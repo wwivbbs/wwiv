@@ -34,6 +34,7 @@ public:
     const std::string DirName(const std::string& name) const;
     // Creates a directory.
     bool Mkdir(const std::string& name) const;
+    std::string CreateTempFilePath(const std::string& name);
     FILE* OpenTempFile(const std::string& name, std::string* path);
     std::string CreateTempFile(const std::string& name, const std::string& contents);
     const std::string& TempDir() const { return tmp_; }

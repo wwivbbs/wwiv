@@ -22,7 +22,7 @@ namespace net {
 
 WFileTransferFile::WFileTransferFile(const string& filename,
 				     std::unique_ptr<WFile>&& file)
-  : TransferFile(filename, file->last_write_time()), file_(std::move(file)) {
+  : TransferFile(filename, file->Exists() ? file->last_write_time() : time(nullptr)), file_(std::move(file)) {
 }
 
 WFileTransferFile::~WFileTransferFile() {}
@@ -50,6 +50,16 @@ bool WFileTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
   // first time.
   file_->Seek(start, WFile::seekBegin);
   return file_->Read(chunk, size) == size;
+}
+
+bool WFileTransferFile::WriteChunk(const char* chunk, size_t size) {
+  if (!file_->IsOpen()) {
+    if (!file_->Open(WFile::modeBinary | WFile::modeReadWrite | WFile::modeCreateFile)) {
+      return false;
+    }
+  }
+  int num_written = file_->Write(chunk, size);
+  return num_written == size;
 }
 
 }  // namespace net
