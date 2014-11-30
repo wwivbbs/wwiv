@@ -79,6 +79,10 @@ BinkConfig::BinkConfig(const string& ini_filename, const string& node_config_fil
     system_name_ = "Unnamed WWIV BBS";
   }
 
+  const string current_directory = WFile::current_directory();
+  network_dir_ = ini_file_->GetValue("NETWORK_DIR", current_directory.c_str());
+  network_name_ = ini_file_->GetValue("NETWORK_NAME", "wwivnet");
+
   // A line will be of the format @node host:port [password].
   string line;
   while (node_config_file.ReadLine(&line)) {

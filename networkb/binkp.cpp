@@ -175,16 +175,14 @@ BinkState BinkP::ConnInit() {
 
 BinkState BinkP::WaitConn() {
   clog << "STATE: WaitConn" << endl;
-  const string sys = StringPrintf("SYS %s", config_->system_name().c_str());
   send_command_packet(BinkpCommands::M_NUL, "OPT wwivnet");
-  send_command_packet(BinkpCommands::M_NUL, sys);
+  send_command_packet(BinkpCommands::M_NUL, StrCat("SYS ", config_->system_name()));
   send_command_packet(BinkpCommands::M_NUL, "ZYZ Unknown Sysop");
   send_command_packet(BinkpCommands::M_NUL, "VER networkb/0.0 binkp/1.0");
   send_command_packet(BinkpCommands::M_NUL, "LOC Unknown");
 
-  const string address = StrCat(StringPrintf("WWIV @%u", config_->node_number()), ".wwivnet");
-  send_command_packet(BinkpCommands::M_NUL, address);
-  send_command_packet(BinkpCommands::M_ADR, StringPrintf("20000:20000/%d@wwivnet", config_->node_number()));
+  send_command_packet(BinkpCommands::M_NUL, StringPrintf("WWIV @%u.%s", config_->node_number(), config_->network_name().c_str()));
+  send_command_packet(BinkpCommands::M_ADR, StringPrintf("20000:20000/%d@%s", config_->node_number(), config_->network_name().c_str()));
 
   // Try to process any inbound frames before leaving this state.
   process_frames(milliseconds(100));
@@ -262,7 +260,7 @@ BinkState BinkP::IfSecure() {
 BinkState BinkP::AuthRemote() {
   clog << "STATE: AuthRemote" << endl;
   // Check that the address matches who we thought we called.
-  clog << "       address line = " << address_list_ << endl;
+  clog << "       remote address_list: " << address_list_ << endl;
   const string expected_ftn = StringPrintf("20000:20000/%d@wwivnet",
              expected_remote_address_);
   if (address_list_.find(expected_ftn) != string::npos) {
