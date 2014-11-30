@@ -30,6 +30,8 @@ class BinkConfig {
 
   uint16_t node_number() const { return node_; }
   const std::string& system_name() const { return system_name_; }
+  const std::string& network_name() const { return network_name_; }
+  const std::string& network_dir() const { return network_dir_; }
 
  private:
   std::map<uint16_t, BinkNodeConfig> node_config_;
@@ -38,6 +40,8 @@ class BinkConfig {
 
   uint16_t node_;
   std::string system_name_;
+  std::string network_name_;
+  std::string network_dir_;
 };
 
 struct config_error : public std::runtime_error {

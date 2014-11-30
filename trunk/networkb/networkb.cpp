@@ -3,15 +3,18 @@
 //
 // example usage:
 //
-// G:\tmp>\Debug\networkb.exe --send --config=G:\tmp\n.ini
+// G:\tmp>\Debug\networkb.exe --send --config=G:\tmp\n.ini --node=1
 //
 // n.ini:
 // [NETWORK]
-// NODE=1
+// NODE=2
 // SYSTEM_NAME=My Test System
+// NETWORK_NAME=wwivnet
+// # Normally DIR would be C:\bbs\wwivnet or something like that.
+// DIR=G:\tmp 
 //
 // addresses.binkp:
-// @2 localhost:24554 -
+// @1 localhost:24554 -
 //
 
 #include "networkb/binkp.h"
@@ -94,21 +97,32 @@ int main(int argc, char** argv) {
     }
   }
 
+  int expected_remote_node = 0;
+  if (contains(args, "node")) {
+    expected_remote_node = std::stoi(args["node"]);
+  }
   try {
     BinkConfig config(config_filename, node_config_filename);
+    unique_ptr<SocketConnection> c;
+    BinkSide side = BinkSide::ORIGINATING;
     if (contains(args, "receive")) {
       clog << "BinkP receive" << endl;
-      unique_ptr<SocketConnection> c(Accept(24554));
-      BinkP binkp(c.get(), &config, BinkSide::ANSWERING, 2);
-      binkp.Run();
+      side = BinkSide::ANSWERING;
+      c = Accept(24554);
     } else if (contains(args, "send")) {
-      // send
-      unique_ptr<SocketConnection> c(Connect("localhost", 24554));
-      BinkP binkp(c.get(), &config, BinkSide::ORIGINATING, 1);
-      binkp.Run();
+      clog << "BinkP send to: " << expected_remote_node << endl;
+      side = BinkSide::ORIGINATING;
+      const BinkNodeConfig* node_config = config.node_config_for(expected_remote_node);
+      if (node_config == nullptr) {
+        clog << "Unable to find node condfig for node: " << expected_remote_node << endl;
+        return 2;
+      }
+      c = Connect(node_config->host, node_config->port);
     } else {
       clog << "No command given to send or receive.  Either use '--send --node=#' or --receive";
     }
+    BinkP binkp(c.get(), &config, side, expected_remote_node);
+    binkp.Run();
   } catch (const socket_error& e) {
     clog << e.what() << std::endl;
   } catch (const std::exception& e) {
