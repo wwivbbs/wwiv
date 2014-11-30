@@ -244,8 +244,8 @@ void write_inet_addr(const char *pszInternetEmailAddress, int nUserNumber) {
       in.Close();
       out.Close();
     }
-    WFile::Remove(in.GetFullPathName());
-    copyfile(out.GetFullPathName(), in.GetFullPathName(), false);
-    WFile::Remove(out.GetFullPathName());
+    WFile::Remove(in.full_pathname());
+    copyfile(out.full_pathname(), in.full_pathname(), false);
+    WFile::Remove(out.full_pathname());
   }
 }

@@ -65,7 +65,7 @@ TEST_F(TextFileTest, Constructor_Path_And_Name) {
 TEST_F(TextFileTest, Append) {
   std::unique_ptr<WTextFile> file(new WTextFile(helper_.TempDir(), this->test_name(), "a+t"));
   EXPECT_EQ(3, file->Write("abc"));
-  const string filename = file->GetFullPathName();
+  const string filename = file->full_pathname();
   file.reset();
 
   const string actual = helper_.ReadFile(filename);
@@ -103,7 +103,7 @@ TEST_F(TextFileTest, Write) {
   {
     WTextFile file(helper_.TempDir(), this->test_name(), "wt");
     file.Write("Hello");
-    filename = file.GetFullPathName();
+    filename = file.full_pathname();
     // Let the textfile close.
   }
   const string actual = helper_.ReadFile(filename);
@@ -115,7 +115,7 @@ TEST_F(TextFileTest, WriteFormatted) {
   {
     WTextFile file(helper_.TempDir(), this->test_name(), "wt");
     file.WriteFormatted("%s %s", "Hello", "World");
-    filename = file.GetFullPathName();
+    filename = file.full_pathname();
     // Let the textfile close.
   }
   const string actual = helper_.ReadFile(filename);
@@ -127,7 +127,7 @@ TEST_F(TextFileTest, WriteChar) {
   {
     WTextFile file(helper_.TempDir(), this->test_name(), "wt");
     file.WriteChar('H');
-    filename = file.GetFullPathName();
+    filename = file.full_pathname();
     // Let the textfile close.
   }
   const string actual = helper_.ReadFile(filename);
@@ -140,7 +140,7 @@ TEST_F(TextFileTest, WriteBinary) {
   {
     WTextFile file(helper_.TempDir(), this->test_name(), "wt");
     file.WriteBinary(kHelloWorld.c_str(), kHelloWorld.size() - 1);  // trim off \n
-    filename = file.GetFullPathName();
+    filename = file.full_pathname();
     // Let the textfile close.
   }
   const string actual = helper_.ReadFile(filename);

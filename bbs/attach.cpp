@@ -245,7 +245,7 @@ void attach_file(int mode) {
               } else {
                 if (so() && !bRemoteUpload) {
                   // Copy file s to szFullPathName.
-                  if (!WFile::CopyFile(szFileToAttach, szFullPathName)) {
+                  if (!WFile::Copy(szFileToAttach, szFullPathName)) {
                     bout << "done.\r\n";
                     ok = 1;
                   } else {

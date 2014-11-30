@@ -99,14 +99,14 @@ void EditMenus() {
   } else {
     if (!fileEditMenu.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone)) {
       MenuSysopLog("Unable to open menu.");
-      MenuSysopLog(fileEditMenu.GetFullPathName());
+      MenuSysopLog(fileEditMenu.full_pathname());
       return;
     }
     nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec));
     --nAmount;
     if (nAmount < 0) {
       MenuSysopLog("Menu is corrupt.");
-      MenuSysopLog(fileEditMenu.GetFullPathName());
+      MenuSysopLog(fileEditMenu.full_pathname());
       return;
     }
   }
@@ -561,11 +561,11 @@ bool GetMenuDir(string& menuName) {
     } else {
       WFile dir(GetMenuDirectory(), menuName);
       if (!dir.Exists()) {
-        bout << "The path " << dir.GetFullPathName() << wwiv::endl <<
+        bout << "The path " << dir.full_pathname() << wwiv::endl <<
                            "does not exist, create it? (N) : ";
         if (noyes()) {
           GetApplication()->CdHome(); // go to the wwiv dir
-          WWIV_make_path(dir.GetFullPathName().c_str());  // Create the new path
+          WWIV_make_path(dir.full_pathname().c_str());  // Create the new path
           if (dir.Exists()) {
             GetApplication()->CdHome();
             bout << "Created\r\n";

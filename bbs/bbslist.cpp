@@ -186,11 +186,11 @@ static void DeleteBBSListEntry() {
   }
   bout.nl();
   if (ok) {
-    WFile::Remove(fi.GetFullPathName());
-    WFile::Rename(fo.GetFullPathName(), fi.GetFullPathName());
+    WFile::Remove(fi.full_pathname());
+    WFile::Rename(fo.full_pathname(), fi.full_pathname());
     bout << "|#7* |#1Number removed.\r\n";
   } else {
-    WFile::Remove(fo.GetFullPathName());
+    WFile::Remove(fo.full_pathname());
     bout << "|#6Error: Couldn't find that in the bbslist file.\r\n";
   }
 }

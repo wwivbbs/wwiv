@@ -85,15 +85,15 @@ bool checkDirExists(WFile &dir, const char *desc) {
     return true;
   }
 
-	Print(NOK, false, "Unable to find dir '%s'", dir.GetFullPathName().c_str());
+	Print(NOK, false, "Unable to find dir '%s'", dir.full_pathname().c_str());
 	Print(NOK, false, "for '%s' dir", desc);
 	printf("   Do you wish to CREATE it (y/N)?\n");
 	string s;
 	std::cin >> s;
 	if(s[0] == 'Y' || s[0] == 'y') {
-		bool exist = WWIV_make_path(dir.GetFullPathName().c_str()) != 0;
+		bool exist = WWIV_make_path(dir.full_pathname().c_str()) != 0;
 		if(!exist) {
-			Print(NOK, true, "Unable to create dir '%s' for %s dir.", dir.GetFullPathName().c_str(), desc);
+			Print(NOK, true, "Unable to create dir '%s' for %s dir.", dir.full_pathname().c_str(), desc);
             return false;
 		}
 	}
@@ -133,11 +133,11 @@ class FixApplication {
 	  unsigned long actual = file.GetLength();
 	  file.Close();
 	  if(actual < len) {
-		  Print(NOK, true, "%s too short (%ld<%ld).", file.GetFullPathName().c_str(), actual, len);
+		  Print(NOK, true, "%s too short (%ld<%ld).", file.full_pathname().c_str(), actual, len);
 		  giveUp();
 	  }
 	  if(actual > len) {
-		  Print(NOK, true, "%s too long (%ld>%ld).", file.GetFullPathName().c_str(), actual, len);
+		  Print(NOK, true, "%s too long (%ld>%ld).", file.full_pathname().c_str(), actual, len);
 		  Print(NOK, true, "Attempting to continue.");
 	  }
   }
@@ -155,8 +155,8 @@ class FixApplication {
 	  bool update = false;
 	  WFile statusDat(syscfg.datadir, STATUS_DAT);
 	  if(!statusDat.Exists()) {
-		  Print(NOK, true, "%s NOT FOUND.", statusDat.GetFullPathName().c_str());
-		  Print(OK, true, "Recreating %s.", statusDat.GetFullPathName().c_str());
+		  Print(NOK, true, "%s NOT FOUND.", statusDat.full_pathname().c_str());
+		  Print(OK, true, "Recreating %s.", statusDat.full_pathname().c_str());
 		  memset(&status, 0, sizeof(statusrec));
 		  strcpy(status.date1, "00/00/00");
 		  strcpy(status.date2, status.date1);
@@ -169,9 +169,9 @@ class FixApplication {
 		  update = true;
 	  } else {
 		  checkFileSize(statusDat, sizeof(statusrec));
-		  Print(OK, true, "Reading %s...", statusDat.GetFullPathName().c_str());
+		  Print(OK, true, "Reading %s...", statusDat.full_pathname().c_str());
 		  if (!statusDat.Open(nFileMode)) {
-			  Print(NOK, true, "%s NOT FOUND.", statusDat.GetFullPathName().c_str());
+			  Print(NOK, true, "%s NOT FOUND.", statusDat.full_pathname().c_str());
 			  giveUp();
 		  }
 		  statusDat.Read(&status, sizeof(statusrec));
@@ -228,17 +228,17 @@ class FixApplication {
   void initDirsDat() {
 	  WFile dirsDat(syscfg.datadir, DIRS_DAT);
 	  if(!dirsDat.Exists()) {
-		  Print(NOK, true, "%s NOT FOUND.", dirsDat.GetFullPathName().c_str());
+		  Print(NOK, true, "%s NOT FOUND.", dirsDat.full_pathname().c_str());
 		  maybeGiveUp();
       return;
     }
 
-    Print(OK, true, "Reading %s...", dirsDat.GetFullPathName().c_str());
+    Print(OK, true, "Reading %s...", dirsDat.full_pathname().c_str());
 	  int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
 	  dirsDat.Open(nFileMode);
 	  directories = (directoryrec *)malloc(dirsDat.GetLength() + 1);
 	  if(directories == nullptr) {
-		  Print(NOK, true, "Couldn't allocate %ld bytes for %s.", dirsDat.GetLength(), dirsDat.GetFullPathName().c_str());
+		  Print(NOK, true, "Couldn't allocate %ld bytes for %s.", dirsDat.GetLength(), dirsDat.full_pathname().c_str());
 		  giveUp();
 	  }
 	  num_dirs_ = (dirsDat.Read(directories, dirsDat.GetLength())) / sizeof(directoryrec);
@@ -249,16 +249,16 @@ class FixApplication {
   void initSubsDat() {
 	  WFile subsDat(syscfg.datadir, SUBS_DAT);
 	  if(!subsDat.Exists()) {
-		  Print(NOK, true, "%s NOT FOUND.", subsDat.GetFullPathName().c_str());
+		  Print(NOK, true, "%s NOT FOUND.", subsDat.full_pathname().c_str());
 		  maybeGiveUp();
           return;
 	  } 
-	  Print(OK, true, "Reading %s...", subsDat.GetFullPathName().c_str());
+	  Print(OK, true, "Reading %s...", subsDat.full_pathname().c_str());
 	  int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
 	  subsDat.Open(nFileMode);
 	  subboards = (subboardrec *)malloc(subsDat.GetLength() + 1);
 	  if(subboards == nullptr) {
-		  Print(NOK, true, "Couldn't allocate %ld bytes for %s.", subsDat.GetLength(), subsDat.GetFullPathName().c_str());
+		  Print(NOK, true, "Couldn't allocate %ld bytes for %s.", subsDat.GetLength(), subsDat.full_pathname().c_str());
 		  giveUp();
 	  }
 	  int num_subs = (subsDat.Read(subboards, subsDat.GetLength())) / sizeof(subboardrec);
@@ -280,12 +280,12 @@ class FixApplication {
 	  }
 
 	  checkFileSize(configFile, sizeof(configrec));
-	  Print(OK, true, "Reading %s...", configFile.GetFullPathName().c_str());
+	  Print(OK, true, "Reading %s...", configFile.full_pathname().c_str());
 	  configFile.Open(WFile::modeReadOnly | WFile::modeBinary);
 	  int readIn = configFile.Read(&syscfg, sizeof(configrec));
 	  configFile.Close();
 	  if(readIn != sizeof(configrec)) {
-		  Print(NOK, true, "Failed to read %s (%d != %d)", configFile.GetFullPathName().c_str(), readIn, sizeof(configrec));
+		  Print(NOK, true, "Failed to read %s (%d != %d)", configFile.full_pathname().c_str(), readIn, sizeof(configrec));
 		  giveUp();
 	  }
 	  syscfg.userreclen = sizeof(userrec);
