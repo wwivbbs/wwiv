@@ -163,9 +163,11 @@ class WFile {
   static int GetDebugLevel() { return debug_level_; }
   static void EnsureTrailingSlash(std::string* path);
   static void CurrentDirectory(std::string* current_dir);
-  static void MakeAbsolutePath(const std::string base, std::string* relative);
-  static bool IsAbsolutePath(const std::string path);
-  static bool IsRelativePath(const std::string path) { return !IsAbsolutePath(path); }
+  static void MakeAbsolutePath(const std::string& base, std::string* relative);
+  static bool IsAbsolutePath(const std::string& path);
+  static bool IsRelativePath(const std::string& path) { return !IsAbsolutePath(path); }
+
+  static bool RealPath(const std::string& path, std::string* resolved);
 };
 
 #endif // __INCLUDED_PLATFORM_WFILLE_H__

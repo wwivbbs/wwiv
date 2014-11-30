@@ -25,7 +25,7 @@
 #include <string>
 
 using std::string;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 TEST(FileTest, DoesNotExist) {
     FileHelper file;
@@ -216,4 +216,25 @@ TEST(FileTest, IsRelative) {
 
   EXPECT_TRUE(WFile::IsRelativePath(kFileName));
   EXPECT_FALSE(WFile::IsRelativePath(path));
+}
+
+TEST(FileTest, RealPath_Same) {
+  static const string kFileName = this->test_info_->name();
+  FileHelper helper;
+  const string path = helper.CreateTempFile(kFileName, "Hello World");
+
+  string realpath;
+  ASSERT_TRUE(WFile::RealPath(path, &realpath));
+  EXPECT_EQ(path, realpath);
+}
+
+TEST(FileTest, RealPath_Different) {
+  static const string kFileName = this->test_info_->name();
+  FileHelper helper;
+  const string path = helper.CreateTempFile(kFileName, "Hello World");
+
+  string realpath;
+  // Add an extra ./ into the path.
+  ASSERT_TRUE(WFile::RealPath(StrCat(helper.TempDir(), WFile::pathSeparatorString, ".", WFile::pathSeparatorString, kFileName), &realpath));
+  EXPECT_EQ(path, realpath);
 }

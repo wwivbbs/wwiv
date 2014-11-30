@@ -67,3 +67,18 @@ bool WFile::Copy(const std::string sourceFileName, const std::string destFileNam
 bool WFile::Move(const std::string sourceFileName, const std::string destFileName) {
   return ::MoveFileA(sourceFileName.c_str(), destFileName.c_str()) ? true : false;
 }
+
+bool WFile::RealPath(const std::string& path, std::string* resolved) {
+  const int BUFSIZE = 4096;
+  CHAR szBuffer[BUFSIZE];
+  CHAR** lppPart = { nullptr };
+
+  DWORD result = GetFullPathName(path.c_str(), BUFSIZE, szBuffer, lppPart);
+  if (result == 0) {
+    resolved->assign(path);
+    return false;
+  }
+
+  resolved->assign(szBuffer);
+  return true;
+}

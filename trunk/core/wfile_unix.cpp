@@ -20,6 +20,8 @@
 
 #include <algorithm>
 #include <cerrno>
+#include <climits>
+#include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
 #include <iostream>
@@ -101,4 +103,15 @@ bool WFile::Move(const std::string sourceFileName, const std::string destFileNam
     return Remove(sourceFileName);
   }
   return false;
+}
+
+bool WFile::RealPath(const std::string& path, std::string* resolved) {
+  char* result = realpath(path.c_str(), NULL);
+  if (resolved == NULL) {
+    resolved->assign(path);
+    return false;
+  }
+
+  resolved->assign(result);
+  free(result);
 }
