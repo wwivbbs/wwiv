@@ -175,8 +175,7 @@ TEST(FileTest, EnsureTrailingSlash) {
 TEST(FileTest, CurrentDirectory) {
   char expected[MAX_PATH];
   getcwd(expected, MAX_PATH);
-  string actual;
-  WFile::CurrentDirectory(&actual);
+  string actual = WFile::current_directory();
   EXPECT_STREQ(expected, actual.c_str());
 }
 
