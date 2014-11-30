@@ -1,3 +1,19 @@
+//
+// NetworkB(inkp) prototype.
+//
+// example usage:
+//
+// G:\tmp>\Debug\networkb.exe --send --config=G:\tmp\n.ini --addresses=G:\tmp\addresses.binkp
+//
+// n.ini:
+// [NETWORK]
+// NODE=1
+// SYSTEM_NAME=My Test System
+//
+// addresses.binkp:
+// @2 localhost:24554 -
+//
+
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"
@@ -93,7 +109,9 @@ int main(int argc, char** argv) {
     } else {
       clog << "No command given to send or receive.  Either use '--send --node=#' or --receive";
     }
-  } catch (socket_error e) {
+  } catch (const socket_error& e) {
+    clog << e.what() << std::endl;
+  } catch (const std::exception& e) {
     clog << e.what() << std::endl;
   }
   
