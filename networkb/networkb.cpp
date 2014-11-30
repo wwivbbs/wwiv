@@ -22,6 +22,7 @@
 #include "networkb/connection.h"
 #include "networkb/socket_connection.h"
 #include "networkb/socket_exceptions.h"
+#include "networkb/wfile_transfer_file.h"
 
 #include <fcntl.h>
 #include <iostream>
@@ -121,7 +122,11 @@ int main(int argc, char** argv) {
       clog << "No command given to send or receive.  Either use '--send --node=#' or --receive";
       return 1;
     }
-    BinkP binkp(c.get(), &config, side, expected_remote_node);
+    BinkP::received_transfer_file_factory_t factory = [&](const string& filename) { 
+      WFile* f = new WFile(config.network_dir(), filename);
+      return new WFileTransferFile(filename, unique_ptr<WFile>(f)); 
+    };
+    BinkP binkp(c.get(), &config, side, expected_remote_node, factory);
     binkp.Run();
   } catch (const socket_error& e) {
     clog << e.what() << std::endl;
