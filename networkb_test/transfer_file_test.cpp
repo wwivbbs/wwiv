@@ -19,7 +19,7 @@ using namespace wwiv::strings;
 class TransferFileTest : public testing::Test {
 public:
   TransferFileTest() 
-    : filename("test1"), contents("ASDF"), now(system_clock::now()), file(filename, contents, now) {
+    : filename("test1"), contents("ASDF"), now(system_clock::now()), file(filename, contents, system_clock::to_time_t(now)) {
     full_filename = file_helper_.CreateTempFile(filename, contents);
   }
 
