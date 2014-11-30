@@ -61,6 +61,7 @@ static WSession* sess;
 using std::string;
 using std::unique_ptr;
 using wwiv::bbs::InputMode;
+using namespace wwiv::strings;
 
 //////////////////////////////////////////////////////////////////////////////
 // Implementation
@@ -144,7 +145,7 @@ int WApplication::doWFCEvents() {
     set_net_num(0);
     bool any = false;
     SetWfcStatus(1);
-    if (!wwiv::strings::IsEquals(date(), pStatus->GetLastDate())) {
+    if (!IsEquals(date(), pStatus->GetLastDate())) {
       if ((GetSession()->GetBeginDayNodeNumber() == 0) || (instance_number == GetSession()->GetBeginDayNodeNumber())) {
         cleanup_events();
         holdphone(true);
@@ -682,23 +683,15 @@ void WApplication::GotCaller(unsigned int ms, unsigned long cs) {
 
 
 int WApplication::BBSMainLoop(int argc, char *argv[]) {
-//
 // TODO - move this to WIOTelnet
-//
 #if defined ( _WIN32 )
   WIOTelnet::InitializeWinsock();
-
-  //
   // If there is only 1 argument "-TELSRV" then use internal telnet daemon
-  //
-  if (argc == 2) {
-    if (wwiv::strings::IsEqualsIgnoreCase(argv[1], "-TELSRV") ||
-        wwiv::strings::IsEqualsIgnoreCase(argv[1], "/TELSRV")) {
-      WInternalTelnetServer server(this);
-      server.RunTelnetServer();
-      ExitBBSImpl(0);
-      return 0;
-    }
+  if (argc == 2 && IsEqualsIgnoreCase(argv[1], "-TELSRV") {
+    WInternalTelnetServer server(this);
+    server.RunTelnetServer();
+    ExitBBSImpl(0);
+    return 0;
   }
 #endif // _WIN32
 
@@ -811,7 +804,7 @@ int WApplication::Run(int argc, char *argv[]) {
         num_min = std::stoi(argument);
         break;
       case 'U':
-        this_usernum = wwiv::strings::StringToUnsignedShort(argument.c_str());
+        this_usernum = StringToUnsignedShort(argument.c_str());
         if (!m_bUserAlreadyOn) {
           GetSession()->SetCurrentSpeed("KB");
         }
@@ -943,7 +936,7 @@ int WApplication::Run(int argc, char *argv[]) {
   if (event_only) {
     unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
     cleanup_events();
-    if (!wwiv::strings::IsEquals(date(), pStatus->GetLastDate())) {
+    if (!IsEquals(date(), pStatus->GetLastDate())) {
       // This may be another node, but the user explicitly wanted to run the beginday
       // event from the commandline, so we'll just check the date.
       beginday(true);
@@ -969,7 +962,7 @@ int WApplication::Run(int argc, char *argv[]) {
         okmacro = true;
         if (!hangup && GetSession()->usernum > 0 &&
             GetSession()->GetCurrentUser()->IsRestrictionLogon() &&
-            wwiv::strings::IsEquals(date(), GetSession()->GetCurrentUser()->GetLastOn()) &&
+            IsEquals(date(), GetSession()->GetCurrentUser()->GetLastOn()) &&
             GetSession()->GetCurrentUser()->GetTimesOnToday() > 0) {
           bout << "\r\n|#6Sorry, you can only logon once per day.\r\n\n";
           hangup = true;
@@ -1252,6 +1245,11 @@ WApplication* CreateApplication(WLocalIO* localIO) {
 }
 
 int bbsmain(int argc, char *argv[]) {
-  CreateApplication(nullptr);
-  return GetApplication()->BBSMainLoop(argc, argv);
+  try {
+    CreateApplication(nullptr);
+    return GetApplication()->BBSMainLoop(argc, argv);
+  } catch (std::exception& e) {
+    // TODO(rushfan): Log this to sysop log or where else?
+    std::clog << "BBS Terminated by exception: " << e.what() << std::endl;
+  }
 }
