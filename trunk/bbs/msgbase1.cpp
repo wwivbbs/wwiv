@@ -28,7 +28,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 
 using std::string;
 using std::unique_ptr;
@@ -97,8 +97,8 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
     } else {
       nh.main_type = main_type_post;
       const string filename = StringPrintf("%sn%s.net", GetSession()->GetNetworkDataDirectory().c_str(), xnp->stype);
-      WFile file(filename);
-      if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+      File file(filename);
+      if (file.Open(File::modeBinary | File::modeReadOnly)) {
         int len1 = file.GetLength();
         pList = static_cast<unsigned short int *>(BbsAllocA(len1 * 2 + 1));
         if (!pList) {
@@ -464,11 +464,11 @@ void ScanMessageTitles() {
   }
 }
 
-void delmail(WFile *pFile, int loc) {
+void delmail(File *pFile, int loc) {
   mailrec m, m1;
   WUser user;
 
-  pFile->Seek(static_cast<long>(loc * sizeof(mailrec)), WFile::seekBegin);
+  pFile->Seek(static_cast<long>(loc * sizeof(mailrec)), File::seekBegin);
   pFile->Read(&m, sizeof(mailrec));
 
   if (m.touser == 0 && m.tosys == 0) {
@@ -481,7 +481,7 @@ void delmail(WFile *pFile, int loc) {
     int otf = false;
     for (int i = 0; i < t; i++) {
       if (i != loc) {
-        pFile->Seek(static_cast<long>(i * sizeof(mailrec)), WFile::seekBegin);
+        pFile->Seek(static_cast<long>(i * sizeof(mailrec)), File::seekBegin);
         pFile->Read(&m1, sizeof(mailrec));
         if ((m.msg.stored_as == m1.msg.stored_as) && (m.msg.storage_type == m1.msg.storage_type) && (m1.daten != 0xffffffff)) {
           otf = true;
@@ -506,7 +506,7 @@ void delmail(WFile *pFile, int loc) {
       --fwaiting;
     }
   }
-  pFile->Seek(static_cast<long>(loc * sizeof(mailrec)), WFile::seekBegin);
+  pFile->Seek(static_cast<long>(loc * sizeof(mailrec)), File::seekBegin);
   m.touser = 0;
   m.tosys = 0;
   m.daten = 0xffffffff;

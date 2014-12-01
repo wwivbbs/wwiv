@@ -21,7 +21,7 @@ namespace wwiv {
 namespace net {
 
 WFileTransferFile::WFileTransferFile(const string& filename,
-				     std::unique_ptr<WFile>&& file)
+				     std::unique_ptr<File>&& file)
   : TransferFile(filename, file->Exists() ? file->last_write_time() : time(nullptr)), file_(std::move(file)) {
 }
 
@@ -33,7 +33,7 @@ int WFileTransferFile::file_size() const {
 
 bool WFileTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
   if (!file_->IsOpen()) {
-    if (!file_->Open(WFile::modeBinary | WFile::modeReadOnly)) {
+    if (!file_->Open(File::modeBinary | File::modeReadOnly)) {
       return false;
     }
   }
@@ -48,13 +48,13 @@ bool WFileTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
   // TODO(rushfan): Cache the current file pointer and only re-seek
   // if needed (realistically we should ever have to seek after the
   // first time.
-  file_->Seek(start, WFile::seekBegin);
+  file_->Seek(start, File::seekBegin);
   return file_->Read(chunk, size) == size;
 }
 
 bool WFileTransferFile::WriteChunk(const char* chunk, size_t size) {
   if (!file_->IsOpen()) {
-    if (!file_->Open(WFile::modeBinary | WFile::modeReadWrite | WFile::modeCreateFile)) {
+    if (!file_->Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
       return false;
     }
   }

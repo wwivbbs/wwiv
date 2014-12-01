@@ -33,7 +33,7 @@
 #include "init/subacc.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "init/utility.h"
 
 static const int MAX_SUBS_DIRS = 4096;

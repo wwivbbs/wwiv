@@ -3,7 +3,7 @@ TODO for networkb
 
 pre-alpha
 =========
-# * Create WFile based TransferFile subclass for real use.
+# * Create File based TransferFile subclass for real use.
 * create daemon process to be the listener side
 * create unit tests
 #* create server side of extension (OPT wwivnet) that if the server supports

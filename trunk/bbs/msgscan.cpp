@@ -626,10 +626,10 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
     }
     char szFullPathName[ MAX_PATH ];
     sprintf(szFullPathName, "%s%s.frm", syscfg.gfilesdir, szFileName);
-    if (!WFile::Exists(szFullPathName)) {
+    if (!File::Exists(szFullPathName)) {
       sprintf(szFullPathName, "%sform%s.msg", syscfg.gfilesdir, szFileName);
     }
-    if (WFile::Exists(szFullPathName)) {
+    if (File::Exists(szFullPathName)) {
       LoadFileIntoWorkspace(szFullPathName, true);
       email(get_post(nMessageNumber)->owneruser, get_post(nMessageNumber)->ownersys, false, get_post(nMessageNumber)->anony);
       grab_quotes(nullptr, nullptr);
@@ -672,19 +672,19 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
         unique_ptr<char[]> b(readfile(&(get_post(nMessageNumber)->msg), (subboards[GetSession()->GetCurrentReadMessageArea()].filename),
                            &lMessageLen));
         string filename = "EXTRACT.TMP";
-        if (WFile::Exists(filename)) {
-          WFile::Remove(filename);
+        if (File::Exists(filename)) {
+          File::Remove(filename);
         }
-        WFile fileExtract(filename);
-        if (!fileExtract.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
+        File fileExtract(filename);
+        if (!fileExtract.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
           bout << "|#6Could not open file for writing.\r\n";
         } else {
           if (fileExtract.GetLength() > 0) {
-            fileExtract.Seek(-1L, WFile::seekEnd);
+            fileExtract.Seek(-1L, File::seekEnd);
             char chLastChar = CZ;
             fileExtract.Read(&chLastChar, 1);
             if (chLastChar == CZ) {
-              fileExtract.Seek(-1L, WFile::seekEnd);
+              fileExtract.Seek(-1L, File::seekEnd);
             }
           }
           char szBuffer[ 255 ];
@@ -707,8 +707,8 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
         }
         send_email();
         filename = StringPrintf("%s%s", syscfgovr.tempdir, INPUT_MSG);
-        if (WFile::Exists(filename)) {
-          WFile::Remove(filename);
+        if (File::Exists(filename)) {
+          File::Remove(filename);
         }
       }
       nScanOptionType = SCAN_OPTION_READ_MESSAGE;
@@ -918,9 +918,9 @@ void HandleMessageDownload(int nMessageNumber) {
     if (!okfn(filename)) {
       return;
     }
-    WFile fileTemp(syscfgovr.tempdir, filename);
+    File fileTemp(syscfgovr.tempdir, filename);
     fileTemp.Delete();
-    fileTemp.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
+    fileTemp.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     fileTemp.Write(b.get(), lMessageLen);
     fileTemp.Close();
 

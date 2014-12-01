@@ -14,7 +14,7 @@
 
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "core/wfndfile.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/binkp_config.h"
@@ -48,13 +48,13 @@ public:
   vector<TransferFile*> CreateTransferFileList() {
     vector<TransferFile*> result;
     string dir = network_directory_;
-    WFile::EnsureTrailingSlash(&dir);
+    File::EnsureTrailingSlash(&dir);
     const string s_node_net = StringPrintf("S%d.NET", destination_node_);
-    const string search_path = StrCat(dir, WFile::pathSeparatorString, s_node_net);
+    const string search_path = StrCat(dir, File::pathSeparatorString, s_node_net);
     WFindFile fnd;
     bool found = fnd.open(search_path, 0);
     while (found) {
-      result.push_back(new WFileTransferFile(fnd.GetFileName(), unique_ptr<WFile>(new WFile(network_directory_, fnd.GetFileName()))));
+      result.push_back(new WFileTransferFile(fnd.GetFileName(), unique_ptr<File>(new File(network_directory_, fnd.GetFileName()))));
       found = fnd.next();
     }
     fnd.close();

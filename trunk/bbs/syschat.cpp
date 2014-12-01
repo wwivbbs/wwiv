@@ -552,7 +552,7 @@ void chat1(char *pszChatLine, bool two_way) {
     chatting = 1;
   }
   double tc = timer();
-  WFile chatFile(syscfg.gfilesdir, "chat.txt");
+  File chatFile(syscfg.gfilesdir, "chat.txt");
 
   GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
   s1[0] = '\0';
@@ -616,8 +616,8 @@ void chat1(char *pszChatLine, bool two_way) {
     if (chat_file && !two_way) {
       if (!chatFile.IsOpen()) {
         GetSession()->localIO()->LocalFastPuts("-] Chat file opened.\r\n");
-        if (chatFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
-          chatFile.Seek(0L, WFile::seekEnd);
+        if (chatFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
+          chatFile.Seek(0L, File::seekEnd);
           sprintf(s2, "\r\n\r\nChat file opened %s %s\r\n", fulldate(), times());
           chatFile.Write(s2, strlen(s2));
           strcpy(s2, "----------------------------------\r\n\r\n");

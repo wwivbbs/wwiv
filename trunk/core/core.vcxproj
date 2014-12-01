@@ -85,14 +85,14 @@
     <ClCompile Include="platform\win32\wfndfile.cpp" />
     <ClCompile Include="platform\wutil.cpp" />
     <ClCompile Include="stl.cpp" />
-    <ClCompile Include="wfile.cpp" />
-    <ClCompile Include="wfile_unix.cpp">
+    <ClCompile Include="file.cpp" />
+    <ClCompile Include="file_unix.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="wfile_win32.cpp" />
+    <ClCompile Include="file_win32.cpp" />
     <ClCompile Include="strings.cpp" />
-    <ClCompile Include="wtextfile.cpp" />
+    <ClCompile Include="textfile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inifile.h" />
@@ -101,8 +101,8 @@
     <ClInclude Include="stl.h" />
     <ClInclude Include="transaction.h" />
     <ClInclude Include="strings.h" />
-    <ClInclude Include="wfile.h" />
-    <ClInclude Include="wtextfile.h" />
+    <ClInclude Include="file.h" />
+    <ClInclude Include="textfile.h" />
     <ClInclude Include="wutil.h" />
     <ClInclude Include="wwivassert.h" />
     <ClInclude Include="wwivport.h" />

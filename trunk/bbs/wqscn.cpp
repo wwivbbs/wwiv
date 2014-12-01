@@ -20,13 +20,13 @@
 #include "wwiv.h"
 
 
-static WFile qscanFile;
+static File qscanFile;
 
 
 bool open_qscn() {
   if (!qscanFile.IsOpen()) {
     qscanFile.SetName(syscfg.datadir, USER_QSC);
-    if (!qscanFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
+    if (!qscanFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return false;
     }
   }
@@ -56,7 +56,7 @@ void read_qscn(int nUserNumber, uint32_t* qscn, bool bStayOpen, bool bForceRead)
   if (open_qscn()) {
     long lPos = static_cast<long>(syscfg.qscn_len) * static_cast<long>(nUserNumber);
     if (lPos + static_cast<long>(syscfg.qscn_len) <= qscanFile.GetLength()) {
-      qscanFile.Seek(lPos, WFile::seekBegin);
+      qscanFile.Seek(lPos, File::seekBegin);
       qscanFile.Read(qscn, syscfg.qscn_len);
       if (!bStayOpen) {
         close_qscn();
@@ -90,7 +90,7 @@ void write_qscn(int nUserNumber, uint32_t *qscn, bool bStayOpen) {
   }
   if (open_qscn()) {
     long lPos = static_cast<long>(syscfg.qscn_len) * static_cast<long>(nUserNumber);
-    qscanFile.Seek(lPos, WFile::seekBegin);
+    qscanFile.Seek(lPos, File::seekBegin);
     qscanFile.Write(qscn, syscfg.qscn_len);
     if (!bStayOpen) {
       close_qscn();

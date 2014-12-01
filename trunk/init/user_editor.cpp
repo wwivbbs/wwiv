@@ -32,7 +32,7 @@
 #include "init/wwivinit.h"
 
 #include "core/strings.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "initlib/listbox.h"
 
 #include "sdk/filenames.h"
@@ -92,9 +92,9 @@ static vector<HelpItem> create_extra_help_items() {
 }
 
 static const int JumpToUser(CursesIO* io, CursesWindow* window) {
-  WFile file(syscfg.datadir, NAMES_LST);
+  File file(syscfg.datadir, NAMES_LST);
   int num_reconds = file.GetLength() / sizeof(smalrec);
-  if (!file.Open(WFile::modeReadOnly | WFile::modeBinary, WFile::shareDenyWrite)) {
+  if (!file.Open(File::modeReadOnly | File::modeBinary, File::shareDenyWrite)) {
     show_error_no_users(window);
     return -1;
   }

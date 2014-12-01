@@ -842,7 +842,7 @@ void qwk_menu(void) {
 
       build_qwk_packet();
 
-      if (WFile::Exists(namepath)) {
+      if (File::Exists(namepath)) {
         sysoplog("REP was uploaded");
         upload_reply_packet();
       }
@@ -858,7 +858,7 @@ void qwk_menu(void) {
 
       build_qwk_packet();
 
-      if (WFile::Exists(namepath)) {
+      if (File::Exists(namepath)) {
         upload_reply_packet();
       }
       break;
@@ -1238,7 +1238,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
     x = 0;
     while (x < qwk_cfg.amount_blts) {
-      if (WFile::Exists(qwk_cfg.blt[x])) {
+      if (File::Exists(qwk_cfg.blt[x])) {
         // Only copy if bulletin is newer than the users laston date
         // Don't have file_daten anymore
         // if(file_daten(qwk_cfg.blt[x]) > date_to_daten(GetSession()->GetCurrentUser()->GetLastOnDateNumber()))
@@ -1274,8 +1274,8 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     // TODO(rushfan): Should we just have a make abs path?
     WWIV_make_abs_cmd(GetApplication()->GetHomeDir(), &qwk_file_to_send);
 
-    WFile qwk_file_to_send_file(qwk_file_to_send);
-    if (!WFile::Exists(qwk_file_to_send)){
+    File qwk_file_to_send_file(qwk_file_to_send);
+    if (!File::Exists(qwk_file_to_send)){
       bout.bputs("No such file.");
       bout.nl();
       qwk_info->abort = 1;

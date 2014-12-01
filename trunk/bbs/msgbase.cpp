@@ -41,9 +41,9 @@ using wwiv::strings::StrCat;
 using wwiv::strings::StringPrintf;
 
 // Local function prototypes
-WFile* OpenMessageFile(const string messageAreaFileName);
-void set_gat_section(WFile *pMessageFile, int section);
-void save_gat(WFile *pMessageFile);
+File* OpenMessageFile(const string messageAreaFileName);
+void set_gat_section(File *pMessageFile, int section);
+void save_gat(File *pMessageFile);
 
 static long gat_section;
 
@@ -85,12 +85,12 @@ static void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, string* out
               "%s%s%c%s.%-3u",
               syscfg.datadir,
               REGIONS_DIR,
-              WFile::pathSeparatorChar,
+              File::pathSeparatorChar,
               REGIONS_DIR,
               atoi(csne->phone));
 
       string description;
-      if (WFile::Exists(filename)) {
+      if (File::Exists(filename)) {
         // Try to use the town first.
         const string phone_prefix = StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
         description = describe_area_code_prefix(atoi(csne->phone), atoi(phone_prefix.c_str()));
@@ -119,7 +119,7 @@ void remove_link(messagerec * pMessageRecord, string fileName) {
   case 1:
     break;
   case 2: {
-    unique_ptr<WFile> file(OpenMessageFile(fileName));
+    unique_ptr<File> file(OpenMessageFile(fileName));
     if (file->IsOpen()) {
       set_gat_section(file.get(), static_cast<int>(pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS));
       long lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
@@ -143,14 +143,14 @@ void remove_link(messagerec * pMessageRecord, string fileName) {
  * Opens the message area file {pszMessageAreaFileName} and returns the file handle.
  * Note: This is a Private method to this module.
  */
-WFile* OpenMessageFile(const string messageAreaFileName) {
+File* OpenMessageFile(const string messageAreaFileName) {
   GetApplication()->GetStatusManager()->RefreshStatusCache();
 
   const string filename = StrCat(syscfg.msgsdir, messageAreaFileName, FILENAME_DAT_EXTENSION);
-  WFile *pFileMessage = new WFile(filename);
-  if (!pFileMessage->Open(WFile::modeReadWrite | WFile::modeBinary)) {
+  File *pFileMessage = new File(filename);
+  if (!pFileMessage->Open(File::modeReadWrite | File::modeBinary)) {
     // Create message area file if it doesn't exist.
-    pFileMessage->Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
+    pFileMessage->Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     for (int i = 0; i < GAT_NUMBER_ELEMENTS; i++) {
       gat[i] = 0;
     }
@@ -158,7 +158,7 @@ WFile* OpenMessageFile(const string messageAreaFileName) {
     pFileMessage->SetLength(GAT_SECTION_SIZE + (75L * 1024L));
     gat_section = 0;
   }
-  pFileMessage->Seek(0L, WFile::seekBegin);
+  pFileMessage->Seek(0L, File::seekBegin);
   pFileMessage->Read(gat, GAT_SECTION_SIZE);
 
   gat_section = 0;
@@ -173,7 +173,7 @@ WFile* OpenMessageFile(const string messageAreaFileName) {
 long current_gat_section() { return gat_section; }
 void current_gat_section(long section) { gat_section = section; }
 
-void set_gat_section(WFile *pMessageFile, int section) {
+void set_gat_section(File *pMessageFile, int section) {
   if (gat_section != section) {
     long lFileSize = pMessageFile->GetLength();
     long lSectionPos = static_cast<long>(section) * GATSECLEN;
@@ -181,7 +181,7 @@ void set_gat_section(WFile *pMessageFile, int section) {
       pMessageFile->SetLength(lSectionPos);
       lFileSize = lSectionPos;
     }
-    pMessageFile->Seek(lSectionPos, WFile::seekBegin);
+    pMessageFile->Seek(lSectionPos, File::seekBegin);
     if (lFileSize < (lSectionPos + GAT_SECTION_SIZE)) {
       for (int i = 0; i < GAT_NUMBER_ELEMENTS; i++) {
         gat[i] = 0;
@@ -194,9 +194,9 @@ void set_gat_section(WFile *pMessageFile, int section) {
   }
 }
 
-void save_gat(WFile *pMessageFile) {
+void save_gat(File *pMessageFile) {
   long lSectionPos = static_cast<long>(gat_section) * GATSECLEN;
-  pMessageFile->Seek(lSectionPos, WFile::seekBegin);
+  pMessageFile->Seek(lSectionPos, File::seekBegin);
   pMessageFile->Write(gat, GAT_SECTION_SIZE);
   WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
   pStatus->IncrementFileChangedFlag(WStatus::fileChangePosts);
@@ -211,7 +211,7 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
     break;
   case 2: {
     int gati[128];
-    WFile *pMessageFile = OpenMessageFile(fileName);
+    File *pMessageFile = OpenMessageFile(fileName);
     if (pMessageFile->IsOpen()) {
       for (int section = 0; section < 1024; section++) {
         set_gat_section(pMessageFile, section);
@@ -227,7 +227,7 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
         if (gatp >= nNumBlocksRequired) {
           gati[gatp] = -1;
           for (int i = 0; i < nNumBlocksRequired; i++) {
-            pMessageFile->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), WFile::seekBegin);
+            pMessageFile->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::seekBegin);
             pMessageFile->Write((&b[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
             gat[gati[i]] = static_cast< unsigned short >(gati[i + 1]);
           }
@@ -252,7 +252,7 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
 char *readfile(messagerec * pMessageRecord, string fileName, long *plMessageLength) {
   *plMessageLength = 0L;
   if (pMessageRecord->storage_type == 2) {
-    unique_ptr<WFile> file(OpenMessageFile(fileName));
+    unique_ptr<File> file(OpenMessageFile(fileName));
     set_gat_section(file.get(), pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS);
     int lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
     long lMessageLength = 0;
@@ -271,7 +271,7 @@ char *readfile(messagerec * pMessageRecord, string fileName, long *plMessageLeng
     lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
     long lMessageBytesRead = 0;
     while (lCurrentSection > 0 && lCurrentSection < GAT_NUMBER_ELEMENTS) {
-      file->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast< long >(lCurrentSection), WFile::seekBegin);
+      file->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast< long >(lCurrentSection), File::seekBegin);
       lMessageBytesRead += static_cast<long>(file->Read(&(b[lMessageBytesRead]), MSG_BLOCK_SIZE));
       lCurrentSection = gat[lCurrentSection];
     }
@@ -288,8 +288,8 @@ char *readfile(messagerec * pMessageRecord, string fileName, long *plMessageLeng
 }
 
 void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed) {
-  WFile fileOrig(pszFileName);
-  if (!fileOrig.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File fileOrig(pszFileName);
+  if (!fileOrig.Open(File::modeBinary | File::modeReadOnly)) {
     bout << "\r\nFile not found.\r\n\n";
     return;
   }
@@ -302,8 +302,8 @@ void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed) {
     b[lOrigSize++] = CZ;
   }
 
-  WFile fileOut(syscfgovr.tempdir, INPUT_MSG);
-  fileOut.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
+  File fileOut(syscfgovr.tempdir, INPUT_MSG);
+  fileOut.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   fileOut.Write(b.get(), lOrigSize);
   fileOut.Close();
 
@@ -414,23 +414,23 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
   return true;
 }
 
-WFile *OpenEmailFile(bool bAllowWrite) {
-  WFile *file = new WFile(syscfg.datadir, EMAIL_DAT);
+File *OpenEmailFile(bool bAllowWrite) {
+  File *file = new File(syscfg.datadir, EMAIL_DAT);
 
   // If the file doesn't exist, just return the opaque handle now instead of flailing
   // around trying to open it
   if (!file->Exists()) {
     // if it does not exist, try to create it via the open call
     // sf bug 1215434
-    file->Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
+    file->Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     return file;
   }
 
   for (int nAttempNum = 0; nAttempNum < NUM_ATTEMPTS_TO_OPEN_EMAIL; nAttempNum++) {
     if (bAllowWrite) {
-      file->Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
+      file->Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     } else {
-      file->Open(WFile::modeBinary | WFile::modeReadOnly);
+      file->Open(File::modeBinary | File::modeReadOnly);
     }
     if (file->IsOpen()) {
       break;
@@ -468,7 +468,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
   }
 
   if (nSystemNumber == 0) {
-    WFile *pFileEmail = OpenEmailFile(true);
+    File *pFileEmail = OpenEmailFile(true);
     WWIV_ASSERT(pFileEmail);
     if (!pFileEmail->IsOpen()) {
       return;
@@ -478,11 +478,11 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
       i = 0;
     } else {
       i = nEmailFileLen - 1;
-      pFileEmail->Seek(i * sizeof(mailrec), WFile::seekBegin);
+      pFileEmail->Seek(i * sizeof(mailrec), File::seekBegin);
       pFileEmail->Read(&messageRecord, sizeof(mailrec));
       while (i > 0 && messageRecord.tosys == 0 && messageRecord.touser == 0) {
         --i;
-        pFileEmail->Seek(i * sizeof(mailrec), WFile::seekBegin);
+        pFileEmail->Seek(i * sizeof(mailrec), File::seekBegin);
         int i1 = pFileEmail->Read(&messageRecord, sizeof(mailrec));
         if (i1 == -1) {
           bout << "|#6DIDN'T READ WRITE!\r\n";
@@ -493,7 +493,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
       }
     }
 
-    pFileEmail->Seek(i * sizeof(mailrec), WFile::seekBegin);
+    pFileEmail->Seek(i * sizeof(mailrec), File::seekBegin);
     int nBytesWritten = pFileEmail->Write(&m, sizeof(mailrec));
     pFileEmail->Close();
     delete pFileEmail;
@@ -550,9 +550,9 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
           GetSession()->GetNetworkDataDirectory().c_str(),
           GetApplication()->GetNetworkExtension().c_str());
       }
-      WFile fileNetworkPacket(net_filename);
-      fileNetworkPacket.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
-      fileNetworkPacket.Seek(0L, WFile::seekEnd);
+      File fileNetworkPacket(net_filename);
+      fileNetworkPacket.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
+      fileNetworkPacket.Seek(0L, File::seekEnd);
       fileNetworkPacket.Write(&nh, sizeof(net_header_rec));
       fileNetworkPacket.Write(b1.get(), nh.length);
       fileNetworkPacket.Close();
@@ -1283,7 +1283,7 @@ void lineadd(messagerec* pMessageRecord, const string& sx, string fileName) {
   case 1:
     break;
   case 2: {
-    unique_ptr<WFile> message_file(OpenMessageFile(fileName));
+    unique_ptr<File> message_file(OpenMessageFile(fileName));
     set_gat_section(message_file.get(), pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS);
     int new1 = 1;
     while (new1 < GAT_NUMBER_ELEMENTS && gat[new1] != 0) {
@@ -1298,17 +1298,17 @@ void lineadd(messagerec* pMessageRecord, const string& sx, string fileName) {
       message_file->Close();
       return;
     }
-    message_file->Seek(MSG_STARTING + static_cast<long>(i) * MSG_BLOCK_SIZE, WFile::seekBegin);
+    message_file->Seek(MSG_STARTING + static_cast<long>(i) * MSG_BLOCK_SIZE, File::seekBegin);
     message_file->Read(b, MSG_BLOCK_SIZE);
     int j = 0;
     while (j < MSG_BLOCK_SIZE && b[j] != CZ) {
       ++j;
     }
     strcpy(&(b[j]), line.c_str());
-    message_file->Seek(MSG_STARTING + static_cast<long>(i) * MSG_BLOCK_SIZE, WFile::seekBegin);
+    message_file->Seek(MSG_STARTING + static_cast<long>(i) * MSG_BLOCK_SIZE, File::seekBegin);
     message_file->Write(b, MSG_BLOCK_SIZE);
     if (((j + line.size()) > MSG_BLOCK_SIZE) && (new1 != GAT_NUMBER_ELEMENTS)) {
-      message_file->Seek(MSG_STARTING + static_cast<long>(new1)  * MSG_BLOCK_SIZE, WFile::seekBegin);
+      message_file->Seek(MSG_STARTING + static_cast<long>(new1)  * MSG_BLOCK_SIZE, File::seekBegin);
       message_file->Write(b + MSG_BLOCK_SIZE, MSG_BLOCK_SIZE);
       gat[new1] = 65535;
       gat[i] = static_cast< unsigned short >(new1);

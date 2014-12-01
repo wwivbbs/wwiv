@@ -257,8 +257,8 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
     bActionHandled = 0;
     char szFileName[ MAX_PATH ];
     sprintf(szFileName, "CHANNEL.%d", (loc + 1 - INST_LOC_CH1));
-    if (WFile::Exists(szFileName)) {
-      WFile::Remove(szFileName);
+    if (File::Exists(szFileName)) {
+      File::Remove(szFileName);
       sprintf(szFileName, "\r\n|#1[|#9%s has unsecured the channel|#1]", GetSession()->GetCurrentUser()->GetName());
       out_msg(szFileName, loc);
       bout << "|#1[|#9Channel Unsecured|#1]\r\n";
@@ -361,7 +361,7 @@ void intro(int loc) {
   }
   char szFileName[ MAX_PATH ];
   sprintf(szFileName, "CHANNEL.%d", (loc + 1 - INST_LOC_CH1));
-  if (loc != INST_LOC_CH1 && WFile::Exists(szFileName)) {
+  if (loc != INST_LOC_CH1 && File::Exists(szFileName)) {
     bout << "|#7This channel is |#1secured|#7.\r\n";
   }
   bout << "|#7Type ? for help.\r\n";
@@ -457,11 +457,11 @@ void secure_ch(int ch) {
     return;
   }
   sprintf(szFileName, "CHANNEL.%d", (ch + 1 - INST_LOC_CH1));
-  if (WFile::Exists(szFileName)) {
+  if (File::Exists(szFileName)) {
     bout << "|#1[|#9Channel already secured!|#1]\r\n";
   } else {
-    WFile file(szFileName);
-    file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeText);
+    File file(szFileName);
+    file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeText);
     file.Write(GetSession()->GetCurrentUser()->GetName(), strlen(GetSession()->GetCurrentUser()->GetName()));
     file.Close();
     bout << "|#1[|#9Channel Secured|#1]\r\n";
@@ -478,10 +478,10 @@ void cleanup_chat() {
 
   for (int x = INST_LOC_CH2; x <= INST_LOC_CH10; x++) {
     sprintf(szFileName, "CHANNEL.%d", (x + 1 - INST_LOC_CH1));
-    if (WFile::Exists(szFileName)) {
+    if (File::Exists(szFileName)) {
       who_online(nodes, x);
       if (!nodes[0]) {
-        WFile::Remove(szFileName);
+        File::Remove(szFileName);
       }
     }
   }
@@ -781,7 +781,7 @@ void list_channels() {
 
   for (int i = 1; i <= 10; i++) {
     sprintf(s, "CHANNEL.%d", i);
-    secure[i] = (WFile::Exists(s)) ? 1 : 0;
+    secure[i] = (File::Exists(s)) ? 1 : 0;
     check[i] = 0;
   }
 
@@ -841,7 +841,7 @@ int change_channels(int loc) {
   }
   if (check_ch(temploc)) {
     sprintf(szMessage, "CHANNEL.%d", temploc);
-    if (!WFile::Exists(szMessage)) {
+    if (!File::Exists(szMessage)) {
       ch_ok = 1;
     } else {
       if (GetSession()->GetCurrentUser()->GetSl() >= g_nChatOpSecLvl || so()) {

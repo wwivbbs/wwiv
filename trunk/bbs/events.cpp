@@ -92,8 +92,8 @@ void init_events() {
   events = static_cast<eventsrec *>(BbsAllocA(MAX_EVENT * sizeof(eventsrec)));
   WWIV_ASSERT(events != nullptr);
 
-  WFile eventsFile(syscfg.datadir, EVENTS_DAT);
-  if (eventsFile.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File eventsFile(syscfg.datadir, EVENTS_DAT);
+  if (eventsFile.Open(File::modeBinary | File::modeReadOnly)) {
     GetSession()->num_events = eventsFile.GetLength() / sizeof(eventsrec);
     eventsFile.Read(events, GetSession()->num_events * sizeof(eventsrec));
     get_next_forced_event();
@@ -164,8 +164,8 @@ void cleanup_events() {
     events[i].lastrun = 0;
   }
 
-  WFile eventsFile(syscfg.datadir, EVENTS_DAT);
-  eventsFile.Open(WFile::modeReadWrite | WFile::modeBinary);
+  File eventsFile(syscfg.datadir, EVENTS_DAT);
+  eventsFile.Open(File::modeReadWrite | File::modeBinary);
   eventsFile.Write(events, GetSession()->num_events * sizeof(eventsrec));
   eventsFile.Close();
 }
@@ -181,14 +181,14 @@ void check_event() {
         ((events[i].instance == GetApplication()->GetInstanceNumber()) ||
          (events[i].instance == 0))) {
       // make sure the event hasn't already been executed on another node,then mark it as run
-      WFile eventsFile(syscfg.datadir, EVENTS_DAT);
-      eventsFile.Open(WFile::modeReadWrite | WFile::modeBinary);
-      eventsFile.Seek(i * sizeof(eventsrec), WFile::seekBegin);
+      File eventsFile(syscfg.datadir, EVENTS_DAT);
+      eventsFile.Open(File::modeReadWrite | File::modeBinary);
+      eventsFile.Seek(i * sizeof(eventsrec), File::seekBegin);
       eventsFile.Read(&events[i], sizeof(eventsrec));
 
       if ((events[i].status & EVENT_RUNTODAY) == 0) {
         events[i].status |= EVENT_RUNTODAY;
-        eventsFile.Seek(i * sizeof(eventsrec), WFile::seekBegin);
+        eventsFile.Seek(i * sizeof(eventsrec), File::seekBegin);
         eventsFile.Write(&events[i], sizeof(eventsrec));
         do_event = i + 1;
       }
@@ -202,9 +202,9 @@ void check_event() {
       // if the next runtime is before now trigger it to run
       if (nextrun <= tl) {
         // flag the event to run
-        WFile eventsFile(syscfg.datadir, EVENTS_DAT);
-        eventsFile.Open(WFile::modeReadWrite | WFile::modeBinary);
-        eventsFile.Seek(i * sizeof(eventsrec), WFile::seekBegin);
+        File eventsFile(syscfg.datadir, EVENTS_DAT);
+        eventsFile.Open(File::modeReadWrite | File::modeBinary);
+        eventsFile.Seek(i * sizeof(eventsrec), File::seekBegin);
         eventsFile.Read(&events[i], sizeof(eventsrec));
 
         // make sure other nodes didn't run it already
@@ -212,7 +212,7 @@ void check_event() {
           events[i].status |= EVENT_RUNTODAY;
           // record that we ran it now.
           events[i].lastrun = nextrun;
-          eventsFile.Seek(i * sizeof(eventsrec), WFile::seekBegin);
+          eventsFile.Seek(i * sizeof(eventsrec), File::seekBegin);
           eventsFile.Write(&events[i], sizeof(eventsrec));
           do_event = i + 1;
         }
@@ -630,9 +630,9 @@ void eventedit() {
   } while (!done && !hangup);
   sort_events();
 
-  WFile eventsFile(syscfg.datadir, EVENTS_DAT);
+  File eventsFile(syscfg.datadir, EVENTS_DAT);
   if (GetSession()->num_events) {
-    eventsFile.Open(WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary | WFile::modeTruncate);
+    eventsFile.Open(File::modeReadWrite | File::modeCreateFile | File::modeBinary | File::modeTruncate);
     eventsFile.Write(events, GetSession()->num_events * sizeof(eventsrec));
     eventsFile.Close();
   } else {

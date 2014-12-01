@@ -165,7 +165,7 @@ void modify_dir(int n) {
       bout << " \b";
       Input1(s, r.path, 79, true, InputMode::MIXED);
       if (s[0]) {
-        WFile dir(s);
+        File dir(s);
         if (!dir.Exists()) {
           GetApplication()->CdHome();
           if (WWIV_make_path(s)) {
@@ -175,8 +175,8 @@ void modify_dir(int n) {
           }
         }
         if (s[0]) {
-          if (LAST(s) != WFile::pathSeparatorChar) {
-            strcat(s, WFile::pathSeparatorString);
+          if (LAST(s) != File::pathSeparatorChar) {
+            strcat(s, File::pathSeparatorString);
           }
           strcpy(r.path, s);
           bout.nl(2);
@@ -538,17 +538,17 @@ void dlboardedit() {
           bout << "|#5Delete data files (.DIR/.EXT) for dir also? ";
           if (yesno()) {
             sprintf(s1, "%s%s.dir", syscfg.datadir, s);
-            WFile::Remove(s1);
+            File::Remove(s1);
             sprintf(s1, "%s%s.ext", syscfg.datadir, s);
-            WFile::Remove(s1);
+            File::Remove(s1);
           }
         }
       }
       break;
     }
   } while (!done && !hangup);
-  WFile dirsFile(syscfg.datadir, DIRS_DAT);
-  bool bDirsOpen = dirsFile.Open(WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary | WFile::modeTruncate);
+  File dirsFile(syscfg.datadir, DIRS_DAT);
+  bool bDirsOpen = dirsFile.Open(File::modeReadWrite | File::modeCreateFile | File::modeBinary | File::modeTruncate);
   if (!bDirsOpen) {
     sysoplog("!!! Unable to open DIRS.DAT for writing, some changes may have been lost", false);
   } else {

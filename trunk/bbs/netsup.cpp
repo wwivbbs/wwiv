@@ -45,16 +45,16 @@ static void rename_pend(const string& directory, const string& filename) {
 
   for (int i = 0; i < 1000; i++) {
     const string new_filename = StringPrintf("%s%s%u.net", directory.c_str(), prefix.c_str(), i);
-    if (WFile::Rename(pend_filename, new_filename) || errno != EACCES) {
+    if (File::Rename(pend_filename, new_filename) || errno != EACCES) {
       return;
     }
   }
 }
 
 static bool checkup2(const time_t tFileTime, const char *pszFileName) {
-  WFile file(GetSession()->GetNetworkDataDirectory(), pszFileName);
+  File file(GetSession()->GetNetworkDataDirectory(), pszFileName);
 
-  if (file.Open(WFile::modeReadOnly)) {
+  if (file.Open(File::modeReadOnly)) {
     time_t tNewFileTime = file.last_write_time();
     file.Close();
     return (tNewFileTime > (tFileTime + 2));
@@ -67,10 +67,10 @@ static bool check_bbsdata() {
   bool ok2 = false;
 
   sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), CONNECT_UPD);
-  bool ok = WFile::Exists(s);
+  bool ok = File::Exists(s);
   if (!ok) {
     sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), BBSLIST_UPD);
-    ok = WFile::Exists(s);
+    ok = File::Exists(s);
   }
   unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
   if (ok && pStatus->IsUsingNetEdit()) {
@@ -78,8 +78,8 @@ static bool check_bbsdata() {
     sprintf(s, "NETEDIT .%d /U", GetSession()->GetNetworkNumber());
     ExecuteExternalProgram(s, EFLAG_NETPROG);
   } else {
-    WFile bbsdataNet(GetSession()->GetNetworkDataDirectory().c_str(), BBSDATA_NET);
-    if (bbsdataNet.Open(WFile::modeReadOnly)) {
+    File bbsdataNet(GetSession()->GetNetworkDataDirectory().c_str(), BBSDATA_NET);
+    if (bbsdataNet.Open(File::modeReadOnly)) {
       time_t tFileTime = bbsdataNet.last_write_time();
       bbsdataNet.Close();
       ok = checkup2(tFileTime, BBSDATA_NET) || checkup2(tFileTime, CONNECT_NET);
@@ -89,15 +89,15 @@ static bool check_bbsdata() {
     }
   }
   sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), BBSDATA_NET);
-  if (!WFile::Exists(s)) {
+  if (!File::Exists(s)) {
     ok = ok2 = false;
   }
   sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), CONNECT_NET);
-  if (!WFile::Exists(s)) {
+  if (!File::Exists(s)) {
     ok = ok2 = false;
   }
   sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), CALLOUT_NET);
-  if (!WFile::Exists(s)) {
+  if (!File::Exists(s)) {
     ok = ok2 = false;
   }
   if (ok || ok2) {
@@ -213,7 +213,7 @@ int cleanup_net1() {
             ok2 = 1;
           }
           sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), LOCAL_NET);
-          if (WFile::Exists(s)) {
+          if (File::Exists(s)) {
 #ifndef __unix__
             if (GetSession()->wfc_status == 0) {
               // WFC addition
@@ -306,9 +306,9 @@ void do_callout(int sn) {
         bout << "@" << sn << wwiv::endl;
         char szRegionsFileName[ MAX_PATH ];
         sprintf(szRegionsFileName, "%s%s%c%s.%-3u", syscfg.datadir,
-                REGIONS_DAT, WFile::pathSeparatorChar, REGIONS_DAT, atoi(csne->phone));
+                REGIONS_DAT, File::pathSeparatorChar, REGIONS_DAT, atoi(csne->phone));
         string region;
-        if (WFile::Exists(szRegionsFileName)) {
+        if (File::Exists(szRegionsFileName)) {
           char town[5];
           sprintf(town, "%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
           region = describe_area_code_prefix(atoi(csne->phone), atoi(town));
@@ -750,8 +750,8 @@ void print_pending_list() {
       continue;
     }
 
-    WFile deadNetFile(GetSession()->GetNetworkDataDirectory(), DEAD_NET);
-    if (deadNetFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+    File deadNetFile(GetSession()->GetNetworkDataDirectory(), DEAD_NET);
+    if (deadNetFile.Open(File::modeReadOnly | File::modeBinary)) {
       long lFileSize = deadNetFile.GetLength();
       deadNetFile.Close();
       sprintf(s3, "%ldk", (lFileSize + 1023) / 1024);
@@ -767,8 +767,8 @@ void print_pending_list() {
       continue;
     }
 
-    WFile checkNetFile(GetSession()->GetNetworkDataDirectory(), CHECK_NET);
-    if (checkNetFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+    File checkNetFile(GetSession()->GetNetworkDataDirectory(), CHECK_NET);
+    if (checkNetFile.Open(File::modeReadOnly | File::modeBinary)) {
       long lFileSize = checkNetFile.GetLength();
       checkNetFile.Close();
       sprintf(s3, "%ldk", (lFileSize + 1023) / 1024);
@@ -894,9 +894,9 @@ void gate_msg(net_header_rec * nh, char *pszMessageText, int nNetNumber, const c
     }
     const string packet_filename = StringPrintf("%sp1%s",
       net_networks[nNetNumber].dir, GetApplication()->GetNetworkExtension().c_str());
-    WFile packetFile(packet_filename);
-    if (packetFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
-      packetFile.Seek(0L, WFile::seekEnd);
+    File packetFile(packet_filename);
+    if (packetFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
+      packetFile.Seek(0L, File::seekEnd);
       if (!pList) {
         nh->list_len = 0;
       }
@@ -1461,9 +1461,9 @@ long *next_system_reg(int ts) {
   } else {
     for (int i = 0; i < GetSession()->num_sys_list; i++) {
       if (csn_index[i] == ts) {
-        WFile bbsdataReg(GetSession()->GetNetworkDataDirectory(), BBSDATA_REG);
-        bbsdataReg.Open(WFile::modeBinary | WFile::modeReadOnly);
-        bbsdataReg.Seek(i * sizeof(long), WFile::seekBegin);
+        File bbsdataReg(GetSession()->GetNetworkDataDirectory(), BBSDATA_REG);
+        bbsdataReg.Open(File::modeBinary | File::modeReadOnly);
+        bbsdataReg.Seek(i * sizeof(long), File::seekBegin);
         bbsdataReg.Read(&reg_num, sizeof(long));
         bbsdataReg.Close();
         if (i == GetSession()->num_sys_list - 1) {

@@ -214,7 +214,7 @@ void asv() {
           irt[60] = '\0';
         }
         sprintf(s1, "%s%s", syscfg.gfilesdir, FORMASV_MSG);
-        if (WFile::Exists(s1)) {
+        if (File::Exists(s1)) {
           LoadFileIntoWorkspace(s1, true);
           msg.storage_type = 2;
           GetSession()->SetNewMailWaiting(true);
@@ -308,12 +308,12 @@ int printasv(const string& filename, int num, bool abort) {
     if (GetSession()->GetCurrentUser()->HasAnsi()) {
       if (GetSession()->GetCurrentUser()->HasColor()) {
         sprintf(szFileName1, "%s%s", szFileName, ".ans");
-        if (WFile::Exists(szFileName1)) {
+        if (File::Exists(szFileName1)) {
           strcat(szFileName, ".ans");
         }
       } else {
         sprintf(szFileName1, "%s%s", szFileName, ".b&w");
-        if (WFile::Exists(szFileName1)) {
+        if (File::Exists(szFileName1)) {
           strcat(szFileName, ".b&w");
         }
       }
@@ -321,12 +321,12 @@ int printasv(const string& filename, int num, bool abort) {
   }
   if (!strrchr(szFileName, '.')) {
     sprintf(szFileName1, "%s%s", szFileName, ".msg");
-    if (WFile::Exists(szFileName1)) {
+    if (File::Exists(szFileName1)) {
       strcat(szFileName, ".msg");
     }
   }
-  WFile file_to_prt(szFileName);
-  if (!file_to_prt.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file_to_prt(szFileName);
+  if (!file_to_prt.Open(File::modeBinary | File::modeReadOnly)) {
     perror(szFileName);
     if (curatr != temp) {
       curatr = temp;

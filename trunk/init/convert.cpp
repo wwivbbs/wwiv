@@ -33,7 +33,7 @@
 #include "bbs/wconstants.h"
 
 #include "core/strings.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "core/wwivport.h"
 
 #include "init/archivers.h"
@@ -57,7 +57,7 @@ void convcfg(CursesWindow* window, const string& config_filename) {
     window->Printf("Converting config.dat to 4.30/5.00 format...\n");
     window->SetColor(SchemeId::NORMAL);
     read(hFile, &syscfg, sizeof(configrec));
-    sprintf(syscfg.menudir, "%smenus%c", syscfg.gfilesdir, WFile::pathSeparatorChar);
+    sprintf(syscfg.menudir, "%smenus%c", syscfg.gfilesdir, File::pathSeparatorChar);
     strcpy(syscfg.unused_logoff_c, " ");
     strcpy(syscfg.unused_v_scan_c, " ");
 

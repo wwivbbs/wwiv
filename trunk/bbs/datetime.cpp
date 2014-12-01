@@ -107,8 +107,8 @@ time_t date_to_daten(const char *datet) {
  *
  */
 void filedate(const char *pszFileName, char *pszReturnValue) {
-  WFile file(pszFileName);
-  if (!file.Exists() && !file.Open(WFile::modeReadOnly)) {
+  File file(pszFileName);
+  if (!file.Exists() && !file.Open(File::modeReadOnly)) {
     return;
   }
   time_t tFileDate = file.last_write_time();

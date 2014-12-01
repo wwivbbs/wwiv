@@ -22,8 +22,8 @@
 
 #include "core/inifile.h"
 #include "core/strings.h"
-#include "core/wfile.h"
-#include "core/wtextfile.h"
+#include "core/file.h"
+#include "core/textfile.h"
 #include "core/wwivassert.h"
 
 using namespace wwiv::strings;
@@ -36,8 +36,8 @@ namespace core {
 string FilePath(const string& directoryName, const string& fileName) {
   string fullPathName(directoryName);
   char last_char = directoryName.back();
-  if (last_char != WFile::pathSeparatorChar) {
-    fullPathName.push_back(WFile::pathSeparatorChar);
+  if (last_char != File::pathSeparatorChar) {
+    fullPathName.push_back(File::pathSeparatorChar);
   }
   fullPathName.append(fileName);
   return fullPathName;
@@ -46,7 +46,7 @@ string FilePath(const string& directoryName, const string& fileName) {
 IniFile::IniFile(const string& fileName, const string& primary, const string& secondary) 
     : file_name_(fileName), open_(false), primary_(primary), secondary_(secondary) {
 
-  WTextFile file(file_name_, "rt");
+  TextFile file(file_name_, "rt");
   if (!file.IsOpen()) {
     open_ = false;
     return;

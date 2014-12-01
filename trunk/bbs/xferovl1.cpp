@@ -74,14 +74,14 @@ void modify_extended_description(char **sss, const char *dest, const char *title
     if (okfsed() && GetApplication()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
       sprintf(s, "%sEXTENDED.DSC", syscfgovr.tempdir);
       if (*sss) {
-        WFile fileExtDesc(s);
-        fileExtDesc.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
+        File fileExtDesc(s);
+        fileExtDesc.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
         fileExtDesc.Write(*sss, strlen(*sss));
         fileExtDesc.Close();
         free(*sss);
         *sss = nullptr;
       } else {
-        WFile::Remove(s);
+        File::Remove(s);
       }
 
       const int saved_screen_chars = GetSession()->GetCurrentUser()->GetScreenChars();
@@ -96,8 +96,8 @@ void modify_extended_description(char **sss, const char *dest, const char *title
         if ((*sss = static_cast<char *>(BbsAllocA(10240))) == nullptr) {
           return;
         }
-        WFile fileExtDesc(s);
-        fileExtDesc.Open(WFile::modeBinary | WFile::modeReadWrite);
+        File fileExtDesc(s);
+        fileExtDesc.Open(File::modeBinary | File::modeReadWrite);
         fileExtDesc.Read(*sss, fileExtDesc.GetLength());
         (*sss)[ fileExtDesc.GetLength() ] = 0;
         fileExtDesc.Close();
@@ -218,8 +218,8 @@ bool get_file_idz(uploadsrec * u, int dn) {
     return false;
   }
 
-  WFile::Remove(syscfgovr.tempdir, FILE_ID_DIZ);
-  WFile::Remove(syscfgovr.tempdir, DESC_SDI);
+  File::Remove(syscfgovr.tempdir, FILE_ID_DIZ);
+  File::Remove(syscfgovr.tempdir, DESC_SDI);
 
   chdir(directories[dn].path);
   WWIV_GetDir(s, true);
@@ -230,10 +230,10 @@ bool get_file_idz(uploadsrec * u, int dn) {
   ExecuteExternalProgram(cmd, EFLAG_NOHUP);
   GetApplication()->CdHome();
   sprintf(s, "%s%s", syscfgovr.tempdir, FILE_ID_DIZ);
-  if (!WFile::Exists(s)) {
+  if (!File::Exists(s)) {
     sprintf(s, "%s%s", syscfgovr.tempdir, DESC_SDI);
   }
-  if (WFile::Exists(s)) {
+  if (File::Exists(s)) {
     bout.nl();
     bout << "|#9Reading in |#2" << stripfn(s) << "|#9 as extended description...";
     ss = read_extended_description(u->filename);
@@ -244,8 +244,8 @@ bool get_file_idz(uploadsrec * u, int dn) {
     if ((b = static_cast<char *>(BbsAllocA(GetSession()->max_extend_lines * 256 + 1))) == nullptr) {
       return false;
     }
-    WFile file(s);
-    file.Open(WFile::modeBinary | WFile::modeReadOnly);
+    File file(s);
+    file.Open(File::modeBinary | File::modeReadOnly);
     if (file.GetLength() < (GetSession()->max_extend_lines * 256)) {
       long lFileLen = file.GetLength();
       file.Read(b, lFileLen);
@@ -289,8 +289,8 @@ bool get_file_idz(uploadsrec * u, int dn) {
     free(b);
     bout << "Done!\r\n";
   }
-  WFile::Remove(syscfgovr.tempdir, FILE_ID_DIZ);
-  WFile::Remove(syscfgovr.tempdir, DESC_SDI);
+  File::Remove(syscfgovr.tempdir, FILE_ID_DIZ);
+  File::Remove(syscfgovr.tempdir, DESC_SDI);
   return true;
 }
 
@@ -331,8 +331,8 @@ int read_idz(int mode, int tempdir) {
   bout.bprintf("|#9Checking for external description files in |#2%-25.25s #%s...\r\n",
                                     directories[udir[tempdir].subnum].name,
                                     udir[tempdir].keys);
-  WFile fileDownload(g_szDownloadFileName);
-  fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
+  File fileDownload(g_szDownloadFileName);
+  fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   for (i = 1; (i <= GetSession()->numf) && (!hangup) && !abort; i++) {
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
@@ -343,7 +343,7 @@ int read_idz(int mode, int tempdir) {
       WWIV_GetDir(s1, true);
       strcat(s1, stripfn(u.filename));
       GetApplication()->CdHome();
-      if (WFile::Exists(s1)) {
+      if (File::Exists(s1)) {
         if (get_file_idz(&u, udir[tempdir].subnum)) {
           count++;
         }
@@ -427,12 +427,12 @@ void tag_it() {
           sprintf(s2, "%s%s", directories[filelist[i].directory].path,
                   stripfn(filelist[i].u.filename));
           sprintf(s, "%s%s", syscfgovr.tempdir, stripfn(filelist[i].u.filename));
-          if (!WFile::Exists(s)) {
+          if (!File::Exists(s)) {
             copyfile(s2, s, true);
           }
         }
-        WFile fp(s);
-        if (!fp.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+        File fp(s);
+        if (!fp.Open(File::modeBinary | File::modeReadOnly)) {
           bout << "|#6The file " << stripfn(filelist[i].u.filename) << " is not there.\r\n";
           bad = true;
         } else {
@@ -584,7 +584,7 @@ void tag_files() {
           bout << "|#3CD ROM DRIVE\r\n";
         } else {
           sprintf(s, "|#7%s%s", directories[filelist[i].directory].path, filelist[i].u.filename);
-          if (!WFile::Exists(s)) {
+          if (!File::Exists(s)) {
             bout.nl();
             bout << "|#6-=>FILE NOT THERE<=-\r\n";
           }
@@ -638,11 +638,11 @@ void tag_files() {
                   stripfn(filelist[i].u.filename));
           sprintf(s1, "%s%s", syscfgovr.tempdir,
                   stripfn(filelist[i].u.filename));
-          if (!WFile::Exists(s1)) {
+          if (!File::Exists(s1)) {
             copyfile(s2, s1, true);
           }
         }
-        if (!WFile::Exists(s1)) {
+        if (!File::Exists(s1)) {
           bout << "|#6File not there.\r\n";
           pausescr();
           break;
@@ -714,7 +714,7 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
         if (directories[dn].mask & mask_cdrom) {
           sprintf(s2, "%s%s", directories[dn].path, pszFileName);
           sprintf(s1, "%s%s", syscfgovr.tempdir, pszFileName);
-          if (!WFile::Exists(s1)) {
+          if (!File::Exists(s1)) {
             if (!copyfile(s2, s1, true)) {
               bout << "|#6 file unavailable... press any key.";
               getkey();
@@ -725,7 +725,7 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
         } else {
           sprintf(s2, "%s%s", directories[dn].path, pszFileName);
           StringRemoveWhitespace(s2);
-          if ((!WFile::Exists(s2)) && (!so())) {
+          if ((!File::Exists(s2)) && (!so())) {
             bout << "\r";
             bout.clreol();
             bout << "|#6 file unavailable... press any key.";
@@ -785,8 +785,8 @@ int try_to_download(const char *pszFileMask, int dn) {
   foundany = 1;
   do {
     GetSession()->localIO()->tleft(true);
-    WFile fileDownload(g_szDownloadFileName);
-    fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly);
+    File fileDownload(g_szDownloadFileName);
+    fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
@@ -1168,14 +1168,14 @@ void removefilesnotthere(int dn, int *autodel) {
   bool abort = false;
   while (!hangup && i > 0 && !abort) {
     char szCandidateFileName[ MAX_PATH ];
-    WFile fileDownload(g_szDownloadFileName);
-    fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly);
+    File fileDownload(g_szDownloadFileName);
+    fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
     sprintf(szCandidateFileName, "%s%s", directories[dn].path, u.filename);
     StringRemoveWhitespace(szCandidateFileName);
-    if (!WFile::Exists(szCandidateFileName)) {
+    if (!File::Exists(szCandidateFileName)) {
       StringTrim(u.description);
       sprintf(szCandidateFileName, "|#2%s :|#1 %-40.40s", u.filename, u.description);
       if (!*autodel) {
@@ -1198,7 +1198,7 @@ void removefilesnotthere(int dn, int *autodel) {
           delete_extended_description(u.filename);
         }
         sysoplogf("-%s Removed from %s", u.filename, directories[dn].name);
-        fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
+        fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
         for (int i1 = i; i1 < GetSession()->numf; i1++) {
           FileAreaSetRecord(fileDownload, i1 + 1);
           fileDownload.Read(&u, sizeof(uploadsrec));

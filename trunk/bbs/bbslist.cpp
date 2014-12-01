@@ -21,7 +21,7 @@
 #include "wwiv.h"
 #include "printfile.h"
 #include "core/strings.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 #include "bbs/keycodes.h"
 
 using std::string;
@@ -40,9 +40,9 @@ static char ShowBBSListMenuAndGetChoice() {
 
 static bool IsBBSPhoneNumberUnique(const string& phoneNumber) {
   bool ok = true;
-  WFile file(syscfg.gfilesdir, BBSLIST_MSG);
-  if (file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
-    file.Seek(0L, WFile::seekBegin);
+  File file(syscfg.gfilesdir, BBSLIST_MSG);
+  if (file.Open(File::modeReadOnly | File::modeBinary)) {
+    file.Seek(0L, File::seekBegin);
     long lBbsListLength = file.GetLength();
     char *ss = static_cast<char *>(BbsAllocA(lBbsListLength + 500L));
     if (ss == nullptr) {
@@ -95,15 +95,15 @@ static bool IsBBSPhoneNumberValid(const string& phoneNumber) {
 }
 
 static void AddBBSListLine(const string bbsListLine) {
-  WFile file(syscfg.gfilesdir, BBSLIST_MSG);
-  bool bOpen = file.Open(WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary);
+  File file(syscfg.gfilesdir, BBSLIST_MSG);
+  bool bOpen = file.Open(File::modeReadWrite | File::modeCreateFile | File::modeBinary);
   if (bOpen && file.GetLength() > 0) {
-    file.Seek(-1L, WFile::seekEnd);
+    file.Seek(-1L, File::seekEnd);
     char chLastChar = 0;
     file.Read(&chLastChar, 1);
     if (chLastChar == CZ) {
       // If last char is a EOF, skip it.
-      file.Seek(-1L, WFile::seekEnd);
+      file.Seek(-1L, File::seekEnd);
     }
   }
   file.Write(bbsListLine.c_str(), bbsListLine.length());
@@ -168,8 +168,8 @@ static void DeleteBBSListEntry() {
   }
 
   bool ok = false;
-  WTextFile fi(syscfg.gfilesdir, BBSLIST_MSG, "r");
-  WTextFile fo(syscfg.gfilesdir, BBSLIST_TMP, "w");
+  TextFile fi(syscfg.gfilesdir, BBSLIST_MSG, "r");
+  TextFile fo(syscfg.gfilesdir, BBSLIST_TMP, "w");
   if (fi.IsOpen()) {
     if (fo.IsOpen()) {
       string line;
@@ -186,11 +186,11 @@ static void DeleteBBSListEntry() {
   }
   bout.nl();
   if (ok) {
-    WFile::Remove(fi.full_pathname());
-    WFile::Rename(fo.full_pathname(), fi.full_pathname());
+    File::Remove(fi.full_pathname());
+    File::Rename(fo.full_pathname(), fi.full_pathname());
     bout << "|#7* |#1Number removed.\r\n";
   } else {
-    WFile::Remove(fo.full_pathname());
+    File::Remove(fo.full_pathname());
     bout << "|#6Error: Couldn't find that in the bbslist file.\r\n";
   }
 }

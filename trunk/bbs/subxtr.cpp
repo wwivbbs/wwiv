@@ -28,8 +28,8 @@ static char *mallocin_file(const char *pszFileName, size_t *len) {
   *len = 0;
   char* ss = nullptr;
 
-  WFile file(pszFileName);
-  if (file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+  File file(pszFileName);
+  if (file.Open(File::modeReadOnly | File::modeBinary)) {
     *len = file.GetLength();
     ss = static_cast<char *>(malloc(*len + 20));
     if (ss) {

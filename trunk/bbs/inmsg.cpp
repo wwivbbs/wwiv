@@ -23,7 +23,7 @@
 #include "subxtr.h"
 #include "printfile.h"
 #include "core/strings.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 #include "core/wwivassert.h"
 #include "bbs/external_edit.h"
 #include "bbs/keycodes.h"
@@ -104,7 +104,7 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     fsed = INMSG_FSED;
   }
   if (use_workspace) {
-    if (!WFile::Exists(exted_filename)) {
+    if (!File::Exists(exted_filename)) {
       use_workspace = false;
     } else {
       fsed = INMSG_FSED_WORKSPACE;
@@ -149,7 +149,7 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
   } else if (fsed == INMSG_FSED) {   // Use Full Screen Editor
     bSaveMessage = ExternalMessageEditor(maxli, &setanon, title, pszDestination, flags, aux);
   } else if (fsed == INMSG_FSED_WORKSPACE) {   // "auto-send mail message"
-    bSaveMessage = WFile::Exists(exted_filename);
+    bSaveMessage = File::Exists(exted_filename);
     if (bSaveMessage && !GetSession()->IsNewMailWatiting()) {
       bout << "Reading in file...\r\n";
     }
@@ -164,9 +164,9 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     if (!GetSession()->IsNewMailWatiting()) {
       SpinPuts("Saving...", 2);
     }
-    WFile fileExtEd(exted_filename);
+    File fileExtEd(exted_filename);
     if (fsed) {
-      fileExtEd.Open(WFile::modeBinary | WFile::modeReadOnly);
+      fileExtEd.Open(File::modeBinary | File::modeReadOnly);
       long lExternalEditorFileSize = fileExtEd.GetLength();
       lMaxMessageSize  = std::max<long>(lExternalEditorFileSize, 30000);
     } else {
@@ -237,7 +237,7 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     pMessageRecord->stored_as = 0xffffffff;
   }
   if (fsed) {
-    WFile::Remove(exted_filename);
+    File::Remove(exted_filename);
   }
   if (!fsed) {
     free(lin);
@@ -577,23 +577,23 @@ void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, co
       xtrasubsnetrec *xnp = &xsubs[GetSession()->GetCurrentReadMessageArea()].nets[i];
       char *nd = net_networks[xnp->net_num].dir;
       sprintf(szFileName, "%s%s.tag", nd, xnp->stype);
-      if (WFile::Exists(szFileName)) {
+      if (File::Exists(szFileName)) {
         break;
       }
       sprintf(szFileName, "%s%s", nd, GENERAL_TAG);
-      if (WFile::Exists(szFileName)) {
+      if (File::Exists(szFileName)) {
         break;
       }
       sprintf(szFileName, "%s%s.tag", syscfg.datadir, xnp->stype);
-      if (WFile::Exists(szFileName)) {
+      if (File::Exists(szFileName)) {
         break;
       }
       sprintf(szFileName, "%s%s", syscfg.datadir, GENERAL_TAG);
-      if (WFile::Exists(szFileName)) {
+      if (File::Exists(szFileName)) {
         break;
       }
     }
-    WTextFile file(szFileName, "rb");
+    TextFile file(szFileName, "rb");
     if (file.IsOpen()) {
       int j = 0;
       while (!file.IsEndOfFile()) {
@@ -628,7 +628,7 @@ void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, co
 void UpdateMessageBufferQuotesCtrlLines(char *pszMessageBuffer, long *plBufferLength) {
   char szQuotesFileName[ MAX_PATH ];
   sprintf(szQuotesFileName, "%s%s", syscfgovr.tempdir, QUOTES_TXT);
-  WTextFile file(szQuotesFileName, "rt");
+  TextFile file(szQuotesFileName, "rt");
   if (file.IsOpen()) {
     char szQuoteText[ 255 ];
     while (file.ReadLine(szQuoteText, sizeof(szQuoteText) - 1)) {

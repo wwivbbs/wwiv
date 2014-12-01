@@ -33,7 +33,7 @@
 #include <sys/stat.h>
 #endif
 
-#include "core/wfile.h"
+#include "core/file.h"
 #include "core/wwivport.h"
 #include "core/strings.h"
 
@@ -48,7 +48,7 @@ FileHelper::FileHelper() {
 }
 
 const string FileHelper::DirName(const string& name) const {
-  return StrCat(tmp_, WFile::pathSeparatorString, name, WFile::pathSeparatorString);
+  return StrCat(tmp_, File::pathSeparatorString, name, File::pathSeparatorString);
 }
 
 bool FileHelper::Mkdir(const string& name) const {
@@ -84,9 +84,9 @@ string FileHelper::CreateTempDir(const string base) {
 string FileHelper::CreateTempFilePath(const string& orig_name) {
   string name(orig_name);
 #ifdef _WIN32
-  std::replace(name.begin(), name.end(), '/', WFile::pathSeparatorChar);
+  std::replace(name.begin(), name.end(), '/', File::pathSeparatorChar);
 #endif  // _WIN32
-  return StrCat(TempDir(), WFile::pathSeparatorString, name);
+  return StrCat(TempDir(), File::pathSeparatorString, name);
 }
 
 FILE* FileHelper::OpenTempFile(const string& orig_name, string* path) {

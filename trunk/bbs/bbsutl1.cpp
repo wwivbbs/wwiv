@@ -23,7 +23,7 @@
 #include "core/wutil.h"
 #include "bbs/wcomm.h"
 #include "core/strings.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 
@@ -316,7 +316,7 @@ bool play_sdf(const string& soundFileName, bool abortable) {
 
   string fullPathName;
   // append gfilesdir if no path specified
-  if (soundFileName.find(WFile::pathSeparatorChar) == string::npos) {
+  if (soundFileName.find(File::pathSeparatorChar) == string::npos) {
     fullPathName = StrCat(syscfg.gfilesdir, soundFileName);
   } else {
     fullPathName = soundFileName;
@@ -328,12 +328,12 @@ bool play_sdf(const string& soundFileName, bool abortable) {
   }
 
   // Must Exist
-  if (!WFile::Exists(fullPathName)) {
+  if (!File::Exists(fullPathName)) {
     return false;
   }
 
   // must be able to open read-only
-  WTextFile soundFile(fullPathName, "rt");
+  TextFile soundFile(fullPathName, "rt");
   if (!soundFile.IsOpen()) {
     return false;
   }
@@ -375,7 +375,7 @@ bool play_sdf(const string& soundFileName, bool abortable) {
  *        area code.
  */
 string describe_area_code(int nAreaCode) {
-  WTextFile file(syscfg.datadir, REGIONS_DAT, "rt");
+  TextFile file(syscfg.datadir, REGIONS_DAT, "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file
     return "";
@@ -405,10 +405,10 @@ string describe_area_code_prefix(int nAreaCode, int nTargetTown) {
   const string filename = StringPrintf("%s%s%c%s.%-3d",
           syscfg.datadir,
           REGIONS_DIR,
-          WFile::pathSeparatorChar,
+          File::pathSeparatorChar,
           REGIONS_DIR,
           nAreaCode);
-  WTextFile file(filename, "rt");
+  TextFile file(filename, "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file
     return "";

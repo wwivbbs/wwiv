@@ -63,7 +63,7 @@ static bool ListPlusExist(const char *pszFileName) {
   char szRealFileName[MAX_PATH];
   strcpy(szRealFileName, pszFileName);
   StringRemoveWhitespace(szRealFileName);
-  return (*szRealFileName) ? WFile::Exists(szRealFileName) : false;
+  return (*szRealFileName) ? File::Exists(szRealFileName) : false;
 }
 
 static void colorize_foundtext(char *text, struct search_record * search_rec, int color) {
@@ -606,13 +606,13 @@ static int load_config_listing(int config) {
     return 0;
   }
 
-  WFile fileConfig(syscfg.datadir, CONFIG_USR);
+  File fileConfig(syscfg.datadir, CONFIG_USR);
 
   if (fileConfig.Exists()) {
     WUser user;
     GetApplication()->GetUserManager()->ReadUser(&user, config);
-    if (fileConfig.Open(WFile::modeBinary | WFile::modeReadOnly)) {
-      fileConfig.Seek(config * sizeof(user_config), WFile::seekBegin);
+    if (fileConfig.Open(File::modeBinary | File::modeReadOnly)) {
+      fileConfig.Seek(config * sizeof(user_config), File::seekBegin);
       len = fileConfig.Read(&config_listing, sizeof(user_config));
       fileConfig.Close();
       if (len != sizeof(user_config) ||
@@ -643,15 +643,15 @@ static void write_config_listing(int config) {
   GetApplication()->GetUserManager()->ReadUser(&user, config);
   strcpy(config_listing.name, user.GetName());
 
-  WFile fileUserConfig(syscfg.datadir, CONFIG_USR);
-  if (!fileUserConfig.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
+  File fileUserConfig(syscfg.datadir, CONFIG_USR);
+  if (!fileUserConfig.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
     return;
   }
 
   config_listing.lp_options |= cfl_fname;
   config_listing.lp_options |= cfl_description;
 
-  fileUserConfig.Seek(config * sizeof(user_config), WFile::seekBegin);
+  fileUserConfig.Seek(config * sizeof(user_config), File::seekBegin);
   fileUserConfig.Write(&config_listing, sizeof(user_config));
   fileUserConfig.Close();
 }
@@ -846,8 +846,8 @@ static void check_lp_colors() {
 
 void load_lp_config() {
   if (!lp_config_loaded) {
-    WFile fileConfig(syscfg.datadir, LISTPLUS_CFG);
-    if (!fileConfig.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+    File fileConfig(syscfg.datadir, LISTPLUS_CFG);
+    if (!fileConfig.Open(File::modeBinary | File::modeReadOnly)) {
       memset(&lp_config, 0, sizeof(struct listplus_config));
       lp_config.fi = lp_config.lssm = static_cast<long>(time(nullptr));
 
@@ -890,8 +890,8 @@ void load_lp_config() {
 
 void save_lp_config() {
   if (lp_config_loaded) {
-    WFile fileConfig(syscfg.datadir, LISTPLUS_CFG);
-    if (fileConfig.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate | WFile::modeReadWrite)) {
+    File fileConfig(syscfg.datadir, LISTPLUS_CFG);
+    if (fileConfig.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite)) {
       fileConfig.Write(&lp_config, sizeof(struct listplus_config));
       fileConfig.Close();
     }
@@ -1406,8 +1406,8 @@ static int rename_filename(const char *pszFileName, int dn) {
   strcpy(s3, s);
   i = recno(s);
   while (i > 0) {
-    WFile fileDownload(g_szDownloadFileName);
-    if (!fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+    File fileDownload(g_szDownloadFileName);
+    if (!fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
       break;
     }
     cp = i;
@@ -1442,7 +1442,7 @@ static int rename_filename(const char *pszFileName, int dn) {
           bout << "Filename already in use; not changed.\r\n";
         } else {
           strcat(s2, u.filename);
-          WFile::Rename(s2, s1);
+          File::Rename(s2, s1);
           if (ListPlusExist(s1)) {
             ss = read_extended_description(u.filename);
             if (ss) {
@@ -1499,7 +1499,7 @@ static int rename_filename(const char *pszFileName, int dn) {
     } else {
       u.mask &= ~mask_extended;
     }
-    if (fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
+    if (fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
       FileAreaSetRecord(fileDownload, i);
       fileDownload.Write(&u, sizeof(uploadsrec));
       fileDownload.Close();
@@ -1529,8 +1529,8 @@ static int remove_filename(const char *pszFileName, int dn) {
   bool abort = false;
   bool rdlp = false;
   while (!hangup && i > 0 && !abort) {
-    WFile fileDownload(g_szDownloadFileName);
-    if (fileDownload.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+    File fileDownload(g_szDownloadFileName);
+    if (fileDownload.Open(File::modeReadOnly | File::modeBinary)) {
       FileAreaSetRecord(fileDownload, i);
       fileDownload.Read(&u, sizeof(uploadsrec));
       fileDownload.Close();
@@ -1564,7 +1564,7 @@ static int remove_filename(const char *pszFileName, int dn) {
           modify_database(szTempFileName, false);
         }
         if (rm) {
-          WFile::Remove(directories[dn].path, u.filename);
+          File::Remove(directories[dn].path, u.filename);
           if (rdlp && u.ownersys == 0) {
             WUser user;
             GetApplication()->GetUserManager()->ReadUser(&user, u.ownerusr);
@@ -1593,7 +1593,7 @@ static int remove_filename(const char *pszFileName, int dn) {
         }
         sysoplogf("- \"%s\" removed off of %s", u.filename, directories[dn].name);
 
-        if (fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
+        if (fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
           for (int i1 = i; i1 < GetSession()->numf; i1++) {
             FileAreaSetRecord(fileDownload, i1 + 1);
             fileDownload.Read(&u, sizeof(uploadsrec));
@@ -1637,8 +1637,8 @@ static int move_filename(const char *pszFileName, int dn) {
 
   while (!hangup && nRecNum > 0 && !done) {
     int cp = nRecNum;
-    WFile fileDownload(g_szDownloadFileName);
-    if (fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+    File fileDownload(g_szDownloadFileName);
+    if (fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
       FileAreaSetRecord(fileDownload, nRecNum);
       fileDownload.Read(&u, sizeof(uploadsrec));
       fileDownload.Close();
@@ -1727,7 +1727,7 @@ static int move_filename(const char *pszFileName, int dn) {
         u.daten = static_cast<unsigned long>(time(nullptr));
       }
       --cp;
-      if (fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
+      if (fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
         for (int i2 = nRecNum; i2 < GetSession()->numf; i2++) {
           FileAreaSetRecord(fileDownload, i2 + 1);
           fileDownload.Read(&u1, sizeof(uploadsrec));
@@ -1748,7 +1748,7 @@ static int move_filename(const char *pszFileName, int dn) {
       }
       sprintf(szDestFileName, "%s%s", directories[nDestDirNum].path, u.filename);
       dliscan1(nDestDirNum);
-      if (fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
+      if (fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
         for (int i = GetSession()->numf; i >= 1; i--) {
           FileAreaSetRecord(fileDownload, i);
           fileDownload.Read(&u1, sizeof(uploadsrec));
@@ -1785,16 +1785,16 @@ static int move_filename(const char *pszFileName, int dn) {
           bSameDrive = true;
         }
         if (bSameDrive) {
-          WFile::Rename(szSourceFileName, szDestFileName);
+          File::Rename(szSourceFileName, szDestFileName);
           if (ListPlusExist(szDestFileName)) {
-            WFile::Remove(szSourceFileName);
+            File::Remove(szSourceFileName);
           } else {
             copyfile(szSourceFileName, szDestFileName, false);
-            WFile::Remove(szSourceFileName);
+            File::Remove(szSourceFileName);
           }
         } else {
           copyfile(szSourceFileName, szDestFileName, false);
-          WFile::Remove(szSourceFileName);
+          File::Remove(szSourceFileName);
         }
       }
       bout << "\r\nFile moved.\r\n";
@@ -2005,7 +2005,7 @@ void view_file(const char *pszFileName) {
   unalign(szBuffer);
 
   // TODO: AVIEWCOM.EXE will not work on x64 platforms, find replacement
-  if (WFile::Exists("AVIEWCOM.EXE")) {
+  if (File::Exists("AVIEWCOM.EXE")) {
     if (incom) {
       sprintf(szCommandLine, "AVIEWCOM.EXE %s%s -p%s -a1 -d",
               directories[udir[GetSession()->GetCurrentFileArea()].subnum].path, szBuffer, syscfgovr.tempdir);
@@ -2027,8 +2027,8 @@ void view_file(const char *pszFileName) {
     i = recno(pszFileName);
     do {
       if (i > 0) {
-        WFile fileDownload(g_szDownloadFileName);
-        if (fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+        File fileDownload(g_szDownloadFileName);
+        if (fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
           FileAreaSetRecord(fileDownload, i);
           fileDownload.Read(&u, sizeof(uploadsrec));
           fileDownload.Close();
@@ -2063,8 +2063,8 @@ int lp_try_to_download(const char *pszFileMask, int dn) {
   foundany = 1;
   do {
     GetSession()->localIO()->tleft(true);
-    WFile fileDownload(g_szDownloadFileName);
-    fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly);
+    File fileDownload(g_szDownloadFileName);
+    fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();

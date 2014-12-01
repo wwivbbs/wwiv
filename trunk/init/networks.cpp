@@ -37,9 +37,9 @@
 #include "initlib/input.h"
 #include "initlib/listbox.h"
 #include "core/strings.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "core/wwivport.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "init/subacc.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
@@ -260,7 +260,7 @@ static bool insert_net(CursesWindow* window, int nn) {
   initinfo.net_num_max++;
   memset(&(net_networks[nn]), 0, sizeof(net_networks_rec));
   strcpy(net_networks[nn].name, "NewNet");
-  sprintf(net_networks[nn].dir, "newnet.dir%c", WFile::pathSeparatorChar);
+  sprintf(net_networks[nn].dir, "newnet.dir%c", File::pathSeparatorChar);
 
   filename = StringPrintf("%snetworks.dat", syscfg.datadir);
   int i = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
@@ -274,7 +274,7 @@ static bool insert_net(CursesWindow* window, int nn) {
 #define OKAD (syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)
 
 void networks() {
-  if (!WFile::Exists("NETWORK.EXE")) {
+  if (!File::Exists("NETWORK.EXE")) {
     vector<string> lines{
       "WARNING",
       "You have not installed the networking software.  Unzip netxx.zip",
@@ -350,9 +350,9 @@ void networks() {
     }
   } while (!done);
 
-  WFile file (syscfg.datadir, NETWORKS_DAT);
-  if (file.Open(WFile::modeReadWrite|WFile::modeCreateFile|WFile::modeTruncate|WFile::modeBinary,
-    WFile::shareDenyReadWrite)) {
+  File file (syscfg.datadir, NETWORKS_DAT);
+  if (file.Open(File::modeReadWrite|File::modeCreateFile|File::modeTruncate|File::modeBinary,
+    File::shareDenyReadWrite)) {
     file.Write(net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
   }
   file.Close();

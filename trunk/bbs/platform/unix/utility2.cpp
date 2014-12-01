@@ -24,7 +24,7 @@
 #include "bbs/wwiv.h"
 
 #include "core/strings.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "core/wwivport.h"
 
 using std::string;

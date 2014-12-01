@@ -190,15 +190,15 @@ int inst_ok(int loc, int subloc) {
   }
 
   int nInstNum = 0;
-  WFile instFile(syscfg.datadir, INSTANCE_DAT);
-  if (!instFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+  File instFile(syscfg.datadir, INSTANCE_DAT);
+  if (!instFile.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   }
   int nNumInstances = static_cast<int>(instFile.GetLength() / sizeof(instancerec));
   instFile.Close();
   for (int nInstance = 1; nInstance < nNumInstances; nInstance++) {
-    if (instFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
-      instFile.Seek(nInstance * sizeof(instancerec), WFile::seekBegin);
+    if (instFile.Open(File::modeReadOnly | File::modeBinary)) {
+      instFile.Seek(nInstance * sizeof(instancerec), File::seekBegin);
       instFile.Read(&instance_temp, sizeof(instancerec));
       instFile.Close();
       if (instance_temp.loc == loc &&

@@ -33,7 +33,7 @@ namespace fix {
 
 int FixUsersCommand::Execute() {
     std::cout << "Runnning FixUsersCommand::Execute" << std::endl;
-    	WFile userFile(syscfg.datadir, USER_LST);
+    	File userFile(syscfg.datadir, USER_LST);
 	if(!userFile.Exists()) {
 		Print(NOK, true, "%s does not exist.", userFile.full_pathname().c_str());
 		giveUp();
@@ -89,17 +89,17 @@ int FixUsersCommand::Execute() {
 	printf("size=%lu %lu\n", smallrecords.size(), sizeof(smalrec) * smallrecords.size());
 
 	Print(OK, true, "Checking NAMES.LST");
-	WFile nameFile(syscfg.datadir, NAMES_LST);
+	File nameFile(syscfg.datadir, NAMES_LST);
 	if(!nameFile.Exists()) {
 		Print(NOK, true, "%s does not exist, regenerating with %d names", nameFile.full_pathname().c_str(),
 			smallrecords.size());
 		nameFile.Close();
-		nameFile.Open(WFile::modeCreateFile | WFile::modeBinary | WFile::modeWriteOnly);
+		nameFile.Open(File::modeCreateFile | File::modeBinary | File::modeWriteOnly);
 		nameFile.Write(&smallrecords[0], sizeof(smalrec) * smallrecords.size());
 		nameFile.Close();
 
 	} else {
-		if(nameFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+		if(nameFile.Open(File::modeReadOnly | File::modeBinary)) {
 			unsigned long size = nameFile.GetLength();
 			unsigned short recs = static_cast<unsigned short>(size / sizeof(smalrec));
 			if (recs != status.users) {

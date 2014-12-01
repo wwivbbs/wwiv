@@ -58,18 +58,18 @@ void catsl() {
   GetTemporaryInstanceLogFileName(szInstanceBaseName);
   sprintf(szInstanceLogFileName, "%s%s", syscfg.gfilesdir, szInstanceBaseName);
 
-  if (WFile::Exists(szInstanceLogFileName)) {
+  if (File::Exists(szInstanceLogFileName)) {
     string basename = GetSysopLogFileName(date());
-    WFile wholeLogFile(syscfg.gfilesdir, basename);
+    File wholeLogFile(syscfg.gfilesdir, basename);
 
     char* pLogBuffer = static_cast<char *>(BbsAllocA(CAT_BUFSIZE));
     if (pLogBuffer) {
-      if (wholeLogFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
-        wholeLogFile.Seek(0, WFile::seekBegin);
-        wholeLogFile.Seek(0, WFile::seekEnd);
+      if (wholeLogFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
+        wholeLogFile.Seek(0, File::seekBegin);
+        wholeLogFile.Seek(0, File::seekEnd);
 
-        WFile instLogFile(szInstanceLogFileName);
-        if (instLogFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+        File instLogFile(szInstanceLogFileName);
+        if (instLogFile.Open(File::modeReadOnly | File::modeBinary)) {
           int nNumRead = 0;
           do {
             nNumRead = instLogFile.Read(pLogBuffer, CAT_BUFSIZE);
@@ -111,12 +111,12 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
   }
   switch (cmd) {
   case LOG_STRING: {  // Write line to sysop's log
-    WFile logFile(s_szLogFileName);
-    if (!logFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
+    File logFile(s_szLogFileName);
+    if (!logFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
     }
     if (logFile.GetLength()) {
-      logFile.Seek(0L, WFile::seekEnd);
+      logFile.Seek(0L, File::seekEnd);
     }
     string logLine;
     if (midline > 0) {
@@ -132,13 +132,13 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
   }
   break;
   case LOG_CHAR: {
-    WFile logFile(s_szLogFileName);
-    if (!logFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
+    File logFile(s_szLogFileName);
+    if (!logFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       // sysop log ?
       return;
     }
     if (logFile.GetLength()) {
-      logFile.Seek(0L, WFile::seekEnd);
+      logFile.Seek(0L, File::seekEnd);
     }
     string logLine;
     if (midline == 0 || (midline + 2 + text.length()) > 78) {

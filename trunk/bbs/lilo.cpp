@@ -77,11 +77,11 @@ static void CleanUserInfo() {
 static bool random_screen(const char *mpfn) {
   char szBuffer[ 255 ];
   sprintf(szBuffer, "%s%s%s", GetSession()->language_dir.c_str(), mpfn, ".0");
-  if (WFile::Exists(szBuffer)) {
+  if (File::Exists(szBuffer)) {
     int nNumberOfScreens = 0;
     for (int i = 0; i < 1000; i++) {
       sprintf(szBuffer, "%s%s.%d", GetSession()->language_dir.c_str(), mpfn, i);
-      if (WFile::Exists(szBuffer)) {
+      if (File::Exists(szBuffer)) {
         nNumberOfScreens++;
       } else {
         break;
@@ -135,7 +135,7 @@ static int GetAnsiStatusAndShowWelcomeScreen(int nNetworkOnly) {
     ans = check_ansi();
     char szFileName[ MAX_PATH ];
     sprintf(szFileName, "%s%s", GetSession()->language_dir.c_str(), WELCOME_ANS);
-    if (WFile::Exists(szFileName)) {
+    if (File::Exists(szFileName)) {
       bout.nl();
       if (ans > 0) {
         GetSession()->GetCurrentUser()->SetStatusFlag(WUser::ansi);
@@ -149,7 +149,7 @@ static int GetAnsiStatusAndShowWelcomeScreen(int nNetworkOnly) {
     } else {
       if (ans) {
         sprintf(szFileName, "%s%s.0", GetSession()->language_dir.c_str(), WELCOME_NOEXT);
-        if (WFile::Exists(szFileName)) {
+        if (File::Exists(szFileName)) {
           random_screen(WELCOME_NOEXT);
         } else {
           printfile(WELCOME_MSG);
@@ -306,7 +306,7 @@ void ExecuteWWIVNetworkRequest(const char *pszUserName) {
       networkCommand << szUserName << " /B" << modem_speed << " /F0";
       std::stringstream remoteDatFileName;
       remoteDatFileName << syscfg.datadir << REMOTES_DAT;
-      WTextFile file(remoteDatFileName.str(), "rt");
+      TextFile file(remoteDatFileName.str(), "rt");
       if (file.IsOpen()) {
         bool ok = false;
         char szBuffer[ 255 ];
@@ -642,15 +642,15 @@ static void UpdateLastOnFileAndUserLog() {
     }
 
     if (GetSession()->GetEffectiveSl() != 255) {
-      WFile userLog(syscfg.gfilesdir, USER_LOG);
-      if (userLog.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
-        userLog.Seek(0L, WFile::seekEnd);
+      File userLog(syscfg.gfilesdir, USER_LOG);
+      if (userLog.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
+        userLog.Seek(0L, File::seekEnd);
         userLog.Write(szLogLine, strlen(szLogLine));
         userLog.Close();
       }
-      WFile lastonFile(szLastOnTxtFileName);
-      if (lastonFile.Open(WFile::modeReadWrite | WFile::modeBinary |
-                          WFile::modeCreateFile | WFile::modeTruncate)) {
+      File lastonFile(szLastOnTxtFileName);
+      if (lastonFile.Open(File::modeReadWrite | File::modeBinary |
+                          File::modeCreateFile | File::modeTruncate)) {
         if (ss != nullptr) {
           // Need to ensure ss is not null here
           pos = 0;
@@ -1041,7 +1041,7 @@ void logoff() {
   sysoplogfi(false, "Read: %lu   Time on: %u", GetSession()->GetNumMessagesReadThisLogon(),
              static_cast<int>((timer() - timeon) / MINUTES_PER_HOUR_FLOAT));
   if (mailcheck) {
-    WFile* pFileEmail = OpenEmailFile(true);
+    File* pFileEmail = OpenEmailFile(true);
     WWIV_ASSERT(pFileEmail);
     if (pFileEmail->IsOpen()) {
       GetSession()->GetCurrentUser()->SetNumMailWaiting(0);
@@ -1049,7 +1049,7 @@ void logoff() {
       int r = 0;
       int w = 0;
       while (r < t) {
-        pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(r), WFile::seekBegin);
+        pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(r), File::seekBegin);
         pFileEmail->Read(&m, sizeof(mailrec));
         if (m.tosys != 0 || m.touser != 0) {
           if (m.tosys == 0 && m.touser == GetSession()->usernum) {
@@ -1058,7 +1058,7 @@ void logoff() {
             }
           }
           if (r != w) {
-            pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w), WFile::seekBegin);
+            pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w), File::seekBegin);
             pFileEmail->Write(&m, sizeof(mailrec));
           }
           ++w;
@@ -1069,7 +1069,7 @@ void logoff() {
         m.tosys = 0;
         m.touser = 0;
         for (int w1 = w; w1 < r; w1++) {
-          pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w1), WFile::seekBegin);
+          pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w1), File::seekBegin);
           pFileEmail->Write(&m, sizeof(mailrec));
         }
       }
@@ -1082,7 +1082,7 @@ void logoff() {
     }
   } else {
     // re-calculate mail waiting'
-    WFile *pFileEmail = OpenEmailFile(false);
+    File *pFileEmail = OpenEmailFile(false);
     WWIV_ASSERT(pFileEmail);
     if (pFileEmail->IsOpen()) {
       int nTotalEmailMessages = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));
@@ -1100,21 +1100,21 @@ void logoff() {
     }
   }
   if (smwcheck) {
-    WFile smwFile(syscfg.datadir, SMW_DAT);
-    if (smwFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
+    File smwFile(syscfg.datadir, SMW_DAT);
+    if (smwFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       int t = static_cast<int>(smwFile.GetLength() / sizeof(shortmsgrec));
       int r = 0;
       int w = 0;
       while (r < t) {
         shortmsgrec sm;
-        smwFile.Seek(r * sizeof(shortmsgrec), WFile::seekBegin);
+        smwFile.Seek(r * sizeof(shortmsgrec), File::seekBegin);
         smwFile.Read(&sm, sizeof(shortmsgrec));
         if (sm.tosys != 0 || sm.touser != 0) {
           if (sm.tosys == 0 && sm.touser == GetSession()->usernum) {
             GetSession()->GetCurrentUser()->SetStatusFlag(WUser::SMW);
           }
           if (r != w) {
-            smwFile.Seek(w * sizeof(shortmsgrec), WFile::seekBegin);
+            smwFile.Seek(w * sizeof(shortmsgrec), File::seekBegin);
             smwFile.Write(&sm, sizeof(shortmsgrec));
           }
           ++w;

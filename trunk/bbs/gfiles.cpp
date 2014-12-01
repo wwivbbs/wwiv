@@ -36,8 +36,8 @@ void gfiles2();
 void gfiles3(int n);
 
 char *get_file(const string& filename, long *len) {
-  WFile file(filename);
-  if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(filename);
+  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     *len = 0L;
     return nullptr;
   }
@@ -62,8 +62,8 @@ gfilerec *read_sec(int sn, int *nf) {
   }
 
   const string filename = StringPrintf("%s%s.gfl", syscfg.datadir, gfilesec[sn].filename);
-  WFile file(filename);
-  if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(filename);
+  if (file.Open(File::modeBinary | File::modeReadOnly)) {
     *nf = file.Read(pRecord, nSectionSize) / sizeof(gfilerec);
   }
   return pRecord;
@@ -256,9 +256,9 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
     sprintf(lnum, "%d", i + 1);
     strncpy(s4, g[i].description, 29);
     s4[29] = '\0';
-    sprintf(path_name, "%s%s%c%s", syscfg.gfilesdir, gfilesec[sn].filename, WFile::pathSeparatorChar, g[i].filename);
-    if (WFile::Exists(path_name)) {
-      WFile handle(path_name);
+    sprintf(path_name, "%s%s%c%s", syscfg.gfilesdir, gfilesec[sn].filename, File::pathSeparatorChar, g[i].filename);
+    if (File::Exists(path_name)) {
+      File handle(path_name);
       sprintf(lsize, "%ld""k", bytes_to_k(handle.GetLength()));
     } else {
       sprintf(lsize, "OFL");
@@ -278,9 +278,9 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
       strncpy(s5, g[i + 1].description, 29);
       s5[29] = '\0';
       sprintf(path_name, "%s%s%c%s", syscfg.gfilesdir, gfilesec[sn].filename,
-              WFile::pathSeparatorChar, g[i + 1].filename);
-      if (WFile::Exists(path_name)) {
-        WFile handle(path_name);
+              File::pathSeparatorChar, g[i + 1].filename);
+      if (File::Exists(path_name)) {
+        File handle(path_name);
         sprintf(rsize, "%ld", bytes_to_k(handle.GetLength()));
         strcat(rsize, "k");
       } else {
@@ -406,16 +406,16 @@ void gfile_sec(int sn) {
           bout << "|#5Erase file too? ";
           if (yesno()) {
             sprintf(szFileName, "%s%s%c%s", syscfg.gfilesdir,
-                    gfilesec[sn].filename, WFile::pathSeparatorChar, g[i - 1].filename);
-            WFile::Remove(szFileName);
+                    gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
+            File::Remove(szFileName);
           }
           for (i1 = i; i1 < nf; i1++) {
             g[i1 - 1] = g[i1];
           }
           --nf;
           sprintf(szFileName, "%s%s.gfl", syscfg.datadir, gfilesec[sn].filename);
-          WFile file(szFileName);
-          file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate);
+          File file(szFileName);
+          file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
           file.Write(g, nf * sizeof(gfilerec));
           file.Close();
           bout << "\r\nDeleted.\r\n\n";
@@ -426,7 +426,7 @@ void gfile_sec(int sn) {
     } else if (IsEquals(ss, "Q")) {
       done = true;
     } else if (i > 0 && i <= nf) {
-      sprintf(szFileName, "%s%c%s", gfilesec[sn].filename, WFile::pathSeparatorChar, g[i - 1].filename);
+      sprintf(szFileName, "%s%c%s", gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
       i1 = printfile(szFileName);
       GetSession()->GetCurrentUser()->SetNumGFilesRead(GetSession()->GetCurrentUser()->GetNumGFilesRead() + 1);
       if (i1 == 0) {
@@ -447,9 +447,9 @@ void gfile_sec(int sn) {
           done1 = true;
         } else if (!abort) {
           if (i2 > 0 && i2 <= nf) {
-            sprintf(szFileName, "%s%s%c%s", syscfg.gfilesdir, gfilesec[sn].filename, WFile::pathSeparatorChar, g[i2 - 1].filename);
-            WFile file(szFileName);
-            if (!file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+            sprintf(szFileName, "%s%s%c%s", syscfg.gfilesdir, gfilesec[sn].filename, File::pathSeparatorChar, g[i2 - 1].filename);
+            File file(szFileName);
+            if (!file.Open(File::modeReadOnly | File::modeBinary)) {
               bout << "|#6File not found : [" << file.full_pathname() << "]";
             } else {
               long lFileSize = file.GetLength();

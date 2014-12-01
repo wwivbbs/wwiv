@@ -61,11 +61,11 @@ void reset_files() {
   pStatus->SetNumUsers(0);
   bout.nl();
   int nNumUsers = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
-  WFile userFile(syscfg.datadir, USER_LST);
-  if (userFile.Open(WFile::modeBinary | WFile::modeReadWrite)) {
+  File userFile(syscfg.datadir, USER_LST);
+  if (userFile.Open(File::modeBinary | File::modeReadWrite)) {
     for (int i = 1; i <= nNumUsers; i++) {
       long pos = static_cast<long>(syscfg.userreclen) * static_cast<long>(i);
-      userFile.Seek(pos, WFile::seekBegin);
+      userFile.Seek(pos, File::seekBegin);
       userFile.Read(&user.data, syscfg.userreclen);
       if (!user.IsUserDeleted()) {
         user.FixUp();
@@ -77,20 +77,20 @@ void reset_files() {
         user.SetInactFlag(0);
         user.SetInactFlag(inact_deleted);
       }
-      userFile.Seek(pos, WFile::seekBegin);
+      userFile.Seek(pos, File::seekBegin);
       userFile.Write(&user.data, syscfg.userreclen);
       if ((i % 10) == 0) {
         userFile.Close();
         bout << i << "\r ";
-        userFile.Open(WFile::modeBinary | WFile::modeReadWrite);
+        userFile.Open(File::modeBinary | File::modeReadWrite);
       }
     }
     userFile.Close();
   }
   bout << "\r\n\r\n";
 
-  WFile namesFile(syscfg.datadir, NAMES_LST);
-  if (!namesFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeTruncate)) {
+  File namesFile(syscfg.datadir, NAMES_LST);
+  if (!namesFile.Open(File::modeReadWrite | File::modeBinary | File::modeTruncate)) {
     std::cout << namesFile.full_pathname() << " NOT FOUND" << std::endl;
     GetApplication()->AbortBBS(true);
   }
@@ -519,8 +519,8 @@ void print_net_listing(bool bForcePause) {
       bout << "|#1Print BBS region info? ";
       bool useregion = yesno();
 
-      WFile bbsListFile(GetSession()->GetNetworkDataDirectory(), BBSDATA_NET);
-      if (!bbsListFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+      File bbsListFile(GetSession()->GetNetworkDataDirectory(), BBSDATA_NET);
+      if (!bbsListFile.Open(File::modeReadOnly | File::modeBinary)) {
         bout << "|#6Error opening " << bbsListFile.full_pathname() << "!\r\n";
         pausescr();
         continue;
@@ -618,9 +618,9 @@ void print_net_listing(bool bForcePause) {
           } else {
             if (useregion && strncmp(s, csne.phone, 3) != 0) {
               strcpy(s, csne.phone);
-              sprintf(s2, "%s%s%c%s.%-3u", syscfg.datadir, REGIONS_DIR, WFile::pathSeparatorChar, REGIONS_DIR, atoi(csne.phone));
+              sprintf(s2, "%s%s%c%s.%-3u", syscfg.datadir, REGIONS_DIR, File::pathSeparatorChar, REGIONS_DIR, atoi(csne.phone));
               string areacode;
-              if (WFile::Exists(s2)) {
+              if (File::Exists(s2)) {
                 sprintf(town, "%c%c%c", csne.phone[4], csne.phone[5], csne.phone[6]);
                 areacode = describe_area_code_prefix(atoi(csne.phone), atoi(town));
               } else {
@@ -674,13 +674,13 @@ void mailr() {
   mailrec m, m1;
   filestatusrec fsr;
 
-  WFile *pFileEmail = OpenEmailFile(false);
+  File *pFileEmail = OpenEmailFile(false);
   WWIV_ASSERT(pFileEmail);
   if (pFileEmail->IsOpen()) {
     int nRecordNumber = pFileEmail->GetLength() / sizeof(mailrec) - 1;
     char c = ' ';
     while (nRecordNumber >= 0 && c != 'Q' && !hangup) {
-      pFileEmail->Seek(nRecordNumber * sizeof(mailrec), WFile::seekBegin);
+      pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::seekBegin);
       pFileEmail->Read(&m, sizeof(mailrec));
       if (m.touser != 0) {
         pFileEmail->Close();
@@ -707,8 +707,8 @@ void mailr() {
           set_net_num(nn);
           bout << "|#9Subj|#7: |#" << GetSession()->GetMessageColor() << m.title << wwiv::endl;
           if (m.status & status_file) {
-            WFile attachDat(syscfg.datadir, ATTACH_DAT);
-            if (attachDat.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+            File attachDat(syscfg.datadir, ATTACH_DAT);
+            if (attachDat.Open(File::modeReadOnly | File::modeBinary)) {
               bool found = false;
               long lAttachFileSize = attachDat.Read(&fsr, sizeof(fsr));
               while (lAttachFileSize > 0 && !found) {
@@ -738,22 +738,22 @@ void mailr() {
           }
           if (c == 'D') {
             pFileEmail = OpenEmailFile(true);
-            pFileEmail->Seek(nRecordNumber * sizeof(mailrec), WFile::seekBegin);
+            pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::seekBegin);
             pFileEmail->Read(&m1, sizeof(mailrec));
             if (memcmp(&m, &m1, sizeof(mailrec)) == 0) {
               delmail(pFileEmail, nRecordNumber);
               bool found = false;
               if (m.status & status_file) {
-                WFile attachFile(syscfg.datadir, ATTACH_DAT);
-                if (attachFile.Open(WFile::modeReadWrite | WFile::modeBinary)) {
+                File attachFile(syscfg.datadir, ATTACH_DAT);
+                if (attachFile.Open(File::modeReadWrite | File::modeBinary)) {
                   long lAttachFileSize = attachFile.Read(&fsr, sizeof(fsr));
                   while (lAttachFileSize > 0 && !found) {
                     if (m.daten == static_cast<unsigned long>(fsr.id)) {
                       found = true;
                       fsr.id = 0;
-                      attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, WFile::seekCurrent);
+                      attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::seekCurrent);
                       attachFile.Write(&fsr, sizeof(filestatusrec));
-                      WFile::Remove(GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename);
+                      File::Remove(GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename);
                     } else {
                       attachFile.Read(&fsr, sizeof(filestatusrec));
                     }
@@ -811,8 +811,8 @@ void chuser() {
 }
 
 void zlog() {
-  WFile file(syscfg.datadir, ZLOG_DAT);
-  if (!file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+  File file(syscfg.datadir, ZLOG_DAT);
+  if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
   int i = 0;
@@ -842,7 +842,7 @@ void zlog() {
     }
     ++i;
     if (i < 97) {
-      file.Seek(i * sizeof(zlogrec), WFile::seekBegin);
+      file.Seek(i * sizeof(zlogrec), File::seekBegin);
       file.Read(&z, sizeof(zlogrec));
     }
   }
@@ -940,16 +940,16 @@ void beginday(bool displayStatus) {
   if (displayStatus) {
     bout << "  |#7* |#1Cleaning up log files...\r\n";
   }
-  WFile::Remove(syscfg.gfilesdir, pStatus->GetLogFileName(1));
-  WFile::Remove(syscfg.gfilesdir, USER_LOG);
+  File::Remove(syscfg.gfilesdir, pStatus->GetLogFileName(1));
+  File::Remove(syscfg.gfilesdir, USER_LOG);
 
   if (displayStatus) {
     bout << "  |#7* |#1Updating ZLOG information...\r\n";
   }
-  WFile fileZLog(syscfg.datadir, ZLOG_DAT);
+  File fileZLog(syscfg.datadir, ZLOG_DAT);
   zlogrec z1;
-  if (!fileZLog.Open(WFile::modeReadWrite | WFile::modeBinary)) {
-    fileZLog.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone);
+  if (!fileZLog.Open(File::modeReadWrite | File::modeBinary)) {
+    fileZLog.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone);
     z1.date[0]  = '\0';
     z1.active   = 0;
     z1.calls    = 0;
@@ -962,13 +962,13 @@ void beginday(bool displayStatus) {
     }
   } else {
     for (int i = 96; i >= 1; i--) {
-      fileZLog.Seek((i - 1) * sizeof(zlogrec), WFile::seekBegin);
+      fileZLog.Seek((i - 1) * sizeof(zlogrec), File::seekBegin);
       fileZLog.Read(&z1, sizeof(zlogrec));
-      fileZLog.Seek(i * sizeof(zlogrec), WFile::seekBegin);
+      fileZLog.Seek(i * sizeof(zlogrec), File::seekBegin);
       fileZLog.Write(&z1, sizeof(zlogrec));
     }
   }
-  fileZLog.Seek(0L, WFile::seekBegin);
+  fileZLog.Seek(0L, File::seekBegin);
   fileZLog.Write(&z, sizeof(zlogrec));
   fileZLog.Close();
 

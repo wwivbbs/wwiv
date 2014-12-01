@@ -19,7 +19,7 @@
 #ifndef __INCLUDED_FIX_H__
 #define __INCLUDED_FIX_H__
 
-class WFile;
+class File;
 
 void giveUp();
 void maybeGiveUp();
@@ -27,7 +27,7 @@ void maybeGiveUp();
 namespace wwiv {
 namespace fix {
 
-bool checkDirExists(WFile &dir, const char *desc);
+bool checkDirExists(File &dir, const char *desc);
 class FixConfiguration;
 
 class Command {
