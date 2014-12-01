@@ -136,7 +136,7 @@ void run_chain(int nChainNumber) {
   int inst = inst_ok(INST_LOC_CHAINS, nChainNumber + 1);
   if (inst != 0) {
     char szMessage[255];
-    sprintf(szMessage, "|#2Chain %s is in use on instance %d", chains[nChainNumber].description, inst);
+    sprintf(szMessage, "|#2Chain %s is in use on instance %d.  ", chains[nChainNumber].description, inst);
     if (!(chains[nChainNumber].ansir & ansir_multi_user)) {
       strcat(szMessage, "Try again later.\r\n");
       bout << szMessage;
