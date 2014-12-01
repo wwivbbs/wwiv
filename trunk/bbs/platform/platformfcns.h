@@ -31,8 +31,6 @@ char * strrev(char *s);
 
 // $PLATFORM/filesupp.cpp
 
-long WWIV_GetFreeSpaceForPath(const char * szPath);
-
 // $PLATFORM/utility2.cpp
 void WWIV_make_abs_cmd(const std::string root, std::string* out);
 
