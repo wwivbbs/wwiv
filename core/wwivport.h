@@ -43,7 +43,6 @@
 #endif
 
 #define _putenv(s)  putenv(s)
-#define mkdir(x)  mkdir(x, S_IRWXU | S_IRWXG)
 
 #endif // defined ( __unix__ )
 

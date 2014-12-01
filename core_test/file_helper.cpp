@@ -53,11 +53,7 @@ const string FileHelper::DirName(const string& name) const {
 
 bool FileHelper::Mkdir(const string& name) const {
     const string path = DirName(name); 
-#ifdef _WIN32
-    return CreateDirectory(path.c_str(), nullptr) ? true : false;
-#else
-    return (mkdir(path.c_str()) == 0);
-#endif
+    return File::mkdir(name);
 }
 
 // static
