@@ -10,7 +10,7 @@ set(COMMON_SOURCES
   strings.cpp
   file.cpp
   file_unix.cpp
-  wtextfile.cpp
+  textfile.cpp
   )
 
 if(UNIX) 
