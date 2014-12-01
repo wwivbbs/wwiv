@@ -542,11 +542,11 @@ void InitVotes() {
 
 void ReadLog() {
   const string sysop_log_file = GetSysopLogFileName(date());
-  print_local_file(sysop_log_file.c_str(), "");
+  print_local_file(sysop_log_file.c_str());
 }
 
 void ReadNetLog() {
-  print_local_file("NET.LOG", "");
+  print_local_file("NET.LOG");
 }
 
 void PrintPending() {
@@ -576,7 +576,7 @@ void VotePrint() {
 
 void YesturdaysLog() {
   std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
-  print_local_file(pStatus->GetLogFileName(), "");
+  print_local_file(pStatus->GetLogFileName());
 }
 
 void ZLog() {
@@ -595,13 +595,13 @@ void ViewNetDataLog() {
       done = true;
       break;
     case '0':
-      print_local_file("netdat0.log", "");
+      print_local_file("netdat0.log");
       break;
     case '1':
-      print_local_file("netdat1.log", "");
+      print_local_file("netdat1.log");
       break;
     case '2':
-      print_local_file("netdat2.log", "");
+      print_local_file("netdat2.log");
       break;
     }
   }
@@ -928,7 +928,7 @@ void ListUsersDL() {
 
 void PrintDSZLog() {
   if (File::Exists(g_szDSZLogFileName)) {
-    print_local_file(g_szDSZLogFileName, "");
+    print_local_file(g_szDSZLogFileName);
   }
 }
 
