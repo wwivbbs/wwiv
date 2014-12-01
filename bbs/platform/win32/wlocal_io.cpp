@@ -18,6 +18,7 @@
 #include "bbs/platform/wlocal_io.h"
 
 #include <algorithm>
+#include <chrono>
 #include <memory>
 #include <conio.h>
 #include <string>
@@ -28,19 +29,21 @@
 #include "bbs/wstatus.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwiv.h"
+#include "core/os.h"
 #include "core/strings.h"
 #include "core/file.h"
-#include "core/wutil.h"
 #include "core/wwivassert.h"
 
 // local functions
 bool HasKeyBeenPressed(HANDLE in);
 unsigned char GetKeyboardChar();
 
+using std::chrono::milliseconds;
 using std::string;
 using std::unique_ptr;
 using std::vector;
 using wwiv::strings::StringPrintf;
+using wwiv::os::sound;
 
 /*
  * Sets screen attribute at screen pos x,y to attribute contained in a.
@@ -388,7 +391,7 @@ void WLocalIO::LocalPutch(unsigned char ch) {
   } else if (ch == CG) {
     if (!outcom) {
       // TODO Make the bell sound configurable.
-      WWIV_Sound(500, 4);
+      sound(500, milliseconds(4));
     }
   }
 }

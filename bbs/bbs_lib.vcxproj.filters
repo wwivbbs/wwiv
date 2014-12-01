@@ -319,9 +319,6 @@
     <ClCompile Include="WUser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\wutil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="xfer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

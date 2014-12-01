@@ -17,13 +17,19 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
+#include <chrono>
 
 #include "wwiv.h"
 #include "instmsg.h"
+#include "core/os.h"
 #include "core/strings.h"
-#include "core/wutil.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+
+
+using std::chrono::milliseconds;
+using wwiv::os::sleep_for;
+using wwiv::os::sound;
 
 // module private functions
 
@@ -59,14 +65,14 @@ void chatsound(int sf, int ef, int uf, int dly1, int dly2, int rp) {
   for (int i1 = 0; i1 < rp; i1++) {
     if (sf < ef) {
       for (int i = sf; i < ef; i += uf) {
-        WWIV_Sound(i, dly1);
+        sound(i, milliseconds(dly1));
       }
     } else {
       for (int i = ef; i > sf; i -= uf) {
-        WWIV_Sound(i, dly1);
+        sound(i, milliseconds(dly1));
       }
     }
-    WWIV_Delay(dly2);
+    sleep_for(milliseconds(dly2));
   }
 }
 

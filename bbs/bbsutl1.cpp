@@ -16,19 +16,22 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <chrono>
 #include <memory>
 #include <string>
 
 #include "wwiv.h"
-#include "core/wutil.h"
 #include "bbs/wcomm.h"
+#include "core/os.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 
+using std::chrono::milliseconds;
 using std::string;
 using std::unique_ptr;
+using wwiv::os::sound;
 using wwiv::strings::StrCat;
 using wwiv::strings::StringPrintf;
 
@@ -355,7 +358,7 @@ bool play_sdf(const string& soundFileName, bool abortable) {
         if (nw > 2) {
           nPauseDelay = atoi(extractword(3, soundLine, DELIMS_WHITE));
         }
-        WWIV_Sound(freq, dur);
+        sound(freq, milliseconds(dur));
         if (nPauseDelay > 0) {
           WWIV_Delay(nPauseDelay);
         }

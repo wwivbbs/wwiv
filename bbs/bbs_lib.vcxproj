@@ -203,7 +203,6 @@
     <ClCompile Include="platform\win32\utility2.cpp" />
     <ClCompile Include="platform\win32\wiot.cpp" />
     <ClCompile Include="platform\win32\wlocal_io.cpp" />
-    <ClCompile Include="platform\wutil.cpp" />
     <ClCompile Include="printfile.cpp" />
     <ClCompile Include="prot\crctab.cpp" />
     <ClCompile Include="prot\zmodem.cpp" />
