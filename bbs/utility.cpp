@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #ifdef _WIN32
 #include <sys/utime.h>
@@ -26,16 +27,18 @@
 
 #include "wwiv.h"
 #include "common.h"
+#include "core/os.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 
+using std::chrono::milliseconds;
 using std::string;
 using std::vector;
-using wwiv::strings::IsEqualsIgnoreCase;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::os;
+using namespace wwiv::strings;
 
 extern const unsigned char *translate_letters[];
 
@@ -271,8 +274,8 @@ void send_net(net_header_rec * nh, unsigned short int *list, const char *text, c
  * Tells the OS that it is safe to preempt this task now.
  */
 void giveup_timeslice() {
-  WWIV_Delay(100);
-  WWIV_Delay(0);
+  sleep_for(milliseconds(100));
+  yield();
 
   if (!in_chatroom || !bChatLine) {
     if (inst_msg_waiting()) {

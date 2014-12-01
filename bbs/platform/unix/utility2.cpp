@@ -40,10 +40,3 @@ void WWIV_make_abs_cmd(const string root, string* out) {
 }
 #endif  // NOT_BBS
 
-void WWIV_Delay(unsigned long msec) {
-  if (msec) {
-    unsigned long usec = msec * 1000;
-    usleep(usec);
-  }
-}
-
