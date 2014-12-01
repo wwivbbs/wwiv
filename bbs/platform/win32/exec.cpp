@@ -364,8 +364,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
     }
   }
 
-  char szCurDir[ MAX_PATH ];
-  WWIV_GetDir(szCurDir, true);
+  const string current_directory = File::current_directory();
 
   ::Sleep(250);
 
@@ -379,7 +378,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
                   TRUE,
                   dwCreationFlags,
                   nullptr, // GetApplication()->xenviron not using nullptr causes things to not work.
-                  szCurDir,
+                  current_directory.c_str(),
                   &si,
                   &pi);
 

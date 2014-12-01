@@ -72,17 +72,6 @@ long WWIV_GetFreeSpaceForPath(const char * szPath) {
 #endif
 }
 
-void WWIV_GetDir(char *s, bool be) {
-  strcpy(s, "X:\\");
-  s[0] = static_cast< char >('A' + static_cast< char >(_getdrive() - 1));
-  _getdcwd(0, &s[0], MAX_PATH);
-  if (be) {
-    if (s[strlen(s) - 1] != '\\') {
-      strcat(s, "\\");
-    }
-  }
-}
-
 void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName) {
   _splitpath(pszPath, nullptr, nullptr, pszFileName, nullptr);
 }

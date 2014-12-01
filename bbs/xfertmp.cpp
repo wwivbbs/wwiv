@@ -538,7 +538,7 @@ void list_temp_dir() {
 
 void temp_extract() {
   int i, i1, i2, ot;
-  char s[255], s1[255], s2[81], s3[255], s4[129];
+  char s[255], s1[255], s2[81], s3[255];
   uploadsrec u;
 
   dliscan();
@@ -585,10 +585,9 @@ void temp_extract() {
       } else {
         chdir(directories[udir[GetSession()->GetCurrentFileArea()].subnum].path);
       }
-      WWIV_GetDir(s4, true);
-      strcat(s4, stripfn(u.filename));
+      File file(File::current_directory(), stripfn(u.filename));
       GetApplication()->CdHome();
-      if (check_for_files(s4)) {
+      if (check_for_files(file.full_pathname().c_str())) {
         bool ok1 = false;
         do {
           bout << "|#2Extract what (?=list,Q=abort) ? ";
@@ -618,7 +617,7 @@ void temp_extract() {
             if (strchr(s1, '.') == nullptr) {
               strcat(s1, ".*");
             }
-            get_arc_cmd(s3, s4, 1, stripfn(s1));
+            get_arc_cmd(s3, file.full_pathname().c_str(), 1, stripfn(s1));
             chdir(syscfgovr.tempdir);
             if (!okfn(s1)) {
               s3[0] = '\0';

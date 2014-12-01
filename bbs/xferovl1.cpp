@@ -222,10 +222,9 @@ bool get_file_idz(uploadsrec * u, int dn) {
   File::Remove(syscfgovr.tempdir, DESC_SDI);
 
   chdir(directories[dn].path);
-  WWIV_GetDir(s, true);
-  strcat(s, stripfn(u->filename));
+  File file(File::current_directory(), stripfn(u->filename));
   GetApplication()->CdHome();
-  get_arc_cmd(cmd, s, 1, "FILE_ID.DIZ DESC.SDI");
+  get_arc_cmd(cmd, file.full_pathname().c_str(), 1, "FILE_ID.DIZ DESC.SDI");
   chdir(syscfgovr.tempdir);
   ExecuteExternalProgram(cmd, EFLAG_NOHUP);
   GetApplication()->CdHome();
@@ -312,7 +311,7 @@ int read_idz_all() {
 
 
 int read_idz(int mode, int tempdir) {
-  char s[81], s1[255];
+  char s[81];
   int i, count = 0;
   bool abort = false;
   uploadsrec u;
@@ -340,10 +339,9 @@ int read_idz(int mode, int tempdir) {
         (strstr(u.filename, ".COM") == nullptr) &&
         (strstr(u.filename, ".EXE") == nullptr)) {
       chdir(directories[udir[tempdir].subnum].path);
-      WWIV_GetDir(s1, true);
-      strcat(s1, stripfn(u.filename));
+      File file(File::current_directory(), stripfn(u.filename));
       GetApplication()->CdHome();
-      if (File::Exists(s1)) {
+      if (file.Exists()) {
         if (get_file_idz(&u, udir[tempdir].subnum)) {
           count++;
         }
