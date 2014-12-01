@@ -357,7 +357,6 @@ BinkState BinkP::WaitEob() {
       process_frames( [&]() -> bool { return eob_received_; }, seconds(1));
       clog << "       WaitEob: eob_received: " << std::boolalpha << eob_received_ << endl;
       if (eob_received_) {
-        clog << "       WaitEob: eob_received: " << std::boolalpha << eob_received_ << endl;
         return BinkState::DONE;
       }
       process_frames(milliseconds(100));
