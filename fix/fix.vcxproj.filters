@@ -30,9 +30,6 @@
     <ClCompile Include="fix_config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\bbs\platform\win32\filesupp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\bbs\platform\win32\utility2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

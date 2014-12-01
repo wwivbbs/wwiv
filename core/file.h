@@ -173,6 +173,9 @@ class File {
 
   static bool mkdir(const File& dir) { return File::mkdir(dir.full_pathname()); }
   static bool mkdirs(const File& dir) { return File::mkdirs(dir.full_pathname()); }
+
+  static long GetFreeSpaceForPath(const std::string& path);
+
 };
 
 #endif // __INCLUDED_PLATFORM_WFILLE_H__

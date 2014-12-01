@@ -19,12 +19,12 @@
 #include "core/file.h"
 
 #include <cerrno>
+#include <cstdint>
 #include <cstring>
 #include <fcntl.h>
-
 #include <io.h>
 #include <share.h>
-
+#include <string>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
@@ -34,6 +34,8 @@
 
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
+
+using std::string;
 
 /////////////////////////////////////////////////////////////////////////////
 // Constants
@@ -81,4 +83,19 @@ bool File::RealPath(const std::string& path, std::string* resolved) {
 
   resolved->assign(szBuffer);
   return true;
+}
+
+// static
+long File::GetFreeSpaceForPath(const string& path) {
+  uint64_t i64FreeBytesToCaller, i64TotalBytes, i64FreeBytes;
+  BOOL result = GetDiskFreeSpaceEx(path.c_str(),
+      reinterpret_cast<PULARGE_INTEGER>(&i64FreeBytesToCaller),
+      reinterpret_cast<PULARGE_INTEGER>(&i64TotalBytes),
+      reinterpret_cast<PULARGE_INTEGER>(&i64FreeBytes));
+  if (result) {
+    return static_cast<long>(i64FreeBytesToCaller / 1024);
+  }
+
+  return 0;
+
 }
