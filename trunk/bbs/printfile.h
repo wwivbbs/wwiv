@@ -22,7 +22,7 @@
 #include <string>
 
 const std::string CreateFullPathToPrint(const std::string& basename);
-void print_local_file(const char *ss, const char *ss1);
+void print_local_file(const std::string& filename);
 bool printfile(const std::string& filename, bool bAbortable = true, bool bForcePause = true);
 
 #endif  // __INCLUDED_PRINTFILE_H__

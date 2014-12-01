@@ -272,7 +272,7 @@ int WApplication::doWFCEvents() {
           case '2': {
             char szNetDatFileName[ MAX_PATH ];
             snprintf(szNetDatFileName, sizeof(szNetDatFileName), "netdat%c.log", ch);
-            print_local_file(szNetDatFileName, "");
+            print_local_file(szNetDatFileName);
           }
           break;
           }
@@ -404,7 +404,7 @@ int WApplication::doWFCEvents() {
           wfc_cls();
           unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
           const string sysop_log_file = GetSysopLogFileName(date());
-          print_local_file(sysop_log_file.c_str(), pStatus->GetLogFileName());
+          print_local_file(sysop_log_file);
         }
         break;
       // Read User Mail
@@ -423,7 +423,7 @@ int WApplication::doWFCEvents() {
       case 'N':
         if (AllowLocalSysop()) {
           wfc_cls();
-          print_local_file("net.log", "netdat*.log");
+          print_local_file("net.log");
         }
         break;
       // EditTextFile
@@ -517,7 +517,7 @@ int WApplication::doWFCEvents() {
           wfc_cls();
           unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
           const string sysop_log_file = GetSysopLogFileName(date());
-          print_local_file(pStatus->GetLogFileName(), sysop_log_file.c_str());
+          print_local_file(pStatus->GetLogFileName());
         }
         break;
       // Print Activity (Z) Log
