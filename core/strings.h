@@ -46,6 +46,8 @@ std::string StrCat(std::string s1, std::string s2, std::string s3);
 std::string StrCat(std::string s1, std::string s2, std::string s3, std::string s4);
 std::string StrCat(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5);
 std::string StrCat(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5, std::string s6);
+std::string StrCat(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5, std::string s6, std::string s7);
+std::string StrCat(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5, std::string s6, std::string s7, std::string s8);
 int GetStringLength(const char* pszString);
 bool IsEquals(const char *pszString1, const char *pszString2);
 bool IsEqualsIgnoreCase(const char *pszString1, const char *pszString2);

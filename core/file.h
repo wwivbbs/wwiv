@@ -168,6 +168,8 @@ class File {
   static bool IsRelativePath(const std::string& path) { return !IsAbsolutePath(path); }
 
   static bool RealPath(const std::string& path, std::string* resolved);
+  static bool mkdir(const std::string& path);
+  static bool mkdirs(const std::string& path);
 };
 
 #endif // __INCLUDED_PLATFORM_WFILLE_H__

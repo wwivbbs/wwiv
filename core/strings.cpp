@@ -100,6 +100,18 @@ string StrCat(string s1, string s2, string s3, string s4, string s5, string s6) 
   return ss.str();
 }
 
+string StrCat(string s1, string s2, string s3, string s4, string s5, string s6, string s7) {
+  ostringstream ss;
+  ss << s1 << s2 << s3 << s4 << s5 << s6 << s7;
+  return ss.str();
+}
+
+string StrCat(string s1, string s2, string s3, string s4, string s5, string s6, string s7, string s8) {
+  ostringstream ss;
+  ss << s1 << s2 << s3 << s4 << s5 << s6 << s7 << s8;
+  return ss.str();
+}
+
 /**
  * Gets the length of the C style string.  This function returns an int
  * instead of a size_t, so using this function can avoid warnings of
