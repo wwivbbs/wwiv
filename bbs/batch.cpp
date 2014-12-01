@@ -514,12 +514,10 @@ void make_ul_batch_list(char *pszListFileName) {
   }
   for (int i = 0; i < GetSession()->numbatch; i++) {
     if (!batch[i].sending) {
-      char szBatchFileName[MAX_PATH], szCurrentDirectory[MAX_PATH];
       chdir(directories[batch[i].dir].path);
-      WWIV_GetDir(szCurrentDirectory, true);
+      File file(File::current_directory(), stripfn(batch[i].filename));
       GetApplication()->CdHome();
-      sprintf(szBatchFileName, "%s%s\r\n", szCurrentDirectory, stripfn(batch[i].filename));
-      fileList.Write(szBatchFileName, strlen(szBatchFileName));
+      fileList.Write(StrCat(file.full_pathname(), "\r\n"));
     }
   }
   fileList.Close();
@@ -542,25 +540,21 @@ static void make_dl_batch_list(char *pszListFileName) {
   long addk = 0;
   for (int i = 0; i < GetSession()->numbatch; i++) {
     if (batch[i].sending) {
-      char szFileNameToSend[ MAX_PATH ];
+      string filename_to_send;
       if (directories[batch[i].dir].mask & mask_cdrom) {
-        char szCurrentDirectory[ MAX_PATH ];
         chdir(syscfgovr.tempdir);
-        WWIV_GetDir(szCurrentDirectory, true);
-        sprintf(szFileNameToSend, "%s%s", szCurrentDirectory, stripfn(batch[i].filename));
-        if (!File::Exists(szFileNameToSend)) {
-          char szSourceFileName[ MAX_PATH ];
+        const string current_dir = File::current_directory();
+        File fileToSend(current_dir, stripfn(batch[i].filename));
+        if (!fileToSend.Exists()) {
           chdir(directories[batch[i].dir].path);
-          WWIV_GetDir(szSourceFileName, true);
-          strcat(szSourceFileName, stripfn(batch[i].filename));
-          copyfile(szSourceFileName, szFileNameToSend, true);
+          File sourceFile(File::current_directory(), stripfn(batch[i].filename));
+          copyfile(sourceFile.full_pathname(), fileToSend.full_pathname(), true);
         }
-        strcat(szFileNameToSend, "\r\n");
+        filename_to_send = fileToSend.full_pathname();
       } else {
-        char szCurrentDirectory[ MAX_PATH ];
         chdir(directories[batch[i].dir].path);
-        WWIV_GetDir(szCurrentDirectory, true);
-        sprintf(szFileNameToSend, "%s%s\r\n", szCurrentDirectory, stripfn(batch[i].filename));
+        File fileToSend(File::current_directory(), stripfn(batch[i].filename));
+        filename_to_send = fileToSend.full_pathname();
       }
       bool ok = true;
       GetApplication()->CdHome();
@@ -576,7 +570,7 @@ static void make_dl_batch_list(char *pszListFileName) {
         bout << "Cannot download " << batch[i].filename << ": Ratio too low" << wwiv::endl;
       }
       if (ok) {
-        fileList.Write(szFileNameToSend, strlen(szFileNameToSend));
+        fileList.Write(StrCat(filename_to_send, "\r\n"));
         at += batch[i].time;
         addk += thisk;
       }
