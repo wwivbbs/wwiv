@@ -31,9 +31,8 @@
 using std::chrono::milliseconds;
 using std::string;
 using std::unique_ptr;
-using wwiv::os::sound;
-using wwiv::strings::StrCat;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::os;
+using namespace wwiv::strings;
 
 /**
  * Returns true if local sysop functions accessible, else returns false.
@@ -360,7 +359,7 @@ bool play_sdf(const string& soundFileName, bool abortable) {
         }
         sound(freq, milliseconds(dur));
         if (nPauseDelay > 0) {
-          WWIV_Delay(nPauseDelay);
+          sleep_for(milliseconds(nPauseDelay));
         }
       }
     }

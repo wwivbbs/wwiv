@@ -82,7 +82,6 @@
   <ItemGroup>
     <ClCompile Include="inifile.cpp" />
     <ClCompile Include="os.cpp" />
-    <ClCompile Include="platform\win32\wfndfile.cpp" />
     <ClCompile Include="stl.cpp" />
     <ClCompile Include="file.cpp" />
     <ClCompile Include="file_unix.cpp">
@@ -92,6 +91,7 @@
     <ClCompile Include="file_win32.cpp" />
     <ClCompile Include="strings.cpp" />
     <ClCompile Include="textfile.cpp" />
+    <ClCompile Include="wfndfile_win32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inifile.h" />
