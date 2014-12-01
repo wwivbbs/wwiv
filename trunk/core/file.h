@@ -146,16 +146,16 @@ class File {
 
  public:
   // static functions
-  static bool Remove(const std::string fileName);
-  static bool Remove(const std::string directoryName, const std::string fileName);
-  static bool Rename(const std::string origFileName, const std::string newFileName);
-  static bool Exists(const std::string fileName);
-  static bool Exists(const std::string directoryName, const std::string fileName);
-  static bool ExistsWildcard(const std::string wildCard);
-  static bool Copy(const std::string sourceFileName, const std::string destFileName);
-  static bool Move(const std::string sourceFileName, const std::string destFileName);
+  static bool Remove(const std::string& fileName);
+  static bool Remove(const std::string& directoryName, const std::string& fileName);
+  static bool Rename(const std::string& origFileName, const std::string& newFileName);
+  static bool Exists(const std::string& fileName);
+  static bool Exists(const std::string& directoryName, const std::string& fileName);
+  static bool ExistsWildcard(const std::string& wildCard);
+  static bool Copy(const std::string& sourceFileName, const std::string& destFileName);
+  static bool Move(const std::string& sourceFileName, const std::string& destFileName);
 
-  static bool SetFilePermissions(const std::string fileName, int nPermissions);
+  static bool SetFilePermissions(const std::string& fileName, int nPermissions);
   static bool IsFileHandleValid(int hFile);
 
   static void SetLogger(WLogger* logger) { logger_ = logger; }

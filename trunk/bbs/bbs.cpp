@@ -270,9 +270,7 @@ int WApplication::doWFCEvents() {
           case '0':
           case '1':
           case '2': {
-            char szNetDatFileName[ MAX_PATH ];
-            snprintf(szNetDatFileName, sizeof(szNetDatFileName), "netdat%c.log", ch);
-            print_local_file(szNetDatFileName);
+            print_local_file(StringPrintf("netdat%c.log", ch));
           }
           break;
           }
@@ -433,11 +431,9 @@ int WApplication::doWFCEvents() {
           holdphone(true);
           write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
           bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
-          char szFileName[ MAX_PATH ];
-          getcwd(szFileName, MAX_PATH);
-          snprintf(szFileName, sizeof(szFileName), "%c", File::pathSeparatorChar);
+          const string current_dir_slash = File::current_directory() + File::pathSeparatorString;
           string newFileName;
-          Input1(&newFileName, szFileName, 50, true, InputMode::UPPER);
+          Input1(&newFileName, current_dir_slash, 50, true, InputMode::UPPER);
           if (!newFileName.empty()) {
             external_text_edit(newFileName.c_str(), "", 500, ".", MSGED_FLAG_NO_TAGLINE);
           }
@@ -751,9 +747,8 @@ int WApplication::Run(int argc, char *argv[]) {
       switch (ch) {
       case 'B': {
         ui = static_cast<unsigned int>(atol(argument.c_str()));
-        char szCurrentSpeed[ 21 ];
-        snprintf(szCurrentSpeed, sizeof(szCurrentSpeed), "%u",  ui);
-        GetSession()->SetCurrentSpeed(szCurrentSpeed);
+        const string current_speed_string = StringPrintf("%u",  ui);
+        GetSession()->SetCurrentSpeed(current_speed_string.c_str());
         if (!us) {
           us = ui;
         }

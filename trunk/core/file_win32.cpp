@@ -62,11 +62,11 @@ bool File::IsDirectory() const {
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-bool File::Copy(const std::string sourceFileName, const std::string destFileName) {
+bool File::Copy(const std::string& sourceFileName, const std::string& destFileName) {
   return ::CopyFileA(sourceFileName.c_str(), destFileName.c_str(), FALSE) ? true : false;
 }
 
-bool File::Move(const std::string sourceFileName, const std::string destFileName) {
+bool File::Move(const std::string& sourceFileName, const std::string& destFileName) {
   return ::MoveFileA(sourceFileName.c_str(), destFileName.c_str()) ? true : false;
 }
 
@@ -92,10 +92,5 @@ long File::GetFreeSpaceForPath(const string& path) {
       reinterpret_cast<PULARGE_INTEGER>(&i64FreeBytesToCaller),
       reinterpret_cast<PULARGE_INTEGER>(&i64TotalBytes),
       reinterpret_cast<PULARGE_INTEGER>(&i64FreeBytes));
-  if (result) {
-    return static_cast<long>(i64FreeBytesToCaller / 1024);
-  }
-
-  return 0;
-
+  return (result) ? static_cast<long>(i64FreeBytesToCaller / 1024) : 0;
 }
