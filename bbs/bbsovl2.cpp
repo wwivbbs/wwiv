@@ -16,14 +16,18 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <chrono>
 #include <string>
 
 #include "bbs/wwiv.h"
 #include "bbs/keycodes.h"
+#include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 
 using std::string;
+using std::chrono::milliseconds;
+using namespace wwiv::os;
 
 // Allows local-only editing of some of the user data in a shadowized window.
 void OnlineUserEditor() {
@@ -291,16 +295,16 @@ void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStrin
   bool oecho = local_echo;
   local_echo = true;
   bout.Color(nColorCode);
-  WWIV_Delay(nCharDelay);
+  sleep_for(milliseconds(nCharDelay));
   for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
     bputch(*iter);
-    WWIV_Delay(nCharDelay);
+    sleep_for(milliseconds(nCharDelay));
   }
 
-  WWIV_Delay(nStringDelay);
+  sleep_for(milliseconds(nStringDelay));
   for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
     bout.bs();
-    WWIV_Delay(5);
+  sleep_for(milliseconds(5));
   }
   local_echo = oecho;
 }
@@ -332,19 +336,19 @@ void SpinPuts(const string& strText, int nColorCode) {
     bout.Color(nColorCode);
     const int dly = 30;
     for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
-      WWIV_Delay(dly);
+      sleep_for(milliseconds(dly));
       bout << "/";
       MoveLeft(1);
-      WWIV_Delay(dly);
+      sleep_for(milliseconds(dly));
       bout << "-";
       MoveLeft(1);
-      WWIV_Delay(dly);
+      sleep_for(milliseconds(dly));
       bout << "\\";
       MoveLeft(1);
-      WWIV_Delay(dly);
+      sleep_for(milliseconds(dly));
       bout << "|";
       MoveLeft(1);
-      WWIV_Delay(dly);
+      sleep_for(milliseconds(dly));
       bputch(*iter);
     }
   } else {

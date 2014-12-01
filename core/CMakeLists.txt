@@ -15,7 +15,7 @@ set(COMMON_SOURCES
 
 if(UNIX) 
   set(PLATFORM_SOURCES 
-	platform/unix/wfndfile.cpp 
+	wfndfile_unix.cpp 
 	)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()

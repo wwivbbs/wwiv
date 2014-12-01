@@ -60,10 +60,11 @@ static WApplication *app;
 static WSession* sess;
 
 using std::chrono::milliseconds;
+using std::chrono::seconds;
 using std::string;
 using std::unique_ptr;
 using wwiv::bbs::InputMode;
-using wwiv::os::sound;
+using namespace wwiv::os;
 using namespace wwiv::strings;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -946,7 +947,7 @@ int WApplication::Run(int argc, char *argv[]) {
     } else {
       sysoplog("!!! Wanted to run the beginday event when it's not required!!!", false);
       std::cout << "! WARNING: Tried to run beginday event again\r\n\n";
-      WWIV_Delay(2000);
+      sleep_for(seconds(2));
     }
     ExitBBSImpl(m_nOkLevel);
   }
@@ -1043,7 +1044,7 @@ int WApplication::Run(int argc, char *argv[]) {
       bout << "\r\n>> SYSOP ALERT ACTIVATED <<\r\n\n";
       while (!GetSession()->localIO()->LocalKeyPressed() && (fabs(timer() - dt) < SECONDS_PER_MINUTE_FLOAT)) {
         sound(500, milliseconds(250));
-        WWIV_Delay(1);
+        sleep_for(milliseconds(1));
       }
       GetSession()->localIO()->LocalCls();
       holdphone(false);
