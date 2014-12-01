@@ -83,7 +83,6 @@
     <ClCompile Include="inifile.cpp" />
     <ClCompile Include="os.cpp" />
     <ClCompile Include="platform\win32\wfndfile.cpp" />
-    <ClCompile Include="platform\wutil.cpp" />
     <ClCompile Include="stl.cpp" />
     <ClCompile Include="file.cpp" />
     <ClCompile Include="file_unix.cpp">
@@ -103,7 +102,6 @@
     <ClInclude Include="strings.h" />
     <ClInclude Include="file.h" />
     <ClInclude Include="textfile.h" />
-    <ClInclude Include="wutil.h" />
     <ClInclude Include="wwivassert.h" />
     <ClInclude Include="wwivport.h" />
   </ItemGroup>

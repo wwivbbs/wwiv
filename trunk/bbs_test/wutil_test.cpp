@@ -18,12 +18,14 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "core/wutil.h"
+#include "core/os.h"
+
+using namespace wwiv::os;
 
 TEST(GetRandomNumberTest, Basic) {
   int sum = 0;
   for (int i=0; i < 100; i++) {
-    sum += WWIV_GetRandomNumber(1000);
+    sum += random_number(1000);
   }
   ASSERT_NE(0, sum) << "Sum should not be zero";
 }

@@ -27,12 +27,12 @@
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "core/wutil.h"
 #include "core/inifile.h"
 
 using std::string;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
+using wwiv::os::random_number;
 
 #if !defined ( __unix__ )
 
@@ -232,9 +232,9 @@ void wfc_screen() {
       if ((timer() - poll_time > 10) || GetSession()->wfc_status == 1) {
         GetSession()->wfc_status = 2;
         GetSession()->localIO()->LocalCls();
-        GetSession()->localIO()->LocalXYAPrintf(WWIV_GetRandomNumber(38),
-                                                WWIV_GetRandomNumber(24),
-                                                WWIV_GetRandomNumber(14) + 1,
+        GetSession()->localIO()->LocalXYAPrintf(random_number(38),
+                                                random_number(24),
+                                                random_number(14) + 1,
                                                 "WWIV Screen Saver - Press Any Key For WWIV");
         wfc_time = timer() - GetSession()->screen_saver_time - 1;
         poll_time = timer();

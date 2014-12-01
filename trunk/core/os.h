@@ -21,6 +21,7 @@
 #pragma once
 
 #include <chrono>
+#include <cstdint>
 #include <functional>
 #include <string>
 
@@ -36,6 +37,12 @@ void sleep_for(std::chrono::milliseconds d);
 
 // Gets the OS Version Number.
 std::string os_version_string();
+
+// plays a sound at frequency for duration
+void sound(uint32_t frequency, std::chrono::milliseconds d);
+
+// returns a random number.
+int random_number(int max_value);
 
 
 }  // namespace os
