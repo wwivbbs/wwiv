@@ -52,7 +52,7 @@ const char File::separatorChar     = ';';
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
 
-bool File::IsDirectory() {
+bool File::IsDirectory() const {
   DWORD dwAttributes = GetFileAttributes(full_path_name_.c_str());
   return (dwAttributes & FILE_ATTRIBUTE_DIRECTORY) ? true : false;
 }

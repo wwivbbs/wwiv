@@ -119,13 +119,13 @@ class File {
   virtual bool Exists() const;
   virtual bool Delete();
 
-  virtual bool IsDirectory();
-  virtual bool IsFile();
+  virtual bool IsDirectory() const;
+  virtual bool IsFile() const ;
 
   virtual bool SetFilePermissions(int nPermissions);
   virtual time_t last_write_time();
 
-  virtual const std::string GetParent() {
+  virtual const std::string GetParent() const {
     size_t found = full_path_name_.find_last_of(File::pathSeparatorChar);
     if (found == std::string::npos) {
       return std::string("");
@@ -133,7 +133,7 @@ class File {
     return full_path_name_.substr(0, found);
   }
 
-  virtual std::string GetName() {
+  virtual std::string GetName() const {
     size_t found = full_path_name_.find_last_of(File::pathSeparatorChar);
     if (found == std::string::npos) {
       return std::string("");
@@ -141,7 +141,7 @@ class File {
     return full_path_name_.substr(found + 1);
   }
 
-  virtual const std::string full_pathname() { return full_path_name_; }
+  virtual const std::string full_pathname() const { return full_path_name_; }
   virtual const std::string GetLastError() const { return error_text_; }
 
  public:
@@ -170,6 +170,9 @@ class File {
   static bool RealPath(const std::string& path, std::string* resolved);
   static bool mkdir(const std::string& path);
   static bool mkdirs(const std::string& path);
+
+  static bool mkdir(const File& dir) { return File::mkdir(dir.full_pathname()); }
+  static bool mkdirs(const File& dir) { return File::mkdirs(dir.full_pathname()); }
 };
 
 #endif // __INCLUDED_PLATFORM_WFILLE_H__
