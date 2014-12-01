@@ -143,7 +143,7 @@ bool BinkP::process_frames(std::chrono::milliseconds d) {
 bool BinkP::process_frames(std::function<bool()> predicate, std::chrono::milliseconds d) {
   try {
     while (!predicate()) {
-      // clog << "        process_frames loop" << endl;
+      //clog << "        process_frames loop" << endl;
       uint16_t header = conn_->read_uint16(d);
       if (header & 0x8000) {
         if (!process_command(header & 0x7fff, d)) {
@@ -182,6 +182,7 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   int sent = conn_->send(packet.get(), size, seconds(3));
   clog << "SEND:  command: " << BinkpCommands::command_id_to_name(command_id)
        << "; packet_length: " << (packet_length & 0x7fff)
+       << "; sent " << sent
        << "; data: " << data << endl;
   return true;
 }
@@ -332,7 +333,10 @@ BinkState BinkP::TransferFiles() {
   // TODO(rushfan): Should this be in a new state?
   if (files_to_send_.empty()) {
     // All files are sent, let's let the remote know we are done.
-    send_command_packet(BinkpCommands::M_EOB, "");
+    clog << "       Sending EOB" << endl;
+    // Kinda a hack, but trying to send a 3 byte packet was stalling on Windows.  Making it larger makes
+    // it send (yes, even with TCP_NODELAY set).
+    send_command_packet(BinkpCommands::M_EOB, "All files to send have been sent. Thank you.");
     process_frames(seconds(1));
   }
   return BinkState::WAIT_EOB;
@@ -350,10 +354,10 @@ BinkState BinkP::WaitEob() {
   clog << "STATE: WaitEob: eob_received: " << std::boolalpha << eob_received_ << endl;
   for (int count=1; count < 10; count++) {
     try {
-      count++;
       process_frames( [&]() -> bool { return eob_received_; }, seconds(1));
       clog << "       WaitEob: eob_received: " << std::boolalpha << eob_received_ << endl;
       if (eob_received_) {
+        clog << "       WaitEob: eob_received: " << std::boolalpha << eob_received_ << endl;
         return BinkState::DONE;
       }
       process_frames(milliseconds(100));
