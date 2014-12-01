@@ -71,7 +71,3 @@ long WWIV_GetFreeSpaceForPath(const char * szPath) {
   return 0;
 #endif
 }
-
-void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName) {
-  _splitpath(pszPath, nullptr, nullptr, pszFileName, nullptr);
-}
