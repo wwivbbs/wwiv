@@ -38,7 +38,7 @@
 
 using std::string;
 using std::unique_ptr;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 /**
  * Creates the fully qualified filename to display adding extensions and directories as needed.
@@ -137,57 +137,13 @@ bool printfile(const string& filename, bool bAbortable, bool bForcePause) {
   return lFileSize > 0;
 }
 
-
 /**
  * Displays a file locally, using LIST util if so defined in WWIV.INI,
  * otherwise uses normal TTY output.
  */
-void print_local_file(const char *ss, const char *ss1) {
-  char szCmdLine[ MAX_PATH ];
-  char szCmdLine2[ MAX_PATH ];
-
-  WWIV_ASSERT(ss);
-
-  char *pszTempSS = strdup(ss);
-  char *bs = strchr(pszTempSS, File::pathSeparatorChar);
-  if ((syscfg.sysconfig & sysconfig_list) && !incom) {
-    if (!bs) {
-      char * pszTempSS1 = strdup(ss1);
-      sprintf(szCmdLine, "%s %s%s", "LIST", syscfg.gfilesdir, ss);
-      if (ss1[0]) {
-        bs = strchr(pszTempSS1, File::pathSeparatorChar);
-        if (!bs) {
-          sprintf(szCmdLine2, "%s %s%s", szCmdLine, syscfg.gfilesdir, ss1);
-        } else {
-          sprintf(szCmdLine2, "%s %s", szCmdLine, ss1);
-        }
-        strcpy(szCmdLine, szCmdLine2);
-      }
-      free(pszTempSS1);
-    } else {
-      sprintf(szCmdLine, "%s %s", "LIST", ss);
-      if (ss1[0]) {
-        char * pszTempSS1 = strdup(ss1);
-        bs = strchr(pszTempSS1, File::pathSeparatorChar);
-        if (!bs) {
-          sprintf(szCmdLine2, "%s %s%s", szCmdLine, syscfg.gfilesdir, ss1);
-        } else {
-          sprintf(szCmdLine2, "%s %s", szCmdLine, ss1);
-        }
-        strcpy(szCmdLine, szCmdLine2);
-        free(pszTempSS1);
-      }
-    }
-    ExecuteExternalProgram(szCmdLine, EFLAG_NONE);
-    if (GetSession()->IsUserOnline()) {
-      GetSession()->localIO()->LocalCls();
-      GetApplication()->UpdateTopScreen();
-    }
-  } else {
-    printfile(ss);
-    bout.nl(2);
-    pausescr();
-  }
-  free(pszTempSS);
+void print_local_file(const string& ss) {
+  printfile(ss);
+  bout.nl(2);
+  pausescr();
 }
 
