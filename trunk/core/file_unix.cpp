@@ -34,6 +34,10 @@
 #include <sys/param.h>
 #include <sys/mount.h>
 
+#ifdef __linux
+#include <sys/vfs.h> 
+#endif  // __linux
+
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
 
