@@ -230,7 +230,7 @@ void Wait(double d) {
  */
 long freek1(const char *pszPathName) {
   WWIV_ASSERT(pszPathName);
-  return WWIV_GetFreeSpaceForPath(pszPathName);
+  return File::GetFreeSpaceForPath(pszPathName);
 }
 
 void send_net(net_header_rec * nh, unsigned short int *list, const char *text, const char *byname) {

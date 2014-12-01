@@ -109,9 +109,6 @@
     <ClCompile Include="extract.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\win32\filesupp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="finduser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

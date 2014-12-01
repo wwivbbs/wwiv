@@ -114,3 +114,11 @@ bool File::RealPath(const std::string& path, std::string* resolved) {
   free(result);
   return true;
 }
+long File::GetFreeSpaceForPath(const string& path) {
+  struct statfs fs;
+  if (statfs(path.c_str(), &fs)) {
+    perror("freek1()");
+    return 0;
+  }
+  return ((long) fs.f_bsize * (double) fs.f_bavail) / 1024;
+}
