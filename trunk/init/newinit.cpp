@@ -260,7 +260,7 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   strcpy(d1.name, "Sysop");
   strcpy(d1.filename, "SYSOP");
   sprintf(d1.path, "dloads%csysop%c", File::pathSeparatorChar, File::pathSeparatorChar);
-  mkdir(d1.path);
+  File::mkdir(d1.path);
   d1.dsl = 100;
   d1.maxfiles = 50;
   d1.type = 65535;
@@ -272,7 +272,7 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   strcpy(d1.name, "Miscellaneous");
   strcpy(d1.filename, "misc");
   sprintf(d1.path, "dloads%cmisc%c", File::pathSeparatorChar, File::pathSeparatorChar);
-  mkdir(d1.path);
+  File::mkdir(d1.path);
   d1.dsl = 10;
   d1.age = 0;
   d1.dar = 0;
@@ -351,7 +351,7 @@ bool new_init(CursesWindow* window, const string& bbsdir) {
     window->SetColor(SchemeId::NORMAL);
     int nRet = chdir(dirname.c_str());
     if (nRet) {
-      if (mkdir(dirname.c_str())) {
+      if (!File::mkdir(dirname.c_str())) {
         window->SetColor(SchemeId::ERROR_TEXT);
         window->Printf("\n\nERROR!!! Couldn't make '%s' Sub-Dir.\nExiting...", dirname.c_str());
         return false;
