@@ -1,4 +1,4 @@
-/**************************************************************************/
+//**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
 /*             Copyright (C)1998-2007, WWIV Software Services             */
@@ -23,8 +23,9 @@
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
+#include "core/file.h"
+#include "core/os.h"
 #include "core/strings.h"
-#include "core/wutil.h"
 
 using std::cout;
 using std::string;
@@ -51,7 +52,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
     if (!fileGlobalCap.IsOpen()) {
       snprintf(szFileName, sizeof(szFileName), "%sglobal-%d.txt", syscfg.gfilesdir, GetApplication()->GetInstanceNumber());
       fileGlobalCap.SetName(szFileName);
-      bool bOpen = fileGlobalCap.Open(WFile::modeBinary | WFile::modeAppend | WFile::modeCreateFile | WFile::modeReadWrite);
+      bool bOpen = fileGlobalCap.Open(File::modeBinary | File::modeAppend | File::modeCreateFile | File::modeReadWrite);
       global_ptr = 0;
       global_buf = static_cast<char *>(BbsAllocA(GLOBAL_SIZE));
       if (!bOpen || (!global_buf)) {
@@ -111,10 +112,10 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
       snprintf(szTempFileName, sizeof(szTempFileName), "%s%s", syscfgovr.tempdir, pszFileName);
       fileGlobalCap.SetName(szTempFileName);
       if (ovwr) {
-        fileGlobalCap.Open(WFile::modeBinary | WFile::modeText | WFile::modeCreateFile | WFile::modeReadWrite);
+        fileGlobalCap.Open(File::modeBinary | File::modeText | File::modeCreateFile | File::modeReadWrite);
       } else {
-        fileGlobalCap.Open(WFile::modeBinary | WFile::modeText | WFile::modeCreateFile | WFile::modeAppend |
-                           WFile::modeReadWrite);
+        fileGlobalCap.Open(File::modeBinary | File::modeText | File::modeCreateFile | File::modeAppend |
+                           File::modeReadWrite);
       }
       global_ptr = 0;
       express = true;
@@ -287,7 +288,7 @@ void WLocalIO::LocalPutch(unsigned char ch) {
   } else if (ch == CG) {
     if (!outcom) {
       // TODO Make the bell sound configurable.
-      WWIV_Sound(500, 4);
+      // wwiv::os::sound(500, milliseconds(4));
     }
   }
 #endif

@@ -31,8 +31,13 @@
 #include <sys/file.h>
 #include <unistd.h>
 
+#include <sys/param.h>
+#include <sys/mount.h>
+
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
+
+using std::string;
 
 /////////////////////////////////////////////////////////////////////////////
 // Constants

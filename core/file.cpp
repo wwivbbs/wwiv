@@ -384,9 +384,15 @@ bool File::IsAbsolutePath(const string& path) {
 #endif  // _WIN32
 }
 
+#ifdef _WIN32
+#define MKDIR(x) ::mkdir(x)
+#else
+#define MKDIR(x) ::mkdir(x, S_IRWXU | S_IRWXG)
+#endif
+
 // static
 bool File::mkdir(const string& path) {
-  int result = ::mkdir(path.c_str());
+  int result = MKDIR(path.c_str());
   if (result != -1) {
     return true;
   }
@@ -400,7 +406,7 @@ bool File::mkdir(const string& path) {
 // static
 // based loosely on http://stackoverflow.com/questions/675039/how-can-i-create-directory-tree-in-c-linux
 bool File::mkdirs(const string& path) {
-  int result = ::mkdir(path.c_str());
+  int result = MKDIR(path.c_str());
   if (result != -1) {
     return true;
   }
