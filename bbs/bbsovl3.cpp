@@ -305,9 +305,9 @@ bool copyfile(const string& sourceFileName, const string& destFileName, bool sta
   }
 
   if ((sourceFileName != destFileName) &&
-      WFile::Exists(sourceFileName) &&
-      !WFile::Exists(destFileName)) {
-    if (WFile::Copy(sourceFileName, destFileName)) {
+      File::Exists(sourceFileName) &&
+      !File::Exists(destFileName)) {
+    if (File::Copy(sourceFileName, destFileName)) {
       return true;
     }
   }
@@ -325,7 +325,7 @@ bool copyfile(const string& sourceFileName, const string& destFileName, bool sta
  *
  */
 bool movefile(const string& sourceFileName, const string& destFileName, bool stats) {
-  if (sourceFileName != destFileName && WFile::Exists(sourceFileName)) {
+  if (sourceFileName != destFileName && File::Exists(sourceFileName)) {
     bool bCanUseRename = false;
 
     if (sourceFileName[1] != ':' && destFileName[1] != ':') {
@@ -336,14 +336,14 @@ bool movefile(const string& sourceFileName, const string& destFileName, bool sta
     }
 
     if (bCanUseRename) {
-      WFile::Rename(sourceFileName, destFileName);
-      if (WFile::Exists(destFileName)) {
+      File::Rename(sourceFileName, destFileName);
+      if (File::Exists(destFileName)) {
         return false;
       }
     }
   }
   bool bCopyFileResult = copyfile(sourceFileName, destFileName, stats);
-  WFile::Remove(sourceFileName);
+  File::Remove(sourceFileName);
 
   return bCopyFileResult;
 }

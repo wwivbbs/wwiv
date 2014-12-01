@@ -26,11 +26,11 @@
 
 #include "bbs/bbs.h"
 #include "bbs/wcomm.h"
-#include "core/WFile.h"
+#include "core/File.h"
 #include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
 #include "bbs/sysoplog.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 #include "bbs/wsession.h"
 #include "bbs/vars.h"
 
@@ -81,8 +81,8 @@ static void CreateSyncFosCommandLine(string *out, const string& tempFilePath, in
 // returns true if the file is deleted.
 static bool DeleteSyncTempFile() {
   const string tempFileName = GetSyncFosTempFilePath();
-  if (WFile::Exists(tempFileName)) {
-    WFile::Remove(tempFileName);
+  if (File::Exists(tempFileName)) {
+    File::Remove(tempFileName);
     return true;
   }
   return false;
@@ -92,7 +92,7 @@ static bool CreateSyncTempFile(string *out, const string commandLine) {
   out->assign(GetSyncFosTempFilePath());
   DeleteSyncTempFile();
 
-  WTextFile file(*out, "wt");
+  TextFile file(*out, "wt");
   if (!file.IsOpen()) {
     return false;
   }

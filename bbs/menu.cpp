@@ -26,13 +26,13 @@
 #include "menusupp.h"
 #include "printfile.h"
 #include "core/strings.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 #include "core/wwivassert.h"
 
 static user_config *pSecondUserRec;         // Userrec2 style setup
 static int nSecondUserRecLoaded;            // Whos config is loaded
 
-// TODO: move this to WTextFile or WFile
+// TODO: move this to TextFile or File
 static FILE *hMenuDesc;
 
 static char *pMenuStrings;
@@ -247,8 +247,8 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
   // --------------------------
   // Open up the main data file
   // --------------------------
-  pMenuData->pMenuFile = new WFile(GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "mnu"));
-  pMenuData->pMenuFile->Open(WFile::modeBinary | WFile::modeReadOnly, WFile::shareDenyNone);
+  pMenuData->pMenuFile = new File(GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "mnu"));
+  pMenuData->pMenuFile->Open(File::modeBinary | File::modeReadOnly, File::shareDenyNone);
 
   // -----------------------------------
   // Find out how many records there are
@@ -267,7 +267,7 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
   // Read the header (control)
   // record into memory
   // -------------------------
-  pMenuData->pMenuFile->Seek(0L, WFile::seekBegin);
+  pMenuData->pMenuFile->Seek(0L, File::seekBegin);
   pMenuData->pMenuFile->Read(&pMenuData->header, sizeof(MenuHeader));
 
   // version numbers can be checked here
@@ -275,8 +275,8 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
   // ------------------------------
   // Open/Read/Close the index file
   // ------------------------------
-  WFile fileIndex(GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "idx"));
-  if (fileIndex.Open(WFile::modeBinary | WFile::modeReadOnly, WFile::shareDenyNone)) {
+  File fileIndex(GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "idx"));
+  if (fileIndex.Open(File::modeBinary | File::modeReadOnly, File::shareDenyNone)) {
     if (fileIndex.GetLength() > static_cast<long>(pMenuData->nAmountRecs * sizeof(MenuRecIndex))) {
       MenuSysopLog("Index is corrupt");
       MenuSysopLog(fileIndex.full_pathname());
@@ -297,8 +297,8 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
   // ----------------------------
   // Open/Rease/Close Prompt file
   // ----------------------------
-  WFile filePrompt(GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "pro"));
-  if (filePrompt.Open(WFile::modeBinary | WFile::modeReadOnly, WFile::shareDenyNone)) {
+  File filePrompt(GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "pro"));
+  if (filePrompt.Open(File::modeBinary | File::modeReadOnly, File::shareDenyNone)) {
     long lSize = filePrompt.GetLength();
     pMenuData->szPrompt = static_cast<char *>(malloc(lSize + 10 + TEST_PADDING));
     if (pMenuData->szPrompt != nullptr) {
@@ -394,7 +394,7 @@ bool LoadMenuRecord(MenuInstanceData * pMenuData, string& command, MenuRec * pMe
       if ((pMenuData->index[x].nFlags & MENU_FLAG_DELETED) == 0) {
         if (pMenuData->index[x].nRec != 0) {
           // Dont include control record
-          pMenuData->pMenuFile->Seek(pMenuData->index[x].nRec * sizeof(MenuRec), WFile::seekBegin);
+          pMenuData->pMenuFile->Seek(pMenuData->index[x].nRec * sizeof(MenuRec), File::seekBegin);
           pMenuData->pMenuFile->Read(pMenu, sizeof(MenuRec));
 
           if (CheckMenuItemSecurity(pMenu, 1)) {
@@ -466,12 +466,12 @@ string GetHelpFileName(MenuInstanceData * pMenuData) {
   if (GetSession()->GetCurrentUser()->HasAnsi()) {
     if (GetSession()->GetCurrentUser()->HasColor()) {
       string filename = GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "ans");
-      if (WFile::Exists(filename)) {
+      if (File::Exists(filename)) {
         return filename;
       }
     }
     string filename = GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "b&w");
-    if (WFile::Exists(filename)) {
+    if (File::Exists(filename)) {
       return filename;
     }
   }
@@ -651,7 +651,7 @@ bool ValidateMenuSet(const char *pszMenuDir) {
   nSecondUserRecLoaded = GetSession()->usernum;
 
   // ensure the entry point exists
-  return WFile::Exists(GetMenuDirectory(pszMenuDir), "main.mnu");
+  return File::Exists(GetMenuDirectory(pszMenuDir), "main.mnu");
 }
 
 bool LoadMenuSetup(int nUserNum) {
@@ -666,12 +666,12 @@ bool LoadMenuSetup(int nUserNum) {
     return false;
   }
 
-  WFile userConfig(syscfg.datadir, CONFIG_USR);
+  File userConfig(syscfg.datadir, CONFIG_USR);
   if (userConfig.Exists()) {
     WUser user;
     GetApplication()->GetUserManager()->ReadUser(&user, nUserNum);
-    if (userConfig.Open(WFile::modeReadOnly | WFile::modeBinary)) {
-      userConfig.Seek(nUserNum * sizeof(user_config), WFile::seekBegin);
+    if (userConfig.Open(File::modeReadOnly | File::modeBinary)) {
+      userConfig.Seek(nUserNum * sizeof(user_config), File::seekBegin);
 
       int len = userConfig.Read(pSecondUserRec, sizeof(user_config));
       userConfig.Close();
@@ -698,12 +698,12 @@ void WriteMenuSetup(int nUserNum) {
   GetApplication()->GetUserManager()->ReadUser(&user, nUserNum);
   strcpy(pSecondUserRec->name, user.GetName());
 
-  WFile userConfig(syscfg.datadir, CONFIG_USR);
-  if (!userConfig.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
+  File userConfig(syscfg.datadir, CONFIG_USR);
+  if (!userConfig.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;
   }
 
-  userConfig.Seek(nUserNum * sizeof(user_config), WFile::seekBegin);
+  userConfig.Seek(nUserNum * sizeof(user_config), File::seekBegin);
   userConfig.Write(pSecondUserRec, sizeof(user_config));
   userConfig.Close();
 }
@@ -893,7 +893,7 @@ void SetMenuDescription(const char *pszName, const char *pszDesc) {
     bMenuOpen = true;
   }
 
-  WTextFile tempDescriptionFile(GetMenuDirectory(), TEMP_ION, "wt");
+  TextFile tempDescriptionFile(GetMenuDirectory(), TEMP_ION, "wt");
 
   if (!tempDescriptionFile.IsOpen()) {
     MenuSysopLog("Unable to write description");
@@ -925,9 +925,9 @@ void SetMenuDescription(const char *pszName, const char *pszDesc) {
 
   CloseMenuDescriptions();
 
-  WFile descriptionFile(GetMenuDirectory(), DESCRIPT_ION);
-  WFile::Remove(descriptionFile.full_pathname());
-  WFile::Rename(tempDescriptionFile.full_pathname(), descriptionFile.full_pathname());
+  File descriptionFile(GetMenuDirectory(), DESCRIPT_ION);
+  File::Remove(descriptionFile.full_pathname());
+  File::Rename(tempDescriptionFile.full_pathname(), descriptionFile.full_pathname());
 
   if (bMenuOpen) {
     OpenMenuDescriptions();
@@ -942,20 +942,20 @@ const string GetMenuDescriptionFile() {
 
 const string GetMenuDirectory(const string menuPath) {
   std::ostringstream os;
-  os << GetMenuDirectory() << menuPath << WFile::pathSeparatorString;
+  os << GetMenuDirectory() << menuPath << File::pathSeparatorString;
   return string(os.str());
 }
 
 const string GetMenuDirectory(const string menuPath, const string menuName,
                                    const string extension) {
   std::ostringstream os;
-  os << GetMenuDirectory() << menuPath << WFile::pathSeparatorString << menuName << "." << extension;
+  os << GetMenuDirectory() << menuPath << File::pathSeparatorString << menuName << "." << extension;
   return string(os.str());
 }
 
 const string GetMenuDirectory() {
   std::ostringstream os;
-  os << GetSession()->language_dir << "menus" << WFile::pathSeparatorChar;
+  os << GetSession()->language_dir << "menus" << File::pathSeparatorChar;
   return string(os.str());
 }
 
@@ -976,7 +976,7 @@ void GenerateMenu(MenuInstanceData * pMenuData) {
     if ((pMenuData->index[x].nFlags & MENU_FLAG_DELETED) == 0) {
       if (pMenuData->index[x].nRec != 0) {
         // Dont include control record
-        pMenuData->pMenuFile->Seek(pMenuData->index[x].nRec * sizeof(MenuRec), WFile::seekBegin);
+        pMenuData->pMenuFile->Seek(pMenuData->index[x].nRec * sizeof(MenuRec), File::seekBegin);
         pMenuData->pMenuFile->Read(&menu, sizeof(MenuRec));
 
         if (CheckMenuItemSecurity(&menu, false) &&

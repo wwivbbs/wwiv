@@ -122,7 +122,7 @@ void normalupload(int dn) {
   char szReceiveFileName[ MAX_PATH ];
   sprintf(szReceiveFileName, "%s%s", d.path, szUnalignedFile);
   if (ok && yesno()) {
-    WFile file(d.path, szUnalignedFile);
+    File file(d.path, szUnalignedFile);
     if (file.Exists()) {
       if (dcs()) {
         xfer = false;
@@ -220,9 +220,9 @@ void normalupload(int dn) {
         GetSession()->GetCurrentUser()->SetExtraTime(GetSession()->GetCurrentUser()->GetExtraTime() + static_cast<float>(ti));
       }
       if (ok) {
-        WFile file(szReceiveFileName);
+        File file(szReceiveFileName);
         if (ok == 1) {
-          if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+          if (!file.Open(File::modeBinary | File::modeReadOnly)) {
             ok = 0;
             bout.nl(2);
             bout << "OS error - File not found.\r\n\n";
@@ -239,7 +239,7 @@ void normalupload(int dn) {
               }
               ok = 0;
             } else {
-              file.Open(WFile::modeBinary | WFile::modeReadOnly);
+              file.Open(File::modeBinary | File::modeReadOnly);
             }
           }
         }
@@ -259,8 +259,8 @@ void normalupload(int dn) {
           time_t lCurrentTime;
           time(&lCurrentTime);
           u.daten = static_cast<unsigned long>(lCurrentTime);
-          WFile fileDownload(g_szDownloadFileName);
-          fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
+          File fileDownload(g_szDownloadFileName);
+          fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
           for (int j = GetSession()->numf; j >= 1; j--) {
             FileAreaSetRecord(fileDownload, j);
             fileDownload.Read(&u1, sizeof(uploadsrec));

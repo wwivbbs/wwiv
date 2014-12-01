@@ -20,7 +20,7 @@
 #include "wwiv.h"
 #include "instmsg.h"
 #include "core/strings.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -68,7 +68,7 @@ void get_user_ppp_addr() {
   GetSession()->internetFullEmailAddress = wwiv::strings::StringPrintf("%s@%s",
       GetSession()->internetEmailName.c_str(),
       GetSession()->internetEmailDomain.c_str());
-  WTextFile acctFile(GetSession()->GetNetworkDataDirectory(), ACCT_INI, "rt");
+  TextFile acctFile(GetSession()->GetNetworkDataDirectory(), ACCT_INI, "rt");
   char szLine[ 260 ];
   if (acctFile.IsOpen()) {
     while (acctFile.ReadLine(szLine, 255) && !found) {
@@ -175,19 +175,19 @@ char *read_inet_addr(char *pszInternetEmailAddress, int nUserNumber) {
   } else {
     //pszInternetEmailAddress = nullptr;
     *pszInternetEmailAddress = 0;
-    WFile inetAddrFile(syscfg.datadir, INETADDR_DAT);
+    File inetAddrFile(syscfg.datadir, INETADDR_DAT);
     if (!inetAddrFile.Exists()) {
-      inetAddrFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
+      inetAddrFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
       for (int i = 0; i <= syscfg.maxusers; i++) {
         long lCurPos = 80L * static_cast<long>(i);
-        inetAddrFile.Seek(lCurPos, WFile::seekBegin);
+        inetAddrFile.Seek(lCurPos, File::seekBegin);
         inetAddrFile.Write(pszInternetEmailAddress, 80L);
       }
     } else {
       char szUserName[ 255 ];
-      inetAddrFile.Open(WFile::modeReadOnly | WFile::modeBinary);
+      inetAddrFile.Open(File::modeReadOnly | File::modeBinary);
       long lCurPos = 80L * static_cast<long>(nUserNumber);
-      inetAddrFile.Seek(lCurPos, WFile::seekBegin);
+      inetAddrFile.Seek(lCurPos, File::seekBegin);
       inetAddrFile.Read(szUserName, 80L);
       if (check_inet_addr(szUserName)) {
         strcpy(pszInternetEmailAddress, szUserName);
@@ -210,10 +210,10 @@ void write_inet_addr(const char *pszInternetEmailAddress, int nUserNumber) {
     return; /*nullptr;*/
   }
 
-  WFile inetAddrFile(syscfg.datadir, INETADDR_DAT);
-  inetAddrFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
+  File inetAddrFile(syscfg.datadir, INETADDR_DAT);
+  inetAddrFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   long lCurPos = 80L * static_cast<long>(nUserNumber);
-  inetAddrFile.Seek(lCurPos, WFile::seekBegin);
+  inetAddrFile.Seek(lCurPos, File::seekBegin);
   inetAddrFile.Write(pszInternetEmailAddress, 80L);
   inetAddrFile.Close();
   char szDefaultUserAddr[ 255 ];
@@ -221,8 +221,8 @@ void write_inet_addr(const char *pszInternetEmailAddress, int nUserNumber) {
   GetSession()->SetNetworkNumber(getnetnum("FILEnet"));
   if (GetSession()->GetNetworkNumber() != -1) {
     set_net_num(GetSession()->GetNetworkNumber());
-    WTextFile in(GetSession()->GetNetworkDataDirectory(), ACCT_INI, "rt");
-    WTextFile out(syscfgovr.tempdir, ACCT_INI, "wt+");
+    TextFile in(GetSession()->GetNetworkDataDirectory(), ACCT_INI, "rt");
+    TextFile out(syscfgovr.tempdir, ACCT_INI, "wt+");
     if (in.IsOpen() && out.IsOpen()) {
       char szLine[ 260 ];
       while (in.ReadLine(szLine, 255)) {
@@ -244,8 +244,8 @@ void write_inet_addr(const char *pszInternetEmailAddress, int nUserNumber) {
       in.Close();
       out.Close();
     }
-    WFile::Remove(in.full_pathname());
+    File::Remove(in.full_pathname());
     copyfile(out.full_pathname(), in.full_pathname(), false);
-    WFile::Remove(out.full_pathname());
+    File::Remove(out.full_pathname());
   }
 }

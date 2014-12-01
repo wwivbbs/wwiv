@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 #include "subxtr.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 #include "core/strings.h"
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
@@ -46,8 +46,8 @@ void save_subs() {
     subboards[nTempNetNum].age &= 0x7f;
   }
 
-  WFile subsFile(syscfg.datadir, SUBS_DAT);
-  if (!subsFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate)) {
+  File subsFile(syscfg.datadir, SUBS_DAT);
+  if (!subsFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate)) {
     bout << "Error writing subs.dat file." << wwiv::endl;
     pausescr();
   } else {
@@ -59,9 +59,9 @@ void save_subs() {
     subsFile.Close();
   }
 
-  WFile::Remove(syscfg.datadir, SUBS_XTR);
+  File::Remove(syscfg.datadir, SUBS_XTR);
 
-  WTextFile fileSubsXtr(syscfg.datadir, SUBS_XTR, "w");
+  TextFile fileSubsXtr(syscfg.datadir, SUBS_XTR, "w");
   if (fileSubsXtr.IsOpen()) {
     for (int i = 0; i < GetSession()->num_subs; i++) {
       if (xsubs[i].num_nets) {
@@ -81,9 +81,9 @@ void save_subs() {
   for (int nDelNetNum = 0; nDelNetNum < GetSession()->GetMaxNetworkNumber(); nDelNetNum++) {
     set_net_num(nDelNetNum);
 
-    WFile::Remove(GetSession()->GetNetworkDataDirectory(), ALLOW_NET);
-    WFile::Remove(GetSession()->GetNetworkDataDirectory(), SUBS_PUB);
-    WFile::Remove(GetSession()->GetNetworkDataDirectory(), NNALL_NET);
+    File::Remove(GetSession()->GetNetworkDataDirectory(), ALLOW_NET);
+    File::Remove(GetSession()->GetNetworkDataDirectory(), SUBS_PUB);
+    File::Remove(GetSession()->GetNetworkDataDirectory(), NNALL_NET);
   }
 
   set_net_num(nSavedNetNum);
@@ -319,7 +319,7 @@ void modify_sub(int n) {
       if (szSubBaseName[0] != 0 && strchr(szSubBaseName, '.') == 0) {
         char szOldSubFileName[MAX_PATH];
         sprintf(szOldSubFileName, "%s%s.sub", syscfg.datadir, szSubBaseName);
-        if (WFile::Exists(szOldSubFileName)) {
+        if (File::Exists(szOldSubFileName)) {
           for (int i = 0; i < GetSession()->num_subs; i++) {
             if (strncasecmp(subboards[i].filename, szSubBaseName, strlen(szSubBaseName)) == 0) {
               strcpy(szOldSubFileName, subboards[i].name);
@@ -340,18 +340,18 @@ void modify_sub(int n) {
         char szFile1[ MAX_PATH ], szFile2[ MAX_PATH ];
         sprintf(szFile1, "%s%s.sub", syscfg.datadir, r.filename);
         sprintf(szFile2, "%s%s.dat", syscfg.msgsdir, r.filename);
-        if (r.storage_type == 2 && !WFile::Exists(szFile1) &&
-            !WFile::Exists(szFile2) &&
+        if (r.storage_type == 2 && !File::Exists(szFile1) &&
+            !File::Exists(szFile2) &&
             !wwiv::strings::IsEquals(r.filename, "NONAME")) {
           bout.nl();
           bout << "|#7Rename current data files (.SUB/.DAT)? ";
           if (yesno()) {
             sprintf(szFile1, "%s%s.sub", syscfg.datadir, szOldSubFileName);
             sprintf(szFile2, "%s%s.sub", syscfg.datadir, r.filename);
-            WFile::Rename(szFile1, szFile2);
+            File::Rename(szFile1, szFile2);
             sprintf(szFile1, "%s%s.dat", syscfg.msgsdir, szOldSubFileName);
             sprintf(szFile2, "%s%s.dat", syscfg.msgsdir, r.filename);
-            WFile::Rename(szFile1, szFile2);
+            File::Rename(szFile1, szFile2);
           }
         }
       }
@@ -893,9 +893,9 @@ void boardedit() {
           if (yesno()) {
             char szTempFileName[ MAX_PATH ];
             sprintf(szTempFileName, "%s%s.sub", syscfg.datadir, s);
-            WFile::Remove(szTempFileName);
+            File::Remove(szTempFileName);
             sprintf(szTempFileName, "%s%s.dat", syscfg.msgsdir, s);
-            WFile::Remove(szTempFileName);
+            File::Remove(szTempFileName);
           }
         }
       }

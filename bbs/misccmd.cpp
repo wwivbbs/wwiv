@@ -42,7 +42,7 @@ void kill_old_email() {
 
   bout << "|#5List mail starting at most recent? ";
   int forward = (yesno());
-  WFile *pFileEmail = OpenEmailFile(false);
+  File *pFileEmail = OpenEmailFile(false);
   WWIV_ASSERT(pFileEmail);
   if (!pFileEmail->IsOpen()) {
     bout << "\r\nNo mail.\r\n";
@@ -56,7 +56,7 @@ void kill_old_email() {
 
   bool done = false;
   do {
-    pFileEmail->Seek(cur * sizeof(mailrec), WFile::seekBegin);
+    pFileEmail->Seek(cur * sizeof(mailrec), File::seekBegin);
     pFileEmail->Read(&m, sizeof(mailrec));
     while ((m.fromsys != 0 || m.fromuser != GetSession()->usernum || m.touser == 0) && cur < max && cur >= 0) {
       if (forward) {
@@ -65,7 +65,7 @@ void kill_old_email() {
         ++cur;
       }
       if (cur < max && cur >= 0) {
-        pFileEmail->Seek(cur * sizeof(mailrec), WFile::seekBegin);
+        pFileEmail->Seek(cur * sizeof(mailrec), File::seekBegin);
         pFileEmail->Read(&m, sizeof(mailrec));
       }
     }
@@ -98,8 +98,8 @@ void kill_old_email() {
         int nDaysAgo = static_cast<int>((lCurrentTime - m.daten) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT);
         bout << "|#1Sent|#9: |#" << GetSession()->GetMessageColor() << nDaysAgo << " days ago" << wwiv::endl;
         if (m.status & status_file) {
-          WFile fileAttach(syscfg.datadir, ATTACH_DAT);
-          if (fileAttach.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+          File fileAttach(syscfg.datadir, ATTACH_DAT);
+          if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
             bool found = false;
             long l1 = fileAttach.Read(&fsr, sizeof(fsr));
             while (l1 > 0 && !found) {
@@ -140,23 +140,23 @@ void kill_old_email() {
           break;
         case 'D': {
           done1 = true;
-          WFile *pFileEmail = OpenEmailFile(true);
-          pFileEmail->Seek(cur * sizeof(mailrec), WFile::seekBegin);
+          File *pFileEmail = OpenEmailFile(true);
+          pFileEmail->Seek(cur * sizeof(mailrec), File::seekBegin);
           pFileEmail->Read(&m1, sizeof(mailrec));
           if (memcmp(&m, &m1, sizeof(mailrec)) == 0) {
             delmail(pFileEmail, cur);
             bool found = false;
             if (m.status & status_file) {
-              WFile fileAttach(syscfg.datadir, ATTACH_DAT);
-              if (fileAttach.Open(WFile::modeBinary | WFile::modeReadWrite)) {
+              File fileAttach(syscfg.datadir, ATTACH_DAT);
+              if (fileAttach.Open(File::modeBinary | File::modeReadWrite)) {
                 long l1 = fileAttach.Read(&fsr, sizeof(fsr));
                 while (l1 > 0 && !found) {
                   if (m.daten == static_cast<unsigned long>(fsr.id)) {
                     found = true;
                     fsr.id = 0;
-                    fileAttach.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, WFile::seekCurrent);
+                    fileAttach.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::seekCurrent);
                     fileAttach.Write(&fsr, sizeof(filestatusrec));
-                    WFile::Remove(GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename);
+                    File::Remove(GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename);
                   } else {
                     l1 = fileAttach.Read(&fsr, sizeof(filestatusrec));
                   }
@@ -250,7 +250,7 @@ void list_users(int mode) {
   write_qscn(GetSession()->usernum, qsc, false);
   GetApplication()->GetStatusManager()->RefreshStatusCache();
 
-  WFile userList(syscfg.datadir, USER_LST);
+  File userList(syscfg.datadir, USER_LST);
   int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
   for (int i = 0; (i < nNumUserRecords) && !abort && !hangup; i++) {
@@ -511,7 +511,7 @@ void uudecode(const char *pszInputFileName, const char *pszOutputFileName) {
   char szCmdLine[ MAX_PATH ];
   sprintf(szCmdLine, "UUDECODE %s %s", pszInputFileName, pszOutputFileName);
   ExecuteExternalProgram(szCmdLine, EFLAG_NONE);    // run command
-  WFile::Remove(pszInputFileName);        // delete the input file
+  File::Remove(pszInputFileName);        // delete the input file
 }
 
 void Packers() {

@@ -46,8 +46,8 @@ void read_call_out_list() {
 
   zap_call_out_list();
 
-  WFile fileCallout(GetSession()->GetNetworkDataDirectory(), CALLOUT_NET);
-  if (fileCallout.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File fileCallout(GetSession()->GetNetworkDataDirectory(), CALLOUT_NET);
+  if (fileCallout.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileCallout.GetLength();
     char *ss = nullptr;
     if ((ss = static_cast<char*>(BbsAllocA(lFileLength + 512))) == nullptr) {
@@ -70,7 +70,7 @@ void read_call_out_list() {
     }
     con = net_networks[GetSession()->GetNetworkNumber()].con;
     con--;
-    fileCallout.Open(WFile::modeBinary | WFile::modeReadOnly);
+    fileCallout.Open(File::modeBinary | File::modeReadOnly);
     if ((ss = static_cast<char*>(BbsAllocA(lFileLength + 512))) == nullptr) {
       WWIV_ASSERT(ss != nullptr);
       GetApplication()->AbortBBS(true);
@@ -219,8 +219,8 @@ void read_bbs_list() {
   if (net_sysnum == 0) {
     return;
   }
-  WFile fileBbsData(GetSession()->GetNetworkDataDirectory(), BBSDATA_NET);
-  if (fileBbsData.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File fileBbsData(GetSession()->GetNetworkDataDirectory(), BBSDATA_NET);
+  if (fileBbsData.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileBbsData.GetLength();
     GetSession()->num_sys_list = static_cast<int>(lFileLength / sizeof(net_system_list_rec));
     if ((csn = static_cast<net_system_list_rec *>(BbsAllocA(lFileLength + 512L))) == nullptr) {
@@ -242,8 +242,8 @@ void read_bbs_list_index() {
   if (net_sysnum == 0) {
     return;
   }
-  WFile fileBbsData(GetSession()->GetNetworkDataDirectory(), BBSDATA_IND);
-  if (fileBbsData.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File fileBbsData(GetSession()->GetNetworkDataDirectory(), BBSDATA_IND);
+  if (fileBbsData.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileBbsData.GetLength();
     GetSession()->num_sys_list = static_cast<int>(lFileLength / 2);
     if ((csn_index = static_cast<unsigned short *>(BbsAllocA(lFileLength))) == nullptr) {
@@ -295,9 +295,9 @@ net_system_list_rec *next_system(int ts) {
   } else if (csn) {
     return ((net_system_list_rec *) & (csn[nIndex]));
   } else {
-    WFile fileBbsData(GetSession()->GetNetworkDataDirectory(), BBSDATA_NET);
-    fileBbsData.Open(WFile::modeBinary | WFile::modeReadOnly);
-    fileBbsData.Seek(sizeof(net_system_list_rec) * static_cast<long>(nIndex), WFile::seekBegin);
+    File fileBbsData(GetSession()->GetNetworkDataDirectory(), BBSDATA_NET);
+    fileBbsData.Open(File::modeBinary | File::modeReadOnly);
+    fileBbsData.Seek(sizeof(net_system_list_rec) * static_cast<long>(nIndex), File::seekBegin);
     fileBbsData.Read(&csne, sizeof(net_system_list_rec));
     fileBbsData.Close();
     return (csne.forsys == 65535) ? nullptr : (&csne);
@@ -317,8 +317,8 @@ void zap_contacts() {
 void read_contacts() {
   zap_contacts();
 
-  WFile fileContact(GetSession()->GetNetworkDataDirectory(), CONTACT_NET);
-  if (fileContact.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File fileContact(GetSession()->GetNetworkDataDirectory(), CONTACT_NET);
+  if (fileContact.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileContact.GetLength();
     net_networks[GetSession()->GetNetworkNumber()].num_ncn = static_cast< short >(lFileLength / sizeof(net_contact_rec));
     if ((net_networks[GetSession()->GetNetworkNumber()].ncn =
@@ -327,7 +327,7 @@ void read_contacts() {
       WWIV_ASSERT(net_networks[GetSession()->GetNetworkNumber()].ncn != nullptr);
       GetApplication()->AbortBBS(true);
     }
-    fileContact.Seek(0L, WFile::seekBegin);
+    fileContact.Seek(0L, File::seekBegin);
     fileContact.Read(net_networks[GetSession()->GetNetworkNumber()].ncn,
                      net_networks[GetSession()->GetNetworkNumber()].num_ncn * sizeof(net_contact_rec));
     fileContact.Close();

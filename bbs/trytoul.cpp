@@ -60,10 +60,10 @@ int try_to_ul(char *pszFileName) {
 
   char src[MAX_PATH];
   sprintf(src, "%s%s", syscfgovr.batchdir, pszFileName);
-  sprintf(dest, "%sTRY2UL%c%s", syscfg.dloadsdir, WFile::pathSeparatorChar, pszFileName);
+  sprintf(dest, "%sTRY2UL%c%s", syscfg.dloadsdir, File::pathSeparatorChar, pszFileName);
 
-  if (WFile::Exists(dest)) {                        // this is iffy <sp?/who care I chooose to
-    WFile::Remove(dest);                           // remove duplicates in try2ul dir, so keep
+  if (File::Exists(dest)) {                        // this is iffy <sp?/who care I chooose to
+    File::Remove(dest);                           // remove duplicates in try2ul dir, so keep
   }
   // it clean and up to date
   copyfile(src, dest, true);                   // copy file from batch dir,to try2ul dir */
@@ -206,7 +206,7 @@ int try_to_ul_wh(char *pszFileName) {
   strcpy(u.date, date());
 
   sprintf(s1, "%s%s", d.path, s);
-  if (WFile::Exists(s1)) {
+  if (File::Exists(s1)) {
     if (dcs()) {
       bout.nl(2);
       bout << "File already exists.\r\n|#5Add to database anyway? ";
@@ -271,8 +271,8 @@ int try_to_ul_wh(char *pszFileName) {
   sprintf(s1, "%s%s", syscfgovr.batchdir, pszFileName);
   sprintf(s2, "%s%s", d.path, pszFileName);
 
-  if (WFile::Exists(s2)) {
-    WFile::Remove(s2);
+  if (File::Exists(s2)) {
+    File::Remove(s2);
   }
 
   // s1 and s2 should remain set,they are used below
@@ -357,8 +357,8 @@ int try_to_ul_wh(char *pszFileName) {
 
   bout.nl(3);
 
-  WFile file(d.path, s);
-  if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(d.path, s);
+  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     // dos error, file not found
     if (u.mask & mask_extended) {
       delete_extended_description(u.filename);
@@ -376,7 +376,7 @@ int try_to_ul_wh(char *pszFileName) {
       t2u_error(pszFileName, "Failed upload event");
       return 1;
     } else {
-      file.Open(WFile::modeBinary | WFile::modeReadOnly);
+      file.Open(File::modeBinary | File::modeReadOnly);
     }
   }
   long lFileLength = file.GetLength();
@@ -387,8 +387,8 @@ int try_to_ul_wh(char *pszFileName) {
   time_t tCurrentDate;
   time(&tCurrentDate);
   u.daten = static_cast<unsigned long>(tCurrentDate);
-  WFile fileDownload(g_szDownloadFileName);
-  fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
+  File fileDownload(g_szDownloadFileName);
+  fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   for (i = GetSession()->numf; i >= 1; i--) {
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u1, sizeof(uploadsrec));

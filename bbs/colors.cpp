@@ -22,16 +22,16 @@
 
 
 void get_colordata() {
-  WFile file(syscfg.datadir, COLOR_DAT);
-  if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
+  File file(syscfg.datadir, COLOR_DAT);
+  if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;
   }
   file.Read(&rescolor, sizeof(colorrec));
 }
 
 void save_colordata() {
-  WFile file(syscfg.datadir, COLOR_DAT);
-  if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
+  File file(syscfg.datadir, COLOR_DAT);
+  if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;
   }
   file.Write(&rescolor, sizeof(colorrec));

@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "core/wfile.h"
+#include "core/file.h"
 
 #include <cerrno>
 #include <cstring>
@@ -38,21 +38,21 @@
 /////////////////////////////////////////////////////////////////////////////
 // Constants
 
-const int WFile::shareDenyReadWrite = SH_DENYRW;
-const int WFile::shareDenyWrite     = SH_DENYWR;
-const int WFile::shareDenyRead      = SH_DENYRD;
-const int WFile::shareDenyNone      = SH_DENYNO;
+const int File::shareDenyReadWrite = SH_DENYRW;
+const int File::shareDenyWrite     = SH_DENYWR;
+const int File::shareDenyRead      = SH_DENYRD;
+const int File::shareDenyNone      = SH_DENYNO;
 
-const int WFile::permReadWrite      = (_S_IREAD | _S_IWRITE);
+const int File::permReadWrite      = (_S_IREAD | _S_IWRITE);
 
-const char WFile::pathSeparatorChar = '\\';
-const char WFile::pathSeparatorString[] = "\\";
-const char WFile::separatorChar     = ';';
+const char File::pathSeparatorChar = '\\';
+const char File::pathSeparatorString[] = "\\";
+const char File::separatorChar     = ';';
 
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
 
-bool WFile::IsDirectory() {
+bool File::IsDirectory() {
   DWORD dwAttributes = GetFileAttributes(full_path_name_.c_str());
   return (dwAttributes & FILE_ATTRIBUTE_DIRECTORY) ? true : false;
 }
@@ -60,15 +60,15 @@ bool WFile::IsDirectory() {
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-bool WFile::Copy(const std::string sourceFileName, const std::string destFileName) {
+bool File::Copy(const std::string sourceFileName, const std::string destFileName) {
   return ::CopyFileA(sourceFileName.c_str(), destFileName.c_str(), FALSE) ? true : false;
 }
 
-bool WFile::Move(const std::string sourceFileName, const std::string destFileName) {
+bool File::Move(const std::string sourceFileName, const std::string destFileName) {
   return ::MoveFileA(sourceFileName.c_str(), destFileName.c_str()) ? true : false;
 }
 
-bool WFile::RealPath(const std::string& path, std::string* resolved) {
+bool File::RealPath(const std::string& path, std::string* resolved) {
   const int BUFSIZE = 4096;
   CHAR szBuffer[BUFSIZE];
   CHAR** lppPart = { nullptr };

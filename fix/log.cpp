@@ -23,7 +23,7 @@
 #include "bbs/wwiv.h"
 #include "core/wwivport.h"
 
-static WFile hLogFile;
+static File hLogFile;
 
 static const char* szLogTypeArray[] = {
 	"+ ",
@@ -61,7 +61,7 @@ bool OpenLogFile(const char* szFileName) {
 	char szBuf[512];
 
 	hLogFile.SetName(szFileName);
-	if(!hLogFile.Open(WFile::modeReadWrite | WFile::modeCreateFile)) {
+	if(!hLogFile.Open(File::modeReadWrite | File::modeCreateFile)) {
 		Print(NOK, false, "Cannot open Log File %s", szFileName);
 		return false;
 	}

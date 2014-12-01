@@ -65,8 +65,8 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
   bool ok = true;
   while ((nRecordNumber > 0) && ok && !hangup) {
     GetSession()->localIO()->tleft(true);
-    WFile fileDownload(g_szDownloadFileName);
-    fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly);
+    File fileDownload(g_szDownloadFileName);
+    fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, nRecordNumber);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
@@ -91,7 +91,7 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
       if (directories[dn].mask & mask_cdrom) {
         sprintf(s2, "%s%s", directories[dn].path, u.filename);
         sprintf(s1, "%s%s", syscfgovr.tempdir, u.filename);
-        if (!WFile::Exists(s1)) {
+        if (!File::Exists(s1)) {
           copyfile(s2, s1, false);
         }
       }
@@ -109,7 +109,7 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
               (bytes_to_k(u.numbytes)));
         }
         ++u.numdloads;
-        fileDownload.Open(WFile::modeBinary | WFile::modeReadWrite);
+        fileDownload.Open(File::modeBinary | File::modeReadWrite);
         FileAreaSetRecord(fileDownload, nRecordNumber);
         fileDownload.Write(&u, sizeof(uploadsrec));
         fileDownload.Close();

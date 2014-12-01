@@ -78,12 +78,12 @@ struct arch {
 };
 
 int check_for_files_arc(const char *pszFileName) {
-  WFile file(pszFileName);
-  if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(pszFileName);
+  if (file.Open(File::modeBinary | File::modeReadOnly)) {
     arch a;
     long lFileSize = file.GetLength();
     long lFilePos = 1;
-    file.Seek(0, WFile::seekBegin);
+    file.Seek(0, File::seekBegin);
     file.Read(&a, 1);
     if (a.type != 26) {
       file.Close();
@@ -91,7 +91,7 @@ int check_for_files_arc(const char *pszFileName) {
       return 1;
     }
     while (lFilePos < lFileSize) {
-      file.Seek(lFilePos, WFile::seekBegin);
+      file.Seek(lFilePos, File::seekBegin);
       int nNumRead = file.Read(&a, sizeof(arch));
       if (nNumRead == sizeof(arch)) {
         lFilePos += sizeof(arch);
@@ -189,15 +189,15 @@ int check_for_files_zip(const char *pszFileName) {
 
 #define READ_FN( ln ) { file.Read( s, ln ); s[ ln ] = '\0'; }
 
-  WFile file(pszFileName);
-  if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(pszFileName);
+  if (file.Open(File::modeBinary | File::modeReadOnly)) {
     long l = 0;
     long len = file.GetLength();
     while (l < len) {
       long sig = 0;
-      file.Seek(l, WFile::seekBegin);
+      file.Seek(l, File::seekBegin);
       file.Read(&sig, 4);
-      file.Seek(l, WFile::seekBegin);
+      file.Seek(l, File::seekBegin);
       switch (sig) {
       case ZIP_LOCAL_SIG:
         file.Read(&zl, sizeof(zl));
@@ -253,8 +253,8 @@ struct lharc_header {
 int check_for_files_lzh(const char *pszFileName) {
   lharc_header a;
 
-  WFile file(pszFileName);
-  if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(pszFileName);
+  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     bout << "File not found: " << stripfn(pszFileName) << wwiv::endl;
     return 1;
   }
@@ -263,7 +263,7 @@ int check_for_files_lzh(const char *pszFileName) {
   int err = 0;
   for (long l = 0; l < lFileSize;
        l += a.fn_len + a.comp_size + sizeof(lharc_header) + file.Read(&nCrc, sizeof(nCrc)) + 1) {
-    file.Seek(l, WFile::seekBegin);
+    file.Seek(l, File::seekBegin);
     char flag;
     file.Read(&flag, 1);
     if (!flag) {
@@ -295,13 +295,13 @@ int check_for_files_lzh(const char *pszFileName) {
 }
 
 int check_for_files_arj(const char *pszFileName) {
-  WFile file(pszFileName);
-  if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(pszFileName);
+  if (file.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileSize = file.GetLength();
     long lCurPos = 0;
-    file.Seek(0L, WFile::seekBegin);
+    file.Seek(0L, File::seekBegin);
     while (lCurPos < lFileSize) {
-      file.Seek(lCurPos, WFile::seekBegin);
+      file.Seek(lCurPos, File::seekBegin);
       unsigned short sh;
       int nNumRead = file.Read(&sh, 2);
       if (nNumRead != 2 || sh != 0xea60) {
@@ -313,10 +313,10 @@ int check_for_files_arj(const char *pszFileName) {
       file.Read(&sh, 2);
       unsigned char s1;
       file.Read(&s1, 1);
-      file.Seek(lCurPos + 12, WFile::seekBegin);
+      file.Seek(lCurPos + 12, File::seekBegin);
       long l2;
       file.Read(&l2, 4);
-      file.Seek(lCurPos + static_cast<long>(s1), WFile::seekBegin);
+      file.Seek(lCurPos + static_cast<long>(s1), File::seekBegin);
       char szBuffer[256];
       file.Read(szBuffer, 250);
       szBuffer[250] = '\0';
@@ -326,12 +326,12 @@ int check_for_files_arj(const char *pszFileName) {
         return 1;
       }
       lCurPos += 4 + static_cast<long>(sh);
-      file.Seek(lCurPos, WFile::seekBegin);
+      file.Seek(lCurPos, File::seekBegin);
       file.Read(&sh, 2);
       lCurPos += 2;
       while ((lCurPos < lFileSize) && sh) {
         lCurPos += 6 + static_cast<long>(sh);
-        file.Seek(lCurPos - 2, WFile::seekBegin);
+        file.Seek(lCurPos - 2, File::seekBegin);
         file.Read(&sh, 2);
       }
       lCurPos += l2;
@@ -387,8 +387,8 @@ bool download_temp_arc(const char *pszFileName, bool count_against_xfer_ratio) {
   }
   char szDownloadFileName[ MAX_PATH ];
   sprintf(szDownloadFileName, "%s%s.%s", syscfgovr.tempdir, pszFileName, arcs[ARC_NUMBER].extension);
-  WFile file(szDownloadFileName);
-  if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(szDownloadFileName);
+  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     bout << "No such file.\r\n\n";
     return false;
   }
@@ -556,8 +556,8 @@ void temp_extract() {
   i = recno(s);
   bool ok = true;
   while ((i > 0) && ok && !hangup) {
-    WFile fileDownload(g_szDownloadFileName);
-    fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly);
+    File fileDownload(g_szDownloadFileName);
+    fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
@@ -567,12 +567,12 @@ void temp_extract() {
       sprintf(s1, "%s%s", directories[udir[GetSession()->GetCurrentFileArea()].subnum].path, u.filename);
       sprintf(s2, "%s%s", syscfgovr.tempdir, u.filename);
       StringRemoveWhitespace(s1);
-      if (!WFile::Exists(s2)) {
+      if (!File::Exists(s2)) {
         copyfile(s1, s2, false);
       }
     }
     get_arc_cmd(s1, s2, 1, "");
-    if (s1[0] && WFile::Exists(s2)) {
+    if (s1[0] && File::Exists(s2)) {
       bout.nl(2);
       bool abort = false;
       ot = GetSession()->tagging;
@@ -764,8 +764,8 @@ void move_file_t() {
     int nCurPos = 0;
     while (!hangup && (nTempRecordNum > 0) && !done) {
       nCurPos = nTempRecordNum;
-      WFile fileDownload(g_szDownloadFileName);
-      fileDownload.Open(WFile::modeReadOnly | WFile::modeBinary);
+      File fileDownload(g_szDownloadFileName);
+      fileDownload.Open(File::modeReadOnly | File::modeBinary);
       FileAreaSetRecord(fileDownload, nTempRecordNum);
       fileDownload.Read(&u, sizeof(uploadsrec));
       fileDownload.Close();
@@ -826,7 +826,7 @@ void move_file_t() {
           u.daten = static_cast<unsigned long>(time(nullptr));
         }
         --nCurPos;
-        fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
+        fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
         for (int i1 = nTempRecordNum; i1 < GetSession()->numf; i1++) {
           FileAreaSetRecord(fileDownload, i1 + 1);
           fileDownload.Read(&u1, sizeof(uploadsrec));
@@ -848,7 +848,7 @@ void move_file_t() {
         sprintf(s2, "%s%s", directories[d1].path, u.filename);
         StringRemoveWhitespace(s2);
         dliscan1(d1);
-        fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
+        fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
         for (int i = GetSession()->numf; i >= 1; i--) {
           FileAreaSetRecord(fileDownload, i);
           fileDownload.Read(&u1, sizeof(uploadsrec));
@@ -874,7 +874,7 @@ void move_file_t() {
         }
         StringRemoveWhitespace(s1);
         StringRemoveWhitespace(s2);
-        if (!wwiv::strings::IsEquals(s1, s2) && WFile::Exists(s1)) {
+        if (!wwiv::strings::IsEquals(s1, s2) && File::Exists(s1)) {
           bool bSameDrive = false;
           if (s1[1] != ':' && s2[1] != ':') {
             bSameDrive = true;
@@ -883,16 +883,16 @@ void move_file_t() {
             bSameDrive = true;
           }
           if (bSameDrive) {
-            WFile::Rename(s1, s2);
-            if (WFile::Exists(s2)) {
-              WFile::Remove(s1);
+            File::Rename(s1, s2);
+            if (File::Exists(s2)) {
+              File::Remove(s1);
             } else {
               copyfile(s1, s2, false);
-              WFile::Remove(s1);
+              File::Remove(s1);
             }
           } else {
             copyfile(s1, s2, false);
-            WFile::Remove(s1);
+            File::Remove(s1);
           }
           remlist(batch[nCurBatchPos].filename);
           didnt_upload(nCurBatchPos);
@@ -927,8 +927,8 @@ void removefile() {
   int i = recno(szFileToRemove);
   bool abort = false;
   while (!hangup && (i > 0) && !abort) {
-    WFile fileDownload(g_szDownloadFileName);
-    fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly);
+    File fileDownload(g_szDownloadFileName);
+    fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
@@ -967,7 +967,7 @@ void removefile() {
             char szFileNameToDelete[ MAX_PATH ];
             sprintf(szFileNameToDelete, "%s%s", directories[udir[GetSession()->GetCurrentFileArea()].subnum].path, u.filename);
             StringRemoveWhitespace(szFileNameToDelete);
-            WFile::Remove(szFileNameToDelete);
+            File::Remove(szFileNameToDelete);
             if (bRemoveDlPoints && u.ownersys == 0) {
               GetApplication()->GetUserManager()->ReadUser(&uu, u.ownerusr);
               if (!uu.IsUserDeleted()) {
@@ -983,7 +983,7 @@ void removefile() {
             delete_extended_description(u.filename);
           }
           sysoplogf("- \"%s\" removed off of %s", u.filename, directories[udir[GetSession()->GetCurrentFileArea()].subnum].name);
-          fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
+          fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
           for (int i1 = i; i1 < GetSession()->numf; i1++) {
             FileAreaSetRecord(fileDownload, i1 + 1);
             fileDownload.Read(&u, sizeof(uploadsrec));

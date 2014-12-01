@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "core/wfile.h"
+#include "core/file.h"
 
 #include <algorithm>
 #include <cerrno>
@@ -37,22 +37,22 @@
 /////////////////////////////////////////////////////////////////////////////
 // Constants
 
-const int WFile::shareDenyReadWrite = S_IWRITE;
-const int WFile::shareDenyWrite     = 0;
-const int WFile::shareDenyRead      = S_IREAD;
-const int WFile::shareDenyNone      = 0;
+const int File::shareDenyReadWrite = S_IWRITE;
+const int File::shareDenyWrite     = 0;
+const int File::shareDenyRead      = S_IREAD;
+const int File::shareDenyNone      = 0;
 
-const int WFile::permReadWrite      = O_RDWR;
+const int File::permReadWrite      = O_RDWR;
 
-const char WFile::pathSeparatorChar = '/';
-const char WFile::pathSeparatorString[] = "/";
+const char File::pathSeparatorChar = '/';
+const char File::pathSeparatorString[] = "/";
 
-const char WFile::separatorChar     = ':';
+const char File::separatorChar     = ':';
 
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
 
-bool WFile::IsDirectory() {
+bool File::IsDirectory() {
   struct stat statbuf;
   stat(full_path_name_.c_str(), &statbuf);
   return S_ISDIR(statbuf.st_mode);
@@ -61,8 +61,8 @@ bool WFile::IsDirectory() {
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-bool WFile::Copy(const std::string sourceFileName, const std::string destFileName) {
-  if (sourceFileName != destFileName && WFile::Exists(sourceFileName) && !WFile::Exists(destFileName)) {
+bool File::Copy(const std::string sourceFileName, const std::string destFileName) {
+  if (sourceFileName != destFileName && File::Exists(sourceFileName) && !File::Exists(destFileName)) {
     char *pBuffer = static_cast<char *>(malloc(16400));
     if (pBuffer == nullptr) {
       return false;
@@ -97,7 +97,7 @@ bool WFile::Copy(const std::string sourceFileName, const std::string destFileNam
   return true;
 }
 
-bool WFile::Move(const std::string sourceFileName, const std::string destFileName) {
+bool File::Move(const std::string sourceFileName, const std::string destFileName) {
   //TODO: Atani needs to see if Rushfan buggered up this implementation
   if (Copy(sourceFileName, destFileName)) {
     return Remove(sourceFileName);
@@ -105,7 +105,7 @@ bool WFile::Move(const std::string sourceFileName, const std::string destFileNam
   return false;
 }
 
-bool WFile::RealPath(const std::string& path, std::string* resolved) {
+bool File::RealPath(const std::string& path, std::string* resolved) {
   char* result = realpath(path.c_str(), NULL);
   if (resolved == NULL) {
     resolved->assign(path);

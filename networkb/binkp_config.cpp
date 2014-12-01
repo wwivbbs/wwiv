@@ -8,8 +8,8 @@
 
 #include "core/strings.h"
 #include "core/inifile.h"
-#include "core/wfile.h"
-#include "core/wtextfile.h"
+#include "core/file.h"
+#include "core/textfile.h"
 
 using std::clog;
 using std::endl;
@@ -65,7 +65,7 @@ BinkConfig::BinkConfig(const string& ini_filename, const string& node_config_fil
     throw config_error(StringPrintf("Unable to open ini file: '%s'", ini_filename.c_str()));
   }
 
-  WTextFile node_config_file(node_config_filename, "rt");
+  TextFile node_config_file(node_config_filename, "rt");
   if (!node_config_file.IsOpen()) {
     throw config_error(StringPrintf("Unable to open node config file: '%s'", node_config_filename.c_str()));
   }
@@ -79,7 +79,7 @@ BinkConfig::BinkConfig(const string& ini_filename, const string& node_config_fil
     system_name_ = "Unnamed WWIV BBS";
   }
 
-  const string current_directory = WFile::current_directory();
+  const string current_directory = File::current_directory();
   network_dir_ = ini_file_->GetValue("NETWORK_DIR", current_directory.c_str());
   network_name_ = ini_file_->GetValue("NETWORK_NAME", "wwivnet");
 

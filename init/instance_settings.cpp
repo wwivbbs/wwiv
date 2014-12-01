@@ -33,7 +33,7 @@
 #include <sys/stat.h>
 
 #include "core/inifile.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "core/wwivport.h"
 #include "init/ifcns.h"
 #include "init/init.h"
@@ -120,10 +120,10 @@ static void tweak_dir(char *s, int inst) {
     sprintf(s, "temp%d", inst);
   } else {
     char *lcp = s + i - 1;
-    while ((((*lcp >= '0') && (*lcp <= '9')) || (*lcp == WFile::pathSeparatorChar)) && (lcp >= s)) {
+    while ((((*lcp >= '0') && (*lcp <= '9')) || (*lcp == File::pathSeparatorChar)) && (lcp >= s)) {
       lcp--;
     }
-    sprintf(lcp + 1, "%d%c", inst, WFile::pathSeparatorChar);
+    sprintf(lcp + 1, "%d%c", inst, File::pathSeparatorChar);
   }
 }
 

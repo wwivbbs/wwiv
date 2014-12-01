@@ -79,7 +79,7 @@ TEST_F(TransferFileTest, WriteChunk) {
 }
 
 TEST_F(TransferFileTest, WFileTest_Read) {
-  WFileTransferFile wfile_file(filename, unique_ptr<WFile>(new WFile(full_filename)));
+  WFileTransferFile wfile_file(filename, unique_ptr<File>(new File(full_filename)));
   ASSERT_EQ(filename, wfile_file.filename());
   ASSERT_EQ(contents.size(), wfile_file.file_size());
 
@@ -111,7 +111,7 @@ TEST_F(TransferFileTest, WFileTest_Write) {
   const string empty_filename = StrCat(filename, "_empty");
   const string empty_file_fullpath = file_helper_.CreateTempFilePath(empty_filename);
   {
-    WFileTransferFile wfile_file(empty_filename, unique_ptr<WFile>(new WFile(empty_file_fullpath)));
+    WFileTransferFile wfile_file(empty_filename, unique_ptr<File>(new File(empty_file_fullpath)));
     EXPECT_EQ(empty_filename, wfile_file.filename());
     EXPECT_LE(wfile_file.file_size(), 0);
 

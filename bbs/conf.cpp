@@ -23,7 +23,7 @@
 
 #include "wwiv.h"
 #include "core/strings.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 #include "core/wwivassert.h"
 
 using std::string;
@@ -346,7 +346,7 @@ void save_confs(int conftype, int whichnum, confrec * c) {
     return;
   }
 
-  WTextFile f(szFileName, "wt");
+  TextFile f(szFileName, "wt");
   if (!f.IsOpen()) {
     bout.nl();
     bout << "|#6Couldn't write to conference file: " << szFileName << wwiv::endl;
@@ -1219,7 +1219,7 @@ bool create_conf_file(int conftype) {
     return false;
   }
 
-  WTextFile f(szFileName, "wt");
+  TextFile f(szFileName, "wt");
   if (!f.IsOpen()) {
     return false;
   }
@@ -1250,11 +1250,11 @@ confrec *read_conferences(const char *pszFileName, int *nc, int max) {
     return nullptr;
   }
 
-  if (!WFile::Exists(pszFileName)) {
+  if (!File::Exists(pszFileName)) {
     return nullptr;
   }
 
-  WTextFile f(pszFileName, "rt");
+  TextFile f(pszFileName, "rt");
   if (!f.IsOpen()) {
     return nullptr;
   }
@@ -1425,7 +1425,7 @@ void read_in_conferences(int conftype) {
     free(*cpp);
     *cpp = nullptr;
   }
-  if (!WFile::Exists(s)) {
+  if (!File::Exists(s)) {
     if (!create_conf_file(conftype)) {
       std::cout << "Problem creating conferences." << std::endl;
       GetApplication()->AbortBBS();
@@ -1458,10 +1458,10 @@ int get_num_conferences(const char *pszFileName) {
   char ls[MAX_CONF_LINE];
   int i = 0;
 
-  if (!WFile::Exists(pszFileName)) {
+  if (!File::Exists(pszFileName)) {
     return 0;
   }
-  WTextFile f(pszFileName, "rt");
+  TextFile f(pszFileName, "rt");
   if (!f.IsOpen()) {
     return 0;
   }

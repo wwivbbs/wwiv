@@ -34,8 +34,8 @@
 #include <curses.h>
 
 #include "core/strings.h"
-#include "core/wfile.h"
-#include "core/wtextfile.h"
+#include "core/file.h"
+#include "core/textfile.h"
 #include "core/wwivport.h"
 #include "init/archivers.h"
 #include "init/ifcns.h"
@@ -51,7 +51,7 @@ using std::vector;
 using wwiv::strings::StringPrintf;
 
 static void create_text(const char *pszFileName) {
-  WTextFile file("gfiles", pszFileName, "wt");
+  TextFile file("gfiles", pszFileName, "wt");
   file.WriteLine(StringPrintf("This is %s.", pszFileName));
   file.WriteLine("Edit to suit your needs.");
   file.Close();
@@ -68,9 +68,9 @@ static string date() {
 static uint32_t *qsc;
 
 static void write_qscn(unsigned int un, uint32_t *qscn) {
-  WFile file(syscfg.datadir, USER_QSC);
-  if (file.Open(WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile)) {
-    file.Seek(syscfg.qscn_len * un, WFile::seekBegin);
+  File file(syscfg.datadir, USER_QSC);
+  if (file.Open(File::modeReadWrite|File::modeBinary|File::modeCreateFile)) {
+    file.Seek(syscfg.qscn_len * un, File::seekBegin);
     file.Write(qscn, syscfg.qscn_len);
     file.Close();
   }
@@ -84,12 +84,12 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   memset(&syscfg, 0, sizeof(configrec));
 
   strcpy(syscfg.systempw, "SYSOP");
-  sprintf(syscfg.msgsdir, "%smsgs%c", bbsdir.c_str(), WFile::pathSeparatorChar);
-  sprintf(syscfg.gfilesdir, "%sgfiles%c", bbsdir.c_str(), WFile::pathSeparatorChar);
-  sprintf(syscfg.datadir, "%sdata%c", bbsdir.c_str(), WFile::pathSeparatorChar);
-  sprintf(syscfg.dloadsdir, "%sdloads%c", bbsdir.c_str(), WFile::pathSeparatorChar);
-  sprintf(syscfg.tempdir, "%stemp1%c", bbsdir.c_str(), WFile::pathSeparatorChar);
-  sprintf(syscfg.menudir, "%sgfiles%cmenus%c", bbsdir.c_str(), WFile::pathSeparatorChar, WFile::pathSeparatorChar);
+  sprintf(syscfg.msgsdir, "%smsgs%c", bbsdir.c_str(), File::pathSeparatorChar);
+  sprintf(syscfg.gfilesdir, "%sgfiles%c", bbsdir.c_str(), File::pathSeparatorChar);
+  sprintf(syscfg.datadir, "%sdata%c", bbsdir.c_str(), File::pathSeparatorChar);
+  sprintf(syscfg.dloadsdir, "%sdloads%c", bbsdir.c_str(), File::pathSeparatorChar);
+  sprintf(syscfg.tempdir, "%stemp1%c", bbsdir.c_str(), File::pathSeparatorChar);
+  sprintf(syscfg.menudir, "%sgfiles%cmenus%c", bbsdir.c_str(), File::pathSeparatorChar, File::pathSeparatorChar);
   strcpy(syscfg.batchdir, syscfg.tempdir);
   strcpy(syscfg.unused_bbs_init_modem, "ATS0=0M0Q0V0E0S2=1S7=20H0{");
   strcpy(syscfg.unused_answer, "ATA{");
@@ -259,7 +259,7 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
 
   strcpy(d1.name, "Sysop");
   strcpy(d1.filename, "SYSOP");
-  sprintf(d1.path, "dloads%csysop%c", WFile::pathSeparatorChar, WFile::pathSeparatorChar);
+  sprintf(d1.path, "dloads%csysop%c", File::pathSeparatorChar, File::pathSeparatorChar);
   mkdir(d1.path);
   d1.dsl = 100;
   d1.maxfiles = 50;
@@ -271,7 +271,7 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
 
   strcpy(d1.name, "Miscellaneous");
   strcpy(d1.filename, "misc");
-  sprintf(d1.path, "dloads%cmisc%c", WFile::pathSeparatorChar, WFile::pathSeparatorChar);
+  sprintf(d1.path, "dloads%cmisc%c", File::pathSeparatorChar, File::pathSeparatorChar);
   mkdir(d1.path);
   d1.dsl = 10;
   d1.age = 0;
@@ -288,11 +288,11 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   window->SetColor(SchemeId::NORMAL);
 
   rename("wwivini.500", "wwiv.ini");
-  string destination = StringPrintf("data%cmenucmds.dat", WFile::pathSeparatorChar);
+  string destination = StringPrintf("data%cmenucmds.dat", File::pathSeparatorChar);
   rename("menucmds.dat", destination.c_str());
-  destination = StringPrintf("data%cregions.dat", WFile::pathSeparatorChar);
+  destination = StringPrintf("data%cregions.dat", File::pathSeparatorChar);
   rename("regions.dat", destination.c_str());
-  destination = StringPrintf("data%cwfc.dat", WFile::pathSeparatorChar);
+  destination = StringPrintf("data%cwfc.dat", File::pathSeparatorChar);
   rename("wfc.dat", destination.c_str());
   // Create the sample files.
   create_text("welcome.msg");
@@ -309,22 +309,22 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Decompressing archives.  Please wait");
   window->SetColor(SchemeId::NORMAL);
-  if (WFile::Exists("en-menus.zip")) {
+  if (File::Exists("en-menus.zip")) {
     system("unzip -qq -o EN-menus.zip -dgfiles ");
     const string destination = StringPrintf("dloads%csysop%cen-menus.zip",
-        WFile::pathSeparatorChar, WFile::pathSeparatorChar);
+        File::pathSeparatorChar, File::pathSeparatorChar);
     rename("en-menus.zip", destination.c_str());
   }
-  if (WFile::Exists("regions.zip")) {
+  if (File::Exists("regions.zip")) {
     system("unzip -qq -o regions.zip -ddata");
     const string destination = StringPrintf("dloads%csysop%cregions.zip",
-        WFile::pathSeparatorChar, WFile::pathSeparatorChar);
+        File::pathSeparatorChar, File::pathSeparatorChar);
     rename("regions.zip", destination.c_str());
   }
-  if (WFile::Exists("zip-city.zip")) {
+  if (File::Exists("zip-city.zip")) {
     system("unzip -qq -o zip-city.zip -ddata");
     const string destination = StringPrintf("dloads%csysop%czip-city.zip",
-        WFile::pathSeparatorChar, WFile::pathSeparatorChar);
+        File::pathSeparatorChar, File::pathSeparatorChar);
     rename("zip-city.zip", destination.c_str());
   }
   window->SetColor(SchemeId::NORMAL);

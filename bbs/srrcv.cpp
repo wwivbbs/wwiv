@@ -147,15 +147,15 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
   unsigned char bln;
   int i1, i2, i3;
 
-  WFile::Remove(pszFileName);
+  File::Remove(pszFileName);
   bool ok = true;
   bool lastcan = false;
   bool lasteot = false;
   int  nTotalErrors = 0;
   int  nConsecErrors = 0;
 
-  WFile file(pszFileName);
-  if (!file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
+  File file(pszFileName);
+  if (!file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
     bout << "\r\n\nDOS error - Can't create file.\r\n\n";
     *received = false;
     return;
@@ -241,7 +241,7 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
         }
         rputch(CF);
       } else if ((bn & 0x00ff) == static_cast<unsigned int>(bln)) {
-        file.Seek(pos, WFile::seekBegin);
+        file.Seek(pos, File::seekBegin);
         long lx = reallen - pos;
         i2 = (i == 0) ? 128 : 1024;
         if ((static_cast<long>(i2) > lx) && reallen) {

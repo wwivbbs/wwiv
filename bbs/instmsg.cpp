@@ -39,9 +39,9 @@ void send_inst_msg(inst_msg_header *ih, const char *msg) {
   char szFileName[MAX_PATH];
 
   sprintf(szFileName, "%sTMSG%3.3u.%3.3d", syscfg.datadir, GetApplication()->GetInstanceNumber(), ih->dest_inst);
-  WFile file(szFileName);
-  if (file.Open(WFile::modeBinary | WFile::modeReadWrite | WFile::modeCreateFile)) {
-    file.Seek(0L, WFile::seekEnd);
+  File file(szFileName);
+  if (file.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
+    file.Seek(0L, File::seekEnd);
     if (ih->msg_size > 0 && !msg) {
       ih->msg_size = 0;
     }
@@ -54,7 +54,7 @@ void send_inst_msg(inst_msg_header *ih, const char *msg) {
     for (int i = 0; i < 1000; i++) {
       char szMsgFileName[ MAX_PATH ];
       sprintf(szMsgFileName, "%sMSG%5.5d.%3.3d", syscfg.datadir, i, ih->dest_inst);
-      if (!WFile::Rename(szFileName, szMsgFileName) || (errno != EACCES)) {
+      if (!File::Rename(szFileName, szMsgFileName) || (errno != EACCES)) {
         break;
       }
     }
@@ -223,8 +223,8 @@ void process_inst_msgs() {
   sprintf(szFindFileName, "%sMSG*.%3.3u", syscfg.datadir, GetApplication()->GetInstanceNumber());
   bool bDone = fnd.open(szFindFileName, 0);
   while ((bDone) && (!hangup)) {
-    WFile file(syscfg.datadir, fnd.GetFileName());
-    if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+    File file(syscfg.datadir, fnd.GetFileName());
+    if (!file.Open(File::modeBinary | File::modeReadOnly)) {
       continue;
     }
     long lFileSize = file.GetLength();
@@ -287,8 +287,8 @@ bool get_inst_info(int nInstanceNum, instancerec * ir) {
 
   memset(ir, 0, sizeof(instancerec));
 
-  WFile instFile(syscfg.datadir, INSTANCE_DAT);
-  if (!instFile.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File instFile(syscfg.datadir, INSTANCE_DAT);
+  if (!instFile.Open(File::modeBinary | File::modeReadOnly)) {
     return false;
   }
   int i = static_cast<int>(instFile.GetLength() / sizeof(instancerec));
@@ -296,7 +296,7 @@ bool get_inst_info(int nInstanceNum, instancerec * ir) {
     instFile.Close();
     return false;
   }
-  instFile.Seek(static_cast<long>(nInstanceNum * sizeof(instancerec)), WFile::seekBegin);
+  instFile.Seek(static_cast<long>(nInstanceNum * sizeof(instancerec)), File::seekBegin);
   instFile.Read(ir, sizeof(instancerec));
   instFile.Close();
   return true;
@@ -333,8 +333,8 @@ bool inst_available_chat(instancerec * ir) {
  * Returns max instance number.
  */
 int num_instances() {
-  WFile instFile(syscfg.datadir, INSTANCE_DAT);
-  if (!instFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+  File instFile(syscfg.datadir, INSTANCE_DAT);
+  if (!instFile.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   }
   int nNumInstances = static_cast<int>(instFile.GetLength() / sizeof(instancerec)) - 1;
@@ -574,9 +574,9 @@ void write_inst(int loc, int subloc, int flags) {
   }
   if (re_write && syscfg.datadir != nullptr) {
     ti.last_update = static_cast<unsigned long>(time(nullptr));
-    WFile instFile(syscfg.datadir, INSTANCE_DAT);
-    if (instFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
-      instFile.Seek(static_cast<long>(GetApplication()->GetInstanceNumber() * sizeof(instancerec)), WFile::seekBegin);
+    File instFile(syscfg.datadir, INSTANCE_DAT);
+    if (instFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
+      instFile.Seek(static_cast<long>(GetApplication()->GetInstanceNumber() * sizeof(instancerec)), File::seekBegin);
       instFile.Write(&ti, sizeof(instancerec));
       instFile.Close();
     }
@@ -600,7 +600,7 @@ bool inst_msg_waiting() {
 
   char szFileName[81];
   sprintf(szFileName, "%sMSG*.%3.3u", syscfg.datadir, GetApplication()->GetInstanceNumber());
-  bool bExist = WFile::ExistsWildcard(szFileName);
+  bool bExist = File::ExistsWildcard(szFileName);
   if (!bExist) {
     last_iia = l;
   }

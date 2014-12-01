@@ -133,11 +133,11 @@ int listfiles_plus_function(int type) {
       int lines = 0;
       int changedir = 0;
 
-      WFile fileDownload(g_szDownloadFileName);
+      File fileDownload(g_szDownloadFileName);
       while (!done && !hangup && !all_done) {
         checka(&all_done);
         if (!amount) {
-          if (!fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+          if (!fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
             done = true;
             continue;
           }
@@ -296,7 +296,7 @@ ADD_OR_REMOVE_BATCH:
                           strcpy(szTempFile, directories[udir[GetSession()->GetCurrentFileArea()].subnum].path);
                           strcat(szTempFile, file_recs[file_pos]->filename);
                           unalign(szTempFile);
-                          if (sysop_mode || !GetSession()->using_modem || WFile::Exists(szTempFile)) {
+                          if (sysop_mode || !GetSession()->using_modem || File::Exists(szTempFile)) {
 #ifdef FILE_POINTS
                             fpts = 0;
                             fpts = (file_recs[file_pos]->filepoints);
@@ -386,7 +386,7 @@ ADD_OR_REMOVE_BATCH:
                             strcpy(szTempFile, directories[udir[GetSession()->GetCurrentFileArea()].subnum].path);
                             strcat(szTempFile, file_recs[file_pos]->filename);
                             unalign(szTempFile);
-                            if (sysop_mode || !GetSession()->using_modem || WFile::Exists(szTempFile)) {
+                            if (sysop_mode || !GetSession()->using_modem || File::Exists(szTempFile)) {
 #ifdef FILE_POINTS
                               fpts = 0;
                               fpts = (file_recs[file_pos]->filepoints);

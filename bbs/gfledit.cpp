@@ -117,7 +117,7 @@ void modify_sec(int n) {
       break;
     case 'B': {
       bout.nl();
-      WFile dir(syscfg.gfilesdir, r.filename);
+      File dir(syscfg.gfilesdir, r.filename);
       if (dir.Exists()) {
         bout << "\r\nThere is currently a directory for this g-file section.\r\n";
         bout << "If you change the filename, the directory will still be there.\r\n\n";
@@ -127,12 +127,12 @@ void modify_sec(int n) {
       input(s, 8);
       if ((s[0] != 0) && (strchr(s, '.') == 0)) {
         strcpy(r.filename, s);
-        WFile dir(syscfg.gfilesdir, r.filename);
+        File dir(syscfg.gfilesdir, r.filename);
         if (!dir.Exists()) {
           bout.nl();
           bout << "|#5Create directory for this section? ";
           if (yesno()) {
-            WFile *dir = new WFile(syscfg.gfilesdir, r.filename);
+            File *dir = new File(syscfg.gfilesdir, r.filename);
             WWIV_make_path(dir->full_pathname().c_str());
           } else {
             bout << "\r\nYou will have to create the directory manually, then.\r\n\n";
@@ -271,8 +271,8 @@ void gfileedit() {
       break;
     }
   } while (!done && !hangup);
-  WFile gfileDat(syscfg.datadir, GFILE_DAT);
-  gfileDat.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate);
+  File gfileDat(syscfg.datadir, GFILE_DAT);
+  gfileDat.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
   gfileDat.Write(&gfilesec[0], GetSession()->num_sec * sizeof(gfiledirrec));
   gfileDat.Close();
 }
@@ -285,7 +285,7 @@ bool fill_sec(int sn) {
   bool bFound = false;
 
   gfilerec *g = read_sec(sn, &n1);
-  sprintf(s1, "%s%s%c*.*", syscfg.gfilesdir, gfilesec[sn].filename, WFile::pathSeparatorChar);
+  sprintf(s1, "%s%s%c*.*", syscfg.gfilesdir, gfilesec[sn].filename, File::pathSeparatorChar);
   bFound = fnd.open(s1, 0);
   bool ok = true;
   int chd = 0;
@@ -335,8 +335,8 @@ bool fill_sec(int sn) {
   if (chd) {
     char szFileName[ MAX_PATH ];
     sprintf(szFileName, "%s%s.gfl", syscfg.datadir, gfilesec[sn].filename);
-    WFile gflFile(szFileName);
-    gflFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate);
+    File gflFile(szFileName);
+    gflFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     gflFile.Write(g, nf * sizeof(gfilerec));
     gflFile.Close();
     WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();

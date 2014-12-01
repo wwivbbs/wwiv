@@ -30,7 +30,7 @@
 #include "bbs/wstatus.h"
 #include "core/inifile.h"
 #include "core/strings.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 
@@ -409,12 +409,12 @@ IniFile* WApplication::ReadINIFile() {
 
     if ((ss = ini->GetValue(get_key_str(INI_STR_ATTACH_DIR))) != nullptr) {
       m_attachmentDirectory = ss;
-      if (m_attachmentDirectory.at(m_attachmentDirectory.length() - 1) != WFile::pathSeparatorChar) {
-        m_attachmentDirectory += WFile::pathSeparatorString;
+      if (m_attachmentDirectory.at(m_attachmentDirectory.length() - 1) != File::pathSeparatorChar) {
+        m_attachmentDirectory += File::pathSeparatorString;
       }
     } else {
       std::ostringstream os;
-      os << GetHomeDir() << ATTACH_DIR << WFile::pathSeparatorString;
+      os << GetHomeDir() << ATTACH_DIR << File::pathSeparatorString;
       m_attachmentDirectory = os.str();
     }
 
@@ -461,10 +461,10 @@ bool WApplication::ReadConfigOverlayFile(int instance_number, configrec* full_sy
     StringReplace(&batch_directory, "%n", instance_num_string);
 
     const string base_dir = GetHomeDir();
-    WFile::MakeAbsolutePath(base_dir, &batch_directory);
-    WFile::MakeAbsolutePath(base_dir, &temp_directory);
-    WFile::EnsureTrailingSlash(&temp_directory);
-    WFile::EnsureTrailingSlash(&batch_directory);
+    File::MakeAbsolutePath(base_dir, &batch_directory);
+    File::MakeAbsolutePath(base_dir, &temp_directory);
+    File::EnsureTrailingSlash(&temp_directory);
+    File::EnsureTrailingSlash(&batch_directory);
 
     syscfgovr.primaryport = 1;
     strcpy(syscfgovr.tempdir, temp_directory.c_str());
@@ -480,8 +480,8 @@ bool WApplication::ReadConfigOverlayFile(int instance_number, configrec* full_sy
   }
 
   // Read the legacy config.ovr file.
-  WFile configOvrFile(CONFIG_OVR);
-  bool bIsConfigObvOpen = configOvrFile.Open(WFile::modeBinary | WFile::modeReadOnly);
+  File configOvrFile(CONFIG_OVR);
+  bool bIsConfigObvOpen = configOvrFile.Open(File::modeBinary | File::modeReadOnly);
   if (bIsConfigObvOpen &&
       configOvrFile.GetLength() < static_cast<long>(instance_number * sizeof(configoverrec))) {
     configOvrFile.Close();
@@ -494,7 +494,7 @@ bool WApplication::ReadConfigOverlayFile(int instance_number, configrec* full_sy
     strcpy(syscfgovr.batchdir, full_syscfg->batchdir);
   } else {
     long lCurNodeOffset = (instance_number - 1) * sizeof(configoverrec);
-    configOvrFile.Seek(lCurNodeOffset, WFile::seekBegin);
+    configOvrFile.Seek(lCurNodeOffset, File::seekBegin);
     configOvrFile.Read(&syscfgovr, sizeof(configoverrec));
     configOvrFile.Close();
   }
@@ -510,8 +510,8 @@ static char* DuplicatePath(const char* path) {
 bool WApplication::ReadConfig() {
   configrec full_syscfg;
 
-  WFile configFile(CONFIG_DAT);
-  int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
+  File configFile(CONFIG_DAT);
+  int nFileMode = File::modeReadOnly | File::modeBinary;
   if (!configFile.Open(nFileMode)) {
     std::cout << CONFIG_DAT << " NOT FOUND.\r\n";
     return false;
@@ -622,8 +622,8 @@ bool WApplication::ReadConfig() {
 }
 
 bool WApplication::SaveConfig() {
-  WFile configFile(CONFIG_DAT);
-  if (configFile.Open(WFile::modeBinary | WFile::modeReadWrite)) {
+  File configFile(CONFIG_DAT);
+  if (configFile.Open(File::modeBinary | File::modeReadWrite)) {
     configrec full_syscfg;
     configFile.Read(&full_syscfg, sizeof(configrec));
     // Should these move to wwiv.ini?
@@ -659,7 +659,7 @@ bool WApplication::SaveConfig() {
     full_syscfg.unused_rrd = 0;
     memset(full_syscfg.unused_regcode, '\0', 83);
 
-    configFile.Seek(0, WFile::seekBegin);
+    configFile.Seek(0, File::seekBegin);
     configFile.Write(&full_syscfg, sizeof(configrec));
     return false;
   }
@@ -674,8 +674,8 @@ void WApplication::read_nextern() {
     externs = nullptr;
   }
 
-  WFile externalFile(syscfg.datadir, NEXTERN_DAT);
-  if (externalFile.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File externalFile(syscfg.datadir, NEXTERN_DAT);
+  if (externalFile.Open(File::modeBinary | File::modeReadOnly)) {
     unsigned long lFileSize = externalFile.GetLength();
     if (lFileSize > 15 * sizeof(newexternalrec)) {
       lFileSize = 15 * sizeof(newexternalrec);
@@ -693,8 +693,8 @@ void WApplication::read_arcs() {
     arcs = nullptr;
   }
 
-  WFile archiverFile(syscfg.datadir, ARCHIVER_DAT);
-  if (archiverFile.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File archiverFile(syscfg.datadir, ARCHIVER_DAT);
+  if (archiverFile.Open(File::modeBinary | File::modeReadOnly)) {
     unsigned long lFileSize = archiverFile.GetLength();
     if (lFileSize > MAX_ARCS * sizeof(arcrec)) {
       lFileSize = MAX_ARCS * sizeof(arcrec);
@@ -713,8 +713,8 @@ void WApplication::read_editors() {
   }
   GetSession()->SetNumberOfEditors(0);
 
-  WFile file(syscfg.datadir, EDITORS_DAT);
-  if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(syscfg.datadir, EDITORS_DAT);
+  if (file.Open(File::modeBinary | File::modeReadOnly)) {
     unsigned long lFileSize = file.GetLength();
     if (lFileSize > 10 * sizeof(editorrec)) {
       lFileSize = 10 * sizeof(editorrec);
@@ -731,8 +731,8 @@ void WApplication::read_nintern() {
     free(over_intern);
     over_intern = nullptr;
   }
-  WFile file(syscfg.datadir, NINTERN_DAT);
-  if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(syscfg.datadir, NINTERN_DAT);
+  if (file.Open(File::modeBinary | File::modeReadOnly)) {
     over_intern = static_cast<newexternalrec *>(BbsAllocA(3 * sizeof(newexternalrec)));
     WWIV_ASSERT(over_intern != nullptr);
 
@@ -750,8 +750,8 @@ bool WApplication::read_subs() {
   subboards = static_cast< subboardrec * >(BbsAllocA(GetSession()->GetMaxNumberMessageAreas() * sizeof(subboardrec)));
   WWIV_ASSERT(subboards != nullptr);
 
-  WFile file(syscfg.datadir, SUBS_DAT);
-  if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(syscfg.datadir, SUBS_DAT);
+  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     std::cout << file.GetName() << " NOT FOUND.\r\n";
     return false;
   }
@@ -768,7 +768,7 @@ void WApplication::read_networks() {
   GetSession()->SetInternetUseRealNames(false);
 
   // TODO: wire up for NetX
-  WTextFile fileNetIni("NET.INI", "rt");
+  TextFile fileNetIni("NET.INI", "rt");
   if (fileNetIni.IsOpen()) {
     while (!fileNetIni.IsEndOfFile()) {
       char szBuffer[ 255 ];
@@ -796,8 +796,8 @@ void WApplication::read_networks() {
     free(net_networks);
   }
   net_networks = nullptr;
-  WFile file(syscfg.datadir, NETWORKS_DAT);
-  if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(syscfg.datadir, NETWORKS_DAT);
+  if (file.Open(File::modeBinary | File::modeReadOnly)) {
     GetSession()->SetMaxNetworkNumber(file.GetLength() / sizeof(net_networks_rec));
     if (GetSession()->GetMaxNetworkNumber()) {
       net_networks = static_cast<net_networks_rec *>(BbsAllocA(GetSession()->GetMaxNetworkNumber() * sizeof(
@@ -835,8 +835,8 @@ bool WApplication::read_names() {
   smallist = static_cast<smalrec *>(BbsAllocA(static_cast<long>(maxNumberOfUsers) * static_cast<long>(sizeof(smalrec))));
   WWIV_ASSERT(smallist != nullptr);
 
-  WFile file(syscfg.datadir, NAMES_LST);
-  if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(syscfg.datadir, NAMES_LST);
+  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     std::cout << file.GetName() << " NOT FOUND.\r\n";
     return false;
   }
@@ -851,12 +851,12 @@ void WApplication::read_voting() {
     questused[ nTempQuestionNumber ] = 0;
   }
 
-  WFile file(syscfg.datadir, VOTING_DAT);
-  if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(syscfg.datadir, VOTING_DAT);
+  if (file.Open(File::modeBinary | File::modeReadOnly)) {
     int n = static_cast<int>(file.GetLength() / sizeof(votingrec)) - 1;
     for (int nTempQuestUsedNum = 0; nTempQuestUsedNum < n; nTempQuestUsedNum++) {
       votingrec v;
-      file.Seek(static_cast<long>(nTempQuestUsedNum) * sizeof(votingrec), WFile::seekBegin);
+      file.Seek(static_cast<long>(nTempQuestUsedNum) * sizeof(votingrec), File::seekBegin);
       file.Read(&v, sizeof(votingrec));
       if (v.numanswers) {
         questused[ nTempQuestUsedNum ] = 1;
@@ -876,8 +876,8 @@ bool WApplication::read_dirs() {
                 static_cast<long>(sizeof(directoryrec))));
   WWIV_ASSERT(directories != nullptr);
 
-  WFile file(syscfg.datadir, DIRS_DAT);
-  if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(syscfg.datadir, DIRS_DAT);
+  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     std::cout << file.GetName() << "%s NOT FOUND.\r\n";
     return false;
   }
@@ -894,8 +894,8 @@ void WApplication::read_chains() {
   chains = nullptr;
   chains = static_cast<chainfilerec *>(BbsAllocA(GetSession()->max_chains * sizeof(chainfilerec)));
   WWIV_ASSERT(chains != nullptr);
-  WFile file(syscfg.datadir, CHAINS_DAT);
-  if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(syscfg.datadir, CHAINS_DAT);
+  if (file.Open(File::modeBinary | File::modeReadOnly)) {
     GetSession()->SetNumberOfChains(file.Read(chains,
                                     GetSession()->max_chains * sizeof(chainfilerec)) / sizeof(chainfilerec));
   }
@@ -908,8 +908,8 @@ void WApplication::read_chains() {
     chains_reg = static_cast<chainregrec *>(BbsAllocA(GetSession()->max_chains * sizeof(chainregrec)));
     WWIV_ASSERT(chains_reg != nullptr);
 
-    WFile regFile(syscfg.datadir, CHAINS_REG);
-    if (regFile.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+    File regFile(syscfg.datadir, CHAINS_REG);
+    if (regFile.Open(File::modeBinary | File::modeReadOnly)) {
       regFile.Read(chains_reg, GetSession()->max_chains * sizeof(chainregrec));
     } else {
       for (int nTempChainNum = 0; nTempChainNum < GetSession()->GetNumberOfChains(); nTempChainNum++) {
@@ -922,7 +922,7 @@ void WApplication::read_chains() {
         chains_reg[ nTempChainNum ].minage  = 0;
         chains_reg[ nTempChainNum ].maxage  = 255;
       }
-      regFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
+      regFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
       regFile.Write(chains_reg , sizeof(chainregrec) * GetSession()->GetNumberOfChains());
     }
     regFile.Close();
@@ -935,8 +935,8 @@ bool WApplication::read_language() {
     free(languages);
   }
   languages = nullptr;
-  WFile file(syscfg.datadir, LANGUAGE_DAT);
-  if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(syscfg.datadir, LANGUAGE_DAT);
+  if (file.Open(File::modeBinary | File::modeReadOnly)) {
     GetSession()->num_languages = file.GetLength() / sizeof(languagerec);
     if (GetSession()->num_languages) {
       languages = static_cast<languagerec *>(BbsAllocA(GetSession()->num_languages * sizeof(languagerec)));
@@ -970,8 +970,8 @@ void WApplication::read_gfile() {
   }
   gfilesec = static_cast<gfiledirrec *>(BbsAllocA(static_cast<long>(GetSession()->max_gfilesec * sizeof(gfiledirrec))));
   WWIV_ASSERT(gfilesec != nullptr);
-  WFile file(syscfg.datadir, GFILE_DAT);
-  if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(syscfg.datadir, GFILE_DAT);
+  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     GetSession()->num_sec = 0;
   } else {
     GetSession()->num_sec = file.Read(gfilesec, GetSession()->max_gfilesec * sizeof(gfiledirrec)) / sizeof(gfiledirrec);
@@ -985,7 +985,7 @@ void WApplication::read_gfile() {
 void WApplication::make_abs_path(char *pszDirectory) {
   string base(GetHomeDir());
   string dir(pszDirectory);
-  WFile::MakeAbsolutePath(base, &dir);
+  File::MakeAbsolutePath(base, &dir);
   strcpy(pszDirectory, dir.c_str());
 }
 
@@ -1037,7 +1037,7 @@ void WApplication::InitializeBBS() {
     AbortBBS();
   }
 
-  if (!WFile::Exists(syscfgovr.tempdir)) {
+  if (!File::Exists(syscfgovr.tempdir)) {
     if (WWIV_make_path(syscfgovr.tempdir) == -1) {
       std::cout << "\r\nYour temp dir isn't valid.\r\n";
       std::cout << "It is now set to: '" << syscfgovr.tempdir << "'\r\n\n";
@@ -1045,7 +1045,7 @@ void WApplication::InitializeBBS() {
     }
   }
 
-  if (!WFile::Exists(syscfgovr.batchdir)) {
+  if (!File::Exists(syscfgovr.batchdir)) {
     if (WWIV_make_path(syscfgovr.batchdir) == -1) {
       std::cout << "\r\nYour batch dir isn't valid.\r\n";
       std::cout << "It is now set to: '" << syscfgovr.batchdir << "'\r\n\n";
@@ -1057,7 +1057,7 @@ void WApplication::InitializeBBS() {
 
   // make sure it is the new USERREC structure
   XINIT_PRINTF("* Reading user scan pointers.\r\n");
-  WFile fileQScan(syscfg.datadir, USER_QSC);
+  File fileQScan(syscfg.datadir, USER_QSC);
   if (!fileQScan.Exists()) {
     std::cout << "Could not open file '" << fileQScan.full_pathname() << "'\r\n";
     std::cout << "You must go into INIT and convert your userlist before running the BBS.\r\n";
@@ -1088,7 +1088,7 @@ void WApplication::InitializeBBS() {
   }
 
   XINIT_PRINTF("* Reading color information.\r\n");
-  WFile fileColor(syscfg.datadir, COLOR_DAT);
+  File fileColor(syscfg.datadir, COLOR_DAT);
   if (!fileColor.Exists()) {
     buildcolorfile();
   }
@@ -1269,9 +1269,9 @@ void WApplication::InitializeBBS() {
   if (GetInstanceNumber() > 1) {
     char szFileName[MAX_PATH];
     snprintf(szFileName, sizeof(szFileName), "%s.%3.3u", WWIV_NET_NOEXT, GetInstanceNumber());
-    WFile::Remove(szFileName);
+    File::Remove(szFileName);
   } else {
-    WFile::Remove(WWIV_NET_DAT);
+    File::Remove(WWIV_NET_DAT);
   }
 
   srand(time(nullptr));
@@ -1286,7 +1286,7 @@ void WApplication::InitializeBBS() {
 // begin dupphone additions
 
 void WApplication::check_phonenum() {
-  WFile phoneFile(syscfg.datadir, PHONENUM_DAT);
+  File phoneFile(syscfg.datadir, PHONENUM_DAT);
   if (!phoneFile.Exists()) {
     create_phone_file();
   }
@@ -1296,16 +1296,16 @@ void WApplication::check_phonenum() {
 void WApplication::create_phone_file() {
   phonerec p;
 
-  WFile file(syscfg.datadir, USER_LST);
-  if (!file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+  File file(syscfg.datadir, USER_LST);
+  if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
   long lFileSize = file.GetLength();
   file.Close();
   int nNumberOfRecords = static_cast<int>(lFileSize / sizeof(userrec));
 
-  WFile phoneNumFile(syscfg.datadir, PHONENUM_DAT);
-  if (!phoneNumFile.Open(WFile::modeReadWrite | WFile::modeAppend | WFile::modeBinary | WFile::modeCreateFile)) {
+  File phoneNumFile(syscfg.datadir, PHONENUM_DAT);
+  if (!phoneNumFile.Open(File::modeReadWrite | File::modeAppend | File::modeBinary | File::modeCreateFile)) {
     return;
   }
 

@@ -24,14 +24,14 @@
 #include "bbs/wwiv.h"
 #include "bbs/wconstants.h"
 #include "core/strings.h"
-#include "core/wfile.h"
+#include "core/file.h"
 
 using std::string;
 
 static int check_arc(const char* filename)
 {
-  WFile f(filename);
-  if (!f.Open(WFile::modeReadOnly)) {
+  File f(filename);
+  if (!f.Open(File::modeReadOnly)) {
     return COMPRESSION_UNKNOWN;
   }
 

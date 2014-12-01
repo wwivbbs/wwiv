@@ -25,7 +25,7 @@
 
 #include "filenames.h"
 #include "core/wwivport.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "vardec.h"
 #include "version.cpp"
 

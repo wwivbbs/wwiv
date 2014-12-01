@@ -34,9 +34,9 @@ using wwiv::strings::StringToUnsignedShort;
 
 bool GetMenuDir(string& menuDir);
 bool GetMenuMenu(const string& pszDirectoryName, string& menuName);
-void ReIndexMenu(WFile &fileEditMenu, const char *pszDirectoryName, const char *pszMenuName);
-void ReadMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur);
-void WriteMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur);
+void ReIndexMenu(File &fileEditMenu, const char *pszDirectoryName, const char *pszMenuName);
+void ReadMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur);
+void WriteMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur);
 void DisplayItem(MenuRec * Menu, int nCur, int nAmount);
 void DisplayHeader(MenuHeader * Header, int nCur, int nAmount, const char *pszDirectoryName);
 void EditPulldownColors(MenuHeader * H);
@@ -72,10 +72,10 @@ void EditMenus() {
     return;
   }
 
-  WFile fileEditMenu(GetMenuDirectory(menuDir, menuName, "mnu"));
+  File fileEditMenu(GetMenuDirectory(menuDir, menuName, "mnu"));
   if (!fileEditMenu.Exists()) {
     bout << "Creating menu...\r\n";
-    if (!fileEditMenu.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone)) {
+    if (!fileEditMenu.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone)) {
       bout << "Unable to create menu.\r\n";
       return;
     }
@@ -97,7 +97,7 @@ void EditMenus() {
     fileEditMenu.Write(&Menu, sizeof(MenuRec));
     nAmount = 0;
   } else {
-    if (!fileEditMenu.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone)) {
+    if (!fileEditMenu.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone)) {
       MenuSysopLog("Unable to open menu.");
       MenuSysopLog(fileEditMenu.full_pathname());
       return;
@@ -113,7 +113,7 @@ void EditMenus() {
   int nCur = 0;
 
   // read first record
-  fileEditMenu.Seek(nCur * sizeof(MenuRec), WFile::seekBegin);
+  fileEditMenu.Seek(nCur * sizeof(MenuRec), File::seekBegin);
   fileEditMenu.Read(&Menu, sizeof(MenuRec));
 
   bool done = false;
@@ -478,12 +478,12 @@ void EditMenus() {
 }
 
 
-void ReIndexMenu(WFile &fileEditMenu, const char *pszDirectoryName, const char *pszMenuName) {
+void ReIndexMenu(File &fileEditMenu, const char *pszDirectoryName, const char *pszMenuName) {
   bout << "Indexing Menu...\r\n";
 
-  WFile fileIdx(GetMenuDirectory(pszDirectoryName, pszMenuName, "idx"));
-  if (!fileIdx.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate | WFile::modeReadWrite,
-                    WFile::shareDenyWrite)) {
+  File fileIdx(GetMenuDirectory(pszDirectoryName, pszMenuName, "idx"));
+  if (!fileIdx.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite,
+                    File::shareDenyWrite)) {
     bout << "Unable to reindex\r\n";
     pausescr();
     return;
@@ -492,7 +492,7 @@ void ReIndexMenu(WFile &fileEditMenu, const char *pszDirectoryName, const char *
 
   for (int nRec = 1; nRec < nAmount; nRec++) {
     MenuRec menu;
-    fileEditMenu.Seek(nRec * sizeof(MenuRec), WFile::seekBegin);
+    fileEditMenu.Seek(nRec * sizeof(MenuRec), File::seekBegin);
     fileEditMenu.Read(&menu, sizeof(MenuRec));
 
     MenuRecIndex menuIndex;
@@ -501,7 +501,7 @@ void ReIndexMenu(WFile &fileEditMenu, const char *pszDirectoryName, const char *
     menuIndex.nFlags = menu.nFlags;
     strcpy(menuIndex.szKey, menu.szKey);
 
-    fileIdx.Seek((nRec - 1) * sizeof(MenuRecIndex), WFile::seekBegin);
+    fileIdx.Seek((nRec - 1) * sizeof(MenuRecIndex), File::seekBegin);
     fileIdx.Write(&menuIndex, sizeof(MenuRecIndex));
   }
 
@@ -509,17 +509,17 @@ void ReIndexMenu(WFile &fileEditMenu, const char *pszDirectoryName, const char *
 }
 
 
-void ReadMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur) {
-  if (fileEditMenu.Seek(nCur * sizeof(MenuRec), WFile::seekBegin) != -1) {
+void ReadMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur) {
+  if (fileEditMenu.Seek(nCur * sizeof(MenuRec), File::seekBegin) != -1) {
     fileEditMenu.Read(Menu, sizeof(MenuRec));
   }
 }
 
 
-void WriteMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur) {
+void WriteMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur) {
   // %%TODO Add in locking (_locking) support via WIN32 file api's
 
-  long lRet = fileEditMenu.Seek(nCur * sizeof(MenuRec), WFile::seekBegin);
+  long lRet = fileEditMenu.Seek(nCur * sizeof(MenuRec), File::seekBegin);
   if (lRet == -1) {
     return;
   }
@@ -537,7 +537,7 @@ void WriteMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur) {
     return;
   }
 
-  fileEditMenu.Seek(nCur * sizeof(MenuRec), WFile::seekBegin);
+  fileEditMenu.Seek(nCur * sizeof(MenuRec), File::seekBegin);
 
   /*
   unlock(iEditMenu, nCur * sizeof(MenuRec), sizeof(MenuRec));
@@ -559,7 +559,7 @@ bool GetMenuDir(string& menuName) {
     } else if (menuName[0] == '?') {
       ListMenuDirs();
     } else {
-      WFile dir(GetMenuDirectory(), menuName);
+      File dir(GetMenuDirectory(), menuName);
       if (!dir.Exists()) {
         bout << "The path " << dir.full_pathname() << wwiv::endl <<
                            "does not exist, create it? (N) : ";
@@ -602,7 +602,7 @@ bool GetMenuMenu(const string& directoryName, string& menuName) {
     } else if (menuName[0] == '?') {
       ListMenuMenus(directoryName.c_str());
     } else {
-      if (!WFile::Exists(GetMenuDirectory(directoryName))) {
+      if (!File::Exists(GetMenuDirectory(directoryName))) {
         bout << "File does not exist, create it? (yNq) : ";
         char x = ynq();
 

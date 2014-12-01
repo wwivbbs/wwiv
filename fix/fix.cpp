@@ -57,7 +57,7 @@ public:
 
 	  Print(OK, true, "Checking for Critical DATA files...");
     for (const auto& datafile : datafiles) {
-      WFile file(syscfg.datadir, datafile);
+      File file(syscfg.datadir, datafile);
 		  if(!file.Exists()) {
 			  Print(NOK, true, "Critical file: %s is missing", datafile.c_str());
 		  }
@@ -79,7 +79,7 @@ public:
 };
 
 
-bool checkDirExists(WFile &dir, const char *desc) {
+bool checkDirExists(File &dir, const char *desc) {
 	bool exist = dir.Exists();
 	if(exist) {
     return true;
@@ -125,9 +125,9 @@ class FixApplication {
         << "Compile Time : " << wwiv_date << std::endl << std::endl;
   }
 
-  void checkFileSize(WFile &file, unsigned long len) {
+  void checkFileSize(File &file, unsigned long len) {
 	  if(!file.IsOpen()) {
-		  int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
+		  int nFileMode = File::modeReadOnly | File::modeBinary;
 		  file.Open(nFileMode);
 	  }
 	  unsigned long actual = file.GetLength();
@@ -143,17 +143,17 @@ class FixApplication {
   }
 
   void saveStatus() {
-	  WFile statusDat(syscfg.datadir, STATUS_DAT);
+	  File statusDat(syscfg.datadir, STATUS_DAT);
 
-	  statusDat.Open(WFile::modeReadWrite | WFile::modeBinary);
+	  statusDat.Open(File::modeReadWrite | File::modeBinary);
 	  statusDat.Write(&status, sizeof(statusrec));
 	  statusDat.Close();
   }
 
   void initStatusDat() {
-	  int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
+	  int nFileMode = File::modeReadOnly | File::modeBinary;
 	  bool update = false;
-	  WFile statusDat(syscfg.datadir, STATUS_DAT);
+	  File statusDat(syscfg.datadir, STATUS_DAT);
 	  if(!statusDat.Exists()) {
 		  Print(NOK, true, "%s NOT FOUND.", statusDat.full_pathname().c_str());
 		  Print(OK, true, "Recreating %s.", statusDat.full_pathname().c_str());
@@ -226,7 +226,7 @@ class FixApplication {
   }
 
   void initDirsDat() {
-	  WFile dirsDat(syscfg.datadir, DIRS_DAT);
+	  File dirsDat(syscfg.datadir, DIRS_DAT);
 	  if(!dirsDat.Exists()) {
 		  Print(NOK, true, "%s NOT FOUND.", dirsDat.full_pathname().c_str());
 		  maybeGiveUp();
@@ -234,7 +234,7 @@ class FixApplication {
     }
 
     Print(OK, true, "Reading %s...", dirsDat.full_pathname().c_str());
-	  int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
+	  int nFileMode = File::modeReadOnly | File::modeBinary;
 	  dirsDat.Open(nFileMode);
 	  directories = (directoryrec *)malloc(dirsDat.GetLength() + 1);
 	  if(directories == nullptr) {
@@ -247,14 +247,14 @@ class FixApplication {
   }
 
   void initSubsDat() {
-	  WFile subsDat(syscfg.datadir, SUBS_DAT);
+	  File subsDat(syscfg.datadir, SUBS_DAT);
 	  if(!subsDat.Exists()) {
 		  Print(NOK, true, "%s NOT FOUND.", subsDat.full_pathname().c_str());
 		  maybeGiveUp();
           return;
 	  } 
 	  Print(OK, true, "Reading %s...", subsDat.full_pathname().c_str());
-	  int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
+	  int nFileMode = File::modeReadOnly | File::modeBinary;
 	  subsDat.Open(nFileMode);
 	  subboards = (subboardrec *)malloc(subsDat.GetLength() + 1);
 	  if(subboards == nullptr) {
@@ -273,7 +273,7 @@ class FixApplication {
   }
 
   void Init() {
-	  WFile configFile(CONFIG_DAT);
+	  File configFile(CONFIG_DAT);
 	  if (!configFile.Exists()) {
 		  Print(NOK, true, "%s NOT FOUND.", CONFIG_DAT);
 		  giveUp();
@@ -281,7 +281,7 @@ class FixApplication {
 
 	  checkFileSize(configFile, sizeof(configrec));
 	  Print(OK, true, "Reading %s...", configFile.full_pathname().c_str());
-	  configFile.Open(WFile::modeReadOnly | WFile::modeBinary);
+	  configFile.Open(File::modeReadOnly | File::modeBinary);
 	  int readIn = configFile.Read(&syscfg, sizeof(configrec));
 	  configFile.Close();
 	  if(readIn != sizeof(configrec)) {
@@ -290,7 +290,7 @@ class FixApplication {
 	  }
 	  syscfg.userreclen = sizeof(userrec);
 
-	  WFile dataDir(syscfg.datadir);
+	  File dataDir(syscfg.datadir);
 	  if(!checkDirExists(dataDir, "Data")) {
 		  Print(NOK, true, "Must find DATA directory to continue.");
 		  giveUp();

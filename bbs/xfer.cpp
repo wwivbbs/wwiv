@@ -67,8 +67,8 @@ void get_ed_info() {
   }
 
   long lCurFilePos = 0;
-  WFile fileExtDescr(g_szExtDescrFileName);
-  if (fileExtDescr.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+  File fileExtDescr(g_szExtDescrFileName);
+  if (fileExtDescr.Open(File::modeReadOnly | File::modeBinary)) {
     long lFileSize = fileExtDescr.GetLength();
     if (lFileSize > 0) {
       ed_info = static_cast<ext_desc_rec *>(BbsAllocA(static_cast<long>(GetSession()->numf) * sizeof(ext_desc_rec)));
@@ -78,7 +78,7 @@ void get_ed_info() {
       }
       ed_num = 0;
       while (lCurFilePos < lFileSize && ed_num < GetSession()->numf) {
-        fileExtDescr.Seek(lCurFilePos, WFile::seekBegin);
+        fileExtDescr.Seek(lCurFilePos, File::seekBegin);
         ext_desc_type ed;
         int nNumRead = fileExtDescr.Read(&ed, sizeof(ext_desc_type));
         if (nNumRead == sizeof(ext_desc_type)) {
@@ -121,7 +121,7 @@ bool check_ul_event(int nDirectoryNum, uploadsrec * u) {
                                   stripfn(u->filename), comport, "");
   ExecuteExternalProgram(cmdLine, GetApplication()->GetSpawnOptions(SPAWNOPT_ULCHK));
 
-  WFile file(directories[nDirectoryNum].path, stripfn(u->filename));
+  File file(directories[nDirectoryNum].path, stripfn(u->filename));
   if (!file.Exists()) {
     sysoplogf("File \"%s\" to %s deleted by UL event.", u->filename, directories[nDirectoryNum].name);
     bout << u->filename << " was deleted by the upload event.\r\n";
@@ -243,7 +243,7 @@ int list_arc_out(const char *pszFileName, const char *pszDirectory) {
   sprintf(szFullPathName, "%s%s", pszDirectory, pszFileName);
   if (directories[udir[GetSession()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
     sprintf(szFullPathName, "%s%s", syscfgovr.tempdir, pszFileName);
-    if (!WFile::Exists(szFullPathName)) {
+    if (!File::Exists(szFullPathName)) {
       char szFullPathNameInDir[ MAX_PATH ];
       sprintf(szFullPathNameInDir, "%s%s", pszDirectory, pszFileName);
       copyfile(szFullPathNameInDir, szFullPathName, false);
@@ -256,7 +256,7 @@ int list_arc_out(const char *pszFileName, const char *pszDirectory) {
     szArchiveCmd[0] = 0;
   }
 
-  if (WFile::Exists(szFullPathName) && (szArchiveCmd[0] != 0)) {
+  if (File::Exists(szFullPathName) && (szArchiveCmd[0] != 0)) {
     bout.nl(2);
     bout << "Archive listing for " << pszFileName << wwiv::endl;
     bout.nl();
@@ -271,7 +271,7 @@ int list_arc_out(const char *pszFileName, const char *pszDirectory) {
   }
 
   if (szFileNameToDelete[0]) {
-    WFile::Remove(szFileNameToDelete);
+    File::Remove(szFileNameToDelete);
   }
 
   return nRetCode;
@@ -309,8 +309,8 @@ bool dcs() {
 
 void dliscan1(int nDirectoryNum) {
   sprintf(g_szDownloadFileName, "%s%s.dir", syscfg.datadir, directories[nDirectoryNum].filename);
-  WFile fileDownload(g_szDownloadFileName);
-  fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
+  File fileDownload(g_szDownloadFileName);
+  fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   int nNumRecords = fileDownload.GetLength() / sizeof(uploadsrec);
   uploadsrec u;
   if (nNumRecords == 0) {
@@ -354,8 +354,8 @@ void dliscan_hash(int nDirectoryNum) {
 
   string dir = StringPrintf("%s%s.dir",
       syscfg.datadir, directories[nDirectoryNum].filename);
-  WFile file(dir);
-  if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(dir);
+  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     time((time_t *) & (GetSession()->m_DirectoryDateCache[nDirectoryNum]));
     return;
   }
@@ -384,9 +384,9 @@ void add_extended_description(const char *pszFileName, const char *pszDescriptio
   strcpy(ed.name, pszFileName);
   ed.len = static_cast<short>(GetStringLength(pszDescription));
 
-  WFile file(g_szExtDescrFileName);
-  file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
-  file.Seek(0L, WFile::seekEnd);
+  File file(g_szExtDescrFileName);
+  file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
+  file.Seek(0L, File::seekEnd);
   file.Write(&ed, sizeof(ext_desc_type));
   file.Write(pszDescription, ed.len);
   file.Close();
@@ -402,18 +402,18 @@ void delete_extended_description(const char *pszFileName) {
     return;
   }
 
-  WFile fileExtDescr(g_szExtDescrFileName);
-  fileExtDescr.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
+  File fileExtDescr(g_szExtDescrFileName);
+  fileExtDescr.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   long lFileSize = fileExtDescr.GetLength();
   long r = 0, w = 0;
   while (r < lFileSize) {
-    fileExtDescr.Seek(r, WFile::seekBegin);
+    fileExtDescr.Seek(r, File::seekBegin);
     fileExtDescr.Read(&ed, sizeof(ext_desc_type));
     if (ed.len < 10000) {
       fileExtDescr.Read(ss, ed.len);
       if (!IsEquals(pszFileName, ed.name)) {
         if (r != w) {
-          fileExtDescr.Seek(w, WFile::seekBegin);
+          fileExtDescr.Seek(w, File::seekBegin);
           fileExtDescr.Write(&ed, sizeof(ext_desc_type));
           fileExtDescr.Write(ss, ed.len);
         }
@@ -434,11 +434,11 @@ char *read_extended_description(const char *pszFileName) {
   if (ed_got && ed_info) {
     for (int i = 0; i < ed_num; i++) {
       if (IsEquals(pszFileName, ed_info[i].name)) {
-        WFile fileExtDescr(g_szExtDescrFileName);
-        if (!fileExtDescr.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+        File fileExtDescr(g_szExtDescrFileName);
+        if (!fileExtDescr.Open(File::modeBinary | File::modeReadOnly)) {
           return nullptr;
         }
-        fileExtDescr.Seek(ed_info[i].offset, WFile::seekBegin);
+        fileExtDescr.Seek(ed_info[i].offset, File::seekBegin);
         ext_desc_type ed;
         int nNumRead = fileExtDescr.Read(&ed, sizeof(ext_desc_type));
         if (nNumRead == sizeof(ext_desc_type) &&
@@ -459,12 +459,12 @@ char *read_extended_description(const char *pszFileName) {
     }
   }
   if (ed_got != 1) {
-    WFile fileExtDescr(g_szExtDescrFileName);
-    if (fileExtDescr.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+    File fileExtDescr(g_szExtDescrFileName);
+    if (fileExtDescr.Open(File::modeBinary | File::modeReadOnly)) {
       long lFileSize = fileExtDescr.GetLength();
       long lCurPos = 0;
       while (lCurPos < lFileSize) {
-        fileExtDescr.Seek(lCurPos, WFile::seekBegin);
+        fileExtDescr.Seek(lCurPos, File::seekBegin);
         ext_desc_type ed;
         lCurPos += static_cast<long>(fileExtDescr.Read(&ed, sizeof(ext_desc_type)));
         if (IsEquals(pszFileName, ed.name)) {
@@ -673,7 +673,7 @@ void printinfo(uploadsrec * u, bool *abort) {
   if (!(directories[ udir[ GetSession()->GetCurrentFileArea() ].subnum ].mask & mask_cdrom)) {
     strcpy(s2, directories[ udir[ GetSession()->GetCurrentFileArea() ].subnum ].path);
     strcat(s2, u->filename);
-    if (!WFile::Exists(s2)) {
+    if (!File::Exists(s2)) {
       strcpy(s1, "N/A");
     }
   }
@@ -824,8 +824,8 @@ void listfiles() {
   GetSession()->titled = 1;
   lines_listed = 0;
 
-  WFile fileDownload(g_szDownloadFileName);
-  fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly);
+  File fileDownload(g_szDownloadFileName);
+  fileDownload.Open(File::modeBinary | File::modeReadOnly);
   bool abort = false;
   for (int i = 1; i <= GetSession()->numf && !abort && !hangup && GetSession()->tagging != 0; i++) {
     FileAreaSetRecord(fileDownload, i);
@@ -845,7 +845,7 @@ void listfiles() {
         }
       }
 
-      fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly);
+      fileDownload.Open(File::modeBinary | File::modeReadOnly);
     } else if (bkbhit()) {
       checka(&abort);
     }
@@ -869,8 +869,8 @@ void nscandir(int nDirNum, bool *abort) {
       GetSession()->SetCurrentFileArea(nOldCurDir);
       return;
     }
-    WFile fileDownload(g_szDownloadFileName);
-    fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly);
+    File fileDownload(g_szDownloadFileName);
+    fileDownload.Open(File::modeBinary | File::modeReadOnly);
     for (int i = 1; i <= GetSession()->numf && !(*abort) && !hangup && GetSession()->tagging != 0; i++) {
       CheckForHangup();
       FileAreaSetRecord(fileDownload, i);
@@ -879,7 +879,7 @@ void nscandir(int nDirNum, bool *abort) {
       if (u.daten >= static_cast<unsigned long>(nscandate)) {
         fileDownload.Close();
         printinfo(&u, abort);
-        fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly);
+        fileDownload.Open(File::modeBinary | File::modeReadOnly);
       } else if (bkbhit()) {
         checka(abort);
       }
@@ -1019,8 +1019,8 @@ void searchall() {
       GetSession()->SetCurrentFileArea(i);
       dliscan();
       GetSession()->titled = 1;
-      WFile fileDownload(g_szDownloadFileName);
-      fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly);
+      File fileDownload(g_szDownloadFileName);
+      fileDownload.Open(File::modeBinary | File::modeReadOnly);
       for (int i1 = 1; i1 <= GetSession()->numf && !abort && !hangup && (GetSession()->tagging || x_only); i1++) {
         FileAreaSetRecord(fileDownload, i1);
         uploadsrec u;
@@ -1028,7 +1028,7 @@ void searchall() {
         if (compare(szFileMask, u.filename)) {
           fileDownload.Close();
           printinfo(&u, &abort);
-          fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly);
+          fileDownload.Open(File::modeBinary | File::modeReadOnly);
         } else if (bkbhit()) {
           checka(&abort);
         }
@@ -1053,8 +1053,8 @@ int nrecno(const char *pszFileMask, int nStartingRec) {
     return -1;
   }
 
-  WFile fileDownload(g_szDownloadFileName);
-  fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly);
+  File fileDownload(g_szDownloadFileName);
+  fileDownload.Open(File::modeBinary | File::modeReadOnly);
   FileAreaSetRecord(fileDownload, nRecNum);
   uploadsrec u;
   fileDownload.Read(&u, sizeof(uploadsrec));
@@ -1088,7 +1088,7 @@ int printfileinfo(uploadsrec * u, int nDirectoryNum) {
   char szFileName[ MAX_PATH ];
   sprintf(szFileName, "%s%s", directories[nDirectoryNum].path, u->filename);
   StringRemoveWhitespace(szFileName);
-  if (!WFile::Exists(szFileName)) {
+  if (!File::Exists(szFileName)) {
     bout << "\r\n-=>FILE NOT THERE<=-\r\n\n";
     return -1;
   }
@@ -1116,6 +1116,6 @@ void remlist(const char *pszFileName) {
   }
 }
 
-int FileAreaSetRecord(WFile &file, int nRecordNumber) {
-  return file.Seek(nRecordNumber * sizeof(uploadsrec), WFile::seekBegin);
+int FileAreaSetRecord(File &file, int nRecordNumber) {
+  return file.Seek(nRecordNumber * sizeof(uploadsrec), File::seekBegin);
 }

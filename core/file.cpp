@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "core/wfile.h"
+#include "core/file.h"
 
 #include <algorithm>
 #include <cerrno>
@@ -76,27 +76,27 @@ using std::string;
 /////////////////////////////////////////////////////////////////////////////
 // Constants
 
-const int WFile::modeDefault = (O_RDWR | O_BINARY);
-const int WFile::modeAppend         = O_APPEND;
-const int WFile::modeBinary         = O_BINARY;
-const int WFile::modeCreateFile     = O_CREAT;
-const int WFile::modeReadOnly       = O_RDONLY;
-const int WFile::modeReadWrite      = O_RDWR;
-const int WFile::modeText           = O_TEXT;
-const int WFile::modeWriteOnly      = O_WRONLY;
-const int WFile::modeTruncate       = O_TRUNC;
+const int File::modeDefault = (O_RDWR | O_BINARY);
+const int File::modeAppend         = O_APPEND;
+const int File::modeBinary         = O_BINARY;
+const int File::modeCreateFile     = O_CREAT;
+const int File::modeReadOnly       = O_RDONLY;
+const int File::modeReadWrite      = O_RDWR;
+const int File::modeText           = O_TEXT;
+const int File::modeWriteOnly      = O_WRONLY;
+const int File::modeTruncate       = O_TRUNC;
 
-const int WFile::modeUnknown        = -1;
-const int WFile::shareUnknown       = -1;
+const int File::modeUnknown        = -1;
+const int File::shareUnknown       = -1;
 
-const int WFile::seekBegin          = SEEK_SET;
-const int WFile::seekCurrent        = SEEK_CUR;
-const int WFile::seekEnd            = SEEK_END;
+const int File::seekBegin          = SEEK_SET;
+const int File::seekCurrent        = SEEK_CUR;
+const int File::seekEnd            = SEEK_END;
 
-const int WFile::invalid_handle     = -1;
+const int File::invalid_handle     = -1;
 
-WLogger*  WFile::logger_;
-int WFile::debug_level_;
+WLogger*  File::logger_;
+int File::debug_level_;
 
 static const int WAIT_TIME_SECONDS = 10;
 static const int TRIES = 100;
@@ -104,45 +104,45 @@ static const int TRIES = 100;
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
 
-WFile::WFile() {
+File::File() {
   init();
 }
 
-WFile::WFile(const string& fileName) {
+File::File(const string& fileName) {
   init();
   this->SetName(fileName);
 }
 
-WFile::WFile(const string& dirName, const string& fileName) {
+File::File(const string& dirName, const string& fileName) {
   init();
   this->SetName(dirName, fileName);
 }
 
-void WFile::init() {
+void File::init() {
   open_ = false;
-  handle_ = WFile::invalid_handle;
+  handle_ = File::invalid_handle;
 }
 
-WFile::~WFile() {
+File::~File() {
   if (this->IsOpen()) {
     this->Close();
   }
 }
 
-bool WFile::Open(int nFileMode, int nShareMode) {
+bool File::Open(int nFileMode, int nShareMode) {
   WWIV_ASSERT(this->IsOpen() == false);
 
   // Set default share mode
-  if (nShareMode == WFile::shareUnknown) {
+  if (nShareMode == File::shareUnknown) {
     nShareMode = shareDenyWrite;
-    if ((nFileMode & WFile::modeReadWrite) ||
-        (nFileMode & WFile::modeWriteOnly)) {
-      nShareMode = WFile::shareDenyReadWrite;
+    if ((nFileMode & File::modeReadWrite) ||
+        (nFileMode & File::modeWriteOnly)) {
+      nShareMode = File::shareDenyReadWrite;
     }
   }
 
-  WWIV_ASSERT(nShareMode   != WFile::shareUnknown);
-  WWIV_ASSERT(nFileMode    != WFile::modeUnknown);
+  WWIV_ASSERT(nShareMode   != File::shareUnknown);
+  WWIV_ASSERT(nFileMode    != File::modeUnknown);
 
   if (debug_level_ > 2) {
     logger_->LogMessage("\rSH_OPEN %s, access=%u\r\n", full_path_name_.c_str(), nFileMode);
@@ -173,23 +173,23 @@ bool WFile::Open(int nFileMode, int nShareMode) {
     logger_->LogMessage("\rSH_OPEN %s, access=%u, handle=%d.\r\n", full_path_name_.c_str(), nFileMode, handle_);
   }
 
-  open_ = WFile::IsFileHandleValid(handle_);
+  open_ = File::IsFileHandleValid(handle_);
   if (open_) {
     flock(handle_, (nShareMode & shareDenyWrite) ? LOCK_EX : LOCK_SH);
   }
 
-  if (handle_ == WFile::invalid_handle) {
+  if (handle_ == File::invalid_handle) {
     this->error_text_ = strerror(errno);
   }
 
   return open_;
 }
 
-void WFile::Close() {
-  if (WFile::IsFileHandleValid(handle_)) {
+void File::Close() {
+  if (File::IsFileHandleValid(handle_)) {
     flock(handle_, LOCK_UN);
     close(handle_);
-    handle_ = WFile::invalid_handle;
+    handle_ = File::invalid_handle;
     open_ = false;
   }
 }
@@ -197,12 +197,12 @@ void WFile::Close() {
 /////////////////////////////////////////////////////////////////////////////
 // Member functions
 
-bool WFile::SetName(const string& fileName) {
+bool File::SetName(const string& fileName) {
   full_path_name_ = fileName;
   return true;
 }
 
-bool WFile::SetName(const string& dirName, const string& fileName) {
+bool File::SetName(const string& dirName, const string& fileName) {
   std::stringstream fullPathName;
   fullPathName << dirName;
   if (!dirName.empty() && dirName[dirName.length() - 1] == pathSeparatorChar) {
@@ -213,7 +213,7 @@ bool WFile::SetName(const string& dirName, const string& fileName) {
   return SetName(fullPathName.str());
 }
 
-int WFile::Read(void* pBuffer, size_t nCount) {
+int File::Read(void* pBuffer, size_t nCount) {
   int ret = read(handle_, pBuffer, nCount);
   if (ret == -1) {
     std::cout << "[DEBUG: Read errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
@@ -222,7 +222,7 @@ int WFile::Read(void* pBuffer, size_t nCount) {
   return ret;
 }
 
-int WFile::Write(const void* pBuffer, size_t nCount) {
+int File::Write(const void* pBuffer, size_t nCount) {
   int nRet = write(handle_, pBuffer, nCount);
   if (nRet == -1) {
     std::cout << "[DEBUG: Write errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
@@ -231,38 +231,38 @@ int WFile::Write(const void* pBuffer, size_t nCount) {
   return nRet;
 }
 
-long WFile::Seek(long lOffset, int nFrom) {
-  WWIV_ASSERT(nFrom == WFile::seekBegin || nFrom == WFile::seekCurrent || nFrom == WFile::seekEnd);
-  WWIV_ASSERT(WFile::IsFileHandleValid(handle_));
+long File::Seek(long lOffset, int nFrom) {
+  WWIV_ASSERT(nFrom == File::seekBegin || nFrom == File::seekCurrent || nFrom == File::seekEnd);
+  WWIV_ASSERT(File::IsFileHandleValid(handle_));
 
   return lseek(handle_, lOffset, nFrom);
 }
 
-bool WFile::Exists() const {
-  return WFile::Exists(full_path_name_);
+bool File::Exists() const {
+  return File::Exists(full_path_name_);
 }
 
-bool WFile::Delete() {
+bool File::Delete() {
   if (this->IsOpen()) {
     this->Close();
   }
   return unlink(full_path_name_.c_str()) == 0;
 }
 
-void WFile::SetLength(long lNewLength) {
-  WWIV_ASSERT(WFile::IsFileHandleValid(handle_));
+void File::SetLength(long lNewLength) {
+  WWIV_ASSERT(File::IsFileHandleValid(handle_));
   ftruncate(handle_, lNewLength);
 }
 
-bool WFile::IsFile() {
+bool File::IsFile() {
   return !this->IsDirectory();
 }
 
-bool WFile::SetFilePermissions(int nPermissions) {
+bool File::SetFilePermissions(int nPermissions) {
   return chmod(full_path_name_.c_str(), nPermissions) == 0;
 }
 
-long WFile::GetLength() {
+long File::GetLength() {
   // _stat/_fstat is the 32 bit version on WIN32
   struct _stat fileinfo;
 
@@ -280,13 +280,13 @@ long WFile::GetLength() {
   return fileinfo.st_size;
 }
 
-time_t WFile::last_write_time() {
+time_t File::last_write_time() {
   bool bOpenedHere = false;
   if (!this->IsOpen()) {
     bOpenedHere = true;
     Open();
   }
-  WWIV_ASSERT(WFile::IsFileHandleValid(handle_));
+  WWIV_ASSERT(File::IsFileHandleValid(handle_));
 
   // N.B. On Windows with _USE_32BIT_TIME_T defined _fstat == _fstat32.
   struct _stat buf;
@@ -300,21 +300,21 @@ time_t WFile::last_write_time() {
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-bool WFile::Rename(const string origFileName, const string newFileName) {
+bool File::Rename(const string origFileName, const string newFileName) {
   return rename(origFileName.c_str(), newFileName.c_str()) == 0;
 }
 
-bool WFile::Remove(const string fileName) {
+bool File::Remove(const string fileName) {
   return (unlink(fileName.c_str()) ? false : true);
 }
 
-bool WFile::Remove(const string directoryName, const string fileName) {
+bool File::Remove(const string directoryName, const string fileName) {
   string strFullFileName = directoryName;
   strFullFileName += fileName;
-  return WFile::Remove(strFullFileName);
+  return File::Remove(strFullFileName);
 }
 
-bool WFile::Exists(const string original_pathname) {
+bool File::Exists(const string original_pathname) {
   struct _stat buf;
   string fn(original_pathname);
   if (fn.back() == pathSeparatorChar) {
@@ -325,7 +325,7 @@ bool WFile::Exists(const string original_pathname) {
   return ret == 0;
 }
 
-bool WFile::Exists(const string directoryName, const string fileName) {
+bool File::Exists(const string directoryName, const string fileName) {
   std::stringstream fullPathName;
   if (!directoryName.empty() && directoryName[directoryName.length() - 1] == pathSeparatorChar) {
     fullPathName << directoryName << fileName;
@@ -335,52 +335,52 @@ bool WFile::Exists(const string directoryName, const string fileName) {
   return Exists(fullPathName.str());
 }
 
-bool WFile::ExistsWildcard(const string wildCard) {
+bool File::ExistsWildcard(const string wildCard) {
   WFindFile fnd;
   return (fnd.open(wildCard.c_str(), 0));
 }
 
-bool WFile::SetFilePermissions(const string fileName, int nPermissions) {
+bool File::SetFilePermissions(const string fileName, int nPermissions) {
   WWIV_ASSERT(!fileName.empty());
   return (chmod(fileName.c_str(), nPermissions) == 0) ? true : false;
 }
 
-bool WFile::IsFileHandleValid(int hFile) {
-  return (hFile != WFile::invalid_handle) ? true : false;
+bool File::IsFileHandleValid(int hFile) {
+  return (hFile != File::invalid_handle) ? true : false;
 }
 
 //static
-void WFile::EnsureTrailingSlash(string* path) {
+void File::EnsureTrailingSlash(string* path) {
   char last_char = path->back();
-  if (last_char != WFile::pathSeparatorChar) {
-    path->push_back(WFile::pathSeparatorChar);
+  if (last_char != File::pathSeparatorChar) {
+    path->push_back(File::pathSeparatorChar);
   }
 }
 
 // static 
-string WFile::current_directory() {
+string File::current_directory() {
   char s[MAX_PATH];
   getcwd(s, MAX_PATH);
   return string(s);
 }
 
 // static
-void WFile::MakeAbsolutePath(const string& base, string* relative) {
-  if (!WFile::IsAbsolutePath(*relative)) {
-    WFile dir(base, *relative);
+void File::MakeAbsolutePath(const string& base, string* relative) {
+  if (!File::IsAbsolutePath(*relative)) {
+    File dir(base, *relative);
     relative->assign(dir.full_pathname());
   }
 }
 
 // static
-bool WFile::IsAbsolutePath(const string& path) {
+bool File::IsAbsolutePath(const string& path) {
   if (path.empty()) {
     return false;
   }
 #ifdef _WIN32
   return ::PathIsRelative(path.c_str()) ? false : true;
 #else
-  return path.front() == WFile::pathSeparatorChar;
+  return path.front() == File::pathSeparatorChar;
 #endif  // _WIN32
 }
 

@@ -21,7 +21,7 @@
 
 #include <string>
 #include "bbs/keycodes.h"
-#include "core/wfile.h"
+#include "core/file.h"
 
 #ifdef _WIN32
 #define NOGDICAPMASKS
@@ -87,7 +87,7 @@ class WLocalIO {
 
  private:
   std::string  m_chatReason;
-  WFile   fileGlobalCap; // g_hGlobalCapHandle;
+  File   fileGlobalCap; // g_hGlobalCapHandle;
   bool    m_bSysopAlert;
   int     m_nTopLine;
   int     m_nScreenBottom;

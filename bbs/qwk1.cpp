@@ -70,7 +70,7 @@ void qwk_remove_email(void) {
     return;
   }
 
-  std::unique_ptr<WFile> f(OpenEmailFile(true));
+  std::unique_ptr<File> f(OpenEmailFile(true));
   
   if (!f->IsOpen()) {
     free(mloc);
@@ -82,7 +82,7 @@ void qwk_remove_email(void) {
 
   mailrec m;
   for (long i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
-    f->Seek(i * sizeof(mailrec), WFile::seekBegin);
+    f->Seek(i * sizeof(mailrec), File::seekBegin);
     f->Read(&m, sizeof(mailrec));
     if ((m.tosys == 0) && (m.touser == GetSession()->usernum)) {
       mloc[mw].index = static_cast<short>(i);
@@ -132,7 +132,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   }
 
   slrec ss = getslrec(GetSession()->GetEffectiveSl());
-  std::unique_ptr<WFile> f(OpenEmailFile(false));
+  std::unique_ptr<File> f(OpenEmailFile(false));
   if (!f->IsOpen()) {
     bout.nl(2);
     bout.bputs("No mail file exists!");
@@ -143,7 +143,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   mfl = f->GetLength() / sizeof(mailrec);
   uint8_t mw = 0;
   for (i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
-    f->Seek(((long)(i)) * (sizeof(mailrec)), WFile::seekBegin);
+    f->Seek(((long)(i)) * (sizeof(mailrec)), File::seekBegin);
     f->Read(&m, sizeof(mailrec));
     if ((m.tosys == 0) && (m.touser == GetSession()->usernum)) {
       mloc[mw].index = static_cast<short>(i);
@@ -991,7 +991,7 @@ void qwk_receive_file(char *fn, bool *received, int i) {
   default:
     if (incom) {
       extern_prot(i - WWIV_NUM_INTERNAL_PROTOCOLS, fn, 0);
-      *received = WFile::Exists(fn);
+      *received = File::Exists(fn);
     }
     break;
   }
@@ -1113,7 +1113,7 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
       bout.bputs("Enter complete path to Bulletin");
       input(s, 80);
 
-      if (!WFile::Exists(s)) {
+      if (!File::Exists(s)) {
         bout.bprintf("File doesn't exist, continue?");
         if (!yesno()) {
           break;

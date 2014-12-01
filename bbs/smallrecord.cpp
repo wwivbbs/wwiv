@@ -21,7 +21,7 @@
 #include "core/wwivport.h"
 #include "wconstants.h"
 #include "sdk/filenames.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "wuser.h"
 #include "core/strings.h"
 #include "vars.h"
@@ -51,8 +51,8 @@ void InsertSmallRecord(int nUserNumber, const char *pszName) {
   strcpy(reinterpret_cast<char*>(sr.name), pszName);
   sr.number = static_cast<unsigned short>(nUserNumber);
   smallist[cp] = sr;
-  WFile namesList(syscfg.datadir, NAMES_LST);
-  if (!namesList.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeTruncate)) {
+  File namesList(syscfg.datadir, NAMES_LST);
+  if (!namesList.Open(File::modeReadWrite | File::modeBinary | File::modeTruncate)) {
     std::cout << namesList.full_pathname() << " NOT FOUND" << std::endl;
     GetApplication()->AbortBBS();
   }
@@ -83,8 +83,8 @@ void DeleteSmallRecord(const char *pszName) {
   for (int i = cp; i < pStatus->GetNumUsers() - 1; i++) {
     smallist[i] = smallist[i + 1];
   }
-  WFile namesList(syscfg.datadir, NAMES_LST);
-  if (!namesList.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeTruncate)) {
+  File namesList(syscfg.datadir, NAMES_LST);
+  if (!namesList.Open(File::modeReadWrite | File::modeBinary | File::modeTruncate)) {
     std::cout << namesList.full_pathname() << " COULD NOT BE CREATED" << std::endl;
     GetApplication()->AbortBBS();
   }

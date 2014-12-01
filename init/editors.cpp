@@ -34,7 +34,7 @@
 #include "init/ifcns.h"
 #include "init/init.h"
 #include "core/strings.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "core/wwivport.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
@@ -89,8 +89,8 @@ void edit_editor(editorrec* c) {
 void extrn_editors() {
   initinfo.numeditors = 0;
   unique_ptr<editorrec[]> editors(new editorrec[10]);
-  WFile file (syscfg.datadir, EDITORS_DAT);
-  if (file.Open(WFile::modeReadOnly|WFile::modeBinary)) {
+  File file (syscfg.datadir, EDITORS_DAT);
+  if (file.Open(File::modeReadOnly|File::modeBinary)) {
     int num_read = file.Read(editors.get(), 10 * sizeof(editorrec));
     initinfo.numeditors = num_read / sizeof(editorrec);
     file.Close();
@@ -150,9 +150,9 @@ void extrn_editors() {
     }
   } while (!done);
 
-  WFile editors_dat(syscfg.datadir, EDITORS_DAT);
-  if (editors_dat.Open(WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile|WFile::modeTruncate,
-    WFile::shareDenyReadWrite)) {
+  File editors_dat(syscfg.datadir, EDITORS_DAT);
+  if (editors_dat.Open(File::modeReadWrite|File::modeBinary|File::modeCreateFile|File::modeTruncate,
+    File::shareDenyReadWrite)) {
     editors_dat.Write(editors.get(), initinfo.numeditors * sizeof(editorrec));
   }
   editors_dat.Close();

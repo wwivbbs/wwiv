@@ -18,7 +18,7 @@
 /**************************************************************************/
 #include <cstdlib>
 #include "init/wwivinit.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "sdk/vardec.h"
 #include "init/subacc.h"
 
@@ -35,7 +35,7 @@ static postrec *cache;                      // points to sub cache memory
 static bool believe_cache;                  // true if cache is valid
 static int cache_start;                     // starting msgnum of cache
 static int last_msgnum;                     // last msgnum read
-static WFile fileSub;                       // WFile object for '.sub' file
+static File fileSub;                       // File object for '.sub' file
 static char subdat_fn[MAX_PATH];            // filename of .sub file
 
 // locals
@@ -69,18 +69,18 @@ bool open_sub(bool wr) {
 
   if (wr) {
     fileSub.SetName(subdat_fn);
-    fileSub.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
+    fileSub.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
 
     if (fileSub.IsOpen()) {
       // re-read info from file, to be safe
       believe_cache = false;
-      fileSub.Seek(0L, WFile::seekBegin);
+      fileSub.Seek(0L, File::seekBegin);
       fileSub.Read(&p, sizeof(postrec));
       SetNumMessagesInCurrentMessageArea(p.owneruser);
     }
   } else {
     fileSub.SetName(subdat_fn);
-    fileSub.Open(WFile::modeReadOnly | WFile::modeBinary);
+    fileSub.Open(File::modeReadOnly | File::modeBinary);
   }
 
   return fileSub.IsOpen();
@@ -119,7 +119,7 @@ bool iscan1(int si, subboardrec *subboards) {
   snprintf(subdat_fn, sizeof(subdat_fn), "%s%s.sub", syscfg.datadir, subboards[si].filename);
 
   // open file, and create it if necessary
-  if (!WFile::Exists(subdat_fn)) {
+  if (!File::Exists(subdat_fn)) {
     if (!open_sub(true)) {
       return false;
     }
@@ -135,7 +135,7 @@ bool iscan1(int si, subboardrec *subboards) {
   last_msgnum = 0;
 
   // read in first rec, specifying # posts
-  fileSub.Seek(0L, WFile::seekBegin);
+  fileSub.Seek(0L, File::seekBegin);
   fileSub.Read(&p, sizeof(postrec));
   SetNumMessagesInCurrentMessageArea(p.owneruser);
 
@@ -178,7 +178,7 @@ postrec *get_post(int mn) {
 
     // re-read # msgs, if needed
     if (subchg == 2) {
-      fileSub.Seek(0L, WFile::seekBegin);
+      fileSub.Seek(0L, File::seekBegin);
       fileSub.Read(&p, sizeof(postrec));
       SetNumMessagesInCurrentMessageArea(p.owneruser);
 
@@ -215,7 +215,7 @@ postrec *get_post(int mn) {
     }
 
     // read in some sub info
-    fileSub.Seek(cache_start * sizeof(postrec), WFile::seekBegin);
+    fileSub.Seek(cache_start * sizeof(postrec), File::seekBegin);
     fileSub.Read(cache, MAX_TO_CACHE * sizeof(postrec));
 
     // now, close the file, if necessary
@@ -237,7 +237,7 @@ void write_post(int mn, postrec * pp) {
   postrec *p1;
 
   if (fileSub.IsOpen()) {
-    fileSub.Seek(mn * sizeof(postrec), WFile::seekBegin);
+    fileSub.Seek(mn * sizeof(postrec), File::seekBegin);
     fileSub.Write(pp, sizeof(postrec));
     if (believe_cache) {
       if (mn >= cache_start && mn < (cache_start + MAX_TO_CACHE)) {

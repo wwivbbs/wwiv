@@ -22,7 +22,7 @@
 #include "bbs/printfile.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 #include "core/wwivassert.h"
 
 #include "bbs/stuffin.h"
@@ -44,7 +44,7 @@ void compress_file(const string& orig_filename, const string& directory) {
 
   const string command = stuff_in(arcs[0].arca, arcName, orig_filename, "", "", "");
   ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPAWNOPT_ARCH_A));
-  WFile::Remove(orig_filename);
+  File::Remove(orig_filename);
   GetApplication()->UpdateTopScreen();
 }
 
@@ -117,7 +117,7 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
       strcat(s2, ".mod");
     }
     sprintf(szFileName, "%s%s", s1, s2);
-    if (WFile::Exists(szFileName)) {
+    if (File::Exists(szFileName)) {
       exists = true;
       sprintf(szFileName, "%s already exists.", s2);
       bout.nl();
@@ -140,9 +140,9 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
   } while (!hangup && s2[0] == '\0' && !quit);
 
   if (!quit && !hangup) {
-    WFile file(szFileName);
-    file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
-    file.Seek(0L, WFile::seekEnd);
+    File file(szFileName);
+    file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
+    file.Seek(0L, File::seekEnd);
     file.Write(b, len);
     file.Close();
     bout << "Message written to: " << szFileName << wwiv::endl;
@@ -231,7 +231,7 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
       if (noyes()) {
         sprintf(idz_fn, "%s%s", syscfgovr.tempdir, FILE_ID_DIZ);
         sprintf(dir_path, "%s%s", directories[udir[mod_dir].subnum].path, StringRemoveChar(s2, '.'));
-        WTextFile file(idz_fn, "w");
+        TextFile file(idz_fn, "w");
         file.WriteFormatted("%.58s\n", szDescription);
         const string datetime = W_DateString(tDateTime, "Y", "");
         file.WriteFormatted("Copyright (c) %s, %s\n", datetime.c_str(), author);
@@ -343,13 +343,13 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
             strcat(s4, s1);
             uued = true;
 
-            if (WFile::Exists(s4)) {
+            if (File::Exists(s4)) {
               bout << s1 << s4 << " already exists!\r\n";
               uued = false;
             }
           }
 
-          if (WFile::Exists(s3)) {
+          if (File::Exists(s3)) {
             bout << "\r\nFilename already in use.\r\n\n";
             bout << "|#0O|#1)verwrite, |#0A|#1)ppend, |#0N|#1)ew name, |#0Q|#1)uit? |#0";
             ch1 = onek("QOAN");
@@ -364,7 +364,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
             case 'A':
               break;
             case 'O':
-              WFile::Remove(s3);
+              File::Remove(s3);
               break;
             }
             bout.nl();
@@ -376,15 +376,15 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
 
       if (s3[0] && !hangup) {
         if (s3[0] != '\x01') {
-          WFile file(s3);
-          if (!file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
+          File file(s3);
+          if (!file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
             bout << "|#6Could not open file for writing.\r\n";
           } else {
             if (file.GetLength() > 0) {
-              file.Seek(-1L, WFile::seekEnd);
+              file.Seek(-1L, File::seekEnd);
               file.Read(&ch1, 1);
               if (ch1 == CZ) {
-                file.Seek(-1L, WFile::seekEnd);
+                file.Seek(-1L, File::seekEnd);
               }
             }
             file.Write(pszTitle, strlen(pszTitle));
@@ -410,7 +410,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
         } else {
           sprintf(s2, "%s%s", syscfg.gfilesdir, s1);
         }
-        if (WFile::Exists(s2)) {
+        if (File::Exists(s2)) {
           bout << "\r\nFilename already in use.\r\n\n";
           bout << "|#0O|#1)verwrite, |#0A|#1)ppend, |#0N|#1)ew name, |#0Q|#1)uit? |#0";
           ch1 = onek("QOAN");
@@ -425,7 +425,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
           case 'A':
             break;
           case 'O':
-            WFile::Remove(s2);
+            File::Remove(s2);
             break;
           }
           bout.nl();
@@ -436,15 +436,15 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
     } while (!hangup && s2[0] != 0 && s1[0] == 0);
 
     if (s1[0] && !hangup) {
-      WFile file(s2);
-      if (!file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
+      File file(s2);
+      if (!file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
         bout << "|#6Could not open file for writing.\r\n";
       } else {
         if (file.GetLength() > 0) {
-          file.Seek(-1L, WFile::seekEnd);
+          file.Seek(-1L, File::seekEnd);
           file.Read(&ch1, 1);
           if (ch1 == CZ) {
-            file.Seek(-1L, WFile::seekEnd);
+            file.Seek(-1L, File::seekEnd);
           }
         }
         file.Write(pszTitle, strlen(pszTitle));

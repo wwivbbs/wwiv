@@ -20,7 +20,7 @@
 #include "wwiv.h"
 #include "subxtr.h"
 #include "core/strings.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 
 bool display_sub_categories();
 int find_hostfor(char *type, short *ui, char *pszDescription, short *opt);
@@ -95,7 +95,7 @@ int find_hostfor(char *type, short *ui, char *pszDescription, short *opt) {
     } else {
       sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), SUBS_LST);
     }
-    WTextFile file(s, "r");
+    TextFile file(s, "r");
     if (file.IsOpen()) {
       while (!done && file.ReadLine(s, 160)) {
         if (s[0] > ' ') {
@@ -310,8 +310,8 @@ void sub_xtr_add(int n, int nn) {
   if (yesno()) {
     char szFileName[MAX_PATH];
     sprintf(szFileName, "%sn%s.net", GetSession()->GetNetworkDataDirectory().c_str(), xnp->stype);
-    WFile file(szFileName);
-    if (file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
+    File file(szFileName);
+    if (file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
       file.Close();
     }
 
@@ -331,7 +331,7 @@ void sub_xtr_add(int n, int nn) {
           input(s, 3);
           i = wwiv::strings::StringToUnsignedShort(s);
           if (i || wwiv::strings::IsEquals(s, "0")) {
-            WTextFile ff(GetSession()->GetNetworkDataDirectory(), CATEG_NET, "rt");
+            TextFile ff(GetSession()->GetNetworkDataDirectory(), CATEG_NET, "rt");
             while (ff.ReadLine(s, 100)) {
               i1 = wwiv::strings::StringToUnsignedShort(s);
               if (i1 == i) {
@@ -416,7 +416,7 @@ bool display_sub_categories() {
     return false;
   }
 
-  WTextFile ff(GetSession()->GetNetworkDataDirectory(), CATEG_NET, "rt");
+  TextFile ff(GetSession()->GetNetworkDataDirectory(), CATEG_NET, "rt");
   if (ff.IsOpen()) {
     bout.nl();
     bout << "Available sub categories are:\r\n";
@@ -438,8 +438,8 @@ bool display_sub_categories() {
 int amount_of_subscribers(const char *pszNetworkFileName) {
   int numnodes = 0;
 
-  WFile file(pszNetworkFileName);
-  if (!file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+  File file(pszNetworkFileName);
+  if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   } else {
     long len1 = file.GetLength();
@@ -447,7 +447,7 @@ int amount_of_subscribers(const char *pszNetworkFileName) {
       return 0;
     }
     char *b = static_cast<char *>(BbsAllocA(len1));
-    file.Seek(0L, WFile::seekBegin);
+    file.Seek(0L, File::seekBegin);
     file.Read(b, len1);
     b[len1] = 0;
     file.Close();

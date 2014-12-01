@@ -127,10 +127,10 @@ bool WStatus::NewDay() {
 bool StatusMgr::Get(bool bLockFile) {
   if (!m_statusFile.IsOpen()) {
     m_statusFile.SetName(syscfg.datadir, STATUS_DAT);
-    int nLockMode = (bLockFile) ? (WFile::modeReadWrite | WFile::modeBinary) : (WFile::modeReadOnly | WFile::modeBinary);
+    int nLockMode = (bLockFile) ? (File::modeReadWrite | File::modeBinary) : (File::modeReadOnly | File::modeBinary);
     m_statusFile.Open(nLockMode);
   } else {
-    m_statusFile.Seek(0L, WFile::seekBegin);
+    m_statusFile.Seek(0L, File::seekBegin);
   }
   if (!m_statusFile.IsOpen()) {
     sysoplog("CANNOT READ STATUS");
@@ -163,8 +163,8 @@ bool StatusMgr::Get(bool bLockFile) {
         switch (i) {
         case WStatus::fileChangeNames:            // re-read names.lst
           if (smallist) {
-            WFile namesFile(syscfg.datadir, NAMES_LST);
-            if (namesFile.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+            File namesFile(syscfg.datadir, NAMES_LST);
+            if (namesFile.Open(File::modeBinary | File::modeReadOnly)) {
               namesFile.Read(smallist, (sizeof(smalrec) * status.users));
               namesFile.Close();
             }
@@ -234,9 +234,9 @@ bool StatusMgr::CommitTransaction(WStatus* pStatus) {
 bool StatusMgr::Write(statusrec *pStatus) {
   if (!m_statusFile.IsOpen()) {
     m_statusFile.SetName(syscfg.datadir, STATUS_DAT);
-    m_statusFile.Open(WFile::modeReadWrite | WFile::modeBinary);
+    m_statusFile.Open(File::modeReadWrite | File::modeBinary);
   } else {
-    m_statusFile.Seek(0L, WFile::seekBegin);
+    m_statusFile.Seek(0L, File::seekBegin);
   }
 
   if (!m_statusFile.IsOpen()) {

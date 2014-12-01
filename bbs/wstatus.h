@@ -20,7 +20,7 @@
 /**************************************************************************/
 
 #include "sdk/vardec.h"
-#include "core/wfile.h"
+#include "core/file.h"
 
 extern statusrec status;
 
@@ -217,7 +217,7 @@ class WStatus {
  */
 class StatusMgr {
  private:
-  WFile m_statusFile;
+  File m_statusFile;
   bool Write(statusrec *pStatus);
   /*!
    * @function Get Loads the contents of STATUS.DAT with

@@ -32,13 +32,13 @@ void print_quest(int mapp, int map[21]) {
     bout << "|#5Voting Questions:\r\n\n";
   }
   bool abort = false;
-  WFile voteFile(syscfg.datadir, VOTING_DAT);
-  if (!voteFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+  File voteFile(syscfg.datadir, VOTING_DAT);
+  if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
 
   for (int i = 1; i <= mapp && !abort; i++) {
-    voteFile.Seek(map[ i ] * sizeof(votingrec), WFile::seekBegin);
+    voteFile.Seek(map[ i ] * sizeof(votingrec), File::seekBegin);
     voteFile.Read(&v, sizeof(votingrec));
 
     char szBuffer[255];
@@ -57,11 +57,11 @@ void print_quest(int mapp, int map[21]) {
 bool print_question(int i, int ii) {
   votingrec v;
 
-  WFile voteFile(syscfg.datadir, VOTING_DAT);
-  if (!voteFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+  File voteFile(syscfg.datadir, VOTING_DAT);
+  if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return false;
   }
-  voteFile.Seek(ii * sizeof(votingrec), WFile::seekBegin);
+  voteFile.Seek(ii * sizeof(votingrec), File::seekBegin);
   voteFile.Read(&v, sizeof(votingrec));
   voteFile.Close();
   bool abort = false;
@@ -120,11 +120,11 @@ void vote_question(int i, int ii) {
   }
 
 
-  WFile voteFile(syscfg.datadir, VOTING_DAT);
-  if (!voteFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+  File voteFile(syscfg.datadir, VOTING_DAT);
+  if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
-  voteFile.Seek(ii * sizeof(votingrec), WFile::seekBegin);
+  voteFile.Seek(ii * sizeof(votingrec), File::seekBegin);
   voteFile.Read(&v, sizeof(votingrec));
   voteFile.Close();
 
@@ -156,10 +156,10 @@ void vote_question(int i, int ii) {
     return;
   }
 
-  if (!voteFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+  if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
-  voteFile.Seek(ii * sizeof(votingrec), WFile::seekBegin);
+  voteFile.Seek(ii * sizeof(votingrec), File::seekBegin);
   voteFile.Read(&v, sizeof(votingrec));
 
   if (!v.numanswers) {
@@ -173,7 +173,7 @@ void vote_question(int i, int ii) {
   if (i1) {
     v.responses[ GetSession()->GetCurrentUser()->GetVote(ii) - 1 ].numresponses++;
   }
-  voteFile.Seek(ii * sizeof(votingrec), WFile::seekBegin);
+  voteFile.Seek(ii * sizeof(votingrec), File::seekBegin);
   voteFile.Write(&v, sizeof(votingrec));
   voteFile.Close();
   bout.nl(2);
@@ -183,8 +183,8 @@ void vote_question(int i, int ii) {
 void vote() {
   votingrec v;
 
-  WFile voteFile(syscfg.datadir, VOTING_DAT);
-  if (!voteFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+  File voteFile(syscfg.datadir, VOTING_DAT);
+  if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
 
@@ -203,7 +203,7 @@ void vote() {
 
   int map[21], mapp = 0;
   for (int i1 = 0; i1 < 20; i1++) {
-    voteFile.Seek(i1 * sizeof(votingrec), WFile::seekBegin);
+    voteFile.Seek(i1 * sizeof(votingrec), File::seekBegin);
     voteFile.Read(&v, sizeof(votingrec));
     if (v.numanswers) {
       map[++mapp] = i1;

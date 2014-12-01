@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 
 #include <iostream>
 #include <cerrno>
@@ -27,7 +27,7 @@
 #include <sys/stat.h>
 
 #include "core/strings.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "core/wwivport.h"
 
 #ifdef _WIN32
@@ -43,33 +43,33 @@
 
 using std::string;
 
-const int WTextFile::WAIT_TIME = 10;
-const int WTextFile::TRIES = 100;
+const int TextFile::WAIT_TIME = 10;
+const int TextFile::TRIES = 100;
 
-WTextFile::WTextFile(const string& fileName, const string& fileMode) {
+TextFile::TextFile(const string& fileName, const string& fileMode) {
   Open(fileName, fileMode);
 }
 
-WTextFile::WTextFile(const string& directoryName, const string& fileName, const string& fileMode) {
+TextFile::TextFile(const string& directoryName, const string& fileName, const string& fileMode) {
   string fullPathName(directoryName);
   char last_char = directoryName.back();
-  if (last_char != WFile::pathSeparatorChar) {
-    fullPathName.push_back(WFile::pathSeparatorChar);
+  if (last_char != File::pathSeparatorChar) {
+    fullPathName.push_back(File::pathSeparatorChar);
   }
   fullPathName.append(fileName);
 
   Open(fullPathName, fileMode);
 }
 
-bool WTextFile::Open(const string& file_name, const string& file_mode) {
+bool TextFile::Open(const string& file_name, const string& file_mode) {
   file_name_ = file_name;
   file_mode_ = file_mode;
-  file_ = WTextFile::OpenImpl();
+  file_ = TextFile::OpenImpl();
   return file_ != nullptr;
 }
 
 #ifdef _WIN32
-FILE* WTextFile::OpenImpl() {
+FILE* TextFile::OpenImpl() {
   int share = SH_DENYWR;
   int md = 0;
   if (strchr(file_mode_.c_str(), 'w') != nullptr) {
@@ -93,7 +93,7 @@ FILE* WTextFile::OpenImpl() {
   int fd = _sopen(file_name_.c_str(), md, share, S_IREAD | S_IWRITE);
   if (fd < 0) {
     int count = 1;
-    if (WFile::Exists(file_name_)) {
+    if (File::Exists(file_name_)) {
       ::Sleep(WAIT_TIME);
       fd = _sopen(file_name_.c_str(), md, share, S_IREAD | S_IWRITE);
       while ((fd < 0 && errno == EACCES) && count < TRIES) {
@@ -119,7 +119,7 @@ FILE* WTextFile::OpenImpl() {
 }
 
 #else  // _WIN32
-FILE* WTextFile::OpenImpl() {
+FILE* TextFile::OpenImpl() {
   FILE *f = fopen(file_name_.c_str(), file_mode_.c_str());
   if (f != nullptr) {
     flock(fileno(f), (strpbrk(file_mode_.c_str(), "wa+")) ? LOCK_EX : LOCK_SH);
@@ -128,7 +128,7 @@ FILE* WTextFile::OpenImpl() {
 }
 #endif  // _WIN32
 
-bool WTextFile::Close() {
+bool TextFile::Close() {
   if (file_ == nullptr) {
     return false;
   }
@@ -137,7 +137,7 @@ bool WTextFile::Close() {
   return true;
 }
 
-int WTextFile::WriteLine(const string& text) { 
+int TextFile::WriteLine(const string& text) { 
   int num_written = (fputs(text.c_str(), file_) >= 0) ? text.size() : 0;
   // fopen in text mode will force \n -> \r\n on win32
   fputs("\n", file_);
@@ -145,7 +145,7 @@ int WTextFile::WriteLine(const string& text) {
   return num_written;
 }
 
-int WTextFile::WriteFormatted(const char *pszFormatText, ...) {
+int TextFile::WriteFormatted(const char *pszFormatText, ...) {
   va_list ap;
   char szBuffer[4096];
 
@@ -163,7 +163,7 @@ static void StripLineEnd(char *pszString) {
   pszString[i] = '\0';
 }
 
-bool WTextFile::ReadLine(string *buffer) {
+bool TextFile::ReadLine(string *buffer) {
   char szBuffer[4096];
   char *p = fgets(szBuffer, sizeof(szBuffer), file_);
   if (p == nullptr) {
@@ -175,6 +175,6 @@ bool WTextFile::ReadLine(string *buffer) {
   return true;
 }
 
-WTextFile::~WTextFile() {
+TextFile::~TextFile() {
   Close();
 }
