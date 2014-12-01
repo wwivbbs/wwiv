@@ -254,7 +254,7 @@ void File::SetLength(long lNewLength) {
   ftruncate(handle_, lNewLength);
 }
 
-bool File::IsFile() {
+bool File::IsFile() const {
   return !this->IsDirectory();
 }
 

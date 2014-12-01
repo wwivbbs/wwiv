@@ -565,7 +565,7 @@ bool GetMenuDir(string& menuName) {
                            "does not exist, create it? (N) : ";
         if (noyes()) {
           GetApplication()->CdHome(); // go to the wwiv dir
-          WWIV_make_path(dir.full_pathname().c_str());  // Create the new path
+          File::mkdirs(dir);  // Create the new path
           if (dir.Exists()) {
             GetApplication()->CdHome();
             bout << "Created\r\n";

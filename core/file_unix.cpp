@@ -49,10 +49,8 @@ const char File::pathSeparatorString[] = "/";
 
 const char File::separatorChar     = ':';
 
-/////////////////////////////////////////////////////////////////////////////
-// Constructors/Destructors
 
-bool File::IsDirectory() {
+bool File::IsDirectory() const {
   struct stat statbuf;
   stat(full_path_name_.c_str(), &statbuf);
   return S_ISDIR(statbuf.st_mode);
