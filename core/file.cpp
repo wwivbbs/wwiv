@@ -300,21 +300,21 @@ time_t File::last_write_time() {
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-bool File::Rename(const string origFileName, const string newFileName) {
+bool File::Rename(const string& origFileName, const string& newFileName) {
   return rename(origFileName.c_str(), newFileName.c_str()) == 0;
 }
 
-bool File::Remove(const string fileName) {
+bool File::Remove(const string& fileName) {
   return (unlink(fileName.c_str()) ? false : true);
 }
 
-bool File::Remove(const string directoryName, const string fileName) {
+bool File::Remove(const string& directoryName, const string& fileName) {
   string strFullFileName = directoryName;
   strFullFileName += fileName;
   return File::Remove(strFullFileName);
 }
 
-bool File::Exists(const string original_pathname) {
+bool File::Exists(const string& original_pathname) {
   struct _stat buf;
   string fn(original_pathname);
   if (fn.back() == pathSeparatorChar) {
@@ -325,7 +325,7 @@ bool File::Exists(const string original_pathname) {
   return ret == 0;
 }
 
-bool File::Exists(const string directoryName, const string fileName) {
+bool File::Exists(const string& directoryName, const string& fileName) {
   std::stringstream fullPathName;
   if (!directoryName.empty() && directoryName[directoryName.length() - 1] == pathSeparatorChar) {
     fullPathName << directoryName << fileName;
@@ -335,12 +335,12 @@ bool File::Exists(const string directoryName, const string fileName) {
   return Exists(fullPathName.str());
 }
 
-bool File::ExistsWildcard(const string wildCard) {
+bool File::ExistsWildcard(const string& wildCard) {
   WFindFile fnd;
   return (fnd.open(wildCard.c_str(), 0));
 }
 
-bool File::SetFilePermissions(const string fileName, int nPermissions) {
+bool File::SetFilePermissions(const string& fileName, int nPermissions) {
   WWIV_ASSERT(!fileName.empty());
   return (chmod(fileName.c_str(), nPermissions) == 0) ? true : false;
 }

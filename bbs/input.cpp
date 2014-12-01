@@ -253,7 +253,7 @@ void input_password(string promptText, string* strOutPassword, int nMaxLength) {
 // Returns: length of string
 //==================================================================
 
-int Input1(char *pszOutText, string origText, int nMaxLength, bool bInsert, InputMode mode) {
+int Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInsert, InputMode mode) {
   char szTemp[ 255 ];
   const char dash = '-';
   const char slash = '/';
@@ -475,7 +475,7 @@ int Input1(char *pszOutText, string origText, int nMaxLength, bool bInsert, Inpu
 }
 
 
-int Input1(string* strOutText, string origText, int nMaxLength, bool bInsert, InputMode mode) {
+int Input1(string* strOutText, const string& origText, int nMaxLength, bool bInsert, InputMode mode) {
   char szTempBuffer[ 255 ];
   WWIV_ASSERT(nMaxLength < sizeof(szTempBuffer));
 
