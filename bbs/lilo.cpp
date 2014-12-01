@@ -32,12 +32,12 @@
 #include "core/inifile.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "core/wutil.h"
 #include "core/wwivassert.h"
 
 using std::string;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
+using wwiv::os::random_number;
 using wwiv::strings::StringPrintf;
 
 #define SECS_PER_DAY 86400L
@@ -87,7 +87,7 @@ static bool random_screen(const char *mpfn) {
         break;
       }
     }
-    sprintf(szBuffer, "%s%s.%d", GetSession()->language_dir.c_str(), mpfn, WWIV_GetRandomNumber(nNumberOfScreens));
+    sprintf(szBuffer, "%s%s.%d", GetSession()->language_dir.c_str(), mpfn, random_number(nNumberOfScreens));
     printfile(szBuffer);
     return true;
   }

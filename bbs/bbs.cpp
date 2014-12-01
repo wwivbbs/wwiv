@@ -20,6 +20,7 @@
 #include <direct.h>
 #endif  // WIN32
 
+#include <chrono>
 #include <cmath>
 #include <memory>
 #include <stdarg.h>
@@ -37,7 +38,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
-#include "core/wutil.h"
+#include "core/os.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 
@@ -58,9 +59,11 @@ extern time_t last_time_c;
 static WApplication *app;
 static WSession* sess;
 
+using std::chrono::milliseconds;
 using std::string;
 using std::unique_ptr;
 using wwiv::bbs::InputMode;
+using wwiv::os::sound;
 using namespace wwiv::strings;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1039,7 +1042,7 @@ int WApplication::Run(int argc, char *argv[]) {
       GetSession()->localIO()->LocalCls();
       bout << "\r\n>> SYSOP ALERT ACTIVATED <<\r\n\n";
       while (!GetSession()->localIO()->LocalKeyPressed() && (fabs(timer() - dt) < SECONDS_PER_MINUTE_FLOAT)) {
-        WWIV_Sound(500, 250);
+        sound(500, milliseconds(250));
         WWIV_Delay(1);
       }
       GetSession()->localIO()->LocalCls();

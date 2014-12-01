@@ -21,6 +21,7 @@
 #include <chrono>
 #include <functional>
 #include <limits>
+#include <random>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -60,10 +61,10 @@ bool wait_for(function<bool()> predicate, milliseconds d) {
 void sleep_for(milliseconds d) {
 #ifdef _WIN32
   int64_t count = d.count();
-  if (count > numeric_limits<int64_t>::max()) {
-    count = numeric_limits<int64_t>::max();
+  if (count > numeric_limits<uint32_t>::max()) {
+    count = numeric_limits<uint32_t>::max();
   }
-  ::Sleep(count);
+  ::Sleep(static_cast<uint32_t>(count));
 
 #else  // _WIN32
   usleep (d.count() * 1000);
@@ -141,6 +142,20 @@ std::string os_version_string() {
 #error "What's the platform here???"
 #endif
   return string("UNKNOWN OS");
+}
+
+void sound(uint32_t frequency, std::chrono::milliseconds d) {
+#ifdef _WIN32
+  ::Beep(frequency, static_cast<uint32_t>(d.count()));
+#endif  // _WIN32
+}
+
+int random_number(int max_value) {
+  static std::random_device rdev;
+  static std::default_random_engine re(rdev());
+
+  std::uniform_int_distribution<int> dist(0, max_value - 1);
+  return dist(re);
 }
 
 }  // namespace os
