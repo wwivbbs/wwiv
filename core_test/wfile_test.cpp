@@ -237,3 +237,29 @@ TEST(FileTest, RealPath_Different) {
   ASSERT_TRUE(File::RealPath(StrCat(helper.TempDir(), File::pathSeparatorString, ".", File::pathSeparatorString, kFileName), &realpath));
   EXPECT_EQ(path, realpath);
 }
+
+TEST(FileTest, mkdir) {
+  FileHelper helper;
+  const string path = StrCat(helper.TempDir(), File::pathSeparatorString, "a");
+  const string path_missing_middle = StrCat(helper.TempDir(), File::pathSeparatorString, "a", 
+      File::pathSeparatorString, "b", File::pathSeparatorString, "c");
+  ASSERT_FALSE(File::Exists(path));
+
+  ASSERT_TRUE(File::mkdir(path));
+  ASSERT_TRUE(File::mkdir(path));  // 2nd time should still return true.
+  EXPECT_FALSE(File::mkdir(path_missing_middle));  // Can't create missing path elements.
+
+  ASSERT_TRUE(File::Exists(path));
+}
+
+TEST(FileTest, mkdirs) {
+  FileHelper helper;
+  const string path = StrCat(helper.TempDir(), File::pathSeparatorString, "a", 
+      File::pathSeparatorString, "b", File::pathSeparatorString, "c");
+  ASSERT_FALSE(File::Exists(path));
+
+  ASSERT_TRUE(File::mkdirs(path));
+  ASSERT_TRUE(File::mkdirs(path));
+
+  ASSERT_TRUE(File::Exists(path));
+}

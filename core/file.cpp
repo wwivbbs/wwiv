@@ -384,4 +384,33 @@ bool File::IsAbsolutePath(const string& path) {
 #endif  // _WIN32
 }
 
+// static
+bool File::mkdir(const string& path) {
+  int result = ::mkdir(path.c_str());
+  if (result != -1) {
+    return true;
+  }
+  if (errno == EEXIST) {
+    // still return true if the directory already existed.
+    return true;
+  }
+  return false;
+}
 
+// static
+// based loosely on http://stackoverflow.com/questions/675039/how-can-i-create-directory-tree-in-c-linux
+bool File::mkdirs(const string& path) {
+  int result = ::mkdir(path.c_str());
+  if (result != -1) {
+    return true;
+  }
+  if (errno == ENOENT) {
+    if (!mkdirs(path.substr(0, path.find_last_of(File::pathSeparatorChar)))) {
+      return false;  // failed to create the parent, stop here.
+    }
+    return File::mkdir(path.c_str());
+  } else if (errno == EEXIST) {
+    return true;  // the path already existed.
+  }
+  return false;  // unknown error.
+}
