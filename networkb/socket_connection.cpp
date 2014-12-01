@@ -78,6 +78,18 @@ static bool SetNonBlockingMode(SOCKET sock) {
 #endif  // _WIN32
 }
 
+static bool SetNoDelayMode(SOCKET sock) {
+#ifdef _WIN32
+      int one = 1;
+      return setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (char*) &one, sizeof(one)) != SOCKET_ERROR;
+
+#else  // _WIN32
+  // TODO(rushfan): set TCP_NODELAY
+  return true;
+
+#endif  // _WIN32
+}
+
 static bool WouldSocketBlock() {
 #ifdef _WIN32
   return WSAGetLastError() == WSAEWOULDBLOCK;
@@ -126,6 +138,12 @@ unique_ptr<SocketConnection> Connect(const string& host,
         s = INVALID_SOCKET;
         continue;
       }
+      if (!SetNoDelayMode(s)) {
+        std::clog << "Unable to put socket into nodelay mode." << std::endl;
+        closesocket(s);
+        s = INVALID_SOCKET;
+        continue;
+      }
       return unique_ptr<SocketConnection>(new SocketConnection(s, host, port));
     }
   }
@@ -162,7 +180,12 @@ unique_ptr<SocketConnection> Accept(int port) {
     s = INVALID_SOCKET;
     throw socket_error("Unable to set nonblocking mode on the socket.");
   }
-
+  if (!SetNoDelayMode(s)) {
+    std::clog << "Unable to put socket into nodelay mode." << std::endl;
+    closesocket(s);
+    s = INVALID_SOCKET;
+    throw socket_error("Unable to set nodelay mode on the socket.");
+  }
   return unique_ptr<SocketConnection>(new SocketConnection(s, "", port));
 }
 
