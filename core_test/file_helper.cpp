@@ -53,7 +53,7 @@ const string FileHelper::DirName(const string& name) const {
 
 bool FileHelper::Mkdir(const string& name) const {
     const string path = DirName(name); 
-    return File::mkdir(name);
+    return File::mkdir(path);
 }
 
 // static
