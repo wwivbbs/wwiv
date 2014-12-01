@@ -35,6 +35,9 @@ bool wait_for(std::function<bool()> predicate, std::chrono::milliseconds d);
 // Sleeps for a duration of time d
 void sleep_for(std::chrono::milliseconds d);
 
+// Yields the CPU to other threads or processes.
+void yield();
+
 // Gets the OS Version Number.
 std::string os_version_string();
 

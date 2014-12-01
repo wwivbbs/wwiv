@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include <qwk.h>
 
+#include <chrono>
 #include <memory>
 #include <ctype.h>
 #include <fcntl.h>
@@ -40,12 +41,16 @@
 #include "bbs/stuffin.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"
+#include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 
+using std::chrono::milliseconds;
 using std::string;
 using std::unique_ptr;
-using wwiv::strings::StringPrintf;
+
+using namespace wwiv::os;
+using namespace wwiv::strings;
 
 #define SET_BLOCK(file, pos, size) lseek(file, (long)pos * (long)size, SEEK_SET)
 #define qwk_iscan_literal(x) (iscan1(x, 1))
@@ -350,7 +355,7 @@ void upload_reply_packet(void) {
   if (do_it) {
     if (incom) {
       qwk_receive_file(namepath, &rec, GetSession()->GetCurrentUser()->data.qwk_protocol);
-      WWIV_Delay(500);
+      sleep_for(milliseconds(500));
     }
 
     if (rec) {

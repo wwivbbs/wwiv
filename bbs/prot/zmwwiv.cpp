@@ -1,12 +1,17 @@
 #include "wwiv.h"
 
-#include "zmodem.h"
+#include <chrono>
 #include <cstdarg>
 #include <cstdlib>
 #include <cstring>
 
 #include "wcomm.h"
+#include "zmodem.h"
+#include "core/os.h"
 #include "core/strings.h"
+
+using std::chrono::milliseconds;
+using namespace wwiv::os;
 
 // Local Functions
 int ZModemWindowStatus( const char *fmt, ... );
@@ -29,7 +34,7 @@ bool NewZModemSendFile( const char *pszFileName ) {
 	info.windowsize = 0;
 	info.bufsize = 0;
 
-	WWIV_Delay( 500 );	// Kludge -- Byte thinks this may help on his system
+	sleep_for(milliseconds(500));	// Kludge -- Byte thinks this may help on his system
 
 	ZmodemTInit( &info );
 	int done = doIO( &info );
@@ -71,7 +76,7 @@ bool NewZModemSendFile( const char *pszFileName ) {
 		return false;
 	}
 
-	WWIV_Delay( 500 );	// Kludge -- Byte thinks this may help on his system
+	sleep_for(milliseconds(500));	// Kludge -- Byte thinks this may help on his system
 
 	done = ZmodemTFinish( &info );
 	if( !done ) {
@@ -160,9 +165,9 @@ int doIO( ZModem *info ) {
 	bool doCancel = false;	// %%TODO: make this true if the user aborts.
 
 	while(!done) {
-		WWIV_Delay( 0 );
+		yield();
 		if ( info->timeout > 0 ) {
-			WWIV_Delay( 0 );
+			yield();
 		}
 		time_t tThen = time( nullptr );
 #if defined(_DEBUG)
@@ -173,7 +178,7 @@ int doIO( ZModem *info ) {
 		// Don't loop/sleep if the timeout is 0 (which means streaming), this makes the
 		// performance < 1k/second vs. 8-9k/second locally
 		while ( ( info->timeout > 0 ) && !GetSession()->remoteIO()->incoming() && !hangup ) {
-			WWIV_Delay( 100 );
+			sleep_for(milliseconds(100));
 			time_t tNow = time( nullptr );
 			if ( ( tNow - tThen ) > info->timeout ) {
 #if defined(_DEBUG)
@@ -223,7 +228,7 @@ int ZXmitStr(u_char *str, int len, ZModem *info) {
 
 
 void ZIFlush(ZModem *info) {
-	WWIV_Delay( 100 );
+	sleep_for(milliseconds(100));
 	//puts( "ZIFlush" );
 	//if( connectionType == ConnectionSerial )
 	//  SerialFlush( 0 );
@@ -242,7 +247,7 @@ int ZAttn(ZModem *info) {
 	int cnt = 0;
 	for( char *ptr = info->attn; *ptr != '\0'; ++ptr ) {
 		if ( ( ( cnt++ ) % 10 ) == 0 ) {
-			WWIV_Delay( 100 );
+			sleep_for(milliseconds(100));
 		}
 		if ( *ptr == ATTNBRK ) {
 			//SerialBreak();
@@ -250,7 +255,7 @@ int ZAttn(ZModem *info) {
 #if defined(_DEBUG)
 			zmodemlog( "ATTNPSE\r\n" );
 #endif
-			WWIV_Delay( 100 );
+			sleep_for(milliseconds(100));
 		} else {
 			rputch( *ptr, true );
 			//append_buffer(&outputBuf, ptr, 1, ofd);
