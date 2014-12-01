@@ -44,12 +44,6 @@ using wwiv::strings::StringPrintf;
 // Local prototypes.
 bool external_edit_internal(const string& edit_filename, const string& new_directory, const editorrec& editor, int numlines);
 
-static string WWIV_GetCurrentDirectory(bool be) {
-  char szDir[MAX_PATH];
-  WWIV_GetDir(szDir, be);
-  return string(szDir);
-}
-
 static void RemoveEditorFileFromTemp(const string& filename) {
   File file(syscfgovr.tempdir, filename);
   file.SetFilePermissions(File::permReadWrite);
@@ -257,18 +251,15 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   }
 
   WWIV_make_abs_cmd(GetApplication()->GetHomeDir(), &editorCommand);
-  const string current_directory = WWIV_GetCurrentDirectory(false);
+  const string original_directory = File::current_directory();
 
   string strippedFileName(stripfn(edit_filename.c_str()));
-  string full_filename;
   if (!new_directory.empty()) {
     chdir(new_directory.c_str()) ;
-    full_filename = WWIV_GetCurrentDirectory(true);
   }
-  full_filename += strippedFileName;
 
   time_t tFileTime = 0;
-  File fileTempForTime(full_filename);
+  File fileTempForTime(File::current_directory(), strippedFileName);
   bool bIsFileThere = fileTempForTime.Exists();
   if (bIsFileThere) {
     tFileTime = fileTempForTime.last_write_time();
@@ -283,7 +274,7 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   }
   const string sx2 = StringPrintf("%d", num_screen_lines);
   const string sx3 = StringPrintf("%d", numlines);
-  const string cmdLine = stuff_in(editorCommand, full_filename, sx1, sx2, sx3, "");
+  const string cmdLine = stuff_in(editorCommand, fileTempForTime.full_pathname(), sx1, sx2, sx3, "");
 
   // TODO(rushfan): Make this a common function shared between here and chains.
   int flags = 0;
@@ -301,6 +292,7 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   chdir(new_directory.c_str());
 
   bool bModifiedOrExists = false;
+  const string full_filename = fileTempForTime.full_pathname();
   if (!bIsFileThere) {
     bModifiedOrExists = File::Exists(full_filename);
   } else {
@@ -312,6 +304,6 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
       }
     }
   }
-  chdir(current_directory.c_str());
+  chdir(original_directory.c_str());
   return bModifiedOrExists;
 }
