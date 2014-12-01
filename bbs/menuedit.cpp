@@ -27,10 +27,8 @@
 
 using std::string;
 using wwiv::bbs::InputMode;
-using wwiv::strings::IsEqualsIgnoreCase;
-using wwiv::strings::StringToChar;
-using wwiv::strings::StringToShort;
-using wwiv::strings::StringToUnsignedShort;
+
+using namespace wwiv::strings;
 
 bool GetMenuDir(string& menuDir);
 bool GetMenuMenu(const string& pszDirectoryName, string& menuName);
@@ -903,25 +901,22 @@ void EditPulldownColors(MenuHeader * pMenuHeader) {
 
 
 void ListMenuDirs() {
-  char szName[20];
-  char szDesc[101];
-  WFindFile fnd;
-  bool bFound;
-
-  string path = GetMenuDirectory() + "*";
-
+  const string path = StrCat(GetMenuDirectory(), "*");
   OpenMenuDescriptions();
 
   bout.nl();
   bout << "|#7Available Menus Sets\r\n";
   bout << "|#5============================\r\n";
 
-  bFound = fnd.open(path.c_str(), 0);
+  WFindFile fnd;
+  bool bFound = fnd.open(path.c_str(), 0);
   while (bFound && !hangup) {
-    string fileName = fnd.GetFileName();
     if (fnd.IsDirectory()) {
-      WWIV_GetFileNameFromPath(fileName.c_str(), szName);
-      bout.bprintf("|#2%-8.8s |15%-60.60s\r\n", szName, GetMenuDescription(fileName, szDesc));
+      File file(fnd.GetFileName());
+      const string full_pathname = fnd.GetFileName();
+      const string filename = file.GetName();
+      char szDesc[101];
+      bout.bprintf("|#2%-8.8s |15%-60.60s\r\n", filename.c_str(), GetMenuDescription(full_pathname, szDesc));
     }
     bFound = fnd.next();
   }

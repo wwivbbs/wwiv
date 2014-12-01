@@ -35,15 +35,3 @@ long WWIV_GetFreeSpaceForPath(const char* szPath) {
   return ((long) fs.f_bsize * (double) fs.f_bavail) / 1024;
 }
 
-void WWIV_GetFileNameFromPath(const char* pszPath, char* pszFileName) {
-  char* pszTemp = strdup(pszPath);
-  char* pTempFn = strrchr(pszTemp, '/');
-  if (pTempFn != nullptr) {
-    *pTempFn = 0;
-    pTempFn++;
-  } else {
-    pTempFn = pszTemp;
-  }
-  strcpy(pszFileName, pTempFn);
-  free(pszTemp);
-}
