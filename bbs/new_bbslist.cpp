@@ -32,7 +32,7 @@
 #include "bbs/fcns.h"
 #include "bbs/wsession.h"
 #include "core/strings.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 #include "sdk/filenames.h"
 
 #include <rapidjson/document.h>
@@ -113,7 +113,7 @@ bool LoadFromJSON(const string& dir, const string& filename,
                   std::vector<std::unique_ptr<BbsListEntry>>* entries) {
   int id = 1;
   Document document;
-  WTextFile file(dir, filename, "r");
+  TextFile file(dir, filename, "r");
   if (!file.IsOpen()) {
     // rapidjson will assert if the file does not exist, so we need to 
     // verify that the file exists first.
@@ -172,7 +172,7 @@ static Value BbsListEntryToJsonValue(const BbsListEntry& entry, Document::Alloca
 bool SaveToJSON(const string& dir, const string& filename, 
                 const std::vector<std::unique_ptr<BbsListEntry>>& entries) {
   Document document;
-  WTextFile file(dir, filename, "w");
+  TextFile file(dir, filename, "w");
   if (!file.IsOpen()) {
     // rapidjson will assert if the file does not exist, so we need to 
     // verify that the file exists first.
@@ -200,7 +200,7 @@ static bool ConvertLegacyList(
     const string& dir, const string& legacy_filename, 
     std::vector<std::unique_ptr<BbsListEntry>>* entries) {
 
-  WTextFile legacy_file(dir, legacy_filename, "r");
+  TextFile legacy_file(dir, legacy_filename, "r");
   if (!legacy_file.IsOpen()) {
     return false;
   }

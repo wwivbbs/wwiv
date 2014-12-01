@@ -42,7 +42,7 @@
 
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wfile.h"
+#include "core/file.h"
 
 using std::clog;
 using std::endl;
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
   }
 
   config_filename = args["config"];
-  WFile config_file(config_filename);
+  File config_file(config_filename);
   if (!config_file.Exists()) {
     clog << "Config file " << config_filename << " does not exist." << endl;
     return 1;
@@ -94,12 +94,12 @@ int main(int argc, char** argv) {
 
   if (contains(args, "addresses")) {
     node_config_filename = args["addresses"];
-    if (!WFile::Exists(node_config_filename)) {
+    if (!File::Exists(node_config_filename)) {
       clog << "Node Config file " << node_config_filename << " does not exist." << endl;
       return 1;
     }
   } else {
-    WFile candidate_node_config(config_file.GetParent(), "addresses.binkp");
+    File candidate_node_config(config_file.GetParent(), "addresses.binkp");
     node_config_filename = candidate_node_config.full_pathname();
     if (!candidate_node_config.Exists()) {
       clog << "Node Config file " << node_config_filename << " does not exist." << endl;
@@ -132,8 +132,8 @@ int main(int argc, char** argv) {
       return 1;
     }
     BinkP::received_transfer_file_factory_t factory = [&](const string& filename) { 
-      WFile* f = new WFile(config.network_dir(), filename);
-      return new WFileTransferFile(filename, unique_ptr<WFile>(f)); 
+      File* f = new File(config.network_dir(), filename);
+      return new WFileTransferFile(filename, unique_ptr<File>(f)); 
     };
     BinkP binkp(c.get(), &config, side, expected_remote_node, factory);
     binkp.Run();

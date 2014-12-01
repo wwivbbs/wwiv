@@ -31,7 +31,7 @@
 
 #include "core/scope_exit.h"
 #include "core/strings.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 
 #include "bbs/stuffin.h"
 #include "bbs/wconstants.h"
@@ -51,8 +51,8 @@ static string WWIV_GetCurrentDirectory(bool be) {
 }
 
 static void RemoveEditorFileFromTemp(const string& filename) {
-  WFile file(syscfgovr.tempdir, filename);
-  file.SetFilePermissions(WFile::permReadWrite);
+  File file(syscfgovr.tempdir, filename);
+  file.SetFilePermissions(File::permReadWrite);
   file.Delete();
 }
 
@@ -76,8 +76,8 @@ static void RemoveControlFiles(const editorrec& editor) {
 }
 
 static void ReadWWIVResultFiles(string* title, int* anon) {
-  if (WFile::Exists(syscfgovr.tempdir, RESULT_ED)) {
-    WTextFile file(syscfgovr.tempdir, RESULT_ED, "rt");
+  if (File::Exists(syscfgovr.tempdir, RESULT_ED)) {
+    TextFile file(syscfgovr.tempdir, RESULT_ED, "rt");
     string anon_string;
     if (file.ReadLine(&anon_string)) {
       *anon = atoi(anon_string.c_str());
@@ -87,11 +87,11 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
       }
     }
     file.Close();
-  } else if (WFile::Exists(syscfgovr.tempdir, FEDIT_INF)) {
+  } else if (File::Exists(syscfgovr.tempdir, FEDIT_INF)) {
     fedit_data_rec fedit_data;
     memset(&fedit_data, '\0', sizeof(fedit_data_rec));
-    WFile file(syscfgovr.tempdir, FEDIT_INF);
-    file.Open(WFile::modeBinary | WFile::modeReadOnly);
+    File file(syscfgovr.tempdir, FEDIT_INF);
+    file.Open(File::modeBinary | File::modeReadOnly);
       if (file.Read(&fedit_data, sizeof(fedit_data))) {
         title->assign(fedit_data.ttl);
         *anon = fedit_data.anon;
@@ -101,7 +101,7 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
 }
 
 static bool WriteMsgInf(const string& title, const string& destination, const string& aux) {
-  WTextFile file(syscfgovr.tempdir, MSGINF, "wt");
+  TextFile file(syscfgovr.tempdir, MSGINF, "wt");
   if (!file.IsOpen()) {
     return false;
   }
@@ -134,7 +134,7 @@ static bool WriteMsgInf(const string& title, const string& destination, const st
 }
 
 static void WriteWWIVEditorControlFiles(const string& title, const string& destination, int flags) {
-  WTextFile fileEditorInf(syscfgovr.tempdir, EDITOR_INF, "wt");
+  TextFile fileEditorInf(syscfgovr.tempdir, EDITOR_INF, "wt");
   if (fileEditorInf.IsOpen()) {
     if (irt_name[0]) {
       flags |= MSGED_FLAG_HAS_REPLY_NAME;
@@ -157,7 +157,7 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& desti
   }
   if (flags & MSGED_FLAG_NO_TAGLINE) {
     // disable tag lines by creating a DISABLE.TAG file
-    WTextFile fileDisableTag(DISABLE_TAG, "w");
+    TextFile fileDisableTag(DISABLE_TAG, "w");
   } else {
     RemoveEditorFileFromTemp(DISABLE_TAG);
   }
@@ -173,8 +173,8 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& desti
   strcpy(fedit_data.ttl, title.c_str());
   fedit_data.anon = 0;
 
-  WFile fileFEditInf(syscfgovr.tempdir, FEDIT_INF);
-  if (fileFEditInf.Open(WFile::modeDefault | WFile::modeCreateFile | WFile::modeTruncate, WFile::shareDenyRead)) {
+  File fileFEditInf(syscfgovr.tempdir, FEDIT_INF);
+  if (fileFEditInf.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyRead)) {
     fileFEditInf.Write(&fedit_data, sizeof(fedit_data));
     fileFEditInf.Close();
   }
@@ -182,11 +182,11 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& desti
 
 bool WriteExternalEditorControlFiles(const editorrec& editor, const string& title, const string& destination, int flags, const string& aux) {
   if (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) {
-    if (WFile::Exists(syscfgovr.tempdir, QUOTES_TXT)) {
+    if (File::Exists(syscfgovr.tempdir, QUOTES_TXT)) {
       // Copy quotes.txt to MSGTMP if it exists
-      WFile source(syscfgovr.tempdir, QUOTES_TXT);
-      WFile dest(syscfgovr.tempdir, MSGTMP);
-      WFile::Copy(source.full_pathname(), dest.full_pathname());
+      File source(syscfgovr.tempdir, QUOTES_TXT);
+      File dest(syscfgovr.tempdir, MSGTMP);
+      File::Copy(source.full_pathname(), dest.full_pathname());
     }
     return WriteMsgInf(title, destination, aux);
   } 
@@ -219,9 +219,9 @@ bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string&
     // Copy MSGTMP to INPUT_MSG since that's what the rest of WWIV expectes.
     // TODO(rushfan): Let this function return an object with result and filename and anything
     // else that needs to be passed back.
-    WFile source(syscfgovr.tempdir, MSGTMP);
-    WFile dest(syscfgovr.tempdir, INPUT_MSG);
-    WFile::Copy(source.full_pathname(), dest.full_pathname());
+    File source(syscfgovr.tempdir, MSGTMP);
+    File dest(syscfgovr.tempdir, INPUT_MSG);
+    File::Copy(source.full_pathname(), dest.full_pathname());
 
     // TODO(rushfan): Do we need to re-read MSGINF to look for changes to title or setanon?
   } else {
@@ -268,7 +268,7 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   full_filename += strippedFileName;
 
   time_t tFileTime = 0;
-  WFile fileTempForTime(full_filename);
+  File fileTempForTime(full_filename);
   bool bIsFileThere = fileTempForTime.Exists();
   if (bIsFileThere) {
     tFileTime = fileTempForTime.last_write_time();
@@ -302,9 +302,9 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
 
   bool bModifiedOrExists = false;
   if (!bIsFileThere) {
-    bModifiedOrExists = WFile::Exists(full_filename);
+    bModifiedOrExists = File::Exists(full_filename);
   } else {
-    WFile fileTempForTime(full_filename);
+    File fileTempForTime(full_filename);
     if (fileTempForTime.Exists()) {
       time_t tFileTime1 = fileTempForTime.last_write_time();
       if (tFileTime != tFileTime1) {

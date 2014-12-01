@@ -25,7 +25,7 @@
 /**
  * Helper class for tests requing local filesystem access.  
  *
- * Note: This class can not use WFile since it is used by the tests for WFile.
+ * Note: This class can not use File since it is used by the tests for File.
  */
 class FileHelper {
 public:

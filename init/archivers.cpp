@@ -35,7 +35,7 @@
 #include "init/ifcns.h"
 #include "init/init.h"
 #include "core/strings.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "core/wwivport.h"
 #include "bbs/wconstants.h" // for MAX_ARCHIVERS
 #include "initlib/input.h"
@@ -116,8 +116,8 @@ bool create_arcs(CursesWindow* window) {
       "archive comment command", "archive test command" });
   }
 
-  WFile file(syscfg.datadir, ARCHIVER_DAT);
-  if (!file.Open(WFile::modeWriteOnly|WFile::modeBinary|WFile::modeCreateFile)) {
+  File file(syscfg.datadir, ARCHIVER_DAT);
+  if (!file.Open(File::modeWriteOnly|File::modeBinary|File::modeCreateFile)) {
     messagebox(window, StringPrintf("Couldn't open '%s' for writing.\n", file.full_pathname().c_str()));
     return false;
   }
@@ -128,12 +128,12 @@ bool create_arcs(CursesWindow* window) {
 bool edit_archivers() {
   arcrec arc[MAX_ARCS];
 
-  WFile file(syscfg.datadir, ARCHIVER_DAT);
-  if (!file.Open(WFile::modeReadWrite|WFile::modeBinary)) {
+  File file(syscfg.datadir, ARCHIVER_DAT);
+  if (!file.Open(File::modeReadWrite|File::modeBinary)) {
     if (!create_arcs(out->window())) {
       return false;
     }
-    file.Open(WFile::modeReadWrite|WFile::modeBinary);
+    file.Open(File::modeReadWrite|File::modeBinary);
   }
   file.Read(&arc, MAX_ARCS * sizeof(arcrec));
   
@@ -170,7 +170,7 @@ bool edit_archivers() {
   }
 
   // seek to beginning of file, write arcrecs, close file
-  file.Seek(0, WFile::seekBegin);
+  file.Seek(0, File::seekBegin);
   file.Write(arc, MAX_ARCS * sizeof(arcrec));
   return true;
 }

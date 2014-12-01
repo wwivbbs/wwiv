@@ -24,13 +24,13 @@ void print_quests();
 void set_question(int ii);
 
 void print_quests() {
-  WFile file(syscfg.datadir, VOTING_DAT);
-  if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(syscfg.datadir, VOTING_DAT);
+  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     return;
   }
   bool abort = false;
   for (int i = 1; (i <= 20) && !abort; i++) {
-    file.Seek(static_cast<long>(i - 1) * sizeof(votingrec), WFile::seekBegin);
+    file.Seek(static_cast<long>(i - 1) * sizeof(votingrec), File::seekBegin);
 
     votingrec v;
     file.Read(&v, sizeof(votingrec));
@@ -85,9 +85,9 @@ void set_question(int ii) {
     }
   }
 
-  WFile votingDat(syscfg.datadir, VOTING_DAT);
-  votingDat.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
-  votingDat.Seek(ii * sizeof(votingrec), WFile::seekBegin);
+  File votingDat(syscfg.datadir, VOTING_DAT);
+  votingDat.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
+  votingDat.Seek(ii * sizeof(votingrec), File::seekBegin);
   votingDat.Write(&v, sizeof(votingrec));
   votingDat.Close();
 
@@ -107,8 +107,8 @@ void set_question(int ii) {
 void ivotes() {
   votingrec v;
 
-  WFile votingDat(syscfg.datadir, VOTING_DAT);
-  votingDat.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
+  File votingDat(syscfg.datadir, VOTING_DAT);
+  votingDat.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   int n = static_cast<int>((votingDat.GetLength() / sizeof(votingrec)) - 1);
   if (n < 20) {
     v.question[0] = '\0';
@@ -151,17 +151,17 @@ void voteprint() {
       x[ i1 + i * 20 ] = static_cast<char>(u.GetVote(i1));
     }
   }
-  WFile votingText(syscfg.gfilesdir, VOTING_TXT);
-  votingText.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeText);
+  File votingText(syscfg.gfilesdir, VOTING_TXT);
+  votingText.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeText);
   votingText.Write(votingText.full_pathname());
 
-  WFile votingDat(syscfg.datadir, VOTING_DAT);
+  File votingDat(syscfg.datadir, VOTING_DAT);
 
   GetApplication()->GetStatusManager()->RefreshStatusCache();
 
   for (int i1 = 0; i1 < 20; i1++) {
-    votingDat.Open(WFile::modeReadOnly | WFile::modeBinary);
-    votingDat.Seek(i1 * sizeof(votingrec), WFile::seekBegin);
+    votingDat.Open(File::modeReadOnly | File::modeBinary);
+    votingDat.Seek(i1 * sizeof(votingrec), File::seekBegin);
     votingDat.Read(&v, sizeof(votingrec));
     votingDat.Close();
     if (v.numanswers) {

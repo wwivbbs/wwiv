@@ -26,7 +26,7 @@
 
 #include <memory>
 #include <core/inifile.h>
-#include "core/wfile.h"
+#include "core/file.h"
 #include "runnable.h"
 #include "wsession.h"
 

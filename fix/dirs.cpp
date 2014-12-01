@@ -39,7 +39,7 @@ void checkAllDirsExist() {
   vector<string> dirs{ syscfg.msgsdir, syscfg.gfilesdir, syscfg.menudir, syscfg.datadir, syscfg.dloadsdir, syscfg.tempdir };
 
   for (const auto& dir_name : dirs) {
-		WFile dir(dir_name);
+		File dir(dir_name);
     auto full_pathname = dir.full_pathname().c_str();
 		if(!checkDirExists(dir, full_pathname)) {
 			Print(NOK, true, "%s directory is missing", full_pathname);
@@ -72,14 +72,14 @@ void checkFileAreas(int num_dirs) {
 	Print(OK, true, "Checking %d directories", num_dirs);
 	for(int i = 0; i < num_dirs; i++) {
 		if(!(directories[i].mask & mask_cdrom) && !(directories[i].mask & mask_offline)) {
-			WFile dir(directories[i].path);
+			File dir(directories[i].path);
 			if(checkDirExists(dir, directories[i].name)) {
 				Print(OK, true, "Checking directory '%s'", directories[i].name);
 				string filename = directories[i].filename;
 				filename.append(".dir");
-				WFile recordFile(syscfg.datadir, filename.c_str());
+				File recordFile(syscfg.datadir, filename.c_str());
 				if(recordFile.Exists()) {
-					if(!recordFile.Open(WFile::modeReadWrite | WFile::modeBinary)) {
+					if(!recordFile.Open(File::modeReadWrite | File::modeBinary)) {
 						Print(NOK, true, "Unable to open '%s'", recordFile.full_pathname().c_str());
 					} else {
 						unsigned int numFiles = recordFile.GetLength() / sizeof(uploadsrec);
@@ -88,7 +88,7 @@ void checkFileAreas(int num_dirs) {
 						if(upload.numbytes != numFiles) {
 							Print(NOK, true, "Corrected # of files in %s.", directories[i].name);
 							upload.numbytes = numFiles;
-							recordFile.Seek(0L, WFile::seekBegin);
+							recordFile.Seek(0L, File::seekBegin);
 							recordFile.Write(&upload, sizeof(uploadsrec));
 						}
 						if(numFiles >= 1) {
@@ -96,14 +96,14 @@ void checkFileAreas(int num_dirs) {
 							unsigned int recNo = 0;
 							string filenameExt = directories[i].filename;
 							filenameExt.append(".ext");
-							WFile extDescFile(syscfg.datadir, filenameExt.c_str());
+							File extDescFile(syscfg.datadir, filenameExt.c_str());
 							if(extDescFile.Exists()) {
-								if(extDescFile.Open(WFile::modeReadWrite | WFile::modeBinary)) {
+								if(extDescFile.Open(File::modeReadWrite | File::modeBinary)) {
 									extDesc = (ext_desc_rec *)malloc(numFiles * sizeof(ext_desc_rec));
 									unsigned long offs = 0;
 									while(offs < (unsigned long)extDescFile.GetLength() && recNo < numFiles) {
 										ext_desc_type ed;
-										extDescFile.Seek(offs, WFile::seekBegin);
+										extDescFile.Seek(offs, File::seekBegin);
 										if(extDescFile.Read(&ed, sizeof(ext_desc_type)) == sizeof(ext_desc_type)) {
 											strcpy(extDesc[recNo].name, ed.name);
 											extDesc[recNo].offset = offs;
@@ -116,7 +116,7 @@ void checkFileAreas(int num_dirs) {
 							}
 							for(unsigned int fileNo = 1; fileNo < numFiles; fileNo++) {
 								bool modified = false;
-								recordFile.Seek(sizeof(uploadsrec) * fileNo, WFile::seekBegin);
+								recordFile.Seek(sizeof(uploadsrec) * fileNo, File::seekBegin);
 								recordFile.Read(&upload, sizeof(uploadsrec));
 								bool extDescFound = false;
 								for(unsigned int desc = 0; desc < recNo; desc++) {
@@ -133,9 +133,9 @@ void checkFileAreas(int num_dirs) {
 									modified = true;
 									Print(NOK, true, "Fixed extended description for '%s'.", upload.filename);
 								}
-								WFile file(directories[i].path, Unalign(upload.filename));
+								File file(directories[i].path, Unalign(upload.filename));
 								if (strlen(upload.filename)>0 && file.Exists()) {
-									if (file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+									if (file.Open(File::modeReadOnly | File::modeBinary)) {
                                         Print(OK, false, "Checking file '%s'.", file.full_pathname().c_str());
                                         if (upload.numbytes != (unsigned long)file.GetLength()) {
 
@@ -150,7 +150,7 @@ void checkFileAreas(int num_dirs) {
                                     }
 								}
 								if(modified) {
-									recordFile.Seek(sizeof(uploadsrec) * fileNo, WFile::seekBegin);
+									recordFile.Seek(sizeof(uploadsrec) * fileNo, File::seekBegin);
 									recordFile.Write(&upload, sizeof(uploadsrec));
 								}
 							}

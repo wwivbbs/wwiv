@@ -58,7 +58,7 @@ void multimail(int *pnUserNumber, int numu) {
   m.msg.storage_type = EMAIL_STORAGE;
   strcpy(irt, "Multi-Mail");
   irt_name[0] = 0;
-  WFile::Remove(QUOTES_TXT);
+  File::Remove(QUOTES_TXT);
   std::string t;
   inmsg(&m.msg, &t, &i, true, "email", INMSG_FSED, "Multi-Mail", MSGED_FLAG_NONE);
   if (m.msg.stored_as == 0xffffffff) {
@@ -138,17 +138,17 @@ void multimail(int *pnUserNumber, int numu) {
   m.status = status_multimail;
   m.daten = static_cast<unsigned long>(time(nullptr));
 
-  unique_ptr<WFile> pFileEmail(OpenEmailFile(true));
+  unique_ptr<File> pFileEmail(OpenEmailFile(true));
   int len = pFileEmail->GetLength() / sizeof(mailrec);
   if (len == 0) {
     i = 0;
   } else {
     i = len - 1;
-    pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), WFile::seekBegin);
+    pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::seekBegin);
     pFileEmail->Read(&m1, sizeof(mailrec));
     while ((i > 0) && (m1.tosys == 0) && (m1.touser == 0)) {
       --i;
-      pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), WFile::seekBegin);
+      pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::seekBegin);
       int i1 = pFileEmail->Read(&m1, sizeof(mailrec));
       if (i1 == -1) {
         bout << "|#6DIDN'T READ WRITE!\r\n";
@@ -158,7 +158,7 @@ void multimail(int *pnUserNumber, int numu) {
       ++i;
     }
   }
-  pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), WFile::seekBegin);
+  pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::seekBegin);
   for (int cv = 0; cv < numu; cv++) {
     if (pnUserNumber[cv] > 0) {
       m.touser = static_cast<unsigned short>(pnUserNumber[cv]);
@@ -345,8 +345,8 @@ void slash_e() {
       bout << "|#2Which? ";
       input(s, 8);
 
-      WFile fileMailList(syscfg.datadir, s);
-      if (!fileMailList.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+      File fileMailList(syscfg.datadir, s);
+      if (!fileMailList.Open(File::modeBinary | File::modeReadOnly)) {
         bout.nl();
         bout << "Unknown mailing list.\r\n\n";
       } else {

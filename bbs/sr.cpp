@@ -385,8 +385,8 @@ int get_protocol(xfertype xt) {
 void ascii_send(const char *pszFileName, bool *sent, double *percent) {
   char b[2048];
 
-  WFile file(pszFileName);
-  if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(pszFileName);
+  if (file.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileSize = file.GetLength();
     lFileSize = std::max<long>(lFileSize, 1);
     int nNumRead = file.Read(b, 1024);
@@ -607,7 +607,7 @@ void receive_file(const char *pszFileName, int *received, const char *sfn, int d
   default:
     if (nProtocol > (WWIV_NUM_INTERNAL_PROTOCOLS - 1) && incom) {
       extern_prot(nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS, pszFileName, false);
-      *received = WFile::Exists(pszFileName);
+      *received = File::Exists(pszFileName);
     }
     break;
   }
@@ -661,14 +661,14 @@ void endbatch() {
       abort = true;
     }
     if (ch == CU) {
-      WFile nullFile;
+      File nullFile;
       send_b(nullFile, 0L, 3, 0, &ucrc, "", &terr, &abort);
       abort = true;
     }
     /*
     if ((!hangup) && (!abort))
     {
-      WFile nullFile;
+      File nullFile;
       send_b(nullFile,0L,2,0,&ucrc,"",&terr,&abort);
     }
     */

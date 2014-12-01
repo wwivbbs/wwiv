@@ -9,8 +9,8 @@ set(COMMON_SOURCES
   os.cpp
   platform/wutil.cpp
   strings.cpp
-  wfile.cpp
-  wfile_unix.cpp
+  file.cpp
+  file_unix.cpp
   wtextfile.cpp
   )
 

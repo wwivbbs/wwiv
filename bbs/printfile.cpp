@@ -27,7 +27,7 @@
 #include "bbs.h"
 #include "wsession.h"
 #include "core/wwivport.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "platform/wlocal_io.h"
@@ -44,14 +44,14 @@ using wwiv::strings::StringPrintf;
  * Creates the fully qualified filename to display adding extensions and directories as needed.
  */
 const string CreateFullPathToPrint(const string& basename) {
-  if (WFile::Exists(basename)) {
+  if (File::Exists(basename)) {
     return basename;
   }
   string langdir(GetSession()->language_dir);
   string gfilesdir(syscfg.gfilesdir);
   std::vector<string> dirs { langdir, gfilesdir };
   for (const auto& base : dirs) {
-    WFile file(base, basename);
+    File file(base, basename);
     if (basename.find('.') != string::npos) {
       // We have a file with extension.
       if (file.Exists()) {
@@ -65,19 +65,19 @@ const string CreateFullPathToPrint(const string& basename) {
       if (GetSession()->GetCurrentUser()->HasColor()) {
         // ANSI and color
         string candidate = StringPrintf("%s.ans", root_filename.c_str());
-        if (WFile::Exists(candidate)) {
+        if (File::Exists(candidate)) {
           return candidate;
         }
       }
       // ANSI.
       string candidate = StringPrintf("%s.b&w", root_filename.c_str());
-      if (WFile::Exists(candidate)) {
+      if (File::Exists(candidate)) {
         return candidate;
       }
     }
     // ANSI/Color optional
     string candidate = StringPrintf("%s.msg", root_filename.c_str());
-    if (WFile::Exists(candidate)) {
+    if (File::Exists(candidate)) {
       return candidate;
     }
   }
@@ -149,13 +149,13 @@ void print_local_file(const char *ss, const char *ss1) {
   WWIV_ASSERT(ss);
 
   char *pszTempSS = strdup(ss);
-  char *bs = strchr(pszTempSS, WFile::pathSeparatorChar);
+  char *bs = strchr(pszTempSS, File::pathSeparatorChar);
   if ((syscfg.sysconfig & sysconfig_list) && !incom) {
     if (!bs) {
       char * pszTempSS1 = strdup(ss1);
       sprintf(szCmdLine, "%s %s%s", "LIST", syscfg.gfilesdir, ss);
       if (ss1[0]) {
-        bs = strchr(pszTempSS1, WFile::pathSeparatorChar);
+        bs = strchr(pszTempSS1, File::pathSeparatorChar);
         if (!bs) {
           sprintf(szCmdLine2, "%s %s%s", szCmdLine, syscfg.gfilesdir, ss1);
         } else {
@@ -168,7 +168,7 @@ void print_local_file(const char *ss, const char *ss1) {
       sprintf(szCmdLine, "%s %s", "LIST", ss);
       if (ss1[0]) {
         char * pszTempSS1 = strdup(ss1);
-        bs = strchr(pszTempSS1, WFile::pathSeparatorChar);
+        bs = strchr(pszTempSS1, File::pathSeparatorChar);
         if (!bs) {
           sprintf(szCmdLine2, "%s %s%s", szCmdLine, syscfg.gfilesdir, ss1);
         } else {

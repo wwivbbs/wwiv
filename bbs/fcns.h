@@ -475,7 +475,7 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
 char *readfile(messagerec * pMessageRecord, const std::string fileName, long *plMessageLength);
 void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed);
 bool ForwardMessage(int *pUserNumber, int *pSystemNumber);
-WFile *OpenEmailFile(bool bAllowWrite);
+File *OpenEmailFile(bool bAllowWrite);
 void sendout_email(const std::string& title, messagerec * msg, int anony, int nUserNumber, int nSystemNumber, int an,
                    int nFromUser, int nFromSystem, int nForwardedCode, int nFromNetworkNumber);
 bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit);
@@ -497,7 +497,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
 void qscan(int nBeginSubNumber, int *pnNextSubNumber);
 void nscan(int nStartingSubNum = 0);
 void ScanMessageTitles();
-void delmail(WFile *pFile, int loc);
+void delmail(File *pFile, int loc);
 void remove_post();
 
 // File: multinst.cpp
@@ -609,7 +609,7 @@ void zmodem_receive(const std::string& filename, bool *received);
 // File: srsend.cpp
 
 void send_block(char *b, int nBlockType, bool bUseCRC, char byBlockNumber);
-char send_b(WFile &file, long pos, int nBlockType, char byBlockNumber, bool *bUseCRC, const char *pszFileName,
+char send_b(File &file, long pos, int nBlockType, char byBlockNumber, bool *bUseCRC, const char *pszFileName,
             int *terr, bool *abort);
 bool okstart(bool *bUseCRC, bool *abort);
 void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUseCRC, bool bUseYModem,
@@ -770,7 +770,7 @@ int  recno(const char *pszFileMask);
 int  nrecno(const char *pszFileMask, int nStartingRec);
 int  printfileinfo(uploadsrec * pUploadRecord, int nDirectoryNum);
 void remlist(const char *pszFileName);
-int  FileAreaSetRecord(WFile &file, int nRecordNumber);
+int  FileAreaSetRecord(File &file, int nRecordNumber);
 
 
 // File: xferovl.cpp

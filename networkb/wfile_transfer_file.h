@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include <core/wfile.h>
+#include <core/file.h>
 
 #include "networkb/transfer_file.h"
 
@@ -18,7 +18,7 @@ namespace net {
   
 class WFileTransferFile : public TransferFile {
 public:
-  WFileTransferFile(const std::string& filename, std::unique_ptr<WFile>&& file);
+  WFileTransferFile(const std::string& filename, std::unique_ptr<File>&& file);
   virtual ~WFileTransferFile();
 
   virtual int file_size() const override final;
@@ -26,7 +26,7 @@ public:
   virtual bool WriteChunk(const char* chunk, std::size_t size) override final;
 
  private:
-  std::unique_ptr<WFile> file_; 
+  std::unique_ptr<File> file_; 
 };
 
 

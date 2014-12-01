@@ -22,7 +22,7 @@
 #include <direct.h>
 
 #include "core/strings.h"
-#include "core/wfile.h"
+#include "core/file.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -90,12 +90,12 @@ void WWIV_make_abs_cmd(const std::string root, std::string* out) {
     }
     _snprintf(s, sizeof(s), "%s%s", s1, ext.c_str());
     if (s1[1] == ':') {
-      if (WFile::Exists(s)) {
+      if (File::Exists(s)) {
         *out = StrCat(s, s2);
         return;
       }
     } else {
-      if (WFile::Exists(s)) {
+      if (File::Exists(s)) {
         *out = StrCat(root, s, s2);
         return;
       } else {
@@ -121,7 +121,7 @@ int WWIV_make_path(const char *s) {
   _getdcwd(0, current_path, MAX_PATH);
   
   char current_drive = static_cast< char >(*current_path - '@');
-  if (p[strlen(p)-1] == WFile::pathSeparatorChar) {
+  if (p[strlen(p)-1] == File::pathSeparatorChar) {
     p[strlen(p)-1] = 0;
   }
   if (p[1] == ':') {
@@ -133,11 +133,11 @@ int WWIV_make_path(const char *s) {
     }
     p += 2;
   }
-  if (*p == WFile::pathSeparatorChar) {
-    _chdir(WFile::pathSeparatorString);
+  if (*p == File::pathSeparatorChar) {
+    _chdir(File::pathSeparatorString);
     p++;
   }
-  for (; (p = strtok(p, WFile::pathSeparatorString)) != 0; p = 0) {
+  for (; (p = strtok(p, File::pathSeparatorString)) != 0; p = 0) {
     if (_chdir(p)) {
       if (_mkdir(p)) {
         _chdir(current_path);

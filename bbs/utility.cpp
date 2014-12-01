@@ -78,7 +78,7 @@ void remove_from_temp(const char *pszFileName, const char *pszDirectoryName, boo
       if (bPrintStatus) {
         std::cout << "Deleting TEMP file: " << pszDirectoryName << szFileName << std::endl;
       }
-      WFile::Remove(pszDirectoryName, szFileName);
+      File::Remove(pszDirectoryName, szFileName);
     }
     bFound = fnd.next();
   }
@@ -136,8 +136,8 @@ void frequent_init() {
   extratimecall = 0.0;
   GetSession()->using_modem = 0;
   GetSession()->localIO()->set_global_handle(false);
-  WFile::SetFilePermissions(g_szDSZLogFileName, WFile::permReadWrite);
-  WFile::Remove(g_szDSZLogFileName);
+  File::SetFilePermissions(g_szDSZLogFileName, File::permReadWrite);
+  File::Remove(g_szDSZLogFileName);
   GetSession()->SetTimeOnlineLimited(false);
   GetSession()->localIO()->set_x_only(0, nullptr, 0);
   set_net_num(0);
@@ -236,11 +236,11 @@ void send_net(net_header_rec * nh, unsigned short int *list, const char *text, c
   const string filename = StringPrintf("%sp1%s",
     GetSession()->GetNetworkDataDirectory().c_str(),
     GetApplication()->GetNetworkExtension().c_str());
-  WFile file(filename);
-  if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
+  File file(filename);
+  if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;
   }
-  file.Seek(0L, WFile::seekEnd);
+  file.Seek(0L, File::seekEnd);
   if (!list) {
     nh->list_len = 0;
   }
@@ -371,11 +371,11 @@ char *get_wildlist(char *pszFileMask) {
     bout.bprintf("%12.12s ", fnd.GetFileName());
   }
 
-  if (strchr(pszFileMask, WFile::pathSeparatorChar) == nullptr) {
+  if (strchr(pszFileMask, File::pathSeparatorChar) == nullptr) {
     pszFileMask[0] = '\0';
   } else {
     for (int i = 0; i < wwiv::strings::GetStringLength(pszFileMask); i++) {
-      if (pszFileMask[i] == WFile::pathSeparatorChar) {
+      if (pszFileMask[i] == File::pathSeparatorChar) {
         mark = i + 1;
       }
     }
@@ -537,8 +537,8 @@ slrec getslrec(int nSl) {
     return CurSlRec;
   }
 
-  WFile file(GetApplication()->GetHomeDir(), CONFIG_DAT);
-  if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(GetApplication()->GetHomeDir(), CONFIG_DAT);
+  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     // Bad ju ju here.
     GetApplication()->AbortBBS();
   }

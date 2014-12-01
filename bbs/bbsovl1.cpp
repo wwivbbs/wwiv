@@ -104,13 +104,13 @@ int GetMaxMessageLinesAllowed() {
  * Allows user to upload a post.
  */
 void upload_post() {
-  WFile file(syscfgovr.tempdir, INPUT_MSG);
+  File file(syscfgovr.tempdir, INPUT_MSG);
   long lMaxBytes = 250 * static_cast<long>(GetMaxMessageLinesAllowed());
 
   bout << "\r\nYou may now upload a message, max bytes: " << lMaxBytes << wwiv::endl << wwiv::endl;
   int i = 0;
   receive_file(file.full_pathname().c_str(), &i, INPUT_MSG, -1);
-  if (file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+  if (file.Open(File::modeReadOnly | File::modeBinary)) {
     long lFileSize = file.GetLength();
     if (lFileSize > lMaxBytes) {
       bout << "\r\n|#6Sorry, your message is too long.  Not saved.\r\n\n";

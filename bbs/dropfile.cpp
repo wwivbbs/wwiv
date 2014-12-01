@@ -26,7 +26,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 
 using std::string;
 
@@ -144,8 +144,8 @@ long GetMinutesRemainingForDropFile() {
 /** make DORINFO1.DEF (RBBS and many others) dropfile */
 void CreateDoorInfoDropFile() {
   string fileName = create_filename(CHAINFILE_DORINFO);
-  WFile::Remove(fileName);
-  WTextFile fileDorInfoSys(fileName, "wt");
+  File::Remove(fileName);
+  TextFile fileDorInfoSys(fileName, "wt");
   if (fileDorInfoSys.IsOpen()) {
     fileDorInfoSys.WriteFormatted("%s\n%s\n\nCOM%d\n", syscfg.systemname, syscfg.sysopname,
                                   incom ? syscfgovr.primaryport : 0);
@@ -177,9 +177,9 @@ void CreateDoorInfoDropFile() {
 /** make PCBOARD.SYS (PC Board) drop file */
 void CreatePCBoardSysDropFile() {
   string fileName = create_filename(CHAINFILE_PCBOARD);
-  WFile pcbFile(fileName);
+  File pcbFile(fileName);
   pcbFile.Delete();
-  if (pcbFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
+  if (pcbFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     pcboard_sys_rec pcb;
     memset(&pcb, 0, sizeof(pcb));
     strcpy(pcb.display, "-1");
@@ -250,8 +250,8 @@ void CreatePCBoardSysDropFile() {
 void CreateCallInfoBbsDropFile() {
   // make CALLINFO.BBS (WildCat!)
   string fileName = create_filename(CHAINFILE_CALLINFO);
-  WFile::Remove(fileName);
-  WTextFile file(fileName, "wt");
+  File::Remove(fileName);
+  TextFile file(fileName, "wt");
   if (file.IsOpen()) {
     file.WriteFormatted("%s\n", GetSession()->GetCurrentUser()->GetRealName());
     switch (modem_speed) {
@@ -332,9 +332,9 @@ void CreateDoor32SysDropFile() {
 
      ========================================================================= */
   string fileName = create_filename(CHAINFILE_DOOR32);
-  WFile::Remove(fileName);
+  File::Remove(fileName);
 
-  WTextFile file(fileName, "wt");
+  TextFile file(fileName, "wt");
   if (file.IsOpen()) {
     file.WriteFormatted("%d\n",     GetDoor32CommType());
     file.WriteFormatted("%u\n",     GetSession()->remoteIO()->GetDoorHandle());
@@ -355,9 +355,9 @@ void CreateDoor32SysDropFile() {
 /** Create generic DOOR.SYS dropfile */
 void CreateDoorSysDropFile() {
   string fileName = create_filename(CHAINFILE_DOOR);
-  WFile::Remove(fileName);
+  File::Remove(fileName);
 
-  WTextFile file(fileName, "wt");
+  TextFile file(fileName, "wt");
   if (file.IsOpen()) {
     char szLine[255];
     string cspeed = GetComSpeedInDropfileFormat(com_speed);
@@ -478,8 +478,8 @@ const string create_chain_file() {
 
   string fileName = create_filename(CHAINFILE_CHAIN);
 
-  WFile::Remove(fileName);
-  WTextFile file(fileName, "wt");
+  File::Remove(fileName);
+  TextFile file(fileName, "wt");
   if (file.IsOpen()) {
     file.WriteFormatted("%d\n%s\n%s\n%s\n%d\n%c\n%10.2f\n%s\n%d\n%d\n%d\n",
                         GetSession()->usernum,

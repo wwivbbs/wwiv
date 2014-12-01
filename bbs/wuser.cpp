@@ -24,7 +24,7 @@
 #include "sdk/filenames.h"
 #include "bbs/wuser.h"
 #include "core/strings.h"
-#include "core/wfile.h"
+#include "core/file.h"
 
 #if defined( _WIN32 )
 #define snprintf _snprintf
@@ -110,8 +110,8 @@ void WUserManager::InitializeUserManager(std::string dataDirectory, int nUserRec
 }
 
 int  WUserManager::GetNumberOfUserRecords() const {
-  WFile userList(m_dataDirectory, USER_LST);
-  if (userList.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+  File userList(m_dataDirectory, USER_LST);
+  if (userList.Open(File::modeReadOnly | File::modeBinary)) {
     long nSize = userList.GetLength();
     int nNumRecords = (static_cast<int>(nSize / m_nUserRecordLength) - 1);
     return nNumRecords;
@@ -120,8 +120,8 @@ int  WUserManager::GetNumberOfUserRecords() const {
 }
 
 bool WUserManager::ReadUserNoCache(WUser *pUser, int nUserNumber) {
-  WFile userList(m_dataDirectory, USER_LST);
-  if (!userList.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+  File userList(m_dataDirectory, USER_LST);
+  if (!userList.Open(File::modeReadOnly | File::modeBinary)) {
     pUser->data.inact = inact_deleted;
     pUser->FixUp();
     return false;
@@ -135,7 +135,7 @@ bool WUserManager::ReadUserNoCache(WUser *pUser, int nUserNumber) {
     return false;
   }
   long pos = static_cast<long>(m_nUserRecordLength) * static_cast<long>(nUserNumber);
-  userList.Seek(pos, WFile::seekBegin);
+  userList.Seek(pos, File::seekBegin);
   userList.Read(&pUser->data,  m_nUserRecordLength);
   pUser->FixUp();
   return true;
@@ -158,10 +158,10 @@ bool WUserManager::ReadUser(WUser *pUser, int nUserNumber, bool bForceRead) {
 }
 
 bool WUserManager::WriteUserNoCache(WUser *pUser, int nUserNumber) {
-  WFile userList(m_dataDirectory, USER_LST);
-  if (userList.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
+  File userList(m_dataDirectory, USER_LST);
+  if (userList.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     long pos = static_cast<long>(m_nUserRecordLength) * static_cast<long>(nUserNumber);
-    userList.Seek(pos, WFile::seekBegin);
+    userList.Seek(pos, File::seekBegin);
     userList.Write(&pUser->data,  m_nUserRecordLength);
     return true;
   }
@@ -195,8 +195,8 @@ int WUserManager::FindUser(std::string searchString) {
     return sr->number;
   }
 #else
-  std::unique_ptr<WFile> usersFile(new WFile(m_dataDirectory, USER_LST));
-  usersFile->Open(WFile::modeBinary | WFile::modeReadOnly);
+  std::unique_ptr<File> usersFile(new File(m_dataDirectory, USER_LST));
+  usersFile->Open(File::modeBinary | File::modeReadOnly);
   smalrec userRec;
   if (usersFile->IsOpen()) {
     bool done = false;

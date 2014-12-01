@@ -78,7 +78,7 @@ void send_block(char *b, int nBlockType, bool bUseCRC, char byBlockNumber) {
 }
 
 
-char send_b(WFile &file, long pos, int nBlockType, char byBlockNumber, bool *bUseCRC, const char *pszFileName,
+char send_b(File &file, long pos, int nBlockType, char byBlockNumber, bool *bUseCRC, const char *pszFileName,
             int *terr, bool *abort) {
   char b[1025], szTempBuffer[20];
 
@@ -90,7 +90,7 @@ char send_b(WFile &file, long pos, int nBlockType, char byBlockNumber, bool *bUs
     nb = 1024;
   }
   if (nb) {
-    file.Seek(pos, WFile::seekBegin);
+    file.Seek(pos, File::seekBegin);
     int nNumRead = file.Read(b, nb);
     for (int i = nNumRead; i < nb; i++) {
       b[i] = '\0';
@@ -181,8 +181,8 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
   bool abort = false;
   int terr = 0;
   char *pszWorkingFileName = strdup(pszFileName);
-  WFile file(pszWorkingFileName);
-  if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  File file(pszWorkingFileName);
+  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     if (!bUseYModemBatch) {
       bout << "\r\nFile not found.\r\n\n";
     }

@@ -28,7 +28,7 @@
 #include "bbs/wstatus.h"
 #include "core/inifile.h"
 #include "core/strings.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 
 using std::string;
 using wwiv::bbs::InputMode;
@@ -149,19 +149,19 @@ static bool check_name(const string userName) {
     return false;
   }
 
-  WFile trashFile(syscfg.gfilesdir, TRASHCAN_TXT);
-  if (!trashFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+  File trashFile(syscfg.gfilesdir, TRASHCAN_TXT);
+  if (!trashFile.Open(File::modeReadOnly | File::modeBinary)) {
     return true;
   }
 
-  trashFile.Seek(0L, WFile::seekBegin);
+  trashFile.Seek(0L, File::seekBegin);
   long lTrashFileLen = trashFile.GetLength();
   long lTrashFilePointer = 0;
   sprintf(s2, " %s ", userName.c_str());
   bool ok = true;
   while (lTrashFilePointer < lTrashFileLen && ok && !hangup) {
     CheckForHangup();
-    trashFile.Seek(lTrashFilePointer, WFile::seekBegin);
+    trashFile.Seek(lTrashFilePointer, File::seekBegin);
     trashFile.Read(s, 150);
     int i = 0;
     while ((i < 150) && (s[i])) {
@@ -611,9 +611,9 @@ void input_ansistat() {
 }
 
 static int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
-  WFile userFile(syscfg.datadir, USER_LST);
+  File userFile(syscfg.datadir, USER_LST);
   for (int i = 0; !userFile.IsOpen() && (i < 20); i++) {
-    if (!userFile.Open(WFile::modeBinary | WFile::modeReadWrite | WFile::modeCreateFile)) {
+    if (!userFile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
       Wait(0.1);
     }
   }
@@ -622,7 +622,7 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
   }
 
   int nNewUserNumber = static_cast<int>((userFile.GetLength() / syscfg.userreclen) - 1);
-  userFile.Seek(syscfg.userreclen, WFile::seekBegin);
+  userFile.Seek(syscfg.userreclen, File::seekBegin);
   int nUserNumber = 1;
 
   if (nNewUserNumber == GetApplication()->GetStatusManager()->GetUserCount()) {
@@ -632,21 +632,21 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
       if (nUserNumber % 25 == 0) {
         userFile.Close();
         for (int n = 0; !userFile.IsOpen() && (n < 20); n++) {
-          if (!userFile.Open(WFile::modeBinary | WFile::modeReadWrite | WFile::modeCreateFile)) {
+          if (!userFile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
             Wait(0.1);
           }
         }
         if (!userFile.IsOpen()) {
           return -1;
         }
-        userFile.Seek(static_cast<long>(nUserNumber * syscfg.userreclen), WFile::seekBegin);
+        userFile.Seek(static_cast<long>(nUserNumber * syscfg.userreclen), File::seekBegin);
         nNewUserNumber = static_cast<int>((userFile.GetLength() / syscfg.userreclen) - 1);
       }
       WUser tu;
       userFile.Read(&tu.data, syscfg.userreclen);
 
       if (tu.IsUserDeleted() && tu.GetSl() != 255) {
-        userFile.Seek(static_cast<long>(nUserNumber * syscfg.userreclen), WFile::seekBegin);
+        userFile.Seek(static_cast<long>(nUserNumber * syscfg.userreclen), File::seekBegin);
         userFile.Write(&pUser->data, syscfg.userreclen);
         userFile.Close();
         write_qscn(nUserNumber, qsc, false);
@@ -659,7 +659,7 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
   }
 
   if (nUserNumber <= syscfg.maxusers) {
-    userFile.Seek(static_cast<long>(nUserNumber * syscfg.userreclen), WFile::seekBegin);
+    userFile.Seek(static_cast<long>(nUserNumber * syscfg.userreclen), File::seekBegin);
     userFile.Write(&pUser->data, syscfg.userreclen);
     userFile.Close();
     write_qscn(nUserNumber, qsc, false);
@@ -789,8 +789,8 @@ void DoFullNewUser() {
   if (syscfg.sysconfig & sysconfig_extended_info) {
     input_street();
     char szZipFileName[ MAX_PATH ];
-    sprintf(szZipFileName, "%s%s%czip1.dat", syscfg.datadir, ZIPCITY_DIR, WFile::pathSeparatorChar);
-    if (WFile::Exists(szZipFileName)) {
+    sprintf(szZipFileName, "%s%s%czip1.dat", syscfg.datadir, ZIPCITY_DIR, File::pathSeparatorChar);
+    if (File::Exists(szZipFileName)) {
       input_zipcode();
       if (!check_zip(GetSession()->GetCurrentUser()->GetZipcode(), 1)) {
         GetSession()->GetCurrentUser()->SetCity("");
@@ -1210,9 +1210,9 @@ bool check_zip(const char *pszZipCode, int mode) {
   bool found = false;
 
   char szFileName[ MAX_PATH ];
-  sprintf(szFileName, "%s%s%czip%c.dat", syscfg.datadir, ZIPCITY_DIR, WFile::pathSeparatorChar, pszZipCode[0]);
+  sprintf(szFileName, "%s%s%czip%c.dat", syscfg.datadir, ZIPCITY_DIR, File::pathSeparatorChar, pszZipCode[0]);
 
-  WTextFile zip_file(szFileName, "r");
+  TextFile zip_file(szFileName, "r");
   if (!zip_file.IsOpen()) {
     ok = false;
     if (mode != 2) {
@@ -1538,7 +1538,7 @@ void DoMinimalNewUser() {
 
 
 void new_mail() {
-  WFile file(syscfg.gfilesdir, (GetSession()->GetCurrentUser()->GetSl() > syscfg.newusersl) ? NEWSYSOP_MSG : NEWMAIL_MSG);
+  File file(syscfg.gfilesdir, (GetSession()->GetCurrentUser()->GetSl() > syscfg.newusersl) ? NEWSYSOP_MSG : NEWMAIL_MSG);
   if (!file.Exists()) {
     return;
   }

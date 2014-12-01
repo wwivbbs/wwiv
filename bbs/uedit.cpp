@@ -49,14 +49,14 @@ void deluser(int nUserNumber) {
     user.SetInactFlag(WUser::userDeleted);
     user.SetNumMailWaiting(0);
     GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
-    WFile *pFileEmail = OpenEmailFile(true);
+    File *pFileEmail = OpenEmailFile(true);
     WWIV_ASSERT(pFileEmail);
     if (pFileEmail->IsOpen()) {
       long lEmailFileLen = pFileEmail->GetLength() / sizeof(mailrec);
       for (int nMailRecord = 0; nMailRecord < lEmailFileLen; nMailRecord++) {
         mailrec m;
 
-        pFileEmail->Seek(nMailRecord * sizeof(mailrec), WFile::seekBegin);
+        pFileEmail->Seek(nMailRecord * sizeof(mailrec), File::seekBegin);
         pFileEmail->Read(&m, sizeof(mailrec));
         if ((m.tosys == 0 && m.touser == nUserNumber) ||
             (m.fromsys == 0 && m.fromuser == nUserNumber)) {
@@ -66,8 +66,8 @@ void deluser(int nUserNumber) {
       pFileEmail->Close();
       delete pFileEmail;
     }
-    WFile voteFile(syscfg.datadir, VOTING_DAT);
-    voteFile.Open(WFile::modeReadWrite | WFile::modeBinary);
+    File voteFile(syscfg.datadir, VOTING_DAT);
+    voteFile.Open(File::modeReadWrite | File::modeBinary);
     long nNumVoteRecords = static_cast<int>(voteFile.GetLength() / sizeof(votingrec)) - 1;
     for (long lCurVoteRecord = 0; lCurVoteRecord < 20; lCurVoteRecord++) {
       if (user.GetVote(lCurVoteRecord)) {
@@ -75,12 +75,12 @@ void deluser(int nUserNumber) {
           votingrec v;
           voting_response vr;
 
-          voteFile.Seek(static_cast<long>(lCurVoteRecord * sizeof(votingrec)), WFile::seekBegin);
+          voteFile.Seek(static_cast<long>(lCurVoteRecord * sizeof(votingrec)), File::seekBegin);
           voteFile.Read(&v, sizeof(votingrec));
           vr = v.responses[ user.GetVote(lCurVoteRecord) - 1 ];
           vr.numresponses--;
           v.responses[ user.GetVote(lCurVoteRecord) - 1 ] = vr;
-          voteFile.Seek(static_cast<long>(lCurVoteRecord * sizeof(votingrec)), WFile::seekBegin);
+          voteFile.Seek(static_cast<long>(lCurVoteRecord * sizeof(votingrec)), File::seekBegin);
           voteFile.Write(&v, sizeof(votingrec));
         }
         user.SetVote(lCurVoteRecord, 0);

@@ -36,14 +36,14 @@ void rsm(int nUserNum, WUser *pUser, bool bAskToSaveMsgs) {
   bool bShownAnyMessage = false;
   int bShownAllMessages = true;
   if (pUser->HasShortMessage()) {
-    WFile file(syscfg.datadir, SMW_DAT);
-    if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
+    File file(syscfg.datadir, SMW_DAT);
+    if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
     }
     int nTotalMsgsInFile = static_cast<int>(file.GetLength() / sizeof(shortmsgrec));
     for (int nCurrentMsg = 0; nCurrentMsg < nTotalMsgsInFile; nCurrentMsg++) {
       shortmsgrec sm;
-      file.Seek(nCurrentMsg * sizeof(shortmsgrec), WFile::seekBegin);
+      file.Seek(nCurrentMsg * sizeof(shortmsgrec), File::seekBegin);
       file.Read(&sm, sizeof(shortmsgrec));
       if (sm.touser == nUserNum && sm.tosys == 0) {
         bout.Color(9);
@@ -68,7 +68,7 @@ void rsm(int nUserNum, WUser *pUser, bool bAskToSaveMsgs) {
           sm.touser = 0;
           sm.tosys = 0;
           sm.message[0] = 0;
-          file.Seek(nCurrentMsg * sizeof(shortmsgrec), WFile::seekBegin);
+          file.Seek(nCurrentMsg * sizeof(shortmsgrec), File::seekBegin);
           file.Write(&sm, sizeof(shortmsgrec));
         } else {
           bShownAllMessages = false;
@@ -90,19 +90,19 @@ void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char 
   WUser user;
   GetApplication()->GetUserManager()->ReadUser(&user, nUserNum);
   if (!user.IsUserDeleted()) {
-    WFile file(syscfg.datadir, SMW_DAT);
-    if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
+    File file(syscfg.datadir, SMW_DAT);
+    if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
     }
     int nTotalMsgsInFile = static_cast<int>(file.GetLength() / sizeof(shortmsgrec));
     int nNewMsgPos = nTotalMsgsInFile - 1;
     shortmsgrec sm;
     if (nNewMsgPos >= 0) {
-      file.Seek(nNewMsgPos * sizeof(shortmsgrec), WFile::seekBegin);
+      file.Seek(nNewMsgPos * sizeof(shortmsgrec), File::seekBegin);
       file.Read(&sm, sizeof(shortmsgrec));
       while (sm.tosys == 0 && sm.touser == 0 && nNewMsgPos > 0) {
         --nNewMsgPos;
-        file.Seek(nNewMsgPos * sizeof(shortmsgrec), WFile::seekBegin);
+        file.Seek(nNewMsgPos * sizeof(shortmsgrec), File::seekBegin);
         file.Read(&sm, sizeof(shortmsgrec));
       }
       if (sm.tosys != 0 || sm.touser != 0) {
@@ -115,7 +115,7 @@ void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char 
     sm.touser = static_cast<unsigned short>(nUserNum);
     strncpy(sm.message, pszMessageText, 80);
     sm.message[80] = '\0';
-    file.Seek(nNewMsgPos * sizeof(shortmsgrec), WFile::seekBegin);
+    file.Seek(nNewMsgPos * sizeof(shortmsgrec), File::seekBegin);
     file.Write(&sm, sizeof(shortmsgrec));
     file.Close();
     user.SetStatusFlag(WUser::SMW);
@@ -141,9 +141,9 @@ void SendRemoteShortMessage(int nUserNum, int nSystemNum, char *pszMessageText) 
   const string packet_filename = StringPrintf("%sp0%s", 
     GetSession()->GetNetworkDataDirectory().c_str(),
     GetApplication()->GetNetworkExtension().c_str());
-  WFile file(packet_filename);
-  file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
-  file.Seek(0L, WFile::seekEnd);
+  File file(packet_filename);
+  file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
+  file.Seek(0L, File::seekEnd);
   file.Write(&nh, sizeof(net_header_rec));
   file.Write(pszMessageText, nh.length);
   file.Close();

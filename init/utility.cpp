@@ -34,7 +34,7 @@
 #include "bbs/wconstants.h"
 #include "wwivinit.h"
 #include "core/wwivport.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "core/wfndfile.h"
 #include "sdk/filenames.h"
 
@@ -54,17 +54,17 @@ static void fix_user_rec(userrec *u) {
 }
 
 int number_userrecs() {
-  WFile file(syscfg.datadir, USER_LST);
-  if (file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
-                WFile::shareDenyReadWrite)) {
+  File file(syscfg.datadir, USER_LST);
+  if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile,
+                File::shareDenyReadWrite)) {
     return static_cast<int>(file.GetLength() / sizeof(userrec)) - 1;
   }
   return -1;
 }
 
 void read_user(unsigned int un, userrec *u) {
-  WFile file(syscfg.datadir, USER_LST);
-  if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyReadWrite)) {
+  File file(syscfg.datadir, USER_LST);
+  if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite)) {
     u->inact = inact_deleted;
     fix_user_rec(u);
     return;
@@ -79,7 +79,7 @@ void read_user(unsigned int un, userrec *u) {
     return;
   }
   long pos = ((long) syscfg.userreclen) * ((long) un);
-  file.Seek(pos, WFile::seekBegin);
+  file.Seek(pos, File::seekBegin);
   file.Read(u, syscfg.userreclen);
   file.Close();
   fix_user_rec(u);
@@ -90,10 +90,10 @@ void write_user(unsigned int un, userrec *u) {
     return;
   }
 
-  WFile file(syscfg.datadir, USER_LST);
-  if (file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
+  File file(syscfg.datadir, USER_LST);
+  if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     long pos = un * syscfg.userreclen;
-    file.Seek(pos, WFile::seekBegin);
+    file.Seek(pos, File::seekBegin);
     file.Write(u, syscfg.userreclen);
     file.Close();
   }
@@ -104,9 +104,9 @@ void write_user(unsigned int un, userrec *u) {
   SecondUserRec.cHotKeys = 1;
   SecondUserRec.cMenuType = 0;
 
-  WFile userdat(syscfg.datadir, "user.dat");
-  if (userdat.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone)) {
-    userdat.Seek(un * sizeof(user_config), WFile::seekBegin);
+  File userdat(syscfg.datadir, "user.dat");
+  if (userdat.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone)) {
+    userdat.Seek(un * sizeof(user_config), File::seekBegin);
     userdat.Write(&SecondUserRec, sizeof(user_config));
     userdat.Close();
   }
@@ -114,16 +114,16 @@ void write_user(unsigned int un, userrec *u) {
 }
 
 void save_status() {
-  WFile file(syscfg.datadir, STATUS_DAT);
-  if (file.Open(WFile::modeBinary|WFile::modeReadWrite|WFile::modeCreateFile)) {
+  File file(syscfg.datadir, STATUS_DAT);
+  if (file.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile)) {
     file.Write(&status, sizeof(statusrec));
   }
 }
 
 /** returns true if status.dat is read correctly */
 bool read_status() {
-  WFile file(syscfg.datadir, STATUS_DAT);
-  if (file.Open(WFile::modeBinary|WFile::modeReadWrite)) {
+  File file(syscfg.datadir, STATUS_DAT);
+  if (file.Open(File::modeBinary|File::modeReadWrite)) {
     file.Read(&status, sizeof(statusrec));
     return true;
   }
@@ -131,8 +131,8 @@ bool read_status() {
 }
 
 void save_config() {
-  WFile file(CONFIG_DAT);
-  if (file.Open(WFile::modeBinary|WFile::modeReadWrite|WFile::modeCreateFile)) {
+  File file(CONFIG_DAT);
+  if (file.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile)) {
     file.Write(&syscfg, sizeof(configrec));
   }
 }
@@ -141,9 +141,9 @@ void trimstrpath(char *s) {
   StringTrimEnd(s);
 
   int i = strlen(s);
-  if (i && (s[i - 1] != WFile::pathSeparatorChar)) {
+  if (i && (s[i - 1] != File::pathSeparatorChar)) {
     // We don't have pathSeparatorString.
-    s[i] = WFile::pathSeparatorChar;
+    s[i] = File::pathSeparatorChar;
     s[i + 1] = 0;
   }
 }

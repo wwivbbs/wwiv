@@ -431,7 +431,7 @@ int WApplication::doWFCEvents() {
           bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
           char szFileName[ MAX_PATH ];
           getcwd(szFileName, MAX_PATH);
-          snprintf(szFileName, sizeof(szFileName), "%c", WFile::pathSeparatorChar);
+          snprintf(szFileName, sizeof(szFileName), "%c", File::pathSeparatorChar);
           string newFileName;
           Input1(&newFileName, szFileName, 50, true, InputMode::UPPER);
           if (!newFileName.empty()) {
@@ -759,7 +759,7 @@ int WApplication::Run(int argc, char *argv[]) {
       case 'C':
         break;
       case 'D':
-        WFile::SetDebugLevel(std::stoi(argument));
+        File::SetDebugLevel(std::stoi(argument));
         break;
       case 'E':
         event_only = true;
@@ -1105,7 +1105,7 @@ void WApplication::CdHome() {
 
 const string WApplication::GetHomeDir() {
   string dir = m_szCurrentDirectory;
-  WFile::EnsureTrailingSlash(&dir);
+  File::EnsureTrailingSlash(&dir);
   return string(dir);
 }
 
@@ -1240,7 +1240,7 @@ WApplication::~WApplication() {
 WApplication* CreateApplication(WLocalIO* localIO) {
   app = new WApplication();
   sess = new WSession(app, localIO);
-  WFile::SetLogger(app);
+  File::SetLogger(app);
   return app;
 }
 

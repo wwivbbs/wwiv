@@ -24,10 +24,10 @@
 #include <string>
 
 
-class WTextFile {
+class TextFile {
 public:
-  WTextFile(const std::string& file_name, const std::string& file_mode);
-  WTextFile(const std::string& directory_name, const std::string& file_name, const std::string& file_mode);
+  TextFile(const std::string& file_name, const std::string& file_mode);
+  TextFile(const std::string& directory_name, const std::string& file_name, const std::string& file_mode);
   bool Open(const std::string& file_name, const std::string& file_mode);
   bool Close();
 
@@ -63,7 +63,7 @@ public:
   FILE* GetFILE() { return file_; } 
 
  public:
-  ~WTextFile();
+  ~TextFile();
 
  private:
   std::string file_name_;

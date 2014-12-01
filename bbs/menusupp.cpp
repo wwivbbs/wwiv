@@ -247,10 +247,10 @@ void GoodBye() {
     }
   }
   sprintf(szFileName, "%s%s", GetSession()->language_dir.c_str(), LOGOFF_MAT);
-  if (!WFile::Exists(szFileName)) {
+  if (!File::Exists(szFileName)) {
     sprintf(szFileName, "%s%s", syscfg.gfilesdir, LOGOFF_MAT);
   }
-  if (WFile::Exists(szFileName)) {
+  if (File::Exists(szFileName)) {
     cycle = 0;
     do {
       bout.cls();
@@ -431,8 +431,8 @@ void CallOut() {
 }
 
 void Debug() {
-  int new_level = (WFile::GetDebugLevel() + 1) % 5;
-  WFile::SetDebugLevel(new_level);
+  int new_level = (File::GetDebugLevel() + 1) % 5;
+  File::SetDebugLevel(new_level);
   bout << "|#5New Debug Level: " << new_level << wwiv::endl;
 }
 
@@ -663,7 +663,7 @@ void ValidateScan() {
 
 void ChatRoom() {
   write_inst(INST_LOC_CHATROOM, 0, INST_FLAGS_NONE);
-  if (WFile::Exists("WWIVCHAT.EXE")) {
+  if (File::Exists("WWIVCHAT.EXE")) {
     std::ostringstream cmdline;
     cmdline << "WWIVCHAT.EXE " << create_chain_file();
     ExecuteExternalProgram(cmdline.str(), GetApplication()->GetSpawnOptions(SPAWNOPT_CHAT));
@@ -927,7 +927,7 @@ void ListUsersDL() {
 }
 
 void PrintDSZLog() {
-  if (WFile::Exists(g_szDSZLogFileName)) {
+  if (File::Exists(g_szDSZLogFileName)) {
     print_local_file(g_szDSZLogFileName, "");
   }
 }

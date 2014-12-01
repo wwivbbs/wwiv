@@ -38,7 +38,7 @@
 
 #include "core/inifile.h"
 #include "core/strings.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "core/wfndfile.h"
 #include "core/wwivport.h"
 
@@ -86,7 +86,7 @@ static void ValidateConfigOverlayExists(const string& bbsdir) {
   IniFile ini(WWIV_INI, "WWIV");
   int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
 
-  WFile config_overlay(CONFIG_OVR);
+  File config_overlay(CONFIG_OVR);
   if (!config_overlay.Exists() || config_overlay.GetLength() < sizeof(configoverrec)) {
     // Handle the case where there is no config.ovr.
     write_instance(1, syscfg.batchdir, syscfg.tempdir);
@@ -111,11 +111,11 @@ static void ValidateConfigOverlayExists(const string& bbsdir) {
         StringReplace(&temp_directory, "%n", instance_num_string);
         StringReplace(&batch_directory, "%n", instance_num_string);
 
-        WFile::MakeAbsolutePath(base, &temp_directory);
-        WFile::MakeAbsolutePath(base, &batch_directory);
+        File::MakeAbsolutePath(base, &temp_directory);
+        File::MakeAbsolutePath(base, &batch_directory);
 
-        WFile::EnsureTrailingSlash(&temp_directory);
-        WFile::EnsureTrailingSlash(&batch_directory);
+        File::EnsureTrailingSlash(&temp_directory);
+        File::EnsureTrailingSlash(&batch_directory);
         write_instance(i, batch_directory, temp_directory);
       }
     }

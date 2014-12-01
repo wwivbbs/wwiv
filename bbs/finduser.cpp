@@ -20,7 +20,7 @@
 
 #include "wconstants.h"
 #include "sdk/filenames.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "wuser.h"
 #include "wsession.h"
 #include "core/strings.h"

@@ -36,7 +36,7 @@
 #endif  // _WIN32
 
 #include "core/strings.h"
-#include "core/wfile.h"
+#include "core/file.h"
 
 using std::function;
 using std::string;
@@ -111,7 +111,7 @@ std::string os_version_string() {
     return StringPrintf("WIN32 Compatable OS v%d%c%d", os.dwMajorVersion, '.', os.dwMinorVersion);
   }
 #elif defined ( __linux__ )
-  WFile info("/proc/sys/kernel", "osrelease");
+  File info("/proc/sys/kernel", "osrelease");
   if (info.Exists()) {
     FILE *kernel_file;
     struct k_version { unsigned major, minor, update, iteration; };

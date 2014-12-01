@@ -37,9 +37,9 @@ class WLogger {
 };
 
 /**
- * WFile - File I/O Class.
+ * File - File I/O Class.
  */
-class WFile {
+class File {
  public:
   // Constants
   static const int modeDefault;
@@ -82,16 +82,16 @@ class WFile {
 
  public:
   // Constructor/Destructor
-  WFile();
-  WFile(const std::string& dirName, const std::string& fileName);
-  explicit WFile(const std::string& strFileName);
-  virtual ~WFile();
+  File();
+  File(const std::string& dirName, const std::string& fileName);
+  explicit File(const std::string& strFileName);
+  virtual ~File();
 
   // Public Member functions
   virtual bool SetName(const std::string& fileName);
   virtual bool SetName(const std::string& dirName, const std::string& fileName);
-  virtual bool Open(int nFileMode = WFile::modeDefault,
-                    int nShareMode = WFile::shareUnknown);
+  virtual bool Open(int nFileMode = File::modeDefault,
+                    int nShareMode = File::shareUnknown);
   virtual void Close();
   virtual bool IsOpen() const { return open_; }
 
@@ -126,7 +126,7 @@ class WFile {
   virtual time_t last_write_time();
 
   virtual const std::string GetParent() {
-    size_t found = full_path_name_.find_last_of(WFile::pathSeparatorChar);
+    size_t found = full_path_name_.find_last_of(File::pathSeparatorChar);
     if (found == std::string::npos) {
       return std::string("");
     }
@@ -134,7 +134,7 @@ class WFile {
   }
 
   virtual std::string GetName() {
-    size_t found = full_path_name_.find_last_of(WFile::pathSeparatorChar);
+    size_t found = full_path_name_.find_last_of(File::pathSeparatorChar);
     if (found == std::string::npos) {
       return std::string("");
     }

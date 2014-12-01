@@ -19,7 +19,7 @@
 #include <random>
 #include <string>
 
-#include "core/wfile.h"
+#include "core/file.h"
 #include "core/wutil.h"
 #include "core/strings.h"
 #include "core/wwivport.h"

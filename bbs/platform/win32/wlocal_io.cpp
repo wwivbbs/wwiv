@@ -29,7 +29,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/wwiv.h"
 #include "core/strings.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "core/wutil.h"
 #include "core/wwivassert.h"
 
@@ -106,7 +106,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
       _snprintf(szFileName, sizeof(szFileName), "%sglobal-%d.txt", syscfg.gfilesdir, GetApplication()->GetInstanceNumber());
       fileGlobalCap.SetName(szFileName);
 
-      bool bOpen = fileGlobalCap.Open(WFile::modeBinary | WFile::modeAppend | WFile::modeCreateFile | WFile::modeReadWrite);
+      bool bOpen = fileGlobalCap.Open(File::modeBinary | File::modeAppend | File::modeCreateFile | File::modeReadWrite);
       global_ptr = 0;
       global_buf = static_cast<char*>(BbsAllocA(GLOBAL_SIZE));
       if (!bOpen || !global_buf) {
@@ -165,9 +165,9 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
       fileGlobalCap.SetName(syscfgovr.tempdir, pszFileName);
 
       if (ovwr) {
-        fileGlobalCap.Open(WFile::modeBinary | WFile::modeText | WFile::modeCreateFile | WFile::modeReadWrite);
+        fileGlobalCap.Open(File::modeBinary | File::modeText | File::modeCreateFile | File::modeReadWrite);
       } else {
-        fileGlobalCap.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeAppend | WFile::modeReadWrite);
+        fileGlobalCap.Open(File::modeBinary | File::modeCreateFile | File::modeAppend | File::modeReadWrite);
       }
       global_ptr = 0;
       express = true;
@@ -551,8 +551,8 @@ void WLocalIO::alt_key(int nKeyCode) {
   if (ch1) {
     char szCommand[ MAX_PATH ];
     memset(szCommand, 0, sizeof(szCommand));
-    WFile macroFile(syscfg.datadir, MACROS_TXT);
-    if (macroFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+    File macroFile(syscfg.datadir, MACROS_TXT);
+    if (macroFile.Open(File::modeReadOnly | File::modeBinary)) {
       int l = macroFile.GetLength();
       char* ss = static_cast<char *>(BbsAllocA(l + 10));
       if (ss) {

@@ -23,7 +23,7 @@
 #include "wwiv.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
-#include "core/wtextfile.h"
+#include "core/textfile.h"
 
 using std::string;
 using std::stringstream;
@@ -41,7 +41,7 @@ void read_automessage() {
   unique_ptr<WStatus> status(GetApplication()->GetStatusManager()->GetStatus());
   bool bAutoMessageAnonymous = status->IsAutoMessageAnonymous();
 
-  WTextFile autoMessageFile(syscfg.gfilesdir, AUTO_MSG, "rt");
+  TextFile autoMessageFile(syscfg.gfilesdir, AUTO_MSG, "rt");
   string line;
   if (!autoMessageFile.IsOpen() || !autoMessageFile.ReadLine(&line)) {
     bout << "|#3No auto-message.\r\n";
@@ -100,7 +100,7 @@ void write_automessage() {
     pStatus->SetAutoMessageAuthorUserNumber(GetSession()->usernum);
     GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
 
-    WTextFile file(syscfg.gfilesdir, AUTO_MSG, "wt");
+    TextFile file(syscfg.gfilesdir, AUTO_MSG, "wt");
     string authorName = GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum);
     file.WriteFormatted("%s\r\n", authorName.c_str());
     sysoplog("Changed Auto-message");
@@ -117,7 +117,7 @@ void write_automessage() {
 
 char ShowAMsgMenuAndGetInput(const string& autoMessageLockFileName) {
   bool bCanWrite = false;
-  if (!GetSession()->GetCurrentUser()->IsRestrictionAutomessage() && !WFile::Exists(autoMessageLockFileName)) {
+  if (!GetSession()->GetCurrentUser()->IsRestrictionAutomessage() && !File::Exists(autoMessageLockFileName)) {
     bCanWrite = (getslrec(GetSession()->GetEffectiveSl()).posts) ? true : false;
   }
 
@@ -177,12 +177,12 @@ void do_automessage() {
     case 'D':
       bout << "\r\n|#3Delete Auto-message, Are you sure? ";
       if (yesno()) {
-        WFile::Remove(autoMessageFile);
+        File::Remove(autoMessageFile);
       }
       bout.nl(2);
       break;
     case 'L':
-      if (WFile::Exists(automessageLockFile)) {
+      if (File::Exists(automessageLockFile)) {
         bout << "\r\n|#3Message is already locked.\r\n\n";
       } else {
         bout <<  "|#9Do you want to lock the Auto-message? ";
@@ -192,19 +192,19 @@ void do_automessage() {
           // to tell the board if it is locked or not. It consists
           // of a space.
           //
-          WTextFile lockFile(automessageLockFile, "w+t");
+          TextFile lockFile(automessageLockFile, "w+t");
           lockFile.WriteChar(' ');
           lockFile.Close();
         }
       }
       break;
     case 'U':
-      if (!WFile::Exists(automessageLockFile)) {
+      if (!File::Exists(automessageLockFile)) {
         bout << "Message not locked.\r\n";
       } else {
         bout << "|#5Unlock message? ";
         if (yesno()) {
-          WFile::Remove(automessageLockFile);
+          File::Remove(automessageLockFile);
         }
       }
       break;

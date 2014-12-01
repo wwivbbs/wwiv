@@ -33,7 +33,7 @@
 #include <sys/stat.h>
 
 #include "core/strings.h"
-#include "core/wfile.h"
+#include "core/file.h"
 #include "core/wwivport.h"
 #include "init/ifcns.h"
 #include "init/init.h"
@@ -97,8 +97,8 @@ static uint8_t get_next_langauge_num(languagerec* languages, int size) {
 void edit_languages() {
   initinfo.num_languages = 0;
   unique_ptr<languagerec[]> languages(new languagerec[MAX_LANGUAGES]);
-  WFile file(syscfg.datadir, LANGUAGE_DAT);
-  if (file.Open(WFile::modeReadOnly|WFile::modeBinary)) {
+  File file(syscfg.datadir, LANGUAGE_DAT);
+  if (file.Open(File::modeReadOnly|File::modeBinary)) {
     int num_read = file.Read(languages.get(), MAX_LANGUAGES * sizeof(languagerec));
     initinfo.num_languages = num_read / sizeof(languagerec);
     file.Close();
@@ -167,9 +167,9 @@ void edit_languages() {
   } while (!done);
 
   {
-    WFile file(syscfg.datadir, LANGUAGE_DAT);
-    if (file.Open(WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile|WFile::modeTruncate,
-      WFile::shareDenyReadWrite)) {
+    File file(syscfg.datadir, LANGUAGE_DAT);
+    if (file.Open(File::modeReadWrite|File::modeBinary|File::modeCreateFile|File::modeTruncate,
+      File::shareDenyReadWrite)) {
       file.Write(languages.get(), initinfo.num_languages * sizeof(languagerec));
     }
   }
