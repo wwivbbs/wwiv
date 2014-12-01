@@ -17,12 +17,18 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <chrono>
+
 #include "wwiv.h"
+#include "core/os.h"
 #include "core/strings.h"
 #include "pause.h"
 #include "bbs/keycodes.h"
 
 extern char str_pause[];
+
+using std::chrono::milliseconds;
+using namespace wwiv::os;
 
 namespace wwiv {
 namespace bbs {
@@ -46,8 +52,7 @@ static char GetKeyForPause() {
   char ch = 0;
   while (ch == 0) {
     ch = bgetch();
-    WWIV_Delay(50);
-    WWIV_Delay(0);
+    sleep_for(milliseconds(50));
     CheckForHangup();
   }
   int nKey = wwiv::UpperCase<int>(ch);
@@ -144,8 +149,7 @@ void pausescr() {
             return;
           }
         }
-        WWIV_Delay(50);
-        WWIV_Delay(0);
+        sleep_for(milliseconds(50));
         CheckForHangup();
       }
       ch = GetKeyForPause();

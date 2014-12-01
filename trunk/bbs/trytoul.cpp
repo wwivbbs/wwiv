@@ -16,13 +16,18 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <chrono>
 
 #include "wwiv.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
+#include "core/os.h"
 #include "core/strings.h"
 
+using std::chrono::milliseconds;
 using std::string;
+
+using namespace wwiv::os;
 using namespace wwiv::strings;
 
 int try_to_ul_wh(char *pszFileName);
@@ -107,8 +112,8 @@ int try_to_ul_wh(char *pszFileName) {
         }
         done = true;
       } else {
-        // The WWIV_Delay used to be a wait_sec_or_hit( 1 )
-        WWIV_Delay(500);
+        // The sleep_for used to be a wait_sec_or_hit( 1 )
+        sleep_for(milliseconds(500));
         bout << "\r\nUpload " << pszFileName << " to which dir? <CR>=0 ?=List \r\n";
         input(temp, 5, true);
         StringTrim(temp);

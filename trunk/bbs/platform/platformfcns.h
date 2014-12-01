@@ -36,7 +36,6 @@ void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName);
 
 // $PLATFORM/utility2.cpp
 void WWIV_make_abs_cmd(const std::string root, std::string* out);
-void WWIV_Delay(unsigned long msec);
 
 // $PLATFORM/exec.cpp
 int ExecExternalProgram(const std::string commandLine, int flags);

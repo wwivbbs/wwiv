@@ -22,6 +22,7 @@
 #include <functional>
 #include <limits>
 #include <random>
+#include <thread>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -69,6 +70,18 @@ void sleep_for(milliseconds d) {
 #else  // _WIN32
   usleep (d.count() * 1000);
 #endif  // _WIN32
+}
+
+void yield() {
+  // TODO(rushfan): use this_thread::yield once it's been
+  // tested on MSVC and GCC (Maybe with MSVC 2015).
+  // Then we'll call this:
+  // std::this_thread::yield();
+
+  // Also TODO is to investigate if we should use sleep(1) vs. sleep(0) so that we'll
+  // yield to threads on other processors.
+  // See http://stackoverflow.com/questions/1413630/switchtothread-thread-yield-vs-thread-sleep0-vs-thead-sleep1
+  sleep_for(milliseconds(0));
 }
 
 std::string os_version_string() {

@@ -124,7 +124,7 @@ unsigned int WIOTelnet::putW(unsigned char ch) {
     } else {
       return nRet;
     }
-    WWIV_Delay(0);
+    ::Sleep(0);
   }
 }
 
@@ -237,7 +237,7 @@ unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTr
       free(pszBuffer);
       return nRet;
     }
-    WWIV_Delay(0);
+    ::Sleep(0);
   }
 }
 
@@ -261,7 +261,7 @@ void WIOTelnet::StopThreads() {
     std::cout << "WIOTelnet::StopThreads: Error with SetEvent " << GetLastError() 
               << " - '" << error_text << "'" << std::endl;
   }
-  WWIV_Delay(0);
+  ::Sleep(0);
 
   // Wait for read thread to exit.
   DWORD dwRes = WaitForSingleObject(read_thread_, 5000);
