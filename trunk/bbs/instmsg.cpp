@@ -511,7 +511,7 @@ void write_inst(int loc, int subloc, int flags) {
         break;
       }
     }
-    unsigned short ms = (GetSession()->using_modem) ? modem_speed : 0;
+    uint16_t ms = static_cast<uint16_t>((GetSession()->using_modem) ? modem_speed : 0);
     if (ti.modem_speed != ms) {
       ti.modem_speed = ms;
       re_write = true;

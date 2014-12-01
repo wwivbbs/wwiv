@@ -73,7 +73,6 @@ char* GetArString(gfiledirrec r, char* pszBuffer) {
 
 void modify_sec(int n) {
   char s[81];
-  char szSubNum[255];
 
   gfiledirrec r = gfilesec[n];
   bool done = false;
@@ -132,8 +131,8 @@ void modify_sec(int n) {
           bout.nl();
           bout << "|#5Create directory for this section? ";
           if (yesno()) {
-            File *dir = new File(syscfg.gfilesdir, r.filename);
-            WWIV_make_path(dir->full_pathname().c_str());
+            File dir(syscfg.gfilesdir, r.filename);
+            File::mkdirs(dir);
           } else {
             bout << "\r\nYou will have to create the directory manually, then.\r\n\n";
           }

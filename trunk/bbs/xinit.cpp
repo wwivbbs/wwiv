@@ -1038,7 +1038,7 @@ void WApplication::InitializeBBS() {
   }
 
   if (!File::Exists(syscfgovr.tempdir)) {
-    if (WWIV_make_path(syscfgovr.tempdir) == -1) {
+    if (!File::mkdirs(syscfgovr.tempdir)) {
       std::cout << "\r\nYour temp dir isn't valid.\r\n";
       std::cout << "It is now set to: '" << syscfgovr.tempdir << "'\r\n\n";
       AbortBBS();
@@ -1046,7 +1046,7 @@ void WApplication::InitializeBBS() {
   }
 
   if (!File::Exists(syscfgovr.batchdir)) {
-    if (WWIV_make_path(syscfgovr.batchdir) == -1) {
+    if (!File::mkdirs(syscfgovr.batchdir)) {
       std::cout << "\r\nYour batch dir isn't valid.\r\n";
       std::cout << "It is now set to: '" << syscfgovr.batchdir << "'\r\n\n";
       AbortBBS();
@@ -1143,7 +1143,7 @@ void WApplication::InitializeBBS() {
   XINIT_PRINTF(" * Reading Full Screen Message Editors.\r\n");
   read_editors();
 
-  if (WWIV_make_path(m_attachmentDirectory.c_str())) {
+  if (File::mkdirs(m_attachmentDirectory)) {
     std::cout << "\r\nYour file attachment directory is invalid.\r\n";
     std::cout << "It is now set to: " << m_attachmentDirectory << "'\r\n\n";
     AbortBBS();

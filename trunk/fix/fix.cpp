@@ -91,7 +91,7 @@ bool checkDirExists(File &dir, const char *desc) {
 	string s;
 	std::cin >> s;
 	if(s[0] == 'Y' || s[0] == 'y') {
-		bool exist = WWIV_make_path(dir.full_pathname().c_str()) != 0;
+		bool exist = File::mkdirs(dir);
 		if(!exist) {
 			Print(NOK, true, "Unable to create dir '%s' for %s dir.", dir.full_pathname().c_str(), desc);
             return false;

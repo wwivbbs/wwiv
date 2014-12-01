@@ -22,17 +22,11 @@
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 
+using std::string;
+using namespace wwiv::strings;
 
 int try_to_ul_wh(char *pszFileName);
 void t2u_error(const char *pszFileName, const char *msg);
-
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// Implementation
-//
-//
-//
 
 
 int try_to_ul(char *pszFileName) {
@@ -49,18 +43,16 @@ int try_to_ul(char *pszFileName) {
     return 0;  // success
   }
 
-  char dest[MAX_PATH];
-  sprintf(dest, "%sTRY2UL", syscfg.dloadsdir);
-  WWIV_make_path(dest);
+  const string dest_dir = StringPrintf("%sTRY2UL", syscfg.dloadsdir);
+  File::mkdirs(dest_dir);
   GetApplication()->CdHome();   // ensure we are in the correct directory
 
   bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
 
   sysoplogf("Failed to upload %s, moving to TRY2UL dir", pszFileName);
 
-  char src[MAX_PATH];
-  sprintf(src, "%s%s", syscfgovr.batchdir, pszFileName);
-  sprintf(dest, "%sTRY2UL%c%s", syscfg.dloadsdir, File::pathSeparatorChar, pszFileName);
+  const string src = StringPrintf("%s%s", syscfgovr.batchdir, pszFileName);
+  const string dest = StringPrintf("%sTRY2UL%c%s", syscfg.dloadsdir, File::pathSeparatorChar, pszFileName);
 
   if (File::Exists(dest)) {                        // this is iffy <sp?/who care I chooose to
     File::Remove(dest);                           // remove duplicates in try2ul dir, so keep

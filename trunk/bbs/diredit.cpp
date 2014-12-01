@@ -94,7 +94,6 @@ char* GetAttributeString(directoryrec r, char* pszAttributes) {
 
 void modify_dir(int n) {
   char s[81], ch, ch2;
-  char szSubNum[81];
   int i;
 
   directoryrec r = directories[n];
@@ -168,7 +167,7 @@ void modify_dir(int n) {
         File dir(s);
         if (!dir.Exists()) {
           GetApplication()->CdHome();
-          if (WWIV_make_path(s)) {
+          if (File::mkdirs(dir)) {
             bout << "|#6Unable to create or change to directory." << wwiv::endl;
             pausescr();
             s[0] = 0;
