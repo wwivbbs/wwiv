@@ -59,7 +59,7 @@ bool File::IsDirectory() const {
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-bool File::Copy(const std::string sourceFileName, const std::string destFileName) {
+bool File::Copy(const std::string& sourceFileName, const std::string& destFileName) {
   if (sourceFileName != destFileName && File::Exists(sourceFileName) && !File::Exists(destFileName)) {
     char *pBuffer = static_cast<char *>(malloc(16400));
     if (pBuffer == nullptr) {
@@ -95,7 +95,7 @@ bool File::Copy(const std::string sourceFileName, const std::string destFileName
   return true;
 }
 
-bool File::Move(const std::string sourceFileName, const std::string destFileName) {
+bool File::Move(const std::string& sourceFileName, const std::string& destFileName) {
   //TODO: Atani needs to see if Rushfan buggered up this implementation
   if (Copy(sourceFileName, destFileName)) {
     return Remove(sourceFileName);
