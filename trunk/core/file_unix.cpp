@@ -30,11 +30,11 @@
 #include <sys/stat.h>
 #include <sys/file.h>
 #include <unistd.h>
-
 #include <sys/param.h>
 #include <sys/mount.h>
 
 #ifdef __linux
+#include <sys/statfs.h>
 #include <sys/vfs.h> 
 #endif  // __linux
 
