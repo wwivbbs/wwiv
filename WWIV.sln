@@ -41,6 +41,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "networkb_lib", "networkb\ne
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "networkb_test", "networkb_test\networkb_test.vcxproj", "{004B2A22-12E5-4E96-8587-15BF25A6C823}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sdk", "sdk\sdk.vcxproj", "{53DB67DB-4D42-4A8A-B176-EE83A170DE86}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -213,6 +215,16 @@ Global
 		{004B2A22-12E5-4E96-8587-15BF25A6C823}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{004B2A22-12E5-4E96-8587-15BF25A6C823}.Release|Win32.ActiveCfg = Release|Win32
 		{004B2A22-12E5-4E96-8587-15BF25A6C823}.Release|Win32.Build.0 = Release|Win32
+		{53DB67DB-4D42-4A8A-B176-EE83A170DE86}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{53DB67DB-4D42-4A8A-B176-EE83A170DE86}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{53DB67DB-4D42-4A8A-B176-EE83A170DE86}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{53DB67DB-4D42-4A8A-B176-EE83A170DE86}.Debug|Win32.ActiveCfg = Debug|Win32
+		{53DB67DB-4D42-4A8A-B176-EE83A170DE86}.Debug|Win32.Build.0 = Debug|Win32
+		{53DB67DB-4D42-4A8A-B176-EE83A170DE86}.Release|Any CPU.ActiveCfg = Release|Win32
+		{53DB67DB-4D42-4A8A-B176-EE83A170DE86}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{53DB67DB-4D42-4A8A-B176-EE83A170DE86}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{53DB67DB-4D42-4A8A-B176-EE83A170DE86}.Release|Win32.ActiveCfg = Release|Win32
+		{53DB67DB-4D42-4A8A-B176-EE83A170DE86}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
