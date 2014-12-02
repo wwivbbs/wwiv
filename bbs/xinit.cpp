@@ -1143,7 +1143,7 @@ void WApplication::InitializeBBS() {
   XINIT_PRINTF(" * Reading Full Screen Message Editors.\r\n");
   read_editors();
 
-  if (File::mkdirs(m_attachmentDirectory)) {
+  if (!File::mkdirs(m_attachmentDirectory)) {
     std::cout << "\r\nYour file attachment directory is invalid.\r\n";
     std::cout << "It is now set to: " << m_attachmentDirectory << "'\r\n\n";
     AbortBBS();
