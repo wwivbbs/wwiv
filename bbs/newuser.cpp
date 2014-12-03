@@ -34,7 +34,7 @@ using std::string;
 using wwiv::bbs::InputMode;
 using wwiv::core::FilePath;
 using wwiv::core::IniFile;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;;
 
 // Local function prototypes
 
@@ -73,30 +73,27 @@ static void input_phone() {
   }
 }
 
-
 void input_dataphone() {
   bool ok = true;
-  char szTempDataPhoneNum[ 21 ];
   do {
     bout.nl();
     bout << "|#3Enter your DATA phone no. in the form. \r\n";
     bout << "|#3 ###-###-#### - Press Enter to use [" << GetSession()->GetCurrentUser()->GetVoicePhoneNumber()
-                       << "].\r\n";
-    Input1(szTempDataPhoneNum, GetSession()->GetCurrentUser()->GetDataPhoneNumber(), 12, true, InputMode::PHONE);
-    if (szTempDataPhoneNum[0] == '\0') {
-      snprintf(szTempDataPhoneNum, 21, "%s", GetSession()->GetCurrentUser()->GetVoicePhoneNumber());
+         << "].\r\n";
+    string data_phone_number;
+    Input1(&data_phone_number, GetSession()->GetCurrentUser()->GetDataPhoneNumber(), 12, true, InputMode::PHONE);
+    if (data_phone_number[0] == '\0') {
+      data_phone_number = GetSession()->GetCurrentUser()->GetVoicePhoneNumber();
     }
-    ok = valid_phone(szTempDataPhoneNum);
+    ok = valid_phone(data_phone_number);
 
-    if (!ok) {
+    if (ok) {
+      GetSession()->GetCurrentUser()->SetDataPhoneNumber(data_phone_number.c_str());
+    } else {
       bout.nl();
       bout << "|#6Please enter a valid phone number in the correct format.\r\n";
     }
   } while (!ok && !hangup);
-
-  if (!hangup) {
-    GetSession()->GetCurrentUser()->SetDataPhoneNumber(szTempDataPhoneNum);
-  }
 }
 
 void input_language() {
@@ -246,7 +243,6 @@ static void input_callsign() {
   string s;
   input(&s, 6, true);
   GetSession()->GetCurrentUser()->SetCallsign(s.c_str());
-
 }
 
 bool valid_phone(const string& phoneNumber) {
@@ -292,7 +288,6 @@ void input_street() {
   }
 }
 
-
 void input_city() {
   char szCity[ 255 ];
   do {
@@ -308,12 +303,11 @@ void input_city() {
   GetSession()->GetCurrentUser()->SetCity(szCity);
 }
 
-
 void input_state() {
   string state;
   do {
     bout.nl();
-    if (wwiv::strings::IsEquals(GetSession()->GetCurrentUser()->GetCountry(), "CAN")) {
+    if (IsEquals(GetSession()->GetCurrentUser()->GetCountry(), "CAN")) {
       bout << "|#3Enter your province (i.e. QC).\r\n";
     } else {
       bout << "|#3Enter your state (i.e. CA). \r\n";
@@ -328,7 +322,6 @@ void input_state() {
   } while (state.empty() && (!hangup));
   GetSession()->GetCurrentUser()->SetState(state.c_str());
 }
-
 
 void input_country() {
   string country;
@@ -345,13 +338,12 @@ void input_country() {
   GetSession()->GetCurrentUser()->SetCountry(country.c_str());
 }
 
-
 void input_zipcode() {
   string zipcode;
   do {
     int len = 7;
     bout.nl();
-    if (wwiv::strings::IsEquals(GetSession()->GetCurrentUser()->GetCountry(), "USA")) {
+    if (IsEquals(GetSession()->GetCurrentUser()->GetCountry(), "USA")) {
       bout << "|#3Enter your zipcode as #####-#### \r\n";
       len = 10;
     } else {
@@ -369,13 +361,11 @@ void input_zipcode() {
   GetSession()->GetCurrentUser()->SetZipcode(zipcode.c_str());
 }
 
-
 void input_sex() {
   bout.nl();
   bout << "|#2Your gender (M,F) :";
   GetSession()->GetCurrentUser()->SetGender(onek("MF"));
 }
-
 
 void input_age(WUser *pUser) {
   int y = 2000, m = 1, d = 1;
@@ -1405,16 +1395,11 @@ void DoMinimalNewUser() {
     GetSession()->GetCurrentUser()->SetAge(years_old(m, d, y));
     s1[0] = '\0';
     cln_nu();
-    bout << "|#2" <<
-                       mon[ std::max<int>(0, GetSession()->GetCurrentUser()->GetBirthdayMonth() - 1) ] <<
-                       " " <<
-                       GetSession()->GetCurrentUser()->GetBirthdayDay() <<
-                       ", " <<
-                       GetSession()->GetCurrentUser()->GetBirthdayYear() <<
-                       " (" <<
-                       GetSession()->GetCurrentUser()->GetAge() <<
-                       " years old)\r\n";
-    bout << "|#1[C] Sex (Gender)            : ";
+    bout << "|#2" << mon[ std::max<int>(0, GetSession()->GetCurrentUser()->GetBirthdayMonth() - 1) ] << " "
+         << GetSession()->GetCurrentUser()->GetBirthdayDay() << ", "
+         << GetSession()->GetCurrentUser()->GetBirthdayYear()
+         << " (" << GetSession()->GetCurrentUser()->GetAge() << " years old)\r\n"
+         << "|#1[C] Sex (Gender)            : ";
     if (GetSession()->GetCurrentUser()->GetGender() != 'M' && GetSession()->GetCurrentUser()->GetGender()  != 'F') {
       bout.mpl(1);
       GetSession()->GetCurrentUser()->SetGender(onek_ncr("MF"));
@@ -1436,7 +1421,7 @@ void DoMinimalNewUser() {
     if (GetSession()->GetCurrentUser()->GetZipcode()[0] == 0) {
       bool ok = false;
       do {
-        if (wwiv::strings::IsEquals(GetSession()->GetCurrentUser()->GetCountry(), "USA")) {
+        if (IsEquals(GetSession()->GetCurrentUser()->GetCountry(), "USA")) {
           Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.zipcode), s1, 5, true, InputMode::UPPER);
           check_zip(GetSession()->GetCurrentUser()->GetZipcode(), 2);
         } else {
