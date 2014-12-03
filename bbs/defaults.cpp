@@ -985,7 +985,6 @@ static long is_inscan(int dir) {
 }
 
 void config_scan_plus(int type) {
-  char s[50];
   int i, command, this_dir, this_sub, ad;
   int sysdir = 0, top = 0, amount = 0, pos = 0, side_pos = 0;
   side_menu_colors smc = {
@@ -1090,8 +1089,8 @@ void config_scan_plus(int type) {
             sysdir = 1;
           }
           for (this_dir = 0; (this_dir < GetSession()->num_dirs); this_dir++) {
-            sprintf(s, "%d", sysdir ? top + pos : top + pos + 1);
-            if (IsEquals(s, udir[this_dir].keys)) {
+            const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
+            if (s == udir[this_dir].keys) {
               ad = udir[this_dir].subnum;
               qsc_n[ad / 32] ^= (1L << (ad % 32));
             }
@@ -1141,8 +1140,8 @@ void config_scan_plus(int type) {
               sysdir = 1;
             }
             for (this_dir = 0; (this_dir < GetSession()->num_dirs); this_dir++) {
-              sprintf(s, "%d", sysdir ? top + pos : top + pos + 1);
-              if (IsEquals(s, udir[this_dir].keys)) {
+              const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
+              if (s == udir[this_dir].keys) {
                 ad = udir[this_dir].subnum;
                 qsc_n[ad / 32] ^= (1L << (ad % 32));
               }
