@@ -39,16 +39,6 @@ void DisplayItem(MenuRec * Menu, int nCur, int nAmount);
 void DisplayHeader(MenuHeader * Header, int nCur, int nAmount, const char *pszDirectoryName);
 void ListMenuMenus(const char *pszDirectoryName);
 
-#ifndef _WIN32
-#ifndef LOBYTE
-#define LOBYTE(w)           ((uint8_t)(w))
-#endif  // LOBYTE
-
-#ifndef HIBYTE
-#define HIBYTE(w)           ((uint8_t)(((uint16_t)(w) >> 8) & 0xFF))
-#endif  // HIBYTE
-#endif
-
 void EditMenus() {
   char szTemp1[21];
   char szPW[21];
@@ -57,7 +47,7 @@ void EditMenus() {
   MenuHeader header;
   MenuRec Menu;
   bout.cls();
-  bout << "|#2WWIV Menu Editor|#0\r\n";
+  bout.litebar("WWIV Menu Editor");
 
   string menuDir;
   if (!GetMenuDir(menuDir)) {
@@ -617,234 +607,43 @@ void DisplayItem(MenuRec * Menu, int nCur, int nAmount) {
     bout << "|#9X) Extended Help  : |#2%s" << Menu->szExtendedHelp << wwiv::endl;
   }
   bout.nl(2);
-  bout << "|041|#0,|04A|#0-|04F|#0,|04K|#0-|04U|#0, |04Z|#0=Add new record, |04[|#0=Prev, |04]|#0=Next, |04Q|#0=Quit : ";
+  bout << "|101,A-F,K-U, Z=Add new record, [=Prev, ]=Next, Q=Quit : ";
 }
-
 
 void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const char *pszDirectoryName) {
   bout.cls();
 
   OpenMenuDescriptions();
 
-  bout << "(" << nCur << "/" << nAmount << ")" << wwiv::endl;
+  bout << "|#9(Menu Header)" << wwiv::endl;
 
   if (nCur == 0) {
-    bout << "   Menu Version         : " <<
-                       static_cast<int>(HIBYTE(pHeader->nVersion)) <<
-                       static_cast<int>(LOBYTE(pHeader->nVersion)) << wwiv::endl;
-    bout << "0) Menu Description     : " << GetMenuDescription(pszDirectoryName) << wwiv::endl;
-    bout << "1) Deleted              : " << ((pHeader->nFlags & MENU_FLAG_DELETED) ? "Yes" : "No") <<
-                       wwiv::endl;
-    bout << "2) Main Menu            : " << ((pHeader->nFlags & MENU_FLAG_MAINMENU) ? "Yes" : "No") <<
-                       wwiv::endl;;
-    bout << "A) What do Numbers do   : " << (pHeader->nNumbers == MENU_NUMFLAG_NOTHING ? "Nothing" :
+    bout << "|#90) Menu Description     |#2: " << GetMenuDescription(pszDirectoryName) << wwiv::endl;
+    bout << "|#91) Deleted              |#2: " << ((pHeader->nFlags & MENU_FLAG_DELETED) ? "Yes" : "No") << wwiv::endl;
+    bout << "|#92) Main Menu            |#2: " << ((pHeader->nFlags & MENU_FLAG_MAINMENU) ? "Yes" : "No") << wwiv::endl;;
+    bout << "|#9A) What do Numbers do   |#2: " << (pHeader->nNumbers == MENU_NUMFLAG_NOTHING ? "Nothing" :
                        pHeader->nNumbers == MENU_NUMFLAG_SUBNUMBER ? "Set sub number" : pHeader->nNumbers == MENU_NUMFLAG_DIRNUMBER ?
                        "Set dir number" : "Out of range") << wwiv::endl;
-    bout << "B) What type of logging : " << (pHeader->nLogging == MENU_LOGTYPE_KEY ? "Key entered" :
+    bout << "|#9B) What type of logging |#2: " << (pHeader->nLogging == MENU_LOGTYPE_KEY ? "Key entered" :
                        pHeader->nLogging == MENU_LOGTYPE_NONE ? "No logging" : pHeader->nLogging == MENU_LOGTYPE_COMMAND ?
                        "Command being executeed" : pHeader->nLogging == MENU_LOGTYPE_DESC ? "Desc of Command" : "Out of range") << wwiv::endl;
-    bout << "C) Force help to be on  : " << (pHeader->nForceHelp == MENU_HELP_DONTFORCE ? "Not forced" :
+    bout << "|#9C) Force help to be on  |#2: " << (pHeader->nForceHelp == MENU_HELP_DONTFORCE ? "Not forced" :
                        pHeader->nForceHelp == MENU_HELP_FORCE ? "Forced On" : pHeader->nForceHelp == MENU_HELP_ONENTRANCE ?
                        "Forced on entrance" : "Out of range") << wwiv::endl;
-    bout << "F) Enter Script         : " << pHeader->szScript << wwiv::endl;
-    bout << "G) Exit Script          : " << pHeader->szExitScript << wwiv::endl;
-    bout << "H) Min SL               : " << static_cast<unsigned int>(pHeader->nMinSL) << wwiv::endl;
-    bout << "I) Min DSL              : " << static_cast<unsigned int>(pHeader->nMinDSL) << wwiv::endl;
-    bout << "J) AR                   : " << static_cast<unsigned int>(pHeader->uAR) << wwiv::endl;
-    bout << "K) DAR                  : " << static_cast<unsigned int>(pHeader->uDAR) << wwiv::endl;
-    bout << "L) Restrictions         : " << static_cast<unsigned int>(pHeader->uRestrict) << wwiv::endl;
-    bout << "M) Sysop                : " << (pHeader->nSysop ? "Yes" : "No") << wwiv::endl;
-    bout << "N) Co-Sysop             : " << (pHeader->nCoSysop ? "Yes" : "No") << wwiv::endl;
-    bout << "O) Password             : " << (incom ? "<Remote>" : pHeader->szPassWord) << wwiv::endl;
+    bout << "|#9F) Enter Script         : |#2" << pHeader->szScript << wwiv::endl;
+    bout << "|#9G) Exit Script          : |#2" << pHeader->szExitScript << wwiv::endl;
+    bout << "|#9H) Min SL               : |#2" << static_cast<unsigned int>(pHeader->nMinSL) << wwiv::endl;
+    bout << "|#9I) Min DSL              : |#2" << static_cast<unsigned int>(pHeader->nMinDSL) << wwiv::endl;
+    bout << "|#9J) AR                   : |#2" << static_cast<unsigned int>(pHeader->uAR) << wwiv::endl;
+    bout << "|#9K) DAR                  : |#2" << static_cast<unsigned int>(pHeader->uDAR) << wwiv::endl;
+    bout << "|#9L) Restrictions         : |#2" << static_cast<unsigned int>(pHeader->uRestrict) << wwiv::endl;
+    bout << "|#9M) Sysop                : |#2" << (pHeader->nSysop ? "Yes" : "No") << wwiv::endl;
+    bout << "|#9N) Co-Sysop             : |#2" << (pHeader->nCoSysop ? "Yes" : "No") << wwiv::endl;
+    bout << "|#9O) Password             : |#2" << (incom ? "<Remote>" : pHeader->szPassWord) << wwiv::endl;
   }
   bout.nl(2);
-  bout << "0-2, A-O, Z=Add new Record, [=Prev, ]=Next, Q=Quit : ";
-
+  bout << "|100-2, A-O, Z=Add new Record, [=Prev, ]=Next, Q=Quit : ";
   CloseMenuDescriptions();
-}
-
-
-void EditPulldownColors(MenuHeader * pMenuHeader) {
-  char szTemp[15];
-
-  bool done = false;
-  while (!done && !hangup) {
-    bout.cls();
-    bout.Color(0);
-
-    bout.bprintf("%-35.35s", "A) Title color");
-    if (pMenuHeader->nTitleColor) {
-      bout.SystemColor(pMenuHeader->nTitleColor);
-    }
-    bout << static_cast<int>(pMenuHeader->nTitleColor) << wwiv::endl;
-    bout.Color(0);
-    bout.bprintf("%-35.35s", "B) Main border color");
-    if (pMenuHeader->nMainBorderColor) {
-      bout.SystemColor(pMenuHeader->nMainBorderColor);
-    }
-    bout << static_cast<int>(pMenuHeader->nMainBorderColor) << wwiv::endl;
-    bout.Color(0);
-    bout.bprintf("%-35.35s", "C) Main box color");
-    if (pMenuHeader->nMainBoxColor) {
-      bout.SystemColor(pMenuHeader->nMainBoxColor);
-    }
-    bout << static_cast<int>(pMenuHeader->nMainBoxColor) << wwiv::endl;
-    bout.Color(0);
-    bout.bprintf("%-35.35s", "D) Main text color");
-    if (pMenuHeader->nMainTextColor) {
-      bout.SystemColor(pMenuHeader->nMainTextColor);
-    }
-    bout << static_cast<int>(pMenuHeader->nMainTextColor) << wwiv::endl;
-    bout.Color(0);
-    bout.bprintf("%-35.35s", "E) Main text highlight color");
-    if (pMenuHeader->nMainTextHLColor) {
-      bout.SystemColor(pMenuHeader->nMainTextHLColor);
-    }
-    bout << static_cast<int>(pMenuHeader->nMainTextHLColor) << wwiv::endl;
-    bout.Color(0);
-    bout.bprintf("%-35.35s", "F) Main selected color");
-    if (pMenuHeader->nMainSelectedColor) {
-      bout.SystemColor(pMenuHeader->nMainSelectedColor);
-    }
-    bout << static_cast<int>(pMenuHeader->nMainSelectedColor) << wwiv::endl;
-    bout.Color(0);
-    bout.bprintf("%-35.35s", "G) Main selected hightlight color");
-    if (pMenuHeader->nMainSelectedHLColor) {
-      bout.SystemColor(pMenuHeader->nMainSelectedHLColor);
-    }
-    bout << static_cast<int>(pMenuHeader->nMainSelectedHLColor) << wwiv::endl;
-    bout.Color(0);
-
-    bout.bprintf("%-35.35s", "K) Item border color");
-    if (pMenuHeader->nItemBorderColor) {
-      bout.SystemColor(pMenuHeader->nItemBorderColor);
-    }
-    bout << static_cast<int>(pMenuHeader->nItemBorderColor) << wwiv::endl;
-    bout.Color(0);
-    bout.bprintf("%-35.35s", "L) Item box color");
-    if (pMenuHeader->nItemBoxColor) {
-      bout.SystemColor(pMenuHeader->nItemBoxColor);
-    }
-    bout << static_cast<int>(pMenuHeader->nItemBoxColor) << wwiv::endl;
-    bout.Color(0);
-    bout.bprintf("%-35.35s", "M) Item text color");
-    if (pMenuHeader->nItemTextColor) {
-      bout.SystemColor(pMenuHeader->nItemTextColor);
-    }
-    bout << static_cast<int>(pMenuHeader->nItemTextColor) << wwiv::endl;
-    bout.Color(0);
-    bout.bprintf("%-35.35s", "N) Item text highlight color");
-    if (pMenuHeader->nItemTextHLColor) {
-      bout.SystemColor(pMenuHeader->nItemTextHLColor);
-    }
-    bout << static_cast<int>(pMenuHeader->nItemTextHLColor) << wwiv::endl;
-    bout.Color(0);
-    bout.bprintf("%-35.35s", "O) Item selected color");
-    if (pMenuHeader->nItemSelectedColor) {
-      bout.SystemColor(pMenuHeader->nItemSelectedColor);
-    }
-    bout << static_cast<int>(pMenuHeader->nItemSelectedColor) << wwiv::endl;
-    bout.Color(0);
-    bout.bprintf("%-35.35s", "P) Item selected hightlight color");
-    if (pMenuHeader->nItemSelectedHLColor) {
-      bout.SystemColor(pMenuHeader->nItemSelectedHLColor);
-    }
-    bout << static_cast<int>(pMenuHeader->nItemSelectedHLColor) << wwiv::endl;
-    bout.Color(0);
-
-    bout.nl(2);
-    bout << "A-G,K-P, Q=Quit : ";
-    char chKey = onek("QABCDEFGKLMNOP");
-
-    if (chKey != 'Q') {
-      ListAllColors();
-      bout.nl();
-      bout << "Select a color : ";
-    }
-    switch (chKey) {
-    case 'A':
-      input(szTemp, 3);
-      if (szTemp[0]) {
-        pMenuHeader->nTitleColor = StringToChar(szTemp);
-      }
-      break;
-    case 'B':
-      input(szTemp, 3);
-      if (szTemp[0]) {
-        pMenuHeader->nMainBorderColor = StringToChar(szTemp);
-      }
-      break;
-    case 'C':
-      input(szTemp, 3);
-      if (szTemp[0]) {
-        pMenuHeader->nMainBoxColor = StringToChar(szTemp);
-      }
-      break;
-    case 'D':
-      input(szTemp, 3);
-      if (szTemp[0]) {
-        pMenuHeader->nMainTextColor = StringToChar(szTemp);
-      }
-      break;
-    case 'E':
-      input(szTemp, 3);
-      if (szTemp[0]) {
-        pMenuHeader->nMainTextHLColor = StringToChar(szTemp);
-      }
-      break;
-    case 'F':
-      input(szTemp, 3);
-      if (szTemp[0]) {
-        pMenuHeader->nMainSelectedColor = StringToChar(szTemp);
-      }
-      break;
-    case 'G':
-      input(szTemp, 3);
-      if (szTemp[0]) {
-        pMenuHeader->nMainSelectedHLColor = StringToChar(szTemp);
-      }
-      break;
-    case 'K':
-      input(szTemp, 3);
-      if (szTemp[0]) {
-        pMenuHeader->nItemBorderColor = StringToChar(szTemp);
-      }
-      break;
-    case 'L':
-      input(szTemp, 3);
-      if (szTemp[0]) {
-        pMenuHeader->nItemBoxColor = StringToChar(szTemp);
-      }
-      break;
-    case 'M':
-      input(szTemp, 3);
-      if (szTemp[0]) {
-        pMenuHeader->nItemTextColor = StringToChar(szTemp);
-      }
-      break;
-    case 'N':
-      input(szTemp, 3);
-      if (szTemp[0]) {
-        pMenuHeader->nItemTextHLColor = StringToChar(szTemp);
-      }
-      break;
-    case 'O':
-      input(szTemp, 3);
-      if (szTemp[0]) {
-        pMenuHeader->nItemSelectedColor = StringToChar(szTemp);
-      }
-      break;
-    case 'P':
-      input(szTemp, 3);
-      if (szTemp[0]) {
-        pMenuHeader->nItemSelectedHLColor = StringToChar(szTemp);
-      }
-      break;
-    case 'Q':
-      done = true;
-      break;
-    }
-  }
 }
 
 void ListMenuDirs() {
@@ -853,8 +652,8 @@ void ListMenuDirs() {
   OpenMenuDescriptions();
 
   bout.nl();
-  bout << "|#7Available Menus Sets\r\n";
-  bout << "|#5============================\r\n";
+  bout << "|#1Available Menus Sets\r\n";
+  bout << "|#7============================\r\n";
 
   WFindFile fnd;
   bool bFound = fnd.open(path.c_str(), 0);
@@ -864,7 +663,7 @@ void ListMenuDirs() {
       if (!starts_with(filename, ".")) {
         // Skip the . and .. dir entries.
         const string description = GetMenuDescription(filename);
-        bout.bprintf("|#2%-8.8s |15%-60.60s\r\n", filename.c_str(), description.c_str());
+        bout.bprintf("|#2%-8.8s |#9%-60.60s\r\n", filename.c_str(), description.c_str());
       }
     }
     bFound = fnd.next();
@@ -880,15 +679,15 @@ void ListMenuMenus(const char *pszDirectoryName) {
   string path = GetMenuDirectory(pszDirectoryName) + "*.mnu";
 
   bout.nl();
-  bout << "|#7Available Menus\r\n";
-  bout << "|#5===============|06\r\n";
+  bout << "|#1Available Menus\r\n";
+  bout << "|#7===============|06\r\n";
 
   WFindFile fnd;
   bool bFound = fnd.open(path.c_str(), 0);
   while (bFound && !hangup) {
     if (fnd.IsFile()) {
       string s = fnd.GetFileName();
-      bout << s.substr(0, s.find_last_of('.')) << wwiv::endl;
+      bout << "|#2" << s.substr(0, s.find_last_of('.')) << wwiv::endl;
     }
     bFound = fnd.next();
   }
