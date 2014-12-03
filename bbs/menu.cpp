@@ -40,12 +40,9 @@ static char **ppMenuStringsIndex;
 static int nNumMenuCmds;
 
 using std::string;
-using wwiv::strings::IsEqualsIgnoreCase;
-using wwiv::strings::IsEquals;
+using namespace wwiv::strings;
 
-//
 // Local function prototypes
-//
 bool CheckMenuPassword(char* pszCorrectPassword);
 bool LoadMenuSetup(int nUserNum);
 bool ValidateMenuSet(const char *pszMenuDir);
@@ -510,8 +507,6 @@ bool AMIsNumber(string& command) {
 }
 
 void ConfigUserMenuSet() {
-  char szMsg[101], szDesc[101];
-
   ReadMenuSetup();
 
   if (GetSession()->usernum != nSecondUserRecLoaded) {
@@ -549,8 +544,7 @@ void ConfigUserMenuSet() {
       if (ValidateMenuSet(menuSetName.c_str())) {
         OpenMenuDescriptions();
         bout.nl();
-        bout << "|#1Menu Set : |#2" <<  menuSetName.c_str() << "  -  |15" << GetMenuDescription(menuSetName,
-                           szDesc) << wwiv::endl;
+        bout << "|#1Menu Set : |#2" <<  menuSetName.c_str() << "  -  |15" << GetMenuDescription(menuSetName) << wwiv::endl;
         bout << "|#5Use this menu set? ";
         if (noyes()) {
           strcpy(pSecondUserRec->szMenuSet, menuSetName.c_str());
@@ -594,9 +588,8 @@ void ConfigUserMenuSet() {
 
   WriteMenuSetup(GetSession()->usernum);
 
-  sprintf(szMsg, "Menu in use : %s - %s - %s", pSecondUserRec->szMenuSet,
-          pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Hot" : "Off", pSecondUserRec->cMenuType == MENUTYPE_REGULAR ? "REG" : "PD");
-  MenuSysopLog(szMsg);
+  MenuSysopLog(StringPrintf("Menu in use : %s - %s - %s", pSecondUserRec->szMenuSet,
+          pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Hot" : "Off", pSecondUserRec->cMenuType == MENUTYPE_REGULAR ? "REG" : "PD"));
   bout.nl(2);
 }
 
@@ -799,18 +792,17 @@ void CloseMenuDescriptions() {
   hMenuDesc = nullptr;
 }
 
-char *GetMenuDescription(const string& name, char *pszDesc) {
+const string GetMenuDescription(const string& name) {
+  string description;
   if (!hMenuDesc) {
-    *pszDesc = 0;
-    return nullptr;
+    return "";
   }
   fseek(hMenuDesc, 0, SEEK_SET);
 
   char szLine[201];
   while (!hangup) {
     if (!fgets(szLine, 200, hMenuDesc)) {
-      *pszDesc = 0;
-      return pszDesc;
+    return "";
     }
     char* pszTemp = strchr(szLine, ' ');
     if (!pszTemp) {
@@ -820,28 +812,16 @@ char *GetMenuDescription(const string& name, char *pszDesc) {
     pszTemp[0] = 0;
     ++pszTemp;
 
-    if (IsEqualsIgnoreCase(name.c_str(), szLine)) {
-      strcpy(pszDesc, pszTemp);
-      int x = strlen(pszDesc);
-      --x;
-
-      if (x > 55) {
-        x = 54;
-        pszDesc[x + 1] = 0;
+    if (name == szLine) {
+      description.assign(pszTemp);
+      StringTrim(&description);
+      if (description.size() > 55) {
+        return description.substr(0, 55);
       }
-      if (x >= 0 && isspace(pszDesc[x])) {
-        while (x > 0 && isspace(pszDesc[x]) && !hangup) {
-          --x;
-        }
-        if (!isspace(pszDesc[x])) {
-          ++x;
-        }
-        pszDesc[x] = 0;
-      }
-      return pszDesc;
+      return description;
     }
   }
-  return pszDesc;
+  return "";
 }
 
 // tokenize a line.
@@ -881,7 +861,7 @@ static char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, co
   return const_cast<char *>(pszText);
 }
 
-void SetMenuDescription(const char *pszName, const char *pszDesc) {
+void SetMenuDescription(const string& name, const string& description) {
   char szLine[MAX_PATH], szTok[26];
   int bWritten = 0;
   bool bMenuOpen = false;
@@ -909,8 +889,8 @@ void SetMenuDescription(const char *pszName, const char *pszDesc) {
 
       stptok(szLine, szTok, 25, " ");
 
-      if (IsEqualsIgnoreCase(pszName, szTok)) {
-        tempDescriptionFile.WriteFormatted("%s %s\n", pszName, pszDesc);
+      if (IsEqualsIgnoreCase(name.c_str(), szTok)) {
+        tempDescriptionFile.WriteFormatted("%s %s\n", name.c_str(), description.c_str());
         bWritten = 1;
       } else {
         tempDescriptionFile.WriteFormatted("%s", szLine);
@@ -918,11 +898,10 @@ void SetMenuDescription(const char *pszName, const char *pszDesc) {
     }
   }
   if (!bWritten) {
-    tempDescriptionFile.WriteFormatted("%s %s\n", pszName, pszDesc);
+    tempDescriptionFile.WriteFormatted("%s %s\n", name.c_str(), description.c_str());
   }
 
   tempDescriptionFile.Close();
-
   CloseMenuDescriptions();
 
   File descriptionFile(GetMenuDirectory(), DESCRIPT_ION);

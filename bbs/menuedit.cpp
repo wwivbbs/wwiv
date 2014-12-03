@@ -156,18 +156,18 @@ void EditMenus() {
         nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
         ReadMenuRec(fileEditMenu, &Menu, nCur);
         break;
-      case '0':
+      case '0': {
         OpenMenuDescriptions();
-        GetMenuDescription(menuDir.c_str(), szDesc);
+        string description = GetMenuDescription(menuDir.c_str());
 
         bout << "|#5New desc     : ";
         bout.Color(0);
-        inputl(szDesc, 60);
-        if (szDesc[0]) {
-          SetMenuDescription(menuDir.c_str(), szDesc);
+        inputl(&description, 60);
+        if (!description.empty()) {
+          SetMenuDescription(menuDir, description);
         }
         CloseMenuDescriptions();
-        break;
+      } break;
       case '1':
         bout << "Is menu deleted? (N) ";
         if (yesno()) {
@@ -632,9 +632,7 @@ void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const char *pszD
     bout << "   Menu Version         : " <<
                        static_cast<int>(HIBYTE(pHeader->nVersion)) <<
                        static_cast<int>(LOBYTE(pHeader->nVersion)) << wwiv::endl;
-    char szDesc[101];
-    bout << "0) Menu Description     : " << GetMenuDescription(string(pszDirectoryName),
-                       szDesc) << wwiv::endl;
+    bout << "0) Menu Description     : " << GetMenuDescription(pszDirectoryName) << wwiv::endl;
     bout << "1) Deleted              : " << ((pHeader->nFlags & MENU_FLAG_DELETED) ? "Yes" : "No") <<
                        wwiv::endl;
     bout << "2) Main Menu            : " << ((pHeader->nFlags & MENU_FLAG_MAINMENU) ? "Yes" : "No") <<
@@ -865,9 +863,8 @@ void ListMenuDirs() {
       const string filename = fnd.GetFileName();
       if (!starts_with(filename, ".")) {
         // Skip the . and .. dir entries.
-        File file(menu_directory, filename);
-        char szBuffer[101];
-        bout.bprintf("|#2%-8.8s |15%-60.60s\r\n", filename.c_str(), GetMenuDescription(filename, szBuffer));
+        const string description = GetMenuDescription(filename);
+        bout.bprintf("|#2%-8.8s |15%-60.60s\r\n", filename.c_str(), description.c_str());
       }
     }
     bFound = fnd.next();
