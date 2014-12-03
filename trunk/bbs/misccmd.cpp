@@ -41,7 +41,7 @@ void kill_old_email() {
   filestatusrec fsr;
 
   bout << "|#5List mail starting at most recent? ";
-  int forward = (yesno());
+  bool forward = yesno();
   File *pFileEmail = OpenEmailFile(false);
   WWIV_ASSERT(pFileEmail);
   if (!pFileEmail->IsOpen()) {
@@ -197,7 +197,6 @@ void kill_old_email() {
   pFileEmail->Close();
   delete pFileEmail;
 }
-
 
 void list_users(int mode) {
   subboardrec s;
