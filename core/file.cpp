@@ -104,23 +104,14 @@ static const int TRIES = 100;
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
 
-File::File() {
-  init();
+File::File() : open_(false), handle_(File::invalid_handle) {}
+
+File::File(const string& full_file_name) : File() {
+  this->SetName(full_file_name);
 }
 
-File::File(const string& fileName) {
-  init();
-  this->SetName(fileName);
-}
-
-File::File(const string& dirName, const string& fileName) {
-  init();
-  this->SetName(dirName, fileName);
-}
-
-void File::init() {
-  open_ = false;
-  handle_ = File::invalid_handle;
+File::File(const string& dir, const string& filename) : File() {
+  this->SetName(dir, filename);
 }
 
 File::~File() {
@@ -141,8 +132,8 @@ bool File::Open(int nFileMode, int nShareMode) {
     }
   }
 
-  WWIV_ASSERT(nShareMode   != File::shareUnknown);
-  WWIV_ASSERT(nFileMode    != File::modeUnknown);
+  WWIV_ASSERT(nShareMode != File::shareUnknown);
+  WWIV_ASSERT(nFileMode != File::modeUnknown);
 
   if (debug_level_ > 2) {
     logger_->LogMessage("\rSH_OPEN %s, access=%u\r\n", full_path_name_.c_str(), nFileMode);
