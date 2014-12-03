@@ -28,6 +28,7 @@
 using std::string;
 using std::chrono::milliseconds;
 using namespace wwiv::os;
+using namespace wwiv::strings;
 
 // Allows local-only editing of some of the user data in a shadowized window.
 void OnlineUserEditor() {
@@ -42,13 +43,12 @@ void OnlineUserEditor() {
   int wx = 5;
   int wy = 3;
   GetSession()->localIO()->MakeLocalWindow(wx, wy - 2, 70, 16 + 2);
-  char szBar[ 255 ];
-  sprintf(szBar, "\xC3%s\xB4", charstr(70 - wx + 3, '\xC4'));
-  GetSession()->localIO()->LocalXYPrintf(wx, wy, szBar);
-  GetSession()->localIO()->LocalXYPrintf(wx, wy + 4, szBar);
-  GetSession()->localIO()->LocalXYPrintf(wx, wy + 7, szBar);
-  GetSession()->localIO()->LocalXYPrintf(wx, wy + 11, szBar);
-  GetSession()->localIO()->LocalXYPrintf(wx, wy + 13, szBar);
+  const string bar = StringPrintf("\xC3%s\xB4", charstr(70 - wx + 3, '\xC4'));
+  GetSession()->localIO()->LocalXYPuts(wx, wy, bar);
+  GetSession()->localIO()->LocalXYPuts(wx, wy + 4, bar);
+  GetSession()->localIO()->LocalXYPuts(wx, wy + 7, bar);
+  GetSession()->localIO()->LocalXYPuts(wx, wy + 11, bar);
+  GetSession()->localIO()->LocalXYPuts(wx, wy + 13, bar);
   sprintf(sl, "%u", GetSession()->GetCurrentUser()->GetSl());
   sprintf(dsl, "%u", GetSession()->GetCurrentUser()->GetDsl());
   sprintf(exempt, "%u", GetSession()->GetCurrentUser()->GetExempt());
