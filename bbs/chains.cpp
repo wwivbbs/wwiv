@@ -28,34 +28,29 @@
 #include "core/wwivassert.h"
 
 using std::string;
-using wwiv::strings::IsEquals;
+using namespace wwiv::strings;
 
 // Displays the list of chains to a user
 static void show_chains(int *mapp, int *map) {
-  char szBuffer[ 255 ];
-
   bout.Color(0);
   bout.cls();
   bout.nl();
   bool abort = false;
   bool next = false;
   if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg) {
-    sprintf(szBuffer, "|#5  Num |#1%-42.42s|#2%-22.22s|#1%-5.5s", "Description", "Sponsored by", "Usage");
-    pla(szBuffer, &abort);
+    pla(StringPrintf("|#5  Num |#1%-42.42s|#2%-22.22s|#1%-5.5s", "Description", "Sponsored by", "Usage"), &abort);
 
     if (okansi()) {
-      sprintf(szBuffer, "|#%d %s", FRAME_COLOR,
-              "\xDA\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xBF");
+      pla(StringPrintf("|#%d %s", FRAME_COLOR,
+              "\xDA\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xBF"), &abort);
     } else {
-      sprintf(szBuffer, " +---+-----------------------------------------+---------------------+-----+");
+      pla(StringPrintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
     }
-    pla(szBuffer, &abort);
     for (int i = 0; i < *mapp && !abort && !hangup; i++) {
       WUser user;
-      strcat(szBuffer, ". ");
       if (okansi()) {
         GetApplication()->GetUserManager()->ReadUser(&user, chains_reg[map[i]].regby[0]);
-        sprintf(szBuffer, " |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
+        pla(StringPrintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
                 FRAME_COLOR,
                 i + 1,
                 FRAME_COLOR,
@@ -65,85 +60,66 @@ static void show_chains(int *mapp, int *map) {
                 (chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
                 FRAME_COLOR,
                 chains_reg[map[i]].usage,
-                FRAME_COLOR);
-        pla(szBuffer, &abort);
+                FRAME_COLOR), &abort);
         if (chains_reg[map[i]].regby[0] != 0) {
           for (int i1 = 1; i1 < 5 && !abort; i1++) {
             if (chains_reg[map[i]].regby[i1] != 0) {
               GetApplication()->GetUserManager()->ReadUser(&user, chains_reg[map[i]].regby[i1]);
-              sprintf(szBuffer, " |#%d\xB3   \xBA%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3",
-                      FRAME_COLOR, " ", user.GetName(), FRAME_COLOR, " ");
-              pla(szBuffer, &abort);
+              pla(StringPrintf(" |#%d\xB3   \xBA%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3",
+                      FRAME_COLOR, " ", user.GetName(), FRAME_COLOR, " "), &abort);
             }
           }
         }
       } else {
         GetApplication()->GetUserManager()->ReadUser(&user, chains_reg[map[i]].regby[0]);
-        sprintf(szBuffer, " |%3d|%-41.41s|%-21.21s|%5d|",
+        pla(StringPrintf(" |%3d|%-41.41s|%-21.21s|%5d|",
                 i + 1, chains[map[i]].description,
                 (chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
-                chains_reg[map[i]].usage);
-        pla(szBuffer, &abort);
+                chains_reg[map[i]].usage), &abort);
         if (chains_reg[map[i]].regby[0] != 0) {
           for (int i1 = 1; i1 < 5; i1++) {
             if (chains_reg[map[i]].regby[i1] != 0) {
               GetApplication()->GetUserManager()->ReadUser(&user, chains_reg[map[i]].regby[i1]);
-              sprintf(szBuffer, " |   |                                         |%-21.21s|     |",
-                      (chains_reg[map[i]].regby[i1]) ? user.GetName() : "Available");
-              pla(szBuffer, &abort);
+              pla(StringPrintf(" |   |                                         |%-21.21s|     |",
+                      (chains_reg[map[i]].regby[i1]) ? user.GetName() : "Available"), &abort);
             }
           }
         }
       }
     }
     if (okansi()) {
-      sprintf(szBuffer, "|#%d %s", FRAME_COLOR,
-              "\xC0\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9");
+      pla(StringPrintf("|#%d %s", FRAME_COLOR, "\xC0\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9"), &abort);
     } else {
-      sprintf(szBuffer, " +---+-----------------------------------------+---------------------+-----+");
+      pla(StringPrintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
     }
-    pla(szBuffer, &abort);
-
   } else {
     bout.litebar(" %s Online Programs ", syscfg.systemname);
-    bout <<
-                       "|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
+    bout << "|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
     for (int i = 0; i < *mapp && !abort && !hangup; i++) {
-      sprintf(szBuffer, "|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, chains[map[i]].description);
-      osan(szBuffer, &abort, &next);
+      osan(StringPrintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, chains[map[i]].description), &abort, &next);
       i++;
       if (!abort && !hangup) {
-        char szBuffer[ 255 ];
         if (i >= *mapp) {
-          sprintf(szBuffer, "  |#7\xB3                                  |#7\xB3");
+          pla(StringPrintf("  |#7\xB3                                  |#7\xB3"), &abort);
         } else {
-          sprintf(szBuffer, "|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, chains[map[i]].description);
+          pla(StringPrintf("|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, chains[map[i]].description), &abort);
         }
-        pla(szBuffer, &abort);
       }
     }
-    bout <<
-                       "|#7\xC0\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xD9\r\n";
+    bout << "|#7\xC0\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xD9\r\n";
   }
 }
 
-//////////////////////////////////////////////////////////////////////////////
-//
 // Executes a "chain", index number nChainNumber.
-//
-
 void run_chain(int nChainNumber) {
   int inst = inst_ok(INST_LOC_CHAINS, nChainNumber + 1);
   if (inst != 0) {
-    char szMessage[255];
-    sprintf(szMessage, "|#2Chain %s is in use on instance %d.  ", chains[nChainNumber].description, inst);
+    const string message = StringPrintf("|#2Chain %s is in use on instance %d.  ", chains[nChainNumber].description, inst);
     if (!(chains[nChainNumber].ansir & ansir_multi_user)) {
-      strcat(szMessage, "Try again later.\r\n");
-      bout << szMessage;
+      bout << message << "Try again later.\r\n";
       return;
     } else {
-      strcat(szMessage, "Care to join in? ");
-      bout << szMessage;
+      bout << message << "Care to join in? ";
       if (!yesno()) {
         return;
       }
@@ -157,17 +133,10 @@ void run_chain(int nChainNumber) {
       regFile.Write(chains_reg, GetSession()->GetNumberOfChains() * sizeof(chainregrec));
     }
   }
-  char szComSpeed[ 11 ];
-  sprintf(szComSpeed, "%d", (com_speed == 1) ? 115200 : com_speed);
-
-  char szComPortNum[ 11 ];
-  sprintf(szComPortNum, "%d", syscfgovr.primaryport);
-
-  char szModemSpeed[ 11 ];
-  sprintf(szModemSpeed, "%d", modem_speed);
-
-  const string chainCmdLine = stuff_in(chains[nChainNumber].filename, create_chain_file(), szComSpeed, szComPortNum,
-                                       szModemSpeed, "");
+  const string com_speed_str = StringPrintf("%d", (com_speed == 1) ? 115200 : com_speed);
+  const string com_port_num_str = StringPrintf("%d", syscfgovr.primaryport);
+  const string modem_speed_str = StringPrintf("%d", modem_speed);
+  const string chainCmdLine = stuff_in(chains[nChainNumber].filename, create_chain_file(), com_speed_str, com_port_num_str, modem_speed_str, "");
 
   sysoplogf("!Ran \"%s\"", chains[nChainNumber].description);
   GetSession()->GetCurrentUser()->SetNumChainsRun(GetSession()->GetCurrentUser()->GetNumChainsRun() + 1);
@@ -231,7 +200,7 @@ void do_chains() {
       map[ mapp++ ] = i;
       if (mapp < 100) {
         if ((mapp % 10) == 0) {
-          odc[mapp / 10 - 1] = static_cast< char >('0' + (mapp / 10));
+          odc[mapp / 10 - 1] = static_cast<char>('0' + (mapp / 10));
         }
       }
     }
@@ -257,9 +226,9 @@ void do_chains() {
       ss = mmkey(2);
       nChainNumber = atoi(ss);
     } else {
-      char szChainNumber[ 11 ];
-      input(szChainNumber, 3);
-      nChainNumber = atoi(szChainNumber);
+      string chain_number;
+      input(&chain_number, 3);
+      nChainNumber = atoi(chain_number.c_str());
     }
     if (nChainNumber > 0 && nChainNumber <= mapp) {
       bout << "\r\n|#6Please wait...\r\n";
