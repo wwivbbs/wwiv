@@ -26,11 +26,8 @@
 
 using wwiv::bbs::InputMode;
 
-//
 // Local Function Prototypes
-//
 
-void save_subs();
 void boarddata(int n, char *s);
 void showsubs();
 void modify_sub(int n);
@@ -38,7 +35,7 @@ void swap_subs(int sub1, int sub2);
 void insert_sub(int n);
 void delete_sub(int n);
 
-void save_subs() {
+static void save_subs() {
   int nSavedNetNum = GetSession()->GetNetworkNumber();
 
   for (int nTempNetNum = 0; nTempNetNum < GetSession()->num_subs; nTempNetNum++) {
