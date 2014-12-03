@@ -548,7 +548,7 @@ bool GetMenuMenu(const string& directoryName, string& menuName) {
   while (!hangup) {
     bout.nl();
     bout << "|#9(Enter=Quit, ?=List) Enter menu file to edit: |#0";
-    input(&menuName, 8);
+    input1(&menuName, 8, InputMode::FILENAME, true, true);
 
     if (menuName.empty()) {
       return false;
