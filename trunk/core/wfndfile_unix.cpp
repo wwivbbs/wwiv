@@ -153,7 +153,7 @@ bool WFindFile::IsFile() {
     return false;
   }
 
-  return (nFileType & DT_BLK);
+  return (nFileType & DT_REG);
 }
 
 
