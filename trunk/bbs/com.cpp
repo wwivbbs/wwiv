@@ -28,13 +28,6 @@
 
 extern char str_quit[];
 
-//
-// Local functions
-//
-
-void addto(char *pszAnsiString, int nNumber);
-
-
 void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const char *cc) {
   if (GetSession()->localIO()->WhereX()) {
     bout.nl();
@@ -47,8 +40,6 @@ void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const c
   bout.SystemColor(*cc);
   strcpy(endofline, xl);
 }
-
-
 
 // Note: if this function is called anywhere except for from the
 // WFC, it will break the UNIX implementation of WComm unless
@@ -108,8 +99,7 @@ bool CheckForHangup()
   return hangup;
 }
 
-
-void addto(char *pszAnsiString, int nNumber) {
+static void addto(char *pszAnsiString, int nNumber) {
   char szBuffer[ 20 ];
 
   strcat(pszAnsiString, (pszAnsiString[0]) ? ";" : "\x1b[");
@@ -117,13 +107,11 @@ void addto(char *pszAnsiString, int nNumber) {
   strcat(pszAnsiString, szBuffer);
 }
 
-
-void makeansi(int attr, char *pszOutBuffer, bool forceit)
 /* Passed to this function is a one-byte attribute as defined for IBM type
 * screens.  Returned is a string which, when printed, will change the
 * display to the color desired, from the current function.
 */
-{
+void makeansi(int attr, char *pszOutBuffer, bool forceit) {
   static const char *temp = "04261537";
 
   int catr = curatr;

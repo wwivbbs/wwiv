@@ -163,13 +163,11 @@ static void print_cur_stat() {
   bout.bprintf("%-48s %-45s\r\n", s1, s2);
   sprintf(s1, "|#1U|#9) Use Msg AutoQuote : |#2%s", YesNoString(GetSession()->GetCurrentUser()->IsUseAutoQuote()));
 
-  char szWWIVRegNum[80];
+  string wwiv_regnum = "(None)";
   if (GetSession()->GetCurrentUser()->GetWWIVRegNumber()) {
-    sprintf(szWWIVRegNum, "%ld", GetSession()->GetCurrentUser()->GetWWIVRegNumber());
-  } else {
-    strcpy(szWWIVRegNum, "(None)");
+    wwiv_regnum = StringPrintf("%ld", GetSession()->GetCurrentUser()->GetWWIVRegNumber());
   }
-  sprintf(s2, "|#1W|#9) WWIV reg num      : |#2%s", szWWIVRegNum);
+  sprintf(s2, "|#1W|#9) WWIV reg num      : |#2%s", wwiv_regnum.c_str());
   bout.bprintf("%-48s %-45s\r\n", s1, s2);
 
   bout << "|#1Q|#9) Quit to main menu\r\n";
@@ -391,12 +389,10 @@ void l_config_qscan() {
   bool abort = false;
   bout << "\r\n|#9Boards to q-scan marked with '*'|#0\r\n\n";
   for (int i = 0; (i < GetSession()->num_subs) && (usub[i].subnum != -1) && !abort; i++) {
-    char szBuffer[81];
-    sprintf(szBuffer, "%c %s. %s",
+    pla(StringPrintf("%c %s. %s",
             (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) ? '*' : ' ',
             usub[i].keys,
-            subboards[usub[i].subnum].name);
-    pla(szBuffer, &abort);
+            subboards[usub[i].subnum].name), &abort);
   }
   bout.nl(2);
 }
@@ -421,10 +417,8 @@ void config_qscan() {
       bout << "\r\nSelect Conference: \r\n\n";
       int i = 0;
       while (i < subconfnum && uconfsub[i].confnum != -1 && !abort) {
-        char szBuffer[120];
-        sprintf(szBuffer, "%c) %s", subconfs[uconfsub[i].confnum].designator,
-                stripcolors(reinterpret_cast<char*>(subconfs[uconfsub[i].confnum].name)));
-        pla(szBuffer, &abort);
+        pla(StringPrintf("%c) %s", subconfs[uconfsub[i].confnum].designator,
+                stripcolors(reinterpret_cast<char*>(subconfs[uconfsub[i].confnum].name))), &abort);
         szConfList[i + 1] = subconfs[uconfsub[i].confnum].designator;
         szConfList[i + 2] = 0;
         i++;
@@ -520,7 +514,7 @@ static void list_macro(const char *pszMacroText) {
   bout.nl();
 }
 
-static char *macroedit(char *pszMacroText) {
+static void macroedit(char *pszMacroText) {
   *pszMacroText = '\0';
   bout.nl();
   bout << "|#5Enter your macro, press |#7[|#1CTRL-Z|#7]|#5 when finished.\r\n\n";
@@ -580,7 +574,6 @@ static char *macroedit(char *pszMacroText) {
   if (!yesno()) {
     *pszMacroText = '\0';
   }
-  return pszMacroText;
 }
 
 static void make_macros() {
@@ -982,9 +975,8 @@ static long is_inscan(int dir) {
   }
 
   for (int this_dir = 0; (this_dir < GetSession()->num_dirs); this_dir++) {
-    char szDir[50];
-    sprintf(szDir, "%d", sysdir ? dir : dir + 1);
-    if (IsEquals(szDir, udir[this_dir].keys)) {
+    const string key = StringPrintf("%d", (sysdir ? dir : (dir + 1)));
+    if (key == udir[this_dir].keys) {
       int ad = udir[this_dir].subnum;
       return (qsc_n[ad / 32] & (1L << ad % 32));
     }
