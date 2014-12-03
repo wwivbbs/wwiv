@@ -243,7 +243,7 @@ void input_password(string promptText, string* strOutPassword, int nMaxLength) {
 //
 // Returns: length of string
 //==================================================================
-int Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInsert, InputMode mode) {
+void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInsert, InputMode mode) {
   char szTemp[ 255 ];
   const char dash = '-';
   const char slash = '/';
@@ -251,13 +251,13 @@ int Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInser
 #if defined( __unix__ )
   input1(szTemp, nMaxLength, mode, true);
   strcpy(pszOutText, szTemp);
-  return strlen(szTemp);
+  return;
 #endif // __unix__
 
   if (!okansi()) {
     input1(szTemp, nMaxLength, mode, true);
     strcpy(pszOutText, szTemp);
-    return static_cast<int>(strlen(szTemp));
+    return;
   }
   int nTopDataSaved = GetSession()->topdata;
   if (GetSession()->topdata != WLocalIO::topdataNone) {
@@ -461,15 +461,14 @@ int Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInser
   GetSession()->localIO()->SetTopLine(nTopLineSaved);
 
   bout.Color(0);
-  return nLength;
+  return;
 }
 
-int Input1(string* strOutText, const string& origText, int nMaxLength, bool bInsert, InputMode mode) {
-  char szTempBuffer[ 255 ];
+void Input1(string* strOutText, const string& origText, int nMaxLength, bool bInsert, InputMode mode) {
+  char szTempBuffer[255];
   WWIV_ASSERT(nMaxLength < sizeof(szTempBuffer));
 
-  int nLength = Input1(szTempBuffer, origText, nMaxLength, bInsert, mode);
+  Input1(szTempBuffer, origText, nMaxLength, bInsert, mode);
   strOutText->assign(szTempBuffer);
-  return nLength;
 }
 
