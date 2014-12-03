@@ -178,8 +178,8 @@ const std::string GetMenuDirectory();
 void MenuSysopLog(const std::string pszMsg);
 void OpenMenuDescriptions();
 void CloseMenuDescriptions();
-char *GetMenuDescription(const std::string& name, char *pszDesc);
-void SetMenuDescription(const char *pszName, const char *pszDesc);
+const std::string GetMenuDescription(const std::string& name);
+void SetMenuDescription(const std::string& name, const std::string& description);
 
 // Used by menuinterpretcommand.cpp
 void TurnMCIOff();
