@@ -78,13 +78,12 @@ class File {
   std::string error_text_;
   static  WLogger* logger_;
   static int debug_level_;
-  void init();
 
  public:
   // Constructor/Destructor
   File();
-  File(const std::string& dirName, const std::string& fileName);
-  explicit File(const std::string& strFileName);
+  File(const std::string& dir, const std::string& filename);
+  explicit File(const std::string& full_file_name);
   virtual ~File();
 
   // Public Member functions
