@@ -115,8 +115,6 @@ struct MenuHeader {
   char   szExitScript[101];  /* Executed on rtn from menu  */
 };
 
-
-
 struct MenuRec {
   uint8_t nFlags;   /* AFLAG_????? */
 
@@ -135,18 +133,15 @@ struct MenuRec {
   uint16_t nMinDSL, iMaxDSL;
   uint16_t uAR, uDAR;        /* Must match all specified to be able to run     */
   uint16_t uRestrict;        /* If any of these restrictions, you cant execute */
-  uint8_t nSysop, nCoSysop;   /* true and false, does it take a co/sysop to run */
+  uint8_t nSysop, nCoSysop;  /* true and false, does it take a co/sysop to run */
   char szPassWord[21];
 
-  uint16_t nHide;             /* Hide text from PD/Regular/both or no menus */
-  uint16_t nPDFlags;          /* special characteristis for pulldowns       */
+  uint16_t nHide;            /* Hide text from PD/Regular/both or no menus */
+  uint16_t unused_nPDFlags;  /* special characteristis for pulldowns       */
 
-  char szExtendedHelp[13]; /* filename to detailed help on this item */
-
+  char szExtendedHelp[13];   /* filename to detailed help on this item */
   char unused_data[79];
-
 };
-
 
 struct MenuRecIndex {
   char szKey[MENU_MAX_KEYS + 1];

@@ -37,7 +37,6 @@ void ReadMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur);
 void WriteMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur);
 void DisplayItem(MenuRec * Menu, int nCur, int nAmount);
 void DisplayHeader(MenuHeader * Header, int nCur, int nAmount, const char *pszDirectoryName);
-void EditPulldownColors(MenuHeader * H);
 void ListMenuMenus(const char *pszDirectoryName);
 
 #ifndef _WIN32
@@ -209,10 +208,6 @@ void EditMenus() {
           ((MenuHeader *)(&Menu))->nAllowedMenu = 0;
         }
         break;
-      case 'E':
-        bout << "Pulldown menu title : ";
-        inputl(((MenuHeader *)(&Menu))->szMenuTitle, 20);
-        break;
       case 'F':
         bout << "Command to execute : ";
         inputl(((MenuHeader *)(&Menu))->szScript, 100);
@@ -273,9 +268,6 @@ void EditMenus() {
         }
         bout << "   New PW : ";
         input(((MenuHeader *)(&Menu))->szPassWord, 20);
-        break;
-      case 'P':
-        EditPulldownColors(((MenuHeader *)(&Menu)));
         break;
       }
     } else {
@@ -349,10 +341,6 @@ void EditMenus() {
         if (!(Menu.szPDText[0])) {
           strcpy(Menu.szPDText, Menu.szMenuText);
         }
-        break;
-      case 'D':
-        bout << "Pulldown Menu Text : ";
-        inputl(Menu.szPDText, 40);
         break;
       case 'E':
         bout << "Help Text : ";
@@ -440,28 +428,6 @@ void EditMenus() {
           Menu.nHide = MENU_HIDE_NONE;
         }
         break;
-      case 'W':
-        bout << "Clear screen before command is run? (Y) ";
-        if (noyes()) {
-          Menu.nPDFlags &= ~PDFLAGS_NOCLEAR;
-        } else {
-          Menu.nPDFlags |= PDFLAGS_NOCLEAR;
-        }
-
-        bout << "Pause screen after command is run? (Y) ";
-        if (noyes()) {
-          Menu.nPDFlags &= ~PDFLAGS_NOPAUSEAFTER;
-        } else {
-          Menu.nPDFlags |= PDFLAGS_NOPAUSEAFTER;
-        }
-
-        bout << "Restore screen after command is run? (Y) ";
-        if (noyes()) {
-          Menu.nPDFlags &= ~PDFLAGS_NORESTORE;
-        } else {
-          Menu.nPDFlags |= PDFLAGS_NORESTORE;
-        }
-        break;
       case 'X':
         bout << "Filename for detailed help on item : ";
         input(Menu.szExtendedHelp, 12);
@@ -541,7 +507,6 @@ void WriteMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur) {
   unlock(iEditMenu, nCur * sizeof(MenuRec), sizeof(MenuRec));
   */
 }
-
 
 bool GetMenuDir(string& menuName) {
   ListMenuDirs();
@@ -624,11 +589,8 @@ bool GetMenuMenu(const string& directoryName, string& menuName) {
   return false;
 }
 
-
-
 void DisplayItem(MenuRec * Menu, int nCur, int nAmount) {
   bout.cls();
-
   bout << "|02(|#9" << nCur << "|02/|#9" << nAmount << "|02)" << wwiv::endl;
 
   if (nCur > 0 && nCur <= nAmount) {
@@ -636,7 +598,6 @@ void DisplayItem(MenuRec * Menu, int nCur, int nAmount) {
     bout << "|#9A) Key            : |#2" << Menu->szKey << wwiv::endl;
     bout << "|#9B) Command        : |#2" << Menu->szExecute << wwiv::endl;
     bout << "|#9C) Menu Text      : |#2" << Menu->szMenuText << wwiv::endl;
-    bout << "|#9D) PD Menu Text   : |#2" << Menu->szPDText << wwiv::endl;
     bout << "|#9E) Help Text      : |#2" << Menu->szHelp << wwiv::endl;
     bout << "|#9F) Inst Msg       : |#2" << Menu->szInstanceMessage << wwiv::endl;
     bout << "|#9G) Sysop Log      : |#2" << Menu->szSysopLog << wwiv::endl;
@@ -653,16 +614,10 @@ void DisplayItem(MenuRec * Menu, int nCur, int nAmount) {
     bout << "|#9V) Hide text from : |#2" << (Menu->nHide == MENU_HIDE_NONE ? "None" : Menu->nHide ==
                        MENU_HIDE_PULLDOWN ? "Pulldown Menus" : Menu->nHide == MENU_HIDE_REGULAR ? "Regular Menus" : Menu->nHide ==
                        MENU_HIDE_BOTH ? "Both Menus" : "Out of Range") << wwiv::endl;
-    bout.bprintf("|#9W) Pulldown flags : |#5%-20.20s |#1%-18.18s |#6%-20.20s",
-                                      Menu->nPDFlags & PDFLAGS_NOCLEAR ? "No Clear before run" : "Clear before run",
-                                      Menu->nPDFlags & PDFLAGS_NOPAUSEAFTER ? "No Pause after run" : "Pause after run",
-                                      Menu->nPDFlags & PDFLAGS_NORESTORE ? "No Restore after run" : "Restore after run");
     bout << "|#9X) Extended Help  : |#2%s" << Menu->szExtendedHelp << wwiv::endl;
-
   }
   bout.nl(2);
-  bout <<
-                     "|041|#0,|04A|#0-|04F|#0,|04K|#0-|04U|#0, |04Z|#0=Add new record, |04[|#0=Prev, |04]|#0=Next, |04Q|#0=Quit : ";
+  bout << "|041|#0,|04A|#0-|04F|#0,|04K|#0-|04U|#0, |04Z|#0=Add new record, |04[|#0=Prev, |04]|#0=Next, |04Q|#0=Quit : ";
 }
 
 
@@ -693,10 +648,6 @@ void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const char *pszD
     bout << "C) Force help to be on  : " << (pHeader->nForceHelp == MENU_HELP_DONTFORCE ? "Not forced" :
                        pHeader->nForceHelp == MENU_HELP_FORCE ? "Forced On" : pHeader->nForceHelp == MENU_HELP_ONENTRANCE ?
                        "Forced on entrance" : "Out of range") << wwiv::endl;
-    bout << "D) Allowed menu type    : " << (pHeader->nAllowedMenu == MENU_ALLOWED_BOTH ? "Regular/Pulldown" :
-                       pHeader->nAllowedMenu == MENU_ALLOWED_PULLDOWN ? "Pulldown" : pHeader->nAllowedMenu == MENU_ALLOWED_REGULAR ?
-                       "Regular" : "Out of range") << wwiv::endl;
-    bout << "E) Pulldown menu title  : " << pHeader->szMenuTitle << wwiv::endl;
     bout << "F) Enter Script         : " << pHeader->szScript << wwiv::endl;
     bout << "G) Exit Script          : " << pHeader->szExitScript << wwiv::endl;
     bout << "H) Min SL               : " << static_cast<unsigned int>(pHeader->nMinSL) << wwiv::endl;
@@ -707,7 +658,6 @@ void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const char *pszD
     bout << "M) Sysop                : " << (pHeader->nSysop ? "Yes" : "No") << wwiv::endl;
     bout << "N) Co-Sysop             : " << (pHeader->nCoSysop ? "Yes" : "No") << wwiv::endl;
     bout << "O) Password             : " << (incom ? "<Remote>" : pHeader->szPassWord) << wwiv::endl;
-    bout << "P) Change pulldown colors" << wwiv::endl;
   }
   bout.nl(2);
   bout << "0-2, A-O, Z=Add new Record, [=Prev, ]=Next, Q=Quit : ";
