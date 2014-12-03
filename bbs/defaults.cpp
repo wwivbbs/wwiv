@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <iomanip>
 #include <string>
 #include <vector>
 
@@ -29,6 +30,9 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 
+using std::setw;
+using std::endl;
+using std::left;
 using std::string;
 using std::vector;
 using wwiv::strings::IsEquals;
@@ -114,20 +118,20 @@ static void print_cur_stat() {
   char s1[255], s2[255];
   bout.cls();
   bout.litebar("Your Preferences");
-  sprintf(s1, "|#11|#9) Screen size       : |#2%d X %d", GetSession()->GetCurrentUser()->GetScreenChars(),
-          GetSession()->GetCurrentUser()->GetScreenLines());
-  sprintf(s2, "|#12|#9) ANSI              : |#2%s", GetSession()->GetCurrentUser()->HasAnsi() ?
+  bout << left;
+  const string screen_size = StringPrintf("%d X %d", 
+      GetSession()->GetCurrentUser()->GetScreenChars(),
+      GetSession()->GetCurrentUser()->GetScreenLines());
+  const string ansi_setting = (GetSession()->GetCurrentUser()->HasAnsi() ?
           (GetSession()->GetCurrentUser()->HasColor() ? "Color" : "Monochrome") : "No ANSI");
-  bout.bprintf("%-48s %-45s\r\n", s1, s2);
+  bout << "|#11|#9) Screen size       : |#2" << setw(16) << screen_size << " " 
+       << "|#12|#9) ANSI              : |#2" << ansi_setting << wwiv::endl;
 
-  sprintf(s1, "|#13|#9) Pause on screen   : |#2%s", GetSession()->GetCurrentUser()->HasPause() ? "On" : "Off");
   const string mailbox_status = GetMailBoxStatus();
-  sprintf(s2, "|#14|#9) Mailbox           : |#2%s", mailbox_status.c_str());
-  bout.bprintf("%-48s %-45s\r\n", s1, s2);
+  bout << "|#13|#9) Pause on screen   : |#2" << setw(16) << (GetSession()->GetCurrentUser()->HasPause() ? "On " : "Off") << " "
+       << "|#14|#9) Mailbox           : |#2" << mailbox_status << wwiv::endl;
 
-  sprintf(s1, "|#15|#9) Configured Q-scan");
-  sprintf(s2, "|#16|#9) Change password");
-  bout.bprintf("%-45s %-45s\r\n", s1, s2);
+  bout << setw(45) << "|#15|#9) Configured Q-scan" << " " << setw(45) << "|#16|#9) Change password" << wwiv::endl;
 
   if (okansi()) {
     sprintf(s1, "|#17|#9) Update macros");
