@@ -680,13 +680,13 @@ void ListMenuMenus(const char *pszDirectoryName) {
 
   bout.nl();
   bout << "|#1Available Menus\r\n";
-  bout << "|#7===============|06\r\n";
+  bout << "|#7===============|#0\r\n";
 
   WFindFile fnd;
-  bool bFound = fnd.open(path.c_str(), 0);
+  bool bFound = fnd.open(path, 0);
   while (bFound && !hangup) {
     if (fnd.IsFile()) {
-      string s = fnd.GetFileName();
+      const string s = fnd.GetFileName();
       bout << "|#2" << s.substr(0, s.find_last_of('.')) << wwiv::endl;
     }
     bFound = fnd.next();
