@@ -197,33 +197,25 @@ void input1(string* strOutText, int nMaxLength, InputMode lc, bool crend, bool b
   strOutText->assign(szTempBuffer);
 }
 
-
-void input(char *pszOutText, int nMaxLength, bool bAutoMpl)
 // This will input an upper-case string
-{
+void input(char *pszOutText, int nMaxLength, bool bAutoMpl) {
   input1(pszOutText, nMaxLength, InputMode::UPPER, true, bAutoMpl);
 }
 
-
-void input(string* strOutText, int nMaxLength, bool bAutoMpl)
 // This will input an upper-case string
-{
+void input(string* strOutText, int nMaxLength, bool bAutoMpl) {
   char szTempBuffer[ 255 ];
   input(szTempBuffer, nMaxLength, bAutoMpl);
   strOutText->assign(szTempBuffer);
 }
 
-
-void inputl(char *pszOutText, int nMaxLength, bool bAutoMpl)
 // This will input an upper or lowercase string of characters
-{
+void inputl(char *pszOutText, int nMaxLength, bool bAutoMpl) {
   input1(pszOutText, nMaxLength, InputMode::MIXED, true, bAutoMpl);
 }
 
-
-void inputl(string* strOutText, int nMaxLength, bool bAutoMpl)
 // This will input an upper or lowercase string of characters
-{
+void inputl(string* strOutText, int nMaxLength, bool bAutoMpl) {
   char szTempBuffer[ 255 ];
   WWIV_ASSERT(nMaxLength < sizeof(szTempBuffer));
   inputl(szTempBuffer, nMaxLength, bAutoMpl);
@@ -236,7 +228,6 @@ void input_password(string promptText, string* strOutPassword, int nMaxLength) {
   local_echo = false;
   input1(strOutPassword, nMaxLength, InputMode::UPPER, true);
 }
-
 
 //==================================================================
 // Function: Input1
@@ -252,7 +243,6 @@ void input_password(string promptText, string* strOutPassword, int nMaxLength) {
 //
 // Returns: length of string
 //==================================================================
-
 int Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInsert, InputMode mode) {
   char szTemp[ 255 ];
   const char dash = '-';
@@ -473,7 +463,6 @@ int Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInser
   bout.Color(0);
   return nLength;
 }
-
 
 int Input1(string* strOutText, const string& origText, int nMaxLength, bool bInsert, InputMode mode) {
   char szTempBuffer[ 255 ];

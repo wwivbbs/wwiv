@@ -17,18 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
-#include "subxtr.h"
+#include "bbs/wwiv.h"
+#include "bbs/subxtr.h"
 #include "core/strings.h"
-
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// Implementation
-//
-//
-//
-
 
 void old_sublist() {
   char s[ 255 ];

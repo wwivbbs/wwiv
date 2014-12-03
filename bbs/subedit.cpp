@@ -17,23 +17,15 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
-#include "subxtr.h"
-#include "core/textfile.h"
-#include "core/strings.h"
+#include "bbs/wwiv.h"
+#include "bbs/subxtr.h"
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
+#include "core/textfile.h"
+#include "core/strings.h"
 
 using wwiv::bbs::InputMode;
-
-// Local Function Prototypes
-
-void boarddata(int n, char *s);
-void showsubs();
-void modify_sub(int n);
-void swap_subs(int sub1, int sub2);
-void insert_sub(int n);
-void delete_sub(int n);
+using namespace wwiv::strings;
 
 static void save_subs() {
   int nSavedNetNum = GetSession()->GetNetworkNumber();
@@ -86,8 +78,7 @@ static void save_subs() {
   set_net_num(nSavedNetNum);
 }
 
-
-void boarddata(int n, char *s) {
+static void boarddata(int n, char *s) {
   subboardrec r = subboards[n];
   char x = SPACE;
   if (r.ar != 0) {
@@ -126,8 +117,7 @@ void boarddata(int n, char *s) {
   x = y;
 }
 
-
-void showsubs() {
+static void showsubs() {
   char szSubString[ 41 ];
   bout.cls();
   bool abort = false;
@@ -248,8 +238,7 @@ void DisplayNetInfo(int nSubNum) {
 
 }
 
-
-void modify_sub(int n) {
+static void modify_sub(int n) {
   subboardrec r = subboards[n];
   bool done = false;
   do {
@@ -339,7 +328,7 @@ void modify_sub(int n) {
         sprintf(szFile2, "%s%s.dat", syscfg.msgsdir, r.filename);
         if (r.storage_type == 2 && !File::Exists(szFile1) &&
             !File::Exists(szFile2) &&
-            !wwiv::strings::IsEquals(r.filename, "NONAME")) {
+            !IsEquals(r.filename, "NONAME")) {
           bout.nl();
           bout << "|#7Rename current data files (.SUB/.DAT)? ";
           if (yesno()) {
@@ -465,10 +454,10 @@ void modify_sub(int n) {
 
       if (ch2 == 'A') {
         sub_xtr_add(n, -1);
-        if (wwiv::strings::IsEquals(subboards[n].name, "** New WWIV Message Area **")) {
+        if (IsEquals(subboards[n].name, "** New WWIV Message Area **")) {
           strncpy(subboards[n].name, xsubs[n].desc, 40);
         }
-        if (wwiv::strings::IsEquals(subboards[n].name, "NONAME")) {
+        if (IsEquals(subboards[n].name, "NONAME")) {
           strncpy(subboards[n].filename, xsubs[n].nets->stype, 8);
         }
       } else if (ch2 == 'D' || ch2 == 'M') {
@@ -561,8 +550,7 @@ void modify_sub(int n) {
   subboards[n] = r;
 }
 
-
-void swap_subs(int sub1, int sub2) {
+static void swap_subs(int sub1, int sub2) {
   SUBCONF_TYPE sub1conv = (SUBCONF_TYPE) sub1;
   SUBCONF_TYPE sub2conv = (SUBCONF_TYPE) sub2;
 
@@ -626,8 +614,7 @@ void swap_subs(int sub1, int sub2) {
   save_subs();
 }
 
-
-void insert_sub(int n) {
+static void insert_sub(int n) {
   subboardrec r = { 0 };
   int i, i1, i2;
   uint32_t *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m1, m2, m3;
@@ -701,8 +688,7 @@ void insert_sub(int n) {
   }
 }
 
-
-void delete_sub(int n) {
+static void delete_sub(int n) {
   int i, i1, i2, nNumUserRecords;
   uint32_t *pTempQScan, *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m2, m3;
   SUBCONF_TYPE nconv = static_cast<SUBCONF_TYPE>(n);
