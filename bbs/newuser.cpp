@@ -1370,7 +1370,8 @@ void DoMinimalNewUser() {
       do {
         ok = false;
         cln_nu();
-        if ((Input1(s, s1, 10, false, InputMode::DATE)) == 10) {
+        Input1(s, s1, 10, false, InputMode::DATE);
+        if (strlen(s) == 10) {
           sprintf(m1, "%c%c", s[0], s[1]);
           sprintf(d1, "%c%c", s[3], s[4]);
           sprintf(y1, "%c%c%c%c", s[6], s[7], s[8], s[9]);
