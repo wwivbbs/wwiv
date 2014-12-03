@@ -12,12 +12,13 @@ LOGFILE=install_`date "+%Y-%m-%d_%H-%M-%S"`.log
 echo
 echo "Starting the install process"
 echo "Starting the install process" > ${WWIVBASE}/$LOGFILE 2>&1
-
+echo
 
 #
 # Make sure we have the necessary tools
 #
-# This shouldn't be necessary (since we needed unzip to get this file in the first place)
+# checking for unzip shouldn't be necessary (since we needed unzip 
+# to get this file in the first place)
 #
 which unzip >> ${WWIVBASE}/$LOGFILE 2>&1
 STATUS=$?
@@ -29,6 +30,15 @@ then
     exit 1
 fi
 
+# Make sure init exists
+if [ ! -f ${WWIVBASE}/init ]
+then
+    echo "init is missing.  Please compile your BBS files and copy them"
+    echo "init is missing.  Please compile your BBS files and copy them" >> ${WWIVBASE}/$LOGFILE 2>&1
+    echo "to ${WWIVBASE} and run sh install.sh again."
+    echo "to ${WWIVBASE} and run sh install.sh again." >> ${WWIVBASE}/$LOGFILE 2>&1
+    exit 1
+fi
 
 #
 # Unzip the data files
@@ -62,26 +72,6 @@ cd ${WWIVBASE}
 cd data
 unzip -u ../zip-city.zip >> ${WWIVBASE}/$LOGFILE 2>&1
 cd ${WWIVBASE}
-
-
-#
-# Fixing some of the basic borked filenames
-#
-echo
-echo "Fixing filename case issues"
-echo "Fixing filename case issues" >> ${WWIVBASE}/$LOGFILE 2>&1
-
-echo "Fixing gfiles issues" >> ${WWIVBASE}/$LOGFILE 2>&1
-ln -P gfiles/mbslash.msg gfiles/MBSLASH.MSG >> ${WWIVBASE}/$LOGFILE 2>&1
-ln -P gfiles/tslash.msg gfiles/TSLASH.MSG  >> ${WWIVBASE}/$LOGFILE 2>&1
-
-cd gfiles/menus/wwiv
-for i in xfer.*
-do
-    ln -P $i XFER${i##xfer}  >> ${WWIVBASE}/$LOGFILE 2>&1
-done
-cd ${WWIVBASE}
-
 
 
 # configure scripts and helper binaries.
