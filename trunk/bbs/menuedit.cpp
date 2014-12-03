@@ -849,9 +849,9 @@ void EditPulldownColors(MenuHeader * pMenuHeader) {
   }
 }
 
-
 void ListMenuDirs() {
-  const string path = StrCat(GetMenuDirectory(), "*");
+  const string menu_directory = GetMenuDirectory();
+  const string path = StrCat(menu_directory, "*");
   OpenMenuDescriptions();
 
   bout.nl();
@@ -862,11 +862,13 @@ void ListMenuDirs() {
   bool bFound = fnd.open(path.c_str(), 0);
   while (bFound && !hangup) {
     if (fnd.IsDirectory()) {
-      File file(fnd.GetFileName());
-      const string full_pathname = fnd.GetFileName();
-      const string filename = file.GetName();
-      char szDesc[101];
-      bout.bprintf("|#2%-8.8s |15%-60.60s\r\n", filename.c_str(), GetMenuDescription(full_pathname, szDesc));
+      const string filename = fnd.GetFileName();
+      if (!starts_with(filename, ".")) {
+        // Skip the . and .. dir entries.
+        File file(menu_directory, filename);
+        char szBuffer[101];
+        bout.bprintf("|#2%-8.8s |15%-60.60s\r\n", filename.c_str(), GetMenuDescription(filename, szBuffer));
+      }
     }
     bFound = fnd.next();
   }
