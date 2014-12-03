@@ -23,9 +23,6 @@
 
 #pragma pack(push, 1)
 
-/* Defining USE_FTS activates The File Transfer System */
-#define USE_FTS
-
 /* All network nodes except the destination will only look at:
  *   tosys - the destination system.  Is 0 if more than one system
  *   list_len - if (tosys==0) then list_len is the number of destination
@@ -35,8 +32,6 @@
  *     or the system ist length.  Thus the overall length of a message in
  *     the net will be (sizeof(net_header_rec) + 2*list_len + length)
  */
-
-
 struct net_header_rec {
   uint16_t  tosys,    /* destination system */
            touser,     /* destination user */
@@ -124,8 +119,6 @@ struct net_contact_rec {
  * This data is maintained so that the BBS can decide which other system to
  * attempt connection with next.
  */
-
-
 struct net_system_list_rec {
   uint16_t  sysnum;         /* system number of the system */
   char            phone[13],      /* phone number of system */
@@ -146,11 +139,7 @@ struct net_system_list_rec {
 // the systems in the network.  This text file doesn't hold connection info
 // between the systems.  The purpose of all records should be obvious.
 
-
-
-//
 // BBSLIST designators
-//
 
 #define other_inet          0x0001  /* $ - System is PPP capable         */
 #define other_fido          0x0002  /* \ - System run Fido frontend      */
@@ -170,15 +159,6 @@ struct net_system_list_rec {
 #define other_area_coord    0x2000  /* ^ - AC */
 #define other_subs_coord    0x4000  /* ~ - Sub Coordinator */
 
-
-
-struct net_interconnect_rec {
-  uint16_t  sysnum,     /* outward calling system */
-           numsys;     /* num systems it can call */
-  uint16_t  *connect;   /* list of numsys systems */
-  float           *cost;      /* list of numsys costs */
-};
-
 /* This data is also read in from a text file.  It tells how much it costs for
  * sysnum to call out to other systems.
  *
@@ -190,8 +170,6 @@ struct net_interconnect_rec {
  *   cost (cost[1]) dollars per minute for sysnum to call out to system
  *   number (connect[1]).
  */
-
-
 struct net_call_out_rec {
   uint16_t  sysnum;         /* system number */
   uint8_t   macnum;         /* macro/script to use */
@@ -218,8 +196,6 @@ struct net_call_out_rec {
  *   should only be non-zero if options_sendback is also set for this system.
  * password - is the password used for connection to this system.
  */
-
-
 #define options_sendback      0x0001   /* & they can send data back */
 #define options_ATT_night     0x0002   /* - callout only at AT&T nigh hours */
 #define options_ppp           0x0004   /* _ transfer via PPP */
@@ -231,13 +207,6 @@ struct net_call_out_rec {
 #define options_force_ac      0x0100   /* $ force area code on dial */
 #define options_dial_ten      0x0200   /* * use ten digit dialing format */
 #define options_hide_pend     0x0400   /* = hide in pending display */
-
-struct sys_for_rec {
-  uint16_t  sysnum;         /* system number we can call */
-  int16_t           nument;         /* number of entries in list */
-  uint16_t  *list;          /* list of systems */
-};
-
 
 struct net_networks_rec {
   uint8_t   type;           /* type of network */
@@ -253,53 +222,6 @@ struct net_networks_rec {
 #define net_type_wwivnet  0
 #define net_type_fidonet  1
 #define net_type_internet 2
-
-/*************************/
-/* FTS System Structures */
-/*************************/
-#ifdef USE_FTS
-struct fts_header {
-  char            filename[13];       /* name of file */
-  int32_t            filesize;           /* size of file */
-  char            description[59];    /* description  */
-  uint32_t   crc32value;         /* crc value of file */
-  int16_t           maintype,           /* fts maintype */
-                  fdltype,            /* fdl type */
-                  chunkcount,         /* number of this chunk */
-                  totalchunks;        /* total number of chunks */
-  char            sysname[60],        /* name of originating system */
-                  tonet[16];          /* destination network name */
-  int16_t           tosys,              /* destination system */
-                  touser;             /* destination user */
-  char            fromnet[16];        /* originating network name */
-  int16_t           fromsys,            /* originating system */
-                  fromuser,           /* originating user */
-                  ver,                /* version of fts system */
-                  info;               /* 1=key 2=sec'd file req  */
-  char            xtrastuff[16];      /*                                */
-};
-
-#define fdl_requestable 0x0001
-#define fdl_postable    0x0004
-#define fdl_wwivreg     0x0008
-
-struct fdlrec_rec {
-  char  name[61];
-  int16_t fdl,
-        host;
-  int32_t  status;
-  char  res[41];
-};
-
-struct bltrec_rec {
-  char  name[61];
-  int16_t blt,
-        host;
-  int32_t  status;
-  char  res[41];
-};
-
-#endif
 
 #pragma pack(pop)
 
