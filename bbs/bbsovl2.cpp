@@ -37,48 +37,48 @@ void OnlineUserEditor() {
        posts[6], banktime[6], gold[10], ass[6], logons[6];
   int cp, i, rc = ABORTED;
 
-  GetSession()->DisplaySysopWorkingIndicator(true);
-  GetSession()->localIO()->savescreen();
-  curatr = GetSession()->GetUserEditorColor();
+  session()->DisplaySysopWorkingIndicator(true);
+  session()->localIO()->savescreen();
+  curatr = session()->GetUserEditorColor();
   int wx = 5;
   int wy = 3;
-  GetSession()->localIO()->MakeLocalWindow(wx, wy - 2, 70, 16 + 2);
+  session()->localIO()->MakeLocalWindow(wx, wy - 2, 70, 16 + 2);
   const string bar = StringPrintf("\xC3%s\xB4", charstr(70 - wx + 3, '\xC4'));
-  GetSession()->localIO()->LocalXYPuts(wx, wy, bar);
-  GetSession()->localIO()->LocalXYPuts(wx, wy + 4, bar);
-  GetSession()->localIO()->LocalXYPuts(wx, wy + 7, bar);
-  GetSession()->localIO()->LocalXYPuts(wx, wy + 11, bar);
-  GetSession()->localIO()->LocalXYPuts(wx, wy + 13, bar);
-  sprintf(sl, "%u", GetSession()->GetCurrentUser()->GetSl());
-  sprintf(dsl, "%u", GetSession()->GetCurrentUser()->GetDsl());
-  sprintf(exempt, "%u", GetSession()->GetCurrentUser()->GetExempt());
+  session()->localIO()->LocalXYPuts(wx, wy, bar);
+  session()->localIO()->LocalXYPuts(wx, wy + 4, bar);
+  session()->localIO()->LocalXYPuts(wx, wy + 7, bar);
+  session()->localIO()->LocalXYPuts(wx, wy + 11, bar);
+  session()->localIO()->LocalXYPuts(wx, wy + 13, bar);
+  sprintf(sl, "%u", session()->user()->GetSl());
+  sprintf(dsl, "%u", session()->user()->GetDsl());
+  sprintf(exempt, "%u", session()->user()->GetExempt());
   if (*qsc > 999) {
     *qsc = 999;
   }
   sprintf(sysopsub, "%lu", *qsc);
-  sprintf(uk, "%lu", GetSession()->GetCurrentUser()->GetUploadK());
-  sprintf(dk, "%lu", GetSession()->GetCurrentUser()->GetDownloadK());
-  sprintf(up, "%u", GetSession()->GetCurrentUser()->GetFilesUploaded());
-  sprintf(down, "%u", GetSession()->GetCurrentUser()->GetFilesDownloaded());
-  sprintf(posts, "%u", GetSession()->GetCurrentUser()->GetNumMessagesPosted());
-  sprintf(banktime, "%u", GetSession()->GetCurrentUser()->GetTimeBankMinutes());
-  sprintf(logons, "%u", GetSession()->GetCurrentUser()->GetNumLogons());
-  sprintf(ass, "%u", GetSession()->GetCurrentUser()->GetAssPoints());
+  sprintf(uk, "%lu", session()->user()->GetUploadK());
+  sprintf(dk, "%lu", session()->user()->GetDownloadK());
+  sprintf(up, "%u", session()->user()->GetFilesUploaded());
+  sprintf(down, "%u", session()->user()->GetFilesDownloaded());
+  sprintf(posts, "%u", session()->user()->GetNumMessagesPosted());
+  sprintf(banktime, "%u", session()->user()->GetTimeBankMinutes());
+  sprintf(logons, "%u", session()->user()->GetNumLogons());
+  sprintf(ass, "%u", session()->user()->GetAssPoints());
 
-  _gcvt(GetSession()->GetCurrentUser()->GetGold(), 5, gold);
+  _gcvt(session()->user()->GetGold(), 5, gold);
   strcpy(rst, restrict_string);
   for (i = 0; i <= 15; i++) {
-    if (GetSession()->GetCurrentUser()->HasArFlag(1 << i)) {
+    if (session()->user()->HasArFlag(1 << i)) {
       ar[i] = (char)('A' + i);
     } else {
       ar[i] = SPACE;
     }
-    if (GetSession()->GetCurrentUser()->HasDarFlag(1 << i)) {
+    if (session()->user()->HasDarFlag(1 << i)) {
       dar[i] = (char)('A' + i);
     } else {
       dar[i] = SPACE;
     }
-    if (GetSession()->GetCurrentUser()->HasRestrictionFlag(1 << i)) {
+    if (session()->user()->HasRestrictionFlag(1 << i)) {
       restrict[i] = rst[i];
     } else {
       restrict[i] = SPACE;
@@ -92,160 +92,160 @@ void OnlineUserEditor() {
 
   // heading
   char szLocalName[ 255 ];
-  sprintf(szLocalName, "[%s]", GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum));
-  GetSession()->localIO()->LocalXYAPrintf(wx + 1, wy - 1, 31, " %-29.29s%s ", "WWIV User Editor",
+  sprintf(szLocalName, "[%s]", session()->user()->GetUserNameAndNumber(session()->usernum));
+  session()->localIO()->LocalXYAPrintf(wx + 1, wy - 1, 31, " %-29.29s%s ", "WWIV User Editor",
                                           StringJustify(szLocalName, 37, SPACE, JUSTIFY_RIGHT));
 
-  GetSession()->localIO()->LocalXYAPrintf(wx + 2,  wy + 1, 3,   "Security Level(SL): %s", sl);
-  GetSession()->localIO()->LocalXYAPrintf(wx + 36, wy + 1, 3,   "  Message AR: %s", ar);
-  GetSession()->localIO()->LocalXYAPrintf(wx + 2,  wy + 2, 3,   "DL Sec. Level(DSL): %s", dsl);
-  GetSession()->localIO()->LocalXYAPrintf(wx + 36, wy + 2, 3,   " Download AR: %s", dar);
-  GetSession()->localIO()->LocalXYAPrintf(wx + 2,  wy + 3, 3,   "   User Exemptions: %s", exempt);
-  GetSession()->localIO()->LocalXYAPrintf(wx + 36, wy + 3, 3,   "Restrictions: %s", restrict);
-  GetSession()->localIO()->LocalXYAPrintf(wx + 2,  wy + 5, 3,   "         Sysop Sub: %s", sysopsub);
-  GetSession()->localIO()->LocalXYAPrintf(wx + 36, wy + 5, 3,   "   Time Bank: %s", banktime);
-  GetSession()->localIO()->LocalXYAPrintf(wx + 2,  wy + 6, 3,   "        Ass Points: %s", ass);
-  GetSession()->localIO()->LocalXYAPrintf(wx + 36, wy + 6, 3,   " Gold Points: %s", gold);
-  GetSession()->localIO()->LocalXYAPrintf(wx + 2,  wy + 8, 3,   "       KB Uploaded: %s", uk);
-  GetSession()->localIO()->LocalXYAPrintf(wx + 35, wy + 8, 3,   "KB Downloaded: %s", dk);
-  GetSession()->localIO()->LocalXYAPrintf(wx + 2,  wy + 9, 3,   "    Files Uploaded: %s", up);
-  GetSession()->localIO()->LocalXYAPrintf(wx + 32, wy + 9, 3,   "Files Downloaded: %s", down);
-  GetSession()->localIO()->LocalXYAPrintf(wx + 2,  wy + 10, 3,  "   Messages Posted: %s", posts);
-  GetSession()->localIO()->LocalXYAPrintf(wx + 32, wy + 10, 3,  "Number of Logons: %s", logons);
-  GetSession()->localIO()->LocalXYAPrintf(wx + 2,  wy + 12, 3,  "Note: %s", GetSession()->GetCurrentUser()->GetNote());
-  GetSession()->localIO()->LocalXYAPrintf(wx + 1, wy + 14, 31,
+  session()->localIO()->LocalXYAPrintf(wx + 2,  wy + 1, 3,   "Security Level(SL): %s", sl);
+  session()->localIO()->LocalXYAPrintf(wx + 36, wy + 1, 3,   "  Message AR: %s", ar);
+  session()->localIO()->LocalXYAPrintf(wx + 2,  wy + 2, 3,   "DL Sec. Level(DSL): %s", dsl);
+  session()->localIO()->LocalXYAPrintf(wx + 36, wy + 2, 3,   " Download AR: %s", dar);
+  session()->localIO()->LocalXYAPrintf(wx + 2,  wy + 3, 3,   "   User Exemptions: %s", exempt);
+  session()->localIO()->LocalXYAPrintf(wx + 36, wy + 3, 3,   "Restrictions: %s", restrict);
+  session()->localIO()->LocalXYAPrintf(wx + 2,  wy + 5, 3,   "         Sysop Sub: %s", sysopsub);
+  session()->localIO()->LocalXYAPrintf(wx + 36, wy + 5, 3,   "   Time Bank: %s", banktime);
+  session()->localIO()->LocalXYAPrintf(wx + 2,  wy + 6, 3,   "        Ass Points: %s", ass);
+  session()->localIO()->LocalXYAPrintf(wx + 36, wy + 6, 3,   " Gold Points: %s", gold);
+  session()->localIO()->LocalXYAPrintf(wx + 2,  wy + 8, 3,   "       KB Uploaded: %s", uk);
+  session()->localIO()->LocalXYAPrintf(wx + 35, wy + 8, 3,   "KB Downloaded: %s", dk);
+  session()->localIO()->LocalXYAPrintf(wx + 2,  wy + 9, 3,   "    Files Uploaded: %s", up);
+  session()->localIO()->LocalXYAPrintf(wx + 32, wy + 9, 3,   "Files Downloaded: %s", down);
+  session()->localIO()->LocalXYAPrintf(wx + 2,  wy + 10, 3,  "   Messages Posted: %s", posts);
+  session()->localIO()->LocalXYAPrintf(wx + 32, wy + 10, 3,  "Number of Logons: %s", logons);
+  session()->localIO()->LocalXYAPrintf(wx + 2,  wy + 12, 3,  "Note: %s", session()->user()->GetNote());
+  session()->localIO()->LocalXYAPrintf(wx + 1, wy + 14, 31,
                                           "    (ENTER) Next Field   (UP-ARROW) Previous Field    (ESC) Exit    ");
   curatr = 3;
   while (!done) {
     switch (cp) {
     case 0:
-      GetSession()->localIO()->LocalGotoXY(wx + 22, wy + 1);
-      GetSession()->localIO()->LocalEditLine(sl, 3, NUM_ONLY, &rc, "");
-      GetSession()->GetCurrentUser()->SetSl(atoi(sl));
-      sprintf(sl, "%d", GetSession()->GetCurrentUser()->GetSl());
-      GetSession()->localIO()->LocalPrintf("%-3s", sl);
+      session()->localIO()->LocalGotoXY(wx + 22, wy + 1);
+      session()->localIO()->LocalEditLine(sl, 3, NUM_ONLY, &rc, "");
+      session()->user()->SetSl(atoi(sl));
+      sprintf(sl, "%d", session()->user()->GetSl());
+      session()->localIO()->LocalPrintf("%-3s", sl);
       break;
     case 1:
-      GetSession()->localIO()->LocalGotoXY(wx + 50, wy + 1);
-      GetSession()->localIO()->LocalEditLine(ar, 16, SET, &rc, "ABCDEFGHIJKLMNOP ");
-      GetSession()->GetCurrentUser()->SetAr(0);
+      session()->localIO()->LocalGotoXY(wx + 50, wy + 1);
+      session()->localIO()->LocalEditLine(ar, 16, SET, &rc, "ABCDEFGHIJKLMNOP ");
+      session()->user()->SetAr(0);
       for (i = 0; i <= 15; i++) {
         if (ar[i] != SPACE) {
-          GetSession()->GetCurrentUser()->SetArFlag(1 << i);
+          session()->user()->SetArFlag(1 << i);
         }
       }
       break;
     case 2:
-      GetSession()->localIO()->LocalGotoXY(wx + 22, wy + 2);
-      GetSession()->localIO()->LocalEditLine(dsl, 3, NUM_ONLY, &rc, "");
-      GetSession()->GetCurrentUser()->SetDsl(atoi(dsl));
-      sprintf(dsl, "%d", GetSession()->GetCurrentUser()->GetDsl());
-      GetSession()->localIO()->LocalPrintf("%-3s", dsl);
+      session()->localIO()->LocalGotoXY(wx + 22, wy + 2);
+      session()->localIO()->LocalEditLine(dsl, 3, NUM_ONLY, &rc, "");
+      session()->user()->SetDsl(atoi(dsl));
+      sprintf(dsl, "%d", session()->user()->GetDsl());
+      session()->localIO()->LocalPrintf("%-3s", dsl);
       break;
     case 3:
-      GetSession()->localIO()->LocalGotoXY(wx + 50, wy + 2);
-      GetSession()->localIO()->LocalEditLine(dar, 16, SET, &rc, "ABCDEFGHIJKLMNOP ");
-      GetSession()->GetCurrentUser()->SetDar(0);
+      session()->localIO()->LocalGotoXY(wx + 50, wy + 2);
+      session()->localIO()->LocalEditLine(dar, 16, SET, &rc, "ABCDEFGHIJKLMNOP ");
+      session()->user()->SetDar(0);
       for (i = 0; i <= 15; i++) {
         if (dar[i] != SPACE) {
-          GetSession()->GetCurrentUser()->SetDarFlag(1 << i);
+          session()->user()->SetDarFlag(1 << i);
         }
       }
       break;
     case 4:
-      GetSession()->localIO()->LocalGotoXY(wx + 22, wy + 3);
-      GetSession()->localIO()->LocalEditLine(exempt, 3, NUM_ONLY, &rc, "");
-      GetSession()->GetCurrentUser()->SetExempt(atoi(exempt));
-      sprintf(exempt, "%u", GetSession()->GetCurrentUser()->GetExempt());
-      GetSession()->localIO()->LocalPrintf("%-3s", exempt);
+      session()->localIO()->LocalGotoXY(wx + 22, wy + 3);
+      session()->localIO()->LocalEditLine(exempt, 3, NUM_ONLY, &rc, "");
+      session()->user()->SetExempt(atoi(exempt));
+      sprintf(exempt, "%u", session()->user()->GetExempt());
+      session()->localIO()->LocalPrintf("%-3s", exempt);
       break;
     case 5:
-      GetSession()->localIO()->LocalGotoXY(wx + 50, wy + 3);
-      GetSession()->localIO()->LocalEditLine(restrict, 16, SET, &rc, rst);
-      GetSession()->GetCurrentUser()->SetRestriction(0);
+      session()->localIO()->LocalGotoXY(wx + 50, wy + 3);
+      session()->localIO()->LocalEditLine(restrict, 16, SET, &rc, rst);
+      session()->user()->SetRestriction(0);
       for (i = 0; i <= 15; i++) {
         if (restrict[i] != SPACE) {
-          GetSession()->GetCurrentUser()->SetRestrictionFlag(1 << i);
+          session()->user()->SetRestrictionFlag(1 << i);
         }
       }
       break;
     case 6:
-      GetSession()->localIO()->LocalGotoXY(wx + 22, wy + 5);
-      GetSession()->localIO()->LocalEditLine(sysopsub, 3, NUM_ONLY, &rc, "");
+      session()->localIO()->LocalGotoXY(wx + 22, wy + 5);
+      session()->localIO()->LocalEditLine(sysopsub, 3, NUM_ONLY, &rc, "");
       *qsc = atoi(sysopsub);
       sprintf(sysopsub, "%lu", *qsc);
-      GetSession()->localIO()->LocalPrintf("%-3s", sysopsub);
+      session()->localIO()->LocalPrintf("%-3s", sysopsub);
       break;
     case 7:
-      GetSession()->localIO()->LocalGotoXY(wx + 50, wy + 5);
-      GetSession()->localIO()->LocalEditLine(banktime, 5, NUM_ONLY, &rc, "");
-      GetSession()->GetCurrentUser()->SetTimeBankMinutes(atoi(banktime));
-      sprintf(banktime, "%u", GetSession()->GetCurrentUser()->GetTimeBankMinutes());
-      GetSession()->localIO()->LocalPrintf("%-5s", banktime);
+      session()->localIO()->LocalGotoXY(wx + 50, wy + 5);
+      session()->localIO()->LocalEditLine(banktime, 5, NUM_ONLY, &rc, "");
+      session()->user()->SetTimeBankMinutes(atoi(banktime));
+      sprintf(banktime, "%u", session()->user()->GetTimeBankMinutes());
+      session()->localIO()->LocalPrintf("%-5s", banktime);
       break;
     case 8:
-      GetSession()->localIO()->LocalGotoXY(wx + 22, wy + 6);
-      GetSession()->localIO()->LocalEditLine(ass, 5, NUM_ONLY, &rc, "");
-      GetSession()->GetCurrentUser()->SetAssPoints(atoi(ass));
-      sprintf(ass, "%u", GetSession()->GetCurrentUser()->GetAssPoints());
-      GetSession()->localIO()->LocalPrintf("%-5s", ass);
+      session()->localIO()->LocalGotoXY(wx + 22, wy + 6);
+      session()->localIO()->LocalEditLine(ass, 5, NUM_ONLY, &rc, "");
+      session()->user()->SetAssPoints(atoi(ass));
+      sprintf(ass, "%u", session()->user()->GetAssPoints());
+      session()->localIO()->LocalPrintf("%-5s", ass);
       break;
     case 9:
-      GetSession()->localIO()->LocalGotoXY(wx + 50, wy + 6);
-      GetSession()->localIO()->LocalEditLine(gold, 5, NUM_ONLY, &rc, "");
-      GetSession()->GetCurrentUser()->SetGold(static_cast<float>(atof(gold)));
-      _gcvt(GetSession()->GetCurrentUser()->GetGold(), 5, gold);
-      GetSession()->localIO()->LocalPrintf("%-5s", gold);
+      session()->localIO()->LocalGotoXY(wx + 50, wy + 6);
+      session()->localIO()->LocalEditLine(gold, 5, NUM_ONLY, &rc, "");
+      session()->user()->SetGold(static_cast<float>(atof(gold)));
+      _gcvt(session()->user()->GetGold(), 5, gold);
+      session()->localIO()->LocalPrintf("%-5s", gold);
       break;
     case 10:
-      GetSession()->localIO()->LocalGotoXY(wx + 22, wy + 8);
-      GetSession()->localIO()->LocalEditLine(uk, 7, NUM_ONLY, &rc, "");
-      GetSession()->GetCurrentUser()->SetUploadK(atol(uk));
-      sprintf(uk, "%lu", GetSession()->GetCurrentUser()->GetUploadK());
-      GetSession()->localIO()->LocalPrintf("%-7s", uk);
+      session()->localIO()->LocalGotoXY(wx + 22, wy + 8);
+      session()->localIO()->LocalEditLine(uk, 7, NUM_ONLY, &rc, "");
+      session()->user()->SetUploadK(atol(uk));
+      sprintf(uk, "%lu", session()->user()->GetUploadK());
+      session()->localIO()->LocalPrintf("%-7s", uk);
       break;
     case 11:
-      GetSession()->localIO()->LocalGotoXY(wx + 50, wy + 8);
-      GetSession()->localIO()->LocalEditLine(dk, 7, NUM_ONLY, &rc, "");
-      GetSession()->GetCurrentUser()->SetDownloadK(atol(dk));
-      sprintf(dk, "%lu", GetSession()->GetCurrentUser()->GetDownloadK());
-      GetSession()->localIO()->LocalPrintf("%-7s", dk);
+      session()->localIO()->LocalGotoXY(wx + 50, wy + 8);
+      session()->localIO()->LocalEditLine(dk, 7, NUM_ONLY, &rc, "");
+      session()->user()->SetDownloadK(atol(dk));
+      sprintf(dk, "%lu", session()->user()->GetDownloadK());
+      session()->localIO()->LocalPrintf("%-7s", dk);
       break;
     case 12:
-      GetSession()->localIO()->LocalGotoXY(wx + 22, wy + 9);
-      GetSession()->localIO()->LocalEditLine(up, 5, NUM_ONLY, &rc, "");
-      GetSession()->GetCurrentUser()->SetFilesUploaded(atoi(up));
-      sprintf(up, "%u", GetSession()->GetCurrentUser()->GetFilesUploaded());
-      GetSession()->localIO()->LocalPrintf("%-5s", up);
+      session()->localIO()->LocalGotoXY(wx + 22, wy + 9);
+      session()->localIO()->LocalEditLine(up, 5, NUM_ONLY, &rc, "");
+      session()->user()->SetFilesUploaded(atoi(up));
+      sprintf(up, "%u", session()->user()->GetFilesUploaded());
+      session()->localIO()->LocalPrintf("%-5s", up);
       break;
     case 13:
-      GetSession()->localIO()->LocalGotoXY(wx + 50, wy + 9);
-      GetSession()->localIO()->LocalEditLine(down, 5, NUM_ONLY, &rc, "");
-      GetSession()->GetCurrentUser()->SetFilesDownloaded(atoi(down));
-      sprintf(down, "%u", GetSession()->GetCurrentUser()->GetFilesDownloaded());
-      GetSession()->localIO()->LocalPrintf("%-5s", down);
+      session()->localIO()->LocalGotoXY(wx + 50, wy + 9);
+      session()->localIO()->LocalEditLine(down, 5, NUM_ONLY, &rc, "");
+      session()->user()->SetFilesDownloaded(atoi(down));
+      sprintf(down, "%u", session()->user()->GetFilesDownloaded());
+      session()->localIO()->LocalPrintf("%-5s", down);
       break;
     case 14:
-      GetSession()->localIO()->LocalGotoXY(wx + 22, wy + 10);
-      GetSession()->localIO()->LocalEditLine(posts, 5, NUM_ONLY, &rc, "");
-      GetSession()->GetCurrentUser()->SetNumMessagesPosted(atoi(posts));
-      sprintf(posts, "%u", GetSession()->GetCurrentUser()->GetNumMessagesPosted());
-      GetSession()->localIO()->LocalPrintf("%-5s", posts);
+      session()->localIO()->LocalGotoXY(wx + 22, wy + 10);
+      session()->localIO()->LocalEditLine(posts, 5, NUM_ONLY, &rc, "");
+      session()->user()->SetNumMessagesPosted(atoi(posts));
+      sprintf(posts, "%u", session()->user()->GetNumMessagesPosted());
+      session()->localIO()->LocalPrintf("%-5s", posts);
       break;
     case 15:
-      GetSession()->localIO()->LocalGotoXY(wx + 50, wy + 10);
-      GetSession()->localIO()->LocalEditLine(logons, 5, NUM_ONLY, &rc, "");
-      GetSession()->GetCurrentUser()->SetNumLogons(atoi(logons));
-      sprintf(logons, "%u", GetSession()->GetCurrentUser()->GetNumLogons());
-      GetSession()->localIO()->LocalPrintf("%-5s", logons);
+      session()->localIO()->LocalGotoXY(wx + 50, wy + 10);
+      session()->localIO()->LocalEditLine(logons, 5, NUM_ONLY, &rc, "");
+      session()->user()->SetNumLogons(atoi(logons));
+      sprintf(logons, "%u", session()->user()->GetNumLogons());
+      session()->localIO()->LocalPrintf("%-5s", logons);
       break;
     case 16: {
       char szNote[ 81 ];
-      GetSession()->localIO()->LocalGotoXY(wx + 8, wy + 12);
-      strcpy(szNote, GetSession()->GetCurrentUser()->GetNote());
-      GetSession()->localIO()->LocalEditLine(szNote, 60, ALL, &rc, "");
+      session()->localIO()->LocalGotoXY(wx + 8, wy + 12);
+      strcpy(szNote, session()->user()->GetNote());
+      session()->localIO()->LocalEditLine(szNote, 60, ALL, &rc, "");
       StringTrimEnd(szNote);
-      GetSession()->GetCurrentUser()->SetNote(szNote);
+      session()->user()->SetNote(szNote);
     }
     break;
     }
@@ -267,10 +267,10 @@ void OnlineUserEditor() {
       break;
     }
   }
-  GetSession()->localIO()->restorescreen();
-  GetSession()->ResetEffectiveSl();
+  session()->localIO()->restorescreen();
+  session()->ResetEffectiveSl();
   changedsl();
-  GetSession()->DisplaySysopWorkingIndicator(false);
+  session()->DisplaySysopWorkingIndicator(false);
 #endif // !defined ( __unix__ )
 }
 

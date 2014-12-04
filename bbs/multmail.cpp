@@ -47,7 +47,7 @@ void multimail(int *pnUserNumber, int numu) {
   bout.nl();
 
   int i = 0;
-  if (getslrec(GetSession()->GetEffectiveSl()).ability & ability_email_anony) {
+  if (getslrec(session()->GetEffectiveSl()).ability & ability_email_anony) {
     i = anony_enable_anony;
   }
   bout << "|#5Show all recipients in mail? ";
@@ -98,13 +98,13 @@ void multimail(int *pnUserNumber, int numu) {
     WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
     if (pnUserNumber[cv] == 1) {
       pStatus->IncrementNumFeedbackSentToday();
-      GetSession()->GetCurrentUser()->SetNumFeedbackSentToday(GetSession()->GetCurrentUser()->GetNumFeedbackSentToday() + 1);
-      GetSession()->GetCurrentUser()->SetNumFeedbackSent(GetSession()->GetCurrentUser()->GetNumFeedbackSent() + 1);
+      session()->user()->SetNumFeedbackSentToday(session()->user()->GetNumFeedbackSentToday() + 1);
+      session()->user()->SetNumFeedbackSent(session()->user()->GetNumFeedbackSent() + 1);
       ++fsenttoday;
     } else {
       pStatus->IncrementNumEmailSentToday();
-      GetSession()->GetCurrentUser()->SetNumEmailSent(GetSession()->GetCurrentUser()->GetNumEmailSent() + 1);
-      GetSession()->GetCurrentUser()->SetNumEmailSentToday(GetSession()->GetCurrentUser()->GetNumEmailSentToday() + 1);
+      session()->user()->SetNumEmailSent(session()->user()->GetNumEmailSent() + 1);
+      session()->user()->SetNumEmailSentToday(session()->user()->GetNumEmailSentToday() + 1);
     }
     GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
     sysoplog(s);
@@ -132,7 +132,7 @@ void multimail(int *pnUserNumber, int numu) {
 
   m.anony = static_cast< unsigned char >(i);
   m.fromsys = 0;
-  m.fromuser = static_cast<unsigned short>(GetSession()->usernum);
+  m.fromuser = static_cast<unsigned short>(session()->usernum);
   m.tosys = 0;
   m.touser = 0;
   m.status = status_multimail;
@@ -290,13 +290,13 @@ void slash_e() {
     bout << "Sorry, not enough disk space left.\r\n\n";
     return;
   }
-  if (((fsenttoday >= 5) || (GetSession()->GetCurrentUser()->GetNumFeedbackSentToday() >= 10) ||
-       (GetSession()->GetCurrentUser()->GetNumEmailSentToday() >= getslrec(GetSession()->GetEffectiveSl()).emails))
+  if (((fsenttoday >= 5) || (session()->user()->GetNumFeedbackSentToday() >= 10) ||
+       (session()->user()->GetNumEmailSentToday() >= getslrec(session()->GetEffectiveSl()).emails))
       && (!cs())) {
     bout << "Too much mail sent today.\r\n\n";
     return;
   }
-  if (GetSession()->GetCurrentUser()->IsRestrictionEmail()) {
+  if (session()->user()->IsRestrictionEmail()) {
     bout << "You can't send mail.\r\n";
     return;
   }

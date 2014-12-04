@@ -130,7 +130,7 @@ void run_chain(int nChainNumber) {
     chains_reg[nChainNumber].usage++;
     File regFile(syscfg.datadir, CHAINS_REG);
     if (regFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate)) {
-      regFile.Write(chains_reg, GetSession()->GetNumberOfChains() * sizeof(chainregrec));
+      regFile.Write(chains_reg, session()->GetNumberOfChains() * sizeof(chainregrec));
     }
   }
   const string com_speed_str = StringPrintf("%d", (com_speed == 1) ? 115200 : com_speed);
@@ -139,7 +139,7 @@ void run_chain(int nChainNumber) {
   const string chainCmdLine = stuff_in(chains[nChainNumber].filename, create_chain_file(), com_speed_str, com_port_num_str, modem_speed_str, "");
 
   sysoplogf("!Ran \"%s\"", chains[nChainNumber].description);
-  GetSession()->GetCurrentUser()->SetNumChainsRun(GetSession()->GetCurrentUser()->GetNumChainsRun() + 1);
+  session()->user()->SetNumChainsRun(session()->user()->GetNumChainsRun() + 1);
 
   int flags = 0;
   if (!(chains[nChainNumber].ansir & ansir_no_DOS)) {
@@ -164,34 +164,34 @@ void run_chain(int nChainNumber) {
 void do_chains() {
   printfile(CHAINS_NOEXT);
 
-  int *map = static_cast<int*>(BbsAllocA(GetSession()->max_chains * sizeof(int)));
+  int *map = static_cast<int*>(BbsAllocA(session()->max_chains * sizeof(int)));
   WWIV_ASSERT(map != nullptr);
   if (!map) {
     return;
   }
 
-  GetSession()->localIO()->tleft(true);
+  session()->localIO()->tleft(true);
   int mapp = 0;
   memset(odc, 0, sizeof(odc));
-  for (int i = 0; i < GetSession()->GetNumberOfChains(); i++) {
+  for (int i = 0; i < session()->GetNumberOfChains(); i++) {
     bool ok = true;
     chainfilerec c = chains[i];
     if ((c.ansir & ansir_ansi) && !okansi()) {
       ok = false;
     }
-    if ((c.ansir & ansir_local_only) && GetSession()->using_modem) {
+    if ((c.ansir & ansir_local_only) && session()->using_modem) {
       ok = false;
     }
-    if (c.sl > GetSession()->GetEffectiveSl()) {
+    if (c.sl > session()->GetEffectiveSl()) {
       ok = false;
     }
-    if (c.ar && !GetSession()->GetCurrentUser()->HasArFlag(c.ar)) {
+    if (c.ar && !session()->user()->HasArFlag(c.ar)) {
       ok = false;
     }
-    if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg && (GetSession()->GetEffectiveSl() < 255)) {
+    if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg && (session()->GetEffectiveSl() < 255)) {
       chainregrec r = chains_reg[ i ];
       if (r.maxage) {
-        if (r.minage > GetSession()->GetCurrentUser()->GetAge() || r.maxage < GetSession()->GetCurrentUser()->GetAge()) {
+        if (r.minage > session()->user()->GetAge() || r.maxage < session()->user()->GetAge()) {
           ok = false;
         }
       }
@@ -217,7 +217,7 @@ void do_chains() {
   char* ss = nullptr;
 
   do {
-    GetSession()->localIO()->tleft(true);
+    session()->localIO()->tleft(true);
     bout.nl();
     bout << "|#7Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
 

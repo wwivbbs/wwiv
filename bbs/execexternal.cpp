@@ -30,15 +30,15 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
   create_chain_file();
 
   // get ready to run it
-  if (GetSession()->IsUserOnline()) {
-    GetSession()->WriteCurrentUser();
-    write_qscn(GetSession()->usernum, qsc, false);
+  if (session()->IsUserOnline()) {
+    session()->WriteCurrentUser();
+    write_qscn(session()->usernum, qsc, false);
   }
-  GetSession()->localIO()->set_global_handle(false);
+  session()->localIO()->set_global_handle(false);
 
   // extra processing for net programs
   if (nFlags & EFLAG_NETPROG) {
-    write_inst(INST_LOC_NET, GetSession()->GetNetworkNumber() + 1, INST_FLAGS_NONE);
+    write_inst(INST_LOC_NET, session()->GetNetworkNumber() + 1, INST_FLAGS_NONE);
   }
 
   // Execute the program and make sure the workingdir is reset
@@ -46,9 +46,9 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
   GetApplication()->CdHome();
 
   // Reread the user record.
-  if (GetSession()->IsUserOnline()) {
-    GetApplication()->GetUserManager()->ReadUser(GetSession()->GetCurrentUser(), GetSession()->usernum, true);
-    read_qscn(GetSession()->usernum, qsc, false, true);
+  if (session()->IsUserOnline()) {
+    GetApplication()->GetUserManager()->ReadUser(session()->user(), session()->usernum, true);
+    read_qscn(session()->usernum, qsc, false, true);
     GetApplication()->UpdateTopScreen();
   }
 

@@ -34,7 +34,7 @@ static int disable_conf_cnt = 0;
 #define MAX_CONF_LINE 4096
 
 /* To prevent heap fragmentation, allocate confrec.subs in multiples. */
-#define CONF_MULTIPLE ( GetSession()->GetMaxNumberMessageAreas() / 5 )
+#define CONF_MULTIPLE ( session()->GetMaxNumberMessageAreas() / 5 )
 
 // Locals
 char* GetGenderAllowed(int nGender, char *pszGenderAllowed);
@@ -62,12 +62,12 @@ void tmp_disable_conf(bool disable) {
 
   if (disable) {
     disable_conf_cnt++;
-    if (okconf(GetSession()->GetCurrentUser())) {
+    if (okconf(session()->user())) {
       g_flags |= g_flag_disable_conf;
-      ocs = GetSession()->GetCurrentConferenceMessageArea();
-      oss = usub[GetSession()->GetCurrentMessageArea()].subnum;
-      ocd = GetSession()->GetCurrentConferenceFileArea();
-      osd = udir[GetSession()->GetCurrentFileArea()].subnum;
+      ocs = session()->GetCurrentConferenceMessageArea();
+      oss = usub[session()->GetCurrentMessageArea()].subnum;
+      ocd = session()->GetCurrentConferenceFileArea();
+      osd = udir[session()->GetCurrentFileArea()].subnum;
       setuconf(CONF_SUBS, -1, oss);
       setuconf(CONF_DIRS, -1, osd);
     }
@@ -103,7 +103,7 @@ int get_conf_info(int conftype, int *num, confrec ** cpp,
       sprintf(pszFileName, "%s%s", syscfg.datadir, SUBS_CNF);
     }
     if (num_s) {
-      *num_s = GetSession()->num_subs;
+      *num_s = session()->num_subs;
     }
     if (uc) {
       *uc = uconfsub;
@@ -120,7 +120,7 @@ int get_conf_info(int conftype, int *num, confrec ** cpp,
       sprintf(pszFileName, "%s%s", syscfg.datadir, DIRS_CNF);
     }
     if (num_s) {
-      *num_s = GetSession()->num_dirs;
+      *num_s = session()->num_dirs;
     }
     if (uc) {
       *uc = uconfdir;

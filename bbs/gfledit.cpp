@@ -49,7 +49,7 @@ void showsec() {
   bool abort = false;
   pla("|#2NN AR Name                                      FN       SL  AGE MAX", &abort);
   pla("|#7-- == ----------------------------------------  ======== --- === ---", &abort);
-  for (int i = 0; (i < GetSession()->num_sec) && (!abort); i++) {
+  for (int i = 0; (i < session()->num_sec) && (!abort); i++) {
     pla(gfiledata(i, szBuffer), &abort);
   }
 }
@@ -95,13 +95,13 @@ void modify_sec(int n) {
     case '[':
       gfilesec[n] = r;
       if (--n < 0) {
-        n = GetSession()->num_sec - 1;
+        n = session()->num_sec - 1;
       }
       r = gfilesec[n];
       break;
     case ']':
       gfilesec[n] = r;
-      if (++n >= GetSession()->num_sec) {
+      if (++n >= session()->num_sec) {
         n = 0;
       }
       r = gfilesec[n];
@@ -192,7 +192,7 @@ void modify_sec(int n) {
 void insert_sec(int n) {
   gfiledirrec r;
 
-  for (int i = GetSession()->num_sec - 1; i >= n; i--) {
+  for (int i = session()->num_sec - 1; i >= n; i--) {
     gfilesec[i + 1] = gfilesec[i];
   }
   strcpy(r.name, "** NEW SECTION **");
@@ -202,16 +202,16 @@ void insert_sec(int n) {
   r.maxfiles  = 99;
   r.ar    = 0;
   gfilesec[n] = r;
-  ++GetSession()->num_sec;
+  ++session()->num_sec;
   modify_sec(n);
 }
 
 
 void delete_sec(int n) {
-  for (int i = n; i < GetSession()->num_sec; i++) {
+  for (int i = n; i < session()->num_sec; i++) {
     gfilesec[i] = gfilesec[i + 1];
   }
-  --GetSession()->num_sec;
+  --session()->num_sec;
 }
 
 
@@ -240,17 +240,17 @@ void gfileedit() {
       bout << "|#2Section number? ";
       input(s, 2);
       i = atoi(s);
-      if ((s[0] != 0) && (i >= 0) && (i < GetSession()->num_sec)) {
+      if ((s[0] != 0) && (i >= 0) && (i < session()->num_sec)) {
         modify_sec(i);
       }
       break;
     case 'I':
-      if (GetSession()->num_sec < GetSession()->max_gfilesec) {
+      if (session()->num_sec < session()->max_gfilesec) {
         bout.nl();
         bout << "|#2Insert before which section? ";
         input(s, 2);
         i = atoi(s);
-        if ((s[0] != 0) && (i >= 0) && (i <= GetSession()->num_sec)) {
+        if ((s[0] != 0) && (i >= 0) && (i <= session()->num_sec)) {
           insert_sec(i);
         }
       }
@@ -260,7 +260,7 @@ void gfileedit() {
       bout << "|#2Delete which section? ";
       input(s, 2);
       i = atoi(s);
-      if ((s[0] != 0) && (i >= 0) && (i < GetSession()->num_sec)) {
+      if ((s[0] != 0) && (i >= 0) && (i < session()->num_sec)) {
         bout.nl();
         bout << "|#5Delete " << gfilesec[i].name << "?";
         if (yesno()) {
@@ -272,7 +272,7 @@ void gfileedit() {
   } while (!done && !hangup);
   File gfileDat(syscfg.datadir, GFILE_DAT);
   gfileDat.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
-  gfileDat.Write(&gfilesec[0], GetSession()->num_sec * sizeof(gfiledirrec));
+  gfileDat.Write(&gfilesec[0], session()->num_sec * sizeof(gfiledirrec));
   gfileDat.Close();
 }
 

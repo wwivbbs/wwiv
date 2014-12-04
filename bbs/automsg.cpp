@@ -51,7 +51,7 @@ void read_automessage() {
 
   string authorName = StringTrimEnd(&line);
   if (bAutoMessageAnonymous) {
-    if (getslrec(GetSession()->GetEffectiveSl()).ability & ability_read_post_anony) {
+    if (getslrec(session()->GetEffectiveSl()).ability & ability_read_post_anony) {
       stringstream ss;
       ss << "<<< " << line << " >>>";
       authorName = ss.str();
@@ -88,7 +88,7 @@ void write_automessage() {
   }
   bout.nl();
   bool bAnonStatus = false;
-  if (getslrec(GetSession()->GetEffectiveSl()).ability & ability_post_anony) {
+  if (getslrec(session()->GetEffectiveSl()).ability & ability_post_anony) {
     bout << "|#9Anonymous? ";
     bAnonStatus = yesno();
   }
@@ -97,11 +97,11 @@ void write_automessage() {
   if (yesno()) {
     WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
     pStatus->SetAutoMessageAnonymous(bAnonStatus);
-    pStatus->SetAutoMessageAuthorUserNumber(GetSession()->usernum);
+    pStatus->SetAutoMessageAuthorUserNumber(session()->usernum);
     GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
 
     TextFile file(syscfg.gfilesdir, AUTO_MSG, "wt");
-    string authorName = GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum);
+    string authorName = session()->user()->GetUserNameAndNumber(session()->usernum);
     file.WriteFormatted("%s\r\n", authorName.c_str());
     sysoplog("Changed Auto-message");
     for (const auto& line : lines) {
@@ -117,8 +117,8 @@ void write_automessage() {
 
 char ShowAMsgMenuAndGetInput(const string& autoMessageLockFileName) {
   bool bCanWrite = false;
-  if (!GetSession()->GetCurrentUser()->IsRestrictionAutomessage() && !File::Exists(autoMessageLockFileName)) {
-    bCanWrite = (getslrec(GetSession()->GetEffectiveSl()).posts) ? true : false;
+  if (!session()->user()->IsRestrictionAutomessage() && !File::Exists(autoMessageLockFileName)) {
+    bCanWrite = (getslrec(session()->GetEffectiveSl()).posts) ? true : false;
   }
 
   char cmdKey = 0;

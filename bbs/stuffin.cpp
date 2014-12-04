@@ -92,7 +92,7 @@ const string stuff_in(const string& commandline, const string& arg1,
         break;
       // call-specific numbers
       case 'H':
-        os << GetSession()->remoteIO()->GetDoorHandle();
+        os << session()->remoteIO()->GetDoorHandle();
         break;
       case 'M':
         os << modem_speed;

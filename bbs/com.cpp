@@ -29,7 +29,7 @@
 extern char str_quit[];
 
 void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const char *cc) {
-  if (GetSession()->localIO()->WhereX()) {
+  if (session()->localIO()->WhereX()) {
     bout.nl();
   }
   for (int i = 0; cl[i] != 0; i++) {
@@ -47,19 +47,19 @@ void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const c
 // character read, and using it as the return value of read)
 char rpeek_wfconly() {
   if (ok_modem_stuff && !global_xx) {
-    return ((char) GetSession()->remoteIO()->peek());
+    return ((char) session()->remoteIO()->peek());
   }
   return 0;
 }
 
 
 char bgetchraw() {
-  if (ok_modem_stuff && !global_xx && nullptr != GetSession()->remoteIO()) {
-    if (GetSession()->remoteIO()->incoming()) {
-      return (GetSession()->remoteIO()->getW());
+  if (ok_modem_stuff && !global_xx && nullptr != session()->remoteIO()) {
+    if (session()->remoteIO()->incoming()) {
+      return (session()->remoteIO()->getW());
     }
-    if (GetSession()->localIO()->LocalKeyPressed()) {
-      return GetSession()->localIO()->LocalGetChar();
+    if (session()->localIO()->LocalKeyPressed()) {
+      return session()->localIO()->LocalGetChar();
     }
   }
   return 0;
@@ -68,8 +68,8 @@ char bgetchraw() {
 
 bool bkbhitraw() {
   if (ok_modem_stuff && !global_xx) {
-    return (GetSession()->remoteIO()->incoming() || GetSession()->localIO()->LocalKeyPressed());
-  } else if (GetSession()->localIO()->LocalKeyPressed()) {
+    return (session()->remoteIO()->incoming() || session()->localIO()->LocalKeyPressed());
+  } else if (session()->localIO()->LocalKeyPressed()) {
     return true;
   }
   return false;
@@ -78,8 +78,8 @@ bool bkbhitraw() {
 
 void dump() {
   if (ok_modem_stuff) {
-    GetSession()->remoteIO()->purgeOut();
-    GetSession()->remoteIO()->purgeIn();
+    session()->remoteIO()->purgeOut();
+    session()->remoteIO()->purgeIn();
   }
 }
 
@@ -89,9 +89,9 @@ bool CheckForHangup()
 // hung up.  Obviously, if no user is logged on remotely, this does nothing.
 // returns the value of hangup
 {
-  if (!hangup && GetSession()->using_modem && !GetSession()->remoteIO()->carrier()) {
+  if (!hangup && session()->using_modem && !session()->remoteIO()->carrier()) {
     hangup = hungup = true;
-    if (GetSession()->IsUserOnline()) {
+    if (session()->IsUserOnline()) {
       sysoplog("Hung Up.");
       std::cout << "Hung Up!";
     }
@@ -158,8 +158,8 @@ void makeansi(int attr, char *pszOutBuffer, bool forceit) {
 
 
 void resetnsp() {
-  if (nsp == 1 && !(GetSession()->GetCurrentUser()->HasPause())) {
-    GetSession()->GetCurrentUser()->ToggleStatusFlag(WUser::pauseOnPage);
+  if (nsp == 1 && !(session()->user()->HasPause())) {
+    session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
   }
   nsp = 0;
 }
@@ -170,7 +170,7 @@ bool bkbhit() {
     return false;
   }
 
-  if ((GetSession()->localIO()->LocalKeyPressed() || (incom && bkbhitraw()) ||
+  if ((session()->localIO()->LocalKeyPressed() || (incom && bkbhitraw()) ||
        (charbufferpointer && charbuffer[charbufferpointer])) ||
       bquote) {
     return true;
@@ -190,10 +190,10 @@ char getkey()
   timelastchar1 = timer1();
 
   using namespace wwiv::strings;
-  long tv = (so() || IsEqualsIgnoreCase(GetSession()->GetCurrentSpeed().c_str(), "TELNET")) ? 10920L : 3276L;
+  long tv = (so() || IsEqualsIgnoreCase(session()->GetCurrentSpeed().c_str(), "TELNET")) ? 10920L : 3276L;
   long tv1 = tv - 1092L;     // change 4.31 Build3
 
-  if (!GetSession()->tagging || GetSession()->GetCurrentUser()->IsUseNoTagging()) {
+  if (!session()->tagging || session()->user()->IsUseNoTagging()) {
     lines_listed = 0;
   }
 
@@ -315,7 +315,7 @@ char onek(const char *pszAllowableChars, bool bAutoMpl) {
 void rputs(const char *pszText) {
   // Rushfan fix for COM/IP weirdness
   if (ok_modem_stuff) {
-    GetSession()->remoteIO()->write(pszText, strlen(pszText));
+    session()->remoteIO()->write(pszText, strlen(pszText));
   }
 }
 

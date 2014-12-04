@@ -91,9 +91,9 @@ int find_hostfor(char *type, short *ui, char *pszDescription, short *opt) {
   bool done = false;
   for (int i = 0; i < 256 && !done; i++) {
     if (i) {
-      sprintf(s, "%s%s.%d", GetSession()->GetNetworkDataDirectory().c_str(), SUBS_NOEXT, i);
+      sprintf(s, "%s%s.%d", session()->GetNetworkDataDirectory().c_str(), SUBS_NOEXT, i);
     } else {
-      sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), SUBS_LST);
+      sprintf(s, "%s%s", session()->GetNetworkDataDirectory().c_str(), SUBS_LST);
     }
     TextFile file(s, "r");
     if (file.IsOpen()) {
@@ -250,14 +250,14 @@ void sub_xtr_add(int n, int nn) {
 
   memset(xnp, 0, sizeof(xtrasubsnetrec));
 
-  if (GetSession()->GetMaxNetworkNumber() > 1) {
+  if (session()->GetMaxNetworkNumber() > 1) {
     odc[0] = 0;
     odci = 0;
     onx[0] = 'Q';
     onx[1] = 0;
     onxi = 1;
     bout.nl();
-    for (ii = 0; ii < GetSession()->GetMaxNetworkNumber(); ii++) {
+    for (ii = 0; ii < session()->GetMaxNetworkNumber(); ii++) {
       if (ii < 9) {
         onx[onxi++] = static_cast<char>(ii + '1');
         onx[onxi] = 0;
@@ -270,7 +270,7 @@ void sub_xtr_add(int n, int nn) {
     }
     bout << "Q. Quit\r\n\n";
     bout << "|#2Which network (number): ";
-    if (GetSession()->GetMaxNetworkNumber() < 9) {
+    if (session()->GetMaxNetworkNumber() < 9) {
       ch = onek(onx);
       if (ch == 'Q') {
         ii = -1;
@@ -285,13 +285,13 @@ void sub_xtr_add(int n, int nn) {
         ii = atoi(mmk) - 1;
       }
     }
-    if (ii >= 0 && ii < GetSession()->GetMaxNetworkNumber()) {
+    if (ii >= 0 && ii < session()->GetMaxNetworkNumber()) {
       set_net_num(ii);
     } else {
       return;
     }
   }
-  xnp->net_num = static_cast<short>(GetSession()->GetNetworkNumber());
+  xnp->net_num = static_cast<short>(session()->GetNetworkNumber());
 
   bout.nl();
   bout << "|#2What sub type? ";
@@ -309,7 +309,7 @@ void sub_xtr_add(int n, int nn) {
   bout << "|#5Will you be hosting the sub? ";
   if (yesno()) {
     char szFileName[MAX_PATH];
-    sprintf(szFileName, "%sn%s.net", GetSession()->GetNetworkDataDirectory().c_str(), xnp->stype);
+    sprintf(szFileName, "%sn%s.net", session()->GetNetworkDataDirectory().c_str(), xnp->stype);
     File file(szFileName);
     if (file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
       file.Close();
@@ -331,7 +331,7 @@ void sub_xtr_add(int n, int nn) {
           input(s, 3);
           i = wwiv::strings::StringToUnsignedShort(s);
           if (i || wwiv::strings::IsEquals(s, "0")) {
-            TextFile ff(GetSession()->GetNetworkDataDirectory(), CATEG_NET, "rt");
+            TextFile ff(session()->GetNetworkDataDirectory(), CATEG_NET, "rt");
             while (ff.ReadLine(s, 100)) {
               i1 = wwiv::strings::StringToUnsignedShort(s);
               if (i1 == i) {
@@ -416,7 +416,7 @@ bool display_sub_categories() {
     return false;
   }
 
-  TextFile ff(GetSession()->GetNetworkDataDirectory(), CATEG_NET, "rt");
+  TextFile ff(session()->GetNetworkDataDirectory(), CATEG_NET, "rt");
   if (ff.IsOpen()) {
     bout.nl();
     bout << "Available sub categories are:\r\n";

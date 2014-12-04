@@ -151,12 +151,12 @@ void valuser(int nUserNumber) {
       bout << "|#9Note: |#2" << user.GetNote() << wwiv::endl;
     }
     bout << "|#9SL  : |#2" << user.GetSl() << wwiv::endl;
-    if (user.GetSl() != 255 && user.GetSl() < GetSession()->GetEffectiveSl()) {
+    if (user.GetSl() != 255 && user.GetSl() < session()->GetEffectiveSl()) {
       bout << "|#9New : ";
       input(s, 3, true);
       if (s[0]) {
         int nSl = atoi(s);
-        if (!GetApplication()->GetWfcStatus() && nSl >= GetSession()->GetEffectiveSl()) {
+        if (!GetApplication()->GetWfcStatus() && nSl >= session()->GetEffectiveSl()) {
           nSl = -2;
         }
         if (nSl >= 0 && nSl < 255) {
@@ -179,12 +179,12 @@ void valuser(int nUserNumber) {
     }
     bout.nl();
     bout << "|#9DSL : |#2" << user.GetDsl() << wwiv::endl;
-    if (user.GetDsl() != 255 && user.GetDsl() < GetSession()->GetCurrentUser()->GetDsl()) {
+    if (user.GetDsl() != 255 && user.GetDsl() < session()->user()->GetDsl()) {
       bout << "|#9New ? ";
       input(s, 3, true);
       if (s[0]) {
         int nDsl = atoi(s);
-        if (!GetApplication()->GetWfcStatus() && nDsl >= GetSession()->GetCurrentUser()->GetDsl()) {
+        if (!GetApplication()->GetWfcStatus() && nDsl >= session()->user()->GetDsl()) {
           nDsl = -1;
         }
         if (nDsl >= 0 && nDsl < 255) {
@@ -203,7 +203,7 @@ void valuser(int nUserNumber) {
       } else {
         s[i] = SPACE;
       }
-      if (GetSession()->GetCurrentUser()->HasArFlag(1 << i)) {
+      if (session()->user()->HasArFlag(1 << i)) {
         ar1[ar2++] = static_cast<char>('A' + i);
       }
       if (user.HasDarFlag(1 << i)) {
@@ -211,7 +211,7 @@ void valuser(int nUserNumber) {
       } else {
         s1[i] = SPACE;
       }
-      if (GetSession()->GetCurrentUser()->HasDarFlag(1 << i)) {
+      if (session()->user()->HasDarFlag(1 << i)) {
         dar1[dar2++] = static_cast<char>('A' + i);
       }
       if (user.HasRestrictionFlag(1 << i)) {
@@ -327,29 +327,29 @@ void print_net_listing(bool bForcePause) {
 
   GetApplication()->GetStatusManager()->RefreshStatusCache();
 
-  if (!GetSession()->GetMaxNetworkNumber()) {
+  if (!session()->GetMaxNetworkNumber()) {
     return;
   }
 
   write_inst(INST_LOC_NETLIST, 0, INST_FLAGS_NONE);
 
   if (bForcePause) {
-    bHadPause  = GetSession()->GetCurrentUser()->HasPause();
+    bHadPause  = session()->user()->HasPause();
     if (bHadPause) {
-      GetSession()->GetCurrentUser()->ToggleStatusFlag(WUser::pauseOnPage);
+      session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
     }
   }
   bool done = false;
   while (!done && !hangup) {
     bout.cls();
-    if (GetSession()->GetMaxNetworkNumber() > 1) {
+    if (session()->GetMaxNetworkNumber() > 1) {
       odc[0] = 0;
       int odci = 0;
       onx[0] = 'Q';
       onx[1] = 0;
       int onxi = 1;
       bout.nl();
-      for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++) {
+      for (i = 0; i < session()->GetMaxNetworkNumber(); i++) {
         if (i < 9) {
           onx[onxi++] = static_cast<char>(i + '1');
           onx[onxi] = 0;
@@ -362,7 +362,7 @@ void print_net_listing(bool bForcePause) {
       }
       bout << "|#2Q|#9)|#1 Quit\r\n\n";
       bout << "|#9Which network? |#2";
-      if (GetSession()->GetMaxNetworkNumber() < 9) {
+      if (session()->GetMaxNetworkNumber() < 9) {
         char ch = onek(onx);
         if (ch == 'Q') {
           done = true;
@@ -382,7 +382,7 @@ void print_net_listing(bool bForcePause) {
         break;
       }
 
-      if ((i < 0) || (i > GetSession()->GetMaxNetworkNumber())) {
+      if ((i < 0) || (i > session()->GetMaxNetworkNumber())) {
         continue;
       }
     } else {
@@ -406,7 +406,7 @@ void print_net_listing(bool bForcePause) {
 
       bout.cls();
       bout.nl();
-      bout << "|#9Network|#2: |#1" << GetSession()->GetNetworkName() << wwiv::endl;
+      bout << "|#9Network|#2: |#1" << session()->GetNetworkName() << wwiv::endl;
       bout.nl();
 
       bout << "|#21|#9) = |#1List All\r\n";
@@ -426,7 +426,7 @@ void print_net_listing(bool bForcePause) {
 
       switch (cmd) {
       case 'Q':
-        if (GetSession()->GetMaxNetworkNumber() < 2) {
+        if (session()->GetMaxNetworkNumber() < 2) {
           done = true;
         }
         done1 = true;
@@ -519,7 +519,7 @@ void print_net_listing(bool bForcePause) {
       bout << "|#1Print BBS region info? ";
       bool useregion = yesno();
 
-      File bbsListFile(GetSession()->GetNetworkDataDirectory(), BBSDATA_NET);
+      File bbsListFile(session()->GetNetworkDataDirectory(), BBSDATA_NET);
       if (!bbsListFile.Open(File::modeReadOnly | File::modeBinary)) {
         bout << "|#6Error opening " << bbsListFile.full_pathname() << "!\r\n";
         pausescr();
@@ -528,7 +528,7 @@ void print_net_listing(bool bForcePause) {
       strcpy(s, "000-000-0000");
       bout.nl(2);
 
-      for (i = 0; (i < GetSession()->num_sys_list) && (!abort); i++) {
+      for (i = 0; (i < session()->num_sys_list) && (!abort); i++) {
         bool matched = false;
         bbsListFile.Read(&csne, sizeof(net_system_list_rec));
         if ((csne.forsys == 65535) && (cmdbit != NET_SEARCH_NOCONNECT)) {
@@ -654,19 +654,19 @@ void print_net_listing(bool bForcePause) {
     }
   }
   if (bForcePause && bHadPause) {
-    GetSession()->GetCurrentUser()->ToggleStatusFlag(WUser::pauseOnPage);
+    session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
   }
 }
 
 
 void read_new_stuff() {
   zap_bbs_list();
-  for (int i = 0; i < GetSession()->GetMaxNetworkNumber(); i++) {
+  for (int i = 0; i < session()->GetMaxNetworkNumber(); i++) {
     set_net_num(i);
     zap_call_out_list();
     zap_contacts();
   }
-  set_language_1(GetSession()->GetCurrentLanguageNumber());
+  set_language_1(session()->GetCurrentLanguageNumber());
 }
 
 
@@ -687,7 +687,7 @@ void mailr() {
         do {
           WUser user;
           GetApplication()->GetUserManager()->ReadUser(&user, m.touser);
-          bout << "|#9  To|#7: |#" << GetSession()->GetMessageColor() << user.GetUserNameAndNumber(
+          bout << "|#9  To|#7: |#" << session()->GetMessageColor() << user.GetUserNameAndNumber(
                                m.touser) << wwiv::endl;
           int tp = 80;
           int nn = 0;
@@ -705,7 +705,7 @@ void mailr() {
             nn = 0;
           }
           set_net_num(nn);
-          bout << "|#9Subj|#7: |#" << GetSession()->GetMessageColor() << m.title << wwiv::endl;
+          bout << "|#9Subj|#7: |#" << session()->GetMessageColor() << m.title << wwiv::endl;
           if (m.status & status_file) {
             File attachDat(syscfg.datadir, ATTACH_DAT);
             if (attachDat.Open(File::modeReadOnly | File::modeBinary)) {
@@ -765,8 +765,8 @@ void mailr() {
               bout << "Mail file changed; try again.\r\n";
             }
             pFileEmail->Close();
-            if (!GetSession()->IsUserOnline() && m.touser == 1 && m.tosys == 0) {
-              GetSession()->GetCurrentUser()->SetNumMailWaiting(GetSession()->GetCurrentUser()->GetNumMailWaiting() - 1);
+            if (!session()->IsUserOnline() && m.touser == 1 && m.tosys == 0) {
+              session()->user()->SetNumMailWaiting(session()->user()->GetNumMailWaiting() - 1);
             }
           }
           bout.nl(2);
@@ -796,13 +796,13 @@ void chuser() {
   input(&userName, 30, true);
   int nUserNumber = finduser1(userName);
   if (nUserNumber > 0) {
-    GetSession()->WriteCurrentUser();
-    write_qscn(GetSession()->usernum, qsc, false);
-    GetSession()->ReadCurrentUser(nUserNumber);
+    session()->WriteCurrentUser();
+    write_qscn(session()->usernum, qsc, false);
+    session()->ReadCurrentUser(nUserNumber);
     read_qscn(nUserNumber, qsc, false);
-    GetSession()->usernum = static_cast<unsigned short>(nUserNumber);
-    GetSession()->SetEffectiveSl(255);
-    sysoplogf("#*#*#* Changed to %s", GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum));
+    session()->usernum = static_cast<unsigned short>(nUserNumber);
+    session()->SetEffectiveSl(255);
+    sysoplogf("#*#*#* Changed to %s", session()->user()->GetUserNameAndNumber(session()->usernum));
     changedsl();
     GetApplication()->UpdateTopScreen();
   } else {
@@ -909,8 +909,8 @@ void auto_purge() {
 
 
 void beginday(bool displayStatus) {
-  if ((GetSession()->GetBeginDayNodeNumber() > 0)
-      && (GetApplication()->GetInstanceNumber() != GetSession()->GetBeginDayNodeNumber())) {
+  if ((session()->GetBeginDayNodeNumber() > 0)
+      && (GetApplication()->GetInstanceNumber() != session()->GetBeginDayNodeNumber())) {
     // If BEGINDAYNODENUMBER is > 0 or defined in WWIV.INI only handle beginday events on that node number
     GetApplication()->GetStatusManager()->RefreshStatusCache();
     return;

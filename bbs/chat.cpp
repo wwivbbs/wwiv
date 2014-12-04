@@ -104,7 +104,7 @@ void chat_room() {
       loc = change_channels(-1);
     }
   } else {
-    if (GetSession()->GetCurrentUser()->IsRestrictionMultiNodeChat() || !check_ch(1)) {
+    if (session()->user()->IsRestrictionMultiNodeChat() || !check_ch(1)) {
       bout << "\r\n|#6You may not access inter-instance chat facilities.\r\n";
       pausescr();
       return;
@@ -130,7 +130,7 @@ void chat_room() {
       process_inst_msgs();
     }
     bout << "|#1: " << szColorString;
-    GetSession()->localIO()->tleft(true);
+    session()->localIO()->tleft(true);
     bChatLine = false;
     char szMessage[ 300 ];
     inputl(szMessage, 250);
@@ -259,14 +259,14 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
     sprintf(szFileName, "CHANNEL.%d", (loc + 1 - INST_LOC_CH1));
     if (File::Exists(szFileName)) {
       File::Remove(szFileName);
-      sprintf(szFileName, "\r\n|#1[|#9%s has unsecured the channel|#1]", GetSession()->GetCurrentUser()->GetName());
+      sprintf(szFileName, "\r\n|#1[|#9%s has unsecured the channel|#1]", session()->user()->GetName());
       out_msg(szFileName, loc);
       bout << "|#1[|#9Channel Unsecured|#1]\r\n";
     } else {
       bout << "|#1[|#9Channel not secured!|#1]\r\n";
     }
   } else if (IsEqualsIgnoreCase(pszMessage, "/l") &&
-             GetSession()->GetCurrentUser()->GetSl() >= g_nChatOpSecLvl) {
+             session()->user()->GetSl() >= g_nChatOpSecLvl) {
     bout << "\r\n|#9Username: ";
     input(szText, 30);
     bout.nl();
@@ -310,7 +310,7 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
     }
   }
   if (bActionHandled) {
-    sprintf(szText, pszFromMessage, GetSession()->GetCurrentUser()->GetName(), pszColorString, pszMessage);
+    sprintf(szText, pszFromMessage, session()->user()->GetName(), pszColorString, pszMessage);
     out_msg(szText, loc);
   }
   return loc;
@@ -389,7 +389,7 @@ void ch_direct(const char *pszMessage, int loc, char *pszColorString, int node, 
     char szUserName[ 81 ];
     strcpy(szUserName, u.GetName());
     sprintf(szMessage, "|#9From %.12s|#6 [to %s]|#1: %s%s",
-            GetSession()->GetCurrentUser()->GetName(), szUserName, pszColorString,
+            session()->user()->GetName(), szUserName, pszColorString,
             pszMessage + nOffSet + 1);
     for (int i = 1; i <= num_instances(); i++) {
       get_inst_info(i, &ir);
@@ -419,7 +419,7 @@ void ch_whisper(const char *pszMessage, char *pszColorString, int node, int nOff
 
   char szText[ 512 ];
   if (ir.loc >= INST_LOC_CH1 && ir.loc <= INST_LOC_CH10) {
-    sprintf(szText, "|#9From %.12s|#6 [WHISPERED]|#2|#1:%s%s", GetSession()->GetCurrentUser()->GetName(), pszColorString,
+    sprintf(szText, "|#9From %.12s|#6 [WHISPERED]|#2|#1:%s%s", session()->user()->GetName(), pszColorString,
             pszMessage + nOffSet);
   } else {
     strcpy(szText, pszMessage + nOffSet);
@@ -462,10 +462,10 @@ void secure_ch(int ch) {
   } else {
     File file(szFileName);
     file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeText);
-    file.Write(GetSession()->GetCurrentUser()->GetName(), strlen(GetSession()->GetCurrentUser()->GetName()));
+    file.Write(session()->user()->GetName(), strlen(session()->user()->GetName()));
     file.Close();
     bout << "|#1[|#9Channel Secured|#1]\r\n";
-    sprintf(szFileName, "\r\n|#1[|#9%s has secured the channel|#1]", GetSession()->GetCurrentUser()->GetName());
+    sprintf(szFileName, "\r\n|#1[|#9%s has secured the channel|#1]", session()->user()->GetName());
     out_msg(szFileName, ch);
   }
 }
@@ -522,7 +522,7 @@ void page_user(int loc) {
       return;
     }
     sprintf(s, "%s is paging you from Chatroom channel %d.  Type /C from the MAIN MENU to enter the Chatroom.",
-            GetSession()->GetCurrentUser()->GetName(), loc);
+            session()->user()->GetName(), loc);
     send_inst_str(i, s);
   }
   bout << "|#1[|#9Page Sent|#1]\r\n";
@@ -534,7 +534,7 @@ void moving(bool bOnline, int loc) {
   char space[55];
 
   if (!invis) {
-    sprintf(space, "|#6%s %s", GetSession()->GetCurrentUser()->GetName(), (bOnline ? "is on the air." :
+    sprintf(space, "|#6%s %s", session()->user()->GetName(), (bOnline ? "is on the air." :
             "has signed off."));
     out_msg(space, loc);
   }
@@ -680,12 +680,12 @@ void exec_action(const char *pszMessage, char *pszColorString, int loc, int nact
   if (bOk) {
     get_inst_info(p, &ir);
     GetApplication()->GetUserManager()->ReadUser(&u, ir.user);
-    sprintf(tmsg, actions[nact]->toperson, GetSession()->GetCurrentUser()->GetName());
+    sprintf(tmsg, actions[nact]->toperson, session()->user()->GetName());
   } else if (actions[nact]->r) {
     bout << "This action requires a recipient.\r\n";
     return;
   } else {
-    sprintf(tmsg, actions[nact]->singular, GetSession()->GetCurrentUser()->GetName());
+    sprintf(tmsg, actions[nact]->singular, session()->user()->GetName());
   }
   bout << actions[nact]->toprint << wwiv::endl;
   sprintf(final, "%s%s", pszColorString, tmsg);
@@ -693,7 +693,7 @@ void exec_action(const char *pszMessage, char *pszColorString, int loc, int nact
     out_msg(final, loc);
   } else {
     send_inst_str(p, final);
-    sprintf(tmsg, actions[nact]->toall, GetSession()->GetCurrentUser()->GetName(), u.GetName());
+    sprintf(tmsg, actions[nact]->toall, session()->user()->GetName(), u.GetName());
     sprintf(final, "%s%s", pszColorString, tmsg);
     for (int c = 1; c <= num_instances(); c++) {
       get_inst_info(c, &ir);
@@ -734,7 +734,7 @@ void ga(const char *pszMessage, char *pszColorString, int loc, int type) {
     return;
   }
   char szBuffer[500];
-  sprintf(szBuffer, "%s%s%s %s", pszColorString, GetSession()->GetCurrentUser()->GetName(), (type ? "'s" : ""),
+  sprintf(szBuffer, "%s%s%s %s", pszColorString, session()->user()->GetName(), (type ? "'s" : ""),
           pszMessage);
   bout << "|#1[|#9Generic Action Sent|#1]\r\n";
   out_msg(szBuffer, loc);
@@ -746,13 +746,13 @@ void toggle_avail() {
   instancerec ir;
   char xl[81], cl[81], atr[81], cc;
 
-  GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
   get_inst_info(GetApplication()->GetInstanceNumber(), &ir);
   avail = !avail;
 
   bout << "\n\rYou are now ";
   bout << (avail ? "available for chat.\n\r\n" : "not available for chat.\n\r\n");
-  write_inst(ir.loc, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+  write_inst(ir.loc, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
   RestoreCurrentLine(cl, atr, xl, &cc);
 }
 
@@ -762,13 +762,13 @@ void toggle_invis() {
   instancerec ir;
   char xl[81], cl[81], atr[81], cc;
 
-  GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
   get_inst_info(GetApplication()->GetInstanceNumber(), &ir);
   invis = !invis;
 
   bout << "\r\n|#1You are now ";
   bout << (invis ? "invisible.\n\r\n" : "visible.\n\r\n");
-  write_inst(ir.loc, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+  write_inst(ir.loc, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
   RestoreCurrentLine(cl, atr, xl, &cc);
 }
 
@@ -844,7 +844,7 @@ int change_channels(int loc) {
     if (!File::Exists(szMessage)) {
       ch_ok = 1;
     } else {
-      if (GetSession()->GetCurrentUser()->GetSl() >= g_nChatOpSecLvl || so()) {
+      if (session()->user()->GetSl() >= g_nChatOpSecLvl || so()) {
         bout << "|#9This channel is secured.  Are you |#1SURE|#9 you wish to enter? ";
         if (yesno()) {
           ch_ok = 1;
@@ -874,10 +874,10 @@ bool check_ch(int ch) {
   unsigned short c_ar;
   char szMessage[80];
 
-  if (GetSession()->GetCurrentUser()->GetSl() < channels[ch].sl && !so()) {
+  if (session()->user()->GetSl() < channels[ch].sl && !so()) {
     bout << "\r\n|#9A security level of |#1" << channels[ch].sl <<
                        "|#9 is required to access this channel.\r\n";
-    bout << "|#9Your security level is |#1" << GetSession()->GetCurrentUser()->GetSl() << "|#9.\r\n";
+    bout << "|#9Your security level is |#1" << session()->user()->GetSl() << "|#9.\r\n";
     return false;
   }
   if (channels[ch].ar != '0') {
@@ -885,14 +885,14 @@ bool check_ch(int ch) {
   } else {
     c_ar = 0;
   }
-  if (c_ar && !GetSession()->GetCurrentUser()->HasArFlag(c_ar)) {
+  if (c_ar && !session()->user()->HasArFlag(c_ar)) {
     sprintf(szMessage, "\r\n|#9The \"|#1%c|#9\" AR is required to access this chat channel.\r\n", channels[ch].ar);
     bout << szMessage;
     return false;
   }
   char gender = channels[ch].sex;
-  if (gender != 65 && GetSession()->GetCurrentUser()->GetGender() != gender
-      && GetSession()->GetCurrentUser()->GetSl() < g_nChatOpSecLvl) {
+  if (gender != 65 && session()->user()->GetGender() != gender
+      && session()->user()->GetSl() < g_nChatOpSecLvl) {
     if (gender == 77) {
       bout << "\r\n|#9Only |#1males|#9 are allowed in this channel.\r\n";
     } else if (gender == 70) {
@@ -902,13 +902,13 @@ bool check_ch(int ch) {
     }
     return false;
   }
-  if (GetSession()->GetCurrentUser()->GetAge() < channels[ch].min_age
-      && GetSession()->GetCurrentUser()->GetSl() < g_nChatOpSecLvl) {
+  if (session()->user()->GetAge() < channels[ch].min_age
+      && session()->user()->GetSl() < g_nChatOpSecLvl) {
     bout << "\r\n|#9You must be |#1" << channels[ch].min_age << "|#9 or older to enter this channel.\r\n";
     return false;
   }
-  if (GetSession()->GetCurrentUser()->GetAge() > channels[ch].max_age
-      && GetSession()->GetCurrentUser()->GetSl() < g_nChatOpSecLvl) {
+  if (session()->user()->GetAge() > channels[ch].max_age
+      && session()->user()->GetSl() < g_nChatOpSecLvl) {
     bout << "\r\n|#9You must be |#1" << channels[ch].max_age << "|#9 or younger to enter this channel.\r\n";
     return false;
   }

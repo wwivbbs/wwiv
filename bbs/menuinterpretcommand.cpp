@@ -177,7 +177,7 @@ void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript) {
     break;
     case 19: {
       // "DisplayHelp"
-      if (GetSession()->GetCurrentUser()->IsExpert()) {
+      if (session()->user()->IsExpert()) {
         AMDisplayHelp(pMenuData);
       }
     }

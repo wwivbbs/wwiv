@@ -71,7 +71,7 @@ void send_inst_str1(int m, int whichinst, const char *pszSendString) {
   ih.main = static_cast<unsigned short>(m);
   ih.minor = 0;
   ih.from_inst = static_cast<unsigned short>(GetApplication()->GetInstanceNumber());
-  ih.from_user = static_cast<unsigned short>(GetSession()->usernum);
+  ih.from_user = static_cast<unsigned short>(session()->usernum);
   ih.msg_size = strlen(szTempSendString) + 1;
   ih.dest_inst = static_cast<unsigned short>(whichinst);
   ih.daten = static_cast<unsigned long>(time(nullptr));
@@ -93,7 +93,7 @@ void send_inst_shutdown(int whichinst) {
   ih.main = INST_MSG_SHUTDOWN;
   ih.minor = 0;
   ih.from_inst = static_cast<unsigned short>(GetApplication()->GetInstanceNumber());
-  ih.from_user = static_cast<unsigned short>(GetSession()->usernum);
+  ih.from_user = static_cast<unsigned short>(session()->usernum);
   ih.msg_size = 0;
   ih.dest_inst = static_cast<unsigned short>(whichinst);
   ih.daten = static_cast<unsigned long>(time(nullptr));
@@ -169,8 +169,8 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
   switch (ih->main) {
   case INST_MSG_STRING:
   case INST_MSG_SYSMSG:
-    if (ih->msg_size > 0 && GetSession()->IsUserOnline() && !hangup) {
-      GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+    if (ih->msg_size > 0 && session()->IsUserOnline() && !hangup) {
+      session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
       bout.nl(2);
       if (in_chatroom) {
         i = 0;
@@ -248,22 +248,22 @@ void process_inst_msgs() {
         m = nullptr;
       }
       if (hi == INST_MSG_SHUTDOWN) {
-        if (GetSession()->IsUserOnline()) {
+        if (session()->IsUserOnline()) {
           TempDisablePause diable_pause;
           bout.nl(2);
           printfile(OFFLINE_NOEXT);
-          if (GetSession()->IsUserOnline()) {
-            if (GetSession()->usernum == 1) {
-              fwaiting = GetSession()->GetCurrentUser()->GetNumMailWaiting();
+          if (session()->IsUserOnline()) {
+            if (session()->usernum == 1) {
+              fwaiting = session()->user()->GetNumMailWaiting();
             }
-            GetSession()->WriteCurrentUser();
-            write_qscn(GetSession()->usernum, qsc, false);
+            session()->WriteCurrentUser();
+            write_qscn(session()->usernum, qsc, false);
           }
         }
         file.Close();
         file.Delete();
-        GetSession()->localIO()->SetTopLine(0);
-        GetSession()->localIO()->LocalCls();
+        session()->localIO()->SetTopLine(0);
+        session()->localIO()->LocalCls();
         hangup = true;
         hang_it_up();
         holdphone(false);
@@ -344,7 +344,7 @@ int num_instances() {
 
 
 /*
- * Returns 1 if GetSession()->usernum nUserNumber is online, and returns instance user is on in
+ * Returns 1 if session()->usernum nUserNumber is online, and returns instance user is on in
  * wi, else returns 0.
  */
 bool user_online(int nUserNumber, int *wi) {
@@ -414,8 +414,8 @@ void instance_edit() {
         break;
       }
       if (i == GetApplication()->GetInstanceNumber()) {
-        GetSession()->localIO()->SetTopLine(0);
-        GetSession()->localIO()->LocalCls();
+        session()->localIO()->SetTopLine(0);
+        session()->localIO()->LocalCls();
         hangup = true;
         hang_it_up();
         holdphone(false);
@@ -448,8 +448,8 @@ void instance_edit() {
             }
           }
         }
-        GetSession()->localIO()->SetTopLine(0);
-        GetSession()->localIO()->LocalCls();
+        session()->localIO()->SetTopLine(0);
+        session()->localIO()->LocalCls();
         hangup = true;
         hang_it_up();
         holdphone(false);
@@ -487,12 +487,12 @@ void write_inst(int loc, int subloc, int flags) {
   }
 
   unsigned short cf = ti.flags & (~(INST_FLAGS_ONLINE | INST_FLAGS_MSG_AVAIL));
-  if (GetSession()->IsUserOnline()) {
+  if (session()->IsUserOnline()) {
     cf |= INST_FLAGS_ONLINE;
     if (invis) {
       cf |= INST_FLAGS_INVIS;
     }
-    if (!GetSession()->GetCurrentUser()->IsIgnoreNodeMessages()) {
+    if (!session()->user()->IsIgnoreNodeMessages()) {
       switch (loc) {
       case INST_LOC_MAIN:
       case INST_LOC_XFER:
@@ -511,7 +511,7 @@ void write_inst(int loc, int subloc, int flags) {
         break;
       }
     }
-    uint16_t ms = static_cast<uint16_t>((GetSession()->using_modem) ? modem_speed : 0);
+    uint16_t ms = static_cast<uint16_t>((session()->using_modem) ? modem_speed : 0);
     if (ti.modem_speed != ms) {
       ti.modem_speed = ms;
       re_write = true;
@@ -547,11 +547,11 @@ void write_inst(int loc, int subloc, int flags) {
   if (loc == INST_LOC_DOWN) {
     re_write = true;
   } else {
-    if (GetSession()->IsUserOnline()) {
-      if (ti.user != GetSession()->usernum) {
+    if (session()->IsUserOnline()) {
+      if (ti.user != session()->usernum) {
         re_write = true;
-        if ((GetSession()->usernum > 0) && (GetSession()->usernum <= syscfg.maxusers)) {
-          ti.user = static_cast<short>(GetSession()->usernum);
+        if ((session()->usernum > 0) && (session()->usernum <= syscfg.maxusers)) {
+          ti.user = static_cast<short>(session()->usernum);
         }
       }
     }

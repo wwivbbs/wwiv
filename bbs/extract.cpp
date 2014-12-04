@@ -86,7 +86,7 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
   } while (!hangup && ss1[0] == '?');
 
   mod_dir = -1;
-  for (int i1 = 0; i1 < GetSession()->num_dirs && udir[i1].subnum != -1; i1++) {
+  for (int i1 = 0; i1 < session()->num_dirs && udir[i1].subnum != -1; i1++) {
     if (wwiv::strings::IsEquals(udir[i1].keys, ss1)) {
       mod_dir = i1;
     }
@@ -274,7 +274,7 @@ bool upload_mod(int nDirectoryNumber, const char *pszFileName, const char *pszDe
   if (!ok) {
     bout << "|#6Aborted.\r\n";
   }
-  if (GetSession()->numf >= maxf) {
+  if (session()->numf >= maxf) {
     bout << "directory full.\r\n";
   }
   return false;

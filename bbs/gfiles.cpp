@@ -370,7 +370,7 @@ void gfile_sec(int sn) {
   list_gfiles(g, nf, sn);
   bool done = false;
   while (!done && !hangup) {
-    GetSession()->localIO()->tleft(true);
+    session()->localIO()->tleft(true);
     bout << "|#9Current G|#1-|#9File Section |#1: |#5" << gfilesec[sn].name << "|#0\r\n";
     bout << "|#9Which G|#1-|#9File |#1(|#21|#1-|#2" << nf <<
                        "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
@@ -428,7 +428,7 @@ void gfile_sec(int sn) {
     } else if (i > 0 && i <= nf) {
       sprintf(szFileName, "%s%c%s", gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
       i1 = printfile(szFileName);
-      GetSession()->GetCurrentUser()->SetNumGFilesRead(GetSession()->GetCurrentUser()->GetNumGFilesRead() + 1);
+      session()->user()->SetNumGFilesRead(session()->user()->GetNumGFilesRead() + 1);
       if (i1 == 0) {
         sysoplogf("Read G-file '%s'", g[i - 1].filename);
       }
@@ -496,7 +496,7 @@ void gfiles3(int n) {
 }
 
 void gfiles() {
-  int* map = static_cast<int *>(BbsAllocA(GetSession()->max_gfilesec * sizeof(int)));
+  int* map = static_cast<int *>(BbsAllocA(session()->max_gfilesec * sizeof(int)));
   WWIV_ASSERT(map);
 
   bool done = false;
@@ -504,15 +504,15 @@ void gfiles() {
   for (int i = 0; i < 20; i++) {
     odc[i] = 0;
   }
-  for (int i = 0; i < GetSession()->num_sec; i++) {
+  for (int i = 0; i < session()->num_sec; i++) {
     bool ok = true;
-    if (GetSession()->GetCurrentUser()->GetAge() < gfilesec[i].age) {
+    if (session()->user()->GetAge() < gfilesec[i].age) {
       ok = false;
     }
-    if (GetSession()->GetEffectiveSl() < gfilesec[i].sl) {
+    if (session()->GetEffectiveSl() < gfilesec[i].sl) {
       ok = false;
     }
-    if (!GetSession()->GetCurrentUser()->HasArFlag(gfilesec[i].ar) && gfilesec[i].ar) {
+    if (!session()->user()->HasArFlag(gfilesec[i].ar) && gfilesec[i].ar) {
       ok = false;
     }
     if (ok) {
@@ -529,7 +529,7 @@ void gfiles() {
   }
   list_sec(map, nmap);
   while (!done && !hangup) {
-    GetSession()->localIO()->tleft(true);
+    session()->localIO()->tleft(true);
     bout << "|#9G|#1-|#9Files Main Menu|#0\r\n";
     bout << "|#9Which Section |#1(|#21|#1-|#2" << nmap <<
                        "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
