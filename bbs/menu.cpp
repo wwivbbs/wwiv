@@ -238,6 +238,25 @@ void CloseMenu(MenuInstanceData * pMenuData) {
   }
 }
 
+static bool CreateIndex(MenuInstanceData* pMenuData) {
+  time_t start = time(nullptr);
+  pMenuData->index = static_cast<MenuRecIndex *>(malloc(pMenuData->nAmountRecs * sizeof(MenuRecIndex) + TEST_PADDING));
+  int nAmount = pMenuData->pMenuFile->GetLength() / sizeof(MenuRec);
+
+  for (int nRec = 1; nRec < nAmount; nRec++) {
+    MenuRec menu;
+    pMenuData->pMenuFile->Seek(nRec * sizeof(MenuRec), File::seekBegin);
+    pMenuData->pMenuFile->Read(&menu, sizeof(MenuRec));
+
+    memset(&pMenuData->index[nRec-1], 0, sizeof(MenuRecIndex));
+    pMenuData->index[nRec-1].nRec = static_cast<short>(nRec);
+    pMenuData->index[nRec-1].nFlags = menu.nFlags;
+    strcpy(pMenuData->index[nRec-1].szKey, menu.szKey);
+  }
+  bout << "Time to create index for menu: " << time(nullptr) - start << " ms." << wwiv::endl;
+  return true;
+}
+
 bool OpenMenu(MenuInstanceData * pMenuData) {
   CloseMenu(pMenuData);
 
@@ -269,27 +288,11 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
 
   // version numbers can be checked here
 
-  // ------------------------------
-  // Open/Read/Close the index file
-  // ------------------------------
-  File fileIndex(GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "idx"));
-  if (fileIndex.Open(File::modeBinary | File::modeReadOnly, File::shareDenyNone)) {
-    if (fileIndex.GetLength() > static_cast<long>(pMenuData->nAmountRecs * sizeof(MenuRecIndex))) {
-      MenuSysopLog("Index is corrupt");
-      MenuSysopLog(fileIndex.full_pathname());
-      return false;
-    }
-    pMenuData->index = static_cast<MenuRecIndex *>(malloc(pMenuData->nAmountRecs * sizeof(MenuRecIndex) + TEST_PADDING));
-    if (pMenuData->index != nullptr) {
-      fileIndex.Read(pMenuData->index, pMenuData->nAmountRecs * sizeof(MenuRecIndex));
-    }
-    fileIndex.Close();          // close the file
-  } else {
-    // Unable to open menu index
-    MenuSysopLog("Unable to open Menu Index");
+  if (!CreateIndex(pMenuData)) {
+    MenuSysopLog("Unable to create menu index.");
+    pMenuData->nAmountRecs = 0;
     return false;
   }
-
 
   // ----------------------------
   // Open/Rease/Close Prompt file

@@ -32,7 +32,6 @@ using namespace wwiv::strings;
 
 bool GetMenuDir(string& menuDir);
 bool GetMenuMenu(const string& pszDirectoryName, string& menuName);
-void ReIndexMenu(File &fileEditMenu, const char *pszDirectoryName, const char *pszMenuName);
 void ReadMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur);
 void WriteMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur);
 void DisplayItem(MenuRec * Menu, int nCur, int nAmount);
@@ -426,49 +425,14 @@ void EditMenus() {
     }
   }
   GetApplication()->CdHome(); // make sure we are in the wwiv dir
-
-  ReIndexMenu(fileEditMenu, menuDir.c_str(), menuName.c_str());
   fileEditMenu.Close();
 }
-
-
-void ReIndexMenu(File &fileEditMenu, const char *pszDirectoryName, const char *pszMenuName) {
-  bout << "Indexing Menu...\r\n";
-
-  File fileIdx(GetMenuDirectory(pszDirectoryName, pszMenuName, "idx"));
-  if (!fileIdx.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite,
-                    File::shareDenyWrite)) {
-    bout << "Unable to reindex\r\n";
-    pausescr();
-    return;
-  }
-  int nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec));
-
-  for (int nRec = 1; nRec < nAmount; nRec++) {
-    MenuRec menu;
-    fileEditMenu.Seek(nRec * sizeof(MenuRec), File::seekBegin);
-    fileEditMenu.Read(&menu, sizeof(MenuRec));
-
-    MenuRecIndex menuIndex;
-    memset(&menuIndex, 0, sizeof(MenuRecIndex));
-    menuIndex.nRec = static_cast<short>(nRec);
-    menuIndex.nFlags = menu.nFlags;
-    strcpy(menuIndex.szKey, menu.szKey);
-
-    fileIdx.Seek((nRec - 1) * sizeof(MenuRecIndex), File::seekBegin);
-    fileIdx.Write(&menuIndex, sizeof(MenuRecIndex));
-  }
-
-  fileIdx.Close();
-}
-
 
 void ReadMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur) {
   if (fileEditMenu.Seek(nCur * sizeof(MenuRec), File::seekBegin) != -1) {
     fileEditMenu.Read(Menu, sizeof(MenuRec));
   }
 }
-
 
 void WriteMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur) {
   // %%TODO Add in locking (_locking) support via WIN32 file api's
