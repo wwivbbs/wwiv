@@ -58,9 +58,9 @@ void show_files(const char *pszFileName, const char *pszDirectoryName) {
 #endif
 
   SNPRINTF(s, sizeof(s), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", strupr(stripfn(pszFileName)), drive, direc);
-  int i = (GetSession()->GetCurrentUser()->GetScreenChars() - 1) / 2 - strlen(stripcolors(s)) / 2;
+  int i = (session()->user()->GetScreenChars() - 1) / 2 - strlen(stripcolors(s)) / 2;
   bout << "|#7" << charstr(i, c) << s;
-  i = GetSession()->GetCurrentUser()->GetScreenChars() - 1 - i - strlen(stripcolors(s));
+  i = session()->user()->GetScreenChars() - 1 - i - strlen(stripcolors(s));
   bout << "|#7" << charstr(i, c);
 
   char szFullPathName[ MAX_PATH ];
@@ -71,7 +71,7 @@ void show_files(const char *pszFileName, const char *pszDirectoryName) {
     strncpy(s, fnd.GetFileName(), MAX_PATH);
     align(s);
     SNPRINTF(szFullPathName, sizeof(szFullPathName), "|#7[|#2%s|#7]|#1 ", s);
-    if (GetSession()->localIO()->WhereX() > (GetSession()->GetCurrentUser()->GetScreenChars() - 15)) {
+    if (session()->localIO()->WhereX() > (session()->user()->GetScreenChars() - 15)) {
       bout.nl();
     }
     bout << szFullPathName;
@@ -80,7 +80,7 @@ void show_files(const char *pszFileName, const char *pszDirectoryName) {
 
   bout.nl();
   bout.Color(7);
-  bout << charstr(GetSession()->GetCurrentUser()->GetScreenChars() - 1, c);
+  bout << charstr(session()->user()->GetScreenChars() - 1, c);
   bout.nl(2);
 }
 

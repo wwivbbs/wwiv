@@ -40,13 +40,13 @@ string GetInstanceActivityString(instancerec &ir) {
     case INST_LOC_EMAIL: return string("Sending Email");
     case INST_LOC_MAIN: return string("Main Menu");
     case INST_LOC_XFER:
-      if (so() && ir.subloc < GetSession()->num_dirs) {
+      if (so() && ir.subloc < session()->num_dirs) {
         string temp = StringPrintf("Dir : %s", stripcolors(directories[ ir.subloc ].name));
         return StrCat("Transfer Area", temp);
       }
       return string("Transfer Area");
     case INST_LOC_CHAINS:
-      if (ir.subloc > 0 && ir.subloc <= GetSession()->GetNumberOfChains()) {
+      if (ir.subloc > 0 && ir.subloc <= session()->GetNumberOfChains()) {
         string temp = StringPrintf("Door: %s", stripcolors(chains[ ir.subloc - 1 ].description));
         return StrCat("Chains", temp);
       }
@@ -75,7 +75,7 @@ string GetInstanceActivityString(instancerec &ir) {
     case INST_LOC_BANK: return ("In TimeBank");
     case INST_LOC_AMSG: return ("AutoMessage");
     case INST_LOC_SUBS:
-      if (so() && ir.subloc < GetSession()->num_subs) {
+      if (so() && ir.subloc < session()->num_subs) {
         string temp = StringPrintf("(Sub: %s)", stripcolors(subboards[ ir.subloc ].name));
         return StrCat("Reading Messages", temp);
       }
@@ -90,7 +90,7 @@ string GetInstanceActivityString(instancerec &ir) {
     case INST_LOC_FEEDBACK: return string("Leaving Feedback");
     case INST_LOC_KILLEMAIL: return string("Viewing Old Email");
     case INST_LOC_POST:
-      if (so() && ir.subloc < GetSession()->num_subs) {
+      if (so() && ir.subloc < session()->num_subs) {
         string temp = StringPrintf(" (Sub: %s)", stripcolors(subboards[ir.subloc].name));
         return StrCat("Posting a Message", temp);
       }

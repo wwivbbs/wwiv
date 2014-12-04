@@ -163,7 +163,7 @@ void color_config() {
         if ((n <= -1) && (n >= -16)) {
           rescolor.resx[207 + abs(n)] = static_cast< unsigned char >(c);
         } else if ((n >= 0) && (n <= 9)) {
-          GetSession()->GetCurrentUser()->SetColor(n, c);
+          session()->user()->SetColor(n, c);
         } else {
           rescolor.resx[n - 10] = static_cast< unsigned char >(c);
         }

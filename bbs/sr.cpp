@@ -50,10 +50,10 @@ char gettimeout(double d, bool *abort) {
 
   double d1 = timer();
   while (fabs(timer() - d1) < d && !bkbhitraw() && !hangup && !*abort) {
-    if (GetSession()->localIO()->LocalKeyPressed()) {
-      char ch = GetSession()->localIO()->LocalGetChar();
+    if (session()->localIO()->LocalKeyPressed()) {
+      char ch = session()->localIO()->LocalGetChar();
       if (ch == 0) {
-        GetSession()->localIO()->LocalGetChar();
+        session()->localIO()->LocalGetChar();
       } else if (ch == ESC) {
         *abort = true;
       }
@@ -99,13 +99,13 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
   sx2[1] = '\0';
   const string command = stuff_in(s1, sx1, sx2, szFileName, sx3, "");
   if (!command.empty()) {
-    GetSession()->localIO()->set_protect(0);
+    session()->localIO()->set_protect(0);
     sprintf(s2, "%s is currently online at %u bps",
-            GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum), modem_speed);
-    GetSession()->localIO()->LocalPuts(s2);
-    GetSession()->localIO()->LocalPuts("\r\n\r\n");
-    GetSession()->localIO()->LocalPuts(command);
-    GetSession()->localIO()->LocalPuts("\r\n");
+            session()->user()->GetUserNameAndNumber(session()->usernum), modem_speed);
+    session()->localIO()->LocalPuts(s2);
+    session()->localIO()->LocalPuts("\r\n\r\n");
+    session()->localIO()->LocalPuts(command);
+    session()->localIO()->LocalPuts("\r\n");
     if (incom) {
       int nRetCode = ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPAWNOPT_PROT_SINGLE));
       GetApplication()->UpdateTopScreen();
@@ -126,7 +126,7 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
     return false;
   }
 
-  if (nProtocolNum > 0 && nProtocolNum < (GetSession()->GetNumberOfExternalProtocols() + WWIV_NUM_INTERNAL_PROTOCOLS)) {
+  if (nProtocolNum > 0 && nProtocolNum < (session()->GetNumberOfExternalProtocols() + WWIV_NUM_INTERNAL_PROTOCOLS)) {
     switch (nProtocolNum) {
     case WWIV_INTERNAL_PROT_ASCII:
       if (xt == xf_down || xt == xf_down_temp) {
@@ -156,20 +156,20 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
         // TODO(rushfan): Internal ZModem doesn't support internal batch uploads
         // ok = true;
       }
-      if (nProtocolNum == WWIV_INTERNAL_PROT_ZMODEM && !GetSession()->IsUseInternalZmodem()) {
+      if (nProtocolNum == WWIV_INTERNAL_PROT_ZMODEM && !session()->IsUseInternalZmodem()) {
         // If AllowInternalZmodem is not true, don't allow it.
         ok = false;
       }
       break;
     case WWIV_INTERNAL_PROT_BATCH:
       if (xt == xf_up) {
-        for (int i = 0; i < GetSession()->GetNumberOfExternalProtocols(); i++) {
+        for (int i = 0; i < session()->GetNumberOfExternalProtocols(); i++) {
           if (externs[i].receivebatchfn[0]) {
             ok = true;
           }
         }
       } else if (xt == xf_down) {
-        for (int i = 0; i < GetSession()->GetNumberOfExternalProtocols(); i++) {
+        for (int i = 0; i < session()->GetNumberOfExternalProtocols(); i++) {
           if (externs[i].sendbatchfn[0]) {
             ok = true;
           }
@@ -237,7 +237,7 @@ char *prot_name(int nProtocolNum) {
     strcpy(szProtocolName, "Zmodem (Internal)");
   default:
     if (nProtocolNum >= WWIV_NUM_INTERNAL_PROTOCOLS &&
-        nProtocolNum < (GetSession()->GetNumberOfExternalProtocols() + WWIV_NUM_INTERNAL_PROTOCOLS)) {
+        nProtocolNum < (session()->GetNumberOfExternalProtocols() + WWIV_NUM_INTERNAL_PROTOCOLS)) {
       ss = externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].description;
     }
     break;
@@ -253,20 +253,20 @@ int get_protocol(xfertype xt) {
   char s[81], s1[81], oks[81], ch, oks1[81], *ss, ch1, fl[80];
   int prot;
 
-  if (ok_prot(GetSession()->GetCurrentUser()->GetDefaultProtocol(), xt)) {
-    prot = GetSession()->GetCurrentUser()->GetDefaultProtocol();
+  if (ok_prot(session()->user()->GetDefaultProtocol(), xt)) {
+    prot = session()->user()->GetDefaultProtocol();
   } else {
     prot = 0;
   }
 
-  unsigned char cyColorSave = GetSession()->GetCurrentUser()->GetColor(8);
-  GetSession()->GetCurrentUser()->SetColor(8, 1);
+  unsigned char cyColorSave = session()->user()->GetColor(8);
+  session()->user()->SetColor(8, 1);
   int oks1p = 0;
   oks1[0] = '\0';
   strcpy(oks, "Q?0");
   int i1 = strlen(oks);
   int only = 0;
-  int maxprot = (WWIV_NUM_INTERNAL_PROTOCOLS - 1) + GetSession()->GetNumberOfExternalProtocols();
+  int maxprot = (WWIV_NUM_INTERNAL_PROTOCOLS - 1) + session()->GetNumberOfExternalProtocols();
   for (int i = 1; i <= maxprot; i++) {
     fl[ i ] = '\0';
     if (ok_prot(i, xt)) {
@@ -354,13 +354,13 @@ int get_protocol(xfertype xt) {
       done = true;
     }
   } while (!done && !hangup);
-  GetSession()->GetCurrentUser()->SetColor(8, cyColorSave);
+  session()->user()->SetColor(8, cyColorSave);
   if (ch == RETURN) {
     return prot;
   }
   if (ch >= '0' && ch <= '9') {
     if (ch != '0') {
-      GetSession()->GetCurrentUser()->SetDefaultProtocol(ch - '0');
+      session()->user()->SetDefaultProtocol(ch - '0');
     }
     return ch - '0';
   } else {
@@ -368,11 +368,11 @@ int get_protocol(xfertype xt) {
       return -1;
     } else {
       i1 = ch - BASE_CHAR + 10;
-      GetSession()->GetCurrentUser()->SetDefaultProtocol(i1);
-      if (i1 < GetSession()->GetNumberOfExternalProtocols() + WWIV_NUM_INTERNAL_PROTOCOLS) {
+      session()->user()->SetDefaultProtocol(i1);
+      if (i1 < session()->GetNumberOfExternalProtocols() + WWIV_NUM_INTERNAL_PROTOCOLS) {
         return ch - BASE_CHAR + 10;
       }
-      for (int j = 3; j < GetSession()->GetNumberOfExternalProtocols() + WWIV_NUM_INTERNAL_PROTOCOLS; j++) {
+      for (int j = 3; j < session()->GetNumberOfExternalProtocols() + WWIV_NUM_INTERNAL_PROTOCOLS; j++) {
         if (upcase(*prot_name(j)) == ch) {
           return j;
         }
@@ -408,7 +408,7 @@ void ascii_send(const char *pszFileName, bool *sent, double *percent) {
       *sent = true;
     } else {
       *sent = false;
-      GetSession()->GetCurrentUser()->SetDownloadK(GetSession()->GetCurrentUser()->GetDownloadK() + bytes_to_k(lTotalBytes));
+      session()->user()->SetDownloadK(session()->user()->GetDownloadK() + bytes_to_k(lTotalBytes));
     }
     *percent = static_cast<double>(lTotalBytes) / static_cast<double>(lFileSize);
   } else {
@@ -503,7 +503,7 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn
       break;
     case WWIV_INTERNAL_PROT_BATCH:
       ok = true;
-      if (GetSession()->numbatch >= GetSession()->max_batch) {
+      if (session()->numbatch >= session()->max_batch) {
         bout.nl();
         bout << "No room left in batch queue.\r\n\n";
         *sent = false;
@@ -523,17 +523,17 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn
             *abort = false;
           } else {
             batchtime += static_cast<float>(t);
-            strcpy(batch[GetSession()->numbatch].filename, sfn);
-            batch[GetSession()->numbatch].dir = static_cast<short>(dn);
-            batch[GetSession()->numbatch].time = static_cast<float>(t);
-            batch[GetSession()->numbatch].sending = 1;
-            batch[GetSession()->numbatch].len = fs;
+            strcpy(batch[session()->numbatch].filename, sfn);
+            batch[session()->numbatch].dir = static_cast<short>(dn);
+            batch[session()->numbatch].time = static_cast<float>(t);
+            batch[session()->numbatch].sending = 1;
+            batch[session()->numbatch].len = fs;
 
-            GetSession()->numbatch++;
-            ++GetSession()->numbatchdl;
+            session()->numbatch++;
+            ++session()->numbatchdl;
             bout.nl(2);
             bout << "File added to batch queue.\r\n";
-            bout << "Batch: Files - " << GetSession()->numbatch <<
+            bout << "Batch: Files - " << session()->numbatch <<
                                "  Time - " << ctim(batchtime) << "\r\n\n";
             *sent = false;
             *abort = false;
@@ -582,22 +582,22 @@ void receive_file(const char *pszFileName, int *received, const char *sfn, int d
   break;
   case WWIV_INTERNAL_PROT_BATCH:
     if (dn != -1) {
-      if (GetSession()->numbatch >= GetSession()->max_batch) {
+      if (session()->numbatch >= session()->max_batch) {
         bout.nl();
         bout << "No room left in batch queue.\r\n\n";
         *received = 0;
       } else {
         *received = 2;
-        strcpy(batch[GetSession()->numbatch].filename, sfn);
-        batch[GetSession()->numbatch].dir = static_cast<short>(dn);
-        batch[GetSession()->numbatch].time = 0;
-        batch[GetSession()->numbatch].sending = 0;
-        batch[GetSession()->numbatch].len = 0;
+        strcpy(batch[session()->numbatch].filename, sfn);
+        batch[session()->numbatch].dir = static_cast<short>(dn);
+        batch[session()->numbatch].time = 0;
+        batch[session()->numbatch].sending = 0;
+        batch[session()->numbatch].len = 0;
 
-        GetSession()->numbatch++;
+        session()->numbatch++;
         bout.nl();
         bout << "File added to batch queue.\r\n\n";
-        bout << "Batch upload: files - " << (GetSession()->numbatch - GetSession()->numbatchdl) << "\r\n\n";
+        bout << "Batch upload: files - " << (session()->numbatch - session()->numbatchdl) << "\r\n\n";
       }
     } else {
       bout.nl();
@@ -649,8 +649,8 @@ char end_batch1() {
 void endbatch() {
   bool abort = false;
   int terr = 0;
-  int oldx = GetSession()->localIO()->WhereX();
-  int oldy = GetSession()->localIO()->WhereY();
+  int oldx = session()->localIO()->WhereX();
+  int oldy = session()->localIO()->WhereY();
   bool ucrc = false;
   if (!okstart(&ucrc, &abort)) {
     abort = true;
@@ -673,5 +673,5 @@ void endbatch() {
     }
     */
   }
-  GetSession()->localIO()->LocalGotoXY(oldx, oldy);
+  session()->localIO()->LocalGotoXY(oldx, oldy);
 }

@@ -47,7 +47,7 @@ bool okconf(WUser *pUser) {
 void add_ass(int nNumPoints, const char *pszReason) {
   sysoplog("***");
   sysoplogf("*** ASS-PTS: %d, Reason: [%s]", nNumPoints, pszReason);
-  GetSession()->GetCurrentUser()->IncrementAssPoints(nNumPoints);
+  session()->user()->IncrementAssPoints(nNumPoints);
 }
 
 

@@ -88,7 +88,7 @@ class WSession {
   static const int mmkeyMessageAreas = 1;
   static const int mmkeyFileAreas = 2;
 
-  WUser* GetCurrentUser() { return &m_thisuser; }
+  WUser* user() { return &m_thisuser; }
 
   void DisplaySysopWorkingIndicator(bool displayWait);
   WComm* remoteIO();
@@ -104,7 +104,7 @@ class WSession {
   bool WriteCurrentUser();
   bool WriteCurrentUser(int nUserNumber);
 
-  void ResetEffectiveSl() { m_nEffectiveSl = GetCurrentUser()->GetSl(); }
+  void ResetEffectiveSl() { m_nEffectiveSl = user()->GetSl(); }
   void SetEffectiveSl(int nSl) { m_nEffectiveSl = nSl; }
   int  GetEffectiveSl() const { return m_nEffectiveSl; }
 
@@ -235,7 +235,6 @@ class WSession {
   bool internal_qwk_enabled() const { return internal_qwk_enabled_; }
   void set_internal_qwk_enabled(bool internal_qwk_enabled) { internal_qwk_enabled_ = internal_qwk_enabled; }
 
-
  private:
   bool            m_bLastKeyLocal;
   int             m_nEffectiveSl;
@@ -346,7 +345,6 @@ class WSession {
   unsigned char
   newuser_colors[10],         // skip for now
   newuser_bwcolors[10];       // skip for now
-
 };
 
 #if defined(_MSC_VER)

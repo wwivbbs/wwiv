@@ -63,7 +63,7 @@ void showdirs() {
   bool abort = false;
   pla("|#2##   DAR Area Description                        FileName DSL AGE FIL PATH", &abort);
   pla("|#7==== --- ======================================= -------- === --- === ---------", &abort);
-  for (int i = 0; i < GetSession()->num_dirs && !abort; i++) {
+  for (int i = 0; i < session()->num_dirs && !abort; i++) {
     sprintf(s, "%s %s", directories[i].name, directories[i].filename);
     if (stristr(s, s1)) {
       dirdata(i, s);
@@ -128,13 +128,13 @@ void modify_dir(int n) {
     case '[':
       directories[n] = r;
       if (--n < 0) {
-        n = GetSession()->num_dirs - 1;
+        n = session()->num_dirs - 1;
       }
       r = directories[n];
       break;
     case ']':
       directories[n] = r;
-      if (++n >= GetSession()->num_dirs) {
+      if (++n >= session()->num_dirs) {
         n = 0;
       }
       r = directories[n];
@@ -276,7 +276,7 @@ void swap_dirs(int dir1, int dir2) {
   SUBCONF_TYPE dir1conv = static_cast<SUBCONF_TYPE>(dir1);
   SUBCONF_TYPE dir2conv = static_cast<SUBCONF_TYPE>(dir2);
 
-  if (dir1 < 0 || dir1 >= GetSession()->num_dirs || dir2 < 0 || dir2 >= GetSession()->num_dirs) {
+  if (dir1 < 0 || dir1 >= session()->num_dirs || dir2 < 0 || dir2 >= session()->num_dirs) {
     return;
   }
 
@@ -316,16 +316,16 @@ void swap_dirs(int dir1, int dir2) {
   directories[dir1] = directories[dir2];
   directories[dir2] = drt;
 
-  unsigned long tl = GetSession()->m_DirectoryDateCache[dir1];
-  GetSession()->m_DirectoryDateCache[dir1] = GetSession()->m_DirectoryDateCache[dir2];
-  GetSession()->m_DirectoryDateCache[dir2] = tl;
+  unsigned long tl = session()->m_DirectoryDateCache[dir1];
+  session()->m_DirectoryDateCache[dir1] = session()->m_DirectoryDateCache[dir2];
+  session()->m_DirectoryDateCache[dir2] = tl;
 }
 
 
 void insert_dir(int n) {
   SUBCONF_TYPE nconv = static_cast<SUBCONF_TYPE>(n);
 
-  if (n < 0 || n > GetSession()->num_dirs) {
+  if (n < 0 || n > session()->num_dirs) {
     return;
   }
 
@@ -334,9 +334,9 @@ void insert_dir(int n) {
   n = static_cast< int >(nconv);
 
   int i;
-  for (i = GetSession()->num_dirs - 1; i >= n; i--) {
+  for (i = session()->num_dirs - 1; i >= n; i--) {
     directories[i + 1] = directories[i];
-    GetSession()->m_DirectoryDateCache[i + 1] = GetSession()->m_DirectoryDateCache[i];
+    session()->m_DirectoryDateCache[i + 1] = session()->m_DirectoryDateCache[i];
   }
 
   directoryrec r;
@@ -350,7 +350,7 @@ void insert_dir(int n) {
   r.type = 0;
   r.mask = 0;
   directories[n] = r;
-  ++GetSession()->num_dirs;
+  ++session()->num_dirs;
 
   int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
@@ -367,7 +367,7 @@ void insert_dir(int n) {
       read_qscn(i, pTempQScan, true);
 
       int i1;
-      for (i1 = GetSession()->num_dirs / 32; i1 > n / 32; i1--) {
+      for (i1 = session()->num_dirs / 32; i1 > n / 32; i1--) {
         pTempQScan_n[i1] = (pTempQScan_n[i1] << 1) | (pTempQScan_n[i1 - 1] >> 31);
       }
       pTempQScan_n[i1] = m1 | (m2 & (pTempQScan_n[i1] << 1)) | (m3 & pTempQScan_n[i1]);
@@ -387,7 +387,7 @@ void delete_dir(int n) {
 
   nconv = static_cast< SUBCONF_TYPE >(n);
 
-  if ((n < 0) || (n >= GetSession()->num_dirs)) {
+  if ((n < 0) || (n >= session()->num_dirs)) {
     return;
   }
 
@@ -395,11 +395,11 @@ void delete_dir(int n) {
 
   n = static_cast<int>(nconv);
 
-  for (i = n; i < GetSession()->num_dirs; i++) {
+  for (i = n; i < session()->num_dirs; i++) {
     directories[i] = directories[i + 1];
-    GetSession()->m_DirectoryDateCache[i] = GetSession()->m_DirectoryDateCache[i + 1];
+    session()->m_DirectoryDateCache[i] = session()->m_DirectoryDateCache[i + 1];
   }
-  --GetSession()->num_dirs;
+  --session()->num_dirs;
 
   int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
@@ -417,7 +417,7 @@ void delete_dir(int n) {
       pTempQScan_n[n / 32] = (pTempQScan_n[n / 32] & m3) | ((pTempQScan_n[n / 32] >> 1) & m2) |
                              (pTempQScan_n[(n / 32) + 1] << 31);
 
-      for (i1 = (n / 32) + 1; i1 <= (GetSession()->num_dirs / 32); i1++) {
+      for (i1 = (n / 32) + 1; i1 <= (session()->num_dirs / 32); i1++) {
         pTempQScan_n[i1] = (pTempQScan_n[i1] >> 1) | (pTempQScan_n[i1 + 1] << 31);
       }
 
@@ -455,31 +455,31 @@ void dlboardedit() {
       bout << "|#2Dir number? ";
       input(s, 4);
       i = atoi(s);
-      if ((s[0] != 0) && (i >= 0) && (i < GetSession()->num_dirs)) {
+      if ((s[0] != 0) && (i >= 0) && (i < session()->num_dirs)) {
         modify_dir(i);
       }
       break;
     case 'S':
-      if (GetSession()->num_dirs < GetSession()->GetMaxNumberFileAreas()) {
+      if (session()->num_dirs < session()->GetMaxNumberFileAreas()) {
         bout.nl();
         bout << "|#2Take dir number? ";
         input(s, 4);
         i1 = atoi(s);
-        if (!s[0] || i1 < 0 || i1 >= GetSession()->num_dirs) {
+        if (!s[0] || i1 < 0 || i1 >= session()->num_dirs) {
           break;
         }
         bout.nl();
         bout << "|#2And put before dir number? ";
         input(s, 4);
         i2 = atoi(s);
-        if ((!s[0]) || (i2 < 0) || (i2 % 32 == 0) || (i2 > GetSession()->num_dirs) || (i1 == i2)) {
+        if ((!s[0]) || (i2 < 0) || (i2 % 32 == 0) || (i2 > session()->num_dirs) || (i1 == i2)) {
           break;
         }
         bout.nl();
         if (i2 < i1) {
           i1++;
         }
-        write_qscn(GetSession()->usernum, qsc, true);
+        write_qscn(session()->usernum, qsc, true);
         bout << "|#1Moving dir now...Please wait...";
         insert_dir(i2);
         swap_dirs(i1, i2);
@@ -491,12 +491,12 @@ void dlboardedit() {
       }
       break;
     case 'I':
-      if (GetSession()->num_dirs < GetSession()->GetMaxNumberFileAreas()) {
+      if (session()->num_dirs < session()->GetMaxNumberFileAreas()) {
         bout.nl();
         bout << "|#2Insert before which dir? ";
         input(s, 4);
         i = atoi(s);
-        if ((s[0] != 0) && (i >= 0) && (i <= GetSession()->num_dirs)) {
+        if ((s[0] != 0) && (i >= 0) && (i <= session()->num_dirs)) {
           insert_dir(i);
           modify_dir(i);
           confchg = 1;
@@ -526,7 +526,7 @@ void dlboardedit() {
       bout << "|#2Delete which dir? ";
       input(s, 4);
       i = atoi(s);
-      if ((s[0] != 0) && (i >= 0) && (i < GetSession()->num_dirs)) {
+      if ((s[0] != 0) && (i >= 0) && (i < session()->num_dirs)) {
         bout.nl();
         bout << "|#5Delete " << directories[i].name << "? ";
         if (yesno()) {
@@ -551,7 +551,7 @@ void dlboardedit() {
   if (!bDirsOpen) {
     sysoplog("!!! Unable to open DIRS.DAT for writing, some changes may have been lost", false);
   } else {
-    dirsFile.Write(directories, sizeof(directoryrec) * GetSession()->num_dirs);
+    dirsFile.Write(directories, sizeof(directoryrec) * session()->num_dirs);
     dirsFile.Close();
   }
   if (confchg) {

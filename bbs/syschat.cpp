@@ -84,7 +84,7 @@ void chatsound(int sf, int ef, int uf, int dly1, int dly2, int rp) {
 
 void RequestChat() {
   bout.nl(2);
-  if (sysop2() && !GetSession()->GetCurrentUser()->IsRestrictionChat()) {
+  if (sysop2() && !session()->user()->IsRestrictionChat()) {
     if (chatcall) {
       chatcall = false;
       bout << "Chat call turned off.\r\n";
@@ -107,7 +107,7 @@ void RequestChat() {
           szChatReason[nTemp] = SPACE;
         }
         szChatReason[80] = '\0';
-        GetSession()->localIO()->SetChatReason(szChatReason);
+        session()->localIO()->SetChatReason(szChatReason);
         GetApplication()->UpdateTopScreen();
         bout << "Chat call turned ON.\r\n";
         bout.nl();
@@ -130,18 +130,18 @@ void RequestChat() {
 //
 
 void select_chat_name(char *pszSysopName) {
-  GetSession()->DisplaySysopWorkingIndicator(true);
-  GetSession()->localIO()->savescreen();
+  session()->DisplaySysopWorkingIndicator(true);
+  session()->localIO()->savescreen();
   strcpy(pszSysopName, syscfg.sysopname);
-  curatr = GetSession()->GetChatNameSelectionColor();
-  GetSession()->localIO()->MakeLocalWindow(20, 5, 43, 3);
-  GetSession()->localIO()->LocalXYPuts(22, 6, "Chat As: ");
-  curatr = GetSession()->GetEditLineColor();
-  GetSession()->localIO()->LocalXYPuts(31, 6, charstr(30, SPACE));
+  curatr = session()->GetChatNameSelectionColor();
+  session()->localIO()->MakeLocalWindow(20, 5, 43, 3);
+  session()->localIO()->LocalXYPuts(22, 6, "Chat As: ");
+  curatr = session()->GetEditLineColor();
+  session()->localIO()->LocalXYPuts(31, 6, charstr(30, SPACE));
 
   int rc;
-  GetSession()->localIO()->LocalGotoXY(31, 6);
-  GetSession()->localIO()->LocalEditLine(pszSysopName, 30, ALL, &rc, pszSysopName);
+  session()->localIO()->LocalGotoXY(31, 6);
+  session()->localIO()->LocalEditLine(pszSysopName, 30, ALL, &rc, pszSysopName);
   if (rc != ABORTED) {
     StringTrimEnd(pszSysopName);
     int nUserNumber = atoi(pszSysopName);
@@ -157,8 +157,8 @@ void select_chat_name(char *pszSysopName) {
   } else {
     strcpy(pszSysopName, "");
   }
-  GetSession()->localIO()->restorescreen();
-  GetSession()->DisplaySysopWorkingIndicator(false);
+  session()->localIO()->restorescreen();
+  session()->DisplaySysopWorkingIndicator(false);
 }
 
 
@@ -169,7 +169,7 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
   int i, i1;
 
   int cm = chatting;
-  int begx = GetSession()->localIO()->WhereX();
+  int begx = session()->localIO()->WhereX();
   if (pszRollover[0] != 0) {
     if (charbufferpointer) {
       char szTempBuffer[255];
@@ -188,21 +188,21 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
   unsigned char ch = 0;
   do {
     ch = getkey();
-    if (GetSession()->IsLastKeyLocal()) {
-      if (GetSession()->localIO()->WhereY() == 11) {
+    if (session()->IsLastKeyLocal()) {
+      if (session()->localIO()->WhereY() == 11) {
         bout << "\x1b[12;1H";
-        for (int screencount = 0; screencount < GetSession()->GetCurrentUser()->GetScreenChars(); screencount++) {
+        for (int screencount = 0; screencount < session()->user()->GetScreenChars(); screencount++) {
           s2[screencount] = '\xCD';
         }
         sprintf(temp1, "|B1|#2 %s chatting with %s |B0|#1", pszSysopName,
-                GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum));
-        int nNumCharsToMove = (((GetSession()->GetCurrentUser()->GetScreenChars() - strlen(stripcolors(temp1))) / 2));
+                session()->user()->GetUserNameAndNumber(session()->usernum));
+        int nNumCharsToMove = (((session()->user()->GetScreenChars() - strlen(stripcolors(temp1))) / 2));
         if (nNumCharsToMove) {
           strncpy(&s2[nNumCharsToMove - 1], temp1, (strlen(temp1)));
         } else {
-          strcpy(s2, charstr(205, GetSession()->GetCurrentUser()->GetScreenChars() - 1));
+          strcpy(s2, charstr(205, session()->user()->GetScreenChars() - 1));
         }
-        s2[GetSession()->GetCurrentUser()->GetScreenChars()] = '\0';
+        s2[session()->user()->GetScreenChars()] = '\0';
         bout << s2;
         s2[0] = '\0';
         temp1[0] = '\0';
@@ -219,9 +219,9 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
         sprintf(s2, "\x1b[%d;%dH", 5, 1);
         bout << s2;
         s2[0] = 0;
-      } else if (GetSession()->localIO()->WhereY() > 11) {
-        wwiv_x2 = (GetSession()->localIO()->WhereX() + 1);
-        wwiv_y2 = (GetSession()->localIO()->WhereY() + 1);
+      } else if (session()->localIO()->WhereY() > 11) {
+        wwiv_x2 = (session()->localIO()->WhereX() + 1);
+        wwiv_y2 = (session()->localIO()->WhereY() + 1);
         sprintf(s2, "\x1b[%d;%dH", wwiv_y1, wwiv_x1);
         bout << s2;
         s2[0] = 0;
@@ -229,7 +229,7 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
       side = 0;
       bout.Color(1);
     } else {
-      if (GetSession()->localIO()->WhereY() >= 23) {
+      if (session()->localIO()->WhereY() >= 23) {
         for (int cntr = 13; cntr < 25; cntr++) {
           sprintf(s2, "\x1b[%d;%dH", cntr, 1);
           bout << s2;
@@ -243,9 +243,9 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
         sprintf(s2, "\x1b[%d;%dH", 17, 1);
         bout << s2;
         s2[0] = '\0';
-      } else if (GetSession()->localIO()->WhereY() < 12 && side == 0) {
-        wwiv_x1 = (GetSession()->localIO()->WhereX() + 1);
-        wwiv_y1 = (GetSession()->localIO()->WhereY() + 1);
+      } else if (session()->localIO()->WhereY() < 12 && side == 0) {
+        wwiv_x1 = (session()->localIO()->WhereX() + 1);
+        wwiv_y1 = (session()->localIO()->WhereY() + 1);
         sprintf(s2, "\x1b[%d;%dH", wwiv_y2, wwiv_x2);
         bout << s2;
         s2[0] = 0;
@@ -260,21 +260,21 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
     }
     if (ch >= SPACE) {
       if (side == 0) {
-        if (GetSession()->localIO()->WhereX() < (GetSession()->GetCurrentUser()->GetScreenChars() - 1) && cp0 < nMaxLength) {
-          if (GetSession()->localIO()->WhereY() < 11) {
-            side0[GetSession()->localIO()->WhereY()][cp0++] = ch;
+        if (session()->localIO()->WhereX() < (session()->user()->GetScreenChars() - 1) && cp0 < nMaxLength) {
+          if (session()->localIO()->WhereY() < 11) {
+            side0[session()->localIO()->WhereY()][cp0++] = ch;
             bputch(ch);
           } else {
-            side0[GetSession()->localIO()->WhereY()][cp0++] = ch;
-            side0[GetSession()->localIO()->WhereY()][cp0] = 0;
+            side0[session()->localIO()->WhereY()][cp0++] = ch;
+            side0[session()->localIO()->WhereY()][cp0] = 0;
             for (int cntr = 0; cntr < 12; cntr++) {
               sprintf(s2, "\x1b[%d;%dH", cntr, 1);
               bout << s2;
               if ((cntr >= 0) && (cntr < 6)) {
                 bout.Color(1);
                 bout << side0[cntr + 6];
-                wwiv_y1 = GetSession()->localIO()->WhereY() + 1;
-                wwiv_x1 = GetSession()->localIO()->WhereX() + 1;
+                wwiv_y1 = session()->localIO()->WhereY() + 1;
+                wwiv_x1 = session()->localIO()->WhereX() + 1;
               }
               bout << "\x1b[K";
               s2[0] = 0;
@@ -283,31 +283,31 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
             bout << s2;
             s2[0] = 0;
           }
-          if (GetSession()->localIO()->WhereX() == (GetSession()->GetCurrentUser()->GetScreenChars() - 1)) {
+          if (session()->localIO()->WhereX() == (session()->user()->GetScreenChars() - 1)) {
             done = true;
           }
         } else {
-          if (GetSession()->localIO()->WhereX() >= (GetSession()->GetCurrentUser()->GetScreenChars() - 1)) {
+          if (session()->localIO()->WhereX() >= (session()->user()->GetScreenChars() - 1)) {
             done = true;
           }
         }
       } else {
-        if ((GetSession()->localIO()->WhereX() < (GetSession()->GetCurrentUser()->GetScreenChars() - 1))
+        if ((session()->localIO()->WhereX() < (session()->user()->GetScreenChars() - 1))
             && (cp1 < nMaxLength)) {
-          if (GetSession()->localIO()->WhereY() < 23) {
-            side1[GetSession()->localIO()->WhereY() - 13][cp1++] = ch;
+          if (session()->localIO()->WhereY() < 23) {
+            side1[session()->localIO()->WhereY() - 13][cp1++] = ch;
             bputch(ch);
           } else {
-            side1[GetSession()->localIO()->WhereY() - 13][cp1++] = ch;
-            side1[GetSession()->localIO()->WhereY() - 13][cp1] = 0;
+            side1[session()->localIO()->WhereY() - 13][cp1++] = ch;
+            side1[session()->localIO()->WhereY() - 13][cp1] = 0;
             for (int cntr = 13; cntr < 25; cntr++) {
               sprintf(s2, "\x1b[%d;%dH", cntr, 1);
               bout << s2;
               if (cntr >= 13 && cntr < 18) {
                 bout.Color(5);
                 bout << side1[cntr - 7];
-                wwiv_y2 = GetSession()->localIO()->WhereY() + 1;
-                wwiv_x2 = GetSession()->localIO()->WhereX() + 1;
+                wwiv_y2 = session()->localIO()->WhereY() + 1;
+                wwiv_x2 = session()->localIO()->WhereX() + 1;
               }
               bout << "\x1b[K";
               s2[0] = '\0';
@@ -316,11 +316,11 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
             bout << s2;
             s2[0] = '\0';
           }
-          if (GetSession()->localIO()->WhereX() == (GetSession()->GetCurrentUser()->GetScreenChars() - 1)) {
+          if (session()->localIO()->WhereX() == (session()->user()->GetScreenChars() - 1)) {
             done = true;
           }
         } else {
-          if (GetSession()->localIO()->WhereX() >= (GetSession()->GetCurrentUser()->GetScreenChars() - 1)) {
+          if (session()->localIO()->WhereX() >= (session()->user()->GetScreenChars() - 1)) {
             done = true;
           }
         }
@@ -334,19 +334,19 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
       break;
       case RETURN:                            /* C/R */
         if (side == 0) {
-          side0[GetSession()->localIO()->WhereY()][cp0] = 0;
+          side0[session()->localIO()->WhereY()][cp0] = 0;
         } else {
-          side1[GetSession()->localIO()->WhereY() - 13][cp1] = 0;
+          side1[session()->localIO()->WhereY() - 13][cp1] = 0;
         }
         done = true;
         break;
       case BACKSPACE: {                           /* Backspace */
         if (side == 0) {
           if (cp0) {
-            if (side0[GetSession()->localIO()->WhereY()][cp0 - 2] == 3) {
+            if (side0[session()->localIO()->WhereY()][cp0 - 2] == 3) {
               cp0 -= 2;
               bout.Color(0);
-            } else if (side0[GetSession()->localIO()->WhereY()][cp0 - 1] == 8) {
+            } else if (side0[session()->localIO()->WhereY()][cp0 - 1] == 8) {
               cp0--;
               bputch(SPACE);
             } else {
@@ -355,10 +355,10 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
             }
           }
         } else if (cp1) {
-          if (side1[GetSession()->localIO()->WhereY() - 13][cp1 - 2] == CC) {
+          if (side1[session()->localIO()->WhereY() - 13][cp1 - 2] == CC) {
             cp1 -= 2;
             bout.Color(0);
-          } else  if (side1[GetSession()->localIO()->WhereY() - 13][cp1 - 1] == BACKSPACE) {
+          } else  if (side1[session()->localIO()->WhereY() - 13][cp1 - 1] == BACKSPACE) {
             cp1--;
             bputch(SPACE);
           } else {
@@ -369,7 +369,7 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
       }
       break;
       case CX:                            /* Ctrl-X */
-        while (GetSession()->localIO()->WhereX() > begx) {
+        while (session()->localIO()->WhereX() > begx) {
           bout.bs();
           if (side == 0) {
             cp0 = 0;
@@ -383,48 +383,48 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
         if (side == 0) {
           if (cp0) {
             do {
-              if (side0[GetSession()->localIO()->WhereY()][cp0 - 2] == CC) {
+              if (side0[session()->localIO()->WhereY()][cp0 - 2] == CC) {
                 cp0 -= 2;
                 bout.Color(0);
-              } else if (side0[GetSession()->localIO()->WhereY()][cp0 - 1] == BACKSPACE) {
+              } else if (side0[session()->localIO()->WhereY()][cp0 - 1] == BACKSPACE) {
                 cp0--;
                 bputch(SPACE);
               } else {
                 cp0--;
                 bout.bs();
               }
-            } while ((cp0) && (side0[GetSession()->localIO()->WhereY()][cp0 - 1] != SPACE) &&
-                     (side0[GetSession()->localIO()->WhereY()][cp0 - 1] != BACKSPACE) &&
-                     (side0[GetSession()->localIO()->WhereY()][cp0 - 2] != CC));
+            } while ((cp0) && (side0[session()->localIO()->WhereY()][cp0 - 1] != SPACE) &&
+                     (side0[session()->localIO()->WhereY()][cp0 - 1] != BACKSPACE) &&
+                     (side0[session()->localIO()->WhereY()][cp0 - 2] != CC));
           }
         } else {
           if (cp1) {
             do {
-              if (side1[GetSession()->localIO()->WhereY() - 13][cp1 - 2] == CC) {
+              if (side1[session()->localIO()->WhereY() - 13][cp1 - 2] == CC) {
                 cp1 -= 2;
                 bout.Color(0);
-              } else if (side1[GetSession()->localIO()->WhereY() - 13][cp1 - 1] == BACKSPACE) {
+              } else if (side1[session()->localIO()->WhereY() - 13][cp1 - 1] == BACKSPACE) {
                 cp1--;
                 bputch(SPACE);
               } else {
                 cp1--;
                 bout.bs();
               }
-            } while ((cp1) && (side1[GetSession()->localIO()->WhereY() - 13][cp1 - 1] != SPACE) &&
-                     (side1[GetSession()->localIO()->WhereY() - 13][cp1 - 1] != BACKSPACE) &&
-                     (side1[GetSession()->localIO()->WhereY() - 13][cp1 - 2]));
+            } while ((cp1) && (side1[session()->localIO()->WhereY() - 13][cp1 - 1] != SPACE) &&
+                     (side1[session()->localIO()->WhereY() - 13][cp1 - 1] != BACKSPACE) &&
+                     (side1[session()->localIO()->WhereY() - 13][cp1 - 2]));
           }
         }
         break;
       case CN:                            /* Ctrl-N */
         if (side == 0) {
-          if ((GetSession()->localIO()->WhereX()) && (cp0 < nMaxLength)) {
+          if ((session()->localIO()->WhereX()) && (cp0 < nMaxLength)) {
             bputch(BACKSPACE);
-            side0[GetSession()->localIO()->WhereY()][cp0++] = BACKSPACE;
+            side0[session()->localIO()->WhereY()][cp0++] = BACKSPACE;
           }
-        } else  if ((GetSession()->localIO()->WhereX()) && (cp1 < nMaxLength)) {
+        } else  if ((session()->localIO()->WhereX()) && (cp1 < nMaxLength)) {
           bputch(BACKSPACE);
-          side1[GetSession()->localIO()->WhereY() - 13][cp1++] = BACKSPACE;
+          side1[session()->localIO()->WhereY() - 13][cp1++] = BACKSPACE;
         }
         break;
       case CP:                            /* Ctrl-P */
@@ -432,8 +432,8 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
           if (cp0 < nMaxLength - 1) {
             ch = getkey();
             if ((ch >= SPACE) && (ch <= 126)) {
-              side0[GetSession()->localIO()->WhereY()][cp0++] = CC;
-              side0[GetSession()->localIO()->WhereY()][cp0++] = ch;
+              side0[session()->localIO()->WhereY()][cp0++] = CC;
+              side0[session()->localIO()->WhereY()][cp0++] = ch;
               bout.Color(ch - 48);
             }
           }
@@ -441,8 +441,8 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
           if (cp1 < nMaxLength - 1) {
             ch = getkey();
             if ((ch >= SPACE) && (ch <= 126)) {
-              side1[GetSession()->localIO()->WhereY() - 13][cp1++] = CC;
-              side1[GetSession()->localIO()->WhereY() - 13][cp1++] = ch;
+              side1[session()->localIO()->WhereY() - 13][cp1++] = CC;
+              side1[session()->localIO()->WhereY() - 13][cp1++] = ch;
               bout.Color(ch - 48);
             }
           }
@@ -452,20 +452,20 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
         if (side == 0) {
           i = 5 - (cp0 % 5);
           if (((cp0 + i) < nMaxLength)
-              && ((GetSession()->localIO()->WhereX() + i) < GetSession()->GetCurrentUser()->GetScreenChars())) {
-            i = 5 - ((GetSession()->localIO()->WhereX() + 1) % 5);
+              && ((session()->localIO()->WhereX() + i) < session()->user()->GetScreenChars())) {
+            i = 5 - ((session()->localIO()->WhereX() + 1) % 5);
             for (i1 = 0; i1 < i; i1++) {
-              side0[GetSession()->localIO()->WhereY()][cp0++] = SPACE;
+              side0[session()->localIO()->WhereY()][cp0++] = SPACE;
               bputch(SPACE);
             }
           }
         } else {
           i = 5 - (cp1 % 5);
           if (((cp1 + i) < nMaxLength)
-              && ((GetSession()->localIO()->WhereX() + i) < GetSession()->GetCurrentUser()->GetScreenChars())) {
-            i = 5 - ((GetSession()->localIO()->WhereX() + 1) % 5);
+              && ((session()->localIO()->WhereX() + i) < session()->user()->GetScreenChars())) {
+            i = 5 - ((session()->localIO()->WhereX() + 1) % 5);
             for (i1 = 0; i1 < i; i1++) {
-              side1[GetSession()->localIO()->WhereY() - 13][cp1++] = SPACE;
+              side1[session()->localIO()->WhereY() - 13][cp1++] = SPACE;
               bputch(SPACE);
             }
           }
@@ -477,12 +477,12 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
   if (ch != RETURN) {
     if (side == 0) {
       i = cp0 - 1;
-      while ((i > 0) && (side0[GetSession()->localIO()->WhereY()][i] != SPACE) &&
-             ((side0[GetSession()->localIO()->WhereY()][i] != BACKSPACE) ||
-             (side0[GetSession()->localIO()->WhereY()][i - 1] == CC))) {
+      while ((i > 0) && (side0[session()->localIO()->WhereY()][i] != SPACE) &&
+             ((side0[session()->localIO()->WhereY()][i] != BACKSPACE) ||
+             (side0[session()->localIO()->WhereY()][i - 1] == CC))) {
         i--;
       }
-      if ((i > (GetSession()->localIO()->WhereX() / 2)) && (i != (cp0 - 1))) {
+      if ((i > (session()->localIO()->WhereX() / 2)) && (i != (cp0 - 1))) {
         i1 = cp0 - i - 1;
         for (i = 0; i < i1; i++) {
           bputch(BACKSPACE);
@@ -491,20 +491,20 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
           bputch(SPACE);
         }
         for (i = 0; i < i1; i++) {
-          pszRollover[i] = side0[GetSession()->localIO()->WhereY()][cp0 - i1 + i];
+          pszRollover[i] = side0[session()->localIO()->WhereY()][cp0 - i1 + i];
         }
         pszRollover[i1] = '\0';
         cp0 -= i1;
       }
-      side0[GetSession()->localIO()->WhereY()][cp0] = '\0';
+      side0[session()->localIO()->WhereY()][cp0] = '\0';
     } else {
       i = cp1 - 1;
-      while ((i > 0) && (side1[GetSession()->localIO()->WhereY() - 13][i] != SPACE) &&
-             ((side1[GetSession()->localIO()->WhereY() - 13][i] != BACKSPACE) ||
-             (side1[GetSession()->localIO()->WhereY() - 13][i - 1] == CC))) {
+      while ((i > 0) && (side1[session()->localIO()->WhereY() - 13][i] != SPACE) &&
+             ((side1[session()->localIO()->WhereY() - 13][i] != BACKSPACE) ||
+             (side1[session()->localIO()->WhereY() - 13][i - 1] == CC))) {
         i--;
       }
-      if ((i > (GetSession()->localIO()->WhereX() / 2)) && (i != (cp1 - 1))) {
+      if ((i > (session()->localIO()->WhereX() / 2)) && (i != (cp1 - 1))) {
         i1 = cp1 - i - 1;
         for (i = 0; i < i1; i++) {
           bputch(BACKSPACE);
@@ -513,15 +513,15 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
           bputch(SPACE);
         }
         for (i = 0; i < i1; i++) {
-          pszRollover[i] = side1[GetSession()->localIO()->WhereY() - 13][cp1 - i1 + i];
+          pszRollover[i] = side1[session()->localIO()->WhereY() - 13][cp1 - i1 + i];
         }
         pszRollover[i1] = '\0';
         cp1 -= i1;
       }
-      side1[GetSession()->localIO()->WhereY() - 13][cp1] = '\0';
+      side1[session()->localIO()->WhereY() - 13][cp1] = '\0';
     }
   }
-  if (crend && GetSession()->localIO()->WhereY() != 11 && GetSession()->localIO()->WhereY() < 23) {
+  if (crend && session()->localIO()->WhereY() != 11 && session()->localIO()->WhereY() < 23) {
     bout.nl();
   }
   if (side == 0) {
@@ -546,8 +546,8 @@ void chat1(char *pszChatLine, bool two_way) {
     return;
   }
 
-  int otag = GetSession()->tagging;
-  GetSession()->tagging = 0;
+  int otag = session()->tagging;
+  session()->tagging = 0;
 
   chatcall = false;
   if (two_way) {
@@ -560,13 +560,13 @@ void chat1(char *pszChatLine, bool two_way) {
   double tc = timer();
   File chatFile(syscfg.gfilesdir, "chat.txt");
 
-  GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
   s1[0] = '\0';
 
   bool oe = local_echo;
   local_echo = true;
   bout.nl(2);
-  int nSaveTopData = GetSession()->topdata;
+  int nSaveTopData = session()->topdata;
   if (!okansi()) {
     two_way = false;
   }
@@ -575,27 +575,27 @@ void chat1(char *pszChatLine, bool two_way) {
   }
 
   if (two_way) {
-    GetSession()->localIO()->LocalCls();
+    session()->localIO()->LocalCls();
     cp0 = cp1 = 0;
     if (defscreenbottom == 24) {
-      GetSession()->topdata = WLocalIO::topdataNone;
+      session()->topdata = WLocalIO::topdataNone;
       GetApplication()->UpdateTopScreen();
     }
     bout << "\x1b[2J";
     wwiv_x2 = 1;
     wwiv_y2 = 13;
     bout << "\x1b[1;1H";
-    wwiv_x1 = GetSession()->localIO()->WhereX();
-    wwiv_y1 = GetSession()->localIO()->WhereY();
+    wwiv_x1 = session()->localIO()->WhereX();
+    wwiv_y1 = session()->localIO()->WhereY();
     bout << "\x1b[12;1H";
     bout.Color(7);
-    for (int screencount = 0; screencount < GetSession()->GetCurrentUser()->GetScreenChars(); screencount++) {
+    for (int screencount = 0; screencount < session()->user()->GetScreenChars(); screencount++) {
       bputch(static_cast< unsigned char >(205), true);
     }
     FlushOutComChBuffer();
     sprintf(s, " %s chatting with %s ", szSysopName,
-            GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum));
-    int nNumCharsToMove = ((GetSession()->GetCurrentUser()->GetScreenChars() - strlen(stripcolors(s))) / 2);
+            session()->user()->GetUserNameAndNumber(session()->usernum));
+    int nNumCharsToMove = ((session()->user()->GetScreenChars() - strlen(stripcolors(s))) / 2);
     sprintf(s1, "\x1b[12;%dH", std::max<int>(nNumCharsToMove, 0));
     bout << s1;
     bout.Color(4);
@@ -621,7 +621,7 @@ void chat1(char *pszChatLine, bool two_way) {
     }
     if (chat_file && !two_way) {
       if (!chatFile.IsOpen()) {
-        GetSession()->localIO()->LocalFastPuts("-] Chat file opened.\r\n");
+        session()->localIO()->LocalFastPuts("-] Chat file opened.\r\n");
         if (chatFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
           chatFile.Seek(0L, File::seekEnd);
           sprintf(s2, "\r\n\r\nChat file opened %s %s\r\n", fulldate(), times());
@@ -634,7 +634,7 @@ void chat1(char *pszChatLine, bool two_way) {
       chatFile.Write(s2, strlen(s2));
     } else if (chatFile.IsOpen()) {
       chatFile.Close();
-      GetSession()->localIO()->LocalFastPuts("-] Chat file closed.\r\n");
+      session()->localIO()->LocalFastPuts("-] Chat file closed.\r\n");
     }
     if (hangup) {
       chatting = 0;
@@ -666,14 +666,14 @@ void chat1(char *pszChatLine, bool two_way) {
     tc += SECONDS_PER_DAY_FLOAT;
   }
   extratimecall += tc;
-  GetSession()->topdata = nSaveTopData;
-  if (GetSession()->IsUserOnline()) {
+  session()->topdata = nSaveTopData;
+  if (session()->IsUserOnline()) {
     GetApplication()->UpdateTopScreen();
   }
   local_echo = oe;
   RestoreCurrentLine(cl, atr, xl, &cc);
 
-  GetSession()->tagging = otag;
+  session()->tagging = otag;
   if (okansi()) {
     bout << "\x1b[K";
   }

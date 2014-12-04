@@ -52,11 +52,11 @@ void GetMessageAnonStatus(bool *real_name, int *anony, int setanon);
 static const int LEN = 161;
 
 static bool GetMessageToName(const char *aux) {
-  // If GetSession()->GetCurrentReadMessageArea() is -1, then it hasn't been set by reading a sub,
+  // If session()->GetCurrentReadMessageArea() is -1, then it hasn't been set by reading a sub,
   // also, if we are using e-mail, this is definately NOT a FidoNet
   // post so there's no reason in wasting everyone's time in the loop...
   WWIV_ASSERT(aux);
-  if (GetSession()->GetCurrentReadMessageArea() == -1 ||
+  if (session()->GetCurrentReadMessageArea() == -1 ||
       IsEqualsIgnoreCase(aux, "email")) {
     return 0;
   }
@@ -64,9 +64,9 @@ static bool GetMessageToName(const char *aux) {
   bool bHasAddress = false;
   bool newlsave = newline;
 
-  if (xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) {
-    for (int i = 0; i < xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets; i++) {
-      xtrasubsnetrec *xnp = &xsubs[GetSession()->GetCurrentReadMessageArea()].nets[i];
+  if (xsubs[session()->GetCurrentReadMessageArea()].num_nets) {
+    for (int i = 0; i < xsubs[session()->GetCurrentReadMessageArea()].num_nets; i++) {
+      xtrasubsnetrec *xnp = &xsubs[session()->GetCurrentReadMessageArea()].nets[i];
       if (net_networks[xnp->net_num].type == net_type_fidonet &&
           !IsEqualsIgnoreCase(aux, "email")) {
         bHasAddress = true;
@@ -150,7 +150,7 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     bSaveMessage = ExternalMessageEditor(maxli, &setanon, title, pszDestination, flags, aux);
   } else if (fsed == INMSG_FSED_WORKSPACE) {   // "auto-send mail message"
     bSaveMessage = File::Exists(exted_filename);
-    if (bSaveMessage && !GetSession()->IsNewMailWatiting()) {
+    if (bSaveMessage && !session()->IsNewMailWatiting()) {
       bout << "Reading in file...\r\n";
     }
     use_workspace = false;
@@ -161,7 +161,7 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     bool real_name = false;
     GetMessageAnonStatus(&real_name, anony, setanon);
     bout.backline();
-    if (!GetSession()->IsNewMailWatiting()) {
+    if (!session()->IsNewMailWatiting()) {
       SpinPuts("Saving...", 2);
     }
     File fileExtEd(exted_filename);
@@ -187,13 +187,13 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
 
     // Add author name
     if (real_name) {
-      AddLineToMessageBuffer(b.get(), GetSession()->GetCurrentUser()->GetRealName(), &lCurrentMessageSize);
+      AddLineToMessageBuffer(b.get(), session()->user()->GetRealName(), &lCurrentMessageSize);
     } else {
-      if (GetSession()->IsNewMailWatiting()) {
+      if (session()->IsNewMailWatiting()) {
         const string sysop_name = StringPrintf("%s #1", syscfg.sysopname);
         AddLineToMessageBuffer(b.get(), sysop_name.c_str(), &lCurrentMessageSize);
       } else {
-        AddLineToMessageBuffer(b.get(), GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem(GetSession()->usernum, net_sysnum),
+        AddLineToMessageBuffer(b.get(), session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum),
                                &lCurrentMessageSize);
       }
     }
@@ -206,7 +206,7 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     AddLineToMessageBuffer(b.get(), time_string.c_str(), &lCurrentMessageSize);
     UpdateMessageBufferQuotesCtrlLines(b.get(), &lCurrentMessageSize);
 
-    if (GetSession()->IsMessageThreadingEnabled()) {
+    if (session()->IsMessageThreadingEnabled()) {
       UpdateMessageBufferTheadsInfo(b.get(), &lCurrentMessageSize, aux);
     }
     if (irt[0]) {
@@ -283,8 +283,8 @@ bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, strin
   bout.nl();
   bout << "|#1Enter |#2/Q|#1 to quote previous message, |#2/HELP|#1 for other editor commands.\r\n";
   strcpy(s, "[---=----=----=----=----=----=----=----]----=----=----=----=----=----=----=----]");
-  if (GetSession()->GetCurrentUser()->GetScreenChars() < 80) {
-    s[ GetSession()->GetCurrentUser()->GetScreenChars() ] = '\0';
+  if (session()->user()->GetScreenChars() < 80) {
+    s[ session()->user()->GetScreenChars() ] = '\0';
   }
   bout.Color(7);
   bout << s;
@@ -300,8 +300,8 @@ bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, strin
     while (inli(s, szRollOverLine, 160, true, bAllowPrevious)) {
       (*curli)--;
       strcpy(szRollOverLine, &(lin[(*curli) * LEN]));
-      if (GetStringLength(szRollOverLine) > GetSession()->GetCurrentUser()->GetScreenChars() - 1) {
-        szRollOverLine[ GetSession()->GetCurrentUser()->GetScreenChars() - 2 ] = '\0';
+      if (GetStringLength(szRollOverLine) > session()->user()->GetScreenChars() - 1) {
+        szRollOverLine[ session()->user()->GetScreenChars() - 2 ] = '\0';
       }
     }
     if (hangup) {
@@ -349,7 +349,7 @@ bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, strin
                 ++i5;
               }
             }
-            for (i4 = 0; (i4 < (GetSession()->GetCurrentUser()->GetScreenChars() - i5) / 2) && (!abort); i4++) {
+            for (i4 = 0; (i4 < (session()->user()->GetScreenChars() - i5) / 2) && (!abort); i4++) {
               osan(" ", &abort, &next);
             }
           }
@@ -444,7 +444,7 @@ bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, strin
 
 void GetMessageTitle(string *title, bool force_title) {
   if (okansi()) {
-    if (!GetSession()->IsNewMailWatiting()) {
+    if (!session()->IsNewMailWatiting()) {
       bout << "|#2Title: ";
       bout.mpl(60);
     }
@@ -453,7 +453,7 @@ void GetMessageTitle(string *title, bool force_title) {
       char ch = '\0';
       StringTrim(irt);
       if (strncasecmp(stripcolors(irt), "re:", 3) != 0) {
-        if (GetSession()->IsNewMailWatiting()) {
+        if (session()->IsNewMailWatiting()) {
           sprintf(s1, "%s", irt);
           irt[0] = '\0';
         } else {
@@ -463,7 +463,7 @@ void GetMessageTitle(string *title, bool force_title) {
         sprintf(s1, "%s", irt);
       }
       s1[60] = '\0';
-      if (!GetSession()->IsNewMailWatiting() && !force_title) {
+      if (!session()->IsNewMailWatiting() && !force_title) {
         bout << s1;
         ch = getkey();
         if (ch == 10) {
@@ -493,7 +493,7 @@ void GetMessageTitle(string *title, bool force_title) {
       inputl(title, 60);
     }
   } else {
-    if (GetSession()->IsNewMailWatiting() || force_title) {
+    if (session()->IsNewMailWatiting() || force_title) {
       title->assign(irt);
     } else {
       bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
@@ -510,16 +510,16 @@ void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength,
     const string buf = StringPrintf("%c0P %lX-%lX", 4, targcrc, msgid);
     AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
     if (thread) {
-      thread [GetSession()->GetNumMessagesInCurrentMessageArea() + 1 ].msg_num = static_cast< unsigned short>
-          (GetSession()->GetNumMessagesInCurrentMessageArea() + 1);
-      strcpy(thread[GetSession()->GetNumMessagesInCurrentMessageArea() + 1].message_code, &buf.c_str()[4]);
+      thread [session()->GetNumMessagesInCurrentMessageArea() + 1 ].msg_num = static_cast< unsigned short>
+          (session()->GetNumMessagesInCurrentMessageArea() + 1);
+      strcpy(thread[session()->GetNumMessagesInCurrentMessageArea() + 1].message_code, &buf.c_str()[4]);
     }
-    if (GetSession()->threadID.length() > 0) {
-      const string buf = StringPrintf("%c0W %s", 4, GetSession()->threadID.c_str());
+    if (session()->threadID.length() > 0) {
+      const string buf = StringPrintf("%c0W %s", 4, session()->threadID.c_str());
       AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
       if (thread) {
-        strcpy(thread[GetSession()->GetNumMessagesInCurrentMessageArea() + 1].parent_code, &buf.c_str()[4]);
-        thread[ GetSession()->GetNumMessagesInCurrentMessageArea() + 1 ].used = 1;
+        strcpy(thread[session()->GetNumMessagesInCurrentMessageArea() + 1].parent_code, &buf.c_str()[4]);
+        thread[ session()->GetNumMessagesInCurrentMessageArea() + 1 ].used = 1;
       }
     }
   }
@@ -528,9 +528,9 @@ void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength,
 void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLength, const char *aux) {
   if (irt_name[0] &&
       !IsEqualsIgnoreCase(aux, "email") &&
-      xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) {
-    for (int i = 0; i < xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets; i++) {
-      xtrasubsnetrec *xnp = &xsubs[GetSession()->GetCurrentReadMessageArea()].nets[i];
+      xsubs[session()->GetCurrentReadMessageArea()].num_nets) {
+    for (int i = 0; i < xsubs[session()->GetCurrentReadMessageArea()].num_nets; i++) {
+      xtrasubsnetrec *xnp = &xsubs[session()->GetCurrentReadMessageArea()].nets[i];
       if (net_networks[xnp->net_num].type == net_type_fidonet) {
         const string buf = StringPrintf("0FidoAddr: %s", irt_name);
         AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
@@ -538,12 +538,12 @@ void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLeng
       }
     }
   }
-  if ((strncasecmp("internet", GetSession()->GetNetworkName(), 8) == 0) ||
-      (strncasecmp("filenet", GetSession()->GetNetworkName(), 7) == 0)) {
-    if (GetSession()->usenetReferencesLine.length() > 0) {
-      const string buf = StringPrintf("%c0RReferences: %s", CD, GetSession()->usenetReferencesLine.c_str());
+  if ((strncasecmp("internet", session()->GetNetworkName(), 8) == 0) ||
+      (strncasecmp("filenet", session()->GetNetworkName(), 7) == 0)) {
+    if (session()->usenetReferencesLine.length() > 0) {
+      const string buf = StringPrintf("%c0RReferences: %s", CD, session()->usenetReferencesLine.c_str());
       AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
-      GetSession()->usenetReferencesLine = "";
+      session()->usenetReferencesLine = "";
     }
   }
   if (irt[0] != '"') {
@@ -568,13 +568,13 @@ void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLeng
 
 void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, const char *aux) {
   char szMultiMail[] = "Multi-Mail";
-  if (xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets &&
+  if (xsubs[session()->GetCurrentReadMessageArea()].num_nets &&
       !IsEqualsIgnoreCase(aux, "email") &&
-      (!(subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_no_tag)) &&
+      (!(subboards[session()->GetCurrentReadMessageArea()].anony & anony_no_tag)) &&
       !IsEqualsIgnoreCase(irt, szMultiMail)) {
     char szFileName[ MAX_PATH ];
-    for (int i = 0; i < xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets; i++) {
-      xtrasubsnetrec *xnp = &xsubs[GetSession()->GetCurrentReadMessageArea()].nets[i];
+    for (int i = 0; i < xsubs[session()->GetCurrentReadMessageArea()].num_nets; i++) {
+      xtrasubsnetrec *xnp = &xsubs[session()->GetCurrentReadMessageArea()].nets[i];
       char *nd = net_networks[xnp->net_num].dir;
       sprintf(szFileName, "%s%s.tag", nd, xnp->stype);
       if (File::Exists(szFileName)) {
@@ -673,8 +673,8 @@ void GetMessageAnonStatus(bool *real_name, int *anony, int setanon) {
     break;
   case anony_enable_dear_abby: {
     bout.nl();
-    bout << "1. " << GetSession()->GetCurrentUser()->GetUserNameAndNumber(
-                         GetSession()->usernum) << wwiv::endl;
+    bout << "1. " << session()->user()->GetUserNameAndNumber(
+                         session()->usernum) << wwiv::endl;
     bout << "2. Abby\r\n";
     bout << "3. Problemed Person\r\n\n";
     bout << "|#5Which? ";

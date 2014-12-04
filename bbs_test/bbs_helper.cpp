@@ -59,10 +59,10 @@ void BbsHelper::SetUp() {
 
     syscfg.datadir = const_cast<char*>(dir_data_.c_str());
     syscfg.gfilesdir = const_cast<char*>(dir_gfiles_.c_str());
-    WSession* session = GetSession();
+    WSession* s = session();
 
-    session->language_dir = dir_en_gfiles_;
-    user_ = GetSession()->GetCurrentUser();
+    s->language_dir = dir_en_gfiles_;
+    user_ = s->user();
 }
 
 void BbsHelper::TearDown() {

@@ -352,10 +352,10 @@ void NewBBSList() {
     case 'A': {
       vector<unique_ptr<BbsListEntry>> entries;
       LoadFromJSON(syscfg.datadir, BBSLIST_JSON, &entries);
-      if (GetSession()->GetEffectiveSl() <= 10) {
+      if (session()->GetEffectiveSl() <= 10) {
         bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
         break;
-      } else if (GetSession()->GetCurrentUser()->IsRestrictionAutomessage()) {
+      } else if (session()->user()->IsRestrictionAutomessage()) {
         bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
         break;
       }

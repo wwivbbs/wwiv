@@ -46,7 +46,7 @@ void attach_file(int mode) {
     mailrec m;
     pFileEmail->Seek(cur * sizeof(mailrec), File::seekBegin);
     pFileEmail->Read(&m, sizeof(mailrec));
-    while ((m.fromsys != 0 || m.fromuser != GetSession()->usernum || m.touser == 0) &&
+    while ((m.fromsys != 0 || m.fromuser != session()->usernum || m.touser == 0) &&
            cur < max && cur >= 0) {
       if (bDirectionForward) {
         --cur;
@@ -58,7 +58,7 @@ void attach_file(int mode) {
         pFileEmail->Read(&m, sizeof(mailrec));
       }
     }
-    if (m.fromsys != 0 || m.fromuser != GetSession()->usernum || m.touser == 0 || cur >= max || cur < 0) {
+    if (m.fromsys != 0 || m.fromuser != session()->usernum || m.touser == 0 || cur >= max || cur < 0) {
       done = true;
     } else {
       bool done1 = false;
@@ -71,7 +71,7 @@ void attach_file(int mode) {
           bout << "|#1  To|#7: |#2";
           strcpy(szBuffer, u.GetUserNameAndNumber(m.touser));
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da)) &&
-              (getslrec(GetSession()->GetEffectiveSl()).ability & ability_read_email_anony) == 0) {
+              (getslrec(session()->GetEffectiveSl()).ability & ability_read_email_anony) == 0) {
             strcpy(szBuffer, ">UNKNOWN<");
           }
           bout << szBuffer;

@@ -39,7 +39,7 @@ void normalupload(int dn) {
 
   dliscan1(dn);
   directoryrec d = directories[dn];
-  if (GetSession()->numf >= d.maxfiles) {
+  if (session()->numf >= d.maxfiles) {
     bout.nl(3);
     bout << "This directory is currently full.\r\n\n";
     return;
@@ -95,12 +95,12 @@ void normalupload(int dn) {
     }
   }
   strcpy(u.filename, szInputFileName);
-  u.ownerusr = static_cast<unsigned short>(GetSession()->usernum);
+  u.ownerusr = static_cast<unsigned short>(session()->usernum);
   u.ownersys = 0;
   u.numdloads = 0;
   u.unused_filetype = 0;
   u.mask = 0;
-  strcpy(u.upby, GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum));
+  strcpy(u.upby, session()->user()->GetUserNameAndNumber(session()->usernum));
   strcpy(u.date, date());
   bout.nl();
   ok = 1;
@@ -161,7 +161,7 @@ void normalupload(int dn) {
       bout.nl();
       bout << "Checking for same file in other directories...\r\n\n";
       int nLastLineLength = 0;
-      for (int i = 0; i < GetSession()->num_dirs && udir[i].subnum != -1; i++) {
+      for (int i = 0; i < session()->num_dirs && udir[i].subnum != -1; i++) {
         string buffer = "Scanning ";
         buffer += directories[udir[i].subnum].name;
         int nBufferLen = buffer.length();
@@ -210,14 +210,14 @@ void normalupload(int dn) {
       }
       bout.nl();
       if (xfer) {
-        write_inst(INST_LOC_UPLOAD, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_ONLINE);
+        write_inst(INST_LOC_UPLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_ONLINE);
         double ti = timer();
         receive_file(szReceiveFileName, &ok, u.filename, dn);
         ti = timer() - ti;
         if (ti < 0) {
           ti += SECONDS_PER_HOUR_FLOAT * HOURS_PER_DAY_FLOAT;
         }
-        GetSession()->GetCurrentUser()->SetExtraTime(GetSession()->GetCurrentUser()->GetExtraTime() + static_cast<float>(ti));
+        session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>(ti));
       }
       if (ok) {
         File file(szReceiveFileName);
@@ -248,9 +248,9 @@ void normalupload(int dn) {
             long lFileLength = file.GetLength();
             u.numbytes = lFileLength;
             file.Close();
-            GetSession()->GetCurrentUser()->SetFilesUploaded(GetSession()->GetCurrentUser()->GetFilesUploaded() + 1);
+            session()->user()->SetFilesUploaded(session()->user()->GetFilesUploaded() + 1);
             modify_database(u.filename, true);
-            GetSession()->GetCurrentUser()->SetUploadK(GetSession()->GetCurrentUser()->GetUploadK() + bytes_to_k(u.numbytes));
+            session()->user()->SetUploadK(session()->user()->GetUploadK() + bytes_to_k(u.numbytes));
 
             get_file_idz(&u, dn);
           } else {
@@ -261,7 +261,7 @@ void normalupload(int dn) {
           u.daten = static_cast<unsigned long>(lCurrentTime);
           File fileDownload(g_szDownloadFileName);
           fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-          for (int j = GetSession()->numf; j >= 1; j--) {
+          for (int j = session()->numf; j >= 1; j--) {
             FileAreaSetRecord(fileDownload, j);
             fileDownload.Read(&u1, sizeof(uploadsrec));
             FileAreaSetRecord(fileDownload, j + 1);
@@ -269,12 +269,12 @@ void normalupload(int dn) {
           }
           FileAreaSetRecord(fileDownload, 1);
           fileDownload.Write(&u, sizeof(uploadsrec));
-          ++GetSession()->numf;
+          ++session()->numf;
           FileAreaSetRecord(fileDownload, 0);
           fileDownload.Read(&u1, sizeof(uploadsrec));
-          u1.numbytes = GetSession()->numf;
+          u1.numbytes = session()->numf;
           u1.daten = lCurrentTime;
-          GetSession()->m_DirectoryDateCache[dn] = lCurrentTime;
+          session()->m_DirectoryDateCache[dn] = lCurrentTime;
           FileAreaSetRecord(fileDownload, 0);
           fileDownload.Write(&u1, sizeof(uploadsrec));
           fileDownload.Close();
@@ -287,7 +287,7 @@ void normalupload(int dn) {
             bout.nl(2);
             bout.bprintf("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());
             bout.nl(2);
-            if (GetSession()->IsUserOnline()) {
+            if (session()->IsUserOnline()) {
               GetApplication()->UpdateTopScreen();
             }
           }

@@ -162,11 +162,11 @@ void StartMenus() {
   }
   pMenuData->nReload = 1;                    // force loading of menu
 
-  if (!LoadMenuSetup(GetSession()->usernum)) {
+  if (!LoadMenuSetup(session()->usernum)) {
     strcpy(pSecondUserRec->szMenuSet, "wwiv"); // default menu set name
     pSecondUserRec->cHotKeys = HOTKEYS_ON;
     pSecondUserRec->cMenuType = MENUTYPE_REGULAR;
-    WriteMenuSetup(GetSession()->usernum);
+    WriteMenuSetup(session()->usernum);
   }
   while (pMenuData->nReload != 0 && !hangup) {
     if (pMenuData->pMenuFile != nullptr) {
@@ -179,7 +179,7 @@ void StartMenus() {
     pMenuData->nFinished = 0;
     pMenuData->nReload = 0;
 
-    if (!LoadMenuSetup(GetSession()->usernum)) {
+    if (!LoadMenuSetup(session()->usernum)) {
       LoadMenuSetup(1);
       ConfigUserMenuSet();
     }
@@ -205,7 +205,7 @@ void Menus(MenuInstanceData * pMenuData, const string menuDirectory, const strin
       return;
     }
     // if flagged to display help on entrance, then do so
-    if (GetSession()->GetCurrentUser()->IsExpert() && pMenuData->header.nForceHelp == MENU_HELP_ONENTRANCE) {
+    if (session()->user()->IsExpert() && pMenuData->header.nForceHelp == MENU_HELP_ONENTRANCE) {
       AMDisplayHelp(pMenuData);
     }
 
@@ -325,15 +325,15 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
 
 bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword) {
   if ((pHeader->nFlags & MENU_FLAG_DELETED) ||
-      (GetSession()->GetEffectiveSl() < pHeader->nMinSL) ||
-      (GetSession()->GetCurrentUser()->GetDsl() < pHeader->nMinDSL)) {
+      (session()->GetEffectiveSl() < pHeader->nMinSL) ||
+      (session()->user()->GetDsl() < pHeader->nMinDSL)) {
     return false;
   }
 
   // All AR bits specified must match
   for (short int x = 0; x < 16; x++) {
     if (pHeader->uAR & (1 << x)) {
-      if (!GetSession()->GetCurrentUser()->HasArFlag(1 << x)) {
+      if (!session()->user()->HasArFlag(1 << x)) {
         return false;
       }
     }
@@ -342,8 +342,8 @@ bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword) {
   // All DAR bits specified must match
   for (short int x = 0; x < 16; x++) {
     if (pHeader->uDAR & (1 << x)) {
-      if (!GetSession()->GetCurrentUser()->HasDarFlag(1 << x)) {
-        return (GetSession()->GetCurrentUser()->GetDsl() < pHeader->nMinDSL);
+      if (!session()->user()->HasDarFlag(1 << x)) {
+        return (session()->user()->GetDsl() < pHeader->nMinDSL);
       }
     }
   }
@@ -351,8 +351,8 @@ bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword) {
   // If any restrictions match, then they arn't allowed
   for (short int x = 0; x < 16; x++) {
     if (pHeader->uRestrict & (1 << x)) {
-      if (GetSession()->GetCurrentUser()->HasRestrictionFlag(1 << x)) {
-        return (GetSession()->GetCurrentUser()->GetDsl() < pHeader->nMinDSL);
+      if (session()->user()->HasRestrictionFlag(1 << x)) {
+        return (session()->user()->GetDsl() < pHeader->nMinDSL);
       }
     }
   }
@@ -452,7 +452,7 @@ void MenuSysopLog(const string msg) {
 }
 
 void PrintMenuPrompt(MenuInstanceData * pMenuData) {
-  if (!GetSession()->GetCurrentUser()->IsExpert() || pMenuData->header.nForceHelp == MENU_HELP_FORCE) {
+  if (!session()->user()->IsExpert() || pMenuData->header.nForceHelp == MENU_HELP_FORCE) {
     AMDisplayHelp(pMenuData);
   }
   TurnMCIOn();
@@ -463,8 +463,8 @@ void PrintMenuPrompt(MenuInstanceData * pMenuData) {
 }
 
 string GetHelpFileName(MenuInstanceData * pMenuData) {
-  if (GetSession()->GetCurrentUser()->HasAnsi()) {
-    if (GetSession()->GetCurrentUser()->HasColor()) {
+  if (session()->user()->HasAnsi()) {
+    if (session()->user()->HasColor()) {
       string filename = GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "ans");
       if (File::Exists(filename)) {
         return filename;
@@ -512,13 +512,13 @@ bool AMIsNumber(string& command) {
 void ConfigUserMenuSet() {
   ReadMenuSetup();
 
-  if (GetSession()->usernum != nSecondUserRecLoaded) {
-    if (!LoadMenuSetup(GetSession()->usernum)) {
+  if (session()->usernum != nSecondUserRecLoaded) {
+    if (!LoadMenuSetup(session()->usernum)) {
       LoadMenuSetup(1);
     }
   }
 
-  nSecondUserRecLoaded = GetSession()->usernum;
+  nSecondUserRecLoaded = session()->usernum;
 
   bout.cls();
   printfile(MENUWEL_NOEXT);
@@ -582,14 +582,14 @@ void ConfigUserMenuSet() {
 
   // If menu is invalid, it picks the first one it finds
   if (!ValidateMenuSet(pSecondUserRec->szMenuSet)) {
-    if (GetSession()->num_languages > 1 && GetSession()->GetCurrentUser()->GetLanguage() != 0) {
-      bout << "|#6No menus for " << languages[GetSession()->GetCurrentUser()->GetLanguage()].name <<
+    if (session()->num_languages > 1 && session()->user()->GetLanguage() != 0) {
+      bout << "|#6No menus for " << languages[session()->user()->GetLanguage()].name <<
                          " language.";
       input_language();
     }
   }
 
-  WriteMenuSetup(GetSession()->usernum);
+  WriteMenuSetup(session()->usernum);
 
   MenuSysopLog(StringPrintf("Menu in use : %s - %s - %s", pSecondUserRec->szMenuSet,
           pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Hot" : "Off", pSecondUserRec->cMenuType == MENUTYPE_REGULAR ? "REG" : "PD"));
@@ -607,13 +607,13 @@ void QueryMenuSet() {
   }
   ReadMenuSetup();
 
-  if (GetSession()->usernum != nSecondUserRecLoaded) {
-    if (!LoadMenuSetup(GetSession()->usernum)) {
+  if (session()->usernum != nSecondUserRecLoaded) {
+    if (!LoadMenuSetup(session()->usernum)) {
       LoadMenuSetup(1);
     }
   }
 
-  nSecondUserRecLoaded = GetSession()->usernum;
+  nSecondUserRecLoaded = session()->usernum;
 
   ValidateMenuSet(pSecondUserRec->szMenuSet);
 
@@ -638,13 +638,13 @@ void QueryMenuSet() {
 }
 
 bool ValidateMenuSet(const char *pszMenuDir) {
-  if (GetSession()->usernum != nSecondUserRecLoaded) {
-    if (!LoadMenuSetup(GetSession()->usernum)) {
+  if (session()->usernum != nSecondUserRecLoaded) {
+    if (!LoadMenuSetup(session()->usernum)) {
       LoadMenuSetup(1);
     }
   }
 
-  nSecondUserRecLoaded = GetSession()->usernum;
+  nSecondUserRecLoaded = session()->usernum;
 
   // ensure the entry point exists
   return File::Exists(GetMenuDirectory(pszMenuDir), "main.mnu");
@@ -712,10 +712,10 @@ void UnloadMenuSetup() {
 string GetCommand(MenuInstanceData * pMenuData) {
   if (pSecondUserRec->cHotKeys == HOTKEYS_ON) {
     if (pMenuData->header.nNumbers == MENU_NUMFLAG_DIRNUMBER) {
-      write_inst(INST_LOC_XFER, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
+      write_inst(INST_LOC_XFER, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
       return string(mmkey(1, WSession::mmkeyFileAreas));
     } else if (pMenuData->header.nNumbers == MENU_NUMFLAG_SUBNUMBER) {
-      write_inst(INST_LOC_MAIN, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+      write_inst(INST_LOC_MAIN, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
       return string(mmkey(0, WSession::mmkeyMessageAreas));
     } else {
       odc[0] = '/';
@@ -732,17 +732,17 @@ string GetCommand(MenuInstanceData * pMenuData) {
 bool CheckMenuItemSecurity(MenuRec * pMenu, bool bCheckPassword) {
   // if deleted, return as failed
   if ((pMenu->nFlags & MENU_FLAG_DELETED) ||
-      (GetSession()->GetEffectiveSl() < pMenu->nMinSL) ||
-      (GetSession()->GetEffectiveSl() > pMenu->iMaxSL && pMenu->iMaxSL != 0) ||
-      (GetSession()->GetCurrentUser()->GetDsl() < pMenu->nMinDSL) ||
-      (GetSession()->GetCurrentUser()->GetDsl() > pMenu->iMaxDSL && pMenu->iMaxDSL != 0)) {
+      (session()->GetEffectiveSl() < pMenu->nMinSL) ||
+      (session()->GetEffectiveSl() > pMenu->iMaxSL && pMenu->iMaxSL != 0) ||
+      (session()->user()->GetDsl() < pMenu->nMinDSL) ||
+      (session()->user()->GetDsl() > pMenu->iMaxDSL && pMenu->iMaxDSL != 0)) {
     return false;
   }
 
   // All AR bits specified must match
   for (int x = 0; x < 16; x++) {
     if (pMenu->uAR & (1 << x)) {
-      if (!GetSession()->GetCurrentUser()->HasArFlag(1 << x)) {
+      if (!session()->user()->HasArFlag(1 << x)) {
         return false;
       }
     }
@@ -751,7 +751,7 @@ bool CheckMenuItemSecurity(MenuRec * pMenu, bool bCheckPassword) {
   // All DAR bits specified must match
   for (int x = 0; x < 16; x++) {
     if (pMenu->uDAR & (1 << x)) {
-      if (!GetSession()->GetCurrentUser()->HasDarFlag(1 << x)) {
+      if (!session()->user()->HasDarFlag(1 << x)) {
         return false;
       }
     }
@@ -760,7 +760,7 @@ bool CheckMenuItemSecurity(MenuRec * pMenu, bool bCheckPassword) {
   // If any restrictions match, then they arn't allowed
   for (int x = 0; x < 16; x++) {
     if (pMenu->uRestrict & (1 << x)) {
-      if (GetSession()->GetCurrentUser()->HasRestrictionFlag(1 << x)) {
+      if (session()->user()->HasRestrictionFlag(1 << x)) {
         return false;
       }
     }
@@ -937,7 +937,7 @@ const string GetMenuDirectory(const string menuPath, const string menuName,
 
 const string GetMenuDirectory() {
   std::ostringstream os;
-  os << GetSession()->language_dir << "menus" << File::pathSeparatorChar;
+  os << session()->language_dir << "menus" << File::pathSeparatorChar;
   return string(os.str());
 }
 
@@ -983,7 +983,7 @@ void GenerateMenu(MenuInstanceData * pMenuData) {
       }
     }
   }
-  if (IsEquals(GetSession()->GetCurrentUser()->GetName(), "GUEST")) {
+  if (IsEquals(session()->user()->GetName(), "GUEST")) {
     if (iDisplayed % 2) {
       bout.nl();
     }

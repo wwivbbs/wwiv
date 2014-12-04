@@ -60,7 +60,7 @@ static void input_phone() {
   do {
     bout.nl();
     bout << "|#3Enter your VOICE phone no. in the form:\r\n|#3 ###-###-####\r\n|#2:";
-    Input1(&phoneNumber,  GetSession()->GetCurrentUser()->GetVoicePhoneNumber(), 12, true, InputMode::PHONE);
+    Input1(&phoneNumber,  session()->user()->GetVoicePhoneNumber(), 12, true, InputMode::PHONE);
 
     ok = valid_phone(phoneNumber.c_str());
     if (!ok) {
@@ -69,7 +69,7 @@ static void input_phone() {
     }
   } while (!ok && !hangup);
   if (!hangup) {
-    GetSession()->GetCurrentUser()->SetVoicePhoneNumber(phoneNumber.c_str());
+    session()->user()->SetVoicePhoneNumber(phoneNumber.c_str());
   }
 }
 
@@ -78,17 +78,17 @@ void input_dataphone() {
   do {
     bout.nl();
     bout << "|#3Enter your DATA phone no. in the form. \r\n";
-    bout << "|#3 ###-###-#### - Press Enter to use [" << GetSession()->GetCurrentUser()->GetVoicePhoneNumber()
+    bout << "|#3 ###-###-#### - Press Enter to use [" << session()->user()->GetVoicePhoneNumber()
          << "].\r\n";
     string data_phone_number;
-    Input1(&data_phone_number, GetSession()->GetCurrentUser()->GetDataPhoneNumber(), 12, true, InputMode::PHONE);
+    Input1(&data_phone_number, session()->user()->GetDataPhoneNumber(), 12, true, InputMode::PHONE);
     if (data_phone_number[0] == '\0') {
-      data_phone_number = GetSession()->GetCurrentUser()->GetVoicePhoneNumber();
+      data_phone_number = session()->user()->GetVoicePhoneNumber();
     }
     ok = valid_phone(data_phone_number);
 
     if (ok) {
-      GetSession()->GetCurrentUser()->SetDataPhoneNumber(data_phone_number.c_str());
+      session()->user()->SetDataPhoneNumber(data_phone_number.c_str());
     } else {
       bout.nl();
       bout << "|#6Please enter a valid phone number in the correct format.\r\n";
@@ -97,12 +97,12 @@ void input_dataphone() {
 }
 
 void input_language() {
-  if (GetSession()->num_languages > 1) {
-    GetSession()->GetCurrentUser()->SetLanguage(255);
+  if (session()->num_languages > 1) {
+    session()->user()->SetLanguage(255);
     do {
       char ch = 0, onx[20];
       bout.nl(2);
-      for (int i = 0; i < GetSession()->num_languages; i++) {
+      for (int i = 0; i < session()->num_languages; i++) {
         bout << (i + 1) << ". " << languages[i].name << wwiv::endl;
         if (i < 9) {
           onx[i] = static_cast< char >('1' + i);
@@ -110,25 +110,25 @@ void input_language() {
       }
       bout.nl();
       bout << "|#2Which language? ";
-      if (GetSession()->num_languages < 10) {
-        onx[GetSession()->num_languages] = 0;
+      if (session()->num_languages < 10) {
+        onx[session()->num_languages] = 0;
         ch = onek(onx);
         ch -= '1';
       } else {
         int i;
-        for (i = 1; i <= GetSession()->num_languages / 10; i++) {
+        for (i = 1; i <= session()->num_languages / 10; i++) {
           odc[i - 1] = static_cast< char >('0' + i);
         }
         odc[i - 1] = 0;
         char* ss = mmkey(2);
         ch = *((ss) - 1);
       }
-      if (ch >= 0 && ch < GetSession()->num_languages) {
-        GetSession()->GetCurrentUser()->SetLanguage(languages[ch].num);
+      if (ch >= 0 && ch < session()->num_languages) {
+        session()->user()->SetLanguage(languages[ch].num);
       }
-    } while ((GetSession()->GetCurrentUser()->GetLanguage() == 255) && (!hangup));
+    } while ((session()->user()->GetLanguage() == 255) && (!hangup));
 
-    set_language(GetSession()->GetCurrentUser()->GetLanguage());
+    set_language(session()->user()->GetLanguage());
   }
 }
 
@@ -200,10 +200,10 @@ void input_name() {
       bout << "|#3Enter your full name, or your alias.\r\n";
     }
     char szTempLocalName[ 255 ];
-    Input1(szTempLocalName, GetSession()->GetCurrentUser()->GetName(), 30, true, InputMode::UPPER);
+    Input1(szTempLocalName, session()->user()->GetName(), 30, true, InputMode::UPPER);
     ok = check_name(szTempLocalName);
     if (ok) {
-      GetSession()->GetCurrentUser()->SetName(szTempLocalName);
+      session()->user()->SetName(szTempLocalName);
     } else {
       bout.nl();
       bout << "|#6I'm sorry, you can't use that name.\r\n";
@@ -223,17 +223,17 @@ void input_realname() {
       bout << "|#3Enter your FULL real name.\r\n";
       char szTempLocalName[ 255 ];
       Input1(szTempLocalName,
-             GetSession()->GetCurrentUser()->GetRealName(), 30, true, InputMode::PROPER);
+             session()->user()->GetRealName(), 30, true, InputMode::PROPER);
 
       if (szTempLocalName[0] == '\0') {
         bout.nl();
         bout << "|#6Sorry, you must enter your FULL real name.\r\n";
       } else {
-        GetSession()->GetCurrentUser()->SetRealName(szTempLocalName);
+        session()->user()->SetRealName(szTempLocalName);
       }
-    } while ((GetSession()->GetCurrentUser()->GetRealName()[0] == '\0') && !hangup);
+    } while ((session()->user()->GetRealName()[0] == '\0') && !hangup);
   } else {
-    GetSession()->GetCurrentUser()->SetRealName(GetSession()->GetCurrentUser()->GetName());
+    session()->user()->SetRealName(session()->user()->GetName());
   }
 }
 
@@ -242,7 +242,7 @@ static void input_callsign() {
   bout << " |#3Enter your amateur radio callsign, or just hit <ENTER> if none.\r\n|#2:";
   string s;
   input(&s, 6, true);
-  GetSession()->GetCurrentUser()->SetCallsign(s.c_str());
+  session()->user()->SetCallsign(s.c_str());
 }
 
 bool valid_phone(const string& phoneNumber) {
@@ -251,7 +251,7 @@ bool valid_phone(const string& phoneNumber) {
   }
 
   if (syscfg.sysconfig & sysconfig_extended_info) {
-    if (!IsPhoneNumberUSAFormat(GetSession()->GetCurrentUser()) && GetSession()->GetCurrentUser()->GetCountry()[0]) {
+    if (!IsPhoneNumberUSAFormat(session()->user()) && session()->user()->GetCountry()[0]) {
       return true;
     }
   }
@@ -276,7 +276,7 @@ void input_street() {
   do {
     bout.nl();
     bout << "|#3Enter your street address.\r\n";
-    Input1(&street, GetSession()->GetCurrentUser()->GetStreet(), 30, true, InputMode::PROPER);
+    Input1(&street, session()->user()->GetStreet(), 30, true, InputMode::PROPER);
 
     if (street.empty()) {
       bout.nl();
@@ -284,7 +284,7 @@ void input_street() {
     }
   } while (street.empty() && !hangup);
   if (!hangup) {
-    GetSession()->GetCurrentUser()->SetStreet(street.c_str());
+    session()->user()->SetStreet(street.c_str());
   }
 }
 
@@ -293,21 +293,21 @@ void input_city() {
   do {
     bout.nl();
     bout << "|#3Enter your city (i.e San Francisco). \r\n";
-    Input1(szCity, GetSession()->GetCurrentUser()->GetCity(), 30, false, InputMode::PROPER);
+    Input1(szCity, session()->user()->GetCity(), 30, false, InputMode::PROPER);
 
     if (szCity[0] == '\0') {
       bout.nl();
       bout << "|#6I'm sorry, you must enter your city.\r\n";
     }
   } while (szCity[0] == '\0' && (!hangup));
-  GetSession()->GetCurrentUser()->SetCity(szCity);
+  session()->user()->SetCity(szCity);
 }
 
 void input_state() {
   string state;
   do {
     bout.nl();
-    if (IsEquals(GetSession()->GetCurrentUser()->GetCountry(), "CAN")) {
+    if (IsEquals(session()->user()->GetCountry(), "CAN")) {
       bout << "|#3Enter your province (i.e. QC).\r\n";
     } else {
       bout << "|#3Enter your state (i.e. CA). \r\n";
@@ -320,7 +320,7 @@ void input_state() {
       bout << "|#6I'm sorry, you must enter your state or province.\r\n";
     }
   } while (state.empty() && (!hangup));
-  GetSession()->GetCurrentUser()->SetState(state.c_str());
+  session()->user()->SetState(state.c_str());
 }
 
 void input_country() {
@@ -335,7 +335,7 @@ void input_country() {
       country = "USA";
     }
   } while (country.empty() && (!hangup));
-  GetSession()->GetCurrentUser()->SetCountry(country.c_str());
+  session()->user()->SetCountry(country.c_str());
 }
 
 void input_zipcode() {
@@ -343,7 +343,7 @@ void input_zipcode() {
   do {
     int len = 7;
     bout.nl();
-    if (IsEquals(GetSession()->GetCurrentUser()->GetCountry(), "USA")) {
+    if (IsEquals(session()->user()->GetCountry(), "USA")) {
       bout << "|#3Enter your zipcode as #####-#### \r\n";
       len = 10;
     } else {
@@ -358,13 +358,13 @@ void input_zipcode() {
       bout << "|#6I'm sorry, you must enter your zipcode.\r\n";
     }
   } while (zipcode.empty() && (!hangup));
-  GetSession()->GetCurrentUser()->SetZipcode(zipcode.c_str());
+  session()->user()->SetZipcode(zipcode.c_str());
 }
 
 void input_sex() {
   bout.nl();
   bout << "|#2Your gender (M,F) :";
-  GetSession()->GetCurrentUser()->SetGender(onek("MF"));
+  session()->user()->SetGender(onek("MF"));
 }
 
 void input_age(WUser *pUser) {
@@ -459,9 +459,9 @@ void input_comptype() {
     }
   } while (!ok && !hangup);
 
-  GetSession()->GetCurrentUser()->SetComputerType(ct);
+  session()->user()->SetComputerType(ct);
   if (hangup) {
-    GetSession()->GetCurrentUser()->SetComputerType(-1);
+    session()->user()->SetComputerType(-1);
   }
 }
 
@@ -494,9 +494,9 @@ void input_screensize() {
     ok = (y < 8 || y > 60) ? false : true;
   } while (!ok && !hangup);
 
-  GetSession()->GetCurrentUser()->SetScreenChars(x);
-  GetSession()->GetCurrentUser()->SetScreenLines(y);
-  GetSession()->screenlinest = y;
+  session()->user()->SetScreenChars(x);
+  session()->user()->SetScreenLines(y);
+  session()->screenlinest = y;
 }
 
 
@@ -540,7 +540,7 @@ void input_pw(WUser *pUser) {
     password.clear();
     Input1(&password, "", 8, false, InputMode::UPPER);
 
-    string realName = GetSession()->GetCurrentUser()->GetRealName();
+    string realName = session()->user()->GetRealName();
     StringUpperCase(&realName);
     if (!CheckPasswordComplexity(pUser, password)) {
       ok = false;
@@ -558,8 +558,8 @@ void input_pw(WUser *pUser) {
 
 
 void input_ansistat() {
-  GetSession()->GetCurrentUser()->ClearStatusFlag(WUser::ansi);
-  GetSession()->GetCurrentUser()->ClearStatusFlag(WUser::color);
+  session()->user()->ClearStatusFlag(WUser::ansi);
+  session()->user()->ClearStatusFlag(WUser::color);
   bout.nl();
   if (check_ansi() == 1) {
     bout << "ANSI graphics support detected.  Use it? ";
@@ -573,12 +573,12 @@ void input_ansistat() {
     bout << "Is the above line colored, italicized, bold, inversed, or blinking? ";
   }
   if (noyes()) {
-    GetSession()->GetCurrentUser()->SetStatusFlag(WUser::ansi);
+    session()->user()->SetStatusFlag(WUser::ansi);
     bout.nl();
     bout << "|#5Do you want color? ";
     if (noyes()) {
-      GetSession()->GetCurrentUser()->SetStatusFlag(WUser::color);
-      GetSession()->GetCurrentUser()->SetStatusFlag(WUser::extraColor);
+      session()->user()->SetStatusFlag(WUser::color);
+      session()->user()->SetStatusFlag(WUser::extraColor);
     } else {
       color_list();
       bout.nl();
@@ -590,10 +590,10 @@ void input_ansistat() {
       int c  = ch - '0';
       int c2 = c << 4;
       for (int i = 0; i < 10; i++) {
-        if ((GetSession()->GetCurrentUser()->GetBWColor(i) & 0x70) == 0) {
-          GetSession()->GetCurrentUser()->SetBWColor(i, (GetSession()->GetCurrentUser()->GetBWColor(i) & 0x88) | c);
+        if ((session()->user()->GetBWColor(i) & 0x70) == 0) {
+          session()->user()->SetBWColor(i, (session()->user()->GetBWColor(i) & 0x88) | c);
         } else {
-          GetSession()->GetCurrentUser()->SetBWColor(i, (GetSession()->GetCurrentUser()->GetBWColor(i) & 0x88) | c2);
+          session()->user()->SetBWColor(i, (session()->user()->GetBWColor(i) & 0x88) | c2);
         }
       }
     }
@@ -663,43 +663,43 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
 
 
 
-// Clears GetSession()->GetCurrentUser()'s data and makes it ready to be a new user, also
+// Clears session()->user()'s data and makes it ready to be a new user, also
 // clears the QScan pointers
 void CreateNewUserRecord() {
-  GetSession()->GetCurrentUser()->ZeroUserData();
+  session()->user()->ZeroUserData();
   memset(qsc, 0, syscfg.qscn_len);
 
-  GetSession()->GetCurrentUser()->SetFirstOn(date());
-  GetSession()->GetCurrentUser()->SetLastOn("Never.");
-  GetSession()->GetCurrentUser()->SetMacro(0, "Wow! This is a GREAT BBS!");
-  GetSession()->GetCurrentUser()->SetMacro(1, "Guess you forgot to define this one....");
-  GetSession()->GetCurrentUser()->SetMacro(2, "User = Monkey + Keyboard");
+  session()->user()->SetFirstOn(date());
+  session()->user()->SetLastOn("Never.");
+  session()->user()->SetMacro(0, "Wow! This is a GREAT BBS!");
+  session()->user()->SetMacro(1, "Guess you forgot to define this one....");
+  session()->user()->SetMacro(2, "User = Monkey + Keyboard");
 
-  GetSession()->GetCurrentUser()->SetScreenLines(25);
-  GetSession()->GetCurrentUser()->SetScreenChars(80);
+  session()->user()->SetScreenLines(25);
+  session()->user()->SetScreenChars(80);
 
-  GetSession()->GetCurrentUser()->SetSl(syscfg.newusersl);
-  GetSession()->GetCurrentUser()->SetDsl(syscfg.newuserdsl);
+  session()->user()->SetSl(syscfg.newusersl);
+  session()->user()->SetDsl(syscfg.newuserdsl);
 
-  GetSession()->GetCurrentUser()->SetTimesOnToday(1);
-  GetSession()->GetCurrentUser()->SetLastOnDateNumber(0);
-  GetSession()->GetCurrentUser()->SetRestriction(syscfg.newuser_restrict);
+  session()->user()->SetTimesOnToday(1);
+  session()->user()->SetLastOnDateNumber(0);
+  session()->user()->SetRestriction(syscfg.newuser_restrict);
 
   *qsc = 999;
-  memset(qsc_n, 0xff, ((GetSession()->GetMaxNumberFileAreas() + 31) / 32) * 4);
-  memset(qsc_q, 0xff, ((GetSession()->GetMaxNumberMessageAreas() + 31) / 32) * 4);
+  memset(qsc_n, 0xff, ((session()->GetMaxNumberFileAreas() + 31) / 32) * 4);
+  memset(qsc_q, 0xff, ((session()->GetMaxNumberMessageAreas() + 31) / 32) * 4);
 
-  GetSession()->GetCurrentUser()->SetStatusFlag(WUser::pauseOnPage);
-  GetSession()->GetCurrentUser()->ClearStatusFlag(WUser::conference);
-  GetSession()->GetCurrentUser()->ClearStatusFlag(WUser::nscanFileSystem);
-  GetSession()->GetCurrentUser()->SetGold(syscfg.newusergold);
+  session()->user()->SetStatusFlag(WUser::pauseOnPage);
+  session()->user()->ClearStatusFlag(WUser::conference);
+  session()->user()->ClearStatusFlag(WUser::nscanFileSystem);
+  session()->user()->SetGold(syscfg.newusergold);
 
   for (int nColorLoop = 0; nColorLoop <= 9; nColorLoop++) {
-    GetSession()->GetCurrentUser()->SetColor(nColorLoop, GetSession()->newuser_colors[ nColorLoop ]);
-    GetSession()->GetCurrentUser()->SetBWColor(nColorLoop, GetSession()->newuser_bwcolors[ nColorLoop ]);
+    session()->user()->SetColor(nColorLoop, session()->newuser_colors[ nColorLoop ]);
+    session()->user()->SetBWColor(nColorLoop, session()->newuser_bwcolors[ nColorLoop ]);
   }
 
-  GetSession()->ResetEffectiveSl();
+  session()->ResetEffectiveSl();
   string randomPassword;
   for (int i = 0; i < 6; i++) {
     char ch = static_cast< char >(rand() % 36);
@@ -710,8 +710,8 @@ void CreateNewUserRecord() {
     }
     randomPassword += ch;
   }
-  GetSession()->GetCurrentUser()->SetPassword(randomPassword.c_str());
-  GetSession()->GetCurrentUser()->SetEmailAddress("");
+  session()->user()->SetPassword(randomPassword.c_str());
+  session()->user()->SetEmailAddress("");
 
 }
 
@@ -768,7 +768,7 @@ void DoFullNewUser() {
   input_realname();
   input_phone();
   if (GetApplication()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
-    if (check_dupes(GetSession()->GetCurrentUser()->GetVoicePhoneNumber())) {
+    if (check_dupes(session()->user()->GetVoicePhoneNumber())) {
       if (GetApplication()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
         hangup = true;
         hang_it_up();
@@ -782,28 +782,28 @@ void DoFullNewUser() {
     sprintf(szZipFileName, "%s%s%czip1.dat", syscfg.datadir, ZIPCITY_DIR, File::pathSeparatorChar);
     if (File::Exists(szZipFileName)) {
       input_zipcode();
-      if (!check_zip(GetSession()->GetCurrentUser()->GetZipcode(), 1)) {
-        GetSession()->GetCurrentUser()->SetCity("");
-        GetSession()->GetCurrentUser()->SetState("");
+      if (!check_zip(session()->user()->GetZipcode(), 1)) {
+        session()->user()->SetCity("");
+        session()->user()->SetState("");
       }
-      GetSession()->GetCurrentUser()->SetCountry("USA");
+      session()->user()->SetCountry("USA");
     }
-    if (GetSession()->GetCurrentUser()->GetCity()[0] == '\0') {
+    if (session()->user()->GetCity()[0] == '\0') {
       input_city();
     }
-    if (GetSession()->GetCurrentUser()->GetState()[0] == '\0') {
+    if (session()->user()->GetState()[0] == '\0') {
       input_state();
     }
-    if (GetSession()->GetCurrentUser()->GetZipcode()[0] == '\0') {
+    if (session()->user()->GetZipcode()[0] == '\0') {
       input_zipcode();
     }
-    if (GetSession()->GetCurrentUser()->GetCountry()[0] == '\0') {
+    if (session()->user()->GetCountry()[0] == '\0') {
       input_country();
     }
     input_dataphone();
 
     if (GetApplication()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
-      if (check_dupes(GetSession()->GetCurrentUser()->GetDataPhoneNumber())) {
+      if (check_dupes(session()->user()->GetDataPhoneNumber())) {
         if (GetApplication()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
           hangup = true;
           hang_it_up();
@@ -814,21 +814,21 @@ void DoFullNewUser() {
   }
   input_callsign();
   input_sex();
-  input_age(GetSession()->GetCurrentUser());
+  input_age(session()->user());
   input_comptype();
 
-  if (GetSession()->GetNumberOfEditors() && GetSession()->GetCurrentUser()->HasAnsi()) {
+  if (session()->GetNumberOfEditors() && session()->user()->HasAnsi()) {
     bout.nl();
     bout << "|#5Select a fullscreen editor? ";
     if (yesno()) {
       select_editor();
     } else {
-      for (int nEditor = 0; nEditor < GetSession()->GetNumberOfEditors(); nEditor++) {
+      for (int nEditor = 0; nEditor < session()->GetNumberOfEditors(); nEditor++) {
         char szEditorDesc[ 121 ];
         strcpy(szEditorDesc, editors[nEditor].description);
         if (strstr(strupr(szEditorDesc) , "WWIVEDIT") != nullptr) {
-          GetSession()->GetCurrentUser()->SetDefaultEditor(nEditor + 1);
-          nEditor = GetSession()->GetNumberOfEditors();
+          session()->user()->SetDefaultEditor(nEditor + 1);
+          nEditor = session()->GetNumberOfEditors();
         }
       }
     }
@@ -840,7 +840,7 @@ void DoFullNewUser() {
     bout << "Enter your default protocol, or 0 for none.\r\n\n";
     int nDefProtocol = get_protocol(xf_down);
     if (nDefProtocol) {
-      GetSession()->GetCurrentUser()->SetDefaultProtocol(nDefProtocol);
+      session()->user()->SetDefaultProtocol(nDefProtocol);
     }
   }
 }
@@ -852,7 +852,7 @@ void DoNewUserASV() {
     return;
   }
   if (GetApplication()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV) &&
-      GetSession()->asv.sl > syscfg.newusersl && GetSession()->asv.sl < 90) {
+      session()->asv.sl > syscfg.newusersl && session()->asv.sl < 90) {
     bout.nl();
     bout << "|#5Are you currently a WWIV SysOp? ";
     if (yesno()) {
@@ -860,13 +860,13 @@ void DoNewUserASV() {
       bout << "|#5Please enter your BBS name and number.\r\n";
       string note;
       inputl(&note, 60, true);
-      GetSession()->GetCurrentUser()->SetNote(note.c_str());
-      GetSession()->GetCurrentUser()->SetSl(GetSession()->asv.sl);
-      GetSession()->GetCurrentUser()->SetDsl(GetSession()->asv.dsl);
-      GetSession()->GetCurrentUser()->SetAr(GetSession()->asv.ar);
-      GetSession()->GetCurrentUser()->SetDar(GetSession()->asv.dar);
-      GetSession()->GetCurrentUser()->SetExempt(GetSession()->asv.exempt);
-      GetSession()->GetCurrentUser()->SetRestriction(GetSession()->asv.restrict);
+      session()->user()->SetNote(note.c_str());
+      session()->user()->SetSl(session()->asv.sl);
+      session()->user()->SetDsl(session()->asv.dsl);
+      session()->user()->SetAr(session()->asv.ar);
+      session()->user()->SetDar(session()->asv.dar);
+      session()->user()->SetExempt(session()->asv.exempt);
+      session()->user()->SetRestriction(session()->asv.restrict);
       bout.nl();
       printfile(ASV_NOEXT);
       bout.nl();
@@ -880,31 +880,31 @@ void VerifyNewUserFullInfo() {
   bool ok = false;
   do {
     bout.nl(2);
-    bout << "|#91) Name          : |#2" << GetSession()->GetCurrentUser()->GetName() << wwiv::endl;
+    bout << "|#91) Name          : |#2" << session()->user()->GetName() << wwiv::endl;
     if (!(syscfg.sysconfig & sysconfig_no_alias)) {
-      bout << "|#92) Real Name     : |#2" << GetSession()->GetCurrentUser()->GetRealName() << wwiv::endl;
+      bout << "|#92) Real Name     : |#2" << session()->user()->GetRealName() << wwiv::endl;
     }
-    bout << "|#93) Callsign      : |#2" << GetSession()->GetCurrentUser()->GetCallsign() << wwiv::endl;
-    bout << "|#94) Phone No.     : |#2" << GetSession()->GetCurrentUser()->GetVoicePhoneNumber() <<
+    bout << "|#93) Callsign      : |#2" << session()->user()->GetCallsign() << wwiv::endl;
+    bout << "|#94) Phone No.     : |#2" << session()->user()->GetVoicePhoneNumber() <<
                        wwiv::endl;
-    bout << "|#95) Gender        : |#2" << GetSession()->GetCurrentUser()->GetGender() << wwiv::endl;
+    bout << "|#95) Gender        : |#2" << session()->user()->GetGender() << wwiv::endl;
     bout << "|#96) Birthdate     : |#2" <<
-                       static_cast<int>(GetSession()->GetCurrentUser()->GetBirthdayMonth()) << "/" <<
-                       static_cast<int>(GetSession()->GetCurrentUser()->GetBirthdayDay()) << "/" <<
-                       static_cast<int>(GetSession()->GetCurrentUser()->GetBirthdayYear()) << wwiv::endl;
-    bout << "|#97) Computer type : |#2" << ctypes(GetSession()->GetCurrentUser()->GetComputerType()) <<
+                       static_cast<int>(session()->user()->GetBirthdayMonth()) << "/" <<
+                       static_cast<int>(session()->user()->GetBirthdayDay()) << "/" <<
+                       static_cast<int>(session()->user()->GetBirthdayYear()) << wwiv::endl;
+    bout << "|#97) Computer type : |#2" << ctypes(session()->user()->GetComputerType()) <<
                        wwiv::endl;
     bout << "|#98) Screen size   : |#2" <<
-                       GetSession()->GetCurrentUser()->GetScreenChars() << " X " <<
-                       GetSession()->GetCurrentUser()->GetScreenLines() << wwiv::endl;
-    bout << "|#99) Password      : |#2" << GetSession()->GetCurrentUser()->GetPassword() << wwiv::endl;
+                       session()->user()->GetScreenChars() << " X " <<
+                       session()->user()->GetScreenLines() << wwiv::endl;
+    bout << "|#99) Password      : |#2" << session()->user()->GetPassword() << wwiv::endl;
     if (syscfg.sysconfig & sysconfig_extended_info) {
-      bout << "|#9A) Street Address: |#2" << GetSession()->GetCurrentUser()->GetStreet() << wwiv::endl;
-      bout << "|#9B) City          : |#2" << GetSession()->GetCurrentUser()->GetCity() << wwiv::endl;
-      bout << "|#9C) State         : |#2" << GetSession()->GetCurrentUser()->GetState() << wwiv::endl;
-      bout << "|#9D) Country       : |#2" << GetSession()->GetCurrentUser()->GetCountry() << wwiv::endl;
-      bout << "|#9E) Zipcode       : |#2" << GetSession()->GetCurrentUser()->GetZipcode() << wwiv::endl;
-      bout << "|#9F) Dataphone     : |#2" << GetSession()->GetCurrentUser()->GetDataPhoneNumber() << wwiv::endl;
+      bout << "|#9A) Street Address: |#2" << session()->user()->GetStreet() << wwiv::endl;
+      bout << "|#9B) City          : |#2" << session()->user()->GetCity() << wwiv::endl;
+      bout << "|#9C) State         : |#2" << session()->user()->GetState() << wwiv::endl;
+      bout << "|#9D) Country       : |#2" << session()->user()->GetCountry() << wwiv::endl;
+      bout << "|#9E) Zipcode       : |#2" << session()->user()->GetZipcode() << wwiv::endl;
+      bout << "|#9F) Dataphone     : |#2" << session()->user()->GetDataPhoneNumber() << wwiv::endl;
     }
     bout.nl();
     bout << "Q) No changes.\r\n";
@@ -940,7 +940,7 @@ void VerifyNewUserFullInfo() {
       input_sex();
       break;
     case '6':
-      input_age(GetSession()->GetCurrentUser());
+      input_age(session()->user());
       break;
     case '7':
       input_comptype();
@@ -949,7 +949,7 @@ void VerifyNewUserFullInfo() {
       input_screensize();
       break;
     case '9':
-      input_pw(GetSession()->GetCurrentUser());
+      input_pw(session()->user());
       break;
     case 'A':
       input_street();
@@ -976,34 +976,34 @@ void VerifyNewUserFullInfo() {
 
 void WriteNewUserInfoToSysopLog() {
   sysoplog("** New User Information **");
-  sysoplogf("-> %s #%ld (%s)", GetSession()->GetCurrentUser()->GetName(), GetSession()->usernum,
-            GetSession()->GetCurrentUser()->GetRealName());
+  sysoplogf("-> %s #%ld (%s)", session()->user()->GetName(), session()->usernum,
+            session()->user()->GetRealName());
   if (syscfg.sysconfig & sysconfig_extended_info) {
-    sysoplogf("-> %s", GetSession()->GetCurrentUser()->GetStreet());
-    sysoplogf("-> %s, %s %s  (%s)", GetSession()->GetCurrentUser()->GetCity(),
-              GetSession()->GetCurrentUser()->GetState(), GetSession()->GetCurrentUser()->GetZipcode(),
-              GetSession()->GetCurrentUser()->GetCountry());
+    sysoplogf("-> %s", session()->user()->GetStreet());
+    sysoplogf("-> %s, %s %s  (%s)", session()->user()->GetCity(),
+              session()->user()->GetState(), session()->user()->GetZipcode(),
+              session()->user()->GetCountry());
   }
-  sysoplogf("-> %s (Voice)", GetSession()->GetCurrentUser()->GetVoicePhoneNumber());
+  sysoplogf("-> %s (Voice)", session()->user()->GetVoicePhoneNumber());
   if (syscfg.sysconfig & sysconfig_extended_info) {
-    sysoplogf("-> %s (Data)", GetSession()->GetCurrentUser()->GetDataPhoneNumber());
+    sysoplogf("-> %s (Data)", session()->user()->GetDataPhoneNumber());
   }
   sysoplogf("-> %02d/%02d/%02d (%d yr old %s)",
-            GetSession()->GetCurrentUser()->GetBirthdayMonth(), GetSession()->GetCurrentUser()->GetBirthdayDay(),
-            GetSession()->GetCurrentUser()->GetBirthdayYear(), GetSession()->GetCurrentUser()->GetAge(),
-            ((GetSession()->GetCurrentUser()->GetGender() == 'M') ? "Male" : "Female"));
-  sysoplogf("-> Using a %s Computer", ctypes(GetSession()->GetCurrentUser()->GetComputerType()));
-  if (GetSession()->GetCurrentUser()->GetWWIVRegNumber()) {
-    sysoplogf("-> WWIV Registration # %ld", GetSession()->GetCurrentUser()->GetWWIVRegNumber());
+            session()->user()->GetBirthdayMonth(), session()->user()->GetBirthdayDay(),
+            session()->user()->GetBirthdayYear(), session()->user()->GetAge(),
+            ((session()->user()->GetGender() == 'M') ? "Male" : "Female"));
+  sysoplogf("-> Using a %s Computer", ctypes(session()->user()->GetComputerType()));
+  if (session()->user()->GetWWIVRegNumber()) {
+    sysoplogf("-> WWIV Registration # %ld", session()->user()->GetWWIVRegNumber());
   }
   sysoplog("********");
 
 
-  if (GetSession()->GetCurrentUser()->GetVoicePhoneNumber()[0]) {
-    add_phone_number(GetSession()->usernum, GetSession()->GetCurrentUser()->GetVoicePhoneNumber());
+  if (session()->user()->GetVoicePhoneNumber()[0]) {
+    add_phone_number(session()->usernum, session()->user()->GetVoicePhoneNumber());
   }
-  if (GetSession()->GetCurrentUser()->GetDataPhoneNumber()[0]) {
-    add_phone_number(GetSession()->usernum, GetSession()->GetCurrentUser()->GetDataPhoneNumber());
+  if (session()->user()->GetDataPhoneNumber()[0]) {
+    add_phone_number(session()->usernum, session()->user()->GetDataPhoneNumber());
   }
 }
 
@@ -1012,14 +1012,14 @@ void VerifyNewUserPassword() {
   bool ok = false;
   do {
     bout.nl(2);
-    bout << "|#9Your User Number: |#2" << GetSession()->usernum << wwiv::endl;
-    bout << "|#9Your Password:    |#2" << GetSession()->GetCurrentUser()->GetPassword() << wwiv::endl;
+    bout << "|#9Your User Number: |#2" << session()->usernum << wwiv::endl;
+    bout << "|#9Your Password:    |#2" << session()->user()->GetPassword() << wwiv::endl;
     bout.nl(1);
     bout << "|#9Please write down this information, and enter your password for verification.\r\n";
     bout << "|#9You will need to know this password in order to change it to something else.\r\n\n";
     string password;
     input_password("|#9PW: ", &password, 8);
-    if (password == GetSession()->GetCurrentUser()->GetPassword()) {
+    if (password == session()->user()->GetPassword()) {
       ok = true;
     }
   } while (!ok && !hangup);
@@ -1043,9 +1043,9 @@ void SendNewUserFeedbackIfRequired() {
   }
   feedback(true);
   if (GetApplication()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
-    if (!GetSession()->GetCurrentUser()->GetNumEmailSent() && !GetSession()->GetCurrentUser()->GetNumFeedbackSent()) {
+    if (!session()->user()->GetNumEmailSent() && !session()->user()->GetNumFeedbackSent()) {
       printfile(NOFBACK_NOEXT);
-      deluser(GetSession()->usernum);
+      deluser(session()->usernum);
       hangup = true;
       hang_it_up();
       return;
@@ -1062,23 +1062,23 @@ void ExecNewUserCommand() {
     sysoplog("Executing New User Event: ", false);
     sysoplog(commandLine.c_str(), true);
 
-    GetSession()->WriteCurrentUser();
+    session()->WriteCurrentUser();
     ExecuteExternalProgram(commandLine, GetApplication()->GetSpawnOptions(SPAWNOPT_NEWUSER));
-    GetSession()->ReadCurrentUser();
+    session()->ReadCurrentUser();
   }
 }
 
 
 void newuser() {
   get_colordata();
-  GetSession()->screenlinest = 25;
+  session()->screenlinest = 25;
 
   CreateNewUserRecord();
 
   input_language();
 
   sysoplog("", false);
-  sysoplogfi(false, "*** NEW USER %s   %s    %s (%ld)", fulldate(), times(), GetSession()->GetCurrentSpeed().c_str(),
+  sysoplogfi(false, "*** NEW USER %s   %s    %s (%ld)", fulldate(), times(), session()->GetCurrentSpeed().c_str(),
              GetApplication()->GetInstanceNumber());
 
   if (!CanCreateNewUserAccountHere() || hangup) {
@@ -1087,9 +1087,9 @@ void newuser() {
   }
 
   if (check_ansi()) {
-    GetSession()->GetCurrentUser()->SetStatusFlag(WUser::ansi);
-    GetSession()->GetCurrentUser()->SetStatusFlag(WUser::color);
-    GetSession()->GetCurrentUser()->SetStatusFlag(WUser::extraColor);
+    session()->user()->SetStatusFlag(WUser::ansi);
+    session()->user()->SetStatusFlag(WUser::color);
+    session()->user()->SetStatusFlag(WUser::extraColor);
   }
   printfile(SYSTEM_NOEXT);
   bout.nl();
@@ -1116,10 +1116,10 @@ void newuser() {
 
 
   bout.nl(4);
-  bout << "Random password: " << GetSession()->GetCurrentUser()->GetPassword() << wwiv::endl << wwiv::endl;
+  bout << "Random password: " << session()->user()->GetPassword() << wwiv::endl << wwiv::endl;
   bout << "|#5Do you want a different password (Y/N)? ";
   if (yesno()) {
-    input_pw(GetSession()->GetCurrentUser());
+    input_pw(session()->user());
   }
 
   DoNewUserASV();
@@ -1138,8 +1138,8 @@ void newuser() {
 
   bout.nl();
   bout << "Please wait...\r\n\n";
-  GetSession()->usernum = find_new_usernum(GetSession()->GetCurrentUser(), qsc);
-  if (GetSession()->usernum <= 0) {
+  session()->usernum = find_new_usernum(session()->user(), qsc);
+  if (session()->usernum <= 0) {
     bout.nl();
     bout << "|#6Error creating user account.\r\n\n";
     hangup = true;
@@ -1156,7 +1156,7 @@ void newuser() {
 
   ExecNewUserCommand();
 
-  GetSession()->ResetEffectiveSl();
+  session()->ResetEffectiveSl();
   changedsl();
   new_mail();
 }
@@ -1244,18 +1244,18 @@ bool check_zip(const char *pszZipCode, int mode) {
     if (mode != 2) {
       bout << "\r\n|#2" << city << ", " << state << "  USA? (y/N): ";
       if (yesno()) {
-        GetSession()->GetCurrentUser()->SetCity(city);
-        GetSession()->GetCurrentUser()->SetState(state);
-        GetSession()->GetCurrentUser()->SetCountry("USA");
+        session()->user()->SetCity(city);
+        session()->user()->SetState(state);
+        session()->user()->SetCountry("USA");
       } else {
         bout.nl();
         bout << "|#6My records show differently.\r\n\n";
         ok = false;
       }
     } else {
-      GetSession()->GetCurrentUser()->SetCity(city);
-      GetSession()->GetCurrentUser()->SetState(state);
-      GetSession()->GetCurrentUser()->SetCountry("USA");
+      session()->user()->SetCity(city);
+      session()->user()->SetState(state);
+      session()->user()->SetCountry("USA");
     }
   }
   return ok;
@@ -1264,9 +1264,9 @@ bool check_zip(const char *pszZipCode, int mode) {
 
 bool check_dupes(const char *pszPhoneNumber) {
   int nUserNumber = find_phone_number(pszPhoneNumber);
-  if (nUserNumber && nUserNumber != GetSession()->usernum) {
+  if (nUserNumber && nUserNumber != session()->usernum) {
     char szBuffer[ 255 ];
-    sprintf(szBuffer, "    %s entered phone # %s", GetSession()->GetCurrentUser()->GetName(), pszPhoneNumber);
+    sprintf(szBuffer, "    %s entered phone # %s", session()->user()->GetName(), pszPhoneNumber);
     sysoplog(szBuffer, false);
     ssm(1, 0, szBuffer);
 
@@ -1285,13 +1285,13 @@ bool check_dupes(const char *pszPhoneNumber) {
 void noabort(const char *pszFileName) {
   bool oic = false;
 
-  if (GetSession()->using_modem) {
+  if (session()->using_modem) {
     oic   = incom;
     incom = false;
     dump();
   }
   printfile(pszFileName);
-  if (GetSession()->using_modem) {
+  if (session()->using_modem) {
     dump();
     incom = oic;
   }
@@ -1299,7 +1299,7 @@ void noabort(const char *pszFileName) {
 
 static void cln_nu() {
   bout.Color(0);
-  int i1 = GetSession()->localIO()->WhereX();
+  int i1 = session()->localIO()->WhereX();
   if (i1 > 28) {
     for (int i = i1; i > 28; i--) {
       bout.bs();
@@ -1330,14 +1330,14 @@ void DoMinimalNewUser() {
   newline = false;
   s1[0] = 0;
   bool done = false;
-  int nSaveTopData = GetSession()->topdata;
-  GetSession()->topdata = WLocalIO::topdataNone;
+  int nSaveTopData = session()->topdata;
+  session()->topdata = WLocalIO::topdataNone;
   GetApplication()->UpdateTopScreen();
   do {
     bout.cls();
     bout.litebar("%s New User Registration", syscfg.systemname);
     bout << "|#1[A] Name (real or alias)    : ";
-    if (GetSession()->GetCurrentUser()->GetName()[0] == '\0') {
+    if (session()->user()->GetName()[0] == '\0') {
       bool ok = true;
       char szTempName[ 81 ];
       do {
@@ -1348,14 +1348,14 @@ void DoMinimalNewUser() {
           BackPrint("I'm sorry, you can't use that name.", 6, 20, 1000);
         }
       } while (!ok && !hangup);
-      GetSession()->GetCurrentUser()->SetName(szTempName);
+      session()->user()->SetName(szTempName);
     }
     s1[0] = '\0';
     cln_nu();
-    bout << "|#2" << GetSession()->GetCurrentUser()->GetName();
+    bout << "|#2" << session()->user()->GetName();
     bout.nl();
     bout << "|#1[B] Birth Date (MM/DD/YYYY) : ";
-    if (GetSession()->GetCurrentUser()->GetAge() == 0) {
+    if (session()->user()->GetAge() == 0) {
       bool ok = false;
       do {
         ok = false;
@@ -1389,67 +1389,67 @@ void DoMinimalNewUser() {
     if (hangup) {
       return;
     }
-    GetSession()->GetCurrentUser()->SetBirthdayMonth(m);
-    GetSession()->GetCurrentUser()->SetBirthdayDay(d);
-    GetSession()->GetCurrentUser()->SetBirthdayYear(y);
-    GetSession()->GetCurrentUser()->SetAge(years_old(m, d, y));
+    session()->user()->SetBirthdayMonth(m);
+    session()->user()->SetBirthdayDay(d);
+    session()->user()->SetBirthdayYear(y);
+    session()->user()->SetAge(years_old(m, d, y));
     s1[0] = '\0';
     cln_nu();
-    bout << "|#2" << mon[ std::max<int>(0, GetSession()->GetCurrentUser()->GetBirthdayMonth() - 1) ] << " "
-         << GetSession()->GetCurrentUser()->GetBirthdayDay() << ", "
-         << GetSession()->GetCurrentUser()->GetBirthdayYear()
-         << " (" << GetSession()->GetCurrentUser()->GetAge() << " years old)\r\n"
+    bout << "|#2" << mon[ std::max<int>(0, session()->user()->GetBirthdayMonth() - 1) ] << " "
+         << session()->user()->GetBirthdayDay() << ", "
+         << session()->user()->GetBirthdayYear()
+         << " (" << session()->user()->GetAge() << " years old)\r\n"
          << "|#1[C] Sex (Gender)            : ";
-    if (GetSession()->GetCurrentUser()->GetGender() != 'M' && GetSession()->GetCurrentUser()->GetGender()  != 'F') {
+    if (session()->user()->GetGender() != 'M' && session()->user()->GetGender()  != 'F') {
       bout.mpl(1);
-      GetSession()->GetCurrentUser()->SetGender(onek_ncr("MF"));
+      session()->user()->SetGender(onek_ncr("MF"));
     }
     s1[0] = '\0';
     cln_nu();
-    bout << "|#2" << (GetSession()->GetCurrentUser()->GetGender() == 'M' ? "Male" : "Female") << wwiv::endl;
+    bout << "|#2" << (session()->user()->GetGender() == 'M' ? "Male" : "Female") << wwiv::endl;
     bout <<  "|#1[D] Country                 : " ;
-    if (GetSession()->GetCurrentUser()->GetCountry()[0] == '\0') {
-      Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.country), "", 3, false, InputMode::UPPER);
-      if (GetSession()->GetCurrentUser()->GetCountry()[0] == '\0') {
-        GetSession()->GetCurrentUser()->SetCountry("USA");
+    if (session()->user()->GetCountry()[0] == '\0') {
+      Input1(reinterpret_cast<char*>(session()->user()->data.country), "", 3, false, InputMode::UPPER);
+      if (session()->user()->GetCountry()[0] == '\0') {
+        session()->user()->SetCountry("USA");
       }
     }
     s1[0] = '\0';
     cln_nu();
-    bout << "|#2" << GetSession()->GetCurrentUser()->GetCountry() << wwiv::endl;
+    bout << "|#2" << session()->user()->GetCountry() << wwiv::endl;
     bout << "|#1[E] ZIP or Postal Code      : ";
-    if (GetSession()->GetCurrentUser()->GetZipcode()[0] == 0) {
+    if (session()->user()->GetZipcode()[0] == 0) {
       bool ok = false;
       do {
-        if (IsEquals(GetSession()->GetCurrentUser()->GetCountry(), "USA")) {
-          Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.zipcode), s1, 5, true, InputMode::UPPER);
-          check_zip(GetSession()->GetCurrentUser()->GetZipcode(), 2);
+        if (IsEquals(session()->user()->GetCountry(), "USA")) {
+          Input1(reinterpret_cast<char*>(session()->user()->data.zipcode), s1, 5, true, InputMode::UPPER);
+          check_zip(session()->user()->GetZipcode(), 2);
         } else {
-          Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.zipcode), s1, 7, true, InputMode::UPPER);
+          Input1(reinterpret_cast<char*>(session()->user()->data.zipcode), s1, 7, true, InputMode::UPPER);
         }
-        if (GetSession()->GetCurrentUser()->GetZipcode()[0]) {
+        if (session()->user()->GetZipcode()[0]) {
           ok = true;
         }
       } while (!ok && !hangup);
     }
     s1[0] = '\0';
     cln_nu();
-    bout << "|#2" << GetSession()->GetCurrentUser()->GetZipcode() << wwiv::endl;
+    bout << "|#2" << session()->user()->GetZipcode() << wwiv::endl;
     bout << "|#1[F] City/State/Province     : ";
-    if (GetSession()->GetCurrentUser()->GetCity()[0] == 0) {
+    if (session()->user()->GetCity()[0] == 0) {
       bool ok = false;
       do {
-        Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.city), s1, 30, true, InputMode::PROPER);
-        if (GetSession()->GetCurrentUser()->GetCity()[0]) {
+        Input1(reinterpret_cast<char*>(session()->user()->data.city), s1, 30, true, InputMode::PROPER);
+        if (session()->user()->GetCity()[0]) {
           ok = true;
         }
       } while (!ok && !hangup);
       bout << ", ";
-      if (GetSession()->GetCurrentUser()->GetState()[0] == 0) {
+      if (session()->user()->GetState()[0] == 0) {
         do {
           bool ok = false;
-          Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.state), s1, 2, true, InputMode::UPPER);
-          if (GetSession()->GetCurrentUser()->GetState()[0]) {
+          Input1(reinterpret_cast<char*>(session()->user()->data.state), s1, 2, true, InputMode::UPPER);
+          if (session()->user()->GetState()[0]) {
             ok = true;
           }
         } while (!ok && !hangup);
@@ -1457,25 +1457,25 @@ void DoMinimalNewUser() {
     }
     s1[0] = '\0';
     cln_nu();
-    properize(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.city));
-    bout << "|#2" << GetSession()->GetCurrentUser()->GetCity() << ", " <<
-                       GetSession()->GetCurrentUser()->GetState() << wwiv::endl;
+    properize(reinterpret_cast<char*>(session()->user()->data.city));
+    bout << "|#2" << session()->user()->GetCity() << ", " <<
+                       session()->user()->GetState() << wwiv::endl;
     bout << "|#1[G] Internet Mail Address   : ";
-    if (GetSession()->GetCurrentUser()->GetEmailAddress()[0] == 0) {
+    if (session()->user()->GetEmailAddress()[0] == 0) {
       string emailAddress;
       Input1(&emailAddress, s1, 44, true, InputMode::MIXED);
-      GetSession()->GetCurrentUser()->SetEmailAddress(emailAddress.c_str());
-      if (!check_inet_addr(GetSession()->GetCurrentUser()->GetEmailAddress())) {
+      session()->user()->SetEmailAddress(emailAddress.c_str());
+      if (!check_inet_addr(session()->user()->GetEmailAddress())) {
         cln_nu();
         BackPrint("Invalid address!", 6, 20, 1000);
       }
-      if (GetSession()->GetCurrentUser()->GetEmailAddress()[0] == 0) {
-        GetSession()->GetCurrentUser()->SetEmailAddress("None");
+      if (session()->user()->GetEmailAddress()[0] == 0) {
+        session()->user()->SetEmailAddress("None");
       }
     }
     s1[0] = '\0';
     cln_nu();
-    bout << "|#2" << GetSession()->GetCurrentUser()->GetEmailAddress() << wwiv::endl;
+    bout << "|#2" << session()->user()->GetEmailAddress() << wwiv::endl;
     bout.nl();
     bout << "|#5Item to change or [Q] to Quit : |#0";
     ch = onek("QABCDEFG");
@@ -1484,65 +1484,65 @@ void DoMinimalNewUser() {
       done = true;
       break;
     case 'A':
-      strcpy(s1, GetSession()->GetCurrentUser()->GetName());
-      GetSession()->GetCurrentUser()->SetName("");
+      strcpy(s1, session()->user()->GetName());
+      session()->user()->SetName("");
       break;
     case 'B':
-      GetSession()->GetCurrentUser()->SetAge(0);
-      sprintf(s1, "%02d/%02d/%02d", GetSession()->GetCurrentUser()->GetBirthdayDay(),
-              GetSession()->GetCurrentUser()->GetBirthdayMonth(), GetSession()->GetCurrentUser()->GetBirthdayYear());
+      session()->user()->SetAge(0);
+      sprintf(s1, "%02d/%02d/%02d", session()->user()->GetBirthdayDay(),
+              session()->user()->GetBirthdayMonth(), session()->user()->GetBirthdayYear());
       break;
     case 'C':
-      GetSession()->GetCurrentUser()->SetGender('N');
+      session()->user()->SetGender('N');
       break;
     case 'D':
-      GetSession()->GetCurrentUser()->SetCountry("");
+      session()->user()->SetCountry("");
     case 'E':
-      GetSession()->GetCurrentUser()->SetZipcode("");
+      session()->user()->SetZipcode("");
     case 'F':
-      strcpy(s1, GetSession()->GetCurrentUser()->GetCity());
-      GetSession()->GetCurrentUser()->SetCity("");
-      GetSession()->GetCurrentUser()->SetState("");
+      strcpy(s1, session()->user()->GetCity());
+      session()->user()->SetCity("");
+      session()->user()->SetState("");
       break;
     case 'G':
-      strcpy(s1, GetSession()->GetCurrentUser()->GetEmailAddress());
-      GetSession()->GetCurrentUser()->SetEmailAddress("");
+      strcpy(s1, session()->user()->GetEmailAddress());
+      session()->user()->SetEmailAddress("");
       break;
     }
   } while (!done && !hangup);
-  GetSession()->GetCurrentUser()->SetRealName(GetSession()->GetCurrentUser()->GetName());
-  GetSession()->GetCurrentUser()->SetVoicePhoneNumber("999-999-9999");
-  GetSession()->GetCurrentUser()->SetDataPhoneNumber(GetSession()->GetCurrentUser()->GetVoicePhoneNumber());
-  GetSession()->GetCurrentUser()->SetStreet("None Requested");
-  if (GetSession()->GetNumberOfEditors() && GetSession()->GetCurrentUser()->HasAnsi()) {
-    GetSession()->GetCurrentUser()->SetDefaultEditor(1);
+  session()->user()->SetRealName(session()->user()->GetName());
+  session()->user()->SetVoicePhoneNumber("999-999-9999");
+  session()->user()->SetDataPhoneNumber(session()->user()->GetVoicePhoneNumber());
+  session()->user()->SetStreet("None Requested");
+  if (session()->GetNumberOfEditors() && session()->user()->HasAnsi()) {
+    session()->user()->SetDefaultEditor(1);
   }
-  GetSession()->topdata = nSaveTopData;
+  session()->topdata = nSaveTopData;
   GetApplication()->UpdateTopScreen();
   newline = true;
 }
 
 
 void new_mail() {
-  File file(syscfg.gfilesdir, (GetSession()->GetCurrentUser()->GetSl() > syscfg.newusersl) ? NEWSYSOP_MSG : NEWMAIL_MSG);
+  File file(syscfg.gfilesdir, (session()->user()->GetSl() > syscfg.newusersl) ? NEWSYSOP_MSG : NEWMAIL_MSG);
   if (!file.Exists()) {
     return;
   }
-  GetSession()->SetNewMailWaiting(true);
-  int save_ed = GetSession()->GetCurrentUser()->GetDefaultEditor();
-  GetSession()->GetCurrentUser()->SetDefaultEditor(0);
+  session()->SetNewMailWaiting(true);
+  int save_ed = session()->user()->GetDefaultEditor();
+  session()->user()->SetDefaultEditor(0);
   LoadFileIntoWorkspace(file.full_pathname().c_str(), true);
   use_workspace = true;
-  string userName = GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum);
+  string userName = session()->user()->GetUserNameAndNumber(session()->usernum);
   string title = StringPrintf("Welcome to %s!", syscfg.systemname);
 
   int nAllowAnon = 0;
   messagerec msg;
   msg.storage_type = 2;
   inmsg(&msg, &title, &nAllowAnon, false, "email", INMSG_NOFSED, userName.c_str(), MSGED_FLAG_NONE, true);
-  sendout_email(title, &msg, 0, GetSession()->usernum, 0, 1, 1, 0, 1, 0);
-  GetSession()->GetCurrentUser()->SetNumMailWaiting(GetSession()->GetCurrentUser()->GetNumMailWaiting() + 1);
-  GetSession()->GetCurrentUser()->SetDefaultEditor(save_ed);
-  GetSession()->SetNewMailWaiting(false);
+  sendout_email(title, &msg, 0, session()->usernum, 0, 1, 1, 0, 1, 0);
+  session()->user()->SetNumMailWaiting(session()->user()->GetNumMailWaiting() + 1);
+  session()->user()->SetDefaultEditor(save_ed);
+  session()->SetNewMailWaiting(false);
 }
 

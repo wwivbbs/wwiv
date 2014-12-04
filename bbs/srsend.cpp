@@ -126,8 +126,8 @@ char send_b(File &file, long pos, int nBlockType, char byBlockNumber, bool *bUse
       if (nNumErrors >= 9) {
         done = true;
       }
-      GetSession()->localIO()->LocalXYPrintf(69, 4, "%d", nNumErrors);
-      GetSession()->localIO()->LocalXYPrintf(69, 5, "%d", *terr);
+      session()->localIO()->LocalXYPrintf(69, 4, "%d", nNumErrors);
+      session()->localIO()->LocalXYPrintf(69, 5, "%d", *terr);
     }
   } while (!done && !hangup && !*abort);
 
@@ -199,18 +199,18 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
   if (!bUseYModemBatch) {
     bout << "\r\n-=> Beginning file transmission, Ctrl+X to abort.\r\n";
   }
-  int xx1 = GetSession()->localIO()->WhereX();
-  int yy1 = GetSession()->localIO()->WhereY();
-  GetSession()->localIO()->LocalXYPuts(52, 0, "\xB3 Filename :               ");
-  GetSession()->localIO()->LocalXYPuts(52, 1, "\xB3 Xfer Time:               ");
-  GetSession()->localIO()->LocalXYPuts(52, 2, "\xB3 File Size:               ");
-  GetSession()->localIO()->LocalXYPuts(52, 3, "\xB3 Cur Block: 1 - 1k        ");
-  GetSession()->localIO()->LocalXYPuts(52, 4, "\xB3 Consec Errors: 0         ");
-  GetSession()->localIO()->LocalXYPuts(52, 5, "\xB3 Total Errors : 0         ");
-  GetSession()->localIO()->LocalXYPuts(52, 6,
+  int xx1 = session()->localIO()->WhereX();
+  int yy1 = session()->localIO()->WhereY();
+  session()->localIO()->LocalXYPuts(52, 0, "\xB3 Filename :               ");
+  session()->localIO()->LocalXYPuts(52, 1, "\xB3 Xfer Time:               ");
+  session()->localIO()->LocalXYPuts(52, 2, "\xB3 File Size:               ");
+  session()->localIO()->LocalXYPuts(52, 3, "\xB3 Cur Block: 1 - 1k        ");
+  session()->localIO()->LocalXYPuts(52, 4, "\xB3 Consec Errors: 0         ");
+  session()->localIO()->LocalXYPuts(52, 5, "\xB3 Total Errors : 0         ");
+  session()->localIO()->LocalXYPuts(52, 6,
                                        "\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4");
-  GetSession()->localIO()->LocalXYPuts(65, 0, stripfn(pszWorkingFileName));
-  GetSession()->localIO()->LocalXYPrintf(65, 2, "%ld - %ldk", (lFileSize + 127) / 128, bytes_to_k(lFileSize));
+  session()->localIO()->LocalXYPuts(65, 0, stripfn(pszWorkingFileName));
+  session()->localIO()->LocalXYPrintf(65, 2, "%ld - %ldk", (lFileSize + 127) / 128, bytes_to_k(lFileSize));
 
   if (!okstart(&bUseCRC, &abort)) {
     abort = true;
@@ -231,9 +231,9 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
     if ((lFileSize - cp) < 128L) {
       bUse1kBlocks = false;
     }
-    GetSession()->localIO()->LocalXYPrintf(65, 3, "%ld - %ldk", cp / 128 + 1, cp / 1024 + 1);
-    GetSession()->localIO()->LocalXYPuts(65, 1, ctim(((double)(lFileSize - cp)) * tpb));
-    GetSession()->localIO()->LocalXYPuts(69, 4, "0");
+    session()->localIO()->LocalXYPrintf(65, 3, "%ld - %ldk", cp / 128 + 1, cp / 1024 + 1);
+    session()->localIO()->LocalXYPuts(65, 1, ctim(((double)(lFileSize - cp)) * tpb));
+    session()->localIO()->LocalXYPuts(69, 4, "0");
 
     ch = send_b(file, cp, (bUse1kBlocks) ? 1 : 0, byBlockNumber, &bUseCRC, pszWorkingFileName, &terr, &abort);
     if (ch == CX) {
@@ -265,7 +265,7 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
     }
   }
   file.Close();
-  GetSession()->localIO()->LocalGotoXY(xx1, yy1);
+  session()->localIO()->LocalGotoXY(xx1, yy1);
   if (*sent && !bUseYModemBatch) {
     bout << "-=> File transmission complete.\r\n\n";
   }
@@ -280,10 +280,10 @@ void zmodem_send(const char *pszFileName, bool *sent, double *percent) {
   char *pszWorkingFileName = strdup(pszFileName);
   StringRemoveWhitespace(pszWorkingFileName);
 
-  bool bOldBinaryMode = GetSession()->remoteIO()->GetBinaryMode();
-  GetSession()->remoteIO()->SetBinaryMode(true);
+  bool bOldBinaryMode = session()->remoteIO()->GetBinaryMode();
+  session()->remoteIO()->SetBinaryMode(true);
   bool bResult = NewZModemSendFile(pszWorkingFileName);
-  GetSession()->remoteIO()->SetBinaryMode(bOldBinaryMode);
+  session()->remoteIO()->SetBinaryMode(bOldBinaryMode);
 
   if (bResult) {
     *sent = true;

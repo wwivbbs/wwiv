@@ -37,7 +37,7 @@ void t2u_error(const char *pszFileName, const char *msg);
 int try_to_ul(char *pszFileName) {
   bool ac = false;
 
-  if (uconfsub[1].confnum != -1 && okconf(GetSession()->GetCurrentUser())) {
+  if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
     ac = true;
     tmp_disable_conf(true);
   }
@@ -65,7 +65,7 @@ int try_to_ul(char *pszFileName) {
   // it clean and up to date
   copyfile(src, dest, true);                   // copy file from batch dir,to try2ul dir */
 
-  if (GetSession()->IsUserOnline()) {
+  if (session()->IsUserOnline()) {
     GetApplication()->UpdateTopScreen();
   }
 
@@ -95,9 +95,9 @@ int try_to_ul_wh(char *pszFileName) {
   bout.nl(3);
 
   bool done = false;
-  if (GetSession()->GetCurrentUser()->IsRestrictionValidate() || GetSession()->GetCurrentUser()->IsRestrictionUpload() ||
+  if (session()->user()->IsRestrictionValidate() || session()->user()->IsRestrictionUpload() ||
       (syscfg.sysconfig & sysconfig_all_sysop)) {
-    dn = (syscfg.newuploads < GetSession()->num_dirs) ? syscfg.newuploads : 0;
+    dn = (syscfg.newuploads < session()->num_dirs) ? syscfg.newuploads : 0;
   } else {
     char temp[10];
 
@@ -105,7 +105,7 @@ int try_to_ul_wh(char *pszFileName) {
     done = false;
     while (!done) {
       if (hangup) {
-        if (syscfg.newuploads < GetSession()->num_dirs) {
+        if (syscfg.newuploads < session()->num_dirs) {
           dn = syscfg.newuploads;
         } else {
           dn = 0;
@@ -142,7 +142,7 @@ int try_to_ul_wh(char *pszFileName) {
 
   dliscan1(dn);
   d = directories[dn];
-  if (GetSession()->numf >= d.maxfiles) {
+  if (session()->numf >= d.maxfiles) {
     t2u_error(pszFileName, "This directory is currently full.");
     return 1;
   }
@@ -193,12 +193,12 @@ int try_to_ul_wh(char *pszFileName) {
     }
   }
   strcpy(u.filename, s);
-  u.ownerusr = static_cast<unsigned short>(GetSession()->usernum);
+  u.ownerusr = static_cast<unsigned short>(session()->usernum);
   u.ownersys = 0;
   u.numdloads = 0;
   u.unused_filetype = 0;
   u.mask = 0;
-  strncpy(u.upby, GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum), sizeof(u.upby));
+  strncpy(u.upby, session()->user()->GetUserNameAndNumber(session()->usernum), sizeof(u.upby));
   u.upby[36]  = '\0';
   strcpy(u.date, date());
 
@@ -221,7 +221,7 @@ int try_to_ul_wh(char *pszFileName) {
     bout << "Checking for same file in other directories...\r\n\n";
     i2 = 0;
 
-    for (i = 0; (i < GetSession()->num_dirs) && (udir[i].subnum != -1); i++) {
+    for (i = 0; (i < session()->num_dirs) && (udir[i].subnum != -1); i++) {
       strcpy(s1, "Scanning ");
       strcat(s1, directories[udir[i].subnum].name);
 
@@ -321,7 +321,7 @@ int try_to_ul_wh(char *pszFileName) {
             u.mask &= ~mask_extended;
           } else {
             u.mask |= mask_extended;
-            modify_extended_description(&ss, directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, u.filename);
+            modify_extended_description(&ss, directories[udir[session()->GetCurrentFileArea()].subnum].name, u.filename);
             if (ss) {
               delete_extended_description(u.filename);
               add_extended_description(u.filename, ss);
@@ -329,7 +329,7 @@ int try_to_ul_wh(char *pszFileName) {
             }
           }
         } else {
-          modify_extended_description(&ss, directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, u.filename);
+          modify_extended_description(&ss, directories[udir[session()->GetCurrentFileArea()].subnum].name, u.filename);
           if (ss) {
             add_extended_description(u.filename, ss);
             free(ss);
@@ -379,14 +379,14 @@ int try_to_ul_wh(char *pszFileName) {
   long lFileLength = file.GetLength();
   u.numbytes = lFileLength;
   file.Close();
-  GetSession()->GetCurrentUser()->SetFilesUploaded(GetSession()->GetCurrentUser()->GetFilesUploaded() + 1);
+  session()->user()->SetFilesUploaded(session()->user()->GetFilesUploaded() + 1);
 
   time_t tCurrentDate;
   time(&tCurrentDate);
   u.daten = static_cast<unsigned long>(tCurrentDate);
   File fileDownload(g_szDownloadFileName);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  for (i = GetSession()->numf; i >= 1; i--) {
+  for (i = session()->numf; i >= 1; i--) {
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u1, sizeof(uploadsrec));
     FileAreaSetRecord(fileDownload, i + 1);
@@ -395,19 +395,19 @@ int try_to_ul_wh(char *pszFileName) {
 
   FileAreaSetRecord(fileDownload, 1);
   fileDownload.Write(&u, sizeof(uploadsrec));
-  ++GetSession()->numf;
+  ++session()->numf;
   FileAreaSetRecord(fileDownload, 0);
   fileDownload.Read(&u1, sizeof(uploadsrec));
-  u1.numbytes = GetSession()->numf;
+  u1.numbytes = session()->numf;
   u1.daten = static_cast<unsigned long>(tCurrentDate);
-  GetSession()->m_DirectoryDateCache[dn] = static_cast<unsigned int>(tCurrentDate);
+  session()->m_DirectoryDateCache[dn] = static_cast<unsigned int>(tCurrentDate);
   FileAreaSetRecord(fileDownload, 0);
   fileDownload.Write(&u1, sizeof(uploadsrec));
   fileDownload.Close();
 
   modify_database(u.filename, true);
 
-  GetSession()->GetCurrentUser()->SetUploadK(GetSession()->GetCurrentUser()->GetUploadK() + bytes_to_k(u.numbytes));
+  session()->user()->SetUploadK(session()->user()->GetUploadK() + bytes_to_k(u.numbytes));
 
   WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
   pStatus->IncrementNumUploadsToday();

@@ -121,7 +121,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
   int nCounter = 0;
   for (;;) {
     nCounter++;
-    if (GetSession()->using_modem && (!GetSession()->remoteIO()->carrier())) {
+    if (session()->using_modem && (!session()->remoteIO()->carrier())) {
       SetEvent(hSyncHangupEvent);
       fprintf(hLogFile, "Setting Hangup Event and Sleeping\r\n");
       ::Sleep(1000);
@@ -140,10 +140,10 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
       }
     }
 
-    if (GetSession()->remoteIO()->incoming()) {
+    if (session()->remoteIO()->incoming()) {
       nCounter = 0;
       // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
-      int nNumReadFromComm = GetSession()->remoteIO()->read(szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE);
+      int nNumReadFromComm = session()->remoteIO()->read(szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE);
       fprintf(hLogFile, "Read [%d] from comm\r\n", nNumReadFromComm);
 #if 1
       int nLp = 0;
@@ -232,10 +232,10 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
           bout << szReadBuffer;
 
           //ExpandWWIVHeartCodes( szReadBuffer );
-          //int nNumWritten = GetSession()->remoteIO()->write( szReadBuffer, strlen( szReadBuffer )  );
+          //int nNumWritten = session()->remoteIO()->write( szReadBuffer, strlen( szReadBuffer )  );
           //fprintf( hLogFile, "Wrote [%d] bytes to comm.\r\n", nNumWritten );
         } else {
-          int nNumWritten = GetSession()->remoteIO()->write(szReadBuffer, nBufferPtr);
+          int nNumWritten = session()->remoteIO()->write(szReadBuffer, nBufferPtr);
           fprintf(hLogFile, "Wrote [%d] bytes to comm.\r\n", nNumWritten);
         }
 
@@ -262,7 +262,7 @@ bool ExpandWWIVHeartCodes(char *pszBuffer) {
       if (*pIn >= '0' && *pIn <= '9') {
         char szTempColor[ 81 ];
         int nColor = *pIn - '0';
-        makeansi(GetSession()->GetCurrentUser()->GetColor(nColor), szTempColor, false);
+        makeansi(session()->user()->GetColor(nColor), szTempColor, false);
         char *pColor = szTempColor;
         while (*pColor) {
           *pOut++ = *pColor++;
@@ -293,7 +293,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
   bool bShouldUseSync = false;
   bool bUsingSync = false;
   int nSyncMode = 0;
-  if (GetSession()->using_modem) {
+  if (session()->using_modem) {
     if (flags & EFLAG_FOSSIL) {
       bShouldUseSync = true;
     } else if (flags & EFLAG_COMIO) {
@@ -328,12 +328,12 @@ int ExecExternalProgram(const string commandLine, int flags) {
     strcpy(pszTitle, "NETWORK");
   } else {
     _snprintf(pszTitle, sizeof(pszTitle), "%s in door on node %d",
-              GetSession()->GetCurrentUser()->GetName(), GetApplication()->GetInstanceNumber());
+              session()->user()->GetName(), GetApplication()->GetInstanceNumber());
   }
   si.lpTitle = pszTitle;
 
-  if (ok_modem_stuff && !bUsingSync && GetSession()->using_modem) {
-    GetSession()->remoteIO()->close(true);
+  if (ok_modem_stuff && !bUsingSync && session()->using_modem) {
+    session()->remoteIO()->close(true);
   }
 
   HANDLE hSyncHangupEvent = INVALID_HANDLE_VALUE;
@@ -391,16 +391,16 @@ int ExecExternalProgram(const string commandLine, int flags) {
     }
 
     // If we return here, we may have to reopen the communications port.
-    if (ok_modem_stuff && !bUsingSync && GetSession()->using_modem) {
-      GetSession()->remoteIO()->open();
-      GetSession()->remoteIO()->dtr(true);
+    if (ok_modem_stuff && !bUsingSync && session()->using_modem) {
+      session()->remoteIO()->open();
+      session()->remoteIO()->dtr(true);
     }
     return -1;
   }
 
-  // If we are on Windows NT and GetSession()->IsExecUseWaitForInputIdle() is true use this.
-  if (GetSession()->IsExecUseWaitForInputIdle()) {
-    int dwWaitRet = ::WaitForInputIdle(pi.hProcess, GetSession()->GetExecWaitForInputTimeout());
+  // If we are on Windows NT and session()->IsExecUseWaitForInputIdle() is true use this.
+  if (session()->IsExecUseWaitForInputIdle()) {
+    int dwWaitRet = ::WaitForInputIdle(pi.hProcess, session()->GetExecWaitForInputTimeout());
     if (dwWaitRet != 0) {
       if (bUsingSync) {
         fprintf(hLogFile, "!!! WaitForInputIdle Failed with code %ld", dwWaitRet);
@@ -408,7 +408,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
       sysoplogf("!!! WaitForInputIdle Failed with code %ld", dwWaitRet);
     }
   } else {
-    ::Sleep(GetSession()->GetExecWaitForInputTimeout());
+    ::Sleep(session()->GetExecWaitForInputTimeout());
     ::Sleep(0);
     ::Sleep(0);
     ::Sleep(0);
@@ -420,8 +420,8 @@ int ExecExternalProgram(const string commandLine, int flags) {
 
 
   if (bUsingSync) {
-    bool bSavedBinaryMode = GetSession()->remoteIO()->GetBinaryMode();
-    GetSession()->remoteIO()->SetBinaryMode(true);
+    bool bSavedBinaryMode = session()->remoteIO()->GetBinaryMode();
+    session()->remoteIO()->SetBinaryMode(true);
     bool bSyncLoopStatus = DoSyncFosLoopNT(pi.hProcess, hSyncHangupEvent, hSyncReadSlot, nSyncMode);
     fprintf(hLogFile,  "DoSyncFosLoopNT: Returning %s\r\n", (bSyncLoopStatus) ? "TRUE" : "FALSE");
 
@@ -438,7 +438,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
         TerminateProcess(pi.hProcess, 0);
       }
     }
-    GetSession()->remoteIO()->SetBinaryMode(bSavedBinaryMode);
+    session()->remoteIO()->SetBinaryMode(bSavedBinaryMode);
   } else {
     // Wait until child process exits.
     WaitForSingleObject(pi.hProcess, INFINITE);
@@ -453,9 +453,9 @@ int ExecExternalProgram(const string commandLine, int flags) {
   delete[] pszTitle;
 
   // reengage comm stuff
-  if (ok_modem_stuff && !bUsingSync && GetSession()->using_modem) {
-    GetSession()->remoteIO()->open();
-    GetSession()->remoteIO()->dtr(true);
+  if (ok_modem_stuff && !bUsingSync && session()->using_modem) {
+    session()->remoteIO()->open();
+    session()->remoteIO()->dtr(true);
   }
 
   return static_cast< int >(dwExitCode);

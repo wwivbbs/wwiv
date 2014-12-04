@@ -100,7 +100,7 @@ static bool WriteMsgInf(const string& title, const string& destination, const st
     return false;
   }
 
-  file.WriteLine(GetSession()->GetCurrentUser()->GetName());
+  file.WriteLine(session()->user()->GetName());
   if (aux == "email") {
     // destination == to address for email
     file.WriteLine(destination);
@@ -140,13 +140,13 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& desti
       "%s\n%s\n%lu\n%s\n%s\n%u\n%u\n%lu\n%u\n",
       title.c_str(),
       destination.c_str(),
-      GetSession()->usernum,
-      GetSession()->GetCurrentUser()->GetName(),
-      GetSession()->GetCurrentUser()->GetRealName(),
-      GetSession()->GetCurrentUser()->GetSl(),
+      session()->usernum,
+      session()->user()->GetName(),
+      session()->user()->GetRealName(),
+      session()->user()->GetSl(),
       flags,
-      GetSession()->localIO()->GetTopLine(),
-      GetSession()->GetCurrentUser()->GetLanguage());
+      session()->localIO()->GetTopLine(),
+      session()->user()->GetLanguage());
     fileEditorInf.Close();
   }
   if (flags & MSGED_FLAG_NO_TAGLINE) {
@@ -190,8 +190,8 @@ bool WriteExternalEditorControlFiles(const editorrec& editor, const string& titl
 }
 
 bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string& destination, int flags, const string& aux) {
-  const auto editor_number = GetSession()->GetCurrentUser()->GetDefaultEditor() - 1;
-  if (editor_number >= GetSession()->GetNumberOfEditors() || !okansi()) {
+  const auto editor_number = session()->user()->GetDefaultEditor() - 1;
+  if (editor_number >= session()->GetNumberOfEditors() || !okansi()) {
     bout << "\r\nYou can't use that full screen editor.\r\n\n";
     return false;
   }
@@ -226,8 +226,8 @@ bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string&
 
 bool external_text_edit(const string& edit_filename, const string& new_directory, int numlines,
                         const string& destination, int flags) {
-  const auto editor_number = GetSession()->GetCurrentUser()->GetDefaultEditor() - 1;
-  if (editor_number >= GetSession()->GetNumberOfEditors() || !okansi()) {
+  const auto editor_number = session()->user()->GetDefaultEditor() - 1;
+  if (editor_number >= session()->GetNumberOfEditors() || !okansi()) {
     bout << "\r\nYou can't use that full screen editor.\r\n\n";
     return false;
   }
@@ -265,11 +265,11 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
     tFileTime = fileTempForTime.last_write_time();
   }
 
-  const string sx1 = StringPrintf("%d", GetSession()->GetCurrentUser()->GetScreenChars());
-  int num_screen_lines = GetSession()->GetCurrentUser()->GetScreenLines();
-  if (!GetSession()->using_modem) {
-    int newtl = (GetSession()->screenlinest > defscreenbottom - GetSession()->localIO()->GetTopLine()) ? 0 :
-                GetSession()->localIO()->GetTopLine();
+  const string sx1 = StringPrintf("%d", session()->user()->GetScreenChars());
+  int num_screen_lines = session()->user()->GetScreenLines();
+  if (!session()->using_modem) {
+    int newtl = (session()->screenlinest > defscreenbottom - session()->localIO()->GetTopLine()) ? 0 :
+                session()->localIO()->GetTopLine();
     num_screen_lines = defscreenbottom + 1 - newtl;
   }
   const string sx2 = StringPrintf("%d", num_screen_lines);

@@ -24,13 +24,13 @@
 void old_sublist() {
   char s[ 255 ];
 
-  int oc = GetSession()->GetCurrentConferenceMessageArea();
-  int os = usub[GetSession()->GetCurrentMessageArea()].subnum;
+  int oc = session()->GetCurrentConferenceMessageArea();
+  int os = usub[session()->GetCurrentMessageArea()].subnum;
 
   bool abort = false;
   int sn = 0;
   int en = subconfnum - 1;
-  if (okconf(GetSession()->GetCurrentUser())) {
+  if (okconf(session()->user())) {
     if (uconfsub[1].confnum != -1) {
       bout.nl();
       bout << "|#2A)ll conferences, Q)uit, <space> for current conference: ";
@@ -38,8 +38,8 @@ void old_sublist() {
       bout.nl();
       switch (ch) {
       case ' ':
-        sn = GetSession()->GetCurrentConferenceMessageArea();
-        en = GetSession()->GetCurrentConferenceMessageArea();
+        sn = session()->GetCurrentConferenceMessageArea();
+        en = session()->GetCurrentConferenceMessageArea();
         break;
       case 'Q':
         return;
@@ -54,7 +54,7 @@ void old_sublist() {
   bout.nl();
   int i = sn;
   while (i <= en && uconfsub[i].confnum != -1 && !abort) {
-    if (uconfsub[1].confnum != -1 && okconf(GetSession()->GetCurrentUser())) {
+    if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
       setuconf(CONF_SUBS, i, -1);
       sprintf(s, "|#1%s %c|#0:|#2 %s", "Conference",
               subconfs[uconfsub[i].confnum].designator,
@@ -62,14 +62,14 @@ void old_sublist() {
       pla(s, &abort);
     }
     int i1 = 0;
-    while ((i1 < GetSession()->num_subs) && (usub[i1].subnum != -1) && (!abort)) {
+    while ((i1 < session()->num_subs) && (usub[i1].subnum != -1) && (!abort)) {
       sprintf(s, "  |#5%4.4s|#2", usub[i1].keys);
       if (qsc_q[usub[i1].subnum / 32] & (1L << (usub[i1].subnum % 32))) {
         strcat(s, " - ");
       } else {
         strcat(s, "  ");
       }
-      if (net_sysnum || GetSession()->GetMaxNetworkNumber() > 1) {
+      if (net_sysnum || session()->GetMaxNetworkNumber() > 1) {
         if (xsubs[usub[i1].subnum].num_nets) {
           const char *ss;
           if (xsubs[usub[i1].subnum].num_nets > 1) {
@@ -96,7 +96,7 @@ void old_sublist() {
     }
     i++;
     bout.nl();
-    if (!okconf(GetSession()->GetCurrentUser())) {
+    if (!okconf(session()->user())) {
       break;
     }
   }
@@ -106,7 +106,7 @@ void old_sublist() {
     bout.nl();
   }
 
-  if (okconf(GetSession()->GetCurrentUser())) {
+  if (okconf(session()->user())) {
     setuconf(CONF_SUBS, oc, os);
   }
 }
@@ -128,14 +128,14 @@ void SubList() {
   char ch, s[81], s2[10], s3[81], sdf[130];
   bool next;
 
-  oldConf = GetSession()->GetCurrentConferenceMessageArea();
-  oldSub = usub[GetSession()->GetCurrentMessageArea()].subnum;
+  oldConf = session()->GetCurrentConferenceMessageArea();
+  oldSub = usub[session()->GetCurrentMessageArea()].subnum;
 
   sn = lastp = firstp = 0;
-  ns = GetSession()->GetCurrentConferenceMessageArea();
+  ns = session()->GetCurrentConferenceMessageArea();
   en = subconfnum - 1;
 
-  if (okconf(GetSession()->GetCurrentUser())) {
+  if (okconf(session()->user())) {
     if (uconfsub[1].confnum != -1) {
       bout.nl();
       bout << "|#2A)ll conferences, Q)uit, <space> for current conference: ";
@@ -143,8 +143,8 @@ void SubList() {
       bout.nl();
       switch (ch) {
       case ' ':
-        sn = GetSession()->GetCurrentConferenceMessageArea();
-        en = GetSession()->GetCurrentConferenceMessageArea();
+        sn = session()->GetCurrentConferenceMessageArea();
+        en = session()->GetCurrentConferenceMessageArea();
         break;
       case 'Q':
         return;
@@ -160,18 +160,18 @@ void SubList() {
     p = 1;
     i = sn;
     i1 = 0;
-    ns = GetSession()->GetCurrentConferenceMessageArea();
+    ns = session()->GetCurrentConferenceMessageArea();
     while (i <= en && uconfsub[i].confnum != -1 && !abort) {
-      if (uconfsub[1].confnum != -1 && okconf(GetSession()->GetCurrentUser())) {
+      if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
         setuconf(CONF_SUBS, i, -1);
         i1 = 0;
       }
-      while (i1 < GetSession()->num_subs && usub[i1].subnum != -1 && !abort) {
+      while (i1 < session()->num_subs && usub[i1].subnum != -1 && !abort) {
         if (p) {
           p = 0;
           firstp = i1;
           bout.cls();
-          if (uconfsub[1].confnum != -1 && okconf(GetSession()->GetCurrentUser())) {
+          if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
             sprintf(s, "Conference %c: %s",
                     subconfs[uconfsub[i].confnum].designator,
                     stripcolors(reinterpret_cast<char*>(subconfs[uconfsub[i].confnum].name)));
@@ -191,7 +191,7 @@ void SubList() {
           strcpy(s2, "|#6No ");
         }
         iscan(i1);
-        if (net_sysnum || GetSession()->GetMaxNetworkNumber() > 1) {
+        if (net_sysnum || session()->GetMaxNetworkNumber() > 1) {
           if (xsubs[usub[i1].subnum].num_nets) {
 	    const char* ss;
             if (xsubs[usub[i1].subnum].num_nets > 1) {
@@ -200,7 +200,7 @@ void SubList() {
             } else {
               strcpy(s3, net_networks[xsubs[usub[i1].subnum].nets[0].net_num].name);
               ss = stripcolors(s3);
-              wc = GetSession()->GetNetworkNumber() % 8;
+              wc = session()->GetNetworkNumber() % 8;
             }
             if (subboards[usub[i1].subnum].anony & anony_val_net) {
               sprintf(s3, "|#7[|#%i%-8.8s|#7]", wc, ss);
@@ -214,18 +214,18 @@ void SubList() {
           strcpy(s3, "|#7>|#1LOCAL|#7<  ");
         }
         msgIndex = 1;
-        while ((msgIndex <= GetSession()->GetNumMessagesInCurrentMessageArea())
+        while ((msgIndex <= session()->GetNumMessagesInCurrentMessageArea())
                && (get_post(msgIndex)->qscan <= qsc_p[usub[i1].subnum])) {
           ++msgIndex;
         }
-        newTally = GetSession()->GetNumMessagesInCurrentMessageArea() - msgIndex + 1;
-        if (usub[GetSession()->GetCurrentMessageArea()].subnum == usub[i1].subnum) {
+        newTally = session()->GetNumMessagesInCurrentMessageArea() - msgIndex + 1;
+        if (usub[session()->GetCurrentMessageArea()].subnum == usub[i1].subnum) {
           sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |B1|15%-36.36s |#9\xB3 |#9%5d |#9\xB3 |#%c%5d |#9",
-                  i1 + 1, s2, s3, subboards[usub[i1].subnum].name, GetSession()->GetNumMessagesInCurrentMessageArea(),
+                  i1 + 1, s2, s3, subboards[usub[i1].subnum].name, session()->GetNumMessagesInCurrentMessageArea(),
                   newTally ? '6' : '3', newTally);
         } else {
           sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |#1%-36.36s |#9\xB3 |#9%5d |#9\xB3 |#%c%5d |#9",
-                  i1 + 1, s2, s3, subboards[usub[i1].subnum].name, GetSession()->GetNumMessagesInCurrentMessageArea(),
+                  i1 + 1, s2, s3, subboards[usub[i1].subnum].name, session()->GetNumMessagesInCurrentMessageArea(),
                   newTally ? '6' : '3', newTally);
         }
         if (okansi()) {
@@ -235,17 +235,17 @@ void SubList() {
         }
         lastp = i1++;
         bout.nl();
-        if (lines_listed >= GetSession()->screenlinest - 2) {
+        if (lines_listed >= session()->screenlinest - 2) {
           p = 1;
           lines_listed = 0;
           DisplayHorizontalBar(78, 7);
           bout.bprintf("|#1Select |#9[|#2%d-%d, [Enter]=Next Page, Q=Quit|#9]|#0 : ", firstp + 1, lastp + 1);
           const char* ss = mmkey(0, true);
           if (isdigit(ss[0])) {
-            for (i2 = 0; i2 < GetSession()->num_subs; i2++) {
+            for (i2 = 0; i2 < session()->num_subs; i2++) {
               if (wwiv::strings::IsEquals(usub[i2].keys, ss)) {
-                GetSession()->SetCurrentMessageArea(i2);
-                oldSub = usub[GetSession()->GetCurrentMessageArea()].subnum;
+                session()->SetCurrentMessageArea(i2);
+                oldSub = usub[session()->GetCurrentMessageArea()].subnum;
                 done = true;
                 abort = true;
               }
@@ -253,7 +253,7 @@ void SubList() {
           } else {
             switch (ss[0]) {
             case 'Q': {
-              if (okconf(GetSession()->GetCurrentUser())) {
+              if (okconf(session()->user())) {
                 setuconf(CONF_SUBS, oldConf, oldSub);
               }
               done = true;
@@ -274,7 +274,7 @@ void SubList() {
       if (!abort) {
         p = 1;
         DisplayHorizontalBar(78, 7);
-        if (okconf(GetSession()->GetCurrentUser())) {
+        if (okconf(session()->user())) {
           if (uconfsub[1].confnum != -1) {
             bout.bprintf("|#1Select |#9[|#21-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ", ns);
           } else {
@@ -295,29 +295,29 @@ void SubList() {
             wwiv::strings::IsEquals(ss, "\r")) {
           bout.nl(2);
           done = true;
-          if (!okconf(GetSession()->GetCurrentUser())) {
+          if (!okconf(session()->user())) {
             abort = true;
           }
         }
         if (wwiv::strings::IsEquals(ss, "J")) {
-          if (okconf(GetSession()->GetCurrentUser())) {
+          if (okconf(session()->user())) {
             jump_conf(CONF_SUBS);
           }
-          sn = en = oldConf = GetSession()->GetCurrentConferenceMessageArea();
+          sn = en = oldConf = session()->GetCurrentConferenceMessageArea();
           ns = i = 0;
         }
         if (isdigit(ss[0])) {
-          for (i2 = 0; i2 < GetSession()->num_subs; i2++) {
+          for (i2 = 0; i2 < session()->num_subs; i2++) {
             if (wwiv::strings::IsEquals(usub[i2].keys, ss)) {
-              GetSession()->SetCurrentMessageArea(i2);
-              oldSub = usub[GetSession()->GetCurrentMessageArea()].subnum;
+              session()->SetCurrentMessageArea(i2);
+              oldSub = usub[session()->GetCurrentMessageArea()].subnum;
               done = true;
               abort = true;
             }
           }
         }
       } else {
-        if (okconf(GetSession()->GetCurrentUser())) {
+        if (okconf(session()->user())) {
           setuconf(CONF_SUBS, oldConf, oldSub);
         }
         done = true;
@@ -329,7 +329,7 @@ void SubList() {
     }
   } while (!hangup && !done);
 
-  if (okconf(GetSession()->GetCurrentUser())) {
+  if (okconf(session()->user())) {
     setuconf(CONF_SUBS, oldConf, oldSub);
   }
 }

@@ -140,7 +140,7 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
   if (pUser->GetForwardUserNumber() != 0) {
     bout << "|#9   Forwarded To : |#1";
     if (pUser->GetForwardSystemNumber() != 0) {
-      if (GetSession()->GetMaxNetworkNumber() > 1) {
+      if (session()->GetMaxNetworkNumber() > 1) {
         bout << net_networks[ pUser->GetForwardNetNumber() ].name <<
                            " #" << pUser->GetForwardUserNumber() <<
                            " @" << pUser->GetForwardSystemNumber() << wwiv::endl;
@@ -155,10 +155,10 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
 
     bout << "|#2H|#9) Password     : |#1";
     if (AllowLocalSysop()) {
-      GetSession()->localIO()->LocalPuts(pUser->GetPassword());
+      session()->localIO()->LocalPuts(pUser->GetPassword());
     }
 
-    if (incom && GetSession()->GetCurrentUser()->GetSl() == 255) {
+    if (incom && session()->user()->GetSl() == 255) {
       rputs(pUser->GetPassword());
     } else {
       rputs("(not shown remotely)");
@@ -485,7 +485,7 @@ void uedit(int usern, int other) {
       bout.nl();
       bout << "|#9(|#2Q|#9=|#1Quit, |#2?|#9=|#1Help|#9) User Editor Command: ";
       char ch = 0;
-      if (GetSession()->GetCurrentUser()->GetSl() == 255 || GetApplication()->GetWfcStatus()) {
+      if (session()->user()->GetSl() == 255 || GetApplication()->GetWfcStatus()) {
         ch = onek("ACDEFGHILMNOPQRSTUVWXYZ0123456789[]{}/,.?~%:", true);
       } else {
         ch = onek("ACDEFGHILMNOPQRSTUWYZ0123456789[]{}/,.?%", true);
@@ -497,7 +497,7 @@ void uedit(int usern, int other) {
         char ch1 = onek("\rABCDEFGHIJKLMNOP");
         if (ch1 != RETURN) {
           ch1 -= 'A';
-          if (GetApplication()->GetWfcStatus() || (GetSession()->GetCurrentUser()->HasArFlag(1 << ch1))) {
+          if (GetApplication()->GetWfcStatus() || (session()->user()->HasArFlag(1 << ch1))) {
             user.ToggleArFlag(1 << ch1);
             GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
           }
@@ -521,7 +521,7 @@ void uedit(int usern, int other) {
         break;
       case 'D':
         if (nUserNumber != 1) {
-          if (!user.IsUserDeleted() && GetSession()->GetEffectiveSl() > user.GetSl()) {
+          if (!user.IsUserDeleted() && session()->GetEffectiveSl() > user.GetSl()) {
             bout << "|#5Delete? ";
             if (yesno()) {
               deluser(nUserNumber);
@@ -543,9 +543,9 @@ void uedit(int usern, int other) {
       break;
       case 'F': {
         int nNetworkNumber = getnetnum("FILEnet");
-        GetSession()->SetNetworkNumber(nNetworkNumber);
+        session()->SetNetworkNumber(nNetworkNumber);
         if (nNetworkNumber != -1) {
-          set_net_num(GetSession()->GetNetworkNumber());
+          set_net_num(session()->GetNetworkNumber());
           bout << "Current Internet Address\r\n:" << user.GetEmailAddress() << wwiv::endl;
           bout << "New Address\r\n:";
           inputl(s, 75);
@@ -553,7 +553,7 @@ void uedit(int usern, int other) {
             if (check_inet_addr(s)) {
               user.SetEmailAddress(s);
               write_inet_addr(s, nUserNumber);
-              user.SetForwardNetNumber(GetSession()->GetNetworkNumber());
+              user.SetForwardNetNumber(session()->GetNetworkNumber());
             } else {
               bout.nl();
               bout << "Invalid format.\r\n";
@@ -592,7 +592,7 @@ void uedit(int usern, int other) {
         char ch1 = onek("\rABCDEFGHIJKLMNOP");
         if (ch1 != RETURN) {
           ch1 -= 'A';
-          if (GetApplication()->GetWfcStatus() || (GetSession()->GetCurrentUser()->HasDarFlag(1 << ch1))) {
+          if (GetApplication()->GetWfcStatus() || (session()->user()->HasDarFlag(1 << ch1))) {
             user.ToggleDarFlag(1 << ch1);
             GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
           }
@@ -689,24 +689,24 @@ void uedit(int usern, int other) {
           bout << "|#7Toggle callback verify flag (y/N) ? ";
           if (yesno()) {
             if (user.GetCbv() & 1) {
-              GetSession()->GetCurrentUser()->SetSl(syscfg.newusersl);
-              GetSession()->GetCurrentUser()->SetDsl(syscfg.newuserdsl);
-              GetSession()->GetCurrentUser()->SetRestriction(syscfg.newuser_restrict);
+              session()->user()->SetSl(syscfg.newusersl);
+              session()->user()->SetDsl(syscfg.newuserdsl);
+              session()->user()->SetRestriction(syscfg.newuser_restrict);
               user.SetExempt(0);
               user.SetAr(0);
               user.SetDar(0);
               user.SetCbv(user.GetCbv() - 1);
             } else {
-              if (user.GetSl() < GetSession()->cbv.sl) {
-                user.SetSl(GetSession()->cbv.sl);
+              if (user.GetSl() < session()->cbv.sl) {
+                user.SetSl(session()->cbv.sl);
               }
-              if (user.GetDsl() < GetSession()->cbv.dsl) {
-                user.SetDsl(GetSession()->cbv.dsl);
+              if (user.GetDsl() < session()->cbv.dsl) {
+                user.SetDsl(session()->cbv.dsl);
               }
-              user.SetRestriction(user.GetRestriction() | GetSession()->cbv.restrict);
-              user.SetExempt(user.GetExempt() | GetSession()->cbv.exempt);
-              user.SetArFlag(GetSession()->cbv.ar);
-              user.SetDarFlag(GetSession()->cbv.dar);
+              user.SetRestriction(user.GetRestriction() | session()->cbv.restrict);
+              user.SetExempt(user.GetExempt() | session()->cbv.exempt);
+              user.SetArFlag(session()->cbv.ar);
+              user.SetDarFlag(session()->cbv.dar);
               user.SetCbv(user.GetCbv() | 1);
             }
             bWriteUser = true;
@@ -753,7 +753,7 @@ void uedit(int usern, int other) {
         }
         break;
       case 'S': {
-        if (user.GetSl() >= GetSession()->GetEffectiveSl()) {
+        if (user.GetSl() >= session()->GetEffectiveSl()) {
           break;
         }
         bout.nl();
@@ -761,7 +761,7 @@ void uedit(int usern, int other) {
         string sl;
         input(&sl, 3);
         int nNewSL = atoi(sl.c_str());
-        if (!GetApplication()->GetWfcStatus() && nNewSL >= GetSession()->GetEffectiveSl() && nUserNumber != 1) {
+        if (!GetApplication()->GetWfcStatus() && nNewSL >= session()->GetEffectiveSl() && nUserNumber != 1) {
           bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
           pausescr();
           nNewSL = -1;
@@ -769,14 +769,14 @@ void uedit(int usern, int other) {
         if (nNewSL >= 0 && nNewSL < 255 && sl[0]) {
           user.SetSl(nNewSL);
           GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
-          if (nUserNumber == GetSession()->usernum) {
-            GetSession()->SetEffectiveSl(nNewSL);
+          if (nUserNumber == session()->usernum) {
+            session()->SetEffectiveSl(nNewSL);
           }
         }
       }
       break;
       case 'T': {
-        if (user.GetDsl() >= GetSession()->GetCurrentUser()->GetDsl()) {
+        if (user.GetDsl() >= session()->user()->GetDsl()) {
           break;
         }
         bout.nl();
@@ -784,7 +784,7 @@ void uedit(int usern, int other) {
         string dsl;
         input(&dsl, 3);
         int nNewDSL = atoi(dsl.c_str());
-        if (!GetApplication()->GetWfcStatus() && nNewDSL >= GetSession()->GetCurrentUser()->GetDsl() && nUserNumber != 1) {
+        if (!GetApplication()->GetWfcStatus() && nNewDSL >= session()->user()->GetDsl() && nUserNumber != 1) {
           bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
           pausescr();
           nNewDSL = -1;
@@ -924,10 +924,10 @@ void uedit(int usern, int other) {
         if (ch != '0') {
           nAutoValNum = ch - '1';
         }
-        if ((GetSession()->GetEffectiveSl() >= syscfg.autoval[nAutoValNum].sl) &&
-            (GetSession()->GetCurrentUser()->GetDsl() >= syscfg.autoval[nAutoValNum].dsl) &&
-            (((~GetSession()->GetCurrentUser()->GetAr()) & syscfg.autoval[nAutoValNum].ar) == 0) &&
-            (((~GetSession()->GetCurrentUser()->GetDar()) & syscfg.autoval[nAutoValNum].dar) == 0)) {
+        if ((session()->GetEffectiveSl() >= syscfg.autoval[nAutoValNum].sl) &&
+            (session()->user()->GetDsl() >= syscfg.autoval[nAutoValNum].dsl) &&
+            (((~session()->user()->GetAr()) & syscfg.autoval[nAutoValNum].ar) == 0) &&
+            (((~session()->user()->GetDar()) & syscfg.autoval[nAutoValNum].dar) == 0)) {
           auto_val(nAutoValNum, &user);
           GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
         }
@@ -1129,9 +1129,9 @@ void print_affil(WUser *pUser) {
   bout << "|#2   Sysp    : |#1";
   if (csne) {
     bout << "@" << pUser->GetHomeSystemNumber() << ", " << csne->name << ", on " <<
-                       GetSession()->GetNetworkName() << ".";
+                       session()->GetNetworkName() << ".";
   } else {
-    bout << "@" << pUser->GetHomeSystemNumber() << ", <UNKNOWN>, on " << GetSession()->GetNetworkName() <<
+    bout << "@" << pUser->GetHomeSystemNumber() << ", <UNKNOWN>, on " << session()->GetNetworkName() <<
                        ".";
   }
   bout.nl(2);

@@ -65,7 +65,7 @@ bool open_sub(bool wr) {
       fileSub.Seek(0L, File::seekBegin);
       postrec p;
       fileSub.Read(&p, sizeof(postrec));
-      GetSession()->SetNumMessagesInCurrentMessageArea(p.owneruser);
+      session()->SetNumMessagesInCurrentMessageArea(p.owneruser);
     }
   } else {
     fileSub.SetName(subdat_fn);
@@ -88,7 +88,7 @@ bool iscan1(int si, bool quick) {
     }
   }
   // forget it if an invalid sub #
-  if (si < 0 || si >= GetSession()->num_subs) {
+  if (si < 0 || si >= session()->num_subs) {
     return false;
   }
 
@@ -102,12 +102,12 @@ bool iscan1(int si, bool quick) {
     }
     // see if a sub has changed
     GetApplication()->GetStatusManager()->RefreshStatusCache();
-    if (GetSession()->subchg) {
-      GetSession()->SetCurrentReadMessageArea(-1);
+    if (session()->subchg) {
+      session()->SetCurrentReadMessageArea(-1);
     }
 
     // if already have this one set, nothing more to do
-    if (si == GetSession()->GetCurrentReadMessageArea()) {
+    if (si == session()->GetCurrentReadMessageArea()) {
       return true;
     }
   }
@@ -129,23 +129,23 @@ bool iscan1(int si, bool quick) {
   }
 
   // set sub
-  GetSession()->SetCurrentReadMessageArea(si);
-  GetSession()->subchg = 0;
+  session()->SetCurrentReadMessageArea(si);
+  session()->subchg = 0;
   last_msgnum = 0;
 
   // read in first rec, specifying # posts
   fileSub.Seek(0L, File::seekBegin);
   fileSub.Read(&p, sizeof(postrec));
-  GetSession()->SetNumMessagesInCurrentMessageArea(p.owneruser);
+  session()->SetNumMessagesInCurrentMessageArea(p.owneruser);
 
   // read in sub date, if don't already know it
-  if (GetSession()->m_SubDateCache[si] == 0) {
-    if (GetSession()->GetNumMessagesInCurrentMessageArea()) {
-      fileSub.Seek(GetSession()->GetNumMessagesInCurrentMessageArea() * sizeof(postrec), File::seekBegin);
+  if (session()->m_SubDateCache[si] == 0) {
+    if (session()->GetNumMessagesInCurrentMessageArea()) {
+      fileSub.Seek(session()->GetNumMessagesInCurrentMessageArea() * sizeof(postrec), File::seekBegin);
       fileSub.Read(&p, sizeof(postrec));
-      GetSession()->m_SubDateCache[si] = p.qscan;
+      session()->m_SubDateCache[si] = p.qscan;
     } else {
-      GetSession()->m_SubDateCache[si] = 1;
+      session()->m_SubDateCache[si] = 1;
     }
   }
 
@@ -171,13 +171,13 @@ postrec *get_post(int mn) {
     return nullptr;
   }
 
-  if (GetSession()->subchg == 1) {
+  if (session()->subchg == 1) {
     // sub has changed (detected in GetApplication()->GetStatusManager()->Read); invalidate cache
     believe_cache = false;
 
     // kludge: subchg==2 leaves subchg indicating change, but the '2' value
     // indicates, to this routine, that it has been handled at this level
-    GetSession()->subchg = 2;
+    session()->subchg = 2;
   }
   // see if we need new cache info
   if (!believe_cache ||
@@ -192,27 +192,27 @@ postrec *get_post(int mn) {
     }
 
     // re-read # msgs, if needed
-    if (GetSession()->subchg == 2) {
+    if (session()->subchg == 2) {
       fileSub.Seek(0L, File::seekBegin);
       fileSub.Read(&p, sizeof(postrec));
-      GetSession()->SetNumMessagesInCurrentMessageArea(p.owneruser);
+      session()->SetNumMessagesInCurrentMessageArea(p.owneruser);
 
       // another kludge: subchg==3 indicates we have re-read # msgs also
       // only used so we don't do this every time through
-      GetSession()->subchg = 3;
+      session()->subchg = 3;
 
       // adjust msgnum, if it is no longer valid
-      if (mn > GetSession()->GetNumMessagesInCurrentMessageArea()) {
-        mn = GetSession()->GetNumMessagesInCurrentMessageArea();
+      if (mn > session()->GetNumMessagesInCurrentMessageArea()) {
+        mn = session()->GetNumMessagesInCurrentMessageArea();
       }
     }
     // select new starting point of cache
     if (mn >= last_msgnum) {
       // going forward
-      if (GetSession()->GetNumMessagesInCurrentMessageArea() <= MAX_TO_CACHE) {
+      if (session()->GetNumMessagesInCurrentMessageArea() <= MAX_TO_CACHE) {
         cache_start = 1;
-      } else if (mn > (GetSession()->GetNumMessagesInCurrentMessageArea() - MAX_TO_CACHE)) {
-        cache_start = GetSession()->GetNumMessagesInCurrentMessageArea() - MAX_TO_CACHE + 1;
+      } else if (mn > (session()->GetNumMessagesInCurrentMessageArea() - MAX_TO_CACHE)) {
+        cache_start = session()->GetNumMessagesInCurrentMessageArea() - MAX_TO_CACHE + 1;
       } else {
         cache_start = mn;
       }
@@ -241,7 +241,7 @@ postrec *get_post(int mn) {
     believe_cache = true;
   }
   // error if msg # invalid
-  if (mn < 1 || mn > GetSession()->GetNumMessagesInCurrentMessageArea()) {
+  if (mn < 1 || mn > session()->GetNumMessagesInCurrentMessageArea()) {
     return nullptr;
   }
   last_msgnum = mn;
@@ -281,18 +281,18 @@ void add_post(postrec * pp) {
 
     // one more post
     p.owneruser++;
-    GetSession()->SetNumMessagesInCurrentMessageArea(p.owneruser);
+    session()->SetNumMessagesInCurrentMessageArea(p.owneruser);
     fileSub.Seek(0L, File::seekBegin);
     fileSub.Write(&p, sizeof(postrec));
 
     // add the new post
-    fileSub.Seek(GetSession()->GetNumMessagesInCurrentMessageArea() * sizeof(postrec), File::seekBegin);
+    fileSub.Seek(session()->GetNumMessagesInCurrentMessageArea() * sizeof(postrec), File::seekBegin);
     fileSub.Write(pp, sizeof(postrec));
 
     // we've modified the sub
     believe_cache = false;
-    GetSession()->subchg = 0;
-    GetSession()->m_SubDateCache[GetSession()->GetCurrentReadMessageArea()] = pp->qscan;
+    session()->subchg = 0;
+    session()->m_SubDateCache[session()->GetCurrentReadMessageArea()] = pp->qscan;
   }
   if (bCloseSubFile) {
     close_sub();
@@ -313,14 +313,14 @@ void delete_message(int mn) {
   GetApplication()->GetStatusManager()->RefreshStatusCache();
 
   if (fileSub.IsOpen()) {
-    if (mn > 0 && mn <= GetSession()->GetNumMessagesInCurrentMessageArea()) {
+    if (mn > 0 && mn <= session()->GetNumMessagesInCurrentMessageArea()) {
       char *pBuffer = static_cast<char *>(malloc(BUFSIZE));
       if (pBuffer) {
         postrec *p1 = get_post(mn);
-        remove_link(&(p1->msg), subboards[GetSession()->GetCurrentReadMessageArea()].filename);
+        remove_link(&(p1->msg), subboards[session()->GetCurrentReadMessageArea()].filename);
 
         long cp = static_cast<long>(mn + 1) * sizeof(postrec);
-        long len = static_cast<long>(GetSession()->GetNumMessagesInCurrentMessageArea() + 1) * sizeof(postrec);
+        long len = static_cast<long>(session()->GetNumMessagesInCurrentMessageArea() + 1) * sizeof(postrec);
 
         unsigned int nb = 0;
         do {
@@ -340,7 +340,7 @@ void delete_message(int mn) {
         fileSub.Seek(0L, File::seekBegin);
         fileSub.Read(&p, sizeof(postrec));
         p.owneruser--;
-        GetSession()->SetNumMessagesInCurrentMessageArea(p.owneruser);
+        session()->SetNumMessagesInCurrentMessageArea(p.owneruser);
         fileSub.Seek(0L, File::seekBegin);
         fileSub.Write(&p, sizeof(postrec));
 
@@ -384,13 +384,13 @@ void resynch(int *msgnum, postrec * pp) {
 
   GetApplication()->GetStatusManager()->RefreshStatusCache();
 
-  if (GetSession()->subchg || pp) {
+  if (session()->subchg || pp) {
     pp1 = get_post(*msgnum);
     if (IsSamePost(pp1, &p)) {
       return;
     } else if (!pp1 || (p.qscan < pp1->qscan)) {
-      if (*msgnum > GetSession()->GetNumMessagesInCurrentMessageArea()) {
-        *msgnum = GetSession()->GetNumMessagesInCurrentMessageArea() + 1;
+      if (*msgnum > session()->GetNumMessagesInCurrentMessageArea()) {
+        *msgnum = session()->GetNumMessagesInCurrentMessageArea() + 1;
       }
       for (int i = *msgnum - 1; i > 0; i--) {
         pp1 = get_post(i);
@@ -401,14 +401,14 @@ void resynch(int *msgnum, postrec * pp) {
       }
       *msgnum = 0;
     } else {
-      for (int i = *msgnum + 1; i <= GetSession()->GetNumMessagesInCurrentMessageArea(); i++) {
+      for (int i = *msgnum + 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
         pp1 = get_post(i);
         if (IsSamePost(&p, pp1) || (p.qscan <= pp1->qscan)) {
           *msgnum = i;
           return;
         }
       }
-      *msgnum = GetSession()->GetNumMessagesInCurrentMessageArea();
+      *msgnum = session()->GetNumMessagesInCurrentMessageArea();
     }
   }
 }
@@ -425,9 +425,9 @@ void pack_sub(int si) {
 
       bout << "\r\n|#7\xFE |#1Packing Message Area: |#5" << subboards[si].name << wwiv::endl;
 
-      for (int i = 1; i <= GetSession()->GetNumMessagesInCurrentMessageArea(); i++) {
+      for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
         if (i % 10 == 0) {
-          bout << i << "/" << GetSession()->GetNumMessagesInCurrentMessageArea() << "\r";
+          bout << i << "/" << session()->GetNumMessagesInCurrentMessageArea() << "\r";
         }
         postrec *p = get_post(i);
         if (p) {
@@ -445,14 +445,14 @@ void pack_sub(int si) {
             write_post(i, p);
           }
         }
-        bout << i << "/" << GetSession()->GetNumMessagesInCurrentMessageArea() << "\r";
+        bout << i << "/" << session()->GetNumMessagesInCurrentMessageArea() << "\r";
       }
 
       File::Remove(fn1);
       File::Rename(fn2, fn1);
 
       close_sub();
-      bout << "|#7\xFE |#1Done Packing " << GetSession()->GetNumMessagesInCurrentMessageArea() <<
+      bout << "|#7\xFE |#1Done Packing " << session()->GetNumMessagesInCurrentMessageArea() <<
                          " messages.                              \r\n";
     }
   }
@@ -461,7 +461,7 @@ void pack_sub(int si) {
 void pack_all_subs() {
   TempDisablePause disable_pause;
 
-  for (int i=0; i < GetSession()->num_subs && !hangup; i++) {
+  for (int i=0; i < session()->num_subs && !hangup; i++) {
     pack_sub(i);
     bool abort = checka();
     if (abort) {
