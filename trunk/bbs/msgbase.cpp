@@ -55,20 +55,20 @@ static void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, string* out
                                  string* outLocation) {
   string netName;
 
-  if (GetSession()->GetMaxNetworkNumber() > 1) {
-    netName = StrCat(net_networks[GetSession()->GetNetworkNumber()].name, "- ");
+  if (session()->GetMaxNetworkNumber() > 1) {
+    netName = StrCat(net_networks[session()->GetNetworkNumber()].name, "- ");
   }
 
   outNetworkName->clear();
   outLocation->clear();
 
-  if (IsEqualsIgnoreCase(GetSession()->GetNetworkName(), "Internet") ||
+  if (IsEqualsIgnoreCase(session()->GetNetworkName(), "Internet") ||
       nSystemNumber == 32767) {
     outNetworkName->assign("Internet Mail and Newsgroups");
     return;
   }
 
-  if (nSystemNumber && GetSession()->GetCurrentNetworkType() == net_type_wwivnet) {
+  if (nSystemNumber && session()->GetCurrentNetworkType() == net_type_wwivnet) {
     net_system_list_rec *csne = next_system(nSystemNumber);
     if (csne) {
       string netstatus;
@@ -309,7 +309,7 @@ void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed) {
 
   use_workspace = (bNoEditAllowed || !okfsed()) ? true : false;
 
-  if (!GetSession()->IsNewMailWatiting()) {
+  if (!session()->IsNewMailWatiting()) {
     bout << "\r\nFile loaded into workspace.\r\n\n";
     if (!use_workspace) {
       bout << "Editing will be allowed.\r\n";
@@ -334,7 +334,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
   }
   if (userRecord.GetForwardSystemNumber() != 0) {
     if (!userRecord.IsMailForwardedToInternet()) {
-      int nNetworkNumber = GetSession()->GetNetworkNumber();
+      int nNetworkNumber = session()->GetNetworkNumber();
       set_net_num(userRecord.GetForwardNetNumber());
       if (!valid_system(userRecord.GetForwardSystemNumber())) {
         set_net_num(nNetworkNumber);
@@ -461,7 +461,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
   m.status  = 0;
   m.daten = static_cast<unsigned long>(time(nullptr));
 
-  if (m.fromsys && GetSession()->GetMaxNetworkNumber() > 1) {
+  if (m.fromsys && session()->GetMaxNetworkNumber() > 1) {
     m.status |= status_new_net;
     m.title[79] = '\0';
     m.title[80] = static_cast<char>(nFromNetworkNumber);
@@ -524,7 +524,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     nh.method = 0;
     unique_ptr<char[]> b1(new char[lEmailFileLen + 768]);
     i = 0;
-    if (nUserNumber == 0 && nFromNetworkNumber == GetSession()->GetNetworkNumber()) {
+    if (nUserNumber == 0 && nFromNetworkNumber == session()->GetNetworkNumber()) {
       nh.main_type = main_type_email_name;
       strcpy(&(b1[i]), net_email_name);
       i += strlen(net_email_name) + 1;
@@ -537,17 +537,17 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
       bout.bprintf("Message truncated by %lu bytes for the network.", nh.length - 32760L);
       nh.length = 32760;
     }
-    if (nFromNetworkNumber != GetSession()->GetNetworkNumber()) {
-      gate_msg(&nh, b1.get(), GetSession()->GetNetworkNumber(), net_email_name, nullptr, nFromNetworkNumber);
+    if (nFromNetworkNumber != session()->GetNetworkNumber()) {
+      gate_msg(&nh, b1.get(), session()->GetNetworkNumber(), net_email_name, nullptr, nFromNetworkNumber);
     } else {
       string net_filename;
       if (nForwardedCode) {
         net_filename = StringPrintf("%sp1%s",
-          GetSession()->GetNetworkDataDirectory().c_str(),
+          session()->GetNetworkDataDirectory().c_str(),
           GetApplication()->GetNetworkExtension().c_str());
       } else {
         net_filename = StringPrintf("%sp0%s",
-          GetSession()->GetNetworkDataDirectory().c_str(),
+          session()->GetNetworkDataDirectory().c_str(),
           GetApplication()->GetNetworkExtension().c_str());
       }
       File fileNetworkPacket(net_filename);
@@ -579,8 +579,8 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
       sysoplog(tempLogMessage);
       logMessage += ">UNKNOWN<";
     }
-    if (nSystemNumber == 0 && GetSession()->GetEffectiveSl() > syscfg.newusersl && userRecord.GetForwardSystemNumber() == 0
-        && !GetSession()->IsNewMailWatiting()) {
+    if (nSystemNumber == 0 && session()->GetEffectiveSl() > syscfg.newusersl && userRecord.GetForwardSystemNumber() == 0
+        && !session()->IsNewMailWatiting()) {
       bout << "|#5Attach a file to this message? ";
       if (yesno()) {
         attach_file(1);
@@ -588,16 +588,16 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     }
   } else {
     string logMessagePart;
-    if ((nSystemNumber == 1 && IsEqualsIgnoreCase(GetSession()->GetNetworkName(), "Internet")) ||
+    if ((nSystemNumber == 1 && IsEqualsIgnoreCase(session()->GetNetworkName(), "Internet")) ||
         nSystemNumber == 32767) {
       logMessagePart = net_email_name;
     } else {
-      if (GetSession()->GetMaxNetworkNumber() > 1) {
+      if (session()->GetMaxNetworkNumber() > 1) {
         if (nUserNumber == 0) {
           logMessagePart = StringPrintf("%s @%u.%s", net_email_name, nSystemNumber,
-                           GetSession()->GetNetworkName());
+                           session()->GetNetworkName());
         } else {
-          logMessagePart = StringPrintf("#%u @%u.%s", nUserNumber, nSystemNumber, GetSession()->GetNetworkName());
+          logMessagePart = StringPrintf("#%u @%u.%s", nUserNumber, nSystemNumber, session()->GetNetworkName());
         }
       } else {
         if (nUserNumber == 0) {
@@ -614,20 +614,20 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
   WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
   if (nUserNumber == 1 && nSystemNumber == 0) {
     pStatus->IncrementNumFeedbackSentToday();
-    GetSession()->GetCurrentUser()->SetNumFeedbackSent(GetSession()->GetCurrentUser()->GetNumFeedbackSent() + 1);
-    GetSession()->GetCurrentUser()->SetNumFeedbackSentToday(GetSession()->GetCurrentUser()->GetNumFeedbackSentToday() + 1);
+    session()->user()->SetNumFeedbackSent(session()->user()->GetNumFeedbackSent() + 1);
+    session()->user()->SetNumFeedbackSentToday(session()->user()->GetNumFeedbackSentToday() + 1);
     ++fsenttoday;
   } else {
     pStatus->IncrementNumEmailSentToday();
-    GetSession()->GetCurrentUser()->SetNumEmailSentToday(GetSession()->GetCurrentUser()->GetNumEmailSentToday() + 1);
+    session()->user()->SetNumEmailSentToday(session()->user()->GetNumEmailSentToday() + 1);
     if (nSystemNumber == 0) {
-      GetSession()->GetCurrentUser()->SetNumEmailSent(GetSession()->GetCurrentUser()->GetNumEmailSent() + 1);
+      session()->user()->SetNumEmailSent(session()->user()->GetNumEmailSent() + 1);
     } else {
-      GetSession()->GetCurrentUser()->SetNumNetEmailSent(GetSession()->GetCurrentUser()->GetNumNetEmailSent() + 1);
+      session()->user()->SetNumNetEmailSent(session()->user()->GetNumNetEmailSent() + 1);
     }
   }
   GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
-  if (!GetSession()->IsNewMailWatiting()) {
+  if (!session()->IsNewMailWatiting()) {
     bout.Color(3);
     bout << logMessage;
     bout.nl();
@@ -662,21 +662,21 @@ bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit) {
       bout << "\r\nUnknown system number.\r\n\n";
       return false;
     }
-    if (GetSession()->GetCurrentUser()->IsRestrictionNet()) {
+    if (session()->user()->IsRestrictionNet()) {
       bout << "\r\nYou can't send mail off the system.\r\n";
       return false;
     }
   }
-  if (!GetSession()->IsNewMailWatiting() && !bForceit) {
+  if (!session()->IsNewMailWatiting() && !bForceit) {
     if (((nUserNumber == 1 && nSystemNumber == 0 &&
-          (fsenttoday >= 5 || GetSession()->GetCurrentUser()->GetNumFeedbackSentToday() >= 10)) ||
+          (fsenttoday >= 5 || session()->user()->GetNumFeedbackSentToday() >= 10)) ||
          ((nUserNumber != 1 || nSystemNumber != 0) &&
-          (GetSession()->GetCurrentUser()->GetNumEmailSentToday() >= getslrec(GetSession()->GetEffectiveSl()).emails)))
+          (session()->user()->GetNumEmailSentToday() >= getslrec(session()->GetEffectiveSl()).emails)))
         && !cs()) {
       bout << "\r\nToo much mail sent today.\r\n\n";
       return false;
     }
-    if (GetSession()->GetCurrentUser()->IsRestrictionEmail() && nUserNumber != 1) {
+    if (session()->user()->IsRestrictionEmail() && nUserNumber != 1) {
       bout << "\r\nYou can't send mail.\r\n\n";
       return false;
     }
@@ -722,7 +722,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
   if (nSystemNumber) {
     csne = next_system(nSystemNumber);
   }
-  if (getslrec(GetSession()->GetEffectiveSl()).ability & ability_read_email_anony) {
+  if (getslrec(session()->GetEffectiveSl()).ability & ability_read_email_anony) {
     an = 1;
   } else if (anony & (anony_sender | anony_sender_da | anony_sender_pp)) {
     an = 0;
@@ -739,15 +739,15 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
     }
   } else {
     if ((nSystemNumber == 1 && nUserNumber == 0 &&
-         IsEqualsIgnoreCase(GetSession()->GetNetworkName(), "Internet")) ||
+         IsEqualsIgnoreCase(session()->GetNetworkName(), "Internet")) ||
         nSystemNumber == 32767) {
       strcpy(szDestination, net_email_name);
     } else {
-      if (GetSession()->GetMaxNetworkNumber() > 1) {
+      if (session()->GetMaxNetworkNumber() > 1) {
         if (nUserNumber == 0) {
-          sprintf(szDestination, "%s @%u.%s", net_email_name, nSystemNumber, GetSession()->GetNetworkName());
+          sprintf(szDestination, "%s @%u.%s", net_email_name, nSystemNumber, session()->GetNetworkName());
         } else {
-          sprintf(szDestination, "#%u @%u.%s", nUserNumber, nSystemNumber, GetSession()->GetNetworkName());
+          sprintf(szDestination, "#%u @%u.%s", nUserNumber, nSystemNumber, session()->GetNetworkName());
         }
       } else {
         if (nUserNumber == 0) {
@@ -758,12 +758,12 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
       }
     }
   }
-  if (!GetSession()->IsNewMailWatiting()) {
+  if (!session()->IsNewMailWatiting()) {
     bout << "|#9E-mailing |#2";
   }
   bout << szDestination;
   bout.nl();
-  int i = (getslrec(GetSession()->GetEffectiveSl()).ability & ability_email_anony) ? anony_enable_anony : 0;
+  int i = (getslrec(session()->GetEffectiveSl()).ability & ability_email_anony) ? anony_enable_anony : 0;
 
   if (anony & (anony_receiver_pp | anony_receiver_da)) {
     i = anony_enable_dear_abby;
@@ -771,7 +771,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
   if (anony & anony_receiver) {
     i = anony_enable_anony;
   }
-  if (i == anony_enable_anony && GetSession()->GetCurrentUser()->IsRestrictionAnonymous()) {
+  if (i == anony_enable_anony && session()->user()->IsRestrictionAnonymous()) {
     i = 0;
   }
   if (nSystemNumber != 0) {
@@ -804,8 +804,8 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
     i |= anony_receiver_pp;
   }
 
-  if (GetSession()->IsCarbonCopyEnabled()) {
-    if (!GetSession()->IsNewMailWatiting()) {
+  if (session()->IsCarbonCopyEnabled()) {
+    if (!session()->IsNewMailWatiting()) {
       bout.nl();
       bout << "|#9Copy this mail to others? ";
       nNumUsers = 0;
@@ -813,9 +813,9 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
         bool done = false;
         carbon_copy[nNumUsers].nUserNumber = nUserNumber;
         carbon_copy[nNumUsers].nSystemNumber = nSystemNumber;
-        strcpy(carbon_copy[nNumUsers].net_name, GetSession()->GetNetworkName());
+        strcpy(carbon_copy[nNumUsers].net_name, session()->GetNetworkName());
         strcpy(carbon_copy[nNumUsers].net_email_name, net_email_name);
-        carbon_copy[nNumUsers].net_num = GetSession()->GetNetworkNumber();
+        carbon_copy[nNumUsers].net_num = session()->GetNetworkNumber();
         nNumUsers++;
         do {
           string emailAddress;
@@ -830,9 +830,9 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
           if (tu || ts) {
             carbon_copy[nNumUsers].nUserNumber = tu;
             carbon_copy[nNumUsers].nSystemNumber = ts;
-            strcpy(carbon_copy[nNumUsers].net_name, GetSession()->GetNetworkName());
+            strcpy(carbon_copy[nNumUsers].net_name, session()->GetNetworkName());
             strcpy(carbon_copy[nNumUsers].net_email_name, net_email_name);
-            carbon_copy[nNumUsers].net_num = GetSession()->GetNetworkNumber();
+            carbon_copy[nNumUsers].net_num = session()->GetNetworkNumber();
             nNumUsers++;
             cc = true;
           }
@@ -864,7 +864,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
             strcpy(szDestination, carbon_copy[j].net_email_name);
           } else {
             set_net_num(carbon_copy[j].net_num);
-            if (GetSession()->GetMaxNetworkNumber() > 1) {
+            if (session()->GetMaxNetworkNumber() > 1) {
               if (carbon_copy[j].nUserNumber == 0) {
                 sprintf(szDestination, "%s@%u.%s", carbon_copy[j].net_email_name, carbon_copy[j].nSystemNumber,
                         carbon_copy[j].net_name);
@@ -910,11 +910,11 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
     for (int nCounter = 0; nCounter < nNumUsers; nCounter++) {
       set_net_num(carbon_copy[nCounter].net_num);
       sendout_email(title, &messageRecord, i, carbon_copy[nCounter].nUserNumber, carbon_copy[nCounter].nSystemNumber, an,
-                    GetSession()->usernum, net_sysnum, 0, carbon_copy[nCounter].net_num);
+                    session()->usernum, net_sysnum, 0, carbon_copy[nCounter].net_num);
     }
   } else {
-    sendout_email(title, &messageRecord, i, nUserNumber, nSystemNumber, an, GetSession()->usernum, net_sysnum, 0,
-                  GetSession()->GetNetworkNumber());
+    sendout_email(title, &messageRecord, i, nUserNumber, nSystemNumber, an, session()->usernum, net_sysnum, 0,
+                  session()->GetNetworkNumber());
   }
 }
 
@@ -1104,7 +1104,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
           ctrld = 1;
         } else if (ctrld == 1) {
           if (ch >= '0' && ch <= '9') {
-            if (GetSession()->GetCurrentUser()->GetOptionalVal() < (ch - '0')) {
+            if (session()->user()->GetOptionalVal() < (ch - '0')) {
               ctrld = 0;
             } else {
               ctrld = -1;
@@ -1119,8 +1119,8 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
           if (g_flags & g_flag_ansi_movement) {
             g_flags &= ~g_flag_ansi_movement;
             lines_listed = 0;
-            if (GetSession()->localIO()->GetTopLine() && GetSession()->localIO()->GetScreenBottom() == 24) {
-              GetSession()->localIO()->set_protect(0);
+            if (session()->localIO()->GetTopLine() && session()->localIO()->GetScreenBottom() == 24) {
+              session()->localIO()->set_protect(0);
             }
           }
           s[nNumCharsPtr++] = ch;
@@ -1133,20 +1133,20 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
 
         if (printit || ansi || nLineLenPtr >= 80) {
           if (centre && (ctrld != -1)) {
-            int nSpacesToCenter = (GetSession()->GetCurrentUser()->GetScreenChars() - GetSession()->localIO()->WhereX() -
+            int nSpacesToCenter = (session()->user()->GetScreenChars() - session()->localIO()->WhereX() -
                                    nLineLenPtr) / 2;
             osan(charstr(nSpacesToCenter, ' '), &abort, next);
           }
           if (nNumCharsPtr) {
             if (ctrld != -1) {
-              if ((GetSession()->localIO()->WhereX() + nLineLenPtr >= GetSession()->GetCurrentUser()->GetScreenChars()) && !centre
+              if ((session()->localIO()->WhereX() + nLineLenPtr >= session()->user()->GetScreenChars()) && !centre
                   && !ansi) {
                 bout.nl();
               }
               s[nNumCharsPtr] = '\0';
               osan(s, &abort, next);
               if (ctrla && s[nNumCharsPtr - 1] != SPACE && !ansi) {
-                if (GetSession()->localIO()->WhereX() < GetSession()->GetCurrentUser()->GetScreenChars() - 1) {
+                if (session()->localIO()->WhereX() < session()->user()->GetScreenChars() - 1) {
                   bputch(SPACE);
                 } else {
                   bout.nl();
@@ -1189,7 +1189,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   if (express && abort && !*next) {
     expressabort = true;
   }
-  if (ansi && GetSession()->topdata && GetSession()->IsUserOnline()) {
+  if (ansi && session()->topdata && session()->IsUserOnline()) {
     GetApplication()->UpdateTopScreen();
   }
   if (syscfg.sysconfig & sysconfig_enable_mci) {
@@ -1201,7 +1201,7 @@ void read_message(int n, bool *next, int *val) {
   bout.nl();
   bool abort = false;
   *next = false;
-  if (GetSession()->GetCurrentUser()->IsUseClearScreen()) {
+  if (session()->user()->IsUseClearScreen()) {
     bout.cls();
   }
   if (forcescansub) {
@@ -1211,11 +1211,11 @@ void read_message(int n, bool *next, int *val) {
   }
 
   bout.bprintf(" |#9Msg|#7: [|#1%u|#7/|#1%lu|#7]|#%d |#2%s\r\n", n,
-                                    GetSession()->GetNumMessagesInCurrentMessageArea(), GetSession()->GetMessageColor(),
-                                    subboards[GetSession()->GetCurrentReadMessageArea()].name);
+                                    session()->GetNumMessagesInCurrentMessageArea(), session()->GetMessageColor(),
+                                    subboards[session()->GetCurrentReadMessageArea()].name);
   const string subjectLine = "|#9Subj|#7: ";
   osan(subjectLine, &abort, next);
-  bout.Color(GetSession()->GetMessageColor());
+  bout.Color(session()->GetMessageColor());
   postrec p = *get_post(n);
   if (p.status & (status_unvalidated | status_delete)) {
     plan(6, "<<< NOT VALIDATED YET >>>", &abort, next);
@@ -1224,41 +1224,41 @@ void read_message(int n, bool *next, int *val) {
     }
     *val |= 1;
     osan(subjectLine, &abort, next);
-    bout.Color(GetSession()->GetMessageColor());
+    bout.Color(session()->GetMessageColor());
   }
   strncpy(irt, p.title, 60);
   irt_name[0] = '\0';
-  plan(GetSession()->GetMessageColor(), irt, &abort, next);
+  plan(session()->GetMessageColor(), irt, &abort, next);
   if ((p.status & status_no_delete) && lcs()) {
     osan("|#9Info|#7: ", &abort, next);
-    plan(GetSession()->GetMessageColor(), "Permanent Message", &abort, next);
+    plan(session()->GetMessageColor(), "Permanent Message", &abort, next);
   }
-  if ((p.status & status_pending_net) && GetSession()->GetCurrentUser()->GetSl() > syscfg.newusersl) {
+  if ((p.status & status_pending_net) && session()->user()->GetSl() > syscfg.newusersl) {
     osan("|#9Val|#7:  ", &abort, next);
-    plan(GetSession()->GetMessageColor(), "Not Network Validated", &abort, next);
+    plan(session()->GetMessageColor(), "Not Network Validated", &abort, next);
     *val |= 2;
   }
   if (!abort) {
-    bool bReadit = (lcs() || (getslrec(GetSession()->GetEffectiveSl()).ability & ability_read_post_anony)) ? true : false;
-    int nNetNumSaved = GetSession()->GetNetworkNumber();
+    bool bReadit = (lcs() || (getslrec(session()->GetEffectiveSl()).ability & ability_read_post_anony)) ? true : false;
+    int nNetNumSaved = session()->GetNetworkNumber();
 
     if (p.status & status_post_new_net) {
       set_net_num(p.title[80]);
     }
     read_message1(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit, next,
-                  (subboards[GetSession()->GetCurrentReadMessageArea()].filename), p.ownersys, p.owneruser);
+                  (subboards[session()->GetCurrentReadMessageArea()].filename), p.ownersys, p.owneruser);
 
-    if (nNetNumSaved != GetSession()->GetNetworkNumber()) {
+    if (nNetNumSaved != session()->GetNetworkNumber()) {
       set_net_num(nNetNumSaved);
     }
 
-    GetSession()->GetCurrentUser()->SetNumMessagesRead(GetSession()->GetCurrentUser()->GetNumMessagesRead() + 1);
-    GetSession()->SetNumMessagesReadThisLogon(GetSession()->GetNumMessagesReadThisLogon() + 1);
+    session()->user()->SetNumMessagesRead(session()->user()->GetNumMessagesRead() + 1);
+    session()->SetNumMessagesReadThisLogon(session()->GetNumMessagesReadThisLogon() + 1);
   } else if (express && !*next) {
     expressabort = true;
   }
-  if (p.qscan > qsc_p[GetSession()->GetCurrentReadMessageArea()]) {
-    qsc_p[GetSession()->GetCurrentReadMessageArea()] = p.qscan;
+  if (p.qscan > qsc_p[session()->GetCurrentReadMessageArea()]) {
+    qsc_p[session()->GetCurrentReadMessageArea()] = p.qscan;
   }
   
   WStatus *pStatus = GetApplication()->GetStatusManager()->GetStatus();

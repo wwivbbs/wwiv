@@ -96,20 +96,20 @@ char bgetch() {
       return charbuffer[charbufferpointer++];
     }
   }
-  if (GetSession()->localIO()->LocalKeyPressed()) {
-    ch = GetSession()->localIO()->LocalGetChar();
-    GetSession()->SetLastKeyLocal(true);
+  if (session()->localIO()->LocalKeyPressed()) {
+    ch = session()->localIO()->LocalGetChar();
+    session()->SetLastKeyLocal(true);
     if (!(g_flags & g_flag_allow_extended)) {
       if (!ch) {
-        ch = GetSession()->localIO()->LocalGetChar();
-        GetSession()->localIO()->skey(ch);
+        ch = session()->localIO()->LocalGetChar();
+        session()->localIO()->skey(ch);
         ch = static_cast< char >(((ch == F10) || (ch == CF10)) ? 2 : 0);
       }
     }
     timelastchar1 = timer1();
   } else if (incom && bkbhitraw()) {
     ch = bgetchraw();
-    GetSession()->SetLastKeyLocal(false);
+    session()->SetLastKeyLocal(false);
   }
 
   if (!(g_flags & g_flag_allow_extended)) {
@@ -132,7 +132,7 @@ void HandleControlKey(char *ch) {
     case CF:   // CTRL-F
       if (okmacro && (!charbufferpointer)) {
         int macroNum = MACRO_KEY_TABLE[(int)c];
-        strncpy(charbuffer, &(GetSession()->GetCurrentUser()->GetMacro(macroNum)[0]), sizeof(charbuffer) - 1);
+        strncpy(charbuffer, &(session()->user()->GetMacro(macroNum)[0]), sizeof(charbuffer) - 1);
         c = charbuffer[0];
         if (c) {
           charbufferpointer = 1;
@@ -147,7 +147,7 @@ void HandleControlKey(char *ch) {
     case CU:  // CTRL-U
       if (local_echo) {
         char xl[81], cl[81], atr[81], cc;
-        GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+        session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
         bout.Color(0);
         bout.nl(2);
         multi_instance();
@@ -169,7 +169,7 @@ void HandleControlKey(char *ch) {
       toggle_avail();
       break;
     case CY:
-      GetSession()->GetCurrentUser()->ToggleStatusFlag(WUser::pauseOnPage);
+      session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
       break;
     }
   }
@@ -179,7 +179,7 @@ void HandleControlKey(char *ch) {
 void PrintTime() {
   char xl[81], cl[81], atr[81], cc;
 
-  GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
 
   bout.Color(0);
   bout.nl(2);
@@ -190,7 +190,7 @@ void PrintTime() {
   currentTime.erase(currentTime.find_last_of("\r\n"));
 
   bout << "|#2" << currentTime << wwiv::endl;
-  if (GetSession()->IsUserOnline()) {
+  if (session()->IsUserOnline()) {
     bout << "|#9Time on   = |#1" << ctim(timer() - timeon) << wwiv::endl;
     bout << "|#9Time left = |#1" << ctim(nsl()) << wwiv::endl;
   }
@@ -208,7 +208,7 @@ void RedrawCurrentLine() {
   ansistr[ansiptr_1] = 0;
   strncpy(ansistr_1, ansistr, sizeof(ansistr_1) - 1);
 
-  GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
   bout.nl();
   RestoreCurrentLine(cl, atr, xl, &cc);
 

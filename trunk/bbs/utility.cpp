@@ -94,7 +94,7 @@ void remove_from_temp(const char *pszFileName, const char *pszDirectoryName, boo
  * @return true if the user wants ANSI, false otherwise.
  */
 bool okansi() {
-  return GetSession()->GetCurrentUser()->HasAnsi() && !x_only;
+  return session()->user()->HasAnsi() && !x_only;
 }
 
 /**
@@ -104,47 +104,47 @@ bool okansi() {
 void frequent_init() {
   setiia(90);
   g_flags = 0;
-  GetSession()->tagging = 0;
+  session()->tagging = 0;
   newline = true;
-  GetSession()->SetCurrentReadMessageArea(-1);
-  GetSession()->SetCurrentConferenceMessageArea(0);
-  GetSession()->SetCurrentConferenceFileArea(0);
+  session()->SetCurrentReadMessageArea(-1);
+  session()->SetCurrentConferenceMessageArea(0);
+  session()->SetCurrentConferenceFileArea(0);
   ansiptr = 0;
   curatr = 0x07;
   outcom = false;
   incom = false;
   charbufferpointer = 0;
-  GetSession()->localIO()->SetTopLine(0);
-  GetSession()->screenlinest = defscreenbottom + 1;
+  session()->localIO()->SetTopLine(0);
+  session()->screenlinest = defscreenbottom + 1;
   endofline[0] = '\0';
   hangup = false;
   hungup = false;
   chatcall = false;
-  GetSession()->localIO()->ClearChatReason();
-  GetSession()->SetUserOnline(false);
+  session()->localIO()->ClearChatReason();
+  session()->SetUserOnline(false);
   change_color = 0;
   chatting = 0;
   local_echo = true;
   irt[0] = '\0';
   irt_name[0] = '\0';
   lines_listed = 0;
-  GetSession()->ReadCurrentUser(1);
+  session()->ReadCurrentUser(1);
   read_qscn(1, qsc, false);
-  fwaiting = (GetSession()->GetCurrentUser()->IsUserDeleted()) ? 0 : GetSession()->GetCurrentUser()->GetNumMailWaiting();
+  fwaiting = (session()->user()->IsUserDeleted()) ? 0 : session()->user()->GetNumMailWaiting();
   okmacro = true;
   okskey = true;
   mailcheck = false;
   smwcheck = false;
   use_workspace = false;
   extratimecall = 0.0;
-  GetSession()->using_modem = 0;
-  GetSession()->localIO()->set_global_handle(false);
+  session()->using_modem = 0;
+  session()->localIO()->set_global_handle(false);
   File::SetFilePermissions(g_szDSZLogFileName, File::permReadWrite);
   File::Remove(g_szDSZLogFileName);
-  GetSession()->SetTimeOnlineLimited(false);
-  GetSession()->localIO()->set_x_only(0, nullptr, 0);
+  session()->SetTimeOnlineLimited(false);
+  session()->localIO()->set_x_only(0, nullptr, 0);
   set_net_num(0);
-  set_language(GetSession()->GetCurrentUser()->GetLanguage());
+  set_language(session()->user()->GetLanguage());
   reset_disable_conf();
 }
 
@@ -153,11 +153,11 @@ void frequent_init() {
  * Gets the current users upload/download ratio.
  */
 double ratio() {
-  if (GetSession()->GetCurrentUser()->GetDownloadK() == 0) {
+  if (session()->user()->GetDownloadK() == 0) {
     return 99.999;
   }
-  double r = static_cast<float>(GetSession()->GetCurrentUser()->GetUploadK()) /
-             static_cast<float>(GetSession()->GetCurrentUser()->GetDownloadK());
+  double r = static_cast<float>(session()->user()->GetUploadK()) /
+             static_cast<float>(session()->user()->GetDownloadK());
 
   return (r > 99.998) ? 99.998 : r;
 }
@@ -166,11 +166,11 @@ double ratio() {
  * Gets the current users post/call ratio.
  */
 double post_ratio() {
-  if (GetSession()->GetCurrentUser()->GetNumLogons() == 0) {
+  if (session()->user()->GetNumLogons() == 0) {
     return 99.999;
   }
-  double r = static_cast<float>(GetSession()->GetCurrentUser()->GetNumMessagesPosted()) /
-             static_cast<float>(GetSession()->GetCurrentUser()->GetNumLogons());
+  double r = static_cast<float>(session()->user()->GetNumMessagesPosted()) /
+             static_cast<float>(session()->user()->GetNumLogons());
   return (r > 99.998) ? 99.998 : r;
 }
 
@@ -178,22 +178,22 @@ double nsl() {
   double rtn = 1.00;
 
   double dd = timer();
-  if (GetSession()->IsUserOnline()) {
+  if (session()->IsUserOnline()) {
     if (timeon > (dd + SECONDS_PER_MINUTE_FLOAT)) {
       timeon -= SECONDS_PER_HOUR_FLOAT * HOURS_PER_DAY_FLOAT;
     }
     double tot = dd - timeon;
-    double tpl = static_cast<double>(getslrec(GetSession()->GetEffectiveSl()).time_per_logon) * MINUTES_PER_HOUR_FLOAT;
-    double tpd = static_cast<double>(getslrec(GetSession()->GetEffectiveSl()).time_per_day) * MINUTES_PER_HOUR_FLOAT;
-    double tlc = tpl - tot + GetSession()->GetCurrentUser()->GetExtraTime() + extratimecall;
-    double tlt = tpd - tot - static_cast<double>(GetSession()->GetCurrentUser()->GetTimeOnToday()) +
-                 GetSession()->GetCurrentUser()->GetExtraTime();
+    double tpl = static_cast<double>(getslrec(session()->GetEffectiveSl()).time_per_logon) * MINUTES_PER_HOUR_FLOAT;
+    double tpd = static_cast<double>(getslrec(session()->GetEffectiveSl()).time_per_day) * MINUTES_PER_HOUR_FLOAT;
+    double tlc = tpl - tot + session()->user()->GetExtraTime() + extratimecall;
+    double tlt = tpd - tot - static_cast<double>(session()->user()->GetTimeOnToday()) +
+                 session()->user()->GetExtraTime();
 
     tlt = std::min<double>(tlc, tlt);
     rtn = in_range<double>(0.0, 32767.0, tlt);
   }
 
-  GetSession()->SetTimeOnlineLimited(false);
+  session()->SetTimeOnlineLimited(false);
   if (syscfg.executetime) {
     double tlt = time_event - dd;
     if (tlt < 0.0) {
@@ -201,7 +201,7 @@ double nsl() {
     }
     if (rtn > tlt) {
       rtn = tlt;
-      GetSession()->SetTimeOnlineLimited(true);
+      session()->SetTimeOnlineLimited(true);
     }
     check_event();
     if (do_event) {
@@ -237,7 +237,7 @@ void send_net(net_header_rec * nh, unsigned short int *list, const char *text, c
   WWIV_ASSERT(nh);
 
   const string filename = StringPrintf("%sp1%s",
-    GetSession()->GetNetworkDataDirectory().c_str(),
+    session()->GetNetworkDataDirectory().c_str(),
     GetApplication()->GetNetworkExtension().c_str());
   File file(filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
@@ -332,14 +332,14 @@ void preload_subs() {
   bout.nl();
   bout << "|#1Caching message areas";
   int i1 = 3;
-  for (GetSession()->SetMessageAreaCacheNumber(0);
-       GetSession()->GetMessageAreaCacheNumber() < GetSession()->num_subs && !abort;
-       GetSession()->SetMessageAreaCacheNumber(GetSession()->GetMessageAreaCacheNumber() + 1)) {
-    if (!GetSession()->m_SubDateCache[GetSession()->GetMessageAreaCacheNumber()]) {
-      iscan1(GetSession()->GetMessageAreaCacheNumber(), true);
+  for (session()->SetMessageAreaCacheNumber(0);
+       session()->GetMessageAreaCacheNumber() < session()->num_subs && !abort;
+       session()->SetMessageAreaCacheNumber(session()->GetMessageAreaCacheNumber() + 1)) {
+    if (!session()->m_SubDateCache[session()->GetMessageAreaCacheNumber()]) {
+      iscan1(session()->GetMessageAreaCacheNumber(), true);
     }
     bout << "\x03" << i1 << ".";
-    if ((GetSession()->GetMessageAreaCacheNumber() % 5) == 4) {
+    if ((session()->GetMessageAreaCacheNumber() % 5) == 4) {
       i1++;
       if (i1 == 4) {
         i1++;
@@ -427,7 +427,7 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
   WWIV_ASSERT(menu_pos);
   WWIV_ASSERT(smc);
 
-  GetSession()->localIO()->tleft(true);
+  session()->localIO()->tleft(true);
 
   if (bNeedsRedraw) {
     amount = 1;
@@ -567,8 +567,8 @@ void WWIV_SetFileTime(const char* pszFileName, const time_t tTime) {
 
 bool okfsed() {
   return (!okansi() ||
-          !GetSession()->GetCurrentUser()->GetDefaultEditor() ||
-          (GetSession()->GetCurrentUser()->GetDefaultEditor() > GetSession()->GetNumberOfEditors()))
+          !session()->user()->GetDefaultEditor() ||
+          (session()->user()->GetDefaultEditor() > session()->GetNumberOfEditors()))
          ? false : true;
 }
 
@@ -618,7 +618,7 @@ std::string W_DateString(time_t tDateTime, const std::string& origMode , const s
       }
 
       // which form of the clock is in use?
-      if (GetSession()->GetCurrentUser()->IsUse24HourClock()) {
+      if (session()->user()->IsUse24HourClock()) {
         strftime(s, 40, "%H:%M", pTm);
       } else {
         strftime(s, 40, "%I:%M %p", pTm);

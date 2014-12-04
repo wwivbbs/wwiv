@@ -84,14 +84,14 @@ void modify_extended_description(char **sss, const char *dest, const char *title
         File::Remove(s);
       }
 
-      const int saved_screen_chars = GetSession()->GetCurrentUser()->GetScreenChars();
-      if (GetSession()->GetCurrentUser()->GetScreenChars() > (76 - INDENTION)) {
-        GetSession()->GetCurrentUser()->SetScreenChars(76 - INDENTION);
+      const int saved_screen_chars = session()->user()->GetScreenChars();
+      if (session()->user()->GetScreenChars() > (76 - INDENTION)) {
+        session()->user()->SetScreenChars(76 - INDENTION);
       }
 
       bool bEditOK = external_text_edit("extended.dsc", syscfgovr.tempdir,
-          GetSession()->max_extend_lines, dest, MSGED_FLAG_NO_TAGLINE);
-      GetSession()->GetCurrentUser()->SetScreenChars(saved_screen_chars);
+          session()->max_extend_lines, dest, MSGED_FLAG_NO_TAGLINE);
+      session()->user()->SetScreenChars(saved_screen_chars);
       if (bEditOK) {
         if ((*sss = static_cast<char *>(BbsAllocA(10240))) == nullptr) {
           return;
@@ -118,13 +118,13 @@ void modify_extended_description(char **sss, const char *dest, const char *title
       *sss[0] = 0;
       i = 1;
       bout.nl();
-      bout << "Enter up to  " << GetSession()->max_extend_lines << " lines, "
+      bout << "Enter up to  " << session()->max_extend_lines << " lines, "
                          << 78 - INDENTION << " chars each.\r\n";
       bout.nl();
       s[0] = '\0';
-      int nSavedScreenSize = GetSession()->GetCurrentUser()->GetScreenChars();
-      if (GetSession()->GetCurrentUser()->GetScreenChars() > (76 - INDENTION)) {
-        GetSession()->GetCurrentUser()->SetScreenChars(76 - INDENTION);
+      int nSavedScreenSize = session()->user()->GetScreenChars();
+      if (session()->user()->GetScreenChars() > (76 - INDENTION)) {
+        session()->user()->SetScreenChars(76 - INDENTION);
       }
       do {
         bout << "|#2" << i << ": |#0";
@@ -149,8 +149,8 @@ void modify_extended_description(char **sss, const char *dest, const char *title
           *(sss[0] + i4) = 0;
           s[i2] = 0;
           strrev(s);
-          if (strlen(s) > static_cast<unsigned int>(GetSession()->GetCurrentUser()->GetScreenChars() - 1)) {
-            s[ GetSession()->GetCurrentUser()->GetScreenChars() - 2 ] = '\0';
+          if (strlen(s) > static_cast<unsigned int>(session()->user()->GetScreenChars() - 1)) {
+            s[ session()->user()->GetScreenChars() - 2 ] = '\0';
           }
         }
         i2 = strlen(s1);
@@ -162,8 +162,8 @@ void modify_extended_description(char **sss, const char *dest, const char *title
           strcat(*sss, s1);
           i4 += strlen(s1);
         }
-      } while ((i++ < GetSession()->max_extend_lines) && (s1[0]));
-      GetSession()->GetCurrentUser()->SetScreenChars(nSavedScreenSize);
+      } while ((i++ < session()->max_extend_lines) && (s1[0]));
+      session()->user()->SetScreenChars(nSavedScreenSize);
       if (*sss[0] == '\0') {
         free(*sss);
         *sss = nullptr;
@@ -240,18 +240,18 @@ bool get_file_idz(uploadsrec * u, int dn) {
       free(ss);
       delete_extended_description(u->filename);
     }
-    if ((b = static_cast<char *>(BbsAllocA(GetSession()->max_extend_lines * 256 + 1))) == nullptr) {
+    if ((b = static_cast<char *>(BbsAllocA(session()->max_extend_lines * 256 + 1))) == nullptr) {
       return false;
     }
     File file(s);
     file.Open(File::modeBinary | File::modeReadOnly);
-    if (file.GetLength() < (GetSession()->max_extend_lines * 256)) {
+    if (file.GetLength() < (session()->max_extend_lines * 256)) {
       long lFileLen = file.GetLength();
       file.Read(b, lFileLen);
       b[ lFileLen ] = 0;
     } else {
-      file.Read(b, GetSession()->max_extend_lines * 256);
-      b[GetSession()->max_extend_lines * 256] = 0;
+      file.Read(b, session()->max_extend_lines * 256);
+      b[session()->max_extend_lines * 256] = 0;
     }
     file.Close();
     if (GetApplication()->HasConfigFlag(OP_FLAGS_IDZ_DESC)) {
@@ -299,9 +299,9 @@ int read_idz_all() {
 
   tmp_disable_conf(true);
   TempDisablePause disable_pause;
-  GetSession()->localIO()->set_protect(0);
-  for (int i = 0; (i < GetSession()->num_dirs) && (udir[i].subnum != -1) &&
-       (!GetSession()->localIO()->LocalKeyPressed()); i++) {
+  session()->localIO()->set_protect(0);
+  for (int i = 0; (i < session()->num_dirs) && (udir[i].subnum != -1) &&
+       (!session()->localIO()->LocalKeyPressed()); i++) {
     count += read_idz(0, i);
   }
   tmp_disable_conf(false);
@@ -319,7 +319,7 @@ int read_idz(int mode, int tempdir) {
   std::unique_ptr<TempDisablePause> disable_pause;
   if (mode) {
     disable_pause.reset(new TempDisablePause);
-    GetSession()->localIO()->set_protect(0);
+    session()->localIO()->set_protect(0);
     dliscan();
     file_mask(s);
   } else {
@@ -332,7 +332,7 @@ int read_idz(int mode, int tempdir) {
                                     udir[tempdir].keys);
   File fileDownload(g_szDownloadFileName);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  for (i = 1; (i <= GetSession()->numf) && (!hangup) && !abort; i++) {
+  for (i = 1; (i <= session()->numf) && (!hangup) && !abort; i++) {
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     if ((compare(s, u.filename)) &&
@@ -366,16 +366,16 @@ void tag_it() {
   char s[255], s1[255], s2[81], s3[400];
   long fs = 0;
 
-  if (GetSession()->numbatch >= GetSession()->max_batch) {
+  if (session()->numbatch >= session()->max_batch) {
     bout << "|#6No room left in batch queue.";
     getkey();
     return;
   }
-  bout << "|#2Which file(s) (1-" << GetSession()->tagptr << ", *=All, 0=Quit)? ";
+  bout << "|#2Which file(s) (1-" << session()->tagptr << ", *=All, 0=Quit)? ";
   input(s3, 30, true);
   if (s3[0] == '*') {
     s3[0] = '\0';
-    for (i2 = 0; i2 < GetSession()->tagptr && i2 < 78; i2++) {
+    for (i2 = 0; i2 < session()->tagptr && i2 < 78; i2++) {
       sprintf(s2, "%d ", i2 + 1);
       strcat(s3, s2);
       if (strlen(s3) > sizeof(s3) - 10) {
@@ -403,17 +403,17 @@ void tag_it() {
       break;
     }
     i--;
-    if ((s1[0]) && (i >= 0) && (i < GetSession()->tagptr)) {
+    if ((s1[0]) && (i >= 0) && (i < session()->tagptr)) {
       if (check_batch_queue(filelist[i].u.filename)) {
         bout << "|#6" << filelist[i].u.filename << " is already in the batch queue.\r\n";
         bad = true;
       }
-      if (GetSession()->numbatch >= GetSession()->max_batch) {
-        bout << "|#6Batch file limit of " << GetSession()->max_batch << " has been reached.\r\n";
+      if (session()->numbatch >= session()->max_batch) {
+        bout << "|#6Batch file limit of " << session()->max_batch << " has been reached.\r\n";
         bad = true;
       }
       if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio) &&
-          !GetSession()->GetCurrentUser()->IsExemptRatio() && !bad) {
+          !session()->user()->IsExemptRatio() && !bad) {
         bout.bprintf("|#2Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n",
                                           ratio(), syscfg.req_ratio);
         bad = true;
@@ -447,13 +447,13 @@ void tag_it() {
       }
       if (!bad) {
         batchtime += static_cast<float>(t);
-        strcpy(batch[GetSession()->numbatch].filename, filelist[i].u.filename);
-        batch[GetSession()->numbatch].dir = filelist[i].directory;
-        batch[GetSession()->numbatch].time = (float) t;
-        batch[GetSession()->numbatch].sending = 1;
-        batch[GetSession()->numbatch].len = fs;
-        GetSession()->numbatch++;
-        ++GetSession()->numbatchdl;
+        strcpy(batch[session()->numbatch].filename, filelist[i].u.filename);
+        batch[session()->numbatch].dir = filelist[i].directory;
+        batch[session()->numbatch].time = (float) t;
+        batch[session()->numbatch].sending = 1;
+        batch[session()->numbatch].len = fs;
+        session()->numbatch++;
+        ++session()->numbatchdl;
         bout << "|#1" << filelist[i].u.filename << " added to batch queue.\r\n";
       }
     } else {
@@ -470,23 +470,23 @@ void tag_files() {
   bool had = false;
   double d;
 
-  if ((lines_listed == 0) || (GetSession()->tagging == 0) || (g_num_listed == 0)) {
+  if ((lines_listed == 0) || (session()->tagging == 0) || (g_num_listed == 0)) {
     return;
   }
   bool abort = false;
-  if (x_only || GetSession()->tagging == 2) {
-    GetSession()->tagptr = 0;
+  if (x_only || session()->tagging == 2) {
+    session()->tagptr = 0;
     return;
   }
-  GetSession()->localIO()->tleft(true);
+  session()->localIO()->tleft(true);
   if (hangup) {
     return;
   }
-  if (GetSession()->GetCurrentUser()->IsUseNoTagging()) {
-    if (GetSession()->GetCurrentUser()->HasPause()) {
+  if (session()->user()->IsUseNoTagging()) {
+    if (session()->user()->HasPause()) {
       pausescr();
     }
-    bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
+    bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
     if (okansi()) {
       bout << "\r" <<
                          "\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"
@@ -495,11 +495,11 @@ void tag_files() {
       bout << "\r" << "------------+-----+-----------------------------------------------------------" <<
                          wwiv::endl;
     }
-    GetSession()->tagptr = 0;
+    session()->tagptr = 0;
     return;
   }
   lines_listed = 0;
-  bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
+  bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
   if (okansi()) {
     bout <<
                        "\r\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\r\n";
@@ -514,25 +514,25 @@ void tag_files() {
     lines_listed = 0;
     switch (ch) {
     case '?':
-      i = GetSession()->tagging;
-      GetSession()->tagging = 0;
+      i = session()->tagging;
+      session()->tagging = 0;
       printfile(TTAGGING_NOEXT);
       pausescr();
-      GetSession()->tagging = i;
+      session()->tagging = i;
       relist();
       break;
     case 'C':
     case SPACE:
     case RETURN:
       lines_listed = 0;
-      GetSession()->tagptr = 0;
-      GetSession()->titled = 2;
+      session()->tagptr = 0;
+      session()->titled = 2;
       bout.cls();
       done = true;
       break;
     case 'D':
       batchdl(1);
-      GetSession()->tagging = 0;
+      session()->tagging = 0;
       if (!had) {
         bout.nl();
         pausescr();
@@ -542,20 +542,20 @@ void tag_files() {
       break;
     case 'E':
       lines_listed = 0;
-      i1 = GetSession()->tagging;
-      GetSession()->tagging = 0;
-      bout << "|#9Which file (1-" << GetSession()->tagptr << ")? ";
+      i1 = session()->tagging;
+      session()->tagging = 0;
+      bout << "|#9Which file (1-" << session()->tagptr << ")? ";
       input(s, 2, true);
       i = atoi(s) - 1;
-      if (s[0] && i >= 0 && i < GetSession()->tagptr) {
+      if (s[0] && i >= 0 && i < session()->tagptr) {
         d = XFER_TIME(filelist[i].u.numbytes);
         bout.nl();
-        for (i2 = 0; i2 < GetSession()->num_dirs; i2++) {
+        for (i2 = 0; i2 < session()->num_dirs; i2++) {
           if (udir[i2].subnum == filelist[i].directory) {
             break;
           }
         }
-        if (i2 < GetSession()->num_dirs) {
+        if (i2 < session()->num_dirs) {
           bout << "|#1Directory  : |#2#" << udir[i2].keys << ", " << directories[filelist[i].directory].name <<
                              wwiv::endl;
         } else {
@@ -568,7 +568,7 @@ void tag_files() {
           sprintf(g_szExtDescrFileName, "%s%s.ext", syscfg.datadir, directories[filelist[i].directory].filename);
           zap_ed_info();
           bout << "|#1Ext. Desc. : |#2";
-          print_extended(filelist[i].u.filename, &abort, GetSession()->max_extend_lines, 2);
+          print_extended(filelist[i].u.filename, &abort, session()->max_extend_lines, 2);
           zap_ed_info();
           strcpy(g_szExtDescrFileName, s1);
         }
@@ -592,18 +592,18 @@ void tag_files() {
         relist();
 
       }
-      GetSession()->tagging = i1;
+      session()->tagging = i1;
       break;
     case 'N':
-      GetSession()->tagging = 2;
+      session()->tagging = 2;
       done = true;
       break;
     case 'M':
       if (dcs()) {
-        i = GetSession()->tagging;
-        GetSession()->tagging = 0;
+        i = session()->tagging;
+        session()->tagging = 0;
         move_file_t();
-        GetSession()->tagging = i;
+        session()->tagging = i;
         if (g_num_listed == 0) {
           done = true;
           return;
@@ -612,9 +612,9 @@ void tag_files() {
       }
       break;
     case 'Q':
-      GetSession()->tagging   = 0;
-      GetSession()->titled    = 0;
-      GetSession()->tagptr    = 0;
+      session()->tagging   = 0;
+      session()->titled    = 0;
+      session()->tagptr    = 0;
       lines_listed    = 0;
       done = true;
       return;
@@ -625,10 +625,10 @@ void tag_files() {
       tag_it();
       break;
     case 'V':
-      bout << "|#2Which file (1-|#2" << GetSession()->tagptr << ")? ";
+      bout << "|#2Which file (1-|#2" << session()->tagptr << ")? ";
       input(s, 2, true);
       i = atoi(s) - 1;
-      if ((s[0]) && (i >= 0) && (i < GetSession()->tagptr)) {
+      if ((s[0]) && (i >= 0) && (i < session()->tagptr)) {
         sprintf(s1, "%s%s", directories[filelist[i].directory].path,
                 stripfn(filelist[i].u.filename));
         if (directories[filelist[i].directory].mask & mask_cdrom) {
@@ -651,11 +651,11 @@ void tag_files() {
         }
         if (s[0] != 0) {
           bout.nl();
-          GetSession()->tagging = 0;
+          session()->tagging = 0;
           ExecuteExternalProgram(s, GetApplication()->GetSpawnOptions(SPAWNOPT_ARCH_L));
           bout.nl();
           pausescr();
-          GetSession()->tagging = 1;
+          session()->tagging = 1;
           GetApplication()->UpdateTopScreen();
           bout.cls();
           relist();
@@ -672,7 +672,7 @@ void tag_files() {
       break;
     }
   }
-  GetSession()->tagptr = 0;
+  session()->tagptr = 0;
   lines_listed = 0;
 }
 
@@ -734,18 +734,18 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
           }
         }
         batchtime += static_cast<float>(t);
-        strcpy(batch[GetSession()->numbatch].filename, pszFileName);
-        batch[GetSession()->numbatch].dir = static_cast<short>(dn);
-        batch[GetSession()->numbatch].time = static_cast<float>(t);
-        batch[GetSession()->numbatch].sending = 1;
-        batch[GetSession()->numbatch].len = fs;
+        strcpy(batch[session()->numbatch].filename, pszFileName);
+        batch[session()->numbatch].dir = static_cast<short>(dn);
+        batch[session()->numbatch].time = static_cast<float>(t);
+        batch[session()->numbatch].sending = 1;
+        batch[session()->numbatch].len = fs;
         bout << "\r";
         bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n",
-                                          GetSession()->numbatch + 1, batch[GetSession()->numbatch].filename, batch[GetSession()->numbatch].len,
-                                          ctim(batch[GetSession()->numbatch].time),
-                                          directories[batch[GetSession()->numbatch].dir].name);
-        GetSession()->numbatch++;
-        ++GetSession()->numbatchdl;
+                                          session()->numbatch + 1, batch[session()->numbatch].filename, batch[session()->numbatch].len,
+                                          ctim(batch[session()->numbatch].time),
+                                          directories[batch[session()->numbatch].dir].name);
+        session()->numbatch++;
+        ++session()->numbatchdl;
         bout << "\r";
         bout << "|#5    Continue search? ";
         ch = onek_ncr("YN\r");
@@ -782,7 +782,7 @@ int try_to_download(const char *pszFileMask, int dn) {
   ok = true;
   foundany = 1;
   do {
-    GetSession()->localIO()->tleft(true);
+    session()->localIO()->tleft(true);
     File fileDownload(g_szDownloadFileName);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
@@ -798,7 +798,7 @@ int try_to_download(const char *pszFileMask, int dn) {
       return -2;
     }
 
-    write_inst(INST_LOC_DOWNLOAD, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_ONLINE);
+    write_inst(INST_LOC_DOWNLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_ONLINE);
     sprintf(s1, "%s%s", directories[dn].path, u.filename);
     sprintf(s3, "%-40.40s", u.description);
     abort = false;
@@ -844,7 +844,7 @@ void download() {
       bout <<
                          "|#7\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\r\n";
     }
-    if (i < GetSession()->numbatch) {
+    if (i < session()->numbatch) {
       if (!returning && batch[i].sending) {
         bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", i + 1, batch[i].filename,
                                           batch[i].len, ctim(batch[i].time), directories[batch[i].dir].name);
@@ -854,7 +854,7 @@ void download() {
         count = 0;
         ok = true;
         bout.backline();
-        bout.bprintf("|#2%3d ", GetSession()->numbatch + 1);
+        bout.bprintf("|#2%3d ", session()->numbatch + 1);
         bout.Color(1);
         bool onl = newline;
         newline = false;
@@ -865,9 +865,9 @@ void download() {
             strcat(s, ".*");
           }
           align(s);
-          rtn = try_to_download(s, udir[GetSession()->GetCurrentFileArea()].subnum);
+          rtn = try_to_download(s, udir[session()->GetCurrentFileArea()].subnum);
           if (rtn == 0) {
-            if (uconfdir[1].confnum != -10 && okconf(GetSession()->GetCurrentUser())) {
+            if (uconfdir[1].confnum != -10 && okconf(session()->user())) {
               bout.backline();
               bout << " |#5Search all conferences? ";
               ch = onek_ncr("YN\r");
@@ -877,11 +877,11 @@ void download() {
               }
             }
             bout.backline();
-            sprintf(s1, "%3d %s", GetSession()->numbatch + 1, s);
+            sprintf(s1, "%3d %s", session()->numbatch + 1, s);
             bout.Color(1);
             bout << s1;
             foundany = dn = 0;
-            while ((dn < GetSession()->num_dirs) && (udir[dn].subnum != -1)) {
+            while ((dn < session()->num_dirs) && (udir[dn].subnum != -1)) {
               count++;
               if (!x_only) {
                 bout << "|#" << color;
@@ -927,9 +927,9 @@ void download() {
       rtn = 0;
       i = 0;
     }
-  } while (!done && !hangup && (i <= GetSession()->numbatch));
+  } while (!done && !hangup && (i <= session()->numbatch));
 
-  if (!GetSession()->numbatchdl) {
+  if (!session()->numbatchdl) {
     return;
   }
 
@@ -940,7 +940,7 @@ void download() {
     return;
   }
   bout.nl();
-  bout << "|#1Files in Batch Queue   : |#2" << GetSession()->numbatch << wwiv::endl;
+  bout << "|#1Files in Batch Queue   : |#2" << session()->numbatch << wwiv::endl;
   bout << "|#1Estimated Download Time: |#2" << ctim2(batchtime) << wwiv::endl;
   bout.nl();
   rtn = batchdl(3);
@@ -948,7 +948,7 @@ void download() {
     return;
   }
   bout.nl();
-  if (!GetSession()->numbatchdl) {
+  if (!session()->numbatchdl) {
     return;
   }
   bout << "|#5Hang up after transfer? ";
@@ -985,12 +985,12 @@ char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars) {
   char s1[81], s2[81], s3[81];
   char ch = 0;
 
-  GetSession()->localIO()->tleft(true);
+  session()->localIO()->tleft(true);
   sprintf(s1, "\r|#2%s (|#1%s|#2)? |#0", pszPrompt, pszAcceptChars);
   sprintf(s2, "%s (%s)? ", pszPrompt, pszAcceptChars);
   int i1 = strlen(s2);
   sprintf(s3, "%s%s", pszAcceptChars, " \r");
-  GetSession()->localIO()->tleft(true);
+  session()->localIO()->tleft(true);
   if (okansi()) {
     bout << s1;
     ch = onek_ncr(s3);
@@ -1013,14 +1013,14 @@ char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars) {
 void endlist(int mode) {
   // if mode == 1, list files
   // if mode == 2, new files
-  if (GetSession()->tagging != 0) {
+  if (session()->tagging != 0) {
     if (g_num_listed) {
-      if (GetSession()->tagging == 1 && !GetSession()->GetCurrentUser()->IsUseNoTagging() && filelist) {
+      if (session()->tagging == 1 && !session()->user()->IsUseNoTagging() && filelist) {
         tag_files();
         return;
       } else {
-        bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
-        if (GetSession()->titled != 2 && GetSession()->tagging == 1 && !GetSession()->GetCurrentUser()->IsUseNoTagging()) {
+        bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
+        if (session()->titled != 2 && session()->tagging == 1 && !session()->user()->IsUseNoTagging()) {
           if (okansi()) {
             bout <<
                                "\r\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\r\n";
@@ -1197,17 +1197,17 @@ void removefilesnotthere(int dn, int *autodel) {
         }
         sysoplogf("-%s Removed from %s", u.filename, directories[dn].name);
         fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-        for (int i1 = i; i1 < GetSession()->numf; i1++) {
+        for (int i1 = i; i1 < session()->numf; i1++) {
           FileAreaSetRecord(fileDownload, i1 + 1);
           fileDownload.Read(&u, sizeof(uploadsrec));
           FileAreaSetRecord(fileDownload, i1);
           fileDownload.Write(&u, sizeof(uploadsrec));
         }
         --i;
-        --GetSession()->numf;
+        --session()->numf;
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Read(&u, sizeof(uploadsrec));
-        u.numbytes = GetSession()->numf;
+        u.numbytes = session()->numf;
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Write(&u, sizeof(uploadsrec));
         fileDownload.Close();
@@ -1236,8 +1236,8 @@ void removenotthere() {
   bout.nl();
   bout << "|#5Remove N/A files in all directories? ";
   if (yesno()) {
-    for (int i = 0; ((i < GetSession()->num_dirs) && (udir[i].subnum != -1) &&
-                     (!GetSession()->localIO()->LocalKeyPressed())); i++) {
+    for (int i = 0; ((i < session()->num_dirs) && (udir[i].subnum != -1) &&
+                     (!session()->localIO()->LocalKeyPressed())); i++) {
       bout.nl();
       bout << "|#1Removing N/A|#0 in " << directories[udir[i].subnum].name;
       bout.nl(2);
@@ -1245,9 +1245,9 @@ void removenotthere() {
     }
   } else {
     bout.nl();
-    bout << "Removing N/A|#0 in " << directories[udir[GetSession()->GetCurrentFileArea()].subnum].name;
+    bout << "Removing N/A|#0 in " << directories[udir[session()->GetCurrentFileArea()].subnum].name;
     bout.nl(2);
-    removefilesnotthere(udir[GetSession()->GetCurrentFileArea()].subnum, &autodel);
+    removefilesnotthere(udir[session()->GetCurrentFileArea()].subnum, &autodel);
   }
   tmp_disable_conf(false);
   GetApplication()->UpdateTopScreen();
@@ -1255,7 +1255,7 @@ void removenotthere() {
 
 
 int find_batch_queue(const char *pszFileName) {
-  for (int i = 0; i < GetSession()->numbatch; i++) {
+  for (int i = 0; i < session()->numbatch; i++) {
     if (wwiv::strings::IsEquals(pszFileName, batch[i].filename)) {
       return i;
     }

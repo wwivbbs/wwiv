@@ -47,7 +47,7 @@ const string CreateFullPathToPrint(const string& basename) {
   if (File::Exists(basename)) {
     return basename;
   }
-  string langdir(GetSession()->language_dir);
+  string langdir(session()->language_dir);
   string gfilesdir(syscfg.gfilesdir);
   std::vector<string> dirs { langdir, gfilesdir };
   for (const auto& base : dirs) {
@@ -61,8 +61,8 @@ const string CreateFullPathToPrint(const string& basename) {
       continue;
     }
     const string root_filename = file.full_pathname();
-    if (GetSession()->GetCurrentUser()->HasAnsi()) {
-      if (GetSession()->GetCurrentUser()->HasColor()) {
+    if (session()->user()->HasAnsi()) {
+      if (session()->user()->HasColor()) {
         // ANSI and color
         string candidate = StringPrintf("%s.ans", root_filename.c_str());
         if (File::Exists(candidate)) {

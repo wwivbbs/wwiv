@@ -259,24 +259,24 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
     strcpy(pszOutText, szTemp);
     return;
   }
-  int nTopDataSaved = GetSession()->topdata;
-  if (GetSession()->topdata != WLocalIO::topdataNone) {
-    GetSession()->topdata = WLocalIO::topdataNone;
+  int nTopDataSaved = session()->topdata;
+  if (session()->topdata != WLocalIO::topdataNone) {
+    session()->topdata = WLocalIO::topdataNone;
     GetApplication()->UpdateTopScreen();
   }
   if (mode == InputMode::DATE || mode == InputMode::PHONE) {
     bInsert = false;
   }
-  int nTopLineSaved = GetSession()->localIO()->GetTopLine();
-  GetSession()->localIO()->SetTopLine(0);
+  int nTopLineSaved = session()->localIO()->GetTopLine();
+  session()->localIO()->SetTopLine(0);
   int pos = 0;
   int nLength = 0;
   szTemp[0] = '\0';
 
   nMaxLength = std::min<int>(nMaxLength, 80);
   bout.Color(4);
-  int x = GetSession()->localIO()->WhereX() + 1;
-  int y = GetSession()->localIO()->WhereY() + 1;
+  int x = session()->localIO()->WhereX() + 1;
+  int y = session()->localIO()->WhereY() + 1;
 
   bout.GotoXY(x, y);
   for (int i = 0; i < nMaxLength; i++) {
@@ -289,7 +289,7 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
     bout.GotoXY(x, y);
     pos = nLength = strlen(szTemp);
   }
-  x = GetSession()->localIO()->WhereX() + 1;
+  x = session()->localIO()->WhereX() + 1;
 
   bool done = false;
   do {
@@ -457,8 +457,8 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
     pszOutText[0] = '\0';
   }
 
-  GetSession()->topdata = nTopDataSaved;
-  GetSession()->localIO()->SetTopLine(nTopLineSaved);
+  session()->topdata = nTopDataSaved;
+  session()->localIO()->SetTopLine(nTopLineSaved);
 
   bout.Color(0);
   return;

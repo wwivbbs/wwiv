@@ -166,7 +166,7 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
 * Writes a string to the sysoplog, if user online and EffectiveSl < 255.
 */
 void sysopchar(const string text) {
-  if ((incom || GetSession()->GetEffectiveSl() != 255) && !text.empty()) {
+  if ((incom || session()->GetEffectiveSl() != 255) && !text.empty()) {
     AddLineToSysopLogImpl(LOG_CHAR, text);
   }
 }

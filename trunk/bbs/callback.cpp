@@ -58,7 +58,7 @@ void wwivnode(WUser *pUser, int mode) {
     return;
   }
   net_system_list_rec *csne = next_system(nSystemNumber);
-  sprintf(s, "Sysop @%u %s %s", nSystemNumber, csne->name, GetSession()->GetNetworkName());
+  sprintf(s, "Sysop @%u %s %s", nSystemNumber, csne->name, session()->GetNetworkName());
   string ph, ph1;
   if (!mode) {
     ph1 = pUser->GetDataPhoneNumber();
@@ -88,10 +88,10 @@ void wwivnode(WUser *pUser, int mode) {
   }
   sysoplog("-+ WWIV SysOp");
   sysoplog(s);
-  pUser->SetRestriction(GetSession()->asv.restrict);
-  pUser->SetExempt(GetSession()->asv.exempt);
-  pUser->SetAr(GetSession()->asv.ar);
-  pUser->SetDar(GetSession()->asv.dar);
+  pUser->SetRestriction(session()->asv.restrict);
+  pUser->SetExempt(session()->asv.exempt);
+  pUser->SetAr(session()->asv.ar);
+  pUser->SetDar(session()->asv.dar);
   if (!mode) {
     bout.nl();
     if (printfile(ASV1_NOEXT)) {
@@ -102,11 +102,11 @@ void wwivnode(WUser *pUser, int mode) {
   }
   if (wwiv::strings::IsEquals(pUser->GetDataPhoneNumber(),
                               reinterpret_cast<char*>(csne->phone))) {
-    if (pUser->GetSl() < GetSession()->asv.sl) {
-      pUser->SetSl(GetSession()->asv.sl);
+    if (pUser->GetSl() < session()->asv.sl) {
+      pUser->SetSl(session()->asv.sl);
     }
-    if (pUser->GetDsl() < GetSession()->asv.dsl) {
-      pUser->SetDsl(GetSession()->asv.dsl);
+    if (pUser->GetDsl() < session()->asv.dsl) {
+      pUser->SetDsl(session()->asv.dsl);
     }
   } else {
     if (!mode) {
@@ -118,7 +118,7 @@ void wwivnode(WUser *pUser, int mode) {
       }
     }
   }
-  pUser->SetForwardNetNumber(GetSession()->GetNetworkNumber());
+  pUser->SetForwardNetNumber(session()->GetNetworkNumber());
   pUser->SetHomeUserNumber(1);
   pUser->SetHomeSystemNumber(nSystemNumber);
   if (!mode) {

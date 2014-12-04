@@ -48,15 +48,15 @@ void HopSub() {
   }
 
   int c = 0;
-  int oc = GetSession()->GetCurrentConferenceMessageArea();
-  int os = usub[GetSession()->GetCurrentMessageArea()].subnum;
+  int oc = session()->GetCurrentConferenceMessageArea();
+  int os = usub[session()->GetCurrentMessageArea()].subnum;
 
   while ((c < nc) && !abort) {
-    if (okconf(GetSession()->GetCurrentUser())) {
+    if (okconf(session()->user())) {
       setuconf(CONF_SUBS, c, -1);
     }
     int i = 0;
-    while ((i < GetSession()->num_subs) && (usub[i].subnum != -1) && !abort) {
+    while ((i < session()->num_subs) && (usub[i].subnum != -1) && !abort) {
       strcpy(s2, subboards[usub[i].subnum].name);
       for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
         ;
@@ -71,11 +71,11 @@ void HopSub() {
         char ch = onek_ncr("QYN\r");
         if (ch == 'Y') {
           abort = true;
-          GetSession()->SetCurrentMessageArea(i);
+          session()->SetCurrentMessageArea(i);
           break;
         } else if (ch == 'Q') {
           abort = true;
-          if (okconf(GetSession()->GetCurrentUser())) {
+          if (okconf(session()->user())) {
             setuconf(CONF_SUBS, oc, os);
           }
           break;
@@ -84,11 +84,11 @@ void HopSub() {
       ++i;
     }
     c++;
-    if (!okconf(GetSession()->GetCurrentUser())) {
+    if (!okconf(session()->user())) {
       break;
     }
   }
-  if (okconf(GetSession()->GetCurrentUser()) && !abort) {
+  if (okconf(session()->user()) && !abort) {
     setuconf(CONF_SUBS, oc, os);
   }
 }
@@ -121,15 +121,15 @@ void HopDir() {
   }
 
   int c = 0;
-  int oc = GetSession()->GetCurrentConferenceFileArea();
-  int os = udir[GetSession()->GetCurrentFileArea()].subnum;
+  int oc = session()->GetCurrentConferenceFileArea();
+  int os = udir[session()->GetCurrentFileArea()].subnum;
 
   while (c < nc && !abort) {
-    if (okconf(GetSession()->GetCurrentUser())) {
+    if (okconf(session()->user())) {
       setuconf(CONF_DIRS, c, -1);
     }
     int i = 0;
-    while ((i < GetSession()->num_dirs) && (udir[i].subnum != -1) && (!abort)) {
+    while ((i < session()->num_dirs) && (udir[i].subnum != -1) && (!abort)) {
       strcpy(s2, directories[udir[i].subnum].name);
       for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
         ;
@@ -143,11 +143,11 @@ void HopDir() {
         char ch = onek_ncr("QYN\r");
         if (ch == 'Y') {
           abort = true;
-          GetSession()->SetCurrentFileArea(i);
+          session()->SetCurrentFileArea(i);
           break;
         } else if (ch == 'Q') {
           abort = true;
-          if (okconf(GetSession()->GetCurrentUser())) {
+          if (okconf(session()->user())) {
             setuconf(CONF_DIRS, oc, os);
           }
           break;
@@ -156,11 +156,11 @@ void HopDir() {
       ++i;
     }
     c++;
-    if (!okconf(GetSession()->GetCurrentUser())) {
+    if (!okconf(session()->user())) {
       break;
     }
   }
-  if (okconf(GetSession()->GetCurrentUser()) && !abort) {
+  if (okconf(session()->user()) && !abort) {
     setuconf(CONF_DIRS, oc, os);
   }
 }

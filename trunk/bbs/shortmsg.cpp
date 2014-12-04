@@ -128,7 +128,7 @@ void SendRemoteShortMessage(int nUserNum, int nSystemNum, char *pszMessageText) 
   nh.tosys = static_cast<unsigned short>(nSystemNum);
   nh.touser = static_cast<unsigned short>(nUserNum);
   nh.fromsys = net_sysnum;
-  nh.fromuser = static_cast<unsigned short>(GetSession()->usernum);
+  nh.fromuser = static_cast<unsigned short>(session()->usernum);
   nh.main_type = main_type_ssm;
   nh.minor_type = 0;
   nh.list_len = 0;
@@ -139,7 +139,7 @@ void SendRemoteShortMessage(int nUserNum, int nSystemNum, char *pszMessageText) 
   nh.length = strlen(pszMessageText);
   nh.method = 0;
   const string packet_filename = StringPrintf("%sp0%s", 
-    GetSession()->GetNetworkDataDirectory().c_str(),
+    session()->GetNetworkDataDirectory().c_str(),
     GetApplication()->GetNetworkExtension().c_str());
   File file(packet_filename);
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);

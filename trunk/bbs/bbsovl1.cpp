@@ -55,33 +55,33 @@ void YourInfo() {
     bout << "|#5Your User Information:\r\n";
   }
   bout.nl();
-  bout << "|#9Your name      : |#2" << GetSession()->GetCurrentUser()->GetUserNameAndNumber(
-                       GetSession()->usernum) << wwiv::endl;
-  bout << "|#9Phone number   : |#2" << GetSession()->GetCurrentUser()->GetVoicePhoneNumber() << wwiv::endl;
-  if (GetSession()->GetCurrentUser()->GetNumMailWaiting() > 0) {
-    bout << "|#9Mail Waiting   : |#2" << GetSession()->GetCurrentUser()->GetNumMailWaiting() << wwiv::endl;
+  bout << "|#9Your name      : |#2" << session()->user()->GetUserNameAndNumber(
+                       session()->usernum) << wwiv::endl;
+  bout << "|#9Phone number   : |#2" << session()->user()->GetVoicePhoneNumber() << wwiv::endl;
+  if (session()->user()->GetNumMailWaiting() > 0) {
+    bout << "|#9Mail Waiting   : |#2" << session()->user()->GetNumMailWaiting() << wwiv::endl;
   }
-  bout << "|#9Security Level : |#2" << GetSession()->GetCurrentUser()->GetSl() << wwiv::endl;
-  if (GetSession()->GetEffectiveSl() != GetSession()->GetCurrentUser()->GetSl()) {
-    bout << "|#1 (temporarily |#2" << GetSession()->GetEffectiveSl() << "|#1)";
+  bout << "|#9Security Level : |#2" << session()->user()->GetSl() << wwiv::endl;
+  if (session()->GetEffectiveSl() != session()->user()->GetSl()) {
+    bout << "|#1 (temporarily |#2" << session()->GetEffectiveSl() << "|#1)";
   }
   bout.nl();
-  bout << "|#9Transfer SL    : |#2" << GetSession()->GetCurrentUser()->GetDsl() << wwiv::endl;
-  bout << "|#9Date Last On   : |#2" << GetSession()->GetCurrentUser()->GetLastOn() << wwiv::endl;
-  bout << "|#9Times on       : |#2" << GetSession()->GetCurrentUser()->GetNumLogons() << wwiv::endl;
-  bout << "|#9On today       : |#2" << GetSession()->GetCurrentUser()->GetTimesOnToday() << wwiv::endl;
-  bout << "|#9Messages posted: |#2" << GetSession()->GetCurrentUser()->GetNumMessagesPosted() << wwiv::endl;
-  bout << "|#9E-mail sent    : |#2" << (GetSession()->GetCurrentUser()->GetNumEmailSent() +
-                     GetSession()->GetCurrentUser()->GetNumFeedbackSent() + GetSession()->GetCurrentUser()->GetNumNetEmailSent()) <<
+  bout << "|#9Transfer SL    : |#2" << session()->user()->GetDsl() << wwiv::endl;
+  bout << "|#9Date Last On   : |#2" << session()->user()->GetLastOn() << wwiv::endl;
+  bout << "|#9Times on       : |#2" << session()->user()->GetNumLogons() << wwiv::endl;
+  bout << "|#9On today       : |#2" << session()->user()->GetTimesOnToday() << wwiv::endl;
+  bout << "|#9Messages posted: |#2" << session()->user()->GetNumMessagesPosted() << wwiv::endl;
+  bout << "|#9E-mail sent    : |#2" << (session()->user()->GetNumEmailSent() +
+                     session()->user()->GetNumFeedbackSent() + session()->user()->GetNumNetEmailSent()) <<
                      wwiv::endl;
-  bout << "|#9Time spent on  : |#2" << static_cast<long>((GetSession()->GetCurrentUser()->GetTimeOn() +
+  bout << "|#9Time spent on  : |#2" << static_cast<long>((session()->user()->GetTimeOn() +
                      timer() - timeon) / SECONDS_PER_MINUTE_FLOAT) << " |#9Minutes" << wwiv::endl;
 
   // Transfer Area Statistics
-  bout << "|#9Uploads        : |#2" << GetSession()->GetCurrentUser()->GetUploadK() << "|#9k in|#2 " <<
-                     GetSession()->GetCurrentUser()->GetFilesUploaded() << " |#9files" << wwiv::endl;
-  bout << "|#9Downloads      : |#2" << GetSession()->GetCurrentUser()->GetDownloadK() << "|#9k in|#2 " <<
-                     GetSession()->GetCurrentUser()->GetFilesDownloaded() << " |#9files" << wwiv::endl;
+  bout << "|#9Uploads        : |#2" << session()->user()->GetUploadK() << "|#9k in|#2 " <<
+                     session()->user()->GetFilesUploaded() << " |#9files" << wwiv::endl;
+  bout << "|#9Downloads      : |#2" << session()->user()->GetDownloadK() << "|#9k in|#2 " <<
+                     session()->user()->GetFilesDownloaded() << " |#9files" << wwiv::endl;
   bout << "|#9Transfer Ratio : |#2" << ratio() << wwiv::endl;
   bout.nl();
   pausescr();
@@ -185,7 +185,7 @@ void edit_confs() {
  * Sends Feedback to the SysOp.  If  bNewUserFeedback is true then this is
  * newuser feedback, otherwise it is "normal" feedback.
  * The user can choose to email anyone listed.
- * Users with GetSession()->usernum < 10 who have sysop privs will be listed, so
+ * Users with session()->usernum < 10 who have sysop privs will be listed, so
  * this user can select which sysop to leave feedback to.
  */
 void feedback(bool bNewUserFeedback) {

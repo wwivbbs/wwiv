@@ -60,16 +60,16 @@ void WOutStream::Color(int wwivColor) {
   unsigned char c = '\0';
 
   if (wwivColor <= -1 && wwivColor >= -16) {
-    c = (GetSession()->GetCurrentUser()->HasColor() ?
-         rescolor.resx[207 + abs(wwivColor)] : GetSession()->GetCurrentUser()->GetBWColor(0));
+    c = (session()->user()->HasColor() ?
+         rescolor.resx[207 + abs(wwivColor)] : session()->user()->GetBWColor(0));
   }
   if (wwivColor >= 0 && wwivColor <= 9) {
-    c = (GetSession()->GetCurrentUser()->HasColor() ?
-         GetSession()->GetCurrentUser()->GetColor(wwivColor) : GetSession()->GetCurrentUser()->GetBWColor(wwivColor));
+    c = (session()->user()->HasColor() ?
+         session()->user()->GetColor(wwivColor) : session()->user()->GetBWColor(wwivColor));
   }
   if (wwivColor >= 10 && wwivColor <= 207) {
-    c = (GetSession()->GetCurrentUser()->HasColor() ?
-         rescolor.resx[wwivColor - 10] : GetSession()->GetCurrentUser()->GetBWColor(0));
+    c = (session()->user()->HasColor() ?
+         rescolor.resx[wwivColor - 10] : session()->user()->GetBWColor(0));
   }
   if (c == curatr) {
     return;
@@ -77,8 +77,8 @@ void WOutStream::Color(int wwivColor) {
 
   bout.SystemColor(c);
 
-  makeansi(GetSession()->GetCurrentUser()->HasColor() ?
-           GetSession()->GetCurrentUser()->GetColor(0) : GetSession()->GetCurrentUser()->GetBWColor(0), endofline, false);
+  makeansi(session()->user()->HasColor() ?
+           session()->user()->GetColor(0) : session()->user()->GetBWColor(0), endofline, false);
 }
 
 void WOutStream::ResetColors() {
@@ -88,7 +88,7 @@ void WOutStream::ResetColors() {
 
 void WOutStream::GotoXY(int x, int y) {
   if (okansi()) {
-    y = std::min<int>(y, GetSession()->screenlinest);    // Don't get Y get too big or mTelnet will not be happy
+    y = std::min<int>(y, session()->screenlinest);    // Don't get Y get too big or mTelnet will not be happy
     *this << "\x1b[" << y << ";" << x << "H";
   }
 }

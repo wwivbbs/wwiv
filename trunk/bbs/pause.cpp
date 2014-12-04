@@ -36,12 +36,12 @@ namespace bbs {
 TempDisablePause::TempDisablePause() : wwiv::core::Transaction([] {
     if (g_flags & g_flag_disable_pause) {
       g_flags &= ~g_flag_disable_pause;
-      GetSession()->GetCurrentUser()->SetStatusFlag(WUser::pauseOnPage);
+      session()->user()->SetStatusFlag(WUser::pauseOnPage);
     }
   }, nullptr) {
-  if (GetSession()->GetCurrentUser()->HasPause()) {
+  if (session()->user()->HasPause()) {
     g_flags |= g_flag_disable_pause;
-    GetSession()->GetCurrentUser()->ClearStatusFlag(WUser::pauseOnPage);
+    session()->user()->ClearStatusFlag(WUser::pauseOnPage);
   }
 }
 
@@ -66,9 +66,9 @@ static char GetKeyForPause() {
     break;
   case 'C':
   case '=':
-    if (GetSession()->GetCurrentUser()->HasPause()) {
+    if (session()->user()->HasPause()) {
       nsp = 1;
-      GetSession()->GetCurrentUser()->ToggleStatusFlag(WUser::pauseOnPage);
+      session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
     }
     break;
   default:
@@ -107,9 +107,9 @@ void pausescr() {
 
     i1 = strlen(stripcolors(ss));
     i = curatr;
-    bout.SystemColor(GetSession()->GetCurrentUser()->HasColor() ? GetSession()->GetCurrentUser()->GetColor(
+    bout.SystemColor(session()->user()->HasColor() ? session()->user()->GetColor(
                                      3) :
-                                   GetSession()->GetCurrentUser()->GetBWColor(3));
+                                   session()->user()->GetBWColor(3));
     bout << ss << "\x1b[" << i1 << "D";
     bout.SystemColor(i);
 
@@ -125,9 +125,9 @@ void pausescr() {
           if (!warned) {
             warned = 1;
             bputch(CG);
-            bout.SystemColor(GetSession()->GetCurrentUser()->HasColor() ? GetSession()->GetCurrentUser()->GetColor(
+            bout.SystemColor(session()->user()->HasColor() ? session()->user()->GetColor(
                                              6) :
-                                           GetSession()->GetCurrentUser()->GetBWColor(6));
+                                           session()->user()->GetBWColor(6));
             bout << ss;
             for (int i3 = 0; i3 < i2; i3++) {
               if (s[i3] == 3 && i1 > 1) {

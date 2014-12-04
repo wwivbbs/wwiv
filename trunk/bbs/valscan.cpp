@@ -28,48 +28,48 @@ void valscan() {
   }
 
   int ac = 0;
-  int os = GetSession()->GetCurrentMessageArea();
+  int os = session()->GetCurrentMessageArea();
 
-  if (uconfsub[1].confnum != -1 && okconf(GetSession()->GetCurrentUser())) {
+  if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
     ac = 1;
     tmp_disable_conf(true);
   }
   bool done = false;
-  for (int sn = 0; sn < GetSession()->num_subs && !hangup && !done; sn++) {
+  for (int sn = 0; sn < session()->num_subs && !hangup && !done; sn++) {
     if (!iscan(sn)) {
       continue;
     }
-    if (GetSession()->GetCurrentReadMessageArea() < 0) {
+    if (session()->GetCurrentReadMessageArea() < 0) {
       return;
     }
 
     uint32_t sq = qsc_p[sn];
 
     // Must be sub with validation "on"
-    if (!(xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets)
-        || !(subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_val_net)) {
+    if (!(xsubs[session()->GetCurrentReadMessageArea()].num_nets)
+        || !(subboards[session()->GetCurrentReadMessageArea()].anony & anony_val_net)) {
       continue;
     }
 
     bout.nl();
     bout.Color(2);
     bout.clreol();
-    bout << "{{ ValScanning " << subboards[GetSession()->GetCurrentReadMessageArea()].name << " }}\r\n";
+    bout << "{{ ValScanning " << subboards[session()->GetCurrentReadMessageArea()].name << " }}\r\n";
     lines_listed = 0;
     bout.clreol();
     if (okansi() && !newline) {
       bout << "\r\x1b[2A";
     }
 
-    for (int i = 1; i <= GetSession()->GetNumMessagesInCurrentMessageArea() && !hangup && !done; i++) {    // was i = 0
+    for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea() && !hangup && !done; i++) {    // was i = 0
       if (get_post(i)->status & status_pending_net) {
         CheckForHangup();
-        GetSession()->localIO()->tleft(true);
-        if (i > 0 && i <= GetSession()->GetNumMessagesInCurrentMessageArea()) {
+        session()->localIO()->tleft(true);
+        if (i > 0 && i <= session()->GetNumMessagesInCurrentMessageArea()) {
           bool next;
           int val;
           read_message(i, &next, &val);
-          bout << "|#4[|#4Subboard: " << subboards[GetSession()->GetCurrentReadMessageArea()].name << "|#1]\r\n";
+          bout << "|#4[|#4Subboard: " << subboards[session()->GetCurrentReadMessageArea()].name << "|#1]\r\n";
           bout <<  "|#1D|#9)elete, |#1R|#9)eread |#1V|#9)alidate, |#1M|#9)ark Validated, |#1Q|#9)uit: |#2";
           char ch = onek("QDVMR");
           switch (ch) {
@@ -86,16 +86,16 @@ void valscan() {
             p1->status &= ~status_pending_net;
             write_post(i, p1);
             close_sub();
-            send_net_post(p1, subboards[GetSession()->GetCurrentReadMessageArea()].filename,
-                          GetSession()->GetCurrentReadMessageArea());
+            send_net_post(p1, subboards[session()->GetCurrentReadMessageArea()].filename,
+                          session()->GetCurrentReadMessageArea());
             bout.nl();
             bout << "|#7Message sent.\r\n\n";
           }
           break;
           case 'M':
-            if (lcs() && i > 0 && i <= GetSession()->GetNumMessagesInCurrentMessageArea() &&
-                subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_val_net &&
-                xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) {
+            if (lcs() && i > 0 && i <= session()->GetNumMessagesInCurrentMessageArea() &&
+                subboards[session()->GetCurrentReadMessageArea()].anony & anony_val_net &&
+                xsubs[session()->GetCurrentReadMessageArea()].num_nets) {
               open_sub(true);
               resynch(&i, nullptr);
               postrec *p1 = get_post(i);
@@ -154,6 +154,6 @@ void valscan() {
     tmp_disable_conf(false);
   }
 
-  GetSession()->SetCurrentMessageArea(os);
+  session()->SetCurrentMessageArea(os);
   bout.nl(2);
 }

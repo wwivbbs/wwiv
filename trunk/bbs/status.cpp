@@ -148,14 +148,14 @@ bool StatusMgr::Get(bool bLockFile) {
     }
 
     if (lQScanPtr != status.qscanptr) {
-      if (GetSession()->m_SubDateCache) {
+      if (session()->m_SubDateCache) {
         // kill subs cache
-        for (int i1 = 0; i1 < GetSession()->num_subs; i1++) {
-          GetSession()->m_SubDateCache[i1] = 0L;
+        for (int i1 = 0; i1 < session()->num_subs; i1++) {
+          session()->m_SubDateCache[i1] = 0L;
         }
       }
-      GetSession()->SetMessageAreaCacheNumber(0);
-      GetSession()->subchg = 1;
+      session()->SetMessageAreaCacheNumber(0);
+      session()->subchg = 1;
       //g_szMessageGatFileName[0] = 0;
     }
     for (int i = 0; i < 7; i++) {
@@ -171,16 +171,16 @@ bool StatusMgr::Get(bool bLockFile) {
           }
           break;
         case WStatus::fileChangeUpload: {         // kill dirs cache
-          if (GetSession()->m_DirectoryDateCache) {
-            for (int i1 = 0; i1 < GetSession()->num_dirs; i1++) {
-              GetSession()->m_DirectoryDateCache[i1] = 0L;
+          if (session()->m_DirectoryDateCache) {
+            for (int i1 = 0; i1 < session()->num_dirs; i1++) {
+              session()->m_DirectoryDateCache[i1] = 0L;
             }
           }
-          GetSession()->SetFileAreaCacheNumber(0);
+          session()->SetFileAreaCacheNumber(0);
         }
         break;
         case WStatus::fileChangePosts:
-          GetSession()->subchg = 1;
+          session()->subchg = 1;
           //g_szMessageGatFileName[0] = 0;
           break;
         case WStatus::fileChangeEmail:
@@ -188,9 +188,9 @@ bool StatusMgr::Get(bool bLockFile) {
           mailcheck = false;
           break;
         case WStatus::fileChangeNet: {
-          int nOldNetNum = GetSession()->GetNetworkNumber();
+          int nOldNetNum = session()->GetNetworkNumber();
           zap_bbs_list();
-          for (int i1 = 0; i1 < GetSession()->GetMaxNetworkNumber(); i1++) {
+          for (int i1 = 0; i1 < session()->GetMaxNetworkNumber(); i1++) {
             set_net_num(i1);
             zap_call_out_list();
             zap_contacts();

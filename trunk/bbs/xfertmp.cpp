@@ -408,13 +408,13 @@ bool download_temp_arc(const char *pszFileName, bool count_against_xfer_ratio) {
     send_file(szDownloadFileName, &sent, &abort, szFileToSend, -1, lFileSize);
     if (sent) {
       if (count_against_xfer_ratio) {
-        GetSession()->GetCurrentUser()->SetFilesDownloaded(GetSession()->GetCurrentUser()->GetFilesDownloaded() + 1);
-        GetSession()->GetCurrentUser()->SetDownloadK(GetSession()->GetCurrentUser()->GetDownloadK() + bytes_to_k(lFileSize));
+        session()->user()->SetFilesDownloaded(session()->user()->GetFilesDownloaded() + 1);
+        session()->user()->SetDownloadK(session()->user()->GetDownloadK() + bytes_to_k(lFileSize));
         bout.nl(2);
         bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
       }
       sysoplogf("Downloaded %ldk of \"%s\"", bytes_to_k(lFileSize), szFileToSend);
-      if (GetSession()->IsUserOnline()) {
+      if (session()->IsUserOnline()) {
         GetApplication()->UpdateTopScreen();
       }
       return true;
@@ -441,8 +441,8 @@ void add_arc(const char *arc, const char *pszFileName, int dos) {
   get_arc_cmd(szAddArchiveCommand, szArchiveFileName, 2, pszFileName);
   if (szAddArchiveCommand[0]) {
     chdir(syscfgovr.tempdir);
-    GetSession()->localIO()->LocalPuts(szAddArchiveCommand);
-    GetSession()->localIO()->LocalPuts("\r\n");
+    session()->localIO()->LocalPuts(szAddArchiveCommand);
+    session()->localIO()->LocalPuts("\r\n");
     if (dos) {
       ExecuteExternalProgram(szAddArchiveCommand, GetApplication()->GetSpawnOptions(SPAWNOPT_ARCH_A));
     } else {
@@ -561,10 +561,10 @@ void temp_extract() {
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
-    sprintf(s2, "%s%s", directories[udir[GetSession()->GetCurrentFileArea()].subnum].path, u.filename);
+    sprintf(s2, "%s%s", directories[udir[session()->GetCurrentFileArea()].subnum].path, u.filename);
     StringRemoveWhitespace(s2);
-    if (directories[udir[GetSession()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
-      sprintf(s1, "%s%s", directories[udir[GetSession()->GetCurrentFileArea()].subnum].path, u.filename);
+    if (directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
+      sprintf(s1, "%s%s", directories[udir[session()->GetCurrentFileArea()].subnum].path, u.filename);
       sprintf(s2, "%s%s", syscfgovr.tempdir, u.filename);
       StringRemoveWhitespace(s1);
       if (!File::Exists(s2)) {
@@ -575,15 +575,15 @@ void temp_extract() {
     if (s1[0] && File::Exists(s2)) {
       bout.nl(2);
       bool abort = false;
-      ot = GetSession()->tagging;
-      GetSession()->tagging = 2;
+      ot = session()->tagging;
+      session()->tagging = 2;
       printinfo(&u, &abort);
-      GetSession()->tagging = ot;
+      session()->tagging = ot;
       bout.nl();
-      if (directories[udir[GetSession()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
+      if (directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
         chdir(syscfgovr.tempdir);
       } else {
-        chdir(directories[udir[GetSession()->GetCurrentFileArea()].subnum].path);
+        chdir(directories[udir[session()->GetCurrentFileArea()].subnum].path);
       }
       File file(File::current_directory(), stripfn(u.filename));
       GetApplication()->CdHome();
@@ -597,7 +597,7 @@ void temp_extract() {
             ok1 = false;
           }
           if (wwiv::strings::IsEquals(s1, "?")) {
-            list_arc_out(stripfn(u.filename), directories[udir[GetSession()->GetCurrentFileArea()].subnum].path);
+            list_arc_out(stripfn(u.filename), directories[udir[session()->GetCurrentFileArea()].subnum].path);
             s1[0] = '\0';
           }
           if (wwiv::strings::IsEquals(s1, "Q")) {
@@ -743,12 +743,12 @@ void move_file_t() {
   tmp_disable_conf(true);
 
   bout.nl();
-  if (GetSession()->numbatch == 0) {
+  if (session()->numbatch == 0) {
     bout.nl();
     bout << "|#6No files have been tagged for movement.\r\n";
     pausescr();
   }
-  for (int nCurBatchPos = GetSession()->numbatch - 1; nCurBatchPos >= 0; nCurBatchPos--) {
+  for (int nCurBatchPos = session()->numbatch - 1; nCurBatchPos >= 0; nCurBatchPos--) {
     bool ok = false;
     char szCurBatchFileName[ MAX_PATH ];
     strcpy(szCurBatchFileName, batch[nCurBatchPos].filename);
@@ -790,7 +790,7 @@ void move_file_t() {
         } while (!hangup && (pszDirectoryNum[0] == '?'));
         d1 = -1;
         if (pszDirectoryNum[0]) {
-          for (int i1 = 0; (i1 < GetSession()->num_dirs) && (udir[i1].subnum != -1); i1++) {
+          for (int i1 = 0; (i1 < session()->num_dirs) && (udir[i1].subnum != -1); i1++) {
             if (wwiv::strings::IsEquals(udir[i1].keys, pszDirectoryNum)) {
               d1 = i1;
             }
@@ -804,7 +804,7 @@ void move_file_t() {
             ok = false;
             bout << "Filename already in use in that directory.\r\n";
           }
-          if (GetSession()->numf >= directories[d1].maxfiles) {
+          if (session()->numf >= directories[d1].maxfiles) {
             ok = false;
             bout << "Too many files in that directory.\r\n";
           }
@@ -826,16 +826,16 @@ void move_file_t() {
         }
         --nCurPos;
         fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-        for (int i1 = nTempRecordNum; i1 < GetSession()->numf; i1++) {
+        for (int i1 = nTempRecordNum; i1 < session()->numf; i1++) {
           FileAreaSetRecord(fileDownload, i1 + 1);
           fileDownload.Read(&u1, sizeof(uploadsrec));
           FileAreaSetRecord(fileDownload, i1);
           fileDownload.Write(&u1, sizeof(uploadsrec));
         }
-        --GetSession()->numf;
+        --session()->numf;
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Read(&u1, sizeof(uploadsrec));
-        u1.numbytes = GetSession()->numf;
+        u1.numbytes = session()->numf;
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Write(&u1, sizeof(uploadsrec));
         fileDownload.Close();
@@ -848,7 +848,7 @@ void move_file_t() {
         StringRemoveWhitespace(s2);
         dliscan1(d1);
         fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-        for (int i = GetSession()->numf; i >= 1; i--) {
+        for (int i = session()->numf; i >= 1; i--) {
           FileAreaSetRecord(fileDownload, i);
           fileDownload.Read(&u1, sizeof(uploadsrec));
           FileAreaSetRecord(fileDownload, i + 1);
@@ -856,13 +856,13 @@ void move_file_t() {
         }
         FileAreaSetRecord(fileDownload, 1);
         fileDownload.Write(&u, sizeof(uploadsrec));
-        ++GetSession()->numf;
+        ++session()->numf;
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Read(&u1, sizeof(uploadsrec));
-        u1.numbytes = GetSession()->numf;
+        u1.numbytes = session()->numf;
         if (u.daten > u1.daten) {
           u1.daten = u.daten;
-          GetSession()->m_DirectoryDateCache[d1] = u.daten;
+          session()->m_DirectoryDateCache[d1] = u.daten;
         }
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Write(&u1, sizeof(uploadsrec));
@@ -931,12 +931,12 @@ void removefile() {
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
-    if ((dcs()) || ((u.ownersys == 0) && (u.ownerusr == GetSession()->usernum))) {
+    if ((dcs()) || ((u.ownersys == 0) && (u.ownerusr == session()->usernum))) {
       bout.nl();
       if (check_batch_queue(u.filename)) {
         bout << "|#6That file is in the batch queue; remove it from there.\r\n\n";
       } else {
-        printfileinfo(&u, udir[GetSession()->GetCurrentFileArea()].subnum);
+        printfileinfo(&u, udir[session()->GetCurrentFileArea()].subnum);
         bout << "|#9Remove (|#2Y/N/Q|#9) |#0: |#2";
         char ch = ynq();
         if (ch == 'Q') {
@@ -964,7 +964,7 @@ void removefile() {
           }
           if (bDeleteFileToo) {
             char szFileNameToDelete[ MAX_PATH ];
-            sprintf(szFileNameToDelete, "%s%s", directories[udir[GetSession()->GetCurrentFileArea()].subnum].path, u.filename);
+            sprintf(szFileNameToDelete, "%s%s", directories[udir[session()->GetCurrentFileArea()].subnum].path, u.filename);
             StringRemoveWhitespace(szFileNameToDelete);
             File::Remove(szFileNameToDelete);
             if (bRemoveDlPoints && u.ownersys == 0) {
@@ -981,19 +981,19 @@ void removefile() {
           if (u.mask & mask_extended) {
             delete_extended_description(u.filename);
           }
-          sysoplogf("- \"%s\" removed off of %s", u.filename, directories[udir[GetSession()->GetCurrentFileArea()].subnum].name);
+          sysoplogf("- \"%s\" removed off of %s", u.filename, directories[udir[session()->GetCurrentFileArea()].subnum].name);
           fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-          for (int i1 = i; i1 < GetSession()->numf; i1++) {
+          for (int i1 = i; i1 < session()->numf; i1++) {
             FileAreaSetRecord(fileDownload, i1 + 1);
             fileDownload.Read(&u, sizeof(uploadsrec));
             FileAreaSetRecord(fileDownload, i1);
             fileDownload.Write(&u, sizeof(uploadsrec));
           }
           --i;
-          --GetSession()->numf;
+          --session()->numf;
           FileAreaSetRecord(fileDownload, 0);
           fileDownload.Read(&u, sizeof(uploadsrec));
-          u.numbytes = GetSession()->numf;
+          u.numbytes = session()->numf;
           FileAreaSetRecord(fileDownload, 0);
           fileDownload.Write(&u, sizeof(uploadsrec));
           fileDownload.Close();

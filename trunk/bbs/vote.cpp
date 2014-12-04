@@ -43,7 +43,7 @@ void print_quest(int mapp, int map[21]) {
 
     char szBuffer[255];
     snprintf(szBuffer, sizeof(szBuffer), "|#6%c |#2%2d|#7) |#1%s",
-             GetSession()->GetCurrentUser()->GetVote(map[ i ]) ? ' ' : '*', i, v.question);
+             session()->user()->GetVote(map[ i ]) ? ' ' : '*', i, v.question);
     pla(szBuffer, &abort);
   }
   voteFile.Close();
@@ -115,7 +115,7 @@ void vote_question(int i, int ii) {
   votingrec v;
 
   bool pqo = print_question(i, ii);
-  if (GetSession()->GetCurrentUser()->IsRestrictionVote() || GetSession()->GetEffectiveSl() <= 10 || !pqo) {
+  if (session()->user()->IsRestrictionVote() || session()->GetEffectiveSl() <= 10 || !pqo) {
     return;
   }
 
@@ -133,8 +133,8 @@ void vote_question(int i, int ii) {
   }
 
   std::string message = "|#9Your vote: |#1";
-  if (GetSession()->GetCurrentUser()->GetVote(ii)) {
-    message.append(v.responses[ GetSession()->GetCurrentUser()->GetVote(ii) - 1 ].response);
+  if (session()->user()->GetVote(ii)) {
+    message.append(v.responses[ session()->user()->GetVote(ii) - 1 ].response);
   } else {
     message +=  "No Comment";
   }
@@ -166,12 +166,12 @@ void vote_question(int i, int ii) {
     voteFile.Close();
     return;
   }
-  if (GetSession()->GetCurrentUser()->GetVote(ii)) {
-    v.responses[ GetSession()->GetCurrentUser()->GetVote(ii) - 1 ].numresponses--;
+  if (session()->user()->GetVote(ii)) {
+    v.responses[ session()->user()->GetVote(ii) - 1 ].numresponses--;
   }
-  GetSession()->GetCurrentUser()->SetVote(ii, i1);
+  session()->user()->SetVote(ii, i1);
   if (i1) {
-    v.responses[ GetSession()->GetCurrentUser()->GetVote(ii) - 1 ].numresponses++;
+    v.responses[ session()->user()->GetVote(ii) - 1 ].numresponses++;
   }
   voteFile.Seek(ii * sizeof(votingrec), File::seekBegin);
   voteFile.Write(&v, sizeof(votingrec));

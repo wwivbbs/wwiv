@@ -218,7 +218,7 @@ private:
 WApplication* GetApplication();
 WApplication* CreateApplication(WLocalIO* localIO);
 
-WSession* GetSession();
+WSession* session();
 
 #endif // __INCLUDED_BBS_H__
 

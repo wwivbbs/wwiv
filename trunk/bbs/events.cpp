@@ -68,9 +68,9 @@ char *ttclastrun(int d) {
 
 void sort_events() {
   // keeping events sorted in time order makes things easier.
-  for (int i = 0; i < (GetSession()->num_events - 1); i++) {
+  for (int i = 0; i < (session()->num_events - 1); i++) {
     int z = i;
-    for (int j = (i + 1); j < GetSession()->num_events; j++) {
+    for (int j = (i + 1); j < session()->num_events; j++) {
       if (events[j].time < events[z].time) {
         z = j;
       }
@@ -94,11 +94,11 @@ void init_events() {
 
   File eventsFile(syscfg.datadir, EVENTS_DAT);
   if (eventsFile.Open(File::modeBinary | File::modeReadOnly)) {
-    GetSession()->num_events = eventsFile.GetLength() / sizeof(eventsrec);
-    eventsFile.Read(events, GetSession()->num_events * sizeof(eventsrec));
+    session()->num_events = eventsFile.GetLength() / sizeof(eventsrec);
+    eventsFile.Read(events, session()->num_events * sizeof(eventsrec));
     get_next_forced_event();
   } else {
-    GetSession()->num_events = 0;
+    session()->num_events = 0;
   }
 }
 
@@ -112,7 +112,7 @@ void get_next_forced_event() {
   if (day == 7) {
     day = 0;
   }
-  for (int i = 0; i < GetSession()->num_events; i++) {
+  for (int i = 0; i < session()->num_events; i++) {
     if ((events[i].instance == GetApplication()->GetInstanceNumber() || events[i].instance == 0) &&
         events[i].status & EVENT_FORCED) {
       if (first < 0 && events[i].time < tl && ((events[i].days & (1 << day)) > 0)) {
@@ -139,7 +139,7 @@ void get_next_forced_event() {
 
 
 void cleanup_events() {
-  if (!GetSession()->num_events) {
+  if (!session()->num_events) {
     return;
   }
 
@@ -152,13 +152,13 @@ void cleanup_events() {
   }
 
   int i;
-  for (i = 0; i < GetSession()->num_events; i++) {
+  for (i = 0; i < session()->num_events; i++) {
     if (((events[i].status & EVENT_RUNTODAY) == 0) &&
         ((events[i].days & (1 << day)) > 0)) {
       run_event(i);
     }
   }
-  for (i = 0; i < GetSession()->num_events; i++) {
+  for (i = 0; i < session()->num_events; i++) {
     events[i].status &= ~EVENT_RUNTODAY;
     // zero out last run in case this is a periodic event
     events[i].lastrun = 0;
@@ -166,7 +166,7 @@ void cleanup_events() {
 
   File eventsFile(syscfg.datadir, EVENTS_DAT);
   eventsFile.Open(File::modeReadWrite | File::modeBinary);
-  eventsFile.Write(events, GetSession()->num_events * sizeof(eventsrec));
+  eventsFile.Write(events, session()->num_events * sizeof(eventsrec));
   eventsFile.Close();
 }
 
@@ -175,7 +175,7 @@ void check_event() {
   int i;
 
   int tl = t_now();
-  for (i = 0; i < GetSession()->num_events && !do_event; i++) {
+  for (i = 0; i < session()->num_events && !do_event; i++) {
     if (((events[i].status & EVENT_RUNTODAY) == 0) && (events[i].time <= tl) &&
         ((events[i].days & (1 << dow())) > 0) &&
         ((events[i].instance == GetApplication()->GetInstanceNumber()) ||
@@ -228,7 +228,7 @@ void run_event(int evnt) {
 
   write_inst(INST_LOC_EVENT, 0, INST_FLAGS_NONE);
 #ifndef __unix__
-  GetSession()->localIO()->SetCursor(WLocalIO::cursorNormal);
+  session()->localIO()->SetCursor(WLocalIO::cursorNormal);
 #endif
   bout.cls();
   bout << "\r\nNow running external event.\r\n\n";
@@ -237,8 +237,8 @@ void run_event(int evnt) {
   }
   if (events[evnt].status & EVENT_EXIT) {
     exitlevel = static_cast<int>(events[evnt].cmd[0]);
-    if (ok_modem_stuff && GetSession()->remoteIO() != nullptr) {
-      GetSession()->remoteIO()->close();
+    if (ok_modem_stuff && session()->remoteIO() != nullptr) {
+      session()->remoteIO()->close();
     }
     exit(exitlevel);
   }
@@ -262,7 +262,7 @@ void show_events() {
   pla("|#1                                         Hold   Force   Run            Run", &abort);
   pla("|#1Evnt Time  Command                 Node  Phone  Event  Today   Freq    Days", &abort);
   pla("|#7=============================================================================", &abort);
-  for (int i = 0; (i < GetSession()->num_events) && !abort; i++) {
+  for (int i = 0; (i < session()->num_events) && !abort; i++) {
     if (events[i].status & EVENT_EXIT) {
       sprintf(s1, "Exit Level = %d", events[i].cmd[0]);
     } else {
@@ -381,14 +381,14 @@ void modify_event(int evnt) {
       break;
     case ']':
       i++;
-      if (i >= GetSession()->num_events) {
+      if (i >= session()->num_events) {
         i = 0;
       }
       break;
     case '[':
       i--;
       if (i < 0) {
-        i = GetSession()->num_events - 1;
+        i = session()->num_events - 1;
       }
       break;
     case 'A':
@@ -532,21 +532,21 @@ void modify_event(int evnt) {
 
 
 void insert_event() {
-  strcpy(events[GetSession()->num_events].cmd, "**New Event**");
-  events[GetSession()->num_events].time = 0;
-  events[GetSession()->num_events].status = 0;
-  events[GetSession()->num_events].instance = 0;
-  events[GetSession()->num_events].days = 127;                // Default to all 7 days
-  modify_event(GetSession()->num_events);
-  GetSession()->num_events = GetSession()->num_events + 1;
+  strcpy(events[session()->num_events].cmd, "**New Event**");
+  events[session()->num_events].time = 0;
+  events[session()->num_events].status = 0;
+  events[session()->num_events].instance = 0;
+  events[session()->num_events].days = 127;                // Default to all 7 days
+  modify_event(session()->num_events);
+  session()->num_events = session()->num_events + 1;
 }
 
 
 void delete_event(int n) {
-  for (int i = n; i < GetSession()->num_events; i++) {
+  for (int i = n; i < session()->num_events; i++) {
     events[i] = events[i + 1];
   }
-  GetSession()->num_events = GetSession()->num_events - 1;
+  session()->num_events = session()->num_events - 1;
 }
 
 
@@ -580,7 +580,7 @@ void eventedit() {
       bout << "|#2Run which Event? ";
       input(s, 2);
       int nEventNum = atoi(s);
-      if (s[0] != '\0' && nEventNum >= 0 && nEventNum < GetSession()->num_events) {
+      if (s[0] != '\0' && nEventNum >= 0 && nEventNum < session()->num_events) {
         run_event(nEventNum);
       }
     }
@@ -590,13 +590,13 @@ void eventedit() {
       bout << "|#2Modify which Event? ";
       input(s, 2);
       int nEventNum = atoi(s);
-      if (s[0] != '\0' && nEventNum >= 0 && nEventNum < GetSession()->num_events) {
+      if (s[0] != '\0' && nEventNum >= 0 && nEventNum < session()->num_events) {
         modify_event(nEventNum);
       }
     }
     break;
     case 'I':
-      if (GetSession()->num_events < MAX_EVENT) {
+      if (session()->num_events < MAX_EVENT) {
         insert_event();
       } else {
         bout << "\r\n|#6Can't add any more events!\r\n\n";
@@ -604,12 +604,12 @@ void eventedit() {
       }
       break;
     case 'D':
-      if (GetSession()->num_events) {
+      if (session()->num_events) {
         bout.nl();
         bout << "|#2Delete which Event? ";
         input(s, 2);
         int nEventNum = atoi(s);
-        if (s[0] && nEventNum >= 0 && nEventNum < GetSession()->num_events) {
+        if (s[0] && nEventNum >= 0 && nEventNum < session()->num_events) {
           bout.nl();
           if (events[nEventNum].status & EVENT_EXIT) {
             sprintf(s, "Exit Level = %d", events[nEventNum].cmd[0]);
@@ -631,9 +631,9 @@ void eventedit() {
   sort_events();
 
   File eventsFile(syscfg.datadir, EVENTS_DAT);
-  if (GetSession()->num_events) {
+  if (session()->num_events) {
     eventsFile.Open(File::modeReadWrite | File::modeCreateFile | File::modeBinary | File::modeTruncate);
-    eventsFile.Write(events, GetSession()->num_events * sizeof(eventsrec));
+    eventsFile.Write(events, session()->num_events * sizeof(eventsrec));
     eventsFile.Close();
   } else {
     eventsFile.Delete();

@@ -146,9 +146,9 @@ void grab_quotes(messagerec * m, const char *aux) {
       if (file.IsOpen()) {
         l3 = l2 = 0;
         ss1 = nullptr;
-        GetSession()->internetFullEmailAddress = "";
-        if ((strncasecmp("internet", GetSession()->GetNetworkName(), 8) == 0) ||
-            (strncasecmp("filenet", GetSession()->GetNetworkName(), 7) == 0)) {
+        session()->internetFullEmailAddress = "";
+        if ((strncasecmp("internet", session()->GetNetworkName(), 8) == 0) ||
+            (strncasecmp("filenet", session()->GetNetworkName(), 7) == 0)) {
           for (l1 = 0; l1 < lMessageLength; l1++) {
             if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'R') &&
                 (ss[l1 + 3] == 'M')) {
@@ -165,7 +165,7 @@ void grab_quotes(messagerec * m, const char *aux) {
                     ss1 = strtok(nullptr, "\r\n");
                   }
                   if (ss1) {
-                    GetSession()->usenetReferencesLine = ss1;
+                    session()->usenetReferencesLine = ss1;
                   }
                 }
               }
@@ -175,14 +175,14 @@ void grab_quotes(messagerec * m, const char *aux) {
         }
         l3 = l2 = 0;
         ss1 = nullptr;
-        if (GetSession()->IsMessageThreadingEnabled()) {
+        if (session()->IsMessageThreadingEnabled()) {
           for (l1 = 0; l1 < lMessageLength; l1++) {
             if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'P')) {
               l1 += 4;
-              GetSession()->threadID = "";
+              session()->threadID = "";
               while ((ss[l1] != '\r') && (l1 < lMessageLength)) {
                 sprintf(temp, "%c", ss[l1]);
-                GetSession()->threadID += temp;
+                session()->threadID += temp;
                 l1++;
               }
               l1 = lMessageLength;
@@ -367,7 +367,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
       b = p;
     }
     fileInputMsg.Close();
-    if (GetSession()->GetCurrentUser()->GetNumMessagesPosted() < 10) {
+    if (session()->user()->GetNumMessagesPosted() < 10) {
       printfile(QUOTE_NOEXT);
     }
     irt_name[0] = '\0';
@@ -380,7 +380,7 @@ void get_quote(int fsed) {
   static int i, i1, i2, i3, rl;
   static int l1, l2;
 
-  GetSession()->SetQuoting((fsed) ? true : false);
+  session()->SetQuoting((fsed) ? true : false);
   if (quotes_ind == nullptr) {
     if (fsed) {
       bout << "\x0c";
@@ -391,7 +391,7 @@ void get_quote(int fsed) {
     if (fsed) {
       pausescr();
     }
-    GetSession()->SetQuoting(false);
+    session()->SetQuoting(false);
     return;
   }
   rl = 1;
@@ -491,7 +491,7 @@ void get_quote(int fsed) {
       }
     }
   } while (!hangup && rl && !i2);
-  GetSession()->SetQuoting(false);
+  session()->SetQuoting(false);
   charbufferpointer = 0;
   if (i1 > 0 && i2 >= i1 && i2 <= i && rl && !hangup) {
     bquote = i1;

@@ -64,7 +64,7 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
   }
   bool ok = true;
   while ((nRecordNumber > 0) && ok && !hangup) {
-    GetSession()->localIO()->tleft(true);
+    session()->localIO()->tleft(true);
     File fileDownload(g_szDownloadFileName);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, nRecordNumber);
@@ -86,7 +86,7 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
       }
     }
     if (bOkToDL || bFreeDL) {
-      write_inst(INST_LOC_DOWNLOAD, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
+      write_inst(INST_LOC_DOWNLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
       sprintf(s1, "%s%s", directories[dn].path, u.filename);
       if (directories[dn].mask & mask_cdrom) {
         sprintf(s2, "%s%s", directories[dn].path, u.filename);
@@ -104,8 +104,8 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
 
       if (sent) {
         if (!bFreeDL) {
-          GetSession()->GetCurrentUser()->SetFilesDownloaded(GetSession()->GetCurrentUser()->GetFilesDownloaded() + 1);
-          GetSession()->GetCurrentUser()->SetDownloadK(GetSession()->GetCurrentUser()->GetDownloadK() + static_cast<int>
+          session()->user()->SetFilesDownloaded(session()->user()->GetFilesDownloaded() + 1);
+          session()->user()->SetDownloadK(session()->user()->GetDownloadK() + static_cast<int>
               (bytes_to_k(u.numbytes)));
         }
         ++u.numdloads;
@@ -121,7 +121,7 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
           if (!ur.IsUserDeleted()) {
             if (date_to_daten(ur.GetFirstOn()) < static_cast<time_t>(u.daten)) {
               ssm(u.ownerusr, 0, "%s downloaded '%s' on %s",
-                  GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum),
+                  session()->user()->GetUserNameAndNumber(session()->usernum),
                   u.filename, date());
             }
           }
@@ -131,7 +131,7 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
       bout.nl(2);
       bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
 
-      if (GetSession()->IsUserOnline()) {
+      if (session()->IsUserOnline()) {
         GetApplication()->UpdateTopScreen();
       }
     } else {
@@ -148,7 +148,7 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
 
 
 int FindDN(char *pszDownloadFileName) {
-  for (int i = 0; (i < GetSession()->num_dirs); i++) {
+  for (int i = 0; (i < session()->num_dirs); i++) {
     if (wwiv::strings::IsEqualsIgnoreCase(directories[i].filename, pszDownloadFileName)) {
       return i;
     }
@@ -181,7 +181,7 @@ bool MenuRunDoorNumber(int nDoorNumber, bool bFree) {
 
 
 int FindDoorNo(char *pszDoor) {
-  for (int i = 0; i < GetSession()->GetNumberOfChains(); i++) {
+  for (int i = 0; i < session()->GetNumberOfChains(); i++) {
     if (wwiv::strings::IsEqualsIgnoreCase(chains[i].description, pszDoor)) {
       return i;
     }
@@ -210,19 +210,19 @@ bool ValidateDoorAccess(int nDoorNumber) {
   if ((c.ansir & ansir_ansi) && !okansi()) {
     return false;
   }
-  if ((c.ansir & ansir_local_only) && GetSession()->using_modem) {
+  if ((c.ansir & ansir_local_only) && session()->using_modem) {
     return false;
   }
-  if (c.sl > GetSession()->GetEffectiveSl()) {
+  if (c.sl > session()->GetEffectiveSl()) {
     return false;
   }
-  if (c.ar && !GetSession()->GetCurrentUser()->HasArFlag(c.ar)) {
+  if (c.ar && !session()->user()->HasArFlag(c.ar)) {
     return false;
   }
-  if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg && GetSession()->GetEffectiveSl() < 255) {
+  if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg && session()->GetEffectiveSl() < 255) {
     chainregrec r = chains_reg[ nDoorNumber ];
     if (r.maxage) {
-      if (r.minage > GetSession()->GetCurrentUser()->GetAge() || r.maxage < GetSession()->GetCurrentUser()->GetAge()) {
+      if (r.minage > session()->user()->GetAge() || r.maxage < session()->user()->GetAge()) {
         return false;
       }
     }
@@ -239,9 +239,9 @@ void ChangeSubNumber() {
   bout << "|#7Select Sub number : |#0";
 
   char* s = mmkey(0);
-  for (int i = 0; (i < GetSession()->num_subs) && (usub[i].subnum != -1); i++) {
+  for (int i = 0; (i < session()->num_subs) && (usub[i].subnum != -1); i++) {
     if (wwiv::strings::IsEquals(usub[i].keys, s)) {
-      GetSession()->SetCurrentMessageArea(i);
+      session()->SetCurrentMessageArea(i);
     }
   }
 }
@@ -259,9 +259,9 @@ void ChangeDirNumber() {
       bout.nl();
       continue;
     }
-    for (int i = 0; i < GetSession()->num_dirs; i++) {
+    for (int i = 0; i < session()->num_dirs; i++) {
       if (wwiv::strings::IsEquals(udir[i].keys, s)) {
-        GetSession()->SetCurrentFileArea(i);
+        session()->SetCurrentFileArea(i);
         done = true;
       }
     }
@@ -365,17 +365,17 @@ void ReadMessages() {
       break;
     }
     if (isdigit(subsText[0])) {
-      for (int iTemp = 0; (iTemp < GetSession()->num_subs) && (usub[iTemp].subnum != -1); iTemp++) {
+      for (int iTemp = 0; (iTemp < session()->num_subs) && (usub[iTemp].subnum != -1); iTemp++) {
         if (subsText == usub[iTemp].keys) {
-          GetSession()->SetCurrentMessageArea(iTemp);
+          session()->SetCurrentMessageArea(iTemp);
 
           if (chWhichMessages == 'N') {
             // read new messages in the current sub
-            ReadSelectedMessages(RM_QSCAN_MSGS, GetSession()->GetCurrentMessageArea());
+            ReadSelectedMessages(RM_QSCAN_MSGS, session()->GetCurrentMessageArea());
           }
           if (chWhichMessages == 'A') {
             // Read all messages in the current sub
-            ReadSelectedMessages(RM_ALL_MSGS, GetSession()->GetCurrentMessageArea());
+            ReadSelectedMessages(RM_ALL_MSGS, session()->GetCurrentMessageArea());
           }
         }
       }
@@ -386,7 +386,7 @@ void ReadMessages() {
 
 
 void ReadSelectedMessages(int chWhichMessages, int iWhere) {
-  int iSaveSub = GetSession()->GetCurrentMessageArea();
+  int iSaveSub = session()->GetCurrentMessageArea();
 
   int nextsub = 1;
   switch (iWhere) {
@@ -395,9 +395,9 @@ void ReadSelectedMessages(int chWhichMessages, int iWhere) {
     bout.cls();
 
     bout << "|#3-=< Q-Scan All >=-\r\n";
-    for (int i = 0; (usub[i].subnum != -1) && (i < GetSession()->num_subs) && nextsub && !hangup; i++) {
-      GetSession()->SetCurrentMessageArea(i);
-      iscan(GetSession()->GetCurrentMessageArea());
+    for (int i = 0; (usub[i].subnum != -1) && (i < session()->num_subs) && nextsub && !hangup; i++) {
+      session()->SetCurrentMessageArea(i);
+      iscan(session()->GetCurrentMessageArea());
       if (iWhere == RM_QSCAN_SUBS) {
         if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) {
           if (chWhichMessages == RM_QSCAN_MSGS) {
@@ -423,7 +423,7 @@ void ReadSelectedMessages(int chWhichMessages, int iWhere) {
   break;
 
   default:                                /* sub # */
-    GetSession()->SetCurrentMessageArea(iWhere);
+    session()->SetCurrentMessageArea(iWhere);
 
     if (chWhichMessages == RM_QSCAN_MSGS) {
       qscan(iWhere, &nextsub);
@@ -433,6 +433,6 @@ void ReadSelectedMessages(int chWhichMessages, int iWhere) {
     break;
   }
 
-  GetSession()->SetCurrentMessageArea(iSaveSub);
-  iscan(GetSession()->GetCurrentMessageArea());
+  session()->SetCurrentMessageArea(iSaveSub);
+  iscan(session()->GetCurrentMessageArea());
 }

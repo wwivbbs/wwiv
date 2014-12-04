@@ -89,7 +89,7 @@ void qwk_remove_email(void) {
   for (long i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
     f->Seek(i * sizeof(mailrec), File::seekBegin);
     f->Read(&m, sizeof(mailrec));
-    if ((m.tosys == 0) && (m.touser == GetSession()->usernum)) {
+    if ((m.tosys == 0) && (m.touser == session()->usernum)) {
       mloc[mw].index = static_cast<short>(i);
       mloc[mw].fromsys = m.fromsys;
       mloc[mw].fromuser = m.fromuser;
@@ -98,9 +98,9 @@ void qwk_remove_email(void) {
       mw++;
     }
   }
-  GetSession()->GetCurrentUser()->data.waiting = mw;
+  session()->user()->data.waiting = mw;
 
-  if (GetSession()->usernum == 1) {
+  if (session()->usernum == 1) {
     fwaiting = mw;
   }
   
@@ -136,7 +136,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     return;
   }
 
-  slrec ss = getslrec(GetSession()->GetEffectiveSl());
+  slrec ss = getslrec(session()->GetEffectiveSl());
   std::unique_ptr<File> f(OpenEmailFile(false));
   if (!f->IsOpen()) {
     bout.nl(2);
@@ -150,7 +150,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   for (i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
     f->Seek(((long)(i)) * (sizeof(mailrec)), File::seekBegin);
     f->Read(&m, sizeof(mailrec));
-    if ((m.tosys == 0) && (m.touser == GetSession()->usernum)) {
+    if ((m.tosys == 0) && (m.touser == session()->usernum)) {
       mloc[mw].index = static_cast<short>(i);
       mloc[mw].fromsys = m.fromsys;
       mloc[mw].fromuser = m.fromuser;
@@ -160,9 +160,9 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     }
   }
   f->Close();
-  GetSession()->GetCurrentUser()->data.waiting = mw;
+  session()->user()->data.waiting = mw;
 
-  if (GetSession()->usernum == 1) {
+  if (session()->usernum == 1) {
     fwaiting = mw;
   }
   
@@ -289,30 +289,30 @@ int select_qwk_archiver(struct qwk_junk *qwk_info, int ask) {
 }
 
 string qwk_which_zip() {
-  if (GetSession()->GetCurrentUser()->data.qwk_archive > 4) {
-    GetSession()->GetCurrentUser()->data.qwk_archive = 0;
+  if (session()->user()->data.qwk_archive > 4) {
+    session()->user()->data.qwk_archive = 0;
   }
 
-  if (arcs[GetSession()->GetCurrentUser()->data.qwk_archive - 1].extension[0] == 0) {
-    GetSession()->GetCurrentUser()->data.qwk_archive = 0;
+  if (arcs[session()->user()->data.qwk_archive - 1].extension[0] == 0) {
+    session()->user()->data.qwk_archive = 0;
   }
 
-  if (GetSession()->GetCurrentUser()->data.qwk_archive == 0) {
+  if (session()->user()->data.qwk_archive == 0) {
     return string("ASK");
   } else {
-    return string((arcs[GetSession()->GetCurrentUser()->data.qwk_archive - 1].extension));
+    return string((arcs[session()->user()->data.qwk_archive - 1].extension));
   }
 }
 
 string qwk_which_protocol() {
-  if (GetSession()->GetCurrentUser()->data.qwk_protocol == 1) {
-    GetSession()->GetCurrentUser()->data.qwk_protocol = 0;
+  if (session()->user()->data.qwk_protocol == 1) {
+    session()->user()->data.qwk_protocol = 0;
   }
 
-  if (GetSession()->GetCurrentUser()->data.qwk_protocol == 0) {
+  if (session()->user()->data.qwk_protocol == 0) {
     return string("ASK");
   } else {
-    string thisprotocol(prot_name(GetSession()->GetCurrentUser()->data.qwk_protocol));
+    string thisprotocol(prot_name(session()->user()->data.qwk_protocol));
     if (thisprotocol.size() > 22) {
       return thisprotocol.substr(0, 21);
     }
@@ -337,8 +337,8 @@ void upload_reply_packet(void) {
   write_qwk_cfg(&qwk_cfg);
   close_qwk_cfg(&qwk_cfg);
 
-  save_sub = GetSession()->GetCurrentMessageArea();
-  if ((uconfsub[1].confnum != -1) && (okconf(GetSession()->GetCurrentUser()))) {
+  save_sub = session()->GetCurrentMessageArea();
+  if ((uconfsub[1].confnum != -1) && (okconf(session()->user()))) {
     save_conf = 1;
     tmp_disable_conf(true);
   }
@@ -354,7 +354,7 @@ void upload_reply_packet(void) {
 
   if (do_it) {
     if (incom) {
-      qwk_receive_file(namepath, &rec, GetSession()->GetCurrentUser()->data.qwk_protocol);
+      qwk_receive_file(namepath, &rec, session()->user()->data.qwk_protocol);
       sleep_for(milliseconds(500));
     }
 
@@ -377,7 +377,7 @@ void upload_reply_packet(void) {
     tmp_disable_conf(false);
   }
 
-  GetSession()->SetCurrentMessageArea(save_sub);
+  session()->SetCurrentMessageArea(save_sub);
 }
 
 void ready_reply_packet(const char *packet_name, const char *msg_name) {
@@ -491,11 +491,11 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
       GetApplication()->GetUserManager()->ReadUser(&u, un);
       strcpy(s2, u.GetUserNameAndNumber(un));
     } else {
-      if (GetSession()->GetMaxNetworkNumber() > 1) {
+      if (session()->GetMaxNetworkNumber() > 1) {
         if (un == 0) {
-          sprintf(s2, "%s @%u.%s", net_email_name, sy, GetSession()->GetNetworkName());
+          sprintf(s2, "%s @%u.%s", net_email_name, sy, session()->GetNetworkName());
         } else {
-          sprintf(s2, "%u @%u.%s", un, sy, GetSession()->GetNetworkName());
+          sprintf(s2, "%u @%u.%s", un, sy, session()->GetNetworkName());
         }
       } else {
         if (un == 0) {
@@ -533,7 +533,7 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
 
     time(&thetime);
 
-    const char* nam1 = GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem(GetSession()->usernum, net_sysnum);
+    const char* nam1 = session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum);
     qwk_inmsg(text, size, &msg, "email", nam1, thetime);
 
     if (msg.stored_as == 0xffffffff) {
@@ -541,7 +541,7 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
     }
 
     bout.Color(8);
-    sendout_email(title, &msg, 0, un, sy, 1, GetSession()->usernum, net_sysnum, 0, GetSession()->GetNetworkNumber());
+    sendout_email(title, &msg, 0, un, sy, 1, session()->usernum, net_sysnum, 0, session()->GetNetworkNumber());
   }
 }
 
@@ -743,18 +743,18 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     }
 
 
-    if (sub >= GetSession()->num_subs || sub < 0) {
+    if (sub >= session()->num_subs || sub < 0) {
       bout.Color(5);
       bout.bputs("Sub out of range");
 
       ++pass;
       continue;
     }
-    GetSession()->SetCurrentMessageArea(sub);
+    session()->SetCurrentMessageArea(sub);
 
     // Busy files... allow to retry
     while (!hangup) {
-      if (!qwk_iscan_literal(GetSession()->GetCurrentMessageArea())) {
+      if (!qwk_iscan_literal(session()->GetCurrentMessageArea())) {
         bout.nl();
         bout.bprintf("MSG file is busy on another instance, try again?");
         if (!noyes()) {
@@ -766,7 +766,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
       }
     }
 
-    if (GetSession()->GetCurrentReadMessageArea() < 0) {
+    if (session()->GetCurrentReadMessageArea() < 0) {
       bout.Color(5);
       bout.bputs("Sub out of range");
 
@@ -774,11 +774,11 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
       continue;
     }
 
-    ss = getslrec(GetSession()->GetEffectiveSl());
+    ss = getslrec(session()->GetEffectiveSl());
 
     // User is restricked from posting
-    if ((restrict_post & GetSession()->GetCurrentUser()->data.restrict)
-        || (GetSession()->GetCurrentUser()->data.posttoday >= ss.posts)) {
+    if ((restrict_post & session()->user()->data.restrict)
+        || (session()->user()->data.posttoday >= ss.posts)) {
       bout.nl();
       bout.bputs("Too many messages posted today.");
       bout.nl();
@@ -788,7 +788,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     }
 
     // User doesn't have enough sl to post on sub
-    if (GetSession()->GetEffectiveSl() < subboards[GetSession()->GetCurrentReadMessageArea()].postsl) {
+    if (session()->GetEffectiveSl() < subboards[session()->GetCurrentReadMessageArea()].postsl) {
       bout.nl();
       bout.bputs("You can't post here.");
       bout.nl();
@@ -796,14 +796,14 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
       continue;
     }
 
-    m.storage_type = static_cast<uint8_t>(subboards[GetSession()->GetCurrentReadMessageArea()].storage_type);
+    m.storage_type = static_cast<uint8_t>(subboards[session()->GetCurrentReadMessageArea()].storage_type);
 
     a = 0;
 
-    if (xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) {
+    if (xsubs[session()->GetCurrentReadMessageArea()].num_nets) {
       a &= (anony_real_name);
 
-      if (GetSession()->GetCurrentUser()->data.restrict & restrict_net) {
+      if (session()->user()->data.restrict & restrict_net) {
         bout.nl();
         bout.bputs("You can't post on networked sub-boards.");
         bout.nl();
@@ -822,15 +822,15 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     bout.Color(2);
     bout.bprintf("Posting on :");
     bout.Color(3);
-    bout.bputs(stripcolors(subboards[GetSession()->GetCurrentReadMessageArea()].name));
+    bout.bputs(stripcolors(subboards[session()->GetCurrentReadMessageArea()].name));
     bout.nl();
 
-    if (xsubs[GetSession()->GetCurrentReadMessageArea()].nets) {
+    if (xsubs[session()->GetCurrentReadMessageArea()].nets) {
       bout.Color(2);
       bout.bprintf("Going on   :");
       bout.Color(3);
       bout.bputs(
-        net_networks[xsubs[GetSession()->GetCurrentReadMessageArea()].nets[xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets].net_num].name);
+        net_networks[xsubs[session()->GetCurrentReadMessageArea()].nets[xsubs[session()->GetCurrentReadMessageArea()].num_nets].net_num].name);
       bout.nl();
     }
 
@@ -846,22 +846,22 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
   }
   bout.nl();
 
-  if (subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_real_name) {
-    strcpy(user_name, GetSession()->GetCurrentUser()->GetRealName());
+  if (subboards[session()->GetCurrentReadMessageArea()].anony & anony_real_name) {
+    strcpy(user_name, session()->user()->GetRealName());
     properize(user_name);
   } else {
-    const char* nam1 = GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem(GetSession()->usernum, net_sysnum);
+    const char* nam1 = session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum);
     strcpy(user_name, nam1);
   }
 
   time(&thetime);
-  qwk_inmsg(text, size, &m, subboards[GetSession()->GetCurrentReadMessageArea()].filename, user_name, thetime);
+  qwk_inmsg(text, size, &m, subboards[session()->GetCurrentReadMessageArea()].filename, user_name, thetime);
 
   if (m.stored_as != 0xffffffff) {
     char s[201];
 
     while (!hangup) {
-      f = qwk_iscan_literal(GetSession()->GetCurrentReadMessageArea());
+      f = qwk_iscan_literal(session()->GetCurrentReadMessageArea());
 
       if (f == -1) {
         bout.nl();
@@ -886,14 +886,14 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     p.anony = a;
     p.msg = m;
     p.ownersys = 0;
-    p.owneruser = static_cast<uint16_t>(GetSession()->usernum);
+    p.owneruser = static_cast<uint16_t>(session()->usernum);
     {
       WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
       p.qscan = pStatus->IncrementQScanPointer();
       GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
     }
     time((long *)(&p.daten));
-    if (GetSession()->GetCurrentUser()->data.restrict & restrict_validate) {
+    if (session()->user()->data.restrict & restrict_validate) {
       p.status = status_unvalidated;
     } else {
       p.status = 0;
@@ -901,29 +901,29 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
     open_sub(1);
 
-    if ((xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) &&
-        (subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_val_net) && (!lcs() || irt[0])) {
+    if ((xsubs[session()->GetCurrentReadMessageArea()].num_nets) &&
+        (subboards[session()->GetCurrentReadMessageArea()].anony & anony_val_net) && (!lcs() || irt[0])) {
       p.status |= status_pending_net;
       dm = 1;
 
-      for (i = GetSession()->GetNumMessagesInCurrentMessageArea(); (i >= 1)
-           && (i > (GetSession()->GetNumMessagesInCurrentMessageArea() - 28)); i--) {
+      for (i = session()->GetNumMessagesInCurrentMessageArea(); (i >= 1)
+           && (i > (session()->GetNumMessagesInCurrentMessageArea() - 28)); i--) {
         if (get_post(i)->status & status_pending_net) {
           dm = 0;
           break;
         }
       }
       if (dm) {
-        sprintf(s, "Unvalidated net posts on %s.", subboards[GetSession()->GetCurrentReadMessageArea()].name);
+        sprintf(s, "Unvalidated net posts on %s.", subboards[session()->GetCurrentReadMessageArea()].name);
         ssm(1, 0, s);
       }
     }
 
-    if (GetSession()->GetNumMessagesInCurrentMessageArea() >=
-        subboards[GetSession()->GetCurrentReadMessageArea()].maxmsgs) {
+    if (session()->GetNumMessagesInCurrentMessageArea() >=
+        subboards[session()->GetCurrentReadMessageArea()].maxmsgs) {
       i = 1;
       dm = 0;
-      while ((dm == 0) && (i <= GetSession()->GetNumMessagesInCurrentMessageArea()) && !hangup) {
+      while ((dm == 0) && (i <= session()->GetNumMessagesInCurrentMessageArea()) && !hangup) {
         if ((get_post(i)->status & status_no_delete) == 0) {
           dm = i;
         }
@@ -937,8 +937,8 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
     add_post(&p);
 
-    ++GetSession()->GetCurrentUser()->data.msgpost;
-    ++GetSession()->GetCurrentUser()->data.posttoday;
+    ++session()->user()->data.msgpost;
+    ++session()->user()->data.posttoday;
 
     {
       WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
@@ -949,14 +949,14 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
     close_sub();
 
-    sprintf(s, "+ \"%s\" posted on %s", p.title, subboards[GetSession()->GetCurrentReadMessageArea()].name);
+    sprintf(s, "+ \"%s\" posted on %s", p.title, subboards[session()->GetCurrentReadMessageArea()].name);
     sysoplog(s);
 
-    if (xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) {
-      ++GetSession()->GetCurrentUser()->data.postnet;
+    if (xsubs[session()->GetCurrentReadMessageArea()].num_nets) {
+      ++session()->user()->data.postnet;
       if (!(p.status & status_pending_net)) {
-        send_net_post(&p, subboards[GetSession()->GetCurrentReadMessageArea()].filename,
-                      GetSession()->GetCurrentReadMessageArea());
+        send_net_post(&p, subboards[session()->GetCurrentReadMessageArea()].filename,
+                      session()->GetCurrentReadMessageArea());
       }
     }
   }
@@ -1194,28 +1194,28 @@ void config_qwk_bw() {
 
     switch (key) {
     case 0:
-      GetSession()->GetCurrentUser()->data.qwk_dont_scan_mail = !GetSession()->GetCurrentUser()->data.qwk_dont_scan_mail;
+      session()->user()->data.qwk_dont_scan_mail = !session()->user()->data.qwk_dont_scan_mail;
       break;
     case 1:
-      GetSession()->GetCurrentUser()->data.qwk_delete_mail = !GetSession()->GetCurrentUser()->data.qwk_delete_mail;
+      session()->user()->data.qwk_delete_mail = !session()->user()->data.qwk_delete_mail;
       break;
     case 2:
-      GetSession()->GetCurrentUser()->data.qwk_dontsetnscan = !GetSession()->GetCurrentUser()->data.qwk_dontsetnscan;
+      session()->user()->data.qwk_dontsetnscan = !session()->user()->data.qwk_dontsetnscan;
       break;
     case 3:
-      GetSession()->GetCurrentUser()->data.qwk_remove_color = !GetSession()->GetCurrentUser()->data.qwk_remove_color;
+      session()->user()->data.qwk_remove_color = !session()->user()->data.qwk_remove_color;
       break;
     case 4:
-      GetSession()->GetCurrentUser()->data.qwk_convert_color = !GetSession()->GetCurrentUser()->data.qwk_convert_color;
+      session()->user()->data.qwk_convert_color = !session()->user()->data.qwk_convert_color;
       break;
     case 5:
-      GetSession()->GetCurrentUser()->data.qwk_leave_bulletin = !GetSession()->GetCurrentUser()->data.qwk_leave_bulletin;
+      session()->user()->data.qwk_leave_bulletin = !session()->user()->data.qwk_leave_bulletin;
       break;
     case 6:
-      GetSession()->GetCurrentUser()->data.qwk_dontscanfiles = !GetSession()->GetCurrentUser()->data.qwk_dontscanfiles;
+      session()->user()->data.qwk_dontscanfiles = !session()->user()->data.qwk_dontscanfiles;
       break;
     case 7:
-      GetSession()->GetCurrentUser()->data.qwk_keep_routing = !GetSession()->GetCurrentUser()->data.qwk_keep_routing;
+      session()->user()->data.qwk_keep_routing = !session()->user()->data.qwk_keep_routing;
       break;
     case 8: {
       struct qwk_junk qj;
@@ -1224,7 +1224,7 @@ void config_qwk_bw() {
 
       int a = select_qwk_archiver(&qj, 1);
       if (!qj.abort) {
-        GetSession()->GetCurrentUser()->data.qwk_archive = a;
+        session()->user()->data.qwk_archive = a;
       }
       break;
     }
@@ -1235,15 +1235,15 @@ void config_qwk_bw() {
 
       int a = select_qwk_protocol(&qj);
       if (!qj.abort) {
-        GetSession()->GetCurrentUser()->data.qwk_protocol = a;
+        session()->user()->data.qwk_protocol = a;
       }
     } break;
     case 10: {
       uint16_t max_msgs, max_per_sub;
 
       if (get_qwk_max_msgs(&max_msgs, &max_per_sub)) {
-        GetSession()->GetCurrentUser()->data.qwk_max_msgs = max_msgs;
-        GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub = max_per_sub;
+        session()->user()->data.qwk_max_msgs = max_msgs;
+        session()->user()->data.qwk_max_msgs_per_sub = max_per_sub;
       }
     } break;
     }
@@ -1255,52 +1255,52 @@ string qwk_current_text(int pos) {
 
   switch (pos) {
   case 0:
-    if (GetSession()->GetCurrentUser()->data.qwk_dont_scan_mail) {
+    if (session()->user()->data.qwk_dont_scan_mail) {
       return yesorno[1];
     } else {
       return yesorno[0];
     }
   case 1:
-    if (GetSession()->GetCurrentUser()->data.qwk_delete_mail) {
+    if (session()->user()->data.qwk_delete_mail) {
       return yesorno[0];
     } else {
       return yesorno[1];
     }
   case 2:
-    if (GetSession()->GetCurrentUser()->data.qwk_dontsetnscan) {
+    if (session()->user()->data.qwk_dontsetnscan) {
       return yesorno[1];
     } else {
       return yesorno[0];
     }
   case 3:
-    if (GetSession()->GetCurrentUser()->data.qwk_remove_color) {
+    if (session()->user()->data.qwk_remove_color) {
       return yesorno[0];
     } else {
       return yesorno[1];
     }
   case 4:
-    if (GetSession()->GetCurrentUser()->data.qwk_convert_color) {
+    if (session()->user()->data.qwk_convert_color) {
       return yesorno[0];
     } else {
       return yesorno[1];
     }
 
   case 5:
-    if (GetSession()->GetCurrentUser()->data.qwk_leave_bulletin) {
+    if (session()->user()->data.qwk_leave_bulletin) {
       return yesorno[1];
     } else {
       return yesorno[0];
     }
 
   case 6:
-    if (GetSession()->GetCurrentUser()->data.qwk_dontscanfiles) {
+    if (session()->user()->data.qwk_dontscanfiles) {
       return yesorno[1];
     } else {
       return yesorno[0];
     }
 
   case 7:
-    if (GetSession()->GetCurrentUser()->data.qwk_keep_routing) {
+    if (session()->user()->data.qwk_keep_routing) {
       return yesorno[1];
     } else {
       return yesorno[0];
@@ -1313,15 +1313,15 @@ string qwk_current_text(int pos) {
     return qwk_which_protocol();
 
   case 10:
-    if (!GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub && !GetSession()->GetCurrentUser()->data.qwk_max_msgs) {
+    if (!session()->user()->data.qwk_max_msgs_per_sub && !session()->user()->data.qwk_max_msgs) {
       return "Unlimited/Unlimited";
-    } else if (!GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub) {
-      return StringPrintf("Unlimited/%u", GetSession()->GetCurrentUser()->data.qwk_max_msgs);
-    } else if (!GetSession()->GetCurrentUser()->data.qwk_max_msgs) {
-      return StringPrintf("%u/Unlimited", GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub);
+    } else if (!session()->user()->data.qwk_max_msgs_per_sub) {
+      return StringPrintf("Unlimited/%u", session()->user()->data.qwk_max_msgs);
+    } else if (!session()->user()->data.qwk_max_msgs) {
+      return StringPrintf("%u/Unlimited", session()->user()->data.qwk_max_msgs_per_sub);
     } else {
-      return StringPrintf("%u/%u", GetSession()->GetCurrentUser()->data.qwk_max_msgs,
-              GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub);
+      return StringPrintf("%u/%u", session()->user()->data.qwk_max_msgs,
+              session()->user()->data.qwk_max_msgs_per_sub);
     }
 
   case 11:

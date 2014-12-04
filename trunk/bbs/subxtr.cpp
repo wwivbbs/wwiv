@@ -149,12 +149,12 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
               xsubs[curn].nets = &(xsubsn[nn]);
             }
             ss2 = skipspace(++ss1);
-            for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++) {
+            for (i = 0; i < session()->GetMaxNetworkNumber(); i++) {
               if (wwiv::strings::IsEqualsIgnoreCase(net_networks[i].name, ss1)) {
                 break;
               }
             }
-            if ((i < GetSession()->GetMaxNetworkNumber()) && (*ss2)) {
+            if ((i < session()->GetMaxNetworkNumber()) && (*ss2)) {
               xsubsn[nn].net_num = i;
               ss1 = ss2;
               ss2 = skipspace(ss2);
@@ -195,7 +195,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
           } else {
             xsubsn[nn].net_num = 0;
           }
-          if ((xsubsn[nn].net_num >= 0) && (xsubsn[nn].net_num < GetSession()->GetMaxNetworkNumber())) {
+          if ((xsubsn[nn].net_num >= 0) && (xsubsn[nn].net_num < session()->GetMaxNetworkNumber())) {
             xsubs[curn].nets = &(xsubsn[nn]);
             xsubsn[nn].type = subboards[curn].type;
             sprintf(xsubsn[nn].stype, "%u", xsubsn[nn].type);
@@ -205,7 +205,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
           }
         }
       }
-      for (n = 0; n < GetSession()->GetMaxNetworkNumber(); n++) {
+      for (n = 0; n < session()->GetMaxNetworkNumber(); n++) {
         sprintf(s, "%s%s", net_networks[n].dir, ALLOW_NET);
         ss = mallocin_file(s, &l);
         if (ss) {

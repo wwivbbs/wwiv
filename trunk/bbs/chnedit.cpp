@@ -55,7 +55,7 @@ static void showchains() {
   bool abort = false;
   pla("|#2NN Description                   Path Name                      SL  ANSI AR", &abort);
   pla("|#7== ----------------------------  ============================== --- ==== --", &abort);
-  for (int nChainNum = 0; nChainNum < GetSession()->GetNumberOfChains() && !abort; nChainNum++) {
+  for (int nChainNum = 0; nChainNum < session()->GetNumberOfChains() && !abort; nChainNum++) {
     const string s = chaindata(nChainNum);
     pla(s, &abort);
   }
@@ -156,8 +156,8 @@ void modify_chain(int nCurrentChainNumber) {
         chains_reg[ nCurrentChainNumber ] = r;
       }
       if (--nCurrentChainNumber < 0) {
-        nCurrentChainNumber = GetSession()->GetNumberOfChains() - 1;
-        GetSession()->SetNumberOfChains(nCurrentChainNumber);
+        nCurrentChainNumber = session()->GetNumberOfChains() - 1;
+        session()->SetNumberOfChains(nCurrentChainNumber);
       }
       c = chains[ nCurrentChainNumber ];
       if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
@@ -169,7 +169,7 @@ void modify_chain(int nCurrentChainNumber) {
       if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
         chains_reg[ nCurrentChainNumber ] = r;
       }
-      if (++nCurrentChainNumber >= GetSession()->GetNumberOfChains()) {
+      if (++nCurrentChainNumber >= session()->GetNumberOfChains()) {
         nCurrentChainNumber = 0;
       }
       c = chains[ nCurrentChainNumber ];
@@ -330,7 +330,7 @@ void insert_chain(int nCurrentChainNumber) {
   chainfilerec c;
   chainregrec r;
 
-  for (int i = GetSession()->GetNumberOfChains() - 1; i >= nCurrentChainNumber; i--) {
+  for (int i = session()->GetNumberOfChains() - 1; i >= nCurrentChainNumber; i--) {
     chains[i + 1] = chains[i];
     if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
       chains_reg[i + 1] = chains_reg[i];
@@ -343,7 +343,7 @@ void insert_chain(int nCurrentChainNumber) {
   c.ansir = 0;
   chains[ nCurrentChainNumber ] = c;
   c.ansir |= ansir_no_DOS;
-  GetSession()->SetNumberOfChains(GetSession()->GetNumberOfChains() + 1);
+  session()->SetNumberOfChains(session()->GetNumberOfChains() + 1);
   if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     memset(&r, 0, sizeof(r));
     r.maxage = 255;
@@ -353,13 +353,13 @@ void insert_chain(int nCurrentChainNumber) {
 }
 
 void delete_chain(int nCurrentChainNumber) {
-  for (int i = nCurrentChainNumber; i < GetSession()->GetNumberOfChains(); i++) {
+  for (int i = nCurrentChainNumber; i < session()->GetNumberOfChains(); i++) {
     chains[i] = chains[i + 1];
     if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
       chains_reg[i] = chains_reg[i + 1];
     }
   }
-  GetSession()->SetNumberOfChains(GetSession()->GetNumberOfChains() - 1);
+  session()->SetNumberOfChains(session()->GetNumberOfChains() - 1);
 }
 
 void chainedit() {
@@ -385,23 +385,23 @@ void chainedit() {
       string s;
       input(&s, 2);
       int i = atoi(s.c_str());
-      if (s[0] != '\0' && i >= 0 && i < GetSession()->GetNumberOfChains()) {
+      if (s[0] != '\0' && i >= 0 && i < session()->GetNumberOfChains()) {
         modify_chain(i);
       }
     } break;
     case 'I': {
-      if (GetSession()->GetNumberOfChains() < GetSession()->max_chains) {
+      if (session()->GetNumberOfChains() < session()->max_chains) {
         bout.nl();
         bout << "|#2Insert before which chain ('$' for end) : ";
         int chain = 0;
         string s;
         input(&s, 2);
         if (s[0] == '$') {
-          chain =  GetSession()->GetNumberOfChains();
+          chain =  session()->GetNumberOfChains();
         } else {
           chain = atoi(s.c_str());
         }
-        if (s[0] != '\0' && chain >= 0 && chain <= GetSession()->GetNumberOfChains()) {
+        if (s[0] != '\0' && chain >= 0 && chain <= session()->GetNumberOfChains()) {
           insert_chain(chain);
         }
       }
@@ -412,7 +412,7 @@ void chainedit() {
       string s;
       input(&s, 2);
       int i = atoi(s.c_str());
-      if (s[0] != '\0' && i >= 0 && i < GetSession()->GetNumberOfChains()) {
+      if (s[0] != '\0' && i >= 0 && i < session()->GetNumberOfChains()) {
         bout.nl();
         bout << "|#5Delete " << chains[i].description << "? ";
         if (yesno()) {
@@ -425,13 +425,13 @@ void chainedit() {
 
   File chainsFile(syscfg.datadir, CHAINS_DAT);
   if (chainsFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile| File::modeTruncate)) {
-    chainsFile.Write(chains, GetSession()->GetNumberOfChains() * sizeof(chainfilerec));
+    chainsFile.Write(chains, session()->GetNumberOfChains() * sizeof(chainfilerec));
     chainsFile.Close();
   }
   if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     File regFile(syscfg.datadir, CHAINS_REG);
     if (regFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate)) {
-      regFile.Write(chains_reg, GetSession()->GetNumberOfChains() * sizeof(chainregrec));
+      regFile.Write(chains_reg, session()->GetNumberOfChains() * sizeof(chainregrec));
       regFile.Close();
     }
   }

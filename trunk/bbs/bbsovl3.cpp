@@ -47,7 +47,7 @@ static int pd_getkey() {
 
 int get_kb_event(int nNumLockMode) {
   int key = 0;
-  GetSession()->localIO()->tleft(true);
+  session()->localIO()->tleft(true);
   time_t time1 = time(nullptr);
 
   do {
@@ -61,10 +61,10 @@ int get_kb_event(int nNumLockMode) {
       return 0;
     }
 
-    if (bkbhitraw() || GetSession()->localIO()->LocalKeyPressed()) {
-      if (!incom || GetSession()->localIO()->LocalKeyPressed()) {
+    if (bkbhitraw() || session()->localIO()->LocalKeyPressed()) {
+      if (!incom || session()->localIO()->LocalKeyPressed()) {
         // Check for local keys
-        key = GetSession()->localIO()->LocalGetChar();
+        key = session()->localIO()->LocalGetChar();
         if (key == CBACKSPACE) {
           return COMMAND_DELETE;
         }
@@ -74,9 +74,9 @@ int get_kb_event(int nNumLockMode) {
         if (key == RETURN || key == CL) {
           return EXECUTE;
         }
-        if ((key == 0 || key == 224) && GetSession()->localIO()->LocalKeyPressed()) {
+        if ((key == 0 || key == 224) && session()->localIO()->LocalKeyPressed()) {
           // again, the 224 is an artifact of Win32, I dunno why.
-          key = GetSession()->localIO()->LocalGetChar();
+          key = session()->localIO()->LocalGetChar();
           return key + 256;
         } else {
           if (nNumLockMode == NOTNUMBERS) {
@@ -169,8 +169,8 @@ int get_kb_event(int nNumLockMode) {
           }
         } else {
           if (!key) {
-            if (GetSession()->localIO()->LocalKeyPressed()) {
-              key = GetSession()->localIO()->LocalGetChar();
+            if (session()->localIO()->LocalKeyPressed()) {
+              key = session()->localIO()->LocalGetChar();
               return (key + 256);
             }
           }
@@ -280,7 +280,7 @@ bool do_sysop_command(int nCommandID) {
       bout.cls();
     }
 
-    GetSession()->localIO()->skey(static_cast<char>(nKeyStroke));
+    session()->localIO()->skey(static_cast<char>(nKeyStroke));
 
     if (bNeedToRedraw) {
       bout.cls();

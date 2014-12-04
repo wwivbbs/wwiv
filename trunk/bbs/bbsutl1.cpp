@@ -43,7 +43,7 @@ bool AllowLocalSysop() {
 
 
 /**
- * Finds GetSession()->usernum and system number from emailAddress, sets network number as
+ * Finds session()->usernum and system number from emailAddress, sets network number as
  * appropriate.
  * @param emailAddress The text of the email address.
  * @param pUserNumber OUT The User Number
@@ -72,10 +72,10 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
       bout << "Unknown user.\r\n";
     }
   } else if (atoi(ss + 1) == 0) {
-    for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++) {
+    for (i = 0; i < session()->GetMaxNetworkNumber(); i++) {
       set_net_num(i);
-      if ((strncasecmp("internet", GetSession()->GetNetworkName(), 8) == 0) ||
-          ((strncasecmp("filenet", GetSession()->GetNetworkName(), 7) == 0) && (*pSystemNumber == 32767))) {
+      if ((strncasecmp("internet", session()->GetNetworkName(), 8) == 0) ||
+          ((strncasecmp("filenet", session()->GetNetworkName(), 7) == 0) && (*pSystemNumber == 32767))) {
         strcpy(net_email_name, szEmailAddress);
         for (ss1 = net_email_name; *ss1; ss1++) {
           if ((*ss1 >= 'A') && (*ss1 <= 'Z')) {
@@ -86,7 +86,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
         break;
       }
     }
-    if (i >= GetSession()->GetMaxNetworkNumber()) {
+    if (i >= session()->GetMaxNetworkNumber()) {
       bout << "Unknown user.\r\n";
     }
   } else {
@@ -126,9 +126,9 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
       *pSystemNumber = static_cast< unsigned short >(nSystemNumber);
     }
     if (*pSystemNumber && ss1) {
-      for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++) {
+      for (i = 0; i < session()->GetMaxNetworkNumber(); i++) {
         set_net_num(i);
-        if (wwiv::strings::IsEqualsIgnoreCase(ss1, GetSession()->GetNetworkName())) {
+        if (wwiv::strings::IsEqualsIgnoreCase(ss1, session()->GetNetworkName())) {
           if (!valid_system(*pSystemNumber)) {
             bout.nl();
             bout << "There is no " << ss1 << " @" << *pSystemNumber << ".\r\n\n";
@@ -148,23 +148,23 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
           break;
         }
       }
-      if (i >= GetSession()->GetMaxNetworkNumber()) {
+      if (i >= session()->GetMaxNetworkNumber()) {
         bout.nl();
         bout << "This system isn't connected to " << ss1 << "\r\n";
         *pSystemNumber = *pUserNumber = 0;
       }
-    } else if (*pSystemNumber && GetSession()->GetMaxNetworkNumber() > 1) {
+    } else if (*pSystemNumber && session()->GetMaxNetworkNumber() > 1) {
       odc[0] = '\0';
       odci = 0;
       onx[0] = 'Q';
       onx[1] = '\0';
       onxi = 1;
       nv = 0;
-      on = GetSession()->GetNetworkNumber();
-      ss = static_cast<char *>(BbsAllocA(GetSession()->GetMaxNetworkNumber()));
+      on = session()->GetNetworkNumber();
+      ss = static_cast<char *>(BbsAllocA(session()->GetMaxNetworkNumber()));
       WWIV_ASSERT(ss != nullptr);
       xx = -1;
-      for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++) {
+      for (i = 0; i < session()->GetMaxNetworkNumber(); i++) {
         set_net_num(i);
         if (net_sysnum == *pSystemNumber) {
           xx = i;
@@ -205,7 +205,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
               odc[odci - 1] = static_cast< char >(odci + '0');
               odc[odci] = 0;
             }
-            bout << i + 1 << ". " << GetSession()->GetNetworkName() << " (" << csne->name << ")\r\n";
+            bout << i + 1 << ". " << session()->GetNetworkName() << " (" << csne->name << ")\r\n";
           }
         }
         bout << "Q. Quit\r\n\n";
@@ -283,18 +283,18 @@ void hang_it_up() {
     return;
   }
 
-  GetSession()->remoteIO()->dtr(false);
-  if (!GetSession()->remoteIO()->carrier()) {
+  session()->remoteIO()->dtr(false);
+  if (!session()->remoteIO()->carrier()) {
     return;
   }
 
   Wait(0.5);
-  if (!GetSession()->remoteIO()->carrier()) {
+  if (!session()->remoteIO()->carrier()) {
     return;
   }
 
   Wait(0.5);
-  if (!GetSession()->remoteIO()->carrier()) {
+  if (!session()->remoteIO()->carrier()) {
     return;
   }
 #endif
