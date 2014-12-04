@@ -480,7 +480,7 @@ string GetHelpFileName(MenuInstanceData * pMenuData) {
 
 void AMDisplayHelp(MenuInstanceData * pMenuData) {
   const string filename = GetHelpFileName(pMenuData);
-  if (!printfile(filename.c_str(), true)) {
+  if (!printfile(filename, true)) {
     GenerateMenu(pMenuData);
   }
 }
