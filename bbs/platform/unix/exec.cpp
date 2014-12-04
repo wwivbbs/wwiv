@@ -36,7 +36,7 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
   (void)flags;
 
   if (ok_modem_stuff) {
-    sess()->remoteIO()->close(true);
+    session()->remoteIO()->close(true);
   }
 
   char s[256];
@@ -45,8 +45,8 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
 
   // reengage comm stuff
   if (ok_modem_stuff) {
-    sess()->remoteIO()->open();
-    sess()->remoteIO()->dtr(true);
+    session()->remoteIO()->open();
+    session()->remoteIO()->dtr(true);
   }
 
   return i;
