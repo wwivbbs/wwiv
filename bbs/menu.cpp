@@ -239,21 +239,19 @@ void CloseMenu(MenuInstanceData * pMenuData) {
 }
 
 static bool CreateIndex(MenuInstanceData* pMenuData) {
-  time_t start = time(nullptr);
   pMenuData->index = static_cast<MenuRecIndex *>(malloc(pMenuData->nAmountRecs * sizeof(MenuRecIndex) + TEST_PADDING));
   int nAmount = pMenuData->pMenuFile->GetLength() / sizeof(MenuRec);
 
-  for (int nRec = 1; nRec < nAmount; nRec++) {
+  for (uint16_t nRec = 1; nRec < nAmount; nRec++) {
     MenuRec menu;
     pMenuData->pMenuFile->Seek(nRec * sizeof(MenuRec), File::seekBegin);
     pMenuData->pMenuFile->Read(&menu, sizeof(MenuRec));
 
     memset(&pMenuData->index[nRec-1], 0, sizeof(MenuRecIndex));
-    pMenuData->index[nRec-1].nRec = static_cast<short>(nRec);
+    pMenuData->index[nRec-1].nRec = nRec;
     pMenuData->index[nRec-1].nFlags = menu.nFlags;
     strcpy(pMenuData->index[nRec-1].szKey, menu.szKey);
   }
-  bout << "Time to create index for menu: " << time(nullptr) - start << " ms." << wwiv::endl;
   return true;
 }
 
