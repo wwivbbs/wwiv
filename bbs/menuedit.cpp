@@ -143,16 +143,15 @@ void EditMenus() {
         ReadMenuRec(fileEditMenu, &Menu, nCur);
         break;
       case '0': {
-        OpenMenuDescriptions();
-        string description = GetMenuDescription(menuDir);
+        wwiv::menus::MenuDescriptions descriptions(GetMenuDirectory());
+        string description = descriptions.description(menuDir);
 
         bout << "|#5New desc     : ";
         bout.Color(0);
         inputl(&description, 60);
         if (!description.empty()) {
-          SetMenuDescription(menuDir, description);
+          descriptions.set_description(menuDir, description);
         }
-        CloseMenuDescriptions();
       } break;
       case '1':
         bout << "Is menu deleted? (N) ";
@@ -566,11 +565,11 @@ void DisplayItem(MenuRec * Menu, int nCur, int nAmount) {
 }
 
 void DisplayHeader(MenuHeader* pHeader, int nCur, const string& dirname) {
-  OpenMenuDescriptions();
+  wwiv::menus::MenuDescriptions descriptions(GetMenuDirectory());
   bout.cls();
   bout << "|#9(Menu Header)" << wwiv::endl;
   if (nCur == 0) {
-    bout << "|#90) Menu Description     |#2: " << GetMenuDescription(dirname) << wwiv::endl;
+    bout << "|#90) Menu Description     |#2: " << descriptions.description(dirname) << wwiv::endl;
     bout << "|#91) Deleted              |#2: " << ((pHeader->nFlags & MENU_FLAG_DELETED) ? "Yes" : "No") << wwiv::endl;
     bout << "|#92) Main Menu            |#2: " << ((pHeader->nFlags & MENU_FLAG_MAINMENU) ? "Yes" : "No") << wwiv::endl;;
     bout << "|#9A) What do Numbers do   |#2: " << (pHeader->nNumbers == MENU_NUMFLAG_NOTHING ? "Nothing" :
@@ -595,13 +594,12 @@ void DisplayHeader(MenuHeader* pHeader, int nCur, const string& dirname) {
   }
   bout.nl(2);
   bout << "|100-2, A-O, Z=Add new Record, [=Prev, ]=Next, Q=Quit : ";
-  CloseMenuDescriptions();
 }
 
 void ListMenuDirs() {
   const string menu_directory = GetMenuDirectory();
   const string path = StrCat(menu_directory, "*");
-  OpenMenuDescriptions();
+  wwiv::menus::MenuDescriptions descriptions(menu_directory);
 
   bout.nl();
   bout << "|#1Available Menus Sets\r\n";
@@ -614,15 +612,13 @@ void ListMenuDirs() {
       const string filename = fnd.GetFileName();
       if (!starts_with(filename, ".")) {
         // Skip the . and .. dir entries.
-        const string description = GetMenuDescription(filename);
+        const string description = descriptions.description(filename);
         bout.bprintf("|#2%-8.8s |#9%-60.60s\r\n", filename.c_str(), description.c_str());
       }
     }
     bFound = fnd.next();
   }
   bout.nl();
-
-  CloseMenuDescriptions();
   bout.Color(0);
 }
 
