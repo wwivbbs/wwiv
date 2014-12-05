@@ -26,15 +26,13 @@
 #include "menu.h"
 #include "menusupp.h"
 #include "printfile.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
 
 static user_config *pSecondUserRec;         // Userrec2 style setup
 static int nSecondUserRecLoaded;            // Whos config is loaded
-
-// TODO: move this to TextFile or File
-static FILE *hMenuDesc;
 
 static char *pMenuStrings;
 static char **ppMenuStringsIndex;
@@ -43,6 +41,7 @@ static int nNumMenuCmds;
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::strings;
+using namespace wwiv::stl;
 
 // Local function prototypes
 bool CheckMenuPassword(char* pszCorrectPassword);
@@ -528,15 +527,14 @@ void ConfigUserMenuSet() {
       string menuSetName;
       inputl(&menuSetName, 8);
       if (ValidateMenuSet(menuSetName.c_str())) {
-        OpenMenuDescriptions();
+        wwiv::menus::MenuDescriptions descriptions(GetMenuDirectory());
         bout.nl();
-        bout << "|#1Menu Set : |#2" <<  menuSetName.c_str() << "  -  |15" << GetMenuDescription(menuSetName) << wwiv::endl;
+        bout << "|#1Menu Set : |#2" <<  menuSetName.c_str() << "  -  |15" << descriptions.description(menuSetName) << wwiv::endl;
         bout << "|#5Use this menu set? ";
         if (noyes()) {
           strcpy(pSecondUserRec->szMenuSet, menuSetName.c_str());
           break;
         }
-        CloseMenuDescriptions();
       }
       bout.nl();
       bout << "|#8That menu set does not exists, resetting to the default menu set" << wwiv::endl;
@@ -765,51 +763,57 @@ bool CheckMenuItemSecurity(MenuRec * pMenu, bool bCheckPassword) {
   return true;
 }
 
-void OpenMenuDescriptions() {
-  const string menu_description_file = GetMenuDescriptionFile();
-  hMenuDesc = fopen(menu_description_file.c_str(), "r");
-}
+namespace wwiv {
+namespace menus {
 
-void CloseMenuDescriptions() {
-  if (hMenuDesc) {
-    fclose(hMenuDesc);
-  }
-
-  hMenuDesc = nullptr;
-}
-
-const string GetMenuDescription(const string& name) {
-  string description;
-  if (!hMenuDesc) {
-    return "";
-  }
-  fseek(hMenuDesc, 0, SEEK_SET);
-
-  char szLine[201];
-  while (!hangup) {
-    if (!fgets(szLine, 200, hMenuDesc)) {
-    return "";
-    }
-    char* pszTemp = strchr(szLine, ' ');
-    if (!pszTemp) {
-      continue;
-    }
-
-    pszTemp[0] = 0;
-    ++pszTemp;
-
-    if (name == szLine) {
-      description.assign(pszTemp);
-      StringTrim(&description);
-      if (description.size() > 55) {
-        return description.substr(0, 55);
+MenuDescriptions::MenuDescriptions(const std::string& menupath) :menupath_(menupath) {
+  TextFile file(menupath, DESCRIPT_ION, "rt");
+  if (file.IsOpen()) {
+    string s;
+    while (file.ReadLine(&s)) {
+      StringTrim(&s);
+      if (s.empty()) {
+        continue;
       }
-      return description;
+      string::size_type space = s.find(' ');
+      if (space == string::npos) {
+        continue;
+      }
+      string menu_name = s.substr(0, space);
+      string description = s.substr(space + 1);
+      StringLowerCase(&menu_name);
+      StringLowerCase(&description);
+      descriptions_.emplace(menu_name, description);
     }
+  }
+}
+
+MenuDescriptions::~MenuDescriptions() {
+}
+
+const std::string MenuDescriptions::description(const std::string& name) {
+  if (contains(descriptions_, name)) {
+    return descriptions_[name];
   }
   return "";
 }
 
+bool MenuDescriptions::set_description(const std::string& name, const std::string& description) {
+  descriptions_[name] = description;
+
+  TextFile file(menupath_, DESCRIPT_ION, "wt");
+  if (!file.IsOpen()) {
+    return false;
+  }
+
+  for (const auto& iter : descriptions_) {
+    file.WriteFormatted("%s %s", iter.first, iter.second);
+  }
+  return true;
+}
+
+}
+}
 // tokenize a line.
 static char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, const char *brk) {
   pszToken[0] = '\0';
@@ -845,64 +849,6 @@ static char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, co
   }
   *pszToken = '\0';
   return const_cast<char *>(pszText);
-}
-
-void SetMenuDescription(const string& name, const string& description) {
-  char szLine[MAX_PATH], szTok[26];
-  int bWritten = 0;
-  bool bMenuOpen = false;
-
-  if (!hMenuDesc) {
-    bMenuOpen = false;
-    OpenMenuDescriptions();
-  } else {
-    bMenuOpen = true;
-  }
-
-  TextFile tempDescriptionFile(GetMenuDirectory(), TEMP_ION, "wt");
-
-  if (!tempDescriptionFile.IsOpen()) {
-    MenuSysopLog("Unable to write description");
-    return;
-  }
-  if (hMenuDesc) {
-    fseek(hMenuDesc, 0, SEEK_SET);
-
-    while (!hangup) {
-      if (!fgets(szLine, 200, hMenuDesc)) {
-        break;
-      }
-
-      stptok(szLine, szTok, 25, " ");
-
-      if (IsEqualsIgnoreCase(name.c_str(), szTok)) {
-        tempDescriptionFile.WriteFormatted("%s %s\n", name.c_str(), description.c_str());
-        bWritten = 1;
-      } else {
-        tempDescriptionFile.WriteFormatted("%s", szLine);
-      }
-    }
-  }
-  if (!bWritten) {
-    tempDescriptionFile.WriteFormatted("%s %s\n", name.c_str(), description.c_str());
-  }
-
-  tempDescriptionFile.Close();
-  CloseMenuDescriptions();
-
-  File descriptionFile(GetMenuDirectory(), DESCRIPT_ION);
-  File::Remove(descriptionFile.full_pathname());
-  File::Rename(tempDescriptionFile.full_pathname(), descriptionFile.full_pathname());
-
-  if (bMenuOpen) {
-    OpenMenuDescriptions();
-  }
-}
-
-const string GetMenuDescriptionFile() {
-  std::ostringstream os;
-  os << GetMenuDirectory() << DESCRIPT_ION;
-  return string(os.str());
 }
 
 const string GetMenuDirectory(const string menuPath) {

@@ -26,6 +26,8 @@
 #include <functional>
 #include <string>
 
+#include "core/strings.h"
+
 namespace wwiv {
 namespace stl {
 
@@ -45,6 +47,11 @@ bool contains(std::map<std::string, V, C, A> const& m, const std::string& key) {
   return m.find(key) != m.end();
 }
 
+struct ci_less {
+  bool operator() (const std::string& left, const std::string& right) const {
+	  return strcasecmp(left.c_str(), right.c_str()) < 0;
+  }
+};
 
 }  // namespace stl
 }  // namespace wwiv
