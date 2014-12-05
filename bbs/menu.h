@@ -83,8 +83,8 @@ class File;
 
 struct MenuHeader {
   char   szSig[10];      /* Menu Signature */
-  uint16_t  nHeadBytes;     /* Size of Menu header */
-  uint16_t  nBodyBytes;     /* Size of Menu Record */
+  uint16_t  nHeadBytes;  /* Size of Menu header */
+  uint16_t  nBodyBytes;  /* Size of Menu Record */
   char   MISC[50];
 
   uint16_t  nVersion;
@@ -106,10 +106,10 @@ struct MenuHeader {
   char   szMenuTitle[21];
   char   MISC2[60];
   char   szPassWord[21];     /* required for entry of menu */
-  uint16_t  nMinSL, nMinDSL;    /* required for entry of menu */
+  uint16_t nMinSL, nMinDSL;    /* required for entry of menu */
   uint16_t uAR, uDAR;          /* required for entry of menu */
   uint16_t uRestrict;          /* not allowed restrictions   */
-  uint8_t   nSysop, nCoSysop;   /* Must be either sysop or co */
+  uint8_t  nSysop, nCoSysop;   /* Must be either sysop or co */
   char   MISC3[30];
   char   szScript[101];      /* Gets executed on entry     */
   char   szExitScript[101];  /* Executed on rtn from menu  */
@@ -149,8 +149,10 @@ struct MenuRecIndex {
   uint8_t nFlags;             /* Quick access to the flags */
 };
 
-
-struct MenuInstanceData {
+class MenuInstanceData {
+public:
+  MenuInstanceData();
+  ~MenuInstanceData();
   std::string menu;
   std::string path;
   File *pMenuFile;
