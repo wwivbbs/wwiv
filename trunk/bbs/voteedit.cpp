@@ -160,7 +160,9 @@ void voteprint() {
   application()->GetStatusManager()->RefreshStatusCache();
 
   for (int i1 = 0; i1 < 20; i1++) {
-    votingDat.Open(File::modeReadOnly | File::modeBinary);
+    if (!votingDat.Open(File::modeReadOnly | File::modeBinary)) {
+      continue;
+    }
     votingDat.Seek(i1 * sizeof(votingrec), File::seekBegin);
     votingDat.Read(&v, sizeof(votingrec));
     votingDat.Close();
