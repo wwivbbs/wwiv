@@ -262,7 +262,7 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
   int nTopDataSaved = session()->topdata;
   if (session()->topdata != WLocalIO::topdataNone) {
     session()->topdata = WLocalIO::topdataNone;
-    GetApplication()->UpdateTopScreen();
+    application()->UpdateTopScreen();
   }
   if (mode == InputMode::DATE || mode == InputMode::PHONE) {
     bInsert = false;

@@ -72,7 +72,7 @@ static bool check_bbsdata() {
     sprintf(s, "%s%s", session()->GetNetworkDataDirectory().c_str(), BBSLIST_UPD);
     ok = File::Exists(s);
   }
-  unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
   if (ok && pStatus->IsUsingNetEdit()) {
     holdphone(true);
     sprintf(s, "NETEDIT .%d /U", session()->GetNetworkNumber());
@@ -105,9 +105,9 @@ static bool check_bbsdata() {
     holdphone(true);
 
     ExecuteExternalProgram(s, EFLAG_NETPROG);
-    WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+    WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
     pStatus->IncrementFileChangedFlag(WStatus::fileChangeNet);
-    GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
+    application()->GetStatusManager()->CommitTransaction(pStatus);
 
     zap_call_out_list();
     zap_contacts();
@@ -120,21 +120,21 @@ static bool check_bbsdata() {
 }
 
 void cleanup_net() {
-  if (cleanup_net1() && GetApplication()->HasConfigFlag(OP_FLAGS_NET_CALLOUT)) {
+  if (cleanup_net1() && application()->HasConfigFlag(OP_FLAGS_NET_CALLOUT)) {
     if (session()->wfc_status == 0) {
       session()->localIO()->LocalCls();
     }
 
-    IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+    IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), INI_TAG);
     if (iniFile.IsOpen()) {
       const char *pszValue = iniFile.GetValue("NET_CLEANUP_CMD1");
       if (pszValue != nullptr) {
-        ExecuteExternalProgram(pszValue, GetApplication()->GetSpawnOptions(SPAWNOPT_NET_CMD1));
+        ExecuteExternalProgram(pszValue, application()->GetSpawnOptions(SPAWNOPT_NET_CMD1));
         cleanup_net1();
       }
       pszValue = iniFile.GetValue("NET_CLEANUP_CMD2");
       if (pszValue != nullptr) {
-        ExecuteExternalProgram(pszValue, GetApplication()->GetSpawnOptions(SPAWNOPT_NET_CMD2));
+        ExecuteExternalProgram(pszValue, application()->GetSpawnOptions(SPAWNOPT_NET_CMD2));
         cleanup_net1();
       }
       iniFile.Close();
@@ -149,7 +149,7 @@ int cleanup_net1() {
   int ok, ok2, nl = 0, anynew = 0, i = 0;
   bool abort;
 
-  GetApplication()->SetCleanNetNeeded(false);
+  application()->SetCleanNetNeeded(false);
 
   if (net_networks[0].sysnum == 0 && session()->GetMaxNetworkNumber() == 1) {
     return 0;
@@ -175,7 +175,7 @@ int cleanup_net1() {
         ok2 = 0;
         ok = 0;
         WFindFile fnd;
-        sprintf(s, "%sp*.%3.3d", session()->GetNetworkDataDirectory().c_str(), GetApplication()->GetInstanceNumber());
+        sprintf(s, "%sp*.%3.3d", session()->GetNetworkDataDirectory().c_str(), application()->GetInstanceNumber());
         bool bFound = fnd.open(s, 0);
         while (bFound) {
           ok = 1;
@@ -185,7 +185,7 @@ int cleanup_net1() {
           bFound = fnd.next();
         }
 
-        if (GetApplication()->GetInstanceNumber() == 1) {
+        if (application()->GetInstanceNumber() == 1) {
           if (!ok) {
             sprintf(s, "%sp*.net", session()->GetNetworkDataDirectory().c_str());
             WFindFile fnd;
@@ -235,7 +235,7 @@ int cleanup_net1() {
               any = 1;
             }
             ok2 = 1;
-            GetApplication()->GetStatusManager()->RefreshStatusCache();
+            application()->GetStatusManager()->RefreshStatusCache();
             session()->SetCurrentReadMessageArea(-1);
             session()->ReadCurrentUser(1);
             fwaiting = session()->user()->GetNumMailWaiting();
@@ -252,7 +252,7 @@ int cleanup_net1() {
       }
     }
   }
-  if (anynew && (GetApplication()->GetInstanceNumber() != 1)) {
+  if (anynew && (application()->GetInstanceNumber() != 1)) {
     send_inst_cleannet();
   }
   return i;
@@ -334,7 +334,7 @@ void do_callout(int sn) {
 #endif
         ExecuteExternalProgram(s, EFLAG_NETPROG);
         zap_contacts();
-        GetApplication()->GetStatusManager()->RefreshStatusCache();
+        application()->GetStatusManager()->RefreshStatusCache();
         last_time_c = static_cast<int>(tCurrentTime);
         global_xx = false;
         cleanup_net();
@@ -451,7 +451,7 @@ void attempt_callout() {
   net_call_out_rec *con;
   net_contact_rec *ncn;
 
-  GetApplication()->GetStatusManager()->RefreshStatusCache();
+  application()->GetStatusManager()->RefreshStatusCache();
 
   bool net_only = true;
 
@@ -893,7 +893,7 @@ void gate_msg(net_header_rec * nh, char *pszMessageText, int nNetNumber, const c
       nh->length += strlen(pszAuthorName) + 1;
     }
     const string packet_filename = StringPrintf("%sp1%s",
-      net_networks[nNetNumber].dir, GetApplication()->GetNetworkExtension().c_str());
+      net_networks[nNetNumber].dir, application()->GetNetworkExtension().c_str());
     File packetFile(packet_filename);
     if (packetFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       packetFile.Seek(0L, File::seekEnd);
@@ -939,7 +939,7 @@ static void print_call(int sn, int nNetNumber, int i2) {
     got_color = 1;
     color = 30;
 
-    IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+    IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), INI_TAG);
     if (iniFile.IsOpen()) {
       const char *ss = iniFile.GetValue("CALLOUT_COLOR_TEXT");
       if (ss != nullptr) {
@@ -1056,7 +1056,7 @@ static int ansicallout() {
     color2 = 59;
     color3 = 7;
     color4 = 30;
-    IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+    IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), INI_TAG);
     if (iniFile.IsOpen()) {
       callout_ansi = iniFile.GetBooleanValue("CALLOUT_ANSI") ? 1 : 0;
       color1 = iniFile.GetNumericValue("CALLOUT_COLOR", color1);

@@ -116,7 +116,7 @@ void valscan() {
                 close_sub();
                 if (p2.ownersys == 0) {
                   WUser tu;
-                  GetApplication()->GetUserManager()->ReadUser(&tu, p2.owneruser);
+                  application()->users()->ReadUser(&tu, p2.owneruser);
                   if (!tu.IsUserDeleted()) {
                     if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(p2.daten)) {
                       bout.nl();
@@ -134,8 +134,8 @@ void valscan() {
                       bout.nl();
                       bout << "|#3Post credit removed = " << nNumPostCredits << wwiv::endl;
                       tu.SetNumDeletedPosts(tu.GetNumDeletedPosts() + 1);
-                      GetApplication()->GetUserManager()->WriteUser(&tu, p2.owneruser);
-                      GetApplication()->UpdateTopScreen();
+                      application()->users()->WriteUser(&tu, p2.owneruser);
+                      application()->UpdateTopScreen();
                     }
                   }
                 }

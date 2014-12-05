@@ -50,7 +50,7 @@ int try_to_ul(char *pszFileName) {
 
   const string dest_dir = StringPrintf("%sTRY2UL", syscfg.dloadsdir);
   File::mkdirs(dest_dir);
-  GetApplication()->CdHome();   // ensure we are in the correct directory
+  application()->CdHome();   // ensure we are in the correct directory
 
   bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
 
@@ -66,7 +66,7 @@ int try_to_ul(char *pszFileName) {
   copyfile(src, dest, true);                   // copy file from batch dir,to try2ul dir */
 
   if (session()->IsUserOnline()) {
-    GetApplication()->UpdateTopScreen();
+    application()->UpdateTopScreen();
   }
 
   if (ac) {
@@ -216,7 +216,7 @@ int try_to_ul_wh(char *pszFileName) {
       return 1;
     }
   }
-  if (ok && (!GetApplication()->HasConfigFlag(OP_FLAGS_FAST_SEARCH))) {
+  if (ok && (!application()->HasConfigFlag(OP_FLAGS_FAST_SEARCH))) {
     bout.nl();
     bout << "Checking for same file in other directories...\r\n\n";
     i2 = 0;
@@ -409,10 +409,10 @@ int try_to_ul_wh(char *pszFileName) {
 
   session()->user()->SetUploadK(session()->user()->GetUploadK() + bytes_to_k(u.numbytes));
 
-  WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+  WStatus *pStatus = application()->GetStatusManager()->BeginTransaction();
   pStatus->IncrementNumUploadsToday();
   pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
-  GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
+  application()->GetStatusManager()->CommitTransaction(pStatus);
   sysoplogf("+ \"%s\" uploaded on %s", u.filename, directories[dn].name);
   return 0;                                 // This means success
 }

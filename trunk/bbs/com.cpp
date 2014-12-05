@@ -212,7 +212,7 @@ char getkey()
         beepyet = true;
         bputch(CG);
       }
-      GetApplication()->UpdateShutDownStatus();
+      application()->UpdateShutDownStatus();
       if (labs(dd - timelastchar1) > tv) {
         bout.nl();
         bout << "Call back later when you are there.\r\n";

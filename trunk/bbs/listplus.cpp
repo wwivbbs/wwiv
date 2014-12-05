@@ -238,7 +238,7 @@ int listfiles_plus(int type) {
   signal(SIGFPE, catch_divide_by_zero);
 
   session()->topdata = WLocalIO::topdataNone;
-  GetApplication()->UpdateTopScreen();
+  application()->UpdateTopScreen();
   bout.cls();
 
   int nReturn = listfiles_plus_function(type);
@@ -260,7 +260,7 @@ int listfiles_plus(int type) {
   dliscan();
 
   session()->topdata = save_topdata;
-  GetApplication()->UpdateTopScreen();
+  application()->UpdateTopScreen();
 
   return nReturn;
 }
@@ -610,7 +610,7 @@ static int load_config_listing(int config) {
 
   if (fileConfig.Exists()) {
     WUser user;
-    GetApplication()->GetUserManager()->ReadUser(&user, config);
+    application()->users()->ReadUser(&user, config);
     if (fileConfig.Open(File::modeBinary | File::modeReadOnly)) {
       fileConfig.Seek(config * sizeof(user_config), File::seekBegin);
       len = fileConfig.Read(&config_listing, sizeof(user_config));
@@ -640,7 +640,7 @@ static void write_config_listing(int config) {
   }
 
   WUser user;
-  GetApplication()->GetUserManager()->ReadUser(&user, config);
+  application()->users()->ReadUser(&user, config);
   strcpy(config_listing.name, user.GetName());
 
   File fileUserConfig(syscfg.datadir, CONFIG_USR);
@@ -1553,7 +1553,7 @@ static int remove_filename(const char *pszFileName, int dn) {
             bout << "|#5Remove DL points? ";
             rdlp = yesno();
           }
-          if (GetApplication()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
+          if (application()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
             bout << "|#5Remove from ALLOW.DAT? ";
             if (yesno()) {
               modify_database(szTempFileName, false);
@@ -1567,7 +1567,7 @@ static int remove_filename(const char *pszFileName, int dn) {
           File::Remove(directories[dn].path, u.filename);
           if (rdlp && u.ownersys == 0) {
             WUser user;
-            GetApplication()->GetUserManager()->ReadUser(&user, u.ownerusr);
+            application()->users()->ReadUser(&user, u.ownerusr);
             if (!user.IsUserDeleted()) {
               if (date_to_daten(user.GetFirstOn()) < static_cast<time_t>(u.daten)) {
                 user.SetFilesUploaded(user.GetFilesUploaded() - 1);
@@ -1583,7 +1583,7 @@ static int remove_filename(const char *pszFileName, int dn) {
                 }
                 bout << "Removed " << (u.filepoints * 2) << " file points\r\n";
 #endif
-                GetApplication()->GetUserManager()->WriteUser(&user, u.ownerusr);
+                application()->users()->WriteUser(&user, u.ownerusr);
               }
             }
           }
@@ -2018,7 +2018,7 @@ void view_file(const char *pszFileName) {
     } else {
       sprintf(szCommandLine, "AVIEWCOM.EXE %s%s com0 -o%u -p%s -a1 -d",
               directories[udir[session()->GetCurrentFileArea()].subnum].path, szBuffer,
-              GetApplication()->GetInstanceNumber(), syscfgovr.tempdir);
+              application()->GetInstanceNumber(), syscfgovr.tempdir);
       ExecuteExternalProgram(szCommandLine, EFLAG_NONE);
     }
   } else {
@@ -2071,7 +2071,7 @@ int lp_try_to_download(const char *pszFileMask, int dn) {
 
     ok2 = 0;
     if (strncmp(u.filename, "WWIV4", 5) == 0 &&
-        !GetApplication()->HasConfigFlag(OP_FLAGS_NO_EASY_DL)) {
+        !application()->HasConfigFlag(OP_FLAGS_NO_EASY_DL)) {
       ok2 = 1;
     }
 

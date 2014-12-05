@@ -67,26 +67,13 @@ using wwiv::bbs::InputMode;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
-//////////////////////////////////////////////////////////////////////////////
-// Implementation
-//
-WApplication* GetApplication() {
-  return app;
-}
+WApplication* application() { return app; }
 
+WSession* session() { return sess; }
 
-WSession* session() {
-  return sess;
-}
+StatusMgr* WApplication::GetStatusManager() { return statusMgr; }
 
-
-StatusMgr* WApplication::GetStatusManager() {
-  return statusMgr;
-}
-
-WUserManager* WApplication::GetUserManager() {
-  return userManager;
-}
+WUserManager* WApplication::users() { return userManager; }
 
 #if !defined ( __unix__ )
 void WApplication::GetCaller() {
@@ -615,7 +602,7 @@ int WApplication::LocalLogon() {
       }
 
       WUser tu;
-      GetUserManager()->ReadUserNoCache(&tu, m_unx);
+      users()->ReadUserNoCache(&tu, m_unx);
       if (tu.GetSl() != 255 || tu.IsUserDeleted()) {
         return lokb;
       }
@@ -1246,7 +1233,7 @@ WApplication* CreateApplication(WLocalIO* localIO) {
 int bbsmain(int argc, char *argv[]) {
   try {
     CreateApplication(nullptr);
-    return GetApplication()->BBSMainLoop(argc, argv);
+    return application()->BBSMainLoop(argc, argv);
   } catch (std::exception& e) {
     // TODO(rushfan): Log this to sysop log or where else?
     std::clog << "BBS Terminated by exception: " << e.what() << std::endl;

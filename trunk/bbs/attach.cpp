@@ -67,7 +67,7 @@ void attach_file(int mode) {
         bout.nl();
         if (m.tosys == 0) {
           char szBuffer[ 255 ];
-          GetApplication()->GetUserManager()->ReadUser(&u, m.touser);
+          application()->users()->ReadUser(&u, m.touser);
           bout << "|#1  To|#7: |#2";
           strcpy(szBuffer, u.GetUserNameAndNumber(m.touser));
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da)) &&
@@ -141,7 +141,7 @@ void attach_file(int mode) {
                 while (lNumRead > 0 && !bFound) {
                   if (m.daten == static_cast<unsigned long>(fsr.id)) {
                     fsr.id = 0;
-                    File::Remove(GetApplication()->GetAttachmentDirectory(), fsr.filename);
+                    File::Remove(application()->GetAttachmentDirectory(), fsr.filename);
                     attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::seekCurrent);
                     attachFile.Write(&fsr, sizeof(fsr));
                   }
@@ -159,7 +159,7 @@ void attach_file(int mode) {
             }
             }
           }
-          if (freek1(GetApplication()->GetAttachmentDirectory().c_str()) < 500) {
+          if (freek1(application()->GetAttachmentDirectory().c_str()) < 500) {
             bout << "Not enough free space to attach a file.\r\n";
           } else {
             if (!done2) {
@@ -189,7 +189,7 @@ void attach_file(int mode) {
                     }
                   }
                   if (!bFound && szFileToAttach[0]) {
-                    sprintf(szFullPathName, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), stripfn(szFileToAttach));
+                    sprintf(szFullPathName, "%s%s", application()->GetAttachmentDirectory().c_str(), stripfn(szFileToAttach));
                     bout.nl();
                     bout << "|#5" << szFileToAttach << "? ";
                     if (!yesno()) {
@@ -201,7 +201,7 @@ void attach_file(int mode) {
               if (!so() || bRemoteUpload) {
                 bout << "|#2Filename: ";
                 input(szFileToAttach, 12, true);
-                sprintf(szFullPathName, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), szFileToAttach);
+                sprintf(szFullPathName, "%s%s", application()->GetAttachmentDirectory().c_str(), szFileToAttach);
                 if (!okfn(szFileToAttach) || strchr(szFileToAttach, '?')) {
                   bFound = true;
                 }
@@ -215,7 +215,7 @@ void attach_file(int mode) {
                   if (yesno()) {
                     bout << "|#5Filename: ";
                     input(szNewFileName, 12, true);
-                    sprintf(szFullPathName, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), szNewFileName);
+                    sprintf(szFullPathName, "%s%s", application()->GetAttachmentDirectory().c_str(), szNewFileName);
                     if (okfn(szNewFileName) && !strchr(szNewFileName, '?') && !File::Exists(szFullPathName)) {
                       bFound   = false;
                       done3   = true;
@@ -253,7 +253,7 @@ void attach_file(int mode) {
                     getkey();
                   }
                 } else {
-                  sprintf(szFullPathName, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), szFileToAttach);
+                  sprintf(szFullPathName, "%s%s", application()->GetAttachmentDirectory().c_str(), szFileToAttach);
                   receive_file(szFullPathName, &ok, "", 0);
                 }
                 if (ok) {
@@ -303,7 +303,7 @@ void attach_file(int mode) {
                         sysoplog(szLogLine);
                       }
                     } else {
-                      File::Remove(GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename);
+                      File::Remove(application()->GetAttachmentDirectory().c_str(), fsr.filename);
                     }
                   }
                 }

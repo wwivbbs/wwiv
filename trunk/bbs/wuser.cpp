@@ -145,7 +145,7 @@ bool WUserManager::ReadUser(WUser *pUser, int nUserNumber, bool bForceRead) {
 #ifndef NOT_BBS
   if (!bForceRead) {
     bool userOnAndCurrentUser = (session()->IsUserOnline() && (nUserNumber == session()->usernum));
-    int nWfcStatus = GetApplication()->GetWfcStatus();
+    int nWfcStatus = application()->GetWfcStatus();
     bool wfcStatusAndUserOne = (nWfcStatus && nUserNumber == 1);
     if (userOnAndCurrentUser || wfcStatusAndUserOne) {
       pUser->data = session()->user()->data;
@@ -175,7 +175,7 @@ bool WUserManager::WriteUser(WUser *pUser, int nUserNumber) {
 
 #ifndef NOT_BBS
   if ((session()->IsUserOnline() && nUserNumber == static_cast<int>(session()->usernum)) ||
-      (GetApplication()->GetWfcStatus() && nUserNumber == 1)) {
+      (application()->GetWfcStatus() && nUserNumber == 1)) {
     if (&pUser->data != &session()->user()->data) {
       session()->user()->data = pUser->data;
     }
@@ -188,7 +188,7 @@ int WUserManager::FindUser(std::string searchString) {
 #ifndef NOT_BBS
   smalrec *sr = (smalrec *)bsearch((const void *)searchString.c_str(),
                                    static_cast<const void *>(smallist),
-                                   static_cast<size_t>(GetApplication()->GetStatusManager()->GetUserCount()),
+                                   static_cast<size_t>(application()->GetStatusManager()->GetUserCount()),
                                    sizeof(smalrec),
                                    (int(*)(const void *, const void *)) wwiv::strings::StringCompareIgnoreCase);
   if (sr != nullptr) {

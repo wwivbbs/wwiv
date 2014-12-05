@@ -143,8 +143,8 @@ bool WSession::ReadCurrentUser() {
 
 bool WSession::ReadCurrentUser(int nUserNumber, bool bForceRead) {
   WWIV_ASSERT(m_pApplication);
-  WWIV_ASSERT(m_pApplication->GetUserManager());
-  return m_pApplication->GetUserManager()->ReadUser(&m_thisuser, nUserNumber, bForceRead);
+  WWIV_ASSERT(m_pApplication->users());
+  return m_pApplication->users()->ReadUser(&m_thisuser, nUserNumber, bForceRead);
 }
 
 bool WSession::WriteCurrentUser() {
@@ -153,8 +153,8 @@ bool WSession::WriteCurrentUser() {
 
 bool WSession::WriteCurrentUser(int nUserNumber) {
   WWIV_ASSERT(m_pApplication);
-  WWIV_ASSERT(m_pApplication->GetUserManager());
-  return m_pApplication->GetUserManager()->WriteUser(&m_thisuser, nUserNumber);
+  WWIV_ASSERT(m_pApplication->users());
+  return m_pApplication->users()->WriteUser(&m_thisuser, nUserNumber);
 }
 
 void WSession::DisplaySysopWorkingIndicator(bool displayWait) {

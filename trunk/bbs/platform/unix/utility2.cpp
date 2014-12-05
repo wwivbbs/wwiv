@@ -35,7 +35,7 @@ using wwiv::strings::StrCat;
 void WWIV_make_abs_cmd(const string root, string* out) {
   if (out->find("/") != string::npos) {
     string s(*out);
-    *out = StrCat(GetApplication()->GetHomeDir(), s);
+    *out = StrCat(application()->GetHomeDir(), s);
   }
 }
 #endif  // NOT_BBS
