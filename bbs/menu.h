@@ -119,12 +119,12 @@ struct MenuRec {
   uint8_t nFlags;   /* AFLAG_????? */
 
   char szKey[MENU_MAX_KEYS + 1]; /* Keystrock to execute menu item   */
-  char szExecute[101];          /* Command to execute               */
-  char szMenuText[41];          /* Menu description                 */
-  char szPDText[41];            /* Pulldown menu text               */
+  char szExecute[101];           /* Command to execute               */
+  char szMenuText[41];           /* Menu description                 */
+  char unused_szPDText[41];      /* Pulldown menu text               */
 
-  char szHelp[81];              /* Help for this item               */
-  char szSysopLog[51];          /* Msg to put in the log            */
+  char szHelp[81];               /* Help for this item               */
+  char szSysopLog[51];           /* Msg to put in the log            */
 
   char szInstanceMessage[81];
 
