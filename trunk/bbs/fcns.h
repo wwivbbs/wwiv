@@ -22,10 +22,11 @@
 #include <ctime>
 #include <string>
 
+#include "core/file.h"
 #include "sdk/vardec.h"
 #include "net.h"
-#include "menu.h" // Only needed by defaults
 
+class MenuInstanceData;
 class WUser;
 
 // File: asv.cpp

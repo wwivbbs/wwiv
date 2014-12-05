@@ -35,16 +35,15 @@ bool GetMenuMenu(const string& pszDirectoryName, string& menuName);
 void ReadMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur);
 void WriteMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur);
 void DisplayItem(MenuRec * Menu, int nCur, int nAmount);
-void DisplayHeader(MenuHeader* Header, int nCur, int nAmount, const string& dirname);
+void DisplayHeader(MenuHeader* Header, int nCur, const string& dirname);
 void ListMenuMenus(const char *pszDirectoryName);
 
 void EditMenus() {
   char szTemp1[21];
   char szPW[21];
-  char szDesc[81];
   int nAmount = 0;
-  MenuHeader header;
-  MenuRec Menu;
+  MenuHeader header{};
+  MenuRec Menu{};
   bout.cls();
   bout.litebar("WWIV Menu Editor");
 
@@ -65,8 +64,6 @@ void EditMenus() {
       bout << "Unable to create menu.\r\n";
       return;
     }
-    memset(&header, 0, sizeof(MenuHeader));
-    memset(&Menu, 0, sizeof(MenuRec));
     strcpy(header.szSig, "WWIV430");
 
     header.nVersion = MENU_VERSION;
@@ -105,7 +102,7 @@ void EditMenus() {
   bool done = false;
   while (!hangup && !done) {
     if (nCur == 0) {
-      DisplayHeader((MenuHeader *)(&Menu), nCur, nAmount, menuDir.c_str());
+      DisplayHeader((MenuHeader *)(&Menu), nCur, menuDir);
       char chKey = onek("Q[]Z012ABCDEFGHIJKLMNOP");
       switch (chKey) {
       case 'Q':
@@ -568,7 +565,7 @@ void DisplayItem(MenuRec * Menu, int nCur, int nAmount) {
   bout << "|101,A-F,K-U, Z=Add new record, [=Prev, ]=Next, Q=Quit : ";
 }
 
-void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const string& dirname) {
+void DisplayHeader(MenuHeader* pHeader, int nCur, const string& dirname) {
   OpenMenuDescriptions();
   bout.cls();
   bout << "|#9(Menu Header)" << wwiv::endl;
@@ -628,7 +625,6 @@ void ListMenuDirs() {
   CloseMenuDescriptions();
   bout.Color(0);
 }
-
 
 void ListMenuMenus(const char *pszDirectoryName) {
   string path = GetMenuDirectory(pszDirectoryName) + "*.mnu";

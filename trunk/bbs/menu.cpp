@@ -69,6 +69,9 @@ char *MenuGetParam(char *pszSrc, char *pszParam);
 char *MenuSkipSpaces(char *pszSrc);
 void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript);
 
+MenuInstanceData::MenuInstanceData() {}
+MenuInstanceData::~MenuInstanceData() {}
+
 
 bool CheckMenuPassword(char* pszCorrectPassword) {
   string password = IsEqualsIgnoreCase(pszCorrectPassword, "*SYSTEM") ? syscfg.systempw : pszCorrectPassword;
@@ -169,7 +172,6 @@ void StartMenus() {
     if (menu_data->pMenuFile != nullptr) {
       delete menu_data->pMenuFile;
       menu_data->pMenuFile = nullptr;
-
     }
     menu_data.reset(new MenuInstanceData{});
 
