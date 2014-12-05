@@ -837,8 +837,8 @@ void defaults(MenuInstanceData * pMenuData) {
     break;
     case 'K':
       ConfigUserMenuSet();
-      pMenuData->nFinished = 1;
-      pMenuData->nReload = 1;
+      pMenuData->finished = true;
+      pMenuData->reload = true;
       break;
     case 'L':
       if (session()->num_languages > 1) {
