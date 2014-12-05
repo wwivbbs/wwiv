@@ -380,7 +380,7 @@ int  WLocalIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *pszForma
 void WLocalIO::set_protect(int l) {
 #if defined ( __APPLE__ )
   SetTopLine(l);
-  sess()->screenlinest = (sess()->using_modem) ? sess()->user()->GetScreenLines() :
+  session()->screenlinest = (session()->using_modem) ? session()->user()->GetScreenLines() :
                                defscreenbottom + 1 - GetTopLine();
 #endif
 }
@@ -429,14 +429,14 @@ void WLocalIO::skey(char ch) {
           application()->ToggleShutDown();
           break;
         case F2:                          /* F2 */
-          sess()->topdata++;
-          if (sess()->topdata > WLocalIO::topdataUser) {
-            sess()->topdata = WLocalIO::topdataNone;
+          session()->topdata++;
+          if (session()->topdata > WLocalIO::topdataUser) {
+            session()->topdata = WLocalIO::topdataNone;
           }
           application()->UpdateTopScreen();
           break;
         case F3:                          /* F3 */
-          if (sess()->using_modem) {
+          if (session()->using_modem) {
             incom = !incom;
             dump();
             tleft(false);
@@ -448,7 +448,7 @@ void WLocalIO::skey(char ch) {
           break;
         case F5:                          /* F5 */
           hangup = true;
-          sess()->remoteIO()->dtr(false);
+          session()->remoteIO()->dtr(false);
           break;
         case SF5:                          /* Shift-F5 */
           i1 = (rand() % 20) + 10;
@@ -456,33 +456,33 @@ void WLocalIO::skey(char ch) {
             bputch(static_cast< unsigned char >(rand() % 256));
           }
           hangup = true;
-          sess()->remoteIO()->dtr(false);
+          session()->remoteIO()->dtr(false);
           break;
         case CF5:                          /* Ctrl-F5 */
           bout << "\r\nCall back later when you are there.\r\n\n";
           hangup = true;
-          sess()->remoteIO()->dtr(false);
+          session()->remoteIO()->dtr(false);
           break;
         case F6:                          /* F6 */
           ToggleSysopAlert();
           tleft(false);
           break;
         case F7:                          /* F7 */
-          sess()->user()->SetExtraTime(sess()->user()->GetExtraTime() -
+          session()->user()->SetExtraTime(session()->user()->GetExtraTime() -
               static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
           tleft(false);
           break;
         case F8:                          /* F8 */
-          sess()->user()->SetExtraTime(sess()->user()->GetExtraTime() +
+          session()->user()->SetExtraTime(session()->user()->GetExtraTime() +
               static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
           tleft(false);
           break;
         case F9:                          /* F9 */
-          if (sess()->user()->GetSl() != 255) {
-            if (sess()->GetEffectiveSl() != 255) {
-              sess()->SetEffectiveSl(255);
+          if (session()->user()->GetSl() != 255) {
+            if (session()->GetEffectiveSl() != 255) {
+              session()->SetEffectiveSl(255);
             } else {
-              sess()->ResetEffectiveSl();
+              session()->ResetEffectiveSl();
             }
             changedsl();
             tleft(false);
@@ -554,25 +554,25 @@ void WLocalIO::tleft(bool bCheckForTimeOut) {
   int cy = WhereY();
   int ctl = GetTopLine();
   int cc = curatr;
-  curatr = sess()->GetTopScreenColor();
+  curatr = session()->GetTopScreenColor();
   SetTopLine(0);
   double nsln = nsl();
-  int nLineNumber = (chatcall && (sess()->topdata == WLocalIO::topdataUser)) ? 5 : 4;
+  int nLineNumber = (chatcall && (session()->topdata == WLocalIO::topdataUser)) ? 5 : 4;
 
-  if (sess()->topdata) {
-    if (sess()->using_modem && !incom) {
+  if (session()->topdata) {
+    if (session()->using_modem && !incom) {
       LocalXYPuts(1, nLineNumber, ss[0]);
-      for (std::string::size_type i = 19; i < sess()->GetCurrentSpeed().length(); i++) {
+      for (std::string::size_type i = 19; i < session()->GetCurrentSpeed().length(); i++) {
         LocalPutch(static_cast< unsigned char >('+'));
       }
     } else {
-      LocalXYPuts(1, nLineNumber, sess()->GetCurrentSpeed().c_str());
+      LocalXYPuts(1, nLineNumber, session()->GetCurrentSpeed().c_str());
       for (int i = WhereX(); i < 23; i++) {
         LocalPutch(static_cast< unsigned char >('+'));
       }
     }
 
-    if (sess()->user()->GetSl() != 255 && sess()->GetEffectiveSl() == 255) {
+    if (session()->user()->GetSl() != 255 && session()->GetEffectiveSl() == 255) {
       LocalXYPuts(23, nLineNumber, ss[1]);
     }
     if (fileGlobalCap.IsOpen()) {
@@ -590,17 +590,17 @@ void WLocalIO::tleft(bool bCheckForTimeOut) {
       LocalXYPuts(64, nLineNumber, ss[6]);
     }
   }
-  switch (sess()->topdata) {
+  switch (session()->topdata) {
   case WLocalIO::topdataSystem:
-    if (sess()->IsUserOnline()) {
+    if (session()->IsUserOnline()) {
       LocalXYPrintf(18, 3, "T-%6.2f", nsln / SECONDS_PER_MINUTE_FLOAT);
     }
     break;
   case WLocalIO::topdataUser: {
-    if (sess()->IsUserOnline()) {
+    if (session()->IsUserOnline()) {
       LocalXYPrintf(18, 3, "T-%6.2f", nsln / SECONDS_PER_MINUTE_FLOAT);
     } else {
-      LocalXYPrintf(18, 3, sess()->user()->GetPassword());
+      LocalXYPrintf(18, 3, session()->user()->GetPassword());
     }
   }
   break;
@@ -608,7 +608,7 @@ void WLocalIO::tleft(bool bCheckForTimeOut) {
   SetTopLine(ctl);
   curatr = cc;
   LocalGotoXY(cx, cy);
-  if (bCheckForTimeOut && sess()->IsUserOnline()) {
+  if (bCheckForTimeOut && session()->IsUserOnline()) {
     if (nsln == 0.0) {
       bout << "\r\nTime expired.\r\n\n";
       hangup = true;
