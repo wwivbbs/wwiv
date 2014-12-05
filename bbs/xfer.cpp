@@ -119,7 +119,7 @@ bool check_ul_event(int nDirectoryNum, uploadsrec * u) {
   const string comport = StringPrintf("%d", incom ? syscfgovr.primaryport : 0);
   const string cmdLine = stuff_in(syscfg.upload_cmd, create_chain_file(), directories[nDirectoryNum].path,
                                   stripfn(u->filename), comport, "");
-  ExecuteExternalProgram(cmdLine, GetApplication()->GetSpawnOptions(SPAWNOPT_ULCHK));
+  ExecuteExternalProgram(cmdLine, application()->GetSpawnOptions(SPAWNOPT_ULCHK));
 
   File file(directories[nDirectoryNum].path, stripfn(u->filename));
   if (!file.Exists()) {
@@ -226,7 +226,7 @@ void get_arc_cmd(char *pszOutBuffer, const char *pszArcFileName, int cmd, const 
         return;
       }
       string command = stuff_in(szArcCmd, pszArcFileName, ofn, "", "", "");
-      WWIV_make_abs_cmd(GetApplication()->GetHomeDir(), &command);
+      WWIV_make_abs_cmd(application()->GetHomeDir(), &command);
       strcpy(pszOutBuffer, command.c_str());
       return;
     }
@@ -260,7 +260,7 @@ int list_arc_out(const char *pszFileName, const char *pszDirectory) {
     bout.nl(2);
     bout << "Archive listing for " << pszFileName << wwiv::endl;
     bout.nl();
-    nRetCode = ExecuteExternalProgram(szArchiveCmd, GetApplication()->GetSpawnOptions(SPAWNOPT_ARCH_L));
+    nRetCode = ExecuteExternalProgram(szArchiveCmd, application()->GetSpawnOptions(SPAWNOPT_ARCH_L));
     bout.nl();
   } else {
     bout.nl();

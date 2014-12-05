@@ -43,13 +43,13 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
 
   // Execute the program and make sure the workingdir is reset
   int nExecRetCode = ExecExternalProgram(commandLine, nFlags);
-  GetApplication()->CdHome();
+  application()->CdHome();
 
   // Reread the user record.
   if (session()->IsUserOnline()) {
-    GetApplication()->GetUserManager()->ReadUser(session()->user(), session()->usernum, true);
+    application()->users()->ReadUser(session()->user(), session()->usernum, true);
     read_qscn(session()->usernum, qsc, false, true);
-    GetApplication()->UpdateTopScreen();
+    application()->UpdateTopScreen();
   }
 
   // return to caller

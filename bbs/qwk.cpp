@@ -280,7 +280,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
       }
     }
 
-    unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
+    unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
     qsc_p[session()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
     session()->SetCurrentMessageArea(os);
   } else {
@@ -364,13 +364,13 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
   if (p->qscan > qsc_p[session()->GetCurrentReadMessageArea()]) { // Update qscan pointer right here
     qsc_p[session()->GetCurrentReadMessageArea()] = p->qscan;  // And here
   }
-  WStatus* pStatus = GetApplication()->GetStatusManager()->GetStatus();
+  WStatus* pStatus = application()->GetStatusManager()->GetStatus();
   uint32_t lQScanPtr = pStatus->GetQScanPointer();
   delete pStatus;
   if (p->qscan >= lQScanPtr) {
-    WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+    WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
     pStatus->SetQScanPointer(p->qscan + 1);
-    GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
+    application()->GetStatusManager()->CommitTransaction(pStatus);
   }
 }
 
@@ -1268,11 +1268,11 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     sprintf(parem2, "%s*.*", QWK_DIRECTORY);
 
     string command = stuff_in(arcs[archiver].arca, parem1, parem2, "", "", "");
-    ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPAWNOPT_ARCH_A));
+    ExecuteExternalProgram(command, application()->GetSpawnOptions(SPAWNOPT_ARCH_A));
 
     qwk_file_to_send = wwiv::strings::StringPrintf("%s%s", QWK_DIRECTORY, qwkname);
     // TODO(rushfan): Should we just have a make abs path?
-    WWIV_make_abs_cmd(GetApplication()->GetHomeDir(), &qwk_file_to_send);
+    WWIV_make_abs_cmd(application()->GetHomeDir(), &qwk_file_to_send);
 
     File qwk_file_to_send_file(qwk_file_to_send);
     if (!File::Exists(qwk_file_to_send)){

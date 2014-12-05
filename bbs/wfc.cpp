@@ -44,7 +44,7 @@ static int inst_num;
 
 
 void wfc_cls() {
-  if (GetApplication()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
+  if (application()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     bout.ResetColors();
     session()->localIO()->LocalCls();
     session()->wfc_status = 0;
@@ -58,7 +58,7 @@ void wfc_init() {
     session()->wfcdrvs[ i ] = 0;
   }
 
-  IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+  IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), INI_TAG);
   if (iniFile.IsOpen()) {
     const char *pszDriveList = iniFile.GetValue("WFC_DRIVES");
     if (pszDriveList != nullptr) {
@@ -74,7 +74,7 @@ void wfc_init() {
   }
 
   session()->localIO()->SetCursor(WLocalIO::cursorNormal);              // add 4.31 Build3
-  if (GetApplication()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
+  if (application()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     session()->wfc_status = 0;
     inst_num = 1;
   }
@@ -82,7 +82,7 @@ void wfc_init() {
 
 
 void wfc_update() {
-  if (!GetApplication()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
+  if (!application()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     return;
   }
 
@@ -90,7 +90,7 @@ void wfc_update() {
   WUser u;
 
   get_inst_info(inst_num, &ir);
-  GetApplication()->GetUserManager()->ReadUserNoCache(&u, ir.user);
+  application()->users()->ReadUserNoCache(&u, ir.user);
   session()->localIO()->LocalXYAPrintf(57, 18, 15, "%-3d", inst_num);
   if (ir.flags & INST_FLAGS_ONLINE) {
     session()->localIO()->LocalXYAPrintf(42, 19, 14, "%-25.25s", u.GetUserNameAndNumber(ir.user));
@@ -107,7 +107,7 @@ void wfc_update() {
       if (inst_num > num_instances()) {
         inst_num = 1;
       }
-    } while (inst_num == GetApplication()->GetInstanceNumber());
+    } while (inst_num == application()->GetInstanceNumber());
   }
 }
 
@@ -129,12 +129,12 @@ void wfc_screen() {
   WUser u;
   static double wfc_time = 0, poll_time = 0;
 
-  if (!GetApplication()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
+  if (!application()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     return;
   }
 
   int nNumNewMessages = check_new_mail(session()->usernum);
-  std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
   if (session()->wfc_status == 0) {
     session()->localIO()->SetCursor(WLocalIO::cursorNone);
     session()->localIO()->LocalCls();
@@ -144,12 +144,12 @@ void wfc_screen() {
       if (!wfcFile.Open(File::modeBinary | File::modeReadOnly)) {
         wfc_cls();
         std::cout << wfcFile.full_pathname() << " NOT FOUND." << std::endl;
-        GetApplication()->AbortBBS();
+        application()->AbortBBS();
       }
       wfcFile.Read(pszScreenBuffer, 4000);
     }
     DisplayWFCScreen(pszScreenBuffer);
-    sprintf(szBuffer, "Activity and Statistics of %s Node %d", syscfg.systemname, GetApplication()->GetInstanceNumber());
+    sprintf(szBuffer, "Activity and Statistics of %s Node %d", syscfg.systemname, application()->GetInstanceNumber());
     session()->localIO()->LocalXYAPrintf(1 + ((76 - strlen(szBuffer)) / 2), 4, 15, szBuffer);
     session()->localIO()->LocalXYAPrintf(8, 1, 14, fulldate());
     std::string osVersion = wwiv::os::os_version_string();
@@ -184,7 +184,7 @@ void wfc_screen() {
     session()->localIO()->LocalXYAPrintf(58, 13, 14, "Waiting For Command");
 
     int i = 0, i1 = 0;
-    while (session()->wfcdrvs[i] > 0 && session()->wfcdrvs[i] < GetApplication()->GetHomeDir()[0] && i1 < 5) {
+    while (session()->wfcdrvs[i] > 0 && session()->wfcdrvs[i] < application()->GetHomeDir()[0] && i1 < 5) {
       if (iscdrom(static_cast<char>(session()->wfcdrvs[i]))) {
         session()->localIO()->LocalXYAPrintf(2, 16 + i1, 3, "CDROM %c..", session()->wfcdrvs[i] + '@');
         session()->localIO()->LocalXYAPrintf(12 - 1, 17 + i1 - 1, 14, "%10.1f MB", 0.0f);
@@ -208,9 +208,9 @@ void wfc_screen() {
       i++;
     }
 
-    get_inst_info(GetApplication()->GetInstanceNumber(), &ir);
+    get_inst_info(application()->GetInstanceNumber(), &ir);
     if (ir.user < syscfg.maxusers && ir.user > 0) {
-      GetApplication()->GetUserManager()->ReadUserNoCache(&u, ir.user);
+      application()->users()->ReadUserNoCache(&u, ir.user);
       session()->localIO()->LocalXYAPrintf(33, 16, 14, "%-20.20s", u.GetUserNameAndNumber(ir.user));
     } else {
       session()->localIO()->LocalXYAPrintf(33, 16, 14, "%-20.20s", "Nobody");

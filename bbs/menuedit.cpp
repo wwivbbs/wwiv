@@ -418,7 +418,7 @@ void EditMenus() {
       }
     }
   }
-  GetApplication()->CdHome(); // make sure we are in the wwiv dir
+  application()->CdHome(); // make sure we are in the wwiv dir
   fileEditMenu.Close();
 }
 
@@ -475,14 +475,14 @@ bool GetMenuDir(string& menuName) {
         bout << "The path " << dir.full_pathname() << wwiv::endl <<
                            "does not exist, create it? (N) : ";
         if (noyes()) {
-          GetApplication()->CdHome(); // go to the wwiv dir
+          application()->CdHome(); // go to the wwiv dir
           File::mkdirs(dir);  // Create the new path
           if (dir.Exists()) {
-            GetApplication()->CdHome();
+            application()->CdHome();
             bout << "Created\r\n";
             return true;
           } else {
-            GetApplication()->CdHome();
+            application()->CdHome();
             bout << "Unable to create\r\n";
             return false;
           }
@@ -491,7 +491,7 @@ bool GetMenuDir(string& menuName) {
           return false;
         }
       }
-      GetApplication()->CdHome();
+      application()->CdHome();
       return true;
     }
   }

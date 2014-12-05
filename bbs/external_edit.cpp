@@ -250,7 +250,7 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
     return false;
   }
 
-  WWIV_make_abs_cmd(GetApplication()->GetHomeDir(), &editorCommand);
+  WWIV_make_abs_cmd(application()->GetHomeDir(), &editorCommand);
   const string original_directory = File::current_directory();
 
   string strippedFileName(stripfn(edit_filename.c_str()));

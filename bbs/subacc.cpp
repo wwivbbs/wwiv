@@ -101,7 +101,7 @@ bool iscan1(int si, bool quick) {
       set_net_num(0);
     }
     // see if a sub has changed
-    GetApplication()->GetStatusManager()->RefreshStatusCache();
+    application()->GetStatusManager()->RefreshStatusCache();
     if (session()->subchg) {
       session()->SetCurrentReadMessageArea(-1);
     }
@@ -172,7 +172,7 @@ postrec *get_post(int mn) {
   }
 
   if (session()->subchg == 1) {
-    // sub has changed (detected in GetApplication()->GetStatusManager()->Read); invalidate cache
+    // sub has changed (detected in application()->GetStatusManager()->Read); invalidate cache
     believe_cache = false;
 
     // kludge: subchg==2 leaves subchg indicating change, but the '2' value
@@ -274,7 +274,7 @@ void add_post(postrec * pp) {
   }
   if (fileSub.IsOpen()) {
     // get updated info
-    GetApplication()->GetStatusManager()->RefreshStatusCache();
+    application()->GetStatusManager()->RefreshStatusCache();
     fileSub.Seek(0L, File::seekBegin);
     postrec p;
     fileSub.Read(&p, sizeof(postrec));
@@ -310,7 +310,7 @@ void delete_message(int mn) {
     bCloseSubFile = true;
   }
   // see if anything changed
-  GetApplication()->GetStatusManager()->RefreshStatusCache();
+  application()->GetStatusManager()->RefreshStatusCache();
 
   if (fileSub.IsOpen()) {
     if (mn > 0 && mn <= session()->GetNumMessagesInCurrentMessageArea()) {
@@ -382,7 +382,7 @@ void resynch(int *msgnum, postrec * pp) {
     p = *pp1;
   }
 
-  GetApplication()->GetStatusManager()->RefreshStatusCache();
+  application()->GetStatusManager()->RefreshStatusCache();
 
   if (session()->subchg || pp) {
     pp1 = get_post(*msgnum);

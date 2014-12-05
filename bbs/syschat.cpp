@@ -88,7 +88,7 @@ void RequestChat() {
     if (chatcall) {
       chatcall = false;
       bout << "Chat call turned off.\r\n";
-      GetApplication()->UpdateTopScreen();
+      application()->UpdateTopScreen();
     } else {
       bout << "|#9Enter Reason for chat: \r\n|#0:";
       std::string chatReason;
@@ -108,7 +108,7 @@ void RequestChat() {
         }
         szChatReason[80] = '\0';
         session()->localIO()->SetChatReason(szChatReason);
-        GetApplication()->UpdateTopScreen();
+        application()->UpdateTopScreen();
         bout << "Chat call turned ON.\r\n";
         bout.nl();
       }
@@ -147,7 +147,7 @@ void select_chat_name(char *pszSysopName) {
     int nUserNumber = atoi(pszSysopName);
     if (nUserNumber > 0 && nUserNumber <= syscfg.maxusers) {
       WUser tu;
-      GetApplication()->GetUserManager()->ReadUser(&tu, nUserNumber);
+      application()->users()->ReadUser(&tu, nUserNumber);
       strcpy(pszSysopName, tu.GetUserNameAndNumber(nUserNumber));
     } else {
       if (!pszSysopName[0]) {
@@ -579,7 +579,7 @@ void chat1(char *pszChatLine, bool two_way) {
     cp0 = cp1 = 0;
     if (defscreenbottom == 24) {
       session()->topdata = WLocalIO::topdataNone;
-      GetApplication()->UpdateTopScreen();
+      application()->UpdateTopScreen();
     }
     bout << "\x1b[2J";
     wwiv_x2 = 1;
@@ -668,7 +668,7 @@ void chat1(char *pszChatLine, bool two_way) {
   extratimecall += tc;
   session()->topdata = nSaveTopData;
   if (session()->IsUserOnline()) {
-    GetApplication()->UpdateTopScreen();
+    application()->UpdateTopScreen();
   }
   local_echo = oe;
   RestoreCurrentLine(cl, atr, xl, &cc);

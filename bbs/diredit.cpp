@@ -166,7 +166,7 @@ void modify_dir(int n) {
       if (s[0]) {
         File dir(s);
         if (!dir.Exists()) {
-          GetApplication()->CdHome();
+          application()->CdHome();
           if (File::mkdirs(dir)) {
             bout << "|#6Unable to create or change to directory." << wwiv::endl;
             pausescr();
@@ -285,7 +285,7 @@ void swap_dirs(int dir1, int dir2) {
   dir1 = static_cast<int>(dir1conv);
   dir2 = static_cast<int>(dir2conv);
 
-  int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
+  int nNumUserRecords = application()->users()->GetNumberOfUserRecords();
 
   uint32_t *pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
   WWIV_ASSERT(pTempQScan != nullptr);
@@ -352,7 +352,7 @@ void insert_dir(int n) {
   directories[n] = r;
   ++session()->num_dirs;
 
-  int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
+  int nNumUserRecords = application()->users()->GetNumberOfUserRecords();
 
   uint32_t* pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
   WWIV_ASSERT(pTempQScan != nullptr);
@@ -401,7 +401,7 @@ void delete_dir(int n) {
   }
   --session()->num_dirs;
 
-  int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
+  int nNumUserRecords = application()->users()->GetNumberOfUserRecords();
 
   pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
   WWIV_ASSERT(pTempQScan != nullptr);
@@ -557,7 +557,7 @@ void dlboardedit() {
   if (confchg) {
     save_confs(CONF_DIRS, -1, nullptr);
   }
-  if (!GetApplication()->GetWfcStatus()) {
+  if (!application()->GetWfcStatus()) {
     changedsl();
   }
 }

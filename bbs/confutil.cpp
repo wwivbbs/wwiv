@@ -360,7 +360,7 @@ void setuconf(int nConferenceType, int num, int nOldSubNumber) {
 void changedsl() {
   int ocurconfsub = uconfsub[session()->GetCurrentConferenceMessageArea()].confnum;
   int ocurconfdir = uconfdir[session()->GetCurrentConferenceFileArea()].confnum;
-  GetApplication()->UpdateTopScreen();
+  application()->UpdateTopScreen();
 
   userconfrec c1;
   c1.confnum = -1;

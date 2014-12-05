@@ -94,12 +94,12 @@ void set_question(int ii) {
   questused[ii] = (v.numanswers) ? 1 : 0;
 
   WUser u;
-  GetApplication()->GetUserManager()->ReadUser(&u, 1);
-  int nNumUsers = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
+  application()->users()->ReadUser(&u, 1);
+  int nNumUsers = application()->users()->GetNumberOfUserRecords();
   for (int i1 = 1; i1 <= nNumUsers; i1++) {
-    GetApplication()->GetUserManager()->ReadUser(&u, i1);
+    application()->users()->ReadUser(&u, i1);
     u.SetVote(nNumUsers, 0);
-    GetApplication()->GetUserManager()->WriteUser(&u, i1);
+    application()->users()->WriteUser(&u, i1);
   }
 }
 
@@ -139,14 +139,14 @@ void ivotes() {
 void voteprint() {
   votingrec v;
 
-  int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
+  int nNumUserRecords = application()->users()->GetNumberOfUserRecords();
   char *x = static_cast<char *>(BbsAllocA(20 * (2 + nNumUserRecords)));
   if (x == nullptr) {
     return;
   }
   for (int i = 0; i <= nNumUserRecords; i++) {
     WUser u;
-    GetApplication()->GetUserManager()->ReadUser(&u, i);
+    application()->users()->ReadUser(&u, i);
     for (int i1 = 0; i1 < 20; i1++) {
       x[ i1 + i * 20 ] = static_cast<char>(u.GetVote(i1));
     }
@@ -157,7 +157,7 @@ void voteprint() {
 
   File votingDat(syscfg.datadir, VOTING_DAT);
 
-  GetApplication()->GetStatusManager()->RefreshStatusCache();
+  application()->GetStatusManager()->RefreshStatusCache();
 
   for (int i1 = 0; i1 < 20; i1++) {
     votingDat.Open(File::modeReadOnly | File::modeBinary);
@@ -175,7 +175,7 @@ void voteprint() {
         text.str("     ");
         text << v.responses[i2].response << "\r\n";
         votingText.Write(text.str());
-        for (int i3 = 0; i3 < GetApplication()->GetStatusManager()->GetUserCount(); i3++) {
+        for (int i3 = 0; i3 < application()->GetStatusManager()->GetUserCount(); i3++) {
           if (x[i1 + 20 * smallist[i3].number] == i2 + 1) {
             text.clear();
             text.str("          ");

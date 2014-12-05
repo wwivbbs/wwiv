@@ -78,7 +78,7 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
     bOkToDL = printfileinfo(&u, dn);
 
 
-    if (strncmp(u.filename, "WWIV4", 5) == 0 && !GetApplication()->HasConfigFlag(OP_FLAGS_NO_EASY_DL)) {
+    if (strncmp(u.filename, "WWIV4", 5) == 0 && !application()->HasConfigFlag(OP_FLAGS_NO_EASY_DL)) {
       bOkToDL = 1;
     } else {
       if (!ratio_ok()) {
@@ -117,7 +117,7 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
         sysoplogf("Downloaded \"%s\"", u.filename);
 
         if (syscfg.sysconfig & sysconfig_log_dl) {
-          GetApplication()->GetUserManager()->ReadUser(&ur, u.ownerusr);
+          application()->users()->ReadUser(&ur, u.ownerusr);
           if (!ur.IsUserDeleted()) {
             if (date_to_daten(ur.GetFirstOn()) < static_cast<time_t>(u.daten)) {
               ssm(u.ownerusr, 0, "%s downloaded '%s' on %s",
@@ -132,7 +132,7 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
       bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
 
       if (session()->IsUserOnline()) {
-        GetApplication()->UpdateTopScreen();
+        application()->UpdateTopScreen();
       }
     } else {
       bout << "\r\n\nNot enough time left to D/L.\r\n";
@@ -219,7 +219,7 @@ bool ValidateDoorAccess(int nDoorNumber) {
   if (c.ar && !session()->user()->HasArFlag(c.ar)) {
     return false;
   }
-  if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg && session()->GetEffectiveSl() < 255) {
+  if (application()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg && session()->GetEffectiveSl() < 255) {
     chainregrec r = chains_reg[ nDoorNumber ];
     if (r.maxage) {
       if (r.minage > session()->user()->GetAge() || r.maxage < session()->user()->GetAge()) {

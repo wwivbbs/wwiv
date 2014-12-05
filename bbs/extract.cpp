@@ -43,9 +43,9 @@ void compress_file(const string& orig_filename, const string& directory) {
   string arcName = StrCat(directory, baseFileName);
 
   const string command = stuff_in(arcs[0].arca, arcName, orig_filename, "", "", "");
-  ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPAWNOPT_ARCH_A));
+  ExecuteExternalProgram(command, application()->GetSpawnOptions(SPAWNOPT_ARCH_A));
   File::Remove(orig_filename);
-  GetApplication()->UpdateTopScreen();
+  application()->UpdateTopScreen();
 }
 
 // Allows extracting a message into a file area, directly.
@@ -287,7 +287,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
   WWIV_ASSERT(b);
   char s1[81], s2[81], s3[81], ch = 26, ch1, s4[81];
 
-  if (GetApplication()->HasConfigFlag(OP_FLAGS_NEW_EXTRACT)) {
+  if (application()->HasConfigFlag(OP_FLAGS_NEW_EXTRACT)) {
     printfile(MEXTRACT_NOEXT);
     bool done = false;
     bool uued = false;

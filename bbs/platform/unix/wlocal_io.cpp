@@ -50,7 +50,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
 
   if (bOpenFile) {
     if (!fileGlobalCap.IsOpen()) {
-      snprintf(szFileName, sizeof(szFileName), "%sglobal-%d.txt", syscfg.gfilesdir, GetApplication()->GetInstanceNumber());
+      snprintf(szFileName, sizeof(szFileName), "%sglobal-%d.txt", syscfg.gfilesdir, application()->GetInstanceNumber());
       fileGlobalCap.SetName(szFileName);
       bool bOpen = fileGlobalCap.Open(File::modeBinary | File::modeAppend | File::modeCreateFile | File::modeReadWrite);
       global_ptr = 0;
@@ -423,17 +423,17 @@ void WLocalIO::skey(char ch) {
           break;
         case SF1:                          /* Shift-F1 */
           set_global_handle((fileGlobalCap.IsOpen()) ? false : true);
-          GetApplication()->UpdateTopScreen();
+          application()->UpdateTopScreen();
           break;
         case CF1:                          /* Ctrl-F1 */
-          GetApplication()->ToggleShutDown();
+          application()->ToggleShutDown();
           break;
         case F2:                          /* F2 */
           sess()->topdata++;
           if (sess()->topdata > WLocalIO::topdataUser) {
             sess()->topdata = WLocalIO::topdataNone;
           }
-          GetApplication()->UpdateTopScreen();
+          application()->UpdateTopScreen();
           break;
         case F3:                          /* F3 */
           if (sess()->using_modem) {
@@ -444,7 +444,7 @@ void WLocalIO::skey(char ch) {
           break;
         case F4:                          /* F4 */
           chatcall = false;
-          GetApplication()->UpdateTopScreen();
+          application()->UpdateTopScreen();
           break;
         case F5:                          /* F5 */
           hangup = true;

@@ -43,7 +43,7 @@ string GetSysopLogFileName(const string& d) {
 * Returns instance (temporary) sysoplog filename in s.
 */
 void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName) {
-  sprintf(pszInstanceLogFileName, "inst-%3.3u.log", GetApplication()->GetInstanceNumber());
+  sprintf(pszInstanceLogFileName, "inst-%3.3u.log", application()->GetInstanceNumber());
 }
 
 #define CAT_BUFSIZE 8192
