@@ -69,7 +69,7 @@ const char *ctypes(int num) {
     "Other",
   };
 
-  IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), "CTYPES");
+  IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), "CTYPES");
   if (iniFile.IsOpen()) {
     const string comptype = StringPrintf("COMP_TYPE[%d]", num + 1);
     const char *ss = iniFile.GetValue(comptype.c_str());

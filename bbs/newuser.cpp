@@ -615,7 +615,7 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
   userFile.Seek(syscfg.userreclen, File::seekBegin);
   int nUserNumber = 1;
 
-  if (nNewUserNumber == GetApplication()->GetStatusManager()->GetUserCount()) {
+  if (nNewUserNumber == application()->GetStatusManager()->GetUserCount()) {
     nUserNumber = nNewUserNumber + 1;
   } else {
     while (nUserNumber <= nNewUserNumber) {
@@ -720,7 +720,7 @@ void CreateNewUserRecord() {
 // on here, if this function returns false, a sufficient error
 // message has already been displayed to the user.
 bool CanCreateNewUserAccountHere() {
-  if (GetApplication()->GetStatusManager()->GetUserCount() >= syscfg.maxusers) {
+  if (application()->GetStatusManager()->GetUserCount() >= syscfg.maxusers) {
     bout.nl(2);
     bout << "I'm sorry, but the system currently has the maximum number of users it can\r\nhandle.\r\n\n";
     return false;
@@ -755,7 +755,7 @@ bool CanCreateNewUserAccountHere() {
 
 
 bool UseMinimalNewUserInfo() {
-  IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+  IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), INI_TAG);
   if (iniFile.IsOpen()) {
     return iniFile.GetBooleanValue("NEWUSER_MIN");
   }
@@ -767,9 +767,9 @@ void DoFullNewUser() {
   input_name();
   input_realname();
   input_phone();
-  if (GetApplication()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
+  if (application()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
     if (check_dupes(session()->user()->GetVoicePhoneNumber())) {
-      if (GetApplication()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
+      if (application()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
         hangup = true;
         hang_it_up();
         return;
@@ -802,9 +802,9 @@ void DoFullNewUser() {
     }
     input_dataphone();
 
-    if (GetApplication()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
+    if (application()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
       if (check_dupes(session()->user()->GetDataPhoneNumber())) {
-        if (GetApplication()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
+        if (application()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
           hangup = true;
           hang_it_up();
           return;
@@ -847,11 +847,11 @@ void DoFullNewUser() {
 
 
 void DoNewUserASV() {
-  if (GetApplication()->HasConfigFlag(OP_FLAGS_ADV_ASV)) {
+  if (application()->HasConfigFlag(OP_FLAGS_ADV_ASV)) {
     asv();
     return;
   }
-  if (GetApplication()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV) &&
+  if (application()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV) &&
       session()->asv.sl > syscfg.newusersl && session()->asv.sl < 90) {
     bout.nl();
     bout << "|#5Are you currently a WWIV SysOp? ";
@@ -1036,13 +1036,13 @@ void SendNewUserFeedbackIfRequired() {
     return;
   }
 
-  if (GetApplication()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
+  if (application()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
     noabort(FEEDBACK_NOEXT);
   } else if (printfile(FEEDBACK_NOEXT)) {
     sysoplog("", false);
   }
   feedback(true);
-  if (GetApplication()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
+  if (application()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
     if (!session()->user()->GetNumEmailSent() && !session()->user()->GetNumFeedbackSent()) {
       printfile(NOFBACK_NOEXT);
       deluser(session()->usernum);
@@ -1063,7 +1063,7 @@ void ExecNewUserCommand() {
     sysoplog(commandLine.c_str(), true);
 
     session()->WriteCurrentUser();
-    ExecuteExternalProgram(commandLine, GetApplication()->GetSpawnOptions(SPAWNOPT_NEWUSER));
+    ExecuteExternalProgram(commandLine, application()->GetSpawnOptions(SPAWNOPT_NEWUSER));
     session()->ReadCurrentUser();
   }
 }
@@ -1079,7 +1079,7 @@ void newuser() {
 
   sysoplog("", false);
   sysoplogfi(false, "*** NEW USER %s   %s    %s (%ld)", fulldate(), times(), session()->GetCurrentSpeed().c_str(),
-             GetApplication()->GetInstanceNumber());
+             application()->GetInstanceNumber());
 
   if (!CanCreateNewUserAccountHere() || hangup) {
     hangup = true;
@@ -1148,7 +1148,7 @@ void newuser() {
 
   WriteNewUserInfoToSysopLog();
 
-  GetApplication()->UpdateTopScreen();
+  application()->UpdateTopScreen();
 
   VerifyNewUserPassword();
 
@@ -1271,7 +1271,7 @@ bool check_dupes(const char *pszPhoneNumber) {
     ssm(1, 0, szBuffer);
 
     WUser user;
-    GetApplication()->GetUserManager()->ReadUser(&user, nUserNumber);
+    application()->users()->ReadUser(&user, nUserNumber);
     sprintf(szBuffer, "      also entered by %s", user.GetName());
     sysoplog(szBuffer, false);
     ssm(1, 0, szBuffer);
@@ -1332,7 +1332,7 @@ void DoMinimalNewUser() {
   bool done = false;
   int nSaveTopData = session()->topdata;
   session()->topdata = WLocalIO::topdataNone;
-  GetApplication()->UpdateTopScreen();
+  application()->UpdateTopScreen();
   do {
     bout.cls();
     bout.litebar("%s New User Registration", syscfg.systemname);
@@ -1518,7 +1518,7 @@ void DoMinimalNewUser() {
     session()->user()->SetDefaultEditor(1);
   }
   session()->topdata = nSaveTopData;
-  GetApplication()->UpdateTopScreen();
+  application()->UpdateTopScreen();
   newline = true;
 }
 

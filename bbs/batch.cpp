@@ -128,7 +128,7 @@ void downloaded(char *pszFileName, long lCharsPerSecond) {
         }
         if (syscfg.sysconfig & sysconfig_log_dl) {
           WUser user;
-          GetApplication()->GetUserManager()->ReadUser(&user, u.ownerusr);
+          application()->users()->ReadUser(&user, u.ownerusr);
           if (!user.IsUserDeleted()) {
             if (date_to_daten(user.GetFirstOn()) < static_cast<time_t>(u.daten)) {
               ssm(u.ownerusr, 0, "%s downloaded|#1 \"%s\" |#7on %s",
@@ -249,10 +249,10 @@ void uploaded(char *pszFileName, long lCharsPerSecond) {
               modify_database(u.filename, true);
               session()->user()->SetUploadK(session()->user()->GetUploadK() +
                   static_cast<int>(bytes_to_k(u.numbytes)));
-              WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+              WStatus *pStatus = application()->GetStatusManager()->BeginTransaction();
               pStatus->IncrementNumUploadsToday();
               pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
-              GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
+              application()->GetStatusManager()->CommitTransaction(pStatus);
               File fileDn(g_szDownloadFileName);
               fileDn.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
               FileAreaSetRecord(fileDn, nRecNum);
@@ -501,8 +501,8 @@ double ratio1(long a) {
 }
 
 void make_ul_batch_list(char *pszListFileName) {
-  sprintf(pszListFileName, "%s%s.%3.3u", GetApplication()->GetHomeDir().c_str(), FILESUL_NOEXT,
-          GetApplication()->GetInstanceNumber());
+  sprintf(pszListFileName, "%s%s.%3.3u", application()->GetHomeDir().c_str(), FILESUL_NOEXT,
+          application()->GetInstanceNumber());
 
   File::SetFilePermissions(pszListFileName, File::permReadWrite);
   File::Remove(pszListFileName);
@@ -516,7 +516,7 @@ void make_ul_batch_list(char *pszListFileName) {
     if (!batch[i].sending) {
       chdir(directories[batch[i].dir].path);
       File file(File::current_directory(), stripfn(batch[i].filename));
-      GetApplication()->CdHome();
+      application()->CdHome();
       fileList.Write(StrCat(file.full_pathname(), "\r\n"));
     }
   }
@@ -524,8 +524,8 @@ void make_ul_batch_list(char *pszListFileName) {
 }
 
 static void make_dl_batch_list(char *pszListFileName) {
-  sprintf(pszListFileName, "%s%s.%3.3u", GetApplication()->GetHomeDir().c_str(), FILESDL_NOEXT,
-          GetApplication()->GetInstanceNumber());
+  sprintf(pszListFileName, "%s%s.%3.3u", application()->GetHomeDir().c_str(), FILESDL_NOEXT,
+          application()->GetInstanceNumber());
 
   File::SetFilePermissions(pszListFileName, File::permReadWrite);
   File::Remove(pszListFileName);
@@ -557,7 +557,7 @@ static void make_dl_batch_list(char *pszListFileName) {
         filename_to_send = fileToSend.full_pathname();
       }
       bool ok = true;
-      GetApplication()->CdHome();
+      application()->CdHome();
       if (nsl() < (batch[i].time + at)) {
         ok = false;
         bout << "Cannot download " << batch[i].filename << ": Not enough time" << wwiv::endl;
@@ -596,7 +596,7 @@ void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, con
 
   string commandLine = stuff_in(pszCommandLine, sx1, sx2, downlist, sx3, uplist);
   if (!commandLine.empty()) {
-    WWIV_make_abs_cmd(GetApplication()->GetHomeDir(), &commandLine);
+    WWIV_make_abs_cmd(application()->GetHomeDir(), &commandLine);
     session()->localIO()->LocalCls();
     const string message = StringPrintf(
         "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
@@ -607,7 +607,7 @@ void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, con
       File::SetFilePermissions(g_szDSZLogFileName, File::permReadWrite);
       File::Remove(g_szDSZLogFileName);
       chdir(syscfgovr.batchdir);
-      ExecuteExternalProgram(commandLine, GetApplication()->GetSpawnOptions(SPAWNOPT_PROT_BATCH));
+      ExecuteExternalProgram(commandLine, application()->GetSpawnOptions(SPAWNOPT_PROT_BATCH));
       if (bHangupAfterDl) {
         bihangup(1);
         if (!session()->remoteIO()->carrier()) {
@@ -619,7 +619,7 @@ void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, con
         bout << "\r\n|#9Please wait...\r\n\n";
       }
       ProcessDSZLogFile();
-      GetApplication()->UpdateTopScreen();
+      application()->UpdateTopScreen();
     }
   }
   if (downlist[0]) {

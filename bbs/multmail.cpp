@@ -75,7 +75,7 @@ void multimail(int *pnUserNumber, int numu) {
     if (pnUserNumber[cv] < 0) {
       continue;
     }
-    GetApplication()->GetUserManager()->ReadUser(&user, pnUserNumber[cv]);
+    application()->users()->ReadUser(&user, pnUserNumber[cv]);
     if ((user.GetSl() == 255 && (user.GetNumMailWaiting() > (syscfg.maxwaiting * 5))) ||
         ((user.GetSl() != 255) && (user.GetNumMailWaiting() > syscfg.maxwaiting)) ||
         user.GetNumMailWaiting() > 200) {
@@ -90,12 +90,12 @@ void multimail(int *pnUserNumber, int numu) {
     }
     strcpy(s, "  ");
     user.SetNumMailWaiting(user.GetNumMailWaiting() + 1);
-    GetApplication()->GetUserManager()->WriteUser(&user, pnUserNumber[cv]);
+    application()->users()->WriteUser(&user, pnUserNumber[cv]);
     if (pnUserNumber[cv] == 1) {
       ++fwaiting;
     }
     strcat(s, user.GetUserNameAndNumber(pnUserNumber[cv]));
-    WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+    WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
     if (pnUserNumber[cv] == 1) {
       pStatus->IncrementNumFeedbackSentToday();
       session()->user()->SetNumFeedbackSentToday(session()->user()->GetNumFeedbackSentToday() + 1);
@@ -106,7 +106,7 @@ void multimail(int *pnUserNumber, int numu) {
       session()->user()->SetNumEmailSent(session()->user()->GetNumEmailSent() + 1);
       session()->user()->SetNumEmailSentToday(session()->user()->GetNumEmailSentToday() + 1);
     }
-    GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
+    application()->GetStatusManager()->CommitTransaction(pStatus);
     sysoplog(s);
     bout << s;
     bout.nl();
@@ -223,7 +223,7 @@ int oneuser() {
     bout << "Unknown user.\r\n\n";
     return 0;
   }
-  GetApplication()->GetUserManager()->ReadUser(&user, nUserNumber);
+  application()->users()->ReadUser(&user, nUserNumber);
   if (((user.GetSl() == 255) && (user.GetNumMailWaiting() > (syscfg.maxwaiting * 5))) ||
       ((user.GetSl() != 255) && (user.GetNumMailWaiting() > syscfg.maxwaiting)) ||
       (user.GetNumMailWaiting() > 200)) {
@@ -391,7 +391,7 @@ void slash_e() {
     case 'L':
       for (i = 0; i < numu; i++) {
         WUser user;
-        GetApplication()->GetUserManager()->ReadUser(&user, nUserNumber[i]);
+        application()->users()->ReadUser(&user, nUserNumber[i]);
         bout << i + 1 << ". " << user.GetUserNameAndNumber(nUserNumber[i]) << wwiv::endl;
       }
       break;

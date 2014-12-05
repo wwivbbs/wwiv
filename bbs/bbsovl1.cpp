@@ -197,25 +197,25 @@ void feedback(bool bNewUserFeedback) {
 
   if (bNewUserFeedback) {
     sprintf(irt, "|#1Validation Feedback (|#6%d|#2 slots left|#1)",
-            syscfg.maxusers - GetApplication()->GetStatusManager()->GetUserCount());
+            syscfg.maxusers - application()->GetStatusManager()->GetUserCount());
     // We disable the fsed here since it was hanging on some systems.  Not sure why
     // but it's better to be safe -- Rushfan 2003-12-04
     email(1, 0, true, 0, true, false);
     return;
   }
   if (guest_user) {
-    GetApplication()->GetStatusManager()->RefreshStatusCache();
+    application()->GetStatusManager()->RefreshStatusCache();
     strcpy(irt, "Guest Account Feedback");
     email(1, 0, true, 0, true, true);
     return;
   }
   strcpy(irt, "|#1Feedback");
-  int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
+  int nNumUserRecords = application()->users()->GetNumberOfUserRecords();
   int i1 = 0;
 
   for (i = 2; i < 10 && i < nNumUserRecords; i++) {
     WUser user;
-    GetApplication()->GetUserManager()->ReadUser(&user, i);
+    application()->users()->ReadUser(&user, i);
     if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
         !user.IsUserDeleted()) {
       i1++;
@@ -230,7 +230,7 @@ void feedback(bool bNewUserFeedback) {
     bout.nl();
     for (i = 1; (i < 10 && i < nNumUserRecords); i++) {
       WUser user;
-      GetApplication()->GetUserManager()->ReadUser(&user, i);
+      application()->users()->ReadUser(&user, i);
       if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
           !user.IsUserDeleted()) {
         bout << "|#2" << i << "|#7)|#1 " << user.GetUserNameAndNumber(i) << wwiv::endl;

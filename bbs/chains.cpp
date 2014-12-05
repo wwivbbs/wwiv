@@ -37,7 +37,7 @@ static void show_chains(int *mapp, int *map) {
   bout.nl();
   bool abort = false;
   bool next = false;
-  if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg) {
+  if (application()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg) {
     pla(StringPrintf("|#5  Num |#1%-42.42s|#2%-22.22s|#1%-5.5s", "Description", "Sponsored by", "Usage"), &abort);
 
     if (okansi()) {
@@ -49,7 +49,7 @@ static void show_chains(int *mapp, int *map) {
     for (int i = 0; i < *mapp && !abort && !hangup; i++) {
       WUser user;
       if (okansi()) {
-        GetApplication()->GetUserManager()->ReadUser(&user, chains_reg[map[i]].regby[0]);
+        application()->users()->ReadUser(&user, chains_reg[map[i]].regby[0]);
         pla(StringPrintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
                 FRAME_COLOR,
                 i + 1,
@@ -64,14 +64,14 @@ static void show_chains(int *mapp, int *map) {
         if (chains_reg[map[i]].regby[0] != 0) {
           for (int i1 = 1; i1 < 5 && !abort; i1++) {
             if (chains_reg[map[i]].regby[i1] != 0) {
-              GetApplication()->GetUserManager()->ReadUser(&user, chains_reg[map[i]].regby[i1]);
+              application()->users()->ReadUser(&user, chains_reg[map[i]].regby[i1]);
               pla(StringPrintf(" |#%d\xB3   \xBA%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3",
                       FRAME_COLOR, " ", user.GetName(), FRAME_COLOR, " "), &abort);
             }
           }
         }
       } else {
-        GetApplication()->GetUserManager()->ReadUser(&user, chains_reg[map[i]].regby[0]);
+        application()->users()->ReadUser(&user, chains_reg[map[i]].regby[0]);
         pla(StringPrintf(" |%3d|%-41.41s|%-21.21s|%5d|",
                 i + 1, chains[map[i]].description,
                 (chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
@@ -79,7 +79,7 @@ static void show_chains(int *mapp, int *map) {
         if (chains_reg[map[i]].regby[0] != 0) {
           for (int i1 = 1; i1 < 5; i1++) {
             if (chains_reg[map[i]].regby[i1] != 0) {
-              GetApplication()->GetUserManager()->ReadUser(&user, chains_reg[map[i]].regby[i1]);
+              application()->users()->ReadUser(&user, chains_reg[map[i]].regby[i1]);
               pla(StringPrintf(" |   |                                         |%-21.21s|     |",
                       (chains_reg[map[i]].regby[i1]) ? user.GetName() : "Available"), &abort);
             }
@@ -126,7 +126,7 @@ void run_chain(int nChainNumber) {
     }
   }
   write_inst(INST_LOC_CHAINS, static_cast< unsigned short >(nChainNumber + 1), INST_FLAGS_NONE);
-  if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg) {
+  if (application()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg) {
     chains_reg[nChainNumber].usage++;
     File regFile(syscfg.datadir, CHAINS_REG);
     if (regFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate)) {
@@ -151,7 +151,7 @@ void run_chain(int nChainNumber) {
 
   ExecuteExternalProgram(chainCmdLine, flags);
   write_inst(INST_LOC_CHAINS, 0, INST_FLAGS_NONE);
-  GetApplication()->UpdateTopScreen();
+  application()->UpdateTopScreen();
 }
 
 
@@ -188,7 +188,7 @@ void do_chains() {
     if (c.ar && !session()->user()->HasArFlag(c.ar)) {
       ok = false;
     }
-    if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg && (session()->GetEffectiveSl() < 255)) {
+    if (application()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg && (session()->GetEffectiveSl() < 255)) {
       chainregrec r = chains_reg[ i ];
       if (r.maxage) {
         if (r.minage > session()->user()->GetAge() || r.maxage < session()->user()->GetAge()) {

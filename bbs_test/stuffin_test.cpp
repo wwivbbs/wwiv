@@ -108,7 +108,7 @@ TEST_F(StuffInTest, PortAndNode) {
     syscfgovr.primaryport = 1;
     EXPECT_EQ(string("1"), stuff_in("%P", "", "", "", "", ""));
 
-    // TODO(Rushfan): Figure out how to get GetApplication() working in tests and
+    // TODO(Rushfan): Figure out how to get application() working in tests and
     // reenable this one.
 //    EXPECT_EQ(string("1"), stuff_in("%N", "", "", "", "", ""));
 }

@@ -140,7 +140,7 @@ void make_inst_str(int nInstanceNum, std::string *out, int nInstanceFormat) {
     std::string userName;
     if (ir.user < syscfg.maxusers && ir.user > 0) {
       WUser user;
-      GetApplication()->GetUserManager()->ReadUser(&user, ir.user);
+      application()->users()->ReadUser(&user, ir.user);
       if (ir.flags & INST_FLAGS_ONLINE) {
         userName = user.GetUserNameAndNumber(ir.user);
       } else {
@@ -203,7 +203,7 @@ int inst_ok(int loc, int subloc) {
       instFile.Close();
       if (instance_temp.loc == loc &&
           instance_temp.subloc == subloc &&
-          instance_temp.number != GetApplication()->GetInstanceNumber()) {
+          instance_temp.number != application()->GetInstanceNumber()) {
         nInstNum = instance_temp.number;
       }
     }

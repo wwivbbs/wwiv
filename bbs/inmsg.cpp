@@ -225,7 +225,7 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
       }
     }
 
-    if (GetApplication()->HasConfigFlag(OP_FLAGS_MSG_TAG)) {
+    if (application()->HasConfigFlag(OP_FLAGS_MSG_TAG)) {
       UpdateMessageBufferTagLine(b.get(), &lCurrentMessageSize, aux);
     }
     if (b[lCurrentMessageSize - 1] != CZ) {

@@ -144,7 +144,7 @@ void remove_link(messagerec * pMessageRecord, string fileName) {
  * Note: This is a Private method to this module.
  */
 File* OpenMessageFile(const string messageAreaFileName) {
-  GetApplication()->GetStatusManager()->RefreshStatusCache();
+  application()->GetStatusManager()->RefreshStatusCache();
 
   const string filename = StrCat(syscfg.msgsdir, messageAreaFileName, FILENAME_DAT_EXTENSION);
   File *pFileMessage = new File(filename);
@@ -198,9 +198,9 @@ void save_gat(File *pMessageFile) {
   long lSectionPos = static_cast<long>(gat_section) * GATSECLEN;
   pMessageFile->Seek(lSectionPos, File::seekBegin);
   pMessageFile->Write(gat, GAT_SECTION_SIZE);
-  WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+  WStatus *pStatus = application()->GetStatusManager()->BeginTransaction();
   pStatus->IncrementFileChangedFlag(WStatus::fileChangePosts);
-  GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
+  application()->GetStatusManager()->CommitTransaction(pStatus);
 }
 
 void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const string fileName) {
@@ -324,7 +324,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
   }
 
   WUser userRecord;
-  GetApplication()->GetUserManager()->ReadUser(&userRecord, *pUserNumber);
+  application()->users()->ReadUser(&userRecord, *pUserNumber);
   if (userRecord.IsUserDeleted()) {
     return false;
   }
@@ -375,7 +375,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
     ss[i] = '\0';
   }
   ss[*pUserNumber] = 1;
-  GetApplication()->GetUserManager()->ReadUser(&userRecord, nCurrentUser);
+  application()->users()->ReadUser(&userRecord, nCurrentUser);
   while (userRecord.GetForwardUserNumber() || userRecord.GetForwardSystemNumber()) {
     if (userRecord.GetForwardSystemNumber()) {
       if (!valid_system(userRecord.GetForwardSystemNumber())) {
@@ -406,7 +406,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
       return false;
     }
     nCurrentUser = userRecord.GetForwardUserNumber() ;
-    GetApplication()->GetUserManager()->ReadUser(&userRecord, nCurrentUser);
+    application()->users()->ReadUser(&userRecord, nCurrentUser);
   }
   free(ss);
   *pSystemNumber = 0;
@@ -544,11 +544,11 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
       if (nForwardedCode) {
         net_filename = StringPrintf("%sp1%s",
           session()->GetNetworkDataDirectory().c_str(),
-          GetApplication()->GetNetworkExtension().c_str());
+          application()->GetNetworkExtension().c_str());
       } else {
         net_filename = StringPrintf("%sp0%s",
           session()->GetNetworkDataDirectory().c_str(),
-          GetApplication()->GetNetworkExtension().c_str());
+          application()->GetNetworkExtension().c_str());
       }
       File fileNetworkPacket(net_filename);
       fileNetworkPacket.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
@@ -561,9 +561,9 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
   string logMessage = "Mail sent to ";
   if (nSystemNumber == 0) {
     WUser userRecord;
-    GetApplication()->GetUserManager()->ReadUser(&userRecord, nUserNumber);
+    application()->users()->ReadUser(&userRecord, nUserNumber);
     userRecord.SetNumMailWaiting(userRecord.GetNumMailWaiting() + 1);
-    GetApplication()->GetUserManager()->WriteUser(&userRecord, nUserNumber);
+    application()->users()->WriteUser(&userRecord, nUserNumber);
     if (nUserNumber == 1) {
       ++fwaiting;
     }
@@ -611,7 +611,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     sysoplog(logMessage);
   }
 
-  WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+  WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
   if (nUserNumber == 1 && nSystemNumber == 0) {
     pStatus->IncrementNumFeedbackSentToday();
     session()->user()->SetNumFeedbackSent(session()->user()->GetNumFeedbackSent() + 1);
@@ -626,7 +626,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
       session()->user()->SetNumNetEmailSent(session()->user()->GetNumNetEmailSent() + 1);
     }
   }
-  GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
+  application()->GetStatusManager()->CommitTransaction(pStatus);
   if (!session()->IsNewMailWatiting()) {
     bout.Color(3);
     bout << logMessage;
@@ -644,7 +644,7 @@ bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit) {
       return false;
     }
     WUser userRecord;
-    GetApplication()->GetUserManager()->ReadUser(&userRecord, nUserNumber);
+    application()->users()->ReadUser(&userRecord, nUserNumber);
     if ((userRecord.GetSl() == 255 && userRecord.GetNumMailWaiting() > (syscfg.maxwaiting * 5)) ||
         (userRecord.GetSl() != 255 && userRecord.GetNumMailWaiting() > syscfg.maxwaiting) ||
         userRecord.GetNumMailWaiting() > 200) {
@@ -732,7 +732,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
   if (nSystemNumber == 0) {
     set_net_num(0);
     if (an) {
-      GetApplication()->GetUserManager()->ReadUser(&userRecord, nUserNumber);
+      application()->users()->ReadUser(&userRecord, nUserNumber);
       strcpy(szDestination, userRecord.GetUserNameAndNumber(nUserNumber));
     } else {
       strcpy(szDestination, ">UNKNOWN<");
@@ -855,7 +855,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
       for (int j = 0; j < nNumUsers; j++) {
         if (carbon_copy[j].nSystemNumber == 0) {
           set_net_num(0);
-          GetApplication()->GetUserManager()->ReadUser(&userRecord, carbon_copy[j].nUserNumber);
+          application()->users()->ReadUser(&userRecord, carbon_copy[j].nUserNumber);
           strcpy(szDestination, userRecord.GetUserNameAndNumber(carbon_copy[j].nUserNumber));
         } else {
           if (carbon_copy[j].nSystemNumber == 1 &&
@@ -940,7 +940,7 @@ void imail(int nUserNumber, int nSystemNumber) {
 
   int i = 1;
   if (nSystemNumber == 0) {
-    GetApplication()->GetUserManager()->ReadUser(&userRecord, nUserNumber);
+    application()->users()->ReadUser(&userRecord, nUserNumber);
     if (!userRecord.IsUserDeleted()) {
       bout << "|#5E-mail " << userRecord.GetUserNameAndNumber(nUserNumber) << "? ";
       if (!yesno()) {
@@ -1190,7 +1190,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
     expressabort = true;
   }
   if (ansi && session()->topdata && session()->IsUserOnline()) {
-    GetApplication()->UpdateTopScreen();
+    application()->UpdateTopScreen();
   }
   if (syscfg.sysconfig & sysconfig_enable_mci) {
     g_flags &= ~g_flag_disable_mci;
@@ -1261,17 +1261,17 @@ void read_message(int n, bool *next, int *val) {
     qsc_p[session()->GetCurrentReadMessageArea()] = p.qscan;
   }
   
-  WStatus *pStatus = GetApplication()->GetStatusManager()->GetStatus();
+  WStatus *pStatus = application()->GetStatusManager()->GetStatus();
   // not sure why we check this twice...
   // maybe we need a getCachedQScanPointer?
   unsigned long lQScanPointer = pStatus->GetQScanPointer();
   delete pStatus;
   if (p.qscan >= lQScanPointer) {
-    WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+    WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
     if (p.qscan >= pStatus->GetQScanPointer()) {
       pStatus->SetQScanPointer(p.qscan + 1);
     }
-    GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
+    application()->GetStatusManager()->CommitTransaction(pStatus);
   }
 }
 

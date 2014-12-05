@@ -106,7 +106,7 @@ static string GetMailBoxStatus() {
   }
 
   WUser ur;
-  GetApplication()->GetUserManager()->ReadUser(&ur, session()->user()->GetForwardUserNumber());
+  application()->users()->ReadUser(&ur, session()->user()->GetForwardUserNumber());
   if (ur.IsUserDeleted()) {
     session()->user()->SetForwardUserNumber(0);
     return string("Normal");
@@ -1000,7 +1000,7 @@ void config_scan_plus(int type) {
 
   int useconf = (subconfnum > 1 && okconf(session()->user()));
   session()->topdata = WLocalIO::topdataNone;
-  GetApplication()->UpdateTopScreen();
+  application()->UpdateTopScreen();
 
   vector<string> menu_items = { "Next",  "Previous", "Toggle", "Clear All", "Set All" };
 

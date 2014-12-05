@@ -238,7 +238,7 @@ void send_net(net_header_rec * nh, unsigned short int *list, const char *text, c
 
   const string filename = StringPrintf("%sp1%s",
     session()->GetNetworkDataDirectory().c_str(),
-    GetApplication()->GetNetworkExtension().c_str());
+    application()->GetNetworkExtension().c_str());
   File file(filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;
@@ -540,10 +540,10 @@ slrec getslrec(int nSl) {
     return CurSlRec;
   }
 
-  File file(GetApplication()->GetHomeDir(), CONFIG_DAT);
+  File file(application()->GetHomeDir(), CONFIG_DAT);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     // Bad ju ju here.
-    GetApplication()->AbortBBS();
+    application()->AbortBBS();
   }
   configrec c;
   file.Read(&c, sizeof(configrec));

@@ -107,7 +107,6 @@ unsigned short WApplication::str2restrict(const char *s) {
   return static_cast< short >(r);
 }
 
-
 // begin callback addition
 
 unsigned char WApplication::stryn2tf(const char *s) {
@@ -272,29 +271,29 @@ IniFile* WApplication::ReadINIFile() {
   session()->SetNewScanAtLogin(false);
 
   for (size_t nTempEventNum = 0; nTempEventNum < NEL(eventinfo); nTempEventNum++) {
-    GetApplication()->spawn_opts[ nTempEventNum ] = eventinfo[ nTempEventNum ].eflags;
+    application()->spawn_opts[ nTempEventNum ] = eventinfo[ nTempEventNum ].eflags;
   }
 
   // put in default WApplication::flags
-  GetApplication()->SetConfigFlags(OP_FLAGS_FIDO_PROCESS);
+  application()->SetConfigFlags(OP_FLAGS_FIDO_PROCESS);
 
   if (ok_modem_stuff) {
-    GetApplication()->SetConfigFlag(OP_FLAGS_NET_CALLOUT);
+    application()->SetConfigFlag(OP_FLAGS_NET_CALLOUT);
   } else {
-    GetApplication()->ClearConfigFlag(OP_FLAGS_NET_CALLOUT);
+    application()->ClearConfigFlag(OP_FLAGS_NET_CALLOUT);
   }
 
   // initialize ini communication
   const string instance_name = StringPrintf("WWIV-%u", GetInstanceNumber());
-  IniFile* ini(new IniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), instance_name, INI_TAG));
+  IniFile* ini(new IniFile(FilePath(application()->GetHomeDir(), WWIV_INI), instance_name, INI_TAG));
   if (ini->IsOpen()) {
     // found something
     // pull out event flags
-    for (size_t nTempSpawnOptNum = 0; nTempSpawnOptNum < NEL(GetApplication()->spawn_opts); nTempSpawnOptNum++) {
+    for (size_t nTempSpawnOptNum = 0; nTempSpawnOptNum < NEL(application()->spawn_opts); nTempSpawnOptNum++) {
       const string key_name = StringPrintf("%s[%s]", get_key_str(INI_STR_SPAWNOPT), eventinfo[nTempSpawnOptNum].name);
       const char *ss = ini->GetValue(key_name);
       if (ss != nullptr) {
-        GetApplication()->spawn_opts[nTempSpawnOptNum] = str2spawnopt(ss);
+        application()->spawn_opts[nTempSpawnOptNum] = str2spawnopt(ss);
       }
     }
 
@@ -358,14 +357,14 @@ IniFile* WApplication::ReadINIFile() {
                                         session()->GetBeginDayNodeNumber()));
 
     // pull out sysinfo_flags
-    GetApplication()->SetConfigFlags(GetFlagsFromIniFile(ini, sysinfo_flags, NEL(sysinfo_flags),
-                                     GetApplication()->GetConfigFlags()));
+    application()->SetConfigFlags(GetFlagsFromIniFile(ini, sysinfo_flags, NEL(sysinfo_flags),
+                                     application()->GetConfigFlags()));
 
     // allow override of WSession::m_nMessageColor
     session()->SetMessageColor(ini->GetNumericValue(get_key_str(INI_STR_MSG_COLOR), session()->GetMessageColor()));
 
     // get asv values
-    if (GetApplication()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV)) {
+    if (application()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV)) {
       INI_GET_ASV("SL", sl, atoi, syscfg.autoval[9].sl);
       INI_GET_ASV("DSL", dsl, atoi, syscfg.autoval[9].dsl);
       INI_GET_ASV("EXEMPT", exempt, atoi, 0);
@@ -373,7 +372,7 @@ IniFile* WApplication::ReadINIFile() {
       INI_GET_ASV("DAR", dar, str_to_arword, syscfg.autoval[9].dar);
       INI_GET_ASV("RESTRICT", restrict, str2restrict, 0);
     }
-    if (GetApplication()->HasConfigFlag(OP_FLAGS_ADV_ASV)) {
+    if (application()->HasConfigFlag(OP_FLAGS_ADV_ASV)) {
       session()->advasv.reg_wwiv = ini->GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV, "REG_WWIV"), 1);
       session()->advasv.nonreg_wwiv = ini->GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV, "NONREG_WWIV"), 1);
       session()->advasv.non_wwiv = ini->GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV, "NON_WWIV"), 1);
@@ -381,7 +380,7 @@ IniFile* WApplication::ReadINIFile() {
     }
 
     // get callback values
-    if (GetApplication()->HasConfigFlag(OP_FLAGS_CALLBACK)) {
+    if (application()->HasConfigFlag(OP_FLAGS_CALLBACK)) {
       INI_GET_CALLBACK("SL", sl, atoi, syscfg.autoval[2].sl);
       INI_GET_CALLBACK("DSL", dsl, atoi, syscfg.autoval[2].dsl);
       INI_GET_CALLBACK("EXEMPT", exempt, atoi, 0);
@@ -420,7 +419,6 @@ IniFile* WApplication::ReadINIFile() {
 
     session()->screen_saver_time = ini->GetNumericValue(get_key_str(INI_STR_SCREEN_SAVER_TIME),
                                       session()->screen_saver_time);
-
   }
 
   session()->max_extend_lines    = std::min<unsigned short>(session()->max_extend_lines, 99);
@@ -520,7 +518,7 @@ bool WApplication::ReadConfig() {
   configFile.Close();
 
   // initialize the user manager
-  GetUserManager()->InitializeUserManager(full_syscfg.datadir, full_syscfg.userreclen, full_syscfg.maxusers);
+  users()->InitializeUserManager(full_syscfg.datadir, full_syscfg.userreclen, full_syscfg.maxusers);
 
   std::unique_ptr<IniFile> ini(ReadINIFile());
   if (!ini->IsOpen()) {
@@ -900,7 +898,7 @@ void WApplication::read_chains() {
                                     session()->max_chains * sizeof(chainfilerec)) / sizeof(chainfilerec));
   }
   file.Close();
-  if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
+  if (application()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     if (chains_reg) {
       free(chains_reg);
     }
@@ -1311,7 +1309,7 @@ void WApplication::create_phone_file() {
 
   for (int nTempUserNumber = 1; nTempUserNumber <= nNumberOfRecords; nTempUserNumber++) {
     WUser user;
-    GetApplication()->GetUserManager()->ReadUser(&user, nTempUserNumber);
+    application()->users()->ReadUser(&user, nTempUserNumber);
     if (!user.IsUserDeleted()) {
       p.usernum = nTempUserNumber;
       char szTempVoiceNumber[ 255 ], szTempDataNumber[ 255 ];

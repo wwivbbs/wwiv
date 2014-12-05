@@ -338,9 +338,9 @@ bool fill_sec(int sn) {
     gflFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     gflFile.Write(g, nf * sizeof(gfilerec));
     gflFile.Close();
-    WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+    WStatus *pStatus = application()->GetStatusManager()->BeginTransaction();
     pStatus->SetGFileDate(date());
-    GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
+    application()->GetStatusManager()->CommitTransaction(pStatus);
   }
   free(g);
   return !ok;

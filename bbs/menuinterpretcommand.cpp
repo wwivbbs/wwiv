@@ -29,7 +29,7 @@ using wwiv::core::IniFile;
 using wwiv::bbslist::NewBBSList;
 
 bool UseNewBBSList() {
-  IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+  IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), INI_TAG);
   if (iniFile.IsOpen()) {
     return iniFile.GetBooleanValue("USE_NEW_BBSLIST");
   }

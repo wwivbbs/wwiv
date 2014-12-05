@@ -67,14 +67,14 @@ static string GetSyncFosTempFilePath() {
 
 static const string GetDosXtrnPath() {
   std::stringstream sstream;
-  sstream << GetApplication()->GetHomeDir() << "DOSXTRN.EXE";
+  sstream << application()->GetHomeDir() << "DOSXTRN.EXE";
   return string(sstream.str());
 }
 
 static void CreateSyncFosCommandLine(string *out, const string& tempFilePath, int nSyncMode) {
   std::stringstream sstream;
   sstream << GetDosXtrnPath() << " " << tempFilePath << " " << "NT" << " ";
-  sstream << GetApplication()->GetInstanceNumber() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
+  sstream << application()->GetInstanceNumber() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
   out->assign(sstream.str());
 }
 
@@ -162,7 +162,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
         char szWriteSlotName[ MAX_PATH ];
         ::Sleep(500);
         _snprintf(szWriteSlotName, sizeof(szWriteSlotName), "\\\\.\\mailslot\\sbbsexec\\wr%d",
-                  GetApplication()->GetInstanceNumber());
+                  application()->GetInstanceNumber());
         fprintf(hLogFile, "Creating Mail Slot [%s]\r\n", szWriteSlotName);
 
         hSyncWriteSlot = CreateFile(szWriteSlotName,
@@ -312,7 +312,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
     bUsingSync = true;
 
     char szTempLogFileName[ MAX_PATH ];
-    _snprintf(szTempLogFileName, sizeof(szTempLogFileName), "%swwivsync.log", GetApplication()->GetHomeDir().c_str());
+    _snprintf(szTempLogFileName, sizeof(szTempLogFileName), "%swwivsync.log", application()->GetHomeDir().c_str());
     hLogFile = fopen(szTempLogFileName, "at");
     fprintf(hLogFile, charstr(78, '='));
     fprintf(hLogFile, "\r\n\r\n");
@@ -328,7 +328,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
     strcpy(pszTitle, "NETWORK");
   } else {
     _snprintf(pszTitle, sizeof(pszTitle), "%s in door on node %d",
-              session()->user()->GetName(), GetApplication()->GetInstanceNumber());
+              session()->user()->GetName(), application()->GetInstanceNumber());
   }
   si.lpTitle = pszTitle;
 
@@ -342,7 +342,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
   if (bUsingSync) {
     // Create Hangup Event.
     char szHangupEventName[ MAX_PATH + 1 ];
-    _snprintf(szHangupEventName, sizeof(szHangupEventName), "sbbsexec_hungup%d", GetApplication()->GetInstanceNumber());
+    _snprintf(szHangupEventName, sizeof(szHangupEventName), "sbbsexec_hungup%d", application()->GetInstanceNumber());
     hSyncHangupEvent = CreateEvent(nullptr, TRUE, FALSE, szHangupEventName);
     if (hSyncHangupEvent == INVALID_HANDLE_VALUE) {
       fprintf(hLogFile, "!!! Unable to create Hangup Event for SyncFoss External program [%ld]", GetLastError());
@@ -353,7 +353,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
     // Create Read Mail Slot
     char szReadSlotName[ MAX_PATH + 1];
     _snprintf(szReadSlotName, sizeof(szReadSlotName), "\\\\.\\mailslot\\sbbsexec\\rd%d",
-              GetApplication()->GetInstanceNumber());
+              application()->GetInstanceNumber());
     hSyncReadSlot = CreateMailslot(szReadSlotName, CONST_SBBSFOS_BUFFER_SIZE, 0, nullptr);
     if (hSyncReadSlot == INVALID_HANDLE_VALUE) {
       fprintf(hLogFile, "!!! Unable to create mail slot for reading for SyncFoss External program [%ld]", GetLastError());
@@ -377,7 +377,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
                   nullptr,
                   TRUE,
                   dwCreationFlags,
-                  nullptr, // GetApplication()->xenviron not using nullptr causes things to not work.
+                  nullptr, // application()->xenviron not using nullptr causes things to not work.
                   current_directory.c_str(),
                   &si,
                   &pi);

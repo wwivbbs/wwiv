@@ -92,7 +92,7 @@ class WApplication : public WLogger, Runnable {
 
   StatusMgr* GetStatusManager();
 
-  WUserManager* GetUserManager();
+  WUserManager* users();
 
   const std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
 
@@ -215,7 +215,7 @@ private:
 };
 
 // Function Prototypes
-WApplication* GetApplication();
+WApplication* application();
 WApplication* CreateApplication(WLocalIO* localIO);
 
 WSession* session();

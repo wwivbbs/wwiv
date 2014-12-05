@@ -157,7 +157,7 @@ postrec *get_post(int mn) {
   }
 
   if (subchg == 1) {
-    // sub has changed (detected in GetApplication()->GetStatusManager()->Read); invalidate cache
+    // sub has changed (detected in application()->GetStatusManager()->Read); invalidate cache
     believe_cache = false;
 
     // kludge: subch==2 leaves subch indicating change, but the '2' value
