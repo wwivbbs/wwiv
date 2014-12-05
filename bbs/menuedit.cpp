@@ -35,7 +35,7 @@ bool GetMenuMenu(const string& pszDirectoryName, string& menuName);
 void ReadMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur);
 void WriteMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur);
 void DisplayItem(MenuRec * Menu, int nCur, int nAmount);
-void DisplayHeader(MenuHeader * Header, int nCur, int nAmount, const char *pszDirectoryName);
+void DisplayHeader(MenuHeader* Header, int nCur, int nAmount, const string& dirname);
 void ListMenuMenus(const char *pszDirectoryName);
 
 void EditMenus() {
@@ -147,7 +147,7 @@ void EditMenus() {
         break;
       case '0': {
         OpenMenuDescriptions();
-        string description = GetMenuDescription(menuDir.c_str());
+        string description = GetMenuDescription(menuDir);
 
         bout << "|#5New desc     : ";
         bout.Color(0);
@@ -568,15 +568,12 @@ void DisplayItem(MenuRec * Menu, int nCur, int nAmount) {
   bout << "|101,A-F,K-U, Z=Add new record, [=Prev, ]=Next, Q=Quit : ";
 }
 
-void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const char *pszDirectoryName) {
-  bout.cls();
-
+void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const string& dirname) {
   OpenMenuDescriptions();
-
+  bout.cls();
   bout << "|#9(Menu Header)" << wwiv::endl;
-
   if (nCur == 0) {
-    bout << "|#90) Menu Description     |#2: " << GetMenuDescription(pszDirectoryName) << wwiv::endl;
+    bout << "|#90) Menu Description     |#2: " << GetMenuDescription(dirname) << wwiv::endl;
     bout << "|#91) Deleted              |#2: " << ((pHeader->nFlags & MENU_FLAG_DELETED) ? "Yes" : "No") << wwiv::endl;
     bout << "|#92) Main Menu            |#2: " << ((pHeader->nFlags & MENU_FLAG_MAINMENU) ? "Yes" : "No") << wwiv::endl;;
     bout << "|#9A) What do Numbers do   |#2: " << (pHeader->nNumbers == MENU_NUMFLAG_NOTHING ? "Nothing" :
@@ -590,11 +587,11 @@ void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const char *pszD
                        "Forced on entrance" : "Out of range") << wwiv::endl;
     bout << "|#9F) Enter Script         : |#2" << pHeader->szScript << wwiv::endl;
     bout << "|#9G) Exit Script          : |#2" << pHeader->szExitScript << wwiv::endl;
-    bout << "|#9H) Min SL               : |#2" << static_cast<unsigned int>(pHeader->nMinSL) << wwiv::endl;
-    bout << "|#9I) Min DSL              : |#2" << static_cast<unsigned int>(pHeader->nMinDSL) << wwiv::endl;
-    bout << "|#9J) AR                   : |#2" << static_cast<unsigned int>(pHeader->uAR) << wwiv::endl;
-    bout << "|#9K) DAR                  : |#2" << static_cast<unsigned int>(pHeader->uDAR) << wwiv::endl;
-    bout << "|#9L) Restrictions         : |#2" << static_cast<unsigned int>(pHeader->uRestrict) << wwiv::endl;
+    bout << "|#9H) Min SL               : |#2" << pHeader->nMinSL << wwiv::endl;
+    bout << "|#9I) Min DSL              : |#2" << pHeader->nMinDSL << wwiv::endl;
+    bout << "|#9J) AR                   : |#2" << pHeader->uAR << wwiv::endl;
+    bout << "|#9K) DAR                  : |#2" << pHeader->uDAR << wwiv::endl;
+    bout << "|#9L) Restrictions         : |#2" << pHeader->uRestrict << wwiv::endl;
     bout << "|#9M) Sysop                : |#2" << (pHeader->nSysop ? "Yes" : "No") << wwiv::endl;
     bout << "|#9N) Co-Sysop             : |#2" << (pHeader->nCoSysop ? "Yes" : "No") << wwiv::endl;
     bout << "|#9O) Password             : |#2" << (incom ? "<Remote>" : pHeader->szPassWord) << wwiv::endl;
@@ -614,7 +611,7 @@ void ListMenuDirs() {
   bout << "|#7============================\r\n";
 
   WFindFile fnd;
-  bool bFound = fnd.open(path.c_str(), 0);
+  bool bFound = fnd.open(path, 0);
   while (bFound && !hangup) {
     if (fnd.IsDirectory()) {
       const string filename = fnd.GetFileName();

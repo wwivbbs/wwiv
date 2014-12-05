@@ -61,13 +61,13 @@ bool AMIsNumber(string& command);
 void QueryMenuSet();
 void WriteMenuSetup(int nUserNum);
 void UnloadMenuSetup();
-string GetCommand(MenuInstanceData * pMenuData);
-bool CheckMenuItemSecurity(MenuRec * pMenu, bool bCheckPassword);
-void GenerateMenu(MenuInstanceData * pMenuData);
+string GetCommand(MenuInstanceData* pMenuData);
+bool CheckMenuItemSecurity(MenuRec* pMenu, bool bCheckPassword);
+void GenerateMenu(MenuInstanceData* pMenuData);
 char *MenuDoParenCheck(char *pszSrc, int bMore, char *porig);
 char *MenuGetParam(char *pszSrc, char *pszParam);
 char *MenuSkipSpaces(char *pszSrc);
-void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript);
+void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript);
 
 
 bool CheckMenuPassword(char* pszCorrectPassword) {
@@ -241,7 +241,7 @@ static bool CreateIndex(MenuInstanceData* pMenuData) {
   return true;
 }
 
-bool OpenMenu(MenuInstanceData * pMenuData) {
+bool OpenMenu(MenuInstanceData* pMenuData) {
   CloseMenu(pMenuData);
 
   // --------------------------
