@@ -320,16 +320,10 @@ void EditMenus() {
         if (!(Menu.szMenuText[0])) {
           strcpy(Menu.szMenuText, Menu.szExecute);
         }
-        if (!(Menu.szPDText[0])) {
-          strcpy(Menu.szPDText, Menu.szExecute);
-        }
         break;
       case 'C':
         bout << "Menu Text : ";
         inputl(Menu.szMenuText, 40);
-        if (!(Menu.szPDText[0])) {
-          strcpy(Menu.szPDText, Menu.szMenuText);
-        }
         break;
       case 'E':
         bout << "Help Text : ";
