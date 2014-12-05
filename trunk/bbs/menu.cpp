@@ -807,7 +807,7 @@ bool MenuDescriptions::set_description(const std::string& name, const std::strin
   }
 
   for (const auto& iter : descriptions_) {
-    file.WriteFormatted("%s %s", iter.first, iter.second);
+    file.WriteFormatted("%s %s", iter.first.c_str(), iter.second.c_str());
   }
   return true;
 }
