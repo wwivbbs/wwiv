@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <cstdint>
+#include <memory>
 
 #include "wwiv.h"
 
@@ -40,6 +41,7 @@ static char **ppMenuStringsIndex;
 static int nNumMenuCmds;
 
 using std::string;
+using std::unique_ptr;
 using namespace wwiv::strings;
 
 // Local function prototypes
@@ -153,14 +155,9 @@ void mainmenu() {
 }
 
 void StartMenus() {
-  MenuInstanceData* pMenuData = static_cast<MenuInstanceData *>(malloc(sizeof(MenuInstanceData)));
-  pMenuData->pMenuFile = nullptr;
-  if (!pMenuData) {
-    sysoplog("Unable to allocate memory for pMenuData");
-    hangup = true;
-    return;
-  }
-  pMenuData->nReload = 1;                    // force loading of menu
+  unique_ptr<MenuInstanceData> menu_data(new MenuInstanceData{});
+  menu_data->pMenuFile = nullptr;
+  menu_data->reload = 1;                    // force loading of menu
 
   if (!LoadMenuSetup(session()->usernum)) {
     strcpy(pSecondUserRec->szMenuSet, "wwiv"); // default menu set name
@@ -168,16 +165,13 @@ void StartMenus() {
     pSecondUserRec->cMenuType = MENUTYPE_REGULAR;
     WriteMenuSetup(session()->usernum);
   }
-  while (pMenuData->nReload != 0 && !hangup) {
-    if (pMenuData->pMenuFile != nullptr) {
-      delete pMenuData->pMenuFile;
-      pMenuData->pMenuFile = nullptr;
+  while (menu_data->reload != 0 && !hangup) {
+    if (menu_data->pMenuFile != nullptr) {
+      delete menu_data->pMenuFile;
+      menu_data->pMenuFile = nullptr;
 
     }
-    memset(pMenuData, 0, sizeof(MenuInstanceData));
-
-    pMenuData->nFinished = 0;
-    pMenuData->nReload = 0;
+    menu_data.reset(new MenuInstanceData{});
 
     if (!LoadMenuSetup(session()->usernum)) {
       LoadMenuSetup(1);
@@ -187,37 +181,34 @@ void StartMenus() {
       ConfigUserMenuSet();
     }
 
-    Menus(pMenuData, pSecondUserRec->szMenuSet, "main"); // default starting menu
-  }
-  if (pMenuData) {
-    free(pMenuData);
+    Menus(menu_data.get(), pSecondUserRec->szMenuSet, "main"); // default starting menu
   }
 }
 
-void Menus(MenuInstanceData * pMenuData, const string menuDirectory, const string menuName) {
-  strcpy(pMenuData->szPath, menuDirectory.c_str());
-  strcpy(pMenuData->szMenu, menuName.c_str());
+void Menus(MenuInstanceData *menu_data, const string menuDirectory, const string menuName) {
+  menu_data->path = menuDirectory;
+  menu_data->menu = menuName;
 
-  if (OpenMenu(pMenuData)) {
-    if (pMenuData->header.nNumbers == MENU_NUMFLAG_DIRNUMBER && udir[0].subnum == -1) {
+  if (OpenMenu(menu_data)) {
+    if (menu_data->header.nNumbers == MENU_NUMFLAG_DIRNUMBER && udir[0].subnum == -1) {
       bout << "\r\nYou cannot currently access the file section.\r\n\n";
-      CloseMenu(pMenuData);
+      CloseMenu(menu_data);
       return;
     }
     // if flagged to display help on entrance, then do so
-    if (session()->user()->IsExpert() && pMenuData->header.nForceHelp == MENU_HELP_ONENTRANCE) {
-      AMDisplayHelp(pMenuData);
+    if (session()->user()->IsExpert() && menu_data->header.nForceHelp == MENU_HELP_ONENTRANCE) {
+      AMDisplayHelp(menu_data);
     }
 
-    while (!hangup && pMenuData->nFinished == 0) {
-      PrintMenuPrompt(pMenuData);
-      string command = GetCommand(pMenuData);
-      MenuExecuteCommand(pMenuData, command);
+    while (!hangup && !menu_data->finished) {
+      PrintMenuPrompt(menu_data);
+      string command = GetCommand(menu_data);
+      MenuExecuteCommand(menu_data, command);
     }
   } else if (IsEqualsIgnoreCase(menuName.c_str(), "main")) {     // default menu name
     hangup = true;
   }
-  CloseMenu(pMenuData);
+  CloseMenu(menu_data);
 }
 
 void CloseMenu(MenuInstanceData * pMenuData) {
@@ -230,11 +221,6 @@ void CloseMenu(MenuInstanceData * pMenuData) {
   if (pMenuData->index != nullptr) {
     free(pMenuData->index);
     pMenuData->index = nullptr;
-  }
-
-  if (pMenuData->szPrompt != nullptr) {
-    free(pMenuData->szPrompt);
-    pMenuData->szPrompt = nullptr;
   }
 }
 
@@ -261,7 +247,7 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
   // --------------------------
   // Open up the main data file
   // --------------------------
-  pMenuData->pMenuFile = new File(GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "mnu"));
+  pMenuData->pMenuFile = new File(GetMenuDirectory(pMenuData->path, pMenuData->menu, "mnu"));
   pMenuData->pMenuFile->Open(File::modeBinary | File::modeReadOnly, File::shareDenyNone);
 
   // -----------------------------------
@@ -295,19 +281,17 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
   // ----------------------------
   // Open/Rease/Close Prompt file
   // ----------------------------
-  File filePrompt(GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "pro"));
+  File filePrompt(GetMenuDirectory(pMenuData->path, pMenuData->menu, "pro"));
   if (filePrompt.Open(File::modeBinary | File::modeReadOnly, File::shareDenyNone)) {
-    long lSize = filePrompt.GetLength();
-    pMenuData->szPrompt = static_cast<char *>(malloc(lSize + 10 + TEST_PADDING));
-    if (pMenuData->szPrompt != nullptr) {
-      lSize = filePrompt.Read(pMenuData->szPrompt, lSize);
-      pMenuData->szPrompt[lSize] = 0;
-
-      char* sp = strstr(pMenuData->szPrompt, ".end.");
-      if (sp) {
-        sp[0] = '\0';
-      }
+    long size = filePrompt.GetLength();
+    unique_ptr<char[]> prompt(new char[size + 1]);
+    size = filePrompt.Read(prompt.get(), size);
+    prompt.get()[size] = '\0';
+    char* sp = strstr(prompt.get(), ".end.");
+    if (sp) {
+      *sp = '\0';
     }
+    pMenuData->prompt.assign(prompt.get());
     filePrompt.Close();
   }
   if (!CheckMenuSecurity(&pMenuData->header, true)) {
@@ -317,7 +301,6 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
   if (pMenuData->header.szScript[0]) {
     InterpretCommand(pMenuData, pMenuData->header.szScript);
   }
-
   return true;
 }
 
@@ -454,8 +437,8 @@ void PrintMenuPrompt(MenuInstanceData * pMenuData) {
     AMDisplayHelp(pMenuData);
   }
   TurnMCIOn();
-  if (pMenuData->szPrompt) {
-    bout << pMenuData->szPrompt;
+  if (!pMenuData->prompt.empty()) {
+    bout << pMenuData->prompt;
   }
   TurnMCIOff();
 }
@@ -463,17 +446,17 @@ void PrintMenuPrompt(MenuInstanceData * pMenuData) {
 string GetHelpFileName(MenuInstanceData * pMenuData) {
   if (session()->user()->HasAnsi()) {
     if (session()->user()->HasColor()) {
-      string filename = GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "ans");
+      string filename = GetMenuDirectory(pMenuData->path, pMenuData->menu, "ans");
       if (File::Exists(filename)) {
         return filename;
       }
     }
-    string filename = GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "b&w");
+    string filename = GetMenuDirectory(pMenuData->path, pMenuData->menu, "b&w");
     if (File::Exists(filename)) {
       return filename;
     }
   }
-  return GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "msg");
+  return GetMenuDirectory(pMenuData->path, pMenuData->menu, "msg");
 }
 
 void AMDisplayHelp(MenuInstanceData * pMenuData) {

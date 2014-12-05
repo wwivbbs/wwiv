@@ -151,15 +151,14 @@ struct MenuRecIndex {
 
 
 struct MenuInstanceData {
-  char szMenu[MAX_PATH];
-  char szPath[MAX_PATH];
+  std::string menu;
+  std::string path;
   File *pMenuFile;
   uint16_t nAmountRecs;
-  uint16_t nFinished;
+  bool finished;
+  bool reload;  /* true if we are going to reload the menus */
 
-  uint16_t nReload;  /* true if we are going to reload the menus */
-
-  char *szPrompt;
+  std::string prompt;
   MenuRecIndex *index;
   MenuHeader header;   /* Hold header info for current menu set in memory */
 };

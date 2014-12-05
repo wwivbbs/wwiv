@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <memory>
 
 #include "bbs/wwiv.h"
 #include "bbs/menu.h"
@@ -23,6 +24,9 @@
 #include "bbs/printfile.h"
 #include "bbs/new_bbslist.h"
 #include "core/inifile.h"
+
+using std::string;
+using std::unique_ptr;
 
 using wwiv::core::FilePath;
 using wwiv::core::IniFile;
@@ -36,9 +40,9 @@ bool UseNewBBSList() {
   return false;
 }
 
-void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript) {
+void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript) {
   char szCmd[31], szParam1[51], szParam2[51];
-  char szTempScript[ 255 ];
+  char szTempScript[255];
   memset(szTempScript, 0, sizeof(szTempScript));
   strncpy(szTempScript, pszScript, 250);
 
@@ -62,14 +66,8 @@ void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript) {
     case 0: {
       // "MENU"
       // Spawn a new menu
-      MenuInstanceData *pNewMenuData = static_cast<MenuInstanceData *>(malloc(sizeof(MenuInstanceData)));
-
-      memset(pNewMenuData, 0, sizeof(MenuInstanceData));
-      pNewMenuData->nFinished = 0;
-      pNewMenuData->nReload = 0;
-
-      Menus(pNewMenuData, pMenuData->szPath, szParam1);
-      free(pNewMenuData);
+      unique_ptr<MenuInstanceData> new_menu(new MenuInstanceData{});
+      Menus(new_menu.get(), pMenuData->path, szParam1);
     }
     break;
     case 1: {
@@ -79,14 +77,14 @@ void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript) {
       // -------------------------
       // "ReturnFromMenu"
       InterpretCommand(pMenuData, pMenuData->header.szExitScript);
-      pMenuData->nFinished = 1;
+      pMenuData->finished = true;
     }
     break;
     case 2: {
       // "EditMenuSet"
       EditMenus();           // flag if we are editing this menu
-      pMenuData->nFinished = 1;
-      pMenuData->nReload = 1;
+      pMenuData->finished = true;
+      pMenuData->reload = true;
     }
     break;
     case 3: {
@@ -171,8 +169,8 @@ void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript) {
     case 18: {
       // "ConfigUserMenuSet"
       ConfigUserMenuSet();
-      pMenuData->nFinished = 1;
-      pMenuData->nReload = 1;
+      pMenuData->finished = true;
+      pMenuData->reload = true;
     }
     break;
     case 19: {
