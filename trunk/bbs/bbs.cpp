@@ -1237,6 +1237,6 @@ int bbsmain(int argc, char *argv[]) {
   } catch (std::exception& e) {
     // TODO(rushfan): Log this to sysop log or where else?
     std::clog << "BBS Terminated by exception: " << e.what() << std::endl;
-    return 1;
+      return 1;
   }
 }

@@ -105,8 +105,8 @@ void properize(char *pszText);
 std::string properize(const std::string text);
 
 #ifdef _WIN32
-#define strcasecmp( a, b ) stricmp( a, b )
-#define strncasecmp( a, b, c) strnicmp( a, b, c )
+#define strcasecmp( a, b ) _stricmp( a, b )
+#define strncasecmp( a, b, c) _strnicmp( a, b, c )
 #endif  // _WIN32
 
 #endif  // __INCLUDED_STRINGS_H__

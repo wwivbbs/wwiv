@@ -20,9 +20,13 @@
 #define __INCLUDED_MENU_H__
 
 #include <cstdint>
+#include <map>
 #include <string>
 
-#include "vars.h"
+#include "bbs/vars.h"
+#include "core/file.h"
+#include "core/stl.h"
+#include "core/textfile.h"
 
 #define MENU
 #define MENU_VERSION 0x0100
@@ -72,12 +76,7 @@
 #define PDFLAGS_NOCLEAR       (0x0001)
 #define PDFLAGS_NORESTORE     (0x0002)
 #define PDFLAGS_NOPAUSEAFTER  (0x0004)
-
-
 #define MENU_MAX_KEYS (10)
-
-class File;
-
 
 #pragma pack(push, 1)
 
@@ -167,20 +166,33 @@ public:
 
 #pragma pack(pop)
 
+namespace wwiv {
+namespace menus {
+
+class MenuDescriptions {
+public:
+  MenuDescriptions(const std::string& menupath);
+  ~MenuDescriptions();
+  const std::string description(const std::string& name);
+  bool set_description(const std::string& name, const std::string& description);
+
+private:
+  std::string menupath_;
+  std::map<std::string, std::string, wwiv::stl::ci_less> descriptions_;
+};
+
+}
+}
+
 // Functions used b bbs.cpp and defaults.cpp
 void mainmenu();
 void ConfigUserMenuSet();
 
 // Functions used by menuedit and menu
-const std::string GetMenuDescriptionFile();
 const std::string GetMenuDirectory(const std::string menuPath);
 const std::string GetMenuDirectory(const std::string menuPath, const std::string menuName, const std::string extension);
 const std::string GetMenuDirectory();
 void MenuSysopLog(const std::string pszMsg);
-void OpenMenuDescriptions();
-void CloseMenuDescriptions();
-const std::string GetMenuDescription(const std::string& name);
-void SetMenuDescription(const std::string& name, const std::string& description);
 
 // Used by menuinterpretcommand.cpp
 void TurnMCIOff();
