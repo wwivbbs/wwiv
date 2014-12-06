@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/attach.h"
 
 #include "bbs/input.h"
 #include "bbs/wconstants.h"

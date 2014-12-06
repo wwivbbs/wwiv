@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/asv.h"
 
 #include "bbs/datetime.h"
 #include "bbs/bbs.h"
@@ -30,8 +31,7 @@
 #include "sdk/filenames.h"
 using std::string;
 
-// Local prototypes
-int  printasv(const string& filename, int num, bool abort);
+int printasv(const string& filename, int num, bool abort);
 
 void asv() {
   int i = 0;
@@ -296,7 +296,6 @@ void asv() {
   }
 }
 
-
 int printasv(const string& filename, int num, bool abort) {
   char buff[1024], nums[9];
   unsigned int j;
@@ -439,11 +438,8 @@ int printasv(const string& filename, int num, bool abort) {
   return 0;
 }
 
-
 void set_autoval(int n) {
   auto_val(n, session()->user());
   session()->ResetEffectiveSl();
   changedsl();
 }
-
-

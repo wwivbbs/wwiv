@@ -25,6 +25,7 @@
 #include "bbs/wstatus.h"
 #include "bbs/wwiv.h"
 #include "bbs/wconstants.h"
+#include "bbs/wfc.h"
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"

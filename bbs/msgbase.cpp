@@ -16,15 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "wwiv.h"
-#include "instmsg.h"
-#include "core/strings.h"
-#include "core/wwivassert.h"
-#include "bbs/keycodes.h"
+#include "bbs/attach.h"
+#include "bbs/instmsg.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
+#include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
+#include "bbs/wwiv.h"
+#include "core/strings.h"
+#include "core/wwivassert.h"
 
 #define EMAIL_STORAGE 2
 
