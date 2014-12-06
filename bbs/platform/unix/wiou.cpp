@@ -137,7 +137,6 @@ char WIOUnix::peek() {
 
 unsigned int WIOUnix::read(char *buffer, unsigned int count) {
   int dlay = 0;
-  int len = 0;
   struct pollfd p;
 
   p.fd = fileno(stdin);
