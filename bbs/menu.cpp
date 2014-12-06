@@ -58,9 +58,9 @@ void UnloadMenuSetup();
 string GetCommand(const MenuInstanceData* pMenuData);
 bool CheckMenuItemSecurity(MenuRec* pMenu, bool bCheckPassword);
 void GenerateMenu(const MenuInstanceData* pMenuData);
-char *MenuDoParenCheck(char *pszSrc, int bMore, char *porig);
-char *MenuGetParam(char *pszSrc, char *pszParam);
-char *MenuSkipSpaces(char *pszSrc);
+const char *MenuDoParenCheck(const char *pszSrc, int bMore, const char *porig);
+const char *MenuGetParam(const char *pszSrc, char *pszParam);
+const char *MenuSkipSpaces(const char *pszSrc);
 void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript);
 
 static bool CheckMenuPassword(const string& original_password) {
@@ -863,8 +863,8 @@ void GenerateMenu(const MenuInstanceData* pMenuData) {
 //   multiple lines are seperated with the ~ key
 //   enclose multi word text in quotes
 //
-char *MenuParseLine(char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2) {
-  char *porig = pszSrc;
+const char *MenuParseLine(const char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2) {
+  const char *porig = pszSrc;
 
   pszCmd[0] = 0;
   pszParam1[0] = 0;
@@ -916,7 +916,7 @@ char *MenuParseLine(char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2
   return pszSrc;
 }
 
-char *MenuDoParenCheck(char *pszSrc, int bMore, char *porig) {
+const char *MenuDoParenCheck(const char *pszSrc, int bMore, const char *porig) {
   if (pszSrc[0] == ',') {
     if (bMore == 0) {
       MenuSysopLog("Too many paramaters in line of code");
@@ -938,7 +938,7 @@ char *MenuDoParenCheck(char *pszSrc, int bMore, char *porig) {
   return pszSrc;
 }
 
-char *MenuGetParam(char *pszSrc, char *pszParam) {
+const char *MenuGetParam(const char *pszSrc, char *pszParam) {
   pszSrc = MenuSkipSpaces(pszSrc);
   pszParam[0] = 0;
 
@@ -973,7 +973,7 @@ char *MenuGetParam(char *pszSrc, char *pszParam) {
   return pszSrc;
 }
 
-char *MenuSkipSpaces(char *pszSrc) {
+const char *MenuSkipSpaces(const char *pszSrc) {
   while (isspace(pszSrc[0]) && pszSrc[0] != '\0') {
     ++pszSrc;
   }

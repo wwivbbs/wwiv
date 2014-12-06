@@ -438,11 +438,11 @@ void ListMenuDirs();
 
 // File: menuspec.cpp
 
-int  MenuDownload(char *pszDirFName, char *pszFName, bool bFreeDL, bool bTitle);
-int  FindDN(char *pszFName);
-bool MenuRunDoorName(char *pszDoor, bool bFree);
+int  MenuDownload(const char *pszDirFName, const char *pszFName, bool bFreeDL, bool bTitle);
+int  FindDN(const char *pszFName);
+bool MenuRunDoorName(const char *pszDoor, bool bFree);
 bool MenuRunDoorNumber(int nDoorNumber, bool bFree);
-int  FindDoorNo(char *pszDoor);
+int  FindDoorNo(const char *pszDoor);
 bool ValidateDoorAccess(int nDoorNumber);
 void ChangeSubNumber();
 void ChangeDirNumber();

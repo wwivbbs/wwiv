@@ -38,7 +38,7 @@
  *  bFreeDL             = true if this is a free download
  *  bTitle              = true if title is to be shown with file info
  */
-int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, bool bTitle) {
+int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bool bFreeDL, bool bTitle) {
   int bOkToDL;
   uploadsrec u;
   WUser ur;
@@ -147,7 +147,7 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
 }
 
 
-int FindDN(char *pszDownloadFileName) {
+int FindDN(const char *pszDownloadFileName) {
   for (int i = 0; (i < session()->num_dirs); i++) {
     if (wwiv::strings::IsEqualsIgnoreCase(directories[i].filename, pszDownloadFileName)) {
       return i;
@@ -163,7 +163,7 @@ int FindDN(char *pszDownloadFileName) {
  * pszDoor = Door description to run
  * bFree  = If true, security on door will not back checked
  */
-bool MenuRunDoorName(char *pszDoor, bool bFree) {
+bool MenuRunDoorName(const char *pszDoor, bool bFree) {
   int nDoorNumber = FindDoorNo(pszDoor);
   return (nDoorNumber >= 0) ? MenuRunDoorNumber(nDoorNumber, bFree) : false;
 }
@@ -180,7 +180,7 @@ bool MenuRunDoorNumber(int nDoorNumber, bool bFree) {
 
 
 
-int FindDoorNo(char *pszDoor) {
+int FindDoorNo(const char *pszDoor) {
   for (int i = 0; i < session()->GetNumberOfChains(); i++) {
     if (wwiv::strings::IsEqualsIgnoreCase(chains[i].description, pszDoor)) {
       return i;

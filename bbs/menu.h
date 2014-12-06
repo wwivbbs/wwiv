@@ -206,6 +206,6 @@ void MenuSysopLog(const std::string pszMsg);
 void TurnMCIOff();
 void TurnMCIOn();
 int  GetMenuIndex(const char* pszCommand);
-char *MenuParseLine(char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2);
+const char *MenuParseLine(const char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2);
 
 #endif  // __INCLUDED_MENU_H__

@@ -132,7 +132,7 @@ void ReadAutoMessage();
 void GuestApply();
 void AttachFile();
 bool GuestCheck();
-void SetSubNumber(char *pszSubKeys);
-void SetDirNumber(char *pszDirectoryKeys);
+void SetSubNumber(const char *pszSubKeys);
+void SetDirNumber(const char *pszDirectoryKeys);
 
 #endif // __INCLUDED_MENUSUPP_H__
