@@ -36,7 +36,26 @@ void ReadMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur);
 void WriteMenuRec(File &fileEditMenu, MenuRec * Menu, int nCur);
 void DisplayItem(MenuRec * Menu, int nCur, int nAmount);
 void DisplayHeader(MenuHeader* Header, int nCur, const string& dirname);
-void ListMenuMenus(const char *pszDirectoryName);
+
+static void ListMenuMenus(const char *pszDirectoryName) {
+  string path = GetMenuDirectory(pszDirectoryName) + "*.mnu";
+
+  bout.nl();
+  bout << "|#1Available Menus\r\n";
+  bout << "|#7===============|#0\r\n";
+
+  WFindFile fnd;
+  bool bFound = fnd.open(path, 0);
+  while (bFound && !hangup) {
+    if (fnd.IsFile()) {
+      const string s = fnd.GetFileName();
+      bout << "|#2" << s.substr(0, s.find_last_of('.')) << wwiv::endl;
+    }
+    bFound = fnd.next();
+  }
+  bout.nl();
+  bout.Color(0);
+}
 
 void EditMenus() {
   char szTemp1[21];
@@ -57,7 +76,7 @@ void EditMenus() {
     return;
   }
 
-  File fileEditMenu(GetMenuDirectory(menuDir, menuName, "mnu"));
+  File fileEditMenu(MenuInstanceData::create_menu_filename(menuDir, menuName, "mnu"));
   if (!fileEditMenu.Exists()) {
     bout << "Creating menu...\r\n";
     if (!fileEditMenu.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone)) {
@@ -65,17 +84,12 @@ void EditMenus() {
       return;
     }
     strcpy(header.szSig, "WWIV430");
-
     header.nVersion = MENU_VERSION;
     header.nFlags = MENU_FLAG_MAINMENU;
-
     header.nHeadBytes = sizeof(MenuHeader);
     header.nBodyBytes = sizeof(MenuRec);
 
-    /* ---------------------------------------- */
-    /* Copy header into menu and write the menu */
-    /* to ensure the record is 0 100% 0 filled  */
-    /* ---------------------------------------- */
+    // Copy header into menu and write the menu  to ensure the record is 0 100% 0 filled.
     memmove(&Menu, &header, sizeof(MenuHeader));
     fileEditMenu.Write(&Menu, sizeof(MenuRec));
     nAmount = 0;
@@ -130,11 +144,8 @@ void EditMenus() {
       case 'Z':
         WriteMenuRec(fileEditMenu, &Menu, nCur);
         memset(&Menu, 0, sizeof(MenuRec));
-
         nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
-
         nCur = nAmount + 1;
-        memset(&Menu, 0, sizeof(MenuRec));
         Menu.iMaxSL = 255;
         Menu.iMaxDSL = 255;
 
@@ -495,7 +506,6 @@ bool GetMenuDir(string& menuName) {
   return false;
 }
 
-
 bool GetMenuMenu(const string& directoryName, string& menuName) {
   ListMenuMenus(directoryName.c_str());
 
@@ -516,11 +526,9 @@ bool GetMenuMenu(const string& directoryName, string& menuName) {
         if (x == 'Q') {
           return false;
         }
-
         if (x == 'Y') {
           return true;
         }
-
         if (x == 'N') {
           continue;
         }
@@ -598,7 +606,6 @@ void DisplayHeader(MenuHeader* pHeader, int nCur, const string& dirname) {
 
 void ListMenuDirs() {
   const string menu_directory = GetMenuDirectory();
-  const string path = StrCat(menu_directory, "*");
   wwiv::menus::MenuDescriptions descriptions(menu_directory);
 
   bout.nl();
@@ -606,7 +613,8 @@ void ListMenuDirs() {
   bout << "|#7============================\r\n";
 
   WFindFile fnd;
-  bool bFound = fnd.open(path, 0);
+  const string search_path = StrCat(menu_directory, "*");
+  bool bFound = fnd.open(search_path, 0);
   while (bFound && !hangup) {
     if (fnd.IsDirectory()) {
       const string filename = fnd.GetFileName();
@@ -622,22 +630,3 @@ void ListMenuDirs() {
   bout.Color(0);
 }
 
-void ListMenuMenus(const char *pszDirectoryName) {
-  string path = GetMenuDirectory(pszDirectoryName) + "*.mnu";
-
-  bout.nl();
-  bout << "|#1Available Menus\r\n";
-  bout << "|#7===============|#0\r\n";
-
-  WFindFile fnd;
-  bool bFound = fnd.open(path, 0);
-  while (bFound && !hangup) {
-    if (fnd.IsFile()) {
-      const string s = fnd.GetFileName();
-      bout << "|#2" << s.substr(0, s.find_last_of('.')) << wwiv::endl;
-    }
-    bFound = fnd.next();
-  }
-  bout.nl();
-  bout.Color(0);
-}

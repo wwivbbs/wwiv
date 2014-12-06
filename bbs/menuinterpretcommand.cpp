@@ -67,7 +67,7 @@ void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript) {
       // "MENU"
       // Spawn a new menu
       unique_ptr<MenuInstanceData> new_menu(new MenuInstanceData{});
-      Menus(new_menu.get(), pMenuData->path, szParam1);
+      new_menu->Menus(pMenuData->path, szParam1);
     }
     break;
     case 1: {
@@ -176,7 +176,7 @@ void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript) {
     case 19: {
       // "DisplayHelp"
       if (session()->user()->IsExpert()) {
-        AMDisplayHelp(pMenuData);
+        pMenuData->DisplayHelp();
       }
     }
     break;
