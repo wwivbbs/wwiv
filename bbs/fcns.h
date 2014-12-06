@@ -676,9 +676,6 @@ void valscan();
 
 // File: vote.cpp
 
-void print_quest(int mapp, int map[21]);
-bool print_question(int i, int ii);
-void vote_question(int i, int ii);
 void vote();
 
 

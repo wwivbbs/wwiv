@@ -17,12 +17,12 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include "bbs/wwiv.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 
 
-void print_quest(int mapp, int map[21]) {
+static void print_quest(int mapp, int map[21]) {
   votingrec v;
 
   bout.cls();
@@ -53,8 +53,7 @@ void print_quest(int mapp, int map[21]) {
   }
 }
 
-
-bool print_question(int i, int ii) {
+static bool print_question(int i, int ii) {
   votingrec v;
 
   File voteFile(syscfg.datadir, VOTING_DAT);
@@ -110,8 +109,7 @@ bool print_question(int i, int ii) {
   return (abort) ? false : true;
 }
 
-
-void vote_question(int i, int ii) {
+static void vote_question(int i, int ii) {
   votingrec v;
 
   bool pqo = print_question(i, ii);
@@ -179,7 +177,6 @@ void vote_question(int i, int ii) {
   bout.nl(2);
 }
 
-
 void vote() {
   votingrec v;
 
@@ -238,4 +235,3 @@ void vote() {
     }
   } while (!done && !hangup);
 }
-
