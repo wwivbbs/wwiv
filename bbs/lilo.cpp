@@ -21,6 +21,7 @@
 #include <memory>
 #include <string>
 
+#include "bbs/automsg.h"
 #include "bbs/dropfile.h"
 #include "bbs/input.h"
 #include "bbs/datetime.h"

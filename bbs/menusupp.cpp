@@ -21,6 +21,7 @@
 #include <string>
 
 #include "bbs/attach.h"
+#include "bbs/automsg.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/external_edit.h"
