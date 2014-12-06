@@ -170,7 +170,7 @@ public:
 
   std::string prompt;
   std::unique_ptr<MenuRecIndex[]> index;
-  MenuHeader header;   /* Hold header info for current menu set in memory */
+  MenuHeader header;   /* Holds the header info for current menu set in memory */
   std::unique_ptr<File> menu_file;
 };
 
@@ -205,7 +205,6 @@ void MenuSysopLog(const std::string pszMsg);
 // Used by menuinterpretcommand.cpp
 void TurnMCIOff();
 void TurnMCIOn();
-int  GetMenuIndex(const char* pszCommand);
 const char *MenuParseLine(const char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2);
 
 #endif  // __INCLUDED_MENU_H__

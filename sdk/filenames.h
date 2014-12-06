@@ -126,7 +126,6 @@
 
 #define MACROS_TXT "macros.txt"
 #define MBMAIN_NOEXT "mbmain"
-#define MENUCMDS_DAT "menucmds.dat"
 #define MENUWEL_NOEXT "menuwel"
 #define MEXTRACT_NOEXT "mextract"
 #define MMAIL_NOEXT "mmail"
