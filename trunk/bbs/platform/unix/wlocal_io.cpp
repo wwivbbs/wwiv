@@ -19,6 +19,7 @@
 #include <iostream>
 #include <string>
 
+#include "bbs/asv.h"
 #include "bbs/datetime.h"
 #include "bbs/wwiv.h"
 #include "bbs/wcomm.h"

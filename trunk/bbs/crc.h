@@ -18,6 +18,8 @@
 #ifndef __INCLUDED_BBS_CRC_H__
 #define __INCLUDED_BBS_CRC_H__
 
-unsigned long int crc32buf(const char *pBuffer, size_t nLength);
+#include <cstddef>
+
+unsigned long int crc32buf(const char *pBuffer, std::size_t nLength);
 
 #endif  // __INCLUDED_BBS_CRC_H__
