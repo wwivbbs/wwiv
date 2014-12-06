@@ -136,8 +136,8 @@ char WIOUnix::peek() {
 }
 
 unsigned int WIOUnix::read(char *buffer, unsigned int count) {
-  unsigned char ch = 0;
   int dlay = 0;
+  int len = 0;
   struct pollfd p;
 
   p.fd = fileno(stdin);
@@ -145,14 +145,10 @@ unsigned int WIOUnix::read(char *buffer, unsigned int count) {
 
   if (poll(&p, 1, dlay)) {
     if (p.revents & POLLIN) {
-      ::read(fileno(stdin), &ch, 1);
-      // Don't ask why this needs to be here...but it does
-      if (ch == SOFTRETURN) {
-        ch = RETURN;
-      }
+      return ::read(fileno(stdin), buffer, count);
     }
   }
-  return ch;
+  return 0;
 }
 
 
