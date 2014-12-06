@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "bbs/wwiv.h"
+#include "bbs/datetime.h"
 #include "bbs/wconstants.h"
 #include "core/strings.h"
 

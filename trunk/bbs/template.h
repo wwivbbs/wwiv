@@ -14,15 +14,9 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_H__
-#define __INCLUDED_WWIV_H__
+#ifndef __INCLUDED_BBS_TEMPLATE_H__
+#define __INCLUDED_BBS_TEMPLATE_H__
 
-#include "bbs/bbs.h"
-#include "bbs/fcns.h"
-#include "bbs/vars.h"
 
-#include "sdk/filenames.h"
-
-#endif  // __INCLUDED_WWIV_H__
+#endif  // __INCLUDED_BBS_TEMPLATE_H__

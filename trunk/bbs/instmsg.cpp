@@ -16,10 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "instmsg.h"
+#include "bbs/instmsg.h"
 
 #include <cstdarg>
 
+#include "bbs/datetime.h"
+#include "bbs/input.h"
 #include "bbs/wwiv.h"
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"

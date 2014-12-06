@@ -20,12 +20,16 @@
 #include <string>
 #include <vector>
 
+#include "bbs/datetime.h"
+#include "bbs/dropfile.h"
+#include "bbs/input.h"
 #include "core/strings.h"
 #include "bbs/stuffin.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/xfer_common.h"
 #include "bbs/wwiv.h"
+#include "bbs/platform/platformfcns.h"
 
 using std::string;
 using wwiv::strings::GetStringLength;

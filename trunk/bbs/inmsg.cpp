@@ -16,12 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/inmsg.h"
+
 #include <algorithm>
 #include <string>
 
-#include "wwiv.h"
-#include "subxtr.h"
-#include "printfile.h"
+#include "bbs/wwiv.h"
+#include "bbs/input.h"
+#include "bbs/subxtr.h"
+#include "bbs/printfile.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"

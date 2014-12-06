@@ -21,7 +21,7 @@
 #include <cstring>
 #include <string>
 
-#include "bbs/wwiv.h"
+#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/file.h"

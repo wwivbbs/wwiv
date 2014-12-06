@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "bbs/datetime.h"
 #include "bbs/keycodes.h"
 #include "bbs/wcomm.h"
 #include "bbs/wstatus.h"

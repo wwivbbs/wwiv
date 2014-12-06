@@ -17,10 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/wwiv.h"
+#include "bbs/input.h"
 #include "bbs/subxtr.h"
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
+#include "bbs/wwiv.h"
 #include "core/textfile.h"
 #include "core/strings.h"
 

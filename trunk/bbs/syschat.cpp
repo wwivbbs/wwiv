@@ -19,12 +19,14 @@
 #include <algorithm>
 #include <chrono>
 
-#include "wwiv.h"
-#include "instmsg.h"
-#include "core/os.h"
-#include "core/strings.h"
+#include "bbs/datetime.h"
+#include "bbs/instmsg.h"
+#include "bbs/input.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+#include "bbs/wwiv.h"
+#include "core/os.h"
+#include "core/strings.h"
 
 
 using std::chrono::milliseconds;

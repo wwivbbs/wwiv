@@ -14,15 +14,16 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_H__
-#define __INCLUDED_WWIV_H__
+#ifndef __INCLUDED_BBS_INMSG_H__
+#define __INCLUDED_BBS_INMSG_H__
 
-#include "bbs/bbs.h"
-#include "bbs/fcns.h"
-#include "bbs/vars.h"
+#include <string>
 
-#include "sdk/filenames.h"
+#include "sdk/vardec.h"
 
-#endif  // __INCLUDED_WWIV_H__
+void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool needtitle, const char *aux, int fsed,
+           const char *pszDestination, int flags, bool force_title = false);
+void AddLineToMessageBuffer(char *pszMessageBuffer, const char *pszLineToAdd, long *plBufferLength);
+
+#endif  // __INCLUDED_BBS_INMSG_H__

@@ -19,8 +19,9 @@
 #include <cmath>
 #include <string>
 
-#include "wwiv.h"
-#include "wcomm.h"
+#include "bbs/datetime.h"
+#include "bbs/wwiv.h"
+#include "bbs/wcomm.h"
 #include "core/strings.h"
 #include "bbs/keycodes.h"
 

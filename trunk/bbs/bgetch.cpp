@@ -17,7 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include "bbs/wwiv.h"
+#include "bbs/datetime.h"
 #include "bbs/keycodes.h"
 
 // Local data structures

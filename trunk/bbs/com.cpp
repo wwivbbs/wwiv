@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "bbs/datetime.h"
 #include "bbs/wwiv.h"
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"

@@ -20,7 +20,8 @@
 #include <memory>
 #include <string>
 
-#include "wwiv.h"
+#include "bbs/wwiv.h"
+#include "bbs/input.h"
 #include "bbs/wcomm.h"
 #include "core/os.h"
 #include "core/strings.h"
