@@ -19,9 +19,9 @@
 #include <cstdarg>
 #include <string>
 
+#include "bbs/datetime.h"
 #include "core/strings.h"
-
-#include "wwiv.h"
+#include "bbs/wwiv.h"
 
 using std::string;
 using wwiv::strings::StringPrintf;

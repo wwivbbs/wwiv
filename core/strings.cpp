@@ -573,3 +573,38 @@ string properize(const string text) {
   return string(os.str());
 }
 
+#ifndef _WIN32
+
+/** Converts string to uppercase */
+char *strupr(char *s) {
+  for (int i = 0; s[i] != 0; i++) {
+    s[i] = wwiv::UpperCase<char>(s[i]);
+  }
+
+  return s;
+}
+
+/** Converts string to lowercase */
+char *strlwr(char *s) {
+  for (int i = 0; s[i] != 0; i++) {
+    s[i] = wwiv::LowerCase(s[i]);
+  }
+
+  return s;
+}
+
+// Reverses a string
+char *strrev(char *pszBufer) {
+  WWIV_ASSERT(pszBufer);
+  char szTempBuffer[255];
+  int str = strlen(pszBufer);
+  WWIV_ASSERT(str <= 255);
+
+  for (int i = str; i > - 1; i--) {
+    pszBufer[i] = szTempBuffer[str - i];
+  }
+  strcpy(pszBufer, szTempBuffer);
+  return pszBufer;
+}
+
+#endif  // _WIN32

@@ -17,8 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include "bbs/input.h"
 #include "bbs/wstatus.h"
+#include "bbs/wwiv.h"
 
 void print_quests();
 void set_question(int ii);

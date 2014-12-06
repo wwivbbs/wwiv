@@ -21,6 +21,7 @@
 #include <string>
 
 #include "bbs/wwiv.h"
+#include "bbs/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"

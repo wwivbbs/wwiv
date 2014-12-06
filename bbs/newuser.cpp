@@ -17,10 +17,13 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/wwiv.h"
 #include <algorithm>
 #include <string>
 
+#include "bbs/wwiv.h"
+#include "bbs/datetime.h"
+#include "bbs/dropfile.h"
+#include "bbs/inmsg.h"
 #include "bbs/input.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"

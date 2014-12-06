@@ -17,13 +17,13 @@
 /*                                                                        */
 /**************************************************************************/
 #include <cmath>
-#include "wwiv.h"
-#include "wcomm.h"
+#include "bbs/datetime.h"
+#include "bbs/wwiv.h"
+#include "bbs/wcomm.h"
 #include "core/strings.h"
 #include "bbs/keycodes.h"
 
 bool NewZModemSendFile(const char *pszFileName);
-
 
 
 void send_block(char *b, int nBlockType, bool bUseCRC, char byBlockNumber) {

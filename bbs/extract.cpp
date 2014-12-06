@@ -19,6 +19,7 @@
 #include <string>
 #include "wwiv.h"
 
+#include "bbs/input.h"
 #include "bbs/printfile.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"

@@ -18,9 +18,10 @@
 /**************************************************************************/
 #include <string>
 
-#include "wwiv.h"
-#include "printfile.h"
-#include "wcomm.h"
+#include "bbs/input.h"
+#include "bbs/wwiv.h"
+#include "bbs/printfile.h"
+#include "bbs/wcomm.h"
 #include "core/strings.h"
 
 using std::string;

@@ -23,6 +23,7 @@
 
 #include "bbs/wwiv.h"
 #include "bbs/menu.h"
+#include "bbs/menuspec.h"
 #include "bbs/menusupp.h"
 #include "bbs/printfile.h"
 #include "bbs/new_bbslist.h"

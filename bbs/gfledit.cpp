@@ -17,7 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include "bbs/datetime.h"
+#include "bbs/input.h"
+#include "bbs/wwiv.h"
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"

@@ -20,6 +20,8 @@
 #include <memory>
 #include <string>
 
+#include "bbs/datetime.h"
+#include "bbs/dropfile.h"
 #include "bbs/wwiv.h"
 #include "bbs/external_edit.h"
 #include "bbs/input.h"

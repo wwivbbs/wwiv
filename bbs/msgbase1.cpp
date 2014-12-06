@@ -22,7 +22,10 @@
 #include <unistd.h>
 #endif  // _WIN32
 
-#include "wwiv.h"
+#include "bbs/datetime.h"
+#include "bbs/wwiv.h"
+#include "bbs/inmsg.h"
+#include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/subxtr.h"
 #include "bbs/wconstants.h"

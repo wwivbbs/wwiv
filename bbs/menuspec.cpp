@@ -17,9 +17,12 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
-#include "instmsg.h"
-#include "menusupp.h"
+#include "bbs/datetime.h"
+#include "bbs/input.h"
+#include "bbs/wwiv.h"
+#include "bbs/instmsg.h"
+#include "bbs/menuspec.h"
+#include "bbs/menusupp.h"
 #include "core/strings.h"
 
 /* ---------------------------------------------------------------------- */

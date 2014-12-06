@@ -16,23 +16,24 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#ifndef __INCLUDED_BBS_H__
+#define __INCLUDED_BBS_H__
+
 /*
  * @header WWIV 5.0 Main Application
  * Main Starting point of the WWIV 5.0 System.
  */
 
-#ifndef __INCLUDED_BBS_H__
-#define __INCLUDED_BBS_H__
-
 #include <memory>
-#include <core/inifile.h>
-#include "core/file.h"
-#include "runnable.h"
-#include "wsession.h"
+#include <string>
 
-class StatusMgr;
-class WComm;
-class WUserManager;
+#include "bbs/runnable.h"
+#include "bbs/wcomm.h"
+#include "bbs/wsession.h"
+#include "bbs/wstatus.h"
+#include "bbs/wuser.h"
+#include "core/inifile.h"
+#include "core/file.h"
 
 /*!
  * @class WApplication  Main Application object for WWIV 5.0

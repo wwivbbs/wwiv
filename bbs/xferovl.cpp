@@ -17,13 +17,15 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include "bbs/datetime.h"
+#include "bbs/input.h"
+#include "bbs/keycodes.h"
+#include "bbs/wwiv.h"
+#include "bbs/wconstants.h"
+#include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/textfile.h"
-#include "bbs/keycodes.h"
-#include "bbs/wconstants.h"
-#include "bbs/wstatus.h"
 
 extern char str_quit[];
 

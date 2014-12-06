@@ -20,7 +20,8 @@
 #include <cmath>
 #include <string>
 
-#include "wwiv.h"
+#include "bbs/datetime.h"
+#include "bbs/wwiv.h"
 #include "bbs/stuffin.h"
 #include "core/strings.h"
 #include "bbs/keycodes.h"

@@ -27,8 +27,8 @@
 #include <unistd.h>
 #endif  // _WIN32
 
-#include "wwiv.h"
-
+#include "bbs/wwiv.h"
+#include "bbs/platform/platformfcns.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/textfile.h"

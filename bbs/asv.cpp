@@ -17,11 +17,17 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
-#include "core/strings.h"
+#include "bbs/datetime.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/inmsg.h"
+#include "bbs/input.h"
+#include "bbs/vars.h"
+#include "bbs/wsession.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
-
+#include "core/strings.h"
+#include "sdk/filenames.h"
 using std::string;
 
 // Local prototypes

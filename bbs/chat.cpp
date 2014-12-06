@@ -19,6 +19,7 @@
 
 #include "bbs/wwiv.h"
 
+#include "bbs/input.h"
 #include "core/inifile.h"
 #include "bbs/keycodes.h"
 #include "bbs/instmsg.h"

@@ -26,14 +26,19 @@
 #include <string>
 #include <vector>
 
-#include "bbs/printfile.h"
-#include "bbs/vars.h"  // for syscfg
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
+#include "bbs/input.h"
+#include "bbs/printfile.h"
+#include "bbs/vars.h"  // for syscfg
 #include "bbs/wsession.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
+
+// This is defined in keycodes.h and breaks rapidjson since that is what is used
+// for the template variable.
+#undef CT
 
 #include <rapidjson/document.h>
 #include <rapidjson/rapidjson.h>

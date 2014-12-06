@@ -30,6 +30,7 @@
 #include <sys/stat.h>
 
 #include "bbs/instmsg.h"
+#include "bbs/input.h"
 #include "bbs/pause.h"
 #include "bbs/qscan.h"
 #include "bbs/stuffin.h"
@@ -39,7 +40,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"
 #include "bbs/wstatus.h"
-
+#include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 

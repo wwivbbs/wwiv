@@ -18,8 +18,10 @@
 /**************************************************************************/
 #include <algorithm>
 
-#include "wwiv.h"
-#include "subxtr.h"
+#include "bbs/datetime.h"
+#include "bbs/input.h"
+#include "bbs/subxtr.h"
+#include "bbs/wwiv.h"
 
 void valscan() {
   // Must be local cosysop or better

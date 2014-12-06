@@ -32,6 +32,8 @@
 
 #include "bbs/archivers.h"
 #include "bbs/bbs.h"
+#include "bbs/inmsg.h"
+#include "bbs/input.h"
 #include "bbs/subxtr.h"
 #include "sdk/vardec.h"
 #include "bbs/vars.h"
@@ -60,10 +62,7 @@ using namespace wwiv::strings;
 extern const char *QWKFrom;
 extern int qwk_percent;
 
-// from inmsg.cpp
-void AddLineToMessageBuffer(char *pszMessageBuffer, const char *pszLineToAdd, long *plBufferLength);
-
-// from readmail.cp
+// from readmail.cpp
 int  read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
 
 void qwk_remove_email(void) {

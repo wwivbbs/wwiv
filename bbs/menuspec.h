@@ -14,15 +14,24 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_H__
-#define __INCLUDED_WWIV_H__
+#ifndef __INCLUDED_BBS_MENUSPEC_H__
+#define __INCLUDED_BBS_MENUSPEC_H__
 
-#include "bbs/bbs.h"
-#include "bbs/fcns.h"
-#include "bbs/vars.h"
+int  MenuDownload(const char *pszDirFName, const char *pszFName, bool bFreeDL, bool bTitle);
+int  FindDN(const char *pszFName);
+bool MenuRunDoorName(const char *pszDoor, bool bFree);
+bool MenuRunDoorNumber(int nDoorNumber, bool bFree);
+int  FindDoorNo(const char *pszDoor);
+bool ValidateDoorAccess(int nDoorNumber);
+void ChangeSubNumber();
+void ChangeDirNumber();
+void SetMsgConf(int iConf);
+void SetDirConf(int iConf);
+void EnableConf();
+void DisableConf();
+void SetNewScanMsg();
+void ReadMessages();
+void ReadSelectedMessages(int iWhich, int iWhere);
 
-#include "sdk/filenames.h"
-
-#endif  // __INCLUDED_WWIV_H__
+#endif  // __INCLUDED_BBS_MENUSPEC_H__

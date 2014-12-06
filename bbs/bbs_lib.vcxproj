@@ -94,11 +94,13 @@
     <ClInclude Include="external_edit.h" />
     <ClInclude Include="fcns.h" />
     <ClInclude Include="filenames.h" />
+    <ClInclude Include="inmsg.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="instmsg.h" />
     <ClInclude Include="keycodes.h" />
     <ClInclude Include="listplus.h" />
     <ClInclude Include="menu.h" />
+    <ClInclude Include="menuspec.h" />
     <ClInclude Include="menusupp.h" />
     <ClInclude Include="net.h" />
     <ClInclude Include="new_bbslist.h" />
@@ -117,6 +119,7 @@
     <ClInclude Include="runnable.h" />
     <ClInclude Include="subxtr.h" />
     <ClInclude Include="sysoplog.h" />
+    <ClInclude Include="template.h" />
     <ClInclude Include="utility.h" />
     <ClInclude Include="vardec.h" />
     <ClInclude Include="vars.h" />

@@ -19,6 +19,8 @@
 #include <memory>
 #include <string>
 
+#include "bbs/datetime.h"
+#include "bbs/input.h"
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
 #include "bbs/wwiv.h"

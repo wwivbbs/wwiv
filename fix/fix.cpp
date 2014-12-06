@@ -26,11 +26,12 @@
 #include "core/strings.h"
 
 #define _DEFINE_GLOBALS_
-#include "wwiv.h"
-#include "log.h"
-#include "dirs.h"
-#include "users.h"
-#include "fix_config.h"
+#include "bbs/datetime.h"
+#include "bbs/wwiv.h"
+#include "fix/log.h"
+#include "fix/dirs.h"
+#include "fix/users.h"
+#include "fix/fix_config.h"
 
 void giveUp();
 void maybeGiveUp();

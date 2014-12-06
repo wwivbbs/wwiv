@@ -23,24 +23,34 @@
 #include <chrono>
 #include <cmath>
 #include <memory>
-#include <stdarg.h>
+#include <cstdarg>
 
 #define _DEFINE_GLOBALS_
-#include "wwiv.h"
+// vars.h requires  _DEFINE_GLOBALS_
+#include "bbs/vars.h"
 // This has to be included here to define "xtrasubsrec *xsubs;"
-#include "subxtr.h"
+#include "bbs/subxtr.h"
 #undef _DEFINE_GLOBALS_
 
-#include "bbs.h"
-#include "instmsg.h"
-#include "menu.h" // for mainmenu
+#include "bbs/bbs.h"
+#include "bbs/datetime.h"
 #include "bbs/external_edit.h"
+#include "bbs/fcns.h"
+#include "bbs/input.h"
+#include "bbs/instmsg.h"
+#include "bbs/menu.h"
+#include "bbs/printfile.h"
+#include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
+#include "bbs/wsession.h"
 #include "bbs/wstatus.h"
+#include "bbs/platform/platformfcns.h"
+#include "bbs/platform/wlocal_io.h"
 #include "core/strings.h"
 #include "core/os.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
+#include "sdk/filenames.h"
 
 #if defined( _WIN32 )
 #include <direct.h>
@@ -49,8 +59,6 @@
 #else
 #include <unistd.h>
 #endif // _WIN32
-#include "printfile.h"
-#include "wcomm.h"
 #include "bbs/keycodes.h"
 
 

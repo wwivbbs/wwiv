@@ -20,6 +20,8 @@
 #include <sstream>
 #include <string>
 
+#include "bbs/datetime.h"
+#include "bbs/input.h"
 #include "bbs/wwiv.h"
 #include "bbs/external_edit.h"
 #include "bbs/instmsg.h"

@@ -17,7 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "bbs/datetime.h"
 #include "bbs/wwiv.h"
+#include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/printfile.h"
 #include "bbs/wcomm.h"
