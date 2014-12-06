@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/callback.h"
+
 #include <string>
 
 #include "bbs/input.h"

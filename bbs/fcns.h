@@ -30,12 +30,6 @@ class MenuInstanceData;
 class WUser;
 
 
-// File: automsg.cpp
-
-void read_automessage();
-void do_automessage();
-
-
 // File: batch.cpp
 
 void upload(int dn);
@@ -46,11 +40,6 @@ int  batchdl(int mode);
 void didnt_upload(int nBatchIndex);
 void ymbatchdl(bool bHangupAfterDl);
 void zmbatchdl(bool bHangupAfterDl);
-
-
-// File: bbslist.cpp
-
-void LegacyBBSList();
 
 
 // File: bbsovl1.cpp
@@ -138,14 +127,6 @@ char bgetch();
 int  bputch(char c, bool bUseInternalBuffer = false);
 void FlushOutComChBuffer();
 void rputch(char ch, bool bUseInternalBuffer = false);
-
-
-// File: callback.cpp
-
-void wwivnode(WUser *pUser, int mode);
-int  callback();
-void dial(char *phone, int xlate);
-
 
 // File: chains.cpp
 

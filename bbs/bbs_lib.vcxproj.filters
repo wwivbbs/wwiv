@@ -522,6 +522,15 @@
     <ClInclude Include="attach.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="automsg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bbslist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="callback.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
