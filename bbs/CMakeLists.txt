@@ -132,7 +132,6 @@ if(UNIX)
 	platform/unix/exec.cpp 
 	platform/unix/utility2.cpp 
 	platform/unix/wlocal_io.cpp
-	platform/unix/stringstuff.cpp 
 	platform/unix/wiou.cpp)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
   if(APPLE)
