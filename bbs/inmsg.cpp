@@ -21,10 +21,11 @@
 #include <algorithm>
 #include <string>
 
-#include "bbs/wwiv.h"
+#include "bbs/crc.h"
 #include "bbs/input.h"
 #include "bbs/subxtr.h"
 #include "bbs/printfile.h"
+#include "bbs/wwiv.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"

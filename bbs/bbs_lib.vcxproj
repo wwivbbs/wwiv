@@ -86,9 +86,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="asv.h" />
+    <ClInclude Include="attach.h" />
     <ClInclude Include="bbs.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="conf.h" />
+    <ClInclude Include="crc.h" />
     <ClInclude Include="datetime.h" />
     <ClInclude Include="dropfile.h" />
     <ClInclude Include="external_edit.h" />
@@ -121,10 +124,14 @@
     <ClInclude Include="sysoplog.h" />
     <ClInclude Include="template.h" />
     <ClInclude Include="utility.h" />
+    <ClInclude Include="valscan.h" />
     <ClInclude Include="vardec.h" />
     <ClInclude Include="vars.h" />
+    <ClInclude Include="vote.h" />
+    <ClInclude Include="voteedit.h" />
     <ClInclude Include="wcomm.h" />
     <ClInclude Include="wconstants.h" />
+    <ClInclude Include="wfc.h" />
     <ClInclude Include="woutstreambuffer.h" />
     <ClInclude Include="wsession.h" />
     <ClInclude Include="wstatus.h" />
