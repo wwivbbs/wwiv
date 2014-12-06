@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include <string>
 
+#include "bbs/callback.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/wwiv.h"

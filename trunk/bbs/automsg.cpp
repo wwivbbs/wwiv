@@ -16,11 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/automsg.h"
+
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "wwiv.h"
+#include "bbs/wwiv.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/textfile.h"

@@ -16,14 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/bbslist.h"
+
 #include <string>
 
-#include "bbs/wwiv.h"
 #include "bbs/input.h"
+#include "bbs/keycodes.h"
 #include "bbs/printfile.h"
+#include "bbs/wwiv.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "bbs/keycodes.h"
 
 using std::string;
 

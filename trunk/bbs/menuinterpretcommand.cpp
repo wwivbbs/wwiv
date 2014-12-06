@@ -21,12 +21,13 @@
 #include <memory>
 #include <string>
 
-#include "bbs/wwiv.h"
+#include "bbs/bbslist.h"
 #include "bbs/menu.h"
 #include "bbs/menuspec.h"
 #include "bbs/menusupp.h"
-#include "bbs/printfile.h"
 #include "bbs/new_bbslist.h"
+#include "bbs/printfile.h"
+#include "bbs/wwiv.h"
 #include "core/inifile.h"
 #include "core/stl.h"
 #include "core/strings.h"
