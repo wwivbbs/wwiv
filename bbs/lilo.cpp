@@ -17,16 +17,19 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
 #include <limits>
 #include <memory>
 #include <string>
 
+#include "bbs/dropfile.h"
+#include "bbs/input.h"
+#include "bbs/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/menusupp.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
 #include "bbs/wcomm.h"
+#include "bbs/wwiv.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/inifile.h"

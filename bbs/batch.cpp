@@ -25,6 +25,8 @@
 #include <unistd.h>
 #endif  // _WIN32
 
+#include "bbs/datetime.h"
+#include "bbs/input.h"
 #include "bbs/wwiv.h"
 #include "bbs/instmsg.h"
 #include "bbs/printfile.h"
@@ -32,6 +34,7 @@
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
+#include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 

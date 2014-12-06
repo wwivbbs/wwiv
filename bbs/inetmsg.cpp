@@ -17,8 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
-#include "instmsg.h"
+#include "bbs/wwiv.h"
+#include "bbs/input.h"
+#include "bbs/instmsg.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 

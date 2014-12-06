@@ -18,8 +18,9 @@
 /**************************************************************************/
 #include <string>
 
-#include "wwiv.h"
-#include "printfile.h"
+#include "bbs/wwiv.h"
+#include "bbs/input.h"
+#include "bbs/printfile.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "bbs/keycodes.h"

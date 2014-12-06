@@ -16,14 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#if !defined ( __INCLUDED_WSESSION_H__ )
-#define __INCLUDED_WSESSION_H__
+#if !defined ( __INCLUDED_BBS_WSESSION_H__ )
+#define __INCLUDED_BBS_WSESSION_H__
 
 #include <iostream>
 #include <string>
 
-#include "sdk/vardec.h"
+#include "bbs/wcomm.h"
 #include "bbs/wuser.h"
+#include "bbs/woutstreambuffer.h"
+#include "bbs/platform/wlocal_io.h"
+#include "sdk/vardec.h"
 
 //
 // WSession - Holds information and status data about the current user
@@ -34,7 +37,6 @@
 // associated with this instance of WWIV globally (not tied to a user)
 //
 
-#include "woutstreambuffer.h"
 
 #if defined(_MSC_VER)
 #pragma warning( push )
@@ -42,10 +44,6 @@
 #endif // _MSC_VER
 
 class WApplication;
-class WLocalIO;
-class WComm;
-class WUser;
-
 ///////////////////////////////////////////////////////////////////////////////
 // ASV Settings (populated by INI file
 //
@@ -351,5 +349,5 @@ class WSession {
 #pragma warning( pop )
 #endif
 
-#endif  // #if !defined (__INCLUDED_WSESSION_H__)
+#endif  // #if !defined (__INCLUDED_BBS_WSESSION_H__)
 

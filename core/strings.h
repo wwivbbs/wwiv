@@ -107,6 +107,12 @@ std::string properize(const std::string text);
 #ifdef _WIN32
 #define strcasecmp( a, b ) _stricmp( a, b )
 #define strncasecmp( a, b, c) _strnicmp( a, b, c )
+
+#else  // _WIN32
+char *strupr(char *s);
+char *strlwr(char *s);
+char * strrev(char *s);
+
 #endif  // _WIN32
 
 #endif  // __INCLUDED_STRINGS_H__

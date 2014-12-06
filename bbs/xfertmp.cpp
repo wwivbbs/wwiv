@@ -25,6 +25,8 @@
 #include <unistd.h>
 #endif  // _WIN32
 
+#include "bbs/datetime.h"
+#include "bbs/input.h"
 #include "bbs/wwiv.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"

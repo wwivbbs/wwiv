@@ -30,6 +30,7 @@ char *dateFromTimeTForLog(time_t t) {
   return szDateString;
 }
 
+// Only used by fix.
 char *dateFromTimeT(time_t t) {
   static char szDateString[11];
   struct tm * pTm = localtime(&t);

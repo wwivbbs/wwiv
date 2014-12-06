@@ -18,16 +18,18 @@
 /**************************************************************************/
 #include <algorithm>
 #include <memory>
+#include <string>
 
-#include "wwiv.h"
-
-#include "instmsg.h"
-#include "subxtr.h"
-#include "printfile.h"
-#include "core/strings.h"
-#include "core/wwivassert.h"
+#include "bbs/datetime.h"
+#include "bbs/instmsg.h"
+#include "bbs/input.h"
+#include "bbs/subxtr.h"
+#include "bbs/printfile.h"
+#include "bbs/wwiv.h"
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
+#include "core/strings.h"
+#include "core/wwivassert.h"
 
 void SetupThreadRecordsBeforeScan();
 void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsub, bool &bTitleScan, bool &done,

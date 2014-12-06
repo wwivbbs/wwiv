@@ -19,7 +19,9 @@
 #include <string>
 
 #include "bbs/wwiv.h"
-
+#include "bbs/datetime.h"
+#include "bbs/dropfile.h"
+#include "bbs/input.h"
 #include "bbs/pause.h"
 #include "bbs/qscan.h"
 #include "bbs/wconstants.h"

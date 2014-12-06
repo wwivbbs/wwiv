@@ -24,7 +24,7 @@
 
 #include "core/file.h"
 #include "sdk/vardec.h"
-#include "net.h"
+#include "bbs/net.h"
 
 class MenuInstanceData;
 class WUser;
@@ -254,10 +254,6 @@ void set_net_num(int nNetworkNumber);
 unsigned long int crc32buf(const char *pBuffer, size_t nLength);
 
 
-// File: datetime.cpp
-#include "datetime.h"
-
-
 // File: defaults.cpp
 
 void select_editor();
@@ -278,10 +274,6 @@ void dlboardedit();
 
 void dirlist(int mode);
 
-
-// File: dropfile.cpp
-
-#include "bbs/dropfile.h"
 
 // File: dupphone.cpp
 
@@ -337,15 +329,6 @@ bool fill_sec(int sn);
 void HopSub();
 void HopDir();
 
-
-// File: inmsg.cpp
-
-void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool needtitle, const char *aux, int fsed,
-           const char *pszDestination, int flags, bool force_title = false);
-
-
-// File: input.cpp
-#include "bbs/input.h"
 
 // File: inetmsg.cpp
 
@@ -434,28 +417,6 @@ void *BbsAllocA(size_t lNumBytes);
 
 void EditMenus();
 void ListMenuDirs();
-
-
-// File: menuspec.cpp
-
-int  MenuDownload(const char *pszDirFName, const char *pszFName, bool bFreeDL, bool bTitle);
-int  FindDN(const char *pszFName);
-bool MenuRunDoorName(const char *pszDoor, bool bFree);
-bool MenuRunDoorNumber(int nDoorNumber, bool bFree);
-int  FindDoorNo(const char *pszDoor);
-bool ValidateDoorAccess(int nDoorNumber);
-void ChangeSubNumber();
-void ChangeDirNumber();
-void SetMsgConf(int iConf);
-void SetDirConf(int iConf);
-void EnableConf();
-void DisableConf();
-void SetNewScanMsg();
-void ReadMessages();
-void ReadSelectedMessages(int iWhich, int iWhere);
-
-
-// File: menusupp.cpp
 
 
 

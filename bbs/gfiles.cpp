@@ -18,9 +18,10 @@
 /**************************************************************************/
 #include <string>
 
-#include "wwiv.h"
-#include "instmsg.h"
-#include "printfile.h"
+#include "bbs/wwiv.h"
+#include "bbs/datetime.h"
+#include "bbs/instmsg.h"
+#include "bbs/printfile.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 

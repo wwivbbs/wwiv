@@ -17,6 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
+#include <memory>
+#include <string>
+
 #ifdef _WIN32
 #include <direct.h>
 #else
@@ -24,6 +27,7 @@
 #endif  // _WIN32
 
 #include "bbs/wwiv.h"
+#include "bbs/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"
 #include "bbs/wconstants.h"

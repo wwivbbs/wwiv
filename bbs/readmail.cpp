@@ -20,11 +20,13 @@
 #include <memory>
 #include <string>
 
-#include "wwiv.h"
-#include "instmsg.h"
+#include "bbs/datetime.h"
+#include "bbs/wwiv.h"
+#include "bbs/instmsg.h"
+#include "bbs/input.h"
 #include "bbs/wconstants.h"
-#include "subxtr.h"
-#include "printfile.h"
+#include "bbs/subxtr.h"
+#include "bbs/printfile.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/textfile.h"

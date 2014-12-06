@@ -23,9 +23,6 @@
 #if defined ( __linux__ ) || defined ( __APPLE__ )
 
 // $PLATFORM/stringstuff.cpp
-char *strupr(char *s);
-char *strlwr(char *s);
-char * strrev(char *s);
 
 #endif // __linux__ || __APPLE__
 

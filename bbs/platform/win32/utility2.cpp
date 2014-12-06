@@ -21,6 +21,7 @@
 
 #include <direct.h>
 
+#include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
 #include "core/file.h"
 

@@ -19,12 +19,13 @@
 #include <cstdint>
 #include <memory>
 
-#include "bbs/wwiv.h"
+#include "bbs/input.h"
 #include "bbs/common.h"
 #include "bbs/instmsg.h"
 #include "bbs/menu.h"
 #include "bbs/menusupp.h"
 #include "bbs/printfile.h"
+#include "bbs/wwiv.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"

@@ -17,8 +17,10 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
-#include "instmsg.h"
+#include "bbs/wwiv.h"
+#include "bbs/dropfile.h"
+#include "bbs/instmsg.h"
+#include "bbs/platform/platformfcns.h"
 
 int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
   // forget it if the user has hung up

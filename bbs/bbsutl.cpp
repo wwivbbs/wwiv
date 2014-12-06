@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include <string>
 
+#include "bbs/datetime.h"
+#include "bbs/input.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwiv.h"
 #include "core/strings.h"

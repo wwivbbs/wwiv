@@ -20,12 +20,12 @@
 #include <string>
 #include <vector>
 
-#include "wwivcolors.h"
-
-#include "wwiv.h"
-#include "common.h"
-#include "menu.h"
-#include "printfile.h"
+#include "bbs/wwivcolors.h"
+#include "bbs/wwiv.h"
+#include "bbs/common.h"
+#include "bbs/menu.h"
+#include "bbs/input.h"
+#include "bbs/printfile.h"
 #include "core/strings.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
