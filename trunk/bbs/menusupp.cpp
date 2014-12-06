@@ -1074,7 +1074,7 @@ bool GuestCheck() {
   return true;
 }
 
-void SetSubNumber(char *pszSubKeys) {
+void SetSubNumber(const char *pszSubKeys) {
   for (int i = 0; (i < session()->num_subs) && (usub[i].subnum != -1); i++) {
     if (wwiv::strings::IsEquals(usub[i].keys, pszSubKeys)) {
       session()->SetCurrentMessageArea(i);
@@ -1082,7 +1082,7 @@ void SetSubNumber(char *pszSubKeys) {
   }
 }
 
-void SetDirNumber(char *pszDirectoryKeys) {
+void SetDirNumber(const char *pszDirectoryKeys) {
   for (int i = 0; i < session()->num_dirs; i++) {
     if (wwiv::strings::IsEquals(udir[i].keys, pszDirectoryKeys)) {
       session()->SetCurrentFileArea(i);

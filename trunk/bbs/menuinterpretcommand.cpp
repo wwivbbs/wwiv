@@ -16,7 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <functional>
+#include <map>
 #include <memory>
+#include <string>
 
 #include "bbs/wwiv.h"
 #include "bbs/menu.h"
@@ -24,13 +27,21 @@
 #include "bbs/printfile.h"
 #include "bbs/new_bbslist.h"
 #include "core/inifile.h"
+#include "core/stl.h"
+#include "core/strings.h"
 
+using std::map;
 using std::string;
 using std::unique_ptr;
 
 using wwiv::core::FilePath;
 using wwiv::core::IniFile;
 using wwiv::bbslist::NewBBSList;
+
+using namespace wwiv::strings;
+using namespace wwiv::stl;
+
+map<string, std::function<void(MenuInstanceData*, const string&, const string&)>, wwiv::stl::ci_less> CreateCommandMap();
 
 bool UseNewBBSList() {
   IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), INI_TAG);
@@ -41,6 +52,8 @@ bool UseNewBBSList() {
 }
 
 void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript) {
+  static map<string, std::function<void(MenuInstanceData* pMenuData, const string&, const string&)>, wwiv::stl::ci_less> functions = CreateCommandMap();
+
   char szCmd[31], szParam1[51], szParam2[51];
   char szTempScript[255];
   memset(szTempScript, 0, sizeof(szTempScript));
@@ -50,7 +63,7 @@ void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript) {
     return;
   }
 
-  char* pszScriptPointer = szTempScript;
+  const char* pszScriptPointer = szTempScript;
   while (pszScriptPointer && !hangup) {
     pszScriptPointer = MenuParseLine(pszScriptPointer, szCmd, szParam1, szParam2);
 
@@ -58,823 +71,505 @@ void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript) {
       break;
     }
 
-    // -------------------------
-    // Run a new menu instance
-
-    int nCmdID = GetMenuIndex(szCmd);
-    switch (nCmdID) {
-    case 0: {
-      // "MENU"
-      // Spawn a new menu
-      unique_ptr<MenuInstanceData> new_menu(new MenuInstanceData{});
-      new_menu->Menus(pMenuData->path, szParam1);
+    string cmd(szCmd);
+    if (contains(functions, cmd)) {
+      functions.at(cmd)(pMenuData, szParam1, szParam2);
     }
-    break;
-    case 1: {
-      // -------------------------
-      // Exit out of this instance
-      // of the menu
-      // -------------------------
-      // "ReturnFromMenu"
+  }
+}
+
+#if defined( _MSC_VER )
+#pragma warning( push )
+#pragma warning( disable : 4100 )  // unreferenced formal parameter for pMenuData, param1, param2
+#endif
+
+map<string, std::function<void(MenuInstanceData*, const string&, const string&)>, wwiv::stl::ci_less> CreateCommandMap() {
+  return {
+    { "MENU", [&](MenuInstanceData* menu_data, const string& param1, const string& param2) {
+      unique_ptr<MenuInstanceData> new_menu(new MenuInstanceData{});
+      new_menu->Menus(menu_data->path, param1);
+    } },
+    { "ReturnFromMenu", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       InterpretCommand(pMenuData, pMenuData->header.szExitScript);
       pMenuData->finished = true;
-    }
-    break;
-    case 2: {
-      // "EditMenuSet"
+    } },
+    { "EditMenuSet", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       EditMenus();           // flag if we are editing this menu
       pMenuData->finished = true;
       pMenuData->reload = true;
-    }
-    break;
-    case 3: {
-      // "DLFreeFile"
-      align(szParam2);
-      MenuDownload(szParam1, szParam2, true, true);
-    }
-    break;
-    case 4: {
-      // "DLFile"
-      align(szParam2);
-      MenuDownload(szParam1, szParam2, false, true);
-    }
-    break;
-    case 5: {
-      // "RunDoor"
-      MenuRunDoorName(szParam1, false);
-    }
-    break;
-    case 6: {
-      // "RunDoorFree"
-      MenuRunDoorName(szParam1, true);
-    }
-    break;
-    case 7: {
-      // "RunDoorNumber"
-      int nTemp = atoi(szParam1);
+    } },
+    { "DLFreeFile", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+      char s[MAX_PATH];
+      strcpy(s, param2.c_str());
+      align(s);
+      MenuDownload(param1.c_str(), s, true, true);
+    } },
+    { "DLFile", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+      char s[MAX_PATH];
+      strcpy(s, param2.c_str());
+      align(s);
+      MenuDownload(param1.c_str(), s, false, true);
+    } },
+    { "RunDoor", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+      MenuRunDoorName(param1.c_str(), false);
+    } },
+    { "RunDoorFree", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+      MenuRunDoorName(param1.c_str(), true);
+    } },
+    { "RunDoorNumber", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+      int nTemp = atoi(param1.c_str());
       MenuRunDoorNumber(nTemp, false);
-    }
-    break;
-    case 8: {
-      // "RunDoorNumberFree"
-      int nTemp = atoi(szParam1);
+    } },
+    { "RunDoorNumberFree", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+      int nTemp = atoi(param1.c_str());
       MenuRunDoorNumber(nTemp, true);
-    }
-    break;
-    case 9: {
-      // "PrintFile"
-      printfile(szParam1, true);
-    }
-    break;
-    case 10: {
-      // "PrintFileNA"
-      printfile(szParam1, false);
-    }
-    break;
-    case 11: {
-      // "SetSubNumber"
-      SetSubNumber(szParam1);
-    }
-    break;
-    case 12: {
-      // "SetDirNumber"
-      SetDirNumber(szParam1);
-    }
-    break;
-    case 13: {
-      // "SetMsgConf"
-      SetMsgConf(szParam1[0]);
-    }
-    break;
-    case 14: {
-      // "SetDirConf"
-      SetDirConf(szParam1[0]);
-    }
-    break;
-    case 15: {
-      // "EnableConf"
+    } },
+    { "PrintFile", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+      printfile(param1.c_str(), true);
+    } },
+    { "PrintFileNA", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+      printfile(param1.c_str(), false);
+    } },
+    { "SetSubNumber", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+      SetSubNumber(param1.c_str());
+    } },
+    { "SetDirNumber", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+      SetDirNumber(param1.c_str());
+    } },
+    { "SetMsgConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+      SetMsgConf(param1.c_str()[0]);
+    } },
+    { "SetMsgConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+      SetMsgConf(param1.c_str()[0]);
+    } },
+    { "SetDirConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+      SetDirConf(param1.c_str()[0]);
+    } },
+    { "EnableConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       EnableConf();
-    }
-    break;
-    case 16: {
-      // "DisableConf"
+    } },
+    { "DisableConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       DisableConf();
-    }
-    break;
-    case 17: {
-      // "Pause"
+    } },
+    { "Pause", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       pausescr();
-    }
-    break;
-    case 18: {
-      // "ConfigUserMenuSet"
+    } },
+    { "ConfigUserMenuSet", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ConfigUserMenuSet();
       pMenuData->finished = true;
       pMenuData->reload = true;
-    }
-    break;
-    case 19: {
-      // "DisplayHelp"
+    } },
+    { "DisplayHelp", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       if (session()->user()->IsExpert()) {
         pMenuData->DisplayHelp();
       }
-    }
-    break;
-    case 20: {
-      // "SelectSub"
+    } },
+    { "SelectSub", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ChangeSubNumber();
-    }
-    break;
-    case 21: {
-      // "SelectDir"
+    } },
+    { "SelectDir", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ChangeDirNumber();
-    }
-    break;
-    case 22: {
-      // "SubList"
+    } },
+    { "SubList", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       SubList();
-    }
-    break;
-    case 23: {
-      // "UpSubConf"
+    } },
+    { "UpSubConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       UpSubConf();
-    }
-    break;
-    case 24: {
-      // "DownSubConf"
+    } },
+    { "DownSubConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       DownSubConf();
-    }
-    break;
-    case 25: {
-      // "UpSub"
+    } },
+    { "UpSub", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       UpSub();
-    }
-    break;
-    case 26: {
-      // "DownSub"
+    } },
+    { "DownSub", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       DownSub();
-    }
-    break;
-    case 27: {
-      // "ValidateUser"
+    } },
+    { "ValidateUser", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ValidateUser();
-    }
-    break;
-    case 28: {
-      // "Doors"
+    } },
+    { "Doors", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       Chains();
-    }
-    break;
-    case 29: {
-      // "TimeBank"
+    } },
+    { "TimeBank", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       TimeBank();
-    }
-    break;
-    case 30: {
-      // "AutoMessage"
+    } },
+    { "AutoMessage", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       AutoMessage();
-    }
-    break;
-    case 31: {
-      // "BBSList"
+    } },
+    { "BBSList", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       if (UseNewBBSList()) {
         NewBBSList();
       } else {
         LegacyBBSList();
       }
-    }
-    break;
-    case 32: {
-      // "RequestChat"
+    } },
+    { "RequestChat", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       RequestChat();
-    }
-    break;
-    case 33: {
-      // "Defaults"
+    } },
+    { "Defaults", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       Defaults(pMenuData);
-    }
-    break;
-    case 34: {
-      // "SendEMail"
+    } },
+    { "SendEMail", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       SendEMail();
-    }
-    break;
-    case 35: {
-      // "Feedback"
+    } },
+    { "Feedback", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       FeedBack();
-    }
-    break;
-    case 36: {
-      // "Bulletins"
+    } },
+    { "Bulletins", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       Bulletins();
-    }
-    break;
-    case 37: {
-      // "HopSub"
+    } },
+    { "HopSub", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       HopSub();
-    }
-    break;
-    case 38: {
-      // "SystemInfo"
+    } },
+    { "SystemInfo", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       SystemInfo();
-    }
-    break;
-    case 39: {
-      // "JumpSubConf"
+    } },
+    { "JumpSubConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       JumpSubConf();
-    }
-    break;
-    case 40: {
-      // "KillEMail"
+    } },
+    { "KillEMail", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       KillEMail();
-    }
-    break;
-    case 41: {
-      // "LastCallers"
+    } },
+    { "LastCallers", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       LastCallers();
-    }
-    break;
-    case 42: {
-      // "ReadEMail"
+    } },
+    { "ReadEMail", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ReadEMail();
-    }
-    break;
-    case 43: {
-      // "NewMessageScan"
+    } },
+    { "NewMessageScan", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       NewMessageScan();
-    }
-    break;
-    case 44: {
-      // "Goodbye"
+    } },
+    { "Goodbye", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       GoodBye();
-    }
-    break;
-    case 45: {
-      // "PostMessage"
+    } },
+    { "PostMessage", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       WWIV_PostMessage();
-    }
-    break;
-    case 46: {
-      // "NewMsgScanCurSub"
+    } },
+    { "NewMsgScanCurSub", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ScanSub();
-    }
-    break;
-    case 47: {
-      // "RemovePost"
+    } },
+    { "RemovePost", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       RemovePost();
-    }
-    break;
-    case 48: {
-      // "TitleScan"
+    } },
+    { "TitleScan", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       TitleScan();
-    }
-    break;
-    case 49: {
-      // "ListUsers"
+    } },
+    { "ListUsers", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ListUsers();
-    }
-    break;
-    case 50: {
-      // "Vote"
+    } },
+    { "Vote", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       Vote();
-    }
-    break;
-    case 51: {
-      // "ToggleExpert"
+    } },
+    { "ToggleExpert", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ToggleExpert();
-    }
-    break;
-    case 52: {
-      // "YourInfo"
+    } },
+    { "YourInfo", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       YourInfo();
-    }
-    break;
-    case 53: {
-      // "ExpressScan"
+    } },
+    { "ExpressScan", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ExpressScan();
-    }
-    break;
-    case 54: {
-      // "WWIVVer"
+    } },
+    { "WWIVVer", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       WWIVVersion();
-    }
-    break;
-    case 55: {
-      // "InstanceEdit"
+    } },
+    { "InstanceEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       InstanceEdit();
-    }
-    break;
-    case 56: {
-      // "ConferenceEdit"
+    } },
+    { "ConferenceEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       JumpEdit();
-    }
-    break;
-    case 57: {
-      // "SubEdit"
+    } },
+    { "SubEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       BoardEdit();
-    }
-    break;
-    case 58: {
-      // "ChainEdit"
+    } },
+    { "ChainEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ChainEdit();
-    }
-    break;
-    case 59: {
-      // "ToggleAvailable"
+    } },
+    { "ToggleAvailable", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ToggleChat();
-    }
-    break;
-    case 60: {
-      // "ChangeUser"
+    } },
+    { "ChangeUser", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ChangeUser();
-    }
-    break;
-    case 61: {
-      // "CLOUT"
+    } },
+    { "CLOUT", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       CallOut();
-    }
-    break;
-    case 62: {
-      // "Debug"
+    } },
+    { "Debug", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       Debug();
-    }
-    break;
-    case 63: {
-      // "DirEdit"
+    } },
+    { "DirEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    } },
+    { "", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       DirEdit();
-    }
-    break;
-    case 65: {
-      // "Edit"
+    } },
+    { "Edit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       EditText();
-    }
-    break;
-    case 66: {
-      // "BulletinEdit"
+    } },
+    { "BulletinEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       EditBulletins();
-    }
-    break;
-    case 67: {
-      // "LoadText"
-      // LoadText and LoadTextFile are the same, so they are now merged.
+    } },
+    { "LoadText", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       LoadTextFile();
-    }
-    break;
-    case 68: {
-      // "ReadAllMail"
+    } },
+    { "ReadAllMail", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ReadAllMail();
-    }
-    break;
-    case 69: {
-      // "Reboot"
+    } },
+    { "Reboot", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       RebootComputer();
-    }
-    break;
-    case 70: {
-      // "ReloadMenus"
+    } },
+    { "ReloadMenus", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ReloadMenus();
-    }
-    break;
-    case 71: {
-      // "ResetUserIndex"
+    } },
+    { "ResetUserIndex", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ResetFiles();
-    }
-    break;
-    case 72: {
-      // "ResetQScan"
+    } },
+    { "ResetQscan", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ResetQscan();
-    }
-    break;
-    case 73: {
-      // "MemStat"
+    } },
+    { "MemStat", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       MemoryStatus();
-    }
-    break;
-    case 74: {
-      // "PackMsgs"
+    } },
+    { "PackMsgs", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       PackMessages();
-    }
-    break;
-    case 75: {
-      // "VoteEdit"
+    } },
+    { "VoteEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       InitVotes();
-    }
-    break;
-    case 76: {
-      // "Log"
+    } },
+    { "Log", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ReadLog();
-    }
-    break;
-    case 77: {
-      // "NetLog"
+    } },
+    { "NetLog", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ReadNetLog();
-    }
-    break;
-    case 78: {
-      // "Pending"
+    } },
+    { "Pending", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       PrintPending();
-    }
-    break;
-    case 79: {
-      // "Status"
+    } },
+    { "Status", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       PrintStatus();
-    }
-    break;
-    case 80: {
-      // "TextEdit"
+    } },
+    { "TextEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       TextEdit();
-    }
-    break;
-    case 81: {
-      // "UserEdit"
+    } },
+    { "UserEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       UserEdit();
-    }
-    break;
-    case 82: {
-      // "VotePrint"
+    } },
+    { "VotePrint", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       VotePrint();
-    }
-    break;
-    case 83: {
-      // "YLog"
+    } },
+    { "YLog", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       YesturdaysLog();
-    }
-    break;
-    case 84: {
-      // "ZLog"
+    } },
+    { "ZLog", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ZLog();
-    }
-    break;
-    case 85: {
-      // "ViewNetDataLog"
+    } },
+    { "ViewNetDataLog", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ViewNetDataLog();
-    }
-    break;
-    case 86: {
-      // "UploadPost"
+    } },
+    { "UploadPost", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       UploadPost();
-    }
-    break;
-    case 87: {
-      // "cls"
+    } },
+    { "cls", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       bout.cls();
-    }
-    break;
-    case 88: {
-      // "NetListing"
+    } },
+    { "NetListing", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       NetListing();
-    }
-    break;
-    case 89: {
-      // "WHO"
+    } },
+    { "WHO", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       WhoIsOnline();
-    }
-    break;
-    case 90: {
-      // /A "NewMsgsAllConfs"
+    } },
+    { "NewMsgsAllConfs", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+      // /A NewMsgsAllConfs
       NewMsgsAllConfs();
-    }
-    break;
-    case 91: {
+    } },
+    { "MultiEMail", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       // /E "MultiEMail"
       MultiEmail();
-    }
-    break;
-    case 92: {
-      // "NewMsgScanFromHere"
+    } },
+    { "NewMsgScanFromHere", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       NewMsgScanFromHere();
-    }
-    break;
-    case 93: {
-      // "ValidatePosts"
+    } },
+    { "ValidatePosts", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ValidateScan();
-    }
-    break;
-    case 94: {
-      // "ChatRoom"
+    } },
+    { "ChatRoom", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ChatRoom();
-    }
-    break;
-    case 95: {
-      // "DownloadPosts"
+    } },
+    { "DownloadPosts", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       DownloadPosts();
-    }
-    break;
-    case 96: {
-      // "DownloadFileList"
+    } },
+    { "DownloadFileList", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       DownloadFileList();
-    }
-    break;
-    case 97: {
-      // "ClearQScan"
+    } },
+    { "ClearQScan", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ClearQScan();
-    }
-    break;
-    case 98: {
-      // "FastGoodBye"
+    } },
+    { "FastGoodBye", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       FastGoodBye();
-    }
-    break;
-    case 99: {
-      // "NewFilesAllConfs"
+    } },
+    { "NewFilesAllConfs", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       NewFilesAllConfs();
-    }
-    break;
-    case 100: {
-      // "ReadIDZ"
+    } },
+    { "ReadIDZ", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ReadIDZ();
-    }
-    break;
-    case 101: {
-      // "UploadAllDirs"
+    } },
+    { "UploadAllDirs", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       UploadAllDirs();
-    }
-    break;
-    case 102: {
-      // "UploadCurDir"
+    } },
+    { "UploadCurDir", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       UploadCurDir();
-    }
-    break;
-    case 103: {
-      // "RenameFiles"
+    } },
+    { "RenameFiles", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       RenameFiles();
-    }
-    break;
-    case 104: {
-      // "MoveFiles"
+    } },
+    { "MoveFiles", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       MoveFiles();
-    }
-    break;
-    case 105: {
-      // "SortDirs"
+    } },
+    { "SortDirs", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       SortDirs();
-    }
-    break;
-    case 106: {
-      // "ReverseSortDirs"
+    } },
+    { "ReverseSortDirs", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ReverseSort();
-    }
-    break;
-    case 107: {
-      // "AllowEdit"
+    } },
+    { "AllowEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       AllowEdit();
-    }
-    break;
-    case 109: {
-      // "UploadFilesBBS"
+    } },
+    { "UploadFilesBBS", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       UploadFilesBBS();
-    }
-    break;
-    case 110: {
-      // "DirList"
+    } },
+    { "DirList", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       DirList();
-    }
-    break;
-    case 111: {
-      // "UpDirConf"
+    } },
+    { "UpDirConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       UpDirConf();
-    }
-    break;
-    case 112: {
-      // "UpDir"
+    } },
+    { "UpDir", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       UpDir();
-    }
-    break;
-    case 113: {
-      // "DownDirConf"
+    } },
+    { "DownDirConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       DownDirConf();
-    }
-    break;
-    case 114: {
-      // "DownDir"
+    } },
+    { "DownDir", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       DownDir();
-    }
-    break;
-    case 115: {
-      // "ListUsersDL"
+    } },
+    { "ListUsersDL", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ListUsersDL();
-    }
-    break;
-    case 116: {
-      // "PrintDSZLog"
+    } },
+    { "PrintDSZLog", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       PrintDSZLog();
-    }
-    break;
-    case 117: {
-      // "PrintDevices"
+    } },
+    { "PrintDevices", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       PrintDevices();
-    }
-    break;
-    case 118: {
-      // "ViewArchive"
+    } },
+    { "ViewArchive", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ViewArchive();
-    }
-    break;
-    case 119: {
-      // "BatchMenu"
+    } },
+    { "BatchMenu", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       BatchMenu();
-    }
-    break;
-    case 120: {
-      // "Download"
+    } },
+    { "Download", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       Download();
-    }
-    break;
-    case 121: {
-      // "TempExtract"
+    } },
+    { "TempExtract", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       TempExtract();
-    }
-    break;
-    case 122: {
-      // "FindDescription"
+    } },
+    { "FindDescription", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       FindDescription();
-    }
-    break;
-    case 123: {
-      // "ArchiveMenu"
+    } },
+    { "ArchiveMenu", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       TemporaryStuff();
-    }
-    break;
-    case 124: {
-      // "HopDir"
+    } },
+    { "HopDir", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       HopDir();
-    }
-    break;
-    case 125: {
-      // "JumpDirConf"
+    } },
+    { "JumpDirConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       JumpDirConf();
-    }
-    break;
-    case 126: {
-      // "ListFiles"
+    } },
+    { "ListFiles", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ListFiles();
-    }
-    break;
-    case 127: {
-      // "NewFileScan"
+    } },
+    { "NewFileScan", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       NewFileScan();
-    }
-    break;
-    case 128: {
-      // "SetNewFileScanDate"
+    } },
+    { "SetNewFileScanDate", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       SetNewFileScanDate();
-    }
-    break;
-    case 129: {
-      // "RemoveFiles"
+    } },
+    { "RemoveFiles", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       RemoveFiles();
-    }
-    break;
-    case 130: {
-      // "SearchAllFiles"
+    } },
+    { "SearchAllFiles", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       SearchAllFiles();
-    }
-    break;
-    case 131: {
-      // "XferDefaults"
+    } },
+    { "XferDefaults", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       XferDefaults();
-    }
-    break;
-    case 132: {
-      // "Upload"
+    } },
+    { "Upload", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       Upload();
-    }
-    break;
-    case 133: {
-      // "YourInfoDL"
+    } },
+    { "YourInfoDL", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+      Upload();
+    } },
+    { "YourInfoDL", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       YourInfoDL();
-    }
-    break;
-    case 134: {
-      // "UploadToSysop"
+    } },
+    { "UploadToSysop", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       UploadToSysop();
-    }
-    break;
-    case 135: {
-      // "ReadAutoMessage"
+    } },
+    { "ReadAutoMessage", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ReadAutoMessage();
-    }
-    break;
-    case 136: {
-      // "SetNewScanMsg"
+    } },
+    { "SetNewScanMsg", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       SetNewScanMsg();
-    }
-    break;
-    case 137: {
-      // "ReadMessages"
+    } },
+    { "ReadMessages", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ReadMessages();
-    }
-    break;
-    /*
-    case 138:
-    { // "RUN"
-    ExecuteBasic(szParam1);
-    } break;
-    */
-    case 139: {
-      // "EventEdit"
+    } },
+    { "EventEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       EventEdit();
-    }
-    break;
-    case 140: {
-      // "LoadTextFile"
+    } },
+    { "LoadTextFile", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       LoadTextFile();
-    }
-    break;
-    case 141: {
-      // "GuestApply"
+    } },
+    { "GuestApply", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       GuestApply();
-    }
-    break;
-    case 142: {
-      // "ConfigFileList"
+    } },
+    { "ConfigFileList", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ConfigFileList();
-    }
-    break;
-    case 143: {
-      // "ListAllColors"
+    } },
+    { "ListAllColors", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       ListAllColors();
-    }
-    break;
-#ifdef QUESTIONS
-    case 144: {
-      // "EditQuestions"
-      EditQuestions();
-    }
-    break;
-    case 145: {
-      // "Questions"
-      Questions();
-    }
-    break;
-#endif
-    case 146: {
-      // "RemoveNotThere"
+    } },
+    { "RemoveNotThere", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       RemoveNotThere();
-    }
-    break;
-    case 147: {
-      // "AttachFile"
+    } },
+    { "AttachFile", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       AttachFile();
-    }
-    break;
-    case 148: {
-      // "InternetEmail"
+    } },
+    { "InternetEmail", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       InternetEmail();
-    }
-    break;
-    case 149: {
-      // "UnQScan"
+    } },
+    { "UnQScan", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       UnQScan();
-    }
-    break;
-    // ppMenuStringsIndex[150] thru ppMenuStringsIndex[153] not used.....
-    case 154: {
-      // "Packers"
+    } },
+    { "Packers", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       Packers();
-    }
-    break;
-    case 155: {
-      // Color_Config
+    } },
+    { "ColorConfig", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       color_config();
-    }
-    break;
-    //------------------------------------------------------------------
-    //  ppMenuStringsIndex[156] and [157] are reserved for SDS Systems and systems
-    //  that distribute modifications.  DO NOT reuse these strings for
-    //  other menu options.
-    //------------------------------------------------------------------
-    //    case 156:
-    //    { // ModAccess
-    //        ModsAccess();
-    //    } break;
-    //    case 157:
-    //    { // SDSAccess
-    //        SDSAccess();
-    //      } break;
-    //------------------------------------------------------------------
-    case 158: {
-      // InitVotes
+    } },
+    { "InitVotes", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       InitVotes();
-    }
-    break;
-    case 161: {
-      // TurnMCIOn
+    } },
+    { "TurnMCIOn", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       TurnMCIOn();
-    }
-    break;
-    case 162: {
-      // TurnMCIOff
+    } },
+    { "TurnMCIOff", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       TurnMCIOff();
-    }
-    break;
-    default: {
-      MenuSysopLog("The following command was not recognized");
-      MenuSysopLog(szCmd);
-    }
-    break;
-    }
-  }
+    } },
+//    { "", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+//    } },
+  };
 }
 
-
+#if defined( _MSC_VER )
+#pragma warning(pop)
+#endif
