@@ -27,7 +27,6 @@ if(UNIX)
   include_directories(${BBS_SOURCE_DIR}/platform/unix)
   set(PLATFORM_SOURCES 
 	${BBS_SOURCE_DIR}/platform/unix/utility2.cpp 
-	${BBS_SOURCE_DIR}/platform/unix/stringstuff.cpp 
 	)
   if(APPLE)
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation -framework Foundation")
