@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <string>
 
+#include "bbs/asv.h"
 #include "bbs/wwiv.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"

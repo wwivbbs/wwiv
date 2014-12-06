@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/voteedit.h"
 
 #include "bbs/input.h"
 #include "bbs/wstatus.h"

@@ -29,16 +29,6 @@
 class MenuInstanceData;
 class WUser;
 
-// File: asv.cpp
-
-void asv();
-void set_autoval(int n);
-
-
-// File: attach.cpp
-
-void attach_file(int mode);
-
 
 // File: automsg.cpp
 
@@ -248,12 +238,6 @@ void zap_contacts();
 void read_contacts();
 void set_net_num(int nNetworkNumber);
 
-
-// File: crc.cpp
-
-unsigned long int crc32buf(const char *pBuffer, size_t nLength);
-
-
 // File: defaults.cpp
 
 void select_editor();
@@ -294,7 +278,7 @@ void eventedit();
 
 // File: execexternal.cpp
 
-int  ExecuteExternalProgram(const std::string& commandLine, int nFlags);
+int ExecuteExternalProgram(const std::string& commandLine, int nFlags);
 
 
 // File: extract.cpp
@@ -669,33 +653,6 @@ void close_qscn();
 void read_qscn(int nUserNumber, uint32_t* qscn, bool bStayOpen, bool bForceRead = false);
 void write_qscn(int nUserNumber, uint32_t* qscn, bool bStayOpen);
 
-// File: valscan.cpp
-
-void valscan();
-
-
-// File: vote.cpp
-
-void vote();
-
-
-// File: voteedit.cpp
-
-void ivotes();
-void voteprint();
-
-
-// File: wfc.cpp
-
-void wfc_cls();
-void wfc_init();
-void wfc_screen();
-
-
-// File: WStringUtils.cpp
-
-// Moved to WStringUtils.h
-
 // File: xfer.cpp
 
 void zap_ed_info();
@@ -786,18 +743,5 @@ void list_temp_arc();
 void temporary_stuff();
 void move_file_t();
 void removefile();
-
-
-// File: xinit.cpp
-
-
-
-
-
-// WWIV Namespace inlined Functions
-
-
-
-
 
 #endif // __INCLUDED_FCNS_H__

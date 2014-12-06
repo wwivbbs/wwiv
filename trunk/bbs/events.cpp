@@ -24,6 +24,7 @@
 #include "bbs/printfile.h"
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
+#include "bbs/wfc.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 

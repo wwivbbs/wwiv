@@ -20,9 +20,9 @@
 #include <memory>
 #include <string>
 
+#include "bbs/attach.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
-#include "bbs/wwiv.h"
 #include "bbs/external_edit.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
@@ -30,6 +30,10 @@
 #include "bbs/menu.h"
 #include "bbs/menusupp.h"
 #include "bbs/pause.h"
+#include "bbs/valscan.h"
+#include "bbs/vote.h"
+#include "bbs/voteedit.h"
+#include "bbs/wwiv.h"
 #include "bbs/wconstants.h"
 #include "bbs/printfile.h"
 #include "bbs/wstatus.h"

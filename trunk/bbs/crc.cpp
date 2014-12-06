@@ -17,7 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include "bbs/crc.h"
 
 /**********************************************************************\
 |*                                                                    *|
@@ -78,8 +78,6 @@ typedef unsigned long int UNS_32_BITS;
 /*     logic; the shift must be unsigned (bring in zeroes).  On some   */
 /*     hardware you could probably optimize the shift in assembler by  */
 /*     using byte-swap instructions.                                   */
-
-//unsigned long int crc32buf(char *pBuffer, size_t nLength);
 
 static UNS_32_BITS crc_32_tab[] = {
   /* CRC polynomial 0xedb88320 */

@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/valscan.h"
 #include <algorithm>
 
 #include "bbs/datetime.h"

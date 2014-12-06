@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/vote.h"
 
 #include "bbs/wwiv.h"
 #include "bbs/wstatus.h"
