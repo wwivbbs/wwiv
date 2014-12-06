@@ -148,23 +148,32 @@ struct MenuRecIndex {
   uint8_t nFlags;             /* Quick access to the flags */
 };
 
+#pragma pack(pop)
+
 class MenuInstanceData {
 public:
   MenuInstanceData();
   ~MenuInstanceData();
+  bool Open();
+  void Close();
+  void DisplayHelp() const;
+  const std::string create_menu_filename(const std::string& extension) const;
+  static const std::string create_menu_filename(
+      const std::string& path, const std::string& menu, const std::string& extension);
+  void Menus(const std::string& menuDirectory, const std::string& menuName);
+
   std::string menu;
   std::string path;
-  File *pMenuFile;
   uint16_t nAmountRecs;
   bool finished;
   bool reload;  /* true if we are going to reload the menus */
 
   std::string prompt;
-  MenuRecIndex *index;
+  std::unique_ptr<MenuRecIndex[]> index;
   MenuHeader header;   /* Hold header info for current menu set in memory */
+  std::unique_ptr<File> menu_file;
 };
 
-#pragma pack(pop)
 
 namespace wwiv {
 namespace menus {
@@ -173,7 +182,7 @@ class MenuDescriptions {
 public:
   MenuDescriptions(const std::string& menupath);
   ~MenuDescriptions();
-  const std::string description(const std::string& name);
+  const std::string description(const std::string& name) const;
   bool set_description(const std::string& name, const std::string& description);
 
 private:
@@ -190,7 +199,6 @@ void ConfigUserMenuSet();
 
 // Functions used by menuedit and menu
 const std::string GetMenuDirectory(const std::string menuPath);
-const std::string GetMenuDirectory(const std::string menuPath, const std::string menuName, const std::string extension);
 const std::string GetMenuDirectory();
 void MenuSysopLog(const std::string pszMsg);
 
@@ -198,8 +206,6 @@ void MenuSysopLog(const std::string pszMsg);
 void TurnMCIOff();
 void TurnMCIOn();
 int  GetMenuIndex(const char* pszCommand);
-void Menus(MenuInstanceData * pMenuData, const std::string menuDirectory, const std::string menuName);
 char *MenuParseLine(char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2);
-void AMDisplayHelp(MenuInstanceData * pMenuData);
 
 #endif  // __INCLUDED_MENU_H__
