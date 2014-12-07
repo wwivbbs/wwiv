@@ -72,15 +72,14 @@ void read_user(unsigned int un, userrec *u) {
     return;
   }
 
-  int nu = static_cast<int>((file.GetLength() / syscfg.userreclen) - 1);
-
-  if ((int) un > nu) {
+  std::size_t nu = (file.GetLength() / syscfg.userreclen) - 1;
+  if (un > nu) {
     file.Close();
     u->inact = inact_deleted;
     fix_user_rec(u);
     return;
   }
-  long pos = ((long) syscfg.userreclen) * ((long) un);
+  long pos = un * syscfg.userreclen;
   file.Seek(pos, File::seekBegin);
   file.Read(u, syscfg.userreclen);
   file.Close();
@@ -88,7 +87,7 @@ void read_user(unsigned int un, userrec *u) {
 }
 
 void write_user(unsigned int un, userrec *u) {
-  if ((un < 1) || (un > syscfg.maxusers)) {
+  if (un < 1 || un > syscfg.maxusers) {
     return;
   }
 
