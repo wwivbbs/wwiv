@@ -547,8 +547,7 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
   }
 
   // add the subconfs now
-  for (std::vector<int>::iterator iter = intlist.begin(); iter != intlist.end(); ++iter) {
-    int nConference = *iter;
+  for (auto nConference : intlist) {
     if (nConference >= num) {
       break;
     }
@@ -601,8 +600,7 @@ void delsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
     intlist.push_back(*which);
   }
 
-  for (std::vector<int>::iterator iter = intlist.begin(); iter != intlist.end(); ++iter) {
-    int nConference = *iter;
+  for (auto nConference : intlist) {
     if (nConference >= num) {
       break;
     }
