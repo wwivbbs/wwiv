@@ -20,6 +20,7 @@
 #define __INCLUDED_STRINGS_H__
 
 #include <cstdint>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -40,14 +41,21 @@ extern const char *DELIMS_WHITE;
 namespace wwiv {
 namespace strings {
 
+template<typename A>
+std::string StrCat(const A& a) {
+  std::ostringstream ss;
+  ss << a;
+  return ss.str();
+}
+
+template<typename A, typename... Args>
+std::string StrCat(const A& a, const Args&... args) {
+  std::ostringstream ss;
+  ss << a << StrCat(args...);
+  return ss.str();
+}
+
 std::string StringPrintf(const char *pszFormattedText, ...);
-std::string StrCat(std::string s1, std::string s2);
-std::string StrCat(std::string s1, std::string s2, std::string s3);
-std::string StrCat(std::string s1, std::string s2, std::string s3, std::string s4);
-std::string StrCat(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5);
-std::string StrCat(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5, std::string s6);
-std::string StrCat(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5, std::string s6, std::string s7);
-std::string StrCat(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5, std::string s6, std::string s7, std::string s8);
 int GetStringLength(const char* pszString);
 bool IsEquals(const char *pszString1, const char *pszString2);
 bool IsEqualsIgnoreCase(const char *pszString1, const char *pszString2);
