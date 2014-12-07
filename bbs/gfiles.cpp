@@ -26,8 +26,7 @@
 #include "core/wwivassert.h"
 
 using std::string;
-using wwiv::strings::IsEquals;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 void gfl_hdr(int which);
 void list_sec(int *map, int nmap);

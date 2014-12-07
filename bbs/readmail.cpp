@@ -34,6 +34,7 @@
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::strings;
 
 // Local Functions
 

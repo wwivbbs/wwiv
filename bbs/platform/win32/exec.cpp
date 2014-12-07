@@ -34,6 +34,7 @@
 #include "bbs/wsession.h"
 #include "bbs/vars.h"
 
+
 // from com.cpp.
 // this is only used in the 9x support and will be remvoed shortly
 void makeansi(int attr, char *pszOutBuffer, bool forceit);
@@ -57,7 +58,7 @@ const int CONST_NUM_LOOPS_BEFORE_EXIT_CHECK         = 500;
 typedef HANDLE(WINAPI *OPENVXDHANDLEFUNC)(HANDLE);
 
 using std::string;
-using wwiv::strings::StrCat;
+using namespace wwiv::strings;
 
 // Helper functions
 

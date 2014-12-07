@@ -75,7 +75,7 @@ void RemoveWhitespace(std::string* s);
 bool starts_with(const std::string& input, const std::string& match);
 bool ends_with(const std::string& input, const std::string& match);
 
-void StringJustify(std::string* s, int length, char bg, JustificationType just_type);
+void StringJustify(std::string* s, std::string::size_type length, char bg, JustificationType just_type);
 void StringTrim(char *pszString);
 void StringTrim(std::string* s);
 void StringTrimEnd(std::string* s);
@@ -83,6 +83,8 @@ void StringTrimEnd(char *pszString);
 void StringTrimBegin(std::string* s);
 void StringUpperCase(std::string* s);
 void StringLowerCase(std::string* s);
+
+const char *charstr(std::string::size_type length, int fill);
 
 }  // namespace strings
 
@@ -101,7 +103,6 @@ const T LowerCase(const T a) {
 }  // namespace wwiv
 
 // Function Prototypes
-const char *charstr(int nStringLength, int chRepeatChar);
 char *stripcolors(const char *pszOrig);
 std::string stripcolors(const std::string& orig);
 unsigned char upcase(unsigned char ch);

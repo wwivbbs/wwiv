@@ -211,7 +211,7 @@ bool ends_with(const std::string& input, const std::string& match) {
  *      RIGHT
  * @return the justified text.
  */
-void StringJustify(string* s, int length, char bg, JustificationType just_type) {
+void StringJustify(string* s, string::size_type length, char bg, JustificationType just_type) {
   if (s->size() > length) {
     *s = s->substr(0, length);
     return;
@@ -284,28 +284,22 @@ void StringLowerCase(string* s) {
   std::transform(s->begin(), s->end(), s->begin(), (int(*)(int)) tolower);
 }
 
-}  // namespace strings
-}  // namespace wwiv
-
 /**
  * Returns string comprised of char chRepeatChar, nStringLength characters in length
  * @param nStringLength The number of characters to create the string
  * @param chRepeatChar The character to repeat.
  * @return The string containing rc repeated len times.
  */
-const char *charstr(int nStringLength, int chRepeatChar) {
-  static char szTempBuffer[ 255 ];
-
-  if (chRepeatChar == 0 || nStringLength < 1) {
-    return "";
-  }
-
-  nStringLength = std::min<int>(nStringLength, 160);
-
-  memset(szTempBuffer, chRepeatChar, nStringLength);
-  szTempBuffer[ nStringLength ] = '\0';
-  return szTempBuffer;
+const char *charstr(string::size_type length, int fill) {
+  static string result;
+  result = string(std::min<int>(length, 160), fill);
+  return result.c_str();
 }
+
+
+}  // namespace strings
+}  // namespace wwiv
+
 
 /**
  * Is the character c a possible color code. (is it #, B, or a digit)
@@ -315,10 +309,7 @@ bool IsColorCode(char c) {
   if (!c) {
     return false;
   }
-  if (c == '#' || c == 'B' || isdigit(c)) {
-    return true;
-  }
-  return false;
+  return (c == '#' || c == 'B' || isdigit(c));
 }
 
 char *stripcolors(const char *pszOrig) {
@@ -336,7 +327,7 @@ char *stripcolors(const char *pszOrig) {
  * @return A new string without the color codes
  */
 string stripcolors(const string& orig) {
-  ostringstream os;
+  string out;
   for (string::const_iterator i = orig.begin(); i != orig.end(); i++) {
     if (*i == '|' && (i + 1) != orig.end() && (i + 2) != orig.end() && IsColorCode(*(i + 1)) && IsColorCode(*(i + 2))) {
       ++i;
@@ -344,10 +335,10 @@ string stripcolors(const string& orig) {
     } else if (*i == 3 && i + 1 < orig.end() && isdigit(*(i + 1))) {
       ++i;
     } else {
-      os << *i;
+      out.push_back(*i);
     }
   }
-  return os.str();
+  return out;
 }
 
 /**

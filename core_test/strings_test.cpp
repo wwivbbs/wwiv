@@ -324,3 +324,8 @@ TEST(StringsTest, StringLowerCase) {
   StringLowerCase(&a);
   EXPECT_STREQ("ab", a.c_str());
 }
+
+TEST(StringsTest, CharStr) {
+  EXPECT_STREQ("a", charstr(1, 'a'));
+  EXPECT_STREQ("bbbbb", charstr(5, 'b'));
+}
