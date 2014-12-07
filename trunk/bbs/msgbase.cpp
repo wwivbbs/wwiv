@@ -39,9 +39,7 @@
 using std::string;
 using std::stringstream;
 using std::unique_ptr;
-using wwiv::strings::IsEqualsIgnoreCase;
-using wwiv::strings::StrCat;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 // Local function prototypes
 File* OpenMessageFile(const string messageAreaFileName);

@@ -21,6 +21,8 @@
 #include "bbs/subxtr.h"
 #include "core/strings.h"
 
+using namespace wwiv::strings;
+
 void old_sublist() {
   char s[ 255 ];
 

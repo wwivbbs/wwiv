@@ -25,8 +25,7 @@
 #include "core/strings.h"
 
 using std::string;
-using wwiv::strings::StrCat;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 // Local funciton prototypes
 
