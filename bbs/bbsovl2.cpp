@@ -91,10 +91,9 @@ void OnlineUserEditor() {
   bool done = false;
 
   // heading
-  char szLocalName[ 255 ];
-  sprintf(szLocalName, "[%s]", session()->user()->GetUserNameAndNumber(session()->usernum));
-  session()->localIO()->LocalXYAPrintf(wx + 1, wy - 1, 31, " %-29.29s%s ", "WWIV User Editor",
-                                          StringJustify(szLocalName, 37, SPACE, JUSTIFY_RIGHT));
+  string s = StringPrintf("[%s]", session()->user()->GetUserNameAndNumber(session()->usernum));
+  StringJustify(&s, 37, SPACE, JustificationType::RIGHT);
+  session()->localIO()->LocalXYAPrintf(wx + 1, wy - 1, 31, " %-29.29s%s ", "WWIV User Editor", s.c_str());
 
   session()->localIO()->LocalXYAPrintf(wx + 2,  wy + 1, 3,   "Security Level(SL): %s", sl);
   session()->localIO()->LocalXYAPrintf(wx + 36, wy + 1, 3,   "  Message AR: %s", ar);
