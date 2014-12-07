@@ -24,16 +24,6 @@
 #include <string>
 #include <vector>
 
-extern const char *DELIMS_WHITE;
-
-#ifdef _WIN32
-
-#define vsnprintf _vsnprintf
-#define snprintf _snprintf
-
-#endif   // _WIN32
-
-
 namespace wwiv {
 namespace strings {
 
@@ -110,14 +100,20 @@ char *stripcolors(const char *pszOrig);
 std::string stripcolors(const std::string& orig);
 unsigned char upcase(unsigned char ch);
 unsigned char locase(unsigned char ch);
-char *stristr(char *pszString, char *pszPattern);
 
 void properize(char *pszText);
 std::string properize(const std::string& text);
 
+extern const char *DELIMS_WHITE;
+
 #ifdef _WIN32
+#define vsnprintf _vsnprintf
+#define snprintf _snprintf
+
 #define strcasecmp( a, b ) _stricmp( a, b )
 #define strncasecmp( a, b, c) _strnicmp( a, b, c )
+
+char *strcasestr(const char *pszString, const char *pszPattern);
 
 #else  // _WIN32
 char *strupr(char *s);

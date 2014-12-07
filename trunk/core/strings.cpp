@@ -33,6 +33,14 @@
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 
+#ifdef _WIN32
+#define NOMINMAX
+#include "Shlwapi.h"
+#pragma comment(lib, "Shlwapi.lib")
+#undef StrCat
+#endif  // _WIN32
+
+
 using std::numeric_limits;
 using std::stoi;
 using std::string;
@@ -411,29 +419,11 @@ unsigned char locase(unsigned char ch) {
   return ch;
 }
 
-/**
- * Returns a pointer to the 1st occurence of pszPattern inside of s1 in a case
- * insensitive manner
- *
- * @param pszString The whole string
- * @param pszPattern The string to search for
- *
- * @return pointer inside of pszString which contains pszPattern.
- */
-char *stristr(char *pszString, char *pszPattern) {
-  WWIV_ASSERT(pszString);
-  WWIV_ASSERT(pszPattern);
-
-  int len = strlen(pszPattern), pos = 0;
-
-  while (pszString[pos]) {
-    if (strncasecmp(pszString + pos, pszPattern, len) == 0) {
-      return (pszString + pos);
-    }
-    ++pos;
-  }
-  return nullptr;
+#ifdef _WIN32
+char *strcasestr(const char *haystack, const char *needle) {
+  return StrStrI(haystack, needle);
 }
+#endif  // _WIN32
 
 void properize(char *pszText) {
   if (pszText == nullptr) {
