@@ -19,11 +19,11 @@
 
 #include <chrono>
 
-#include "wwiv.h"
+#include "bbs/pause.h"
+#include "bbs/keycodes.h"
+#include "bbs/wwiv.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "pause.h"
-#include "bbs/keycodes.h"
 
 extern char str_pause[];
 

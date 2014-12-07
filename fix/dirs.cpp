@@ -20,10 +20,10 @@
 #include <string>
 #include <vector>
 
-#include "wwiv.h"
-#include "fix.h"
-#include "log.h"
-#include "dirs.h"
+#include "bbs/wwiv.h"
+#include "fix/fix.h"
+#include "fix/log.h"
+#include "fix/dirs.h"
 
 using std::cout;
 using std::endl;

@@ -16,22 +16,22 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <string>
-
-#include "wconstants.h"
-#include "sdk/filenames.h"
-#include "core/file.h"
-#include "wuser.h"
-#include "wsession.h"
-#include "core/strings.h"
-#include "vars.h"
-#include "bbs.h"
 #include <cstdlib>
 #include <memory>
-#include "wstatus.h"
+#include <string>
+
+#include "bbs/bbs.h"
+#include "bbs/wconstants.h"
+#include "bbs/wuser.h"
+#include "bbs/wsession.h"
+#include "bbs/vars.h"
+#include "bbs/wstatus.h"
+#include "core/strings.h"
+#include "core/file.h"
+#include "sdk/filenames.h"
 
 // TODO - Remove this and finduser, finduser1, ISR, DSR, and add_add
-#include "fcns.h"
+#include "bbs/fcns.h"
 
 using std::string;
 using namespace wwiv::strings;

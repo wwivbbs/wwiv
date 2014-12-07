@@ -17,11 +17,10 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
-
-#include "platform/wlocal_io.h"
-#include "net.h"
-#include "wcomm.h"
+#include "bbs/wwiv.h"
+#include "bbs/platform/wlocal_io.h"
+#include "bbs/net.h"
+#include "bbs/wcomm.h"
 #include "core/wwivassert.h"
 
 using std::string;

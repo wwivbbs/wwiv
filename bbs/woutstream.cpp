@@ -20,10 +20,10 @@
 #include <cstdarg>
 #include <string>
 
-#include "wwiv.h"
-#include "woutstreambuffer.h"
-#include "core/strings.h"
 #include "bbs/keycodes.h"
+#include "bbs/woutstreambuffer.h"
+#include "bbs/wwiv.h"
+#include "core/strings.h"
 
 using std::ostream;
 using std::string;

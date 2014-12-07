@@ -19,14 +19,14 @@
 #include <string>
 #include <vector>
 
-#include "wwiv.h"
-#include "common.h"
-#include "listplus.h"
-#include "printfile.h"
-#include "core/strings.h"
-#include "core/wwivassert.h"
+#include "bbs/wwiv.h"
+#include "bbs/common.h"
+#include "bbs/listplus.h"
+#include "bbs/printfile.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+#include "core/strings.h"
+#include "core/wwivassert.h"
 
 using std::string;
 using std::vector;

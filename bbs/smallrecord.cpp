@@ -16,33 +16,30 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
-
-#include "core/wwivport.h"
-#include "wconstants.h"
-#include "sdk/filenames.h"
-#include "core/file.h"
-#include "wuser.h"
-#include "core/strings.h"
-#include "vars.h"
-#include "bbs.h"
 #include <iostream>
-#include "wstatus.h"
+
+#include "bbs/bbs.h"
+#include "bbs/vars.h"
+#include "bbs/wconstants.h"
+#include "bbs/wuser.h"
+#include "bbs/wstatus.h"
+#include "core/file.h"
+#include "core/strings.h"
+#include "core/wwivport.h"
+#include "sdk/filenames.h"
 
 // TODO - Remove this and finduser, finduser1, ISR, DSR, and add_add
-#include "fcns.h"
+#include "bbs/fcns.h"
 
+using namespace wwiv::strings;
 
-
-//
 // Inserts a record into NAMES.LST
-//
 void InsertSmallRecord(int nUserNumber, const char *pszName) {
   smalrec sr;
   int cp = 0;
   WStatus *pStatus = application()->GetStatusManager()->BeginTransaction();
   while (cp < pStatus->GetNumUsers() &&
-         wwiv::strings::StringCompare(pszName, reinterpret_cast<char*>(smallist[cp].name)) > 0) {
+         StringCompare(pszName, reinterpret_cast<char*>(smallist[cp].name)) > 0) {
     ++cp;
   }
   for (int i = pStatus->GetNumUsers(); i > cp; i--) {

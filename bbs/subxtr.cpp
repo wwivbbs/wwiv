@@ -16,9 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "subxtr.h"
+#include "bbs/subxtr.h"
 
-#include "wwiv.h"
+#include "bbs/wwiv.h"
 #include "core/strings.h"
 
 static xtrasubsnetrec *xsubsn;

@@ -16,13 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "qscan.h"
+#include "bbs/qscan.h"
 
 #include <cstdint>
 #include <memory>
-#include "bbs.h"
-#include "vars.h"
-#include "wsession.h"
+#include "bbs/bbs.h"
+#include "bbs/vars.h"
+#include "bbs/wsession.h"
 
 namespace wwiv {
 namespace bbs {

@@ -17,7 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include "bbs/wwiv.h"
 
 
 static File qscanFile;
