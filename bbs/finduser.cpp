@@ -33,8 +33,8 @@
 // TODO - Remove this and finduser, finduser1, ISR, DSR, and add_add
 #include "fcns.h"
 
-using wwiv::strings::IsEqualsIgnoreCase;
 using std::string;
+using namespace wwiv::strings;
 
 //
 // Returns user number

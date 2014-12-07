@@ -76,6 +76,13 @@ bool starts_with(const std::string& input, const std::string& match);
 bool ends_with(const std::string& input, const std::string& match);
 
 void StringJustify(std::string* s, int length, char bg, JustificationType just_type);
+void StringTrim(char *pszString);
+void StringTrim(std::string* s);
+void StringTrimEnd(std::string* s);
+void StringTrimEnd(char *pszString);
+void StringTrimBegin(std::string* s);
+void StringUpperCase(std::string* s);
+void StringLowerCase(std::string* s);
 
 }  // namespace strings
 
@@ -95,17 +102,10 @@ const T LowerCase(const T a) {
 
 // Function Prototypes
 const char *charstr(int nStringLength, int chRepeatChar);
-void StringTrimEnd(char *pszString);
 char *stripcolors(const char *pszOrig);
 std::string stripcolors(const std::string& orig);
 unsigned char upcase(unsigned char ch);
 unsigned char locase(unsigned char ch);
-void StringTrim(char *pszString);
-void StringTrim(std::string* s);
-void StringTrimEnd(std::string* s);
-void StringTrimBegin(std::string* s);
-void StringUpperCase(std::string* s);
-void StringLowerCase(std::string* s);
 char *stristr(char *pszString, char *pszPattern);
 char *StringRemoveWhitespace(char *str);
 char *StringRemoveChar(const char *pszString, char chCharacterToRemove);

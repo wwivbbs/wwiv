@@ -231,6 +231,59 @@ void StringJustify(string* s, int length, char bg, JustificationType just_type) 
   }
 }
 
+
+/**
+ * Removes spaces from the beginning and the end of the string s.
+ * @param s the string from which to remove spaces
+ * @return s with spaces removed.
+ */
+void StringTrim(char *pszString) {
+  string s(pszString);
+  StringTrim(&s);
+  strcpy(pszString, s.c_str());
+}
+
+/**
+ * Removes spaces from the beginning and the end of the string s.
+ * @param s the string from which to remove spaces
+ * @return s with spaces removed.
+ */
+void StringTrim(string* s) {
+  string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
+  s->erase(0, pos);
+
+  pos = s->find_last_not_of(DELIMS_WHITE);
+  s->erase(pos + 1);
+}
+
+void StringTrimBegin(string* s) {
+  string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
+  s->erase(0, pos);
+}
+
+void StringTrimEnd(string* s) {
+  string::size_type pos = s->find_last_not_of(DELIMS_WHITE);
+  s->erase(pos + 1);
+}
+
+/**
+ * Removes the whitespace from the end of the string
+ * @param pszString The string from which to remove the trailing whitespace
+ */
+void StringTrimEnd(char *pszString) {
+  string s(pszString);
+  StringTrimEnd(&s);
+  strcpy(pszString, s.c_str());
+}
+
+void StringUpperCase(string* s) {
+  std::transform(s->begin(), s->end(), s->begin(), (int(*)(int)) toupper);
+}
+
+void StringLowerCase(string* s) {
+  std::transform(s->begin(), s->end(), s->begin(), (int(*)(int)) tolower);
+}
+
 }  // namespace strings
 }  // namespace wwiv
 
@@ -253,23 +306,6 @@ const char *charstr(int nStringLength, int chRepeatChar) {
   szTempBuffer[ nStringLength ] = '\0';
   return szTempBuffer;
 }
-
-
-/**
- * Removes the whitespace from the end of the string
- * @param pszString The string from which to remove the trailing whitespace
- */
-void StringTrimEnd(char *pszString) {
-  WWIV_ASSERT(pszString);
-  string::size_type i = strlen(pszString);
-  while ((i > 0) && (pszString[i - 1] == 32)) {
-    WWIV_ASSERT(i > 0);
-    --i;
-  }
-  WWIV_ASSERT(i >= 0);
-  pszString[i] = '\0';
-}
-
 
 /**
  * Is the character c a possible color code. (is it #, B, or a digit)
@@ -314,7 +350,6 @@ string stripcolors(const string& orig) {
   return os.str();
 }
 
-
 /**
  * Translates the character ch into uppercase using WWIV's translation tables
  * @param ch The character to translate
@@ -342,48 +377,6 @@ unsigned char locase(unsigned char ch) {
   }
 
   return ch;
-}
-
-/**
- * Removes spaces from the beginning and the end of the string s.
- * @param s the string from which to remove spaces
- * @return s with spaces removed.
- */
-void StringTrim(char *pszString) {
-  string s(pszString);
-  StringTrim(&s);
-  strcpy(pszString, s.c_str());
-}
-
-/**
- * Removes spaces from the beginning and the end of the string s.
- * @param s the string from which to remove spaces
- * @return s with spaces removed.
- */
-void StringTrim(string* s) {
-  string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
-  s->erase(0, pos);
-
-  pos = s->find_last_not_of(DELIMS_WHITE);
-  s->erase(pos + 1);
-}
-
-void StringTrimBegin(string* s) {
-  string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
-  s->erase(0, pos);
-}
-
-void StringTrimEnd(string* s) {
-  string::size_type pos = s->find_last_not_of(DELIMS_WHITE);
-  s->erase(pos + 1);
-}
-
-void StringUpperCase(string* s) {
-  std::transform(s->begin(), s->end(), s->begin(), (int(*)(int)) toupper);
-}
-
-void StringLowerCase(string* s) {
-  std::transform(s->begin(), s->end(), s->begin(), (int(*)(int)) tolower);
 }
 
 /**

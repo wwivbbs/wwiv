@@ -36,9 +36,7 @@
 using std::string;
 using std::unique_ptr;
 using wwiv::bbs::InputMode;
-using wwiv::strings::GetStringLength;
-using wwiv::strings::IsEqualsIgnoreCase;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 //
 // Local function prototypes

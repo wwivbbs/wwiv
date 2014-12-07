@@ -30,6 +30,7 @@
 
 using std::string;
 using std::vector;
+using namespace wwiv::strings;
 
 // Local function prototypes
 int  compare_criteria(struct search_record * sr, uploadsrec * ur);
