@@ -19,9 +19,9 @@
 
 #if defined (NET)
 #include "sdk/vardec.h"
-#include "net.h"
+#include "bbs/net.h"
 #else
-#include "wwiv.h"
+#include "bbs/wwiv.h"
 #endif
 #include "core/strings.h"
 #include "core/wwivassert.h"

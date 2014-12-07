@@ -21,19 +21,15 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
-#include "sdk/filenames.h"
 #include "bbs/wuser.h"
 #include "core/strings.h"
 #include "core/file.h"
-
-#if defined( _WIN32 )
-#define snprintf _snprintf
-#endif // _WIN32
+#include "sdk/filenames.h"
 
 #ifndef NOT_BBS
-#include "bbs.h"
-#include "vars.h"
-#include "wstatus.h"
+#include "bbs/bbs.h"
+#include "bbs/vars.h"
+#include "bbs/wstatus.h"
 #endif // NOT_BBS
 extern unsigned char *translate_letters[];
 
@@ -41,7 +37,7 @@ WUser::WUser() {
   ZeroUserData();
 }
 
-WUser::~WUser() { }
+WUser::~WUser() {}
 
 WUser::WUser(const WUser& w) {
   memcpy(&data, &w.data, sizeof(userrec));

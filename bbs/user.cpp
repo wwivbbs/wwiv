@@ -17,19 +17,18 @@
 /*                                                                        */
 /**************************************************************************/
 
-
-#include "core/wwivport.h"
-#include "wconstants.h"
-#include "sdk/filenames.h"
+#include "bbs/bbs.h"
+#include "bbs/vars.h"
+#include "bbs/wconstants.h"
+#include "bbs/wuser.h"
+#include "bbs/wsession.h"
 #include "core/file.h"
-#include "wuser.h"
-#include "wsession.h"
 #include "core/strings.h"
-#include "vars.h"
-#include "bbs.h"
+#include "core/wwivport.h"
+#include "sdk/filenames.h"
 
 // TODO - Remove this and finduser, finduser1, ISR, DSR, and add_add
-#include "fcns.h"
+#include "bbs/fcns.h"
 
 /*
 * Checks status of given userrec to see if conferencing is turned on.

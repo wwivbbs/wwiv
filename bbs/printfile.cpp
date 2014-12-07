@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "printfile.h"
+#include "bbs/printfile.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -24,17 +24,17 @@
 #include <string>
 #include <vector>
 
-#include "bbs.h"
-#include "wsession.h"
+#include "bbs/bbs.h"
+#include "bbs/platform/wlocal_io.h"
+#include "bbs/fcns.h"
+#include "bbs/keycodes.h"
+#include "bbs/vars.h"
+#include "bbs/wconstants.h"
+#include "bbs/wsession.h"
 #include "core/wwivport.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
-#include "platform/wlocal_io.h"
-#include "fcns.h"
-#include "bbs/keycodes.h"
-#include "vars.h"
-#include "wconstants.h"
 
 using std::string;
 using std::unique_ptr;

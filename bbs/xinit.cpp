@@ -39,7 +39,7 @@
 #include "core/wwivport.h"
 
 // Additional INI file function and structure
-#include "xinitini.h"
+#include "bbs/xinitini.h"
 
 // %%TODO: Turn this warning back on once the rest of the code is cleaned up
 #if defined( _MSC_VER )

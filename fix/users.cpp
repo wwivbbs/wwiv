@@ -18,10 +18,10 @@
 /**************************************************************************/
 #include <algorithm>
 
-#include "wwiv.h"
-#include "fix.h"
-#include "log.h"
-#include "users.h"
+#include "bbs/wwiv.h"
+#include "fix/fix.h"
+#include "fix/log.h"
+#include "fix/users.h"
 
 // This causes compile errors before wwiv.h That seems broken
 #include <algorithm>

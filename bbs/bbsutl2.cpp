@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-#include "wwiv.h"
+#include "bbs/wwiv.h"
 #include "core/inifile.h"
 #include "core/strings.h"
 

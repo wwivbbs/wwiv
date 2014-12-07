@@ -18,10 +18,7 @@
 /**************************************************************************/
 
 
-#include "woutstreambuffer.h"
+#include "bbs/woutstreambuffer.h"
 
-WOutStreamBuffer::WOutStreamBuffer() {
-}
-
-WOutStreamBuffer::~WOutStreamBuffer() {
-}
+WOutStreamBuffer::WOutStreamBuffer() {}
+WOutStreamBuffer::~WOutStreamBuffer() {}

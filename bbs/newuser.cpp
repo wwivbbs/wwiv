@@ -665,8 +665,6 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
   }
 }
 
-
-
 // Clears session()->user()'s data and makes it ready to be a new user, also
 // clears the QScan pointers
 void CreateNewUserRecord() {

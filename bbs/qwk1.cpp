@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <qwk.h>
+#include "bbs/qwk.h"
 
 #include <chrono>
 #include <memory>
