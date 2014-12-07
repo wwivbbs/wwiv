@@ -17,20 +17,22 @@
 /*                                                                        */
 /**************************************************************************/
 #include <cstdarg>
+#include <cstddef>
 #include <string>
 
 #include "bbs/datetime.h"
-#include "core/strings.h"
 #include "bbs/wwiv.h"
+#include "core/strings.h"
 
 using std::string;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 // Local function prototypes
 void AddLineToSysopLogImpl(int cmd, const string& text);
 
-#define LOG_STRING 0
-#define LOG_CHAR   4
+static const int LOG_STRING = 0;
+static const int LOG_CHAR = 4;
+static const std::size_t CAT_BUFSIZE = 8192;
 
 /*
 * Creates sysoplog filename in s, from datestring.
@@ -45,8 +47,6 @@ string GetSysopLogFileName(const string& d) {
 void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName) {
   sprintf(pszInstanceLogFileName, "inst-%3.3u.log", application()->GetInstanceNumber());
 }
-
-#define CAT_BUFSIZE 8192
 
 /*
 * Copies temporary/instance sysoplog to primary sysoplog file.
@@ -120,8 +120,7 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
     }
     string logLine;
     if (midline > 0) {
-      logLine = "\r\n";
-      logLine += text;
+      logLine = StrCat("\r\n", text);
       midline = 0;
     } else {
       logLine = text;
@@ -154,18 +153,15 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
   }
   break;
   default: {
-    std::ostringstream os;
-    os << "Invalid Command passed to sysoplog::AddLineToSysopLogImpl, Cmd = " << cmd;
-    AddLineToSysopLogImpl(LOG_STRING, os.str());
-  }
-  break;
+    AddLineToSysopLogImpl(LOG_STRING, StrCat("Invalid Command passed to sysoplog::AddLineToSysopLogImpl, Cmd = ", std::to_string(cmd)));
+  } break;
   }
 }
 
 /*
 * Writes a string to the sysoplog, if user online and EffectiveSl < 255.
 */
-void sysopchar(const string text) {
+void sysopchar(const string& text) {
   if ((incom || session()->GetEffectiveSl() != 255) && !text.empty()) {
     AddLineToSysopLogImpl(LOG_CHAR, text);
   }
@@ -175,11 +171,9 @@ void sysopchar(const string text) {
 * Writes a string to the sysoplog, if EffectiveSl < 255 and user online,
 * indented a few spaces.
 */
-void sysoplog(const string text, bool bIndent) {
+void sysoplog(const string& text, bool bIndent) {
   if (bIndent) {
-    std::ostringstream os;
-    os << "   " << text;
-    AddLineToSysopLogImpl(LOG_STRING, os.str());
+    AddLineToSysopLogImpl(LOG_STRING, StrCat("   ", text));
   } else {
     AddLineToSysopLogImpl(LOG_STRING, text);
   }
