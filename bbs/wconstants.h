@@ -19,12 +19,6 @@
 #ifndef __INCLUDED_WCONSTANTS_H__
 #define __INCLUDED_WCONSTANTS_H__
 
-#ifndef JUSTIFY_LEFT
-#define JUSTIFY_LEFT   0
-#define JUSTIFY_RIGHT  1
-#define JUSTIFY_CENTER 2
-#endif  // JUSTIFY_LEFT
-
 // For get_kb_event, decides if the number pad turns '8' into an arrow etc.. or not
 #define NOTNUMBERS 1
 #define NUMBERS    0

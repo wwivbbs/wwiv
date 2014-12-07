@@ -240,3 +240,54 @@ TEST(StringsTest, EndssWith) {
   EXPECT_FALSE(ends_with("asdf", "adf"));
   EXPECT_FALSE(ends_with("asdf", "easdf"));
 }
+
+TEST(StringsTest, StringJustify_Left) {
+  string a("a");
+  StringJustify(&a, 2, ' ', JustificationType::LEFT);
+  EXPECT_STREQ("a ", a.c_str());
+
+  string b("b");
+  StringJustify(&b, 2, ' ', JustificationType::LEFT);
+  EXPECT_STREQ("b ", b.c_str());
+}
+
+TEST(StringsTest, StringJustify_LeftOtherChar) {
+  string a("a");
+  StringJustify(&a, 2, '.', JustificationType::LEFT);
+  EXPECT_STREQ("a.", a.c_str());
+
+  string b("b");
+  StringJustify(&b, 2, '.', JustificationType::LEFT);
+  EXPECT_STREQ("b.", b.c_str());
+}
+
+TEST(StringsTest, StringJustify_Right) {
+  string a("a");
+  StringJustify(&a, 2, ' ', JustificationType::RIGHT);
+  EXPECT_STREQ(" a", a.c_str());
+
+  string b("b");
+  StringJustify(&b, 2, ' ', JustificationType::RIGHT);
+  EXPECT_STREQ(" b", b.c_str());
+}
+
+TEST(StringsTest, StringJustify_RightOtherChar) {
+  string a("a");
+  StringJustify(&a, 2, '.', JustificationType::RIGHT);
+  EXPECT_STREQ(".a", a.c_str());
+
+  string b("b");
+  StringJustify(&b, 2, '.', JustificationType::RIGHT);
+  EXPECT_STREQ(".b", b.c_str());
+}
+
+TEST(StringsTest, StringJustify_LongerString) {
+  string a("aaa");
+  StringJustify(&a, 2, ' ', JustificationType::LEFT);
+  EXPECT_STREQ("aa", a.c_str());
+
+  string b("bbb");
+  StringJustify(&b, 2, ' ', JustificationType::RIGHT);
+  EXPECT_STREQ("bb", b.c_str());
+}
+

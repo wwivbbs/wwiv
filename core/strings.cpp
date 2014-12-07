@@ -201,6 +201,35 @@ bool ends_with(const std::string& input, const std::string& match) {
       && std::equal(match.rbegin(), match.rend(), input.rbegin());
 }
 
+/**
+ * Returns a string justified and padded with "bg".
+ * @param pszString The text to justify
+ * @param nLength the length of the text
+ * @param bg the character to use as the background
+ * @param nJustificationType one of the following:
+ *      LEFT
+ *      RIGHT
+ * @return the justified text.
+ */
+void StringJustify(string* s, int length, char bg, JustificationType just_type) {
+  if (s->size() > length) {
+    *s = s->substr(0, length);
+    return;
+  } else if (s->size() == length) {
+    return;
+  }
+
+  string::size_type delta = length - s->size();
+  switch (just_type) {
+  case JustificationType::LEFT: {
+    s->resize(length, bg);
+  } break;
+  case JustificationType::RIGHT: {
+    string tmp(*s);
+    *s = StrCat(string(delta, bg), tmp);
+  } break;
+  }
+}
 
 }  // namespace strings
 }  // namespace wwiv
@@ -315,49 +344,6 @@ unsigned char locase(unsigned char ch) {
   }
 
   return ch;
-}
-
-
-/**
- * Returns a string justified and padded with "bg".
- * @param pszString The text to justify
- * @param nLength the length of the text
- * @param the character to use as the background
- * @param nJustificationType one of the following:
- *      JUSTIFY_LEFT
- *      JUSTIFY_RIGHT
- *      JUSTIFY_CENTER
- * @return the justified text.
- */
-char *StringJustify(char *pszString, int nLength, int bg, int nJustificationType) {
-  WWIV_ASSERT(pszString);
-
-  pszString[nLength] = '\0';
-  int x = strlen(pszString);
-
-  if (x < nLength) {
-    switch (nJustificationType) {
-    case JUSTIFY_LEFT: {
-      memset(pszString + x, bg, nLength - x);
-    }
-    break;
-    case JUSTIFY_RIGHT: {
-      memmove(pszString + nLength - x, pszString, x);
-      memset(pszString, bg, nLength - x);
-    }
-    break;
-    case JUSTIFY_CENTER: {
-      int x1 = (nLength - x) / 2;
-      memmove(pszString + x1, pszString, x);
-      memset(pszString, bg, x1);
-      memset(pszString + x + x1, bg, nLength - (x + x1));
-    }
-    break;
-    default:
-      WWIV_ASSERT(false);     // incorrect type.
-    }
-  }
-  return pszString;
 }
 
 
