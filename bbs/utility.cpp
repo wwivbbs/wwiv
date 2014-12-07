@@ -596,7 +596,7 @@ std::string W_DateString(time_t tDateTime, const std::string& origMode , const s
   struct tm * pTm = localtime(&tDateTime);
 
   std::string mode = origMode;
-  std::transform(mode.begin(), mode.end(), mode.begin(), ::toupper);
+  StringUpperCase(&mode);
 
   bool first = true;
   // cycle thru mode string

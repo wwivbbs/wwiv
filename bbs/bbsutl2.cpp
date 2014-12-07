@@ -99,9 +99,11 @@ void osan(const string& text, bool *abort, bool *next) {
   CheckForHangup();
   checka(abort, next);
 
-  for (string::const_iterator iter = text.begin(); iter != text.end() && !(*abort) && !hangup; iter++) {
-    bputch(*iter, true);     // RF20020927 use buffered bputch
-    checka(abort, next);
+  for (auto ch : text) {
+    bputch(ch, true);     // RF20020927 use buffered bputch
+    if (checka(abort, next) || hangup) {
+      break;
+    }
   }
   FlushOutComChBuffer();
 }

@@ -89,8 +89,8 @@ static bool IsBBSPhoneNumberValid(const string& phoneNumber) {
   if (phoneNumber.length() != 12) {
     return false;
   }
-  for (auto iter = phoneNumber.begin(); iter != phoneNumber.end(); iter++) {
-    if (strchr("0123456789-", (*iter)) == 0) {
+  for (auto ch : phoneNumber) {
+    if (strchr("0123456789-", ch) == 0) {
       return false;
     }
   }
