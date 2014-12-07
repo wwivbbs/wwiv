@@ -85,7 +85,7 @@ static void colorize_foundtext(char *text, struct search_record * search_rec, in
       StringTrim(word);
 
       while (pszTempBuffer && word[0]) {
-        if ((pszTempBuffer = stristr(pszTempBuffer, word)) != nullptr) {
+        if ((pszTempBuffer = strcasestr(pszTempBuffer, word)) != nullptr) {
           size = strlen(pszTempBuffer) + 1;
           memmove(&pszTempBuffer[6], &pszTempBuffer[0], size);
           strncpy(pszTempBuffer, found_color, 6);
