@@ -80,6 +80,11 @@ TEST(StringsTest, StrCat_Smoke) {
   EXPECT_EQ(kRushfan, StrCat("r", "u", "s", "h", "f", "an"));
 }
 
+TEST(StringsTest, StrCat_AlphaNumeric) {
+  static const string kWoot = "w00t";
+  EXPECT_EQ(kWoot, StrCat("w", 0, 0, "t"));
+}
+
 TEST(StringsTest, StringReplace_EntireString) {
   string s = "Hello";
   string world = "World";
