@@ -23,8 +23,8 @@
 std::string GetSysopLogFileName(const std::string& date);
 void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName);
 void catsl();
-void sysopchar(const std::string text);
-void sysoplog(const std::string text, bool bIndent = true);
+void sysopchar(const std::string& text);
+void sysoplog(const std::string& text, bool bIndent = true);
 void sysoplogf(const char *pszFormat, ...);
 void sysoplogfi(bool bIndent, const char *pszFormat, ...);
 

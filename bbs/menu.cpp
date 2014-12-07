@@ -369,7 +369,7 @@ void LogUserFunction(const MenuInstanceData * menu_data, const string& command, 
 
 void MenuSysopLog(const string msg) {
   const string log_message = StrCat("*MENU* : ", msg);
-  sysopchar(log_message);
+  sysoplog(log_message);
   bout << log_message << wwiv::endl;
 }
 
