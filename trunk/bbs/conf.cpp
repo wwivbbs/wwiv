@@ -1262,7 +1262,7 @@ confrec *read_conferences(const char *pszFileName, int *nc, int max) {
   confrec *conferences = static_cast<confrec *>(BbsAllocA(l));
   WWIV_ASSERT(conferences != nullptr);
   if (!conferences) {
-    std::cout << "Out of memory reading file [" << pszFileName << "]." << std::endl;
+    std::clog << "Out of memory reading file [" << pszFileName << "]." << std::endl;
     f.Close();
     return nullptr;
   }
@@ -1350,7 +1350,7 @@ confrec *read_conferences(const char *pszFileName, int *nc, int max) {
           if (ok) {
             memset(conferences[cc].subs, 0, l);
           } else {
-            std::cout << "Out of memory on conference file #" << cc + 1 << ", " <<
+            std::clog << "Out of memory on conference file #" << cc + 1 << ", " <<
                       syscfg.datadir << pszFileName << "." << std::endl;
             for (i2 = 0; i2 < cc; i2++) {
               free(conferences[i2].subs);
@@ -1426,13 +1426,13 @@ void read_in_conferences(int conftype) {
   }
   if (!File::Exists(s)) {
     if (!create_conf_file(conftype)) {
-      std::cout << "Problem creating conferences." << std::endl;
+      std::clog << "Problem creating conferences." << std::endl;
       application()->AbortBBS();
     }
   }
   *cpp = read_conferences(s, np, max);
   if (!(*cpp)) {
-    std::cout << "Problem reading conferences." << std::endl;
+    std::clog << "Problem reading conferences." << std::endl;
     application()->AbortBBS();
 
   }

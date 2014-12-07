@@ -36,16 +36,16 @@ WIOTelnet::WIOTelnet(unsigned int nHandle) : socket_(static_cast<SOCKET>(nHandle
   if (!DuplicateHandle(GetCurrentProcess(), reinterpret_cast<HANDLE>(socket_),
                        GetCurrentProcess(), reinterpret_cast<HANDLE*>(&duplicate_socket_),
                        0, TRUE, DUPLICATE_SAME_ACCESS)) {
-    std::cout << "Error creating duplicate socket: " << GetLastError() << "\r\n\n";
+    std::clog << "Error creating duplicate socket: " << GetLastError() << "\r\n\n";
   }
   if (socket_ != 0 && socket_ != INVALID_SOCKET) {
     // Make sure our signal event is not set to the "signaled" state
     stop_event_ = CreateEvent(nullptr, true, false, nullptr);
-    std::cout << "Created Stop Event: " << GetLastErrorText() << std::endl;
+    std::clog << "Created Stop Event: " << GetLastErrorText() << std::endl;
   } else {
     const char *message = "**ERROR: UNABLE to create STOP EVENT FOR WIOTelnet";
     sysoplog(message);
-    std::cout << message << std::endl;
+    std::clog << message << std::endl;
   }
 }
 
@@ -99,7 +99,7 @@ void WIOTelnet::close(bool bIsTemporary) {
 unsigned int WIOTelnet::putW(unsigned char ch) {
   if (socket_ == INVALID_SOCKET) {
 #ifdef _DEBUG
-    std::cout << "pw(INVALID-SOCKET) ";
+    std::clog << "pw(INVALID-SOCKET) ";
 #endif // _DEBUG
     return 0;
   }
@@ -116,7 +116,7 @@ unsigned int WIOTelnet::putW(unsigned char ch) {
     if (nRet == SOCKET_ERROR) {
       if (WSAGetLastError() != WSAEWOULDBLOCK) {
         if (WSAGetLastError() != WSAENOTSOCK) {
-          std::cout << "DEBUG: ERROR on send from putW() [" << WSAGetLastError() << "] [#" << static_cast<int>
+          std::clog << "DEBUG: ERROR on send from putW() [" << WSAGetLastError() << "] [#" << static_cast<int>
                     (ch) << "]" << std::endl;
         }
         return 0;
@@ -228,7 +228,7 @@ unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTr
     if (nRet == SOCKET_ERROR) {
       if (WSAGetLastError() != WSAEWOULDBLOCK) {
         if (WSAGetLastError() != WSAENOTSOCK) {
-          std::cout << "DEBUG: in write(), expected to send " << count << " character(s), actually sent " << nRet << std::endl;
+          std::clog << "DEBUG: in write(), expected to send " << count << " character(s), actually sent " << nRet << std::endl;
         }
         free(pszBuffer);
         return 0;
@@ -258,7 +258,7 @@ void WIOTelnet::StopThreads() {
   }
   if (!SetEvent(stop_event_)) {
     const std::string error_text = GetLastErrorText();
-    std::cout << "WIOTelnet::StopThreads: Error with SetEvent " << GetLastError() 
+    std::clog << "WIOTelnet::StopThreads: Error with SetEvent " << GetLastError() 
               << " - '" << error_text << "'" << std::endl;
   }
   ::Sleep(0);
@@ -272,7 +272,7 @@ void WIOTelnet::StopThreads() {
   case WAIT_TIMEOUT:
     // The exit code of 123 doesn't mean anything, and isn't used anywhere.
     ::TerminateThread(read_thread_, 123);
-    std::cout << "WIOTelnet::StopThreads: Terminated the read thread" << std::endl;
+    std::clog << "WIOTelnet::StopThreads: Terminated the read thread" << std::endl;
     break;
   default:
     break;
@@ -287,7 +287,7 @@ void WIOTelnet::StartThreads() {
 
   if (!ResetEvent(stop_event_)) {
     const std::string error_text = GetLastErrorText();
-    std::cout << "WIOTelnet::StartThreads: Error with ResetEvent " << GetLastError()
+    std::clog << "WIOTelnet::StartThreads: Error with ResetEvent " << GetLastError()
               << " - '" << error_text << "'" << std::endl;
   }
 
@@ -314,22 +314,22 @@ void WIOTelnet::InitializeWinsock() {
   if (err != 0) {
     switch (err) {
     case WSASYSNOTREADY:
-      std::cout << "Error from WSAStartup: WSASYSNOTREADY";
+      std::clog << "Error from WSAStartup: WSASYSNOTREADY";
       break;
     case WSAVERNOTSUPPORTED:
-      std::cout << "Error from WSAStartup: WSAVERNOTSUPPORTED";
+      std::clog << "Error from WSAStartup: WSAVERNOTSUPPORTED";
       break;
     case WSAEINPROGRESS:
-      std::cout << "Error from WSAStartup: WSAEINPROGRESS";
+      std::clog << "Error from WSAStartup: WSAEINPROGRESS";
       break;
     case WSAEPROCLIM:
-      std::cout << "Error from WSAStartup: WSAEPROCLIM";
+      std::clog << "Error from WSAStartup: WSAEPROCLIM";
       break;
     case WSAEFAULT:
-      std::cout << "Error from WSAStartup: WSAEFAULT";
+      std::clog << "Error from WSAStartup: WSAEFAULT";
       break;
     default:
-      std::cout << "Error from WSAStartup: ** unknown error code **";
+      std::clog << "Error from WSAStartup: ** unknown error code **";
       break;
     }
   }
@@ -355,7 +355,7 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid) {
     if (dwWaitRet == (WSA_WAIT_EVENT_0 + 1)) {
       if (!ResetEvent(pTelnet->stop_event_)) {
         const std::string error_text = GetLastErrorText();
-        std::cout << "WIOTelnet::InboundTelnetProc: Error with ResetEvent " 
+        std::clog << "WIOTelnet::InboundTelnetProc: Error with ResetEvent " 
                   << GetLastError() << " - '" << error_text << "'" << std::endl;
       }
 

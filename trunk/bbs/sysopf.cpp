@@ -94,7 +94,7 @@ void reset_files() {
 
   File namesFile(syscfg.datadir, NAMES_LST);
   if (!namesFile.Open(File::modeReadWrite | File::modeBinary | File::modeTruncate)) {
-    std::cout << namesFile.full_pathname() << " NOT FOUND" << std::endl;
+    std::clog << namesFile.full_pathname() << " NOT FOUND" << std::endl;
     application()->AbortBBS(true);
   }
   namesFile.Write(smallist, sizeof(smalrec) * pStatus->GetNumUsers());

@@ -154,7 +154,7 @@ int crc32file( char *name ) {
 		if (Block == 1024) {
 			printf("%5ld+%4ld ", charcnt/Block, charcnt%Block);
 		}
-		std::cout << " " << name << "\n";
+		std::clog << " " << name << "\n";
 	}
 
 	fclose( fin );

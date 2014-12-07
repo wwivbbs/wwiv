@@ -30,10 +30,7 @@ WInternalTelnetServer::WInternalTelnetServer(Runnable* pRunnable) : m_pRunnable(
   WIOTelnet::InitializeWinsock();
 }
 
-
-WInternalTelnetServer::~WInternalTelnetServer() {
-}
-
+WInternalTelnetServer::~WInternalTelnetServer() {}
 
 void WInternalTelnetServer::CreateListener() {
   int nRet = SOCKET_ERROR;
@@ -41,7 +38,7 @@ void WInternalTelnetServer::CreateListener() {
   // Start Listening Thread Socket
   SOCKET hSock = socket(AF_INET, SOCK_STREAM, 0);
   if (hSock == INVALID_SOCKET) {
-    std::cout << "Error Creating Listener socket..\r\n";
+    std::clog << "Error Creating Listener socket..\r\n";
   } else {
     SOCKADDR_IN pstSockName;
     pstSockName.sin_addr.s_addr = ADDR_ANY;
@@ -50,46 +47,46 @@ void WInternalTelnetServer::CreateListener() {
     nRet = bind(hSock, reinterpret_cast<LPSOCKADDR>(&pstSockName), sizeof(SOCKADDR_IN));
     if (nRet == SOCKET_ERROR) {
       int nBindErrCode = WSAGetLastError();
-      std::cout << "error " << nBindErrCode << " binding socket\r\n";
+      std::clog << "error " << nBindErrCode << " binding socket\r\n";
       switch (nBindErrCode) {
       case WSANOTINITIALISED:
-        std::cout << "WSANOTINITIALISED";
+        std::clog << "WSANOTINITIALISED";
         break;
       case WSAENETDOWN:
-        std::cout << "WSAENETDOWN";
+        std::clog << "WSAENETDOWN";
         break;
       case WSAEACCES:
-        std::cout << "WSAEACCES";
+        std::clog << "WSAEACCES";
         break;
       case WSAEADDRINUSE:
-        std::cout << "WSAEADDRINUSE";
+        std::clog << "WSAEADDRINUSE";
         break;
       case WSAEADDRNOTAVAIL:
-        std::cout << "WSAEADDRNOTAVAIL";
+        std::clog << "WSAEADDRNOTAVAIL";
         break;
       case WSAEFAULT:
-        std::cout << "WSAEFAULT";
+        std::clog << "WSAEFAULT";
         break;
       case WSAEINPROGRESS:
-        std::cout << "WSAEINPROGRESS";
+        std::clog << "WSAEINPROGRESS";
         break;
       case WSAEINVAL:
-        std::cout << "WSAEINVAL";
+        std::clog << "WSAEINVAL";
         break;
       case WSAENOBUFS:
-        std::cout << "WSAENOBUFS";
+        std::clog << "WSAENOBUFS";
         break;
       case WSAENOTSOCK:
-        std::cout << "WSAENOTSOCK";
+        std::clog << "WSAENOTSOCK";
         break;
       default:
-        std::cout << "*unknown error*";
+        std::clog << "*unknown error*";
         break;
       }
     } else {
       nRet = listen(hSock, 5);
       if (nRet == SOCKET_ERROR) {
-        std::cout << "Error listening on socket\r\n";
+        std::clog << "Error listening on socket\r\n";
       }
     }
   }
@@ -97,13 +94,12 @@ void WInternalTelnetServer::CreateListener() {
   if (nRet == SOCKET_ERROR) {
     closesocket(hSock);
     hSock = INVALID_SOCKET;
-    std::cout << "Unable to initilize Listening Socket!\r\n";
+    std::clog << "Unable to initilize Listening Socket!\r\n";
     WSACleanup();
     exit(1);
   }
   hSocketHandle = hSock;
 }
-
 
 void WInternalTelnetServer::RunTelnetServer() {
   SOCKET hSock;
@@ -113,8 +109,8 @@ void WInternalTelnetServer::RunTelnetServer() {
   CreateListener();
 
   if (hSocketHandle != INVALID_SOCKET) {
-    std::cout << "Press control-c to exit\r\n\n";
-    std::cout << "Waiting for socket connection...\r\n\n";
+    std::clog << "Press control-c to exit\r\n\n";
+    std::clog << "Waiting for socket connection...\r\n\n";
     hSock = accept(hSocketHandle, reinterpret_cast<LPSOCKADDR>(&lpstName), &AddrLen);
     if (hSock != INVALID_SOCKET) {
       char buffer[20];
@@ -137,5 +133,3 @@ void WInternalTelnetServer::RunTelnetServer() {
     }
   }
 }
-
-
