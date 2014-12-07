@@ -42,7 +42,7 @@ using std::string;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 using wwiv::os::random_number;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 #define SECS_PER_DAY 86400L
 
@@ -169,25 +169,20 @@ static int GetAnsiStatusAndShowWelcomeScreen(int nNetworkOnly) {
   return ans;
 }
 
-
 int ShowLoginAndGetUserNumber(int nNetworkOnly, char* pszUserName) {
-  char szUserName[ 255 ];
-
   bout.nl();
   if (nNetworkOnly) {
     bout << "This time is reserved for net-mail ONLY.  Please try calling back again later.\r\n";
   } else {
     bout << "Enter number or name or 'NEW'\r\n";
   }
-
-  memset(&szUserName, 0, 255);
-
   bout << "NN: ";
-  input(szUserName, 30);
-  StringTrim(szUserName);
+  string user_name;
+  input(&user_name, 30);
+  StringTrim(&user_name);
 
-  int nUserNumber = finduser(szUserName);
-  if (nUserNumber == 0 && szUserName[ 0 ] != '\0') {
+  int nUserNumber = finduser(user_name);
+  if (nUserNumber == 0 && !user_name.empty()) {
     bout << "Searching...";
     bool abort = false;
     for (int i = 1; i < application()->GetStatusManager()->GetUserCount() && nUserNumber == 0 && !hangup
@@ -197,11 +192,10 @@ int ShowLoginAndGetUserNumber(int nNetworkOnly, char* pszUserName) {
       }
       int nTempUserNumber = smallist[i].number;
       session()->ReadCurrentUser(nTempUserNumber);
-      if (szUserName[ 0 ] == session()->user()->GetRealName()[ 0 ]) {
-        char szTempUserName[ 255 ];
-        strcpy(szTempUserName, session()->user()->GetRealName());
-        if (wwiv::strings::IsEquals(szUserName, strupr(szTempUserName)) &&
-            !session()->user()->IsUserDeleted()) {
+      if (user_name[0] == session()->user()->GetRealName()[0]) {
+        string temp_user_name(session()->user()->GetRealName());
+        StringUpperCase(&temp_user_name);
+        if (user_name == temp_user_name && !session()->user()->IsUserDeleted()) {
           bout << "|#5Do you mean " << session()->user()->GetUserNameAndNumber(i) << "? ";
           if (yesno()) {
             nUserNumber = nTempUserNumber;
@@ -211,7 +205,7 @@ int ShowLoginAndGetUserNumber(int nNetworkOnly, char* pszUserName) {
       checka(&abort);
     }
   }
-  strcpy(pszUserName, szUserName);
+  strcpy(pszUserName, user_name.c_str());
   return nUserNumber;
 }
 
