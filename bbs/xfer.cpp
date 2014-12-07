@@ -32,10 +32,7 @@
 #include "bbs/platform/platformfcns.h"
 
 using std::string;
-using wwiv::strings::GetStringLength;
-using wwiv::strings::IsEquals;
-using wwiv::strings::IsEqualsIgnoreCase;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 // How far to indent extended descriptions
 static const int INDENTION = 24;

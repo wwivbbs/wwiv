@@ -17,11 +17,14 @@
 /*                                                                        */
 /**************************************************************************/
 #include <cmath>
+
 #include "bbs/datetime.h"
-#include "bbs/wwiv.h"
 #include "bbs/wcomm.h"
-#include "core/strings.h"
+#include "bbs/wwiv.h"
 #include "bbs/keycodes.h"
+#include "core/strings.h"
+
+using namespace wwiv::strings;
 
 bool NewZModemSendFile(const char *pszFileName);
 

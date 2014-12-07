@@ -85,6 +85,9 @@ void StringUpperCase(std::string* s);
 void StringLowerCase(std::string* s);
 
 const char *charstr(std::string::size_type length, int fill);
+char *StringRemoveWhitespace(char *str);
+// Strips the string from the first occurence of ch
+char *StringRemoveChar(const char *pszString, char ch);
 
 }  // namespace strings
 
@@ -108,8 +111,6 @@ std::string stripcolors(const std::string& orig);
 unsigned char upcase(unsigned char ch);
 unsigned char locase(unsigned char ch);
 char *stristr(char *pszString, char *pszPattern);
-char *StringRemoveWhitespace(char *str);
-char *StringRemoveChar(const char *pszString, char chCharacterToRemove);
 
 void properize(char *pszText);
 std::string properize(const std::string& text);
