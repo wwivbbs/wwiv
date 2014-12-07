@@ -285,8 +285,6 @@ bool IsColorCode(char c) {
   return false;
 }
 
-
-
 char *stripcolors(const char *pszOrig) {
   WWIV_ASSERT(pszOrig);
   static char szNewString[255];
@@ -313,7 +311,7 @@ string stripcolors(const string& orig) {
       os << *i;
     }
   }
-  return string(os.str());
+  return os.str();
 }
 
 
@@ -352,59 +350,33 @@ unsigned char locase(unsigned char ch) {
  * @param s the string from which to remove spaces
  * @return s with spaces removed.
  */
-char *StringTrim(char *pszString) {
-  WWIV_ASSERT(pszString);
-
-  // find real end of it
-  int nStringLen = strlen(pszString);
-  while ((nStringLen > 0) && isspace(static_cast<unsigned char>(pszString[nStringLen - 1]))) {
-    --nStringLen;
-  }
-
-  // find real beginning
-  int nStartPos = 0;
-  while ((nStartPos < nStringLen) && isspace(static_cast<unsigned char>(pszString[nStartPos]))) {
-    ++nStartPos;
-  }
-
-  // knock spaces off the length
-  nStringLen -= nStartPos;
-
-  // move over the desired subsection
-  memmove(pszString, pszString + nStartPos, nStringLen);
-
-  // ensure null-terminated
-  pszString[ nStringLen ] = '\0';
-
-  return pszString;
+void StringTrim(char *pszString) {
+  string s(pszString);
+  StringTrim(&s);
+  strcpy(pszString, s.c_str());
 }
-
 
 /**
  * Removes spaces from the beginning and the end of the string s.
  * @param s the string from which to remove spaces
  * @return s with spaces removed.
  */
-string StringTrim(string* s) {
+void StringTrim(string* s) {
   string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
   s->erase(0, pos);
 
   pos = s->find_last_not_of(DELIMS_WHITE);
   s->erase(pos + 1);
-
-  return *s;
 }
 
-string StringTrimBegin(string* s) {
+void StringTrimBegin(string* s) {
   string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
   s->erase(0, pos);
-  return *s;
 }
 
-string StringTrimEnd(string* s) {
+void StringTrimEnd(string* s) {
   string::size_type pos = s->find_last_not_of(DELIMS_WHITE);
   s->erase(pos + 1);
-  return *s;
 }
 
 string StringUpperCase(string* s) {
