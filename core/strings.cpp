@@ -160,10 +160,10 @@ uint8_t StringToUnsignedChar(const string& s) {
       [](const string& s) { return std::stoul(s); }, s);
 }
 
-const string& StringReplace(string* orig, const string old_string, const string new_string) {
+const string& StringReplace(string* orig, const string& old_string, const string& new_string) {
   string::size_type pos = orig->find(old_string, 0);
   while (pos != string::npos) {
-    orig->replace(pos, old_string.length(),  new_string);
+    orig->replace(pos, old_string.length(), new_string);
     pos = orig->find(old_string, pos + new_string.length());
   }
   return *orig;
@@ -461,7 +461,7 @@ void properize(char *pszText) {
   }
 }
 
-string properize(const string text) {
+string properize(const string& text) {
   if (text.empty()) {
     return string("");
   }
