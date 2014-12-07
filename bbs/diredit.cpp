@@ -66,7 +66,7 @@ void showdirs() {
   pla("|#7==== --- ======================================= -------- === --- === ---------", &abort);
   for (int i = 0; i < session()->num_dirs && !abort; i++) {
     sprintf(s, "%s %s", directories[i].name, directories[i].filename);
-    if (stristr(s, s1)) {
+    if (strcasestr(s, s1)) {
       dirdata(i, s);
       pla(s, &abort);
     }

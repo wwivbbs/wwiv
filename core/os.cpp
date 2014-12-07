@@ -26,11 +26,8 @@
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <Windows.h>
-#ifdef max
-// windows.h defines max breaking numeric_limits
-#undef max
-#endif  // max
 
 #else  // _WIN32
 #include <unistd.h>

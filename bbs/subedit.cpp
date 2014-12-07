@@ -129,7 +129,7 @@ static void showsubs() {
   for (int i = 0; i < session()->num_subs && !abort; i++) {
     char szSubData[ 255 ];
     sprintf(szSubData, "%s %s", subboards[i].name, subboards[i].filename);
-    if (stristr(szSubData, szSubString)) {
+    if (strcasestr(szSubData, szSubString)) {
       subboards[i].anony &= ~anony_require_sv;
       boarddata(i, szSubData);
       pla(szSubData, &abort);
