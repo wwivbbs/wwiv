@@ -312,3 +312,15 @@ TEST(StringsTest, StringTrimEnd) {
   StringTrimEnd(&a);
   EXPECT_STREQ(" a", a.c_str());
 }
+
+TEST(StringsTest, StringUpperCase) {
+  string a = "aB";
+  StringUpperCase(&a);
+  EXPECT_STREQ("AB", a.c_str());
+}
+
+TEST(StringsTest, StringLowerCase) {
+  string a = "aB";
+  StringLowerCase(&a);
+  EXPECT_STREQ("ab", a.c_str());
+}
