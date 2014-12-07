@@ -50,7 +50,7 @@
 #ifdef __unix__
 #define XINIT_PRINTF( x )
 #else
-#define XINIT_PRINTF( x ) std::cout << ( x )
+#define XINIT_PRINTF( x ) std::clog << ( x )
 #endif // __unix__
 
 struct ini_flags_type {
@@ -472,7 +472,7 @@ bool WApplication::ReadConfigOverlayFile(int instance_number, configrec* full_sy
 
     int max_num_instances = ini->GetNumericValue("NUM_INSTANCES", 4);
     if (instance_number > max_num_instances) {
-      std::cout << "Not enough instances configured.\r\n";
+      std::clog << "Not enough instances configured.\r\n";
       return false;
     }
 
@@ -485,7 +485,7 @@ bool WApplication::ReadConfigOverlayFile(int instance_number, configrec* full_sy
   if (bIsConfigObvOpen &&
       configOvrFile.GetLength() < static_cast<long>(instance_number * sizeof(configoverrec))) {
     configOvrFile.Close();
-    std::cout << "Not enough instances configured.\r\n";
+    std::clog << "Not enough instances configured.\r\n";
     return false;
   }
   if (!bIsConfigObvOpen) {
@@ -513,7 +513,7 @@ bool WApplication::ReadConfig() {
   File configFile(CONFIG_DAT);
   int nFileMode = File::modeReadOnly | File::modeBinary;
   if (!configFile.Open(nFileMode)) {
-    std::cout << CONFIG_DAT << " NOT FOUND.\r\n";
+    std::clog << CONFIG_DAT << " NOT FOUND.\r\n";
     return false;
   }
   configFile.Read(&full_syscfg, sizeof(configrec));
@@ -524,7 +524,7 @@ bool WApplication::ReadConfig() {
 
   std::unique_ptr<IniFile> ini(ReadINIFile());
   if (!ini->IsOpen()) {
-    std::cout << "Insufficient memory for system info structure.\r\n";
+    std::clog << "Insufficient memory for system info structure.\r\n";
     AbortBBS();
   }
 
@@ -752,7 +752,7 @@ bool WApplication::read_subs() {
 
   File file(syscfg.datadir, SUBS_DAT);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    std::cout << file.GetName() << " NOT FOUND.\r\n";
+    std::clog << file.GetName() << " NOT FOUND.\r\n";
     return false;
   }
   session()->num_subs = (file.Read(subboards,
@@ -837,7 +837,7 @@ bool WApplication::read_names() {
 
   File file(syscfg.datadir, NAMES_LST);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    std::cout << file.GetName() << " NOT FOUND.\r\n";
+    std::clog << file.GetName() << " NOT FOUND.\r\n";
     return false;
   }
   file.Read(smallist, maxNumberOfUsers * sizeof(smalrec));
@@ -878,7 +878,7 @@ bool WApplication::read_dirs() {
 
   File file(syscfg.datadir, DIRS_DAT);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    std::cout << file.GetName() << "%s NOT FOUND.\r\n";
+    std::clog << file.GetName() << "%s NOT FOUND.\r\n";
     return false;
   }
   session()->num_dirs = file.Read(directories,
@@ -956,7 +956,7 @@ bool WApplication::read_language() {
   }
   session()->SetCurrentLanguageNumber(-1);
   if (!set_language(0)) {
-    std::cout << "You need the default language installed to run the BBS.\r\n";
+    std::clog << "You need the default language installed to run the BBS.\r\n";
     return false;
   }
   return true;
@@ -997,8 +997,8 @@ void WApplication::InitializeBBS() {
 
   session()->localIO()->LocalCls();
 #if !defined( __unix__ )
-  std::cout << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2014, WWIV Software Services.\r\n\n";
-  std::cout << "\r\nInitializing BBS...\r\n";
+  std::clog << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2014, WWIV Software Services.\r\n\n";
+  std::clog << "\r\nInitializing BBS...\r\n";
 #endif // __unix__
   session()->SetCurrentReadMessageArea(-1);
   use_workspace = false;
@@ -1015,7 +1015,7 @@ void WApplication::InitializeBBS() {
   // Struct tm_year is -= 1900
   struct tm * pTm = localtime(&t);
   if (pTm->tm_year < 88) {
-    std::cout << "You need to set the date [" << pTm->tm_year << "] & time before running the BBS.\r\n";
+    std::clog << "You need to set the date [" << pTm->tm_year << "] & time before running the BBS.\r\n";
     AbortBBS();
   }
 
@@ -1026,29 +1026,29 @@ void WApplication::InitializeBBS() {
   XINIT_PRINTF("* Processing configuration file: WWIV.INI.\r\n");
 
   if (syscfgovr.tempdir[0] == '\0') {
-    std::cout << "\r\nYour temp dir isn't valid.\r\n";
-    std::cout << "It is empty\r\n\n";
+    std::clog << "\r\nYour temp dir isn't valid.\r\n";
+    std::clog << "It is empty\r\n\n";
     AbortBBS();
   }
 
   if (syscfgovr.batchdir[0] == '\0') {
-    std::cout << "\r\nYour batch dir isn't valid.\r\n";
-    std::cout << "It is empty\r\n\n";
+    std::clog << "\r\nYour batch dir isn't valid.\r\n";
+    std::clog << "It is empty\r\n\n";
     AbortBBS();
   }
 
   if (!File::Exists(syscfgovr.tempdir)) {
     if (!File::mkdirs(syscfgovr.tempdir)) {
-      std::cout << "\r\nYour temp dir isn't valid.\r\n";
-      std::cout << "It is now set to: '" << syscfgovr.tempdir << "'\r\n\n";
+      std::clog << "\r\nYour temp dir isn't valid.\r\n";
+      std::clog << "It is now set to: '" << syscfgovr.tempdir << "'\r\n\n";
       AbortBBS();
     }
   }
 
   if (!File::Exists(syscfgovr.batchdir)) {
     if (!File::mkdirs(syscfgovr.batchdir)) {
-      std::cout << "\r\nYour batch dir isn't valid.\r\n";
-      std::cout << "It is now set to: '" << syscfgovr.batchdir << "'\r\n\n";
+      std::clog << "\r\nYour batch dir isn't valid.\r\n";
+      std::clog << "It is now set to: '" << syscfgovr.batchdir << "'\r\n\n";
       AbortBBS();
     }
   }
@@ -1059,8 +1059,8 @@ void WApplication::InitializeBBS() {
   XINIT_PRINTF("* Reading user scan pointers.\r\n");
   File fileQScan(syscfg.datadir, USER_QSC);
   if (!fileQScan.Exists()) {
-    std::cout << "Could not open file '" << fileQScan.full_pathname() << "'\r\n";
-    std::cout << "You must go into INIT and convert your userlist before running the BBS.\r\n";
+    std::clog << "Could not open file '" << fileQScan.full_pathname() << "'\r\n";
+    std::clog << "You must go into INIT and convert your userlist before running the BBS.\r\n";
     AbortBBS();
   }
 
@@ -1083,7 +1083,7 @@ void WApplication::InitializeBBS() {
   XINIT_PRINTF("* Reading status information.\r\n");
   WStatus* pStatus = statusMgr->BeginTransaction();
   if (!pStatus) {
-    std::cout << "Unable to return status.dat.\r\n";
+    std::clog << "Unable to return status.dat.\r\n";
     AbortBBS();
   }
 
@@ -1144,8 +1144,8 @@ void WApplication::InitializeBBS() {
   read_editors();
 
   if (!File::mkdirs(m_attachmentDirectory)) {
-    std::cout << "\r\nYour file attachment directory is invalid.\r\n";
-    std::cout << "It is now set to: " << m_attachmentDirectory << "'\r\n\n";
+    std::clog << "\r\nYour file attachment directory is invalid.\r\n";
+    std::clog << "It is now set to: " << m_attachmentDirectory << "'\r\n\n";
     AbortBBS();
   }
   CdHome();

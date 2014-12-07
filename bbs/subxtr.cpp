@@ -90,7 +90,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
   size_t l = nMaxSubs * sizeof(xtrasubsrec);
   xsubs = static_cast<xtrasubsrec *>(malloc(l + 1));
   if (!xsubs) {
-    std::cout << "Insufficient memory (" << l << "d bytes) for SUBS.XTR" << std::endl;
+    std::clog << "Insufficient memory (" << l << "d bytes) for SUBS.XTR" << std::endl;
     return false;
   }
   memset(xsubs, 0, l);
@@ -116,7 +116,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
     l = static_cast<long>(nn) * sizeof(xtrasubsnetrec);
     xsubsn = static_cast<xtrasubsnetrec *>(malloc(l));
     if (!xsubsn) {
-      std::cout << "Insufficient memory (" << l << " bytes) for net subs info" << std::endl;
+      std::clog << "Insufficient memory (" << l << " bytes) for net subs info" << std::endl;
       return false;
     }
     memset(xsubsn, 0, l);
@@ -176,7 +176,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
               xsubs[curn].num_nets++;
               xsubs[curn].num_nets_max++;
             } else {
-              std::cout << "Unknown network '" << ss1 << "' in SUBS.XTR" << std::endl;
+              std::clog << "Unknown network '" << ss1 << "' in SUBS.XTR" << std::endl;
             }
           }
           break;

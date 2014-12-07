@@ -1274,7 +1274,7 @@ static int ansicallout() {
   holdphone(false);
   session()->localIO()->SetCursor(WLocalIO::cursorNormal);
 #endif
-  std::cout << "System: " << sn << std::endl;
+  std::cerr << "System: " << sn << std::endl;
   return sn;
 }
 
