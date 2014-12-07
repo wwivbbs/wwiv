@@ -67,7 +67,7 @@ uint16_t StringToUnsignedShort(const std::string& s);
 char StringToChar(const std::string& s);
 uint8_t StringToUnsignedChar(const std::string& s);
 
-const std::string& StringReplace(std::string* orig, const std::string old_string, const std::string new_string);
+const std::string& StringReplace(std::string* orig, const std::string& old_string, const std::string& new_string);
 std::vector<std::string> SplitString(const std::string& original_string, const std::string& delims);
 void SplitString(const std::string& original_string, const std::string& delims, std::vector<std::string>* out);
 
@@ -111,7 +111,7 @@ char *StringRemoveWhitespace(char *str);
 char *StringRemoveChar(const char *pszString, char chCharacterToRemove);
 
 void properize(char *pszText);
-std::string properize(const std::string text);
+std::string properize(const std::string& text);
 
 #ifdef _WIN32
 #define strcasecmp( a, b ) _stricmp( a, b )
