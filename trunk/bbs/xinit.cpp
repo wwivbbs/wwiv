@@ -61,10 +61,8 @@ struct ini_flags_type {
 
 using std::string;
 using wwiv::bbs::TempDisablePause;
-using wwiv::core::IniFile;
-using wwiv::core::FilePath;
-using wwiv::strings::StringPrintf;
-using wwiv::strings::StringReplace;
+using namespace wwiv::core;
+using namespace wwiv::strings;
 
 uint32_t GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, uint32_t flags);
 

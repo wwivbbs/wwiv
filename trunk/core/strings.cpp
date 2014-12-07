@@ -297,6 +297,47 @@ const char *charstr(string::size_type length, int fill) {
 }
 
 
+char *StringRemoveWhitespace(char *str) {
+  WWIV_ASSERT(str);
+
+  if (str) {
+    char *obuf, *nbuf;
+    for (obuf = str, nbuf = str; *obuf; ++obuf) {
+      if (!isspace(*obuf)) {
+        *nbuf++ = *obuf;
+      }
+    }
+    *nbuf = '\0';
+  }
+  return str;
+}
+
+char *StringRemoveChar(const char *pszString, char ch) {
+  static char s_strip_string[ 255 ];
+
+  WWIV_ASSERT(pszString);
+  strcpy(s_strip_string, "");
+
+  int i1 = 0;
+  for (int i = 0; i < wwiv::strings::GetStringLength(pszString); i++) {
+    if (pszString[i] != ch) {
+      s_strip_string[i1] = pszString[i];
+      i1++;
+    } else {
+      s_strip_string[i1] = '\0';
+      break;
+    }
+  }
+
+  //if last char is a space, remove it too.
+  if (s_strip_string[i1 - 1] == ' ') {
+    i1--;
+  }
+  s_strip_string[i1] = '\0';
+  return s_strip_string;
+}
+
+
 }  // namespace strings
 }  // namespace wwiv
 
@@ -392,49 +433,6 @@ char *stristr(char *pszString, char *pszPattern) {
     ++pos;
   }
   return nullptr;
-}
-
-char *StringRemoveWhitespace(char *str) {
-  WWIV_ASSERT(str);
-
-  if (str) {
-    char *obuf, *nbuf;
-    for (obuf = str, nbuf = str; *obuf; ++obuf) {
-      if (!isspace(*obuf)) {
-        *nbuf++ = *obuf;
-      }
-    }
-    *nbuf = '\0';
-  }
-  return str;
-}
-
-char *StringRemoveChar(const char *pszString, char chCharacterToRemove) {
-  static char s_strip_string[ 255 ];
-
-  WWIV_ASSERT(pszString);
-
-  strcpy(s_strip_string, "");
-
-  int i1  = 0;
-  for (int i = 0; i < wwiv::strings::GetStringLength(pszString); i++) {
-    if (pszString[i] != chCharacterToRemove) {
-      s_strip_string[i1] = pszString[i];
-      i1++;
-    } else {
-      s_strip_string[i1] = '\0';
-      break;
-    }
-  }
-
-  //if last char is a space, remove it too
-  if (s_strip_string[i1 - 1] == ' ') {
-    i1--;
-  }
-
-  s_strip_string[i1] = '\0';
-
-  return static_cast< char * >(s_strip_string);
 }
 
 void properize(char *pszText) {

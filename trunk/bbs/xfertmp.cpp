@@ -39,6 +39,7 @@
 using std::function;
 using std::string;
 using std::vector;
+using namespace wwiv::strings;
 
 bool bad_filename(const char *pszFileName) {
   // strings not to allow in a .zip file to extract from
