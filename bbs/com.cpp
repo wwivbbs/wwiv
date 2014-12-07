@@ -94,7 +94,7 @@ bool CheckForHangup()
     hangup = hungup = true;
     if (session()->IsUserOnline()) {
       sysoplog("Hung Up.");
-      std::cout << "Hung Up!";
+      std::cerr << "Hung Up!";
     }
   }
   return hangup;

@@ -81,7 +81,7 @@ void remove_from_temp(const char *pszFileName, const char *pszDirectoryName, boo
         !IsEqualsIgnoreCase(szFileName, ".") &&
         !IsEqualsIgnoreCase(szFileName, "..")) {
       if (bPrintStatus) {
-        std::cout << "Deleting TEMP file: " << pszDirectoryName << szFileName << std::endl;
+        std::clog << "Deleting TEMP file: " << pszDirectoryName << szFileName << std::endl;
       }
       File::Remove(pszDirectoryName, szFileName);
     }

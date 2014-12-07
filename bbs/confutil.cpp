@@ -250,7 +250,7 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
         }
         break;
       default:
-        std::cout << "[utility.cpp] setconf called with nConferenceType != (CONF_SUBS || CONF_DIRS)\r\n";
+        std::clog << "[utility.cpp] setconf called with nConferenceType != (CONF_SUBS || CONF_DIRS)\r\n";
         WWIV_ASSERT(true);
         break;
       }
@@ -282,7 +282,7 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
       }
       break;
     default:
-      std::cout << "[utility.cpp] setconf called with nConferenceType != (CONF_SUBS || CONF_DIRS)\r\n";
+      std::clog << "[utility.cpp] setconf called with nConferenceType != (CONF_SUBS || CONF_DIRS)\r\n";
       WWIV_ASSERT(true);
       break;
 
@@ -347,7 +347,7 @@ void setuconf(int nConferenceType, int num, int nOldSubNumber) {
     }
     break;
   default:
-    std::cout << "[utility.cpp] setuconf called with nConferenceType != (CONF_SUBS || CONF_DIRS)\r\n";
+    std::clog << "[utility.cpp] setuconf called with nConferenceType != (CONF_SUBS || CONF_DIRS)\r\n";
     WWIV_ASSERT(true);
     break;
   }

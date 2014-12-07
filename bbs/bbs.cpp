@@ -712,7 +712,7 @@ int WApplication::Run(int argc, char *argv[]) {
   char* ss = getenv("BBS");
   if (ss) {
     if (strncmp(ss, "WWIV", 4) == 0) {
-      std::cout << "You are already in the BBS, type 'EXIT' instead.\n\n";
+      std::clog << "You are already in the BBS, type 'EXIT' instead.\n\n";
       exit(255);
     }
   }
@@ -786,7 +786,7 @@ int WApplication::Run(int argc, char *argv[]) {
       case 'N': {
         instance_number = std::stoi(argument);
         if (instance_number <= 0 || instance_number > 999) {
-          std::cout << "Your Instance can only be 1..999, you tried instance #" << instance_number << std::endl;
+          std::clog << "Your Instance can only be 1..999, you tried instance #" << instance_number << std::endl;
           exit(m_nErrorLevel);
         }
       }
@@ -830,7 +830,7 @@ int WApplication::Run(int argc, char *argv[]) {
           global_xx           = false;
           bTelnetInstance = true;
         } else {
-          std::cout << "Invalid Command line argument given '" << argumentRaw << "'\r\n\n";
+          std::clog << "Invalid Command line argument given '" << argumentRaw << "'\r\n\n";
           exit(m_nErrorLevel);
         }
       }
@@ -874,14 +874,14 @@ int WApplication::Run(int argc, char *argv[]) {
       }
       break;
       default: {
-        std::cout << "Invalid Command line argument given '" << argument << "'\r\n\n";
+        std::clog << "Invalid Command line argument given '" << argument << "'\r\n\n";
         exit(m_nErrorLevel);
       }
       break;
       }
     } else {
       // Command line argument did not start with a '-' or a '/'
-      std::cout << "Invalid Command line argument given '" << argumentRaw << "'\r\n\n";
+      std::clog << "Invalid Command line argument given '" << argumentRaw << "'\r\n\n";
       exit(m_nErrorLevel);
     }
   }
@@ -938,7 +938,7 @@ int WApplication::Run(int argc, char *argv[]) {
       beginday(true);
     } else {
       sysoplog("!!! Wanted to run the beginday event when it's not required!!!", false);
-      std::cout << "! WARNING: Tried to run beginday event again\r\n\n";
+      std::clog << "! WARNING: Tried to run beginday event again\r\n\n";
       sleep_for(seconds(2));
     }
     ExitBBSImpl(m_nOkLevel);
@@ -1081,8 +1081,6 @@ void WApplication::ShowUsage() {
             std::endl;
 }
 
-
-
 WApplication::WApplication() : statusMgr(new StatusMgr()), userManager(new WUserManager()), m_nOkLevel(exitLevelOK), 
     m_nErrorLevel(exitLevelNotOK), instance_number(-1), m_bUserAlreadyOn(false), m_nBbsShutdownStatus(shutdownNone), m_fShutDownTime(0),
     m_nWfcStatus(0) {
@@ -1106,6 +1104,7 @@ const string WApplication::GetHomeDir() {
 }
 
 void WApplication::AbortBBS(bool bSkipShutdown) {
+  std::clog.flush();
   if (bSkipShutdown) {
     exit(m_nErrorLevel);
   } else {
@@ -1113,11 +1112,9 @@ void WApplication::AbortBBS(bool bSkipShutdown) {
   }
 }
 
-
 void WApplication::QuitBBS() {
   ExitBBSImpl(WApplication::exitLevelQuit);
 }
-
 
 void WApplication::ExitBBSImpl(int nExitLevel) {
   sysoplog("", false);
@@ -1126,14 +1123,12 @@ void WApplication::ExitBBSImpl(int nExitLevel) {
   sysoplog("", false);
   catsl();
   write_inst(INST_LOC_DOWN, 0, INST_FLAGS_NONE);
-  std::cout << "\r\n";
-  std::cout << "WWIV Bulletin Board System " << wwiv_version << beta_version << " exiting at error level " << nExitLevel
+  std::clog << "\r\n";
+  std::clog << "WWIV Bulletin Board System " << wwiv_version << beta_version << " exiting at error level " << nExitLevel
             << std::endl << std::endl;
   delete this;
   exit(nExitLevel);
-
 }
-
 
 bool WApplication::LogMessage(const char* pszFormat, ...) {
   va_list ap;
@@ -1146,14 +1141,12 @@ bool WApplication::LogMessage(const char* pszFormat, ...) {
   return true;
 }
 
-
 void WApplication::UpdateTopScreen() {
   if (!GetWfcStatus()) {
     unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
     session()->localIO()->UpdateTopScreen(pStatus.get(), session(), GetInstanceNumber());
   }
 }
-
 
 void WApplication::ShutDownBBS(int nShutDownStatus) {
   char xl[81], cl[81], atr[81], cc;
@@ -1181,7 +1174,7 @@ void WApplication::ShutDownBBS(int nShutDownStatus) {
     SetShutDownStatus(WApplication::shutdownNone);
     break;
   default:
-    std::cout << "[utility.cpp] shutdown called with illegal type: " << nShutDownStatus << std::endl;
+    std::clog << "[utility.cpp] shutdown called with illegal type: " << nShutDownStatus << std::endl;
     WWIV_ASSERT(false);
   }
   RestoreCurrentLine(cl, atr, xl, &cc);
@@ -1206,7 +1199,6 @@ void WApplication::UpdateShutDownStatus() {
   }
 }
 
-
 void WApplication::ToggleShutDown() {
   if (IsShutDownActive()) {
     SetShutDownStatus(WApplication::shutdownNone);
@@ -1214,7 +1206,6 @@ void WApplication::ToggleShutDown() {
     ShutDownBBS(WApplication::shutdownThreeMinutes);
   }
 }
-
 
 WApplication::~WApplication() {
   if (sess != nullptr) {
