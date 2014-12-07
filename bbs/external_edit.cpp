@@ -39,7 +39,7 @@
 
 using std::string;
 using wwiv::core::ScopeExit;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 // Local prototypes.
 bool external_edit_internal(const string& edit_filename, const string& new_directory, const editorrec& editor, int numlines);

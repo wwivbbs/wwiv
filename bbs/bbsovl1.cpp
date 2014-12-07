@@ -30,6 +30,7 @@
 #include "core/strings.h"
 
 using std::string;
+using namespace wwiv::strings;
 
 //////////////////////////////////////////////////////////////////////////////
 // Implementation

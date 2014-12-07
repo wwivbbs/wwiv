@@ -23,27 +23,17 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 
-//////////////////////////////////////////////////////////////////////////////
-//
-//
-// module private functions
-//
-//
+using namespace wwiv::strings;
 
 
-unsigned char *valid_name(unsigned char *s);
+static unsigned char translate_table[] = {
+    "................................_!.#$%&.{}*+.-.{0123456789..{=}?"
+    "_abcdefghijklmnopqrstuvwxyz{}}-_.abcdefghijklmnopqrstuvwxyz{|}~."
+    "cueaaaaceeeiiiaaelaooouuyouclypfaiounnao?__..!{}................"
+    "................................abfneouyo0od.0en=+}{fj*=oo..n2.."
+};
 
-
-static unsigned char translate_table[] = { \
-                                           "................................_!.#$%&.{}*+.-.{0123456789..{=}?" \
-                                           "_abcdefghijklmnopqrstuvwxyz{}}-_.abcdefghijklmnopqrstuvwxyz{|}~." \
-                                           "cueaaaaceeeiiiaaelaooouuyouclypfaiounnao?__..!{}................" \
-                                           "................................abfneouyo0od.0en=+}{fj*=oo..n2.."
-                                         };
-
-
-
-unsigned char *valid_name(unsigned char *s) {
+static unsigned char *valid_name(unsigned char *s) {
   static unsigned char szName[60];
 
   unsigned int j = 0;
@@ -55,7 +45,6 @@ unsigned char *valid_name(unsigned char *s) {
   szName[j] = 0;
   return szName;
 }
-
 
 void get_user_ppp_addr() {
   session()->internetFullEmailAddress = "";

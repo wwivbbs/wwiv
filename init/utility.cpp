@@ -38,6 +38,8 @@
 #include "core/wfndfile.h"
 #include "sdk/filenames.h"
 
+using namespace wwiv::strings;
+
 extern char bbsdir[];
 
 static void fix_user_rec(userrec *u) {

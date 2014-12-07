@@ -52,8 +52,7 @@ static char s_szFindString[21];
 using std::string;
 using std::unique_ptr;
 using wwiv::endl;
-using wwiv::strings::IsEquals;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan) {
   irt[0] = '\0';
