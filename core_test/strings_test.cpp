@@ -329,3 +329,14 @@ TEST(StringsTest, CharStr) {
   EXPECT_STREQ("a", charstr(1, 'a'));
   EXPECT_STREQ("bbbbb", charstr(5, 'b'));
 }
+
+TEST(StringsTest, StringRemoveWhitespace) {
+  char s[81];
+  strcpy(s, " h e l l o ");
+  EXPECT_STREQ("hello", StringRemoveWhitespace(s));
+  EXPECT_STREQ("hello", s);
+}
+
+TEST(StringsTest, StringRemoveChar) {
+  EXPECT_STREQ("he", StringRemoveChar("hello world", 'l'));
+}

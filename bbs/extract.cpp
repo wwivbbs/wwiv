@@ -17,20 +17,20 @@
 /*                                                                        */
 /**************************************************************************/
 #include <string>
-#include "wwiv.h"
 
 #include "bbs/input.h"
+#include "bbs/keycodes.h"
+#include "bbs/stuffin.h"
 #include "bbs/printfile.h"
+#include "bbs/wwiv.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
 
-#include "bbs/stuffin.h"
-#include "bbs/keycodes.h"
 
 using std::string;
-using wwiv::strings::StrCat;
+using namespace wwiv::strings;
 
 // Compresses file *pszFileName to directory *pszDirectoryName.
 void compress_file(const string& orig_filename, const string& directory) {

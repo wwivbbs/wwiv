@@ -27,6 +27,8 @@
 #include "core/wfndfile.h"
 #include "core/textfile.h"
 
+using namespace wwiv::strings;
+
 extern char str_quit[];
 
 //
