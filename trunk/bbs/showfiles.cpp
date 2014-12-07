@@ -22,11 +22,11 @@
 
 #include "bbs/bbs.h"
 #include "bbs/wsession.h"
+#include "bbs/platform/platformfcns.h"  // for strupr
+#include "bbs/platform/wlocal_io.h"
 #include "core/wwivport.h"
-#include "platform/platformfcns.h"  // for strupr
 #include "core/wfndfile.h"
 #include "core/strings.h"
-#include "platform/wlocal_io.h"
 
 using namespace wwiv::strings;
 

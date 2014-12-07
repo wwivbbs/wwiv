@@ -38,6 +38,7 @@
 #include "bbs/fcns.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
+#include "bbs/keycodes.h"
 #include "bbs/menu.h"
 #include "bbs/printfile.h"
 #include "bbs/voteedit.h"
@@ -56,12 +57,11 @@
 
 #if defined( _WIN32 )
 #include <direct.h>
-#include "platform/win32/InternalTelnetServer.h"
-#include "platform/win32/Wiot.h"
+#include "bbs/platform/win32/InternalTelnetServer.h"
+#include "bbs/platform/win32/Wiot.h"
 #else
 #include <unistd.h>
 #endif // _WIN32
-#include "bbs/keycodes.h"
 
 
 static bool bUsingPppProject = true;

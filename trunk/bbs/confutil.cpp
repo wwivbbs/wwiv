@@ -17,13 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include "bbs/wwiv.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
-//
 // Local functions
-//
 bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber);
 bool access_conf(WUser * u, int sl, confrec * c);
 bool access_sub(WUser * u, int sl, subboardrec * s);

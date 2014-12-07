@@ -18,7 +18,7 @@
 /**************************************************************************/
 #include <string>
 
-#include "wwiv.h"
+#include "bbs/wwiv.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "bbs/keycodes.h"
