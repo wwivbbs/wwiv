@@ -860,7 +860,9 @@ void HandleListTitles(int &nMessageNumber, int &nScanOptionType) {
     } else {
       // Need the StringTrim on post title since some FSEDs
       // added \r in the title string, also gets rid of extra spaces
-      strncat(szPrompt, stripcolors(StringTrim(get_post(nMessageNumber)->title)), 60);
+      string title(get_post(nMessageNumber)->title);
+      StringTrim(&title);
+      strncat(szPrompt, stripcolors(title).c_str(), 60);
     }
 
     if (session()->user()->GetScreenChars() >= 80) {

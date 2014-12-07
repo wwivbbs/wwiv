@@ -291,3 +291,24 @@ TEST(StringsTest, StringJustify_LongerString) {
   EXPECT_STREQ("bb", b.c_str());
 }
 
+TEST(StringsTest, StringTrim) {
+  string a = " a ";
+  StringTrim(&a);
+  EXPECT_STREQ("a", a.c_str());
+
+  string b = "b";
+  StringTrim(&b);
+  EXPECT_STREQ("b", b.c_str());
+}
+
+TEST(StringsTest, StringTrimBegin) {
+  string a = " a ";
+  StringTrimBegin(&a);
+  EXPECT_STREQ("a ", a.c_str());
+}
+
+TEST(StringsTest, StringTrimEnd) {
+  string a = " a ";
+  StringTrimEnd(&a);
+  EXPECT_STREQ(" a", a.c_str());
+}
