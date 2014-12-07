@@ -37,7 +37,7 @@
 
 using std::string;
 using std::vector;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 user_config config_listing;
 int list_loaded;
@@ -102,66 +102,60 @@ static void colorize_foundtext(char *text, struct search_record * search_rec, in
   }
 }
 
+static void colorize_foundtext(string *text, struct search_record * search_rec, int color) {
+  std::unique_ptr<char[]> s(new char[text->size() * 2 + (12 * 10)]);  // extra padding for colorized
+  strcpy(s.get(), text->c_str());
+  colorize_foundtext(s.get(), search_rec, color);
+  text->assign(s.get());
+}
+
 static void build_header() {
-  char szHeader[255];
   int desc_pos = 30;
-
-  strcpy(szHeader, " Tag # ");
-
+  string header(" Tag # ");
   if (config_listing.lp_options & cfl_fname) {
-    strcat(szHeader, "FILENAME");
+    header += "FILENAME";
   }
-
   if (config_listing.lp_options & cfl_extension) {
-    strcat(szHeader, ".EXT ");
+    header += ".EXT ";
   }
-
   if (config_listing.lp_options & cfl_dloads) {
-    strcat(szHeader, " DL ");
+    header += " DL ";
   }
-
   if (config_listing.lp_options & cfl_kbytes) {
-    strcat(szHeader, "Bytes ");
+    header += "Bytes ";
   }
-
 #ifdef FILE_POINTS
   if (config_listing.lp_options & cfl_file_points) {
     strcat(szHeader, "Fpts ");
   }
 #endif
-
   if (config_listing.lp_options & cfl_days_old) {
-    strcat(szHeader, "Age ");
+    header += "Age ";
   }
-
   if (config_listing.lp_options & cfl_times_a_day_dloaded) {
-    strcat(szHeader, "DL'PD ");
+    header += "DL'PD ";
   }
-
   if (config_listing.lp_options & cfl_days_between_dloads) {
-    strcat(szHeader, "DBDLS ");
+    header += "DBDLS ";
   }
-
   if (config_listing.lp_options & cfl_description) {
-    desc_pos = strlen(szHeader);
-    strcat(szHeader, "Description");
+    desc_pos = header.size();
+    header += "Description";
   }
-  StringJustify(szHeader, 79, ' ', JUSTIFY_LEFT);
-  bout << "|23|01" << szHeader << wwiv::endl;
+  StringJustify(&header, 79, ' ', JustificationType::LEFT);
+  bout << "|23|01" << header << wwiv::endl;
 
-  szHeader[0] = '\0';
-
+  header.clear();
   if (config_listing.lp_options & cfl_date_uploaded) {
-    strcat(szHeader, "Date Uploaded      ");
+    header += "Date Uploaded      ";
   }
   if (config_listing.lp_options & cfl_upby) {
-    strcat(szHeader, "Who uploaded");
+    header += "Who uploaded";
   }
-
-  if (szHeader[0]) {
-    StringJustify(szHeader, desc_pos + strlen(szHeader), ' ', JUSTIFY_RIGHT);
-    StringJustify(szHeader, 79, ' ', JUSTIFY_LEFT);
-    bout << "|23|01" << szHeader << wwiv::endl;
+  if (!header.empty()) {
+    StringJustify(&header, desc_pos + header.size(), ' ', JustificationType::RIGHT);
+    StringJustify(&header, 79, ' ', JustificationType::LEFT);
+    bout << "|23|01" << header << wwiv::endl;
   }
 }
 
@@ -344,8 +338,8 @@ int lp_add_batch(const char *pszFileName, int dn, long fs) {
 
 
 int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struct search_record * search_rec) {
-  char szBuffer[MAX_PATH], szFileName[MAX_PATH], szFileExt[MAX_PATH];
-  char szFileInformation[1024], element[150];
+  char szFileName[MAX_PATH], szFileExt[MAX_PATH];
+  char element[150];
   int chars_this_line = 0, numl = 0, cpos = 0, will_fit = 78;
   char ch = 0;
   int char_printed = 0, extdesc_pos;
@@ -356,7 +350,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
     return numl;
   }
 
-  char * str = strchr(szFileName, '.');
+  char* str = strchr(szFileName, '.');
   if (str && *str) {
     str[0] = 0;
     ++str;
@@ -369,41 +363,41 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
   long lDiffTime = static_cast<long>(difftime(tTimeNow, u->daten));
   int nDaysOld = lDiffTime / SECONDS_PER_DAY;
 
-  sprintf(szFileInformation, "|%2d %c |%2d%3d ", lp_config.tagged_color, marked ? '\xFE' : ' ', lp_config.file_num_color,
-          filenum);
+  string file_information = StringPrintf("|%2d %c |%2d%3d ", lp_config.tagged_color, marked ? '\xFE' : ' ', lp_config.file_num_color, filenum);
   int width = 7;
   lines_listed = 0;
 
+  string buffer;
   if (config_listing.lp_options & cfl_fname) {
-    strcpy(szBuffer, szFileName);
-    StringJustify(szBuffer, 8, ' ', JUSTIFY_LEFT);
+    buffer = szFileName;
+    StringJustify(&buffer, 8, ' ', JustificationType::LEFT);
     if (search_rec) {
-      colorize_foundtext(szBuffer, search_rec, config_listing.lp_colors[0]);
+      colorize_foundtext(&buffer, search_rec, config_listing.lp_colors[0]);
     }
-    sprintf(element, "|%02d%s", config_listing.lp_colors[0], szBuffer);
-    strcat(szFileInformation, element);
+    sprintf(element, "|%02d%s", config_listing.lp_colors[0], buffer.c_str());
+    file_information += element;
     width += 8;
   }
   if (config_listing.lp_options & cfl_extension) {
-    strcpy(szBuffer, szFileExt);
-    StringJustify(szBuffer, 3, ' ', JUSTIFY_LEFT);
+    buffer = szFileExt;
+    StringJustify(&buffer, 3, ' ', JustificationType::LEFT);
     if (search_rec) {
-      colorize_foundtext(szBuffer, search_rec, config_listing.lp_colors[1]);
+      colorize_foundtext(&buffer, search_rec, config_listing.lp_colors[1]);
     }
-    sprintf(element, "|%02d.%s", config_listing.lp_colors[1], szBuffer);
-    strcat(szFileInformation, element);
+    sprintf(element, "|%02d.%s", config_listing.lp_colors[1], buffer.c_str());
+    file_information += element;
     width += 4;
   }
   if (config_listing.lp_options & cfl_dloads) {
-    sprintf(szBuffer, "%3d", u->numdloads);
-    szBuffer[3] = 0;
-    sprintf(element, " |%02d%s", config_listing.lp_colors[2], szBuffer);
-    strcat(szFileInformation, element);
+    buffer = StringPrintf("%3d", u->numdloads);
+    buffer.resize(3);
+    sprintf(element, " |%02d%s", config_listing.lp_colors[2], buffer.c_str());
+    file_information += element;
     width += 4;
   }
   if (config_listing.lp_options & cfl_kbytes) {
-    sprintf(szBuffer, "%4ldk", static_cast<long>(bytes_to_k(u->numbytes)));
-    szBuffer[5] = 0;
+    buffer = StringPrintf("%4luk", bytes_to_k(u->numbytes));
+    buffer.resize(5);
     if (!(directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom)) {
       char szTempFile[MAX_PATH];
 
@@ -412,12 +406,12 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
       unalign(szTempFile);
       if (lp_config.check_exist) {
         if (!ListPlusExist(szTempFile)) {
-          strcpy(szBuffer, "OFFLN");
+          buffer = "OFFLN";
         }
       }
     }
-    sprintf(element, " |%02d%s", config_listing.lp_colors[3], szBuffer);
-    strcat(szFileInformation, element);
+    sprintf(element, " |%02d%s", config_listing.lp_colors[3], buffer.c_str());
+    file_information += element;
     width += 6;
   }
 #ifdef FILE_POINTS
@@ -439,20 +433,20 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
 #endif
 
   if (config_listing.lp_options & cfl_days_old) {
-    sprintf(szBuffer, "%3d", nDaysOld);
-    szBuffer[3] = 0;
-    sprintf(element, " |%02d%s", config_listing.lp_colors[6], szBuffer);
-    strcat(szFileInformation, element);
+    buffer = StringPrintf("%3d", nDaysOld);
+    buffer.resize(3);
+    sprintf(element, " |%02d%s", config_listing.lp_colors[6], buffer.c_str());
+    file_information += element;
     width += 4;
   }
   if (config_listing.lp_options & cfl_times_a_day_dloaded) {
     float t;
 
     t = nDaysOld ? (float) u->numdloads / (float) nDaysOld : (float) 0.0;
-    sprintf(szBuffer, "%2.2f", t);
-    szBuffer[5] = 0;
-    sprintf(element, " |%02d%s", config_listing.lp_colors[8], szBuffer);
-    strcat(szFileInformation, element);
+    buffer = StringPrintf("%2.2f", t);
+    buffer.resize(5);
+    sprintf(element, " |%02d%s", config_listing.lp_colors[8], buffer.c_str());
+    file_information += element;
     width += 6;
   }
   if (config_listing.lp_options & cfl_days_between_dloads) {
@@ -460,30 +454,30 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
 
     t = nDaysOld ? (float) u->numdloads / (float) nDaysOld : (float) 0.0;
     t = t ? (float) 1 / (float) t : (float) 0.0;
-    sprintf(szBuffer, "%3.1f", t);
-    szBuffer[5] = 0;
-    sprintf(element, " |%02d%s", config_listing.lp_colors[9], szBuffer);
-    strcat(szFileInformation, element);
+    buffer = StringPrintf("%3.1f", t);
+    buffer.resize(5);
+    sprintf(element, " |%02d%s", config_listing.lp_colors[9], buffer.c_str());
+    file_information += element;
     width += 6;
   }
   if (config_listing.lp_options & cfl_description) {
     ++width;
-    strcpy(szBuffer, u->description);
+    buffer = u->description;
     if (search_rec) {
-      colorize_foundtext(szBuffer, search_rec, config_listing.lp_colors[10]);
+      colorize_foundtext(&buffer, search_rec, config_listing.lp_colors[10]);
     }
-    sprintf(element, " |%02d%s", config_listing.lp_colors[10], szBuffer);
-    strcat(szFileInformation, element);
+    sprintf(element, " |%02d%s", config_listing.lp_colors[10], buffer.c_str());
+    file_information += element;
     extdesc_pos = width;
   } else {
     extdesc_pos = -1;
   }
 
-  strcat(szFileInformation, "\r\n");
+  file_information += "\r\n";
   cpos = 0;
-  while (szFileInformation[cpos] && numl < LinesLeft) {
+  while (file_information[cpos] && numl < LinesLeft) {
     do {
-      ch = szFileInformation[cpos];
+      ch = file_information[cpos];
       if (!ch) {
         continue;
       }
@@ -501,7 +495,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
       ++numl;
     } else if (chars_this_line > will_fit && ch) {
       do {
-        ch = szFileInformation[cpos++];
+        ch = file_information[cpos++];
       } while (ch != '\n' && ch != 0);
       --cpos;
     } else if (ch) {
@@ -541,37 +535,36 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
       bputch('\r');
     }
   }
-  szBuffer[0] = 0;
-  szFileInformation[0] = 0;
+  file_information.clear();
 
   if (config_listing.lp_options & cfl_date_uploaded) {
     if ((u->actualdate[2] == '/') && (u->actualdate[5] == '/')) {
-      sprintf(szBuffer, "UL: %s  New: %s", u->date, u->actualdate);
-      StringJustify(szBuffer, 27, ' ', JUSTIFY_LEFT);
+      buffer = StringPrintf("UL: %s  New: %s", u->date, u->actualdate);
+      StringJustify(&buffer, 27, ' ', JustificationType::LEFT);
     } else {
-      sprintf(szBuffer, "UL: %s", u->date);
-      StringJustify(szBuffer, 12, ' ', JUSTIFY_LEFT);
+      buffer = StringPrintf("UL: %s", u->date);
+      StringJustify(&buffer, 12, ' ', JustificationType::LEFT);
     }
-    sprintf(element, "|%02d%s  ", config_listing.lp_colors[4], szBuffer);
-    strcat(szFileInformation, element);
+    sprintf(element, "|%02d%s  ", config_listing.lp_colors[4], buffer.c_str());
+    file_information += element;
   }
 
   if (config_listing.lp_options & cfl_upby) {
     if (config_listing.lp_options & cfl_date_uploaded) {
-      StringJustify(szFileInformation, strlen(szFileInformation) + width, ' ', JUSTIFY_RIGHT);
-      bout << szFileInformation;
+      StringJustify(&file_information, file_information.size() + width, ' ', JustificationType::RIGHT);
+      bout << file_information;
       bout.nl();
       ++numl;
     }
     string tmp = u->upby;
     tmp = properize(tmp).substr(0, 15);
     sprintf(element, "|%02dUpby: %s", config_listing.lp_colors[7], tmp.c_str());
-    strcpy(szFileInformation, element);
+    file_information = element;
   }
 
-  if (szBuffer[0]) {
-    StringJustify(szFileInformation, strlen(szFileInformation) + width, ' ', JUSTIFY_RIGHT);
-    bout << szFileInformation;
+  if (!buffer.empty()) {
+    StringJustify(&file_information, file_information.size() + width, ' ', JustificationType::RIGHT);
+    bout << file_information;
     bout.nl();
     ++numl;
   }

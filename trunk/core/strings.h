@@ -26,11 +26,7 @@
 
 extern const char *DELIMS_WHITE;
 
-#define JUSTIFY_LEFT   0
-#define JUSTIFY_RIGHT  1
-#define JUSTIFY_CENTER 2
-
-#if defined (_WIN32)
+#ifdef _WIN32
 
 #define vsnprintf _vsnprintf
 #define snprintf _snprintf
@@ -40,6 +36,10 @@ extern const char *DELIMS_WHITE;
 
 namespace wwiv {
 namespace strings {
+
+enum class JustificationType {
+  LEFT, RIGHT
+};
 
 template<typename A>
 std::string StrCat(const A& a) {
@@ -75,6 +75,8 @@ void RemoveWhitespace(std::string* s);
 bool starts_with(const std::string& input, const std::string& match);
 bool ends_with(const std::string& input, const std::string& match);
 
+void StringJustify(std::string* s, int length, char bg, JustificationType just_type);
+
 }  // namespace strings
 
 template<class T>
@@ -98,7 +100,6 @@ char *stripcolors(const char *pszOrig);
 std::string stripcolors(const std::string& orig);
 unsigned char upcase(unsigned char ch);
 unsigned char locase(unsigned char ch);
-char *StringJustify(char *pszString, int nLength, int bg, int nJustificationType);
 char *StringTrim(char *pszString);
 std::string StringTrim(std::string* s);
 std::string StringTrimEnd(std::string* s);
