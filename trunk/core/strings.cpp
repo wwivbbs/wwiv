@@ -206,7 +206,7 @@ bool starts_with(const std::string& input, const std::string& match) {
 
 bool ends_with(const std::string& input, const std::string& match) {
   return input.size() >= match.size()
-      && std::equal(std::rbegin(match), std::rend(match), std::rbegin(input));
+    && std::equal(match.rbegin(), match.rend(), input.rbegin());
 }
 
 /**
