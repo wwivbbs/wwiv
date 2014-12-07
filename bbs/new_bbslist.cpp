@@ -233,10 +233,10 @@ static bool ConvertLegacyList(
 
 static string GetBbsListEntryAddress(const BbsListEntry* entry) {
   const auto& addresses = entry->addresses;
-  if (addresses.size() == 0) {
+  if (addresses.empty()) {
     return "";
   }
-  return addresses.begin()->second;
+  return std::begin(addresses)->second;
 }
 
 static void ReadBBSList(const vector<unique_ptr<BbsListEntry>>& entries) {
@@ -269,7 +269,7 @@ static void DeleteBbsListEntry() {
     return;
   }
 
-  for (auto b = entries.begin(); b != entries.end(); b++) {
+  for (auto b = std::begin(entries); b != std::end(entries); b++) {
     if (b->get()->id == entry_num) {
       entries.erase(b);
       bout << "|10Entry deleted." << wwiv::endl;

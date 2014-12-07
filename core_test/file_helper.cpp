@@ -80,7 +80,7 @@ string FileHelper::CreateTempDir(const string base) {
 string FileHelper::CreateTempFilePath(const string& orig_name) {
   string name(orig_name);
 #ifdef _WIN32
-  std::replace(name.begin(), name.end(), '/', File::pathSeparatorChar);
+  std::replace(std::begin(name), std::end(name), '/', File::pathSeparatorChar);
 #endif  // _WIN32
   return StrCat(TempDir(), File::pathSeparatorString, name);
 }

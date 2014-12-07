@@ -196,17 +196,17 @@ void SplitString(const string& original_string, const string& delims, vector<str
 }
 
 void RemoveWhitespace(string* s) {
-  s->erase(std::remove_if(s->begin(), s->end(), ::isspace), s->end());
+  s->erase(std::remove_if(std::begin(*s), std::end(*s), ::isspace), std::end(*s));
 }
 
 bool starts_with(const std::string& input, const std::string& match) {
   return input.size() >= match.size()
-      && std::equal(match.begin(), match.end(), input.begin());
+      && std::equal(std::begin(match), std::end(match), std::begin(input));
 }
 
 bool ends_with(const std::string& input, const std::string& match) {
   return input.size() >= match.size()
-      && std::equal(match.rbegin(), match.rend(), input.rbegin());
+      && std::equal(std::rbegin(match), std::rend(match), std::rbegin(input));
 }
 
 /**
@@ -285,11 +285,11 @@ void StringTrimEnd(char *pszString) {
 }
 
 void StringUpperCase(string* s) {
-  std::transform(s->begin(), s->end(), s->begin(), (int(*)(int)) toupper);
+  std::transform(std::begin(*s), std::end(*s), std::begin(*s), (int(*)(int)) toupper);
 }
 
 void StringLowerCase(string* s) {
-  std::transform(s->begin(), s->end(), s->begin(), (int(*)(int)) tolower);
+  std::transform(std::begin(*s), std::end(*s), std::begin(*s), (int(*)(int)) tolower);
 }
 
 /**
@@ -377,11 +377,11 @@ char *stripcolors(const char *pszOrig) {
  */
 string stripcolors(const string& orig) {
   string out;
-  for (string::const_iterator i = orig.begin(); i != orig.end(); i++) {
-    if (*i == '|' && (i + 1) != orig.end() && (i + 2) != orig.end() && IsColorCode(*(i + 1)) && IsColorCode(*(i + 2))) {
+  for (auto i = begin(orig); i != end(orig); i++) {
+    if (*i == '|' && (i + 1) != end(orig) && (i + 2) != end(orig) && IsColorCode(*(i + 1)) && IsColorCode(*(i + 2))) {
       ++i;
       ++i;
-    } else if (*i == 3 && i + 1 < orig.end() && isdigit(*(i + 1))) {
+    } else if (*i == 3 && i + 1 < end(orig) && isdigit(*(i + 1))) {
       ++i;
     } else {
       out.push_back(*i);
@@ -403,7 +403,6 @@ unsigned char upcase(unsigned char ch) {
   return ch;
 }
 
-
 /**
  * Translates the character ch into lower using WWIV's translation tables
  * @param ch The character to translate
@@ -411,19 +410,11 @@ unsigned char upcase(unsigned char ch) {
  */
 unsigned char locase(unsigned char ch) {
   unsigned char *ss = (unsigned char*)  strchr((const char*) translate_letters[1], ch);
-
   if (ss) {
     ch = translate_letters[0][ss - translate_letters[1]];
   }
-
   return ch;
 }
-
-#ifdef _WIN32
-char *strcasestr(const char *haystack, const char *needle) {
-  return StrStrI(haystack, needle);
-}
-#endif  // _WIN32
 
 void properize(char *pszText) {
   if (pszText == nullptr) {
@@ -447,18 +438,22 @@ string properize(const string& text) {
 
   char last = ' ';
   ostringstream os;
-  for (string::const_iterator i = text.begin(); i != text.end(); i++) {
+  for (auto ch : text) {
     if (last == ' ' || last == '-' || last == '.') {
-      os << wwiv::UpperCase<char>(*i);
+      os << wwiv::UpperCase<char>(ch);
     } else {
-      os << wwiv::LowerCase<char>(*i);
+      os << wwiv::LowerCase<char>(ch);
     }
-    last = *i;
+    last = ch;
   }
-  return string(os.str());
+  return os.str();
 }
 
-#ifndef _WIN32
+#ifdef _WIN32
+char *strcasestr(const char *haystack, const char *needle) {
+  return StrStrI(haystack, needle);
+}
+#else
 
 /** Converts string to uppercase */
 char *strupr(char *s) {

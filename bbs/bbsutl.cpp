@@ -387,7 +387,7 @@ void pla(const string& text, bool *abort) {
     *abort = true;
   }
   checka(abort);
-  for (string::const_iterator iter = text.begin(); iter != text.end() && !*abort; ++iter) {
+  for (auto iter = std::cbegin(text); iter != std::cend(text) && !*abort; ++iter) {
     bputch(*iter, true);
     checka(abort);
   }
@@ -407,7 +407,7 @@ void plal(const string& text, string::size_type limit, bool *abort) {
 
   limit += text.length() - stripcolors(text).length();
   string::size_type nCharsDisplayed = 0;
-  for (string::const_iterator iter = text.begin(); iter != text.end() && nCharsDisplayed++ < limit
+  for (auto iter = text.begin(); iter != text.end() && nCharsDisplayed++ < limit
        && !*abort; ++iter) {
     if (*iter != '\r' && *iter != '\n') {
       bputch(*iter, true);
