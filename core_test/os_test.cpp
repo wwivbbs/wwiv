@@ -45,9 +45,9 @@ TEST(OsTest, WaitFor_PredicateFalse) {
 }
 
 TEST(OsTest, SleepFor) {
-  auto predicate = []() { return true; };
   auto start = system_clock::now();
   auto d = milliseconds(100);
   sleep_for(d);
-  ASSERT_TRUE(system_clock::now() >= start + d);
+  auto now = system_clock::now();
+  ASSERT_TRUE(now - start - d < d) << (now - start - d).count();
 }
