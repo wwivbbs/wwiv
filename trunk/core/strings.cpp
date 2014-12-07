@@ -344,7 +344,6 @@ unsigned char locase(unsigned char ch) {
   return ch;
 }
 
-
 /**
  * Removes spaces from the beginning and the end of the string s.
  * @param s the string from which to remove spaces
@@ -379,14 +378,12 @@ void StringTrimEnd(string* s) {
   s->erase(pos + 1);
 }
 
-string StringUpperCase(string* s) {
+void StringUpperCase(string* s) {
   std::transform(s->begin(), s->end(), s->begin(), (int(*)(int)) toupper);
-  return *s;
 }
 
-string StringLowerCase(string* s) {
+void StringLowerCase(string* s) {
   std::transform(s->begin(), s->end(), s->begin(), (int(*)(int)) tolower);
-  return *s;
 }
 
 /**
