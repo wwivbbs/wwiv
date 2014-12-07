@@ -387,7 +387,7 @@ void pla(const string& text, bool *abort) {
     *abort = true;
   }
   checka(abort);
-  for (auto iter = std::cbegin(text); iter != std::cend(text) && !*abort; ++iter) {
+  for (auto iter = std::begin(text); iter != std::end(text) && !*abort; ++iter) {
     bputch(*iter, true);
     checka(abort);
   }
