@@ -78,7 +78,6 @@ int try_to_ul(char *pszFileName) {
   return 1;                                 // return failure, removes ul k credits etc...
 }
 
-
 int try_to_ul_wh(char *pszFileName) {
   directoryrec d;
   char s[101], s1[MAX_PATH], s2[MAX_PATH], *ss;

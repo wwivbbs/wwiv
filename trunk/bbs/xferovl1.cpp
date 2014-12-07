@@ -24,7 +24,6 @@
 #include <unistd.h>
 #endif  // _WIN32
 
-#include "core/strings.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/wwiv.h"
@@ -35,6 +34,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/xfer_common.h"
+#include "core/strings.h"
 
 // How far to indent extended descriptions
 static const int INDENTION = 24;
@@ -47,6 +47,7 @@ static const unsigned char *invalid_chars =
   (unsigned char *)"Ú¿ÀÙÄ³Ã´ÁÂÉ»È¼ÍºÌ¹ÊËÕ¸Ô¾Í³ÆµÏÑÖ·Ó½ÄºÇ¶ÐÒÅÎØ×°±²ÛßÜÝÞ";
 
 using wwiv::bbs::TempDisablePause;
+using namespace wwiv::strings;
 
 void modify_extended_description(char **sss, const char *dest, const char *title) {
   char s[255], s1[255];

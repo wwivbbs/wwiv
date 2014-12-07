@@ -425,7 +425,7 @@ public:
     window->GotoXY(this->x_, this->y_);
     int return_code = 0;
     editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, &return_code, "");
-    StringTrimEnd(this->data_);
+    wwiv::strings::StringTrimEnd(this->data_);
     return return_code;
   }
 

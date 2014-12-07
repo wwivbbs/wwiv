@@ -47,6 +47,7 @@
 #define qwk_iscan(x)         (iscan1(usub[x].subnum, 1))
 
 using std::unique_ptr;
+using namespace wwiv::strings;
 
 // from msgbase.cpp
 long current_gat_section();

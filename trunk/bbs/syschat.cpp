@@ -28,10 +28,9 @@
 #include "core/os.h"
 #include "core/strings.h"
 
-
 using std::chrono::milliseconds;
-using wwiv::os::sleep_for;
-using wwiv::os::sound;
+using namespace wwiv::os;
+using namespace wwiv::strings;
 
 // module private functions
 

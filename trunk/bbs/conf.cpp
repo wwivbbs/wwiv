@@ -27,6 +27,7 @@
 #include "core/wwivassert.h"
 
 using std::string;
+using namespace wwiv::strings;
 
 static int disable_conf_cnt = 0;
 
@@ -1531,4 +1532,3 @@ void sort_conf_str(char *pszConferenceStr) {
   StringTrimEnd(s2);
   strcpy(pszConferenceStr, s2);
 }
-
