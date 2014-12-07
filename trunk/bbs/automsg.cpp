@@ -51,7 +51,8 @@ void read_automessage() {
     return;
   }
 
-  string authorName = StringTrimEnd(&line);
+  StringTrimEnd(&line);
+  string authorName = line;
   if (bAutoMessageAnonymous) {
     if (getslrec(session()->GetEffectiveSl()).ability & ability_read_post_anony) {
       stringstream ss;

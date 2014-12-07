@@ -222,7 +222,8 @@ static bool ConvertLegacyList(
     }
     unique_ptr<BbsListEntry> e(new BbsListEntry());
     string name = line.substr(14, 42);
-    e->name = StringTrimEnd(&name);
+    StringTrimEnd(&name);
+    e->name = name;
     e->addresses.insert(std::make_pair(ConnectionType::MODEM, line.substr(0, 12)));
     e->software = line.substr(74, 4);
     entries->emplace_back(e.release());
