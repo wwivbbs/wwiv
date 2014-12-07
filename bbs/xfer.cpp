@@ -742,9 +742,9 @@ void printtitle(bool *abort) {
   if ((g_num_listed == 0 && session()->tagptr == 0) || session()->tagging == 0 ||
       (session()->user()->IsUseNoTagging() && g_num_listed == 0)) {
     if (okansi()) {
-      bout << ss << charstr(78, '\xCD')  << wwiv::endl;
+      bout << ss << string(78, '\xCD')  << wwiv::endl;
     } else {
-      bout << ss << charstr(78, '-') << wwiv::endl;
+      bout << ss << string(78, '-') << wwiv::endl;
     }
   } else if (lines_listed) {
     if (session()->titled != 2 && session()->tagging == 1 && !session()->user()->IsUseNoTagging()) {

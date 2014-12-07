@@ -18,14 +18,17 @@
 /**************************************************************************/
 
 #include <cstring>
+#include <string>
 
-#include "bbs.h"
-#include "wsession.h"
+#include "bbs/bbs.h"
+#include "bbs/wsession.h"
 #include "core/wwivport.h"
 #include "platform/platformfcns.h"  // for strupr
 #include "core/wfndfile.h"
 #include "core/strings.h"
 #include "platform/wlocal_io.h"
+
+using namespace wwiv::strings;
 
 // prototype from utility.cpp
 bool okansi();

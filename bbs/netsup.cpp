@@ -38,8 +38,7 @@ using std::string;
 using std::unique_ptr;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
-using wwiv::strings::IsEqualsIgnoreCase;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 static void rename_pend(const string& directory, const string& filename) {
   const string pend_filename = StringPrintf("%s%s", directory.c_str(), filename.c_str());
