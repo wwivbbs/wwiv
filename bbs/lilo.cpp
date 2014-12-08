@@ -48,15 +48,6 @@ using namespace wwiv::strings;
 
 static char g_szLastLoginDate[9];
 
-/*
- * Enable the following line if you need remote.exe or to be able to launch
- * commands specified in remotes.dat.  This is disabled by default
- */
-// #define ENABLE_REMOTE_VIA_SPECIAL_LOGINS
-
-//
-// Local functions
-//
 
 static void CleanUserInfo() {
   if (okconf(session()->user())) {
@@ -79,20 +70,18 @@ static void CleanUserInfo() {
 }
 
 static bool random_screen(const char *mpfn) {
-  char szBuffer[ 255 ];
-  sprintf(szBuffer, "%s%s%s", session()->language_dir.c_str(), mpfn, ".0");
-  if (File::Exists(szBuffer)) {
+  const string dot_zero = StrCat(session()->language_dir, mpfn, ".0");
+  if (File::Exists(dot_zero)) {
     int nNumberOfScreens = 0;
     for (int i = 0; i < 1000; i++) {
-      sprintf(szBuffer, "%s%s.%d", session()->language_dir.c_str(), mpfn, i);
-      if (File::Exists(szBuffer)) {
+      const string dot_n = StrCat(session()->language_dir.c_str(), mpfn, ".", i);
+      if (File::Exists(dot_n)) {
         nNumberOfScreens++;
       } else {
         break;
       }
     }
-    sprintf(szBuffer, "%s%s.%d", session()->language_dir.c_str(), mpfn, random_number(nNumberOfScreens));
-    printfile(szBuffer);
+    printfile(StrCat(session()->language_dir.c_str(), mpfn, ".", random_number(nNumberOfScreens)));
     return true;
   }
   return false;
@@ -103,64 +92,64 @@ bool IsPhoneNumberUSAFormat(WUser *pUser) {
   return (country == "USA" || country == "CAN" || country == "MEX");
 }
 
-static int GetNetworkOnlyStatus() {
-  int nNetworkOnly = 1;
+static bool GetNetworkOnlyStatus() {
+  bool network_only = true;
   if (syscfg.netlowtime != syscfg.nethightime) {
     if (syscfg.nethightime > syscfg.netlowtime) {
       if ((timer() <= (syscfg.netlowtime * SECONDS_PER_MINUTE_FLOAT))
           || (timer() >= (syscfg.nethightime * SECONDS_PER_MINUTE_FLOAT))) {
-        nNetworkOnly = 0;
+        network_only = false;
       }
     } else {
       if ((timer() <= (syscfg.netlowtime * SECONDS_PER_MINUTE_FLOAT))
           && (timer() >= (syscfg.nethightime * SECONDS_PER_MINUTE_FLOAT))) {
-        nNetworkOnly = 0;
+        network_only = false;
       }
     }
   } else {
-    nNetworkOnly = 0;
+    network_only = false;
   }
-  return nNetworkOnly;
+  return network_only;
 }
 
-static int GetAnsiStatusAndShowWelcomeScreen(int nNetworkOnly) {
-  int ans = -1;
-  if (!nNetworkOnly && incom) {
-    if (session()->GetCurrentSpeed().length() > 0) {
-      char szCurrentSpeed[ 81 ];
-      strcpy(szCurrentSpeed, session()->GetCurrentSpeed().c_str());
-      bout << "CONNECT " << strupr(szCurrentSpeed) << "\r\n\r\n";
-    }
-    string osVersion = wwiv::os::os_version_string();
-    bout << "\r\nWWIV " << wwiv_version << "/" << osVersion << " " << beta_version << wwiv::endl;
-    bout << "Copyright (c) 1998-2014 WWIV Software Services." << wwiv::endl;
-    bout << "All Rights Reserved." << wwiv::endl;
+static int GetAnsiStatusAndShowWelcomeScreen(bool network_only) {
+  if (network_only) {
+    return -1;
+  }
 
-    ans = check_ansi();
-    char szFileName[ MAX_PATH ];
-    sprintf(szFileName, "%s%s", session()->language_dir.c_str(), WELCOME_ANS);
-    if (File::Exists(szFileName)) {
-      bout.nl();
-      if (ans > 0) {
-        session()->user()->SetStatusFlag(WUser::ansi);
-        session()->user()->SetStatusFlag(WUser::color);
-        if (!random_screen(WELCOME_NOEXT)) {
-          printfile(WELCOME_ANS);
-        }
-      } else if (ans == 0) {
-        printfile(WELCOME_MSG);
+  if (session()->GetCurrentSpeed().length() > 0) {
+    string current_speed = session()->GetCurrentSpeed();
+    StringUpperCase(&current_speed);
+    bout << "CONNECT " << current_speed << "\r\n\r\n";
+  }
+  const string osVersion = wwiv::os::os_version_string();
+  bout << "\r\nWWIV " << wwiv_version << "/" << osVersion << " " << beta_version << wwiv::endl;
+  bout << "Copyright (c) 1998-2014 WWIV Software Services." << wwiv::endl;
+  bout << "All Rights Reserved." << wwiv::endl;
+
+  int ans = check_ansi();
+  const string filename = StrCat(session()->language_dir.c_str(), WELCOME_ANS);
+  if (File::Exists(filename)) {
+    bout.nl();
+    if (ans > 0) {
+      session()->user()->SetStatusFlag(WUser::ansi);
+      session()->user()->SetStatusFlag(WUser::color);
+      if (!random_screen(WELCOME_NOEXT)) {
+        printfile(WELCOME_ANS);
       }
-    } else {
-      if (ans) {
-        sprintf(szFileName, "%s%s.0", session()->language_dir.c_str(), WELCOME_NOEXT);
-        if (File::Exists(szFileName)) {
-          random_screen(WELCOME_NOEXT);
-        } else {
-          printfile(WELCOME_MSG);
-        }
+    } else if (ans == 0) {
+      printfile(WELCOME_MSG);
+    }
+  } else {
+    if (ans) {
+      const string filename = StrCat(session()->language_dir.c_str(), WELCOME_NOEXT, ".0");
+      if (File::Exists(filename)) {
+        random_screen(WELCOME_NOEXT);
       } else {
         printfile(WELCOME_MSG);
       }
+    } else {
+      printfile(WELCOME_MSG);
     }
   }
   if (curatr != 7) {
@@ -169,9 +158,9 @@ static int GetAnsiStatusAndShowWelcomeScreen(int nNetworkOnly) {
   return ans;
 }
 
-int ShowLoginAndGetUserNumber(int nNetworkOnly, char* pszUserName) {
+static int ShowLoginAndGetUserNumber(bool network_only) {
   bout.nl();
-  if (nNetworkOnly) {
+  if (network_only) {
     bout << "This time is reserved for net-mail ONLY.  Please try calling back again later.\r\n";
   } else {
     bout << "Enter number or name or 'NEW'\r\n";
@@ -205,7 +194,6 @@ int ShowLoginAndGetUserNumber(int nNetworkOnly, char* pszUserName) {
       checka(&abort);
     }
   }
-  strcpy(pszUserName, user_name.c_str());
   return nUserNumber;
 }
 
@@ -268,9 +256,7 @@ static void DoFailedLoginAttempt() {
   session()->usernum = 0;
 }
 
-void ExecuteWWIVNetworkRequest(const char *pszUserName) {
-  char szUserName[ 255 ];
-  strcpy(szUserName, pszUserName);
+static void ExecuteWWIVNetworkRequest() {
   if (incom) {
     hangup = true;
     return;
@@ -278,8 +264,7 @@ void ExecuteWWIVNetworkRequest(const char *pszUserName) {
 
   application()->GetStatusManager()->RefreshStatusCache();
   long lTime = time(nullptr);
-  switch (session()->usernum) {
-  case -2: {
+  if (session()->usernum == -2) {
     std::stringstream networkCommand;
     networkCommand << "network /B" << modem_speed << " /T" << lTime << " /F0";
     write_inst(INST_LOC_NET, 0, INST_FLAGS_NONE);
@@ -288,44 +273,6 @@ void ExecuteWWIVNetworkRequest(const char *pszUserName) {
       send_inst_cleannet();
     }
     set_net_num(0);
-  }
-  break;
-#ifdef ENABLE_REMOTE_VIA_SPECIAL_LOGINS
-  case -3: {
-    std::stringstream networkCommand;
-    networkCommand << "REMOTE /B" << modem_speed << " /F0";
-    ExecuteExternalProgram(networkCommand.str().c_str() , EFLAG_NONE);
-  }
-  break;
-  case -4: {
-    szUserName[8] = '\0';
-    if (szUserName[0]) {
-      std::stringstream networkCommand;
-      networkCommand << szUserName << " /B" << modem_speed << " /F0";
-      std::stringstream remoteDatFileName;
-      remoteDatFileName << syscfg.datadir << REMOTES_DAT;
-      TextFile file(remoteDatFileName.str(), "rt");
-      if (file.IsOpen()) {
-        bool ok = false;
-        char szBuffer[ 255 ];
-        while (!ok && file.ReadLine(szBuffer, 80)) {
-          char* ss = strchr(szBuffer, '\n');
-          if (ss) {
-            *ss = 0;
-          }
-          if (wwiv::strings::IsEqualsIgnoreCase(szBuffer, szUserName)) {
-            ok = true;
-          }
-        }
-        file.Close();
-        if (ok) {
-          ExecuteExternalProgram(networkCommand.str().c_str(), EFLAG_NONE);
-        }
-      }
-    }
-  }
-  break;
-#endif // ENABLE_REMOTE_VIA_SPECIAL_LOGINS
   }
   application()->GetStatusManager()->RefreshStatusCache();
   hangup = true;
@@ -382,7 +329,7 @@ static void LeaveBadPasswordFeedback(int ans) {
 
 static void CheckCallRestrictions() {
   if (!hangup && session()->usernum > 0 && session()->user()->IsRestrictionLogon() &&
-      wwiv::strings::IsEquals(date(), session()->user()->GetLastOn()) &&
+      IsEquals(date(), session()->user()->GetLastOn()) &&
       session()->user()->GetTimesOnToday() > 0) {
     bout.nl();
     bout << "|#6Sorry, you can only logon once per day.\r\n";
@@ -395,10 +342,9 @@ static void DoCallBackVerification() {
 }
 
 void getuser() {
-  char szUserName[ 255 ];
   write_inst(INST_LOC_GETUSER, 0, INST_FLAGS_NONE);
 
-  int nNetworkOnly = GetNetworkOnlyStatus();
+  bool network_only = GetNetworkOnlyStatus();
   int count = 0;
   bool ok = false;
 
@@ -408,16 +354,11 @@ void getuser() {
   session()->SetEffectiveSl(syscfg.newusersl);
   session()->user()->SetStatus(0);
 
-  int ans = GetAnsiStatusAndShowWelcomeScreen(nNetworkOnly);
-
+  int ans = GetAnsiStatusAndShowWelcomeScreen(network_only);
   do {
-    session()->usernum = ShowLoginAndGetUserNumber(nNetworkOnly, szUserName);
-
-    if (nNetworkOnly && session()->usernum != -2) {
-      if (session()->usernum != -4 ||
-          !wwiv::strings::IsEquals(szUserName, "DNM")) {
-        session()->usernum = 0;
-      }
+    session()->usernum = ShowLoginAndGetUserNumber(network_only);
+    if (network_only && session()->usernum != -2) {
+      session()->usernum = 0;
     }
     if (session()->usernum > 0) {
       session()->ReadCurrentUser();
@@ -459,7 +400,7 @@ void getuser() {
       }
     } else if (session()->usernum == 0) {
       bout.nl();
-      if (!nNetworkOnly) {
+      if (!network_only) {
         bout << "|#6Unknown user.\r\n";
       }
     } else if (session()->usernum == -1) {
@@ -467,8 +408,8 @@ void getuser() {
       play_sdf(NEWUSER_NOEXT, false);
       newuser();
       ok = true;
-    } else if (session()->usernum == -2 || session()->usernum == -3 || session()->usernum == -4) {
-      ExecuteWWIVNetworkRequest(szUserName);
+    } else if (session()->usernum == -2) {  // network
+      ExecuteWWIVNetworkRequest();
     }
   } while (!hangup && !ok && ++count < 3);
 
@@ -477,7 +418,6 @@ void getuser() {
   }
 
   okmacro = true;
-
   CheckCallRestrictions();
 
   if (application()->HasConfigFlag(OP_FLAGS_CALLBACK) && (session()->user()->GetCbv() & 1) == 0) {
@@ -497,7 +437,7 @@ static void FixUserLinesAndColors() {
 
 static void UpdateUserStatsForLogin() {
   strcpy(g_szLastLoginDate, date());
-  if (wwiv::strings::IsEquals(g_szLastLoginDate, session()->user()->GetLastOn())) {
+  if (IsEquals(g_szLastLoginDate, session()->user()->GetLastOn())) {
     session()->user()->SetTimesOnToday(session()->user()->GetTimesOnToday() + 1);
   } else {
     session()->user()->SetTimesOnToday(1);
