@@ -42,41 +42,6 @@ void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const c
   strcpy(endofline, xl);
 }
 
-// Note: if this function is called anywhere except for from the
-// WFC, it will break the UNIX implementation of WComm unless
-// Wiou implements some fake method of peek (i.e. caching the
-// character read, and using it as the return value of read)
-char rpeek_wfconly() {
-  if (ok_modem_stuff && !global_xx) {
-    return ((char) session()->remoteIO()->peek());
-  }
-  return 0;
-}
-
-
-char bgetchraw() {
-  if (ok_modem_stuff && !global_xx && nullptr != session()->remoteIO()) {
-    if (session()->remoteIO()->incoming()) {
-      return (session()->remoteIO()->getW());
-    }
-    if (session()->localIO()->LocalKeyPressed()) {
-      return session()->localIO()->LocalGetChar();
-    }
-  }
-  return 0;
-}
-
-
-bool bkbhitraw() {
-  if (ok_modem_stuff && !global_xx) {
-    return (session()->remoteIO()->incoming() || session()->localIO()->LocalKeyPressed());
-  } else if (session()->localIO()->LocalKeyPressed()) {
-    return true;
-  }
-  return false;
-}
-
-
 void dump() {
   if (ok_modem_stuff) {
     session()->remoteIO()->purgeOut();
@@ -84,12 +49,10 @@ void dump() {
   }
 }
 
-
-bool CheckForHangup()
 // This function checks to see if the user logged on to the com port has
 // hung up.  Obviously, if no user is logged on remotely, this does nothing.
 // returns the value of hangup
-{
+bool CheckForHangup() {
   if (!hangup && session()->using_modem && !session()->remoteIO()->carrier()) {
     hangup = hungup = true;
     if (session()->IsUserOnline()) {
@@ -155,9 +118,6 @@ void makeansi(int attr, char *pszOutBuffer, bool forceit) {
   }
 }
 
-
-
-
 void resetnsp() {
   if (nsp == 1 && !(session()->user()->HasPause())) {
     session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
@@ -165,27 +125,11 @@ void resetnsp() {
   nsp = 0;
 }
 
-
-bool bkbhit() {
-  if (x_only) {
-    return false;
-  }
-
-  if ((session()->localIO()->LocalKeyPressed() || (incom && bkbhitraw()) ||
-       (charbufferpointer && charbuffer[charbufferpointer])) ||
-      bquote) {
-    return true;
-  }
-  return false;
-}
-
-
-char getkey()
 /* This function returns one character from either the local keyboard or
 * remote com port (if applicable).  After 1.5 minutes of inactivity, a
 * beep is sounded.  After 3 minutes of inactivity, the user is hung up.
 */
-{
+char getkey() {
   resetnsp();
   bool beepyet = false;
   timelastchar1 = timer1();
@@ -232,13 +176,11 @@ static void print_yn(bool yes) {
   bout.nl();
 }
 
-
-bool yesno()
 /* The keyboard is checked for either a Y, N, or C/R to be hit.  C/R is
 * assumed to be the same as a N.  Yes or No is output, and yn is set to
 * zero if No was returned, and yesno() is non-zero if Y was hit.
 */
-{
+bool yesno() {
   char ch = 0;
 
   bout.Color(1);
@@ -253,7 +195,6 @@ bool yesno()
   }
   return (ch == *(YesNoString(true))) ? true : false;
 }
-
 
 /**
  * This is the same as yesno(), except C/R is assumed to be "Y"
@@ -273,7 +214,6 @@ bool noyes() {
   }
   return (ch == *(YesNoString(true)) || ch == RETURN) ? true : false;
 }
-
 
 char ynq() {
   char ch = 0;
@@ -300,7 +240,6 @@ char ynq() {
   return ch;
 }
 
-
 char onek(const char *pszAllowableChars, bool bAutoMpl) {
   if (bAutoMpl) {
     bout.mpl(1);
@@ -308,16 +247,6 @@ char onek(const char *pszAllowableChars, bool bAutoMpl) {
   char ch = onek_ncr(pszAllowableChars);
   bout.nl();
   return ch;
-}
-
-/* This function ouputs a string to the com port.  This is mainly used
- * for modem commands
- */
-void rputs(const char *pszText) {
-  // Rushfan fix for COM/IP weirdness
-  if (ok_modem_stuff) {
-    session()->remoteIO()->write(pszText, strlen(pszText));
-  }
 }
 
 // TODO(rushfan): Remove this.

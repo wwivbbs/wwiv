@@ -125,6 +125,9 @@ std::string strip_to_node(const std::string& txt);
 // File: bgetch.cpp
 
 char bgetch();
+char bgetchraw();
+bool bkbhitraw();
+bool bkbhit();
 
 
 // File: bputch.cpp
@@ -132,6 +135,7 @@ char bgetch();
 int  bputch(char c, bool bUseInternalBuffer = false);
 void FlushOutComChBuffer();
 void rputch(char ch, bool bUseInternalBuffer = false);
+void rputs(const char *pszText);
 
 // File: chains.cpp
 
@@ -161,21 +165,15 @@ void buildcolorfile();
 
 // File: com.cpp
 void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const char *cc);
-char rpeek_wfconly();
-char bgetchraw();
-bool bkbhitraw();
 void dump();
 bool CheckForHangup();
 void makeansi(int attr, char *pszOutBuffer, bool forceit);
-void bs();
 void resetnsp();
-bool bkbhit();
 char getkey();
 bool yesno();
 bool noyes();
 char ynq();
 char onek(const char *pszAllowableChars, bool bAutoMpl = false);
-void rputs(const char *pszText);
 void holdphone(bool bPickUpPhone);
 
 
