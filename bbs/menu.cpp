@@ -97,8 +97,6 @@ void StartMenus() {
     WriteMenuSetup(session()->usernum);
   }
   while (menu_data->reload && !hangup) {
-    menu_data->menu_file.release();
-
     if (!LoadMenuSetup(session()->usernum)) {
       LoadMenuSetup(1);
       ConfigUserMenuSet();
@@ -144,7 +142,6 @@ MenuInstanceData::~MenuInstanceData() {
 }
 
 void MenuInstanceData::Close() {
-  menu_file.release();
   insertion_order_.clear();
   nAmountRecs = 0;
   menu_command_map_.clear();
@@ -201,10 +198,12 @@ bool MenuInstanceData::Open() {
 
   // Version numbers can be checked here.
   if (!CreateMenuMap()) {
+    menu_file.reset();
     MenuSysopLog("Unable to create menu index.");
     nAmountRecs = 0;
     return false;
   }
+  menu_file.reset();
 
   // Open/Rease/Close Prompt file
   File filePrompt(create_menu_filename("pro"));
