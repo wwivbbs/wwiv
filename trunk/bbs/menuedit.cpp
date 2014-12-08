@@ -220,7 +220,7 @@ static bool GetMenuDir(string* menuName) {
   ListMenuDirs();
   while (!hangup) {
     bout.nl();
-    bout << "|#9(Enter=Quit, ?=List) Enter menuset to edit: |#0";
+    bout << "|#9(Enter=Quit, ?=List) \r\n|#9Enter menuset to edit: |#0";
     input1(menuName, 8, InputMode::FILENAME, true, true);
     if (menuName->empty()) {
       return false;
@@ -488,17 +488,17 @@ void WriteMenuRec(File &fileEditMenu, MenuRec * menu, int nCur) {
 }
 
 bool GetMenuMenu(const string& directoryName, string& menuName) {
-  ListMenuMenus(directoryName.c_str());
+  ListMenuMenus(directoryName);
 
   while (!hangup) {
     bout.nl();
-    bout << "|#9(Enter=Quit, ?=List) Enter menu file to edit: |#0";
+    bout << "|#9(Enter=Quit, ?=List) \r\n|#9Enter menu file to edit: |#0";
     input1(&menuName, 8, InputMode::FILENAME, true, true);
 
     if (menuName.empty()) {
       return false;
     } else if (menuName[0] == '?') {
-      ListMenuMenus(directoryName.c_str());
+      ListMenuMenus(directoryName);
     } 
     if (File::Exists(GetMenuDirectory(directoryName))) {
       return true;
@@ -519,7 +519,8 @@ bool GetMenuMenu(const string& directoryName, string& menuName) {
 
 void DisplayItem(MenuRec * menu, int nCur, int nAmount) {
   bout.cls();
-  bout << "|02(|#9" << nCur << "|02/|#9" << nAmount << "|02)" << wwiv::endl;
+  const string title = StrCat("Menu Item (", nCur, " of ", nAmount, ")");
+  bout.litebar(title.c_str());
 
   if (nCur > 0 && nCur <= nAmount) {
     bout << "|#91) Deleted        : |#2" << (menu->nFlags & MENU_FLAG_DELETED ? "Yes" : "No ") << wwiv::endl;
@@ -550,18 +551,18 @@ void DisplayItem(MenuRec * menu, int nCur, int nAmount) {
 void DisplayHeader(MenuHeader* pHeader, int nCur, const string& dirname) {
   wwiv::menus::MenuDescriptions descriptions(wwiv::menus::GetMenuDirectory());
   bout.cls();
-  bout << "|#9(Menu Header)" << wwiv::endl;
+  bout.litebar("Menu Header");
   if (nCur == 0) {
-    bout << "|#90) Menu Description     |#2: " << descriptions.description(dirname) << wwiv::endl;
-    bout << "|#91) Deleted              |#2: " << ((pHeader->nFlags & MENU_FLAG_DELETED) ? "Yes" : "No") << wwiv::endl;
-    bout << "|#92) Main Menu            |#2: " << ((pHeader->nFlags & MENU_FLAG_MAINMENU) ? "Yes" : "No") << wwiv::endl;;
-    bout << "|#9A) What do Numbers do   |#2: " << (pHeader->nNumbers == MENU_NUMFLAG_NOTHING ? "Nothing" :
+    bout << "|#90) Menu Description     :|#2 " << descriptions.description(dirname) << wwiv::endl;
+    bout << "|#91) Deleted              :|#2 " << ((pHeader->nFlags & MENU_FLAG_DELETED) ? "Yes" : "No") << wwiv::endl;
+    bout << "|#92) Main Menu            :|#2 " << ((pHeader->nFlags & MENU_FLAG_MAINMENU) ? "Yes" : "No") << wwiv::endl;;
+    bout << "|#9A) What do Numbers do   :|#2 " << (pHeader->nNumbers == MENU_NUMFLAG_NOTHING ? "Nothing" :
                        pHeader->nNumbers == MENU_NUMFLAG_SUBNUMBER ? "Set sub number" : pHeader->nNumbers == MENU_NUMFLAG_DIRNUMBER ?
                        "Set dir number" : "Out of range") << wwiv::endl;
-    bout << "|#9B) What type of logging |#2: " << (pHeader->nLogging == MENU_LOGTYPE_KEY ? "Key entered" :
+    bout << "|#9B) What type of logging :|#2 " << (pHeader->nLogging == MENU_LOGTYPE_KEY ? "Key entered" :
                        pHeader->nLogging == MENU_LOGTYPE_NONE ? "No logging" : pHeader->nLogging == MENU_LOGTYPE_COMMAND ?
                        "Command being executeed" : pHeader->nLogging == MENU_LOGTYPE_DESC ? "Desc of Command" : "Out of range") << wwiv::endl;
-    bout << "|#9C) Force help to be on  |#2: " << (pHeader->nForceHelp == MENU_HELP_DONTFORCE ? "Not forced" :
+    bout << "|#9C) Force help to be on  :|#2 " << (pHeader->nForceHelp == MENU_HELP_DONTFORCE ? "Not forced" :
                        pHeader->nForceHelp == MENU_HELP_FORCE ? "Forced On" : pHeader->nForceHelp == MENU_HELP_ONENTRANCE ?
                        "Forced on entrance" : "Out of range") << wwiv::endl;
     bout << "|#9F) Enter Script         : |#2" << pHeader->szScript << wwiv::endl;
