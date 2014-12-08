@@ -22,6 +22,7 @@
 #include "bbs/wwiv.h"
 #include "bbs/input.h"
 #include "bbs/menu.h"
+#include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
 
@@ -31,23 +32,19 @@ using wwiv::bbs::InputMode;
 using namespace wwiv::menus;
 using namespace wwiv::strings;
 
-
-bool GetMenuDir(string& menuDir);
 bool GetMenuMenu(const string& pszDirectoryName, string& menuName);
 void ReadMenuRec(File &fileEditMenu, MenuRec * menu, int nCur);
 void WriteMenuRec(File &fileEditMenu, MenuRec * menu, int nCur);
 void DisplayItem(MenuRec * menu, int nCur, int nAmount);
 void DisplayHeader(MenuHeader* Header, int nCur, const string& dirname);
 
-static void ListMenuMenus(const char *pszDirectoryName) {
-  string path = GetMenuDirectory(pszDirectoryName) + "*.mnu";
-
+static void ListMenuMenus(const string& directory_name) {
   bout.nl();
   bout << "|#1Available Menus\r\n";
   bout << "|#7===============|#0\r\n";
 
   WFindFile fnd;
-  bool bFound = fnd.open(path, 0);
+  bool bFound = fnd.open(StrCat(GetMenuDirectory(directory_name), "*.mnu"), 0);
   while (bFound && !hangup) {
     if (fnd.IsFile()) {
       const string s = fnd.GetFileName();
@@ -58,7 +55,6 @@ static void ListMenuMenus(const char *pszDirectoryName) {
   bout.nl();
   bout.Color(0);
 }
-
 
 static bool EditHeader(MenuHeader* header, File &fileEditMenu, const string& menuDir, int& nAmount, int& nCur) {
   bool done = false;
@@ -219,6 +215,42 @@ static bool EditHeader(MenuHeader* header, File &fileEditMenu, const string& men
   return done;
 }
 
+static bool GetMenuDir(string* menuName) {
+  wwiv::core::ScopeExit on_exit([=] { application()->CdHome(); });
+  ListMenuDirs();
+  while (!hangup) {
+    bout.nl();
+    bout << "|#9(Enter=Quit, ?=List) Enter menuset to edit: |#0";
+    input1(menuName, 8, InputMode::FILENAME, true, true);
+    if (menuName->empty()) {
+      return false;
+    } else if (menuName->at(0) == '?') {
+      ListMenuDirs();
+    } 
+    File dir(GetMenuDirectory(), *menuName);
+    if (dir.Exists()) {
+      return true;
+    }
+    bout << "The path " << dir << wwiv::endl << "does not exist, create it? (N) : ";
+    if (!noyes()) {
+      bout << "Not created\r\n";
+      return false;
+    }
+
+    application()->CdHome(); // go to the wwiv dir
+    File::mkdirs(dir);  // Create the new path
+    if (dir.Exists()) {
+      bout << "Created\r\n";
+      return true;
+    } else {
+      bout << "Unable to create\r\n";
+      return false;
+    }
+  }
+  // The only way to get here is to hangup
+  return false;
+}
+
 void EditMenus() {
   char szTemp1[21];
   char szPW[21];
@@ -229,7 +261,7 @@ void EditMenus() {
   bout.litebar("WWIV Menu Editor");
 
   string menuDir;
-  if (!GetMenuDir(menuDir)) {
+  if (!GetMenuDir(&menuDir)) {
     return;
   }
 
@@ -278,7 +310,7 @@ void EditMenus() {
       done = EditHeader((MenuHeader*) &menu, fileEditMenu, menuDir, nAmount, nCur);
     } else {
       DisplayItem(&menu, nCur, nAmount);
-      char chKey = onek("Q[]Z1ABCDEFGKLMNOPRSTUVWX");
+      char chKey = onek("Q[]Z1ABCDEFGKLMNOPRSTUVW");
 
       switch (chKey) {
       case 'Q':
@@ -428,10 +460,6 @@ void EditMenus() {
           menu.nHide = MENU_HIDE_NONE;
         }
         break;
-      case 'X':
-        bout << "Filename for detailed help on item : ";
-        input(menu.szExtendedHelp, 12);
-        break;
       }
     }
   }
@@ -459,49 +487,6 @@ void WriteMenuRec(File &fileEditMenu, MenuRec * menu, int nCur) {
   fileEditMenu.Seek(nCur * sizeof(MenuRec), File::seekBegin);
 }
 
-bool GetMenuDir(string& menuName) {
-  ListMenuDirs();
-
-  while (!hangup) {
-    bout.nl();
-    bout << "|#9(Enter=Quit, ?=List) Enter menuset to edit: |#0";
-
-    input1(&menuName, 8, InputMode::FILENAME, true, true);
-
-    if (menuName.empty()) {
-      return false;
-    } else if (menuName[0] == '?') {
-      ListMenuDirs();
-    } else {
-      File dir(GetMenuDirectory(), menuName);
-      if (!dir.Exists()) {
-        bout << "The path " << dir.full_pathname() << wwiv::endl <<
-                           "does not exist, create it? (N) : ";
-        if (noyes()) {
-          application()->CdHome(); // go to the wwiv dir
-          File::mkdirs(dir);  // Create the new path
-          if (dir.Exists()) {
-            application()->CdHome();
-            bout << "Created\r\n";
-            return true;
-          } else {
-            application()->CdHome();
-            bout << "Unable to create\r\n";
-            return false;
-          }
-        } else {
-          bout << "Not created\r\n";
-          return false;
-        }
-      }
-      application()->CdHome();
-      return true;
-    }
-  }
-  // The only way to get here is to hangup
-  return false;
-}
-
 bool GetMenuMenu(const string& directoryName, string& menuName) {
   ListMenuMenus(directoryName.c_str());
 
@@ -514,23 +499,18 @@ bool GetMenuMenu(const string& directoryName, string& menuName) {
       return false;
     } else if (menuName[0] == '?') {
       ListMenuMenus(directoryName.c_str());
-    } else {
-      if (!File::Exists(GetMenuDirectory(directoryName))) {
-        bout << "File does not exist, create it? (yNq) : ";
-        char x = ynq();
-
-        if (x == 'Q') {
-          return false;
-        }
-        if (x == 'Y') {
-          return true;
-        }
-        if (x == 'N') {
-          continue;
-        }
-      } else {
-        return true;
-      }
+    } 
+    if (File::Exists(GetMenuDirectory(directoryName))) {
+      return true;
+    }
+    bout << "File does not exist, create it? (yNq) : ";
+    char x = ynq();
+    if (x == 'Q') {
+      return false;
+    } else if (x == 'Y') {
+      return true;
+    } else  if (x == 'N') {
+      continue;
     }
   }
   // The only way to get here is to hangup
@@ -562,7 +542,6 @@ void DisplayItem(MenuRec * menu, int nCur, int nAmount) {
     bout << "|#9V) Hide text from : |#2" << (menu->nHide == MENU_HIDE_NONE ? "None" : menu->nHide ==
                        MENU_HIDE_PULLDOWN ? "Pulldown Menus" : menu->nHide == MENU_HIDE_REGULAR ? "Regular Menus" : menu->nHide ==
                        MENU_HIDE_BOTH ? "Both Menus" : "Out of Range") << wwiv::endl;
-    bout << "|#9X) Extended Help  : |#2%s" << menu->szExtendedHelp << wwiv::endl;
   }
   bout.nl(2);
   bout << "|101,A-F,K-U, Z=Add new record, [=Prev, ]=Next, Q=Quit : ";
