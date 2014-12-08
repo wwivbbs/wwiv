@@ -98,6 +98,8 @@ void StartMenus() {
     WriteMenuSetup(session()->usernum);
   }
   while (menu_data->reload && !hangup) {
+    menu_data->finished = false;
+    menu_data->reload = false;
     if (!LoadMenuSetup(session()->usernum)) {
       LoadMenuSetup(1);
       ConfigUserMenuSet();
