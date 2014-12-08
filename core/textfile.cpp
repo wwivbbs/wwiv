@@ -178,3 +178,12 @@ bool TextFile::ReadLine(string *buffer) {
 TextFile::~TextFile() {
   Close();
 }
+
+std::string TextFile::ReadFileIntoString() {
+  string contents;
+  fseek(file_, 0, SEEK_END);
+  contents.resize(ftell(file_));
+  rewind(file_);
+  fread(&contents[0], 1, contents.size(), file_);
+  return contents;
+}
