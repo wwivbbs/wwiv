@@ -200,7 +200,6 @@ void MenuSysopLog(const std::string pszMsg);
 // Used by menuinterpretcommand.cpp
 void TurnMCIOff();
 void TurnMCIOn();
-const char *MenuParseLine(const char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2);
 
 }  // namespace menus
 }  // namespace wwiv

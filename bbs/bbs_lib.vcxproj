@@ -108,6 +108,7 @@
     <ClInclude Include="menu.h" />
     <ClInclude Include="menuspec.h" />
     <ClInclude Include="menusupp.h" />
+    <ClInclude Include="menu_parser.h" />
     <ClInclude Include="net.h" />
     <ClInclude Include="new_bbslist.h" />
     <ClInclude Include="pause.h" />
@@ -198,6 +199,7 @@
     <ClCompile Include="menuinterpretcommand.cpp" />
     <ClCompile Include="menuspec.cpp" />
     <ClCompile Include="menusupp.cpp" />
+    <ClCompile Include="menu_parser.cpp" />
     <ClCompile Include="misccmd.cpp" />
     <ClCompile Include="msgbase.cpp" />
     <ClCompile Include="msgbase1.cpp" />
