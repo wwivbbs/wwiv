@@ -186,5 +186,9 @@ TEST_F(TextFileTest, GetPosition) {
 #endif  // _WIN32
 }
 
-
-
+TEST_F(TextFileTest, ReadFileIntoString) {
+  const string path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
+  TextFile file(path, "rt");
+  string s = file.ReadFileIntoString();
+  EXPECT_STREQ("a\nb\nc\n", s.c_str());
+}
