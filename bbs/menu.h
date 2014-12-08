@@ -195,7 +195,7 @@ void ConfigUserMenuSet();
 // Functions used by menuedit and menu
 const std::string GetMenuDirectory(const std::string menuPath);
 const std::string GetMenuDirectory();
-void MenuSysopLog(const std::string pszMsg);
+void MenuSysopLog(const std::string& pszMsg);
 
 // Used by menuinterpretcommand.cpp
 void TurnMCIOff();
