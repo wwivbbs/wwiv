@@ -192,7 +192,6 @@ int bputch(char c, bool bUseInternalBuffer) {
   return displayed;
 }
 
-
 /**
  * This function executes an ANSI string to change color, position the cursor, etc
  */
@@ -320,9 +319,17 @@ void execute_ansi() {
   }
 }
 
+/* This function ouputs a string to the com port.  This is mainly used
+ * for modem commands
+ */
+void rputs(const char *pszText) {
+  // Rushfan fix for COM/IP weirdness
+  if (ok_modem_stuff) {
+    session()->remoteIO()->write(pszText, strlen(pszText));
+  }
+}
 
 void rputch(char ch, bool bUseInternalBuffer) {
-
   if (ok_modem_stuff && nullptr != session()->remoteIO()) {
     if (bUseInternalBuffer) {
       if (s_nOutComChBufferPosition >= OUTCOMCH_BUFFER_SIZE) {
@@ -335,8 +342,6 @@ void rputch(char ch, bool bUseInternalBuffer) {
   }
 }
 
-
-
 void FlushOutComChBuffer() {
   if (s_nOutComChBufferPosition > 0) {
     session()->remoteIO()->write(s_szOutComChBuffer, s_nOutComChBufferPosition);
@@ -344,5 +349,3 @@ void FlushOutComChBuffer() {
     memset(s_szOutComChBuffer, 0, OUTCOMCH_BUFFER_SIZE + 1);
   }
 }
-
-
