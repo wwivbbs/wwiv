@@ -1,7 +1,6 @@
 # CMake for WWIV 5.0
 cmake_minimum_required (VERSION 2.6)
 project (WWIV5)
-include_directories(.)
 include_directories(..)
 include_directories(../deps/rapidjson-master/include)
 
@@ -128,7 +127,6 @@ set(ZMODEM_SOURCES
 )
 
 if(UNIX) 
-  include_directories(platform/unix)
   set(PLATFORM_SOURCES 
 	platform/unix/exec.cpp 
 	platform/unix/utility2.cpp 

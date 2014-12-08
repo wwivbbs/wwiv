@@ -20,11 +20,11 @@
 #if !defined (__INCLUDED_WIOU_H__)
 #define __INCLUDED_WIOU_H__
 
-
-#include "wcomm.h"
 #include <termios.h>
 #include <sys/poll.h>
 #include <sys/ioctl.h>
+
+#include "bbs/wcomm.h"
 
 class WIOUnix : public WComm {
  private:

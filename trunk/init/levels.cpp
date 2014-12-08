@@ -30,15 +30,15 @@
 #include <string>
 #include <sys/stat.h>
 
-#include "ifcns.h"
-#include "init.h"
-#include "input.h"
+#include "init/ifcns.h"
+#include "init/init.h"
+#include "initlib/input.h"
 #include "initlib/listbox.h"
 #include "bbs/wconstants.h"
-#include "wwivinit.h"
+#include "init/wwivinit.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "utility.h"
+#include "init/utility.h"
 
 using std::string;
 using std::vector;
