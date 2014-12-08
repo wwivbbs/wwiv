@@ -47,7 +47,6 @@ bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword);
 void MenuExecuteCommand(MenuInstanceData* menu_data, const string& command);
 void LogUserFunction(const MenuInstanceData* menu_data, const string& command, MenuRec* pMenu);
 void PrintMenuPrompt(MenuInstanceData* menu_data);
-bool AMIsNumber(const string& command);
 void QueryMenuSet();
 void WriteMenuSetup(int user_number);
 void UnloadMenuSetup();
@@ -178,10 +177,7 @@ bool MenuInstanceData::Open() {
 
   // Open up the main data file
   unique_ptr<File> menu_file(new File(create_menu_filename("mnu")));
-  menu_file->Open(File::modeBinary | File::modeReadOnly, File::shareDenyNone);
-
-  // Find out how many records there are
-  if (!menu_file->IsOpen()) {
+  if (!menu_file->Open(File::modeBinary | File::modeReadOnly, File::shareDenyNone))  {
     // Unable to open menu
     MenuSysopLog("Unable to open Menu");
     return false;
@@ -197,24 +193,25 @@ bool MenuInstanceData::Open() {
     return false;
   }
 
-  // Open/Rease/Close Prompt file
-  File filePrompt(create_menu_filename("pro"));
-  if (filePrompt.Open(File::modeBinary | File::modeReadOnly, File::shareDenyNone)) {
-    long size = filePrompt.GetLength();
-    unique_ptr<char[]> s(new char[size + 1]);
-    size = filePrompt.Read(s.get(), size);
-    s.get()[size] = '\0';
-    char* sp = strstr(s.get(), ".end.");
-    if (sp) {
-      *sp = '\0';
-    }
-    prompt.assign(s.get());
-    filePrompt.Close();
-  }
   if (!CheckMenuSecurity(&header, true)) {
     MenuSysopLog("< Menu Sec");
     return false;
   }
+
+  // Open/Rease/Close Prompt file.  We use binary mode since we want the
+  // \r to remain on windows (and linux).
+  TextFile prompt_file(create_menu_filename("pro"), "rb");
+  if (prompt_file.IsOpen()) {
+    string tmp = prompt_file.ReadFileIntoString();
+    string::size_type end = tmp.find(".end.");
+    if (end != string::npos) {
+      prompt = tmp.substr(0, end);
+    } else {
+      prompt = tmp;
+    }
+  }
+
+  // Execute command to use on entering the menu (if any).
   if (header.szScript[0]) {
     InterpretCommand(this, header.szScript);
   }
@@ -291,9 +288,22 @@ bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword) {
   return true;
 }
 
+static bool IsNumber(const string& command) {
+  if (!command.length()) {
+    return false;
+  }
+
+  for (const auto& ch : command) {
+    if (!isdigit(ch)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool MenuInstanceData::LoadMenuRecord(const std::string& command, MenuRec** pMenu) {
   // If we have 'numbers set the sub #' turned on then create a command to do so if a # is entered.
-  if (AMIsNumber(command)) {
+  if (IsNumber(command)) {
     if (header.nNumbers == MENU_NUMFLAG_SUBNUMBER) {
       memset(pMenu, 0, sizeof(MenuRec));
       sprintf((*pMenu)->szExecute, "SetSubNumber %d", atoi(command.c_str()));
@@ -310,19 +320,9 @@ bool MenuInstanceData::LoadMenuRecord(const std::string& command, MenuRec** pMen
     *pMenu = &menu_command_map_.at(command);
     if (CheckMenuItemSecurity(*pMenu, true)) {
       return true;
-    } else {
-      MenuSysopLog(StrCat("< item security : ", command));
-      return false;
     }
-    return true;
-  }
-  return false;
-}
-
-bool LoadMenuRecord(MenuInstanceData* menu_data, const string& command, MenuRec* pMenu) {
-  MenuRec *tmp;
-  if (menu_data->LoadMenuRecord(command, &tmp)) {
-    memcpy(pMenu, tmp, sizeof(MenuRec));
+    MenuSysopLog(StrCat("< item security : ", command));
+    return false;
   }
   return false;
 }
@@ -380,19 +380,6 @@ void TurnMCIOff() {
 
 void TurnMCIOn() {
   g_flags &= ~g_flag_disable_mci;
-}
-
-bool AMIsNumber(const string& command) {
-  if (!command.length()) {
-    return false;
-  }
-
-  for (const auto& ch : command) {
-    if (!isdigit(ch)) {
-      return false;
-    }
-  }
-  return true;
 }
 
 void ConfigUserMenuSet() {
