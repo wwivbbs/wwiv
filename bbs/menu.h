@@ -161,6 +161,8 @@ public:
   static const std::string create_menu_filename(
       const std::string& path, const std::string& menu, const std::string& extension);
   void Menus(const std::string& menuDirectory, const std::string& menuName);
+  bool LoadMenuRecord(const std::string& command, MenuRec** pMenu);
+  void GenerateMenu() const;
 
   std::string menu;
   std::string path;
@@ -172,6 +174,9 @@ public:
   std::unique_ptr<MenuRecIndex[]> index;
   MenuHeader header;   /* Holds the header info for current menu set in memory */
   std::unique_ptr<File> menu_file;
+private:
+  bool CreateMenuMap();
+  std::map<std::string, MenuRec> menu_command_map_;
 };
 
 
