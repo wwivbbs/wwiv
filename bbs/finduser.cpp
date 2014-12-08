@@ -48,8 +48,6 @@ using namespace wwiv::strings;
 //
 //  -1      = NEW USER
 //  -2      = WWIVnet
-//  -3      = Remote Command
-//  -4      = Unknown Special Login
 //
 int finduser(const string& searchString) {
   WUser user;
@@ -62,14 +60,10 @@ int finduser(const string& searchString) {
   if (searchString == "!-@NETWORK@-!") {
     return -2;
   }
-  if (searchString == "!-@REMOTE@-!") {
-    return -3;
-  }
   int nUserNumber = atoi(searchString.c_str());
   if (nUserNumber > 0) {
     application()->users()->ReadUser(&user, nUserNumber);
     if (user.IsUserDeleted()) {
-      //printf( "DEBUG: User %s is deleted!\r\n", user.GetName() );
       return 0;
     }
     return nUserNumber;
@@ -77,18 +71,16 @@ int finduser(const string& searchString) {
   nUserNumber = application()->users()->FindUser(searchString);
   if (nUserNumber == 0L) {
     return 0;
-  } else {
-    application()->users()->ReadUser(&user, nUserNumber);
-    if (user.IsUserDeleted()) {
-      return 0;
-    } else {
-      if (IsEqualsIgnoreCase(user.GetName(), "GUEST")) {
-        guest_user = true;
-        application()->users()->SetUserWritesAllowed(false);
-      }
-      return nUserNumber;
-    }
+  } 
+  application()->users()->ReadUser(&user, nUserNumber);
+  if (user.IsUserDeleted()) {
+    return 0;
   }
+  if (IsEqualsIgnoreCase(user.GetName(), "GUEST")) {
+    guest_user = true;
+    application()->users()->SetUserWritesAllowed(false);
+  }
+  return nUserNumber;
 }
 
 
