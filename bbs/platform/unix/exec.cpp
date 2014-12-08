@@ -19,18 +19,11 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "wwiv.h"
-#include "wcomm.h"
+#include "bbs/wwiv.h"
+#include "bbs/wcomm.h"
 
-//
 // Local function prototypes
-//
-
 int UnixSpawn(char *pszCommand, char* environ[]);
-
-//
-// Implementation
-//
 
 int ExecExternalProgram(const std::string commandLine, int flags) {
   (void)flags;
@@ -48,10 +41,8 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
     session()->remoteIO()->open();
     session()->remoteIO()->dtr(true);
   }
-
   return i;
 }
-
 
 int UnixSpawn(char *pszCommand, char* environ[]) {
   if (pszCommand == 0) {
