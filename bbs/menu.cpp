@@ -39,6 +39,10 @@ using std::unique_ptr;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
+namespace wwiv {
+namespace menus {
+
+
 // Local function prototypes
 bool LoadMenuSetup(int user_number);
 bool ValidateMenuSet(const char *pszMenuDir);
@@ -645,9 +649,6 @@ bool CheckMenuItemSecurity(MenuRec * pMenu, bool bCheckPassword) {
   return true;
 }
 
-namespace wwiv {
-namespace menus {
-
 MenuDescriptions::MenuDescriptions(const std::string& menupath) :menupath_(menupath) {
   TextFile file(menupath, DESCRIPT_ION, "rt");
   if (file.IsOpen()) {
@@ -694,15 +695,12 @@ bool MenuDescriptions::set_description(const std::string& name, const std::strin
   return true;
 }
 
-}
+const string GetMenuDirectory() {
+  return StrCat(session()->language_dir, "menus", File::pathSeparatorString);
 }
 
 const string GetMenuDirectory(const string menuPath) {
   return StrCat(GetMenuDirectory(), menuPath, File::pathSeparatorString);
-}
-
-const string GetMenuDirectory() {
-  return StrCat(session()->language_dir, "menus", File::pathSeparatorString);
 }
 
 void MenuInstanceData::GenerateMenu() const {
@@ -880,3 +878,6 @@ const char *MenuSkipSpaces(const char *pszSrc) {
   }
   return pszSrc;
 }
+
+}  // namespace menus
+}  // namespace wwiv

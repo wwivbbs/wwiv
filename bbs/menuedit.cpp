@@ -28,7 +28,9 @@
 using std::string;
 using wwiv::bbs::InputMode;
 
+using namespace wwiv::menus;
 using namespace wwiv::strings;
+
 
 bool GetMenuDir(string& menuDir);
 bool GetMenuMenu(const string& pszDirectoryName, string& menuName);
@@ -573,7 +575,7 @@ void DisplayItem(MenuRec * Menu, int nCur, int nAmount) {
 }
 
 void DisplayHeader(MenuHeader* pHeader, int nCur, const string& dirname) {
-  wwiv::menus::MenuDescriptions descriptions(GetMenuDirectory());
+  wwiv::menus::MenuDescriptions descriptions(wwiv::menus::GetMenuDirectory());
   bout.cls();
   bout << "|#9(Menu Header)" << wwiv::endl;
   if (nCur == 0) {

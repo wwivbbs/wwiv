@@ -752,7 +752,7 @@ void enter_regnum() {
   }
 }
 
-void defaults(MenuInstanceData * pMenuData) {
+void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
   bool done = false;
   do {
     print_cur_stat();
@@ -836,7 +836,7 @@ void defaults(MenuInstanceData * pMenuData) {
     }
     break;
     case 'K':
-      ConfigUserMenuSet();
+      wwiv::menus::ConfigUserMenuSet();
       pMenuData->finished = true;
       pMenuData->reload = true;
       break;

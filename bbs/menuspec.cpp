@@ -25,6 +25,8 @@
 #include "bbs/menusupp.h"
 #include "core/strings.h"
 
+using namespace wwiv::menus;
+
 /* ---------------------------------------------------------------------- */
 /* menuspec.cpp - Menu Specific support functions                           */
 /*                                                                        */
