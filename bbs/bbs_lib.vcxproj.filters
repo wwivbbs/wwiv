@@ -355,6 +355,9 @@
     <ClCompile Include="new_bbslist.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="menu_parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -529,6 +532,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="callback.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="menu_parser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
