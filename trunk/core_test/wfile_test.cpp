@@ -263,3 +263,11 @@ TEST(FileTest, mkdirs) {
 
   ASSERT_TRUE(File::Exists(path));
 }
+
+TEST(FileTest, Stream) {
+    FileHelper file;
+    File f(file.TempDir(), "newdir");
+    std::stringstream s;
+    s << f;
+    ASSERT_EQ(f.full_pathname(), s.str());
+}

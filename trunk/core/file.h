@@ -22,6 +22,7 @@
 
 #include <cstring>
 #include <ctime>
+#include <iostream>
 #include <string>
 
 #ifndef MAX_PATH
@@ -175,6 +176,8 @@ class File {
 
   static long GetFreeSpaceForPath(const std::string& path);
 
+  friend std::ostream& operator<< (std::ostream &os, const File &cPoint);
 };
+
 
 #endif // __INCLUDED_PLATFORM_WFILLE_H__

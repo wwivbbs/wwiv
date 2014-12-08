@@ -325,7 +325,7 @@ bool MenuInstanceData::LoadMenuRecord(const std::string& command, MenuRec** pMen
     if (CheckMenuItemSecurity(*pMenu, true)) {
       return true;
     }
-    MenuSysopLog(StrCat("< item security : ", command));
+    MenuSysopLog(StrCat("|06< item security : ", command));
     return false;
   }
   return false;
@@ -359,7 +359,7 @@ void LogUserFunction(const MenuInstanceData* menu_data, const string& command, M
   }
 }
 
-void MenuSysopLog(const string msg) {
+void MenuSysopLog(const string& msg) {
   const string log_message = StrCat("*MENU* : ", msg);
   sysoplog(log_message);
   bout << log_message << wwiv::endl;
