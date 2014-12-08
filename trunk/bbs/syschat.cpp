@@ -94,7 +94,7 @@ void RequestChat() {
       bout << "|#9Enter Reason for chat: \r\n|#0:";
       std::string chatReason;
       inputl(&chatReason, 70, true);
-      if (chatReason.empty()) {
+      if (!chatReason.empty()) {
         if (!play_sdf(CHAT_NOEXT, false)) {
           chatsound(100, 800, 10, 10, 25, 5);
         }
