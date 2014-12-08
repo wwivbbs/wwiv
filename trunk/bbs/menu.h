@@ -140,7 +140,7 @@ struct MenuRec {
   uint16_t nHide;            /* Hide text from PD/Regular/both or no menus */
   uint16_t unused_nPDFlags;  /* special characteristis for pulldowns       */
 
-  char szExtendedHelp[13];   /* filename to detailed help on this item */
+  char szExtendedHelp[13];   /* filename for detailed help on this item (not used) */
   char unused_data[79];
 };
 
