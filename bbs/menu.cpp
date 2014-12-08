@@ -107,7 +107,6 @@ void StartMenus() {
     if (!ValidateMenuSet(pSecondUserRec->szMenuSet)) {
       ConfigUserMenuSet();
     }
-
     menu_data->Menus(pSecondUserRec->szMenuSet, "main"); // default starting menu
   }
 }
@@ -163,7 +162,7 @@ bool MenuInstanceData::CreateMenuMap(File* menu_file) {
   insertion_order_.clear();
   int nAmount = menu_file->GetLength() / sizeof(MenuRec);
 
-  for (uint16_t nRec = 1; nRec < nAmount; nRec++) {
+  for (int nRec = 1; nRec < nAmount; nRec++) {
     MenuRec menu;
     menu_file->Seek(nRec * sizeof(MenuRec), File::seekBegin);
     menu_file->Read(&menu, sizeof(MenuRec));
@@ -296,7 +295,6 @@ static bool IsNumber(const string& command) {
   if (!command.length()) {
     return false;
   }
-
   for (const auto& ch : command) {
     if (!isdigit(ch)) {
       return false;
@@ -312,8 +310,7 @@ bool MenuInstanceData::LoadMenuRecord(const std::string& command, MenuRec** pMen
       memset(pMenu, 0, sizeof(MenuRec));
       sprintf((*pMenu)->szExecute, "SetSubNumber %d", atoi(command.c_str()));
       return true;
-    }
-    if (header.nNumbers == MENU_NUMFLAG_DIRNUMBER) {
+    } else if (header.nNumbers == MENU_NUMFLAG_DIRNUMBER) {
       memset(pMenu, 0, sizeof(MenuRec));
       sprintf((*pMenu)->szExecute, "SetDirNumber %d", atoi(command.c_str()));
       return true;
@@ -326,7 +323,6 @@ bool MenuInstanceData::LoadMenuRecord(const std::string& command, MenuRec** pMen
       return true;
     }
     MenuSysopLog(StrCat("|06< item security : ", command));
-    return false;
   }
   return false;
 }
@@ -345,7 +341,7 @@ void MenuExecuteCommand(MenuInstanceData* menu_data, const string& command) {
 void LogUserFunction(const MenuInstanceData* menu_data, const string& command, MenuRec* pMenu) {
   switch (menu_data->header.nLogging) {
   case MENU_LOGTYPE_KEY:
-    sysopchar(command.c_str());
+    sysopchar(command);
     break;
   case MENU_LOGTYPE_COMMAND:
     sysoplog(pMenu->szExecute);
@@ -401,8 +397,8 @@ void ConfigUserMenuSet() {
   while (!bDone && !hangup) {
     bout << "   |#1WWIV |#6Menu |#1Editor|#0\r\n\r\n";
     bout << "|#21|06) |#1Menuset      |06: |15" << pSecondUserRec->szMenuSet << wwiv::endl;
-    bout << "|#22|06) |#1Use hot keys |06: |15" << (pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Yes" : "No ") <<
-                       wwiv::endl;
+    bout << "|#22|06) |#1Use hot keys |06: |15" << (pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Yes" : "No ")
+         << wwiv::endl;
     bout.nl();
     bout << "|#9[|0212? |08Q|02=Quit|#9] :|#0 ";
 
@@ -410,9 +406,8 @@ void ConfigUserMenuSet() {
 
     switch (chKey) {
     case 'Q':
-      bDone = 1;
+      bDone = true;
       break;
-
     case '1': {
       ListMenuDirs();
       bout.nl(2);
@@ -437,20 +432,16 @@ void ConfigUserMenuSet() {
       }
     }
     break;
-
     case '2':
       pSecondUserRec->cHotKeys = !pSecondUserRec->cHotKeys;
       break;
-
     case '3':
       pSecondUserRec->cMenuType = !pSecondUserRec->cMenuType;
       break;
-
     case '?':
       printfile(MENUWEL_NOEXT);
       continue;                           // bypass the below cls()
     }
-
     bout.cls();
   }
 
@@ -464,48 +455,9 @@ void ConfigUserMenuSet() {
   }
 
   WriteMenuSetup(session()->usernum);
-
   MenuSysopLog(StringPrintf("Menu in use : %s - %s - %s", pSecondUserRec->szMenuSet,
           pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Hot" : "Off", pSecondUserRec->cMenuType == MENUTYPE_REGULAR ? "REG" : "PD"));
   bout.nl(2);
-}
-
-
-void QueryMenuSet() {
-  user_config tmpcfg;
-  bool bSecondUserRecLoaded = false;
-
-  if (!pSecondUserRec) {
-    bSecondUserRecLoaded = true;
-    pSecondUserRec = &tmpcfg;
-  }
-
-  if (session()->usernum != nSecondUserRecLoaded) {
-    if (!LoadMenuSetup(session()->usernum)) {
-      LoadMenuSetup(1);
-    }
-  }
-
-  nSecondUserRecLoaded = session()->usernum;
-  ValidateMenuSet(pSecondUserRec->szMenuSet);
-
-  bout.nl(2);
-  if (pSecondUserRec->szMenuSet[0] == 0) {
-    strcpy(pSecondUserRec->szMenuSet, "WWIV");
-  }
-  bout << "|#7Configurable menu set status:\r\n\r\n";
-  bout << "|#8Menu in use  : |#9" << pSecondUserRec->szMenuSet << wwiv::endl;
-  bout << "|#8Hot keys are : |#9" << (pSecondUserRec->cHotKeys == HOTKEYS_ON ? "On" : "Off") << wwiv::endl;
-  bout.nl();
-  bout << "|#7Would you like to change these? (N) ";
-  if (yesno()) {
-    ConfigUserMenuSet();
-  }
-
-  if (bSecondUserRecLoaded) {
-    pSecondUserRec = nullptr;
-    nSecondUserRecLoaded = 0;
-  }
 }
 
 bool ValidateMenuSet(const char *pszMenuDir) {
