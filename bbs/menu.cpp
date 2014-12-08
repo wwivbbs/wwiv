@@ -44,7 +44,6 @@ bool LoadMenuSetup(int user_number);
 bool ValidateMenuSet(const char *pszMenuDir);
 void StartMenus();
 bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword);
-bool LoadMenuRecord(MenuInstanceData* menu_data, const string& command, MenuRec* pMenu);
 void MenuExecuteCommand(MenuInstanceData* menu_data, const string& command);
 void LogUserFunction(const MenuInstanceData* menu_data, const string& command, MenuRec* pMenu);
 void PrintMenuPrompt(MenuInstanceData* menu_data);
@@ -54,7 +53,6 @@ void WriteMenuSetup(int user_number);
 void UnloadMenuSetup();
 const string GetCommand(const MenuInstanceData* menu_data);
 bool CheckMenuItemSecurity(MenuRec* pMenu, bool bCheckPassword);
-void GenerateMenu(const MenuInstanceData* menu_data);
 const char *MenuDoParenCheck(const char *pszSrc, int bMore, const char *porig);
 const char *MenuGetParam(const char *pszSrc, char *pszParam);
 const char *MenuSkipSpaces(const char *pszSrc);
@@ -149,6 +147,7 @@ void MenuInstanceData::Close() {
   menu_file.release();
   index.release();
   nAmountRecs = 0;
+  menu_command_map_.clear();
 }
 
 //static
@@ -161,19 +160,20 @@ const string MenuInstanceData::create_menu_filename(const string& extension) con
   return MenuInstanceData::create_menu_filename(path, menu, extension);
 }
 
-static bool CreateIndex(MenuInstanceData* menu_data) {
-  menu_data->index.reset(new MenuRecIndex[menu_data->nAmountRecs * sizeof(MenuRecIndex)]);
-  int nAmount = menu_data->menu_file->GetLength() / sizeof(MenuRec);
+bool MenuInstanceData::CreateMenuMap() {
+  index.reset(new MenuRecIndex[nAmountRecs * sizeof(MenuRec)]);
+  int nAmount = menu_file->GetLength() / sizeof(MenuRec);
 
   for (uint16_t nRec = 1; nRec < nAmount; nRec++) {
     MenuRec menu;
-    menu_data->menu_file->Seek(nRec * sizeof(MenuRec), File::seekBegin);
-    menu_data->menu_file->Read(&menu, sizeof(MenuRec));
+    menu_file->Seek(nRec * sizeof(MenuRec), File::seekBegin);
+    menu_file->Read(&menu, sizeof(MenuRec));
 
-    memset(&menu_data->index[nRec-1], 0, sizeof(MenuRecIndex));
-    menu_data->index[nRec-1].nRec = nRec;
-    menu_data->index[nRec-1].nFlags = menu.nFlags;
-    strcpy(menu_data->index[nRec-1].szKey, menu.szKey);
+    menu_command_map_.emplace(menu.szKey, menu);
+    memset(&index[nRec-1], 0, sizeof(MenuRecIndex));
+    index[nRec-1].nRec = nRec;
+    index[nRec-1].nFlags = menu.nFlags;
+    strcpy(index[nRec-1].szKey, menu.szKey);
   }
   return true;
 }
@@ -200,9 +200,8 @@ bool MenuInstanceData::Open() {
   menu_file->Seek(0L, File::seekBegin);
   menu_file->Read(&header, sizeof(MenuHeader));
 
-  // version numbers can be checked here
-
-  if (!CreateIndex(this)) {
+  // Version numbers can be checked here.
+  if (!CreateMenuMap()) {
     MenuSysopLog("Unable to create menu index.");
     nAmountRecs = 0;
     return false;
@@ -251,7 +250,7 @@ static const string GetHelpFileName(const MenuInstanceData* menu_data) {
 void MenuInstanceData::DisplayHelp() const {
   const string filename = GetHelpFileName(this);
   if (!printfile(filename, true)) {
-    GenerateMenu(this);
+    GenerateMenu();
   }
 }
 
@@ -302,55 +301,54 @@ bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword) {
   return true;
 }
 
-bool LoadMenuRecord(MenuInstanceData* menu_data, const string& command, MenuRec * pMenu) {
-  memset(pMenu, 0, sizeof(MenuRec));
-
+bool MenuInstanceData::LoadMenuRecord(const std::string& command, MenuRec** pMenu) {
   // If we have 'numbers set the sub #' turned on then create a command to do so if a # is entered.
   if (AMIsNumber(command)) {
-    if (menu_data->header.nNumbers == MENU_NUMFLAG_SUBNUMBER) {
+    if (header.nNumbers == MENU_NUMFLAG_SUBNUMBER) {
       memset(pMenu, 0, sizeof(MenuRec));
-      sprintf(pMenu->szExecute, "SetSubNumber %d", atoi(command.c_str()));
+      sprintf((*pMenu)->szExecute, "SetSubNumber %d", atoi(command.c_str()));
       return true;
     }
-    if (menu_data->header.nNumbers == MENU_NUMFLAG_DIRNUMBER) {
+    if (header.nNumbers == MENU_NUMFLAG_DIRNUMBER) {
       memset(pMenu, 0, sizeof(MenuRec));
-      sprintf(pMenu->szExecute, "SetDirNumber %d", atoi(command.c_str()));
+      sprintf((*pMenu)->szExecute, "SetDirNumber %d", atoi(command.c_str()));
       return true;
     }
   }
-  for (int x = 0; x < menu_data->nAmountRecs; x++) {
-    if (IsEqualsIgnoreCase(menu_data->index[x].szKey, command.c_str())) {
-      if ((menu_data->index[x].nFlags & MENU_FLAG_DELETED) == 0) {
-        if (menu_data->index[x].nRec != 0) {
-          // Dont include control record
-          menu_data->menu_file->Seek(menu_data->index[x].nRec * sizeof(MenuRec), File::seekBegin);
-          menu_data->menu_file->Read(pMenu, sizeof(MenuRec));
 
-          if (CheckMenuItemSecurity(pMenu, 1)) {
-            return true;
-          } else {
-            MenuSysopLog(StrCat("< item security : ", command));
-            return false;
-          }
-        }
-      }
+  if (contains(menu_command_map_, command)) {
+    *pMenu = &menu_command_map_.at(command);
+    if (CheckMenuItemSecurity(*pMenu, true)) {
+      return true;
+    } else {
+      MenuSysopLog(StrCat("< item security : ", command));
+      return false;
     }
+    return true;
   }
   return false;
 }
 
-void MenuExecuteCommand(MenuInstanceData * menu_data, const string& command) {
-  MenuRec menu;
+bool LoadMenuRecord(MenuInstanceData* menu_data, const string& command, MenuRec* pMenu) {
+  MenuRec *tmp;
+  if (menu_data->LoadMenuRecord(command, &tmp)) {
+    memcpy(pMenu, tmp, sizeof(MenuRec));
+  }
+  return false;
+}
 
-  if (LoadMenuRecord(menu_data, command, &menu)) {
-    LogUserFunction(menu_data, command, &menu);
-    InterpretCommand(menu_data, menu.szExecute);
+void MenuExecuteCommand(MenuInstanceData* menu_data, const string& command) {
+  MenuRec* menu;
+
+  if (menu_data->LoadMenuRecord(command, &menu)) {
+    LogUserFunction(menu_data, command, menu);
+    InterpretCommand(menu_data, menu->szExecute);
   } else {
-    LogUserFunction(menu_data, command, &menu);
+    LogUserFunction(menu_data, command, menu);
   }
 }
 
-void LogUserFunction(const MenuInstanceData * menu_data, const string& command, MenuRec * pMenu) {
+void LogUserFunction(const MenuInstanceData* menu_data, const string& command, MenuRec* pMenu) {
   switch (menu_data->header.nLogging) {
   case MENU_LOGTYPE_KEY:
     sysopchar(command.c_str());
@@ -373,7 +371,7 @@ void MenuSysopLog(const string msg) {
   bout << log_message << wwiv::endl;
 }
 
-void PrintMenuPrompt(MenuInstanceData * menu_data) {
+void PrintMenuPrompt(MenuInstanceData* menu_data) {
   if (!session()->user()->IsExpert() || menu_data->header.nForceHelp == MENU_HELP_FORCE) {
     menu_data->DisplayHelp();
   }
@@ -400,7 +398,7 @@ bool AMIsNumber(const string& command) {
   }
 
   for (const auto& ch : command) {
-    if (isdigit(ch) == 0) {
+    if (!isdigit(ch)) {
       return false;
     }
   }
@@ -730,7 +728,7 @@ const string GetMenuDirectory() {
   return StrCat(session()->language_dir, "menus", File::pathSeparatorString);
 }
 
-void GenerateMenu(const MenuInstanceData* menu_data) {
+void MenuInstanceData::GenerateMenu() const {
   MenuRec menu;
 
   memset(&menu, 0, sizeof(MenuRec));
@@ -739,16 +737,19 @@ void GenerateMenu(const MenuInstanceData* menu_data) {
   bout.nl();
 
   int iDisplayed = 0;
-  if (menu_data->header.nNumbers != MENU_NUMFLAG_NOTHING) {
+  if (header.nNumbers != MENU_NUMFLAG_NOTHING) {
     bout.bprintf("|#1%-8.8s  |#2%-25.25s  ", "[#]", "Change Sub/Dir #");
     ++iDisplayed;
   }
-  for (int x = 0; x < menu_data->nAmountRecs - 1; x++) {
-    if ((menu_data->index[x].nFlags & MENU_FLAG_DELETED) == 0) {
-      if (menu_data->index[x].nRec != 0) {
+  for (int x = 0; x < nAmountRecs - 1; x++) {
+    if ((index[x].nFlags & MENU_FLAG_DELETED) == 0) {
+      if (index[x].nRec != 0) {
         // Dont include control record
-        menu_data->menu_file->Seek(menu_data->index[x].nRec * sizeof(MenuRec), File::seekBegin);
-        menu_data->menu_file->Read(&menu, sizeof(MenuRec));
+        const string key(index[x].szKey);
+        if (!contains(menu_command_map_, key)) {
+          continue;
+        }
+        menu = menu_command_map_.at(key);
 
         if (CheckMenuItemSecurity(&menu, false) &&
             menu.nHide != MENU_HIDE_REGULAR &&
