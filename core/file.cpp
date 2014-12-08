@@ -411,3 +411,9 @@ bool File::mkdirs(const string& path) {
   }
   return false;  // unknown error.
 }
+
+std::ostream& operator<<(std::ostream& os, const File& file) {
+  os << file.full_pathname();
+  return os;
+}
+
