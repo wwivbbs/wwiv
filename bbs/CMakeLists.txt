@@ -57,6 +57,7 @@ set(COMMON_SOURCES
  menu.cpp
  menuedit.cpp
  menuinterpretcommand.cpp
+ menu_parser.cpp
  menuspec.cpp
  menusupp.cpp
  misccmd.cpp

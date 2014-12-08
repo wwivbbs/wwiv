@@ -43,6 +43,7 @@
 using std::string;
 using wwiv::bbs::InputMode;
 using wwiv::bbs::TempDisablePause;
+using namespace wwiv::menus;
 
 void UnQScan() {
   bout.nl();

@@ -26,7 +26,12 @@
 #include "sdk/vardec.h"
 #include "bbs/net.h"
 
+namespace wwiv {
+namespace menus {
 class MenuInstanceData;
+}
+}
+
 class WUser;
 
 
@@ -226,7 +231,7 @@ const std::string DescribeColorCode(int nColorCode);
 void color_list();
 void config_qscan();
 void enter_regnum();
-void defaults(MenuInstanceData * MenuData);
+void defaults(wwiv::menus::MenuInstanceData * MenuData);
 void config_scan_plus(int type);
 
 
