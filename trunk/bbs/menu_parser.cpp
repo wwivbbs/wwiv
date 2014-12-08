@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/menu_parser.h"
+
 #include <cstdint>
 #include <cctype>
 #include <memory>
