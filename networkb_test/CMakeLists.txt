@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
 project (networkb_test)
-include_directories(.)
 
 include_directories(../deps/gtest-1.7.0/include)
 include_directories(..)

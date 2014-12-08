@@ -15,7 +15,6 @@ set(COMMON_SOURCES
   users.cpp
   )
 
-include_directories(${BBS_SOURCE_DIR})
 set(BBS_SOURCES
   ${BBS_SOURCE_DIR}/datetime.cpp
   ${BBS_SOURCE_DIR}/memory.cpp
@@ -24,7 +23,6 @@ set(BBS_SOURCES
   )
 
 if(UNIX) 
-  include_directories(${BBS_SOURCE_DIR}/platform/unix)
   set(PLATFORM_SOURCES 
 	${BBS_SOURCE_DIR}/platform/unix/utility2.cpp 
 	)

@@ -16,17 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
-
-#include "wwiv.h"
-#include "wcomm.h"
-#include "wiou.h"
 #include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
 #include <sys/poll.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+
+#include "bbs/wcomm.h"
+#include "bbs/wwiv.h"
+#include "bbs/platform/unix/wiou.h"
 
 
 #define TTY "/dev/tty"
@@ -61,9 +60,7 @@ WIOUnix::WIOUnix() : tty_open(0), ttyf(nullptr) {
   }
 
   int f = fileno(ttyf);
-
   set_terminal(true);
-
   struct termios ttyb;
 
   ioctl(f, TCGETS, &ttysav);
@@ -149,7 +146,6 @@ unsigned int WIOUnix::read(char *buffer, unsigned int count) {
   }
   return 0;
 }
-
 
 unsigned int WIOUnix::write(const char *buffer, unsigned int count, bool bNoTransation) {
   ::write(fileno(stdout), buffer, count);

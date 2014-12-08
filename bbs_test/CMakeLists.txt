@@ -1,12 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project (WWIV5)
-include_directories(.)
 
 include_directories(../deps/gtest-1.7.0/include)
 include_directories(..)
-include_directories(../bbs)
-include_directories(../bbs/platform)
-include_directories(../core_test)
 
 set(test_sources
   bbs_helper.cpp
