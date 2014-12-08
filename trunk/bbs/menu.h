@@ -21,7 +21,9 @@
 
 #include <cstdint>
 #include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "bbs/vars.h"
 #include "core/file.h"
@@ -142,12 +144,6 @@ struct MenuRec {
   char unused_data[79];
 };
 
-struct MenuRecIndex {
-  char szKey[MENU_MAX_KEYS + 1];
-  uint16_t nRec;        /* allows alot of records    */
-  uint8_t nFlags;             /* Quick access to the flags */
-};
-
 #pragma pack(pop)
 
 class MenuInstanceData {
@@ -171,7 +167,7 @@ public:
   bool reload;  /* true if we are going to reload the menus */
 
   std::string prompt;
-  std::unique_ptr<MenuRecIndex[]> index;
+  std::vector<std::string> insertion_order_;
   MenuHeader header;   /* Holds the header info for current menu set in memory */
   std::unique_ptr<File> menu_file;
 private:

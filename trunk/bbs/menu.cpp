@@ -145,7 +145,7 @@ MenuInstanceData::~MenuInstanceData() {
 
 void MenuInstanceData::Close() {
   menu_file.release();
-  index.release();
+  insertion_order_.clear();
   nAmountRecs = 0;
   menu_command_map_.clear();
 }
@@ -161,7 +161,7 @@ const string MenuInstanceData::create_menu_filename(const string& extension) con
 }
 
 bool MenuInstanceData::CreateMenuMap() {
-  index.reset(new MenuRecIndex[nAmountRecs * sizeof(MenuRec)]);
+  insertion_order_.clear();
   int nAmount = menu_file->GetLength() / sizeof(MenuRec);
 
   for (uint16_t nRec = 1; nRec < nAmount; nRec++) {
@@ -170,10 +170,9 @@ bool MenuInstanceData::CreateMenuMap() {
     menu_file->Read(&menu, sizeof(MenuRec));
 
     menu_command_map_.emplace(menu.szKey, menu);
-    memset(&index[nRec-1], 0, sizeof(MenuRecIndex));
-    index[nRec-1].nRec = nRec;
-    index[nRec-1].nFlags = menu.nFlags;
-    strcpy(index[nRec-1].szKey, menu.szKey);
+    if (nRec != 0 && !(menu.nFlags & MENU_FLAG_DELETED)) {
+      insertion_order_.push_back(menu.szKey);
+    }
   }
   return true;
 }
@@ -729,10 +728,6 @@ const string GetMenuDirectory() {
 }
 
 void MenuInstanceData::GenerateMenu() const {
-  MenuRec menu;
-
-  memset(&menu, 0, sizeof(MenuRec));
-
   bout.Color(0);
   bout.nl();
 
@@ -741,36 +736,26 @@ void MenuInstanceData::GenerateMenu() const {
     bout.bprintf("|#1%-8.8s  |#2%-25.25s  ", "[#]", "Change Sub/Dir #");
     ++iDisplayed;
   }
-  for (int x = 0; x < nAmountRecs - 1; x++) {
-    if ((index[x].nFlags & MENU_FLAG_DELETED) == 0) {
-      if (index[x].nRec != 0) {
-        // Dont include control record
-        const string key(index[x].szKey);
-        if (!contains(menu_command_map_, key)) {
-          continue;
-        }
-        menu = menu_command_map_.at(key);
-
-        if (CheckMenuItemSecurity(&menu, false) &&
-            menu.nHide != MENU_HIDE_REGULAR &&
-            menu.nHide != MENU_HIDE_BOTH) {
-          char szKey[30];
-          if (strlen(menu.szKey) > 1 && menu.szKey[0] != '/' && pSecondUserRec->cHotKeys == HOTKEYS_ON) {
-            sprintf(szKey, "//%s", menu.szKey);
-          } else {
-            sprintf(szKey, "[%s]", menu.szKey);
-          }
-
-          bout.bprintf("|#1%-8.8s  |#2%-25.25s  ", szKey,
-                       menu.szMenuText[0] ? menu.szMenuText : menu.szExecute);
-
-          if (iDisplayed % 2) {
-            bout.nl();
-          }
-
-          ++iDisplayed;
-        }
+  for (const auto& key : insertion_order_) {
+    if (!contains(menu_command_map_, key)) {
+      continue;
+    }
+    MenuRec menu = menu_command_map_.at(key);
+    if (CheckMenuItemSecurity(&menu, false) &&
+        menu.nHide != MENU_HIDE_REGULAR &&
+        menu.nHide != MENU_HIDE_BOTH) {
+      char szKey[30];
+      if (strlen(menu.szKey) > 1 && menu.szKey[0] != '/' && pSecondUserRec->cHotKeys == HOTKEYS_ON) {
+        sprintf(szKey, "//%s", menu.szKey);
+      } else {
+        sprintf(szKey, "[%s]", menu.szKey);
       }
+      bout.bprintf("|#1%-8.8s  |#2%-25.25s  ", szKey,
+                    menu.szMenuText[0] ? menu.szMenuText : menu.szExecute);
+      if (iDisplayed % 2) {
+        bout.nl();
+      }
+      ++iDisplayed;
     }
   }
   if (IsEquals(session()->user()->GetName(), "GUEST")) {
