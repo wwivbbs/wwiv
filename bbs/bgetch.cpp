@@ -200,7 +200,6 @@ void PrintTime() {
   RestoreCurrentLine(cl, atr, xl, &cc);
 }
 
-
 void RedrawCurrentLine() {
   char xl[81], cl[81], atr[81], cc, ansistr_1[81];
 
@@ -217,4 +216,36 @@ void RedrawCurrentLine() {
   ansiptr = ansiptr_1;
 }
 
+char bgetchraw() {
+  if (ok_modem_stuff && !global_xx && nullptr != session()->remoteIO()) {
+    if (session()->remoteIO()->incoming()) {
+      return (session()->remoteIO()->getW());
+    }
+    if (session()->localIO()->LocalKeyPressed()) {
+      return session()->localIO()->LocalGetChar();
+    }
+  }
+  return 0;
+}
 
+bool bkbhitraw() {
+  if (ok_modem_stuff && !global_xx) {
+    return (session()->remoteIO()->incoming() || session()->localIO()->LocalKeyPressed());
+  } else if (session()->localIO()->LocalKeyPressed()) {
+    return true;
+  }
+  return false;
+}
+
+bool bkbhit() {
+  if (x_only) {
+    return false;
+  }
+
+  if ((session()->localIO()->LocalKeyPressed() || (incom && bkbhitraw()) ||
+       (charbufferpointer && charbuffer[charbufferpointer])) ||
+      bquote) {
+    return true;
+  }
+  return false;
+}
