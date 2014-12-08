@@ -143,7 +143,6 @@ MenuInstanceData::~MenuInstanceData() {
 
 void MenuInstanceData::Close() {
   insertion_order_.clear();
-  nAmountRecs = 0;
   menu_command_map_.clear();
 }
 
@@ -157,7 +156,7 @@ const string MenuInstanceData::create_menu_filename(const string& extension) con
   return MenuInstanceData::create_menu_filename(path, menu, extension);
 }
 
-bool MenuInstanceData::CreateMenuMap() {
+bool MenuInstanceData::CreateMenuMap(File* menu_file) {
   insertion_order_.clear();
   int nAmount = menu_file->GetLength() / sizeof(MenuRec);
 
@@ -175,18 +174,14 @@ bool MenuInstanceData::CreateMenuMap() {
 }
 
 bool MenuInstanceData::Open() {
-  nAmountRecs = 0;
   Close();
 
   // Open up the main data file
-  menu_file.reset(new File(create_menu_filename("mnu")));
+  unique_ptr<File> menu_file(new File(create_menu_filename("mnu")));
   menu_file->Open(File::modeBinary | File::modeReadOnly, File::shareDenyNone);
 
   // Find out how many records there are
-  if (menu_file->IsOpen()) {
-    long lSize = menu_file->GetLength();
-    nAmountRecs = static_cast<uint16_t>(lSize / sizeof(MenuRec));
-  } else {
+  if (!menu_file->IsOpen()) {
     // Unable to open menu
     MenuSysopLog("Unable to open Menu");
     return false;
@@ -197,13 +192,10 @@ bool MenuInstanceData::Open() {
   menu_file->Read(&header, sizeof(MenuHeader));
 
   // Version numbers can be checked here.
-  if (!CreateMenuMap()) {
-    menu_file.reset();
+  if (!CreateMenuMap(menu_file.get())) {
     MenuSysopLog("Unable to create menu index.");
-    nAmountRecs = 0;
     return false;
   }
-  menu_file.reset();
 
   // Open/Rease/Close Prompt file
   File filePrompt(create_menu_filename("pro"));

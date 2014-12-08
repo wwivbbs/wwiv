@@ -162,16 +162,14 @@ public:
 
   std::string menu;
   std::string path;
-  uint16_t nAmountRecs;
   bool finished;
   bool reload;  /* true if we are going to reload the menus */
 
   std::string prompt;
   std::vector<std::string> insertion_order_;
   MenuHeader header;   /* Holds the header info for current menu set in memory */
-  std::unique_ptr<File> menu_file;
 private:
-  bool CreateMenuMap();
+  bool CreateMenuMap(File* menu_file);
   std::map<std::string, MenuRec> menu_command_map_;
 };
 
