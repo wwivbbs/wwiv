@@ -30,7 +30,7 @@ void ValidateUser();
 void Chains();
 void TimeBank();
 void AutoMessage();
-void Defaults(MenuInstanceData * MenuData);
+void Defaults(wwiv::menus::MenuInstanceData* MenuData);
 void SendEMail();
 void FeedBack();
 void Bulletins();

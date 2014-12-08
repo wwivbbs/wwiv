@@ -43,6 +43,9 @@ using wwiv::bbslist::NewBBSList;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
+namespace wwiv {
+namespace menus {
+
 map<string, std::function<void(MenuInstanceData*, const string&, const string&)>, wwiv::stl::ci_less> CreateCommandMap();
 
 bool UseNewBBSList() {
@@ -575,3 +578,6 @@ map<string, std::function<void(MenuInstanceData*, const string&, const string&)>
 #if defined( _MSC_VER )
 #pragma warning(pop)
 #endif
+
+}  // namespace menus
+}  // namespace wwiv

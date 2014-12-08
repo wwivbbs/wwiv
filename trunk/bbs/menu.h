@@ -146,6 +146,9 @@ struct MenuRec {
 
 #pragma pack(pop)
 
+namespace wwiv {
+namespace menus {
+
 class MenuInstanceData {
 public:
   MenuInstanceData();
@@ -173,10 +176,6 @@ private:
   std::map<std::string, MenuRec> menu_command_map_;
 };
 
-
-namespace wwiv {
-namespace menus {
-
 class MenuDescriptions {
 public:
   MenuDescriptions(const std::string& menupath);
@@ -188,9 +187,6 @@ private:
   std::string menupath_;
   std::map<std::string, std::string, wwiv::stl::ci_less> descriptions_;
 };
-
-}
-}
 
 // Functions used b bbs.cpp and defaults.cpp
 void mainmenu();
@@ -205,5 +201,8 @@ void MenuSysopLog(const std::string pszMsg);
 void TurnMCIOff();
 void TurnMCIOn();
 const char *MenuParseLine(const char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2);
+
+}  // namespace menus
+}  // namespace wwiv
 
 #endif  // __INCLUDED_MENU_H__

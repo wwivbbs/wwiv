@@ -1005,7 +1005,7 @@ int WApplication::Run(int argc, char *argv[]) {
         }
         zap_ed_info();
         write_inst(INST_LOC_MAIN, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
-        mainmenu();
+        wwiv::menus::mainmenu();
       }
       logoff();
     }
