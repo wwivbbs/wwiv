@@ -62,6 +62,10 @@ public:
   const std::string full_pathname() const { return file_name_; }
   FILE* GetFILE() { return file_; } 
 
+  // Reads the entire contents of the file into the returned string.
+  // The file position will be at the end of the file after returning.
+  std::string ReadFileIntoString();
+
  public:
   ~TextFile();
 
