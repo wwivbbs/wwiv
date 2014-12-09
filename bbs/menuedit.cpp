@@ -40,8 +40,8 @@ void DisplayHeader(MenuHeader* Header, int nCur, const string& dirname);
 
 static void ListMenuMenus(const string& directory_name) {
   bout.nl();
-  bout << "|#1Available Menus\r\n";
-  bout << "|#7===============|#0\r\n";
+  bout << "|#1Available Menus" << wwiv::endl 
+       << "|#9===============" << wwiv::endl;
 
   WFindFile fnd;
   bool bFound = fnd.open(StrCat(GetMenuDirectory(directory_name), "*.mnu"), 0);
@@ -215,6 +215,165 @@ static bool EditHeader(MenuHeader* header, File &fileEditMenu, const string& men
   return done;
 }
 
+static bool EditMenuItem(MenuRec* menu, File &fileEditMenu, int& nAmount, int& nCur) {
+  bool done = false;
+  char szPW[21];
+  char szTemp1[21];
+  DisplayItem(menu, nCur, nAmount);
+  char chKey = onek("Q[]Z1ABCDEFGKLMNOPRSTUVW");
+
+  switch (chKey) {
+  case 'Q':
+    WriteMenuRec(fileEditMenu, menu, nCur);
+    done = true;
+    break;
+
+  case '[':
+    WriteMenuRec(fileEditMenu, menu, nCur);
+    nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+    --nCur;
+    if (nCur < 0) {
+      nCur = nAmount;
+    }
+    ReadMenuRec(fileEditMenu, menu, nCur);
+    break;
+  case ']':
+    WriteMenuRec(fileEditMenu, menu, nCur);
+    nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+    ++nCur;
+    if (nCur > nAmount) {
+      nCur = 0;
+    }
+    ReadMenuRec(fileEditMenu, menu, nCur);
+    break;
+  case 'Z':
+    WriteMenuRec(fileEditMenu, menu, nCur);
+    memset(menu, 0, sizeof(MenuRec));
+    nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+    nCur = nAmount + 1;
+    memset(menu, 0, sizeof(MenuRec));
+    menu->iMaxSL = 255;
+    menu->iMaxDSL = 255;
+    WriteMenuRec(fileEditMenu, menu, nCur);
+    nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+    ReadMenuRec(fileEditMenu, menu, nCur);
+    break;
+  case '1':
+    bout << "Is record deleted? (N) ";
+    if (yesno()) {
+      menu->nFlags |= MENU_FLAG_DELETED;
+    } else {
+      menu->nFlags &= ~MENU_FLAG_DELETED;
+    }
+    break;
+  case 'A':
+    bout << "Key to cause execution : ";
+    input(menu->szKey, MENU_MAX_KEYS);
+    if (!(menu->szSysopLog[0])) {
+      strcpy(menu->szSysopLog, menu->szKey);
+    }
+    break;
+  case 'B':
+    bout << "Command to execute : ";
+    inputl(menu->szExecute, 100);
+    if (!(menu->szMenuText[0])) {
+      strcpy(menu->szMenuText, menu->szExecute);
+    }
+    break;
+  case 'C':
+    bout << "Menu Text : ";
+    inputl(menu->szMenuText, 40);
+    break;
+  case 'E':
+    bout << "Help Text : ";
+    inputl(menu->szHelp, 80);
+    break;
+  case 'F':
+    bout << "Instance Message : ";
+    inputl(menu->szInstanceMessage, 80);
+    break;
+  case 'G':
+    bout << "Sysoplog Message : ";
+    inputl(menu->szSysopLog, 50);
+    break;
+  case 'K':
+    bout << "Min SL : ";
+    input(szTemp1, 3);
+    if (szTemp1[0]) {
+      menu->nMinSL = StringToShort(szTemp1);
+    }
+    break;
+  case 'L':
+    bout << "Max SL : ";
+    input(szTemp1, 3);
+    if (szTemp1[0]) {
+      menu->iMaxSL = StringToShort(szTemp1);
+    }
+    break;
+  case 'M':
+    bout << "Min DSL : ";
+    input(szTemp1, 3);
+    if (szTemp1[0]) {
+      menu->nMinDSL = StringToShort(szTemp1);
+    }
+    break;
+  case 'N':
+    bout << "Max DSL : ";
+    input(szTemp1, 3);
+    if (szTemp1[0]) {
+      menu->iMaxDSL = StringToShort(szTemp1);
+    }
+    break;
+  case 'O':
+    bout << "AR : ";
+    input(szTemp1, 5);
+    if (szTemp1[0]) {
+      menu->uAR = StringToUnsignedShort(szTemp1);
+    }
+    break;
+  case 'P':
+    bout << "DAR : ";
+    input(szTemp1, 5);
+    if (szTemp1[0]) {
+      menu->uDAR = StringToUnsignedShort(szTemp1);
+    }
+    break;
+  case 'R':
+    bout << "Restrictions : ";
+    input(szTemp1, 5);
+    if (szTemp1[0]) {
+      menu->uRestrict = StringToUnsignedShort(szTemp1);
+    }
+    break;
+  case 'S':
+    menu->nSysop = !menu->nSysop;
+    break;
+  case 'T':
+    menu->nCoSysop = !menu->nCoSysop;
+    break;
+  case 'U':
+    if (incom && menu->szPassWord[0]) {
+      bout << "Current PW: ";
+      input(szPW, 20);
+      if (!IsEqualsIgnoreCase(szPW, menu->szPassWord)) {
+        MenuSysopLog("Unable to change PW");
+        break;
+      }
+    }
+    bout << "   New PW : ";
+    input(menu->szPassWord, 20);
+    break;
+
+  case 'V':
+    ++menu->nHide;
+    if (menu->nHide >= MENU_HIDE_LAST) {
+      menu->nHide = MENU_HIDE_NONE;
+    }
+    break;
+  }
+  return done;
+}
+
 static bool GetMenuDir(string* menuName) {
   wwiv::core::ScopeExit on_exit([=] { application()->CdHome(); });
   ListMenuDirs();
@@ -251,12 +410,26 @@ static bool GetMenuDir(string* menuName) {
   return false;
 }
 
-void EditMenus() {
-  char szTemp1[21];
-  char szPW[21];
-  int nAmount = 0;
-  MenuHeader header{};
+static bool CreateNewMenu(File& file, MenuHeader* header) {
   MenuRec menu{};
+  if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone)) {
+    return false;
+  }
+  strcpy(header->szSig, "WWIV430");
+  header->nVersion = MENU_VERSION;
+  header->nFlags = MENU_FLAG_MAINMENU;
+  header->nHeadBytes = sizeof(MenuHeader);
+  header->nBodyBytes = sizeof(MenuRec);
+
+  // Copy header into menu and write the menu  to ensure the record is 0 100% 0 filled.
+  memmove(&menu, header, sizeof(MenuHeader));
+  file.Write(&menu, sizeof(MenuRec));
+
+  return true;
+}
+
+void EditMenus() {
+  wwiv::core::ScopeExit on_exit([] {application()->CdHome(); } );
   bout.cls();
   bout.litebar("WWIV Menu Editor");
 
@@ -265,206 +438,52 @@ void EditMenus() {
     return;
   }
 
-  string menuName;
-  if (!GetMenuMenu(menuDir, menuName)) {
-    return;
-  }
-
-  File fileEditMenu(MenuInstanceData::create_menu_filename(menuDir, menuName, "mnu"));
-  if (!fileEditMenu.Exists()) {
-    bout << "Creating menu...\r\n";
-    if (!fileEditMenu.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone)) {
-      bout << "Unable to create menu.\r\n";
+  bool menu_done = false;
+  while (!hangup && !menu_done) {
+    bout.nl();
+    bout << "|#9Current MenuSet: |#2" << menuDir << wwiv::endl; 
+    string menuName;
+    if (!GetMenuMenu(menuDir, menuName)) {
       return;
     }
-    strcpy(header.szSig, "WWIV430");
-    header.nVersion = MENU_VERSION;
-    header.nFlags = MENU_FLAG_MAINMENU;
-    header.nHeadBytes = sizeof(MenuHeader);
-    header.nBodyBytes = sizeof(MenuRec);
 
-    // Copy header into menu and write the menu  to ensure the record is 0 100% 0 filled.
-    memmove(&menu, &header, sizeof(MenuHeader));
-    fileEditMenu.Write(&menu, sizeof(MenuRec));
-    nAmount = 0;
-  } else {
-    if (!fileEditMenu.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone)) {
-      MenuSysopLog(StrCat("Unable to open menu: ", fileEditMenu));
-      return;
-    }
-    nAmount = static_cast<int>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
-    if (nAmount < 0) {
-      MenuSysopLog(StrCat("Menu is corrupt: ", fileEditMenu));
-      return;
-    }
-  }
-  int nCur = 0;
-
-  // read first record
-  fileEditMenu.Seek(nCur * sizeof(MenuRec), File::seekBegin);
-  fileEditMenu.Read(&menu, sizeof(MenuRec));
-
-  bool done = false;
-  while (!hangup && !done) {
-    if (nCur == 0) {
-      done = EditHeader((MenuHeader*) &menu, fileEditMenu, menuDir, nAmount, nCur);
+    int nAmount = 0;
+    MenuHeader header{};
+    MenuRec menu{};
+    File fileEditMenu(MenuInstanceData::create_menu_filename(menuDir, menuName, "mnu"));
+    if (!fileEditMenu.Exists()) {
+      bout << "Creating menu...\r\n";
+      if (!CreateNewMenu(fileEditMenu, &header)) {
+        bout << "Unable to create menu.\r\n";
+        return;
+      }
     } else {
-      DisplayItem(&menu, nCur, nAmount);
-      char chKey = onek("Q[]Z1ABCDEFGKLMNOPRSTUVW");
-
-      switch (chKey) {
-      case 'Q':
-        WriteMenuRec(fileEditMenu, &menu, nCur);
-        done = true;
-        break;
-
-      case '[':
-        WriteMenuRec(fileEditMenu, &menu, nCur);
-        nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
-        --nCur;
-        if (nCur < 0) {
-          nCur = nAmount;
-        }
-        ReadMenuRec(fileEditMenu, &menu, nCur);
-        break;
-      case ']':
-        WriteMenuRec(fileEditMenu, &menu, nCur);
-        nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
-        ++nCur;
-        if (nCur > nAmount) {
-          nCur = 0;
-        }
-        ReadMenuRec(fileEditMenu, &menu, nCur);
-        break;
-      case 'Z':
-        WriteMenuRec(fileEditMenu, &menu, nCur);
-        memset(&menu, 0, sizeof(MenuRec));
-        nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
-        nCur = nAmount + 1;
-        memset(&menu, 0, sizeof(MenuRec));
-        menu.iMaxSL = 255;
-        menu.iMaxDSL = 255;
-        WriteMenuRec(fileEditMenu, &menu, nCur);
-        nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
-        ReadMenuRec(fileEditMenu, &menu, nCur);
-        break;
-      case '1':
-        bout << "Is record deleted? (N) ";
-        if (yesno()) {
-          menu.nFlags |= MENU_FLAG_DELETED;
-        } else {
-          menu.nFlags &= ~MENU_FLAG_DELETED;
-        }
-        break;
-      case 'A':
-        bout << "Key to cause execution : ";
-        input(menu.szKey, MENU_MAX_KEYS);
-        if (!(menu.szSysopLog[0])) {
-          strcpy(menu.szSysopLog, menu.szKey);
-        }
-        break;
-      case 'B':
-        bout << "Command to execute : ";
-        inputl(menu.szExecute, 100);
-        if (!(menu.szMenuText[0])) {
-          strcpy(menu.szMenuText, menu.szExecute);
-        }
-        break;
-      case 'C':
-        bout << "Menu Text : ";
-        inputl(menu.szMenuText, 40);
-        break;
-      case 'E':
-        bout << "Help Text : ";
-        inputl(menu.szHelp, 80);
-        break;
-      case 'F':
-        bout << "Instance Message : ";
-        inputl(menu.szInstanceMessage, 80);
-        break;
-      case 'G':
-        bout << "Sysoplog Message : ";
-        inputl(menu.szSysopLog, 50);
-        break;
-      case 'K':
-        bout << "Min SL : ";
-        input(szTemp1, 3);
-        if (szTemp1[0]) {
-          menu.nMinSL = StringToShort(szTemp1);
-        }
-        break;
-      case 'L':
-        bout << "Max SL : ";
-        input(szTemp1, 3);
-        if (szTemp1[0]) {
-          menu.iMaxSL = StringToShort(szTemp1);
-        }
-        break;
-      case 'M':
-        bout << "Min DSL : ";
-        input(szTemp1, 3);
-        if (szTemp1[0]) {
-          menu.nMinDSL = StringToShort(szTemp1);
-        }
-        break;
-      case 'N':
-        bout << "Max DSL : ";
-        input(szTemp1, 3);
-        if (szTemp1[0]) {
-          menu.iMaxDSL = StringToShort(szTemp1);
-        }
-        break;
-      case 'O':
-        bout << "AR : ";
-        input(szTemp1, 5);
-        if (szTemp1[0]) {
-          menu.uAR = StringToUnsignedShort(szTemp1);
-        }
-        break;
-      case 'P':
-        bout << "DAR : ";
-        input(szTemp1, 5);
-        if (szTemp1[0]) {
-          menu.uDAR = StringToUnsignedShort(szTemp1);
-        }
-        break;
-      case 'R':
-        bout << "Restrictions : ";
-        input(szTemp1, 5);
-        if (szTemp1[0]) {
-          menu.uRestrict = StringToUnsignedShort(szTemp1);
-        }
-        break;
-      case 'S':
-        menu.nSysop = !menu.nSysop;
-        break;
-      case 'T':
-        menu.nCoSysop = !menu.nCoSysop;
-        break;
-      case 'U':
-        if (incom && menu.szPassWord[0]) {
-          bout << "Current PW: ";
-          input(szPW, 20);
-          if (!IsEqualsIgnoreCase(szPW, menu.szPassWord)) {
-            MenuSysopLog("Unable to change PW");
-            break;
-          }
-        }
-        bout << "   New PW : ";
-        input(menu.szPassWord, 20);
-        break;
-
-      case 'V':
-        ++menu.nHide;
-        if (menu.nHide >= MENU_HIDE_LAST) {
-          menu.nHide = MENU_HIDE_NONE;
-        }
-        break;
+      if (!fileEditMenu.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone)) {
+        MenuSysopLog(StrCat("Unable to open menu: ", fileEditMenu));
+        return;
+      }
+      nAmount = static_cast<int>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+      if (nAmount < 0) {
+        MenuSysopLog(StrCat("Menu is corrupt: ", fileEditMenu));
+        return;
       }
     }
-  }
-  application()->CdHome(); // make sure we are in the wwiv dir
-  fileEditMenu.Close();
+    int nCur = 0;
+
+    // read first record
+    fileEditMenu.Seek(nCur * sizeof(MenuRec), File::seekBegin);
+    fileEditMenu.Read(&menu, sizeof(MenuRec));
+
+    bool menuitem_done = false;
+    while (!hangup && !menuitem_done) {
+      if (nCur == 0) {
+        menuitem_done = EditHeader((MenuHeader*) &menu, fileEditMenu, menuDir, nAmount, nCur);
+      } else {
+        menuitem_done = EditMenuItem(&menu, fileEditMenu, nAmount, nCur);
+      }
+    }
+
+  } // menu_done
 }
 
 void ReadMenuRec(File &fileEditMenu, MenuRec * menu, int nCur) {
@@ -585,8 +604,8 @@ void ListMenuDirs() {
   wwiv::menus::MenuDescriptions descriptions(menu_directory);
 
   bout.nl();
-  bout << "|#1Available Menus Sets\r\n";
-  bout << "|#7============================\r\n";
+  bout << "|#1Available Menus Sets" << wwiv::endl 
+       << "|#9============================" << wwiv::endl;
 
   WFindFile fnd;
   const string search_path = StrCat(menu_directory, "*");
