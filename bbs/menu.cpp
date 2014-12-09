@@ -329,7 +329,6 @@ bool MenuInstanceData::LoadMenuRecord(const std::string& command, MenuRec* pMenu
 
 void MenuExecuteCommand(MenuInstanceData* menu_data, const string& command) {
   MenuRec menu;
-
   if (menu_data->LoadMenuRecord(command, &menu)) {
     LogUserFunction(menu_data, command, &menu);
     InterpretCommand(menu_data, menu.szExecute);
