@@ -35,8 +35,8 @@ using std::endl;
 using std::left;
 using std::string;
 using std::vector;
-using wwiv::strings::IsEquals;
-using wwiv::strings::StringPrintf;
+using wwiv::bbs::InputMode;
+using namespace wwiv::strings;
 
 static const int STOP_LIST = 0;
 static const int MAX_SCREEN_LINES_TO_SHOW = 24;
@@ -111,11 +111,10 @@ static string GetMailBoxStatus() {
     session()->user()->SetForwardUserNumber(0);
     return string("Normal");
   }
-  return StringPrintf("Forward to %s", ur.GetUserNameAndNumber(session()->user()->GetForwardUserNumber()));
+  return StrCat("Forward to ", ur.GetUserNameAndNumber(session()->user()->GetForwardUserNumber()));
 }
 
 static void print_cur_stat() {
-  char s1[255], s2[255];
   bout.cls();
   bout.litebar("Your Preferences");
   bout << left;
@@ -134,45 +133,40 @@ static void print_cur_stat() {
   bout << setw(45) << "|#15|#9) Configured Q-scan" << " " << setw(45) << "|#16|#9) Change password" << wwiv::endl;
 
   if (okansi()) {
-    sprintf(s1, "|#17|#9) Update macros");
-    sprintf(s2, "|#18|#9) Change colors");
-    bout.bprintf("%-45s %-45s\r\n", s1, s2);
+    bout << setw(45) << "|#17|#9) Update macros" << " "
+         << setw(45) << "|#18|#9) Change colors" << wwiv::endl;
+
     int nEditorNum = session()->user()->GetDefaultEditor();
-    sprintf(s1, "|#19|#9) Full screen editor: |#2%s",
-            ((nEditorNum > 0) && (nEditorNum <= session()->GetNumberOfEditors())) ?
-            editors[ nEditorNum - 1 ].description : "None");
-    sprintf(s2, "|#1A|#9) Extended colors   : |#2%s", YesNoString(session()->user()->IsUseExtraColor()));
-    bout.bprintf("%-48.48s %-45s\r\n", s1, s2);
+    const string editor_name = (nEditorNum > 0 && nEditorNum <= session()->GetNumberOfEditors()) ?
+            editors[nEditorNum-1].description : "None";
+     bout << "|#19|#9) Full screen editor: |#2" << setw(16) << editor_name << " " 
+          << "|#1A|#9) Extended colors   : |#2" << YesNoString(session()->user()->IsUseExtraColor()) << wwiv::endl;
   } else {
-    bout << "|#17|#9) Update macros\r\n";
+    bout << "|#17|#9) Update macros" << wwiv::endl;
   }
-  sprintf(s1, "|#1B|#9) Optional lines    : |#2%d", session()->user()->GetOptionalVal());
-  sprintf(s2, "|#1C|#9) Conferencing      : |#2%s", YesNoString(session()->user()->IsUseConference()));
-  bout.bprintf("%-48s %-45s\r\n", s1, s2);
-  bout << "|#1I|#9) Internet Address  : |#2" << ((session()->user()->GetEmailAddress()[0] ==
-                     '\0') ? "None." : session()->user()->GetEmailAddress()) << wwiv::endl;
-  bout << "|#1K|#9) Configure Menus\r\n";
+
+  const string internet_email_address = 
+      ((session()->user()->GetEmailAddress()[0] == '\0') ? "None." : session()->user()->GetEmailAddress());
+  bout << "|#1B|#9) Optional lines    : |#2" << setw(16) << session()->user()->GetOptionalVal() << " "
+       << "|#1C|#9) Conferencing      : |#2" << YesNoString(session()->user()->IsUseConference()) << wwiv::endl;
+  bout << "|#1I|#9) Internet Address  : |#2" << internet_email_address << wwiv::endl;
+  bout << "|#1K|#9) Configure Menus" << wwiv::endl;
   if (session()->num_languages > 1) {
-    sprintf(s1, "|#1L|#9) Language          : |#2%s", cur_lang_name);
-    bout.bprintf("%-48s ", s1);
+    bout<< "|#1L|#9) Language          : |#2" << setw(16) << cur_lang_name << " ";
   }
   if (num_instances() > 1) {
-    sprintf(s1, "|#1M|#9) Allow user msgs   : |#2%s",
-            YesNoString(session()->user()->IsIgnoreNodeMessages() ? false : true));
-    bout.bprintf("%-48s", s1);
+    bout << "|#1M|#9) Allow user msgs   : |#2" << YesNoString(!session()->user()->IsIgnoreNodeMessages());
   }
   bout.nl();
-  sprintf(s1, "|#1S|#9) Cls Between Msgs? : |#2%s", YesNoString(session()->user()->IsUseClearScreen()));
-  sprintf(s2, "|#1T|#9) 12hr or 24hr clock: |#2%s", session()->user()->IsUse24HourClock() ? "24hr" : "12hr");
-  bout.bprintf("%-48s %-45s\r\n", s1, s2);
-  sprintf(s1, "|#1U|#9) Use Msg AutoQuote : |#2%s", YesNoString(session()->user()->IsUseAutoQuote()));
+  bout << "|#1S|#9) Cls Between Msgs? : |#2" << setw(16) << YesNoString(session()->user()->IsUseClearScreen()) << " "
+       << "|#1T|#9) 12hr or 24hr clock: |#2" << (session()->user()->IsUse24HourClock() ? "24hr" : "12hr") << wwiv::endl;
 
   string wwiv_regnum = "(None)";
   if (session()->user()->GetWWIVRegNumber()) {
     wwiv_regnum = StringPrintf("%ld", session()->user()->GetWWIVRegNumber());
   }
-  sprintf(s2, "|#1W|#9) WWIV reg num      : |#2%s", wwiv_regnum.c_str());
-  bout.bprintf("%-48s %-45s\r\n", s1, s2);
+  bout << "|#1U|#9) Use Msg AutoQuote : |#2" << setw(16) << YesNoString(session()->user()->IsUseAutoQuote()) << " "
+       << "|#1W|#9) WWIV reg num      : |#2" << wwiv_regnum << wwiv::endl;
 
   bout << "|#1Q|#9) Quit to main menu\r\n";
 }
@@ -657,10 +651,7 @@ static void change_password() {
 }
 
 static void modify_mailbox() {
-  char s[81];
-
   bout.nl();
-
   bout << "|#9Do you want to close your mailbox? ";
   if (yesno()) {
     bout << "|#5Are you sure? ";
@@ -682,11 +673,11 @@ static void modify_mailbox() {
       bout << "|#5Do you want to forward to your Internet address? ";
       if (yesno()) {
         bout << "|#3Enter the Internet E-Mail Address.\r\n|#9:";
-        Input1(s, session()->user()->GetEmailAddress(), 75, true, 
-            wwiv::bbs::InputMode::MIXED);
-        if (check_inet_addr(s)) {
-          session()->user()->SetEmailAddress(s);
-          write_inet_addr(s, session()->usernum);
+        string entered_address;
+        Input1(&entered_address, session()->user()->GetEmailAddress(), 75, true, InputMode::MIXED);
+        if (check_inet_addr(entered_address.c_str())) {
+          session()->user()->SetEmailAddress(entered_address.c_str());
+          write_inet_addr(entered_address.c_str(), session()->usernum);
           session()->user()->SetForwardNetNumber(session()->GetNetworkNumber());
           session()->user()->SetForwardToInternet();
           bout << "\r\nSaved.\r\n\n";
@@ -697,10 +688,11 @@ static void modify_mailbox() {
   }
   bout.nl();
   bout << "|#2Forward to? ";
-  input(s, 40);
+  string entered_forward_to;
+  input(&entered_forward_to, 40);
 
   int nTempForwardUser, nTempForwardSystem;
-  parse_email_info(s, &nTempForwardUser, &nTempForwardSystem);
+  parse_email_info(entered_forward_to, &nTempForwardUser, &nTempForwardSystem);
   session()->user()->SetForwardUserNumber(nTempForwardUser);
   session()->user()->SetForwardSystemNumber(nTempForwardSystem);
   if (session()->user()->GetForwardSystemNumber() != 0) {
@@ -718,11 +710,11 @@ static void modify_mailbox() {
   if (session()->user()->GetForwardUserNumber() == 0
       && session()->user()->GetForwardSystemNumber() == 0) {
     session()->user()->SetForwardNetNumber(0);
-    bout << "Forwarding reset.\r\n";
+    bout << "Forwarding reset.";
   } else {
-    bout << "Saved.\r\n";
+    bout << "Saved.";
   }
-  bout.nl();
+  bout.nl(2);
 }
 
 static void optional_lines() {
@@ -738,7 +730,6 @@ static void optional_lines() {
   }
 
 }
-
 
 void enter_regnum() {
   bout << "|#7Enter your WWIV registration number, or enter '|#20|#7' for none.\r\n|#0:";
