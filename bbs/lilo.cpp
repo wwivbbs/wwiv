@@ -128,7 +128,7 @@ static int GetAnsiStatusAndShowWelcomeScreen(bool network_only) {
   bout << "All Rights Reserved." << wwiv::endl;
 
   int ans = check_ansi();
-  const string filename = StrCat(session()->language_dir.c_str(), WELCOME_ANS);
+  const string filename = StrCat(session()->language_dir, WELCOME_ANS);
   if (File::Exists(filename)) {
     bout.nl();
     if (ans > 0) {
@@ -197,7 +197,6 @@ static int ShowLoginAndGetUserNumber(bool network_only) {
   return nUserNumber;
 }
 
-
 bool IsPhoneRequired() {
   IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), INI_TAG);
   if (iniFile.IsOpen()) {
@@ -246,12 +245,11 @@ static void DoFailedLoginAttempt() {
   session()->WriteCurrentUser();
   bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
 
-  std::stringstream logLine;
-  logLine << "### ILLEGAL LOGON for " <<
-          session()->user()->GetUserNameAndNumber(session()->usernum) << " (" <<
-          ctim(timer()) << ")";
+  const string logline = StrCat("### ILLEGAL LOGON for ",
+    session()->user()->GetUserNameAndNumber(session()->usernum), 
+    " (",  ctim(timer()), ")");
   sysoplog("", false);
-  sysoplog(logLine.str(), false);
+  sysoplog(logline, false);
   sysoplog("", false);
   session()->usernum = 0;
 }
@@ -720,15 +718,15 @@ static void DisplayUserLoginInformation() {
   } else {
     bout << "None.\r\n";
   }
-  bout << "|#9Time allowed on|#0... |#2" << static_cast<int>((nsl() + 30) / SECONDS_PER_MINUTE_FLOAT) <<
-                     wwiv::endl;
+  bout << "|#9Time allowed on|#0... |#2" << static_cast<int>((nsl() + 30) / SECONDS_PER_MINUTE_FLOAT)
+       << wwiv::endl;
   if (session()->user()->GetNumIllegalLogons() > 0) {
-    bout << "|#9Illegal logons|#0.... |#2" << session()->user()->GetNumIllegalLogons() <<
-                       wwiv::endl;
+    bout << "|#9Illegal logons|#0.... |#2" << session()->user()->GetNumIllegalLogons()
+         << wwiv::endl;
   }
   if (session()->user()->GetNumMailWaiting() > 0) {
-    bout << "|#9Mail waiting|#0...... |#2" << session()->user()->GetNumMailWaiting() <<
-                       wwiv::endl;
+    bout << "|#9Mail waiting|#0...... |#2" << session()->user()->GetNumMailWaiting()
+         << wwiv::endl;
   }
   if (session()->user()->GetTimesOnToday() == 1) {
     bout << "|#9Date last on|#0...... |#2" << session()->user()->GetLastOn() << wwiv::endl;
@@ -777,13 +775,13 @@ static void DisplayUserLoginInformation() {
         bout << "Mail set to be forwarded to ";
         if (session()->GetMaxNetworkNumber() > 1) {
           bout << "#" << session()->user()->GetForwardUserNumber()
-                             << " @"
-                             << session()->user()->GetForwardSystemNumber()
-                             << "." << session()->GetNetworkName() << "."
-                             << wwiv::endl;
+               << " @"
+               << session()->user()->GetForwardSystemNumber()
+               << "." << session()->GetNetworkName() << "."
+               << wwiv::endl;
         } else {
           bout << "#" << session()->user()->GetForwardUserNumber() << " @"
-                             << session()->user()->GetForwardSystemNumber() << "." << wwiv::endl;
+               << session()->user()->GetForwardSystemNumber() << "." << wwiv::endl;
         }
       }
     } else {
