@@ -160,7 +160,7 @@ public:
   static const std::string create_menu_filename(
       const std::string& path, const std::string& menu, const std::string& extension);
   void Menus(const std::string& menuDirectory, const std::string& menuName);
-  bool LoadMenuRecord(const std::string& command, MenuRec** pMenu);
+  bool LoadMenuRecord(const std::string& command, MenuRec* pMenu);
   void GenerateMenu() const;
 
   std::string menu;
