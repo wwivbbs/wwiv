@@ -97,7 +97,6 @@ void get_user_ppp_addr() {
   }
 }
 
-
 void send_inet_email() {
   if (session()->user()->GetNumEmailSentToday() > getslrec(session()->GetEffectiveSl()).emails) {
     bout.nl();
@@ -138,7 +137,6 @@ void send_inet_email() {
   }
 }
 
-
 bool check_inet_addr(const char *inetaddr) {
   if (!inetaddr || !*inetaddr) {
     return false;
@@ -153,7 +151,6 @@ bool check_inet_addr(const char *inetaddr) {
   }
   return true;
 }
-
 
 char *read_inet_addr(char *pszInternetEmailAddress, int nUserNumber) {
   if (!nUserNumber) {
@@ -193,7 +190,6 @@ char *read_inet_addr(char *pszInternetEmailAddress, int nUserNumber) {
   }
   return pszInternetEmailAddress;
 }
-
 
 void write_inet_addr(const char *pszInternetEmailAddress, int nUserNumber) {
   if (!nUserNumber) {
