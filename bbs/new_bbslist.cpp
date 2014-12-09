@@ -32,6 +32,7 @@
 #include "bbs/printfile.h"
 #include "bbs/vars.h"  // for syscfg
 #include "bbs/wsession.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
@@ -60,6 +61,7 @@ using std::map;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 namespace wwiv {
@@ -231,21 +233,37 @@ static bool ConvertLegacyList(
   return true;
 }
 
-static string GetBbsListEntryAddress(const BbsListEntry* entry) {
+static string GetConnectionType(const BbsListEntry* entry, ConnectionType type) {
   const auto& addresses = entry->addresses;
   if (addresses.empty()) {
     return "";
   }
-  return std::begin(addresses)->second;
+  if (!contains(entry->addresses, type)) {
+    return "";
+  }
+  return entry->addresses.find(type)->second;
 }
 
 static void ReadBBSList(const vector<unique_ptr<BbsListEntry>>& entries) {
+  int cnt = 0;
   for (const auto& entry : entries) {
-    const string s = StringPrintf("|#9%3d: [|#1%-12s|#9] %-40.40s |#9(%s|#9)",
+    const string s = StringPrintf("%3d: %-60.60s (%s)",
         entry->id,
-        GetBbsListEntryAddress(entry.get()).c_str(),
         entry->name.c_str(), entry->software.c_str());
+    bout.Color((++cnt % 2) == 0 ? 1 : 9);
     bout << s << wwiv::endl;
+    if (contains(entry->addresses, ConnectionType::MODEM)) {
+      bout.Color((cnt % 2) == 0 ? 1 : 9);
+      bout << "     Modem: " << GetConnectionType(entry.get(), ConnectionType::MODEM) << wwiv::endl;
+    }
+    if (contains(entry->addresses, ConnectionType::TELNET)) {
+      bout.Color((cnt % 2) == 0 ? 1 : 9);
+      bout << "     Telnet: " << GetConnectionType(entry.get(), ConnectionType::TELNET) << wwiv::endl;
+    }
+    if (contains(entry->addresses, ConnectionType::SSH)) {
+      bout.Color((cnt % 2) == 0 ? 1 : 9);
+      bout << "     SSH: " << GetConnectionType(entry.get(), ConnectionType::SSH) << wwiv::endl;
+    }
   }
 }
 
@@ -310,24 +328,44 @@ static bool IsBBSPhoneNumberUnique(
 }
 
 static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
-  bout << "\r\nPlease enter phone number:\r\n ###-###-####\r\n:";
+  bout << "\r\nDoes this BBS have a POTS line? (y/N) : ";
   string phone_number;
-  input(&phone_number, 12, true);
-  if (!IsBBSPhoneNumberValid(phone_number)) {
-    bout << "\r\n|#6 Error: Please enter number in correct format.\r\n\n";
-    return false;
+  bool has_pots = noyes();
+  if (has_pots) {
+    bout << "\r\nPlease enter phone number:\r\n ###-###-####\r\n:";
+    input(&phone_number, 12, true);
+    if (!IsBBSPhoneNumberValid(phone_number)) {
+      bout << "\r\n|#6 Error: Please enter number in correct format.\r\n\n";
+      return false;
+    }
+    if (!IsBBSPhoneNumberUnique(phone_number, *entries)) {
+      bout << "|#6Sorry, It's already in the BBS list.\r\n\n\n";
+      return false;
+    }
   }
-  if (!IsBBSPhoneNumberUnique(phone_number, *entries)) {
-    bout << "|#6Sorry, It's already in the BBS list.\r\n\n\n";
-    return false;
+
+  bout << "\r\nIs this BBS telnettable? (Y/n) : ";
+  string telnet_address;
+  bool has_telnet = yesno();
+  if (has_telnet) {
+    bout << "\r\nEnter the telnet address:\r\n:";
+    inputl(&telnet_address, 72, true);
+    if (!telnet_address.empty()) {
+    }
   }
+
   bout << "|#7Enter the BBS name and comments about it (incl. V.32/HST) :\r\n:";
   unique_ptr<BbsListEntry> entry(new BbsListEntry());
   inputl(&entry->name, 50, true);
   bout << "\r\n|#7Enter BBS type (ie, |#1WWIV|#7):\r\n:";
   input(&entry->software, 12, true);
 
-  entry->addresses.insert(std::make_pair(ConnectionType::MODEM, phone_number));
+  if (has_pots) {
+    entry->addresses.insert(std::make_pair(ConnectionType::MODEM, phone_number));
+  }
+  if (has_telnet) {
+    entry->addresses.insert(std::make_pair(ConnectionType::TELNET, telnet_address));
+  }
   bout.nl();
   bout << "|#5Is this information correct? ";
   if (yesno()) {
