@@ -303,23 +303,23 @@ static bool IsNumber(const string& command) {
   return true;
 }
 
-bool MenuInstanceData::LoadMenuRecord(const std::string& command, MenuRec** pMenu) {
+bool MenuInstanceData::LoadMenuRecord(const std::string& command, MenuRec* pMenu) {
   // If we have 'numbers set the sub #' turned on then create a command to do so if a # is entered.
   if (IsNumber(command)) {
     if (header.nNumbers == MENU_NUMFLAG_SUBNUMBER) {
       memset(pMenu, 0, sizeof(MenuRec));
-      sprintf((*pMenu)->szExecute, "SetSubNumber %d", atoi(command.c_str()));
+      sprintf(pMenu->szExecute, "SetSubNumber %d", atoi(command.c_str()));
       return true;
     } else if (header.nNumbers == MENU_NUMFLAG_DIRNUMBER) {
       memset(pMenu, 0, sizeof(MenuRec));
-      sprintf((*pMenu)->szExecute, "SetDirNumber %d", atoi(command.c_str()));
+      sprintf(pMenu->szExecute, "SetDirNumber %d", atoi(command.c_str()));
       return true;
     }
   }
 
   if (contains(menu_command_map_, command)) {
-    *pMenu = &menu_command_map_.at(command);
-    if (CheckMenuItemSecurity(*pMenu, true)) {
+    *pMenu = menu_command_map_.at(command);
+    if (CheckMenuItemSecurity(pMenu, true)) {
       return true;
     }
     MenuSysopLog(StrCat("|06< item security : ", command));
@@ -328,13 +328,13 @@ bool MenuInstanceData::LoadMenuRecord(const std::string& command, MenuRec** pMen
 }
 
 void MenuExecuteCommand(MenuInstanceData* menu_data, const string& command) {
-  MenuRec* menu;
+  MenuRec menu;
 
   if (menu_data->LoadMenuRecord(command, &menu)) {
-    LogUserFunction(menu_data, command, menu);
-    InterpretCommand(menu_data, menu->szExecute);
+    LogUserFunction(menu_data, command, &menu);
+    InterpretCommand(menu_data, menu.szExecute);
   } else {
-    LogUserFunction(menu_data, command, menu);
+    LogUserFunction(menu_data, command, &menu);
   }
 }
 
