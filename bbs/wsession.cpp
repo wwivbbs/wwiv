@@ -19,7 +19,7 @@
 
 #include "bbs/wwiv.h"
 #include "bbs/platform/wlocal_io.h"
-#include "bbs/net.h"
+#include "sdk/net.h"
 #include "bbs/wcomm.h"
 #include "core/wwivassert.h"
 

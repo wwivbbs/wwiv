@@ -24,7 +24,7 @@
 
 #include "core/file.h"
 #include "sdk/vardec.h"
-#include "bbs/net.h"
+#include "sdk/net.h"
 
 namespace wwiv {
 namespace menus {
