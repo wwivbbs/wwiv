@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.0x                             */
-/*               Copyright (C)2014, WWIV Software Services                */
+/*                              WWIV Version 5.0x                         */
+/*             Copyright (C)2014, WWIV Software Services                  */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,35 +14,40 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
+/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_NETWORKS_H__
-#define __INCLUDED_SDK_NETWORKS_H__
+#include "gtest/gtest.h"
 
+#include <iostream>
 #include <memory>
-#include <vector>
+#include <string>
+
+#include "core/file.h"
+#include "core/strings.h"
+#include "core_test/file_helper.h"
 #include "sdk/config.h"
-#include "sdk/net.h"
-#include "sdk/vardec.h"
+#include "sdk/networks.h"
 
-namespace wwiv {
-namespace sdk {
+using std::cout;
+using std::endl;
+using std::string;
 
-class Networks {
-public:
-  explicit Networks(const Config& config);
-  virtual ~Networks();
+using namespace wwiv::sdk;
 
-  bool IsInitialized() const { return initialized_; }
-  const std::vector<net_networks_rec>& networks() const { return networks_; }
-  net_networks_rec& at(int num) { return networks_.at(num); }
-  net_networks_rec& at(const std::string& name);
-
-private:
-  bool initialized_;
-  std::vector<net_networks_rec> networks_;
+// TODO(rushfan): These tests don't work yet - just testing locally
+// for now. Need to create a tree under the tempdir containing a 
+// stub BBS.
+class ConfigTest : public testing::Test {
 };
 
-}
-}
 
-#endif  // __INCLUDED_SDK_NETWORKS_H__
+TEST_F(ConfigTest, Config) {
+  const string saved_dir = File::current_directory();
+  ASSERT_EQ(0, chdir("C:\\bbs"));
+
+  Config config;
+  EXPECT_TRUE(config.IsInitialized());
+  std::cout << config.datadir() << endl;
+
+  chdir(saved_dir.c_str());
+}
