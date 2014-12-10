@@ -14,15 +14,11 @@
     <ClInclude Include="config.h" />
     <ClInclude Include="filenames.h" />
     <ClInclude Include="networks.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="vardec.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="config.cpp" />
     <ClCompile Include="networks.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="sdk.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{53DB67DB-4D42-4A8A-B176-EE83A170DE86}</ProjectGuid>

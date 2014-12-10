@@ -85,6 +85,9 @@
     <ProjectReference Include="..\core\core.vcxproj">
       <Project>{160ca888-2434-48a8-ad4e-02140e3b2c52}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\sdk\sdk.vcxproj">
+      <Project>{53db67db-4d42-4a8a-b176-ee83a170de86}</Project>
+    </ProjectReference>
     <ProjectReference Include="networkb_lib.vcxproj">
       <Project>{5bdd74e7-bd9d-42ca-9b2a-397db9cda67c}</Project>
     </ProjectReference>
