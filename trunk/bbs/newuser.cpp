@@ -1019,8 +1019,7 @@ void VerifyNewUserPassword() {
     bout.nl(1);
     bout << "|#9Please write down this information, and enter your password for verification.\r\n";
     bout << "|#9You will need to know this password in order to change it to something else.\r\n\n";
-    string password;
-    input_password("|#9PW: ", &password, 8);
+    string password = input_password("|#9PW: ", 8);
     if (password == session()->user()->GetPassword()) {
       ok = true;
     }

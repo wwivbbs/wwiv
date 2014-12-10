@@ -252,7 +252,6 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
   }
 }
 
-
 /**
  * Queries user and verifies system password.
  * @return true if the password entered is valid.
@@ -261,8 +260,7 @@ bool ValidateSysopPassword() {
   bout.nl();
   if (so()) {
     if (incom) {
-      string password;
-      input_password("|#7SY: ", &password, 20);
+      string password = input_password("|#7SY: ", 20);
       if (password == syscfg.systempw) {
         return true;
       }
