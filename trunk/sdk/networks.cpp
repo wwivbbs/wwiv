@@ -21,9 +21,12 @@
 #include <stdexcept>
 
 #include "core/file.h"
+#include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
+
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace sdk {
@@ -49,6 +52,15 @@ Networks::Networks(const Config& config) {
   if (num_read != num * sizeof(net_networks_rec)) {
     std::clog << "failed to read the expected number of bytes: " << num * sizeof(net_networks_rec) << std::endl;
   }
+}
+
+net_networks_rec& Networks::at(const std::string& name) {
+  for (auto& n : networks_) {
+    if (IsEqualsIgnoreCase(name.c_str(), n.name)) {
+      return n;
+    }
+  }
+  throw std::out_of_range(StrCat("Unable to find network named: ", name));
 }
 
 Networks::~Networks() {

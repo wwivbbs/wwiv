@@ -10,5 +10,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sdk_test_main.cpp" />
+    <ClCompile Include="config_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="network_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
