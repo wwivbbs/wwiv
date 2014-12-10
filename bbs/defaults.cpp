@@ -625,17 +625,16 @@ static void change_password() {
     return;
   }
 
-  string password, password2;
   bout.nl();
-  input_password("|#9You must now enter your current password.\r\n|#7: ", &password, 8);
+  string password = input_password("|#9You must now enter your current password.\r\n|#7: ", 8);
   if (password != session()->user()->GetPassword()) {
     bout << "\r\nIncorrect.\r\n\n";
     return;
   }
   bout.nl(2);
-  input_password("|#9Enter your new password, 3 to 8 characters long.\r\n|#7: ", &password, 8);
+  password = input_password("|#9Enter your new password, 3 to 8 characters long.\r\n|#7: ", 8);
   bout.nl(2);
-  input_password("|#9Repeat password for verification.\r\n|#7: ", &password2, 8);
+  string password2 = input_password("|#9Repeat password for verification.\r\n|#7: ", 8);
   if (password == password2) {
     if (password2.length() < 3) {
       bout.nl();

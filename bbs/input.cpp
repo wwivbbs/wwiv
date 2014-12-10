@@ -222,11 +222,12 @@ void inputl(string* strOutText, int nMaxLength, bool bAutoMpl) {
   strOutText->assign(szTempBuffer);
 }
 
-void input_password(string promptText, string* strOutPassword, int nMaxLength) {
+std::string input_password(const string& promptText, int nMaxLength) {
   bout << promptText;
-  bout.mpl(nMaxLength);
   local_echo = false;
-  input1(strOutPassword, nMaxLength, InputMode::UPPER, true);
+  string entered_password;
+  input1(&entered_password, nMaxLength, InputMode::UPPER, true);
+  return entered_password;
 }
 
 //==================================================================

@@ -212,8 +212,7 @@ bool IsPhoneRequired() {
 
 bool VerifyPhoneNumber() {
   if (IsPhoneNumberUSAFormat(session()->user()) || !session()->user()->GetCountry()[0]) {
-    string phoneNumber;
-    input_password("PH: ###-###-", &phoneNumber, 4);
+    string phoneNumber = input_password("PH: ###-###-", 4);
 
     if (phoneNumber != &session()->user()->GetVoicePhoneNumber()[8]) {
       if (phoneNumber.length() == 4 && phoneNumber[3] == '-') {
@@ -228,15 +227,12 @@ bool VerifyPhoneNumber() {
 static bool VerifyPassword() {
   application()->UpdateTopScreen();
 
-  string password;
-  input_password("PW: ", &password, 8);
-
+  string password = input_password("PW: ", 8);
   return (password == session()->user()->GetPassword());
 }
 
 static bool VerifySysopPassword() {
-  string password;
-  input_password("SY: ", &password, 20);
+  string password = input_password("SY: ", 20);
   return (password == syscfg.systempw) ? true : false;
 }
 
