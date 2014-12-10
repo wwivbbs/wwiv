@@ -22,7 +22,7 @@
 #include <ctime>
 
 #include "sdk/vardec.h"
-#include "net.h"
+#include "sdk/net.h"
 
 #ifndef MAX_PATH
 #define MAX_PATH 260

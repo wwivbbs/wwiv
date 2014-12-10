@@ -19,7 +19,7 @@
 
 #if defined (NET)
 #include "sdk/vardec.h"
-#include "bbs/net.h"
+#include "sdk/net.h"
 #else
 #include "bbs/wwiv.h"
 #endif
