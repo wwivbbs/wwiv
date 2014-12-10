@@ -46,7 +46,7 @@ static const unsigned char *valid_letters =
  * @param pszOutText the text entered by the user (output value)
  * @param nMaxLength Maximum length to allow for the input text
  * @param lc The case to return, this can be InputMode::UPPER, InputMode::MIXED, InputMode::PROPER, or InputMode::FILENAME
- * @param crend Add a CR to the end of the input text
+ * @param crend output the CR/LF if one is entered.
  * @param bAutoMpl Call bout.mpl(nMaxLength) automatically.
  */
 void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAutoMpl) {

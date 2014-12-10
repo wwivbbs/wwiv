@@ -19,7 +19,7 @@
 #ifndef __INCLUDED_TEMPLATE_H__
 #define __INCLUDED_TEMPLATE_H__
 
-#include "bbs/net.h"
+#include "sdk/net.h"
 
 #define MAX_NETWORKS 100
 
