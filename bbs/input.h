@@ -45,6 +45,6 @@ void inputl(char *pszOutText, int nMaxLength, bool bAutoMpl = false);
 void inputl(std::string *strOutText, int nMaxLength, bool bAutoMpl = false);
 void Input1(char *pszOutText, const std::string& origText, int nMaxLength, bool bInsert, wwiv::bbs::InputMode mode);
 void Input1(std::string *strOutText, const std::string& origText, int nMaxLength, bool bInsert, wwiv::bbs::InputMode mode);
-void input_password(std::string promptText, std::string *strOutPassword, int nMaxLength);
+std::string input_password(const std::string& promptText, int nMaxLength);
 
 #endif  // __INCLUDED_INPUT_H__

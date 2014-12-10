@@ -63,8 +63,7 @@ static bool CheckMenuPassword(const string& original_password) {
   const string expected_password = (original_password == "*SYSTEM") ? syscfg.systempw : original_password;
 
   bout.nl();
-  string actual_password;
-  input_password("|#2SY: ", &actual_password, 20);
+  string actual_password = input_password("|#2SY: ", 20);
   return actual_password == expected_password;
 }
 
