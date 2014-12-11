@@ -16,5 +16,13 @@
     <ClCompile Include="network_test.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="sdk_helper.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sdk_helper.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
