@@ -16,45 +16,56 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
+#include "sdk_test/sdk_helper.h"
+#include <sstream>
 
+#include <algorithm>
 #include <iostream>
-#include <memory>
 #include <string>
 
 #include "core/file.h"
 #include "core/strings.h"
+#include "core/wwivport.h"
 #include "core_test/file_helper.h"
-#include "sdk/config.h"
-#include "sdk/networks.h"
-#include "sdk_test/sdk_helper.h"
 
-using std::cout;
-using std::endl;
+#include "gtest/gtest.h"
+#include "sdk/filenames.h"
+#include "sdk/vardec.h"
+
 using std::string;
-
-using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-// TODO(rushfan): These tests don't work yet - just testing locally
-// for now. Need to create a tree under the tempdir containing a 
-// stub BBS.
-class ConfigTest : public testing::Test {
-public:
-  SdkHelper helper;
-};
 
-TEST_F(ConfigTest, Helper) {
-  ASSERT_TRUE(ends_with(helper.root_, "bbs")) << helper.root_;
+SdkHelper::SdkHelper() {
+
+  root_ = files_.CreateTempFilePath("bbs");
+
+  const string msgs = CreatePath("msgs");
+  const string gfiles = CreatePath("gfiles");
+  const string menus = CreatePath("menus");
+  data_ = CreatePath("data");
+  const string dloads = CreatePath("dloads");
+
+  configrec c;
+  strcpy(c.msgsdir, msgs.c_str());
+  strcpy(c.gfilesdir, gfiles.c_str());
+  strcpy(c.menudir, menus.c_str());
+  strcpy(c.datadir, data_.c_str());
+  strcpy(c.dloadsdir, dloads.c_str());
+
+  File cfile(root_, CONFIG_DAT);
+  if (!cfile.Open(File::modeBinary|File::modeCreateFile|File::modeWriteOnly)) {
+    throw "failed to create config.dat";
+  }
+  cfile.Write(&c, sizeof(configrec));
+  cfile.Close();
 }
 
-TEST_F(ConfigTest, Config) {
-  const string saved_dir = File::current_directory();
-  ASSERT_EQ(0, chdir(helper.root_.c_str()));
+std::string SdkHelper::CreatePath(const string& name) {
+  const string  path = files_.CreateTempFilePath(StrCat("bbs/", name));
+  File::mkdirs(path);
+  return path;
+}
 
-  Config config;
-  EXPECT_TRUE(config.IsInitialized());
-  EXPECT_STREQ(helper.data_.c_str(), config.datadir().c_str());
-
-  chdir(saved_dir.c_str());
+SdkHelper::~SdkHelper() {
 }
