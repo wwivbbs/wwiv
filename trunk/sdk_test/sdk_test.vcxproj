@@ -99,7 +99,11 @@
   <ItemGroup>
     <ClCompile Include="config_test.cpp" />
     <ClCompile Include="network_test.cpp" />
+    <ClCompile Include="sdk_helper.cpp" />
     <ClCompile Include="sdk_test_main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sdk_helper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
