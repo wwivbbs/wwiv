@@ -27,16 +27,20 @@ namespace sdk {
 class Config {
 public:
   Config();
+  explicit Config(const std::string& root_directory);
   virtual ~Config();
 
   bool IsInitialized() const { return initialized_; }
   configrec* config() const { return config_.get(); }
+  void set_config(configrec* config);
 
+  const std::string root_directory() const { return root_directory_; }
   const std::string datadir() const { return config_->datadir; }
 
 private:
   bool initialized_;
   std::unique_ptr<configrec> config_;
+  const std::string root_directory_;
 };
 
 }

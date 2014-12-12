@@ -18,43 +18,63 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
+#include <cstdint>
+#include <cstring>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "core/file.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "sdk/config.h"
+#include "sdk/filenames.h"
 #include "sdk/networks.h"
+#include "sdk_test/sdk_helper.h"
 
-using std::cout;
-using std::endl;
-using std::string;
+using namespace std;
 
 using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
-// TODO(rushfan): These tests don't work yet - just testing locally
-// for now. Need to create a tree under the tempdir containing a 
-// stub BBS.
 class NetworkTest : public testing::Test {
+public:
+  bool CreateNetworksDat(const Config& config, vector<string> names) {
+    File file(config.datadir(), NETWORKS_DAT);
+    file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
+    if (!file.IsOpen()) {
+      return false;
+    }
+  
+    uint16_t sysnum = 1;
+    for (const auto& name : names) {
+      const string dir = StrCat(config.root_directory(), File::pathSeparatorString, name);
+      net_networks_rec rec{};
+      strcpy(rec.name, name.c_str());
+      strcpy(rec.dir, dir.c_str());
+      rec.sysnum = sysnum++;
+      file.Write(&rec, sizeof(net_networks_rec));
+    }
+
+    return true;
+  }
+
+  SdkHelper helper;
 };
 
 TEST_F(NetworkTest, Networks) {
-  const string saved_dir = File::current_directory();
-  ASSERT_EQ(0, chdir("C:\\bbs"));
-
-  Config config;
+  Config config(helper.root());
   EXPECT_TRUE(config.IsInitialized());
-  std::cout << config.datadir() << endl;
+  EXPECT_TRUE(CreateNetworksDat(config, { "one", "two" }));
+
   Networks networks(config);
   EXPECT_TRUE(networks.IsInitialized());
+
 
   for (const auto& n : networks.networks()) {
     cout << n.name << ": " << n.dir << endl;
   }
   cout << "Network #0: " << networks.at(0).name << " dir: " << networks.at(0).dir << endl;
-  cout << "Network #0: " << networks.at("wwivnet").name << " dir: " << networks.at("wwivnet").dir <<endl;
-
-  chdir(saved_dir.c_str());
+  cout << "Network 'one': " << networks.at("one").name << " dir: " << networks.at("one").dir <<endl;
 }

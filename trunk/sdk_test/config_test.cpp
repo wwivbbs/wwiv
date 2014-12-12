@@ -29,10 +29,7 @@
 #include "sdk/networks.h"
 #include "sdk_test/sdk_helper.h"
 
-using std::cout;
-using std::endl;
-using std::string;
-
+using namespace std;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -44,17 +41,42 @@ public:
   SdkHelper helper;
 };
 
-TEST_F(ConfigTest, Helper) {
-  ASSERT_TRUE(ends_with(helper.root_, "bbs")) << helper.root_;
+TEST_F(ConfigTest, Helper_CreatedBBSRoot) {
+  ASSERT_TRUE(ends_with(helper.root(), "bbs")) << helper.root();
 }
 
-TEST_F(ConfigTest, Config) {
-  const string saved_dir = File::current_directory();
-  ASSERT_EQ(0, chdir(helper.root_.c_str()));
+TEST_F(ConfigTest, Config_CurrentDirectory) {
+  ASSERT_EQ(0, chdir(helper.root().c_str()));
 
   Config config;
-  EXPECT_TRUE(config.IsInitialized());
+  ASSERT_TRUE(config.IsInitialized());
   EXPECT_STREQ(helper.data_.c_str(), config.datadir().c_str());
+}
 
-  chdir(saved_dir.c_str());
+TEST_F(ConfigTest, Config_DifferentDirectory) {
+  Config config(helper.root());
+  ASSERT_TRUE(config.IsInitialized());
+  EXPECT_STREQ(helper.data_.c_str(), config.datadir().c_str());
+}
+
+TEST_F(ConfigTest, SetConfig_Stack) {
+  Config config(helper.root());
+  ASSERT_TRUE(config.IsInitialized());
+
+  configrec c{};
+  strcpy(c.systemname, "mysys");
+  config.set_config(&c);
+  ASSERT_STREQ(c.systemname, config.config()->systemname);
+}
+
+TEST_F(ConfigTest, SetConfig_Heap) {
+  Config config(helper.root());
+  ASSERT_TRUE(config.IsInitialized());
+
+  configrec* c = new configrec();
+  strcpy(c->systemname, "mysys");
+  config.set_config(c);
+  ASSERT_STREQ(c->systemname, config.config()->systemname);
+  EXPECT_NE(nullptr, c);
+  delete c;
 }
