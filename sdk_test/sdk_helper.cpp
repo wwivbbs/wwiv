@@ -32,14 +32,11 @@
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
-using std::string;
+using namespace std;
 using namespace wwiv::strings;
 
 
-SdkHelper::SdkHelper() {
-
-  root_ = files_.CreateTempFilePath("bbs");
-
+SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.CreateTempFilePath("bbs")) {
   const string msgs = CreatePath("msgs");
   const string gfiles = CreatePath("gfiles");
   const string menus = CreatePath("menus");
@@ -68,4 +65,5 @@ std::string SdkHelper::CreatePath(const string& name) {
 }
 
 SdkHelper::~SdkHelper() {
+  chdir(saved_dir_.c_str());
 }
