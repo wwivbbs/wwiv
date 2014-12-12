@@ -47,6 +47,8 @@ void sound(uint32_t frequency, std::chrono::milliseconds d);
 // returns a random number.
 int random_number(int max_value);
 
+std::string environment_variable(const std::string& variable_name);
+
 
 }  // namespace os
 }  // namespace wwiv

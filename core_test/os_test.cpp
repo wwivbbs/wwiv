@@ -17,14 +17,17 @@
 /*                                                                        */
 /**************************************************************************/
 #include "gtest/gtest.h"
-#include "core/os.h"
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
+
+#include "core/os.h"
 
 using std::string;
 using namespace std::chrono;
 using namespace wwiv::os;
+
 
 TEST(OsTest, WaitFor_PredicateTrue) {
   auto predicate = []() { return true; };
@@ -50,4 +53,14 @@ TEST(OsTest, SleepFor) {
   sleep_for(d);
   auto now = system_clock::now();
   ASSERT_TRUE(now - start - d < d) << (now - start - d).count();
+}
+
+TEST(OsTest, EnvironmentVariable_Exists) {
+  ASSERT_EQ(0, putenv("QWERTYUIOP=ASDF"));
+
+  EXPECT_EQ(string("ASDF"), environment_variable("QWERTYUIOP"));
+}
+
+TEST(OsTest, EnvironmentVariable_DoesNotExist) {
+  EXPECT_EQ(string(""), environment_variable("XXXQWERTYUIOP"));
 }

@@ -19,6 +19,7 @@
 #include "core/os.h"
 
 #include <chrono>
+#include <cstdlib>
 #include <functional>
 #include <limits>
 #include <random>
@@ -167,6 +168,15 @@ int random_number(int max_value) {
   std::uniform_int_distribution<int> dist(0, max_value - 1);
   return dist(re);
 }
+
+std::string environment_variable(const std::string& variable_name) {
+  const char* s = getenv(variable_name.c_str());
+  if (s == nullptr) {
+    return "";
+  }
+  return string(s);
+}
+
 
 }  // namespace os
 }  // namespace wwiv
