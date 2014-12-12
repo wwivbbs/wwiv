@@ -34,8 +34,9 @@
 #endif
 
 #include "core/file.h"
-#include "core/wwivport.h"
+#include "core/os.h"
 #include "core/strings.h"
+#include "core/wwivport.h"
 
 using std::string;
 using namespace wwiv::strings;
@@ -56,25 +57,39 @@ bool FileHelper::Mkdir(const string& name) const {
     return File::mkdir(path);
 }
 
-// static
-string FileHelper::CreateTempDir(const string base) {
+static const string GetTestTempDir() {
+  string test_tempdir = wwiv::os::environment_variable("WWIV_TEST_TEMPDIR");
+  if (test_tempdir.empty()) {
 #ifdef _WIN32
-    char local_dir_template[_MAX_PATH];
     char temp_path[_MAX_PATH];
     GetTempPath(_MAX_PATH, temp_path);
+    test_tempdir = temp_path;
+#else  // _WIN32
+    test_tempdir = "/tmp";
+#endif  // _WIN32
+  }
+  return test_tempdir;
+}
+
+// static
+string FileHelper::CreateTempDir(const string base) {
+    const string temp_path = GetTestTempDir();
+#ifdef _WIN32
     time_t now = time(nullptr);
-    sprintf(local_dir_template, "%s%s.%lx", temp_path, base.c_str(), now);
-    if (!CreateDirectory(local_dir_template, nullptr)) {
-        return string();
+    const string local_dir_template = StringPrintf("%s%s.%lx", temp_path.c_str(), base.c_str(), now);
+    if (CreateDirectory(local_dir_template.c_str(), nullptr)) {
+      return string(local_dir_template);
     }
-    return string(local_dir_template);
 #else
+    const string template = temp_path + "/fileXXXXXX";
     char local_dir_template[MAX_PATH];
-    static const char kTemplate[] = "/tmp/fileXXXXXX";
-    strcpy(local_dir_template, kTemplate);
+    strcpy(local_dir_template, template.c_str());
     char *result = mkdtemp(local_dir_template);
-    return string(result);
+    if (result) {
+      return string(result);
+    }
 #endif
+    return string("");
 }
 
 string FileHelper::CreateTempFilePath(const string& orig_name) {
