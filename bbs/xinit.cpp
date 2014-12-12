@@ -38,6 +38,8 @@
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 
+#include "sdk/config.h"
+
 // Additional INI file function and structure
 #include "bbs/xinitini.h"
 
@@ -508,19 +510,15 @@ static char* DuplicatePath(const char* path) {
 }
 
 bool WApplication::ReadConfig() {
-  configrec full_syscfg;
-
-  File configFile(CONFIG_DAT);
-  int nFileMode = File::modeReadOnly | File::modeBinary;
-  if (!configFile.Open(nFileMode)) {
+  //configrec full_syscfg;
+  wwiv::sdk::Config full_config;
+  if (!full_config.IsInitialized()) {
     std::clog << CONFIG_DAT << " NOT FOUND.\r\n";
     return false;
   }
-  configFile.Read(&full_syscfg, sizeof(configrec));
-  configFile.Close();
 
   // initialize the user manager
-  users()->InitializeUserManager(full_syscfg.datadir, full_syscfg.userreclen, full_syscfg.maxusers);
+  users()->InitializeUserManager(full_config.config()->datadir, full_config.config()->userreclen, full_config.config()->maxusers);
 
   std::unique_ptr<IniFile> ini(ReadINIFile());
   if (!ini->IsOpen()) {
@@ -528,7 +526,7 @@ bool WApplication::ReadConfig() {
     AbortBBS();
   }
 
-  bool config_ovr_read = ReadConfigOverlayFile(GetInstanceNumber(), &full_syscfg, ini.get());
+  bool config_ovr_read = ReadConfigOverlayFile(GetInstanceNumber(), full_config.config(), ini.get());
   if (!config_ovr_read) {
     return false;
   }
@@ -542,72 +540,72 @@ bool WApplication::ReadConfig() {
   int fsoffset = OFFOF(forwardsys);
   int fnoffset = OFFOF(net_num);
 
-  if (userreclen != full_syscfg.userreclen           ||
-      waitingoffset != full_syscfg.waitingoffset     ||
-      inactoffset != full_syscfg.inactoffset         ||
-      sysstatusoffset != full_syscfg.sysstatusoffset ||
-      fuoffset != full_syscfg.fuoffset               ||
-      fsoffset != full_syscfg.fsoffset               ||
-      fnoffset != full_syscfg.fnoffset) {
-    full_syscfg.userreclen      = userreclen;
-    full_syscfg.waitingoffset   = waitingoffset;
-    full_syscfg.inactoffset     = inactoffset;
-    full_syscfg.sysstatusoffset = sysstatusoffset;
-    full_syscfg.fuoffset        = fuoffset;
-    full_syscfg.fsoffset        = fsoffset;
-    full_syscfg.fnoffset        = fnoffset;
+  if (userreclen != full_config.config()->userreclen           ||
+      waitingoffset != full_config.config()->waitingoffset     ||
+      inactoffset != full_config.config()->inactoffset         ||
+      sysstatusoffset != full_config.config()->sysstatusoffset ||
+      fuoffset != full_config.config()->fuoffset               ||
+      fsoffset != full_config.config()->fsoffset               ||
+      fnoffset != full_config.config()->fnoffset) {
+    full_config.config()->userreclen      = userreclen;
+    full_config.config()->waitingoffset   = waitingoffset;
+    full_config.config()->inactoffset     = inactoffset;
+    full_config.config()->sysstatusoffset = sysstatusoffset;
+    full_config.config()->fuoffset        = fuoffset;
+    full_config.config()->fsoffset        = fsoffset;
+    full_config.config()->fnoffset        = fnoffset;
   }
 
-  syscfg.newuserpw        = strdup(full_syscfg.newuserpw);
-  syscfg.systempw         = strdup(full_syscfg.systempw);
+  syscfg.newuserpw        = strdup(full_config.config()->newuserpw);
+  syscfg.systempw         = strdup(full_config.config()->systempw);
 
-  syscfg.msgsdir          = DuplicatePath(full_syscfg.msgsdir);
-  syscfg.gfilesdir        = DuplicatePath(full_syscfg.gfilesdir);
-  syscfg.datadir          = DuplicatePath(full_syscfg.datadir);
-  syscfg.dloadsdir        = DuplicatePath(full_syscfg.dloadsdir);
-  syscfg.batchdir         = DuplicatePath(full_syscfg.batchdir);
-  syscfg.menudir          = DuplicatePath(full_syscfg.menudir);
+  syscfg.msgsdir          = DuplicatePath(full_config.config()->msgsdir);
+  syscfg.gfilesdir        = DuplicatePath(full_config.config()->gfilesdir);
+  syscfg.datadir          = DuplicatePath(full_config.config()->datadir);
+  syscfg.dloadsdir        = DuplicatePath(full_config.config()->dloadsdir);
+  syscfg.batchdir         = DuplicatePath(full_config.config()->batchdir);
+  syscfg.menudir          = DuplicatePath(full_config.config()->menudir);
 
-  syscfg.systemname       = strdup(full_syscfg.systemname);
-  syscfg.systemphone      = strdup(full_syscfg.systemphone);
-  syscfg.sysopname        = strdup(full_syscfg.sysopname);
+  syscfg.systemname       = strdup(full_config.config()->systemname);
+  syscfg.systemphone      = strdup(full_config.config()->systemphone);
+  syscfg.sysopname        = strdup(full_config.config()->sysopname);
 
-  syscfg.newusersl        = full_syscfg.newusersl;
-  syscfg.newuserdsl       = full_syscfg.newuserdsl;
-  syscfg.maxwaiting       = full_syscfg.maxwaiting;
-  syscfg.newuploads       = full_syscfg.newuploads;
-  syscfg.closedsystem     = full_syscfg.closedsystem;
+  syscfg.newusersl        = full_config.config()->newusersl;
+  syscfg.newuserdsl       = full_config.config()->newuserdsl;
+  syscfg.maxwaiting       = full_config.config()->maxwaiting;
+  syscfg.newuploads       = full_config.config()->newuploads;
+  syscfg.closedsystem     = full_config.config()->closedsystem;
 
-  syscfg.systemnumber     = full_syscfg.systemnumber;
-  syscfg.maxusers         = full_syscfg.maxusers;
-  syscfg.newuser_restrict = full_syscfg.newuser_restrict;
-  syscfg.sysconfig        = full_syscfg.sysconfig;
-  syscfg.sysoplowtime     = full_syscfg.sysoplowtime;
-  syscfg.sysophightime    = full_syscfg.sysophightime;
-  syscfg.executetime      = full_syscfg.executetime;
-  syscfg.netlowtime       = full_syscfg.netlowtime;
-  syscfg.nethightime      = full_syscfg.nethightime;
-  syscfg.max_subs         = full_syscfg.max_subs;
-  syscfg.max_dirs         = full_syscfg.max_dirs;
-  syscfg.qscn_len         = full_syscfg.qscn_len;
-  syscfg.userreclen       = full_syscfg.userreclen;
+  syscfg.systemnumber     = full_config.config()->systemnumber;
+  syscfg.maxusers         = full_config.config()->maxusers;
+  syscfg.newuser_restrict = full_config.config()->newuser_restrict;
+  syscfg.sysconfig        = full_config.config()->sysconfig;
+  syscfg.sysoplowtime     = full_config.config()->sysoplowtime;
+  syscfg.sysophightime    = full_config.config()->sysophightime;
+  syscfg.executetime      = full_config.config()->executetime;
+  syscfg.netlowtime       = full_config.config()->netlowtime;
+  syscfg.nethightime      = full_config.config()->nethightime;
+  syscfg.max_subs         = full_config.config()->max_subs;
+  syscfg.max_dirs         = full_config.config()->max_dirs;
+  syscfg.qscn_len         = full_config.config()->qscn_len;
+  syscfg.userreclen       = full_config.config()->userreclen;
 
-  syscfg.post_call_ratio  = full_syscfg.post_call_ratio;
-  syscfg.req_ratio        = full_syscfg.req_ratio;
-  syscfg.newusergold      = full_syscfg.newusergold;
+  syscfg.post_call_ratio  = full_config.config()->post_call_ratio;
+  syscfg.req_ratio        = full_config.config()->req_ratio;
+  syscfg.newusergold      = full_config.config()->newusergold;
 
-  syscfg.autoval[0]       = full_syscfg.autoval[0];
-  syscfg.autoval[1]       = full_syscfg.autoval[1];
-  syscfg.autoval[2]       = full_syscfg.autoval[2];
-  syscfg.autoval[3]       = full_syscfg.autoval[3];
-  syscfg.autoval[4]       = full_syscfg.autoval[4];
-  syscfg.autoval[5]       = full_syscfg.autoval[5];
-  syscfg.autoval[6]       = full_syscfg.autoval[6];
-  syscfg.autoval[7]       = full_syscfg.autoval[7];
-  syscfg.autoval[8]       = full_syscfg.autoval[8];
-  syscfg.autoval[9]       = full_syscfg.autoval[9];
+  syscfg.autoval[0]       = full_config.config()->autoval[0];
+  syscfg.autoval[1]       = full_config.config()->autoval[1];
+  syscfg.autoval[2]       = full_config.config()->autoval[2];
+  syscfg.autoval[3]       = full_config.config()->autoval[3];
+  syscfg.autoval[4]       = full_config.config()->autoval[4];
+  syscfg.autoval[5]       = full_config.config()->autoval[5];
+  syscfg.autoval[6]       = full_config.config()->autoval[6];
+  syscfg.autoval[7]       = full_config.config()->autoval[7];
+  syscfg.autoval[8]       = full_config.config()->autoval[8];
+  syscfg.autoval[9]       = full_config.config()->autoval[9];
 
-  syscfg.wwiv_reg_number  = full_syscfg.wwiv_reg_number;
+  syscfg.wwiv_reg_number  = full_config.config()->wwiv_reg_number;
 
   make_abs_path(syscfg.gfilesdir);
   make_abs_path(syscfg.datadir);
@@ -627,7 +625,7 @@ bool WApplication::SaveConfig() {
     configrec full_syscfg;
     configFile.Read(&full_syscfg, sizeof(configrec));
     // Should these move to wwiv.ini?
-    // full_syscfg.post_call_ratio = syscfg.post_call_ratio;
+    // full_config.config()->post_call_ratio = syscfg.post_call_ratio;
     // full_syscfg.newusergold     = syscfg.newusergold;
 
     // These are set by WWIV.INI, set them back so that changes
