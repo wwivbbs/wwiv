@@ -24,9 +24,10 @@
 namespace wwiv {
 namespace sdk {
 
-Config::Config() : initialized_(false), config_(new configrec{}) {
-  //TODO(rushfan): Do we need to change directories first if env vars are set?
-  File configFile(CONFIG_DAT);
+Config::Config() : Config(File::current_directory()) {}
+
+Config::Config(const std::string& root_directory)  : initialized_(false), config_(new configrec{}), root_directory_(root_directory) {
+  File configFile(root_directory, CONFIG_DAT);
   int file_mode = File::modeReadOnly | File::modeBinary;
   if (!configFile.Open(file_mode)) {
     std::clog << CONFIG_DAT << " NOT FOUND.\r\n";
@@ -34,6 +35,13 @@ Config::Config() : initialized_(false), config_(new configrec{}) {
   configFile.Read(config_.get(), sizeof(configrec));
   configFile.Close();
   initialized_ = true;
+}
+
+void Config::set_config(configrec* config) {
+  std::unique_ptr<configrec> temp(new configrec());
+  // assign value
+  *temp = *config;
+  config_.swap(temp);
 }
 
 Config::~Config() {}

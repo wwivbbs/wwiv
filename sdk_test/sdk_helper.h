@@ -27,10 +27,15 @@ public:
   SdkHelper();
   ~SdkHelper();
 
+  const std::string& root() const { return root_; }
+
   std::string CreatePath(const std::string& name);
   FileHelper files_;
-  std::string root_;
   std::string data_;
+
+private:
+  const std::string saved_dir_;
+  const std::string root_;
 };
 
 #endif  // __INCLUDED_SDK_TEST_SDK_HELPER_H__
