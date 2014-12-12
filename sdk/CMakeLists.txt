@@ -13,4 +13,4 @@ if(UNIX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
-add_library(core ${COMMON_SOURCES})
+add_library(sdk ${COMMON_SOURCES})
