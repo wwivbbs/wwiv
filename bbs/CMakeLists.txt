@@ -144,5 +144,5 @@ endif()
 
 add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 
 add_executable(bbs ${BBS_MAIN})
-target_link_libraries(bbs bbs_lib core)
+target_link_libraries(bbs bbs_lib core sdk)
 
