@@ -74,6 +74,7 @@ static const string GetTestTempDir() {
 // static
 string FileHelper::CreateTempDir(const string base) {
     const string temp_path = GetTestTempDir();
+    string template_ = StrCat(temp_path, "/fileXXXXXX");
 #ifdef _WIN32
     time_t now = time(nullptr);
     const string local_dir_template = StringPrintf("%s%s.%lx", temp_path.c_str(), base.c_str(), now);
@@ -81,9 +82,8 @@ string FileHelper::CreateTempDir(const string base) {
       return string(local_dir_template);
     }
 #else
-    const string template = temp_path + "/fileXXXXXX";
     char local_dir_template[MAX_PATH];
-    strcpy(local_dir_template, template.c_str());
+    strcpy(local_dir_template, template_.c_str());
     char *result = mkdtemp(local_dir_template);
     if (result) {
       return string(result);
