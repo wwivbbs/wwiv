@@ -126,6 +126,10 @@
 
 #define MACROS_TXT "macros.txt"
 #define MBMAIN_NOEXT "mbmain"
+
+// QWK
+#define MESSAGES_DAT "MESSAGES.DAT"
+
 #define MENUWEL_NOEXT "menuwel"
 #define MEXTRACT_NOEXT "mextract"
 #define MMAIL_NOEXT "mmail"

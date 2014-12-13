@@ -26,21 +26,23 @@
 #endif
 #include <sys/stat.h>
 
+#include "core/scope_exit.h"
+#include "core/strings.h"
+#include "core/wwivport.h"
+#include "core/file.h"
 #include "init/wwivinit.h"
 #include "init/ifcns.h"
 #include "init/init.h"
 #include "initlib/input.h"
 #include "init/subacc.h"
-#include "core/strings.h"
-#include "core/wwivport.h"
-#include "core/file.h"
 #include "init/utility.h"
+#include "sdk/filenames.h"
 
 static const int MAX_SUBS_DIRS = 4096;
 
 using std::unique_ptr;
 using std::string;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 static int input_number(CursesWindow* window, int max_digits) {
   string s;
@@ -81,8 +83,9 @@ static void convert_to(CursesWindow* window, int num_subs, int num_dirs) {
     num_dirs = MAX_SUBS_DIRS;
   }
 
-  int nqscn_len = 4 * (1 + num_subs + ((num_subs + 31) / 32) + ((num_dirs + 31) / 32));
+  std::size_t nqscn_len = 4 * (1 + num_subs + ((num_subs + 31) / 32) + ((num_dirs + 31) / 32));
   uint32_t* nqsc = (uint32_t *)malloc(nqscn_len);
+  wwiv::core::ScopeExit free_nqsc([&]() { free(nqsc); nqsc = nullptr; });
   if (!nqsc) {
     return;
   }
@@ -96,8 +99,8 @@ static void convert_to(CursesWindow* window, int num_subs, int num_dirs) {
   memset(nqsc_q, 0xff, ((num_subs + 31) / 32) * 4);
 
   uint32_t* oqsc = (uint32_t *)malloc(syscfg.qscn_len);
+  wwiv::core::ScopeExit free_oqsc([&]() { free(oqsc); oqsc = nullptr; });
   if (!oqsc) {
-    free(nqsc);
     messagebox(window, StringPrintf("Could not allocate %d bytes for old quickscan rec\n", syscfg.qscn_len));
     return;
   }
@@ -121,52 +124,40 @@ static void convert_to(CursesWindow* window, int num_subs, int num_dirs) {
     l3 = syscfg.max_subs * 4;
   }
 
-  const string oqfn = StringPrintf("%suser.qsc", syscfg.datadir);
-  const string nqfn = StringPrintf("%suserqsc.new", syscfg.datadir);
-
-  int oqf = open(oqfn.c_str(), O_RDWR | O_BINARY);
-  if (oqf < 0) {
-    free(nqsc);
-    free(oqsc);
+  File oqf(syscfg.datadir, USER_QSC);
+  if (!oqf.Open(File::modeBinary|File::modeReadWrite)) {
     messagebox(window, "Could not open user.qsc");
     return;
   }
-  int nqf = open(nqfn.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  if (nqf < 0) {
-    free(nqsc);
-    free(oqsc);
-    close(oqf);
+  File nqf(syscfg.datadir, "userqsc.new");
+  if (!nqf.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile|File::modeTruncate)) {
     messagebox(window, "Could not open userqsc.new");
     return;
   }
 
-  int nu = filelength(oqf) / syscfg.qscn_len;
+  int nu = oqf.GetLength() / syscfg.qscn_len;
   for (int i = 0; i < nu; i++) {
     if (i % 10 == 0) {
       window->Printf("%u/%u\r", i, nu);
     }
-    read(oqf, oqsc, syscfg.qscn_len);
+    oqf.Read(oqsc, syscfg.qscn_len);
 
     *nqsc = *oqsc;
     memcpy(nqsc_n, oqsc_n, l1);
     memcpy(nqsc_q, oqsc_q, l2);
     memcpy(nqsc_p, oqsc_p, l3);
-
-    write(nqf, nqsc, nqscn_len);
+    nqf.Write(nqsc, nqscn_len);
   }
 
-  close(oqf);
-  close(nqf);
-  unlink(oqfn.c_str());
-  rename(nqfn.c_str(), oqfn.c_str());
+  oqf.Close();
+  nqf.Close();
+  oqf.Delete();
+  File::Rename(nqf.full_pathname(), oqf.full_pathname());
 
   syscfg.max_subs = num_subs;
   syscfg.max_dirs = num_dirs;
   syscfg.qscn_len = nqscn_len;
   save_config();
-
-  free(nqsc);
-  free(oqsc);
   window->Printf("Done\n");
 }
 
