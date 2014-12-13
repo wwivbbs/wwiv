@@ -35,6 +35,7 @@
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
+#include "sdk/config.h"
 
 using std::chrono::milliseconds;
 using std::string;
@@ -542,17 +543,13 @@ slrec getslrec(int nSl) {
     return CurSlRec;
   }
 
-  File file(application()->GetHomeDir(), CONFIG_DAT);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
+  wwiv::sdk::Config config;
+  if (!config.IsInitialized()) {
     // Bad ju ju here.
     application()->AbortBBS();
   }
-  configrec c;
-  file.Read(&c, sizeof(configrec));
-
   nCurSl = nSl;
-  CurSlRec = c.sl[nSl];
-
+  CurSlRec = config.config()->sl[nSl];
   return CurSlRec;
 }
 
