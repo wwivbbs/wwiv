@@ -37,10 +37,12 @@
 #include "init/init.h"
 #include "initlib/input.h"
 #include "initlib/listbox.h"
+#include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::unique_ptr;
@@ -213,38 +215,37 @@ void extrn_prots() {
     }
   } while (!done);
 
-  string filename = StringPrintf("%snextern.dat", syscfg.datadir);
-  int hFile = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  write(hFile, externs, initinfo.numexterns * sizeof(newexternalrec));
-  close(hFile);
+  File newexternfile (syscfg.datadir, NEXTERN_DAT);
+  if (newexternfile.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile|File::modeTruncate)) {
+    newexternfile.Write(externs, initinfo.numexterns * sizeof(newexternalrec));
+  }
+  newexternfile.Close();
 
-  filename = StringPrintf("%snintern.dat", syscfg.datadir);
+  File internfile(syscfg.datadir, NINTERN_DAT);
   if ((over_intern[0].othr | over_intern[1].othr | over_intern[2].othr)&othr_override_internal) {
-    hFile = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-    if (hFile > 0) {
-      write(hFile, over_intern, 3 * sizeof(newexternalrec));
-      close(hFile);
+    if (internfile.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile|File::modeTruncate)) {
+      internfile.Write(over_intern, 3 * sizeof(newexternalrec));
     }
   } else {
-    unlink(filename.c_str());
+    internfile.Delete();
   }
 }
 
 void load_protocols() {
-  externs = (newexternalrec *) malloc(15 * sizeof(newexternalrec));
-  initinfo.numexterns = 0;
-  string filename = StringPrintf("%snextern.dat", syscfg.datadir);
-  int hFile = open(filename.c_str(), O_RDWR | O_BINARY);
-  if (hFile > 0) {
-    initinfo.numexterns = (read(hFile, externs, 15 * sizeof(newexternalrec))) / sizeof(newexternalrec);
-    close(hFile);
+  {
+    externs = (newexternalrec *) malloc(15 * sizeof(newexternalrec));
+    initinfo.numexterns = 0;
+    File externfile(syscfg.datadir, NEXTERN_DAT);
+    if (externfile.Open(File::modeBinary|File::modeReadWrite)) {
+      initinfo.numexterns = externfile.Read(externs, 15 * sizeof(newexternalrec)) / sizeof(newexternalrec);
+    }
   }
-  over_intern = (newexternalrec *) malloc(3 * sizeof(newexternalrec));
-  memset(over_intern, 0, 3 * sizeof(newexternalrec));
-  filename = StringPrintf("%snintern.dat", syscfg.datadir);
-  hFile = open(filename.c_str(), O_RDWR | O_BINARY);
-  if (hFile > 0) {
-    read(hFile, over_intern, 3 * sizeof(newexternalrec));
-    close(hFile);
+  {
+    over_intern = (newexternalrec *) malloc(3 * sizeof(newexternalrec));
+    memset(over_intern, 0, 3 * sizeof(newexternalrec));
+    File internfile(syscfg.datadir, NINTERN_DAT);
+    if (internfile.Open(File::modeBinary|File::modeReadWrite)) {
+      internfile.Read(over_intern, 3 * sizeof(newexternalrec));
+    }
   }
 }
