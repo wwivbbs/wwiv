@@ -48,7 +48,7 @@
 
 using std::string;
 using std::vector;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 static void create_text(const char *pszFileName) {
   TextFile file("gfiles", pszFileName, "wt");
@@ -238,62 +238,65 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   // Note: this is where init makes a user record #1 that is deleted for new installs.
   write_user(1, &u);
   write_qscn(1, qsc);
-  int hFile = open("data/names.lst", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-  close(hFile);
+  {
+    File namesfile(StrCat("data/", NAMES_LST));
+    namesfile.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile);
+  }
+  {
+    subboardrec s1;
+    memset(&s1, 0, sizeof(subboardrec));
 
-  subboardrec s1;
-  memset(&s1, 0, sizeof(subboardrec));
+    strcpy(s1.name, "General");
+    strcpy(s1.filename, "GENERAL");
+    s1.readsl = 10;
+    s1.postsl = 20;
+    s1.maxmsgs = 50;
+    s1.storage_type = 2;
+    File subsfile(StrCat("data/", SUBS_DAT));
+    subsfile.Open(File::modeBinary|File::modeCreateFile|File::modeReadWrite);
+    subsfile.Write(&s1, sizeof(subboardrec));
+    subsfile.Close();
+  }
 
-  strcpy(s1.name, "General");
-  strcpy(s1.filename, "GENERAL");
-  s1.readsl = 10;
-  s1.postsl = 20;
-  s1.maxmsgs = 50;
-  s1.storage_type = 2;
-  hFile = open("data/subs.dat", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-  write(hFile, &s1, sizeof(subboardrec));
-  close(hFile);
+  {
+    directoryrec d1;
+    memset(&d1, 0, sizeof(directoryrec));
+    strcpy(d1.name, "Sysop");
+    strcpy(d1.filename, "SYSOP");
+    sprintf(d1.path, "dloads%csysop%c", File::pathSeparatorChar, File::pathSeparatorChar);
+    File::mkdir(d1.path);
+    d1.dsl = 100;
+    d1.maxfiles = 50;
+    d1.type = 65535;
+    File dirsfile(StrCat("data/", SUBS_DAT));
+    dirsfile.Open(File::modeBinary|File::modeCreateFile|File::modeReadWrite);
+    dirsfile.Write(&d1, sizeof(directoryrec));
 
-  directoryrec d1;
-  memset(&d1, 0, sizeof(directoryrec));
+    memset(&d1, 0, sizeof(directoryrec));
+    strcpy(d1.name, "Miscellaneous");
+    strcpy(d1.filename, "misc");
+    sprintf(d1.path, "dloads%cmisc%c", File::pathSeparatorChar, File::pathSeparatorChar);
+    File::mkdir(d1.path);
+    d1.dsl = 10;
+    d1.age = 0;
+    d1.dar = 0;
+    d1.maxfiles = 50;
+    d1.mask = 0;
+    d1.type = 0;
+    dirsfile.Write(&d1, sizeof(directoryrec));
+    dirsfile.Close();
+  }
 
-  strcpy(d1.name, "Sysop");
-  strcpy(d1.filename, "SYSOP");
-  sprintf(d1.path, "dloads%csysop%c", File::pathSeparatorChar, File::pathSeparatorChar);
-  File::mkdir(d1.path);
-  d1.dsl = 100;
-  d1.maxfiles = 50;
-  d1.type = 65535;
-  hFile = open("data/dirs.dat", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-  write(hFile, &d1, sizeof(directoryrec));
-
-  memset(&d1, 0, sizeof(directoryrec));
-
-  strcpy(d1.name, "Miscellaneous");
-  strcpy(d1.filename, "misc");
-  sprintf(d1.path, "dloads%cmisc%c", File::pathSeparatorChar, File::pathSeparatorChar);
-  File::mkdir(d1.path);
-  d1.dsl = 10;
-  d1.age = 0;
-  d1.dar = 0;
-  d1.maxfiles = 50;
-  d1.mask = 0;
-  d1.type = 0;
-  write(hFile, &d1, sizeof(directoryrec));
-  close(hFile);
   window->Printf(".\n");
   ////////////////////////////////////////////////////////////////////////////
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Copying String and Miscellaneous files.\n");
   window->SetColor(SchemeId::NORMAL);
 
-  rename("wwivini.500", "wwiv.ini");
-  string destination = StringPrintf("data%cmenucmds.dat", File::pathSeparatorChar);
-  rename("menucmds.dat", destination.c_str());
-  destination = StringPrintf("data%cregions.dat", File::pathSeparatorChar);
-  rename("regions.dat", destination.c_str());
-  destination = StringPrintf("data%cwfc.dat", File::pathSeparatorChar);
-  rename("wfc.dat", destination.c_str());
+  File::Rename("wwivini.500", WWIV_INI);
+  File::Rename("menucmds.dat", StringPrintf("data%cmenucmds.dat", File::pathSeparatorChar));
+  File::Rename("regions.dat", StringPrintf("data%cregions.dat", File::pathSeparatorChar));
+  File::Rename("wfc.dat", StringPrintf("data%cwfc.dat", File::pathSeparatorChar));
   // Create the sample files.
   create_text("welcome.msg");
   create_text("newuser.msg");
@@ -311,21 +314,22 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   window->SetColor(SchemeId::NORMAL);
   if (File::Exists("en-menus.zip")) {
     system("unzip -qq -o EN-menus.zip -dgfiles ");
-    const string destination = StringPrintf("dloads%csysop%cen-menus.zip",
-        File::pathSeparatorChar, File::pathSeparatorChar);
-    rename("en-menus.zip", destination.c_str());
+    File::Rename("en-menus.zip", 
+                 StringPrintf("dloads%csysop%cen-menus.zip",
+                              File::pathSeparatorChar,
+                              File::pathSeparatorChar));
   }
   if (File::Exists("regions.zip")) {
     system("unzip -qq -o regions.zip -ddata");
     const string destination = StringPrintf("dloads%csysop%cregions.zip",
         File::pathSeparatorChar, File::pathSeparatorChar);
-    rename("regions.zip", destination.c_str());
+    File::Rename("regions.zip", destination);
   }
   if (File::Exists("zip-city.zip")) {
     system("unzip -qq -o zip-city.zip -ddata");
     const string destination = StringPrintf("dloads%csysop%czip-city.zip",
         File::pathSeparatorChar, File::pathSeparatorChar);
-    rename("zip-city.zip", destination.c_str());
+    File::Rename("zip-city.zip", destination);
   }
   window->SetColor(SchemeId::NORMAL);
 }
@@ -351,7 +355,7 @@ bool new_init(CursesWindow* window, const string& bbsdir) {
     window->SetColor(SchemeId::NORMAL);
     int nRet = chdir(dirname.c_str());
     if (nRet) {
-      if (!File::mkdir(dirname.c_str())) {
+      if (!File::mkdir(dirname)) {
         window->SetColor(SchemeId::ERROR_TEXT);
         window->Printf("\n\nERROR!!! Couldn't make '%s' Sub-Dir.\nExiting...", dirname.c_str());
         return false;
