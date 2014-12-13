@@ -35,7 +35,6 @@
 #include "bbs/qscan.h"
 #include "bbs/stuffin.h"
 #include "bbs/subxtr.h"
-#include "sdk/vardec.h"
 #include "bbs/wwiv.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"
@@ -43,6 +42,8 @@
 #include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
+#include "sdk/filenames.h"
+#include "sdk/vardec.h"
 
 #define qwk_iscan(x)         (iscan1(usub[x].subnum, 1))
 
@@ -120,7 +121,7 @@ void build_qwk_packet(void) {
 
   write_inst(INST_LOC_QWK, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_ONLINE);
 
-  const string filename = StringPrintf("%sMESSAGES.DAT", QWK_DIRECTORY);
+  const string filename = StrCat((QWK_DIRECTORY, MESSAGES_DAT);
   qwk_info.file = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
   if (qwk_info.file < 1) {
