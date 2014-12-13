@@ -101,8 +101,8 @@
     <ClCompile Include="stl_test.cpp" />
     <ClCompile Include="strings_test.cpp" />
     <ClCompile Include="transaction_test.cpp" />
-    <ClCompile Include="wfile_test.cpp" />
-    <ClCompile Include="wtextfile_test.cpp" />
+    <ClCompile Include="file_test.cpp" />
+    <ClCompile Include="textfile_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

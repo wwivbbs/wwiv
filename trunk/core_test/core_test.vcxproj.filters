@@ -13,10 +13,10 @@
     <ClCompile Include="transaction_test.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
-    <ClCompile Include="wfile_test.cpp">
+    <ClCompile Include="file_test.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
-    <ClCompile Include="wtextfile_test.cpp">
+    <ClCompile Include="textfile_test.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
     <ClCompile Include="scope_exit_test.cpp">
