@@ -121,7 +121,7 @@ void build_qwk_packet(void) {
 
   write_inst(INST_LOC_QWK, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_ONLINE);
 
-  const string filename = StrCat((QWK_DIRECTORY, MESSAGES_DAT);
+  const string filename = StrCat(QWK_DIRECTORY, MESSAGES_DAT);
   qwk_info.file = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
   if (qwk_info.file < 1) {
