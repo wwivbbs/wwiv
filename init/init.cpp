@@ -154,8 +154,7 @@ int WInitApp::main(int argc, char *argv[]) {
   out->window()->SetColor(SchemeId::NORMAL);
 
   bool newbbs = false;
-  int configfile = open(CONFIG_DAT, O_RDWR | O_BINARY);
-  if (configfile < 0) {
+  if (!File::Exists(CONFIG_DAT)) {
     vector<string> lines = { StringPrintf("%s NOT FOUND.", CONFIG_DAT), "", "Perform initial installation?" };
     if (dialog_yn(out->window(), lines)) {
       // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
@@ -164,9 +163,8 @@ int WInitApp::main(int argc, char *argv[]) {
         return 2;
       }
       newbbs = true;
-      configfile = open(CONFIG_DAT, O_RDWR | O_BINARY);
-      if (configfile == -1) {
-        messagebox(out->window(), StringPrintf("Unable to open config.dat, error: %d", errno));
+      if (!File::Exists(CONFIG_DAT)) {
+        messagebox(out->window(), "Unable to open config.dat");
       }
     } else {
       return 1;
@@ -174,41 +172,38 @@ int WInitApp::main(int argc, char *argv[]) {
   }
 
   // Convert 4.2X to 4.3 format if needed.
-  if (filelength(configfile) != sizeof(configrec)) {
-    close(configfile);
+  File configfile(CONFIG_DAT);
+  if (configfile.GetLength() != sizeof(configrec)) {
     // TODO(rushfan): Create a subwindow
     convcfg(out->window(), CONFIG_DAT);
-    configfile = open(CONFIG_DAT, O_RDWR | O_BINARY);
   }
 
-  read(configfile, &syscfg, sizeof(configrec));
-  close(configfile);
+  if (configfile.Open(File::modeBinary|File::modeReadOnly)) {
+    configfile.Read(&syscfg, sizeof(configrec));
+  }
+  configfile.Close();
 
   ValidateConfigOverlayExists(bbsdir);
 
-  string filename = StringPrintf("%sarchiver.dat", syscfg.datadir);
-  int hFile = open(filename.c_str(), O_RDONLY | O_BINARY);
-  if (hFile < 0) {
+  File archiverfile(syscfg.datadir, ARCHIVER_DAT);
+  if (!archiverfile.Open(File::modeBinary|File::modeReadOnly)) {
     create_arcs(out->window());
-  } else {
-    close(hFile);
   }
   bool bDataDirectoryOk = read_status();
   if (bDataDirectoryOk) {
     net_networks = (net_networks_rec *) malloc(MAX_NETWORKS * sizeof(net_networks_rec));
     memset(net_networks, 0, MAX_NETWORKS * sizeof(net_networks_rec));
 
-    filename = StringPrintf("%snetworks.dat", syscfg.datadir);
-    hFile = open(filename.c_str(), O_RDONLY | O_BINARY);
-    if (hFile > 0) {
-      initinfo.net_num_max = filelength(hFile) / sizeof(net_networks_rec);
+    File networksfile(syscfg.datadir, NETWORKS_DAT);
+    if (networksfile.Open(File::modeBinary|File::modeReadOnly)) {
+      initinfo.net_num_max = networksfile.GetLength() / sizeof(net_networks_rec);
       if (initinfo.net_num_max > MAX_NETWORKS) {
         initinfo.net_num_max = MAX_NETWORKS;
       }
       if (initinfo.net_num_max) {
-        read(hFile, net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
+        networksfile.Read(net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
       }
-      close(hFile);
+      networksfile.Close();
     }
   }
 

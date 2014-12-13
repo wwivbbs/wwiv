@@ -43,8 +43,8 @@
 #include "init/subacc.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
-#include "sdk/filenames.h"
 #include "init/subacc.h"
+#include "sdk/filenames.h"
 
 #define UINT(u,n)  (*((int  *)(((char *)(u))+(n))))
 #define UCHAR(u,n) (*((char *)(((char *)(u))+(n))))
@@ -54,20 +54,19 @@ static void edit_net(int nn);
 using std::string;
 using std::unique_ptr;
 using std::vector;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 unique_ptr<subboardrec[]> subboards;
 
 static bool read_subs(CursesWindow* window) {
-  const string filename = StringPrintf("%ssubs.dat", syscfg.datadir);
-  int i = open(filename.c_str(), O_RDWR | O_BINARY);
-  if (i > 0) {
-    int num_subs = filelength(i) / sizeof(subboardrec);
+  File subsfile(syscfg.datadir, SUBS_DAT);
+  
+  if (subsfile.Open(File::modeBinary|File::modeReadWrite)) {
+    int num_subs = subsfile.GetLength() / sizeof(subboardrec);
     subboards.reset(new subboardrec[num_subs]);
-    initinfo.num_subs = read(i, subboards.get(), filelength(i)) / sizeof(subboardrec);
-    close(i);
+    initinfo.num_subs = subsfile.Read(subboards.get(), subsfile.GetLength()) / sizeof(subboardrec);
   } else {
-    messagebox(window, StringPrintf("%s NOT FOUND.\n", filename.c_str()));
+    messagebox(window, StrCat(subsfile.full_pathname(), " NOT FOUND."));
     return false;
   }
   return true;
@@ -75,11 +74,9 @@ static bool read_subs(CursesWindow* window) {
 
 static void write_subs() {
   if (subboards) {
-    const string filename = StringPrintf("%ssubs.dat", syscfg.datadir);
-    int i = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-    if (i > 0) {
-      write(i, subboards.get(), initinfo.num_subs * sizeof(subboardrec));
-      close(i);
+    File subsfile(syscfg.datadir, SUBS_DAT);
+    if (subsfile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
+      subsfile.Write(subboards.get(), initinfo.num_subs * sizeof(subboardrec));
     }
     initinfo.num_subs = 0;
     subboards.reset();
@@ -127,15 +124,13 @@ static bool del_net(CursesWindow* window, int nn) {
   }
 
   write_subs();
-
-  string filename = StringPrintf("%semail.dat", syscfg.datadir);
-  int hFile = open(filename.c_str(), O_BINARY | O_RDWR);
-  if (hFile != -1) {
-    long t = filelength(hFile) / sizeof(mailrec);
+  File emailfile(syscfg.datadir, EMAIL_DAT);
+  if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
+    long t = emailfile.GetLength() / sizeof(mailrec);
     for (int r = 0; r < t; r++) {
       mailrec m;
-      lseek(hFile, r*sizeof(mailrec), SEEK_SET);
-      read(hFile, &m, sizeof(mailrec));
+      emailfile.Seek(r * sizeof(mailrec), File::seekBegin);
+      emailfile.Read(&m, sizeof(mailrec));
       if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
         int i = (m.status & status_source_verified) ? 78 : 80;
         if ((int) strlen(m.title) >= i) {
@@ -147,11 +142,10 @@ static bool del_net(CursesWindow* window, int nn) {
         } else if (m.title[i] > nn) {
           m.title[i]--;
         }
-        lseek(hFile, r*sizeof(mailrec), SEEK_SET);
-        write(hFile, &m, sizeof(mailrec));
+        emailfile.Seek(r * sizeof(mailrec), File::seekBegin);
+        emailfile.Write(&m, sizeof(mailrec));
       }
     }
-    close(hFile);
   }
 
   unique_ptr<char[]> u(new char[syscfg.userreclen]);
@@ -174,11 +168,10 @@ static bool del_net(CursesWindow* window, int nn) {
   }
   initinfo.net_num_max--;
 
-  filename = StringPrintf("%snetworks.dat", syscfg.datadir);
-  int f = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  write(f, net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
-  close(f);
-
+  File networksfile(syscfg.datadir, NETWORKS_DAT);
+  if (networksfile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
+    networksfile.Write(net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
+  }
   return true;
 }
 
@@ -216,14 +209,13 @@ static bool insert_net(CursesWindow* window, int nn) {
   }
 
   write_subs();
-  string filename = StringPrintf("%semail.dat", syscfg.datadir);
-  int hFile = open(filename.c_str(), O_BINARY | O_RDWR);
-  if (hFile != -1) {
-    long t = filelength(hFile) / sizeof(mailrec);
+  File emailfile(syscfg.datadir, EMAIL_DAT);
+  if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
+    long t = emailfile.GetLength() / sizeof(mailrec);
     for (int r = 0; r < t; r++) {
       mailrec m;
-      lseek(hFile, sizeof(mailrec) * r, SEEK_SET);
-      read(hFile, &m, sizeof(mailrec));
+      emailfile.Seek(sizeof(mailrec) * r, File::seekBegin);
+      emailfile.Read(&m, sizeof(mailrec));
       if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
         int i = (m.status & status_source_verified) ? 78 : 80;
         if ((int) strlen(m.title) >= i) {
@@ -233,11 +225,10 @@ static bool insert_net(CursesWindow* window, int nn) {
         if (m.title[i] >= nn) {
           m.title[i]++;
         }
-        lseek(hFile, (long)(sizeof(mailrec)) * (long)(r), SEEK_SET);
-        write(hFile, &m, sizeof(mailrec));
+        emailfile.Seek(sizeof(mailrec) * r, File::seekBegin);
+        emailfile.Write(&m, sizeof(mailrec));
       }
     }
-    close(hFile);
   }
 
   unique_ptr<char[]> u(new char[syscfg.userreclen]);
@@ -262,11 +253,11 @@ static bool insert_net(CursesWindow* window, int nn) {
   strcpy(net_networks[nn].name, "NewNet");
   sprintf(net_networks[nn].dir, "newnet.dir%c", File::pathSeparatorChar);
 
-  filename = StringPrintf("%snetworks.dat", syscfg.datadir);
-  int i = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  write(i, net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
-  close(i);
-
+  File networksfile(syscfg.datadir, NETWORKS_DAT);
+  if (networksfile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
+    networksfile.Write(net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
+  }
+  networksfile.Close();
   edit_net(nn);
   return true;
 }
