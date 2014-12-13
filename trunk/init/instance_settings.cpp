@@ -63,40 +63,39 @@ void show_instance(EditItems* items) {
 }
 
 int number_instances() {
-  int configfile = open(CONFIG_OVR, O_RDWR | O_BINARY);
-  if (configfile < 0) {
+  File configfile(CONFIG_OVR);
+  if (!configfile.Open(File::modeBinary|File::modeReadOnly)) {
     return 0;
   }
-  long length = filelength(configfile);
-  close(configfile);
-  return length / sizeof(configoverrec);
+  return configfile.GetLength() / sizeof(configoverrec);
 }
 
 bool read_instance(int num, configoverrec* instance) {
-  int configfile = open(CONFIG_OVR, O_RDWR | O_BINARY);
-  if (configfile < 0) {
+  File configfile(CONFIG_OVR);
+  if (!configfile.Open(File::modeBinary|File::modeReadWrite)) {
     return false;
   }
-  lseek(configfile, (num - 1) * sizeof(configoverrec), SEEK_SET);
-  read(configfile, instance, sizeof(configoverrec));
-  close(configfile);
+
+  configfile.Seek((num - 1) * sizeof(configoverrec), File::seekBegin);
+  configfile.Read(instance, sizeof(configoverrec));
+  configfile.Close();
   return true;
 }
 
 bool write_instance(int num, configoverrec* instance) {
-  int configfile = open(CONFIG_OVR, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-  if (configfile > 0) {
-    int n = filelength(configfile) / sizeof(configoverrec);
-    while (n < (num - 1)) {
-      lseek(configfile, 0L, SEEK_END);
-      write(configfile, instance, sizeof(configoverrec));
-      n++;
-    }
-    lseek(configfile, sizeof(configoverrec) * (num - 1), SEEK_SET);
-    write(configfile, instance, sizeof(configoverrec));
-    close(configfile);
+  File configfile(CONFIG_OVR);
+  if (!configfile.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile, File::shareDenyReadWrite)) {
+    return true;
   }
-  return true;
+  long n = configfile.GetLength() / sizeof(configoverrec);
+  while (n < (num - 1)) {
+    configfile.Seek(0, File::seekEnd);
+    configfile.Write(instance, sizeof(configoverrec));
+    n++;
+  }
+  configfile.Seek(sizeof(configoverrec) * (num - 1), File::seekBegin);
+  configfile.Write(instance, sizeof(configoverrec));
+  configfile.Close();
 }
 
 bool write_instance(int num, const string batch_dir, const string temp_dir) {
