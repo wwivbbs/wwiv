@@ -61,10 +61,9 @@ static map<string, string> ParseArgs(int argc, char** argv) {
   for (int i=0; i < argc; i++) {
     const string s(argv[i]);
     if (starts_with(s, "--")) {
-      vector<string> delims = SplitString(s, "=");
-      string value = (delims.size() > 1) ? delims[1] : "";
-      // lame old GCC doesn't have emplace.
-      args.insert(std::make_pair(delims[0].substr(2), value));
+      const vector<string> delims = SplitString(s, "=");
+      const string value = (delims.size() > 1) ? delims[1] : "";
+      args.emplace(delims[0].substr(2), value);
     }
   }
   return args;
