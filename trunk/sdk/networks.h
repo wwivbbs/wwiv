@@ -34,8 +34,15 @@ public:
 
   bool IsInitialized() const { return initialized_; }
   const std::vector<net_networks_rec>& networks() const { return networks_; }
+  const net_networks_rec& at(int num) const { return networks_.at(num); }
+  const net_networks_rec& at(const std::string& name) const;
   net_networks_rec& at(int num) { return networks_.at(num); }
   net_networks_rec& at(const std::string& name);
+
+  net_networks_rec& operator[](int num) { return at(num); }
+  net_networks_rec& operator[](const std::string& name) { return at(name); }
+  const net_networks_rec& operator[](int num) const { return at(num); }
+  const net_networks_rec& operator[](const std::string& name) const { return at(name); }
 
 private:
   bool initialized_;
