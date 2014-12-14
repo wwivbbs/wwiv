@@ -40,6 +40,7 @@ DEVELOPMENT INFORMATION
 
     WWIV is compiled with the following compilers:
         MS Visual C++ 2013.
+        GCC 4.8 on Linux
 
     I recommend using MSVC 2013. (There is a the "express" edition
     available for free.
