@@ -71,10 +71,13 @@ TEST_F(NetworkTest, Networks) {
   Networks networks(config);
   EXPECT_TRUE(networks.IsInitialized());
 
-
-  for (const auto& n : networks.networks()) {
-    cout << n.name << ": " << n.dir << endl;
-  }
-  cout << "Network #0: " << networks.at(0).name << " dir: " << networks.at(0).dir << endl;
-  cout << "Network 'one': " << networks.at("one").name << " dir: " << networks.at("one").dir <<endl;
+  const string expected_two_dir = StrCat(config.root_directory(), File::pathSeparatorString, "two");
+  EXPECT_STREQ("two", networks.at(1).name);
+  EXPECT_STREQ("two", networks[1].name);
+  EXPECT_STREQ("two", networks.at("two").name);
+  EXPECT_STREQ("two", networks["two"].name);
+  EXPECT_STREQ(expected_two_dir.c_str(), networks.at(1).dir);
+  EXPECT_STREQ(expected_two_dir.c_str(), networks.at("two").dir);
+  EXPECT_STREQ(expected_two_dir.c_str(), networks[1].dir);
+  EXPECT_STREQ(expected_two_dir.c_str(), networks["two"].dir);
 }
