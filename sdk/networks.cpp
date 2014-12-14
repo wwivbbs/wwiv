@@ -54,6 +54,15 @@ Networks::Networks(const Config& config) {
   }
 }
 
+const net_networks_rec& Networks::at(const std::string& name) const {
+  for (auto& n : networks_) {
+    if (IsEqualsIgnoreCase(name.c_str(), n.name)) {
+      return n;
+    }
+  }
+  throw std::out_of_range(StrCat("Unable to find network named: ", name));
+}
+
 net_networks_rec& Networks::at(const std::string& name) {
   for (auto& n : networks_) {
     if (IsEqualsIgnoreCase(name.c_str(), n.name)) {
