@@ -625,7 +625,7 @@ void uedit(int usern, int other) {
         bout << "|#7Enter new computer type: ";
         input(s, 2);
         int nComputerType = atoi(s);
-        if (nComputerType > 0 && nComputerType <= nNumCompTypes) {
+        if (nComputerType >= 0 && nComputerType <= nNumCompTypes) {
           user.SetComputerType(nComputerType);
           application()->users()->WriteUser(&user, nUserNumber);
         }
