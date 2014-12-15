@@ -244,85 +244,85 @@ TEST(StringsTest, EndssWith) {
 TEST(StringsTest, StringJustify_Left) {
   string a("a");
   StringJustify(&a, 2, ' ', JustificationType::LEFT);
-  EXPECT_STREQ("a ", a.c_str());
+  EXPECT_EQ("a ", a);
 
   string b("b");
   StringJustify(&b, 2, ' ', JustificationType::LEFT);
-  EXPECT_STREQ("b ", b.c_str());
+  EXPECT_EQ("b ", b);
 }
 
 TEST(StringsTest, StringJustify_LeftOtherChar) {
   string a("a");
   StringJustify(&a, 2, '.', JustificationType::LEFT);
-  EXPECT_STREQ("a.", a.c_str());
+  EXPECT_EQ("a.", a);
 
   string b("b");
   StringJustify(&b, 2, '.', JustificationType::LEFT);
-  EXPECT_STREQ("b.", b.c_str());
+  EXPECT_EQ("b.", b);
 }
 
 TEST(StringsTest, StringJustify_Right) {
   string a("a");
   StringJustify(&a, 2, ' ', JustificationType::RIGHT);
-  EXPECT_STREQ(" a", a.c_str());
+  EXPECT_EQ(" a", a);
 
   string b("b");
   StringJustify(&b, 2, ' ', JustificationType::RIGHT);
-  EXPECT_STREQ(" b", b.c_str());
+  EXPECT_EQ(" b", b);
 }
 
 TEST(StringsTest, StringJustify_RightOtherChar) {
   string a("a");
   StringJustify(&a, 2, '.', JustificationType::RIGHT);
-  EXPECT_STREQ(".a", a.c_str());
+  EXPECT_EQ(".a", a);
 
   string b("b");
   StringJustify(&b, 2, '.', JustificationType::RIGHT);
-  EXPECT_STREQ(".b", b.c_str());
+  EXPECT_EQ(".b", b);
 }
 
 TEST(StringsTest, StringJustify_LongerString) {
   string a("aaa");
   StringJustify(&a, 2, ' ', JustificationType::LEFT);
-  EXPECT_STREQ("aa", a.c_str());
+  EXPECT_EQ("aa", a);
 
   string b("bbb");
   StringJustify(&b, 2, ' ', JustificationType::RIGHT);
-  EXPECT_STREQ("bb", b.c_str());
+  EXPECT_EQ("bb", b);
 }
 
 TEST(StringsTest, StringTrim) {
   string a = " a ";
   StringTrim(&a);
-  EXPECT_STREQ("a", a.c_str());
+  EXPECT_EQ("a", a);
 
   string b = "b";
   StringTrim(&b);
-  EXPECT_STREQ("b", b.c_str());
+  EXPECT_EQ("b", b);
 }
 
 TEST(StringsTest, StringTrimBegin) {
   string a = " a ";
   StringTrimBegin(&a);
-  EXPECT_STREQ("a ", a.c_str());
+  EXPECT_EQ("a ", a);
 }
 
 TEST(StringsTest, StringTrimEnd) {
   string a = " a ";
   StringTrimEnd(&a);
-  EXPECT_STREQ(" a", a.c_str());
+  EXPECT_EQ(" a", a);
 }
 
 TEST(StringsTest, StringUpperCase) {
   string a = "aB";
   StringUpperCase(&a);
-  EXPECT_STREQ("AB", a.c_str());
+  EXPECT_EQ("AB", a);
 }
 
 TEST(StringsTest, StringLowerCase) {
   string a = "aB";
   StringLowerCase(&a);
-  EXPECT_STREQ("ab", a.c_str());
+  EXPECT_EQ("ab", a);
 }
 
 TEST(StringsTest, CharStr) {

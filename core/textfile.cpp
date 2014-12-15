@@ -184,6 +184,7 @@ std::string TextFile::ReadFileIntoString() {
   fseek(file_, 0, SEEK_END);
   contents.resize(ftell(file_));
   rewind(file_);
-  fread(&contents[0], 1, contents.size(), file_);
+  int num_read = fread(&contents[0], 1, contents.size(), file_);
+  contents.resize(num_read); 
   return contents;
 }

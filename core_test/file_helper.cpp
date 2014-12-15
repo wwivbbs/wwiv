@@ -116,6 +116,8 @@ string FileHelper::CreateTempFile(const string& orig_name, const string& content
   return path;
 }
 
+// N.B.: We don't use TextFile::ReadFileIntoString since we are
+// testing TextFile with this helper.
 const string FileHelper::ReadFile(const string name) const {
   std::FILE *fp = fopen(name.c_str(), "rt");
   if (!fp) {
@@ -125,7 +127,8 @@ const string FileHelper::ReadFile(const string name) const {
   fseek(fp, 0, SEEK_END);
   contents.resize(ftell(fp));
   rewind(fp);
-  fread(&contents[0], 1, contents.size(), fp);
+  int num_read = fread(&contents[0], 1, contents.size(), fp);
+  contents.resize(num_read);
   fclose(fp);
   return contents;
 }

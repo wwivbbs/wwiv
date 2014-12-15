@@ -75,7 +75,7 @@ TEST_F(TransferFileTest, WriteChunk) {
   memset(chunk, 0, 100);
   memcpy(chunk, "AB", 2);
   ASSERT_TRUE(file.WriteChunk(chunk, 2));
-  EXPECT_STREQ("ASDFAB", file.contents().c_str());
+  EXPECT_EQ("ASDFAB", file.contents());
 }
 
 TEST_F(TransferFileTest, WFileTest_Read) {

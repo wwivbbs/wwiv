@@ -56,8 +56,8 @@ TEST_F(NewBbsListTest, SingleItem_NoAddress) {
   ASSERT_TRUE(LoadFromJSON(dir(), "bbslist.json", &entries));
 
   ASSERT_EQ(1, entries.size());
-  EXPECT_STREQ("n1", entries[0]->name.c_str());
-  EXPECT_STREQ("s1", entries[0]->software.c_str());
+  EXPECT_EQ("n1", entries[0]->name);
+  EXPECT_EQ("s1", entries[0]->software);
 }
 
 TEST_F(NewBbsListTest, SingleItem_Address) {
@@ -76,10 +76,10 @@ TEST_F(NewBbsListTest, SingleItem_Address) {
 
   EXPECT_EQ(1, entries.size());
   BbsListEntry* e = entries[0].get();
-  EXPECT_STREQ("n1", e->name.c_str());
-  EXPECT_STREQ("s1", e->software.c_str());
+  EXPECT_EQ("n1", e->name);
+  EXPECT_EQ("s1", e->software);
   EXPECT_EQ(1, e->addresses.size());
-  EXPECT_STREQ("example.com", e->addresses.find(ConnectionType::TELNET)->second.c_str());
+  EXPECT_EQ("example.com", e->addresses.find(ConnectionType::TELNET)->second);
 }
 
 TEST_F(NewBbsListTest, MultipleEntries) {
@@ -94,18 +94,18 @@ TEST_F(NewBbsListTest, MultipleEntries) {
 
   vector<unique_ptr<BbsListEntry>> entries;
   ASSERT_TRUE(LoadFromJSON(dir(), "bbslist.json", &entries));
-
+  
   EXPECT_EQ(3, entries.size());
-  EXPECT_STREQ("n1", entries[0]->name.c_str());
-  EXPECT_STREQ("n2", entries[1]->name.c_str());
-  EXPECT_STREQ("n3", entries[2]->name.c_str());
-  EXPECT_STREQ("s", entries[0]->software.c_str());
-  EXPECT_STREQ("s", entries[1]->software.c_str());
-  EXPECT_STREQ("s", entries[2]->software.c_str());
+  EXPECT_EQ("n1", entries[0]->name);
+  EXPECT_EQ("n2", entries[1]->name);
+  EXPECT_EQ("n3", entries[2]->name);
+  EXPECT_EQ("s", entries[0]->software);
+  EXPECT_EQ("s", entries[1]->software);
+  EXPECT_EQ("s", entries[2]->software);
   EXPECT_EQ(1, entries[0]->addresses.size());
-  EXPECT_STREQ("example.com", entries[0]->addresses.find(ConnectionType::TELNET)->second.c_str());
-  EXPECT_STREQ("foobar.com", entries[1]->addresses.find(ConnectionType::SSH)->second.c_str());
-  EXPECT_STREQ("415-000-0000", entries[2]->addresses.find(ConnectionType::MODEM)->second.c_str());
+  EXPECT_EQ("example.com", entries[0]->addresses.find(ConnectionType::TELNET)->second);
+  EXPECT_EQ("foobar.com", entries[1]->addresses.find(ConnectionType::SSH)->second);
+  EXPECT_EQ("415-000-0000", entries[2]->addresses.find(ConnectionType::MODEM)->second);
 }
 
 TEST_F(NewBbsListTest, WriteSingleEntry) {
@@ -123,10 +123,10 @@ TEST_F(NewBbsListTest, WriteSingleEntry) {
   ASSERT_TRUE(LoadFromJSON(dir(), "bbslist.json", &new_entries));
   EXPECT_EQ(1, new_entries.size());
   const auto e = new_entries.at(0).get();
-  EXPECT_STREQ("n1", e->name.c_str());
-  EXPECT_STREQ("SOFT", e->software.c_str());
+  EXPECT_EQ("n1", e->name);
+  EXPECT_EQ("SOFT", e->software);
   EXPECT_EQ(1, new_entries.at(0)->addresses.size());
   const auto a = new_entries.at(0)->addresses.cbegin();
   EXPECT_EQ(ConnectionType::SSH, a->first);
-  EXPECT_STREQ("example.com", a->second.c_str());
+  EXPECT_EQ("example.com", a->second);
 }
