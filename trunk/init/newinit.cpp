@@ -268,7 +268,7 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
     d1.dsl = 100;
     d1.maxfiles = 50;
     d1.type = 65535;
-    File dirsfile(StrCat("data/", SUBS_DAT));
+    File dirsfile(StrCat("data/", DIRS_DAT));
     dirsfile.Open(File::modeBinary|File::modeCreateFile|File::modeReadWrite);
     dirsfile.Write(&d1, sizeof(directoryrec));
 
