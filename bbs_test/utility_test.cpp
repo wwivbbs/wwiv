@@ -33,24 +33,23 @@ using std::string;
 class UtilityTest : public ::testing::Test {
 protected:
     virtual void SetUp() {
-        helper.SetUp();
+      helper.SetUp();
     }
-
     BbsHelper helper;
 };
 
 TEST_F(UtilityTest, DateString_Y) {
     string res = W_DateString(MAY_18_2014, "Y", "");
-    ASSERT_STREQ("2014", res.c_str());
+    ASSERT_EQ("2014", res);
 
     string res2 = W_DateString(MAY_18_2014, "YY", "");
-    ASSERT_STREQ("2014 2014", res2.c_str());
+    ASSERT_EQ("2014 2014", res2);
 }
 
 TEST_F(UtilityTest, DateString_WDT) {
     string res = W_DateString(MAY_18_2014, "WDT", "");
-    ASSERT_STREQ("Sunday, May 18, 2014 06:00 PM", res.c_str());
+    ASSERT_EQ("Sunday, May 18, 2014 06:00 PM", res);
 
     string res2 = W_DateString(MAY_18_2014, "WDT", "at");
-    ASSERT_STREQ("Sunday, May 18, 2014 at 06:00 PM", res2.c_str());
+    ASSERT_EQ("Sunday, May 18, 2014 at 06:00 PM", res2);
 }

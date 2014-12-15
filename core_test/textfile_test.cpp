@@ -52,14 +52,14 @@ TEST_F(TextFileTest, Constructor_SunnyCase) {
   TextFile file(hello_world_path_, "rt");
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("Hello World", s.c_str());
+  EXPECT_EQ("Hello World", s);
 }
 
 TEST_F(TextFileTest, Constructor_Path_And_Name) {
   TextFile file(helper_.TempDir(), this->test_name(), "rt");
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("Hello World", s.c_str());
+  EXPECT_EQ("Hello World", s);
 }
 
 TEST_F(TextFileTest, Append) {
@@ -69,7 +69,7 @@ TEST_F(TextFileTest, Append) {
   file.reset();
 
   const string actual = helper_.ReadFile(filename);
-  EXPECT_STREQ("Hello World\nabc", actual.c_str());
+  EXPECT_EQ("Hello World\nabc", actual);
 }
 
 TEST_F(TextFileTest, ReadLine_CA) {
@@ -90,11 +90,11 @@ TEST_F(TextFileTest, ReadLine_String) {
   TextFile file(path, "rt");
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("a", s.c_str());
+  EXPECT_EQ("a", s);
   EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("b", s.c_str());
+  EXPECT_EQ("b", s);
   EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("c", s.c_str());
+  EXPECT_EQ("c", s);
   EXPECT_FALSE(file.ReadLine(&s));
 }
 
@@ -107,7 +107,7 @@ TEST_F(TextFileTest, Write) {
     // Let the textfile close.
   }
   const string actual = helper_.ReadFile(filename);
-  EXPECT_STREQ("Hello", actual.c_str());
+  EXPECT_EQ("Hello", actual);
 }
 
 TEST_F(TextFileTest, WriteFormatted) {
@@ -119,7 +119,7 @@ TEST_F(TextFileTest, WriteFormatted) {
     // Let the textfile close.
   }
   const string actual = helper_.ReadFile(filename);
-  EXPECT_STREQ("Hello World", actual.c_str());
+  EXPECT_EQ("Hello World", actual);
 }
 
 TEST_F(TextFileTest, WriteChar) {
@@ -131,7 +131,7 @@ TEST_F(TextFileTest, WriteChar) {
     // Let the textfile close.
   }
   const string actual = helper_.ReadFile(filename);
-  EXPECT_STREQ("H", actual.c_str());
+  EXPECT_EQ("H", actual);
 }
 
 
@@ -144,7 +144,7 @@ TEST_F(TextFileTest, WriteBinary) {
     // Let the textfile close.
   }
   const string actual = helper_.ReadFile(filename);
-  EXPECT_STREQ("Hello World", actual.c_str());
+  EXPECT_EQ("Hello World", actual);
 }
 
 TEST_F(TextFileTest, Close) {
@@ -166,7 +166,7 @@ TEST_F(TextFileTest, IsEOF) {
   TextFile file(hello_world_path_, "rt");
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("Hello World", s.c_str());
+  EXPECT_EQ("Hello World", s);
 
   EXPECT_FALSE(file.ReadLine(&s));
   EXPECT_TRUE(file.IsEndOfFile());
@@ -178,7 +178,7 @@ TEST_F(TextFileTest, GetPosition) {
   ASSERT_EQ(0, file.GetPosition());
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("a", s.c_str());
+  EXPECT_EQ("a", s);
 #ifdef _WIN32
   EXPECT_EQ(3, file.GetPosition());
 #else  // _WIN32
@@ -190,5 +190,5 @@ TEST_F(TextFileTest, ReadFileIntoString) {
   const string path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
   TextFile file(path, "rt");
   string s = file.ReadFileIntoString();
-  EXPECT_STREQ("a\nb\nc\n", s.c_str());
+  EXPECT_EQ("a\nb\nc\n", s);
 }

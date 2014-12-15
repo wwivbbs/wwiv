@@ -50,13 +50,13 @@ TEST_F(ConfigTest, Config_CurrentDirectory) {
 
   Config config;
   ASSERT_TRUE(config.IsInitialized());
-  EXPECT_STREQ(helper.data_.c_str(), config.datadir().c_str());
+  EXPECT_EQ(helper.data_, config.datadir());
 }
 
 TEST_F(ConfigTest, Config_DifferentDirectory) {
   Config config(helper.root());
   ASSERT_TRUE(config.IsInitialized());
-  EXPECT_STREQ(helper.data_.c_str(), config.datadir().c_str());
+  EXPECT_EQ(helper.data_, config.datadir());
 }
 
 TEST_F(ConfigTest, SetConfig_Stack) {
