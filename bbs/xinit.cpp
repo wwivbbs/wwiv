@@ -876,7 +876,7 @@ bool WApplication::read_dirs() {
 
   File file(syscfg.datadir, DIRS_DAT);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    std::clog << file.GetName() << "%s NOT FOUND.\r\n";
+    std::clog << file.GetName() << " NOT FOUND.\r\n";
     return false;
   }
   session()->num_dirs = file.Read(directories,
