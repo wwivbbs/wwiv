@@ -38,9 +38,9 @@ TEST_F(ParseBinkConfigLineTest, NoPort) {
   string line = "@1234 myhost -";
   ASSERT_TRUE(ParseBinkConfigLine(line, &node, &config));
   EXPECT_EQ(1234, node);
-  EXPECT_STREQ("myhost", config.host.c_str());
+  EXPECT_EQ("myhost", config.host);
   EXPECT_EQ(24554, config.port);
-  EXPECT_STREQ("-", config.password.c_str());
+  EXPECT_EQ("-", config.password);
 }
 
 TEST_F(ParseBinkConfigLineTest, Port) {
@@ -50,9 +50,9 @@ TEST_F(ParseBinkConfigLineTest, Port) {
   string line = "@1234 myhost:2345 -";
   ASSERT_TRUE(ParseBinkConfigLine(line, &node, &config));
   EXPECT_EQ(1234, node);
-  EXPECT_STREQ("myhost", config.host.c_str());
+  EXPECT_EQ("myhost", config.host);
   EXPECT_EQ(2345, config.port);
-  EXPECT_STREQ("-", config.password.c_str());
+  EXPECT_EQ("-", config.password);
 }
 
 TEST_F(ParseBinkConfigLineTest, InvalidLine) {
@@ -68,7 +68,7 @@ TEST_F(BinkConfigTest, IniFile) {
   BinkConfig config(ini_filename_, node_filename);
 
   EXPECT_EQ(1, config.node_number());
-  EXPECT_STREQ("Test BBS", config.system_name().c_str());
+  EXPECT_EQ("Test BBS", config.system_name());
 }
 
 TEST_F(BinkConfigTest, NodeConfig) {
@@ -76,14 +76,14 @@ TEST_F(BinkConfigTest, NodeConfig) {
   BinkConfig config(ini_filename_, node_filename);
 
   const BinkNodeConfig* one = config.node_config_for(1);
-  ASSERT_STREQ("example.com", one->host.c_str());
+  ASSERT_EQ("example.com", one->host);
   EXPECT_EQ(24554, one->port);
-  EXPECT_STREQ("-", one->password.c_str());
+  EXPECT_EQ("-", one->password);
 
   const BinkNodeConfig* two = config.node_config_for(2);
-  ASSERT_STREQ("foo.com", two->host.c_str());
+  ASSERT_EQ("foo.com", two->host);
   EXPECT_EQ(1234, two->port);
-  EXPECT_STREQ("welcome", two->password.c_str());
+  EXPECT_EQ("welcome", two->password);
 }
 
 TEST_F(BinkConfigTest, BadNodeConfigFile) {
