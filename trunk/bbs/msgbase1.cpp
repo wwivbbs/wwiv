@@ -160,7 +160,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
 
 void post() {
   if (!iscan(session()->GetCurrentMessageArea())) {
-    bout << "\r\n|12A file required is in use by another instance. Try again later.\r\n";
+    bout << "\r\n|#6A file required is in use by another instance. Try again later.\r\n";
     return;
   }
   if (session()->GetCurrentReadMessageArea() < 0) {
@@ -521,7 +521,7 @@ void delmail(File *pFile, int loc) {
 
 void remove_post() {
   if (!iscan(session()->GetCurrentMessageArea())) {
-    bout << "\r\n|12A file required is in use by another instance. Try again later.\r\n\n";
+    bout << "\r\n|#6A file required is in use by another instance. Try again later.\r\n\n";
     return;
   }
   if (session()->GetCurrentReadMessageArea() < 0) {

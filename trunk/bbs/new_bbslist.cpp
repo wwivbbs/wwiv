@@ -272,13 +272,13 @@ static void DeleteBbsListEntry() {
   LoadFromJSON(syscfg.datadir, BBSLIST_JSON, &entries);
 
   if (entries.empty()) {
-    bout << "|12You can not delete an entry when the list is empty." << wwiv::endl;
+    bout << "|#6You can not delete an entry when the list is empty." << wwiv::endl;
     pausescr();
     return;
   }
 
   ReadBBSList(entries);
-  bout << "|03Enter Entry Number to Delete: ";
+  bout << "|#9(#2Q|#9=#1Quit|#9) Enter Entry Number to Delete: ";
   string s;
   input(&s, 4, true);
   int entry_num = atoi(s.c_str());

@@ -390,16 +390,16 @@ void ConfigUserMenuSet() {
   nSecondUserRecLoaded = session()->usernum;
 
   bout.cls();
+  bout.litebar("Configure Menus");
   printfile(MENUWEL_NOEXT);
   bool bDone = false;
   while (!bDone && !hangup) {
-    bout << "   |#1WWIV |#6Menu |#1Editor|#0\r\n\r\n";
-    bout << "|#21|06) |#1Menuset      |06: |15" << pSecondUserRec->szMenuSet << wwiv::endl;
-    bout << "|#22|06) |#1Use hot keys |06: |15" << (pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Yes" : "No ")
+    bout.nl();
+    bout << "|#11|#9) Menuset      :|#2 " << pSecondUserRec->szMenuSet << wwiv::endl;
+    bout << "|#12|#9) Use hot keys :|#2 " << (pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Yes" : "No ")
          << wwiv::endl;
     bout.nl();
-    bout << "|#9[|0212? |08Q|02=Quit|#9] :|#0 ";
-
+    bout << "|#9(|#2Q|#9=|#1Quit|#9) : ";
     char chKey = onek("Q12?");
 
     switch (chKey) {
@@ -409,13 +409,13 @@ void ConfigUserMenuSet() {
     case '1': {
       ListMenuDirs();
       bout.nl(2);
-      bout << "|15Enter the menu set to use : |#0";
+      bout << "|#9Enter the menu set to use : ";
       string menuSetName;
       inputl(&menuSetName, 8);
       if (ValidateMenuSet(menuSetName.c_str())) {
         wwiv::menus::MenuDescriptions descriptions(GetMenuDirectory());
         bout.nl();
-        bout << "|#1Menu Set : |#2" <<  menuSetName.c_str() << "  -  |15" << descriptions.description(menuSetName) << wwiv::endl;
+        bout << "|#9Menu Set : |#2" <<  menuSetName.c_str() << " :  |#1" << descriptions.description(menuSetName) << wwiv::endl;
         bout << "|#5Use this menu set? ";
         if (noyes()) {
           strcpy(pSecondUserRec->szMenuSet, menuSetName.c_str());
@@ -423,7 +423,7 @@ void ConfigUserMenuSet() {
         }
       }
       bout.nl();
-      bout << "|#8That menu set does not exists, resetting to the default menu set" << wwiv::endl;
+      bout << "|#6That menu set does not exists, resetting to the default menu set" << wwiv::endl;
       pausescr();
       if (pSecondUserRec->szMenuSet[0] == '\0') {
         strcpy(pSecondUserRec->szMenuSet, "wwiv");

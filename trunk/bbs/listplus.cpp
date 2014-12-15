@@ -208,10 +208,10 @@ void print_searching(struct search_record * search_rec) {
   }
 
   if (strlen(search_rec->search) > 3) {
-    bout << "|#1Search keywords : |#2" << search_rec->search;
+    bout << "|#9Search keywords : |#2" << search_rec->search;
     bout.nl(2);
   }
-  bout << "|#1<Space> aborts  : ";
+  bout << "|#9<Space> aborts  : ";
   bout.bprintf(" |B1|15%-40.40s|B0|#0",
                                     directories[udir[session()->GetCurrentFileArea()].subnum].name);
 }
@@ -678,7 +678,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
         colorize_foundtext(new_ss, search_rec, color);
       }
       if (indent > -1 && indent != 16) {
-        bout << "  |#1Extended Description:\n\r";
+        bout << "  |#9Extended Description:\n\r";
       }
       char ch = SOFTRETURN;
 
@@ -721,14 +721,14 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 void show_fileinfo(uploadsrec * u) {
   bout.cls();
   repeat_char('\xCD', 78);
-  bout << "  |#1Filename    : |#2" << u->filename << wwiv::endl;
-  bout << "  |#1Uploaded on : |#2" << u->date << " by |#2" << u->upby << wwiv::endl;
+  bout << "  |#9Filename    : |#2" << u->filename << wwiv::endl;
+  bout << "  |#9Uploaded on : |#2" << u->date << " by |#2" << u->upby << wwiv::endl;
   if (u->actualdate[2] == '/' && u->actualdate[5] == '/') {
-    bout << "  |#1Newest file : |#2" << u->actualdate << wwiv::endl;
+    bout << "  |#9Newest file : |#2" << u->actualdate << wwiv::endl;
   }
-  bout << "  |#1Size        : |#2" << bytes_to_k(u->numbytes) << wwiv::endl;
-  bout << "  |#1Downloads   : |#2" << u->numdloads << "|#1" << wwiv::endl;
-  bout << "  |#1Description : |#2" << u->description << wwiv::endl;
+  bout << "  |#9Size        : |#2" << bytes_to_k(u->numbytes) << wwiv::endl;
+  bout << "  |#9Downloads   : |#2" << u->numdloads << "|#9" << wwiv::endl;
+  bout << "  |#9Description : |#2" << u->description << wwiv::endl;
   print_extended_plus(u->filename, 255, 16, YELLOW, nullptr);
   repeat_char('\xCD', 78);
   pausescr();
@@ -950,7 +950,7 @@ void sysop_configure() {
     bout.GotoXY(29, 17);
     bout.bprintf("|#4%s", lp_config.check_exist ? _on_ : _off_);
     bout.GotoXY(1, 19);
-    bout << "|#1Q-Quit ";
+    bout << "|#9Q-Quit ";
     char key = onek("Q\rABCDEFGHIJKLMNOPRS", true);
     switch (key) {
     case 'Q':
@@ -1878,19 +1878,19 @@ LP_SEARCH_HELP:
     }
     bout.GotoXY(1, 15);
 
-    bout << "|#1A)|#2 Filename (wildcards) :|02 " << sr->filemask << wwiv::endl;
-    bout << "|#1B)|#2 Text (no wildcards)  :|02 " << sr->search << wwiv::endl;
+    bout << "|#9A)|#2 Filename (wildcards) :|#2 " << sr->filemask << wwiv::endl;
+    bout << "|#9B)|#2 Text (no wildcards)  :|#2 " << sr->search << wwiv::endl;
     if (okconf(session()->user())) {
       sprintf(s1, "%s", stripcolors(directories[udir[session()->GetCurrentFileArea()].subnum].name));
     } else {
       sprintf(s1, "%s", stripcolors(directories[udir[session()->GetCurrentFileArea()].subnum].name));
     }
-    bout << "|#1C)|#2 Which Directories    :|02 " << (sr->alldirs == THIS_DIR ? s1 : sr->alldirs == ALL_DIRS ?
+    bout << "|#9C)|#2 Which Directories    :|#2 " << (sr->alldirs == THIS_DIR ? s1 : sr->alldirs == ALL_DIRS ?
                        "All dirs" : "Dirs in NSCAN") << wwiv::endl;
     sprintf(s1, "%s", stripcolors(reinterpret_cast<char*>
                                   (dirconfs[uconfdir[session()->GetCurrentConferenceFileArea()].confnum].name)));
-    bout << "|#1D)|#2 Which Conferences    :|02 " << (all_conf ? "All Conferences" : s1) << wwiv::endl;
-    bout << "|#1E)|#2 Extended Description :|02 " << (sr->search_extended ? "Yes" : "No ") << wwiv::endl;
+    bout << "|#9D)|#2 Which Conferences    :|#2 " << (all_conf ? "All Conferences" : s1) << wwiv::endl;
+    bout << "|#9E)|#2 Extended Description :|#2 " << (sr->search_extended ? "Yes" : "No ") << wwiv::endl;
     bout.nl();
     bout << "|15Select item to change |#2<CR>|15 to start search |#2Q=Quit|15:|#0 ";
 
