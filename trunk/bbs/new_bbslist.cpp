@@ -328,7 +328,7 @@ static bool IsBBSPhoneNumberUnique(
 }
 
 static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
-  bout << "\r\nDoes this BBS have a POTS line? (y/N) : ";
+  bout << "\r\nDoes this BBS have a modem line? (y/N) : ";
   string phone_number;
   bool has_pots = noyes();
   if (has_pots) {
