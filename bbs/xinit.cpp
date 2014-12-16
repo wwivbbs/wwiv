@@ -1159,15 +1159,10 @@ void WApplication::InitializeBBS() {
   XINIT_PRINTF("* Reading User Information.\r\n");
   session()->ReadCurrentUser(1, false);
   fwaiting = (session()->user()->IsUserDeleted()) ? 0 : session()->user()->GetNumMailWaiting();
-
   statusMgr->RefreshStatusCache();
+  session()->topdata = (syscfg.sysconfig & sysconfig_no_local) ? WLocalIO::topdataNone : WLocalIO::topdataUser;
 
-  if (syscfg.sysconfig & sysconfig_no_local) {
-    session()->topdata = WLocalIO::topdataNone;
-  } else {
-    session()->topdata = WLocalIO::topdataUser;
-  }
-  snprintf(g_szDSZLogFileName, sizeof(g_szDSZLogFileName), "%sWWIVDSZ.%3.3u", GetHomeDir().c_str(), GetInstanceNumber());
+  snprintf(g_szDSZLogFileName, sizeof(g_szDSZLogFileName), "%sdsz.log", syscfgovr.tempdir);
   char *ss = getenv("PROMPT");
 #if !defined ( __unix__ ) && !defined ( __APPLE__ )
   newprompt = "PROMPT=WWIV: ";
