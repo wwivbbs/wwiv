@@ -800,7 +800,7 @@ int WApplication::Run(int argc, char *argv[]) {
         num_min = std::stoi(argument);
         break;
       case 'U':
-        this_usernum = StringToUnsignedShort(argument.c_str());
+        this_usernum = StringToUnsignedShort(argument);
         if (!m_bUserAlreadyOn) {
           session()->SetCurrentSpeed("KB");
         }
@@ -849,7 +849,7 @@ int WApplication::Run(int argc, char *argv[]) {
           i++;
           bout << "\r\n|#7\xFE |#5Packing specified subs: \r\n";
           while (i < argc) {
-            int nSubNumToPack = atoi(argv[ i ]);
+            int nSubNumToPack = atoi(argv[i]);
             pack_sub(nSubNumToPack);
             sysoplogf("* Packed Message Area %d", nSubNumToPack);
             i++;
@@ -1052,7 +1052,7 @@ int WApplication::Run(int argc, char *argv[]) {
 void WApplication::ShowUsage() {
   std::cout << "WWIV Bulletin Board System [" << wwiv_version << " - " << beta_version << "]\r\n\n" <<
             "Usage:\r\n\n" <<
-            "WWIV50 -I<inst> [options] \r\n\n" <<
+            "bbs -I<inst> [options] \r\n\n" <<
             "Options:\r\n\n" <<
             "  -?         - Display command line options (This screen)\r\n\n" <<
             "  -A<level>  - Specify the Error Exit Level\r\n" <<
@@ -1076,7 +1076,6 @@ void WApplication::ShowUsage() {
 #if defined (_WIN32)
             "  -XT        - Someone already logged on via telnet (socket handle)\r\n" <<
 #endif // _WIN32
-            "  -XC        - Someone already logged on via modem (comm handle)\r\n" <<
             "  -Z         - Do not hang up on user when at log off\r\n" <<
             std::endl;
 }
