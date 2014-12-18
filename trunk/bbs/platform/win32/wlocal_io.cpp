@@ -47,6 +47,11 @@ using std::vector;
 using wwiv::strings::StringPrintf;
 using wwiv::os::sound;
 
+#define PREV                1
+#define NEXT                2
+#define DONE                4
+#define ABORTED             8
+
 /*
  * Sets screen attribute at screen pos x,y to attribute contained in a.
  */

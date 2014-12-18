@@ -852,11 +852,6 @@ enum xfertype {
 #define g_flag_disable_mci          0x00000040
 #define g_flag_ansi_movement        0x00000080
 
-#define PREV                1
-#define NEXT                2
-#define DONE                4
-#define ABORTED             8
-
 #define NUM_ONLY            1
 #define UPPER_ONLY          2
 #define ALL                 4

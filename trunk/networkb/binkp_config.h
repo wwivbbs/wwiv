@@ -10,6 +10,7 @@
 #include <string>
 
 #include "core/inifile.h"
+#include "sdk/networks.h"
 
 namespace wwiv {
 namespace net {
@@ -22,7 +23,7 @@ struct BinkNodeConfig {
 
 class BinkConfig {
  public:
-  BinkConfig(const std::string& ini_filename, const std::string& node_config_file);
+  BinkConfig(const std::string& network_name, const wwiv::sdk::Config& config, const wwiv::sdk::Networks& networks);
   BinkConfig(int node_number, const std::string& system_name, int node_to_call);
   virtual ~BinkConfig();
   const BinkNodeConfig* node_config_for(int node) const;

@@ -52,6 +52,8 @@ Networks::Networks(const Config& config) {
   if (num_read != num * sizeof(net_networks_rec)) {
     std::clog << "failed to read the expected number of bytes: " << num * sizeof(net_networks_rec) << std::endl;
   }
+
+  initialized_ = true;
 }
 
 const net_networks_rec& Networks::at(const std::string& name) const {
