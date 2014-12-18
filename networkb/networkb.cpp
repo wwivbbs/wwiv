@@ -73,42 +73,42 @@ static map<string, string> ParseArgs(int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
-  map<string, string> args = ParseArgs(argc, argv);
-
-  for (auto arg : args) {
-    clog << "k: " << arg.first << "; v: " << arg.second << endl;
-  }
-
-  string network_name;
-  string node_config_filename;
-
-  network_name = args.at("network");
-  if (network_name.empty()) {
-    clog << "--network=[network name] must be specified." << endl;
-    return 1;
-  }
-  
-  string bbsdir = File::current_directory();
-  if (contains(args, "bbsdir")) {
-    bbsdir = args["bbsdir"];
-  }
-  Config config(bbsdir);
-  if (!config.IsInitialized()) {
-    clog << "Unable to load config.dat." << endl;
-    return 1;
-  }
-  Networks networks(config);
-  if (!networks.IsInitialized()) {
-    clog << "Unable to load networks." << endl;
-    return 1;
-  }
-
-  int expected_remote_node = 0;
-  if (contains(args, "node")) {
-    expected_remote_node = std::stoi(args["node"]);
-  }
   try {
-    BinkConfig config(network_name, config, networks);
+    map<string, string> args = ParseArgs(argc, argv);
+
+    for (auto arg : args) {
+      clog << "arg: --" << arg.first << "=" << arg.second << endl;
+    }
+
+    string node_config_filename;
+
+    string network_name = args.at("network");
+    if (network_name.empty()) {
+      clog << "--network=[network name] must be specified." << endl;
+      return 1;
+    }
+  
+    string bbsdir = File::current_directory();
+    if (contains(args, "bbsdir")) {
+      bbsdir = args["bbsdir"];
+    }
+    Config config(bbsdir);
+    if (!config.IsInitialized()) {
+      clog << "Unable to load config.dat." << endl;
+      return 1;
+    }
+    Networks networks(config);
+    if (!networks.IsInitialized()) {
+      clog << "Unable to load networks." << endl;
+      return 1;
+    }
+
+    int expected_remote_node = 0;
+    if (contains(args, "node")) {
+      expected_remote_node = std::stoi(args["node"]);
+    }
+
+    BinkConfig bink_config(network_name, config, networks);
     unique_ptr<SocketConnection> c;
     BinkSide side = BinkSide::ORIGINATING;
     if (contains(args, "receive")) {
@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
       c = Accept(24554);
     } else if (contains(args, "send")) {
       clog << "BinkP send to: " << expected_remote_node << endl;
-      const BinkNodeConfig* node_config = config.node_config_for(expected_remote_node);
+      const BinkNodeConfig* node_config = bink_config.node_config_for(expected_remote_node);
       if (node_config == nullptr) {
         clog << "Unable to find node condfig for node: " << expected_remote_node << endl;
         return 2;
@@ -128,10 +128,10 @@ int main(int argc, char** argv) {
       return 1;
     }
     BinkP::received_transfer_file_factory_t factory = [&](const string& filename) { 
-      File* f = new File(config.network_dir(), filename);
+      File* f = new File(bink_config.network_dir(), filename);
       return new WFileTransferFile(filename, unique_ptr<File>(f)); 
     };
-    BinkP binkp(c.get(), &config, side, expected_remote_node, factory);
+    BinkP binkp(c.get(), &bink_config, side, expected_remote_node, factory);
     binkp.Run();
   } catch (const socket_error& e) {
     clog << e.what() << std::endl;
