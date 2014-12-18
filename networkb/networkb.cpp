@@ -4,10 +4,10 @@
 // example usage:
 //
 // Originating:
-// G:\tmp>\Debug\networkb.exe --send --config=G:\tmp\n.ini --node=1
+// G:\tmp>\Debug\networkb.exe --send --network=wwivnet --node=[node number to call]
 //
 // Answering Side:
-// \Debug\networkb.exe --receive --config=G:\tmp1\n.ini
+// \Debug\networkb.exe --receive --network=wwivnet
 //
 // \tmp\n.ini:
 // [NETWORK]
@@ -33,6 +33,9 @@
 #include "networkb/socket_exceptions.h"
 #include "networkb/wfile_transfer_file.h"
 
+#include "sdk/config.h"
+#include "sdk/networks.h"
+
 #include <fcntl.h>
 #include <iostream>
 #include <map>
@@ -53,8 +56,8 @@ using std::vector;
 
 using namespace wwiv::net;
 using wwiv::stl::contains;
-using wwiv::strings::starts_with;
-using wwiv::strings::SplitString;
+using namespace wwiv::strings;
+using namespace wwiv::sdk;
 
 static map<string, string> ParseArgs(int argc, char** argv) {
   map<string, string> args;
@@ -76,34 +79,28 @@ int main(int argc, char** argv) {
     clog << "k: " << arg.first << "; v: " << arg.second << endl;
   }
 
-  string config_filename;
+  string network_name;
   string node_config_filename;
 
-  if (!contains(args, "config")) {
-    clog << "--config=<full path to config file> must be specified" << endl;
+  network_name = args.at("network");
+  if (network_name.empty()) {
+    clog << "--network=[network name] must be specified." << endl;
     return 1;
   }
-
-  config_filename = args["config"];
-  File config_file(config_filename);
-  if (!config_file.Exists()) {
-    clog << "Config file " << config_filename << " does not exist." << endl;
+  
+  string bbsdir = File::current_directory();
+  if (contains(args, "bbsdir")) {
+    bbsdir = args["bbsdir"];
+  }
+  Config config(bbsdir);
+  if (!config.IsInitialized()) {
+    clog << "Unable to load config.dat." << endl;
     return 1;
   }
-
-  if (contains(args, "addresses")) {
-    node_config_filename = args["addresses"];
-    if (!File::Exists(node_config_filename)) {
-      clog << "Node Config file " << node_config_filename << " does not exist." << endl;
-      return 1;
-    }
-  } else {
-    File candidate_node_config(config_file.GetParent(), "addresses.binkp");
-    node_config_filename = candidate_node_config.full_pathname();
-    if (!candidate_node_config.Exists()) {
-      clog << "Node Config file " << node_config_filename << " does not exist." << endl;
-      return 1;
-    }
+  Networks networks(config);
+  if (!networks.IsInitialized()) {
+    clog << "Unable to load networks." << endl;
+    return 1;
   }
 
   int expected_remote_node = 0;
@@ -111,7 +108,7 @@ int main(int argc, char** argv) {
     expected_remote_node = std::stoi(args["node"]);
   }
   try {
-    BinkConfig config(config_filename, node_config_filename);
+    BinkConfig config(network_name, config, networks);
     unique_ptr<SocketConnection> c;
     BinkSide side = BinkSide::ORIGINATING;
     if (contains(args, "receive")) {

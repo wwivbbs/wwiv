@@ -95,6 +95,9 @@
     <ProjectReference Include="..\networkb\networkb_lib.vcxproj">
       <Project>{5bdd74e7-bd9d-42ca-9b2a-397db9cda67c}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\sdk\sdk.vcxproj">
+      <Project>{53db67db-4d42-4a8a-b176-ee83a170de86}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="binkp_config_test.cpp" />

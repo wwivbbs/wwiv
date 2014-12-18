@@ -30,6 +30,11 @@ using std::chrono::milliseconds;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
+#define PREV                1
+#define NEXT                2
+#define DONE                4
+#define ABORTED             8
+
 // Allows local-only editing of some of the user data in a shadowized window.
 void OnlineUserEditor() {
 #if !defined ( __unix__ )

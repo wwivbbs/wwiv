@@ -64,40 +64,13 @@ TEST_F(ParseBinkConfigLineTest, InvalidLine) {
 }
 
 TEST_F(BinkConfigTest, IniFile) {
-  const string node_filename = CreateConfigFile("node", "@1 example.com -\n""@2 foo.com:1234 welcome\n");
-  BinkConfig config(ini_filename_, node_filename);
-
-  EXPECT_EQ(1, config.node_number());
-  EXPECT_EQ("Test BBS", config.system_name());
 }
 
 TEST_F(BinkConfigTest, NodeConfig) {
-  const string node_filename = CreateConfigFile("node", "@1 example.com -\n""@2 foo.com:1234 welcome\n");
-  BinkConfig config(ini_filename_, node_filename);
-
-  const BinkNodeConfig* one = config.node_config_for(1);
-  ASSERT_EQ("example.com", one->host);
-  EXPECT_EQ(24554, one->port);
-  EXPECT_EQ("-", one->password);
-
-  const BinkNodeConfig* two = config.node_config_for(2);
-  ASSERT_EQ("foo.com", two->host);
-  EXPECT_EQ(1234, two->port);
-  EXPECT_EQ("welcome", two->password);
 }
 
 TEST_F(BinkConfigTest, BadNodeConfigFile) {
-  const string node_filename = CreateConfigFile("node", "");
-  try {
-    BinkConfig config(ini_filename_, node_filename + "badfilename");
-    FAIL() << "config_error expected";
-  } catch (config_error expected) {}
 }
 
 TEST_F(BinkConfigTest, BadIniConfigFile) {
-  const string node_filename = CreateConfigFile("node", "");
-  try {
-    BinkConfig config(ini_filename_ + "badfilename", node_filename);
-    FAIL() << "config_error expected";
-  } catch (config_error expected) {}
 }

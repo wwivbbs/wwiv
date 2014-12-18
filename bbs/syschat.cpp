@@ -33,9 +33,12 @@ using namespace wwiv::os;
 using namespace wwiv::strings;
 
 // module private functions
-
 void chatsound(int sf, int ef, int uf, int dly1, int dly2, int rp);
 
+#define PREV                1
+#define NEXT                2
+#define DONE                4
+#define ABORTED             8
 
 //////////////////////////////////////////////////////////////////////////////
 //
