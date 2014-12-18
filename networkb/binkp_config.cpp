@@ -10,6 +10,7 @@
 #include "core/inifile.h"
 #include "core/file.h"
 #include "core/textfile.h"
+#include "sdk/networks.h"
 
 using std::clog;
 using std::endl;
@@ -19,9 +20,8 @@ using std::stringstream;
 using std::unique_ptr;
 using std::vector;
 using wwiv::core::IniFile;
-using wwiv::strings::SplitString;
-using wwiv::strings::StringToUnsignedShort;;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
+using namespace wwiv::sdk;
 
 namespace wwiv {
 namespace net {
@@ -58,30 +58,23 @@ bool ParseBinkConfigLine(const string& line, uint16_t* node, BinkNodeConfig* con
   return true;
 }
 
-BinkConfig::BinkConfig(const string& ini_filename, const string& node_config_filename) {
-
-  ini_file_.reset(new IniFile(ini_filename, "NETWORK"));
-  if (!ini_file_->IsOpen()) {
-    throw config_error(StringPrintf("Unable to open ini file: '%s'", ini_filename.c_str()));
-  }
-
-  TextFile node_config_file(node_config_filename, "rt");
-  if (!node_config_file.IsOpen()) {
-    throw config_error(StringPrintf("Unable to open node config file: '%s'", node_config_filename.c_str()));
-  }
-
-  node_ = ini_file_->GetNumericValue("NODE");
-  if (node_ == 0) {
-    throw config_error(StringPrintf("NODE not specified in INI file: '%s'", ini_filename.c_str()));
-  }
-  system_name_.assign(ini_file_->GetValue("SYSTEM_NAME", ""));
+BinkConfig::BinkConfig(const std::string& network_name, const Config& config, const Networks& networks) : network_name_(network_name) {
+  system_name_ = config.config()->systemname;
   if (system_name_.empty()) {
     system_name_ = "Unnamed WWIV BBS";
   }
 
-  const string current_directory = File::current_directory();
-  network_dir_ = ini_file_->GetValue("NETWORK_DIR", current_directory.c_str());
-  network_name_ = ini_file_->GetValue("NETWORK_NAME", "wwivnet");
+  const net_networks_rec& net = networks[network_name];
+  node_ = net.sysnum;
+  network_dir_ = net.dir;
+  if (node_ == 0) {
+    throw config_error(StringPrintf("NODE not specified for network: '%s'", network_name.c_str()));
+  }
+
+  TextFile node_config_file(network_dir_, "addresses.binkp", "rt");
+  if (!node_config_file.IsOpen()) {
+    throw config_error(StrCat("Unable to open node config file: ", node_config_file.full_pathname()));
+  }
 
   // A line will be of the format @node host:port [password].
   string line;
@@ -90,7 +83,7 @@ BinkConfig::BinkConfig(const string& ini_filename, const string& node_config_fil
     BinkNodeConfig node_config;
     if (ParseBinkConfigLine(line, &node_number, &node_config)) {
       // Parsed a line correctly.
-      node_config_.insert(std::make_pair(node_number, node_config));
+      node_config_.emplace(node_number, node_config);
     }
   }
 }

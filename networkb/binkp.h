@@ -1,6 +1,5 @@
 #ifndef __INCLUDED_NETWORKB_BINKP_H__
 #define __INCLUDED_NETWORKB_BINKP_H__
-#pragma once
 
 #include <chrono>
 #include <cstddef>
