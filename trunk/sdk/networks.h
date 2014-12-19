@@ -19,6 +19,7 @@
 #define __INCLUDED_SDK_NETWORKS_H__
 
 #include <memory>
+#include <string>
 #include <vector>
 #include "sdk/config.h"
 #include "sdk/net.h"

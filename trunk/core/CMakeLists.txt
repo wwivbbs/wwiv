@@ -1,7 +1,7 @@
 # CMake for WWIV 5.0
 cmake_minimum_required (VERSION 2.6)
 project (CORE)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+#set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(..)
 
 set(COMMON_SOURCES
