@@ -4,22 +4,10 @@
 // example usage:
 //
 // Originating:
-// G:\tmp>\Debug\networkb.exe --send --network=wwivnet --node=[node number to call]
+// G:\tmp>\Debug\networkb.exe --send --network=rushnet --node=[node number to call]
 //
 // Answering Side:
-// \Debug\networkb.exe --receive --network=wwivnet
-//
-// \tmp\n.ini:
-// [NETWORK]
-// NODE=2
-// SYSTEM_NAME=My Test System
-// NETWORK_NAME=wwivnet
-// # Normally DIR would be C:\bbs\wwivnet or something like that.
-// NETWORK_DIR=G:\tmp 
-// 
-// \tmp1\n.ini is the same with these differences
-// NODE=1
-// NETWORK_DIR=G:\tmp1 
+// \Debug\networkb.exe --receive --network=rushnet
 //
 // addresses.binkp:
 // @1 localhost:24554 -
