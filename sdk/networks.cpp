@@ -19,6 +19,7 @@
 
 #include <exception>
 #include <stdexcept>
+#include <string>
 
 #include "core/file.h"
 #include "core/strings.h"

@@ -22,5 +22,5 @@ endif()
 
 add_library(networkb_lib ${SOURCES})
 add_executable(networkb ${NETWORKB_MAIN})
-target_link_libraries(networkb networkb_lib core)
+target_link_libraries(networkb networkb_lib core sdk)
 
