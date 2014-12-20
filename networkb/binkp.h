@@ -46,7 +46,7 @@ public:
   BinkP(Connection* conn,
         BinkConfig* config,
 	      BinkSide side, 
-	      int expected_remote_address,
+	      int expected_remote_node,
         received_transfer_file_factory_t& received_transfer_file_factory);
   virtual ~BinkP();
 
@@ -92,7 +92,7 @@ private:
   std::map<std::string, std::unique_ptr<TransferFile>> files_to_send_;
   BinkSide side_;
   const int own_address_;
-  const int expected_remote_address_;
+  const int expected_remote_node_;
   std::string remote_password_;
   bool error_received_;
   received_transfer_file_factory_t received_transfer_file_factory_;

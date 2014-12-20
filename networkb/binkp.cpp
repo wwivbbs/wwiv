@@ -69,9 +69,11 @@ private:
 
 
 BinkP::BinkP(Connection* conn, BinkConfig* config, BinkSide side,
-        int expected_remote_address, received_transfer_file_factory_t& received_transfer_file_factory)
+        int expected_remote_node,
+        received_transfer_file_factory_t& received_transfer_file_factory)
   : conn_(conn), config_(config), side_(side), own_address_(config->node_number()), 
-    expected_remote_address_(expected_remote_address), error_received_(false),
+    expected_remote_node_(expected_remote_node), 
+    error_received_(false),
     received_transfer_file_factory_(received_transfer_file_factory) {}
 
 BinkP::~BinkP() {
@@ -300,8 +302,7 @@ BinkState BinkP::AuthRemote() {
   clog << "STATE: AuthRemote" << endl;
   // Check that the address matches who we thought we called.
   clog << "       remote address_list: " << address_list_ << endl;
-  const string expected_ftn = StringPrintf("20000:20000/%d@wwivnet",
-             expected_remote_address_);
+  const string expected_ftn = StringPrintf("20000:20000/%d@%s", expected_remote_node_,  config_->network_name().c_str());
   if (side_ == BinkSide::ANSWERING) {
     return BinkState::WAIT_PWD;
   }
@@ -322,7 +323,7 @@ BinkState BinkP::TransferFiles() {
   process_frames(seconds(1));
   // HACK
   //SendDummyFile("a.txt", 'a', 40);
-  SendFiles file_sender(config_->network_dir(), expected_remote_address_);
+  SendFiles file_sender(config_->network_dir(), expected_remote_node_);
   const auto list = file_sender.CreateTransferFileList();
   for (auto file : list) {
     SendFilePacket(file);
@@ -483,7 +484,9 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   }
 
   TransferFile* file = iter->second.get();
-  file = nullptr;
+  if (!file->Delete()) {
+    clog << "       *** UNABLE TO DELETE FILE: " << file->filename() << endl; 
+  }
   files_to_send_.erase(iter);
   return true;
 }

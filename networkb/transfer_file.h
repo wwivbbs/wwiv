@@ -23,6 +23,7 @@ public:
   }
 
   virtual int file_size() const = 0;
+  virtual bool Delete() = 0;
   virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) = 0;
   virtual bool WriteChunk(const char* chunk, std::size_t size) = 0;
 
@@ -44,6 +45,7 @@ public:
   virtual const std::string& contents() const final { return contents_; }
 
   virtual int file_size() const override final { return contents_.length(); }
+  virtual bool Delete() { contents_.clear(); return true; }
   virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) override final;
   virtual bool WriteChunk(const char* chunk, std::size_t size) override final;
 
