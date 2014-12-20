@@ -31,10 +31,12 @@ Config::Config(const std::string& root_directory)  : initialized_(false), config
   int file_mode = File::modeReadOnly | File::modeBinary;
   if (!configFile.Open(file_mode)) {
     std::clog << CONFIG_DAT << " NOT FOUND.\r\n";
+    initialized_ = false;
+  } else {
+    configFile.Read(config_.get(), sizeof(configrec));
+    configFile.Close();
+    initialized_ = true;
   }
-  configFile.Read(config_.get(), sizeof(configrec));
-  configFile.Close();
-  initialized_ = true;
 }
 
 void Config::set_config(configrec* config) {
