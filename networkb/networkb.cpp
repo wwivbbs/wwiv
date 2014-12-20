@@ -35,6 +35,7 @@
 #include "core/strings.h"
 #include "core/file.h"
 
+using std::cout;
 using std::clog;
 using std::endl;
 using std::map;
@@ -46,6 +47,17 @@ using namespace wwiv::net;
 using wwiv::stl::contains;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
+
+static void ShowHelp() {
+  cout << "Usage: networkb [flags]" << endl
+       << "Flags:" << endl
+       << "--network  Network name to use (i.e. wwivnet)" << endl
+       << "--bbsdir   (optional) BBS directory if other than current directory " << endl
+       << "--send     Send network traffic to --node" << endl
+       << "--receive  Receive from any node" << endl
+       << "--node     Node number (only used when sending)" << endl
+       << endl;
+}
 
 static map<string, string> ParseArgs(int argc, char** argv) {
   map<string, string> args;
@@ -64,8 +76,12 @@ int main(int argc, char** argv) {
   try {
     map<string, string> args = ParseArgs(argc, argv);
 
-    for (auto arg : args) {
+    for (const auto& arg : args) {
       clog << "arg: --" << arg.first << "=" << arg.second << endl;
+      if (arg.first == "help") {
+        ShowHelp();
+        return 0;
+      }
     }
 
     string node_config_filename;
@@ -73,6 +89,7 @@ int main(int argc, char** argv) {
     string network_name = args.at("network");
     if (network_name.empty()) {
       clog << "--network=[network name] must be specified." << endl;
+      ShowHelp();
       return 1;
     }
   
@@ -83,11 +100,13 @@ int main(int argc, char** argv) {
     Config config(bbsdir);
     if (!config.IsInitialized()) {
       clog << "Unable to load config.dat." << endl;
+      ShowHelp();
       return 1;
     }
     Networks networks(config);
     if (!networks.IsInitialized()) {
       clog << "Unable to load networks." << endl;
+      ShowHelp();
       return 1;
     }
 
