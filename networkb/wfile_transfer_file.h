@@ -22,6 +22,7 @@ public:
   virtual ~WFileTransferFile();
 
   virtual int file_size() const override final;
+  virtual bool Delete() override final;
   virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) override final;
   virtual bool WriteChunk(const char* chunk, std::size_t size) override final;
 

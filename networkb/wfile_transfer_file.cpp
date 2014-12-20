@@ -31,6 +31,10 @@ int WFileTransferFile::file_size() const {
   return file_->GetLength();
 }
 
+bool WFileTransferFile::Delete() {
+  return file_->Delete();
+}
+
 bool WFileTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
   if (!file_->IsOpen()) {
     if (!file_->Open(File::modeBinary | File::modeReadOnly)) {
