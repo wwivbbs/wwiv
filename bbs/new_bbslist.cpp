@@ -360,8 +360,7 @@ static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
   unique_ptr<BbsListEntry> entry(new BbsListEntry());
   if (has_pots) {
     bout << "|#9Enter the Modem Number   : ";
-    string phone_number;
-    Input1(&phone_number, "", 12, true, InputMode::PHONE);
+    string phone_number = Input1("", 12, true, InputMode::PHONE);
     bout.nl();
     if (!IsBBSPhoneNumberValid(phone_number)) {
       bout << "\r\n|#6 Error: Please enter number in correct format.\r\n\n";
@@ -375,9 +374,8 @@ static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
   }
 
   if (has_telnet) {
-    string telnet_address;
     bout << "|#9Enter the Telnet Address : ";
-    Input1(&telnet_address, "", 50, true, InputMode::MIXED);
+    string telnet_address = Input1("", 50, true, InputMode::MIXED);
     bout.nl();
     if (!telnet_address.empty()) {
       entry->addresses.insert(std::make_pair(ConnectionType::TELNET, telnet_address));
@@ -385,16 +383,16 @@ static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
   }
 
   bout << "|#9Enter the BBS Name       : ";
-  Input1(&entry->name, "", 50, true, InputMode::MIXED);
+  entry->name = Input1("", 50, true, InputMode::MIXED);
   bout.nl();
   bout << "|#9Enter BBS Type (ex. WWIV): ";
-  Input1(&entry->software, "WWIV", 12, true, InputMode::UPPER);
+  entry->software = Input1("WWIV", 12, true, InputMode::UPPER);
   bout.nl();
   bout << "|#9Enter the BBS Location   : ";
-  Input1(&entry->location, "", 50, true, InputMode::MIXED);
+  entry->location = Input1("", 50, true, InputMode::MIXED);
   bout.nl();
   bout << "|#9Enter the Sysop Name     : ";
-  Input1(&entry->sysop_name, "", 50, true, InputMode::MIXED);
+  entry->sysop_name = Input1("", 50, true, InputMode::MIXED);
   bout.nl(2);
   bout << "|#5Is this information correct? ";
   if (yesno()) {

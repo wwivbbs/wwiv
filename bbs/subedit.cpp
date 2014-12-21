@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
 
 #include "bbs/input.h"
 #include "bbs/subxtr.h"
@@ -25,6 +26,7 @@
 #include "core/textfile.h"
 #include "core/strings.h"
 
+using std::string;
 using wwiv::bbs::InputMode;
 using namespace wwiv::strings;
 
@@ -532,8 +534,7 @@ static void modify_sub(int n) {
     case 'O': {
       bout.nl();
       bout << "|#2Enter new Description : \r\n|#7:";
-      std::string description;
-      Input1(&description, xsubs[n].desc, 60, true, InputMode::MIXED);
+      string description = Input1(xsubs[n].desc, 60, true, InputMode::MIXED);
       bout.Color(0);
       if (description.length() > 0) {
         strcpy(xsubs[n].desc, description.c_str());
