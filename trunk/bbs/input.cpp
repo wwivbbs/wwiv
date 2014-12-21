@@ -230,6 +230,9 @@ std::string input_password(const string& promptText, int nMaxLength) {
   return entered_password;
 }
 
+// TODO(rushfan): Make this a WWIV ini setting.
+static const uint8_t input_background_char = 32; // Was '\xB1';
+
 //==================================================================
 // Function: Input1
 //
@@ -281,7 +284,7 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
 
   bout.GotoXY(x, y);
   for (int i = 0; i < nMaxLength; i++) {
-    bout << "\xB1";
+    bout << input_background_char;
   }
   bout.GotoXY(x, y);
   if (!origText.empty()) {
@@ -305,7 +308,7 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
         bout.GotoXY(nLength + x, y);
         while (nLength--) {
           bout.GotoXY(nLength + x, y);
-          bputch('\xB1');
+          bputch(input_background_char);
         }
         nLength = pos = szTemp[0] = 0;
       }
@@ -353,7 +356,7 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
       for (int i = pos; i < nLength; i++) {
         bputch(szTemp[i]);
       }
-      bputch('\xB1');
+      bputch(input_background_char);
       break;
     case BACKSPACE:                               // Backspace
       if (pos) {
@@ -368,16 +371,16 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
             for (int i = pos; i < nLength; i++) {
               bputch(szTemp[i]);
             }
-            bout << "\xB1";
+            bout << input_background_char;
           }
         } else {
           bout.GotoXY(pos - 1 + x, y);
-          bout << "\xB1";
+          bout << input_background_char;
           pos = --nLength;
           if (((mode == InputMode::DATE) && ((pos == 2) || (pos == 5))) ||
               ((mode == InputMode::PHONE) && ((pos == 3) || (pos == 7)))) {
             bout.GotoXY(pos - 1 + x, y);
-            bout << "\xB1";
+            bout << input_background_char;
             pos = --nLength;
           }
         }
