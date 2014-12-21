@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <iostream>
+#include <iomanip>
 #include <map>
 #include <memory>
 #include <string>
@@ -57,10 +58,14 @@ using rapidjson::PrettyWriter;
 using rapidjson::StringRef;
 using rapidjson::Value;
 using rapidjson::Writer;
+using std::left;
 using std::map;
+using std::setw;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+
+using wwiv::bbs::InputMode;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -108,7 +113,15 @@ static BbsListEntry* JsonValueToBbsListEntry(const Value& json_entry, int id) {
   BbsListEntry* bbs_entry = new BbsListEntry();
   bbs_entry->id = id;
   bbs_entry->name = json_entry["name"].GetString();
-  bbs_entry->software = json_entry["software"].GetString();
+  if (json_entry.HasMember("software")) {
+    bbs_entry->software = json_entry["software"].GetString();
+  }
+  if (json_entry.HasMember("location")) {
+    bbs_entry->location = json_entry["location"].GetString();
+  }
+  if (json_entry.HasMember("sysop_name")) {
+    bbs_entry->sysop_name = json_entry["sysop_name"].GetString();
+  }
   if (json_entry.HasMember("addresses")) {
     const Value& addresses = json_entry["addresses"];
     ParseAddresses(bbs_entry, addresses);
@@ -153,6 +166,8 @@ static Value BbsListEntryToJsonValue(const BbsListEntry& entry, Document::Alloca
   Value json_entry(rapidjson::kObjectType);
   json_entry.AddMember("name", StringRef(entry.name.c_str()), allocator);
   json_entry.AddMember("software", StringRef(entry.software.c_str()), allocator);
+  json_entry.AddMember("location", StringRef(entry.location.c_str()), allocator);
+  json_entry.AddMember("sysop_name", StringRef(entry.sysop_name.c_str()), allocator);
   if (!entry.addresses.empty()) {
     Value addresses_json_entry(rapidjson::kArrayType);
     for (const auto& a : entry.addresses) {
@@ -246,25 +261,25 @@ static string GetConnectionType(const BbsListEntry* entry, ConnectionType type) 
 
 static void ReadBBSList(const vector<unique_ptr<BbsListEntry>>& entries) {
   int cnt = 0;
+  bout.cls();
+  bout.litebar("%s BBS List", syscfg.systemname);
   for (const auto& entry : entries) {
-    const string s = StringPrintf("%3d: %-60.60s (%s)",
-        entry->id,
-        entry->name.c_str(), entry->software.c_str());
     bout.Color((++cnt % 2) == 0 ? 1 : 9);
-    bout << s << wwiv::endl;
+    bout << left << setw(3) << entry->id << " : " << setw(60) << entry->name << " (" << entry->software << ")" << wwiv::endl;
     if (contains(entry->addresses, ConnectionType::MODEM)) {
       bout.Color((cnt % 2) == 0 ? 1 : 9);
-      bout << "     Modem: " << GetConnectionType(entry.get(), ConnectionType::MODEM) << wwiv::endl;
+      bout << "      Modem : " << GetConnectionType(entry.get(), ConnectionType::MODEM) << wwiv::endl;
     }
     if (contains(entry->addresses, ConnectionType::TELNET)) {
       bout.Color((cnt % 2) == 0 ? 1 : 9);
-      bout << "     Telnet: " << GetConnectionType(entry.get(), ConnectionType::TELNET) << wwiv::endl;
+      bout << "      Telnet: " << GetConnectionType(entry.get(), ConnectionType::TELNET) << wwiv::endl;
     }
     if (contains(entry->addresses, ConnectionType::SSH)) {
       bout.Color((cnt % 2) == 0 ? 1 : 9);
-      bout << "     SSH: " << GetConnectionType(entry.get(), ConnectionType::SSH) << wwiv::endl;
+      bout << "      SSH   : " << GetConnectionType(entry.get(), ConnectionType::SSH) << wwiv::endl;
     }
   }
+  bout.nl();
 }
 
 static void DeleteBbsListEntry() {
@@ -278,7 +293,7 @@ static void DeleteBbsListEntry() {
   }
 
   ReadBBSList(entries);
-  bout << "|#9(#2Q|#9=#1Quit|#9) Enter Entry Number to Delete: ";
+  bout << "|#9(|#2Q|#9=|#1Quit|#9) Enter Entry Number to Delete: ";
   string s;
   input(&s, 4, true);
   int entry_num = atoi(s.c_str());
@@ -328,12 +343,26 @@ static bool IsBBSPhoneNumberUnique(
 }
 
 static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
-  bout << "\r\nDoes this BBS have a modem line? (y/N) : ";
-  string phone_number;
+  bout.nl();
+  bout << "|#9Does this BBS have a modem line? (y/N) : ";
   bool has_pots = noyes();
+  bout << "|#9Is this BBS telnettable? (Y/n)         : ";
+  bool has_telnet = yesno();
+
+  if (!has_telnet && !has_pots) {
+    bout.nl();
+    bout << "|#6Either a modem or telnet connection is required." << wwiv::endl;
+    pausescr();
+    return false;
+  }
+
+    bout.nl();
+  unique_ptr<BbsListEntry> entry(new BbsListEntry());
   if (has_pots) {
-    bout << "\r\nPlease enter phone number:\r\n ###-###-####\r\n:";
-    input(&phone_number, 12, true);
+    bout << "|#9Enter the Modem Number   : ";
+    string phone_number;
+    Input1(&phone_number, "", 12, true, InputMode::PHONE);
+    bout.nl();
     if (!IsBBSPhoneNumberValid(phone_number)) {
       bout << "\r\n|#6 Error: Please enter number in correct format.\r\n\n";
       return false;
@@ -342,31 +371,31 @@ static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
       bout << "|#6Sorry, It's already in the BBS list.\r\n\n\n";
       return false;
     }
+    entry->addresses.insert(std::make_pair(ConnectionType::MODEM, phone_number));
   }
 
-  bout << "\r\nIs this BBS telnettable? (Y/n) : ";
-  string telnet_address;
-  bool has_telnet = yesno();
   if (has_telnet) {
-    bout << "\r\nEnter the telnet address:\r\n:";
-    inputl(&telnet_address, 72, true);
+    string telnet_address;
+    bout << "|#9Enter the Telnet Address : ";
+    Input1(&telnet_address, "", 50, true, InputMode::MIXED);
+    bout.nl();
     if (!telnet_address.empty()) {
+      entry->addresses.insert(std::make_pair(ConnectionType::TELNET, telnet_address));
     }
   }
 
-  bout << "|#7Enter the BBS name and comments about it (incl. V.32/HST) :\r\n:";
-  unique_ptr<BbsListEntry> entry(new BbsListEntry());
-  inputl(&entry->name, 50, true);
-  bout << "\r\n|#7Enter BBS type (ie, |#1WWIV|#7):\r\n:";
-  input(&entry->software, 12, true);
-
-  if (has_pots) {
-    entry->addresses.insert(std::make_pair(ConnectionType::MODEM, phone_number));
-  }
-  if (has_telnet) {
-    entry->addresses.insert(std::make_pair(ConnectionType::TELNET, telnet_address));
-  }
+  bout << "|#9Enter the BBS Name       : ";
+  Input1(&entry->name, "", 50, true, InputMode::MIXED);
   bout.nl();
+  bout << "|#9Enter BBS Type (ex. WWIV): ";
+  Input1(&entry->software, "WWIV", 12, true, InputMode::UPPER);
+  bout.nl();
+  bout << "|#9Enter the BBS Location   : ";
+  Input1(&entry->location, "", 50, true, InputMode::MIXED);
+  bout.nl();
+  bout << "|#9Enter the Sysop Name     : ";
+  Input1(&entry->sysop_name, "", 50, true, InputMode::MIXED);
+  bout.nl(2);
   bout << "|#5Is this information correct? ";
   if (yesno()) {
     entries->emplace_back(entry.release());
@@ -379,8 +408,7 @@ static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
 static char ShowBBSListMenuAndGetChoice() {
   bout.nl();
   if (so()) {
-    bout <<
-                       "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9]: (|#1R|#9)ead, (|#1A|#9)dd, (|#1D|#9)elete, (|#1N|#9)et : ";
+    bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9]: (|#1R|#9)ead, (|#1A|#9)dd, (|#1D|#9)elete, (|#1N|#9)et : ";
     return onek("QRNAD");
   } else {
     bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ";
