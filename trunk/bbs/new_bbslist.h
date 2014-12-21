@@ -33,6 +33,8 @@ struct BbsListEntry {
   int id;
   std::string name;
   std::string software;
+  std::string sysop_name;
+  std::string location;
   std::map<ConnectionType, std::string> addresses;
 };
 
