@@ -468,11 +468,11 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
   return;
 }
 
-void Input1(string* strOutText, const string& origText, int nMaxLength, bool bInsert, InputMode mode) {
+string Input1(const string& origText, int nMaxLength, bool bInsert, InputMode mode) {
   char szTempBuffer[255];
   WWIV_ASSERT(nMaxLength < sizeof(szTempBuffer));
 
   Input1(szTempBuffer, origText, nMaxLength, bInsert, mode);
-  strOutText->assign(szTempBuffer);
+  return string(szTempBuffer);
 }
 

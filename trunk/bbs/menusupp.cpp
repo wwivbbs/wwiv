@@ -458,8 +458,7 @@ void EventEdit() {
 void LoadTextFile() {
   bout.nl();
   bout << "|#9Enter Filename: ";
-  string fileName;
-  Input1(&fileName, "", 50, true, InputMode::FULL_PATH_NAME);
+  string fileName = Input1("", 50, true, InputMode::FULL_PATH_NAME);
   if (!fileName.empty()) {
     bout.nl();
     bout << "|#5Allow editing? ";
