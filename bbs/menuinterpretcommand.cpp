@@ -52,7 +52,7 @@ map<string, std::function<void(MenuInstanceData*, const string&, const string&)>
 bool UseNewBBSList() {
   IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), INI_TAG);
   if (iniFile.IsOpen()) {
-    return iniFile.GetBooleanValue("USE_NEW_BBSLIST");
+    return iniFile.GetBooleanValue("USE_NEW_BBSLIST", true);
   }
   return false;
 }
