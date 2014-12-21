@@ -672,8 +672,7 @@ static void modify_mailbox() {
       bout << "|#5Do you want to forward to your Internet address? ";
       if (yesno()) {
         bout << "|#3Enter the Internet E-Mail Address.\r\n|#9:";
-        string entered_address;
-        Input1(&entered_address, session()->user()->GetEmailAddress(), 75, true, InputMode::MIXED);
+        string entered_address = Input1(session()->user()->GetEmailAddress(), 75, true, InputMode::MIXED);
         if (check_inet_addr(entered_address.c_str())) {
           session()->user()->SetEmailAddress(entered_address.c_str());
           write_inet_addr(entered_address.c_str(), session()->usernum);

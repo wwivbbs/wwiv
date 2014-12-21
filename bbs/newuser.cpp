@@ -64,7 +64,7 @@ static void input_phone() {
   do {
     bout.nl();
     bout << "|#3Enter your VOICE phone no. in the form:\r\n|#3 ###-###-####\r\n|#2:";
-    Input1(&phoneNumber,  session()->user()->GetVoicePhoneNumber(), 12, true, InputMode::PHONE);
+    phoneNumber = Input1(session()->user()->GetVoicePhoneNumber(), 12, true, InputMode::PHONE);
 
     ok = valid_phone(phoneNumber.c_str());
     if (!ok) {
@@ -84,8 +84,7 @@ void input_dataphone() {
     bout << "|#3Enter your DATA phone no. in the form. \r\n";
     bout << "|#3 ###-###-#### - Press Enter to use [" << session()->user()->GetVoicePhoneNumber()
          << "].\r\n";
-    string data_phone_number;
-    Input1(&data_phone_number, session()->user()->GetDataPhoneNumber(), 12, true, InputMode::PHONE);
+    string data_phone_number = Input1(session()->user()->GetDataPhoneNumber(), 12, true, InputMode::PHONE);
     if (data_phone_number[0] == '\0') {
       data_phone_number = session()->user()->GetVoicePhoneNumber();
     }
@@ -203,11 +202,10 @@ void input_name() {
     } else {
       bout << "|#3Enter your full name, or your alias.\r\n";
     }
-    char szTempLocalName[ 255 ];
-    Input1(szTempLocalName, session()->user()->GetName(), 30, true, InputMode::UPPER);
-    ok = check_name(szTempLocalName);
+    string temp_local_name = Input1(session()->user()->GetName(), 30, true, InputMode::UPPER);
+    ok = check_name(temp_local_name);
     if (ok) {
-      session()->user()->SetName(szTempLocalName);
+      session()->user()->SetName(temp_local_name.c_str());
     } else {
       bout.nl();
       bout << "|#6I'm sorry, you can't use that name.\r\n";
@@ -225,15 +223,12 @@ void input_realname() {
     do {
       bout.nl();
       bout << "|#3Enter your FULL real name.\r\n";
-      char szTempLocalName[ 255 ];
-      Input1(szTempLocalName,
-             session()->user()->GetRealName(), 30, true, InputMode::PROPER);
-
-      if (szTempLocalName[0] == '\0') {
+      string temp_local_name = Input1(session()->user()->GetRealName(), 30, true, InputMode::PROPER);
+      if (temp_local_name.empty()) {
         bout.nl();
         bout << "|#6Sorry, you must enter your FULL real name.\r\n";
       } else {
-        session()->user()->SetRealName(szTempLocalName);
+        session()->user()->SetRealName(temp_local_name.c_str());
       }
     } while ((session()->user()->GetRealName()[0] == '\0') && !hangup);
   } else {
@@ -280,7 +275,7 @@ void input_street() {
   do {
     bout.nl();
     bout << "|#3Enter your street address.\r\n";
-    Input1(&street, session()->user()->GetStreet(), 30, true, InputMode::PROPER);
+    street = Input1(session()->user()->GetStreet(), 30, true, InputMode::PROPER);
 
     if (street.empty()) {
       bout.nl();
@@ -293,18 +288,18 @@ void input_street() {
 }
 
 void input_city() {
-  char szCity[ 255 ];
+  string city;
   do {
     bout.nl();
     bout << "|#3Enter your city (i.e San Francisco). \r\n";
-    Input1(szCity, session()->user()->GetCity(), 30, false, InputMode::PROPER);
+    city = Input1(session()->user()->GetCity(), 30, false, InputMode::PROPER);
 
-    if (szCity[0] == '\0') {
+    if (city.empty()) {
       bout.nl();
       bout << "|#6I'm sorry, you must enter your city.\r\n";
     }
-  } while (szCity[0] == '\0' && (!hangup));
-  session()->user()->SetCity(szCity);
+  } while (city.empty() && !hangup);
+  session()->user()->SetCity(city.c_str());
 }
 
 void input_state() {
@@ -542,7 +537,7 @@ void input_pw(WUser *pUser) {
     bout.nl();
     bout << "|#3Please enter a new password, 3-8 chars.\r\n";
     password.clear();
-    Input1(&password, "", 8, false, InputMode::UPPER);
+    password = Input1("", 8, false, InputMode::UPPER);
 
     string realName = session()->user()->GetRealName();
     StringUpperCase(&realName);
@@ -1463,8 +1458,7 @@ void DoMinimalNewUser() {
                        session()->user()->GetState() << wwiv::endl;
     bout << "|#1[G] Internet Mail Address   : ";
     if (session()->user()->GetEmailAddress()[0] == 0) {
-      string emailAddress;
-      Input1(&emailAddress, s1, 44, true, InputMode::MIXED);
+      string emailAddress = Input1(s1, 44, true, InputMode::MIXED);
       session()->user()->SetEmailAddress(emailAddress.c_str());
       if (!check_inet_addr(session()->user()->GetEmailAddress())) {
         cln_nu();
