@@ -1016,9 +1016,8 @@ bool ReadConfigDat( configrec *pData )
 
 int GetWWIVInstanceNum()
 {
-	char * ss = getenv("WWIV_INSTANCE");
-	if ( ss != NULL ) 
-	{
+	char* ss = getenv("WWIV_INSTANCE");
+	if (ss != nullptr) {
 		int instance = atoi(ss);
 		if ( instance <= 0  || instance > 999 ) 
 		{
@@ -1190,7 +1189,7 @@ int main(int argc, char *argv[])
 	}
 
 	log_it( true, "\n\n%s", version );
-    output( "\nLicensed under the Apache License." );
+  output( "\nLicensed under the Apache License." );
 	output( "\n%s\n", version_url );
 	time(&some);
 	time_now = localtime(&some);
@@ -1483,14 +1482,6 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	sprintf(s1, "%s\\NTIME.EXE", maindir);
-	if ((exist(s1)) && (*TIMEHOST)) 
-	{
-		output("\n \xFE Polling time from %s...  ", TIMEHOST);
-		sprintf(s, "%s %s", s1, TIMEHOST);
-		do_spawn(s);
-	}
-
 	sprintf(s1, "%s\\QOTD.EXE", maindir);
 	if ((exist(s1)) && (*QOTDHOST) && (*QOTDFILE)) 
 	{
@@ -1585,7 +1576,7 @@ int main(int argc, char *argv[])
 		set_net_num(nNetNumber);
 	}  
 
-       sprintf(s, "%s\\PPPUTIL.EXE TRIM %lu", maindir);
+  sprintf(s, "%s\\PPPUTIL.EXE TRIM %lu", maindir);
 	do_spawn(s);  
 
 	cd_to(maindir);
