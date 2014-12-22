@@ -290,8 +290,7 @@ static void LeaveBadPasswordFeedback(int ans) {
   if (yesno()) {
     bout.nl();
     bout << "What is your NAME or HANDLE? ";
-    string tempName;
-    input1(&tempName, 31, wwiv::bbs::InputMode::PROPER, true);
+    string tempName = Input1("", 31, true, wwiv::bbs::InputMode::PROPER);
     if (!tempName.empty()) {
       bout.nl();
       session()->usernum = 1;

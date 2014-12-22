@@ -37,8 +37,6 @@ enum class InputMode {
 }  // namespace bbs
 }  // namespace wwiv
 
-void input1(char *pszOutText, int nMaxLength, wwiv::bbs::InputMode lc, bool crend, bool bAutoMpl = false);
-void input1(std::string *strOutText, int nMaxLength, wwiv::bbs::InputMode lc, bool crend, bool bAutoMpl = false);
 void input(char *pszOutText, int nMaxLength, bool bAutoMpl = false);
 void input(std::string *strOutText, int nMaxLength, bool bAutoMpl = false);
 void inputl(char *pszOutText, int nMaxLength, bool bAutoMpl = false);

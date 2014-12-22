@@ -380,7 +380,7 @@ static bool GetMenuDir(string* menuName) {
   while (!hangup) {
     bout.nl();
     bout << "|#9(Enter=Quit, ?=List) \r\n|#9Enter menuset to edit: |#0";
-    input1(menuName, 8, InputMode::FILENAME, true, true);
+    *menuName = Input1("", 8, true, InputMode::FILENAME);
     if (menuName->empty()) {
       return false;
     } else if (menuName->at(0) == '?') {
@@ -512,7 +512,7 @@ bool GetMenuMenu(const string& directoryName, string& menuName) {
   while (!hangup) {
     bout.nl();
     bout << "|#9(Enter=Quit, ?=List) \r\n|#9Enter menu file to edit: |#0";
-    input1(&menuName, 8, InputMode::FILENAME, true, true);
+    menuName = Input1("", 8, true, InputMode::FILENAME);
 
     if (menuName.empty()) {
       return false;
