@@ -94,6 +94,8 @@
     <ClInclude Include="binkp_config.h" />
     <ClInclude Include="binkp_commands.h" />
     <ClInclude Include="connection.h" />
+    <ClInclude Include="config_exceptions.h" />
+    <ClInclude Include="ppp_config.h" />
     <ClInclude Include="socket_connection.h" />
     <ClInclude Include="socket_exceptions.h" />
     <ClInclude Include="transfer_file.h" />
@@ -104,6 +106,7 @@
     <ClCompile Include="binkp_config.cpp" />
     <ClCompile Include="binkp_commands.cpp" />
     <ClCompile Include="connection.cpp" />
+    <ClCompile Include="ppp_config.cpp" />
     <ClCompile Include="socket_connection.cpp" />
     <ClCompile Include="socket_exceptions.cpp" />
     <ClCompile Include="transfer_file.cpp" />
