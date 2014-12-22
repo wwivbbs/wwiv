@@ -79,7 +79,6 @@ void ListAllColors();
 
 // File: bbsutl.cpp
 
-void copy_line(char *pszOutLine, char *pszWholeBuffer, long *plBufferPtr, long lBufferLength);
 bool inli(std::string* outBuffer, std::string* rollOver, std::string::size_type nMaxLen, bool bAddCRLF = true,
           bool bAllowPrevious = false, bool bTwoColorChatMode = false, bool clear_previous_line = false);
 bool inli(char *pszBuffer, char *pszRollover, std::string::size_type nMaxLen, bool bAddCRLF = true,
