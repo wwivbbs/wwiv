@@ -1,6 +1,10 @@
 WWIV Internet Network Support version 5.0 Change Log
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+5.0.?? (Alpha) 2014-12-??
+~~~~~~~~~~~~~~~~~~~~~~~~~
+Removed NTIME
+
 5.0.12 (Alpha) 2014-02-19
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 * Merged in fixed from Mark

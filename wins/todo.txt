@@ -1,30 +1,14 @@
 PPP Project version 5.0 TODO List
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Start using WFile for file IO
-
-* Make safe free call (i.e. check for NULL first)
-
-* make safe fclose call (i.e. check for NULL first)
-
-* Look for other blocks of code to make 'safe' (reduce redundancies in the
-  codebase)
-
-* Make net.ini into an .xml file, using the Apache Project XML parser for
-  C++.
-
-* consolidate NET.INI parsing, and put data into 1 structure instead of
-  scattered global variables.  Use WIniFile for INI file parsing.
-
+* Start using File for file IO.  Use core packages and sdk packages.
+* Use IniFile for NET.INI. Create class that owns the data instead of
+  scattered global variables.  
 * split main method of pop.cpp unto 3 methods (1 main, 1 send, 1 receive)
-
 * reduce number of global variables.
-
 * Improve debug diagnostics
-
+* Fix or remove RASDIAL. (RASDIAL support needs to be tested and built by default.)
 
 Bugs
 ~~~~
 net_data not set error message
-
-RASDIAL support needs to be tested and built by default.
