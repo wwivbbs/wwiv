@@ -131,10 +131,10 @@ map<string, std::function<void(MenuInstanceData*, const string&, const string&)>
       MenuRunDoorNumber(nTemp, true);
     } },
     { "PrintFile", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-      printfile(param1.c_str(), true);
+      printfile(param1, true);
     } },
     { "PrintFileNA", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-      printfile(param1.c_str(), false);
+      printfile(param1, false);
     } },
     { "SetSubNumber", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       SetSubNumber(param1.c_str());
