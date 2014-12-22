@@ -298,9 +298,7 @@ void do_callout(int sn) {
       sprintf(s1, " .%d", session()->GetNetworkNumber());
       strcat(s, s1);
       if (strncmp(csne->phone, "000", 3)) {
-#ifndef _UNUX
         run_exp();
-#endif
         bout << "|#7Calling out to: |#2" << csne->name << " - ";
         if (session()->GetMaxNetworkNumber() > 1) {
           bout << session()->GetNetworkName() << " ";
@@ -329,7 +327,6 @@ void do_callout(int sn) {
         bout.Color(7);
         bout << charstr(80, 205);
         bout << "|#0..." << wwiv::endl;
-        //bout.Color( 0 );    //added - 02/23/14 - dsn
 #ifndef __unix__
         holdphone(true);
         Wait(2.5);
@@ -340,9 +337,7 @@ void do_callout(int sn) {
         last_time_c = static_cast<int>(tCurrentTime);
         global_xx = false;
         cleanup_net();
-#ifndef _UNUX
         run_exp();
-#endif
         send_inst_cleannet();
       }
     }
@@ -1380,57 +1375,59 @@ void force_callout(int dw) {
       }
     }
     if (ok) {
+      std::clog << session()->GetNetworkNumber() << std::endl;
+      std::clog << net_networks[session()->GetNetworkNumber()].ncn[ss2[nitu]].bytes_waiting << std::endl;
       if (net_networks[session()->GetNetworkNumber()].ncn[ss2[nitu]].bytes_waiting == 0L) {
         if (!(net_networks[session()->GetNetworkNumber()].con[ss1[nitu]].options & options_sendback)) {
           ok = false;
         }
-        if (ok) {
-          if (dw) {
-            bout.nl();
-            bout << "|#2Num Retries : ";
-            input(s, 5, true);
-            nr = atoi(s);
+      }
+      if (ok) {
+        if (dw) {
+          bout.nl();
+          bout << "|#2Num Retries : ";
+          input(s, 5, true);
+          nr = atoi(s);
+        }
+        if (dw == 2) {
+          if (session()->IsUserOnline()) {
+            session()->WriteCurrentUser();
+            write_qscn(session()->usernum, qsc, false);
+            session()->SetUserOnline(false);
           }
-          if (dw == 2) {
-            if (session()->IsUserOnline()) {
-              session()->WriteCurrentUser();
-              write_qscn(session()->usernum, qsc, false);
-              session()->SetUserOnline(false);
-            }
-            hang_it_up();
-            Wait(5);
-          }
-          if (!dw || nr < 1) {
-            nr = 1;
-          }
+          hang_it_up();
+          Wait(5);
+        }
+        if (!dw || nr < 1) {
+          nr = 1;
+        }
 
+        read_contacts();
+        lc = net_networks[session()->GetNetworkNumber()].ncn[ss2[nitu]].lastcontact;
+        while ((tc < nr) && (!abort)) {
+          if (session()->localIO()->LocalKeyPressed()) {
+            while (session()->localIO()->LocalKeyPressed()) {
+              ch = wwiv::UpperCase<char>(session()->localIO()->LocalGetChar());
+              if (!abort) {
+                abort = (ch == ESC) ? true : false;
+              }
+            }
+          }
+          tc++;
+          set_net_num(ss[nitu]);
           read_contacts();
-          lc = net_networks[session()->GetNetworkNumber()].ncn[ss2[nitu]].lastcontact;
-          while ((tc < nr) && (!abort)) {
-            if (session()->localIO()->LocalKeyPressed()) {
-              while (session()->localIO()->LocalKeyPressed()) {
-                ch = wwiv::UpperCase<char>(session()->localIO()->LocalGetChar());
-                if (!abort) {
-                  abort = (ch == ESC) ? true : false;
-                }
-              }
+          cc = net_networks[session()->GetNetworkNumber()].ncn[ss2[nitu]].lastcontact;
+          if (abort || cc != lc) {
+            break;
+          } else {
+            session()->localIO()->LocalCls();
+            bout << "|#9Retries |#0= |#2" << nr << "|#9, Current |#0= |#2" << tc << "|#9, Remaining |#0= |#2" << nr -
+                                tc << "|#9. ESC to abort.\r\n";
+            if (nr == tc) {
+              free(ss);
+              ss = nullptr;
             }
-            tc++;
-            set_net_num(ss[nitu]);
-            read_contacts();
-            cc = net_networks[session()->GetNetworkNumber()].ncn[ss2[nitu]].lastcontact;
-            if (abort || cc != lc) {
-              break;
-            } else {
-              session()->localIO()->LocalCls();
-              bout << "|#9Retries |#0= |#2" << nr << "|#9, Current |#0= |#2" << tc << "|#9, Remaining |#0= |#2" << nr -
-                                 tc << "|#9. ESC to abort.\r\n";
-              if (nr == tc) {
-                free(ss);
-                ss = nullptr;
-              }
-              do_callout(sn);
-            }
+            do_callout(sn);
           }
         }
       }
