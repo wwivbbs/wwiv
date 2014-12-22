@@ -451,6 +451,11 @@ string properize(const string& text) {
 
 #ifdef _WIN32
 char *strcasestr(const char *haystack, const char *needle) {
+  if (strlen(needle) == 0) {
+    // unlike strstr() and wcsstr() passing an emtpy string results in NULL being returned.
+    // See http://msdn.microsoft.com/en-us/library/windows/desktop/bb773439%28v=vs.85%29.aspx
+    return const_cast<char*>(haystack);
+  }
   return StrStrI(haystack, needle);
 }
 #else
