@@ -860,7 +860,7 @@ void download() {
         bout.Color(1);
         bool onl = newline;
         newline = false;
-        input1(s, 12, wwiv::bbs::InputMode::UPPER, false);
+        input(s, 12);
         newline = onl;
         if ((s[0]) && (s[0] != ' ')) {
           if (strchr(s, '.') == nullptr) {

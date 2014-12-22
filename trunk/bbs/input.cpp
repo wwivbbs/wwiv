@@ -49,7 +49,7 @@ static const unsigned char *valid_letters =
  * @param crend output the CR/LF if one is entered.
  * @param bAutoMpl Call bout.mpl(nMaxLength) automatically.
  */
-void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAutoMpl) {
+static void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAutoMpl) {
   if (bAutoMpl) {
     bout.mpl(nMaxLength);
   }
@@ -190,13 +190,6 @@ void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAu
   }
 }
 
-void input1(string* strOutText, int nMaxLength, InputMode lc, bool crend, bool bAutoMpl) {
-  char szTempBuffer[ 255 ];
-  WWIV_ASSERT(nMaxLength < sizeof(szTempBuffer));
-  input1(szTempBuffer, nMaxLength, lc, crend, bAutoMpl);
-  strOutText->assign(szTempBuffer);
-}
-
 // This will input an upper-case string
 void input(char *pszOutText, int nMaxLength, bool bAutoMpl) {
   input1(pszOutText, nMaxLength, InputMode::UPPER, true, bAutoMpl);
@@ -225,9 +218,12 @@ void inputl(string* strOutText, int nMaxLength, bool bAutoMpl) {
 std::string input_password(const string& promptText, int nMaxLength) {
   bout << promptText;
   local_echo = false;
-  string entered_password;
-  input1(&entered_password, nMaxLength, InputMode::UPPER, true);
-  return entered_password;
+
+  char szEnteredPassword[255];
+  WWIV_ASSERT(nMaxLength < sizeof(szEnteredPassword));
+
+  input1(szEnteredPassword, nMaxLength, InputMode::UPPER, true, false);
+  return string(szEnteredPassword);
 }
 
 // TODO(rushfan): Make this a WWIV ini setting.
@@ -259,7 +255,7 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
 #endif // __unix__
 
   if (!okansi()) {
-    input1(szTemp, nMaxLength, mode, true);
+    input1(szTemp, nMaxLength, mode, true, false);
     strcpy(pszOutText, szTemp);
     return;
   }
