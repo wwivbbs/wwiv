@@ -14,7 +14,7 @@
  * limitations under the License.
  */ 
 #include "pppproj.h"
-#include "network.h"
+#include "networkp.h"
 
 void set_net_num(int nNetNumber)
 {
