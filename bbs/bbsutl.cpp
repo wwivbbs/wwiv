@@ -34,39 +34,6 @@ char  str_pause[81],
       str_quit[81];
 
 
-/**
- * Copies the next line located at pszWholeBuffer[ plBufferPtr ] to pszOutLine
- *
- * @param @pszOutLine The output buffer
- * @param pszWholeBuffer The original text buffer
- * @param plBufferPtr The offset into pszWholeBuffer
- * @param lBufferLength The length of pszWholeBuffer
- */
-void copy_line(char *pszOutLine, char *pszWholeBuffer, long *plBufferPtr, long lBufferLength) {
-  WWIV_ASSERT(pszOutLine);
-  WWIV_ASSERT(pszWholeBuffer);
-  WWIV_ASSERT(plBufferPtr);
-
-  if (*plBufferPtr >= lBufferLength) {
-    pszOutLine[0] = '\0';
-    return;
-  }
-  long lCurrentPtr = *plBufferPtr;
-  int nLinePtr = 0;
-  while ((pszWholeBuffer[lCurrentPtr] != '\r') && (pszWholeBuffer[lCurrentPtr] != '\n')
-         && (lCurrentPtr < lBufferLength)) {
-    pszOutLine[nLinePtr++] = pszWholeBuffer[lCurrentPtr++];
-  }
-  pszOutLine[nLinePtr] = '\0';
-  if ((pszWholeBuffer[lCurrentPtr] == '\r') && (lCurrentPtr < lBufferLength)) {
-    ++lCurrentPtr;
-  }
-  if ((pszWholeBuffer[lCurrentPtr] == '\n') && (lCurrentPtr < lBufferLength)) {
-    ++lCurrentPtr;
-  }
-  *plBufferPtr = lCurrentPtr;
-}
-
 bool inli(string* outBuffer, string* rollOver, string::size_type nMaxLen, bool bAddCRLF,
           bool bAllowPrevious, bool bTwoColorChatMode, bool clear_previous_line) {
   char szBuffer[4096] = {0}, szRollover[4096] = {0};

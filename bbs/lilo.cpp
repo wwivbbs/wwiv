@@ -39,6 +39,7 @@
 #include "core/wwivassert.h"
 
 using std::string;
+using std::unique_ptr;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 using wwiv::os::random_number;
@@ -474,8 +475,7 @@ static void PrintUserSpecificFiles() {
   const int short_size = std::numeric_limits<uint16_t>::digits - 1;
   for (int i=0; i < short_size; i++) {
     if (user->HasArFlag(1 << i)) {
-      const string ar_fn = StringPrintf("ar%c", static_cast<char>('A' + i));
-      printfile(ar_fn);
+      printfile(StringPrintf("ar%c", static_cast<char>('A' + i)));
     }
   }
 
@@ -486,44 +486,67 @@ static void PrintUserSpecificFiles() {
   }
 }
 
+/**
+ * Copies the next line located at pszWholeBuffer[plBufferPtr] to pszOutLine
+ *
+ * @param @pszOutLine The output buffer
+ * @param pszWholeBuffer The original text buffer
+ * @param plBufferPtr The offset into pszWholeBuffer
+ * @param lBufferLength The length of pszWholeBuffer
+ */
+static string copy_line(char *pszWholeBuffer, long *plBufferPtr, long lBufferLength) {
+  WWIV_ASSERT(pszWholeBuffer);
+  WWIV_ASSERT(plBufferPtr);
+  string result;
+
+  if (*plBufferPtr >= lBufferLength) {
+    return result;
+  }
+  long lCurrentPtr = *plBufferPtr;
+  int nLinePtr = 0;
+  while ((pszWholeBuffer[lCurrentPtr] != '\r') && (pszWholeBuffer[lCurrentPtr] != '\n')
+         && (lCurrentPtr < lBufferLength)) {
+    result.push_back(pszWholeBuffer[lCurrentPtr++]);
+  }
+  if ((pszWholeBuffer[lCurrentPtr] == '\r') && (lCurrentPtr < lBufferLength)) {
+    ++lCurrentPtr;
+  }
+  if ((pszWholeBuffer[lCurrentPtr] == '\n') && (lCurrentPtr < lBufferLength)) {
+    ++lCurrentPtr;
+  }
+  *plBufferPtr = lCurrentPtr;
+  return result;
+}
+
 static void UpdateLastOnFileAndUserLog() {
-  char s1[181], szLastOnTxtFileName[ MAX_PATH ], szLogLine[ 255 ];
+  unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+  const string laston_txt_filename = StrCat(syscfg.gfilesdir, LASTON_TXT);
   long len;
-
-  std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
-
-  sprintf(szLogLine, "%ld: %s %s %s   %s - %d (%u)",
-          pStatus->GetCallerNumber(),
-          session()->user()->GetUserNameAndNumber(session()->usernum),
-          times(),
-          fulldate(),
-          session()->GetCurrentSpeed().c_str(),
-          session()->user()->GetTimesOnToday(),
-          application()->GetInstanceNumber());
-  sprintf(szLastOnTxtFileName, "%s%s", syscfg.gfilesdir, LASTON_TXT);
-  char *ss = get_file(szLastOnTxtFileName, &len);
+  unique_ptr<char[]> ss(get_file(laston_txt_filename, &len));
   long pos = 0;
-  if (ss != nullptr) {
+  if (ss) {
     if (!cs()) {
       for (int i = 0; i < 4; i++) {
-        copy_line(s1, ss, &pos, len);
+        copy_line(ss.get(), &pos, len);
       }
     }
-    int i = 1;
+    bool needs_header = true;
     do {
-      copy_line(s1, ss, &pos, len);
-      if (s1[0]) {
-        if (i) {
-          bout << "\r\n\n|#1Last few callers|#7: |#0\r\n\n";
+      const string s1 = copy_line(ss.get(), &pos, len);
+      if (!s1.empty()) {
+        if (needs_header) {
+          bout.nl(2);
+          bout << "|#1Last few callers|#7: |#0";
+          bout.nl(2);
           if (application()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
               (syscfg.sysconfig & sysconfig_extended_info)) {
-            bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
+            bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##" << wwiv::endl;
           } else {
-            bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
+            bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##" << wwiv::endl;
           }
           unsigned char chLine = (okansi()) ? 205 : '=';
           bout << "|#7" << charstr(79, chLine) << wwiv::endl;
-          i = 0;
+          needs_header = false;
         }
         bout << s1;
         bout.nl();
@@ -534,8 +557,17 @@ static void UpdateLastOnFileAndUserLog() {
   }
 
   if (session()->GetEffectiveSl() != 255 || incom) {
-    sysoplog("", false);
-    sysoplog(stripcolors(szLogLine), false);
+  const string log_line = StringPrintf("%ld: %s %s %s   %s - %d (%u)",
+          pStatus->GetCallerNumber(),
+          session()->user()->GetUserNameAndNumber(session()->usernum),
+          times(),
+          fulldate(),
+          session()->GetCurrentSpeed().c_str(),
+          session()->user()->GetTimesOnToday(),
+          application()->GetInstanceNumber());
+
+  sysoplog("", false);
+    sysoplog(stripcolors(log_line), false);
     sysoplog("", false);
     string remoteAddress = session()->remoteIO()->GetRemoteAddress();
     string remoteName = session()->remoteIO()->GetRemoteName();
@@ -547,54 +579,53 @@ static void UpdateLastOnFileAndUserLog() {
     }
     if (application()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
         (syscfg.sysconfig & sysconfig_extended_info)) {
-      sprintf(szLogLine, "|#1%-6ld %-25.25s %-5.5s %-5.5s %-15.15s %-2.2s %-3.3s %-8.8s %2d\r\n",
-              pStatus->GetCallerNumber(),
-              session()->user()->GetUserNameAndNumber(session()->usernum),
-              times(),
-              fulldate(),
-              session()->user()->GetCity(),
-              session()->user()->GetState(),
-              session()->user()->GetCountry(),
-              session()->GetCurrentSpeed().c_str(),
-              session()->user()->GetTimesOnToday());
+      const string log_line = StringPrintf(
+          "|#1%-6ld %-25.25s %-5.5s %-5.5s %-15.15s %-2.2s %-3.3s %-8.8s %2d\r\n",
+          pStatus->GetCallerNumber(),
+          session()->user()->GetUserNameAndNumber(session()->usernum),
+          times(),
+          fulldate(),
+          session()->user()->GetCity(),
+          session()->user()->GetState(),
+          session()->user()->GetCountry(),
+          session()->GetCurrentSpeed().c_str(),
+          session()->user()->GetTimesOnToday());
     } else {
-      sprintf(szLogLine, "|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
-              pStatus->GetCallerNumber(),
-              session()->user()->GetUserNameAndNumber(session()->usernum),
-              cur_lang_name,
-              times(),
-              fulldate(),
-              session()->GetCurrentSpeed().c_str(),
-              session()->user()->GetTimesOnToday());
+      const string log_line = StringPrintf(
+          "|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
+          pStatus->GetCallerNumber(),
+          session()->user()->GetUserNameAndNumber(session()->usernum),
+          cur_lang_name,
+          times(),
+          fulldate(),
+          session()->GetCurrentSpeed().c_str(),
+          session()->user()->GetTimesOnToday());
     }
 
     if (session()->GetEffectiveSl() != 255) {
       File userLog(syscfg.gfilesdir, USER_LOG);
       if (userLog.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
         userLog.Seek(0L, File::seekEnd);
-        userLog.Write(szLogLine, strlen(szLogLine));
+        userLog.Write(log_line);
         userLog.Close();
       }
-      File lastonFile(szLastOnTxtFileName);
+      File lastonFile(laston_txt_filename);
       if (lastonFile.Open(File::modeReadWrite | File::modeBinary |
                           File::modeCreateFile | File::modeTruncate)) {
-        if (ss != nullptr) {
+        if (ss) {
           // Need to ensure ss is not null here
           pos = 0;
-          copy_line(s1, ss, &pos, len);
+          // skip the 1st line.
+          copy_line(ss.get(), &pos, len);
           for (int i = 1; i < 8; i++) {
-            copy_line(s1, ss, &pos, len);
-            strcat(s1, "\r\n");
-            lastonFile.Write(s1, strlen(s1));
+            const string s1 = copy_line(ss.get(), &pos, len) + "\r\n";
+            lastonFile.Write(s1);
           }
         }
-        lastonFile.Write(szLogLine, strlen(szLogLine));
+        lastonFile.Write(log_line);
         lastonFile.Close();
       }
     }
-  }
-  if (ss != nullptr) {
-    free(ss);
   }
 }
 
@@ -607,9 +638,9 @@ static void CheckAndUpdateUserInfo() {
       input_age(session()->user());
       bout.nl();
       bout.bprintf("%02d/%02d/%02d -- Correct? ",
-                                        session()->user()->GetBirthdayMonth(),
-                                        session()->user()->GetBirthdayDay(),
-                                        session()->user()->GetBirthdayYear());
+          session()->user()->GetBirthdayMonth(),
+          session()->user()->GetBirthdayDay(),
+          session()->user()->GetBirthdayYear());
       if (!yesno()) {
         session()->user()->SetBirthdayYear(0);
       }
