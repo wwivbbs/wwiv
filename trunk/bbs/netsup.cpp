@@ -623,9 +623,8 @@ void print_pending_list() {
   time_t tCurrentTime;
   net_call_out_rec *con;
   net_contact_rec *ncn;
-  time_t t;
-  time(&t);
-  struct tm * pTm = localtime(&t);
+  time_t t = time(nullptr);
+  struct tm* pTm = localtime(&t);
 
   long ss = session()->user()->GetStatus();
 
@@ -697,9 +696,9 @@ void print_pending_list() {
           strcpy(s1, "   |#6NEVER!    ");
         }
 
-        sprintf(s3, "%d""k", ((ncn[i2].bytes_sent) + 1023) / 1024);
-        sprintf(s4, "%d""k", ((ncn[i2].bytes_received) + 1023) / 1024);
-        sprintf(s5, "%d""k", ((ncn[i2].bytes_waiting) + 1023) / 1024);
+        sprintf(s3, "%dk", ((ncn[i2].bytes_sent) + 1023) / 1024);
+        sprintf(s4, "%dk", ((ncn[i2].bytes_received) + 1023) / 1024);
+        sprintf(s5, "%dk", ((ncn[i2].bytes_waiting) + 1023) / 1024);
 
         if (con[i1].options & options_ATT_night) {
           if ((nDow != 0) && (nDow != 6)) {

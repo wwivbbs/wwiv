@@ -226,9 +226,11 @@ bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string&
 
 bool external_text_edit(const string& edit_filename, const string& new_directory, int numlines,
                         const string& destination, int flags) {
+  bout.nl();
   const auto editor_number = session()->user()->GetDefaultEditor() - 1;
   if (editor_number >= session()->GetNumberOfEditors() || !okansi()) {
-    bout << "\r\nYou can't use that full screen editor.\r\n\n";
+    bout << "You can't use that full screen editor." << wwiv::endl << wwiv::endl;
+    pausescr();
     return false;
   }
 
@@ -246,8 +248,19 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   
   string editorCommand = (incom) ? editor.filename : editor.filenamecon;
   if (editorCommand.empty()) {
-    bout << "\r\nYou can't use that full screen editor.\r\n\n";
+    bout << "You can't use that full screen editor." << wwiv::endl << wwiv::endl;
+      pausescr();
     return false;
+  }
+
+  if (File::Exists(edit_filename)) {
+    File file(edit_filename);
+    if (file.IsDirectory()) {
+      bout.nl();
+      bout << "|#6You can't edit a directory." << wwiv::endl << wwiv::endl;
+      pausescr();
+      return false;
+    }
   }
 
   WWIV_make_abs_cmd(application()->GetHomeDir(), &editorCommand);
