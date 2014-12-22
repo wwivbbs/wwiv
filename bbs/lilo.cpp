@@ -468,24 +468,20 @@ static void PrintLogonFile() {
 
 static void PrintUserSpecificFiles() {
   const WUser* user = session()->user();  // not-owned
+  printfile(StringPrintf("sl%d", user->GetSl()));
+  printfile(StringPrintf("dsl%d", user->GetDsl()));
 
-  const string sl_fn = StringPrintf("sl%d", user->GetSl());
-  printfile(sl_fn.c_str());
-  const string dsl_fn = StringPrintf("dsl%d", user->GetDsl());
-  printfile(dsl_fn.c_str());
-
-  const int short_size = std::numeric_limits<unsigned short>::digits - 1;
+  const int short_size = std::numeric_limits<uint16_t>::digits - 1;
   for (int i=0; i < short_size; i++) {
     if (user->HasArFlag(1 << i)) {
       const string ar_fn = StringPrintf("ar%c", static_cast<char>('A' + i));
-      printfile(ar_fn.c_str());
+      printfile(ar_fn);
     }
   }
 
   for (int i=0; i < short_size; i++) {
     if (user->HasDarFlag(1 << i)) {
-      const string ar_fn = StringPrintf("dar%c", static_cast<char>('A' + i));
-      printfile(ar_fn.c_str());
+      printfile(StringPrintf("dar%c", static_cast<char>('A' + i)));
     }
   }
 }
