@@ -74,8 +74,7 @@ static bool GetMessageToName(const char *aux) {
         bHasAddress = true;
         bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
         newline = false;
-        string to_name;
-        input1(&to_name, 40, InputMode::MIXED, false, true);
+        string to_name = Input1("", 40, true, InputMode::MIXED);
         newline = newlsave;
         if (to_name.empty()) {
           strcpy(irt_name, "ALL");
