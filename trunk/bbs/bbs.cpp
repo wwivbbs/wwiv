@@ -221,7 +221,7 @@ int WApplication::doWFCEvents() {
           do {
             session()->localIO()->LocalCls();
             bout.nl();
-            printfile(helpFileName.c_str());
+            printfile(helpFileName);
             chHelp = getkey();
             helpFileName = (helpFileName == SWFC_NOEXT) ? SONLINE_NOEXT : SWFC_NOEXT;
           } while (chHelp != SPACE && chHelp != ESC);
