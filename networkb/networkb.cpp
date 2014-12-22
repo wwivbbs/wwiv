@@ -84,8 +84,6 @@ int main(int argc, char** argv) {
       }
     }
 
-    string node_config_filename;
-
     string network_name = args.at("network");
     if (network_name.empty()) {
       clog << "--network=[network name] must be specified." << endl;
