@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exp", "exp\exp.vcxproj", "{904096C2-24D6-4A8E-B1DB-8A414D165D66}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -23,8 +23,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qotd", "qotd\qotd.vcxproj", "{CB9C8EC2-00C1-4E4A-914F-639058915774}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uu", "uu\uu.vcxproj", "{1FB788D3-7D5E-4041-A025-188A18001CD8}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ntime", "ntime\ntime.vcxproj", "{7BA6487F-1DCE-4401-AFE2-D2C28B22EB50}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,10 +66,6 @@ Global
 		{1FB788D3-7D5E-4041-A025-188A18001CD8}.Debug|Win32.Build.0 = Debug|Win32
 		{1FB788D3-7D5E-4041-A025-188A18001CD8}.Release|Win32.ActiveCfg = Release|Win32
 		{1FB788D3-7D5E-4041-A025-188A18001CD8}.Release|Win32.Build.0 = Release|Win32
-		{7BA6487F-1DCE-4401-AFE2-D2C28B22EB50}.Debug|Win32.ActiveCfg = Debug|Win32
-		{7BA6487F-1DCE-4401-AFE2-D2C28B22EB50}.Debug|Win32.Build.0 = Debug|Win32
-		{7BA6487F-1DCE-4401-AFE2-D2C28B22EB50}.Release|Win32.ActiveCfg = Release|Win32
-		{7BA6487F-1DCE-4401-AFE2-D2C28B22EB50}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
