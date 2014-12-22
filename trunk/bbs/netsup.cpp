@@ -1039,7 +1039,7 @@ static int ansicallout() {
   static int callout_ansi, color1, color2, color3, color4, got_info = 0;
   char ch = 0;
   int i, i1, nNetNumber, netnum = 0, x = 0, y = 0, pos = 0, sn = 0;
-  int num_ncn, num_call_sys, rownum = 0, *nodenum, *netpos, *ipos;
+  int num_ncn, num_call_sys, rownum = 0;
   net_contact_rec *ncn;
   net_call_out_rec *con;
 #ifndef __unix__
@@ -1065,9 +1065,9 @@ static int ansicallout() {
   }
 
   if (callout_ansi) {
-    nodenum = static_cast<int *>(BbsAllocA(MAX_CONNECTS * 2));
-    netpos = static_cast<int *>(BbsAllocA(MAX_CONNECTS * 2));
-    ipos = static_cast<int *>(BbsAllocA(MAX_CONNECTS * 2));
+    unique_ptr<int[]> nodenum(new int[MAX_CONNECTS]);
+    unique_ptr<int[]> netpos(new int[MAX_CONNECTS]);
+    unique_ptr<int[]> ipos(new int[MAX_CONNECTS]);
     for (nNetNumber = 0; nNetNumber < session()->GetMaxNetworkNumber(); nNetNumber++) {
       set_net_num(nNetNumber);
       read_call_out_list();
@@ -1113,7 +1113,7 @@ static int ansicallout() {
     session()->localIO()->LocalXYAPrintf(40, 18, color3, "Max Speed       :");
     session()->localIO()->LocalXYAPrintf(40, 19, color3, "System Location :");
 
-    fill_call(color4, rownum, netnum, nodenum);
+    fill_call(color4, rownum, netnum, nodenum.get());
     curatr = color2;
     x = 0;
     y = 0;
@@ -1168,7 +1168,7 @@ static int ansicallout() {
           } else if (rownum > 0) {
             pos -= 10;
             rownum--;
-            fill_call(color4, rownum, netnum, nodenum);
+            fill_call(color4, rownum, netnum, nodenum.get());
             session()->localIO()->LocalXYAPrintf(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
             print_call(nodenum[pos], netpos[pos], ipos[pos]);
           }
@@ -1180,7 +1180,7 @@ static int ansicallout() {
             y++;
           } else if ((rownum + 6) * 10 < netnum) {
             rownum++;
-            fill_call(color4, rownum, netnum, nodenum);
+            fill_call(color4, rownum, netnum, nodenum.get());
             if (pos + 10 < netnum) {
               pos += 10;
             } else {
@@ -1197,7 +1197,7 @@ static int ansicallout() {
             y = 0;
             pos = 0;
             rownum = 0;
-            fill_call(color4, rownum, netnum, nodenum);
+            fill_call(color4, rownum, netnum, nodenum.get());
             session()->localIO()->LocalXYAPrintf(6, 5, color2, "%-5u", nodenum[pos]);
             print_call(nodenum[pos], netpos[pos], ipos[pos]);
           }
@@ -1216,7 +1216,7 @@ static int ansicallout() {
               pos -= 10 * rownum;
               rownum = 0;
             }
-            fill_call(color4, rownum, netnum, nodenum);
+            fill_call(color4, rownum, netnum, nodenum.get());
             session()->localIO()->LocalXYAPrintf(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
             print_call(nodenum[pos], netpos[pos], ipos[pos]);
           }
@@ -1239,7 +1239,7 @@ static int ansicallout() {
                 pos += 10;
               }
             }
-            fill_call(color4, rownum, netnum, nodenum);
+            fill_call(color4, rownum, netnum, nodenum.get());
             if (pos >= netnum) {
               pos -= 10;
               --y;
@@ -1255,13 +1255,10 @@ static int ansicallout() {
     curatr = color3;
     session()->localIO()->LocalCls();
     netw = (netpos[pos]);
-    free(nodenum);
-    free(netpos);
-    free(ipos);
   } else {
     bout.nl();
     bout << "|#2Which system: ";
-    char szSystemNumber[ 11 ];
+    char szSystemNumber[11];
     input(szSystemNumber, 5, true);
     sn = atoi(szSystemNumber);
   }
@@ -1295,8 +1292,8 @@ void force_callout(int dw) {
   onx[1]  = '\0';
   int onxi = 1;
   int nv = 0;
-  char *ss = static_cast<char *>(BbsAllocA(session()->GetMaxNetworkNumber() * 3));
-  char *ss1 = ss + session()->GetMaxNetworkNumber();
+  unique_ptr<char[]> ss(new char[session()->GetMaxNetworkNumber() * 3]);
+  char *ss1 = ss.get() + session()->GetMaxNetworkNumber();
   char *ss2 = ss1 + session()->GetMaxNetworkNumber();
 
   for (int nNetNumber = 0; nNetNumber < session()->GetMaxNetworkNumber(); nNetNumber++) {
@@ -1375,8 +1372,7 @@ void force_callout(int dw) {
       }
     }
     if (ok) {
-      std::clog << session()->GetNetworkNumber() << std::endl;
-      std::clog << net_networks[session()->GetNetworkNumber()].ncn[ss2[nitu]].bytes_waiting << std::endl;
+      std::clog << "Current Network Number : " << session()->GetNetworkNumber() << std::endl;
       if (net_networks[session()->GetNetworkNumber()].ncn[ss2[nitu]].bytes_waiting == 0L) {
         if (!(net_networks[session()->GetNetworkNumber()].con[ss1[nitu]].options & options_sendback)) {
           ok = false;
@@ -1423,18 +1419,11 @@ void force_callout(int dw) {
             session()->localIO()->LocalCls();
             bout << "|#9Retries |#0= |#2" << nr << "|#9, Current |#0= |#2" << tc << "|#9, Remaining |#0= |#2" << nr -
                                 tc << "|#9. ESC to abort.\r\n";
-            if (nr == tc) {
-              free(ss);
-              ss = nullptr;
-            }
             do_callout(sn);
           }
         }
       }
     }
-  }
-  if (ss) {
-    free(ss);
   }
 }
 
