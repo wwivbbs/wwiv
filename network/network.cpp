@@ -62,7 +62,8 @@ static map<string, string> ParseArgs(int argc, char** argv) {
       const string value = (delims.size() > 1) ? delims[1] : "";
       args.emplace(delims[0].substr(2), value);
     } else if (starts_with(s, "/")) {
-      const string key{s[1]};
+      char letter = std::toupper(s[1]);
+      const string key(1, letter);
       const string value = s.substr(2);
       args.emplace(key, value);
     } else if (starts_with(s, ".")) {
