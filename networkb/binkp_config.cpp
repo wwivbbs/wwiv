@@ -28,6 +28,7 @@ namespace net {
 
 // [[ VisibleForTesting ]]
 bool ParseBinkConfigLine(const string& line, uint16_t* node, BinkNodeConfig* config) {
+  // A line will be of the format @node host:port [password].
   if (line.empty() || line[0] != '@') {
     // skip empty lines and those not starting with @.
     return false;
@@ -72,18 +73,16 @@ BinkConfig::BinkConfig(const std::string& network_name, const Config& config, co
   }
 
   TextFile node_config_file(network_dir_, "addresses.binkp", "rt");
-  if (!node_config_file.IsOpen()) {
-    throw config_error(StrCat("Unable to open node config file: ", node_config_file.full_pathname()));
-  }
-
-  // A line will be of the format @node host:port [password].
-  string line;
-  while (node_config_file.ReadLine(&line)) {
-    uint16_t node_number;
-    BinkNodeConfig node_config;
-    if (ParseBinkConfigLine(line, &node_number, &node_config)) {
-      // Parsed a line correctly.
-      node_config_.emplace(node_number, node_config);
+  if (node_config_file.IsOpen()) {
+    // Only load the configuration file if it exists.
+    string line;
+    while (node_config_file.ReadLine(&line)) {
+      uint16_t node_number;
+      BinkNodeConfig node_config;
+      if (ParseBinkConfigLine(line, &node_number, &node_config)) {
+        // Parsed a line correctly.
+        node_config_.emplace(node_number, node_config);
+      }
     }
   }
 }
