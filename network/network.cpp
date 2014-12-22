@@ -17,6 +17,7 @@
 #include "sdk/networks.h"
 
 #include <cctype>
+#include <cstdlib>
 #include <fcntl.h>
 #include <iostream>
 #include <map>
@@ -73,6 +74,20 @@ static map<string, string> ParseArgs(int argc, char** argv) {
   return args;
 }
 
+static int LaunchOldNetworkingStack(const std::string exe, int argc, char** argv) {
+  std::ostringstream os;
+  os << exe;
+  for (int i=1; i < argc; i++) {
+    const string s(argv[1]);
+    if (starts_with(s, "/")) {
+      os << " " << argv[i];
+    }
+  }
+  const string command_line = os.str();
+  clog << "Executing Command: '" << command_line << "'" << endl;
+  return system(command_line.c_str());
+}
+
 int main(int argc, char** argv) {
   try {
     map<string, string> args = ParseArgs(argc, argv);
@@ -126,17 +141,21 @@ int main(int argc, char** argv) {
     if (node_config != nullptr) {
       // We have a node configuration for this one, use networkb.
       clog << "USE networkb: " << node_config->host << ":" << node_config->port << endl;
-      //return 0;
+      const string command_line = StringPrintf("networkb --send --network=%s --node=%d",
+          network_name.c_str(), expected_remote_node);
+      clog << "Executing Command: '" << command_line << "'" << endl;
+      return system(command_line.c_str());
     }
 
     PPPConfig ppp_config(network_name, config, networks);
     const PPPNodeConfig* ppp_node_config = ppp_config.node_config_for(expected_remote_node);
     if (ppp_node_config != nullptr) {
       clog << "USE PPP Project to send to: " << ppp_node_config->email_address << endl;
-      // return 0;
+      return LaunchOldNetworkingStack("networkp", argc, argv);
     }
 
     // Use legacy networking.
+    return LaunchOldNetworkingStack("network0", argc, argv);
     
   } catch (const std::exception& e) {
     clog << e.what() << std::endl;

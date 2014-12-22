@@ -10,7 +10,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exp", "exp\exp.vcxproj", "{
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxproj", "{6309D9B6-1923-4732-9061-7828B8F38D8D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "network", "network\network.vcxproj", "{7734C1D9-126B-405F-B728-2CAD97167542}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "networkp", "networkp\networkp.vcxproj", "{7734C1D9-126B-405F-B728-2CAD97167542}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "news", "news\news.vcxproj", "{73FA6DFD-6774-4E5E-943F-DADE0CFEDD2F}"
 EndProject
