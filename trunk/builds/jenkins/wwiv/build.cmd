@@ -31,40 +31,46 @@ echo Archive:   %RELEASE_ZIP%
 @rem Build BBS, init, telnetserver
 cd %WORKSPACE%\bbs
 %TEXT_TRANSFORM% -a !!version!%SVN_REVISION% version.template
-msbuild bbs_lib.vcxproj /t:Build /p:Configuration=Release /detailedsummary
-msbuild bbs.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild bbs_lib.vcxproj /t:Build /p:Configuration=Release
+msbuild bbs.vcxproj /t:Build /p:Configuration=Release
 
 cd %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer
-msbuild WWIV5TelnetServer.csproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild WWIV5TelnetServer.csproj /t:Build /p:Configuration=Release
 
 cd %WORKSPACE%\initlib
-msbuild initlib.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild initlib.vcxproj /t:Build /p:Configuration=Release
 
 cd %WORKSPACE%\init
-msbuild init.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild init.vcxproj /t:Build /p:Configuration=Release
+
+cd %WORKSPACE%\networkb
+msbuild networkb.vcxproj /t:Build /p:Configuration=Release
+
+cd %WORKSPACE%\network
+msbuild network.vcxproj /t:Build /p:Configuration=Release
 
 cd %WORKSPACE%\fix
-msbuild fix.vcxproj /t:Build /p:Configuration=Release /detailedsummary /property:EnableEnhancedInstructionSet=NoExtensions
+msbuild fix.vcxproj /t:Build /p:Configuration=Release /property:EnableEnhancedInstructionSet=NoExtensions
 
 @rem build WINS
 cd %WORKSPACE%\wins
 
-msbuild exp\exp.vcxproj /t:Build /p:Configuration=Release /detailedsummary
-msbuild network\network.vcxproj /t:Build /p:Configuration=Release /detailedsummary
-msbuild news\news.vcxproj /t:Build /p:Configuration=Release /detailedsummary
-msbuild ntime\ntime.vcxproj /t:Build /p:Configuration=Release /detailedsummary
-msbuild pop\pop.vcxproj /t:Build /p:Configuration=Release /detailedsummary
-msbuild pppurge\pppurge.vcxproj /t:Build /p:Configuration=Release /detailedsummary
-msbuild ppputil\ppputil.vcxproj /t:Build /p:Configuration=Release /detailedsummary
-msbuild qotd\qotd.vcxproj /t:Build /p:Configuration=Release /detailedsummary
-msbuild uu\uu.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild exp\exp.vcxproj /t:Build /p:Configuration=Release
+msbuild networkp\networkp.vcxproj /t:Build /p:Configuration=Release
+msbuild news\news.vcxproj /t:Build /p:Configuration=Release
+msbuild ntime\ntime.vcxproj /t:Build /p:Configuration=Release
+msbuild pop\pop.vcxproj /t:Build /p:Configuration=Release
+msbuild pppurge\pppurge.vcxproj /t:Build /p:Configuration=Release
+msbuild ppputil\ppputil.vcxproj /t:Build /p:Configuration=Release
+msbuild qotd\qotd.vcxproj /t:Build /p:Configuration=Release
+msbuild uu\uu.vcxproj /t:Build /p:Configuration=Release
 
 
 @rem build DEPS
 cd %WORKSPACE%\deps\infozip
 
-msbuild unzip60\win32\vc8\unzip.vcxproj /t:Build /p:Configuration=Release /detailedsummary
-msbuild zip30\win32\vc6\zip.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild unzip60\win32\vc8\unzip.vcxproj /t:Build /p:Configuration=Release
+msbuild zip30\win32\vc6\zip.vcxproj /t:Build /p:Configuration=Release
 
 cd %WORKSPACE%\
 if not exist %WORKSPACE%\release (
@@ -77,7 +83,6 @@ if not exist %WORKSPACE%\archives (
    mkdir %WORKSPACE%\archives
 )
 del /q %WORKSPACE%\archives
-
 
 echo Create Menus (EN)
 cd %WORKSPACE%\bbs\admin\menus\en
@@ -93,13 +98,15 @@ copy /v/y %WORKSPACE%\bbs\Release\bbs.exe %WORKSPACE%\release\bbs.exe
 copy /v/y %WORKSPACE%\bbs\readme.txt %WORKSPACE%\release\readme-bbs.txt
 copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\release\WWIV5TelnetServer.exe %WORKSPACE%\release\WWIV5TelnetServer.exe
 copy /v/y %WORKSPACE%\init\Release\init.exe %WORKSPACE%\release\init.exe
+copy /v/y %WORKSPACE%\network\Release\network.exe %WORKSPACE%\release\network.exe
+copy /v/y %WORKSPACE%\networkb\Release\networkb.exe %WORKSPACE%\release\networkb.exe
 copy /v/y %WORKSPACE%\fix\Release\fix.exe %WORKSPACE%\release\fix.exe
 copy /v/y %WORKSPACE%\bbs\admin\* %WORKSPACE%\release\
 
 echo Copying WINS files to staging area
 set WINS=%WORKSPACE%\wins
 copy /v/y %WINS%\exp\Release\exp.exe %WORKSPACE%\release\exp.exe
-copy /v/y %WINS%\network\Release\network.exe %WORKSPACE%\release\network.exe
+copy /v/y %WINS%\networkp\Release\networkp.exe %WORKSPACE%\release\networkp.exe
 copy /v/y %WINS%\news\Release\news.exe %WORKSPACE%\release\news.exe
 copy /v/y %WINS%\ntime\Release\ntime.exe %WORKSPACE%\release\ntime.exe
 copy /v/y %WINS%\pop\Release\pop.exe %WORKSPACE%\release\pop.exe
@@ -127,5 +134,3 @@ cd %WORKSPACE%\release
 echo Archive File: %RELEASE_ZIP%
 echo Archive contents:
 %ZIP_EXE% l %RELEASE_ZIP%
-
-
