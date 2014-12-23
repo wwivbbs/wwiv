@@ -61,14 +61,15 @@ TEST_F(ParseBinkConfigLineTest, InvalidLine) {
   ASSERT_FALSE(ParseBinkConfigLine(line, &node, &config));
 }
 
-TEST_F(BinkConfigTest, IniFile) {
-}
-
 TEST_F(BinkConfigTest, NodeConfig) {
-}
-
-TEST_F(BinkConfigTest, BadNodeConfigFile) {
-}
-
-TEST_F(BinkConfigTest, BadIniConfigFile) {
+  files_.Mkdir("network");
+  const string line("@2 example.com -");
+  files_.CreateTempFile("network/addresses.binkp", line);
+  const string network_dir = files_.DirName("network");
+  BinkConfig config(1, "mybbs", network_dir);
+  const BinkNodeConfig* node_config = config.node_config_for(2);
+  ASSERT_NE(nullptr, node_config);
+  EXPECT_EQ("example.com", node_config->host);
+  EXPECT_EQ(24554, node_config->port);
+  EXPECT_EQ("-", node_config->password);
 }
