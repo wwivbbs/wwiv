@@ -249,7 +249,7 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
   const char slash = '/';
 
 #if defined( __unix__ )
-  input1(szTemp, nMaxLength, mode, true);
+  input1(szTemp, nMaxLength, mode, true, false);
   strcpy(pszOutText, szTemp);
   return;
 #endif // __unix__
