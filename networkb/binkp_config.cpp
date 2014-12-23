@@ -59,6 +59,23 @@ bool ParseBinkConfigLine(const string& line, uint16_t* node, BinkNodeConfig* con
   return true;
 }
 
+static bool ParseAddressesFile(std::map<uint16_t, BinkNodeConfig>* node_config_map, const string network_dir) {
+  TextFile node_config_file(network_dir, "addresses.binkp", "rt");
+  if (node_config_file.IsOpen()) {
+    // Only load the configuration file if it exists.
+    string line;
+    while (node_config_file.ReadLine(&line)) {
+      uint16_t node_number;
+      BinkNodeConfig node_config;
+      if (ParseBinkConfigLine(line, &node_number, &node_config)) {
+        // Parsed a line correctly.
+        node_config_map->emplace(node_number, node_config);
+      }
+    }
+  }
+  return true;
+}
+
 BinkConfig::BinkConfig(const std::string& network_name, const Config& config, const Networks& networks) : network_name_(network_name) {
   system_name_ = config.config()->systemname;
   if (system_name_.empty()) {
@@ -72,29 +89,14 @@ BinkConfig::BinkConfig(const std::string& network_name, const Config& config, co
     throw config_error(StringPrintf("NODE not specified for network: '%s'", network_name.c_str()));
   }
 
-  TextFile node_config_file(network_dir_, "addresses.binkp", "rt");
-  if (node_config_file.IsOpen()) {
-    // Only load the configuration file if it exists.
-    string line;
-    while (node_config_file.ReadLine(&line)) {
-      uint16_t node_number;
-      BinkNodeConfig node_config;
-      if (ParseBinkConfigLine(line, &node_number, &node_config)) {
-        // Parsed a line correctly.
-        node_config_.emplace(node_number, node_config);
-      }
-    }
-  }
+  ParseAddressesFile(&node_config_, network_dir_);
 }
 
 // For testing
-BinkConfig::BinkConfig(int node_number, const std::string& system_name, int node_to_call) 
-  : node_(node_number), system_name_(system_name) {
-  BinkNodeConfig node_config { "example.com", 24554, "-" };
-  node_config_.insert(std::make_pair(node_number, node_config));
+BinkConfig::BinkConfig(int node_number, const string& system_name, const string& network_dir) 
+  : node_(node_number), system_name_(system_name), network_dir_(network_dir) {
+  ParseAddressesFile(&node_config_, network_dir);
 }
-
-
 
 BinkConfig::~BinkConfig() {}
 
@@ -105,7 +107,6 @@ const BinkNodeConfig* BinkConfig::node_config_for(int node) const {
   }
   return nullptr;
 }
-
 
 }  // namespace net
 }  // namespace wwiv
