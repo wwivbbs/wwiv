@@ -25,7 +25,7 @@ struct BinkNodeConfig {
 class BinkConfig {
  public:
   BinkConfig(const std::string& network_name, const wwiv::sdk::Config& config, const wwiv::sdk::Networks& networks);
-  BinkConfig(int node_number, const std::string& system_name, int node_to_call);
+  BinkConfig(int node_number, const std::string& system_name, const std::string& network_dir);
   virtual ~BinkConfig();
   const BinkNodeConfig* node_config_for(int node) const;
 
