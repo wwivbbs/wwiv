@@ -9,6 +9,7 @@ set(test_sources
   binkp_config_test.cpp
   fake_connection.cpp
   transfer_file_test.cpp
+  ppp_config_test.cpp
 )
 
 if(UNIX) 

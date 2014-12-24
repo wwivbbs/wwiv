@@ -43,6 +43,23 @@ bool ParseAddressNetLine(const string& line, uint16_t* node, PPPNodeConfig* conf
   return true;
 }
 
+static bool ParseAddressesFile(std::map<uint16_t, PPPNodeConfig>* node_config_map, const string network_dir) {
+  TextFile node_config_file(network_dir, "ADDRESS.NET", "rt");
+  if (!node_config_file.IsOpen()) {
+    return false;
+  }
+  // A line will be of the format @node host:port [password].
+  string line;
+  while (node_config_file.ReadLine(&line)) {
+    uint16_t node_number;
+    PPPNodeConfig node_config;
+    if (ParseAddressNetLine(line, &node_number, &node_config)) {
+      // Parsed a line correctly.
+      node_config_map->emplace(node_number, node_config);
+    }
+  }
+}
+
 PPPConfig::PPPConfig(const std::string& network_name, const Config& config, const Networks& networks) : network_name_(network_name) {
   system_name_ = config.config()->systemname;
   if (system_name_.empty()) {
@@ -56,21 +73,12 @@ PPPConfig::PPPConfig(const std::string& network_name, const Config& config, cons
     throw config_error(StringPrintf("NODE not specified for network: '%s'", network_name.c_str()));
   }
 
-  TextFile node_config_file(network_dir_, "ADDRESS.NET", "rt");
-  if (!node_config_file.IsOpen()) {
-    throw config_error(StrCat("Unable to open node config file: ", node_config_file.full_pathname()));
-  }
+  ParseAddressesFile(&node_config_, network_dir_);
+}
 
-  // A line will be of the format @node host:port [password].
-  string line;
-  while (node_config_file.ReadLine(&line)) {
-    uint16_t node_number;
-    PPPNodeConfig node_config;
-    if (ParseAddressNetLine(line, &node_number, &node_config)) {
-      // Parsed a line correctly.
-      node_config_.emplace(node_number, node_config);
-    }
-  }
+PPPConfig::PPPConfig(int node_number, const string& system_name, const string& network_dir) 
+    : node_(node_number), system_name_(system_name), network_dir_(network_dir) {
+  ParseAddressesFile(&node_config_, network_dir);
 }
 
 PPPConfig::~PPPConfig() {}
