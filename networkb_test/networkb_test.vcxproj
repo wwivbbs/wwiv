@@ -104,6 +104,7 @@
     <ClCompile Include="binkp_test.cpp" />
     <ClCompile Include="fake_connection.cpp" />
     <ClCompile Include="networkb_test_main.cpp" />
+    <ClCompile Include="ppp_config_test.cpp" />
     <ClCompile Include="transfer_file_test.cpp" />
   </ItemGroup>
   <ItemGroup>
