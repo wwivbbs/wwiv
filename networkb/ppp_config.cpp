@@ -58,6 +58,7 @@ static bool ParseAddressesFile(std::map<uint16_t, PPPNodeConfig>* node_config_ma
       node_config_map->emplace(node_number, node_config);
     }
   }
+  return true;
 }
 
 PPPConfig::PPPConfig(const std::string& network_name, const Config& config, const Networks& networks) : network_name_(network_name) {
