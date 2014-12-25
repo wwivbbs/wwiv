@@ -515,7 +515,7 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
         bputch(menu_items[*menu_pos][0]);
         bout.SystemColor(smc->normal_menu_item);
         bout.bputs(menu_items[*menu_pos].substr(1));
-        if (*menu_pos == menu_items.size() - 1) {
+        if (*menu_pos == static_cast<int>(menu_items.size() - 1)) {
           *menu_pos = 0;
         } else {
           ++* menu_pos;

@@ -33,19 +33,6 @@ static unsigned char translate_table[] = {
     "................................abfneouyo0od.0en=+}{fj*=oo..n2.."
 };
 
-static unsigned char *valid_name(unsigned char *s) {
-  static unsigned char szName[60];
-
-  unsigned int j = 0;
-  for (unsigned int i = 0; (i < strlen(reinterpret_cast<char*>(s))) && (i < 81); i++) {
-    if (s[i] != '.') {
-      szName[j++] = translate_table[s[i]];
-    }
-  }
-  szName[j] = 0;
-  return szName;
-}
-
 void get_user_ppp_addr() {
   session()->internetFullEmailAddress = "";
   bool found = false;

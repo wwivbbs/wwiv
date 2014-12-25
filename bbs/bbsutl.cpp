@@ -39,7 +39,7 @@ bool inli(string* outBuffer, string* rollOver, string::size_type nMaxLen, bool b
   char szBuffer[4096] = {0}, szRollover[4096] = {0};
   strcpy(szBuffer, outBuffer->c_str());
   strcpy(szRollover, rollOver->c_str());
-  bool ret = inli(szBuffer, szRollover, nMaxLen, bAddCRLF, bAllowPrevious, bTwoColorChatMode);
+  bool ret = inli(szBuffer, szRollover, nMaxLen, bAddCRLF, bAllowPrevious, bTwoColorChatMode, clear_previous_line);
   outBuffer->assign(szBuffer);
   rollOver->assign(szRollover);
   return ret;
