@@ -493,7 +493,7 @@ bool WApplication::ReadConfigOverlayFile(int instance_number, configrec* full_sy
   if (!bIsConfigObvOpen) {
     syscfgovr.primaryport = 1;
     strcpy(syscfgovr.tempdir, full_syscfg->tempdir);
-    strcpy(syscfgovr.batchdir, full_syscfg->batchdir);
+    strcpy(syscfgovr.batchdir, full_syscfg->tempdir);
   } else {
     long lCurNodeOffset = (instance_number - 1) * sizeof(configoverrec);
     configOvrFile.Seek(lCurNodeOffset, File::seekBegin);
@@ -563,7 +563,6 @@ bool WApplication::ReadConfig() {
   syscfg.gfilesdir        = DuplicatePath(full_config.config()->gfilesdir);
   syscfg.datadir          = DuplicatePath(full_config.config()->datadir);
   syscfg.dloadsdir        = DuplicatePath(full_config.config()->dloadsdir);
-  syscfg.batchdir         = DuplicatePath(full_config.config()->batchdir);
   syscfg.menudir          = DuplicatePath(full_config.config()->menudir);
 
   syscfg.systemname       = strdup(full_config.config()->systemname);
