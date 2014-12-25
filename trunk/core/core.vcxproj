@@ -85,6 +85,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="inifile.cpp" />
+    <ClCompile Include="log.cpp" />
     <ClCompile Include="os.cpp" />
     <ClCompile Include="stl.cpp" />
     <ClCompile Include="file.cpp" />
@@ -99,6 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inifile.h" />
+    <ClInclude Include="log.h" />
     <ClInclude Include="os.h" />
     <ClInclude Include="scope_exit.h" />
     <ClInclude Include="stl.h" />
