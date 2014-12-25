@@ -873,7 +873,7 @@ int WApplication::Run(int argc, char *argv[]) {
   }
 
   if (num_min > 0) {
-    syscfg.executetime = static_cast< unsigned short >((timer() + num_min * 60) / 60);
+    syscfg.executetime = static_cast<uint16_t>((timer() + num_min * 60) / 60);
     if (syscfg.executetime > 1440) {
       syscfg.executetime -= 1440;
     }

@@ -127,7 +127,7 @@ struct userrec {
   registered,                              // numerical registration date
   expires,                                 // numerical expiration date
   datenscan,                               // numerical date of last file scan
-  nameinfo;                                // bit mapping for name case
+  unued_nameinfo;                          // bit mapping for name case
 
   char
   res_long[40];                            // reserved for long values
@@ -159,7 +159,6 @@ struct userrec {
   unsigned short int qwk_keep_routing:      1;
   unsigned short int full_desc:             1;
   unsigned short int qwk_protocol:          4;
-
 };
 
 // SECLEV DATA FOR 1 SL
@@ -231,13 +230,13 @@ struct configrec {
        unused_executestr[51];                  // Old single event command (removed in 4.3i0)
 
   uint8_t newusersl,                           // new user SL
-           newuserdsl,                         // new user DSL
-           maxwaiting,                         // max mail waiting
-           comport[5],                         // what connected to comm
-           com_ISR[5],                         // Com Interrupts
-           primaryport,                        // primary comm port
-           newuploads,                         // file dir new uploads go
-           closedsystem;                       // if system is closed
+          newuserdsl,                          // new user DSL
+          maxwaiting,                          // max mail waiting
+          comport[5],                          // what connected to comm
+          com_ISR[5],                          // Com Interrupts
+          primaryport,                         // primary comm port
+          newuploads,                          // file dir new uploads go
+          closedsystem;                        // if system is closed
 
   uint16_t systemnumber,                       // BBS system number
            baudrate[5],                        // Baud rate for com ports
@@ -270,14 +269,14 @@ struct configrec {
 
   oldarcrec arcs[4];                          // old archivers
 
-  char legacy_beginday_c[51],                 // beginday event
-       legacy_logon_c[51];                    // logon event
+  char unused_legacy_beginday_c[51],          // beginday event
+       unused_legacy_logon_c[51];             // logon event
 
   int16_t userreclen,                         // user record length
         waitingoffset,                        // mail waiting offset
         inactoffset;                          // inactive offset
 
-  char legacy_newuser_c[51];                  // newuser event
+  char unused_legacy_newuser_c[51];           // newuser event
 
   uint32_t wwiv_reg_number;                   // user's reg number
 
@@ -285,14 +284,14 @@ struct configrec {
 
   float post_call_ratio;
 
-  char legacy_upload_c[51],                          // upload event
+  char unused_legacy_upload_c[51],            // upload event
        unused_dszbatchdl[81],
-       modem_type[9],
-       batchdir[81];
+       unused_modem_type[9],
+       unused_batchdir[81];
 
   int16_t sysstatusoffset;                      // system status offset
 
-  char network_type;                          // network type ID
+  char unused_network_type;                     // network type ID
 
   int16_t fuoffset, fsoffset, fnoffset;         // offset values
 
@@ -306,11 +305,8 @@ struct configrec {
            unused_rrd;                        // shareware expiration date
 
   char menudir[81];                           // path for menu dir
-
   char unused_logoff_c[51];                   // logoff event
-
   char unused_v_scan_c[51];                   // virus scanning event
-
   char res[400];                              // RESERVED
 };
 

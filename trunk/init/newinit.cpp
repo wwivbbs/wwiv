@@ -90,7 +90,6 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   sprintf(syscfg.dloadsdir, "%sdloads%c", bbsdir.c_str(), File::pathSeparatorChar);
   sprintf(syscfg.tempdir, "%stemp1%c", bbsdir.c_str(), File::pathSeparatorChar);
   sprintf(syscfg.menudir, "%sgfiles%cmenus%c", bbsdir.c_str(), File::pathSeparatorChar, File::pathSeparatorChar);
-  strcpy(syscfg.batchdir, syscfg.tempdir);
   strcpy(syscfg.unused_bbs_init_modem, "ATS0=0M0Q0V0E0S2=1S7=20H0{");
   strcpy(syscfg.unused_answer, "ATA{");
   strcpy(syscfg.unused_connect_300, "1");
@@ -209,7 +208,6 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
 
   strcpy(syscfg.unused_dial_prefix, "ATDT");
   syscfg.post_call_ratio = 0.0;
-  strcpy(syscfg.modem_type, "H2400");
   save_config();
 
   create_arcs(out->window());

@@ -89,7 +89,7 @@ static void ValidateConfigOverlayExists(const string& bbsdir) {
   File config_overlay(CONFIG_OVR);
   if (!config_overlay.Exists() || config_overlay.GetLength() < sizeof(configoverrec)) {
     // Handle the case where there is no config.ovr.
-    write_instance(1, syscfg.batchdir, syscfg.tempdir);
+    write_instance(1, syscfg.tempdir, syscfg.tempdir);
   }
 
   if (config_overlay.GetLength() < static_cast<long>(num_instances * sizeof(configoverrec))) {
