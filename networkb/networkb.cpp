@@ -37,7 +37,6 @@
 #include "core/strings.h"
 
 using std::cout;
-using std::clog;
 using std::endl;
 using std::exception;
 using std::map;
