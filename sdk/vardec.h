@@ -162,7 +162,6 @@ struct userrec {
 
 };
 
-
 // SECLEV DATA FOR 1 SL
 struct slrec {
   uint16_t time_per_day,                // time allowed on per day
@@ -1011,7 +1010,6 @@ struct filestatusrec {
 
 struct phonerec {
   int16_t usernum;                        // user's number
-
   unsigned char phone[13];                  // user's phone number
 };
 
