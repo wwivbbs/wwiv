@@ -6,10 +6,11 @@ include_directories(..)
 
 set(COMMON_SOURCES
   inifile.cpp
-  os.cpp
-  strings.cpp
   file.cpp
   file_unix.cpp
+  log.cpp
+  os.cpp
+  strings.cpp
   textfile.cpp
   )
 
