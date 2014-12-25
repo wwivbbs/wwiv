@@ -556,18 +556,18 @@ static void UpdateLastOnFileAndUserLog() {
     pausescr();
   }
 
-  if (session()->GetEffectiveSl() != 255 || incom) {
-  const string log_line = StringPrintf("%ld: %s %s %s   %s - %d (%u)",
-          pStatus->GetCallerNumber(),
-          session()->user()->GetUserNameAndNumber(session()->usernum),
-          times(),
-          fulldate(),
-          session()->GetCurrentSpeed().c_str(),
-          session()->user()->GetTimesOnToday(),
-          application()->GetInstanceNumber());
+  if (true || session()->GetEffectiveSl() != 255 || incom) {
+    const string sysop_log_line = StringPrintf("%ld: %s %s %s   %s - %d (%u)",
+        pStatus->GetCallerNumber(),
+        session()->user()->GetUserNameAndNumber(session()->usernum),
+        times(),
+        fulldate(),
+        session()->GetCurrentSpeed().c_str(),
+        session()->user()->GetTimesOnToday(),
+        application()->GetInstanceNumber());
 
-  sysoplog("", false);
-    sysoplog(stripcolors(log_line), false);
+    sysoplog("", false);
+    sysoplog(stripcolors(sysop_log_line), false);
     sysoplog("", false);
     string remoteAddress = session()->remoteIO()->GetRemoteAddress();
     string remoteName = session()->remoteIO()->GetRemoteName();
@@ -577,9 +577,10 @@ static void UpdateLastOnFileAndUserLog() {
     if (remoteName.length() > 0) {
       sysoplogf("CID NAME: %s", remoteName.c_str());
     }
+    string log_line;
     if (application()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
         (syscfg.sysconfig & sysconfig_extended_info)) {
-      const string log_line = StringPrintf(
+      log_line = StringPrintf(
           "|#1%-6ld %-25.25s %-5.5s %-5.5s %-15.15s %-2.2s %-3.3s %-8.8s %2d\r\n",
           pStatus->GetCallerNumber(),
           session()->user()->GetUserNameAndNumber(session()->usernum),
@@ -591,7 +592,7 @@ static void UpdateLastOnFileAndUserLog() {
           session()->GetCurrentSpeed().c_str(),
           session()->user()->GetTimesOnToday());
     } else {
-      const string log_line = StringPrintf(
+      log_line = StringPrintf(
           "|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
           pStatus->GetCallerNumber(),
           session()->user()->GetUserNameAndNumber(session()->usernum),
