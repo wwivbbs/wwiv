@@ -27,7 +27,8 @@ namespace core {
 
 class Logger {
 public:
-  Logger(const std::string& kind);
+  Logger();
+  explicit Logger(const std::string& kind);
   ~Logger();
 
   template <typename T> Logger & operator<<(T const & value) {
@@ -35,8 +36,10 @@ public:
     return *this;
   }
 
+  static void Init(int argc, char** argv);
   static void set_filename(const std::string& kind, const std::string& filename) { fn_map_[kind] = filename; }
   static std::string date_time();
+
 private:
   const std::string kind_;
   std::ostringstream stream_;

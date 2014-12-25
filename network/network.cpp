@@ -25,20 +25,20 @@
 #include <string>
 #include <vector>
 
+#include "core/file.h"
+#include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/file.h"
 
 using std::cout;
-using std::clog;
 using std::endl;
 using std::map;
 using std::string;
 using std::unique_ptr;
 using std::vector;
 
+using namespace wwiv::core;
 using namespace wwiv::net;
-using wwiv::stl::contains;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -85,16 +85,17 @@ static int LaunchOldNetworkingStack(const std::string exe, int argc, char** argv
     }
   }
   const string command_line = os.str();
-  clog << "Executing Command: '" << command_line << "'" << endl;
+  Logger() << "Executing Command: '" << command_line << "'";
   return system(command_line.c_str());
 }
 
 int main(int argc, char** argv) {
+  Logger::Init(argc, argv);
   try {
     map<string, string> args = ParseArgs(argc, argv);
 
     for (const auto& arg : args) {
-      clog << "arg: --" << arg.first << "=" << arg.second << endl;
+      Logger() << "arg: --" << arg.first << "=" << arg.second;
       if (arg.first == "help") {
         ShowHelp();
         return 0;
@@ -105,7 +106,7 @@ int main(int argc, char** argv) {
     string network_number = get_or_default(args, "network_number", "");
 
     if (network_name.empty() && network_number.empty()) {
-      clog << "--network=[network name] or .[network_number] must be specified." << endl;
+      Logger() << "--network=[network name] or .[network_number] must be specified.";
       ShowHelp();
       return 1;
     }
@@ -116,13 +117,13 @@ int main(int argc, char** argv) {
     }
     Config config(bbsdir);
     if (!config.IsInitialized()) {
-      clog << "Unable to load config.dat." << endl;
+      Logger() << "Unable to load config.dat.";
       ShowHelp();
       return 1;
     }
     Networks networks(config);
     if (!networks.IsInitialized()) {
-      clog << "Unable to load networks." << endl;
+      Logger() << "Unable to load networks.";
       ShowHelp();
       return 1;
     }
@@ -140,7 +141,7 @@ int main(int argc, char** argv) {
     if (expected_remote_node == 32767) {
       // 32767 is the PPP project address for "send everything". Some people use this
       // "magic" node number.
-      clog << "USE PPP Project to send to: Internet Email (@32767)" << endl;
+      Logger() << "USE PPP Project to send to: Internet Email (@32767)";
       return LaunchOldNetworkingStack("networkp", argc, argv);
     }
 
@@ -148,23 +149,23 @@ int main(int argc, char** argv) {
     const BinkNodeConfig* node_config = bink_config.node_config_for(expected_remote_node);
     if (node_config != nullptr) {
       // We have a node configuration for this one, use networkb.
-      clog << "USE networkb: " << node_config->host << ":" << node_config->port << endl;
+      Logger() << "USE networkb: " << node_config->host << ":" << node_config->port;
       const string command_line = StringPrintf("networkb --send --network=%s --node=%d",
         network_name.c_str(), expected_remote_node);
-      clog << "Executing Command: '" << command_line << "'" << endl;
+      Logger() << "Executing Command: '" << command_line << "'";
       return system(command_line.c_str());
     }
 
     PPPConfig ppp_config(network_name, config, networks);
     const PPPNodeConfig* ppp_node_config = ppp_config.node_config_for(expected_remote_node);
     if (ppp_node_config != nullptr) {
-      clog << "USE PPP Project to send to: " << ppp_node_config->email_address << endl;
+      Logger() << "USE PPP Project to send to: " << ppp_node_config->email_address;
       return LaunchOldNetworkingStack("networkp", argc, argv);
     }
 
     // Use legacy networking.
     return LaunchOldNetworkingStack("network0", argc, argv);
   } catch (const std::exception& e) {
-    clog << e.what() << std::endl;
+    Logger() << e.what();
   }
 }
