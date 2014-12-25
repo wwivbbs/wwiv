@@ -137,6 +137,11 @@ int main(int argc, char** argv) {
       expected_remote_node = std::stoi(args.at("N"));
     }
 
+    if (expected_remote_node == 32767) {
+      clog << "USE PPP Project to send to: Internet Email (@32767)" << endl;
+      return LaunchOldNetworkingStack("networkp", argc, argv);
+    }
+
     BinkConfig bink_config(network_name, config, networks);
     const BinkNodeConfig* node_config = bink_config.node_config_for(expected_remote_node);
     if (node_config != nullptr) {
