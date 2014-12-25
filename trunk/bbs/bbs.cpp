@@ -149,9 +149,7 @@ int WApplication::doWFCEvents() {
     if (!IsEquals(date(), pStatus->GetLastDate())) {
       if ((session()->GetBeginDayNodeNumber() == 0) || (instance_number == session()->GetBeginDayNodeNumber())) {
         cleanup_events();
-        holdphone(true);
         beginday(true);
-        holdphone(false);
         wfc_cls();
       }
     }
@@ -208,9 +206,7 @@ int WApplication::doWFCEvents() {
       // Reset User Records
       case '=':
         if (AllowLocalSysop()) {
-          holdphone(true);
           reset_files();
-          holdphone(false);
         }
         break;
       // Show WFC Menu
@@ -241,20 +237,14 @@ int WApplication::doWFCEvents() {
         break;
 
       // Fast Net Callout from WFC
-      // replace '32767' with your primary connection on the primary network
-      case '*':
-        if ((ok_modem_stuff || bUsingPppProject)
-            && GetInstanceNumber() == 1) {      //changed - 02/23/14 - dsn - removed node number check, added || bUsingPppProject )
-          session()->localIO()->LocalCls();                    //added   - 02/23/14 - dsn
-          do_callout(32767);                             //changed - 02/23/14 - dsn - changed 1160 to 32767
-        }
-        break;
+      case '*': {
+        session()->localIO()->LocalCls(); // added   - 02/23/14 - dsn
+        do_callout(32767); // changed - 02/23/14 - dsn - changed 1160 to 32767
+      } break;
       // Run MenuEditor
       case '!':
         if (AllowLocalSysop()) {
-          holdphone(true);
           EditMenus();
-          holdphone(false);
         }
         break;
       // Print NetLogs
@@ -276,18 +266,14 @@ int WApplication::doWFCEvents() {
       // Net List
       case '`':
         if (net_sysnum && AllowLocalSysop()) {
-          holdphone(true);
           print_net_listing(true);
-          holdphone(false);
         }
         break;
       // [TAB] Instance Editor
       case TAB:
         if (AllowLocalSysop()) {
           wfc_cls();
-          holdphone(true);
           instance_edit();
-          holdphone(false);
         }
         break;
       // [ESC] Quit the BBS
@@ -303,28 +289,22 @@ int WApplication::doWFCEvents() {
       case 'B':
         if (AllowLocalSysop()) {
           write_inst(INST_LOC_BOARDEDIT, 0, INST_FLAGS_NONE);
-          holdphone(true);
           boardedit();
           cleanup_net();
-          holdphone(false);
         }
         break;
       // ChainEdit
       case 'C':
         if (AllowLocalSysop()) {
           write_inst(INST_LOC_CHAINEDIT, 0, INST_FLAGS_NONE);
-          holdphone(true);
           chainedit();
-          holdphone(false);
         }
         break;
       // DirEdit
       case 'D':
         if (AllowLocalSysop()) {
           write_inst(INST_LOC_DIREDIT, 0, INST_FLAGS_NONE);
-          holdphone(true);
           dlboardedit();
-          holdphone(false);
         }
         break;
       // Send Email
@@ -332,30 +312,24 @@ int WApplication::doWFCEvents() {
         if (AllowLocalSysop()) {
           wfc_cls();
           session()->usernum = 1;
-          holdphone(true);
           bout << "|#1Send Email:";
           send_email();
           session()->WriteCurrentUser(1);
           cleanup_net();
-          holdphone(false);
         }
         break;
       // GfileEdit
       case 'G':
         if (AllowLocalSysop()) {
           write_inst(INST_LOC_GFILEEDIT, 0, INST_FLAGS_NONE);
-          holdphone(true);
           gfileedit();
-          holdphone(false);
         }
         break;
       // EventEdit
       case 'H':
         if (AllowLocalSysop()) {
           write_inst(INST_LOC_EVENTEDIT, 0, INST_FLAGS_NONE);
-          holdphone(true);
           eventedit();
-          holdphone(false);
         }
         break;
       // InitVotes
@@ -363,18 +337,14 @@ int WApplication::doWFCEvents() {
         if (AllowLocalSysop()) {
           wfc_cls();
           write_inst(INST_LOC_VOTEEDIT, 0, INST_FLAGS_NONE);
-          holdphone(true);
           ivotes();
-          holdphone(false);
         }
         break;
       // ConfEdit
       case 'J':
         if (AllowLocalSysop()) {
           wfc_cls();
-          holdphone(true);
           edit_confs();
-          holdphone(false);
         }
         break;
       // SendMailFile
@@ -382,7 +352,6 @@ int WApplication::doWFCEvents() {
         if (AllowLocalSysop()) {
           wfc_cls();
           session()->usernum = 1;
-          holdphone(true);
           bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
           string buffer;
           input(&buffer, 50);
@@ -390,7 +359,6 @@ int WApplication::doWFCEvents() {
           send_email();
           session()->WriteCurrentUser(1);
           cleanup_net();
-          holdphone(false);
         }
         break;
       // Print Log Daily logs
@@ -407,11 +375,9 @@ int WApplication::doWFCEvents() {
         if (AllowLocalSysop()) {
           wfc_cls();
           session()->usernum = 1;
-          holdphone(true);
           readmail(0);
           session()->WriteCurrentUser(1);
           cleanup_net();
-          holdphone(false);
         }
         break;
       // Print Net Log
@@ -425,7 +391,6 @@ int WApplication::doWFCEvents() {
       case 'O':
         if (AllowLocalSysop()) {
           wfc_cls();
-          holdphone(true);
           write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
           bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
           const string current_dir_slash = File::current_directory() + File::pathSeparatorString;
@@ -433,7 +398,6 @@ int WApplication::doWFCEvents() {
           if (!newFileName.empty()) {
             external_text_edit(newFileName, "", 500, ".", MSGED_FLAG_NO_TAGLINE);
           }
-          holdphone(false);
         }
         break;
       // Print Network Pending list
@@ -453,9 +417,7 @@ int WApplication::doWFCEvents() {
         wfc_cls();
         if (AllowLocalSysop()) {
           write_inst(INST_LOC_MAILR, 0, INST_FLAGS_NONE);
-          holdphone(true);
           mailr();
-          holdphone(false);
         }
         break;
       // Print Current Status
@@ -469,9 +431,7 @@ int WApplication::doWFCEvents() {
       case 'U':
         if (AllowLocalSysop()) {
           write_inst(INST_LOC_UEDIT, 0, INST_FLAGS_NONE);
-          holdphone(true);
           uedit(1, UEDIT_NONE);
-          holdphone(false);
         }
         break;
       // Send Internet Mail
@@ -480,13 +440,11 @@ int WApplication::doWFCEvents() {
           wfc_cls();
           session()->usernum = 1;
           session()->SetUserOnline(true);
-          holdphone(true);
           get_user_ppp_addr();
           send_inet_email();
           session()->SetUserOnline(false);
           session()->WriteCurrentUser(1);
           cleanup_net();
-          holdphone(false);
         }
         break;
       // Edit Gfile
@@ -494,10 +452,8 @@ int WApplication::doWFCEvents() {
         if (AllowLocalSysop()) {
           wfc_cls();
           write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
-          holdphone(true);
           bout << "|#1Edit " << syscfg.gfilesdir << "<filename>: \r\n";
           text_edit();
-          holdphone(false);
         }
         break;
       // Print Environment
@@ -978,14 +934,10 @@ int WApplication::Run(int argc, char *argv[]) {
     }
 
     if (session()->using_modem > -1) {
-      if (!session()->using_modem) {
-        holdphone(true);
-      }
       if (!this_usernum) {
         getuser();
       }
     } else {
-      holdphone(true);
       session()->using_modem = 0;
       okmacro = true;
       session()->usernum = m_unx;
@@ -1019,9 +971,6 @@ int WApplication::Run(int argc, char *argv[]) {
     }
     cleanup_net();
 
-    if (!session()->using_modem) {
-      holdphone(false);
-    }
     if (!no_hangup && ok_modem_stuff) {
       sess->remoteIO()->dtr(false);
     }
@@ -1029,7 +978,6 @@ int WApplication::Run(int argc, char *argv[]) {
     if (session()->localIO()->GetSysopAlert() && (!session()->localIO()->LocalKeyPressed())) {
       sess->remoteIO()->dtr(true);
       Wait(0.1);
-      holdphone(true);
       double dt = timer();
       session()->localIO()->LocalCls();
       bout << "\r\n>> SYSOP ALERT ACTIVATED <<\r\n\n";
@@ -1038,7 +986,6 @@ int WApplication::Run(int argc, char *argv[]) {
         sleep_for(milliseconds(1));
       }
       session()->localIO()->LocalCls();
-      holdphone(false);
     }
     session()->localIO()->SetSysopAlert(false);
   } while (!ooneuser);
