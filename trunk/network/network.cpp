@@ -138,6 +138,8 @@ int main(int argc, char** argv) {
     }
 
     if (expected_remote_node == 32767) {
+      // 32767 is the PPP project address for "send everything". Some people use this
+      // "magic" node number.
       clog << "USE PPP Project to send to: Internet Email (@32767)" << endl;
       return LaunchOldNetworkingStack("networkp", argc, argv);
     }
