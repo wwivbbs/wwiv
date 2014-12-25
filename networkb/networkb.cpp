@@ -31,9 +31,10 @@
 #include <string>
 #include <vector>
 
+#include "core/file.h"
+#include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/file.h"
 
 using std::cout;
 using std::clog;
@@ -43,6 +44,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
+using wwiv::core::Logger;
 using namespace wwiv::net;
 using wwiv::stl::contains;
 using namespace wwiv::strings;
@@ -75,9 +77,10 @@ static map<string, string> ParseArgs(int argc, char** argv) {
 int main(int argc, char** argv) {
   try {
     map<string, string> args = ParseArgs(argc, argv);
+    Logger::set_filename("I", "networkb.log");
 
     for (const auto& arg : args) {
-      clog << "arg: --" << arg.first << "=" << arg.second << endl;
+      wwiv::core::Logger("I") << "arg: --" << arg.first << "=" << arg.second;
       if (arg.first == "help") {
         ShowHelp();
         return 0;
