@@ -39,16 +39,17 @@
 using std::cout;
 using std::clog;
 using std::endl;
+using std::exception;
 using std::map;
 using std::string;
 using std::unique_ptr;
 using std::vector;
 
-using wwiv::core::Logger;
+using namespace wwiv::core;
 using namespace wwiv::net;
-using wwiv::stl::contains;
-using namespace wwiv::strings;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 static void ShowHelp() {
   cout << "Usage: networkb [flags]" << endl
@@ -76,11 +77,11 @@ static map<string, string> ParseArgs(int argc, char** argv) {
 
 int main(int argc, char** argv) {
   try {
+    Logger::Init(argc, argv);
     map<string, string> args = ParseArgs(argc, argv);
-    Logger::set_filename("I", "networkb.log");
 
     for (const auto& arg : args) {
-      wwiv::core::Logger("I") << "arg: --" << arg.first << "=" << arg.second;
+      Logger() << "arg: --" << arg.first << "=" << arg.second;
       if (arg.first == "help") {
         ShowHelp();
         return 0;
@@ -89,7 +90,7 @@ int main(int argc, char** argv) {
 
     string network_name = args.at("network");
     if (network_name.empty()) {
-      clog << "--network=[network name] must be specified." << endl;
+      Logger() << "--network=[network name] must be specified.";
       ShowHelp();
       return 1;
     }
@@ -100,13 +101,13 @@ int main(int argc, char** argv) {
     }
     Config config(bbsdir);
     if (!config.IsInitialized()) {
-      clog << "Unable to load config.dat." << endl;
+      Logger() << "Unable to load config.dat.";
       ShowHelp();
       return 1;
     }
     Networks networks(config);
     if (!networks.IsInitialized()) {
-      clog << "Unable to load networks." << endl;
+      Logger() << "Unable to load networks.";
       ShowHelp();
       return 1;
     }
@@ -120,19 +121,19 @@ int main(int argc, char** argv) {
     unique_ptr<SocketConnection> c;
     BinkSide side = BinkSide::ORIGINATING;
     if (contains(args, "receive")) {
-      clog << "BinkP receive" << endl;
+      Logger() << "BinkP receive";
       side = BinkSide::ANSWERING;
       c = Accept(24554);
     } else if (contains(args, "send")) {
-      clog << "BinkP send to: " << expected_remote_node << endl;
+      Logger() << "BinkP send to: " << expected_remote_node;
       const BinkNodeConfig* node_config = bink_config.node_config_for(expected_remote_node);
       if (node_config == nullptr) {
-        clog << "Unable to find node condfig for node: " << expected_remote_node << endl;
+        Logger() << "Unable to find node condfig for node: " << expected_remote_node;
         return 2;
       }
       c = Connect(node_config->host, node_config->port);
     } else {
-      clog << "No command given to send or receive.  Either use '--send --node=#' or --receive";
+      Logger() << "No command given to send or receive.  Either use '--send --node=#' or --receive";
       return 1;
     }
     BinkP::received_transfer_file_factory_t factory = [&](const string& filename) { 
@@ -142,9 +143,9 @@ int main(int argc, char** argv) {
     BinkP binkp(c.get(), &bink_config, side, expected_remote_node, factory);
     binkp.Run();
   } catch (const socket_error& e) {
-    clog << e.what() << std::endl;
-  } catch (const std::exception& e) {
-    clog << e.what() << std::endl;
+    Logger() << e.what();
+  } catch (const exception& e) {
+    Logger() << e.what();
   }
   
 }
