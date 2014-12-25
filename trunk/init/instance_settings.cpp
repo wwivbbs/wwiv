@@ -96,6 +96,7 @@ bool write_instance(int num, configoverrec* instance) {
   configfile.Seek(sizeof(configoverrec) * (num - 1), File::seekBegin);
   configfile.Write(instance, sizeof(configoverrec));
   configfile.Close();
+  return true;
 }
 
 bool write_instance(int num, const string batch_dir, const string temp_dir) {
