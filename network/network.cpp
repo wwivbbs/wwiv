@@ -45,17 +45,17 @@ using namespace wwiv::stl;
 
 static void ShowHelp() {
   cout << "Usage: network [flags]" << endl
-       << "Flags:" << endl
-       << "/N####     Network node number to dial." << endl
-       << ".####      Network number (as defined in INIT)" << endl
-       << "--network  Network name to use (i.e. wwivnet)" << endl
-       << "--bbsdir   (optional) BBS directory if other than current directory " << endl
-       << endl;
+    << "Flags:" << endl
+    << "/N####     Network node number to dial." << endl
+    << ".####      Network number (as defined in INIT)" << endl
+    << "--network  Network name to use (i.e. wwivnet)" << endl
+    << "--bbsdir   (optional) BBS directory if other than current directory " << endl
+    << endl;
 }
 
 static map<string, string> ParseArgs(int argc, char** argv) {
   map<string, string> args;
-  for (int i=0; i < argc; i++) {
+  for (int i = 0; i < argc; i++) {
     const string s(argv[i]);
     if (starts_with(s, "--")) {
       const vector<string> delims = SplitString(s, "=");
@@ -78,7 +78,7 @@ static map<string, string> ParseArgs(int argc, char** argv) {
 static int LaunchOldNetworkingStack(const std::string exe, int argc, char** argv) {
   std::ostringstream os;
   os << exe;
-  for (int i=1; i < argc; i++) {
+  for (int i = 1; i < argc; i++) {
     const string s(argv[1]);
     if (starts_with(s, "/")) {
       os << " " << argv[i];
@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
       ShowHelp();
       return 1;
     }
-  
+
     string bbsdir = File::current_directory();
     if (contains(args, "bbsdir")) {
       bbsdir = args["bbsdir"];
@@ -143,7 +143,7 @@ int main(int argc, char** argv) {
       // We have a node configuration for this one, use networkb.
       clog << "USE networkb: " << node_config->host << ":" << node_config->port << endl;
       const string command_line = StringPrintf("networkb --send --network=%s --node=%d",
-          network_name.c_str(), expected_remote_node);
+        network_name.c_str(), expected_remote_node);
       clog << "Executing Command: '" << command_line << "'" << endl;
       return system(command_line.c_str());
     }
@@ -157,9 +157,7 @@ int main(int argc, char** argv) {
 
     // Use legacy networking.
     return LaunchOldNetworkingStack("network0", argc, argv);
-    
   } catch (const std::exception& e) {
     clog << e.what() << std::endl;
   }
-  
 }
