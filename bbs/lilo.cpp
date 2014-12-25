@@ -556,7 +556,7 @@ static void UpdateLastOnFileAndUserLog() {
     pausescr();
   }
 
-  if (true || session()->GetEffectiveSl() != 255 || incom) {
+  if (session()->GetEffectiveSl() != 255 || incom) {
     const string sysop_log_line = StringPrintf("%ld: %s %s %s   %s - %d (%u)",
         pStatus->GetCallerNumber(),
         session()->user()->GetUserNameAndNumber(session()->usernum),
