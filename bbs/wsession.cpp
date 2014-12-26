@@ -29,7 +29,7 @@ WOutStream bout;
 
 WSession::WSession(WApplication* app) : WSession(app, nullptr) {}
 
-WSession::WSession(WApplication* app, WLocalIO* localIO) : m_pApplication(app), 
+WSession::WSession(WApplication* app, WLocalIO* localIO) : application_(app), 
     m_bLastKeyLocal(true), m_nEffectiveSl(0), m_DirectoryDateCache(0), m_SubDateCache(0),
     m_nTopScreenColor(0), m_nUserEditorColor(0), m_nEditLineColor(0), 
     m_nChatNameSelectionColor(0), m_nMessageColor(0), mail_who_field_len(0),
@@ -43,13 +43,8 @@ WSession::WSession(WApplication* app, WLocalIO* localIO) : m_pApplication(app),
     numf(0), m_nNumMsgsInCurrentSub(0), num_dirs(0), num_languages(0), num_sec(0), num_subs(0), num_events(0),
     num_sys_list(0), screenlinest(0), subchg(0), tagging(0), tagptr(0), titled(0), using_modem(0), m_bInternalZmodem(false),
     m_bExecLogSyncFoss(false), m_bExecUseWaitForInputIdle(false), m_nExecChildProcessWaitTime(0), m_bNewScanAtLogin(false),
-    usernum(0), m_pComm(nullptr) {
-  if (localIO == nullptr) {
-    m_pLocalIO = new WLocalIO();
-  } else {
-    m_pLocalIO = localIO;
-  }
-  ::bout.SetLocalIO(m_pLocalIO);
+    usernum(0), local_io_(localIO ? localIO : new WLocalIO()) {
+  ::bout.SetLocalIO(local_io_.get());
 
   memset(&newuser_colors, 0, sizeof(newuser_colors));
   memset(&newuser_bwcolors, 0, sizeof(newuser_bwcolors));
@@ -59,46 +54,27 @@ WSession::WSession(WApplication* app, WLocalIO* localIO) : m_pApplication(app),
 }
 
 WSession::~WSession() {
-  if (ok_modem_stuff && m_pComm != nullptr) {
-    m_pComm->close();
-    if (m_pComm != nullptr) {
-      delete m_pComm;
-      m_pComm = nullptr;
-    }
+  if (comm_ && ok_modem_stuff) {
+    comm_->close();
   }
-  if (m_pLocalIO != nullptr) {
-    m_pLocalIO->SetCursor(WLocalIO::cursorNormal);
-    delete m_pLocalIO;
-    m_pLocalIO = nullptr;
+  if (local_io_) {
+    local_io_->SetCursor(WLocalIO::cursorNormal);
   }
 }
 
 void WSession::CreateComm(unsigned int nHandle) {
-  m_pComm = WComm::CreateComm(nHandle);
-  bout.SetComm(m_pComm);
-}
-
-WLocalIO* WSession::localIO() { return m_pLocalIO; }
-WComm* WSession::remoteIO() { return m_pComm; }
-
-bool WSession::ReadCurrentUser() {
-  return ReadCurrentUser(usernum, false);
+  comm_.reset(WComm::CreateComm(nHandle));
+  bout.SetComm(comm_.get());
 }
 
 bool WSession::ReadCurrentUser(int nUserNumber, bool bForceRead) {
-  WWIV_ASSERT(m_pApplication);
-  WWIV_ASSERT(m_pApplication->users());
-  return m_pApplication->users()->ReadUser(&m_thisuser, nUserNumber, bForceRead);
-}
-
-bool WSession::WriteCurrentUser() {
-  return WriteCurrentUser(usernum);
+  WWIV_ASSERT(application_->users());
+  return application_->users()->ReadUser(&m_thisuser, nUserNumber, bForceRead);
 }
 
 bool WSession::WriteCurrentUser(int nUserNumber) {
-  WWIV_ASSERT(m_pApplication);
-  WWIV_ASSERT(m_pApplication->users());
-  return m_pApplication->users()->WriteUser(&m_thisuser, nUserNumber);
+  WWIV_ASSERT(application_->users());
+  return application_->users()->WriteUser(&m_thisuser, nUserNumber);
 }
 
 void WSession::DisplaySysopWorkingIndicator(bool displayWait) {
@@ -133,10 +109,5 @@ void WSession::DisplaySysopWorkingIndicator(bool displayWait) {
   }
 }
 
-const char* WSession::GetNetworkName() const {
-  return net_networks[m_nNetworkNumber].name;
-}
-
-const string WSession::GetNetworkDataDirectory() const {
-  return string(net_networks[m_nNetworkNumber].dir);
-}
+const char* WSession::GetNetworkName() const { return net_networks[m_nNetworkNumber].name; }
+const std::string WSession::GetNetworkDataDirectory() const { return std::string(net_networks[m_nNetworkNumber].dir); }

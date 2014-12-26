@@ -121,9 +121,9 @@ CursesIO::CursesIO()
 
   int stdscr_maxx = getmaxx(stdscr);
   int stdscr_maxy = getmaxy(stdscr);
-  header_ = new CursesWindow(nullptr, color_scheme_.get(), 2, 0, 0, 0);
-  footer_ = new CursesFooter(new CursesWindow(nullptr, color_scheme_.get(), 2, 0, stdscr_maxy-2, 0), 
-    color_scheme_.get());
+  header_.reset(new CursesWindow(nullptr, color_scheme_.get(), 2, 0, 0, 0));
+  footer_.reset(new CursesFooter(new CursesWindow(nullptr, color_scheme_.get(), 2, 0, stdscr_maxy-2, 0), 
+    color_scheme_.get()));
   header_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::HEADER));
   const string s = StringPrintf("WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version);
   header_->SetColor(SchemeId::HEADER);
@@ -135,7 +135,7 @@ CursesIO::CursesIO()
   footer_->window()->Refresh();
   header_->RedrawWin();
 
-  window_ = new CursesWindow(nullptr, color_scheme_.get(), stdscr_maxy-4, stdscr_maxx, 2, 0);
+  window_.reset(new CursesWindow(nullptr, color_scheme_.get(), stdscr_maxy-4, stdscr_maxx, 2, 0));
   window_->Keypad(true);
 
   touchwin(stdscr);
@@ -146,9 +146,6 @@ CursesIO::CursesIO()
 }
 
 CursesIO::~CursesIO() {
-  delete footer_;
-  delete header_;
-  delete window_;
   endwin();
 
 #ifdef _WIN32
@@ -188,7 +185,7 @@ void CursesIO::SetIndicatorMode(IndicatorMode mode) {
 }
 
 CursesWindow* CursesIO::CreateBoxedWindow(const std::string& title, int nlines, int ncols) {
-  unique_ptr<CursesWindow> window(new CursesWindow(window_, color_scheme_.get(), nlines, ncols));
+  unique_ptr<CursesWindow> window(new CursesWindow(window_.get(), color_scheme_.get(), nlines, ncols));
   window->SetColor(SchemeId::WINDOW_BOX);
   window->Box(0, 0);
   window->SetTitle(title);

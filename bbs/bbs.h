@@ -89,12 +89,9 @@ class WApplication : public WLogger, Runnable {
   /*!
    * @function BBSMainLoop - Main BBS loop.. (old main functon)
    */
-  int  BBSMainLoop(int argc, char *argv[]);
-
-  StatusMgr* GetStatusManager();
-
-  WUserManager* users();
-
+  int BBSMainLoop(int argc, char *argv[]);
+  StatusMgr* GetStatusManager() { return statusMgr.get(); }
+  WUserManager* users() { return userManager.get(); }
   const std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
 
   /*!
@@ -210,8 +207,8 @@ private:
   double          m_fShutDownTime;
   int             m_nWfcStatus;
 
-  StatusMgr*      statusMgr;
-  WUserManager*   userManager;
+  std::unique_ptr<StatusMgr> statusMgr;
+  std::unique_ptr<WUserManager> userManager;
   std::string     m_attachmentDirectory;
 };
 
