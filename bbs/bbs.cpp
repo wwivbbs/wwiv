@@ -89,12 +89,7 @@ using namespace wwiv::os;
 using namespace wwiv::strings;
 
 WApplication* application() { return app; }
-
 WSession* session() { return sess; }
-
-StatusMgr* WApplication::GetStatusManager() { return statusMgr; }
-
-WUserManager* WApplication::users() { return userManager; }
 
 #if !defined ( __unix__ )
 void WApplication::GetCaller() {
@@ -850,21 +845,20 @@ int WApplication::Run(int argc, char *argv[]) {
   }
 
   // Add the environment variable or overwrite the existing one
-  char szInstanceEnvVar[81];
 #if !defined ( __unix__ )
-  snprintf(szInstanceEnvVar, sizeof(szInstanceEnvVar), "WWIV_INSTANCE=%ld", GetInstanceNumber());
-  putenv(szInstanceEnvVar);
+  const string env_str = StringPrintf("WWIV_INSTANCE=%ld", GetInstanceNumber());
+  putenv(env_str.c_str());
 #else
   // For some reason putenv() doesn't work sometimes when setenv() does...
-  snprintf(szInstanceEnvVar, sizeof(szInstanceEnvVar), "%u", GetInstanceNumber());
-  setenv("WWIV_INSTANCE", szInstanceEnvVar, 1);
+  const string env_str = StringPrintf("%u", GetInstanceNumber());
+  setenv("WWIV_INSTANCE", env_str.c_str(), 1);
   m_bUserAlreadyOn = true;
 #endif
 
   session()->CreateComm(hSockOrComm);
   this->InitializeBBS();
 
-  if (systemPassword.length() > 0) {
+  if (!systemPassword.empty()) {
     strcpy(syscfg.systempw, systemPassword.c_str());
   }
 
@@ -1164,16 +1158,6 @@ WApplication::~WApplication() {
   if (sess != nullptr) {
     delete sess;
     sess = nullptr;
-  }
-
-  if (statusMgr != nullptr) {
-    delete statusMgr;
-    statusMgr = nullptr;
-  }
-
-  if (userManager != nullptr) {
-    delete userManager;
-    userManager = nullptr;
   }
 }
 

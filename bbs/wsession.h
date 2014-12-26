@@ -20,6 +20,7 @@
 #define __INCLUDED_BBS_WSESSION_H__
 
 #include <iostream>
+#include <memory>
 #include <string>
 
 #include "bbs/wcomm.h"
@@ -89,17 +90,17 @@ class WSession {
   WUser* user() { return &m_thisuser; }
 
   void DisplaySysopWorkingIndicator(bool displayWait);
-  WComm* remoteIO();
-  WLocalIO* localIO();
+  WComm* remoteIO() { return comm_.get(); }
+  WLocalIO* localIO() { return local_io_.get(); }
   /*! @function CreateComm Creates up the communications subsystem */
   void CreateComm(unsigned int nHandle);
 
   bool IsLastKeyLocal() const { return m_bLastKeyLocal; }
   void SetLastKeyLocal(bool b) { m_bLastKeyLocal = b; }
 
-  bool ReadCurrentUser();
+  bool ReadCurrentUser() { return ReadCurrentUser(usernum, false); }
   bool ReadCurrentUser(int nUserNumber, bool bForceRead = false);
-  bool WriteCurrentUser();
+  bool WriteCurrentUser() { return WriteCurrentUser(usernum); }
   bool WriteCurrentUser(int nUserNumber);
 
   void ResetEffectiveSl() { m_nEffectiveSl = user()->GetSl(); }
@@ -236,10 +237,10 @@ class WSession {
  private:
   bool            m_bLastKeyLocal;
   int             m_nEffectiveSl;
-  WApplication*   m_pApplication;
+  WApplication*   application_;
   WUser           m_thisuser;
-  WComm*          m_pComm;
-  WLocalIO*       m_pLocalIO;
+  std::unique_ptr<WComm> comm_;
+  std::unique_ptr<WLocalIO> local_io_;
   bool wwivmail_enabled_;
   bool internal_qwk_enabled_;
 
