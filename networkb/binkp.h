@@ -14,6 +14,7 @@ namespace wwiv {
 namespace net {
   
 class BinkConfig;
+class Callout;
 class Connection;
 class TransferFile;
 
@@ -45,6 +46,7 @@ public:
   // connection?
   BinkP(Connection* conn,
         BinkConfig* config,
+        Callout* callout,
 	      BinkSide side, 
 	      int expected_remote_node,
         received_transfer_file_factory_t& received_transfer_file_factory);
@@ -85,6 +87,7 @@ private:
   BinkState SendDummyFile(const std::string& filename, char fill, std::size_t size);
 
   BinkConfig* config_;
+  Callout* callout_;
   Connection* conn_;
   std::string address_list_;
   bool ok_received_;
