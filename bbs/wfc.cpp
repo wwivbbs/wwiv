@@ -40,10 +40,9 @@ using wwiv::os::random_number;
 
 // Local Functions
 void DisplayWFCScreen(const char *pszBuffer);
-static char * pszScreenBuffer = nullptr;
+static char* pszScreenBuffer = nullptr;
 
 static int inst_num;
-
 
 void wfc_cls() {
   if (application()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
@@ -54,7 +53,6 @@ void wfc_cls() {
   }
 }
 
-
 void wfc_init() {
   session()->localIO()->SetCursor(WLocalIO::cursorNormal);              // add 4.31 Build3
   if (application()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
@@ -62,7 +60,6 @@ void wfc_init() {
     inst_num = 1;
   }
 }
-
 
 void wfc_update() {
   if (!application()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
@@ -92,18 +89,6 @@ void wfc_update() {
       }
     } while (inst_num == application()->GetInstanceNumber());
   }
-}
-
-bool iscdrom(char drive) {
-#if !defined ( __unix__ )
-  // TODO Make this function platform specific
-  char szDrivePath[10];
-  sprintf(szDrivePath, "%c:\\", drive + '@');
-
-  return ((GetDriveType(szDrivePath) == DRIVE_CDROM) ? true : false);
-#else
-  return false;
-#endif
 }
 
 void wfc_screen() {
@@ -201,10 +186,8 @@ void wfc_screen() {
   }
 }
 
-
 void DisplayWFCScreen(const char *pszScreenBuffer) {
   session()->localIO()->LocalWriteScreenBuffer(pszScreenBuffer);
 }
-
 
 #endif // __unix__
