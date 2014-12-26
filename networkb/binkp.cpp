@@ -18,6 +18,7 @@
 #include "core/wfndfile.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/binkp_config.h"
+#include "networkb/callout.h"
 #include "networkb/connection.h"
 #include "networkb/socket_exceptions.h"
 #include "networkb/transfer_file.h"
@@ -67,11 +68,26 @@ private:
   const uint16_t destination_node_;
 };
 
+static string expected_password_for(Callout* callout, int node) {
+  const net_call_out_rec* con = callout->node_config_for(node);
+  string password("-");  // default password
+  if (con != nullptr) {
+    const char *p = con->password;
+    if (p && *p) {
+      // If the password is null nullptr and not empty string.
+      password.assign(p);
+    } else {
+      clog << "       No password found for node: " << node << " using default password of '-'" << endl;
+    }
+  }
+  return password;
+}
 
-BinkP::BinkP(Connection* conn, BinkConfig* config, BinkSide side,
+BinkP::BinkP(Connection* conn, BinkConfig* config, Callout* callout, BinkSide side,
         int expected_remote_node,
         received_transfer_file_factory_t& received_transfer_file_factory)
-  : conn_(conn), config_(config), side_(side), own_address_(config->node_number()), 
+  : conn_(conn), config_(config), callout_(callout), side_(side),
+    own_address_(config->node_number()), 
     expected_remote_node_(expected_remote_node), 
     error_received_(false),
     received_transfer_file_factory_(received_transfer_file_factory) {}
@@ -91,7 +107,6 @@ bool BinkP::process_command(int16_t length, std::chrono::milliseconds d) {
   } break;
   case BinkpCommands::M_ADR: {
     clog << "RECV:  M_ADR: " << s << endl;
-    // TODO(rushfan): tokenize into addresses
     address_list_ = s;
   } break;
   case BinkpCommands::M_OK: {
@@ -182,10 +197,10 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   memcpy(p, data.data(), data.size());
 
   int sent = conn_->send(packet.get(), size, seconds(3));
-  clog << "SEND:  command: " << BinkpCommands::command_id_to_name(command_id)
-       << "; packet_length: " << (packet_length & 0x7fff)
-       << "; sent " << sent
-       << "; data: " << data << endl;
+  clog << "SEND:  command: " << BinkpCommands::command_id_to_name(command_id) << ": "
+//       << "; packet_length: " << (packet_length & 0x7fff)
+//       << "; sent " << sent << "; data: " 
+       << data << endl;
   return true;
 }
 
@@ -230,7 +245,8 @@ BinkState BinkP::WaitConn() {
 
 BinkState BinkP::SendPasswd() {
   clog << "STATE: SendPasswd" << endl;
-  send_command_packet(BinkpCommands::M_PWD, "-");
+  const string password = expected_password_for(callout_, expected_remote_node_);
+  send_command_packet(BinkpCommands::M_PWD, password);
   return BinkState::WAIT_ADDR;
 }
 
@@ -246,10 +262,32 @@ BinkState BinkP::WaitAddr() {
   return BinkState::AUTH_REMOTE;
 }
 
+static int node_number_from_address_list(const string& network_list, const string& network_name) {
+  vector<string> v = SplitString(network_list, " ");
+  for (auto s : v) {
+    StringTrim(&s);
+    if (ends_with(s, StrCat("@", network_name)) || starts_with(s, "20000:20000/")) {
+      s = s.substr(12);
+      s = s.substr(0, s.find('/'));
+      return std::stoi(s);
+    }
+  }
+  return -1;
+}
+
 BinkState BinkP::PasswordAck() {
   // This is only on the answering side.
+  // This should only happen in the originating side.
+  if (side_ != BinkSide::ANSWERING) {
+    clog << "**** ERROR: WaitPwd Called on ORIGINATING side" << endl;
+  }
+
+  int remote_node = node_number_from_address_list(address_list_, config_->network_name());
+  clog << "       remote node: " << remote_node << endl;
+  const string expected_password = expected_password_for(callout_, remote_node);
   clog << "STATE: PasswordAck" << endl;
-  if (remote_password_ == "-") {
+  clog << "       expected_password = '" << expected_password << "'" << endl;
+  if (remote_password_ == expected_password) {
     // Passwords match, send OK.
     send_command_packet(BinkpCommands::M_OK, "Passwords match; insecure session");
     // No need to wait for OK since we are the answering side, just move straight to
@@ -259,20 +297,25 @@ BinkState BinkP::PasswordAck() {
 
   // Passwords do not match, send error.
   send_command_packet(BinkpCommands::M_ERR,
-      StringPrintf("Password doen't match.  Received '%s' expected '%s'."
-       "-", "-"));
+      StringPrintf("Password doen't match.  Received '%s' expected '%s'.",
+       remote_password_.c_str(), expected_password.c_str()));
   return BinkState::DONE;
 }
 
 BinkState BinkP::WaitPwd() {
+  // This should only happen in the originating side.
+  if (side_ != BinkSide::ANSWERING) {
+    clog << "**** ERROR: WaitPwd Called on ORIGINATING side" << endl;
+  }
   clog << "STATE: WaitPwd" << endl;
   auto predicate = [&]() -> bool { return !remote_password_.empty(); };
   for (int i=0; i < 30; i++) {
     process_frames(predicate, seconds(1));
     if (predicate()) {
-      return BinkState::PASSWORD_ACK;
+      break;
     }
   }
+
   return BinkState::PASSWORD_ACK;
 }
 
@@ -302,16 +345,18 @@ BinkState BinkP::AuthRemote() {
   clog << "STATE: AuthRemote" << endl;
   // Check that the address matches who we thought we called.
   clog << "       remote address_list: " << address_list_ << endl;
-  const string expected_ftn = StringPrintf("20000:20000/%d@%s", expected_remote_node_,  config_->network_name().c_str());
   if (side_ == BinkSide::ANSWERING) {
     return BinkState::WAIT_PWD;
   }
+
+  const string expected_ftn = StringPrintf("20000:20000/%d@%s", expected_remote_node_,  config_->network_name().c_str());
+  clog << "       expected_ftn: " << expected_ftn << endl;
   if (address_list_.find(expected_ftn) != string::npos) {
     return (side_ == BinkSide::ORIGINATING) ?
       BinkState::IF_SECURE : BinkState::WAIT_PWD;
   } else {
-    send_command_packet(BinkpCommands::M_ERR, StrCat("Unexpected Address: ",
-                  address_list_));
+    send_command_packet(BinkpCommands::M_ERR, 
+      StrCat("Unexpected Address: ", address_list_));
     // TODO(rushfan): add error state?
     return BinkState::UNKNOWN;
   }

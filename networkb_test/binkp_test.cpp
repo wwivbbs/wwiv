@@ -4,6 +4,7 @@
 #include "networkb/binkp.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/binkp_config.h"
+#include "networkb/callout.h"
 #include "networkb/transfer_file.h"
 #include "networkb_test/fake_connection.h"
 
@@ -30,8 +31,9 @@ protected:
     files_.CreateTempFile("addresses.binkp", line);
     const string network_dir = files_.DirName("network");
     BinkConfig* dummy_config = new BinkConfig(ORIGINATING_ADDRESS, "Dummy", network_dir);
+    Callout* dummy_callout = new Callout(network_dir);
     BinkP::received_transfer_file_factory_t null_factory = [](const string& filename) { return new InMemoryTransferFile(filename, ""); };
-    binkp_.reset(new BinkP(&conn_, dummy_config, BinkSide::ANSWERING, ANSWERING_ADDRESS, null_factory));
+    binkp_.reset(new BinkP(&conn_, dummy_config, dummy_callout, BinkSide::ANSWERING, ANSWERING_ADDRESS, null_factory));
     thread_ = thread([&]() {binkp_->Run(); });
   } 
 
