@@ -35,6 +35,7 @@
 #include "core/wwivassert.h"
 
 using std::string;
+using std::unique_ptr;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 using wwiv::strings::StringPrintf;
@@ -661,7 +662,6 @@ void print_net_listing(bool bForcePause) {
   }
 }
 
-
 void read_new_stuff() {
   zap_bbs_list();
   for (int i = 0; i < session()->GetMaxNetworkNumber(); i++) {
@@ -677,8 +677,7 @@ void mailr() {
   mailrec m, m1;
   filestatusrec fsr;
 
-  File *pFileEmail = OpenEmailFile(false);
-  WWIV_ASSERT(pFileEmail);
+  unique_ptr<File> pFileEmail(OpenEmailFile(false));
   if (pFileEmail->IsOpen()) {
     int nRecordNumber = pFileEmail->GetLength() / sizeof(mailrec) - 1;
     char c = ' ';
@@ -744,7 +743,7 @@ void mailr() {
             pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::seekBegin);
             pFileEmail->Read(&m1, sizeof(mailrec));
             if (memcmp(&m, &m1, sizeof(mailrec)) == 0) {
-              delmail(pFileEmail, nRecordNumber);
+              delmail(pFileEmail.get(), nRecordNumber);
               bool found = false;
               if (m.status & status_file) {
                 File attachFile(syscfg.datadir, ATTACH_DAT);
@@ -776,7 +775,6 @@ void mailr() {
         } while ((c == 'R') && (!hangup));
 
         pFileEmail = OpenEmailFile(false);
-        WWIV_ASSERT(pFileEmail);
         if (!pFileEmail->IsOpen()) {
           break;
         }
@@ -785,9 +783,7 @@ void mailr() {
     }
     pFileEmail->Close();
   }
-  delete pFileEmail;
 }
-
 
 void chuser() {
   if (!ValidateSysopPassword() || !so()) {

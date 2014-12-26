@@ -374,9 +374,8 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
           bout << "|#9Mark messages in " << subboards[usub[session()->GetCurrentMessageArea()].subnum].name <<
                              " as read? ";
           if (yesno()) {
-            WStatus *pStatus = application()->GetStatusManager()->GetStatus();
+            unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
             qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = pStatus->GetQScanPointer() - 1L;
-            delete pStatus;
           }
         }
 

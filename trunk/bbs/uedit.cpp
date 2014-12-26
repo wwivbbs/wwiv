@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <memory>
 #include <string>
 
 #include "bbs/callback.h"
@@ -30,6 +31,7 @@
 
 using namespace wwiv::bbs;
 using std::string;
+using std::unique_ptr;
 using wwiv::strings::IsEquals;
 
 static uint32_t *u_qsc = 0;
@@ -41,7 +43,6 @@ int  matchuser(int nUserNumber);
 int  matchuser(WUser * pUser);
 void changeopt();
 
-
 void deluser(int nUserNumber) {
   WUser user;
   application()->users()->ReadUser(&user, nUserNumber);
@@ -52,8 +53,7 @@ void deluser(int nUserNumber) {
     user.SetInactFlag(WUser::userDeleted);
     user.SetNumMailWaiting(0);
     application()->users()->WriteUser(&user, nUserNumber);
-    File *pFileEmail = OpenEmailFile(true);
-    WWIV_ASSERT(pFileEmail);
+    unique_ptr<File> pFileEmail(OpenEmailFile(true));
     if (pFileEmail->IsOpen()) {
       long lEmailFileLen = pFileEmail->GetLength() / sizeof(mailrec);
       for (int nMailRecord = 0; nMailRecord < lEmailFileLen; nMailRecord++) {
@@ -63,11 +63,10 @@ void deluser(int nUserNumber) {
         pFileEmail->Read(&m, sizeof(mailrec));
         if ((m.tosys == 0 && m.touser == nUserNumber) ||
             (m.fromsys == 0 && m.fromuser == nUserNumber)) {
-          delmail(pFileEmail, nMailRecord);
+          delmail(pFileEmail.get(), nMailRecord);
         }
       }
       pFileEmail->Close();
-      delete pFileEmail;
     }
     File voteFile(syscfg.datadir, VOTING_DAT);
     voteFile.Open(File::modeReadWrite | File::modeBinary);
@@ -95,7 +94,6 @@ void deluser(int nUserNumber) {
     delete_phone_number(nUserNumber, user.GetDataPhoneNumber());    // dupphone addition
   }
 }
-
 
 void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScreen) {
   char s[81], s1[81], s2[81], s3[81];
@@ -255,7 +253,6 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
   }
   // end callback changes
 }
-
 
 int matchuser(int nUserNumber) {
   WUser user;

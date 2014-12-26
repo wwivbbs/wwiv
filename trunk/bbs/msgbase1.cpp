@@ -22,6 +22,9 @@
 #include <unistd.h>
 #endif  // _WIN32
 
+#include <memory>
+#include <string>
+
 #include "bbs/datetime.h"
 #include "bbs/wwiv.h"
 #include "bbs/inmsg.h"
@@ -34,6 +37,7 @@
 #include "core/textfile.h"
 
 using std::string;
+using std::unique_ptr;
 using std::unique_ptr;
 using wwiv::strings::StringPrintf;
 
@@ -373,9 +377,8 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
         && get_post(i)->qscan > qsc_p[session()->GetCurrentReadMessageArea()]) {
       scan(i, SCAN_OPTION_READ_MESSAGE, &nNextSubNumber, false);
     } else {
-      WStatus *pStatus = application()->GetStatusManager()->GetStatus();
+      unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
       qsc_p[session()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
-      delete pStatus;
     }
 
     session()->SetCurrentMessageArea(nOldSubNumber);
