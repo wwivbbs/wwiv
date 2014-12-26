@@ -9,6 +9,7 @@
     <ClInclude Include="networks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="net.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
