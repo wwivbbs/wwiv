@@ -29,7 +29,21 @@ WOutStream bout;
 
 WSession::WSession(WApplication* app) : WSession(app, nullptr) {}
 
-WSession::WSession(WApplication* app, WLocalIO* localIO) {
+WSession::WSession(WApplication* app, WLocalIO* localIO) : m_pApplication(app), 
+    m_bLastKeyLocal(true), m_nEffectiveSl(0), m_DirectoryDateCache(0), m_SubDateCache(0),
+    m_nTopScreenColor(0), m_nUserEditorColor(0), m_nEditLineColor(0), 
+    m_nChatNameSelectionColor(0), m_nMessageColor(0), mail_who_field_len(0),
+    max_batch(0), max_extend_lines(0), max_chains(0), max_gfilesec(0), screen_saver_time(0),
+    m_nForcedReadSubNumber(0), m_bThreadSubs(false), m_bAllowCC(false), m_bUserOnline(false),
+    m_bQuoting(false), m_bTimeOnlineLimited(false), m_nCurrentFileArea(0), m_nCurrentReadMessageArea(0),
+    m_nCurrentMessageArea(0), m_nCurrentConferenceFileArea(0), m_nCurrentConferenceMessageArea(0), m_nFileAreaCache(0),
+    m_nMessageAreaCache(0), m_nBeginDayNodeNumber(0), m_nMaxNumberMessageAreas(0), m_nMaxNumberFileAreas(0),
+    m_nNumMessagesReadThisLogon(0), m_nNetworkNumber(0), m_nMaxNetworkNumber(0), m_nCurrentNetworkType(net_type_wwivnet),
+    m_bNewMailWaiting(false), numbatch(0), numbatchdl(0), m_nNumberOfChains(0), m_nNumberOfEditors(0), m_nNumberOfExternalProtocols(0),
+    numf(0), m_nNumMsgsInCurrentSub(0), num_dirs(0), num_languages(0), num_sec(0), num_subs(0), num_events(0),
+    num_sys_list(0), screenlinest(0), subchg(0), tagging(0), tagptr(0), titled(0), using_modem(0), m_bInternalZmodem(false),
+    m_bExecLogSyncFoss(false), m_bExecUseWaitForInputIdle(false), m_nExecChildProcessWaitTime(0), m_bNewScanAtLogin(false),
+    usernum(0), m_pComm(nullptr) {
   if (localIO == nullptr) {
     m_pLocalIO = new WLocalIO();
   } else {
@@ -37,79 +51,11 @@ WSession::WSession(WApplication* app, WLocalIO* localIO) {
   }
   ::bout.SetLocalIO(m_pLocalIO);
 
-  m_bLastKeyLocal = true;
-  m_pApplication  = app;
-  m_nEffectiveSl  = 0;
-  m_DirectoryDateCache = 0;
-  m_SubDateCache = 0;
-
   memset(&newuser_colors, 0, sizeof(newuser_colors));
   memset(&newuser_bwcolors, 0, sizeof(newuser_bwcolors));
   memset(&asv, 0, sizeof(asv_rec));
   memset(&advasv, 0, sizeof(adv_asv_rec));
   memset(&cbv, 0, sizeof(cbv_rec));
-
-  m_nTopScreenColor                       = 0;
-  m_nUserEditorColor                      = 0;
-  m_nEditLineColor                        = 0;
-  m_nChatNameSelectionColor               = 0;
-  m_nMessageColor                         = 0;
-  mail_who_field_len                      = 0;
-  max_batch                               = 0;
-  max_extend_lines                        = 0;
-  max_chains                              = 0;
-  max_gfilesec                            = 0;
-  screen_saver_time                       = 0;
-  language_dir = "";
-  m_currentSpeed                          = "";
-  m_nForcedReadSubNumber                  = 0;
-  m_bThreadSubs                           = false;
-  m_bAllowCC                              = false;
-  m_bUserOnline                           = false;
-  m_bQuoting                              = false;
-  m_bTimeOnlineLimited                    = false;
-
-  m_nCurrentFileArea                      = 0;
-  m_nCurrentReadMessageArea               = 0;
-  m_nCurrentMessageArea                   = 0;
-  m_nCurrentLanguageNumber                = 0;
-  m_nCurrentConferenceFileArea            = 0;
-  m_nCurrentConferenceMessageArea         = 0;
-  m_nFileAreaCache = m_nMessageAreaCache  = 0;
-  m_nBeginDayNodeNumber                   = 0;
-  m_nMaxNumberMessageAreas                = 0;
-  m_nMaxNumberFileAreas                   = 0;
-  m_nNumMessagesReadThisLogon             = 0;
-  m_nNetworkNumber                        = 0;
-  m_nMaxNetworkNumber                     = 0;
-  m_nCurrentNetworkType                   = net_type_wwivnet;
-  m_bNewMailWaiting                       = false;
-  numbatch = 0;
-  numbatchdl = 0;
-  m_nNumberOfChains = 0;
-  m_nNumberOfEditors = 0;
-  m_nNumberOfExternalProtocols = 0;
-  numf = 0;
-  m_nNumMsgsInCurrentSub = 0;
-  num_dirs = 0;
-  num_languages = 0;
-  num_sec = 0;
-  num_subs = 0;
-  num_events = 0;
-  num_sys_list = 0;
-  screenlinest = 0;
-  subchg = 0;
-  tagging = 0;
-  tagptr = 0;
-  titled = 0;
-  using_modem = 0;
-  m_bInternalZmodem = false;
-  m_bExecLogSyncFoss = false;
-  m_bExecUseWaitForInputIdle = false;
-  m_nExecChildProcessWaitTime = 0;
-  m_bNewScanAtLogin = false;
-  usernum = 0;
-  m_pComm = nullptr;
 }
 
 WSession::~WSession() {
