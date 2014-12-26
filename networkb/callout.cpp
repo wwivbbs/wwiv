@@ -1,5 +1,6 @@
 #include "networkb/callout.h"
 
+#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <map>
@@ -33,117 +34,84 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
     // skip empty lines and those not starting with @.
     return false;
   }
+  memset(con, 0, sizeof(net_call_out_rec));
+  con->min_hr = -1;
+  con->max_hr = -1;
 
-  int p=0;
-  while (p < ss.size()) {
-      switch (ss[p]) {
-      case '@':
-        ++p;
-        con->macnum     = 0;
-        con->options    = 0;
-        con->call_anyway  = 0;
-        con->password[0]  = 0;
-        con->sysnum     = StringToUnsignedShort(&(ss[p]));
-        con->min_hr     = -1;
-        con->max_hr     = -1;
-        con->times_per_day  = 0;
-        con->min_k      = 0;
-        con->call_x_days  = 0;
-        break;
+  for (auto iter = ss.cbegin(); iter != ss.cend(); iter++) {
+      switch (*iter) {
+      case '@': {
+        con->sysnum = StringToUnsignedShort(string(++iter, ss.end()));
+      } break;
       case '&':
         con->options |= options_sendback;
-        ++p;
         break;
       case '-':
         con->options |= options_ATT_night;
-        ++p;
         break;
       case '_':
         con->options |= options_ppp;
-        ++p;
         break;
       case '+':
         con->options |= options_no_call;
-        ++p;
         break;
       case '~':
         con->options |= options_receive_only;
-        ++p;
         break;
-      case '!':
+      case '!': {
         con->options |= options_once_per_day;
-        ++p;
-        con->times_per_day = StringToUnsignedChar(&(ss[p]));
-        if (!con->times_per_day) {
-          con->times_per_day = 1;
-        }
-        break;
-      case '%':
-        ++p;
-        con->macnum = StringToUnsignedChar(&(ss[p]));
-        break;
-      case '/':
-        ++p;
-        con->call_anyway = StringToUnsignedChar(&(ss[p]));
-        ++p;
-        break;
-      case '#':
-        ++p;
-        con->call_x_days = StringToUnsignedChar(&(ss[p]));
-        break;
-      case '(':
-        ++p;
-        con->min_hr = StringToChar(&(ss[p]));
-        break;
-      case ')':
-        ++p;
-        con->max_hr = StringToChar(&(ss[p]));
-        break;
-      case '|':
-        ++p;
-        con->min_k = StringToUnsignedShort(&(ss[p]));
-        if (!con->min_k) {
-          con->min_k = 0;
-        }
-        break;
+        con->times_per_day = std::max<uint8_t>(1, StringToUnsignedChar(string(++iter, ss.end())));
+      } break;
+      case '%': {
+        con->macnum = StringToUnsignedChar(string(++iter, ss.end()));
+      } break;
+      case '/': {
+        con->call_anyway = StringToUnsignedChar(string(++iter, ss.end()));
+      } break;
+      case '#': {
+        con->call_x_days = StringToUnsignedChar(string(++iter, ss.end()));
+      } break;
+      case '(': {
+        con->min_hr = StringToChar(string(++iter, ss.end()));
+      } break;
+      case ')': {
+        con->max_hr = StringToChar(string(++iter, ss.end()));
+      } break;
+      case '|': {
+        con->min_k = std::max<uint16_t>(1, StringToUnsignedShort(string(++iter, ss.end())));
+      } break;
       case ';':
-        ++p;
         con->options |= options_compress;
         break;
       case '^':
-        ++p;
         con->options |= options_hslink;
         break;
       case '$':
-        ++p;
         con->options |= options_force_ac;
         break;
       case '=':
-        ++p;
         con->options |= options_hide_pend;
         break;
       case '*':
-        ++p;
         con->options |= options_dial_ten;
         break;
       case '\"': {
-        ++p;
-        int i = 0;
-        while ((i < 19) && (ss[p + static_cast<long>(i)] != '\"')) {
-          ++i;
+        ++iter;  // skip past first "
+        string password;
+        while (iter != ss.end() && *iter != '\"') {
+          password.push_back(*iter++);
         }
-        for (int i1 = 0; i1 < i; i1++) {
-          con->password[i1] = ss[p+i1];
+        if (password.back() == '\"') {
+          // remove trailing "
+          password.pop_back();
         }
-        con->password[i] = 0;
-        p += (i + 1);
+        strncpy(con->password, password.c_str(), sizeof(con->password));
       }
       break;
       default:
-        ++p;
+        break;
       }
     }
-
     return true;
 }
 
