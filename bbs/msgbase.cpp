@@ -212,10 +212,10 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
     break;
   case 2: {
     int gati[128];
-    File *pMessageFile = OpenMessageFile(fileName);
+    unique_ptr<File> pMessageFile(OpenMessageFile(fileName));
     if (pMessageFile->IsOpen()) {
       for (int section = 0; section < 1024; section++) {
-        set_gat_section(pMessageFile, section);
+        set_gat_section(pMessageFile.get(), section);
         int gatp = 0;
         int nNumBlocksRequired = static_cast<int>((lMessageLength + 511L) / MSG_BLOCK_SIZE);
         int i4 = 1;
@@ -232,12 +232,11 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
             pMessageFile->Write((&b[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
             gat[gati[i]] = static_cast< unsigned short >(gati[i + 1]);
           }
-          save_gat(pMessageFile);
+          save_gat(pMessageFile.get());
           break;
         }
       }
       pMessageFile->Close();
-      delete pMessageFile;
     }
     pMessageRecord->stored_as = static_cast<long>(gati[0]) + static_cast<long>(gat_section) * GAT_NUMBER_ELEMENTS;
   }
@@ -415,7 +414,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
   return true;
 }
 
-File *OpenEmailFile(bool bAllowWrite) {
+std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
   File *file = new File(syscfg.datadir, EMAIL_DAT);
 
   // If the file doesn't exist, just return the opaque handle now instead of flailing
@@ -424,7 +423,7 @@ File *OpenEmailFile(bool bAllowWrite) {
     // if it does not exist, try to create it via the open call
     // sf bug 1215434
     file->Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-    return file;
+    return unique_ptr<File>(file);
   }
 
   for (int nAttempNum = 0; nAttempNum < NUM_ATTEMPTS_TO_OPEN_EMAIL; nAttempNum++) {
@@ -438,8 +437,7 @@ File *OpenEmailFile(bool bAllowWrite) {
     }
     Wait(DELAY_BETWEEN_EMAIL_ATTEMPTS);
   }
-
-  return file;
+  return unique_ptr<File>(file);
 }
 
 void sendout_email(const string& title, messagerec * pMessageRec, int anony, int nUserNumber, int nSystemNumber,
@@ -469,8 +467,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
   }
 
   if (nSystemNumber == 0) {
-    File *pFileEmail = OpenEmailFile(true);
-    WWIV_ASSERT(pFileEmail);
+    unique_ptr<File> pFileEmail(OpenEmailFile(true));
     if (!pFileEmail->IsOpen()) {
       return;
     }
@@ -497,7 +494,6 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     pFileEmail->Seek(i * sizeof(mailrec), File::seekBegin);
     int nBytesWritten = pFileEmail->Write(&m, sizeof(mailrec));
     pFileEmail->Close();
-    delete pFileEmail;
     if (nBytesWritten == -1) {
       bout << "|#6DIDN'T SAVE RIGHT!\r\n";
     }

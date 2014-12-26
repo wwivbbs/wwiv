@@ -20,6 +20,7 @@
 
 #include <cstdint>
 #include <ctime>
+#include <memory>
 #include <string>
 
 #include "core/file.h"
@@ -404,7 +405,7 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
 char *readfile(messagerec * pMessageRecord, const std::string fileName, long *plMessageLength);
 void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed);
 bool ForwardMessage(int *pUserNumber, int *pSystemNumber);
-File *OpenEmailFile(bool bAllowWrite);
+std::unique_ptr<File> OpenEmailFile(bool bAllowWrite);
 void sendout_email(const std::string& title, messagerec * msg, int anony, int nUserNumber, int nSystemNumber, int an,
                    int nFromUser, int nFromSystem, int nForwardedCode, int nFromNetworkNumber);
 bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit);

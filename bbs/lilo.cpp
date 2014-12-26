@@ -1000,8 +1000,7 @@ void logoff() {
   sysoplogfi(false, "Read: %lu   Time on: %u", session()->GetNumMessagesReadThisLogon(),
              static_cast<int>((timer() - timeon) / MINUTES_PER_HOUR_FLOAT));
   if (mailcheck) {
-    File* pFileEmail = OpenEmailFile(true);
-    WWIV_ASSERT(pFileEmail);
+    unique_ptr<File> pFileEmail(OpenEmailFile(true));
     if (pFileEmail->IsOpen()) {
       session()->user()->SetNumMailWaiting(0);
       int t = static_cast< int >(pFileEmail->GetLength() / sizeof(mailrec));
@@ -1037,12 +1036,10 @@ void logoff() {
       pStatus->IncrementFileChangedFlag(WStatus::fileChangeEmail);
       application()->GetStatusManager()->CommitTransaction(pStatus);
       pFileEmail->Close();
-      delete pFileEmail;
     }
   } else {
     // re-calculate mail waiting'
-    File *pFileEmail = OpenEmailFile(false);
-    WWIV_ASSERT(pFileEmail);
+    unique_ptr<File> pFileEmail(OpenEmailFile(false));
     if (pFileEmail->IsOpen()) {
       int nTotalEmailMessages = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));
       session()->user()->SetNumMailWaiting(0);
@@ -1055,7 +1052,6 @@ void logoff() {
         }
       }
       pFileEmail->Close();
-      delete pFileEmail;
     }
   }
   if (smwcheck) {
