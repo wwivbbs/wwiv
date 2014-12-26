@@ -63,7 +63,7 @@ extern const char *QWKFrom;
 extern int qwk_percent;
 
 // from readmail.cpp
-int  read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
+bool read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
 
 void qwk_remove_email(void) {
   emchg = false;

@@ -18,10 +18,16 @@
 /**************************************************************************/
 #include "bbs/attach.h"
 
+#include <memory>
+#include <string>
+
 #include "bbs/input.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwiv.h"
 #include "core/wwivassert.h"
+
+using std::string;
+using std::unique_ptr;
 
 void attach_file(int mode) {
   bool bFound;
@@ -31,12 +37,11 @@ void attach_file(int mode) {
 
   bout.nl();
   bool bDirectionForward = true;
-  File *pFileEmail = OpenEmailFile(true);
+  unique_ptr<File> pFileEmail(OpenEmailFile(true));
   WWIV_ASSERT(pFileEmail);
   if (!pFileEmail->IsOpen()) {
     bout << "\r\nNo mail.\r\n";
     pFileEmail->Close();
-    delete pFileEmail;
     return;
   }
   int max = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));

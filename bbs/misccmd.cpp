@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <memory>
 #include <string>
 
 #include "bbs/wwiv.h"
@@ -34,6 +35,7 @@
 void qwk_menu();
 
 using std::string;
+using std::unique_ptr;
 using wwiv::bbs::TempDisablePause;
 using wwiv::bbs::SaveQScanPointers;
 
@@ -44,8 +46,7 @@ void kill_old_email() {
 
   bout << "|#5List mail starting at most recent? ";
   bool forward = yesno();
-  File *pFileEmail = OpenEmailFile(false);
-  WWIV_ASSERT(pFileEmail);
+  unique_ptr<File> pFileEmail(OpenEmailFile(false));
   if (!pFileEmail->IsOpen()) {
     bout << "\r\nNo mail.\r\n";
     return;
@@ -75,7 +76,6 @@ void kill_old_email() {
       done = true;
     } else {
       pFileEmail->Close();
-      delete pFileEmail;
 
       bool done1 = false;
       do {
@@ -142,11 +142,11 @@ void kill_old_email() {
           break;
         case 'D': {
           done1 = true;
-          File *pFileEmail = OpenEmailFile(true);
+          unique_ptr<File> pFileEmail(OpenEmailFile(true));
           pFileEmail->Seek(cur * sizeof(mailrec), File::seekBegin);
           pFileEmail->Read(&m1, sizeof(mailrec));
           if (memcmp(&m, &m1, sizeof(mailrec)) == 0) {
-            delmail(pFileEmail, cur);
+            delmail(pFileEmail.get(), cur);
             bool found = false;
             if (m.status & status_file) {
               File fileAttach(syscfg.datadir, ATTACH_DAT);
@@ -197,7 +197,6 @@ void kill_old_email() {
     }
   } while (!done && !hangup);
   pFileEmail->Close();
-  delete pFileEmail;
 }
 
 void list_users(int mode) {

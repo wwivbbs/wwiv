@@ -41,7 +41,7 @@ using namespace wwiv::strings;
 bool same_email(tmpmailrec * tm, mailrec * m);
 void purgemail(tmpmailrec * mloc, int mw, int *curmail, mailrec * m1, slrec * ss);
 void resynch_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
-int  read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
+bool read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
 void add_netsubscriber(int nSystemNumber);
 
 //
@@ -81,8 +81,7 @@ void purgemail(tmpmailrec * mloc, int mw, int *curmail, mailrec * m1, slrec * ss
     }
   }
   if (yesno()) {
-    File *pFileEmail = OpenEmailFile(true);
-    WWIV_ASSERT(pFileEmail);
+    unique_ptr<File> pFileEmail(OpenEmailFile(true));
     if (!pFileEmail->IsOpen()) {
       return;
     }
@@ -93,7 +92,7 @@ void purgemail(tmpmailrec * mloc, int mw, int *curmail, mailrec * m1, slrec * ss
         if (same_email(mloc + i, &m)) {
           if (m.fromuser == m1->fromuser && m.fromsys == m1->fromsys) {
             bout << "Deleting mail msg #" << i + 1 << wwiv::endl;
-            delmail(pFileEmail, mloc[i].index);
+            delmail(pFileEmail.get(), mloc[i].index);
             mloc[i].index = -1;
             if (*curmail == i) {
               ++(*curmail);
@@ -107,17 +106,14 @@ void purgemail(tmpmailrec * mloc, int mw, int *curmail, mailrec * m1, slrec * ss
       }
     }
     pFileEmail->Close();
-    delete pFileEmail;
   }
 }
-
 
 void resynch_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat) {
   int i, i1;
   mailrec m1;
 
-  File *pFileEmail = OpenEmailFile((del || stat) ? true : false);
-  WWIV_ASSERT(pFileEmail);
+  unique_ptr<File> pFileEmail(OpenEmailFile(del || stat));
   if (pFileEmail->IsOpen()) {
     int mfl = pFileEmail->GetLength() / sizeof(mailrec);
 
@@ -168,7 +164,7 @@ void resynch_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, uns
         pFileEmail->Seek(mloc[rec].index * sizeof(mailrec), File::seekBegin);
         pFileEmail->Write(m, sizeof(mailrec));
       } else {
-        delmail(pFileEmail, mloc[rec].index);
+        delmail(pFileEmail.get(), mloc[rec].index);
       }
       mloc[rec].index = -1;
     }
@@ -176,16 +172,14 @@ void resynch_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, uns
   } else {
     mloc[rec].index = -1;
   }
-  delete pFileEmail;
 }
 
-
-int read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat) {
+bool read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat) {
   if (mloc[rec].index < 0) {
-    return 0;
+    return false;
   }
 
-  File *pFileEmail = OpenEmailFile((del || stat) ? true : false);
+  unique_ptr<File> pFileEmail(OpenEmailFile(del || stat));
   pFileEmail->Seek(mloc[rec].index * sizeof(mailrec), File::seekBegin);
   pFileEmail->Read(m, sizeof(mailrec));
 
@@ -213,17 +207,14 @@ int read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, un
         pFileEmail->Seek(mloc[rec].index * sizeof(mailrec), File::seekBegin);
         pFileEmail->Write(m, sizeof(mailrec));
       } else {
-        delmail(pFileEmail, mloc[rec].index);
+        delmail(pFileEmail.get(), mloc[rec].index);
       }
       mloc[rec].index = -1;
     }
     pFileEmail->Close();
   }
-  delete pFileEmail;
-
-  return (mloc[rec].index != -1) ? 1 : 0;
+  return (mloc[rec].index != -1);
 }
-
 
 void add_netsubscriber(int nSystemNumber) {
   char s[10], s1[10];
@@ -281,7 +272,6 @@ void add_netsubscriber(int nSystemNumber) {
   }
 }
 
-
 void delete_attachment(unsigned long daten, int forceit) {
   bool delfile;
   filestatusrec fsr;
@@ -318,7 +308,6 @@ void delete_attachment(unsigned long daten, int forceit) {
   }
 }
 
-
 void readmail(int mode) {
   int i, i1, i2, i3, curmail = 0, tp, nn = 0, delme;
   bool done, okmail;
@@ -346,29 +335,29 @@ void readmail(int mode) {
   }
   write_inst(INST_LOC_RMAIL, 0, INST_FLAGS_NONE);
   slrec ss = getslrec(session()->GetEffectiveSl());
-  File *pFileEmail = OpenEmailFile(false);
-  WWIV_ASSERT(pFileEmail);
-  if (!pFileEmail->IsOpen()) {
-    bout << "\r\n\nNo mail file exists!\r\n\n";
-    free(mloc);
-    return;
-  }
-  int mfl = pFileEmail->GetLength() / sizeof(mailrec);
   int mw = 0;
-  for (i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
-    pFileEmail->Seek(i * sizeof(mailrec), File::seekBegin);
-    pFileEmail->Read(&m, sizeof(mailrec));
-    if ((m.tosys == 0) && (m.touser == session()->usernum)) {
-      mloc[mw].index = static_cast< short >(i);
-      mloc[mw].fromsys = m.fromsys;
-      mloc[mw].fromuser = m.fromuser;
-      mloc[mw].daten = m.daten;
-      mloc[mw].msg = m.msg;
-      mw++;
+  {
+    unique_ptr<File> pFileEmail(OpenEmailFile(false));
+    if (!pFileEmail->IsOpen()) {
+      bout << "\r\n\nNo mail file exists!\r\n\n";
+      free(mloc);
+      return;
     }
+    int mfl = pFileEmail->GetLength() / sizeof(mailrec);
+    for (i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
+      pFileEmail->Seek(i * sizeof(mailrec), File::seekBegin);
+      pFileEmail->Read(&m, sizeof(mailrec));
+      if ((m.tosys == 0) && (m.touser == session()->usernum)) {
+        mloc[mw].index = static_cast< short >(i);
+        mloc[mw].fromsys = m.fromsys;
+        mloc[mw].fromuser = m.fromuser;
+        mloc[mw].daten = m.daten;
+        mloc[mw].msg = m.msg;
+        mw++;
+      }
+    }
+    pFileEmail->Close();
   }
-  pFileEmail->Close();
-  delete pFileEmail;
   session()->user()->SetNumMailWaiting(mw);
   if (session()->usernum == 1) {
     fwaiting = mw;
@@ -996,8 +985,7 @@ void readmail(int mode) {
             if (ok_to_mail(nUserNumber, nSystemNumber, false)) {
               bout << "|#5Forward to " << s1 << "? ";
               if (yesno()) {
-                pFileEmail = OpenEmailFile(true);
-                WWIV_ASSERT(pFileEmail);
+                unique_ptr<File> pFileEmail(OpenEmailFile(true));
                 if (!pFileEmail->IsOpen()) {
                   break;
                 }
@@ -1027,7 +1015,6 @@ void readmail(int mode) {
                 m.status |= status_forwarded;
                 m.status |= status_seen;
                 pFileEmail->Close();
-                delete pFileEmail;
 
                 i = session()->GetNetworkNumber();
                 sprintf(s, "\r\nForwarded to %s from %s.", s1,
@@ -1229,12 +1216,10 @@ void readmail(int mode) {
   free(mloc);
 }
 
-
 int check_new_mail(int nUserNumber) {
   int nNumNewMessages = 0;            // number of new mail
 
-  File *pFileEmail = OpenEmailFile(false);
-  WWIV_ASSERT(pFileEmail);
+  unique_ptr<File> pFileEmail(OpenEmailFile(false));
   if (pFileEmail->Exists() && pFileEmail->IsOpen()) {
     int mfLength = pFileEmail->GetLength() / sizeof(mailrec);
     int mWaiting = 0;   // number of mail waiting
@@ -1250,8 +1235,5 @@ int check_new_mail(int nUserNumber) {
     }
     pFileEmail->Close();
   }
-  delete pFileEmail;
-
   return nNumNewMessages;
 }
-
