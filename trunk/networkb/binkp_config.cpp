@@ -28,7 +28,7 @@ namespace net {
 
 // [[ VisibleForTesting ]]
 bool ParseBinkConfigLine(const string& line, uint16_t* node, BinkNodeConfig* config) {
-  // A line will be of the format @node host:port [password].
+  // A line will be of the format @node host:port
   if (line.empty() || line[0] != '@') {
     // skip empty lines and those not starting with @.
     return false;
@@ -49,12 +49,8 @@ bool ParseBinkConfigLine(const string& line, uint16_t* node, BinkNodeConfig* con
     port = StringToUnsignedShort(host_port[1]);
   }
   
-  string password = "-";
-  stream >> password;
-
   config->host = host;
   config->port = port;
-  config->password = password;
 
   return true;
 }

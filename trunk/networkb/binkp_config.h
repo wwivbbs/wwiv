@@ -19,7 +19,6 @@ namespace net {
 struct BinkNodeConfig {
   std::string host;
   int port;
-  std::string password;
 };
 
 class BinkConfig {

@@ -16,6 +16,7 @@
 
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
+#include "networkb/callout.h"
 #include "networkb/connection.h"
 #include "networkb/socket_connection.h"
 #include "networkb/socket_exceptions.h"
@@ -127,7 +128,7 @@ int main(int argc, char** argv) {
       Logger() << "BinkP send to: " << expected_remote_node;
       const BinkNodeConfig* node_config = bink_config.node_config_for(expected_remote_node);
       if (node_config == nullptr) {
-        Logger() << "Unable to find node condfig for node: " << expected_remote_node;
+        Logger() << "Unable to find node config for node: " << expected_remote_node;
         return 2;
       }
       c = Connect(node_config->host, node_config->port);
@@ -139,7 +140,8 @@ int main(int argc, char** argv) {
       File* f = new File(bink_config.network_dir(), filename);
       return new WFileTransferFile(filename, unique_ptr<File>(f)); 
     };
-    BinkP binkp(c.get(), &bink_config, side, expected_remote_node, factory);
+    Callout callout(bink_config.network_dir());
+    BinkP binkp(c.get(), &bink_config, &callout, side, expected_remote_node, factory);
     binkp.Run();
   } catch (const socket_error& e) {
     Logger() << e.what();
