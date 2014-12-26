@@ -320,10 +320,10 @@ void read_contacts() {
   File fileContact(session()->GetNetworkDataDirectory(), CONTACT_NET);
   if (fileContact.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileContact.GetLength();
-    net_networks[session()->GetNetworkNumber()].num_ncn = static_cast< short >(lFileLength / sizeof(net_contact_rec));
+    net_networks[session()->GetNetworkNumber()].num_ncn = static_cast<short>(lFileLength / sizeof(net_contact_rec));
     if ((net_networks[session()->GetNetworkNumber()].ncn =
-           static_cast<net_contact_rec *>(BbsAllocA((net_networks[session()->GetNetworkNumber()].num_ncn + 2) * sizeof(
-                                            net_contact_rec)))) == nullptr) {
+           static_cast<net_contact_rec *>(BbsAllocA((net_networks[session()->GetNetworkNumber()].num_ncn + 2) *
+           sizeof(net_contact_rec)))) == nullptr) {
       WWIV_ASSERT(net_networks[session()->GetNetworkNumber()].ncn != nullptr);
       application()->AbortBBS(true);
     }
