@@ -56,25 +56,6 @@ void wfc_cls() {
 
 
 void wfc_init() {
-  for (int i = 0; i < 5; i++) {
-    session()->wfcdrvs[ i ] = 0;
-  }
-
-  IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), INI_TAG);
-  if (iniFile.IsOpen()) {
-    const char *pszDriveList = iniFile.GetValue("WFC_DRIVES");
-    if (pszDriveList != nullptr) {
-      for (int j = 0; j < wwiv::strings::GetStringLength(pszDriveList); j++) {
-        session()->wfcdrvs[ j ] = pszDriveList[ j ] - '@';
-        if (session()->wfcdrvs[ j ] < 2) {
-          session()->wfcdrvs[ j ] = 2;
-        }
-      }
-    } else {
-      session()->wfcdrvs[ 0 ] = 2;
-    }
-  }
-
   session()->localIO()->SetCursor(WLocalIO::cursorNormal);              // add 4.31 Build3
   if (application()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     session()->wfc_status = 0;
@@ -184,31 +165,6 @@ void wfc_screen() {
     session()->localIO()->LocalXYAPrintf(58, 11, 14, sysop2() ? "Available    " : "Not Available");
     session()->localIO()->LocalXYAPrintf(58, 12, 14, "Local %code", (syscfgovr.primaryport) ? 'M' : 'N');
     session()->localIO()->LocalXYAPrintf(58, 13, 14, "Waiting For Command");
-
-    int i = 0, i1 = 0;
-    while (session()->wfcdrvs[i] > 0 && session()->wfcdrvs[i] < application()->GetHomeDir()[0] && i1 < 5) {
-      if (iscdrom(static_cast<char>(session()->wfcdrvs[i]))) {
-        session()->localIO()->LocalXYAPrintf(2, 16 + i1, 3, "CDROM %c..", session()->wfcdrvs[i] + '@');
-        session()->localIO()->LocalXYAPrintf(12 - 1, 17 + i1 - 1, 14, "%10.1f MB", 0.0f);
-        i1++;
-      } else {
-        char szTmpPath[4];
-        sprintf(szTmpPath, "%c:\\", session()->wfcdrvs[i] + '@');
-        long lFreeDiskSpace = freek1(szTmpPath);
-        char szTempDiskSize[81];
-        if (lFreeDiskSpace > 0) {
-          if (lFreeDiskSpace > 2048) {
-            sprintf(szTempDiskSize, "%10.1f GB", static_cast<float>(lFreeDiskSpace) / (1024.0 * 1024.0));
-          } else {
-            sprintf(szTempDiskSize, "%10.1f MB", static_cast<float>(lFreeDiskSpace) / 1024.0);
-          }
-          session()->localIO()->LocalXYAPrintf(2, 16 + i1, 3, "Drive %c..", session()->wfcdrvs[i] + '@');
-          session()->localIO()->LocalXYAPrintf(12 - 1, 17 + i1 - 1, 14, "%s", szTempDiskSize);
-          i1++;
-        }
-      }
-      i++;
-    }
 
     get_inst_info(application()->GetInstanceNumber(), &ir);
     if (ir.user < syscfg.maxusers && ir.user > 0) {

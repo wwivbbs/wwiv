@@ -323,10 +323,8 @@ class WSession {
   std::string language_dir;
   char    *cur_lang_name;
 
-  int         wfcdrvs[5],
-              wfc_status;
-
-  int         usernum;
+  int wfc_status;
+  int usernum;
 
   asv_rec   asv;
   adv_asv_rec advasv;

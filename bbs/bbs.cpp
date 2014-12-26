@@ -20,8 +20,11 @@
 #include <direct.h>
 #endif  // WIN32
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <exception>
+#include <iostream>
 #include <memory>
 #include <cstdarg>
 
@@ -63,7 +66,6 @@
 #include <unistd.h>
 #endif // _WIN32
 
-
 static bool bUsingPppProject = true;
 extern time_t last_time_c;
 static WApplication *app;
@@ -71,6 +73,15 @@ static WSession* sess;
 
 using std::chrono::milliseconds;
 using std::chrono::seconds;
+using std::clog;
+using std::cout;
+using std::endl;
+using std::exception;
+using std::stoi;
+using std::stol;
+using std::string;
+using std::min;
+using std::max;
 using std::string;
 using std::unique_ptr;
 using wwiv::bbs::InputMode;
@@ -600,7 +611,6 @@ int WApplication::LocalLogon() {
   return lokb;
 }
 
-
 void WApplication::GotCaller(unsigned int ms, unsigned long cs) {
   frequent_init();
   if (session()->wfc_status == 0) {
@@ -633,7 +643,6 @@ void WApplication::GotCaller(unsigned int ms, unsigned long cs) {
   }
 }
 
-
 int WApplication::BBSMainLoop(int argc, char *argv[]) {
 // TODO - move this to WIOTelnet
 #if defined ( _WIN32 )
@@ -653,7 +662,6 @@ int WApplication::BBSMainLoop(int argc, char *argv[]) {
   return nReturnCode;
 }
 
-
 int WApplication::Run(int argc, char *argv[]) {
   int num_min                 = 0;
   unsigned int ui             = 0;
@@ -667,7 +675,7 @@ int WApplication::Run(int argc, char *argv[]) {
   char* ss = getenv("BBS");
   if (ss) {
     if (strncmp(ss, "WWIV", 4) == 0) {
-      std::clog << "You are already in the BBS, type 'EXIT' instead.\n\n";
+      clog << "You are already in the BBS, type 'EXIT' instead.\n\n";
       exit(255);
     }
   }
@@ -710,28 +718,28 @@ int WApplication::Run(int argc, char *argv[]) {
       case 'C':
         break;
       case 'D':
-        File::SetDebugLevel(std::stoi(argument));
+        File::SetDebugLevel(stoi(argument));
         break;
       case 'E':
         event_only = true;
         break;
       case 'S':
-        us = static_cast<unsigned int>(std::stol(argument));
+        us = static_cast<unsigned int>(stol(argument));
         if ((us % 300) && us != 115200) {
           us = ui;
         }
         break;
       case 'Q':
-        m_nOkLevel = std::stoi(argument);
+        m_nOkLevel = stoi(argument);
         break;
       case 'A':
-        m_nErrorLevel = std::stoi(argument);
+        m_nErrorLevel = stoi(argument);
         break;
       case 'O':
         ooneuser = true;
         break;
       case 'H':
-        hSockOrComm = std::stoi(argument);
+        hSockOrComm = stoi(argument);
         break;
       case 'P':
         systemPassword = argument;
@@ -739,9 +747,9 @@ int WApplication::Run(int argc, char *argv[]) {
         break;
       case 'I':
       case 'N': {
-        instance_number = std::stoi(argument);
+        instance_number = stoi(argument);
         if (instance_number <= 0 || instance_number > 999) {
-          std::clog << "Your Instance can only be 1..999, you tried instance #" << instance_number << std::endl;
+          clog << "Your Instance can only be 1..999, you tried instance #" << instance_number << endl;
           exit(m_nErrorLevel);
         }
       }
@@ -752,7 +760,7 @@ int WApplication::Run(int argc, char *argv[]) {
 #endif
         break;
       case 'R':
-        num_min = std::stoi(argument);
+        num_min = stoi(argument);
         break;
       case 'U':
         this_usernum = StringToUnsignedShort(argument);
@@ -765,7 +773,7 @@ int WApplication::Run(int argc, char *argv[]) {
         ok_modem_stuff = false;
         this->InitializeBBS();
         this->doWFCEvents();
-        exit( m_nOkLevel );
+        exit (m_nOkLevel);
       } break;
       case 'X': {
         char argument2Char = wwiv::UpperCase<char>(argument.at(0));
@@ -785,7 +793,7 @@ int WApplication::Run(int argc, char *argv[]) {
           global_xx           = false;
           bTelnetInstance = true;
         } else {
-          std::clog << "Invalid Command line argument given '" << argumentRaw << "'\r\n\n";
+          clog << "Invalid Command line argument given '" << argumentRaw << "'\r\n\n";
           exit(m_nErrorLevel);
         }
       }
@@ -829,14 +837,14 @@ int WApplication::Run(int argc, char *argv[]) {
       }
       break;
       default: {
-        std::clog << "Invalid Command line argument given '" << argument << "'\r\n\n";
+        clog << "Invalid Command line argument given '" << argument << "'\r\n\n";
         exit(m_nErrorLevel);
       }
       break;
       }
     } else {
       // Command line argument did not start with a '-' or a '/'
-      std::clog << "Invalid Command line argument given '" << argumentRaw << "'\r\n\n";
+      clog << "Invalid Command line argument given '" << argumentRaw << "'\r\n\n";
       exit(m_nErrorLevel);
     }
   }
@@ -893,7 +901,7 @@ int WApplication::Run(int argc, char *argv[]) {
       beginday(true);
     } else {
       sysoplog("!!! Wanted to run the beginday event when it's not required!!!", false);
-      std::clog << "! WARNING: Tried to run beginday event again\r\n\n";
+      clog << "! WARNING: Tried to run beginday event again\r\n\n";
       sleep_for(seconds(2));
     }
     ExitBBSImpl(m_nOkLevel);
@@ -996,7 +1004,7 @@ int WApplication::Run(int argc, char *argv[]) {
 
 
 void WApplication::ShowUsage() {
-  std::cout << "WWIV Bulletin Board System [" << wwiv_version << " - " << beta_version << "]\r\n\n" <<
+  cout << "WWIV Bulletin Board System [" << wwiv_version << " - " << beta_version << "]\r\n\n" <<
             "Usage:\r\n\n" <<
             "bbs -I<inst> [options] \r\n\n" <<
             "Options:\r\n\n" <<
@@ -1023,7 +1031,7 @@ void WApplication::ShowUsage() {
             "  -XT        - Someone already logged on via telnet (socket handle)\r\n" <<
 #endif // _WIN32
             "  -Z         - Do not hang up on user when at log off\r\n" <<
-            std::endl;
+            endl;
 }
 
 WApplication::WApplication() : statusMgr(new StatusMgr()), userManager(new WUserManager()), m_nOkLevel(exitLevelOK), 
@@ -1049,7 +1057,7 @@ const string WApplication::GetHomeDir() {
 }
 
 void WApplication::AbortBBS(bool bSkipShutdown) {
-  std::clog.flush();
+  clog.flush();
   if (bSkipShutdown) {
     exit(m_nErrorLevel);
   } else {
@@ -1068,9 +1076,9 @@ void WApplication::ExitBBSImpl(int nExitLevel) {
   sysoplog("", false);
   catsl();
   write_inst(INST_LOC_DOWN, 0, INST_FLAGS_NONE);
-  std::clog << "\r\n";
-  std::clog << "WWIV Bulletin Board System " << wwiv_version << beta_version << " exiting at error level " << nExitLevel
-            << std::endl << std::endl;
+  clog << "\r\n";
+  clog << "WWIV Bulletin Board System " << wwiv_version << beta_version << " exiting at error level " << nExitLevel
+       << endl << endl;
   delete this;
   exit(nExitLevel);
 }
@@ -1119,7 +1127,7 @@ void WApplication::ShutDownBBS(int nShutDownStatus) {
     SetShutDownStatus(WApplication::shutdownNone);
     break;
   default:
-    std::clog << "[utility.cpp] shutdown called with illegal type: " << nShutDownStatus << std::endl;
+    clog << "[utility.cpp] shutdown called with illegal type: " << nShutDownStatus << endl;
     WWIV_ASSERT(false);
   }
   RestoreCurrentLine(cl, atr, xl, &cc);
@@ -1180,9 +1188,9 @@ int bbsmain(int argc, char *argv[]) {
   try {
     CreateApplication(nullptr);
     return application()->BBSMainLoop(argc, argv);
-  } catch (std::exception& e) {
+  } catch (exception& e) {
     // TODO(rushfan): Log this to sysop log or where else?
-    std::clog << "BBS Terminated by exception: " << e.what() << std::endl;
-      return 1;
+    clog << "BBS Terminated by exception: " << e.what() << endl;
+    return 1;
   }
 }

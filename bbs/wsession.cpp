@@ -68,7 +68,6 @@ WSession::WSession(WApplication* app, WLocalIO* localIO) {
   m_bUserOnline                           = false;
   m_bQuoting                              = false;
   m_bTimeOnlineLimited                    = false;
-  wfcdrvs[0] = wfcdrvs[1] = wfcdrvs[2] = wfcdrvs[3] = wfcdrvs[4] = wfc_status = 0;
 
   m_nCurrentFileArea                      = 0;
   m_nCurrentReadMessageArea               = 0;
