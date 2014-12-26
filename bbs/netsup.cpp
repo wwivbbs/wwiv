@@ -143,7 +143,6 @@ void cleanup_net() {
     }
   }
 
-  holdphone(false);
 }
 
 int cleanup_net1() {
@@ -195,6 +194,7 @@ int cleanup_net1() {
           }
           if (ok) {
 #ifndef __unix__
+            // TODO(rushfan): I don't think we need to guard this on unix anymore.
             if (session()->wfc_status == 0) {
               // WFC addition
               session()->localIO()->LocalCls();
@@ -202,7 +202,6 @@ int cleanup_net1() {
               wfc_cls();
             }
 #endif
-            holdphone(true);
             ++i;
             hangup = false;
             session()->using_modem = 0;
@@ -621,8 +620,6 @@ void print_pending_list() {
   int adjust = 0, lines = 0;
   char s1[81], s2[81], s3[81], s4[81], s5[81];
   time_t tCurrentTime;
-  net_call_out_rec *con;
-  net_contact_rec *ncn;
   time_t t = time(nullptr);
   struct tm* pTm = localtime(&t);
 
@@ -660,8 +657,8 @@ void print_pending_list() {
       read_contacts();
     }
 
-    con = net_networks[session()->GetNetworkNumber()].con;
-    ncn = net_networks[session()->GetNetworkNumber()].ncn;
+    net_call_out_rec* con = net_networks[session()->GetNetworkNumber()].con;
+    net_contact_rec* ncn = net_networks[session()->GetNetworkNumber()].ncn;
     num_call_sys = net_networks[session()->GetNetworkNumber()].num_con;
     num_ncn = net_networks[session()->GetNetworkNumber()].num_ncn;
 
@@ -721,16 +718,9 @@ void print_pending_list() {
           i3 = 0;
         }
 
-        bout.bprintf("|#7\xB3 %-3s |#7\xB3 |#2%-8.8s |#7\xB3 |#2%5u |#7\xB3|#2%8s |#7\xB3|#2%8s |#7\xB3|#2%5s |#7\xB3|#2%4d |#7\xB3|#2%13.13s |#7\xB3|#2%4d |#7\xB3\r\n",
-                                          s2,
-                                          session()->GetNetworkName(),
-                                          ncn[i2].systemnumber,
-                                          s3,
-                                          s4,
-                                          s5,
-                                          ncn[i2].numfails,
-                                          s1,
-                                          i3);
+        bout.bprintf("|#7\xB3 %-3s |#7\xB3 |#2%-8.8s |#7\xB3 |#2%5u |#7\xB3|#2%8s |#7\xB3|#2%8s "
+            "|#7\xB3|#2%5s |#7\xB3|#2%4d |#7\xB3|#2%13.13s |#7\xB3|#2%4d |#7\xB3\r\n",
+            s2, session()->GetNetworkName(), ncn[i2].systemnumber, s3, s4, s5, ncn[i2].numfails, s1, i3);
         if (!session()->user()->HasPause() && ((lines++) == 20)) {
           pausescr();
           lines = 0;
@@ -751,8 +741,9 @@ void print_pending_list() {
       long lFileSize = deadNetFile.GetLength();
       deadNetFile.Close();
       sprintf(s3, "%ldk", (lFileSize + 1023) / 1024);
-      bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 |#2------- |#7\xB3|#2%5s |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3|#2 --- |#7\xB3\r\n",
-                                        session()->GetNetworkName(), s3);
+      bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 |#2------- |#7\xB3|#2%5s "
+                   "|#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3|#2 --- |#7\xB3\r\n",
+          session()->GetNetworkName(), s3);
     }
   }
 
@@ -774,8 +765,7 @@ void print_pending_list() {
     }
   }
 
-  bout <<
-                     "|#7\xc0\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9\r\n";
+  bout << "|#7\xc0\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9\r\n";
   bout.nl();
   session()->user()->SetStatus(ss);
   if (!session()->IsUserOnline() && lines_listed) {
@@ -920,9 +910,7 @@ static void print_call(int sn, int nNetNumber, int i2) {
   static int color, got_color = 0;
 
   char s[100], s1[100];
-  time_t tCurrentTime;
-
-  time(&tCurrentTime);
+  time_t tCurrentTime = time(nullptr);
 
   set_net_num(nNetNumber);
   read_call_out_list();
@@ -1032,7 +1020,7 @@ static void fill_call(int color, int row, int netmax, int *nodenum) {
   }
 }
 
-#define MAX_CONNECTS 2000
+static const int MAX_CONNECTS = 2000;
 
 static int ansicallout() {
   static int callout_ansi, color1, color2, color3, color4, got_info = 0;
@@ -1041,10 +1029,7 @@ static int ansicallout() {
   int num_ncn, num_call_sys, rownum = 0;
   net_contact_rec *ncn;
   net_call_out_rec *con;
-#ifndef __unix__
   session()->localIO()->SetCursor(WLocalIO::cursorNone);
-  holdphone(true);
-#endif
   if (!got_info) {
     got_info = 1;
     callout_ansi = 0;
@@ -1261,10 +1246,8 @@ static int ansicallout() {
     input(szSystemNumber, 5, true);
     sn = atoi(szSystemNumber);
   }
-#ifndef __unix__
-  holdphone(false);
+
   session()->localIO()->SetCursor(WLocalIO::cursorNormal);
-#endif
   std::cerr << "System: " << sn << std::endl;
   return sn;
 }

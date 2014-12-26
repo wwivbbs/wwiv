@@ -1185,7 +1185,7 @@ bool HasKeyBeenPressed(HANDLE in) {
 }
 
 unsigned char GetKeyboardChar() {
-  return static_cast< unsigned char >(_getch());
+  return static_cast<unsigned char>(_getch());
 }
 
 void WLocalIO::LocalEditLine(char *pszInOutText, int len, int status, int *returncode, char *pszAllowedSet) {
@@ -1362,7 +1362,6 @@ void WLocalIO::LocalEditLine(char *pszInOutText, int len, int status, int *retur
   LocalGotoXY(cx, cy);
 }
 
-
 int WLocalIO::GetEditLineStringLength(const char *pszText) {
   int i = strlen(pszText);
   while (i >= 0 && (/*pszText[i-1] == 32 ||*/ static_cast<unsigned char>(pszText[i - 1]) == 176)) {
@@ -1371,12 +1370,9 @@ int WLocalIO::GetEditLineStringLength(const char *pszText) {
   return i;
 }
 
-
 void WLocalIO::UpdateNativeTitleBar() {
   // Set console title
   std::stringstream consoleTitleStream;
   consoleTitleStream << "WWIV Node " << application()->GetInstanceNumber() << " (" << syscfg.systemname << ")";
   SetConsoleTitle(consoleTitleStream.str().c_str());
 }
-
-
