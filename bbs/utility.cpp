@@ -145,7 +145,7 @@ void frequent_init() {
   File::SetFilePermissions(g_szDSZLogFileName, File::permReadWrite);
   File::Remove(g_szDSZLogFileName);
   session()->SetTimeOnlineLimited(false);
-  session()->localIO()->set_x_only(0, nullptr, 0);
+  session()->localIO()->set_x_only(false, nullptr, false);
   set_net_num(0);
   set_language(session()->user()->GetLanguage());
   reset_disable_conf();

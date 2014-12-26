@@ -101,8 +101,7 @@ class WLocalIO {
 
  protected:
   int ExtendedKeyWaiting;
-  char *global_buf;
-  int global_ptr;
+  std::string global_buf;
   int wx;
 
 #if defined ( _WIN32 )
@@ -162,7 +161,7 @@ class WLocalIO {
 
   void set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable = false);
   void global_char(char ch);
-  void set_x_only(int tf, const char *pszFileName, int ovwr);
+  void set_x_only(bool tf, const char *pszFileName, bool ovwr);
   void LocalGotoXY(int x, int y);
   int  WhereX();
   int  WhereY();
