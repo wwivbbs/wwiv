@@ -555,14 +555,14 @@ void Packers() {
         TempDisablePause disable_pause;
         SaveQScanPointers save_qscan;
         bout << "\r\nPlease wait...\r\n";
-        session()->localIO()->set_x_only(1, "posts.txt", 0);
+        session()->localIO()->set_x_only(true, "posts.txt", false);
         bool ac = false;
         if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
           ac = true;
         }
         preload_subs();
         nscan();
-        session()->localIO()->set_x_only(0, nullptr, 0);
+        session()->localIO()->set_x_only(false, nullptr, false);
         add_arc("offline", "posts.txt", 0);
         bool sent = download_temp_arc("offline", false);
         if (!sent) {

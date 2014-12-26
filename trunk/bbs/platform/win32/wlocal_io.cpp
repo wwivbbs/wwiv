@@ -69,8 +69,6 @@ WLocalIO::WLocalIO() {
   SetTopLine(0);
   SetScreenBottom(0);
   ExtendedKeyWaiting = 0;
-  global_buf = nullptr;
-  global_ptr = 0;
   wx = 0;
 
   m_hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -112,57 +110,41 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
 
   if (bOpenFile) {
     if (!fileGlobalCap.IsOpen()) {
-      char szFileName[MAX_PATH];
-      _snprintf(szFileName, sizeof(szFileName), "%sglobal-%d.txt", syscfg.gfilesdir, application()->GetInstanceNumber());
-      fileGlobalCap.SetName(szFileName);
-
-      bool bOpen = fileGlobalCap.Open(File::modeBinary | File::modeAppend | File::modeCreateFile | File::modeReadWrite);
-      global_ptr = 0;
-      global_buf = static_cast<char*>(BbsAllocA(GLOBAL_SIZE));
-      if (!bOpen || !global_buf) {
-        if (global_buf) {
-          free(global_buf);
-          global_buf = nullptr;
-        }
-      }
+      fileGlobalCap.SetName(StringPrintf("%sglobal-%d.txt", syscfg.gfilesdir, application()->GetInstanceNumber()));
+      fileGlobalCap.Open(File::modeBinary | File::modeAppend | File::modeCreateFile | File::modeReadWrite);
+      global_buf.clear();
     }
   } else {
     if (fileGlobalCap.IsOpen() && !bOnlyUpdateVariable) {
-      fileGlobalCap.Write(global_buf, global_ptr);
+      fileGlobalCap.Write(global_buf);
       fileGlobalCap.Close();
-      if (global_buf) {
-        free(global_buf);
-        global_buf = nullptr;
-      }
+      global_buf.clear();
     }
   }
 }
 
 void WLocalIO::global_char(char ch) {
-  if (global_buf && fileGlobalCap.IsOpen()) {
-    global_buf[global_ptr++] = ch;
-    if (global_ptr == GLOBAL_SIZE) {
-      fileGlobalCap.Write(global_buf, global_ptr);
-      global_ptr = 0;
+  if (fileGlobalCap.IsOpen()) {
+    global_buf.push_back(ch);
+    if (global_buf.size() >= GLOBAL_SIZE) {
+      fileGlobalCap.Write(global_buf);
+      global_buf.clear();
     }
   }
 }
 
-void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
+void WLocalIO::set_x_only(bool tf, const char *pszFileName, bool ovwr) {
   static bool nOldGlobalHandle = false;
 
   if (x_only) {
     if (!tf) {
       if (fileGlobalCap.IsOpen()) {
-        fileGlobalCap.Write(global_buf, global_ptr);
+        fileGlobalCap.Write(global_buf);
         fileGlobalCap.Close();
-        if (global_buf) {
-          free(global_buf);
-          global_buf = nullptr;
-        }
+        global_buf.clear();
       }
       x_only = false;
-      set_global_handle((nOldGlobalHandle) ? true : false);
+      set_global_handle(nOldGlobalHandle);
       nOldGlobalHandle = false;
       express = expressabort = false;
     }
@@ -179,16 +161,11 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
       } else {
         fileGlobalCap.Open(File::modeBinary | File::modeCreateFile | File::modeAppend | File::modeReadWrite);
       }
-      global_ptr = 0;
+      global_buf.clear();
       express = true;
       expressabort = false;
-      global_buf = static_cast<char *>(BbsAllocA(GLOBAL_SIZE));
-      if (!fileGlobalCap.IsOpen() || !global_buf) {
-        if (global_buf) {
-          free(global_buf);
-          global_buf = nullptr;
-        }
-        set_x_only(0, nullptr, 0);
+      if (!fileGlobalCap.IsOpen()) {
+        set_x_only(false, nullptr, false);
       }
     }
   }

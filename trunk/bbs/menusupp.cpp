@@ -683,7 +683,7 @@ void DownloadPosts() {
     bout << "|#5This could take quite a while.  Are you sure? ";
     if (yesno()) {
       bout << "Please wait...\r\n";
-      session()->localIO()->set_x_only(1, "posts.txt", 0);
+      session()->localIO()->set_x_only(true, "posts.txt", false);
       bool ac = false;
       if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
         ac = true;
@@ -694,7 +694,7 @@ void DownloadPosts() {
       if (ac) {
         tmp_disable_conf(false);
       }
-      session()->localIO()->set_x_only(0, nullptr, 0);
+      session()->localIO()->set_x_only(false, nullptr, false);
       add_arc("offline", "posts.txt", 0);
       download_temp_arc("offline", false);
     }
@@ -708,7 +708,7 @@ void DownloadFileList() {
       bout << "Please wait...\r\n";
       session()->localIO()->set_x_only(1, "files.txt", 1);
       searchall();
-      session()->localIO()->set_x_only(0, nullptr, 0);
+      session()->localIO()->set_x_only(false, nullptr, false);
       add_arc("temp", "files.txt", 0);
       download_temp_arc("temp", false);
     }
