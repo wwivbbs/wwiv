@@ -38,6 +38,9 @@
     <ClCompile Include="ppp_config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="callout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="connection.h">
@@ -68,6 +71,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="config_exceptions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="callout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
