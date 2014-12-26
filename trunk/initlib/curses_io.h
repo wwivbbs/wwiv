@@ -62,9 +62,9 @@ class CursesIO {
   virtual ~CursesIO();
 
   virtual void Cls(chtype background_char = ' ');
-  virtual CursesWindow* window() const { return window_; }
-  virtual CursesFooter* footer() const { return footer_; }
-  virtual CursesWindow* header() const { return header_; }
+  virtual CursesWindow* window() const { return window_.get(); }
+  virtual CursesFooter* footer() const { return footer_.get(); }
+  virtual CursesWindow* header() const { return header_.get(); }
   virtual void SetIndicatorMode(IndicatorMode mode);
 
   virtual CursesWindow* CreateBoxedWindow(const std::string& title, int nlines, int ncols);
@@ -75,9 +75,9 @@ class CursesIO {
  private:
   int max_x_;
   int max_y_;
-  CursesWindow* window_;
-  CursesFooter* footer_;
-  CursesWindow* header_;
+  std::unique_ptr<CursesWindow> window_;
+  std::unique_ptr<CursesFooter> footer_;
+  std::unique_ptr<CursesWindow> header_;
   IndicatorMode indicator_mode_;
   std::unique_ptr<ColorScheme> color_scheme_;
 };
