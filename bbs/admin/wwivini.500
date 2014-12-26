@@ -245,7 +245,6 @@ CALLOUT_HIGHLIGHT      = 30                 ; Highlight color
 CALLOUT_NORMAL         = 3                  ; Normal color
 CALLOUT_COLOR_TEXT     = 14                 ; Text Color
 WFC_SCREEN             = Y                  ; Use ANSI WFC screen?
-WFC_DRIVES             = C                  ; Drives to show in WFC (max: 5)
 ;                                           ; List sequentialy i.e. CDXYZ
 SCREEN_SAVER_TIME      = 120                ; Screen saver invoke time (min.)
 
@@ -331,13 +330,11 @@ USE_VOICE_VAL                 = N           ; Voice validation
 ;[WWIV-1]
 ;NET_CALLOUT            = Y                 ; allow net callouts this instance
 ;FIDO_PROCESS           = N                 ; process fido packets this instance
-;WFC_SCREEN             = N                 ; Use ANSI WFC screen?
 ;
 ; Instance #2
 ;[WWIV-2]
 ;NET_CALLOUT            = N                 ; allow net callouts this instance
 ;FIDO_PROCESS           = Y                 ; process fido packets this instance
-;WFC_SCREEN             = Y                 ; Use ANSI WFC screen?
 ;SCREEN_SAVER_TIME      = 120               ; Screen saver invoke time
 ;
 ;
