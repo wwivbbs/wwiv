@@ -19,6 +19,7 @@
 #include "bbs/platform/win32/wiot.h"
 
 #include <iostream>
+#include <memory>
 #include <process.h>
 
 #include "bbs/wuser.h"
@@ -30,6 +31,8 @@
 #include "core/wwivassert.h"
 
 #pragma comment(lib, "Ws2_32.lib")
+
+using std::unique_ptr;
 
 WIOTelnet::WIOTelnet(unsigned int nHandle) : socket_(static_cast<SOCKET>(nHandle)), threads_started_(false) {
   WIOTelnet::InitializeWinsock();
@@ -199,15 +202,14 @@ unsigned int WIOTelnet::read(char *buffer, unsigned int count) {
 }
 
 unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTranslation) {
-  int nRet;
-  char * pszBuffer = reinterpret_cast<char*>(malloc(count * 2 + 100));
-  ZeroMemory(pszBuffer, (count * 2) + 100);
+  unique_ptr<char[]> tmp_buffer(new char[count * 2 + 100]);
+  memset(tmp_buffer.get(), 0, count * 2 + 100);
   int nCount = count;
 
   if (!bNoTranslation && (memchr(buffer, CHAR_TELNET_OPTION_IAC, count) != nullptr)) {
     // If there is a #255 then excape the #255's
-    const char * p = buffer;
-    char * p2 = pszBuffer;
+    const char* p = buffer;
+    char* p2 = tmp_buffer.get();
     for (unsigned int i = 0; i < count; i++) {
       if (*p == CHAR_TELNET_OPTION_IAC && !bNoTranslation) {
         *p2++ = CHAR_TELNET_OPTION_IAC;
@@ -220,21 +222,19 @@ unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTr
     }
     *p2++ = '\0';
   } else {
-    memcpy(pszBuffer, buffer, count);
+    memcpy(tmp_buffer.get(), buffer, count);
   }
 
   for (;;) {
-    nRet = send(socket_, pszBuffer, nCount, 0);
+    int nRet = send(socket_, tmp_buffer.get(), nCount, 0);
     if (nRet == SOCKET_ERROR) {
       if (WSAGetLastError() != WSAEWOULDBLOCK) {
         if (WSAGetLastError() != WSAENOTSOCK) {
           std::clog << "DEBUG: in write(), expected to send " << count << " character(s), actually sent " << nRet << std::endl;
         }
-        free(pszBuffer);
         return 0;
       }
     } else {
-      free(pszBuffer);
       return nRet;
     }
     ::Sleep(0);
