@@ -76,9 +76,9 @@ void Logger::Init(int argc, char** argv) {
   }
   set_filename("I", StrCat(filename, ".log"));
   time_t t = time(nullptr);
-  string localtime(asctime(localtime(&t)));
-  StringTrim(&localtime);
-  Logger() << filename << " starting at " << localtime;
+  string l(asctime(localtime(&t)));
+  StringTrim(&l);
+  Logger() << filename << " starting at " << l;
 
   exit_filename = filename;
   atexit(ExitLogger);
