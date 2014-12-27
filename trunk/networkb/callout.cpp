@@ -151,7 +151,6 @@ const net_call_out_rec* Callout::node_config_for(int node) const {
   return nullptr;
 }
 
-
 }  // namespace net
 }  // namespace wwiv
 
