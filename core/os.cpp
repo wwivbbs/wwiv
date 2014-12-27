@@ -177,6 +177,14 @@ std::string environment_variable(const std::string& variable_name) {
   return string(s);
 }
 
+bool set_environment_variable(const std::string& variable_name, const std::string value) {
+#ifdef _WIN32
+  return ::SetEnvironmentVariable(variable_name.c_str(), value.c_str()) ? true : false;
+#else
+  setenv(variable_name.c_str(), value.c_str(), 1);
+#endif  // _WIN32
+}
+
 
 }  // namespace os
 }  // namespace wwiv

@@ -61,6 +61,8 @@ void input_password(CursesWindow* window, const std::string& prompt, const std::
 int messagebox(CursesWindow* window, const std::string& text);
 int messagebox(CursesWindow* window, const std::vector<std::string>& text);
 
+void trimstrpath(char *s);
+
 
 // Base item of an editable value, this class does not use templates.
 class BaseEditItem {

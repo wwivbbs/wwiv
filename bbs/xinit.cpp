@@ -34,6 +34,7 @@
 #include "bbs/wstatus.h"
 #include "core/inifile.h"
 #include "core/strings.h"
+#include "core/os.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
@@ -64,6 +65,7 @@ struct ini_flags_type {
 using std::string;
 using wwiv::bbs::TempDisablePause;
 using namespace wwiv::core;
+using namespace wwiv::os;
 using namespace wwiv::strings;
 
 uint32_t GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, uint32_t flags);
@@ -987,8 +989,6 @@ void WApplication::make_abs_path(char *pszDirectory) {
 }
 
 void WApplication::InitializeBBS() {
-  std::string newprompt;
-
   session()->localIO()->SetScreenBottom(session()->localIO()->GetDefaultScreenBottom());
   defscreenbottom = session()->localIO()->GetDefaultScreenBottom();
 
@@ -1162,35 +1162,30 @@ void WApplication::InitializeBBS() {
   session()->topdata = (syscfg.sysconfig & sysconfig_no_local) ? WLocalIO::topdataNone : WLocalIO::topdataUser;
 
   snprintf(g_szDSZLogFileName, sizeof(g_szDSZLogFileName), "%sdsz.log", syscfgovr.tempdir);
-  char *ss = getenv("PROMPT");
 #if !defined ( __unix__ ) && !defined ( __APPLE__ )
-  newprompt = "PROMPT=WWIV: ";
-
-  if (ss) {
-    newprompt += ss;
+  string newprompt = "WWIV: ";
+  const string old_prompt = environment_variable("PROMPT");
+  if (!old_prompt.empty()) {
+    newprompt.append(old_prompt);
   } else {
-    newprompt += "$P$G";
+    newprompt.append("$P$G");
   }
   // put in our environment since passing the xenviron wasn't working
   // with sync emulated fossil
-  putenv(newprompt.c_str());
+  set_environment_variable("PROMPT", newprompt);
 
-  std::string dszLogEnvironmentVariable("DSZLOG=");
-  dszLogEnvironmentVariable.append(g_szDSZLogFileName);
-  int pk = 0;
-  ss = getenv("DSZLOG");
-
-  if (!ss) {
-    putenv(dszLogEnvironmentVariable.c_str());
+  if (environment_variable("DSZLOG").empty()) {
+    set_environment_variable("DSZLOG", g_szDSZLogFileName);
   }
-  if (!pk) {
-    putenv("PKNOFASTCHAR=Y");
-  }
+  // TODO(rushfan): we really shouldn't be using DOS pkzip anymore. Let's remove this.
+  // until then, I've at least commented what this is for.
+  // This allows DOS redirection of output. (see the addendum.doc for 2.04g) or
+  // see https://groups.google.com/forum/#!topic/comp.compression/KkVMQkA0FmA
+  set_environment_variable("PKNOFASTCHAR", "Y");
+  set_environment_variable("BBS", wwiv_version);
 
-  wwivVerEnvVar = "BBS=";
-  wwivVerEnvVar += wwiv_version;
-  putenv(wwivVerEnvVar.c_str());
-  putenv(networkNumEnvVar.c_str());
+  // TODO: this is empty now.  See if we really need this.
+  //putenv(networkNumEnvVar.c_str());
 #endif // defined ( __unix__ )
 
   XINIT_PRINTF("* Reading Voting Booth Configuration.\r\n");
@@ -1229,9 +1224,9 @@ void WApplication::InitializeBBS() {
   qsc_p = qsc_q + (session()->GetMaxNumberMessageAreas() + 31) / 32;
 
   network_extension = ".NET";
-  ss = getenv("WWIV_INSTANCE");
-  if (ss) {
-    int nTempInstanceNumber = atoi(ss);
+  const string wwiv_instance(environment_variable("WWIV_INSTANCE"));
+  if (!wwiv_instance.empty()) {
+    int nTempInstanceNumber = atoi(wwiv_instance.c_str());
     if (nTempInstanceNumber > 0) {
       network_extension = StringPrintf(".%3.3d", nTempInstanceNumber);
       // Fix... Set the global instance variable to match this.  When you run WWIV with the -n<instance> parameter

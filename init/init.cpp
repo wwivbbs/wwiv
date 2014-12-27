@@ -39,6 +39,7 @@
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "core/file.h"
+#include "core/os.h"
 #include "core/wfndfile.h"
 #include "core/wwivport.h"
 
@@ -140,14 +141,13 @@ int main(int argc, char* argv[]) {
 int WInitApp::main(int argc, char *argv[]) {
   setlocale (LC_ALL,"");
 
-  char *ss = getenv("WWIV_DIR");
-  if (ss) {
-    chdir(ss);
+  const string wwiv_dir = wwiv::os::environment_variable("WWIV_DIR");
+  if (!wwiv_dir.empty()) {
+    chdir(wwiv_dir.c_str());
   }
 
-  char current_dir[MAX_PATH];
-  getcwd(current_dir, MAX_PATH);
-  trimstrpath(current_dir);
+  string current_dir = File::current_directory();
+  File::EnsureTrailingSlash(&current_dir);
   const string bbsdir(current_dir);
 
   out->Cls(ACS_CKBOARD);

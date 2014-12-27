@@ -48,6 +48,7 @@ void sound(uint32_t frequency, std::chrono::milliseconds d);
 int random_number(int max_value);
 
 std::string environment_variable(const std::string& variable_name);
+bool set_environment_variable(const std::string& variable_name, const std::string value);
 
 
 }  // namespace os
