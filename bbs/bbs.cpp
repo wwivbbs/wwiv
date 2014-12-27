@@ -845,15 +845,13 @@ int WApplication::Run(int argc, char *argv[]) {
   }
 
   // Add the environment variable or overwrite the existing one
-#if !defined ( __unix__ )
-  const string env_str = StringPrintf("WWIV_INSTANCE=%ld", GetInstanceNumber());
-  putenv(env_str.c_str());
-#else
-  // For some reason putenv() doesn't work sometimes when setenv() does...
   const string env_str = StringPrintf("%u", GetInstanceNumber());
-  setenv("WWIV_INSTANCE", env_str.c_str(), 1);
+  set_environment_variable("WWIV_INSTANCE", env_str);
+#ifndef _WIN32
+  // TODO(rushfan): Don't think we need this, but need to make sure.
+  // it was already there.
   m_bUserAlreadyOn = true;
-#endif
+#endif  // _WIN32
 
   session()->CreateComm(hSockOrComm);
   this->InitializeBBS();

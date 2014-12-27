@@ -32,9 +32,11 @@
 #include <string>
 #include <vector>
 
-#include "initlib/curses_io.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h" 
+#include "core/file.h"
+#include "core/strings.h"
+#include "initlib/curses_io.h"
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT
@@ -53,6 +55,7 @@
 using std::string;
 using std::unique_ptr;
 using std::vector;
+using namespace wwiv::strings;
 
 int CustomEditItem::Run(CursesWindow* window) {
   window->GotoXY(x_, y_);
@@ -551,4 +554,15 @@ int toggleitem(CursesWindow* window, int value, const std::vector<std::string>& 
   window->PutsXY(cx, cy, strings.at(value));
   window->GotoXY(cx, cy);
   return value;
+}
+
+void trimstrpath(char *s) {
+  StringTrimEnd(s);
+
+  int i = strlen(s);
+  if (i && (s[i - 1] != File::pathSeparatorChar)) {
+    // We don't have pathSeparatorString.
+    s[i] = File::pathSeparatorChar;
+    s[i + 1] = 0;
+  }
 }
