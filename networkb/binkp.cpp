@@ -119,6 +119,7 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
   unique_ptr<char[]> data(new char[length]);
   conn_->receive(data.get(), length - 1, d);
   string s(data.get(), length - 1);
+
   switch (command_id) {
   case BinkpCommands::M_NUL: {
     LOG << "RECV:  M_NUL: " << s;

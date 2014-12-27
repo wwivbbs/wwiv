@@ -22,8 +22,6 @@
 #include "networkb/socket_exceptions.h"
 
 using std::chrono::milliseconds;
-using std::clog;
-using std::endl;
 using std::string;
 using std::unique_ptr;
 using wwiv::os::sleep_for;

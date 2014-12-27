@@ -39,7 +39,6 @@ using std::chrono::time_point;
 using std::chrono::duration;
 using std::chrono::duration_cast;
 using std::chrono::system_clock;
-using std::clog;
 using std::endl;
 using std::string;
 using std::unique_ptr;
