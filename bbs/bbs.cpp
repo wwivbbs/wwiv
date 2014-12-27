@@ -692,8 +692,6 @@ int WApplication::Run(int argc, char *argv[]) {
   ooneuser = true;
 #endif
 
-  string systemPassword;
-
   for (int i = 1; i < argc; i++) {
     string argumentRaw = argv[i];
     if (argumentRaw.length() > 1 && (argumentRaw[0] == '-' || argumentRaw[0] == '/')) {
@@ -735,10 +733,6 @@ int WApplication::Run(int argc, char *argv[]) {
         break;
       case 'H':
         hSockOrComm = stoi(argument);
-        break;
-      case 'P':
-        systemPassword = argument;
-        StringUpperCase(&systemPassword);
         break;
       case 'I':
       case 'N': {
@@ -855,10 +849,6 @@ int WApplication::Run(int argc, char *argv[]) {
 
   session()->CreateComm(hSockOrComm);
   this->InitializeBBS();
-
-  if (!systemPassword.empty()) {
-    strcpy(syscfg.systempw, systemPassword.c_str());
-  }
 
   if (syscfg.sysconfig & sysconfig_no_local) {
     this_usernum = 0;
@@ -1011,7 +1001,6 @@ void WApplication::ShowUsage() {
             "  -M         - Don't access modem at all\r\n" <<
             "  -N<inst>   - Designate instance number <inst>\r\n" <<
             "  -O         - Quit WWIV after one user done\r\n" <<
-            "  -P<pass>   - Set System Password to <pass>\r\n" <<
             "  -Q<level>  - Normal exit level\r\n" <<
             "  -R<min>    - Specify max # minutes until event\r\n" <<
             "  -S<rate>   - Used only with -B, indicates com port speed\r\n" <<
