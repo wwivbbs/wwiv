@@ -101,12 +101,6 @@ class WApplication : public WLogger, Runnable {
   std::string networkNumEnvVar;
 
   /*!
-   * @var wwivVerEnvVar Environment variable for the WWIV
-   *      version (set as BBS env variable)
-   */
-  std::string wwivVerEnvVar;
-
-  /*!
    * @function GetHomeDir Returns the current home directory
    */
   const std::string GetHomeDir();
