@@ -181,7 +181,7 @@ bool set_environment_variable(const std::string& variable_name, const std::strin
 #ifdef _WIN32
   return ::SetEnvironmentVariable(variable_name.c_str(), value.c_str()) ? true : false;
 #else
-  setenv(variable_name.c_str(), value.c_str(), 1);
+  return setenv(variable_name.c_str(), value.c_str(), 1) == 0;
 #endif  // _WIN32
 }
 
