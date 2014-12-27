@@ -14,17 +14,6 @@
 // @2 localhost:24554 -
 //
 
-#include "networkb/binkp.h"
-#include "networkb/binkp_config.h"
-#include "networkb/callout.h"
-#include "networkb/connection.h"
-#include "networkb/socket_connection.h"
-#include "networkb/socket_exceptions.h"
-#include "networkb/wfile_transfer_file.h"
-
-#include "sdk/config.h"
-#include "sdk/networks.h"
-
 #include <fcntl.h>
 #include <iostream>
 #include <map>
@@ -36,6 +25,17 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
+
+#include "networkb/binkp.h"
+#include "networkb/binkp_config.h"
+#include "networkb/callout.h"
+#include "networkb/connection.h"
+#include "networkb/socket_connection.h"
+#include "networkb/socket_exceptions.h"
+#include "networkb/wfile_transfer_file.h"
+
+#include "sdk/config.h"
+#include "sdk/networks.h"
 
 using std::cout;
 using std::endl;

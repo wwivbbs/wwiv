@@ -13,6 +13,8 @@
 #include <string>
 #include <thread>
 
+using std::clog;
+using std::endl;
 using std::string;
 using std::thread;
 using std::unique_ptr;
@@ -52,7 +54,7 @@ TEST_F(BinkTest, ErrorAbortsSession) {
   Stop();
   
   while (conn_.has_sent_packets()) {
-    std::clog << conn_.GetNextPacket().debug_string() << std::endl;
+    clog << conn_.GetNextPacket().debug_string() << endl;
   }
 }
 
