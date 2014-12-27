@@ -108,6 +108,7 @@ bool ParseFileRequestLine(const std::string& request_line,
 			  time_t* timestamp,
 			  long* offset);
 
+std::string expected_password_for(Callout* callout, int node);
 int node_number_from_address_list(const std::string& network_list, const std::string& network_name);
 
 }  // namespace net

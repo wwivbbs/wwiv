@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_NETORKB_CALLOUT_H__
 #define __INCLUDED_NETORKB_CALLOUT_H__
 
+#include <initializer_list>
 #include <map>
 #include <string>
 
@@ -29,7 +30,9 @@ namespace net {
   
 class Callout {
  public:
-  Callout(const std::string& network_dir);
+  explicit Callout(const std::string& network_dir);
+  // VisibleForTesting
+  Callout(std::initializer_list<net_call_out_rec> l);
   virtual ~Callout();
   const net_call_out_rec* node_config_for(int node) const;
 
