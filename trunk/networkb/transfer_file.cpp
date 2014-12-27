@@ -12,7 +12,6 @@
 
 using std::chrono::seconds;
 using std::chrono::system_clock;
-using std::clog;
 using std::endl;
 using std::string;
 using wwiv::strings::StringPrintf;
@@ -40,9 +39,9 @@ InMemoryTransferFile::~InMemoryTransferFile() {}
 
 bool InMemoryTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
   if ((start + size) > contents_.size()) {
-    clog << "ERROR InMemoryTransferFile::GetChunk (start + size) > file_size():"
-         << "values[ start: " << start << "; size: " << size
-	 << "; file_size(): " << file_size() << " ]" << endl;
+    std::clog << "ERROR InMemoryTransferFile::GetChunk (start + size) > file_size():"
+              << "values[ start: " << start << "; size: " << size
+	            << "; file_size(): " << file_size() << " ]" << endl;
     return false;
   }
   memcpy(chunk, &contents_.data()[start], size);
