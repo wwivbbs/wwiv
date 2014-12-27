@@ -84,7 +84,6 @@ private:
   bool HandleFileGetRequest(const std::string& request_line);
   bool HandleFileGotRequest(const std::string& request_line);
   bool HandleFileRequest(const std::string& request_line);
-  BinkState SendDummyFile(const std::string& filename, char fill, std::size_t size);
 
   BinkConfig* config_;
   Callout* callout_;
