@@ -136,6 +136,12 @@ Callout::Callout(const string& network_dir) {
   ParseCalloutFile(&node_config_, network_dir);
 }
 
+Callout::Callout(std::initializer_list<net_call_out_rec> l) {
+  for (const auto& r : l) {
+    node_config_.emplace(r.sysnum, r);
+  }
+}
+
 Callout::~Callout() {}
 
 const net_call_out_rec* Callout::node_config_for(int node) const {

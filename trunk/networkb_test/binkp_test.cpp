@@ -22,12 +22,11 @@ using namespace wwiv::strings;
 static const int ANSWERING_ADDRESS = 1;
 static const int ORIGINATING_ADDRESS = 2;
 
-
 class BinkTest : public testing::Test {
 protected:
   void Start() {
     files_.Mkdir("network");
-    const string line("@1 example.com -");
+    const string line("@1 example.com");
     files_.CreateTempFile("addresses.binkp", line);
     const string network_dir = files_.DirName("network");
     BinkConfig* dummy_config = new BinkConfig(ORIGINATING_ADDRESS, "Dummy", network_dir);
@@ -55,9 +54,7 @@ TEST_F(BinkTest, ErrorAbortsSession) {
   while (conn_.has_sent_packets()) {
     std::clog << conn_.GetNextPacket().debug_string() << std::endl;
   }
-};
-
-//int node_number_from_address_list(const std::string& network_list, const std::string& network_name);
+}
 
 TEST(NodeFromAddressTest, SingleAddress) {
   const string address = "20000:20000/1234@foonet";
@@ -71,4 +68,19 @@ TEST(NodeFromAddressTest, MultipleAddresses) {
   EXPECT_EQ(-1, node_number_from_address_list(address, "wwivnet"));
   EXPECT_EQ(-1, node_number_from_address_list(address, "fidonet"));
   EXPECT_EQ(-1, node_number_from_address_list(address, "dorknet"));
+}
+
+// string expected_password_for(Callout* callout, int node)
+TEST(ExpectedPasswordTest, Basic) {
+  net_call_out_rec n{ 1234, 1, options_sendback, 2, 3, 4, "pass", 5, 6, 7, "opts" };
+  Callout callout({ n });
+  string actual = expected_password_for(&callout, 1234);
+  EXPECT_EQ("pass", actual);
+}
+
+TEST(ExpectedPasswordTest, WrongNode) {
+  net_call_out_rec n{ 1234, 1, options_sendback, 2, 3, 4, "pass", 5, 6, 7, "opts" };
+  Callout callout({ n });
+  string actual = expected_password_for(&callout, 12345);
+  EXPECT_EQ("-", actual);
 }
