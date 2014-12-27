@@ -120,45 +120,37 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
   conn_->receive(data.get(), length - 1, d);
   string s(data.get(), length - 1);
 
+  LOG << "RECV:  " << BinkpCommands::command_id_to_name(command_id) << ": " << s;
   switch (command_id) {
   case BinkpCommands::M_NUL: {
-    LOG << "RECV:  M_NUL: " << s;
+    // TODO(rushfan): process these.
   } break;
   case BinkpCommands::M_ADR: {
-    LOG << "RECV:  M_ADR: " << s;
     address_list_ = s;
   } break;
   case BinkpCommands::M_OK: {
-    LOG << "RECV:  M_OK: " << s;
     ok_received_ = true;
   } break;
   case BinkpCommands::M_GET: {
-    LOG << "RECV:  M_GET: " << s;
     HandleFileGetRequest(s);
   } break;
   case BinkpCommands::M_GOT: {
-    LOG << "RECV:  M_GOT: " << s;
     HandleFileGotRequest(s);
   } break;
   case BinkpCommands::M_EOB: {
-    LOG << "RECV:  M_EOB: " << s;
     eob_received_ = true;
   } break;
   case BinkpCommands::M_PWD: {
-    LOG << "RECV:  M_PWD: " << s;
     remote_password_ = s;
   } break;
   case BinkpCommands::M_FILE: {
-    LOG << "RECV:  M_FILE: " << s;
     HandleFileRequest(s);
   } break;
   case BinkpCommands::M_ERR: {
-    LOG << "RECV:  M_ERR: " << s;
     error_received_ = true;
   } break;
   default: {
-    LOG << "RECV:  ** UNHANDLED COMMAND: " << BinkpCommands::command_id_to_name(command_id) 
-         << " data: " << s;
+    LOG << "       ** Unhandled Command: " << BinkpCommands::command_id_to_name(command_id) << ": " << s;
   } break;
   }
   return true;
