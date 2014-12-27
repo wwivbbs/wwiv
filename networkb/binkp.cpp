@@ -43,6 +43,34 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace net {
 
+string expected_password_for(Callout* callout, int node) {
+  const net_call_out_rec* con = callout->node_config_for(node);
+  string password("-");  // default password
+  if (con != nullptr) {
+    const char *p = con->password;
+    if (p && *p) {
+      // If the password is null nullptr and not empty string.
+      password.assign(p);
+    } else {
+      clog << "       No password found for node: " << node << " using default password of '-'" << endl;
+    }
+  }
+  return password;
+}
+
+int node_number_from_address_list(const string& network_list, const string& network_name) {
+  vector<string> v = SplitString(network_list, " ");
+  for (auto s : v) {
+    StringTrim(&s);
+    if (ends_with(s, StrCat("@", network_name)) && starts_with(s, "20000:20000/")) {
+      s = s.substr(12);
+      s = s.substr(0, s.find('/'));
+      return stoi(s);
+    }
+  }
+  return -1;
+}
+
 class SendFiles {
 public:
   SendFiles(const string& network_directory, uint16_t destination_node) 
@@ -70,21 +98,6 @@ private:
   const string network_directory_;
   const uint16_t destination_node_;
 };
-
-static string expected_password_for(Callout* callout, int node) {
-  const net_call_out_rec* con = callout->node_config_for(node);
-  string password("-");  // default password
-  if (con != nullptr) {
-    const char *p = con->password;
-    if (p && *p) {
-      // If the password is null nullptr and not empty string.
-      password.assign(p);
-    } else {
-      clog << "       No password found for node: " << node << " using default password of '-'" << endl;
-    }
-  }
-  return password;
-}
 
 BinkP::BinkP(Connection* conn, BinkConfig* config, Callout* callout, BinkSide side,
         int expected_remote_node,
@@ -262,19 +275,6 @@ BinkState BinkP::WaitAddr() {
     }
   }
   return BinkState::AUTH_REMOTE;
-}
-
-int node_number_from_address_list(const string& network_list, const string& network_name) {
-  vector<string> v = SplitString(network_list, " ");
-  for (auto s : v) {
-    StringTrim(&s);
-    if (ends_with(s, StrCat("@", network_name)) && starts_with(s, "20000:20000/")) {
-      s = s.substr(12);
-      s = s.substr(0, s.find('/'));
-      return stoi(s);
-    }
-  }
-  return -1;
 }
 
 BinkState BinkP::PasswordAck() {
