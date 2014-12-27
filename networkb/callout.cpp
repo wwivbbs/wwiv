@@ -14,7 +14,6 @@
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
 
-using std::clog;
 using std::endl;
 using std::map;
 using std::string;

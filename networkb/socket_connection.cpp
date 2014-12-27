@@ -28,6 +28,7 @@
 #define closesocket(x) close(x)
 #endif  // _WIN32
 
+#include "core/log.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "networkb/socket_exceptions.h"
@@ -48,6 +49,8 @@ using wwiv::strings::StringPrintf;
 namespace wwiv {
 namespace net {
 
+#define LOG wwiv::core::Logger()
+
 namespace {
 
 static const auto SLEEP_MS = milliseconds(100);;
@@ -57,7 +60,7 @@ bool InitializeSockets() {
 WSADATA wsadata;
 int result = WSAStartup(MAKEWORD(2,2), &wsadata);
   if (result != 0) {
-    std::clog << "WSAStartup failed with error: " << result << std::endl;
+    LOG << "WSAStartup failed with error: " << result;
     return false;
   }
 #endif  // _WIN32
@@ -133,13 +136,13 @@ unique_ptr<SocketConnection> Connect(const string& host,
       // success;
       freeaddrinfo(address);
       if (!SetNonBlockingMode(s)) {
-        std::clog << "Unable to put socket into nonblocking mode." << std::endl;
+        LOG << "Unable to put socket into nonblocking mode.";
         closesocket(s);
         s = INVALID_SOCKET;
         continue;
       }
       if (!SetNoDelayMode(s)) {
-        std::clog << "Unable to put socket into nodelay mode." << std::endl;
+        LOG << "Unable to put socket into nodelay mode.";
         closesocket(s);
         s = INVALID_SOCKET;
         continue;
@@ -175,13 +178,13 @@ unique_ptr<SocketConnection> Accept(int port) {
   SOCKET s = accept(sock, reinterpret_cast<struct sockaddr *>(&saddr), &addr_length);
 
   if (!SetNonBlockingMode(s)) {
-    std::clog << "Unable to put socket into nonblocking mode." << std::endl;
+    LOG << "Unable to put socket into nonblocking mode.";
     closesocket(s);
     s = INVALID_SOCKET;
     throw socket_error("Unable to set nonblocking mode on the socket.");
   }
   if (!SetNoDelayMode(s)) {
-    std::clog << "Unable to put socket into nodelay mode." << std::endl;
+    LOG << "Unable to put socket into nodelay mode.";
     closesocket(s);
     s = INVALID_SOCKET;
     throw socket_error("Unable to set nodelay mode on the socket.");
@@ -225,7 +228,7 @@ int SocketConnection::receive(void* data, const int size, milliseconds d) {
 int SocketConnection::send(const void* data, int size, milliseconds d) {
   int sent = ::send(sock_, reinterpret_cast<const char*>(data), size, 0);
   if (sent != size) {
-    clog << "ERROR: send != packet size.  size: " << size << "; sent: " << sent << endl;
+    LOG << "ERROR: send != packet size.  size: " << size << "; sent: " << sent;
   }
   return size;
 }
