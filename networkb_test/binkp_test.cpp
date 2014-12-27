@@ -56,3 +56,19 @@ TEST_F(BinkTest, ErrorAbortsSession) {
     std::clog << conn_.GetNextPacket().debug_string() << std::endl;
   }
 };
+
+//int node_number_from_address_list(const std::string& network_list, const std::string& network_name);
+
+TEST(NodeFromAddressTest, SingleAddress) {
+  const string address = "20000:20000/1234@foonet";
+  EXPECT_EQ(1234, node_number_from_address_list(address, "foonet"));
+  EXPECT_EQ(-1, node_number_from_address_list(address, "wwivnet"));
+}
+
+TEST(NodeFromAddressTest, MultipleAddresses) {
+  const string address = "1:369/23@fidonet 20000:20000/1234@foonet 20000:369/24@dorknet";
+  EXPECT_EQ(1234, node_number_from_address_list(address, "foonet"));
+  EXPECT_EQ(-1, node_number_from_address_list(address, "wwivnet"));
+  EXPECT_EQ(-1, node_number_from_address_list(address, "fidonet"));
+  EXPECT_EQ(-1, node_number_from_address_list(address, "dorknet"));
+}
