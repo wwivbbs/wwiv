@@ -42,8 +42,6 @@
 #define MAX_PATH 260
 #endif
 
-#define _putenv(s)  putenv(s)
-
 #endif // defined ( __unix__ )
 
 #endif // __INCLUDED_PLATFORM_INCL1_H__

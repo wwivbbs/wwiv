@@ -667,23 +667,23 @@ int WApplication::Run(int argc, char *argv[]) {
   bool bTelnetInstance        = false;
   unsigned int hSockOrComm    = 0;
 
-  char* ss = getenv("BBS");
-  if (ss) {
-    if (strncmp(ss, "WWIV", 4) == 0) {
-      clog << "You are already in the BBS, type 'EXIT' instead.\n\n";
-      exit(255);
-    }
-  }
   curatr = 0x07;
-  ss = getenv("WWIV_DIR");
-  if (ss) {
-    chdir(ss);
-  }
-
   // Set the instance, this may be changed by a command line argument
   instance_number = 1;
   no_hangup = false;
   ok_modem_stuff = true;
+
+  const std::string bbs_env = environment_variable("BBS");
+  if (!bbs_env.empty()) {
+    if (bbs_env.find("WWIV") != string::npos) {
+      std::cerr << "You are already in the BBS, type 'EXIT' instead.\n\n";
+      exit(255);
+    }
+  }
+  const string wwiv_dir = environment_variable("WWIV_DIR");
+  if (!wwiv_dir.empty()) {
+    chdir(wwiv_dir.c_str());
+  }
 
 #if defined( __unix__ )
   // HACK to make WWIV5/X just work w/o any command line
