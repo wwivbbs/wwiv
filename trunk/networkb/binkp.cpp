@@ -367,7 +367,7 @@ BinkState BinkP::AuthRemote() {
 BinkState BinkP::TransferFiles() {
   clog << "STATE: TransferFiles" << endl;
   // Quickly let the inbound event loop percolate.
-  process_frames(seconds(1));
+  process_frames(milliseconds(100));
 
   SendFiles file_sender(config_->network_dir(), expected_remote_node_);
   const auto list = file_sender.CreateTransferFileList();
@@ -375,7 +375,9 @@ BinkState BinkP::TransferFiles() {
     SendFilePacket(file);
   }
   // Quickly let the inbound event loop percolate.
-  process_frames(seconds(1));
+  for (int i=0; i < 5; i++) {
+    process_frames(milliseconds(50));
+  }
 
   // TODO(rushfan): Should this be in a new state?
   if (files_to_send_.empty()) {
@@ -398,15 +400,14 @@ BinkState BinkP::Unknown() {
 }
 
 BinkState BinkP::WaitEob() {
-  clog << "STATE: WaitEob: eob_received: " << std::boolalpha << eob_received_ << endl;
-  for (int count=1; count < 10; count++) {
+  clog << "STATE: WaitEob: ENTERING eob_received: " << boolalpha << eob_received_ << endl;
+  for (int count=1; count < 20; count++) {
     try {
-      process_frames([&]() -> bool { return eob_received_; }, seconds(1));
-      clog << "       WaitEob: eob_received: " << std::boolalpha << eob_received_ << endl;
+      process_frames([&]() -> bool { return eob_received_; }, seconds(500));
       if (eob_received_) {
         return BinkState::DONE;
       }
-      process_frames(milliseconds(100));
+      clog << "       WaitEob: eob_received: " << boolalpha << eob_received_ << endl;
     } catch (timeout_error e) {
       clog << "       WaitEob looping for more data. " << e.what() << std::endl;
     }
@@ -533,13 +534,6 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   }
   files_to_send_.erase(iter);
   return true;
-}
-
-// TODO(rushfan): Remove this.
-BinkState BinkP::SendDummyFile(const std::string& filename, char fill, size_t size) {
-  clog << "       SendDummyFile: " << filename << endl;
-  bool result = SendFilePacket(new InMemoryTransferFile(filename, string(size, fill)));
-  return BinkState::UNKNOWN;
 }
 
 void BinkP::Run() {
