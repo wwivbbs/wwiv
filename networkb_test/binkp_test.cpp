@@ -74,14 +74,16 @@ TEST(NodeFromAddressTest, MultipleAddresses) {
 
 // string expected_password_for(Callout* callout, int node)
 TEST(ExpectedPasswordTest, Basic) {
-  net_call_out_rec n{ 1234, 1, options_sendback, 2, 3, 4, "pass", 5, 6, 7, "opts" };
+  char opts[] = "opts";
+  net_call_out_rec n{ 1234, 1, options_sendback, 2, 3, 4, "pass", 5, 6, 7, opts };
   Callout callout({ n });
   string actual = expected_password_for(&callout, 1234);
   EXPECT_EQ("pass", actual);
 }
 
 TEST(ExpectedPasswordTest, WrongNode) {
-  net_call_out_rec n{ 1234, 1, options_sendback, 2, 3, 4, "pass", 5, 6, 7, "opts" };
+  char opts[] = "opts";
+  net_call_out_rec n{ 1234, 1, options_sendback, 2, 3, 4, "pass", 5, 6, 7, opts };
   Callout callout({ n });
   string actual = expected_password_for(&callout, 12345);
   EXPECT_EQ("-", actual);
