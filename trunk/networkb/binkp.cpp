@@ -26,9 +26,12 @@
 
 using std::chrono::milliseconds;
 using std::chrono::seconds;
+using std::boolalpha;
 using std::clog;
 using std::endl;
 using std::map;
+using std::stoi;
+using std::stol;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -96,7 +99,7 @@ BinkP::~BinkP() {
   files_to_send_.clear();
 }
 
-bool BinkP::process_command(int16_t length, std::chrono::milliseconds d) {
+bool BinkP::process_command(int16_t length, milliseconds d) {
   const uint8_t command_id = conn_->read_uint8(d);
   unique_ptr<char[]> data(new char[length]);
   conn_->receive(data.get(), length - 1, d);
@@ -145,7 +148,7 @@ bool BinkP::process_command(int16_t length, std::chrono::milliseconds d) {
   return true;
 }
 
-bool BinkP::process_data(int16_t length, std::chrono::milliseconds d) {
+bool BinkP::process_data(int16_t length, milliseconds d) {
   unique_ptr<char[]> data(new char[length]);
   int length_received = conn_->receive(data.get(), length, d);
   string s(data.get(), length);
@@ -153,14 +156,13 @@ bool BinkP::process_data(int16_t length, std::chrono::milliseconds d) {
   return true;
 }
 
-bool BinkP::process_frames(std::chrono::milliseconds d) {
+bool BinkP::process_frames(milliseconds d) {
   return process_frames([&]() -> bool { return false; }, d);
 }
 
-bool BinkP::process_frames(std::function<bool()> predicate, std::chrono::milliseconds d) {
+bool BinkP::process_frames(std::function<bool()> predicate, milliseconds d) {
   try {
     while (!predicate()) {
-      //clog << "        process_frames loop" << endl;
       uint16_t header = conn_->read_uint16(d);
       if (header & 0x8000) {
         if (!process_command(header & 0x7fff, d)) {
@@ -206,7 +208,7 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
 
 bool BinkP::send_data_packet(const char* data, std::size_t packet_length) {
   // for now assume everything fits within a single frame.
-  std::unique_ptr<char[]> packet(new char[packet_length + 2]);
+  unique_ptr<char[]> packet(new char[packet_length + 2]);
   packet_length &= 0x7fff;
   uint8_t b0 = ((packet_length & 0xff00) >> 8);
   uint8_t b1 = packet_length & 0x00ff;
@@ -262,14 +264,14 @@ BinkState BinkP::WaitAddr() {
   return BinkState::AUTH_REMOTE;
 }
 
-static int node_number_from_address_list(const string& network_list, const string& network_name) {
+int node_number_from_address_list(const string& network_list, const string& network_name) {
   vector<string> v = SplitString(network_list, " ");
   for (auto s : v) {
     StringTrim(&s);
-    if (ends_with(s, StrCat("@", network_name)) || starts_with(s, "20000:20000/")) {
+    if (ends_with(s, StrCat("@", network_name)) && starts_with(s, "20000:20000/")) {
       s = s.substr(12);
       s = s.substr(0, s.find('/'));
-      return std::stoi(s);
+      return stoi(s);
     }
   }
   return -1;
@@ -366,8 +368,7 @@ BinkState BinkP::TransferFiles() {
   clog << "STATE: TransferFiles" << endl;
   // Quickly let the inbound event loop percolate.
   process_frames(seconds(1));
-  // HACK
-  //SendDummyFile("a.txt", 'a', 40);
+
   SendFiles file_sender(config_->network_dir(), expected_remote_node_);
   const auto list = file_sender.CreateTransferFileList();
   for (auto file : list) {
@@ -400,7 +401,7 @@ BinkState BinkP::WaitEob() {
   clog << "STATE: WaitEob: eob_received: " << std::boolalpha << eob_received_ << endl;
   for (int count=1; count < 10; count++) {
     try {
-      process_frames( [&]() -> bool { return eob_received_; }, seconds(1));
+      process_frames([&]() -> bool { return eob_received_; }, seconds(1));
       clog << "       WaitEob: eob_received: " << std::boolalpha << eob_received_ << endl;
       if (eob_received_) {
         return BinkState::DONE;
@@ -414,7 +415,7 @@ BinkState BinkP::WaitEob() {
 }
 
 bool BinkP::SendFilePacket(TransferFile* file) {
-  string filename(file->filename());
+  const string filename(file->filename());
   clog << "       SendFilePacket: " << filename << endl;
   files_to_send_[filename] = unique_ptr<TransferFile>(file);
   send_command_packet(BinkpCommands::M_FILE, file->as_packet_data(0));
@@ -459,8 +460,8 @@ bool BinkP::HandleFileRequest(const string& request_line) {
   }
 
   auto d = seconds(5);
-  bool done = false;
   long bytes_received = starting_offset;
+  bool done = false;
 
   try {
     unique_ptr<TransferFile> received_file(received_transfer_file_factory_(filename));
@@ -481,8 +482,7 @@ bool BinkP::HandleFileRequest(const string& request_line) {
         if (bytes_received >= expected_length) {
           clog << "        file finished; bytes_received: " << bytes_received << endl;
           done = true;
-          const string data_line = StringPrintf("%s %u %u", filename.c_str(),
-                  bytes_received, timestamp);
+          const string data_line = StringPrintf("%s %u %u", filename.c_str(), bytes_received, timestamp);
           send_command_packet(BinkpCommands::M_GOT, data_line);
           received_files_.push_back(std::move(received_file));
         }
@@ -492,7 +492,6 @@ bool BinkP::HandleFileRequest(const string& request_line) {
     clog << "        timeout_error: " << e.what() << endl;
   }
   clog << "        " << " returning true" << endl;
-  // clog << "        contents: " << contents;
   return true;
 }
 
@@ -500,11 +499,11 @@ bool BinkP::HandleFileGetRequest(const string& request_line) {
   clog << "       HandleFileGetRequest: request_line: [" << request_line << "]" << endl; 
   vector<string> s = SplitString(request_line, " ");
   const string filename = s.at(0);
-  long length = std::stol(s.at(1));
+  long length = stol(s.at(1));
   time_t timestamp = std::stoul(s.at(2));
   long offset = 0;
   if (s.size() >= 4) {
-    offset = std::stol(s.at(3));
+    offset = stol(s.at(3));
   }
 
   auto iter = files_to_send_.find(filename);
@@ -520,7 +519,7 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   clog << "       HandleFileGotRequest: request_line: [" << request_line << "]" << endl; 
   vector<string> s = SplitString(request_line, " ");
   const string filename = s.at(0);
-  long length = std::stol(s.at(1));
+  long length = stol(s.at(1));
 
   auto iter = files_to_send_.find(filename);
   if (iter == std::end(files_to_send_)) {
@@ -615,11 +614,11 @@ bool ParseFileRequestLine(const std::string& request_line,
     return false;
   }
   *filename = s.at(0);
-  *length = std::stol(s.at(1));
-  *timestamp = std::stoul(s.at(2));
+  *length = stol(s.at(1));
+  *timestamp = stoul(s.at(2));
   *offset = 0;
   if (s.size() >= 4) {
-    *offset = std::stol(s.at(3));
+    *offset = stol(s.at(3));
   }
   return true;
 }
