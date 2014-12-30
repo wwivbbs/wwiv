@@ -48,8 +48,6 @@ using wwiv::strings::StringPrintf;
 namespace wwiv {
 namespace net {
 
-#define LOG wwiv::core::Logger()
-
 namespace {
 
 static const auto SLEEP_MS = milliseconds(100);;
@@ -105,8 +103,7 @@ static bool WouldSocketBlock() {
 SocketConnection::SocketConnection(SOCKET sock, const string& host, int port)
   : sock_(sock), host_(host), port_(port) {}
 
-unique_ptr<SocketConnection> Connect(const string& host,
-				     int port) {
+unique_ptr<SocketConnection> Connect(const string& host, int port) {
   static bool initialized = InitializeSockets();
   if (!initialized) {
     throw socket_error("Unable to initialize sockets.");
@@ -118,7 +115,7 @@ unique_ptr<SocketConnection> Connect(const string& host,
   hints.ai_socktype =  SOCK_STREAM;
   hints.ai_protocol = IPPROTO_IP;
   
-  const string port_string = StringPrintf("%d", port);
+  const string port_string = std::to_string(port);
   struct addrinfo* address = nullptr;
   int result = getaddrinfo(host.c_str(), port_string.c_str(), &hints, &address);
   for (struct addrinfo* res = address; res != nullptr; res = res->ai_next) {

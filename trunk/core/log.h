@@ -22,6 +22,8 @@
 #include <string>
 #include <sstream>
 
+#define LOG wwiv::core::Logger()
+
 namespace wwiv {
 namespace core {
 
