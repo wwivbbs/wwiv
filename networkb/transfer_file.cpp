@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 
+#include "core/log.h"
 #include "core/strings.h"
 
 using std::chrono::seconds;
@@ -39,9 +40,9 @@ InMemoryTransferFile::~InMemoryTransferFile() {}
 
 bool InMemoryTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
   if ((start + size) > contents_.size()) {
-    std::clog << "ERROR InMemoryTransferFile::GetChunk (start + size) > file_size():"
-              << "values[ start: " << start << "; size: " << size
-	            << "; file_size(): " << file_size() << " ]" << endl;
+    LOG << "ERROR InMemoryTransferFile::GetChunk (start + size) > file_size():"
+        << "values[ start: " << start << "; size: " << size
+	      << "; file_size(): " << file_size() << " ]";
     return false;
   }
   memcpy(chunk, &contents_.data()[start], size);

@@ -43,8 +43,6 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace net {
 
-#define LOG wwiv::core::Logger()
-
 string expected_password_for(Callout* callout, int node) {
   const net_call_out_rec* con = callout->node_config_for(node);
   string password("-");  // default password
