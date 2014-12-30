@@ -85,7 +85,7 @@ static int LaunchOldNetworkingStack(const std::string exe, int argc, char** argv
     }
   }
   const string command_line = os.str();
-  Logger() << "Executing Command: '" << command_line << "'";
+  LOG << "Executing Command: '" << command_line << "'";
   return system(command_line.c_str());
 }
 
@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
     map<string, string> args = ParseArgs(argc, argv);
 
     for (const auto& arg : args) {
-      Logger() << "arg: --" << arg.first << "=" << arg.second;
+      LOG << "arg: --" << arg.first << "=" << arg.second;
       if (arg.first == "help") {
         ShowHelp();
         return 0;
@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
     string network_number = get_or_default(args, "network_number", "");
 
     if (network_name.empty() && network_number.empty()) {
-      Logger() << "--network=[network name] or .[network_number] must be specified.";
+      LOG << "--network=[network name] or .[network_number] must be specified.";
       ShowHelp();
       return 1;
     }
@@ -117,13 +117,13 @@ int main(int argc, char** argv) {
     }
     Config config(bbsdir);
     if (!config.IsInitialized()) {
-      Logger() << "Unable to load config.dat.";
+      LOG << "Unable to load config.dat.";
       ShowHelp();
       return 1;
     }
     Networks networks(config);
     if (!networks.IsInitialized()) {
-      Logger() << "Unable to load networks.";
+      LOG << "Unable to load networks.";
       ShowHelp();
       return 1;
     }
@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
     if (expected_remote_node == 32767) {
       // 32767 is the PPP project address for "send everything". Some people use this
       // "magic" node number.
-      Logger() << "USE PPP Project to send to: Internet Email (@32767)";
+      LOG << "USE PPP Project to send to: Internet Email (@32767)";
       return LaunchOldNetworkingStack("networkp", argc, argv);
     }
 
@@ -149,23 +149,23 @@ int main(int argc, char** argv) {
     const BinkNodeConfig* node_config = bink_config.node_config_for(expected_remote_node);
     if (node_config != nullptr) {
       // We have a node configuration for this one, use networkb.
-      Logger() << "USE networkb: " << node_config->host << ":" << node_config->port;
+      LOG << "USE networkb: " << node_config->host << ":" << node_config->port;
       const string command_line = StringPrintf("networkb --send --network=%s --node=%d",
         network_name.c_str(), expected_remote_node);
-      Logger() << "Executing Command: '" << command_line << "'";
+      LOG << "Executing Command: '" << command_line << "'";
       return system(command_line.c_str());
     }
 
     PPPConfig ppp_config(network_name, config, networks);
     const PPPNodeConfig* ppp_node_config = ppp_config.node_config_for(expected_remote_node);
     if (ppp_node_config != nullptr) {
-      Logger() << "USE PPP Project to send to: " << ppp_node_config->email_address;
+      LOG << "USE PPP Project to send to: " << ppp_node_config->email_address;
       return LaunchOldNetworkingStack("networkp", argc, argv);
     }
 
     // Use legacy networking.
     return LaunchOldNetworkingStack("network0", argc, argv);
   } catch (const std::exception& e) {
-    Logger() << e.what();
+    LOG << e.what();
   }
 }

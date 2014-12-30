@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
     map<string, string> args = ParseArgs(argc, argv);
 
     for (const auto& arg : args) {
-      Logger() << "arg: --" << arg.first << "=" << arg.second;
+      LOG << "arg: --" << arg.first << "=" << arg.second;
       if (arg.first == "help") {
         ShowHelp();
         return 0;
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
 
     string network_name = args.at("network");
     if (network_name.empty()) {
-      Logger() << "--network=[network name] must be specified.";
+      LOG << "--network=[network name] must be specified.";
       ShowHelp();
       return 1;
     }
@@ -101,13 +101,13 @@ int main(int argc, char** argv) {
     }
     Config config(bbsdir);
     if (!config.IsInitialized()) {
-      Logger() << "Unable to load config.dat.";
+      LOG << "Unable to load config.dat.";
       ShowHelp();
       return 1;
     }
     Networks networks(config);
     if (!networks.IsInitialized()) {
-      Logger() << "Unable to load networks.";
+      LOG << "Unable to load networks.";
       ShowHelp();
       return 1;
     }
@@ -121,19 +121,19 @@ int main(int argc, char** argv) {
     unique_ptr<SocketConnection> c;
     BinkSide side = BinkSide::ORIGINATING;
     if (contains(args, "receive")) {
-      Logger() << "BinkP receive";
+      LOG << "BinkP receive";
       side = BinkSide::ANSWERING;
       c = Accept(24554);
     } else if (contains(args, "send")) {
-      Logger() << "BinkP send to: " << expected_remote_node;
+      LOG << "BinkP send to: " << expected_remote_node;
       const BinkNodeConfig* node_config = bink_config.node_config_for(expected_remote_node);
       if (node_config == nullptr) {
-        Logger() << "Unable to find node config for node: " << expected_remote_node;
+        LOG << "Unable to find node config for node: " << expected_remote_node;
         return 2;
       }
       c = Connect(node_config->host, node_config->port);
     } else {
-      Logger() << "No command given to send or receive.  Either use '--send --node=#' or --receive";
+      LOG << "No command given to send or receive.  Either use '--send --node=#' or --receive";
       return 1;
     }
     BinkP::received_transfer_file_factory_t factory = [&](const string& filename) { 
@@ -144,9 +144,9 @@ int main(int argc, char** argv) {
     BinkP binkp(c.get(), &bink_config, &callout, side, expected_remote_node, factory);
     binkp.Run();
   } catch (const socket_error& e) {
-    Logger() << e.what();
+    LOG << e.what();
   } catch (const exception& e) {
-    Logger() << e.what();
+    LOG << e.what();
   }
   
 }
