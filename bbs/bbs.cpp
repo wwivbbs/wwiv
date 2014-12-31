@@ -142,7 +142,7 @@ void WApplication::GetCaller() {
 //};
 
 WLocalIO* GetWfcIO() {
-  returm sess->localIO(); // new WfcLocalIO(sess->remoteIO()); 
+  return sess->localIO(); // new WfcLocalIO(sess->remoteIO()); 
 }
 
 void wfc_screen() {}
