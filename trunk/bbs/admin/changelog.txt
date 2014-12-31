@@ -8,6 +8,8 @@ subversion commit log.
 
 ==============================================================================
 
+See WHATSNEW.TXT or the Subversion ChangeLog for changes post February 2014.
+
 LABEL: WWIV-5_0_62
 DATE:  February 2014
 
