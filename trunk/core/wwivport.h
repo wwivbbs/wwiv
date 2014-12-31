@@ -20,7 +20,7 @@
 #ifndef __INCLUDED_PLATFORM_INCL1_H__
 #define __INCLUDED_PLATFORM_INCL1_H__
 
-#if defined( __APPLE__ ) && !defined( __unix__ )
+#if !defined(__unix__) && !defined(_WIN32) && defined(__APPLE__) && defined(__MACH__)
 #define __unix__
 #endif
 
