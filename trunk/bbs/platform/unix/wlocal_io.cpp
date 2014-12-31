@@ -31,29 +31,23 @@
 
 using std::cout;
 using std::string;
+using namespace wwiv::strings;
 
-WLocalIO::WLocalIO() {
-  // These 2 lines must remain in here.
-  ExtendedKeyWaiting = 0;
-  wx = 0;
-  //m_nWfcStatus = 0;
-
+WLocalIO::WLocalIO() : ExtendedKeyWaiting(0), wx(0) {
   // TODO (for kwalker) Add Linux platform specific console maniuplation stuff
 }
 
 WLocalIO::~WLocalIO() {}
 
 void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
-  char szFileName[ MAX_PATH ];
-
   if (x_only) {
     return;
   }
 
   if (bOpenFile) {
     if (!fileGlobalCap.IsOpen()) {
-      snprintf(szFileName, sizeof(szFileName), "%sglobal-%d.txt", syscfg.gfilesdir, application()->GetInstanceNumber());
-      fileGlobalCap.SetName(szFileName);
+      const string filename = StringPrintf("%sglobal-%d.txt", syscfg.gfilesdir, application()->GetInstanceNumber());
+      fileGlobalCap.SetName(filename);
       fileGlobalCap.Open(File::modeBinary | File::modeAppend | File::modeCreateFile | File::modeReadWrite);
       global_buf.clear();
     }
@@ -76,8 +70,6 @@ void WLocalIO::global_char(char ch) {
 
 void WLocalIO::set_x_only(bool tf, const char *pszFileName, bool ovwr) {
   static bool bOldGlobalHandle;
-  char szTempFileName[ MAX_PATH ];
-
   if (x_only) {
     if (!tf) {
       if (fileGlobalCap.IsOpen()) {
@@ -95,8 +87,8 @@ void WLocalIO::set_x_only(bool tf, const char *pszFileName, bool ovwr) {
       set_global_handle(false);
       x_only = true;
       wx = 0;
-      snprintf(szTempFileName, sizeof(szTempFileName), "%s%s", syscfgovr.tempdir, pszFileName);
-      fileGlobalCap.SetName(szTempFileName);
+      const string temp_filename = StrCat(syscfgovr.tempdir, pszFileName);
+      fileGlobalCap.SetName(temp_filename);
       if (ovwr) {
         fileGlobalCap.Open(File::modeBinary | File::modeText | File::modeCreateFile | File::modeReadWrite);
       } else {
