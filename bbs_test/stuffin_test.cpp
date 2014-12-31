@@ -127,7 +127,7 @@ TEST_F(StuffInTest, Speeds) {
     com_speed = 38400;
     EXPECT_EQ(string("38400"), stuff_in("%S", "", "", "", "", ""));
 
-    com_speed = 1;
+    com_speed = 115200;
     EXPECT_EQ(string("115200"), stuff_in("%S", "", "", "", "", ""));
 }
 

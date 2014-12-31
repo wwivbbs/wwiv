@@ -42,19 +42,17 @@ using std::string;
 
 
 // module private functions
-void  listbatch();
-void  downloaded(char *pszFileName, long lCharsPerSecond);
-void    uploaded(char *pszFileName, long lCharsPerSecond);
-void    handle_dszline(char *l);
-double  ratio1(long a);
-void  make_ul_batch_list(char *pszListFileName);
-void  run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, const char *dl, bool bHangupAfterDl);
-void  ProcessDSZLogFile();
-void  dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription);
-void  bihangup(int up);
-int   try_to_ul(char *pszFileName);
-int   try_to_ul_wh(char *pszFileName);
-void  normalupload(int dn);
+void listbatch();
+void downloaded(char *pszFileName, long lCharsPerSecond);
+void uploaded(char *pszFileName, long lCharsPerSecond);
+void handle_dszline(char *l);
+double ratio1(long a);
+void ProcessDSZLogFile();
+void dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription);
+void bihangup(int up);
+int try_to_ul(char *pszFileName);
+int try_to_ul_wh(char *pszFileName);
+void normalupload(int dn);
 
 
 using namespace wwiv::strings;
@@ -147,7 +145,6 @@ void downloaded(char *pszFileName, long lCharsPerSecond) {
   sysoplogf("!!! Couldn't find \"%s\" in DL batch queue.", pszFileName);
 }
 
-
 void didnt_upload(int nBatchIndex) {
   uploadsrec u;
 
@@ -192,7 +189,6 @@ void didnt_upload(int nBatchIndex) {
   }
   sysoplogf("!!! Couldn't find \"%s\" in transfer area.", batch[nBatchIndex].filename);
 }
-
 
 void uploaded(char *pszFileName, long lCharsPerSecond) {
   uploadsrec u;
@@ -287,7 +283,6 @@ void uploaded(char *pszFileName, long lCharsPerSecond) {
   }
 }
 
-
 void zmbatchdl(bool bHangupAfterDl) {
   int cur = 0;
   uploadsrec u;
@@ -366,7 +361,6 @@ void zmbatchdl(bool bHangupAfterDl) {
   }
 }
 
-
 void ymbatchdl(bool bHangupAfterDl) {
   int cur = 0;
   uploadsrec u;
@@ -443,7 +437,6 @@ void ymbatchdl(bool bHangupAfterDl) {
   }
 }
 
-
 void handle_dszline(char *l) {
   long lCharsPerSecond = 0;
 
@@ -503,17 +496,16 @@ double ratio1(long a) {
   return r;
 }
 
-void make_ul_batch_list(char *pszListFileName) {
-  sprintf(pszListFileName, "%s%s.%3.3u", application()->GetHomeDir().c_str(), FILESUL_NOEXT,
+static string make_ul_batch_list() {
+  string list_filename = StringPrintf("%s%s.%3.3u", application()->GetHomeDir().c_str(), FILESUL_NOEXT,
           application()->GetInstanceNumber());
 
-  File::SetFilePermissions(pszListFileName, File::permReadWrite);
-  File::Remove(pszListFileName);
+  File::SetFilePermissions(list_filename, File::permReadWrite);
+  File::Remove(list_filename);
 
-  File fileList(pszListFileName);
+  File fileList(list_filename);
   if (!fileList.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite)) {
-    pszListFileName[0] = '\0';
-    return;
+    return "";
   }
   for (int i = 0; i < session()->numbatch; i++) {
     if (!batch[i].sending) {
@@ -524,19 +516,19 @@ void make_ul_batch_list(char *pszListFileName) {
     }
   }
   fileList.Close();
+  return list_filename;
 }
 
-static void make_dl_batch_list(char *pszListFileName) {
-  sprintf(pszListFileName, "%s%s.%3.3u", application()->GetHomeDir().c_str(), FILESDL_NOEXT,
+static string make_dl_batch_list() {
+  string list_filename = StringPrintf("%s%s.%3.3u", application()->GetHomeDir().c_str(), FILESDL_NOEXT,
           application()->GetInstanceNumber());
 
-  File::SetFilePermissions(pszListFileName, File::permReadWrite);
-  File::Remove(pszListFileName);
+  File::SetFilePermissions(list_filename, File::permReadWrite);
+  File::Remove(list_filename);
 
-  File fileList(pszListFileName);
+  File fileList(list_filename);
   if (!fileList.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite)) {
-    pszListFileName[0] = '\0';
-    return;
+    return "";
   }
 
   double at = 0.0;
@@ -580,24 +572,17 @@ static void make_dl_batch_list(char *pszListFileName) {
     }
   }
   fileList.Close();
+  return list_filename;
 }
 
-void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, const char *dl, bool bHangupAfterDl) {
-  char sx1[21], sx2[21], sx3[21];
+static void run_cmd(const string& orig_commandline, const string& downlist, const string& uplist, const string& dl, bool bHangupAfterDl) {
+  string commandLine = stuff_in(orig_commandline,
+      std::to_string(std::min<int>(com_speed, 57600)), 
+      std::to_string(syscfgovr.primaryport),
+      downlist, 
+      std::to_string(std::min<int>(modem_speed, 57600)), 
+      uplist);
 
-  int nSpeed = std::min<int>(com_speed, 57600);
-
-  if (com_speed == 1) {
-    strcpy(sx1, "57600");
-  } else {
-    sprintf(sx1, "%d", nSpeed);
-  }
-
-  nSpeed = std::min<int>(modem_speed, 57600);
-  sprintf(sx3, "%d", nSpeed);
-  sprintf(sx2, "%d", syscfgovr.primaryport);
-
-  string commandLine = stuff_in(pszCommandLine, sx1, sx2, downlist, sx3, uplist);
   if (!commandLine.empty()) {
     WWIV_make_abs_cmd(application()->GetHomeDir(), &commandLine);
     session()->localIO()->LocalCls();
@@ -625,11 +610,11 @@ void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, con
       application()->UpdateTopScreen();
     }
   }
-  if (downlist[0]) {
+  if (!downlist.empty()) {
     File::SetFilePermissions(downlist, File::permReadWrite);
     File::Remove(downlist);
   }
-  if (uplist[0 ]) {
+  if (!uplist.empty()) {
     File::SetFilePermissions(uplist, File::permReadWrite);
     File::Remove(uplist);
   }
@@ -669,41 +654,37 @@ void ProcessDSZLogFile() {
 }
 
 void dszbatchdl(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription) {
-  char szListFileName[MAX_PATH], szDownloadLogEntry[255];
-
-  sprintf(szDownloadLogEntry, "%s BATCH Download: Files - %d, Time - %s", pszDescription, session()->numbatchdl,
-          ctim(batchtime));
+  string download_log_entry = StringPrintf(
+      "%s BATCH Download: Files - %d, Time - %s", pszDescription, session()->numbatchdl, ctim(batchtime));
   if (bHangupAfterDl) {
-    strcat(szDownloadLogEntry, ", HAD");
+    download_log_entry += ", HAD";
   }
-  sysoplog(szDownloadLogEntry);
+  sysoplog(download_log_entry);
   bout.nl();
-  bout << szDownloadLogEntry;
+  bout << download_log_entry;
   bout.nl(2);
 
   write_inst(INST_LOC_DOWNLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
-  make_dl_batch_list(szListFileName);
-  run_cmd(pszCommandLine, szListFileName, "", szDownloadLogEntry, bHangupAfterDl);
+  const string list_filename = make_dl_batch_list();
+  run_cmd(pszCommandLine, list_filename, "", download_log_entry, bHangupAfterDl);
 }
 
 void dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription) {
-  char szListFileName[MAX_PATH], szDownloadLogEntry[255];
-
-  sprintf(szDownloadLogEntry, "%s BATCH Upload: Files - %d", pszDescription,
+  string download_log_entry = StringPrintf("%s BATCH Upload: Files - %d", pszDescription,
           session()->numbatch - session()->numbatchdl);
   if (bHangupAfterDl) {
-    strcat(szDownloadLogEntry, ", HAD");
+    download_log_entry += ", HAD";
   }
-  sysoplog(szDownloadLogEntry);
+  sysoplog(download_log_entry);
   bout.nl();
-  bout << szDownloadLogEntry;
+  bout << download_log_entry;
   bout.nl(2);
 
   write_inst(INST_LOC_UPLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
-  make_ul_batch_list(szListFileName);
+  string list_filename = make_ul_batch_list();
 
   double ti = timer();
-  run_cmd(pszCommandLine, "", szListFileName, szDownloadLogEntry, bHangupAfterDl);
+  run_cmd(pszCommandLine, "", list_filename, download_log_entry, bHangupAfterDl);
   ti = timer() - ti;
   if (ti < 0) {
     ti += static_cast< double >(SECONDS_PER_DAY);
@@ -723,8 +704,7 @@ int batchdl(int mode) {
     case 3:
       bout.nl();
       if (mode == 3) {
-        bout <<
-                           "|#7[|#2L|#7]|#1ist Files, |#7[|#2C|#7]|#1lear Queue, |#7[|#2R|#7]|#1emove File, |#7[|#2Q|#7]|#1uit or |#7[|#2D|#7]|#1ownload : |#0";
+        bout << "|#7[|#2L|#7]|#1ist Files, |#7[|#2C|#7]|#1lear Queue, |#7[|#2R|#7]|#1emove File, |#7[|#2Q|#7]|#1uit or |#7[|#2D|#7]|#1ownload : |#0";
         ch = onek("QLRDC\r");
       } else {
         bout << "|#9Batch: L,R,Q,C,D,U,? : ";
@@ -848,11 +828,10 @@ int batchdl(int mode) {
   return 0;
 }
 
-void bihangup(int up)
 // This function returns one character from either the local keyboard or
 // remote com port (if applicable).  Every second of inactivity, a
 // beep is sounded.  After 10 seconds of inactivity, the user is hung up.
-{
+void bihangup(int up) {
   int color = 5;
 
   dump();
@@ -907,7 +886,6 @@ void bihangup(int up)
   } while (!ch && !hangup);
 }
 
-
 void upload(int dn) {
   dliscan1(dn);
   directoryrec d = directories[ dn ];
@@ -952,7 +930,6 @@ void upload(int dn) {
   } while (!done && !hangup);
 }
 
-
 char *unalign(char *pszFileName) {
   char* pszTemp = strstr(pszFileName, " ");
   if (pszTemp) {
@@ -964,4 +941,3 @@ char *unalign(char *pszFileName) {
   }
   return pszFileName;
 }
-
