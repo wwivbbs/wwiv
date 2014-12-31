@@ -503,7 +503,6 @@ static string copy_line(char *pszWholeBuffer, long *plBufferPtr, long lBufferLen
     return result;
   }
   long lCurrentPtr = *plBufferPtr;
-  int nLinePtr = 0;
   while ((pszWholeBuffer[lCurrentPtr] != '\r') && (pszWholeBuffer[lCurrentPtr] != '\n')
          && (lCurrentPtr < lBufferLength)) {
     result.push_back(pszWholeBuffer[lCurrentPtr++]);
