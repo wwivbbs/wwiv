@@ -129,92 +129,26 @@ static void tweak_dir(char *s, int inst) {
 
 void instance_editor() {
   IniFile ini("wwiv.ini", "WWIV");
-  if (ini.IsOpen() && ini.GetValue("TEMP_DIRECTORY") != nullptr) {
-    string temp(ini.GetValue("TEMP_DIRECTORY"));
-    string batch(ini.GetValue("BATCH_DIRECTORY", temp.c_str()));
-    int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
-
-    out->Cls(ACS_CKBOARD);
-    unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Temporary Directory Configuration", 10, 76));
-
-    window->PrintfXY(2, 1, "Temporary Dir Pattern : %s", temp.c_str());
-    window->PrintfXY(2, 2, "Batch Dir Pattern     : %s", batch.c_str());
-    window->PrintfXY(2, 3, "Number of Instances:  : %d", num_instances);
-
-    window->SetColor(SchemeId::WINDOW_DATA);
-    window->PrintfXY(2, 5, "To change these values please edit 'wwiv.ini'");
-
-    window->SetColor(SchemeId::WINDOW_PROMPT);
-    window->PrintfXY(2, 7, "Press Any Key");
-    window->GetChar();
+  if (ini.IsOpen() && ini.GetValue("TEMP_DIRECTORY") == nullptr) {
+    messagebox(out->window(), "TEMP_DIRECTORY must be set in WWIV.INI");
     return;
   }
 
-  configoverrec instance;
-  int num_instances = number_instances();
+  string temp(ini.GetValue("TEMP_DIRECTORY"));
+  string batch(ini.GetValue("BATCH_DIRECTORY", temp.c_str()));
+  int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
+
   out->Cls(ACS_CKBOARD);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Temporary Directory Configuration", 4, 76));
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Temporary Directory Configuration", 10, 76));
 
-  int current_instance = 1;
-  read_instance(current_instance, &instance);
+  window->PrintfXY(2, 1, "Temporary Dir Pattern : %s", temp.c_str());
+  window->PrintfXY(2, 2, "Batch Dir Pattern     : %s", batch.c_str());
+  window->PrintfXY(2, 3, "Number of Instances:  : %d", num_instances);
 
-  window->PrintfXY(2, 1, "Temporary Directory :");
-  window->PrintfXY(2, 2, "Batch Directory     :");
+  window->SetColor(SchemeId::WINDOW_DATA);
+  window->PrintfXY(2, 5, "To change these values please edit 'wwiv.ini'");
 
-  EditItems items{
-    new FilePathItem(COL1_POSITION, 1, 50, instance.tempdir),
-    new FilePathItem(COL1_POSITION, 2, 50, instance.batchdir),
-  };
-  items.set_curses_io(out, window.get());
-  vector<HelpItem> help_items = { { "A", "Add" } };
-  items.set_navigation_extra_help_items(help_items);
-  show_instance(&items);
-
-  for (;;)  {
-    char ch = onek(window.get(), "\033AQ[]{}\r");
-    switch (ch) {
-    case '\r': {
-      items.Run();
-      if (dialog_yn(window.get(), "Save Instance?")) {
-        write_instance(current_instance, &instance);
-      }
-    } break;
-    case 'A': {
-      num_instances++;
-      tweak_dir(instance.tempdir, num_instances);
-      tweak_dir(instance.batchdir, num_instances);
-      write_instance(num_instances, &instance);
-    } break;
-    case 'Q':
-    case '\033': {
-      return;
-    }
-    case ']':
-      if (++current_instance > num_instances) {
-        current_instance = 1;
-      }
-      break;
-    case '[': {
-      if (--current_instance < 1) {
-        current_instance = num_instances;
-      }
-    } break;
-    case '}':
-      current_instance += 10;
-      if (current_instance > num_instances) {
-        current_instance = num_instances;
-      }
-      break;
-    case '{':
-      current_instance -= 10;
-      if (current_instance < 1) {
-        current_instance = 1;
-      }
-      break;
-    }
-
-    read_instance(current_instance, &instance);
-    show_instance(&items);
-  }
+  window->SetColor(SchemeId::WINDOW_PROMPT);
+  window->PrintfXY(2, 7, "Press Any Key");
+  window->GetChar();
 }
-

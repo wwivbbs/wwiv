@@ -163,7 +163,7 @@ class WApplication : public WLogger, Runnable {
 
   void InitializeBBS(); // old init() method
   wwiv::core::IniFile* ReadINIFile(); // from xinit.cpp
-  bool ReadConfigOverlayFile(int instance_number, configrec* full_syscfg, wwiv::core::IniFile* ini);
+  bool ReadConfigOverlayFile(int instance_number, wwiv::core::IniFile* ini);
   bool ReadConfig();
 
   int LocalLogon();
