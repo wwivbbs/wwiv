@@ -699,8 +699,9 @@ int WApplication::Run(int argc, char *argv[]) {
       char ch = wwiv::UpperCase<char>(argumentRaw[1]);
       switch (ch) {
       case 'B': {
+        // I think this roundtrip here is just to ensure argument is really a number.
         ui = static_cast<unsigned int>(atol(argument.c_str()));
-        const string current_speed_string = StringPrintf("%u",  ui);
+        const string current_speed_string = std::to_string(ui);
         session()->SetCurrentSpeed(current_speed_string.c_str());
         if (!us) {
           us = ui;
@@ -839,7 +840,7 @@ int WApplication::Run(int argc, char *argv[]) {
   }
 
   // Add the environment variable or overwrite the existing one
-  const string env_str = StringPrintf("%u", GetInstanceNumber());
+  const string env_str = std::to_string(GetInstanceNumber());
   set_environment_variable("WWIV_INSTANCE", env_str);
 #ifndef _WIN32
   // TODO(rushfan): Don't think we need this, but need to make sure.
