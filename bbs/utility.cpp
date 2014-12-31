@@ -63,7 +63,7 @@ void remove_from_temp(const char *pszFileName, const char *pszDirectoryName, boo
   WWIV_ASSERT(pszFileName);
   WWIV_ASSERT(pszDirectoryName);
 
-  const stirng filespec = StrCat(pszDirectoryName, stripfn(pszFileName));
+  const string filespec = StrCat(pszDirectoryName, stripfn(pszFileName));
   WFindFile fnd;
   bool bFound = fnd.open(filespec, 0);
   bout.nl();
@@ -72,9 +72,9 @@ void remove_from_temp(const char *pszFileName, const char *pszDirectoryName, boo
     // We don't want to delete ".", "..".
     if (filename != "." && filename != "..") {
       if (bPrintStatus) {
-        std::clog << "Deleting TEMP file: " << pszDirectoryName << szFileName << std::endl;
+        std::clog << "Deleting TEMP file: " << pszDirectoryName << filename << std::endl;
       }
-      File::Remove(pszDirectoryName, szFileName);
+      File::Remove(pszDirectoryName, filename);
     }
     bFound = fnd.next();
   }
