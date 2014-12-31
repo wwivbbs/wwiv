@@ -1,6 +1,6 @@
 # CMake for WWIV 5.0
 cmake_minimum_required (VERSION 2.6)
-project (WWIV5)
+project (BBS)
 include_directories(..)
 include_directories(../deps/rapidjson-master/include)
 
@@ -141,8 +141,6 @@ if(UNIX)
   endif()
 endif()
 
-
 add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 
 add_executable(bbs ${BBS_MAIN})
 target_link_libraries(bbs bbs_lib core sdk)
-

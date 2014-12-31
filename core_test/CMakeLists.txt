@@ -25,5 +25,6 @@ endif()
 add_library(core_fixtures ${fixture_sources}) 
 
 add_executable(core_tests ${test_sources})
+target_link_libraries(core_fixtures core)
 target_link_libraries(core_tests core_fixtures core gtest_main)
 
