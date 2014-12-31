@@ -44,6 +44,7 @@
 #include "bbs/stuffin.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"
+#include "core/file.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivport.h"

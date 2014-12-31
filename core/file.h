@@ -25,6 +25,8 @@
 #include <iostream>
 #include <string>
 
+#include "core/wwivport.h"
+
 #ifndef MAX_PATH
 #define MAX_PATH 260
 #endif
