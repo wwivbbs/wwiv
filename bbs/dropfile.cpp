@@ -464,7 +464,7 @@ const string create_chain_file() {
   if (com_speed == 1 || com_speed == 49664) {
     cspeed = "115200";
   } else {
-    cspeed = wwiv::strings::StringPrintf("%u", com_speed);
+    cspeed = std::to_string(com_speed);
   }
 
   create_drop_files();
