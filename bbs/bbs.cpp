@@ -92,6 +92,8 @@ WApplication* application() { return app; }
 WSession* session() { return sess; }
 
 #if !defined ( __unix__ )
+WLocalIO* GetWfcIO() { return sess->localIO(); }
+
 void WApplication::GetCaller() {
   session()->SetMessageAreaCacheNumber(0);
   session()->SetFileAreaCacheNumber(0);
@@ -130,11 +132,18 @@ void WApplication::GetCaller() {
   okskey = true;
   session()->localIO()->LocalCls();
   session()->localIO()->LocalPrintf("Logging on at %s ...\r\n",
-                                       session()->GetCurrentSpeed().c_str());
+                                     session()->GetCurrentSpeed().c_str());
   SetWfcStatus(0);
 }
 
 #else  // _unix__
+
+//class WfcLocalIO : public WLocalIO {
+//};
+
+WLocalIO* GetWfcIO() {
+  returm sess->localIO(); // new WfcLocalIO(sess->remoteIO()); 
+}
 
 void wfc_screen() {}
 void wfc_cls() {}
@@ -145,6 +154,7 @@ int WApplication::doWFCEvents() {
   char ch;
   int lokb;
   static int mult_time;
+  WLocalIO* io = GetWfcIO();
 
   unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
   do {
@@ -182,16 +192,16 @@ int WApplication::doWFCEvents() {
     }
     wfc_screen();
     okskey = false;
-    if (session()->localIO()->LocalKeyPressed()) {
+    if (io->LocalKeyPressed()) {
       SetWfcStatus(0);
       session()->ReadCurrentUser(1);
       read_qscn(1, qsc, false);
       fwaiting = session()->user()->GetNumMailWaiting();
       SetWfcStatus(1);
-      ch = wwiv::UpperCase<char>(session()->localIO()->LocalGetChar());
+      ch = wwiv::UpperCase<char>(io->LocalGetChar());
       if (ch == 0) {
-        ch = session()->localIO()->LocalGetChar();
-        session()->localIO()->skey(ch);
+        ch = io->LocalGetChar();
+        io->skey(ch);
         ch = 0;
       }
     } else {
@@ -203,7 +213,7 @@ int WApplication::doWFCEvents() {
       any = true;
       okskey = true;
       resetnsp();
-      session()->localIO()->SetCursor(WLocalIO::cursorNormal);
+      io->SetCursor(WLocalIO::cursorNormal);
       switch (ch) {
       // Local Logon
       case SPACE:
@@ -221,7 +231,7 @@ int WApplication::doWFCEvents() {
           string helpFileName = SWFC_NOEXT;
           char chHelp = ESC;
           do {
-            session()->localIO()->LocalCls();
+            io->LocalCls();
             bout.nl();
             printfile(helpFileName);
             chHelp = getkey();
@@ -244,7 +254,7 @@ int WApplication::doWFCEvents() {
 
       // Fast Net Callout from WFC
       case '*': {
-        session()->localIO()->LocalCls(); // added   - 02/23/14 - dsn
+        io->LocalCls(); // added   - 02/23/14 - dsn
         do_callout(32767); // changed - 02/23/14 - dsn - changed 1160 to 32767
       } break;
       // Run MenuEditor
@@ -256,7 +266,7 @@ int WApplication::doWFCEvents() {
       // Print NetLogs
       case ',':
         if (net_sysnum > 0 || (session()->GetMaxNetworkNumber() > 1 && AllowLocalSysop())) {
-          session()->localIO()->LocalGotoXY(2, 23);
+          io->LocalGotoXY(2, 23);
           bout << "|#7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ";
           ch = onek("Q012");
           switch (ch) {
@@ -284,12 +294,12 @@ int WApplication::doWFCEvents() {
         break;
       // [ESC] Quit the BBS
       case ESC:
-        session()->localIO()->LocalGotoXY(2, 23);
+        io->LocalGotoXY(2, 23);
         bout << "|#7Exit the BBS? ";
         if (yesno()) {
           QuitBBS();
         }
-        session()->localIO()->LocalCls();
+        io->LocalCls();
         break;
       // BoardEdit
       case 'B':
@@ -415,7 +425,7 @@ int WApplication::doWFCEvents() {
         break;
       // Quit BBS
       case 'Q':
-        session()->localIO()->LocalGotoXY(2, 23);
+        io->LocalGotoXY(2, 23);
         QuitBBS();
         break;
       // Read All Mail
@@ -772,18 +782,18 @@ int WApplication::Run(int argc, char *argv[]) {
           // Server's -Bxxx parameter doesn't hose us.
           session()->SetCurrentSpeed("115200");
           session()->SetUserOnline(false);
-          us                  = 115200U;
-          ui                  = us;
-          m_bUserAlreadyOn    = true;
-          ooneuser            = true;
-          session()->using_modem   = 0;
-          hangup              = false;
-          incom               = true;
-          outcom              = false;
-          global_xx           = false;
+          us = 115200;
+          ui = us;
+          m_bUserAlreadyOn = true;
+          ooneuser = true;
+          session()->using_modem = 0;
+          hangup = false;
+          incom = true;
+          outcom = false;
+          global_xx = false;
           bTelnetInstance = true;
         } else {
-          clog << "Invalid Command line argument given '" << argumentRaw << "'\r\n\n";
+          clog << "Invalid Command line argument given '" << argumentRaw << "'" << std::endl;
           exit(m_nErrorLevel);
         }
       }
@@ -1009,6 +1019,7 @@ void WApplication::ShowUsage() {
             "  -TELSRV    - Uses internet telnet server to answer incomming session\r\n" <<
 #endif // _WIN32
             "  -U<user#>  - Pass usernumber <user#> online\r\n" <<
+            "  -W         - Display Local 'WFC' menu\r\n" <<
 #if defined (_WIN32)
             "  -XT        - Someone already logged on via telnet (socket handle)\r\n" <<
 #endif // _WIN32
