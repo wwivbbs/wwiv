@@ -185,9 +185,11 @@ int WInitApp::main(int argc, char *argv[]) {
 
   ValidateConfigOverlayExists(bbsdir);
 
-  File archiverfile(syscfg.datadir, ARCHIVER_DAT);
-  if (!archiverfile.Open(File::modeBinary|File::modeReadOnly)) {
-    create_arcs(out->window());
+  {
+    File archiverfile(syscfg.datadir, ARCHIVER_DAT);
+    if (!archiverfile.Open(File::modeBinary|File::modeReadOnly)) {
+      create_arcs(out->window());
+    }
   }
   bool bDataDirectoryOk = read_status();
   if (bDataDirectoryOk) {
