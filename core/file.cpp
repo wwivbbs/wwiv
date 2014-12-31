@@ -356,6 +356,12 @@ string File::current_directory() {
 }
 
 // static
+bool File::set_current_directory(const string& dir) {
+  return chdir(dir.c_str()) == 0;
+}
+
+
+// static
 void File::MakeAbsolutePath(const string& base, string* relative) {
   if (!File::IsAbsolutePath(*relative)) {
     File dir(base, *relative);

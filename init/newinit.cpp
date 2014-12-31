@@ -351,15 +351,15 @@ bool new_init(CursesWindow* window, const string& bbsdir) {
   window->SetColor(SchemeId::NORMAL);
   for (const auto& dirname : dirnames) {
     window->SetColor(SchemeId::NORMAL);
-    int nRet = chdir(dirname.c_str());
-    if (nRet) {
+    bool chdir_ok = File::set_current_directory(dirname);
+    if (!chdir_ok) {
       if (!File::mkdir(dirname)) {
         window->SetColor(SchemeId::ERROR_TEXT);
         window->Printf("\n\nERROR!!! Couldn't make '%s' Sub-Dir.\nExiting...", dirname.c_str());
         return false;
       }
     } else {
-      chdir(bbsdir.c_str());
+      File::set_current_directory(bbsdir);
     }
   }
 

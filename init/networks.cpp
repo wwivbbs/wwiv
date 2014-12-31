@@ -413,10 +413,10 @@ static void edit_net(int nn) {
         fclose(pOutputFile);
         fclose(pInputFile);
         const string old_filename = StringPrintf("%ssubsxtr.old", syscfg.datadir);
-        unlink(old_filename.c_str());
-        rename(input_filename.c_str(), old_filename.c_str());
-        unlink(input_filename.c_str());
-        rename(output_filename.c_str(), input_filename.c_str());
+	File::Remove(old_filename);
+	File::Rename(input_filename, old_filename);
+	File::Remove(input_filename);
+	File::Rename(output_filename, input_filename);
       } else {
         fclose(pInputFile);
       }
