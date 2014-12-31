@@ -7,8 +7,6 @@ command with one parameter  : menucmd "xyz"
 command with two parameters : menucmd 123, "abc def"
 command with two parameters : menucmd(456,"abc")
 
-
-
 You can stack multiple menu commands by seperating them with the ~ key.
 
 The following code ...
@@ -325,10 +323,6 @@ DirEdit
 
   Sysop command to edit the directory records
 
-ShellDOS
-
-  Sysop command to shell to dos
-
 Edit
 
   Sysop command to edit a text file
@@ -344,10 +338,6 @@ LoadText
 ReadAllMail
 
   Sysop command to read all mail
-
-Reboot
-
-  Sysop command to reboot the machine
 
 ReloadMenus
 
@@ -441,7 +431,6 @@ NewMsgScanFromHere
 
   Read new messages starting from the current sub
 
-
 ValidatePosts
 
   Sysop command to validate unvalidated posts
@@ -469,7 +458,6 @@ FastGoodBye
 NewFilesAllConfs
 
   New file scan in all directories in all conferences
-
 
 ReadIDZ
 
