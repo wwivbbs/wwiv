@@ -24,24 +24,4 @@
 #define __unix__
 #endif
 
-#if defined ( __unix__ )
-
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <dirent.h>
-#include <utime.h>
-#define O_BINARY  0
-#define O_TEXT    0
-#define SH_DENYNO 0
-#define SH_DENYWR 0
-#ifndef MAX_PATH
-#define MAX_PATH 260
-#endif
-
-#endif // defined ( __unix__ )
-
 #endif // __INCLUDED_PLATFORM_INCL1_H__

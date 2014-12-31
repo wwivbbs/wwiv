@@ -21,6 +21,7 @@
 #include <string>
 
 #include <dirent.h>
+#include <limits.h>
 #include <iostream>
 #include "core/strings.h"
 #include "core/wwivassert.h"
@@ -42,11 +43,11 @@ char *strip_filename(const char *pszFileName);
 
 
 bool WFindFile::open(const string& filespec, unsigned int nTypeMask) {
-  char szFileName[MAX_PATH];
-  char szDirectoryName[MAX_PATH];
-  char szFileSpec[MAX_PATH+1];
+  char szFileName[PATH_MAX];
+  char szDirectoryName[PATH_MAX];
+  char szFileSpec[PATH_MAX+1];
   unsigned int i, f, laststar;
-  memset(szFileSpec, 0, MAX_PATH + 1);
+  memset(szFileSpec, 0, PATH_MAX + 1);
 
   __open(filespec, nTypeMask);
   dos_flag = 0;
@@ -56,7 +57,7 @@ bool WFindFile::open(const string& filespec, unsigned int nTypeMask) {
 
   if (wwiv::strings::IsEquals(szFileName, "*.*")  ||
       wwiv::strings::IsEquals(szFileName, "*")) {
-    memset(szFileSpec, '?', MAX_PATH);
+    memset(szFileSpec, '?', PATH_MAX);
   } else {
     f = laststar = szFileSpec[0] = 0;
     for (i = 0; i < strlen(szFileName); i++) {
@@ -80,27 +81,27 @@ bool WFindFile::open(const string& filespec, unsigned int nTypeMask) {
             break;
           }
           szFileSpec[f++] = '?';
-        } while (++i < MAX_PATH);
+        } while (++i < PATH_MAX);
 
       } else {
         szFileSpec[f++] = szFileName[i];
       }
     }
 
-    if (strchr(szFileSpec, '.') == NULL && f < MAX_PATH) {
-      memset(&szFileSpec[f], '?', MAX_PATH - f);
+    if (strchr(szFileSpec, '.') == NULL && f < PATH_MAX) {
+      memset(&szFileSpec[f], '?', PATH_MAX - f);
     }
 
     if (strstr(szFileName, ".*") != NULL && dos_flag) {
       memset(&szFileSpec[9], '?', 3);
     }
 
-    if (strlen(szFileSpec) < MAX_PATH && !dos_flag) {
-      memset(&szFileSpec[f], 32, MAX_PATH - f);
+    if (strlen(szFileSpec) < PATH_MAX && !dos_flag) {
+      memset(&szFileSpec[f], 32, PATH_MAX - f);
     }
 
   }
-  szFileSpec[MAX_PATH] = 0;
+  szFileSpec[PATH_MAX] = 0;
 
   if (dos_flag) {
     szFileSpec[12] = 0;
@@ -233,7 +234,7 @@ int fname_ok(const struct dirent *ent) {
   }
 
   if (!dos_flag) {
-    for (i = 0; i < MAX_PATH && ok; i++) {
+    for (i = 0; i < PATH_MAX && ok; i++) {
       if ((s1[i] != s2[i]) && (s1[i] != '?') && (s2[i] != '?')) {
         ok = 0;
       }
@@ -254,7 +255,7 @@ int fname_ok(const struct dirent *ent) {
 char *strip_filename(const char *pszFileName) {
   WWIV_ASSERT(pszFileName);
   static char szStaticFileName[15];
-  char szTempFileName[MAX_PATH];
+  char szTempFileName[PATH_MAX];
 
   int nSepIndex = -1;
   for (int i = 0; i < strlen(pszFileName); i++) {
