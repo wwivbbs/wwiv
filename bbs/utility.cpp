@@ -60,31 +60,17 @@ template<class _Ty> inline const _Ty& in_range(const _Ty& minValue, const _Ty& m
  * @param bPrintStatus      Print out locally as files are deleted
  */
 void remove_from_temp(const char *pszFileName, const char *pszDirectoryName, bool bPrintStatus) {
-  char szFileSpecification[ MAX_PATH ];
-
   WWIV_ASSERT(pszFileName);
   WWIV_ASSERT(pszDirectoryName);
 
-  sprintf(szFileSpecification, "%s%s", pszDirectoryName, stripfn(pszFileName));
+  const stirng filespec = StrCat(pszDirectoryName, stripfn(pszFileName));
   WFindFile fnd;
-  bool bFound = fnd.open(szFileSpecification, 0);
+  bool bFound = fnd.open(filespec, 0);
   bout.nl();
   while (bFound) {
-    char szFileName[MAX_PATH];
-    strcpy(szFileName, fnd.GetFileName());
-
-    //
-    // We don't want to delete ".", "..", or any of the door drop files
-    // (you can't delete . or .. anyway!  but it's a waste of time to try...
-    //
-    if (!IsEqualsIgnoreCase(szFileName, "chain.txt") &&
-        !IsEqualsIgnoreCase(szFileName, "door.sys") &&
-        !IsEqualsIgnoreCase(szFileName, "door32.sys") &&
-        !IsEqualsIgnoreCase(szFileName, "dorinfo1.def") &&
-        !IsEqualsIgnoreCase(szFileName, "callinfo.bbs") &&
-        !IsEqualsIgnoreCase(szFileName, "pcboard.sys") &&
-        !IsEqualsIgnoreCase(szFileName, ".") &&
-        !IsEqualsIgnoreCase(szFileName, "..")) {
+    const string filename = fnd.GetFileName();
+    // We don't want to delete ".", "..".
+    if (filename != "." && filename != "..") {
       if (bPrintStatus) {
         std::clog << "Deleting TEMP file: " << pszDirectoryName << szFileName << std::endl;
       }
