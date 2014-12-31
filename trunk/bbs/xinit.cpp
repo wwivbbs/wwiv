@@ -53,7 +53,7 @@
 #ifdef __unix__
 #define XINIT_PRINTF( x )
 #else
-#define XINIT_PRINTF( x ) std::clog << ( x )
+#define XINIT_PRINTF( x ) std::clog << '\xFE' << ' ' << ( x )  << std::endl
 #endif // __unix__
 
 struct ini_flags_type {
@@ -451,56 +451,36 @@ IniFile* WApplication::ReadINIFile() {
   return ini;
 }
 
-bool WApplication::ReadConfigOverlayFile(int instance_number, configrec* full_syscfg, IniFile* ini) {
+bool WApplication::ReadConfigOverlayFile(int instance_number, IniFile* ini) {
   const char* temp_directory_char = ini->GetValue("TEMP_DIRECTORY");
-  if (temp_directory_char != nullptr) {
-    string temp_directory(temp_directory_char);
-    // TEMP_DIRECTORY is defined in wwiv.ini, therefore use it over config.ovr, also 
-    // default the batch_directory to TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
-    string batch_directory(ini->GetValue("BATCH_DIRECTORY", temp_directory.c_str()));
-
-    // Replace %n with instance number value.
-    string instance_num_string = std::to_string(instance_number);
-    StringReplace(&temp_directory, "%n", instance_num_string);
-    StringReplace(&batch_directory, "%n", instance_num_string);
-
-    const string base_dir = GetHomeDir();
-    File::MakeAbsolutePath(base_dir, &batch_directory);
-    File::MakeAbsolutePath(base_dir, &temp_directory);
-    File::EnsureTrailingSlash(&temp_directory);
-    File::EnsureTrailingSlash(&batch_directory);
-
-    syscfgovr.primaryport = 1;
-    strcpy(syscfgovr.tempdir, temp_directory.c_str());
-    strcpy(syscfgovr.batchdir, batch_directory.c_str());
-
-    int max_num_instances = ini->GetNumericValue("NUM_INSTANCES", 4);
-    if (instance_number > max_num_instances) {
-      std::clog << "Not enough instances configured.\r\n";
-      return false;
-    }
-
-    return true;
-  }
-
-  // Read the legacy config.ovr file.
-  File configOvrFile(CONFIG_OVR);
-  bool bIsConfigObvOpen = configOvrFile.Open(File::modeBinary | File::modeReadOnly);
-  if (bIsConfigObvOpen &&
-      configOvrFile.GetLength() < static_cast<long>(instance_number * sizeof(configoverrec))) {
-    configOvrFile.Close();
-    std::clog << "Not enough instances configured.\r\n";
+  if (temp_directory_char == nullptr) {
+    std::clog << "TEMP_DIRECTORY must be set in WWIV.INI." << std::endl;
     return false;
   }
-  if (!bIsConfigObvOpen) {
-    syscfgovr.primaryport = 1;
-    strcpy(syscfgovr.tempdir, full_syscfg->tempdir);
-    strcpy(syscfgovr.batchdir, full_syscfg->tempdir);
-  } else {
-    long lCurNodeOffset = (instance_number - 1) * sizeof(configoverrec);
-    configOvrFile.Seek(lCurNodeOffset, File::seekBegin);
-    configOvrFile.Read(&syscfgovr, sizeof(configoverrec));
-    configOvrFile.Close();
+  string temp_directory(temp_directory_char);
+  // TEMP_DIRECTORY is defined in wwiv.ini, also default the batch_directory to 
+  // TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
+  string batch_directory(ini->GetValue("BATCH_DIRECTORY", temp_directory.c_str()));
+
+  // Replace %n with instance number value.
+  string instance_num_string = std::to_string(instance_number);
+  StringReplace(&temp_directory, "%n", instance_num_string);
+  StringReplace(&batch_directory, "%n", instance_num_string);
+
+  const string base_dir = GetHomeDir();
+  File::MakeAbsolutePath(base_dir, &batch_directory);
+  File::MakeAbsolutePath(base_dir, &temp_directory);
+  File::EnsureTrailingSlash(&temp_directory);
+  File::EnsureTrailingSlash(&batch_directory);
+
+  syscfgovr.primaryport = 1;
+  strcpy(syscfgovr.tempdir, temp_directory.c_str());
+  strcpy(syscfgovr.batchdir, batch_directory.c_str());
+
+  int max_num_instances = ini->GetNumericValue("NUM_INSTANCES", 4);
+  if (instance_number > max_num_instances) {
+    std::clog << "Not enough instances configured (" << max_num_instances << ")." << std::endl;
+    return false;
   }
   return true;
 }
@@ -512,10 +492,9 @@ static char* DuplicatePath(const char* path) {
 }
 
 bool WApplication::ReadConfig() {
-  //configrec full_syscfg;
   wwiv::sdk::Config full_config;
   if (!full_config.IsInitialized()) {
-    std::clog << CONFIG_DAT << " NOT FOUND.\r\n";
+    std::clog << CONFIG_DAT << " NOT FOUND." << std::endl;
     return false;
   }
 
@@ -524,11 +503,11 @@ bool WApplication::ReadConfig() {
 
   std::unique_ptr<IniFile> ini(ReadINIFile());
   if (!ini->IsOpen()) {
-    std::clog << "Insufficient memory for system info structure.\r\n";
+    std::clog << "Insufficient memory for system info structure." << std::endl;
     AbortBBS();
   }
 
-  bool config_ovr_read = ReadConfigOverlayFile(GetInstanceNumber(), full_config.config(), ini.get());
+  bool config_ovr_read = ReadConfigOverlayFile(GetInstanceNumber(),ini.get());
   if (!config_ovr_read) {
     return false;
   }
@@ -625,10 +604,6 @@ bool WApplication::SaveConfig() {
   if (configFile.Open(File::modeBinary | File::modeReadWrite)) {
     configrec full_syscfg;
     configFile.Read(&full_syscfg, sizeof(configrec));
-    // Should these move to wwiv.ini?
-    // full_config.config()->post_call_ratio = syscfg.post_call_ratio;
-    // full_syscfg.newusergold     = syscfg.newusergold;
-
     // These are set by WWIV.INI, set them back so that changes
     // will be propagated to config.dat
     full_syscfg.sysconfig       = syscfg.sysconfig;
@@ -665,7 +640,6 @@ bool WApplication::SaveConfig() {
   return true;
 }
 
-
 void WApplication::read_nextern() {
   session()->SetNumberOfExternalProtocols(0);
   if (externs) {
@@ -685,7 +659,6 @@ void WApplication::read_nextern() {
   }
 }
 
-
 void WApplication::read_arcs() {
   if (arcs) {
     free(arcs);
@@ -703,7 +676,6 @@ void WApplication::read_arcs() {
     WWIV_ASSERT(arcs != nullptr);
   }
 }
-
 
 void WApplication::read_editors() {
   if (editors) {
@@ -724,7 +696,6 @@ void WApplication::read_editors() {
   }
 }
 
-
 void WApplication::read_nintern() {
   if (over_intern) {
     free(over_intern);
@@ -739,7 +710,6 @@ void WApplication::read_nintern() {
   }
 }
 
-
 bool WApplication::read_subs() {
   if (subboards) {
     free(subboards);
@@ -751,14 +721,13 @@ bool WApplication::read_subs() {
 
   File file(syscfg.datadir, SUBS_DAT);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    std::clog << file.GetName() << " NOT FOUND.\r\n";
+    std::clog << file.GetName() << " NOT FOUND." << std::endl;
     return false;
   }
   session()->num_subs = (file.Read(subboards,
                                       (session()->GetMaxNumberMessageAreas() * sizeof(subboardrec)))) / sizeof(subboardrec);
   return (read_subs_xtr(session()->GetMaxNumberMessageAreas(), session()->num_subs, subboards));
 }
-
 
 void WApplication::read_networks() {
   session()->internetEmailName = "";
@@ -770,7 +739,7 @@ void WApplication::read_networks() {
   TextFile fileNetIni("NET.INI", "rt");
   if (fileNetIni.IsOpen()) {
     while (!fileNetIni.IsEndOfFile()) {
-      char szBuffer[ 255 ];
+      char szBuffer[255];
       fileNetIni.ReadLine(szBuffer, 80);
       szBuffer[sizeof(szBuffer) - 1] = 0;
       StringRemoveWhitespace(szBuffer);
@@ -823,7 +792,6 @@ void WApplication::read_networks() {
   }
 }
 
-
 bool WApplication::read_names() {
   if (smallist) {
     free(smallist);
@@ -836,14 +804,13 @@ bool WApplication::read_names() {
 
   File file(syscfg.datadir, NAMES_LST);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    std::clog << file.GetName() << " NOT FOUND.\r\n";
+    std::clog << file.GetName() << " NOT FOUND." << std::endl;
     return false;
   }
   file.Read(smallist, maxNumberOfUsers * sizeof(smalrec));
   file.Close();
   return true;
 }
-
 
 void WApplication::read_voting() {
   for (int nTempQuestionNumber = 0; nTempQuestionNumber < 20; nTempQuestionNumber++) {
@@ -864,7 +831,6 @@ void WApplication::read_voting() {
   }
 }
 
-
 bool WApplication::read_dirs() {
   if (directories) {
     free(directories);
@@ -877,14 +843,13 @@ bool WApplication::read_dirs() {
 
   File file(syscfg.datadir, DIRS_DAT);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    std::clog << file.GetName() << " NOT FOUND.\r\n";
+    std::clog << file.GetName() << " NOT FOUND." << std::endl;
     return false;
   }
   session()->num_dirs = file.Read(directories,
                                      (sizeof(directoryrec) * session()->GetMaxNumberFileAreas())) / sizeof(directoryrec);
   return true;
 }
-
 
 void WApplication::read_chains() {
   if (chains) {
@@ -928,7 +893,6 @@ void WApplication::read_chains() {
   }
 }
 
-
 bool WApplication::read_language() {
   if (languages) {
     free(languages);
@@ -955,12 +919,11 @@ bool WApplication::read_language() {
   }
   session()->SetCurrentLanguageNumber(-1);
   if (!set_language(0)) {
-    std::clog << "You need the default language installed to run the BBS.\r\n";
+    std::clog << "You need the default language installed to run the BBS." << std::endl;
     return false;
   }
   return true;
 }
-
 
 void WApplication::read_gfile() {
   if (gfilesec != nullptr) {
@@ -994,8 +957,8 @@ void WApplication::InitializeBBS() {
 
   session()->localIO()->LocalCls();
 #if !defined( __unix__ )
-  std::clog << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2014, WWIV Software Services.\r\n\n";
-  std::clog << "\r\nInitializing BBS...\r\n";
+  std::clog << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2014, WWIV Software Services." << std::endl << std::endl;
+  std::clog << "\r\nInitializing BBS..." << std::endl;
 #endif // __unix__
   session()->SetCurrentReadMessageArea(-1);
   use_workspace = false;
@@ -1012,7 +975,7 @@ void WApplication::InitializeBBS() {
   // Struct tm_year is -= 1900
   struct tm * pTm = localtime(&t);
   if (pTm->tm_year < 88) {
-    std::clog << "You need to set the date [" << pTm->tm_year << "] & time before running the BBS.\r\n";
+    std::clog << "You need to set the date [" << pTm->tm_year << "] & time before running the BBS." << std::endl;
     AbortBBS();
   }
 
@@ -1020,32 +983,30 @@ void WApplication::InitializeBBS() {
     AbortBBS(true);
   }
 
-  XINIT_PRINTF("* Processing configuration file: WWIV.INI.\r\n");
+  XINIT_PRINTF("Processing configuration file: WWIV.INI.");
 
   if (syscfgovr.tempdir[0] == '\0') {
-    std::clog << "\r\nYour temp dir isn't valid.\r\n";
-    std::clog << "It is empty\r\n\n";
+    std::clog  << std::endl << "Your temp dir isn't valid. It is empty." << std::endl;
     AbortBBS();
   }
 
   if (syscfgovr.batchdir[0] == '\0') {
-    std::clog << "\r\nYour batch dir isn't valid.\r\n";
-    std::clog << "It is empty\r\n\n";
+    std::clog  << std::endl << "Your batch dir isn't valid. It is empty." << std::endl;
     AbortBBS();
   }
 
   if (!File::Exists(syscfgovr.tempdir)) {
     if (!File::mkdirs(syscfgovr.tempdir)) {
-      std::clog << "\r\nYour temp dir isn't valid.\r\n";
-      std::clog << "It is now set to: '" << syscfgovr.tempdir << "'\r\n\n";
+      std::clog << std::endl << "Your temp dir isn't valid." << std::endl;
+      std::clog << "It is now set to: '" << syscfgovr.tempdir << "'" << std::endl;
       AbortBBS();
     }
   }
 
   if (!File::Exists(syscfgovr.batchdir)) {
     if (!File::mkdirs(syscfgovr.batchdir)) {
-      std::clog << "\r\nYour batch dir isn't valid.\r\n";
-      std::clog << "It is now set to: '" << syscfgovr.batchdir << "'\r\n\n";
+      std::clog << std::endl << "Your batch dir isn't valid." << std::endl;
+      std::clog << "It is now set to: '" << syscfgovr.batchdir << "'" << std::endl;
       AbortBBS();
     }
   }
@@ -1053,11 +1014,11 @@ void WApplication::InitializeBBS() {
   write_inst(INST_LOC_INIT, 0, INST_FLAGS_NONE);
 
   // make sure it is the new USERREC structure
-  XINIT_PRINTF("* Reading user scan pointers.\r\n");
+  XINIT_PRINTF("Reading user scan pointers.");
   File fileQScan(syscfg.datadir, USER_QSC);
   if (!fileQScan.Exists()) {
-    std::clog << "Could not open file '" << fileQScan.full_pathname() << "'\r\n";
-    std::clog << "You must go into INIT and convert your userlist before running the BBS.\r\n";
+    std::clog << "Could not open file '" << fileQScan.full_pathname() << "'" << std::endl;
+    std::clog << "You must go into INIT and convert your userlist before running the BBS." << std::endl;
     AbortBBS();
   }
 
@@ -1077,14 +1038,14 @@ void WApplication::InitializeBBS() {
   read_networks();
   set_net_num(0);
 
-  XINIT_PRINTF("* Reading status information.\r\n");
+  XINIT_PRINTF("Reading status information.");
   WStatus* pStatus = statusMgr->BeginTransaction();
   if (!pStatus) {
-    std::clog << "Unable to return status.dat.\r\n";
+    std::clog << "Unable to return status.dat." << std::endl;
     AbortBBS();
   }
 
-  XINIT_PRINTF("* Reading color information.\r\n");
+  XINIT_PRINTF("Reading color information.");
   File fileColor(syscfg.datadir, COLOR_DAT);
   if (!fileColor.Exists()) {
     buildcolorfile();
@@ -1098,51 +1059,51 @@ void WApplication::InitializeBBS() {
   gat = static_cast<unsigned short *>(BbsAllocA(2048 * sizeof(short)));
   WWIV_ASSERT(gat != nullptr);
 
-  XINIT_PRINTF("* Reading Gfiles.\r\n");
+  XINIT_PRINTF("Reading Gfiles.");
   gfilesec = nullptr;
   read_gfile();
 
   smallist = nullptr;
 
-  XINIT_PRINTF("* Reading user names.\r\n");
+  XINIT_PRINTF("Reading user names.");
   if (!read_names()) {
     AbortBBS();
   }
 
-  XINIT_PRINTF("* Reading Message Areas.\r\n");
+  XINIT_PRINTF("Reading Message Areas.");
   subboards = nullptr;
   if (!read_subs()) {
     AbortBBS();
   }
 
-  XINIT_PRINTF("* Reading File Areas.\r\n");
+  XINIT_PRINTF("Reading File Areas.");
   directories = nullptr;
   if (!read_dirs()) {
     AbortBBS();
   }
 
-  XINIT_PRINTF("* Reading Chains.\r\n");
+  XINIT_PRINTF("Reading Chains.");
   session()->SetNumberOfChains(0);
   chains = nullptr;
   read_chains();
 
-  XINIT_PRINTF("* Reading File Transfer Protocols.\r\n");
+  XINIT_PRINTF("Reading File Transfer Protocols.");
   externs = nullptr;
   read_nextern();
 
   over_intern = nullptr;
   read_nintern();
 
-  XINIT_PRINTF("* Reading File Archivers.\r\n");
+  XINIT_PRINTF("Reading File Archivers.");
   read_arcs();
   SaveConfig();
 
-  XINIT_PRINTF(" * Reading Full Screen Message Editors.\r\n");
+  XINIT_PRINTF("Reading Full Screen Message Editors.");
   read_editors();
 
   if (!File::mkdirs(m_attachmentDirectory)) {
-    std::clog << "\r\nYour file attachment directory is invalid.\r\n";
-    std::clog << "It is now set to: " << m_attachmentDirectory << "'\r\n\n";
+    std::clog << std::endl << "Your file attachment directory is invalid." << std::endl;
+    std::clog << "It is now set to: " << m_attachmentDirectory << "' << std::endl";
     AbortBBS();
   }
   CdHome();
@@ -1155,7 +1116,7 @@ void WApplication::InitializeBBS() {
   batch = static_cast<batchrec *>(BbsAllocA(session()->max_batch * sizeof(batchrec)));
   WWIV_ASSERT(batch != nullptr);
 
-  XINIT_PRINTF("* Reading User Information.\r\n");
+  XINIT_PRINTF("Reading User Information.");
   session()->ReadCurrentUser(1, false);
   fwaiting = (session()->user()->IsUserDeleted()) ? 0 : session()->user()->GetNumMailWaiting();
   statusMgr->RefreshStatusCache();
@@ -1188,17 +1149,17 @@ void WApplication::InitializeBBS() {
   //putenv(networkNumEnvVar.c_str());
 #endif // defined ( __unix__ )
 
-  XINIT_PRINTF("* Reading Voting Booth Configuration.\r\n");
+  XINIT_PRINTF("Reading Voting Booth Configuration.");
   read_voting();
 
-  XINIT_PRINTF("* Reading External Events.\r\n");
+  XINIT_PRINTF("Reading External Events.");
   init_events();
   last_time = time_event - timer();
   if (last_time < 0.0) {
     last_time += HOURS_PER_DAY_FLOAT * SECONDS_PER_HOUR_FLOAT;
   }
 
-  XINIT_PRINTF("* Allocating Memory for Message/File Areas.\r\n");
+  XINIT_PRINTF("Allocating Memory for Message/File Areas.");
   do_event = 0;
   usub = static_cast<usersubrec *>(BbsAllocA(session()->GetMaxNumberMessageAreas() * sizeof(usersubrec)));
   WWIV_ASSERT(usub != nullptr);
@@ -1245,7 +1206,7 @@ void WApplication::InitializeBBS() {
   }
   subconfnum = dirconfnum = 0;
 
-  XINIT_PRINTF("* Reading Conferences.\r\n");
+  XINIT_PRINTF("Reading Conferences.");
   read_all_conferences();
 
   if (!m_bUserAlreadyOn) {
@@ -1264,7 +1225,7 @@ void WApplication::InitializeBBS() {
   srand(time(nullptr));
   catsl();
 
-  XINIT_PRINTF("* Saving Instance information.\r\n");
+  XINIT_PRINTF("Saving Instance information.");
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
 }
 
