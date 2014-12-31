@@ -43,6 +43,7 @@
 #include "bbs/wwivcolors.h"
 #include "bbs/wstatus.h"
 #include "bbs/platform/platformfcns.h"
+#include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "sdk/filenames.h"
