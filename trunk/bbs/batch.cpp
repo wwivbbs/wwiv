@@ -589,7 +589,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
     const string message = StringPrintf(
         "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
         session()->user()->GetUserNameAndNumber(session()->usernum),
-        modem_speed, dl, commandLine.c_str());
+        modem_speed, dl.c_str(), commandLine.c_str());
     session()->localIO()->LocalPuts(message);
     if (incom) {
       File::SetFilePermissions(g_szDSZLogFileName, File::permReadWrite);
