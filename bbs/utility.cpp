@@ -21,7 +21,11 @@
 #include <cmath>
 #ifdef _WIN32
 #include <sys/utime.h>
+
+#else
+#include <utime.h>
 #endif  // WIN32
+
 #include <string>
 #include <vector>
 

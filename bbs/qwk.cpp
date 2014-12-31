@@ -26,6 +26,9 @@
 #ifdef _WIN32
 #include <direct.h>
 #include <io.h>
+#else
+#include <sys/types.h>
+#include <unistd.h>
 #endif
 #include <sys/stat.h>
 

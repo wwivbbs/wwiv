@@ -29,6 +29,11 @@
 #define MAX_PATH 260
 #endif
 
+#ifdef __unix__
+#define O_BINARY  0
+#define O_TEXT    0
+#endif  // __unix__
+
 class WLogger {
  public:
   // Member functions
@@ -163,6 +168,7 @@ class File {
   static int GetDebugLevel() { return debug_level_; }
   static void EnsureTrailingSlash(std::string* path);
   static std::string current_directory();
+  static bool set_current_directory(const std::string& dir);
   static void MakeAbsolutePath(const std::string& base, std::string* relative);
   static bool IsAbsolutePath(const std::string& path);
   static bool IsRelativePath(const std::string& path) { return !IsAbsolutePath(path); }

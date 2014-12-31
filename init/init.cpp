@@ -143,7 +143,7 @@ int WInitApp::main(int argc, char *argv[]) {
 
   const string wwiv_dir = wwiv::os::environment_variable("WWIV_DIR");
   if (!wwiv_dir.empty()) {
-    chdir(wwiv_dir.c_str());
+    File::set_current_directory(wwiv_dir);
   }
 
   string current_dir = File::current_directory();
