@@ -1,6 +1,12 @@
 # CMake for WWIV 5.0
 cmake_minimum_required (VERSION 2.6)
 project (WWIV5All)
+
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
+include(Common)
+include(FindASan)
+
 add_subdirectory(deps/gtest-1.7.0)
 add_subdirectory(core)
 add_subdirectory(core_test)
