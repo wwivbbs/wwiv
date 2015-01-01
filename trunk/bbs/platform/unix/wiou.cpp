@@ -153,7 +153,7 @@ unsigned int WIOUnix::write(const char *buffer, unsigned int count, bool bNoTran
 }
 
 bool WIOUnix::carrier() {
-  return (!hangup && !hungup);
+  return (!hangup);
 }
 
 bool WIOUnix::incoming() {
