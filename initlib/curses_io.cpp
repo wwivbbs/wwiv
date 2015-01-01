@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                 WWIV Initialization Utility Version 5.0                */
-/*             Copyright (C)1998-2014, WWIV Software Services             */
+/*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -41,7 +41,7 @@ extern const char *beta_version;
 extern const char *wwiv_date;
 extern unsigned short wwiv_num_version;
 
-static const char* copyrightString = "Copyright (c) 1998-2014, WWIV Software Services";
+static const char* copyrightString = "Copyright (c) 1998-2015, WWIV Software Services";
 
 #if defined ( _WIN32 )
 static HANDLE hConOut;
