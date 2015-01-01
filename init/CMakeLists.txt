@@ -30,8 +30,6 @@ set(COMMON_SOURCES
 
 if(UNIX) 
   find_package(Curses REQUIRED)
-  message("Curses Library: ${CURSES_LIBRARIES}") 
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
 add_executable(init ${COMMON_SOURCES})

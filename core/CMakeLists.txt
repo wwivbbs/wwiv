@@ -17,7 +17,6 @@ if(UNIX)
   set(PLATFORM_SOURCES 
     wfndfile_unix.cpp
     )
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
 add_library(core ${COMMON_SOURCES} ${PLATFORM_SOURCES})
