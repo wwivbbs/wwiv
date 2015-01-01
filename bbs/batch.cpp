@@ -600,8 +600,6 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
         bihangup(1);
         if (!session()->remoteIO()->carrier()) {
           session()->remoteIO()->dtr(true);
-          Wait(0.274);
-          holdphone(true);
         }
       } else {
         bout << "\r\n|#9Please wait...\r\n\n";
@@ -871,8 +869,6 @@ void bihangup(int up) {
           Wait(0.1);
           if (!session()->remoteIO()->carrier()) {
             session()->remoteIO()->dtr(true);
-            Wait(0.1);
-            holdphone(true);
           }
         }
       }

@@ -1015,7 +1015,7 @@ struct phonerec {
 
 #define EVENT_FORCED       0x0001           // force user off to run event?
 #define EVENT_SHRINK       0x0002           // shrink for event?
-#define EVENT_HOLD         0x0004           // holdphone for event?
+#define UNUSED_EVENT_HOLD  0x0004           // holdphone for event?
 #define EVENT_EXIT         0x0008           // exit bbs completely to run?
 #define EVENT_PERIODIC     0x0010           // event runs periodically
 #define EVENT_RUNTODAY     0x8000           // has it run today?

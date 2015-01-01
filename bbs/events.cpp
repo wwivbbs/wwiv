@@ -235,9 +235,6 @@ void run_event(int evnt) {
 #endif
   bout.cls();
   bout << "\r\nNow running external event.\r\n\n";
-  if (events[evnt].status & EVENT_HOLD) {
-    holdphone(true);
-  }
   if (events[evnt].status & EVENT_EXIT) {
     exitlevel = static_cast<int>(events[evnt].cmd[0]);
     if (ok_modem_stuff && session()->remoteIO() != nullptr) {
@@ -249,7 +246,6 @@ void run_event(int evnt) {
   do_event = 0;
   get_next_forced_event();
   cleanup_net();
-  holdphone(false);
 #ifndef __unix__
   wfc_cls();
 #endif
@@ -281,7 +277,7 @@ void show_events() {
       if (events[i].status & EVENT_RUNTODAY) {
         sprintf(s, " %2d  %-5.5s %-23.23s  %2d     %1c      %1c    %-5.5s    %2dm   %s",
                 i, ttc(events[i].time), s1, events[i].instance,
-                events[i].status & EVENT_HOLD ? y : n,
+                ' ',
                 events[i].status & EVENT_FORCED ? y : n,
                 ttclastrun(events[i].lastrun),
                 events[i].period,
@@ -289,7 +285,7 @@ void show_events() {
       } else {
         sprintf(s, " %2d  %-5.5s %-23.23s  %2d     %1c      %1c      %1c      %2dm   %s",
                 i, ttc(events[i].time), s1, events[i].instance,
-                events[i].status & EVENT_HOLD ? y : n,
+                ' ',
                 events[i].status & EVENT_FORCED ? y : n,
                 n,
                 events[i].period,
@@ -298,7 +294,7 @@ void show_events() {
     } else {
       sprintf(s, " %2d  %-5.5s %-23.23s  %2d     %1c      %1c      %1c            %s",
               i, ttc(events[i].time), s1, events[i].instance,
-              events[i].status & EVENT_HOLD ? y : n,
+              ' ',
               events[i].status & EVENT_FORCED ? y : n,
               events[i].status & EVENT_RUNTODAY ? y : n,
               daystr);
@@ -358,7 +354,6 @@ void modify_event(int evnt) {
       strcpy(s1, events[i].cmd);
     }
     bout << "B) Event Command...: " << s1 << wwiv::endl;
-    bout << "C) Phone Off Hook?.: " << ((events[i].status & EVENT_HOLD) ? "Yes" : "No") << wwiv::endl;
     bout << "D) Already Run?....: " << ((events[i].status & EVENT_RUNTODAY) ? "Yes" : "No") << wwiv::endl;
     bout << "E) Shrink?.........: " << ((events[i].status & EVENT_SHRINK) ? "Yes" : "No") << wwiv::endl;
     bout << "F) Force User Off?.: " << ((events[i].status & EVENT_FORCED) ? "Yes" : "No") << wwiv::endl;
@@ -480,9 +475,6 @@ void modify_event(int evnt) {
           strcpy(events[i].cmd, s);
         }
       }
-      break;
-    case 'C':
-      events[i].status ^= EVENT_HOLD;
       break;
     case 'D':
       events[i].status ^= EVENT_RUNTODAY;

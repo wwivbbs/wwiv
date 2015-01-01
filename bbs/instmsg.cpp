@@ -268,7 +268,6 @@ void process_inst_msgs() {
         session()->localIO()->LocalCls();
         hangup = true;
         hang_it_up();
-        holdphone(false);
         Wait(1);
         application()->QuitBBS();
       }
@@ -420,7 +419,6 @@ void instance_edit() {
         session()->localIO()->LocalCls();
         hangup = true;
         hang_it_up();
-        holdphone(false);
         Wait(1);
         application()->QuitBBS();
         break;
@@ -454,7 +452,6 @@ void instance_edit() {
         session()->localIO()->LocalCls();
         hangup = true;
         hang_it_up();
-        holdphone(false);
         Wait(1);
         application()->QuitBBS();
       }
