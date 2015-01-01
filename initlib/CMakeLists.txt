@@ -22,7 +22,6 @@ if(UNIX)
   set(PLATFORM_SOURCES 
 	platform/unix/filestuff.cpp
 	)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
 add_library(initlib ${COMMON_SOURCES} ${PLATFORM_SOURCES})

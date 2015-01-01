@@ -10,10 +10,6 @@ set(test_sources
   sdk_helper.cpp
 )
 
-if(UNIX) 
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif()
-
 add_executable(sdk_tests ${test_sources})
 target_link_libraries(sdk_tests core core_fixtures gtest_main sdk)
 
