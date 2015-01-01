@@ -33,41 +33,27 @@ class WComm {
   std::string remote_address_;
 
  protected:
-  // Com Port Number.  Only used by Serial IO derivatives
-  // of this class
-  int comport_;
   bool binary_mode_;
 
   static const std::string GetLastErrorText();
 
  public:
-  WComm() : comport_(0), binary_mode_(false) {}
+  WComm() : binary_mode_(false) {}
   virtual ~WComm() {}
 
   virtual unsigned int open() = 0;
-  virtual bool setup(char parity, int wordlen, int stopbits, unsigned long baud) = 0;
   virtual void close(bool bIsTemporary = false) = 0;
-  virtual unsigned int putW(unsigned char ch) = 0;
   virtual unsigned char getW() = 0;
   virtual bool dtr(bool raise) = 0;
-  virtual void flushOut() = 0;
-  virtual void purgeOut() = 0;
   virtual void purgeIn() = 0;
   virtual unsigned int put(unsigned char ch) = 0;
-  virtual char peek() = 0;
   virtual unsigned int read(char *buffer, unsigned int count) = 0;
   virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) = 0;
   virtual bool carrier() = 0;
   virtual bool incoming() = 0;
-  virtual void StopThreads() = 0;
-  virtual void StartThreads() = 0;
 
   virtual unsigned int GetHandle() const = 0;
   virtual unsigned int GetDoorHandle() const { return GetHandle(); }
-
-  // Get/Set Com Port Number
-  virtual int  GetComPort() const;
-  virtual void SetComPort(int nNewPort);
 
   void SetBinaryMode(bool b) { binary_mode_ = b; }
   bool GetBinaryMode() const { return binary_mode_; }

@@ -44,7 +44,6 @@ void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const c
 
 void dump() {
   if (ok_modem_stuff) {
-    session()->remoteIO()->purgeOut();
     session()->remoteIO()->purgeIn();
   }
 }

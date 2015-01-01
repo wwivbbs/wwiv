@@ -54,23 +54,18 @@ class WIOTelnet : public WComm {
 
  public:
   WIOTelnet(unsigned int nHandle);
-  virtual bool setup(char parity, int wordlen, int stopbits, unsigned long baud);
-  virtual unsigned int open();
-  virtual void close(bool bIsTemporary);
-  virtual unsigned int putW(unsigned char ch);
-  virtual unsigned char getW();
-  virtual bool dtr(bool raise);
-  virtual void flushOut();
-  virtual void purgeOut();
-  virtual void purgeIn();
-  virtual unsigned int put(unsigned char ch);
-  virtual char peek();
-  virtual unsigned int read(char *buffer, unsigned int count);
-  virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false);
-  virtual bool carrier();
-  virtual bool incoming();
-  virtual void StopThreads();
-  virtual void StartThreads();
+  virtual unsigned int open() override;
+  virtual void close(bool bIsTemporary) override;
+  virtual unsigned char getW() override;
+  virtual bool dtr(bool raise) override;
+  virtual void purgeIn() override;
+  virtual unsigned int put(unsigned char ch) override;
+  virtual unsigned int read(char *buffer, unsigned int count) override;
+  virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) override;
+  virtual bool carrier() override;
+  virtual bool incoming() override;
+  void StopThreads();
+  void StartThreads();
   virtual ~WIOTelnet();
   virtual unsigned int GetHandle() const;
   virtual unsigned int GetDoorHandle() const;

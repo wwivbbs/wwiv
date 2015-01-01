@@ -52,10 +52,6 @@ WIOTelnet::WIOTelnet(unsigned int nHandle) : socket_(static_cast<SOCKET>(nHandle
   }
 }
 
-bool WIOTelnet::setup(char, int, int, unsigned long) {
-  return true;
-}
-
 unsigned int WIOTelnet::GetHandle() const {
   return static_cast<unsigned int>(socket_);
 }
@@ -99,7 +95,7 @@ void WIOTelnet::close(bool bIsTemporary) {
   }
 }
 
-unsigned int WIOTelnet::putW(unsigned char ch) {
+unsigned int WIOTelnet::put(unsigned char ch) {
   if (socket_ == INVALID_SOCKET) {
 #ifdef _DEBUG
     std::clog << "pw(INVALID-SOCKET) ";
@@ -119,7 +115,7 @@ unsigned int WIOTelnet::putW(unsigned char ch) {
     if (nRet == SOCKET_ERROR) {
       if (WSAGetLastError() != WSAEWOULDBLOCK) {
         if (WSAGetLastError() != WSAENOTSOCK) {
-          std::clog << "DEBUG: ERROR on send from putW() [" << WSAGetLastError() << "] [#" << static_cast<int>
+          std::clog << "DEBUG: ERROR on send from put() [" << WSAGetLastError() << "] [#" << static_cast<int>
                     (ch) << "]" << std::endl;
         }
         return 0;
@@ -152,14 +148,6 @@ bool WIOTelnet::dtr(bool raise) {
   return true;
 }
 
-void WIOTelnet::flushOut() {
-  // NOP - We don't wait for output
-}
-
-void WIOTelnet::purgeOut() {
-  // NOP - We don't wait for output
-}
-
 void WIOTelnet::purgeIn() {
   // Implementing this is new as of 2003-03-31, so if this causes problems,
   // then we may need to remove it [Rushfan]
@@ -168,21 +156,6 @@ void WIOTelnet::purgeIn() {
     queue_.pop();
   }
   ReleaseMutex(mu_);
-}
-
-unsigned int WIOTelnet::put(unsigned char ch) {
-  return putW(ch);
-}
-
-char WIOTelnet::peek() {
-  char ch = 0;
-
-  WaitForSingleObject(mu_, INFINITE);
-  if (!queue_.empty()) {
-    ch = queue_.front();
-  }
-  ReleaseMutex(mu_);
-  return ch;
 }
 
 unsigned int WIOTelnet::read(char *buffer, unsigned int count) {

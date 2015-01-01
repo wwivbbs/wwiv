@@ -79,19 +79,14 @@ WIOUnix::~WIOUnix() {
   set_terminal(false);
 }
 
-bool WIOUnix::setup(char parity, int wordlen, int stopbits, unsigned long baud) {
-  return true;
-}
-
 unsigned int WIOUnix::open() { return 0; }
 
 void WIOUnix::close(bool bIsTemporary = false) {
   bIsTemporary = bIsTemporary;
 }
 
-unsigned int WIOUnix::putW(unsigned char ch) {
-  ::write(fileno(stdout), &ch, 1);
-  return 0;
+unsigned int WIOUnix::put(unsigned char ch) {
+  return ::write(fileno(stdout), &ch, 1);
 }
 
 unsigned char WIOUnix::getW() {
@@ -115,22 +110,7 @@ unsigned char WIOUnix::getW() {
 }
 
 bool WIOUnix::dtr(bool raise) { return true; }
-
-void WIOUnix::flushOut() {}
-
-void WIOUnix::purgeOut() {}
-
 void WIOUnix::purgeIn() {}
-
-unsigned int WIOUnix::put(unsigned char ch) {
-  return putW(ch);
-}
-
-char WIOUnix::peek() {
-  // This is only called by function rpeek_wfconly which is only
-  // ever invoked from the WFC
-  return 0;
-}
 
 unsigned int WIOUnix::read(char *buffer, unsigned int count) {
   int dlay = 0;
@@ -148,8 +128,7 @@ unsigned int WIOUnix::read(char *buffer, unsigned int count) {
 }
 
 unsigned int WIOUnix::write(const char *buffer, unsigned int count, bool bNoTransation) {
-  ::write(fileno(stdout), buffer, count);
-  return 0;
+  return ::write(fileno(stdout), buffer, count);
 }
 
 bool WIOUnix::carrier() {
@@ -167,10 +146,6 @@ bool WIOUnix::incoming() {
   }
   return false;
 }
-
-void WIOUnix::StopThreads() {}
-
-void WIOUnix::StartThreads() {}
 
 unsigned int WIOUnix::GetHandle() const {
   // Is this needed or should we just return 0?

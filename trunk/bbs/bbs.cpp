@@ -635,9 +635,6 @@ void WApplication::GotCaller(unsigned int ms, unsigned long cs) {
   session()->localIO()->LocalCls();
   session()->localIO()->LocalPrintf("Logging on at %s...\r\n", session()->GetCurrentSpeed().c_str());
   if (ms) {
-    if (ok_modem_stuff && nullptr != sess->remoteIO()) {
-      sess->remoteIO()->setup('N', 8, 1, cs);
-    }
     incom   = true;
     outcom  = true;
     session()->using_modem = 1;
