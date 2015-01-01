@@ -79,7 +79,7 @@ WIOUnix::~WIOUnix() {
   set_terminal(false);
 }
 
-unsigned int WIOUnix::open() { return 0; }
+bool WIOUnix::open() { return true; }
 
 void WIOUnix::close(bool bIsTemporary = false) {
   bIsTemporary = bIsTemporary;

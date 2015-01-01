@@ -41,7 +41,7 @@ class WComm {
   WComm() : binary_mode_(false) {}
   virtual ~WComm() {}
 
-  virtual unsigned int open() = 0;
+  virtual bool open() = 0;
   virtual void close(bool bIsTemporary = false) = 0;
   virtual unsigned char getW() = 0;
   virtual bool dtr(bool raise) = 0;
