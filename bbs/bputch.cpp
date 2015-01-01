@@ -337,7 +337,7 @@ void rputch(char ch, bool bUseInternalBuffer) {
       }
       s_szOutComChBuffer[ s_nOutComChBufferPosition++ ] = ch;
     } else {
-      session()->remoteIO()->putW(ch);
+      session()->remoteIO()->put(ch);
     }
   }
 }
