@@ -23,7 +23,7 @@ namespace WWIV5TelnetServer
             this.logger = logger;
         }
 
-        private const int SW_MINIMIZED = 2;
+        private const int SW_MINIMIZE = 6;
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass"), DllImport("user32.dll")]
         private static extern int ShowWindowAsync(IntPtr hWnd, int nCmdShow);
 
@@ -69,7 +69,7 @@ namespace WWIV5TelnetServer
                     Thread.Sleep(100);
                 }
                 logger("Trying to minimize process on handle:" + p.MainWindowHandle);
-                ShowWindowAsync(p.MainWindowHandle, SW_MINIMIZED);
+                ShowWindowAsync(p.MainWindowHandle, SW_MINIMIZE);
             }
             return p;
         }
