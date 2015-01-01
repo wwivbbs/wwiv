@@ -13,10 +13,6 @@ set(test_sources
   ppp_config_test.cpp
 )
 
-if(UNIX) 
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif()
-
 add_executable(networkb_tests ${test_sources})
 target_link_libraries(networkb_tests networkb_lib core core_fixtures gtest_main sdk)
 

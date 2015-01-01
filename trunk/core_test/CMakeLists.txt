@@ -18,10 +18,6 @@ set(test_sources
   textfile_test.cpp
 )
 
-if(UNIX) 
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif()
-
 add_library(core_fixtures ${fixture_sources}) 
 
 add_executable(core_tests ${test_sources})
