@@ -16,10 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#if !defined (__INCLUDED_WIOT_H__)
+#ifndef __INCLUDED_WIOT_H__
 #define __INCLUDED_WIOT_H__
 
 #include "WComm.h"
+
+#include <cstdint>
 #include <queue>
 
 #if defined( _WIN32 )
@@ -31,30 +33,30 @@ extern "C" {
 class WIOTelnet : public WComm {
  public:
   static const char CHAR_TELNET_OPTION_IAC = '\xFF';;
-  static const int  TELNET_OPTION_IAC = 255;
-  static const int  TELNET_OPTION_NOP = 241;
-  static const int  TELNET_OPTION_BRK = 243;
+  static const uint8_t TELNET_OPTION_IAC = 255;
+  static const uint8_t TELNET_OPTION_NOP = 241;
+  static const uint8_t TELNET_OPTION_BRK = 243;
 
-  static const int  TELNET_OPTION_WILL = 251;
-  static const int  TELNET_OPTION_WONT = 252;
-  static const int  TELNET_OPTION_DO = 253;
-  static const int  TELNET_OPTION_DONT = 254;
+  static const uint8_t TELNET_OPTION_WILL = 251;
+  static const uint8_t TELNET_OPTION_WONT = 252;
+  static const uint8_t TELNET_OPTION_DO = 253;
+  static const uint8_t TELNET_OPTION_DONT = 254;
 
-  static const int TELNET_SB = 250;
-  static const int TELNET_SE = 240;
+  static const uint8_t TELNET_SB = 250;
+  static const uint8_t TELNET_SE = 240;
 
-  static const int TELNET_OPTION_BINARY = 0;
-  static const int TELNET_OPTION_ECHO = 1;
-  static const int TELNET_OPTION_RECONNECTION = 2;
-  static const int TELNET_OPTION_SUPPRESSS_GA = 3;
-  static const int TELNET_OPTION_TERMINAL_TYPE = 24;
-  static const int TELNET_OPTION_WINDOW_SIZE = 31;
-  static const int TELNET_OPTION_TERMINAL_SPEED = 32;
-  static const int TELNET_OPTION_LINEMODE = 34;
+  static const uint8_t TELNET_OPTION_BINARY = 0;
+  static const uint8_t TELNET_OPTION_ECHO = 1;
+  static const uint8_t TELNET_OPTION_RECONNECTION = 2;
+  static const uint8_t TELNET_OPTION_SUPPRESSS_GA = 3;
+  static const uint8_t TELNET_OPTION_TERMINAL_TYPE = 24;
+  static const uint8_t TELNET_OPTION_WINDOW_SIZE = 31;
+  static const uint8_t TELNET_OPTION_TERMINAL_SPEED = 32;
+  static const uint8_t TELNET_OPTION_LINEMODE = 34;
 
  public:
   WIOTelnet(unsigned int nHandle);
-  virtual unsigned int open() override;
+  virtual bool open() override;
   virtual void close(bool bIsTemporary) override;
   virtual unsigned char getW() override;
   virtual bool dtr(bool raise) override;
@@ -76,20 +78,19 @@ class WIOTelnet : public WComm {
  private:
   void HandleTelnetIAC(unsigned char nCmd, unsigned char nParam);
   void AddStringToInputBuffer(int nStart, int nEnd, char *pszBuffer);
-  void AddCharToInputBuffer(char ch);
 
  private:
   static void InboundTelnetProc(void *pTelnet);
 
  protected:
   std::queue<char> queue_;
-  HANDLE mu_;
+  mutable HANDLE mu_;
   SOCKET socket_;
   SOCKET duplicate_socket_;
   HANDLE read_thread_;
   HANDLE stop_event_;
-  bool   threads_started_;
+  bool threads_started_;
 };
 
-#endif  // #if !defined (__INCLUDED_WIOT_H__)
+#endif  // __INCLUDED_WIOT_H__
 
