@@ -19,9 +19,11 @@
 
 #include <algorithm>
 #include <cstring>
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <stdexcept>
 
 #include "curses.h"
 #include "curses_io.h"
@@ -34,7 +36,7 @@
 
 using std::unique_ptr;
 using std::string;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 extern const char *wwiv_version;
 extern const char *beta_version;
@@ -121,6 +123,16 @@ CursesIO::CursesIO()
 
   int stdscr_maxx = getmaxx(stdscr);
   int stdscr_maxy = getmaxy(stdscr);
+
+  if (stdscr_maxx < 80) {
+    endwin();
+    throw std::runtime_error(StrCat("Screen width must be at least 80, was: ", stdscr_maxx));
+  }
+  if (stdscr_maxy < 25) {
+    endwin();
+    throw std::runtime_error(StrCat("Screen height must be at least 25, was: ", stdscr_maxy));
+  }
+
   header_.reset(new CursesWindow(nullptr, color_scheme_.get(), 2, 0, 0, 0));
   footer_.reset(new CursesFooter(new CursesWindow(nullptr, color_scheme_.get(), 2, 0, stdscr_maxy-2, 0), 
     color_scheme_.get()));

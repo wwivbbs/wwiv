@@ -134,8 +134,13 @@ WInitApp::~WInitApp() {
 }
 
 int main(int argc, char* argv[]) {
-  std::unique_ptr<WInitApp> app(new WInitApp());
-  return app->main(argc, argv);
+  try {
+    std::unique_ptr<WInitApp> app(new WInitApp());
+    return app->main(argc, argv);
+  } catch (std::exception& e) {
+    std::clog << "Fatal exception launching init: " << std::endl 
+              << e.what() << std::endl;
+  }
 }
 
 int WInitApp::main(int argc, char *argv[]) {
