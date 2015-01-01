@@ -568,6 +568,9 @@ void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLeng
 
 
 void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, const char *aux) {
+  if (session()->num_subs <= 0 && session()->GetCurrentReadMessageArea() <= 0) {
+    return;
+  }
   char szMultiMail[] = "Multi-Mail";
   if (xsubs[session()->GetCurrentReadMessageArea()].num_nets &&
       !IsEqualsIgnoreCase(aux, "email") &&
