@@ -32,23 +32,28 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 
+using std::clog;
+using std::endl;
+using std::string;
 using std::unique_ptr;
+using namespace wwiv::strings;
+
 
 WIOTelnet::WIOTelnet(unsigned int nHandle) : socket_(static_cast<SOCKET>(nHandle)), threads_started_(false) {
   WIOTelnet::InitializeWinsock();
   if (!DuplicateHandle(GetCurrentProcess(), reinterpret_cast<HANDLE>(socket_),
                        GetCurrentProcess(), reinterpret_cast<HANDLE*>(&duplicate_socket_),
                        0, TRUE, DUPLICATE_SAME_ACCESS)) {
-    std::clog << "Error creating duplicate socket: " << GetLastError() << "\r\n\n";
+    clog << "Error creating duplicate socket: " << GetLastError() << endl << endl;
   }
   if (socket_ != 0 && socket_ != INVALID_SOCKET) {
     // Make sure our signal event is not set to the "signaled" state
     stop_event_ = CreateEvent(nullptr, true, false, nullptr);
-    std::clog << "Created Stop Event: " << GetLastErrorText() << std::endl;
+    clog << "Created Stop Event: " << GetLastErrorText() << endl;
   } else {
     const char *message = "**ERROR: UNABLE to create STOP EVENT FOR WIOTelnet";
     sysoplog(message);
-    std::clog << message << std::endl;
+    clog << message << endl;
   }
 }
 
@@ -60,7 +65,7 @@ unsigned int WIOTelnet::GetDoorHandle() const {
   return static_cast<unsigned int>(duplicate_socket_);
 }
 
-unsigned int WIOTelnet::open() {
+bool WIOTelnet::open() {
   StartThreads();
 
   SOCKADDR_IN addr;
@@ -68,22 +73,24 @@ unsigned int WIOTelnet::open() {
 
   getpeername(socket_, reinterpret_cast<SOCKADDR *>(&addr), &nAddrSize);
 
-  const std::string address = inet_ntoa(addr.sin_addr);
+  const string address = inet_ntoa(addr.sin_addr);
   SetRemoteName("Internet TELNET Session");
   SetRemoteAddress(address);
 
-  char szTempTelnet[ 21 ];
-  snprintf(szTempTelnet, sizeof(szTempTelnet), "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT,
-           WIOTelnet::TELNET_OPTION_ECHO);
-  write(szTempTelnet, 3, true);
-  snprintf(szTempTelnet, sizeof(szTempTelnet), "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_WILL,
-           WIOTelnet::TELNET_OPTION_ECHO);
-  write(szTempTelnet, 3, true);
-  snprintf(szTempTelnet, sizeof(szTempTelnet), "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT,
-           WIOTelnet::TELNET_OPTION_LINEMODE);
-  write(szTempTelnet, 3, true);
+  { 
+    char s[3] = { WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT, WIOTelnet::TELNET_OPTION_ECHO };
+    write(s, 3, true);
+  }
+  { 
+    char s[3] = { WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_WILL, WIOTelnet::TELNET_OPTION_ECHO };
+    write(s, 3, true);
+  }
+  { 
+    char s[3] = { WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT, WIOTelnet::TELNET_OPTION_LINEMODE };
+    write(s, 3, true);
+  }
 
-  return 0;
+  return true;
 }
 
 void WIOTelnet::close(bool bIsTemporary) {
@@ -102,12 +109,9 @@ unsigned int WIOTelnet::put(unsigned char ch) {
 #endif // _DEBUG
     return 0;
   }
-  char szBuffer[5];
-  szBuffer[0] = static_cast<char>(ch);
-  szBuffer[1] = '\0';
+  char szBuffer[3] = { ch, 0, 0 };
   if (ch == TELNET_OPTION_IAC) {
     szBuffer[1] = static_cast<char>(ch);
-    szBuffer[2] = '\0';
   }
 
   for (;;) {
@@ -115,8 +119,8 @@ unsigned int WIOTelnet::put(unsigned char ch) {
     if (nRet == SOCKET_ERROR) {
       if (WSAGetLastError() != WSAEWOULDBLOCK) {
         if (WSAGetLastError() != WSAENOTSOCK) {
-          std::clog << "DEBUG: ERROR on send from put() [" << WSAGetLastError() << "] [#" << static_cast<int>
-                    (ch) << "]" << std::endl;
+          clog << "DEBUG: ERROR on send from put() [" << WSAGetLastError() << "] [#" 
+               << static_cast<int> (ch) << "]" << endl;
         }
         return 0;
       }
@@ -175,6 +179,7 @@ unsigned int WIOTelnet::read(char *buffer, unsigned int count) {
 }
 
 unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTranslation) {
+  clog << "WIOTelnet::write(" << count << ") ";
   unique_ptr<char[]> tmp_buffer(new char[count * 2 + 100]);
   memset(tmp_buffer.get(), 0, count * 2 + 100);
   int nCount = count;
@@ -245,7 +250,7 @@ void WIOTelnet::StopThreads() {
   case WAIT_TIMEOUT:
     // The exit code of 123 doesn't mean anything, and isn't used anywhere.
     ::TerminateThread(read_thread_, 123);
-    std::clog << "WIOTelnet::StopThreads: Terminated the read thread" << std::endl;
+    clog << "WIOTelnet::StopThreads: Terminated the read thread" << endl;
     break;
   default:
     break;
@@ -260,8 +265,8 @@ void WIOTelnet::StartThreads() {
 
   if (!ResetEvent(stop_event_)) {
     const std::string error_text = GetLastErrorText();
-    std::clog << "WIOTelnet::StartThreads: Error with ResetEvent " << GetLastError()
-              << " - '" << error_text << "'" << std::endl;
+    clog << "WIOTelnet::StartThreads: Error with ResetEvent " << GetLastError()
+         << " - '" << error_text << "'" << endl;
   }
 
   mu_ = ::CreateMutex(nullptr, false, "WWIV Input Buffer");
@@ -276,9 +281,7 @@ WIOTelnet::~WIOTelnet() {
   WSACleanup();
 }
 
-//
 // Static Class Members.
-//
 
 void WIOTelnet::InitializeWinsock() {
   WSADATA wsaData;
@@ -383,9 +386,7 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid) {
 }
 
 void WIOTelnet::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
-  //
   // We should probably start responding to the DO and DONT options....
-  //
   ::OutputDebugString("HandleTelnetIAC: ");
 
   switch (nCmd) {
@@ -398,27 +399,22 @@ void WIOTelnet::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   }
   break;
   case TELNET_OPTION_WILL: {
-    char szBuffer[ 255 ];
-    _snprintf(szBuffer, sizeof(szBuffer), "[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WILL", nParam);
-    ::OutputDebugString(szBuffer);
+    const string s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WILL", nParam);
+    ::OutputDebugString(s.c_str());
   }
   break;
   case TELNET_OPTION_WONT: {
-    char szBuffer[ 255 ];
-    _snprintf(szBuffer, sizeof(szBuffer), "[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WONT", nParam);
-    ::OutputDebugString(szBuffer);
+    const string s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WONT", nParam);
+    ::OutputDebugString(s.c_str());
   }
   break;
   case TELNET_OPTION_DO: {
-    char szBuffer[ 255 ];
-    _snprintf(szBuffer, sizeof(szBuffer), "[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DO", nParam);
-    ::OutputDebugString(szBuffer);
+    const string s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DO", nParam);
+    ::OutputDebugString(s.c_str());
     switch (nParam) {
     case TELNET_OPTION_SUPPRESSS_GA: {
-      char szTelnetOptionBuffer[ 255 ];
-      _snprintf(szTelnetOptionBuffer, sizeof(szTelnetOptionBuffer), "%c%c%c", TELNET_OPTION_IAC, TELNET_OPTION_WILL,
-                TELNET_OPTION_SUPPRESSS_GA);
-      write(szTelnetOptionBuffer, 3, true);
+      const string s = StringPrintf("%c%c%c", TELNET_OPTION_IAC, TELNET_OPTION_WILL, TELNET_OPTION_SUPPRESSS_GA);
+      write(s.c_str(), 3, true);
       ::OutputDebugString("Sent TELNET IAC WILL SUPPRESSS GA\r\n");
     }
     break;
@@ -426,9 +422,8 @@ void WIOTelnet::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   }
   break;
   case TELNET_OPTION_DONT: {
-    char szBuffer[ 255 ];
-    _snprintf(szBuffer, sizeof(szBuffer), "[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DONT", nParam);
-    ::OutputDebugString(szBuffer);
+    const string s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DONT", nParam);
+    ::OutputDebugString(s.c_str());
   }
   break;
   }
@@ -438,34 +433,29 @@ void WIOTelnet::AddStringToInputBuffer(int nStart, int nEnd, char *pszBuffer) {
   WWIV_ASSERT(pszBuffer);
   WaitForSingleObject(mu_, INFINITE);
 
-  char szBuffer[4096];
-  strncpy(szBuffer, pszBuffer, sizeof(szBuffer));
-  memcpy(szBuffer, pszBuffer, nEnd);
+//  char szBuffer[4096];
+//  memcpy(szBuffer, pszBuffer, nEnd);
   bool bBinaryMode = GetBinaryMode();
   for (int i = nStart; i < nEnd; i++) {
-    if ((static_cast<unsigned char>(szBuffer[i]) == 255)) {
-      if ((i + 1) < nEnd  && static_cast<unsigned char>(szBuffer[i + 1]) == 255) {
-        AddCharToInputBuffer(szBuffer[i + 1]);
+    if ((static_cast<unsigned char>(pszBuffer[i]) == 255)) {
+      if ((i + 1) < nEnd  && static_cast<unsigned char>(pszBuffer[i + 1]) == 255) {
+        queue_.push(pszBuffer[i + 1]);
         i++;
       } else if ((i + 2) < nEnd) {
-        HandleTelnetIAC(szBuffer[i + 1], szBuffer[i + 2]);
+        HandleTelnetIAC(pszBuffer[i + 1], pszBuffer[i + 2]);
         i += 2;
       } else {
         ::OutputDebugString("WHAT THE HECK?!?!?!? 255 w/o any options or anything\r\n");
       }
-    } else if (bBinaryMode || szBuffer[i] != '\0') {
+    } else if (bBinaryMode || pszBuffer[i] != '\0') {
       // I think the nulls in the input buffer were being bad... RF20020906
       // This fixed the problem of telnetting with CRT to a linux machine and then telnetting from
       // that linux box to the bbs... Hopefully this will fix the Win9x built-in telnet client as
       // well as TetraTERM
-      AddCharToInputBuffer(szBuffer[i]);
+      queue_.push(pszBuffer[i]);
     } else {
-      ::OutputDebugString("szBuffer had a null\r\n");
+      ::OutputDebugString("pszBuffer had a null\r\n");
     }
   }
   ReleaseMutex(mu_);
-}
-
-void WIOTelnet::AddCharToInputBuffer(char ch) {
-  queue_.push(ch);
 }
