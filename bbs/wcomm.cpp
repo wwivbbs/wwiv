@@ -33,9 +33,6 @@
 // static
 std::string WComm::error_text_;
 
-int WComm::GetComPort() const { return comport_; }
-void WComm::SetComPort(int nNewPort) { comport_ = nNewPort; }
-
 const std::string WComm::GetLastErrorText() {
 #if defined ( _WIN32 )
   char* error_text;
