@@ -408,7 +408,12 @@ class WUser {
     memset(&data.macros[ nLine ][0], 0, 80);
     strcpy(reinterpret_cast<char*>(data.macros[ nLine ]), s);
   }
-  const char GetGender() const            {
+  const char GetGender() const {
+    if (data.sex == 'N') {
+      // N means unknowN.  NEWUSER sets it to N to prompt the
+      // user again.
+      return 'N';
+    }
     return data.sex == 'F' ? 'F' : 'M';
   }
   void SetGender(const char c)          {
