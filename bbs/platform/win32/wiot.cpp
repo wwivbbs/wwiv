@@ -45,13 +45,14 @@ WIOTelnet::WIOTelnet(unsigned int nHandle) : socket_(static_cast<SOCKET>(nHandle
                        GetCurrentProcess(), reinterpret_cast<HANDLE*>(&duplicate_socket_),
                        0, TRUE, DUPLICATE_SAME_ACCESS)) {
     clog << "Error creating duplicate socket: " << GetLastError() << endl << endl;
+    // TODO(rushfan): throw exception here since this socket is useless.
   }
   if (socket_ != 0 && socket_ != INVALID_SOCKET) {
     // Make sure our signal event is not set to the "signaled" state
     stop_event_ = CreateEvent(nullptr, true, false, nullptr);
     clog << "Created Stop Event: " << GetLastErrorText() << endl;
   } else {
-    const char *message = "**ERROR: UNABLE to create STOP EVENT FOR WIOTelnet";
+    const char* message = "**ERROR: UNABLE to create STOP EVENT FOR WIOTelnet";
     sysoplog(message);
     clog << message << endl;
   }
@@ -105,7 +106,7 @@ void WIOTelnet::close(bool bIsTemporary) {
 unsigned int WIOTelnet::put(unsigned char ch) {
   if (socket_ == INVALID_SOCKET) {
 #ifdef _DEBUG
-    std::clog << "pw(INVALID-SOCKET) ";
+    clog << "pw(INVALID-SOCKET) ";
 #endif // _DEBUG
     return 0;
   }
@@ -208,7 +209,7 @@ unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTr
     if (nRet == SOCKET_ERROR) {
       if (WSAGetLastError() != WSAEWOULDBLOCK) {
         if (WSAGetLastError() != WSAENOTSOCK) {
-          std::clog << "DEBUG: in write(), expected to send " << count << " character(s), actually sent " << nRet << std::endl;
+          clog << "DEBUG: in write(), expected to send " << count << " character(s), actually sent " << nRet << endl;
         }
         return 0;
       }
@@ -235,9 +236,9 @@ void WIOTelnet::StopThreads() {
     return;
   }
   if (!SetEvent(stop_event_)) {
-    const std::string error_text = GetLastErrorText();
-    std::clog << "WIOTelnet::StopThreads: Error with SetEvent " << GetLastError() 
-              << " - '" << error_text << "'" << std::endl;
+    const string error_text = GetLastErrorText();
+    clog << "WIOTelnet::StopThreads: Error with SetEvent " << GetLastError() 
+         << " - '" << error_text << "'" << endl;
   }
   ::Sleep(0);
 
@@ -264,7 +265,7 @@ void WIOTelnet::StartThreads() {
   }
 
   if (!ResetEvent(stop_event_)) {
-    const std::string error_text = GetLastErrorText();
+    const string error_text = GetLastErrorText();
     clog << "WIOTelnet::StartThreads: Error with ResetEvent " << GetLastError()
          << " - '" << error_text << "'" << endl;
   }
@@ -290,22 +291,22 @@ void WIOTelnet::InitializeWinsock() {
   if (err != 0) {
     switch (err) {
     case WSASYSNOTREADY:
-      std::clog << "Error from WSAStartup: WSASYSNOTREADY";
+      clog << "Error from WSAStartup: WSASYSNOTREADY";
       break;
     case WSAVERNOTSUPPORTED:
-      std::clog << "Error from WSAStartup: WSAVERNOTSUPPORTED";
+      clog << "Error from WSAStartup: WSAVERNOTSUPPORTED";
       break;
     case WSAEINPROGRESS:
-      std::clog << "Error from WSAStartup: WSAEINPROGRESS";
+      clog << "Error from WSAStartup: WSAEINPROGRESS";
       break;
     case WSAEPROCLIM:
-      std::clog << "Error from WSAStartup: WSAEPROCLIM";
+      clog << "Error from WSAStartup: WSAEPROCLIM";
       break;
     case WSAEFAULT:
-      std::clog << "Error from WSAStartup: WSAEFAULT";
+      clog << "Error from WSAStartup: WSAEFAULT";
       break;
     default:
-      std::clog << "Error from WSAStartup: ** unknown error code **";
+      clog << "Error from WSAStartup: ** unknown error code **";
       break;
     }
   }
@@ -330,9 +331,9 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid) {
     DWORD dwWaitRet = WSAWaitForMultipleEvents(2, hArray, false, 10000, false);
     if (dwWaitRet == (WSA_WAIT_EVENT_0 + 1)) {
       if (!ResetEvent(pTelnet->stop_event_)) {
-        const std::string error_text = GetLastErrorText();
-        std::clog << "WIOTelnet::InboundTelnetProc: Error with ResetEvent " 
-                  << GetLastError() << " - '" << error_text << "'" << std::endl;
+        const string error_text = GetLastErrorText();
+        clog << "WIOTelnet::InboundTelnetProc: Error with ResetEvent " 
+             << GetLastError() << " - '" << error_text << "'" << endl;
       }
 
       bDone = true;
