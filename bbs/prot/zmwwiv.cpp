@@ -208,7 +208,7 @@ int doIO( ZModem *info ) {
 		}
 
 		ProcessLocalKeyDuringZmodem();
-		if ( hangup || hungup ) {
+		if (hangup) {
 			return ZmErrCancel;
 		}
 

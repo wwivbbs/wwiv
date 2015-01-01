@@ -111,7 +111,6 @@ void frequent_init() {
   session()->screenlinest = defscreenbottom + 1;
   endofline[0] = '\0';
   hangup = false;
-  hungup = false;
   chatcall = false;
   session()->localIO()->ClearChatReason();
   session()->SetUserOnline(false);
