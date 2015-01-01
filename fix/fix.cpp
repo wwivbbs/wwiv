@@ -121,7 +121,7 @@ class FixApplication {
 
   void ShowBanner() {
     cout << "WWIV Bulletin Board System -" << wwiv_version << std::endl
-        << "Copyright (c) 1998-2014, WWIV Software Services.\n"
+        << "Copyright (c) 1998-2015, WWIV Software Services.\n"
         << "All Rights Reserved.\n\n"
         << "Compile Time : " << wwiv_date << std::endl << std::endl;
   }
