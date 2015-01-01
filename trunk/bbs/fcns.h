@@ -174,7 +174,6 @@ bool yesno();
 bool noyes();
 char ynq();
 char onek(const char *pszAllowableChars, bool bAutoMpl = false);
-void holdphone(bool bPickUpPhone);
 
 
 // File: conf.cpp

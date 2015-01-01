@@ -248,6 +248,3 @@ char onek(const char *pszAllowableChars, bool bAutoMpl) {
   bout.nl();
   return ch;
 }
-
-// TODO(rushfan): Remove this.
-void holdphone(bool bPickUpPhone) { /* NOOP */ }

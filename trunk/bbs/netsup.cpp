@@ -76,9 +76,9 @@ static bool check_bbsdata() {
   }
   unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
   if (ok && pStatus->IsUsingNetEdit()) {
-    holdphone(true);
-    sprintf(s, "NETEDIT .%d /U", session()->GetNetworkNumber());
-    ExecuteExternalProgram(s, EFLAG_NETPROG);
+    // TODO(rushfan): is this program even around anymore?
+    ExecuteExternalProgram(StringPrintf("NETEDIT .%d /U", session()->GetNetworkNumber()),
+      EFLAG_NETPROG);
   } else {
     File bbsdataNet(session()->GetNetworkDataDirectory().c_str(), BBSDATA_NET);
     if (bbsdataNet.Open(File::modeReadOnly)) {
@@ -104,7 +104,6 @@ static bool check_bbsdata() {
   }
   if (ok || ok2) {
     sprintf(s, "network3 %s .%d", (ok ? " Y" : ""), session()->GetNetworkNumber());
-    holdphone(true);
 
     ExecuteExternalProgram(s, EFLAG_NETPROG);
     WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
@@ -223,7 +222,6 @@ int cleanup_net1() {
               wfc_cls();
             }
 #endif
-            holdphone(true);
             ++i;
             any = 1;
             ok = 1;
@@ -326,10 +324,6 @@ void do_callout(int sn) {
         bout.Color(7);
         bout << charstr(80, 205);
         bout << "|#0..." << wwiv::endl;
-#ifndef __unix__
-        holdphone(true);
-        Wait(2.5);
-#endif
         ExecuteExternalProgram(s, EFLAG_NETPROG);
         zap_contacts();
         application()->GetStatusManager()->RefreshStatusCache();
