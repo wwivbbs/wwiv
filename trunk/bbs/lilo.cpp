@@ -521,7 +521,7 @@ static void UpdateLastOnFileAndUserLog() {
   unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
   const string laston_txt_filename = StrCat(syscfg.gfilesdir, LASTON_TXT);
   long len;
-  unique_ptr<char[]> ss(get_file(laston_txt_filename, &len));
+  unique_ptr<char[], void (*)(void*)> ss(get_file(laston_txt_filename, &len), &std::free);
   long pos = 0;
   if (ss) {
     if (!cs()) {
