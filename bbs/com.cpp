@@ -54,7 +54,7 @@ void dump() {
 // returns the value of hangup
 bool CheckForHangup() {
   if (!hangup && session()->using_modem && !session()->remoteIO()->carrier()) {
-    hangup = hungup = true;
+    hangup = true;
     if (session()->IsUserOnline()) {
       sysoplog("Hung Up.");
       std::cerr << "Hung Up!";
