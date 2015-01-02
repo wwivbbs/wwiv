@@ -131,6 +131,7 @@ int main(int argc, char *argv[])
   Config config(config_dir);
   if (!config.IsInitialized()) {
     clog << "Unable to load CONFIG.DAT" << endl;
+    return 1;
   }
   File::set_current_directory(config_dir);
   IniFile ini("wwiv.ini", "WWIV");
