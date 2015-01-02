@@ -35,7 +35,7 @@ class WIOUnix : public WComm {
  public:
   WIOUnix();
   virtual ~WIOUnix();
-  virtual unsigned int open() override;
+  virtual bool open() override;
   virtual void close(bool bIsTemporary) override;
   virtual unsigned char getW() override;
   virtual bool dtr(bool raise) override;
