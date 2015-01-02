@@ -9,4 +9,4 @@ add_definitions(-DNOT_BBS)
 set(NODEMGR_SOURCES nodemgr.cpp)
 
 add_executable(nodemgr ${NODEMGR_SOURCES})
-target_link_libraries(nodemgr core)
+target_link_libraries(nodemgr sdk core)
