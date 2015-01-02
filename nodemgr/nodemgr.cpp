@@ -41,7 +41,6 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-#define BBSHOME "/home/bbs/"
 #define BBS_BINARY "bbs"
 
 static pid_t bbs_pid = 0;
@@ -128,8 +127,7 @@ int main(int argc, char *argv[])
        << "Please wait while node data is parsed." << endl;
 
   const string wwiv_dir = environment_variable("WWIV_DIR");
-  // TODO(rushfan): Change BBSHOME to current directory.
-  string config_dir = !wwiv_dir.empty() ? wwiv_dir : BBSHOME;
+  string config_dir = !wwiv_dir.empty() ? wwiv_dir : File::current_directory();
   Config config(config_dir);
   if (!config.IsInitialized()) {
     clog << "Unable to load CONFIG.DAT" << endl;
