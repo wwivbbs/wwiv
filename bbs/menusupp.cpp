@@ -560,7 +560,7 @@ void PrintPending() {
 }
 
 void PrintStatus() {
-  prstatus(false);
+  prstatus();
 }
 
 void TextEdit() {

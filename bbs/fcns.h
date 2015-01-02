@@ -597,7 +597,7 @@ void chat1(char *pszChatLine, bool two_way);
 // File: sysopf.cpp
 
 void reset_files();
-void prstatus(bool bIsWFC);
+void prstatus();
 void valuser(int nUserNumber);
 void print_net_listing(bool bForcePause);
 void read_new_stuff();
