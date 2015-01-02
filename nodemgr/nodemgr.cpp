@@ -17,35 +17,106 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include <cstdlib>
+#include <iostream>
 #include <signal.h>
-#include <stdio.h>
-#include <sys/stat.h>
+#include <string>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <unistd.h>
 
+#include "core/file.h"
+#include "core/inifile.h"
+#include "core/os.h"
+#include "core/strings.h"
+#include "sdk/config.h"
 #include "sdk/vardec.h"
 #include "sdk/filenames.h"
 
-using namespace std;
+using std::clog;
+using std::cout;
+using std::endl;
+using std::string;
+using namespace wwiv::core;
+using namespace wwiv::sdk;
+using namespace wwiv::strings;
+using namespace wwiv::os;
 
-#define MAX_NODES 500
 #define BBSHOME "/home/bbs/"
 #define BBS_BINARY "bbs"
 
-configrec cfgRec;
-configoverrec *cfgOverlayRec = NULL;
-int maxNodes = 1;
-int usedNodes = 0;
+static pid_t bbs_pid = 0;
 
-void loadConfigDat();
-void loadNodeData();
-void loadUsedNodeData();
+static const File node_file(const Config& config, int node_number) {
+  return File(config.datadir(), StrCat("nodeinuse.", node_number));
+}
 
-void launchNode(int nodeNumber);
-void huphandler(int mysignal);
-void huphandler2(int mysignal);
+static void huphandler(int mysignal) {
+  // TODO(rushfan): Should this be clog? Where does stderr go?
+  cout << endl;
+  cout << "Sending SIGHUP to BBS after receiving " << mysignal << "..." << endl;
+  kill(bbs_pid, SIGHUP); // send SIGHUP to process group
+}
+
+static int loadUsedNodeData(const Config& config, int num_instances) {
+  int used_nodes = 0;
+  for(int counter = 1; counter <= num_instances; counter++) {
+    File semaphore_file(node_file(config, counter));
+    if (semaphore_file.Exists()) {
+      ++used_nodes;
+    }
+  }
+  return used_nodes;
+}
+
+static bool launchNode(const Config& config, int node_number) {
+  File semaphore_file(node_file(config, node_number));
+  if (!semaphore_file.Open(File::modeCreateFile|File::modeText|File::modeReadWrite|File::modeTruncate, File::shareDenyNone)) {
+    // TODO(rushfan): What to do?
+    clog << "Unable to create semaphore file: " << semaphore_file << "; errno: "
+         << errno << endl;
+  }
+  semaphore_file.Close();
+  // TODO(rushfan): Remove /I since we only need one of these.
+  const string cmd = StringPrintf("./%s /N%u /I%u", BBS_BINARY, node_number, node_number);
+
+  clog << "Invoking WWIV with command line:" << cmd << endl;
+  pid_t child_pid = fork();
+  if (child_pid == -1) {
+    // fork failed.
+    clog << "Error forking WWIV." << endl;
+    return false;
+  } else if (child_pid == 0) {
+    // child process.
+    struct sigaction sa;
+    execl("/bin/sh", "sh", "-c", cmd.c_str(), nullptr);
+    // Should not happen unless we can't exec /bin/sh
+    _exit(127);
+  }
+  bbs_pid = child_pid;
+  int status = 0;
+  while (waitpid(child_pid, &status, 0) == -1) {
+    if (errno != EINTR) {
+      break;
+    }
+  }
+
+  bool delete_ok = semaphore_file.Delete();
+  if (!delete_ok) {
+    clog << "Unable to delete semaphore file: "<< semaphore_file << "; errno: "
+         << errno << endl;
+  }
+  return true;
+}
+
+void setup_signal_handlers() {
+  struct sigaction sa;
+  sa.sa_handler = huphandler;
+  sa.sa_flags = SA_RESETHAND;
+  sigfillset(&sa.sa_mask);
+  if (sigaction(SIGHUP, &sa, nullptr) == -1) {
+    clog << "Unable to install signal handler for SIGHUP";
+  }
+}
 
 /**
  *  This program is the manager of the nodes for the WWIV BBS software
@@ -53,130 +124,31 @@ void huphandler2(int mysignal);
  */
 int main(int argc, char *argv[])
 {
-  bool foundNode = false;
-  int newNodeNumber = 1;
-  chdir(BBSHOME); // hardcoded home dir of BBS. config.dat/config.ovr should be here.
-  loadConfigDat();
-  loadNodeData();
-  loadUsedNodeData();
+  cout << "WWIV 5.0 UNIX Node Manager Bootstrap." << endl
+       << "Please wait while node data is parsed." << endl;
 
-  signal (SIGQUIT, SIG_DFL);
-  signal (SIGTERM, SIG_DFL);
-  signal (SIGALRM, SIG_DFL);
-  signal (SIGINT, SIG_DFL); 
-  signal (SIGHUP, huphandler);
-
-  if(maxNodes == 0)
-  {
-    maxNodes = 1;
+  const string wwiv_dir = environment_variable("WWIV_DIR");
+  // TODO(rushfan): Change BBSHOME to current directory.
+  string config_dir = !wwiv_dir.empty() ? wwiv_dir : BBSHOME;
+  Config config(config_dir);
+  if (!config.IsInitialized()) {
+    clog << "Unable to load CONFIG.DAT" << endl;
   }
+  File::set_current_directory(config_dir);
+  IniFile ini("wwiv.ini", "WWIV");
+  const int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
+  setup_signal_handlers();
+  int used_nodes = loadUsedNodeData(config, num_instances);
 
-  printf("WWIV 5.0 UNIX Node Manager Bootstrap.\n");
-  printf("Please wait while node data is parsed.\n");
-  printf("Found %u/%u Nodes in use.\n", usedNodes, maxNodes);
+  cout << "Found " << used_nodes << "/" << num_instances << " Nodes in use." << endl;
 
-  if(usedNodes == maxNodes)
-  {
-    printf("There are no available nodes.  Please try again later.\n");
-  }
-  else if(usedNodes == 0)
-  {
-    launchNode(1);
-  }
-  else
-  {
-    // Find open node number.
-    //
-    for(newNodeNumber = 1; newNodeNumber <= maxNodes && !foundNode; newNodeNumber++)
-    {
-      char nodeFile[256];
-      sprintf((char *)nodeFile, "%snodeinuse.%u", cfgRec.datadir, newNodeNumber);
-      struct stat buf;
-      if(stat(nodeFile, &buf))
-      {
-        foundNode = true;
-        launchNode(newNodeNumber);
-      }
+  // Find open node number.
+  for(int node = 1; node <= num_instances; node++) {
+    if (!node_file(config, node).Exists()) {
+      launchNode(config, node);
+      clog << "Exiting" << endl;
+      return 0;
     }
   }
-  
-  if(cfgOverlayRec != NULL)
-  {
-    delete [] cfgOverlayRec;
-  }
-  return(0);
+  return 1;
 }
-
-void loadConfigDat()
-{
-  FILE *fp = fopen(CONFIG_DAT, "rb");
-  if(fp == NULL)
-  {
-    fprintf(stderr, "%s not found!  BBS not initialized.\n", CONFIG_DAT);
-    return;
-  }
-  fread(&cfgRec, 1, sizeof(configrec), fp);
-  fclose(fp);  
-}
-
-void loadNodeData()
-{
-  FILE *fp = fopen(CONFIG_OVR, "rb");
-  if(fp != NULL)
-  {
-    fseek(fp, 0L, SEEK_END);
-    unsigned long len = ftell(fp);
-    fseek(fp, 0L, SEEK_SET);
-    maxNodes = len/sizeof(configoverrec);
-    cfgOverlayRec = new configoverrec[maxNodes];
-    fread(cfgOverlayRec, maxNodes, sizeof(configoverrec), fp);
-    fclose(fp);
-  }
-  else
-  {
-    printf("There was an error reading the node data files.\n");
-    printf("Please report this to the sysop.\n");
-    exit(-1);
-  }
-}
-
-void loadUsedNodeData()
-{
-  for(int counter = 1; counter <= maxNodes; counter++)
-  {
-    struct stat buf;
-    char nodeFile[256];
-    sprintf((char *)nodeFile, "%snodeinuse.%u", cfgRec.datadir, counter);
-    if(!stat(nodeFile, &buf))
-    {
-      usedNodes++;
-    }
-  }
-}
-
-void launchNode(int nodeNumber)
-{
-  FILE *fp;
-  char nodeFile[256];
-  sprintf((char *)nodeFile, "%snodeinuse.%u", cfgRec.datadir, nodeNumber);
-  fp = fopen(nodeFile, "wb");
-  fclose(fp);
-  char sysCmd[512];
-  sprintf((char *)sysCmd, "./%s /N%u /I%u", BBS_BINARY, nodeNumber, nodeNumber);
-
-  printf("Invoking WWIV with cmd line:\n%s\n", sysCmd);
-  system(sysCmd);
-  unlink(nodeFile);
-}
-
-void huphandler(int mysignal) {
-	signal (SIGHUP, huphandler2); // catch the SIGHUP we send below
-	printf("\nSending SIGHUP to BBS after receiving %d...\n", mysignal);
-	kill(0,SIGHUP); // send SIGHUP to process group
-}
-
-void huphandler2(int mysignal) {
-	signal (SIGHUP, SIG_DFL); // reset to default handler
-	printf("\nWaiting for BBS to die after signal %d...\n", mysignal);
-}
-
