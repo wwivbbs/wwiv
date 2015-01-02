@@ -9,3 +9,4 @@ set(COMMON_SOURCES
   )
 
 add_library(sdk ${COMMON_SOURCES})
+target_link_libraries(sdk core)
