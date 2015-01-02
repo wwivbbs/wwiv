@@ -103,9 +103,7 @@ void reset_files() {
   application()->GetStatusManager()->CommitTransaction(pStatus);
 }
 
-
-
-void prstatus(bool bIsWFC) {
+void prstatus() {
   application()->GetStatusManager()->RefreshStatusCache();
   bout.cls();
   if (syscfg.newuserpw[0] != '\0') {
@@ -114,30 +112,26 @@ void prstatus(bool bIsWFC) {
   bout << "|#9Board is        : " << (syscfg.closedsystem ? "Closed" : "Open") << wwiv::endl;
 
   std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
-  if (!bIsWFC) {
-    // All of this information is on the WFC Screen
-    bout << "|#9Number Users    : |#2" << pStatus->GetNumUsers() << wwiv::endl;
-    bout << "|#9Number Calls    : |#2" << pStatus->GetCallerNumber() << wwiv::endl;
-    bout << "|#9Last Date       : |#2" << pStatus->GetLastDate() << wwiv::endl;
-    bout << "|#9Time            : |#2" << times() << wwiv::endl;
-    bout << "|#9Active Today    : |#2" << pStatus->GetMinutesActiveToday() << wwiv::endl;
-    bout << "|#9Calls Today     : |#2" << pStatus->GetNumCallsToday() << wwiv::endl;
-    bout << "|#9Net Posts Today : |#2" << (pStatus->GetNumMessagesPostedToday() - pStatus->GetNumLocalPosts())
-                       << wwiv::endl;
-    bout << "|#9Local Post Today: |#2" << pStatus->GetNumLocalPosts() << wwiv::endl;
-    bout << "|#9E Sent Today    : |#2" << pStatus->GetNumEmailSentToday() << wwiv::endl;
-    bout << "|#9F Sent Today    : |#2" << pStatus->GetNumFeedbackSentToday() << wwiv::endl;
-    bout << "|#9Uploads Today   : |#2" << pStatus->GetNumUploadsToday() << wwiv::endl;
-    bout << "|#9Feedback Waiting: |#2" << fwaiting << wwiv::endl;
-    bout << "|#9Sysop           : |#2" << ((sysop2()) ? "Available" : "NOT Available") << wwiv::endl;
-  }
+  bout << "|#9Number Users    : |#2" << pStatus->GetNumUsers() << wwiv::endl;
+  bout << "|#9Number Calls    : |#2" << pStatus->GetCallerNumber() << wwiv::endl;
+  bout << "|#9Last Date       : |#2" << pStatus->GetLastDate() << wwiv::endl;
+  bout << "|#9Time            : |#2" << times() << wwiv::endl;
+  bout << "|#9Active Today    : |#2" << pStatus->GetMinutesActiveToday() << wwiv::endl;
+  bout << "|#9Calls Today     : |#2" << pStatus->GetNumCallsToday() << wwiv::endl;
+  bout << "|#9Net Posts Today : |#2" << (pStatus->GetNumMessagesPostedToday() - pStatus->GetNumLocalPosts())
+        << wwiv::endl;
+  bout << "|#9Local Post Today: |#2" << pStatus->GetNumLocalPosts() << wwiv::endl;
+  bout << "|#9E Sent Today    : |#2" << pStatus->GetNumEmailSentToday() << wwiv::endl;
+  bout << "|#9F Sent Today    : |#2" << pStatus->GetNumFeedbackSentToday() << wwiv::endl;
+  bout << "|#9Uploads Today   : |#2" << pStatus->GetNumUploadsToday() << wwiv::endl;
+  bout << "|#9Feedback Waiting: |#2" << fwaiting << wwiv::endl;
+  bout << "|#9Sysop           : |#2" << ((sysop2()) ? "Available" : "NOT Available") << wwiv::endl;
   bout << "|#9Q-Scan Pointer  : |#2" << pStatus->GetQScanPointer() << wwiv::endl;
 
   if (num_instances() > 1) {
     multi_instance();
   }
 }
-
 
 void valuser(int nUserNumber) {
   char s[81], s1[81], s2[81], s3[81], ar1[20], dar1[20];

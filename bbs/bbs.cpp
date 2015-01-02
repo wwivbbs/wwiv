@@ -439,7 +439,7 @@ int WApplication::doWFCEvents() {
       // Print Current Status
       case 'S':
         if (AllowLocalSysop()) {
-          prstatus(true);
+          prstatus();
           getkey();
         }
         break;
