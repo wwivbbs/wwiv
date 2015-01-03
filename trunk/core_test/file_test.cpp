@@ -179,6 +179,19 @@ TEST(FileTest, CurrentDirectory) {
   EXPECT_STREQ(expected, actual.c_str());
 }
 
+TEST(FileTest, SetCurrentDirectory) {
+  char expected[MAX_PATH];
+  getcwd(expected, MAX_PATH);
+  string original_dir = File::current_directory();
+  ASSERT_STREQ(expected, original_dir.c_str());
+
+  FileHelper helper;
+  File::set_current_directory(helper.TempDir());
+  EXPECT_EQ(helper.TempDir(), File::current_directory());
+
+  File::set_current_directory(original_dir);
+}
+
 TEST(FileTest, MakeAbsolutePath_Relative) {
   static const string kFileName = this->test_info_->name();
   FileHelper helper;
