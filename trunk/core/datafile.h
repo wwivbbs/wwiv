@@ -41,12 +41,27 @@ public:
   }
   virtual ~DataFile() {}
 
-  File& file() { return file_; }
-  bool ok() { return file_.IsOpen(); }
+  File& file() const { return file_; }
+  bool ok() const { return file_.IsOpen(); }
   bool Read(RECORD* record) { return file_.Read(record, SIZE) == SIZE; }
+  bool Read(int record_number, RECORD* record) {
+    if (!Seek(record_number)) {
+      return false;
+    }
+    return Read(record);
+  }
+
   bool Write(const RECORD* record) { return file_.Write(record, SIZE) == SIZE; }
+  bool Write(int record_number, const RECORD* record) {
+    if (!Seek(record_number)) {
+      return false;
+    }
+    return Write(record);
+  }
   bool Seek(int record_number) { return file_.Seek(record_number * SIZE, File::seekBegin) == (record_number * SIZE); }
   int number_of_records() { return file_.GetLength() / SIZE; }
+
+  explicit operator bool() const { return file_.IsOpen(); }
 
 private:
   File file_;

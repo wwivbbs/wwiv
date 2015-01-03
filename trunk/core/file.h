@@ -150,7 +150,10 @@ class File {
   virtual const std::string full_pathname() const { return full_path_name_; }
   virtual const std::string GetLastError() const { return error_text_; }
 
- public:
+  // operators
+  explicit operator bool() const { return IsOpen(); }
+  friend std::ostream& operator<< (std::ostream &os, const File &cPoint);
+
   // static functions
   static bool Remove(const std::string& fileName);
   static bool Remove(const std::string& directoryName, const std::string& fileName);
@@ -182,8 +185,6 @@ class File {
   static bool mkdirs(const File& dir) { return File::mkdirs(dir.full_pathname()); }
 
   static long GetFreeSpaceForPath(const std::string& path);
-
-  friend std::ostream& operator<< (std::ostream &os, const File &cPoint);
 };
 
 
