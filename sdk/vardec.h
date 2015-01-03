@@ -1005,8 +1005,8 @@ struct filestatusrec {
 // QUICK REFERNCE TO FIND USER INPUT_MODE_PHONE NUMBER
 
 struct phonerec {
-  int16_t usernum;                        // user's number
-  unsigned char phone[13];                  // user's phone number
+  int16_t usernum;                          // user's number
+  char phone[13];                           // user's phone number
 };
 
 // begin events additions

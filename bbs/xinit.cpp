@@ -1108,7 +1108,7 @@ void WApplication::InitializeBBS() {
   }
   CdHome();
 
-  check_phonenum();                         // dupphone addition
+  check_phonenum(); // dupphone addition
 
   // allocate sub cache
   iscan1(-1, false);
