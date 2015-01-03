@@ -29,12 +29,12 @@ using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-TEST(DataFileTest, Basic) {
+TEST(DataFileTest, Read) {
   struct T { int a; int b; };
   FileHelper file;
   string tmp = file.TempDir();
 
-  File x(tmp, "Basic1");
+  File x(tmp, "Read");
   ASSERT_TRUE(x.Open(File::modeCreateFile|File::modeBinary|File::modeReadWrite));
   T t1{1, 2};
   T t2{3, 4};
@@ -43,8 +43,9 @@ TEST(DataFileTest, Basic) {
   x.Close();
 
   {
-    DataFile<T, sizeof(T)> datafile(tmp, "Basic1", File::modeReadOnly);
+    DataFile<T, sizeof(T)> datafile(tmp, "Read", File::modeReadOnly);
     ASSERT_TRUE(datafile.ok());
+    EXPECT_EQ(2, datafile.number_of_records());
     T t{0, 0};
     EXPECT_TRUE(datafile.Read(&t));
     EXPECT_EQ(1, t.a);
@@ -53,6 +54,40 @@ TEST(DataFileTest, Basic) {
     EXPECT_TRUE(datafile.Read(&t));
     EXPECT_EQ(3, t.a);
     EXPECT_EQ(4, t.b);
-  }
 
+    ASSERT_TRUE(datafile.Seek(1));
+    EXPECT_TRUE(datafile.Read(&t));
+    EXPECT_EQ(3, t.a);
+    EXPECT_EQ(4, t.b);
+
+    ASSERT_TRUE(datafile.Seek(0));
+    EXPECT_TRUE(datafile.Read(&t));
+    EXPECT_EQ(1, t.a);
+    EXPECT_EQ(2, t.b);
+  }
+}
+
+TEST(DataFileTest, Write) {
+  struct T { int a; int b; };
+  FileHelper file;
+  string tmp = file.TempDir();
+
+  T t1{1, 2};
+  T t2{3, 4};
+
+  {
+    DataFile<T, sizeof(T)> datafile(tmp, "Write", File::modeCreateFile|File::modeBinary|File::modeReadWrite);
+    ASSERT_TRUE(datafile.ok());
+    datafile.Write(&t1);
+    datafile.Write(&t2);
+  }
+  File x(tmp, "Write");
+  ASSERT_TRUE(x.Open(File::modeBinary|File::modeReadOnly));
+  x.Read(&t1, sizeof(T));
+  x.Read(&t2, sizeof(T));
+  x.Close();
+  EXPECT_EQ(1, t1.a);
+  EXPECT_EQ(2, t1.b);
+  EXPECT_EQ(3, t2.a);
+  EXPECT_EQ(4, t2.b);
 }
