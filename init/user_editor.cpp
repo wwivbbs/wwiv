@@ -25,15 +25,14 @@
 #include <string>
 #include <vector>
 
+#include "core/strings.h"
+#include "core/datafile.h"
+#include "core/file.h"
+#include "initlib/listbox.h"
 #include "init/init.h"
 #include "initlib/input.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
-
-#include "core/strings.h"
-#include "core/file.h"
-#include "initlib/listbox.h"
-
 #include "sdk/filenames.h"
 
 static const int COL1_POSITION = 17;
@@ -43,7 +42,8 @@ static const int COL1_LINE = 2;
 using std::string;
 using std::unique_ptr;
 using std::vector;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::core;
+using namespace wwiv::strings;
 
 static bool IsUserDeleted(userrec *user) {
   return user->inact & inact_deleted;
@@ -91,24 +91,24 @@ static vector<HelpItem> create_extra_help_items() {
 }
 
 static const int JumpToUser(CursesIO* io, CursesWindow* window) {
-  File file(syscfg.datadir, NAMES_LST);
-  int num_reconds = file.GetLength() / sizeof(smalrec);
-  if (!file.Open(File::modeReadOnly | File::modeBinary, File::shareDenyWrite)) {
-    show_error_no_users(window);
-    return -1;
-  }
-
   vector<ListBoxItem> items;
-  for (int i = 0; i < num_reconds; i++) {
-    smalrec name;
-    int bytes_read = file.Read(&name, sizeof(smalrec));
-    if (bytes_read != sizeof(smalrec)) {
-      messagebox(window, "Error reading smalrec");
+  {
+    DataFile<smalrec> file(syscfg.datadir, NAMES_LST, File::modeReadOnly | File::modeBinary, File::shareDenyWrite);
+    if (!file) {
+      show_error_no_users(window);
       return -1;
     }
-    items.emplace_back(StringPrintf("%s #%d", name.name, name.number), 0, name.number);
+
+    const int num_records = file.number_of_records();
+    for (int i = 0; i < num_records; i++) {
+      smalrec name;
+      if (!file.Read(&name)) {
+        messagebox(window, "Error reading smalrec");
+        return -1;
+      }
+      items.emplace_back(StringPrintf("%s #%d", name.name, name.number), 0, name.number);
+    }
   }
-  file.Close();
   
   ListBox list(io, window, "Select User", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
     static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());

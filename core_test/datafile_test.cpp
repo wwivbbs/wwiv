@@ -44,7 +44,7 @@ TEST(DataFileTest, Read) {
 
   {
     DataFile<T, sizeof(T)> datafile(tmp, "Read", File::modeReadOnly);
-    ASSERT_TRUE(datafile.ok());
+    ASSERT_TRUE(datafile);
     EXPECT_EQ(2, datafile.number_of_records());
     T t{0, 0};
     EXPECT_TRUE(datafile.Read(&t));
@@ -55,13 +55,11 @@ TEST(DataFileTest, Read) {
     EXPECT_EQ(3, t.a);
     EXPECT_EQ(4, t.b);
 
-    ASSERT_TRUE(datafile.Seek(1));
-    EXPECT_TRUE(datafile.Read(&t));
+    EXPECT_TRUE(datafile.Read(1, &t));
     EXPECT_EQ(3, t.a);
     EXPECT_EQ(4, t.b);
 
-    ASSERT_TRUE(datafile.Seek(0));
-    EXPECT_TRUE(datafile.Read(&t));
+    EXPECT_TRUE(datafile.Read(0, &t));
     EXPECT_EQ(1, t.a);
     EXPECT_EQ(2, t.b);
   }
@@ -77,7 +75,7 @@ TEST(DataFileTest, Write) {
 
   {
     DataFile<T, sizeof(T)> datafile(tmp, "Write", File::modeCreateFile|File::modeBinary|File::modeReadWrite);
-    ASSERT_TRUE(datafile.ok());
+    ASSERT_TRUE(datafile);
     datafile.Write(&t1);
     datafile.Write(&t2);
   }
@@ -90,4 +88,15 @@ TEST(DataFileTest, Write) {
   EXPECT_EQ(2, t1.b);
   EXPECT_EQ(3, t2.a);
   EXPECT_EQ(4, t2.b);
+}
+
+TEST(DataFileTest, Read_DoesNotExist) {
+  struct T { int a; };
+  FileHelper file;
+  const string tmp = file.TempDir();
+  DataFile<T> datafile(tmp, "DoesNotExist", File::modeBinary|File::modeReadWrite);
+  if (datafile) {
+    FAIL() << "file should not exist.";
+  }
+  EXPECT_FALSE(datafile);
 }

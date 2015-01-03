@@ -76,7 +76,7 @@ TEST(FileTest, Length_Open) {
     FileHelper helper;
     string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
     File file(path);
-    file.Open(File::modeBinary | File::modeReadOnly);
+    ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
     ASSERT_EQ(kHelloWorld.size(), file.GetLength());
 }
 
@@ -102,7 +102,7 @@ TEST(FileTest, IsDirectory_Open) {
     FileHelper helper;
     string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
     File file(path);
-    file.Open(File::modeBinary | File::modeReadOnly);
+    ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
     ASSERT_FALSE(file.IsDirectory());
     ASSERT_TRUE(file.IsFile());
 }
@@ -122,7 +122,7 @@ TEST(FileTest, LastWriteTime_Open) {
     time_t now = time(nullptr);
     string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
     File file(path);
-    file.Open(File::modeBinary | File::modeReadOnly);
+    ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
     ASSERT_LE(now, file.last_write_time());
 }
 
@@ -131,7 +131,7 @@ TEST(FileTest, Read) {
   FileHelper helper;
   string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
   File file(path);
-  file.Open(File::modeBinary | File::modeReadOnly);
+  ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
   char buf[255];
   ASSERT_EQ(kHelloWorld.length(), file.Read(buf, kHelloWorld.length()));
   buf[11] = 0;
@@ -278,9 +278,28 @@ TEST(FileTest, mkdirs) {
 }
 
 TEST(FileTest, Stream) {
-    FileHelper file;
-    File f(file.TempDir(), "newdir");
-    std::stringstream s;
-    s << f;
-    ASSERT_EQ(f.full_pathname(), s.str());
+  FileHelper file;
+  File f(file.TempDir(), "newdir");
+  std::stringstream s;
+  s << f;
+  ASSERT_EQ(f.full_pathname(), s.str());
+}
+
+TEST(FileTest, IsOpen_Open) {
+  static const string kHelloWorld = "Hello World";
+  FileHelper helper;
+  string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+  File file(path);
+  ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
+  EXPECT_TRUE(file.IsOpen());
+  EXPECT_TRUE((bool) file);
+}
+
+TEST(FileTest, IsOpen_NotOpen) {
+  static const string kHelloWorld = "Hello World";
+  FileHelper helper;
+  string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+  File file(path + "DNE");
+  EXPECT_FALSE(file.IsOpen());
+  EXPECT_FALSE(file);
 }

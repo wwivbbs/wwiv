@@ -26,17 +26,19 @@
 #include <curses.h>
 #include <sys/stat.h>
 
-#include "init/archivers.h"
 #include "bbs/common.h"
-#include "init/init.h"
-#include "initlib/input.h"
 #include "bbs/wconstants.h"
-#include "init/wwivinit.h"
 #include "core/wwivport.h"
+#include "core/datafile.h"
 #include "core/file.h"
 #include "core/wfndfile.h"
+#include "init/archivers.h"
+#include "initlib/input.h"
+#include "init/init.h"
+#include "init/wwivinit.h"
 #include "sdk/filenames.h"
 
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 extern char bbsdir[];
@@ -55,33 +57,31 @@ static void fix_user_rec(userrec *u) {
 }
 
 int number_userrecs() {
-  File file(syscfg.datadir, USER_LST);
-  if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile,
-                File::shareDenyReadWrite)) {
-    return static_cast<int>(file.GetLength() / sizeof(userrec)) - 1;
+  DataFile<userrec> file(syscfg.datadir, USER_LST,
+      File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
+  if (file) {
+    return file.number_of_records() - 1;
   }
   return -1;
 }
 
 void read_user(unsigned int un, userrec *u) {
-  File file(syscfg.datadir, USER_LST);
-  if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite)) {
+  DataFile<userrec> file(syscfg.datadir, USER_LST,
+      File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
+  if (!file) {
     u->inact = inact_deleted;
     fix_user_rec(u);
     return;
   }
 
-  std::size_t nu = (file.GetLength() / syscfg.userreclen) - 1;
+  std::size_t nu = file.number_of_records() - 1;
   if (un > nu) {
-    file.Close();
     u->inact = inact_deleted;
     fix_user_rec(u);
     return;
   }
-  long pos = un * syscfg.userreclen;
-  file.Seek(pos, File::seekBegin);
-  file.Read(u, syscfg.userreclen);
-  file.Close();
+  file.Seek(un);
+  file.Read(u);
   fix_user_rec(u);
 }
 
@@ -90,12 +90,11 @@ void write_user(unsigned int un, userrec *u) {
     return;
   }
 
-  File file(syscfg.datadir, USER_LST);
-  if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-    long pos = un * syscfg.userreclen;
-    file.Seek(pos, File::seekBegin);
-    file.Write(u, syscfg.userreclen);
-    file.Close();
+  DataFile<userrec> file(syscfg.datadir, USER_LST,
+      File::modeReadWrite | File::modeBinary | File::modeCreateFile);
+  if (file) {
+    file.Seek(un);
+    file.Write(u);
   }
 
   user_config SecondUserRec = { 0 };
@@ -104,35 +103,33 @@ void write_user(unsigned int un, userrec *u) {
   SecondUserRec.cHotKeys = 1;
   SecondUserRec.cMenuType = 0;
 
-  File userdat(syscfg.datadir, "user.dat");
-  if (userdat.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone)) {
-    userdat.Seek(un * sizeof(user_config), File::seekBegin);
-    userdat.Write(&SecondUserRec, sizeof(user_config));
-    userdat.Close();
+  DataFile<user_config> userdat(syscfg.datadir, "user.dat",
+      File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone);
+  if (file) {
+    userdat.Seek(un);
+    userdat.Write(&SecondUserRec);
   }
-
 }
 
 void save_status() {
-  File file(syscfg.datadir, STATUS_DAT);
-  if (file.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile)) {
-    file.Write(&status, sizeof(statusrec));
+  DataFile<statusrec> file(syscfg.datadir, STATUS_DAT, File::modeBinary|File::modeReadWrite|File::modeCreateFile);
+  if (file) {
+    file.Write(&status);
   }
 }
 
 /** returns true if status.dat is read correctly */
 bool read_status() {
-  File file(syscfg.datadir, STATUS_DAT);
-  if (file.Open(File::modeBinary|File::modeReadWrite)) {
-    file.Read(&status, sizeof(statusrec));
-    return true;
+  DataFile<statusrec> file(syscfg.datadir, STATUS_DAT, File::modeBinary|File::modeReadWrite);
+  if (file) {
+    return file.Read(&status);
   }
   return false;
 }
 
 void save_config() {
-  File file(CONFIG_DAT);
-  if (file.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile)) {
-    file.Write(&syscfg, sizeof(configrec));
+  DataFile<configrec> file(CONFIG_DAT, File::modeBinary|File::modeReadWrite|File::modeCreateFile);
+  if (file) {
+    file.Write(&syscfg);
   }
 }
