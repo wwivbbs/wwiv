@@ -14,6 +14,7 @@ set(test_sources
   stl_test.cpp
   strings_test.cpp
   transaction_test.cpp
+  datafile_test.cpp
   file_test.cpp
   textfile_test.cpp
 )
