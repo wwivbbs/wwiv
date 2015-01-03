@@ -32,7 +32,6 @@
 #endif
 #include <sys/stat.h>
 
-#include "init/ifcns.h"
 #include "init/init.h"
 #include "initlib/input.h"
 #include "initlib/listbox.h"

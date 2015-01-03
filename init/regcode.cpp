@@ -22,7 +22,6 @@
 
 #include <curses.h>
 
-#include "init/ifcns.h"
 #include "initlib/input.h"
 #include "init/init.h"
 #include "init/utility.h"

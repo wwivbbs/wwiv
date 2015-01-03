@@ -31,7 +31,6 @@
 #include "core/wwivport.h"
 #include "core/file.h"
 #include "init/wwivinit.h"
-#include "init/ifcns.h"
 #include "init/init.h"
 #include "initlib/input.h"
 #include "init/subacc.h"

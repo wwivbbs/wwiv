@@ -25,8 +25,6 @@
 #include <string>
 
 #include "core/strings.h"
-
-#include "init/ifcns.h"
 #include "init/init.h"
 #include "initlib/input.h"
 #include "init/utility.h"
