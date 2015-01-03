@@ -31,7 +31,7 @@
 #include "init/init.h"
 #include "initlib/input.h"
 #include "bbs/wconstants.h"
-#include "wwivinit.h"
+#include "init/wwivinit.h"
 #include "core/wwivport.h"
 #include "core/file.h"
 #include "core/wfndfile.h"
