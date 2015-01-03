@@ -43,9 +43,9 @@ public:
 
   File& file() { return file_; }
   bool ok() { return file_.IsOpen(); }
-  bool Read(RECORD* record) { int num_read = file_.Read(record, SIZE); return num_read == SIZE; }
-  bool Write(const RECORD* record) { int num_written = file_.Write(record, SIZE); return num_written == SIZE; }
-  bool Seek(int record_number) { long offset = file_.Seek(record_number * SIZE, File::seekBegin); return offset == (record_number * SIZE); }
+  bool Read(RECORD* record) { return file_.Read(record, SIZE) == SIZE; }
+  bool Write(const RECORD* record) { return file_.Write(record, SIZE) == SIZE; }
+  bool Seek(int record_number) { return file_.Seek(record_number * SIZE, File::seekBegin) == (record_number * SIZE); }
   int number_of_records() { return file_.GetLength() / SIZE; }
 
 private:

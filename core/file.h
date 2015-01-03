@@ -81,7 +81,6 @@ class File {
 
  private:
   int handle_;
-  bool open_;
   std::string full_path_name_;
   std::string error_text_;
   static  WLogger* logger_;
@@ -100,7 +99,7 @@ class File {
   virtual bool Open(int nFileMode = File::modeDefault,
                     int nShareMode = File::shareUnknown);
   virtual void Close();
-  virtual bool IsOpen() const { return open_; }
+  virtual bool IsOpen() const { return File::IsFileHandleValid(handle_); }
 
   virtual int Read(void * pBuffer, size_t nCount);
   virtual int Write(const void * pBuffer, size_t nCount);
