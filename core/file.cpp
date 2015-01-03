@@ -104,7 +104,7 @@ static const int TRIES = 100;
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
 
-File::File() : open_(false), handle_(File::invalid_handle) {}
+File::File() : handle_(File::invalid_handle) {}
 
 File::File(const string& full_file_name) : File() {
   this->SetName(full_file_name);
@@ -164,8 +164,7 @@ bool File::Open(int nFileMode, int nShareMode) {
     logger_->LogMessage("\rSH_OPEN %s, access=%u, handle=%d.\r\n", full_path_name_.c_str(), nFileMode, handle_);
   }
 
-  open_ = File::IsFileHandleValid(handle_);
-  if (open_) {
+  if (File::IsFileHandleValid(handle_)) {
     flock(handle_, (nShareMode & shareDenyWrite) ? LOCK_EX : LOCK_SH);
   }
 
@@ -173,7 +172,7 @@ bool File::Open(int nFileMode, int nShareMode) {
     this->error_text_ = strerror(errno);
   }
 
-  return open_;
+  return File::IsFileHandleValid(handle_);
 }
 
 void File::Close() {
@@ -181,7 +180,6 @@ void File::Close() {
     flock(handle_, LOCK_UN);
     close(handle_);
     handle_ = File::invalid_handle;
-    open_ = false;
   }
 }
 
@@ -328,16 +326,16 @@ bool File::Exists(const string& directoryName, const string& fileName) {
 
 bool File::ExistsWildcard(const string& wildCard) {
   WFindFile fnd;
-  return (fnd.open(wildCard.c_str(), 0));
+  return fnd.open(wildCard.c_str(), 0);
 }
 
 bool File::SetFilePermissions(const string& fileName, int nPermissions) {
   WWIV_ASSERT(!fileName.empty());
-  return (chmod(fileName.c_str(), nPermissions) == 0) ? true : false;
+  return chmod(fileName.c_str(), nPermissions) == 0;
 }
 
 bool File::IsFileHandleValid(int hFile) {
-  return (hFile != File::invalid_handle) ? true : false;
+  return hFile != File::invalid_handle;
 }
 
 //static
@@ -359,7 +357,6 @@ string File::current_directory() {
 bool File::set_current_directory(const string& dir) {
   return chdir(dir.c_str()) == 0;
 }
-
 
 // static
 void File::MakeAbsolutePath(const string& base, string* relative) {
@@ -422,4 +419,3 @@ std::ostream& operator<<(std::ostream& os, const File& file) {
   os << file.full_pathname();
   return os;
 }
-
