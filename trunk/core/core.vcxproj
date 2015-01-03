@@ -99,6 +99,7 @@
     <ClCompile Include="wfndfile_win32.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="datafile.h" />
     <ClInclude Include="inifile.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="os.h" />

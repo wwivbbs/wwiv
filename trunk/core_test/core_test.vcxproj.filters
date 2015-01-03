@@ -28,6 +28,9 @@
     <ClCompile Include="stl_test.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="datafile_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Helpers">
