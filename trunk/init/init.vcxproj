@@ -86,9 +86,7 @@
     <ClInclude Include="archivers.h" />
     <ClInclude Include="autoval.h" />
     <ClInclude Include="editors.h" />
-    <ClInclude Include="ifcns.h" />
     <ClInclude Include="init.h" />
-    <ClInclude Include="input.h" />
     <ClInclude Include="instance_settings.h" />
     <ClInclude Include="ivardec.h" />
     <ClInclude Include="languages.h" />

@@ -30,7 +30,6 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include "init/ifcns.h"
 #include "init/init.h"
 #include "initlib/input.h"
 #include "initlib/listbox.h"

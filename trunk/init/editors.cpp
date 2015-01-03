@@ -31,7 +31,6 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include "init/ifcns.h"
 #include "init/init.h"
 #include "core/strings.h"
 #include "core/file.h"

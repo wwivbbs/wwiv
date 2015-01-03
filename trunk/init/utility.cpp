@@ -28,7 +28,6 @@
 
 #include "init/archivers.h"
 #include "bbs/common.h"
-#include "init/ifcns.h"
 #include "init/init.h"
 #include "initlib/input.h"
 #include "bbs/wconstants.h"
