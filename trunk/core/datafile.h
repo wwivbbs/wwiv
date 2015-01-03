@@ -32,7 +32,7 @@ public:
   DataFile(const std::string& dir, const std::string& filename,
            int nFileMode = File::modeDefault,
            int nShareMode = File::shareUnknown) 
-      : DataFile(FilePath(dir, filename)) {}
+      : DataFile(FilePath(dir, filename), nFileMode, nShareMode) {}
   explicit DataFile(const std::string& full_file_name,
            int nFileMode = File::modeDefault,
            int nShareMode = File::shareUnknown) 
@@ -45,7 +45,7 @@ public:
   bool ok() { return file_.IsOpen(); }
   bool Read(RECORD* record) { int num_read = file_.Read(record, SIZE); return num_read == SIZE; }
   bool Write(const RECORD* record) { int num_written = file_.Write(record, SIZE); return num_written == SIZE; }
-  bool Seek(int record_number) { file_.Seek(record_number * SIZE, File::seekBegin); }
+  bool Seek(int record_number) { long offset = file_.Seek(record_number * SIZE, File::seekBegin); return offset == (record_number * SIZE); }
   int number_of_records() { return file_.GetLength() / SIZE; }
 
 private:
