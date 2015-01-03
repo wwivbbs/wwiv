@@ -26,7 +26,6 @@
 #include <direct.h>
 #endif
 
-#include "init/ifcns.h"
 #include "init/init.h"
 #include "initlib/input.h"
 #include "core/wwivport.h"

@@ -20,9 +20,6 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ifcns.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="init.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -39,9 +36,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="user_editor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="instance_settings.h">
