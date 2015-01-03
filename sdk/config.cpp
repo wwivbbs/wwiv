@@ -17,9 +17,12 @@
 /**************************************************************************/
 #include "sdk/config.h"
 
+#include "core/datafile.h"
 #include "core/file.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
+
+using namespace wwiv::core;
 
 namespace wwiv {
 namespace sdk {
@@ -27,15 +30,11 @@ namespace sdk {
 Config::Config() : Config(File::current_directory()) {}
 
 Config::Config(const std::string& root_directory)  : initialized_(false), config_(new configrec{}), root_directory_(root_directory) {
-  File configFile(root_directory, CONFIG_DAT);
-  int file_mode = File::modeReadOnly | File::modeBinary;
-  if (!configFile.Open(file_mode)) {
+  DataFile<configrec> configFile(root_directory, CONFIG_DAT, File::modeReadOnly | File::modeBinary);
+  if (!configFile) {
     std::clog << CONFIG_DAT << " NOT FOUND.\r\n";
-    initialized_ = false;
   } else {
-    configFile.Read(config_.get(), sizeof(configrec));
-    configFile.Close();
-    initialized_ = true;
+    initialized_ = configFile.Read(config_.get());
   }
 }
 

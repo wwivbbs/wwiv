@@ -21,12 +21,14 @@
 #include <stdexcept>
 #include <string>
 
+#include "core/datafile.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 namespace wwiv {
@@ -37,23 +39,17 @@ Networks::Networks(const Config& config) {
     throw std::invalid_argument("config must be initialized");
   }
 
-  File file(config.datadir(), NETWORKS_DAT);
-  if (!file.Exists()) {
-    return;
-  }
-
-  int num = file.GetLength() / sizeof(net_networks_rec);
-  file.Open(File::modeBinary|File::modeReadOnly, File::shareDenyNone);
-  if (!file.IsOpen()) {
+  DataFile<net_networks_rec> file(config.datadir(), NETWORKS_DAT, File::modeBinary|File::modeReadOnly, File::shareDenyNone);
+  if (!file) {
     return;
   }
   
-  networks_.resize(num);
-  int num_read = file.Read(&networks_[0], num * sizeof(net_networks_rec));
-  if (num_read != num * sizeof(net_networks_rec)) {
-    std::clog << "failed to read the expected number of bytes: " << num * sizeof(net_networks_rec) << std::endl;
+  const int num_records = file.number_of_records();
+  networks_.resize(num_records);
+  initialized_ = file.Read(&networks_[0], num_records);
+  if (!initialized_) {
+    std::clog << "failed to read the expected number of bytes: " << num_records * sizeof(net_networks_rec) << std::endl;
   }
-
   initialized_ = true;
 }
 
