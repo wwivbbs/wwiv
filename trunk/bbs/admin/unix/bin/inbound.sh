@@ -22,11 +22,21 @@ cd ${WWIVNET}
 fetchmail
 
 # Check for processing in progress and abort if anything is already there
-if [ -f s90.net -o -f S90.NET ]
+if [ -f s${WWIVNET_NODE}.net -o -f S${WWIVNET_NODE}.NET ]
 then
-    echo "ERROR: an S90.net file already exists"
+    echo "ERROR: an S${WWIVNET_NODE}.net file already exists"
     exit 1
 else
+    # make sure our mail directories exist
+    if [ ! -d ${INBOUND} ]
+    then 
+        mkdir -p ${INBOUND}
+    fi
+    if [ ! -d ${PROCESSED} ]
+    then 
+        mkdir -p ${PROCESSED}
+    fi
+    
     # Loop over the contents of the inbound directory 
     for msg in `ls ${INBOUND}`
     do
@@ -36,7 +46,7 @@ else
         sed -i 's/\\/\//g' ${WWIVDATA}/networks.dat
 
         # Check to see if the file got processed successfully
-        if [ -f s90.net -o -f S90.NET ]
+        if [ -f s${WWIVNET_NODE}.net -o -f S${WWIVNET_NODE}.NET ]
         then
             echo "ERROR: ${msg} failed to process successfully. Aborting further processing."
             exit 2
