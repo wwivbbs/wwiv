@@ -15,8 +15,39 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_TEMPLATE_H__
-#define __INCLUDED_SDK_TEMPLATE_H__
+#ifndef __INCLUDED_SDK_PHONE_NUMBERS_H__
+#define __INCLUDED_SDK_PHONE_NUMBERS_H__
+
+#include <string>
+#include <vector>
+#include "sdk/config.h"
+#include "sdk/vardec.h"
+
+namespace wwiv {
+namespace sdk {
+
+class PhoneNumbers {
+public:
+  explicit PhoneNumbers(const Config& config);
+  virtual ~PhoneNumbers();
+
+  bool IsInitialized() const { return initialized_; }
+  bool insert(int user_number, const std::string& phone_number);
+  bool erase(int user_number, const std::string& phone_number);
+  int find(const std::string& phone_number) const;
+
+private:
+  bool Load();
+  bool Save();
+
+  bool initialized_;
+  std::string datadir_;
+  std::vector<phonerec> phones_;
+};
 
 
-#endif  // __INCLUDED_SDK_TEMPLATE_H__
+}
+}
+
+
+#endif  // __INCLUDED_SDK_PHONE_NUMBERS_H__

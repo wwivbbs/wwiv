@@ -99,6 +99,7 @@
   <ItemGroup>
     <ClCompile Include="config_test.cpp" />
     <ClCompile Include="network_test.cpp" />
+    <ClCompile Include="phone_numbers_test.cpp" />
     <ClCompile Include="sdk_helper.cpp" />
     <ClCompile Include="sdk_test_main.cpp" />
   </ItemGroup>

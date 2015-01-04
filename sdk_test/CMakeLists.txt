@@ -7,6 +7,7 @@ include_directories(..)
 set(test_sources
   config_test.cpp
   network_test.cpp
+  phone_numbers_test.cpp
   sdk_helper.cpp
 )
 
