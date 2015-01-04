@@ -41,6 +41,16 @@ then
 fi
 
 #
+# backup Windows binaries since we don't use them and they cause conflicts
+#
+echo 
+echo "Moving Windows binaries"
+echo "Moving Windows binaries" >> ${WWIVBASE}/$LOGFILE 2>&1
+mkdir win-bins
+mv *.exe win-bins
+
+
+#
 # Unzip the data files
 #
 echo
