@@ -37,18 +37,13 @@ using std::unique_ptr;
 using namespace wwiv::strings;
 
 // Local Functions
-
 bool same_email(tmpmailrec * tm, mailrec * m);
 void purgemail(tmpmailrec * mloc, int mw, int *curmail, mailrec * m1, slrec * ss);
 void resynch_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
 bool read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
 void add_netsubscriber(int nSystemNumber);
 
-//
 // Implementation
-//
-
-
 bool same_email(tmpmailrec * tm, mailrec * m) {
   if (tm->fromsys != m->fromsys ||
       tm->fromuser != m->fromuser ||
@@ -56,12 +51,11 @@ bool same_email(tmpmailrec * tm, mailrec * m) {
       m->touser != session()->usernum ||
       tm->daten != m->daten ||
       tm->index == -1 ||
-      memcmp(&tm->msg, &m->msg, sizeof(messagerec) != 0)) {
+      memcmp(&tm->msg, &m->msg, sizeof(messagerec)) != 0) {
     return false;
   }
   return true;
 }
-
 
 void purgemail(tmpmailrec * mloc, int mw, int *curmail, mailrec * m1, slrec * ss) {
   mailrec m;
