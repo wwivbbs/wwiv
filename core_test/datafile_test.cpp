@@ -44,7 +44,7 @@ TEST(DataFileTest, Read) {
 
   {
     DataFile<T, sizeof(T)> datafile(tmp, "Read", File::modeReadOnly);
-    ASSERT_TRUE(datafile);
+    ASSERT_TRUE((bool) datafile);
     EXPECT_EQ(2, datafile.number_of_records());
     T t{0, 0};
     EXPECT_TRUE(datafile.Read(&t));
@@ -75,7 +75,7 @@ TEST(DataFileTest, Write) {
 
   {
     DataFile<T, sizeof(T)> datafile(tmp, "Write", File::modeCreateFile|File::modeBinary|File::modeReadWrite);
-    ASSERT_TRUE(datafile);
+    ASSERT_TRUE((bool) datafile);
     datafile.Write(&t1);
     datafile.Write(&t2);
   }
