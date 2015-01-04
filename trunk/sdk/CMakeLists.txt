@@ -6,6 +6,7 @@ include_directories(..)
 set(COMMON_SOURCES
   config.cpp
   networks.cpp
+  phone_numbers.cpp
   )
 
 add_library(sdk ${COMMON_SOURCES})

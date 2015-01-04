@@ -19,6 +19,9 @@
     <ClCompile Include="sdk_helper.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="phone_numbers_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sdk_helper.h">
