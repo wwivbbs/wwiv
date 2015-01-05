@@ -29,7 +29,7 @@ protected:
   void Start() {
     files_.Mkdir("network");
     const string line("@1 example.com");
-    files_.CreateTempFile("addresses.binkp", line);
+    files_.CreateTempFile("binkp.net", line);
     const string network_dir = files_.DirName("network");
     BinkConfig* dummy_config = new BinkConfig(ORIGINATING_ADDRESS, "Dummy", network_dir);
     Callout* dummy_callout = new Callout(network_dir);
