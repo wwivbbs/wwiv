@@ -91,6 +91,11 @@ echo "Configuring system scripts" >> ${WWIVBASE}/$LOGFILE 2>&1
 tar zxvf unix-scripts.tgz >> ${WWIVBASE}/$LOGFILE 2>&1
 
 echo
+echo "Setting file permissions"
+echo "Setting file permissions" >> ${WWIVBASE}/$LOGFILE 2>&1
+chmod 600 .fetchmailrc .procmailrc >> ${WWIVBASE}/$LOGFILE 2>&1
+
+echo
 echo "Setting scripts to use your install location ${WWIVBASE}"
 echo "Setting scripts to use your install location ${WWIVBASE}" >> ${WWIVBASE}/$LOGFILE 2>&1
 for i in bin/callout.py in.nodemgr wwiv-service .procmailrc .wwivrc
