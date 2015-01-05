@@ -39,6 +39,18 @@ namespace WWIV5TelnetServer
         private void PreferencesDialog_Load(object sender, EventArgs e)
         {
             Properties.Settings.Default.Reload();
+            highNodeSpinner.Value = Properties.Settings.Default.endNode;
+            autostartCheckBox.Checked = Properties.Settings.Default.autostart;
+            executableField.Text = Properties.Settings.Default.executable;
+            homeField.Text = Properties.Settings.Default.homeDirectory;
+            localNodeSpinner.Value = Properties.Settings.Default.localNode;
+            parametersField.Text = Properties.Settings.Default.parameters;
+            portSpinner.Value = Properties.Settings.Default.port;
+            lowNodeSpinner.Value = Properties.Settings.Default.startNode;
+            balloonsCheckBox.Checked = Properties.Settings.Default.useBalloons;
+            beginDayCheckBox.Checked = Properties.Settings.Default.useBegindayEvent;
+            runEventsCheckbox.Checked = Properties.Settings.Default.useEvents;
+            launchMinimizedCheckBox.Checked = Properties.Settings.Default.launchMinimized;
         }
 
         private void ok_Clicked(object sender, EventArgs e)
