@@ -341,6 +341,15 @@ BinkState BinkP::AuthRemote() {
   // Check that the address matches who we thought we called.
   LOG << "       remote address_list: " << address_list_;
   if (side_ == BinkSide::ANSWERING) {
+    int caller_node = node_number_from_address_list(address_list_, config_->network_name());
+    const net_call_out_rec* callout_record = callout_->node_config_for(caller_node);
+    if (callout_record == nullptr) {
+      // We don't have a callout.net entry for this caller. Fail the connection
+      send_command_packet(BinkpCommands::M_ERR, 
+          StrCat("Error (NETWORKB-0002): Unexpected Address: ", address_list_));
+      // TODO(rushfan): Do we need a real error state (same TODO as below)
+      return BinkState::UNKNOWN;
+    }
     return BinkState::WAIT_PWD;
   }
 
@@ -351,7 +360,7 @@ BinkState BinkP::AuthRemote() {
       BinkState::IF_SECURE : BinkState::WAIT_PWD;
   } else {
     send_command_packet(BinkpCommands::M_ERR, 
-      StrCat("Unexpected Address: ", address_list_));
+      StrCat("Error (NETWORKB-0001): Unexpected Address: ", address_list_));
     // TODO(rushfan): add error state?
     return BinkState::UNKNOWN;
   }
@@ -367,6 +376,7 @@ BinkState BinkP::TransferFiles() {
   for (auto file : list) {
     SendFilePacket(file);
   }
+  SendFilePacket(new InMemoryTransferFile("foo\\bad.guy", "I'm a bad boy"));
   // Quickly let the inbound event loop percolate.
   for (int i=0; i < 5; i++) {
     process_frames(milliseconds(50));
