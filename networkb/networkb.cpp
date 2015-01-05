@@ -9,7 +9,7 @@
 // Answering Side:
 // \Debug\networkb.exe --receive --network=rushnet
 //
-// addresses.binkp:
+// binkp.net:
 // @1 localhost:24554 -
 // @2 localhost:24554 -
 //

@@ -46,7 +46,7 @@ TEST(BinkConfigTest, NodeConfig) {
   FileHelper files;
   files.Mkdir("network");
   const string line("@2 example.com");
-  files.CreateTempFile("network/addresses.binkp", line);
+  files.CreateTempFile("network/binkp.net", line);
   const string network_dir = files.DirName("network");
   BinkConfig config(1, "mybbs", network_dir);
   const BinkNodeConfig* node_config = config.node_config_for(2);
