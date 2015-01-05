@@ -180,7 +180,7 @@ unsigned int WIOTelnet::read(char *buffer, unsigned int count) {
 }
 
 unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTranslation) {
-  clog << "WIOTelnet::write(" << count << ") ";
+  //clog << "WIOTelnet::write(" << count << ") ";
   unique_ptr<char[]> tmp_buffer(new char[count * 2 + 100]);
   memset(tmp_buffer.get(), 0, count * 2 + 100);
   int nCount = count;
