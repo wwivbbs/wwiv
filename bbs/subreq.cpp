@@ -42,26 +42,26 @@ static void maybe_netmail(xtrasubsnetrec * ni, bool bAdd) {
   }
 }
 
-static void sub_req(int main_type, int minor_type, int tosys, char *extra) {
+static void sub_req(uint16_t main_type, uint16_t minor_type, int tosys, char *extra) {
   net_header_rec nh;
 
   nh.tosys = static_cast<unsigned short>(tosys);
   nh.touser = 1;
   nh.fromsys = net_sysnum;
   nh.fromuser = 1;
-  nh.main_type = static_cast<unsigned short>(main_type);
-  nh.minor_type = static_cast<unsigned short>(minor_type) ;
+  nh.main_type = main_type;
+  nh.minor_type = minor_type;
   nh.list_len = 0;
   nh.daten = static_cast<unsigned long>(time(nullptr));
-  if (!minor_type) {
+  nh.method = 0;
+  if (minor_type == 0) {
+    // This is an alphanumeric sub type.
     nh.length = strlen(extra) + 1;
+    send_net(&nh, nullptr, extra, nullptr);
   } else {
     nh.length = 1;
-    extra[0] = 0;
+    send_net(&nh, nullptr, "", nullptr);
   }
-  nh.method = 0;
-
-  send_net(&nh, nullptr, extra, nullptr);
 
   bout.nl();
   if (main_type == main_type_sub_add_req) {
