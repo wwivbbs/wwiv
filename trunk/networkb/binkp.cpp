@@ -376,7 +376,6 @@ BinkState BinkP::TransferFiles() {
   for (auto file : list) {
     SendFilePacket(file);
   }
-  SendFilePacket(new InMemoryTransferFile("foo\\bad.guy", "I'm a bad boy"));
   // Quickly let the inbound event loop percolate.
   for (int i=0; i < 5; i++) {
     process_frames(milliseconds(50));
