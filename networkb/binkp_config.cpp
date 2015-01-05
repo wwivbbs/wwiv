@@ -55,7 +55,7 @@ bool ParseBinkConfigLine(const string& line, uint16_t* node, BinkNodeConfig* con
 }
 
 static bool ParseAddressesFile(std::map<uint16_t, BinkNodeConfig>* node_config_map, const string network_dir) {
-  TextFile node_config_file(network_dir, "addresses.binkp", "rt");
+  TextFile node_config_file(network_dir, "binkp.net", "rt");
   if (node_config_file.IsOpen()) {
     // Only load the configuration file if it exists.
     string line;
