@@ -24,6 +24,10 @@ namespace net {
 WFileTransferFile::WFileTransferFile(const string& filename,
 				     std::unique_ptr<File>&& file)
   : TransferFile(filename, file->Exists() ? file->last_write_time() : time(nullptr)), file_(std::move(file)) {
+  if (filename.find(File::pathSeparatorChar) != string::npos) {
+    // Don't allow filenames with slashes in it.
+    throw std::invalid_argument("filename can not be relative pathed");
+  }
 }
 
 WFileTransferFile::~WFileTransferFile() {}
@@ -59,6 +63,10 @@ bool WFileTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
 
 bool WFileTransferFile::WriteChunk(const char* chunk, size_t size) {
   if (!file_->IsOpen()) {
+    if (file_->Exists()) {
+      // Don't overwrite an existing file.
+      return false;
+    }
     if (!file_->Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
       return false;
     }
