@@ -367,11 +367,18 @@ BinkState BinkP::AuthRemote() {
 }
 
 BinkState BinkP::TransferFiles() {
-  LOG << "STATE: TransferFiles";
+  // This is only valid if we are the SENDER.
+  // TODO(rushfan): make this a method on the class.
+  int remote_node = expected_remote_node_;
+  if (side_ == BinkSide::ANSWERING) {
+    remote_node = node_number_from_address_list(address_list_, config_->network_name());
+  }
+
+  LOG << "STATE: TransferFiles to node: " << remote_node;
   // Quickly let the inbound event loop percolate.
   process_frames(milliseconds(100));
 
-  SendFiles file_sender(config_->network_dir(), expected_remote_node_);
+  SendFiles file_sender(config_->network_dir(), remote_node);
   const auto list = file_sender.CreateTransferFileList();
   for (auto file : list) {
     SendFilePacket(file);
