@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_CORE_LOG_H__
 #define __INCLUDED_CORE_LOG_H__
 
+#include <functional>
 #include <map>
 #include <string>
 #include <sstream>
@@ -42,11 +43,13 @@ public:
   static void set_filename(const std::string& kind, const std::string& filename) { fn_map_[kind] = filename; }
   static std::string date_time();
   static void ExitLogger();
+  static void DefaultDisplay(const std::string& s);
 
 private:
   const std::string kind_;
   std::ostringstream stream_;
   static std::map<std::string, std::string> fn_map_;
+  std::function<void(std::string&)> display_fn_;
 };
 
 }
