@@ -49,7 +49,7 @@ private:
   const std::string kind_;
   std::ostringstream stream_;
   static std::map<std::string, std::string> fn_map_;
-  std::function<void(std::string&)> display_fn_;
+  std::function<void(const std::string&)> display_fn_;
 };
 
 }
