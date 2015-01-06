@@ -59,7 +59,8 @@ Logger::~Logger() {
 
 static std::string exit_filename;
 
-static void ExitLogger() {
+//static
+void Logger::ExitLogger() {
   time_t t = time(nullptr);
   Logger() << exit_filename << " exiting at " << asctime(localtime(&t));
 }
@@ -81,7 +82,6 @@ void Logger::Init(int argc, char** argv) {
   Logger() << filename << " starting at " << l;
 
   exit_filename = filename;
-  atexit(ExitLogger);
 }
 
 // static

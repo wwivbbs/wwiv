@@ -41,6 +41,7 @@ public:
   static void Init(int argc, char** argv);
   static void set_filename(const std::string& kind, const std::string& filename) { fn_map_[kind] = filename; }
   static std::string date_time();
+  static void ExitLogger();
 
 private:
   const std::string kind_;
