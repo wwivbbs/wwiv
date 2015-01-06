@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
       }
     }
 
-    string network_name = args.at("network");
+    const string network_name = args.at("network");
     if (network_name.empty()) {
       LOG << "--network=[network name] must be specified.";
       ShowHelp();
@@ -151,6 +151,4 @@ int main(int argc, char** argv) {
   } catch (const exception& e) {
     LOG << e.what();
   }
-  std::clog << "outta here." << std::endl;
-  
 }

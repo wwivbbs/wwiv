@@ -42,7 +42,7 @@ map<string, string> Logger::fn_map_;
 
 Logger::Logger() : Logger("I") {}
 
-Logger::Logger(const string& kind) : kind_(kind) { 
+Logger::Logger(const string& kind) : kind_(kind), display_fn_(Logger::DefaultDisplay) { 
   stream_ << kind_ << date_time() << " "; 
 }
 
@@ -54,7 +54,7 @@ Logger::~Logger() {
   } else {
     out << stream_.str() << endl;
   }
-  clog << stream_.str() << endl;
+  display_fn_(stream_.str());
 }
 
 static std::string exit_filename;
@@ -64,6 +64,12 @@ void Logger::ExitLogger() {
   time_t t = time(nullptr);
   Logger() << exit_filename << " exiting at " << asctime(localtime(&t));
 }
+
+// static
+void Logger::DefaultDisplay(const std::string& s) {
+  clog << s << endl;
+}
+
 
 // static
 void Logger::Init(int argc, char** argv) {
