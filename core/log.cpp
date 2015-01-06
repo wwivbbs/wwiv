@@ -70,7 +70,6 @@ void Logger::DefaultDisplay(const std::string& s) {
   clog << s << endl;
 }
 
-
 // static
 void Logger::Init(int argc, char** argv) {
   string filename(argv[0]);
