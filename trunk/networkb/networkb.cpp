@@ -25,6 +25,7 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/scope_exit.h"
 
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
@@ -78,6 +79,8 @@ static map<string, string> ParseArgs(int argc, char** argv) {
 int main(int argc, char** argv) {
   try {
     Logger::Init(argc, argv);
+    wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
+
     map<string, string> args = ParseArgs(argc, argv);
 
     for (const auto& arg : args) {
@@ -148,5 +151,6 @@ int main(int argc, char** argv) {
   } catch (const exception& e) {
     LOG << e.what();
   }
+  std::clog << "outta here." << std::endl;
   
 }
