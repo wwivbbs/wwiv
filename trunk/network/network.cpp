@@ -8,14 +8,6 @@
 // @2 localhost:24554 -
 //
 
-#include "networkb/binkp.h"
-#include "networkb/binkp_config.h"
-#include "networkb/connection.h"
-#include "networkb/ppp_config.h"
-
-#include "sdk/config.h"
-#include "sdk/networks.h"
-
 #include <cctype>
 #include <cstdlib>
 #include <fcntl.h>
@@ -27,8 +19,16 @@
 
 #include "core/file.h"
 #include "core/log.h"
+#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "networkb/binkp.h"
+#include "networkb/binkp_config.h"
+#include "networkb/connection.h"
+#include "networkb/ppp_config.h"
+
+#include "sdk/config.h"
+#include "sdk/networks.h"
 
 using std::cout;
 using std::endl;
@@ -92,6 +92,7 @@ static int LaunchOldNetworkingStack(const std::string exe, int argc, char** argv
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
   try {
+    wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
     map<string, string> args = ParseArgs(argc, argv);
 
     for (const auto& arg : args) {
