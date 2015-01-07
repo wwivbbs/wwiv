@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "bbs/version.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/stl.h"
@@ -234,9 +235,15 @@ BinkState BinkP::ConnInit() {
   return BinkState::WAIT_CONN;
 }
 
+static string wwiv_version_string() {
+  return StrCat(wwiv_version, " (", wwiv_date, ")");
+
+}
+
 BinkState BinkP::WaitConn() {
   LOG << "STATE: WaitConn";
   send_command_packet(BinkpCommands::M_NUL, "OPT wwivnet");
+  send_command_packet(BinkpCommands::M_NUL, StrCat("WWIVVER ", wwiv_version_string()));
   send_command_packet(BinkpCommands::M_NUL, StrCat("SYS ", config_->system_name()));
   send_command_packet(BinkpCommands::M_NUL, "ZYZ Unknown Sysop");
   send_command_packet(BinkpCommands::M_NUL, "VER networkb/0.0 binkp/1.0");

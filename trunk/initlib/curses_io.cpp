@@ -27,6 +27,7 @@
 
 #include "curses.h"
 #include "curses_io.h"
+#include "bbs/version.h"
 #include "core/strings.h"
 
 #ifdef _WIN32
@@ -37,11 +38,6 @@
 using std::unique_ptr;
 using std::string;
 using namespace wwiv::strings;
-
-extern const char *wwiv_version;
-extern const char *beta_version;
-extern const char *wwiv_date;
-extern unsigned short wwiv_num_version;
 
 static const char* copyrightString = "Copyright (c) 1998-2015, WWIV Software Services";
 
