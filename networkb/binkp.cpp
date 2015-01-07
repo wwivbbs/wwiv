@@ -82,7 +82,7 @@ public:
     string dir = network_directory_;
     File::EnsureTrailingSlash(&dir);
     const string s_node_net = StringPrintf("S%d.NET", destination_node_);
-    const string search_path = StrCat(dir, File::pathSeparatorString, s_node_net);
+    const string search_path = StrCat(dir, s_node_net);
     LOG << "       CreateTransferFileList: search_path: " << search_path;
     WFindFile fnd;
     bool found = fnd.open(search_path, 0);
