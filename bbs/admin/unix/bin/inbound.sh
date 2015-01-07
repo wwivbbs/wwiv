@@ -14,9 +14,9 @@
 # there's likely a problem (eg, dosemu barfed) so we should
 # stop and review/report
 
-source ~/.wwivrc
+source REPLACE-WWIVBASE/.wwivrc
 
-cd ${WWIVNET}
+cd ${WWIVNET_DIR}
 
 # get new mail (if any)
 fetchmail
@@ -41,9 +41,9 @@ else
     for msg in `ls ${INBOUND}`
     do
         uudecode ${INBOUND}/${msg}
-        sed -i 's/\//\\/g' ${WWIVDATA}/networks.dat
+        sed -i 's/\//\\/g' ${WWIVDATA_DIR}/networks.dat
         dosemu -quiet -dumb -E inbound.bat 2>/dev/null | sed -n -e '/^net37/,$'p -e '/PPP Project/,$'p
-        sed -i 's/\\/\//g' ${WWIVDATA}/networks.dat
+        sed -i 's/\\/\//g' ${WWIVDATA_DIR}/networks.dat
 
         # Check to see if the file got processed successfully
         if [ -f s${WWIVNET_NODE}.net -o -f S${WWIVNET_NODE}.NET ]

@@ -7,7 +7,7 @@ LOGFILE=procmail.log
 
 :0:
 * ^Subject:.*UUE
-REPLACE-WWIVBASE/data/wwivnet/inbound/
+REPLACE-WWIVBASE/wwivnet/inbound/
 
 :0:
 ${DEFAULT}

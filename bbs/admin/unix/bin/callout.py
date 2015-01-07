@@ -15,8 +15,8 @@ import shutil
 #config variables
 HOST="skulls.wwivbbs.com"
 PORT=2525
-queuedir="REPLACE-WWIVBASE/data/wwivnet/mqueue/"
-sentdir="REPLACE-WWIVBASE/data/wwivnet/sent/"
+queuedir="REPLACE-WWIVBASE/wwivnet/mqueue/"
+sentdir="REPLACE-WWIVBASE/wwivnet/sent/"
 
 def sendstuff():
      tn=telnetlib.Telnet( HOST, PORT )

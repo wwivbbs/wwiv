@@ -4,7 +4,7 @@
 # set up the nodemgr env so the wwiv user can find
 # everything it needs
 
-. REPLACE-WWIVBASE/.wwivrc
+source REPLACE-WWIVBASE/.wwivrc
 
-cd ${WWIVBASE}
+cd ${WWIV_DIR}
 ./nodemgr
