@@ -5,11 +5,11 @@
 # script to manage all the steps for processing WWIVnet packets
 #
 
-source ~/.wwivrc
+source REPLACE-WWIVBASE/.wwivrc
 
 date
 
-cd ${WWIVBASE}
-${WWIVBASE}/bin/inbound.sh
-${WWIVBASE}/bin/outbound.sh
+cd ${WWIV_DIR}
+${WWIV_DIR}/bin/inbound.sh
+${WWIV_DIR}/bin/outbound.sh
 

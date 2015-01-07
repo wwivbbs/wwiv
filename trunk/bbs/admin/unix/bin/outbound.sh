@@ -5,9 +5,9 @@
 # Process all outgoing mail messages
 # 
 
-source ~/.wwivrc
+source REPLACE-WWIVBASE/.wwivrc
 
-cd ${WWIVNET}
+cd ${WWIVNET_DIR}
 
 # Get array list of SNN files to process
 sxx_list=( `find . -maxdepth 1 -type f -iname "s*.net"` )
@@ -20,9 +20,9 @@ then
     else
         echo "Found ${#sxx_list[@]} files to process: ${sxx_list[@]}"
     fi
-    sed -i 's/\//\\/g' ${WWIVDATA}/networks.dat
+    sed -i 's/\//\\/g' ${WWIVDATA_DIR}/networks.dat
     dosemu -quiet -dumb -E network.bat 2>/dev/null | sed -n -e '/^net37/,$'p -e '/PPP Project/,$'p
-    sed -i 's/\\/\//g' ${WWIVDATA}/networks.dat
+    sed -i 's/\\/\//g' ${WWIVDATA_DIR}/networks.dat
 
     # Check to see if the files got processed successfully
     sxx_list=( `find . -maxdepth 1 -type f -iname "s*.net"` )
@@ -31,7 +31,7 @@ then
         echo "ERROR: failed to process all files successfully. Aborting further processing."
         exit 2
     else
-        ${WWIVBASE}/bin/callout.py
+        ${WWIV_DIR}/bin/callout.py
     fi
 else
     echo "No Mail to send"
