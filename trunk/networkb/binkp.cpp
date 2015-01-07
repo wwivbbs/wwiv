@@ -84,14 +84,12 @@ public:
     const string s_node_net = StringPrintf("S%d.NET", destination_node_);
     const string search_path = StrCat(dir, s_node_net);
     LOG << "       CreateTransferFileList: search_path: " << search_path;
-    WFindFile fnd;
-    bool found = fnd.open(search_path, 0);
-    while (found) {
-      result.push_back(new WFileTransferFile(fnd.GetFileName(), unique_ptr<File>(new File(network_directory_, fnd.GetFileName()))));
-      LOG << "       CreateTransferFileList: found file: " << fnd.GetFileName();
-      found = fnd.next();
+    if (File::Exists(search_path)) {
+      File file (search_path);
+      const string basename = file.GetName();
+      result.push_back(new WFileTransferFile(basename, unique_ptr<File>(new File(network_directory_, basename))));
+      LOG << "       CreateTransferFileList: found file: " << basename;
     }
-    fnd.close();
 
     return result;
   }
