@@ -1060,10 +1060,14 @@ void WApplication::QuitBBS() {
 }
 
 void WApplication::ExitBBSImpl(int nExitLevel) {
-  sysoplog("", false);
-  sysoplogfi(false, "WWIV %s, inst %u, taken down at %s on %s with exit code %d.",
-             wwiv_version, GetInstanceNumber(), times(), fulldate(), nExitLevel);
-  sysoplog("", false);
+  if (nExitLevel != WApplication::exitLevelOK && nExitLevel != WApplication::exitLevelQuit) {
+    // Only log the exiting at absnomal error levels, since we see lots of exiting statements
+    // in the logs that don't correspond to sessions every being created (network probers, etc).
+    sysoplog("", false);
+    sysoplogfi(false, "WWIV %s, inst %u, taken down at %s on %s with exit code %d.",
+               wwiv_version, GetInstanceNumber(), times(), fulldate(), nExitLevel);
+    sysoplog("", false);
+  }
   catsl();
   write_inst(INST_LOC_DOWN, 0, INST_FLAGS_NONE);
   clog << "\r\n";
