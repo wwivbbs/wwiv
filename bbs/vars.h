@@ -21,6 +21,7 @@
 
 #include <ctime>
 
+#include "bbs/version.h"
 #include "sdk/vardec.h"
 #include "sdk/net.h"
 
@@ -176,13 +177,6 @@ __EXTRN__ confrec *subconfs, *dirconfs;
 __EXTRN__ int iia;
 
 __EXTRN__ int32_t last_iia;
-
-// from version.cpp
-extern const char *wwiv_version;
-extern const char *beta_version;
-extern const char *wwiv_date;
-extern unsigned short wwiv_num_version;
-
 
 // confedit
 #define CONF_SUBS 1
