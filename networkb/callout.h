@@ -35,6 +35,7 @@ class Callout {
   Callout(std::initializer_list<net_call_out_rec> l);
   virtual ~Callout();
   const net_call_out_rec* node_config_for(int node) const;
+  Callout& operator=(const Callout& rhs) { node_config_ = rhs.node_config_; }
 
  private:
   std::map<uint16_t, net_call_out_rec> node_config_;

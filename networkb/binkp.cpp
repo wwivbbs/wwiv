@@ -44,7 +44,7 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace net {
 
-string expected_password_for(Callout* callout, int node) {
+string expected_password_for(const Callout* callout, int node) {
   const net_call_out_rec* con = callout->node_config_for(node);
   string password("-");  // default password
   if (con != nullptr) {
@@ -60,9 +60,11 @@ string expected_password_for(Callout* callout, int node) {
 }
 
 int node_number_from_address_list(const string& network_list, const string& network_name) {
+  LOG << "       node_number_from_address_list: '" << network_list << "'; network_name: " << network_name;
   vector<string> v = SplitString(network_list, " ");
   for (auto s : v) {
     StringTrim(&s);
+    LOG << "       node_number_from_address_list(s): '" << s << "'";
     if (ends_with(s, StrCat("@", network_name)) && starts_with(s, "20000:20000/")) {
       s = s.substr(12);
       s = s.substr(0, s.find('/'));
@@ -70,6 +72,17 @@ int node_number_from_address_list(const string& network_list, const string& netw
     }
   }
   return -1;
+}
+
+std::string network_name_from_single_address(const std::string& network_list) {
+  vector<string> v = SplitString(network_list, " ");
+  string s = v.front();
+  string::size_type index = s.find_last_of("@");
+  if (index == string::npos) {
+    // default to wwivnet
+    return "wwivnet";
+  }
+  return s.substr(index+1);
 }
 
 class SendFiles {
@@ -100,10 +113,13 @@ private:
   const uint16_t destination_node_;
 };
 
-BinkP::BinkP(Connection* conn, BinkConfig* config, Callout* callout, BinkSide side,
+BinkP::BinkP(Connection* conn, BinkConfig* config, std::map<const string, Callout>& callouts, BinkSide side,
         int expected_remote_node,
         received_transfer_file_factory_t& received_transfer_file_factory)
-  : conn_(conn), config_(config), callout_(callout), side_(side),
+  : conn_(conn),
+    config_(config), 
+    callouts_(callouts),
+    side_(side),
     own_address_(config->node_number()), 
     expected_remote_node_(expected_remote_node), 
     error_received_(false),
@@ -249,8 +265,25 @@ BinkState BinkP::WaitConn() {
   send_command_packet(BinkpCommands::M_NUL, "VER networkb/0.0 binkp/1.0");
   send_command_packet(BinkpCommands::M_NUL, "LOC Unknown");
 
-  send_command_packet(BinkpCommands::M_NUL, StringPrintf("WWIV @%u.%s", config_->node_number(), config_->network_name().c_str()));
-  send_command_packet(BinkpCommands::M_ADR, StringPrintf("20000:20000/%d@%s", config_->node_number(), config_->network_name().c_str()));
+  string network_addresses;
+  if (side_ == BinkSide::ANSWERING) {
+    // Present all addresses on answering side.
+    for (const auto net : config_->networks().networks()) {
+      send_command_packet(BinkpCommands::M_NUL,
+          StringPrintf("WWIV @%u.%s", net.sysnum, net.name));
+      if (!network_addresses.empty()) {
+        network_addresses.append(" ");
+      }
+      network_addresses += StringPrintf("20000:20000/%d@%s", net.sysnum, net.name);
+    }
+  } else {
+    // Present single primary address.
+    send_command_packet(BinkpCommands::M_NUL,
+        StringPrintf("WWIV @%u.%s", config_->node_number(), config_->callout_network_name().c_str()));
+    const auto net = config_->networks()[config_->callout_network_name()];
+    network_addresses = StringPrintf("20000:20000/%d@%s", net.sysnum, net.name);
+  }
+  send_command_packet(BinkpCommands::M_ADR, network_addresses);
 
   // Try to process any inbound frames before leaving this state.
   process_frames(milliseconds(100));
@@ -259,8 +292,11 @@ BinkState BinkP::WaitConn() {
 }
 
 BinkState BinkP::SendPasswd() {
+  // This is on the sending side.
   LOG << "STATE: SendPasswd";
-  const string password = expected_password_for(callout_, expected_remote_node_);
+  const string network_name(remote_network_name());
+  Callout callout = callouts_.at(network_name);
+  const string password = expected_password_for(&callout, expected_remote_node_);
   send_command_packet(BinkpCommands::M_PWD, password);
   return BinkState::WAIT_ADDR;
 }
@@ -284,9 +320,13 @@ BinkState BinkP::PasswordAck() {
     LOG << "**** ERROR: WaitPwd Called on ORIGINATING side";
   }
 
-  int remote_node = node_number_from_address_list(address_list_, config_->network_name());
+  // TODO(rushfan): we need to use the network name we matched not the one that config thinks.
+  const string network_name = remote_network_name();
+  int remote_node = node_number_from_address_list(address_list_, network_name);
   LOG << "       remote node: " << remote_node;
-  const string expected_password = expected_password_for(callout_, remote_node);
+
+  Callout callout(callouts_.at(network_name));
+  const string expected_password = expected_password_for(&callout, remote_node);
   LOG << "STATE: PasswordAck";
   LOG << "       expected_password = '" << expected_password << "'";
   if (remote_password_ == expected_password) {
@@ -347,9 +387,11 @@ BinkState BinkP::AuthRemote() {
   LOG << "STATE: AuthRemote";
   // Check that the address matches who we thought we called.
   LOG << "       remote address_list: " << address_list_;
+  const string remote_network_name(remote_network_name());
   if (side_ == BinkSide::ANSWERING) {
-    int caller_node = node_number_from_address_list(address_list_, config_->network_name());
-    const net_call_out_rec* callout_record = callout_->node_config_for(caller_node);
+    int caller_node = node_number_from_address_list(address_list_, remote_network_name);
+    LOG << "       remote_network_name: " << remote_network_name << "; caller_node: " << caller_node;
+    const net_call_out_rec* callout_record = callouts_.at(remote_network_name).node_config_for(caller_node);
     if (callout_record == nullptr) {
       // We don't have a callout.net entry for this caller. Fail the connection
       send_command_packet(BinkpCommands::M_ERR, 
@@ -360,7 +402,7 @@ BinkState BinkP::AuthRemote() {
     return BinkState::WAIT_PWD;
   }
 
-  const string expected_ftn = StringPrintf("20000:20000/%d@%s", expected_remote_node_,  config_->network_name().c_str());
+  const string expected_ftn = StringPrintf("20000:20000/%d@%s", expected_remote_node_, remote_network_name.c_str());
   LOG << "       expected_ftn: " << expected_ftn;
   if (address_list_.find(expected_ftn) != string::npos) {
     return (side_ == BinkSide::ORIGINATING) ?
@@ -377,15 +419,15 @@ BinkState BinkP::TransferFiles() {
   // This is only valid if we are the SENDER.
   // TODO(rushfan): make this a method on the class.
   int remote_node = expected_remote_node_;
+  const string remote_network_name(remote_network_name());
   if (side_ == BinkSide::ANSWERING) {
-    remote_node = node_number_from_address_list(address_list_, config_->network_name());
+    remote_node = node_number_from_address_list(address_list_, remote_network_name);
   }
 
   LOG << "STATE: TransferFiles to node: " << remote_node;
   // Quickly let the inbound event loop percolate.
   process_frames(milliseconds(100));
-
-  SendFiles file_sender(config_->network_dir(), remote_node);
+  SendFiles file_sender(config_->network_dir(remote_network_name), remote_node);
   const auto list = file_sender.CreateTransferFileList();
   for (auto file : list) {
     SendFilePacket(file);
@@ -480,8 +522,9 @@ bool BinkP::HandleFileRequest(const string& request_line) {
   long bytes_received = starting_offset;
   bool done = false;
 
+  const string net = remote_network_name();
   try {
-    unique_ptr<TransferFile> received_file(received_transfer_file_factory_(filename));
+    unique_ptr<TransferFile> received_file(received_transfer_file_factory_(net, filename));
     while (!done) {
       LOG << "        loop";
       uint16_t header = conn_->read_uint16(d);
@@ -611,6 +654,17 @@ void BinkP::Run() {
     LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
   }
 }
+
+const std::string BinkP::remote_network_name() const {
+  string remote_network_name(config_->callout_network_name());
+  if (side_ == BinkSide::ANSWERING) {
+    //TODO(rushfan): Ensure that we only have one address on receiving end.
+    remote_network_name = network_name_from_single_address(address_list_);
+  }
+  LOG << "       remote_network_name(): " << remote_network_name;
+  return remote_network_name;
+}
+
 
 bool ParseFileRequestLine(const std::string& request_line, 
         std::string* filename,

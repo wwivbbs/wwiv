@@ -30,8 +30,7 @@ class PPPConfig {
 
   uint16_t node_number() const { return node_; }
   const std::string& system_name() const { return system_name_; }
-  const std::string& network_name() const { return network_name_; }
-  const std::string& network_dir() const { return network_dir_; }
+  const std::string& callout_network_name() const { return callout_network_name_; }
 
  private:
   std::map<uint16_t, PPPNodeConfig> node_config_;
@@ -39,8 +38,7 @@ class PPPConfig {
 
   uint16_t node_;
   std::string system_name_;
-  std::string network_name_;
-  std::string network_dir_;
+  std::string callout_network_name_;
 };
 
 bool ParseAddressNetLine(const std::string& line,
