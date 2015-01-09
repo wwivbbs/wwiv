@@ -387,11 +387,11 @@ BinkState BinkP::AuthRemote() {
   LOG << "STATE: AuthRemote";
   // Check that the address matches who we thought we called.
   LOG << "       remote address_list: " << address_list_;
-  const string remote_network_name(remote_network_name());
+  const string network_name(remote_network_name());
   if (side_ == BinkSide::ANSWERING) {
-    int caller_node = node_number_from_address_list(address_list_, remote_network_name);
-    LOG << "       remote_network_name: " << remote_network_name << "; caller_node: " << caller_node;
-    const net_call_out_rec* callout_record = callouts_.at(remote_network_name).node_config_for(caller_node);
+    int caller_node = node_number_from_address_list(address_list_, network_name);
+    LOG << "       remote_network_name: " << network_name << "; caller_node: " << caller_node;
+    const net_call_out_rec* callout_record = callouts_.at(network_name).node_config_for(caller_node);
     if (callout_record == nullptr) {
       // We don't have a callout.net entry for this caller. Fail the connection
       send_command_packet(BinkpCommands::M_ERR, 
@@ -402,7 +402,7 @@ BinkState BinkP::AuthRemote() {
     return BinkState::WAIT_PWD;
   }
 
-  const string expected_ftn = StringPrintf("20000:20000/%d@%s", expected_remote_node_, remote_network_name.c_str());
+  const string expected_ftn = StringPrintf("20000:20000/%d@%s", expected_remote_node_, network_name.c_str());
   LOG << "       expected_ftn: " << expected_ftn;
   if (address_list_.find(expected_ftn) != string::npos) {
     return (side_ == BinkSide::ORIGINATING) ?
@@ -419,15 +419,15 @@ BinkState BinkP::TransferFiles() {
   // This is only valid if we are the SENDER.
   // TODO(rushfan): make this a method on the class.
   int remote_node = expected_remote_node_;
-  const string remote_network_name(remote_network_name());
+  const string network_name(remote_network_name());
   if (side_ == BinkSide::ANSWERING) {
-    remote_node = node_number_from_address_list(address_list_, remote_network_name);
+    remote_node = node_number_from_address_list(address_list_, network_name);
   }
 
   LOG << "STATE: TransferFiles to node: " << remote_node;
   // Quickly let the inbound event loop percolate.
   process_frames(milliseconds(100));
-  SendFiles file_sender(config_->network_dir(remote_network_name), remote_node);
+  SendFiles file_sender(config_->network_dir(network_name), remote_node);
   const auto list = file_sender.CreateTransferFileList();
   for (auto file : list) {
     SendFilePacket(file);
