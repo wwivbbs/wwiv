@@ -23,15 +23,16 @@ struct BinkNodeConfig {
 
 class BinkConfig {
  public:
-  BinkConfig(const std::string& network_name, const wwiv::sdk::Config& config, const wwiv::sdk::Networks& networks);
+  BinkConfig(const std::string& callout_network_name, const wwiv::sdk::Config& config, const wwiv::sdk::Networks& networks);
   BinkConfig(int node_number, const std::string& system_name, const std::string& network_dir);
   virtual ~BinkConfig();
   const BinkNodeConfig* node_config_for(int node) const;
 
   uint16_t node_number() const { return node_; }
-  const std::string& system_name() const { return system_name_; }
-  const std::string& network_name() const { return network_name_; }
-  const std::string& network_dir() const { return network_dir_; }
+  const std::string system_name() const { return system_name_; }
+  const std::string callout_network_name() const { return callout_network_name_; }
+  const std::string network_dir(const std::string& network_name) const;
+  const wwiv::sdk::Networks& networks() { return networks_; }
 
  private:
   std::map<uint16_t, BinkNodeConfig> node_config_;
@@ -39,8 +40,8 @@ class BinkConfig {
 
   uint16_t node_;
   std::string system_name_;
-  std::string network_name_;
-  std::string network_dir_;
+  std::string callout_network_name_;
+  const wwiv::sdk::Networks networks_;
 };
 
 bool ParseBinkConfigLine(const std::string& line,
