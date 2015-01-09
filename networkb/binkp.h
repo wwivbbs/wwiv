@@ -10,11 +10,12 @@
 #include <string>
 #include <vector>
 
+#include "networkb/callout.h"
+
 namespace wwiv {
 namespace net {
   
 class BinkConfig;
-class Callout;
 class Connection;
 class TransferFile;
 
@@ -39,14 +40,16 @@ enum class BinkSide {
   ANSWERING
 };
 
+// Main protocol driver class for BinkP derived sessions.
 class BinkP {
 public:
-  typedef std::function<TransferFile*(const std::string& filename)> received_transfer_file_factory_t;
+  typedef std::function<TransferFile*(const std::string& network_name, const std::string& filename)>
+      received_transfer_file_factory_t;
   // TODO(rushfan): should we use a unique_ptr for Connection and own the
   // connection?
   BinkP(Connection* conn,
         BinkConfig* config,
-        Callout* callout,
+        std::map<const std::string, Callout>& callouts,
 	      BinkSide side, 
 	      int expected_remote_node,
         received_transfer_file_factory_t& received_transfer_file_factory);
@@ -67,6 +70,8 @@ private:
   bool send_command_packet(uint8_t command_id, const std::string& data);
   bool send_data_packet(const char* data, std::size_t size);
 
+  const std::string remote_network_name() const;
+
   BinkState ConnInit();
   BinkState WaitConn();
   BinkState SendPasswd();
@@ -86,7 +91,7 @@ private:
   bool HandleFileRequest(const std::string& request_line);
 
   BinkConfig* config_;
-  Callout* callout_;
+  std::map<const std::string, Callout> callouts_;
   Connection* conn_;
   std::string address_list_;
   bool ok_received_;
@@ -101,14 +106,26 @@ private:
   std::vector<std::unique_ptr<TransferFile>> received_files_;
 };
 
+// Parses a M_FILE request line into it's parts.
+// TODO(rushfan): Support the 5th CRC parameter in FRL-1022
+// See  http://www.filegate.net/ftsc/FRL-1022.001
 bool ParseFileRequestLine(const std::string& request_line, 
 			  std::string* filename,
 			  long* length,
 			  time_t* timestamp,
 			  long* offset);
 
-std::string expected_password_for(Callout* callout, int node);
+// Returns just the expected password for a node (node) contained in the
+// CALLOUT.NET file used by the Callout class.
+std::string expected_password_for(const Callout* callout, int node);
+
+// Returns just the node number (such as "1") from a FTN address like
+// (such as "20000:20000/1@wwivnet")
 int node_number_from_address_list(const std::string& network_list, const std::string& network_name);
+
+// Returns just the network name (such as "wwivnet") from a FTN address like
+// (such as "20000:20000/1@wwivnet")
+std::string network_name_from_single_address(const std::string& network_list);
 
 }  // namespace net
 }  // namespace wwiv

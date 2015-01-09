@@ -59,24 +59,24 @@ static bool ParseAddressesFile(std::map<uint16_t, PPPNodeConfig>* node_config_ma
   return true;
 }
 
-PPPConfig::PPPConfig(const std::string& network_name, const Config& config, const Networks& networks) : network_name_(network_name) {
+PPPConfig::PPPConfig(const std::string& callout_network_name, const Config& config, const Networks& networks)
+    : callout_network_name_(callout_network_name) {
   system_name_ = config.config()->systemname;
   if (system_name_.empty()) {
     system_name_ = "Unnamed WWIV BBS";
   }
 
-  const net_networks_rec& net = networks[network_name];
+  const net_networks_rec& net = networks[callout_network_name];
   node_ = net.sysnum;
-  network_dir_ = net.dir;
   if (node_ == 0) {
-    throw config_error(StringPrintf("NODE not specified for network: '%s'", network_name.c_str()));
+    throw config_error(StringPrintf("NODE not specified for network: '%s'", callout_network_name.c_str()));
   }
 
-  ParseAddressesFile(&node_config_, network_dir_);
+  ParseAddressesFile(&node_config_, net.dir);
 }
 
 PPPConfig::PPPConfig(int node_number, const string& system_name, const string& network_dir) 
-    : node_(node_number), system_name_(system_name), network_dir_(network_dir) {
+    : node_(node_number), system_name_(system_name) {
   ParseAddressesFile(&node_config_, network_dir);
 }
 

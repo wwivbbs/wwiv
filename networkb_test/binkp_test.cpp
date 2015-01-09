@@ -32,9 +32,13 @@ protected:
     files_.CreateTempFile("binkp.net", line);
     const string network_dir = files_.DirName("network");
     BinkConfig* dummy_config = new BinkConfig(ORIGINATING_ADDRESS, "Dummy", network_dir);
-    Callout* dummy_callout = new Callout(network_dir);
-    BinkP::received_transfer_file_factory_t null_factory = [](const string& filename) { return new InMemoryTransferFile(filename, ""); };
-    binkp_.reset(new BinkP(&conn_, dummy_config, dummy_callout, BinkSide::ANSWERING, ANSWERING_ADDRESS, null_factory));
+    Callout dummy_callout(network_dir);
+    BinkP::received_transfer_file_factory_t null_factory = [](const string& network_name, const string& filename) { 
+      return new InMemoryTransferFile(filename, "");
+    };
+    std::map<const std::string, Callout> callouts = {{"", dummy_callout}};
+//    callouts.emplace("", dummy_callout);
+    binkp_.reset(new BinkP(&conn_, dummy_config, callouts, BinkSide::ANSWERING, ANSWERING_ADDRESS, null_factory));
     thread_ = thread([&]() {binkp_->Run(); });
   } 
 
@@ -70,6 +74,11 @@ TEST(NodeFromAddressTest, MultipleAddresses) {
   EXPECT_EQ(-1, node_number_from_address_list(address, "wwivnet"));
   EXPECT_EQ(-1, node_number_from_address_list(address, "fidonet"));
   EXPECT_EQ(-1, node_number_from_address_list(address, "dorknet"));
+}
+
+TEST(NetworkNameFromAddressTest, SingleAddress) {
+  const string address = "1:369/23@fidonet";
+  EXPECT_EQ("fidonet", network_name_from_single_address(address));
 }
 
 // string expected_password_for(Callout* callout, int node)

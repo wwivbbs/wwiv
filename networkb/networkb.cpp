@@ -138,13 +138,17 @@ int main(int argc, char** argv) {
     } else {
       LOG << "No command given to send or receive.  Either use '--send --node=#' or --receive";
       return 1;
-    }
-    BinkP::received_transfer_file_factory_t factory = [&](const string& filename) { 
-      File* f = new File(bink_config.network_dir(), filename);
+    } 
+    BinkP::received_transfer_file_factory_t factory = [&](const string& network_name, const string& filename) { 
+      const net_networks_rec& net = bink_config.networks()[network_name];
+      File* f = new File(net.dir, filename);
       return new WFileTransferFile(filename, unique_ptr<File>(f)); 
     };
-    Callout callout(bink_config.network_dir());
-    BinkP binkp(c.get(), &bink_config, &callout, side, expected_remote_node, factory);
+    map<const string, Callout> callouts;
+    for (const auto net : bink_config.networks().networks()) {
+      callouts.emplace(net.name, Callout(net.dir));
+    }
+    BinkP binkp(c.get(), &bink_config, callouts, side, expected_remote_node, factory);
     binkp.Run();
   } catch (const socket_error& e) {
     LOG << e.what();

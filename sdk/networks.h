@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_SDK_NETWORKS_H__
 #define __INCLUDED_SDK_NETWORKS_H__
 
+#include <initializer_list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -31,6 +32,8 @@ namespace sdk {
 class Networks {
 public:
   explicit Networks(const Config& config);
+  // [[ VisibleForTesting ]]
+  explicit Networks(std::initializer_list<net_networks_rec> l) : networks_(l) {}
   virtual ~Networks();
 
   bool IsInitialized() const { return initialized_; }
