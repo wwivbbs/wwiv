@@ -70,6 +70,8 @@ private:
   bool send_command_packet(uint8_t command_id, const std::string& data);
   bool send_data_packet(const char* data, std::size_t size);
 
+  void rename_pending_files() const;
+  void process_network_files() const;
   const std::string remote_network_name() const;
 
   BinkState ConnInit();

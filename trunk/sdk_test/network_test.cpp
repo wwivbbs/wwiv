@@ -80,4 +80,7 @@ TEST_F(NetworkTest, Networks) {
   EXPECT_STREQ(expected_two_dir.c_str(), networks.at("two").dir);
   EXPECT_STREQ(expected_two_dir.c_str(), networks[1].dir);
   EXPECT_STREQ(expected_two_dir.c_str(), networks["two"].dir);
+
+  EXPECT_EQ(0, networks.network_number("one"));
+  EXPECT_EQ(1, networks.network_number("two"));
 }

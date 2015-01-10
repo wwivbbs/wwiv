@@ -48,6 +48,8 @@ public:
   const net_networks_rec& operator[](int num) const { return at(num); }
   const net_networks_rec& operator[](const std::string& name) const { return at(name); }
 
+  int network_number(const std::string& network_name) const;
+
 private:
   bool initialized_;
   std::vector<net_networks_rec> networks_;

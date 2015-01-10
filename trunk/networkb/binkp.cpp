@@ -25,6 +25,7 @@
 #include "networkb/socket_exceptions.h"
 #include "networkb/transfer_file.h"
 #include "networkb/wfile_transfer_file.h"
+#include "sdk/filenames.h"
 
 using std::chrono::milliseconds;
 using std::chrono::seconds;
@@ -675,11 +676,37 @@ void BinkP::Run() {
   } catch (socket_error e) {
     LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
   }
+  rename_pending_files();
+  process_network_files();
+}
+
+void BinkP::rename_pending_files() const {
+  LOG << "STATE: rename_pending_files";
   for (const auto& file : received_files_) {
-    const auto dir = config_->networks()[this->remote_network_name()].dir;
-    LOG << "STATE: RENAME_PEND: dir: " << dir << "; file: " << file->filename();
+    const auto dir = config_->networks()[remote_network_name()].dir;
+    LOG << "       renaming_pending_file: dir: " << dir << "; file: " << file->filename();
     rename_pend(dir, file->filename());
   }
+}
+
+static int System(const string& cmd) {
+  LOG << "       executing:: " << cmd;
+  return system(cmd.c_str());
+}
+
+void BinkP::process_network_files() const {
+  const string network_name = remote_network_name();
+  LOG << "STATE: process_network_files for network: " << network_name;
+  int network_number = config_->networks().network_number(network_name);
+  const auto dir = config_->networks()[remote_network_name()].dir;
+  if (File::ExistsWildcard(StrCat(dir, "P*.NET"))) {
+    System(StrCat("network1 .", network_number));
+    if (File::Exists(StrCat(dir, LOCAL_NET))) {
+      System(StrCat("network2 .", network_number));
+    }
+  }
+  // TODO(rushfan): check timestamps on network files to see if we need
+  // to run network3 .# Y.  Also look for UPD files (BBSLIST.UPD and CONNECT.UPD).
 }
 
 const std::string BinkP::remote_network_name() const {
@@ -691,7 +718,6 @@ const std::string BinkP::remote_network_name() const {
   LOG << "       remote_network_name(): " << remote_network_name;
   return remote_network_name;
 }
-
 
 bool ParseFileRequestLine(const std::string& request_line, 
         std::string* filename,
