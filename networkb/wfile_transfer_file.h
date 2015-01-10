@@ -25,6 +25,7 @@ public:
   virtual bool Delete() override final;
   virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) override final;
   virtual bool WriteChunk(const char* chunk, std::size_t size) override final;
+  virtual bool Close() override final;
 
  private:
   std::unique_ptr<File> file_; 
