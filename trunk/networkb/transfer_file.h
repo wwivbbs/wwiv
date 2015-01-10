@@ -26,6 +26,7 @@ public:
   virtual bool Delete() = 0;
   virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) = 0;
   virtual bool WriteChunk(const char* chunk, std::size_t size) = 0;
+  virtual bool Close() = 0;
 
  protected:
   virtual const std::string as_packet_data(int size, int offset) const final;
@@ -48,6 +49,7 @@ public:
   virtual bool Delete() { contents_.clear(); return true; }
   virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) override final;
   virtual bool WriteChunk(const char* chunk, std::size_t size) override final;
+  virtual bool Close() override final;
 
 private:
   std::string contents_;

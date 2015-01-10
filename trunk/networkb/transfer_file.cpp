@@ -54,5 +54,10 @@ bool InMemoryTransferFile::WriteChunk(const char* chunk, size_t size) {
   return true;
 }
 
+bool InMemoryTransferFile::Close() {
+  return true;
+}
+
+
 }  // namespace net
 } // namespace wwiv
