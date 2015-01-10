@@ -71,7 +71,17 @@ net_networks_rec& Networks::at(const std::string& name) {
   throw std::out_of_range(StrCat("Unable to find network named: ", name));
 }
 
-Networks::~Networks() {
+Networks::~Networks() {}
+
+int Networks::network_number(const std::string& network_name) const {
+  int i = 0;
+  for (const auto& n : networks_) {
+    if (IsEqualsIgnoreCase(network_name.c_str(), n.name)) {
+      return i;
+    }
+    ++i;
+  }
+  throw std::out_of_range(StrCat("Unable to find network named: ", network_name));
 }
 
 
