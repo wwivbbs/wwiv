@@ -373,8 +373,6 @@ void save_confs(int conftype, int whichnum, confrec * c) {
           }
         }
         f.WriteFormatted("\n\n");
-      } else {
-        continue;
       }
     }
     if (i < num) {
