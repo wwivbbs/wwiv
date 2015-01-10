@@ -540,18 +540,19 @@ bool BinkP::HandleFileRequest(const string& request_line) {
         received_file->WriteChunk(data.get(), length_received);
         bytes_received += length_received;
         if (bytes_received >= expected_length) {
-          LOG << "        file finished; bytes_received: " << bytes_received;
+          LOG << "       file finished; bytes_received: " << bytes_received;
           done = true;
           const string data_line = StringPrintf("%s %u %u", filename.c_str(), bytes_received, timestamp);
           send_command_packet(BinkpCommands::M_GOT, data_line);
+          received_file->Close();
           received_files_.push_back(std::move(received_file));
         }
       }
     }
   } catch (timeout_error e) {
-    LOG << "        timeout_error: " << e.what();
+    LOG << "       timeout_error: " << e.what();
   }
-  LOG << "        " << " returning true";
+  LOG << "       returning true";
   return true;
 }
 
@@ -595,10 +596,31 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   return true;
 }
 
+static void rename_pend(const string& directory, const string& filename) {
+  File pend_file(directory, filename);
+  if (!pend_file.Exists()) {
+    LOG << " pending file does not exist: " << pend_file;
+    return;
+  }
+  const string pend_filename(pend_file.full_pathname());
+  const string num = filename.substr(1);
+  const string prefix = (atoi(num.c_str())) ? "1" : "0";
+
+  for (int i = 0; i < 1000; i++) {
+    const string new_filename = StringPrintf("%sP%s-0-%u.NET", directory.c_str(), prefix.c_str(), i);
+    // LOG << new_filename;
+    if (File::Rename(pend_filename, new_filename)) {
+      LOG << "renamed file to: " << new_filename;
+      return;
+    }
+  }
+  LOG << "all attempts failed to rename_pend";
+}
+
 void BinkP::Run() {
-  LOG << "STATE: Run (Main Event Loop): ";
+  LOG << "STATE: Run (Main Event Loop): side_:" << static_cast<int>(side_);
+  BinkState state = (side_ == BinkSide::ORIGINATING) ? BinkState::CONN_INIT : BinkState::WAIT_CONN;
   try {
-    BinkState state = (side_ == BinkSide::ORIGINATING) ? BinkState::CONN_INIT : BinkState::WAIT_CONN;
     bool done = false;
     while (!done) {
       switch (state) {
@@ -652,6 +674,11 @@ void BinkP::Run() {
     }
   } catch (socket_error e) {
     LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
+  }
+  for (const auto& file : received_files_) {
+    const auto dir = config_->networks()[this->remote_network_name()].dir;
+    LOG << "STATE: RENAME_PEND: dir: " << dir << "; file: " << file->filename();
+    rename_pend(dir, file->filename());
   }
 }
 
