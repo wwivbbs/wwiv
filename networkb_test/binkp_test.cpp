@@ -36,8 +36,7 @@ protected:
     BinkP::received_transfer_file_factory_t null_factory = [](const string& network_name, const string& filename) { 
       return new InMemoryTransferFile(filename, "");
     };
-    std::map<const std::string, Callout> callouts = {{"", dummy_callout}};
-//    callouts.emplace("", dummy_callout);
+    std::map<const std::string, Callout> callouts = {{"wwivnet", dummy_callout}};
     binkp_.reset(new BinkP(&conn_, dummy_config, callouts, BinkSide::ANSWERING, ANSWERING_ADDRESS, null_factory));
     thread_ = thread([&]() {binkp_->Run(); });
   } 
