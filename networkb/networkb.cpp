@@ -91,11 +91,14 @@ int main(int argc, char** argv) {
       }
     }
 
-    const string network_name = args.at("network");
-    if (network_name.empty()) {
+    if (!contains(args, "network") && contains(args, "send")) {
       LOG << "--network=[network name] must be specified.";
       ShowHelp();
       return 1;
+    }
+    string network_name;
+    if (contains(args, "network")) {
+      network_name = args.at("network");
     }
   
     string bbsdir = File::current_directory();

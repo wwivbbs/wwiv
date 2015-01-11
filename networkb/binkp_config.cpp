@@ -71,20 +71,22 @@ static bool ParseAddressesFile(std::map<uint16_t, BinkNodeConfig>* node_config_m
   return true;
 }
 
-BinkConfig::BinkConfig(const std::string& primary_network_name, const Config& config, const Networks& networks)
-    : callout_network_name_(primary_network_name), networks_(networks) {
+BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& config, const Networks& networks)
+    : callout_network_name_(callout_network_name), networks_(networks) {
   system_name_ = config.config()->systemname;
   if (system_name_.empty()) {
     system_name_ = "Unnamed WWIV BBS";
   }
 
-  const net_networks_rec& net = networks[primary_network_name];
-  node_ = net.sysnum;
-  if (node_ == 0) {
-    throw config_error(StringPrintf("NODE not specified for network: '%s'", primary_network_name.c_str()));
-  }
+  if (networks.contains(callout_network_name)) {
+    const net_networks_rec& net = networks[callout_network_name];
+    callout_node_ = net.sysnum;
+    if (callout_node_ == 0) {
+      throw config_error(StringPrintf("NODE not specified for network: '%s'", callout_network_name.c_str()));
+    }
 
-  ParseAddressesFile(&node_config_, net.dir);
+    ParseAddressesFile(&node_config_, net.dir);
+  }
 }
 
 const std::string BinkConfig::network_dir(const std::string& network_name) const {
@@ -101,8 +103,8 @@ static net_networks_rec test_net(const string& network_dir) {
 }
 
 // For testing
-BinkConfig::BinkConfig(int node_number, const string& system_name, const string& network_dir) 
-  : callout_network_name_("wwivnet"), node_(node_number), system_name_(system_name),
+BinkConfig::BinkConfig(int callout_node_number, const string& system_name, const string& network_dir) 
+  : callout_network_name_("wwivnet"), callout_node_(callout_node_number), system_name_(system_name),
     networks_({ test_net(network_dir) }) {
   ParseAddressesFile(&node_config_, network_dir);
 }

@@ -28,7 +28,7 @@ class PPPConfig {
   virtual ~PPPConfig();
   const PPPNodeConfig* node_config_for(int node) const;
 
-  uint16_t node_number() const { return node_; }
+  uint16_t callout_node_number() const { return node_; }
   const std::string& system_name() const { return system_name_; }
   const std::string& callout_network_name() const { return callout_network_name_; }
 
