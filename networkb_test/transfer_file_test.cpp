@@ -104,7 +104,7 @@ TEST_F(TransferFileTest, WFileTest_Read) {
 
   // Goes past the end.
   EXPECT_FALSE(wfile_file.GetChunk(chunk, contents.size() - 1, 2));
-
+  wfile_file.Close();
 }
 
 TEST_F(TransferFileTest, WFileTest_Write) {
@@ -117,6 +117,7 @@ TEST_F(TransferFileTest, WFileTest_Write) {
 
     wfile_file.WriteChunk(contents.c_str(), contents.size());
     EXPECT_EQ(contents.size(), wfile_file.file_size());
+    wfile_file.Close();
   }
   // Needed wfile_file to go out of scope before the file can be read.
   EXPECT_EQ(contents, file_helper_.ReadFile(empty_file_fullpath));
