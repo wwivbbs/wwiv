@@ -100,7 +100,6 @@ private:
   bool eob_received_;
   std::map<std::string, std::unique_ptr<TransferFile>> files_to_send_;
   BinkSide side_;
-  const int own_address_;
   const int expected_remote_node_;
   std::string remote_password_;
   bool error_received_;

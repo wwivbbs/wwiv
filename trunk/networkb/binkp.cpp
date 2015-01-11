@@ -124,7 +124,6 @@ BinkP::BinkP(Connection* conn, BinkConfig* config, std::map<const string, Callou
     config_(config), 
     callouts_(callouts),
     side_(side),
-    own_address_(config->node_number()), 
     expected_remote_node_(expected_remote_node), 
     error_received_(false),
     received_transfer_file_factory_(received_transfer_file_factory) {}
@@ -283,7 +282,7 @@ BinkState BinkP::WaitConn() {
   } else {
     // Present single primary address.
     send_command_packet(BinkpCommands::M_NUL,
-        StringPrintf("WWIV @%u.%s", config_->node_number(), config_->callout_network_name().c_str()));
+        StringPrintf("WWIV @%u.%s", config_->callout_node_number(), config_->callout_network_name().c_str()));
     const auto net = config_->networks()[config_->callout_network_name()];
     network_addresses = StringPrintf("20000:20000/%d@%s", net.sysnum, net.name);
   }
