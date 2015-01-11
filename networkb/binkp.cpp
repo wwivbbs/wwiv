@@ -686,6 +686,11 @@ void BinkP::Run() {
 void BinkP::rename_pending_files() const {
   LOG << "STATE: rename_pending_files";
   for (const auto& file : received_files_) {
+    if (!config_->networks().contains(remote_network_name())) {
+      // unknown network. log and skip.
+      LOG << "ERROR: unknown network name (not in config.dat): " << remote_network_name();
+      continue;
+    }
     const auto dir = config_->networks()[remote_network_name()].dir;
     LOG << "       renaming_pending_file: dir: " << dir << "; file: " << file->filename();
     rename_pend(dir, file->filename());
@@ -701,6 +706,9 @@ void BinkP::process_network_files() const {
   const string network_name = remote_network_name();
   LOG << "STATE: process_network_files for network: " << network_name;
   int network_number = config_->networks().network_number(network_name);
+  if (network_number == wwiv::sdk::Networks::npos) {
+    return;
+  }
   const auto dir = config_->networks()[remote_network_name()].dir;
   if (File::ExistsWildcard(StrCat(dir, "P*.NET"))) {
     System(StrCat("network1 .", network_number));

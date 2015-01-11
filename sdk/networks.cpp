@@ -34,6 +34,8 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace sdk {
 
+const int Networks::npos;  // reserve space.
+
 Networks::Networks(const Config& config) {
   if (!config.IsInitialized()) {
     throw std::invalid_argument("config must be initialized");
@@ -73,15 +75,24 @@ net_networks_rec& Networks::at(const std::string& name) {
 
 Networks::~Networks() {}
 
-int Networks::network_number(const std::string& network_name) const {
-  int i = 0;
+Networks::size_type Networks::network_number(const std::string& network_name) const {
+  Networks::size_type i = 0;
   for (const auto& n : networks_) {
     if (IsEqualsIgnoreCase(network_name.c_str(), n.name)) {
       return i;
     }
     ++i;
   }
-  throw std::out_of_range(StrCat("Unable to find network named: ", network_name));
+  return npos;
+}
+
+bool Networks::contains(const std::string& network_name) const {
+  for (const auto& n : networks_) {
+    if (IsEqualsIgnoreCase(network_name.c_str(), n.name)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 

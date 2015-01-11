@@ -102,7 +102,8 @@ static net_networks_rec test_net(const string& network_dir) {
 
 // For testing
 BinkConfig::BinkConfig(int node_number, const string& system_name, const string& network_dir) 
-  : node_(node_number), system_name_(system_name), networks_({ test_net(network_dir) }) {
+  : callout_network_name_("wwivnet"), node_(node_number), system_name_(system_name),
+    networks_({ test_net(network_dir) }) {
   ParseAddressesFile(&node_config_, network_dir);
 }
 
