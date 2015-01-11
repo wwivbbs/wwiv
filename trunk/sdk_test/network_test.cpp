@@ -40,6 +40,17 @@ using namespace wwiv::strings;
 
 class NetworkTest : public testing::Test {
 public:
+  NetworkTest() : config(helper.root()) {
+    EXPECT_TRUE(config.IsInitialized());
+    EXPECT_TRUE(CreateNetworksDat(config, { "one", "two" }));
+    networks.reset(new Networks(config));
+    EXPECT_TRUE(networks->IsInitialized());
+  }
+
+  virtual void SetUp() {
+    config.IsInitialized();
+  }
+
   bool CreateNetworksDat(const Config& config, vector<string> names) {
     File file(config.datadir(), NETWORKS_DAT);
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
@@ -60,27 +71,48 @@ public:
     return true;
   }
 
+  Networks& test_networks() const { return *networks.get(); }
+
   SdkHelper helper;
+  Config config;
+  unique_ptr<Networks> networks;
 };
 
-TEST_F(NetworkTest, Networks) {
-  Config config(helper.root());
-  EXPECT_TRUE(config.IsInitialized());
-  EXPECT_TRUE(CreateNetworksDat(config, { "one", "two" }));
+TEST_F(NetworkTest, Networks_At) {
+  const Networks& networks = test_networks();
 
-  Networks networks(config);
-  EXPECT_TRUE(networks.IsInitialized());
+  EXPECT_STREQ("two", networks.at(1).name);
+  EXPECT_STREQ("two", networks.at("two").name);
+}
+
+TEST_F(NetworkTest, Networks_Bracket) {
+  const Networks& networks = test_networks();
+
+  EXPECT_STREQ("two", networks[1].name);
+  EXPECT_STREQ("two", networks["two"].name);
+}
+
+TEST_F(NetworkTest, Networks_Dir) {
+  const Networks& networks = test_networks();
 
   const string expected_two_dir = StrCat(config.root_directory(), File::pathSeparatorString, "two");
-  EXPECT_STREQ("two", networks.at(1).name);
-  EXPECT_STREQ("two", networks[1].name);
-  EXPECT_STREQ("two", networks.at("two").name);
-  EXPECT_STREQ("two", networks["two"].name);
   EXPECT_STREQ(expected_two_dir.c_str(), networks.at(1).dir);
   EXPECT_STREQ(expected_two_dir.c_str(), networks.at("two").dir);
   EXPECT_STREQ(expected_two_dir.c_str(), networks[1].dir);
   EXPECT_STREQ(expected_two_dir.c_str(), networks["two"].dir);
+}
+
+TEST_F(NetworkTest, Networks_NetworkNumber) {
+  const Networks& networks = test_networks();
 
   EXPECT_EQ(0, networks.network_number("one"));
   EXPECT_EQ(1, networks.network_number("two"));
+  EXPECT_EQ(-1, networks.network_number("not-here"));
+}
+
+TEST_F(NetworkTest, Networks_Contains) {
+  const Networks& networks = test_networks();
+
+  EXPECT_TRUE(networks.contains("one"));
+  EXPECT_FALSE(networks.contains("foo"));
 }
