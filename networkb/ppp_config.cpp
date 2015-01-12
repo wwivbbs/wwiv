@@ -10,6 +10,7 @@
 #include "core/inifile.h"
 #include "core/file.h"
 #include "core/textfile.h"
+#include "sdk/filenames.h"
 #include "sdk/networks.h"
 
 using std::map;
@@ -42,7 +43,7 @@ bool ParseAddressNetLine(const string& line, uint16_t* node, PPPNodeConfig* conf
 }
 
 static bool ParseAddressesFile(std::map<uint16_t, PPPNodeConfig>* node_config_map, const string network_dir) {
-  TextFile node_config_file(network_dir, "ADDRESS.NET", "rt");
+  TextFile node_config_file(network_dir, ADDRESS_NET, "rt");
   if (!node_config_file.IsOpen()) {
     return false;
   }

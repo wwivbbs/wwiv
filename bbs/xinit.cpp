@@ -1184,7 +1184,7 @@ void WApplication::InitializeBBS() {
   qsc_q = qsc_n + (session()->GetMaxNumberFileAreas() + 31) / 32;
   qsc_p = qsc_q + (session()->GetMaxNumberMessageAreas() + 31) / 32;
 
-  network_extension = ".NET";
+  network_extension = ".net";
   const string wwiv_instance(environment_variable("WWIV_INSTANCE"));
   if (!wwiv_instance.empty()) {
     int nTempInstanceNumber = atoi(wwiv_instance.c_str());
