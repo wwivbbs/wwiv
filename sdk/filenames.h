@@ -21,6 +21,7 @@
 #define __INCLUDED_FILENAMES_H__
 
 #define ACCT_INI "acct.ini"
+#define ADDRESS_NET "addrss.net"
 #define ALLOW_NET "allow.net"
 #define ALLOW_DAT "allow.dat"
 #define ATTACH_DAT "attach.dat"
@@ -43,6 +44,7 @@
 #define BBSLIST_TMP "bbslist.tmp"
 #define BBSLIST_UPD "bbslist.upd"
 #define BBSLIST_JSON "bbslist.json"
+#define BINKP_NET "binkp.net"
 
 #define CALLOUT_NET "callout.net"
 #define CATEG_NET "categ.net"
@@ -75,7 +77,7 @@
 
 #define CS_EMAIL_NOEXT "cs-email"
 
-#define DEAD_NET "DEAD.NET" // network sent files remain uppercase until we remove the dos software
+#define DEAD_NET "dead.net"
 #define DEFAULTS_NOEXT "defaults"
 #define DESC_SDI "desc.sdi"
 #define DESCRIPT_ION "descript.ion"
@@ -114,7 +116,7 @@
 #define LASTON_TXT "laston.txt"
 #define LISTPLUS_CFG "listplus.cfg"
 #define LISTPLUS_HLP "listplus.hlp"
-#define LOCAL_NET "LOCAL.NET"  // network sent files remain uppercase until we remove the dos software
+#define LOCAL_NET "local.net"
 #define LOCKAUTO_MSG "lockauto.msg"
 #define LOGOFF_MAT "logoff.mat"
 #define LOGOFF_NOEXT "logoff"
