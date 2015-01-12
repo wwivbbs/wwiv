@@ -21,7 +21,7 @@
 #define __INCLUDED_FILENAMES_H__
 
 #define ACCT_INI "acct.ini"
-#define ADDRESS_NET "addrss.net"
+#define ADDRESS_NET "address.net"
 #define ALLOW_NET "allow.net"
 #define ALLOW_DAT "allow.dat"
 #define ATTACH_DAT "attach.dat"
