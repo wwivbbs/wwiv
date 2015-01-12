@@ -145,6 +145,8 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
   } break;
   case BinkpCommands::M_ADR: {
     address_list_ = s;
+    // address list is always lower cased compared.
+    StringLowerCase(&address_list_);
   } break;
   case BinkpCommands::M_OK: {
     ok_received_ = true;
@@ -521,7 +523,7 @@ bool BinkP::HandleFileRequest(const string& request_line) {
     return false;
   }
 
-  auto d = seconds(5);
+  auto d = seconds(30);  // TODO(rushfan): make this configurable.
   long bytes_received = starting_offset;
   bool done = false;
 
@@ -529,7 +531,7 @@ bool BinkP::HandleFileRequest(const string& request_line) {
   try {
     unique_ptr<TransferFile> received_file(received_transfer_file_factory_(net, filename));
     while (!done) {
-      LOG << "        loop";
+      LOG << "        HandleFileRequest: loop";
       uint16_t header = conn_->read_uint16(d);
       uint16_t length = header & 0x7fff;
       if (header & 0x8000) {
@@ -553,9 +555,9 @@ bool BinkP::HandleFileRequest(const string& request_line) {
       }
     }
   } catch (timeout_error e) {
-    LOG << "       timeout_error: " << e.what();
+    LOG << "       HandleFileRequest: timeout_error: " << e.what();
   }
-  LOG << "       returning true";
+  LOG << "       HandleFileRequest: returning true";
   return true;
 }
 

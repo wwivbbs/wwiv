@@ -73,6 +73,8 @@ static bool ParseAddressesFile(std::map<uint16_t, BinkNodeConfig>* node_config_m
 
 BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& config, const Networks& networks)
     : callout_network_name_(callout_network_name), networks_(networks) {
+  // network names will alwyas be compared lower case.
+  StringLowerCase(&callout_network_name_);
   system_name_ = config.config()->systemname;
   if (system_name_.empty()) {
     system_name_ = "Unnamed WWIV BBS";
