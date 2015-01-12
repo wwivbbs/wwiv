@@ -75,7 +75,7 @@ net_networks_rec& Networks::at(const std::string& name) {
 
 Networks::~Networks() {}
 
-Networks::size_type Networks::network_number(const std::string& network_name) const {
+ auto Networks::network_number(const std::string& network_name) const -> size_type {
   Networks::size_type i = 0;
   for (const auto& n : networks_) {
     if (IsEqualsIgnoreCase(network_name.c_str(), n.name)) {
