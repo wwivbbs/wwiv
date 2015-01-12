@@ -99,6 +99,7 @@ int main(int argc, char** argv) {
     string network_name;
     if (contains(args, "network")) {
       network_name = args.at("network");
+      StringLowerCase(&network_name);
     }
   
     string bbsdir = File::current_directory();
