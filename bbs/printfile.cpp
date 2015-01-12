@@ -110,6 +110,12 @@ bool printfile(const string& filename, bool bAbortable, bool bForcePause) {
       // if we have an ESC, then this file probably contains
       // an ansi sequence
       bHasAnsi = true;
+    } else if (ss[lCurPos] == CZ) {
+      // We are done here on a control-Z since that's DOS EOF.  Also ANSI
+      // files created with PabloDraw expect that anything after a Control-Z
+      // is fair game for metadata and includes SAUCE metadata after it which
+      // we do not want to render in the bbs.
+      break;
     }
     if (bHasAnsi && !bForcePause) {
       // If this is an ANSI file, then don't pause
