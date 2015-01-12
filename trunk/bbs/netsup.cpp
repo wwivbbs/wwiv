@@ -43,10 +43,10 @@ using namespace wwiv::strings;
 static void rename_pend(const string& directory, const string& filename) {
   const string pend_filename = StringPrintf("%s%s", directory.c_str(), filename.c_str());
   const string num = filename.substr(1);
-  const string prefix = (atoi(num.c_str())) ? "P1-" : "P0-";
+  const string prefix = (atoi(num.c_str())) ? "p1-" : "p0-";
 
   for (int i = 0; i < 1000; i++) {
-    const string new_filename = StringPrintf("%s%s%u.NET", directory.c_str(), prefix.c_str(), i);
+    const string new_filename = StringPrintf("%s%s%u.net", directory.c_str(), prefix.c_str(), i);
     if (File::Rename(pend_filename, new_filename) || errno != EACCES) {
       return;
     }
@@ -175,7 +175,7 @@ int cleanup_net1() {
         ok2 = 0;
         ok = 0;
         WFindFile fnd;
-        sprintf(s, "%sP*.%3.3d", session()->GetNetworkDataDirectory().c_str(), application()->GetInstanceNumber());
+        sprintf(s, "%sp*.%3.3d", session()->GetNetworkDataDirectory().c_str(), application()->GetInstanceNumber());
         bool bFound = fnd.open(s, 0);
         while (bFound) {
           ok = 1;
@@ -187,7 +187,7 @@ int cleanup_net1() {
 
         if (application()->GetInstanceNumber() == 1) {
           if (!ok) {
-            sprintf(s, "%sP*.NET", session()->GetNetworkDataDirectory().c_str());
+            sprintf(s, "%sp*.net", session()->GetNetworkDataDirectory().c_str());
             WFindFile fnd;
             ok = fnd.open(s, 0);
           }
@@ -1451,7 +1451,7 @@ void run_exp() {
   set_net_num(nFileNetNetworkNumber);
 
   char szExpCommand[MAX_PATH];
-  sprintf(szExpCommand, "EXP S32767.NET %s %d %s %s %s", session()->GetNetworkDataDirectory().c_str(), net_sysnum,
+  sprintf(szExpCommand, "exp s32767.net %s %d %s %s %s", session()->GetNetworkDataDirectory().c_str(), net_sysnum,
           session()->internetEmailName.c_str(), session()->internetEmailDomain.c_str(), session()->GetNetworkName());
   ExecuteExternalProgram(szExpCommand, EFLAG_NETPROG);
 

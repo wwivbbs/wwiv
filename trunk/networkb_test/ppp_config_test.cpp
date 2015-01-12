@@ -34,7 +34,7 @@ TEST(PPPConfigTest, NodeConfig) {
   FileHelper files;
   files.Mkdir("network");
   const string line("@2 foo@example.com");
-  files.CreateTempFile("network/ADDRESS.NET", line);
+  files.CreateTempFile("network/address.net", line);
   const string network_dir = files.DirName("network");
   PPPConfig config(1, "mybbs", network_dir);
   const PPPNodeConfig* node_config = config.node_config_for(2);

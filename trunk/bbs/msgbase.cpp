@@ -539,11 +539,11 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     } else {
       string net_filename;
       if (nForwardedCode) {
-        net_filename = StringPrintf("%sP1%s",
+        net_filename = StringPrintf("%sp1%s",
           session()->GetNetworkDataDirectory().c_str(),
           application()->GetNetworkExtension().c_str());
       } else {
-        net_filename = StringPrintf("%sP0%s",
+        net_filename = StringPrintf("%sp0%s",
           session()->GetNetworkDataDirectory().c_str(),
           application()->GetNetworkExtension().c_str());
       }

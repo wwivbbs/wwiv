@@ -99,7 +99,7 @@ public:
     vector<TransferFile*> result;
     string dir = network_directory_;
     File::EnsureTrailingSlash(&dir);
-    const string s_node_net = StringPrintf("S%d.NET", destination_node_);
+    const string s_node_net = StringPrintf("s%d.net", destination_node_);
     const string search_path = StrCat(dir, s_node_net);
     LOG << "       CreateTransferFileList: search_path: " << search_path;
     if (File::Exists(search_path)) {
@@ -610,7 +610,7 @@ static void rename_pend(const string& directory, const string& filename) {
   const string prefix = (atoi(num.c_str())) ? "1" : "0";
 
   for (int i = 0; i < 1000; i++) {
-    const string new_filename = StringPrintf("%sP%s-0-%u.NET", directory.c_str(), prefix.c_str(), i);
+    const string new_filename = StringPrintf("%sp%s-0-%u.net", directory.c_str(), prefix.c_str(), i);
     // LOG << new_filename;
     if (File::Rename(pend_filename, new_filename)) {
       LOG << "renamed file to: " << new_filename;
@@ -709,7 +709,7 @@ void BinkP::process_network_files() const {
     return;
   }
   const auto dir = config_->networks()[remote_network_name()].dir;
-  if (File::ExistsWildcard(StrCat(dir, "P*.NET"))) {
+  if (File::ExistsWildcard(StrCat(dir, "p*.net"))) {
     System(StrCat("network1 .", network_number));
     if (File::Exists(StrCat(dir, LOCAL_NET))) {
       System(StrCat("network2 .", network_number));

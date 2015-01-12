@@ -217,7 +217,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
           }
           free(ss);
         }
-        sprintf(s, "%sSUBS.PUB", net_networks[n].dir);
+        sprintf(s, "%ssubs.pub", net_networks[n].dir);
         ss = mallocin_file(s, &l);
         if (ss) {
           for (ss1 = strtok(ss, " \t\r\n"); ss1; ss1 = strtok(nullptr, " \t\r\n")) {
@@ -228,7 +228,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
           }
           free(ss);
         }
-        sprintf(s, "%sNNALL.NET", net_networks[n].dir);
+        sprintf(s, "%snnall.net", net_networks[n].dir);
         ss = mallocin_file(s, &l);
         if (ss) {
           for (ss1 = strtok(ss, "\r\n"); ss1; ss1 = strtok(nullptr, "\r\n")) {
@@ -246,7 +246,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
       }
       for (i = 0; i < nn; i++) {
         if ((xsubsn[i].type) && (!xsubsn[i].host)) {
-          sprintf(s, "%sNN%u.NET",
+          sprintf(s, "%snn%u.net",
                   net_networks[xsubsn[i].net_num].dir,
                   xsubsn[i].type);
           ss = mallocin_file(s, &l);
