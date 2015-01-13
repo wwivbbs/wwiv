@@ -76,7 +76,6 @@ bool WFileTransferFile::WriteChunk(const char* chunk, size_t size) {
 }
 
 bool WFileTransferFile::Close() {
-  LOG << "WFileTransferFile::Close(): " << file_->full_pathname();
   file_->Close();
   return true;
 }

@@ -20,6 +20,8 @@ public:
 
   virtual uint16_t read_uint16(std::chrono::milliseconds d) = 0;
   virtual uint8_t read_uint8(std::chrono::milliseconds d) = 0;
+  virtual bool is_open() const = 0;
+  virtual bool close() = 0;
 };
 
 }  // namespace net
