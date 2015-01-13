@@ -515,7 +515,7 @@ bool BinkP::SendFileData(TransferFile* file) {
 
 // M_FILE received.
 bool BinkP::HandleFileRequest(const string& request_line) {
-  LOG << "HandleFileRequest; request_line: " << request_line;
+  LOG << "       HandleFileRequest; request_line: " << request_line;
   string filename;
   long expected_length = 0;
   time_t timestamp = 0;
@@ -532,7 +532,7 @@ bool BinkP::HandleFileRequest(const string& request_line) {
   try {
     unique_ptr<TransferFile> received_file(received_transfer_file_factory_(net, filename));
     while (!done) {
-      LOG << "        HandleFileRequest: loop";
+      LOG << "       HandleFileRequest: loop";
       uint16_t header = conn_->read_uint16(d);
       uint16_t length = header & 0x7fff;
       if (header & 0x8000) {
@@ -668,6 +668,7 @@ void BinkP::Run() {
         break;
       case BinkState::DONE:
         LOG << "STATE: Done.";
+        conn_->close();
         done = true;
         break;
       }

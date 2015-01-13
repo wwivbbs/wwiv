@@ -12,7 +12,6 @@
 #define NO_ERROR 0
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
-#define closesocket(x) close(x)
 
 #endif  // _WIN32
 
@@ -152,3 +151,6 @@ void FakeConnection::ReplyCommand(int8_t command_id, const string& data) {
   std::lock_guard<std::mutex> lock(mu_);
   receive_queue_.push(FakeBinkpPacket(packet.get(), size));
 }
+
+bool FakeConnection::is_open() const { return open_; }
+bool FakeConnection::close() { open_ = false; return true; }

@@ -101,7 +101,7 @@ static bool WouldSocketBlock() {
 }  // namespace
 
 SocketConnection::SocketConnection(SOCKET sock, const string& host, int port)
-  : sock_(sock), host_(host), port_(port) {}
+  : sock_(sock), host_(host), port_(port), open_(true) {}
 
 unique_ptr<SocketConnection> Connect(const string& host, int port) {
   static bool initialized = InitializeSockets();
@@ -189,6 +189,7 @@ unique_ptr<SocketConnection> Accept(int port) {
 }
 
 SocketConnection::~SocketConnection() {
+  LOG << "       SocketConnection::~SocketConnection()";
   if (sock_ != INVALID_SOCKET) {
     closesocket(sock_);
     sock_ = INVALID_SOCKET;
@@ -213,7 +214,7 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const milliseconds d, std::s
       }
     }
     if (result == 0) {
-      throw socket_error(StringPrintf("size error reading from socket. was %d expected %u", result, size));
+      return 0;
     }
     total_read += result;
     if (total_read < size) {
@@ -227,12 +228,16 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const milliseconds d, std::s
 }
 
 int SocketConnection::receive(void* data, const int size, milliseconds d) {
-  return read_TYPE<void, 0>(sock_, data, d, size);
+  int num_read = read_TYPE<void, 0>(sock_, data, d, size);
+  if (open_ && num_read == 0) {
+    throw socket_error(StringPrintf("size error reading from socket. was %d expected %u", 0, size));
+  }
+  return num_read;
 }
 
 int SocketConnection::send(const void* data, int size, milliseconds d) {
   int sent = ::send(sock_, reinterpret_cast<const char*>(data), size, 0);
-  if (sent != size) {
+  if (open_ && sent != size) {
     LOG << "ERROR: send != packet size.  size: " << size << "; sent: " << sent;
   }
   return size;
@@ -240,15 +245,28 @@ int SocketConnection::send(const void* data, int size, milliseconds d) {
 
 uint16_t SocketConnection::read_uint16(milliseconds d) {
   uint16_t data = 0;
-  read_TYPE<uint16_t>(sock_, &data, d);
+  int num_read = read_TYPE<uint16_t>(sock_, &data, d);
+  if (open_ && num_read == 0) {
+    throw socket_error(StringPrintf("size error reading from socket. was %d expected %u", 0, sizeof(uint16_t)));
+  }
   return ntohs(data);
 }
 
 uint8_t SocketConnection::read_uint8(milliseconds d) {
   uint8_t data = 0;
-  read_TYPE<uint8_t>(sock_, &data, d);
+  int num_read = read_TYPE<uint8_t>(sock_, &data, d);
+  if (open_ && num_read == 0) {
+    throw socket_error(StringPrintf("size error reading from socket. was %d expected %u", 0, sizeof(uint8_t)));
+  }
   return data;
 }
+
+bool SocketConnection::close() {
+  open_ = false;
+  closesocket(sock_);
+  return true;
+}
+
 
 }  // namespace net
 } // namespace wwiv
