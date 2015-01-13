@@ -101,6 +101,13 @@ int main(int argc, char** argv) {
       network_name = args.at("network");
       StringLowerCase(&network_name);
     }
+
+    int port = 24554;
+    if (contains(args, "port")) {
+      port = std::stoi(args.at("port"));
+    }
+
+    bool skip_net = contains(args, "skip_net");
   
     string bbsdir = File::current_directory();
     if (contains(args, "bbsdir")) {
@@ -125,12 +132,13 @@ int main(int argc, char** argv) {
     }
 
     BinkConfig bink_config(network_name, config, networks);
+    bink_config.set_skip_net(skip_net);
     unique_ptr<SocketConnection> c;
     BinkSide side = BinkSide::ORIGINATING;
     if (contains(args, "receive")) {
       LOG << "BinkP receive";
       side = BinkSide::ANSWERING;
-      c = Accept(24554);
+      c = Accept(port);
     } else if (contains(args, "send")) {
       LOG << "BinkP send to: " << expected_remote_node;
       const BinkNodeConfig* node_config = bink_config.node_config_for(expected_remote_node);
