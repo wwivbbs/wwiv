@@ -60,6 +60,8 @@ static void ShowHelp() {
        << "--send     Send network traffic to --node" << endl
        << "--receive  Receive from any node" << endl
        << "--node     Node number (only used when sending)" << endl
+       << "--port     Port number to use (receiving only)" << endl
+       << "--skip_net Skip invoking network1/network2/network3" << endl
        << endl;
 }
 
