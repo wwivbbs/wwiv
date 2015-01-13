@@ -1,4 +1,4 @@
-#include "connection.h"
+#include "networkb/connection.h"
 
 namespace wwiv {
 namespace net {

@@ -42,6 +42,8 @@ public:
   virtual int send(const void* data, int size, std::chrono::milliseconds d) override;
   virtual uint16_t read_uint16(std::chrono::milliseconds d) override;
   virtual uint8_t read_uint8(std::chrono::milliseconds d) override;
+  virtual bool is_open() const override;
+  virtual bool close() override;
 
   bool has_sent_packets() const;
   FakeBinkpPacket GetNextPacket();
@@ -53,6 +55,7 @@ public:
   std::queue<FakeBinkpPacket> send_queue_;
 private:
   mutable std::mutex mu_;
+  bool open_;
 };
 
 #endif  // __INCLUDED_NETWORKB_FAKE_CONNECTION_H__

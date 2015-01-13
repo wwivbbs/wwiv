@@ -39,10 +39,14 @@ public:
   virtual uint16_t read_uint16(std::chrono::milliseconds d) override;
   virtual uint8_t read_uint8(std::chrono::milliseconds d) override;
 
+  virtual bool is_open() const { return open_; }
+  virtual bool close() override;
+
 private:
   const std::string host_;
   const int port_;
   SOCKET sock_;
+  bool open_;
 };
 
 
