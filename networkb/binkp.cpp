@@ -298,10 +298,11 @@ BinkState BinkP::WaitConn() {
 
 BinkState BinkP::SendPasswd() {
   // This is on the sending side.
-  LOG << "STATE: SendPasswd";
   const string network_name(remote_network_name());
+  LOG << "STATE: SendPasswd for network '" << network_name << "' for node: " << expected_remote_node_;
   Callout callout = callouts_.at(network_name);
   const string password = expected_password_for(&callout, expected_remote_node_);
+  LOG << "       sending password packet";
   send_command_packet(BinkpCommands::M_PWD, password);
   return BinkState::WAIT_ADDR;
 }
