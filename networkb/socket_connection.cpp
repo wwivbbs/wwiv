@@ -198,19 +198,28 @@ SocketConnection::~SocketConnection() {
 template<typename TYPE, std::size_t SIZE = sizeof(TYPE)>
 static int read_TYPE(const SOCKET sock, TYPE* data, const milliseconds d, std::size_t size = SIZE) {
   auto end = system_clock::now() + d;
+  char *p = reinterpret_cast<char*>(data);
+  std::size_t total_read = 0;
+  int remaining = size;
   while (true) {
     if (system_clock::now() > end) {
       throw timeout_error("timeout error reading from socket.");
     }
-    int result = ::recv(sock, reinterpret_cast<char*>(data), size, 0);
+    int result = ::recv(sock, p, remaining, 0);
     if (result == SOCKET_ERROR) {
       if (WouldSocketBlock()) {
         sleep_for(SLEEP_MS);
         continue;
       }
     }
-    if (result != size) {
+    if (result == 0) {
       throw socket_error(StringPrintf("size error reading from socket. was %d expected %u", result, size));
+    }
+    total_read += result;
+    if (total_read < size) {
+      p += result;
+      remaining -= result;
+      continue;
     }
     return result;
   }

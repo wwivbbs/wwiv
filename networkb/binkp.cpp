@@ -682,7 +682,9 @@ void BinkP::Run() {
     LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
   }
   rename_pending_files();
-  process_network_files();
+  if (!config_->skip_net()) {
+    process_network_files();
+  }
 }
 
 void BinkP::rename_pending_files() const {

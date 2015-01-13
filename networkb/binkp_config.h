@@ -34,6 +34,9 @@ class BinkConfig {
   const std::string network_dir(const std::string& network_name) const;
   const wwiv::sdk::Networks& networks() { return networks_; }
 
+  void set_skip_net(bool skip_net) { skip_net_ = skip_net; }
+  bool skip_net() const { return skip_net_; }
+
  private:
   std::map<uint16_t, BinkNodeConfig> node_config_;
   std::string home_dir_;
@@ -42,6 +45,7 @@ class BinkConfig {
   std::string system_name_;
   std::string callout_network_name_;
   const wwiv::sdk::Networks networks_;
+  bool skip_net_;
 };
 
 bool ParseBinkConfigLine(const std::string& line,
