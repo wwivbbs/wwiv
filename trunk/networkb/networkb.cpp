@@ -160,13 +160,15 @@ int main(int argc, char** argv) {
     };
     map<const string, Callout> callouts;
     for (const auto net : bink_config.networks().networks()) {
-      callouts.emplace(net.name, Callout(net.dir));
+      string lower_case_network_name(net.name);
+      StringLowerCase(&lower_case_network_name);
+      callouts.emplace(lower_case_network_name, Callout(net.dir));
     }
     BinkP binkp(c.get(), &bink_config, callouts, side, expected_remote_node, factory);
     binkp.Run();
   } catch (const socket_error& e) {
-    LOG << e.what();
+    LOG << "ERROR: [networkb]: " << e.what();
   } catch (const exception& e) {
-    LOG << e.what();
+    LOG << "ERROR: [networkb]: " << e.what();
   }
 }

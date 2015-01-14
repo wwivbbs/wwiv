@@ -167,6 +167,6 @@ int main(int argc, char** argv) {
     // Use legacy networking.
     return LaunchOldNetworkingStack("network0", argc, argv);
   } catch (const std::exception& e) {
-    LOG << e.what();
+    LOG << "ERROR: [network]: " << e.what();
   }
 }
