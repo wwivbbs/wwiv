@@ -415,6 +415,13 @@ BinkState BinkP::AuthRemote() {
   if (side_ == BinkSide::ANSWERING) {
     int caller_node = node_number_from_address_list(address_list_, network_name);
     LOG << "       remote_network_name: " << network_name << "; caller_node: " << caller_node;
+    if (callouts_.find(network_name) == end(callouts_)) {
+      // We don't have a callout.net entry for this caller. Fail the connection
+      send_command_packet(BinkpCommands::M_ERR, 
+          StrCat("Error (NETWORKB-0003): Unable to find callout.net for: ", network_name));
+      // TODO(rushfan): Do we need a real error state (same TODO as below)
+      return BinkState::UNKNOWN;
+    }
     const net_call_out_rec* callout_record = callouts_.at(network_name).node_config_for(caller_node);
     if (callout_record == nullptr) {
       // We don't have a callout.net entry for this caller. Fail the connection
