@@ -25,7 +25,7 @@
 #define NO_ERROR 0
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
-#define closesocket(x) close(x)
+#define closesocket(x) ::close(x)
 #endif  // _WIN32
 
 #include "core/log.h"
