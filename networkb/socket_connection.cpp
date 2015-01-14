@@ -262,8 +262,10 @@ uint8_t SocketConnection::read_uint8(milliseconds d) {
 }
 
 bool SocketConnection::close() {
-  open_ = false;
-  closesocket(sock_);
+  if (open_) {
+    open_ = false;
+    closesocket(sock_);
+  }
   return true;
 }
 

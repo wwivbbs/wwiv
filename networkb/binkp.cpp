@@ -133,6 +133,9 @@ BinkP::~BinkP() {
 }
 
 bool BinkP::process_command(int16_t length, milliseconds d) {
+  if (!conn_->is_open()) {
+    return false;
+  }
   const uint8_t command_id = conn_->read_uint8(d);
   unique_ptr<char[]> data(new char[length]);
   conn_->receive(data.get(), length - 1, d);
@@ -177,6 +180,9 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
 }
 
 bool BinkP::process_data(int16_t length, milliseconds d) {
+  if (!conn_->is_open()) {
+    return false;
+  }
   unique_ptr<char[]> data(new char[length]);
   int length_received = conn_->receive(data.get(), length, d);
   string s(data.get(), length);
@@ -189,6 +195,9 @@ bool BinkP::process_frames(milliseconds d) {
 }
 
 bool BinkP::process_frames(std::function<bool()> predicate, milliseconds d) {
+  if (!conn_->is_open()) {
+    return false;
+  }
   try {
     while (!predicate()) {
       uint16_t header = conn_->read_uint16(d);
@@ -206,12 +215,14 @@ bool BinkP::process_frames(std::function<bool()> predicate, milliseconds d) {
       }
     }
   } catch (timeout_error ignored) {
-    // LOG << "        timeout_error from process_frames";
   }
   return true;
 }
 
 bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
+  if (!conn_->is_open()) {
+    return false;
+  }
   const std::size_t size = 3 + data.size(); /* header + command + data + null*/
   unique_ptr<char[]> packet(new char[size]);
   // Actual packet size parameter does not include the size parameter itself.
@@ -235,6 +246,9 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
 }
 
 bool BinkP::send_data_packet(const char* data, std::size_t packet_length) {
+  if (!conn_->is_open()) {
+    return false;
+  }
   // for now assume everything fits within a single frame.
   unique_ptr<char[]> packet(new char[packet_length + 2]);
   packet_length &= 0x7fff;
@@ -274,19 +288,23 @@ BinkState BinkP::WaitConn() {
   if (side_ == BinkSide::ANSWERING) {
     // Present all addresses on answering side.
     for (const auto net : config_->networks().networks()) {
+      string lower_case_network_name(net.name);
+      StringLowerCase(&lower_case_network_name);
       send_command_packet(BinkpCommands::M_NUL,
-          StringPrintf("WWIV @%u.%s", net.sysnum, net.name));
+          StringPrintf("WWIV @%u.%s", net.sysnum, lower_case_network_name.c_str()));
       if (!network_addresses.empty()) {
         network_addresses.append(" ");
       }
-      network_addresses += StringPrintf("20000:20000/%d@%s", net.sysnum, net.name);
+      network_addresses += StringPrintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name.c_str());
     }
   } else {
     // Present single primary address.
     send_command_packet(BinkpCommands::M_NUL,
         StringPrintf("WWIV @%u.%s", config_->callout_node_number(), config_->callout_network_name().c_str()));
     const auto net = config_->networks()[config_->callout_network_name()];
-    network_addresses = StringPrintf("20000:20000/%d@%s", net.sysnum, net.name);
+    string lower_case_network_name(net.name);
+    StringLowerCase(&lower_case_network_name);
+    network_addresses = StringPrintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name.c_str());
   }
   send_command_packet(BinkpCommands::M_ADR, network_addresses);
 
@@ -532,7 +550,6 @@ bool BinkP::HandleFileRequest(const string& request_line) {
   try {
     unique_ptr<TransferFile> received_file(received_transfer_file_factory_(net, filename));
     while (!done) {
-      LOG << "       HandleFileRequest: loop";
       uint16_t header = conn_->read_uint16(d);
       uint16_t length = header & 0x7fff;
       if (header & 0x8000) {
@@ -682,6 +699,7 @@ void BinkP::Run() {
   } catch (socket_error e) {
     LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
   }
+  LOG << "Before rename pending_files";
   rename_pending_files();
   if (!config_->skip_net()) {
     process_network_files();
