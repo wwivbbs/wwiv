@@ -126,7 +126,9 @@ BinkP::BinkP(Connection* conn, BinkConfig* config, std::map<const string, Callou
     side_(side),
     expected_remote_node_(expected_remote_node), 
     error_received_(false),
-    received_transfer_file_factory_(received_transfer_file_factory) {}
+    received_transfer_file_factory_(received_transfer_file_factory),
+    current_receive_file_length_(0),
+    current_receive_file_expected_length_(0) {}
 
 BinkP::~BinkP() {
   files_to_send_.clear();
@@ -186,7 +188,37 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
   unique_ptr<char[]> data(new char[length]);
   int length_received = conn_->receive(data.get(), length, d);
   string s(data.get(), length);
-  LOG << "RECV:  DATA PACKET; len: " << length_received << "; data: " << s.substr(3);
+  LOG << "RECV:  DATA PACKET; len: " << length_received;
+  if (!current_receive_file_) {
+    LOG << "ERROR: Received M_DATA with no current file.";
+    current_receive_file_expected_length_ = 0;
+    current_receive_file_length_ = 0;
+    current_receive_file_timestamp_ = 0;
+    current_receive_file_filename_.clear();
+    return false;
+  }
+  current_receive_file_->WriteChunk(data.get(), length_received);
+  current_receive_file_length_ += length_received;
+  if (current_receive_file_length_ >= current_receive_file_expected_length_) {
+    LOG << "       file finished; bytes_received: " << current_receive_file_length_;
+
+    const string data_line = StringPrintf("%s %u %u",
+        current_receive_file_filename_.c_str(),
+        current_receive_file_length_,
+        current_receive_file_timestamp_);
+
+    current_receive_file_->Close();
+    received_files_.push_back(std::move(current_receive_file_));
+    if (current_receive_file_.get() != nullptr) {
+      LOG << "      *** ERROR: current_receive_file_ should be nullptr";
+    }
+    current_receive_file_expected_length_ = 0;
+    current_receive_file_length_ = 0;
+    current_receive_file_timestamp_ = 0;
+    current_receive_file_filename_.clear();
+    send_command_packet(BinkpCommands::M_GOT, data_line);
+  }
+
   return true;
 }
 
@@ -207,7 +239,7 @@ bool BinkP::process_frames(std::function<bool()> predicate, milliseconds d) {
           return false;
         }
       } else {
-        // Unexpected data frame.
+        // process data frame.
         if (!process_data(header & 0x7fff, d)) {
           // false return value mean san error occurred.
           return false;
@@ -545,48 +577,20 @@ bool BinkP::SendFileData(TransferFile* file) {
 // M_FILE received.
 bool BinkP::HandleFileRequest(const string& request_line) {
   LOG << "       HandleFileRequest; request_line: " << request_line;
-  string filename;
-  long expected_length = 0;
-  time_t timestamp = 0;
+  current_receive_file_filename_.clear();
+  current_receive_file_expected_length_ = 0;
+  current_receive_file_timestamp_ = 0;
   long starting_offset = 0;
-  if (!ParseFileRequestLine(request_line, &filename, &expected_length, &timestamp, &starting_offset)) {
+  if (!ParseFileRequestLine(request_line,
+      &current_receive_file_filename_, 
+       &current_receive_file_expected_length_, 
+       &current_receive_file_timestamp_, 
+       &starting_offset)) {
     return false;
   }
 
-  auto d = seconds(30);  // TODO(rushfan): make this configurable.
-  long bytes_received = starting_offset;
-  bool done = false;
-
   const string net = remote_network_name();
-  try {
-    unique_ptr<TransferFile> received_file(received_transfer_file_factory_(net, filename));
-    while (!done) {
-      uint16_t header = conn_->read_uint16(d);
-      uint16_t length = header & 0x7fff;
-      if (header & 0x8000) {
-        // Unexpected file packet.  Could be a M_GOT, M_SKIP, or M_GET
-        // TOOD(rushfan): make process_command return the command.
-        process_command(length, d);
-      } else {
-        unique_ptr<char[]> data(new char[length]);
-        int length_received = conn_->receive(data.get(), length, d);
-        LOG << "RECV:  DATA PACKET; len: " << length_received;
-        received_file->WriteChunk(data.get(), length_received);
-        bytes_received += length_received;
-        if (bytes_received >= expected_length) {
-          LOG << "       file finished; bytes_received: " << bytes_received;
-          done = true;
-          const string data_line = StringPrintf("%s %u %u", filename.c_str(), bytes_received, timestamp);
-          send_command_packet(BinkpCommands::M_GOT, data_line);
-          received_file->Close();
-          received_files_.push_back(std::move(received_file));
-        }
-      }
-    }
-  } catch (timeout_error e) {
-    LOG << "       HandleFileRequest: timeout_error: " << e.what();
-  }
-  LOG << "       HandleFileRequest: returning true";
+  current_receive_file_.reset(received_transfer_file_factory_(net, current_receive_file_filename_));
   return true;
 }
 
