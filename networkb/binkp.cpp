@@ -510,6 +510,8 @@ BinkState BinkP::Unknown() {
 BinkState BinkP::WaitEob() {
   LOG << "STATE: WaitEob: ENTERING eob_received: " << boolalpha << eob_received_;
   if (eob_received_) {
+    // If we've already received an EOB, don't process_frames or do anything else. 
+    // We're done.
     return BinkState::DONE;
   }
 
