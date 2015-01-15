@@ -230,7 +230,7 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const milliseconds d, std::s
 int SocketConnection::receive(void* data, const int size, milliseconds d) {
   int num_read = read_TYPE<void, 0>(sock_, data, d, size);
   if (open_ && num_read == 0) {
-    throw socket_error(StringPrintf("receive: got zero read from socket. expected: ", size));
+    throw socket_closed_error(StringPrintf("receive: got zero read from socket. expected: ", size));
   }
   return num_read;
 }
@@ -247,7 +247,7 @@ uint16_t SocketConnection::read_uint16(milliseconds d) {
   uint16_t data = 0;
   int num_read = read_TYPE<uint16_t>(sock_, &data, d);
   if (open_ && num_read == 0) {
-    throw socket_error(StrCat("read_uint16: got zero read from socket. expected: ", sizeof(uint16_t)));
+    throw socket_closed_error(StrCat("read_uint16: got zero read from socket. expected: ", sizeof(uint16_t)));
   }
   return ntohs(data);
 }
@@ -256,7 +256,7 @@ uint8_t SocketConnection::read_uint8(milliseconds d) {
   uint8_t data = 0;
   int num_read = read_TYPE<uint8_t>(sock_, &data, d);
   if (open_ && num_read == 0) {
-    throw socket_error(StrCat("receive: got zero read from socket. expected: ", sizeof(uint8_t)));
+    throw socket_closed_error(StrCat("receive: got zero read from socket. expected: ", sizeof(uint8_t)));
   }
   return data;
 }
