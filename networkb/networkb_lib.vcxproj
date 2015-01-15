@@ -97,6 +97,7 @@
     <ClInclude Include="connection.h" />
     <ClInclude Include="config_exceptions.h" />
     <ClInclude Include="ppp_config.h" />
+    <ClInclude Include="receive_file.h" />
     <ClInclude Include="socket_connection.h" />
     <ClInclude Include="socket_exceptions.h" />
     <ClInclude Include="transfer_file.h" />
@@ -109,6 +110,7 @@
     <ClCompile Include="callout.cpp" />
     <ClCompile Include="connection.cpp" />
     <ClCompile Include="ppp_config.cpp" />
+    <ClCompile Include="receive_file.cpp" />
     <ClCompile Include="socket_connection.cpp" />
     <ClCompile Include="socket_exceptions.cpp" />
     <ClCompile Include="transfer_file.cpp" />
