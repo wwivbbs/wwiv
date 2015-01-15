@@ -490,15 +490,19 @@ BinkState BinkP::Unknown() {
 
 BinkState BinkP::WaitEob() {
   LOG << "STATE: WaitEob: ENTERING eob_received: " << boolalpha << eob_received_;
-  for (int count=1; count < 20; count++) {
+  const int eob_retries = 12;
+  const int eob_wait_seconds = 5;
+  for (int count=1; count < eob_retries; count++) {
+    // Loop for up to one minute swaiting for an EOB before exiting.
     try {
-      process_frames([&]() -> bool { return eob_received_; }, seconds(500));
+      process_frames([&]() -> bool { return eob_received_; }, seconds(eob_wait_seconds));
       if (eob_received_) {
         return BinkState::DONE;
       }
-      LOG << "       WaitEob: eob_received: " << boolalpha << eob_received_;
+      LOG << "       WaitEob: still waiting for M_EOB to be received. will wait up to "
+          << (eob_retries * eob_wait_seconds) << " seconds.";
     } catch (timeout_error e) {
-      LOG << "       WaitEob looping for more data. " << e.what();
+      LOG << "       WaitEob: ERROR while waiting for more data: " << e.what();
     }
   }
   return BinkState::DONE;
