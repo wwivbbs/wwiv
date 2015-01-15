@@ -126,9 +126,7 @@ BinkP::BinkP(Connection* conn, BinkConfig* config, std::map<const string, Callou
     side_(side),
     expected_remote_node_(expected_remote_node), 
     error_received_(false),
-    received_transfer_file_factory_(received_transfer_file_factory),
-    current_receive_file_length_(0),
-    current_receive_file_expected_length_(0) {}
+    received_transfer_file_factory_(received_transfer_file_factory) {}
 
 BinkP::~BinkP() {
   files_to_send_.clear();
@@ -191,31 +189,20 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
   LOG << "RECV:  DATA PACKET; len: " << length_received;
   if (!current_receive_file_) {
     LOG << "ERROR: Received M_DATA with no current file.";
-    current_receive_file_expected_length_ = 0;
-    current_receive_file_length_ = 0;
-    current_receive_file_timestamp_ = 0;
-    current_receive_file_filename_.clear();
     return false;
   }
   current_receive_file_->WriteChunk(data.get(), length_received);
-  current_receive_file_length_ += length_received;
-  if (current_receive_file_length_ >= current_receive_file_expected_length_) {
-    LOG << "       file finished; bytes_received: " << current_receive_file_length_;
+  if (current_receive_file_->length() >= current_receive_file_->expected_length()) {
+    LOG << "       file finished; bytes_received: " << current_receive_file_->length();
 
     const string data_line = StringPrintf("%s %u %u",
-        current_receive_file_filename_.c_str(),
-        current_receive_file_length_,
-        current_receive_file_timestamp_);
+        current_receive_file_->filename().c_str(),
+        current_receive_file_->length(),
+        current_receive_file_->timestamp());
 
     current_receive_file_->Close();
-    received_files_.push_back(std::move(current_receive_file_));
-    if (current_receive_file_.get() != nullptr) {
-      LOG << "      *** ERROR: current_receive_file_ should be nullptr";
-    }
-    current_receive_file_expected_length_ = 0;
-    current_receive_file_length_ = 0;
-    current_receive_file_timestamp_ = 0;
-    current_receive_file_filename_.clear();
+    received_files_.push_back(current_receive_file_->filename());
+    current_receive_file_.release();
     send_command_packet(BinkpCommands::M_GOT, data_line);
   }
 
@@ -577,20 +564,27 @@ bool BinkP::SendFileData(TransferFile* file) {
 // M_FILE received.
 bool BinkP::HandleFileRequest(const string& request_line) {
   LOG << "       HandleFileRequest; request_line: " << request_line;
-  current_receive_file_filename_.clear();
-  current_receive_file_expected_length_ = 0;
-  current_receive_file_timestamp_ = 0;
+  ReceiveFile* old_file = current_receive_file_.release();
+  if (old_file != nullptr) {
+    LOG << "** ERROR: Got HandleFileRequest while still having an open receive file!";
+  }
+  string filename;
+  long expected_length;
+  time_t timestamp;
   long starting_offset = 0;
   if (!ParseFileRequestLine(request_line,
-      &current_receive_file_filename_, 
-       &current_receive_file_expected_length_, 
-       &current_receive_file_timestamp_, 
-       &starting_offset)) {
+      &filename, 
+      &expected_length,
+      &timestamp, 
+      &starting_offset)) {
     return false;
   }
-
-  const string net = remote_network_name();
-  current_receive_file_.reset(received_transfer_file_factory_(net, current_receive_file_filename_));
+  const auto net = remote_network_name();
+  auto *p = new ReceiveFile(received_transfer_file_factory_(net, filename),
+    filename,
+    expected_length,
+    timestamp);
+  current_receive_file_.reset(p);
   return true;
 }
 
@@ -730,8 +724,8 @@ void BinkP::rename_pending_files() const {
       continue;
     }
     const auto dir = config_->networks()[remote_network_name()].dir;
-    LOG << "       renaming_pending_file: dir: " << dir << "; file: " << file->filename();
-    rename_pend(dir, file->filename());
+    LOG << "       renaming_pending_file: dir: " << dir << "; file: " << file;
+    rename_pend(dir, file);
   }
 }
 
