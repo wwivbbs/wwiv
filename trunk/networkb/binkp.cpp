@@ -509,6 +509,10 @@ BinkState BinkP::Unknown() {
 
 BinkState BinkP::WaitEob() {
   LOG << "STATE: WaitEob: ENTERING eob_received: " << boolalpha << eob_received_;
+  if (eob_received_) {
+    return BinkState::DONE;
+  }
+
   const int eob_retries = 12;
   const int eob_wait_seconds = 5;
   for (int count=1; count < eob_retries; count++) {
@@ -705,6 +709,9 @@ void BinkP::Run() {
       }
       process_frames(milliseconds(100));
     }
+  } catch (socket_closed_error e) {
+    // The other end closed the socket before we did.
+    LOG << "       connection was closed by the other side.";
   } catch (socket_error e) {
     LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
   }
