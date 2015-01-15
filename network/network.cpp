@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
     }
 
     string network_name = get_or_default(args, "network", "");
-    string network_number = get_or_default(args, "network_number", "");
+    string network_number = get_or_default(args, "network_number", "0");
 
     if (network_name.empty() && network_number.empty()) {
       LOG << "--network=[network name] or .[network_number] must be specified.";
