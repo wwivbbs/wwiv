@@ -105,6 +105,11 @@ private:
   bool error_received_;
   received_transfer_file_factory_t received_transfer_file_factory_;
   std::vector<std::unique_ptr<TransferFile>> received_files_;
+  std::unique_ptr<TransferFile> current_receive_file_;
+  long current_receive_file_length_;
+  long current_receive_file_expected_length_;
+  time_t current_receive_file_timestamp_;
+  std::string current_receive_file_filename_;
 };
 
 // Parses a M_FILE request line into it's parts.
