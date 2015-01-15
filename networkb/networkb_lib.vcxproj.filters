@@ -41,9 +41,6 @@
     <ClCompile Include="callout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="receive_file.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="connection.h">

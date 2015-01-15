@@ -110,7 +110,6 @@
     <ClCompile Include="callout.cpp" />
     <ClCompile Include="connection.cpp" />
     <ClCompile Include="ppp_config.cpp" />
-    <ClCompile Include="receive_file.cpp" />
     <ClCompile Include="socket_connection.cpp" />
     <ClCompile Include="socket_exceptions.cpp" />
     <ClCompile Include="transfer_file.cpp" />
