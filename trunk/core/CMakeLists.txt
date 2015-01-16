@@ -9,6 +9,7 @@ set(COMMON_SOURCES
   file_unix.cpp
   log.cpp
   os.cpp
+  os_unix.cpp
   strings.cpp
   textfile.cpp
   )
