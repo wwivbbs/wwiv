@@ -23,6 +23,7 @@
 #include "core/strings.h"
 #include "core/file.h"
 
+using std::chrono::milliseconds;
 using std::string;
 using namespace wwiv::strings;
 
