@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "core/os.h"
 
+#include <algorithm>
+#include <chrono>
 #include <cstdlib>
 #include <cstdint>
 #include <limits>
@@ -36,12 +38,71 @@
 
 #pragma comment (lib, "DbgHelp.lib")
 
+using std::numeric_limits;
+using std::chrono::milliseconds;
 using std::string;
 using std::stringstream;
 using namespace wwiv::strings;
 
 namespace wwiv {
 namespace os {
+
+void sleep_for(milliseconds d) {
+  int64_t count = d.count();
+  if (count > numeric_limits<uint32_t>::max()) {
+    count = numeric_limits<uint32_t>::max();
+  }
+  ::Sleep(static_cast<uint32_t>(count));
+}
+
+void sound(uint32_t frequency, std::chrono::milliseconds d) {
+  ::Beep(frequency, static_cast<uint32_t>(d.count()));
+}
+
+std::string os_version_string() {
+  OSVERSIONINFO os;
+  os.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+  if (!GetVersionEx(&os)) {
+    return std::string("WIN32");
+  }
+  switch (os.dwPlatformId) {
+  case VER_PLATFORM_WIN32_NT:
+    if (os.dwMajorVersion == 5) {
+      switch (os.dwMinorVersion) {
+      case 0:
+        return StringPrintf("Windows 2000 %s", os.szCSDVersion);
+      case 1:
+        return StringPrintf("Windows XP %s", os.szCSDVersion);
+      case 2:
+        return StringPrintf("Windows Server 2003 %s", os.szCSDVersion);
+      default:
+        return StringPrintf("Windows NT %ld%c%ld %s",
+                             os.dwMajorVersion, '.', os.dwMinorVersion, os.szCSDVersion);
+      }
+    } else if (os.dwMajorVersion == 6) {
+      switch (os.dwMinorVersion) {
+      case 0:
+        return StringPrintf("Windows Vista %s", os.szCSDVersion);
+      case 1:
+        return StringPrintf("Windows 7 %s", os.szCSDVersion);
+      case 2:
+        return StringPrintf("Windows 8 %s", os.szCSDVersion);
+      case 3:
+        return StringPrintf("Windows 8.1 %s", os.szCSDVersion);
+      default:
+        return StringPrintf("Windows NT %ld%c%ld %s",
+                                           os.dwMajorVersion, '.', os.dwMinorVersion, os.szCSDVersion);
+      }
+    }
+    break;
+  default:
+    return StringPrintf("WIN32 Compatable OS v%d%c%d", os.dwMajorVersion, '.', os.dwMinorVersion);
+  }
+}
+
+bool set_environment_variable(const std::string& variable_name, const std::string value) {
+  return ::SetEnvironmentVariable(variable_name.c_str(), value.c_str()) ? true : false;
+}
 
 string stacktrace() {
   HANDLE process = GetCurrentProcess();
