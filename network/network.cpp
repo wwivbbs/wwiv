@@ -43,6 +43,7 @@ using namespace wwiv::net;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
+using namespace wwiv::os;
 
 static void ShowHelp() {
   cout << "Usage: network [flags]" << endl
@@ -93,7 +94,7 @@ static int LaunchOldNetworkingStack(const std::string exe, int argc, char** argv
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
   try {
-    wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
+    ScopeExit at_exit(Logger::ExitLogger);
     map<string, string> args = ParseArgs(argc, argv);
 
     for (const auto& arg : args) {
@@ -169,6 +170,6 @@ int main(int argc, char** argv) {
     return LaunchOldNetworkingStack("network0", argc, argv);
   } catch (const std::exception& e) {
     LOG << "ERROR: [network]: " << e.what() << "\nStacktrace:\n";
-    LOG << wwiv::os::stacktrace();
+    LOG << stacktrace();
   }
 }
