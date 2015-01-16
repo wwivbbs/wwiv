@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*               Copyright (C)2014-2015 WWIV Software Services            */
+/*                    Copyright (C)2015 WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,45 +16,52 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_CORE_OS_H__
-#define __INCLUDED_WWIV_CORE_OS_H__
-#pragma once
+#include "core/os.h"
 
-#include <chrono>
+#include <cstdlib>
 #include <cstdint>
-#include <functional>
-#include <string>
+#include <limits>
+#include <sstream>
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <Windows.h>
+#include <DbgHelp.h>
+
+#endif  // _WIN32
+
+#include "core/strings.h"
+#include "core/file.h"
+
+#pragma comment (lib, "DbgHelp.lib")
+
+using std::string;
+using std::stringstream;
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace os {
 
-// Sleeps for a duration of time d, or until predicate returns true.
-// returns the value of predicate.
-bool wait_for(std::function<bool()> predicate, std::chrono::milliseconds d);
+string stacktrace() {
+  HANDLE process = GetCurrentProcess();
+  SymInitialize(process, NULL, TRUE);
+  void* stack[100];
+  uint16_t frames = CaptureStackBackTrace(0, 100, stack, NULL);
+  SYMBOL_INFO* symbol = (SYMBOL_INFO *) calloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char), 1);
+  symbol->MaxNameLen = 255;
+  symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
 
-// Sleeps for a duration of time d
-void sleep_for(std::chrono::milliseconds d);
-
-// Yields the CPU to other threads or processes.
-void yield();
-
-// Gets the OS Version Number.
-std::string os_version_string();
-
-// plays a sound at frequency for duration
-void sound(uint32_t frequency, std::chrono::milliseconds d);
-
-// returns a random number.
-int random_number(int max_value);
-
-std::string environment_variable(const std::string& variable_name);
-bool set_environment_variable(const std::string& variable_name, const std::string value);
-
-// Prints a stacktrace to stderr.
-std::string stacktrace();
+  stringstream out;
+  // start at one to skip this current frame.
+  for(std::size_t i = 1; i < frames; i++) {
+    SymFromAddr(process, (DWORD64)(stack[i]), 0, symbol);
+    out << frames - i - 1 << ": " << symbol->Name << " = " << std::hex << symbol->Address << std::endl;
+  }
+  free(symbol);
+  return out.str();
+}
 
 
 }  // namespace os
 }  // namespace wwiv
-
-#endif  // __INCLUDED_WWIV_CORE_OS_H__
