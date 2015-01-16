@@ -22,6 +22,7 @@
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/os.h"
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"
@@ -167,6 +168,7 @@ int main(int argc, char** argv) {
     // Use legacy networking.
     return LaunchOldNetworkingStack("network0", argc, argv);
   } catch (const std::exception& e) {
-    LOG << "ERROR: [network]: " << e.what();
+    LOG << "ERROR: [network]: " << e.what() << "\nStacktrace:\n";
+    LOG << wwiv::os::stacktrace();
   }
 }
