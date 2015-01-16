@@ -87,6 +87,7 @@
     <ClCompile Include="inifile.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="os.cpp" />
+    <ClCompile Include="os_win.cpp" />
     <ClCompile Include="stl.cpp" />
     <ClCompile Include="file.cpp" />
     <ClCompile Include="file_unix.cpp">

@@ -17,6 +17,7 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/os.h"
 #include "core/wfndfile.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/binkp_config.h"
@@ -41,6 +42,7 @@ using std::vector;
 using namespace wwiv::net;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
+using namespace wwiv::os;
 
 namespace wwiv {
 namespace net {
@@ -660,6 +662,7 @@ void BinkP::Run() {
   BinkState state = (side_ == BinkSide::ORIGINATING) ? BinkState::CONN_INIT : BinkState::WAIT_CONN;
   try {
     bool done = false;
+    throw socket_error("foo");
     while (!done) {
       switch (state) {
       case BinkState::CONN_INIT:
@@ -715,7 +718,8 @@ void BinkP::Run() {
     // The other end closed the socket before we did.
     LOG << "       connection was closed by the other side.";
   } catch (socket_error e) {
-    LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
+    LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what() << "\nStacktrace:\n";
+    LOG << stacktrace();
   }
   LOG << "Before rename pending_files";
   rename_pending_files();
