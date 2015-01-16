@@ -662,7 +662,6 @@ void BinkP::Run() {
   BinkState state = (side_ == BinkSide::ORIGINATING) ? BinkState::CONN_INIT : BinkState::WAIT_CONN;
   try {
     bool done = false;
-    throw socket_error("foo");
     while (!done) {
       switch (state) {
       case BinkState::CONN_INIT:
