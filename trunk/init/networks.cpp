@@ -264,18 +264,6 @@ static bool insert_net(CursesWindow* window, int nn) {
 #define OKAD (syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)
 
 void networks() {
-  if (!File::Exists("NETWORK.EXE")) {
-    vector<string> lines{
-      "WARNING",
-      "You have not installed the networking software.  Unzip netxx.zip",
-      "to the main BBS directory and re-run init.",
-      "",
-      "Hit any key to continue."
-    };
-    out->Cls(ACS_CKBOARD);
-    messagebox(out->window(), lines);
-  }
-
   bool done = false;
   do {
     out->Cls(ACS_CKBOARD);
