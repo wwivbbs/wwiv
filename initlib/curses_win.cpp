@@ -78,7 +78,9 @@ void CursesWindow::SetTitle(const std::string& title) {
 int CursesWindow::GetChar() const {
   for (;;) {
     int ch = wgetch(window_);
-    if (ch == ERR || ch == KEY_RESIZE) {
+    if (ch == KEY_RESIZE) {
+      // Since we don't support online window resizing just ignore this
+      // but don't return it as a key for the application to (badly) handle.
       continue;
     }
     return ch;
