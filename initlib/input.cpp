@@ -303,8 +303,9 @@ int dialog_input_number(CursesWindow* window, const string& prompt, int min_valu
 char onek(CursesWindow* window, const char *pszKeys) {
   char ch = 0;
 
-  while (!strchr(pszKeys, ch = toupper(wgetch(window->window()))))
-    ;
+  while (!strchr(pszKeys, ch = toupper(window->GetChar()))) {
+    // NOP
+  }
   return ch;
 }
 
