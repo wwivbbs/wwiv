@@ -1,1 +1,13 @@
-cmake . && make -j12
+#!/bin/bash
+set -e
+declare -r RELEASE_ZIP=${WORKSPACE}/archives/wwiv-build-linux-${SVN_REVISION}-${BUILD_NUMBER}.zip
+cmake .
+make -j12 
+echo "RELEASE_ZIP: ${RELEASE_ZIP}"
+
+if [[ ! -d "${WORKSPACE}/archives" ]]; then
+  mkdir -p "${WORKSPACE}/archives"
+  echo "Created archive dir: ${WORKSPACE}/archives"
+fi
+
+touch ${RELEASE_ZIP}
