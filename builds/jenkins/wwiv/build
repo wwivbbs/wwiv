@@ -1,6 +1,7 @@
 #!/bin/bash
+rm ${WORKSPACE}/wwiv-build-linux-*.zip
 set -e
-declare -r RELEASE_ZIP=${WORKSPACE}/archives/wwiv-build-linux-${SVN_REVISION}-${BUILD_NUMBER}.zip
+declare -r RELEASE_ZIP=${WORKSPACE}/wwiv-build-linux-${SVN_REVISION}-${BUILD_NUMBER}.zip
 cmake .
 make -j12 
 echo "RELEASE_ZIP: ${RELEASE_ZIP}"

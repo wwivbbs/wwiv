@@ -23,7 +23,7 @@
 )
 
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
-set RELEASE_ZIP=%WORKSPACE%\archives\wwiv-build-%SVN_REVISION%-%BUILD_NUMBER%.zip
+set RELEASE_ZIP=%WORKSPACE%\wwiv-build-win-%SVN_REVISION%-%BUILD_NUMBER%.zip
 echo Workspace: %WORKSPACE%         
 echo Revision:  %SVN_REVISION%
 echo Archive:   %RELEASE_ZIP%
@@ -78,11 +78,7 @@ if not exist %WORKSPACE%\release (
   mkdir %WORKSPACE%\release
 )
 del /q %WORKSPACE%\release
-if not exist %WORKSPACE%\archives (
-   echo Creating %WORKSPACE%\archives
-   mkdir %WORKSPACE%\archives
-)
-del /q %WORKSPACE%\archives
+del wwiv-build-*.zip
 
 echo Create Menus (EN)
 cd %WORKSPACE%\bbs\admin\menus\en
