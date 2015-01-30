@@ -1,6 +1,14 @@
 #!/bin/bash
-rm ${WORKSPACE}/wwiv-build-linux-*.zip
+#
+# WWIV 5.0 Build Script.
+#
+# Required Variables:
+# WORKSPACE - wwiv-svn root directory
+# BUILD_NUMBER - Jenkins Build number
+# SVN_REVISION - subversion build number
+
 set -e
+rm ${WORKSPACE}/wwiv-build-linux-*.zip
 declare -r RELEASE_ZIP=${WORKSPACE}/wwiv-build-linux-${SVN_REVISION}-${BUILD_NUMBER}.zip
 cmake .
 make -j12 
@@ -11,4 +19,24 @@ if [[ ! -d "${WORKSPACE}/archives" ]]; then
   echo "Created archive dir: ${WORKSPACE}/archives"
 fi
 
-touch ${RELEASE_ZIP}
+if [[ ! -d "${WORKSPACE}/release" ]]; then
+  mkdir -p "${WORKSPACE}/release"
+  echo "Created release dir: ${WORKSPACE}/release"
+fi
+
+echo "Creating Menus"
+cd ${WORKSPACE}/bbs/admin/menus/en
+zip -r ${WORKSPACE}/release/en-menus.zip *
+
+echo "Creating zip-city"
+cd ${WORKSPACE}/bbs/admin
+zip -r ${WORKSPACE}/release/zip-city.zip zip-city/*
+
+echo "Creating regions"
+cd ${WORKSPACE}/bbs/admin
+zip -r ${WORKSPACE}/release/regions.zip regions/*
+
+echo "Creating release archive: ${RELEASE_ZIP}"
+cd ${WORKSPACE}/release
+zip ${RELEASE_ZIP}
+
