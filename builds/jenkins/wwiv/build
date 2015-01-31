@@ -13,19 +13,32 @@ rm ${WORKSPACE}/wwiv-build-linux-*.zip
 set -e
 
 declare -r RELEASE_ZIP=${WORKSPACE}/wwiv-build-linux-${SVN_REVISION}-${BUILD_NUMBER}.zip
+echo "Workspace: ${WORKSPACE}"
+echo "Revision:  ${SVN_REVISION}"
+echo "Archive:   ${RELEASE_ZIP}"
+
+echo "Cleaning up release dir"
+if [[ -d "${WORKSPACE}/release" ]]
+then
+  rm -rf "${WORKSPACE}/release"
+fi
+mkdir -p "${WORKSPACE}/release"
+echo "Created release dir: ${WORKSPACE}/release"
+
+echo "Building binaries"
+cd ${WORKSPACE}
+sed -i -e "s@<#= version #>@${SVN_REVISION}@" bbs/version.template
 cmake .
 make -j12 
-echo "RELEASE_ZIP: ${RELEASE_ZIP}"
 
-if [[ ! -d "${WORKSPACE}/archives" ]]; then
-  mkdir -p "${WORKSPACE}/archives"
-  echo "Created archive dir: ${WORKSPACE}/archives"
-fi
-
-if [[ ! -d "${WORKSPACE}/release" ]]; then
-  mkdir -p "${WORKSPACE}/release"
-  echo "Created release dir: ${WORKSPACE}/release"
-fi
+echo "Populating built binaries"
+cp  ${WORKSPACE}/networkb/networkb \
+    ${WORKSPACE}/fix/fix \
+    ${WORKSPACE}/bbs/bbs \
+    ${WORKSPACE}/init/init \
+    ${WORKSPACE}/nodemgr/nodemgr \
+    ${WORKSPACE}/network/network \
+    ${WORKSPACE}/release
 
 echo "Creating Menus"
 cd ${WORKSPACE}/bbs/admin/menus/en
@@ -39,7 +52,30 @@ echo "Creating regions"
 cd ${WORKSPACE}/bbs/admin
 zip -r ${WORKSPACE}/release/regions.zip regions/*
 
+echo "adding common files"
+cd ${WORKSPACE}/bbs/admin
+shopt -s extglob
+cp !(*.bat) ${WORKSPACE}/release
+shopt -u extglob
+
+echo "adding linux-specific files"
+cd ${WORKSPACE}/bbs/admin/unix
+shopt -s dotglob
+cp -a * ${WORKSPACE}/release
+shopt -u dotglob
+if [[ -f ${WORKSPACE}/release/unix-scripts.tgz ]]
+then
+  rm ${WORKSPACE}/release/unix-scripts.tgz
+fi
+
+echo "Creating build.nfo file"
+echo "Build URL ${BUILD_URL}" > ${WORKSPACE}/release/build.nfo
+echo "Subversion Build: ${SVN_REVISION}" >> ${WORKSPACE}/release/build.nfo
+
 echo "Creating release archive: ${RELEASE_ZIP}"
 cd ${WORKSPACE}/release
-zip ${RELEASE_ZIP} *
+zip -r ${RELEASE_ZIP} *
 
+echo "Archive file: ${RELEASE_ZIP}"
+echo "File Contents:"
+unzip -l ${RELEASE_ZIP}
