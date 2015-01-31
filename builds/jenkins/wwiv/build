@@ -7,8 +7,11 @@
 # BUILD_NUMBER - Jenkins Build number
 # SVN_REVISION - subversion build number
 
-set -e
+
 rm ${WORKSPACE}/wwiv-build-linux-*.zip
+
+set -e
+
 declare -r RELEASE_ZIP=${WORKSPACE}/wwiv-build-linux-${SVN_REVISION}-${BUILD_NUMBER}.zip
 cmake .
 make -j12 
