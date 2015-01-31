@@ -38,5 +38,5 @@ zip -r ${WORKSPACE}/release/regions.zip regions/*
 
 echo "Creating release archive: ${RELEASE_ZIP}"
 cd ${WORKSPACE}/release
-zip ${RELEASE_ZIP}
+zip ${RELEASE_ZIP} *
 
