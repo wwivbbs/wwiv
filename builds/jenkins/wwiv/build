@@ -9,13 +9,14 @@
 
 
 rm ${WORKSPACE}/wwiv-build-linux-*.zip
+rm ${WORKSPACE}/wwiv-build-linux-*.tar.gz
 
 set -e
 
-declare -r RELEASE_ZIP=${WORKSPACE}/wwiv-build-linux-${SVN_REVISION}-${BUILD_NUMBER}.zip
+declare -r RELEASE_TGZ=${WORKSPACE}/wwiv-build-linux-${SVN_REVISION}-${BUILD_NUMBER}.tar.gz
 echo "Workspace: ${WORKSPACE}"
 echo "Revision:  ${SVN_REVISION}"
-echo "Archive:   ${RELEASE_ZIP}"
+echo "Archive:   ${RELEASE_TGZ}"
 
 echo "Cleaning up release dir"
 if [[ -d "${WORKSPACE}/release" ]]
@@ -71,19 +72,15 @@ cd ${WORKSPACE}/bbs/admin/unix
 shopt -s dotglob
 cp -a * ${WORKSPACE}/release
 shopt -u dotglob
-if [[ -f ${WORKSPACE}/release/unix-scripts.tgz ]]
-then
-  rm ${WORKSPACE}/release/unix-scripts.tgz
-fi
 
 echo "Creating build.nfo file"
 echo "Build URL ${BUILD_URL}" > ${WORKSPACE}/release/build.nfo
 echo "Subversion Build: ${SVN_REVISION}" >> ${WORKSPACE}/release/build.nfo
 
-echo "Creating release archive: ${RELEASE_ZIP}"
+echo "Creating release archive: ${RELEASE_TGZ}"
 cd ${WORKSPACE}/release
-zip -r ${RELEASE_ZIP} *
+tar zcvf ${RELEASE_TGZ} *
 
-echo "Archive file: ${RELEASE_ZIP}"
+echo "Archive file: ${RELEASE_TGZ}"
 echo "File Contents:"
-unzip -l ${RELEASE_ZIP}
+tar ztvf ${RELEASE_TGZ}
