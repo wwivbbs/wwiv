@@ -55,7 +55,15 @@ zip -r ${WORKSPACE}/release/regions.zip regions/*
 echo "adding common files"
 cd ${WORKSPACE}/bbs/admin
 shopt -s extglob
-cp !(*.bat) ${WORKSPACE}/release
+set +e
+cp -v !(*.bat) ${WORKSPACE}/release
+RESULT=$?
+set -e
+# cp returns non-zero if we skip directories, so do our own check
+if [[ $RESULT -gt 1 ]]
+then
+  exit 1
+fi
 shopt -u extglob
 
 echo "adding linux-specific files"
