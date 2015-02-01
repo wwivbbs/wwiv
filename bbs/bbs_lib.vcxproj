@@ -41,11 +41,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)\..\;$(IncludePath);..\deps\rapidjson-master\include</IncludePath>
+    <IncludePath>$(ProjectDir)\..\;$(IncludePath);$(ProjectDir)\..\deps\rapidjson-master\include;$(ProjectDir)\..\deps\pdcurses-3.4\include\</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)\..\;$(IncludePath);..\deps\rapidjson-master\include</IncludePath>
+    <IncludePath>$(ProjectDir)\..\;$(IncludePath);$(ProjectDir)\..\deps\rapidjson-master\include;$(ProjectDir)\..\deps\pdcurses-3.4\include\</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -270,6 +270,9 @@
   <ItemGroup>
     <ProjectReference Include="..\core\core.vcxproj">
       <Project>{160ca888-2434-48a8-ad4e-02140e3b2c52}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\initlib\initlib.vcxproj">
+      <Project>{8ebd5a9a-e149-4e24-b5ca-7ebe0cc45a08}</Project>
     </ProjectReference>
     <ProjectReference Include="..\sdk\sdk.vcxproj">
       <Project>{53db67db-4d42-4a8a-b176-ee83a170de86}</Project>

@@ -81,7 +81,7 @@ void CursesFooter::SetDefaultFooter() const {
   window_->Refresh();
 }
 
-CursesIO::CursesIO() 
+CursesIO::CursesIO(const string& title) 
     : max_x_(0), max_y_(0), window_(nullptr), footer_(nullptr), 
       header_(nullptr), indicator_mode_(IndicatorMode::NONE) {
 
@@ -129,13 +129,12 @@ CursesIO::CursesIO()
     throw std::runtime_error(StrCat("Screen height must be at least 25, was: ", stdscr_maxy));
   }
 
-  header_.reset(new CursesWindow(nullptr, color_scheme_.get(), 2, 0, 0, 0));
+  header_.reset(new CursesWindow(nullptr, color_scheme_.get(), 2, 0));
   footer_.reset(new CursesFooter(new CursesWindow(nullptr, color_scheme_.get(), 2, 0, stdscr_maxy-2, 0), 
     color_scheme_.get()));
   header_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::HEADER));
-  const string s = StringPrintf("WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version);
   header_->SetColor(SchemeId::HEADER);
-  header_->MvAddStr(0, 0, s);
+  header_->MvAddStr(0, 0, title);
   header_->SetColor(SchemeId::HEADER_COPYRIGHT);
   header_->MvAddStr(1, 0, copyrightString);
   footer_->window()->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::HEADER));
@@ -202,6 +201,6 @@ CursesWindow* CursesIO::CreateBoxedWindow(const std::string& title, int nlines, 
 }
 
 // static
-void CursesIO::Init() {
-    out = new CursesIO();
+void CursesIO::Init(const std::string& title) {
+    out = new CursesIO(title);
 }

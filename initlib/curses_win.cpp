@@ -33,15 +33,17 @@ using wwiv::strings::StringPrintf;
 CursesWindow::CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols, int begin_y, int begin_x) 
     : parent_(parent), color_scheme_(color_scheme), current_scheme_id_(SchemeId::UNKNOWN) {
   if (parent != nullptr) {
-    if (begin_x == 0) {
+    if (begin_x == -1) {
       begin_x = (parent->GetMaxX() - ncols) / 2;
     }
-    if (begin_y == 0) {
+    if (begin_y == -1) {
       begin_y = (parent->GetMaxY() - nlines) / 2;
     }
     window_ =  newwin(nlines, ncols, begin_y + getbegy(parent->window()), 
       begin_x + getbegx(parent->window()));
   } else {
+    if (begin_x == -1) { begin_x = 0; }
+    if (begin_y == -1) { begin_y = 0; }
     window_ = newwin(nlines, ncols, begin_y, begin_x);
   }
   keypad(window_, true);

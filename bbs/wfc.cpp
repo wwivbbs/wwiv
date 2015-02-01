@@ -18,23 +18,166 @@
 /**************************************************************************/
 #include "bbs/wfc.h"
 
+#include <cctype>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "bbs/wwiv.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
+#include "bbs/printfile.h"
+#include "bbs/voteedit.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "core/inifile.h"
+#include "initlib/curses_io.h"
 
 using std::string;
+using std::unique_ptr;
+using std::vector;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 using wwiv::os::random_number;
+using namespace wwiv::strings;
+
+
+namespace wwiv {
+namespace wfc {
+
+namespace {
+static CursesWindow* CreateBoxedWindow(const std::string& title, int nlines, int ncols, int y, int x) {
+  unique_ptr<CursesWindow> window(new CursesWindow(out->window(), out->color_scheme(), nlines, ncols, y, x));
+  window->SetColor(SchemeId::WINDOW_BOX);
+  window->Box(0, 0);
+  window->SetTitle(title);
+  window->SetColor(SchemeId::WINDOW_TEXT);
+  return window.release();
+}
+}
+
+auto noop = [](){};
+
+static void wfc_command(int instance_location_id, std::function<void()> f, 
+    std::function<void()> f2 = noop, std::function<void()> f3 = noop, std::function<void()> f4 = noop) {
+  if (!AllowLocalSysop()) {
+    // TODO(rushfan): Show messagebox error?
+    return;
+  }
+  wfc_cls();
+  write_inst(instance_location_id, 0, INST_FLAGS_NONE);
+  f();
+  f2();
+  f3();
+  f4();
+  write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
+}
+
+auto send_email_f = []() {
+  session()->usernum = 1;
+  bout << "|#1Send Email:";
+  send_email();
+  session()->WriteCurrentUser(1);
+};
+
+auto view_sysop_log_f = []() {
+  unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+  const string sysop_log_file = GetSysopLogFileName(date());
+  print_local_file(sysop_log_file);
+};
+
+auto view_yesterday_sysop_log_f = []() {
+  unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+  print_local_file(pStatus->GetLogFileName(1));
+};
+
+auto read_mail_f = []() {
+  session()->usernum = 1;
+  readmail(0);
+  session()->WriteCurrentUser(1);
+};
+
+auto getkey_f = []() { getkey(); };
+
+ControlCenter::ControlCenter() {
+  const string title = StringPrintf("WWIV %s%s Server.", wwiv_version, beta_version);
+  CursesIO::Init(title);
+  // take ownership of out.
+  out_scope_.reset(out);
+  out->Cls(ACS_CKBOARD);
+
+  commands_.reset(CreateBoxedWindow("Commands", 9, 38, 1, 1));
+  status_.reset(CreateBoxedWindow("Status", 9, 39, 1, 40));
+  logs_.reset(CreateBoxedWindow("Logs", 9, 78, 11, 1));
+
+  commands_->PutsXY(1, 1, "[B]oardEdit [C]hainEdit");
+  commands_->PutsXY(1, 2, "[D]irEdit [E]mail [G]-FileEdit");
+  commands_->PutsXY(1, 3, "[I]nit Voting Data  [J] ConfEdit");
+  commands_->PutsXY(1, 4, "Sysop[L]og  Read [M]ail  [N]etLog");
+  commands_->PutsXY(1, 5, "[P]ending Net Data [/] Net Callout");
+  commands_->PutsXY(1, 6, "[R]ead all email [S]ystem Status");
+  commands_->PutsXY(1, 7, "[U]serEdit [Y]-Log [Z]-Log");
+
+  vector<HelpItem> help_items0 = { { "?", "All Commands" },};
+  vector<HelpItem> help_items1 = { {"Q", "Quit" } };
+  out->footer()->ShowHelpItems(0, help_items0);
+  out->footer()->ShowHelpItems(1, help_items1);
+
+  application()->SetWfcStatus(0);
+  session()->ReadCurrentUser(1);
+  read_qscn(1, qsc, false);
+  session()->ResetEffectiveSl();
+  session()->usernum = 1;
+
+  fwaiting = session()->user()->GetNumMailWaiting();
+  application()->SetWfcStatus(1);
+}
+
+ControlCenter::~ControlCenter() {}
+
+void ControlCenter::Run() {
+  for (bool done = false; !done;) {
+    // refresh the window since we call endwin before invoking bbs code.
+    out->window()->Refresh();
+    int key = commands_->GetChar();
+    if (key == ERR) {
+      // we have a timeout. process other events
+    }
+    application()->SetWfcStatus(2);
+    // Call endwin since we'll be out of curses IO
+    endwin();
+    switch (toupper(key)) {
+    case 'B': wfc_command(INST_LOC_BOARDEDIT, boardedit, cleanup_net); break;
+    case 'C': wfc_command(INST_LOC_CHAINEDIT, chainedit); break;
+    case 'D': wfc_command(INST_LOC_DIREDIT, dlboardedit); break;
+    case 'E': wfc_command(INST_LOC_EMAIL, send_email_f, cleanup_net); break;
+    case 'G': wfc_command(INST_LOC_GFILEEDIT, gfileedit); break;
+    case 'H': wfc_command(INST_LOC_EVENTEDIT, eventedit); break;
+    case 'I': wfc_command(INST_LOC_VOTEEDIT, ivotes); break;
+    case 'J': wfc_command(INST_LOC_CONFEDIT, edit_confs); break;
+    case 'L': wfc_command(INST_LOC_WFC, view_sysop_log_f); break;
+    case 'M': wfc_command(INST_LOC_EMAIL, read_mail_f, cleanup_net); break;
+    case 'N': wfc_command(INST_LOC_WFC, []() { print_local_file("net.log"); }); break;
+    case 'P': wfc_command(INST_LOC_WFC, print_pending_list); break;
+    case 'R': wfc_command(INST_LOC_MAILR, mailr); break;
+    case 'S': wfc_command(INST_LOC_WFC, prstatus, getkey_f); break;
+    case 'U': wfc_command(INST_LOC_UEDIT, []() { uedit(1, UEDIT_NONE); } ); break;
+    case 'Y': wfc_command(INST_LOC_WFC, view_yesterday_sysop_log_f); break;
+    case 'Z': wfc_command(INST_LOC_WFC, zlog, getkey_f); break;
+    case 'Q': return;
+    }
+  }
+}
+
+}
+}
+
+
+
+// Legacy WFC
 
 #if !defined ( __unix__ )
 

@@ -18,6 +18,30 @@
 #ifndef __INCLUDED_BBS_WFC_H__
 #define __INCLUDED_BBS_WFC_H__
 
+#include <memory>
+#include "initlib/curses_io.h"
+#include "initlib/curses_win.h"
+
+
+namespace wwiv {
+namespace wfc {
+
+class ControlCenter {
+public: 
+  ControlCenter();
+  ~ControlCenter();
+  void Run();
+
+private:
+  // Takes ownership of out to enure it's deleted on exit from the WFC.
+  std::unique_ptr<CursesIO> out_scope_;
+  std::unique_ptr<CursesWindow> commands_;
+  std::unique_ptr<CursesWindow> status_;
+  std::unique_ptr<CursesWindow> logs_;
+};
+}  // namespace wfc
+}  // namespace wwiv
+
 void wfc_cls();
 void wfc_init();
 void wfc_screen();

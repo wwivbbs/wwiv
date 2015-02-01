@@ -57,7 +57,7 @@ public:
 class CursesIO {
  public:
   // Constructor/Destructor
-  CursesIO();
+  CursesIO(const std::string& title);
   CursesIO(const CursesIO& copy);
   virtual ~CursesIO();
 
@@ -70,7 +70,7 @@ class CursesIO {
   virtual CursesWindow* CreateBoxedWindow(const std::string& title, int nlines, int ncols);
 
   ColorScheme* color_scheme() { return color_scheme_.get(); }
-  static void Init();
+  static void Init(const std::string& title);
 
  private:
   int max_x_;
