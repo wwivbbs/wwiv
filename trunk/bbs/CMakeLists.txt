@@ -111,6 +111,7 @@ set(COMMON_SOURCES
  xferovl1.cpp
  xfertmp.cpp
  xinit.cpp
+ wfc.cpp
 )
 
 set(BBS_MAIN bbs_main.cpp)
@@ -141,5 +142,6 @@ if(UNIX)
 endif()
 
 add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 
+target_link_libraries(bbs_lib initlib core sdk)
 add_executable(bbs ${BBS_MAIN})
-target_link_libraries(bbs bbs_lib core sdk)
+target_link_libraries(bbs bbs_lib)
