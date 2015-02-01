@@ -382,8 +382,7 @@ int WApplication::doWFCEvents() {
         if (AllowLocalSysop()) {
           wfc_cls();
           unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
-          const string sysop_log_file = GetSysopLogFileName(date());
-          print_local_file(sysop_log_file);
+          print_local_file(pStatus->GetLogFileName(0));
         }
         break;
       // Read User Mail
@@ -480,8 +479,7 @@ int WApplication::doWFCEvents() {
         if (AllowLocalSysop()) {
           wfc_cls();
           unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
-          const string sysop_log_file = GetSysopLogFileName(date());
-          print_local_file(pStatus->GetLogFileName());
+          print_local_file(pStatus->GetLogFileName(1));
         }
         break;
       // Print Activity (Z) Log
@@ -769,7 +767,9 @@ int WApplication::Run(int argc, char *argv[]) {
       case 'W': {
         ok_modem_stuff = false;
         this->InitializeBBS();
-        this->doWFCEvents();
+        wwiv::wfc::ControlCenter control_center;
+        control_center.Run();
+        //this->doWFCEvents();
         exit (m_nOkLevel);
       } break;
       case 'X': {

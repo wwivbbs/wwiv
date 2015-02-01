@@ -85,6 +85,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ProjectReference Include="..\initlib\initlib.vcxproj">
+      <Project>{8ebd5a9a-e149-4e24-b5ca-7ebe0cc45a08}</Project>
+    </ProjectReference>
     <ProjectReference Include="bbs_lib.vcxproj">
       <Project>{bcf878f6-1997-4c3d-864e-12f0c1b5eb5e}</Project>
     </ProjectReference>
