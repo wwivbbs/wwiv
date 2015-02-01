@@ -123,7 +123,8 @@ static void ValidateConfigOverlayExists(const string& bbsdir) {
 }
 
 WInitApp::WInitApp() {
-  CursesIO::Init();
+  const string title = StringPrintf("WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version);
+  CursesIO::Init(title);
 }
 
 WInitApp::~WInitApp() {
