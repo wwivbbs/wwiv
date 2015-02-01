@@ -24,4 +24,5 @@ if(UNIX)
 	)
 endif()
 
-add_library(initlib ${COMMON_SOURCES} ${PLATFORM_SOURCES})
+add_library(initlib ${COMMON_SOURCES} ${PLATFORM_SOURCES} ${CURSES_LIBRARIES})
+target_link_libraries(initlib ${CURSES_LIBRARIES})
