@@ -545,7 +545,7 @@ int WApplication::LocalLogon() {
   if (session()->localIO()->LocalKeyPressed()) {
     char ch = wwiv::UpperCase<char>(session()->localIO()->LocalGetChar());
     if (ch == 'Y') {
-      session()->localIO()->LocalFastPuts(YesNoString(true));
+      session()->localIO()->LocalPuts(YesNoString(true));
       bout << wwiv::endl;
       lokb = 1;
     } else if (ch == 0 || static_cast<unsigned char>(ch) == 224) {
@@ -1170,7 +1170,7 @@ WApplication* CreateApplication(WLocalIO* localIO) {
 
 int bbsmain(int argc, char *argv[]) {
   try {
-    CreateApplication(nullptr);
+    CreateApplication(new WLocalIO());
     return application()->BBSMainLoop(argc, argv);
   } catch (exception& e) {
     // TODO(rushfan): Log this to sysop log or where else?

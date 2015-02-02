@@ -74,6 +74,7 @@ class ColorScheme {
   ColorScheme();
   virtual ~ColorScheme() {}
   virtual attr_t GetAttributesForScheme(SchemeId id) const;
+  ColorScheme& operator=(const ColorScheme&) = delete;
 private:
   static std::map<SchemeId, SchemeDescription> LoadColorSchemes();
   const std::map<SchemeId, SchemeDescription> scheme_;

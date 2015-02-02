@@ -625,7 +625,7 @@ void chat1(char *pszChatLine, bool two_way) {
     }
     if (chat_file && !two_way) {
       if (!chatFile.IsOpen()) {
-        session()->localIO()->LocalFastPuts("-] Chat file opened.\r\n");
+        session()->localIO()->LocalPuts("-] Chat file opened.\r\n");
         if (chatFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
           chatFile.Seek(0L, File::seekEnd);
           sprintf(s2, "\r\n\r\nChat file opened %s %s\r\n", fulldate(), times());
@@ -638,7 +638,7 @@ void chat1(char *pszChatLine, bool two_way) {
       chatFile.Write(s2, strlen(s2));
     } else if (chatFile.IsOpen()) {
       chatFile.Close();
-      session()->localIO()->LocalFastPuts("-] Chat file closed.\r\n");
+      session()->localIO()->LocalPuts("-] Chat file closed.\r\n");
     }
     if (hangup) {
       chatting = 0;
