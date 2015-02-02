@@ -33,7 +33,7 @@ using std::cout;
 using std::string;
 using namespace wwiv::strings;
 
-WLocalIO::WLocalIO() : ExtendedKeyWaiting(0), wx(0) {}
+WLocalIO::WLocalIO() {}
 
 WLocalIO::~WLocalIO() {}
 
