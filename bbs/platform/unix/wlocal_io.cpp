@@ -124,14 +124,6 @@ int WLocalIO::GetDefaultScreenBottom() { return 25; }
  */
 void WLocalIO::LocalEditLine(char *s, int len, int status, int *returncode, char *ss) {}
 
-int WLocalIO::GetEditLineStringLength(const char *pszText) {
-  int i = strlen(pszText);
-  while (i >= 0 && (/*pszText[i-1] == 32 ||*/ static_cast<unsigned char>(pszText[i - 1]) == 176)) {
-    --i;
-  }
-  return i;
-}
-
 void WLocalIO::UpdateNativeTitleBar() {}
 
 void WLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) {}
