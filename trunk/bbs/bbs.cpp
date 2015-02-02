@@ -42,6 +42,7 @@
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/keycodes.h"
+#include "bbs/null_local_io.h"
 #include "bbs/menu.h"
 #include "bbs/printfile.h"
 #include "bbs/voteedit.h"
@@ -51,7 +52,7 @@
 #include "bbs/wsession.h"
 #include "bbs/wstatus.h"
 #include "bbs/platform/platformfcns.h"
-#include "bbs/platform/wlocal_io.h"
+#include "bbs/local_io.h"
 #include "core/strings.h"
 #include "core/os.h"
 #include "core/wwivassert.h"
@@ -62,6 +63,7 @@
 #include <direct.h>
 #include "bbs/platform/win32/InternalTelnetServer.h"
 #include "bbs/platform/win32/Wiot.h"
+#include "bbs/local_io_win32.h"
 #else
 #include <unistd.h>
 #endif // _WIN32
@@ -1171,7 +1173,11 @@ WApplication* CreateApplication(WLocalIO* localIO) {
 
 int bbsmain(int argc, char *argv[]) {
   try {
-    CreateApplication(new WLocalIO());
+#ifdef _WIN32
+    CreateApplication(new Win32ConsoleIO());
+#else
+    CreateApplication(new NullLocalIO());
+#endif
     return application()->BBSMainLoop(argc, argv);
   } catch (exception& e) {
     // TODO(rushfan): Log this to sysop log or where else?

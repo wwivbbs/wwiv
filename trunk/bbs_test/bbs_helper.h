@@ -23,7 +23,7 @@
 #include <string>
 #include "bbs/bbs.h"
 #include "core_test/file_helper.h"
-#include "bbs/platform/wlocal_io.h"
+#include "bbs/local_io.h"
 #include "bbs/wuser.h"
 
 class TestIO;
@@ -68,6 +68,37 @@ class TestLocalIO : public WLocalIO {
 public:
   TestLocalIO(std::string* captured);
   virtual void LocalPutch(unsigned char ch) override;
+  virtual void LocalGotoXY(int x, int y) override {}
+  virtual int WhereX() override { return 0; }
+  virtual int WhereY() override { return 0; }
+  virtual void LocalLf() override {}
+  virtual void LocalCr() override {}
+  virtual void LocalCls() override {}
+  virtual void LocalBackspace() override {}
+  virtual void LocalPutchRaw(unsigned char ch) override {}
+  virtual void LocalPuts(const std::string& s) override {}
+  virtual void LocalXYPuts(int x, int y, const std::string& text) override {}
+  virtual void LocalFastPuts(const std::string& text) override {}
+  virtual int LocalPrintf(const char *pszFormattedText, ...) override { return 0; }
+  virtual int LocalXYPrintf(int x, int y, const char *pszFormattedText, ...) override { return 0; }
+  virtual int LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...) override { return 0; }
+  virtual void set_protect(int l) override {}
+  virtual void savescreen() override {}
+  virtual void restorescreen() override {}
+  virtual void skey(char ch) override {}
+  virtual void tleft(bool bCheckForTimeOut) override {}
+  virtual bool LocalKeyPressed() override { return false; }
+  virtual void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) override {}
+  virtual unsigned char LocalGetChar() override { return getchar(); }
+  virtual void MakeLocalWindow(int x, int y, int xlen, int ylen) override {}
+  virtual void SetCursor(int cursorStyle) override {}
+  virtual void LocalClrEol() override {}
+  virtual void LocalWriteScreenBuffer(const char *pszBuffer) override {}
+  virtual int GetDefaultScreenBottom() override { return 25; }
+  virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) override {}
+  virtual void UpdateNativeTitleBar() override {}
+  virtual void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) override {}
+
   std::string* captured_;
 };
 

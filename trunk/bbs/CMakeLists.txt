@@ -52,6 +52,7 @@ set(COMMON_SOURCES
  interpret.cpp
  lilo.cpp
  listplus.cpp
+ local_io.cpp
  lpfunc.cpp
  memory.cpp
  menu.cpp
@@ -70,6 +71,7 @@ set(COMMON_SOURCES
  newuser.cpp
  new_bbslist.cpp
  normupld.cpp
+ null_local_io.cpp
  pause.cpp
  printfile.cpp
  qscan.cpp
@@ -132,7 +134,6 @@ if(UNIX)
   set(PLATFORM_SOURCES 
 	platform/unix/exec.cpp 
 	platform/unix/utility2.cpp 
-	platform/unix/wlocal_io.cpp
 	platform/unix/wiou.cpp)
   if(APPLE)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} platform/osx/macversioninfo.mm)

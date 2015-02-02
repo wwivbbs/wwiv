@@ -64,16 +64,6 @@
 class WStatus;
 class WSession;
 
-struct screentype {
-  short x1, y1, topline1, curatr1;
-
-#ifdef _WIN32
-  CHAR_INFO* scrn1;
-#else
-  char *scrn1;
-#endif
-};
-
 class WLocalIO {
  public:
   // Constructor/Destructor
@@ -102,45 +92,44 @@ class WLocalIO {
   const bool GetSysopAlert() const { return m_bSysopAlert; }
   void set_capture(wwiv::bbs::Capture* capture) { capture_ = capture; }
 
-  virtual void LocalGotoXY(int x, int y);
-  virtual int  WhereX();
-  virtual int  WhereY();
-  virtual void LocalLf();
-  virtual void LocalCr();
-  virtual void LocalCls();
-  virtual void LocalClrEol();
-  virtual void LocalBackspace();
-  virtual void LocalPutchRaw(unsigned char ch);
+  virtual void LocalGotoXY(int x, int y) = 0;
+  virtual int  WhereX() = 0;
+  virtual int  WhereY() = 0;
+  virtual void LocalLf() = 0;
+  virtual void LocalCr() = 0;
+  virtual void LocalCls() = 0;
+  virtual void LocalClrEol() = 0;
+  virtual void LocalBackspace() = 0;
+  virtual void LocalPutchRaw(unsigned char ch) = 0;
   // Overridden by TestLocalIO in tests.
-  virtual void LocalPutch(unsigned char ch);
-  virtual void LocalPuts(const std::string& text);
-  virtual void LocalXYPuts(int x, int y, const std::string& text);
-  virtual int  LocalPrintf(const char *pszFormattedText, ...);
-  virtual int  LocalXYPrintf(int x, int y, const char *pszFormattedText, ...);
-  virtual int  LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...);
-  virtual void set_protect(int l);
-  virtual void savescreen();
-  virtual void restorescreen();
-  virtual void skey(char ch);
-  virtual void tleft(bool bCheckForTimeOut);
-  virtual void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber);
-  virtual bool LocalKeyPressed();
-  virtual unsigned char LocalGetChar();
-  virtual void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc);
+  virtual void LocalPutch(unsigned char ch) = 0;
+  virtual void LocalPuts(const std::string& text) = 0;
+  virtual void LocalXYPuts(int x, int y, const std::string& text) = 0;
+  virtual int  LocalPrintf(const char *pszFormattedText, ...) = 0;
+  virtual int  LocalXYPrintf(int x, int y, const char *pszFormattedText, ...) = 0;
+  virtual int  LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...) = 0;
+  virtual void set_protect(int l) = 0;
+  virtual void savescreen() = 0;
+  virtual void restorescreen() = 0;
+  virtual void skey(char ch) = 0;
+  virtual void tleft(bool bCheckForTimeOut) = 0;
+  virtual void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) = 0;
+  virtual bool LocalKeyPressed() = 0;
+  virtual unsigned char LocalGetChar() = 0;
+  virtual void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) = 0;
   /*
    * MakeLocalWindow makes a "shadowized" window with the upper-left hand corner at
    * (x,y), and the lower-right corner at (x+xlen,y+ylen).
    */
-  virtual void MakeLocalWindow(int x, int y, int xlen, int ylen);
-  virtual void SetCursor(int cursorStyle);
-  virtual void LocalWriteScreenBuffer(const char *pszBuffer);
-  virtual int  GetDefaultScreenBottom();
-
-  virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss);
-  virtual void UpdateNativeTitleBar();
+  virtual void MakeLocalWindow(int x, int y, int xlen, int ylen) = 0;
+  virtual void SetCursor(int cursorStyle) = 0;
+  virtual void LocalWriteScreenBuffer(const char *pszBuffer) = 0;
+  virtual int  GetDefaultScreenBottom() = 0;
+  virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) = 0;
+  virtual void UpdateNativeTitleBar() = 0;
 
 private:
-  void LocalFastPuts(const std::string &text);
+  virtual void LocalFastPuts(const std::string &text) = 0;
 
 private:
   wwiv::bbs::Capture* capture_;
@@ -148,27 +137,6 @@ private:
   bool m_bSysopAlert;
   int m_nTopLine;
   int m_nScreenBottom;
-  screentype m_ScreenSave;
-
-  bool ExtendedKeyWaiting;
-
-#if defined ( _WIN32 )
-  COORD  m_cursorPosition;
-  HANDLE m_hConOut;
-  HANDLE m_hConIn;
-  CONSOLE_SCREEN_BUFFER_INFO m_consoleBufferInfo;
-  DWORD saved_input_mode_ = 0;
-#endif
-
-#if defined ( __APPLE__ )
-  short m_cursorPositionX;
-  short m_cursorPositionY;
-#endif
-
-#if defined ( _WIN32 )
-  void set_attr_xy(int x, int y, int a);
-  COORD m_originalConsoleSize;
-#endif // _WIN32
 };
 
 
