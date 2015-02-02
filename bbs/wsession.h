@@ -27,7 +27,7 @@
 #include "bbs/wcomm.h"
 #include "bbs/wuser.h"
 #include "bbs/woutstreambuffer.h"
-#include "bbs/platform/wlocal_io.h"
+#include "bbs/local_io.h"
 #include "sdk/vardec.h"
 
 //

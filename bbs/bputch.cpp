@@ -24,7 +24,7 @@
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
 #include "bbs/wsession.h"
-#include "bbs/platform/wlocal_io.h"
+#include "bbs/local_io.h"
 
 
 void execute_ansi();

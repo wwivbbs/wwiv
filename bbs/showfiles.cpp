@@ -23,7 +23,7 @@
 #include "bbs/bbs.h"
 #include "bbs/wsession.h"
 #include "bbs/platform/platformfcns.h"  // for strupr
-#include "bbs/platform/wlocal_io.h"
+#include "bbs/local_io.h"
 #include "core/wwivport.h"
 #include "core/wfndfile.h"
 #include "core/strings.h"

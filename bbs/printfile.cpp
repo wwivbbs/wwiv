@@ -25,7 +25,7 @@
 #include <vector>
 
 #include "bbs/bbs.h"
-#include "bbs/platform/wlocal_io.h"
+#include "bbs/local_io.h"
 #include "bbs/fcns.h"
 #include "bbs/keycodes.h"
 #include "bbs/vars.h"
