@@ -305,6 +305,14 @@ void CreateCallInfoBbsDropFile() {
   }
 }
 
+static unsigned int GetDoorHandle() {
+  if (session()->remoteIO()) {
+    return session()->remoteIO()->GetDoorHandle();
+  }
+  return 0;
+}
+
+
 /** Make DOOR32.SYS drop file */
 void CreateDoor32SysDropFile() {
   /* =========================================================================
@@ -338,7 +346,7 @@ void CreateDoor32SysDropFile() {
   TextFile file(fileName, "wt");
   if (file.IsOpen()) {
     file.WriteFormatted("%d\n",     GetDoor32CommType());
-    file.WriteFormatted("%u\n",     session()->remoteIO()->GetDoorHandle());
+    file.WriteFormatted("%u\n",     GetDoorHandle());
     string cspeed = GetComSpeedInDropfileFormat(com_speed);
     file.WriteFormatted("%s\n",      cspeed.c_str());
     file.WriteFormatted("WWIV %s\n", wwiv_version);
