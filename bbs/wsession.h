@@ -23,6 +23,7 @@
 #include <memory>
 #include <string>
 
+#include "bbs/capture.h"
 #include "bbs/wcomm.h"
 #include "bbs/wuser.h"
 #include "bbs/woutstreambuffer.h"
@@ -85,7 +86,8 @@ class WSession {
   void DisplaySysopWorkingIndicator(bool displayWait);
   WComm* remoteIO() { return comm_.get(); }
   WLocalIO* localIO() { return local_io_.get(); }
-  bool reset_wlocal_io(WLocalIO* wlocal_io);
+  bool reset_local_io(WLocalIO* wlocal_io);
+  wwiv::bbs::Capture* capture() { return capture_.get(); }
 
   /*! @function CreateComm Creates up the communications subsystem */
   void CreateComm(unsigned int nHandle);
@@ -238,6 +240,7 @@ class WSession {
   std::unique_ptr<WLocalIO> local_io_;
   bool wwivmail_enabled_;
   bool internal_qwk_enabled_;
+  std::unique_ptr<wwiv::bbs::Capture> capture_;
 
  public:
   //

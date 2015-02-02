@@ -17,11 +17,15 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/wwiv.h"
-#include "bbs/platform/wlocal_io.h"
-#include "sdk/net.h"
+#include "bbs/bbs.h"
+#include "bbs/capture.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wcomm.h"
+#include "bbs/platform/wlocal_io.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
+#include "sdk/net.h"
 
 using std::string;
 
@@ -41,7 +45,7 @@ WSession::WSession(WApplication* app, WLocalIO* localIO) : application_(app),
     numf(0), m_nNumMsgsInCurrentSub(0), num_dirs(0), num_languages(0), num_sec(0), num_subs(0), num_events(0),
     num_sys_list(0), screenlinest(0), subchg(0), tagging(0), tagptr(0), titled(0), using_modem(0), m_bInternalZmodem(false),
     m_bExecLogSyncFoss(false), m_bExecUseWaitForInputIdle(false), m_nExecChildProcessWaitTime(0), m_bNewScanAtLogin(false),
-    usernum(0), local_io_(localIO) {
+    usernum(0), local_io_(localIO), capture_(new wwiv::bbs::Capture()) {
   ::bout.SetLocalIO(localIO);
 
   memset(&newuser_colors, 0, sizeof(newuser_colors));
@@ -60,8 +64,9 @@ WSession::~WSession() {
   }
 }
 
-bool WSession::reset_wlocal_io(WLocalIO* wlocal_io) {
+bool WSession::reset_local_io(WLocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);
+  local_io_->set_capture(capture());
   ::bout.SetLocalIO(wlocal_io);
   return true;
 }

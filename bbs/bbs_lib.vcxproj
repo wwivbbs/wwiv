@@ -92,6 +92,7 @@
     <ClInclude Include="bbs.h" />
     <ClInclude Include="bbslist.h" />
     <ClInclude Include="callback.h" />
+    <ClInclude Include="capture.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="conf.h" />
     <ClInclude Include="crc.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="bgetch.cpp" />
     <ClCompile Include="bputch.cpp" />
     <ClCompile Include="callback.cpp" />
+    <ClCompile Include="capture.cpp" />
     <ClCompile Include="chains.cpp" />
     <ClCompile Include="chat.cpp" />
     <ClCompile Include="chnedit.cpp" />

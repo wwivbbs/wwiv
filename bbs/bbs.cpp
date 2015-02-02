@@ -1164,6 +1164,7 @@ WApplication::~WApplication() {
 WApplication* CreateApplication(WLocalIO* localIO) {
   app = new WApplication();
   sess = new WSession(app, localIO);
+  localIO->set_capture(sess->capture());
   File::SetLogger(app);
   return app;
 }
