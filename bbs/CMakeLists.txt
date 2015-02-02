@@ -53,6 +53,7 @@ set(COMMON_SOURCES
  lilo.cpp
  listplus.cpp
  local_io.cpp
+ local_io_unix_console.cpp
  lpfunc.cpp
  memory.cpp
  menu.cpp
