@@ -27,8 +27,6 @@ using std::string;
 
 WOutStream bout;
 
-WSession::WSession(WApplication* app) : WSession(app, nullptr) {}
-
 WSession::WSession(WApplication* app, WLocalIO* localIO) : application_(app), 
     m_bLastKeyLocal(true), m_nEffectiveSl(0), m_DirectoryDateCache(0), m_SubDateCache(0),
     m_nTopScreenColor(0), m_nUserEditorColor(0), m_nEditLineColor(0), 
@@ -44,7 +42,7 @@ WSession::WSession(WApplication* app, WLocalIO* localIO) : application_(app),
     num_sys_list(0), screenlinest(0), subchg(0), tagging(0), tagptr(0), titled(0), using_modem(0), m_bInternalZmodem(false),
     m_bExecLogSyncFoss(false), m_bExecUseWaitForInputIdle(false), m_nExecChildProcessWaitTime(0), m_bNewScanAtLogin(false),
     usernum(0), local_io_(localIO) {
-    ::bout.SetLocalIO(local_io_.get());
+  ::bout.SetLocalIO(localIO);
 
   memset(&newuser_colors, 0, sizeof(newuser_colors));
   memset(&newuser_bwcolors, 0, sizeof(newuser_bwcolors));
@@ -60,6 +58,12 @@ WSession::~WSession() {
   if (local_io_) {
     local_io_->SetCursor(WLocalIO::cursorNormal);
   }
+}
+
+bool WSession::reset_wlocal_io(WLocalIO* wlocal_io) {
+  local_io_.reset(wlocal_io);
+  ::bout.SetLocalIO(wlocal_io);
+  return true;
 }
 
 void WSession::CreateComm(unsigned int nHandle) {
@@ -78,8 +82,8 @@ bool WSession::WriteCurrentUser(int nUserNumber) {
 }
 
 void WSession::DisplaySysopWorkingIndicator(bool displayWait) {
-  const std::string waitString = "-=[WAIT]=-";
-  std::string::size_type nNumPrintableChars = waitString.length();
+  const string waitString = "-=[WAIT]=-";
+  auto nNumPrintableChars = waitString.length();
   for (std::string::const_iterator iter = waitString.begin(); iter != waitString.end(); ++iter) {
     if (*iter == 3 && nNumPrintableChars > 1) {
       nNumPrintableChars -= 2;

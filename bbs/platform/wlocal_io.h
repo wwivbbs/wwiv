@@ -141,9 +141,11 @@ class WLocalIO {
 
   void LocalEditLine(char *s, int len, int status, int *returncode, char *ss);
   void UpdateNativeTitleBar();
+
 private:
   void LocalFastPuts(const std::string &text);
- private:
+
+private:
   std::string  m_chatReason;
   File   fileGlobalCap; // g_hGlobalCapHandle;
   bool    m_bSysopAlert;
@@ -153,9 +155,7 @@ private:
   std::string global_buf;
   int wx;
 
-  char scan_to_char(int nKeyCode);
-  void alt_key(int nKeyCode);
-  int  GetEditLineStringLength(const char *pszText);
+  int GetEditLineStringLength(const char *pszText);
   int ExtendedKeyWaiting;
 
 #if defined ( _WIN32 )
