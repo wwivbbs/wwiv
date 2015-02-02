@@ -69,7 +69,6 @@ WLocalIO::WLocalIO() {
   SetTopLine(0);
   SetScreenBottom(0);
   ExtendedKeyWaiting = 0;
-  capture_->set_wx(0);
 
   m_hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
   m_hConIn  = GetStdHandle(STD_INPUT_HANDLE);
@@ -1100,6 +1099,14 @@ unsigned char GetKeyboardChar() {
   return static_cast<unsigned char>(_getch());
 }
 
+static int GetEditLineStringLength(const char *pszText) {
+  size_t i = strlen(pszText);
+  while (i >= 0 && (/*pszText[i-1] == 32 ||*/ static_cast<unsigned char>(pszText[i - 1]) == 176)) {
+    --i;
+  }
+  return i;
+}
+
 void WLocalIO::LocalEditLine(char *pszInOutText, int len, int status, int *returncode, char *pszAllowedSet) {
   WWIV_ASSERT(pszInOutText);
   WWIV_ASSERT(pszAllowedSet);
@@ -1272,14 +1279,6 @@ void WLocalIO::LocalEditLine(char *pszInOutText, int len, int status, int *retur
   curatr = oldatr;
   LocalFastPuts(szFinishedString);
   LocalGotoXY(cx, cy);
-}
-
-int WLocalIO::GetEditLineStringLength(const char *pszText) {
-  int i = strlen(pszText);
-  while (i >= 0 && (/*pszText[i-1] == 32 ||*/ static_cast<unsigned char>(pszText[i - 1]) == 176)) {
-    --i;
-  }
-  return i;
 }
 
 void WLocalIO::UpdateNativeTitleBar() {

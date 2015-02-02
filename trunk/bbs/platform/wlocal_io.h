@@ -100,45 +100,44 @@ class WLocalIO {
 
   void SetSysopAlert(bool b) { m_bSysopAlert = b; }
   const bool GetSysopAlert() const { return m_bSysopAlert; }
-
   void set_capture(wwiv::bbs::Capture* capture) { capture_ = capture; }
 
-  void LocalGotoXY(int x, int y);
-  int  WhereX();
-  int  WhereY();
-  void LocalLf();
-  void LocalCr();
-  void LocalCls();
-  void LocalClrEol();
-  void LocalBackspace();
-  void LocalPutchRaw(unsigned char ch);
+  virtual void LocalGotoXY(int x, int y);
+  virtual int  WhereX();
+  virtual int  WhereY();
+  virtual void LocalLf();
+  virtual void LocalCr();
+  virtual void LocalCls();
+  virtual void LocalClrEol();
+  virtual void LocalBackspace();
+  virtual void LocalPutchRaw(unsigned char ch);
   // Overridden by TestLocalIO in tests.
   virtual void LocalPutch(unsigned char ch);
-  void LocalPuts(const std::string& text);
-  void LocalXYPuts(int x, int y, const std::string& text);
-  int  LocalPrintf(const char *pszFormattedText, ...);
-  int  LocalXYPrintf(int x, int y, const char *pszFormattedText, ...);
-  int  LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...);
-  void set_protect(int l);
-  void savescreen();
-  void restorescreen();
-  void skey(char ch);
-  void tleft(bool bCheckForTimeOut);
-  void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber);
-  bool LocalKeyPressed();
-  unsigned char LocalGetChar();
-  void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc);
+  virtual void LocalPuts(const std::string& text);
+  virtual void LocalXYPuts(int x, int y, const std::string& text);
+  virtual int  LocalPrintf(const char *pszFormattedText, ...);
+  virtual int  LocalXYPrintf(int x, int y, const char *pszFormattedText, ...);
+  virtual int  LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...);
+  virtual void set_protect(int l);
+  virtual void savescreen();
+  virtual void restorescreen();
+  virtual void skey(char ch);
+  virtual void tleft(bool bCheckForTimeOut);
+  virtual void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber);
+  virtual bool LocalKeyPressed();
+  virtual unsigned char LocalGetChar();
+  virtual void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc);
   /*
    * MakeLocalWindow makes a "shadowized" window with the upper-left hand corner at
    * (x,y), and the lower-right corner at (x+xlen,y+ylen).
    */
-  void MakeLocalWindow(int x, int y, int xlen, int ylen);
-  void SetCursor(int cursorStyle);
-  void LocalWriteScreenBuffer(const char *pszBuffer);
-  int  GetDefaultScreenBottom();
+  virtual void MakeLocalWindow(int x, int y, int xlen, int ylen);
+  virtual void SetCursor(int cursorStyle);
+  virtual void LocalWriteScreenBuffer(const char *pszBuffer);
+  virtual int  GetDefaultScreenBottom();
 
-  void LocalEditLine(char *s, int len, int status, int *returncode, char *ss);
-  void UpdateNativeTitleBar();
+  virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss);
+  virtual void UpdateNativeTitleBar();
 
 private:
   void LocalFastPuts(const std::string &text);
@@ -151,8 +150,7 @@ private:
   int m_nScreenBottom;
   screentype m_ScreenSave;
 
-  int GetEditLineStringLength(const char *pszText);
-  int ExtendedKeyWaiting;
+  bool ExtendedKeyWaiting;
 
 #if defined ( _WIN32 )
   COORD  m_cursorPosition;

@@ -32,7 +32,7 @@ namespace bbs {
 
 static const std::size_t GLOBAL_SIZE = 4096;
 
-Capture::Capture() {}
+Capture::Capture() : wx_(0) {}
 Capture::~Capture() {}
 
 void Capture::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
