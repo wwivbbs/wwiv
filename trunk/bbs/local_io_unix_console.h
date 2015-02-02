@@ -16,61 +16,21 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_LOCAL_IO_WIN32_H__
-#define __INCLUDED_LOCAL_IO_WIN32_H__
+#ifndef __INCLUDED_LOCAL_IO_UNIX_CONSOLE_H__
+#define __INCLUDED_LOCAL_IO_UNIX_CONSOLE_H__
 
 #include <string>
-
-#include "bbs/capture.h"
-#include "bbs/keycodes.h"
 #include "bbs/local_io.h"
-#include "core/file.h"
-
-#ifdef _WIN32
-#define NOGDICAPMASKS
-#define NOSYSMETRICS
-#define NOMENUS
-#define NOICONS
-#define NOKEYSTATES
-#define NOSYSCOMMANDS
-#define NORASTEROPS
-#define NOATOM
-#define NOCLIPBOARD
-#define NODRAWTEXT
-#define NOKERNEL
-#define NONLS
-#define NOMEMMGR
-#define NOMETAFILE
-#define NOMINMAX
-#define NOOPENFILE
-#define NOSCROLL
-#define NOSERVICE
-#define NOSOUND
-#define NOTEXTMETRIC
-#define NOWH
-#define NOCOMM
-#define NOKANJI
-#define NOHELP
-#define NOPROFILER
-#define NODEFERWINDOWPOS
-#define NOMCX
-#define NOCRYPT
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-#endif // _WIN32
-// This C++ class should encompass all Local Input/Output from The BBS.
-// You should use a routine in here instead of using printf, puts, etc.
 
 class WStatus;
 class WSession;
 
-class Win32ConsoleIO : public LocalIO {
+class UnixConsoleIO : public LocalIO {
  public:
   // Constructor/Destructor
-  Win32ConsoleIO();
-  Win32ConsoleIO(const LocalIO& copy) = delete;
-  virtual ~Win32ConsoleIO();
+  UnixConsoleIO();
+  UnixConsoleIO(const LocalIO& copy) = delete;
+  virtual ~UnixConsoleIO();
 
   virtual void LocalGotoXY(int x, int y) override;
   virtual int  WhereX() override;
@@ -107,20 +67,12 @@ class Win32ConsoleIO : public LocalIO {
 
 private:
   virtual void LocalFastPuts(const std::string &text) override;
+  int m_cursorPositionX;
+  int m_cursorPositionY;
 
-private:
-  std::string m_chatReason;
-  bool ExtendedKeyWaiting;
-
-  COORD  m_cursorPosition;
-  HANDLE m_hConOut;
-  HANDLE m_hConIn;
-  CONSOLE_SCREEN_BUFFER_INFO m_consoleBufferInfo;
-  DWORD saved_input_mode_ = 0;
 
   void set_attr_xy(int x, int y, int a);
-  COORD m_originalConsoleSize;
 };
 
 
-#endif // __INCLUDED_LOCAL_IO_WIN32_H__
+#endif // __INCLUDED_LOCAL_IO_UNIX_CONSOLE_H__

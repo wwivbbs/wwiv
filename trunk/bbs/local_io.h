@@ -128,11 +128,13 @@ class LocalIO {
   virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) = 0;
   virtual void UpdateNativeTitleBar() = 0;
 
+protected:
+  wwiv::bbs::Capture* capture_;
+
 private:
   virtual void LocalFastPuts(const std::string &text) = 0;
 
 private:
-  wwiv::bbs::Capture* capture_;
   std::string m_chatReason;
   bool m_bSysopAlert;
   int m_nTopLine;
