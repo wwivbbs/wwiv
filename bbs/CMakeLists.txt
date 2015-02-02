@@ -21,6 +21,7 @@ set(COMMON_SOURCES
  bgetch.cpp
  bputch.cpp
  callback.cpp
+ capture.cpp
  chains.cpp
  chat.cpp
  chnedit.cpp
