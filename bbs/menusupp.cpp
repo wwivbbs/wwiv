@@ -706,7 +706,7 @@ void DownloadFileList() {
     bout << "|#5This could take quite a while.  Are you sure? ";
     if (yesno()) {
       bout << "Please wait...\r\n";
-      session()->localIO()->set_x_only(1, "files.txt", 1);
+      session()->localIO()->set_x_only(1, "files.txt", true);
       searchall();
       session()->localIO()->set_x_only(false, nullptr, false);
       add_arc("temp", "files.txt", 0);

@@ -43,8 +43,8 @@ WSession::WSession(WApplication* app, WLocalIO* localIO) : application_(app),
     numf(0), m_nNumMsgsInCurrentSub(0), num_dirs(0), num_languages(0), num_sec(0), num_subs(0), num_events(0),
     num_sys_list(0), screenlinest(0), subchg(0), tagging(0), tagptr(0), titled(0), using_modem(0), m_bInternalZmodem(false),
     m_bExecLogSyncFoss(false), m_bExecUseWaitForInputIdle(false), m_nExecChildProcessWaitTime(0), m_bNewScanAtLogin(false),
-    usernum(0), local_io_(localIO ? localIO : new WLocalIO()) {
-  ::bout.SetLocalIO(local_io_.get());
+    usernum(0), local_io_(localIO) {
+    ::bout.SetLocalIO(local_io_.get());
 
   memset(&newuser_colors, 0, sizeof(newuser_colors));
   memset(&newuser_bwcolors, 0, sizeof(newuser_bwcolors));
