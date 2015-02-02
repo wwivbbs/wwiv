@@ -31,9 +31,9 @@
 #include "bbs/wstatus.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwiv.h"
+#include "core/file.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "core/file.h"
 #include "core/wwivassert.h"
 
 // local functions
@@ -44,7 +44,7 @@ using std::chrono::milliseconds;
 using std::string;
 using std::unique_ptr;
 using std::vector;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 using wwiv::os::sound;
 
 #define PREV                1
@@ -134,7 +134,7 @@ void WLocalIO::global_char(char ch) {
 }
 
 void WLocalIO::set_x_only(bool tf, const char *pszFileName, bool ovwr) {
-  static bool nOldGlobalHandle = false;
+  static bool bOldGlobalHandle = false;
 
   if (x_only) {
     if (!tf) {
@@ -144,13 +144,13 @@ void WLocalIO::set_x_only(bool tf, const char *pszFileName, bool ovwr) {
         global_buf.clear();
       }
       x_only = false;
-      set_global_handle(nOldGlobalHandle);
-      nOldGlobalHandle = false;
+      set_global_handle(bOldGlobalHandle);
+      bOldGlobalHandle = false;
       express = expressabort = false;
     }
   } else {
     if (tf) {
-      nOldGlobalHandle = fileGlobalCap.IsOpen();
+      bOldGlobalHandle = fileGlobalCap.IsOpen();
       set_global_handle(false);
       x_only = true;
       wx = 0;
@@ -523,17 +523,17 @@ void WLocalIO::restorescreen() {
   LocalGotoXY(m_ScreenSave.x1, m_ScreenSave.y1);
 }
 
-char xlate[] = {
+static char xlate[] = {
   'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 0, 0, 0, 0,
   'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 0, 0, 0, 0, 0,
   'Z', 'X', 'C', 'V', 'B', 'N', 'M',
 };
 
-char WLocalIO::scan_to_char(int nKeyCode) {
+static char scan_to_char(int nKeyCode) {
   return (nKeyCode >= 16 && nKeyCode <= 50) ? xlate[ nKeyCode - 16 ] : '\x00';
 }
 
-void WLocalIO::alt_key(int nKeyCode) {
+static void alt_key(int nKeyCode) {
   char ch1 = scan_to_char(nKeyCode);
   if (ch1) {
     char szCommand[ MAX_PATH ];

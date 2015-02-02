@@ -1,4 +1,4 @@
-//**************************************************************************/
+/**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
 /*             Copyright (C)1998-2007, WWIV Software Services             */
@@ -33,9 +33,7 @@ using std::cout;
 using std::string;
 using namespace wwiv::strings;
 
-WLocalIO::WLocalIO() : ExtendedKeyWaiting(0), wx(0) {
-  // TODO (for kwalker) Add Linux platform specific console maniuplation stuff
-}
+WLocalIO::WLocalIO() : ExtendedKeyWaiting(0), wx(0) {}
 
 WLocalIO::~WLocalIO() {}
 
@@ -46,8 +44,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
 
   if (bOpenFile) {
     if (!fileGlobalCap.IsOpen()) {
-      const string filename = StringPrintf("%sglobal-%d.txt", syscfg.gfilesdir, application()->GetInstanceNumber());
-      fileGlobalCap.SetName(filename);
+      fileGlobalCap.SetName(StringPrintf("%sglobal-%d.txt", syscfg.gfilesdir, application()->GetInstanceNumber()));
       fileGlobalCap.Open(File::modeBinary | File::modeAppend | File::modeCreateFile | File::modeReadWrite);
       global_buf.clear();
     }
@@ -55,6 +52,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
     if (fileGlobalCap.IsOpen() && !bOnlyUpdateVariable) {
       fileGlobalCap.Write(global_buf);
       fileGlobalCap.Close();
+      global_buf.clear();
     }
   }
 }
@@ -64,17 +62,20 @@ void WLocalIO::global_char(char ch) {
     global_buf.push_back(ch);
     if (global_buf.size() >= GLOBAL_SIZE) {
       fileGlobalCap.Write(global_buf);
+      global_buf.clear();
     }
   }
 }
 
 void WLocalIO::set_x_only(bool tf, const char *pszFileName, bool ovwr) {
-  static bool bOldGlobalHandle;
+  static bool bOldGlobalHandle = false;
+
   if (x_only) {
     if (!tf) {
       if (fileGlobalCap.IsOpen()) {
         fileGlobalCap.Write(global_buf);
         fileGlobalCap.Close();
+        global_buf.clear();
       }
       x_only = false;
       set_global_handle(bOldGlobalHandle);
@@ -87,14 +88,13 @@ void WLocalIO::set_x_only(bool tf, const char *pszFileName, bool ovwr) {
       set_global_handle(false);
       x_only = true;
       wx = 0;
-      const string temp_filename = StrCat(syscfgovr.tempdir, pszFileName);
-      fileGlobalCap.SetName(temp_filename);
-      if (ovwr) {
-        fileGlobalCap.Open(File::modeBinary | File::modeText | File::modeCreateFile | File::modeReadWrite);
-      } else {
-        fileGlobalCap.Open(File::modeBinary | File::modeText | File::modeCreateFile | File::modeAppend |
-                           File::modeReadWrite);
+      fileGlobalCap.SetName(syscfgovr.tempdir, pszFileName);
+
+      int mode = File::modeBinary | File::modeText | File::modeCreateFile | File::modeReadWrite;
+      if (!ovwr) {
+        mode |= File::modeAppend;
       }
+      fileGlobalCap.Open(mode);
       global_buf.clear();
       express = true;
       expressabort = false;
@@ -142,21 +142,6 @@ void WLocalIO::savescreen() {}
 
 void WLocalIO::restorescreen() {}
 
-char xlate[] = {
-  'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 0, 0, 0, 0,
-  'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 0, 0, 0, 0, 0,
-  'Z', 'X', 'C', 'V', 'B', 'N', 'M',
-};
-
-char WLocalIO::scan_to_char(int nKeyCode) {
-  return (nKeyCode >= 16 && nKeyCode <= 50) ? xlate[ nKeyCode - 16 ] : '\x00';
-}
-
-void WLocalIO::alt_key(int nKeyCode) {}
-
-/*
- * skey handles all f-keys and the like hit FROM THE KEYBOARD ONLY
- */
 void WLocalIO::skey(char ch) {}
 
 void WLocalIO::tleft(bool bCheckForTimeOut) {}

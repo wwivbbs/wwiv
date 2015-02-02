@@ -38,12 +38,6 @@
 // associated with this instance of WWIV globally (not tied to a user)
 //
 
-
-#if defined(_MSC_VER)
-#pragma warning( push )
-#pragma warning( disable: 4511 4512 )
-#endif // _MSC_VER
-
 class WApplication;
 ///////////////////////////////////////////////////////////////////////////////
 // ASV Settings (populated by INI file
@@ -78,7 +72,6 @@ extern WOutStream bout;
 //
 class WSession {
  public:
-  WSession(WApplication* app);
   WSession(WApplication* app, WLocalIO* localIO);
   virtual ~WSession();
 
@@ -92,6 +85,8 @@ class WSession {
   void DisplaySysopWorkingIndicator(bool displayWait);
   WComm* remoteIO() { return comm_.get(); }
   WLocalIO* localIO() { return local_io_.get(); }
+  bool reset_wlocal_io(WLocalIO* wlocal_io);
+
   /*! @function CreateComm Creates up the communications subsystem */
   void CreateComm(unsigned int nHandle);
 
@@ -343,10 +338,6 @@ class WSession {
   newuser_colors[10],         // skip for now
   newuser_bwcolors[10];       // skip for now
 };
-
-#if defined(_MSC_VER)
-#pragma warning( pop )
-#endif
 
 #endif  // #if !defined (__INCLUDED_BBS_WSESSION_H__)
 
