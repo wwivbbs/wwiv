@@ -1327,7 +1327,7 @@ void DoMinimalNewUser() {
   s1[0] = 0;
   bool done = false;
   int nSaveTopData = session()->topdata;
-  session()->topdata = WLocalIO::topdataNone;
+  session()->topdata = LocalIO::topdataNone;
   application()->UpdateTopScreen();
   do {
     bout.cls();

@@ -58,13 +58,13 @@ public:
   TestIO();
   void Clear() { captured_.clear(); } 
   std::string captured();
-  WLocalIO* local_io() const { return local_io_; }
+  LocalIO* local_io() const { return local_io_; }
 private:
-  WLocalIO* local_io_;
+  LocalIO* local_io_;
   std::string captured_;
 };
 
-class TestLocalIO : public WLocalIO {
+class TestLocalIO : public LocalIO {
 public:
   TestLocalIO(std::string* captured);
   virtual void LocalPutch(unsigned char ch) override;

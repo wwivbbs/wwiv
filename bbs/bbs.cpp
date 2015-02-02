@@ -94,7 +94,7 @@ WApplication* application() { return app; }
 WSession* session() { return sess; }
 
 #if !defined ( __unix__ )
-WLocalIO* GetWfcIO() { return sess->localIO(); }
+LocalIO* GetWfcIO() { return sess->localIO(); }
 
 void WApplication::GetCaller() {
   session()->SetMessageAreaCacheNumber(0);
@@ -140,10 +140,10 @@ void WApplication::GetCaller() {
 
 #else  // _unix__
 
-//class WfcLocalIO : public WLocalIO {
+//class WfcLocalIO : public LocalIO {
 //};
 
-WLocalIO* GetWfcIO() {
+LocalIO* GetWfcIO() {
   return sess->localIO(); // new WfcLocalIO(sess->remoteIO()); 
 }
 
@@ -156,7 +156,7 @@ int WApplication::doWFCEvents() {
   char ch;
   int lokb;
   static int mult_time;
-  WLocalIO* io = GetWfcIO();
+  LocalIO* io = GetWfcIO();
 
   unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
   do {
@@ -215,7 +215,7 @@ int WApplication::doWFCEvents() {
       any = true;
       okskey = true;
       resetnsp();
-      io->SetCursor(WLocalIO::cursorNormal);
+      io->SetCursor(LocalIO::cursorNormal);
       switch (ch) {
       // Local Logon
       case SPACE:
@@ -1163,7 +1163,7 @@ WApplication::~WApplication() {
   }
 }
 
-WApplication* CreateApplication(WLocalIO* localIO) {
+WApplication* CreateApplication(LocalIO* localIO) {
   app = new WApplication();
   sess = new WSession(app, localIO);
   localIO->set_capture(sess->capture());

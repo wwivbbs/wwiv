@@ -21,7 +21,7 @@
 
 #include <string>
 
-class NullLocalIO : public WLocalIO {
+class NullLocalIO : public LocalIO {
 public:
   NullLocalIO();
   ~NullLocalIO();

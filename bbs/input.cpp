@@ -260,8 +260,8 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
     return;
   }
   int nTopDataSaved = session()->topdata;
-  if (session()->topdata != WLocalIO::topdataNone) {
-    session()->topdata = WLocalIO::topdataNone;
+  if (session()->topdata != LocalIO::topdataNone) {
+    session()->topdata = LocalIO::topdataNone;
     application()->UpdateTopScreen();
   }
   if (mode == InputMode::DATE || mode == InputMode::PHONE) {

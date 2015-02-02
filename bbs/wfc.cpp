@@ -192,12 +192,12 @@ void wfc_cls() {
     bout.ResetColors();
     session()->localIO()->LocalCls();
     session()->wfc_status = 0;
-    session()->localIO()->SetCursor(WLocalIO::cursorNormal);
+    session()->localIO()->SetCursor(LocalIO::cursorNormal);
   }
 }
 
 void wfc_init() {
-  session()->localIO()->SetCursor(WLocalIO::cursorNormal);              // add 4.31 Build3
+  session()->localIO()->SetCursor(LocalIO::cursorNormal);              // add 4.31 Build3
   if (application()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     session()->wfc_status = 0;
     inst_num = 1;
@@ -247,7 +247,7 @@ void wfc_screen() {
   int nNumNewMessages = check_new_mail(session()->usernum);
   std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
   if (session()->wfc_status == 0) {
-    session()->localIO()->SetCursor(WLocalIO::cursorNone);
+    session()->localIO()->SetCursor(LocalIO::cursorNone);
     session()->localIO()->LocalCls();
     if (pszScreenBuffer == nullptr) {
       pszScreenBuffer = new char[4000];
