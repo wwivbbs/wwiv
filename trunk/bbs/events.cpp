@@ -231,7 +231,7 @@ void run_event(int evnt) {
 
   write_inst(INST_LOC_EVENT, 0, INST_FLAGS_NONE);
 #ifndef __unix__
-  session()->localIO()->SetCursor(WLocalIO::cursorNormal);
+  session()->localIO()->SetCursor(LocalIO::cursorNormal);
 #endif
   bout.cls();
   bout << "\r\nNow running external event.\r\n\n";

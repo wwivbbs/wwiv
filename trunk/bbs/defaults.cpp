@@ -988,7 +988,7 @@ void config_scan_plus(int type) {
   };
 
   int useconf = (subconfnum > 1 && okconf(session()->user()));
-  session()->topdata = WLocalIO::topdataNone;
+  session()->topdata = LocalIO::topdataNone;
   application()->UpdateTopScreen();
 
   vector<string> menu_items = { "Next",  "Previous", "Toggle", "Clear All", "Set All" };

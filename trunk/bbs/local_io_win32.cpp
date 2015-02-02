@@ -71,7 +71,7 @@ void Win32ConsoleIO::set_attr_xy(int x, int y, int a) {
   WriteConsoleOutputAttribute(m_hConOut, reinterpret_cast< LPWORD >(&a), 1, loc, &cb);
 }
 
-Win32ConsoleIO::Win32ConsoleIO() : WLocalIO() {
+Win32ConsoleIO::Win32ConsoleIO() : LocalIO() {
   SetTopLine(0);
   SetScreenBottom(0);
   ExtendedKeyWaiting = 0;
@@ -545,8 +545,8 @@ void Win32ConsoleIO::skey(char ch) {
           break;
         case F2:                          /* F2 */
           session()->topdata++;
-          if (session()->topdata > WLocalIO::topdataUser) {
-            session()->topdata = WLocalIO::topdataNone;
+          if (session()->topdata > LocalIO::topdataUser) {
+            session()->topdata = LocalIO::topdataNone;
           }
           application()->UpdateTopScreen();
           break;
@@ -656,7 +656,7 @@ void Win32ConsoleIO::tleft(bool bCheckForTimeOut) {
   curatr = session()->GetTopScreenColor();
   SetTopLine(0);
   double nsln = nsl();
-  int nLineNumber = (chatcall && (session()->topdata == WLocalIO::topdataUser)) ? 5 : 4;
+  int nLineNumber = (chatcall && (session()->topdata == LocalIO::topdataUser)) ? 5 : 4;
 
 
   if (session()->topdata) {
@@ -691,12 +691,12 @@ void Win32ConsoleIO::tleft(bool bCheckForTimeOut) {
     }
   }
   switch (session()->topdata) {
-  case WLocalIO::topdataSystem:
+  case LocalIO::topdataSystem:
     if (session()->IsUserOnline()) {
       LocalXYPrintf(18, 3, "T-%6.2f", nsln / SECONDS_PER_MINUTE_FLOAT);
     }
     break;
-  case WLocalIO::topdataUser: {
+  case LocalIO::topdataUser: {
     if (session()->IsUserOnline()) {
       LocalXYPrintf(18, 3, "T-%6.2f", nsln / SECONDS_PER_MINUTE_FLOAT);
     } else {
@@ -723,7 +723,7 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
   int lll = lines_listed;
 
   if (so() && !incom) {
-    pSession->topdata = WLocalIO::topdataNone;
+    pSession->topdata = LocalIO::topdataNone;
   }
 
   if (syscfg.sysconfig & sysconfig_titlebar) {
@@ -734,13 +734,13 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
   }
 
   switch (pSession->topdata) {
-  case WLocalIO::topdataNone:
+  case LocalIO::topdataNone:
     set_protect(0);
     break;
-  case WLocalIO::topdataSystem:
+  case LocalIO::topdataSystem:
     set_protect(5);
     break;
-  case WLocalIO::topdataUser:
+  case LocalIO::topdataUser:
     if (chatcall) {
       set_protect(6);
     } else {
@@ -763,9 +763,9 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
   sl[80] = '\0';
 
   switch (pSession->topdata) {
-  case WLocalIO::topdataNone:
+  case LocalIO::topdataNone:
     break;
-  case WLocalIO::topdataSystem: {
+  case LocalIO::topdataSystem: {
     LocalXYPrintf(0, 0, "%-50s  Activity for %8s:      ", syscfg.systemname, pStatus->GetLastDate());
 
     LocalXYPrintf(0, 1, "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
@@ -786,7 +786,7 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
                   pStatus->GetNumFeedbackSentToday());
   }
   break;
-  case WLocalIO::topdataUser: {
+  case LocalIO::topdataUser: {
     strcpy(rst, restrict_string);
     for (i = 0; i <= 15; i++) {
       if (pSession->user()->HasArFlag(1 << i)) {
@@ -1013,19 +1013,19 @@ void Win32ConsoleIO::SetCursor(int cursorStyle) {
   CONSOLE_CURSOR_INFO cursInfo;
 
   switch (cursorStyle) {
-  case WLocalIO::cursorNone: {
+  case LocalIO::cursorNone: {
     cursInfo.dwSize = 20;
     cursInfo.bVisible = false;
     SetConsoleCursorInfo(m_hConOut, &cursInfo);
   }
   break;
-  case WLocalIO::cursorSolid: {
+  case LocalIO::cursorSolid: {
     cursInfo.dwSize = 100;
     cursInfo.bVisible = true;
     SetConsoleCursorInfo(m_hConOut, &cursInfo);
   }
   break;
-  case WLocalIO::cursorNormal:
+  case LocalIO::cursorNormal:
   default: {
     cursInfo.dwSize = 20;
     cursInfo.bVisible = true;

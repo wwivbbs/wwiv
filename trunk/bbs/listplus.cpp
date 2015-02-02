@@ -232,7 +232,7 @@ int listfiles_plus(int type) {
   ext_is_on = session()->user()->GetFullFileDescriptions();
   signal(SIGFPE, catch_divide_by_zero);
 
-  session()->topdata = WLocalIO::topdataNone;
+  session()->topdata = LocalIO::topdataNone;
   application()->UpdateTopScreen();
   bout.cls();
 

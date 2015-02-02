@@ -73,7 +73,7 @@ extern WOutStream bout;
 //
 class WSession {
  public:
-  WSession(WApplication* app, WLocalIO* localIO);
+  WSession(WApplication* app, LocalIO* localIO);
   virtual ~WSession();
 
  public:
@@ -85,8 +85,8 @@ class WSession {
 
   void DisplaySysopWorkingIndicator(bool displayWait);
   WComm* remoteIO() { return comm_.get(); }
-  WLocalIO* localIO() { return local_io_.get(); }
-  bool reset_local_io(WLocalIO* wlocal_io);
+  LocalIO* localIO() { return local_io_.get(); }
+  bool reset_local_io(LocalIO* wlocal_io);
   wwiv::bbs::Capture* capture() { return capture_.get(); }
 
   /*! @function CreateComm Creates up the communications subsystem */
@@ -237,7 +237,7 @@ class WSession {
   WApplication*   application_;
   WUser           m_thisuser;
   std::unique_ptr<WComm> comm_;
-  std::unique_ptr<WLocalIO> local_io_;
+  std::unique_ptr<LocalIO> local_io_;
   bool wwivmail_enabled_;
   bool internal_qwk_enabled_;
   std::unique_ptr<wwiv::bbs::Capture> capture_;

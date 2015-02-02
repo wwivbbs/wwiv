@@ -78,7 +78,7 @@ string TestIO::captured() {
   return captured;
 }
 
-TestLocalIO::TestLocalIO(string* captured) : WLocalIO(), captured_(captured) {}
+TestLocalIO::TestLocalIO(string* captured) : LocalIO(), captured_(captured) {}
 
 void TestLocalIO::LocalPutch(unsigned char ch) {
   captured_->push_back(ch);
