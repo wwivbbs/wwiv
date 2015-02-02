@@ -106,17 +106,19 @@
     <ClInclude Include="instmsg.h" />
     <ClInclude Include="keycodes.h" />
     <ClInclude Include="listplus.h" />
+    <ClInclude Include="local_io.h" />
+    <ClInclude Include="local_io_win32.h" />
     <ClInclude Include="menu.h" />
     <ClInclude Include="menuspec.h" />
     <ClInclude Include="menusupp.h" />
     <ClInclude Include="menu_parser.h" />
     <ClInclude Include="net.h" />
     <ClInclude Include="new_bbslist.h" />
+    <ClInclude Include="null_local_io.h" />
     <ClInclude Include="pause.h" />
     <ClInclude Include="platform\platformfcns.h" />
     <ClInclude Include="platform\win32\InternalTelnetServer.h" />
     <ClInclude Include="platform\win32\wiot.h" />
-    <ClInclude Include="platform\wlocal_io.h" />
     <ClInclude Include="platform\wutil.h" />
     <ClInclude Include="printfile.h" />
     <ClInclude Include="prot\crctab.h" />
@@ -194,6 +196,8 @@
     <ClCompile Include="interpret.cpp" />
     <ClCompile Include="lilo.cpp" />
     <ClCompile Include="listplus.cpp" />
+    <ClCompile Include="local_io.cpp" />
+    <ClCompile Include="local_io_win32.cpp" />
     <ClCompile Include="lpfunc.cpp" />
     <ClCompile Include="memory.cpp" />
     <ClCompile Include="menu.cpp" />
@@ -218,7 +222,6 @@
     <ClCompile Include="platform\win32\InternalTelnetServer.cpp" />
     <ClCompile Include="platform\win32\utility2.cpp" />
     <ClCompile Include="platform\win32\wiot.cpp" />
-    <ClCompile Include="platform\win32\wlocal_io.cpp" />
     <ClCompile Include="printfile.cpp" />
     <ClCompile Include="prot\crctab.cpp" />
     <ClCompile Include="prot\zmodem.cpp" />

@@ -22,7 +22,7 @@
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/wcomm.h"
-#include "bbs/platform/wlocal_io.h"
+#include "bbs/local_io.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 #include "sdk/net.h"

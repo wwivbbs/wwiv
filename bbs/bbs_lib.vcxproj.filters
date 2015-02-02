@@ -298,9 +298,6 @@
     <ClCompile Include="platform\win32\wiot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\win32\wlocal_io.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WOutStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -359,6 +356,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="capture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="local_io_win32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="local_io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -439,9 +442,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="platform\win32\wiot.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="platform\wlocal_io.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="woutstreambuffer.h">
@@ -541,6 +541,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="capture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="local_io_win32.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="local_io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="null_local_io.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
