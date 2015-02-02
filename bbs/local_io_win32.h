@@ -65,11 +65,11 @@
 class WStatus;
 class WSession;
 
-class Win32ConsoleIO : public WLocalIO {
+class Win32ConsoleIO : public LocalIO {
  public:
   // Constructor/Destructor
   Win32ConsoleIO();
-  Win32ConsoleIO(const WLocalIO& copy) = delete;
+  Win32ConsoleIO(const LocalIO& copy) = delete;
   virtual ~Win32ConsoleIO();
 
   virtual void LocalGotoXY(int x, int y) override;

@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_PLATFORM_WLOCALIO_H__
-#define __INCLUDED_PLATFORM_WLOCALIO_H__
+#ifndef __INCLUDED_PLATFORM_LOCALIO_H__
+#define __INCLUDED_PLATFORM_LOCALIO_H__
 
 #include <string>
 
@@ -64,12 +64,12 @@
 class WStatus;
 class WSession;
 
-class WLocalIO {
+class LocalIO {
  public:
   // Constructor/Destructor
-  WLocalIO();
-  WLocalIO(const WLocalIO& copy) = delete;
-  virtual ~WLocalIO();
+  LocalIO();
+  LocalIO(const LocalIO& copy) = delete;
+  virtual ~LocalIO();
 
   static const int cursorNone = 0;
   static const int cursorNormal = 1;
@@ -140,4 +140,4 @@ private:
 };
 
 
-#endif // __INCLUDED_PLATFORM_WLOCALIO_H__
+#endif // __INCLUDED_PLATFORM_LOCALIO_H__

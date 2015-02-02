@@ -208,7 +208,7 @@ private:
 
 // Function Prototypes
 WApplication* application();
-WApplication* CreateApplication(WLocalIO* localIO);
+WApplication* CreateApplication(LocalIO* localIO);
 
 WSession* session();
 

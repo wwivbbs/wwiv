@@ -18,5 +18,5 @@
 /**************************************************************************/
 #include "bbs/local_io.h"
 
-WLocalIO::WLocalIO() {}
-WLocalIO::~WLocalIO() {}
+LocalIO::LocalIO() {}
+LocalIO::~LocalIO() {}

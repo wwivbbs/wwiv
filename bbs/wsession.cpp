@@ -31,7 +31,7 @@ using std::string;
 
 WOutStream bout;
 
-WSession::WSession(WApplication* app, WLocalIO* localIO) : application_(app), 
+WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app), 
     m_bLastKeyLocal(true), m_nEffectiveSl(0), m_DirectoryDateCache(0), m_SubDateCache(0),
     m_nTopScreenColor(0), m_nUserEditorColor(0), m_nEditLineColor(0), 
     m_nChatNameSelectionColor(0), m_nMessageColor(0), mail_who_field_len(0),
@@ -60,11 +60,11 @@ WSession::~WSession() {
     comm_->close();
   }
   if (local_io_) {
-    local_io_->SetCursor(WLocalIO::cursorNormal);
+    local_io_->SetCursor(LocalIO::cursorNormal);
   }
 }
 
-bool WSession::reset_local_io(WLocalIO* wlocal_io) {
+bool WSession::reset_local_io(LocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);
   local_io_->set_capture(capture());
   ::bout.SetLocalIO(wlocal_io);

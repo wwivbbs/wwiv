@@ -582,7 +582,7 @@ void chat1(char *pszChatLine, bool two_way) {
     session()->localIO()->LocalCls();
     cp0 = cp1 = 0;
     if (defscreenbottom == 24) {
-      session()->topdata = WLocalIO::topdataNone;
+      session()->topdata = LocalIO::topdataNone;
       application()->UpdateTopScreen();
     }
     bout << "\x1b[2J";

@@ -1023,7 +1023,7 @@ static int ansicallout() {
   int num_ncn, num_call_sys, rownum = 0;
   net_contact_rec *ncn;
   net_call_out_rec *con;
-  session()->localIO()->SetCursor(WLocalIO::cursorNone);
+  session()->localIO()->SetCursor(LocalIO::cursorNone);
   if (!got_info) {
     got_info = 1;
     callout_ansi = 0;
@@ -1229,7 +1229,7 @@ static int ansicallout() {
         }
       }
     } while (!done);
-    session()->localIO()->SetCursor(WLocalIO::cursorNormal);
+    session()->localIO()->SetCursor(LocalIO::cursorNormal);
     curatr = color3;
     session()->localIO()->LocalCls();
     netw = (netpos[pos]);
@@ -1241,7 +1241,7 @@ static int ansicallout() {
     sn = atoi(szSystemNumber);
   }
 
-  session()->localIO()->SetCursor(WLocalIO::cursorNormal);
+  session()->localIO()->SetCursor(LocalIO::cursorNormal);
   std::cerr << "System: " << sn << std::endl;
   return sn;
 }

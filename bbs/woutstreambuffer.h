@@ -34,12 +34,12 @@ class WOutStreamBuffer : public std::streambuf {
 };
 
 class WComm;
-class WLocalIO;
+class LocalIO;
 
 class WOutStream : public std::ostream {
  protected:
   WOutStreamBuffer buf;
-  WLocalIO *local_io_;
+  LocalIO *local_io_;
   WComm *comm_;
 
  public:
@@ -52,8 +52,8 @@ class WOutStream : public std::ostream {
   }
   virtual ~WOutStream() {}
 
-  void SetLocalIO(WLocalIO *local_io) { local_io_ = local_io; }
-  WLocalIO* localIO() const { return local_io_; }
+  void SetLocalIO(LocalIO *local_io) { local_io_ = local_io; }
+  LocalIO* localIO() const { return local_io_; }
 
   void SetComm(WComm *comm) { comm_ = comm; }
   WComm* remoteIO() const { return comm_; }

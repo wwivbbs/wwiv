@@ -1120,7 +1120,7 @@ void WApplication::InitializeBBS() {
   session()->ReadCurrentUser(1, false);
   fwaiting = (session()->user()->IsUserDeleted()) ? 0 : session()->user()->GetNumMailWaiting();
   statusMgr->RefreshStatusCache();
-  session()->topdata = (syscfg.sysconfig & sysconfig_no_local) ? WLocalIO::topdataNone : WLocalIO::topdataUser;
+  session()->topdata = (syscfg.sysconfig & sysconfig_no_local) ? LocalIO::topdataNone : LocalIO::topdataUser;
 
   snprintf(g_szDSZLogFileName, sizeof(g_szDSZLogFileName), "%sdsz.log", syscfgovr.tempdir);
 #if !defined ( __unix__ ) && !defined ( __APPLE__ )
