@@ -67,7 +67,7 @@ private:
 class TestLocalIO : public WLocalIO {
 public:
   TestLocalIO(std::string* captured);
-  virtual void LocalPutch(unsigned char ch);
+  virtual void LocalPutch(unsigned char ch) override;
   std::string* captured_;
 };
 

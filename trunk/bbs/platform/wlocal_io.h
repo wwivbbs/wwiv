@@ -75,8 +75,12 @@ struct screentype {
 };
 
 class WLocalIO {
-
  public:
+  // Constructor/Destructor
+  WLocalIO();
+  WLocalIO(const WLocalIO& copy) = delete;
+  virtual ~WLocalIO();
+
   static const int cursorNone = 0;
   static const int cursorNormal = 1;
   static const int cursorSolid = 2;
@@ -85,83 +89,22 @@ class WLocalIO {
   static const int topdataSystem = 1;
   static const int topdataUser = 2;
 
- private:
-  std::string  m_chatReason;
-  File   fileGlobalCap; // g_hGlobalCapHandle;
-  bool    m_bSysopAlert;
-  int     m_nTopLine;
-  int     m_nScreenBottom;
-  screentype m_ScreenSave;
+  void SetChatReason(const std::string& chat_reason) { m_chatReason = chat_reason; }
+  void ClearChatReason() { m_chatReason.clear(); }
 
+  const int GetTopLine() const { return m_nTopLine; }
+  void SetTopLine(int nTopLine) { m_nTopLine = nTopLine; }
 
- private:
-  char scan_to_char(int nKeyCode);
-  void alt_key(int nKeyCode);
-  int  GetEditLineStringLength(const char *pszText);
+  const int GetScreenBottom() const { return m_nScreenBottom; }
+  void SetScreenBottom(int nScreenBottom) { m_nScreenBottom = nScreenBottom; }
 
- protected:
-  int ExtendedKeyWaiting;
-  std::string global_buf;
-  int wx;
-
-#if defined ( _WIN32 )
-  COORD  m_cursorPosition;
-  HANDLE m_hConOut;
-  HANDLE m_hConIn;
-  CONSOLE_SCREEN_BUFFER_INFO m_consoleBufferInfo;
-  DWORD saved_input_mode_ = 0;
-#endif
-
-#if defined ( __APPLE__ )
-  short m_cursorPositionX;
-  short m_cursorPositionY;
-#endif
-
- public:
-#if defined ( _WIN32 )
-  void set_attr_xy(int x, int y, int a);
-  COORD m_originalConsoleSize;
-#endif // _WIN32
-
-  // Constructor/Destructor
-  WLocalIO();
-  WLocalIO(const WLocalIO& copy) = delete;
-  virtual ~WLocalIO();
-
-  void SetChatReason(char* pszChatReason) {
-    m_chatReason = pszChatReason;
-  }
-  void ClearChatReason() {
-    m_chatReason.clear();
-  }
-
-  const int GetTopLine() const {
-    return m_nTopLine;
-  }
-  void SetTopLine(int nTopLine) {
-    m_nTopLine = nTopLine;
-  }
-
-  const int GetScreenBottom() const {
-    return m_nScreenBottom;
-  }
-  void SetScreenBottom(int nScreenBottom) {
-    m_nScreenBottom = nScreenBottom;
-  }
-
-  void SetSysopAlert(bool b) {
-    m_bSysopAlert = b;
-  }
-  const bool GetSysopAlert() const {
-    return m_bSysopAlert;
-  }
-  void ToggleSysopAlert() {
-    m_bSysopAlert = !m_bSysopAlert;
-  }
+  void SetSysopAlert(bool b) { m_bSysopAlert = b; }
+  const bool GetSysopAlert() const { return m_bSysopAlert; }
 
   void set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable = false);
   void global_char(char ch);
   void set_x_only(bool tf, const char *pszFileName, bool ovwr);
+
   void LocalGotoXY(int x, int y);
   int  WhereX();
   int  WhereY();
@@ -171,14 +114,13 @@ class WLocalIO {
   void LocalClrEol();
   void LocalBackspace();
   void LocalPutchRaw(unsigned char ch);
+  // Overridden by TestLocalIO in tests.
   virtual void LocalPutch(unsigned char ch);
   void LocalPuts(const std::string& text);
   void LocalXYPuts(int x, int y, const std::string& text);
-  void LocalFastPuts(const std::string &text);
   int  LocalPrintf(const char *pszFormattedText, ...);
   int  LocalXYPrintf(int x, int y, const char *pszFormattedText, ...);
   int  LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...);
-  void pr_Wait(bool displayWait);
   void set_protect(int l);
   void savescreen();
   void restorescreen();
@@ -199,7 +141,40 @@ class WLocalIO {
 
   void LocalEditLine(char *s, int len, int status, int *returncode, char *ss);
   void UpdateNativeTitleBar();
+private:
+  void LocalFastPuts(const std::string &text);
+ private:
+  std::string  m_chatReason;
+  File   fileGlobalCap; // g_hGlobalCapHandle;
+  bool    m_bSysopAlert;
+  int     m_nTopLine;
+  int     m_nScreenBottom;
+  screentype m_ScreenSave;
+  std::string global_buf;
+  int wx;
 
+  char scan_to_char(int nKeyCode);
+  void alt_key(int nKeyCode);
+  int  GetEditLineStringLength(const char *pszText);
+  int ExtendedKeyWaiting;
+
+#if defined ( _WIN32 )
+  COORD  m_cursorPosition;
+  HANDLE m_hConOut;
+  HANDLE m_hConIn;
+  CONSOLE_SCREEN_BUFFER_INFO m_consoleBufferInfo;
+  DWORD saved_input_mode_ = 0;
+#endif
+
+#if defined ( __APPLE__ )
+  short m_cursorPositionX;
+  short m_cursorPositionY;
+#endif
+
+#if defined ( _WIN32 )
+  void set_attr_xy(int x, int y, int a);
+  COORD m_originalConsoleSize;
+#endif // _WIN32
 };
 
 

@@ -156,11 +156,11 @@ void WLocalIO::set_x_only(bool tf, const char *pszFileName, bool ovwr) {
       wx = 0;
       fileGlobalCap.SetName(syscfgovr.tempdir, pszFileName);
 
-      if (ovwr) {
-        fileGlobalCap.Open(File::modeBinary | File::modeText | File::modeCreateFile | File::modeReadWrite);
-      } else {
-        fileGlobalCap.Open(File::modeBinary | File::modeCreateFile | File::modeAppend | File::modeReadWrite);
+      int mode = File::modeBinary | File::modeText | File::modeCreateFile | File::modeReadWrite;
+      if (!ovwr) {
+        mode |= File::modeAppend;
       }
+      fileGlobalCap.Open(mode);
       global_buf.clear();
       express = true;
       expressabort = false;
@@ -639,7 +639,7 @@ void WLocalIO::skey(char ch) {
           session()->remoteIO()->dtr(false);
           break;
         case F6:                          /* F6 */
-          ToggleSysopAlert();
+          SetSysopAlert(!GetSysopAlert());
           tleft(false);
           break;
         case F7:                          /* F7 */
