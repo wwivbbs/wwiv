@@ -14,47 +14,35 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
+#ifndef __INCLUDED_BBS_CAPTURE_H__
+#define __INCLUDED_BBS_CAPTURE_H__
 
-#include "bbs/wwiv.h"
-#include "bbs/dropfile.h"
-#include "bbs/instmsg.h"
-#include "bbs/platform/platformfcns.h"
+#include "core/file.h"
 
-int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
-  // forget it if the user has hung up
-  if (!(nFlags & EFLAG_NOHUP)) {
-    if (CheckForHangup()) {
-      return -1;
-    }
-  }
-  create_chain_file();
+namespace wwiv {
+namespace bbs {
 
-  // get ready to run it
-  if (session()->IsUserOnline()) {
-    session()->WriteCurrentUser();
-    write_qscn(session()->usernum, qsc, false);
-  }
-  session()->capture()->set_global_handle(false);
+ class Capture {
+ public:
+   Capture();
+   ~Capture();
 
-  // extra processing for net programs
-  if (nFlags & EFLAG_NETPROG) {
-    write_inst(INST_LOC_NET, session()->GetNetworkNumber() + 1, INST_FLAGS_NONE);
-  }
+  void set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable = false);
+  void global_char(char ch);
+  void set_x_only(bool tf, const char *pszFileName, bool ovwr);
+  bool is_open() const { return fileGlobalCap.IsOpen(); }
+  int wx() const { return wx_; }
+  void set_wx(int wx) { wx_ = wx; }
 
-  // Execute the program and make sure the workingdir is reset
-  int nExecRetCode = ExecExternalProgram(commandLine, nFlags);
-  application()->CdHome();
+ private:
+  File fileGlobalCap;
+  std::string global_buf;
+  int wx_;
+ };
 
-  // Reread the user record.
-  if (session()->IsUserOnline()) {
-    application()->users()->ReadUser(session()->user(), session()->usernum, true);
-    read_qscn(session()->usernum, qsc, false, true);
-    application()->UpdateTopScreen();
-  }
-
-  // return to caller
-  return nExecRetCode;
+}
 }
 
+
+#endif  // __INCLUDED_BBS_CAPTURE_H__

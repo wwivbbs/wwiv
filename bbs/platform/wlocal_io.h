@@ -20,6 +20,8 @@
 #define __INCLUDED_PLATFORM_WLOCALIO_H__
 
 #include <string>
+
+#include "bbs/capture.h"
 #include "bbs/keycodes.h"
 #include "core/file.h"
 
@@ -58,8 +60,6 @@
 #endif // _WIN32
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
-
-#define GLOBAL_SIZE 4096
 
 class WStatus;
 class WSession;
@@ -101,9 +101,7 @@ class WLocalIO {
   void SetSysopAlert(bool b) { m_bSysopAlert = b; }
   const bool GetSysopAlert() const { return m_bSysopAlert; }
 
-  void set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable = false);
-  void global_char(char ch);
-  void set_x_only(bool tf, const char *pszFileName, bool ovwr);
+  void set_capture(wwiv::bbs::Capture* capture) { capture_ = capture; }
 
   void LocalGotoXY(int x, int y);
   int  WhereX();
@@ -146,14 +144,12 @@ private:
   void LocalFastPuts(const std::string &text);
 
 private:
-  std::string  m_chatReason;
-  File   fileGlobalCap; // g_hGlobalCapHandle;
-  bool    m_bSysopAlert;
-  int     m_nTopLine;
-  int     m_nScreenBottom;
+  wwiv::bbs::Capture* capture_;
+  std::string m_chatReason;
+  bool m_bSysopAlert;
+  int m_nTopLine;
+  int m_nScreenBottom;
   screentype m_ScreenSave;
-  std::string global_buf;
-  int wx;
 
   int GetEditLineStringLength(const char *pszText);
   int ExtendedKeyWaiting;
@@ -176,7 +172,6 @@ private:
   COORD m_originalConsoleSize;
 #endif // _WIN32
 };
-
 
 
 #endif // __INCLUDED_PLATFORM_WLOCALIO_H__

@@ -69,7 +69,7 @@ WLocalIO::WLocalIO() {
   SetTopLine(0);
   SetScreenBottom(0);
   ExtendedKeyWaiting = 0;
-  wx = 0;
+  capture_->set_wx(0);
 
   m_hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
   m_hConIn  = GetStdHandle(STD_INPUT_HANDLE);
@@ -103,74 +103,6 @@ WLocalIO::~WLocalIO() {
   SetConsoleMode(m_hConIn, saved_input_mode_);
 }
 
-void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
-  if (x_only) {
-    return;
-  }
-
-  if (bOpenFile) {
-    if (!fileGlobalCap.IsOpen()) {
-      fileGlobalCap.SetName(StringPrintf("%sglobal-%d.txt", syscfg.gfilesdir, application()->GetInstanceNumber()));
-      fileGlobalCap.Open(File::modeBinary | File::modeAppend | File::modeCreateFile | File::modeReadWrite);
-      global_buf.clear();
-    }
-  } else {
-    if (fileGlobalCap.IsOpen() && !bOnlyUpdateVariable) {
-      fileGlobalCap.Write(global_buf);
-      fileGlobalCap.Close();
-      global_buf.clear();
-    }
-  }
-}
-
-void WLocalIO::global_char(char ch) {
-  if (fileGlobalCap.IsOpen()) {
-    global_buf.push_back(ch);
-    if (global_buf.size() >= GLOBAL_SIZE) {
-      fileGlobalCap.Write(global_buf);
-      global_buf.clear();
-    }
-  }
-}
-
-void WLocalIO::set_x_only(bool tf, const char *pszFileName, bool ovwr) {
-  static bool bOldGlobalHandle = false;
-
-  if (x_only) {
-    if (!tf) {
-      if (fileGlobalCap.IsOpen()) {
-        fileGlobalCap.Write(global_buf);
-        fileGlobalCap.Close();
-        global_buf.clear();
-      }
-      x_only = false;
-      set_global_handle(bOldGlobalHandle);
-      bOldGlobalHandle = false;
-      express = expressabort = false;
-    }
-  } else {
-    if (tf) {
-      bOldGlobalHandle = fileGlobalCap.IsOpen();
-      set_global_handle(false);
-      x_only = true;
-      wx = 0;
-      fileGlobalCap.SetName(syscfgovr.tempdir, pszFileName);
-
-      int mode = File::modeBinary | File::modeText | File::modeCreateFile | File::modeReadWrite;
-      if (!ovwr) {
-        mode |= File::modeAppend;
-      }
-      fileGlobalCap.Open(mode);
-      global_buf.clear();
-      express = true;
-      expressabort = false;
-      if (!fileGlobalCap.IsOpen()) {
-        set_x_only(false, nullptr, false);
-      }
-    }
-  }
-  timelastchar1 = timer1();
-}
 
 // This, obviously, moves the cursor to the location specified, offset from
 // the protected dispaly at the top of the screen.  Note: this function
@@ -183,7 +115,7 @@ void WLocalIO::LocalGotoXY(int x, int y) {
   y = std::min<int>(y, GetScreenBottom());
 
   if (x_only) {
-    wx = x;
+    capture_->set_wx(x);
     return;
   }
   m_cursorPosition.X = static_cast< short >(x);
@@ -197,7 +129,7 @@ void WLocalIO::LocalGotoXY(int x, int y) {
 */
 int WLocalIO::WhereX() {
   if (x_only) {
-    return (wx);
+    return capture_->wx();
   }
 
   CONSOLE_SCREEN_BUFFER_INFO m_consoleBufferInfo;
@@ -350,6 +282,7 @@ void WLocalIO::LocalPutchRaw(unsigned char ch) {
  */
 void WLocalIO::LocalPutch(unsigned char ch) {
   if (x_only) {
+    int wx = capture_->wx();
     if (ch > 31) {
       wx = (wx + 1) % 80;
     } else if (ch == RETURN || ch == CL) {
@@ -359,6 +292,7 @@ void WLocalIO::LocalPutch(unsigned char ch) {
         wx--;
       }
     }
+    capture_->set_wx(wx);
     return;
   }
 
@@ -596,8 +530,9 @@ void WLocalIO::skey(char ch) {
         case F1:                          /* F1 */
           OnlineUserEditor();
           break;
-        case SF1:                          /* Shift-F1 */
-          set_global_handle((fileGlobalCap.IsOpen()) ? false : true);
+        case SF1:
+          /* Shift-F1 */
+          capture_->set_global_handle(!capture_->is_open());
           application()->UpdateTopScreen();
           break;
         case CF1:                          /* Ctrl-F1 */
@@ -735,7 +670,7 @@ void WLocalIO::tleft(bool bCheckForTimeOut) {
     if (session()->user()->GetSl() != 255 && session()->GetEffectiveSl() == 255) {
       LocalXYPuts(23, nLineNumber, top_screen_items[1]);
     }
-    if (fileGlobalCap.IsOpen()) {
+    if (capture_->is_open()) {
       LocalXYPuts(40, nLineNumber, top_screen_items[2]);
     }
     if (GetSysopAlert()) {

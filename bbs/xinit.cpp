@@ -965,7 +965,7 @@ void WApplication::InitializeBBS() {
   chat_file = false;
   session()->localIO()->SetSysopAlert(false);
   nsp = 0;
-  session()->localIO()->set_global_handle(false, true);
+  session()->capture()->set_global_handle(false, true);
   bquote = 0;
   equote = 0;
   session()->SetQuoting(false);

@@ -130,11 +130,11 @@ void frequent_init() {
   use_workspace = false;
   extratimecall = 0.0;
   session()->using_modem = 0;
-  session()->localIO()->set_global_handle(false);
+  session()->capture()->set_global_handle(false);
   File::SetFilePermissions(g_szDSZLogFileName, File::permReadWrite);
   File::Remove(g_szDSZLogFileName);
   session()->SetTimeOnlineLimited(false);
-  session()->localIO()->set_x_only(false, nullptr, false);
+  session()->capture()->set_x_only(false, nullptr, false);
   set_net_num(0);
   set_language(session()->user()->GetLanguage());
   reset_disable_conf();
