@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
+#include <sys/poll.h>
 
 #include "bbs/asv.h"
 #include "bbs/datetime.h"
@@ -54,6 +55,7 @@ void UnixConsoleIO::LocalGotoXY(int x, int y) {
   m_cursorPositionY = static_cast< short >(y);
 
   cout << "\x1b[" << y << ";" << x << "H";
+  cout.flush();
 }
 
 int UnixConsoleIO::WhereX() {
@@ -68,7 +70,8 @@ int UnixConsoleIO::WhereY() {
 }
 
 void UnixConsoleIO::LocalLf() {
-  std::cout << "\n";
+  cout << "\n";
+  cout.flush();
   m_cursorPositionY++;
   if (m_cursorPositionY > 24) {
     m_cursorPositionY = 24;
@@ -77,17 +80,20 @@ void UnixConsoleIO::LocalLf() {
 
 void UnixConsoleIO::LocalCr() {
   cout << "\r";
+  cout.flush();
   m_cursorPositionX = 0;
 }
 
 void UnixConsoleIO::LocalCls() {
   cout << "\x1b[2J";
+  cout.flush();
   m_cursorPositionX = 0;
   m_cursorPositionY = 0;
 }
 
 void UnixConsoleIO::LocalBackspace() {
   cout << "\b";
+  cout.flush();
   if (m_cursorPositionX >= 0) {
     m_cursorPositionX--;
   } else if (m_cursorPositionY != GetTopLine()) {
@@ -98,6 +104,7 @@ void UnixConsoleIO::LocalBackspace() {
 
 void UnixConsoleIO::LocalPutchRaw(unsigned char ch) {
   cout << ch;
+  cout.flush();
   if (m_cursorPositionX <= 79) {
     m_cursorPositionX++;
     return;
@@ -145,6 +152,7 @@ void UnixConsoleIO::LocalPuts(const string& s) {
   for (char ch : s) {
     LocalPutch(ch);
   }
+  cout.flush();
 }
 
 void UnixConsoleIO::LocalXYPuts(int x, int y, const string& text) {
@@ -158,6 +166,7 @@ void UnixConsoleIO::LocalFastPuts(const string& text) {
 
   // TODO: set current attributes
   cout << text;
+  cout.flush();
 }
 
 int  UnixConsoleIO::LocalPrintf(const char *pszFormattedText, ...) {
@@ -323,7 +332,15 @@ void UnixConsoleIO::skey(char ch) {
 }
 
 void UnixConsoleIO::tleft(bool bCheckForTimeOut) {}
-bool UnixConsoleIO::LocalKeyPressed() { return false; }
+
+bool UnixConsoleIO::LocalKeyPressed() { 
+  struct pollfd p;
+
+  p.fd = fileno(stdin);
+  p.events = POLLIN;
+  poll(&p, 1, 0);
+  return (p.revents & POLLIN);
+}
 void UnixConsoleIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {}
 
 unsigned char UnixConsoleIO::LocalGetChar() {
