@@ -81,6 +81,7 @@ static std::map<int, AnsiColor> CreateAnsiScheme() {
 CursesLocalIO::CursesLocalIO() : scheme_(CreateAnsiScheme()) {
   window = new CursesWindow(out->window(), out->color_scheme(), screen_bottom + 1, 80, 0, 0);
   scrollok(window->window(), true);
+  window->Clear();
 }
 
 CursesLocalIO::~CursesLocalIO() {
@@ -92,11 +93,6 @@ void CursesLocalIO::SetColor(int color) {
   attr_t attr = COLOR_PAIR(color + 100);
   if (s.bold()) {
     attr |= A_BOLD;
-  }
-  {
-    char ods[81];
-    sprintf(ods, "SetColor %d (%d)\n", color, attr);
-    ::OutputDebugString(ods);
   }
   window->AttrSet(attr);
 }
@@ -117,10 +113,6 @@ void CursesLocalIO::LocalLf() {
   m_cursorPositionY = WhereY();
   m_cursorPositionX = WhereX();
   m_cursorPositionY++;
-
-  char s[81];
-  sprintf(s, "LocalLf: m_cursorPositionY = %d\n", m_cursorPositionY);
-  ::OutputDebugString(s);
 
   if (m_cursorPositionY > screen_bottom) { // GetScreenBottom()) {
     scroll(window->window());
@@ -367,8 +359,6 @@ static int last_key_pressed = ERR;
 
 bool CursesLocalIO::LocalKeyPressed() {
   if (last_key_pressed != ERR) {
-    Sleep(100);
-    OutputDebugString("LocalKeyPressed (true)\n");
     return true;
   }
   nodelay(window->window(), TRUE);
@@ -380,14 +370,10 @@ void CursesLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {}
 
 unsigned char CursesLocalIO::LocalGetChar() {
   if (last_key_pressed != ERR) {
-    char s[81];
-    sprintf(s, "LocalGetChar() last_key_pressed = %d\n", last_key_pressed);
-    ::OutputDebugString(s);
     int ch = last_key_pressed;
     last_key_pressed = ERR;
     return ch;
   }
-  OutputDebugString("LocalGetChar (witing for char)\n");
   nodelay(window->window(), FALSE);
   last_key_pressed = ERR;
   return window->GetChar();
