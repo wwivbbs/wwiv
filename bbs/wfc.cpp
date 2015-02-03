@@ -26,6 +26,7 @@
 #include "bbs/wwiv.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
+#include "bbs/local_io_curses.h"
 #include "bbs/printfile.h"
 #include "bbs/voteedit.h"
 #include "bbs/wconstants.h"
@@ -63,6 +64,8 @@ auto noop = [](){};
 
 static void wfc_command(int instance_location_id, std::function<void()> f, 
     std::function<void()> f2 = noop, std::function<void()> f3 = noop, std::function<void()> f4 = noop) {
+  session()->reset_local_io(new CursesLocalIO());
+
   if (!AllowLocalSysop()) {
     // TODO(rushfan): Show messagebox error?
     return;
@@ -107,8 +110,17 @@ ControlCenter::ControlCenter() {
   CursesIO::Init(title);
   // take ownership of out.
   out_scope_.reset(out);
-  out->Cls(ACS_CKBOARD);
+  application()->SetWfcStatus(0);
+}
 
+ControlCenter::~ControlCenter() {}
+
+void ControlCenter::Run() {
+  // Initialization steps that have to happen before we
+  // have a functional WFC system. This also supposes that
+  // application()->InitializeBBS has been called.
+
+  out->Cls(ACS_CKBOARD);
   commands_.reset(CreateBoxedWindow("Commands", 9, 38, 1, 1));
   status_.reset(CreateBoxedWindow("Status", 9, 39, 1, 40));
   logs_.reset(CreateBoxedWindow("Logs", 9, 78, 11, 1));
@@ -126,7 +138,6 @@ ControlCenter::ControlCenter() {
   out->footer()->ShowHelpItems(0, help_items0);
   out->footer()->ShowHelpItems(1, help_items1);
 
-  application()->SetWfcStatus(0);
   session()->ReadCurrentUser(1);
   read_qscn(1, qsc, false);
   session()->ResetEffectiveSl();
@@ -134,14 +145,16 @@ ControlCenter::ControlCenter() {
 
   fwaiting = session()->user()->GetNumMailWaiting();
   application()->SetWfcStatus(1);
-}
+  int saved_screenlines = session()->user()->GetScreenLines();
+  session()->user()->SetScreenLines(18);
 
-ControlCenter::~ControlCenter() {}
-
-void ControlCenter::Run() {
   for (bool done = false; !done;) {
     // refresh the window since we call endwin before invoking bbs code.
     out->window()->Refresh();
+    commands_->Refresh();
+    status_->Refresh();
+    logs_->Refresh();
+
     int key = commands_->GetChar();
     if (key == ERR) {
       // we have a timeout. process other events
@@ -167,15 +180,19 @@ void ControlCenter::Run() {
     case 'U': wfc_command(INST_LOC_UEDIT, []() { uedit(1, UEDIT_NONE); } ); break;
     case 'Y': wfc_command(INST_LOC_WFC, view_yesterday_sysop_log_f); break;
     case 'Z': wfc_command(INST_LOC_WFC, zlog, getkey_f); break;
-    case 'Q': return;
+    case 'Q': done=true; break;
     }
+    out->window()->TouchWin();
+    commands_->TouchWin();
+    status_->TouchWin();
+    logs_->TouchWin();
   }
+  session()->user()->SetScreenLines(saved_screenlines);
+
 }
 
 }
 }
-
-
 
 // Legacy WFC
 

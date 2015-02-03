@@ -42,7 +42,8 @@
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/keycodes.h"
-#include "bbs/local_io_unix_console.h"
+#include "bbs/local_io.h"
+#include "bbs/local_io_curses.h"
 #include "bbs/null_local_io.h"
 #include "bbs/menu.h"
 #include "bbs/printfile.h"
@@ -53,7 +54,6 @@
 #include "bbs/wsession.h"
 #include "bbs/wstatus.h"
 #include "bbs/platform/platformfcns.h"
-#include "bbs/local_io.h"
 #include "core/strings.h"
 #include "core/os.h"
 #include "core/wwivassert.h"
@@ -762,13 +762,9 @@ int WApplication::Run(int argc, char *argv[]) {
         break;
       case 'W': {
         ok_modem_stuff = false;
-#ifndef _WIN32
-        session()->reset_local_io(new UnixConsoleIO());
-#endif  // _WIN32
         this->InitializeBBS();
         wwiv::wfc::ControlCenter control_center;
         control_center.Run();
-        //this->doWFCEvents();
         exit (m_nOkLevel);
       } break;
       case 'X': {
