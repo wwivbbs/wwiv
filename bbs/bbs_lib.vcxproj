@@ -198,7 +198,6 @@
     <ClCompile Include="lilo.cpp" />
     <ClCompile Include="listplus.cpp" />
     <ClCompile Include="local_io.cpp" />
-    <ClCompile Include="local_io_unix_console.cpp" />
     <ClCompile Include="local_io_win32.cpp" />
     <ClCompile Include="lpfunc.cpp" />
     <ClCompile Include="memory.cpp" />
