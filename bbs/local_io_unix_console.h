@@ -19,7 +19,9 @@
 #ifndef __INCLUDED_LOCAL_IO_UNIX_CONSOLE_H__
 #define __INCLUDED_LOCAL_IO_UNIX_CONSOLE_H__
 
+#include <cstdio>
 #include <string>
+#include <termios.h>
 #include "bbs/local_io.h"
 
 class WStatus;
@@ -69,6 +71,8 @@ private:
   virtual void LocalFastPuts(const std::string &text) override;
   int m_cursorPositionX;
   int m_cursorPositionY;
+  FILE *ttyf;
+  struct termios ttysav;
 
 
   void set_attr_xy(int x, int y, int a);
