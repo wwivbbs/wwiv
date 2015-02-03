@@ -21,6 +21,10 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <termios.h>
+#include <unistd.h>
 #include <sys/poll.h>
 
 #include "bbs/asv.h"
@@ -37,8 +41,55 @@ using std::cout;
 using std::string;
 using namespace wwiv::strings;
 
-UnixConsoleIO::UnixConsoleIO() {}
-UnixConsoleIO::~UnixConsoleIO() {}
+#define TTY "/dev/tty"
+
+#if !defined(TCGETS) && defined(TIOCGETA)
+#define TCGETS TIOCGETA
+#endif
+#if !defined(TCSETS) && defined(TIOCSETA)
+#define TCSETS TIOCSETA
+#endif
+
+static void set_terminal(bool initMode) {
+  static struct termios foo;
+  static struct termios boo;
+
+  if (initMode) {
+    tcgetattr(fileno(stdin), &foo);
+    memcpy(&boo, &foo, sizeof(struct termios));
+    foo.c_lflag &= ~ICANON;
+    tcsetattr(fileno(stdin), TCSANOW, &foo);
+  } else {
+    tcsetattr(fileno(stdin), TCSANOW, &boo);
+  }
+}
+
+UnixConsoleIO::UnixConsoleIO() {
+  if ((ttyf = fdopen(::open(TTY, O_RDWR), "r")) == nullptr) {
+    ttyf = stdin;
+  } else {
+    setbuf(ttyf, NULL);
+  }
+
+  int f = fileno(ttyf);
+  set_terminal(true);
+  struct termios ttyb;
+
+  ioctl(f, TCGETS, &ttysav);
+  ioctl(f, TCGETS, &ttyb);
+  ttyb.c_lflag &= ~(ECHO | ISIG);
+  ioctl(f, TCSETS, &ttyb);
+}
+
+UnixConsoleIO::~UnixConsoleIO() {
+  int f = fileno(ttyf);
+  ioctl(f, TCSETS, &ttysav);
+
+  if (ttyf != stdin) {
+    fclose(ttyf);
+  }
+  set_terminal(false);
+}
 
 void UnixConsoleIO::LocalGotoXY(int x, int y) {
   x = std::max<int>(x, 0);
@@ -103,8 +154,7 @@ void UnixConsoleIO::LocalBackspace() {
 }
 
 void UnixConsoleIO::LocalPutchRaw(unsigned char ch) {
-  cout << ch;
-  cout.flush();
+  ::write(fileno(stdout), &ch, 1);
   if (m_cursorPositionX <= 79) {
     m_cursorPositionX++;
     return;
@@ -152,7 +202,6 @@ void UnixConsoleIO::LocalPuts(const string& s) {
   for (char ch : s) {
     LocalPutch(ch);
   }
-  cout.flush();
 }
 
 void UnixConsoleIO::LocalXYPuts(int x, int y, const string& text) {
@@ -164,9 +213,8 @@ void UnixConsoleIO::LocalFastPuts(const string& text) {
   m_cursorPositionX += text.length();
   m_cursorPositionX %= 80;
 
+  ::write(fileno(stdout), text.c_str(), text.size());
   // TODO: set current attributes
-  cout << text;
-  cout.flush();
 }
 
 int  UnixConsoleIO::LocalPrintf(const char *pszFormattedText, ...) {
@@ -344,7 +392,23 @@ bool UnixConsoleIO::LocalKeyPressed() {
 void UnixConsoleIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {}
 
 unsigned char UnixConsoleIO::LocalGetChar() {
-  return getchar();
+  unsigned char ch = 0;
+  int dlay = 0;
+  struct pollfd p;
+
+  p.fd = fileno(stdin);
+  p.events = POLLIN;
+
+  if (poll(&p, 1, dlay)) {
+    if (p.revents & POLLIN) {
+      ::read(fileno(stdin), &ch, 1);
+      // Don't ask why this needs to be here...but it does
+      if (ch == SOFTRETURN) {
+        ch = RETURN;
+      }
+    }
+  }
+  return ch;
 }
 
 void UnixConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {}
