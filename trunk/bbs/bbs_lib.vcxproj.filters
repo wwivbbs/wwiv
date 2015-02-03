@@ -364,9 +364,6 @@
     <ClCompile Include="local_io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="local_io_unix_console.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
