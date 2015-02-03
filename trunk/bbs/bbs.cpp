@@ -94,9 +94,9 @@ using namespace wwiv::strings;
 WApplication* application() { return app; }
 WSession* session() { return sess; }
 
-#if !defined ( __unix__ )
 LocalIO* GetWfcIO() { return sess->localIO(); }
 
+#if !defined ( __unix__ )
 void WApplication::GetCaller() {
   session()->SetMessageAreaCacheNumber(0);
   session()->SetFileAreaCacheNumber(0);
@@ -140,13 +140,6 @@ void WApplication::GetCaller() {
 }
 
 #else  // _unix__
-
-//class WfcLocalIO : public LocalIO {
-//};
-
-LocalIO* GetWfcIO() {
-  return sess->localIO(); // new WfcLocalIO(sess->remoteIO()); 
-}
 
 void wfc_screen() {}
 void wfc_cls() {}
