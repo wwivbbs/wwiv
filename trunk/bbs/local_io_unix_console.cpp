@@ -19,6 +19,7 @@
 #include "bbs/local_io_unix_console.h"
 
 #include <algorithm>
+#include <cstdarg>
 #include <iostream>
 #include <string>
 #include <fcntl.h>
