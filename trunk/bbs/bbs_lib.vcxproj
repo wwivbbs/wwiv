@@ -107,7 +107,6 @@
     <ClInclude Include="keycodes.h" />
     <ClInclude Include="listplus.h" />
     <ClInclude Include="local_io.h" />
-    <ClInclude Include="local_io_unix_console.h" />
     <ClInclude Include="local_io_win32.h" />
     <ClInclude Include="menu.h" />
     <ClInclude Include="menuspec.h" />
@@ -198,6 +197,7 @@
     <ClCompile Include="lilo.cpp" />
     <ClCompile Include="listplus.cpp" />
     <ClCompile Include="local_io.cpp" />
+    <ClCompile Include="local_io_curses.cpp" />
     <ClCompile Include="local_io_win32.cpp" />
     <ClCompile Include="lpfunc.cpp" />
     <ClCompile Include="memory.cpp" />
