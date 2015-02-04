@@ -19,8 +19,10 @@
 #ifndef __INCLUDED_LOCAL_IO_CURSES_H__
 #define __INCLUDED_LOCAL_IO_CURSES_H__
 
+#include <cstdint>
 #include <cstdio>
 #include <string>
+
 #include "bbs/local_io.h"
 #include "initlib/colors.h"
 #include "initlib/curses_win.h"
@@ -31,17 +33,17 @@ class WSession;
 // Describes a color scheme.
 class AnsiColor {
 public:
-  AnsiColor(int f, int b, bool bold) : f_(f), b_(b), bold_(bold) {}
+  AnsiColor(uint8_t f, uint8_t b, bool bold) : f_(f), b_(b), bold_(bold) {}
   AnsiColor() : AnsiColor(7, 0, true) {}
 
   // Don't provide a user defined destructor since that will block move semantics
-  int f() const { return f_; }
-  int b() const { return b_; }
+  uint8_t f() const { return f_; }
+  uint8_t b() const { return b_; }
   bool bold() const { return bold_; }
 
 private:
-  int f_;
-  int b_;
+  uint8_t f_;
+  uint8_t b_;
   bool bold_;
 };
 
