@@ -183,7 +183,7 @@ void reset_disable_conf();
 int  get_conf_info(int conftype, int *num, confrec ** cpp, char *pszFileName, int *num_s, userconfrec ** uc);
 void jump_conf(int conftype);
 void update_conf(int conftype, SUBCONF_TYPE * sub1, SUBCONF_TYPE * sub2, int action);
-int str_to_arword(const char *arstr);
+uint16_t str_to_arword(const char *arstr);
 char *word_to_arstr(int ar);
 char first_available_designator(int conftype);
 int  in_conference(int subnum, confrec * c);

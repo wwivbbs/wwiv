@@ -94,9 +94,9 @@ TEST_F(IniFileTest, Single_GetNumericValue) {
   const string path = this->CreateIniFile("TEST", { "FOO=1234", "BAR=4321", "baz=12345" } );
   IniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST");
   ASSERT_TRUE(ini.IsOpen());
-  EXPECT_EQ(1234, ini.GetNumericValue("FOO"));
-  EXPECT_EQ(4321, ini.GetNumericValue("BAR"));
-  EXPECT_EQ(12345, ini.GetNumericValue("baz"));
+  EXPECT_EQ(1234, ini.GetNumericValue<int>("FOO"));
+  EXPECT_EQ(4321, ini.GetNumericValue<int>("BAR"));
+  EXPECT_EQ(12345, ini.GetNumericValue<int>("baz"));
   ini.Close();
 }
 

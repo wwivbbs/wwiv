@@ -44,12 +44,6 @@
 // Additional INI file function and structure
 #include "bbs/xinitini.h"
 
-// %%TODO: Turn this warning back on once the rest of the code is cleaned up
-#if defined( _MSC_VER )
-#pragma warning( push )
-#pragma warning( disable : 4244 )
-#endif
-
 #ifdef __unix__
 #define XINIT_PRINTF( x )
 #else
@@ -129,7 +123,7 @@ unsigned char WApplication::stryn2tf(const char *s) {
 // end callback addition
 
 
-#define OFFOF(x) ( reinterpret_cast<long>( &session()->user()->data.x ) - reinterpret_cast<long>( &session()->user()->data ) )
+#define OFFOF(x) ( reinterpret_cast<int16_t>( &session()->user()->data.x ) - reinterpret_cast<int16_t>( &session()->user()->data ) )
 
 
 // Reads WWIV.INI info from [WWIV] subsection, overrides some config.dat
@@ -308,12 +302,12 @@ IniFile* WApplication::ReadINIFile() {
       string key_name = StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLOR), nTempColorNum);
       const char *ss = ini->GetValue(key_name);
       if (ss != nullptr && atoi(ss) > 0) {
-        session()->newuser_colors[nTempColorNum] = atoi(ss);
+        session()->newuser_colors[nTempColorNum] = StringToUnsignedChar(ss);
       }
       key_name = StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLOR), nTempColorNum);
       ss = ini->GetValue(key_name);
       if (ss != nullptr && atoi(ss) > 0) {
-        session()->newuser_bwcolors[nTempColorNum] = atoi(ss);
+        session()->newuser_bwcolors[nTempColorNum] = StringToUnsignedChar(ss);
       }
     }
 
@@ -371,31 +365,31 @@ IniFile* WApplication::ReadINIFile() {
 
     // get asv values
     if (application()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV)) {
-      INI_GET_ASV("SL", sl, atoi, syscfg.autoval[9].sl);
-      INI_GET_ASV("DSL", dsl, atoi, syscfg.autoval[9].dsl);
-      INI_GET_ASV("EXEMPT", exempt, atoi, 0);
+      INI_GET_ASV("SL", sl, StringToUnsignedChar, syscfg.autoval[9].sl);
+      INI_GET_ASV("DSL", dsl, StringToUnsignedChar, syscfg.autoval[9].dsl);
+      INI_GET_ASV("EXEMPT", exempt, StringToUnsignedChar, 0);
       INI_GET_ASV("AR", ar, str_to_arword, syscfg.autoval[9].ar);
       INI_GET_ASV("DAR", dar, str_to_arword, syscfg.autoval[9].dar);
       INI_GET_ASV("RESTRICT", restrict, str2restrict, 0);
     }
     if (application()->HasConfigFlag(OP_FLAGS_ADV_ASV)) {
-      session()->advasv.reg_wwiv = ini->GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV, "REG_WWIV"), 1);
-      session()->advasv.nonreg_wwiv = ini->GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV, "NONREG_WWIV"), 1);
-      session()->advasv.non_wwiv = ini->GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV, "NON_WWIV"), 1);
-      session()->advasv.cosysop = ini->GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV, "COSYSOP"), 1);
+      session()->advasv.reg_wwiv = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "REG_WWIV"), 1);
+      session()->advasv.nonreg_wwiv = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "NONREG_WWIV"), 1);
+      session()->advasv.non_wwiv = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "NON_WWIV"), 1);
+      session()->advasv.cosysop = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "COSYSOP"), 1);
     }
 
     // get callback values
     if (application()->HasConfigFlag(OP_FLAGS_CALLBACK)) {
-      INI_GET_CALLBACK("SL", sl, atoi, syscfg.autoval[2].sl);
-      INI_GET_CALLBACK("DSL", dsl, atoi, syscfg.autoval[2].dsl);
-      INI_GET_CALLBACK("EXEMPT", exempt, atoi, 0);
+      INI_GET_CALLBACK("SL", sl, StringToUnsignedChar, syscfg.autoval[2].sl);
+      INI_GET_CALLBACK("DSL", dsl, StringToUnsignedChar, syscfg.autoval[2].dsl);
+      INI_GET_CALLBACK("EXEMPT", exempt, StringToUnsignedChar, 0);
       INI_GET_CALLBACK("AR", ar, str_to_arword, syscfg.autoval[2].ar);
       INI_GET_CALLBACK("DAR", dar, str_to_arword, syscfg.autoval[2].dar);
       INI_GET_CALLBACK("RESTRICT", restrict, str2restrict, 0);
       INI_GET_CALLBACK("FORCED", forced, stryn2tf, 0);
       INI_GET_CALLBACK("LONG_DISTANCE", longdistance, stryn2tf, 0);
-      INI_GET_CALLBACK("REPEAT", repeat, atoi, 0);
+      INI_GET_CALLBACK("REPEAT", repeat, StringToUnsignedChar, 0);
     }
 
     // sysconfig flags
@@ -406,7 +400,7 @@ IniFile* WApplication::ReadINIFile() {
     // misc stuff
     if (((ss = ini->GetValue(get_key_str(INI_STR_MAIL_WHO_LEN))) != nullptr) &&
         (atoi(ss) > 0 || ss[0] == '0')) {
-      session()->mail_who_field_len = atoi(ss);
+      session()->mail_who_field_len = StringToUnsignedShort(ss);
     }
     if ((ss = ini->GetValue(get_key_str(INI_STR_RATIO))) != nullptr) {
       syscfg.req_ratio = static_cast<float>(atof(ss));
@@ -513,13 +507,13 @@ bool WApplication::ReadConfig() {
   }
 
   // update user info data
-  int userreclen = sizeof(userrec);
-  int waitingoffset = OFFOF(waiting);
-  int inactoffset = OFFOF(inact);
-  int sysstatusoffset = OFFOF(sysstatus);
-  int fuoffset = OFFOF(forwardusr);
-  int fsoffset = OFFOF(forwardsys);
-  int fnoffset = OFFOF(net_num);
+  int16_t userreclen = static_cast<int16_t>(sizeof(userrec));
+  int16_t waitingoffset = OFFOF(waiting);
+  int16_t inactoffset = OFFOF(inact);
+  int16_t sysstatusoffset = OFFOF(sysstatus);
+  int16_t fuoffset = OFFOF(forwardusr);
+  int16_t fsoffset = OFFOF(forwardsys);
+  int16_t fnoffset = OFFOF(net_num);
 
   if (userreclen != full_config.config()->userreclen           ||
       waitingoffset != full_config.config()->waitingoffset     ||
@@ -957,8 +951,9 @@ void WApplication::InitializeBBS() {
 
   session()->localIO()->LocalCls();
 #if !defined( __unix__ )
-  std::clog << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2015, WWIV Software Services." << std::endl << std::endl;
-  std::clog << "\r\nInitializing BBS..." << std::endl;
+  std::clog << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2015, WWIV Software Services."
+            << std::endl << std::endl
+            << "\r\nInitializing BBS..." << std::endl;
 #endif // __unix__
   session()->SetCurrentReadMessageArea(-1);
   use_workspace = false;
@@ -975,6 +970,7 @@ void WApplication::InitializeBBS() {
   // Struct tm_year is -= 1900
   struct tm * pTm = localtime(&t);
   if (pTm->tm_year < 88) {
+    // TODO9(rushfan): Is this check really needed anymore?
     std::clog << "You need to set the date [" << pTm->tm_year << "] & time before running the BBS." << std::endl;
     AbortBBS();
   }
@@ -984,17 +980,6 @@ void WApplication::InitializeBBS() {
   }
 
   XINIT_PRINTF("Processing configuration file: WWIV.INI.");
-
-  if (syscfgovr.tempdir[0] == '\0') {
-    std::clog  << std::endl << "Your temp dir isn't valid. It is empty." << std::endl;
-    AbortBBS();
-  }
-
-  if (syscfgovr.batchdir[0] == '\0') {
-    std::clog  << std::endl << "Your batch dir isn't valid. It is empty." << std::endl;
-    AbortBBS();
-  }
-
   if (!File::Exists(syscfgovr.tempdir)) {
     if (!File::mkdirs(syscfgovr.tempdir)) {
       std::clog << std::endl << "Your temp dir isn't valid." << std::endl;
@@ -1022,11 +1007,11 @@ void WApplication::InitializeBBS() {
     AbortBBS();
   }
 
-#if !defined( __unix__ )
   if (!syscfgovr.primaryport) {
+    // On all platforms primaryport is now 1 (this case should only ever happen
+    // on an upgraded system.
     syscfgovr.primaryport = 1;
   }
-#endif // __unix__
 
   languages = nullptr;
   if (!read_language()) {
@@ -1229,7 +1214,6 @@ void WApplication::InitializeBBS() {
 }
 
 
-
 // begin dupphone additions
 
 void WApplication::check_phonenum() {
@@ -1238,7 +1222,6 @@ void WApplication::check_phonenum() {
     create_phone_file();
   }
 }
-
 
 void WApplication::create_phone_file() {
   phonerec p;
@@ -1256,7 +1239,7 @@ void WApplication::create_phone_file() {
     return;
   }
 
-  for (int nTempUserNumber = 1; nTempUserNumber <= nNumberOfRecords; nTempUserNumber++) {
+  for (int16_t nTempUserNumber = 1; nTempUserNumber <= nNumberOfRecords; nTempUserNumber++) {
     WUser user;
     application()->users()->ReadUser(&user, nTempUserNumber);
     if (!user.IsUserDeleted()) {
@@ -1269,7 +1252,7 @@ void WApplication::create_phone_file() {
         phoneNumFile.Write(&p, sizeof(phonerec));
       }
       if (szTempDataNumber[0] &&
-          !wwiv::strings::IsEquals(szTempVoiceNumber, szTempDataNumber) &&
+          !IsEquals(szTempVoiceNumber, szTempDataNumber) &&
           !strstr(szTempVoiceNumber, "000-")) {
         strcpy(reinterpret_cast<char*>(p.phone), szTempDataNumber);
         phoneNumFile.Write(&p, sizeof(phonerec));
@@ -1278,7 +1261,6 @@ void WApplication::create_phone_file() {
   }
   phoneNumFile.Close();
 }
-
 
 uint32_t GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, uint32_t flags) {
   for (int i = 0; i < nFlagNumber; i++) {
@@ -1302,10 +1284,5 @@ uint32_t GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNu
 
   return flags;
 }
-
-
-#if defined( _MSC_VER )
-#pragma warning( pop )
-#endif // _MSC_VER
 
 // end dupphone additions

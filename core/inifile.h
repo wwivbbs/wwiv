@@ -38,8 +38,16 @@ class IniFile {
   bool IsOpen() const { return open_; }
 
   const char* GetValue(const std::string& key, const char *default_value = nullptr) const;
-  const long GetNumericValue(const std::string& key, int default_value = 0) const;
+  const long GetNumericValueT(const std::string& key, long default_value = 0) const;
   const bool GetBooleanValue(const std::string& key, bool default_value = false) const;
+
+  template<typename T>
+  const T GetNumericValue(const std::string& key, T default_value = 0) const {
+    return static_cast<T>(GetNumericValueT(key, default_value));
+  }
+  const long GetNumericValue(const std::string& key, long default_value = 0) const {
+    return GetNumericValueT(key, default_value);
+  }
 
  private:
   // This class should not be assigneable via '=' so remove the implicit operator=

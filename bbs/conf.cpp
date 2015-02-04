@@ -249,12 +249,11 @@ void update_conf(int conftype, SUBCONF_TYPE * sub1, SUBCONF_TYPE * sub2, int act
 }
 
 
-
 /*
  * Returns bitmapped word representing an AR or DAR string.
  */
-int str_to_arword(const char *arstr) {
-  int rar = 0;
+uint16_t str_to_arword(const char *arstr) {
+  uint16_t rar = 0;
   char s[81];
 
   strcpy(s, arstr);
