@@ -866,8 +866,8 @@ void auto_purge() {
 
   IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), INI_TAG);
   if (iniFile.IsOpen()) {
-    days = iniFile.GetNumericValue("AUTO_USER_PURGE");
-    skipsl = iniFile.GetNumericValue("NO_PURGE_SL");
+    days = iniFile.GetNumericValue<unsigned int>("AUTO_USER_PURGE");
+    skipsl = iniFile.GetNumericValue<int>("NO_PURGE_SL");
   }
   iniFile.Close();
 

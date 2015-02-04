@@ -124,7 +124,7 @@ bool IniFile::StringToBoolean(const char *p) {
   return (ch == 'Y' || ch == 'T' || ch == '1');
 }
 
-const long IniFile::GetNumericValue(const string& key, int default_value) const {
+const long IniFile::GetNumericValueT(const string& key, long default_value) const {
   const char *s = GetValue(key);
   return (s != nullptr) ? atoi(s) : default_value;
 }
