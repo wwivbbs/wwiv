@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
+#include <cstddef>
 #include <memory>
 #include <string>
 
@@ -122,9 +123,7 @@ unsigned char WApplication::stryn2tf(const char *s) {
 
 // end callback addition
 
-
-#define OFFOF(x) ( reinterpret_cast<int16_t>( &session()->user()->data.x ) - reinterpret_cast<int16_t>( &session()->user()->data ) )
-
+#define OFFOF(x) ( reinterpret_cast<long>( &session()->user()->data.x ) - reinterpret_cast<long>( &session()->user()->data ) )
 
 // Reads WWIV.INI info from [WWIV] subsection, overrides some config.dat
 // settings (as appropriate), updates config.dat with those values. Also
