@@ -52,6 +52,7 @@ class CursesLocalIO : public LocalIO {
  public:
   // Constructor/Destructor
   CursesLocalIO();
+  explicit CursesLocalIO(int num_lines);
   CursesLocalIO(const LocalIO& copy) = delete;
   virtual ~CursesLocalIO();
 
