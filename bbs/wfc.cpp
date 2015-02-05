@@ -151,17 +151,25 @@ void ControlCenter::Run() {
   int saved_screenlines = session()->user()->GetScreenLines();
   session()->user()->SetScreenLines(18);
 
+  bool need_refresh = false;
   for (bool done = false; !done;) {
-    // refresh the window since we call endwin before invoking bbs code.
-    out->window()->Refresh();
-    commands_->Refresh();
-    status_->Refresh();
-    logs_->Refresh();
+    if (need_refresh) {
+      // refresh the window since we call endwin before invoking bbs code.
+      out->window()->Refresh();
+      commands_->Refresh();
+      status_->Refresh();
+      logs_->Refresh();
+      need_refresh = false;
+    }
 
+    wtimeout(commands_->window(), 500);
     int key = commands_->GetChar();
     if (key == ERR) {
       // we have a timeout. process other events
+      need_refresh = false;
+      continue;
     }
+    need_refresh = true;
     application()->SetWfcStatus(2);
     // Call endwin since we'll be out of curses IO
     endwin();

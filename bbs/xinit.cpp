@@ -947,6 +947,8 @@ void WApplication::make_abs_path(char *pszDirectory) {
 void WApplication::InitializeBBS() {
   session()->localIO()->SetScreenBottom(session()->localIO()->GetDefaultScreenBottom());
   defscreenbottom = session()->localIO()->GetDefaultScreenBottom();
+  // set default screenlinest
+  session()->screenlinest = defscreenbottom + 1;
 
   session()->localIO()->LocalCls();
 #if !defined( __unix__ )
