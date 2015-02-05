@@ -625,7 +625,6 @@ void WApplication::GotCaller(unsigned int ms, unsigned long cs) {
     session()->user()->SetScreenChars(80);
     session()->user()->SetScreenLines(25);
   }
-  session()->screenlinest = 25;
   session()->localIO()->LocalCls();
   session()->localIO()->LocalPrintf("Logging on at %s...\r\n", session()->GetCurrentSpeed().c_str());
   if (ms) {
