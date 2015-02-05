@@ -124,6 +124,7 @@ void ControlCenter::Run() {
   const int logs_y_padding = 1;
   const int logs_start = 11;
   const int logs_length = out->window()->GetMaxY() - logs_start - logs_y_padding;
+  log_.reset(new WfcLog(logs_length - 2));
   commands_.reset(CreateBoxedWindow("Commands", 9, 38, 1, 1));
   status_.reset(CreateBoxedWindow("Status", 9, 39, 1, 40));
   logs_.reset(CreateBoxedWindow("Logs", logs_length, 78, 11, 1));
@@ -167,6 +168,7 @@ void ControlCenter::Run() {
     if (key == ERR) {
       // we have a timeout. process other events
       need_refresh = false;
+      UpdateLog();
       continue;
     }
     need_refresh = true;
@@ -174,9 +176,9 @@ void ControlCenter::Run() {
     // Call endwin since we'll be out of curses IO
     endwin();
     switch (toupper(key)) {
-    case 'B': wfc_command(INST_LOC_BOARDEDIT, boardedit, cleanup_net); break;
-    case 'C': wfc_command(INST_LOC_CHAINEDIT, chainedit); break;
-    case 'D': wfc_command(INST_LOC_DIREDIT, dlboardedit); break;
+    case 'B': wfc_command(INST_LOC_BOARDEDIT, boardedit, cleanup_net); log_->Put("Ran BoardEdit"); break;
+    case 'C': wfc_command(INST_LOC_CHAINEDIT, chainedit); log_->Put("Ran ChainEdit"); break;
+    case 'D': wfc_command(INST_LOC_DIREDIT, dlboardedit); log_->Put("Ran DirEdit"); break;
     case 'E': wfc_command(INST_LOC_EMAIL, send_email_f, cleanup_net); break;
     case 'G': wfc_command(INST_LOC_GFILEEDIT, gfileedit); break;
     case 'H': wfc_command(INST_LOC_EVENTEDIT, eventedit); break;
@@ -192,6 +194,7 @@ void ControlCenter::Run() {
     case 'Y': wfc_command(INST_LOC_WFC, view_yesterday_sysop_log_f); break;
     case 'Z': wfc_command(INST_LOC_WFC, zlog, getkey_f); break;
     case 'Q': done=true; break;
+    case ' ': log_->Put("Not Implemented Yet"); break; 
     }
     out->window()->TouchWin();
     commands_->TouchWin();
@@ -200,6 +203,25 @@ void ControlCenter::Run() {
   }
   session()->user()->SetScreenLines(saved_screenlines);
 
+}
+
+void ControlCenter::UpdateLog() {
+  if (!log_->dirty()) {
+    return;
+  }
+
+  vector<string> lines;
+  if (!log_->Get(lines)) {
+    return;
+  }
+
+  int start = 1;
+  const int width = logs_->GetMaxX() - 4;
+  for (const auto& line : lines) {
+    logs_->PutsXY(1, start, line);
+    logs_->PutsXY(1 + line.size(), start, string(width - line.size(), ' '));
+    start++;
+  }
 }
 
 }

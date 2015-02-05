@@ -139,6 +139,7 @@
     <ClInclude Include="wcomm.h" />
     <ClInclude Include="wconstants.h" />
     <ClInclude Include="wfc.h" />
+    <ClInclude Include="wfc_log.h" />
     <ClInclude Include="woutstreambuffer.h" />
     <ClInclude Include="wsession.h" />
     <ClInclude Include="wstatus.h" />
@@ -262,6 +263,7 @@
     <ClCompile Include="voteedit.cpp" />
     <ClCompile Include="WComm.cpp" />
     <ClCompile Include="wfc.cpp" />
+    <ClCompile Include="wfc_log.cpp" />
     <ClCompile Include="WOutStream.cpp" />
     <ClCompile Include="WOutStreamBuffer.cpp" />
     <ClCompile Include="wqscn.cpp" />
