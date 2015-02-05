@@ -15,39 +15,37 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_WFC_H__
-#define __INCLUDED_BBS_WFC_H__
-
-#include <memory>
-
 #include "bbs/wfc_log.h"
-#include "initlib/curses_io.h"
-#include "initlib/curses_win.h"
 
+#include <algorithm>
+#include <mutex>
+#include <string>
+#include <vector>
 
-namespace wwiv {
-namespace wfc {
+using std::string;
+using std::vector;
 
-class ControlCenter {
-public: 
-  ControlCenter();
-  ~ControlCenter();
-  void Run();
-  void UpdateLog();
+WfcLog::WfcLog(std::size_t size) : size_(size), dirty_(false) {}
+WfcLog::~WfcLog() {}
 
-private:
-  // Takes ownership of out to enure it's deleted on exit from the WFC.
-  std::unique_ptr<CursesIO> out_scope_;
-  std::unique_ptr<CursesWindow> commands_;
-  std::unique_ptr<CursesWindow> status_;
-  std::unique_ptr<CursesWindow> logs_;
-  std::unique_ptr<WfcLog> log_;
-};
-}  // namespace wfc
-}  // namespace wwiv
+bool WfcLog::Put(const std::string& log_line) {
+  dirty_ = true;
+  std::lock_guard<std::mutex> lock(mu_);
+  queue_.emplace_back(log_line);
+  while (queue_.size() > size_) {
+    queue_.pop_front();
+  }
+  return true;
+}
 
-void wfc_cls();
-void wfc_init();
-void wfc_screen();
+bool WfcLog::Get(vector<string>& lines) {
+  lines.clear();
+  std::lock_guard<std::mutex> lock(mu_);
+  if (queue_.empty()) {
+    return false;
+  }
 
-#endif  // __INCLUDED_BBS_WFC_H__
+  std::copy(std::begin(queue_), std::end(queue_), std::inserter(lines, std::end(lines)));
+  dirty_ = false;
+  return true;
+}
