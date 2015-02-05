@@ -44,7 +44,7 @@ using namespace wwiv::strings;
 
 extern CursesIO* out;
 
-static const int screen_bottom = 20;
+static const int default_screen_bottom = 20;
 
 static std::map<int, AnsiColor> CreateAnsiScheme() {
   std::map<int, AnsiColor> scheme;
@@ -78,8 +78,10 @@ static std::map<int, AnsiColor> CreateAnsiScheme() {
   return scheme;
 }
 
-CursesLocalIO::CursesLocalIO() : scheme_(CreateAnsiScheme()) {
-  window = new CursesWindow(out->window(), out->color_scheme(), screen_bottom + 1, 80, 0, 0);
+CursesLocalIO::CursesLocalIO() : CursesLocalIO(default_screen_bottom + 1) {}
+
+CursesLocalIO::CursesLocalIO(int num_lines) : scheme_(CreateAnsiScheme()) {
+  window = new CursesWindow(out->window(), out->color_scheme(), num_lines, 80, 0, 0);
   scrollok(window->window(), true);
   window->Clear();
 }
@@ -114,9 +116,9 @@ void CursesLocalIO::LocalLf() {
   m_cursorPositionX = WhereX();
   m_cursorPositionY++;
 
-  if (m_cursorPositionY > screen_bottom) { // GetScreenBottom()) {
+  if (m_cursorPositionY > GetScreenBottom()) { // GetScreenBottom()) {
     scroll(window->window());
-    m_cursorPositionY = screen_bottom;
+    m_cursorPositionY = GetScreenBottom();
   }
   window->GotoXY(m_cursorPositionX, m_cursorPositionY);
 }
