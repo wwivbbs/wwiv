@@ -230,7 +230,8 @@ int CursesLocalIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *pszF
 
 void CursesLocalIO::set_protect(int l) {
   SetTopLine(l);
-  session()->screenlinest = (session()->using_modem) ? session()->user()->GetScreenLines() :
+  session()->screenlinest = 
+    (session()->using_modem) ? session()->user()->GetScreenLines() :
                                defscreenbottom + 1 - GetTopLine();
 }
 
@@ -388,7 +389,7 @@ void CursesLocalIO::LocalClrEol() {
 }
 
 void CursesLocalIO::LocalWriteScreenBuffer(const char *pszBuffer) {}
-int CursesLocalIO::GetDefaultScreenBottom() { return 25; }
+int CursesLocalIO::GetDefaultScreenBottom() { return window->GetMaxY() - 1; }
 void CursesLocalIO::LocalEditLine(char *s, int len, int status, int *returncode, char *ss) {}
 void CursesLocalIO::UpdateNativeTitleBar() {}
 

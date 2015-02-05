@@ -67,6 +67,11 @@ WSession::~WSession() {
 bool WSession::reset_local_io(LocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);
   local_io_->set_capture(capture());
+
+  session()->localIO()->SetScreenBottom(session()->localIO()->GetDefaultScreenBottom());
+  defscreenbottom = session()->localIO()->GetDefaultScreenBottom();
+
+  session()->localIO()->set_protect(0);
   ::bout.SetLocalIO(wlocal_io);
   return true;
 }
