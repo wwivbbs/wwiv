@@ -64,7 +64,7 @@ auto noop = [](){};
 
 static void wfc_command(int instance_location_id, std::function<void()> f, 
     std::function<void()> f2 = noop, std::function<void()> f3 = noop, std::function<void()> f4 = noop) {
-  session()->reset_local_io(new CursesLocalIO());
+  session()->reset_local_io(new CursesLocalIO(out->window()->GetMaxY()));
 
   if (!AllowLocalSysop()) {
     // TODO(rushfan): Show messagebox error?
@@ -121,9 +121,12 @@ void ControlCenter::Run() {
   // application()->InitializeBBS has been called.
 
   out->Cls(ACS_CKBOARD);
+  const int logs_y_padding = 1;
+  const int logs_start = 11;
+  const int logs_length = out->window()->GetMaxY() - logs_start - logs_y_padding;
   commands_.reset(CreateBoxedWindow("Commands", 9, 38, 1, 1));
   status_.reset(CreateBoxedWindow("Status", 9, 39, 1, 40));
-  logs_.reset(CreateBoxedWindow("Logs", 9, 78, 11, 1));
+  logs_.reset(CreateBoxedWindow("Logs", logs_length, 78, 11, 1));
 
   commands_->PutsXY(1, 1, "[B]oardEdit [C]hainEdit");
   commands_->PutsXY(1, 2, "[D]irEdit [E]mail [G]-FileEdit");
