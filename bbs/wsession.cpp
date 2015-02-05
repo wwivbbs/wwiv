@@ -68,8 +68,10 @@ bool WSession::reset_local_io(LocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);
   local_io_->set_capture(capture());
 
-  session()->localIO()->SetScreenBottom(session()->localIO()->GetDefaultScreenBottom());
-  defscreenbottom = session()->localIO()->GetDefaultScreenBottom();
+  const int screen_bottom = session()->localIO()->GetDefaultScreenBottom();
+  session()->localIO()->SetScreenBottom(screen_bottom);
+  defscreenbottom = screen_bottom;
+  session()->screenlinest = screen_bottom + 1;
 
   session()->localIO()->set_protect(0);
   ::bout.SetLocalIO(wlocal_io);
@@ -83,7 +85,12 @@ void WSession::CreateComm(unsigned int nHandle) {
 
 bool WSession::ReadCurrentUser(int nUserNumber, bool bForceRead) {
   WWIV_ASSERT(application_->users());
-  return application_->users()->ReadUser(&m_thisuser, nUserNumber, bForceRead);
+  bool result = application_->users()->ReadUser(&m_thisuser, nUserNumber, bForceRead);
+
+  // Update all other session variables that are dependent.
+  screenlinest = (session()->using_modem) ? 
+      session()->user()->GetScreenLines() : defscreenbottom + 1;
+  return result;
 }
 
 bool WSession::WriteCurrentUser(int nUserNumber) {

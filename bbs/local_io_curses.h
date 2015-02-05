@@ -96,7 +96,7 @@ private:
   int m_cursorPositionY;
   void set_attr_xy(int x, int y, int a);
 
-  CursesWindow* window;
+  std::unique_ptr<CursesWindow> window_;
   const std::map<int, AnsiColor> scheme_;
 };
 
