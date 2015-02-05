@@ -1061,7 +1061,7 @@ void Win32ConsoleIO::LocalWriteScreenBuffer(const char *pszBuffer) {
 }
 
 int Win32ConsoleIO::GetDefaultScreenBottom() {
-  return (m_consoleBufferInfo.dwSize.Y - 1);
+  return m_consoleBufferInfo.dwSize.Y - 1;
 }
 
 bool HasKeyBeenPressed(HANDLE in) {
