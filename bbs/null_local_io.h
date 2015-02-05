@@ -52,7 +52,7 @@ public:
   virtual void SetCursor(int cursorStyle) override {}
   virtual void LocalClrEol() override {}
   virtual void LocalWriteScreenBuffer(const char *pszBuffer) override {}
-  virtual int GetDefaultScreenBottom() override { return 25; }
+  virtual int GetDefaultScreenBottom() override { return 24; }
   virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) override {}
   virtual void UpdateNativeTitleBar() override {}
   virtual void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) override {}
