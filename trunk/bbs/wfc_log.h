@@ -15,39 +15,29 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_WFC_H__
-#define __INCLUDED_BBS_WFC_H__
+#ifndef __INCLUDED_BBS_WFC_LOG_H__
+#define __INCLUDED_BBS_WFC_LOG_H__
 
-#include <memory>
+#include <deque>
+#include <mutex>
+#include <string>
+#include <vector>
 
-#include "bbs/wfc_log.h"
-#include "initlib/curses_io.h"
-#include "initlib/curses_win.h"
+class WfcLog {
+public:
+  WfcLog(std::size_t size);
+  ~WfcLog();
 
+  bool Put(const std::string& log_line);
+  bool Get(std::vector<std::string>& lines);
 
-namespace wwiv {
-namespace wfc {
-
-class ControlCenter {
-public: 
-  ControlCenter();
-  ~ControlCenter();
-  void Run();
-  void UpdateLog();
+  bool dirty() const { return dirty_; }
 
 private:
-  // Takes ownership of out to enure it's deleted on exit from the WFC.
-  std::unique_ptr<CursesIO> out_scope_;
-  std::unique_ptr<CursesWindow> commands_;
-  std::unique_ptr<CursesWindow> status_;
-  std::unique_ptr<CursesWindow> logs_;
-  std::unique_ptr<WfcLog> log_;
+  std::size_t size_;
+  bool dirty_;
+  std::mutex mu_;
+  std::deque<std::string> queue_;
 };
-}  // namespace wfc
-}  // namespace wwiv
 
-void wfc_cls();
-void wfc_init();
-void wfc_screen();
-
-#endif  // __INCLUDED_BBS_WFC_H__
+#endif  // __INCLUDED_BBS_WFC_LOG_H__

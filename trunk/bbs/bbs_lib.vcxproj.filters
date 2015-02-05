@@ -367,6 +367,9 @@
     <ClCompile Include="local_io_curses.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="wfc_log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -553,6 +556,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="null_local_io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wfc_log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
