@@ -115,11 +115,10 @@ ControlCenter::ControlCenter() {
 
 ControlCenter::~ControlCenter() {}
 
-void ControlCenter::Run() {
+void ControlCenter::Initialize() {
   // Initialization steps that have to happen before we
   // have a functional WFC system. This also supposes that
   // application()->InitializeBBS has been called.
-
   out->Cls(ACS_CKBOARD);
   const int logs_y_padding = 1;
   const int logs_start = 11;
@@ -149,17 +148,15 @@ void ControlCenter::Run() {
 
   fwaiting = session()->user()->GetNumMailWaiting();
   application()->SetWfcStatus(1);
-  int saved_screenlines = session()->user()->GetScreenLines();
-  session()->user()->SetScreenLines(18);
+}
 
+void ControlCenter::Run() {
+  Initialize();
   bool need_refresh = false;
   for (bool done = false; !done;) {
     if (need_refresh) {
       // refresh the window since we call endwin before invoking bbs code.
-      out->window()->Refresh();
-      commands_->Refresh();
-      status_->Refresh();
-      logs_->Refresh();
+      RefreshAll();
       need_refresh = false;
     }
 
@@ -196,13 +193,22 @@ void ControlCenter::Run() {
     case 'Q': done=true; break;
     case ' ': log_->Put("Not Implemented Yet"); break; 
     }
-    out->window()->TouchWin();
-    commands_->TouchWin();
-    status_->TouchWin();
-    logs_->TouchWin();
+    TouchAll();
   }
-  session()->user()->SetScreenLines(saved_screenlines);
+}
 
+void ControlCenter::TouchAll() {
+  out->window()->TouchWin();
+  commands_->TouchWin();
+  status_->TouchWin();
+  logs_->TouchWin();
+}
+
+void ControlCenter::RefreshAll() {
+  out->window()->Refresh();
+  commands_->Refresh();
+  status_->Refresh();
+  logs_->Refresh();
 }
 
 void ControlCenter::UpdateLog() {

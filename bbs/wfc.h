@@ -32,8 +32,11 @@ class ControlCenter {
 public: 
   ControlCenter();
   ~ControlCenter();
+  void Initialize();
   void Run();
   void UpdateLog();
+  void TouchAll();
+  void RefreshAll();
 
 private:
   // Takes ownership of out to enure it's deleted on exit from the WFC.
