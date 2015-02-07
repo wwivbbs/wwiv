@@ -116,6 +116,7 @@ ControlCenter::ControlCenter() {
 ControlCenter::~ControlCenter() {}
 
 static void DrawCommands(CursesWindow* commands) {
+  commands->SetColor(SchemeId::WINDOW_TEXT);
   commands->PutsXY(1, 1, "[B]oardEdit [C]hainEdit");
   commands->PutsXY(1, 2, "[D]irEdit [E]mail [G]-FileEdit");
   commands->PutsXY(1, 3, "[I]nit Voting Data  [J] ConfEdit");
@@ -126,6 +127,7 @@ static void DrawCommands(CursesWindow* commands) {
 }
 
 static void DrawStatus(CursesWindow* status) {
+  status->SetColor(SchemeId::WINDOW_TEXT);
   status->PutsXY(2, 1, "Today:");
   status->PutsXY(2, 2, "Calls: XXXXX Minutes: XXXXX");
   status->PutsXY(2, 3, "M: XXX L: XXX E: XXX F: XXX FW: XXX");
@@ -133,6 +135,43 @@ static void DrawStatus(CursesWindow* status) {
   status->PutsXY(2, 5, "Users: XXXXX Calls: XXXXX");
   status->PutsXY(2, 6, "Last User:");
   status->PutsXY(2, 7, "XXXXXXXXXXXXXXXXXXXXXXXXXX");
+}
+
+static string GetLastUserName(int inst_num) {
+  instancerec ir;
+  WUser u;
+
+  get_inst_info(inst_num, &ir);
+  application()->users()->ReadUserNoCache(&u, ir.user);
+  if (ir.flags & INST_FLAGS_ONLINE) {
+    return string(u.GetUserNameAndNumber(ir.user));
+  } else {
+    return "Nobody";
+  }
+
+}
+
+static void UpdateStatus(CursesWindow* status) {
+  status->SetColor(SchemeId::WINDOW_DATA);
+  std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+
+  status->PrintfXY(9, 2, "%-5d", pStatus->GetNumCallsToday());
+  status->PrintfXY(24, 2, "%-5d", pStatus->GetMinutesActiveToday());
+
+  status->PrintfXY(5, 3, "%-3u", pStatus->GetNumMessagesPostedToday());
+  status->PrintfXY(12, 3, "%-3u", pStatus->GetNumLocalPosts());
+  status->PrintfXY(19, 3, "%-3u", pStatus->GetNumEmailSentToday());
+  status->PrintfXY(26, 3, "%-3u", pStatus->GetNumFeedbackSentToday());
+
+  fwaiting = session()->user()->GetNumMailWaiting();
+  status->PrintfXY(34, 3, "%-3d", fwaiting);
+
+  status->PrintfXY(9, 5, "%-5d", pStatus->GetNumUsers());
+  status->PrintfXY(22, 5, "%-6lu", pStatus->GetCallerNumber());
+
+  // TODO(rushfan): Need to know the last used node number
+  // then call GetLastUserName.
+  //  status->PutsXY(2, 7, "XXXXXXXXXXXXXXXXXXXXXXXXXX");
 }
 
 void ControlCenter::Initialize() {
@@ -180,6 +219,7 @@ void ControlCenter::Run() {
       // we have a timeout. process other events
       need_refresh = false;
       UpdateLog();
+      UpdateStatus(status_.get());
       continue;
     }
     need_refresh = true;
@@ -223,6 +263,7 @@ void ControlCenter::RefreshAll() {
   commands_->Refresh();
   status_->Refresh();
   logs_->Refresh();
+  UpdateStatus(status_.get());
 }
 
 void ControlCenter::UpdateLog() {
