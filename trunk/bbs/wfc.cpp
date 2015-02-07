@@ -115,6 +115,26 @@ ControlCenter::ControlCenter() {
 
 ControlCenter::~ControlCenter() {}
 
+static void DrawCommands(CursesWindow* commands) {
+  commands->PutsXY(1, 1, "[B]oardEdit [C]hainEdit");
+  commands->PutsXY(1, 2, "[D]irEdit [E]mail [G]-FileEdit");
+  commands->PutsXY(1, 3, "[I]nit Voting Data  [J] ConfEdit");
+  commands->PutsXY(1, 4, "Sysop[L]og  Read [M]ail  [N]etLog");
+  commands->PutsXY(1, 5, "[P]ending Net Data [/] Net Callout");
+  commands->PutsXY(1, 6, "[R]ead all email [S]ystem Status");
+  commands->PutsXY(1, 7, "[U]serEdit [Y]-Log [Z]-Log");
+}
+
+static void DrawStatus(CursesWindow* status) {
+  status->PutsXY(2, 1, "Today:");
+  status->PutsXY(2, 2, "Calls: XXXXX Minutes: XXXXX");
+  status->PutsXY(2, 3, "M: XXX L: XXX E: XXX F: XXX FW: XXX");
+  status->PutsXY(2, 4, "Totals:");
+  status->PutsXY(2, 5, "Users: XXXXX Calls: XXXXX");
+  status->PutsXY(2, 6, "Last User:");
+  status->PutsXY(2, 7, "XXXXXXXXXXXXXXXXXXXXXXXXXX");
+}
+
 void ControlCenter::Initialize() {
   // Initialization steps that have to happen before we
   // have a functional WFC system. This also supposes that
@@ -128,14 +148,8 @@ void ControlCenter::Initialize() {
   status_.reset(CreateBoxedWindow("Status", 9, 39, 1, 40));
   logs_.reset(CreateBoxedWindow("Logs", logs_length, 78, 11, 1));
 
-  commands_->PutsXY(1, 1, "[B]oardEdit [C]hainEdit");
-  commands_->PutsXY(1, 2, "[D]irEdit [E]mail [G]-FileEdit");
-  commands_->PutsXY(1, 3, "[I]nit Voting Data  [J] ConfEdit");
-  commands_->PutsXY(1, 4, "Sysop[L]og  Read [M]ail  [N]etLog");
-  commands_->PutsXY(1, 5, "[P]ending Net Data [/] Net Callout");
-  commands_->PutsXY(1, 6, "[R]ead all email [S]ystem Status");
-  commands_->PutsXY(1, 7, "[U]serEdit [Y]-Log [Z]-Log");
-
+  DrawCommands(commands_.get());
+  DrawStatus(status_.get());
   vector<HelpItem> help_items0 = { { "?", "All Commands" },};
   vector<HelpItem> help_items1 = { {"Q", "Quit" } };
   out->footer()->ShowHelpItems(0, help_items0);
