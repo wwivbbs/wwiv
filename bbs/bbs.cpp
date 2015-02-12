@@ -69,7 +69,6 @@
 #include <unistd.h>
 #endif // _WIN32
 
-static bool bUsingPppProject = true;
 extern time_t last_time_c;
 static WApplication *app;
 static WSession* sess;
@@ -180,8 +179,7 @@ int WApplication::doWFCEvents() {
     session()->SetCurrentSpeed("KB");
     time_t lCurrentTime = time(nullptr);
     if (!any && (((rand() % 8000) == 0) || (lCurrentTime - last_time_c > 1200)) &&
-        (net_sysnum) && (ok_modem_stuff || bUsingPppProject) &&
-        (this->flags & OP_FLAGS_NET_CALLOUT)) {
+        net_sysnum && (this->flags & OP_FLAGS_NET_CALLOUT)) {
       lCurrentTime = last_time_c;
       attempt_callout();
       any = true;
@@ -237,13 +235,13 @@ int WApplication::doWFCEvents() {
         break;
       // Force Network Callout
       case '/':
-        if (net_sysnum && AllowLocalSysop() && (ok_modem_stuff || bUsingPppProject)) {
+        if (net_sysnum && AllowLocalSysop()) {
           force_callout(0);
         }
         break;
       // War Dial Connect
       case '.':
-        if (net_sysnum && AllowLocalSysop() && (ok_modem_stuff || bUsingPppProject)) {
+        if (net_sysnum && AllowLocalSysop()) {
           force_callout(1);
         }
         break;
