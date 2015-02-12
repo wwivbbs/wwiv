@@ -148,7 +148,6 @@ void wfc_cls() {}
 int WApplication::doWFCEvents() {
   char ch;
   int lokb;
-  static int mult_time;
   LocalIO* io = GetWfcIO();
 
   unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
@@ -513,6 +512,7 @@ int WApplication::doWFCEvents() {
           }
           session()->SetFileAreaCacheNumber(session()->GetFileAreaCacheNumber() + 1);
         } else {
+          static int mult_time = 0;
           if (this->IsCleanNetNeeded() || labs(timer1() - mult_time) > 1000L) {
             cleanup_net();
             mult_time = timer1();
