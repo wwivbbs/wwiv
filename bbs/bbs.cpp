@@ -177,6 +177,7 @@ int WApplication::doWFCEvents() {
     lokb = 0;
     session()->SetCurrentSpeed("KB");
     time_t lCurrentTime = time(nullptr);
+    static time_t last_time_c;
     if (!any && (((rand() % 8000) == 0) || (lCurrentTime - last_time_c > 1200)) &&
         net_sysnum && (this->flags & OP_FLAGS_NET_CALLOUT)) {
       lCurrentTime = last_time_c;
