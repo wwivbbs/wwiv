@@ -191,9 +191,6 @@ static void CleanNetIfNeeded() {
       if (application()->IsCleanNetNeeded() || labs(timer1() - mult_time) > 1000L) {
         cleanup_net();
         mult_time = timer1();
-        giveup_timeslice();
-      } else {
-        giveup_timeslice();
       }
     }
   }
