@@ -174,6 +174,59 @@ static void UpdateStatus(CursesWindow* status) {
   //  status->PutsXY(2, 7, "XXXXXXXXXXXXXXXXXXXXXXXXXX");
 }
 
+static void CleanNetIfNeeded() {
+  if (session()->GetMessageAreaCacheNumber() < session()->num_subs) {
+    if (!session()->m_SubDateCache[session()->GetMessageAreaCacheNumber()]) {
+      iscan1(session()->GetMessageAreaCacheNumber(), true);
+    }
+    session()->SetMessageAreaCacheNumber(session()->GetMessageAreaCacheNumber() + 1);
+  } else {
+    if (session()->GetFileAreaCacheNumber() < session()->num_dirs) {
+      if (!session()->m_DirectoryDateCache[session()->GetFileAreaCacheNumber()]) {
+        dliscan_hash(session()->GetFileAreaCacheNumber());
+      }
+      session()->SetFileAreaCacheNumber(session()->GetFileAreaCacheNumber() + 1);
+    } else {
+      static int mult_time = 0;
+      if (application()->IsCleanNetNeeded() || labs(timer1() - mult_time) > 1000L) {
+        cleanup_net();
+        mult_time = timer1();
+        giveup_timeslice();
+      } else {
+        giveup_timeslice();
+      }
+    }
+  }
+}
+
+
+static void RunEventsIfNeeded() {
+  unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+  if (!IsEquals(date(), pStatus->GetLastDate())) {
+    if ((session()->GetBeginDayNodeNumber() == 0) 
+        || (application()->GetInstanceNumber() == session()->GetBeginDayNodeNumber())) {
+      cleanup_events();
+      beginday(true);
+    }
+  }
+
+  if (!do_event) {
+    check_event();
+  }
+
+  while (do_event) {
+    run_event(do_event - 1);
+    check_event();
+  }
+
+  session()->SetCurrentSpeed("KB");
+  static time_t last_time_c = 0;
+  time_t lCurrentTime = time(nullptr);
+  if ((((rand() % 8000) == 0) || (lCurrentTime - last_time_c > 1200)) && net_sysnum) {
+    lCurrentTime = last_time_c;
+    attempt_callout();
+  }
+}
 void ControlCenter::Initialize() {
   // Initialization steps that have to happen before we
   // have a functional WFC system. This also supposes that
@@ -220,6 +273,8 @@ void ControlCenter::Run() {
       need_refresh = false;
       UpdateLog();
       UpdateStatus(status_.get());
+      CleanNetIfNeeded();
+      RunEventsIfNeeded();
       continue;
     }
     need_refresh = true;
