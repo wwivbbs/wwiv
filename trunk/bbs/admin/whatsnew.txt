@@ -46,6 +46,9 @@ What's New in 2014
 * Fix now defaults to only fixing critical files.  To enable other "fixes" 
   (which I recommend using at your own risk after you backed up DATA/" use
   the command line flags to enable each of these.  See fix -? for help.
+* EXEC_WAITFORIDLETIME and EXEC_USECWAITFORIDLE are no longer used, 
+  EXEC_CHILDWAITTIME  should be used to set how long to wait for exec'ed
+  processes to become runnable. It defaults to 500ms.
 
 What's New in Beta-2
 ~~~~~~~~~~~~~~~~~~~~~

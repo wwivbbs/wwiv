@@ -263,8 +263,6 @@ IniFile* WApplication::ReadINIFile() {
   session()->mail_who_field_len = 35;
   session()->SetBeginDayNodeNumber(1);
   session()->SetUseInternalZmodem(true);
-  session()->SetExecUseWaitForInputIdle(true);
-  session()->SetExecWaitForInputTimeout(2000);
   session()->SetExecChildProcessWaitTime(500);
   session()->SetExecLogSyncFoss(true);
   session()->SetNewScanAtLogin(false);
@@ -345,12 +343,8 @@ IniFile* WApplication::ReadINIFile() {
 
     session()->m_bExecLogSyncFoss = ini->GetBooleanValue(get_key_str(INI_STR_EXEC_LOG_SYNCFOSS),
                                        session()->m_bExecLogSyncFoss);
-    session()->m_bExecUseWaitForInputIdle = ini->GetBooleanValue(get_key_str(INI_STR_EXEC_USE_WAIT_FOR_IDLE),
-        session()->m_bExecUseWaitForInputIdle);
     session()->m_nExecChildProcessWaitTime = ini->GetNumericValue(get_key_str(INI_STR_EXEC_CHILD_WAIT_TIME),
         session()->m_nExecChildProcessWaitTime);
-    session()->m_nExecUseWaitForInputTimeout = ini->GetNumericValue(get_key_str(INI_STR_EXEC_WAIT_FOR_IDLE_TIME),
-        session()->m_nExecUseWaitForInputTimeout);
 
     session()->SetBeginDayNodeNumber(ini->GetNumericValue(get_key_str(INI_STR_BEGINDAYNODENUMBER),
                                         session()->GetBeginDayNodeNumber()));
