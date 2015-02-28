@@ -399,23 +399,12 @@ int ExecExternalProgram(const string commandLine, int flags) {
     return -1;
   }
 
-  // If we are on Windows NT and session()->IsExecUseWaitForInputIdle() is true use this.
-  if (session()->IsExecUseWaitForInputIdle()) {
-    int dwWaitRet = ::WaitForInputIdle(pi.hProcess, session()->GetExecWaitForInputTimeout());
-    if (dwWaitRet != 0) {
-      if (bUsingSync) {
-        fprintf(hLogFile, "!!! WaitForInputIdle Failed with code %ld", dwWaitRet);
-      }
-      sysoplogf("!!! WaitForInputIdle Failed with code %ld", dwWaitRet);
-    }
-  } else {
-    ::Sleep(session()->GetExecWaitForInputTimeout());
-    ::Sleep(0);
-    ::Sleep(0);
-    ::Sleep(0);
+  // Kinda hacky but WaitForInputIdle doesn't work on console application.
+  ::Sleep(session()->GetExecChildProcessWaitTime());
+  const int sleep_zero_times = 5;
+  for (int iter = 0; iter < sleep_zero_times; iter++) {
     ::Sleep(0);
   }
-  ::Sleep(0);
 
   CloseHandle(pi.hThread);
 

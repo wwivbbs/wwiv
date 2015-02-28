@@ -183,12 +183,6 @@ class WSession {
   int  GetBeginDayNodeNumber() const { return m_nBeginDayNodeNumber; }
   void SetBeginDayNodeNumber(int n) { m_nBeginDayNodeNumber = n; }
   
-  bool IsExecUseWaitForInputIdle() const { return m_bExecUseWaitForInputIdle; }
-  void SetExecUseWaitForInputIdle(bool b) { m_bExecUseWaitForInputIdle = b; }
-
-  int  GetExecWaitForInputTimeout() const { return m_nExecUseWaitForInputTimeout; }
-  void SetExecWaitForInputTimeout(int n) { m_nExecUseWaitForInputTimeout = n; }
-
   int  GetExecChildProcessWaitTime() const { return m_nExecChildProcessWaitTime; }
   void SetExecChildProcessWaitTime(int n) { m_nExecChildProcessWaitTime = n; }
 
@@ -266,7 +260,6 @@ class WSession {
 
   bool        m_bNewScanAtLogin,
               m_bInternalZmodem,
-              m_bExecUseWaitForInputIdle,
               m_bExecLogSyncFoss;
 
   int         m_nNumMessagesReadThisLogon,
@@ -280,7 +273,6 @@ class WSession {
               m_nCurrentConferenceFileArea,
               m_nNumMsgsInCurrentSub,
               m_nBeginDayNodeNumber,
-              m_nExecUseWaitForInputTimeout,
               m_nExecChildProcessWaitTime,
               m_nMaxNumberMessageAreas,
               m_nMaxNumberFileAreas,
