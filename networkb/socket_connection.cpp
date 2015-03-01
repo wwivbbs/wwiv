@@ -149,6 +149,16 @@ unique_ptr<SocketConnection> Connect(const string& host, int port) {
   throw connection_error(host, port);
 }
 
+// From: http://stackoverflow.com/questions/2493136/how-can-i-obtain-the-ipv4-address-of-the-client
+// get sockaddr, IPv4 or IPv6:
+static void *get_in_addr(struct sockaddr* sa) {
+  if (sa->sa_family == AF_INET) {
+    return &(((struct sockaddr_in*)sa)->sin_addr);
+  }
+
+  return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
+
 unique_ptr<SocketConnection> Accept(int port) {
   static bool initialized = InitializeSockets();
   if (!initialized) {
@@ -171,7 +181,7 @@ unique_ptr<SocketConnection> Accept(int port) {
   }
  
   socklen_t addr_length = sizeof(sockaddr_in);
-  SOCKET s = accept(sock, reinterpret_cast<struct sockaddr *>(&saddr), &addr_length);
+  SOCKET s = accept(sock, reinterpret_cast<struct sockaddr*>(&saddr), &addr_length);
 
   if (!SetNonBlockingMode(s)) {
     LOG << "Unable to put socket into nonblocking mode.";
@@ -185,6 +195,13 @@ unique_ptr<SocketConnection> Accept(int port) {
     s = INVALID_SOCKET;
     throw socket_error("Unable to set nodelay mode on the socket.");
   }
+
+  char ip[81];
+  struct sockaddr_in* clientAddr = static_cast<struct sockaddr_in*>(
+      get_in_addr(reinterpret_cast<struct sockaddr*>(&saddr)));
+  inet_ntop(saddr.sin_family, clientAddr , ip, sizeof ip);
+  LOG << "Received connection from: " << ip;
+
   return unique_ptr<SocketConnection>(new SocketConnection(s, "", port));
 }
 
