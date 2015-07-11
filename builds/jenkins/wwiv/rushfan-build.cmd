@@ -1,5 +1,5 @@
-SET TEXT_TRANSFORM="C:\Program Files\Common Files\microsoft shared\TextTemplating\12.0\TextTransform.exe"
-SET WORKSPACE=g:
+SET TEXT_TRANSFORM="C:\Program Files\Common Files\microsoft shared\TextTemplating\14.0\TextTransform.exe"
+SET WORKSPACE=W:\wwiv
 SET BUILD_NUMBER=0
 SET SVN_REVISION=0
 pushd %WORKSPACE%

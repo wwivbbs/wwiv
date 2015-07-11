@@ -28,6 +28,10 @@ using namespace wwiv::strings;
 
 bool NewZModemSendFile(const char *pszFileName);
 
+#if (_MSC_VER >= 1900)
+#define timezone _timezone
+#endif  // MSV_VER && !timezone
+
 
 void send_block(char *b, int nBlockType, bool bUseCRC, char byBlockNumber) {
   int nBlockSize = 0;
