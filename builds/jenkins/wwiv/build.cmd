@@ -14,12 +14,12 @@
 @rem 
 @rem **************************************************************************
 
-@if exist "%ProgramFiles(x86)%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" (
-  call "%ProgramFiles(x86)%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86
+@if exist "%ProgramFiles(x86)%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" (
+  call "%ProgramFiles(x86)%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86
 )
 
-@if exist "%ProgramFiles%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" (
-  call "%ProgramFiles%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86
+@if exist "%ProgramFiles%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" (
+  call "%ProgramFiles%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86
 )
 
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
@@ -91,7 +91,6 @@ cd %WORKSPACE%\bbs\admin
 cd %WORKSPACE%\
 echo Copying BBS files to staging directory.
 copy /v/y %WORKSPACE%\bbs\Release\bbs.exe %WORKSPACE%\release\bbs.exe
-copy /v/y %WORKSPACE%\bbs\readme.txt %WORKSPACE%\release\readme-bbs.txt
 copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\release\WWIV5TelnetServer.exe %WORKSPACE%\release\WWIV5TelnetServer.exe
 copy /v/y %WORKSPACE%\init\Release\init.exe %WORKSPACE%\release\init.exe
 copy /v/y %WORKSPACE%\network\Release\network.exe %WORKSPACE%\release\network.exe

@@ -18,6 +18,7 @@
 #include "bbs/wfc_log.h"
 
 #include <algorithm>
+#include <iterator>
 #include <mutex>
 #include <string>
 #include <vector>
