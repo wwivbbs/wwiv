@@ -77,7 +77,7 @@ std::string os_version_string() {
         return StringPrintf("Windows Server 2003 %s", os.szCSDVersion);
       default:
         return StringPrintf("Windows NT %ld%c%ld %s",
-                             os.dwMajorVersion, '.', os.dwMinorVersion, os.szCSDVersion);
+            os.dwMajorVersion, '.', os.dwMinorVersion, os.szCSDVersion);
       }
     } else if (os.dwMajorVersion == 6) {
       switch (os.dwMinorVersion) {
@@ -91,13 +91,12 @@ std::string os_version_string() {
         return StringPrintf("Windows 8.1 %s", os.szCSDVersion);
       default:
         return StringPrintf("Windows NT %ld%c%ld %s",
-                                           os.dwMajorVersion, '.', os.dwMinorVersion, os.szCSDVersion);
+            os.dwMajorVersion, '.', os.dwMinorVersion, os.szCSDVersion);
       }
     }
     break;
-  default:
-    return StringPrintf("WIN32 Compatable OS v%d%c%d", os.dwMajorVersion, '.', os.dwMinorVersion);
   }
+  return StringPrintf("WIN32 Compatable OS v%d%c%d", os.dwMajorVersion, '.', os.dwMinorVersion);
 }
 
 bool set_environment_variable(const std::string& variable_name, const std::string value) {

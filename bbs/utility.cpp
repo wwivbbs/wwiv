@@ -382,7 +382,7 @@ char *get_wildlist(char *pszFileMask) {
   t = static_cast<char>(wwiv::strings::GetStringLength(pszPath));
   strcat(pszPath, fnd.GetFileName());
   int i = 1;
-  for (int i = 1;; i++) {
+  for (i = 1;; i++) {
     if (i % 5 == 0) {
       bout.nl();
     }

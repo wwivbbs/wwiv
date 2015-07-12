@@ -224,9 +224,11 @@ bool get_file_idz(uploadsrec * u, int dn) {
   File::Remove(syscfgovr.tempdir, DESC_SDI);
 
   chdir(directories[dn].path);
-  File file(File::current_directory(), stripfn(u->filename));
-  application()->CdHome();
-  get_arc_cmd(cmd, file.full_pathname().c_str(), 1, "FILE_ID.DIZ DESC.SDI");
+  {
+	  File file(File::current_directory(), stripfn(u->filename));
+	  application()->CdHome();
+	  get_arc_cmd(cmd, file.full_pathname().c_str(), 1, "FILE_ID.DIZ DESC.SDI");
+  }
   chdir(syscfgovr.tempdir);
   ExecuteExternalProgram(cmd, EFLAG_NOHUP);
   application()->CdHome();

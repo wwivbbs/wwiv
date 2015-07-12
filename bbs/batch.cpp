@@ -397,8 +397,8 @@ void ymbatchdl(bool bHangupAfterDl) {
       if (nRecordNumber <= 0) {
         delbatch(cur);
       } else {
-        const string message = StringPrintf("Files left - %d, Time left - %s\r\n", session()->numbatchdl, ctim(batchtime));
-        session()->localIO()->LocalPuts(message);
+        session()->localIO()->LocalPuts(
+			StringPrintf("Files left - %d, Time left - %s\r\n", session()->numbatchdl, ctim(batchtime)));
         File file(g_szDownloadFileName);
         file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
         FileAreaSetRecord(file, nRecordNumber);
