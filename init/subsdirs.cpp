@@ -82,7 +82,7 @@ static void convert_to(CursesWindow* window, int num_subs, int num_dirs) {
     num_dirs = MAX_SUBS_DIRS;
   }
 
-  std::size_t nqscn_len = 4 * (1 + num_subs + ((num_subs + 31) / 32) + ((num_dirs + 31) / 32));
+  uint16_t nqscn_len = 4 * (1 + num_subs + ((num_subs + 31) / 32) + ((num_dirs + 31) / 32));
   uint32_t* nqsc = (uint32_t *)malloc(nqscn_len);
   wwiv::core::ScopeExit free_nqsc([&]() { free(nqsc); nqsc = nullptr; });
   if (!nqsc) {

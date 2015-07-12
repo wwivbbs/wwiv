@@ -1097,7 +1097,9 @@ struct fedit_data_rec {
        anon;
 };
 
-#pragma pack(pop)
+// MSVC 2015 shows this as an error in the IDE. Ignore it, since the real
+// compiler gets it right. See:
+// https://connect.microsoft.com/VisualStudio/feedback/details/872127/intellisense-wrongly-emits-an-error-for-a-static-assertion-checking-the-size-of-a-struct
 
 static_assert(sizeof(userrec) == 1024, "userrec == 1024");
 static_assert(sizeof(slrec) == 14, "slrec == 14");
@@ -1135,5 +1137,7 @@ static_assert(sizeof(phonerec) == 15, "phonerec == 15");
 static_assert(sizeof(eventsrec) == 118, "eventsrec == 118");
 static_assert(sizeof(ext_desc_rec) == 17, "ext_desc_rec == 17");
 static_assert(sizeof(instancerec) == 100, "instancerec == 100");
+
+#pragma pack(pop)
 
 #endif // __INCLUDED_VARDEC_H__

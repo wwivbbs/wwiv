@@ -431,7 +431,7 @@ void remove_post();
 
 // File: multinst.cpp
 
-void make_inst_str(int nInstanceNum, std::string *out, int nInstanceFormat);
+void make_inst_str(int nInstanceNum, std::string *result, int nInstanceFormat);
 void multi_instance();
 int  inst_ok(int loc, int subloc);
 
@@ -581,7 +581,7 @@ int  amount_of_subscribers(const char *pszNetworkFileName);
 
 // File: subxtr.cpp
 
-bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards);
+bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec* s);
 
 
 // File: syschat.cpp

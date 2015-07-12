@@ -24,6 +24,6 @@
 
 void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool needtitle, const char *aux, int fsed,
            const char *pszDestination, int flags, bool force_title = false);
-void AddLineToMessageBuffer(char *pszMessageBuffer, const char *pszLineToAdd, long *plBufferLength);
+void AddLineToMessageBuffer(char *pszMessageBuffer, const std::string& line_to_add, long *plBufferLength);
 
 #endif  // __INCLUDED_BBS_INMSG_H__

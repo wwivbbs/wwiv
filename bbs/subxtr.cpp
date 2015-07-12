@@ -67,7 +67,7 @@ static xtrasubsnetrec *fsub(int netnum, int type) {
 }
 
 
-bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
+bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subs) {
   char *ss1, *ss2;
   int n, curn;
   short i = 0;
@@ -107,7 +107,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
     free(ss);
   } else {
     for (i = 0; i < nNumSubs; i++) {
-      if (subboards[i].type) {
+      if (subs[i].type) {
         ++nn;
       }
     }
@@ -189,15 +189,15 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
       free(ss);
     } else {
       for (curn = 0; curn < nNumSubs; curn++) {
-        if (subboards[curn].type) {
-          if (subboards[curn].age & 0x80) {
-            xsubsn[nn].net_num = subboards[curn].name[40];
+        if (subs[curn].type) {
+          if (subs[curn].age & 0x80) {
+            xsubsn[nn].net_num = subs[curn].name[40];
           } else {
             xsubsn[nn].net_num = 0;
           }
           if ((xsubsn[nn].net_num >= 0) && (xsubsn[nn].net_num < session()->GetMaxNetworkNumber())) {
             xsubs[curn].nets = &(xsubsn[nn]);
-            xsubsn[nn].type = subboards[curn].type;
+            xsubsn[nn].type = subs[curn].type;
             sprintf(xsubsn[nn].stype, "%u", xsubsn[nn].type);
             nn++;
             xsubs[curn].num_nets = 1;

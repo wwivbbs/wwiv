@@ -41,8 +41,6 @@ using namespace wwiv::strings;
 //
 // Local function prototypes
 //
-void AddLineToMessageBuffer(char *pszMessageBuffer, const char *pszLineToAdd, long *plBufferLength);
-
 bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, string *title);
 void GetMessageTitle(string *title, bool force_title);
 void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength, const char *aux);
@@ -192,7 +190,7 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     } else {
       if (session()->IsNewMailWatiting()) {
         const string sysop_name = StringPrintf("%s #1", syscfg.sysopname);
-        AddLineToMessageBuffer(b.get(), sysop_name.c_str(), &lCurrentMessageSize);
+        AddLineToMessageBuffer(b.get(), sysop_name, &lCurrentMessageSize);
       } else {
         AddLineToMessageBuffer(b.get(), session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum),
                                &lCurrentMessageSize);
@@ -204,7 +202,7 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     string time_string(asctime(localtime(&lTime)));
     // asctime appends a \n to the end of the string.
     StringTrimEnd(&time_string);
-    AddLineToMessageBuffer(b.get(), time_string.c_str(), &lCurrentMessageSize);
+    AddLineToMessageBuffer(b.get(), time_string, &lCurrentMessageSize);
     UpdateMessageBufferQuotesCtrlLines(b.get(), &lCurrentMessageSize);
 
     if (session()->IsMessageThreadingEnabled()) {
@@ -249,9 +247,9 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
   grab_quotes(nullptr, nullptr);
 }
 
-void AddLineToMessageBuffer(char *pszMessageBuffer, const char *pszLineToAdd, long *plBufferLength) {
-  strcpy(&(pszMessageBuffer[ *plBufferLength ]), pszLineToAdd);
-  *plBufferLength += strlen(pszLineToAdd);
+void AddLineToMessageBuffer(char *pszMessageBuffer, const std::string& line_to_add, long *plBufferLength) {
+  strcpy(&(pszMessageBuffer[ *plBufferLength ]), line_to_add.c_str());
+  *plBufferLength += line_to_add.length();
   strcpy(&(pszMessageBuffer[ *plBufferLength ]), "\r\n");
   *plBufferLength += 2;
 }
@@ -509,7 +507,7 @@ void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength,
     long msgid = time(nullptr);
     long targcrc = crc32buf(pszMessageBuffer, strlen(pszMessageBuffer));
     const string buf = StringPrintf("%c0P %lX-%lX", 4, targcrc, msgid);
-    AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
+    AddLineToMessageBuffer(pszMessageBuffer, buf, plBufferLength);
     if (thread) {
       thread [session()->GetNumMessagesInCurrentMessageArea() + 1 ].msg_num = static_cast< unsigned short>
           (session()->GetNumMessagesInCurrentMessageArea() + 1);
@@ -517,7 +515,7 @@ void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength,
     }
     if (session()->threadID.length() > 0) {
       const string buf = StringPrintf("%c0W %s", 4, session()->threadID.c_str());
-      AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
+      AddLineToMessageBuffer(pszMessageBuffer, buf, plBufferLength);
       if (thread) {
         strcpy(thread[session()->GetNumMessagesInCurrentMessageArea() + 1].parent_code, &buf.c_str()[4]);
         thread[ session()->GetNumMessagesInCurrentMessageArea() + 1 ].used = 1;
@@ -534,7 +532,7 @@ void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLeng
       xtrasubsnetrec *xnp = &xsubs[session()->GetCurrentReadMessageArea()].nets[i];
       if (net_networks[xnp->net_num].type == net_type_fidonet) {
         const string buf = StringPrintf("0FidoAddr: %s", irt_name);
-        AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
+        AddLineToMessageBuffer(pszMessageBuffer, buf, plBufferLength);
         break;
       }
     }
@@ -543,16 +541,16 @@ void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLeng
       (strncasecmp("filenet", session()->GetNetworkName(), 7) == 0)) {
     if (session()->usenetReferencesLine.length() > 0) {
       const string buf = StringPrintf("%c0RReferences: %s", CD, session()->usenetReferencesLine.c_str());
-      AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
+      AddLineToMessageBuffer(pszMessageBuffer, buf, plBufferLength);
       session()->usenetReferencesLine = "";
     }
   }
   if (irt[0] != '"') {
     const string buf = StringPrintf("RE: %s", irt);
-    AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
+    AddLineToMessageBuffer(pszMessageBuffer, buf, plBufferLength);
     if (irt_sub[0]) {
       const string buf = StringPrintf("ON: %s", irt_sub);
-      AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
+      AddLineToMessageBuffer(pszMessageBuffer, buf, plBufferLength);
     }
   } else {
     irt_sub[0] = '\0';
@@ -561,7 +559,7 @@ void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLeng
   if (irt_name[0] &&
       !IsEqualsIgnoreCase(aux, "email")) {
     const string buf = StringPrintf("BY: %s", irt_name);
-    AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
+    AddLineToMessageBuffer(pszMessageBuffer, buf, plBufferLength);
   }
   AddLineToMessageBuffer(pszMessageBuffer, "", plBufferLength);
 }
@@ -603,18 +601,17 @@ void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, co
       while (!file.IsEndOfFile()) {
         char s[ 181 ];
         s[0] = '\0';
-        char s1[ 181 ];
-        s1[0] = '\0';
         file.ReadLine(s, 180);
         if (strlen(s) > 1) {
           if (s[strlen(s) - 2] == RETURN) {
             s[strlen(s) - 2] = '\0';
           }
         }
+		string s1;
         if (s[0] != CD) {
-          sprintf(s1, "%c%c%s", CD, j + '2', s);
+		  s1 = StringPrintf("%c%c%s", CD, j + '2', s);
         } else {
-          strncpy(s1, s, sizeof(s1));
+		  s1 = s;
         }
         if (!j) {
           AddLineToMessageBuffer(pszMessageBuffer, "1", plBufferLength);
