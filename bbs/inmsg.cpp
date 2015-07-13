@@ -564,72 +564,74 @@ void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLeng
   AddLineToMessageBuffer(pszMessageBuffer, "", plBufferLength);
 }
 
+static string FindTagFileName() {
+  for (int i = 0; i < xsubs[session()->GetCurrentReadMessageArea()].num_nets; i++) {
+    xtrasubsnetrec *xnp = &xsubs[session()->GetCurrentReadMessageArea()].nets[i];
+    const char *nd = net_networks[xnp->net_num].dir;
+    string filename = StringPrintf("%s%s.tag", nd, xnp->stype);
+    if (File::Exists(filename)) {
+      return filename;
+    }
+    filename = StrCat(nd, GENERAL_TAG);
+    if (File::Exists(filename)) {
+      return filename;
+    }
+    filename = StringPrintf("%s%s.tag", syscfg.datadir, xnp->stype);
+    if (File::Exists(filename)) {
+      return filename;
+    }
+    filename = StringPrintf("%s%s", syscfg.datadir, GENERAL_TAG);
+    if (File::Exists(filename)) {
+      return filename;
+    }
+  }
+  return "";
+}
 
 void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, const char *aux) {
   if (session()->num_subs <= 0 && session()->GetCurrentReadMessageArea() <= 0) {
     return;
   }
-  char szMultiMail[] = "Multi-Mail";
+  const char szMultiMail[] = "Multi-Mail";
   if (xsubs[session()->GetCurrentReadMessageArea()].num_nets &&
       !IsEqualsIgnoreCase(aux, "email") &&
       (!(subboards[session()->GetCurrentReadMessageArea()].anony & anony_no_tag)) &&
       !IsEqualsIgnoreCase(irt, szMultiMail)) {
-    char szFileName[ MAX_PATH ];
-    for (int i = 0; i < xsubs[session()->GetCurrentReadMessageArea()].num_nets; i++) {
-      xtrasubsnetrec *xnp = &xsubs[session()->GetCurrentReadMessageArea()].nets[i];
-      char *nd = net_networks[xnp->net_num].dir;
-      sprintf(szFileName, "%s%s.tag", nd, xnp->stype);
-      if (File::Exists(szFileName)) {
-        break;
+    return;
+  }
+
+  const string filename = FindTagFileName();
+  TextFile file(filename, "rb");
+  if (file.IsOpen()) {
+    int j = 0;
+    string s;
+    while (!file.IsEndOfFile()) {
+      s.clear();
+      file.ReadLine(&s);
+      if (s.length() > 1 && s[s.length() - 2] == RETURN) {
+        // remove last 2 characters.
+        s.pop_back();
+        s.pop_back();
       }
-      sprintf(szFileName, "%s%s", nd, GENERAL_TAG);
-      if (File::Exists(szFileName)) {
-        break;
+      string s1 = s;
+      if (s[0] != CD) {
+        s1 = StringPrintf("%c%c%s", CD, j + '2', s.c_str());
       }
-      sprintf(szFileName, "%s%s.tag", syscfg.datadir, xnp->stype);
-      if (File::Exists(szFileName)) {
-        break;
+      if (!j) {
+        AddLineToMessageBuffer(pszMessageBuffer, "1", plBufferLength);
       }
-      sprintf(szFileName, "%s%s", syscfg.datadir, GENERAL_TAG);
-      if (File::Exists(szFileName)) {
-        break;
+      AddLineToMessageBuffer(pszMessageBuffer, s1, plBufferLength);
+      if (j < 7) {
+        j++;
       }
     }
-    TextFile file(szFileName, "rb");
-    if (file.IsOpen()) {
-      int j = 0;
-      while (!file.IsEndOfFile()) {
-        char s[ 181 ];
-        s[0] = '\0';
-        file.ReadLine(s, 180);
-        if (strlen(s) > 1) {
-          if (s[strlen(s) - 2] == RETURN) {
-            s[strlen(s) - 2] = '\0';
-          }
-        }
-		string s1;
-        if (s[0] != CD) {
-		  s1 = StringPrintf("%c%c%s", CD, j + '2', s);
-        } else {
-		  s1 = s;
-        }
-        if (!j) {
-          AddLineToMessageBuffer(pszMessageBuffer, "1", plBufferLength);
-        }
-        AddLineToMessageBuffer(pszMessageBuffer, s1, plBufferLength);
-        if (j < 7) {
-          j++;
-        }
-      }
-      file.Close();
-    }
+    file.Close();
   }
 }
 
 void UpdateMessageBufferQuotesCtrlLines(char *pszMessageBuffer, long *plBufferLength) {
-  char szQuotesFileName[ MAX_PATH ];
-  sprintf(szQuotesFileName, "%s%s", syscfgovr.tempdir, QUOTES_TXT);
-  TextFile file(szQuotesFileName, "rt");
+  const string quotes_filename = StrCat(syscfgovr.tempdir, QUOTES_TXT);
+  TextFile file(quotes_filename, "rt");
   if (file.IsOpen()) {
     char szQuoteText[ 255 ];
     while (file.ReadLine(szQuoteText, sizeof(szQuoteText) - 1)) {
@@ -644,10 +646,8 @@ void UpdateMessageBufferQuotesCtrlLines(char *pszMessageBuffer, long *plBufferLe
     file.Close();
   }
 
-  char szMsgInfFileName[ MAX_PATH ];
-  sprintf(szMsgInfFileName, "%smsginf", syscfgovr.tempdir);
-  copyfile(szQuotesFileName, szMsgInfFileName, false);
-
+  const string msginf_filename = StrCat(syscfgovr.tempdir, "msginf");
+  copyfile(quotes_filename, msginf_filename, false);
 }
 
 void GetMessageAnonStatus(bool *real_name, int *anony, int setanon) {
