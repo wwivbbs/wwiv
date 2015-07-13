@@ -23,14 +23,14 @@
 )
 
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
-set RELEASE_ZIP=%WORKSPACE%\wwiv-build-win-%SVN_REVISION%-%BUILD_NUMBER%.zip
-echo Workspace: %WORKSPACE%         
-echo Revision:  %SVN_REVISION%
-echo Archive:   %RELEASE_ZIP%
+set RELEASE_ZIP=%WORKSPACE%\wwiv-build-win-%BUILD_NUMBER%.zip
+echo Workspace:    %WORKSPACE%         
+echo Build Number: %BUILD_NUMBER%
+echo Archive:      %RELEASE_ZIP%
 
 @rem Build BBS, init, telnetserver
 cd %WORKSPACE%\bbs
-%TEXT_TRANSFORM% -a !!version!%SVN_REVISION% version.template
+%TEXT_TRANSFORM% -a !!version!%BUILD_NUMBER% version.template
 msbuild bbs_lib.vcxproj /t:Build /p:Configuration=Release
 msbuild bbs.vcxproj /t:Build /p:Configuration=Release
 
@@ -120,7 +120,7 @@ copy /v/y %INFOZIP%\zip30\win32\vc6\zip___Win32_Release\zip.exe %WORKSPACE%\rele
 
 echo Creating build.nfo file
 echo Build URL %BUILD_URL% > release\build.nfo
-echo Subversion Build: %SVN_REVISION% >> release\build.nfo
+echo Subversion Build: %BUILD_NUMBER% >> release\build.nfo
 
 echo Creating release archive: %RELEASE_ZIP%
 cd %WORKSPACE%\release
