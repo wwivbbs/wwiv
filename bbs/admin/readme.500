@@ -1,12 +1,12 @@
 readme.500
 09/10/2014
 
-                *** Attention XP and Windows 10 Users ***
+                *** Attention Windows 10 ***
 
-    You need to download the Visual Studio 2013 redistributable files from:
-    http://www.microsoft.com/en-us/download/details.aspx?id=40784
+    You need to download the Visual Studio 2015 RC redistributable files from:
+    https://www.microsoft.com/en-us/download/details.aspx?id=46881
     and install this package before using WWIV (or any other software
-    compiled with Visual Studio 2013).
+    compiled with Visual Studio 2015 RC).
 
 
 WWIV 5.0 Getting Started
