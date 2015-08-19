@@ -52,7 +52,6 @@
 ;
 ; External program spawn options
 ;
-;SPAWNOPT[FSED]         = FOSSIL                        ; for FSEDs
 ;SPAWNOPT[PROT_SINGLE]  = NONE                          ; for single file xfers
 ;SPAWNOPT[PROT_BATCH]   = NONE                          ; for batch xfers
 ;SPAWNOPT[CHAT]         = NONE                          ; for wwivchat.exe
