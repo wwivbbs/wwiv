@@ -252,11 +252,8 @@ BEGINDAYNODENUMBER     = 1                  ; Node number to handle beginday
 INTERNALZMODEM         = Y                  ; Set to N to disable internal Zmodem
 EXEC_LOGSYNCFOSS       = N                  ; Create wwivsync.log when 
                                             ; executing a FOSSIL door.
-EXEC_USECWAITFORIDLE   = Y                  ; Use WaitForIdleInput under WinNT
 EXEC_CHILDWAITTIME     = 500                ; Time to wait for the DOOR to load
                                             ; (used under Win9X)
-EXEC_WAITFORIDLETIME   = 2000               ; Time to wait for the DOOR to load
-                                            ; (used under WinNT)
 NEW_SCAN_AT_LOGIN      = Y                  ; Ask the user to scan for new 
                                             ; messages when they log in.
 USE_WWIVMAIL           = N                  ; Add WWIVMail to the //QWK menu
