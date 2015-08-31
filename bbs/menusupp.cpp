@@ -385,7 +385,7 @@ void WWIVVersion() {
   bout << "|#9Copyright (C) 1998-2015, WWIV Software Services.\r\n";
   bout << "|#9All Rights Reserved.\r\n\r\n";
   bout << "|#9Licensed under the Apache License.  " << wwiv::endl;
-  bout << "|#9Please see |#1http://wwiv.sourceforge.net |#9for more information"
+  bout << "|#9Please see |#1http://wwivbbs.com/ |#9for more information"
        << wwiv::endl << wwiv::endl;
   bout << "|#9Compile Time  : |#2" << wwiv_date << wwiv::endl;
   bout << "|#9SysOp Name:   : |#2" << syscfg.sysopname << wwiv::endl;
