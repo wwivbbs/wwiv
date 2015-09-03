@@ -61,7 +61,7 @@ void select_editor() {
     }
     return;
   }
-  for (int i1 = 0; i1 < 5; i1++) {
+  for (int i1 = 0; i1 <= 5; i1++) {
     odc[ i1 ] = '\0';
   }
   bout << "0. Normal non-full screen editor\r\n";
