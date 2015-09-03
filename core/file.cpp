@@ -59,17 +59,21 @@
 
 #if !defined(ftruncate)
 #define ftruncate chsize
-#endif
+#endif  // ftruncate
 
 #define flock(h, m)
+#define F_OK 0
+
 #else 
 
+#define _access access
 #define _stat stat
 #define _fstat fstat
 #define Sleep(x) usleep((x)*1000)
 #define _sopen(n, f, s, p) open(n, f, 0644)
 
 #endif  // _WIN32
+
 
 using std::string;
 
@@ -304,13 +308,13 @@ bool File::Remove(const string& directoryName, const string& fileName) {
 }
 
 bool File::Exists(const string& original_pathname) {
-  struct _stat buf;
   string fn(original_pathname);
   if (fn.back() == pathSeparatorChar) {
     // If the pathname ends in / or \, then remove the last character.
     fn.pop_back();
   }
-  int ret = _stat(fn.c_str(), &buf);
+  int ret = _access(fn.c_str(), F_OK);
+  std::clog << "access returned: " << ret << " errno: " << errno << " file : " << fn << std::endl;
   return ret == 0;
 }
 
