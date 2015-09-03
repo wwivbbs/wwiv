@@ -1145,6 +1145,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
               if (ctrla && s[nNumCharsPtr - 1] != SPACE && !ansi) {
                 if (session()->localIO()->WhereX() < session()->user()->GetScreenChars() - 1) {
                   bputch(SPACE);
+		  bout.nl();
                 } else {
                   bout.nl();
                 }
