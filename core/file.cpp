@@ -314,7 +314,6 @@ bool File::Exists(const string& original_pathname) {
     fn.pop_back();
   }
   int ret = _access(fn.c_str(), F_OK);
-  std::clog << "access returned: " << ret << " errno: " << errno << " file : " << fn << std::endl;
   return ret == 0;
 }
 
