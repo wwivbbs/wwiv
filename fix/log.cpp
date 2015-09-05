@@ -70,7 +70,7 @@ bool OpenLogFile(const char* szFileName) {
 	time(&secs_now);
 	time_now = localtime(&secs_now);
 	strftime(str, 80, "%a %d %b %Y", time_now);
-	sprintf(szBuf, "\n----------  %s, fix %s\n", str, wwiv_version);
+	sprintf(szBuf, "\n----------  %s, fix %s%s\n", str, wwiv_version, beta_version);
 	hLogFile.Write(szBuf, strlen(szBuf));
 
 	return true;

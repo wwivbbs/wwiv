@@ -123,8 +123,7 @@ static int GetAnsiStatusAndShowWelcomeScreen(bool network_only) {
     StringUpperCase(&current_speed);
     bout << "CONNECT " << current_speed << "\r\n\r\n";
   }
-  const string osVersion = wwiv::os::os_version_string();
-  bout << "\r\nWWIV " << wwiv_version << "/" << osVersion << " " << beta_version << wwiv::endl;
+  bout << "\r\nWWIV " << wwiv_version << beta_version << wwiv::endl;
   bout << "Copyright (c) 1998-2015 WWIV Software Services." << wwiv::endl;
   bout << "All Rights Reserved." << wwiv::endl;
 
