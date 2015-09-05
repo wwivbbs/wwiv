@@ -987,7 +987,7 @@ int WApplication::Run(int argc, char *argv[]) {
 
 
 void WApplication::ShowUsage() {
-  cout << "WWIV Bulletin Board System [" << wwiv_version << " - " << beta_version << "]\r\n\n" <<
+  cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n" <<
             "Usage:\r\n\n" <<
             "bbs -I<inst> [options] \r\n\n" <<
             "Options:\r\n\n" <<

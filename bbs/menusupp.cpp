@@ -381,7 +381,7 @@ void ExpressScan() {
 
 void WWIVVersion() {
   bout.cls();
-  bout << "|#9WWIV Bulletin Board System " << wwiv_version << " " << beta_version << wwiv::endl;
+  bout << "|#9WWIV Bulletin Board System " << wwiv_version << beta_version << wwiv::endl;
   bout << "|#9Copyright (C) 1998-2015, WWIV Software Services.\r\n";
   bout << "|#9All Rights Reserved.\r\n\r\n";
   bout << "|#9Licensed under the Apache License.  " << wwiv::endl;

@@ -292,7 +292,7 @@ BinkState BinkP::ConnInit() {
 }
 
 static string wwiv_version_string() {
-  return StrCat(wwiv_version, " (", wwiv_date, ")");
+  return StrCat(wwiv_version, beta_version, " (", wwiv_date, ")");
 
 }
 
