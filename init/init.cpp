@@ -33,13 +33,13 @@
 #include <locale.h>
 #include <sys/stat.h>
 
-#include "bbs/version.cpp"
 #include "bbs/wconstants.h"
 
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "core/file.h"
 #include "core/os.h"
+#include "core/version.cpp"
 #include "core/wfndfile.h"
 #include "core/wwivport.h"
 

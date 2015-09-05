@@ -83,7 +83,6 @@
   <ItemGroup>
     <ClCompile Include="..\bbs\datetime.cpp" />
     <ClCompile Include="..\bbs\platform\win32\utility2.cpp" />
-    <ClCompile Include="..\bbs\version.cpp" />
     <ClCompile Include="..\bbs\WUser.cpp" />
     <ClCompile Include="dirs.cpp" />
     <ClCompile Include="fix.cpp" />

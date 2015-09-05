@@ -21,7 +21,7 @@
 
 #include <ctime>
 
-#include "bbs/version.h"
+#include "core/version.h"
 #include "sdk/vardec.h"
 #include "sdk/net.h"
 
