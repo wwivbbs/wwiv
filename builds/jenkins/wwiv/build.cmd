@@ -29,7 +29,7 @@ echo Build Number: %BUILD_NUMBER%
 echo Archive:      %RELEASE_ZIP%
 
 @rem Build BBS, init, telnetserver
-cd %WORKSPACE%\bbs
+cd %WORKSPACE%\core
 %TEXT_TRANSFORM% -a !!version!%BUILD_NUMBER% version.template
 msbuild bbs_lib.vcxproj /t:Build /p:Configuration=Release
 msbuild bbs.vcxproj /t:Build /p:Configuration=Release

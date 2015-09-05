@@ -12,12 +12,12 @@
 #include <string>
 #include <vector>
 
-#include "bbs/version.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/os.h"
+#include "core/version.h"
 #include "core/wfndfile.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/binkp_config.h"

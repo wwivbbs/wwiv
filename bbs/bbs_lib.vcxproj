@@ -258,7 +258,6 @@
     <ClCompile Include="user.cpp" />
     <ClCompile Include="utility.cpp" />
     <ClCompile Include="valscan.cpp" />
-    <ClCompile Include="version.cpp" />
     <ClCompile Include="vote.cpp" />
     <ClCompile Include="voteedit.cpp" />
     <ClCompile Include="WComm.cpp" />

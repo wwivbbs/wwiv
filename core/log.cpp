@@ -27,8 +27,7 @@
 
 #include "core/file.h"
 #include "core/strings.h"
-
-#include "bbs/version.cpp"
+#include "core/version.cpp"
 
 using std::clog;
 using std::endl;

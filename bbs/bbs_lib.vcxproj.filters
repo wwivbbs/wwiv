@@ -280,9 +280,6 @@
     <ClCompile Include="valscan.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="version.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="vote.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

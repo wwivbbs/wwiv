@@ -97,6 +97,7 @@
     <ClCompile Include="file_win32.cpp" />
     <ClCompile Include="strings.cpp" />
     <ClCompile Include="textfile.cpp" />
+    <ClCompile Include="version.cpp" />
     <ClCompile Include="wfndfile_win32.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -110,6 +111,7 @@
     <ClInclude Include="strings.h" />
     <ClInclude Include="file.h" />
     <ClInclude Include="textfile.h" />
+    <ClInclude Include="version.h" />
     <ClInclude Include="wwivassert.h" />
     <ClInclude Include="wwivport.h" />
   </ItemGroup>

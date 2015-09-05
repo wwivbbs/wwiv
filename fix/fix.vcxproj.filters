@@ -33,9 +33,6 @@
     <ClCompile Include="..\bbs\platform\win32\utility2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\bbs\version.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\bbs\WUser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
