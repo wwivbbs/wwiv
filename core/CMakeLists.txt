@@ -12,6 +12,7 @@ set(COMMON_SOURCES
   os_unix.cpp
   strings.cpp
   textfile.cpp
+  version.cpp
   )
 
 if(UNIX) 
