@@ -101,7 +101,6 @@ set(COMMON_SOURCES
  user.cpp
  utility.cpp
  valscan.cpp
- version.cpp
  vote.cpp
  voteedit.cpp
  wcomm.cpp
