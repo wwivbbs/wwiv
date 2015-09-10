@@ -597,7 +597,9 @@ void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, co
       !IsEqualsIgnoreCase(aux, "email") &&
       (!(subboards[session()->GetCurrentReadMessageArea()].anony & anony_no_tag)) &&
       !IsEqualsIgnoreCase(irt, szMultiMail)) {
-    return;
+		// tag is ok
+  } else {
+		return;
   }
 
   const string filename = FindTagFileName();
