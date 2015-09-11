@@ -373,7 +373,6 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
     }
     irt_name[0] = '\0';
   }
-  free(org);
 }
 
 void get_quote(int fsed) {
