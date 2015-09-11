@@ -5,7 +5,6 @@
 # Required Variables:
 # WORKSPACE - wwiv-svn root directory
 # BUILD_NUMBER - Jenkins Build number
-# SVN_REVISION - subversion build number
 
 
 rm ${WORKSPACE}/wwiv-build-linux-*.zip
@@ -13,9 +12,9 @@ rm ${WORKSPACE}/wwiv-build-linux-*.tar.gz
 
 set -e
 
-declare -r RELEASE_TGZ=${WORKSPACE}/wwiv-build-linux-${SVN_REVISION}-${BUILD_NUMBER}.tar.gz
+declare -r RELEASE_TGZ=${WORKSPACE}/wwiv-build-linux-${BUILD_NUMBER}.tar.gz
 echo "Workspace: ${WORKSPACE}"
-echo "Revision:  ${SVN_REVISION}"
+echo "Version:   ${BUILD_NUMBER}"
 echo "Archive:   ${RELEASE_TGZ}"
 
 echo "Cleaning up release dir"
@@ -28,7 +27,7 @@ echo "Created release dir: ${WORKSPACE}/release"
 
 echo "Building binaries"
 cd ${WORKSPACE}
-sed -i -e "s@<#= version #>@${SVN_REVISION}@" core/version.template
+sed -i -e "s@<#= version #>@${BUILD_NUMBER}@" core/version.template
 cmake .
 make -j12 
 
@@ -75,7 +74,7 @@ shopt -u dotglob
 
 echo "Creating build.nfo file"
 echo "Build URL ${BUILD_URL}" > ${WORKSPACE}/release/build.nfo
-echo "Subversion Build: ${SVN_REVISION}" >> ${WORKSPACE}/release/build.nfo
+echo "Build Version: ${BUILD_NUMBER}" >> ${WORKSPACE}/release/build.nfo
 
 echo "Creating release archive: ${RELEASE_TGZ}"
 cd ${WORKSPACE}/release
