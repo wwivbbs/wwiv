@@ -27,7 +27,7 @@ echo "Created release dir: ${WORKSPACE}/release"
 
 echo "Building binaries"
 cd ${WORKSPACE}
-sed -i -e "s@<#= version #>@${BUILD_NUMBER}@" core/version.template
+sed -i -e "s@Development@Development Build ${BUILD_NUMBER}@" core/version.cpp
 cmake .
 make -j12 
 
