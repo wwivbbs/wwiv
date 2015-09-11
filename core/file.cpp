@@ -67,8 +67,6 @@
 #else 
 
 #define _access access
-#define _stat stat
-#define _fstat fstat
 #define Sleep(x) usleep((x)*1000)
 #define _sopen(n, f, s, p) open(n, f, 0644)
 
@@ -255,41 +253,6 @@ bool File::SetFilePermissions(int nPermissions) {
   return chmod(full_path_name_.c_str(), nPermissions) == 0;
 }
 
-long File::GetLength() {
-  // _stat/_fstat is the 32 bit version on WIN32
-  struct _stat fileinfo;
-
-  if (IsOpen()) {
-    // File is open, use fstat
-    if (_fstat(handle_, &fileinfo) != 0) {
-      return -1;
-    }
-  } else {
-    // stat works on filenames, not filehandles.
-    if (_stat(full_path_name_.c_str(), &fileinfo) != 0) {
-      return -1;
-    }
-  }
-  return fileinfo.st_size;
-}
-
-time_t File::last_write_time() {
-  bool bOpenedHere = false;
-  if (!this->IsOpen()) {
-    bOpenedHere = true;
-    Open();
-  }
-  WWIV_ASSERT(File::IsFileHandleValid(handle_));
-
-  // N.B. On Windows with _USE_32BIT_TIME_T defined _fstat == _fstat32.
-  struct _stat buf;
-  time_t nFileTime = (_stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
-
-  if (bOpenedHere) {
-    Close();
-  }
-  return nFileTime;
-}
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
