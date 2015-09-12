@@ -371,11 +371,9 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
   if (p->qscan > qsc_p[session()->GetCurrentReadMessageArea()]) { // Update qscan pointer right here
     qsc_p[session()->GetCurrentReadMessageArea()] = p->qscan;  // And here
   }
-  {
-    WStatus* pStatus = application()->GetStatusManager()->GetStatus();
-    uint32_t lQScanPtr = pStatus->GetQScanPointer();
-    delete pStatus;
-  }
+  WStatus* pStatus1 = application()->GetStatusManager()->GetStatus();
+  uint32_t lQScanPtr = pStatus1->GetQScanPointer();
+  delete pStatus1;
   if (p->qscan >= lQScanPtr) {
     WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
     pStatus->SetQScanPointer(p->qscan + 1);
