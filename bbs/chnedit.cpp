@@ -71,6 +71,7 @@ void ShowChainCommandLineHelp() {
   bout << "|#1   %C    |#9 CHAIN.TXT full pathname \r\n";
   bout << "|#1   %D    |#9 DORIFOx.DEF full pathname \r\n";
   bout << "|#1   %E    |#9 DOOR32.SYS full pathname \r\n";
+  bout << "|#1   %H    |#9 Telnet Handle \r\n";
   bout << "|#1   %K    |#9 GFiles Comment File For Archives\r\n";
   bout << "|#1   %M    |#9 Modem Baud Rate\r\n";
   bout << "|#1   %N    |#9 Node (Instance) number\r\n";
