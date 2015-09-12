@@ -1194,8 +1194,9 @@ void readmail(int mode) {
           fileTemp.Write(b.get(), len);
           fileTemp.Close();
           bool bSent;
-          send_file(fileTemp.full_pathname().c_str(), &bSent, 0, fileTemp.full_pathname().c_str(), -1, len);
-          if (i) {
+          bool bAbort;
+          send_file(fileTemp.full_pathname().c_str(), &bSent, &bAbort, fileTemp.full_pathname().c_str(), -1, len);
+          if (bSent) {
             bout << "E-mail download successful.\r\n";
             sysoplog("Downloaded E-mail");
           } else {
