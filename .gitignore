@@ -195,3 +195,4 @@ CMakeCache.txt
 Makefile
 *.a
 
+bbs/bbs.vcxproj
