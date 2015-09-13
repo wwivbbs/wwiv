@@ -516,7 +516,7 @@ int WApplication::doWFCEvents() {
           session()->SetFileAreaCacheNumber(session()->GetFileAreaCacheNumber() + 1);
         } else {
           static int mult_time = 0;
-          if (this->IsCleanNetNeeded() || labs(timer1() - mult_time) > 1000L) {
+          if (this->IsCleanNetNeeded() || abs(timer1() - mult_time) > 1000L) {
             cleanup_net();
             mult_time = timer1();
             giveup_timeslice();

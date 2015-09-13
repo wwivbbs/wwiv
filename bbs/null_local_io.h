@@ -23,7 +23,7 @@
 
 #if defined( _MSC_VER )
 #pragma warning( push )
-#pragma warning( disable : 4125, 4100 )
+#pragma warning( disable : 4125 4100 )
 #endif
 
 class NullLocalIO : public LocalIO {
@@ -52,13 +52,13 @@ public:
   virtual void tleft(bool bCheckForTimeOut) override {}
   virtual bool LocalKeyPressed() override { return false; }
   virtual void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) override {}
-  virtual unsigned char LocalGetChar() override { return getchar(); }
+  virtual unsigned char LocalGetChar() override { return static_cast<unsigned char>(getchar()); }
   virtual void MakeLocalWindow(int x, int y, int xlen, int ylen) override {}
   virtual void SetCursor(int cursorStyle) override {}
   virtual void LocalClrEol() override {}
   virtual void LocalWriteScreenBuffer(const char *pszBuffer) override {}
   virtual int GetDefaultScreenBottom() override { return 24; }
-  virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) override {}
+  virtual void LocalEditLine(char *s, int len, int statusx, int *returncode, char *ss) override {}
   virtual void UpdateNativeTitleBar() override {}
   virtual void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) override {}
 
