@@ -793,10 +793,10 @@ int prep_search_rec(struct search_record * search_rec, int type) {
     }
   } else if (type == LP_NSCAN_DIR) {
     search_rec->alldirs = THIS_DIR;
-    search_rec->nscandate = nscandate;
+    search_rec->nscandate = static_cast<uint32_t>(nscandate);
   } else if (type == LP_NSCAN_NSCAN) {
     g_flags |= g_flag_scanned_files;
-    search_rec->nscandate = nscandate;
+    search_rec->nscandate = static_cast<uint32_t>(nscandate);
     search_rec->alldirs = ALL_DIRS;
   } else {
     sysoplog("Undef LP type");
@@ -1128,7 +1128,7 @@ void config_file_list() {
   strcpy(reinterpret_cast<char*>(u.upby), session()->user()->GetUserNameAndNumber(session()->usernum));
   u.numdloads = 50;
   u.numbytes = 655535L;
-  u.daten = time(nullptr) - 10000;
+  u.daten = static_cast<uint32_t>(time(nullptr) - 10000);
 
   load_lp_config();
 

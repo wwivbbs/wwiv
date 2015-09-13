@@ -771,20 +771,20 @@ class WUser {
   const unsigned long GetRegisteredDateNum() const {
     return data.registered;
   }
-  void SetRegisteredDateNum(unsigned long l)    {
-    data.registered = l;
+  void SetRegisteredDateNum(time_t l)    {
+    data.registered = static_cast<uint32_t>(l);
   }
-  const unsigned long GetExpiresDateNum() const   {
+  const uint32_t GetExpiresDateNum() const   {
     return data.expires;
   }
-  void SetExpiresDateNum(unsigned long l)       {
-    data.expires = l;
+  void SetExpiresDateNum(time_t l)       {
+    data.expires = static_cast<uint32_t>(l);
   }
   const unsigned long GetNewScanDateNumber() const {
     return data.datenscan;
   }
-  void SetNewScanDateNumber(unsigned long l)    {
-    data.datenscan = l;
+  void SetNewScanDateNumber(time_t l)    {
+    data.datenscan = static_cast<uint32_t>(l);
   }
 
   const float GetTimeOnToday() const      {

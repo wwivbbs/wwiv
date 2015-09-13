@@ -274,8 +274,8 @@ void normalupload(int dn) {
           FileAreaSetRecord(fileDownload, 0);
           fileDownload.Read(&u1, sizeof(uploadsrec));
           u1.numbytes = session()->numf;
-          u1.daten = lCurrentTime;
-          session()->m_DirectoryDateCache[dn] = lCurrentTime;
+          u1.daten = static_cast<uint32_t>(lCurrentTime);
+          session()->m_DirectoryDateCache[dn] = static_cast<uint32_t>(lCurrentTime);
           FileAreaSetRecord(fileDownload, 0);
           fileDownload.Write(&u1, sizeof(uploadsrec));
           fileDownload.Close();

@@ -38,7 +38,7 @@ using namespace wwiv::strings;
 static const int INDENTION = 24;
 
 int foundany;
-int this_date;
+uint32_t this_date;
 
 static int ed_num, ed_got;
 static ext_desc_rec *ed_info;

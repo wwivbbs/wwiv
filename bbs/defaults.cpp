@@ -1127,12 +1127,12 @@ void config_scan_plus(int type) {
           if (type == 0) {
             qsc_q[usub[top + pos].subnum / 32] ^= (1L << (usub[top + pos].subnum % 32));
           } else {
-            int this_dir, sysdir = 0;
+            int sysdir = 0;
             int ad;
             if (IsEquals(udir[0].keys, "0")) {
               sysdir = 1;
             }
-            for (this_dir = 0; (this_dir < session()->num_dirs); this_dir++) {
+            for (int this_dir = 0; (this_dir < session()->num_dirs); this_dir++) {
               const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
               if (s == udir[this_dir].keys) {
                 ad = udir[this_dir].subnum;

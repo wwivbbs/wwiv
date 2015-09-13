@@ -205,7 +205,7 @@ int f_action(int nStartPos, int nEndPos, char *pszAWord) {
 
 
 int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char *pszMessageSent, bool &bActionMode,
-              int loc, int g_nNumActions) {
+              int loc, int num_actions) {
   char szText[300];
   WUser u;
 
@@ -232,7 +232,7 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
     bout.nl();
   } else if (IsEqualsIgnoreCase(pszMessage, "list")) {
     bout.nl();
-    for (int i2 = 0; i2 <= g_nNumActions; i2++) {
+    for (int i2 = 0; i2 <= num_actions; i2++) {
       bout.bprintf("%-16.16s", actions[i2]->aword);
     }
     bout.nl();

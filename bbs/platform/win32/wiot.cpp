@@ -410,12 +410,12 @@ void WIOTelnet::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   }
   break;
   case TELNET_OPTION_DO: {
-    const string s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DO", nParam);
-    ::OutputDebugString(s.c_str());
+    const string do_s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DO", nParam);
+    ::OutputDebugString(do_s.c_str());
     switch (nParam) {
     case TELNET_OPTION_SUPPRESSS_GA: {
-      const string s = StringPrintf("%c%c%c", TELNET_OPTION_IAC, TELNET_OPTION_WILL, TELNET_OPTION_SUPPRESSS_GA);
-      write(s.c_str(), 3, true);
+      const string will_s = StringPrintf("%c%c%c", TELNET_OPTION_IAC, TELNET_OPTION_WILL, TELNET_OPTION_SUPPRESSS_GA);
+      write(will_s.c_str(), 3, true);
       ::OutputDebugString("Sent TELNET IAC WILL SUPPRESSS GA\r\n");
     }
     break;
@@ -423,8 +423,8 @@ void WIOTelnet::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   }
   break;
   case TELNET_OPTION_DONT: {
-    const string s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DONT", nParam);
-    ::OutputDebugString(s.c_str());
+    const string dont_s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DONT", nParam);
+    ::OutputDebugString(dont_s.c_str());
   }
   break;
   }

@@ -23,7 +23,7 @@
 
 #if defined( _MSC_VER )
 #pragma warning( push )
-#pragma warning( disable : 4125 )
+#pragma warning( disable : 4125, 4100 )
 #endif
 
 class NullLocalIO : public LocalIO {

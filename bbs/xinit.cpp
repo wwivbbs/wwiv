@@ -1200,7 +1200,7 @@ void WApplication::InitializeBBS() {
     File::Remove(WWIV_NET_DAT);
   }
 
-  srand(time(nullptr));
+  srand(static_cast<unsigned int>(time(nullptr)));
   catsl();
 
   XINIT_PRINTF("Saving Instance information.");

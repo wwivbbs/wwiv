@@ -138,7 +138,7 @@ void FakeConnection::ReplyCommand(int8_t command_id, const string& data) {
   unique_ptr<char[]> packet(new char[size]);
   // Actual packet size parameter does not include the size parameter itself.
   // And for sending a commmand this will be 2 less than our actual packet size.
-  uint16_t packet_length = (data.size() + sizeof(uint8_t)) | 0x8000;
+  uint16_t packet_length = static_cast<uint16_t>(data.size() + sizeof(uint8_t)) | 0x8000;
   uint8_t b0 = ((packet_length & 0xff00) >> 8) | 0x80;
   uint8_t b1 = packet_length & 0x00ff;
 

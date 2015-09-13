@@ -992,7 +992,7 @@ void logoff() {
   if (g_flags & g_flag_scanned_files) {
     session()->user()->SetNewScanDateNumber(session()->user()->GetLastOnDateNumber());
   }
-  long lTime = time(nullptr);
+  time_t lTime = time(nullptr);
   session()->user()->SetLastOnDateNumber(lTime);
   sysoplogfi(false, "Read: %lu   Time on: %u", session()->GetNumMessagesReadThisLogon(),
              static_cast<int>((timer() - timeon) / MINUTES_PER_HOUR_FLOAT));

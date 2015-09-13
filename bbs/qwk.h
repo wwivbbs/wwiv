@@ -175,7 +175,7 @@ void ready_reply_packet(const char *packet_name, const char *msg_name);
 void make_text_ready(char *text, long len);
 char* make_text_file(int filenumber, long *size, int curpos, int blocks);
 void qwk_email_text(char *text, long size, char *title, char *to);
-void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, const char *name, long thetime);
+void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, const char *name, time_t thetime);
 void process_reply_dat(char *name);
 void qwk_post_text(char *text, long size, char *title, int sub);
 int find_qwk_sub(struct qwk_sub_conf *subs, int amount, int fromsub);
