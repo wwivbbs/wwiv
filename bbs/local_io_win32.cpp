@@ -137,7 +137,6 @@ int Win32ConsoleIO::WhereX() {
     return capture_->wx();
   }
 
-  CONSOLE_SCREEN_BUFFER_INFO m_consoleBufferInfo;
   GetConsoleScreenBufferInfo(m_hConOut, &m_consoleBufferInfo);
 
   m_cursorPosition.X = m_consoleBufferInfo.dwCursorPosition.X;
@@ -152,13 +151,9 @@ int Win32ConsoleIO::WhereX() {
 * the cursor is at the top-most position it can be at.
 */
 int Win32ConsoleIO::WhereY() {
-  CONSOLE_SCREEN_BUFFER_INFO m_consoleBufferInfo;
-
   GetConsoleScreenBufferInfo(m_hConOut, &m_consoleBufferInfo);
-
   m_cursorPosition.X = m_consoleBufferInfo.dwCursorPosition.X;
   m_cursorPosition.Y = m_consoleBufferInfo.dwCursorPosition.Y;
-
   return m_cursorPosition.Y - GetTopLine();
 }
 
