@@ -150,14 +150,16 @@ int WApplication::doWFCEvents() {
   int lokb;
   LocalIO* io = GetWfcIO();
 
-  unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> last_date_status(GetStatusManager()->GetStatus());
   do {
     write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
     set_net_num(0);
     bool any = false;
     SetWfcStatus(1);
-    if (!IsEquals(date(), pStatus->GetLastDate())) {
-      if ((session()->GetBeginDayNodeNumber() == 0) || (instance_number == session()->GetBeginDayNodeNumber())) {
+
+    // If the date has changed since we last checked, then then run the beginday event.
+    if (!IsEquals(date(), last_date_status->GetLastDate())) {
+      if ((session()->GetBeginDayNodeNumber() == 0) || (instance_number_ == session()->GetBeginDayNodeNumber())) {
         cleanup_events();
         beginday(true);
         wfc_cls();
@@ -668,7 +670,7 @@ int WApplication::Run(int argc, char *argv[]) {
 
   curatr = 0x07;
   // Set the instance, this may be changed by a command line argument
-  instance_number = 1;
+  instance_number_ = 1;
   no_hangup = false;
   ok_modem_stuff = true;
 
@@ -736,9 +738,9 @@ int WApplication::Run(int argc, char *argv[]) {
         break;
       case 'I':
       case 'N': {
-        instance_number = stoi(argument);
-        if (instance_number <= 0 || instance_number > 999) {
-          clog << "Your Instance can only be 1..999, you tried instance #" << instance_number << endl;
+        instance_number_ = stoi(argument);
+        if (instance_number_ <= 0 || instance_number_ > 999) {
+          clog << "Your Instance can only be 1..999, you tried instance #" << instance_number_ << endl;
           exit(m_nErrorLevel);
         }
       }
@@ -1017,9 +1019,11 @@ void WApplication::ShowUsage() {
             endl;
 }
 
-WApplication::WApplication() : statusMgr(new StatusMgr()), userManager(new WUserManager()), m_nOkLevel(exitLevelOK), 
-    m_nErrorLevel(exitLevelNotOK), instance_number(-1), m_bUserAlreadyOn(false), m_nBbsShutdownStatus(shutdownNone), m_fShutDownTime(0),
-    m_nWfcStatus(0) {
+WApplication::WApplication() : statusMgr(new StatusMgr()),
+    userManager(new WUserManager()), m_nOkLevel(exitLevelOK), 
+    m_nErrorLevel(exitLevelNotOK), instance_number_(-1), 
+    m_bUserAlreadyOn(false), m_nBbsShutdownStatus(shutdownNone),
+    m_fShutDownTime(0), m_nWfcStatus(0) {
   // TODO this should move into the WSystemConfig object (syscfg wrapper) once it is established.
   if (syscfg.userreclen == 0) {
     syscfg.userreclen = sizeof(userrec);

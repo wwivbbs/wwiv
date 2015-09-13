@@ -1125,8 +1125,6 @@ void WApplication::InitializeBBS() {
   set_environment_variable("PKNOFASTCHAR", "Y");
   set_environment_variable("BBS", wwiv_version);
 
-  // TODO: this is empty now.  See if we really need this.
-  //putenv(networkNumEnvVar.c_str());
 #endif // defined ( __unix__ )
 
   XINIT_PRINTF("Reading Voting Booth Configuration.");
@@ -1172,7 +1170,7 @@ void WApplication::InitializeBBS() {
       network_extension = StringPrintf(".%3.3d", nTempInstanceNumber);
       // Fix... Set the global instance variable to match this.  When you run WWIV with the -n<instance> parameter
       // it sets the WWIV_INSTANCE environment variable, however it wasn't doing the reverse.
-      instance_number = nTempInstanceNumber;
+      instance_number_ = nTempInstanceNumber;
     }
   }
 
