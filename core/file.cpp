@@ -271,6 +271,12 @@ bool File::Remove(const string& directoryName, const string& fileName) {
 }
 
 bool File::Exists(const string& original_pathname) {
+  if (original_pathname.empty()) {
+    // An empty filename can not exist.
+    // The question is should we assert here?
+    return false;
+  }
+
   string fn(original_pathname);
   if (fn.back() == pathSeparatorChar) {
     // If the pathname ends in / or \, then remove the last character.
