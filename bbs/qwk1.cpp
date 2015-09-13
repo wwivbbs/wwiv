@@ -893,7 +893,8 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
       p.qscan = pStatus->IncrementQScanPointer();
       application()->GetStatusManager()->CommitTransaction(pStatus);
     }
-    time((long *)(&p.daten));
+    time_t now = time(nullptr);
+    p.daten = static_cast<uint32_t>(now);
     if (session()->user()->data.restrict & restrict_validate) {
       p.status = status_unvalidated;
     } else {

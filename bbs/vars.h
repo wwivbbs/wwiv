@@ -108,7 +108,6 @@ __EXTRN__ unsigned short
 *csn_index,
 net_sysnum,
 #endif // NETWORK
-crc,
 *gat;
 
 __EXTRN__ int modem_speed;

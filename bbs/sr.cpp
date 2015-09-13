@@ -20,12 +20,14 @@
 #include <cmath>
 #include <string>
 
-#include "bbs/datetime.h"
-#include "bbs/wwiv.h"
-#include "bbs/stuffin.h"
 #include "core/strings.h"
+
+#include "bbs/crc.h"
+#include "bbs/datetime.h"
+#include "bbs/stuffin.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+#include "bbs/wwiv.h"
 
 using std::string;
 

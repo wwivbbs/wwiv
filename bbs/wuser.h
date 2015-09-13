@@ -750,11 +750,11 @@ class WUser {
   void SetDownloadK(unsigned long l)            {
     data.dk = l;
   }
-  const unsigned long GetLastOnDateNumber() const {
+  const uint32_t GetLastOnDateNumber() const {
     return data.daten;
   }
-  void SetLastOnDateNumber(unsigned long l)     {
-    data.daten = l;
+  void SetLastOnDateNumber(time_t l)     {
+    data.daten = static_cast<uint32_t>(l);
   }
   const unsigned long GetWWIVRegNumber() const    {
     return data.wwiv_regnum;

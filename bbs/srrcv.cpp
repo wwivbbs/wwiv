@@ -19,11 +19,13 @@
 #include <cmath>
 #include <string>
 
+#include "bbs/crc.h"
 #include "bbs/datetime.h"
-#include "bbs/wwiv.h"
-#include "bbs/wcomm.h"
-#include "core/strings.h"
 #include "bbs/keycodes.h"
+#include "bbs/wcomm.h"
+#include "bbs/wwiv.h"
+
+#include "core/strings.h"
 
 using std::string;
 

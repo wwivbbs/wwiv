@@ -21,6 +21,11 @@
 
 #include <string>
 
+#if defined( _MSC_VER )
+#pragma warning( push )
+#pragma warning( disable : 4125 )
+#endif
+
 class NullLocalIO : public LocalIO {
 public:
   NullLocalIO();
@@ -59,5 +64,10 @@ public:
 
   std::string* captured_;
 };
+
+#if defined( _MSC_VER )
+#pragma warning( pop )
+#endif // _MSC_VER
+
 
 #endif  // __INCLUDED_BBS_NULL_LOCAL_IO_H__

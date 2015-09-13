@@ -257,7 +257,7 @@ static void ExecuteWWIVNetworkRequest() {
   }
 
   application()->GetStatusManager()->RefreshStatusCache();
-  long lTime = time(nullptr);
+  time_t lTime = time(nullptr);
   if (session()->usernum == -2) {
     std::stringstream networkCommand;
     networkCommand << "network /B" << modem_speed << " /T" << lTime << " /F0";
@@ -692,14 +692,13 @@ static void CheckAndUpdateUserInfo() {
              (session()->user()->GetExpiresDateNum() < static_cast<unsigned long>(lTime + 10 * SECS_PER_DAY))) {
     if (static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / static_cast<unsigned long>
                          (SECS_PER_DAY)) > 1) {
-      bout << "|#6Your registration expires in " <<
-                         static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / static_cast<unsigned long>
-                                          (SECS_PER_DAY))
-                         << " days";
+      bout << "|#6Your registration expires in "
+           << static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / static_cast<unsigned long>(SECS_PER_DAY))
+           << " days";
     } else {
-      bout << "|#6Your registration expires in " <<
-                         static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / static_cast<unsigned long>(3600L))
-                         << " hours.";
+      bout << "|#6Your registration expires in "
+           << static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / static_cast<unsigned long>(3600L))
+           << " hours.";
     }
     bout.nl(2);
     pausescr();
