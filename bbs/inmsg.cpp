@@ -603,6 +603,10 @@ void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, co
   }
 
   const string filename = FindTagFileName();
+  if (filename.empty()) {
+    // FindTagFileName returns an empty string if no tagname exists, so
+    // just exit here since there is no tag.
+  }
   TextFile file(filename, "rb");
   if (file.IsOpen()) {
     int j = 0;
