@@ -30,7 +30,7 @@
 ;
 ; TIMED, NEWUSER, BEGINDAY, LOGON, LOGOFF ULCHK, PROT_SINGLE,
 ; PROT_BATCH, CHAT, ARCH_E, ARCH_V, ARCH_A, ARCH_D, ARCH_K, ARCH_T,
-; NET_CMD1, NET_CMD2, V_SCAN
+; NET_CMD1, NET_CMD2
 ;
 ; Values listed for lines commented out are the default settings.  Under
 ; normal conditions, you should not have to edit these settings.  If you
@@ -55,7 +55,6 @@
 ;SPAWNOPT[PROT_SINGLE]  = NONE                          ; for single file xfers
 ;SPAWNOPT[PROT_BATCH]   = NONE                          ; for batch xfers
 ;SPAWNOPT[CHAT]         = NONE                          ; for wwivchat.exe
-;SPAWNOPT[V_SCAN]       = NONE                          ; for virus scanning
 ;
 ; Archiver spawn settings
 ;
