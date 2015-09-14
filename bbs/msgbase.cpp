@@ -1259,12 +1259,14 @@ void read_message(int n, bool *next, int *val) {
     qsc_p[session()->GetCurrentReadMessageArea()] = p.qscan;
   }
   
-  WStatus *pStatus = application()->GetStatusManager()->GetStatus();
-  // not sure why we check this twice...
-  // maybe we need a getCachedQScanPointer?
-  unsigned long lQScanPointer = pStatus->GetQScanPointer();
-  delete pStatus;
-  if (p.qscan >= lQScanPointer) {
+  unsigned long current_qscan_pointer = 0;
+  {
+    std::unique_ptr<WStatus> wwiv_status(application()->GetStatusManager()->GetStatus());
+    // not sure why we check this twice...
+    // maybe we need a getCachedQScanPointer?
+    current_qscan_pointer = wwiv_status->GetQScanPointer();
+  }
+  if (p.qscan >= current_qscan_pointer) {
     WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
     if (p.qscan >= pStatus->GetQScanPointer()) {
       pStatus->SetQScanPointer(p.qscan + 1);

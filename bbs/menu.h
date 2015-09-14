@@ -163,8 +163,8 @@ public:
   bool LoadMenuRecord(const std::string& command, MenuRec* pMenu);
   void GenerateMenu() const;
 
-  std::string menu;
-  std::string path;
+  std::string menu_;
+  std::string path_;
   bool finished;
   bool reload;  /* true if we are going to reload the menus */
 
