@@ -17,6 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 #ifdef _WIN32
+// include this here so it won't get includes by local_io_win32.h
+#include "bbs/wwiv_windows.h"
 #include <direct.h>
 #endif  // WIN32
 
@@ -41,7 +43,6 @@
 #include "bbs/fcns.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/keycodes.h"
 #include "bbs/local_io.h"
 #include "bbs/local_io_curses.h"
 #include "bbs/null_local_io.h"

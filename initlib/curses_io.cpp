@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+// Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "bbs/wwiv_windows.h"
 
 #include <algorithm>
 #include <cstring>
@@ -26,14 +28,9 @@
 #include <stdexcept>
 
 #include "curses.h"
-#include "curses_io.h"
 #include "core/strings.h"
 #include "core/version.h"
-
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif  // _WIN32
+#include "initlib/curses_io.h"
 
 using std::unique_ptr;
 using std::string;

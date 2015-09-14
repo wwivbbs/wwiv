@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2015, WWIV Software Services             */
+/*             Copyright (C)1998-2015,WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,50 +16,58 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-// Always declare wwiv_windows.h first to avoid collisions on defines.
-#include "bbs/wwiv_windows.h"
+#ifndef __INCLUDED_BBS_WWIV_WINDOWS_H__
+#define __INCLUDED_BBS_WWIV_WINDOWS_H__
 
-#include "bbs/wcomm.h"
+// Wrapper header file for includibng windows.h from wwiv.  This sets all of
+// the numerous #defines to remove much of the windows header files since the
+// surface area used by wwiv is tiny.
 
-#include "core/wwivport.h"
+#ifdef _WIN32
+#define NOGDICAPMASKS
+#define NOSYSMETRICS
+#define NOMENUS
+#define NOICONS
+#define NOKEYSTATES
+#define NOSYSCOMMANDS
+#define NORASTEROPS
+#define NOATOM
+#define NOCLIPBOARD
+#define NODRAWTEXT
+#define NOKERNEL
+#define NONLS
+#define NOMEMMGR
+#define NOMETAFILE
+#define NOMINMAX
+#define NOOPENFILE
+#define NOSCROLL
+#define NOSERVICE
+#define NOSOUND
+#define NOTEXTMETRIC
+#define NOWH
+#define NOCOMM
+#define NOKANJI
+#define NOHELP
+#define NOPROFILER
+#define NODEFERWINDOWPOS
+#define NOMCX
+#define NOCRYPT
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+#include <windows.h>
 
-#if defined ( _WIN32 )
-#include "platform/win32/wiot.h"
-#elif defined ( __unix__ )
-#include "bbs/platform/unix/wiou.h"
-#endif
+#ifdef min
+#undef min
+#endif  // min
 
-#include "core/scope_exit.h"
-#include "core/wwivport.h"
+#ifdef max
+#undef max
+#endif  // max
 
-// static
-std::string WComm::error_text_;
+#ifdef CopyFile
+#undef CopyFile
+#endif  // CopyFile
 
-const std::string WComm::GetLastErrorText() {
-#if defined ( _WIN32 )
-  char* error_text;
-  wwiv::core::ScopeExit on_exit([&error_text] {LocalFree(error_text);});
-  
-  FormatMessage(
-    FORMAT_MESSAGE_ALLOCATE_BUFFER |
-    FORMAT_MESSAGE_FROM_SYSTEM |
-    FORMAT_MESSAGE_IGNORE_INSERTS,
-    nullptr,
-    GetLastError(),
-    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-    (LPTSTR) &error_text,
-    0,
-    nullptr
-  );
-  error_text_.assign(error_text);
-#endif
-  return error_text_;
-}
+#endif // _WIN32
 
-WComm* WComm::CreateComm(unsigned int nHandle) {
-#if defined ( _WIN32 )
-  return new WIOTelnet(nHandle);
-#elif defined ( __unix__ )
-  return new WIOUnix();
-#endif
-}
+#endif  // __INCLUDED_BBS_WWIV_WINDOWS_H__

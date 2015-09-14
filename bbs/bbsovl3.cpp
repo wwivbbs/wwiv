@@ -124,10 +124,10 @@ int get_kb_event(int nNumLockMode) {
         if (key == RETURN || key == CL) {
           return EXECUTE;
         } else if (key == ESC) {
-          time_t time1 = time(nullptr);
-          time_t time2 = time(nullptr);
+          time_t esc_time1 = time(nullptr);
+          time_t esc_time2 = time(nullptr);
           do {
-            time2 = time(nullptr);
+            esc_time2 = time(nullptr);
             if (bkbhitraw()) {
               key = pd_getkey();
               if (key == OB || key == O) {
@@ -162,9 +162,9 @@ int get_kb_event(int nNumLockMode) {
                 return GET_OUT;
               }
             }
-          } while (difftime(time2, time1) < 1 && !hangup);
+          } while (difftime(esc_time2, esc_time1) < 1 && !hangup);
 
-          if (difftime(time2, time1) >= 1) {     // if no keys followed ESC
+          if (difftime(esc_time2, esc_time1) >= 1) {     // if no keys followed ESC
             return GET_OUT;
           }
         } else {

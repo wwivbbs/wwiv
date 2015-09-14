@@ -47,6 +47,10 @@ private:
   bool bold_;
 };
 
+#if defined( _MSC_VER )
+#pragma warning( push )
+#pragma warning( disable : 4100 )
+#endif
 
 class CursesLocalIO : public LocalIO {
  public:
@@ -100,5 +104,8 @@ private:
   const std::map<int, AnsiColor> scheme_;
 };
 
+#if defined( _MSC_VER )
+#pragma warning( pop )
+#endif // _MSC_VER
 
 #endif // __INCLUDED_LOCAL_IO_CURSES_H__

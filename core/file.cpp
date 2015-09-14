@@ -17,6 +17,12 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/file.h"
+#ifdef _WIN32
+// Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "bbs/wwiv_windows.h"
+
+#include "Shlwapi.h"
+#endif  // _WIN32
 
 #include <algorithm>
 #include <cerrno>
@@ -34,12 +40,6 @@
 #ifndef _WIN32
 #include <sys/file.h>
 #include <unistd.h>
-#endif  // _WIN32
-
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include "Shlwapi.h"
 #endif  // _WIN32
 
 #include "core/wfndfile.h"
