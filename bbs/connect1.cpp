@@ -338,12 +338,8 @@ void read_contacts() {
 void set_net_num(int nNetworkNumber) {
   if (nNetworkNumber >= 0 && nNetworkNumber < session()->GetMaxNetworkNumber()) {
     session()->SetNetworkNumber(nNetworkNumber);
-    //session()->pszNetworkName = net_networks[session()->GetNetworkNumber()].name;
-    //session()->pszNetworkDataDir = net_networks[session()->GetNetworkNumber()].dir;
     net_sysnum = net_networks[session()->GetNetworkNumber()].sysnum;
     session()->SetCurrentNetworkType(net_networks[ session()->GetNetworkNumber() ].type);
-
-    application()->networkNumEnvVar = StringPrintf("WWIV_NET=%d", session()->GetNetworkNumber());
   }
 }
 

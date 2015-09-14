@@ -18,10 +18,11 @@
 /**************************************************************************/
 #include <cmath>
 
+#include "bbs/crc.h"
 #include "bbs/datetime.h"
+#include "bbs/keycodes.h"
 #include "bbs/wcomm.h"
 #include "bbs/wwiv.h"
-#include "bbs/keycodes.h"
 #include "core/strings.h"
 
 using namespace wwiv::strings;

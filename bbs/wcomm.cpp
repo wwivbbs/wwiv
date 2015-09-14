@@ -16,12 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+// Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "bbs/wwiv_windows.h"
+
 #include "bbs/wcomm.h"
+
 #include "core/wwivport.h"
 
 #if defined ( _WIN32 )
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 #include "platform/win32/wiot.h"
 #elif defined ( __unix__ )
 #include "bbs/platform/unix/wiou.h"

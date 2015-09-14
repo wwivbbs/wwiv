@@ -65,7 +65,7 @@ static int qwk_percent;
 static uint16_t max_msgs;
 
 // from xfer.cpp
-extern int this_date;
+extern uint32_t this_date;
 
 #ifndef _WIN32
 long filelength(int handle) {
@@ -116,7 +116,7 @@ void build_qwk_packet(void) {
   }
 
   if (!qwk_cfg.fu) {
-    qwk_cfg.fu = time(nullptr);
+    qwk_cfg.fu = static_cast<int32_t>(time(nullptr));
   }
 
   ++qwk_cfg.timesd;

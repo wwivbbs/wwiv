@@ -73,7 +73,7 @@ static std::map<int, AnsiColor> CreateAnsiScheme() {
 
   // Create the color pairs for each of the colors defined in the color scheme.
   for (const auto& kv : scheme) {
-    init_pair(kv.first + 100, kv.second.f(), kv.second.b());
+    init_pair(static_cast<short>(kv.first + 100), kv.second.f(), kv.second.b());
   }
   return scheme;
 }
@@ -124,7 +124,6 @@ void CursesLocalIO::LocalLf() {
 }
 
 void CursesLocalIO::LocalCr() {
-  int x = WhereX();
   int y = WhereY();
   window_->GotoXY(0, y);
 }
@@ -356,6 +355,11 @@ void CursesLocalIO::skey(char ch) {
   }
 }
 
+#if defined( _MSC_VER )
+#pragma warning( push )
+#pragma warning( disable : 4125 4100 )
+#endif
+
 void CursesLocalIO::tleft(bool bCheckForTimeOut) {}
 
 static int last_key_pressed = ERR;
@@ -375,11 +379,11 @@ unsigned char CursesLocalIO::LocalGetChar() {
   if (last_key_pressed != ERR) {
     int ch = last_key_pressed;
     last_key_pressed = ERR;
-    return ch;
+    return static_cast<unsigned char>(ch);
   }
   nodelay(window_->window(), FALSE);
   last_key_pressed = ERR;
-  return window_->GetChar();
+  return static_cast<unsigned char>(window_->GetChar());
 }
 
 void CursesLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {}
@@ -396,8 +400,11 @@ void CursesLocalIO::LocalClrEol() {
 void CursesLocalIO::LocalWriteScreenBuffer(const char *pszBuffer) {}
 int CursesLocalIO::GetDefaultScreenBottom() { return window_->GetMaxY() - 1; }
 
-void CursesLocalIO::LocalEditLine(char *s, int len, int status, int *returncode, char *ss) {}
+void CursesLocalIO::LocalEditLine(char *s, int len, int edit_status, int *returncode, char *ss) {}
 
 void CursesLocalIO::UpdateNativeTitleBar() {}
 
 void CursesLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) {}
+#if defined( _MSC_VER )
+#pragma warning( pop )
+#endif // _MSC_VER

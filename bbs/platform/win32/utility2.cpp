@@ -63,7 +63,7 @@ void WWIV_make_abs_cmd(const std::string root, std::string* out) {
       }
     }
   } else if (s1[0] == '\\') {
-    _snprintf(s1, sizeof(s1), "%c:%s", root.c_str(), out->c_str());
+    _snprintf(s1, sizeof(s1), "%c:%s", root.front(), out->c_str());
   } else {
     strncpy(s2, s1, sizeof(s2));
     strtok(s2, " \t");

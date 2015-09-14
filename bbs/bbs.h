@@ -95,12 +95,6 @@ class WApplication : public WLogger, Runnable {
   const std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
 
   /*!
-   * @var networkNumEnvVar Environment variable style
-   *      listing of WWIV net number, (only used for the xenviron)
-   */
-  std::string networkNumEnvVar;
-
-  /*!
    * @function GetHomeDir Returns the current home directory
    */
   const std::string GetHomeDir();
@@ -114,7 +108,7 @@ class WApplication : public WLogger, Runnable {
   /*! @function QuitBBS - Shuts down the bbs at the "QUIT" error level */
   void QuitBBS();
 
-  int  GetInstanceNumber() const { return instance_number; }
+  int  GetInstanceNumber() const { return instance_number_; }
   const std::string& GetNetworkExtension() const { return network_extension; }
 
   void UpdateTopScreen();
@@ -192,7 +186,7 @@ private:
   char            m_szCurrentDirectory[ MAX_PATH ];
   int             m_nOkLevel;
   int             m_nErrorLevel;
-  int             instance_number;
+  int             instance_number_;
   std::string     network_extension;
   double          last_time;
   bool            m_bUserAlreadyOn;

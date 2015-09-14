@@ -331,7 +331,7 @@ void upload_reply_packet(void) {
   read_qwk_cfg(&qwk_cfg);
 
   if (!qwk_cfg.fu) {
-    qwk_cfg.fu = time(nullptr);
+    qwk_cfg.fu = static_cast<int32_t>(time(nullptr));
   }
 
   ++qwk_cfg.timesu;
@@ -428,7 +428,6 @@ char* make_text_file(int filenumber, long *size, int curpos, int blocks) {
 
 void qwk_email_text(char *text, long size, char *title, char *to) {
   int sy, un;
-  long thetime;
 
   strupr(to);
 
@@ -531,8 +530,7 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
     }
 
     msg.storage_type = EMAIL_STORAGE;
-
-    time(&thetime);
+    time_t thetime = time(nullptr);
 
     const char* nam1 = session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum);
     qwk_inmsg(text, size, &msg, "email", nam1, thetime);
@@ -546,7 +544,7 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
   }
 }
 
-void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, const char *name, long thetime) {
+void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, const char *name, time_t thetime) {
   char s[181];
   int oiia = iia;
   setiia(0);
@@ -716,7 +714,6 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
   int i, dm, f, done = 0, pass = 0;
   slrec ss;
-  long thetime;
   char user_name[101];
   uint8_t a;
 
@@ -855,7 +852,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     strcpy(user_name, nam1);
   }
 
-  time(&thetime);
+  time_t thetime = time(nullptr);
   qwk_inmsg(text, size, &m, subboards[session()->GetCurrentReadMessageArea()].filename, user_name, thetime);
 
   if (m.stored_as != 0xffffffff) {
@@ -893,7 +890,8 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
       p.qscan = pStatus->IncrementQScanPointer();
       application()->GetStatusManager()->CommitTransaction(pStatus);
     }
-    time((long *)(&p.daten));
+    time_t now = time(nullptr);
+    p.daten = static_cast<uint32_t>(now);
     if (session()->user()->data.restrict & restrict_validate) {
       p.status = status_unvalidated;
     } else {

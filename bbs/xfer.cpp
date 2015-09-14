@@ -38,7 +38,7 @@ using namespace wwiv::strings;
 static const int INDENTION = 24;
 
 int foundany;
-int this_date;
+uint32_t this_date;
 
 static int ed_num, ed_got;
 static ext_desc_rec *ed_info;
@@ -357,19 +357,22 @@ void dliscan_hash(int nDirectoryNum) {
       syscfg.datadir, directories[nDirectoryNum].filename);
   File file(dir);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    time((time_t *) & (session()->m_DirectoryDateCache[nDirectoryNum]));
+    time_t now = time(nullptr);
+    session()->m_DirectoryDateCache[nDirectoryNum] = static_cast<uint32_t>(now);
     return;
   }
   int nNumRecords = file.GetLength() / sizeof(uploadsrec);
   if (nNumRecords < 1) {
-    time((time_t *) & (session()->m_DirectoryDateCache[nDirectoryNum]));
+    time_t now = time(nullptr);
+    session()->m_DirectoryDateCache[nDirectoryNum] = static_cast<uint32_t>(now);
   } else {
     FileAreaSetRecord(file, 0);
     file.Read(&u, sizeof(uploadsrec));
     if (IsEquals(u.filename, "|MARKER|")) {
       session()->m_DirectoryDateCache[nDirectoryNum] = u.daten;
     } else {
-      time((time_t *) & (session()->m_DirectoryDateCache[nDirectoryNum]));
+      time_t now = time(nullptr);
+      session()->m_DirectoryDateCache[nDirectoryNum] = static_cast<uint32_t>(now);
     }
   }
   file.Close();
