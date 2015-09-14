@@ -310,7 +310,7 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   window->Puts("Decompressing archives.  Please wait");
   window->SetColor(SchemeId::NORMAL);
   if (File::Exists("en-menus.zip")) {
-    system("unzip -qq -o EN-menus.zip -dgfiles ");
+    system("unzip -qq -o en-menus.zip -dgfiles ");
     File::Rename("en-menus.zip", 
                  StringPrintf("dloads%csysop%cen-menus.zip",
                               File::pathSeparatorChar,
