@@ -17,6 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/file.h"
+// Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "bbs/wwiv_windows.h"
 
 #include <cerrno>
 #include <cstdint>
@@ -28,9 +30,6 @@
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"

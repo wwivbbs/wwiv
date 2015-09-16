@@ -95,8 +95,7 @@ void kill_old_email() {
           bout << "#" << m.tosys << " @" << m.tosys << wwiv::endl;
         }
         bout.bprintf("|#1Subj|#9: |#%d%60.60s\r\n", session()->GetMessageColor(), m.title);
-        time_t lCurrentTime;
-        time(&lCurrentTime);
+        time_t lCurrentTime = time(nullptr);
         int nDaysAgo = static_cast<int>((lCurrentTime - m.daten) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT);
         bout << "|#1Sent|#9: |#" << session()->GetMessageColor() << nDaysAgo << " days ago" << wwiv::endl;
         if (m.status & status_file) {

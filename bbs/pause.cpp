@@ -78,7 +78,7 @@ static char GetKeyForPause() {
 }
 // This will pause output, displaying the [PAUSE] message, and wait a key to be hit.
 void pausescr() {
-  int i1, i3, warned;
+  int i1, warned;
   int i = 0;
   char s[81];
   char ch;
@@ -140,7 +140,7 @@ void pausescr() {
         } else {
           if (ttotal > 180) {
             bputch(CG);
-            for (i3 = 0; i3 < i1; i3++) {
+            for (int i3 = 0; i3 < i1; i3++) {
               bputch(' ');
             }
             bout << "\x1b[" << i1 << "D";
@@ -154,7 +154,7 @@ void pausescr() {
       }
       ch = GetKeyForPause();
     } while (!ch && !hangup);
-    for (i3 = 0; i3 < i1; i3++) {
+    for (int i3 = 0; i3 < i1; i3++) {
       bputch(' ');
     }
     bout << "\x1b[" << i1 << "D";

@@ -285,7 +285,7 @@ void do_callout(int sn) {
   if (i != -1) {
     net_system_list_rec *csne = next_system(net_networks[session()->GetNetworkNumber()].con[i].sysnum);
     if (csne) {
-      sprintf(s, "network /N%u /A%s /P%s /S%u /T%ld",
+      sprintf(s, "network /N%u /A%s /P%s /S%u /T%lld",
               sn, (net_networks[session()->GetNetworkNumber()].con[i].options & options_sendback) ? "1" : "0",
               csne->phone, 0, tCurrentTime);
       if (net_networks[session()->GetNetworkNumber()].con[i].macnum) {
@@ -462,7 +462,7 @@ void attempt_callout() {
   if (last_time_c > tCurrentTime) {
     last_time_c = 0L;
   }
-  if (labs(last_time_c - tCurrentTime) < 120) {
+  if (abs(last_time_c - tCurrentTime) < 120) {
     return;
   }
   if (last_time_c == 0L) {
@@ -532,14 +532,14 @@ void attempt_callout() {
           }
         }
         if (con[i].options & options_once_per_day) {
-          if (labs(tCurrentTime - ncn[i2].lastcontactsent) <
+          if (abs(tCurrentTime - ncn[i2].lastcontactsent) <
               (20L * SECONDS_PER_HOUR / con[i].times_per_day)) {
             ok = false;
           }
         }
         if (ok) {
           if ((bytes_to_k(ncn[i2].bytes_waiting) < con[i].min_k)
-              && (labs(tCurrentTime - ncn[i2].lastcontact) < SECONDS_PER_DAY)) {
+              && (abs(tCurrentTime - ncn[i2].lastcontact) < SECONDS_PER_DAY)) {
             ok = false;
           }
         }
@@ -675,14 +675,14 @@ void print_pending_list() {
           strcpy(s2, "|#3---");
         }
 
-        int h = 0, m = 0;
+        time_t h = 0, m = 0;
         if (ncn[i2].lastcontactsent) {
           time_t tLastContactTime = tCurrentTime - ncn[i2].lastcontactsent;
-          int se = tLastContactTime % 60;
+          time_t se = tLastContactTime % 60;
           tLastContactTime = (tLastContactTime - se) / 60;
-          m = tLastContactTime % 60;
-          h = tLastContactTime / 60;
-          sprintf(s1, "|#2%02d:%02d:%02d", h, m, se);
+          m = static_cast<int32_t>(tLastContactTime % 60);
+          h = static_cast<int32_t>(tLastContactTime / 60);
+          sprintf(s1, "|#2%02lld:%02lld:%02lld", h, m, se);
         } else {
           strcpy(s1, "   |#6NEVER!    ");
         }
@@ -704,7 +704,7 @@ void print_pending_list() {
         if (m >= 30) {
           h++;
         }
-        i3 = ((con[i1].call_x_days * 24) - h - adjust);
+        i3 = ((con[i1].call_x_days * 24) - static_cast<int>(h) - adjust);
         if (m < 31) {
           h--;
         }
@@ -937,9 +937,9 @@ static void print_call(int sn, int nNetNumber, int i2) {
   session()->localIO()->LocalXYAPrintf(23, 18, color, "%-10.16s", s1);
 
   if (ncn[i2].firstcontact) {
-    sprintf(s1, "%ld:", (tCurrentTime - ncn[i2].firstcontact) / SECONDS_PER_HOUR);
+    sprintf(s1, "%ld:", static_cast<uint32_t>(tCurrentTime - ncn[i2].firstcontact) / SECONDS_PER_HOUR);
     time_t tTime = (((tCurrentTime - ncn[i2].firstcontact) % SECONDS_PER_HOUR) / 60);
-    sprintf(s, "%ld", tTime);
+    sprintf(s, "%lld", tTime);
     if (tTime < 10) {
       strcat(s1, "0");
       strcat(s1, s);
@@ -953,9 +953,9 @@ static void print_call(int sn, int nNetNumber, int i2) {
   session()->localIO()->LocalXYAPrintf(23, 16, color, "%-17.16s", s1);
 
   if (ncn[i2].lastcontactsent) {
-    sprintf(s1, "%ld:", (tCurrentTime - ncn[i2].lastcontactsent) / SECONDS_PER_HOUR);
+    sprintf(s1, "%ld:", static_cast<uint32_t>(tCurrentTime - ncn[i2].lastcontactsent) / SECONDS_PER_HOUR);
     time_t tTime = (((tCurrentTime - ncn[i2].lastcontactsent) % SECONDS_PER_HOUR) / 60);
-    sprintf(s, "%ld", tTime);
+    sprintf(s, "%lld", tTime);
     if (tTime < 10) {
       strcat(s1, "0");
       strcat(s1, s);
@@ -969,9 +969,9 @@ static void print_call(int sn, int nNetNumber, int i2) {
   session()->localIO()->LocalXYAPrintf(58, 16, color, "%-17.16s", s1);
 
   if (ncn[i2].lasttry) {
-    sprintf(s1, "%ld:", (tCurrentTime - ncn[i2].lasttry) / SECONDS_PER_HOUR);
+    sprintf(s1, "%ld:", static_cast<uint32_t>(tCurrentTime - ncn[i2].lasttry) / SECONDS_PER_HOUR);
     time_t tTime = (((tCurrentTime - ncn[i2].lasttry) % SECONDS_PER_HOUR) / 60);
-    sprintf(s, "%ld", tTime);
+    sprintf(s, "%lld", tTime);
     if (tTime < 10) {
       strcat(s1, "0");
       strcat(s1, s);

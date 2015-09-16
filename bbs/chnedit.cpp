@@ -71,6 +71,7 @@ void ShowChainCommandLineHelp() {
   bout << "|#1   %C    |#9 CHAIN.TXT full pathname \r\n";
   bout << "|#1   %D    |#9 DORIFOx.DEF full pathname \r\n";
   bout << "|#1   %E    |#9 DOOR32.SYS full pathname \r\n";
+  bout << "|#1   %H    |#9 Telnet Handle \r\n";
   bout << "|#1   %K    |#9 GFiles Comment File For Archives\r\n";
   bout << "|#1   %M    |#9 Modem Baud Rate\r\n";
   bout << "|#1   %N    |#9 Node (Instance) number\r\n";
@@ -85,7 +86,6 @@ void ShowChainCommandLineHelp() {
 void modify_chain(int nCurrentChainNumber) {
   chainregrec r;
   char s[255], s1[255], ch, ch2;
-  int i;
   memset(&r, 0, sizeof(chainregrec));
 
   chainfilerec c = chains[ nCurrentChainNumber ];
@@ -195,15 +195,15 @@ void modify_chain(int nCurrentChainNumber) {
         strcpy(c.filename, s);
       }
       break;
-    case 'C':
+    case 'C': {
       bout.nl();
       bout << "|#7New SL? ";
       input(s, 3, true);
-      i = atoi(s);
-      if ((i >= 0) && (i < 256) && (s[0])) {
-        c.sl = static_cast< unsigned char >(i);
+      int sl = atoi(s);
+      if ((sl >= 0) && (sl < 256) && (s[0])) {
+        c.sl = static_cast<unsigned char>(sl);
       }
-      break;
+    } break;
     case 'D':
       bout.nl();
       bout << "|#7New AR (<SPC>=None) ? ";
@@ -263,7 +263,7 @@ void modify_chain(int nCurrentChainNumber) {
       if (!application()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
         break;
       }
-      for (i = 0; i < 5; i++) {
+      for (int i = 0; i < 5; i++) {
         bout.nl();
         bout << "|#9(Q=Quit, 0=None) User name/number: : ";
         input(s1, 30, true);
@@ -277,8 +277,8 @@ void modify_chain(int nCurrentChainNumber) {
               application()->users()->ReadUser(&regUser, nUserNumber);
               r.regby[i] = static_cast< short >(nUserNumber);
               bout.nl();
-              bout << "|#1Registered by       |#2" << nUserNumber << " " << ((r.regby[i]) ? regUser.GetName() :
-                                 "AVAILABLE");
+              bout << "|#1Registered by       |#2" << nUserNumber << " " 
+                   << ((r.regby[i]) ? regUser.GetName() : "AVAILABLE");
             }
           }
         } else {
@@ -329,7 +329,6 @@ void modify_chain(int nCurrentChainNumber) {
 
 void insert_chain(int nCurrentChainNumber) {
   chainfilerec c;
-  chainregrec r;
 
   for (int i = session()->GetNumberOfChains() - 1; i >= nCurrentChainNumber; i--) {
     chains[i + 1] = chains[i];
@@ -346,6 +345,7 @@ void insert_chain(int nCurrentChainNumber) {
   c.ansir |= ansir_no_DOS;
   session()->SetNumberOfChains(session()->GetNumberOfChains() + 1);
   if (application()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
+    chainregrec r;
     memset(&r, 0, sizeof(r));
     r.maxage = 255;
     chains_reg[ nCurrentChainNumber ] = r;

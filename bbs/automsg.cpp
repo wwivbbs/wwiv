@@ -41,8 +41,8 @@ void write_automessage();
  */
 void read_automessage() {
   bout.nl();
-  unique_ptr<WStatus> status(application()->GetStatusManager()->GetStatus());
-  bool bAutoMessageAnonymous = status->IsAutoMessageAnonymous();
+  unique_ptr<WStatus> current_status(application()->GetStatusManager()->GetStatus());
+  bool bAutoMessageAnonymous = current_status->IsAutoMessageAnonymous();
 
   TextFile autoMessageFile(syscfg.gfilesdir, AUTO_MSG, "rt");
   string line;

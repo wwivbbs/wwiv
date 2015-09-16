@@ -17,6 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/textfile.h"
+// Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "bbs/wwiv_windows.h"
 
 #include <iostream>
 #include <cerrno>
@@ -33,8 +35,6 @@
 #ifdef _WIN32
 #include <io.h>
 #include <share.h>
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 
 #else  // _WIN32
 #include <sys/file.h>

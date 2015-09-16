@@ -593,7 +593,7 @@ bool inst_msg_waiting() {
   }
 
   long l = timer1();
-  if (labs(l - last_iia) < iia) {
+  if (abs(l - last_iia) < iia) {
     return false;
   }
 

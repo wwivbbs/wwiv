@@ -65,7 +65,7 @@ static int qwk_percent;
 static uint16_t max_msgs;
 
 // from xfer.cpp
-extern int this_date;
+extern uint32_t this_date;
 
 #ifndef _WIN32
 long filelength(int handle) {
@@ -116,7 +116,7 @@ void build_qwk_packet(void) {
   }
 
   if (!qwk_cfg.fu) {
-    qwk_cfg.fu = time(nullptr);
+    qwk_cfg.fu = static_cast<int32_t>(time(nullptr));
   }
 
   ++qwk_cfg.timesd;
@@ -371,9 +371,9 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
   if (p->qscan > qsc_p[session()->GetCurrentReadMessageArea()]) { // Update qscan pointer right here
     qsc_p[session()->GetCurrentReadMessageArea()] = p->qscan;  // And here
   }
-  WStatus* pStatus = application()->GetStatusManager()->GetStatus();
-  uint32_t lQScanPtr = pStatus->GetQScanPointer();
-  delete pStatus;
+  WStatus* pStatus1 = application()->GetStatusManager()->GetStatus();
+  uint32_t lQScanPtr = pStatus1->GetQScanPointer();
+  delete pStatus1;
   if (p->qscan >= lQScanPtr) {
     WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
     pStatus->SetQScanPointer(p->qscan + 1);
@@ -1068,7 +1068,7 @@ void write_qwk_cfg(struct qwk_config *qwk_cfg) {
   close(f);
 }
 
-int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub) {
+int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
   bout.cls();
   bout.nl();
   bout.Color(2);
@@ -1082,7 +1082,7 @@ int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub) {
     return 0;
   }
 
-  *max_msgs = static_cast<uint16_t>(atoi(temp)); 
+  *qwk_max_msgs = static_cast<uint16_t>(atoi(temp));
 
   bout.bprintf("Most messages you want per sub? ");
   bout.mpl(5);

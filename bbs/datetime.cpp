@@ -16,6 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+// Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "bbs/wwiv_windows.h"
+
 #include "bbs/datetime.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwiv.h"
