@@ -128,8 +128,8 @@ static int GetAnsiStatusAndShowWelcomeScreen(bool network_only) {
   bout << "All Rights Reserved." << wwiv::endl;
 
   int ans = check_ansi();
-  const string filename = StrCat(session()->language_dir, WELCOME_ANS);
-  if (File::Exists(filename)) {
+  const string ans_filename = StrCat(session()->language_dir, WELCOME_ANS);
+  if (File::Exists(ans_filename)) {
     bout.nl();
     if (ans > 0) {
       session()->user()->SetStatusFlag(WUser::ansi);
@@ -142,8 +142,8 @@ static int GetAnsiStatusAndShowWelcomeScreen(bool network_only) {
     }
   } else {
     if (ans) {
-      const string filename = StrCat(session()->language_dir.c_str(), WELCOME_NOEXT, ".0");
-      if (File::Exists(filename)) {
+      const string noext_filename = StrCat(session()->language_dir.c_str(), WELCOME_NOEXT, ".0");
+      if (File::Exists(noext_filename)) {
         random_screen(WELCOME_NOEXT);
       } else {
         printfile(WELCOME_MSG);
@@ -985,10 +985,12 @@ void logoff() {
   session()->user()->SetTimeOn(session()->user()->GetTimeOn() + static_cast<float>(dTimeOnNow));
   session()->user()->SetTimeOnToday(session()->user()->GetTimeOnToday() + static_cast<float>
       (dTimeOnNow - extratimecall));
-  WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
-  int nActiveToday = pStatus->GetMinutesActiveToday();
-  pStatus->SetMinutesActiveToday(nActiveToday + static_cast<unsigned short>(dTimeOnNow / MINUTES_PER_HOUR_FLOAT));
-  application()->GetStatusManager()->CommitTransaction(pStatus);
+  {
+    WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+    int nActiveToday = pStatus->GetMinutesActiveToday();
+    pStatus->SetMinutesActiveToday(nActiveToday + static_cast<unsigned short>(dTimeOnNow / MINUTES_PER_HOUR_FLOAT));
+    application()->GetStatusManager()->CommitTransaction(pStatus);
+  }
   if (g_flags & g_flag_scanned_files) {
     session()->user()->SetNewScanDateNumber(session()->user()->GetLastOnDateNumber());
   }

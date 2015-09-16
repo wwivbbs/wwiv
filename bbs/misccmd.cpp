@@ -141,11 +141,11 @@ void kill_old_email() {
           break;
         case 'D': {
           done1 = true;
-          unique_ptr<File> pFileEmail(OpenEmailFile(true));
-          pFileEmail->Seek(cur * sizeof(mailrec), File::seekBegin);
-          pFileEmail->Read(&m1, sizeof(mailrec));
+          unique_ptr<File> delete_email_file(OpenEmailFile(true));
+          delete_email_file->Seek(cur * sizeof(mailrec), File::seekBegin);
+          delete_email_file->Read(&m1, sizeof(mailrec));
           if (memcmp(&m, &m1, sizeof(mailrec)) == 0) {
-            delmail(pFileEmail.get(), cur);
+            delmail(delete_email_file.get(), cur);
             bool found = false;
             if (m.status & status_file) {
               File fileAttach(syscfg.datadir, ATTACH_DAT);
@@ -176,7 +176,7 @@ void kill_old_email() {
           } else {
             bout << "Mail file changed; try again.\r\n";
           }
-          pFileEmail->Close();
+          delete_email_file->Close();
         }
         break;
         case 'R': {

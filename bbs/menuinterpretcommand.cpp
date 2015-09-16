@@ -93,7 +93,7 @@ map<string, std::function<void(MenuInstanceData*, const string&, const string&)>
   return {
     { "MENU", [&](MenuInstanceData* menu_data, const string& param1, const string& param2) {
       unique_ptr<MenuInstanceData> new_menu(new MenuInstanceData{});
-      new_menu->Menus(menu_data->path, param1);
+      new_menu->Menus(menu_data->path_, param1);
     } },
     { "ReturnFromMenu", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       InterpretCommand(pMenuData, pMenuData->header.szExitScript);

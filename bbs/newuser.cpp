@@ -1443,7 +1443,7 @@ void DoMinimalNewUser() {
       bout << ", ";
       if (session()->user()->GetState()[0] == 0) {
         do {
-          bool ok = false;
+          ok = false;
           Input1(reinterpret_cast<char*>(session()->user()->data.state), s1, 2, true, InputMode::UPPER);
           if (session()->user()->GetState()[0]) {
             ok = true;

@@ -71,7 +71,7 @@ class Win32ConsoleIO : public LocalIO {
   virtual void LocalWriteScreenBuffer(const char *pszBuffer) override;
   virtual int  GetDefaultScreenBottom() override;
 
-  virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) override;
+  virtual void LocalEditLine(char *s, int len, int editor_status, int *returncode, char *ss) override;
   virtual void UpdateNativeTitleBar() override;
 
 private:

@@ -224,6 +224,7 @@ static void RunEventsIfNeeded() {
     attempt_callout();
   }
 }
+
 void ControlCenter::Initialize() {
   // Initialization steps that have to happen before we
   // have a functional WFC system. This also supposes that
