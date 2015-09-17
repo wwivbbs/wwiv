@@ -950,7 +950,7 @@ struct filestatusrec {
 #define SPAWNOPT_BEGINDAY       2
 #define SPAWNOPT_LOGON          3
 #define SPAWNOPT_ULCHK          4
-// SPAWNOPT[FSED] nolonger used.
+// SPAWNOPT[FSED] nolonger used. (5)
 #define SPAWNOPT_PROT_SINGLE    6
 #define SPAWNOPT_PROT_BATCH     7
 #define SPAWNOPT_CHAT           8
@@ -963,7 +963,7 @@ struct filestatusrec {
 #define SPAWNOPT_NET_CMD1       15
 #define SPAWNOPT_NET_CMD2       16
 #define SPAWNOPT_LOGOFF         17
-#define SPAWNOPT_V_SCAN         18
+// SPAWNOPT[V_SCAN] nolonger used. (18)
 #define SPAWNOPT_NETWORK        19
 
 

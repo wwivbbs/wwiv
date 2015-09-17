@@ -140,17 +140,17 @@ struct eventinfo_t {
   unsigned short eflags;
 };
 
-
+// See #defines SPAWNOPT_XXXX in vardec.h for these.
 static eventinfo_t eventinfo[] = {
   {"TIMED",         EFLAG_NONE},
-  {"NEWUSER",       0},
-  {"BEGINDAY",      0},
+  {"NEWUSER",       EFLAG_NONE },
+  {"BEGINDAY",      EFLAG_NONE },
   {"LOGON",         EFLAG_NONE},
   {"ULCHK",         EFLAG_NOHUP},
-  {"FSED",          EFLAG_FOSSIL},  // UNUSED
-  {"PROT_SINGLE",   0},
+  {"CHAT",          EFLAG_FOSSIL},  // UNUSED (5)
+  {"PROT_SINGLE",   EFLAG_NONE },
   {"PROT_BATCH",    EFLAG_NONE},
-  {"CHAT",          0},
+  {"CHAT",          EFLAG_NONE },
   {"ARCH_E",        EFLAG_NONE},
   {"ARCH_L",        EFLAG_NONE},
   {"ARCH_A",        EFLAG_NONE},
@@ -160,8 +160,8 @@ static eventinfo_t eventinfo[] = {
   {"NET_CMD1",      EFLAG_NONE},
   {"NET_CMD2",      EFLAG_NETPROG},
   {"LOGOFF",        EFLAG_NONE},
-  {"V_SCAN",        EFLAG_NONE},
-  {"NETWORK",       0},
+  {"",              EFLAG_NONE}, // UNUSED (18)
+  {"NETWORK",       EFLAG_NONE},
 };
 
 static const char *get_key_str(int n, const char *index = nullptr) {
