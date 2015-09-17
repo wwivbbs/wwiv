@@ -1101,13 +1101,21 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
           ctrld = 1;
         } else if (ctrld == 1) {
           if (ch >= '0' && ch <= '9') {
-            if ((10 - session()->user()->GetOptionalVal()) < (ch - '0')) {
-              ctrld = -1;
-            } else {
-              ctrld = 0;
-            }
-          } else {
-            ctrld = 0;
+	    if ( ch == '0' ) {
+	      ctrld = -1; // don't display
+	    } else {
+	      if (session()->user()->GetOptionalVal() == 0 ) {
+		ctrld = 0; // display
+	      } else {
+		if (10 - (session()->user()->GetOptionalVal()) < ( ch - '0' )) {
+		  ctrld = -1; // don't display
+		} else {
+		  ctrld = 0; // display
+		}
+	      }
+	    }
+	  } else {
+            ctrld = 0; // ctrl-d and non-numeric
           }
         } else {
           if (ch == ESC) {
