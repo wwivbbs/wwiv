@@ -65,9 +65,13 @@ static map<string, string> ParseArgs(int argc, char** argv) {
       args.emplace(delims[0].substr(2), value);
     } else if (starts_with(s, "/")) {
       char letter = std::toupper(s[1]);
-      const string key(1, letter);
-      const string value = s.substr(2);
-      args.emplace(key, value);
+      if (letter == '?') {
+        args.emplace("help", "");
+      } else {
+        const string key(1, letter);
+        const string value = s.substr(2);
+        args.emplace(key, value);
+      }
     } else if (starts_with(s, ".")) {
       const string key = "network_number";
       const string value = s.substr(1);
