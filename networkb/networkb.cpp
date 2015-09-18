@@ -168,11 +168,9 @@ int main(int argc, char** argv) {
     }
     BinkP binkp(c.get(), &bink_config, callouts, side, expected_remote_node, factory);
     binkp.Run();
-  } catch (const socket_error&) {
-    LOG << "ERROR: [networkb]: " << "\nStacktrace:\n";
-    LOG << stacktrace();
-  } catch (const exception&) {
-    LOG << "ERROR: [networkb]: " << "\nStacktrace:\n";
-    LOG << stacktrace();
+  } catch (const socket_error& e) {
+    LOG << "ERROR: [networkb]: " << e.what() << "\n";
+  } catch (const exception& e) {
+    LOG << "ERROR: [networkb]: " << e.what() << "\nStacktrace:\n" << stacktrace();
   }
 }
