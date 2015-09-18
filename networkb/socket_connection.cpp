@@ -196,11 +196,13 @@ unique_ptr<SocketConnection> Accept(int port) {
     throw socket_error("Unable to set nodelay mode on the socket.");
   }
 
+#ifdef WIN_XP_IS_LAME
   char ip[81];
   struct sockaddr_in* clientAddr = static_cast<struct sockaddr_in*>(
       get_in_addr(reinterpret_cast<struct sockaddr*>(&saddr)));
   inet_ntop(saddr.sin_family, clientAddr , ip, sizeof ip);
   LOG << "Received connection from: " << ip;
+#endif  // WIN_XP_IS_LAME
 
   return unique_ptr<SocketConnection>(new SocketConnection(s, "", port));
 }
