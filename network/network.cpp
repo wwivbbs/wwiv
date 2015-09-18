@@ -46,7 +46,7 @@ using namespace wwiv::stl;
 using namespace wwiv::os;
 
 static void ShowHelp() {
-  cout << "Usage: network [flags]" << endl
+  cout << "\nUsage: network [flags]" << endl
     << "Flags:" << endl
     << "/N####     Network node number to dial." << endl
     << ".####      Network number (as defined in INIT)" << endl
@@ -102,7 +102,12 @@ int main(int argc, char** argv) {
     map<string, string> args = ParseArgs(argc, argv);
 
     for (const auto& arg : args) {
-      LOG << "arg: --" << arg.first << "=" << arg.second;
+      if (!arg.second.empty()) {
+        LOG << "arg: --" << arg.first << "=" << arg.second;
+      }
+      else {
+        LOG << "arg: --" << arg.first;
+      }
       if (arg.first == "help") {
         ShowHelp();
         return 0;
