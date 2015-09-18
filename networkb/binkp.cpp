@@ -235,7 +235,7 @@ bool BinkP::process_frames(std::function<bool()> predicate, milliseconds d) {
         }
       }
     }
-  } catch (timeout_error ignored) {
+  } catch (timeout_error&) {
   }
   return true;
 }
@@ -528,7 +528,7 @@ BinkState BinkP::WaitEob() {
       }
       LOG << "       WaitEob: still waiting for M_EOB to be received. will wait up to "
           << (eob_retries * eob_wait_seconds) << " seconds.";
-    } catch (timeout_error e) {
+    } catch (timeout_error& e) {
       LOG << "       WaitEob: ERROR while waiting for more data: " << e.what();
     }
   }
@@ -713,12 +713,12 @@ void BinkP::Run() {
       }
       process_frames(milliseconds(100));
     }
-  } catch (socket_closed_error e) {
+  } catch (socket_closed_error&) {
     // The other end closed the socket before we did.
     LOG << "       connection was closed by the other side.";
-  } catch (socket_error e) {
-    LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what() << "\nStacktrace:\n";
-    LOG << stacktrace();
+  } catch (socket_error& e) {
+    LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what()
+        << "\nStacktrace:\n" << stacktrace();
   }
   LOG << "Before rename pending_files";
   rename_pending_files();

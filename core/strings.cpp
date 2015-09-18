@@ -142,7 +142,7 @@ static T StringToT(std::function<R(const string&)> f, const string& s) {
       return numeric_limits<T>::min();
     }
     return static_cast<T>(ret);
-  } catch (std::logic_error) {
+  } catch (std::logic_error&) {
     // Handle invalid_argument and out_of_range.
     return 0;
   }
