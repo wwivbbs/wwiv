@@ -86,8 +86,9 @@ void Logger::Init(int argc, char** argv) {
   time_t t = time(nullptr);
   string l(asctime(localtime(&t)));
   StringTrim(&l);
-  Logger() << filename << " version " << wwiv_version << beta_version << 
-      " (" << wwiv_date << ")" << " starting at " << l;
+  Logger() << filename << " version " << wwiv_version << beta_version
+           << " (" << wwiv_date << ")";
+   Logger() << filename << " starting at " << l;
 
   exit_filename = filename;
 }
