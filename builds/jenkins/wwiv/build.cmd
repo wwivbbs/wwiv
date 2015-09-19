@@ -142,6 +142,10 @@ copy /v/y %WINS%\qotd\Release\qotd.exe %WORKSPACE%\release\qotd.exe
 copy /v/y %WINS%\uu\Release\uu.exe %WORKSPACE%\release\uu.exe
 
 echo:
+echo * Copying WINS sample filesto staging area
+copy /v/y %WINS%\admin\* %WORKSPACE%\release\
+
+echo:
 echo * Copying INFOZIP files to staging area
 set INFOZIP=%WORKSPACE%\deps\infozip
 dir %INFOZIP%\unzip60\win32\vc8\unzip__Win32_Release\unzip.exe
