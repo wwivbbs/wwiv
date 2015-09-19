@@ -343,8 +343,6 @@ void printtitle_plus();
 int  first_file_pos();
 void print_searching(struct search_record * search_rec);
 int  listfiles_plus(int type);
-void drawfile(int filepos, int filenum);
-void undrawfile(int filepos, int filenum);
 int  lp_add_batch(const char *pszFileName, int dn, long fs);
 int  printinfo_plus(uploadsrec *pUploadRecord, int filenum, int marked, int LinesLeft,
                     struct search_record * search_rec);

@@ -260,14 +260,6 @@ int listfiles_plus(int type) {
   return nReturn;
 }
 
-
-void undrawfile(int filepos, int filenum) {
-  lines_listed = 0;
-  bout.GotoXY(4, filepos + first_file_pos());
-  bout.bprintf("|%2d%3d|#0", lp_config.file_num_color, filenum);
-}
-
-
 int lp_add_batch(const char *pszFileName, int dn, long fs) {
   double t;
 

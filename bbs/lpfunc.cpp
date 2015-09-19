@@ -39,10 +39,23 @@ bool lp_compare_strings_wh(char *raw, char *formula, unsigned *pos, int size);
 int  lp_get_token(char *formula, unsigned *pos);
 int  lp_get_value(char *raw, char *formula, unsigned *pos);
 
-
 // These are defined in listplus.cpp
 extern int bulk_move;
 extern bool ext_is_on;
+
+static void drawfile(int filepos, int filenum) {
+  lines_listed = 0;
+  bout.GotoXY(4, filepos + first_file_pos());
+  bout.SystemColor(lp_config.current_file_color);
+  bout.bprintf("%3d|#0", filenum);
+  bout.GotoXY(4, filepos + first_file_pos());
+}
+
+static void undrawfile(int filepos, int filenum) {
+  lines_listed = 0;
+  bout.GotoXY(4, filepos + first_file_pos());
+  bout.bprintf("|%2d%3d|#0", lp_config.file_num_color, filenum);
+}
 
 static void prep_menu_items(vector<string>* menu_items) {
   menu_items->push_back("Next");
@@ -570,16 +583,6 @@ TOGGLE_EXTENDED:
   free(file_recs);
   return (all_done) ? 1 : 0;
 }
-
-
-void drawfile(int filepos, int filenum) {
-  lines_listed = 0;
-  bout.GotoXY(4, filepos + first_file_pos());
-  bout.SystemColor(lp_config.current_file_color);
-  bout.bprintf("%3d|#0", filenum);
-  bout.GotoXY(4, filepos + first_file_pos());
-}
-
 
 int compare_criteria(struct search_record * sr, uploadsrec * ur) {
   // "        .   "
