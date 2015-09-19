@@ -191,7 +191,7 @@ void printtitle_plus() {
 
 static int lp_configured_lines() {
   return (config_listing.lp_options & cfl_date_uploaded || 
-          config_listing.lp_options & cfl_upby) ? 2 : 1;
+          config_listing.lp_options & cfl_upby) ? 3 : 2;
 }
 
 int first_file_pos() {

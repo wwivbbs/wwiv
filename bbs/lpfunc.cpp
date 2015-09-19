@@ -193,7 +193,7 @@ int listfiles_plus_function(int type) {
             fileDownload.Close();
             if (matches) {
               file_pos = save_file_pos;
-              drawfile(vert_pos[file_pos]-1, file_handle[file_pos]);
+              drawfile(vert_pos[file_pos], file_handle[file_pos]);
               bool redraw = true;
               save_file_pos = 0;
               bool menu_done = false;
@@ -229,22 +229,22 @@ int listfiles_plus_function(int type) {
                   save_file_pos = file_pos;
                   break;
                 case COMMAND_DOWN:
-                  undrawfile(vert_pos[file_pos]-1, file_handle[file_pos]);
+                  undrawfile(vert_pos[file_pos], file_handle[file_pos]);
                   ++file_pos;
                   if (file_pos >= matches) {
                     file_pos = 0;
                   }
-                  drawfile(vert_pos[file_pos]-1, file_handle[file_pos]);
+                  drawfile(vert_pos[file_pos], file_handle[file_pos]);
                   redraw = false;
                   break;
                 case COMMAND_UP:
-                  undrawfile(vert_pos[file_pos]-1, file_handle[file_pos]);
+                  undrawfile(vert_pos[file_pos], file_handle[file_pos]);
                   if (!file_pos) {
                     file_pos = matches - 1;
                   } else {
                     --file_pos;
                   }
-                  drawfile(vert_pos[file_pos]-1, file_handle[file_pos]);
+                  drawfile(vert_pos[file_pos], file_handle[file_pos]);
                   redraw = false;
                   break;
                 case SPACE:
@@ -333,12 +333,12 @@ ADD_OR_REMOVE_BATCH:
                       bout.GotoXY(1, first_file_pos() + vert_pos[file_pos] - 1);
                       bout.bprintf("|%2d %c ", lp_config.tagged_color,
                                                         check_batch_queue(file_recs[file_pos]->filename) ? '\xFE' : ' ');
-                      undrawfile(vert_pos[file_pos] - 1, file_handle[file_pos]);
+                      undrawfile(vert_pos[file_pos], file_handle[file_pos]);
                       ++file_pos;
                       if (file_pos >= matches) {
                         file_pos = 0;
                       }
-                      drawfile(vert_pos[file_pos] - 1, file_handle[file_pos]);
+                      drawfile(vert_pos[file_pos], file_handle[file_pos]);
                       redraw = false;
                     }
                     break;
