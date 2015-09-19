@@ -212,7 +212,8 @@ void print_searching(struct search_record * search_rec) {
     bout.nl(2);
   }
   bout << "|#9<Space> aborts  : ";
-  bout.bprintf(" |B1|15%-40.40s|B0|#0",
+  bout.cls();
+  bout.bprintf(" |B1|15%-40.40s|B0|#0\r",
                                     directories[udir[session()->GetCurrentFileArea()].subnum].name);
 }
 
