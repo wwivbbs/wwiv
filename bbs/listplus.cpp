@@ -191,7 +191,7 @@ void printtitle_plus() {
 
 static int lp_configured_lines() {
   return (config_listing.lp_options & cfl_date_uploaded || 
-          config_listing.lp_options & cfl_upby) ? 2 : 1;
+          config_listing.lp_options & cfl_upby) ? 3 : 2;
 }
 
 int first_file_pos() {
@@ -260,14 +260,6 @@ int listfiles_plus(int type) {
 
   return nReturn;
 }
-
-
-void undrawfile(int filepos, int filenum) {
-  lines_listed = 0;
-  bout.GotoXY(4, filepos + first_file_pos());
-  bout.bprintf("|%2d%3d|#0", lp_config.file_num_color, filenum);
-}
-
 
 int lp_add_batch(const char *pszFileName, int dn, long fs) {
   double t;

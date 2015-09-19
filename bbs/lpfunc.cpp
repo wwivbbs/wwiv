@@ -39,10 +39,23 @@ bool lp_compare_strings_wh(char *raw, char *formula, unsigned *pos, int size);
 int  lp_get_token(char *formula, unsigned *pos);
 int  lp_get_value(char *raw, char *formula, unsigned *pos);
 
-
 // These are defined in listplus.cpp
 extern int bulk_move;
 extern bool ext_is_on;
+
+static void drawfile(int filepos, int filenum) {
+  lines_listed = 0;
+  bout.GotoXY(4, filepos + first_file_pos());
+  bout.SystemColor(lp_config.current_file_color);
+  bout.bprintf("%3d|#0", filenum);
+  bout.GotoXY(4, filepos + first_file_pos());
+}
+
+static void undrawfile(int filepos, int filenum) {
+  lines_listed = 0;
+  bout.GotoXY(4, filepos + first_file_pos());
+  bout.bprintf("|%2d%3d|#0", lp_config.file_num_color, filenum);
+}
 
 static void prep_menu_items(vector<string>* menu_items) {
   menu_items->push_back("Next");
@@ -180,7 +193,7 @@ int listfiles_plus_function(int type) {
             fileDownload.Close();
             if (matches) {
               file_pos = save_file_pos;
-              drawfile(vert_pos[file_pos]-1, file_handle[file_pos]);
+              drawfile(vert_pos[file_pos], file_handle[file_pos]);
               bool redraw = true;
               save_file_pos = 0;
               bool menu_done = false;
@@ -216,22 +229,22 @@ int listfiles_plus_function(int type) {
                   save_file_pos = file_pos;
                   break;
                 case COMMAND_DOWN:
-                  undrawfile(vert_pos[file_pos]-1, file_handle[file_pos]);
+                  undrawfile(vert_pos[file_pos], file_handle[file_pos]);
                   ++file_pos;
                   if (file_pos >= matches) {
                     file_pos = 0;
                   }
-                  drawfile(vert_pos[file_pos]-1, file_handle[file_pos]);
+                  drawfile(vert_pos[file_pos], file_handle[file_pos]);
                   redraw = false;
                   break;
                 case COMMAND_UP:
-                  undrawfile(vert_pos[file_pos]-1, file_handle[file_pos]);
+                  undrawfile(vert_pos[file_pos], file_handle[file_pos]);
                   if (!file_pos) {
                     file_pos = matches - 1;
                   } else {
                     --file_pos;
                   }
-                  drawfile(vert_pos[file_pos]-1, file_handle[file_pos]);
+                  drawfile(vert_pos[file_pos], file_handle[file_pos]);
                   redraw = false;
                   break;
                 case SPACE:
@@ -320,12 +333,12 @@ ADD_OR_REMOVE_BATCH:
                       bout.GotoXY(1, first_file_pos() + vert_pos[file_pos] - 1);
                       bout.bprintf("|%2d %c ", lp_config.tagged_color,
                                                         check_batch_queue(file_recs[file_pos]->filename) ? '\xFE' : ' ');
-                      undrawfile(vert_pos[file_pos] - 1, file_handle[file_pos]);
+                      undrawfile(vert_pos[file_pos], file_handle[file_pos]);
                       ++file_pos;
                       if (file_pos >= matches) {
                         file_pos = 0;
                       }
-                      drawfile(vert_pos[file_pos] - 1, file_handle[file_pos]);
+                      drawfile(vert_pos[file_pos], file_handle[file_pos]);
                       redraw = false;
                     }
                     break;
@@ -570,16 +583,6 @@ TOGGLE_EXTENDED:
   free(file_recs);
   return (all_done) ? 1 : 0;
 }
-
-
-void drawfile(int filepos, int filenum) {
-  lines_listed = 0;
-  bout.GotoXY(4, filepos + first_file_pos());
-  bout.SystemColor(lp_config.current_file_color);
-  bout.bprintf("%3d|#0", filenum);
-  bout.GotoXY(4, filepos + first_file_pos());
-}
-
 
 int compare_criteria(struct search_record * sr, uploadsrec * ur) {
   // "        .   "

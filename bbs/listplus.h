@@ -51,7 +51,7 @@ extern int foundany;
 // This is the place the first file will be printed, which defaults to line
 // 3, if you modify the file listing header, this will need to be changed
 // depending on where the file will need to start after your modification
-#define FIRST_FILE_POS 4
+#define FIRST_FILE_POS 3
 
 // How far from the bottom that the side menu will be on the screen
 // This is used because of people who don't set there screenlines up correctly
