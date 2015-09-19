@@ -2174,7 +2174,7 @@ bool ok_listplus() {
   if (session()->user()->IsUseNoTagging()) {
     return false;
   }
-  if (session()->user()->IsUseListPlus()) {
+  if (!session()->user()->IsUseListPlus()) {
     return false;
   }
 #endif
