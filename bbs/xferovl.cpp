@@ -20,6 +20,7 @@
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
+#include "bbs/listplus.h"
 #include "bbs/wwiv.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
@@ -1186,6 +1187,7 @@ void xfer_defaults() {
                        YesNoString(session()->user()->IsNewScanFiles()) << ").\r\n";
     bout << "|#7[|#24|#7]|#1 Number of lines of extended description to print [" <<
                        session()->user()->GetNumExtended() << " line(s)].\r\n";
+#ifndef FORCE_LP
     bout << "|#7[|#25|#7]|#1 File tagging (";
     if (session()->user()->IsUseNoTagging()) {
       bout << "Disabled)\r\n";
@@ -1197,9 +1199,13 @@ void xfer_defaults() {
     } else if (!session()->user()->IsUseNoTagging()) {
       bout << " - Internal Tagging)\r\n";
     }
+    const std::string onek_options = "Q1234";
+#else  // FORCE_LP
+    const std::string onek_options = "Q12345";
+#endif  // FORCE_LP
     bout << "|#7[|#2Q|#7]|#1 Quit.\r\n\n";
     bout << "|#5Which? ";
-    ch = onek("Q12345");
+    ch = onek(onek_options.c_str());
     switch (ch) {
     case 'Q':
       done = true;
@@ -1232,6 +1238,7 @@ void xfer_defaults() {
         }
       }
       break;
+#ifndef FORCE_LP
     case '5':
       if (session()->user()->IsUseNoTagging()) {
         session()->user()->ClearStatusFlag(WUser::noTag);
@@ -1240,6 +1247,7 @@ void xfer_defaults() {
         session()->user()->SetStatusFlag(WUser::noTag);
       }
       break;
+#endif  // FORCE_LP
     }
   } while (!done && !hangup);
 }
