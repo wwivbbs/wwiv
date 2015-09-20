@@ -2,9 +2,8 @@
 @rem WWIV 5.0 Build Script.
 @rem
 @rem Required Variables:
-@rem WORKSPACE - wwiv-svn root directory
+@rem WORKSPACE - git root directory
 @rem BUILD_NUMBER - Jenkins Build number
-@rem SVN_REVISION - subversion build number
 @rem TEXT_TRANSFORM - path to text transform tool from visual studio
 @rem
 @rem Installed Software:
