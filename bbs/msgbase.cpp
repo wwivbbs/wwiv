@@ -368,12 +368,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
     return false;
   }
   char *ss = static_cast<char*>(BbsAllocA(static_cast<long>(syscfg.maxusers) + 300L));
-  if (ss == nullptr) {
-    return false;
-  }
-  for (int i = 0; i < syscfg.maxusers + 300; i++) {
-    ss[i] = '\0';
-  }
+
   ss[*pUserNumber] = 1;
   application()->users()->ReadUser(&userRecord, nCurrentUser);
   while (userRecord.GetForwardUserNumber() || userRecord.GetForwardSystemNumber()) {
