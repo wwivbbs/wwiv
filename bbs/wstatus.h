@@ -71,7 +71,7 @@ class WStatus {
   const unsigned short GetNumLocalPosts() const {
     return m_pStatusRecord->localposts;
   }
-  const int  IncrementNumLocalPosts() {
+  const int IncrementNumLocalPosts() {
     return m_pStatusRecord->localposts++;
   }
   void SetNumLocalPosts(int n) {
@@ -161,13 +161,13 @@ class WStatus {
     m_pStatusRecord->activetoday = static_cast<unsigned short>(n);
   }
 
-  const unsigned long GetQScanPointer() const {
+  const uint32_t GetQScanPointer() const {
     return m_pStatusRecord->qscanptr;
   }
-  const unsigned long IncrementQScanPointer() {
+  const uint32_t IncrementQScanPointer() {
     return m_pStatusRecord->qscanptr++;
   }
-  void SetQScanPointer(unsigned long l) {
+  void SetQScanPointer(uint32_t l) {
     m_pStatusRecord->qscanptr = l;
   }
 

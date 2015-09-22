@@ -994,7 +994,7 @@ static void print_call(int sn, int nNetNumber, int i2) {
   session()->localIO()->LocalXYAPrintf(14, 3, color, "%-11.16s", session()->GetNetworkName());
 }
 
-static void fill_call(int color, int row, int netmax, int *nodenum) {
+static void fill_call(int color, int row, int netmax, std::map<int, int>& nodenum) {
   int i, x = 0, y = 0;
   char s1[6];
 
@@ -1043,9 +1043,9 @@ static int ansicallout() {
   }
 
   if (callout_ansi) {
-    unique_ptr<int[]> nodenum(new int[MAX_CONNECTS]);
-    unique_ptr<int[]> netpos(new int[MAX_CONNECTS]);
-    unique_ptr<int[]> ipos(new int[MAX_CONNECTS]);
+    std::map<int, int> nodenum;
+    std::map<int, int> netpos;
+    std::map<int, int> ipos;
     for (nNetNumber = 0; nNetNumber < session()->GetMaxNetworkNumber(); nNetNumber++) {
       set_net_num(nNetNumber);
       read_call_out_list();
@@ -1091,10 +1091,11 @@ static int ansicallout() {
     session()->localIO()->LocalXYAPrintf(40, 18, color3, "Max Speed       :");
     session()->localIO()->LocalXYAPrintf(40, 19, color3, "System Location :");
 
-    fill_call(color4, rownum, netnum, nodenum.get());
+    fill_call(color4, rownum, netnum, nodenum);
     curatr = color2;
     x = 0;
     y = 0;
+    int node_number = nodenum[pos];
     session()->localIO()->LocalXYAPrintf(6, 5, color2, "%-5u", nodenum[pos]);
     print_call(nodenum[pos], netpos[pos], ipos[pos]);
 
@@ -1146,7 +1147,7 @@ static int ansicallout() {
           } else if (rownum > 0) {
             pos -= 10;
             rownum--;
-            fill_call(color4, rownum, netnum, nodenum.get());
+            fill_call(color4, rownum, netnum, nodenum);
             session()->localIO()->LocalXYAPrintf(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
             print_call(nodenum[pos], netpos[pos], ipos[pos]);
           }
@@ -1158,7 +1159,7 @@ static int ansicallout() {
             y++;
           } else if ((rownum + 6) * 10 < netnum) {
             rownum++;
-            fill_call(color4, rownum, netnum, nodenum.get());
+            fill_call(color4, rownum, netnum, nodenum);
             if (pos + 10 < netnum) {
               pos += 10;
             } else {
@@ -1175,7 +1176,7 @@ static int ansicallout() {
             y = 0;
             pos = 0;
             rownum = 0;
-            fill_call(color4, rownum, netnum, nodenum.get());
+            fill_call(color4, rownum, netnum, nodenum);
             session()->localIO()->LocalXYAPrintf(6, 5, color2, "%-5u", nodenum[pos]);
             print_call(nodenum[pos], netpos[pos], ipos[pos]);
           }
@@ -1194,7 +1195,7 @@ static int ansicallout() {
               pos -= 10 * rownum;
               rownum = 0;
             }
-            fill_call(color4, rownum, netnum, nodenum.get());
+            fill_call(color4, rownum, netnum, nodenum);
             session()->localIO()->LocalXYAPrintf(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
             print_call(nodenum[pos], netpos[pos], ipos[pos]);
           }
@@ -1217,7 +1218,7 @@ static int ansicallout() {
                 pos += 10;
               }
             }
-            fill_call(color4, rownum, netnum, nodenum.get());
+            fill_call(color4, rownum, netnum, nodenum);
             if (pos >= netnum) {
               pos -= 10;
               --y;

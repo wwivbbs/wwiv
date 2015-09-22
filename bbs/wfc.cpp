@@ -298,6 +298,8 @@ void ControlCenter::Run() {
     case 'Y': wfc_command(INST_LOC_WFC, view_yesterday_sysop_log_f); break;
     case 'Z': wfc_command(INST_LOC_WFC, zlog, getkey_f); break;
     case 'Q': done=true; break;
+    // ansicallout doesn't work due to arrow keys and other drawing problems with it under curses.
+    // case '/': wfc_command(INST_LOC_NET, []() { force_callout(0); }); log_->Put("Ran Network Callout"); break;
     case ' ': log_->Put("Not Implemented Yet"); break; 
     }
     TouchAll();
