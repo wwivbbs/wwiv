@@ -69,6 +69,7 @@ static std::map<int, AnsiColor> CreateAnsiScheme() {
   scheme[14] = AnsiColor(COLOR_YELLOW, COLOR_BLACK, true);
   scheme[15] = AnsiColor(COLOR_WHITE, COLOR_BLACK, true);
   // TODO(rushfan): Set this correctly.
+  scheme[30] = AnsiColor(COLOR_YELLOW, COLOR_BLUE, true);
   scheme[31] = AnsiColor(COLOR_WHITE, COLOR_BLUE, true);
 
   // Create the color pairs for each of the colors defined in the color scheme.
