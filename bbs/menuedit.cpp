@@ -375,7 +375,7 @@ static bool EditMenuItem(MenuRec* menu, File &fileEditMenu, int& nAmount, int& n
 }
 
 static bool GetMenuDir(string* menuName) {
-  wwiv::core::ScopeExit on_exit([=] { application()->CdHome(); });
+  wwiv::core::ScopeExit on_exit([] { application()->CdHome(); });
   ListMenuDirs();
   while (!hangup) {
     bout.nl();
