@@ -25,7 +25,7 @@
  * @param lNumBytes Number of bytes to allocate
  */
 void *BbsAllocA(size_t lNumBytes) {
-  void* pBuffer = calloc(lNumBytes + 1);
+  void* pBuffer = calloc(lNumBytes + 1, 1);
   WWIV_ASSERT(pBuffer);
   return pBuffer;
 }

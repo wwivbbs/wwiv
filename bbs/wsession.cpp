@@ -32,7 +32,7 @@ using std::string;
 WOutStream bout;
 
 WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app), 
-    m_bLastKeyLocal(true), m_nEffectiveSl(0), m_DirectoryDateCache(0), m_SubDateCache(0),
+    last_key_local_(true), effective_sl_(0), m_DirectoryDateCache(0), m_SubDateCache(0),
     m_nTopScreenColor(0), m_nUserEditorColor(0), m_nEditLineColor(0), 
     m_nChatNameSelectionColor(0), m_nMessageColor(0), mail_who_field_len(0),
     max_batch(0), max_extend_lines(0), max_chains(0), max_gfilesec(0), screen_saver_time(0),
