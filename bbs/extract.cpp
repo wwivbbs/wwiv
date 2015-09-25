@@ -141,11 +141,13 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
   } while (!hangup && s2[0] == '\0' && !quit);
 
   if (!quit && !hangup) {
-    File file(szFileName);
-    file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-    file.Seek(0L, File::seekEnd);
-    file.Write(b, len);
-    file.Close();
+    {
+      File file(szFileName);
+      file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
+      file.Seek(0L, File::seekEnd);
+      file.Write(b, len);
+      file.Close();
+    }
     bout << "Message written to: " << szFileName << wwiv::endl;
     sprintf(strip_cmd, "STRIPNET.EXE %s", szFileName);
     ExecuteExternalProgram(strip_cmd, EFLAG_NONE);

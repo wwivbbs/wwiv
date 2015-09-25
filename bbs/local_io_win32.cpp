@@ -1110,7 +1110,8 @@ static int GetEditLineStringLength(const char *pszText) {
   return i;
 }
 
-void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int status, int *returncode, char *pszAllowedSet) {
+void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_status,
+    int *returncode, char *pszAllowedSet) {
   WWIV_ASSERT(pszInOutText);
   WWIV_ASSERT(pszAllowedSet);
 
@@ -1166,12 +1167,12 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int status, int 
         *returncode = NEXT;
         break;
       case INSERT:
-        if (status != SET) {
+        if (editor_status != SET) {
           insert = !insert;
         }
         break;
       case KEY_DELETE:
-        if (status != SET) {
+        if (editor_status != SET) {
           for (int i = pos; i < len; i++) {
             pszInOutText[ i ] = pszInOutText[ i + 1 ];
           }
@@ -1183,10 +1184,10 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int status, int 
       }
     } else {
       if (ch > 31) {
-        if (status == UPPER_ONLY) {
+        if (editor_status == UPPER_ONLY) {
           ch = wwiv::UpperCase<unsigned char>(ch);
         }
-        if (status == SET) {
+        if (editor_status == SET) {
           ch = wwiv::UpperCase<unsigned char>(ch);
           if (ch != SPACE) {
             bool bLookingForSpace = true;
@@ -1207,8 +1208,8 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int status, int 
             }
           }
         }
-        if ((pos < len) && ((status == ALL) || (status == UPPER_ONLY) || (status == SET) ||
-                            ((status == NUM_ONLY) && (((ch >= '0') && (ch <= '9')) || (ch == SPACE))))) {
+        if ((pos < len) && ((editor_status == ALL) || (editor_status == UPPER_ONLY) || (editor_status == SET) ||
+                            ((editor_status == NUM_ONLY) && (((ch >= '0') && (ch <= '9')) || (ch == SPACE))))) {
           if (insert) {
             for (int i = len - 1; i > pos; i--) {
               pszInOutText[i] = pszInOutText[i - 1];

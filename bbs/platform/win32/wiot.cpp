@@ -79,16 +79,28 @@ bool WIOTelnet::open() {
   SetRemoteAddress(address);
 
   { 
-    char s[3] = { WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT, WIOTelnet::TELNET_OPTION_ECHO };
-    write(s, 3, true);
+    unsigned char s[3] = {
+        WIOTelnet::TELNET_OPTION_IAC,
+        WIOTelnet::TELNET_OPTION_DONT,
+        WIOTelnet::TELNET_OPTION_ECHO
+    };
+    write(reinterpret_cast<char*>(s), 3, true);
   }
   { 
-    char s[3] = { WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_WILL, WIOTelnet::TELNET_OPTION_ECHO };
-    write(s, 3, true);
+    unsigned char s[3] = {
+        WIOTelnet::TELNET_OPTION_IAC,
+        WIOTelnet::TELNET_OPTION_WILL,
+        WIOTelnet::TELNET_OPTION_ECHO
+    };
+    write(reinterpret_cast<char*>(s), 3, true);
   }
   { 
-    char s[3] = { WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT, WIOTelnet::TELNET_OPTION_LINEMODE };
-    write(s, 3, true);
+    unsigned char s[3] = { 
+        WIOTelnet::TELNET_OPTION_IAC,
+        WIOTelnet::TELNET_OPTION_DONT,
+        WIOTelnet::TELNET_OPTION_LINEMODE 
+    };
+    write(reinterpret_cast<char*>(s), 3, true);
   }
 
   return true;
@@ -110,13 +122,14 @@ unsigned int WIOTelnet::put(unsigned char ch) {
 #endif // _DEBUG
     return 0;
   }
-  char szBuffer[3] = { ch, 0, 0 };
+  unsigned char szBuffer[3] = { ch, 0, 0 };
   if (ch == TELNET_OPTION_IAC) {
     szBuffer[1] = static_cast<char>(ch);
   }
 
   for (;;) {
-    int nRet = send(socket_, szBuffer, strlen(szBuffer), 0);
+    int nRet = send(socket_, reinterpret_cast<char*>(szBuffer),
+        strlen(reinterpret_cast<char*>(szBuffer)), 0);
     if (nRet == SOCKET_ERROR) {
       if (WSAGetLastError() != WSAEWOULDBLOCK) {
         if (WSAGetLastError() != WSAENOTSOCK) {
@@ -339,7 +352,7 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid) {
       bDone = true;
       break;
     }
-    int nRet = WSAEnumNetworkEvents(socket_, hEvent, &events);
+    nRet = WSAEnumNetworkEvents(socket_, hEvent, &events);
     if (nRet == SOCKET_ERROR) {
       bDone = true;
       break;
