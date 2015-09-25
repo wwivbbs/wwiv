@@ -844,7 +844,7 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
                   pSession->user()->GetNote(),
                   pSession->user()->GetGender(),
                   pSession->user()->GetAge(),
-                  ctypes(pSession->user()->GetComputerType()), fwaiting);
+                  ctypes(pSession->user()->GetComputerType()).c_str(), fwaiting);
 
     if (chatcall) {
       LocalXYPuts(0, 4, m_chatReason);

@@ -443,7 +443,7 @@ void input_comptype() {
     bout.nl();
     bout << "Known computer types:\r\n\n";
     int i = 0;
-    for (i = 1; ctypes(i); i++) {
+    for (i = 1; !ctypes(i).empty(); i++) {
       bout << i << ". " << ctypes(i) << wwiv::endl;
     }
     bout.nl();
@@ -989,7 +989,7 @@ void WriteNewUserInfoToSysopLog() {
             session()->user()->GetBirthdayMonth(), session()->user()->GetBirthdayDay(),
             session()->user()->GetBirthdayYear(), session()->user()->GetAge(),
             ((session()->user()->GetGender() == 'M') ? "Male" : "Female"));
-  sysoplogf("-> Using a %s Computer", ctypes(session()->user()->GetComputerType()));
+  sysoplogf("-> Using a %s Computer", ctypes(session()->user()->GetComputerType()).c_str());
   if (session()->user()->GetWWIVRegNumber()) {
     sysoplogf("-> WWIV Registration # %ld", session()->user()->GetWWIVRegNumber());
   }

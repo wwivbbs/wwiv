@@ -77,10 +77,10 @@ class WIOTelnet : public WComm {
 
  private:
   void HandleTelnetIAC(unsigned char nCmd, unsigned char nParam);
-  void AddStringToInputBuffer(int nStart, int nEnd, char *pszBuffer);
+  void AddStringToInputBuffer(int nStart, int nEnd, char* pszBuffer);
 
  private:
-  static void InboundTelnetProc(void *pTelnet);
+  static void InboundTelnetProc(void* pTelnet);
 
  protected:
   std::queue<char> queue_;

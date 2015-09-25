@@ -414,7 +414,8 @@ bool sysop2() {
 // defined computer type, else returns 0.
 bool checkcomp(const char *pszComputerType) {
   WWIV_ASSERT(pszComputerType);
-  return strstr(ctypes(session()->user()->GetComputerType()), pszComputerType) ? true : false;
+  const string ctype = ctypes(session()->user()->GetComputerType());
+  return strstr(ctype.c_str(), pszComputerType) ? true : false;
 }
 
 

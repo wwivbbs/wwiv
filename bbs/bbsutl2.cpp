@@ -50,9 +50,7 @@ void repeat_char(char x, int amount, int nColor) {
  *
  * @return The text describing computer type num
  */
-const char *ctypes(int num) {
-  static char szCtype[81];
-
+std::string ctypes(int num) {
   // The default list of computer types
   static const vector<string> default_ctypes{
     "IBM PC (8088)",
@@ -74,15 +72,14 @@ const char *ctypes(int num) {
     const string comptype = StringPrintf("COMP_TYPE[%d]", num + 1);
     const char *ss = iniFile.GetValue(comptype.c_str());
     if (ss && *ss) {
-      strcpy(szCtype, ss);
-      return szCtype;
+      return std::string(ss);
     }
-    return nullptr;
+    return "";
   }
   if ((num < 0) || (num > static_cast<int>(default_ctypes.size()))) {
-    return nullptr;
+    return "";
   }
-  return default_ctypes[num].c_str();
+  return default_ctypes[num];
 }
 
 

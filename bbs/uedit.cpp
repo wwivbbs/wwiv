@@ -136,8 +136,9 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
                                     pUser->GetBirthdayMonth(), pUser->GetBirthdayDay(),
                                     pUser->GetBirthdayYear(), pUser->GetAge(), pUser->GetGender());
 
-  bout << "|#2M|#9) Comp         : |#1" << (pUser->GetComputerType() == -1 ? "Waiting for answer" : ctypes(
-                       pUser->GetComputerType())) << wwiv::endl;
+  bout << "|#2M|#9) Comp         : |#1"
+       << (pUser->GetComputerType() == -1 ? "Waiting for answer" : ctypes(pUser->GetComputerType()))
+       << wwiv::endl;
   if (pUser->GetForwardUserNumber() != 0) {
     bout << "|#9   Forwarded To : |#1";
     if (pUser->GetForwardSystemNumber() != 0) {
@@ -613,7 +614,7 @@ void uedit(int usern, int other) {
         int nNumCompTypes = 0;
         bout.nl();
         bout << "Known computer types:\r\n\n";
-        for (int nCurCompType = 0; ctypes(nCurCompType); nCurCompType++) {
+        for (int nCurCompType = 0; !ctypes(nCurCompType).empty(); nCurCompType++) {
           bout << nCurCompType << ". " << ctypes(nCurCompType) << wwiv::endl;
           nNumCompTypes++;
         }

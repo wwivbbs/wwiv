@@ -116,7 +116,7 @@ std::string describe_area_code_prefix(int nAreaCode, int town);
 // File: bbsutl2.cpp
 
 void repeat_char(char x, int amount, int nColor = 7);
-const char *ctypes(int num);
+std::string ctypes(int num);
 void osan(const std::string& text, bool *abort, bool *next);
 void plan(int nWWIVColor, const std::string& text, bool *abort, bool *next);
 std::string strip_to_node(const std::string& txt);
