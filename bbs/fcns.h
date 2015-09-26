@@ -404,10 +404,7 @@ void newuser();
 void pausescr();
 
 // File: quote.cpp
-
-void grab_quotes(messagerec * m, const char *aux);
-void auto_quote(char *org, long len, int type, time_t tDateTime);
-void get_quote(int fsed);
+#include "bbs/quote.h"
 
 
 // File: readmail.cpp

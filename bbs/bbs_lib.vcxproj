@@ -133,6 +133,7 @@
     <ClInclude Include="prot\xmodem.h" />
     <ClInclude Include="prot\zmodem.h" />
     <ClInclude Include="qscan.h" />
+    <ClInclude Include="quote.h" />
     <ClInclude Include="qwk.h" />
     <ClInclude Include="runnable.h" />
     <ClInclude Include="subxtr.h" />
