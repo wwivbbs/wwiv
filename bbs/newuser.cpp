@@ -599,7 +599,7 @@ void input_ansistat() {
   }
 }
 
-static int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
+static int find_new_usernum(const WUser* pUser, uint32_t* qscn) {
   File userFile(syscfg.datadir, USER_LST);
   for (int i = 0; !userFile.IsOpen() && (i < 20); i++) {
     if (!userFile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
@@ -638,7 +638,7 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
         userFile.Seek(static_cast<long>(nUserNumber * syscfg.userreclen), File::seekBegin);
         userFile.Write(&pUser->data, syscfg.userreclen);
         userFile.Close();
-        write_qscn(nUserNumber, qsc, false);
+        write_qscn(nUserNumber, qscn, false);
         InsertSmallRecord(nUserNumber, pUser->GetName());
         return nUserNumber;
       } else {
@@ -651,7 +651,7 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
     userFile.Seek(static_cast<long>(nUserNumber * syscfg.userreclen), File::seekBegin);
     userFile.Write(&pUser->data, syscfg.userreclen);
     userFile.Close();
-    write_qscn(nUserNumber, qsc, false);
+    write_qscn(nUserNumber, qscn, false);
     InsertSmallRecord(nUserNumber, pUser->GetName());
     return nUserNumber;
   } else {

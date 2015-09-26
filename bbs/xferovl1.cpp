@@ -49,7 +49,7 @@ static const unsigned char *invalid_chars =
 using wwiv::bbs::TempDisablePause;
 using namespace wwiv::strings;
 
-void modify_extended_description(char **sss, const char *dest, const char *title) {
+void modify_extended_description(char **sss, const char *dest) {
   char s[255], s1[255];
   int i, i2;
 

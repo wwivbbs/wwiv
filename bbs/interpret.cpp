@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/interpret.h"
 
 #include "bbs/wwiv.h"
 #include "bbs/datetime.h"

@@ -20,6 +20,7 @@
 
 #include "bbs/datetime.h"
 #include "bbs/input.h"
+#include "bbs/interpret.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwiv.h"
 #include "core/strings.h"

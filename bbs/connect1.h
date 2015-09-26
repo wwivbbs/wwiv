@@ -14,38 +14,20 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
+#ifndef __INCLUDED_BBS_CONNECT1_H__
+#define __INCLUDED_BBS_CONNECT1_H__
 
-#include "bbs/bbs.h"
-#include "bbs/sysoplog.h"
-#include "bbs/vars.h"
-#include "bbs/wconstants.h"
-#include "bbs/wuser.h"
-#include "bbs/wsession.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "core/wwivport.h"
-#include "sdk/filenames.h"
+#include "sdk/net.h"
 
-/*
-* Checks status of given userrec to see if conferencing is turned on.
-*/
-bool okconf(WUser *pUser) {
-  if (g_flags & g_flag_disable_conf) {
-    return false;
-  }
+void zap_call_out_list();
+void read_call_out_list();
+void zap_bbs_list();
+void read_bbs_list_index();
+bool valid_system(int ts);
+net_system_list_rec *next_system(int ts);
+void zap_contacts();
+void read_contacts();
+void set_net_num(int nNetworkNumber);
 
-  return pUser->HasStatusFlag(WUser::conference);
-}
-
-
-
-void add_ass(int nNumPoints, const char *pszReason) {
-  sysoplog("***");
-  sysoplogf("*** ASS-PTS: %d, Reason: [%s]", nNumPoints, pszReason);
-  session()->user()->IncrementAssPoints(nNumPoints);
-}
-
-
-
+#endif  // __INCLUDED_BBS_CONNECT1_H__

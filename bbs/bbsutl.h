@@ -14,38 +14,31 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-
-#include "bbs/bbs.h"
-#include "bbs/sysoplog.h"
-#include "bbs/vars.h"
-#include "bbs/wconstants.h"
-#include "bbs/wuser.h"
-#include "bbs/wsession.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "core/wwivport.h"
-#include "sdk/filenames.h"
-
-/*
-* Checks status of given userrec to see if conferencing is turned on.
-*/
-bool okconf(WUser *pUser) {
-  if (g_flags & g_flag_disable_conf) {
-    return false;
-  }
-
-  return pUser->HasStatusFlag(WUser::conference);
-}
+#ifndef __INCLUDED_BBS_BBSUTL_H__
+#define __INCLUDED_BBS_BBSUTL_H__
 
 
+bool inli(std::string* outBuffer, std::string* rollOver, std::string::size_type nMaxLen, bool bAddCRLF = true,
+  bool bAllowPrevious = false, bool bTwoColorChatMode = false, bool clear_previous_line = false);
+bool inli(char *pszBuffer, char *pszRollover, std::string::size_type nMaxLen, bool bAddCRLF = true,
+  bool bAllowPrevious = false, bool bTwoColorChatMode = false, bool clear_previous_line = false);
+bool so();
+bool cs();
+bool lcs();
+bool checka();
+bool checka(bool *abort);
+bool checka(bool *abort, bool *next);
+void pla(const std::string& text, bool *abort);
+void plal(const std::string& text, std::string::size_type limit, bool *abort);
+bool sysop2();
+bool checkcomp(const char *pszComputerType);
+int  check_ansi();
+bool set_language_1(int n);
+bool set_language(int n);
+// todo(rush): make this a C++11 enum
+char *mmkey(int dl, int area = 0 /* mmkeyNoArea */, bool bListOption = false);
+const char *YesNoString(bool bYesNo);
 
-void add_ass(int nNumPoints, const char *pszReason) {
-  sysoplog("***");
-  sysoplogf("*** ASS-PTS: %d, Reason: [%s]", nNumPoints, pszReason);
-  session()->user()->IncrementAssPoints(nNumPoints);
-}
 
-
-
+#endif  // __INCLUDED_BBS_BBSUTL_H__

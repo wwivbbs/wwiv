@@ -518,8 +518,8 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
     this_pos = ((cur_block - 2) * sizeof(qwk_info->qwk_rec));
 
     if (this_pos < len) {
-      memmove(&qwk_info->qwk_rec, ss.get() + cur + this_pos, this_pos + sizeof(qwk_info->qwk_rec) > len
-              ? (int)len - this_pos - 1 : sizeof(qwk_info->qwk_rec));
+      size_t size = (this_pos + sizeof(qwk_info->qwk_rec) > static_cast<size_t>(len)) ? (len - this_pos - 1) : sizeof(qwk_info->qwk_rec);
+      memmove(&qwk_info->qwk_rec, ss.get() + cur + this_pos, size);
     }
     // Save this block
     append_block(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec));

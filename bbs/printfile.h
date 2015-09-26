@@ -21,6 +21,7 @@
 
 #include <string>
 
+char *get_file(const std::string& filename, long *len);
 const std::string CreateFullPathToPrint(const std::string& basename);
 void print_local_file(const std::string& filename);
 bool printfile(const std::string& filename, bool bAbortable = true, bool bForcePause = true);
