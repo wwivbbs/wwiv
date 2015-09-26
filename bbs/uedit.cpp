@@ -16,12 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/uedit.h"
+
 #include <memory>
 #include <string>
 
 #include "bbs/callback.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
+#include "bbs/newuser.h"
 #include "bbs/wwiv.h"
 #include "bbs/printfile.h"
 #include "bbs/wconstants.h"

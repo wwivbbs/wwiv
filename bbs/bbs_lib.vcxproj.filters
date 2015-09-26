@@ -586,6 +586,11 @@
     <ClInclude Include="quote.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="uedit.h" />
+    <ClInclude Include="shortmsg.h" />
+    <ClInclude Include="confutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

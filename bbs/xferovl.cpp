@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"

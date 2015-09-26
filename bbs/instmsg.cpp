@@ -22,6 +22,7 @@
 
 #include "bbs/datetime.h"
 #include "bbs/input.h"
+#include "bbs/multinst.h"
 #include "bbs/wwiv.h"
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"

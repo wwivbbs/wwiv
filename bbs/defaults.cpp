@@ -20,15 +20,17 @@
 #include <string>
 #include <vector>
 
+#include "bbs/confutil.h"
 #include "bbs/wwivcolors.h"
 #include "bbs/wwiv.h"
 #include "bbs/common.h"
 #include "bbs/menu.h"
 #include "bbs/input.h"
+#include "bbs/newuser.h"
 #include "bbs/printfile.h"
-#include "core/strings.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+#include "core/strings.h"
 
 using std::setw;
 using std::endl;

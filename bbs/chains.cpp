@@ -22,6 +22,7 @@
 #include "bbs/input.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
+#include "bbs/multinst.h"
 #include "bbs/wwiv.h"
 #include "bbs/instmsg.h"
 #include "bbs/printfile.h"

@@ -21,6 +21,7 @@
 #include "bbs/wwiv.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
+#include "bbs/netsup.h"
 #include "bbs/printfile.h"
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"

@@ -19,6 +19,7 @@
 #include <chrono>
 #include <string>
 
+#include "bbs/confutil.h"
 #include "bbs/wwiv.h"
 #include "bbs/keycodes.h"
 #include "core/os.h"
