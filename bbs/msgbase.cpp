@@ -21,6 +21,7 @@
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
+#include "bbs/netsup.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "bbs/wwiv.h"

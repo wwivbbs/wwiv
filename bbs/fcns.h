@@ -69,13 +69,7 @@ void SpinPuts(const std::string& text, int nColorCode);
 
 
 // File: bbsovl3.cpp
-
-int  get_kb_event(int nNumLockMode);
-char onek_ncr(const char *pszAllowableChars);
-bool do_sysop_command(int command);
-bool copyfile(const std::string& sourceFileName, const std::string& destFileName, bool stats);
-bool movefile(const std::string& sourceFileName, const std::string& destFileName, bool stats);
-void ListAllColors();
+#include "bbsovl3.h"
 
 
 // File: bbsutl.cpp
@@ -107,12 +101,6 @@ std::string strip_to_node(const std::string& txt);
 void run_chain(int nChainNumber);
 void do_chains();
 
-
-// File: chat.cpp
-
-void toggle_avail();
-void toggle_invis();
-void chat_room();
 
 // File: chnedit.cpp
 
@@ -157,12 +145,6 @@ int get_num_conferences(const char *pszFileName);
 int wordcount(const std::string& instr, const char *delimstr);
 const char *extractword(int ww,  const std::string& instr, const char *delimstr);
 void sort_conf_str(char *pszConferenceStr);
-
-
-// File: confutil.cpp
-
-void setuconf(int nConferenceType, int num, int nOldSubNumber);
-void changedsl();
 
 
 // File: connect1.cpp
@@ -351,13 +333,6 @@ void ScanMessageTitles();
 void delmail(File *pFile, int loc);
 void remove_post();
 
-// File: multinst.cpp
-
-void make_inst_str(int nInstanceNum, std::string *result, int nInstanceFormat);
-void multi_instance();
-int  inst_ok(int loc, int subloc);
-
-
 // File: multmail.cpp
 
 void multimail(int *nUserNumber, int numu);
@@ -366,38 +341,7 @@ void slash_e();
 
 // File: netsup.cpp
 
-void cleanup_net();
-int  cleanup_net1();
-void do_callout(int sn);
-void attempt_callout();
-void print_pending_list();
-void gate_msg(net_header_rec * nh, char *pszMessageText, int nNetNumber, const char *pszAuthorName,
-              unsigned short int *pList, int nFromNetworkNumber);
-void force_callout(int dw);
-long *next_system_reg(int ts);
-void run_exp();
-
-
 // File: newuser.cpp
-
-void input_dataphone();
-void input_language();
-void input_name();
-void input_realname();
-bool valid_phone(const std::string& phoneNumber);
-void input_street();
-void input_city();
-void input_state();
-void input_country();
-void input_zipcode();
-void input_sex();
-void input_age(WUser *pUser);
-void input_comptype();
-void input_screensize();
-void input_pw(WUser *pUser);
-void input_ansistat();
-void newuser();
-
 
 // File: pause.cpp
 
@@ -414,9 +358,7 @@ int  check_new_mail(int nUserNumber);
 
 
 // File: shortmsg.cpp
-
-void rsm(int nUserNum, WUser * pUser, bool bAskToSaveMsgs);
-void ssm(int nUserNum, int nSystemNum, const char *pszFormat, ...);
+#include "bbs/shortmsg.h"
 
 
 // File: showfiles.cpp
@@ -518,19 +460,10 @@ void chat1(char *pszChatLine, bool two_way);
 
 // File: uedit.cpp
 
-void deluser(int nUserNumber);
-void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScreen);
-void auto_val(int n, WUser *pUser);
-void uedit(int usern, int other);
-void print_affil(WUser *pUser);
-
-
 // File: user.cpp
 
 bool okconf(WUser *pUser);
 void add_ass(int nNumPoints, const char *pszReason);
-
-
 
 // File: utility.cpp
 #include "utility.h"
@@ -544,40 +477,7 @@ void read_qscn(int nUserNumber, uint32_t* qscn, bool bStayOpen, bool bForceRead 
 void write_qscn(int nUserNumber, uint32_t* qscn, bool bStayOpen);
 
 // File: xfer.cpp
-
-void zap_ed_info();
-void get_ed_info();
-unsigned long bytes_to_k(unsigned long lBytes);
-int  check_batch_queue(const char *pszFileName);
-bool check_ul_event(int nDirectoryNum, uploadsrec * pUploadRecord);
-bool okfn(const std::string& fileName);
-void print_devices();
-void get_arc_cmd(char *pszOutBuffer, const char *pszArcFileName, int cmd, const char *ofn);
-int  list_arc_out(const char *pszFileName, const char *pszDirectory);
-bool ratio_ok();
-bool dcs();
-void dliscan1(int nDirectoryNum);
-void dliscan_hash(int nDirectoryNum);
-void dliscan();
-void add_extended_description(const char *pszFileName, const char *pszDescription);
-void delete_extended_description(const char *pszFileName);
-char *read_extended_description(const char *pszFileName);
-void print_extended(const char *pszFileName, bool *abort, int numlist, int indent);
-void align(char *pszFileName);
-bool compare(const char *pszFileName1, const char *pszFileName2);
-void printinfo(uploadsrec * pUploadRecord, bool *abort);
-void printtitle(bool *abort);
-void file_mask(char *pszFileMask);
-void listfiles();
-void nscandir(int nDirNum, bool *abort);
-void nscanall();
-void searchall();
-int  recno(const char *pszFileMask);
-int  nrecno(const char *pszFileMask, int nStartingRec);
-int  printfileinfo(uploadsrec * pUploadRecord, int nDirectoryNum);
-void remlist(const char *pszFileName);
-int  FileAreaSetRecord(File &file, int nRecordNumber);
-
+#include "bbs/xfer.h"
 
 // File: xferovl.cpp
 

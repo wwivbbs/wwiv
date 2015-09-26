@@ -20,6 +20,7 @@
 #include <string>
 
 #include "bbs/wwiv.h"
+#include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/input.h"

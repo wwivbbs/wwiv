@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <string>
+#include "bbs/bbsovl3.h"
 
 #include "bbs/wwiv.h"
 #include "core/strings.h"

@@ -30,6 +30,7 @@
 #include "bbs/wwiv.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
+#include "bbs/netsup.h"
 #include "bbs/pause.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
