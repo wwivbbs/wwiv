@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/interpret.h"
 
 #include "bbs/wwiv.h"
 #include "bbs/datetime.h"
@@ -196,9 +197,10 @@ const char *interpret(char chKey) {
   case 'Y':                               // Your BBS name
     strcpy(s, syscfg.systemname);
     break;
-  case 'y':                               // Computer type
-    strcpy(s, ctypes(session()->user()->GetComputerType()));
-    break;
+  case 'y': {                              // Computer type
+    const std::string ctype = ctypes(session()->user()->GetComputerType());
+    strcpy(s, ctype.c_str());
+  } break;
   case 'Z':                               // User's zip code
     strcpy(s, session()->user()->GetZipcode());
     break;

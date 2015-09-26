@@ -1463,7 +1463,7 @@ static int rename_filename(const char *pszFileName, int dn) {
           u.mask &= ~mask_extended;
         } else {
           u.mask |= mask_extended;
-          modify_extended_description(&ss, directories[dn].name, u.filename);
+          modify_extended_description(&ss, directories[dn].name);
           if (ss) {
             delete_extended_description(u.filename);
             add_extended_description(u.filename, ss);
@@ -1471,7 +1471,7 @@ static int rename_filename(const char *pszFileName, int dn) {
           }
         }
       } else {
-        modify_extended_description(&ss, directories[dn].name, u.filename);
+        modify_extended_description(&ss, directories[dn].name);
         if (ss) {
           add_extended_description(u.filename, ss);
           free(ss);

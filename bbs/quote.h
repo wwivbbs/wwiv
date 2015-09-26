@@ -14,38 +14,14 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
+#ifndef __INCLUDED_BBS_QUOTE_H__
+#define __INCLUDED_BBS_QUOTE_H__
 
-#include "bbs/bbs.h"
-#include "bbs/sysoplog.h"
-#include "bbs/vars.h"
-#include "bbs/wconstants.h"
-#include "bbs/wuser.h"
-#include "bbs/wsession.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "core/wwivport.h"
-#include "sdk/filenames.h"
+#include "sdk/vardec.h"
 
-/*
-* Checks status of given userrec to see if conferencing is turned on.
-*/
-bool okconf(WUser *pUser) {
-  if (g_flags & g_flag_disable_conf) {
-    return false;
-  }
+void grab_quotes(messagerec * m, const char *aux);
+void auto_quote(char *org, long len, int type, time_t tDateTime);
+void get_quote(int fsed);
 
-  return pUser->HasStatusFlag(WUser::conference);
-}
-
-
-
-void add_ass(int nNumPoints, const char *pszReason) {
-  sysoplog("***");
-  sysoplogf("*** ASS-PTS: %d, Reason: [%s]", nNumPoints, pszReason);
-  session()->user()->IncrementAssPoints(nNumPoints);
-}
-
-
-
+#endif  // __INCLUDED_BBS_QUOTE_H__

@@ -20,6 +20,7 @@
 
 #include "bbs/datetime.h"
 #include "bbs/input.h"
+#include "bbs/interpret.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwiv.h"
 #include "core/strings.h"
@@ -414,7 +415,8 @@ bool sysop2() {
 // defined computer type, else returns 0.
 bool checkcomp(const char *pszComputerType) {
   WWIV_ASSERT(pszComputerType);
-  return strstr(ctypes(session()->user()->GetComputerType()), pszComputerType) ? true : false;
+  const string ctype = ctypes(session()->user()->GetComputerType());
+  return strstr(ctype.c_str(), pszComputerType) ? true : false;
 }
 
 

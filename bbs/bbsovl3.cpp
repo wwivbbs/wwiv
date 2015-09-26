@@ -46,7 +46,6 @@ static int pd_getkey() {
 }
 
 int get_kb_event(int nNumLockMode) {
-  int key = 0;
   session()->localIO()->tleft(true);
   time_t time1 = time(nullptr);
 
@@ -64,7 +63,7 @@ int get_kb_event(int nNumLockMode) {
     if (bkbhitraw() || session()->localIO()->LocalKeyPressed()) {
       if (!incom || session()->localIO()->LocalKeyPressed()) {
         // Check for local keys
-        key = session()->localIO()->LocalGetChar();
+        int key = session()->localIO()->LocalGetChar();
         if (key == CBACKSPACE) {
           return COMMAND_DELETE;
         }
@@ -75,9 +74,8 @@ int get_kb_event(int nNumLockMode) {
           return EXECUTE;
         }
         if ((key == 0 || key == 224) && session()->localIO()->LocalKeyPressed()) {
-          // again, the 224 is an artifact of Win32, I dunno why.
-          key = session()->localIO()->LocalGetChar();
-          return key + 256;
+          // 224 is E0. See https://msdn.microsoft.com/en-us/library/078sfkak(v=vs.110).aspx
+          return session()->localIO()->LocalGetChar() + 256;
         } else {
           if (nNumLockMode == NOTNUMBERS) {
             switch (key) {
@@ -113,7 +111,7 @@ int get_kb_event(int nNumLockMode) {
           }
         }
       } else if (bkbhitraw()) {
-        key = pd_getkey();
+        int key = pd_getkey();
 
         if (key == CBACKSPACE) {
           return COMMAND_DELETE;

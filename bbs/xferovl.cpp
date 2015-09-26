@@ -378,7 +378,7 @@ void rename_file() {
         } else {
           u.mask |= mask_extended;
           modify_extended_description(&ss,
-                                      directories[udir[session()->GetCurrentFileArea()].subnum].name, u.filename);
+              directories[udir[session()->GetCurrentFileArea()].subnum].name);
           if (ss) {
             delete_extended_description(u.filename);
             add_extended_description(u.filename, ss);
@@ -387,7 +387,7 @@ void rename_file() {
         }
       } else {
         modify_extended_description(&ss,
-                                    directories[udir[session()->GetCurrentFileArea()].subnum].name, u.filename);
+            directories[udir[session()->GetCurrentFileArea()].subnum].name);
         if (ss) {
           add_extended_description(u.filename, ss);
           free(ss);

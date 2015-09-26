@@ -308,7 +308,7 @@ void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStrin
   sleep_for(milliseconds(nStringDelay));
   for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
     bout.bs();
-  sleep_for(milliseconds(5));
+    sleep_for(milliseconds(5));
   }
   local_echo = oecho;
 }

@@ -14,38 +14,19 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
+#ifndef __INCLUDED_BBS_COM_H__
+#define __INCLUDED_BBS_COM_H__
 
-#include "bbs/bbs.h"
-#include "bbs/sysoplog.h"
-#include "bbs/vars.h"
-#include "bbs/wconstants.h"
-#include "bbs/wuser.h"
-#include "bbs/wsession.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "core/wwivport.h"
-#include "sdk/filenames.h"
+void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const char *cc);
+void dump();
+bool CheckForHangup();
+void makeansi(int attr, char *pszOutBuffer, bool forceit);
+void resetnsp();
+char getkey();
+bool yesno();
+bool noyes();
+char ynq();
+char onek(const char *pszAllowableChars, bool bAutoMpl = false);
 
-/*
-* Checks status of given userrec to see if conferencing is turned on.
-*/
-bool okconf(WUser *pUser) {
-  if (g_flags & g_flag_disable_conf) {
-    return false;
-  }
-
-  return pUser->HasStatusFlag(WUser::conference);
-}
-
-
-
-void add_ass(int nNumPoints, const char *pszReason) {
-  sysoplog("***");
-  sysoplogf("*** ASS-PTS: %d, Reason: [%s]", nNumPoints, pszReason);
-  session()->user()->IncrementAssPoints(nNumPoints);
-}
-
-
-
+#endif  // __INCLUDED_BBS_COM_H__

@@ -1095,7 +1095,6 @@ static int ansicallout() {
     curatr = color2;
     x = 0;
     y = 0;
-    int node_number = nodenum[pos];
     session()->localIO()->LocalXYAPrintf(6, 5, color2, "%-5u", nodenum[pos]);
     print_call(nodenum[pos], netpos[pos], ipos[pos]);
 

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*           Copyright (C)2014-2015 WWIV Software Services                */
+/*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,55 +14,19 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
+#ifndef __INCLUDED_BBS_BBSUTL1_H__
+#define __INCLUDED_BBS_BBSUTL1_H__
 
-#include <iostream>
-#include <memory>
 #include <string>
 
-#include "bbs/bputch.h"
-#include "bbs/bbs.h"
-#include "bbs_test/bbs_helper.h"
-#include "core/strings.h"
-#include "core_test/file_helper.h"
+bool AllowLocalSysop();
+void parse_email_info(const std::string& emailAddress, int *pUserNumber, int *pSystemNumber);
+bool ValidateSysopPassword();
+void hang_it_up();
+bool play_sdf(const std::string& soundFileName, bool abortable);
+std::string describe_area_code(int nAreaCode);
+std::string describe_area_code_prefix(int nAreaCode, int town);
 
-using std::cout;
-using std::endl;
-using std::string;
 
-class BPutchFileTest : public ::testing::Test {
-protected:
-    virtual void SetUp() {
-        helper.SetUp();
-    }
-
-    virtual int Puts(string s) {
-      int count = 0;
-      for (const auto& c : s) {
-        count += bputch(c);
-      }
-      return count;
-    }
-
-    BbsHelper helper;
-};
-
-TEST_F(BPutchFileTest, SingleLetter) {
-  EXPECT_EQ(1, bputch('A'));
-  EXPECT_STREQ("A", helper.io()->captured().c_str());
-}
-
-TEST_F(BPutchFileTest, MultipleLetters) {
-  const string kHelloWorld = "Hello World\r\n";
-  EXPECT_EQ(kHelloWorld.size(), Puts(kHelloWorld));
-  EXPECT_EQ(kHelloWorld, helper.io()->captured());
-}
-
-TEST_F(BPutchFileTest, SinglePipe) {
-  const string kHelloWorld = "Hello World\r\n";
-  const string s = "|#1Hello World\r\n";
-  EXPECT_EQ(kHelloWorld.size(), Puts(s));
-  EXPECT_EQ(kHelloWorld, helper.io()->captured());
-}
+#endif  // __INCLUDED_BBS_BBSUTL1_H__

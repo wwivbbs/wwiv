@@ -22,10 +22,19 @@
 #include <string>
 #include <vector>
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
+#include "bbs/com.h"
+#include "bbs/msgbase.h"
+#include "bbs/sysoplog.h"
+#include "bbs/utility.h"
+#include "bbs/vars.h"
+#include "bbs/quote.h"
+#include "bbs/wsession.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::stringstream;

@@ -37,7 +37,12 @@
 #include "bbs/subxtr.h"
 #undef _DEFINE_GLOBALS_
 
+#include "bbs/bgetch.h"
+#include "bbs/bputch.h"
 #include "bbs/bbs.h"
+#include "bbs/bbsutl1.h"
+#include "bbs/com.h"
+#include "bbs/connect1.h"
 #include "bbs/datetime.h"
 #include "bbs/external_edit.h"
 #include "bbs/fcns.h"
@@ -48,6 +53,8 @@
 #include "bbs/null_local_io.h"
 #include "bbs/menu.h"
 #include "bbs/printfile.h"
+#include "bbs/sysoplog.h"
+#include "bbs/utility.h"
 #include "bbs/voteedit.h"
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
@@ -180,7 +187,6 @@ int WApplication::doWFCEvents() {
     lokb = 0;
     session()->SetCurrentSpeed("KB");
     time_t lCurrentTime = time(nullptr);
-    static time_t last_time_c;
     if (!any && (((rand() % 8000) == 0) || (lCurrentTime - last_time_c > 1200)) &&
         net_sysnum && (this->flags & OP_FLAGS_NET_CALLOUT)) {
       lCurrentTime = last_time_c;
