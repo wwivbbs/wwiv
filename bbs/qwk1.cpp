@@ -67,7 +67,7 @@ extern int qwk_percent;
 // from readmail.cpp
 bool read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
 
-void qwk_remove_email(void) {
+void qwk_remove_email() {
   emchg = false;
 
   tmpmailrec* mloc = (tmpmailrec *)malloc(MAXMAIL * sizeof(tmpmailrec));
@@ -321,7 +321,7 @@ string qwk_which_protocol() {
   }
 }
 
-void upload_reply_packet(void) {
+void upload_reply_packet() {
   char name[21], namepath[101];
   bool rec = true;
   int save_conf = 0, save_sub;
@@ -1002,7 +1002,7 @@ void qwk_receive_file(char *fn, bool *received, int i) {
 }
 /* End DAW */
 
-void qwk_sysop(void) {
+void qwk_sysop() {
   struct qwk_config qwk_cfg;
   char sn[10];
 

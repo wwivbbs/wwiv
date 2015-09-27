@@ -54,10 +54,6 @@
 using std::unique_ptr;
 using namespace wwiv::strings;
 
-// from msgbase.cpp
-long current_gat_section();
-void current_gat_section(long section);
-
 // Also used in qwk1.cpp
 const char *QWKFrom = "\x04""0QWKFrom:";
 
@@ -88,14 +84,14 @@ using wwiv::bbs::SaveQScanPointers;
 using wwiv::bbs::TempDisablePause;
 using wwiv::strings::StringPrintf;
 
-static bool replacefile(char *src, char *dst, bool stats) {
+static bool replacefile(char *src, char *dst) {
   if (strlen(dst) == 0) {
     return false;
   }
-  return copyfile(src, dst, stats);
+  return copyfile(src, dst, true);
 }
 
-void build_qwk_packet(void) {
+void build_qwk_packet() {
   struct qwk_junk qwk_info;
   struct qwk_config qwk_cfg;
   bool save_conf = false;
@@ -793,7 +789,7 @@ char* qwk_system_name(char *qwkname) {
   return qwkname;
 }
 
-void qwk_menu(void) {
+void qwk_menu() {
   char temp[101], namepath[101];
 
   qwk_percent = 0;
@@ -1096,7 +1092,7 @@ int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
   return 1;
 }
 
-void qwk_nscan(void) {
+void qwk_nscan() {
 #ifdef NEVER // Not ported yet
   uploadsrec u;
   bool abort = false;
@@ -1345,7 +1341,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
         nfile[0] = 0;
       }
 
-      if (!replacefile(parem1, nfile, true)) {
+      if (!replacefile(parem1, nfile)) {
         bout.Color(7);
         bout.bprintf("Try again?");
         if (!noyes()) {
@@ -1356,33 +1352,4 @@ void finish_qwk(struct qwk_junk *qwk_info) {
         done = 1;
       }
     }
-}
-
-int qwk_open_file(char *fn) {
-  int i;
-  char s[81];
-
-  sprintf(s, "%s%s.dat", syscfg.msgsdir, fn);
-  int f = open(s, O_RDWR | O_BINARY);
-
-  if (f < 0) {
-    f = open(s, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-    for (i = 0; i < 2048; i++) {
-      gat[i] = 0;
-    }
-
-    if (f < 0) {
-      return (-1);
-    }
-    write(f, gat, 4096);
-    // strcpy(gatfn,fn); (removed with g_szMessageGatFileName)
-    ftruncate(f, 4096L + (75L * 1024L));
-    current_gat_section(0);
-  }
-
-  lseek(f, 0L, SEEK_SET);
-  read(f, gat, 4096);
-  // strcpy(gatfn,fn); (removed with g_szMessageGatFileName)
-  current_gat_section(0);
-  return f;
 }
