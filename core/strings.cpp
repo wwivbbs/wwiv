@@ -381,7 +381,7 @@ string stripcolors(const string& orig) {
     if (*i == '|' && (i + 1) != end(orig) && (i + 2) != end(orig) && IsColorCode(*(i + 1)) && IsColorCode(*(i + 2))) {
       ++i;
       ++i;
-    } else if (*i == 3 && i + 1 < end(orig) && isdigit(*(i + 1))) {
+    } else if (*i == 3 && i + 1 != end(orig) && isdigit(*(i + 1))) {
       ++i;
     } else {
       out.push_back(*i);
