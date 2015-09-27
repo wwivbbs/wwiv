@@ -712,7 +712,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
   messagerec m;
   postrec p;
 
-  int i, dm, f, done = 0, pass = 0;
+  int dm, f, done = 0, pass = 0;
   slrec ss;
   char user_name[101];
   uint8_t a;
@@ -812,29 +812,32 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
     bout.cls();
     bout.Color(2);
-    bout.bprintf("Posting    :");
+    bout.bprintf("Posting    : ");
     bout.Color(3);
     bout.bputs(title);
     bout.nl();
 
     bout.Color(2);
-    bout.bprintf("Posting on :");
+    bout.bprintf("Posting on : ");
     bout.Color(3);
     bout.bputs(stripcolors(subboards[session()->GetCurrentReadMessageArea()].name));
     bout.nl();
 
     if (xsubs[session()->GetCurrentReadMessageArea()].nets) {
       bout.Color(2);
-      bout.bprintf("Going on   :");
+      bout.bprintf("Going on   : ");
       bout.Color(3);
-      bout.bputs(
-        net_networks[xsubs[session()->GetCurrentReadMessageArea()].nets[xsubs[session()->GetCurrentReadMessageArea()].num_nets].net_num].name);
+      for (int i = 0; i < xsubs[session()->GetCurrentReadMessageArea()].num_nets; i++) {
+        xtrasubsnetrec *xnp = &xsubs[session()->GetCurrentReadMessageArea()].nets[i];
+        string network_name = net_networks[xnp->net_num].name;
+        bout << network_name << " ";
+      }
       bout.nl();
     }
 
     bout.nl();
     bout.Color(5);
-    bout.bprintf("Correct?");
+    bout.bprintf("Correct? ");
 
     if (noyes()) {
       done = 1;
@@ -905,7 +908,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
       p.status |= status_pending_net;
       dm = 1;
 
-      for (i = session()->GetNumMessagesInCurrentMessageArea(); (i >= 1)
+      for (int i = session()->GetNumMessagesInCurrentMessageArea(); (i >= 1)
            && (i > (session()->GetNumMessagesInCurrentMessageArea() - 28)); i--) {
         if (get_post(i)->status & status_pending_net) {
           dm = 0;
@@ -920,7 +923,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
     if (session()->GetNumMessagesInCurrentMessageArea() >=
         subboards[session()->GetCurrentReadMessageArea()].maxmsgs) {
-      i = 1;
+      int i = 1;
       dm = 0;
       while ((dm == 0) && (i <= session()->GetNumMessagesInCurrentMessageArea()) && !hangup) {
         if ((get_post(i)->status & status_no_delete) == 0) {

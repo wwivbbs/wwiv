@@ -170,7 +170,7 @@ bool isleap(int nYear) {
 
 /* returns day of week, 0=Sun, 6=Sat */
 int dow() {
-  time_t long_time = time(&long_time);  // Get time as long integer.
+  time_t long_time = time(nullptr);  // Get time as long integer.
   struct tm* newtime = localtime(&long_time);  // Convert to local time.
   return newtime->tm_wday;
 }
