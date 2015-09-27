@@ -303,9 +303,7 @@ map<string, std::function<void(MenuInstanceData*, const string&, const string&)>
     { "Debug", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       Debug();
     } },
-    { "DirEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-    } },
-    { "", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "DirEdit", [](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
       DirEdit();
     } },
     { "Edit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
