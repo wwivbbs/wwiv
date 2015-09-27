@@ -448,7 +448,9 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   }
   strncpy(qwk_info->qwk_rec.from, strupr(stripcolors(n)), 25);
 
-  struct tm *time_now = localtime((time_t *)&m1->daten);
+  time_t message_date = m1->daten;
+  struct tm *time_now = localtime(&message_date);
+
   strftime(date, 10, "%m-%d-%y", time_now);
   strncpy(qwk_info->qwk_rec.date, date, 8);
 
@@ -616,9 +618,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   char file[201];
   char system_name[20];
   char date_time[51];
-  time_t secs_now;
-
-  time(&secs_now);
+  time_t secs_now = time(nullptr);
   struct tm* time_now = localtime(&secs_now);
 
   // Creates a string like 'mm-dd-yyyy,hh:mm:ss'

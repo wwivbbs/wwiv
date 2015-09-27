@@ -165,8 +165,7 @@ void user_editor() {
         if (s[2] != '/' || s[5] != '/') {
           return;
         }
-        time_t t;
-        time(&t);
+        time_t t = time(nullptr);
         struct tm * pTm = localtime(&t);
         int current_year = pTm->tm_year+1900;
         int month = std::stoi(s.substr(0, 2));
