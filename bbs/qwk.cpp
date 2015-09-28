@@ -635,7 +635,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   read_qwk_cfg(&qwk_cfg);
   qwk_system_name(system_name);
 
-  fprintf(fp, "%s.QWK\r\n", system_name);
+  fprintf(fp, "%s.qwk\r\n", system_name);
   fprintf(fp, "%s\r\n", "");   // System City and State
   fprintf(fp, "%s\r\n", syscfg.systemphone);
   fprintf(fp, "%s\r\n", syscfg.sysopname);
@@ -1256,7 +1256,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
   close_qwk_cfg(&qwk_cfg);
 
   qwk_system_name(qwkname);
-  strcat(qwkname, ".QWK");
+  strcat(qwkname, ".qwk");
 
   if (!session()->user()->data.qwk_archive
       || !arcs[session()->user()->data.qwk_archive - 1].extension[0]) {
