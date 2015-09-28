@@ -259,10 +259,14 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   memcpy(p, data.data(), data.size());
 
   int sent = conn_->send(packet.get(), size, seconds(3));
-  LOG << "SEND:  command: " << BinkpCommands::command_id_to_name(command_id) << ": "
-//       << "; packet_length: " << (packet_length & 0x7fff)
-//       << "; sent " << sent << "; data: " 
-       << data;
+  if (command_id != BinkpCommands::M_PWD) {
+    LOG << "SEND:  command: " << BinkpCommands::command_id_to_name(command_id)
+         << ": " << data;
+  } else {
+    // Mask the password.
+    LOG << "SEND:  command: " << BinkpCommands::command_id_to_name(command_id) 
+        << ": " << std::string(data.size(), '*');
+  }
   return true;
 }
 
