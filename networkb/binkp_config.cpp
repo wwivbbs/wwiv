@@ -109,10 +109,12 @@ static net_networks_rec test_net(const string& network_dir) {
 }
 
 // For testing
-BinkConfig::BinkConfig(int callout_node_number, const string& system_name, const string& network_dir) 
-  : callout_network_name_("wwivnet"), callout_node_(callout_node_number), system_name_(system_name),
-    sysop_name_("Unknown WWIV Test SysOp"), networks_({ test_net(network_dir) }) {
+BinkConfig::BinkConfig(int callout_node_number, const wwiv::sdk::Config& config, const string& network_dir)
+  : callout_network_name_("wwivnet"), callout_node_(callout_node_number), 
+    networks_({ test_net(network_dir) }) {
   ParseAddressesFile(&node_config_, network_dir);
+  system_name_ = config.config()->systemname;
+  sysop_name_ = config.config()->sysopname;
 }
 
 BinkConfig::~BinkConfig() {}

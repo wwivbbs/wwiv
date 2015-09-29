@@ -31,6 +31,7 @@ public:
   virtual ~Config();
 
   bool IsInitialized() const { return initialized_; }
+  void set_initialized_for_test(bool initialized) { initialized_ = initialized;  }
   configrec* config() const { return config_.get(); }
   void set_config(configrec* config);
 
