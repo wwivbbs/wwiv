@@ -241,7 +241,6 @@ bool BinkP::process_frames(std::function<bool()> predicate, milliseconds d) {
       }
     }
   } catch (timeout_error& e) {
-    LOG << e.what();
   }
   return true;
 }
