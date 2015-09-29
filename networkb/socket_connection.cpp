@@ -233,7 +233,7 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const milliseconds d, std::s
       }
     }
     if (result == 0) {
-      return 0;
+      return total_read;
     }
     total_read += result;
     if (total_read < size) {
@@ -241,9 +241,9 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const milliseconds d, std::s
       remaining -= result;
       continue;
     }
-    return result;
+    return total_read;
   }
-  throw socket_error("unknown error reading from socket");
+  throw socket_error("unknown error reading from socket.");
 }
 
 int SocketConnection::receive(void* data, const int size, milliseconds d) {
