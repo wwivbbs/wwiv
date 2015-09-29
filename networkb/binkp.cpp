@@ -188,7 +188,7 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
   unique_ptr<char[]> data(new char[length]);
   int length_received = conn_->receive(data.get(), length, d);
   string s(data.get(), length);
-  LOG << "RECV:  DATA PACKET; len: " << length_received;
+  LOG << "RECV:  DATA PACKET; len: " << length_received << "; expected: " << length << " duration:" << d.count();
   if (!current_receive_file_) {
     LOG << "ERROR: Received M_DATA with no current file.";
     return false;
