@@ -17,6 +17,12 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/file.h"
+#ifdef _WIN32
+// Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "bbs/wwiv_windows.h"
+
+#include "Shlwapi.h"
+#endif  // _WIN32
 
 #include <algorithm>
 #include <cerrno>
@@ -34,12 +40,6 @@
 #ifndef _WIN32
 #include <sys/file.h>
 #include <unistd.h>
-#endif  // _WIN32
-
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include "Shlwapi.h"
 #endif  // _WIN32
 
 #include "core/wfndfile.h"
@@ -271,6 +271,12 @@ bool File::Remove(const string& directoryName, const string& fileName) {
 }
 
 bool File::Exists(const string& original_pathname) {
+  if (original_pathname.empty()) {
+    // An empty filename can not exist.
+    // The question is should we assert here?
+    return false;
+  }
+
   string fn(original_pathname);
   if (fn.back() == pathSeparatorChar) {
     // If the pathname ends in / or \, then remove the last character.

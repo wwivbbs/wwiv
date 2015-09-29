@@ -561,7 +561,7 @@ void chat1(char *pszChatLine, bool two_way) {
     write_inst(INST_LOC_CHAT, 0, INST_FLAGS_NONE);
     chatting = 1;
   }
-  double tc = timer();
+  double tc_start = timer();
   File chatFile(syscfg.gfilesdir, "chat.txt");
 
   session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
@@ -665,11 +665,11 @@ void chat1(char *pszChatLine, bool two_way) {
   bout.nl();
   bout << "|#7Chat mode over...\r\n\n";
   chatting = 0;
-  tc = timer() - tc;
-  if (tc < 0) {
-    tc += SECONDS_PER_DAY_FLOAT;
+  tc_start = timer() - tc_start;
+  if (tc_start < 0) {
+    tc_start += SECONDS_PER_DAY_FLOAT;
   }
-  extratimecall += tc;
+  extratimecall += tc_start;
   session()->topdata = nSaveTopData;
   if (session()->IsUserOnline()) {
     application()->UpdateTopScreen();

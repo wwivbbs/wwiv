@@ -67,7 +67,7 @@ extern int qwk_percent;
 // from readmail.cpp
 bool read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
 
-void qwk_remove_email(void) {
+void qwk_remove_email() {
   emchg = false;
 
   tmpmailrec* mloc = (tmpmailrec *)malloc(MAXMAIL * sizeof(tmpmailrec));
@@ -321,7 +321,7 @@ string qwk_which_protocol() {
   }
 }
 
-void upload_reply_packet(void) {
+void upload_reply_packet() {
   char name[21], namepath[101];
   bool rec = true;
   int save_conf = 0, save_sub;
@@ -331,7 +331,7 @@ void upload_reply_packet(void) {
   read_qwk_cfg(&qwk_cfg);
 
   if (!qwk_cfg.fu) {
-    qwk_cfg.fu = time(nullptr);
+    qwk_cfg.fu = static_cast<int32_t>(time(nullptr));
   }
 
   ++qwk_cfg.timesu;
@@ -428,7 +428,6 @@ char* make_text_file(int filenumber, long *size, int curpos, int blocks) {
 
 void qwk_email_text(char *text, long size, char *title, char *to) {
   int sy, un;
-  long thetime;
 
   strupr(to);
 
@@ -531,8 +530,7 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
     }
 
     msg.storage_type = EMAIL_STORAGE;
-
-    time(&thetime);
+    time_t thetime = time(nullptr);
 
     const char* nam1 = session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum);
     qwk_inmsg(text, size, &msg, "email", nam1, thetime);
@@ -546,7 +544,7 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
   }
 }
 
-void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, const char *name, long thetime) {
+void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, const char *name, time_t thetime) {
   char s[181];
   int oiia = iia;
   setiia(0);
@@ -714,9 +712,8 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
   messagerec m;
   postrec p;
 
-  int i, dm, f, done = 0, pass = 0;
+  int dm, f, done = 0, pass = 0;
   slrec ss;
-  long thetime;
   char user_name[101];
   uint8_t a;
 
@@ -815,29 +812,32 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
     bout.cls();
     bout.Color(2);
-    bout.bprintf("Posting    :");
+    bout.bprintf("Posting    : ");
     bout.Color(3);
     bout.bputs(title);
     bout.nl();
 
     bout.Color(2);
-    bout.bprintf("Posting on :");
+    bout.bprintf("Posting on : ");
     bout.Color(3);
     bout.bputs(stripcolors(subboards[session()->GetCurrentReadMessageArea()].name));
     bout.nl();
 
     if (xsubs[session()->GetCurrentReadMessageArea()].nets) {
       bout.Color(2);
-      bout.bprintf("Going on   :");
+      bout.bprintf("Going on   : ");
       bout.Color(3);
-      bout.bputs(
-        net_networks[xsubs[session()->GetCurrentReadMessageArea()].nets[xsubs[session()->GetCurrentReadMessageArea()].num_nets].net_num].name);
+      for (int i = 0; i < xsubs[session()->GetCurrentReadMessageArea()].num_nets; i++) {
+        xtrasubsnetrec *xnp = &xsubs[session()->GetCurrentReadMessageArea()].nets[i];
+        string network_name = net_networks[xnp->net_num].name;
+        bout << network_name << " ";
+      }
       bout.nl();
     }
 
     bout.nl();
     bout.Color(5);
-    bout.bprintf("Correct?");
+    bout.bprintf("Correct? ");
 
     if (noyes()) {
       done = 1;
@@ -855,7 +855,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     strcpy(user_name, nam1);
   }
 
-  time(&thetime);
+  time_t thetime = time(nullptr);
   qwk_inmsg(text, size, &m, subboards[session()->GetCurrentReadMessageArea()].filename, user_name, thetime);
 
   if (m.stored_as != 0xffffffff) {
@@ -893,7 +893,8 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
       p.qscan = pStatus->IncrementQScanPointer();
       application()->GetStatusManager()->CommitTransaction(pStatus);
     }
-    time((long *)(&p.daten));
+    time_t now = time(nullptr);
+    p.daten = static_cast<uint32_t>(now);
     if (session()->user()->data.restrict & restrict_validate) {
       p.status = status_unvalidated;
     } else {
@@ -907,7 +908,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
       p.status |= status_pending_net;
       dm = 1;
 
-      for (i = session()->GetNumMessagesInCurrentMessageArea(); (i >= 1)
+      for (int i = session()->GetNumMessagesInCurrentMessageArea(); (i >= 1)
            && (i > (session()->GetNumMessagesInCurrentMessageArea() - 28)); i--) {
         if (get_post(i)->status & status_pending_net) {
           dm = 0;
@@ -922,7 +923,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
     if (session()->GetNumMessagesInCurrentMessageArea() >=
         subboards[session()->GetCurrentReadMessageArea()].maxmsgs) {
-      i = 1;
+      int i = 1;
       dm = 0;
       while ((dm == 0) && (i <= session()->GetNumMessagesInCurrentMessageArea()) && !hangup) {
         if ((get_post(i)->status & status_no_delete) == 0) {
@@ -1004,7 +1005,7 @@ void qwk_receive_file(char *fn, bool *received, int i) {
 }
 /* End DAW */
 
-void qwk_sysop(void) {
+void qwk_sysop() {
   struct qwk_config qwk_cfg;
   char sn[10];
 

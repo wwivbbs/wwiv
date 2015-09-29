@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <string>
+#include "bbs/bbsovl3.h"
 
 #include "bbs/wwiv.h"
 #include "core/strings.h"
@@ -46,7 +47,6 @@ static int pd_getkey() {
 }
 
 int get_kb_event(int nNumLockMode) {
-  int key = 0;
   session()->localIO()->tleft(true);
   time_t time1 = time(nullptr);
 
@@ -64,7 +64,7 @@ int get_kb_event(int nNumLockMode) {
     if (bkbhitraw() || session()->localIO()->LocalKeyPressed()) {
       if (!incom || session()->localIO()->LocalKeyPressed()) {
         // Check for local keys
-        key = session()->localIO()->LocalGetChar();
+        int key = session()->localIO()->LocalGetChar();
         if (key == CBACKSPACE) {
           return COMMAND_DELETE;
         }
@@ -75,9 +75,8 @@ int get_kb_event(int nNumLockMode) {
           return EXECUTE;
         }
         if ((key == 0 || key == 224) && session()->localIO()->LocalKeyPressed()) {
-          // again, the 224 is an artifact of Win32, I dunno why.
-          key = session()->localIO()->LocalGetChar();
-          return key + 256;
+          // 224 is E0. See https://msdn.microsoft.com/en-us/library/078sfkak(v=vs.110).aspx
+          return session()->localIO()->LocalGetChar() + 256;
         } else {
           if (nNumLockMode == NOTNUMBERS) {
             switch (key) {
@@ -113,7 +112,7 @@ int get_kb_event(int nNumLockMode) {
           }
         }
       } else if (bkbhitraw()) {
-        key = pd_getkey();
+        int key = pd_getkey();
 
         if (key == CBACKSPACE) {
           return COMMAND_DELETE;
@@ -124,10 +123,10 @@ int get_kb_event(int nNumLockMode) {
         if (key == RETURN || key == CL) {
           return EXECUTE;
         } else if (key == ESC) {
-          time_t time1 = time(nullptr);
-          time_t time2 = time(nullptr);
+          time_t esc_time1 = time(nullptr);
+          time_t esc_time2 = time(nullptr);
           do {
-            time2 = time(nullptr);
+            esc_time2 = time(nullptr);
             if (bkbhitraw()) {
               key = pd_getkey();
               if (key == OB || key == O) {
@@ -162,9 +161,9 @@ int get_kb_event(int nNumLockMode) {
                 return GET_OUT;
               }
             }
-          } while (difftime(time2, time1) < 1 && !hangup);
+          } while (difftime(esc_time2, esc_time1) < 1 && !hangup);
 
-          if (difftime(time2, time1) >= 1) {     // if no keys followed ESC
+          if (difftime(esc_time2, esc_time1) >= 1) {     // if no keys followed ESC
             return GET_OUT;
           }
         } else {

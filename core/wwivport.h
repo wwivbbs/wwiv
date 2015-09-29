@@ -17,11 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_PLATFORM_INCL1_H__
-#define __INCLUDED_PLATFORM_INCL1_H__
+#ifndef __INCLUDED_PLATFORM_WWIVPORT_H__
+#define __INCLUDED_PLATFORM_WWIVPORT_H__
 
 #if !defined(__unix__) && !defined(_WIN32) && defined(__APPLE__) && defined(__MACH__)
 #define __unix__
 #endif
 
-#endif // __INCLUDED_PLATFORM_INCL1_H__
+#endif // __INCLUDED_PLATFORM_WWIVPORT_H__

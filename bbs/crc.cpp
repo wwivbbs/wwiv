@@ -118,6 +118,7 @@ static UNS_32_BITS crc_32_tab[] = {
 
 #define UPDC32(octet, crc) (crc_32_tab[((crc) ^ (octet)) & 0xff] ^ ((crc) >> 8))
 
+unsigned short crc;
 
 unsigned long int crc32buf(const char *pBuffer, std::size_t nLength) {
   unsigned long int oldcrc32;

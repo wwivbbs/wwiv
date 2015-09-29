@@ -81,9 +81,11 @@ public:
 
 
 bool checkDirExists(File &dir, const char *desc) {
-	bool exist = dir.Exists();
-	if(exist) {
-    return true;
+  {
+	  bool exist = dir.Exists();
+	  if(exist) {
+      return true;
+    }
   }
 
 	Print(NOK, false, "Unable to find dir '%s'", dir.full_pathname().c_str());

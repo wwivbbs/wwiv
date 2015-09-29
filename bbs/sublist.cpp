@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "bbs/wwiv.h"
+#include "bbs/confutil.h"
 #include "bbs/subxtr.h"
 #include "core/strings.h"
 

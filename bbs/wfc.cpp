@@ -27,7 +27,10 @@
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/local_io_curses.h"
+#include "bbs/multinst.h"
+#include "bbs/netsup.h"
 #include "bbs/printfile.h"
+#include "bbs/uedit.h"
 #include "bbs/voteedit.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
@@ -126,15 +129,15 @@ static void DrawCommands(CursesWindow* commands) {
   commands->PutsXY(1, 7, "[U]serEdit [Y]-Log [Z]-Log");
 }
 
-static void DrawStatus(CursesWindow* status) {
-  status->SetColor(SchemeId::WINDOW_TEXT);
-  status->PutsXY(2, 1, "Today:");
-  status->PutsXY(2, 2, "Calls: XXXXX Minutes: XXXXX");
-  status->PutsXY(2, 3, "M: XXX L: XXX E: XXX F: XXX FW: XXX");
-  status->PutsXY(2, 4, "Totals:");
-  status->PutsXY(2, 5, "Users: XXXXX Calls: XXXXX");
-  status->PutsXY(2, 6, "Last User:");
-  status->PutsXY(2, 7, "XXXXXXXXXXXXXXXXXXXXXXXXXX");
+static void DrawStatus(CursesWindow* statusWindow) {
+  statusWindow->SetColor(SchemeId::WINDOW_TEXT);
+  statusWindow->PutsXY(2, 1, "Today:");
+  statusWindow->PutsXY(2, 2, "Calls: XXXXX Minutes: XXXXX");
+  statusWindow->PutsXY(2, 3, "M: XXX L: XXX E: XXX F: XXX FW: XXX");
+  statusWindow->PutsXY(2, 4, "Totals:");
+  statusWindow->PutsXY(2, 5, "Users: XXXXX Calls: XXXXX");
+  statusWindow->PutsXY(2, 6, "Last User:");
+  statusWindow->PutsXY(2, 7, "XXXXXXXXXXXXXXXXXXXXXXXXXX");
 }
 
 static string GetLastUserName(int inst_num) {
@@ -151,27 +154,27 @@ static string GetLastUserName(int inst_num) {
 
 }
 
-static void UpdateStatus(CursesWindow* status) {
-  status->SetColor(SchemeId::WINDOW_DATA);
+static void UpdateStatus(CursesWindow* statusWindow) {
+  statusWindow->SetColor(SchemeId::WINDOW_DATA);
   std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
 
-  status->PrintfXY(9, 2, "%-5d", pStatus->GetNumCallsToday());
-  status->PrintfXY(24, 2, "%-5d", pStatus->GetMinutesActiveToday());
+  statusWindow->PrintfXY(9, 2, "%-5d", pStatus->GetNumCallsToday());
+  statusWindow->PrintfXY(24, 2, "%-5d", pStatus->GetMinutesActiveToday());
 
-  status->PrintfXY(5, 3, "%-3u", pStatus->GetNumMessagesPostedToday());
-  status->PrintfXY(12, 3, "%-3u", pStatus->GetNumLocalPosts());
-  status->PrintfXY(19, 3, "%-3u", pStatus->GetNumEmailSentToday());
-  status->PrintfXY(26, 3, "%-3u", pStatus->GetNumFeedbackSentToday());
+  statusWindow->PrintfXY(5, 3, "%-3u", pStatus->GetNumMessagesPostedToday());
+  statusWindow->PrintfXY(12, 3, "%-3u", pStatus->GetNumLocalPosts());
+  statusWindow->PrintfXY(19, 3, "%-3u", pStatus->GetNumEmailSentToday());
+  statusWindow->PrintfXY(26, 3, "%-3u", pStatus->GetNumFeedbackSentToday());
 
   fwaiting = session()->user()->GetNumMailWaiting();
-  status->PrintfXY(34, 3, "%-3d", fwaiting);
+  statusWindow->PrintfXY(34, 3, "%-3d", fwaiting);
 
-  status->PrintfXY(9, 5, "%-5d", pStatus->GetNumUsers());
-  status->PrintfXY(22, 5, "%-6lu", pStatus->GetCallerNumber());
+  statusWindow->PrintfXY(9, 5, "%-5d", pStatus->GetNumUsers());
+  statusWindow->PrintfXY(22, 5, "%-6lu", pStatus->GetCallerNumber());
 
   // TODO(rushfan): Need to know the last used node number
   // then call GetLastUserName.
-  //  status->PutsXY(2, 7, "XXXXXXXXXXXXXXXXXXXXXXXXXX");
+  //  statusWindow->PutsXY(2, 7, "XXXXXXXXXXXXXXXXXXXXXXXXXX");
 }
 
 static void CleanNetIfNeeded() {
@@ -188,7 +191,7 @@ static void CleanNetIfNeeded() {
       session()->SetFileAreaCacheNumber(session()->GetFileAreaCacheNumber() + 1);
     } else {
       static int mult_time = 0;
-      if (application()->IsCleanNetNeeded() || labs(timer1() - mult_time) > 1000L) {
+      if (application()->IsCleanNetNeeded() || abs(timer1() - mult_time) > 1000L) {
         cleanup_net();
         mult_time = timer1();
       }
@@ -224,6 +227,7 @@ static void RunEventsIfNeeded() {
     attempt_callout();
   }
 }
+
 void ControlCenter::Initialize() {
   // Initialization steps that have to happen before we
   // have a functional WFC system. This also supposes that
@@ -297,6 +301,8 @@ void ControlCenter::Run() {
     case 'Y': wfc_command(INST_LOC_WFC, view_yesterday_sysop_log_f); break;
     case 'Z': wfc_command(INST_LOC_WFC, zlog, getkey_f); break;
     case 'Q': done=true; break;
+    // ansicallout doesn't work due to arrow keys and other drawing problems with it under curses.
+    // case '/': wfc_command(INST_LOC_NET, []() { force_callout(0); }); log_->Put("Ran Network Callout"); break;
     case ' ': log_->Put("Not Implemented Yet"); break; 
     }
     TouchAll();
@@ -492,8 +498,8 @@ void wfc_screen() {
   }
 }
 
-void DisplayWFCScreen(const char *pszScreenBuffer) {
-  session()->localIO()->LocalWriteScreenBuffer(pszScreenBuffer);
+void DisplayWFCScreen(const char *screenBuffer) {
+  session()->localIO()->LocalWriteScreenBuffer(screenBuffer);
 }
 
 #endif // __unix__

@@ -188,7 +188,7 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
   unique_ptr<char[]> data(new char[length]);
   int length_received = conn_->receive(data.get(), length, d);
   string s(data.get(), length);
-  LOG << "RECV:  DATA PACKET; len: " << length_received;
+  LOG << "RECV:  DATA PACKET; len: " << length_received << "; expected: " << length << " duration:" << d.count();
   if (!current_receive_file_) {
     LOG << "ERROR: Received M_DATA with no current file.";
     return false;
@@ -206,6 +206,9 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
     received_files_.push_back(current_receive_file_->filename());
     current_receive_file_.release();
     send_command_packet(BinkpCommands::M_GOT, data_line);
+  } else {
+    LOG << "       file still transferring; bytes_received: " << current_receive_file_->length()
+        << " and: " << current_receive_file_->expected_length() << " bytes expected.";
   }
 
   return true;
@@ -229,13 +232,15 @@ bool BinkP::process_frames(std::function<bool()> predicate, milliseconds d) {
         }
       } else {
         // process data frame.
-        if (!process_data(header & 0x7fff, d)) {
+        // note: always use a timeout of 10s to process data since dropping bytes
+        // causes real problems.
+        if (!process_data(header & 0x7fff, seconds(10))) {
           // false return value mean san error occurred.
           return false;
         }
       }
     }
-  } catch (timeout_error ignored) {
+  } catch (timeout_error& e) {
   }
   return true;
 }
@@ -259,10 +264,14 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   memcpy(p, data.data(), data.size());
 
   int sent = conn_->send(packet.get(), size, seconds(3));
-  LOG << "SEND:  command: " << BinkpCommands::command_id_to_name(command_id) << ": "
-//       << "; packet_length: " << (packet_length & 0x7fff)
-//       << "; sent " << sent << "; data: " 
-       << data;
+  if (command_id != BinkpCommands::M_PWD) {
+    LOG << "SEND:  command: " << BinkpCommands::command_id_to_name(command_id)
+         << ": " << data;
+  } else {
+    // Mask the password.
+    LOG << "SEND:  command: " << BinkpCommands::command_id_to_name(command_id) 
+        << ": " << std::string(data.size(), '*');
+  }
   return true;
 }
 
@@ -478,15 +487,17 @@ BinkState BinkP::TransferFiles() {
 
   LOG << "STATE: TransferFiles to node: " << remote_node;
   // Quickly let the inbound event loop percolate.
-  process_frames(milliseconds(100));
+  process_frames(milliseconds(500));
   SendFiles file_sender(config_->network_dir(network_name), remote_node);
   const auto list = file_sender.CreateTransferFileList();
   for (auto file : list) {
     SendFilePacket(file);
   }
+
+  LOG << "STATE: After SendFilePacket for all files.";
   // Quickly let the inbound event loop percolate.
   for (int i=0; i < 5; i++) {
-    process_frames(milliseconds(50));
+    process_frames(milliseconds(500));
   }
 
   // TODO(rushfan): Should this be in a new state?
@@ -497,6 +508,8 @@ BinkState BinkP::TransferFiles() {
     // it send (yes, even with TCP_NODELAY set).
     send_command_packet(BinkpCommands::M_EOB, "All files to send have been sent. Thank you.");
     process_frames(seconds(1));
+  } else {
+    LOG << "       files_to_send_ is not empty, Not sending EOB";
   }
   return BinkState::WAIT_EOB;
 }
@@ -528,7 +541,7 @@ BinkState BinkP::WaitEob() {
       }
       LOG << "       WaitEob: still waiting for M_EOB to be received. will wait up to "
           << (eob_retries * eob_wait_seconds) << " seconds.";
-    } catch (timeout_error e) {
+    } catch (timeout_error& e) {
       LOG << "       WaitEob: ERROR while waiting for more data: " << e.what();
     }
   }
@@ -551,7 +564,7 @@ bool BinkP::SendFilePacket(TransferFile* file) {
 }
 
 bool BinkP::SendFileData(TransferFile* file) {
-  LOG << "       SendFilePacket: " << file->filename();
+  LOG << "       SendFileData: " << file->filename();
   long file_length = file->file_size();
   const int chunk_size = 16384; // This is 1<<14.  The max per spec is (1 << 15) - 1
   long start = 0;
@@ -713,12 +726,12 @@ void BinkP::Run() {
       }
       process_frames(milliseconds(100));
     }
-  } catch (socket_closed_error e) {
+  } catch (socket_closed_error&) {
     // The other end closed the socket before we did.
     LOG << "       connection was closed by the other side.";
-  } catch (socket_error e) {
-    LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what() << "\nStacktrace:\n";
-    LOG << stacktrace();
+  } catch (socket_error& e) {
+    LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what()
+        << "\nStacktrace:\n" << stacktrace();
   }
   LOG << "Before rename pending_files";
   rename_pending_files();

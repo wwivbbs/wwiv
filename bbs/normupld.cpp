@@ -125,8 +125,7 @@ void normalupload(int dn) {
   char szReceiveFileName[ MAX_PATH ];
   sprintf(szReceiveFileName, "%s%s", d.path, szUnalignedFile);
   if (ok && yesno()) {
-    File file(d.path, szUnalignedFile);
-    if (file.Exists()) {
+    if (File::Exists(d.path, szUnalignedFile)) {
       if (dcs()) {
         xfer = false;
         bout.nl(2);
@@ -152,9 +151,8 @@ void normalupload(int dn) {
         bout << "This directory is for Public Domain/\r\nShareware programs ONLY.  Please do not\r\n";
         bout << "upload other programs.  If you have\r\ntrouble with this policy, please contact\r\n";
         bout << "the sysop.\r\n\n";
-        char szBuffer[ 255 ];
-        sprintf(szBuffer , "Wanted to upload \"%s\"", u.filename);
-        add_ass(5, szBuffer);
+        const string message = StringPrintf("Wanted to upload \"%s\"", u.filename);
+        add_ass(5, message.c_str());
         ok = 0;
       } else {
         u.mask = mask_PD;
@@ -205,7 +203,7 @@ void normalupload(int dn) {
       inputl(u.description, 58);
       bout.nl();
       char *pszExtendedDescription = nullptr;
-      modify_extended_description(&pszExtendedDescription, directories[dn].name, u.filename);
+      modify_extended_description(&pszExtendedDescription, directories[dn].name);
       if (pszExtendedDescription) {
         add_extended_description(u.filename, pszExtendedDescription);
         u.mask |= mask_extended;
@@ -276,8 +274,8 @@ void normalupload(int dn) {
           FileAreaSetRecord(fileDownload, 0);
           fileDownload.Read(&u1, sizeof(uploadsrec));
           u1.numbytes = session()->numf;
-          u1.daten = lCurrentTime;
-          session()->m_DirectoryDateCache[dn] = lCurrentTime;
+          u1.daten = static_cast<uint32_t>(lCurrentTime);
+          session()->m_DirectoryDateCache[dn] = static_cast<uint32_t>(lCurrentTime);
           FileAreaSetRecord(fileDownload, 0);
           fileDownload.Write(&u1, sizeof(uploadsrec));
           fileDownload.Close();

@@ -100,15 +100,14 @@ __EXTRN__ bool  bChatLine,
 
 // Chatroom additions
 __EXTRN__ bool  in_chatroom,
-          invis,
-          avail;
+          chat_invis,
+          chat_avail;
 
 __EXTRN__ unsigned short
 #if !defined ( NETWORK )
 *csn_index,
 net_sysnum,
 #endif // NETWORK
-crc,
 *gat;
 
 __EXTRN__ int modem_speed;

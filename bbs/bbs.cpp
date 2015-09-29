@@ -17,6 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 #ifdef _WIN32
+// include this here so it won't get includes by local_io_win32.h
+#include "bbs/wwiv_windows.h"
 #include <direct.h>
 #endif  // WIN32
 
@@ -35,18 +37,27 @@
 #include "bbs/subxtr.h"
 #undef _DEFINE_GLOBALS_
 
+#include "bbs/bgetch.h"
+#include "bbs/bputch.h"
 #include "bbs/bbs.h"
+#include "bbs/bbsutl1.h"
+#include "bbs/com.h"
+#include "bbs/confutil.h"
+#include "bbs/connect1.h"
 #include "bbs/datetime.h"
 #include "bbs/external_edit.h"
 #include "bbs/fcns.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/keycodes.h"
 #include "bbs/local_io.h"
 #include "bbs/local_io_curses.h"
+#include "bbs/netsup.h"
 #include "bbs/null_local_io.h"
 #include "bbs/menu.h"
 #include "bbs/printfile.h"
+#include "bbs/sysoplog.h"
+#include "bbs/uedit.h"
+#include "bbs/utility.h"
 #include "bbs/voteedit.h"
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
@@ -150,14 +161,16 @@ int WApplication::doWFCEvents() {
   int lokb;
   LocalIO* io = GetWfcIO();
 
-  unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> last_date_status(GetStatusManager()->GetStatus());
   do {
     write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
     set_net_num(0);
     bool any = false;
     SetWfcStatus(1);
-    if (!IsEquals(date(), pStatus->GetLastDate())) {
-      if ((session()->GetBeginDayNodeNumber() == 0) || (instance_number == session()->GetBeginDayNodeNumber())) {
+
+    // If the date has changed since we last checked, then then run the beginday event.
+    if (!IsEquals(date(), last_date_status->GetLastDate())) {
+      if ((session()->GetBeginDayNodeNumber() == 0) || (instance_number_ == session()->GetBeginDayNodeNumber())) {
         cleanup_events();
         beginday(true);
         wfc_cls();
@@ -177,7 +190,6 @@ int WApplication::doWFCEvents() {
     lokb = 0;
     session()->SetCurrentSpeed("KB");
     time_t lCurrentTime = time(nullptr);
-    static time_t last_time_c;
     if (!any && (((rand() % 8000) == 0) || (lCurrentTime - last_time_c > 1200)) &&
         net_sysnum && (this->flags & OP_FLAGS_NET_CALLOUT)) {
       lCurrentTime = last_time_c;
@@ -514,7 +526,7 @@ int WApplication::doWFCEvents() {
           session()->SetFileAreaCacheNumber(session()->GetFileAreaCacheNumber() + 1);
         } else {
           static int mult_time = 0;
-          if (this->IsCleanNetNeeded() || labs(timer1() - mult_time) > 1000L) {
+          if (this->IsCleanNetNeeded() || abs(timer1() - mult_time) > 1000L) {
             cleanup_net();
             mult_time = timer1();
             giveup_timeslice();
@@ -668,7 +680,7 @@ int WApplication::Run(int argc, char *argv[]) {
 
   curatr = 0x07;
   // Set the instance, this may be changed by a command line argument
-  instance_number = 1;
+  instance_number_ = 1;
   no_hangup = false;
   ok_modem_stuff = true;
 
@@ -736,9 +748,9 @@ int WApplication::Run(int argc, char *argv[]) {
         break;
       case 'I':
       case 'N': {
-        instance_number = stoi(argument);
-        if (instance_number <= 0 || instance_number > 999) {
-          clog << "Your Instance can only be 1..999, you tried instance #" << instance_number << endl;
+        instance_number_ = stoi(argument);
+        if (instance_number_ <= 0 || instance_number_ > 999) {
+          clog << "Your Instance can only be 1..999, you tried instance #" << instance_number_ << endl;
           exit(m_nErrorLevel);
         }
       }
@@ -1017,9 +1029,11 @@ void WApplication::ShowUsage() {
             endl;
 }
 
-WApplication::WApplication() : statusMgr(new StatusMgr()), userManager(new WUserManager()), m_nOkLevel(exitLevelOK), 
-    m_nErrorLevel(exitLevelNotOK), instance_number(-1), m_bUserAlreadyOn(false), m_nBbsShutdownStatus(shutdownNone), m_fShutDownTime(0),
-    m_nWfcStatus(0) {
+WApplication::WApplication() : statusMgr(new StatusMgr()),
+    userManager(new WUserManager()), m_nOkLevel(exitLevelOK), 
+    m_nErrorLevel(exitLevelNotOK), instance_number_(-1), 
+    m_bUserAlreadyOn(false), m_nBbsShutdownStatus(shutdownNone),
+    m_fShutDownTime(0), m_nWfcStatus(0) {
   // TODO this should move into the WSystemConfig object (syscfg wrapper) once it is established.
   if (syscfg.userreclen == 0) {
     syscfg.userreclen = sizeof(userrec);
@@ -1120,22 +1134,22 @@ void WApplication::ShutDownBBS(int nShutDownStatus) {
   RestoreCurrentLine(cl, atr, xl, &cc);
 }
 
-
 void WApplication::UpdateShutDownStatus() {
-  if (IsShutDownActive()) {
-    if (((GetShutDownTime() - timer()) < 120) && ((GetShutDownTime() - timer()) > 60)) {
-      if (GetShutDownStatus() != WApplication::shutdownTwoMinutes) {
-        ShutDownBBS(WApplication::shutdownTwoMinutes);
-      }
+  if (!IsShutDownActive()) {
+    return;
+  }
+  if (((GetShutDownTime() - timer()) < 120) && ((GetShutDownTime() - timer()) > 60)) {
+    if (GetShutDownStatus() != WApplication::shutdownTwoMinutes) {
+      ShutDownBBS(WApplication::shutdownTwoMinutes);
     }
-    if (((GetShutDownTime() - timer()) < 60) && ((GetShutDownTime() - timer()) > 0)) {
-      if (GetShutDownStatus() != WApplication::shutdownOneMinute) {
-        ShutDownBBS(WApplication::shutdownOneMinute);
-      }
+  }
+  if (((GetShutDownTime() - timer()) < 60) && ((GetShutDownTime() - timer()) > 0)) {
+    if (GetShutDownStatus() != WApplication::shutdownOneMinute) {
+      ShutDownBBS(WApplication::shutdownOneMinute);
     }
-    if ((GetShutDownTime() - timer()) <= 0) {
-      ShutDownBBS(WApplication::shutdownImmediate);
-    }
+  }
+  if ((GetShutDownTime() - timer()) <= 0) {
+    ShutDownBBS(WApplication::shutdownImmediate);
   }
 }
 
@@ -1173,7 +1187,6 @@ int bbsmain(int argc, char *argv[]) {
   } catch (exception& e) {
     // TODO(rushfan): Log this to sysop log or where else?
     clog << "BBS Terminated by exception: " << e.what() << "\nStacktrace:\n";
-    clog << stacktrace();
     return 1;
   }
 }

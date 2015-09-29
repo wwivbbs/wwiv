@@ -30,6 +30,7 @@
 #include "bbs/wwiv.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
+#include "bbs/netsup.h"
 #include "bbs/pause.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
@@ -123,7 +124,7 @@ unsigned char WApplication::stryn2tf(const char *s) {
 
 // end callback addition
 
-#define OFFOF(x) ( reinterpret_cast<long>( &session()->user()->data.x ) - reinterpret_cast<long>( &session()->user()->data ) )
+#define OFFOF(x) static_cast<int16_t>(reinterpret_cast<long>(&session()->user()->data.x) - reinterpret_cast<long>(&session()->user()->data))
 
 // Reads WWIV.INI info from [WWIV] subsection, overrides some config.dat
 // settings (as appropriate), updates config.dat with those values. Also
@@ -140,17 +141,17 @@ struct eventinfo_t {
   unsigned short eflags;
 };
 
-
+// See #defines SPAWNOPT_XXXX in vardec.h for these.
 static eventinfo_t eventinfo[] = {
   {"TIMED",         EFLAG_NONE},
-  {"NEWUSER",       0},
-  {"BEGINDAY",      0},
+  {"NEWUSER",       EFLAG_NONE },
+  {"BEGINDAY",      EFLAG_NONE },
   {"LOGON",         EFLAG_NONE},
   {"ULCHK",         EFLAG_NOHUP},
-  {"FSED",          EFLAG_FOSSIL},  // UNUSED
-  {"PROT_SINGLE",   0},
+  {"CHAT",          EFLAG_FOSSIL},  // UNUSED (5)
+  {"PROT_SINGLE",   EFLAG_NONE },
   {"PROT_BATCH",    EFLAG_NONE},
-  {"CHAT",          0},
+  {"CHAT",          EFLAG_NONE },
   {"ARCH_E",        EFLAG_NONE},
   {"ARCH_L",        EFLAG_NONE},
   {"ARCH_A",        EFLAG_NONE},
@@ -160,8 +161,8 @@ static eventinfo_t eventinfo[] = {
   {"NET_CMD1",      EFLAG_NONE},
   {"NET_CMD2",      EFLAG_NETPROG},
   {"LOGOFF",        EFLAG_NONE},
-  {"V_SCAN",        EFLAG_NONE},
-  {"NETWORK",       0},
+  {"",              EFLAG_NONE}, // UNUSED (18)
+  {"NETWORK",       EFLAG_NONE},
 };
 
 static const char *get_key_str(int n, const char *index = nullptr) {
@@ -1125,8 +1126,6 @@ void WApplication::InitializeBBS() {
   set_environment_variable("PKNOFASTCHAR", "Y");
   set_environment_variable("BBS", wwiv_version);
 
-  // TODO: this is empty now.  See if we really need this.
-  //putenv(networkNumEnvVar.c_str());
 #endif // defined ( __unix__ )
 
   XINIT_PRINTF("Reading Voting Booth Configuration.");
@@ -1172,7 +1171,7 @@ void WApplication::InitializeBBS() {
       network_extension = StringPrintf(".%3.3d", nTempInstanceNumber);
       // Fix... Set the global instance variable to match this.  When you run WWIV with the -n<instance> parameter
       // it sets the WWIV_INSTANCE environment variable, however it wasn't doing the reverse.
-      instance_number = nTempInstanceNumber;
+      instance_number_ = nTempInstanceNumber;
     }
   }
 
@@ -1202,7 +1201,7 @@ void WApplication::InitializeBBS() {
     File::Remove(WWIV_NET_DAT);
   }
 
-  srand(time(nullptr));
+  srand(static_cast<unsigned int>(time(nullptr)));
   catsl();
 
   XINIT_PRINTF("Saving Instance information.");

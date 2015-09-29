@@ -16,10 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/bgetch.h"
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
+#include "bbs/chat.h"
+#include "bbs/com.h"
 #include "bbs/datetime.h"
 #include "bbs/keycodes.h"
+#include "bbs/multinst.h"
+#include "bbs/utility.h"
+#include "bbs/vars.h"
 
 // Local data structures
 

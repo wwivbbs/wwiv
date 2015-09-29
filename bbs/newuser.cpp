@@ -16,11 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/newuser.h"
 
 #include <algorithm>
 #include <string>
 
 #include "bbs/asv.h"
+#include "bbs/confutil.h"
 #include "bbs/wwiv.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
@@ -28,6 +30,7 @@
 #include "bbs/input.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
+#include "bbs/uedit.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/inifile.h"
@@ -443,7 +446,7 @@ void input_comptype() {
     bout.nl();
     bout << "Known computer types:\r\n\n";
     int i = 0;
-    for (i = 1; ctypes(i); i++) {
+    for (i = 1; !ctypes(i).empty(); i++) {
       bout << i << ". " << ctypes(i) << wwiv::endl;
     }
     bout.nl();
@@ -599,7 +602,7 @@ void input_ansistat() {
   }
 }
 
-static int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
+static int find_new_usernum(const WUser* pUser, uint32_t* qscn) {
   File userFile(syscfg.datadir, USER_LST);
   for (int i = 0; !userFile.IsOpen() && (i < 20); i++) {
     if (!userFile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
@@ -638,7 +641,7 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
         userFile.Seek(static_cast<long>(nUserNumber * syscfg.userreclen), File::seekBegin);
         userFile.Write(&pUser->data, syscfg.userreclen);
         userFile.Close();
-        write_qscn(nUserNumber, qsc, false);
+        write_qscn(nUserNumber, qscn, false);
         InsertSmallRecord(nUserNumber, pUser->GetName());
         return nUserNumber;
       } else {
@@ -651,7 +654,7 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
     userFile.Seek(static_cast<long>(nUserNumber * syscfg.userreclen), File::seekBegin);
     userFile.Write(&pUser->data, syscfg.userreclen);
     userFile.Close();
-    write_qscn(nUserNumber, qsc, false);
+    write_qscn(nUserNumber, qscn, false);
     InsertSmallRecord(nUserNumber, pUser->GetName());
     return nUserNumber;
   } else {
@@ -989,7 +992,7 @@ void WriteNewUserInfoToSysopLog() {
             session()->user()->GetBirthdayMonth(), session()->user()->GetBirthdayDay(),
             session()->user()->GetBirthdayYear(), session()->user()->GetAge(),
             ((session()->user()->GetGender() == 'M') ? "Male" : "Female"));
-  sysoplogf("-> Using a %s Computer", ctypes(session()->user()->GetComputerType()));
+  sysoplogf("-> Using a %s Computer", ctypes(session()->user()->GetComputerType()).c_str());
   if (session()->user()->GetWWIVRegNumber()) {
     sysoplogf("-> WWIV Registration # %ld", session()->user()->GetWWIVRegNumber());
   }
@@ -1443,7 +1446,7 @@ void DoMinimalNewUser() {
       bout << ", ";
       if (session()->user()->GetState()[0] == 0) {
         do {
-          bool ok = false;
+          ok = false;
           Input1(reinterpret_cast<char*>(session()->user()->data.state), s1, 2, true, InputMode::UPPER);
           if (session()->user()->GetState()[0]) {
             ok = true;

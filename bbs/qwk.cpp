@@ -54,10 +54,6 @@
 using std::unique_ptr;
 using namespace wwiv::strings;
 
-// from msgbase.cpp
-long current_gat_section();
-void current_gat_section(long section);
-
 // Also used in qwk1.cpp
 const char *QWKFrom = "\x04""0QWKFrom:";
 
@@ -65,7 +61,7 @@ static int qwk_percent;
 static uint16_t max_msgs;
 
 // from xfer.cpp
-extern int this_date;
+extern uint32_t this_date;
 
 #ifndef _WIN32
 long filelength(int handle) {
@@ -88,14 +84,14 @@ using wwiv::bbs::SaveQScanPointers;
 using wwiv::bbs::TempDisablePause;
 using wwiv::strings::StringPrintf;
 
-static bool replacefile(char *src, char *dst, bool stats) {
+static bool replacefile(char *src, char *dst) {
   if (strlen(dst) == 0) {
     return false;
   }
-  return copyfile(src, dst, stats);
+  return copyfile(src, dst, true);
 }
 
-void build_qwk_packet(void) {
+void build_qwk_packet() {
   struct qwk_junk qwk_info;
   struct qwk_config qwk_cfg;
   bool save_conf = false;
@@ -116,7 +112,7 @@ void build_qwk_packet(void) {
   }
 
   if (!qwk_cfg.fu) {
-    qwk_cfg.fu = time(nullptr);
+    qwk_cfg.fu = static_cast<int32_t>(time(nullptr));
   }
 
   ++qwk_cfg.timesd;
@@ -371,9 +367,9 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
   if (p->qscan > qsc_p[session()->GetCurrentReadMessageArea()]) { // Update qscan pointer right here
     qsc_p[session()->GetCurrentReadMessageArea()] = p->qscan;  // And here
   }
-  WStatus* pStatus = application()->GetStatusManager()->GetStatus();
-  uint32_t lQScanPtr = pStatus->GetQScanPointer();
-  delete pStatus;
+  WStatus* pStatus1 = application()->GetStatusManager()->GetStatus();
+  uint32_t lQScanPtr = pStatus1->GetQScanPointer();
+  delete pStatus1;
   if (p->qscan >= lQScanPtr) {
     WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
     pStatus->SetQScanPointer(p->qscan + 1);
@@ -452,7 +448,9 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   }
   strncpy(qwk_info->qwk_rec.from, strupr(stripcolors(n)), 25);
 
-  struct tm *time_now = localtime((time_t *)&m1->daten);
+  time_t message_date = m1->daten;
+  struct tm *time_now = localtime(&message_date);
+
   strftime(date, 10, "%m-%d-%y", time_now);
   strncpy(qwk_info->qwk_rec.date, date, 8);
 
@@ -518,8 +516,8 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
     this_pos = ((cur_block - 2) * sizeof(qwk_info->qwk_rec));
 
     if (this_pos < len) {
-      memmove(&qwk_info->qwk_rec, ss.get() + cur + this_pos, this_pos + sizeof(qwk_info->qwk_rec) > len
-              ? (int)len - this_pos - 1 : sizeof(qwk_info->qwk_rec));
+      size_t size = (this_pos + sizeof(qwk_info->qwk_rec) > static_cast<size_t>(len)) ? (len - this_pos - 1) : sizeof(qwk_info->qwk_rec);
+      memmove(&qwk_info->qwk_rec, ss.get() + cur + this_pos, size);
     }
     // Save this block
     append_block(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec));
@@ -620,9 +618,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   char file[201];
   char system_name[20];
   char date_time[51];
-  time_t secs_now;
-
-  time(&secs_now);
+  time_t secs_now = time(nullptr);
   struct tm* time_now = localtime(&secs_now);
 
   // Creates a string like 'mm-dd-yyyy,hh:mm:ss'
@@ -639,7 +635,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   read_qwk_cfg(&qwk_cfg);
   qwk_system_name(system_name);
 
-  fprintf(fp, "%s.QWK\r\n", system_name);
+  fprintf(fp, "%s.qwk\r\n", system_name);
   fprintf(fp, "%s\r\n", "");   // System City and State
   fprintf(fp, "%s\r\n", syscfg.systemphone);
   fprintf(fp, "%s\r\n", syscfg.sysopname);
@@ -793,7 +789,7 @@ char* qwk_system_name(char *qwkname) {
   return qwkname;
 }
 
-void qwk_menu(void) {
+void qwk_menu() {
   char temp[101], namepath[101];
 
   qwk_percent = 0;
@@ -1068,7 +1064,7 @@ void write_qwk_cfg(struct qwk_config *qwk_cfg) {
   close(f);
 }
 
-int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub) {
+int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
   bout.cls();
   bout.nl();
   bout.Color(2);
@@ -1082,7 +1078,7 @@ int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub) {
     return 0;
   }
 
-  *max_msgs = static_cast<uint16_t>(atoi(temp)); 
+  *qwk_max_msgs = static_cast<uint16_t>(atoi(temp));
 
   bout.bprintf("Most messages you want per sub? ");
   bout.mpl(5);
@@ -1096,7 +1092,7 @@ int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub) {
   return 1;
 }
 
-void qwk_nscan(void) {
+void qwk_nscan() {
 #ifdef NEVER // Not ported yet
   uploadsrec u;
   bool abort = false;
@@ -1260,7 +1256,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
   close_qwk_cfg(&qwk_cfg);
 
   qwk_system_name(qwkname);
-  strcat(qwkname, ".QWK");
+  strcat(qwkname, ".qwk");
 
   if (!session()->user()->data.qwk_archive
       || !arcs[session()->user()->data.qwk_archive - 1].extension[0]) {
@@ -1345,7 +1341,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
         nfile[0] = 0;
       }
 
-      if (!replacefile(parem1, nfile, true)) {
+      if (!replacefile(parem1, nfile)) {
         bout.Color(7);
         bout.bprintf("Try again?");
         if (!noyes()) {
@@ -1356,33 +1352,4 @@ void finish_qwk(struct qwk_junk *qwk_info) {
         done = 1;
       }
     }
-}
-
-int qwk_open_file(char *fn) {
-  int i;
-  char s[81];
-
-  sprintf(s, "%s%s.dat", syscfg.msgsdir, fn);
-  int f = open(s, O_RDWR | O_BINARY);
-
-  if (f < 0) {
-    f = open(s, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-    for (i = 0; i < 2048; i++) {
-      gat[i] = 0;
-    }
-
-    if (f < 0) {
-      return (-1);
-    }
-    write(f, gat, 4096);
-    // strcpy(gatfn,fn); (removed with g_szMessageGatFileName)
-    ftruncate(f, 4096L + (75L * 1024L));
-    current_gat_section(0);
-  }
-
-  lseek(f, 0L, SEEK_SET);
-  read(f, gat, 4096);
-  // strcpy(gatfn,fn); (removed with g_szMessageGatFileName)
-  current_gat_section(0);
-  return f;
 }
