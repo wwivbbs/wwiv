@@ -24,12 +24,13 @@ struct BinkNodeConfig {
 class BinkConfig {
  public:
   BinkConfig(const std::string& callout_network_name, const wwiv::sdk::Config& config, const wwiv::sdk::Networks& networks);
-  BinkConfig(int node_number, const std::string& system_name, const std::string& network_dir);
+  BinkConfig(int node_number, const wwiv::sdk::Config& config, const std::string& network_dir);
   virtual ~BinkConfig();
   const BinkNodeConfig* node_config_for(int node) const;
 
   uint16_t callout_node_number() const { return callout_node_; }
   const std::string system_name() const { return system_name_; }
+  const std::string sysop_name() const { return sysop_name_; }
   const std::string callout_network_name() const { return callout_network_name_; }
   const std::string network_dir(const std::string& network_name) const;
   const wwiv::sdk::Networks& networks() { return networks_; }
@@ -44,6 +45,7 @@ class BinkConfig {
   uint16_t callout_node_;
   std::string system_name_;
   std::string callout_network_name_;
+  std::string sysop_name_;
   const wwiv::sdk::Networks networks_;
   bool skip_net_;
 };

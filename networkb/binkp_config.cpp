@@ -79,6 +79,10 @@ BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& co
   if (system_name_.empty()) {
     system_name_ = "Unnamed WWIV BBS";
   }
+  sysop_name_ = config.config()->sysopname;
+  if (sysop_name_.empty()) {
+    sysop_name_ = "Unknown WWIV SysOp";
+  }
 
   if (networks.contains(callout_network_name)) {
     const net_networks_rec& net = networks[callout_network_name];
@@ -105,10 +109,12 @@ static net_networks_rec test_net(const string& network_dir) {
 }
 
 // For testing
-BinkConfig::BinkConfig(int callout_node_number, const string& system_name, const string& network_dir) 
-  : callout_network_name_("wwivnet"), callout_node_(callout_node_number), system_name_(system_name),
+BinkConfig::BinkConfig(int callout_node_number, const wwiv::sdk::Config& config, const string& network_dir)
+  : callout_network_name_("wwivnet"), callout_node_(callout_node_number), 
     networks_({ test_net(network_dir) }) {
   ParseAddressesFile(&node_config_, network_dir);
+  system_name_ = config.config()->systemname;
+  sysop_name_ = config.config()->sysopname;
 }
 
 BinkConfig::~BinkConfig() {}
