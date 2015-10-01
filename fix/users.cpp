@@ -19,6 +19,7 @@
 #include <algorithm>
 
 #include "bbs/wwiv.h"
+#include "core/strings.h"
 #include "fix/fix.h"
 #include "fix/log.h"
 #include "fix/users.h"
@@ -27,6 +28,8 @@
 #include <algorithm>
 #include <vector>
 #include <set>
+
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace fix {
@@ -54,7 +57,8 @@ int FixUsersCommand::Execute() {
 	std::vector<smalrec> smallrecords;
 	std::set<std::string> names;
 
-	for(int i = 1; i <= userMgr.GetNumberOfUserRecords(); i++) {
+  const int num_user_records = userMgr.GetNumberOfUserRecords();
+	for(int i = 1; i <= num_user_records; i++) {
 		WUser user;
 		userMgr.ReadUser(&user, i);
 		user.FixUp();
@@ -67,9 +71,11 @@ int FixUsersCommand::Execute() {
 			if (names.find(namestring) == names.end()) {
 				smallrecords.push_back(sr);
 				names.insert(namestring);
+        const std::string msg = StringPrintf("Keeping user: %s #%d", sr.name, sr.number);
+        Print(OK, true, msg.c_str());
 			}
 			else {
-				std::cout << "[skipping " << namestring << " #" << sr.number << "]";
+				std::cout << "[skipping duplicate user: " << namestring << " #" << sr.number << "]";
 			}
 		}
 	};
