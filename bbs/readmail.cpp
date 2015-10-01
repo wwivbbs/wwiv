@@ -692,10 +692,6 @@ void readmail(int mode) {
       case 'Q':
         done = true;
         break;
-      //case 'B':
-      //  sysoplog("@ Ran Board Edit");
-      //  boardedit();
-      //  break;
       case 'O':
         if (cs() && okmail && m.fromuser != 65535 && nn != 255) {
           show_files("*.frm", syscfg.gfilesdir);
