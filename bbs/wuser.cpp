@@ -182,9 +182,10 @@ bool WUserManager::WriteUser(WUser *pUser, int nUserNumber) {
 
 int WUserManager::FindUser(std::string searchString) {
 #ifndef NOT_BBS
+  const size_t user_count = application()->GetStatusManager()->GetUserCount();
   smalrec *sr = (smalrec *)bsearch((const void *)searchString.c_str(),
                                    static_cast<const void *>(smallist),
-                                   static_cast<size_t>(application()->GetStatusManager()->GetUserCount()),
+                                   user_count,
                                    sizeof(smalrec),
                                    (int(*)(const void *, const void *)) wwiv::strings::StringCompareIgnoreCase);
   if (sr != nullptr) {
