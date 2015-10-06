@@ -1101,6 +1101,7 @@ void logoff() {
 
 
 void logon_guest() {
+  session()->SetUserOnline(true);
   bout.nl(2);
   input_ansistat();
 
