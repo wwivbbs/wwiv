@@ -50,7 +50,7 @@ TempDisablePause::TempDisablePause() : wwiv::core::Transaction([] {
 
 static char GetKeyForPause() {
   char ch = 0;
-  while (ch == 0) {
+  while (ch == 0 && !hangup) {
     ch = bgetch();
     sleep_for(milliseconds(50));
     CheckForHangup();
