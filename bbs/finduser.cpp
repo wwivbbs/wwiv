@@ -21,6 +21,7 @@
 #include <string>
 
 #include "bbs/bbs.h"
+#include "bbs/com.h"
 #include "bbs/wconstants.h"
 #include "bbs/wuser.h"
 #include "bbs/wsession.h"
@@ -29,9 +30,6 @@
 #include "core/strings.h"
 #include "core/file.h"
 #include "sdk/filenames.h"
-
-// TODO - Remove this and finduser, finduser1, ISR, DSR, and add_add
-#include "bbs/fcns.h"
 
 using std::string;
 using namespace wwiv::strings;

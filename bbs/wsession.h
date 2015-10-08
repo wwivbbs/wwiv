@@ -92,17 +92,17 @@ class WSession {
   /*! @function CreateComm Creates up the communications subsystem */
   void CreateComm(unsigned int nHandle);
 
-  bool IsLastKeyLocal() const { return m_bLastKeyLocal; }
-  void SetLastKeyLocal(bool b) { m_bLastKeyLocal = b; }
+  bool IsLastKeyLocal() const { return last_key_local_; }
+  void SetLastKeyLocal(bool b) { last_key_local_ = b; }
 
   bool ReadCurrentUser() { return ReadCurrentUser(usernum, false); }
   bool ReadCurrentUser(int nUserNumber, bool bForceRead = false);
   bool WriteCurrentUser() { return WriteCurrentUser(usernum); }
   bool WriteCurrentUser(int nUserNumber);
 
-  void ResetEffectiveSl() { m_nEffectiveSl = user()->GetSl(); }
-  void SetEffectiveSl(int nSl) { m_nEffectiveSl = nSl; }
-  int  GetEffectiveSl() const { return m_nEffectiveSl; }
+  void ResetEffectiveSl() { effective_sl_ = user()->GetSl(); }
+  void SetEffectiveSl(int nSl) { effective_sl_ = nSl; }
+  int  GetEffectiveSl() const { return effective_sl_; }
 
   int  GetTopScreenColor() const { return m_nTopScreenColor; }
   void SetTopScreenColor(int n) { m_nTopScreenColor = n; }
@@ -122,10 +122,11 @@ class WSession {
   int  GetForcedReadSubNumber() const { return m_nForcedReadSubNumber; }
   void SetForcedReadSubNumber(int n) { m_nForcedReadSubNumber = n; }
 
-  const std::string& GetCurrentSpeed() const { return m_currentSpeed; }
-  void SetCurrentSpeed(std::string s) { m_currentSpeed = s; }
-  void SetCurrentSpeed(const char *s) { m_currentSpeed = s; }
+  const std::string GetCurrentSpeed() const { return current_speed_; }
+  void SetCurrentSpeed(const std::string& s) { current_speed_ = s; }
 
+  // This is used in sprintf in many places, so we return a char*
+  // instead of a string.
   const char* GetNetworkName() const;
   const std::string GetNetworkDataDirectory() const;
 
@@ -226,29 +227,26 @@ class WSession {
   void set_internal_qwk_enabled(bool internal_qwk_enabled) { internal_qwk_enabled_ = internal_qwk_enabled; }
 
  private:
-  bool            m_bLastKeyLocal;
-  int             m_nEffectiveSl;
-  WApplication*   application_;
-  WUser           m_thisuser;
-  std::unique_ptr<WComm> comm_;
-  std::unique_ptr<LocalIO> local_io_;
+  WApplication* application_;
+  WUser m_thisuser;
+  bool  last_key_local_;
+  int effective_sl_;
   bool wwivmail_enabled_;
   bool internal_qwk_enabled_;
+  std::unique_ptr<WComm> comm_;
+  std::unique_ptr<LocalIO> local_io_;
   std::unique_ptr<wwiv::bbs::Capture> capture_;
+  std::string current_speed_;
 
  public:
-  //
   // Data from system_operation_rec, make it public for now, and add
   // accessors later on.
-  //
   int
   m_nTopScreenColor,
   m_nUserEditorColor,
   m_nEditLineColor,
   m_nChatNameSelectionColor,
   m_nMessageColor;
-
-  std::string m_currentSpeed;
 
   int         m_nForcedReadSubNumber;
   bool        m_bThreadSubs;
@@ -305,23 +303,22 @@ class WSession {
   std::string internetFullEmailAddress;
   std::string usenetReferencesLine;
   std::string threadID;
-  bool        m_bInternetUseRealNames;
+  bool m_bInternetUseRealNames;
 
-
-  unsigned int *m_DirectoryDateCache,
+  uint32_t *m_DirectoryDateCache,
            *m_SubDateCache;
 
   std::string language_dir;
-  char    *cur_lang_name;
+  char *cur_lang_name;
 
   int wfc_status;
   int usernum;
 
-  asv_rec   asv;
+  asv_rec asv;
   adv_asv_rec advasv;
-  cbv_rec   cbv;
+  cbv_rec cbv;
 
-  unsigned short
+  uint16_t
   mail_who_field_len,
   max_batch,
   max_extend_lines,

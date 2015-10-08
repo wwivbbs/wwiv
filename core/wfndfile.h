@@ -22,14 +22,9 @@
 
 #include <cstring>
 #include <string>
+#include "bbs/wwiv_windows.h"
 #include "core/wwivport.h"
 
-#if defined( _WIN32 )
-#define VC_EXTRALEAN
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#undef CopyFile
-#endif // _WIN32
 
 class WFindFile {
  protected:

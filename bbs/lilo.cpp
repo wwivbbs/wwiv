@@ -24,9 +24,12 @@
 #include "bbs/automsg.h"
 #include "bbs/dropfile.h"
 #include "bbs/input.h"
+#include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/menusupp.h"
+#include "bbs/netsup.h"
+#include "bbs/newuser.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
 #include "bbs/wcomm.h"
@@ -123,14 +126,13 @@ static int GetAnsiStatusAndShowWelcomeScreen(bool network_only) {
     StringUpperCase(&current_speed);
     bout << "CONNECT " << current_speed << "\r\n\r\n";
   }
-  const string osVersion = wwiv::os::os_version_string();
-  bout << "\r\nWWIV " << wwiv_version << "/" << osVersion << " " << beta_version << wwiv::endl;
+  bout << "\r\nWWIV " << wwiv_version << beta_version << wwiv::endl;
   bout << "Copyright (c) 1998-2015 WWIV Software Services." << wwiv::endl;
   bout << "All Rights Reserved." << wwiv::endl;
 
   int ans = check_ansi();
-  const string filename = StrCat(session()->language_dir, WELCOME_ANS);
-  if (File::Exists(filename)) {
+  const string ans_filename = StrCat(session()->language_dir, WELCOME_ANS);
+  if (File::Exists(ans_filename)) {
     bout.nl();
     if (ans > 0) {
       session()->user()->SetStatusFlag(WUser::ansi);
@@ -143,8 +145,8 @@ static int GetAnsiStatusAndShowWelcomeScreen(bool network_only) {
     }
   } else {
     if (ans) {
-      const string filename = StrCat(session()->language_dir.c_str(), WELCOME_NOEXT, ".0");
-      if (File::Exists(filename)) {
+      const string noext_filename = StrCat(session()->language_dir.c_str(), WELCOME_NOEXT, ".0");
+      if (File::Exists(noext_filename)) {
         random_screen(WELCOME_NOEXT);
       } else {
         printfile(WELCOME_MSG);
@@ -186,7 +188,7 @@ static int ShowLoginAndGetUserNumber(bool network_only) {
         string temp_user_name(session()->user()->GetRealName());
         StringUpperCase(&temp_user_name);
         if (user_name == temp_user_name && !session()->user()->IsUserDeleted()) {
-          bout << "|#5Do you mean " << session()->user()->GetUserNameAndNumber(i) << "? ";
+          bout << "|#5Do you mean " << session()->user()->GetUserNameAndNumber(smallist[i].number) << "? ";
           if (yesno()) {
             nUserNumber = nTempUserNumber;
           }
@@ -258,7 +260,7 @@ static void ExecuteWWIVNetworkRequest() {
   }
 
   application()->GetStatusManager()->RefreshStatusCache();
-  long lTime = time(nullptr);
+  time_t lTime = time(nullptr);
   if (session()->usernum == -2) {
     std::stringstream networkCommand;
     networkCommand << "network /B" << modem_speed << " /T" << lTime << " /F0";
@@ -693,14 +695,13 @@ static void CheckAndUpdateUserInfo() {
              (session()->user()->GetExpiresDateNum() < static_cast<unsigned long>(lTime + 10 * SECS_PER_DAY))) {
     if (static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / static_cast<unsigned long>
                          (SECS_PER_DAY)) > 1) {
-      bout << "|#6Your registration expires in " <<
-                         static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / static_cast<unsigned long>
-                                          (SECS_PER_DAY))
-                         << " days";
+      bout << "|#6Your registration expires in "
+           << static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / static_cast<unsigned long>(SECS_PER_DAY))
+           << " days";
     } else {
-      bout << "|#6Your registration expires in " <<
-                         static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / static_cast<unsigned long>(3600L))
-                         << " hours.";
+      bout << "|#6Your registration expires in "
+           << static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / static_cast<unsigned long>(3600L))
+           << " hours.";
     }
     bout.nl(2);
     pausescr();
@@ -987,14 +988,16 @@ void logoff() {
   session()->user()->SetTimeOn(session()->user()->GetTimeOn() + static_cast<float>(dTimeOnNow));
   session()->user()->SetTimeOnToday(session()->user()->GetTimeOnToday() + static_cast<float>
       (dTimeOnNow - extratimecall));
-  WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
-  int nActiveToday = pStatus->GetMinutesActiveToday();
-  pStatus->SetMinutesActiveToday(nActiveToday + static_cast<unsigned short>(dTimeOnNow / MINUTES_PER_HOUR_FLOAT));
-  application()->GetStatusManager()->CommitTransaction(pStatus);
+  {
+    WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+    int nActiveToday = pStatus->GetMinutesActiveToday();
+    pStatus->SetMinutesActiveToday(nActiveToday + static_cast<unsigned short>(dTimeOnNow / MINUTES_PER_HOUR_FLOAT));
+    application()->GetStatusManager()->CommitTransaction(pStatus);
+  }
   if (g_flags & g_flag_scanned_files) {
     session()->user()->SetNewScanDateNumber(session()->user()->GetLastOnDateNumber());
   }
-  long lTime = time(nullptr);
+  time_t lTime = time(nullptr);
   session()->user()->SetLastOnDateNumber(lTime);
   sysoplogfi(false, "Read: %lu   Time on: %u", session()->GetNumMessagesReadThisLogon(),
              static_cast<int>((timer() - timeon) / MINUTES_PER_HOUR_FLOAT));
@@ -1098,6 +1101,7 @@ void logoff() {
 
 
 void logon_guest() {
+  session()->SetUserOnline(true);
   bout.nl(2);
   input_ansistat();
 

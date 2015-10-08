@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+// Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "bbs/wwiv_windows.h"
 
 #include "InternalTelnetServer.h"
 #include "Runnable.h"

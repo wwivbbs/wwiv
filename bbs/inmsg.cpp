@@ -504,20 +504,20 @@ void GetMessageTitle(string *title, bool force_title) {
 
 void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength, const char *aux) {
   if (!IsEqualsIgnoreCase(aux, "email")) {
-    long msgid = time(nullptr);
-    long targcrc = crc32buf(pszMessageBuffer, strlen(pszMessageBuffer));
-    const string buf = StringPrintf("%c0P %lX-%lX", 4, targcrc, msgid);
-    AddLineToMessageBuffer(pszMessageBuffer, buf, plBufferLength);
+    time_t msgid = time(nullptr);
+    unsigned long targcrc = crc32buf(pszMessageBuffer, strlen(pszMessageBuffer));
+    const string msgid_buf = StringPrintf("%c0P %lX-%lX", 4, targcrc, msgid);
+    AddLineToMessageBuffer(pszMessageBuffer, msgid_buf, plBufferLength);
     if (thread) {
       thread [session()->GetNumMessagesInCurrentMessageArea() + 1 ].msg_num = static_cast< unsigned short>
           (session()->GetNumMessagesInCurrentMessageArea() + 1);
-      strcpy(thread[session()->GetNumMessagesInCurrentMessageArea() + 1].message_code, &buf.c_str()[4]);
+      strcpy(thread[session()->GetNumMessagesInCurrentMessageArea() + 1].message_code, &msgid_buf.c_str()[4]);
     }
     if (session()->threadID.length() > 0) {
-      const string buf = StringPrintf("%c0W %s", 4, session()->threadID.c_str());
-      AddLineToMessageBuffer(pszMessageBuffer, buf, plBufferLength);
+      const string threadid_buf = StringPrintf("%c0W %s", 4, session()->threadID.c_str());
+      AddLineToMessageBuffer(pszMessageBuffer, threadid_buf, plBufferLength);
       if (thread) {
-        strcpy(thread[session()->GetNumMessagesInCurrentMessageArea() + 1].parent_code, &buf.c_str()[4]);
+        strcpy(thread[session()->GetNumMessagesInCurrentMessageArea() + 1].parent_code, &threadid_buf.c_str()[4]);
         thread[ session()->GetNumMessagesInCurrentMessageArea() + 1 ].used = 1;
       }
     }
@@ -546,11 +546,11 @@ void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLeng
     }
   }
   if (irt[0] != '"') {
-    const string buf = StringPrintf("RE: %s", irt);
-    AddLineToMessageBuffer(pszMessageBuffer, buf, plBufferLength);
+    const string irt_buf = StringPrintf("RE: %s", irt);
+    AddLineToMessageBuffer(pszMessageBuffer, irt_buf, plBufferLength);
     if (irt_sub[0]) {
-      const string buf = StringPrintf("ON: %s", irt_sub);
-      AddLineToMessageBuffer(pszMessageBuffer, buf, plBufferLength);
+      const string irt_sub_buf = StringPrintf("ON: %s", irt_sub);
+      AddLineToMessageBuffer(pszMessageBuffer, irt_sub_buf, plBufferLength);
     }
   } else {
     irt_sub[0] = '\0';
@@ -558,8 +558,8 @@ void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLeng
 
   if (irt_name[0] &&
       !IsEqualsIgnoreCase(aux, "email")) {
-    const string buf = StringPrintf("BY: %s", irt_name);
-    AddLineToMessageBuffer(pszMessageBuffer, buf, plBufferLength);
+    const string irt_name_buf = StringPrintf("BY: %s", irt_name);
+    AddLineToMessageBuffer(pszMessageBuffer, irt_name_buf, plBufferLength);
   }
   AddLineToMessageBuffer(pszMessageBuffer, "", plBufferLength);
 }
@@ -597,10 +597,16 @@ void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, co
       !IsEqualsIgnoreCase(aux, "email") &&
       (!(subboards[session()->GetCurrentReadMessageArea()].anony & anony_no_tag)) &&
       !IsEqualsIgnoreCase(irt, szMultiMail)) {
-    return;
+		// tag is ok
+  } else {
+		return;
   }
 
   const string filename = FindTagFileName();
+  if (filename.empty()) {
+    // FindTagFileName returns an empty string if no tagname exists, so
+    // just exit here since there is no tag.
+  }
   TextFile file(filename, "rb");
   if (file.IsOpen()) {
     int j = 0;

@@ -20,15 +20,17 @@
 #include <string>
 #include <vector>
 
+#include "bbs/confutil.h"
 #include "bbs/wwivcolors.h"
 #include "bbs/wwiv.h"
 #include "bbs/common.h"
 #include "bbs/menu.h"
 #include "bbs/input.h"
+#include "bbs/newuser.h"
 #include "bbs/printfile.h"
-#include "core/strings.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+#include "core/strings.h"
 
 using std::setw;
 using std::endl;
@@ -61,7 +63,7 @@ void select_editor() {
     }
     return;
   }
-  for (int i1 = 0; i1 < 5; i1++) {
+  for (int i1 = 0; i1 <= 5; i1++) {
     odc[ i1 ] = '\0';
   }
   bout << "0. Normal non-full screen editor\r\n";
@@ -978,8 +980,8 @@ static long is_inscan(int dir) {
 }
 
 void config_scan_plus(int type) {
-  int i, command, this_dir, this_sub, ad;
-  int sysdir = 0, top = 0, amount = 0, pos = 0, side_pos = 0;
+  int i, command;
+  int top = 0, amount = 0, pos = 0, side_pos = 0;
   side_menu_colors smc = {
     NORMAL_HIGHLIGHT,
     NORMAL_MENU_ITEM,
@@ -1069,30 +1071,30 @@ void config_scan_plus(int type) {
                  qsc_q[usub[top + pos].subnum / 32] & (1L << (usub[top + pos].subnum % 32)));
         redraw = false;
         break;
-      case SPACE:
+      case SPACE: {
         if (type == 0) {
 #ifdef NOTOGGLESYSOP
           if (usub[top + pos].subnum == 0) {
             qsc_q[usub[top + pos].subnum / 32] |= (1L << (usub[top + pos].subnum % 32));
-          } else
+          }
+          else
 #endif
             qsc_q[usub[top + pos].subnum / 32] ^= (1L << (usub[top + pos].subnum % 32));
-        } else {
-          if (IsEquals(udir[0].keys, "0")) {
-            sysdir = 1;
-          }
-          for (this_dir = 0; (this_dir < session()->num_dirs); this_dir++) {
+        }
+        else {
+          bool sysdir = IsEquals(udir[0].keys, "0");
+          for (int this_dir = 0; (this_dir < session()->num_dirs); this_dir++) {
             const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
             if (s == udir[this_dir].keys) {
-              ad = udir[this_dir].subnum;
+              int ad = udir[this_dir].subnum;
               qsc_n[ad / 32] ^= (1L << (ad % 32));
             }
           }
         }
         drawscan(pos, type ? is_inscan(top + pos) :
-                 qsc_q[usub[top + pos].subnum / 32] & (1L << (usub[top + pos].subnum % 32)));
+          qsc_q[usub[top + pos].subnum / 32] & (1L << (usub[top + pos].subnum % 32)));
         redraw = false;
-        break;
+      } break;
       case EXECUTE:
         if (!useconf && side_pos > 5) {
           side_pos += 2;
@@ -1127,15 +1129,11 @@ void config_scan_plus(int type) {
           if (type == 0) {
             qsc_q[usub[top + pos].subnum / 32] ^= (1L << (usub[top + pos].subnum % 32));
           } else {
-            int this_dir, sysdir = 0;
-            int ad;
-            if (IsEquals(udir[0].keys, "0")) {
-              sysdir = 1;
-            }
-            for (this_dir = 0; (this_dir < session()->num_dirs); this_dir++) {
+            bool sysdir = IsEquals(udir[0].keys, "0");
+            for (int this_dir = 0; (this_dir < session()->num_dirs); this_dir++) {
               const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
               if (s == udir[this_dir].keys) {
-                ad = udir[this_dir].subnum;
+                int ad = udir[this_dir].subnum;
                 qsc_n[ad / 32] ^= (1L << (ad % 32));
               }
             }
@@ -1146,13 +1144,13 @@ void config_scan_plus(int type) {
           break;
         case 3:
           if (type == 0) {
-            for (this_sub = 0; this_sub < session()->num_subs; this_sub++) {
+            for (int this_sub = 0; this_sub < session()->num_subs; this_sub++) {
               if (qsc_q[usub[this_sub].subnum / 32] & (1L << (usub[this_sub].subnum % 32))) {
                 qsc_q[usub[this_sub].subnum / 32] ^= (1L << (usub[this_sub].subnum % 32));
               }
             }
           } else {
-            for (this_dir = 0; this_dir < session()->num_dirs; this_dir++) {
+            for (int this_dir = 0; this_dir < session()->num_dirs; this_dir++) {
               if (qsc_n[udir[this_dir].subnum / 32] & (1L << (udir[this_dir].subnum % 32))) {
                 qsc_n[udir[this_dir].subnum / 32] ^= 1L << (udir[this_dir].subnum % 32);
               }
@@ -1164,13 +1162,13 @@ void config_scan_plus(int type) {
           break;
         case 4:
           if (type == 0) {
-            for (this_sub = 0; this_sub < session()->num_subs; this_sub++) {
+            for (int this_sub = 0; this_sub < session()->num_subs; this_sub++) {
               if (!(qsc_q[usub[this_sub].subnum / 32] & (1L << (usub[this_sub].subnum % 32)))) {
                 qsc_q[usub[this_sub].subnum / 32] ^= (1L << (usub[this_sub].subnum % 32));
               }
             }
           } else {
-            for (this_dir = 0; this_dir < session()->num_dirs; this_dir++) {
+            for (int this_dir = 0; this_dir < session()->num_dirs; this_dir++) {
               if (!(qsc_n[udir[this_dir].subnum / 32] & (1L << (udir[this_dir].subnum % 32)))) {
                 qsc_n[udir[this_dir].subnum / 32] ^= 1L << (udir[this_dir].subnum % 32);
               }

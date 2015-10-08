@@ -81,9 +81,11 @@ public:
 
 
 bool checkDirExists(File &dir, const char *desc) {
-	bool exist = dir.Exists();
-	if(exist) {
-    return true;
+  {
+	  bool exist = dir.Exists();
+	  if(exist) {
+      return true;
+    }
   }
 
 	Print(NOK, false, "Unable to find dir '%s'", dir.full_pathname().c_str());
@@ -120,7 +122,7 @@ class FixApplication {
   }
 
   void ShowBanner() {
-    cout << "WWIV Bulletin Board System -" << wwiv_version << std::endl
+    cout << "WWIV Bulletin Board System " << wwiv_version << beta_version << std::endl
         << "Copyright (c) 1998-2015, WWIV Software Services.\n"
         << "All Rights Reserved.\n\n"
         << "Compile Time : " << wwiv_date << std::endl << std::endl;

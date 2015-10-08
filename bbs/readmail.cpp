@@ -27,6 +27,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/subxtr.h"
 #include "bbs/printfile.h"
+#include "bbs/uedit.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -620,9 +621,9 @@ void readmail(int mode) {
       if (so()) {
         strcpy(mnu, SY_EMAIL_NOEXT);
         if (application()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
-          bout << "|#2Mail |#7{|#1QSRIDAF?-+GEZPVUOLCNY@|#7} |#2: ";
+          bout << "|#2Mail |#7{|#1QSRIDAF?-+GEMZPVUOLCNY@|#7} |#2: ";
         }
-        strcpy(s, "QSRIDAF?-+GEZPVUOLCNY@BM");
+        strcpy(s, "QSRIDAF?-+GEMZPVUOLCNY@");
       } else {
         if (cs()) {
           strcpy(mnu, CS_EMAIL_NOEXT);
@@ -690,10 +691,6 @@ void readmail(int mode) {
         break;
       case 'Q':
         done = true;
-        break;
-      case 'B':
-        sysoplog("@ Ran Board Edit");
-        boardedit();
         break;
       case 'O':
         if (cs() && okmail && m.fromuser != 65535 && nn != 255) {
@@ -1194,8 +1191,9 @@ void readmail(int mode) {
           fileTemp.Write(b.get(), len);
           fileTemp.Close();
           bool bSent;
-          send_file(fileTemp.full_pathname().c_str(), &bSent, 0, fileTemp.full_pathname().c_str(), -1, len);
-          if (i) {
+          bool bAbort;
+          send_file(fileTemp.full_pathname().c_str(), &bSent, &bAbort, fileTemp.full_pathname().c_str(), -1, len);
+          if (bSent) {
             bout << "E-mail download successful.\r\n";
             sysoplog("Downloaded E-mail");
           } else {

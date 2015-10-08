@@ -17,6 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/file.h"
+// Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "bbs/wwiv_windows.h"
 
 #include <cerrno>
 #include <cstdint>
@@ -28,9 +30,6 @@
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
@@ -57,6 +56,54 @@ const char File::separatorChar     = ';';
 bool File::IsDirectory() const {
   DWORD dwAttributes = GetFileAttributes(full_path_name_.c_str());
   return (dwAttributes & FILE_ATTRIBUTE_DIRECTORY) ? true : false;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Member functions
+
+long File::GetLength() {
+  if (IsOpen()) {
+    LARGE_INTEGER size;
+
+    // File is open, use GetFileSizeEx
+    BOOL result = GetFileSizeEx((HANDLE)_get_osfhandle(handle_), &size);
+    if (!result) {
+      return -1;
+    }
+    return size.LowPart;
+  } else {
+    WIN32_FILE_ATTRIBUTE_DATA info;
+    BOOL result = GetFileAttributesEx(full_path_name_.c_str(), GetFileExInfoStandard, &info);
+    if (!result) {
+      return -1;
+    }
+    return info.nFileSizeLow;
+  }
+}
+
+time_t File::last_write_time() {
+  bool bOpenedHere = false;
+  if (!this->IsOpen()) {
+    bOpenedHere = true;
+    Open();
+  }
+  WWIV_ASSERT(File::IsFileHandleValid(handle_));
+
+  FILETIME ftCreate, ftAccess, ftWrite;
+  if (!GetFileTime((HANDLE) _get_osfhandle(handle_), &ftCreate, &ftAccess, &ftWrite)) {
+    return -1;
+  }
+
+  // This seems a bit wrong since we should be convering the filetime to systme time first
+  // but this matches what was returned from _fstat.
+  // See http://blogs.msdn.com/b/joshpoley/archive/2007/12/19/date-time-formats-and-conversions.aspx
+  LONGLONG ll = (((LONGLONG)(ftWrite.dwHighDateTime)) << 32) + ftWrite.dwLowDateTime;
+  time_t nFileTime = static_cast<time_t>((ll - 116444736000000000ui64) / 10000000ui64);
+
+  if (bOpenedHere) {
+    Close();
+  }
+  return nFileTime;
 }
 
 /////////////////////////////////////////////////////////////////////////////

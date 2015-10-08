@@ -139,7 +139,7 @@ enum CONFIG_QWK_RETURNS {
 
 /* File: qwk.c */
 
-void build_qwk_packet(void);
+void build_qwk_packet();
 void qwk_gather_sub(int bn, struct qwk_junk *qwk_info);
 void qwk_start_read(int msgnum, struct qwk_junk *qwk_info);
 void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info);
@@ -150,39 +150,37 @@ void build_control_dat(struct qwk_junk *qwk_info);
 int _fmsbintoieee(float *src4, float *dest4);
 int _fieeetomsbin(float *src4, float *dest4);
 char * qwk_system_name(char *qwkname);
-void qwk_menu(void);
+void qwk_menu();
 int select_qwk_protocol(struct qwk_junk *qwk_info);
 void insert_after_routing(char *text, char *text2insert, long *len);
 void close_qwk_cfg(struct qwk_config *qwk_cfg);
 void read_qwk_cfg(struct qwk_config *qwk_cfg);
 void write_qwk_cfg(struct qwk_config *qwk_cfg);
 int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub);
-void qwk_nscan(void);
+void qwk_nscan();
 void finish_qwk(struct qwk_junk *qwk_info);
-char *qwk_readfile(messagerec *m1, char *aux, long *l);
-int qwk_open_file(char *fn);
 
 
 /* File: qwk1.c */
 
-void qwk_remove_email(void);
+void qwk_remove_email();
 void qwk_gather_email(struct qwk_junk *qwk_info);
 int select_qwk_archiver(struct qwk_junk *qwk_info, int ask);
 std::string qwk_which_zip();
 std::string qwk_which_protocol();
-void upload_reply_packet(void);
+void upload_reply_packet();
 void ready_reply_packet(const char *packet_name, const char *msg_name);
 void make_text_ready(char *text, long len);
 char* make_text_file(int filenumber, long *size, int curpos, int blocks);
 void qwk_email_text(char *text, long size, char *title, char *to);
-void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, const char *name, long thetime);
+void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, const char *name, time_t thetime);
 void process_reply_dat(char *name);
 void qwk_post_text(char *text, long size, char *title, int sub);
 int find_qwk_sub(struct qwk_sub_conf *subs, int amount, int fromsub);
 void qwk_receive_file(char *fn, bool *received, int i);
-void qwk_sysop(void);
+void qwk_sysop();
 void modify_bulletins(struct qwk_config *qwk_cfg);
-void config_qwk_bw(void);
+void config_qwk_bw();
 std::string qwk_current_text(int pos);
 
 #endif  // _QWK_H_

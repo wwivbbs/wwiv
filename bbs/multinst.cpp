@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <string>
+#include "bbs/multinst.h"
 
 #include "bbs/wwiv.h"
 #include "bbs/instmsg.h"

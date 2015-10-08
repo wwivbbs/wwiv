@@ -27,8 +27,7 @@
 
 #include "core/file.h"
 #include "core/strings.h"
-
-#include "bbs/version.cpp"
+#include "core/version.h"
 
 using std::clog;
 using std::endl;
@@ -87,7 +86,9 @@ void Logger::Init(int argc, char** argv) {
   time_t t = time(nullptr);
   string l(asctime(localtime(&t)));
   StringTrim(&l);
-  Logger() << filename << " version " << wwiv_version << " (" << wwiv_date << ")" << " starting at " << l;
+  Logger() << filename << " version " << wwiv_version << beta_version
+           << " (" << wwiv_date << ")";
+   Logger() << filename << " starting at " << l;
 
   exit_filename = filename;
 }

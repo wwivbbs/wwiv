@@ -309,9 +309,9 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   if (!bIsFileThere) {
     bModifiedOrExists = File::Exists(full_filename);
   } else {
-    File fileTempForTime(full_filename);
-    if (fileTempForTime.Exists()) {
-      time_t tFileTime1 = fileTempForTime.last_write_time();
+    File fileTempForTime2(full_filename);
+    if (fileTempForTime2.Exists()) {
+      time_t tFileTime1 = fileTempForTime2.last_write_time();
       if (tFileTime != tFileTime1) {
         bModifiedOrExists = true;
       }

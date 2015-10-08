@@ -24,9 +24,15 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/bbsovl3.h"
+#include "bbs/bputch.h"
+#include "bbs/com.h"
 #include "bbs/keycodes.h"
+#include "bbs/utility.h"
 #include "bbs/wconstants.h"
+#include "bbs/wsession.h"
+#include "bbs/vars.h"
 
 using std::string;
 using wwiv::bbs::InputMode;

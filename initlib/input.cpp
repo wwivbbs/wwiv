@@ -294,7 +294,7 @@ int dialog_input_number(CursesWindow* window, const string& prompt, int min_valu
   }
   try {
     return std::stoi(s);
-  } catch (std::invalid_argument) { 
+  } catch (std::invalid_argument&) { 
     // No conversion possible.
     return 0;
   }

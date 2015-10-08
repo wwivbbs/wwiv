@@ -192,7 +192,7 @@ protected:
     window->PutsXY(this->x_, this->y_, blanks.c_str());
     try {
       window->PutsXY(this->x_, this->y_, this->items_.at(*this->data_).c_str());
-    } catch (const std::out_of_range) {
+    } catch (const std::out_of_range&) {
       // Leave it empty since we are out of range.
     }
   }

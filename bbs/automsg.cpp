@@ -22,10 +22,19 @@
 #include <string>
 #include <vector>
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
+#include "bbs/com.h"
+#include "bbs/msgbase.h"
+#include "bbs/sysoplog.h"
+#include "bbs/utility.h"
+#include "bbs/vars.h"
+#include "bbs/quote.h"
+#include "bbs/wsession.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::stringstream;
@@ -41,8 +50,8 @@ void write_automessage();
  */
 void read_automessage() {
   bout.nl();
-  unique_ptr<WStatus> status(application()->GetStatusManager()->GetStatus());
-  bool bAutoMessageAnonymous = status->IsAutoMessageAnonymous();
+  unique_ptr<WStatus> current_status(application()->GetStatusManager()->GetStatus());
+  bool bAutoMessageAnonymous = current_status->IsAutoMessageAnonymous();
 
   TextFile autoMessageFile(syscfg.gfilesdir, AUTO_MSG, "rt");
   string line;

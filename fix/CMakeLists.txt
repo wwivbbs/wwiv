@@ -18,7 +18,6 @@ set(COMMON_SOURCES
 set(BBS_SOURCES
   ${BBS_SOURCE_DIR}/datetime.cpp
   ${BBS_SOURCE_DIR}/memory.cpp
-  ${BBS_SOURCE_DIR}/version.cpp
   ${BBS_SOURCE_DIR}/wuser.cpp
   )
 

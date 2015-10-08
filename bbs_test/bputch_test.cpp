@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 
+#include "bbs/bputch.h"
 #include "bbs/bbs.h"
 #include "bbs_test/bbs_helper.h"
 #include "core/strings.h"
@@ -30,10 +31,6 @@
 using std::cout;
 using std::endl;
 using std::string;
-
-// From bputch.cpp, defined in fcns.h
-int bputch(char c, bool bUseInternalBuffer = false);
-
 
 class BPutchFileTest : public ::testing::Test {
 protected:

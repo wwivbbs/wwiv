@@ -142,7 +142,7 @@ static T StringToT(std::function<R(const string&)> f, const string& s) {
       return numeric_limits<T>::min();
     }
     return static_cast<T>(ret);
-  } catch (std::logic_error) {
+  } catch (std::logic_error&) {
     // Handle invalid_argument and out_of_range.
     return 0;
   }
@@ -381,7 +381,7 @@ string stripcolors(const string& orig) {
     if (*i == '|' && (i + 1) != end(orig) && (i + 2) != end(orig) && IsColorCode(*(i + 1)) && IsColorCode(*(i + 2))) {
       ++i;
       ++i;
-    } else if (*i == 3 && i + 1 < end(orig) && isdigit(*(i + 1))) {
+    } else if (*i == 3 && i + 1 != end(orig) && isdigit(*(i + 1))) {
       ++i;
     } else {
       out.push_back(*i);

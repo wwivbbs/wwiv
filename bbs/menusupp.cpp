@@ -22,6 +22,8 @@
 
 #include "bbs/attach.h"
 #include "bbs/automsg.h"
+#include "bbs/chat.h"
+#include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/external_edit.h"
@@ -30,7 +32,11 @@
 #include "bbs/keycodes.h"
 #include "bbs/menu.h"
 #include "bbs/menusupp.h"
+#include "bbs/multinst.h"
+#include "bbs/netsup.h"
+#include "bbs/newuser.h"
 #include "bbs/pause.h"
+#include "bbs/uedit.h"
 #include "bbs/valscan.h"
 #include "bbs/vote.h"
 #include "bbs/voteedit.h"
@@ -381,11 +387,11 @@ void ExpressScan() {
 
 void WWIVVersion() {
   bout.cls();
-  bout << "|#9WWIV Bulletin Board System " << wwiv_version << " " << beta_version << wwiv::endl;
+  bout << "|#9WWIV Bulletin Board System " << wwiv_version << beta_version << wwiv::endl;
   bout << "|#9Copyright (C) 1998-2015, WWIV Software Services.\r\n";
   bout << "|#9All Rights Reserved.\r\n\r\n";
   bout << "|#9Licensed under the Apache License.  " << wwiv::endl;
-  bout << "|#9Please see |#1http://wwiv.sourceforge.net |#9for more information"
+  bout << "|#9Please see |#1http://wwivbbs.com/ |#9for more information"
        << wwiv::endl << wwiv::endl;
   bout << "|#9Compile Time  : |#2" << wwiv_date << wwiv::endl;
   bout << "|#9SysOp Name:   : |#2" << syscfg.sysopname << wwiv::endl;

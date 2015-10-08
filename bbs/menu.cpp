@@ -25,6 +25,7 @@
 #include "bbs/menu.h"
 #include "bbs/menusupp.h"
 #include "bbs/menu_parser.h"
+#include "bbs/newuser.h"
 #include "bbs/printfile.h"
 #include "bbs/wwiv.h"
 #include "core/stl.h"
@@ -111,8 +112,8 @@ void StartMenus() {
 }
 
 void MenuInstanceData::Menus(const string& menuDirectory, const string& menuName) {
-  path = menuDirectory;
-  menu = menuName;
+  path_ = menuDirectory;
+  menu_ = menuName;
 
   if (Open()) {
     if (header.nNumbers == MENU_NUMFLAG_DIRNUMBER && udir[0].subnum == -1) {
@@ -154,7 +155,7 @@ const std::string MenuInstanceData::create_menu_filename(
 }
 
 const string MenuInstanceData::create_menu_filename(const string& extension) const {
-  return MenuInstanceData::create_menu_filename(path, menu, extension);
+  return MenuInstanceData::create_menu_filename(path_, menu_, extension);
 }
 
 bool MenuInstanceData::CreateMenuMap(File* menu_file) {

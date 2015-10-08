@@ -17,12 +17,14 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/wwiv.h"
 #include "bbs/instmsg.h"
 #include "bbs/menuspec.h"
 #include "bbs/menusupp.h"
+#include "bbs/multinst.h"
 #include "core/strings.h"
 
 using namespace wwiv::menus;

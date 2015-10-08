@@ -17,6 +17,12 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/file.h"
+#ifdef _WIN32
+// Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "bbs/wwiv_windows.h"
+
+#include "Shlwapi.h"
+#endif  // _WIN32
 
 #include <algorithm>
 #include <cerrno>
@@ -36,12 +42,6 @@
 #include <unistd.h>
 #endif  // _WIN32
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include "Shlwapi.h"
-#endif  // _WIN32
-
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
 
@@ -59,17 +59,19 @@
 
 #if !defined(ftruncate)
 #define ftruncate chsize
-#endif
+#endif  // ftruncate
 
 #define flock(h, m)
+#define F_OK 0
+
 #else 
 
-#define _stat stat
-#define _fstat fstat
+#define _access access
 #define Sleep(x) usleep((x)*1000)
 #define _sopen(n, f, s, p) open(n, f, 0644)
 
 #endif  // _WIN32
+
 
 using std::string;
 
@@ -251,41 +253,6 @@ bool File::SetFilePermissions(int nPermissions) {
   return chmod(full_path_name_.c_str(), nPermissions) == 0;
 }
 
-long File::GetLength() {
-  // _stat/_fstat is the 32 bit version on WIN32
-  struct _stat fileinfo;
-
-  if (IsOpen()) {
-    // File is open, use fstat
-    if (_fstat(handle_, &fileinfo) != 0) {
-      return -1;
-    }
-  } else {
-    // stat works on filenames, not filehandles.
-    if (_stat(full_path_name_.c_str(), &fileinfo) != 0) {
-      return -1;
-    }
-  }
-  return fileinfo.st_size;
-}
-
-time_t File::last_write_time() {
-  bool bOpenedHere = false;
-  if (!this->IsOpen()) {
-    bOpenedHere = true;
-    Open();
-  }
-  WWIV_ASSERT(File::IsFileHandleValid(handle_));
-
-  // N.B. On Windows with _USE_32BIT_TIME_T defined _fstat == _fstat32.
-  struct _stat buf;
-  time_t nFileTime = (_stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
-
-  if (bOpenedHere) {
-    Close();
-  }
-  return nFileTime;
-}
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
@@ -304,13 +271,18 @@ bool File::Remove(const string& directoryName, const string& fileName) {
 }
 
 bool File::Exists(const string& original_pathname) {
-  struct _stat buf;
+  if (original_pathname.empty()) {
+    // An empty filename can not exist.
+    // The question is should we assert here?
+    return false;
+  }
+
   string fn(original_pathname);
   if (fn.back() == pathSeparatorChar) {
     // If the pathname ends in / or \, then remove the last character.
     fn.pop_back();
   }
-  int ret = _stat(fn.c_str(), &buf);
+  int ret = _access(fn.c_str(), F_OK);
   return ret == 0;
 }
 

@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+// Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "bbs/wwiv_windows.h"
 
 #include <algorithm>
 #include <ctime>
@@ -26,13 +26,13 @@
 
 #include "bbs/bbs.h"
 #include "bbs/wcomm.h"
-#include "core/File.h"
 #include "bbs/platform/platformfcns.h"
-#include "core/strings.h"
 #include "bbs/sysoplog.h"
-#include "core/textfile.h"
 #include "bbs/wsession.h"
 #include "bbs/vars.h"
+#include "core/File.h"
+#include "core/strings.h"
+#include "core/textfile.h"
 
 
 // from com.cpp.
@@ -149,7 +149,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
 #if 1
       int nLp = 0;
       for (nLp = 0; nLp < nNumReadFromComm; nLp++) {
-        fprintf(hLogFile, "[%u]", static_cast<unsigned char>(szReadBuffer[ nLp ]), (unsigned char) szReadBuffer[ nLp ]);
+        fprintf(hLogFile, "[%u]", static_cast<unsigned char>(szReadBuffer[ nLp ]));
       }
       fprintf(hLogFile, "   ");
       for (nLp = 0; nLp < nNumReadFromComm; nLp++) {

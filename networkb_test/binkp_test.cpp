@@ -26,12 +26,18 @@ static const int ORIGINATING_ADDRESS = 2;
 
 class BinkTest : public testing::Test {
 protected:
-  void Start() {
+  void StartBinkpReceiver() {
     files_.Mkdir("network");
     const string line("@1 example.com");
     files_.CreateTempFile("binkp.net", line);
     const string network_dir = files_.DirName("network");
-    BinkConfig* dummy_config = new BinkConfig(ORIGINATING_ADDRESS, "Dummy", network_dir);
+    wwiv::sdk::Config config;
+    memset(&wwiv_config_, 0, sizeof(configrec));
+    config.set_initialized_for_test(true);
+    strcpy(wwiv_config_.systemname, "Test System");
+    strcpy(wwiv_config_.sysopname, "Test Sysop");
+    config.set_config(&wwiv_config_);
+    BinkConfig* dummy_config = new BinkConfig(ORIGINATING_ADDRESS, config, network_dir);
     Callout dummy_callout(network_dir);
     BinkP::received_transfer_file_factory_t null_factory = [](const string& network_name, const string& filename) { 
       return new InMemoryTransferFile(filename, "");
@@ -49,10 +55,11 @@ protected:
   FakeConnection conn_;
   std::thread thread_;
   FileHelper files_;
+  configrec wwiv_config_;
 };
 
 TEST_F(BinkTest, ErrorAbortsSession) {
-  Start();
+  StartBinkpReceiver();
   conn_.ReplyCommand(BinkpCommands::M_ERR, "Doh!");
   Stop();
   

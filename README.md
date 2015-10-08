@@ -10,8 +10,14 @@ You will need CMake 2.8 or later to build WWIV.
 
 ***
 
-Attention Windows 10
+Installation and SysOp Instructions
 ====================
 
-You need to download the [Visual Studio 2015 RC redistributable files](https://www.microsoft.com/en-us/download/details.aspx?id=46881) and install this package before using WWIV (or any other software
-compiled with Visual Studio 2015 RC).
+All the installation and SysOp administration information you 
+need is right here on GitHub in the [WWIV 5.0 Wiki](https://github.com/wwivbbs/wwiv/wiki)
+
+Get Involved
+====================
+
+If you want to help out with WWIV BBS, check out the [project homepage](http://wwivbbs.github.io/) 
+to connect with the team or just jump into the [Issues List](https://github.com/wwivbbs/wwiv/issues).

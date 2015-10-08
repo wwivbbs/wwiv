@@ -24,10 +24,13 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bgetch.h"
 #include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
+#include "bbs/bputch.h"
 #include "bbs/local_io.h"
-#include "bbs/fcns.h"
 #include "bbs/keycodes.h"
+#include "bbs/pause.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wsession.h"
@@ -39,6 +42,23 @@
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::strings;
+
+char *get_file(const string& filename, long *len) {
+  File file(filename);
+  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
+    *len = 0L;
+    return nullptr;
+  }
+
+  long lFileSize = file.GetLength();
+  char* pszFileText = static_cast<char *>(malloc(lFileSize + 50));
+  if (pszFileText == nullptr) {
+    *len = 0L;
+    return nullptr;
+  }
+  *len = static_cast< long >(file.Read(pszFileText, lFileSize));
+  return pszFileText;
+}
 
 /**
  * Creates the fully qualified filename to display adding extensions and directories as needed.

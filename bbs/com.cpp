@@ -149,7 +149,7 @@ char getkey() {
       if (dd < timelastchar1 && ((dd + 1000) > timelastchar1)) {
         timelastchar1 = dd;
       }
-      if (labs(dd - timelastchar1) > 65536L) {
+      if (abs(dd - timelastchar1) > 65536L) {
         timelastchar1 -= static_cast<int>(floor(SECONDS_PER_DAY * 18.2));
       }
       if ((dd - timelastchar1) > tv1 && !beepyet) {
@@ -157,7 +157,7 @@ char getkey() {
         bputch(CG);
       }
       application()->UpdateShutDownStatus();
-      if (labs(dd - timelastchar1) > tv) {
+      if (abs(dd - timelastchar1) > tv) {
         bout.nl();
         bout << "Call back later when you are there.\r\n";
         hangup = true;

@@ -18,6 +18,8 @@
 /**************************************************************************/
 #ifndef __INCLUDED_LOCAL_IO_WIN32_H__
 #define __INCLUDED_LOCAL_IO_WIN32_H__
+// Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "bbs/wwiv_windows.h"
 
 #include <string>
 
@@ -26,39 +28,6 @@
 #include "bbs/local_io.h"
 #include "core/file.h"
 
-#ifdef _WIN32
-#define NOGDICAPMASKS
-#define NOSYSMETRICS
-#define NOMENUS
-#define NOICONS
-#define NOKEYSTATES
-#define NOSYSCOMMANDS
-#define NORASTEROPS
-#define NOATOM
-#define NOCLIPBOARD
-#define NODRAWTEXT
-#define NOKERNEL
-#define NONLS
-#define NOMEMMGR
-#define NOMETAFILE
-#define NOMINMAX
-#define NOOPENFILE
-#define NOSCROLL
-#define NOSERVICE
-#define NOSOUND
-#define NOTEXTMETRIC
-#define NOWH
-#define NOCOMM
-#define NOKANJI
-#define NOHELP
-#define NOPROFILER
-#define NODEFERWINDOWPOS
-#define NOMCX
-#define NOCRYPT
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-#endif // _WIN32
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
 
@@ -102,7 +71,7 @@ class Win32ConsoleIO : public LocalIO {
   virtual void LocalWriteScreenBuffer(const char *pszBuffer) override;
   virtual int  GetDefaultScreenBottom() override;
 
-  virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) override;
+  virtual void LocalEditLine(char *s, int len, int editor_status, int *returncode, char *ss) override;
   virtual void UpdateNativeTitleBar() override;
 
 private:

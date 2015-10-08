@@ -42,12 +42,10 @@ void Print(int nType, bool bLogIt, const char* szText, ...) {
 	printf("%s%s\n", szLogTypeArray[nType], szBuffer);
 
 	if (bLogIt && hLogFile.IsOpen()) {
-		struct tm *time_now;
-		time_t secs_now;
-		char str[81];
-		char szBuf[512];
-		time(&secs_now);
-		time_now = localtime(&secs_now);
+    char str[81];
+    char szBuf[512];
+    time_t secs_now = time(nullptr);
+    struct tm* time_now = localtime(&secs_now);
 		strftime(str, 80, "%H:%M:%S", time_now);
 		sprintf(szBuf, "%s%s  %s\n", szLogTypeArray[nType], str, szBuffer);
 		hLogFile.Write(szBuf, strlen(szBuf));
@@ -70,7 +68,7 @@ bool OpenLogFile(const char* szFileName) {
 	time(&secs_now);
 	time_now = localtime(&secs_now);
 	strftime(str, 80, "%a %d %b %Y", time_now);
-	sprintf(szBuf, "\n----------  %s, fix %s\n", str, wwiv_version);
+	sprintf(szBuf, "\n----------  %s, fix %s%s\n", str, wwiv_version, beta_version);
 	hLogFile.Write(szBuf, strlen(szBuf));
 
 	return true;
