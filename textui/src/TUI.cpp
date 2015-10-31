@@ -22,7 +22,7 @@ class InfoCommand : public UICommand
         infoWindow.AddText( "" );
         infoWindow.AddText( "Copyright (c) 2007 WWIV Software Services", true );
         infoWindow.AddText( "All Rights Reserved", true );
-        infoWindow.AddText( "http://wwivbbs.com/", true );
+        infoWindow.AddText( "http://www.wwivbbs.org/", true );
 	infoWindow.AddText( "https://github.com/wwivbbs/wwiv/", true );
         infoWindow.SetTitle( "About TUI" );
         infoWindow.Run();
