@@ -16,6 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+// work around error using inet_ntoa on build machine.
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+
 #include "bbs/platform/win32/wiot.h"
 
 #include <iostream>
@@ -36,9 +39,6 @@ using std::endl;
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::strings;
-
-// work around error using inet_ntoa on build machine.
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 
 WIOTelnet::WIOTelnet(unsigned int nHandle) : socket_(static_cast<SOCKET>(nHandle)), threads_started_(false) {
