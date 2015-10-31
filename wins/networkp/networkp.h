@@ -28,7 +28,7 @@ typedef struct
 } net_address_rec;
 
 const char *version	= "WWIV Internet Network Support (WINS) " VERSION " [" __DATE__ "]";
-const char *version_url	= "Please visit http://wwivbbs.com/ and https://github.com/wwivbbs/wwiv for support and more information.";
+const char *version_url	= "Please visit http://www.wwivbbs.org/ and https://github.com/wwivbbs/wwiv for support and more information.";
 
 const char *strings[] = 
 {
