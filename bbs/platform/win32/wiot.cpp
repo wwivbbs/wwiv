@@ -37,6 +37,9 @@ using std::string;
 using std::unique_ptr;
 using namespace wwiv::strings;
 
+// work around error using inet_ntoa on build machine.
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+
 
 WIOTelnet::WIOTelnet(unsigned int nHandle) : socket_(static_cast<SOCKET>(nHandle)), threads_started_(false) {
   WIOTelnet::InitializeWinsock();
