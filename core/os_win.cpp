@@ -60,6 +60,7 @@ void sound(uint32_t frequency, std::chrono::milliseconds d) {
 }
 
 std::string os_version_string() {
+
   OSVERSIONINFO os;
   os.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
   if (!GetVersionEx(&os)) {
