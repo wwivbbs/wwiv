@@ -301,17 +301,22 @@ BinkState BinkP::ConnInit() {
 }
 
 static string wwiv_version_string() {
-  return StrCat(wwiv_version, beta_version, " (", wwiv_date, ")");
+  return StrCat(wwiv_version, beta_version);
+}
 
+static string wwiv_version_string_with_date() {
+  return StrCat(wwiv_version, beta_version, " (", wwiv_date, ")");
 }
 
 BinkState BinkP::WaitConn() {
   LOG << "STATE: WaitConn";
   send_command_packet(BinkpCommands::M_NUL, "OPT wwivnet");
-  send_command_packet(BinkpCommands::M_NUL, StrCat("WWIVVER ", wwiv_version_string()));
+  send_command_packet(BinkpCommands::M_NUL, StrCat("WWIVVER ", wwiv_version_string_with_date()));
   send_command_packet(BinkpCommands::M_NUL, StrCat("SYS ", config_->system_name()));
-  send_command_packet(BinkpCommands::M_NUL, "ZYZ Unknown Sysop");
-  send_command_packet(BinkpCommands::M_NUL, "VER networkb/0.0 binkp/1.0");
+  const string sysop_name_packet = StrCat("ZYZ ", config_->sysop_name());
+  send_command_packet(BinkpCommands::M_NUL, sysop_name_packet);
+  const string version_packet = StrCat("VER networkb/", wwiv_version_string(), " binkp/1.0");
+  send_command_packet(BinkpCommands::M_NUL, version_packet);
   send_command_packet(BinkpCommands::M_NUL, "LOC Unknown");
 
   string network_addresses;

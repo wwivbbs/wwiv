@@ -188,7 +188,7 @@ static int ShowLoginAndGetUserNumber(bool network_only) {
         string temp_user_name(session()->user()->GetRealName());
         StringUpperCase(&temp_user_name);
         if (user_name == temp_user_name && !session()->user()->IsUserDeleted()) {
-          bout << "|#5Do you mean " << session()->user()->GetUserNameAndNumber(i) << "? ";
+          bout << "|#5Do you mean " << session()->user()->GetUserNameAndNumber(smallist[i].number) << "? ";
           if (yesno()) {
             nUserNumber = nTempUserNumber;
           }
@@ -1101,6 +1101,7 @@ void logoff() {
 
 
 void logon_guest() {
+  session()->SetUserOnline(true);
   bout.nl(2);
   input_ansistat();
 
