@@ -23,8 +23,10 @@
 #include "core/inifile.h"
 #include "bbs/keycodes.h"
 #include "bbs/instmsg.h"
+#include "bbs/multinst.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
+#include "bbs/uedit.h"
 #include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
@@ -534,7 +536,7 @@ void page_user(int loc) {
 void moving(bool bOnline, int loc) {
   char space[55];
 
-  if (!invis) {
+  if (!chat_invis) {
     sprintf(space, "|#6%s %s", session()->user()->GetName(), (bOnline ? "is on the air." :
             "has signed off."));
     out_msg(space, loc);
@@ -749,10 +751,10 @@ void toggle_avail() {
 
   session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
   get_inst_info(application()->GetInstanceNumber(), &ir);
-  avail = !avail;
+  chat_avail = !chat_avail;
 
   bout << "\n\rYou are now ";
-  bout << (avail ? "available for chat.\n\r\n" : "not available for chat.\n\r\n");
+  bout << (chat_avail ? "available for chat.\n\r\n" : "not available for chat.\n\r\n");
   write_inst(ir.loc, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
   RestoreCurrentLine(cl, atr, xl, &cc);
 }
@@ -765,10 +767,10 @@ void toggle_invis() {
 
   session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
   get_inst_info(application()->GetInstanceNumber(), &ir);
-  invis = !invis;
+  chat_invis = !chat_invis;
 
   bout << "\r\n|#1You are now ";
-  bout << (invis ? "invisible.\n\r\n" : "visible.\n\r\n");
+  bout << (chat_invis ? "invisible.\n\r\n" : "visible.\n\r\n");
   write_inst(ir.loc, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
   RestoreCurrentLine(cl, atr, xl, &cc);
 }

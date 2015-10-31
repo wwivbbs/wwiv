@@ -2,9 +2,8 @@
 @rem WWIV 5.0 Build Script.
 @rem
 @rem Required Variables:
-@rem WORKSPACE - wwiv-svn root directory
+@rem WORKSPACE - git root directory
 @rem BUILD_NUMBER - Jenkins Build number
-@rem SVN_REVISION - subversion build number
 @rem TEXT_TRANSFORM - path to text transform tool from visual studio
 @rem
 @rem Installed Software:
@@ -13,6 +12,8 @@
 @rem   msbuild [in PATH, set by vcvarsall.bat]
 @rem 
 @rem **************************************************************************
+
+setlocal
 
 @if exist "%ProgramFiles(x86)%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" (
   call "%ProgramFiles(x86)%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86
@@ -31,9 +32,17 @@ echo Archive:       %RELEASE_ZIP%
 
 @rem Build BBS, init, telnetserver
 echo:
-echo U* pdating the Build Number in version.cpp
+echo * Updating the Build Number in version.cpp
 cd %WORKSPACE%\core
-%TEXT_TRANSFORM% -a !!version!%BUILD_NUMBER% version.template
+
+setlocal
+rem
+rem When LIB contains paths that do not exist, then TextTransform
+rem fails, so we'll clear it out while running TEXT_TRANSFORM
+rem
+set LIB=
+%TEXT_TRANSFORM% -a !!version!%BUILD_NUMBER% version.template || exit /b
+endlocal
 
 echo:
 echo * Building CORE
@@ -142,6 +151,10 @@ copy /v/y %WINS%\qotd\Release\qotd.exe %WORKSPACE%\release\qotd.exe
 copy /v/y %WINS%\uu\Release\uu.exe %WORKSPACE%\release\uu.exe
 
 echo:
+echo * Copying WINS sample filesto staging area
+copy /v/y %WINS%\admin\* %WORKSPACE%\release\
+
+echo:
 echo * Copying INFOZIP files to staging area
 set INFOZIP=%WORKSPACE%\deps\infozip
 dir %INFOZIP%\unzip60\win32\vc8\unzip__Win32_Release\unzip.exe
@@ -167,3 +180,5 @@ echo:
 echo ** Archive File: %RELEASE_ZIP%
 echo ** Archive contents:
 %ZIP_EXE% l %RELEASE_ZIP%
+endlocal
+

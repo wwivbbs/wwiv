@@ -37,7 +37,13 @@
 #include "bbs/subxtr.h"
 #undef _DEFINE_GLOBALS_
 
+#include "bbs/bgetch.h"
+#include "bbs/bputch.h"
 #include "bbs/bbs.h"
+#include "bbs/bbsutl1.h"
+#include "bbs/com.h"
+#include "bbs/confutil.h"
+#include "bbs/connect1.h"
 #include "bbs/datetime.h"
 #include "bbs/external_edit.h"
 #include "bbs/fcns.h"
@@ -45,9 +51,13 @@
 #include "bbs/instmsg.h"
 #include "bbs/local_io.h"
 #include "bbs/local_io_curses.h"
+#include "bbs/netsup.h"
 #include "bbs/null_local_io.h"
 #include "bbs/menu.h"
 #include "bbs/printfile.h"
+#include "bbs/sysoplog.h"
+#include "bbs/uedit.h"
+#include "bbs/utility.h"
 #include "bbs/voteedit.h"
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
@@ -180,7 +190,6 @@ int WApplication::doWFCEvents() {
     lokb = 0;
     session()->SetCurrentSpeed("KB");
     time_t lCurrentTime = time(nullptr);
-    static time_t last_time_c;
     if (!any && (((rand() % 8000) == 0) || (lCurrentTime - last_time_c > 1200)) &&
         net_sysnum && (this->flags & OP_FLAGS_NET_CALLOUT)) {
       lCurrentTime = last_time_c;
@@ -1125,22 +1134,22 @@ void WApplication::ShutDownBBS(int nShutDownStatus) {
   RestoreCurrentLine(cl, atr, xl, &cc);
 }
 
-
 void WApplication::UpdateShutDownStatus() {
-  if (IsShutDownActive()) {
-    if (((GetShutDownTime() - timer()) < 120) && ((GetShutDownTime() - timer()) > 60)) {
-      if (GetShutDownStatus() != WApplication::shutdownTwoMinutes) {
-        ShutDownBBS(WApplication::shutdownTwoMinutes);
-      }
+  if (!IsShutDownActive()) {
+    return;
+  }
+  if (((GetShutDownTime() - timer()) < 120) && ((GetShutDownTime() - timer()) > 60)) {
+    if (GetShutDownStatus() != WApplication::shutdownTwoMinutes) {
+      ShutDownBBS(WApplication::shutdownTwoMinutes);
     }
-    if (((GetShutDownTime() - timer()) < 60) && ((GetShutDownTime() - timer()) > 0)) {
-      if (GetShutDownStatus() != WApplication::shutdownOneMinute) {
-        ShutDownBBS(WApplication::shutdownOneMinute);
-      }
+  }
+  if (((GetShutDownTime() - timer()) < 60) && ((GetShutDownTime() - timer()) > 0)) {
+    if (GetShutDownStatus() != WApplication::shutdownOneMinute) {
+      ShutDownBBS(WApplication::shutdownOneMinute);
     }
-    if ((GetShutDownTime() - timer()) <= 0) {
-      ShutDownBBS(WApplication::shutdownImmediate);
-    }
+  }
+  if ((GetShutDownTime() - timer()) <= 0) {
+    ShutDownBBS(WApplication::shutdownImmediate);
   }
 }
 
@@ -1178,7 +1187,6 @@ int bbsmain(int argc, char *argv[]) {
   } catch (exception& e) {
     // TODO(rushfan): Log this to sysop log or where else?
     clog << "BBS Terminated by exception: " << e.what() << "\nStacktrace:\n";
-    clog << stacktrace();
     return 1;
   }
 }

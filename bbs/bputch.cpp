@@ -16,10 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/bputch.h"
 
+#include "bbs/bgetch.h"
 #include "bbs/bbs.h"
-#include "bbs/fcns.h"
+#include "bbs/bbsutl1.h"
+#include "bbs/com.h"
+#include "bbs/interpret.h"
 #include "bbs/keycodes.h"
+#include "bbs/pause.h"
+#include "bbs/utility.h"
 #include "bbs/vars.h"
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
@@ -329,6 +335,14 @@ void rputs(const char *pszText) {
   }
 }
 
+void FlushOutComChBuffer() {
+  if (s_nOutComChBufferPosition > 0) {
+    session()->remoteIO()->write(s_szOutComChBuffer, s_nOutComChBufferPosition);
+    s_nOutComChBufferPosition = 0;
+    memset(s_szOutComChBuffer, 0, OUTCOMCH_BUFFER_SIZE + 1);
+  }
+}
+
 void rputch(char ch, bool bUseInternalBuffer) {
   if (ok_modem_stuff && nullptr != session()->remoteIO()) {
     if (bUseInternalBuffer) {
@@ -342,10 +356,3 @@ void rputch(char ch, bool bUseInternalBuffer) {
   }
 }
 
-void FlushOutComChBuffer() {
-  if (s_nOutComChBufferPosition > 0) {
-    session()->remoteIO()->write(s_szOutComChBuffer, s_nOutComChBufferPosition);
-    s_nOutComChBufferPosition = 0;
-    memset(s_szOutComChBuffer, 0, OUTCOMCH_BUFFER_SIZE + 1);
-  }
-}

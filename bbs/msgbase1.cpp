@@ -26,6 +26,7 @@
 #include <string>
 
 #include "bbs/datetime.h"
+#include "bbs/netsup.h"
 #include "bbs/wwiv.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"

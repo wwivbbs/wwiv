@@ -191,7 +191,7 @@ void printtitle_plus() {
 
 static int lp_configured_lines() {
   return (config_listing.lp_options & cfl_date_uploaded || 
-          config_listing.lp_options & cfl_upby) ? 2 : 1;
+          config_listing.lp_options & cfl_upby) ? 3 : 2;
 }
 
 int first_file_pos() {
@@ -212,7 +212,8 @@ void print_searching(struct search_record * search_rec) {
     bout.nl(2);
   }
   bout << "|#9<Space> aborts  : ";
-  bout.bprintf(" |B1|15%-40.40s|B0|#0",
+  bout.cls();
+  bout.bprintf(" |B1|15%-40.40s|B0|#0\r",
                                     directories[udir[session()->GetCurrentFileArea()].subnum].name);
 }
 
@@ -259,14 +260,6 @@ int listfiles_plus(int type) {
 
   return nReturn;
 }
-
-
-void undrawfile(int filepos, int filenum) {
-  lines_listed = 0;
-  bout.GotoXY(4, filepos + first_file_pos());
-  bout.bprintf("|%2d%3d|#0", lp_config.file_num_color, filenum);
-}
-
 
 int lp_add_batch(const char *pszFileName, int dn, long fs) {
   double t;
@@ -1470,7 +1463,7 @@ static int rename_filename(const char *pszFileName, int dn) {
           u.mask &= ~mask_extended;
         } else {
           u.mask |= mask_extended;
-          modify_extended_description(&ss, directories[dn].name, u.filename);
+          modify_extended_description(&ss, directories[dn].name);
           if (ss) {
             delete_extended_description(u.filename);
             add_extended_description(u.filename, ss);
@@ -1478,7 +1471,7 @@ static int rename_filename(const char *pszFileName, int dn) {
           }
         }
       } else {
-        modify_extended_description(&ss, directories[dn].name, u.filename);
+        modify_extended_description(&ss, directories[dn].name);
         if (ss) {
           add_extended_description(u.filename, ss);
           free(ss);
@@ -2181,7 +2174,7 @@ bool ok_listplus() {
   if (session()->user()->IsUseNoTagging()) {
     return false;
   }
-  if (session()->user()->IsUseListPlus()) {
+  if (!session()->user()->IsUseListPlus()) {
     return false;
   }
 #endif

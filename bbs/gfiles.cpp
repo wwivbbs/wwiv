@@ -35,23 +35,6 @@ void gfile_sec(int sn);
 void gfiles2();
 void gfiles3(int n);
 
-char *get_file(const string& filename, long *len) {
-  File file(filename);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    *len = 0L;
-    return nullptr;
-  }
-
-  long lFileSize = file.GetLength();
-  char* pszFileText = static_cast< char *>(BbsAllocA(lFileSize + 50));
-  if (pszFileText == nullptr) {
-    *len = 0L;
-    return nullptr;
-  }
-  *len = static_cast< long >(file.Read(pszFileText, lFileSize));
-  return pszFileText;
-}
-
 gfilerec *read_sec(int sn, int *nf) {
   gfilerec *pRecord;
   *nf = 0;

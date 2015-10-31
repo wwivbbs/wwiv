@@ -22,6 +22,7 @@
 
 #include "bbs/datetime.h"
 #include "bbs/input.h"
+#include "bbs/multinst.h"
 #include "bbs/wwiv.h"
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
@@ -488,7 +489,7 @@ void write_inst(int loc, int subloc, int flags) {
   unsigned short cf = ti.flags & (~(INST_FLAGS_ONLINE | INST_FLAGS_MSG_AVAIL));
   if (session()->IsUserOnline()) {
     cf |= INST_FLAGS_ONLINE;
-    if (invis) {
+    if (chat_invis) {
       cf |= INST_FLAGS_INVIS;
     }
     if (!session()->user()->IsIgnoreNodeMessages()) {
@@ -499,12 +500,12 @@ void write_inst(int loc, int subloc, int flags) {
       case INST_LOC_EMAIL:
       case INST_LOC_CHATROOM:
       case INST_LOC_RMAIL:
-        if (avail) {
+        if (chat_avail) {
           cf |= INST_FLAGS_MSG_AVAIL;
         }
         break;
       default:
-        if ((loc >= INST_LOC_CH1) && (loc <= INST_LOC_CH10) && avail) {
+        if ((loc >= INST_LOC_CH1) && (loc <= INST_LOC_CH10) && chat_avail) {
           cf |= INST_FLAGS_MSG_AVAIL;
         }
         break;
@@ -525,7 +526,7 @@ void write_inst(int loc, int subloc, int flags) {
       ti.flags |= flags;
     }
   }
-  if ((ti.flags & INST_FLAGS_INVIS) && (!invis)) {
+  if ((ti.flags & INST_FLAGS_INVIS) && (!chat_invis)) {
     cf = 0;
     if (ti.flags & INST_FLAGS_ONLINE) {
       cf |= INST_FLAGS_ONLINE;
@@ -564,10 +565,10 @@ void write_inst(int loc, int subloc, int flags) {
     re_write = true;
     ti.loc = static_cast<unsigned short>(loc);
   }
-  if ((((ti.flags & INST_FLAGS_INVIS) && (!invis)) ||
-       ((!(ti.flags & INST_FLAGS_INVIS)) && (invis))) ||
-      (((ti.flags & INST_FLAGS_MSG_AVAIL) && (!avail)) ||
-       ((!(ti.flags & INST_FLAGS_MSG_AVAIL)) && (avail))) &&
+  if ((((ti.flags & INST_FLAGS_INVIS) && (!chat_invis)) ||
+       ((!(ti.flags & INST_FLAGS_INVIS)) && (chat_invis))) ||
+      (((ti.flags & INST_FLAGS_MSG_AVAIL) && (!chat_avail)) ||
+       ((!(ti.flags & INST_FLAGS_MSG_AVAIL)) && (chat_avail))) &&
       (ti.loc != INST_LOC_WFC)) {
     re_write = true;
   }

@@ -558,6 +558,39 @@
     <ClInclude Include="wfc_log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="bbsutl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bbsutl1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bgetch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bputch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sysopf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="interpret.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="msgbase.h" />
+    <ClInclude Include="connect1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="quote.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="uedit.h" />
+    <ClInclude Include="shortmsg.h" />
+    <ClInclude Include="confutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

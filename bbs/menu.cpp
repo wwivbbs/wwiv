@@ -25,6 +25,7 @@
 #include "bbs/menu.h"
 #include "bbs/menusupp.h"
 #include "bbs/menu_parser.h"
+#include "bbs/newuser.h"
 #include "bbs/printfile.h"
 #include "bbs/wwiv.h"
 #include "core/stl.h"

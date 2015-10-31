@@ -27,6 +27,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/scope_exit.h"
+#include "core/version.h"
 
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
@@ -55,7 +56,7 @@ using namespace wwiv::strings;
 using namespace wwiv::os;
 
 static void ShowHelp() {
-  cout << "Usage: networkb [flags]" << endl
+  cout << "\nUsage: networkb [flags]" << endl
        << "Flags:" << endl
        << "--network  Network name to use (i.e. wwivnet)" << endl
        << "--bbsdir   (optional) BBS directory if other than current directory " << endl
@@ -83,12 +84,17 @@ static map<string, string> ParseArgs(int argc, char** argv) {
 int main(int argc, char** argv) {
   try {
     Logger::Init(argc, argv);
+
     wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
 
     map<string, string> args = ParseArgs(argc, argv);
 
     for (const auto& arg : args) {
-      LOG << "arg: --" << arg.first << "=" << arg.second;
+      if (!arg.second.empty()) {
+        LOG << "arg: --" << arg.first << "=" << arg.second;
+      } else {
+        LOG << "arg: --" << arg.first;
+      }
       if (arg.first == "help") {
         ShowHelp();
         return 0;
@@ -153,6 +159,7 @@ int main(int argc, char** argv) {
       c = Connect(node_config->host, node_config->port);
     } else {
       LOG << "No command given to send or receive.  Either use '--send --node=#' or --receive";
+      ShowHelp();
       return 1;
     } 
     BinkP::received_transfer_file_factory_t factory = [&](const string& network_name, const string& filename) { 
@@ -168,11 +175,9 @@ int main(int argc, char** argv) {
     }
     BinkP binkp(c.get(), &bink_config, callouts, side, expected_remote_node, factory);
     binkp.Run();
-  } catch (const socket_error&) {
-    LOG << "ERROR: [networkb]: " << "\nStacktrace:\n";
-    LOG << stacktrace();
-  } catch (const exception&) {
-    LOG << "ERROR: [networkb]: " << "\nStacktrace:\n";
-    LOG << stacktrace();
+  } catch (const socket_error& e) {
+    LOG << "ERROR: [networkb]: " << e.what() << "\n";
+  } catch (const exception& e) {
+    LOG << "ERROR: [networkb]: " << e.what() << "\nStacktrace:\n" << stacktrace();
   }
 }

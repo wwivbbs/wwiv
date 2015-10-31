@@ -21,13 +21,16 @@
 #include <string>
 
 #include "bbs/wwiv.h"
+#include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
+#include "bbs/multinst.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
+#include "bbs/uedit.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/inifile.h"

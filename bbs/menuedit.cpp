@@ -19,12 +19,17 @@
 #include <cstdint>
 #include <string>
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
 #include "bbs/input.h"
 #include "bbs/menu.h"
+#include "bbs/vars.h"
+#include "bbs/wsession.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
+
+#include "sdk/filenames.h"
 
 using std::string;
 using wwiv::bbs::InputMode;
@@ -375,7 +380,7 @@ static bool EditMenuItem(MenuRec* menu, File &fileEditMenu, int& nAmount, int& n
 }
 
 static bool GetMenuDir(string* menuName) {
-  wwiv::core::ScopeExit on_exit([=] { application()->CdHome(); });
+  wwiv::core::ScopeExit on_exit([] { application()->CdHome(); });
   ListMenuDirs();
   while (!hangup) {
     bout.nl();

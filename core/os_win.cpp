@@ -60,6 +60,7 @@ void sound(uint32_t frequency, std::chrono::milliseconds d) {
 }
 
 std::string os_version_string() {
+
   OSVERSIONINFO os;
   os.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
   if (!GetVersionEx(&os)) {
@@ -115,8 +116,15 @@ string stacktrace() {
   stringstream out;
   // start at one to skip this current frame.
   for(std::size_t i = 1; i < frames; i++) {
-    SymFromAddr(process, (DWORD64)(stack[i]), 0, symbol);
-    out << frames - i - 1 << ": " << symbol->Name << " = " << std::hex << symbol->Address << std::endl;
+    if (SymFromAddr(process, (DWORD64)(stack[i]), 0, symbol)) {
+      out << frames - i - 1 << ": " << symbol->Name << " = " << std::hex << symbol->Address;
+    }
+    IMAGEHLP_LINE64 line;
+    DWORD displacement;
+    if (SymGetLineFromAddr64(process, (DWORD64)stack[i], &displacement, &line)) {
+      out << " (" << line.FileName << ": " << std::dec << line.LineNumber << ") ";
+    }
+    out << std::endl;
   }
   free(symbol);
   return out.str();

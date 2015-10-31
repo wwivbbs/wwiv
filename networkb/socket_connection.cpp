@@ -196,11 +196,13 @@ unique_ptr<SocketConnection> Accept(int port) {
     throw socket_error("Unable to set nodelay mode on the socket.");
   }
 
+#ifdef WIN_XP_IS_LAME
   char ip[81];
   struct sockaddr_in* clientAddr = static_cast<struct sockaddr_in*>(
       get_in_addr(reinterpret_cast<struct sockaddr*>(&saddr)));
   inet_ntop(saddr.sin_family, clientAddr , ip, sizeof ip);
   LOG << "Received connection from: " << ip;
+#endif  // WIN_XP_IS_LAME
 
   return unique_ptr<SocketConnection>(new SocketConnection(s, "", port));
 }
@@ -231,7 +233,7 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const milliseconds d, std::s
       }
     }
     if (result == 0) {
-      return 0;
+      return total_read;
     }
     total_read += result;
     if (total_read < size) {
@@ -239,9 +241,9 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const milliseconds d, std::s
       remaining -= result;
       continue;
     }
-    return result;
+    return total_read;
   }
-  throw socket_error("unknown error reading from socket");
+  throw socket_error("unknown error reading from socket.");
 }
 
 int SocketConnection::receive(void* data, const int size, milliseconds d) {

@@ -47,7 +47,14 @@ using namespace wwiv::stl;
 namespace wwiv {
 namespace menus {
 
-map<string, std::function<void(MenuInstanceData*, const string&, const string&)>, wwiv::stl::ci_less> CreateCommandMap();
+struct MenuItemContext {
+public:
+  MenuInstanceData* pMenuData;
+  string param1;
+  string param2;
+};
+
+map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCommandMap();
 
 bool UseNewBBSList() {
   IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), INI_TAG);
@@ -58,7 +65,7 @@ bool UseNewBBSList() {
 }
 
 void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript) {
-  static map<string, std::function<void(MenuInstanceData* pMenuData, const string&, const string&)>, wwiv::stl::ci_less> functions = CreateCommandMap();
+  static map<string, std::function<void(MenuItemContext& context)>, wwiv::stl::ci_less> functions = CreateCommandMap();
 
   char szCmd[31], szParam1[51], szParam2[51];
   char szTempScript[255];
@@ -73,13 +80,14 @@ void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript) {
   while (pszScriptPointer && !hangup) {
     pszScriptPointer = MenuParseLine(pszScriptPointer, szCmd, szParam1, szParam2);
 
-    if (szCmd[0] == 0) {    // || !pszScriptPointer || !*pszScriptPointer
+    if (szCmd[0] == 0) { 
       break;
     }
 
     string cmd(szCmd);
     if (contains(functions, cmd)) {
-      functions.at(cmd)(pMenuData, szParam1, szParam2);
+      MenuItemContext context{ pMenuData, szParam1, szParam2 };
+      functions.at(cmd)(context);
     }
   }
 }
@@ -89,489 +97,487 @@ void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript) {
 #pragma warning( disable : 4100 )  // unreferenced formal parameter for pMenuData, param1, param2
 #endif
 
-map<string, std::function<void(MenuInstanceData*, const string&, const string&)>, wwiv::stl::ci_less> CreateCommandMap() {
+map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCommandMap() {
   return {
-    { "MENU", [&](MenuInstanceData* menu_data, const string& param1, const string& param2) {
+    { "MENU", [](MenuItemContext& context) {
       unique_ptr<MenuInstanceData> new_menu(new MenuInstanceData{});
-      new_menu->Menus(menu_data->path_, param1);
+      new_menu->Menus(context.pMenuData->path_, context.param1);
     } },
-    { "ReturnFromMenu", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-      InterpretCommand(pMenuData, pMenuData->header.szExitScript);
-      pMenuData->finished = true;
+    { "ReturnFromMenu", [](MenuItemContext& context) {
+      InterpretCommand(context.pMenuData, context.pMenuData->header.szExitScript);
+      context.pMenuData->finished = true;
     } },
-    { "EditMenuSet", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "EditMenuSet", [](MenuItemContext& context) {
       EditMenus();           // flag if we are editing this menu
-      pMenuData->finished = true;
-      pMenuData->reload = true;
+      context.pMenuData->finished = true;
+      context.pMenuData->reload = true;
     } },
-    { "DLFreeFile", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "DLFreeFile", [](MenuItemContext& context) {
       char s[MAX_PATH];
-      strcpy(s, param2.c_str());
+      strcpy(s, context.param2.c_str());
       align(s);
-      MenuDownload(param1.c_str(), s, true, true);
+      MenuDownload(context.param1.c_str(), s, true, true);
     } },
-    { "DLFile", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "DLFile", [](MenuItemContext& context) {
       char s[MAX_PATH];
-      strcpy(s, param2.c_str());
+      strcpy(s, context.param2.c_str());
       align(s);
-      MenuDownload(param1.c_str(), s, false, true);
+      MenuDownload(context.param1.c_str(), s, false, true);
     } },
-    { "RunDoor", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-      MenuRunDoorName(param1.c_str(), false);
+    { "RunDoor", [](MenuItemContext& context) {
+      MenuRunDoorName(context.param1.c_str(), false);
     } },
-    { "RunDoorFree", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-      MenuRunDoorName(param1.c_str(), true);
+    { "RunDoorFree", [](MenuItemContext& context) {
+      MenuRunDoorName(context.param1.c_str(), true);
     } },
-    { "RunDoorNumber", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-      int nTemp = atoi(param1.c_str());
+    { "RunDoorNumber", [](MenuItemContext& context) {
+      int nTemp = atoi(context.param1.c_str());
       MenuRunDoorNumber(nTemp, false);
     } },
-    { "RunDoorNumberFree", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-      int nTemp = atoi(param1.c_str());
+    { "RunDoorNumberFree", [](MenuItemContext& context) {
+      int nTemp = atoi(context.param1.c_str());
       MenuRunDoorNumber(nTemp, true);
     } },
-    { "PrintFile", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-      printfile(param1, true);
+    { "PrintFile", [](MenuItemContext& context) {
+      printfile(context.param1, true);
     } },
-    { "PrintFileNA", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-      printfile(param1, false);
+    { "PrintFileNA", [](MenuItemContext& context) {
+      printfile(context.param1, false);
     } },
-    { "SetSubNumber", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-      SetSubNumber(param1.c_str());
+    { "SetSubNumber", [](MenuItemContext& context) {
+      SetSubNumber(context.param1.c_str());
     } },
-    { "SetDirNumber", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-      SetDirNumber(param1.c_str());
+    { "SetDirNumber", [](MenuItemContext& context) {
+      SetDirNumber(context.param1.c_str());
     } },
-    { "SetMsgConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-      SetMsgConf(param1.c_str()[0]);
+    { "SetMsgConf", [](MenuItemContext& context) {
+      SetMsgConf(context.param1.c_str()[0]);
     } },
-    { "SetMsgConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-      SetMsgConf(param1.c_str()[0]);
+    { "SetMsgConf", [](MenuItemContext& context) {
+      SetMsgConf(context.param1.c_str()[0]);
     } },
-    { "SetDirConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-      SetDirConf(param1.c_str()[0]);
+    { "SetDirConf", [](MenuItemContext& context) {
+      SetDirConf(context.param1.c_str()[0]);
     } },
-    { "EnableConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "EnableConf", [](MenuItemContext& context) {
       EnableConf();
     } },
-    { "DisableConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "DisableConf", [](MenuItemContext& context) {
       DisableConf();
     } },
-    { "Pause", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "Pause", [](MenuItemContext& context) {
       pausescr();
     } },
-    { "ConfigUserMenuSet", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ConfigUserMenuSet", [](MenuItemContext& context) {
       ConfigUserMenuSet();
-      pMenuData->finished = true;
-      pMenuData->reload = true;
+      context.pMenuData->finished = true;
+      context.pMenuData->reload = true;
     } },
-    { "DisplayHelp", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "DisplayHelp", [](MenuItemContext& context) {
       if (session()->user()->IsExpert()) {
-        pMenuData->DisplayHelp();
+        context.pMenuData->DisplayHelp();
       }
     } },
-    { "SelectSub", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "SelectSub", [](MenuItemContext& context) {
       ChangeSubNumber();
     } },
-    { "SelectDir", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "SelectDir", [](MenuItemContext& context) {
       ChangeDirNumber();
     } },
-    { "SubList", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "SubList", [](MenuItemContext& context) {
       SubList();
     } },
-    { "UpSubConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "UpSubConf", [](MenuItemContext& context) {
       UpSubConf();
     } },
-    { "DownSubConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "DownSubConf", [](MenuItemContext& context) {
       DownSubConf();
     } },
-    { "UpSub", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "UpSub", [](MenuItemContext& context) {
       UpSub();
     } },
-    { "DownSub", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "DownSub", [](MenuItemContext& context) {
       DownSub();
     } },
-    { "ValidateUser", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ValidateUser", [](MenuItemContext& context) {
       ValidateUser();
     } },
-    { "Doors", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "Doors", [](MenuItemContext& context) {
       Chains();
     } },
-    { "TimeBank", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "TimeBank", [](MenuItemContext& context) {
       TimeBank();
     } },
-    { "AutoMessage", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "AutoMessage", [](MenuItemContext& context) {
       AutoMessage();
     } },
-    { "BBSList", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "BBSList", [](MenuItemContext& context) {
       if (UseNewBBSList()) {
         NewBBSList();
       } else {
         LegacyBBSList();
       }
     } },
-    { "RequestChat", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "RequestChat", [](MenuItemContext& context) {
       RequestChat();
     } },
-    { "Defaults", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-      Defaults(pMenuData);
+    { "Defaults", [](MenuItemContext& context) {
+      Defaults(context.pMenuData);
     } },
-    { "SendEMail", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "SendEMail", [](MenuItemContext& context) {
       SendEMail();
     } },
-    { "Feedback", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "Feedback", [](MenuItemContext& context) {
       FeedBack();
     } },
-    { "Bulletins", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "Bulletins", [](MenuItemContext& context) {
       Bulletins();
     } },
-    { "HopSub", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "HopSub", [](MenuItemContext& context) {
       HopSub();
     } },
-    { "SystemInfo", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "SystemInfo", [](MenuItemContext& context) {
       SystemInfo();
     } },
-    { "JumpSubConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "JumpSubConf", [](MenuItemContext& context) {
       JumpSubConf();
     } },
-    { "KillEMail", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "KillEMail", [](MenuItemContext& context) {
       KillEMail();
     } },
-    { "LastCallers", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "LastCallers", [](MenuItemContext& context) {
       LastCallers();
     } },
-    { "ReadEMail", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ReadEMail", [](MenuItemContext& context) {
       ReadEMail();
     } },
-    { "NewMessageScan", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "NewMessageScan", [](MenuItemContext& context) {
       NewMessageScan();
     } },
-    { "Goodbye", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "Goodbye", [](MenuItemContext& context) {
       GoodBye();
     } },
-    { "PostMessage", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "PostMessage", [](MenuItemContext& context) {
       WWIV_PostMessage();
     } },
-    { "NewMsgScanCurSub", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "NewMsgScanCurSub", [](MenuItemContext& context) {
       ScanSub();
     } },
-    { "RemovePost", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "RemovePost", [](MenuItemContext& context) {
       RemovePost();
     } },
-    { "TitleScan", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "TitleScan", [](MenuItemContext& context) {
       TitleScan();
     } },
-    { "ListUsers", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ListUsers", [](MenuItemContext& context) {
       ListUsers();
     } },
-    { "Vote", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "Vote", [](MenuItemContext& context) {
       Vote();
     } },
-    { "ToggleExpert", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ToggleExpert", [](MenuItemContext& context) {
       ToggleExpert();
     } },
-    { "YourInfo", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "YourInfo", [](MenuItemContext& context) {
       YourInfo();
     } },
-    { "ExpressScan", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ExpressScan", [](MenuItemContext& context) {
       ExpressScan();
     } },
-    { "WWIVVer", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "WWIVVer", [](MenuItemContext& context) {
       WWIVVersion();
     } },
-    { "InstanceEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "InstanceEdit", [](MenuItemContext& context) {
       InstanceEdit();
     } },
-    { "ConferenceEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ConferenceEdit", [](MenuItemContext& context) {
       JumpEdit();
     } },
-    { "SubEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "SubEdit", [](MenuItemContext& context) {
       BoardEdit();
     } },
-    { "ChainEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ChainEdit", [](MenuItemContext& context) {
       ChainEdit();
     } },
-    { "ToggleAvailable", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ToggleAvailable", [](MenuItemContext& context) {
       ToggleChat();
     } },
-    { "ChangeUser", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ChangeUser", [](MenuItemContext& context) {
       ChangeUser();
     } },
-    { "CLOUT", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "CLOUT", [](MenuItemContext& context) {
       CallOut();
     } },
-    { "Debug", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "Debug", [](MenuItemContext& context) {
       Debug();
     } },
-    { "DirEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
-    } },
-    { "", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "DirEdit", [](MenuItemContext& context) {
       DirEdit();
     } },
-    { "Edit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "Edit", [](MenuItemContext& context) {
       EditText();
     } },
-    { "BulletinEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "BulletinEdit", [](MenuItemContext& context) {
       EditBulletins();
     } },
-    { "LoadText", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "LoadText", [](MenuItemContext& context) {
       LoadTextFile();
     } },
-    { "ReadAllMail", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ReadAllMail", [](MenuItemContext& context) {
       ReadAllMail();
     } },
-    { "Reboot", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "Reboot", [](MenuItemContext& context) {
       RebootComputer();
     } },
-    { "ReloadMenus", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ReloadMenus", [](MenuItemContext& context) {
       ReloadMenus();
     } },
-    { "ResetUserIndex", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ResetUserIndex", [](MenuItemContext& context) {
       ResetFiles();
     } },
-    { "ResetQscan", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ResetQscan", [](MenuItemContext& context) {
       ResetQscan();
     } },
-    { "MemStat", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "MemStat", [](MenuItemContext& context) {
       MemoryStatus();
     } },
-    { "PackMsgs", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "PackMsgs", [](MenuItemContext& context) {
       PackMessages();
     } },
-    { "VoteEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "VoteEdit", [](MenuItemContext& context) {
       InitVotes();
     } },
-    { "Log", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "Log", [](MenuItemContext& context) {
       ReadLog();
     } },
-    { "NetLog", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "NetLog", [](MenuItemContext& context) {
       ReadNetLog();
     } },
-    { "Pending", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "Pending", [](MenuItemContext& context) {
       PrintPending();
     } },
-    { "Status", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "Status", [](MenuItemContext& context) {
       PrintStatus();
     } },
-    { "TextEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "TextEdit", [](MenuItemContext& context) {
       TextEdit();
     } },
-    { "UserEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "UserEdit", [](MenuItemContext& context) {
       UserEdit();
     } },
-    { "VotePrint", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "VotePrint", [](MenuItemContext& context) {
       VotePrint();
     } },
-    { "YLog", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "YLog", [](MenuItemContext& context) {
       YesturdaysLog();
     } },
-    { "ZLog", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ZLog", [](MenuItemContext& context) {
       ZLog();
     } },
-    { "ViewNetDataLog", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ViewNetDataLog", [](MenuItemContext& context) {
       ViewNetDataLog();
     } },
-    { "UploadPost", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "UploadPost", [](MenuItemContext& context) {
       UploadPost();
     } },
-    { "cls", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "cls", [](MenuItemContext& context) {
       bout.cls();
     } },
-    { "NetListing", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "NetListing", [](MenuItemContext& context) {
       NetListing();
     } },
-    { "WHO", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "WHO", [](MenuItemContext& context) {
       WhoIsOnline();
     } },
-    { "NewMsgsAllConfs", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "NewMsgsAllConfs", [](MenuItemContext& context) {
       // /A NewMsgsAllConfs
       NewMsgsAllConfs();
     } },
-    { "MultiEMail", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "MultiEMail", [](MenuItemContext& context) {
       // /E "MultiEMail"
       MultiEmail();
     } },
-    { "NewMsgScanFromHere", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "NewMsgScanFromHere", [](MenuItemContext& context) {
       NewMsgScanFromHere();
     } },
-    { "ValidatePosts", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ValidatePosts", [](MenuItemContext& context) {
       ValidateScan();
     } },
-    { "ChatRoom", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ChatRoom", [](MenuItemContext& context) {
       ChatRoom();
     } },
-    { "DownloadPosts", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "DownloadPosts", [](MenuItemContext& context) {
       DownloadPosts();
     } },
-    { "DownloadFileList", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "DownloadFileList", [](MenuItemContext& context) {
       DownloadFileList();
     } },
-    { "ClearQScan", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ClearQScan", [](MenuItemContext& context) {
       ClearQScan();
     } },
-    { "FastGoodBye", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "FastGoodBye", [](MenuItemContext& context) {
       FastGoodBye();
     } },
-    { "NewFilesAllConfs", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "NewFilesAllConfs", [](MenuItemContext& context) {
       NewFilesAllConfs();
     } },
-    { "ReadIDZ", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ReadIDZ", [](MenuItemContext& context) {
       ReadIDZ();
     } },
-    { "UploadAllDirs", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "UploadAllDirs", [](MenuItemContext& context) {
       UploadAllDirs();
     } },
-    { "UploadCurDir", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "UploadCurDir", [](MenuItemContext& context) {
       UploadCurDir();
     } },
-    { "RenameFiles", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "RenameFiles", [](MenuItemContext& context) {
       RenameFiles();
     } },
-    { "MoveFiles", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "MoveFiles", [](MenuItemContext& context) {
       MoveFiles();
     } },
-    { "SortDirs", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "SortDirs", [](MenuItemContext& context) {
       SortDirs();
     } },
-    { "ReverseSortDirs", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ReverseSortDirs", [](MenuItemContext& context) {
       ReverseSort();
     } },
-    { "AllowEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "AllowEdit", [](MenuItemContext& context) {
       AllowEdit();
     } },
-    { "UploadFilesBBS", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "UploadFilesBBS", [](MenuItemContext& context) {
       UploadFilesBBS();
     } },
-    { "DirList", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "DirList", [](MenuItemContext& context) {
       DirList();
     } },
-    { "UpDirConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "UpDirConf", [](MenuItemContext& context) {
       UpDirConf();
     } },
-    { "UpDir", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "UpDir", [](MenuItemContext& context) {
       UpDir();
     } },
-    { "DownDirConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "DownDirConf", [](MenuItemContext& context) {
       DownDirConf();
     } },
-    { "DownDir", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "DownDir", [](MenuItemContext& context) {
       DownDir();
     } },
-    { "ListUsersDL", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ListUsersDL", [](MenuItemContext& context) {
       ListUsersDL();
     } },
-    { "PrintDSZLog", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "PrintDSZLog", [](MenuItemContext& context) {
       PrintDSZLog();
     } },
-    { "PrintDevices", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "PrintDevices", [](MenuItemContext& context) {
       PrintDevices();
     } },
-    { "ViewArchive", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ViewArchive", [](MenuItemContext& context) {
       ViewArchive();
     } },
-    { "BatchMenu", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "BatchMenu", [](MenuItemContext& context) {
       BatchMenu();
     } },
-    { "Download", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "Download", [](MenuItemContext& context) {
       Download();
     } },
-    { "TempExtract", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "TempExtract", [](MenuItemContext& context) {
       TempExtract();
     } },
-    { "FindDescription", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "FindDescription", [](MenuItemContext& context) {
       FindDescription();
     } },
-    { "ArchiveMenu", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ArchiveMenu", [](MenuItemContext& context) {
       TemporaryStuff();
     } },
-    { "HopDir", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "HopDir", [](MenuItemContext& context) {
       HopDir();
     } },
-    { "JumpDirConf", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "JumpDirConf", [](MenuItemContext& context) {
       JumpDirConf();
     } },
-    { "ListFiles", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ListFiles", [](MenuItemContext& context) {
       ListFiles();
     } },
-    { "NewFileScan", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "NewFileScan", [](MenuItemContext& context) {
       NewFileScan();
     } },
-    { "SetNewFileScanDate", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "SetNewFileScanDate", [](MenuItemContext& context) {
       SetNewFileScanDate();
     } },
-    { "RemoveFiles", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "RemoveFiles", [](MenuItemContext& context) {
       RemoveFiles();
     } },
-    { "SearchAllFiles", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "SearchAllFiles", [](MenuItemContext& context) {
       SearchAllFiles();
     } },
-    { "XferDefaults", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "XferDefaults", [](MenuItemContext& context) {
       XferDefaults();
     } },
-    { "Upload", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "Upload", [](MenuItemContext& context) {
       Upload();
     } },
-    { "YourInfoDL", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "YourInfoDL", [](MenuItemContext& context) {
       Upload();
     } },
-    { "YourInfoDL", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "YourInfoDL", [](MenuItemContext& context) {
       YourInfoDL();
     } },
-    { "UploadToSysop", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "UploadToSysop", [](MenuItemContext& context) {
       UploadToSysop();
     } },
-    { "ReadAutoMessage", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ReadAutoMessage", [](MenuItemContext& context) {
       ReadAutoMessage();
     } },
-    { "SetNewScanMsg", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "SetNewScanMsg", [](MenuItemContext& context) {
       SetNewScanMsg();
     } },
-    { "ReadMessages", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ReadMessages", [](MenuItemContext& context) {
       ReadMessages();
     } },
-    { "EventEdit", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "EventEdit", [](MenuItemContext& context) {
       EventEdit();
     } },
-    { "LoadTextFile", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "LoadTextFile", [](MenuItemContext& context) {
       LoadTextFile();
     } },
-    { "GuestApply", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "GuestApply", [](MenuItemContext& context) {
       GuestApply();
     } },
-    { "ConfigFileList", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ConfigFileList", [](MenuItemContext& context) {
       ConfigFileList();
     } },
-    { "ListAllColors", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ListAllColors", [](MenuItemContext& context) {
       ListAllColors();
     } },
-    { "RemoveNotThere", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "RemoveNotThere", [](MenuItemContext& context) {
       RemoveNotThere();
     } },
-    { "AttachFile", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "AttachFile", [](MenuItemContext& context) {
       AttachFile();
     } },
-    { "InternetEmail", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "InternetEmail", [](MenuItemContext& context) {
       InternetEmail();
     } },
-    { "UnQScan", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "UnQScan", [](MenuItemContext& context) {
       UnQScan();
     } },
-    { "Packers", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "Packers", [](MenuItemContext& context) {
       Packers();
     } },
-    { "ColorConfig", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "ColorConfig", [](MenuItemContext& context) {
       color_config();
     } },
-    { "InitVotes", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "InitVotes", [](MenuItemContext& context) {
       InitVotes();
     } },
-    { "TurnMCIOn", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "TurnMCIOn", [](MenuItemContext& context) {
       TurnMCIOn();
     } },
-    { "TurnMCIOff", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+    { "TurnMCIOff", [](MenuItemContext& context) {
       TurnMCIOff();
     } },
-//    { "", [&](MenuInstanceData* pMenuData, const string& param1, const string& param2) {
+//    { "", [](MenuItemContext& context) {
 //    } },
   };
 }

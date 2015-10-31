@@ -27,7 +27,9 @@ using namespace wwiv::core;
 namespace wwiv {
 namespace sdk {
 
-Config::Config() : Config(File::current_directory()) {}
+  static const int CONFIG_DAT_SIZE_424 = 5660;
+
+  Config::Config() : Config(File::current_directory()) {}
 
 Config::Config(const std::string& root_directory)  : initialized_(false), config_(new configrec{}), root_directory_(root_directory) {
   DataFile<configrec> configFile(root_directory, CONFIG_DAT, File::modeReadOnly | File::modeBinary);
@@ -35,6 +37,13 @@ Config::Config(const std::string& root_directory)  : initialized_(false), config
     std::clog << CONFIG_DAT << " NOT FOUND.\r\n";
   } else {
     initialized_ = configFile.Read(config_.get());
+    // Handle 4.24 datafile
+    if (!initialized_) {
+      configFile.Seek(0);
+      int size_read = configFile.file().Read(config_.get(), CONFIG_DAT_SIZE_424);
+      initialized_ = (size_read == CONFIG_DAT_SIZE_424);
+      std::clog << "                 WWIV 4.24 CONFIG.DAT FOUND with size " << size_read << ".\r\n";
+    }
   }
 }
 

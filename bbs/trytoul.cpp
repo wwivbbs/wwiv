@@ -322,7 +322,7 @@ int try_to_ul_wh(char *pszFileName) {
             u.mask &= ~mask_extended;
           } else {
             u.mask |= mask_extended;
-            modify_extended_description(&ss, directories[udir[session()->GetCurrentFileArea()].subnum].name, u.filename);
+            modify_extended_description(&ss, directories[udir[session()->GetCurrentFileArea()].subnum].name);
             if (ss) {
               delete_extended_description(u.filename);
               add_extended_description(u.filename, ss);
@@ -330,7 +330,7 @@ int try_to_ul_wh(char *pszFileName) {
             }
           }
         } else {
-          modify_extended_description(&ss, directories[udir[session()->GetCurrentFileArea()].subnum].name, u.filename);
+          modify_extended_description(&ss, directories[udir[session()->GetCurrentFileArea()].subnum].name);
           if (ss) {
             add_extended_description(u.filename, ss);
             free(ss);

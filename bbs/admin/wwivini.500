@@ -168,7 +168,7 @@ FIDO_PROCESS       = N                      ; process fido packets this instance
 ;
 FORCE_FBACK            = N                  ; force newusers to send fback
 FORCE_NEWUSER          = N                  ; force newusers to read NEWUSER.MSG
-USE_FORCE_SCAN         = N                  ; force user to scan sysop sub
+FORCE_SCAN             = N                  ; force user to scan sysop sub
 FORCE_SCAN_SUBNUM      = N                  ; sub to force scan on
 CHECK_DUP_PHONES       = N                  ; check newuser dupe phones
 HANGUP_DUP_PHONES      = N                  ; hangup on newuser dupe phone

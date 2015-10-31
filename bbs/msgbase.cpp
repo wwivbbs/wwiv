@@ -21,6 +21,7 @@
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
+#include "bbs/netsup.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "bbs/wwiv.h"
@@ -368,12 +369,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
     return false;
   }
   char *ss = static_cast<char*>(BbsAllocA(static_cast<long>(syscfg.maxusers) + 300L));
-  if (ss == nullptr) {
-    return false;
-  }
-  for (int i = 0; i < syscfg.maxusers + 300; i++) {
-    ss[i] = '\0';
-  }
+
   ss[*pUserNumber] = 1;
   application()->users()->ReadUser(&userRecord, nCurrentUser);
   while (userRecord.GetForwardUserNumber() || userRecord.GetForwardSystemNumber()) {

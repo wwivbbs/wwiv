@@ -203,7 +203,7 @@ void normalupload(int dn) {
       inputl(u.description, 58);
       bout.nl();
       char *pszExtendedDescription = nullptr;
-      modify_extended_description(&pszExtendedDescription, directories[dn].name, u.filename);
+      modify_extended_description(&pszExtendedDescription, directories[dn].name);
       if (pszExtendedDescription) {
         add_extended_description(u.filename, pszExtendedDescription);
         u.mask |= mask_extended;

@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "bbs/bbs.h"
+#include "bbs/sysoplog.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wuser.h"
@@ -26,9 +27,6 @@
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "sdk/filenames.h"
-
-// TODO - Remove this and finduser, finduser1, ISR, DSR, and add_add
-#include "bbs/fcns.h"
 
 /*
 * Checks status of given userrec to see if conferencing is turned on.

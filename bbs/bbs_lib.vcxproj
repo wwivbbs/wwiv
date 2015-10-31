@@ -14,18 +14,19 @@
     <ProjectGuid>{BCF878F6-1997-4C3D-864E-12F0C1B5EB5E}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>bbs</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
@@ -91,10 +92,17 @@
     <ClInclude Include="automsg.h" />
     <ClInclude Include="bbs.h" />
     <ClInclude Include="bbslist.h" />
+    <ClInclude Include="bbsutl.h" />
+    <ClInclude Include="bbsutl1.h" />
+    <ClInclude Include="bgetch.h" />
+    <ClInclude Include="bputch.h" />
     <ClInclude Include="callback.h" />
     <ClInclude Include="capture.h" />
+    <ClInclude Include="com.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="conf.h" />
+    <ClInclude Include="confutil.h" />
+    <ClInclude Include="connect1.h" />
     <ClInclude Include="crc.h" />
     <ClInclude Include="datetime.h" />
     <ClInclude Include="dropfile.h" />
@@ -104,6 +112,7 @@
     <ClInclude Include="inmsg.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="instmsg.h" />
+    <ClInclude Include="interpret.h" />
     <ClInclude Include="keycodes.h" />
     <ClInclude Include="listplus.h" />
     <ClInclude Include="local_io.h" />
@@ -112,6 +121,7 @@
     <ClInclude Include="menuspec.h" />
     <ClInclude Include="menusupp.h" />
     <ClInclude Include="menu_parser.h" />
+    <ClInclude Include="msgbase.h" />
     <ClInclude Include="net.h" />
     <ClInclude Include="new_bbslist.h" />
     <ClInclude Include="null_local_io.h" />
@@ -125,11 +135,15 @@
     <ClInclude Include="prot\xmodem.h" />
     <ClInclude Include="prot\zmodem.h" />
     <ClInclude Include="qscan.h" />
+    <ClInclude Include="quote.h" />
     <ClInclude Include="qwk.h" />
     <ClInclude Include="runnable.h" />
+    <ClInclude Include="shortmsg.h" />
     <ClInclude Include="subxtr.h" />
+    <ClInclude Include="sysopf.h" />
     <ClInclude Include="sysoplog.h" />
     <ClInclude Include="template.h" />
+    <ClInclude Include="uedit.h" />
     <ClInclude Include="utility.h" />
     <ClInclude Include="valscan.h" />
     <ClInclude Include="vardec.h" />

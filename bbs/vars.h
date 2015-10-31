@@ -100,8 +100,8 @@ __EXTRN__ bool  bChatLine,
 
 // Chatroom additions
 __EXTRN__ bool  in_chatroom,
-          invis,
-          avail;
+          chat_invis,
+          chat_avail;
 
 __EXTRN__ unsigned short
 #if !defined ( NETWORK )

@@ -1,59 +1,7 @@
-Apple Valley, California
-240
-241
-242
-247
-946
-Baker, California
-733
-Barstow, California
-252
-577
-254
-255
-256
-Benton, California
-933
-Big Pine, California
-938
-Bishop, California
-872
-873
-937
-Blythe, California
-921
-922
-Boron, California
-762
-769
-Borrego, California
-767
-Brawley, California
-344
-351
-Bridgeport, California
-932
-Calexico, California
-357
-768
-California City, California
-373
-Calipatria, California
-348
-354
-359
-Camp Pendelton, California
-430
-725
 Campo, California
 478
-Carlsbad, California
-603
-431
-438
-929
-931
 Chula Vista, California
+413
 420
 421
 422
@@ -66,6 +14,7 @@ Chula Vista, California
 429
 476
 482
+498
 575
 585
 656
@@ -73,39 +22,14 @@ Chula Vista, California
 662
 690
 691
-413
-498
-Cima, California
-928
 Coronado, California
 408
 435
 437
 522
 545
-Crowley Lake, California
-935
-Death Valley, California
-786
-Del Mar, California
-500
-794
-259
-481
-755
-792
-793
-Desert Center, California
-227
-Desert Hot Springs, California
-251
-329
 Dulzura, California
 468
-Eagle Mountain, California
-392
-Earp, California
-665
 El Cajon, California
 401
 590
@@ -125,124 +49,11 @@ El Cajon, California
 588
 593
 596
-El Centro, California
-370
-337
-339
-352
-353
-El Mirage, California
-388
-Encinitas, California
-436
-510
-632
-633
-634
-753
-942
-943
-944
-Escondido, California
-432
-480
-489
-504
-737
-738
-739
-740
-741
-743
-745
-746
-747
-Fallbrook, California
-516
-723
-728
-731
-Fort Irwin, California
-386
-George Air Force Base, California
-246
-269
 Harbison/Alpine, California
 445
 659
-Havasu Lake, California
-858
-Holtville, California
-356
-Homestead Valley, California
-364
-Imperial, California
-355
-Independence, California
-878
-Indio, California
-342
-347
-391
-393
-396
-397
-398
-399
-564
-771
-775
-777
-863
-Inyokern, California
-377
-Jacumba, California
+Jacumba Hot Springs, California
 766
-Joshua Tree, California
-366
-Julian, California
-765
-June Lake, California
-648
-Kernville, California
-376
-La Jolla, California
-404
-506
-508
-518
-550
-657
-658
-270
-272
-273
-274
-450
-452
-453
-454
-455
-456
-457
-458
-459
-483
-488
-490
-534
-535
-539
-546
-551
-552
-554
-558
-581
-587
-597
-622
-625
 La Mesa, California
 460
 461
@@ -260,66 +71,6 @@ La Mesa, California
 670
 697
 698
-Lee Vining, California
-647
-Lenwood, California
-253
-Linda Vista, California
-268
-277
-278
-279
-292
-467
-492
-493
-494
-495
-496
-541
-560
-565
-569
-571
-573
-576
-627
-694
-972
-974
-502
-637
-654
-Lake Isabella, California
-379
-Lone Pine, California
-876
-Lost Lake, California
-664
-Lucerne Valley, California
-248
-Mammoth Lakes, California
-924
-934
-Mira Mesa, California
-684
-271
-530
-536
-537
-547
-549
-566
-578
-586
-621
-689
-693
-695
-Morongo Valley, California
-363
-Mount Pass, California
-856
 National City, California
 267
 336
@@ -331,160 +82,10 @@ National City, California
 479
 412
 416
-Needles, California
-326
-Newberry, California
-257
-Oceanside, California
-414
-433
-434
-439
-512
-709
-720
-721
-722
-729
-754
-757
-763
-945
-966
-967
-Ocotillo, California
-358
-Olancha, California
-764
-Palm Springs, California
-250
-320
-321
-322
-323
-324
-325
-327
-328
-567
-770
-774
-778
-861
-864
-866
-Palm Desert, California
-340
-341
-343
-345
-346
-360
-568
-772
-773
-776
-779
-862
-Palo Verde, California
-854
-Parker Dam, California
-663
-Pauma Valley, California
-742
-Pendleton, California
-385
-Pine Creek, California
-387
 Pine Valley, California
 473
-Pinyon, California
-349
-Poway, California
-486
-679
-748
-Ramona, California
-788
-789
-Rancho Bernardo, California
-451
-485
-487
-592
-604
-673
-674
-675
-Rancho Penasquitos, California
-484
-538
-672
-Rancho Santa Fe, California
-513
-756
-759
-Randsburg, California
-374
-Ridgecrest, California
-371
-375
-382
-384
-446
-499
-927
-939
-Salton, California
-394
-395
 San Diego, California
 220
-276
-289
-406
-407
-417
-419
-505
-507
-514
-525
-532
-540
-548
-559
-624
-645
-701
-702
-717
-844
-853
-887
-888
-897
-898
-899
-925
-970
-971
-977
-980
-981
-985
-987
-988
-990
-991
-992
-993
-994
-995
-996
-997
-998
-999
 221
 222
 223
@@ -509,6 +110,7 @@ San Diego, California
 265
 266
 275
+276
 280
 281
 282
@@ -518,6 +120,7 @@ San Diego, California
 286
 287
 288
+289
 290
 291
 293
@@ -528,23 +131,35 @@ San Diego, California
 298
 299
 338
+406
+407
+417
+419
 491
 497
+505
+507
+514
 521
 523
 524
+525
 526
 527
 528
 529
 531
+532
 533
+540
 542
 543
 544
+548
 553
 556
 557
+559
 563
 570
 574
@@ -554,6 +169,8 @@ San Diego, California
 584
 594
 595
+624
+645
 685
 686
 687
@@ -561,87 +178,51 @@ San Diego, California
 692
 696
 699
+701
+702
+717
+844
+853
+887
+888
+897
+898
+899
 923
+925
 926
 965
 968
 969
+970
+971
 973
 975
+977
 978
 979
+980
+981
 982
 983
 984
+985
 986
+987
+988
 989
-San Marcos, California
-471
-591
-736
-744
-752
+990
+991
+992
+993
+994
+995
+996
+997
+998
+999
 Santee, California
 855
 895
-Shoshone, California
-852
-Summit Valley, California
-389
-Trona, California
-372
-Twentynnplm, California
-361
-362
-367
-368
-865
-Valley Center, California
-749
-751
-Victorville, California
-243
-244
-245
-947
-949
-261
-381
-951
-952
-953
-954
-955
-957
-961
-948
-956
-Vista, California
-519
-732
-598
-599
-630
-631
-724
-726
-727
-758
-940
-941
-Warner Springs, California
-782
-Weldon, California
-378
-Winter Haven, California
-572
-Wrightwdph, California
-868
-Wrightwood, California
-249
-867
-Yucca Valley, California
-228
-365
-369
 5Unknown prefix code (619) - California
+
