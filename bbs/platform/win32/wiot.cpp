@@ -16,6 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+// work around error using inet_ntoa on build machine.
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+
 #include "bbs/platform/win32/wiot.h"
 
 #include <iostream>

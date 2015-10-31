@@ -2,6 +2,7 @@
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "networkb/binkp_config.h"
+#include "sdk/config.h"
 
 #include <cstdint>
 #include <string>
@@ -9,6 +10,7 @@
 using std::string;
 using namespace wwiv::net;
 using namespace wwiv::strings;
+using namespace wwiv::sdk;
 
 class ParseBinkConfigLineTest : public testing::Test {};
 
@@ -48,7 +50,8 @@ TEST(BinkConfigTest, NodeConfig) {
   const string line("@2 example.com");
   files.CreateTempFile("network/binkp.net", line);
   const string network_dir = files.DirName("network");
-  BinkConfig config(1, "mybbs", network_dir);
+  Config wwiv_config;
+  BinkConfig config(1, wwiv_config, network_dir);
   const BinkNodeConfig* node_config = config.node_config_for(2);
   ASSERT_TRUE(node_config != nullptr);
   EXPECT_EQ("example.com", node_config->host);

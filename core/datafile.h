@@ -41,7 +41,7 @@ public:
   }
   virtual ~DataFile() {}
 
-  File& file() const { return file_; }
+  File& file() { return file_; }
   bool ok() const { return file_.IsOpen(); }
   bool Read(RECORD* record, int num_records = 1) { return file_.Read(record, num_records*SIZE) == num_records*SIZE; }
   bool Read(int record_number, RECORD* record) {

@@ -182,13 +182,12 @@ bool WUserManager::WriteUser(WUser *pUser, int nUserNumber) {
 
 int WUserManager::FindUser(std::string searchString) {
 #ifndef NOT_BBS
-  smalrec *sr = (smalrec *)bsearch((const void *)searchString.c_str(),
-                                   static_cast<const void *>(smallist),
-                                   static_cast<size_t>(application()->GetStatusManager()->GetUserCount()),
-                                   sizeof(smalrec),
-                                   (int(*)(const void *, const void *)) wwiv::strings::StringCompareIgnoreCase);
-  if (sr != nullptr) {
-    return sr->number;
+  // TODO(rushfan): Put back in a binary search, but test with user.lst the size of frank's.
+  const size_t user_count = application()->GetStatusManager()->GetUserCount();
+  for (int i = 0; i < user_count; i++) {
+    if (wwiv::strings::IsEqualsIgnoreCase(searchString.c_str(), (const char*)smallist[i].name)) {
+      return smallist[i].number;
+    }
   }
 #else
   std::unique_ptr<File> usersFile(new File(m_dataDirectory, USER_LST));
