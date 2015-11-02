@@ -82,6 +82,22 @@ static void write_subs() {
   }
 }
 
+static bool save_networks_dat() {
+  File networksfile(syscfg.datadir, NETWORKS_DAT);
+  std::unique_ptr<net_networks_rec_disk[]> net_networks_disk(new net_networks_rec_disk[initinfo.net_num_max]());
+  if (networksfile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
+    for (int i = 0; i < initinfo.net_num_max; i++) {
+      net_networks_disk[i].type = net_networks[i].type;
+      strcpy(net_networks_disk[i].name, net_networks[i].name);
+      strcpy(net_networks_disk[i].dir, net_networks[i].dir);
+      net_networks_disk[i].sysnum = net_networks[i].sysnum;
+    }
+    networksfile.Write(net_networks_disk.get(), initinfo.net_num_max * sizeof(net_networks_rec_disk));
+    return true;
+  }
+  return false;
+}
+
 static bool del_net(CursesWindow* window, int nn) {
   if (!read_subs(window)) {
     return false;
@@ -166,10 +182,16 @@ static bool del_net(CursesWindow* window, int nn) {
     net_networks[i] = net_networks[i + 1];
   }
   initinfo.net_num_max--;
-
   File networksfile(syscfg.datadir, NETWORKS_DAT);
+  std::unique_ptr<net_networks_rec_disk[]> net_networks_disk(new net_networks_rec_disk[initinfo.net_num_max]());
   if (networksfile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
-    networksfile.Write(net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
+    for (int i = 0; i < initinfo.net_num_max; i++) {
+      net_networks_disk[i].type = net_networks[i].type;
+      strcpy(net_networks_disk[i].name, net_networks[i].name);
+      strcpy(net_networks_disk[i].dir, net_networks[i].dir);
+      net_networks_disk[i].sysnum = net_networks[i].sysnum;
+    }
+    networksfile.Write(net_networks_disk.get(), initinfo.net_num_max * sizeof(net_networks_rec_disk));
   }
   return true;
 }
@@ -252,11 +274,7 @@ static bool insert_net(CursesWindow* window, int nn) {
   strcpy(net_networks[nn].name, "NewNet");
   sprintf(net_networks[nn].dir, "newnet.dir%c", File::pathSeparatorChar);
 
-  File networksfile(syscfg.datadir, NETWORKS_DAT);
-  if (networksfile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
-    networksfile.Write(net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
-  }
-  networksfile.Close();
+  save_networks_dat();
   edit_net(nn);
   return true;
 }
@@ -328,12 +346,7 @@ void networks() {
     }
   } while (!done);
 
-  File file (syscfg.datadir, NETWORKS_DAT);
-  if (file.Open(File::modeReadWrite|File::modeCreateFile|File::modeTruncate|File::modeBinary,
-    File::shareDenyReadWrite)) {
-    file.Write(net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
-  }
-  file.Close();
+  save_networks_dat();
 }
 
 static void edit_net(int nn) {
