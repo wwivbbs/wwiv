@@ -19,5 +19,5 @@ need is right here on GitHub in the [WWIV 5.0 Wiki](https://github.com/wwivbbs/w
 Get Involved
 ====================
 
-If you want to help out with WWIV BBS, check out the [project homepage](http://wwivbbs.github.io/) 
+If you want to help out with WWIV BBS, check out the [project homepage](http://www.wwivbbs.org) 
 to connect with the team or just jump into the [Issues List](https://github.com/wwivbbs/wwiv/issues).

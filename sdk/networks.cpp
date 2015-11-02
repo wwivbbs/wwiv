@@ -41,16 +41,25 @@ Networks::Networks(const Config& config) {
     throw std::invalid_argument("config must be initialized");
   }
 
-  DataFile<net_networks_rec> file(config.datadir(), NETWORKS_DAT, File::modeBinary|File::modeReadOnly, File::shareDenyNone);
+  DataFile<net_networks_rec_disk> file(config.datadir(), NETWORKS_DAT, File::modeBinary|File::modeReadOnly, File::shareDenyNone);
   if (!file) {
     return;
   }
-  
+
+  std::vector<net_networks_rec_disk> networks_disk;
+
   const int num_records = file.number_of_records();
   networks_.resize(num_records);
-  initialized_ = file.Read(&networks_[0], num_records);
+  networks_disk.resize(num_records);
+  initialized_ = file.Read(&networks_disk[0], num_records);
+  for (int i = 0; i < num_records; i++) {
+    networks_[i].type = networks_disk[i].type;
+    strcpy(networks_[i].name, networks_disk[i].name);
+    strcpy(networks_[i].dir, networks_disk[i].dir);
+    networks_[i].sysnum = networks_disk[i].sysnum;
+  }
   if (!initialized_) {
-    std::clog << "failed to read the expected number of bytes: " << num_records * sizeof(net_networks_rec) << std::endl;
+    std::clog << "failed to read the expected number of bytes: " << num_records * sizeof(net_networks_rec_disk) << std::endl;
   }
   initialized_ = true;
 }

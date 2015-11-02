@@ -19,7 +19,11 @@
 #ifndef __INCLUDED_NET_H__
 #define __INCLUDED_NET_H__
 
+#ifdef __MSDOS__
+#include "sdk/msdos_stdint.h"
+#else
 #include <cstdint>
+#endif  // __MSDOS__
 
 #pragma pack(push, 1)
 
@@ -218,6 +222,15 @@ struct net_networks_rec {
   int16_t           num_con;        /* number in array */
   int16_t           num_ncn;        /* number in array */
 };
+
+struct net_networks_rec_disk {
+  uint8_t   type;           /* type of network */
+  char            name[16];       /* network name */
+  char            dir[69];        /* directory for net data */
+  uint16_t  sysnum;         /* system number */
+  uint8_t padding[12];
+};
+
 
 #define net_type_wwivnet  0
 #define net_type_fidonet  1

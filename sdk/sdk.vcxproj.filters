@@ -11,6 +11,7 @@
     </ClInclude>
     <ClInclude Include="net.h" />
     <ClInclude Include="phone_numbers.h" />
+    <ClInclude Include="msdos_stdint.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
