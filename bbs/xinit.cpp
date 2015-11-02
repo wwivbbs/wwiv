@@ -752,17 +752,23 @@ void WApplication::read_networks() {
     free(net_networks);
   }
   net_networks = nullptr;
-  File file(syscfg.datadir, NETWORKS_DAT);
-  if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    session()->SetMaxNetworkNumber(file.GetLength() / sizeof(net_networks_rec));
-    if (session()->GetMaxNetworkNumber()) {
-      net_networks = static_cast<net_networks_rec *>(BbsAllocA(session()->GetMaxNetworkNumber() * sizeof(
-                       net_networks_rec)));
-      WWIV_ASSERT(net_networks != nullptr);
 
-      file.Read(net_networks, session()->GetMaxNetworkNumber() * sizeof(net_networks_rec));
+  File networksfile(syscfg.datadir, NETWORKS_DAT);
+  if (networksfile.Open(File::modeBinary | File::modeReadOnly)) {
+    int net_num_max = networksfile.GetLength() / sizeof(net_networks_rec_disk);
+    session()->SetMaxNetworkNumber(net_num_max);
+    std::unique_ptr<net_networks_rec_disk[]> net_networks_disk(new net_networks_rec_disk[net_num_max]());
+    net_networks = static_cast<net_networks_rec *>(BbsAllocA(net_num_max * sizeof(net_networks_rec)));
+    if (net_num_max) {
+      networksfile.Read(net_networks_disk.get(), net_num_max * sizeof(net_networks_rec_disk));
+      for (int i = 0; i < net_num_max; i++) {
+        net_networks[i].type = net_networks_disk[i].type;
+        strcpy(net_networks[i].name, net_networks_disk[i].name);
+        strcpy(net_networks[i].dir, net_networks_disk[i].dir);
+        net_networks[i].sysnum = net_networks_disk[i].sysnum;
+      }
     }
-    file.Close();
+    networksfile.Close();
     for (int nTempNetNumber = 0; nTempNetNumber < session()->GetMaxNetworkNumber(); nTempNetNumber++) {
       char* ss = strchr(net_networks[nTempNetNumber].name, ' ');
       if (ss) {
@@ -770,6 +776,7 @@ void WApplication::read_networks() {
       }
     }
   }
+
   if (!net_networks) {
     net_networks = static_cast<net_networks_rec *>(BbsAllocA(sizeof(net_networks_rec)));
     WWIV_ASSERT(net_networks != nullptr);
