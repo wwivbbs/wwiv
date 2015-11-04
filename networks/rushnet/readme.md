@@ -67,7 +67,15 @@ the third .2, etc..
 * Make sure PORT 24554 (or the port you setup) is open inbound on your firewall.
 
 ###Running your BINKP Server
-* If You did not customize the port, this is easy. Run \wwiv\BBS.EXE -W  
-This runs the BBS and shows the WFC screen. The BINKP server has been integrated directly into 
-the BBS and you can leave this running.
-* If you have a custom port, I don't know how to run this properly. ;-)
+* Run \wwiv\networkb.exe --receive (in a loop)
+* If you changed the port number (from the default of 24554) then add --port=####
+
+Example:
+```cmd
+    rem NetworkB controller
+    :start
+    C:
+    cd \wwiv
+    networkb --receive
+    goto start
+```
