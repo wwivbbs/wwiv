@@ -3,7 +3,7 @@
 #include <iostream>
 #include <io.h>
 #include <string>
-#include "bbs/net.h"
+#include "sdk/net.h"
 
 using std::cerr;
 using std::cout;
