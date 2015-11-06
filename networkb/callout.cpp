@@ -154,14 +154,28 @@ const net_call_out_rec* Callout::node_config_for(int node) const {
 static std::string DumpCallout(const net_call_out_rec& n) {
   std::ostringstream ss;
   ss << "sysnum:        "  << n.sysnum << std::endl;
-  ss << "macnum:        "  << n.macnum << std::endl;
-  ss << "options:       " << n.options << std::endl;
-  ss << "min_hr:        " << n.min_hr << std::endl;
-  ss << "max_hr:        " << n.max_hr << std::endl;
-  ss << "password:      " << n.password << std::endl;
-  ss << "times_per_day: " << n.times_per_day << std::endl;
-  ss << "call_x_days:   " << n.call_x_days << std::endl;
-  ss << "min_k:         " << n.min_k << std::endl;
+  if (n.macnum) {
+    ss << "macnum:        " << std::dec << n.macnum << std::endl;
+  }
+  if (n.options) {
+    ss << "options:       " << n.options << std::endl;
+  }
+  if (n.min_hr > 0) {
+    ss << "min_hr:        " << static_cast<int>(n.min_hr) << std::endl;
+  }
+  if (n.max_hr > 0) {
+    ss << "max_hr:        " <<  static_cast<int>(n.max_hr) << std::endl;
+  }
+  ss << "password:      \"" << n.password << "\"" << std::endl;
+  if (n.times_per_day) {
+    ss << "times_per_day: " << static_cast<int>(n.times_per_day) << std::endl;
+  }
+  if (n.call_x_days) {
+    ss << "call_x_days:   " << static_cast<int>(n.call_x_days) << std::endl;
+  }
+  if (n.min_k) {
+    ss << "min_k:         " << static_cast<int>(n.min_k) << std::endl;
+  }
   if (n.opts && *n.opts) {
     ss << "opts:          " << n.opts << std::endl;
   }
@@ -171,7 +185,7 @@ static std::string DumpCallout(const net_call_out_rec& n) {
 std::string Callout::ToString() const {
   std::ostringstream ss;
   for (const auto& kv : node_config_) {
-    ss << "@" << kv.first << std::endl << DumpCallout(kv.second) << std::endl;
+    ss << DumpCallout(kv.second) << std::endl;
   }
   return ss.str();
 }
