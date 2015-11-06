@@ -56,15 +56,18 @@ using namespace wwiv::strings;
 using namespace wwiv::os;
 
 static void ShowHelp() {
+  //       0        1         2         3         4         5         6         7          
+  //       1234567890123456789012345678901234567890123456789012345678901234567890123456789
   cout << "\nUsage: networkb [flags]" << endl
        << "Flags:" << endl
-       << "--network  Network name to use (i.e. wwivnet)" << endl
-       << "--bbsdir   (optional) BBS directory if other than current directory " << endl
-       << "--send     Send network traffic to --node" << endl
-       << "--receive  Receive from any node" << endl
-       << "--node     Node number (only used when sending)" << endl
-       << "--port     Port number to use (receiving only)" << endl
-       << "--skip_net Skip invoking network1/network2/network3" << endl
+       << "--network      Network name to use (i.e. wwivnet)" << endl
+       << "--bbsdir       (optional) BBS directory if other than current directory " << endl
+       << "--send         Send network traffic to --node" << endl
+       << "--receive      Receive from any node" << endl
+       << "--node         Node number (only used when sending)" << endl
+       << "--port         Port number to use (receiving only)" << endl
+       << "--skip_net     Skip invoking network1/network2/network3" << endl
+       << "--dump_callout Displays the data in CALLOUT.NET as understood by networkb."
        << endl;
 }
 
