@@ -145,6 +145,23 @@ int main(int argc, char** argv) {
     bink_config.set_skip_net(skip_net);
     unique_ptr<SocketConnection> c;
     BinkSide side = BinkSide::ORIGINATING;
+
+    map<const string, Callout> callouts;
+    for (const auto net : bink_config.networks().networks()) {
+      string lower_case_network_name(net.name);
+      StringLowerCase(&lower_case_network_name);
+      callouts.emplace(lower_case_network_name, Callout(net.dir));
+    }
+
+    if (contains(args, "dump_callout")) {
+      for (const auto& c : callouts) {
+        std::cout << "CALLOUT.NET information: : " << c.first << std::endl;
+        std::cout << "===========================================================" << std::endl;
+        std::cout << c.second.ToString() << std::endl;
+      }
+      return 0;
+    }
+
     if (contains(args, "receive")) {
       LOG << "BinkP receive";
       side = BinkSide::ANSWERING;
@@ -167,12 +184,6 @@ int main(int argc, char** argv) {
       File* f = new File(net.dir, filename);
       return new WFileTransferFile(filename, unique_ptr<File>(f)); 
     };
-    map<const string, Callout> callouts;
-    for (const auto net : bink_config.networks().networks()) {
-      string lower_case_network_name(net.name);
-      StringLowerCase(&lower_case_network_name);
-      callouts.emplace(lower_case_network_name, Callout(net.dir));
-    }
     BinkP binkp(c.get(), &bink_config, callouts, side, expected_remote_node, factory);
     binkp.Run();
   } catch (const socket_error& e) {
