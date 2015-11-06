@@ -240,7 +240,7 @@ bool BinkP::process_frames(std::function<bool()> predicate, milliseconds d) {
         }
       }
     }
-  } catch (timeout_error& e) {
+  } catch (timeout_error&) {
   }
   return true;
 }

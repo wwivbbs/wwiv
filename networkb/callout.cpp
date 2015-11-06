@@ -151,6 +151,31 @@ const net_call_out_rec* Callout::node_config_for(int node) const {
   return nullptr;
 }
 
+static std::string DumpCallout(const net_call_out_rec& n) {
+  std::ostringstream ss;
+  ss << "sysnum:        "  << n.sysnum << std::endl;
+  ss << "macnum:        "  << n.macnum << std::endl;
+  ss << "options:       " << n.options << std::endl;
+  ss << "min_hr:        " << n.min_hr << std::endl;
+  ss << "max_hr:        " << n.max_hr << std::endl;
+  ss << "password:      " << n.password << std::endl;
+  ss << "times_per_day: " << n.times_per_day << std::endl;
+  ss << "call_x_days:   " << n.call_x_days << std::endl;
+  ss << "min_k:         " << n.min_k << std::endl;
+  if (n.opts && *n.opts) {
+    ss << "opts:          " << n.opts << std::endl;
+  }
+  return ss.str();
+}
+
+std::string Callout::ToString() const {
+  std::ostringstream ss;
+  for (const auto& kv : node_config_) {
+    ss << "@" << kv.first << std::endl << DumpCallout(kv.second) << std::endl;
+  }
+  return ss.str();
+}
+
 }  // namespace net
 }  // namespace wwiv
 
