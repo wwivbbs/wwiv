@@ -28,6 +28,11 @@ int main(int argc, char** argv) {
   while (!done) {
     net_header_rec h;
     int num_read = read(f, &h, sizeof(net_header_rec));
+    if (num_read == 0) {
+      // at the end of the packet.
+      cout << "[End of Packet]" << endl;
+      return 0;
+    }
     if (num_read != sizeof(net_header_rec)) {
       cerr << "error reading header, got short read of size: " << num_read 
            << "; expected: " << sizeof(net_header_rec) << endl;
