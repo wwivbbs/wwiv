@@ -3,6 +3,7 @@
 #include <iostream>
 #include <io.h>
 #include <string>
+#include <vector>
 #include "sdk/net.h"
 
 using std::cerr;
@@ -16,7 +17,7 @@ int main(int argc, char** argv) {
     cout << "Example: dumppacket S1.NET" << endl;
     return 2;
   }
-
+  cout << sizeof(net_header_rec) << endl;
   const string filename(argv[1]);
   int f = open(filename.c_str(), _O_BINARY | _O_RDONLY);
   if (f == -1) {
@@ -42,14 +43,28 @@ int main(int argc, char** argv) {
     cout << "from:        " << h.fromuser << "@" << h.fromsys << endl;
     cout << "type:        " << h.main_type << "." << h.minor_type << endl;
     cout << "list_len:    " << h.list_len << endl;
-    cout << "daten:       " << h.list_len << endl;
+    cout << "daten:       " << h.daten << endl;
     cout << "length:      " << h.length << endl;
-    cout << "method:      " << h.method << endl << endl;
+    cout << "method:      " << h.method << endl;
+
+    // read list of addresses.
+    std::vector<uint16_t> list;
+    list.reserve(h.list_len);
+    int list_num_read = read(f, &list[0], 2 * h.list_len);
+    for (const auto item : list) {
+      cout << item << " ";
+    }
+    cout << endl;
+    string text;
+    text.resize(h.length + 1);
+    int text_num_read = read(f, &text[0], h.length);
+    cout << "Text:" << endl << text << endl << endl;
     // skip text.
-    lseek(f, h.length, SEEK_CUR);
+    //lseek(f, h.length + (2 * h.list_len), SEEK_CUR);
     if (eof(f)) {
       done = true;
     }
+    cout << endl;
   }
   close(f);
   return 0;
