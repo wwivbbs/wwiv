@@ -1,1 +1,1 @@
-cl -I\ packetdump.cpp 
+cl -I..\ packetdump.cpp 
