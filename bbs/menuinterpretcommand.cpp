@@ -369,7 +369,7 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
       VotePrint();
     } },
     { "YLog", [](MenuItemContext& context) {
-      YesturdaysLog();
+      YesterdaysLog();
     } },
     { "ZLog", [](MenuItemContext& context) {
       ZLog();

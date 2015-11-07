@@ -78,7 +78,7 @@ void PrintStatus();
 void TextEdit();
 void UserEdit();
 void VotePrint();
-void YesturdaysLog();
+void YesterdaysLog();
 void ZLog();
 void ViewNetDataLog();
 void UploadPost();

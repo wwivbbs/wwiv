@@ -55,9 +55,15 @@ const char* WStatus::GetLogFileName(int nDaysAgo) const {
   WWIV_ASSERT(nDaysAgo >= 0);
   WWIV_ASSERT(nDaysAgo <= 1);
   switch (nDaysAgo) {
-  case 0:
-    return m_pStatusRecord->log1;
+  case 0: {
+    static char s[81]; // logname
+    std::string todays_log = GetSysopLogFileName(date());
+    strcpy(s, todays_log.c_str());
+    return s;
+  }
   case 1:
+    return m_pStatusRecord->log1;
+  case 2:
     return m_pStatusRecord->log2;
   default:
     return m_pStatusRecord->log1;

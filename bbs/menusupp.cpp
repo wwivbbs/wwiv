@@ -586,9 +586,9 @@ void VotePrint() {
   voteprint();
 }
 
-void YesturdaysLog() {
+void YesterdaysLog() {
   std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
-  print_local_file(pStatus->GetLogFileName());
+  print_local_file(pStatus->GetLogFileName(1));
 }
 
 void ZLog() {
