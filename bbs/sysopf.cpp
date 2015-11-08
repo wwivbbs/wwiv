@@ -936,7 +936,7 @@ void beginday(bool displayStatus) {
   if (displayStatus) {
     bout << "  |#7* |#1Cleaning up log files...\r\n";
   }
-  File::Remove(syscfg.gfilesdir, pStatus->GetLogFileName(1));
+  File::Remove(syscfg.gfilesdir, pStatus->GetLogFileName(2));
   File::Remove(syscfg.gfilesdir, USER_LOG);
 
   if (displayStatus) {

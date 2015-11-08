@@ -59,8 +59,7 @@ int main(int argc, char** argv) {
     text.resize(h.length + 1);
     int text_num_read = read(f, &text[0], h.length);
     cout << "Text:" << endl << text << endl << endl;
-    // skip text.
-    //lseek(f, h.length + (2 * h.list_len), SEEK_CUR);
+
     if (eof(f)) {
       done = true;
     }
