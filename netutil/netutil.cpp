@@ -1,7 +1,6 @@
 #include <cstdio>
 #include <fcntl.h>
 #include <iostream>
-#include <io.h>
 #include <string>
 #include <vector>
 #include "netutil/dump.h"
