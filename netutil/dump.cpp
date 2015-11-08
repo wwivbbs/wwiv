@@ -55,7 +55,7 @@ int dump(int argc, char** argv) {
     if (h.list_len > 0) {
       // read list of addresses.
       std::vector<uint16_t> list;
-      list.reserve(h.list_len);
+      list.resize(h.list_len);
       int list_num_read = read(f, &list[0], 2 * h.list_len);
       for (const auto item : list) {
         cout << item << " ";
