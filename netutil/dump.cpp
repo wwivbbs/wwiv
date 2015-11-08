@@ -11,7 +11,12 @@ using std::cout;
 using std::endl;
 using std::string;
 
-int main(int argc, char** argv) {
+void dump_usage() {
+  cout << "Usage:   dumppacket <filename>" << endl;
+  cout << "Example: dumppacket S1.NET" << endl;
+}
+
+int dump(int argc, char** argv) {
   if (argc < 2) {
     cout << "Usage:   dumppacket <filename>" << endl;
     cout << "Example: dumppacket S1.NET" << endl;
@@ -47,19 +52,22 @@ int main(int argc, char** argv) {
     cout << "length:      " << h.length << endl;
     cout << "method:      " << h.method << endl;
 
-    // read list of addresses.
-    std::vector<uint16_t> list;
-    list.reserve(h.list_len);
-    int list_num_read = read(f, &list[0], 2 * h.list_len);
-    for (const auto item : list) {
-      cout << item << " ";
+    if (h.list_len > 0) {
+      // read list of addresses.
+      std::vector<uint16_t> list;
+      list.reserve(h.list_len);
+      int list_num_read = read(f, &list[0], 2 * h.list_len);
+      for (const auto item : list) {
+        cout << item << " ";
+      }
+      cout << endl;
     }
-    cout << endl;
-    string text;
-    text.resize(h.length + 1);
-    int text_num_read = read(f, &text[0], h.length);
-    cout << "Text:" << endl << text << endl << endl;
-
+    if (h.length > 0) {
+      string text;
+      text.resize(h.length + 1);
+      int text_num_read = read(f, &text[0], h.length);
+      cout << "Text:" << endl << text << endl << endl;
+    }
     if (eof(f)) {
       done = true;
     }

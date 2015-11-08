@@ -53,7 +53,6 @@ const char* WStatus::GetLastDate(int nDaysAgo) const {
 
 const char* WStatus::GetLogFileName(int nDaysAgo) const {
   WWIV_ASSERT(nDaysAgo >= 0);
-  WWIV_ASSERT(nDaysAgo <= 1);
   switch (nDaysAgo) {
   case 0: {
     static char s[81]; // logname
