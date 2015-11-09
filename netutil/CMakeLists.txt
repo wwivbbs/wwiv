@@ -6,9 +6,9 @@ include_directories(..)
 set(NETUTIL_MAIN netutil.cpp)
 
 set(SOURCES 
- dump.cpp
+ dump.cpp dump_callout.cpp
 )
 
 add_executable(netutil ${NETUTIL_MAIN} ${SOURCES})
-target_link_libraries(netutil core sdk)
+target_link_libraries(netutil core networkb_lib sdk)
 
