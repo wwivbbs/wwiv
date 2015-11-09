@@ -16,8 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "core/strings.h"
-
 #include <algorithm>
 #include <cstdarg>
 #include <cstdio>
@@ -30,6 +28,7 @@
 #include <string>
 #include <vector>
 
+#include "core/strings.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 
