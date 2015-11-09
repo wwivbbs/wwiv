@@ -36,29 +36,7 @@ void dump_callout_usage() {
   cout << "Example: dump_callout" << endl;
 }
 
-int dump_callout(int argc, char** argv) {
-  string bbsdir = File::current_directory();
-//  if (contains(args, "bbsdir")) {
-//    bbsdir = args["bbsdir"];
-//  }
-  Config config(bbsdir);
-  if (!config.IsInitialized()) {
-    clog << "Unable to load config.dat.";
-    return 1;
-  }
-  Networks networks(config);
-  if (!networks.IsInitialized()) {
-    clog << "Unable to load networks.";
-    return 1;
-  }
-
-  map<const string, Callout> callouts;
-  for (const auto net : networks.networks()) {
-    string lower_case_network_name(net.name);
-    StringLowerCase(&lower_case_network_name);
-    callouts.emplace(lower_case_network_name, Callout(net.dir));
-  }
-
+int dump_callout(map<const string, Callout> callouts, int argc, char** argv) {
   for (const auto& c : callouts) {
     std::cout << "CALLOUT.NET information: : " << c.first << std::endl;
     std::cout << "===========================================================" << std::endl;
