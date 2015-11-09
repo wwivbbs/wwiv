@@ -48,6 +48,10 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "network", "network\network.vcxproj", "{8DC3E577-7568-49B1-91D8-207CB5887DD9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "netutil", "netutil\netutil.vcxproj", "{F8C4DB1A-0932-407C-9ADA-DBCDE9728305}"
+	ProjectSection(ProjectDependencies) = postProject
+		{160CA888-2434-48A8-AD4E-02140E3B2C52} = {160CA888-2434-48A8-AD4E-02140E3B2C52}
+		{53DB67DB-4D42-4A8A-B176-EE83A170DE86} = {53DB67DB-4D42-4A8A-B176-EE83A170DE86}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

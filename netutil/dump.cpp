@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 #include "core/file.h"
+#include "core/strings.h"
 #include "sdk/net.h"
 
 using std::cerr;
@@ -22,6 +23,14 @@ using std::string;
 void dump_usage() {
   cout << "Usage:   dumppacket <filename>" << endl;
   cout << "Example: dumppacket S1.NET" << endl;
+}
+
+string daten_to_humantime(uint32_t daten) {
+  time_t t = static_cast<time_t>(daten);
+  string human_date = string(asctime(localtime(&t)));
+  wwiv::strings::StringTrimEnd(&human_date);
+
+  return human_date;
 }
 
 int dump(int argc, char** argv) {
@@ -56,7 +65,7 @@ int dump(int argc, char** argv) {
     cout << "from:        " << h.fromuser << "@" << h.fromsys << endl;
     cout << "type:        " << h.main_type << "." << h.minor_type << endl;
     cout << "list_len:    " << h.list_len << endl;
-    cout << "daten:       " << h.daten << endl;
+    cout << "daten:       " << daten_to_humantime(h.daten) << endl;
     cout << "length:      " << h.length << endl;
     cout << "method:      " << h.method << endl;
 
