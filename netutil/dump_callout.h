@@ -18,7 +18,10 @@
 #ifndef __INCLUDED_NETUTIL_DUMP_CALLOUT_H__
 #define __INCLUDED_NETUTIL_DUMP_CALLOUT_H__
 
+#include <map>
+#include "networkb/callout.h"
+
 void dump_callout_usage();
-int dump_callout(int argc, char** argv);
+int dump_callout(std::map<const std::string, wwiv::net::Callout> callouts, int argc, char** argv);
 
 #endif  // __INCLUDED_NETUTIL_DUMP_CALLOUT_H__
