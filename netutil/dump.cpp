@@ -64,8 +64,8 @@ string daten_to_humantime(uint32_t daten) {
 
 int dump(int argc, char** argv) {
   if (argc < 2) {
-    cout << "Usage:   dumppacket <filename>" << endl;
-    cout << "Example: dumppacket S1.NET" << endl;
+    cout << "Usage:   dump <filename>" << endl;
+    cout << "Example: dump S1.NET" << endl;
     return 2;
   }
   const string filename(argv[1]);
