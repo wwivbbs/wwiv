@@ -1,9 +1,17 @@
 #include <cstdio>
 #include <fcntl.h>
 #include <iostream>
+#ifdef _WIN32
 #include <io.h>
+#else  // _WIN32
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#endif 
 #include <string>
 #include <vector>
+#include "core/file.h"
 #include "sdk/net.h"
 
 using std::cerr;
@@ -24,7 +32,7 @@ int dump(int argc, char** argv) {
   }
   cout << sizeof(net_header_rec) << endl;
   const string filename(argv[1]);
-  int f = open(filename.c_str(), _O_BINARY | _O_RDONLY);
+  int f = open(filename.c_str(), O_BINARY | O_RDONLY);
   if (f == -1) {
     cerr << "Unable to open file: " << filename << endl;
     return 1;
@@ -67,9 +75,6 @@ int dump(int argc, char** argv) {
       text.resize(h.length + 1);
       int text_num_read = read(f, &text[0], h.length);
       cout << "Text:" << endl << text << endl << endl;
-    }
-    if (eof(f)) {
-      done = true;
     }
     cout << endl;
   }
