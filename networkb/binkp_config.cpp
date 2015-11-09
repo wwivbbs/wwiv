@@ -27,6 +27,7 @@ namespace net {
 
 // [[ VisibleForTesting ]]
 bool ParseBinkConfigLine(const string& line, uint16_t* node, BinkNodeConfig* config) {
+
   // A line will be of the format @node host:port
   if (line.empty() || line[0] != '@') {
     // skip empty lines and those not starting with @.
@@ -62,6 +63,7 @@ static bool ParseAddressesFile(std::map<uint16_t, BinkNodeConfig>* node_config_m
     while (node_config_file.ReadLine(&line)) {
       uint16_t node_number;
       BinkNodeConfig node_config;
+      StringTrim(&line);
       if (ParseBinkConfigLine(line, &node_number, &node_config)) {
         // Parsed a line correctly.
         node_config_map->emplace(node_number, node_config);

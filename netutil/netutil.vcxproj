@@ -148,15 +148,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="dump_callout.cpp" />
     <ClCompile Include="netutil.cpp" />
     <ClCompile Include="dump.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dump.h" />
+    <ClInclude Include="dump_callout.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\core\core.vcxproj">
       <Project>{160ca888-2434-48a8-ad4e-02140e3b2c52}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\networkb\networkb_lib.vcxproj">
+      <Project>{5bdd74e7-bd9d-42ca-9b2a-397db9cda67c}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

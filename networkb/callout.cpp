@@ -122,6 +122,7 @@ static bool ParseCalloutFile(std::map<uint16_t, net_call_out_rec>* node_config_m
   // A line will be of the format @node host:port [password].
   string line;
   while (node_config_file.ReadLine(&line)) {
+    StringTrim(&line);
     net_call_out_rec node_config;
     if (ParseCalloutNetLine(line, &node_config)) {
       // Parsed a line correctly.
