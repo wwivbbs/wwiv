@@ -57,7 +57,7 @@ static void ShowHelp() {
 
 static map<string, string> ParseArgs(int argc, char** argv) {
   map<string, string> args;
-  for (int i = 0; i < argc; i++) {
+  for (int i = 1; i < argc; i++) {
     const string s(argv[i]);
     if (starts_with(s, "--")) {
       const vector<string> delims = SplitString(s, "=");
