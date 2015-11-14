@@ -85,6 +85,7 @@ BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& co
   if (sysop_name_.empty()) {
     sysop_name_ = "Unknown WWIV SysOp";
   }
+  gfiles_directory_ = config.config()->gfilesdir;
 
   if (networks.contains(callout_network_name)) {
     const net_networks_rec& net = networks[callout_network_name];
@@ -117,6 +118,7 @@ BinkConfig::BinkConfig(int callout_node_number, const wwiv::sdk::Config& config,
   ParseAddressesFile(&node_config_, network_dir);
   system_name_ = config.config()->systemname;
   sysop_name_ = config.config()->sysopname;
+  gfiles_directory_ = config.config()->gfilesdir;
 }
 
 BinkConfig::~BinkConfig() {}

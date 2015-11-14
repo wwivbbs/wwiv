@@ -23,6 +23,7 @@
 #include "networkb/binkp_config.h"
 #include "networkb/callout.h"
 #include "networkb/connection.h"
+#include "networkb/net_log.h"
 #include "networkb/socket_exceptions.h"
 #include "networkb/transfer_file.h"
 #include "networkb/wfile_transfer_file.h"
@@ -128,7 +129,9 @@ BinkP::BinkP(Connection* conn, BinkConfig* config, std::map<const string, Callou
     side_(side),
     expected_remote_node_(expected_remote_node), 
     error_received_(false),
-    received_transfer_file_factory_(received_transfer_file_factory) {}
+    received_transfer_file_factory_(received_transfer_file_factory),
+    bytes_sent_(0),
+    bytes_received_(0) {}
 
 BinkP::~BinkP() {
   files_to_send_.clear();
@@ -202,8 +205,14 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
         current_receive_file_->length(),
         current_receive_file_->timestamp());
 
+    // Increment the nubmer of bytes received.
+    bytes_received_ += current_receive_file_->length();
+
+    // Close the current file, add the name to the list of received files.
     current_receive_file_->Close();
     received_files_.push_back(current_receive_file_->filename());
+
+    //  delete the reference to this file and signal the other side we received it.
     current_receive_file_.release();
     send_command_packet(BinkpCommands::M_GOT, data_line);
   } else {
@@ -381,7 +390,7 @@ BinkState BinkP::PasswordAck() {
 
   // TODO(rushfan): we need to use the network name we matched not the one that config thinks.
   const string network_name = remote_network_name();
-  int remote_node = node_number_from_address_list(address_list_, network_name);
+  int remote_node = remote_network_node();
   LOG << "       remote node: " << remote_node;
 
   Callout callout(callouts_.at(network_name));
@@ -482,13 +491,8 @@ BinkState BinkP::AuthRemote() {
 }
 
 BinkState BinkP::TransferFiles() {
-  // This is only valid if we are the SENDER.
-  // TODO(rushfan): make this a method on the class.
-  int remote_node = expected_remote_node_;
+  int remote_node = remote_network_node();
   const string network_name(remote_network_name());
-  if (side_ == BinkSide::ANSWERING) {
-    remote_node = node_number_from_address_list(address_list_, network_name);
-  }
 
   LOG << "STATE: TransferFiles to node: " << remote_node;
   // Quickly let the inbound event loop percolate.
@@ -650,6 +654,8 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   if (!file->Delete()) {
     LOG << "       *** UNABLE TO DELETE FILE: " << file->filename(); 
   }
+  // Increment the number of bytes sent.
+  bytes_sent_ += file->file_size();
   files_to_send_.erase(iter);
   return true;
 }
@@ -678,6 +684,7 @@ static void rename_pend(const string& directory, const string& filename) {
 void BinkP::Run() {
   LOG << "STATE: Run (Main Event Loop): side_:" << static_cast<int>(side_);
   BinkState state = (side_ == BinkSide::ORIGINATING) ? BinkState::CONN_INIT : BinkState::WAIT_CONN;
+  auto start_time = std::chrono::system_clock::now();
   try {
     bool done = false;
     while (!done) {
@@ -738,11 +745,22 @@ void BinkP::Run() {
     LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what()
         << "\nStacktrace:\n" << stacktrace();
   }
+
+  auto end_time = std::chrono::system_clock::now();
   LOG << "Before rename pending_files";
   rename_pending_files();
   if (!config_->skip_net()) {
     process_network_files();
   }
+
+  // Log to NET.LOG
+  auto diff = end_time - start_time;
+  auto sec = std::chrono::duration_cast<std::chrono::seconds>(diff);
+
+  NetworkSide network_log_side = (side_ == BinkSide::ORIGINATING) ? NetworkSide::TO : NetworkSide::FROM;
+  NetworkLog net_log(config_->gfiles_directory());
+  net_log.Log(std::chrono::system_clock::to_time_t(start_time), network_log_side,
+      remote_network_node(), bytes_sent_, bytes_received_, sec, remote_network_name());
 }
 
 void BinkP::rename_pending_files() const {
@@ -790,6 +808,15 @@ const std::string BinkP::remote_network_name() const {
   }
   LOG << "       remote_network_name(): " << remote_network_name;
   return remote_network_name;
+}
+
+int BinkP::remote_network_node() const {
+  if (side_ == BinkSide::ANSWERING) {
+    const string network_name = remote_network_name();
+    return node_number_from_address_list(address_list_, network_name);
+  }
+  // When sending, we should be talking to who we wanted to.
+  return expected_remote_node_;
 }
 
 bool ParseFileRequestLine(const std::string& request_line, 

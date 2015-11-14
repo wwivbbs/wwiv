@@ -41,6 +41,9 @@
     <ClCompile Include="callout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="net_log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="connection.h">
@@ -77,6 +80,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="receive_file.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net_log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

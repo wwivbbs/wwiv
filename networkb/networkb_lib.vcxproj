@@ -96,6 +96,7 @@
     <ClInclude Include="callout.h" />
     <ClInclude Include="connection.h" />
     <ClInclude Include="config_exceptions.h" />
+    <ClInclude Include="net_log.h" />
     <ClInclude Include="ppp_config.h" />
     <ClInclude Include="receive_file.h" />
     <ClInclude Include="socket_connection.h" />
@@ -109,6 +110,7 @@
     <ClCompile Include="binkp_commands.cpp" />
     <ClCompile Include="callout.cpp" />
     <ClCompile Include="connection.cpp" />
+    <ClCompile Include="net_log.cpp" />
     <ClCompile Include="ppp_config.cpp" />
     <ClCompile Include="socket_connection.cpp" />
     <ClCompile Include="socket_exceptions.cpp" />

@@ -74,6 +74,7 @@ private:
   void rename_pending_files() const;
   void process_network_files() const;
   const std::string remote_network_name() const;
+  int remote_network_node() const;
 
   BinkState ConnInit();
   BinkState WaitConn();
@@ -107,6 +108,8 @@ private:
   received_transfer_file_factory_t received_transfer_file_factory_;
   std::vector<std::string> received_files_;
   std::unique_ptr<ReceiveFile> current_receive_file_;
+  unsigned int bytes_received_;
+  unsigned int bytes_sent_;
 };
 
 // Parses a M_FILE request line into it's parts.
