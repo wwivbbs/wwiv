@@ -101,6 +101,9 @@ std::string NetworkLog::CreateLogLine(
 
 std::string NetworkLog::GetContents() const {
   TextFile file(gfiles_directory_, "NET.LOG", "r");
+  if (!file.IsOpen()) {
+    return "";
+  }
   return file.ReadFileIntoString();
 }
 

@@ -28,14 +28,17 @@ class BinkTest : public testing::Test {
 protected:
   void StartBinkpReceiver() {
     files_.Mkdir("network");
+    files_.Mkdir("gfiles");
     const string line("@1 example.com");
     files_.CreateTempFile("binkp.net", line);
     const string network_dir = files_.DirName("network");
+    const string gfiles_dir = files_.DirName("gfiles");
     wwiv::sdk::Config config;
     memset(&wwiv_config_, 0, sizeof(configrec));
     config.set_initialized_for_test(true);
     strcpy(wwiv_config_.systemname, "Test System");
     strcpy(wwiv_config_.sysopname, "Test Sysop");
+    strcpy(wwiv_config_.gfilesdir, gfiles_dir.c_str());
     config.set_config(&wwiv_config_);
     BinkConfig* dummy_config = new BinkConfig(ORIGINATING_ADDRESS, config, network_dir);
     Callout dummy_callout(network_dir);
