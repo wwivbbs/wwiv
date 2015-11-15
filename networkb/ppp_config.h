@@ -11,6 +11,7 @@
 
 #include "core/inifile.h"
 #include "networkb/config_exceptions.h"
+#include "sdk/config.h"
 #include "sdk/networks.h"
 
 namespace wwiv {
