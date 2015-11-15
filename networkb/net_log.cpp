@@ -49,7 +49,7 @@ NetworkLog::NetworkLog(const std::string& gfiles_directory)
     : gfiles_directory_(gfiles_directory) {}
 NetworkLog::~NetworkLog() {}
 
-std::string date_time(time_t t) {
+static std::string date_time(time_t t) {
   struct tm* local = localtime(&t);
   return StringPrintf("%02d/%02d/%02d %02d:%02d:%02d",
     local->tm_mon + 1, local->tm_mday, local->tm_year % 100,
@@ -80,13 +80,13 @@ std::string NetworkLog::CreateLogLine(
   else {
     // TODO(rushfan): Should this be: ", Tried S" ? like network0 does when it tries to receive
     // Since we always try to send and receive?
-    ss << "         ";
+    ss << ",        ";
   }
   if (bytes_received > 0) {
     ss << StringPrintf(", R:%4uk", (bytes_received + 1023) / 1024);
   } else {
     // TODO(rushfan): Should this be: ", Tried R" ?
-    ss << "        ";
+    ss << "         ";
   }
   ss << "          ";  // should be ", %4.0f cps";
   ss << " ";  // last space before time.

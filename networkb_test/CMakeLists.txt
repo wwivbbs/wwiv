@@ -10,6 +10,7 @@ set(test_sources
   callout_test.cpp
   fake_connection.cpp
   transfer_file_test.cpp
+  net_log_test.cpp
   ppp_config_test.cpp
 )
 

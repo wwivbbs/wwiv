@@ -55,13 +55,13 @@ class NetworkLog {
 
   std::string ToString() const;
 
- private:
    std::string CreateLogLine(
      time_t time, NetworkSide side, int16_t node,
      unsigned int bytes_sent, unsigned int bytes_received,
      std::chrono::seconds seconds_elapsed, const std::string& network_name);
    
-   std::string gfiles_directory_;
+private:
+  std::string gfiles_directory_;
 };
 
 }  // namespace net
