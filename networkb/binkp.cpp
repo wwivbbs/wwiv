@@ -23,6 +23,7 @@
 #include "networkb/binkp_config.h"
 #include "networkb/callout.h"
 #include "networkb/connection.h"
+#include "networkb/contact.h"
 #include "networkb/net_log.h"
 #include "networkb/socket_exceptions.h"
 #include "networkb/transfer_file.h"
@@ -651,11 +652,13 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   }
 
   TransferFile* file = iter->second.get();
+  // Increment the number of bytes sent.
+  // Also don't increment with -1 if there's an error with the file.
+  bytes_sent_ += std::max(0, file->file_size());
+
   if (!file->Delete()) {
     LOG << "       *** UNABLE TO DELETE FILE: " << file->filename(); 
   }
-  // Increment the number of bytes sent.
-  bytes_sent_ += file->file_size();
   files_to_send_.erase(iter);
   return true;
 }
@@ -761,6 +764,15 @@ void BinkP::Run() {
   NetworkLog net_log(config_->gfiles_directory());
   net_log.Log(std::chrono::system_clock::to_time_t(start_time), network_log_side,
       remote_network_node(), bytes_sent_, bytes_received_, sec, remote_network_name());
+
+  // Update CONTACT.NET
+  Contact c(config_->network_dir(remote_network_name()), true);
+  if (error_received_) {
+    c.add_failure(remote_network_node(), std::chrono::system_clock::to_time_t(start_time));
+  } else {
+    c.add_connect(remote_network_node(), std::chrono::system_clock::to_time_t(start_time),
+      bytes_sent_, bytes_received_);
+  }
 }
 
 void BinkP::rename_pending_files() const {

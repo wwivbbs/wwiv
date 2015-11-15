@@ -55,18 +55,23 @@ Contact::Contact(const string& network_dir, bool save_on_destructor)
   }
   
   const int num_records = file.number_of_records();
-  contacts_.resize(num_records);
-  initialized_ = file.Read(&contacts_[0], num_records);
+  if (num_records > 0) {
+    // Debug CRT will crash if you try to read 0 record.
+    // Debug CRT will crash if you access the 0th item in an empty vector.
+    contacts_.resize(num_records);
+    initialized_ = file.Read(&contacts_[0], num_records);
+  }
 
   if (!initialized_) {
     std::clog << "failed to read the expected number of bytes: "
         << num_records * sizeof(net_contact_rec) << std::endl;
   }
   initialized_ = true;
+  //std::clog << "Contact.NET initialized with " << num_records << " record." << std::endl;
 }
 
 Contact::Contact(std::initializer_list<net_contact_rec> l) 
-    : save_on_destructor_(false) {
+    : initialized_(true), save_on_destructor_(false) {
   for (const auto& r : l) {
     contacts_.emplace_back(r);
   }
@@ -80,8 +85,13 @@ bool Contact::Save() {
     return false;
   }
 
-  DataFile<net_contact_rec> file(network_dir_, CONTACT_NET, File::modeBinary | File::modeReadOnly, File::shareDenyNone);
+  DataFile<net_contact_rec> file(network_dir_, CONTACT_NET, 
+      File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate,
+      File::shareDenyReadWrite);
   if (!file) {
+    return false;
+  }
+  if (contacts_.size() == 0) {
     return false;
   }
   return file.Write(&contacts_[0], contacts_.size());
@@ -104,6 +114,10 @@ net_contact_rec* Contact::contact_rec_for(int node) {
 
 void Contact::add_connect(int node, time_t time, uint32_t bytes_sent, uint32_t bytes_received) {
   net_contact_rec* c = contact_rec_for(node);
+  if (c == nullptr) {
+    // TODO(rushfan): Add support for creating new contact records.
+    return;
+  }
   add_contact(c, time);
 
   uint32_t time32 = static_cast<uint32_t>(time);
@@ -117,6 +131,11 @@ void Contact::add_connect(int node, time_t time, uint32_t bytes_sent, uint32_t b
 
 void Contact::add_failure(int node, time_t time) {
   net_contact_rec* c = contact_rec_for(node);
+  if (c == nullptr) {
+    // TODO(rushfan): Add support for creating new contact records.
+    return;
+  }
+
   add_contact(c, time);
   c->numfails++;
 }
