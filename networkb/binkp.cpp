@@ -82,7 +82,8 @@ int node_number_from_address_list(const string& network_list, const string& netw
 std::string network_name_from_single_address(const std::string& network_list) {
   vector<string> v = SplitString(network_list, " ");
   if (v.empty()) {
-    return "";
+    // default to wwivnet
+    return "wwivnet";
   }
   string s = v.front();
   string::size_type index = s.find_last_of("@");
