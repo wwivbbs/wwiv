@@ -28,30 +28,33 @@
 namespace wwiv {
 namespace net {
 
-  
+ /**
+  * Class for manipulating CONTACT.NET
+  */
 class Contact {
  public:
-  explicit Contact(const std::string& network_dir, bool save_on_destructor);
+  Contact(const std::string& network_dir, bool save_on_destructor);
   // VisibleForTesting
   Contact(std::initializer_list<net_contact_rec> l);
   virtual ~Contact();
 
+  // Was this list initialized properly.
   bool IsInitialized() const { return initialized_; }
   // returns a mutable net_contact_rec for system number "node"
   net_contact_rec* contact_rec_for(int node);
 
-  /** add a connection to node */
-  void add_connect(int node, time_t time, uint32_t bytes_send, uint32_t bytes_received);
-  /** add a failure to node */
+  /** add a connection to node, including bytes send and received. */
+  void add_connect(int node, time_t time, uint32_t bytes_sent, uint32_t bytes_received);
+  /** add a failure attempt to node */
   void add_failure(int node, time_t time);
-
-  /** add a contact. caled by connect or failure. */
-  void add_contact(net_contact_rec* c, time_t time);
 
   bool Save();
   std::string ToString() const;
 
  private:
+   /** add a contact. caled by connect or failure. */
+   void add_contact(net_contact_rec* c, time_t time);
+
    std::vector<net_contact_rec> contacts_;
    bool save_on_destructor_;
    bool initialized_;
