@@ -102,6 +102,37 @@ net_contact_rec* Contact::contact_rec_for(int node) {
   return nullptr;
 }
 
+void Contact::add_connect(int node, time_t time, uint32_t bytes_sent, uint32_t bytes_received) {
+  net_contact_rec* c = contact_rec_for(node);
+  add_contact(c, time);
+
+  uint32_t time32 = static_cast<uint32_t>(time);
+  if (bytes_sent > 0) {
+    c->lastcontactsent = time32;
+    c->bytes_waiting = 0;
+    c->bytes_sent += bytes_sent;
+  }
+  c->bytes_received += bytes_received;
+}
+
+void Contact::add_failure(int node, time_t time) {
+  net_contact_rec* c = contact_rec_for(node);
+  add_contact(c, time);
+  c->numfails++;
+}
+
+void Contact::add_contact(net_contact_rec* c, time_t time) {
+  uint32_t time32 = static_cast<uint32_t>(time);
+
+  c->lasttry = time32;
+  c->lastcontact = time32;
+  c->numcontacts++;
+
+  if (c->firstcontact == 0) {
+    c->firstcontact = time32;
+  }
+}
+
 string daten_to_humantime(uint32_t daten) {
   time_t t = static_cast<time_t>(daten);
   string human_date = string(asctime(localtime(&t)));
