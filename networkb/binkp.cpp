@@ -1,3 +1,20 @@
+/**************************************************************************/
+/*                                                                        */
+/*                          WWIV Version 5.0x                             */
+/*               Copyright (C)2015, WWIV Software Services                */
+/*                                                                        */
+/*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
+/*    you may not use this  file  except in compliance with the License.  */
+/*    You may obtain a copy of the License at                             */
+/*                                                                        */
+/*                http://www.apache.org/licenses/LICENSE-2.0              */
+/*                                                                        */
+/*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
+/*    software  distributed  under  the  License  is  distributed on an   */
+/*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
+/*    either  express  or implied.  See  the  License for  the specific   */
+/*    language governing permissions and limitations under the License.   */
+/**************************************************************************/
 #include "networkb/binkp.h"
 
 #include <algorithm>
@@ -79,17 +96,18 @@ int node_number_from_address_list(const string& network_list, const string& netw
   return -1;
 }
 
+// Returns the single network name from the address list (only used when we
+// are in answering mode, where a single address is presented) or the empty
+// string if no address is present.
 std::string network_name_from_single_address(const std::string& network_list) {
   vector<string> v = SplitString(network_list, " ");
   if (v.empty()) {
-    // default to wwivnet
-    return "wwivnet";
+    return "";
   }
   string s = v.front();
   string::size_type index = s.find_last_of("@");
   if (index == string::npos) {
-    // default to wwivnet
-    return "wwivnet";
+    return "";
   }
   return s.substr(index+1);
 }
@@ -106,7 +124,7 @@ public:
     File::EnsureTrailingSlash(&dir);
     const string s_node_net = StringPrintf("s%d.net", destination_node_);
     const string search_path = StrCat(dir, s_node_net);
-    LOG << "       CreateTransferFileList: search_path: " << search_path;
+    // LOG << "       CreateTransferFileList: search_path: " << search_path;
     if (File::Exists(search_path)) {
       File file (search_path);
       const string basename = file.GetName();
@@ -366,7 +384,7 @@ BinkState BinkP::SendPasswd() {
   LOG << "STATE: SendPasswd for network '" << network_name << "' for node: " << expected_remote_node_;
   Callout callout = callouts_.at(network_name);
   const string password = expected_password_for(&callout, expected_remote_node_);
-  LOG << "       sending password packet";
+  // LOG << "       sending password packet";
   send_command_packet(BinkpCommands::M_PWD, password);
   return BinkState::WAIT_ADDR;
 }
@@ -456,7 +474,7 @@ BinkState BinkP::IfSecure() {
 BinkState BinkP::AuthRemote() {
   LOG << "STATE: AuthRemote";
   // Check that the address matches who we thought we called.
-  LOG << "       remote address_list: " << address_list_;
+  // LOG << "       remote address_list: " << address_list_;
   const string network_name(remote_network_name());
   if (side_ == BinkSide::ANSWERING) {
     int caller_node = node_number_from_address_list(address_list_, network_name);
@@ -480,7 +498,7 @@ BinkState BinkP::AuthRemote() {
   }
 
   const string expected_ftn = StringPrintf("20000:20000/%d@%s", expected_remote_node_, network_name.c_str());
-  LOG << "       expected_ftn: " << expected_ftn;
+  // LOG << "       expected_ftn: " << expected_ftn;
   if (address_list_.find(expected_ftn) != string::npos) {
     return (side_ == BinkSide::ORIGINATING) ?
       BinkState::IF_SECURE : BinkState::WAIT_PWD;
@@ -595,7 +613,7 @@ bool BinkP::SendFileData(TransferFile* file) {
 
 // M_FILE received.
 bool BinkP::HandleFileRequest(const string& request_line) {
-  LOG << "       HandleFileRequest; request_line: " << request_line;
+  // LOG << "       HandleFileRequest; request_line: " << request_line;
   ReceiveFile* old_file = current_receive_file_.release();
   if (old_file != nullptr) {
     LOG << "** ERROR: Got HandleFileRequest while still having an open receive file!";
@@ -686,7 +704,7 @@ static void rename_pend(const string& directory, const string& filename) {
 }
 
 void BinkP::Run() {
-  LOG << "STATE: Run (Main Event Loop): side_:" << static_cast<int>(side_);
+  // LOG << "STATE: Run(): side:" << static_cast<int>(side_);
   BinkState state = (side_ == BinkSide::ORIGINATING) ? BinkState::CONN_INIT : BinkState::WAIT_CONN;
   auto start_time = std::chrono::system_clock::now();
   try {
@@ -751,7 +769,6 @@ void BinkP::Run() {
   }
 
   auto end_time = std::chrono::system_clock::now();
-  LOG << "Before rename pending_files";
   rename_pending_files();
   if (!config_->skip_net()) {
     process_network_files();
@@ -814,13 +831,13 @@ void BinkP::process_network_files() const {
 }
 
 const std::string BinkP::remote_network_name() const {
-  string remote_network_name(config_->callout_network_name());
   if (side_ == BinkSide::ANSWERING) {
-    //TODO(rushfan): Ensure that we only have one address on receiving end.
-    remote_network_name = network_name_from_single_address(address_list_);
+    auto name = network_name_from_single_address(address_list_);
+    if (!name.empty()) {
+      return name;
+    }
   }
-  LOG << "       remote_network_name(): " << remote_network_name;
-  return remote_network_name;
+  return config_->callout_network_name();
 }
 
 int BinkP::remote_network_node() const {

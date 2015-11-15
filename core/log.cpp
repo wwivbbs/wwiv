@@ -50,11 +50,15 @@ Logger::Logger(const string& kind) : kind_(kind), display_fn_(Logger::DefaultDis
 
 Logger::~Logger() {
   const string filename = Logger::fn_map_[kind_];
-  ofstream out(filename, ofstream::app);
-  if (!out) {
-    clog << "Unable to open log file: '" << filename << "'" << endl;
-  } else {
-    out << stream_.str() << endl;
+  if (!filename.empty()) {
+    // Only try to log to a file if the filename isn't empty.
+    // Otherwise just log to the screen.
+    ofstream out(filename, ofstream::app);
+    if (!out) {
+      clog << "Unable to open log file: '" << filename << "'" << endl;
+    } else {
+      out << stream_.str() << endl;
+    }
   }
   display_fn_(stream_.str());
 }
