@@ -36,7 +36,7 @@ using namespace wwiv::strings;
 
 class NetworkLogTest : public testing::Test {
 public:
-  NetworkLogTest::NetworkLogTest() {
+  NetworkLogTest() {
     helper_.Mkdir("gfiles");
     now_ = time(nullptr);
 
