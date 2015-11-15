@@ -24,12 +24,18 @@
     <ClCompile Include="dump_callout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="dump_contact.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dump.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dump_callout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dump_contact.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

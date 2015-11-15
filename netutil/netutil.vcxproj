@@ -149,12 +149,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dump_callout.cpp" />
+    <ClCompile Include="dump_contact.cpp" />
     <ClCompile Include="netutil.cpp" />
     <ClCompile Include="dump.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dump.h" />
     <ClInclude Include="dump_callout.h" />
+    <ClInclude Include="dump_contact.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\core\core.vcxproj">

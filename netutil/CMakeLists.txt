@@ -6,7 +6,9 @@ include_directories(..)
 set(NETUTIL_MAIN netutil.cpp)
 
 set(SOURCES 
- dump.cpp dump_callout.cpp
+ dump.cpp
+ dump_callout.cpp
+ dump_contact.cpp
 )
 
 add_executable(netutil ${NETUTIL_MAIN} ${SOURCES})

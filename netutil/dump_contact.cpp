@@ -15,42 +15,52 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETORKB_CONTACT_H__
-#define __INCLUDED_NETORKB_CONTACT_H__
+#include "netutil/dump_contact.h"
 
-#include <initializer_list>
-#include <map>
+#include <cstdio>
+#include <fcntl.h>
+#include <iostream>
+#ifdef _WIN32
+#include <io.h>
+#else  // _WIN32
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#endif 
 #include <string>
+#include <map>
 #include <vector>
-
+#include "core/file.h"
+#include "core/strings.h"
+#include "networkb/contact.h"
+#include "networkb/connection.h"
+#include "sdk/config.h"
 #include "sdk/net.h"
+#include "sdk/networks.h"
 
-namespace wwiv {
-namespace net {
+using std::cerr;
+using std::clog;
+using std::cout;
+using std::endl;
+using std::map;
+using std::string;
+using wwiv::sdk::Config;
+using wwiv::net::Contact;
+using wwiv::sdk::Networks;
+using namespace wwiv::strings;
 
-  
-class Contact {
- public:
-  explicit Contact(const std::string& network_dir, bool save_on_destructor);
-  // VisibleForTesting
-  Contact(std::initializer_list<net_contact_rec> l);
-  virtual ~Contact();
+void dump_contact_usage() {
+  cout << "Usage:   dump_contact" << endl;
+  cout << "Example: dump_contact" << endl;
+}
 
-  bool IsInitialized() const { return initialized_; }
-  // returns a mutable net_contact_rec for system number "node"
-  net_contact_rec* contact_rec_for(int node);
-  bool Save();
-  std::string ToString() const;
+int dump_contact(map<const string, Contact> contacts, int argc, char** argv) {
+  for (const auto& c : contacts) {
+    std::cout << "CONTACT.NET information: : " << c.first << std::endl;
+    std::cout << "===========================================================" << std::endl;
+    std::cout << c.second.ToString() << std::endl;
+  }
 
- private:
-   std::vector<net_contact_rec> contacts_;
-   bool save_on_destructor_;
-   bool initialized_;
-   std::string network_dir_;
-};
-
-
-}  // namespace net
-}  // namespace wwiv
-
-#endif  // __INCLUDED_NETORKB_CONTACT_H__
+  return 0;
+}

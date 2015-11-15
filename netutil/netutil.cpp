@@ -10,6 +10,7 @@
 #include "core/stl.h"
 #include "netutil/dump.h"
 #include "netutil/dump_callout.h"
+#include "netutil/dump_contact.h"
 #include "networkb/callout.h"
 #include "networkb/connection.h"
 #include "sdk/config.h"
@@ -25,6 +26,7 @@ using std::vector;
 using namespace wwiv::strings;
 using wwiv::net::Callout;
 using wwiv::sdk::Config;
+using wwiv::net::Contact;
 using wwiv::sdk::Networks;
 using wwiv::stl::contains;
 
@@ -65,6 +67,7 @@ int main(int argc, char** argv) {
     cout << "commands are:" << endl;
     cout << "\tdump           Dumps contents of a network packet" << endl;
     cout << "\tdump_callout   Dumps parsed representation of CALLOUT.NET" << endl;
+    cout << "\tdump_contact   Dumps parsed representation of CONTACT.NET" << endl;
     return 0;
   }
   argc -= i;
@@ -85,18 +88,25 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  map<const string, Callout> callouts;
-  for (const auto net : networks.networks()) {
-    string lower_case_network_name(net.name);
-    StringLowerCase(&lower_case_network_name);
-    callouts.emplace(lower_case_network_name, Callout(net.dir));
-  }
-
   if (command == "dump") {
     return dump(argc, argv);
   } else if (command == "dump_callout") {
+    map<const string, Callout> callouts;
+    for (const auto net : networks.networks()) {
+      string lower_case_network_name(net.name);
+      StringLowerCase(&lower_case_network_name);
+      callouts.emplace(lower_case_network_name, Callout(net.dir));
+    }
     return dump_callout(callouts, argc, argv);
+  } else if (command == "dump_contact") {
+    map<const string, Contact> contacts;
+    for (const auto net : networks.networks()) {
+      string lower_case_network_name(net.name);
+      StringLowerCase(&lower_case_network_name);
+      contacts.emplace(lower_case_network_name, Contact(net.dir, false));
+    }
+    return dump_contact(contacts, argc, argv);
   }
-  cout << "Invalid command." << endl;
+  cout << "Invalid command: \"" << command << "\"." << endl;
   return 1;
 }
