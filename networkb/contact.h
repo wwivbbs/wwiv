@@ -39,6 +39,15 @@ class Contact {
   bool IsInitialized() const { return initialized_; }
   // returns a mutable net_contact_rec for system number "node"
   net_contact_rec* contact_rec_for(int node);
+
+  /** add a connection to node */
+  void add_connect(int node, time_t time, uint32_t bytes_send, uint32_t bytes_received);
+  /** add a failure to node */
+  void add_failure(int node, time_t time);
+
+  /** add a contact. caled by connect or failure. */
+  void add_contact(net_contact_rec* c, time_t time);
+
   bool Save();
   std::string ToString() const;
 
