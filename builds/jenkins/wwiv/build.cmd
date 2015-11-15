@@ -76,6 +76,11 @@ cd %WORKSPACE%\networkb
 msbuild networkb.vcxproj /t:Build /p:Configuration=Release || exit /b
 
 echo:
+echo * Building NETUTIL
+cd %WORKSPACE%\netutil
+msbuild netutil.vcxproj /t:Build /p:Configuration=Release || exit /b
+
+echo:
 echo * Building NETWORK
 cd %WORKSPACE%\network
 msbuild network.vcxproj /t:Build /p:Configuration=Release || exit /b
@@ -135,6 +140,7 @@ copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\release\WWIV5Telne
 copy /v/y %WORKSPACE%\init\Release\init.exe %WORKSPACE%\release\init.exe
 copy /v/y %WORKSPACE%\network\Release\network.exe %WORKSPACE%\release\network.exe
 copy /v/y %WORKSPACE%\networkb\Release\networkb.exe %WORKSPACE%\release\networkb.exe
+copy /v/y %WORKSPACE%\netutil\Release\netutil.exe %WORKSPACE%\release\netutil.exe
 copy /v/y %WORKSPACE%\fix\Release\fix.exe %WORKSPACE%\release\fix.exe
 copy /v/y %WORKSPACE%\bbs\admin\* %WORKSPACE%\release\
 
