@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.0x                             */
-/*                Copyright (C)2015 WWIV Software Services                */
+/*                              WWIV Version 5.0x                         */
+/*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,42 +15,13 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETORKB_CONTACT_H__
-#define __INCLUDED_NETORKB_CONTACT_H__
+#ifndef __INCLUDED_NETUTIL_DUMP_CONNECT_H__
+#define __INCLUDED_NETUTIL_DUMP_CONNECT_H__
 
-#include <initializer_list>
 #include <map>
-#include <string>
-#include <vector>
+#include "networkb/contact.h"
 
-#include "sdk/net.h"
+void dump_contact_usage();
+int dump_contact(std::map<const std::string, wwiv::net::Contact> callouts, int argc, char** argv);
 
-namespace wwiv {
-namespace net {
-
-  
-class Contact {
- public:
-  explicit Contact(const std::string& network_dir, bool save_on_destructor);
-  // VisibleForTesting
-  Contact(std::initializer_list<net_contact_rec> l);
-  virtual ~Contact();
-
-  bool IsInitialized() const { return initialized_; }
-  // returns a mutable net_contact_rec for system number "node"
-  net_contact_rec* contact_rec_for(int node);
-  bool Save();
-  std::string ToString() const;
-
- private:
-   std::vector<net_contact_rec> contacts_;
-   bool save_on_destructor_;
-   bool initialized_;
-   std::string network_dir_;
-};
-
-
-}  // namespace net
-}  // namespace wwiv
-
-#endif  // __INCLUDED_NETORKB_CONTACT_H__
+#endif  // __INCLUDED_NETUTIL_DUMP_CONNECT_H__
