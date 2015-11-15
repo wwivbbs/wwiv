@@ -87,9 +87,7 @@ static map<string, string> ParseArgs(int argc, char** argv) {
 int main(int argc, char** argv) {
   try {
     Logger::Init(argc, argv);
-
     wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
-
     map<string, string> args = ParseArgs(argc, argv);
 
     for (const auto& arg : args) {
