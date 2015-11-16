@@ -21,6 +21,7 @@
 
 #include <ctime>
 #include <string>
+#include <time.h>	// For time_t
 
 char *dateFromTimeTForLog(time_t t);
 char *dateFromTimeT(time_t t);

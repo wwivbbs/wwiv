@@ -23,6 +23,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <time.h>	// For time_t
 
 #include "sdk/net.h"
 
