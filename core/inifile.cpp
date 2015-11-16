@@ -69,7 +69,7 @@ IniFile::IniFile(const string& fileName, const string& primary, const string& se
         line.erase(line.find(';'));
       }
 
-      int equals = line.find('=');
+      std::size_t equals = line.find('=');
       if (equals == string::npos) {
         // not a line of the form key = value [; comment]
         continue;
