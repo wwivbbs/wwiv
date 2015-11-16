@@ -21,7 +21,6 @@
 
 #include <ctime>
 #include <string>
-#include <time.h>	// For time_t
 
 #include "sdk/vardec.h"
 #include "printfile.h"
