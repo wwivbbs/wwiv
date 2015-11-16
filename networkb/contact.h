@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_NETORKB_CONTACT_H__
 #define __INCLUDED_NETORKB_CONTACT_H__
 
+#include <ctime>
 #include <initializer_list>
 #include <map>
 #include <string>
