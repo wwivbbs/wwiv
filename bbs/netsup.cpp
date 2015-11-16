@@ -303,29 +303,23 @@ void do_callout(int sn) {
           bout << session()->GetNetworkName() << " ";
         }
         bout << "@" << sn << wwiv::endl;
-        char szRegionsFileName[ MAX_PATH ];
-        sprintf(szRegionsFileName, "%s%s%c%s.%-3u", syscfg.datadir,
+        const string regions_filename = StringPrintf("%s%s%c%s.%-3u", syscfg.datadir,
                 REGIONS_DAT, File::pathSeparatorChar, REGIONS_DAT, atoi(csne->phone));
-        string region;
-        if (File::Exists(szRegionsFileName)) {
-          char town[5];
-          sprintf(town, "%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
-          region = describe_area_code_prefix(atoi(csne->phone), atoi(town));
+        string region = "Unknown Region";
+        if (File::Exists(regions_filename)) {
+          const string town = StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
+          region = describe_area_code_prefix(atoi(csne->phone), atoi(town.c_str()));
         } else {
           region = describe_area_code(atoi(csne->phone));
         }
         bout << "|#7Sys located in: |#2" << region << wwiv::endl;
         if (i2 != -1 && net_networks[session()->GetNetworkNumber()].ncn[i2].bytes_waiting) {
-          bout << "|#7Amount pending: |#2" <<
-                             bytes_to_k(net_networks[session()->GetNetworkNumber()].ncn[i2].bytes_waiting) <<
-                             "k" << wwiv::endl;
-        } else {
-          bout.nl();
+          bout << "|#7Amount pending: |#2"
+               << bytes_to_k(net_networks[session()->GetNetworkNumber()].ncn[i2].bytes_waiting)
+               << "k" << wwiv::endl;
         }
-        bout << "|#7Commandline is: |#2" << s << wwiv::endl;
-        bout.Color(7);
-        bout << charstr(80, 205);
-        bout << "|#0..." << wwiv::endl;
+        bout << "|#7Commandline is: |#2" << s << wwiv::endl
+             << "|#7" << std::string(80, 205) << "|#0..." << wwiv::endl;
         ExecuteExternalProgram(s, EFLAG_NETPROG);
         zap_contacts();
         application()->GetStatusManager()->RefreshStatusCache();
