@@ -154,7 +154,7 @@ bool okstart(bool *bUseCRC, bool *abort) {
   bool   ok   = false;
   bool   done = false;
 
-  while (fabs(timer() - d) < 90.0 && !done && !hangup && !*abort) {
+  while (std::abs(timer() - d) < 90.0 && !done && !hangup && !*abort) {
     char ch = gettimeout(91.0 - d, abort);
     if (ch == 'C') {
       *bUseCRC = true;

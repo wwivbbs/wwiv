@@ -61,7 +61,7 @@ void WOutStream::Color(int wwivColor) {
 
   if (wwivColor <= -1 && wwivColor >= -16) {
     c = (session()->user()->HasColor() ?
-         rescolor.resx[207 + abs(wwivColor)] : session()->user()->GetBWColor(0));
+         rescolor.resx[207 + std::abs(wwivColor)] : session()->user()->GetBWColor(0));
   }
   if (wwivColor >= 0 && wwivColor <= 9) {
     c = (session()->user()->HasColor() ?

@@ -594,7 +594,7 @@ bool inst_msg_waiting() {
   }
 
   long l = timer1();
-  if (abs(l - last_iia) < iia) {
+  if (std::abs(l - last_iia) < iia) {
     return false;
   }
 

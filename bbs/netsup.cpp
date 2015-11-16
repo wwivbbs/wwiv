@@ -464,7 +464,7 @@ void attempt_callout() {
   if (last_time_c > tCurrentTime) {
     last_time_c = 0L;
   }
-  if (abs(last_time_c - tCurrentTime) < 120) {
+  if (std::abs(last_time_c - tCurrentTime) < 120) {
     return;
   }
   if (last_time_c == 0L) {
@@ -534,14 +534,14 @@ void attempt_callout() {
           }
         }
         if (con[i].options & options_once_per_day) {
-          if (abs(tCurrentTime - ncn[i2].lastcontactsent) <
+          if (std::abs(tCurrentTime - ncn[i2].lastcontactsent) <
               (20L * SECONDS_PER_HOUR / con[i].times_per_day)) {
             ok = false;
           }
         }
         if (ok) {
           if ((bytes_to_k(ncn[i2].bytes_waiting) < con[i].min_k)
-              && (abs(tCurrentTime - ncn[i2].lastcontact) < SECONDS_PER_DAY)) {
+              && (std::abs(tCurrentTime - ncn[i2].lastcontact) < SECONDS_PER_DAY)) {
             ok = false;
           }
         }

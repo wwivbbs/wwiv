@@ -526,7 +526,7 @@ int WApplication::doWFCEvents() {
           session()->SetFileAreaCacheNumber(session()->GetFileAreaCacheNumber() + 1);
         } else {
           static int mult_time = 0;
-          if (this->IsCleanNetNeeded() || abs(timer1() - mult_time) > 1000L) {
+          if (this->IsCleanNetNeeded() || std::abs(timer1() - mult_time) > 1000L) {
             cleanup_net();
             mult_time = timer1();
             giveup_timeslice();
@@ -546,7 +546,7 @@ int WApplication::LocalLogon() {
   bout << "|#9Log on to the BBS?";
   double d = timer();
   int lokb = 0;
-  while (!session()->localIO()->LocalKeyPressed() && (fabs(timer() - d) < SECONDS_PER_MINUTE_FLOAT))
+  while (!session()->localIO()->LocalKeyPressed() && (std::abs(timer() - d) < SECONDS_PER_MINUTE_FLOAT))
     ;
 
   if (session()->localIO()->LocalKeyPressed()) {
@@ -984,7 +984,7 @@ int WApplication::Run(int argc, char *argv[]) {
       double dt = timer();
       session()->localIO()->LocalCls();
       bout << "\r\n>> SYSOP ALERT ACTIVATED <<\r\n\n";
-      while (!session()->localIO()->LocalKeyPressed() && (fabs(timer() - dt) < SECONDS_PER_MINUTE_FLOAT)) {
+      while (!session()->localIO()->LocalKeyPressed() && (std::abs(timer() - dt) < SECONDS_PER_MINUTE_FLOAT)) {
         sound(500, milliseconds(250));
         sleep_for(milliseconds(1));
       }

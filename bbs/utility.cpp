@@ -210,7 +210,7 @@ void Wait(double d) {
   }
   const long lStartTime = timer1();
   auto l = d * 18.2;
-  while (abs(timer1() - lStartTime) < l) {
+  while (std::abs(timer1() - lStartTime) < l) {
     giveup_timeslice();
   }
 }
