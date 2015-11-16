@@ -671,7 +671,7 @@ void print_pending_list() {
           strcpy(s2, "|#3---");
         }
 
-        time_t h = 0, m = 0;
+        time_t m = 0, h = 0;
         if (ncn[i2].lastcontactsent) {
           time_t tLastContactTime = tCurrentTime - ncn[i2].lastcontactsent;
           time_t se = tLastContactTime % 60;
@@ -680,7 +680,7 @@ void print_pending_list() {
           h = static_cast<int32_t>(tLastContactTime / 60);
           sprintf(s1, "|#2%02lld:%02lld:%02lld", h, m, se);
         } else {
-          strcpy(s1, "   |#6NEVER!    ");
+          strcpy(s1, "|#6     -    ");
         }
 
         sprintf(s3, "%dk", ((ncn[i2].bytes_sent) + 1023) / 1024);
