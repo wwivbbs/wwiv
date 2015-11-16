@@ -102,13 +102,13 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
 
   strcpy(s1, directories[udir[mod_dir].subnum].path);
   do {
-    if (irt) {
+    if (*irt) {
       bout << "|#2Press |#7[|#9Enter|#7]|#2 for |#1" << StringRemoveChar(irt, '.') << ".mod.\r\n";
     }
     bout << "|#2Save under what filename? ";
     input(s2, 12);
     if (!s2[0]) {
-      if (irt) {
+      if (*irt) {
         strcpy(s2, StringRemoveChar(irt, '.'));
       } else {
         goto go_away;
