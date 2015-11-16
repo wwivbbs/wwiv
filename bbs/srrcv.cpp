@@ -46,7 +46,7 @@ char modemkey(int *tout) {
     return 0;
   }
   double d1 = timer();
-  while (fabs(timer() - d1) < 0.5 && !bkbhitraw() && !hangup) {
+  while (std::abs(timer() - d1) < 0.5 && !bkbhitraw() && !hangup) {
     CheckForHangup();
   }
   if (bkbhitraw()) {
@@ -201,7 +201,7 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
     }
 
     double d1 = timer();
-    while (fabs(timer() - d1) < 10.0 && !bkbhitraw() && !hangup) {
+    while (std::abs(timer() - d1) < 10.0 && !bkbhitraw() && !hangup) {
       CheckForHangup();
       if (session()->localIO()->LocalKeyPressed()) {
         ch = session()->localIO()->LocalGetChar();

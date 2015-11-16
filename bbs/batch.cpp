@@ -844,7 +844,7 @@ void bihangup(int up) {
   do {
     while (!bkbhit() && !hangup) {
       long dd = timer1();
-      if (abs(dd - timelastchar1) > 65536L) {
+      if (std::abs(dd - timelastchar1) > 65536L) {
         nextbeep -= 1572480L;
         timelastchar1 -= 1572480L;
       }
@@ -859,7 +859,7 @@ void bihangup(int up) {
           color = 6;
         }
       }
-      if (abs(dd - timelastchar1) > 182L) {
+      if (std::abs(dd - timelastchar1) > 182L) {
         bout.nl();
         bout << "Thank you for calling.";
         bout.nl();
