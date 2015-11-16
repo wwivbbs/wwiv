@@ -74,7 +74,7 @@ void StringTrimBegin(std::string* s);
 void StringUpperCase(std::string* s);
 void StringLowerCase(std::string* s);
 
-const char *charstr(std::string::size_type length, int fill);
+const char *charstr(std::string::size_type length, uint8_t fill);
 char *StringRemoveWhitespace(char *str);
 // Strips the string from the first occurence of ch
 char *StringRemoveChar(const char *pszString, char ch);
