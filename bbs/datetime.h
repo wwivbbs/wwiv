@@ -19,6 +19,7 @@
 #ifndef __INCLUDED_DATETIME_H__
 #define __INCLUDED_DATETIME_H__
 
+#include <ctime>
 #include <string>
 
 char *dateFromTimeTForLog(time_t t);
