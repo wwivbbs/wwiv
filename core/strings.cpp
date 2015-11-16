@@ -294,12 +294,12 @@ void StringLowerCase(string* s) {
 /**
  * Returns string comprised of char chRepeatChar, nStringLength characters in length
  * @param nStringLength The number of characters to create the string
- * @param chRepeatChar The character to repeat.
+ * @param fill The character to repeat.
  * @return The string containing rc repeated len times.
  */
-const char *charstr(string::size_type length, int fill) {
+const char *charstr(string::size_type length, uint8_t fill) {
   static string result;
-  result = string(std::min<int>(length, 160), fill);
+  result = string(std::min<int>(length, 160), static_cast<char>(fill));
   return result.c_str();
 }
 

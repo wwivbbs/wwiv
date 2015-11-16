@@ -184,7 +184,7 @@ int WUserManager::FindUser(std::string searchString) {
 #ifndef NOT_BBS
   // TODO(rushfan): Put back in a binary search, but test with user.lst the size of frank's.
   const size_t user_count = application()->GetStatusManager()->GetUserCount();
-  for (int i = 0; i < user_count; i++) {
+  for (std::size_t i = 0; i < user_count; i++) {
     if (wwiv::strings::IsEqualsIgnoreCase(searchString.c_str(), (const char*)smallist[i].name)) {
       return smallist[i].number;
     }

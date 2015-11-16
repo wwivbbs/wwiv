@@ -63,25 +63,15 @@ std::string os_version_string() {
   }
   return std::string("Linux");
 #elif defined ( __APPLE__ )
-  return string(""); // StringPrintf("%s %s", GetOSNameString(), GetMacVersionString());
-#elif defined(_WIN64)
-  return string("Win64");
-#elif defined(_WIN32)
-  return string("Win32");
+  return string("MacOSX"); // StringPrintf("%s %s", GetOSNameString(), GetMacVersionString());
 #elif defined(__OS2__)
   return string("OS/2");
-#elif defined(__MSDOS__)
-  return string("DOS");
-#elif defined(__linux__)
-  return string("Linux");
 #elif defined(__FreeBSD__)
   return string("FreeBSD");
 #elif defined(__OpenBSD__)
   return string("OpenBSD");
 #elif defined(__NetBSD__)
   return string("NetBSD");
-#elif defined(__APPLE__) && defined(__MACH__) && defined(__POWERPC__)
-  return string("MacOSX");
 #elif defined(BSD)
   return string("BSD");
 #elif defined(__solaris__)
@@ -93,7 +83,6 @@ std::string os_version_string() {
 #elif defined(__QNX__)
   return string("QNX");
 #elif defined(__unix__)
-  // TODO Add Linux version information code here..
   return string("UNIX");
 #elif defined(__HAIKU__)
   return string("Haiku");

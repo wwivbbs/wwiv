@@ -82,7 +82,7 @@ void Logger::Init(int argc, char** argv) {
   if (ends_with(filename, ".exe") || ends_with(filename, ".EXE")) {
     filename = filename.substr(0, filename.size() - 4);
   }
-  int last_slash = filename.rfind(File::pathSeparatorChar);
+  std::size_t last_slash = filename.rfind(File::pathSeparatorChar);
   if (last_slash != string::npos) {
     filename = filename.substr(last_slash + 1);
   }

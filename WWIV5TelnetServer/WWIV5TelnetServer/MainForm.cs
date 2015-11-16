@@ -33,7 +33,7 @@ namespace WWIV5TelnetServer
     public partial class MainForm : Form
     {
         private TelnetServer server = new TelnetServer();
-        private BeginDayHandler beginDay;
+        //private BeginDayHandler beginDay;
     
         public MainForm()
         {
