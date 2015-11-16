@@ -245,7 +245,6 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
             filedatetime = (filedatetime * 8) + static_cast<long>(b[i1] - '0');
             ++i1;
           }
-          i1 += timezone + 5 * 60 * 60;
         }
         rputch(CF);
       } else if ((bn & 0x00ff) == static_cast<unsigned int>(bln)) {
