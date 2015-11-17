@@ -36,13 +36,6 @@ char *stripfn(const char *pszFileName);
 // from xfer.cpp
 void align(char *pszFileName);
 
-
-#if defined (_WIN32)
-#define SNPRINTF _snprintf
-#else
-#define SNPRINTF snprintf
-#endif
-
 // Displays list of files matching filespec pszFileName in directory pszDirectoryName.
 void show_files(const char *pszFileName, const char *pszDirectoryName) {
   char s[MAX_PATH];
@@ -59,24 +52,23 @@ void show_files(const char *pszFileName, const char *pszDirectoryName) {
   strcpy(ext, "");
 #endif
 
-  SNPRINTF(s, sizeof(s), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", strupr(stripfn(pszFileName)), drive, direc);
+  snprintf(s, sizeof(s), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", strupr(stripfn(pszFileName)), drive, direc);
   int i = (session()->user()->GetScreenChars() - 1) / 2 - strlen(stripcolors(s)) / 2;
   bout << "|#7" << std::string(i, c) << s;
   i = session()->user()->GetScreenChars() - 1 - i - strlen(stripcolors(s));
   bout << "|#7" << std::string(i, c);
 
-  char szFullPathName[ MAX_PATH ];
-  SNPRINTF(szFullPathName, sizeof(szFullPathName), "%s%s", pszDirectoryName, strupr(stripfn(pszFileName)));
+  std::string full_pathname = StrCat(pszDirectoryName, strupr(stripfn(pszFileName)));
   WFindFile fnd;
-  bool bFound = fnd.open(szFullPathName, 0);
+  bool bFound = fnd.open(full_pathname, 0);
   while (bFound) {
     strncpy(s, fnd.GetFileName(), MAX_PATH);
     align(s);
-    SNPRINTF(szFullPathName, sizeof(szFullPathName), "|#7[|#2%s|#7]|#1 ", s);
+    full_pathname = StrCat("|#7[|#2", s, "|#7]|#1 ");
     if (session()->localIO()->WhereX() > (session()->user()->GetScreenChars() - 15)) {
       bout.nl();
     }
-    bout << szFullPathName;
+    bout << full_pathname;
     bFound = fnd.next();
   }
 
@@ -85,6 +77,3 @@ void show_files(const char *pszFileName, const char *pszDirectoryName) {
   bout << std::string(session()->user()->GetScreenChars() - 1, c);
   bout.nl(2);
 }
-
-
-
