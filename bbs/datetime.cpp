@@ -21,7 +21,7 @@
 
 #include "bbs/datetime.h"
 #include "bbs/wconstants.h"
-#include "bbs/wwiv.h"
+#include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 

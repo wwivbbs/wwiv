@@ -619,7 +619,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
 }
 
 void ProcessDSZLogFile() {
-  char **lines = static_cast<char **>(BbsAllocA(session()->max_batch * sizeof(char *) * 2));
+  char **lines = static_cast<char **>(calloc((session()->max_batch * sizeof(char *) * 2) + 1, 1));
   WWIV_ASSERT(lines != nullptr);
 
   if (!lines) {
@@ -629,7 +629,7 @@ void ProcessDSZLogFile() {
   File fileDszLog(g_szDSZLogFileName);
   if (fileDszLog.Open(File::modeBinary | File::modeReadOnly)) {
     int nFileSize = static_cast<int>(fileDszLog.GetLength());
-    char *ss = static_cast<char *>(BbsAllocA(nFileSize));
+    char *ss = static_cast<char *>(calloc(nFileSize + 1, 1));
     WWIV_ASSERT(ss != nullptr);
     if (ss) {
       int nBytesRead = fileDszLog.Read(ss, nFileSize);
