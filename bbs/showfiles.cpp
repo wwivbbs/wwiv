@@ -22,7 +22,6 @@
 
 #include "bbs/bbs.h"
 #include "bbs/wsession.h"
-#include "bbs/platform/platformfcns.h"  // for strupr
 #include "bbs/local_io.h"
 #include "core/wwivport.h"
 #include "core/wfndfile.h"
