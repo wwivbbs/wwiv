@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
+#include <map>
 #include <string>
 
 #include "bbs/input.h"
@@ -35,7 +36,8 @@ using std::string;
 using namespace wwiv::strings;
 
 // Displays the list of chains to a user
-static void show_chains(int *mapp, int *map) {
+// Note: we aren't using a const map since [] doesn't work for const maps.
+static void show_chains(int *mapp, std::map<int, int>& map) {
   bout.Color(0);
   bout.cls();
   bout.nl();
@@ -158,21 +160,13 @@ void run_chain(int nChainNumber) {
   application()->UpdateTopScreen();
 }
 
-
 //////////////////////////////////////////////////////////////////////////////
-//
 // Main high-level function for chain access and execution.
-//
-
 
 void do_chains() {
   printfile(CHAINS_NOEXT);
 
-  int *map = static_cast<int*>(BbsAllocA(session()->max_chains * sizeof(int)));
-  WWIV_ASSERT(map != nullptr);
-  if (!map) {
-    return;
-  }
+  std::map<int, int> map;
 
   session()->localIO()->tleft(true);
   int mapp = 0;
@@ -201,17 +195,16 @@ void do_chains() {
       }
     }
     if (ok) {
-      map[ mapp++ ] = i;
+      map[mapp++] = i;
       if (mapp < 100) {
         if ((mapp % 10) == 0) {
-          odc[mapp / 10 - 1] = static_cast<char>('0' + (mapp / 10));
+          odc[mapp / 10-1] = static_cast<char>('0' + (mapp / 10));
         }
       }
     }
   }
   if (mapp == 0) {
     bout << "\r\n\n|#5Sorry, no external programs available.\r\n";
-    free(map);
     return;
   }
   show_chains(&mapp, map);
@@ -252,7 +245,5 @@ void do_chains() {
       }
     }
   } while (!hangup  && !done);
-
-  free(map);
 }
 
