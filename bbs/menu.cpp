@@ -88,7 +88,7 @@ void mainmenu() {
 }
 
 void StartMenus() {
-  unique_ptr<MenuInstanceData> menu_data(new MenuInstanceData{});
+  unique_ptr<MenuInstanceData> menu_data(new MenuInstanceData());
   menu_data->reload = true;                    // force loading of menu
 
   if (!LoadMenuSetup(session()->usernum)) {
