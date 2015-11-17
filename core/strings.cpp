@@ -297,9 +297,9 @@ void StringLowerCase(string* s) {
  * @param fill The character to repeat.
  * @return The string containing rc repeated len times.
  */
-const char *charstr(string::size_type length, uint8_t fill) {
+const char *charstr(string::size_type length, char fill) {
   static string result;
-  result = string(std::min<int>(length, 160), static_cast<char>(fill));
+  result = string(std::min<int>(length, 160), fill);
   return result.c_str();
 }
 

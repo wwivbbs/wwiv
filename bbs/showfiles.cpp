@@ -62,9 +62,9 @@ void show_files(const char *pszFileName, const char *pszDirectoryName) {
 
   SNPRINTF(s, sizeof(s), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", strupr(stripfn(pszFileName)), drive, direc);
   int i = (session()->user()->GetScreenChars() - 1) / 2 - strlen(stripcolors(s)) / 2;
-  bout << "|#7" << charstr(i, c) << s;
+  bout << "|#7" << std::string(i, c) << s;
   i = session()->user()->GetScreenChars() - 1 - i - strlen(stripcolors(s));
-  bout << "|#7" << charstr(i, c);
+  bout << "|#7" << std::string(i, c);
 
   char szFullPathName[ MAX_PATH ];
   SNPRINTF(szFullPathName, sizeof(szFullPathName), "%s%s", pszDirectoryName, strupr(stripfn(pszFileName)));
@@ -83,7 +83,7 @@ void show_files(const char *pszFileName, const char *pszDirectoryName) {
 
   bout.nl();
   bout.Color(7);
-  bout << charstr(session()->user()->GetScreenChars() - 1, c);
+  bout << std::string(session()->user()->GetScreenChars() - 1, c);
   bout.nl(2);
 }
 
