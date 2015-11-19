@@ -28,6 +28,7 @@
 #endif 
 #include <string>
 #include <vector>
+#include "core/command_line.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "sdk/net.h"
@@ -36,6 +37,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
+using wwiv::core::CommandLineCommand;
 
 static string main_type_name(int typ) {
   switch (typ) {
@@ -79,13 +81,7 @@ string daten_to_humantime(uint32_t daten) {
   return human_date;
 }
 
-int dump(int argc, char** argv) {
-  if (argc < 2) {
-    cout << "Usage:   dump <filename>" << endl;
-    cout << "Example: dump S1.NET" << endl;
-    return 2;
-  }
-  const string filename(argv[1]);
+int dump_file(const std::string& filename) {
   int f = open(filename.c_str(), O_BINARY | O_RDONLY);
   if (f == -1) {
     cerr << "Unable to open file: " << filename << endl;
@@ -142,4 +138,14 @@ int dump(int argc, char** argv) {
   }
   close(f);
   return 0;
+}
+
+int dump(const CommandLineCommand* command) {
+  if (command->remaining().empty()) {
+    cout << "Usage:   dump <filename>" << endl;
+    cout << "Example: dump S1.NET" << endl;
+    return 2;
+  }
+  const string filename(command->remaining().front());
+  return dump_file(filename);
 }

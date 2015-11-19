@@ -15,6 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
+#include "netutil/dump_callout.h"
+
 #include <cstdio>
 #include <fcntl.h>
 #include <iostream>
@@ -29,6 +31,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "core/command_line.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "networkb/callout.h"
@@ -53,7 +56,8 @@ void dump_callout_usage() {
   cout << "Example: dump_callout" << endl;
 }
 
-int dump_callout(map<const string, Callout> callouts, int argc, char** argv) {
+int dump_callout(map<const string, Callout> callouts,
+  const wwiv::core::CommandLineCommand* command) {
   for (const auto& c : callouts) {
     std::cout << "CALLOUT.NET information: : " << c.first << std::endl;
     std::cout << "===========================================================" << std::endl;

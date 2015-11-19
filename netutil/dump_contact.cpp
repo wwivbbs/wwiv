@@ -31,6 +31,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "core/command_line.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "networkb/contact.h"
@@ -55,7 +56,7 @@ void dump_contact_usage() {
   cout << "Example: dump_contact" << endl;
 }
 
-int dump_contact(map<const string, Contact> contacts, int argc, char** argv) {
+int dump_contact(map<const string, Contact> contacts, const wwiv::core::CommandLineCommand* command) {
   for (const auto& c : contacts) {
     std::cout << "CONTACT.NET information: : " << c.first << std::endl;
     std::cout << "===========================================================" << std::endl;
