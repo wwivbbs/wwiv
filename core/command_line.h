@@ -37,22 +37,19 @@
  * command: bar [--barname]
  * command: baz [--bazname]
  * CommandLine cmdline(argc, argv, "set_style");
- * cmdline.add(CommandLineArgument("name", 'n', "Sets Name", ""));
- * cmdline.add(CommandLineArgument("location", 'l', "Sets Location", ""));
+ * cmdline.add({"name", 'n', "Sets Name"});
+ * cmdline.add({"location", 'l', "Sets Location"});
  * 
- * CommandLineCommand bar("bar", argc, argv, "set_style");
- * bar.add(CommandLineArgument("barname", 'b', "Sets Bar Name", ""));
- *
- * CommandLineCommand baz("baz", argc, argv, "set_style");
- * bar.add(CommandLineArgument("bazname", 'b', "Sets Baz Name", ""));
- *
- * cmdline.add(bar);
- * cmdline.add(baz);
+ * CommandLineCommand& bar = cmdline.add_command("bar", "Bar Commands");
+ * bar.add({"barname", "Sets Bar Name"});
+ * CommandLineCommand& baz = cmdline.add_command("baz", "Baz Commands");
+ * baz.add({"bazname", "Sets Baz Name"});
  * cmdLine.Parse();
  *
  * const string name = cmdline.arg("name").as_string();
- * CommandLineCommand baz = cmdline.cmd("baz");
- * baz.arg("bazname").as_string();
+ * CommandLineCommand cmd = cmdline.command();
+ * const string command_name = cmd->name();
+ * const string bazname = cmd->arg("bazname").as_string();
  */
 
 
@@ -96,6 +93,8 @@ public:
   CommandLineArgument(
     const std::string& name,const std::string& help_text, const std::string& default_value)
     : CommandLineArgument(name, 0, help_text, default_value) {}
+  CommandLineArgument(const std::string& name, char key, const std::string& help_text)
+    : CommandLineArgument(name, key, help_text, "") {}
   CommandLineArgument(const std::string& name, const std::string& help_text)
     : CommandLineArgument(name, 0, help_text, "") {}
   const std::string name;
@@ -117,37 +116,44 @@ public:
 
 class CommandLineCommand {
 public:
-  CommandLineCommand(const std::string& name, int argc, char** argv, const std::string dot_argument);
+  CommandLineCommand(const std::string& name, const std::string& help_text, int argc, char** argv,
+      const std::string dot_argument);
   bool add(const CommandLineArgument& cmd);
   bool add(const CommandLineCommand& cmd) { commands_allowed_.emplace(cmd.name(), cmd); return true; }
   CommandLineCommand& add_command(const std::string& name) {
-    commands_allowed_.emplace(name, CommandLineCommand(name, argc_, argv_, dot_argument_));
+    return add_command(name, "");
+  }
+  CommandLineCommand& add_command(const std::string& name, const std::string& help_text) {
+    commands_allowed_.emplace(name, CommandLineCommand(name, help_text, argc_, argv_, dot_argument_));
     return commands_allowed_.at(name);
   }
 
   bool subcommand_selected() const { return command_ != nullptr; }
   const std::string name() const { return name_; }
+  const std::string help_text() const { return help_text_; }
 
   const CommandLineValue arg(const std::string name) const { return args_.at(name); }
   const CommandLineCommand* command() const { return command_; }
   std::vector<std::string> remaining() const { return remaining_; }
   std::string ToString() const;
+  virtual std::string GetHelp() const;
 
 protected:
   bool HandleCommandLineArgument(const std::string& key, const std::string& value);
   int Parse(int start_pos);
   int argc_ = 0;
 
-private:
   // Values as allowed to be specified on the commandline.
   std::map<const std::string, CommandLineArgument> args_allowed_;
   std::map<const std::string, CommandLineCommand> commands_allowed_;
   std::vector<std::string> remaining_;
 
+private:
   // Values as entered on the commandline.
   std::map<std::string, CommandLineValue> args_;
   CommandLineCommand* command_ = nullptr;
   const std::string name_;
+  const std::string help_text_;
   char** argv_ = nullptr;
   const std::string dot_argument_;
 };
@@ -156,6 +162,9 @@ class CommandLine : public CommandLineCommand {
 public:
   CommandLine(int argc, char** argv, const std::string dot_argument);
   bool Parse() { return CommandLineCommand::Parse(1) >= CommandLineCommand::argc_; }
+  virtual std::string GetHelp() const override;
+private:
+  const std::string program_name_;
 };
 
 

@@ -36,8 +36,8 @@ TEST_F(CommandLineTest, Basic) {
   int argc = 3;
   char* argv[] = {"", "--foo", "--bar=baz"};
   CommandLine cmdline(argc, argv, "");
-  cmdline.add(CommandLineArgument("foo", ' ', "", "asdf"));
-  cmdline.add(CommandLineArgument("bar", ' ', "", "asdf"));
+  cmdline.add({"foo", "help for foo", "asdf"});
+  cmdline.add({"bar", "help for bar"});
 
   ASSERT_TRUE(cmdline.Parse());
   EXPECT_EQ("baz", cmdline.arg("bar").as_string());

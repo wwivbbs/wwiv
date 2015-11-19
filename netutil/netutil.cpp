@@ -51,10 +51,10 @@ using wwiv::stl::contains;
 
 int main(int argc, char** argv) {
   CommandLine cmdline(argc, argv, "network_number");
-  cmdline.add(CommandLineArgument("bbsdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory()));
-  cmdline.add_command("dump");
-  cmdline.add_command("dump_callout");
-  cmdline.add_command("dump_contact");
+  cmdline.add({"bbsdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory()});
+  cmdline.add_command("dump", "Dumps contents of a network packet");
+  cmdline.add_command("dump_callout", "Dumps parsed representation of CALLOUT.NET");
+  cmdline.add_command("dump_contact", "Dumps parsed representation of CONTACT.NET");
 
   if (!cmdline.Parse()) {
     clog << "Unable to parse command line." << endl;
@@ -62,11 +62,7 @@ int main(int argc, char** argv) {
   }
 
   if (argc <= 1 || !cmdline.subcommand_selected()) {
-    cout << "usage: netutil [--bbsdir] <command> [<args>]" << endl;
-    cout << "commands:" << endl;
-    cout << "\tdump           Dumps contents of a network packet" << endl;
-    cout << "\tdump_callout   Dumps parsed representation of CALLOUT.NET" << endl;
-    cout << "\tdump_contact   Dumps parsed representation of CONTACT.NET" << endl;
+    cout << cmdline.GetHelp();
     return 0;
   }
 

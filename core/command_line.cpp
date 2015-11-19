@@ -24,9 +24,11 @@
 #include <vector>
 
 #include "core/command_line.h"
+#include "core/file.h"
 #include "core/strings.h"
 #include "core/stl.h"
 
+using std::endl;
 using std::map;
 using std::string;
 using std::vector;
@@ -36,11 +38,22 @@ using namespace wwiv::stl;
 namespace wwiv {
 namespace core {
 
-CommandLineCommand::CommandLineCommand(const std::string& name, int argc, char** argv, const std::string dot_argument)
-  : name_(name), argc_(argc), argv_(argv), dot_argument_(dot_argument) {}
+CommandLineCommand::CommandLineCommand(const std::string& name, const std::string& help_text, 
+    int argc, char** argv, const std::string dot_argument)
+  : name_(name), help_text_(help_text), argc_(argc), argv_(argv), dot_argument_(dot_argument) {}
+
+static std::string CreateProgramName(const std::string arg) {
+  string::size_type last_slash = arg.find_last_of(File::separatorChar);
+  if (last_slash == string::npos) {
+    return arg;
+  }
+  string program_name = arg.substr(last_slash + 1);
+  return program_name;
+}
 
 CommandLine::CommandLine(int argc, char** argv, const std::string dot_argument)
-  : CommandLineCommand("", argc, argv, dot_argument) {}
+  : CommandLineCommand("", "", argc, argv, dot_argument), program_name_(CreateProgramName(argv[0])) {
+}
 
 bool CommandLineCommand::add(const CommandLineArgument& cmd) { 
   // Add cmd to the list of allowable arguments, and also set 
@@ -120,6 +133,34 @@ std::string CommandLineCommand::ToString() const {
   }
   return ss.str();
 }
+
+std::string CommandLineCommand::GetHelp() const {
+  std::ostringstream ss;
+  string name = (name_.empty()) ? "program" : name_;
+  ss << name << " arguments:" << std::endl;
+  for (const auto& a : args_allowed_) {
+    ss << "--" << StringPrintf("%-20s", a.second.name.c_str()) << " " << a.second.help_text << endl;
+  }
+  ss << endl;
+  ss << "commands:" << std::endl;
+  for (const auto& a : commands_allowed_) {
+    const string name = a.second.name();
+    ss << "--" << StringPrintf("%-20s", name.c_str()) << " " << a.second.help_text() << endl;
+  }
+  return ss.str();
+}
+
+std::string CommandLine::GetHelp() const {
+  std::ostringstream ss;
+  ss << program_name_ << " [args]";
+  if (!commands_allowed_.empty()) {
+    ss << " <command> [command args]";
+  }
+  ss << std::endl;
+  ss << CommandLineCommand::GetHelp();
+  return ss.str();
+}
+
 
 }  // namespace core
 }  // namespace wwiv
