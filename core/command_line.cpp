@@ -152,11 +152,12 @@ std::string CommandLineCommand::GetHelp() const {
 
 std::string CommandLine::GetHelp() const {
   std::ostringstream ss;
+  ss << "Usage:" << endl;
   ss << program_name_ << " [args]";
   if (!commands_allowed_.empty()) {
     ss << " <command> [command args]";
   }
-  ss << std::endl;
+  ss << endl << endl;
   ss << CommandLineCommand::GetHelp();
   return ss.str();
 }

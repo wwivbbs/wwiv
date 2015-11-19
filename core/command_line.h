@@ -112,6 +112,18 @@ public:
     : CommandLineArgument(name, key, help_text, default_value ? "true" : "false") {
     is_boolean = true; 
   }
+  BooleanCommandLineArgument(
+    const std::string& name,
+    const std::string& help_text, bool default_value)
+    : CommandLineArgument(name, 0, help_text, default_value ? "true" : "false") {
+    is_boolean = true;
+  }
+  BooleanCommandLineArgument(
+    const std::string& name,
+    const std::string& help_text)
+    : CommandLineArgument(name, 0, help_text, "false") {
+    is_boolean = true;
+  }
 };
 
 class CommandLineCommand {
