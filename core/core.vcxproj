@@ -85,6 +85,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="command_line.cpp" />
     <ClCompile Include="inifile.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="os.cpp" />
@@ -102,6 +103,7 @@
     <ClCompile Include="wfndfile_win32.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="command_line.h" />
     <ClInclude Include="datafile.h" />
     <ClInclude Include="inifile.h" />
     <ClInclude Include="log.h" />

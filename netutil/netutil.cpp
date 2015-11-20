@@ -22,6 +22,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "core/command_line.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/stl.h"
@@ -40,6 +41,7 @@ using std::endl;
 using std::map;
 using std::string;
 using std::vector;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 using wwiv::net::Callout;
 using wwiv::sdk::Config;
@@ -48,55 +50,26 @@ using wwiv::sdk::Networks;
 using wwiv::stl::contains;
 
 int main(int argc, char** argv) {
-  map<string, string> args;
-  int i = 1;
-  string command;
-  for (; i < argc; i++) {
-    const string s(argv[i]);
-    if (starts_with(s, "--")) {
-      const vector<string> delims = SplitString(s, "=");
-      const string value = (delims.size() > 1) ? delims[1] : "";
-      args.emplace(delims[0].substr(2), value);
-    }
-    else if (starts_with(s, "/")) {
-      char letter = std::toupper(s[1]);
-      if (letter == '?') {
-        args.emplace("help", "");
-      }
-      else {
-        const string key(1, letter);
-        const string value = s.substr(2);
-        args.emplace(key, value);
-      }
-    }
-    else if (starts_with(s, ".")) {
-      const string key = "network_number";
-      const string value = s.substr(1);
-      args.emplace(key, value);
-    } else {
-      command = s;
-      break;
-    }
+  CommandLine cmdline(argc, argv, "network_number");
+  cmdline.add({"bbsdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory()});
+  cmdline.add_command("dump", "Dumps contents of a network packet");
+  cmdline.add_command("dump_callout", "Dumps parsed representation of CALLOUT.NET");
+  cmdline.add_command("dump_contact", "Dumps parsed representation of CONTACT.NET");
+
+  if (!cmdline.Parse()) {
+    clog << "Unable to parse command line." << endl;
+    return 1;
   }
-    
-  if (argc <= 1) {
-    cout << "usage: netutil [--bbsdir] <command> [<args>]" << endl;
-    cout << "commands are:" << endl;
-    cout << "\tdump           Dumps contents of a network packet" << endl;
-    cout << "\tdump_callout   Dumps parsed representation of CALLOUT.NET" << endl;
-    cout << "\tdump_contact   Dumps parsed representation of CONTACT.NET" << endl;
+
+  if (argc <= 1 || !cmdline.subcommand_selected()) {
+    cout << cmdline.GetHelp();
     return 0;
   }
-  argc -= i;
-  argv += i;
 
-  string bbsdir = File::current_directory();
-  if (contains(args, "bbsdir")) {
-    bbsdir = args["bbsdir"];
-  }
+  string bbsdir = cmdline.arg("bbsdir").as_string();
   Config config(bbsdir);
   if (!config.IsInitialized()) {
-    clog << "Unable to load config.dat.";
+    clog << "Unable to load CONFIG.DAT.";
     return 1;
   }
   Networks networks(config);
@@ -105,8 +78,10 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  const string command = cmdline.command()->name();
+
   if (command == "dump") {
-    return dump(argc, argv);
+    return dump(cmdline.command());
   } else if (command == "dump_callout") {
     map<const string, Callout> callouts;
     for (const auto net : networks.networks()) {
@@ -114,7 +89,7 @@ int main(int argc, char** argv) {
       StringLowerCase(&lower_case_network_name);
       callouts.emplace(lower_case_network_name, Callout(net.dir));
     }
-    return dump_callout(callouts, argc, argv);
+    return dump_callout(callouts, cmdline.command());
   } else if (command == "dump_contact") {
     map<const string, Contact> contacts;
     for (const auto net : networks.networks()) {
@@ -122,7 +97,7 @@ int main(int argc, char** argv) {
       StringLowerCase(&lower_case_network_name);
       contacts.emplace(lower_case_network_name, Contact(net.dir, false));
     }
-    return dump_contact(contacts, argc, argv);
+    return dump_contact(contacts, cmdline.command());
   }
   cout << "Invalid command: \"" << command << "\"." << endl;
   return 1;

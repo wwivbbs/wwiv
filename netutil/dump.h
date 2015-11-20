@@ -18,7 +18,9 @@
 #ifndef __INCLUDED_NETUTIL_DUMP_H__
 #define __INCLUDED_NETUTIL_DUMP_H__
 
+#include "core/command_line.h"
+
 void dump_usage();
-int dump(int argc, char** argv);
+int dump(const wwiv::core::CommandLineCommand* command);
 
 #endif  // __INCLUDED_NETUTIL_DUMP_H__
