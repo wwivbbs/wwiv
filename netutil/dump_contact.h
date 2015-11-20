@@ -19,9 +19,12 @@
 #define __INCLUDED_NETUTIL_DUMP_CONNECT_H__
 
 #include <map>
+#include "core/command_line.h"
 #include "networkb/contact.h"
 
 void dump_contact_usage();
-int dump_contact(std::map<const std::string, wwiv::net::Contact> callouts, int argc, char** argv);
+int dump_contact(
+  std::map<const std::string, wwiv::net::Contact> callouts,
+  const wwiv::core::CommandLineCommand* command);
 
 #endif  // __INCLUDED_NETUTIL_DUMP_CONNECT_H__
