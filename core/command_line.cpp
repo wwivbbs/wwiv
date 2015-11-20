@@ -38,6 +38,12 @@ using namespace wwiv::stl;
 namespace wwiv {
 namespace core {
 
+CommandLineArgument::CommandLineArgument(
+  const std::string& name, char key,
+  const std::string& help_text, const std::string& default_value)
+  : name(name), key(static_cast<char>(std::toupper(key))), 
+    help_text(help_text), default_value(default_value) {}
+
 CommandLineCommand::CommandLineCommand(const std::string& name, const std::string& help_text, 
     int argc, char** argv, const std::string dot_argument)
   : name_(name), help_text_(help_text), argc_(argc), argv_(argv), dot_argument_(dot_argument) {}
@@ -79,6 +85,15 @@ bool CommandLineCommand::HandleCommandLineArgument(
   return true;
 }
 
+std::string CommandLineCommand::ArgNameForKey(char key) {
+  for (const auto& a : args_allowed_) {
+    if (key == a.second.key) {
+      return a.first;
+    }
+  }
+  return "";
+}
+
 int CommandLineCommand::Parse(int start_pos) {
   for (int i = start_pos; i < argc_; i++) {
     const string s(argv_[i]);
@@ -92,13 +107,12 @@ int CommandLineCommand::Parse(int start_pos) {
       HandleCommandLineArgument(key, value);
     } else if (starts_with(s, "/") || starts_with(s, "-")) {
       char letter = static_cast<char>(std::toupper(s[1]));
-      if (letter == '?') {
-        args_.emplace("help", CommandLineValue(""));
-      } else {
-        const string key(1, letter);
-        const string value = s.substr(2);
-        HandleCommandLineArgument(key, value);
+      const string key = ArgNameForKey(letter);
+      if (key.empty()) {
+        throw unknown_argument_error(StrCat("unknown_argument_error: key=", key));
       }
+      const string value = s.substr(2);
+      HandleCommandLineArgument(key, value);
     } else if (starts_with(s, ".")) {
       const string value = s.substr(1);
       HandleCommandLineArgument(dot_argument_, value);
