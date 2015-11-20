@@ -61,7 +61,7 @@ using namespace wwiv::strings;
 using namespace wwiv::os;
 
 static void RegisterHelpCommands(CommandLine& cmdline) {
-  cmdline.add(BooleanCommandLineArgument("help", "Displys Help"));
+  cmdline.add(BooleanCommandLineArgument("help", '?', "Displys Help", false));
   cmdline.add({"bbsdir", "(optional) BBS directory if other than current directory", File::current_directory()});
   cmdline.add({"network", "Network name to use (i.e. wwivnet)"});
   cmdline.add(BooleanCommandLineArgument("send", "Send network traffic to --node"));

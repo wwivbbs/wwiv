@@ -88,8 +88,7 @@ class CommandLineArgument {
 public:
   CommandLineArgument(
     const std::string& name, char key,
-    const std::string& help_text, const std::string& default_value)
-    : name(name), key(key), help_text(help_text), default_value(default_value) {}
+    const std::string& help_text, const std::string& default_value);
   CommandLineArgument(
     const std::string& name,const std::string& help_text, const std::string& default_value)
     : CommandLineArgument(name, 0, help_text, default_value) {}
@@ -132,6 +131,7 @@ public:
       const std::string dot_argument);
   bool add(const CommandLineArgument& cmd);
   bool add(const CommandLineCommand& cmd) { commands_allowed_.emplace(cmd.name(), cmd); return true; }
+  std::string ArgNameForKey(char key);
   CommandLineCommand& add_command(const std::string& name) {
     return add_command(name, "");
   }

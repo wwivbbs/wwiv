@@ -77,3 +77,36 @@ TEST_F(CommandLineTest, Several_Commands) {
   EXPECT_EQ("print", cmdline.command()->name());
   std::clog << cmdline.command()->ToString() << std::endl;
 }
+
+TEST_F(CommandLineTest, SlashArg) {
+  int argc = 3;
+  char* argv[] = {"foo.exe", "/n500", ".1"};
+  CommandLine cmdline(argc, argv, "network_number");
+  cmdline.add({"node", 'n', "node to dial", "0"});
+  cmdline.add({"network_number", "network number to use.", "0"});
+
+  ASSERT_TRUE(cmdline.Parse());
+  EXPECT_EQ(500, cmdline.arg("node").as_int());
+}
+
+TEST_F(CommandLineTest, DotArg) {
+  int argc = 3;
+  char* argv[] = {"foo.exe", "/n500", ".123"};
+  CommandLine cmdline(argc, argv, "network_number");
+  cmdline.add({"node", 'n', "node to dial", "0"});
+  cmdline.add({"network_number", "network number to use.", "0"});
+
+  ASSERT_TRUE(cmdline.Parse());
+  EXPECT_EQ(123, cmdline.arg("network_number").as_int());
+}
+
+TEST_F(CommandLineTest, Help) {
+  int argc = 2;
+  char* argv[] = {"foo.exe", "/?"};
+  CommandLine cmdline(argc, argv, "network_number");
+  cmdline.add(BooleanCommandLineArgument("help", '?', "display help", false));
+
+  ASSERT_TRUE(cmdline.Parse());
+  EXPECT_TRUE(500, cmdline.arg("help").as_bool());
+}
+

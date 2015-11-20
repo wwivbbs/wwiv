@@ -55,13 +55,14 @@ int main(int argc, char** argv) {
   cmdline.add_command("dump", "Dumps contents of a network packet");
   cmdline.add_command("dump_callout", "Dumps parsed representation of CALLOUT.NET");
   cmdline.add_command("dump_contact", "Dumps parsed representation of CONTACT.NET");
+  cmdline.add(BooleanCommandLineArgument("help", '?', "Displays Help", false));
 
   if (!cmdline.Parse()) {
     clog << "Unable to parse command line." << endl;
     return 1;
   }
 
-  if (argc <= 1 || !cmdline.subcommand_selected()) {
+  if (argc <= 1 || !cmdline.subcommand_selected() || cmdline.arg("help").as_bool()) {
     cout << cmdline.GetHelp();
     return 0;
   }
