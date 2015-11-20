@@ -608,14 +608,12 @@ void load_actions(IniFile *pIniFile) {
 
 // Used by load_actions(), adds an action into the array
 void add_action(ch_action act) {
-  ch_action *addact;
-
   if (g_nNumActions < 100) {
     g_nNumActions++;
   } else {
     return;
   }
-  addact = static_cast<ch_action *>(BbsAllocA(sizeof(ch_action)));
+  ch_action* addact = static_cast<ch_action *>(calloc(sizeof(ch_action) + 1, 1));
   WWIV_ASSERT(addact != nullptr);
   addact->r = act.r;
   strcpy(addact->aword, act.aword);
