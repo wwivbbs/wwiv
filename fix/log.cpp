@@ -59,7 +59,7 @@ bool OpenLogFile(const char* szFileName) {
 	char szBuf[512];
 
 	hLogFile.SetName(szFileName);
-	if(!hLogFile.Open(File::modeReadWrite | File::modeCreateFile)) {
+	if (!hLogFile.Open(File::modeReadWrite | File::modeCreateFile)) {
 		Print(NOK, false, "Cannot open Log File %s", szFileName);
 		return false;
 	}

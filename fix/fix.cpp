@@ -59,7 +59,7 @@ public:
 	  Print(OK, true, "Checking for Critical DATA files...");
     for (const auto& datafile : datafiles) {
       File file(syscfg.datadir, datafile);
-		  if(!file.Exists()) {
+		  if (!file.Exists()) {
 			  Print(NOK, true, "Critical file: %s is missing", datafile.c_str());
 		  }
 	  }
@@ -81,23 +81,19 @@ public:
 
 
 bool checkDirExists(File &dir, const char *desc) {
-  {
-	  bool exist = dir.Exists();
-	  if(exist) {
-      return true;
-    }
+  if (dir.Exists()) {
+    return true;
   }
 
-	Print(NOK, false, "Unable to find dir '%s'", dir.full_pathname().c_str());
+  Print(NOK, false, "Unable to find dir '%s'", dir.full_pathname().c_str());
 	Print(NOK, false, "for '%s' dir", desc);
 	printf("   Do you wish to CREATE it (y/N)?\n");
 	string s;
 	std::cin >> s;
-	if(s[0] == 'Y' || s[0] == 'y') {
-		bool exist = File::mkdirs(dir);
-		if(!exist) {
+	if (s[0] == 'Y' || s[0] == 'y') {
+		if (!File::mkdirs(dir)) {
 			Print(NOK, true, "Unable to create dir '%s' for %s dir.", dir.full_pathname().c_str(), desc);
-            return false;
+      return false;
 		}
 	}
 	return true;
@@ -129,17 +125,17 @@ class FixApplication {
   }
 
   void checkFileSize(File &file, unsigned long len) {
-	  if(!file.IsOpen()) {
+	  if (!file.IsOpen()) {
 		  int nFileMode = File::modeReadOnly | File::modeBinary;
 		  file.Open(nFileMode);
 	  }
 	  unsigned long actual = file.GetLength();
 	  file.Close();
-	  if(actual < len) {
+	  if (actual < len) {
 		  Print(NOK, true, "%s too short (%ld<%ld).", file.full_pathname().c_str(), actual, len);
 		  giveUp();
 	  }
-	  if(actual > len) {
+	  if (actual > len) {
 		  Print(NOK, true, "%s too long (%ld>%ld).", file.full_pathname().c_str(), actual, len);
 		  Print(NOK, true, "Attempting to continue.");
 	  }
@@ -157,7 +153,7 @@ class FixApplication {
 	  int nFileMode = File::modeReadOnly | File::modeBinary;
 	  bool update = false;
 	  File statusDat(syscfg.datadir, STATUS_DAT);
-	  if(!statusDat.Exists()) {
+	  if (!statusDat.Exists()) {
 		  Print(NOK, true, "%s NOT FOUND.", statusDat.full_pathname().c_str());
 		  Print(OK, true, "Recreating %s.", statusDat.full_pathname().c_str());
 		  memset(&status, 0, sizeof(statusrec));
@@ -181,14 +177,14 @@ class FixApplication {
 		  statusDat.Close();
 
 		  // version check
-		  if(status.wwiv_version > wwiv_num_version) {
+		  if (status.wwiv_version > wwiv_num_version) {
 			  Print(NOK, true, "Incorrect version of fix (this is for %d, you need %d)", wwiv_num_version, status.wwiv_version);
 			  giveUp();
 		  }
 
 		  time_t val = time(nullptr);
 		  char *curDate = dateFromTimeT(val);
-		  if(strcmp(status.date1, curDate)) {
+		  if (strcmp(status.date1, curDate)) {
 			  strcpy(status.date1, curDate);
 			  update = true;
 			  Print(OK, true, "Date error in STATUS.DAT (status.date1) corrected");
@@ -196,14 +192,14 @@ class FixApplication {
 
 		  val -= 86400L;
 		  curDate = dateFromTimeT(val);
-		  if(strcmp(status.date2, curDate)) {
+		  if (strcmp(status.date2, curDate)) {
 			  strcpy(status.date2, curDate);
 			  update = true;
 			  Print(OK, true, "Date error in STATUS.DAT (status.date2) corrected");
 		  }
 		  char logFile[512];
 		  snprintf(logFile, sizeof(logFile), "%s.log", dateFromTimeTForLog(val));
-		  if(strcmp(status.log1, logFile)) {
+		  if (strcmp(status.log1, logFile)) {
 			  strcpy(status.log1, logFile);
 			  update = true;
 			  Print(OK, true, "Log filename error in STATUS.DAT (status.log1) corrected");
@@ -211,26 +207,26 @@ class FixApplication {
 
 		  val -= 86400L;
 		  curDate = dateFromTimeT(val);
-		  if(strcmp(status.date3, curDate)) {
+		  if (strcmp(status.date3, curDate)) {
 			  strcpy(status.date3, curDate);
 			  update = true;
 			  Print(OK, true, "Date error in STATUS.DAT (status.date3) corrected");
 		  }
 		  snprintf(logFile, sizeof(logFile), "%s.log", dateFromTimeTForLog(val));
-		  if(strcmp(status.log2, logFile)) {
+		  if (strcmp(status.log2, logFile)) {
 			  strcpy(status.log2, logFile);
 			  update = true;
 			  Print(OK, true, "Log filename error in STATUS.DAT (status.log2) corrected");
 		  }
 	  }
-	  if(update) {
+	  if (update) {
 		  saveStatus();
 	  }
   }
 
   void initDirsDat() {
 	  File dirsDat(syscfg.datadir, DIRS_DAT);
-	  if(!dirsDat.Exists()) {
+	  if (!dirsDat.Exists()) {
 		  Print(NOK, true, "%s NOT FOUND.", dirsDat.full_pathname().c_str());
 		  maybeGiveUp();
       return;
@@ -240,7 +236,7 @@ class FixApplication {
 	  int nFileMode = File::modeReadOnly | File::modeBinary;
 	  dirsDat.Open(nFileMode);
 	  directories = (directoryrec *)malloc(dirsDat.GetLength() + 1);
-	  if(directories == nullptr) {
+	  if (directories == nullptr) {
 		  Print(NOK, true, "Couldn't allocate %ld bytes for %s.", dirsDat.GetLength(), dirsDat.full_pathname().c_str());
 		  giveUp();
 	  }
@@ -251,7 +247,7 @@ class FixApplication {
 
   void initSubsDat() {
 	  File subsDat(syscfg.datadir, SUBS_DAT);
-	  if(!subsDat.Exists()) {
+	  if (!subsDat.Exists()) {
 		  Print(NOK, true, "%s NOT FOUND.", subsDat.full_pathname().c_str());
 		  maybeGiveUp();
           return;
@@ -260,7 +256,7 @@ class FixApplication {
 	  int nFileMode = File::modeReadOnly | File::modeBinary;
 	  subsDat.Open(nFileMode);
 	  subboards = (subboardrec *)malloc(subsDat.GetLength() + 1);
-	  if(subboards == nullptr) {
+	  if (subboards == nullptr) {
 		  Print(NOK, true, "Couldn't allocate %ld bytes for %s.", subsDat.GetLength(), subsDat.full_pathname().c_str());
 		  giveUp();
 	  }
@@ -287,14 +283,14 @@ class FixApplication {
 	  configFile.Open(File::modeReadOnly | File::modeBinary);
 	  int readIn = configFile.Read(&syscfg, sizeof(configrec));
 	  configFile.Close();
-	  if(readIn != sizeof(configrec)) {
+	  if (readIn != sizeof(configrec)) {
 		  Print(NOK, true, "Failed to read %s (%d != %d)", configFile.full_pathname().c_str(), readIn, sizeof(configrec));
 		  giveUp();
 	  }
 	  syscfg.userreclen = sizeof(userrec);
 
 	  File dataDir(syscfg.datadir);
-	  if(!checkDirExists(dataDir, "Data")) {
+	  if (!checkDirExists(dataDir, "Data")) {
 		  Print(NOK, true, "Must find DATA directory to continue.");
 		  giveUp();
 	  }
