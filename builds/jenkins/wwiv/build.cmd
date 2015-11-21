@@ -143,6 +143,7 @@ copy /v/y %WORKSPACE%\networkb\Release\networkb.exe %WORKSPACE%\release\networkb
 copy /v/y %WORKSPACE%\netutil\Release\netutil.exe %WORKSPACE%\release\netutil.exe
 copy /v/y %WORKSPACE%\fix\Release\fix.exe %WORKSPACE%\release\fix.exe
 copy /v/y %WORKSPACE%\bbs\admin\* %WORKSPACE%\release\
+copy /v/y %WORKSPACE%\bbs\admin\win32\* %WORKSPACE%\release\
 
 echo:
 echo * Copying WINS files to staging area
