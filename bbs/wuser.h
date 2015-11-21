@@ -547,7 +547,7 @@ class WUser {
     return data.year;
   }
   void SetBirthdayYear(int n)           {
-    if(n == 0){
+    if (n == 0){
       data.year = static_cast<unsigned char>(n);
     }else{
       data.year = static_cast<unsigned char>(n-1900);

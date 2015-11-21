@@ -72,7 +72,7 @@ bool CommandLineCommand::add(const CommandLineArgument& cmd) {
 
 bool CommandLineCommand::HandleCommandLineArgument(
     const std::string& key, const std::string& value) {
-  args_.erase(key);  // emplace doesn't seem to repleace.
+  args_.erase(key);  // emplace doesn't seem to replace.
   if (args_allowed_.at(key).is_boolean) {
     if (value == "N" || value == "0" || IsEqualsIgnoreCase(value.c_str(), "false")) {
       args_.emplace(key, CommandLineValue("false"));
@@ -123,7 +123,8 @@ int CommandLineCommand::Parse(int start_pos) {
         i = cmd.Parse(++i);
         command_ = &cmd;
       } else {
-        // TODO: add all residue to new list.
+        // Add all residue to list of remaining args.
+        // These usually are the positional arguments.
         for (; i < argc_; i++) {
           remaining_.emplace_back(argv_[i]);
         }
