@@ -1,3 +1,20 @@
+/**************************************************************************/
+/*                                                                        */
+/*                          WWIV Version 5.0x                             */
+/*                Copyright (C)2015 WWIV Software Services                */
+/*                                                                        */
+/*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
+/*    you may not use this  file  except in compliance with the License.  */
+/*    You may obtain a copy of the License at                             */
+/*                                                                        */
+/*                http://www.apache.org/licenses/LICENSE-2.0              */
+/*                                                                        */
+/*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
+/*    software  distributed  under  the  License  is  distributed on an   */
+/*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
+/*    either  express  or implied.  See  the  License for  the specific   */
+/*    language governing permissions and limitations under the License.   */
+/**************************************************************************/
 #include "networkb/callout.h"
 
 #include <algorithm>
@@ -122,6 +139,7 @@ static bool ParseCalloutFile(std::map<uint16_t, net_call_out_rec>* node_config_m
   // A line will be of the format @node host:port [password].
   string line;
   while (node_config_file.ReadLine(&line)) {
+    StringTrim(&line);
     net_call_out_rec node_config;
     if (ParseCalloutNetLine(line, &node_config)) {
       // Parsed a line correctly.
@@ -149,6 +167,45 @@ const net_call_out_rec* Callout::node_config_for(int node) const {
     return &iter->second;
   }
   return nullptr;
+}
+
+static std::string DumpCallout(const net_call_out_rec& n) {
+  std::ostringstream ss;
+  ss << "sysnum:        "  << n.sysnum << std::endl;
+  if (n.macnum) {
+    ss << "macnum:        " << std::dec << n.macnum << std::endl;
+  }
+  if (n.options) {
+    ss << "options:       " << n.options << std::endl;
+  }
+  if (n.min_hr > 0) {
+    ss << "min_hr:        " << static_cast<int>(n.min_hr) << std::endl;
+  }
+  if (n.max_hr > 0) {
+    ss << "max_hr:        " <<  static_cast<int>(n.max_hr) << std::endl;
+  }
+  ss << "password:      \"" << n.password << "\"" << std::endl;
+  if (n.times_per_day) {
+    ss << "times_per_day: " << static_cast<int>(n.times_per_day) << std::endl;
+  }
+  if (n.call_x_days) {
+    ss << "call_x_days:   " << static_cast<int>(n.call_x_days) << std::endl;
+  }
+  if (n.min_k) {
+    ss << "min_k:         " << static_cast<int>(n.min_k) << std::endl;
+  }
+  if (n.opts && *n.opts) {
+    ss << "opts:          " << n.opts << std::endl;
+  }
+  return ss.str();
+}
+
+std::string Callout::ToString() const {
+  std::ostringstream ss;
+  for (const auto& kv : node_config_) {
+    ss << DumpCallout(kv.second) << std::endl;
+  }
+  return ss.str();
 }
 
 }  // namespace net

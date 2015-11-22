@@ -1146,15 +1146,11 @@ void newuser() {
   }
 
   WriteNewUserInfoToSysopLog();
-
+  ssm(1, 0, "You have a new user:  %s #%ld", session()->user()->GetName(), session()->usernum);
   application()->UpdateTopScreen();
-
   VerifyNewUserPassword();
-
   SendNewUserFeedbackIfRequired();
-
   ExecNewUserCommand();
-
   session()->ResetEffectiveSl();
   changedsl();
   new_mail();

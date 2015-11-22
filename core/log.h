@@ -28,6 +28,20 @@
 namespace wwiv {
 namespace core {
 
+/**
+ * Logger class for WWIV.
+ * Usage:
+ *   - Once near your main() method, invoke Logger::Init(argc, argv) to initialize the logger.
+ *     This will initialize the logger for (I)nfo to your executable's name with .LOG appended.
+ *     You should also invoke ExitLogger when exiting your binary,
+ * 
+ * Example:
+ *
+ *   Logger::Init(argc, argv);
+ *   wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
+ *
+ * In code, just use "LOG << messages" and it will end up in the information logs.
+ */
 class Logger {
 public:
   Logger();
@@ -39,7 +53,9 @@ public:
     return *this;
   }
 
+  /** Initializes the WWIV Loggers.  Must be invoked once per binary. */
   static void Init(int argc, char** argv);
+  /** Sets the filename for the logger kind (i.e. 'I' for info) */
   static void set_filename(const std::string& kind, const std::string& filename) { fn_map_[kind] = filename; }
   static std::string date_time();
   static void ExitLogger();

@@ -34,6 +34,7 @@ make -j12
 echo "Populating built binaries"
 cp  ${WORKSPACE}/networkb/networkb \
     ${WORKSPACE}/fix/fix \
+    ${WORKSPACE}/netutil/netutil \
     ${WORKSPACE}/bbs/bbs \
     ${WORKSPACE}/init/init \
     ${WORKSPACE}/nodemgr/nodemgr \

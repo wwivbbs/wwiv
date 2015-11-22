@@ -165,8 +165,8 @@ public:
 
   std::string menu_;
   std::string path_;
-  bool finished;
-  bool reload;  /* true if we are going to reload the menus */
+  bool finished=false;
+  bool reload=false;  /* true if we are going to reload the menus */
 
   std::string prompt;
   std::vector<std::string> insertion_order_;

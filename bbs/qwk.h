@@ -19,6 +19,7 @@
 #ifndef _QWK_H_
 #define _QWK_H_
 
+#include <ctime>
 #include <string>
 
 #include "sdk/vardec.h"

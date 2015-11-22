@@ -1,3 +1,20 @@
+/**************************************************************************/
+/*                                                                        */
+/*                          WWIV Version 5.0x                             */
+/*               Copyright (C)2015, WWIV Software Services                */
+/*                                                                        */
+/*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
+/*    you may not use this  file  except in compliance with the License.  */
+/*    You may obtain a copy of the License at                             */
+/*                                                                        */
+/*                http://www.apache.org/licenses/LICENSE-2.0              */
+/*                                                                        */
+/*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
+/*    software  distributed  under  the  License  is  distributed on an   */
+/*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
+/*    either  express  or implied.  See  the  License for  the specific   */
+/*    language governing permissions and limitations under the License.   */
+/**************************************************************************/
 #include "networkb/binkp_config.h"
 
 #include <iostream>
@@ -27,6 +44,7 @@ namespace net {
 
 // [[ VisibleForTesting ]]
 bool ParseBinkConfigLine(const string& line, uint16_t* node, BinkNodeConfig* config) {
+
   // A line will be of the format @node host:port
   if (line.empty() || line[0] != '@') {
     // skip empty lines and those not starting with @.
@@ -62,6 +80,7 @@ static bool ParseAddressesFile(std::map<uint16_t, BinkNodeConfig>* node_config_m
     while (node_config_file.ReadLine(&line)) {
       uint16_t node_number;
       BinkNodeConfig node_config;
+      StringTrim(&line);
       if (ParseBinkConfigLine(line, &node_number, &node_config)) {
         // Parsed a line correctly.
         node_config_map->emplace(node_number, node_config);
@@ -83,6 +102,7 @@ BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& co
   if (sysop_name_.empty()) {
     sysop_name_ = "Unknown WWIV SysOp";
   }
+  gfiles_directory_ = config.config()->gfilesdir;
 
   if (networks.contains(callout_network_name)) {
     const net_networks_rec& net = networks[callout_network_name];
@@ -115,6 +135,7 @@ BinkConfig::BinkConfig(int callout_node_number, const wwiv::sdk::Config& config,
   ParseAddressesFile(&node_config_, network_dir);
   system_name_ = config.config()->systemname;
   sysop_name_ = config.config()->sysopname;
+  gfiles_directory_ = config.config()->gfilesdir;
 }
 
 BinkConfig::~BinkConfig() {}

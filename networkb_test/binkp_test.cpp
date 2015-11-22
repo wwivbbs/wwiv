@@ -1,3 +1,20 @@
+/**************************************************************************/
+/*                                                                        */
+/*                          WWIV Version 5.0x                             */
+/*                Copyright (C)2015 WWIV Software Services                */
+/*                                                                        */
+/*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
+/*    you may not use this  file  except in compliance with the License.  */
+/*    You may obtain a copy of the License at                             */
+/*                                                                        */
+/*                http://www.apache.org/licenses/LICENSE-2.0              */
+/*                                                                        */
+/*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
+/*    software  distributed  under  the  License  is  distributed on an   */
+/*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
+/*    either  express  or implied.  See  the  License for  the specific   */
+/*    language governing permissions and limitations under the License.   */
+/**************************************************************************/
 #include "gtest/gtest.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
@@ -28,14 +45,17 @@ class BinkTest : public testing::Test {
 protected:
   void StartBinkpReceiver() {
     files_.Mkdir("network");
+    files_.Mkdir("gfiles");
     const string line("@1 example.com");
     files_.CreateTempFile("binkp.net", line);
     const string network_dir = files_.DirName("network");
+    const string gfiles_dir = files_.DirName("gfiles");
     wwiv::sdk::Config config;
     memset(&wwiv_config_, 0, sizeof(configrec));
     config.set_initialized_for_test(true);
     strcpy(wwiv_config_.systemname, "Test System");
     strcpy(wwiv_config_.sysopname, "Test Sysop");
+    strcpy(wwiv_config_.gfilesdir, gfiles_dir.c_str());
     config.set_config(&wwiv_config_);
     BinkConfig* dummy_config = new BinkConfig(ORIGINATING_ADDRESS, config, network_dir);
     Callout dummy_callout(network_dir);

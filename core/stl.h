@@ -41,9 +41,15 @@ bool contains(std::map<K, V, C, A> const& m, K const& key) {
   return m.find(key) != m.end();
 }
 
-// Partial specicialization for maps with string keys (allows using const char* for lookup values
+// Partial specicialization for maps with string keys (allows using const char* for lookup values)
 template <typename V, typename C, typename A>
 bool contains(std::map<std::string, V, C, A> const& m, const std::string& key) {
+  return m.find(key) != m.end();
+}
+
+// Partial specicialization for maps with const string keys.
+template <typename V, typename C, typename A>
+bool contains(std::map<const std::string, V, C, A> const& m, const std::string& key) {
   return m.find(key) != m.end();
 }
 

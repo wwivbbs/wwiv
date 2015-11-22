@@ -11,6 +11,8 @@ set(SOURCES
  binkp_config.cpp
  callout.cpp
  connection.cpp
+ contact.cpp
+ net_log.cpp
  ppp_config.cpp
  socket_connection.cpp
  socket_exceptions.cpp

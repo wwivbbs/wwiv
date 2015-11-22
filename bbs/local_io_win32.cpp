@@ -809,7 +809,7 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
     if (!wwiv::strings::IsEquals(pSession->user()->GetLastOn(), date())) {
       strcpy(lo, pSession->user()->GetLastOn());
     } else {
-      _snprintf(lo, sizeof(lo), "Today:%2d", pSession->user()->GetTimesOnToday());
+      snprintf(lo, sizeof(lo), "Today:%2d", pSession->user()->GetTimesOnToday());
     }
 
     LocalXYAPrintf(0, 0, curatr, "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u",
@@ -823,7 +823,7 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
 
     char szCallSignOrRegNum[ 41 ];
     if (pSession->user()->GetWWIVRegNumber()) {
-      _snprintf(szCallSignOrRegNum, sizeof(szCallSignOrRegNum), "%lu", pSession->user()->GetWWIVRegNumber());
+      snprintf(szCallSignOrRegNum, sizeof(szCallSignOrRegNum), "%lu", pSession->user()->GetWWIVRegNumber());
     } else {
       strcpy(szCallSignOrRegNum, pSession->user()->GetCallsign());
     }
@@ -1278,7 +1278,7 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
   pszInOutText[z] = '\0';
 
   char szFinishedString[ 260 ];
-  _snprintf(szFinishedString, sizeof(szFinishedString), "%-255s", pszInOutText);
+  snprintf(szFinishedString, sizeof(szFinishedString), "%-255s", pszInOutText);
   szFinishedString[ len ] = '\0';
   LocalGotoXY(cx, cy);
   curatr = oldatr;

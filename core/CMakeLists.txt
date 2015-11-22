@@ -4,6 +4,7 @@ project (CORE)
 include_directories(..)
 
 set(COMMON_SOURCES
+  command_line.cpp
   inifile.cpp
   file.cpp
   file_unix.cpp

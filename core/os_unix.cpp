@@ -63,10 +63,29 @@ std::string os_version_string() {
   }
   return std::string("Linux");
 #elif defined ( __APPLE__ )
-  return string(""); // StringPrintf("%s %s", GetOSNameString(), GetMacVersionString());
-#elif defined ( __unix__ )
-  // TODO Add Linux version information code here..
+  return string("MacOSX"); // StringPrintf("%s %s", GetOSNameString(), GetMacVersionString());
+#elif defined(__OS2__)
+  return string("OS/2");
+#elif defined(__FreeBSD__)
+  return string("FreeBSD");
+#elif defined(__OpenBSD__)
+  return string("OpenBSD");
+#elif defined(__NetBSD__)
+  return string("NetBSD");
+#elif defined(BSD)
+  return string("BSD");
+#elif defined(__solaris__)
+  return string("Solaris");
+#elif defined(__sun__)
+  return string("SunOS");
+#elif defined(__gnu__)
+  return string("GNU/Hurd");
+#elif defined(__QNX__)
+  return string("QNX");
+#elif defined(__unix__)
   return string("UNIX");
+#elif defined(__HAIKU__)
+  return string("Haiku");
 #endif
   return string("UNKNOWN OS");
 }

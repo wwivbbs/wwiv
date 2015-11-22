@@ -1,3 +1,20 @@
+/**************************************************************************/
+/*                                                                        */
+/*                          WWIV Version 5.0x                             */
+/*               Copyright (C)2015, WWIV Software Services                */
+/*                                                                        */
+/*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
+/*    you may not use this  file  except in compliance with the License.  */
+/*    You may obtain a copy of the License at                             */
+/*                                                                        */
+/*                http://www.apache.org/licenses/LICENSE-2.0              */
+/*                                                                        */
+/*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
+/*    software  distributed  under  the  License  is  distributed on an   */
+/*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
+/*    either  express  or implied.  See  the  License for  the specific   */
+/*    language governing permissions and limitations under the License.   */
+/**************************************************************************/
 #ifndef __INCLUDED_NETWORKB_BINKP_H__
 #define __INCLUDED_NETWORKB_BINKP_H__
 
@@ -74,6 +91,7 @@ private:
   void rename_pending_files() const;
   void process_network_files() const;
   const std::string remote_network_name() const;
+  int remote_network_node() const;
 
   BinkState ConnInit();
   BinkState WaitConn();
@@ -107,6 +125,8 @@ private:
   received_transfer_file_factory_t received_transfer_file_factory_;
   std::vector<std::string> received_files_;
   std::unique_ptr<ReceiveFile> current_receive_file_;
+  unsigned int bytes_received_;
+  unsigned int bytes_sent_;
 };
 
 // Parses a M_FILE request line into it's parts.

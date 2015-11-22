@@ -94,6 +94,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="command_line_test.cpp" />
     <ClCompile Include="core_test_main.cpp" />
     <ClCompile Include="datafile_test.cpp" />
     <ClCompile Include="inifile_test.cpp" />

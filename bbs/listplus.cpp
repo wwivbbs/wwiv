@@ -649,7 +649,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
   int cpos = 0;
   int chars_this_line = 0;
 
-  int will_fit = 80 - abs(indent) - 2;
+  int will_fit = 80 - std::abs(indent) - 2;
 
   char * ss = read_extended_description(pszFileName);
 
@@ -679,7 +679,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
         if (ch == SOFTRETURN && indent) {
           bout.SystemColor(color);
           bputch('\r');
-          bout << "\x1b[" << abs(indent) << "C";
+          bout << "\x1b[" << std::abs(indent) << "C";
         }
         do {
           ch = new_ss[cpos++];

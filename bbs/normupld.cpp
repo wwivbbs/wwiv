@@ -190,8 +190,8 @@ void normalupload(int dn) {
           }
         }
       }
-      string filler = charstr(nLastLineLength, SPACE);
-      bout << filler << "\r";
+
+      bout << string(nLastLineLength, SPACE) << "\r";
       if (ok) {
         dliscan1(dn);
       }

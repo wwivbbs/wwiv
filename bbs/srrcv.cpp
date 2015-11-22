@@ -46,7 +46,7 @@ char modemkey(int *tout) {
     return 0;
   }
   double d1 = timer();
-  while (fabs(timer() - d1) < 0.5 && !bkbhitraw() && !hangup) {
+  while (std::abs(timer() - d1) < 0.5 && !bkbhitraw() && !hangup) {
     CheckForHangup();
   }
   if (bkbhitraw()) {
@@ -201,7 +201,7 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
     }
 
     double d1 = timer();
-    while (fabs(timer() - d1) < 10.0 && !bkbhitraw() && !hangup) {
+    while (std::abs(timer() - d1) < 10.0 && !bkbhitraw() && !hangup) {
       CheckForHangup();
       if (session()->localIO()->LocalKeyPressed()) {
         ch = session()->localIO()->LocalGetChar();
@@ -245,7 +245,6 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
             filedatetime = (filedatetime * 8) + static_cast<long>(b[i1] - '0');
             ++i1;
           }
-          i1 += timezone + 5 * 60 * 60;
         }
         rputch(CF);
       } else if ((bn & 0x00ff) == static_cast<unsigned int>(bln)) {

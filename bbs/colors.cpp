@@ -161,7 +161,7 @@ void color_config() {
       if (yesno()) {
         bout << "\r\nColor saved.\r\n\n";
         if ((n <= -1) && (n >= -16)) {
-          rescolor.resx[207 + abs(n)] = static_cast< unsigned char >(c);
+          rescolor.resx[207 + std::abs(n)] = static_cast< unsigned char >(c);
         } else if ((n >= 0) && (n <= 9)) {
           session()->user()->SetColor(n, c);
         } else {

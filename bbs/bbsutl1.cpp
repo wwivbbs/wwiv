@@ -162,7 +162,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
       onxi = 1;
       nv = 0;
       on = session()->GetNetworkNumber();
-      ss = static_cast<char *>(BbsAllocA(session()->GetMaxNetworkNumber()));
+      ss = static_cast<char *>(calloc(session()->GetMaxNetworkNumber() + 1, 1));
       WWIV_ASSERT(ss != nullptr);
       xx = -1;
       for (i = 0; i < session()->GetMaxNetworkNumber(); i++) {
@@ -170,7 +170,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
         if (net_sysnum == *pSystemNumber) {
           xx = i;
         } else if (valid_system(*pSystemNumber)) {
-          ss[nv++] = static_cast< char >(i);
+          ss[nv++] = static_cast<char>(i);
         }
       }
       set_net_num(on);

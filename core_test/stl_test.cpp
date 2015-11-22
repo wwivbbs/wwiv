@@ -65,3 +65,18 @@ TEST(StlTest, Contains_MapIntInts) {
   EXPECT_TRUE(contains(ints, 1));
   EXPECT_FALSE(contains(ints, 3));
 }
+
+TEST(StlTest, Contains_MapConstStringStrings) {
+  map<const string, string> strings = {{"one", "1"},{"two", "2"},{"three", "3"}};
+
+  EXPECT_TRUE(contains(strings, "one"));
+  EXPECT_FALSE(contains(strings, "zero"));
+}
+
+TEST(StlTest, Dummy) {
+  map<const string, string> strings = {{"one", "1"},{"two", "2"},{"three", "3"}};
+  strings.erase("4");
+  strings["one"] = "one";
+  EXPECT_TRUE(strings["one"] == string("one")) << strings.at("one");
+  EXPECT_FALSE(contains(strings, "zero"));
+}
