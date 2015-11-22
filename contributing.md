@@ -18,7 +18,7 @@ Some things that will increase the chance that your pull request is accepted:
 
 * Drop in on IRC and talk about your changes.
 * Fix an open issue.
-* Write a good commit message][commit].
+* Write a [good commit message][commit].
 * Explain how you tested the changes, any known limitations on Windows version or Linux.
 
 [commit]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
