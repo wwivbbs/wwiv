@@ -102,14 +102,14 @@ int CommandLineCommand::Parse(int start_pos) {
       const string key = delims[0].substr(2);
       const string value = (delims.size() > 1) ? delims[1] : "";
       if (!contains(args_allowed_, key)) {
-        throw unknown_argument_error(StrCat("unknown_argument_error: ", key));
+        throw unknown_argument_error(StrCat("key=", key));
       }
       HandleCommandLineArgument(key, value);
     } else if (starts_with(s, "/") || starts_with(s, "-")) {
       char letter = static_cast<char>(std::toupper(s[1]));
       const string key = ArgNameForKey(letter);
       if (key.empty()) {
-        throw unknown_argument_error(StrCat("unknown_argument_error: key=", key));
+        throw unknown_argument_error(StrCat("letter=", letter));
       }
       const string value = s.substr(2);
       HandleCommandLineArgument(key, value);
@@ -177,6 +177,11 @@ std::string CommandLine::GetHelp() const {
   return ss.str();
 }
 
+unknown_argument_error::unknown_argument_error(const std::string& message)
+    : std::runtime_error(StrCat("unknown_argument_error: ", message)) {
+}
+
 
 }  // namespace core
 }  // namespace wwiv
+

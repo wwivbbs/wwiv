@@ -107,6 +107,6 @@ TEST_F(CommandLineTest, Help) {
   cmdline.add(BooleanCommandLineArgument("help", '?', "display help", false));
 
   ASSERT_TRUE(cmdline.Parse());
-  EXPECT_TRUE(500, cmdline.arg("help").as_bool());
+  EXPECT_TRUE(cmdline.arg("help").as_bool());
 }
 
