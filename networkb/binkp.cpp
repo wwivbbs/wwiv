@@ -764,8 +764,7 @@ void BinkP::Run() {
     // The other end closed the socket before we did.
     LOG << "       connection was closed by the other side.";
   } catch (socket_error& e) {
-    LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what()
-        << "\nStacktrace:\n" << stacktrace();
+    LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
   }
 
   auto end_time = std::chrono::system_clock::now();
