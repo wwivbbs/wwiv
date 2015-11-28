@@ -46,14 +46,15 @@ We love Pull Requests! Good pull requests for features, enhancements and bug rep
 
 Here's the best way to work with the WWIV git repository:
 
-1. [Fork](https://help.github.com/fork-a-repo/), then clone your fork, and configure the remotes:
+1. [Fork](https://help.github.com/articles/fork-a-repo/), then clone your fork, and configure the remotes:
     
     ```bash
     # Create a directory for your fork's clone.
     mkdir git
     chdir git
     # Clone your fork into the current directory (git).
-    git clone git@github.com:your-username/wwiv.git
+    # Use your GitHub username instead of <em>YOUR-USERNAME</em>
+    git clone https://github.com/<em>YOUR-USERNAME</em>/wwiv.git
     # Change directory into the wwiv directory of your clone/
     chdir wwiv
     # Add the remotes for the upstream repository (wwivbbs/wwiv)
@@ -73,7 +74,7 @@ Here's the best way to work with the WWIV git repository:
 3. Create a new branch off of master for your feature, enhancement, or bug fix.
 
     ```bash
-    git checkout -b <my-branch-name>
+    git checkout -b <MY-BRANCH-NAME>
     ```    
 
 4. Make your changes by editing the files and committing changes to your local repository.  Please use good commit messages that explain the changes and also reference github issues as necessary.
@@ -87,7 +88,7 @@ Here's the best way to work with the WWIV git repository:
 6. Push your changes from your local machine to your fork on github.
 
     ```bash
-    git push origin <my-branch-name>
+    git push origin <MY-BRANCH-NAME>
     ```
     
 7. Open a [Pull Request](https://help.github.com/articles/using-pull-requests/) with a clear and concise
