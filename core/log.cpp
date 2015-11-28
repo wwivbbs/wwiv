@@ -77,7 +77,7 @@ void Logger::DefaultDisplay(const std::string& s) {
 }
 
 // static
-void Logger::Init(int argc, char** argv) {
+void Logger::Init(int, char** argv) {
   string filename(argv[0]);
   if (ends_with(filename, ".exe") || ends_with(filename, ".EXE")) {
     filename = filename.substr(0, filename.size() - 4);

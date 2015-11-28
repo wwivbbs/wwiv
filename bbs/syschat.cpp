@@ -204,7 +204,7 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
         if (nNumCharsToMove) {
           strncpy(&s2[nNumCharsToMove - 1], temp1, (strlen(temp1)));
         } else {
-          strcpy(s2, charstr(205, session()->user()->GetScreenChars() - 1));
+          strcpy(s2, charstr(session()->user()->GetScreenChars() - 1, 205));
         }
         s2[session()->user()->GetScreenChars()] = '\0';
         bout << s2;

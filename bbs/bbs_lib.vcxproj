@@ -161,6 +161,7 @@
     <ClInclude Include="wwiv.h" />
     <ClInclude Include="wwivassert.h" />
     <ClInclude Include="wwivcolors.h" />
+    <ClInclude Include="wwiv_windows.h" />
     <ClInclude Include="xfer_common.h" />
     <ClInclude Include="xinitini.h" />
   </ItemGroup>
