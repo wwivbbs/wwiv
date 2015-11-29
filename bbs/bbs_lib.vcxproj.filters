@@ -594,6 +594,33 @@
     <ClInclude Include="wwiv_windows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="archivers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bbsovl3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="chat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="local_io_curses.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="multinst.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="netsup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="newuser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stuffin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xfer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
