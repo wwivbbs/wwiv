@@ -86,7 +86,7 @@ static bool check_bbsdata() {
     if (bbsdataNet.Open(File::modeReadOnly)) {
       time_t tFileTime = bbsdataNet.last_write_time();
       bbsdataNet.Close();
-      ok = checkup2(tFileTime, BBSDATA_NET) || checkup2(tFileTime, CONNECT_NET);
+      ok = checkup2(tFileTime, BBSLIST_NET) || checkup2(tFileTime, CONNECT_NET);
       ok2 = checkup2(tFileTime, CALLOUT_NET);
     } else {
       ok = ok2 = true;
