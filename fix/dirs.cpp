@@ -17,13 +17,17 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <iostream>
 #include <string>
 #include <vector>
 
-#include "bbs/wwiv.h"
+#include "bbs/vars.h"
+#include "core/file.h"
 #include "fix/fix.h"
 #include "fix/log.h"
 #include "fix/dirs.h"
+
+#include "sdk/vardec.h"
 
 using std::cout;
 using std::endl;

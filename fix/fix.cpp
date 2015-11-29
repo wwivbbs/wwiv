@@ -19,6 +19,7 @@
 #include "fix.h"
 
 #include <algorithm>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <vector>
@@ -27,11 +28,14 @@
 
 #define _DEFINE_GLOBALS_
 #include "bbs/datetime.h"
-#include "bbs/wwiv.h"
+#include "bbs/vars.h"
+#include "core/file.h"
 #include "fix/log.h"
 #include "fix/dirs.h"
 #include "fix/users.h"
 #include "fix/fix_config.h"
+
+#include "sdk/filenames.h"
 
 void giveUp();
 void maybeGiveUp();

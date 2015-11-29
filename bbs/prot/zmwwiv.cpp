@@ -24,8 +24,12 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "bbs/bbs.h"
+#include "bbs/bbsovl3.h"
+#include "bbs/bputch.h"
+#include "bbs/utility.h"
 #include "bbs/wcomm.h"
-#include "bbs/wwiv.h"
+#include "bbs/vars.h"
 #include "bbs/prot/zmodem.h"
 #include "core/os.h"
 #include "core/strings.h"
