@@ -67,59 +67,36 @@ static bool checkup2(const time_t tFileTime, const char *pszFileName) {
 }
 
 static bool check_bbsdata() {
-  char s[MAX_PATH];
-  bool ok2 = false;
-
-  sprintf(s, "%s%s", session()->GetNetworkDataDirectory().c_str(), CONNECT_UPD);
-  bool ok = File::Exists(s);
-  if (!ok) {
-    sprintf(s, "%s%s", session()->GetNetworkDataDirectory().c_str(), BBSLIST_UPD);
-    ok = File::Exists(s);
-  }
   unique_ptr<WStatus> wwiv_status_ro(application()->GetStatusManager()->GetStatus());
-  if (ok && wwiv_status_ro->IsUsingNetEdit()) {
-    // TODO(rushfan): is this program even around anymore?
-    ExecuteExternalProgram(StringPrintf("NETEDIT .%d /U", session()->GetNetworkNumber()),
-        EFLAG_NETPROG);
-  } else {
-    File bbsdataNet(session()->GetNetworkDataDirectory().c_str(), BBSDATA_NET);
-    if (bbsdataNet.Open(File::modeReadOnly)) {
-      time_t tFileTime = bbsdataNet.last_write_time();
-      bbsdataNet.Close();
-      ok = checkup2(tFileTime, BBSLIST_NET) || checkup2(tFileTime, CONNECT_NET);
-      ok2 = checkup2(tFileTime, CALLOUT_NET);
-    } else {
-      ok = ok2 = true;
+  File bbsdataNet(session()->GetNetworkDataDirectory().c_str(), BBSDATA_NET);
+  if (bbsdataNet.Open(File::modeReadOnly)) {
+    time_t tFileTime = bbsdataNet.last_write_time();
+    bbsdataNet.Close();
+    bool ok = checkup2(tFileTime, BBSLIST_NET) || checkup2(tFileTime, CONNECT_NET);
+    bool ok2 = checkup2(tFileTime, CALLOUT_NET);
+    if (!ok && !ok2) {
+      return false;
     }
   }
-  sprintf(s, "%s%s", session()->GetNetworkDataDirectory().c_str(), BBSDATA_NET);
-  if (!File::Exists(s)) {
-    ok = ok2 = false;
+  if (!File::Exists(session()->GetNetworkDataDirectory(), BBSLIST_NET)) {
+    return false;
   }
-  sprintf(s, "%s%s", session()->GetNetworkDataDirectory().c_str(), CONNECT_NET);
-  if (!File::Exists(s)) {
-    ok = ok2 = false;
+  if (!File::Exists(session()->GetNetworkDataDirectory().c_str(), CONNECT_NET)) {
+    return false;
   }
-  sprintf(s, "%s%s", session()->GetNetworkDataDirectory().c_str(), CALLOUT_NET);
-  if (!File::Exists(s)) {
-    ok = ok2 = false;
+  if (!File::Exists(session()->GetNetworkDataDirectory().c_str(), CALLOUT_NET)) {
+    return false;
   }
-  if (ok || ok2) {
-    sprintf(s, "network3 %s .%d", (ok ? " Y" : ""), session()->GetNetworkNumber());
+  const string network3 = StringPrintf("network3 Y .%d", session()->GetNetworkNumber());
+  ExecuteExternalProgram(network3, EFLAG_NETPROG);
+  WStatus* wwiv_status = application()->GetStatusManager()->BeginTransaction();
+  wwiv_status->IncrementFileChangedFlag(WStatus::fileChangeNet);
+  application()->GetStatusManager()->CommitTransaction(wwiv_status);
 
-    ExecuteExternalProgram(s, EFLAG_NETPROG);
-    WStatus* wwiv_status = application()->GetStatusManager()->BeginTransaction();
-    wwiv_status->IncrementFileChangedFlag(WStatus::fileChangeNet);
-    application()->GetStatusManager()->CommitTransaction(wwiv_status);
-
-    zap_call_out_list();
-    zap_contacts();
-    zap_bbs_list();
-    if (ok) {
-      return true;
-    }
-  }
-  return false;
+  zap_call_out_list();
+  zap_contacts();
+  zap_bbs_list();
+  return true;
 }
 
 void cleanup_net() {
