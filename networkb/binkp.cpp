@@ -823,7 +823,7 @@ static bool checkup2(const time_t tFileTime, std::string dir, std::string filena
 }
 
 static bool need_network3(const std::string& dir) {
-  if (!File::Exists(dir, BBSDATA_NET)) {
+  if (!File::Exists(dir, BBSLIST_NET)) {
     return false;
   }
   if (!File::Exists(dir, CONNECT_NET)) {
