@@ -56,6 +56,10 @@
 #define VC_EXTRALEAN
 #include <windows.h>
 
+#ifdef MOUSE_MOVED
+#undef MOUSE_MOVED
+#endif  // MOUSE_MOVED
+
 #ifdef min
 #undef min
 #endif  // min

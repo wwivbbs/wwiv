@@ -23,11 +23,10 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <curses.h>
 #include <fcntl.h>
 #include <memory>
 #ifdef _WIN32
-#include <direct.h>
+#include <direct.h> 
 #include <io.h>
 #endif
 #include <locale.h>
@@ -66,6 +65,9 @@
 #include "initlib/listbox.h"
 
 #include "sdk/filenames.h"
+
+// Make sure it's after windows.h
+#include <curses.h>
 
 using std::string;
 using std::vector;

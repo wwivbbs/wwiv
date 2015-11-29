@@ -151,16 +151,16 @@ std::string CommandLineCommand::ToString() const {
 
 std::string CommandLineCommand::GetHelp() const {
   std::ostringstream ss;
-  string name = (name_.empty()) ? "program" : name_;
-  ss << name << " arguments:" << std::endl;
+  string program_name = (name_.empty()) ? "program" : name_;
+  ss << program_name << " arguments:" << std::endl;
   for (const auto& a : args_allowed_) {
     ss << "--" << StringPrintf("%-20s", a.second.name.c_str()) << " " << a.second.help_text << endl;
   }
   ss << endl;
   ss << "commands:" << std::endl;
   for (const auto& a : commands_allowed_) {
-    const string name = a.second.name();
-    ss << "--" << StringPrintf("%-20s", name.c_str()) << " " << a.second.help_text() << endl;
+    const string allowed_name = a.second.name();
+    ss << "--" << StringPrintf("%-20s", allowed_name.c_str()) << " " << a.second.help_text() << endl;
   }
   return ss.str();
 }
