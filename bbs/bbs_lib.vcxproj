@@ -87,17 +87,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="archivers.h" />
     <ClInclude Include="asv.h" />
     <ClInclude Include="attach.h" />
     <ClInclude Include="automsg.h" />
     <ClInclude Include="bbs.h" />
     <ClInclude Include="bbslist.h" />
+    <ClInclude Include="bbsovl3.h" />
     <ClInclude Include="bbsutl.h" />
     <ClInclude Include="bbsutl1.h" />
     <ClInclude Include="bgetch.h" />
     <ClInclude Include="bputch.h" />
     <ClInclude Include="callback.h" />
     <ClInclude Include="capture.h" />
+    <ClInclude Include="chat.h" />
     <ClInclude Include="com.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="conf.h" />
@@ -116,13 +119,17 @@
     <ClInclude Include="keycodes.h" />
     <ClInclude Include="listplus.h" />
     <ClInclude Include="local_io.h" />
+    <ClInclude Include="local_io_curses.h" />
     <ClInclude Include="local_io_win32.h" />
     <ClInclude Include="menu.h" />
     <ClInclude Include="menuspec.h" />
     <ClInclude Include="menusupp.h" />
     <ClInclude Include="menu_parser.h" />
     <ClInclude Include="msgbase.h" />
+    <ClInclude Include="multinst.h" />
     <ClInclude Include="net.h" />
+    <ClInclude Include="netsup.h" />
+    <ClInclude Include="newuser.h" />
     <ClInclude Include="new_bbslist.h" />
     <ClInclude Include="null_local_io.h" />
     <ClInclude Include="pause.h" />
@@ -139,6 +146,7 @@
     <ClInclude Include="qwk.h" />
     <ClInclude Include="runnable.h" />
     <ClInclude Include="shortmsg.h" />
+    <ClInclude Include="stuffin.h" />
     <ClInclude Include="subxtr.h" />
     <ClInclude Include="sysopf.h" />
     <ClInclude Include="sysoplog.h" />
@@ -162,6 +170,7 @@
     <ClInclude Include="wwivassert.h" />
     <ClInclude Include="wwivcolors.h" />
     <ClInclude Include="wwiv_windows.h" />
+    <ClInclude Include="xfer.h" />
     <ClInclude Include="xfer_common.h" />
     <ClInclude Include="xinitini.h" />
   </ItemGroup>
