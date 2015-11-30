@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "bbs/bbsovl3.h"
 #include "bbs/wwiv.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"

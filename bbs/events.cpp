@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
 #include "bbs/wwiv.h"
 #include "bbs/input.h"

@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "bbs/batch.h"
+#include "bbs/bbsovl3.h"
 #include "bbs/wwiv.h"
 #include "bbs/common.h"
 #include "bbs/listplus.h"

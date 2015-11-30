@@ -35,29 +35,11 @@ class MenuInstanceData;
 
 class WUser;
 
-
-// File: batch.cpp
-// #include "bbs/batch.h"
-
-// File: bbsovl1.cpp
-// #include "bbs/bbsovl1.h"
-
-// File: bbsovl2.cpp
-
-
-
-// File: bbsovl3.cpp
-#include "bbsovl3.h"
-
-
 // File: bbsutl.cpp
-
 #include "bbs/bbsutl.h"
-
 
 // File: bbsutl1.cpp
 #include "bbs/bbsutl1.h"
-
 
 // File: bbsutl2.cpp
 
@@ -66,7 +48,6 @@ std::string ctypes(int num);
 void osan(const std::string& text, bool *abort, bool *next);
 void plan(int nWWIVColor, const std::string& text, bool *abort, bool *next);
 std::string strip_to_node(const std::string& txt);
-
 
 // File: bgetch.cpp
 #include "bbs/bgetch.h"
@@ -79,11 +60,9 @@ std::string strip_to_node(const std::string& txt);
 void run_chain(int nChainNumber);
 void do_chains();
 
-
 // File: chnedit.cpp
 
 void chainedit();
-
 
 // File: colors.cpp
 
@@ -93,10 +72,8 @@ void list_ext_colors();
 void color_config();
 void buildcolorfile();
 
-
 // File: com.cpp
 #include "bbs/com.h"
-
 
 // File: conf.cpp
 
@@ -316,11 +293,6 @@ void remove_post();
 void multimail(int *nUserNumber, int numu);
 void slash_e();
 
-
-// File: netsup.cpp
-
-// File: newuser.cpp
-
 // File: pause.cpp
 
 void pausescr();
@@ -435,8 +407,6 @@ void chat1(char *pszChatLine, bool two_way);
 #include "sysoplog.h"
 // File: sysopf.cpp
 #include "bbs/sysopf.h"
-
-// File: uedit.cpp
 
 // File: user.cpp
 

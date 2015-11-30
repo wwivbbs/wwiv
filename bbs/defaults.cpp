@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbsovl3.h"
 #include "bbs/confutil.h"
 #include "bbs/wwivcolors.h"
 #include "bbs/wwiv.h"
