@@ -621,6 +621,15 @@
     <ClInclude Include="xfer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="batch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bbsovl1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bbsovl2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

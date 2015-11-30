@@ -37,35 +37,13 @@ class WUser;
 
 
 // File: batch.cpp
-
-void upload(int dn);
-void delbatch(int nBatchEntryNum);
-char *unalign(char *pszFileName);
-void dszbatchdl(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription);
-int  batchdl(int mode);
-void didnt_upload(int nBatchIndex);
-void ymbatchdl(bool bHangupAfterDl);
-void zmbatchdl(bool bHangupAfterDl);
-
+// #include "bbs/batch.h"
 
 // File: bbsovl1.cpp
-
-void DisplayHorizontalBar(int nSize, int nColor);
-void YourInfo();
-int  GetMaxMessageLinesAllowed();
-void upload_post();
-void send_email();
-void edit_confs();
-void feedback(bool bNewUserFeedback);
-void text_edit();
-
+// #include "bbs/bbsovl1.h"
 
 // File: bbsovl2.cpp
 
-void OnlineUserEditor();
-void BackPrint(const std::string& text, int nColorCode, int nCharDelay, int nStringDelay);
-void MoveLeft(int nNumberOfChars);
-void SpinPuts(const std::string& text, int nColorCode);
 
 
 // File: bbsovl3.cpp

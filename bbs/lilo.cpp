@@ -22,6 +22,7 @@
 #include <string>
 
 #include "bbs/automsg.h"
+#include "bbs/batch.h"
 #include "bbs/dropfile.h"
 #include "bbs/input.h"
 #include "bbs/confutil.h"

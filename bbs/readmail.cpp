@@ -20,6 +20,7 @@
 #include <memory>
 #include <string>
 
+#include "bbs/bbsovl1.h"
 #include "bbs/datetime.h"
 #include "bbs/wwiv.h"
 #include "bbs/instmsg.h"

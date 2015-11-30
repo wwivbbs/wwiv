@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "bbs/batch.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"

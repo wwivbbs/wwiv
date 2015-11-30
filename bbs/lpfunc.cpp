@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+#include "bbs/batch.h"
 #include "bbs/wwiv.h"
 #include "bbs/common.h"
 #include "bbs/listplus.h"
