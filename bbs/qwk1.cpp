@@ -1149,7 +1149,9 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
       while (x < qwk_cfg->amount_blts && !abort && !hangup) {
         bout.bprintf("[%d] %s Is copied over from", x + 1, qwk_cfg->bltname[x]);
         bout.nl();
-        repeat_char(' ', 5);
+        bout.Color(7);
+        bout << string('\xCD', 78);
+        bout.nl();
         bout.bprintf(qwk_cfg->blt[x]);
         bout.nl();
         abort = checka();

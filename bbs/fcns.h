@@ -43,10 +43,8 @@ class WUser;
 
 // File: bbsutl2.cpp
 
-void repeat_char(char x, int amount, int nColor = 7);
 std::string ctypes(int num);
 void osan(const std::string& text, bool *abort, bool *next);
-void plan(int nWWIVColor, const std::string& text, bool *abort, bool *next);
 std::string strip_to_node(const std::string& txt);
 
 // File: bgetch.cpp
