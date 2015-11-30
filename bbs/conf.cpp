@@ -16,10 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/conf.h"
+
 #include <algorithm>
 #include <vector>
 #include <string>
-#include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/input.h"
 #include "bbs/wwiv.h"

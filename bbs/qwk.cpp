@@ -33,6 +33,7 @@
 #include <sys/stat.h>
 
 #include "bbs/bbsovl3.h"
+#include "bbs/conf.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
 #include "bbs/pause.h"

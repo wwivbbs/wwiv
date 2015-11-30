@@ -55,15 +55,6 @@ std::string strip_to_node(const std::string& txt);
 // File: bputch.cpp
 #include "bbs/bputch.h"
 
-// File: chains.cpp
-
-void run_chain(int nChainNumber);
-void do_chains();
-
-// File: chnedit.cpp
-
-void chainedit();
-
 // File: colors.cpp
 
 void get_colordata();
@@ -74,33 +65,6 @@ void buildcolorfile();
 
 // File: com.cpp
 #include "bbs/com.h"
-
-// File: conf.cpp
-
-void tmp_disable_conf(bool disable);
-void reset_disable_conf();
-int  get_conf_info(int conftype, int *num, confrec ** cpp, char *pszFileName, int *num_s, userconfrec ** uc);
-void jump_conf(int conftype);
-void update_conf(int conftype, SUBCONF_TYPE * sub1, SUBCONF_TYPE * sub2, int action);
-uint16_t str_to_arword(const char *arstr);
-char *word_to_arstr(int ar);
-char first_available_designator(int conftype);
-int  in_conference(int subnum, confrec * c);
-void save_confs(int conftype, int whichnum, confrec * c);
-void showsubconfs(int conftype, confrec * c);
-void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which);
-void delsubconf(int conftype, confrec * c, SUBCONF_TYPE * which);
-void conf_edit(int conftype);
-void list_confs(int conftype, int ssc);
-int  select_conf(const char *pszPromptText, int conftype, int listconfs);
-confrec *read_conferences(const char *pszFileName, int *nc, int max);
-void read_in_conferences(int conftype);
-void read_all_conferences();
-int get_num_conferences(const char *pszFileName);
-int wordcount(const std::string& instr, const char *delimstr);
-const char *extractword(int ww,  const std::string& instr, const char *delimstr);
-void sort_conf_str(char *pszConferenceStr);
-
 
 // File: connect1.cpp
 #include "bbs/connect1.h"

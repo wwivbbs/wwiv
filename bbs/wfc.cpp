@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "bbs/bbsovl1.h"
+#include "bbs/chnedit.h"
 #include "bbs/wwiv.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"

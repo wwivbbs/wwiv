@@ -88,6 +88,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="archivers.h" />
+    <ClInclude Include="arword.h" />
     <ClInclude Include="asv.h" />
     <ClInclude Include="attach.h" />
     <ClInclude Include="automsg.h" />
@@ -103,7 +104,9 @@
     <ClInclude Include="bputch.h" />
     <ClInclude Include="callback.h" />
     <ClInclude Include="capture.h" />
+    <ClInclude Include="chains.h" />
     <ClInclude Include="chat.h" />
+    <ClInclude Include="chnedit.h" />
     <ClInclude Include="com.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="conf.h" />
@@ -179,6 +182,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="archivers.cpp" />
+    <ClCompile Include="arword.cpp" />
     <ClCompile Include="asv.cpp" />
     <ClCompile Include="attach.cpp" />
     <ClCompile Include="automsg.cpp" />

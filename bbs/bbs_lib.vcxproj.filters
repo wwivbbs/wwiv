@@ -367,6 +367,9 @@
     <ClCompile Include="wfc_log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="arword.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -628,6 +631,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="bbsovl2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="chains.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="chnedit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="arword.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

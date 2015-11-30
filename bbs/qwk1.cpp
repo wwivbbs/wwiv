@@ -33,6 +33,7 @@
 
 #include "bbs/archivers.h"
 #include "bbs/bbs.h"
+#include "bbs/conf.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
 #include "bbs/subxtr.h"
