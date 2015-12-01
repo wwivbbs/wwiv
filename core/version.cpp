@@ -18,10 +18,10 @@
 /**************************************************************************/
 
 // Version String
-const char *wwiv_version = "v5.00";
+const char *wwiv_version = "5.0.0";
 
 // Build Information
-const char *beta_version = " (Development)";
+const char *beta_version = ".development";
 
 // this is used to set the status.wwiv_version
 // leaving at 431 until we break file compatability
