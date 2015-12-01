@@ -27,7 +27,9 @@
 #include <unistd.h>
 #endif  // _WIN32
 
+#include "bbs/arword.h"
 #include "bbs/wwiv.h"
+#include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/netsup.h"

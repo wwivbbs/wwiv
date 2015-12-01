@@ -20,6 +20,8 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbsovl3.h"
+#include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/input.h"

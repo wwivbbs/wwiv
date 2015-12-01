@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <chrono>
 
+#include "bbs/batch.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"

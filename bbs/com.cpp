@@ -19,13 +19,14 @@
 #include <algorithm>
 #include <cmath>
 
+#include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
-#include "bbs/wwiv.h"
+#include "bbs/keycodes.h"
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
+#include "bbs/wwiv.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
-#include "bbs/keycodes.h"
 
 extern char str_quit[];
 

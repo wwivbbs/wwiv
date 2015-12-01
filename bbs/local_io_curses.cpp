@@ -28,6 +28,8 @@
 #include "curses.h"
 
 #include "bbs/asv.h"
+#include "bbs/bbsovl1.h"
+#include "bbs/bbsovl2.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/wwiv.h"

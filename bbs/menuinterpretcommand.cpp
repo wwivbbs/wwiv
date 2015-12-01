@@ -22,6 +22,8 @@
 #include <string>
 
 #include "bbs/bbslist.h"
+#include "bbs/bbsovl1.h"
+#include "bbs/bbsovl3.h"
 #include "bbs/menu.h"
 #include "bbs/menuspec.h"
 #include "bbs/menusupp.h"

@@ -22,7 +22,13 @@
 
 #include "bbs/attach.h"
 #include "bbs/automsg.h"
+#include "bbs/batch.h"
+#include "bbs/bbsovl1.h"
+#include "bbs/bbsovl2.h"
 #include "bbs/chat.h"
+#include "bbs/chains.h"
+#include "bbs/chnedit.h"
+#include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"

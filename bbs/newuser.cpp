@@ -22,6 +22,9 @@
 #include <string>
 
 #include "bbs/asv.h"
+#include "bbs/bbsovl1.h"
+#include "bbs/bbsovl2.h"
+#include "bbs/bbsovl3.h"
 #include "bbs/confutil.h"
 #include "bbs/wwiv.h"
 #include "bbs/datetime.h"

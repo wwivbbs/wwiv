@@ -20,6 +20,7 @@
 #include <memory>
 #include <string>
 
+#include "bbs/conf.h"
 #include "bbs/wwiv.h"
 #include "bbs/input.h"
 #include "bbs/wcomm.h"

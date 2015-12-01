@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/common.h"

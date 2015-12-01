@@ -16,10 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbsovl1.h"
 
 #include <sstream>
 #include <string>
 
+#include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/wwiv.h"
@@ -42,9 +44,11 @@ extern char str_quit[];
  * @param nSize Length of the horizontal bar to display
  * @param nColor Color of the horizontal bar to display
  */
-void DisplayHorizontalBar(int nSize, int nColor) {
-  unsigned char ch = (okansi()) ? '\xC4' : '-';
-  repeat_char(ch, nSize, nColor);
+void DisplayHorizontalBar(int width, int color) {
+  char ch = (okansi()) ? '\xC4' : '-';
+  bout.Color(color);
+  bout << string(ch, width);
+  bout.nl();
 }
 
 /**

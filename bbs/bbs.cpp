@@ -37,6 +37,8 @@
 #include "bbs/subxtr.h"
 #undef _DEFINE_GLOBALS_
 
+#include "bbs/bbsovl1.h"
+#include "bbs/chnedit.h"
 #include "bbs/bgetch.h"
 #include "bbs/bputch.h"
 #include "bbs/bbs.h"
