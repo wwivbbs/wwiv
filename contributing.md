@@ -24,8 +24,9 @@ The dev team and fellow SysOps hangs out on IRC at:
 
 * WWIV uses labels to track platform, feature, enhancement, and type of bug. 
 * Here are some labels:
-
 ...
+
+[WWIV Releases and Versioning](https://github.com/wwivbbs/wwiv/wiki/wwiv_releases_and_versioning)
 
 ## Bug Reports
 
