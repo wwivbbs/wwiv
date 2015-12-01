@@ -3,6 +3,24 @@
                  Copyright 1999-2014 WWIV Software Services
 ==============================================================================
 
+What's New in 2015
+~~~~~~~~~~~~~~~~~~
+* networkb - BINKP transport for WWIV networking is now part of the WWIV builds.
+* netutil - Network packet and config file utility now included
+* network - shim to proxy between network0, networkp (PPP project) and networkb
+  is now part of the product.
+* A SSM will be sent to the sysop when a new user joins the bbs.
+* WWIV moved from wwiv.sf.net to wwivbbs.org
+* Source code moved from sourceforge.net to GitHub.
+* Upgraded compilers from MSVC 2013 to 2015 Community.
+* Upgraded .NET from 4.0 to 4.6
+* Fixed hangs with guest user accounts when they drop connection
+* Made all QWK filenames lowercase
+* zip/unzip now bundled with WWIV on Windows
+* linux builds now just include linux files, ditto for windows
+
+
+
 What's New in 2014
 ~~~~~~~~~~~~~~~~~~
 * Many more things work.

@@ -20,10 +20,16 @@
 #ifndef __INCLUDED_VARDEC_H__
 #define __INCLUDED_VARDEC_H__
 
+#ifdef __MSDOS__
+#include "sdk/msdos_stdint.h"
+#else
 #include <cstdint>
+#endif  // __MSDOS__
 #include <string>
 
+#ifndef __MSDOS__
 #pragma pack(push, 1)
+#endif  // __MSDOS__
 
 // DATA FOR EVERY USER
 struct userrec {
@@ -1097,6 +1103,7 @@ struct fedit_data_rec {
        anon;
 };
 
+#ifndef __MSDOS__
 // MSVC 2015 shows this as an error in the IDE. Ignore it, since the real
 // compiler gets it right. See:
 // https://connect.microsoft.com/VisualStudio/feedback/details/872127/intellisense-wrongly-emits-an-error-for-a-static-assertion-checking-the-size-of-a-struct
@@ -1139,5 +1146,7 @@ static_assert(sizeof(ext_desc_rec) == 17, "ext_desc_rec == 17");
 static_assert(sizeof(instancerec) == 100, "instancerec == 100");
 
 #pragma pack(pop)
+
+#endif  // __MSDOS__
 
 #endif // __INCLUDED_VARDEC_H__

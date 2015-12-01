@@ -22,7 +22,13 @@
 
 #include "bbs/attach.h"
 #include "bbs/automsg.h"
+#include "bbs/batch.h"
+#include "bbs/bbsovl1.h"
+#include "bbs/bbsovl2.h"
 #include "bbs/chat.h"
+#include "bbs/chains.h"
+#include "bbs/chnedit.h"
+#include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
@@ -586,9 +592,9 @@ void VotePrint() {
   voteprint();
 }
 
-void YesturdaysLog() {
+void YesterdaysLog() {
   std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
-  print_local_file(pStatus->GetLogFileName());
+  print_local_file(pStatus->GetLogFileName(1));
 }
 
 void ZLog() {

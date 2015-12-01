@@ -19,13 +19,14 @@
 #include <algorithm>
 #include <cmath>
 
+#include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
-#include "bbs/wwiv.h"
+#include "bbs/keycodes.h"
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
+#include "bbs/wwiv.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
-#include "bbs/keycodes.h"
 
 extern char str_quit[];
 
@@ -149,7 +150,7 @@ char getkey() {
       if (dd < timelastchar1 && ((dd + 1000) > timelastchar1)) {
         timelastchar1 = dd;
       }
-      if (abs(dd - timelastchar1) > 65536L) {
+      if (std::abs(dd - timelastchar1) > 65536L) {
         timelastchar1 -= static_cast<int>(floor(SECONDS_PER_DAY * 18.2));
       }
       if ((dd - timelastchar1) > tv1 && !beepyet) {
@@ -157,7 +158,7 @@ char getkey() {
         bputch(CG);
       }
       application()->UpdateShutDownStatus();
-      if (abs(dd - timelastchar1) > tv) {
+      if (std::abs(dd - timelastchar1) > tv) {
         bout.nl();
         bout << "Call back later when you are there.\r\n";
         hangup = true;

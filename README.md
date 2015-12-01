@@ -14,10 +14,13 @@ Installation and SysOp Instructions
 ====================
 
 All the installation and SysOp administration information you 
-need is right here on GitHub in the [WWIV 5.0 Wiki](https://github.com/wwivbbs/wwiv/wiki)
+need is in the [WWIV 5.0 Wiki](https://github.com/wwivbbs/wwiv/wiki)
 
 Get Involved
 ====================
 
-If you want to help out with WWIV BBS, check out the [project homepage](http://www.wwivbbs.org) 
-to connect with the team or just jump into the [Issues List](https://github.com/wwivbbs/wwiv/issues).
+If you want to help out with WWIV BBS:
+
+* Read the [Contributors Guidelines](contributing.md)
+* Check out the [WWIVBBS Homepage](http://www.wwivbbs.org) and find us on IRC.
+* Jump into the [Issues List](https://github.com/wwivbbs/wwiv/issues).

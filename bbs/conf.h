@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)2014-2015 WWIV Software Services              */
+/*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,18 +14,19 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_CONF_H__
-#define __INCLUDED_CONF_H__
+#ifndef __INCLUDED_BBS_CONF_H__
+#define __INCLUDED_BBS_CONF_H__
 
 #include <memory>
+#include <string>
 #include "core/transaction.h"
+#include "sdk/vardec.h"
 
 namespace wwiv {
 namespace bbs {
 
-class TempDisableConferences : public wwiv::core::Transaction {
+class TempDisableConferences: public wwiv::core::Transaction {
 public:
   TempDisableConferences();
 };
@@ -33,4 +34,26 @@ public:
 }  // namespace bbs
 }  // namespace wwiv
 
-#endif  // __INCLUDED_CONF_H__
+void tmp_disable_conf(bool disable);
+void reset_disable_conf();
+int  get_conf_info(int conftype, int *num, confrec ** cpp, char *pszFileName, int *num_s, userconfrec ** uc);
+void jump_conf(int conftype);
+void update_conf(int conftype, SUBCONF_TYPE * sub1, SUBCONF_TYPE * sub2, int action);
+char first_available_designator(int conftype);
+int  in_conference(int subnum, confrec * c);
+void save_confs(int conftype, int whichnum, confrec * c);
+void showsubconfs(int conftype, confrec * c);
+void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which);
+void delsubconf(int conftype, confrec * c, SUBCONF_TYPE * which);
+void conf_edit(int conftype);
+void list_confs(int conftype, int ssc);
+int  select_conf(const char *pszPromptText, int conftype, int listconfs);
+confrec *read_conferences(const char *pszFileName, int *nc, int max);
+void read_in_conferences(int conftype);
+void read_all_conferences();
+int get_num_conferences(const char *pszFileName);
+int wordcount(const std::string& instr, const char *delimstr);
+const char *extractword(int ww, const std::string& instr, const char *delimstr);
+void sort_conf_str(char *pszConferenceStr);
+
+#endif  // __INCLUDED_BBS_CONF_H__

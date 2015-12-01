@@ -31,8 +31,8 @@
 #include <windows.h>
 #endif // _WIN32
 
-#include "../vardec.h"
-#include "../net.h"
+#include "sdk/vardec.h"
+#include "sdk/net.h"
 
 #define EXIT_NORMAL     0
 #define EXIT_BAD_PARAMS 1
@@ -90,16 +90,13 @@ int main(int argc, char * argv[])
         WRITE_SIZE(gfiledirrec);
         WRITE_SIZE(gfilerec);
         WRITE_SIZE(languagerec);
-        WRITE_SIZE(result_info);
-        WRITE_SIZE(modem_info);
         WRITE_SIZE(filestatusrec);
-        WRITE_SIZE(asv_rec);
-        WRITE_SIZE(adv_asv_rec);
-        WRITE_SIZE(cbv_rec);
         WRITE_SIZE(phonerec);
         WRITE_SIZE(eventsrec);
         WRITE_SIZE(ext_desc_rec);
         WRITE_SIZE(instancerec);
+        WRITE_SIZE(net_networks_rec);
+        WRITE_SIZE(net_networks_rec_disk);
         fclose(hOut);
         return EXIT_NORMAL;
 }

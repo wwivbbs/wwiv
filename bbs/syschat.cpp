@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <chrono>
 
+#include "bbs/batch.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
@@ -141,7 +142,7 @@ void select_chat_name(char *pszSysopName) {
   session()->localIO()->MakeLocalWindow(20, 5, 43, 3);
   session()->localIO()->LocalXYPuts(22, 6, "Chat As: ");
   curatr = session()->GetEditLineColor();
-  session()->localIO()->LocalXYPuts(31, 6, charstr(30, SPACE));
+  session()->localIO()->LocalXYPuts(31, 6, std::string(30, SPACE));
 
   int rc;
   session()->localIO()->LocalGotoXY(31, 6);
@@ -204,7 +205,7 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
         if (nNumCharsToMove) {
           strncpy(&s2[nNumCharsToMove - 1], temp1, (strlen(temp1)));
         } else {
-          strcpy(s2, charstr(205, session()->user()->GetScreenChars() - 1));
+          strcpy(s2, charstr(session()->user()->GetScreenChars() - 1, 205));
         }
         s2[session()->user()->GetScreenChars()] = '\0';
         bout << s2;

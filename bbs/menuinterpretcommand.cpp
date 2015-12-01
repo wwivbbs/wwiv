@@ -22,6 +22,8 @@
 #include <string>
 
 #include "bbs/bbslist.h"
+#include "bbs/bbsovl1.h"
+#include "bbs/bbsovl3.h"
 #include "bbs/menu.h"
 #include "bbs/menuspec.h"
 #include "bbs/menusupp.h"
@@ -100,7 +102,7 @@ void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript) {
 map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCommandMap() {
   return {
     { "MENU", [](MenuItemContext& context) {
-      unique_ptr<MenuInstanceData> new_menu(new MenuInstanceData{});
+      unique_ptr<MenuInstanceData> new_menu(new MenuInstanceData());
       new_menu->Menus(context.pMenuData->path_, context.param1);
     } },
     { "ReturnFromMenu", [](MenuItemContext& context) {
@@ -369,7 +371,7 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
       VotePrint();
     } },
     { "YLog", [](MenuItemContext& context) {
-      YesturdaysLog();
+      YesterdaysLog();
     } },
     { "ZLog", [](MenuItemContext& context) {
       ZLog();

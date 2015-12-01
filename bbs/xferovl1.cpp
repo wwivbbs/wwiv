@@ -24,6 +24,9 @@
 #include <unistd.h>
 #endif  // _WIN32
 
+#include "bbs/batch.h"
+#include "bbs/bbsovl3.h"
+#include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/wwiv.h"

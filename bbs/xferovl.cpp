@@ -17,6 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "bbs/batch.h"
+#include "bbs/bbsovl3.h"
+#include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"

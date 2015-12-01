@@ -19,6 +19,7 @@
 #include <cstdlib>
 #include "init/wwivinit.h"
 #include "core/file.h"
+#include "core/strings.h"
 #include "sdk/vardec.h"
 #include "init/subacc.h"
 
@@ -26,10 +27,6 @@
 #ifndef MAX_TO_CACHE
 #define MAX_TO_CACHE 15                     // max postrecs to hold in cache
 #endif
-
-#ifdef _WIN32
-#define snprintf _snprintf
-#endif  // _WIN32
 
 static postrec *cache;                      // points to sub cache memory
 static bool believe_cache;                  // true if cache is valid

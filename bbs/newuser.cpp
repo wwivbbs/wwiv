@@ -22,6 +22,9 @@
 #include <string>
 
 #include "bbs/asv.h"
+#include "bbs/bbsovl1.h"
+#include "bbs/bbsovl2.h"
+#include "bbs/bbsovl3.h"
 #include "bbs/confutil.h"
 #include "bbs/wwiv.h"
 #include "bbs/datetime.h"
@@ -1146,15 +1149,11 @@ void newuser() {
   }
 
   WriteNewUserInfoToSysopLog();
-
+  ssm(1, 0, "You have a new user:  %s #%ld", session()->user()->GetName(), session()->usernum);
   application()->UpdateTopScreen();
-
   VerifyNewUserPassword();
-
   SendNewUserFeedbackIfRequired();
-
   ExecNewUserCommand();
-
   session()->ResetEffectiveSl();
   changedsl();
   new_mail();

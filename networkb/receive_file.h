@@ -30,7 +30,7 @@ namespace net {
 class  ReceiveFile {
  public:
  	ReceiveFile(TransferFile* file, const std::string& filename, long expected_length, time_t timestamp)
-      : file_(file), filename_(filename), expected_length_(expected_length), timestamp_(timestamp) {}
+      : file_(file), filename_(filename), expected_length_(expected_length), timestamp_(timestamp), length_(0) {}
  	~ReceiveFile() {}
 
   bool WriteChunk (const char* chunk, size_t size) { 

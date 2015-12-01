@@ -16,12 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "fix/log.h"
+
 #include <cstdarg>
 #include <ctime>
 
-#include "log.h"
-#include "bbs/wwiv.h"
-#include "core/wwivport.h"
+#include "bbs/vars.h"
+#include "core/file.h"
 
 static File hLogFile;
 
@@ -59,7 +60,7 @@ bool OpenLogFile(const char* szFileName) {
 	char szBuf[512];
 
 	hLogFile.SetName(szFileName);
-	if(!hLogFile.Open(File::modeReadWrite | File::modeCreateFile)) {
+	if (!hLogFile.Open(File::modeReadWrite | File::modeCreateFile)) {
 		Print(NOK, false, "Cannot open Log File %s", szFileName);
 		return false;
 	}

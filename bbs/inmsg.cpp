@@ -21,6 +21,9 @@
 #include <algorithm>
 #include <string>
 
+#include "bbs/bbsovl1.h"
+#include "bbs/bbsovl2.h"
+#include "bbs/bbsovl3.h"
 #include "bbs/crc.h"
 #include "bbs/input.h"
 #include "bbs/subxtr.h"

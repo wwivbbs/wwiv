@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/common.h"
@@ -210,7 +211,7 @@ void Wait(double d) {
   }
   const long lStartTime = timer1();
   auto l = d * 18.2;
-  while (abs(timer1() - lStartTime) < l) {
+  while (std::abs(timer1() - lStartTime) < l) {
     giveup_timeslice();
   }
 }

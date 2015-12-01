@@ -19,6 +19,7 @@
 #include "bbs/valscan.h"
 #include <algorithm>
 
+#include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/subxtr.h"

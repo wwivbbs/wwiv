@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClInclude Include="config.h" />
     <ClInclude Include="filenames.h" />
+    <ClInclude Include="msdos_stdint.h" />
     <ClInclude Include="net.h" />
     <ClInclude Include="networks.h" />
     <ClInclude Include="phone_numbers.h" />

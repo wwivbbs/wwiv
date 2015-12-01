@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 
+#include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/netsup.h"
 #include "bbs/wwiv.h"

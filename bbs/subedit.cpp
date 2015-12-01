@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include <string>
 
+#include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/input.h"
 #include "bbs/subxtr.h"

@@ -983,8 +983,9 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   case 2: {
     ss.reset(readfile(pMessageRecord, pszFileName, &lMessageTextLength));
     if (ss == nullptr) {
-      plan(6, "File not found.", &abort, next);
-      bout.nl();
+      bout.Color(6);
+      osan("File not found.", &abort, next);
+      bout.nl(2);
       return;
     }
     int nNamePtr = 0;
@@ -1220,7 +1221,9 @@ void read_message(int n, bool *next, int *val) {
   bout.Color(session()->GetMessageColor());
   postrec p = *get_post(n);
   if (p.status & (status_unvalidated | status_delete)) {
-    plan(6, "<<< NOT VALIDATED YET >>>", &abort, next);
+    bout.Color(6);
+    osan("<<< NOT VALIDATED YET >>>", &abort, next);
+    bout.nl();
     if (!lcs()) {
       return;
     }
@@ -1230,14 +1233,20 @@ void read_message(int n, bool *next, int *val) {
   }
   strncpy(irt, p.title, 60);
   irt_name[0] = '\0';
-  plan(session()->GetMessageColor(), irt, &abort, next);
+  bout.Color(session()->GetMessageColor());
+  osan(irt, &abort, next);
+  bout.nl();
   if ((p.status & status_no_delete) && lcs()) {
     osan("|#9Info|#7: ", &abort, next);
-    plan(session()->GetMessageColor(), "Permanent Message", &abort, next);
+    bout.Color(session()->GetMessageColor());
+    osan("Permanent Message", &abort, next);
+    bout.nl();
   }
   if ((p.status & status_pending_net) && session()->user()->GetSl() > syscfg.newusersl) {
     osan("|#9Val|#7:  ", &abort, next);
-    plan(session()->GetMessageColor(), "Not Network Validated", &abort, next);
+    bout.Color(session()->GetMessageColor());
+    osan("Not Network Validated", &abort, next);
+    bout.nl();
     *val |= 2;
   }
   if (!abort) {

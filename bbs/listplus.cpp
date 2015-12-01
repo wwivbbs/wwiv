@@ -21,6 +21,9 @@
 #include <string>
 #include <vector>
 
+#include "bbs/batch.h"
+#include "bbs/bbsovl3.h"
+#include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
@@ -649,7 +652,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
   int cpos = 0;
   int chars_this_line = 0;
 
-  int will_fit = 80 - abs(indent) - 2;
+  int will_fit = 80 - std::abs(indent) - 2;
 
   char * ss = read_extended_description(pszFileName);
 
@@ -679,7 +682,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
         if (ch == SOFTRETURN && indent) {
           bout.SystemColor(color);
           bputch('\r');
-          bout << "\x1b[" << abs(indent) << "C";
+          bout << "\x1b[" << std::abs(indent) << "C";
         }
         do {
           ch = new_ss[cpos++];
@@ -713,7 +716,9 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 
 void show_fileinfo(uploadsrec * u) {
   bout.cls();
-  repeat_char('\xCD', 78);
+  bout.Color(7);
+  bout << string('\xCD', 78);
+  bout.nl();
   bout << "  |#9Filename    : |#2" << u->filename << wwiv::endl;
   bout << "  |#9Uploaded on : |#2" << u->date << " by |#2" << u->upby << wwiv::endl;
   if (u->actualdate[2] == '/' && u->actualdate[5] == '/') {
@@ -723,7 +728,9 @@ void show_fileinfo(uploadsrec * u) {
   bout << "  |#9Downloads   : |#2" << u->numdloads << "|#9" << wwiv::endl;
   bout << "  |#9Description : |#2" << u->description << wwiv::endl;
   print_extended_plus(u->filename, 255, 16, YELLOW, nullptr);
-  repeat_char('\xCD', 78);
+  bout.Color(7);
+  bout << string('\xCD', 78);
+  bout.nl();
   pausescr();
 }
 

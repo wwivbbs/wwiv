@@ -67,59 +67,36 @@ static bool checkup2(const time_t tFileTime, const char *pszFileName) {
 }
 
 static bool check_bbsdata() {
-  char s[MAX_PATH];
-  bool ok2 = false;
-
-  sprintf(s, "%s%s", session()->GetNetworkDataDirectory().c_str(), CONNECT_UPD);
-  bool ok = File::Exists(s);
-  if (!ok) {
-    sprintf(s, "%s%s", session()->GetNetworkDataDirectory().c_str(), BBSLIST_UPD);
-    ok = File::Exists(s);
-  }
   unique_ptr<WStatus> wwiv_status_ro(application()->GetStatusManager()->GetStatus());
-  if (ok && wwiv_status_ro->IsUsingNetEdit()) {
-    // TODO(rushfan): is this program even around anymore?
-    ExecuteExternalProgram(StringPrintf("NETEDIT .%d /U", session()->GetNetworkNumber()),
-        EFLAG_NETPROG);
-  } else {
-    File bbsdataNet(session()->GetNetworkDataDirectory().c_str(), BBSDATA_NET);
-    if (bbsdataNet.Open(File::modeReadOnly)) {
-      time_t tFileTime = bbsdataNet.last_write_time();
-      bbsdataNet.Close();
-      ok = checkup2(tFileTime, BBSDATA_NET) || checkup2(tFileTime, CONNECT_NET);
-      ok2 = checkup2(tFileTime, CALLOUT_NET);
-    } else {
-      ok = ok2 = true;
+  File bbsdataNet(session()->GetNetworkDataDirectory().c_str(), BBSDATA_NET);
+  if (bbsdataNet.Open(File::modeReadOnly)) {
+    time_t tFileTime = bbsdataNet.last_write_time();
+    bbsdataNet.Close();
+    bool ok = checkup2(tFileTime, BBSLIST_NET) || checkup2(tFileTime, CONNECT_NET);
+    bool ok2 = checkup2(tFileTime, CALLOUT_NET);
+    if (!ok && !ok2) {
+      return false;
     }
   }
-  sprintf(s, "%s%s", session()->GetNetworkDataDirectory().c_str(), BBSDATA_NET);
-  if (!File::Exists(s)) {
-    ok = ok2 = false;
+  if (!File::Exists(session()->GetNetworkDataDirectory(), BBSLIST_NET)) {
+    return false;
   }
-  sprintf(s, "%s%s", session()->GetNetworkDataDirectory().c_str(), CONNECT_NET);
-  if (!File::Exists(s)) {
-    ok = ok2 = false;
+  if (!File::Exists(session()->GetNetworkDataDirectory().c_str(), CONNECT_NET)) {
+    return false;
   }
-  sprintf(s, "%s%s", session()->GetNetworkDataDirectory().c_str(), CALLOUT_NET);
-  if (!File::Exists(s)) {
-    ok = ok2 = false;
+  if (!File::Exists(session()->GetNetworkDataDirectory().c_str(), CALLOUT_NET)) {
+    return false;
   }
-  if (ok || ok2) {
-    sprintf(s, "network3 %s .%d", (ok ? " Y" : ""), session()->GetNetworkNumber());
+  const string network3 = StringPrintf("network3 Y .%d", session()->GetNetworkNumber());
+  ExecuteExternalProgram(network3, EFLAG_NETPROG);
+  WStatus* wwiv_status = application()->GetStatusManager()->BeginTransaction();
+  wwiv_status->IncrementFileChangedFlag(WStatus::fileChangeNet);
+  application()->GetStatusManager()->CommitTransaction(wwiv_status);
 
-    ExecuteExternalProgram(s, EFLAG_NETPROG);
-    WStatus* wwiv_status = application()->GetStatusManager()->BeginTransaction();
-    wwiv_status->IncrementFileChangedFlag(WStatus::fileChangeNet);
-    application()->GetStatusManager()->CommitTransaction(wwiv_status);
-
-    zap_call_out_list();
-    zap_contacts();
-    zap_bbs_list();
-    if (ok) {
-      return true;
-    }
-  }
-  return false;
+  zap_call_out_list();
+  zap_contacts();
+  zap_bbs_list();
+  return true;
 }
 
 void cleanup_net() {
@@ -303,29 +280,23 @@ void do_callout(int sn) {
           bout << session()->GetNetworkName() << " ";
         }
         bout << "@" << sn << wwiv::endl;
-        char szRegionsFileName[ MAX_PATH ];
-        sprintf(szRegionsFileName, "%s%s%c%s.%-3u", syscfg.datadir,
+        const string regions_filename = StringPrintf("%s%s%c%s.%-3u", syscfg.datadir,
                 REGIONS_DAT, File::pathSeparatorChar, REGIONS_DAT, atoi(csne->phone));
-        string region;
-        if (File::Exists(szRegionsFileName)) {
-          char town[5];
-          sprintf(town, "%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
-          region = describe_area_code_prefix(atoi(csne->phone), atoi(town));
+        string region = "Unknown Region";
+        if (File::Exists(regions_filename)) {
+          const string town = StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
+          region = describe_area_code_prefix(atoi(csne->phone), atoi(town.c_str()));
         } else {
           region = describe_area_code(atoi(csne->phone));
         }
         bout << "|#7Sys located in: |#2" << region << wwiv::endl;
         if (i2 != -1 && net_networks[session()->GetNetworkNumber()].ncn[i2].bytes_waiting) {
-          bout << "|#7Amount pending: |#2" <<
-                             bytes_to_k(net_networks[session()->GetNetworkNumber()].ncn[i2].bytes_waiting) <<
-                             "k" << wwiv::endl;
-        } else {
-          bout.nl();
+          bout << "|#7Amount pending: |#2"
+               << bytes_to_k(net_networks[session()->GetNetworkNumber()].ncn[i2].bytes_waiting)
+               << "k" << wwiv::endl;
         }
-        bout << "|#7Commandline is: |#2" << s << wwiv::endl;
-        bout.Color(7);
-        bout << charstr(80, 205);
-        bout << "|#0..." << wwiv::endl;
+        bout << "|#7Commandline is: |#2" << s << wwiv::endl
+             << "|#7" << std::string(80, 205) << "|#0..." << wwiv::endl;
         ExecuteExternalProgram(s, EFLAG_NETPROG);
         zap_contacts();
         application()->GetStatusManager()->RefreshStatusCache();
@@ -464,7 +435,7 @@ void attempt_callout() {
   if (last_time_c > tCurrentTime) {
     last_time_c = 0L;
   }
-  if (abs(last_time_c - tCurrentTime) < 120) {
+  if (std::abs(last_time_c - tCurrentTime) < 120) {
     return;
   }
   if (last_time_c == 0L) {
@@ -534,14 +505,14 @@ void attempt_callout() {
           }
         }
         if (con[i].options & options_once_per_day) {
-          if (abs(tCurrentTime - ncn[i2].lastcontactsent) <
+          if (std::abs(tCurrentTime - ncn[i2].lastcontactsent) <
               (20L * SECONDS_PER_HOUR / con[i].times_per_day)) {
             ok = false;
           }
         }
         if (ok) {
           if ((bytes_to_k(ncn[i2].bytes_waiting) < con[i].min_k)
-              && (abs(tCurrentTime - ncn[i2].lastcontact) < SECONDS_PER_DAY)) {
+              && (std::abs(tCurrentTime - ncn[i2].lastcontact) < SECONDS_PER_DAY)) {
             ok = false;
           }
         }
@@ -677,7 +648,7 @@ void print_pending_list() {
           strcpy(s2, "|#3---");
         }
 
-        time_t h = 0, m = 0;
+        time_t m = 0, h = 0;
         if (ncn[i2].lastcontactsent) {
           time_t tLastContactTime = tCurrentTime - ncn[i2].lastcontactsent;
           time_t se = tLastContactTime % 60;
@@ -686,7 +657,7 @@ void print_pending_list() {
           h = static_cast<int32_t>(tLastContactTime / 60);
           sprintf(s1, "|#2%02lld:%02lld:%02lld", h, m, se);
         } else {
-          strcpy(s1, "   |#6NEVER!    ");
+          strcpy(s1, "|#6     -    ");
         }
 
         sprintf(s3, "%dk", ((ncn[i2].bytes_sent) + 1023) / 1024);

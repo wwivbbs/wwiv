@@ -61,7 +61,7 @@ void WOutStream::Color(int wwivColor) {
 
   if (wwivColor <= -1 && wwivColor >= -16) {
     c = (session()->user()->HasColor() ?
-         rescolor.resx[207 + abs(wwivColor)] : session()->user()->GetBWColor(0));
+         rescolor.resx[207 + std::abs(wwivColor)] : session()->user()->GetBWColor(0));
   }
   if (wwivColor >= 0 && wwivColor <= 9) {
     c = (session()->user()->HasColor() ?
@@ -141,7 +141,7 @@ void WOutStream::litebar(const char *pszFormatText, ...) {
     *this << "\x1B[0;34;47m  " << s1 << "  \x1B[40m\r\n";
     *this << "\x1B[0;1;30m" << string(strlen(s1) + 4, '\xDF') << wwiv::endl;
   } else {
-    *this << charstr(i, ' ') << s << wwiv::endl;
+    *this << std::string(i, ' ') << s << wwiv::endl;
   }
 #else
   const string header = StringPrintf("|B1|15 %-78s", s);

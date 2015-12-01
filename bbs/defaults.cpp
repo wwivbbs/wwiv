@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbsovl3.h"
 #include "bbs/confutil.h"
 #include "bbs/wwivcolors.h"
 #include "bbs/wwiv.h"
@@ -890,7 +891,9 @@ static void list_config_scan_plus(int first, int *amount, int type) {
     bout.bprintf("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
                                       type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
   }
-  repeat_char('\xC4', 79);
+  bout.Color(7);
+  bout << string('\xC4', 79);
+  bout.nl();
 
   int max_lines = GetMaxLinesToShowForScanPlus();
 

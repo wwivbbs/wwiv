@@ -22,6 +22,7 @@
 #include <string>
 
 #include "bbs/automsg.h"
+#include "bbs/batch.h"
 #include "bbs/dropfile.h"
 #include "bbs/input.h"
 #include "bbs/confutil.h"
@@ -546,7 +547,7 @@ static void UpdateLastOnFileAndUserLog() {
             bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##" << wwiv::endl;
           }
           unsigned char chLine = (okansi()) ? 205 : '=';
-          bout << "|#7" << charstr(79, chLine) << wwiv::endl;
+          bout << "|#7" << std::string(79, chLine) << wwiv::endl;
           needs_header = false;
         }
         bout << s1;

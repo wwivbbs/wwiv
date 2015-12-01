@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include <string>
 
+#include "bbs/batch.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
@@ -190,8 +191,8 @@ void normalupload(int dn) {
           }
         }
       }
-      string filler = charstr(nLastLineLength, SPACE);
-      bout << filler << "\r";
+
+      bout << string(nLastLineLength, SPACE) << "\r";
       if (ok) {
         dliscan1(dn);
       }

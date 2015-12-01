@@ -30,20 +30,6 @@ using wwiv::core::FilePath;
 using wwiv::strings::StringPrintf;
 
 /**
- * Display character x repeated amount times in nColor, and if bAddNL is true
- * display a new line character.
- * @param x The Character to repeat
- * @param amount The number of times to repeat x
- * @param nColor the color in which to display the string
- * @param bAddNL if true, add a new line character at the end.
- */
-void repeat_char(char x, int amount, int nColor) {
-  bout.Color(nColor);
-  bout << string(amount, x);
-  bout.nl();
-}
-
-/**
  * Returns the computer type string for computer type number num.
  *
  * @param num The computer type number for which to return the name
@@ -103,24 +89,6 @@ void osan(const string& text, bool *abort, bool *next) {
     }
   }
   FlushOutComChBuffer();
-}
-
-/**
- * Displays pszText in color nWWIVColor which checking for abort and next with a nl
- * @see checka
- * <em>Note: osan means Output String And Next</em>
- *
- * @param nWWIVColor The WWIV color code to use.
- * @param pszText The text to display
- * @param abort The abort flag (Output Parameter)
- * @param next The next flag (Output Parameter)
- */
-void plan(int nWWIVColor, const string& text, bool *abort, bool *next) {
-  bout.Color(nWWIVColor);
-  osan(text, abort, next);
-  if (!(*abort)) {
-    bout.nl();
-  }
 }
 
 /**

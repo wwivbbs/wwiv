@@ -16,8 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "core/strings.h"
-
 #include <algorithm>
 #include <cstdarg>
 #include <cstdio>
@@ -30,6 +28,7 @@
 #include <string>
 #include <vector>
 
+#include "core/strings.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 
@@ -295,10 +294,10 @@ void StringLowerCase(string* s) {
 /**
  * Returns string comprised of char chRepeatChar, nStringLength characters in length
  * @param nStringLength The number of characters to create the string
- * @param chRepeatChar The character to repeat.
+ * @param fill The character to repeat.
  * @return The string containing rc repeated len times.
  */
-const char *charstr(string::size_type length, int fill) {
+const char *charstr(string::size_type length, char fill) {
   static string result;
   result = string(std::min<int>(length, 160), fill);
   return result.c_str();

@@ -52,7 +52,7 @@ char gettimeout(double d, bool *abort) {
   }
 
   double d1 = timer();
-  while (fabs(timer() - d1) < d && !bkbhitraw() && !hangup && !*abort) {
+  while (std::abs(timer() - d1) < d && !bkbhitraw() && !hangup && !*abort) {
     if (session()->localIO()->LocalKeyPressed()) {
       char ch = session()->localIO()->LocalGetChar();
       if (ch == 0) {

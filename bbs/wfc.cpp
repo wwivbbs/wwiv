@@ -23,6 +23,8 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbsovl1.h"
+#include "bbs/chnedit.h"
 #include "bbs/wwiv.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
@@ -191,7 +193,7 @@ static void CleanNetIfNeeded() {
       session()->SetFileAreaCacheNumber(session()->GetFileAreaCacheNumber() + 1);
     } else {
       static int mult_time = 0;
-      if (application()->IsCleanNetNeeded() || abs(timer1() - mult_time) > 1000L) {
+      if (application()->IsCleanNetNeeded() || std::abs(timer1() - mult_time) > 1000L) {
         cleanup_net();
         mult_time = timer1();
       }

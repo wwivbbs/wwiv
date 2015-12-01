@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/batch.h"
+
 #include <algorithm>
 #include <string>
 
@@ -25,6 +27,7 @@
 #include <unistd.h>
 #endif  // _WIN32
 
+#include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/wwiv.h"
@@ -619,7 +622,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
 }
 
 void ProcessDSZLogFile() {
-  char **lines = static_cast<char **>(BbsAllocA(session()->max_batch * sizeof(char *) * 2));
+  char **lines = static_cast<char **>(calloc((session()->max_batch * sizeof(char *) * 2) + 1, 1));
   WWIV_ASSERT(lines != nullptr);
 
   if (!lines) {
@@ -629,7 +632,7 @@ void ProcessDSZLogFile() {
   File fileDszLog(g_szDSZLogFileName);
   if (fileDszLog.Open(File::modeBinary | File::modeReadOnly)) {
     int nFileSize = static_cast<int>(fileDszLog.GetLength());
-    char *ss = static_cast<char *>(BbsAllocA(nFileSize));
+    char *ss = static_cast<char *>(calloc(nFileSize + 1, 1));
     WWIV_ASSERT(ss != nullptr);
     if (ss) {
       int nBytesRead = fileDszLog.Read(ss, nFileSize);
@@ -844,7 +847,7 @@ void bihangup(int up) {
   do {
     while (!bkbhit() && !hangup) {
       long dd = timer1();
-      if (abs(dd - timelastchar1) > 65536L) {
+      if (std::abs(dd - timelastchar1) > 65536L) {
         nextbeep -= 1572480L;
         timelastchar1 -= 1572480L;
       }
@@ -859,7 +862,7 @@ void bihangup(int up) {
           color = 6;
         }
       }
-      if (abs(dd - timelastchar1) > 182L) {
+      if (std::abs(dd - timelastchar1) > 182L) {
         bout.nl();
         bout << "Thank you for calling.";
         bout.nl();

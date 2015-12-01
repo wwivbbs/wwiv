@@ -17,17 +17,18 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
+#include <vector>
+#include <set>
 
-#include "bbs/wwiv.h"
+#include "bbs/vars.h"
+#include "bbs/wuser.h"
+#include "core/file.h"
 #include "core/strings.h"
 #include "fix/fix.h"
 #include "fix/log.h"
 #include "fix/users.h"
+#include "sdk/filenames.h"
 
-// This causes compile errors before wwiv.h That seems broken
-#include <algorithm>
-#include <vector>
-#include <set>
 
 using namespace wwiv::strings;
 
@@ -37,7 +38,7 @@ namespace fix {
 int FixUsersCommand::Execute() {
     std::cout << "Runnning FixUsersCommand::Execute" << std::endl;
     	File userFile(syscfg.datadir, USER_LST);
-	if(!userFile.Exists()) {
+	if (!userFile.Exists()) {
 		Print(NOK, true, "%s does not exist.", userFile.full_pathname().c_str());
 		giveUp();
 	}
@@ -47,7 +48,7 @@ int FixUsersCommand::Execute() {
 	Print(OK, true, "Checking USER.LST... found %d user records.", userMgr.GetNumberOfUserRecords());
 
 	Print(OK, true, "TBD: Check for trashed user recs.");
-	if(userMgr.GetNumberOfUserRecords() > syscfg.maxusers) {
+	if (userMgr.GetNumberOfUserRecords() > syscfg.maxusers) {
 		Print(OK, true, "Might be too many.");
 			maybeGiveUp();
 	} else {
@@ -96,7 +97,7 @@ int FixUsersCommand::Execute() {
 
 	Print(OK, true, "Checking NAMES.LST");
 	File nameFile(syscfg.datadir, NAMES_LST);
-	if(!nameFile.Exists()) {
+	if (!nameFile.Exists()) {
 		Print(NOK, true, "%s does not exist, regenerating with %d names", nameFile.full_pathname().c_str(),
 			smallrecords.size());
 		nameFile.Close();
@@ -105,7 +106,7 @@ int FixUsersCommand::Execute() {
 		nameFile.Close();
 
 	} else {
-		if(nameFile.Open(File::modeReadOnly | File::modeBinary)) {
+		if (nameFile.Open(File::modeReadOnly | File::modeBinary)) {
 			unsigned long size = nameFile.GetLength();
 			unsigned short recs = static_cast<unsigned short>(size / sizeof(smalrec));
 			if (recs != status.users) {

@@ -1,3 +1,20 @@
+/**************************************************************************/
+/*                                                                        */
+/*                          WWIV Version 5.0x                             */
+/*               Copyright (C)2015, WWIV Software Services                */
+/*                                                                        */
+/*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
+/*    you may not use this  file  except in compliance with the License.  */
+/*    You may obtain a copy of the License at                             */
+/*                                                                        */
+/*                http://www.apache.org/licenses/LICENSE-2.0              */
+/*                                                                        */
+/*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
+/*    software  distributed  under  the  License  is  distributed on an   */
+/*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
+/*    either  express  or implied.  See  the  License for  the specific   */
+/*    language governing permissions and limitations under the License.   */
+/**************************************************************************/
 #include "networkb/binkp.h"
 
 #include <algorithm>
@@ -23,6 +40,8 @@
 #include "networkb/binkp_config.h"
 #include "networkb/callout.h"
 #include "networkb/connection.h"
+#include "networkb/contact.h"
+#include "networkb/net_log.h"
 #include "networkb/socket_exceptions.h"
 #include "networkb/transfer_file.h"
 #include "networkb/wfile_transfer_file.h"
@@ -77,6 +96,9 @@ int node_number_from_address_list(const string& network_list, const string& netw
   return -1;
 }
 
+// Returns the single network name from the address list (only used when we
+// are in answering mode, where a single address is presented) or the empty
+// string if no address is present.
 std::string network_name_from_single_address(const std::string& network_list) {
   vector<string> v = SplitString(network_list, " ");
   if (v.empty()) {
@@ -85,8 +107,7 @@ std::string network_name_from_single_address(const std::string& network_list) {
   string s = v.front();
   string::size_type index = s.find_last_of("@");
   if (index == string::npos) {
-    // default to wwivnet
-    return "wwivnet";
+    return "";
   }
   return s.substr(index+1);
 }
@@ -103,7 +124,7 @@ public:
     File::EnsureTrailingSlash(&dir);
     const string s_node_net = StringPrintf("s%d.net", destination_node_);
     const string search_path = StrCat(dir, s_node_net);
-    LOG << "       CreateTransferFileList: search_path: " << search_path;
+    // LOG << "       CreateTransferFileList: search_path: " << search_path;
     if (File::Exists(search_path)) {
       File file (search_path);
       const string basename = file.GetName();
@@ -128,7 +149,9 @@ BinkP::BinkP(Connection* conn, BinkConfig* config, std::map<const string, Callou
     side_(side),
     expected_remote_node_(expected_remote_node), 
     error_received_(false),
-    received_transfer_file_factory_(received_transfer_file_factory) {}
+    received_transfer_file_factory_(received_transfer_file_factory),
+    bytes_sent_(0),
+    bytes_received_(0) {}
 
 BinkP::~BinkP() {
   files_to_send_.clear();
@@ -202,8 +225,14 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
         current_receive_file_->length(),
         current_receive_file_->timestamp());
 
+    // Increment the nubmer of bytes received.
+    bytes_received_ += current_receive_file_->length();
+
+    // Close the current file, add the name to the list of received files.
     current_receive_file_->Close();
     received_files_.push_back(current_receive_file_->filename());
+
+    //  delete the reference to this file and signal the other side we received it.
     current_receive_file_.release();
     send_command_packet(BinkpCommands::M_GOT, data_line);
   } else {
@@ -240,7 +269,7 @@ bool BinkP::process_frames(std::function<bool()> predicate, milliseconds d) {
         }
       }
     }
-  } catch (timeout_error& e) {
+  } catch (timeout_error&) {
   }
   return true;
 }
@@ -355,7 +384,7 @@ BinkState BinkP::SendPasswd() {
   LOG << "STATE: SendPasswd for network '" << network_name << "' for node: " << expected_remote_node_;
   Callout callout = callouts_.at(network_name);
   const string password = expected_password_for(&callout, expected_remote_node_);
-  LOG << "       sending password packet";
+  // LOG << "       sending password packet";
   send_command_packet(BinkpCommands::M_PWD, password);
   return BinkState::WAIT_ADDR;
 }
@@ -381,7 +410,7 @@ BinkState BinkP::PasswordAck() {
 
   // TODO(rushfan): we need to use the network name we matched not the one that config thinks.
   const string network_name = remote_network_name();
-  int remote_node = node_number_from_address_list(address_list_, network_name);
+  int remote_node = remote_network_node();
   LOG << "       remote node: " << remote_node;
 
   Callout callout(callouts_.at(network_name));
@@ -445,7 +474,7 @@ BinkState BinkP::IfSecure() {
 BinkState BinkP::AuthRemote() {
   LOG << "STATE: AuthRemote";
   // Check that the address matches who we thought we called.
-  LOG << "       remote address_list: " << address_list_;
+  // LOG << "       remote address_list: " << address_list_;
   const string network_name(remote_network_name());
   if (side_ == BinkSide::ANSWERING) {
     int caller_node = node_number_from_address_list(address_list_, network_name);
@@ -469,7 +498,7 @@ BinkState BinkP::AuthRemote() {
   }
 
   const string expected_ftn = StringPrintf("20000:20000/%d@%s", expected_remote_node_, network_name.c_str());
-  LOG << "       expected_ftn: " << expected_ftn;
+  // LOG << "       expected_ftn: " << expected_ftn;
   if (address_list_.find(expected_ftn) != string::npos) {
     return (side_ == BinkSide::ORIGINATING) ?
       BinkState::IF_SECURE : BinkState::WAIT_PWD;
@@ -482,13 +511,8 @@ BinkState BinkP::AuthRemote() {
 }
 
 BinkState BinkP::TransferFiles() {
-  // This is only valid if we are the SENDER.
-  // TODO(rushfan): make this a method on the class.
-  int remote_node = expected_remote_node_;
+  int remote_node = remote_network_node();
   const string network_name(remote_network_name());
-  if (side_ == BinkSide::ANSWERING) {
-    remote_node = node_number_from_address_list(address_list_, network_name);
-  }
 
   LOG << "STATE: TransferFiles to node: " << remote_node;
   // Quickly let the inbound event loop percolate.
@@ -589,7 +613,7 @@ bool BinkP::SendFileData(TransferFile* file) {
 
 // M_FILE received.
 bool BinkP::HandleFileRequest(const string& request_line) {
-  LOG << "       HandleFileRequest; request_line: " << request_line;
+  // LOG << "       HandleFileRequest; request_line: " << request_line;
   ReceiveFile* old_file = current_receive_file_.release();
   if (old_file != nullptr) {
     LOG << "** ERROR: Got HandleFileRequest while still having an open receive file!";
@@ -647,6 +671,10 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   }
 
   TransferFile* file = iter->second.get();
+  // Increment the number of bytes sent.
+  // Also don't increment with -1 if there's an error with the file.
+  bytes_sent_ += std::max(0, file->file_size());
+
   if (!file->Delete()) {
     LOG << "       *** UNABLE TO DELETE FILE: " << file->filename(); 
   }
@@ -676,8 +704,9 @@ static void rename_pend(const string& directory, const string& filename) {
 }
 
 void BinkP::Run() {
-  LOG << "STATE: Run (Main Event Loop): side_:" << static_cast<int>(side_);
+  // LOG << "STATE: Run(): side:" << static_cast<int>(side_);
   BinkState state = (side_ == BinkSide::ORIGINATING) ? BinkState::CONN_INIT : BinkState::WAIT_CONN;
+  auto start_time = std::chrono::system_clock::now();
   try {
     bool done = false;
     while (!done) {
@@ -735,13 +764,31 @@ void BinkP::Run() {
     // The other end closed the socket before we did.
     LOG << "       connection was closed by the other side.";
   } catch (socket_error& e) {
-    LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what()
-        << "\nStacktrace:\n" << stacktrace();
+    LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
   }
-  LOG << "Before rename pending_files";
+
+  auto end_time = std::chrono::system_clock::now();
   rename_pending_files();
   if (!config_->skip_net()) {
     process_network_files();
+  }
+
+  // Log to NET.LOG
+  auto diff = end_time - start_time;
+  auto sec = std::chrono::duration_cast<std::chrono::seconds>(diff);
+
+  NetworkSide network_log_side = (side_ == BinkSide::ORIGINATING) ? NetworkSide::TO : NetworkSide::FROM;
+  NetworkLog net_log(config_->gfiles_directory());
+  net_log.Log(std::chrono::system_clock::to_time_t(start_time), network_log_side,
+      remote_network_node(), bytes_sent_, bytes_received_, sec, remote_network_name());
+
+  // Update CONTACT.NET
+  Contact c(config_->network_dir(remote_network_name()), true);
+  if (error_received_) {
+    c.add_failure(remote_network_node(), std::chrono::system_clock::to_time_t(start_time));
+  } else {
+    c.add_connect(remote_network_node(), std::chrono::system_clock::to_time_t(start_time),
+      bytes_sent_, bytes_received_);
   }
 }
 
@@ -764,6 +811,40 @@ static int System(const string& cmd) {
   return system(cmd.c_str());
 }
 
+static bool checkup2(const time_t tFileTime, std::string dir, std::string filename) {
+  File file(dir, filename);
+
+  if (file.Open(File::modeReadOnly)) {
+    time_t tNewFileTime = file.last_write_time();
+    file.Close();
+    return (tNewFileTime > (tFileTime + 2));
+  }
+  return true;
+}
+
+static bool need_network3(const std::string& dir) {
+  if (!File::Exists(dir, BBSLIST_NET)) {
+    return false;
+  }
+  if (!File::Exists(dir, CONNECT_NET)) {
+    return false;
+  }
+  if (!File::Exists(dir, CALLOUT_NET)) {
+    return false;
+  }
+  File bbsdataNet(dir, BBSDATA_NET);
+  if (!bbsdataNet.Open(File::modeReadOnly)) {
+    return false;
+  }
+
+  time_t bbsdata_time = bbsdataNet.last_write_time();
+  bbsdataNet.Close();
+
+  return checkup2(bbsdata_time, dir, BBSLIST_NET)
+    || checkup2(bbsdata_time, dir, CONNECT_NET)
+    || checkup2(bbsdata_time, dir, CALLOUT_NET);
+}
+
 void BinkP::process_network_files() const {
   const string network_name = remote_network_name();
   LOG << "STATE: process_network_files for network: " << network_name;
@@ -778,18 +859,28 @@ void BinkP::process_network_files() const {
       System(StrCat("network2 .", network_number));
     }
   }
-  // TODO(rushfan): check timestamps on network files to see if we need
-  // to run network3 .# Y.  Also look for UPD files (BBSLIST.UPD and CONNECT.UPD).
+  if (need_network3(dir)) {
+    System(StrCat("network3 .", network_number, " Y"));
+  }
 }
 
 const std::string BinkP::remote_network_name() const {
-  string remote_network_name(config_->callout_network_name());
   if (side_ == BinkSide::ANSWERING) {
-    //TODO(rushfan): Ensure that we only have one address on receiving end.
-    remote_network_name = network_name_from_single_address(address_list_);
+    auto name = network_name_from_single_address(address_list_);
+    if (!name.empty()) {
+      return name;
+    }
   }
-  LOG << "       remote_network_name(): " << remote_network_name;
-  return remote_network_name;
+  return config_->callout_network_name();
+}
+
+int BinkP::remote_network_node() const {
+  if (side_ == BinkSide::ANSWERING) {
+    const string network_name = remote_network_name();
+    return node_number_from_address_list(address_list_, network_name);
+  }
+  // When sending, we should be talking to who we wanted to.
+  return expected_remote_node_;
 }
 
 bool ParseFileRequestLine(const std::string& request_line, 
