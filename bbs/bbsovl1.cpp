@@ -47,7 +47,7 @@ extern char str_quit[];
 void DisplayHorizontalBar(int width, int color) {
   char ch = (okansi()) ? '\xC4' : '-';
   bout.Color(color);
-  bout << string(ch, width);
+  bout << string(width, ch);
   bout.nl();
 }
 
