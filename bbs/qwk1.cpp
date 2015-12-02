@@ -1150,7 +1150,7 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
         bout.bprintf("[%d] %s Is copied over from", x + 1, qwk_cfg->bltname[x]);
         bout.nl();
         bout.Color(7);
-        bout << string('\xCD', 78);
+        bout << string(78, '\xCD');
         bout.nl();
         bout.bprintf(qwk_cfg->blt[x]);
         bout.nl();

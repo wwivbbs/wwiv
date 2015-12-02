@@ -892,7 +892,7 @@ static void list_config_scan_plus(int first, int *amount, int type) {
                                       type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
   }
   bout.Color(7);
-  bout << string('\xC4', 79);
+  bout << string(79, '\xC4');
   bout.nl();
 
   int max_lines = GetMaxLinesToShowForScanPlus();

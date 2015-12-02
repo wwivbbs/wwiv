@@ -717,7 +717,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 void show_fileinfo(uploadsrec * u) {
   bout.cls();
   bout.Color(7);
-  bout << string('\xCD', 78);
+  bout << string(78, '\xCD');
   bout.nl();
   bout << "  |#9Filename    : |#2" << u->filename << wwiv::endl;
   bout << "  |#9Uploaded on : |#2" << u->date << " by |#2" << u->upby << wwiv::endl;
@@ -729,7 +729,7 @@ void show_fileinfo(uploadsrec * u) {
   bout << "  |#9Description : |#2" << u->description << wwiv::endl;
   print_extended_plus(u->filename, 255, 16, YELLOW, nullptr);
   bout.Color(7);
-  bout << string('\xCD', 78);
+  bout << string(78, '\xCD');
   bout.nl();
   pausescr();
 }
