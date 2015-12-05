@@ -146,7 +146,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
       // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
       int nNumReadFromComm = session()->remoteIO()->read(szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE);
       fprintf(hLogFile, "Read [%d] from comm\r\n", nNumReadFromComm);
-#if 1
+
       int nLp = 0;
       for (nLp = 0; nLp < nNumReadFromComm; nLp++) {
         fprintf(hLogFile, "[%u]", static_cast<unsigned char>(szReadBuffer[ nLp ]));
@@ -156,7 +156,6 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
         fprintf(hLogFile, "[%c]", static_cast<unsigned char>(szReadBuffer[ nLp ]));
       }
       fprintf(hLogFile, "\r\n");
-#endif // 0
 
       if (hSyncWriteSlot == INVALID_HANDLE_VALUE) {
         // Create Write handle.
