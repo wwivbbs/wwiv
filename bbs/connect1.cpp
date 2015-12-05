@@ -17,14 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 
-#if defined (NET)
-#include "sdk/vardec.h"
-#include "sdk/net.h"
-#else
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
-#endif
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"

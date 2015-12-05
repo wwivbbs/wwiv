@@ -104,10 +104,8 @@ __EXTRN__ bool  in_chatroom,
           chat_avail;
 
 __EXTRN__ unsigned short
-#if !defined ( NETWORK )
 *csn_index,
 net_sysnum,
-#endif // NETWORK
 *gat;
 
 __EXTRN__ int modem_speed;
@@ -139,7 +137,7 @@ extratimecall,
 timeon,
 time_event;
 
-#if defined (INIT) || defined (NETWORK) || defined (FIX)
+#if defined (FIX)
 __EXTRN__ configrec syscfg;
 #else
 __EXTRN__ small_configrec syscfg;
