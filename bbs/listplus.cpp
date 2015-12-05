@@ -1998,46 +1998,27 @@ void view_file(const char *pszFileName) {
   strcpy(szBuffer, pszFileName);
   unalign(szBuffer);
 
-  // TODO: AVIEWCOM.EXE will not work on x64 platforms, find replacement
-  if (File::Exists("AVIEWCOM.EXE")) {
-    if (incom) {
-      sprintf(szCommandLine, "AVIEWCOM.EXE %s%s -p%s -a1 -d",
-              directories[udir[session()->GetCurrentFileArea()].subnum].path, szBuffer, syscfgovr.tempdir);
-      osysstatus = session()->user()->GetStatus();
-      if (session()->user()->HasPause()) {
-        session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
+  dliscan();
+  bool abort = false;
+  i = recno(pszFileName);
+  do {
+    if (i > 0) {
+      File fileDownload(g_szDownloadFileName);
+      if (fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
+        FileAreaSetRecord(fileDownload, i);
+        fileDownload.Read(&u, sizeof(uploadsrec));
+        fileDownload.Close();
       }
-      ExecuteExternalProgram(szCommandLine, EFLAG_COMIO);
-      session()->user()->SetStatus(osysstatus);
-    } else {
-      sprintf(szCommandLine, "AVIEWCOM.EXE %s%s com0 -o%u -p%s -a1 -d",
-              directories[udir[session()->GetCurrentFileArea()].subnum].path, szBuffer,
-              application()->GetInstanceNumber(), syscfgovr.tempdir);
-      ExecuteExternalProgram(szCommandLine, EFLAG_NONE);
+      i1 = list_arc_out(stripfn(u.filename), directories[udir[session()->GetCurrentFileArea()].subnum].path);
+      if (i1) {
+        abort = true;
+      }
+      checka(&abort);
+      i = nrecno(pszFileName, i);
     }
-  } else {
-    dliscan();
-    bool abort = false;
-    i = recno(pszFileName);
-    do {
-      if (i > 0) {
-        File fileDownload(g_szDownloadFileName);
-        if (fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
-          FileAreaSetRecord(fileDownload, i);
-          fileDownload.Read(&u, sizeof(uploadsrec));
-          fileDownload.Close();
-        }
-        i1 = list_arc_out(stripfn(u.filename), directories[udir[session()->GetCurrentFileArea()].subnum].path);
-        if (i1) {
-          abort = true;
-        }
-        checka(&abort);
-        i = nrecno(pszFileName, i);
-      }
-    } while (i > 0 && !hangup && !abort);
-    bout.nl();
-    pausescr();
-  }
+  } while (i > 0 && !hangup && !abort);
+  bout.nl();
+  pausescr();
 }
 
 int lp_try_to_download(const char *pszFileMask, int dn) {
