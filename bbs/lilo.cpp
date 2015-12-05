@@ -266,7 +266,7 @@ static void ExecuteWWIVNetworkRequest() {
     std::stringstream networkCommand;
     networkCommand << "network /B" << modem_speed << " /T" << lTime << " /F0";
     write_inst(INST_LOC_NET, 0, INST_FLAGS_NONE);
-    ExecuteExternalProgram(networkCommand.str().c_str(), EFLAG_NONE);
+    ExecuteExternalProgram(networkCommand.str(), EFLAG_NONE);
     if (application()->GetInstanceNumber() != 1) {
       send_inst_cleannet();
     }

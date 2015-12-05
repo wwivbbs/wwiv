@@ -681,13 +681,7 @@ void ValidateScan() {
 
 void ChatRoom() {
   write_inst(INST_LOC_CHATROOM, 0, INST_FLAGS_NONE);
-  if (File::Exists("WWIVCHAT.EXE")) {
-    std::ostringstream cmdline;
-    cmdline << "WWIVCHAT.EXE " << create_chain_file();
-    ExecuteExternalProgram(cmdline.str(), application()->GetSpawnOptions(SPAWNOPT_CHAT));
-  } else {
-    chat_room();
-  }
+  chat_room();
 }
 
 void DownloadPosts() {
