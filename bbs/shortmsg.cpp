@@ -19,7 +19,10 @@
 #include <cstdarg>
 #include <string>
 #include "core//strings.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using wwiv::strings::StringPrintf;

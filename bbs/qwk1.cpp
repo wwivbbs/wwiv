@@ -40,8 +40,9 @@
 #include "sdk/vardec.h"
 #include "bbs/vars.h"
 #include "bbs/wstatus.h"
-#include "bbs/wwiv.h"
-
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/stuffin.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"

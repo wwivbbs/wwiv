@@ -30,7 +30,9 @@
 #include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/instmsg.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
@@ -40,6 +42,7 @@
 #include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 using std::string;
 

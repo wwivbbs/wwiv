@@ -14,15 +14,24 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_H__
-#define __INCLUDED_WWIV_H__
+#ifndef __INCLUDED_BBS_SR_H__
+#define __INCLUDED_BBS_SR_H__
 
-#include "bbs/bbs.h"
-#include "bbs/fcns.h"
-#include "bbs/vars.h"
+#include "sdk/vardec.h"
 
-#include "sdk/filenames.h"
+void calc_CRC(unsigned char b);
+char gettimeout(double d, bool *abort);
+int  extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending);
+bool ok_prot(int nProtocolNum, xfertype xt);
+char *prot_name(int nProtocolNum);
+int  get_protocol(xfertype xt);
+void ascii_send(const char *pszFileName, bool *sent, double *percent);
+void maybe_internal(const char *pszFileName, bool *xferred, double *percent, bool bSend, int prot);
+void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn, int dn, long fs);
+void receive_file(const char *pszFileName, int *received, const char *sfn, int dn);
+char end_batch1();
+void endbatch();
 
-#endif  // __INCLUDED_WWIV_H__
+
+#endif  // __INCLUDED_BBS_SR_H__

@@ -21,9 +21,21 @@
 #include <memory>
 #include <string>
 
+#include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
+#include "bbs/com.h"
 #include "bbs/input.h"
+#include "bbs/msgbase.h"
+#include "bbs/sr.h"
+#include "bbs/sysoplog.h"
+#include "bbs/utility.h"
 #include "bbs/wconstants.h"
-#include "bbs/wwiv.h"
+#include "bbs/woutstreambuffer.h"
+#include "bbs/vars.h"
+#include "bbs/xfer.h"
+#include "bbs/wuser.h"
+#include "core/file.h"
+#include "sdk/filenames.h"
 #include "core/wwivassert.h"
 
 using std::string;

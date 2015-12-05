@@ -21,12 +21,16 @@
 #include <algorithm>
 #include <vector>
 #include <string>
+#include "bbs/arword.h"
 #include "bbs/confutil.h"
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using namespace wwiv::strings;
@@ -249,47 +253,6 @@ void update_conf(int conftype, SUBCONF_TYPE * sub1, SUBCONF_TYPE * sub2, int act
     break;
   }
 }
-
-
-/*
- * Returns bitmapped word representing an AR or DAR string.
- */
-uint16_t str_to_arword(const char *arstr) {
-  uint16_t rar = 0;
-  char s[81];
-
-  strcpy(s, arstr);
-  strupr(s);
-
-  for (int i = 0; i < 16; i++) {
-    if (strchr(s, i + 'A') != nullptr) {
-      rar |= (1 << i);
-    }
-  }
-  return rar;
-}
-
-/*
- * Converts an int to a string representing those ARs (DARs).
- */
-char *word_to_arstr(int ar) {
-  static char arstr[17];
-  int i, i1 = 0;
-
-  if (ar) {
-    for (i = 0; i < 16; i++) {
-      if ((1 << i) & ar) {
-        arstr[i1++] = static_cast< char >('A' + i);
-      }
-    }
-  }
-  arstr[i1] = '\0';
-  if (!arstr[0]) {
-    strcpy(arstr, "-");
-  }
-  return arstr;
-}
-
 
 /*
  * Returns first available conference designator, of a specified conference

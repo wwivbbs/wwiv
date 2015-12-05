@@ -19,11 +19,14 @@
 
 #include "bbs/datetime.h"
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
+#include "sdk/filenames.h"
 
 char *gfiledata(int nSectionNum, char *pBuffer);
 

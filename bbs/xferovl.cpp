@@ -25,12 +25,15 @@
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
 #include "bbs/listplus.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/textfile.h"
+#include "sdk/filenames.h"
 
 using namespace wwiv::strings;
 

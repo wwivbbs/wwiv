@@ -25,12 +25,15 @@
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/newuser.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/printfile.h"
 #include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "bbs/keycodes.h"
+#include "sdk/filenames.h"
 
 using namespace wwiv::bbs;
 using std::string;

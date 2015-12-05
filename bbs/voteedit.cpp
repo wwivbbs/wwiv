@@ -20,7 +20,10 @@
 
 #include "bbs/input.h"
 #include "bbs/wstatus.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
+#include "sdk/filenames.h"
 
 void print_quests();
 void set_question(int ii);

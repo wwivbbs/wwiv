@@ -19,7 +19,9 @@
 #include <memory>
 #include <string>
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
@@ -31,6 +33,7 @@
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 // from qwk.c
 void qwk_menu();

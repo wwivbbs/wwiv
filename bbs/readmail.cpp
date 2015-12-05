@@ -23,7 +23,9 @@
 #include "bbs/bbsovl1.h"
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
 #include "bbs/wconstants.h"
@@ -34,6 +36,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::unique_ptr;

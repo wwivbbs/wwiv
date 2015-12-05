@@ -27,7 +27,10 @@
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
 #include "bbs/wsession.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::vector;

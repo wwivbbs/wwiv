@@ -18,10 +18,12 @@
 /**************************************************************************/
 #include "bbs/vote.h"
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
-
+#include "sdk/filenames.h"
 
 static void print_quest(int mapp, int map[21]) {
   votingrec v;

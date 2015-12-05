@@ -34,13 +34,16 @@
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
 #include "bbs/wcomm.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/inifile.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::unique_ptr;

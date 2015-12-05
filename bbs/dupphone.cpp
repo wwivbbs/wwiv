@@ -17,10 +17,12 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
-
+#include "sdk/filenames.h"
 
 void add_phone_number(int usernum, const char *phone) {
   if (strstr(phone, "000-")) {

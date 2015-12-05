@@ -23,11 +23,14 @@
 #include "bbs/confutil.h"
 #include "bbs/input.h"
 #include "bbs/newuser.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/printfile.h"
 #include "bbs/uedit.h"
 #include "bbs/wcomm.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::string;
 

@@ -20,6 +20,9 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
@@ -30,7 +33,6 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/xfer_common.h"
-#include "bbs/wwiv.h"
 #include "bbs/platform/platformfcns.h"
 
 using std::string;

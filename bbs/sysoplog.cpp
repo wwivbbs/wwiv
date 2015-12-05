@@ -20,8 +20,10 @@
 #include <cstddef>
 #include <string>
 
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/datetime.h"
-#include "bbs/wwiv.h"
 #include "core/strings.h"
 
 using std::string;

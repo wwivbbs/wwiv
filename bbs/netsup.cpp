@@ -25,13 +25,16 @@
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/wwivport.h"
+#include "sdk/filenames.h"
 
 static int netw;
 time_t last_time_c;

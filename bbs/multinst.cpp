@@ -19,11 +19,14 @@
 #include <string>
 #include "bbs/multinst.h"
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/instmsg.h"
 #include "bbs/wconstants.h"
 
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using namespace wwiv::strings;

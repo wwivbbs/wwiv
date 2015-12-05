@@ -21,7 +21,9 @@
 
 #include "bbs/pause.h"
 #include "bbs/keycodes.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/os.h"
 #include "core/strings.h"
 

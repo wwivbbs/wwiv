@@ -19,7 +19,9 @@
 
 #include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/netsup.h"
@@ -29,6 +31,7 @@
 #include "bbs/wfc.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
+#include "sdk/filenames.h"
 
 using wwiv::bbs::InputMode;
 

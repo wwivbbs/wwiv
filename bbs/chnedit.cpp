@@ -18,9 +18,12 @@
 /**************************************************************************/
 
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
-#include "core/strings.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/keycodes.h"
+#include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using wwiv::bbs::InputMode;

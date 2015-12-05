@@ -22,7 +22,9 @@
 
 #include "bbs/keycodes.h"
 #include "bbs/woutstreambuffer.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 
 using std::ostream;

@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/sr.h"
+
 #include <algorithm>
 #include <cmath>
 #include <string>
@@ -27,7 +29,9 @@
 #include "bbs/stuffin.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 
 using std::string;
 
