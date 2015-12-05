@@ -78,8 +78,9 @@ void UnQScan() {
   case 'C': {
     bout.nl();
     qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = 0;
-    bout << "Messages on " << subboards[usub[session()->GetCurrentMessageArea()].subnum].name <<
-                       " marked as unread.\r\n";
+    bout << "Messages on " 
+         << subboards[usub[session()->GetCurrentMessageArea()].subnum].name
+         << " marked as unread.\r\n";
   }
   break;
   }
