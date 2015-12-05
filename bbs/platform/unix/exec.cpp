@@ -19,7 +19,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wcomm.h"
 
 // Local function prototypes
