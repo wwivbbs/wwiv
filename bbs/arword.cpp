@@ -24,7 +24,6 @@
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
