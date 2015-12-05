@@ -17,9 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/keycodes.h"
-
+#include "sdk/filenames.h"
 
 void get_colordata() {
   File file(syscfg.datadir, COLOR_DAT);

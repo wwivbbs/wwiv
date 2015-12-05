@@ -27,11 +27,14 @@
 #include "bbs/input.h"
 #include "bbs/subxtr.h"
 #include "bbs/printfile.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 void SetupThreadRecordsBeforeScan();
 void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsub, bool &bTitleScan, bool &done,

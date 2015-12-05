@@ -21,7 +21,9 @@
 
 #include "bbs/batch.h"
 #include "bbs/bbsovl3.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/common.h"
 #include "bbs/listplus.h"
 #include "bbs/printfile.h"
@@ -29,6 +31,7 @@
 #include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::vector;

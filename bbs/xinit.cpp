@@ -28,7 +28,9 @@
 #endif  // _WIN32
 
 #include "bbs/arword.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
@@ -44,6 +46,7 @@
 #include "core/wwivport.h"
 
 #include "sdk/config.h"
+#include "sdk/filenames.h"
 
 // Additional INI file function and structure
 #include "bbs/xinitini.h"

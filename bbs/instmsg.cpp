@@ -23,11 +23,14 @@
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/multinst.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
+#include "sdk/filenames.h"
 
 // Local functions
 void send_inst_msg(inst_msg_header * ih, const char *msg);

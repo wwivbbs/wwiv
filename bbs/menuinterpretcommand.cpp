@@ -30,10 +30,13 @@
 #include "bbs/menu_parser.h"
 #include "bbs/new_bbslist.h"
 #include "bbs/printfile.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/inifile.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::map;
 using std::string;

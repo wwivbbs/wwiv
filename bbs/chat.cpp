@@ -17,8 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/wwiv.h"
-
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/input.h"
 #include "core/inifile.h"
 #include "bbs/keycodes.h"
@@ -30,6 +31,7 @@
 #include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 
 using wwiv::core::IniFile;

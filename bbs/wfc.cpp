@@ -25,7 +25,9 @@
 
 #include "bbs/bbsovl1.h"
 #include "bbs/chnedit.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/local_io_curses.h"
@@ -41,6 +43,7 @@
 #include "core/wwivport.h"
 #include "core/inifile.h"
 #include "initlib/curses_io.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::unique_ptr;

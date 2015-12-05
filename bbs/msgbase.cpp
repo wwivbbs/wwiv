@@ -24,9 +24,12 @@
 #include "bbs/netsup.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 #define EMAIL_STORAGE 2
 

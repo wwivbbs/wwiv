@@ -27,7 +27,9 @@
 #include <unistd.h>
 #endif  // _WIN32
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/platform/platformfcns.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
@@ -35,7 +37,7 @@
 
 #include "bbs/stuffin.h"
 #include "bbs/wconstants.h"
-
+#include "sdk/filenames.h"
 
 using std::string;
 using wwiv::core::ScopeExit;

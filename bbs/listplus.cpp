@@ -32,11 +32,14 @@
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/wconstants.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wwivcolors.h"
 
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::vector;

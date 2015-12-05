@@ -30,11 +30,14 @@
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "bbs/printfile.h"
 #include "bbs/xfer_common.h"
+#include "sdk/filenames.h"
 
 // the archive type to use
 #define ARC_NUMBER 0

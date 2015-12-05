@@ -17,13 +17,16 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/valscan.h"
+
 #include <algorithm>
 
+#include "bbs/bbs.h"
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
+#include "bbs/fcns.h"
 #include "bbs/input.h"
 #include "bbs/subxtr.h"
-#include "bbs/wwiv.h"
+#include "bbs/vars.h"
 
 void valscan() {
   // Must be local cosysop or better

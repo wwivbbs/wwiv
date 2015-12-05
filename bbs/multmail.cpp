@@ -17,7 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
 #include "core/wfndfile.h"
@@ -25,6 +27,7 @@
 #include "bbs/printfile.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
+#include "sdk/filenames.h"
 
 // local function prototypes
 void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup);

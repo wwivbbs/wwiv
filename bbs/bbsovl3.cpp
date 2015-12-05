@@ -19,7 +19,9 @@
 #include <string>
 #include "bbs/bbsovl3.h"
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "bbs/keycodes.h"

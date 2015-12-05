@@ -18,11 +18,14 @@
 /**************************************************************************/
 
 #include "bbs/bbsovl3.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "sdk/filenames.h"
 
 using namespace wwiv::strings;
 

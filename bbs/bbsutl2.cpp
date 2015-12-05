@@ -19,9 +19,12 @@
 #include <string>
 #include <vector>
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/inifile.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::vector;

@@ -285,20 +285,7 @@ void DeleteSmallRecord(const char *name);
 
 
 // File: sr.cpp
-
-void calc_CRC(unsigned char b);
-char gettimeout(double d, bool *abort);
-int  extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending);
-bool ok_prot(int nProtocolNum, xfertype xt);
-char *prot_name(int nProtocolNum);
-int  get_protocol(xfertype xt);
-void ascii_send(const char *pszFileName, bool *sent, double *percent);
-void maybe_internal(const char *pszFileName, bool *xferred, double *percent, bool bSend, int prot);
-void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn, int dn, long fs);
-void receive_file(const char *pszFileName, int *received, const char *sfn, int dn);
-char end_batch1();
-void endbatch();
-
+#include "bbs/sr.h"
 
 // File: srrcv.cpp
 

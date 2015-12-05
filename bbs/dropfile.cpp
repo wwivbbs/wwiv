@@ -22,7 +22,9 @@
 #include <string>
 
 #include "bbs/datetime.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"

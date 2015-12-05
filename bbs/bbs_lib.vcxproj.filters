@@ -465,9 +465,6 @@
     <ClInclude Include="wstatus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="wwiv.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="wwivassert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -640,6 +637,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="arword.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

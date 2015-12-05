@@ -24,13 +24,16 @@
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/multinst.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/instmsg.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
 #include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using namespace wwiv::strings;

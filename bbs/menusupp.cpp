@@ -46,11 +46,14 @@
 #include "bbs/valscan.h"
 #include "bbs/vote.h"
 #include "bbs/voteedit.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/printfile.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using wwiv::bbs::InputMode;

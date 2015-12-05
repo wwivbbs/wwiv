@@ -20,7 +20,9 @@
 #include "bbs/bbsovl1.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 
 

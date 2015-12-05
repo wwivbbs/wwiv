@@ -22,7 +22,9 @@
 #include <string>
 
 #include "bbs/confutil.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/keycodes.h"
 #include "core/os.h"
 #include "core/strings.h"

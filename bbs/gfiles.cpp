@@ -18,7 +18,9 @@
 /**************************************************************************/
 #include <string>
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/printfile.h"

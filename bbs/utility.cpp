@@ -30,12 +30,14 @@
 #include <vector>
 
 #include "bbs/bbsovl3.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/common.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
-#include "bbs/wwiv.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"

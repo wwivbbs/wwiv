@@ -23,7 +23,9 @@
 #include "bbs/bbsovl3.h"
 #include "bbs/confutil.h"
 #include "bbs/wwivcolors.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/common.h"
 #include "bbs/menu.h"
 #include "bbs/input.h"
@@ -32,6 +34,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::setw;
 using std::endl;

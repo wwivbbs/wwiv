@@ -21,11 +21,13 @@
 #include "sdk/vardec.h"
 #include "sdk/net.h"
 #else
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #endif
 #include "core/strings.h"
 #include "core/wwivassert.h"
-
+#include "sdk/filenames.h"
 
 void read_bbs_list();
 int system_index(int ts);

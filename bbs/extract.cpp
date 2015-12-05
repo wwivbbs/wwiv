@@ -23,12 +23,14 @@
 #include "bbs/keycodes.h"
 #include "bbs/stuffin.h"
 #include "bbs/printfile.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
-
+#include "sdk/filenames.h"
 
 using std::string;
 using namespace wwiv::strings;
