@@ -18,11 +18,13 @@
 #ifndef __INCLUDED_BBS_SUBACC_H__
 #define __INCLUDED_BBS_SUBACC_H__
 
+#include <cstdint>
 #include "sdk/vardec.h"
 
 void close_sub();
 bool open_sub(bool wr);
-bool iscan1(int si, bool quick);
+uint32_t WWIVReadLastRead(int sub_number);
+bool iscan1(int si);
 int iscan(int b);
 postrec *get_post(int mn);
 void delete_message(int mn);
