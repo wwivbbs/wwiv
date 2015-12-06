@@ -6,6 +6,7 @@ include_directories(../deps/rapidjson-master/include)
 
 set(COMMON_SOURCES 
  archivers.cpp
+ arword.cpp
  asv.cpp
  attach.cpp
  automsg.cpp
