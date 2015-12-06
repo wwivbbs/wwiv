@@ -642,6 +642,9 @@
     <ClInclude Include="sr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="subacc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

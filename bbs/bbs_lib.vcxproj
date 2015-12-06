@@ -154,6 +154,7 @@
     <ClInclude Include="shortmsg.h" />
     <ClInclude Include="sr.h" />
     <ClInclude Include="stuffin.h" />
+    <ClInclude Include="subacc.h" />
     <ClInclude Include="subxtr.h" />
     <ClInclude Include="sysopf.h" />
     <ClInclude Include="sysoplog.h" />
