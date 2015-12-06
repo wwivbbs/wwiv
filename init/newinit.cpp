@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                 WWIV Initialization Utility Version 5.0                */
+/*                  WWIV Initialization Utility Version 5                 */
 /*               Copyright (C)2014-2015 WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -290,7 +290,7 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   window->Puts("Copying String and Miscellaneous files.\n");
   window->SetColor(SchemeId::NORMAL);
 
-  File::Rename("wwivini.500", WWIV_INI);
+  File::Rename("wwivini.510", WWIV_INI);
   File::Rename("menucmds.dat", StringPrintf("data%cmenucmds.dat", File::pathSeparatorChar));
   File::Rename("regions.dat", StringPrintf("data%cregions.dat", File::pathSeparatorChar));
   File::Rename("wfc.dat", StringPrintf("data%cwfc.dat", File::pathSeparatorChar));
