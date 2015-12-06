@@ -26,8 +26,14 @@ namespace core {
 
 class ScopeExit {
 public:
+  ScopeExit() {}
   explicit ScopeExit(std::function<void()> fn) : fn_(fn) {}
-  ~ScopeExit() { fn_(); }
+  ~ScopeExit() { if (fn_) { fn_(); } }
+  // Apparently msvc always has a valid target here since this doesn't go boom:
+  // std::function<void(void)> f;
+  // if (f) { FAIL("boom"); }
+  // bool empty() const { if (fn_) return true; return false; }
+  void swap(std::function<void()> fn) { fn_.swap(fn); }
 private:
   std::function<void()> fn_;
 };
