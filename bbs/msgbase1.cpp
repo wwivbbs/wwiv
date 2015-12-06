@@ -55,7 +55,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
   int nNetNumber;
   int nOrigNetNumber = session()->GetNetworkNumber();
   if (pPostRecord->status & status_post_new_net) {
-    nNetNumber = pPostRecord->title[80];
+    nNetNumber = pPostRecord->network_number;
   } else if (xsubs[nSubNumber].num_nets) {
     nNetNumber = xsubs[nSubNumber].nets[0].net_num;
   } else {
@@ -221,6 +221,7 @@ void post() {
   write_inst(INST_LOC_POST, session()->GetCurrentReadMessageArea(), INST_FLAGS_NONE);
 
   postrec p;
+  memset(&p, 0, sizeof(postrec));
   string title;
   inmsg(&m, &title, &a, true, (subboards[session()->GetCurrentReadMessageArea()].filename), INMSG_FSED,
         subboards[session()->GetCurrentReadMessageArea()].name,

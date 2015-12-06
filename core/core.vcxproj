@@ -115,6 +115,7 @@
     <ClInclude Include="file.h" />
     <ClInclude Include="textfile.h" />
     <ClInclude Include="version.h" />
+    <ClInclude Include="wfndfile.h" />
     <ClInclude Include="wwivassert.h" />
     <ClInclude Include="wwivport.h" />
   </ItemGroup>

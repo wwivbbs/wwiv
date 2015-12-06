@@ -78,6 +78,7 @@ bool iscan1(int si, subboardrec *subboards) {
   // Initializes use of a sub value (subboards[], not usub[]).  If quick, then
   // don't worry about anything detailed, just grab qscan info.
   postrec p;
+  memset(&p, 0, sizeof(postrec));
 
   // forget it if an invalid sub #
   if (si < 0 || si >= initinfo.num_subs) {

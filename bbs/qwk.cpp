@@ -357,7 +357,7 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
 
   int nn = session()->GetNetworkNumber();
   if (p->status & status_post_new_net) {
-    set_net_num(p->title[80]);
+    set_net_num(p->network_number);
   }
 
   put_in_qwk(p, (subboards[session()->GetCurrentReadMessageArea()].filename), msgnum, qwk_info);
