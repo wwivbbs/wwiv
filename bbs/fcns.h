@@ -307,19 +307,7 @@ void zmodem_send(const char *pszFileName, bool *sent, double *percent);
 
 
 // File: subacc.cpp
-
-void close_sub();
-bool open_sub(bool wr);
-bool iscan1(int si, bool quick);
-int iscan(int b);
-postrec *get_post(int mn);
-void delete_message(int mn);
-void write_post(int mn, postrec * pp);
-void add_post(postrec * pp);
-void resynch(int *msgnum, postrec * pp);
-void pack_all_subs();
-void pack_sub(int si);
-
+#include "bbs/subacc.h"
 
 // File: subedit.cpp
 

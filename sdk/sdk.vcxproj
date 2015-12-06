@@ -14,6 +14,8 @@
     <ClInclude Include="config.h" />
     <ClInclude Include="filenames.h" />
     <ClInclude Include="msdos_stdint.h" />
+    <ClInclude Include="msgapi.h" />
+    <ClInclude Include="msgapi_wwiv.h" />
     <ClInclude Include="net.h" />
     <ClInclude Include="networks.h" />
     <ClInclude Include="phone_numbers.h" />
@@ -21,6 +23,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="config.cpp" />
+    <ClCompile Include="msgapi.cpp" />
+    <ClCompile Include="msgapi_wwiv.cpp" />
     <ClCompile Include="networks.cpp" />
     <ClCompile Include="phone_numbers.cpp" />
   </ItemGroup>
