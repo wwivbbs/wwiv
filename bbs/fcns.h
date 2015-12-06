@@ -313,7 +313,7 @@ uint32_t WWIVReadLastRead(int sub_number);
 
 void close_sub();
 bool open_sub(bool wr);
-bool iscan1(int si, bool quick);
+bool iscan1(int sub_number);
 int iscan(int b);
 postrec *get_post(int mn);
 void delete_message(int mn);

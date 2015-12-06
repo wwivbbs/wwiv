@@ -353,7 +353,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
   uint32_t memory_last_read = qsc_p[nSubNumber];
 
   // TODO(rushfan): Do we still need to do this?
-  iscan1(nSubNumber, true);
+  iscan1(nSubNumber);
 
   uint32_t on_disk_last_read = WWIVReadLastRead(nSubNumber);
   if (!on_disk_last_read || on_disk_last_read > memory_last_read) {

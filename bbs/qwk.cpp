@@ -53,7 +53,7 @@
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
-#define qwk_iscan(x)         (iscan1(usub[x].subnum, 1))
+#define qwk_iscan(x)         (iscan1(usub[x].subnum))
 
 using std::unique_ptr;
 using namespace wwiv::strings;

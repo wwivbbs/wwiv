@@ -1103,9 +1103,6 @@ void WApplication::InitializeBBS() {
 
   check_phonenum(); // dupphone addition
 
-  // allocate sub cache
-  iscan1(-1, false);
-
   batch = static_cast<batchrec *>(BbsAllocA(session()->max_batch * sizeof(batchrec)));
   WWIV_ASSERT(batch != nullptr);
 

@@ -107,26 +107,24 @@ uint32_t WWIVReadLastRead(int sub_number) {
 
 // Initializes use of a sub value (subboards[], not usub[]).  If quick, then
 // don't worry about anything detailed, just grab qscan info.
-bool iscan1(int si, bool quick) {
+bool iscan1(int sub_index) {
   postrec p;
 
   // forget it if an invalid sub #
-  if (si < 0 || si >= session()->num_subs) {
+  if (sub_index < 0 || sub_index >= session()->num_subs) {
     return false;
   }
 
-  // skip this stuff if being called from the WFC cache code
-  if (!quick) {
-    // go to correct net #
-    if (xsubs[si].num_nets) {
-      set_net_num(xsubs[si].nets[0].net_num);
-    } else {
-      set_net_num(0);
-    }
+  // go to correct net #
+  if (xsubs[sub_index].num_nets) {
+    set_net_num(xsubs[sub_index].nets[0].net_num);
+  } else {
+    set_net_num(0);
   }
 
   // set sub filename
-  snprintf(subdat_fn, sizeof(subdat_fn), "%s%s.sub", syscfg.datadir, subboards[si].filename);
+  snprintf(subdat_fn, sizeof(subdat_fn), "%s%s.sub", 
+      syscfg.datadir, subboards[sub_index].filename);
 
   // open file, and create it if necessary
   if (!File::Exists(subdat_fn)) {
@@ -140,7 +138,7 @@ bool iscan1(int si, bool quick) {
   }
 
   // set sub
-  session()->SetCurrentReadMessageArea(si);
+  session()->SetCurrentReadMessageArea(sub_index);
   session()->subchg = 0;
 
   // read in first rec, specifying # posts
@@ -160,11 +158,10 @@ bool iscan1(int si, bool quick) {
 
 // Initializes use of a sub (usub[] value, not subboards[] value).
 int iscan(int b) {
-  return iscan1(usub[b].subnum, false);
+  return iscan1(usub[b].subnum);
 }
 
-// Returns info for a post.  Maintains a cache.  Does not correct anything
-// if the sub has changed.
+// Returns info for a post.
 postrec *get_post(int mn) {
   if (mn < 1) {
     return nullptr;
@@ -339,47 +336,54 @@ void resynch(int *msgnum, postrec * pp) {
 }
 
 void pack_sub(int si) {
-  if (iscan1(si, false)) {
-    if (open_sub(true) && subboards[si].storage_type == 2) {
-      const char *sfn = subboards[si].filename;
-      const char *nfn = "PACKTMP$";
+  if (!iscan1(si)) {
+    return;
+  }
+  if (open_sub(true) && subboards[si].storage_type == 2) {
+    const char *sfn = subboards[si].filename;
+    const char *nfn = "PACKTMP$";
 
-      char fn1[MAX_PATH], fn2[MAX_PATH];
-      sprintf(fn1, "%s%s.dat", syscfg.msgsdir, sfn);
-      sprintf(fn2, "%s%s.dat", syscfg.msgsdir, nfn);
+    char fn1[MAX_PATH], fn2[MAX_PATH];
+    sprintf(fn1, "%s%s.dat", syscfg.msgsdir, sfn);
+    sprintf(fn2, "%s%s.dat", syscfg.msgsdir, nfn);
 
-      bout << "\r\n|#7\xFE |#1Packing Message Area: |#5" << subboards[si].name << wwiv::endl;
+    bout << "\r\n|#7\xFE |#1Packing Message Area: |#5" 
+         << subboards[si].name << wwiv::endl;
 
-      for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
-        if (i % 10 == 0) {
-          bout << i << "/" << session()->GetNumMessagesInCurrentMessageArea() << "\r";
-        }
-        postrec *p = get_post(i);
-        if (p) {
-          long lMessageSize;
-          unique_ptr<char[]> mt(readfile(&(p->msg), sfn, &lMessageSize));
-          if (!mt) {
-            mt.reset(new char[10]);
-            if (mt) {
-              strcpy(mt.get(), "??");
-              lMessageSize = 3;
-            }
-          }
-          if (mt) {
-            savefile(mt.get(), lMessageSize, &(p->msg), nfn);
-            write_post(i, p);
-          }
-        }
-        bout << i << "/" << session()->GetNumMessagesInCurrentMessageArea() << "\r";
+    for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
+      if (i % 10 == 0) {
+        bout << i << "/" 
+             << session()->GetNumMessagesInCurrentMessageArea()
+             << "\r";
       }
-
-      File::Remove(fn1);
-      File::Rename(fn2, fn1);
-
-      close_sub();
-      bout << "|#7\xFE |#1Done Packing " << session()->GetNumMessagesInCurrentMessageArea() <<
-                         " messages.                              \r\n";
+      postrec *p = get_post(i);
+      if (p) {
+        long lMessageSize;
+        unique_ptr<char[]> mt(readfile(&(p->msg), sfn, &lMessageSize));
+        if (!mt) {
+          mt.reset(new char[10]);
+          if (mt) {
+            strcpy(mt.get(), "??");
+            lMessageSize = 3;
+          }
+        }
+        if (mt) {
+          savefile(mt.get(), lMessageSize, &(p->msg), nfn);
+          write_post(i, p);
+        }
+      }
+      bout << i << "/" 
+           << session()->GetNumMessagesInCurrentMessageArea()
+           << "\r";
     }
+
+    File::Remove(fn1);
+    File::Rename(fn2, fn1);
+
+    close_sub();
+    bout << "|#7\xFE |#1Done Packing " 
+         << session()->GetNumMessagesInCurrentMessageArea() 
+         << " messages.                              \r\n";
   }
 }
 
