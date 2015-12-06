@@ -30,8 +30,8 @@
 #include "bbs/woutstreambuffer.h"
 #include "bbs/wsession.h"
 #include "bbs/wstatus.h"
-#include "core/strings.h"
 #include "core/file.h"
+#include "core/strings.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 
@@ -48,6 +48,7 @@ static char subdat_fn[MAX_PATH];            // filename of .sub file
 
 using std::unique_ptr;
 using wwiv::bbs::TempDisablePause;
+using wwiv::strings::StrCat;
 
 void close_sub() {
   if (fileSub.IsOpen()) {
@@ -75,6 +76,40 @@ bool open_sub(bool wr) {
   }
 
   return fileSub.IsOpen();
+}
+
+uint32_t WWIVReadLastRead(int sub_number) {
+  // open file, and create it if necessary
+  postrec p;
+  memset(&p, 0, sizeof(postrec));
+
+  File subFile(syscfg.datadir, StrCat(subboards[sub_number].filename, ".sub"));
+  if (!subFile.Exists()) {
+    bool created = subFile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
+    if (!created) {
+      return 0;
+    }
+    p.owneruser = 0;
+    subFile.Write(&p, sizeof(postrec));
+    return 1;
+  }
+
+  if (!subFile.Open(File::modeBinary | File::modeReadOnly)) {
+    return 0;
+  }
+  // read in first rec, specifying # posts
+  // p.owneruser contains # of posts.
+  subFile.Read(&p, sizeof(postrec));
+
+  if (p.owneruser == 0) {
+    // Not sure why but iscan1 returned 1 for empty subs.
+    return 1;
+  }
+
+  // read in sub date, if don't already know it
+  subFile.Seek(p.owneruser * sizeof(postrec), File::seekBegin);
+  subFile.Read(&p, sizeof(postrec));
+  return p.qscan;
 }
 
 // Initializes use of a sub value (subboards[], not usub[]).  If quick, then
@@ -140,16 +175,8 @@ bool iscan1(int si, bool quick) {
   fileSub.Read(&p, sizeof(postrec));
   session()->SetNumMessagesInCurrentMessageArea(p.owneruser);
 
-  // read in sub date, if don't already know it
-  if (session()->m_SubDateCache[si] == 0) {
-    if (session()->GetNumMessagesInCurrentMessageArea()) {
-      fileSub.Seek(session()->GetNumMessagesInCurrentMessageArea() * sizeof(postrec), File::seekBegin);
-      fileSub.Read(&p, sizeof(postrec));
-      session()->m_SubDateCache[si] = p.qscan;
-    } else {
-      session()->m_SubDateCache[si] = 1;
-    }
-  }
+  // We used to read in sub date, if don't already know it
+  // Not callers should use WWIVReadLastRead to get it.
 
   // close file
   close_sub();
@@ -294,7 +321,6 @@ void add_post(postrec * pp) {
     // we've modified the sub
     believe_cache = false;
     session()->subchg = 0;
-    session()->m_SubDateCache[session()->GetCurrentReadMessageArea()] = pp->qscan;
   }
   if (bCloseSubFile) {
     close_sub();

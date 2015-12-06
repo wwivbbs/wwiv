@@ -1154,15 +1154,9 @@ void WApplication::InitializeBBS() {
   do_event = 0;
   usub = static_cast<usersubrec *>(BbsAllocA(session()->GetMaxNumberMessageAreas() * sizeof(usersubrec)));
   WWIV_ASSERT(usub != nullptr);
-  session()->m_SubDateCache = static_cast<unsigned int*>(BbsAllocA(session()->GetMaxNumberMessageAreas() * sizeof(
-                                   long)));
-  WWIV_ASSERT(session()->m_SubDateCache != nullptr);
 
   udir = static_cast<usersubrec *>(BbsAllocA(session()->GetMaxNumberFileAreas() * sizeof(usersubrec)));
   WWIV_ASSERT(udir != nullptr);
-  session()->m_DirectoryDateCache = static_cast<unsigned int*>(BbsAllocA(session()->GetMaxNumberFileAreas() *
-                                       sizeof(long)));
-  WWIV_ASSERT(session()->m_DirectoryDateCache != nullptr);
 
   uconfsub = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
   WWIV_ASSERT(uconfsub != nullptr);

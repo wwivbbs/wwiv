@@ -41,7 +41,6 @@ void send_net(net_header_rec * nh, unsigned short int *list, const char *text, c
 void giveup_timeslice();
 char *stripfn(const char *pszFileName);
 void stripfn_inplace(char *pszFileName);
-void preload_subs();
 char *get_wildlist(char *pszFileMask);
 int side_menu(int *menu_pos, bool redraw, const std::vector<std::string>& menu_items, int xpos, int ypos, struct side_menu_colors * smc);
 slrec getslrec(int nSl);

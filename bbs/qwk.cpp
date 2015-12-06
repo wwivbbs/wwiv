@@ -243,9 +243,9 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
   }
 
   uint32_t qscnptrx = qsc_p[sn];
-  uint32_t sd = session()->m_SubDateCache[sn];
+  uint32_t sd = WWIVReadLastRead(sn);
 
-  if (qwk_percent || ((!sd) || (sd > qscnptrx))) {
+  if (qwk_percent || (!sd || sd > qscnptrx)) {
     os = session()->GetCurrentMessageArea();
     session()->SetCurrentMessageArea(bn);
     i = 1;

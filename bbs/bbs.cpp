@@ -110,8 +110,6 @@ LocalIO* GetWfcIO() { return sess->localIO(); }
 
 #if !defined ( __unix__ )
 void WApplication::GetCaller() {
-  session()->SetMessageAreaCacheNumber(0);
-  session()->SetFileAreaCacheNumber(0);
   SetShutDownStatus(WApplication::shutdownNone);
   wfc_init();
   session()->remoteIO()->ClearRemoteInformation();
@@ -513,30 +511,12 @@ int WApplication::doWFCEvents() {
     }
 
     if (!any) {
-      if (session()->GetMessageAreaCacheNumber() < session()->num_subs) {
-        if (!session()->m_SubDateCache[session()->GetMessageAreaCacheNumber()]) {
-          any = true;
-          iscan1(session()->GetMessageAreaCacheNumber(), true);
-        }
-        session()->SetMessageAreaCacheNumber(session()->GetMessageAreaCacheNumber() + 1);
-      } else {
-        if (session()->GetFileAreaCacheNumber() < session()->num_dirs) {
-          if (!session()->m_DirectoryDateCache[session()->GetFileAreaCacheNumber()]) {
-            any = true;
-            dliscan_hash(session()->GetFileAreaCacheNumber());
-          }
-          session()->SetFileAreaCacheNumber(session()->GetFileAreaCacheNumber() + 1);
-        } else {
-          static int mult_time = 0;
-          if (this->IsCleanNetNeeded() || std::abs(timer1() - mult_time) > 1000L) {
-            cleanup_net();
-            mult_time = timer1();
-            giveup_timeslice();
-          } else {
-            giveup_timeslice();
-          }
-        }
+      static int mult_time = 0;
+      if (this->IsCleanNetNeeded() || std::abs(timer1() - mult_time) > 1000L) {
+        cleanup_net();
+        mult_time = timer1();
       }
+      giveup_timeslice();
     }
   } while (!incom && !lokb);
   return lokb;

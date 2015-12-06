@@ -253,7 +253,6 @@ void NewMessageScan() {
   express = false;
   expressabort = false;
   newline = false;
-  preload_subs();
   nscan();
   newline = true;
 }
@@ -388,7 +387,6 @@ void ExpressScan() {
   expressabort = false;
   TempDisablePause disable_pause;
   newline = false;
-  preload_subs();
   nscan();
   newline = true;
   express = false;
@@ -654,7 +652,6 @@ void NewMsgsAllConfs() {
     ac = true;
     tmp_disable_conf(true);
   }
-  preload_subs();
   nscan();
   newline = true;
   if (ac == true) {
@@ -672,7 +669,6 @@ void InternetEmail() {
 
 void NewMsgScanFromHere() {
   newline = false;
-  preload_subs();
   nscan(session()->GetCurrentMessageArea());
   newline = true;
 }
@@ -699,7 +695,6 @@ void DownloadPosts() {
         ac = true;
         tmp_disable_conf(true);
       }
-      preload_subs();
       nscan();
       if (ac) {
         tmp_disable_conf(false);
