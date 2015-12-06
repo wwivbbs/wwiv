@@ -146,7 +146,6 @@ bool StatusMgr::Get(bool bLockFile) {
     return false;
   } else {
     char oldFileChangeFlags[7];
-    uint32_t lQScanPtr = status.qscanptr;
     for (int nFcIndex = 0; nFcIndex < 7; nFcIndex++) {
       oldFileChangeFlags[nFcIndex] = status.filechange[nFcIndex];
     }
@@ -156,17 +155,6 @@ bool StatusMgr::Get(bool bLockFile) {
       m_statusFile.Close();
     }
 
-    if (lQScanPtr != status.qscanptr) {
-      if (session()->m_SubDateCache) {
-        // kill subs cache
-        for (int i1 = 0; i1 < session()->num_subs; i1++) {
-          session()->m_SubDateCache[i1] = 0L;
-        }
-      }
-      session()->SetMessageAreaCacheNumber(0);
-      session()->subchg = 1;
-      //g_szMessageGatFileName[0] = 0;
-    }
     for (int i = 0; i < 7; i++) {
       if (oldFileChangeFlags[i] != status.filechange[i]) {
         switch (i) {
@@ -179,18 +167,10 @@ bool StatusMgr::Get(bool bLockFile) {
             }
           }
           break;
-        case WStatus::fileChangeUpload: {         // kill dirs cache
-          if (session()->m_DirectoryDateCache) {
-            for (int i1 = 0; i1 < session()->num_dirs; i1++) {
-              session()->m_DirectoryDateCache[i1] = 0L;
-            }
-          }
-          session()->SetFileAreaCacheNumber(0);
-        }
+        case WStatus::fileChangeUpload:
         break;
         case WStatus::fileChangePosts:
           session()->subchg = 1;
-          //g_szMessageGatFileName[0] = 0;
           break;
         case WStatus::fileChangeEmail:
           emchg = true;

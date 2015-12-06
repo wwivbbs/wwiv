@@ -1760,7 +1760,6 @@ static int move_filename(const char *pszFileName, int dn) {
         u1.numbytes = session()->numf;
         if (u.daten > u1.daten) {
           u1.daten = u.daten;
-          session()->m_DirectoryDateCache[nDestDirNum] = u.daten;
         }
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Write(&u1, sizeof(uploadsrec));
@@ -1990,9 +1989,7 @@ void load_listing() {
 
 
 void view_file(const char *pszFileName) {
-  char szCommandLine[MAX_PATH];
   char szBuffer[30];
-  long osysstatus;
   int i, i1;
   uploadsrec u;
 

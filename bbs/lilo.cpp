@@ -939,7 +939,6 @@ void logon() {
       setuconf(CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
     }
   }
-  g_preloaded = false;
 
   if (application()->HasConfigFlag(OP_FLAGS_USE_FORCESCAN)) {
     int nNextSubNumber = 0;

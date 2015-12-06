@@ -139,12 +139,6 @@ class WSession {
   bool IsUserOnline() const { return m_bUserOnline; }
   void SetUserOnline(bool b) { m_bUserOnline = b; }
 
-  int  GetFileAreaCacheNumber() const { return m_nFileAreaCache; }
-  void SetFileAreaCacheNumber(int n) { m_nFileAreaCache = n; }
-
-  int  GetMessageAreaCacheNumber() const { return m_nMessageAreaCache; }
-  void SetMessageAreaCacheNumber(int n) { m_nMessageAreaCache = n; }
-
   int  GetCurrentLanguageNumber() const { return m_nCurrentLanguageNumber; }
   void SetCurrentLanguageNumber(int n) { m_nCurrentLanguageNumber = n; }
 
@@ -304,9 +298,6 @@ class WSession {
   std::string usenetReferencesLine;
   std::string threadID;
   bool m_bInternetUseRealNames;
-
-  uint32_t *m_DirectoryDateCache,
-           *m_SubDateCache;
 
   std::string language_dir;
   char *cur_lang_name;

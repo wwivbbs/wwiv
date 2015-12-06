@@ -59,7 +59,7 @@ using namespace wwiv::os;
 using namespace wwiv::strings;
 
 #define SET_BLOCK(file, pos, size) lseek(file, (long)pos * (long)size, SEEK_SET)
-#define qwk_iscan_literal(x) (iscan1(x, 1))
+#define qwk_iscan_literal(x) (iscan1(x))
 #define MAXMAIL 255
 #define EMAIL_STORAGE 2
 

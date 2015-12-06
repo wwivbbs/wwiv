@@ -344,42 +344,9 @@ void dliscan1(int nDirectoryNum) {
   fileDownload.Close();
   session()->numf = u.numbytes;
   this_date = u.daten;
-  session()->m_DirectoryDateCache[nDirectoryNum] = this_date;
 
   sprintf(g_szExtDescrFileName, "%s%s.ext", syscfg.datadir, directories[nDirectoryNum].filename);
   zap_ed_info();
-}
-
-void dliscan_hash(int nDirectoryNum) {
-  uploadsrec u;
-
-  if (nDirectoryNum >= session()->num_dirs || session()->m_DirectoryDateCache[nDirectoryNum]) {
-    return;
-  }
-
-  string dir = StringPrintf("%s%s.dir",
-      syscfg.datadir, directories[nDirectoryNum].filename);
-  File file(dir);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    time_t now = time(nullptr);
-    session()->m_DirectoryDateCache[nDirectoryNum] = static_cast<uint32_t>(now);
-    return;
-  }
-  int nNumRecords = file.GetLength() / sizeof(uploadsrec);
-  if (nNumRecords < 1) {
-    time_t now = time(nullptr);
-    session()->m_DirectoryDateCache[nDirectoryNum] = static_cast<uint32_t>(now);
-  } else {
-    FileAreaSetRecord(file, 0);
-    file.Read(&u, sizeof(uploadsrec));
-    if (IsEquals(u.filename, "|MARKER|")) {
-      session()->m_DirectoryDateCache[nDirectoryNum] = u.daten;
-    } else {
-      time_t now = time(nullptr);
-      session()->m_DirectoryDateCache[nDirectoryNum] = static_cast<uint32_t>(now);
-    }
-  }
-  file.Close();
 }
 
 void dliscan() {
@@ -863,11 +830,6 @@ void listfiles() {
 }
 
 void nscandir(int nDirNum, bool *abort) {
-  if (session()->m_DirectoryDateCache[udir[nDirNum].subnum]
-      && session()->m_DirectoryDateCache[udir[nDirNum].subnum] < static_cast<unsigned long>(nscandate)) {
-    return;
-  }
-
   int nOldCurDir = session()->GetCurrentFileArea();
   session()->SetCurrentFileArea(nDirNum);
   dliscan();

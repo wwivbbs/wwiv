@@ -305,6 +305,9 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
                   bool bUseYModemBatch);
 void zmodem_send(const char *pszFileName, bool *sent, double *percent);
 
+// todo(rushfan): move this to subacc.h once it's available.
+uint32_t WWIVReadLastRead(int sub_number);
+
 
 // File: subacc.cpp
 #include "bbs/subacc.h"

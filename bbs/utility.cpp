@@ -317,43 +317,6 @@ void stripfn_inplace(char *pszFileName) {
   strcpy(pszFileName, stripfn(pszFileName));
 }
 
-void preload_subs() {
-  bool abort = false;
-
-  if (g_preloaded) {
-    return;
-  }
-
-  bout.nl();
-  bout << "|#1Caching message areas";
-  int i1 = 3;
-  for (session()->SetMessageAreaCacheNumber(0);
-       session()->GetMessageAreaCacheNumber() < session()->num_subs && !abort;
-       session()->SetMessageAreaCacheNumber(session()->GetMessageAreaCacheNumber() + 1)) {
-    if (!session()->m_SubDateCache[session()->GetMessageAreaCacheNumber()]) {
-      iscan1(session()->GetMessageAreaCacheNumber(), true);
-    }
-    bout << "\x03" << i1 << ".";
-    if ((session()->GetMessageAreaCacheNumber() % 5) == 4) {
-      i1++;
-      if (i1 == 4) {
-        i1++;
-      }
-      if (i1 == 10) {
-        i1 = 3;
-      }
-      bout << "\b\b\b\b\b";
-    }
-    checka(&abort);
-  }
-  if (!abort) {
-    bout << "|#1...done!\r\n";
-  }
-  bout.nl();
-  g_preloaded = true;
-}
-
-
 char *get_wildlist(char *pszFileMask) {
   int mark = 0;
   char *pszPath, t;
