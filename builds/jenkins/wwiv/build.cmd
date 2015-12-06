@@ -1,5 +1,5 @@
 @rem **************************************************************************
-@rem WWIV 5.0 Build Script.
+@rem WWIV Build Script.
 @rem
 @rem Required Variables:
 @rem WORKSPACE - git root directory

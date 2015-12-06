@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -20,8 +20,8 @@
 #define __INCLUDED_BBS_H__
 
 /*
- * @header WWIV 5.0 Main Application
- * Main Starting point of the WWIV 5.0 System.
+ * @header WWIV 5 Main Application
+ * Main Starting point of the WWIV 5 System.
  */
 
 #include <memory>
@@ -36,7 +36,7 @@
 #include "core/file.h"
 
 /*!
- * @class WApplication  Main Application object for WWIV 5.0
+ * @class WApplication  Main Application object for WWIV.
  */
 class WApplication : public WLogger, Runnable {
  public:
