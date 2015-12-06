@@ -173,7 +173,6 @@ void move_file() {
       u1.numbytes = session()->numf;
       if (u.daten > u1.daten) {
         u1.daten = u.daten;
-        session()->m_DirectoryDateCache[d1] = u.daten;
       }
       FileAreaSetRecord(fileDownload, 0);
       fileDownload.Write(&u1, sizeof(uploadsrec));
@@ -500,7 +499,6 @@ bool upload_file(const char *pszFileName, int nDirectoryNum, const char *pszDesc
     fileDownload.Read(&u1, sizeof(uploadsrec));
     u1.numbytes = session()->numf;
     u1.daten = static_cast<unsigned long>(tCurrentTime);
-    session()->m_DirectoryDateCache[nDirectoryNum] = static_cast<unsigned long>(tCurrentTime);
     FileAreaSetRecord(fileDownload, 0);
     fileDownload.Write(&u1, sizeof(uploadsrec));
     fileDownload.Close();

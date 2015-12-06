@@ -31,3 +31,20 @@ TEST(ScopeExitTest, Basic) {
   }
   ASSERT_TRUE(committed);
 }
+
+TEST(ScopeExitTest, Empty) {
+  // Should not crash on exit.
+  ScopeExit e;
+}
+
+TEST(ScopeExitTest, Swap) {
+  bool committed = false;
+  bool rolledback = false;
+  auto f = [&] { committed = true; };
+  {
+    ScopeExit e;
+    e.swap(f);
+    ASSERT_FALSE(committed);
+  }
+  ASSERT_TRUE(committed);
+}

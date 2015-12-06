@@ -350,14 +350,13 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
     return;
   }
   bout.nl();
-  uint32_t lQuickScanPointer = qsc_p[nSubNumber];
+  uint32_t memory_last_read = qsc_p[nSubNumber];
 
-  if (!session()->m_SubDateCache[nSubNumber]) {
-    iscan1(nSubNumber, true);
-  }
+  // TODO(rushfan): Do we still need to do this?
+  iscan1(nSubNumber);
 
-  uint32_t lSubDate = session()->m_SubDateCache[nSubNumber];
-  if (!lSubDate || lSubDate > lQuickScanPointer) {
+  uint32_t on_disk_last_read = WWIVReadLastRead(nSubNumber);
+  if (!on_disk_last_read || on_disk_last_read > memory_last_read) {
     int nNextSubNumber = *pnNextSubNumber;
     int nOldSubNumber = session()->GetCurrentMessageArea();
     session()->SetCurrentMessageArea(nBeginSubNumber);
@@ -366,7 +365,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
       bout << "\r\n\003""6A file required is in use by another instance. Try again later.\r\n";
       return;
     }
-    lQuickScanPointer = qsc_p[nSubNumber];
+    memory_last_read = qsc_p[nSubNumber];
 
     bout.bprintf("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n",
                                       subboards[session()->GetCurrentReadMessageArea()].name,
@@ -374,10 +373,11 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
 
     int i;
     for (i = session()->GetNumMessagesInCurrentMessageArea(); (i > 1)
-         && (get_post(i - 1)->qscan > lQuickScanPointer); i--)
+         && (get_post(i - 1)->qscan > memory_last_read); i--)
       ;
 
-    if (session()->GetNumMessagesInCurrentMessageArea() > 0 && i <= session()->GetNumMessagesInCurrentMessageArea()
+    if (session()->GetNumMessagesInCurrentMessageArea() > 0
+        && i <= session()->GetNumMessagesInCurrentMessageArea()
         && get_post(i)->qscan > qsc_p[session()->GetCurrentReadMessageArea()]) {
       scan(i, SCAN_OPTION_READ_MESSAGE, &nNextSubNumber, false);
     } else {
@@ -396,8 +396,9 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
       bout << "\r\x1b[4A";
     }
   } else {
-    bout.bprintf("|#1< Nothing new on %s %s >", subboards[nSubNumber].name,
-                                      usub[nBeginSubNumber].keys);
+    bout.bprintf("|#1< Nothing new on %s %s >",
+        subboards[nSubNumber].name,
+        usub[nBeginSubNumber].keys);
     bout.clreol();
     bout.nl();
     lines_listed = 0;
@@ -413,7 +414,9 @@ void nscan(int nStartingSubNum) {
   int nNextSubNumber = 1;
 
   bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
-  for (int i = nStartingSubNum; usub[i].subnum != -1 && i < session()->num_subs && nNextSubNumber && !hangup; i++) {
+  for (int i = nStartingSubNum; 
+       usub[i].subnum != -1 && i < session()->num_subs && nNextSubNumber && !hangup; 
+       i++) {
     if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) {
       qscan(i, &nNextSubNumber);
     }

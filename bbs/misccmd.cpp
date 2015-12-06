@@ -563,7 +563,6 @@ void Packers() {
         if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
           ac = true;
         }
-        preload_subs();
         nscan();
         session()->capture()->set_x_only(false, nullptr, false);
         add_arc("offline", "posts.txt", 0);

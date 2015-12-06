@@ -32,7 +32,6 @@ int  list_arc_out(const char *pszFileName, const char *pszDirectory);
 bool ratio_ok();
 bool dcs();
 void dliscan1(int nDirectoryNum);
-void dliscan_hash(int nDirectoryNum);
 void dliscan();
 void add_extended_description(const char *pszFileName, const char *pszDescription);
 void delete_extended_description(const char *pszFileName);

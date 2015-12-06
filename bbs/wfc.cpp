@@ -183,27 +183,12 @@ static void UpdateStatus(CursesWindow* statusWindow) {
 }
 
 static void CleanNetIfNeeded() {
-  if (session()->GetMessageAreaCacheNumber() < session()->num_subs) {
-    if (!session()->m_SubDateCache[session()->GetMessageAreaCacheNumber()]) {
-      iscan1(session()->GetMessageAreaCacheNumber(), true);
-    }
-    session()->SetMessageAreaCacheNumber(session()->GetMessageAreaCacheNumber() + 1);
-  } else {
-    if (session()->GetFileAreaCacheNumber() < session()->num_dirs) {
-      if (!session()->m_DirectoryDateCache[session()->GetFileAreaCacheNumber()]) {
-        dliscan_hash(session()->GetFileAreaCacheNumber());
-      }
-      session()->SetFileAreaCacheNumber(session()->GetFileAreaCacheNumber() + 1);
-    } else {
-      static int mult_time = 0;
-      if (application()->IsCleanNetNeeded() || std::abs(timer1() - mult_time) > 1000L) {
-        cleanup_net();
-        mult_time = timer1();
-      }
-    }
+  static int mult_time = 0;
+  if (application()->IsCleanNetNeeded() || std::abs(timer1() - mult_time) > 1000L) {
+    cleanup_net();
+    mult_time = timer1();
   }
 }
-
 
 static void RunEventsIfNeeded() {
   unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());

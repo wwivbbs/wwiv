@@ -74,7 +74,6 @@ __EXTRN__ int ansiptr,
           nsp;
 
 __EXTRN__ bool  bChatLine,
-          g_preloaded,
           newline,
           global_xx,
           forcescansub,
