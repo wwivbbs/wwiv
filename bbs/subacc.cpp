@@ -31,24 +31,18 @@
 #include "bbs/wsession.h"
 #include "bbs/wstatus.h"
 #include "core/file.h"
+#include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 
-#ifndef MAX_TO_CACHE
-#define MAX_TO_CACHE 15                     // max postrecs to hold in cache
-#endif
-
-static postrec *cache;                      // points to sub cache memory
-static bool believe_cache;                  // true if cache is valid
-static int cache_start;                     // starting msgnum of cache
-static int last_msgnum;                     // last msgnum read
 static File fileSub;                       // File object for '.sub' file
 static char subdat_fn[MAX_PATH];            // filename of .sub file
 
 using std::unique_ptr;
 using wwiv::bbs::TempDisablePause;
 using wwiv::strings::StrCat;
+using wwiv::core::ScopeExit;
 
 void close_sub() {
   if (fileSub.IsOpen()) {
@@ -64,7 +58,6 @@ bool open_sub(bool wr) {
     fileSub.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     if (fileSub.IsOpen()) {
       // re-read info from file, to be safe
-      believe_cache = false;
       fileSub.Seek(0L, File::seekBegin);
       postrec p;
       fileSub.Read(&p, sizeof(postrec));
@@ -117,13 +110,6 @@ uint32_t WWIVReadLastRead(int sub_number) {
 bool iscan1(int si, bool quick) {
   postrec p;
 
-  // make sure we have cache space
-  if (!cache) {
-    cache = static_cast<postrec *>(malloc(MAX_TO_CACHE * sizeof(postrec)));
-    if (!cache) {
-      return false;
-    }
-  }
   // forget it if an invalid sub #
   if (si < 0 || si >= session()->num_subs) {
     return false;
@@ -137,19 +123,7 @@ bool iscan1(int si, bool quick) {
     } else {
       set_net_num(0);
     }
-    // see if a sub has changed
-    application()->GetStatusManager()->RefreshStatusCache();
-    if (session()->subchg) {
-      session()->SetCurrentReadMessageArea(-1);
-    }
-
-    // if already have this one set, nothing more to do
-    if (si == session()->GetCurrentReadMessageArea()) {
-      return true;
-    }
   }
-  // sub cache no longer valid
-  believe_cache = false;
 
   // set sub filename
   snprintf(subdat_fn, sizeof(subdat_fn), "%s%s.sub", syscfg.datadir, subboards[si].filename);
@@ -168,7 +142,6 @@ bool iscan1(int si, bool quick) {
   // set sub
   session()->SetCurrentReadMessageArea(si);
   session()->subchg = 0;
-  last_msgnum = 0;
 
   // read in first rec, specifying # posts
   fileSub.Seek(0L, File::seekBegin);
@@ -193,113 +166,45 @@ int iscan(int b) {
 // Returns info for a post.  Maintains a cache.  Does not correct anything
 // if the sub has changed.
 postrec *get_post(int mn) {
-  postrec p;
-  bool bCloseSubFile = false;
-
-  if (mn == 0) {
+  if (mn < 1) {
     return nullptr;
   }
-
-  if (session()->subchg == 1) {
-    // sub has changed (detected in application()->GetStatusManager()->Read); invalidate cache
-    believe_cache = false;
-
-    // kludge: subchg==2 leaves subchg indicating change, but the '2' value
-    // indicates, to this routine, that it has been handled at this level
-    session()->subchg = 2;
+  if (mn > session()->GetNumMessagesInCurrentMessageArea()) {
+    mn = session()->GetNumMessagesInCurrentMessageArea();
   }
-  // see if we need new cache info
-  if (!believe_cache ||
-      mn < cache_start ||
-      mn >= (cache_start + MAX_TO_CACHE)) {
-    if (!fileSub.IsOpen()) {
-      // open the sub data file, if necessary
-      if (!open_sub(false)) {
-        return nullptr;
-      }
-      bCloseSubFile = true;
+  bool need_close = false;
+  if (!fileSub.IsOpen()) {
+    if (!open_sub(false)) {
+      return nullptr;
     }
-
-    // re-read # msgs, if needed
-    if (session()->subchg == 2) {
-      fileSub.Seek(0L, File::seekBegin);
-      fileSub.Read(&p, sizeof(postrec));
-      session()->SetNumMessagesInCurrentMessageArea(p.owneruser);
-
-      // another kludge: subchg==3 indicates we have re-read # msgs also
-      // only used so we don't do this every time through
-      session()->subchg = 3;
-
-      // adjust msgnum, if it is no longer valid
-      if (mn > session()->GetNumMessagesInCurrentMessageArea()) {
-        mn = session()->GetNumMessagesInCurrentMessageArea();
-      }
-    }
-    // select new starting point of cache
-    if (mn >= last_msgnum) {
-      // going forward
-      if (session()->GetNumMessagesInCurrentMessageArea() <= MAX_TO_CACHE) {
-        cache_start = 1;
-      } else if (mn > (session()->GetNumMessagesInCurrentMessageArea() - MAX_TO_CACHE)) {
-        cache_start = session()->GetNumMessagesInCurrentMessageArea() - MAX_TO_CACHE + 1;
-      } else {
-        cache_start = mn;
-      }
-    } else {
-      // going backward
-      if (mn > MAX_TO_CACHE) {
-        cache_start = mn - MAX_TO_CACHE + 1;
-      } else {
-        cache_start = 1;
-      }
-    }
-
-    if (cache_start < 1) {
-      cache_start = 1;
-    }
-
-    // read in some sub info
-    fileSub.Seek(cache_start * sizeof(postrec), File::seekBegin);
-    fileSub.Read(cache, MAX_TO_CACHE * sizeof(postrec));
-
-    // now, close the file, if necessary
-    if (bCloseSubFile) {
-      close_sub();
-    }
-    // cache is now valid
-    believe_cache = true;
+    need_close = true;
   }
-  // error if msg # invalid
-  if (mn < 1 || mn > session()->GetNumMessagesInCurrentMessageArea()) {
-    return nullptr;
+  // read in post
+  static postrec p;
+  fileSub.Seek(mn * sizeof(postrec), File::seekBegin);
+  fileSub.Read(&p, sizeof(postrec));
+
+  if (need_close) {
+    close_sub();
   }
-  last_msgnum = mn;
-  return (cache + (mn - cache_start));
+  return &p;
 }
 
 void write_post(int mn, postrec * pp) {
-  if (fileSub.IsOpen()) {
-    fileSub.Seek(mn * sizeof(postrec), File::seekBegin);
-    fileSub.Write(pp, sizeof(postrec));
-    if (believe_cache) {
-      if (mn >= cache_start && mn < (cache_start + MAX_TO_CACHE)) {
-        postrec* p1 = cache + (mn - cache_start);
-        if (p1 != pp) {
-          *p1 = *pp;
-        }
-      }
-    }
+  if (!fileSub.IsOpen()) {
+    return;
   }
+  fileSub.Seek(mn * sizeof(postrec), File::seekBegin);
+  fileSub.Write(pp, sizeof(postrec));
 }
 
 void add_post(postrec * pp) {
-  bool bCloseSubFile = false;
+  bool need_close = false;
 
   // open the sub, if necessary
-
   if (!fileSub.IsOpen()) {
     open_sub(true);
-    bCloseSubFile = true;
+    need_close = true;
   }
   if (fileSub.IsOpen()) {
     // get updated info
@@ -319,10 +224,9 @@ void add_post(postrec * pp) {
     fileSub.Write(pp, sizeof(postrec));
 
     // we've modified the sub
-    believe_cache = false;
     session()->subchg = 0;
   }
-  if (bCloseSubFile) {
+  if (need_close) {
     close_sub();
   }
 }
@@ -330,12 +234,12 @@ void add_post(postrec * pp) {
 #define BUFSIZE 32000
 
 void delete_message(int mn) {
-  bool bCloseSubFile = false;
+  bool need_close = false;
 
   // open file, if needed
   if (!fileSub.IsOpen()) {
     open_sub(true);
-    bCloseSubFile = true;
+    need_close = true;
   }
   // see if anything changed
   application()->GetStatusManager()->RefreshStatusCache();
@@ -371,31 +275,24 @@ void delete_message(int mn) {
         session()->SetNumMessagesInCurrentMessageArea(p.owneruser);
         fileSub.Seek(0L, File::seekBegin);
         fileSub.Write(&p, sizeof(postrec));
-
-        // cache is now invalid
-        believe_cache = false;
-
         free(pBuffer);
       }
     }
   }
   // close file, if needed
-  if (bCloseSubFile) {
+  if (need_close) {
     close_sub();
   }
 }
 
 static bool IsSamePost(postrec * p1, postrec * p2) {
-  if (p1 &&
-      p2 &&
-      p1->daten == p2->daten &&
-      p1->qscan == p2->qscan &&
-      p1->ownersys == p2->ownersys &&
-      p1->owneruser == p2->owneruser &&
-      wwiv::strings::IsEquals(p1->title, p2->title)) {
-    return true;
-  }
-  return false;
+  return p1 &&
+    p2 &&
+    p1->daten == p2->daten &&
+    p1->qscan == p2->qscan &&
+    p1->ownersys == p2->ownersys &&
+    p1->owneruser == p2->owneruser &&
+    wwiv::strings::IsEquals(p1->title, p2->title);
 }
 
 void resynch(int *msgnum, postrec * pp) {
