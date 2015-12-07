@@ -19,111 +19,28 @@
 #ifndef __INCLUDED_KEYCODES_H__
 #define __INCLUDED_KEYCODES_H__
 
-#define COMMAND_F1        (F1+256)
-#define COMMAND_SF1       (SF1+256)
-#define COMMAND_CF1       (CF1+256)
+constexpr int SPACE = 32;
 
-#define COMMAND_F2        (F2+256)
-#define COMMAND_SF2       (SF2+256)
-#define COMMAND_CF2       (CF2+256)
+constexpr int RETURN = 13;
+constexpr int SOFTRETURN = 10;
+constexpr int HARDRETURN = RETURN;
+constexpr int CRETURN = SOFTRETURN;
 
-#define COMMAND_F3        (F3+256)
-#define COMMAND_SF3       (SF3+256)
-#define COMMAND_CF3       (CF3+256)
+constexpr int HRETURN = HARDRETURN;
+constexpr int SRETURN = SOFTRETURN;
 
-#define COMMAND_F4        (F4+256)
-#define COMMAND_SF4       (SF4+256)
-#define COMMAND_CF4       (CF4+256)
+constexpr int ENTER = RETURN;
+constexpr int SOFTENTER = SOFTRETURN;
+constexpr int HARDENTER = HARDRETURN;
+constexpr int CENTER = CRETURN;
 
-#define COMMAND_F5        (F5+256)
-#define COMMAND_SF5       (SF5+256)
-#define COMMAND_CF5       (CF5+256)
+constexpr int BKSPACE = 8;
+constexpr int BACKSPACE = 8;
+constexpr int CBACKSPACE = 127;
+constexpr int CBKSPACE = 127;
 
-#define COMMAND_F6        (F6+256)
-#define COMMAND_SF6       (SF6+256)
-#define COMMAND_CF6       (CF6+256)
-
-#define COMMAND_F7        (F7+256)
-#define COMMAND_SF7       (SF7+256)
-#define COMMAND_CF7       (CF7+256)
-
-#define COMMAND_F8        (F8+256)
-#define COMMAND_SF8       (SF8+256)
-#define COMMAND_CF8       (CF8+256)
-
-#define COMMAND_F9        (F9+256)
-#define COMMAND_SF9       (SF9+256)
-#define COMMAND_CF9       (CF9+256)
-
-#define COMMAND_F10       (F10+256)
-#define COMMAND_SF10      (SF10+256)
-#define COMMAND_CF10      (CF10+256)
-
-#define GET_OUT     (ESC)
-#define EXECUTE     (RETURN)
-
-#define COMMAND_LEFT     (LARROW+256)
-#define COMMAND_RIGHT    (RARROW+256)
-#define COMMAND_UP       (UPARROW+256)
-#define COMMAND_DOWN     (DARROW+256)
-#define COMMAND_INSERT   (INSERT+256)
-#define COMMAND_PAGEUP   (PAGEUP+256)
-#define COMMAND_PAGEDN   (PAGEDN+256)
-#define COMMAND_HOME     (HOME+256)
-#define COMMAND_END      (END+256)
-#define COMMAND_STAB     (STAB+256)
-#define COMMAND_DELETE   (KEY_DELETE+256)
-
-#define COMMAND_AA       (AA+256)
-#define COMMAND_AB       (AB+256)
-#define COMMAND_AC       (AC+256)
-#define COMMAND_AD       (AD+256)
-#define COMMAND_AE       (AE+256)
-#define COMMAND_AF       (AF+256)
-#define COMMAND_AG       (AG+256)
-#define COMMAND_AH       (AH+256)
-#define COMMAND_AI       (AI+256)
-#define COMMAND_AJ       (AJ+256)
-#define COMMAND_AK       (AK+256)
-#define COMMAND_AL       (AL+256)
-#define COMMAND_AM       (AM+256)
-#define COMMAND_AN       (AN+256)
-#define COMMAND_AO       (AO+256)
-#define COMMAND_AP       (AP+256)
-#define COMMAND_AQ       (AQ+256)
-#define COMMAND_AR       (AR+256)
-#define COMMAND_AS       (AS+256)
-#define COMMAND_AT       (AT+256)
-#define COMMAND_AU       (AU+256)
-#define COMMAND_AV       (AV+256)
-#define COMMAND_AW       (AW+256)
-#define COMMAND_AX       (AX+256)
-#define COMMAND_AY       (AY+256)
-#define COMMAND_AZ       (AZ+256)
-
-
-#define SPACE        32
-
-#define RETURN      13
-#define SOFTRETURN  10
-#define HARDRETURN  RETURN
-#define CRETURN     SOFTRETURN
-
-#define HRETURN     HARDRETURN
-#define SRETURN     SOFTRETURN
-
-#define ENTER       RETURN
-#define SOFTENTER   SOFTRETURN
-#define HARDENTER   HARDRETURN
-#define CENTER      CRETURN
-
-#define BKSPACE     8
-#define BACKSPACE   8
-#define CBACKSPACE  127
-#define CBKSPACE    127
-
-#define ESC         27
-#define TAB         9
+constexpr int ESC = 27;
+constexpr int TAB = 9;
 
 /* Stab is an extended 15 (0 ascii, 15 ext) */
 #define STAB        15
@@ -168,16 +85,16 @@
 #define INSERT      82
 #define KEY_DELETE  83
 
-#define F1          59
-#define F2          60
-#define F3          61
-#define F4          62
-#define F5          63
-#define F6          64
-#define F7          65
-#define F8          66
-#define F9          67
-#define F10         68
+constexpr int F1          = 59;
+constexpr int F2          = 60;
+constexpr int F3          = 61;
+constexpr int F4          = 62;
+constexpr int F5          = 63;
+constexpr int F6          = 64;
+constexpr int F7          = 65;
+constexpr int F8          = 66;
+constexpr int F9          = 67;
+constexpr int F10         = 68;
 
 #define AF1         104
 #define AF2         105
@@ -211,6 +128,46 @@
 #define CF8         101
 #define CF9         102
 #define CF10        103
+
+static constexpr int COMMAND_F1 = (F1 + 256);
+#define COMMAND_SF1       (SF1+256)
+#define COMMAND_CF1       (CF1+256)
+
+#define COMMAND_F2        (F2+256)
+#define COMMAND_SF2       (SF2+256)
+#define COMMAND_CF2       (CF2+256)
+
+#define COMMAND_F3        (F3+256)
+#define COMMAND_SF3       (SF3+256)
+#define COMMAND_CF3       (CF3+256)
+
+#define COMMAND_F4        (F4+256)
+#define COMMAND_SF4       (SF4+256)
+#define COMMAND_CF4       (CF4+256)
+
+#define COMMAND_F5        (F5+256)
+#define COMMAND_SF5       (SF5+256)
+#define COMMAND_CF5       (CF5+256)
+
+#define COMMAND_F6        (F6+256)
+#define COMMAND_SF6       (SF6+256)
+#define COMMAND_CF6       (CF6+256)
+
+#define COMMAND_F7        (F7+256)
+#define COMMAND_SF7       (SF7+256)
+#define COMMAND_CF7       (CF7+256)
+
+#define COMMAND_F8        (F8+256)
+#define COMMAND_SF8       (SF8+256)
+#define COMMAND_CF8       (CF8+256)
+
+#define COMMAND_F9        (F9+256)
+#define COMMAND_SF9       (SF9+256)
+#define COMMAND_CF9       (CF9+256)
+
+#define COMMAND_F10       (F10+256)
+#define COMMAND_SF10      (SF10+256)
+#define COMMAND_CF10      (CF10+256)
 
 #define CA          1
 #define CB          2
@@ -265,5 +222,48 @@
 #define AX  45
 #define AY  21
 #define AZ  44
+
+#define GET_OUT     (ESC)
+#define EXECUTE     (RETURN)
+
+#define COMMAND_LEFT     (LARROW+256)
+#define COMMAND_RIGHT    (RARROW+256)
+#define COMMAND_UP       (UPARROW+256)
+#define COMMAND_DOWN     (DARROW+256)
+#define COMMAND_INSERT   (INSERT+256)
+#define COMMAND_PAGEUP   (PAGEUP+256)
+#define COMMAND_PAGEDN   (PAGEDN+256)
+#define COMMAND_HOME     (HOME+256)
+#define COMMAND_END      (END+256)
+#define COMMAND_STAB     (STAB+256)
+#define COMMAND_DELETE   (KEY_DELETE+256)
+
+#define COMMAND_AA       (AA+256)
+#define COMMAND_AB       (AB+256)
+#define COMMAND_AC       (AC+256)
+#define COMMAND_AD       (AD+256)
+#define COMMAND_AE       (AE+256)
+#define COMMAND_AF       (AF+256)
+#define COMMAND_AG       (AG+256)
+#define COMMAND_AH       (AH+256)
+#define COMMAND_AI       (AI+256)
+#define COMMAND_AJ       (AJ+256)
+#define COMMAND_AK       (AK+256)
+#define COMMAND_AL       (AL+256)
+#define COMMAND_AM       (AM+256)
+#define COMMAND_AN       (AN+256)
+#define COMMAND_AO       (AO+256)
+#define COMMAND_AP       (AP+256)
+#define COMMAND_AQ       (AQ+256)
+#define COMMAND_AR       (AR+256)
+#define COMMAND_AS       (AS+256)
+#define COMMAND_AT       (AT+256)
+#define COMMAND_AU       (AU+256)
+#define COMMAND_AV       (AV+256)
+#define COMMAND_AW       (AW+256)
+#define COMMAND_AX       (AX+256)
+#define COMMAND_AY       (AY+256)
+#define COMMAND_AZ       (AZ+256)
+
 
 #endif // __INCLUDED_KEYCODES_H__
