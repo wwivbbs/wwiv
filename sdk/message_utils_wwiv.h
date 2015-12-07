@@ -31,15 +31,15 @@ uint8_t network_number_from(const M* m) {
     return 0;
   }
   if (m->status & status_source_verified) {
-    return m->source_verified_net_number;
+    return m->src_verified_msg.net_number;
   }
-  return m->network_number;
+  return m->network_msg.net_number;
 }
 
 template<typename M>
 uint8_t source_verfied_type(const M* m) {
   if ((m->status & status_new_net) && (m->status & status_source_verified)) {
-    return m->source_verified_type;
+    return m->src_verified_msg.source_verified_type;
   }
   return 0;
 }

@@ -613,8 +613,8 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
   }
 
   if (get_post(nMessageNumber)->status & status_post_new_net) {
-    set_net_num(get_post(nMessageNumber)->network_number);
-    if (get_post(nMessageNumber)->network_number == -1) {
+    set_net_num(get_post(nMessageNumber)->network_msg.net_number);
+    if (get_post(nMessageNumber)->network_msg.net_number == -1) {
       bout << "|#6Deleted network.\r\n";
       return;
     }

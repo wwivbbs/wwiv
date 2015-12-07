@@ -489,9 +489,16 @@ struct messagerec {
 struct postrec {
   char title[72];                       // title of post
   uint8_t padding_from_title[6];
-  uint8_t source_verified_net_number;
-  uint8_t unused_between_netnum;
-  uint8_t network_number;               // network number for the post
+  union {
+    struct source_verified_message_t {
+      uint8_t net_number;               // network number for the message
+      uint16_t source_verified_type;
+    } src_verified_msg;
+    struct network_message_t {
+      uint16_t unused_padding;
+      uint8_t net_number;               // network number for the message
+    } network_msg;
+  };
 
   uint8_t anony,                        // anony-stat of message
           status;                       // bit-mapped status
@@ -511,9 +518,16 @@ struct postrec {
 struct mailrec {
   char title[72];                       // title of message
   uint8_t padding_from_title[6];
-  uint8_t source_verified_net_number;
-  uint8_t source_verified_type;
-  uint8_t network_number;               // network number for the message
+  union {
+    struct source_verified_message_t {
+      uint8_t net_number;               // network number for the message
+      uint16_t source_verified_type;
+    } src_verified_msg;
+    struct network_message_t {
+      uint16_t unused_padding;
+      uint8_t net_number;               // network number for the message
+    } network_msg;
+  };
 
   uint8_t anony,                        // anonymous mail?
           status;                       // status for e-mail
