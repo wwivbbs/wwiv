@@ -30,6 +30,7 @@
 #define NOMINMAX
 #include <Windows.h>
 #include <DbgHelp.h>
+#include <VersionHelpers.h>
 
 #endif  // _WIN32
 
@@ -60,44 +61,23 @@ void sound(uint32_t frequency, std::chrono::milliseconds d) {
 }
 
 std::string os_version_string() {
-
-  OSVERSIONINFO os;
-  os.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-  if (!GetVersionEx(&os)) {
-    return std::string("WIN32");
+  bool server = IsWindowsServer();
+  if (IsWindows10OrGreater()) {
+    return server ? "Windows 2016 Server" : "Windows 10";
   }
-  switch (os.dwPlatformId) {
-  case VER_PLATFORM_WIN32_NT:
-    if (os.dwMajorVersion == 5) {
-      switch (os.dwMinorVersion) {
-      case 0:
-        return StringPrintf("Windows 2000 %s", os.szCSDVersion);
-      case 1:
-        return StringPrintf("Windows XP %s", os.szCSDVersion);
-      case 2:
-        return StringPrintf("Windows Server 2003 %s", os.szCSDVersion);
-      default:
-        return StringPrintf("Windows NT %ld%c%ld %s",
-            os.dwMajorVersion, '.', os.dwMinorVersion, os.szCSDVersion);
-      }
-    } else if (os.dwMajorVersion == 6) {
-      switch (os.dwMinorVersion) {
-      case 0:
-        return StringPrintf("Windows Vista %s", os.szCSDVersion);
-      case 1:
-        return StringPrintf("Windows 7 %s", os.szCSDVersion);
-      case 2:
-        return StringPrintf("Windows 8 %s", os.szCSDVersion);
-      case 3:
-        return StringPrintf("Windows 8.1 %s", os.szCSDVersion);
-      default:
-        return StringPrintf("Windows NT %ld%c%ld %s",
-            os.dwMajorVersion, '.', os.dwMinorVersion, os.szCSDVersion);
-      }
-    }
-    break;
+  if (IsWindows8Point1OrGreater()) {
+    return server ? "Windows Server 2012R2" : "Windows 8.1";
   }
-  return StringPrintf("WIN32 Compatable OS v%d%c%d", os.dwMajorVersion, '.', os.dwMinorVersion);
+  if (IsWindows8OrGreater()) {
+    return server ? "Windows Server 2012" : "Windows 8.0";
+  }
+  if (IsWindows7SP1OrGreater()) {
+    return server ? "Windows Server 2008" : "Windows 7 SP1";
+  }
+  if (IsWindows7OrGreater()) {
+    return server ? "Windows Server 2008" : "Windows 7";
+  }
+  return "WIN32";
 }
 
 bool set_environment_variable(const std::string& variable_name, const std::string value) {

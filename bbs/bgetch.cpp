@@ -163,7 +163,7 @@ void HandleControlKey(char *ch) {
         RestoreCurrentLine(cl, atr, xl, &cc);
       }
       break;
-    case CR:
+    case 18: // CR
       if (local_echo) {
         RedrawCurrentLine();
       }

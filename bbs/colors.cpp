@@ -107,7 +107,7 @@ void color_config() {
     if (ch == CZ) {
       done = 1;
     }
-    if (ch == CR) {
+    if (ch == 18 /* CR */) {
       list_ext_colors();
       bout.GotoXY(2, 2);
     }

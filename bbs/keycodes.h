@@ -229,7 +229,7 @@
 #define CO          15
 #define CP          16
 #define CQ          17
-#define CR          18
+//#define CR          18
 #define CS          19
 #define CT          20
 #define CU          21
