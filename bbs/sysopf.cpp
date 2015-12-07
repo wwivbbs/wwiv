@@ -39,13 +39,15 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+#include "sdk/message_utils_wwiv.h"
 
 using std::string;
 using std::unique_ptr;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
-using wwiv::strings::StringPrintf;
 
+using namespace wwiv::strings;
+using namespace wwiv::sdk::msgapi;
 
 bool isr1(int nUserNumber, int nNumUsers, const char *pszName) {
   int cp = 0;
@@ -689,24 +691,9 @@ void mailr() {
         do {
           WUser user;
           application()->users()->ReadUser(&user, m.touser);
-          bout << "|#9  To|#7: |#" << session()->GetMessageColor() << user.GetUserNameAndNumber(
-                               m.touser) << wwiv::endl;
-          int tp = 80;
-          int nn = 0;
-          if (m.status & status_source_verified) {
-            tp -= 2;
-          }
-          if (m.status & status_new_net) {
-            tp -= 1;
-            if (wwiv::strings::GetStringLength(m.title) <= tp) {
-              nn = m.title[tp + 1];
-            } else {
-              nn = 0;
-            }
-          } else {
-            nn = 0;
-          }
-          set_net_num(nn);
+          bout << "|#9  To|#7: |#" << session()->GetMessageColor() 
+               << user.GetUserNameAndNumber(m.touser) << wwiv::endl;
+          set_net_num(network_number_from(&m));
           bout << "|#9Subj|#7: |#" << session()->GetMessageColor() << m.title << wwiv::endl;
           if (m.status & status_file) {
             File attachDat(syscfg.datadir, ATTACH_DAT);
