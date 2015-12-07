@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClInclude Include="config.h" />
     <ClInclude Include="filenames.h" />
+    <ClInclude Include="message_utils_wwiv.h" />
     <ClInclude Include="msdos_stdint.h" />
     <ClInclude Include="msgapi.h" />
     <ClInclude Include="msgapi_wwiv.h" />
@@ -23,6 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="config.cpp" />
+    <ClCompile Include="message_utils_wwiv.cpp" />
     <ClCompile Include="msgapi.cpp" />
     <ClCompile Include="msgapi_wwiv.cpp" />
     <ClCompile Include="networks.cpp" />

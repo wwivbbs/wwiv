@@ -50,6 +50,7 @@
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
+#include "sdk/message_utils_wwiv.h"
 
 using std::chrono::milliseconds;
 using std::string;
@@ -57,6 +58,7 @@ using std::unique_ptr;
 
 using namespace wwiv::os;
 using namespace wwiv::strings;
+using namespace wwiv::sdk::msgapi;
 
 #define SET_BLOCK(file, pos, size) lseek(file, (long)pos * (long)size, SEEK_SET)
 #define qwk_iscan_literal(x) (iscan1(x))
@@ -127,7 +129,7 @@ void qwk_remove_email() {
 
 
 void qwk_gather_email(struct qwk_junk *qwk_info) {
-  int i, mfl, curmail, done, tp, nn;
+  int i, mfl, curmail, done;
   char filename[201];
   mailrec m;
   postrec junk;
@@ -207,20 +209,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     } else {
       net_email_name[0] = 0;
     }
-    tp = 80;
-
-    if (m.status & status_new_net) {
-      tp--;
-      if (static_cast<int>(strlen(m.title)) <= tp) {
-        nn = m.title[tp + 1];
-      } else {
-        nn = 0;
-      }
-    } else {
-      nn = 0;
-    }
-
-    set_net_num(nn);
+    set_net_num(network_number_from(&m));
 
     // Hope this isn't killed in the future
     strcpy(junk.title, m.title);

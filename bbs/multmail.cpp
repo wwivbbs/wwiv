@@ -43,6 +43,7 @@ void multimail(int *pnUserNumber, int numu) {
   mailrec m, m1;
   char s[255], s2[81];
   WUser user;
+  memset(&m, 0, sizeof(mailrec));
 
   if (freek1(syscfg.msgsdir) < 10) {
     bout.nl();
