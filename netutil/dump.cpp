@@ -53,7 +53,7 @@ static string main_type_name(int typ) {
   case main_type_extra_data: return "main_type_extra_data";
   case main_type_group_bbslist: return "main_type_group_bbslist";
   case main_type_group_connect: return "main_type_group_connect";
-  case main_type_unsed_1: return "main_type_unsed_1";
+  case main_type_group_binkp: return "main_type_group_binkp";
   case main_type_group_info: return "main_type_group_info";
   case main_type_ssm: return "main_type_ssm";
   case main_type_sub_add_req: return "main_type_sub_add_req";
