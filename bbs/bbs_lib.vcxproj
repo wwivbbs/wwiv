@@ -133,7 +133,6 @@
     <ClInclude Include="menu_parser.h" />
     <ClInclude Include="msgbase.h" />
     <ClInclude Include="multinst.h" />
-    <ClInclude Include="net.h" />
     <ClInclude Include="netsup.h" />
     <ClInclude Include="newuser.h" />
     <ClInclude Include="new_bbslist.h" />
@@ -142,7 +141,6 @@
     <ClInclude Include="platform\platformfcns.h" />
     <ClInclude Include="platform\win32\InternalTelnetServer.h" />
     <ClInclude Include="platform\win32\wiot.h" />
-    <ClInclude Include="platform\wutil.h" />
     <ClInclude Include="printfile.h" />
     <ClInclude Include="prot\crctab.h" />
     <ClInclude Include="prot\xmodem.h" />
@@ -162,7 +160,6 @@
     <ClInclude Include="uedit.h" />
     <ClInclude Include="utility.h" />
     <ClInclude Include="valscan.h" />
-    <ClInclude Include="vardec.h" />
     <ClInclude Include="vars.h" />
     <ClInclude Include="vote.h" />
     <ClInclude Include="voteedit.h" />
@@ -174,7 +171,6 @@
     <ClInclude Include="wsession.h" />
     <ClInclude Include="wstatus.h" />
     <ClInclude Include="wuser.h" />
-    <ClInclude Include="wwivassert.h" />
     <ClInclude Include="wwivcolors.h" />
     <ClInclude Include="wwiv_windows.h" />
     <ClInclude Include="xfer.h" />

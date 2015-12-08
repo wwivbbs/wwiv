@@ -408,9 +408,6 @@
     <ClInclude Include="menusupp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="net.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="pause.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -427,9 +424,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="subxtr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vardec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vars.h">
@@ -465,16 +459,10 @@
     <ClInclude Include="wstatus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="wwivassert.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="wwivcolors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wuser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="platform\wutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="prot\xmodem.h">

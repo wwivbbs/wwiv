@@ -19,79 +19,82 @@
 #ifndef __INCLUDED_WCONSTANTS_H__
 #define __INCLUDED_WCONSTANTS_H__
 
+#include <cstdint>
+
 // For get_kb_event, decides if the number pad turns '8' into an arrow etc.. or not
-#define NOTNUMBERS 1
-#define NUMBERS    0
+constexpr int NOTNUMBERS = 1;
+constexpr int NUMBERS = 0;
 
 // Defines for listplus
-#define LP_LIST_DIR    0
-#define LP_SEARCH_ALL  1
-#define LP_NSCAN_DIR   2
-#define LP_NSCAN_NSCAN 3
+constexpr int LP_LIST_DIR = 0;
+constexpr int LP_SEARCH_ALL = 1;
+constexpr int LP_NSCAN_DIR = 2;
+constexpr int LP_NSCAN_NSCAN = 3;
 
-#define ALL_DIRS    0
-#define THIS_DIR    1
-#define NSCAN_DIRS  2
+constexpr int ALL_DIRS = 0;
+constexpr int THIS_DIR = 1;
+constexpr int NSCAN_DIRS = 2;
 
 // Defines for Q/Nscan Plus
-#define QSCAN       0
-#define NSCAN       1
+constexpr int QSCAN = 0;
+constexpr int NSCAN = 1;
 
-#define INST_FORMAT_OLD     0
-#define INST_FORMAT_WFC     1
-#define INST_FORMAT_LIST    2
+constexpr int INST_FORMAT_OLD = 0;
+constexpr int INST_FORMAT_WFC = 1;
+constexpr int INST_FORMAT_LIST = 2;
 
 // Defines for UEDIT
-#define UEDIT_NONE          0
-#define UEDIT_FULLINFO      1
-#define UEDIT_CLEARSCREEN   2
+constexpr int UEDIT_NONE = 0;
+constexpr int UEDIT_FULLINFO = 1;
+constexpr int UEDIT_CLEARSCREEN = 2;
 
 
-#define MAX_NUM_ACT 100
+constexpr int MAX_NUM_ACT = 100;
 
-#define NUM_DOTS 5
-#define FRAME_COLOR 7
+constexpr int NUM_DOTS = 5;
+constexpr int FRAME_COLOR = 7;
 
 //
 // inmsg/external_edit flags
 //
-#define MSGED_FLAG_NONE             0
-#define MSGED_FLAG_NO_TAGLINE       1
-#define MSGED_FLAG_HAS_REPLY_NAME   2
-#define MSGED_FLAG_HAS_REPLY_TITLE  4
+constexpr int MSGED_FLAG_NONE = 0;
+constexpr int MSGED_FLAG_NO_TAGLINE = 1;
+constexpr int MSGED_FLAG_HAS_REPLY_NAME = 2;
+constexpr int MSGED_FLAG_HAS_REPLY_TITLE = 4;
 
-#define INMSG_NOFSED            0
-#define INMSG_FSED              1
-#define INMSG_FSED_WORKSPACE    2
+constexpr int INMSG_NOFSED = 0;
+constexpr int INMSG_FSED = 1;
+constexpr int INMSG_FSED_WORKSPACE = 2;
 
 //
 // Protocols
 //
-#define WWIV_INTERNAL_PROT_ASCII        1
-#define WWIV_INTERNAL_PROT_XMODEM       2
-#define WWIV_INTERNAL_PROT_XMODEMCRC    3
-#define WWIV_INTERNAL_PROT_YMODEM       4
-#define WWIV_INTERNAL_PROT_BATCH        5
-#define WWIV_INTERNAL_PROT_ZMODEM       6
-#define WWIV_NUM_INTERNAL_PROTOCOLS     7 // last protocol +1
+constexpr int WWIV_INTERNAL_PROT_ASCII = 1;
+constexpr int WWIV_INTERNAL_PROT_XMODEM = 2;
+constexpr int WWIV_INTERNAL_PROT_XMODEMCRC = 3;
+constexpr int WWIV_INTERNAL_PROT_YMODEM = 4;
+constexpr int WWIV_INTERNAL_PROT_BATCH = 5;
+constexpr int WWIV_INTERNAL_PROT_ZMODEM = 6;
+constexpr int WWIV_NUM_INTERNAL_PROTOCOLS = 7; // last protocol +1
 
-#define MAX_ARCS 15
-#define MAXMAIL 255
+constexpr int MAX_ARCS = 15;
+constexpr int MAXMAIL = 255;
+constexpr uint8_t EMAIL_STORAGE = 2;
 
-#define LIST_USERS_MESSAGE_AREA     0
-#define LIST_USERS_FILE_AREA        1
+constexpr int LIST_USERS_MESSAGE_AREA = 0;
+constexpr int LIST_USERS_FILE_AREA = 1;
 
 // Time
-#define SECONDS_PER_HOUR        3600L
-#define SECONDS_PER_HOUR_FLOAT      3600.0
-#define SECONDS_PER_DAY         86400L
-#define SECONDS_PER_DAY_FLOAT       86400.0
-#define HOURS_PER_DAY               24L
-#define HOURS_PER_DAY_FLOAT         24.0
-#define MINUTES_PER_HOUR            60L
-#define MINUTES_PER_HOUR_FLOAT      60.0
-#define SECONDS_PER_MINUTE          60L
-#define SECONDS_PER_MINUTE_FLOAT  60.0
+constexpr int SECONDS_PER_HOUR = 3600L;
+constexpr float SECONDS_PER_HOUR_FLOAT = 3600.0;
+constexpr int SECONDS_PER_DAY = 86400L;
+constexpr float SECONDS_PER_DAY_FLOAT = 86400.0;
+constexpr int HOURS_PER_DAY = 24L;
+constexpr float HOURS_PER_DAY_FLOAT = 24.0;
+constexpr int MINUTES_PER_HOUR = 60L;
+constexpr float MINUTES_PER_HOUR_FLOAT = 60.0;
+constexpr int SECONDS_PER_MINUTE = 60L;
+constexpr float SECONDS_PER_MINUTE_FLOAT = 60.0;
 
 
 #endif // __INCLUDED_WCONSTANTS_H__

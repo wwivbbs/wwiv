@@ -31,17 +31,10 @@
 // descriptions
 // #define HUGE_TRAN
 
-#define MAXMAIL 255
-#define EMAIL_STORAGE 2
 
 #define append_block(file, memory, size) write(file, memory, size)
 #define SETREC(f,i)  lseek(f,((long) (i))*((long)sizeof(uploadsrec)),SEEK_SET);
 #define SET_BLOCK(file, pos, size) lseek(file, (long)pos * (long)size, SEEK_SET)
-
-#define GATSECLEN (4096L+2048L*512L)
-#ifndef MSG_STARTING
-#define MSG_STARTING ((current_gat_section()) * GATSECLEN + 4096L)
-#endif
 
 #define DOTS 5
 
