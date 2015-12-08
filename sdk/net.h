@@ -67,7 +67,7 @@ struct net_header_rec {
 #define main_type_extra_data      0x000a  /* type 10 unused */
 #define main_type_group_bbslist   0x000b  /* type 11 network update from GC */
 #define main_type_group_connect   0x000c  /* type 12 network update from GC */
-#define main_type_unsed_1         0x000d  /* type 13 unused */
+#define main_type_group_binkp     0x000d  /* type 13 network update from GC */
 #define main_type_group_info      0x000e  /* type 14 misc update from GC */
 #define main_type_ssm             0x000f  /* type 15 xxx read your mail */
 #define main_type_sub_add_req     0x0010  /* type 16 add me to your sub */
