@@ -55,7 +55,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
   int nNetNumber;
   int nOrigNetNumber = session()->GetNetworkNumber();
   if (pPostRecord->status & status_post_new_net) {
-    nNetNumber = pPostRecord->network_msg.net_number;
+    nNetNumber = pPostRecord->network.network_msg.net_number;
   } else if (xsubs[nSubNumber].num_nets) {
     nNetNumber = xsubs[nSubNumber].nets[0].net_num;
   } else {

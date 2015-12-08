@@ -125,11 +125,11 @@ static bool del_net(CursesWindow* window, int nn) {
       for (int i1 = 1; i1 <= initinfo.nNumMsgsInCurrentSub; i1++) {
         postrec* p = get_post(i1);
         if (p->status & status_post_new_net) {
-          if (p->network_msg.net_number == nn) {
-            p->network_msg.net_number = -1;
+          if (p->network.network_msg.net_number == nn) {
+            p->network.network_msg.net_number = -1;
             write_post(i1, p);
-          } else if (p->network_msg.net_number > nn) {
-            p->network_msg.net_number--;
+          } else if (p->network.network_msg.net_number > nn) {
+            p->network.network_msg.net_number--;
             write_post(i1, p);
           }
         }
@@ -153,16 +153,16 @@ static bool del_net(CursesWindow* window, int nn) {
         }
         m.status |= status_new_net;
         if (m.status & status_source_verified) {
-          if (m.src_verified_msg.net_number == nn) {
-            m.src_verified_msg.net_number = -1;
-          } else if (m.src_verified_msg.net_number > nn) {
-            m.src_verified_msg.net_number--;
+          if (m.network.src_verified_msg.net_number == nn) {
+            m.network.src_verified_msg.net_number = -1;
+          } else if (m.network.src_verified_msg.net_number > nn) {
+            m.network.src_verified_msg.net_number--;
           }
         } else {
-          if (m.network_msg.net_number == nn) {
-            m.network_msg.net_number = -1;
-          } else if (m.network_msg.net_number > nn) {
-            m.network_msg.net_number--;
+          if (m.network.network_msg.net_number == nn) {
+            m.network.network_msg.net_number = -1;
+          } else if (m.network.network_msg.net_number > nn) {
+            m.network.network_msg.net_number--;
           }
         }
         emailfile.Seek(r * sizeof(mailrec), File::seekBegin);
@@ -227,8 +227,8 @@ static bool insert_net(CursesWindow* window, int nn) {
       for (int i1 = 1; i1 <= initinfo.nNumMsgsInCurrentSub; i1++) {
         postrec* p = get_post(i1);
         if (p->status & status_post_new_net) {
-          if (p->network_msg.net_number >= nn) {
-            p->network_msg.net_number++;
+          if (p->network.network_msg.net_number >= nn) {
+            p->network.network_msg.net_number++;
             write_post(i1, p);
           }
         }
@@ -252,12 +252,12 @@ static bool insert_net(CursesWindow* window, int nn) {
         }
         m.status |= status_new_net;
         if (m.status & status_source_verified) {
-          if (m.src_verified_msg.net_number >= nn) {
-            m.src_verified_msg.net_number++;
+          if (m.network.src_verified_msg.net_number >= nn) {
+            m.network.src_verified_msg.net_number++;
           }
         } else {
-          if (m.network_msg.net_number >= nn) {
-            m.network_msg.net_number++;
+          if (m.network.network_msg.net_number >= nn) {
+            m.network.network_msg.net_number++;
           }
         }
         emailfile.Seek(sizeof(mailrec) * r, File::seekBegin);
