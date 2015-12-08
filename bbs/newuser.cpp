@@ -513,27 +513,6 @@ bool CheckPasswordComplexity(WUser *, string& password) {
     //TODO - the min length should be in wwiv.ini
     return false;
   }
-
-  //if ( password.find( pUser->GetName() ) != string::npos )
-  //{
-  //    return false;
-  //}
-
-  //if ( password.find( realName ) != string::npos )
-  //{
-  //    return false;
-  //}
-
-  //if( password.find( pUser->GetVoicePhoneNumber() ) != string::npos )
-  //{
-  //    return false;
-  //}
-
-  //if ( password.find( pUser->GetDataPhoneNumber() ) != string::npos )
-  //{
-  //    return false;
-  //}
-
   return true;
 }
 

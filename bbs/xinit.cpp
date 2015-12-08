@@ -974,15 +974,6 @@ void WApplication::InitializeBBS() {
   session()->SetQuoting(false);
   session()->tagptr = 0;
 
-  time_t t = time(nullptr);
-  // Struct tm_year is -= 1900
-  struct tm * pTm = localtime(&t);
-  if (pTm->tm_year < 88) {
-    // TODO9(rushfan): Is this check really needed anymore?
-    std::clog << "You need to set the date [" << pTm->tm_year << "] & time before running the BBS." << std::endl;
-    AbortBBS();
-  }
-
   if (!ReadConfig()) {
     AbortBBS(true);
   }
@@ -1128,11 +1119,6 @@ void WApplication::InitializeBBS() {
   if (environment_variable("DSZLOG").empty()) {
     set_environment_variable("DSZLOG", g_szDSZLogFileName);
   }
-  // TODO(rushfan): we really shouldn't be using DOS pkzip anymore. Let's remove this.
-  // until then, I've at least commented what this is for.
-  // This allows DOS redirection of output. (see the addendum.doc for 2.04g) or
-  // see https://groups.google.com/forum/#!topic/comp.compression/KkVMQkA0FmA
-  set_environment_variable("PKNOFASTCHAR", "Y");
   set_environment_variable("BBS", wwiv_version);
 
 #endif // defined ( __unix__ )

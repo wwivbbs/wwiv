@@ -42,6 +42,7 @@
 #include <unistd.h>
 #endif  // _WIN32
 
+#include "core/os.h"
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
 
@@ -60,20 +61,17 @@
 #if !defined(ftruncate)
 #define ftruncate chsize
 #endif  // ftruncate
-
 #define flock(h, m)
 #define F_OK 0
 
 #else 
-
-#define _access access
-#define Sleep(x) usleep((x)*1000)
 #define _sopen(n, f, s, p) open(n, f, 0644)
-
 #endif  // _WIN32
 
 
 using std::string;
+using std::chrono::milliseconds;
+using namespace wwiv::os;
 
 /////////////////////////////////////////////////////////////////////////////
 // Constants
@@ -100,8 +98,8 @@ const int File::invalid_handle     = -1;
 WLogger*  File::logger_;
 int File::debug_level_;
 
-static const int WAIT_TIME_SECONDS = 10;
-static const int TRIES = 100;
+static constexpr int WAIT_TIME_MILLIS = 10;
+static constexpr int TRIES = 100;
 
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
@@ -145,10 +143,10 @@ bool File::Open(int nFileMode, int nShareMode) {
   if (handle_ < 0) {
     int count = 1;
     if (access(full_path_name_.c_str(), 0) != -1) {
-      Sleep(WAIT_TIME_SECONDS);
+      sleep_for(milliseconds(WAIT_TIME_MILLIS));
       handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, _S_IREAD | _S_IWRITE);
       while ((handle_ < 0 && errno == EACCES) && count < TRIES) {
-        Sleep((count % 2) ? WAIT_TIME_SECONDS : 0);
+        sleep_for(milliseconds((count % 2) ? WAIT_TIME_MILLIS : 0));
         if (debug_level_ > 0) {
           logger_->LogMessage("\rWaiting to access %s %d.  \r", full_path_name_.c_str(), TRIES - count);
         }
@@ -282,7 +280,7 @@ bool File::Exists(const string& original_pathname) {
     // If the pathname ends in / or \, then remove the last character.
     fn.pop_back();
   }
-  int ret = _access(fn.c_str(), F_OK);
+  int ret = access(fn.c_str(), F_OK);
   return ret == 0;
 }
 
