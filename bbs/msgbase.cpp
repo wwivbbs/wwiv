@@ -31,8 +31,6 @@
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
-#define EMAIL_STORAGE 2
-
 #define NUM_ATTEMPTS_TO_OPEN_EMAIL 5
 #define DELAY_BETWEEN_EMAIL_ATTEMPTS 9
 

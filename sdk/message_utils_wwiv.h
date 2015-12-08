@@ -37,7 +37,7 @@ uint8_t network_number_from(const M* m) {
 }
 
 template<typename M>
-uint8_t source_verfied_type(const M* m) {
+uint16_t source_verfied_type(const M* m) {
   if ((m->status & status_new_net) && (m->status & status_source_verified)) {
     return m->src_verified_msg.source_verified_type;
   }

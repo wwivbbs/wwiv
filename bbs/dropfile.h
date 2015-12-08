@@ -20,14 +20,14 @@
 
 #include <string>
 
-#define CHAINFILE_CHAIN       0
-#define CHAINFILE_DORINFO     1
-#define CHAINFILE_PCBOARD     2
-#define CHAINFILE_CALLINFO    3
-#define CHAINFILE_DOOR        4
-#define CHAINFILE_DOOR32      5
+constexpr int CHAINFILE_CHAIN = 0;
+constexpr int CHAINFILE_DORINFO = 1;
+constexpr int CHAINFILE_PCBOARD = 2;
+constexpr int CHAINFILE_CALLINFO = 3;
+constexpr int CHAINFILE_DOOR = 4;
+constexpr int CHAINFILE_DOOR32 = 5;
 
-const std::string create_filename(int nDropFileType);
+const std::string create_filename(int dropfile_type);
 const std::string create_chain_file();
 
 
