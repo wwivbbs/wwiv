@@ -22,12 +22,14 @@
 
 #include <iostream>
 #include <cerrno>
+#include <chrono>
 #include <cstring>
 #include <cstdarg>
 #include <fcntl.h>
 #include <string>
 #include <sys/stat.h>
 
+#include "core/os.h"
 #include "core/strings.h"
 #include "core/file.h"
 #include "core/wwivport.h"
@@ -42,6 +44,9 @@
 #endif  // _WIN32
 
 using std::string;
+using std::chrono::milliseconds;
+
+using namespace wwiv::os;
 
 const int TextFile::WAIT_TIME = 10;
 const int TextFile::TRIES = 100;
@@ -94,10 +99,10 @@ FILE* TextFile::OpenImpl() {
   if (fd < 0) {
     int count = 1;
     if (File::Exists(file_name_)) {
-      ::Sleep(WAIT_TIME);
+      sleep_for(milliseconds(WAIT_TIME));
       fd = _sopen(file_name_.c_str(), md, share, S_IREAD | S_IWRITE);
       while ((fd < 0 && errno == EACCES) && count < TRIES) {
-        ::Sleep(WAIT_TIME);
+        sleep_for(milliseconds(WAIT_TIME));
         count++;
         fd = _sopen(file_name_.c_str(), md, share, S_IREAD | S_IWRITE);
       }
