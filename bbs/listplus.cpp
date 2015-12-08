@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -32,11 +32,14 @@
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/wconstants.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wwivcolors.h"
 
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::vector;
@@ -717,7 +720,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 void show_fileinfo(uploadsrec * u) {
   bout.cls();
   bout.Color(7);
-  bout << string('\xCD', 78);
+  bout << string(78, '\xCD');
   bout.nl();
   bout << "  |#9Filename    : |#2" << u->filename << wwiv::endl;
   bout << "  |#9Uploaded on : |#2" << u->date << " by |#2" << u->upby << wwiv::endl;
@@ -729,7 +732,7 @@ void show_fileinfo(uploadsrec * u) {
   bout << "  |#9Description : |#2" << u->description << wwiv::endl;
   print_extended_plus(u->filename, 255, 16, YELLOW, nullptr);
   bout.Color(7);
-  bout << string('\xCD', 78);
+  bout << string(78, '\xCD');
   bout.nl();
   pausescr();
 }
@@ -1757,7 +1760,6 @@ static int move_filename(const char *pszFileName, int dn) {
         u1.numbytes = session()->numf;
         if (u.daten > u1.daten) {
           u1.daten = u.daten;
-          session()->m_DirectoryDateCache[nDestDirNum] = u.daten;
         }
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Write(&u1, sizeof(uploadsrec));
@@ -1987,9 +1989,7 @@ void load_listing() {
 
 
 void view_file(const char *pszFileName) {
-  char szCommandLine[MAX_PATH];
   char szBuffer[30];
-  long osysstatus;
   int i, i1;
   uploadsrec u;
 
@@ -1998,46 +1998,27 @@ void view_file(const char *pszFileName) {
   strcpy(szBuffer, pszFileName);
   unalign(szBuffer);
 
-  // TODO: AVIEWCOM.EXE will not work on x64 platforms, find replacement
-  if (File::Exists("AVIEWCOM.EXE")) {
-    if (incom) {
-      sprintf(szCommandLine, "AVIEWCOM.EXE %s%s -p%s -a1 -d",
-              directories[udir[session()->GetCurrentFileArea()].subnum].path, szBuffer, syscfgovr.tempdir);
-      osysstatus = session()->user()->GetStatus();
-      if (session()->user()->HasPause()) {
-        session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
+  dliscan();
+  bool abort = false;
+  i = recno(pszFileName);
+  do {
+    if (i > 0) {
+      File fileDownload(g_szDownloadFileName);
+      if (fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
+        FileAreaSetRecord(fileDownload, i);
+        fileDownload.Read(&u, sizeof(uploadsrec));
+        fileDownload.Close();
       }
-      ExecuteExternalProgram(szCommandLine, EFLAG_COMIO);
-      session()->user()->SetStatus(osysstatus);
-    } else {
-      sprintf(szCommandLine, "AVIEWCOM.EXE %s%s com0 -o%u -p%s -a1 -d",
-              directories[udir[session()->GetCurrentFileArea()].subnum].path, szBuffer,
-              application()->GetInstanceNumber(), syscfgovr.tempdir);
-      ExecuteExternalProgram(szCommandLine, EFLAG_NONE);
+      i1 = list_arc_out(stripfn(u.filename), directories[udir[session()->GetCurrentFileArea()].subnum].path);
+      if (i1) {
+        abort = true;
+      }
+      checka(&abort);
+      i = nrecno(pszFileName, i);
     }
-  } else {
-    dliscan();
-    bool abort = false;
-    i = recno(pszFileName);
-    do {
-      if (i > 0) {
-        File fileDownload(g_szDownloadFileName);
-        if (fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
-          FileAreaSetRecord(fileDownload, i);
-          fileDownload.Read(&u, sizeof(uploadsrec));
-          fileDownload.Close();
-        }
-        i1 = list_arc_out(stripfn(u.filename), directories[udir[session()->GetCurrentFileArea()].subnum].path);
-        if (i1) {
-          abort = true;
-        }
-        checka(&abort);
-        i = nrecno(pszFileName, i);
-      }
-    } while (i > 0 && !hangup && !abort);
-    bout.nl();
-    pausescr();
-  }
+  } while (i > 0 && !hangup && !abort);
+  bout.nl();
+  pausescr();
 }
 
 int lp_try_to_download(const char *pszFileMask, int dn) {

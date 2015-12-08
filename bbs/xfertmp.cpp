@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -30,11 +30,14 @@
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "bbs/printfile.h"
 #include "bbs/xfer_common.h"
+#include "sdk/filenames.h"
 
 // the archive type to use
 #define ARC_NUMBER 0
@@ -868,7 +871,6 @@ void move_file_t() {
         u1.numbytes = session()->numf;
         if (u.daten > u1.daten) {
           u1.daten = u.daten;
-          session()->m_DirectoryDateCache[d1] = u.daten;
         }
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Write(&u1, sizeof(uploadsrec));

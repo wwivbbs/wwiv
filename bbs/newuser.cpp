@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -26,7 +26,9 @@
 #include "bbs/bbsovl2.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/confutil.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/inmsg.h"
@@ -39,6 +41,7 @@
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using wwiv::bbs::InputMode;

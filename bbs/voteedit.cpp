@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -20,7 +20,10 @@
 
 #include "bbs/input.h"
 #include "bbs/wstatus.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
+#include "sdk/filenames.h"
 
 void print_quests();
 void set_question(int ii);

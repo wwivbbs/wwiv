@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -23,7 +23,9 @@
 #include "bbs/bbsovl3.h"
 #include "bbs/confutil.h"
 #include "bbs/wwivcolors.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/common.h"
 #include "bbs/menu.h"
 #include "bbs/input.h"
@@ -32,6 +34,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::setw;
 using std::endl;
@@ -892,7 +895,7 @@ static void list_config_scan_plus(int first, int *amount, int type) {
                                       type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
   }
   bout.Color(7);
-  bout << string('\xC4', 79);
+  bout << string(79, '\xC4');
   bout.nl();
 
   int max_lines = GetMaxLinesToShowForScanPlus();

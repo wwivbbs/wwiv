@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -25,7 +25,9 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 
 using std::string;
@@ -276,7 +278,6 @@ void normalupload(int dn) {
           fileDownload.Read(&u1, sizeof(uploadsrec));
           u1.numbytes = session()->numf;
           u1.daten = static_cast<uint32_t>(lCurrentTime);
-          session()->m_DirectoryDateCache[dn] = static_cast<uint32_t>(lCurrentTime);
           FileAreaSetRecord(fileDownload, 0);
           fileDownload.Write(&u1, sizeof(uploadsrec));
           fileDownload.Close();

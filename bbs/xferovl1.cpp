@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -29,7 +29,9 @@
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/external_edit.h"
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"
@@ -38,6 +40,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/xfer_common.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 // How far to indent extended descriptions
 static const int INDENTION = 24;

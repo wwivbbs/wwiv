@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -20,10 +20,13 @@
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
+#include "bbs/keycodes.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
-#include "bbs/keycodes.h"
+#include "sdk/filenames.h"
 
 
 using wwiv::bbs::InputMode;
@@ -318,12 +321,7 @@ void swap_dirs(int dir1, int dir2) {
   directoryrec drt = directories[dir1];
   directories[dir1] = directories[dir2];
   directories[dir2] = drt;
-
-  unsigned long tl = session()->m_DirectoryDateCache[dir1];
-  session()->m_DirectoryDateCache[dir1] = session()->m_DirectoryDateCache[dir2];
-  session()->m_DirectoryDateCache[dir2] = tl;
 }
-
 
 void insert_dir(int n) {
   SUBCONF_TYPE nconv = static_cast<SUBCONF_TYPE>(n);
@@ -339,7 +337,6 @@ void insert_dir(int n) {
   int i;
   for (i = session()->num_dirs - 1; i >= n; i--) {
     directories[i + 1] = directories[i];
-    session()->m_DirectoryDateCache[i + 1] = session()->m_DirectoryDateCache[i];
   }
 
   directoryrec r;
@@ -400,7 +397,6 @@ void delete_dir(int n) {
 
   for (i = n; i < session()->num_dirs; i++) {
     directories[i] = directories[i + 1];
-    session()->m_DirectoryDateCache[i] = session()->m_DirectoryDateCache[i + 1];
   }
   --session()->num_dirs;
 

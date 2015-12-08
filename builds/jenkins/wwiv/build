@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# WWIV 5.0 Build Script.
+# WWIV Build Script.
 #
 # Required Variables:
 # WORKSPACE - wwiv-svn root directory

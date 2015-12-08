@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -27,11 +27,14 @@
 #include "bbs/input.h"
 #include "bbs/subxtr.h"
 #include "bbs/printfile.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 void SetupThreadRecordsBeforeScan();
 void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsub, bool &bTitleScan, bool &done,
@@ -610,8 +613,8 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
   }
 
   if (get_post(nMessageNumber)->status & status_post_new_net) {
-    set_net_num(get_post(nMessageNumber)->title[80]);
-    if (get_post(nMessageNumber)->title[80] == -1) {
+    set_net_num(get_post(nMessageNumber)->network_msg.net_number);
+    if (get_post(nMessageNumber)->network_msg.net_number == -1) {
       bout << "|#6Deleted network.\r\n";
       return;
     }

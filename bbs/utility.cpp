@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -30,12 +30,14 @@
 #include <vector>
 
 #include "bbs/bbsovl3.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/common.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
-#include "bbs/wwiv.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
@@ -314,43 +316,6 @@ char *stripfn(const char *pszFileName) {
 void stripfn_inplace(char *pszFileName) {
   strcpy(pszFileName, stripfn(pszFileName));
 }
-
-void preload_subs() {
-  bool abort = false;
-
-  if (g_preloaded) {
-    return;
-  }
-
-  bout.nl();
-  bout << "|#1Caching message areas";
-  int i1 = 3;
-  for (session()->SetMessageAreaCacheNumber(0);
-       session()->GetMessageAreaCacheNumber() < session()->num_subs && !abort;
-       session()->SetMessageAreaCacheNumber(session()->GetMessageAreaCacheNumber() + 1)) {
-    if (!session()->m_SubDateCache[session()->GetMessageAreaCacheNumber()]) {
-      iscan1(session()->GetMessageAreaCacheNumber(), true);
-    }
-    bout << "\x03" << i1 << ".";
-    if ((session()->GetMessageAreaCacheNumber() % 5) == 4) {
-      i1++;
-      if (i1 == 4) {
-        i1++;
-      }
-      if (i1 == 10) {
-        i1 = 3;
-      }
-      bout << "\b\b\b\b\b";
-    }
-    checka(&abort);
-  }
-  if (!abort) {
-    bout << "|#1...done!\r\n";
-  }
-  bout.nl();
-  g_preloaded = true;
-}
-
 
 char *get_wildlist(char *pszFileMask) {
   int mark = 0;

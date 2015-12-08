@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -74,7 +74,6 @@ __EXTRN__ int ansiptr,
           nsp;
 
 __EXTRN__ bool  bChatLine,
-          g_preloaded,
           newline,
           global_xx,
           forcescansub,
@@ -104,10 +103,8 @@ __EXTRN__ bool  in_chatroom,
           chat_avail;
 
 __EXTRN__ unsigned short
-#if !defined ( NETWORK )
 *csn_index,
 net_sysnum,
-#endif // NETWORK
 *gat;
 
 __EXTRN__ int modem_speed;
@@ -139,7 +136,7 @@ extratimecall,
 timeon,
 time_event;
 
-#if defined (INIT) || defined (NETWORK) || defined (FIX)
+#if defined (FIX)
 __EXTRN__ configrec syscfg;
 #else
 __EXTRN__ small_configrec syscfg;

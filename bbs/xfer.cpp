@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -20,6 +20,9 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
@@ -30,7 +33,6 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/xfer_common.h"
-#include "bbs/wwiv.h"
 #include "bbs/platform/platformfcns.h"
 
 using std::string;
@@ -342,42 +344,9 @@ void dliscan1(int nDirectoryNum) {
   fileDownload.Close();
   session()->numf = u.numbytes;
   this_date = u.daten;
-  session()->m_DirectoryDateCache[nDirectoryNum] = this_date;
 
   sprintf(g_szExtDescrFileName, "%s%s.ext", syscfg.datadir, directories[nDirectoryNum].filename);
   zap_ed_info();
-}
-
-void dliscan_hash(int nDirectoryNum) {
-  uploadsrec u;
-
-  if (nDirectoryNum >= session()->num_dirs || session()->m_DirectoryDateCache[nDirectoryNum]) {
-    return;
-  }
-
-  string dir = StringPrintf("%s%s.dir",
-      syscfg.datadir, directories[nDirectoryNum].filename);
-  File file(dir);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    time_t now = time(nullptr);
-    session()->m_DirectoryDateCache[nDirectoryNum] = static_cast<uint32_t>(now);
-    return;
-  }
-  int nNumRecords = file.GetLength() / sizeof(uploadsrec);
-  if (nNumRecords < 1) {
-    time_t now = time(nullptr);
-    session()->m_DirectoryDateCache[nDirectoryNum] = static_cast<uint32_t>(now);
-  } else {
-    FileAreaSetRecord(file, 0);
-    file.Read(&u, sizeof(uploadsrec));
-    if (IsEquals(u.filename, "|MARKER|")) {
-      session()->m_DirectoryDateCache[nDirectoryNum] = u.daten;
-    } else {
-      time_t now = time(nullptr);
-      session()->m_DirectoryDateCache[nDirectoryNum] = static_cast<uint32_t>(now);
-    }
-  }
-  file.Close();
 }
 
 void dliscan() {
@@ -861,11 +830,6 @@ void listfiles() {
 }
 
 void nscandir(int nDirNum, bool *abort) {
-  if (session()->m_DirectoryDateCache[udir[nDirNum].subnum]
-      && session()->m_DirectoryDateCache[udir[nDirNum].subnum] < static_cast<unsigned long>(nscandate)) {
-    return;
-  }
-
   int nOldCurDir = session()->GetCurrentFileArea();
   session()->SetCurrentFileArea(nDirNum);
   dliscan();

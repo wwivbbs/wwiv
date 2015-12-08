@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -20,14 +20,17 @@
 #include <chrono>
 
 #include "bbs/batch.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
-#include "bbs/wwiv.h"
 #include "core/os.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::chrono::milliseconds;
 using namespace wwiv::os;

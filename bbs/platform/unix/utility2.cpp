@@ -21,7 +21,8 @@
 #include <unistd.h>
 #include <string>
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
 
 #include "core/strings.h"
 #include "core/file.h"

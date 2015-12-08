@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -24,9 +24,12 @@
 #include "bbs/subxtr.h"
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/textfile.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using wwiv::bbs::InputMode;
@@ -607,10 +610,6 @@ static void swap_subs(int sub1, int sub2) {
   subboards[sub1]     = subboards[sub2];
   subboards[sub2]     = sbt;
 
-  uint32_t sdt   = session()->m_SubDateCache[sub1];
-  session()->m_SubDateCache[sub1]     = session()->m_SubDateCache[sub2];
-  session()->m_SubDateCache[sub2]     = sdt;
-
   xtrasubsrec xst     = xsubs[sub1];
   xsubs[sub1]         = xsubs[sub2];
   xsubs[sub2]         = xst;
@@ -634,7 +633,6 @@ static void insert_sub(int n) {
 
   for (i = session()->num_subs - 1; i >= n; i--) {
     subboards[i + 1] = subboards[i];
-    session()->m_SubDateCache[i + 1] = session()->m_SubDateCache[i];
     xsubs[i + 1] = xsubs[i];
   }
   strcpy(r.name, "** New WWIV Message Area **");
@@ -714,7 +712,6 @@ static void delete_sub(int n) {
 
   for (i = n; i < session()->num_subs; i++) {
     subboards[i] = subboards[i + 1];
-    session()->m_SubDateCache[i] = session()->m_SubDateCache[i + 1];
     xsubs[i] = xsubs[i + 1];
   }
   --session()->num_subs;
@@ -894,7 +891,6 @@ void boardedit() {
     changedsl();
   }
   session()->subchg = 1;
-  //g_szMessageGatFileName[0] = '\0';
   if (confchg) {
     save_confs(CONF_SUBS, -1, nullptr);
   }

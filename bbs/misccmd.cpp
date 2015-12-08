@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -19,7 +19,9 @@
 #include <memory>
 #include <string>
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
@@ -31,6 +33,7 @@
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 // from qwk.c
 void qwk_menu();
@@ -560,7 +563,6 @@ void Packers() {
         if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
           ac = true;
         }
-        preload_subs();
         nscan();
         session()->capture()->set_x_only(false, nullptr, false);
         add_arc("offline", "posts.txt", 0);

@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -18,7 +18,7 @@
 /**************************************************************************/
 
 // Version String
-const char *wwiv_version = "5.0.0";
+const char *wwiv_version = "5.1.0";
 
 // Build Information
 const char *beta_version = ".development";

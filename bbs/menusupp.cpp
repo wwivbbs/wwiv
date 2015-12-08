@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -46,11 +46,14 @@
 #include "bbs/valscan.h"
 #include "bbs/vote.h"
 #include "bbs/voteedit.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/printfile.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using wwiv::bbs::InputMode;
@@ -75,8 +78,9 @@ void UnQScan() {
   case 'C': {
     bout.nl();
     qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = 0;
-    bout << "Messages on " << subboards[usub[session()->GetCurrentMessageArea()].subnum].name <<
-                       " marked as unread.\r\n";
+    bout << "Messages on " 
+         << subboards[usub[session()->GetCurrentMessageArea()].subnum].name
+         << " marked as unread.\r\n";
   }
   break;
   }
@@ -249,7 +253,6 @@ void NewMessageScan() {
   express = false;
   expressabort = false;
   newline = false;
-  preload_subs();
   nscan();
   newline = true;
 }
@@ -384,7 +387,6 @@ void ExpressScan() {
   expressabort = false;
   TempDisablePause disable_pause;
   newline = false;
-  preload_subs();
   nscan();
   newline = true;
   express = false;
@@ -650,7 +652,6 @@ void NewMsgsAllConfs() {
     ac = true;
     tmp_disable_conf(true);
   }
-  preload_subs();
   nscan();
   newline = true;
   if (ac == true) {
@@ -668,7 +669,6 @@ void InternetEmail() {
 
 void NewMsgScanFromHere() {
   newline = false;
-  preload_subs();
   nscan(session()->GetCurrentMessageArea());
   newline = true;
 }
@@ -681,13 +681,7 @@ void ValidateScan() {
 
 void ChatRoom() {
   write_inst(INST_LOC_CHATROOM, 0, INST_FLAGS_NONE);
-  if (File::Exists("WWIVCHAT.EXE")) {
-    std::ostringstream cmdline;
-    cmdline << "WWIVCHAT.EXE " << create_chain_file();
-    ExecuteExternalProgram(cmdline.str(), application()->GetSpawnOptions(SPAWNOPT_CHAT));
-  } else {
-    chat_room();
-  }
+  chat_room();
 }
 
 void DownloadPosts() {
@@ -701,7 +695,6 @@ void DownloadPosts() {
         ac = true;
         tmp_disable_conf(true);
       }
-      preload_subs();
       nscan();
       if (ac) {
         tmp_disable_conf(false);

@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -34,13 +34,16 @@
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
 #include "bbs/wcomm.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/inifile.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::unique_ptr;
@@ -266,7 +269,7 @@ static void ExecuteWWIVNetworkRequest() {
     std::stringstream networkCommand;
     networkCommand << "network /B" << modem_speed << " /T" << lTime << " /F0";
     write_inst(INST_LOC_NET, 0, INST_FLAGS_NONE);
-    ExecuteExternalProgram(networkCommand.str().c_str(), EFLAG_NONE);
+    ExecuteExternalProgram(networkCommand.str(), EFLAG_NONE);
     if (application()->GetInstanceNumber() != 1) {
       send_inst_cleannet();
     }
@@ -936,7 +939,6 @@ void logon() {
       setuconf(CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
     }
   }
-  g_preloaded = false;
 
   if (application()->HasConfigFlag(OP_FLAGS_USE_FORCESCAN)) {
     int nNextSubNumber = 0;

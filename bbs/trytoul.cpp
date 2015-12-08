@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -23,7 +23,9 @@
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/os.h"
@@ -404,7 +406,6 @@ int try_to_ul_wh(char *pszFileName) {
   fileDownload.Read(&u1, sizeof(uploadsrec));
   u1.numbytes = session()->numf;
   u1.daten = static_cast<unsigned long>(tCurrentDate);
-  session()->m_DirectoryDateCache[dn] = static_cast<unsigned int>(tCurrentDate);
   FileAreaSetRecord(fileDownload, 0);
   fileDownload.Write(&u1, sizeof(uploadsrec));
   fileDownload.Close();

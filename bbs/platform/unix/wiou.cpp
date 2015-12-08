@@ -23,8 +23,10 @@
 #include <sys/ioctl.h>
 #include <sys/time.h>
 
-#include "bbs/wcomm.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/platform/unix/wiou.h"
 
 

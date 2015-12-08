@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -23,7 +23,9 @@
 #include "bbs/bbsovl1.h"
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
 #include "bbs/wconstants.h"
@@ -34,10 +36,13 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
+#include "sdk/message_utils_wwiv.h"
 
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::strings;
+using namespace wwiv::sdk::msgapi;
 
 // Local Functions
 bool same_email(tmpmailrec * tm, mailrec * m);
@@ -306,12 +311,10 @@ void delete_attachment(unsigned long daten, int forceit) {
 }
 
 void readmail(int mode) {
-  int i, i1, i2, i3, curmail = 0, tp, nn = 0, delme;
+  int i, i1, i2, i3, curmail = 0, nn = 0, delme;
   bool done, okmail;
-  unsigned short xx;
   char s[201], s1[205], s2[81], *ss2, mnu[81];
   mailrec m, m1;
-  postrec p;
   char ch;
   long len, num_mail, num_mail1;
   int nUserNumber, nSystemNumber;
@@ -390,20 +393,7 @@ void readmail(int mode) {
         continue;
       }
 
-      tp = 80;
-      if (m.status & status_source_verified) {
-        tp -= 2;
-      }
-      if (m.status & status_new_net) {
-        tp -= 1;
-        if (static_cast< int >(strlen(m.title)) <= tp) {
-          nn = static_cast< unsigned char >(m.title[tp + 1]);
-        } else {
-          nn = 0;
-        }
-      } else {
-        nn = 0;
-      }
+      nn = network_number_from(&m);
       sprintf(s, "|#2%3d%s|#7%c|#1 ", i + 1, m.status & status_seen ? " " : "|#3*", okansi() ? '\xB3' : '|');
 
       if ((m.anony & anony_sender) && ((ss.ability & ability_read_email_anony) == 0)) {
@@ -538,18 +528,16 @@ void readmail(int mode) {
       } else {
         net_email_name[0] = '\0';
       }
-      tp = 80;
       if (m.status & status_source_verified) {
-        tp -= 2;
-        if (static_cast<int>(strlen(m.title)) <= tp) {
-          xx = *(short *)(m.title + tp + 1);
+        int sv_type = source_verfied_type(&m);
+        if (sv_type > 0) {
           strcpy(s, "-=> Source Verified Type ");
-          sprintf(s + strlen(s), "%u", xx);
-          if (xx == 1) {
+          sprintf(s + strlen(s), "%u", sv_type);
+          if (sv_type == 1) {
             strcat(s, " (From NC)");
-          } else if (xx > 256 && xx < 512) {
+          } else if (sv_type > 256 && sv_type < 512) {
             strcpy(s2, " (From GC-");
-            sprintf(s2 + strlen(s2), "%d)", xx - 256);
+            sprintf(s2 + strlen(s2), "%d)", sv_type - 256);
             strcat(s, s2);
           }
         } else {
@@ -560,13 +548,7 @@ void readmail(int mode) {
           pla(s, &abort);
         }
       }
-      nn = 0;
-      if (m.status & status_new_net) {
-        tp -= 1;
-        if (static_cast<int>(strlen(m.title)) <= tp) {
-          nn = m.title[ tp + 1 ];
-        }
-      }
+      nn = network_number_from(&m);
       set_net_num(nn);
       int nFromSystem = 0;
       int nFromUser = 0;
@@ -818,6 +800,8 @@ void readmail(int mode) {
           if (i != -1) {
             unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
 
+            postrec p;
+            memset(&p, 0, sizeof(postrec));
             strcpy(p.title, m.title);
             p.anony = m.anony;
             p.ownersys = m.fromsys;

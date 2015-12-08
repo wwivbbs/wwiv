@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*              Copyright (C)2014-2015 WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -41,7 +41,6 @@ void send_net(net_header_rec * nh, unsigned short int *list, const char *text, c
 void giveup_timeslice();
 char *stripfn(const char *pszFileName);
 void stripfn_inplace(char *pszFileName);
-void preload_subs();
 char *get_wildlist(char *pszFileMask);
 int side_menu(int *menu_pos, bool redraw, const std::vector<std::string>& menu_items, int xpos, int ypos, struct side_menu_colors * smc);
 slrec getslrec(int nSl);

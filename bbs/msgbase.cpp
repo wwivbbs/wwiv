@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -24,9 +24,12 @@
 #include "bbs/netsup.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 #define EMAIL_STORAGE 2
 
@@ -442,6 +445,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
   net_header_rec nh;
   int i;
 
+  memset(&m, 0, sizeof(mailrec));
   strcpy(m.title, title.c_str());
   m.msg = *pMessageRec;
   m.anony = static_cast< unsigned char >(anony);
@@ -458,8 +462,9 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
 
   if (m.fromsys && session()->GetMaxNetworkNumber() > 1) {
     m.status |= status_new_net;
-    m.title[79] = '\0';
-    m.title[80] = static_cast<char>(nFromNetworkNumber);
+    // always trim to WWIV_MESSAGE_TITLE_LENGTH now.
+    m.title[71] = '\0';
+    m.network_msg.net_number = static_cast<int8_t>(nFromNetworkNumber);
   }
 
   if (nSystemNumber == 0) {
@@ -1254,7 +1259,7 @@ void read_message(int n, bool *next, int *val) {
     int nNetNumSaved = session()->GetNetworkNumber();
 
     if (p.status & status_post_new_net) {
-      set_net_num(p.title[80]);
+      set_net_num(p.network_msg.net_number);
     }
     read_message1(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit, next,
                   (subboards[session()->GetCurrentReadMessageArea()].filename), p.ownersys, p.owneruser);

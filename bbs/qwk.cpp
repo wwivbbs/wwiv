@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -40,7 +40,9 @@
 #include "bbs/qscan.h"
 #include "bbs/stuffin.h"
 #include "bbs/subxtr.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"
 #include "bbs/wstatus.h"
@@ -51,7 +53,7 @@
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
-#define qwk_iscan(x)         (iscan1(usub[x].subnum, 1))
+#define qwk_iscan(x)         (iscan1(usub[x].subnum))
 
 using std::unique_ptr;
 using namespace wwiv::strings;
@@ -241,9 +243,9 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
   }
 
   uint32_t qscnptrx = qsc_p[sn];
-  uint32_t sd = session()->m_SubDateCache[sn];
+  uint32_t sd = WWIVReadLastRead(sn);
 
-  if (qwk_percent || ((!sd) || (sd > qscnptrx))) {
+  if (qwk_percent || (!sd || sd > qscnptrx)) {
     os = session()->GetCurrentMessageArea();
     session()->SetCurrentMessageArea(bn);
     i = 1;
@@ -355,7 +357,7 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
 
   int nn = session()->GetNetworkNumber();
   if (p->status & status_post_new_net) {
-    set_net_num(p->title[80]);
+    set_net_num(p->network_msg.net_number);
   }
 
   put_in_qwk(p, (subboards[session()->GetCurrentReadMessageArea()].filename), msgnum, qwk_info);

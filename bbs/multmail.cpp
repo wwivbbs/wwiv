@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -17,7 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
 #include "core/wfndfile.h"
@@ -25,6 +27,7 @@
 #include "bbs/printfile.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
+#include "sdk/filenames.h"
 
 // local function prototypes
 void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup);
@@ -40,6 +43,7 @@ void multimail(int *pnUserNumber, int numu) {
   mailrec m, m1;
   char s[255], s2[81];
   WUser user;
+  memset(&m, 0, sizeof(mailrec));
 
   if (freek1(syscfg.msgsdir) < 10) {
     bout.nl();

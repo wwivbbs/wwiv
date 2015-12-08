@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              Wwiv Version 5.0x                         */
+/*                              Wwiv Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -480,17 +480,28 @@ struct smalrec {
 
 // TYPE TO TELL WHERE A MESSAGE IS STORED
 struct messagerec {
-  uint8_t storage_type;                 // how it is stored
-  uint32_t stored_as;                    // where it is stored
+  uint8_t storage_type;                 // how it is stored (type, 1 or 2)
+  uint32_t stored_as;                   // where it is stored (type specific)
 };
 
 
 // DATA HELD FOR EVERY POST
 struct postrec {
-  char title[81];                             // title of post
+  char title[72];                       // title of post
+  uint8_t padding_from_title[6];
+  union {
+    struct source_verified_message_t {
+      uint8_t net_number;               // network number for the message
+      uint16_t source_verified_type;
+    } src_verified_msg;
+    struct network_message_t {
+      uint16_t unused_padding;
+      uint8_t net_number;               // network number for the message
+    } network_msg;
+  };
 
   uint8_t anony,                        // anony-stat of message
-           status;                                 // bit-mapped status
+          status;                       // bit-mapped status
 
   uint16_t ownersys,                    // what system it came from
            owneruser;                              // who posted it
@@ -505,19 +516,30 @@ struct postrec {
 
 // DATA HELD FOR EVERY E-MAIL OR F-BACK
 struct mailrec {
-  char title[81];                             // E-mail title
+  char title[72];                       // title of message
+  uint8_t padding_from_title[6];
+  union {
+    struct source_verified_message_t {
+      uint8_t net_number;               // network number for the message
+      uint16_t source_verified_type;
+    } src_verified_msg;
+    struct network_message_t {
+      uint16_t unused_padding;
+      uint8_t net_number;               // network number for the message
+    } network_msg;
+  };
 
   uint8_t anony,                        // anonymous mail?
-           status;                                 // status for e-mail
+          status;                       // status for e-mail
 
   uint16_t fromsys,                     // originating system
-           fromuser,                               // originating user
-           tosys,                                  // destination system
-           touser;                                 // destination user
+           fromuser,                    // originating user
+           tosys,                       // destination system
+           touser;                      // destination user
 
-  uint32_t daten;                        // date it was sent
+  uint32_t daten;                       // date it was sent
 
-  messagerec msg;                             // where to find it
+  messagerec msg;                       // where to find it
 };
 
 // USED IN READMAIL TO STORE EMAIL INFO
@@ -856,7 +878,7 @@ enum xfertype {
 #define NUM_ONLY            1
 #define UPPER_ONLY          2
 #define ALL                 4
-#define SET                   8
+#define SET                 8
 
 struct ext_desc_type {
   char name[13];
@@ -907,6 +929,8 @@ struct languagerec {
 
 #define SUBCONF_TYPE uint16_t
 #define MAX_CONFERENCES 26
+
+#define WWIV_MESSAGE_TITLE_LENGTH 72
 
 struct confrec {
   unsigned char designator,                 // A to Z?

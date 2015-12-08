@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -23,9 +23,12 @@
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
 #include "bbs/printfile.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "sdk/filenames.h"
 
 //
 // Local function prototypes

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2015, WWIV Software Services             */
+/*                          WWIV Version 5.0x                             */
+/*               Copyright (C)2015, WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,15 +14,40 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_H__
-#define __INCLUDED_WWIV_H__
+#ifndef __INCLUDED_SDK_MESSAGE_UTILS_WWIV_H__
+#define __INCLUDED_SDK_MESSAGE_UTILS_WWIV_H__
 
-#include "bbs/bbs.h"
-#include "bbs/fcns.h"
-#include "bbs/vars.h"
+#include <cstdint>
+#include "sdk/vardec.h"
 
-#include "sdk/filenames.h"
+namespace wwiv {
+namespace sdk {
+namespace msgapi {
 
-#endif  // __INCLUDED_WWIV_H__
+template<typename M>
+uint8_t network_number_from(const M* m) {
+  if (!(m->status & status_new_net)) {
+    return 0;
+  }
+  if (m->status & status_source_verified) {
+    return m->src_verified_msg.net_number;
+  }
+  return m->network_msg.net_number;
+}
+
+template<typename M>
+uint8_t source_verfied_type(const M* m) {
+  if ((m->status & status_new_net) && (m->status & status_source_verified)) {
+    return m->src_verified_msg.source_verified_type;
+  }
+  return 0;
+}
+
+
+}  // namespace msgapi
+}  // namespace sdk
+}  // namespace wwiv
+
+
+#endif  // __INCLUDED_SDK_MESSAGE_UTILS_WWIV_H__

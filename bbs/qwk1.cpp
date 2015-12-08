@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -40,8 +40,9 @@
 #include "sdk/vardec.h"
 #include "bbs/vars.h"
 #include "bbs/wstatus.h"
-#include "bbs/wwiv.h"
-
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/stuffin.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"
@@ -49,6 +50,7 @@
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
+#include "sdk/message_utils_wwiv.h"
 
 using std::chrono::milliseconds;
 using std::string;
@@ -56,9 +58,10 @@ using std::unique_ptr;
 
 using namespace wwiv::os;
 using namespace wwiv::strings;
+using namespace wwiv::sdk::msgapi;
 
 #define SET_BLOCK(file, pos, size) lseek(file, (long)pos * (long)size, SEEK_SET)
-#define qwk_iscan_literal(x) (iscan1(x, 1))
+#define qwk_iscan_literal(x) (iscan1(x))
 #define MAXMAIL 255
 #define EMAIL_STORAGE 2
 
@@ -126,7 +129,7 @@ void qwk_remove_email() {
 
 
 void qwk_gather_email(struct qwk_junk *qwk_info) {
-  int i, mfl, curmail, done, tp, nn;
+  int i, mfl, curmail, done;
   char filename[201];
   mailrec m;
   postrec junk;
@@ -206,20 +209,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     } else {
       net_email_name[0] = 0;
     }
-    tp = 80;
-
-    if (m.status & status_new_net) {
-      tp--;
-      if (static_cast<int>(strlen(m.title)) <= tp) {
-        nn = m.title[tp + 1];
-      } else {
-        nn = 0;
-      }
-    } else {
-      nn = 0;
-    }
-
-    set_net_num(nn);
+    set_net_num(network_number_from(&m));
 
     // Hope this isn't killed in the future
     strcpy(junk.title, m.title);
@@ -1150,7 +1140,7 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
         bout.bprintf("[%d] %s Is copied over from", x + 1, qwk_cfg->bltname[x]);
         bout.nl();
         bout.Color(7);
-        bout << string('\xCD', 78);
+        bout << string(78, '\xCD');
         bout.nl();
         bout.bprintf(qwk_cfg->blt[x]);
         bout.nl();

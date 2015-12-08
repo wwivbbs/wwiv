@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -285,20 +285,7 @@ void DeleteSmallRecord(const char *name);
 
 
 // File: sr.cpp
-
-void calc_CRC(unsigned char b);
-char gettimeout(double d, bool *abort);
-int  extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending);
-bool ok_prot(int nProtocolNum, xfertype xt);
-char *prot_name(int nProtocolNum);
-int  get_protocol(xfertype xt);
-void ascii_send(const char *pszFileName, bool *sent, double *percent);
-void maybe_internal(const char *pszFileName, bool *xferred, double *percent, bool bSend, int prot);
-void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn, int dn, long fs);
-void receive_file(const char *pszFileName, int *received, const char *sfn, int dn);
-char end_batch1();
-void endbatch();
-
+#include "bbs/sr.h"
 
 // File: srrcv.cpp
 
@@ -318,21 +305,8 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
                   bool bUseYModemBatch);
 void zmodem_send(const char *pszFileName, bool *sent, double *percent);
 
-
 // File: subacc.cpp
-
-void close_sub();
-bool open_sub(bool wr);
-bool iscan1(int si, bool quick);
-int iscan(int b);
-postrec *get_post(int mn);
-void delete_message(int mn);
-void write_post(int mn, postrec * pp);
-void add_post(postrec * pp);
-void resynch(int *msgnum, postrec * pp);
-void pack_all_subs();
-void pack_sub(int si);
-
+#include "bbs/subacc.h"
 
 // File: subedit.cpp
 
