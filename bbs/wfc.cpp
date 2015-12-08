@@ -75,7 +75,6 @@ static void wfc_command(int instance_location_id, std::function<void()> f,
   session()->reset_local_io(new CursesLocalIO(out->window()->GetMaxY()));
 
   if (!AllowLocalSysop()) {
-    // TODO(rushfan): Show messagebox error?
     return;
   }
   wfc_cls();

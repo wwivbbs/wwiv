@@ -33,9 +33,6 @@ using namespace std;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-// TODO(rushfan): These tests don't work yet - just testing locally
-// for now. Need to create a tree under the tempdir containing a 
-// stub BBS.
 class ConfigTest : public testing::Test {
 public:
   SdkHelper helper;

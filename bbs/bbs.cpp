@@ -1168,7 +1168,7 @@ int bbsmain(int argc, char *argv[]) {
     return application()->BBSMainLoop(argc, argv);
   } catch (exception& e) {
     // TODO(rushfan): Log this to sysop log or where else?
-    clog << "BBS Terminated by exception: " << e.what() << "\nStacktrace:\n";
+    clog << "BBS Terminated by exception: " << e.what();
     return 1;
   }
 }
