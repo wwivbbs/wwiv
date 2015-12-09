@@ -22,10 +22,6 @@
 #include "sdk/vardec.h"
 
 
-void remove_link(messagerec * pMessageRecord, const std::string fileName);
-void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const std::string fileName);
-char *readfile(messagerec * pMessageRecord, const std::string fileName, long *plMessageLength);
-void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed);
 bool ForwardMessage(int *pUserNumber, int *pSystemNumber);
 std::unique_ptr<File> OpenEmailFile(bool bAllowWrite);
 void sendout_email(const std::string& title, messagerec * msg, int anony, int nUserNumber, int nSystemNumber, int an,
@@ -34,10 +30,7 @@ bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit);
 void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool force_title = false,
   bool bAllowFSED = true);
 void imail(int nUserNumber, int nSystemNumber);
-void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next, const char *pszFileName,
-  int nFromSystem, int nFromUser);
-void read_message(int n, bool *next, int *val);
-void lineadd(messagerec* pMessageRecord, const std::string& sx, const std::string fileName);
+void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed);
 
 
 

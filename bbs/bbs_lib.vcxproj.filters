@@ -370,6 +370,10 @@
     <ClCompile Include="arword.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="read_message.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="message_file.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -631,6 +635,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="subacc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="read_message.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="message_file.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

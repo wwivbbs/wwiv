@@ -34,6 +34,7 @@
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
+#include "bbs/message_file.h"
 #include "bbs/subxtr.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
@@ -223,95 +224,96 @@ void post() {
   postrec p;
   memset(&p, 0, sizeof(postrec));
   string title;
-  inmsg(&m, &title, &a, true, (subboards[session()->GetCurrentReadMessageArea()].filename), INMSG_FSED,
-        subboards[session()->GetCurrentReadMessageArea()].name,
-        (subboards[session()->GetCurrentReadMessageArea()].anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE);
+  if (!inmsg(&m, &title, &a, true, (subboards[session()->GetCurrentReadMessageArea()].filename), INMSG_FSED,
+    subboards[session()->GetCurrentReadMessageArea()].name,
+    (subboards[session()->GetCurrentReadMessageArea()].anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE)) {
+    m.stored_as = 0xffffffff;
+    return;
+  }
   strcpy(p.title, title.c_str());
-  if (m.stored_as != 0xffffffff) {
-    p.anony   = static_cast< unsigned char >(a);
-    p.msg   = m;
-    p.ownersys  = 0;
-    p.owneruser = static_cast<unsigned short>(session()->usernum);
-    WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
-    p.qscan = pStatus->IncrementQScanPointer();
-    application()->GetStatusManager()->CommitTransaction(pStatus);
-    p.daten = static_cast<unsigned long>(time(nullptr));
-    if (session()->user()->IsRestrictionValidate()) {
-      p.status = status_unvalidated;
-    } else {
-      p.status = 0;
-    }
+  p.anony   = static_cast< unsigned char >(a);
+  p.msg   = m;
+  p.ownersys  = 0;
+  p.owneruser = static_cast<unsigned short>(session()->usernum);
+  WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+  p.qscan = pStatus->IncrementQScanPointer();
+  application()->GetStatusManager()->CommitTransaction(pStatus);
+  p.daten = static_cast<unsigned long>(time(nullptr));
+  if (session()->user()->IsRestrictionValidate()) {
+    p.status = status_unvalidated;
+  } else {
+    p.status = 0;
+  }
 
-    open_sub(true);
+  open_sub(true);
 
-    if ((xsubs[session()->GetCurrentReadMessageArea()].num_nets) &&
-        (subboards[session()->GetCurrentReadMessageArea()].anony & anony_val_net) && (!lcs() || irt[0])) {
-      p.status |= status_pending_net;
-      int dm = 1;
-      for (int i = session()->GetNumMessagesInCurrentMessageArea(); (i >= 1)
-           && (i > (session()->GetNumMessagesInCurrentMessageArea() - 28)); i--) {
-        if (get_post(i)->status & status_pending_net) {
-          dm = 0;
-          break;
-        }
-      }
-      if (dm) {
-        ssm(1, 0, "Unvalidated net posts on %s.", subboards[session()->GetCurrentReadMessageArea()].name);
+  if ((xsubs[session()->GetCurrentReadMessageArea()].num_nets) &&
+      (subboards[session()->GetCurrentReadMessageArea()].anony & anony_val_net) && (!lcs() || irt[0])) {
+    p.status |= status_pending_net;
+    int dm = 1;
+    for (int i = session()->GetNumMessagesInCurrentMessageArea(); (i >= 1)
+          && (i > (session()->GetNumMessagesInCurrentMessageArea() - 28)); i--) {
+      if (get_post(i)->status & status_pending_net) {
+        dm = 0;
+        break;
       }
     }
-    if (session()->GetNumMessagesInCurrentMessageArea() >=
-        subboards[session()->GetCurrentReadMessageArea()].maxmsgs) {
-      int i = 1;
-      int dm = 0;
-      while (i <= session()->GetNumMessagesInCurrentMessageArea()) {
-        postrec* pp = get_post(i);
-        if (!pp) {
-          break;
-        } else if (((pp->status & status_no_delete) == 0) ||
-                   (pp->msg.storage_type != subboards[session()->GetCurrentReadMessageArea()].storage_type)) {
-          dm = i;
-          break;
-        }
-        ++i;
-      }
-      if (dm == 0) {
-        dm = 1;
-      }
-      delete_message(dm);
+    if (dm) {
+      ssm(1, 0, "Unvalidated net posts on %s.", subboards[session()->GetCurrentReadMessageArea()].name);
     }
-    add_post(&p);
-
-    session()->user()->SetNumMessagesPosted(session()->user()->GetNumMessagesPosted() + 1);
-    session()->user()->SetNumPostsToday(session()->user()->GetNumPostsToday() + 1);
-    pStatus = application()->GetStatusManager()->BeginTransaction();
-    pStatus->IncrementNumMessagesPostedToday();
-    pStatus->IncrementNumLocalPosts();
-
-    if (application()->HasConfigFlag(OP_FLAGS_POSTTIME_COMPENSATE)) {
-      time_t lEndTime = time(nullptr);
-      if (lStartTime > lEndTime) {
-        lEndTime += HOURS_PER_DAY * SECONDS_PER_DAY;
+  }
+  if (session()->GetNumMessagesInCurrentMessageArea() >=
+      subboards[session()->GetCurrentReadMessageArea()].maxmsgs) {
+    int i = 1;
+    int dm = 0;
+    while (i <= session()->GetNumMessagesInCurrentMessageArea()) {
+      postrec* pp = get_post(i);
+      if (!pp) {
+        break;
+      } else if (((pp->status & status_no_delete) == 0) ||
+                  (pp->msg.storage_type != subboards[session()->GetCurrentReadMessageArea()].storage_type)) {
+        dm = i;
+        break;
       }
-      lStartTime = static_cast<long>(lEndTime - lStartTime);
-      if ((lStartTime / MINUTES_PER_HOUR_FLOAT) > getslrec(session()->GetEffectiveSl()).time_per_logon) {
-        lStartTime = static_cast<long>(static_cast<float>(getslrec(session()->GetEffectiveSl()).time_per_logon *
-                                       MINUTES_PER_HOUR_FLOAT));
-      }
-      session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>
-          (lStartTime));
+      ++i;
     }
-    application()->GetStatusManager()->CommitTransaction(pStatus);
-    close_sub();
+    if (dm == 0) {
+      dm = 1;
+    }
+    delete_message(dm);
+  }
+  add_post(&p);
 
-    application()->UpdateTopScreen();
-    sysoplogf("+ \"%s\" posted on %s", p.title, subboards[session()->GetCurrentReadMessageArea()].name);
-    bout << "Posted on " << subboards[session()->GetCurrentReadMessageArea()].name << wwiv::endl;
-    if (xsubs[session()->GetCurrentReadMessageArea()].num_nets) {
-      session()->user()->SetNumNetPosts(session()->user()->GetNumNetPosts() + 1);
-      if (!(p.status & status_pending_net)) {
-        send_net_post(&p, subboards[session()->GetCurrentReadMessageArea()].filename,
-                      session()->GetCurrentReadMessageArea());
-      }
+  session()->user()->SetNumMessagesPosted(session()->user()->GetNumMessagesPosted() + 1);
+  session()->user()->SetNumPostsToday(session()->user()->GetNumPostsToday() + 1);
+  pStatus = application()->GetStatusManager()->BeginTransaction();
+  pStatus->IncrementNumMessagesPostedToday();
+  pStatus->IncrementNumLocalPosts();
+
+  if (application()->HasConfigFlag(OP_FLAGS_POSTTIME_COMPENSATE)) {
+    time_t lEndTime = time(nullptr);
+    if (lStartTime > lEndTime) {
+      lEndTime += HOURS_PER_DAY * SECONDS_PER_DAY;
+    }
+    lStartTime = static_cast<long>(lEndTime - lStartTime);
+    if ((lStartTime / MINUTES_PER_HOUR_FLOAT) > getslrec(session()->GetEffectiveSl()).time_per_logon) {
+      lStartTime = static_cast<long>(static_cast<float>(getslrec(session()->GetEffectiveSl()).time_per_logon *
+                                      MINUTES_PER_HOUR_FLOAT));
+    }
+    session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>
+        (lStartTime));
+  }
+  application()->GetStatusManager()->CommitTransaction(pStatus);
+  close_sub();
+
+  application()->UpdateTopScreen();
+  sysoplogf("+ \"%s\" posted on %s", p.title, subboards[session()->GetCurrentReadMessageArea()].name);
+  bout << "Posted on " << subboards[session()->GetCurrentReadMessageArea()].name << wwiv::endl;
+  if (xsubs[session()->GetCurrentReadMessageArea()].num_nets) {
+    session()->user()->SetNumNetPosts(session()->user()->GetNumNetPosts() + 1);
+    if (!(p.status & status_pending_net)) {
+      send_net_post(&p, subboards[session()->GetCurrentReadMessageArea()].filename,
+                    session()->GetCurrentReadMessageArea());
     }
   }
 }

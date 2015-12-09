@@ -38,6 +38,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/menu.h"
 #include "bbs/menusupp.h"
+#include "bbs/message_file.h"
 #include "bbs/multinst.h"
 #include "bbs/netsup.h"
 #include "bbs/newuser.h"

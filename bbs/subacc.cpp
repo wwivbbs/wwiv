@@ -22,6 +22,7 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/connect1.h"
+#include "bbs/message_file.h"
 #include "bbs/msgbase.h"
 #include "bbs/subxtr.h"
 #include "bbs/pause.h"

@@ -15,15 +15,16 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_INMSG_H__
-#define __INCLUDED_BBS_INMSG_H__
+#ifndef __INCLUDED_BBS_MESSAGE_FILE_H__
+#define __INCLUDED_BBS_MESSAGE_FILE_H__
 
 #include <string>
 
 #include "sdk/vardec.h"
 
-bool inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool needtitle, const char *aux, int fsed,
-           const std::string& destination, int flags, bool force_title = false);
-void AddLineToMessageBuffer(char *pszMessageBuffer, const std::string& line_to_add, long *plBufferLength);
+void remove_link(messagerec * pMessageRecord, const std::string fileName);
+void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const std::string fileName);
+char *readfile(messagerec * pMessageRecord, const std::string fileName, long *plMessageLength);
+void lineadd(messagerec* pMessageRecord, const std::string& sx, const std::string fileName);
 
-#endif  // __INCLUDED_BBS_INMSG_H__
+#endif  // __INCLUDED_BBS_MESSAGE_FILE_H__

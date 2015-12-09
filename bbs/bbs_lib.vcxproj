@@ -131,6 +131,7 @@
     <ClInclude Include="menuspec.h" />
     <ClInclude Include="menusupp.h" />
     <ClInclude Include="menu_parser.h" />
+    <ClInclude Include="message_file.h" />
     <ClInclude Include="msgbase.h" />
     <ClInclude Include="multinst.h" />
     <ClInclude Include="netsup.h" />
@@ -148,6 +149,7 @@
     <ClInclude Include="qscan.h" />
     <ClInclude Include="quote.h" />
     <ClInclude Include="qwk.h" />
+    <ClInclude Include="read_message.h" />
     <ClInclude Include="runnable.h" />
     <ClInclude Include="shortmsg.h" />
     <ClInclude Include="sr.h" />
@@ -236,6 +238,7 @@
     <ClCompile Include="menuspec.cpp" />
     <ClCompile Include="menusupp.cpp" />
     <ClCompile Include="menu_parser.cpp" />
+    <ClCompile Include="message_file.cpp" />
     <ClCompile Include="misccmd.cpp" />
     <ClCompile Include="msgbase.cpp" />
     <ClCompile Include="msgbase1.cpp" />
@@ -265,6 +268,7 @@
     <ClCompile Include="qwk.cpp" />
     <ClCompile Include="qwk1.cpp" />
     <ClCompile Include="readmail.cpp" />
+    <ClCompile Include="read_message.cpp" />
     <ClCompile Include="shortmsg.cpp" />
     <ClCompile Include="showfiles.cpp" />
     <ClCompile Include="SmallRecord.cpp" />

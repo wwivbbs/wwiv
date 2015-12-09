@@ -31,6 +31,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/multinst.h"
 #include "bbs/printfile.h"
+#include "bbs/read_message.h"
 #include "bbs/stuffin.h"
 #include "bbs/uedit.h"
 #include "bbs/wconstants.h"

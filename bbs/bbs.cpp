@@ -53,6 +53,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/local_io.h"
 #include "bbs/local_io_curses.h"
+#include "bbs/message_file.h"
 #include "bbs/netsup.h"
 #include "bbs/null_local_io.h"
 #include "bbs/menu.h"

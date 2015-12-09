@@ -25,6 +25,7 @@
 #include "bbs/datetime.h"
 #include "bbs/fcns.h"
 #include "bbs/input.h"
+#include "bbs/read_message.h"
 #include "bbs/subxtr.h"
 #include "bbs/vars.h"
 
@@ -75,7 +76,7 @@ void valscan() {
         if (i > 0 && i <= session()->GetNumMessagesInCurrentMessageArea()) {
           bool next;
           int val;
-          read_message(i, &next, &val);
+          read_post(i, &next, &val);
           bout << "|#4[|#4Subboard: " << subboards[session()->GetCurrentReadMessageArea()].name << "|#1]\r\n";
           bout <<  "|#1D|#9)elete, |#1R|#9)eread |#1V|#9)alidate, |#1M|#9)ark Validated, |#1Q|#9)uit: |#2";
           char ch = onek("QDVMR");

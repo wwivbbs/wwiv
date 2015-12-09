@@ -26,6 +26,7 @@
 #include "bbs/com.h"
 #include "bbs/input.h"
 #include "bbs/msgbase.h"
+#include "bbs/read_message.h"
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
