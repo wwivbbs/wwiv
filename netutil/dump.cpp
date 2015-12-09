@@ -68,6 +68,23 @@ static string main_type_name(int typ) {
   }
 }
 
+static string net_info_minor_type_name(int typ) {
+  switch (typ) {
+  case net_info_general_message: return "net_info_general_message";
+  case net_info_bbslist: return "net_info_bbslist";
+  case net_info_connect: return "net_info_connect";
+  case net_info_sub_lst: return "net_info_sub_lst";
+  case net_info_wwivnews: return "net_info_wwivnews";
+  case net_info_fbackhdr: return "net_info_fbackhdr";
+  case net_info_more_wwivnews: return "net_info_more_wwivnews";
+  case net_info_categ_net: return "net_info_categ_net";
+  case net_info_network_lst: return "net_info_network_lst";
+  case net_info_file: return "net_info_file";
+  case net_info_binkp: return "net_info_binkp";
+  default: return wwiv::strings::StringPrintf("UNKNOWN type #%d", typ);
+  }
+}
+
 void dump_usage() {
   cout << "Usage:   dump <filename>" << endl;
   cout << "Example: dump S1.NET" << endl;
@@ -104,18 +121,20 @@ int dump_file(const std::string& filename) {
     }
     cout << "destination: " << h.touser << "@" << h.tosys << endl;
     cout << "from:        " << h.fromuser << "@" << h.fromsys << endl;
-    cout << "type:        " << main_type_name(h.main_type);
-    if (h.minor_type > 0) {
-      cout << "; subtype: " << h.minor_type;
+    cout << "type:        (" << main_type_name(h.main_type);
+    if (h.main_type == main_type_net_info) {
+      cout << "/" << net_info_minor_type_name(h.minor_type);
+    } else if (h.main_type > 0) {
+      cout << "/" << h.minor_type;
     }
-    cout << endl;
+    cout << ")" << endl;
     if (h.list_len > 0) {
       cout << "list_len:    " << h.list_len << endl;
     }
     cout << "daten:       " << daten_to_humantime(h.daten) << endl;
     cout << "length:      " << h.length << endl;
     if (h.method > 0) {
-      cout << "compression: " << h.method << endl;
+      cout << "compression: de" << h.method << endl;
     }
 
     if (h.list_len > 0) {
@@ -130,8 +149,14 @@ int dump_file(const std::string& filename) {
     }
     if (h.length > 0) {
       string text;
-      text.resize(h.length + 1);
-      int text_num_read = read(f, &text[0], h.length);
+      int length = h.length;
+      if (h.method > 0) {
+        length -= 146; // sizeof EN/DE header.
+        char header[147];
+        read(f, header, 146);
+      }
+      text.resize(length + 1);
+      int text_num_read = read(f, &text[0], length);
       cout << "Text:" << endl << text << endl << endl;
     }
     cout << "==============================================================================" << endl;

@@ -80,6 +80,20 @@ struct net_header_rec {
 #define main_type_new_extern      0x001b  /* type 27 auto-proc ext. msgs */
 #define main_type_game_pack       0x001c  /* type 28 game packs */
 
+// Minor types used by main_type_net_info
+
+#define net_info_general_message  0x0000
+#define net_info_bbslist          0x0001
+#define net_info_connect          0x0002
+#define net_info_sub_lst          0x0003
+#define net_info_wwivnews         0x0004
+#define net_info_fbackhdr         0x0005
+#define net_info_more_wwivnews    0x0006
+#define net_info_categ_net        0x0007
+#define net_info_network_lst      0x0008
+#define net_info_file             0x0009
+#define net_info_binkp            0x0010
+
 
 /* these are in main_type_sub_*_resp, as the first byte of the text */
 #define sub_adddrop_ok            0x00  /* you've been added/removed */
