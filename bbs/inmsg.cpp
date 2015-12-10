@@ -166,79 +166,76 @@ bool inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     use_workspace = false;
   }
 
-  if (bSaveMessage) {
-    long lMaxMessageSize = 0;
-    bool real_name = false;
-    GetMessageAnonStatus(&real_name, anony, setanon);
-    bout.backline();
-    if (!session()->IsNewMailWatiting()) {
-      SpinPuts("Saving...", 2);
-    }
-    File fileExtEd(exted_filename);
-    if (fsed) {
-      fileExtEd.Open(File::modeBinary | File::modeReadOnly);
-      long lExternalEditorFileSize = fileExtEd.GetLength();
-      lMaxMessageSize  = std::max<long>(lExternalEditorFileSize, 30000);
-    } else {
-      for (int i5 = 0; i5 < curli; i5++) {
-        lMaxMessageSize  += (strlen(&(lin[i5 * LEN])) + 2);
-      }
-    }
-    lMaxMessageSize  += 1024;
-    unique_ptr<char[]> b(new char[lMaxMessageSize]);
-    long lCurrentMessageSize = 0;
-
-    // Add author name
-    if (real_name) {
-      AddLineToMessageBuffer(b.get(), session()->user()->GetRealName(), &lCurrentMessageSize);
-    } else {
-      if (session()->IsNewMailWatiting()) {
-        const string sysop_name = StringPrintf("%s #1", syscfg.sysopname);
-        AddLineToMessageBuffer(b.get(), sysop_name, &lCurrentMessageSize);
-      } else {
-        AddLineToMessageBuffer(b.get(), session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum),
-                               &lCurrentMessageSize);
-      }
-    }
-
-    // Add date to message body
-    time_t lTime = time(nullptr);
-    string time_string(asctime(localtime(&lTime)));
-    // asctime appends a \n to the end of the string.
-    StringTrimEnd(&time_string);
-    AddLineToMessageBuffer(b.get(), time_string, &lCurrentMessageSize);
-    UpdateMessageBufferQuotesCtrlLines(b.get(), &lCurrentMessageSize);
-
-    if (session()->IsMessageThreadingEnabled()) {
-      UpdateMessageBufferTheadsInfo(b.get(), &lCurrentMessageSize, aux);
-    }
-    if (irt[0]) {
-      UpdateMessageBufferInReplyToInfo(b.get(), &lCurrentMessageSize, aux);
-    }
-    if (fsed) {
-      // Read the file produced by the external editor and add it to 'b'
-      long lFileSize = fileExtEd.GetLength();
-      fileExtEd.Read((&(b[lCurrentMessageSize])), lFileSize);
-      lCurrentMessageSize += lFileSize;
-      fileExtEd.Close();
-    } else {
-      // iterate through the lines in "char *lin" and append them to 'b'
-      for (int i5 = 0; i5 < curli; i5++) {
-        AddLineToMessageBuffer(b.get(), &(lin[i5 * LEN]), &lCurrentMessageSize);
-      }
-    }
-
-    if (application()->HasConfigFlag(OP_FLAGS_MSG_TAG)) {
-      UpdateMessageBufferTagLine(b.get(), &lCurrentMessageSize, aux);
-    }
-    if (b[lCurrentMessageSize - 1] != CZ) {
-      b[lCurrentMessageSize++] = CZ;
-    }
-    savefile(b.get(), lCurrentMessageSize, pMessageRecord, aux);
-  } else {
+  if (!bSaveMessage) {
     bout << "|#6Aborted.\r\n";
     return false;
   }
+  long lMaxMessageSize = 0;
+  bool real_name = false;
+  GetMessageAnonStatus(&real_name, anony, setanon);
+  bout.backline();
+  if (!session()->IsNewMailWatiting()) {
+    SpinPuts("Saving...", 2);
+  }
+  File fileExtEd(exted_filename);
+  if (fsed) {
+    fileExtEd.Open(File::modeBinary | File::modeReadOnly);
+    long lExternalEditorFileSize = fileExtEd.GetLength();
+    lMaxMessageSize  = std::max<long>(lExternalEditorFileSize, 30000);
+  } else {
+    for (int i5 = 0; i5 < curli; i5++) {
+      lMaxMessageSize  += (strlen(&(lin[i5 * LEN])) + 2);
+    }
+  }
+  unique_ptr<char[]> b(new char[lMaxMessageSize + 1024]);
+  long current_message_size = 0;
+
+  // Add author name
+  if (real_name) {
+    AddLineToMessageBuffer(b.get(), session()->user()->GetRealName(), &current_message_size);
+  } else if (session()->IsNewMailWatiting()) {
+    const string sysop_name = StringPrintf("%s #1", syscfg.sysopname);
+    AddLineToMessageBuffer(b.get(), sysop_name, &current_message_size);
+  } else {
+    AddLineToMessageBuffer(b.get(),
+      session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum),
+      &current_message_size);
+  }
+
+  // Add date to message body
+  time_t lTime = time(nullptr);
+  string time_string(asctime(localtime(&lTime)));
+  // asctime appends a \n to the end of the string.
+  StringTrimEnd(&time_string);
+  AddLineToMessageBuffer(b.get(), time_string, &current_message_size);
+  UpdateMessageBufferQuotesCtrlLines(b.get(), &current_message_size);
+
+  if (session()->IsMessageThreadingEnabled()) {
+    UpdateMessageBufferTheadsInfo(b.get(), &current_message_size, aux);
+  }
+  if (irt[0]) {
+    UpdateMessageBufferInReplyToInfo(b.get(), &current_message_size, aux);
+  }
+  if (fsed) {
+    // Read the file produced by the external editor and add it to 'b'
+    long lFileSize = fileExtEd.GetLength();
+    fileExtEd.Read((&(b[current_message_size])), lFileSize);
+    current_message_size += lFileSize;
+    fileExtEd.Close();
+  } else {
+    // iterate through the lines in "char *lin" and append them to 'b'
+    for (int i5 = 0; i5 < curli; i5++) {
+      AddLineToMessageBuffer(b.get(), &(lin[i5 * LEN]), &current_message_size);
+    }
+  }
+
+  if (application()->HasConfigFlag(OP_FLAGS_MSG_TAG)) {
+    UpdateMessageBufferTagLine(b.get(), &current_message_size, aux);
+  }
+  if (b[current_message_size - 1] != CZ) {
+    b[current_message_size++] = CZ;
+  }
+  savefile(b.get(), current_message_size, pMessageRecord, aux);
   return true;
 }
 
@@ -270,10 +267,8 @@ bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, strin
 
   bout.nl(2);
   bout << "|#9Enter message now, you can use |#2" << maxli << "|#9 lines.\r\n";
-  bout <<
-                     "|#9Colors: ^P-0\003""11\003""22\003""33\003""44\003""55\003""66\003""77\003""88\003""99\003""AA\003""BB\003""CC\003""DD\003""EE\003""FF\003""GG\003""HH\003""II\003""JJ\003""KK\003""LL\003""MM\003""NN\003""OO\003""PP\003""QQ\003""RR\003""SS\003""""\003""0";
-  bout <<
-                     "\003""TT\003""UU\003""VV\003""WW\003""XX\003""YY\003""ZZ\003""aa\003""bb\003""cc\003""dd\003""ee\003""ff\003""gg\003""hh\003""ii\003""jj\003""kk\003""ll\003""mm\003""nn\003""oo\003""pp\003""qq\003""rr\003""ss\003""tt\003""uu\003""vv\003""ww\003""xx\003""yy\003""zz\r\n";
+  bout << "|#9Colors: ^P-0\003""11\003""22\003""33\003""44\003""55\003""66\003""77\003""88\003""99\003""AA\003""BB\003""CC\003""DD\003""EE\003""FF\003""GG\003""HH\003""II\003""JJ\003""KK\003""LL\003""MM\003""NN\003""OO\003""PP\003""QQ\003""RR\003""SS\003""""\003""0";
+  bout << "\003""TT\003""UU\003""VV\003""WW\003""XX\003""YY\003""ZZ\003""aa\003""bb\003""cc\003""dd\003""ee\003""ff\003""gg\003""hh\003""ii\003""jj\003""kk\003""ll\003""mm\003""nn\003""oo\003""pp\003""qq\003""rr\003""ss\003""tt\003""uu\003""vv\003""ww\003""xx\003""yy\003""zz\r\n";
   bout.nl();
   bout << "|#1Enter |#2/Q|#1 to quote previous message, |#2/HELP|#1 for other editor commands.\r\n";
   strcpy(s, "[---=----=----=----=----=----=----=----]----=----=----=----=----=----=----=----]");

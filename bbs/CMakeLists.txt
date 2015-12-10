@@ -63,6 +63,7 @@ set(COMMON_SOURCES
  menu_parser.cpp
  menuspec.cpp
  menusupp.cpp
+ message_file.cpp
  misccmd.cpp
  msgbase.cpp
  msgbase1.cpp
@@ -81,6 +82,7 @@ set(COMMON_SOURCES
  qwk.cpp
  qwk1.cpp
  readmail.cpp
+ read_message.cpp
  shortmsg.cpp
  showfiles.cpp
  smallrecord.cpp
