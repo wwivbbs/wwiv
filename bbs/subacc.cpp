@@ -360,18 +360,12 @@ void pack_sub(int si) {
       postrec *p = get_post(i);
       if (p) {
         long lMessageSize;
-        unique_ptr<char[]> mt(readfile(&(p->msg), sfn, &lMessageSize));
-        if (!mt) {
-          mt.reset(new char[10]);
-          if (mt) {
-            strcpy(mt.get(), "??");
-            lMessageSize = 3;
-          }
+        std::string text;
+        if (!readfile(&(p->msg), sfn, &text)) {
+          text = "??";
         }
-        if (mt) {
-          savefile(mt.get(), lMessageSize, &(p->msg), nfn);
-          write_post(i, p);
-        }
+        savefile(text, &(p->msg), nfn);
+        write_post(i, p);
       }
       bout << i << "/" 
            << session()->GetNumMessagesInCurrentMessageArea()

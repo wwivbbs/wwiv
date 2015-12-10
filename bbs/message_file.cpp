@@ -134,7 +134,7 @@ void remove_link(messagerec * pMessageRecord, string fileName) {
   }
 }
 
-void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const string fileName) {
+void savefile(const std::string& text, messagerec * pMessageRecord, const string fileName) {
   switch (pMessageRecord->storage_type) {
   case 0:
   case 1:
@@ -147,7 +147,7 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
       for (int section = 0; section < 1024; section++) {
         set_gat_section(pMessageFile.get(), section);
         int gatp = 0;
-        int nNumBlocksRequired = static_cast<int>((lMessageLength + 511L) / MSG_BLOCK_SIZE);
+        int nNumBlocksRequired = static_cast<int>((text.length() + 511L) / MSG_BLOCK_SIZE);
         int i4 = 1;
         while (gatp < nNumBlocksRequired && i4 < GAT_NUMBER_ELEMENTS) {
           if (gat[i4] == 0) {
@@ -159,7 +159,7 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
           gati[gatp] = -1;
           for (int i = 0; i < nNumBlocksRequired; i++) {
             pMessageFile->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::seekBegin);
-            pMessageFile->Write((&b[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
+            pMessageFile->Write((&text[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
             gat[gati[i]] = static_cast< unsigned short >(gati[i + 1]);
           }
           save_gat(pMessageFile.get());
@@ -179,42 +179,40 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
   }
 }
 
-char *readfile(messagerec * pMessageRecord, string fileName, long *plMessageLength) {
-  *plMessageLength = 0L;
-  if (pMessageRecord->storage_type == 2) {
-    unique_ptr<File> file(OpenMessageFile(fileName));
-    set_gat_section(file.get(), pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS);
-    int lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
-    long lMessageLength = 0;
-    while (lCurrentSection > 0 && lCurrentSection < GAT_NUMBER_ELEMENTS) {
-      lMessageLength += MSG_BLOCK_SIZE;
-      lCurrentSection = gat[lCurrentSection];
-    }
-    if (lMessageLength == 0) {
-      bout << "\r\nNo message found.\r\n\n";
-      return nullptr;
-    }
-    char* b = new char[lMessageLength + 512];
-    if (!b) {
-      return nullptr;
-    }
-    lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
-    long lMessageBytesRead = 0;
-    while (lCurrentSection > 0 && lCurrentSection < GAT_NUMBER_ELEMENTS) {
-      file->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast< long >(lCurrentSection), File::seekBegin);
-      lMessageBytesRead += static_cast<long>(file->Read(&(b[lMessageBytesRead]), MSG_BLOCK_SIZE));
-      lCurrentSection = gat[lCurrentSection];
-    }
-    file->Close();
-    long lRealMessageLength = lMessageBytesRead - MSG_BLOCK_SIZE;
-    while ((lRealMessageLength < lMessageBytesRead) && (b[lRealMessageLength] != CZ)) {
-      ++lRealMessageLength;
-    }
-    *plMessageLength = lRealMessageLength;
-    b[lRealMessageLength + 1] = '\0';
-    return b;
+bool readfile(messagerec * pMessageRecord, string fileName,string* out) {
+  out->clear();
+  if (pMessageRecord->storage_type != 2) {
+    return false;
   }
-  return nullptr;
+  unique_ptr<File> file(OpenMessageFile(fileName));
+  set_gat_section(file.get(), pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS);
+  int lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
+  long lMessageLength = 0;
+  while (lCurrentSection > 0 && lCurrentSection < GAT_NUMBER_ELEMENTS) {
+    lMessageLength += MSG_BLOCK_SIZE;
+    lCurrentSection = gat[lCurrentSection];
+  }
+  if (lMessageLength == 0) {
+    bout << "\r\nNo message found.\r\n\n";
+    return false;
+  }
+
+  lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
+  while (lCurrentSection > 0 && lCurrentSection < GAT_NUMBER_ELEMENTS) {
+    file->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast< long >(lCurrentSection), File::seekBegin);
+    char b[MSG_BLOCK_SIZE];
+    file->Read(b, MSG_BLOCK_SIZE);
+    out->append(string(b, MSG_BLOCK_SIZE));
+    lCurrentSection = gat[lCurrentSection];
+  }
+  file->Close();
+  int last_cz = out->find_last_of(CZ);
+  int last_block_start = out->length() - MSG_BLOCK_SIZE;
+  if (last_cz != string::npos && last_block_start >= 0 && last_cz > last_block_start) {
+    // last block has a Control-Z in it.  Make sure we add a 0 after it.
+    out->resize(last_cz);
+  }
+  return true;
 }
 
 void lineadd(messagerec* pMessageRecord, const string& sx, string fileName) {

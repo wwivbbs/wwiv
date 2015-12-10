@@ -318,7 +318,7 @@ void readmail(int mode) {
   char s[201], s1[205], s2[81], *ss2, mnu[81];
   mailrec m, m1;
   char ch;
-  long len, num_mail, num_mail1;
+  long num_mail, num_mail1;
   int nUserNumber, nSystemNumber;
   net_system_list_rec *csne;
   filestatusrec fsr;
@@ -423,9 +423,9 @@ void readmail(int mode) {
           if (nn == 255) {
             sprintf(s1, "#%u @%u.%s", m.fromuser, m.fromsys, "<deleted network>");
           } else {
-            unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
-            if (b) {
-              strncpy(s2, b.get(), sizeof(s2) - 1);
+            string b;
+            if (readfile(&(m.msg), "email", &b)) {
+              strncpy(s2, b.c_str(), sizeof(s2) - 1);
               ss2 = strtok(s2, "\r");
               if (m.fromsys == 32767) {
                 sprintf(s1, "%s", stripcolors(ss2));
@@ -670,8 +670,10 @@ void readmail(int mode) {
         break;
       case 'E':
         if (so() && okmail) {
-          unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
-          extract_out(b.get(), len, m.title, m.daten);
+          string b;
+          if (readfile(&(m.msg), "email", &b)) {
+            extract_out(&b[0], b.length(), m.title, m.daten);
+          }
         }
         i1 = 0;
         break;
@@ -800,7 +802,8 @@ void readmail(int mode) {
             }
           }
           if (i != -1) {
-            unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
+            string b;
+            readfile(&(m.msg), "email", &b);
 
             postrec p;
             memset(&p, 0, sizeof(postrec));
@@ -819,7 +822,7 @@ void readmail(int mode) {
               p.status |= status_pending_net;
             }
             p.msg.storage_type = (uint8_t) subboards[session()->GetCurrentReadMessageArea()].storage_type;
-            savefile(b.get(), len, &(p.msg), subboards[session()->GetCurrentReadMessageArea()].filename);
+            savefile(b, &(p.msg), subboards[session()->GetCurrentReadMessageArea()].filename);
             WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
             p.qscan = pStatus->IncrementQScanPointer();
             application()->GetStatusManager()->CommitTransaction(pStatus);
@@ -914,9 +917,11 @@ void readmail(int mode) {
         }
         bout.nl(2);
         if (okfsed() && session()->user()->IsUseAutoQuote()) {
-          unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
-          auto_quote(b.get(), len, 4, m.daten);
-          send_email();
+          string b;
+          if (readfile(&(m.msg), "email", &b)) {
+            auto_quote(&b[0], b.size(), 4, m.daten);
+            send_email();
+          }
           break;
         }
 
@@ -988,8 +993,10 @@ void readmail(int mode) {
                   pFileEmail->Seek(mloc[curmail].index * sizeof(mailrec), File::seekBegin);
                   pFileEmail->Write(&m1, sizeof(mailrec));
                 } else {
-                  unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
-                  savefile(b.get(), len, &(m.msg), "email");
+                  string b;
+                  if (readfile(&(m.msg), "email", &b)) {
+                    savefile(b, &(m.msg), "email");
+                  }
                 }
                 m.status |= status_forwarded;
                 m.status |= status_seen;
@@ -1051,11 +1058,12 @@ void readmail(int mode) {
           break;
         } else if (m.fromuser != 65535) {
           if (okfsed() && session()->user()->IsUseAutoQuote()) {
-            unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
+            string b;
+            readfile(&(m.msg), "email", &b);
             if (s[0] == '@') {
-              auto_quote(b.get(), len, 1, m.daten);
+              auto_quote(&b[0], b.size(), 1, m.daten);
             } else {
-              auto_quote(b.get(), len, 2, m.daten);
+              auto_quote(&b[0], b.size(), 2, m.daten);
             }
           }
 
@@ -1167,7 +1175,8 @@ void readmail(int mode) {
       case 'Y':   // Add from here
         if (curmail >= 0) {
           string downloadFileName;
-          unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
+          string b;
+          readfile(&(m.msg), "email", &b);
           bout << "E-mail download -\r\n\n|#2Filename: ";
           input(&downloadFileName, 12);
           if (!okfn(downloadFileName.c_str())) {
@@ -1176,11 +1185,11 @@ void readmail(int mode) {
           File fileTemp(syscfgovr.tempdir, downloadFileName.c_str());
           fileTemp.Delete();
           fileTemp.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-          fileTemp.Write(b.get(), len);
+          fileTemp.Write(b);
           fileTemp.Close();
           bool bSent;
           bool bAbort;
-          send_file(fileTemp.full_pathname().c_str(), &bSent, &bAbort, fileTemp.full_pathname().c_str(), -1, len);
+          send_file(fileTemp.full_pathname().c_str(), &bSent, &bAbort, fileTemp.full_pathname().c_str(), -1, b.size());
           if (bSent) {
             bout << "E-mail download successful.\r\n";
             sysoplog("Downloaded E-mail");

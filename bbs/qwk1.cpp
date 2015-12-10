@@ -20,6 +20,7 @@
 
 #include <chrono>
 #include <memory>
+#include <sstream>
 #include <ctype.h>
 #include <fcntl.h>
 #ifdef _WIN32
@@ -50,6 +51,7 @@
 #include "core/file.h"
 #include "core/os.h"
 #include "core/strings.h"
+#include "core/scope_exit.h"
 #include "core/wwivport.h"
 #include "sdk/message_utils_wwiv.h"
 
@@ -538,29 +540,27 @@ void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, con
   char s[181];
   int oiia = iia;
   setiia(0);
+  wwiv::core::ScopeExit  at_exit([=]() {
+    charbufferpointer = 0;
+    charbuffer[0] = 0;
+    setiia(oiia);
+  });
 
   messagerec m = *m1;
-  unique_ptr<char[]> t(new char[size + 2048]);
-  long pos = 0;
-  AddLineToMessageBuffer(t.get(), name, &pos);
+  std::ostringstream ss;
+  ss << name << "\r\n";
 
   strcpy(s, ctime(&thetime));
   s[strlen(s) - 1] = 0;
-  AddLineToMessageBuffer(t.get(), s, &pos);
+  ss << s << "\r\n";
+  ss << text << "\r\n";
 
-  memmove(t.get() + pos, text, size);
-  pos += size;
-
-  if (t[pos - 1] != 26) {
-    t[pos++] = 26;
+  std::string message_text = ss.str();
+  if (message_text.back() != CZ) {
+    message_text.push_back(CZ);
   }
-  savefile(t.get(), pos, &m, aux);
-
+  savefile(message_text, &m, aux);
   *m1 = m;
-
-  charbufferpointer = 0;
-  charbuffer[0] = 0;
-  setiia(oiia);
 }
 
 void process_reply_dat(char *name) {
