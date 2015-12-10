@@ -25,6 +25,8 @@
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
+#include "bbs/message_file.h"
+#include "bbs/read_message.h"
 #include "bbs/subxtr.h"
 #include "bbs/printfile.h"
 #include "bbs/bbs.h"
@@ -114,7 +116,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
         if (forcescansub) {
           incom = false;
         }
-        read_message(nMessageNumber, &next, &val);
+        read_post(nMessageNumber, &next, &val);
         if (forcescansub) {
           incom = true;
         }

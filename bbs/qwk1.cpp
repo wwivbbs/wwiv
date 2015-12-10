@@ -36,6 +36,7 @@
 #include "bbs/conf.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
+#include "bbs/message_file.h"
 #include "bbs/subxtr.h"
 #include "sdk/vardec.h"
 #include "bbs/vars.h"

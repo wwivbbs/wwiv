@@ -28,6 +28,7 @@
 #include "bbs/input.h"
 #include "bbs/pause.h"
 #include "bbs/qscan.h"
+#include "bbs/read_message.h"
 #include "bbs/wconstants.h"
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"

@@ -1518,8 +1518,9 @@ void new_mail() {
   int nAllowAnon = 0;
   messagerec msg;
   msg.storage_type = 2;
-  inmsg(&msg, &title, &nAllowAnon, false, "email", INMSG_NOFSED, userName.c_str(), MSGED_FLAG_NONE, true);
-  sendout_email(title, &msg, 0, session()->usernum, 0, 1, 1, 0, 1, 0);
+  if (inmsg(&msg, &title, &nAllowAnon, false, "email", INMSG_NOFSED, userName.c_str(), MSGED_FLAG_NONE, true)) {
+    sendout_email(title, &msg, 0, session()->usernum, 0, 1, 1, 0, 1, 0);
+  }
   session()->user()->SetNumMailWaiting(session()->user()->GetNumMailWaiting() + 1);
   session()->user()->SetDefaultEditor(save_ed);
   session()->SetNewMailWaiting(false);

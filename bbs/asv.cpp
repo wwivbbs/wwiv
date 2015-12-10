@@ -27,6 +27,7 @@
 #include "bbs/connect1.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
+#include "bbs/message_file.h"
 #include "bbs/msgbase.h"
 #include "bbs/netsup.h"
 #include "bbs/newuser.h"
@@ -55,7 +56,6 @@ void asv() {
   long *reg_num, reg_num1;
   int i2 = 0, reg = 0, valfile = 0;
   bool ok = false;
-  messagerec msg;
   int nAllowAnon = 0;
 
   bout.nl();
@@ -236,12 +236,14 @@ void asv() {
         sprintf(s1, "%s%s", syscfg.gfilesdir, FORMASV_MSG);
         if (File::Exists(s1)) {
           LoadFileIntoWorkspace(s1, true);
+          messagerec msg;
           msg.storage_type = 2;
           session()->SetNewMailWaiting(true);
           sprintf(net_email_name, "%s #1@%u", syscfg.sysopname, net_sysnum);
           string title(irt);
-          inmsg(&msg, &title, &nAllowAnon, false, "email", INMSG_NOFSED, snode, MSGED_FLAG_NONE, true);
-          sendout_email(title, &msg, 0, 1, inode, 0, 1, net_sysnum, 1, session()->GetNetworkNumber());
+          if (inmsg(&msg, &title, &nAllowAnon, false, "email", INMSG_NOFSED, snode, MSGED_FLAG_NONE, true)) {
+            sendout_email(title, &msg, 0, 1, inode, 0, 1, net_sysnum, 1, session()->GetNetworkNumber());
+          }
         }
         irt[0] = '\0';
         session()->SetNewMailWaiting(false);

@@ -36,6 +36,7 @@
 #include "bbs/conf.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
+#include "bbs/message_file.h"
 #include "bbs/pause.h"
 #include "bbs/qscan.h"
 #include "bbs/stuffin.h"

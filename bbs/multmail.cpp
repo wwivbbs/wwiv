@@ -22,6 +22,7 @@
 #include "bbs/vars.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
+#include "bbs/message_file.h"
 #include "core/wfndfile.h"
 #include "core/strings.h"
 #include "bbs/printfile.h"
@@ -66,8 +67,7 @@ void multimail(int *pnUserNumber, int numu) {
   irt_name[0] = 0;
   File::Remove(QUOTES_TXT);
   std::string t;
-  inmsg(&m.msg, &t, &i, true, "email", INMSG_FSED, "Multi-Mail", MSGED_FLAG_NONE);
-  if (m.msg.stored_as == 0xffffffff) {
+  if (!inmsg(&m.msg, &t, &i, true, "email", INMSG_FSED, "Multi-Mail", MSGED_FLAG_NONE)) {
     return;
   }
   strcpy(m.title, t.c_str());

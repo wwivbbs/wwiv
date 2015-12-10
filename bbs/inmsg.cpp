@@ -30,7 +30,9 @@
 #include "bbs/printfile.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
+#include "bbs/message_file.h"
 #include "bbs/vars.h"
+#include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
@@ -94,12 +96,11 @@ static bool GetMessageToName(const char *aux) {
   return bHasAddress;
 }
 
-void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitle, const char *aux, int fsed,
-           const char *pszDestination, int flags, bool force_title) {
-  char *lin = nullptr;
+bool inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitle, const char *aux, int fsed,
+           const string& destination, int flags, bool force_title) {
+  unique_ptr<char[]> lin;
 
   int oiia = setiia(0);
-
   if (fsed != INMSG_NOFSED && !okfsed()) {
     fsed = INMSG_NOFSED;
   }
@@ -116,12 +117,21 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     }
   }
 
+  wwiv::core::ScopeExit at_exit([=]() {
+    setiia(oiia);
+    charbufferpointer = 0;
+    charbuffer[0] = '\0';
+    grab_quotes(nullptr, nullptr);
+    if (fsed) {
+      File::Remove(exted_filename);
+    }
+  });
+
   int maxli = GetMaxMessageLinesAllowed();
   if (!fsed) {
-    if ((lin = static_cast<char *>(BbsAllocA((maxli + 10) * LEN))) == nullptr) {
-      pMessageRecord->stored_as = 0xffffffff;
-      setiia(oiia);
-      return;
+    lin.reset(new char[((maxli + 10) * LEN) + 1]);
+    if (!lin) {
+      return false;
     }
     for (int i = 0; i < maxli; i++) {
       lin[i * LEN] = '\0';
@@ -138,21 +148,16 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
   GetMessageTitle(title, force_title);
   if (title->empty() && needtitle) {
     bout << "|#6Aborted.\r\n";
-    pMessageRecord->stored_as = 0xffffffff;
-    if (!fsed) {
-      free(lin);
-    }
-    setiia(oiia);
-    return;
+    return false;
   }
 
   int setanon = 0;
   int curli = 0;
   bool bSaveMessage = false;
   if (fsed == INMSG_NOFSED) {   // Use Internal Message Editor
-    bSaveMessage = InternalMessageEditor(lin, maxli, &curli, &setanon, title);
+    bSaveMessage = InternalMessageEditor(lin.get(), maxli, &curli, &setanon, title);
   } else if (fsed == INMSG_FSED) {   // Use Full Screen Editor
-    bSaveMessage = ExternalMessageEditor(maxli, &setanon, title, pszDestination, flags, aux);
+    bSaveMessage = ExternalMessageEditor(maxli, &setanon, title, destination, flags, aux);
   } else if (fsed == INMSG_FSED_WORKSPACE) {   // "auto-send mail message"
     bSaveMessage = File::Exists(exted_filename);
     if (bSaveMessage && !session()->IsNewMailWatiting()) {
@@ -181,13 +186,6 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     }
     lMaxMessageSize  += 1024;
     unique_ptr<char[]> b(new char[lMaxMessageSize]);
-    if (!b) {
-      free(lin);
-      bout << "Out of memory.\r\n";
-      pMessageRecord->stored_as = 0xffffffff;
-      setiia(oiia);
-      return;
-    }
     long lCurrentMessageSize = 0;
 
     // Add author name
@@ -239,18 +237,9 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     savefile(b.get(), lCurrentMessageSize, pMessageRecord, aux);
   } else {
     bout << "|#6Aborted.\r\n";
-    pMessageRecord->stored_as = 0xffffffff;
+    return false;
   }
-  if (fsed) {
-    File::Remove(exted_filename);
-  }
-  if (!fsed) {
-    free(lin);
-  }
-  charbufferpointer = 0;
-  charbuffer[0] = '\0';
-  setiia(oiia);
-  grab_quotes(nullptr, nullptr);
+  return true;
 }
 
 void AddLineToMessageBuffer(char *pszMessageBuffer, const std::string& line_to_add, long *plBufferLength) {

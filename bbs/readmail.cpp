@@ -28,6 +28,8 @@
 #include "bbs/vars.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
+#include "bbs/message_file.h"
+#include "bbs/read_message.h"
 #include "bbs/wconstants.h"
 #include "bbs/subxtr.h"
 #include "bbs/printfile.h"
