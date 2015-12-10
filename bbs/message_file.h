@@ -23,8 +23,8 @@
 #include "sdk/vardec.h"
 
 void remove_link(messagerec * pMessageRecord, const std::string fileName);
-void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const std::string fileName);
-char *readfile(messagerec * pMessageRecord, const std::string fileName, long *plMessageLength);
+void savefile(const std::string& text, messagerec * pMessageRecord, const std::string fileName);
+bool readfile(messagerec * pMessageRecord, const std::string fileName, std::string* out);
 void lineadd(messagerec* pMessageRecord, const std::string& sx, const std::string fileName);
 
 #endif  // __INCLUDED_BBS_MESSAGE_FILE_H__

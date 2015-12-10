@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <string>
+#include <sstream>
 
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl2.h"
@@ -51,13 +52,14 @@ using namespace wwiv::strings;
 //
 bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, string *title);
 void GetMessageTitle(string *title, bool force_title);
-void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength, const char *aux);
-void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLength, const char *aux);
-void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, const char *aux);
-void UpdateMessageBufferQuotesCtrlLines(char *pszMessageBuffer, long *plBufferLength);
+void UpdateMessageBufferTheadsInfo(std::ostringstream& ss, const char *aux);
+void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char *aux);
+void UpdateMessageBufferTagLine(std::ostringstream& ss, const char *aux);
+void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss);
 void GetMessageAnonStatus(bool *real_name, int *anony, int setanon);
 
 static const int LEN = 161;
+static const char crlf[] = "\r\n";
 
 static bool GetMessageToName(const char *aux) {
   // If session()->GetCurrentReadMessageArea() is -1, then it hasn't been set by reading a sub,
@@ -170,36 +172,30 @@ bool inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     bout << "|#6Aborted.\r\n";
     return false;
   }
-  long lMaxMessageSize = 0;
+  int max_message_size = 0;
   bool real_name = false;
   GetMessageAnonStatus(&real_name, anony, setanon);
   bout.backline();
   if (!session()->IsNewMailWatiting()) {
     SpinPuts("Saving...", 2);
   }
-  File fileExtEd(exted_filename);
   if (fsed) {
-    fileExtEd.Open(File::modeBinary | File::modeReadOnly);
-    long lExternalEditorFileSize = fileExtEd.GetLength();
-    lMaxMessageSize  = std::max<long>(lExternalEditorFileSize, 30000);
+    File fileExtEd(exted_filename);
+    max_message_size = std::max<int>(fileExtEd.GetLength(), 30000);
   } else {
     for (int i5 = 0; i5 < curli; i5++) {
-      lMaxMessageSize  += (strlen(&(lin[i5 * LEN])) + 2);
+      max_message_size  += (strlen(&(lin[i5 * LEN])) + 2);
     }
   }
-  unique_ptr<char[]> b(new char[lMaxMessageSize + 1024]);
-  long current_message_size = 0;
+  std::ostringstream b;
 
   // Add author name
   if (real_name) {
-    AddLineToMessageBuffer(b.get(), session()->user()->GetRealName(), &current_message_size);
+    b << session()->user()->GetRealName() << crlf;
   } else if (session()->IsNewMailWatiting()) {
-    const string sysop_name = StringPrintf("%s #1", syscfg.sysopname);
-    AddLineToMessageBuffer(b.get(), sysop_name, &current_message_size);
+    b << syscfg.sysopname << " #1" << crlf;
   } else {
-    AddLineToMessageBuffer(b.get(),
-      session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum),
-      &current_message_size);
+    b << session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum) << crlf;
   }
 
   // Add date to message body
@@ -207,43 +203,39 @@ bool inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
   string time_string(asctime(localtime(&lTime)));
   // asctime appends a \n to the end of the string.
   StringTrimEnd(&time_string);
-  AddLineToMessageBuffer(b.get(), time_string, &current_message_size);
-  UpdateMessageBufferQuotesCtrlLines(b.get(), &current_message_size);
+  b << time_string << crlf;
+  UpdateMessageBufferQuotesCtrlLines(b);
 
   if (session()->IsMessageThreadingEnabled()) {
-    UpdateMessageBufferTheadsInfo(b.get(), &current_message_size, aux);
+    UpdateMessageBufferTheadsInfo(b, aux);
   }
   if (irt[0]) {
-    UpdateMessageBufferInReplyToInfo(b.get(), &current_message_size, aux);
+    UpdateMessageBufferInReplyToInfo(b, aux);
   }
   if (fsed) {
-    // Read the file produced by the external editor and add it to 'b'
-    long lFileSize = fileExtEd.GetLength();
-    fileExtEd.Read((&(b[current_message_size])), lFileSize);
-    current_message_size += lFileSize;
-    fileExtEd.Close();
+    // Read the file produced by the external editor and add it to the message.
+    TextFile editor_file(exted_filename, "r");
+    string line;
+    while (editor_file.ReadLine(&line)) {
+      b << line << crlf;
+    }
   } else {
     // iterate through the lines in "char *lin" and append them to 'b'
     for (int i5 = 0; i5 < curli; i5++) {
-      AddLineToMessageBuffer(b.get(), &(lin[i5 * LEN]), &current_message_size);
+      b << &(lin[i5 * LEN]) << crlf;
     }
   }
 
   if (application()->HasConfigFlag(OP_FLAGS_MSG_TAG)) {
-    UpdateMessageBufferTagLine(b.get(), &current_message_size, aux);
+    UpdateMessageBufferTagLine(b, aux);
   }
-  if (b[current_message_size - 1] != CZ) {
-    b[current_message_size++] = CZ;
-  }
-  savefile(b.get(), current_message_size, pMessageRecord, aux);
-  return true;
-}
 
-void AddLineToMessageBuffer(char *pszMessageBuffer, const std::string& line_to_add, long *plBufferLength) {
-  strcpy(&(pszMessageBuffer[ *plBufferLength ]), line_to_add.c_str());
-  *plBufferLength += line_to_add.length();
-  strcpy(&(pszMessageBuffer[ *plBufferLength ]), "\r\n");
-  *plBufferLength += 2;
+  string text = b.str();
+  if (text.back() != CZ) {
+    text.push_back(CZ);
+  }
+  savefile(text, pMessageRecord, aux);
+  return true;
 }
 
 static void ReplaceString(char *pszResult, char *pszOld, char *pszNew) {
@@ -492,12 +484,13 @@ void GetMessageTitle(string *title, bool force_title) {
   }
 }
 
-void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength, const char *aux) {
+void UpdateMessageBufferTheadsInfo(std::ostringstream& ss, const char *aux) {
   if (!IsEqualsIgnoreCase(aux, "email")) {
     time_t msgid = time(nullptr);
-    unsigned long targcrc = crc32buf(pszMessageBuffer, strlen(pszMessageBuffer));
+    const string s = ss.str();
+    unsigned long targcrc = crc32buf(s.c_str(), s.length());
     const string msgid_buf = StringPrintf("%c0P %lX-%lX", 4, targcrc, msgid);
-    AddLineToMessageBuffer(pszMessageBuffer, msgid_buf, plBufferLength);
+    ss << msgid_buf << crlf;
     if (thread) {
       thread [session()->GetNumMessagesInCurrentMessageArea() + 1 ].msg_num = static_cast< unsigned short>
           (session()->GetNumMessagesInCurrentMessageArea() + 1);
@@ -505,7 +498,7 @@ void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength,
     }
     if (session()->threadID.length() > 0) {
       const string threadid_buf = StringPrintf("%c0W %s", 4, session()->threadID.c_str());
-      AddLineToMessageBuffer(pszMessageBuffer, threadid_buf, plBufferLength);
+      ss << threadid_buf << crlf;
       if (thread) {
         strcpy(thread[session()->GetNumMessagesInCurrentMessageArea() + 1].parent_code, &threadid_buf.c_str()[4]);
         thread[ session()->GetNumMessagesInCurrentMessageArea() + 1 ].used = 1;
@@ -514,7 +507,7 @@ void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength,
   }
 }
 
-void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLength, const char *aux) {
+void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char *aux) {
   if (irt_name[0] &&
       !IsEqualsIgnoreCase(aux, "email") &&
       xsubs[session()->GetCurrentReadMessageArea()].num_nets) {
@@ -522,7 +515,7 @@ void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLeng
       xtrasubsnetrec *xnp = &xsubs[session()->GetCurrentReadMessageArea()].nets[i];
       if (net_networks[xnp->net_num].type == net_type_fidonet) {
         const string buf = StringPrintf("0FidoAddr: %s", irt_name);
-        AddLineToMessageBuffer(pszMessageBuffer, buf, plBufferLength);
+        ss << buf << crlf;
         break;
       }
     }
@@ -531,16 +524,16 @@ void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLeng
       (strncasecmp("filenet", session()->GetNetworkName(), 7) == 0)) {
     if (session()->usenetReferencesLine.length() > 0) {
       const string buf = StringPrintf("%c0RReferences: %s", CD, session()->usenetReferencesLine.c_str());
-      AddLineToMessageBuffer(pszMessageBuffer, buf, plBufferLength);
+      ss << buf << crlf;
       session()->usenetReferencesLine = "";
     }
   }
   if (irt[0] != '"') {
     const string irt_buf = StringPrintf("RE: %s", irt);
-    AddLineToMessageBuffer(pszMessageBuffer, irt_buf, plBufferLength);
+    ss << irt_buf << crlf;
     if (irt_sub[0]) {
       const string irt_sub_buf = StringPrintf("ON: %s", irt_sub);
-      AddLineToMessageBuffer(pszMessageBuffer, irt_sub_buf, plBufferLength);
+      ss << irt_sub_buf << crlf;
     }
   } else {
     irt_sub[0] = '\0';
@@ -549,9 +542,9 @@ void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLeng
   if (irt_name[0] &&
       !IsEqualsIgnoreCase(aux, "email")) {
     const string irt_name_buf = StringPrintf("BY: %s", irt_name);
-    AddLineToMessageBuffer(pszMessageBuffer, irt_name_buf, plBufferLength);
+    ss << irt_name_buf << crlf;
   }
-  AddLineToMessageBuffer(pszMessageBuffer, "", plBufferLength);
+  ss << crlf;
 }
 
 static string FindTagFileName() {
@@ -578,7 +571,7 @@ static string FindTagFileName() {
   return "";
 }
 
-void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, const char *aux) {
+void UpdateMessageBufferTagLine(std::ostringstream& ss, const char *aux) {
   if (session()->num_subs <= 0 && session()->GetCurrentReadMessageArea() <= 0) {
     return;
   }
@@ -614,9 +607,9 @@ void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, co
         s1 = StringPrintf("%c%c%s", CD, j + '2', s.c_str());
       }
       if (!j) {
-        AddLineToMessageBuffer(pszMessageBuffer, "1", plBufferLength);
+        ss << "1" << crlf;
       }
-      AddLineToMessageBuffer(pszMessageBuffer, s1, plBufferLength);
+      ss << s1 << crlf;
       if (j < 7) {
         j++;
       }
@@ -625,7 +618,7 @@ void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, co
   }
 }
 
-void UpdateMessageBufferQuotesCtrlLines(char *pszMessageBuffer, long *plBufferLength) {
+void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
   const string quotes_filename = StrCat(syscfgovr.tempdir, QUOTES_TXT);
   TextFile file(quotes_filename, "rt");
   if (file.IsOpen()) {
@@ -636,7 +629,7 @@ void UpdateMessageBufferQuotesCtrlLines(char *pszMessageBuffer, long *plBufferLe
         *ss1 = '\0';
       }
       if (strncmp(szQuoteText, "\004""0U", 3) == 0) {
-        AddLineToMessageBuffer(pszMessageBuffer, szQuoteText, plBufferLength);
+        ss << szQuoteText << crlf;
       }
     }
     file.Close();

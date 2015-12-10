@@ -136,15 +136,13 @@ void grab_quotes(messagerec * m, const char *aux) {
     strcat(pfx, "> ");
     pfxlen = strlen(pfx);
 
-    long lMessageLength = 0;
-    unique_ptr<char[]> ss(readfile(m, aux, &lMessageLength));
-
-    if (ss) {
-      quotes_nrm_l = lMessageLength;
+    string ss;
+    if (readfile(m, aux, &ss)) {
+      quotes_nrm_l = ss.length();
 
       File quotesTextFile(szQuotesTextFileName);
       if (quotesTextFile.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyNone)) {
-        quotesTextFile.Write(ss.get(), lMessageLength);
+        quotesTextFile.Write(ss);
         quotesTextFile.Close();
       }
       TextFile file(szQuotesIndexFileName, "wb");
@@ -154,11 +152,11 @@ void grab_quotes(messagerec * m, const char *aux) {
         session()->internetFullEmailAddress = "";
         if ((strncasecmp("internet", session()->GetNetworkName(), 8) == 0) ||
             (strncasecmp("filenet", session()->GetNetworkName(), 7) == 0)) {
-          for (l1 = 0; l1 < lMessageLength; l1++) {
+          for (l1 = 0; l1 < ss.length(); l1++) {
             if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'R') &&
                 (ss[l1 + 3] == 'M')) {
               l1 += 3;
-              while ((ss[l1] != '\r') && (l1 < lMessageLength)) {
+              while ((ss[l1] != '\r') && (l1 < ss.length())) {
                 temp[l3++] = ss[l1];
                 l1++;
               }
@@ -174,27 +172,27 @@ void grab_quotes(messagerec * m, const char *aux) {
                   }
                 }
               }
-              l1 = lMessageLength;
+              l1 = ss.length();
             }
           }
         }
         l3 = l2 = 0;
         ss1 = nullptr;
         if (session()->IsMessageThreadingEnabled()) {
-          for (l1 = 0; l1 < lMessageLength; l1++) {
+          for (l1 = 0; l1 < ss.length(); l1++) {
             if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'P')) {
               l1 += 4;
               session()->threadID = "";
-              while ((ss[l1] != '\r') && (l1 < lMessageLength)) {
+              while ((ss[l1] != '\r') && (l1 < ss.length())) {
                 sprintf(temp, "%c", ss[l1]);
                 session()->threadID += temp;
                 l1++;
               }
-              l1 = lMessageLength;
+              l1 = ss.length();
             }
           }
         }
-        for (l1 = 0; l1 < lMessageLength; l1++) {
+        for (l1 = 0; l1 < ss.length(); l1++) {
           if (ctld == -1) {
             ctld = ss[l1];
           } else switch (ss[l1]) {
@@ -205,7 +203,7 @@ void grab_quotes(messagerec * m, const char *aux) {
               break;
             case 3:
               if (!ss1) {
-                ss1 = ss.get() + l1;
+                ss1 = &ss[0] + l1;
               }
               l2++;
               ctlc = 1;
@@ -246,7 +244,7 @@ void grab_quotes(messagerec * m, const char *aux) {
               break;
             default:
               if (!ss1) {
-                ss1 = ss.get() + l1;
+                ss1 = &ss[0] + l1;
               }
               l2++;
               if (ctlc) {

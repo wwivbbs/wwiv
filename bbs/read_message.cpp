@@ -277,22 +277,20 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   case 2:
   {
     long lMessageTextLength;
-    unique_ptr<char[]> ss(readfile(pMessageRecord, pszFileName, &lMessageTextLength));
-    if (!ss) {
+    if (!readfile(pMessageRecord, pszFileName, &message_text)) {
       return;
     }
-    message_text.assign(ss.get(), lMessageTextLength);
 
     int ptr = 0;
-    for (ptr = 0; ptr < lMessageTextLength && ss[ptr] != RETURN && ptr<=200; ptr++) {
-      name.push_back(ss[ptr]);
+    for (ptr = 0; ptr < message_text.size() && message_text[ptr] != RETURN && ptr<=200; ptr++) {
+      name.push_back(message_text[ptr]);
     }
-    if (ss[++ptr] == SOFTRETURN) {
+    if (message_text[++ptr] == SOFTRETURN) {
       ++ptr;
     }
     int start = ptr;
-    for (; ptr < lMessageTextLength && ss[ptr] != RETURN && ptr-start <= 60; ptr++) {
-      date.push_back(ss[ptr]);
+    for (; ptr < message_text.size() && message_text[ptr] != RETURN && ptr-start <= 60; ptr++) {
+      date.push_back(message_text[ptr]);
     }
     message_text = message_text.substr(ptr + 1);
   }

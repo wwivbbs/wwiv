@@ -47,9 +47,8 @@ using std::unique_ptr;
 using wwiv::strings::StringPrintf;
 
 void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
-  long lMessageLength;
-  unique_ptr<char[]> b(readfile(&(pPostRecord->msg), extra, &lMessageLength));
-  if (!b) {
+  string text;
+  if (!readfile(&(pPostRecord->msg), extra, &text)){
     return;
   }
 
@@ -75,9 +74,10 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
   netHeaderOrig.fromuser  = pPostRecord->owneruser;
   netHeaderOrig.list_len  = 0;
   netHeaderOrig.daten   = pPostRecord->daten;
-  netHeaderOrig.length  = lMessageLength + 1 + strlen(pPostRecord->title);
+  netHeaderOrig.length  = text.size() + 1 + strlen(pPostRecord->title);
   netHeaderOrig.method  = 0;
 
+  uint32_t lMessageLength = text.size();
   if (netHeaderOrig.length > 32755) {
     bout.bprintf("Message truncated by %lu bytes for the network.", netHeaderOrig.length - 32755L);
     netHeaderOrig.length = 32755;
@@ -89,7 +89,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
     return;
   }
   strcpy(b1.get(), pPostRecord->title);
-  memmove(&(b1[strlen(pPostRecord->title) + 1]), b.get(), lMessageLength);
+  memmove(&(b1[strlen(pPostRecord->title) + 1]), text.c_str(), lMessageLength);
 
   for (int n = 0; n < xsubs[nSubNumber].num_nets; n++) {
     xtrasubsnetrec* xnp = &(xsubs[nSubNumber].nets[n]);
@@ -117,32 +117,28 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
           continue;
         }
         // looks like this leaks
-        b.reset(new char[len1 + 100]);
-        if (!b) {
-          free(pList);
-          continue;
-        }
-        file.Read(b.get(), len1);
+        text.clear();
+        text.resize(len1);
+        file.Read(&text[0], len1);
         file.Close();
-        b[len1] = '\0';
+        text[len1] = '\0';
         int len2 = 0;
         while (len2 < len1) {
-          while (len2 < len1 && (b[len2] < '0' || b[len2] > '9')) {
+          while (len2 < len1 && (text[len2] < '0' || text[len2] > '9')) {
             ++len2;
           }
-          if ((b[len2] >= '0') && (b[len2] <= '9') && (len2 < len1)) {
-            int i = atoi(&(b[len2]));
+          if ((text[len2] >= '0') && (text[len2] <= '9') && (len2 < len1)) {
+            int i = atoi(&(text[len2]));
             if (((session()->GetNetworkNumber() != nNetNumber) || (nh.fromsys != i)) && (i != net_sysnum)) {
               if (valid_system(i)) {
                 pList[(nh.list_len)++] = static_cast< unsigned short >(i);
               }
             }
-            while ((len2 < len1) && (b[len2] >= '0') && (b[len2] <= '9')) {
+            while ((len2 < len1) && (text[len2] >= '0') && (text[len2] <= '9')) {
               ++len2;
             }
           }
         }
-        // delete[] p
       }
       if (!nh.list_len) {
         if (pList) {
@@ -320,28 +316,27 @@ void post() {
 
 void grab_user_name(messagerec* pMessageRecord, const char* pszFileName) {
   long lMessageLen;
-  unique_ptr<char[]> ss(readfile(pMessageRecord, pszFileName, &lMessageLen));
-  if (ss.get()) {
-    char* ss1 = strchr(ss.get(), '\r');
-    if (ss1) {
-      *ss1 = '\0';
-      char* ss2 = ss.get();
-      if (ss[0] == '`' && ss[1] == '`') {
-        for (ss1 = ss2 + 2; *ss1; ss1++) {
-          if (ss1[0] == '`' && ss1[1] == '`') {
-            ss2 = ss1 + 2;
-          }
-        }
-        while (*ss2 == ' ') {
-          ++ss2;
-        }
+  string text;
+  net_email_name[0] = '\0';
+  if (!readfile(pMessageRecord, pszFileName, &text)) {
+    return;
+  }
+  string::size_type cr = text.find_first_of('\r');
+  if (cr == string::npos) {
+    return;
+  }
+  text.resize(cr);
+  const char* ss2 = text.c_str();
+  if (text[0] == '`' && text[1] == '`') {
+    for (const char* ss1 = ss2 + 2; *ss1; ss1++) {
+      if (ss1[0] == '`' && ss1[1] == '`') {
+        ss2 = ss1 + 2;
       }
-      strcpy(net_email_name, ss2);
-    } else {
-      net_email_name[0] = '\0';
     }
-  } else {
-    net_email_name[0] = '\0';
+    while (*ss2 == ' ') {
+      ++ss2;
+    }
+    strcpy(net_email_name, ss2);
   }
 }
 

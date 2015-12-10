@@ -401,15 +401,14 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   messagerec m = (m1->msg);
   int cur = 0;
 
-  long len;
-  unique_ptr<char[]> ss(readfile(&m, fn, &len));
-
-  if (!ss) {
+  string ss;
+  if (!readfile(&m, fn, &ss)) {
     bout.bprintf("File not found.");
     bout.nl();
     return;
   }
 
+  long len = ss.length();
   int p = 0;
   // n = name...
   while ((ss[p] != 13) && ((long)p < len) && (p < 200) && !hangup) {
@@ -463,7 +462,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   p1 = 0;
 
   len = len - cur;
-  make_qwk_ready(ss.get() + cur, &len, qwk_address);
+  make_qwk_ready(&ss[cur], &len, qwk_address);
 
   int amount_blocks = ((int)len / sizeof(qwk_info->qwk_rec)) + 2;
 
@@ -522,7 +521,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 
     if (this_pos < len) {
       size_t size = (this_pos + sizeof(qwk_info->qwk_rec) > static_cast<size_t>(len)) ? (len - this_pos - 1) : sizeof(qwk_info->qwk_rec);
-      memmove(&qwk_info->qwk_rec, ss.get() + cur + this_pos, size);
+      memmove(&qwk_info->qwk_rec, ss.c_str() + cur + this_pos, size);
     }
     // Save this block
     append_block(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec));

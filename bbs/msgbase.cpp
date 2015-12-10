@@ -223,9 +223,8 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
       bout << "|#6DIDN'T SAVE RIGHT!\r\n";
     }
   } else {
-    long lEmailFileLen;
-    unique_ptr<char[]> b(readfile(&(m.msg), "email", &lEmailFileLen));
-    if (!b) {
+    string b;
+    if (!readfile(&(m.msg), "email", &b)) {
       return;
     }
     if (nForwardedCode == 2) {
@@ -244,7 +243,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     nh.list_len = 0;
     nh.daten = m.daten;
     nh.method = 0;
-    unique_ptr<char[]> b1(new char[lEmailFileLen + 768]);
+    unique_ptr<char[]> b1(new char[b.size() + 768]);
     i = 0;
     if (nUserNumber == 0 && nFromNetworkNumber == session()->GetNetworkNumber()) {
       nh.main_type = main_type_email_name;
@@ -253,8 +252,8 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     }
     strcpy(&(b1[i]), m.title);
     i += strlen(m.title) + 1;
-    memmove(&(b1[i]), b.get(), lEmailFileLen);
-    nh.length = lEmailFileLen + i;
+    memmove(&(b1[i]), b.c_str(), b.length());
+    nh.length = b.length() + i;
     if (nh.length > 32760) {
       bout.bprintf("Message truncated by %lu bytes for the network.", nh.length - 32760L);
       nh.length = 32760;
