@@ -315,7 +315,6 @@ void post() {
 }
 
 void grab_user_name(messagerec* pMessageRecord, const char* pszFileName) {
-  long lMessageLen;
   string text;
   net_email_name[0] = '\0';
   if (!readfile(pMessageRecord, pszFileName, &text)) {
@@ -353,8 +352,8 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
   // TODO(rushfan): Do we still need to do this?
   iscan1(nSubNumber);
 
-  uint32_t on_disk_last_read = WWIVReadLastRead(nSubNumber);
-  if (!on_disk_last_read || on_disk_last_read > memory_last_read) {
+  uint32_t on_disk_last_post = WWIVReadLastRead(nSubNumber);
+  if (!on_disk_last_post || on_disk_last_post > memory_last_read) {
     int nNextSubNumber = *pnNextSubNumber;
     int nOldSubNumber = session()->GetCurrentMessageArea();
     session()->SetCurrentMessageArea(nBeginSubNumber);

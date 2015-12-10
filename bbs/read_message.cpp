@@ -276,12 +276,11 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   case 1:
   case 2:
   {
-    long lMessageTextLength;
     if (!readfile(pMessageRecord, pszFileName, &message_text)) {
       return;
     }
 
-    int ptr = 0;
+    size_t ptr = 0;
     for (ptr = 0; ptr < message_text.size() && message_text[ptr] != RETURN && ptr<=200; ptr++) {
       name.push_back(message_text[ptr]);
     }
