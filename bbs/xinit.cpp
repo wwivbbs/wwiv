@@ -34,6 +34,7 @@
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
+#include "bbs/message_file.h"
 #include "bbs/netsup.h"
 #include "bbs/pause.h"
 #include "bbs/wconstants.h"
@@ -557,7 +558,7 @@ bool WApplication::ReadConfig() {
   syscfg.sysophightime    = full_config.config()->sysophightime;
   syscfg.executetime      = full_config.config()->executetime;
   syscfg.unused_netlowtime = full_config.config()->unused_netlowtime;
-  syscfg.nethightime      = full_config.config()->nethightime;
+  syscfg.unused_nethightime = full_config.config()->unused_nethightime;
   syscfg.max_subs         = full_config.config()->max_subs;
   syscfg.max_dirs         = full_config.config()->max_dirs;
   syscfg.qscn_len         = full_config.config()->qscn_len;

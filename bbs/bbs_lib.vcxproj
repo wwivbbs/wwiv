@@ -100,6 +100,7 @@
     <ClInclude Include="bbsovl3.h" />
     <ClInclude Include="bbsutl.h" />
     <ClInclude Include="bbsutl1.h" />
+    <ClInclude Include="bbsutl2.h" />
     <ClInclude Include="bgetch.h" />
     <ClInclude Include="bputch.h" />
     <ClInclude Include="callback.h" />

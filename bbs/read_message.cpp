@@ -23,10 +23,13 @@
 #include <string>
 
 #include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
+#include "bbs/bbsutl2.h"
+#include "bbs/bputch.h"
 #include "bbs/connect1.h"
-#include "bbs/fcns.h" // remove me
 #include "bbs/message_file.h"
+#include "bbs/subacc.h"
 #include "bbs/utility.h"
 #include "bbs/vars.h"
 #include "core/file.h"

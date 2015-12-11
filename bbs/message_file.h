@@ -18,12 +18,14 @@
 #ifndef __INCLUDED_BBS_MESSAGE_FILE_H__
 #define __INCLUDED_BBS_MESSAGE_FILE_H__
 
+#include <cstdint>
 #include <string>
 
 #include "sdk/vardec.h"
 
 constexpr uint8_t EMAIL_STORAGE = 2;
 
+extern uint16_t *gat;
 
 void remove_link(messagerec * pMessageRecord, const std::string fileName);
 void savefile(const std::string& text, messagerec * pMessageRecord, const std::string fileName);
