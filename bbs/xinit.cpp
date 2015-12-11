@@ -556,7 +556,7 @@ bool WApplication::ReadConfig() {
   syscfg.sysoplowtime     = full_config.config()->sysoplowtime;
   syscfg.sysophightime    = full_config.config()->sysophightime;
   syscfg.executetime      = full_config.config()->executetime;
-  syscfg.netlowtime       = full_config.config()->netlowtime;
+  syscfg.unused_netlowtime = full_config.config()->unused_netlowtime;
   syscfg.nethightime      = full_config.config()->nethightime;
   syscfg.max_subs         = full_config.config()->max_subs;
   syscfg.max_dirs         = full_config.config()->max_dirs;
