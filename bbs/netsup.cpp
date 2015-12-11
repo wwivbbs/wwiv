@@ -419,21 +419,9 @@ void attempt_callout() {
 
   application()->GetStatusManager()->RefreshStatusCache();
 
+  // We always want to call out, so set net_only to be true.
   bool net_only = true;
 
-  if (syscfg.netlowtime != syscfg.nethightime) {
-    if (syscfg.nethightime > syscfg.netlowtime) {
-      if ((timer() <= (syscfg.netlowtime * SECONDS_PER_MINUTE_FLOAT)) || (timer() >= (syscfg.nethightime * 60.0))) {
-        net_only = false;
-      }
-    } else {
-      if ((timer() <= (syscfg.netlowtime * SECONDS_PER_MINUTE_FLOAT)) && (timer() >= (syscfg.nethightime * 60.0))) {
-        net_only = false;
-      }
-    }
-  } else {
-    net_only = false;
-  }
   time(&tCurrentTime);
   if (last_time_c > tCurrentTime) {
     last_time_c = 0L;

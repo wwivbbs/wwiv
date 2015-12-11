@@ -100,31 +100,7 @@ bool IsPhoneNumberUSAFormat(WUser *pUser) {
   return (country == "USA" || country == "CAN" || country == "MEX");
 }
 
-static bool GetNetworkOnlyStatus() {
-  bool network_only = true;
-  if (syscfg.netlowtime != syscfg.nethightime) {
-    if (syscfg.nethightime > syscfg.netlowtime) {
-      if ((timer() <= (syscfg.netlowtime * SECONDS_PER_MINUTE_FLOAT))
-          || (timer() >= (syscfg.nethightime * SECONDS_PER_MINUTE_FLOAT))) {
-        network_only = false;
-      }
-    } else {
-      if ((timer() <= (syscfg.netlowtime * SECONDS_PER_MINUTE_FLOAT))
-          && (timer() >= (syscfg.nethightime * SECONDS_PER_MINUTE_FLOAT))) {
-        network_only = false;
-      }
-    }
-  } else {
-    network_only = false;
-  }
-  return network_only;
-}
-
-static int GetAnsiStatusAndShowWelcomeScreen(bool network_only) {
-  if (network_only) {
-    return -1;
-  }
-
+static int GetAnsiStatusAndShowWelcomeScreen() {
   if (session()->GetCurrentSpeed().length() > 0) {
     string current_speed = session()->GetCurrentSpeed();
     StringUpperCase(&current_speed);
@@ -165,14 +141,11 @@ static int GetAnsiStatusAndShowWelcomeScreen(bool network_only) {
   return ans;
 }
 
-static int ShowLoginAndGetUserNumber(bool network_only) {
+static int ShowLoginAndGetUserNumber() {
   bout.nl();
-  if (network_only) {
-    bout << "This time is reserved for net-mail ONLY.  Please try calling back again later.\r\n";
-  } else {
-    bout << "Enter number or name or 'NEW'\r\n";
-  }
+  bout << "Enter number or name or 'NEW'\r\n";
   bout << "NN: ";
+
   string user_name;
   input(&user_name, 30);
   StringTrim(&user_name);
@@ -181,8 +154,7 @@ static int ShowLoginAndGetUserNumber(bool network_only) {
   if (nUserNumber == 0 && !user_name.empty()) {
     bout << "Searching...";
     bool abort = false;
-    for (int i = 1; i < application()->GetStatusManager()->GetUserCount() && nUserNumber == 0 && !hangup
-         && !abort; i++) {
+    for (int i = 1; i < application()->GetStatusManager()->GetUserCount() && !hangup && !abort; i++) {
       if (i % 25 == 0) {   // changed from 15 since computers are faster now-a-days
         bout << ".";
       }
@@ -194,14 +166,14 @@ static int ShowLoginAndGetUserNumber(bool network_only) {
         if (user_name == temp_user_name && !session()->user()->IsUserDeleted()) {
           bout << "|#5Do you mean " << session()->user()->GetUserNameAndNumber(smallist[i].number) << "? ";
           if (yesno()) {
-            nUserNumber = nTempUserNumber;
+            return nTempUserNumber;
           }
         }
       }
       checka(&abort);
     }
   }
-  return nUserNumber;
+  return 0;
 }
 
 bool IsPhoneRequired() {
@@ -344,7 +316,6 @@ static void DoCallBackVerification() {
 void getuser() {
   write_inst(INST_LOC_GETUSER, 0, INST_FLAGS_NONE);
 
-  bool network_only = GetNetworkOnlyStatus();
   int count = 0;
   bool ok = false;
 
@@ -354,10 +325,10 @@ void getuser() {
   session()->SetEffectiveSl(syscfg.newusersl);
   session()->user()->SetStatus(0);
 
-  int ans = GetAnsiStatusAndShowWelcomeScreen(network_only);
+  int ans = GetAnsiStatusAndShowWelcomeScreen();
   do {
-    session()->usernum = ShowLoginAndGetUserNumber(network_only);
-    if (network_only && session()->usernum != -2) {
+    session()->usernum = ShowLoginAndGetUserNumber();
+    if (session()->usernum != -2) {
       session()->usernum = 0;
     }
     if (session()->usernum > 0) {
@@ -400,9 +371,7 @@ void getuser() {
       }
     } else if (session()->usernum == 0) {
       bout.nl();
-      if (!network_only) {
-        bout << "|#6Unknown user.\r\n";
-      }
+      bout << "|#6Unknown user.\r\n";
     } else if (session()->usernum == -1) {
       write_inst(INST_LOC_NEWUSER, 0, INST_FLAGS_NONE);
       play_sdf(NEWUSER_NOEXT, false);
