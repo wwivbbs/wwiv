@@ -164,7 +164,7 @@ std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
 }
 
 void sendout_email(const string& title, messagerec * pMessageRec, int anony, int nUserNumber, int nSystemNumber,
-                   int an, int nFromUser, int nFromSystem, int nForwardedCode, int nFromNetworkNumber) {
+                   bool an, int nFromUser, int nFromSystem, int nForwardedCode, int nFromNetworkNumber) {
   mailrec m, messageRecord;
   net_header_rec nh;
   int i;
@@ -405,8 +405,7 @@ bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit) {
   return true;
 }
 
-void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool force_title, bool bAllowFSED) {
-  int an;
+void email(const string& title, int nUserNumber, int nSystemNumber, bool forceit, int anony, bool bAllowFSED) {
   int nNumUsers = 0;
   messagerec messageRecord;
   char szDestination[81];
@@ -443,12 +442,13 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
   if (nSystemNumber) {
     csne = next_system(nSystemNumber);
   }
+  bool an = true;
   if (getslrec(session()->GetEffectiveSl()).ability & ability_read_email_anony) {
-    an = 1;
+    an = true;
   } else if (anony & (anony_sender | anony_sender_da | anony_sender_pp)) {
-    an = 0;
+    an = false;
   } else {
-    an = 1;
+    an = true;
   }
   if (nSystemNumber == 0) {
     set_net_num(0);
@@ -509,11 +509,18 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
   write_inst(INST_LOC_EMAIL, (nSystemNumber == 0) ? nUserNumber : 0, INST_FLAGS_NONE);
 
   messageRecord.storage_type = EMAIL_STORAGE;
-  int nUseFSED = (bAllowFSED) ? INMSG_FSED : INMSG_NOFSED;
-  string title;
-  if (!inmsg(&messageRecord, &title, &i, !forceit, "email", nUseFSED, szDestination, MSGED_FLAG_NONE, force_title)) {
+  MessageEditorData data;
+  data.title = title;
+  data.fsed_flags = (bAllowFSED) ? INMSG_FSED : INMSG_NOFSED;
+  data.anonymous_flag = i;
+  data.aux = "email";
+  data.to_name = szDestination;
+  data.msged_flags = MSGED_FLAG_NONE;
+  if (!inmsg(data)) {
     return;
   }
+  savefile(data.text, &messageRecord, data.aux);
+  i = data.anonymous_flag;
   if (anony & anony_sender) {
     i |= anony_receiver;
   }
@@ -629,11 +636,11 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
   if (cc) {
     for (int nCounter = 0; nCounter < nNumUsers; nCounter++) {
       set_net_num(carbon_copy[nCounter].net_num);
-      sendout_email(title, &messageRecord, i, carbon_copy[nCounter].nUserNumber, carbon_copy[nCounter].nSystemNumber, an,
-                    session()->usernum, net_sysnum, 0, carbon_copy[nCounter].net_num);
+      sendout_email(data.title, &messageRecord, i, carbon_copy[nCounter].nUserNumber, carbon_copy[nCounter].nSystemNumber, an,
+                    session()->usernum, net_sysnum, false, carbon_copy[nCounter].net_num);
     }
   } else {
-    sendout_email(title, &messageRecord, i, nUserNumber, nSystemNumber, an, session()->usernum, net_sysnum, 0,
+    sendout_email(data.title, &messageRecord, i, nUserNumber, nSystemNumber, an, session()->usernum, net_sysnum, false,
                   session()->GetNetworkNumber());
   }
 }
@@ -681,7 +688,7 @@ void imail(int nUserNumber, int nSystemNumber) {
   }
   grab_quotes(nullptr, nullptr);
   if (i) {
-    email(nUserNumber, nSystemNumber, false, 0);
+    email("", nUserNumber, nSystemNumber, false, 0);
   }
 }
 

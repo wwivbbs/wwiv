@@ -20,10 +20,33 @@
 
 #include <string>
 
+#include "bbs/external_edit.h"
 #include "sdk/vardec.h"
 
-bool inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool needtitle, const char *aux, int fsed,
-           const std::string& destination, int flags, bool force_title = false);
-void AddLineToMessageBuffer(char *pszMessageBuffer, const std::string& line_to_add, long *plBufferLength);
+constexpr int INMSG_NOFSED = 0;
+constexpr int INMSG_FSED = 1;
+constexpr int INMSG_FSED_WORKSPACE = 2;
+
+class MessageEditorData {
+public:
+  MessageEditorData(): need_title(false), anonymous_flag(0), msged_flags(MSGED_FLAG_NONE), fsed_flags(INMSG_NOFSED) {}
+  ~MessageEditorData() {}
+
+  std::string title;
+  std::string to_name;  // szDestination (to or sub name)
+
+  bool need_title;
+  int anonymous_flag;   // an
+  int msged_flags;      // used to be flags
+  int fsed_flags;       // fsed
+
+  // legacy filename, used to see if it's email or not.
+  std::string aux;
+
+  // output onlu
+  std::string text;
+};
+
+bool inmsg(MessageEditorData& data);
 
 #endif  // __INCLUDED_BBS_INMSG_H__

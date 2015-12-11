@@ -316,7 +316,7 @@ static void LeaveBadPasswordFeedback(int ans) {
       session()->user()->SetNumEmailSent(0);
       bool bSaveAllowCC = session()->IsCarbonCopyEnabled();
       session()->SetCarbonCopyEnabled(false);
-      email(1, 0, true, 0, true);
+      email(irt, 1, 0, true, 0, true);
       session()->SetCarbonCopyEnabled(bSaveAllowCC);
       if (session()->user()->GetNumEmailSent() > 0) {
         ssm(1, 0, "Check your mailbox.  Someone forgot their password again!");

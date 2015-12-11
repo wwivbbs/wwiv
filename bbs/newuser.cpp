@@ -31,6 +31,7 @@
 #include "bbs/vars.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
+#include "bbs/message_file.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
 #include "bbs/printfile.h"
@@ -1512,14 +1513,19 @@ void new_mail() {
   session()->user()->SetDefaultEditor(0);
   LoadFileIntoWorkspace(file.full_pathname().c_str(), true);
   use_workspace = true;
-  string userName = session()->user()->GetUserNameAndNumber(session()->usernum);
-  string title = StringPrintf("Welcome to %s!", syscfg.systemname);
 
-  int nAllowAnon = 0;
+  MessageEditorData data;
+  data.title = StringPrintf("Welcome to %s!", syscfg.systemname);
+  data.anonymous_flag = 0;
+  data.aux = "email";
+  data.fsed_flags = INMSG_NOFSED;
+  data.to_name = session()->user()->GetUserNameAndNumber(session()->usernum);
+  data.msged_flags = MSGED_FLAG_NONE;
   messagerec msg;
   msg.storage_type = 2;
-  if (inmsg(&msg, &title, &nAllowAnon, false, "email", INMSG_NOFSED, userName.c_str(), MSGED_FLAG_NONE, true)) {
-    sendout_email(title, &msg, 0, session()->usernum, 0, 1, 1, 0, 1, 0);
+  if (inmsg(data)) {
+    savefile(data.title, &msg, data.aux);
+    sendout_email(data.title, &msg, 0, session()->usernum, 0, true, 1, 0, 1, 0);
   }
   session()->user()->SetNumMailWaiting(session()->user()->GetNumMailWaiting() + 1);
   session()->user()->SetDefaultEditor(save_ed);

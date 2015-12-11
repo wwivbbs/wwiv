@@ -699,7 +699,7 @@ void readmail(int mode) {
                         static_cast<long>(session()->user()->GetNumNetEmailSent());
             grab_quotes(nullptr, nullptr);
             if (m.fromuser != 65535) {
-              email(m.fromuser, m.fromsys, false, m.anony);
+              email(irt, m.fromuser, m.fromsys, false, m.anony);
             }
             num_mail1 = static_cast<long>(session()->user()->GetNumFeedbackSent()) +
                         static_cast<long>(session()->user()->GetNumEmailSent()) +
@@ -1025,11 +1025,11 @@ void readmail(int mode) {
                 if (nn != 255 && nn == session()->GetNetworkNumber()) {
                   sendout_email(m.title, &m.msg, m.anony,
                                 nUserNumber, nSystemNumber,
-                                1, m.fromuser,
+                                true, m.fromuser,
                                 m.fromsys ? m.fromsys :
                                 net_networks[nn].sysnum, delme, nn);
                 } else {
-                  sendout_email(m.title, &m.msg, m.anony, nUserNumber, nSystemNumber, 1,
+                  sendout_email(m.title, &m.msg, m.anony, nUserNumber, nSystemNumber, true,
                                 session()->usernum, net_sysnum, delme, session()->GetNetworkNumber());
                 }
                 ++curmail;
@@ -1080,10 +1080,10 @@ void readmail(int mode) {
             }
             parse_email_info(s, &nUserNumber, &nSystemNumber);
             if (nUserNumber || nSystemNumber) {
-              email(nUserNumber, nSystemNumber, false, 0);
+              email("", nUserNumber, nSystemNumber, false, 0);
             }
           } else {
-            email(m.fromuser, m.fromsys, false, m.anony);
+            email("", m.fromuser, m.fromsys, false, m.anony);
           }
           grab_quotes(nullptr, nullptr);
         }

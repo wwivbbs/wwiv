@@ -22,6 +22,12 @@
 #include <string>
 #include "sdk/vardec.h"
 
+constexpr int MSGED_FLAG_NONE = 0;
+constexpr int MSGED_FLAG_NO_TAGLINE = 1;
+constexpr int MSGED_FLAG_HAS_REPLY_NAME = 2;
+constexpr int MSGED_FLAG_HAS_REPLY_TITLE = 4;
+
+
 bool ExternalMessageEditor(int maxli, int *setanon, std::string* pszTitle, const std::string& destination, int flags, const std::string& aux);
 
 bool external_text_edit(const std::string& edit_filename, const std::string& new_directory, int numlines,
