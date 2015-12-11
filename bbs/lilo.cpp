@@ -151,7 +151,10 @@ static int ShowLoginAndGetUserNumber() {
   StringTrim(&user_name);
 
   int nUserNumber = finduser(user_name);
-  if (nUserNumber == 0 && !user_name.empty()) {
+  if (nUserNumber > 0) {
+    return nUserNumber;
+  }
+  if (!user_name.empty()) {
     bout << "Searching...";
     bool abort = false;
     for (int i = 1; i < application()->GetStatusManager()->GetUserCount() && !hangup && !abort; i++) {
@@ -328,9 +331,6 @@ void getuser() {
   int ans = GetAnsiStatusAndShowWelcomeScreen();
   do {
     session()->usernum = ShowLoginAndGetUserNumber();
-    if (session()->usernum != -2) {
-      session()->usernum = 0;
-    }
     if (session()->usernum > 0) {
       session()->ReadCurrentUser();
       read_qscn(session()->usernum, qsc, false);
