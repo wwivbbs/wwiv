@@ -159,7 +159,7 @@ void send_email() {
   parse_email_info(username, &nUserNumber, &nSystemNumber);
   grab_quotes(nullptr, nullptr);
   if (nUserNumber || nSystemNumber) {
-    email(nUserNumber, nSystemNumber, false, 0);
+    email("", nUserNumber, nSystemNumber, false, 0);
   }
 }
 
@@ -210,13 +210,13 @@ void feedback(bool bNewUserFeedback) {
             syscfg.maxusers - application()->GetStatusManager()->GetUserCount());
     // We disable the fsed here since it was hanging on some systems.  Not sure why
     // but it's better to be safe -- Rushfan 2003-12-04
-    email(1, 0, true, 0, true, false);
+    email(irt, 1, 0, true, 0, false);
     return;
   }
   if (guest_user) {
     application()->GetStatusManager()->RefreshStatusCache();
     strcpy(irt, "Guest Account Feedback");
-    email(1, 0, true, 0, true, true);
+    email(irt, 1, 0, true, 0, true);
     return;
   }
   strcpy(irt, "|#1Feedback");
@@ -258,7 +258,7 @@ void feedback(bool bNewUserFeedback) {
     bout.nl();
     i = ch - '0';
   }
-  email(static_cast< unsigned short >(i), 0, false, 0, true);
+  email(irt, static_cast< unsigned short >(i), 0, false, 0, true);
 }
 
 /**

@@ -22,6 +22,9 @@
 
 #include "sdk/vardec.h"
 
+constexpr uint8_t EMAIL_STORAGE = 2;
+
+
 void remove_link(messagerec * pMessageRecord, const std::string fileName);
 void savefile(const std::string& text, messagerec * pMessageRecord, const std::string fileName);
 bool readfile(messagerec * pMessageRecord, const std::string fileName, std::string* out);

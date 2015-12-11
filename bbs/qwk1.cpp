@@ -394,9 +394,7 @@ void make_text_ready(char *text, long len) {
   }
 }
 
-char* make_text_file(int filenumber, long *size, int curpos, int blocks) {
-  *size = 0;
-
+char* make_text_file(int filenumber, int curpos, int blocks) {
   // This memory has to be freed later, after text is 'emailed' or 'posted'
   // Enough memory is allocated for all blocks, plus 2k extra for other
   // 'addline' stuff
@@ -408,17 +406,10 @@ char* make_text_file(int filenumber, long *size, int curpos, int blocks) {
   read(filenumber, qwk, sizeof(qwk_record) * blocks);
   make_text_ready((char *)qwk, sizeof(qwk_record)*blocks);
 
-  *size = sizeof(qwk_record) * blocks;
-
-  // Remove trailing spaces
-  char* temp = reinterpret_cast<char*>(qwk);
-  while (isspace(temp[*size - 1]) && *size && !hangup) {
-    --*size;
-  }
-  return temp;
+  return reinterpret_cast<char*>(qwk);
 }
 
-void qwk_email_text(char *text, long size, char *title, char *to) {
+void qwk_email_text(char *text, char *title, char *to) {
   int sy, un;
 
   strupr(to);
@@ -525,18 +516,18 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
     time_t thetime = time(nullptr);
 
     const char* nam1 = session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum);
-    qwk_inmsg(text, size, &msg, "email", nam1, thetime);
+    qwk_inmsg(text, &msg, "email", nam1, thetime);
 
     if (msg.stored_as == 0xffffffff) {
       return;
     }
 
     bout.Color(8);
-    sendout_email(title, &msg, 0, un, sy, 1, session()->usernum, net_sysnum, 0, session()->GetNetworkNumber());
+    sendout_email(title, &msg, 0, un, sy, 1, session()->usernum, net_sysnum, false, session()->GetNetworkNumber());
   }
 }
 
-void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, const char *name, time_t thetime) {
+void qwk_inmsg(const char *text, messagerec *m1, const char *aux, const char *name, time_t thetime) {
   char s[181];
   int oiia = iia;
   setiia(0);
@@ -565,7 +556,6 @@ void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, con
 
 void process_reply_dat(char *name) {
   struct qwk_record qwk;
-  long size;
   int curpos = 0;
   int done = 0;
   int to_email = 0;
@@ -634,7 +624,7 @@ void process_reply_dat(char *name) {
         }
       }
 
-      char* text = make_text_file(repfile, &size, curpos, atoi(blocks) - 1);
+      char* text = make_text_file(repfile, curpos, atoi(blocks) - 1);
       if (!text) {
         curpos += atoi(blocks) - 1;
         continue;
@@ -680,14 +670,14 @@ void process_reply_dat(char *name) {
       }
             
       if (to_email) {
-        qwk_email_text(text, size, title, to);
+        qwk_email_text(text, title, to);
       } else if (freek1(syscfg.msgsdir) < 10) {
         // Not enough disk space
         bout.nl();
         bout.bputs("Sorry, not enough disk space left.");
         pausescr();
       } else {
-        qwk_post_text(text, size, title, atoi(tosub) - 1);
+        qwk_post_text(text, title, atoi(tosub) - 1);
       }
 
       free(text);
@@ -698,7 +688,7 @@ void process_reply_dat(char *name) {
   repfile = close(repfile);
 }
 
-void qwk_post_text(char *text, long size, char *title, int sub) {
+void qwk_post_text(char *text, char *title, int sub) {
   messagerec m;
   postrec p;
 
@@ -846,7 +836,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
   }
 
   time_t thetime = time(nullptr);
-  qwk_inmsg(text, size, &m, subboards[session()->GetCurrentReadMessageArea()].filename, user_name, thetime);
+  qwk_inmsg(text, &m, subboards[session()->GetCurrentReadMessageArea()].filename, user_name, thetime);
 
   if (m.stored_as != 0xffffffff) {
     char s[201];

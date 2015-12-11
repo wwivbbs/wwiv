@@ -41,7 +41,7 @@ static void maybe_netmail(xtrasubsnetrec * ni, bool bAdd) {
       strcat(irt, " - DROP request");
     }
     set_net_num(ni->net_num);
-    email(1, ni->host, false, 0);
+    email(irt, 1, ni->host, false, 0);
   }
 }
 

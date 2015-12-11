@@ -55,18 +55,6 @@ constexpr int NUM_DOTS = 5;
 constexpr int FRAME_COLOR = 7;
 
 //
-// inmsg/external_edit flags
-//
-constexpr int MSGED_FLAG_NONE = 0;
-constexpr int MSGED_FLAG_NO_TAGLINE = 1;
-constexpr int MSGED_FLAG_HAS_REPLY_NAME = 2;
-constexpr int MSGED_FLAG_HAS_REPLY_TITLE = 4;
-
-constexpr int INMSG_NOFSED = 0;
-constexpr int INMSG_FSED = 1;
-constexpr int INMSG_FSED_WORKSPACE = 2;
-
-//
 // Protocols
 //
 constexpr int WWIV_INTERNAL_PROT_ASCII = 1;
@@ -79,7 +67,6 @@ constexpr int WWIV_NUM_INTERNAL_PROTOCOLS = 7; // last protocol +1
 
 constexpr int MAX_ARCS = 15;
 constexpr int MAXMAIL = 255;
-constexpr uint8_t EMAIL_STORAGE = 2;
 
 constexpr int LIST_USERS_MESSAGE_AREA = 0;
 constexpr int LIST_USERS_FILE_AREA = 1;

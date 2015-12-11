@@ -34,8 +34,6 @@
 void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup);
 int  oneuser();
 
-#define EMAIL_STORAGE 2
-
 using std::string;
 using std::unique_ptr;
 using wwiv::strings::StringPrintf;
@@ -53,9 +51,9 @@ void multimail(int *pnUserNumber, int numu) {
   }
   bout.nl();
 
-  int i = 0;
+  MessageEditorData data;
   if (getslrec(session()->GetEffectiveSl()).ability & ability_email_anony) {
-    i = anony_enable_anony;
+    data.anonymous_flag = anony_enable_anony;
   }
   bout << "|#5Show all recipients in mail? ";
   bool show_all = yesno();
@@ -66,11 +64,15 @@ void multimail(int *pnUserNumber, int numu) {
   strcpy(irt, "Multi-Mail");
   irt_name[0] = 0;
   File::Remove(QUOTES_TXT);
-  std::string t;
-  if (!inmsg(&m.msg, &t, &i, true, "email", INMSG_FSED, "Multi-Mail", MSGED_FLAG_NONE)) {
+  data.aux = "email";
+  data.fsed_flags = INMSG_NOFSED;
+  data.to_name = "Multi-Mail";
+  data.msged_flags = MSGED_FLAG_NONE;
+  if (!inmsg(data)) {
     return;
   }
-  strcpy(m.title, t.c_str());
+  savefile(data.text, &m.msg, data.aux);
+  strcpy(m.title, data.title.c_str());
 
   bout <<  "Mail sent to:\r\n";
   sysoplog("Multi-Mail to:");
@@ -136,7 +138,7 @@ void multimail(int *pnUserNumber, int numu) {
   lineadd(&m.msg, "\003""7----", "email");
   lineadd(&m.msg, s1, "email");
 
-  m.anony = static_cast< unsigned char >(i);
+  m.anony = static_cast< unsigned char >(data.anonymous_flag);
   m.fromsys = 0;
   m.fromuser = static_cast<unsigned short>(session()->usernum);
   m.tosys = 0;
@@ -146,9 +148,8 @@ void multimail(int *pnUserNumber, int numu) {
 
   unique_ptr<File> pFileEmail(OpenEmailFile(true));
   int len = pFileEmail->GetLength() / sizeof(mailrec);
-  if (len == 0) {
-    i = 0;
-  } else {
+  int i = 0;
+  if (len != 0) {
     i = len - 1;
     pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::seekBegin);
     pFileEmail->Read(&m1, sizeof(mailrec));

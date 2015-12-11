@@ -187,17 +187,18 @@ void post() {
     return;
   }
 
+  MessageEditorData data;
   messagerec m;
   m.storage_type = static_cast<unsigned char>(subboards[session()->GetCurrentReadMessageArea()].storage_type);
-  int a = subboards[ session()->GetCurrentReadMessageArea() ].anony & 0x0f;
-  if (a == 0 && getslrec(session()->GetEffectiveSl()).ability & ability_post_anony) {
-    a = anony_enable_anony;
+  data.anonymous_flag = subboards[ session()->GetCurrentReadMessageArea() ].anony & 0x0f;
+  if (data.anonymous_flag == 0 && getslrec(session()->GetEffectiveSl()).ability & ability_post_anony) {
+    data.anonymous_flag = anony_enable_anony;
   }
-  if (a == anony_enable_anony && session()->user()->IsRestrictionAnonymous()) {
-    a = 0;
+  if (data.anonymous_flag == anony_enable_anony && session()->user()->IsRestrictionAnonymous()) {
+    data.anonymous_flag = 0;
   }
   if (xsubs[ session()->GetCurrentReadMessageArea() ].num_nets) {
-    a &= (anony_real_name);
+    data.anonymous_flag &= (anony_real_name);
     if (session()->user()->IsRestrictionNet()) {
       bout << "\r\nYou can't post on networked sub-boards.\r\n\n";
       return;
@@ -219,15 +220,20 @@ void post() {
 
   postrec p;
   memset(&p, 0, sizeof(postrec));
-  string title;
-  if (!inmsg(&m, &title, &a, true, (subboards[session()->GetCurrentReadMessageArea()].filename), INMSG_FSED,
-    subboards[session()->GetCurrentReadMessageArea()].name,
-    (subboards[session()->GetCurrentReadMessageArea()].anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE)) {
+
+  data.aux = "email";
+  data.fsed_flags = INMSG_FSED;
+  data.msged_flags = (subboards[session()->GetCurrentReadMessageArea()].anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE;
+  data.aux = subboards[session()->GetCurrentReadMessageArea()].filename;
+  data.to_name = subboards[session()->GetCurrentReadMessageArea()].name;
+
+  if (!inmsg(data)) {
     m.stored_as = 0xffffffff;
     return;
   }
-  strcpy(p.title, title.c_str());
-  p.anony   = static_cast< unsigned char >(a);
+  savefile(data.text, &m, data.aux);
+  strcpy(p.title, data.title.c_str());
+  p.anony   = static_cast< unsigned char >(data.anonymous_flag);
   p.msg   = m;
   p.ownersys  = 0;
   p.owneruser = static_cast<unsigned short>(session()->usernum);
@@ -315,7 +321,6 @@ void post() {
 }
 
 void grab_user_name(messagerec* pMessageRecord, const char* pszFileName) {
-  long lMessageLen;
   string text;
   net_email_name[0] = '\0';
   if (!readfile(pMessageRecord, pszFileName, &text)) {
@@ -353,8 +358,8 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
   // TODO(rushfan): Do we still need to do this?
   iscan1(nSubNumber);
 
-  uint32_t on_disk_last_read = WWIVReadLastRead(nSubNumber);
-  if (!on_disk_last_read || on_disk_last_read > memory_last_read) {
+  uint32_t on_disk_last_post = WWIVReadLastRead(nSubNumber);
+  if (!on_disk_last_post || on_disk_last_post > memory_last_read) {
     int nNextSubNumber = *pnNextSubNumber;
     int nOldSubNumber = session()->GetCurrentMessageArea();
     session()->SetCurrentMessageArea(nBeginSubNumber);

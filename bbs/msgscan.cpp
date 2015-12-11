@@ -638,7 +638,7 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
     }
     if (File::Exists(szFullPathName)) {
       LoadFileIntoWorkspace(szFullPathName, true);
-      email(get_post(nMessageNumber)->owneruser, get_post(nMessageNumber)->ownersys, false, get_post(nMessageNumber)->anony);
+      email(irt, get_post(nMessageNumber)->owneruser, get_post(nMessageNumber)->ownersys, false, get_post(nMessageNumber)->anony);
       grab_quotes(nullptr, nullptr);
     }
   } else if (pszUserInput[0] == '@') {
@@ -668,7 +668,7 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
       int nUserNumber, nSystemNumber;
       parse_email_info(szUserNameOrNumber, &nUserNumber, &nSystemNumber);
       if (nUserNumber || nSystemNumber) {
-        email(nUserNumber, nSystemNumber, false, 0);
+        email("", nUserNumber, nSystemNumber, false, 0);
       }
       nScanOptionType = SCAN_OPTION_READ_MESSAGE;
     }
@@ -724,9 +724,9 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
   } else {
     if (lcs() || (getslrec(session()->GetEffectiveSl()).ability & ability_read_post_anony)
         || get_post(nMessageNumber)->anony == 0) {
-      email(get_post(nMessageNumber)->owneruser, get_post(nMessageNumber)->ownersys, false, 0);
+      email("", get_post(nMessageNumber)->owneruser, get_post(nMessageNumber)->ownersys, false, 0);
     } else {
-      email(get_post(nMessageNumber)->owneruser, get_post(nMessageNumber)->ownersys, false, get_post(nMessageNumber)->anony);
+      email("", get_post(nMessageNumber)->owneruser, get_post(nMessageNumber)->ownersys, false, get_post(nMessageNumber)->anony);
     }
     irt_sub[0] = 0;
     grab_quotes(nullptr, nullptr);

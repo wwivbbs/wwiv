@@ -116,7 +116,7 @@ void send_inet_email() {
     irt_name[0] = 0;
     grab_quotes(nullptr, nullptr);
     if (nUserNumber || nSystemNumber) {
-      email(nUserNumber, nSystemNumber, false, 0);
+      email("", nUserNumber, nSystemNumber, false, 0);
     }
   } else {
     bout.nl();

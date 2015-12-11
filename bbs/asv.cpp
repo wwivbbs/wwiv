@@ -56,7 +56,6 @@ void asv() {
   long *reg_num, reg_num1;
   int i2 = 0, reg = 0, valfile = 0;
   bool ok = false;
-  int nAllowAnon = 0;
 
   bout.nl();
   bout << "|#5Are you the SysOp of a BBS? ";
@@ -240,9 +239,17 @@ void asv() {
           msg.storage_type = 2;
           session()->SetNewMailWaiting(true);
           sprintf(net_email_name, "%s #1@%u", syscfg.sysopname, net_sysnum);
-          string title(irt);
-          if (inmsg(&msg, &title, &nAllowAnon, false, "email", INMSG_NOFSED, snode, MSGED_FLAG_NONE, true)) {
-            sendout_email(title, &msg, 0, 1, inode, 0, 1, net_sysnum, 1, session()->GetNetworkNumber());
+          
+          MessageEditorData data;
+          data.title = irt;
+          data.anonymous_flag = 0;
+          data.aux = "email";
+          data.fsed_flags = INMSG_NOFSED;
+          data.to_name = snode;
+          data.msged_flags = MSGED_FLAG_NONE;
+          if (inmsg(data)) {
+            savefile(data.text, &msg, data.aux);
+            sendout_email(data.title, &msg, 0, 1, inode, 0, 1, net_sysnum, true, session()->GetNetworkNumber());
           }
         }
         irt[0] = '\0';

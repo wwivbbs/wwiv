@@ -24,11 +24,10 @@
 
 bool ForwardMessage(int *pUserNumber, int *pSystemNumber);
 std::unique_ptr<File> OpenEmailFile(bool bAllowWrite);
-void sendout_email(const std::string& title, messagerec * msg, int anony, int nUserNumber, int nSystemNumber, int an,
+void sendout_email(const std::string& title, messagerec * msg, int anony, int nUserNumber, int nSystemNumber, bool an,
   int nFromUser, int nFromSystem, int nForwardedCode, int nFromNetworkNumber);
 bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit);
-void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool force_title = false,
-  bool bAllowFSED = true);
+void email(const std::string& title, int nUserNumber, int nSystemNumber, bool forceit, int anony, bool bAllowFSED = true);
 void imail(int nUserNumber, int nSystemNumber);
 void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed);
 

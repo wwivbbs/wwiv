@@ -359,7 +359,6 @@ void pack_sub(int si) {
       }
       postrec *p = get_post(i);
       if (p) {
-        long lMessageSize;
         std::string text;
         if (!readfile(&(p->msg), sfn, &text)) {
           text = "??";
