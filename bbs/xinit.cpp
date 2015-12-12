@@ -636,20 +636,10 @@ bool WSession::SaveConfig() {
 }
 
 void WSession::read_nextern() {
-  SetNumberOfExternalProtocols(0);
-  if (externs) {
-    free(externs);
-    externs = nullptr;
-  }
-
-  File externalFile(syscfg.datadir, NEXTERN_DAT);
-  if (externalFile.Open(File::modeBinary | File::modeReadOnly)) {
-    unsigned long lFileSize = externalFile.GetLength();
-    if (lFileSize > 15 * sizeof(newexternalrec)) {
-      lFileSize = 15 * sizeof(newexternalrec);
-    }
-    externs = static_cast<newexternalrec *>(BbsAllocA(lFileSize + 10));
-    SetNumberOfExternalProtocols(externalFile.Read(externs, lFileSize) / sizeof(newexternalrec));
+  externs.clear();
+  DataFile<newexternalrec> externalFile(syscfg.datadir, NEXTERN_DAT);
+  if (externalFile) {
+    externalFile.ReadVector(externs, 15);
   }
 }
 
@@ -680,15 +670,10 @@ void WSession::read_editors() {
 }
 
 void WSession::read_nintern() {
-  if (over_intern) {
-    free(over_intern);
-    over_intern = nullptr;
-  }
-  File file(syscfg.datadir, NINTERN_DAT);
-  if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    over_intern = static_cast<newexternalrec *>(BbsAllocA(3 * sizeof(newexternalrec)));
-
-    file.Read(over_intern, 3 * sizeof(newexternalrec));
+  over_intern.clear();
+  DataFile<newexternalrec> file(syscfg.datadir, NINTERN_DAT);
+  if (file) {
+    file.ReadVector(over_intern, 3);
   }
 }
 
@@ -1037,10 +1022,7 @@ void WSession::InitializeBBS() {
   read_chains();
 
   XINIT_PRINTF("Reading File Transfer Protocols.");
-  externs = nullptr;
   read_nextern();
-
-  over_intern = nullptr;
   read_nintern();
 
   XINIT_PRINTF("Reading File Archivers.");

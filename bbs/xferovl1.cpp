@@ -967,9 +967,10 @@ void download() {
   if (ip > 0) {
     switch (ip) {
     case WWIV_INTERNAL_PROT_YMODEM: {
-      if (over_intern && (over_intern[2].othr & othr_override_internal) &&
-          (over_intern[2].sendbatchfn[0])) {
-        dszbatchdl(had, over_intern[2].sendbatchfn, prot_name(WWIV_INTERNAL_PROT_YMODEM));
+      if (session()->over_intern.size() > 0
+          && (session()->over_intern[2].othr & othr_override_internal)
+          && (session()->over_intern[2].sendbatchfn[0])) {
+        dszbatchdl(had, session()->over_intern[2].sendbatchfn, prot_name(WWIV_INTERNAL_PROT_YMODEM));
       } else {
         ymbatchdl(had);
       }
@@ -979,8 +980,8 @@ void download() {
       zmbatchdl(had);
     }
     default: {
-      dszbatchdl(had, externs[ip - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn,
-                 externs[ip - WWIV_NUM_INTERNAL_PROTOCOLS].description);
+      dszbatchdl(had, session()->externs[ip - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn,
+        session()->externs[ip - WWIV_NUM_INTERNAL_PROTOCOLS].description);
     }
     }
     if (!had) {

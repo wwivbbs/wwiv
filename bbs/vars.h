@@ -153,7 +153,6 @@ __EXTRN__ usersubrec *usub, *udir;
 __EXTRN__ userconfrec *uconfsub, *uconfdir;
 __EXTRN__ batchrec *batch;
 __EXTRN__ tagrec *filelist;
-__EXTRN__ newexternalrec *externs, *over_intern;
 __EXTRN__ gfiledirrec *gfilesec;
 __EXTRN__ net_system_list_rec *csn;
 __EXTRN__ net_networks_rec *net_networks;
