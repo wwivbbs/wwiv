@@ -67,6 +67,17 @@ public:
     return Read(record);
   }
 
+  bool WriteVector(std::vector<RECORD>& records, std::size_t max_records = 0) {
+    std::size_t num = records.size();
+    if (max_records != 0 && max_records < num) {
+      num = max_records;
+    }
+    if (records.size() > num) {
+      records.resize(num);
+    }
+    return Write(&records[0], num);
+  }
+
   bool Write(const RECORD* record, int num_records = 1) { 
     return file_.Write(record, num_records*SIZE) == static_cast<int>(num_records*SIZE);
   }
