@@ -603,7 +603,7 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qscn) {
   userFile.Seek(syscfg.userreclen, File::seekBegin);
   int nUserNumber = 1;
 
-  if (nNewUserNumber == application()->GetStatusManager()->GetUserCount()) {
+  if (nNewUserNumber == session()->GetStatusManager()->GetUserCount()) {
     nUserNumber = nNewUserNumber + 1;
   } else {
     while (nUserNumber <= nNewUserNumber) {
@@ -706,7 +706,7 @@ void CreateNewUserRecord() {
 // on here, if this function returns false, a sufficient error
 // message has already been displayed to the user.
 bool CanCreateNewUserAccountHere() {
-  if (application()->GetStatusManager()->GetUserCount() >= syscfg.maxusers) {
+  if (session()->GetStatusManager()->GetUserCount() >= syscfg.maxusers) {
     bout.nl(2);
     bout << "I'm sorry, but the system currently has the maximum number of users it can\r\nhandle.\r\n\n";
     return false;
@@ -741,7 +741,7 @@ bool CanCreateNewUserAccountHere() {
 
 
 bool UseMinimalNewUserInfo() {
-  IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), INI_TAG);
+  IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
   if (iniFile.IsOpen()) {
     return iniFile.GetBooleanValue("NEWUSER_MIN");
   }
@@ -753,9 +753,9 @@ void DoFullNewUser() {
   input_name();
   input_realname();
   input_phone();
-  if (application()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
+  if (session()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
     if (check_dupes(session()->user()->GetVoicePhoneNumber())) {
-      if (application()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
+      if (session()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
         hangup = true;
         hang_it_up();
         return;
@@ -788,9 +788,9 @@ void DoFullNewUser() {
     }
     input_dataphone();
 
-    if (application()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
+    if (session()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
       if (check_dupes(session()->user()->GetDataPhoneNumber())) {
-        if (application()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
+        if (session()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
           hangup = true;
           hang_it_up();
           return;
@@ -803,18 +803,18 @@ void DoFullNewUser() {
   input_age(session()->user());
   input_comptype();
 
-  if (session()->GetNumberOfEditors() && session()->user()->HasAnsi()) {
+  if (session()->editors.size() && session()->user()->HasAnsi()) {
     bout.nl();
     bout << "|#5Select a fullscreen editor? ";
     if (yesno()) {
       select_editor();
     } else {
-      for (int nEditor = 0; nEditor < session()->GetNumberOfEditors(); nEditor++) {
+      for (int nEditor = 0; nEditor < session()->editors.size(); nEditor++) {
         char szEditorDesc[ 121 ];
-        strcpy(szEditorDesc, editors[nEditor].description);
+        strcpy(szEditorDesc, session()->editors[nEditor].description);
         if (strstr(strupr(szEditorDesc) , "WWIVEDIT") != nullptr) {
           session()->user()->SetDefaultEditor(nEditor + 1);
-          nEditor = session()->GetNumberOfEditors();
+          nEditor = session()->editors.size();
         }
       }
     }
@@ -833,11 +833,11 @@ void DoFullNewUser() {
 
 
 void DoNewUserASV() {
-  if (application()->HasConfigFlag(OP_FLAGS_ADV_ASV)) {
+  if (session()->HasConfigFlag(OP_FLAGS_ADV_ASV)) {
     asv();
     return;
   }
-  if (application()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV) &&
+  if (session()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV) &&
       session()->asv.sl > syscfg.newusersl && session()->asv.sl < 90) {
     bout.nl();
     bout << "|#5Are you currently a WWIV SysOp? ";
@@ -1021,13 +1021,13 @@ void SendNewUserFeedbackIfRequired() {
     return;
   }
 
-  if (application()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
+  if (session()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
     noabort(FEEDBACK_NOEXT);
   } else if (printfile(FEEDBACK_NOEXT)) {
     sysoplog("", false);
   }
   feedback(true);
-  if (application()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
+  if (session()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
     if (!session()->user()->GetNumEmailSent() && !session()->user()->GetNumFeedbackSent()) {
       printfile(NOFBACK_NOEXT);
       deluser(session()->usernum);
@@ -1048,7 +1048,7 @@ void ExecNewUserCommand() {
     sysoplog(commandLine.c_str(), true);
 
     session()->WriteCurrentUser();
-    ExecuteExternalProgram(commandLine, application()->GetSpawnOptions(SPAWNOPT_NEWUSER));
+    ExecuteExternalProgram(commandLine, session()->GetSpawnOptions(SPAWNOPT_NEWUSER));
     session()->ReadCurrentUser();
   }
 }
@@ -1064,7 +1064,7 @@ void newuser() {
 
   sysoplog("", false);
   sysoplogfi(false, "*** NEW USER %s   %s    %s (%ld)", fulldate(), times(), session()->GetCurrentSpeed().c_str(),
-             application()->GetInstanceNumber());
+             session()->GetInstanceNumber());
 
   if (!CanCreateNewUserAccountHere() || hangup) {
     hangup = true;
@@ -1133,7 +1133,7 @@ void newuser() {
 
   WriteNewUserInfoToSysopLog();
   ssm(1, 0, "You have a new user:  %s #%ld", session()->user()->GetName(), session()->usernum);
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
   VerifyNewUserPassword();
   SendNewUserFeedbackIfRequired();
   ExecNewUserCommand();
@@ -1252,7 +1252,7 @@ bool check_dupes(const char *pszPhoneNumber) {
     ssm(1, 0, szBuffer);
 
     WUser user;
-    application()->users()->ReadUser(&user, nUserNumber);
+    session()->users()->ReadUser(&user, nUserNumber);
     sprintf(szBuffer, "      also entered by %s", user.GetName());
     sysoplog(szBuffer, false);
     ssm(1, 0, szBuffer);
@@ -1313,7 +1313,7 @@ void DoMinimalNewUser() {
   bool done = false;
   int nSaveTopData = session()->topdata;
   session()->topdata = LocalIO::topdataNone;
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
   do {
     bout.cls();
     bout.litebar("%s New User Registration", syscfg.systemname);
@@ -1494,11 +1494,11 @@ void DoMinimalNewUser() {
   session()->user()->SetVoicePhoneNumber("999-999-9999");
   session()->user()->SetDataPhoneNumber(session()->user()->GetVoicePhoneNumber());
   session()->user()->SetStreet("None Requested");
-  if (session()->GetNumberOfEditors() && session()->user()->HasAnsi()) {
+  if (session()->editors.size() && session()->user()->HasAnsi()) {
     session()->user()->SetDefaultEditor(1);
   }
   session()->topdata = nSaveTopData;
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
   newline = true;
 }
 

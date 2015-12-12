@@ -55,10 +55,10 @@ static const int MAX_SCREEN_LINES_TO_SHOW = 24;
 // #define NOTOGGLESYSOP
 
 void select_editor() {
-  if (session()->GetNumberOfEditors() == 0) {
+  if (session()->editors.empty()) {
     bout << "\r\nNo full screen editors available.\r\n\n";
     return;
-  } else if (session()->GetNumberOfEditors() == 1) {
+  } else if (session()->editors.size() == 1) {
     if (session()->user()->GetDefaultEditor() == 0) {
       session()->user()->SetDefaultEditor(1);
     } else {
@@ -71,17 +71,17 @@ void select_editor() {
     odc[ i1 ] = '\0';
   }
   bout << "0. Normal non-full screen editor\r\n";
-  for (int i = 0; i < session()->GetNumberOfEditors(); i++) {
-    bout << i + 1 << ". " << editors[i].description  << wwiv::endl;
+  for (int i = 0; i < session()->editors.size(); i++) {
+    bout << i + 1 << ". " << session()->editors[i].description  << wwiv::endl;
     if (((i + 1) % 10) == 0) {
       odc[(i + 1) / 10 - 1 ] = static_cast<char>((i + 1) / 10);
     }
   }
   bout.nl();
-  bout << "|#9Which editor (|#31-" << session()->GetNumberOfEditors() << ", <Q>=leave as is|#9) ? ";
+  bout << "|#9Which editor (|#31-" << session()->editors.size() << ", <Q>=leave as is|#9) ? ";
   char *ss = mmkey(2);
   int nEditor = atoi(ss);
-  if (nEditor >= 1 && nEditor <= session()->GetNumberOfEditors()) {
+  if (nEditor >= 1 && nEditor <= session()->editors.size()) {
     session()->user()->SetDefaultEditor(nEditor);
   } else if (IsEquals(ss, "0")) {
     session()->user()->SetDefaultEditor(0);
@@ -112,7 +112,7 @@ static string GetMailBoxStatus() {
   }
 
   WUser ur;
-  application()->users()->ReadUser(&ur, session()->user()->GetForwardUserNumber());
+  session()->users()->ReadUser(&ur, session()->user()->GetForwardUserNumber());
   if (ur.IsUserDeleted()) {
     session()->user()->SetForwardUserNumber(0);
     return string("Normal");
@@ -143,8 +143,8 @@ static void print_cur_stat() {
          << setw(45) << "|#18|#9) Change colors" << wwiv::endl;
 
     int nEditorNum = session()->user()->GetDefaultEditor();
-    const string editor_name = (nEditorNum > 0 && nEditorNum <= session()->GetNumberOfEditors()) ?
-            editors[nEditorNum-1].description : "None";
+    const string editor_name = (nEditorNum > 0 && nEditorNum <= session()->editors.size()) ?
+        session()->editors[nEditorNum-1].description : "None";
      bout << "|#19|#9) Full screen editor: |#2" << setw(16) << editor_name << " " 
           << "|#1A|#9) Extended colors   : |#2" << YesNoString(session()->user()->IsUseExtraColor()) << wwiv::endl;
   } else {
@@ -997,7 +997,7 @@ void config_scan_plus(int type) {
 
   int useconf = (subconfnum > 1 && okconf(session()->user()));
   session()->topdata = LocalIO::topdataNone;
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
 
   vector<string> menu_items = { "Next",  "Previous", "Toggle", "Clear All", "Set All" };
 

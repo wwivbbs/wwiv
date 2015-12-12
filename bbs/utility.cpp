@@ -233,7 +233,7 @@ void send_net(net_header_rec * nh, unsigned short int *list, const char *text, c
 
   const string filename = StringPrintf("%sp1%s",
     session()->GetNetworkDataDirectory().c_str(),
-    application()->GetNetworkExtension().c_str());
+    session()->GetNetworkExtension().c_str());
   File file(filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;
@@ -501,7 +501,7 @@ slrec getslrec(int nSl) {
   wwiv::sdk::Config config;
   if (!config.IsInitialized()) {
     // Bad ju ju here.
-    application()->AbortBBS();
+    session()->AbortBBS();
   }
   nCurSl = nSl;
   CurSlRec = config.config()->sl[nSl];
@@ -521,9 +521,8 @@ void WWIV_SetFileTime(const char* pszFileName, const time_t tTime) {
 
 bool okfsed() {
   return (!okansi() ||
-          !session()->user()->GetDefaultEditor() ||
-          (session()->user()->GetDefaultEditor() > session()->GetNumberOfEditors()))
-         ? false : true;
+    !session()->user()->GetDefaultEditor() ||
+    (session()->user()->GetDefaultEditor() > session()->editors.size()));
 }
 
 

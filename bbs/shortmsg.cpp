@@ -57,7 +57,7 @@ void rsm(int nUserNum, WUser *pUser, bool bAskToSaveMsgs) {
         if (!so() || !bAskToSaveMsgs) {
           bHandledMessage = true;
         } else {
-          if (application()->HasConfigFlag(OP_FLAGS_CAN_SAVE_SSM)) {
+          if (session()->HasConfigFlag(OP_FLAGS_CAN_SAVE_SSM)) {
             if (!bHandledMessage && bAskToSaveMsgs) {
               bout << "|#5Would you like to save this notification? ";
               bHandledMessage = !yesno();
@@ -91,7 +91,7 @@ void rsm(int nUserNum, WUser *pUser, bool bAskToSaveMsgs) {
 
 void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char *pszMessageText) {
   WUser user;
-  application()->users()->ReadUser(&user, nUserNum);
+  session()->users()->ReadUser(&user, nUserNum);
   if (!user.IsUserDeleted()) {
     File file(syscfg.datadir, SMW_DAT);
     if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
@@ -122,7 +122,7 @@ void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char 
     file.Write(&sm, sizeof(shortmsgrec));
     file.Close();
     user.SetStatusFlag(WUser::SMW);
-    application()->users()->WriteUser(&user, nUserNum);
+    session()->users()->WriteUser(&user, nUserNum);
   }
 }
 
@@ -143,7 +143,7 @@ void SendRemoteShortMessage(int nUserNum, int nSystemNum, char *pszMessageText) 
   nh.method = 0;
   const string packet_filename = StringPrintf("%sp0%s", 
     session()->GetNetworkDataDirectory().c_str(),
-    application()->GetNetworkExtension().c_str());
+    session()->GetNetworkExtension().c_str());
   File file(packet_filename);
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   file.Seek(0L, File::seekEnd);

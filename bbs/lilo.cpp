@@ -157,7 +157,7 @@ static int ShowLoginAndGetUserNumber() {
   if (!user_name.empty()) {
     bout << "Searching...";
     bool abort = false;
-    for (int i = 1; i < application()->GetStatusManager()->GetUserCount() && !hangup && !abort; i++) {
+    for (int i = 1; i < session()->GetStatusManager()->GetUserCount() && !hangup && !abort; i++) {
       if (i % 25 == 0) {   // changed from 15 since computers are faster now-a-days
         bout << ".";
       }
@@ -180,7 +180,7 @@ static int ShowLoginAndGetUserNumber() {
 }
 
 bool IsPhoneRequired() {
-  IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), INI_TAG);
+  IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
   if (iniFile.IsOpen()) {
     if (iniFile.GetBooleanValue("NEWUSER_MIN")) {
       return false;
@@ -207,7 +207,7 @@ bool VerifyPhoneNumber() {
 }
 
 static bool VerifyPassword() {
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
 
   string password = input_password("PW: ", 8);
   return (password == session()->user()->GetPassword());
@@ -238,19 +238,19 @@ static void ExecuteWWIVNetworkRequest() {
     return;
   }
 
-  application()->GetStatusManager()->RefreshStatusCache();
+  session()->GetStatusManager()->RefreshStatusCache();
   time_t lTime = time(nullptr);
   if (session()->usernum == -2) {
     std::stringstream networkCommand;
     networkCommand << "network /B" << modem_speed << " /T" << lTime << " /F0";
     write_inst(INST_LOC_NET, 0, INST_FLAGS_NONE);
     ExecuteExternalProgram(networkCommand.str(), EFLAG_NONE);
-    if (application()->GetInstanceNumber() != 1) {
+    if (session()->GetInstanceNumber() != 1) {
       send_inst_cleannet();
     }
     set_net_num(0);
   }
-  application()->GetStatusManager()->RefreshStatusCache();
+  session()->GetStatusManager()->RefreshStatusCache();
   hangup = true;
   session()->remoteIO()->dtr(false);
   global_xx = false;
@@ -389,7 +389,7 @@ void getuser() {
   okmacro = true;
   CheckCallRestrictions();
 
-  if (application()->HasConfigFlag(OP_FLAGS_CALLBACK) && (session()->user()->GetCbv() & 1) == 0) {
+  if (session()->HasConfigFlag(OP_FLAGS_CALLBACK) && (session()->user()->GetCbv() & 1) == 0) {
     DoCallBackVerification();
   }
 }
@@ -425,10 +425,10 @@ static void UpdateUserStatsForLogin() {
     session()->SetCurrentFileArea(0);
   }
   if (session()->GetEffectiveSl() != 255 && !guest_user) {
-    WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+    WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
     pStatus->IncrementCallerNumber();
     pStatus->IncrementNumCallsToday();
-    application()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->GetStatusManager()->CommitTransaction(pStatus);
   }
 }
 
@@ -493,7 +493,7 @@ static string copy_line(char *pszWholeBuffer, long *plBufferPtr, long lBufferLen
 }
 
 static void UpdateLastOnFileAndUserLog() {
-  unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
   const string laston_txt_filename = StrCat(syscfg.gfilesdir, LASTON_TXT);
   long len;
   unique_ptr<char[], void (*)(void*)> ss(get_file(laston_txt_filename, &len), &std::free);
@@ -512,7 +512,7 @@ static void UpdateLastOnFileAndUserLog() {
           bout.nl(2);
           bout << "|#1Last few callers|#7: |#0";
           bout.nl(2);
-          if (application()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
+          if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
               (syscfg.sysconfig & sysconfig_extended_info)) {
             bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##" << wwiv::endl;
           } else {
@@ -538,7 +538,7 @@ static void UpdateLastOnFileAndUserLog() {
         fulldate(),
         session()->GetCurrentSpeed().c_str(),
         session()->user()->GetTimesOnToday(),
-        application()->GetInstanceNumber());
+        session()->GetInstanceNumber());
 
     sysoplog("", false);
     sysoplog(stripcolors(sysop_log_line), false);
@@ -552,7 +552,7 @@ static void UpdateLastOnFileAndUserLog() {
       sysoplogf("CID NAME: %s", remoteName.c_str());
     }
     string log_line;
-    if (application()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
+    if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
         (syscfg.sysconfig & sysconfig_extended_info)) {
       log_line = StringPrintf(
           "|#1%-6ld %-25.25s %-5.5s %-5.5s %-15.15s %-2.2s %-3.3s %-8.8s %2d\r\n",
@@ -650,7 +650,7 @@ static void CheckAndUpdateUserInfo() {
     input_comptype();
   }
 
-  if (!application()->HasConfigFlag(OP_FLAGS_USER_REGISTRATION)) {
+  if (!session()->HasConfigFlag(OP_FLAGS_USER_REGISTRATION)) {
     return;
   }
 
@@ -739,7 +739,7 @@ static void DisplayUserLoginInformation() {
   bout << "|#9System is|#0......... |#2WWIV " << wwiv_version << beta_version << "  " << wwiv::endl;
 
   /////////////////////////////////////////////////////////////////////////
-  application()->GetStatusManager()->RefreshStatusCache();
+  session()->GetStatusManager()->RefreshStatusCache();
   for (int i = 0; i < session()->GetMaxNetworkNumber(); i++) {
     if (net_networks[i].sysnum) {
       sprintf(s1, "|#9%s node|#0%s|#2 @%u", net_networks[i].name, charstr(13 - strlen(net_networks[i].name), '.'),
@@ -753,14 +753,14 @@ static void DisplayUserLoginInformation() {
           s1[i1] = ' ';
         }
         s1[i1] = '\0';
-        std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+        std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
         bout << s1 << "(net" << pStatus->GetNetworkVersion() << ")\r\n";
       }
     }
   }
 
   bout << "|#9OS|#0................ |#2" << wwiv::os::os_version_string() << wwiv::endl;
-  bout << "|#9Instance|#0.......... |#2" << application()->GetInstanceNumber() << "\r\n\n";
+  bout << "|#9Instance|#0.......... |#2" << session()->GetInstanceNumber() << "\r\n\n";
   if (session()->user()->GetForwardUserNumber()) {
     if (session()->user()->GetForwardSystemNumber() != 0) {
       set_net_num(session()->user()->GetForwardNetNumber());
@@ -850,13 +850,13 @@ void logon() {
 
   read_automessage();
   timeon = timer();
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
   bout.nl(2);
   pausescr();
   if (!syscfg.logon_cmd.empty()) {
     bout.nl();
     const string command = stuff_in(syscfg.logon_cmd, create_chain_file(), "", "", "", "");
-    ExecuteExternalProgram(command, application()->GetSpawnOptions(SPAWNOPT_LOGON));
+    ExecuteExternalProgram(command, session()->GetSpawnOptions(SPAWNOPT_LOGON));
     bout.nl(2);
   }
 
@@ -864,8 +864,8 @@ void logon() {
 
   CheckAndUpdateUserInfo();
 
-  application()->UpdateTopScreen();
-  application()->read_subs();
+  session()->UpdateTopScreen();
+  session()->read_subs();
   rsm(session()->usernum, session()->user(), true);
 
   LoginCheckForNewMail();
@@ -909,7 +909,7 @@ void logon() {
     }
   }
 
-  if (application()->HasConfigFlag(OP_FLAGS_USE_FORCESCAN)) {
+  if (session()->HasConfigFlag(OP_FLAGS_USE_FORCESCAN)) {
     int nNextSubNumber = 0;
     if (session()->user()->GetSl() < 255) {
       forcescansub = true;
@@ -961,10 +961,10 @@ void logoff() {
   session()->user()->SetTimeOnToday(session()->user()->GetTimeOnToday() + static_cast<float>
       (dTimeOnNow - extratimecall));
   {
-    WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+    WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
     int nActiveToday = pStatus->GetMinutesActiveToday();
     pStatus->SetMinutesActiveToday(nActiveToday + static_cast<unsigned short>(dTimeOnNow / MINUTES_PER_HOUR_FLOAT));
-    application()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->GetStatusManager()->CommitTransaction(pStatus);
   }
   if (g_flags & g_flag_scanned_files) {
     session()->user()->SetNewScanDateNumber(session()->user()->GetLastOnDateNumber());
@@ -1006,9 +1006,9 @@ void logoff() {
         }
       }
       pFileEmail->SetLength(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w));
-      WStatus *pStatus = application()->GetStatusManager()->BeginTransaction();
+      WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
       pStatus->IncrementFileChangedFlag(WStatus::fileChangeEmail);
-      application()->GetStatusManager()->CommitTransaction(pStatus);
+      session()->GetStatusManager()->CommitTransaction(pStatus);
       pFileEmail->Close();
     }
   } else {

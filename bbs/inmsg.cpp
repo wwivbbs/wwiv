@@ -648,7 +648,7 @@ bool inmsg(MessageEditorData& data) {
     }
   }
 
-  if (application()->HasConfigFlag(OP_FLAGS_MSG_TAG)) {
+  if (session()->HasConfigFlag(OP_FLAGS_MSG_TAG)) {
     UpdateMessageBufferTagLine(b, data.aux.c_str());
   }
 

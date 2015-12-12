@@ -260,17 +260,17 @@ void CursesLocalIO::skey(char ch) {
           break;
         case SF1:                          /* Shift-F1 */
           capture_->set_global_handle(!capture_->is_open());
-          application()->UpdateTopScreen();
+          session()->UpdateTopScreen();
           break;
         case CF1:                          /* Ctrl-F1 */
-          application()->ToggleShutDown();
+          session()->ToggleShutDown();
           break;
         case F2:                          /* F2 */
           session()->topdata++;
           if (session()->topdata > CursesLocalIO::topdataUser) {
             session()->topdata = CursesLocalIO::topdataNone;
           }
-          application()->UpdateTopScreen();
+          session()->UpdateTopScreen();
           break;
         case F3:                          /* F3 */
           if (session()->using_modem) {
@@ -281,7 +281,7 @@ void CursesLocalIO::skey(char ch) {
           break;
         case F4:                          /* F4 */
           chatcall = false;
-          application()->UpdateTopScreen();
+          session()->UpdateTopScreen();
           break;
         case F5:                          /* F5 */
           hangup = true;

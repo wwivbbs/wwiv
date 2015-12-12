@@ -540,17 +540,17 @@ void Win32ConsoleIO::skey(char ch) {
         case SF1:
           /* Shift-F1 */
           capture_->set_global_handle(!capture_->is_open());
-          application()->UpdateTopScreen();
+          session()->UpdateTopScreen();
           break;
         case CF1:                          /* Ctrl-F1 */
-          application()->ToggleShutDown();
+          session()->ToggleShutDown();
           break;
         case F2:                          /* F2 */
           session()->topdata++;
           if (session()->topdata > LocalIO::topdataUser) {
             session()->topdata = LocalIO::topdataNone;
           }
-          application()->UpdateTopScreen();
+          session()->UpdateTopScreen();
           break;
         case F3:                          /* F3 */
           if (session()->using_modem) {
@@ -561,7 +561,7 @@ void Win32ConsoleIO::skey(char ch) {
           break;
         case F4:                          /* F4 */
           chatcall = false;
-          application()->UpdateTopScreen();
+          session()->UpdateTopScreen();
           break;
         case F5:                          /* F5 */
           hangup = true;
@@ -1293,6 +1293,6 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
 void Win32ConsoleIO::UpdateNativeTitleBar() {
   // Set console title
   std::stringstream consoleTitleStream;
-  consoleTitleStream << "WWIV Node " << application()->GetInstanceNumber() << " (" << syscfg.systemname << ")";
+  consoleTitleStream << "WWIV Node " << session()->GetInstanceNumber() << " (" << syscfg.systemname << ")";
   SetConsoleTitle(consoleTitleStream.str().c_str());
 }

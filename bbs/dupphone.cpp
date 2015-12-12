@@ -95,7 +95,7 @@ int find_phone_number(const char *phone) {
   for (i = 0; i < nNumRecords; i++) {
     if (wwiv::strings::IsEquals(reinterpret_cast<char*>(p[i].phone), phone)) {
       WUser user;
-      application()->users()->ReadUser(&user, p[i].usernum);
+      session()->users()->ReadUser(&user, p[i].usernum);
       if (!user.IsUserDeleted()) {
         break;
       }

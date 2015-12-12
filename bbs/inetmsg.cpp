@@ -172,9 +172,9 @@ char *read_inet_addr(char *pszInternetEmailAddress, int nUserNumber) {
       } else {
         sprintf(pszInternetEmailAddress, "User #%d", nUserNumber);
         WUser user;
-        application()->users()->ReadUser(&user, nUserNumber);
+        session()->users()->ReadUser(&user, nUserNumber);
         user.SetEmailAddress("");
-        application()->users()->WriteUser(&user, nUserNumber);
+        session()->users()->WriteUser(&user, nUserNumber);
       }
     }
     inetAddrFile.Close();

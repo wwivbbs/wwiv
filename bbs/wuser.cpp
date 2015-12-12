@@ -141,7 +141,7 @@ bool WUserManager::ReadUser(WUser *pUser, int nUserNumber, bool bForceRead) {
 #ifndef NOT_BBS
   if (!bForceRead) {
     bool userOnAndCurrentUser = (session()->IsUserOnline() && (nUserNumber == session()->usernum));
-    int nWfcStatus = application()->GetWfcStatus();
+    int nWfcStatus = session()->GetWfcStatus();
     bool wfcStatusAndUserOne = (nWfcStatus && nUserNumber == 1);
     if (userOnAndCurrentUser || wfcStatusAndUserOne) {
       pUser->data = session()->user()->data;
@@ -171,7 +171,7 @@ bool WUserManager::WriteUser(WUser *pUser, int nUserNumber) {
 
 #ifndef NOT_BBS
   if ((session()->IsUserOnline() && nUserNumber == static_cast<int>(session()->usernum)) ||
-      (application()->GetWfcStatus() && nUserNumber == 1)) {
+      (session()->GetWfcStatus() && nUserNumber == 1)) {
     if (&pUser->data != &session()->user()->data) {
       session()->user()->data = pUser->data;
     }
@@ -183,7 +183,7 @@ bool WUserManager::WriteUser(WUser *pUser, int nUserNumber) {
 int WUserManager::FindUser(std::string searchString) {
 #ifndef NOT_BBS
   // TODO(rushfan): Put back in a binary search, but test with user.lst the size of frank's.
-  const size_t user_count = application()->GetStatusManager()->GetUserCount();
+  const size_t user_count = session()->GetStatusManager()->GetUserCount();
   for (std::size_t i = 0; i < user_count; i++) {
     if (wwiv::strings::IsEqualsIgnoreCase(searchString.c_str(), (const char*)smallist[i].name)) {
       return smallist[i].number;

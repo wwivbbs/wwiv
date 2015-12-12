@@ -135,7 +135,7 @@ void downloaded(char *pszFileName, long lCharsPerSecond) {
         }
         if (syscfg.sysconfig & sysconfig_log_dl) {
           WUser user;
-          application()->users()->ReadUser(&user, u.ownerusr);
+          session()->users()->ReadUser(&user, u.ownerusr);
           if (!user.IsUserDeleted()) {
             if (date_to_daten(user.GetFirstOn()) < static_cast<time_t>(u.daten)) {
               ssm(u.ownerusr, 0, "%s downloaded|#1 \"%s\" |#7on %s",
@@ -254,10 +254,10 @@ void uploaded(char *pszFileName, long lCharsPerSecond) {
               modify_database(u.filename, true);
               session()->user()->SetUploadK(session()->user()->GetUploadK() +
                   static_cast<int>(bytes_to_k(u.numbytes)));
-              WStatus *pStatus = application()->GetStatusManager()->BeginTransaction();
+              WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
               pStatus->IncrementNumUploadsToday();
               pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
-              application()->GetStatusManager()->CommitTransaction(pStatus);
+              session()->GetStatusManager()->CommitTransaction(pStatus);
               File fileDn(g_szDownloadFileName);
               fileDn.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
               FileAreaSetRecord(fileDn, nRecNum);
@@ -503,8 +503,8 @@ double ratio1(long a) {
 }
 
 static string make_ul_batch_list() {
-  string list_filename = StringPrintf("%s%s.%3.3u", application()->GetHomeDir().c_str(), FILESUL_NOEXT,
-          application()->GetInstanceNumber());
+  string list_filename = StringPrintf("%s%s.%3.3u", session()->GetHomeDir().c_str(), FILESUL_NOEXT,
+          session()->GetInstanceNumber());
 
   File::SetFilePermissions(list_filename, File::permReadWrite);
   File::Remove(list_filename);
@@ -517,7 +517,7 @@ static string make_ul_batch_list() {
     if (!batch[i].sending) {
       chdir(directories[batch[i].dir].path);
       File file(File::current_directory(), stripfn(batch[i].filename));
-      application()->CdHome();
+      session()->CdHome();
       fileList.Write(StrCat(file.full_pathname(), "\r\n"));
     }
   }
@@ -526,8 +526,8 @@ static string make_ul_batch_list() {
 }
 
 static string make_dl_batch_list() {
-  string list_filename = StringPrintf("%s%s.%3.3u", application()->GetHomeDir().c_str(), FILESDL_NOEXT,
-          application()->GetInstanceNumber());
+  string list_filename = StringPrintf("%s%s.%3.3u", session()->GetHomeDir().c_str(), FILESDL_NOEXT,
+          session()->GetInstanceNumber());
 
   File::SetFilePermissions(list_filename, File::permReadWrite);
   File::Remove(list_filename);
@@ -558,7 +558,7 @@ static string make_dl_batch_list() {
         filename_to_send = fileToSend.full_pathname();
       }
       bool ok = true;
-      application()->CdHome();
+      session()->CdHome();
       if (nsl() < (batch[i].time + at)) {
         ok = false;
         bout << "Cannot download " << batch[i].filename << ": Not enough time" << wwiv::endl;
@@ -590,7 +590,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
       uplist);
 
   if (!commandLine.empty()) {
-    WWIV_make_abs_cmd(application()->GetHomeDir(), &commandLine);
+    WWIV_make_abs_cmd(session()->GetHomeDir(), &commandLine);
     session()->localIO()->LocalCls();
     const string message = StringPrintf(
         "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
@@ -601,7 +601,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
       File::SetFilePermissions(g_szDSZLogFileName, File::permReadWrite);
       File::Remove(g_szDSZLogFileName);
       chdir(syscfgovr.batchdir);
-      ExecuteExternalProgram(commandLine, application()->GetSpawnOptions(SPAWNOPT_PROT_BATCH));
+      ExecuteExternalProgram(commandLine, session()->GetSpawnOptions(SPAWNOPT_PROT_BATCH));
       if (bHangupAfterDl) {
         bihangup(1);
         if (!session()->remoteIO()->carrier()) {
@@ -611,7 +611,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
         bout << "\r\n|#9Please wait...\r\n\n";
       }
       ProcessDSZLogFile();
-      application()->UpdateTopScreen();
+      session()->UpdateTopScreen();
     }
   }
   if (!downlist.empty()) {

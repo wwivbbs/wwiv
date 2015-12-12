@@ -99,12 +99,12 @@ void set_question(int ii) {
   questused[ii] = (v.numanswers) ? 1 : 0;
 
   WUser u;
-  application()->users()->ReadUser(&u, 1);
-  int nNumUsers = application()->users()->GetNumberOfUserRecords();
+  session()->users()->ReadUser(&u, 1);
+  int nNumUsers = session()->users()->GetNumberOfUserRecords();
   for (int i1 = 1; i1 <= nNumUsers; i1++) {
-    application()->users()->ReadUser(&u, i1);
+    session()->users()->ReadUser(&u, i1);
     u.SetVote(nNumUsers, 0);
-    application()->users()->WriteUser(&u, i1);
+    session()->users()->WriteUser(&u, i1);
   }
 }
 
@@ -144,14 +144,14 @@ void ivotes() {
 void voteprint() {
   votingrec v;
 
-  int nNumUserRecords = application()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
   char *x = static_cast<char *>(BbsAllocA(20 * (2 + nNumUserRecords)));
   if (x == nullptr) {
     return;
   }
   for (int i = 0; i <= nNumUserRecords; i++) {
     WUser u;
-    application()->users()->ReadUser(&u, i);
+    session()->users()->ReadUser(&u, i);
     for (int i1 = 0; i1 < 20; i1++) {
       x[ i1 + i * 20 ] = static_cast<char>(u.GetVote(i1));
     }
@@ -162,7 +162,7 @@ void voteprint() {
 
   File votingDat(syscfg.datadir, VOTING_DAT);
 
-  application()->GetStatusManager()->RefreshStatusCache();
+  session()->GetStatusManager()->RefreshStatusCache();
 
   for (int i1 = 0; i1 < 20; i1++) {
     if (!votingDat.Open(File::modeReadOnly | File::modeBinary)) {
@@ -182,7 +182,7 @@ void voteprint() {
         text.str("     ");
         text << v.responses[i2].response << "\r\n";
         votingText.Write(text.str());
-        for (int i3 = 0; i3 < application()->GetStatusManager()->GetUserCount(); i3++) {
+        for (int i3 = 0; i3 < session()->GetStatusManager()->GetUserCount(); i3++) {
           if (x[i1 + 20 * smallist[i3].number] == i2 + 1) {
             text.clear();
             text.str("          ");

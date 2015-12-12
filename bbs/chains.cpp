@@ -31,6 +31,7 @@
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
 #include "bbs/wconstants.h"
+#include "core/datafile.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
@@ -46,7 +47,8 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
   bout.nl();
   bool abort = false;
   bool next = false;
-  if (application()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg) {
+  if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
+      && session()->chains_reg.size() > 0) {
     pla(StringPrintf("|#5  Num |#1%-42.42s|#2%-22.22s|#1%-5.5s", "Description", "Sponsored by", "Usage"), &abort);
 
     if (okansi()) {
@@ -58,39 +60,39 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
     for (int i = 0; i < *mapp && !abort && !hangup; i++) {
       WUser user;
       if (okansi()) {
-        application()->users()->ReadUser(&user, chains_reg[map[i]].regby[0]);
+        session()->users()->ReadUser(&user, session()->chains_reg[map[i]].regby[0]);
         pla(StringPrintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
                 FRAME_COLOR,
                 i + 1,
                 FRAME_COLOR,
-                chains[map[i]].description,
+                session()->chains[map[i]].description,
                 FRAME_COLOR,
-                (chains_reg[map[i]].regby[0]) ? 14 : 13,
-                (chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
+                (session()->chains_reg[map[i]].regby[0]) ? 14 : 13,
+                (session()->chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
                 FRAME_COLOR,
-                chains_reg[map[i]].usage,
+                session()->chains_reg[map[i]].usage,
                 FRAME_COLOR), &abort);
-        if (chains_reg[map[i]].regby[0] != 0) {
+        if (session()->chains_reg[map[i]].regby[0] != 0) {
           for (int i1 = 1; i1 < 5 && !abort; i1++) {
-            if (chains_reg[map[i]].regby[i1] != 0) {
-              application()->users()->ReadUser(&user, chains_reg[map[i]].regby[i1]);
+            if (session()->chains_reg[map[i]].regby[i1] != 0) {
+              session()->users()->ReadUser(&user, session()->chains_reg[map[i]].regby[i1]);
               pla(StringPrintf(" |#%d\xB3   \xBA%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3",
                       FRAME_COLOR, " ", user.GetName(), FRAME_COLOR, " "), &abort);
             }
           }
         }
       } else {
-        application()->users()->ReadUser(&user, chains_reg[map[i]].regby[0]);
+        session()->users()->ReadUser(&user, session()->chains_reg[map[i]].regby[0]);
         pla(StringPrintf(" |%3d|%-41.41s|%-21.21s|%5d|",
-                i + 1, chains[map[i]].description,
-                (chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
-                chains_reg[map[i]].usage), &abort);
-        if (chains_reg[map[i]].regby[0] != 0) {
+                i + 1, session()->chains[map[i]].description,
+                (session()->chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
+                session()->chains_reg[map[i]].usage), &abort);
+        if (session()->chains_reg[map[i]].regby[0] != 0) {
           for (int i1 = 1; i1 < 5; i1++) {
-            if (chains_reg[map[i]].regby[i1] != 0) {
-              application()->users()->ReadUser(&user, chains_reg[map[i]].regby[i1]);
+            if (session()->chains_reg[map[i]].regby[i1] != 0) {
+              session()->users()->ReadUser(&user, session()->chains_reg[map[i]].regby[i1]);
               pla(StringPrintf(" |   |                                         |%-21.21s|     |",
-                      (chains_reg[map[i]].regby[i1]) ? user.GetName() : "Available"), &abort);
+                      (session()->chains_reg[map[i]].regby[i1]) ? user.GetName() : "Available"), &abort);
             }
           }
         }
@@ -105,13 +107,13 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
     bout.litebar(" %s Online Programs ", syscfg.systemname);
     bout << "|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
     for (int i = 0; i < *mapp && !abort && !hangup; i++) {
-      osan(StringPrintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, chains[map[i]].description), &abort, &next);
+      osan(StringPrintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, session()->chains[map[i]].description), &abort, &next);
       i++;
       if (!abort && !hangup) {
         if (i >= *mapp) {
           pla(StringPrintf("  |#7\xB3                                  |#7\xB3"), &abort);
         } else {
-          pla(StringPrintf("|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, chains[map[i]].description), &abort);
+          pla(StringPrintf("|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, session()->chains[map[i]].description), &abort);
         }
       }
     }
@@ -123,8 +125,9 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
 void run_chain(int nChainNumber) {
   int inst = inst_ok(INST_LOC_CHAINS, nChainNumber + 1);
   if (inst != 0) {
-    const string message = StringPrintf("|#2Chain %s is in use on instance %d.  ", chains[nChainNumber].description, inst);
-    if (!(chains[nChainNumber].ansir & ansir_multi_user)) {
+    const string message = StringPrintf("|#2Chain %s is in use on instance %d.  ", 
+        session()->chains[nChainNumber].description, inst);
+    if (!(session()->chains[nChainNumber].ansir & ansir_multi_user)) {
       bout << message << "Try again later.\r\n";
       return;
     } else {
@@ -135,32 +138,33 @@ void run_chain(int nChainNumber) {
     }
   }
   write_inst(INST_LOC_CHAINS, static_cast< unsigned short >(nChainNumber + 1), INST_FLAGS_NONE);
-  if (application()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg) {
-    chains_reg[nChainNumber].usage++;
-    File regFile(syscfg.datadir, CHAINS_REG);
-    if (regFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate)) {
-      regFile.Write(chains_reg, session()->GetNumberOfChains() * sizeof(chainregrec));
+  if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
+    session()->chains_reg[nChainNumber].usage++;
+    wwiv::core::DataFile<chainregrec> regFile(syscfg.datadir, CHAINS_REG,
+      File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
+    if (regFile) {
+      regFile.Write(&(session()->chains_reg[0]), session()->chains.size());
     }
   }
   const string com_speed_str = StringPrintf("%d", (com_speed == 1) ? 115200 : com_speed);
   const string com_port_num_str = StringPrintf("%d", syscfgovr.primaryport);
   const string modem_speed_str = StringPrintf("%d", modem_speed);
-  const string chainCmdLine = stuff_in(chains[nChainNumber].filename, create_chain_file(), com_speed_str, com_port_num_str, modem_speed_str, "");
+  const string chainCmdLine = stuff_in(session()->chains[nChainNumber].filename, create_chain_file(), com_speed_str, com_port_num_str, modem_speed_str, "");
 
-  sysoplogf("!Ran \"%s\"", chains[nChainNumber].description);
+  sysoplogf("!Ran \"%s\"", session()->chains[nChainNumber].description);
   session()->user()->SetNumChainsRun(session()->user()->GetNumChainsRun() + 1);
 
   int flags = 0;
-  if (!(chains[nChainNumber].ansir & ansir_no_DOS)) {
+  if (!(session()->chains[nChainNumber].ansir & ansir_no_DOS)) {
     flags |= EFLAG_COMIO;
   }
-  if (chains[nChainNumber].ansir & ansir_emulate_fossil) {
+  if (session()->chains[nChainNumber].ansir & ansir_emulate_fossil) {
     flags |= EFLAG_FOSSIL;
   }
 
   ExecuteExternalProgram(chainCmdLine, flags);
   write_inst(INST_LOC_CHAINS, 0, INST_FLAGS_NONE);
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -174,9 +178,9 @@ void do_chains() {
   session()->localIO()->tleft(true);
   int mapp = 0;
   memset(odc, 0, sizeof(odc));
-  for (int i = 0; i < session()->GetNumberOfChains(); i++) {
+  for (size_t i = 0; i < session()->chains.size(); i++) {
     bool ok = true;
-    chainfilerec c = chains[i];
+    chainfilerec c = session()->chains[i];
     if ((c.ansir & ansir_ansi) && !okansi()) {
       ok = false;
     }
@@ -189,8 +193,10 @@ void do_chains() {
     if (c.ar && !session()->user()->HasArFlag(c.ar)) {
       ok = false;
     }
-    if (application()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg && (session()->GetEffectiveSl() < 255)) {
-      chainregrec r = chains_reg[ i ];
+    if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
+      && session()->chains_reg.size() > 0 
+      && (session()->GetEffectiveSl() < 255)) {
+      chainregrec r = session()->chains_reg[ i ];
       if (r.maxage) {
         if (r.minage > session()->user()->GetAge() || r.maxage < session()->user()->GetAge()) {
           ok = false;

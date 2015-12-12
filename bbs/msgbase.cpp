@@ -52,7 +52,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
   }
 
   WUser userRecord;
-  application()->users()->ReadUser(&userRecord, *pUserNumber);
+  session()->users()->ReadUser(&userRecord, *pUserNumber);
   if (userRecord.IsUserDeleted()) {
     return false;
   }
@@ -98,7 +98,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
   char *ss = static_cast<char*>(BbsAllocA(static_cast<long>(syscfg.maxusers) + 300L));
 
   ss[*pUserNumber] = 1;
-  application()->users()->ReadUser(&userRecord, nCurrentUser);
+  session()->users()->ReadUser(&userRecord, nCurrentUser);
   while (userRecord.GetForwardUserNumber() || userRecord.GetForwardSystemNumber()) {
     if (userRecord.GetForwardSystemNumber()) {
       if (!valid_system(userRecord.GetForwardSystemNumber())) {
@@ -129,7 +129,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
       return false;
     }
     nCurrentUser = userRecord.GetForwardUserNumber() ;
-    application()->users()->ReadUser(&userRecord, nCurrentUser);
+    session()->users()->ReadUser(&userRecord, nCurrentUser);
   }
   free(ss);
   *pSystemNumber = 0;
@@ -265,11 +265,11 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
       if (nForwardedCode) {
         net_filename = StringPrintf("%sp1%s",
           session()->GetNetworkDataDirectory().c_str(),
-          application()->GetNetworkExtension().c_str());
+          session()->GetNetworkExtension().c_str());
       } else {
         net_filename = StringPrintf("%sp0%s",
           session()->GetNetworkDataDirectory().c_str(),
-          application()->GetNetworkExtension().c_str());
+          session()->GetNetworkExtension().c_str());
       }
       File fileNetworkPacket(net_filename);
       fileNetworkPacket.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
@@ -282,9 +282,9 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
   string logMessage = "Mail sent to ";
   if (nSystemNumber == 0) {
     WUser userRecord;
-    application()->users()->ReadUser(&userRecord, nUserNumber);
+    session()->users()->ReadUser(&userRecord, nUserNumber);
     userRecord.SetNumMailWaiting(userRecord.GetNumMailWaiting() + 1);
-    application()->users()->WriteUser(&userRecord, nUserNumber);
+    session()->users()->WriteUser(&userRecord, nUserNumber);
     if (nUserNumber == 1) {
       ++fwaiting;
     }
@@ -332,7 +332,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     sysoplog(logMessage);
   }
 
-  WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+  WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
   if (nUserNumber == 1 && nSystemNumber == 0) {
     pStatus->IncrementNumFeedbackSentToday();
     session()->user()->SetNumFeedbackSent(session()->user()->GetNumFeedbackSent() + 1);
@@ -347,7 +347,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
       session()->user()->SetNumNetEmailSent(session()->user()->GetNumNetEmailSent() + 1);
     }
   }
-  application()->GetStatusManager()->CommitTransaction(pStatus);
+  session()->GetStatusManager()->CommitTransaction(pStatus);
   if (!session()->IsNewMailWatiting()) {
     bout.Color(3);
     bout << logMessage;
@@ -365,7 +365,7 @@ bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit) {
       return false;
     }
     WUser userRecord;
-    application()->users()->ReadUser(&userRecord, nUserNumber);
+    session()->users()->ReadUser(&userRecord, nUserNumber);
     if ((userRecord.GetSl() == 255 && userRecord.GetNumMailWaiting() > (syscfg.maxwaiting * 5)) ||
         (userRecord.GetSl() != 255 && userRecord.GetNumMailWaiting() > syscfg.maxwaiting) ||
         userRecord.GetNumMailWaiting() > 200) {
@@ -453,7 +453,7 @@ void email(const string& title, int nUserNumber, int nSystemNumber, bool forceit
   if (nSystemNumber == 0) {
     set_net_num(0);
     if (an) {
-      application()->users()->ReadUser(&userRecord, nUserNumber);
+      session()->users()->ReadUser(&userRecord, nUserNumber);
       strcpy(szDestination, userRecord.GetUserNameAndNumber(nUserNumber));
     } else {
       strcpy(szDestination, ">UNKNOWN<");
@@ -582,7 +582,7 @@ void email(const string& title, int nUserNumber, int nSystemNumber, bool forceit
       for (int j = 0; j < nNumUsers; j++) {
         if (carbon_copy[j].nSystemNumber == 0) {
           set_net_num(0);
-          application()->users()->ReadUser(&userRecord, carbon_copy[j].nUserNumber);
+          session()->users()->ReadUser(&userRecord, carbon_copy[j].nUserNumber);
           strcpy(szDestination, userRecord.GetUserNameAndNumber(carbon_copy[j].nUserNumber));
         } else {
           if (carbon_copy[j].nSystemNumber == 1 &&
@@ -667,7 +667,7 @@ void imail(int nUserNumber, int nSystemNumber) {
 
   int i = 1;
   if (nSystemNumber == 0) {
-    application()->users()->ReadUser(&userRecord, nUserNumber);
+    session()->users()->ReadUser(&userRecord, nUserNumber);
     if (!userRecord.IsUserDeleted()) {
       bout << "|#5E-mail " << userRecord.GetUserNameAndNumber(nUserNumber) << "? ";
       if (!yesno()) {
