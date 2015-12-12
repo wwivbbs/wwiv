@@ -160,7 +160,9 @@ bool edit_archivers() {
     }
   } while (!done);
 
-  // copy first four new fomat archivers to oldarcsrec
+  // Copy first four new fomat archivers to oldarcsrec
+  // This was the 4.24 and lower place for them.  4.31 introduced
+  // the new archivers record.
   for (int j = 0; j < 4; j++) {
     strncpy(syscfg.arcs[j].extension, arc[j].extension, 4);
     strncpy(syscfg.arcs[j].arca, arc[j].arca     , 32);

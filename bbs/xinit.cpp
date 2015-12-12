@@ -605,13 +605,6 @@ bool WSession::SaveConfig() {
     full_syscfg.autoval[8]      = syscfg.autoval[8];
     full_syscfg.autoval[9]      = syscfg.autoval[9];
 
-    for (int nTempArcNum = 0; nTempArcNum < 4; nTempArcNum++) {
-      strcpy(full_syscfg.arcs[ nTempArcNum ].extension, arcs[ nTempArcNum ].extension);
-      strcpy(full_syscfg.arcs[ nTempArcNum ].arca, arcs[ nTempArcNum ].arca);
-      strcpy(full_syscfg.arcs[ nTempArcNum ].arce, arcs[ nTempArcNum ].arce);
-      strcpy(full_syscfg.arcs[ nTempArcNum ].arcl, arcs[ nTempArcNum ].arcl);
-    }
-
     full_syscfg.unused_rrd = 0;
     memset(full_syscfg.unused_regcode, '\0', 83);
 
