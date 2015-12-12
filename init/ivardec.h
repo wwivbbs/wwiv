@@ -26,8 +26,6 @@ struct initinfo_rec {
   int num_languages;
   int net_num_max;
   int num_subs;
-  int usernum;
-  int nNumMsgsInCurrentSub;
 };
 #pragma pack(pop)
 

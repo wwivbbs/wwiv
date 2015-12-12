@@ -189,13 +189,14 @@ struct valrec {
 };
 
 
-struct oldarcrec {
+struct arcrec_424_t {
   char extension[4],                          // extension for archive
        arca[32],                               // add commandline
        arce[32],                               // extract commandline
        arcl[32];                               // list commandline
 };
 
+// Archiver Configuration introduced in WWIV 4.30
 struct arcrec {
   char name[32],                              // name of the archiver
        extension[4],                           // extension for archive
@@ -273,7 +274,7 @@ struct configrec {
        unused_connect_9600_a[21],              // alternate connect string
        unused_connect_19200_a[21];             // alternate connect string
 
-  oldarcrec arcs[4];                          // old archivers
+  arcrec_424_t arcs[4];                       // old archivers (4.24 format)
 
   char unused_legacy_beginday_c[51],          // beginday event
        unused_legacy_logon_c[51];             // logon event

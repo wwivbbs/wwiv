@@ -413,8 +413,6 @@ private:
               m_nCurrentNetworkType,
               m_nNetworkNumber,
               m_nMaxNetworkNumber,
-              m_nNumberOfChains,
-              m_nNumberOfExternalProtocols,
               numf,
               num_dirs,
               num_languages,

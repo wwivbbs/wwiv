@@ -167,8 +167,6 @@ __EXTRN__ confrec *subconfs, *dirconfs;
 
 __EXTRN__ int iia;
 
-__EXTRN__ int32_t last_iia;
-
 // confedit
 #define CONF_SUBS 1
 #define CONF_DIRS 2
