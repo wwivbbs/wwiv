@@ -1511,7 +1511,7 @@ void new_mail() {
   session()->SetNewMailWaiting(true);
   int save_ed = session()->user()->GetDefaultEditor();
   session()->user()->SetDefaultEditor(0);
-  LoadFileIntoWorkspace(file.full_pathname().c_str(), true);
+  LoadFileIntoWorkspace(file.full_pathname(), true);
   use_workspace = true;
 
   MessageEditorData data;

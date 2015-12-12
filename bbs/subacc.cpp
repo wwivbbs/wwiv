@@ -20,12 +20,10 @@
 #include <string>
 
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "bbs/connect1.h"
 #include "bbs/message_file.h"
 #include "bbs/msgbase.h"
 #include "bbs/subxtr.h"
-#include "bbs/pause.h"
 #include "sdk/vardec.h"
 #include "bbs/vars.h"
 #include "bbs/woutstreambuffer.h"
@@ -37,13 +35,22 @@
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// NOTE: This file containts wwiv message base specific code and should 
+// move to SDK.
+//
+
 static File fileSub;                       // File object for '.sub' file
 static char subdat_fn[MAX_PATH];            // filename of .sub file
 
 using std::unique_ptr;
-using wwiv::bbs::TempDisablePause;
 using wwiv::strings::StrCat;
 using wwiv::core::ScopeExit;
+
+// Needed by pack_all_subs() which should move out of here.
+bool checka();
+
 
 void close_sub() {
   if (fileSub.IsOpen()) {
@@ -381,15 +388,12 @@ void pack_sub(int si) {
   }
 }
 
-void pack_all_subs() {
-  TempDisablePause disable_pause;
-
+bool pack_all_subs() {
   for (int i=0; i < session()->num_subs && !hangup; i++) {
     pack_sub(i);
-    bool abort = checka();
-    if (abort) {
-      bout << "|#6Aborted.\r\n";
-      return;
+    if (!checka()) {
+      return false;
     }
   }
+  return true;
 }

@@ -57,6 +57,7 @@
 #include "bbs/netsup.h"
 #include "bbs/null_local_io.h"
 #include "bbs/menu.h"
+#include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/sysoplog.h"
 #include "bbs/uedit.h"
@@ -378,7 +379,7 @@ int WApplication::doWFCEvents() {
           bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
           string buffer;
           input(&buffer, 50);
-          LoadFileIntoWorkspace(buffer.c_str(), false);
+          LoadFileIntoWorkspace(buffer, false);
           send_email();
           session()->WriteCurrentUser(1);
           cleanup_net();
@@ -805,7 +806,10 @@ int WApplication::Run(int argc, char *argv[]) {
         } else {
           bout << "\r\n|#7\xFE |#5Packing all subs: \r\n";
           sysoplog("* Packing All Message Areas");
-          pack_all_subs();
+          wwiv::bbs::TempDisablePause disable_pause;
+          if (!pack_all_subs()) {
+            bout << "|#6Aborted.\r\n";
+          }
         }
         ExitBBSImpl(m_nOkLevel);
       }

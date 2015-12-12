@@ -692,8 +692,8 @@ void imail(int nUserNumber, int nSystemNumber) {
   }
 }
 
-void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed) {
-  File fileOrig(pszFileName);
+void LoadFileIntoWorkspace(const std::string& filename, bool bNoEditAllowed) {
+  File fileOrig(filename);
   if (!fileOrig.Open(File::modeBinary | File::modeReadOnly)) {
     bout << "\r\nFile not found.\r\n\n";
     return;
