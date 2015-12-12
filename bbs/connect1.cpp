@@ -49,7 +49,7 @@ void read_call_out_list() {
     char *ss = nullptr;
     if ((ss = static_cast<char*>(BbsAllocA(lFileLength + 512))) == nullptr) {
       WWIV_ASSERT(ss != nullptr);
-      application()->AbortBBS(true);
+      session()->AbortBBS(true);
     }
     fileCallout.Read(ss, lFileLength);
     fileCallout.Close();
@@ -63,14 +63,14 @@ void read_call_out_list() {
          BbsAllocA(static_cast<long>((net_networks[session()->GetNetworkNumber()].num_con + 2) *
                                      sizeof(net_call_out_rec)))) == nullptr) {
       WWIV_ASSERT(net_networks[session()->GetNetworkNumber()].con != nullptr);
-      application()->AbortBBS(true);
+      session()->AbortBBS(true);
     }
     con = net_networks[session()->GetNetworkNumber()].con;
     con--;
     fileCallout.Open(File::modeBinary | File::modeReadOnly);
     if ((ss = static_cast<char*>(BbsAllocA(lFileLength + 512))) == nullptr) {
       WWIV_ASSERT(ss != nullptr);
-      application()->AbortBBS(true);
+      session()->AbortBBS(true);
     }
     fileCallout.Read(ss, lFileLength);
     fileCallout.Close();
@@ -222,7 +222,7 @@ void read_bbs_list() {
     session()->num_sys_list = static_cast<int>(lFileLength / sizeof(net_system_list_rec));
     if ((csn = static_cast<net_system_list_rec *>(BbsAllocA(lFileLength + 512L))) == nullptr) {
       WWIV_ASSERT(csn != nullptr);
-      application()->AbortBBS(true);
+      session()->AbortBBS(true);
     }
     for (int i = 0; i < session()->num_sys_list; i += 256) {
       fileBbsData.Read(&(csn[i]), 256 * sizeof(net_system_list_rec));
@@ -245,7 +245,7 @@ void read_bbs_list_index() {
     session()->num_sys_list = static_cast<int>(lFileLength / 2);
     if ((csn_index = static_cast<unsigned short *>(BbsAllocA(lFileLength))) == nullptr) {
       WWIV_ASSERT(csn_index != nullptr);
-      application()->AbortBBS(true);
+      session()->AbortBBS(true);
     }
     fileBbsData.Read(csn_index, lFileLength);
     fileBbsData.Close();
@@ -322,7 +322,7 @@ void read_contacts() {
            static_cast<net_contact_rec *>(BbsAllocA((net_networks[session()->GetNetworkNumber()].num_ncn + 2) *
            sizeof(net_contact_rec)))) == nullptr) {
       WWIV_ASSERT(net_networks[session()->GetNetworkNumber()].ncn != nullptr);
-      application()->AbortBBS(true);
+      session()->AbortBBS(true);
     }
     fileContact.Seek(0L, File::seekBegin);
     fileContact.Read(net_networks[session()->GetNetworkNumber()].ncn,

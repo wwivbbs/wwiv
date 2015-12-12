@@ -90,7 +90,7 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
     bOkToDL = printfileinfo(&u, dn);
 
 
-    if (strncmp(u.filename, "WWIV4", 5) == 0 && !application()->HasConfigFlag(OP_FLAGS_NO_EASY_DL)) {
+    if (strncmp(u.filename, "WWIV4", 5) == 0 && !session()->HasConfigFlag(OP_FLAGS_NO_EASY_DL)) {
       bOkToDL = 1;
     } else {
       if (!ratio_ok()) {
@@ -129,7 +129,7 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
         sysoplogf("Downloaded \"%s\"", u.filename);
 
         if (syscfg.sysconfig & sysconfig_log_dl) {
-          application()->users()->ReadUser(&ur, u.ownerusr);
+          session()->users()->ReadUser(&ur, u.ownerusr);
           if (!ur.IsUserDeleted()) {
             if (date_to_daten(ur.GetFirstOn()) < static_cast<time_t>(u.daten)) {
               ssm(u.ownerusr, 0, "%s downloaded '%s' on %s",
@@ -144,7 +144,7 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
       bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
 
       if (session()->IsUserOnline()) {
-        application()->UpdateTopScreen();
+        session()->UpdateTopScreen();
       }
     } else {
       bout << "\r\n\nNot enough time left to D/L.\r\n";
@@ -193,8 +193,8 @@ bool MenuRunDoorNumber(int nDoorNumber, bool bFree) {
 
 
 int FindDoorNo(const char *pszDoor) {
-  for (int i = 0; i < session()->GetNumberOfChains(); i++) {
-    if (wwiv::strings::IsEqualsIgnoreCase(chains[i].description, pszDoor)) {
+  for (size_t i = 0; i < session()->chains.size(); i++) {
+    if (wwiv::strings::IsEqualsIgnoreCase(session()->chains[i].description, pszDoor)) {
       return i;
     }
   }
@@ -207,8 +207,8 @@ bool ValidateDoorAccess(int nDoorNumber) {
   int inst = inst_ok(INST_LOC_CHAINS, nDoorNumber + 1);
   if (inst != 0) {
     char szChainInUse[255];
-    sprintf(szChainInUse,  "|#2Chain %s is in use on instance %d.  ", chains[nDoorNumber].description, inst);
-    if (!(chains[nDoorNumber].ansir & ansir_multi_user)) {
+    sprintf(szChainInUse,  "|#2Chain %s is in use on instance %d.  ", session()->chains[nDoorNumber].description, inst);
+    if (!(session()->chains[nDoorNumber].ansir & ansir_multi_user)) {
       bout << szChainInUse << " Try again later.\r\n";
       return false;
     } else {
@@ -218,7 +218,7 @@ bool ValidateDoorAccess(int nDoorNumber) {
       }
     }
   }
-  chainfilerec c = chains[nDoorNumber];
+  chainfilerec& c = session()->chains[nDoorNumber];
   if ((c.ansir & ansir_ansi) && !okansi()) {
     return false;
   }
@@ -231,8 +231,10 @@ bool ValidateDoorAccess(int nDoorNumber) {
   if (c.ar && !session()->user()->HasArFlag(c.ar)) {
     return false;
   }
-  if (application()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg && session()->GetEffectiveSl() < 255) {
-    chainregrec r = chains_reg[ nDoorNumber ];
+  if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
+      && session()->chains_reg.size() > 0
+      && session()->GetEffectiveSl() < 255) {
+    chainregrec& r = session()->chains_reg[ nDoorNumber ];
     if (r.maxage) {
       if (r.minage > session()->user()->GetAge() || r.maxage < session()->user()->GetAge()) {
         return false;

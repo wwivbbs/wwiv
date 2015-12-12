@@ -14,52 +14,14 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_H__
-#define __INCLUDED_BBS_H__
+#ifndef __INCLUDED_BBS_BBSUTL2_H__
+#define __INCLUDED_BBS_BBSUTL2_H__
 
-/*
- * @header WWIV 5 Main Application
- * Main Starting point of the WWIV 5 System.
- */
-
-#include <memory>
 #include <string>
 
-#include "bbs/wcomm.h"
-#include "bbs/wsession.h"
-#include "bbs/wstatus.h"
-#include "bbs/wuser.h"
-#include "core/inifile.h"
-#include "core/file.h"
+std::string ctypes(int num);
+void osan(const std::string& text, bool *abort, bool *next);
+std::string strip_to_node(const std::string& txt);
 
-/*!
- * @class WApplication  Main Application object for WWIV.
- */
-class WApplication : public WLogger {
- public:
-  WApplication();
-  WApplication(const WApplication& copy) = delete;
-  virtual ~WApplication();
-
- public:
-  /*!
-   * @function BBSMainLoop - Main BBS loop.. (old main functon)
-   */
-  int BBSMainLoop(int argc, char *argv[]);
-  // From WLogger
-  virtual bool LogMessage(const char* pszFormat, ...);
-
-
-};
-
-// Function Prototypes
-WApplication* application();
-WSession* CreateSession(WApplication* app, LocalIO* localIO);
-
-WSession* session();
-
-#endif // __INCLUDED_BBS_H__
-
-
+#endif  // __INCLUDED_BBS_BBSUTL2_H__

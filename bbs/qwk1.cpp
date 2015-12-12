@@ -379,7 +379,7 @@ void ready_reply_packet(const char *packet_name, const char *msg_name) {
 
   chdir(QWK_DIRECTORY);
   ExecuteExternalProgram(command, EFLAG_NONE);
-  application()->CdHome();
+  session()->CdHome();
 }
 
 // Takes reply packet and converts '227' (ã) to '13'
@@ -471,7 +471,7 @@ void qwk_email_text(char *text, char *title, char *to) {
     if (sy == 0) {
       set_net_num(0);
       WUser u;
-      application()->users()->ReadUser(&u, un);
+      session()->users()->ReadUser(&u, un);
       strcpy(s2, u.GetUserNameAndNumber(un));
     } else {
       if (session()->GetMaxNetworkNumber() > 1) {
@@ -869,9 +869,9 @@ void qwk_post_text(char *text, char *title, int sub) {
     p.ownersys = 0;
     p.owneruser = static_cast<uint16_t>(session()->usernum);
     {
-      WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+      WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
       p.qscan = pStatus->IncrementQScanPointer();
-      application()->GetStatusManager()->CommitTransaction(pStatus);
+      session()->GetStatusManager()->CommitTransaction(pStatus);
     }
     time_t now = time(nullptr);
     p.daten = static_cast<uint32_t>(now);
@@ -923,10 +923,10 @@ void qwk_post_text(char *text, char *title, int sub) {
     ++session()->user()->data.posttoday;
 
     {
-      WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+      WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
       pStatus->IncrementNumLocalPosts();
       pStatus->IncrementNumMessagesPostedToday();
-      application()->GetStatusManager()->CommitTransaction(pStatus);
+      session()->GetStatusManager()->CommitTransaction(pStatus);
     }
 
     close_sub();

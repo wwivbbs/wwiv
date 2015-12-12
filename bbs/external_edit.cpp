@@ -193,12 +193,12 @@ bool WriteExternalEditorControlFiles(const editorrec& editor, const string& titl
 
 bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string& destination, int flags, const string& aux) {
   const auto editor_number = session()->user()->GetDefaultEditor() - 1;
-  if (editor_number >= session()->GetNumberOfEditors() || !okansi()) {
+  if (editor_number >= session()->editors.size() || !okansi()) {
     bout << "\r\nYou can't use that full screen editor.\r\n\n";
     return false;
   }
 
-  const editorrec& editor = editors[editor_number];
+  const editorrec& editor = session()->editors[editor_number];
   RemoveControlFiles(editor);
   ScopeExit on_exit([=] { RemoveControlFiles(editor); });
 
@@ -230,14 +230,14 @@ bool external_text_edit(const string& edit_filename, const string& new_directory
                         const string& destination, int flags) {
   bout.nl();
   const auto editor_number = session()->user()->GetDefaultEditor() - 1;
-  if (editor_number >= session()->GetNumberOfEditors() || !okansi()) {
+  if (editor_number >= session()->editors.size() || !okansi()) {
     bout << "You can't use that full screen editor." << wwiv::endl << wwiv::endl;
     pausescr();
     return false;
   }
 
   RemoveWWIVControlFiles();
-  const editorrec& editor = editors[editor_number];
+  const editorrec& editor = session()->editors[editor_number];
   WriteExternalEditorControlFiles(editor, edit_filename, destination, flags, "");
   bool result = external_edit_internal(edit_filename, new_directory, editor, numlines);
   RemoveWWIVControlFiles();
@@ -265,7 +265,7 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
     }
   }
 
-  WWIV_make_abs_cmd(application()->GetHomeDir(), &editorCommand);
+  WWIV_make_abs_cmd(session()->GetHomeDir(), &editorCommand);
   const string original_directory = File::current_directory();
 
   string strippedFileName(stripfn(edit_filename.c_str()));

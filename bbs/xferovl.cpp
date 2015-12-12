@@ -502,12 +502,12 @@ bool upload_file(const char *pszFileName, int nDirectoryNum, const char *pszDesc
     FileAreaSetRecord(fileDownload, 0);
     fileDownload.Write(&u1, sizeof(uploadsrec));
     fileDownload.Close();
-    WStatus *pStatus = application()->GetStatusManager()->BeginTransaction();
+    WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
     pStatus->IncrementNumUploadsToday();
     pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
-    application()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->GetStatusManager()->CommitTransaction(pStatus);
     sysoplogf("+ \"%s\" uploaded on %s", u.filename, d.name);
-    application()->UpdateTopScreen();
+    session()->UpdateTopScreen();
   }
   return true;
 }
@@ -524,7 +524,7 @@ bool maybe_upload(const char *pszFileName, int nDirectoryNum, const char *pszDes
   int i = recno(s);
 
   if (i == -1) {
-    if (application()->HasConfigFlag(OP_FLAGS_FAST_SEARCH) && (!is_uploadable(pszFileName) && dcs())) {
+    if (session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH) && (!is_uploadable(pszFileName) && dcs())) {
       bout.bprintf("|#2%-12s: ", pszFileName);
       bout << "|#5In filename database - add anyway? ";
       ch = ynq();
@@ -737,7 +737,7 @@ void relist() {
   lines_listed = 0;
   otag = session()->tagging;
   session()->tagging = 0;
-  if (application()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
+  if (session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
     bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
     if (okansi()) {
       bout <<
@@ -747,7 +747,7 @@ void relist() {
     }
   }
   for (i = 0; i < session()->tagptr; i++) {
-    if (!application()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
+    if (!session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
       if (tcd != filelist[i].directory) {
         bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
         if (tcd != -1) {
@@ -810,7 +810,7 @@ void relist() {
     osan((okansi() ? "\xBA" : ":"), &abort, &next);
 
     sprintf(s1, "%ld""k", bytes_to_k(filelist[i].u.numbytes));
-    if (!application()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
+    if (!session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
       if (!(directories[tcd].mask & mask_cdrom)) {
         sprintf(s2, "%s%s", directories[tcd].path, filelist[i].u.filename);
         StringRemoveWhitespace(s2);
@@ -872,7 +872,7 @@ void edit_database()
   char ch, s[20];
   bool done = false;
 
-  if (!application()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
+  if (!session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
     return;
   }
 
@@ -973,7 +973,7 @@ void modify_database(const char *pszFileName, bool add) {
   unsigned int nb;
   long l, l1, cp;
 
-  if (!application()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
+  if (!session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
     return;
   }
 
@@ -1053,7 +1053,7 @@ void modify_database(const char *pszFileName, bool add) {
  */
 
 bool is_uploadable(const char *pszFileName) {
-  if (!application()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
+  if (!session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
     return true;
   }
 

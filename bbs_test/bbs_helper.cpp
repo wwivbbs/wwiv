@@ -47,7 +47,9 @@ void BbsHelper::SetUp() {
     io_.reset(new TestIO());
     // Without local_echo, we won't capture anything.
     local_echo = true;
-    app_.reset(CreateApplication(io_->local_io()));
+    // hack - this crashes
+    //app_.reset(new WApplication());
+    sess_.reset(CreateSession(new WApplication(), io_->local_io()));
 
     dir_data_ = files_.DirName("data");
     dir_gfiles_ = files_.DirName("gfiles");

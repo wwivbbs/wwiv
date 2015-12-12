@@ -380,7 +380,7 @@ static bool EditMenuItem(MenuRec* menu, File &fileEditMenu, int& nAmount, int& n
 }
 
 static bool GetMenuDir(string* menuName) {
-  wwiv::core::ScopeExit on_exit([] { application()->CdHome(); });
+  wwiv::core::ScopeExit on_exit([] { session()->CdHome(); });
   ListMenuDirs();
   while (!hangup) {
     bout.nl();
@@ -401,7 +401,7 @@ static bool GetMenuDir(string* menuName) {
       return false;
     }
 
-    application()->CdHome(); // go to the wwiv dir
+    session()->CdHome(); // go to the wwiv dir
     File::mkdirs(dir);  // Create the new path
     if (dir.Exists()) {
       bout << "Created\r\n";
@@ -434,7 +434,7 @@ static bool CreateNewMenu(File& file, MenuHeader* header) {
 }
 
 void EditMenus() {
-  wwiv::core::ScopeExit on_exit([] {application()->CdHome(); } );
+  wwiv::core::ScopeExit on_exit([] {session()->CdHome(); } );
   bout.cls();
   bout.litebar("WWIV Menu Editor");
 

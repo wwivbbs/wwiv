@@ -83,7 +83,7 @@ void multimail(int *pnUserNumber, int numu) {
     if (pnUserNumber[cv] < 0) {
       continue;
     }
-    application()->users()->ReadUser(&user, pnUserNumber[cv]);
+    session()->users()->ReadUser(&user, pnUserNumber[cv]);
     if ((user.GetSl() == 255 && (user.GetNumMailWaiting() > (syscfg.maxwaiting * 5))) ||
         ((user.GetSl() != 255) && (user.GetNumMailWaiting() > syscfg.maxwaiting)) ||
         user.GetNumMailWaiting() > 200) {
@@ -98,12 +98,12 @@ void multimail(int *pnUserNumber, int numu) {
     }
     strcpy(s, "  ");
     user.SetNumMailWaiting(user.GetNumMailWaiting() + 1);
-    application()->users()->WriteUser(&user, pnUserNumber[cv]);
+    session()->users()->WriteUser(&user, pnUserNumber[cv]);
     if (pnUserNumber[cv] == 1) {
       ++fwaiting;
     }
     strcat(s, user.GetUserNameAndNumber(pnUserNumber[cv]));
-    WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+    WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
     if (pnUserNumber[cv] == 1) {
       pStatus->IncrementNumFeedbackSentToday();
       session()->user()->SetNumFeedbackSentToday(session()->user()->GetNumFeedbackSentToday() + 1);
@@ -114,7 +114,7 @@ void multimail(int *pnUserNumber, int numu) {
       session()->user()->SetNumEmailSent(session()->user()->GetNumEmailSent() + 1);
       session()->user()->SetNumEmailSentToday(session()->user()->GetNumEmailSentToday() + 1);
     }
-    application()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->GetStatusManager()->CommitTransaction(pStatus);
     sysoplog(s);
     bout << s;
     bout.nl();
@@ -230,7 +230,7 @@ int oneuser() {
     bout << "Unknown user.\r\n\n";
     return 0;
   }
-  application()->users()->ReadUser(&user, nUserNumber);
+  session()->users()->ReadUser(&user, nUserNumber);
   if (((user.GetSl() == 255) && (user.GetNumMailWaiting() > (syscfg.maxwaiting * 5))) ||
       ((user.GetSl() != 255) && (user.GetNumMailWaiting() > syscfg.maxwaiting)) ||
       (user.GetNumMailWaiting() > 200)) {
@@ -398,7 +398,7 @@ void slash_e() {
     case 'L':
       for (i = 0; i < numu; i++) {
         WUser user;
-        application()->users()->ReadUser(&user, nUserNumber[i]);
+        session()->users()->ReadUser(&user, nUserNumber[i]);
         bout << i + 1 << ". " << user.GetUserNameAndNumber(nUserNumber[i]) << wwiv::endl;
       }
       break;

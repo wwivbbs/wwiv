@@ -213,7 +213,7 @@ void add_post(postrec * pp) {
   }
   if (fileSub.IsOpen()) {
     // get updated info
-    application()->GetStatusManager()->RefreshStatusCache();
+    session()->GetStatusManager()->RefreshStatusCache();
     fileSub.Seek(0L, File::seekBegin);
     postrec p;
     fileSub.Read(&p, sizeof(postrec));
@@ -247,7 +247,7 @@ void delete_message(int mn) {
     need_close = true;
   }
   // see if anything changed
-  application()->GetStatusManager()->RefreshStatusCache();
+  session()->GetStatusManager()->RefreshStatusCache();
 
   if (fileSub.IsOpen()) {
     if (mn > 0 && mn <= session()->GetNumMessagesInCurrentMessageArea()) {
@@ -312,7 +312,7 @@ void resynch(int *msgnum, postrec * pp) {
     p = *pp1;
   }
 
-  application()->GetStatusManager()->RefreshStatusCache();
+  session()->GetStatusManager()->RefreshStatusCache();
 
   if (session()->subchg || pp) {
     pp1 = get_post(*msgnum);

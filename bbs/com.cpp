@@ -159,7 +159,7 @@ char getkey() {
         beepyet = true;
         bputch(CG);
       }
-      application()->UpdateShutDownStatus();
+      session()->UpdateShutDownStatus();
       if (std::abs(dd - timelastchar1) > tv) {
         bout.nl();
         bout << "Call back later when you are there.\r\n";

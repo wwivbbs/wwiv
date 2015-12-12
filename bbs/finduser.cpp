@@ -51,7 +51,7 @@ int finduser(const string& searchString) {
   WUser user;
 
   guest_user = false;
-  application()->users()->SetUserWritesAllowed(true);
+  session()->users()->SetUserWritesAllowed(true);
   if (searchString == "NEW") {
     return -1;
   }
@@ -60,23 +60,23 @@ int finduser(const string& searchString) {
   }
   int nUserNumber = atoi(searchString.c_str());
   if (nUserNumber > 0) {
-    application()->users()->ReadUser(&user, nUserNumber);
+    session()->users()->ReadUser(&user, nUserNumber);
     if (user.IsUserDeleted()) {
       return 0;
     }
     return nUserNumber;
   }
-  nUserNumber = application()->users()->FindUser(searchString);
+  nUserNumber = session()->users()->FindUser(searchString);
   if (nUserNumber == 0L) {
     return 0;
   } 
-  application()->users()->ReadUser(&user, nUserNumber);
+  session()->users()->ReadUser(&user, nUserNumber);
   if (user.IsUserDeleted()) {
     return 0;
   }
   if (IsEqualsIgnoreCase(user.GetName(), "GUEST")) {
     guest_user = true;
-    application()->users()->SetUserWritesAllowed(false);
+    session()->users()->SetUserWritesAllowed(false);
   }
   return nUserNumber;
 }
@@ -95,11 +95,11 @@ int finduser1(const string& searchString) {
 
   string userNamePart = searchString;
   StringUpperCase(&userNamePart);
-  for (int i1 = 0; i1 < application()->GetStatusManager()->GetUserCount(); i1++) {
+  for (int i1 = 0; i1 < session()->GetStatusManager()->GetUserCount(); i1++) {
     if (strstr(reinterpret_cast<char*>(smallist[i1].name), userNamePart.c_str()) != nullptr) {
       int nCurrentUserNum = smallist[i1].number;
       WUser user;
-      application()->users()->ReadUser(&user, nCurrentUserNum);
+      session()->users()->ReadUser(&user, nCurrentUserNum);
       bout << "|#5Do you mean " << user.GetUserNameAndNumber(nCurrentUserNum) << " (Y/N/Q)? ";
       char ch = ynq();
       if (ch == 'Y') {

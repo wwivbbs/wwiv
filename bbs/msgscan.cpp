@@ -381,7 +381,7 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
           bout << "|#9Mark messages in " << subboards[usub[session()->GetCurrentMessageArea()].subnum].name <<
                              " as read? ";
           if (yesno()) {
-            unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+            unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
             qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = pStatus->GetQScanPointer() - 1L;
           }
         }
@@ -994,9 +994,9 @@ void HandleMessageMove(int &nMessageNumber) {
       open_sub(true);
       p2.msg.storage_type = static_cast<unsigned char>(subboards[session()->GetCurrentReadMessageArea()].storage_type);
       savefile(b, &(p2.msg), (subboards[session()->GetCurrentReadMessageArea()].filename));
-      WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+      WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
       p2.qscan = pStatus->IncrementQScanPointer();
-      application()->GetStatusManager()->CommitTransaction(pStatus);
+      session()->GetStatusManager()->CommitTransaction(pStatus);
       if (session()->GetNumMessagesInCurrentMessageArea() >=
           subboards[session()->GetCurrentReadMessageArea()].maxmsgs) {
         int nTempMsgNum = 1;
@@ -1092,7 +1092,7 @@ void HandleMessageDelete(int &nMessageNumber) {
       close_sub();
       if (p2.ownersys == 0) {
         WUser tu;
-        application()->users()->ReadUser(&tu, p2.owneruser);
+        session()->users()->ReadUser(&tu, p2.owneruser);
         if (!tu.IsUserDeleted()) {
           if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(p2.daten)) {
             bout.nl();
@@ -1110,8 +1110,8 @@ void HandleMessageDelete(int &nMessageNumber) {
             bout.nl();
             bout << "|#7Post credit removed = " << nNumCredits << endl;
             tu.SetNumDeletedPosts(tu.GetNumDeletedPosts() - 1);
-            application()->users()->WriteUser(&tu, p2.owneruser);
-            application()->UpdateTopScreen();
+            session()->users()->WriteUser(&tu, p2.owneruser);
+            session()->UpdateTopScreen();
           }
         }
       }
