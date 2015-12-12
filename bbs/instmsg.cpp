@@ -41,6 +41,8 @@ bool inst_available_chat(instancerec * ir);
 
 using wwiv::bbs::TempDisablePause;
 
+static int32_t last_iia = 0;
+
 void send_inst_msg(inst_msg_header *ih, const char *msg) {
   char szFileName[MAX_PATH];
 
@@ -218,7 +220,6 @@ void process_inst_msgs() {
   if (x_only || !inst_msg_waiting()) {
     return;
   }
-  static int32_t last_iia = 0;
   last_iia = timer1();
 
   int oiia = setiia(0);

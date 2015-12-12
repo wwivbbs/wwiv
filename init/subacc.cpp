@@ -37,12 +37,14 @@ static void SetCurrentReadMessageArea(int n) {
   m_nCurrentReadMessageArea = n;
 }
 
-static int  GetNumMessagesInCurrentMessageArea() {
-  return initinfo.nNumMsgsInCurrentSub;
+static int nNumMsgsInCurrentSub;
+
+int GetNumMessagesInCurrentMessageArea() {
+  return nNumMsgsInCurrentSub;
 }
 
 static void SetNumMessagesInCurrentMessageArea(int n) {
-  initinfo.nNumMsgsInCurrentSub = n;
+  nNumMsgsInCurrentSub = n;
 }
 
 void close_sub() {

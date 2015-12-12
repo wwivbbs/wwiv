@@ -122,7 +122,7 @@ static bool del_net(CursesWindow* window, int nn) {
     if (i2 >= i) {
       iscan1(i, subboards.get());
       open_sub(true);
-      for (int i1 = 1; i1 <= initinfo.nNumMsgsInCurrentSub; i1++) {
+      for (int i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
         postrec* p = get_post(i1);
         if (p->status & status_post_new_net) {
           if (p->network.network_msg.net_number == nn) {
@@ -224,7 +224,7 @@ static bool insert_net(CursesWindow* window, int nn) {
     if (i2 >= i) {
       iscan1(i, subboards.get());
       open_sub(true);
-      for (int i1 = 1; i1 <= initinfo.nNumMsgsInCurrentSub; i1++) {
+      for (int i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
         postrec* p = get_post(i1);
         if (p->status & status_post_new_net) {
           if (p->network.network_msg.net_number >= nn) {

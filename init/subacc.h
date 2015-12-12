@@ -25,4 +25,6 @@ bool    iscan1(int si, subboardrec *subboards);
 postrec *get_post(int mn);
 void    write_post(int mn, postrec * pp);
 
+int GetNumMessagesInCurrentMessageArea();
+
 #endif  // __INCLUDED_SUBACC_H__
