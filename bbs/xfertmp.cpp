@@ -424,7 +424,7 @@ bool download_temp_arc(const char *pszFileName, bool count_against_xfer_ratio) {
       }
       sysoplogf("Downloaded %ldk of \"%s\"", bytes_to_k(lFileSize), szFileToSend);
       if (session()->IsUserOnline()) {
-        application()->UpdateTopScreen();
+        session()->UpdateTopScreen();
       }
       return true;
     }
@@ -453,12 +453,12 @@ void add_arc(const char *arc, const char *pszFileName, int dos) {
     session()->localIO()->LocalPuts(szAddArchiveCommand);
     session()->localIO()->LocalPuts("\r\n");
     if (dos) {
-      ExecuteExternalProgram(szAddArchiveCommand, application()->GetSpawnOptions(SPAWNOPT_ARCH_A));
+      ExecuteExternalProgram(szAddArchiveCommand, session()->GetSpawnOptions(SPAWNOPT_ARCH_A));
     } else {
       ExecuteExternalProgram(szAddArchiveCommand, EFLAG_NONE);
-      application()->UpdateTopScreen();
+      session()->UpdateTopScreen();
     }
-    application()->CdHome();
+    session()->CdHome();
     sysoplogf("Added \"%s\" to %s", pszFileName, szArchiveFileName);
 
   } else {
@@ -595,7 +595,7 @@ void temp_extract() {
         chdir(directories[udir[session()->GetCurrentFileArea()].subnum].path);
       }
       File file(File::current_directory(), stripfn(u.filename));
-      application()->CdHome();
+      session()->CdHome();
       if (check_for_files(file.full_pathname().c_str())) {
         bool ok1 = false;
         do {
@@ -632,12 +632,12 @@ void temp_extract() {
               s3[0] = '\0';
             }
             if (s3[0]) {
-              ExecuteExternalProgram(s3, application()->GetSpawnOptions(SPAWNOPT_ARCH_E));
+              ExecuteExternalProgram(s3, session()->GetSpawnOptions(SPAWNOPT_ARCH_E));
               sprintf(s2, "Extracted out \"%s\" from \"%s\"", s1, u.filename);
             } else {
               s2[0] = '\0';
             }
-            application()->CdHome();
+            session()->CdHome();
             if (s2[0]) {
               sysoplog(s2);
             }
@@ -959,7 +959,7 @@ void removefile() {
               bout << "|#5Remove DL points? ";
               bRemoveDlPoints = yesno();
             }
-            if (application()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
+            if (session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
               bout.nl();
               bout << "|#5Remove from ALLOW.DAT? ";
               if (yesno()) {
@@ -976,12 +976,12 @@ void removefile() {
             StringRemoveWhitespace(szFileNameToDelete);
             File::Remove(szFileNameToDelete);
             if (bRemoveDlPoints && u.ownersys == 0) {
-              application()->users()->ReadUser(&uu, u.ownerusr);
+              session()->users()->ReadUser(&uu, u.ownerusr);
               if (!uu.IsUserDeleted()) {
                 if (date_to_daten(uu.GetFirstOn()) < static_cast<time_t>(u.daten)) {
                   uu.SetFilesUploaded(uu.GetFilesUploaded() - 1);
                   uu.SetUploadK(uu.GetUploadK() - bytes_to_k(u.numbytes));
-                  application()->users()->WriteUser(&uu, u.ownerusr);
+                  session()->users()->WriteUser(&uu, u.ownerusr);
                 }
               }
             }

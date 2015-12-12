@@ -88,7 +88,7 @@ void kill_old_email() {
         bout << "|#1  To|#9: |#" << session()->GetMessageColor();
 
         if (m.tosys == 0) {
-          application()->users()->ReadUser(&user, m.touser);
+          session()->users()->ReadUser(&user, m.touser);
           string tempName = user.GetUserNameAndNumber(m.touser);
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da))
               && ((getslrec(session()->GetEffectiveSl()).ability & ability_read_email_anony) == 0)) {
@@ -162,7 +162,7 @@ void kill_old_email() {
                     fsr.id = 0;
                     fileAttach.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::seekCurrent);
                     fileAttach.Write(&fsr, sizeof(filestatusrec));
-                    File::Remove(application()->GetAttachmentDirectory().c_str(), fsr.filename);
+                    File::Remove(session()->GetAttachmentDirectory().c_str(), fsr.filename);
                   } else {
                     l1 = fileAttach.Read(&fsr, sizeof(filestatusrec));
                   }
@@ -252,10 +252,10 @@ void list_users(int mode) {
   int color   = 3;
   session()->WriteCurrentUser();
   write_qscn(session()->usernum, qsc, false);
-  application()->GetStatusManager()->RefreshStatusCache();
+  session()->GetStatusManager()->RefreshStatusCache();
 
   File userList(syscfg.datadir, USER_LST);
-  int nNumUserRecords = application()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
   for (int i = 0; (i < nNumUserRecords) && !abort && !hangup; i++) {
     session()->usernum = 0;
@@ -301,7 +301,7 @@ void list_users(int mode) {
     }
 
     int nUserNumber = (bSortByUserNumber) ? i + 1 : smallist[i].number;
-    application()->users()->ReadUser(&user, nUserNumber);
+    session()->users()->ReadUser(&user, nUserNumber);
     read_qscn(nUserNumber, qsc, false);
     changedsl();
     bool in_qscan = (qsc_q[usub[session()->GetCurrentMessageArea()].subnum / 32] & (1L <<
@@ -382,7 +382,7 @@ void list_users(int mode) {
         switch (ch) {
         case 'Q':
           abort = true;
-          i = application()->GetStatusManager()->GetUserCount();
+          i = session()->GetStatusManager()->GetUserCount();
           break;
         case SPACE:
         case RETURN:

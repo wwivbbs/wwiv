@@ -231,7 +231,7 @@ void display_message_text(const std::string& text, bool *next) {
     expressabort = true;
   }
   if (ansi && session()->topdata && session()->IsUserOnline()) {
-    application()->UpdateTopScreen();
+    session()->UpdateTopScreen();
   }
   if (syscfg.sysconfig & sysconfig_enable_mci) {
     g_flags &= ~g_flag_disable_mci;
@@ -403,16 +403,16 @@ void read_post(int n, bool *next, int *val) {
 
   unsigned long current_qscan_pointer = 0;
   {
-    std::unique_ptr<WStatus> wwiv_status(application()->GetStatusManager()->GetStatus());
+    std::unique_ptr<WStatus> wwiv_status(session()->GetStatusManager()->GetStatus());
     // not sure why we check this twice...
     // maybe we need a getCachedQScanPointer?
     current_qscan_pointer = wwiv_status->GetQScanPointer();
   }
   if (p.qscan >= current_qscan_pointer) {
-    WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+    WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
     if (p.qscan >= pStatus->GetQScanPointer()) {
       pStatus->SetQScanPointer(p.qscan + 1);
     }
-    application()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->GetStatusManager()->CommitTransaction(pStatus);
   }
 }

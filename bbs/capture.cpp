@@ -42,7 +42,7 @@ void Capture::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
 
   if (bOpenFile) {
     if (!fileGlobalCap.IsOpen()) {
-      fileGlobalCap.SetName(StringPrintf("%sglobal-%d.txt", syscfg.gfilesdir, application()->GetInstanceNumber()));
+      fileGlobalCap.SetName(StringPrintf("%sglobal-%d.txt", syscfg.gfilesdir, session()->GetInstanceNumber()));
       fileGlobalCap.Open(File::modeBinary | File::modeAppend | File::modeCreateFile | File::modeReadWrite);
       global_buf.clear();
     }

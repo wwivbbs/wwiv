@@ -50,7 +50,7 @@ void write_automessage();
  */
 void read_automessage() {
   bout.nl();
-  unique_ptr<WStatus> current_status(application()->GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> current_status(session()->GetStatusManager()->GetStatus());
   bool bAutoMessageAnonymous = current_status->IsAutoMessageAnonymous();
 
   TextFile autoMessageFile(syscfg.gfilesdir, AUTO_MSG, "rt");
@@ -108,10 +108,10 @@ void write_automessage() {
 
   bout << "|#9Is this OK? ";
   if (yesno()) {
-    WStatus *pStatus = application()->GetStatusManager()->BeginTransaction();
+    WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
     pStatus->SetAutoMessageAnonymous(bAnonStatus);
     pStatus->SetAutoMessageAuthorUserNumber(session()->usernum);
-    application()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->GetStatusManager()->CommitTransaction(pStatus);
 
     TextFile file(syscfg.gfilesdir, AUTO_MSG, "wt");
     string authorName = session()->user()->GetUserNameAndNumber(session()->usernum);
@@ -180,7 +180,7 @@ void do_automessage() {
       break;
     case 'A': {
       grab_quotes(nullptr, nullptr);
-      unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+      unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
       if (pStatus->GetAutoMessageAuthorUserNumber() > 0) {
         strcpy(irt, "Re: AutoMessage");
         email(irt, pStatus->GetAutoMessageAuthorUserNumber(), 0, false, pStatus->IsAutoMessageAnonymous() ? anony_sender : 0);

@@ -32,7 +32,7 @@ class MakeAbsTest : public ::testing::Test {
 protected:
     virtual void SetUp() {
         helper.SetUp();
-        root = helper.app_->GetHomeDir();
+        root = helper.sess_->GetHomeDir();
     }
     BbsHelper helper;
     string root;

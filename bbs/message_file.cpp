@@ -55,7 +55,7 @@ uint16_t *gat = nullptr;
 * Note: This is a Private method to this module.
 */
 static File* OpenMessageFile(const string messageAreaFileName) {
-  application()->GetStatusManager()->RefreshStatusCache();
+  session()->GetStatusManager()->RefreshStatusCache();
 
   const string filename = StrCat(syscfg.msgsdir, messageAreaFileName, FILENAME_DAT_EXTENSION);
   File *pFileMessage = new File(filename);
@@ -101,9 +101,9 @@ static void save_gat(File *pMessageFile) {
   long lSectionPos = static_cast<long>(gat_section) * GATSECLEN;
   pMessageFile->Seek(lSectionPos, File::seekBegin);
   pMessageFile->Write(gat, GAT_SECTION_SIZE);
-  WStatus *pStatus = application()->GetStatusManager()->BeginTransaction();
+  WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
   pStatus->IncrementFileChangedFlag(WStatus::fileChangePosts);
-  application()->GetStatusManager()->CommitTransaction(pStatus);
+  session()->GetStatusManager()->CommitTransaction(pStatus);
 }
 
 

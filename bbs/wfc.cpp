@@ -94,13 +94,13 @@ auto send_email_f = []() {
 };
 
 auto view_sysop_log_f = []() {
-  unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
   const string sysop_log_file = GetSysopLogFileName(date());
   print_local_file(sysop_log_file);
 };
 
 auto view_yesterday_sysop_log_f = []() {
-  unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
   print_local_file(pStatus->GetLogFileName(1));
 };
 
@@ -117,7 +117,7 @@ ControlCenter::ControlCenter() {
   CursesIO::Init(title);
   // take ownership of out.
   out_scope_.reset(out);
-  application()->SetWfcStatus(0);
+  session()->SetWfcStatus(0);
 }
 
 ControlCenter::~ControlCenter() {}
@@ -149,7 +149,7 @@ static string GetLastUserName(int inst_num) {
   WUser u;
 
   get_inst_info(inst_num, &ir);
-  application()->users()->ReadUserNoCache(&u, ir.user);
+  session()->users()->ReadUserNoCache(&u, ir.user);
   if (ir.flags & INST_FLAGS_ONLINE) {
     return string(u.GetUserNameAndNumber(ir.user));
   } else {
@@ -160,7 +160,7 @@ static string GetLastUserName(int inst_num) {
 
 static void UpdateStatus(CursesWindow* statusWindow) {
   statusWindow->SetColor(SchemeId::WINDOW_DATA);
-  std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
 
   statusWindow->PrintfXY(9, 2, "%-5d", pStatus->GetNumCallsToday());
   statusWindow->PrintfXY(24, 2, "%-5d", pStatus->GetMinutesActiveToday());
@@ -183,17 +183,17 @@ static void UpdateStatus(CursesWindow* statusWindow) {
 
 static void CleanNetIfNeeded() {
   static int mult_time = 0;
-  if (application()->IsCleanNetNeeded() || std::abs(timer1() - mult_time) > 1000L) {
+  if (session()->IsCleanNetNeeded() || std::abs(timer1() - mult_time) > 1000L) {
     cleanup_net();
     mult_time = timer1();
   }
 }
 
 static void RunEventsIfNeeded() {
-  unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
   if (!IsEquals(date(), pStatus->GetLastDate())) {
     if ((session()->GetBeginDayNodeNumber() == 0) 
-        || (application()->GetInstanceNumber() == session()->GetBeginDayNodeNumber())) {
+        || (session()->GetInstanceNumber() == session()->GetBeginDayNodeNumber())) {
       cleanup_events();
       beginday(true);
     }
@@ -220,7 +220,7 @@ static void RunEventsIfNeeded() {
 void ControlCenter::Initialize() {
   // Initialization steps that have to happen before we
   // have a functional WFC system. This also supposes that
-  // application()->InitializeBBS has been called.
+  // session()->InitializeBBS has been called.
   out->Cls(ACS_CKBOARD);
   const int logs_y_padding = 1;
   const int logs_start = 11;
@@ -243,7 +243,7 @@ void ControlCenter::Initialize() {
   session()->usernum = 1;
 
   fwaiting = session()->user()->GetNumMailWaiting();
-  application()->SetWfcStatus(1);
+  session()->SetWfcStatus(1);
 }
 
 void ControlCenter::Run() {
@@ -268,7 +268,7 @@ void ControlCenter::Run() {
       continue;
     }
     need_refresh = true;
-    application()->SetWfcStatus(2);
+    session()->SetWfcStatus(2);
     // Call endwin since we'll be out of curses IO
     endwin();
     switch (toupper(key)) {
@@ -346,7 +346,7 @@ static char* pszScreenBuffer = nullptr;
 static int inst_num;
 
 void wfc_cls() {
-  if (application()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
+  if (session()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     bout.ResetColors();
     session()->localIO()->LocalCls();
     session()->wfc_status = 0;
@@ -356,14 +356,14 @@ void wfc_cls() {
 
 void wfc_init() {
   session()->localIO()->SetCursor(LocalIO::cursorNormal);              // add 4.31 Build3
-  if (application()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
+  if (session()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     session()->wfc_status = 0;
     inst_num = 1;
   }
 }
 
 void wfc_update() {
-  if (!application()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
+  if (!session()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     return;
   }
 
@@ -371,7 +371,7 @@ void wfc_update() {
   WUser u;
 
   get_inst_info(inst_num, &ir);
-  application()->users()->ReadUserNoCache(&u, ir.user);
+  session()->users()->ReadUserNoCache(&u, ir.user);
   session()->localIO()->LocalXYAPrintf(57, 18, 15, "%-3d", inst_num);
   if (ir.flags & INST_FLAGS_ONLINE) {
     session()->localIO()->LocalXYAPrintf(42, 19, 14, "%-25.25s", u.GetUserNameAndNumber(ir.user));
@@ -388,7 +388,7 @@ void wfc_update() {
       if (inst_num > num_instances()) {
         inst_num = 1;
       }
-    } while (inst_num == application()->GetInstanceNumber());
+    } while (inst_num == session()->GetInstanceNumber());
   }
 }
 
@@ -398,12 +398,12 @@ void wfc_screen() {
   WUser u;
   static double wfc_time = 0, poll_time = 0;
 
-  if (!application()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
+  if (!session()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     return;
   }
 
   int nNumNewMessages = check_new_mail(session()->usernum);
-  std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
   if (session()->wfc_status == 0) {
     session()->localIO()->SetCursor(LocalIO::cursorNone);
     session()->localIO()->LocalCls();
@@ -413,12 +413,12 @@ void wfc_screen() {
       if (!wfcFile.Open(File::modeBinary | File::modeReadOnly)) {
         wfc_cls();
         std::clog << wfcFile.full_pathname() << " NOT FOUND." << std::endl;
-        application()->AbortBBS();
+        session()->AbortBBS();
       }
       wfcFile.Read(pszScreenBuffer, 4000);
     }
     DisplayWFCScreen(pszScreenBuffer);
-    sprintf(szBuffer, "Activity and Statistics of %s Node %d", syscfg.systemname, application()->GetInstanceNumber());
+    sprintf(szBuffer, "Activity and Statistics of %s Node %d", syscfg.systemname, session()->GetInstanceNumber());
     session()->localIO()->LocalXYAPrintf(1 + ((76 - strlen(szBuffer)) / 2), 4, 15, szBuffer);
     session()->localIO()->LocalXYAPrintf(8, 1, 14, fulldate());
     std::string osVersion = wwiv::os::os_version_string();
@@ -452,9 +452,9 @@ void wfc_screen() {
     session()->localIO()->LocalXYAPrintf(58, 12, 14, "Local %code", (syscfgovr.primaryport) ? 'M' : 'N');
     session()->localIO()->LocalXYAPrintf(58, 13, 14, "Waiting For Command");
 
-    get_inst_info(application()->GetInstanceNumber(), &ir);
+    get_inst_info(session()->GetInstanceNumber(), &ir);
     if (ir.user < syscfg.maxusers && ir.user > 0) {
-      application()->users()->ReadUserNoCache(&u, ir.user);
+      session()->users()->ReadUserNoCache(&u, ir.user);
       session()->localIO()->LocalXYAPrintf(33, 16, 14, "%-20.20s", u.GetUserNameAndNumber(ir.user));
     } else {
       session()->localIO()->LocalXYAPrintf(33, 16, 14, "%-20.20s", "Nobody");

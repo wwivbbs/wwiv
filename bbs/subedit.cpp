@@ -570,7 +570,7 @@ static void swap_subs(int sub1, int sub2) {
   sub1 = static_cast<int>(sub1conv);
   sub2 = static_cast<int>(sub2conv);
 
-  int nNumUserRecords = application()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
   uint32_t *pTempQScan = static_cast< uint32_t *>(BbsAllocA(syscfg.qscn_len));
   if (pTempQScan) {
@@ -649,7 +649,7 @@ static void insert_sub(int n) {
   subboards[n] = r;
   memset(&(xsubs[n]), 0, sizeof(xtrasubsrec));
   ++session()->num_subs;
-  int nNumUserRecords = application()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
   uint32_t* pTempQScan = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len));
   if (pTempQScan) {
@@ -715,7 +715,7 @@ static void delete_sub(int n) {
     xsubs[i] = xsubs[i + 1];
   }
   --session()->num_subs;
-  nNumUserRecords = application()->users()->GetNumberOfUserRecords();
+  nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
   pTempQScan = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len + 4));
   if (pTempQScan) {
@@ -773,7 +773,7 @@ void boardedit() {
   }
   showsubs();
   bool done = false;
-  application()->GetStatusManager()->RefreshStatusCache();
+  session()->GetStatusManager()->RefreshStatusCache();
   do {
     bout.nl();
     bout << "|#7(Q=Quit) (D)elete, (I)nsert, (M)odify, (S)wapSubs : ";
@@ -887,7 +887,7 @@ void boardedit() {
     }
   } while (!done && !hangup);
   save_subs();
-  if (!application()->GetWfcStatus()) {
+  if (!session()->GetWfcStatus()) {
     changedsl();
   }
   session()->subchg = 1;

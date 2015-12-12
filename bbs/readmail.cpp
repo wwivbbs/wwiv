@@ -189,7 +189,7 @@ bool read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, u
 
   if (!same_email(mloc + rec, m)) {
     pFileEmail->Close();
-    application()->GetStatusManager()->RefreshStatusCache();
+    session()->GetStatusManager()->RefreshStatusCache();
     if (emchg) {
       resynch_email(mloc, mw, rec, m, del, stat);
     } else {
@@ -298,10 +298,10 @@ void delete_attachment(unsigned long daten, int forceit) {
           }
         }
         if (delfile) {
-          File::Remove(application()->GetAttachmentDirectory().c_str(), fsr.filename);
+          File::Remove(session()->GetAttachmentDirectory().c_str(), fsr.filename);
         } else {
           bout << "\r\nOrphaned attach " << fsr.filename << " remains in " <<
-                             application()->GetAttachmentDirectory() << wwiv::endl;
+                             session()->GetAttachmentDirectory() << wwiv::endl;
           pausescr();
         }
       } else {
@@ -408,7 +408,7 @@ void readmail(int mode) {
             }
           } else {
             WUser u;
-            application()->users()->ReadUser(&u, m.fromuser);
+            session()->users()->ReadUser(&u, m.fromuser);
             strcat(s, u.GetUserNameAndNumber(m.fromuser));
           }
         } else {
@@ -573,7 +573,7 @@ void readmail(int mode) {
           while (l1 > 0 && !found) {
             if (m.daten == static_cast<unsigned long>(fsr.id)) {
               found = true;
-              sprintf(s, "%s%s", application()->GetAttachmentDirectory().c_str(), fsr.filename);
+              sprintf(s, "%s%s", session()->GetAttachmentDirectory().c_str(), fsr.filename);
               if (File::Exists(s)) {
                 bout << "'T' to download attached file \"" << fsr.filename << "\" (" << fsr.numbytes << " bytes).\r\n";
                 attach_exists = true;
@@ -600,33 +600,33 @@ void readmail(int mode) {
       set_net_num(nn);
       i1 = 1;
       irt_name[0] = '\0';
-      if (!application()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
+      if (!session()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
         strcpy(mnu, EMAIL_NOEXT);
         bout << "|#2Mail {?} : ";
       }
       if (so()) {
         strcpy(mnu, SY_EMAIL_NOEXT);
-        if (application()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
+        if (session()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
           bout << "|#2Mail |#7{|#1QSRIDAF?-+GEMZPVUOLCNY@|#7} |#2: ";
         }
         strcpy(s, "QSRIDAF?-+GEMZPVUOLCNY@");
       } else {
         if (cs()) {
           strcpy(mnu, CS_EMAIL_NOEXT);
-          if (application()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
+          if (session()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
             bout << "|#2Mail |#7{|#1QSRIDAF?-+GZPVUOCY@|#7} |#2: ";
           }
           strcpy(s, "QSRIDAF?-+GZPVUOCY@");
         } else {
           if (!okmail) {
             strcpy(mnu, RS_EMAIL_NOEXT);
-            if (application()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
+            if (session()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
               bout << "|#2Mail |#7{|#1QI?-+GY|#7} |#2: ";
             }
             strcpy(s, "QI?-+G");
           } else {
             strcpy(mnu, EMAIL_NOEXT);
-            if (application()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
+            if (session()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
               bout << "|#2Mail |#7{|#1QSRIDAF?+-GY@|#7} |#2: ";
             }
             strcpy(s, "QSRIDAF?-+GY@");
@@ -634,7 +634,7 @@ void readmail(int mode) {
         }
       }
       if ((m.status & status_file) && found && attach_exists) {
-        if (application()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
+        if (session()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
           bout << "\b\b|#7{|#1T|#7} |#2: |#0";
         }
         strcat(s, "T");
@@ -648,7 +648,7 @@ void readmail(int mode) {
       switch (ch) {
       case 'T':
         bout.nl();
-        sprintf(s1, "%s%s", application()->GetAttachmentDirectory().c_str(), fsr.filename);
+        sprintf(s1, "%s%s", session()->GetAttachmentDirectory().c_str(), fsr.filename);
         bool sentt;
         bool abortt;
         send_file(s1, &sentt, &abortt, fsr.filename, -1, fsr.numbytes);
@@ -823,9 +823,9 @@ void readmail(int mode) {
             }
             p.msg.storage_type = (uint8_t) subboards[session()->GetCurrentReadMessageArea()].storage_type;
             savefile(b, &(p.msg), subboards[session()->GetCurrentReadMessageArea()].filename);
-            WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+            WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
             p.qscan = pStatus->IncrementQScanPointer();
-            application()->GetStatusManager()->CommitTransaction(pStatus);
+            session()->GetStatusManager()->CommitTransaction(pStatus);
             if (session()->GetNumMessagesInCurrentMessageArea() >=
                 subboards[session()->GetCurrentReadMessageArea()].maxmsgs) {
               i1 = 1;
@@ -842,10 +842,10 @@ void readmail(int mode) {
               delete_message(i2);
             }
             add_post(&p);
-            pStatus = application()->GetStatusManager()->BeginTransaction();
+            pStatus = session()->GetStatusManager()->BeginTransaction();
             pStatus->IncrementNumMessagesPostedToday();
             pStatus->IncrementNumLocalPosts();
-            application()->GetStatusManager()->CommitTransaction(pStatus);
+            session()->GetStatusManager()->CommitTransaction(pStatus);
             close_sub();
             tmp_disable_conf(false);
             iscan(session()->GetCurrentMessageArea());
@@ -963,7 +963,7 @@ void readmail(int mode) {
             } else {
               set_net_num(nn);
               WUser u;
-              application()->users()->ReadUser(&u, nUserNumber);
+              session()->users()->ReadUser(&u, nUserNumber);
               strcpy(s1, u.GetUserNameNumberAndSystem(nUserNumber, net_sysnum));
             }
             if (ok_to_mail(nUserNumber, nSystemNumber, false)) {

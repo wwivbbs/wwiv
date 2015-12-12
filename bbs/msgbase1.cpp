@@ -237,9 +237,9 @@ void post() {
   p.msg   = m;
   p.ownersys  = 0;
   p.owneruser = static_cast<unsigned short>(session()->usernum);
-  WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+  WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
   p.qscan = pStatus->IncrementQScanPointer();
-  application()->GetStatusManager()->CommitTransaction(pStatus);
+  session()->GetStatusManager()->CommitTransaction(pStatus);
   p.daten = static_cast<unsigned long>(time(nullptr));
   if (session()->user()->IsRestrictionValidate()) {
     p.status = status_unvalidated;
@@ -288,11 +288,11 @@ void post() {
 
   session()->user()->SetNumMessagesPosted(session()->user()->GetNumMessagesPosted() + 1);
   session()->user()->SetNumPostsToday(session()->user()->GetNumPostsToday() + 1);
-  pStatus = application()->GetStatusManager()->BeginTransaction();
+  pStatus = session()->GetStatusManager()->BeginTransaction();
   pStatus->IncrementNumMessagesPostedToday();
   pStatus->IncrementNumLocalPosts();
 
-  if (application()->HasConfigFlag(OP_FLAGS_POSTTIME_COMPENSATE)) {
+  if (session()->HasConfigFlag(OP_FLAGS_POSTTIME_COMPENSATE)) {
     time_t lEndTime = time(nullptr);
     if (lStartTime > lEndTime) {
       lEndTime += HOURS_PER_DAY * SECONDS_PER_DAY;
@@ -305,10 +305,10 @@ void post() {
     session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>
         (lStartTime));
   }
-  application()->GetStatusManager()->CommitTransaction(pStatus);
+  session()->GetStatusManager()->CommitTransaction(pStatus);
   close_sub();
 
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
   sysoplogf("+ \"%s\" posted on %s", p.title, subboards[session()->GetCurrentReadMessageArea()].name);
   bout << "Posted on " << subboards[session()->GetCurrentReadMessageArea()].name << wwiv::endl;
   if (xsubs[session()->GetCurrentReadMessageArea()].num_nets) {
@@ -384,7 +384,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
         && get_post(i)->qscan > qsc_p[session()->GetCurrentReadMessageArea()]) {
       scan(i, SCAN_OPTION_READ_MESSAGE, &nNextSubNumber, false);
     } else {
-      unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+      unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
       qsc_p[session()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
     }
 
@@ -513,10 +513,10 @@ void delmail(File *pFile, int loc) {
   }
 
   if (m.tosys == 0) {
-    application()->users()->ReadUser(&user, m.touser);
+    session()->users()->ReadUser(&user, m.touser);
     if (user.GetNumMailWaiting()) {
       user.SetNumMailWaiting(user.GetNumMailWaiting() - 1);
-      application()->users()->WriteUser(&user, m.touser);
+      session()->users()->WriteUser(&user, m.touser);
     }
     if (m.touser == 1) {
       --fwaiting;
@@ -566,12 +566,12 @@ void remove_post() {
     if (((get_post(nPostNumber)->ownersys == 0) && (get_post(nPostNumber)->owneruser == session()->usernum)) || lcs()) {
       if ((get_post(nPostNumber)->owneruser == session()->usernum) && (get_post(nPostNumber)->ownersys == 0)) {
         WUser tu;
-        application()->users()->ReadUser(&tu, get_post(nPostNumber)->owneruser);
+        session()->users()->ReadUser(&tu, get_post(nPostNumber)->owneruser);
         if (!tu.IsUserDeleted()) {
           if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(get_post(nPostNumber)->daten)) {
             if (tu.GetNumMessagesPosted()) {
               tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - 1);
-              application()->users()->WriteUser(&tu, get_post(nPostNumber)->owneruser);
+              session()->users()->WriteUser(&tu, get_post(nPostNumber)->owneruser);
             }
           }
         }

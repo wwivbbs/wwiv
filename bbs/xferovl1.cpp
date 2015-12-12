@@ -64,7 +64,7 @@ void modify_extended_description(char **sss, const char *dest) {
   do {
     if (ii) {
       bout.nl();
-      if (okfsed() && application()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
+      if (okfsed() && session()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
         bout << "|#5Modify the extended description? ";
       } else {
         bout << "|#5Enter a new extended description? ";
@@ -79,7 +79,7 @@ void modify_extended_description(char **sss, const char *dest) {
         return;
       }
     }
-    if (okfsed() && application()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
+    if (okfsed() && session()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
       sprintf(s, "%sEXTENDED.DSC", syscfgovr.tempdir);
       if (*sss) {
         File fileExtDesc(s);
@@ -207,7 +207,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
   int i;
   bool ok = false;
 
-  if (application()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && (directories[dn].mask & mask_cdrom)) {
+  if (session()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && (directories[dn].mask & mask_cdrom)) {
     return false;
   }
   sprintf(s, "%s%s", directories[dn].path, stripfn(u->filename));
@@ -232,12 +232,12 @@ bool get_file_idz(uploadsrec * u, int dn) {
   chdir(directories[dn].path);
   {
 	  File file(File::current_directory(), stripfn(u->filename));
-	  application()->CdHome();
+	  session()->CdHome();
 	  get_arc_cmd(cmd, file.full_pathname().c_str(), 1, "FILE_ID.DIZ DESC.SDI");
   }
   chdir(syscfgovr.tempdir);
   ExecuteExternalProgram(cmd, EFLAG_NOHUP);
-  application()->CdHome();
+  session()->CdHome();
   sprintf(s, "%s%s", syscfgovr.tempdir, FILE_ID_DIZ);
   if (!File::Exists(s)) {
     sprintf(s, "%s%s", syscfgovr.tempdir, DESC_SDI);
@@ -264,7 +264,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
       b[session()->max_extend_lines * 256] = 0;
     }
     file.Close();
-    if (application()->HasConfigFlag(OP_FLAGS_IDZ_DESC)) {
+    if (session()->HasConfigFlag(OP_FLAGS_IDZ_DESC)) {
       ss = strtok(b, "\n");
       if (ss) {
         for (i = 0; i < wwiv::strings::GetStringLength(ss); i++) {
@@ -315,7 +315,7 @@ int read_idz_all() {
     count += read_idz(0, i);
   }
   tmp_disable_conf(false);
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
   return count;
 }
 
@@ -350,7 +350,7 @@ int read_idz(int mode, int tempdir) {
         (strstr(u.filename, ".EXE") == nullptr)) {
       chdir(directories[udir[tempdir].subnum].path);
       File file(File::current_directory(), stripfn(u.filename));
-      application()->CdHome();
+      session()->CdHome();
       if (file.Exists()) {
         if (get_file_idz(&u, udir[tempdir].subnum)) {
           count++;
@@ -363,7 +363,7 @@ int read_idz(int mode, int tempdir) {
   }
   fileDownload.Close();
   if (mode) {
-    application()->UpdateTopScreen();
+    session()->UpdateTopScreen();
   }
   return count;
 }
@@ -662,11 +662,11 @@ void tag_files() {
         if (s[0] != 0) {
           bout.nl();
           session()->tagging = 0;
-          ExecuteExternalProgram(s, application()->GetSpawnOptions(SPAWNOPT_ARCH_L));
+          ExecuteExternalProgram(s, session()->GetSpawnOptions(SPAWNOPT_ARCH_L));
           bout.nl();
           pausescr();
           session()->tagging = 1;
-          application()->UpdateTopScreen();
+          session()->UpdateTopScreen();
           bout.cls();
           relist();
         } else {
@@ -800,7 +800,7 @@ int try_to_download(const char *pszFileMask, int dn) {
     fileDownload.Close();
 
     bool ok2 = false;
-    if (strncmp(u.filename, "WWIV4", 5) == 0 && !application()->HasConfigFlag(OP_FLAGS_NO_EASY_DL)) {
+    if (strncmp(u.filename, "WWIV4", 5) == 0 && !session()->HasConfigFlag(OP_FLAGS_NO_EASY_DL)) {
       ok2 = true;
     }
 
@@ -1260,7 +1260,7 @@ void removenotthere() {
     removefilesnotthere(udir[session()->GetCurrentFileArea()].subnum, &autodel);
   }
   tmp_disable_conf(false);
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
 }
 
 

@@ -114,11 +114,11 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
     session()->localIO()->LocalPuts(command);
     session()->localIO()->LocalPuts("\r\n");
     if (incom) {
-      int nRetCode = ExecuteExternalProgram(command, application()->GetSpawnOptions(SPAWNOPT_PROT_SINGLE));
-      application()->UpdateTopScreen();
+      int nRetCode = ExecuteExternalProgram(command, session()->GetSpawnOptions(SPAWNOPT_PROT_SINGLE));
+      session()->UpdateTopScreen();
       return nRetCode;
     } else {
-      application()->UpdateTopScreen();
+      session()->UpdateTopScreen();
       return -5;
     }
   }

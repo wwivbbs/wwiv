@@ -49,8 +49,8 @@ string GetInstanceActivityString(instancerec &ir) {
       }
       return string("Transfer Area");
     case INST_LOC_CHAINS:
-      if (ir.subloc > 0 && ir.subloc <= session()->GetNumberOfChains()) {
-        string temp = StringPrintf("Door: %s", stripcolors(chains[ ir.subloc - 1 ].description));
+      if (ir.subloc > 0 && ir.subloc <= session()->chains.size()) {
+        string temp = StringPrintf("Door: %s", stripcolors(session()->chains[ ir.subloc - 1 ].description));
         return StrCat("Chains", temp);
       }
       return string("Chains");
@@ -143,7 +143,7 @@ void make_inst_str(int nInstanceNum, std::string *out, int nInstanceFormat) {
     std::string userName;
     if (ir.user < syscfg.maxusers && ir.user > 0) {
       WUser user;
-      application()->users()->ReadUser(&user, ir.user);
+      session()->users()->ReadUser(&user, ir.user);
       if (ir.flags & INST_FLAGS_ONLINE) {
         userName = user.GetUserNameAndNumber(ir.user);
       } else {
@@ -206,7 +206,7 @@ int inst_ok(int loc, int subloc) {
       instFile.Close();
       if (instance_temp.loc == loc &&
           instance_temp.subloc == subloc &&
-          instance_temp.number != application()->GetInstanceNumber()) {
+          instance_temp.number != session()->GetInstanceNumber()) {
         nInstNum = instance_temp.number;
       }
     }
