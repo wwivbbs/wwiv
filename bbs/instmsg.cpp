@@ -218,6 +218,7 @@ void process_inst_msgs() {
   if (x_only || !inst_msg_waiting()) {
     return;
   }
+  static int32_t last_iia = 0;
   last_iia = timer1();
 
   int oiia = setiia(0);

@@ -332,7 +332,7 @@ IniFile* WSession::ReadINIFile() {
     // pull out sizing options
     max_batch = ini->GetNumericValue(get_key_str(INI_STR_MAX_BATCH), max_batch);
     max_extend_lines = ini->GetNumericValue(get_key_str(INI_STR_MAX_EXTEND_LINES),
-                                     max_extend_lines);
+                                            max_extend_lines);
     max_chains = ini->GetNumericValue(get_key_str(INI_STR_MAX_CHAINS), max_chains);
     max_gfilesec = ini->GetNumericValue(get_key_str(INI_STR_MAX_GFILESEC), max_gfilesec);
 
@@ -343,16 +343,16 @@ IniFile* WSession::ReadINIFile() {
     INI_INIT_STR(INI_STR_LOGON_CMD, logon_cmd);
 
     m_nForcedReadSubNumber = ini->GetNumericValue(get_key_str(INI_STR_FORCE_SCAN_SUBNUM),
-                                           m_nForcedReadSubNumber);
+                                                  m_nForcedReadSubNumber);
     m_bInternalZmodem = ini->GetBooleanValue(get_key_str(INI_STR_INTERNALZMODEM),
-                                      m_bInternalZmodem);
+                                             m_bInternalZmodem);
     m_bNewScanAtLogin = ini->GetBooleanValue(get_key_str(INI_STR_NEW_SCAN_AT_LOGIN),
-                                      m_bNewScanAtLogin);
+                                             m_bNewScanAtLogin);
 
     m_bExecLogSyncFoss = ini->GetBooleanValue(get_key_str(INI_STR_EXEC_LOG_SYNCFOSS),
-                                       m_bExecLogSyncFoss);
-    m_nExecChildProcessWaitTime = ini->GetNumericValue(get_key_str(INI_STR_EXEC_CHILD_WAIT_TIME),
-        m_nExecChildProcessWaitTime);
+                                              m_bExecLogSyncFoss);
+    m_nExecChildProcessWaitTime = 
+        ini->GetNumericValue(get_key_str(INI_STR_EXEC_CHILD_WAIT_TIME), m_nExecChildProcessWaitTime);
 
     SetBeginDayNodeNumber(ini->GetNumericValue(get_key_str(INI_STR_BEGINDAYNODENUMBER),
                                         GetBeginDayNodeNumber()));
@@ -419,7 +419,7 @@ IniFile* WSession::ReadINIFile() {
     }
 
     screen_saver_time = ini->GetNumericValue(get_key_str(INI_STR_SCREEN_SAVER_TIME),
-                                      screen_saver_time);
+                                             screen_saver_time);
   }
 
   max_extend_lines    = std::min<unsigned short>(max_extend_lines, 99);
@@ -427,22 +427,9 @@ IniFile* WSession::ReadINIFile() {
   max_chains          = std::min<unsigned short>(max_chains, 999);
   max_gfilesec        = std::min<unsigned short>(max_gfilesec, 999);
 
-  // can't allow user to change these on-the-fly
-  unsigned short omb = max_batch;
-  if (omb) {
-    max_batch = omb;
-  }
-  unsigned short omc = max_chains;
-  if (omc) {
-    max_chains = omc;
-  }
-  unsigned short omg = max_gfilesec;
-  if (omg) {
-    max_gfilesec = omg;
-  }
-
   set_wwivmail_enabled(ini->GetBooleanValue("USE_WWIVMAIL", true));
   set_internal_qwk_enabled(ini->GetBooleanValue("USE_INTERNAL_QWK", true));
+
   return ini;
 }
 
