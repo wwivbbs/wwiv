@@ -676,9 +676,7 @@ void WSession::read_editors() {
   if (!file) {
     return;
   }
-  int num_editors = std::min(10, file.number_of_records());
-  editors.resize(num_editors);
-  file.Read(&editors[0], num_editors);
+  file.ReadVector(editors, 10);
 }
 
 void WSession::read_nintern() {
@@ -844,19 +842,14 @@ void WSession::read_chains() {
   if (!file) {
     return;
   }
-  int num_editors = std::min(
-    static_cast<int>(max_chains), file.number_of_records());
-  chains.resize(num_editors);
-  file.Read(&chains[0], num_editors);
+  file.ReadVector(chains, max_chains);
 
   if (HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     chains_reg.clear();
 
     DataFile<chainregrec> regFile(syscfg.datadir, CHAINS_REG);
     if (regFile) {
-      int num_chains = std::min<int>(max_chains, regFile.number_of_records());
-      chains_reg.resize(num_chains);
-      regFile.Read(&chains_reg[0], num_chains);
+      regFile.ReadVector(chains_reg, max_chains);
     } else {
       regFile.Close();
       for (size_t nTempChainNum = 0; nTempChainNum < chains.size(); nTempChainNum++) {

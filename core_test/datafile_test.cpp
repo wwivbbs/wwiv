@@ -65,6 +65,66 @@ TEST(DataFileTest, Read) {
   }
 }
 
+TEST(DataFileTest, ReadVector) {
+  struct T { int a; int b; };
+  FileHelper file;
+  string tmp = file.TempDir();
+
+  File x(tmp, "ReadVector");
+  ASSERT_TRUE(x.Open(File::modeCreateFile | File::modeBinary | File::modeReadWrite));
+  T t1{1, 2};
+  T t2{3, 4};
+  T t3{5, 6};
+  x.Write(&t1, sizeof(T));
+  x.Write(&t2, sizeof(T));
+  x.Write(&t3, sizeof(T));
+  x.Close();
+
+  {
+    DataFile<T> datafile(tmp, "ReadVector", File::modeReadOnly);
+    ASSERT_TRUE((bool)datafile);
+    EXPECT_EQ(3, datafile.number_of_records());
+    std::vector<T> t;
+    EXPECT_TRUE(datafile.ReadVector(t));
+    EXPECT_EQ(3, t.size());
+    EXPECT_EQ(1, t[0].a);
+    EXPECT_EQ(2, t[0].b);
+    EXPECT_EQ(3, t[1].a);
+    EXPECT_EQ(4, t[1].b);
+    EXPECT_EQ(5, t[2].a);
+    EXPECT_EQ(6, t[2].b);
+  }
+}
+
+TEST(DataFileTest, ReadVector_MaxRecords) {
+  struct T { int a; int b; };
+  FileHelper file;
+  string tmp = file.TempDir();
+
+  File x(tmp, "ReadVector_MaxRecords");
+  ASSERT_TRUE(x.Open(File::modeCreateFile | File::modeBinary | File::modeReadWrite));
+  T t1{1, 2};
+  T t2{3, 4};
+  T t3{5, 6};
+  x.Write(&t1, sizeof(T));
+  x.Write(&t2, sizeof(T));
+  x.Write(&t3, sizeof(T));
+  x.Close();
+
+  {
+    DataFile<T> datafile(tmp, "ReadVector_MaxRecords", File::modeReadOnly);
+    ASSERT_TRUE((bool)datafile);
+    EXPECT_EQ(3, datafile.number_of_records());
+    std::vector<T> t;
+    EXPECT_TRUE(datafile.ReadVector(t, 2));
+    EXPECT_EQ(2, t.size());
+    EXPECT_EQ(1, t[0].a);
+    EXPECT_EQ(2, t[0].b);
+    EXPECT_EQ(3, t[1].a);
+    EXPECT_EQ(4, t[1].b);
+  }
+}
+
 TEST(DataFileTest, Write) {
   struct T { int a; int b; };
   FileHelper file;

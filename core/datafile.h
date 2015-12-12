@@ -20,6 +20,7 @@
 
 #include <cstddef>
 #include <string>
+#include <vector>
 #include "core/file.h"
 #include "core/inifile.h" // for FilePath
 
@@ -44,6 +45,18 @@ public:
   File& file() { return file_; }
   void Close() { return file_.Close(); }
   bool ok() const { return file_.IsOpen(); }
+
+  bool ReadVector(std::vector<RECORD>& records, std::size_t max_records = 0) {
+    std::size_t num_to_read = number_of_records();
+    if (max_records != 0 && max_records < num_to_read) {
+      num_to_read = max_records;
+    }
+    if (records.size() < num_to_read) {
+      records.resize(num_to_read);
+    }
+    return Read(&records[0], num_to_read);
+  }
+
   bool Read(RECORD* record, int num_records = 1) { 
     return file_.Read(record, num_records*SIZE) == static_cast<int>(num_records*SIZE); 
   }
