@@ -133,7 +133,7 @@ void extrn_editors() {
           int i = dialog_input_number(out->window(), prompt, 1, editors.size() + 1);
           editorrec e;
           memset(&e, 0, sizeof(editorrec));
-          if (i < 0) {
+          if (i < 0 || i > editors.size() + 1) {
             break;
           } else if (i > editors.size()) {
             editors.push_back(e);

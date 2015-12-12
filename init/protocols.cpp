@@ -191,7 +191,7 @@ void extrn_prots() {
     list.set_additional_hotkeys("DI");
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
     ListBoxResult result = list.Run();
-    const int maxProtocolNumber = externs.size() -1 + 6;
+    const int max_protocol_number = externs.size() -1 + 6;
 
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
@@ -217,8 +217,8 @@ void extrn_prots() {
           messagebox(out->window(), "Too many external protocols.");
           break;
         }
-        string prompt = StringPrintf("Insert before which (6-%d) ? ", maxProtocolNumber + 1);
-        int pos = dialog_input_number(out->window(), prompt, 2, maxProtocolNumber + 1);
+        string prompt = StringPrintf("Insert before which (6-%d) ? ", max_protocol_number + 1);
+        int pos = dialog_input_number(out->window(), prompt, 2, max_protocol_number + 1);
         if ((pos >= 6) && (pos <= externs.size() + 6)) {
           size_t extern_pos = pos - 6;
           newexternalrec e;
