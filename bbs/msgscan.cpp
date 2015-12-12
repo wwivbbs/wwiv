@@ -706,10 +706,10 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
         bout << "|#5Allow editing? ";
         if (yesno()) {
           bout.nl();
-          LoadFileIntoWorkspace(filename.c_str(), false);
+          LoadFileIntoWorkspace(filename, false);
         } else {
           bout.nl();
-          LoadFileIntoWorkspace(filename.c_str(), true);
+          LoadFileIntoWorkspace(filename, true);
         }
         send_email();
         filename = StringPrintf("%s%s", syscfgovr.tempdir, INPUT_MSG);

@@ -479,10 +479,10 @@ void LoadTextFile() {
     bout << "|#5Allow editing? ";
     if (yesno()) {
       bout.nl();
-      LoadFileIntoWorkspace(fileName.c_str(), false);
+      LoadFileIntoWorkspace(fileName, false);
     } else {
       bout.nl();
-      LoadFileIntoWorkspace(fileName.c_str(), true);
+      LoadFileIntoWorkspace(fileName, true);
     }
   }
 }
@@ -549,7 +549,10 @@ void PackMessages() {
   bout.nl();
   bout << "|#5Pack all subs? ";
   if (yesno()) {
-    pack_all_subs();
+    wwiv::bbs::TempDisablePause disable_pause;
+    if (!pack_all_subs()) {
+      bout << "|#6Aborted.\r\n";
+    }
   } else {
     pack_sub(usub[session()->GetCurrentMessageArea()].subnum);
   }

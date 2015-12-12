@@ -29,7 +29,7 @@ void sendout_email(const std::string& title, messagerec * msg, int anony, int nU
 bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit);
 void email(const std::string& title, int nUserNumber, int nSystemNumber, bool forceit, int anony, bool bAllowFSED = true);
 void imail(int nUserNumber, int nSystemNumber);
-void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed);
+void LoadFileIntoWorkspace(const std::string& filename, bool bNoEditAllowed);
 
 
 

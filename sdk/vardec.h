@@ -264,8 +264,8 @@ struct configrec {
   char hangupphone[21],                        // string to hang up phone
        pickupphone[21];                        // string to pick up phone
 
-  uint16_t netlowtime,                         // net time on
-           nethightime;                        // net time off
+  uint16_t unused_netlowtime,                  // net time on
+           unused_nethightime;                  // net time off
 
   char unused_connect_300_a[21],               // alternate connect string
        unused_connect_1200_a[21],              // alternate connect string
@@ -352,8 +352,8 @@ struct small_configrec {
            sysoplowtime,       // Chat time on
            sysophightime,      // Chat time off
            executetime,        // time to run mail router
-           netlowtime,         // net time on
-           nethightime,        // net time off
+           unused_netlowtime,  // net time on
+           unused_nethightime, // net time off
            max_subs,
            max_dirs,
            qscn_len,

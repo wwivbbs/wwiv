@@ -104,8 +104,7 @@ __EXTRN__ bool  in_chatroom,
 
 __EXTRN__ unsigned short
 *csn_index,
-net_sysnum,
-*gat;
+net_sysnum;
 
 __EXTRN__ int modem_speed;
 

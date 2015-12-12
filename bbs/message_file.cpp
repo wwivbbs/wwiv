@@ -22,29 +22,33 @@
 #include <string>
 
 #include "bbs/bbs.h"
-#include "bbs/bbsutl1.h"
-#include "bbs/connect1.h"
-#include "bbs/vars.h"
+#include "bbs/vars.h"  // only needed for syscfg
 #include "core/file.h"
 #include "core/strings.h"
 #include "sdk/net.h"
 #include "sdk/filenames.h"
 
-#define GAT_NUMBER_ELEMENTS 2048
-#define GAT_SECTION_SIZE    4096
-#define MSG_BLOCK_SIZE      512
+/////////////////////////////////////////////////////////////////////////////
+//
+// NOTE: This file containts wwiv message base specific code and should move to SDK
+//
+
+static constexpr int  GAT_NUMBER_ELEMENTS = 2048;
+static constexpr int GAT_SECTION_SIZE = 4096;
+static constexpr int MSG_BLOCK_SIZE = 512;
 
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::strings;
 
 
-#define GATSECLEN (GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE)
-#ifndef MSG_STARTING
+static constexpr int  GATSECLEN = GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE;
 #define MSG_STARTING (gat_section * GATSECLEN + GAT_SECTION_SIZE)
-#endif  // MSG_STARTING
 
 static long gat_section;
+// this is initialized in xinit, otherwise we can make it static.
+// TODO(rushfan): make it static
+uint16_t *gat = nullptr;
 
 /**
 * Opens the message area file {pszMessageAreaFileName} and returns the file handle.

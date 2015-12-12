@@ -1164,10 +1164,10 @@ void readmail(int mode) {
           bout << "|#5Allow editing? ";
           if (yesno()) {
             bout.nl();
-            LoadFileIntoWorkspace(fileName.c_str(), false);
+            LoadFileIntoWorkspace(fileName, false);
           } else {
             bout.nl();
-            LoadFileIntoWorkspace(fileName.c_str(),  true);
+            LoadFileIntoWorkspace(fileName,  true);
           }
         }
       }

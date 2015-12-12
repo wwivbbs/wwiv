@@ -43,9 +43,7 @@ class WUser;
 
 // File: bbsutl2.cpp
 
-std::string ctypes(int num);
-void osan(const std::string& text, bool *abort, bool *next);
-std::string strip_to_node(const std::string& txt);
+#include "bbs/bbsutl2.h"
 
 // File: bgetch.cpp
 #include "bbs/bgetch.h"
