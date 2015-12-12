@@ -194,7 +194,7 @@ bool WriteExternalEditorControlFiles(const editorrec& editor, const string& titl
 bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string& destination, int flags, const string& aux) {
   const auto editor_number = session()->user()->GetDefaultEditor() - 1;
   if (editor_number >= session()->editors.size() || !okansi()) {
-    bout << "\r\nYou can't use that full screen editor.\r\n\n";
+    bout << "\r\nYou can't use that full screen editor (EME).\r\n\n";
     return false;
   }
 
@@ -231,7 +231,7 @@ bool external_text_edit(const string& edit_filename, const string& new_directory
   bout.nl();
   const auto editor_number = session()->user()->GetDefaultEditor() - 1;
   if (editor_number >= session()->editors.size() || !okansi()) {
-    bout << "You can't use that full screen editor." << wwiv::endl << wwiv::endl;
+    bout << "You can't use that full screen editor. (ete1)" << wwiv::endl << wwiv::endl;
     pausescr();
     return false;
   }
@@ -250,7 +250,7 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   
   string editorCommand = (incom) ? editor.filename : editor.filenamecon;
   if (editorCommand.empty()) {
-    bout << "You can't use that full screen editor." << wwiv::endl << wwiv::endl;
+    bout << "You can't use that full screen editor. (eti)" << wwiv::endl << wwiv::endl;
       pausescr();
     return false;
   }
