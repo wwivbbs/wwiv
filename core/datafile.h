@@ -72,9 +72,6 @@ public:
     if (max_records != 0 && max_records < num) {
       num = max_records;
     }
-    if (records.size() > num) {
-      records.resize(num);
-    }
     return Write(&records[0], num);
   }
 

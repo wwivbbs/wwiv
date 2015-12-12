@@ -43,7 +43,7 @@ TEST(DataFileTest, Read) {
   x.Close();
 
   {
-    DataFile<T, sizeof(T)> datafile(tmp, "Read", File::modeReadOnly);
+    DataFile<T> datafile(tmp, "Read", File::modeReadOnly);
     ASSERT_TRUE((bool) datafile);
     EXPECT_EQ(2, datafile.number_of_records());
     T t{0, 0};
@@ -134,7 +134,7 @@ TEST(DataFileTest, Write) {
   T t2{3, 4};
 
   {
-    DataFile<T, sizeof(T)> datafile(tmp, "Write", File::modeCreateFile|File::modeBinary|File::modeReadWrite);
+    DataFile<T> datafile(tmp, "Write", File::modeCreateFile|File::modeBinary|File::modeReadWrite);
     ASSERT_TRUE((bool) datafile);
     datafile.Write(&t1);
     datafile.Write(&t2);
@@ -159,7 +159,7 @@ TEST(DataFileTest, WriteVector) {
   T t2{3, 4};
 
   {
-    DataFile<T, sizeof(T)> datafile(tmp, "WriteVector",
+    DataFile<T> datafile(tmp, "WriteVector",
         File::modeCreateFile | File::modeBinary | File::modeReadWrite);
     ASSERT_TRUE((bool)datafile);
     std::vector<T> t = {t1, t2};
@@ -186,7 +186,7 @@ TEST(DataFileTest, WriteVector_MaxRecords) {
   T t3{5, 6};
 
   {
-    DataFile<T, sizeof(T)> datafile(tmp, "WriteVector_MaxRecords",
+    DataFile<T> datafile(tmp, "WriteVector_MaxRecords",
       File::modeCreateFile | File::modeBinary | File::modeReadWrite);
     ASSERT_TRUE((bool)datafile);
     std::vector<T> t = {t1, t2, t3};

@@ -432,12 +432,12 @@ void chainedit() {
 
   DataFile<chainfilerec> file(syscfg.datadir, CHAINS_DAT,
     File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
-  file.Write(&(session()->chains[0]), session()->chains.size());
+  file.WriteVector(session()->chains);
   if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     DataFile<chainregrec> regFile(syscfg.datadir, CHAINS_REG,
         File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     if (regFile) {
-      regFile.Write(&(session()->chains_reg[0]), session()->chains.size());
+      regFile.WriteVector(session()->chains_reg);
     }
   }
 }

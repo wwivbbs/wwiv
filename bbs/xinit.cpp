@@ -860,7 +860,7 @@ void WSession::read_chains() {
       }
       DataFile<chainregrec> writeFile(syscfg.datadir, CHAINS_REG, 
           File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-      writeFile.Write(&chains_reg[0], chains_reg.size());
+      writeFile.WriteVector(chains_reg);
     }
   }
 }

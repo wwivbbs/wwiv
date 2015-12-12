@@ -143,7 +143,7 @@ void run_chain(int nChainNumber) {
     wwiv::core::DataFile<chainregrec> regFile(syscfg.datadir, CHAINS_REG,
       File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     if (regFile) {
-      regFile.Write(&(session()->chains_reg[0]), session()->chains.size());
+      regFile.WriteVector(session()->chains_reg);
     }
   }
   const string com_speed_str = StringPrintf("%d", (com_speed == 1) ? 115200 : com_speed);
