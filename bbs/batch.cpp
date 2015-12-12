@@ -777,8 +777,8 @@ int batchdl(int mode) {
         bout.nl(2);
         int i = get_protocol(xf_up_batch);
         if (i > 0) {
-          dszbatchul(bHangupAfterDl, externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn,
-                     externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
+          dszbatchul(bHangupAfterDl, session()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn,
+                     session()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
           if (!bHangupAfterDl) {
             bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
           }
@@ -806,17 +806,18 @@ int batchdl(int mode) {
         int i = get_protocol(xf_down_batch);
         if (i > 0) {
           if (i == WWIV_INTERNAL_PROT_YMODEM) {
-            if (over_intern && (over_intern[2].othr & othr_override_internal) &&
-                (over_intern[2].sendbatchfn[0])) {
-              dszbatchdl(bHangupAfterDl, over_intern[2].sendbatchfn, prot_name(4));
+            if (session()->over_intern.size() > 0 
+                && (session()->over_intern[2].othr & othr_override_internal) 
+                && (session()->over_intern[2].sendbatchfn[0])) {
+              dszbatchdl(bHangupAfterDl, session()->over_intern[2].sendbatchfn, prot_name(4));
             } else {
               ymbatchdl(bHangupAfterDl);
             }
           } else if (i == WWIV_INTERNAL_PROT_ZMODEM) {
             zmbatchdl(bHangupAfterDl);
           } else {
-            dszbatchdl(bHangupAfterDl, externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn,
-                       externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
+            dszbatchdl(bHangupAfterDl, session()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn,
+                       session()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
           }
           if (!bHangupAfterDl) {
             bout.nl();

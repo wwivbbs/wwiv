@@ -210,7 +210,7 @@ bool readfile(messagerec * pMessageRecord, string fileName,string* out) {
     lCurrentSection = gat[lCurrentSection];
   }
   file->Close();
-  int last_cz = out->find_last_of(CZ);
+  string::size_type last_cz = out->find_last_of(CZ);
   int last_block_start = out->length() - MSG_BLOCK_SIZE;
   if (last_cz != string::npos && last_block_start >= 0 && last_cz > last_block_start) {
     // last block has a Control-Z in it.  Make sure we add a 0 after it.

@@ -227,9 +227,6 @@ public:
   int  GetMaxNetworkNumber() const { return m_nMaxNetworkNumber; }
   void SetMaxNetworkNumber(int n) { m_nMaxNetworkNumber = n; }
 
-  int  GetNumberOfExternalProtocols() const { return m_nNumberOfExternalProtocols; }
-  void SetNumberOfExternalProtocols(int n) { m_nNumberOfExternalProtocols = n; }
-
   bool wwivmail_enabled() const { return wwivmail_enabled_; }
   void set_wwivmail_enabled(bool wwivmail_enabled) { wwivmail_enabled_ = wwivmail_enabled; }
 
@@ -471,7 +468,8 @@ public:
   std::vector<chainfilerec> chains;
   std::vector<chainregrec> chains_reg;
 
-
+  std::vector<newexternalrec> externs;
+  std::vector<newexternalrec> over_intern;
 };
 
 #endif  // #if !defined (__INCLUDED_BBS_WSESSION_H__)

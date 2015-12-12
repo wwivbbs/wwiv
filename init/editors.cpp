@@ -33,6 +33,7 @@
 
 #include "init/init.h"
 #include "core/strings.h"
+#include "core/datafile.h"
 #include "core/file.h"
 #include "core/wwivport.h"
 #include "init/utility.h"
@@ -44,28 +45,29 @@
 using std::unique_ptr;
 using std::string;
 using std::vector;
+using wwiv::core::DataFile;
 using wwiv::strings::StringPrintf;
 
-void edit_editor(editorrec* c) {
+static void edit_editor(editorrec& e) {
   out->Cls(ACS_CKBOARD);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("External Editor Configuration", 17, 78));
 
   const vector<string> bbs_types = { "WWIV    ", "QuickBBS" };
   const int COL1_POSITION = 22;
 
-  if (!(c->ansir & ansir_ansi)) {
-    c->ansir |= ansir_emulate_fossil;
-    c->ansir |= ansir_no_DOS;
-    c->ansir |= ansir_ansi;
+  if (!(e.ansir & ansir_ansi)) {
+    e.ansir |= ansir_emulate_fossil;
+    e.ansir |= ansir_no_DOS;
+    e.ansir |= ansir_ansi;
   }
 
   EditItems items{
-    new StringEditItem<char*>(COL1_POSITION, 1, 35, c->description, false),
-    new ToggleEditItem<uint8_t>(COL1_POSITION, 2, bbs_types, &c->bbs_type),
-    new FlagEditItem<uint8_t>(COL1_POSITION, 3, ansir_no_DOS, "No ", "Yes", &c->ansir),
-    new FlagEditItem<uint8_t>(COL1_POSITION, 4, ansir_emulate_fossil, "Yes", "No ", &c->ansir),
-    new CommandLineItem(2, 6, 75, c->filename),
-    new CommandLineItem(2, 9, 75, c->filenamecon)
+    new StringEditItem<char*>(COL1_POSITION, 1, 35, e.description, false),
+    new ToggleEditItem<uint8_t>(COL1_POSITION, 2, bbs_types, &e.bbs_type),
+    new FlagEditItem<uint8_t>(COL1_POSITION, 3, ansir_no_DOS, "No ", "Yes", &e.ansir),
+    new FlagEditItem<uint8_t>(COL1_POSITION, 4, ansir_emulate_fossil, "Yes", "No ", &e.ansir),
+    new CommandLineItem(2, 6, 75, e.filename),
+    new CommandLineItem(2, 9, 75, e.filenamecon)
   };
   items.set_curses_io(out, window.get());
 
@@ -86,12 +88,10 @@ void edit_editor(editorrec* c) {
 }
 
 void extrn_editors() {
-  initinfo.numeditors = 0;
-  unique_ptr<editorrec[]> editors(new editorrec[10]);
-  File file (syscfg.datadir, EDITORS_DAT);
-  if (file.Open(File::modeReadOnly|File::modeBinary)) {
-    int num_read = file.Read(editors.get(), 10 * sizeof(editorrec));
-    initinfo.numeditors = num_read / sizeof(editorrec);
+  vector<editorrec> editors;
+  DataFile<editorrec> file (syscfg.datadir, EDITORS_DAT);
+  if (file) {
+    file.ReadVector(editors, 10);
     file.Close();
   }
 
@@ -99,7 +99,7 @@ void extrn_editors() {
   do {
     out->Cls(ACS_CKBOARD);
     vector<ListBoxItem> items;
-    for (int i = 0; i < initinfo.numeditors; i++) {
+    for (size_t i = 0; i < editors.size(); i++) {
       items.emplace_back(StringPrintf("%d. %s", i + 1, editors[i].description));
     }
     CursesWindow* window = out->window();
@@ -113,46 +113,49 @@ void extrn_editors() {
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
         case 'D': {
-          if (initinfo.numeditors) {
+          if (editors.size()) {
             string prompt = StringPrintf("Delete '%s'", items[result.selected].text().c_str());
             bool yn = dialog_yn(window, prompt);
             if (!yn) {
               break;
             }
-            for (int i1 = result.selected; i1 < initinfo.numeditors; i1++) {
-              editors[i1] = editors[i1 + 1];
-            }
-            --initinfo.numeditors;
+            auto it = editors.begin();
+            std::advance(it, result.selected);
+            editors.erase(it);
           }
         } break;
         case 'I': {
-          if (initinfo.numeditors >= 10) {
+          if (editors.size() >= 10) {
             messagebox(out->window(), "Too many editors.");
             break;
           }
-          string prompt = StringPrintf("Insert before which (1-%d) : ", initinfo.numeditors + 1);
-          int i = dialog_input_number(out->window(), prompt, 1, initinfo.numeditors);
-          if (i > 0 && i <= initinfo.numeditors + 1) {
-            for (int i1 = initinfo.numeditors; i1 > i - 1; i1--) {
-              editors[i1] = editors[i1 - 1];
-            }
-            ++initinfo.numeditors;
-            memset(&editors[i-1], 0, sizeof(editorrec));
-            edit_editor(&editors[i - 1]);
+          string prompt = StringPrintf("Insert before which (1-%d) : ", editors.size() + 1);
+          int i = dialog_input_number(out->window(), prompt, 1, editors.size() + 1);
+          editorrec e;
+          memset(&e, 0, sizeof(editorrec));
+          if (i < 0 || i > editors.size() + 1) {
+            break;
+          } else if (i > editors.size()) {
+            editors.push_back(e);
+          } else {
+            auto it = editors.begin();
+            std::advance(it, i);
+            editors.insert(it, e);
           }
+          edit_editor(editors[i - 1]);
         } break;
       }
     } else if (result.type == ListBoxResultType::SELECTION) {
-      edit_editor(&editors[result.selected]);
+      edit_editor(editors[result.selected]);
     } else if (result.type == ListBoxResultType::NO_SELECTION) {
       done = true;
     }
   } while (!done);
 
-  File editors_dat(syscfg.datadir, EDITORS_DAT);
-  if (editors_dat.Open(File::modeReadWrite|File::modeBinary|File::modeCreateFile|File::modeTruncate,
-    File::shareDenyReadWrite)) {
-    editors_dat.Write(editors.get(), initinfo.numeditors * sizeof(editorrec));
+  DataFile<editorrec> editors_dat(syscfg.datadir, EDITORS_DAT,
+    File::modeReadWrite|File::modeBinary|File::modeCreateFile|File::modeTruncate,
+    File::shareDenyReadWrite);
+  if (editors_dat) {
+    editors_dat.WriteVector(editors);
   }
-  editors_dat.Close();
 }

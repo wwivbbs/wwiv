@@ -78,17 +78,17 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
     bout.nl();
     bout << "-=> Beginning file transmission, Ctrl+X to abort.\r\n";
     if (nProtocolNum < 0) {
-      strcpy(s1, over_intern[(-nProtocolNum) - 1].sendfn);
+      strcpy(s1, session()->over_intern[(-nProtocolNum) - 1].sendfn);
     } else {
-      strcpy(s1, (externs[nProtocolNum].sendfn));
+      strcpy(s1, (session()->externs[nProtocolNum].sendfn));
     }
   } else {
     bout.nl();
     bout << "-=> Ready to receive, Ctrl+X to abort.\r\n";
     if (nProtocolNum < 0) {
-      strcpy(s1, over_intern[(-nProtocolNum) - 1].receivefn);
+      strcpy(s1, session()->over_intern[(-nProtocolNum) - 1].receivefn);
     } else {
-      strcpy(s1, (externs[nProtocolNum].receivefn));
+      strcpy(s1, (session()->externs[nProtocolNum].receivefn));
     }
   }
   strcpy(szFileName, pszFileNameToSend);
@@ -133,7 +133,7 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
     return false;
   }
 
-  if (nProtocolNum > 0 && nProtocolNum < (session()->GetNumberOfExternalProtocols() + WWIV_NUM_INTERNAL_PROTOCOLS)) {
+  if (nProtocolNum > 0 && nProtocolNum < (session()->externs.size() + WWIV_NUM_INTERNAL_PROTOCOLS)) {
     switch (nProtocolNum) {
     case WWIV_INTERNAL_PROT_ASCII:
       if (xt == xf_down || xt == xf_down_temp) {
@@ -170,14 +170,14 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
       break;
     case WWIV_INTERNAL_PROT_BATCH:
       if (xt == xf_up) {
-        for (int i = 0; i < session()->GetNumberOfExternalProtocols(); i++) {
-          if (externs[i].receivebatchfn[0]) {
+        for (int i = 0; i < session()->externs.size(); i++) {
+          if (session()->externs[i].receivebatchfn[0]) {
             ok = true;
           }
         }
       } else if (xt == xf_down) {
-        for (int i = 0; i < session()->GetNumberOfExternalProtocols(); i++) {
-          if (externs[i].sendbatchfn[0]) {
+        for (int i = 0; i < session()->externs.size(); i++) {
+          if (session()->externs[i].sendbatchfn[0]) {
             ok = true;
           }
         }
@@ -190,23 +190,23 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
       switch (xt) {
       case xf_up:
       case xf_up_temp:
-        if (externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].receivefn[0]) {
+        if (session()->externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].receivefn[0]) {
           ok = true;
         }
         break;
       case xf_down:
       case xf_down_temp:
-        if (externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].sendfn[0]) {
+        if (session()->externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].sendfn[0]) {
           ok = true;
         }
         break;
       case xf_up_batch:
-        if (externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn[0]) {
+        if (session()->externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn[0]) {
           ok = true;
         }
         break;
       case xf_down_batch:
-        if (externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn[0]) {
+        if (session()->externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn[0]) {
           ok = true;
         }
         break;
@@ -244,8 +244,8 @@ char *prot_name(int nProtocolNum) {
     strcpy(szProtocolName, "Zmodem (Internal)");
   default:
     if (nProtocolNum >= WWIV_NUM_INTERNAL_PROTOCOLS &&
-        nProtocolNum < (session()->GetNumberOfExternalProtocols() + WWIV_NUM_INTERNAL_PROTOCOLS)) {
-      ss = externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].description;
+        nProtocolNum < (session()->externs.size() + WWIV_NUM_INTERNAL_PROTOCOLS)) {
+      ss = session()->externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].description;
     }
     break;
   }
@@ -273,7 +273,7 @@ int get_protocol(xfertype xt) {
   strcpy(oks, "Q?0");
   int i1 = strlen(oks);
   int only = 0;
-  int maxprot = (WWIV_NUM_INTERNAL_PROTOCOLS - 1) + session()->GetNumberOfExternalProtocols();
+  int maxprot = (WWIV_NUM_INTERNAL_PROTOCOLS - 1) + session()->externs.size();
   for (int i = 1; i <= maxprot; i++) {
     fl[ i ] = '\0';
     if (ok_prot(i, xt)) {
@@ -376,10 +376,10 @@ int get_protocol(xfertype xt) {
     } else {
       i1 = ch - BASE_CHAR + 10;
       session()->user()->SetDefaultProtocol(i1);
-      if (i1 < session()->GetNumberOfExternalProtocols() + WWIV_NUM_INTERNAL_PROTOCOLS) {
+      if (i1 < session()->externs.size() + WWIV_NUM_INTERNAL_PROTOCOLS) {
         return ch - BASE_CHAR + 10;
       }
-      for (int j = 3; j < session()->GetNumberOfExternalProtocols() + WWIV_NUM_INTERNAL_PROTOCOLS; j++) {
+      for (int j = 3; j < session()->externs.size() + WWIV_NUM_INTERNAL_PROTOCOLS; j++) {
         if (upcase(*prot_name(j)) == ch) {
           return j;
         }
@@ -427,10 +427,11 @@ void ascii_send(const char *pszFileName, bool *sent, double *percent) {
 }
 
 void maybe_internal(const char *pszFileName, bool *xferred, double *percent, bool bSend, int prot) {
-  if (over_intern && (over_intern[prot - 2].othr & othr_override_internal) &&
-      ((bSend && over_intern[prot - 2].sendfn[0]) ||
-       (!bSend && over_intern[prot - 2].receivefn[0]))) {
-    if (extern_prot(-(prot - 1), pszFileName, bSend) == over_intern[prot - 2].ok1) {
+  if (session()->over_intern.size() > 0 
+      && (session()->over_intern[prot - 2].othr & othr_override_internal)
+      && ((bSend && session()->over_intern[prot - 2].sendfn[0]) ||
+          (!bSend && session()->over_intern[prot - 2].receivefn[0]))) {
+    if (extern_prot(-(prot - 1), pszFileName, bSend) == session()->over_intern[prot - 2].ok1) {
       *xferred = true;
     }
     return;
@@ -551,7 +552,7 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn
     default:
       int nTempProt = extern_prot(nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS, pszFileName, true);
       *abort = false;
-      if (nTempProt == externs[nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS].ok1) {
+      if (nTempProt == session()->externs[nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS].ok1) {
         *sent = true;
       }
       break;

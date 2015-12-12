@@ -636,20 +636,10 @@ bool WSession::SaveConfig() {
 }
 
 void WSession::read_nextern() {
-  SetNumberOfExternalProtocols(0);
-  if (externs) {
-    free(externs);
-    externs = nullptr;
-  }
-
-  File externalFile(syscfg.datadir, NEXTERN_DAT);
-  if (externalFile.Open(File::modeBinary | File::modeReadOnly)) {
-    unsigned long lFileSize = externalFile.GetLength();
-    if (lFileSize > 15 * sizeof(newexternalrec)) {
-      lFileSize = 15 * sizeof(newexternalrec);
-    }
-    externs = static_cast<newexternalrec *>(BbsAllocA(lFileSize + 10));
-    SetNumberOfExternalProtocols(externalFile.Read(externs, lFileSize) / sizeof(newexternalrec));
+  externs.clear();
+  DataFile<newexternalrec> externalFile(syscfg.datadir, NEXTERN_DAT);
+  if (externalFile) {
+    externalFile.ReadVector(externs, 15);
   }
 }
 
@@ -676,21 +666,14 @@ void WSession::read_editors() {
   if (!file) {
     return;
   }
-  int num_editors = std::min(10, file.number_of_records());
-  editors.resize(num_editors);
-  file.Read(&editors[0], num_editors);
+  file.ReadVector(editors, 10);
 }
 
 void WSession::read_nintern() {
-  if (over_intern) {
-    free(over_intern);
-    over_intern = nullptr;
-  }
-  File file(syscfg.datadir, NINTERN_DAT);
-  if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    over_intern = static_cast<newexternalrec *>(BbsAllocA(3 * sizeof(newexternalrec)));
-
-    file.Read(over_intern, 3 * sizeof(newexternalrec));
+  over_intern.clear();
+  DataFile<newexternalrec> file(syscfg.datadir, NINTERN_DAT);
+  if (file) {
+    file.ReadVector(over_intern, 3);
   }
 }
 
@@ -844,19 +827,14 @@ void WSession::read_chains() {
   if (!file) {
     return;
   }
-  int num_editors = std::min(
-    static_cast<int>(max_chains), file.number_of_records());
-  chains.resize(num_editors);
-  file.Read(&chains[0], num_editors);
+  file.ReadVector(chains, max_chains);
 
   if (HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     chains_reg.clear();
 
     DataFile<chainregrec> regFile(syscfg.datadir, CHAINS_REG);
     if (regFile) {
-      int num_chains = std::min<int>(max_chains, regFile.number_of_records());
-      chains_reg.resize(num_chains);
-      regFile.Read(&chains_reg[0], num_chains);
+      regFile.ReadVector(chains_reg, max_chains);
     } else {
       regFile.Close();
       for (size_t nTempChainNum = 0; nTempChainNum < chains.size(); nTempChainNum++) {
@@ -867,7 +845,7 @@ void WSession::read_chains() {
       }
       DataFile<chainregrec> writeFile(syscfg.datadir, CHAINS_REG, 
           File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-      writeFile.Write(&chains_reg[0], chains_reg.size());
+      writeFile.WriteVector(chains_reg);
     }
   }
 }
@@ -1044,10 +1022,7 @@ void WSession::InitializeBBS() {
   read_chains();
 
   XINIT_PRINTF("Reading File Transfer Protocols.");
-  externs = nullptr;
   read_nextern();
-
-  over_intern = nullptr;
   read_nintern();
 
   XINIT_PRINTF("Reading File Archivers.");

@@ -20,6 +20,5 @@
 #define __INCLUDED_PROTOCOLS_H__
 
 void extrn_prots();
-void load_protocols();
 
 #endif // __INCLUDED_PROTOCOLS_H__

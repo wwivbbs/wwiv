@@ -933,7 +933,7 @@ static void qwk_send_file(string fn, bool *sent, bool *abort) {
   default: {
     int exit_code = extern_prot(protocol - WWIV_NUM_INTERNAL_PROTOCOLS, fn.c_str(), 1);
     *abort = 0;
-    if (exit_code == externs[protocol - WWIV_NUM_INTERNAL_PROTOCOLS].ok1) {
+    if (exit_code == session()->externs[protocol - WWIV_NUM_INTERNAL_PROTOCOLS].ok1) {
       *sent = 1;
     }
   } break;

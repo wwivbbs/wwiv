@@ -78,7 +78,6 @@ using wwiv::strings::StringReplace;
 initinfo_rec initinfo;
 configrec syscfg;
 statusrec status;
-newexternalrec *externs, *over_intern;
 net_networks_rec *net_networks;
 
 // from convert.cpp
