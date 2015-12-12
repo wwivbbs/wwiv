@@ -36,6 +36,7 @@
 #include "init/init.h"
 #include "initlib/input.h"
 #include "initlib/listbox.h"
+#include "core/datafile.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
@@ -46,11 +47,10 @@
 using std::string;
 using std::unique_ptr;
 using std::vector;
+using wwiv::core::DataFile;
 using wwiv::strings::StringPrintf;
 
-static newexternalrec *externs, *over_intern;
-
-static const char *prot_name(int pn) {
+static const char *prot_name(const vector<newexternalrec>& externs, int pn) {
   switch (pn) {
   case 1:
     return "ASCII";
@@ -63,14 +63,37 @@ static const char *prot_name(int pn) {
   case 5:
     return "Batch";
   default:
-    if (pn > 5 || pn < (initinfo.numexterns + 6)) {
+    if (pn > 5 || pn < (externs.size() + 6)) {
       return externs[pn - 6].description;
     }
   }
   return ">NONE<";
 }
 
-static void edit_prot(int n) {
+static void load_protocols(vector<newexternalrec>& externs, vector<newexternalrec>& over_intern) {
+  externs.clear();
+  over_intern.clear();
+  {
+    DataFile<newexternalrec> file(syscfg.datadir, NEXTERN_DAT, File::modeBinary | File::modeReadWrite);
+    if (file) {
+      file.ReadVector(externs, 15);
+    }
+  }
+  {
+    DataFile<newexternalrec> file(syscfg.datadir, NINTERN_DAT, File::modeBinary | File::modeReadWrite);
+    if (file) {
+      file.ReadVector(over_intern, 3);
+    } else {
+      newexternalrec e;
+      memset(&e, 0, sizeof(newexternalrec));
+      for (size_t i = 0; i < 3; i++) {
+        over_intern.push_back(e);
+      }
+    }
+  }
+}
+
+static void edit_prot(vector<newexternalrec>& externs, vector<newexternalrec>& over_intern, int n) {
   if (n == 5) {
     // This is the "Batch" protocol which has no override.
     return;
@@ -81,7 +104,7 @@ static void edit_prot(int n) {
     c = externs[n - 6];
   } else {
     c = over_intern[n - 2];
-    strcpy(c.description, prot_name(n));
+    strcpy(c.description, prot_name(over_intern, n));
   }
 
   out->Cls(ACS_CKBOARD);
@@ -146,7 +169,9 @@ static void edit_prot(int n) {
 #define END_CHAR (BASE_CHAR+10)
 
 void extrn_prots() {
-  load_protocols();
+  vector<newexternalrec> externs;
+  vector<newexternalrec> over_interns;
+  load_protocols(externs, over_interns);
 
   bool done = false;
   do {
@@ -155,8 +180,8 @@ void extrn_prots() {
     items.emplace_back(StringPrintf("2. XModem (Internal)"), 0, 2);
     items.emplace_back(StringPrintf("X. XModem CRC (Internal)"), 0, 3);
     items.emplace_back(StringPrintf("Y. YModem (Internal)"), 0, 4);
-    for (int i = 0; i < initinfo.numexterns; i++) {
-      items.emplace_back(StringPrintf("%d. %s (External)", i + 6, prot_name(i+6)), 0, i+6);
+    for (size_t i = 0; i < externs.size(); i++) {
+      items.emplace_back(StringPrintf("%d. %s (External)", i + 6, prot_name(externs, i+6)), 0, i+6);
     }
     CursesWindow* window(out->window());
     ListBox list(out, window, "Select Protocol", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
@@ -166,12 +191,12 @@ void extrn_prots() {
     list.set_additional_hotkeys("DI");
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
     ListBoxResult result = list.Run();
-    const int maxProtocolNumber = initinfo.numexterns -1 + 6;
+    const int maxProtocolNumber = externs.size() -1 + 6;
 
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
       case 'D': {
-        if (initinfo.numexterns) {
+        if (externs.size() > 0) {
           if (items[result.selected].data() < 6) {
             messagebox(out->window(), "You can only delete external protocols.");
             break;
@@ -181,70 +206,58 @@ void extrn_prots() {
           if (!yn) {
             break;
           }
-          int i = result.selected - 3; // 3 is the number of internal protocols listed.
-          for (int i1 = i; i1 < initinfo.numexterns; i1++) {
-            externs[i1] = externs[i1 + 1];
-          }
-          --initinfo.numexterns;
+          int pos = result.selected - 3; // 3 is the number of internal protocols listed.
+          auto it = externs.begin();
+          std::advance(it, pos);
+          externs.erase(it);
         }
       } break;
       case 'I': {
-        if (initinfo.numexterns >= 15) {
+        if (externs.size() >= 15) {
           messagebox(out->window(), "Too many external protocols.");
           break;
         }
         string prompt = StringPrintf("Insert before which (6-%d) ? ", maxProtocolNumber + 1);
-        int i = dialog_input_number(out->window(), prompt, 2, initinfo.num_languages);
-        if ((i >= 6) && (i <= initinfo.numexterns + 6)) {
-          for (int i1 = initinfo.numexterns; i1 > i - 6; i1--) {
-            externs[i1] = externs[i1 - 1];
+        int pos = dialog_input_number(out->window(), prompt, 2, maxProtocolNumber + 1);
+        if ((pos >= 6) && (pos <= externs.size() + 6)) {
+          size_t extern_pos = pos - 6;
+          newexternalrec e;
+          memset(&e, 0, sizeof(newexternalrec));
+          if (extern_pos > externs.size()) {
+            externs.push_back(e);
+          } else {
+            auto it = externs.begin();
+            std::advance(it, extern_pos);
+            externs.insert(it, e);
           }
-          ++initinfo.numexterns;
-          memset(externs + i - 6, 0, sizeof(newexternalrec));
-          edit_prot(i);
+          edit_prot(externs, over_interns, pos);
         } else {
-          messagebox(out->window(), StringPrintf("Invalid entry: %d", i));
+          messagebox(out->window(), StringPrintf("Invalid entry: %d", pos));
         }
       } break;
       }
     } else if (result.type == ListBoxResultType::SELECTION) {
-      edit_prot(items[result.selected].data());
+      edit_prot(externs, over_interns, items[result.selected].data());
     } else if (result.type == ListBoxResultType::NO_SELECTION) {
       done = true;
     }
   } while (!done);
 
-  File newexternfile (syscfg.datadir, NEXTERN_DAT);
-  if (newexternfile.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile|File::modeTruncate)) {
-    newexternfile.Write(externs, initinfo.numexterns * sizeof(newexternalrec));
+  DataFile<newexternalrec> newexternfile(syscfg.datadir, NEXTERN_DAT,
+    File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate);
+  if (newexternfile) {
+    newexternfile.WriteVector(externs);
   }
   newexternfile.Close();
 
-  File internfile(syscfg.datadir, NINTERN_DAT);
-  if ((over_intern[0].othr | over_intern[1].othr | over_intern[2].othr)&othr_override_internal) {
-    if (internfile.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile|File::modeTruncate)) {
-      internfile.Write(over_intern, 3 * sizeof(newexternalrec));
+  if ((over_interns[0].othr | over_interns[1].othr | over_interns[2].othr)&othr_override_internal) {
+    DataFile<newexternalrec>  internfile(syscfg.datadir, NINTERN_DAT,
+      File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate);
+    if (internfile) {
+      internfile.WriteVector(over_interns);
     }
   } else {
-    internfile.Delete();
+    File::Remove(syscfg.datadir, NINTERN_DAT);
   }
 }
 
-void load_protocols() {
-  {
-    externs = (newexternalrec *) malloc(15 * sizeof(newexternalrec));
-    initinfo.numexterns = 0;
-    File externfile(syscfg.datadir, NEXTERN_DAT);
-    if (externfile.Open(File::modeBinary|File::modeReadWrite)) {
-      initinfo.numexterns = externfile.Read(externs, 15 * sizeof(newexternalrec)) / sizeof(newexternalrec);
-    }
-  }
-  {
-    over_intern = (newexternalrec *) malloc(3 * sizeof(newexternalrec));
-    memset(over_intern, 0, 3 * sizeof(newexternalrec));
-    File internfile(syscfg.datadir, NINTERN_DAT);
-    if (internfile.Open(File::modeBinary|File::modeReadWrite)) {
-      internfile.Read(over_intern, 3 * sizeof(newexternalrec));
-    }
-  }
-}

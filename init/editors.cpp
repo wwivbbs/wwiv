@@ -130,7 +130,7 @@ void extrn_editors() {
             break;
           }
           string prompt = StringPrintf("Insert before which (1-%d) : ", editors.size() + 1);
-          int i = dialog_input_number(out->window(), prompt, 1, editors.size());
+          int i = dialog_input_number(out->window(), prompt, 1, editors.size() + 1);
           editorrec e;
           memset(&e, 0, sizeof(editorrec));
           if (i < 0) {
