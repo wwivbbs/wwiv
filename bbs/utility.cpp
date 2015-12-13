@@ -522,7 +522,7 @@ void WWIV_SetFileTime(const char* pszFileName, const time_t tTime) {
 bool okfsed() {
   return okansi()
          && session()->user()->GetDefaultEditor() > 0 
-         && session()->user()->GetDefaultEditor() < session()->editors.size();
+         && session()->user()->GetDefaultEditor() <= session()->editors.size();
 }
 
 
