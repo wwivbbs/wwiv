@@ -207,10 +207,10 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
         abort = false;
         for (int i = 0; (i < *curli) && !abort; i++) {
           string line = lin.at(i);
-          if (line.back() == CA) {
+          if (!line.empty() && line.back() == CA) {
             line.pop_back();
           }
-          if (line.front() == CB) {
+          if (!line.empty() && line.front() == CB) {
             line = line.substr(1);
             int i5 = 0;
             int i4 = 0;
