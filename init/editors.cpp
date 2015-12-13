@@ -133,16 +133,18 @@ void extrn_editors() {
           int i = dialog_input_number(out->window(), prompt, 1, editors.size() + 1);
           editorrec e;
           memset(&e, 0, sizeof(editorrec));
-          if (i < 0 || i > editors.size() + 1) {
+          // N.B. i is one based, result.selected is 0 based.
+          if (i <= 0 || i > editors.size() + 1) {
             break;
           } else if (i > editors.size()) {
             editors.push_back(e);
+            edit_editor(editors.back());
           } else {
             auto it = editors.begin();
-            std::advance(it, i);
-            editors.insert(it, e);
+            std::advance(it, i - 1);
+            auto new_editor_it = editors.insert(it, e);
+            edit_editor(*new_editor_it);
           }
-          edit_editor(editors[i - 1]);
         } break;
       }
     } else if (result.type == ListBoxResultType::SELECTION) {

@@ -38,6 +38,7 @@
 #include <memory>
 #include <cstdarg>
 #include "bbs/bbs.h"
+#include "bbs/null_local_io.h"
 #include "bbs/sysoplog.h"
 #include "bbs/wcomm.h"
 #include "bbs/wsession.h"

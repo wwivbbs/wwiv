@@ -234,10 +234,9 @@ void asv() {
         }
         sprintf(s1, "%s%s", syscfg.gfilesdir, FORMASV_MSG);
         if (File::Exists(s1)) {
-          LoadFileIntoWorkspace(s1, true);
+          LoadFileIntoWorkspace(s1, true, true);
           messagerec msg;
           msg.storage_type = 2;
-          session()->SetNewMailWaiting(true);
           sprintf(net_email_name, "%s #1@%u", syscfg.sysopname, net_sysnum);
           
           MessageEditorData data;
@@ -247,13 +246,24 @@ void asv() {
           data.fsed_flags = INMSG_NOFSED;
           data.to_name = snode;
           data.msged_flags = MSGED_FLAG_NONE;
+          data.silent_mode = true;
           if (inmsg(data)) {
             savefile(data.text, &msg, data.aux);
-            sendout_email(data.title, &msg, 0, 1, inode, 0, 1, net_sysnum, true, session()->GetNetworkNumber());
+            EmailData email(data);
+            email.msg = &msg;
+            email.anony = 0;
+            email.user_number = 1;
+            email.system_number = inode;
+            email.an = false;
+            email.from_user = 1;
+            email.from_system = net_sysnum;
+            email.forwarded_code = 1;
+            email.from_network_number = session()->GetNetworkNumber();
+            email.silent_mode = true;
+            sendout_email(email);
           }
         }
         irt[0] = '\0';
-        session()->SetNewMailWaiting(false);
       } else {
         valfile = 2;
         break;

@@ -212,9 +212,6 @@ public:
   int  GetMaxNumberFileAreas() const { return m_nMaxNumberFileAreas; }
   void SetMaxNumberFileAreas(int n) { m_nMaxNumberFileAreas = n; }
 
-  bool IsNewMailWatiting() const { return m_bNewMailWaiting; }
-  void SetNewMailWaiting(bool b) { m_bNewMailWaiting = b; }
-
   bool IsTimeOnlineLimited() const { return m_bTimeOnlineLimited; }
   void SetTimeOnlineLimited(bool b) { m_bTimeOnlineLimited = b; }
 
@@ -389,7 +386,6 @@ private:
   bool        m_bAllowCC;
   bool        m_bUserOnline;
   bool        m_bQuoting;
-  bool        m_bNewMailWaiting;
   bool        m_bTimeOnlineLimited;
 
   bool        m_bNewScanAtLogin,

@@ -89,9 +89,10 @@ static bool GetMessageToName(const char *aux) {
   return bHasAddress;
 }
 
-static void GetMessageTitle(string *title, bool force_title) {
+static void GetMessageTitle(MessageEditorData& data) {
+  bool force_title = !data.title.empty();
   if (okansi()) {
-    if (!session()->IsNewMailWatiting()) {
+    if (!data.silent_mode) {
       bout << "|#2Title: ";
       bout.mpl(60);
     }
@@ -100,7 +101,7 @@ static void GetMessageTitle(string *title, bool force_title) {
       char ch = '\0';
       StringTrim(irt);
       if (strncasecmp(stripcolors(irt), "re:", 3) != 0) {
-        if (session()->IsNewMailWatiting()) {
+        if (data.silent_mode) {
           s1 = irt;
           irt[0] = '\0';
         } else {
@@ -112,14 +113,14 @@ static void GetMessageTitle(string *title, bool force_title) {
       if (s1.length() > 60) {
         s1.resize(60);
       }
-      if (!session()->IsNewMailWatiting() && !force_title) {
+      if (!data.silent_mode && !force_title) {
         bout << s1;
         ch = getkey();
         if (ch == 10) {
           ch = getkey();
         }
       } else {
-        title->assign(s1);
+        data.title.assign(s1);
         ch = RETURN;
       }
       force_title = false;
@@ -132,21 +133,21 @@ static void GetMessageTitle(string *title, bool force_title) {
         bout.mpl(60);
         string rollover_line = StringPrintf("%c", ch);
         inli(&s1, &rollover_line, 60, true, false);
-        title->assign(s1);
+        data.title.assign(s1);
       } else {
         bout.nl();
-        title->assign(s1);
+        data.title.assign(s1);
       }
     } else {
-      inputl(title, 60);
+      inputl(&data.title, 60);
     }
   } else {
-    if (session()->IsNewMailWatiting() || force_title) {
-      title->assign(irt);
+    if (data.silent_mode || force_title) {
+      data.title.assign(irt);
     } else {
       bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
       bout << "Title: ";
-      inputl(title, 60);
+      inputl(&data.title, 60);
     }
   }
 }
@@ -568,8 +569,7 @@ bool inmsg(MessageEditorData& data) {
     }
   }
 
-  bool force_title = !data.title.empty();
-  GetMessageTitle(&data.title, force_title);
+  GetMessageTitle(data);
   if (data.title.empty() && data.need_title) {
     bout << "|#6Aborted.\r\n";
     return false;
@@ -584,7 +584,7 @@ bool inmsg(MessageEditorData& data) {
     bSaveMessage = ExternalMessageEditor(maxli, &setanon, &data.title, data.to_name, data.msged_flags, data.aux);
   } else if (data.fsed_flags == INMSG_FSED_WORKSPACE) {   // "auto-send mail message"
     bSaveMessage = File::Exists(exted_filename);
-    if (bSaveMessage && !session()->IsNewMailWatiting()) {
+    if (bSaveMessage && !data.silent_mode) {
       bout << "Reading in file...\r\n";
     }
     use_workspace = false;
@@ -598,7 +598,7 @@ bool inmsg(MessageEditorData& data) {
   bool real_name = false;
   GetMessageAnonStatus(&real_name, &data.anonymous_flag, setanon);
   bout.backline();
-  if (!session()->IsNewMailWatiting()) {
+  if (!data.silent_mode) {
     SpinPuts("Saving...", 2);
   }
   if (data.fsed_flags) {
@@ -614,7 +614,7 @@ bool inmsg(MessageEditorData& data) {
   // Add author name
   if (real_name) {
     b << session()->user()->GetRealName() << crlf;
-  } else if (session()->IsNewMailWatiting()) {
+  } else if (data.silent_mode) {
     b << syscfg.sysopname << " #1" << crlf;
   } else {
     b << session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum) << crlf;
