@@ -150,22 +150,22 @@ int TextFile::WriteLine(const string& text) {
   return num_written;
 }
 
-int TextFile::WriteFormatted(const char *pszFormatText, ...) {
+int TextFile::WriteFormatted(const char *formatText, ...) {
   va_list ap;
   char szBuffer[4096];
 
-  va_start(ap, pszFormatText);
-  vsnprintf(szBuffer, sizeof(szBuffer), pszFormatText, ap);
+  va_start(ap, formatText);
+  vsnprintf(szBuffer, sizeof(szBuffer), formatText, ap);
   va_end(ap);
   return Write(szBuffer);
 }
 
-static void StripLineEnd(char *pszString) {
-  size_t i = strlen(pszString);
-  while ((i > 0) && ((pszString[i - 1] == 10) || pszString[i-1] == 13)) {
+static void StripLineEnd(char *str) {
+  size_t i = strlen(str);
+  while ((i > 0) && ((str[i - 1] == 10) || str[i-1] == 13)) {
     --i;
   }
-  pszString[i] = '\0';
+  str[i] = '\0';
 }
 
 bool TextFile::ReadLine(string *buffer) {

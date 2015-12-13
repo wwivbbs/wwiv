@@ -60,7 +60,7 @@ void showsec() {
 }
 
 
-char* GetArString(gfiledirrec r, char* pszBuffer) {
+char* GetArString(gfiledirrec r, char* buffer) {
   char szBuffer[ 81 ];
   strcpy(szBuffer, "None.");
   if (r.ar != 0) {
@@ -71,8 +71,8 @@ char* GetArString(gfiledirrec r, char* pszBuffer) {
     }
     szBuffer[1] = 0;
   }
-  strcpy(pszBuffer, szBuffer);
-  return pszBuffer;
+  strcpy(buffer, szBuffer);
+  return buffer;
 }
 
 

@@ -213,14 +213,14 @@ int get_kb_event(int nNumLockMode) {
 
 // Like onek but does not put cursor down a line
 // One key, no carriage return
-char onek_ncr(const char *pszAllowableChars) {
-  WWIV_ASSERT(pszAllowableChars);
+char onek_ncr(const char *allowable_chars) {
+  WWIV_ASSERT(allowable_chars);
 
   char ch = '\0';
-  while (!strchr(pszAllowableChars, ch = wwiv::UpperCase<char>(getkey())) && !hangup)
+  while (!strchr(allowable_chars, ch = wwiv::UpperCase<char>(getkey())) && !hangup)
     ;
   if (hangup) {
-    ch = pszAllowableChars[0];
+    ch = allowable_chars[0];
   }
   bputch(ch);
   return ch;

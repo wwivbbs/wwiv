@@ -28,7 +28,7 @@ constexpr int MSGED_FLAG_HAS_REPLY_NAME = 2;
 constexpr int MSGED_FLAG_HAS_REPLY_TITLE = 4;
 
 
-bool ExternalMessageEditor(int maxli, int *setanon, std::string* pszTitle, const std::string& destination, int flags, const std::string& aux);
+bool ExternalMessageEditor(int maxli, int *setanon, std::string* title, const std::string& destination, int flags, const std::string& aux);
 
 bool external_text_edit(const std::string& edit_filename, const std::string& new_directory, int numlines,
                         const std::string& destination, int flags);

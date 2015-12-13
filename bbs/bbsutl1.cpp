@@ -376,7 +376,7 @@ bool play_sdf(const string& soundFileName, bool abortable) {
 /**
  * Describes the area code as listed in regions.dat
  * @param nAreaCode The area code to describe
- * @param pszDescription point to return the description for the specified
+ * @param description point to return the description for the specified
  *        area code.
  */
 string describe_area_code(int nAreaCode) {

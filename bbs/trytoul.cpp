@@ -37,18 +37,18 @@ using std::string;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
-int try_to_ul_wh(char *pszFileName);
-void t2u_error(const char *pszFileName, const char *msg);
+int try_to_ul_wh(char *file_name);
+void t2u_error(const char *file_name, const char *msg);
 
 
-int try_to_ul(char *pszFileName) {
+int try_to_ul(char *file_name) {
   bool ac = false;
 
   if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
     ac = true;
     tmp_disable_conf(true);
   }
-  if (!try_to_ul_wh(pszFileName)) {
+  if (!try_to_ul_wh(file_name)) {
     if (ac) {
       tmp_disable_conf(false);
     }
@@ -61,10 +61,10 @@ int try_to_ul(char *pszFileName) {
 
   bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
 
-  sysoplogf("Failed to upload %s, moving to TRY2UL dir", pszFileName);
+  sysoplogf("Failed to upload %s, moving to TRY2UL dir", file_name);
 
-  const string src = StringPrintf("%s%s", syscfgovr.batchdir, pszFileName);
-  const string dest = StringPrintf("%sTRY2UL%c%s", syscfg.dloadsdir, File::pathSeparatorChar, pszFileName);
+  const string src = StringPrintf("%s%s", syscfgovr.batchdir, file_name);
+  const string dest = StringPrintf("%sTRY2UL%c%s", syscfg.dloadsdir, File::pathSeparatorChar, file_name);
 
   if (File::Exists(dest)) {                        // this is iffy <sp?/who care I chooose to
     File::Remove(dest);                           // remove duplicates in try2ul dir, so keep
@@ -83,18 +83,18 @@ int try_to_ul(char *pszFileName) {
   return 1;                                 // return failure, removes ul k credits etc...
 }
 
-int try_to_ul_wh(char *pszFileName) {
+int try_to_ul_wh(char *file_name) {
   directoryrec d;
   char s[101], s1[MAX_PATH], s2[MAX_PATH], *ss;
   int i, i1, i2, i3, i4, key, ok = 0, dn = 0;
   uploadsrec u, u1;
 
-  unalign(pszFileName);
-  StringTrim(pszFileName);
+  unalign(file_name);
+  StringTrim(file_name);
 
-  strcpy(s, pszFileName);
-  if (!okfn(pszFileName)) {
-    t2u_error(pszFileName, "Bad filename");          // bad filename
+  strcpy(s, file_name);
+  if (!okfn(file_name)) {
+    t2u_error(file_name, "Bad filename");          // bad filename
     return 1;
   }
   bout.cls();
@@ -120,7 +120,7 @@ int try_to_ul_wh(char *pszFileName) {
       } else {
         // The sleep_for used to be a wait_sec_or_hit( 1 )
         sleep_for(milliseconds(500));
-        bout << "\r\nUpload " << pszFileName << " to which dir? <CR>=0 ?=List \r\n";
+        bout << "\r\nUpload " << file_name << " to which dir? <CR>=0 ?=List \r\n";
         input(temp, 5, true);
         StringTrim(temp);
         if (temp[0] == '?') {
@@ -149,11 +149,11 @@ int try_to_ul_wh(char *pszFileName) {
   dliscan1(dn);
   d = directories[dn];
   if (session()->numf >= d.maxfiles) {
-    t2u_error(pszFileName, "This directory is currently full.");
+    t2u_error(file_name, "This directory is currently full.");
     return 1;
   }
   if ((d.mask & mask_no_uploads) && (!dcs())) {
-    t2u_error(pszFileName, "Uploads are not allowed to this directory.");
+    t2u_error(file_name, "Uploads are not allowed to this directory.");
     return 1;
   }
   if (!is_uploadable(s)) {
@@ -161,17 +161,17 @@ int try_to_ul_wh(char *pszFileName) {
       bout.nl();
       bout << "|#5In filename database - add anyway? ";
       if (!yesno()) {
-        t2u_error(pszFileName, "|#6File either already here or unwanted.");
+        t2u_error(file_name, "|#6File either already here or unwanted.");
         return 1;
       }
     } else {
-      t2u_error(pszFileName, "|#6File either already here or unwanted.");
+      t2u_error(file_name, "|#6File either already here or unwanted.");
       return 1;
     }
   }
   align(s);
   if (strchr(s, '?')) {
-    t2u_error(pszFileName, "Contains wildcards");
+    t2u_error(file_name, "Contains wildcards");
     return 1;
   }
   if (d.mask & mask_archive) {
@@ -194,7 +194,7 @@ int try_to_ul_wh(char *pszFileName) {
       bout << s1;
       bout.nl(2);
 
-      t2u_error(pszFileName, "Unsupported archive");
+      t2u_error(file_name, "Unsupported archive");
       return 1;
     }
   }
@@ -214,11 +214,11 @@ int try_to_ul_wh(char *pszFileName) {
       bout.nl(2);
       bout << "File already exists.\r\n|#5Add to database anyway? ";
       if (yesno() == 0) {
-        t2u_error(pszFileName, "That file is already here.");
+        t2u_error(file_name, "That file is already here.");
         return 1;
       }
     } else {
-      t2u_error(pszFileName, "That file is already here.");
+      t2u_error(file_name, "That file is already here.");
       return 1;
     }
   }
@@ -250,12 +250,12 @@ int try_to_ul_wh(char *pszFileName) {
           bout.nl();
           bout << "|#5Upload anyway? ";
           if (!yesno()) {
-            t2u_error(pszFileName, "That file is already here.");
+            t2u_error(file_name, "That file is already here.");
             return 1;
           }
           bout.nl();
         } else {
-          t2u_error(pszFileName, "That file is already here.");
+          t2u_error(file_name, "That file is already here.");
           return 1;
         }
       }
@@ -271,8 +271,8 @@ int try_to_ul_wh(char *pszFileName) {
     dliscan1(dn);
     bout.nl();
   }
-  sprintf(s1, "%s%s", syscfgovr.batchdir, pszFileName);
-  sprintf(s2, "%s%s", d.path, pszFileName);
+  sprintf(s1, "%s%s", syscfgovr.batchdir, file_name);
+  sprintf(s2, "%s%s", d.path, file_name);
 
   if (File::Exists(s2)) {
     File::Remove(s2);
@@ -290,7 +290,7 @@ int try_to_ul_wh(char *pszFileName) {
     bout.cls();
     bout.nl();
     bout << "|#1Upload going to |#7" << d.name << "\r\n\n";
-    bout << "   |#1Filename    |01: |#7" << pszFileName << wwiv::endl;
+    bout << "   |#1Filename    |01: |#7" << file_name << wwiv::endl;
     bout << "|#2A|#7] |#1Description |01: |#7" << u.description << wwiv::endl;
     bout << "|#2B|#7] |#1Modify extended description\r\n\n";
     print_extended(u.filename, &abort, 10, 0);
@@ -300,7 +300,7 @@ int try_to_ul_wh(char *pszFileName) {
     case 'Q':
       bout << "Are you sure, file will be lost? ";
       if (yesno()) {
-        t2u_error(pszFileName, "Changed mind");
+        t2u_error(file_name, "Changed mind");
         // move file back to batch dir
         movefile(s2, s1, true);
         return 1;
@@ -366,7 +366,7 @@ int try_to_ul_wh(char *pszFileName) {
     if (u.mask & mask_extended) {
       delete_extended_description(u.filename);
     }
-    t2u_error(pszFileName, "DOS error - File not found.");
+    t2u_error(file_name, "DOS error - File not found.");
     return 1;
   }
   if (!syscfg.upload_cmd.empty()) {
@@ -376,7 +376,7 @@ int try_to_ul_wh(char *pszFileName) {
       if (u.mask & mask_extended) {
         delete_extended_description(u.filename);
       }
-      t2u_error(pszFileName, "Failed upload event");
+      t2u_error(file_name, "Failed upload event");
       return 1;
     } else {
       file.Open(File::modeBinary | File::modeReadOnly);
@@ -423,11 +423,11 @@ int try_to_ul_wh(char *pszFileName) {
 }
 
 
-void t2u_error(const char *pszFileName, const char *msg) {
+void t2u_error(const char *file_name, const char *msg) {
   char szBuffer[ 255 ];
 
   bout.nl(2);
-  sprintf(szBuffer, "**  %s failed T2U qualifications", pszFileName);
+  sprintf(szBuffer, "**  %s failed T2U qualifications", file_name);
   bout << szBuffer;
   bout.nl();
   sysoplog(szBuffer);

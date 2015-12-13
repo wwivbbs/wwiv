@@ -198,34 +198,34 @@ void CursesLocalIO::LocalFastPuts(const string& text) {
   window_->Puts(text.c_str());
 }
 
-int CursesLocalIO::LocalPrintf(const char *pszFormattedText, ...) {
+int CursesLocalIO::LocalPrintf(const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[1024];
 
-  va_start(ap, pszFormattedText);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
+  va_start(ap, formatted_text);
+  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
   LocalFastPuts(szBuffer);
   return nNumWritten;
 }
 
-int CursesLocalIO::LocalXYPrintf(int x, int y, const char *pszFormattedText, ...) {
+int CursesLocalIO::LocalXYPrintf(int x, int y, const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[1024];
 
-  va_start(ap, pszFormattedText);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
+  va_start(ap, formatted_text);
+  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
   LocalXYPuts(x, y, szBuffer);
   return nNumWritten;
 }
 
-int CursesLocalIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...) {
+int CursesLocalIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[1024];
 
-  va_start(ap, pszFormattedText);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
+  va_start(ap, formatted_text);
+  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
 
   int nOldColor = curatr;
@@ -403,7 +403,7 @@ void CursesLocalIO::LocalClrEol() {
   window_->ClrtoEol();
 }
 
-void CursesLocalIO::LocalWriteScreenBuffer(const char *pszBuffer) {}
+void CursesLocalIO::LocalWriteScreenBuffer(const char *buffer) {}
 int CursesLocalIO::GetDefaultScreenBottom() { return window_->GetMaxY() - 1; }
 
 void CursesLocalIO::LocalEditLine(char *s, int len, int edit_status, int *returncode, char *ss) {}

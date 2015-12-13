@@ -250,10 +250,10 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
   }
 }
 
-bool ExpandWWIVHeartCodes(char *pszBuffer) {
+bool ExpandWWIVHeartCodes(char *buffer) {
   curatr = 0;
   char szTempBuffer[ CONST_SBBSFOS_BUFFER_SIZE + 100 ];
-  char *pIn = pszBuffer;
+  char *pIn = buffer;
   char *pOut = szTempBuffer;
   int n = 0;
   while (*pIn && n++ < (CONST_SBBSFOS_BUFFER_SIZE)) {
@@ -275,7 +275,7 @@ bool ExpandWWIVHeartCodes(char *pszBuffer) {
     *pOut++ = *pIn++;
   }
   *pOut++ = '\0';
-  strcpy(pszBuffer, szTempBuffer);
+  strcpy(buffer, szTempBuffer);
   return true;
 }
 
@@ -322,15 +322,15 @@ int ExecExternalProgram(const string commandLine, int flags) {
   }
 
   DWORD dwCreationFlags = 0;
-  char * pszTitle = new char[ 255 ];
-  memset(pszTitle, 0, sizeof(pszTitle));
+  char * title = new char[ 255 ];
+  memset(title, 0, sizeof(title));
   if (flags & EFLAG_NETPROG) {
-    strcpy(pszTitle, "NETWORK");
+    strcpy(title, "NETWORK");
   } else {
-    _snprintf(pszTitle, sizeof(pszTitle), "%s in door on node %d",
+    _snprintf(title, sizeof(title), "%s in door on node %d",
               session()->user()->GetName(), session()->GetInstanceNumber());
   }
-  si.lpTitle = pszTitle;
+  si.lpTitle = title;
 
   if (ok_modem_stuff && !bUsingSync && session()->using_modem) {
     session()->remoteIO()->close(true);
@@ -383,7 +383,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
                   &pi);
 
   if (!bRetCP) {
-    delete[] pszTitle;
+    delete[] title;
     sysoplogf("!!! CreateProcess failed for command: [%s] with Error Code %ld", workingCommandLine.c_str(), GetLastError());
     if (bUsingSync) {
       fprintf(hLogFile, "!!! CreateProcess failed for command: [%s] with Error Code %ld", workingCommandLine.c_str(),
@@ -439,7 +439,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
   // Close process and thread handles.
   CloseHandle(pi.hProcess);
 
-  delete[] pszTitle;
+  delete[] title;
 
   // reengage comm stuff
   if (ok_modem_stuff && !bUsingSync && session()->using_modem) {

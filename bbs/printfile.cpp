@@ -106,10 +106,10 @@ const string CreateFullPathToPrint(const string& basename) {
 }
 
 /**
- * Prints the file pszFileName.  Returns true if the file exists and is not
+ * Prints the file file_name.  Returns true if the file exists and is not
  * zero length.  Returns false if the file does not exist or is zero length
  *
- * @param pszFileName Name of the file to display
+ * @param file_name Name of the file to display
  * @param bAbortable If true, a keyboard input may abort the display
  * @param bForcePause Should pauses be used even for ANSI files - Normally
  *        pause on screen is disabled for ANSI files.

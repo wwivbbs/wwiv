@@ -49,7 +49,7 @@ void ProcessLocalKeyDuringZmodem();
 #pragma warning( disable : 4706 4127 4244 4100 )
 #endif
 
-bool NewZModemSendFile( const char *pszFileName ) {
+bool NewZModemSendFile( const char *file_name ) {
 	ZModem info;
 	info.ifd = info.ofd = -1;
 	info.zrinitflags = 0;
@@ -74,16 +74,16 @@ bool NewZModemSendFile( const char *pszFileName ) {
 	int f3			= 0;
 	int nFilesRem	= 0;
 	int nBytesRem	= 0;
-	done = ZmodemTFile( pszFileName, pszFileName, f0, f1, f2, f3, nFilesRem, nBytesRem, &info );
+	done = ZmodemTFile( file_name, file_name, f0, f1, f2, f3, nFilesRem, nBytesRem, &info );
 	switch ( done ) {
 	case 0:
-		ZModemWindowXferStatus( "Sending File: %s", pszFileName );
+		ZModemWindowXferStatus( "Sending File: %s", file_name );
 		break;
 	case ZmErrCantOpen:
-		ZModemWindowXferStatus( "ERROR Opening File: %s", pszFileName );
+		ZModemWindowXferStatus( "ERROR Opening File: %s", file_name );
 		break;
 	case ZmFileTooLong:
-		ZModemWindowXferStatus( "ERROR FileName \"%s\" is too long", pszFileName );
+		ZModemWindowXferStatus( "ERROR FileName \"%s\" is too long", file_name );
 		break;
 	case ZmDone:
 		return true;
@@ -112,7 +112,7 @@ bool NewZModemSendFile( const char *pszFileName ) {
 }
 
 
-bool NewZModemReceiveFile( const char *pszFileName ) {
+bool NewZModemReceiveFile( const char *file_name ) {
 	ZModem info;
 	info.ifd = info.ofd = -1;
 	info.zrinitflags = 0;
@@ -128,10 +128,10 @@ bool NewZModemReceiveFile( const char *pszFileName ) {
 	if ( ret ) {
 		char szNewFileName[ MAX_PATH ];
 		char szOldFileName[ MAX_PATH ];
-		strcpy( szNewFileName, pszFileName );
+		strcpy( szNewFileName, file_name );
 		StringRemoveWhitespace( szNewFileName );
 
-		sprintf(szOldFileName, "%s%s", syscfgovr.tempdir, stripfn(pszFileName));
+		sprintf(szOldFileName, "%s%s", syscfgovr.tempdir, stripfn(file_name));
 		StringRemoveWhitespace(szOldFileName);
         std::clog << "szOldFileName=" << szOldFileName
                   << "szNewFileName=" << szNewFileName;
@@ -355,11 +355,11 @@ void ZStatus(int type, int value, char *msg) {
 }
 
 
-FILE * ZOpenFile(char *pszFileName, u_long crc, ZModem *info) {
+FILE * ZOpenFile(char *file_name, u_long crc, ZModem *info) {
 	char szTempFileName[ MAX_PATH ];
-	sprintf( szTempFileName, "%s%s", syscfgovr.tempdir, pszFileName );
+	sprintf( szTempFileName, "%s%s", syscfgovr.tempdir, file_name );
 #if defined(_DEBUG)
-	zmodemlog( "ZOpenFile filename=%s %s\r\n", pszFileName, szTempFileName );
+	zmodemlog( "ZOpenFile filename=%s %s\r\n", file_name, szTempFileName );
 #endif
 	return fopen( szTempFileName, "wb" );
 
@@ -376,11 +376,11 @@ FILE * ZOpenFile(char *pszFileName, u_long crc, ZModem *info) {
 	//	 * if relative path, do we want to prepend something?
 	//	 */
 	//
-	//	if( *pszFileName == '/' )	/* for now, disallow absolute paths */
+	//	if( *file_name == '/' )	/* for now, disallow absolute paths */
 	//	  return nullptr;
 	//
 	//	buf.st_size = 0;
-	//	if( stat(pszFileName, &buf) == 0 )
+	//	if( stat(file_name, &buf) == 0 )
 	//	  exists = True;
 	//	else if( errno == ENOENT )
 	//	  exists = False;
@@ -412,7 +412,7 @@ FILE * ZOpenFile(char *pszFileName, u_long crc, ZModem *info) {
 	//	}
 	//
 	//	zmodemlog("ZOpenFile: %s, f0=%x, f1=%x, exists=%d, size=%d/%d\n",
-	//	  pszFileName, f0,f1, exists, buf.st_size, info->len);
+	//	  file_name, f0,f1, exists, buf.st_size, info->len);
 	//
 	//	if( f0 == ZCRESUM ) {	/* if exists, and we already have it, return */
 	//	  if( exists  &&  buf.st_size == info->len )
@@ -438,8 +438,8 @@ FILE * ZOpenFile(char *pszFileName, u_long crc, ZModem *info) {
 	//	    break;
 	//
 	//	  case ZMCRC:		/* take if different CRC or length */
-	//	    zmodemlog("  ZMCRC: crc=%x, FileCrc=%x\n", crc, FileCrc(pszFileName) );
-	//	    if( exists  &&  info->len == buf.st_size && crc == FileCrc(pszFileName) )
+	//	    zmodemlog("  ZMCRC: crc=%x, FileCrc=%x\n", crc, FileCrc(file_name) );
+	//	    if( exists  &&  info->len == buf.st_size && crc == FileCrc(file_name) )
 	//	      return nullptr;
 	//	    break;
 	//
@@ -467,28 +467,28 @@ FILE * ZOpenFile(char *pszFileName, u_long crc, ZModem *info) {
 	//	  case ZMCHNG:	/* invent new filename if exists */
 	//	    if( exists ) {
 	//	      while( exists ) {
-	//		sprintf(szFileName2, "%s_%d", pszFileName, changeCount++);
+	//		sprintf(szFileName2, "%s_%d", file_name, changeCount++);
 	//		exists = stat(szFileName2, &buf) == 0 || errno != ENOENT;
 	//	      }
-	//	      pszFileName = szFileName2;
+	//	      file_name = szFileName2;
 	//	    }
 	//	    break;
 	//	}
 	//
 	//	/* here if we've decided to accept */
-	//	if( exists && !apnd && unlink(pszFileName) != 0 )
+	//	if( exists && !apnd && unlink(file_name) != 0 )
 	//	  return nullptr;
 	//
 	//	/* TODO: build directory path if needed */
 	//
-	//	ZModemWindowStatus("Receiving: \"%s\"", pszFileName);
+	//	ZModemWindowStatus("Receiving: \"%s\"", file_name);
 	//
 	//	WindowXferGaugeMax(info->len);
 	//
-	//	ofile = fopen(pszFileName, apnd ? "a" : "w");
+	//	ofile = fopen(file_name, apnd ? "a" : "w");
 	//
 	//	zmodemlog("  ready to open %s/%s: apnd = %d, file = %lx\n",
-	//	  getcwd(path,sizeof(path)), pszFileName, apnd, (long)ofile);
+	//	  getcwd(path,sizeof(path)), file_name, apnd, (long)ofile);
 	//
 	//	return ofile;
 	//return nullptr;

@@ -65,7 +65,7 @@ void Capture::global_char(char ch) {
   }
 }
 
-void Capture::set_x_only(bool tf, const char *pszFileName, bool ovwr) {
+void Capture::set_x_only(bool tf, const char *file_name, bool ovwr) {
   static bool bOldGlobalHandle = false;
 
   if (x_only) {
@@ -86,7 +86,7 @@ void Capture::set_x_only(bool tf, const char *pszFileName, bool ovwr) {
       set_global_handle(false);
       x_only = true;
       wx_ = 0;
-      fileGlobalCap.SetName(syscfgovr.tempdir, pszFileName);
+      fileGlobalCap.SetName(syscfgovr.tempdir, file_name);
 
       int mode = File::modeBinary | File::modeText | File::modeCreateFile | File::modeReadWrite;
       if (!ovwr) {

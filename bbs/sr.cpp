@@ -389,10 +389,10 @@ int get_protocol(xfertype xt) {
   return -1;
 }
 
-void ascii_send(const char *pszFileName, bool *sent, double *percent) {
+void ascii_send(const char *file_name, bool *sent, double *percent) {
   char b[2048];
 
-  File file(pszFileName);
+  File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileSize = file.GetLength();
     lFileSize = std::max<long>(lFileSize, 1);
@@ -426,12 +426,12 @@ void ascii_send(const char *pszFileName, bool *sent, double *percent) {
   }
 }
 
-void maybe_internal(const char *pszFileName, bool *xferred, double *percent, bool bSend, int prot) {
+void maybe_internal(const char *file_name, bool *xferred, double *percent, bool bSend, int prot) {
   if (session()->over_intern.size() > 0 
       && (session()->over_intern[prot - 2].othr & othr_override_internal)
       && ((bSend && session()->over_intern[prot - 2].sendfn[0]) ||
           (!bSend && session()->over_intern[prot - 2].receivefn[0]))) {
-    if (extern_prot(-(prot - 1), pszFileName, bSend) == session()->over_intern[prot - 2].ok1) {
+    if (extern_prot(-(prot - 1), file_name, bSend) == session()->over_intern[prot - 2].ok1) {
       *xferred = true;
     }
     return;
@@ -444,35 +444,35 @@ void maybe_internal(const char *pszFileName, bool *xferred, double *percent, boo
   if (bSend) {
     switch (prot) {
     case WWIV_INTERNAL_PROT_XMODEM:
-      xymodem_send(pszFileName, xferred, percent, false, false, false);
+      xymodem_send(file_name, xferred, percent, false, false, false);
       break;
     case WWIV_INTERNAL_PROT_XMODEMCRC:
-      xymodem_send(pszFileName, xferred, percent, true, false, false);
+      xymodem_send(file_name, xferred, percent, true, false, false);
       break;
     case WWIV_INTERNAL_PROT_YMODEM:
-      xymodem_send(pszFileName, xferred, percent, true, true, false);
+      xymodem_send(file_name, xferred, percent, true, true, false);
       break;
     case WWIV_INTERNAL_PROT_ZMODEM:
-      zmodem_send(pszFileName, xferred, percent);
+      zmodem_send(file_name, xferred, percent);
       break;
     }
   } else {
     switch (prot) {
     case WWIV_INTERNAL_PROT_XMODEM:
-      xymodem_receive(pszFileName, xferred, false);
+      xymodem_receive(file_name, xferred, false);
       break;
     case WWIV_INTERNAL_PROT_XMODEMCRC:
     case WWIV_INTERNAL_PROT_YMODEM:
-      xymodem_receive(pszFileName, xferred, true);
+      xymodem_receive(file_name, xferred, true);
       break;
     case WWIV_INTERNAL_PROT_ZMODEM:
-      zmodem_receive(pszFileName, xferred);
+      zmodem_receive(file_name, xferred);
       break;
     }
   }
 }
 
-void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn, int dn, long fs) {
+void send_file(const char *file_name, bool *sent, bool *abort, const char *sfn, int dn, long fs) {
   *sent = false;
   *abort = false;
   int nProtocol = 0;
@@ -501,13 +501,13 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn
       ok = true;
       break;
     case WWIV_INTERNAL_PROT_ASCII:
-      ascii_send(pszFileName, sent, &percent);
+      ascii_send(file_name, sent, &percent);
       break;
     case WWIV_INTERNAL_PROT_XMODEM:
     case WWIV_INTERNAL_PROT_XMODEMCRC:
     case WWIV_INTERNAL_PROT_YMODEM:
     case WWIV_INTERNAL_PROT_ZMODEM:
-      maybe_internal(pszFileName, sent, &percent, true, nProtocol);
+      maybe_internal(file_name, sent, &percent, true, nProtocol);
       break;
     case WWIV_INTERNAL_PROT_BATCH:
       ok = true;
@@ -550,7 +550,7 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn
       }
       break;
     default:
-      int nTempProt = extern_prot(nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS, pszFileName, true);
+      int nTempProt = extern_prot(nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS, file_name, true);
       *abort = false;
       if (nTempProt == session()->externs[nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS].ok1) {
         *sent = true;
@@ -563,12 +563,12 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn
       *sent = true;
       add_ass(10, "Aborted on last block");
     } else {
-      sysoplogf("Tried D/L \"%s\" %3.2f%%", stripfn(pszFileName), percent * 100.0);
+      sysoplogf("Tried D/L \"%s\" %3.2f%%", stripfn(file_name), percent * 100.0);
     }
   }
 }
 
-void receive_file(const char *pszFileName, int *received, const char *sfn, int dn) {
+void receive_file(const char *file_name, int *received, const char *sfn, int dn) {
   bool bReceived;
   int nProtocol = (dn == -1) ? get_protocol(xf_up_temp) : get_protocol(xf_up);
 
@@ -583,8 +583,8 @@ void receive_file(const char *pszFileName, int *received, const char *sfn, int d
   case WWIV_INTERNAL_PROT_XMODEMCRC:
   case WWIV_INTERNAL_PROT_YMODEM:
   case WWIV_INTERNAL_PROT_ZMODEM: {
-    std::clog << "maybe_internal, filename=" << pszFileName;
-    maybe_internal(pszFileName, &bReceived, nullptr, false, nProtocol);
+    std::clog << "maybe_internal, filename=" << file_name;
+    maybe_internal(file_name, &bReceived, nullptr, false, nProtocol);
     *received = (bReceived) ? 1 : 0;
   }
   break;
@@ -614,8 +614,8 @@ void receive_file(const char *pszFileName, int *received, const char *sfn, int d
     break;
   default:
     if (nProtocol > (WWIV_NUM_INTERNAL_PROTOCOLS - 1) && incom) {
-      extern_prot(nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS, pszFileName, false);
-      *received = File::Exists(pszFileName);
+      extern_prot(nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS, file_name, false);
+      *received = File::Exists(file_name);
     }
     break;
   }

@@ -58,15 +58,15 @@ template<class _Ty> inline const _Ty& in_range(const _Ty& minValue, const _Ty& m
  * Deletes files from a directory.  This is meant to be used only in the temp
  * directories of WWIV.
  *
- * @param pszFileName       Wildcard file specification to delete
+ * @param file_name       Wildcard file specification to delete
  * @param pszDirectoryName  Name of the directory to delete files from
  * @param bPrintStatus      Print out locally as files are deleted
  */
-void remove_from_temp(const char *pszFileName, const char *pszDirectoryName, bool bPrintStatus) {
-  WWIV_ASSERT(pszFileName);
+void remove_from_temp(const char *file_name, const char *pszDirectoryName, bool bPrintStatus) {
+  WWIV_ASSERT(file_name);
   WWIV_ASSERT(pszDirectoryName);
 
-  const string filespec = StrCat(pszDirectoryName, stripfn(pszFileName));
+  const string filespec = StrCat(pszDirectoryName, stripfn(file_name));
   WFindFile fnd;
   bool bFound = fnd.open(filespec, 0);
   bout.nl();
@@ -279,22 +279,22 @@ void giveup_timeslice() {
   }
 }
 
-char *stripfn(const char *pszFileName) {
+char *stripfn(const char *file_name) {
   static char szStaticFileName[15];
   char szTempFileName[ MAX_PATH ];
 
-  WWIV_ASSERT(pszFileName);
+  WWIV_ASSERT(file_name);
 
   int nSepIndex = -1;
-  for (int i = 0; i < wwiv::strings::GetStringLength(pszFileName); i++) {
-    if (pszFileName[i] == '\\' || pszFileName[i] == ':' || pszFileName[i] == '/') {
+  for (int i = 0; i < wwiv::strings::GetStringLength(file_name); i++) {
+    if (file_name[i] == '\\' || file_name[i] == ':' || file_name[i] == '/') {
       nSepIndex = i;
     }
   }
   if (nSepIndex != -1) {
-    strcpy(szTempFileName, &(pszFileName[nSepIndex + 1]));
+    strcpy(szTempFileName, &(file_name[nSepIndex + 1]));
   } else {
-    strcpy(szTempFileName, pszFileName);
+    strcpy(szTempFileName, file_name);
   }
   for (int i1 = 0; i1 < wwiv::strings::GetStringLength(szTempFileName); i1++) {
     if (szTempFileName[i1] >= 'A' && szTempFileName[i1] <= 'Z') {
@@ -313,8 +313,8 @@ char *stripfn(const char *pszFileName) {
   return szStaticFileName;
 }
 
-void stripfn_inplace(char *pszFileName) {
-  strcpy(pszFileName, stripfn(pszFileName));
+void stripfn_inplace(char *file_name) {
+  strcpy(file_name, stripfn(file_name));
 }
 
 char *get_wildlist(char *pszFileMask) {
@@ -508,15 +508,15 @@ slrec getslrec(int nSl) {
   return CurSlRec;
 }
 
-void WWIV_SetFileTime(const char* pszFileName, const time_t tTime) {
+void WWIV_SetFileTime(const char* file_name, const time_t tTime) {
   struct utimbuf utbuf;
 
   utbuf.actime  = tTime;
   utbuf.modtime = tTime;
 
-  WWIV_ASSERT(pszFileName);
+  WWIV_ASSERT(file_name);
 
-  utime(pszFileName, &utbuf);
+  utime(file_name, &utbuf);
 }
 
 bool okfsed() {

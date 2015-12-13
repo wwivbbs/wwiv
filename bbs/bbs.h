@@ -49,7 +49,7 @@ class WApplication : public WLogger {
    */
   int BBSMainLoop(int argc, char *argv[]);
   // From WLogger
-  virtual bool LogMessage(const char* pszFormat, ...);
+  virtual bool LogMessage(const char* format, ...);
 
 
 };

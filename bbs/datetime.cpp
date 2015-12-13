@@ -110,8 +110,8 @@ time_t date_to_daten(const char *datet) {
  *     filetime("BBS.EXE"));
  *
  */
-void filedate(const char *pszFileName, char *pszReturnValue) {
-  File file(pszFileName);
+void filedate(const char *file_name, char *out) {
+  File file(file_name);
   if (!file.Exists() && !file.Open(File::modeReadOnly)) {
     return;
   }
@@ -119,7 +119,7 @@ void filedate(const char *pszFileName, char *pszReturnValue) {
   struct tm *pTm = localtime(&tFileDate);
 
   // We use 9 here since that is the size of the date format MM/DD/YY + nullptr
-  snprintf(pszReturnValue, 9, "%02d/%02d/%02d", pTm->tm_mon, pTm->tm_mday, (pTm->tm_year % 100));
+  snprintf(out, 9, "%02d/%02d/%02d", pTm->tm_mon, pTm->tm_mday, (pTm->tm_year % 100));
 }
 
 

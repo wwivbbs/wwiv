@@ -128,12 +128,12 @@ void ivotes() {
     print_quests();
     bout.nl();
     bout << "|#2Which (Q=Quit) ? ";
-    std::string questionNumber;
-    input(&questionNumber, 2);
-    if (questionNumber == "Q") {
+    std::string questionum;
+    input(&questionum, 2);
+    if (questionum == "Q") {
       done = true;
     }
-    int i = atoi(questionNumber.c_str());
+    int i = atoi(questionum.c_str());
     if (i > 0 && i < 21) {
       set_question(i - 1);
     }

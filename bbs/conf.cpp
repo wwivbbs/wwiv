@@ -97,7 +97,7 @@ void reset_disable_conf() {
  * Returns info on conference types
  */
 int get_conf_info(int conftype, int *num, confrec ** cpp,
-                  char *pszFileName, int *num_s, userconfrec ** uc) {
+                  char *file_name, int *num_s, userconfrec ** uc) {
   switch (conftype) {
   case CONF_SUBS:
     if (cpp) {
@@ -106,8 +106,8 @@ int get_conf_info(int conftype, int *num, confrec ** cpp,
     if (num) {
       *num = subconfnum;
     }
-    if (pszFileName) {
-      sprintf(pszFileName, "%s%s", syscfg.datadir, SUBS_CNF);
+    if (file_name) {
+      sprintf(file_name, "%s%s", syscfg.datadir, SUBS_CNF);
     }
     if (num_s) {
       *num_s = session()->num_subs;
@@ -123,8 +123,8 @@ int get_conf_info(int conftype, int *num, confrec ** cpp,
     if (num) {
       *num = dirconfnum;
     }
-    if (pszFileName) {
-      sprintf(pszFileName, "%s%s", syscfg.datadir, DIRS_CNF);
+    if (file_name) {
+      sprintf(file_name, "%s%s", syscfg.datadir, DIRS_CNF);
     }
     if (num_s) {
       *num_s = session()->num_dirs;
@@ -437,9 +437,9 @@ bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list) {
       break;
     case 1: {
       //This means there is no number in the range, it's just ,###,###
-      int nNumber = atoi(extractword(1, temp, " -\t\r\n"));
-      if (nNumber < 1024 && nNumber >= 0) {
-        intarray[ nNumber ] = 1;
+      int num = atoi(extractword(1, temp, " -\t\r\n"));
+      if (num < 1024 && num >= 0) {
+        intarray[ num ] = 1;
       }
     }
     break;
@@ -1107,7 +1107,7 @@ void list_confs(int conftype, int ssc) {
  * (0-based), or -1 if the user aborted. Error message is printed for
  * invalid conference selections.
  */
-int select_conf(const char *pszPromptText, int conftype, int listconfs) {
+int select_conf(const char *prompt_text, int conftype, int listconfs) {
   int i = 0, i1, sl = 0;
   bool ok = false;
   char *mmk;
@@ -1118,9 +1118,9 @@ int select_conf(const char *pszPromptText, int conftype, int listconfs) {
       list_confs(conftype, 0);
       sl = 0;
     }
-    if (pszPromptText && pszPromptText[0]) {
+    if (prompt_text && prompt_text[0]) {
       bout.nl();
-      bout <<  "|#1" << pszPromptText;
+      bout <<  "|#1" << prompt_text;
     }
     mmk = mmkey(0);
     if (!mmk[0]) {
@@ -1200,21 +1200,21 @@ bool create_conf_file(int conftype) {
  * Reads in conferences and returns pointer to conference data. Out-of-memory
  * messages are shown if applicable.
  */
-confrec *read_conferences(const char *pszFileName, int *nc, int max) {
+confrec *read_conferences(const char *file_name, int *nc, int max) {
   char ts[128], *ss;
   int i, i1, i2, i3, cc = 0;
   bool ok = true;
 
-  *nc = get_num_conferences(pszFileName);
+  *nc = get_num_conferences(file_name);
   if (*nc < 1) {
     return nullptr;
   }
 
-  if (!File::Exists(pszFileName)) {
+  if (!File::Exists(file_name)) {
     return nullptr;
   }
 
-  TextFile f(pszFileName, "rt");
+  TextFile f(file_name, "rt");
   if (!f.IsOpen()) {
     return nullptr;
   }
@@ -1223,7 +1223,7 @@ confrec *read_conferences(const char *pszFileName, int *nc, int max) {
   confrec *conferences = static_cast<confrec *>(BbsAllocA(l));
   WWIV_ASSERT(conferences != nullptr);
   if (!conferences) {
-    std::clog << "Out of memory reading file [" << pszFileName << "]." << std::endl;
+    std::clog << "Out of memory reading file [" << file_name << "]." << std::endl;
     f.Close();
     return nullptr;
   }
@@ -1312,7 +1312,7 @@ confrec *read_conferences(const char *pszFileName, int *nc, int max) {
             memset(conferences[cc].subs, 0, l);
           } else {
             std::clog << "Out of memory on conference file #" << cc + 1 << ", " <<
-                      syscfg.datadir << pszFileName << "." << std::endl;
+                      syscfg.datadir << file_name << "." << std::endl;
             for (i2 = 0; i2 < cc; i2++) {
               free(conferences[i2].subs);
             }
@@ -1414,14 +1414,14 @@ void read_all_conferences() {
 /*
  * Returns number of conferences in a specified conference file.
  */
-int get_num_conferences(const char *pszFileName) {
+int get_num_conferences(const char *file_name) {
   char ls[MAX_CONF_LINE];
   int i = 0;
 
-  if (!File::Exists(pszFileName)) {
+  if (!File::Exists(file_name)) {
     return 0;
   }
-  TextFile f(pszFileName, "rt");
+  TextFile f(file_name, "rt");
   if (!f.IsOpen()) {
     return 0;
   }
@@ -1477,10 +1477,10 @@ const char *extractword(int ww, const string& instr, const char *delimstr) {
 }
 
 
-void sort_conf_str(char *pszConferenceStr) {
+void sort_conf_str(char *conference_string) {
   char s1[81], s2[81];
 
-  strncpy(s1, pszConferenceStr, sizeof(s1));
+  strncpy(s1, conference_string, sizeof(s1));
   strncpy(s2, charstr(MAX_CONFERENCES, 32), sizeof(s2));
 
   for (char i = 'A'; i <= 'Z'; i++) {
@@ -1489,5 +1489,5 @@ void sort_conf_str(char *pszConferenceStr) {
     }
   }
   StringTrimEnd(s2);
-  strcpy(pszConferenceStr, s2);
+  strcpy(conference_string, s2);
 }

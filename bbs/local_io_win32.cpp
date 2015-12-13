@@ -341,34 +341,34 @@ void Win32ConsoleIO::LocalFastPuts(const string& text) {
   m_cursorPosition.X = m_cursorPosition.X + static_cast<int16_t>(cb);
 }
 
-int  Win32ConsoleIO::LocalPrintf(const char *pszFormattedText, ...) {
+int  Win32ConsoleIO::LocalPrintf(const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[ 1024 ];
 
-  va_start(ap, pszFormattedText);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
+  va_start(ap, formatted_text);
+  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
   LocalFastPuts(szBuffer);
   return nNumWritten;
 }
 
-int  Win32ConsoleIO::LocalXYPrintf(int x, int y, const char *pszFormattedText, ...) {
+int  Win32ConsoleIO::LocalXYPrintf(int x, int y, const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[ 1024 ];
 
-  va_start(ap, pszFormattedText);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
+  va_start(ap, formatted_text);
+  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
   LocalXYPuts(x, y, szBuffer);
   return nNumWritten;
 }
 
-int  Win32ConsoleIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...) {
+int  Win32ConsoleIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[ 1024 ];
 
-  va_start(ap, pszFormattedText);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
+  va_start(ap, formatted_text);
+  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
 
   // bout.SystemColor( nAttribute );
@@ -1046,9 +1046,9 @@ void Win32ConsoleIO::LocalClrEol() {
   FillConsoleOutputAttribute(m_hConOut, (WORD) curatr, len, ConInfo.dwCursorPosition, &cb);
 }
 
-void Win32ConsoleIO::LocalWriteScreenBuffer(const char *pszBuffer) {
+void Win32ConsoleIO::LocalWriteScreenBuffer(const char *buffer) {
   CHAR_INFO ci[2000];
-  const char *p = pszBuffer;
+  const char *p = buffer;
 
   for (int i = 0; i < 2000; i++) {
     ci[i].Char.AsciiChar = *p++;
@@ -1107,9 +1107,9 @@ unsigned char GetKeyboardChar() {
   return static_cast<unsigned char>(_getch());
 }
 
-static int GetEditLineStringLength(const char *pszText) {
-  size_t i = strlen(pszText);
-  while (i >= 0 && (/*pszText[i-1] == 32 ||*/ static_cast<unsigned char>(pszText[i - 1]) == 176)) {
+static int GetEditLineStringLength(const char *text) {
+  size_t i = strlen(text);
+  while (i >= 0 && (/*text[i-1] == 32 ||*/ static_cast<unsigned char>(text[i - 1]) == 176)) {
     --i;
   }
   return i;

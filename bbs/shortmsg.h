@@ -21,6 +21,6 @@
 #include "bbs/wuser.h"
 
 void rsm(int nUserNum, WUser * pUser, bool bAskToSaveMsgs);
-void ssm(int nUserNum, int nSystemNum, const char *pszFormat, ...);
+void ssm(int nUserNum, int nSystemNum, const char *format, ...);
 
 #endif  // __INCLUDED_BBS_SHORTMSG_H__

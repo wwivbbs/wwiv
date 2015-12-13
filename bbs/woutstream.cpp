@@ -38,8 +38,8 @@ std::ostream::int_type WOutStreamBuffer::overflow(std::ostream::int_type c) {
   return c;
 }
 
-std::streamsize WOutStreamBuffer::xsputn(const char *pszText, std::streamsize numChars) {
-  //fprintf(stderr, "{xsputn[%s] #%u}\n", pszText, numChars);
+std::streamsize WOutStreamBuffer::xsputn(const char *text, std::streamsize numChars) {
+  //fprintf(stderr, "{xsputn[%s] #%u}\n", text, numChars);
   if (numChars == 0) {
     return 0;
   }
@@ -48,11 +48,11 @@ std::streamsize WOutStreamBuffer::xsputn(const char *pszText, std::streamsize nu
     return 0;
   }
   for (int i = 0; i < numChars; i++) {
-    if (pszText[i] == 0) {
+    if (text[i] == 0) {
       // Hit an embedded \0, stop early.
       break;
     }
-    bputch(pszText[i], true);
+    bputch(text[i], true);
   }
   FlushOutComChBuffer();
   return numChars;
@@ -123,12 +123,12 @@ void WOutStream::SystemColor(int nColor) {
   bputs(szBuffer);
 }
 
-void WOutStream::litebar(const char *pszFormatText, ...) {
+void WOutStream::litebar(const char *formatText, ...) {
   va_list ap;
   char s[1024];
 
-  va_start(ap, pszFormatText);
-  vsnprintf(s, sizeof(s), pszFormatText, ap);
+  va_start(ap, formatText);
+  vsnprintf(s, sizeof(s), formatText, ap);
   va_end(ap);
 
 #ifdef OLD_LITEBAR
@@ -204,12 +204,12 @@ int WOutStream::bputs(const string& text) {
   return text.size();
 }
 
-int WOutStream::bprintf(const char *pszFormatText, ...) {
+int WOutStream::bprintf(const char *formatText, ...) {
   va_list ap;
   char szBuffer[4096];
 
-  va_start(ap, pszFormatText);
-  vsnprintf(szBuffer, sizeof(szBuffer), pszFormatText, ap);
+  va_start(ap, formatText);
+  vsnprintf(szBuffer, sizeof(szBuffer), formatText, ap);
   va_end(ap);
   return bputs(szBuffer);
 }

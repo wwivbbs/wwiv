@@ -764,8 +764,8 @@ bool WSession::read_names() {
 }
 
 void WSession::read_voting() {
-  for (int nTempQuestionNumber = 0; nTempQuestionNumber < 20; nTempQuestionNumber++) {
-    questused[ nTempQuestionNumber ] = 0;
+  for (int nTempQuestionum = 0; nTempQuestionum < 20; nTempQuestionum++) {
+    questused[ nTempQuestionum ] = 0;
   }
 
   File file(syscfg.datadir, VOTING_DAT);
@@ -1134,14 +1134,14 @@ void WSession::create_phone_file() {
   }
   long lFileSize = file.GetLength();
   file.Close();
-  int nNumberOfRecords = static_cast<int>(lFileSize / sizeof(userrec));
+  int numOfRecords = static_cast<int>(lFileSize / sizeof(userrec));
 
   File phoneNumFile(syscfg.datadir, PHONENUM_DAT);
   if (!phoneNumFile.Open(File::modeReadWrite | File::modeAppend | File::modeBinary | File::modeCreateFile)) {
     return;
   }
 
-  for (int16_t nTempUserNumber = 1; nTempUserNumber <= nNumberOfRecords; nTempUserNumber++) {
+  for (int16_t nTempUserNumber = 1; nTempUserNumber <= numOfRecords; nTempUserNumber++) {
     WUser user;
     users()->ReadUser(&user, nTempUserNumber);
     if (!user.IsUserDeleted()) {

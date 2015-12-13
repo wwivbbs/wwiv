@@ -27,7 +27,7 @@
 #include "sdk/filenames.h"
 
 bool display_sub_categories();
-int find_hostfor(char *type, short *ui, char *pszDescription, short *opt);
+int find_hostfor(char *type, short *ui, char *description, short *opt);
 
 
 static void maybe_netmail(xtrasubsnetrec * ni, bool bAdd) {
@@ -83,12 +83,12 @@ static void sub_req(uint16_t main_type, uint16_t minor_type, int tosys, char *ex
 #define OPTION_ANSI   0x0010
 
 
-int find_hostfor(char *type, short *ui, char *pszDescription, short *opt) {
+int find_hostfor(char *type, short *ui, char *description, short *opt) {
   char s[255], *ss;
   int rc = 0;
 
-  if (pszDescription) {
-    *pszDescription = 0;
+  if (description) {
+    *description = 0;
   }
   *opt = 0;
 
@@ -147,8 +147,8 @@ int find_hostfor(char *type, short *ui, char *pszDescription, short *opt) {
                       done = true;
                       *opt = o;
                       rc = h;
-                      if (pszDescription) {
-                        strcpy(pszDescription, ss);
+                      if (description) {
+                        strcpy(description, ss);
                       }
                     }
                   } else {
@@ -163,8 +163,8 @@ int find_hostfor(char *type, short *ui, char *pszDescription, short *opt) {
                       *ui = h;
                       *opt = o;
                       rc = h;
-                      if (pszDescription) {
-                        strcpy(pszDescription, ss);
+                      if (description) {
+                        strcpy(description, ss);
                       }
                     }
                   }

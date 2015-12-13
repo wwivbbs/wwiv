@@ -49,9 +49,9 @@ using std::string;
 using std::vector;
 using namespace wwiv::strings;
 
-static void create_text(const char *pszFileName) {
-  TextFile file("gfiles", pszFileName, "wt");
-  file.WriteLine(StringPrintf("This is %s.", pszFileName));
+static void create_text(const char *file_name) {
+  TextFile file("gfiles", file_name, "wt");
+  file.WriteLine(StringPrintf("This is %s.", file_name));
   file.WriteLine("Edit to suit your needs.");
   file.Close();
 }

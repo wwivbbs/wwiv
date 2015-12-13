@@ -119,7 +119,7 @@ void MenuInstanceData::Menus(const string& menuDirectory, const string& menuName
   menu_ = menuName;
 
   if (Open()) {
-    if (header.nNumbers == MENU_NUMFLAG_DIRNUMBER && udir[0].subnum == -1) {
+    if (header.nums == MENU_NUMFLAG_DIRNUMBER && udir[0].subnum == -1) {
       bout << "\r\nYou cannot currently access the file section.\r\n\n";
       Close();
       return;
@@ -309,11 +309,11 @@ static bool IsNumber(const string& command) {
 bool MenuInstanceData::LoadMenuRecord(const std::string& command, MenuRec* pMenu) {
   // If we have 'numbers set the sub #' turned on then create a command to do so if a # is entered.
   if (IsNumber(command)) {
-    if (header.nNumbers == MENU_NUMFLAG_SUBNUMBER) {
+    if (header.nums == MENU_NUMFLAG_SUBNUMBER) {
       memset(pMenu, 0, sizeof(MenuRec));
       sprintf(pMenu->szExecute, "SetSubNumber %d", atoi(command.c_str()));
       return true;
-    } else if (header.nNumbers == MENU_NUMFLAG_DIRNUMBER) {
+    } else if (header.nums == MENU_NUMFLAG_DIRNUMBER) {
       memset(pMenu, 0, sizeof(MenuRec));
       sprintf(pMenu->szExecute, "SetDirNumber %d", atoi(command.c_str()));
       return true;
@@ -532,10 +532,10 @@ void UnloadMenuSetup() {
 
 const string GetCommand(const MenuInstanceData* menu_data) {
   if (pSecondUserRec->cHotKeys == HOTKEYS_ON) {
-    if (menu_data->header.nNumbers == MENU_NUMFLAG_DIRNUMBER) {
+    if (menu_data->header.nums == MENU_NUMFLAG_DIRNUMBER) {
       write_inst(INST_LOC_XFER, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
       return string(mmkey(1, WSession::mmkeyFileAreas));
-    } else if (menu_data->header.nNumbers == MENU_NUMFLAG_SUBNUMBER) {
+    } else if (menu_data->header.nums == MENU_NUMFLAG_SUBNUMBER) {
       write_inst(INST_LOC_MAIN, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
       return string(mmkey(0, WSession::mmkeyMessageAreas));
     } else {
@@ -662,7 +662,7 @@ void MenuInstanceData::GenerateMenu() const {
   bout.nl();
 
   int iDisplayed = 0;
-  if (header.nNumbers != MENU_NUMFLAG_NOTHING) {
+  if (header.nums != MENU_NUMFLAG_NOTHING) {
     bout.bprintf("|#1%-8.8s  |#2%-25.25s  ", "[#]", "Change Sub/Dir #");
     ++iDisplayed;
   }

@@ -65,12 +65,12 @@ bool CheckForHangup() {
   return hangup;
 }
 
-static void addto(char *pszAnsiString, int nNumber) {
+static void addto(char *ansi_str, int num) {
   char szBuffer[ 20 ];
 
-  strcat(pszAnsiString, (pszAnsiString[0]) ? ";" : "\x1b[");
-  snprintf(szBuffer, sizeof(szBuffer), "%d", nNumber);
-  strcat(pszAnsiString, szBuffer);
+  strcat(ansi_str, (ansi_str[0]) ? ";" : "\x1b[");
+  snprintf(szBuffer, sizeof(szBuffer), "%d", num);
+  strcat(ansi_str, szBuffer);
 }
 
 /* Passed to this function is a one-byte attribute as defined for IBM type
@@ -242,11 +242,11 @@ char ynq() {
   return ch;
 }
 
-char onek(const char *pszAllowableChars, bool auto_mpl) {
+char onek(const char *allowable_chars, bool auto_mpl) {
   if (auto_mpl) {
     bout.mpl(1);
   }
-  char ch = onek_ncr(pszAllowableChars);
+  char ch = onek_ncr(allowable_chars);
   bout.nl();
   return ch;
 }

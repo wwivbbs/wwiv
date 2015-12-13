@@ -92,7 +92,7 @@ struct MenuHeader {
   uint16_t  nEmpty;
   uint8_t   nFlags;
 
-  uint8_t   nNumbers;     /* What does a number do?  Set sub#, Dir#, nothing? */
+  uint8_t   nums;     /* What does a number do?  Set sub#, Dir#, nothing? */
   uint8_t   nLogging;     /* Types of logging, Key, None, command, desc       */
 
   uint8_t   nForceHelp;   /* force, dont force, on entrance only              */

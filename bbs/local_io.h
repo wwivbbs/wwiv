@@ -71,9 +71,9 @@ class LocalIO {
   virtual void LocalPutch(unsigned char ch) = 0;
   virtual void LocalPuts(const std::string& text) = 0;
   virtual void LocalXYPuts(int x, int y, const std::string& text) = 0;
-  virtual int  LocalPrintf(const char *pszFormattedText, ...) = 0;
-  virtual int  LocalXYPrintf(int x, int y, const char *pszFormattedText, ...) = 0;
-  virtual int  LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...) = 0;
+  virtual int  LocalPrintf(const char *formatted_text, ...) = 0;
+  virtual int  LocalXYPrintf(int x, int y, const char *formatted_text, ...) = 0;
+  virtual int  LocalXYAPrintf(int x, int y, int nAttribute, const char *formatted_text, ...) = 0;
   virtual void set_protect(int l) = 0;
   virtual void savescreen() = 0;
   virtual void restorescreen() = 0;
@@ -89,7 +89,7 @@ class LocalIO {
    */
   virtual void MakeLocalWindow(int x, int y, int xlen, int ylen) = 0;
   virtual void SetCursor(int cursorStyle) = 0;
-  virtual void LocalWriteScreenBuffer(const char *pszBuffer) = 0;
+  virtual void LocalWriteScreenBuffer(const char *buffer) = 0;
   virtual int  GetDefaultScreenBottom() = 0;
   virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) = 0;
   virtual void UpdateNativeTitleBar() = 0;

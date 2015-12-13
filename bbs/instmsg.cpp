@@ -35,7 +35,7 @@
 // Local functions
 void send_inst_msg(inst_msg_header * ih, const char *msg);
 int  handle_inst_msg(inst_msg_header * ih, const char *msg);
-void send_inst_str1(int m, int whichinst, const char *pszSendString);
+void send_inst_str1(int m, int whichinst, const char *send_string);
 bool inst_available(instancerec * ir);
 bool inst_available_chat(instancerec * ir);
 
@@ -71,11 +71,11 @@ void send_inst_msg(inst_msg_header *ih, const char *msg) {
 
 #define LAST(s) s[strlen(s)-1]
 
-void send_inst_str1(int m, int whichinst, const char *pszSendString) {
+void send_inst_str1(int m, int whichinst, const char *send_string) {
   inst_msg_header ih;
   char szTempSendString[ 1024 ];
 
-  sprintf(szTempSendString, "%s\r\n", pszSendString);
+  sprintf(szTempSendString, "%s\r\n", send_string);
   ih.main = static_cast<unsigned short>(m);
   ih.minor = 0;
   ih.from_inst = static_cast<unsigned short>(session()->GetInstanceNumber());
@@ -87,12 +87,12 @@ void send_inst_str1(int m, int whichinst, const char *pszSendString) {
   send_inst_msg(&ih, szTempSendString);
 }
 
-void send_inst_str(int whichinst, const char *pszSendString) {
-  send_inst_str1(INST_MSG_STRING, whichinst, pszSendString);
+void send_inst_str(int whichinst, const char *send_string) {
+  send_inst_str1(INST_MSG_STRING, whichinst, send_string);
 }
 
-void send_inst_sysstr(int whichinst, const char *pszSendString) {
-  send_inst_str1(INST_MSG_SYSMSG, whichinst, pszSendString);
+void send_inst_sysstr(int whichinst, const char *send_string) {
+  send_inst_str1(INST_MSG_SYSMSG, whichinst, send_string);
 }
 
 void send_inst_shutdown(int whichinst) {
@@ -135,7 +135,7 @@ void send_inst_cleannet() {
 /*
  * "Broadcasts" a message to all online instances.
  */
-void _broadcast(char *pszSendString) {
+void _broadcast(char *send_string) {
   instancerec ir;
 
   int ni = num_instances();
@@ -145,7 +145,7 @@ void _broadcast(char *pszSendString) {
     }
     if (get_inst_info(i, &ir)) {
       if (inst_available(&ir)) {
-        send_inst_str(i, pszSendString);
+        send_inst_str(i, send_string);
       }
     }
   }

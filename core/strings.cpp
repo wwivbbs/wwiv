@@ -64,15 +64,15 @@ namespace strings {
 
 /**
  * sprintf type function for STL string classes.
- * @param pszFormattedText The format specifier
+ * @param formatted_text The format specifier
  * @param ... Variable arguments
  */
-string StringPrintf(const char *pszFormattedText, ...) {
+string StringPrintf(const char *formatted_text, ...) {
   char szBuffer[ 1024 ];
 
   va_list ap;
-  va_start(ap, pszFormattedText);
-  vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
+  va_start(ap, formatted_text);
+  vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
   return string(szBuffer);
 }
@@ -82,52 +82,52 @@ string StringPrintf(const char *pszFormattedText, ...) {
  * instead of a size_t, so using this function can avoid warnings of
  * signed vs. unsigned comparasons.
  *
- * @param pszString the C style string
+ * @param str the C style string
  * @return The length as an integer
  */
-int GetStringLength(const char* pszString) {
-  WWIV_ASSERT(pszString);
-  return static_cast<int>(strlen(pszString));
+int GetStringLength(const char* str) {
+  WWIV_ASSERT(str);
+  return static_cast<int>(strlen(str));
 }
 
 /**
  * Compares the strings
- * @param pszString1 string to compare
- * @param pszString1 other string to compare
+ * @param str1 string to compare
+ * @param str1 other string to compare
  * @return true of the strings contain the same contents
  */
-bool IsEquals(const char* pszString1, const char* pszString2) {
-  WWIV_ASSERT(pszString1);
-  WWIV_ASSERT(pszString2);
+bool IsEquals(const char* str1, const char* str2) {
+  WWIV_ASSERT(str1);
+  WWIV_ASSERT(str2);
 
-  return (strcmp(pszString1, pszString2) == 0) ? true : false;
+  return (strcmp(str1, str2) == 0) ? true : false;
 }
 
 /**
  * Compares the strings, ignoring case
- * @param pszString1 string to compare
- * @param pszString1 other string to compare
+ * @param str1 string to compare
+ * @param str1 other string to compare
  * @return true of the strings contain the same contents ignoring case
  */
-bool IsEqualsIgnoreCase(const char *pszString1, const char *pszString2) {
-  WWIV_ASSERT(pszString1);
-  WWIV_ASSERT(pszString2);
+bool IsEqualsIgnoreCase(const char *str1, const char *str2) {
+  WWIV_ASSERT(str1);
+  WWIV_ASSERT(str2);
 
-  return (StringCompareIgnoreCase(pszString1, pszString2) == 0) ? true : false;
+  return (StringCompareIgnoreCase(str1, str2) == 0) ? true : false;
 }
 
-int StringCompareIgnoreCase(const char *pszString1, const char *pszString2) {
-  WWIV_ASSERT(pszString1);
-  WWIV_ASSERT(pszString2);
+int StringCompareIgnoreCase(const char *str1, const char *str2) {
+  WWIV_ASSERT(str1);
+  WWIV_ASSERT(str2);
 
-  return strcasecmp(pszString1, pszString2);
+  return strcasecmp(str1, str2);
 }
 
-int StringCompare(const char *pszString1, const char *pszString2) {
-  WWIV_ASSERT(pszString1);
-  WWIV_ASSERT(pszString2);
+int StringCompare(const char *str1, const char *str2) {
+  WWIV_ASSERT(str1);
+  WWIV_ASSERT(str2);
 
-  return strcmp(pszString1, pszString2);
+  return strcmp(str1, str2);
 }
 
 template <typename T, typename R>
@@ -210,7 +210,7 @@ bool ends_with(const std::string& input, const std::string& match) {
 
 /**
  * Returns a string justified and padded with "bg".
- * @param pszString The text to justify
+ * @param str The text to justify
  * @param nLength the length of the text
  * @param bg the character to use as the background
  * @param nJustificationType one of the following:
@@ -244,10 +244,10 @@ void StringJustify(string* s, string::size_type length, char bg, JustificationTy
  * @param s the string from which to remove spaces
  * @return s with spaces removed.
  */
-void StringTrim(char *pszString) {
-  string s(pszString);
+void StringTrim(char *str) {
+  string s(str);
   StringTrim(&s);
-  strcpy(pszString, s.c_str());
+  strcpy(str, s.c_str());
 }
 
 /**
@@ -275,12 +275,12 @@ void StringTrimEnd(string* s) {
 
 /**
  * Removes the whitespace from the end of the string
- * @param pszString The string from which to remove the trailing whitespace
+ * @param str The string from which to remove the trailing whitespace
  */
-void StringTrimEnd(char *pszString) {
-  string s(pszString);
+void StringTrimEnd(char *str) {
+  string s(str);
   StringTrimEnd(&s);
-  strcpy(pszString, s.c_str());
+  strcpy(str, s.c_str());
 }
 
 void StringUpperCase(string* s) {
@@ -319,16 +319,16 @@ char *StringRemoveWhitespace(char *str) {
   return str;
 }
 
-char *StringRemoveChar(const char *pszString, char ch) {
+char *StringRemoveChar(const char *str, char ch) {
   static char s_strip_string[ 255 ];
 
-  WWIV_ASSERT(pszString);
+  WWIV_ASSERT(str);
   strcpy(s_strip_string, "");
 
   int i1 = 0;
-  for (int i = 0; i < wwiv::strings::GetStringLength(pszString); i++) {
-    if (pszString[i] != ch) {
-      s_strip_string[i1] = pszString[i];
+  for (int i = 0; i < wwiv::strings::GetStringLength(str); i++) {
+    if (str[i] != ch) {
+      s_strip_string[i1] = str[i];
       i1++;
     } else {
       s_strip_string[i1] = '\0';
@@ -415,17 +415,17 @@ unsigned char locase(unsigned char ch) {
   return ch;
 }
 
-void properize(char *pszText) {
-  if (pszText == nullptr) {
+void properize(char *text) {
+  if (text == nullptr) {
     return;
   }
 
-  for (int i = 0; i < wwiv::strings::GetStringLength(pszText); i++) {
-    if ((i == 0) || ((i > 0) && ((pszText[i - 1] == ' ') || (pszText[i - 1] == '-') ||
-                                 (pszText[i - 1] == '.')))) {
-      pszText[i] = wwiv::UpperCase<char>(pszText[i]);
+  for (int i = 0; i < wwiv::strings::GetStringLength(text); i++) {
+    if ((i == 0) || ((i > 0) && ((text[i - 1] == ' ') || (text[i - 1] == '-') ||
+                                 (text[i - 1] == '.')))) {
+      text[i] = wwiv::UpperCase<char>(text[i]);
     } else {
-      pszText[i] = wwiv::LowerCase(pszText[i]);
+      text[i] = wwiv::LowerCase(text[i]);
     }
   }
 }

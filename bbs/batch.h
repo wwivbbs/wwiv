@@ -20,8 +20,8 @@
 
 void upload(int dn);
 void delbatch(int nBatchEntryNum);
-char *unalign(char *pszFileName);
-void dszbatchdl(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription);
+char *unalign(char *file_name);
+void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description);
 int  batchdl(int mode);
 void didnt_upload(int nBatchIndex);
 void ymbatchdl(bool bHangupAfterDl);

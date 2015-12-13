@@ -41,7 +41,7 @@ class WLogger {
   // Member functions
    WLogger() {}
   virtual ~WLogger() {}
-  virtual bool LogMessage(const char* pszFormat, ...) = 0;
+  virtual bool LogMessage(const char* format, ...) = 0;
 };
 
 /**

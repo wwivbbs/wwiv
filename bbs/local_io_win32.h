@@ -54,9 +54,9 @@ class Win32ConsoleIO : public LocalIO {
   virtual void LocalPutch(unsigned char ch) override;
   virtual void LocalPuts(const std::string& text) override;
   virtual void LocalXYPuts(int x, int y, const std::string& text) override;
-  virtual int  LocalPrintf(const char *pszFormattedText, ...) override;
-  virtual int  LocalXYPrintf(int x, int y, const char *pszFormattedText, ...) override;
-  virtual int  LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...) override;
+  virtual int  LocalPrintf(const char *formatted_text, ...) override;
+  virtual int  LocalXYPrintf(int x, int y, const char *formatted_text, ...) override;
+  virtual int  LocalXYAPrintf(int x, int y, int nAttribute, const char *formatted_text, ...) override;
   virtual void set_protect(int l) override;
   virtual void savescreen() override;
   virtual void restorescreen() override;
@@ -68,7 +68,7 @@ class Win32ConsoleIO : public LocalIO {
   virtual void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) override;
   virtual void MakeLocalWindow(int x, int y, int xlen, int ylen) override;
   virtual void SetCursor(int cursorStyle) override;
-  virtual void LocalWriteScreenBuffer(const char *pszBuffer) override;
+  virtual void LocalWriteScreenBuffer(const char *buffer) override;
   virtual int  GetDefaultScreenBottom() override;
 
   virtual void LocalEditLine(char *s, int len, int editor_status, int *returncode, char *ss) override;

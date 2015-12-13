@@ -58,8 +58,8 @@ static void rename_pend(const string& directory, const string& filename) {
   }
 }
 
-static bool checkup2(const time_t tFileTime, const char *pszFileName) {
-  File file(session()->GetNetworkDataDirectory(), pszFileName);
+static bool checkup2(const time_t tFileTime, const char *file_name) {
+  File file(session()->GetNetworkDataDirectory(), file_name);
 
   if (file.Open(File::modeReadOnly)) {
     time_t tNewFileTime = file.last_write_time();
@@ -731,30 +731,30 @@ void print_pending_list() {
   }
 }
 
-void gate_msg(net_header_rec * nh, char *pszMessageText, int nNetNumber, const char *pszAuthorName,
+void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char *pszAuthorName,
               unsigned short int *pList, int nFromNetworkNumber) {
   char newname[256], qn[200], on[200];
   char nm[205];
   int i;
 
-  if (strlen(pszMessageText) >= 80) {
+  if (strlen(messageText) >= 80) {
     return;
   }
 
-  char *pszOriginalText = pszMessageText;
-  pszMessageText += strlen(pszOriginalText) + 1;
+  char *pszOriginalText = messageText;
+  messageText += strlen(pszOriginalText) + 1;
   unsigned short ntl = static_cast<unsigned short>(nh->length - strlen(pszOriginalText) - 1);
-  char *ss = strchr(pszMessageText, '\r');
-  if (ss && (ss - pszMessageText < 200) && (ss - pszMessageText < ntl)) {
-    strncpy(nm, pszMessageText, ss - pszMessageText);
-    nm[ss - pszMessageText] = 0;
+  char *ss = strchr(messageText, '\r');
+  if (ss && (ss - messageText < 200) && (ss - messageText < ntl)) {
+    strncpy(nm, messageText, ss - messageText);
+    nm[ss - messageText] = 0;
     ss++;
     if (*ss == '\n') {
       ss++;
     }
-    nh->length -= (ss - pszMessageText);
-    ntl = ntl - static_cast<unsigned short>(ss - pszMessageText);
-    pszMessageText = ss;
+    nh->length -= (ss - messageText);
+    ntl = ntl - static_cast<unsigned short>(ss - messageText);
+    messageText = ss;
 
     qn[0] = on[0] = '\0';
 
@@ -856,7 +856,7 @@ void gate_msg(net_header_rec * nh, char *pszMessageText, int nNetNumber, const c
       }
       packetFile.Write(pszOriginalText, strlen(pszOriginalText) + 1);
       packetFile.Write(newname, strlen(newname));
-      packetFile.Write(pszMessageText, ntl);
+      packetFile.Write(messageText, ntl);
       packetFile.Close();
     }
   }

@@ -172,24 +172,24 @@ void select_chat_name(char *pszSysopName) {
 
 // Allows two-way chatting until sysop aborts/exits chat. or the end of line is hit,
 // then chat1 is back in control.
-void two_way_chat(char *pszRollover, int max_length, bool crend, char *pszSysopName) {
+void two_way_chat(char *rollover, int max_length, bool crend, char *pszSysopName) {
   char s2[100], temp1[100];
   int i, i1;
 
   int cm = chatting;
   int begx = session()->localIO()->WhereX();
-  if (pszRollover[0] != 0) {
+  if (rollover[0] != 0) {
     if (charbufferpointer) {
       char szTempBuffer[255];
-      strcpy(szTempBuffer, pszRollover);
+      strcpy(szTempBuffer, rollover);
       strcat(szTempBuffer, &charbuffer[charbufferpointer]);
       strcpy(&charbuffer[1], szTempBuffer);
       charbufferpointer = 1;
     } else {
-      strcpy(&charbuffer[1], pszRollover);
+      strcpy(&charbuffer[1], rollover);
       charbufferpointer = 1;
     }
-    pszRollover[0] = 0;
+    rollover[0] = 0;
   }
   bool done = false;
   int side = 0;
@@ -499,9 +499,9 @@ void two_way_chat(char *pszRollover, int max_length, bool crend, char *pszSysopN
           bputch(SPACE);
         }
         for (i = 0; i < i1; i++) {
-          pszRollover[i] = side0[session()->localIO()->WhereY()][cp0 - i1 + i];
+          rollover[i] = side0[session()->localIO()->WhereY()][cp0 - i1 + i];
         }
-        pszRollover[i1] = '\0';
+        rollover[i1] = '\0';
         cp0 -= i1;
       }
       side0[session()->localIO()->WhereY()][cp0] = '\0';
@@ -521,9 +521,9 @@ void two_way_chat(char *pszRollover, int max_length, bool crend, char *pszSysopN
           bputch(SPACE);
         }
         for (i = 0; i < i1; i++) {
-          pszRollover[i] = side1[session()->localIO()->WhereY() - 13][cp1 - i1 + i];
+          rollover[i] = side1[session()->localIO()->WhereY() - 13][cp1 - i1 + i];
         }
-        pszRollover[i1] = '\0';
+        rollover[i1] = '\0';
         cp1 -= i1;
       }
       side1[session()->localIO()->WhereY() - 13][cp1] = '\0';

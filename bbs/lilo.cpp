@@ -80,16 +80,16 @@ static void CleanUserInfo() {
 static bool random_screen(const char *mpfn) {
   const string dot_zero = StrCat(session()->language_dir, mpfn, ".0");
   if (File::Exists(dot_zero)) {
-    int nNumberOfScreens = 0;
+    int numOfScreens = 0;
     for (int i = 0; i < 1000; i++) {
       const string dot_n = StrCat(session()->language_dir.c_str(), mpfn, ".", i);
       if (File::Exists(dot_n)) {
-        nNumberOfScreens++;
+        numOfScreens++;
       } else {
         break;
       }
     }
-    printfile(StrCat(session()->language_dir.c_str(), mpfn, ".", random_number(nNumberOfScreens)));
+    printfile(StrCat(session()->language_dir.c_str(), mpfn, ".", random_number(numOfScreens)));
     return true;
   }
   return false;

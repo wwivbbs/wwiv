@@ -30,7 +30,7 @@ class WOutStreamBuffer : public std::streambuf {
   WOutStreamBuffer();
   ~WOutStreamBuffer();
   virtual std::ostream::int_type overflow(std::ostream::int_type c);
-  virtual std::streamsize xsputn(const char *pszText, std::streamsize numChars);
+  virtual std::streamsize xsputn(const char *text, std::streamsize numChars);
 };
 
 class WComm;
@@ -87,7 +87,7 @@ class WOutStream : public std::ostream {
    * the cursor at the beginning of the input prompt area.  Of course, if the
    * user does not want ansi, this routine does nothing.
    */
-  void mpl(int nNumberOfChars);
+  void mpl(int numOfChars);
 
   /**
    * This function outputs a string of characters to the screen (and remotely

@@ -31,13 +31,13 @@ using namespace wwiv::strings;
 
 // prototype from utility.cpp
 bool okansi();
-char *stripfn(const char *pszFileName);
+char *stripfn(const char *file_name);
 
 // from xfer.cpp
-void align(char *pszFileName);
+void align(char *file_name);
 
-// Displays list of files matching filespec pszFileName in directory pszDirectoryName.
-void show_files(const char *pszFileName, const char *pszDirectoryName) {
+// Displays list of files matching filespec file_name in directory pszDirectoryName.
+void show_files(const char *file_name, const char *pszDirectoryName) {
   char s[MAX_PATH];
   char drive[MAX_PATH], direc[MAX_PATH], file[MAX_PATH], ext[MAX_PATH];
 
@@ -48,17 +48,17 @@ void show_files(const char *pszFileName, const char *pszDirectoryName) {
 #else
   strcpy(direc, pszDirectoryName);
   strcpy(drive, "");
-  strcpy(file, pszFileName);
+  strcpy(file, file_name);
   strcpy(ext, "");
 #endif
 
-  snprintf(s, sizeof(s), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", strupr(stripfn(pszFileName)), drive, direc);
+  snprintf(s, sizeof(s), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", strupr(stripfn(file_name)), drive, direc);
   int i = (session()->user()->GetScreenChars() - 1) / 2 - strlen(stripcolors(s)) / 2;
   bout << "|#7" << std::string(i, c) << s;
   i = session()->user()->GetScreenChars() - 1 - i - strlen(stripcolors(s));
   bout << "|#7" << std::string(i, c);
 
-  std::string full_pathname = StrCat(pszDirectoryName, strupr(stripfn(pszFileName)));
+  std::string full_pathname = StrCat(pszDirectoryName, strupr(stripfn(file_name)));
   WFindFile fnd;
   bool bFound = fnd.open(full_pathname, 0);
   while (bFound) {

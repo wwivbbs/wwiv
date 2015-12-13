@@ -29,7 +29,7 @@
 
 using namespace wwiv::strings;
 
-bool NewZModemSendFile(const char *pszFileName);
+bool NewZModemSendFile(const char *file_name);
 
 #if (_MSC_VER >= 1900)
 #define timezone _timezone
@@ -88,7 +88,7 @@ void send_block(char *b, int nBlockType, bool bUseCRC, char byBlockNumber) {
 }
 
 
-char send_b(File &file, long pos, int nBlockType, char byBlockNumber, bool *bUseCRC, const char *pszFileName,
+char send_b(File &file, long pos, int nBlockType, char byBlockNumber, bool *bUseCRC, const char *file_name,
             int *terr, bool *abort) {
   char b[1025], szTempBuffer[20];
 
@@ -109,7 +109,7 @@ char send_b(File &file, long pos, int nBlockType, char byBlockNumber, bool *bUse
     char szFileDate[20];
     memset(b, 0, 128);
     nb = 128;
-    strcpy(b, stripfn(pszFileName));
+    strcpy(b, stripfn(file_name));
     sprintf(szTempBuffer, "%ld ", pos);
     // We neede dthis cast to (long) to compile with XCode 1.5 on OS X
     sprintf(szFileDate, "%ld", (long)file.last_write_time() - (long)timezone);
@@ -182,7 +182,7 @@ int GetXYModemBlockSize(bool bBlockSize1K) {
 }
 
 
-void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUseCRC, bool bUseYModem,
+void xymodem_send(const char *file_name, bool *sent, double *percent, bool bUseCRC, bool bUseYModem,
                   bool bUseYModemBatch) {
   char ch;
 
@@ -190,7 +190,7 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
   char byBlockNumber = 1;
   bool abort = false;
   int terr = 0;
-  char *pszWorkingFileName = strdup(pszFileName);
+  char *pszWorkingFileName = strdup(file_name);
   File file(pszWorkingFileName);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     if (!bUseYModemBatch) {
@@ -283,11 +283,11 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
 }
 
 
-void zmodem_send(const char *pszFileName, bool *sent, double *percent) {
+void zmodem_send(const char *file_name, bool *sent, double *percent) {
   *sent = false;
   *percent = 0.0;
 
-  char *pszWorkingFileName = strdup(pszFileName);
+  char *pszWorkingFileName = strdup(file_name);
   StringRemoveWhitespace(pszWorkingFileName);
 
   bool bOldBinaryMode = session()->remoteIO()->GetBinaryMode();

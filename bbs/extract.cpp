@@ -35,7 +35,7 @@
 using std::string;
 using namespace wwiv::strings;
 
-// Compresses file *pszFileName to directory *pszDirectoryName.
+// Compresses file *file_name to directory *pszDirectoryName.
 void compress_file(const string& orig_filename, const string& directory) {
   bout << "|#2Now compressing " << orig_filename << wwiv::endl;
   string fileName(orig_filename);
@@ -255,16 +255,16 @@ go_away:
 }
 
 
-bool upload_mod(int nDirectoryNumber, const char *pszFileName, const char *pszDescription)
+bool upload_mod(int nDirectoryNumber, const char *file_name, const char *description)
 /* Passes a specific filename to the upload function */
 {
   char s[81], s1[81];
 
-  WWIV_ASSERT(pszFileName);
+  WWIV_ASSERT(file_name);
 
   dliscan1(udir[nDirectoryNumber].subnum);
   bout.nl(2);
-  strcpy(s, pszFileName);
+  strcpy(s, file_name);
   strcpy(s1, directories[udir[nDirectoryNumber].subnum].path);
   int maxf = directories[udir[nDirectoryNumber].subnum].maxfiles;
   strcat(s1, s);
@@ -272,10 +272,10 @@ bool upload_mod(int nDirectoryNumber, const char *pszFileName, const char *pszDe
   bool bDone = fnd.open(s1, 0);
   bool ok = false;
   if (!bDone) {
-    ok = maybe_upload(fnd.GetFileName(), nDirectoryNumber, pszDescription);
+    ok = maybe_upload(fnd.GetFileName(), nDirectoryNumber, description);
   }
   if (ok) {
-    bout << "Uploaded " << pszFileName << "....\r\n";
+    bout << "Uploaded " << file_name << "....\r\n";
   }
   if (!ok) {
     bout << "|#6Aborted.\r\n";
@@ -287,7 +287,7 @@ bool upload_mod(int nDirectoryNumber, const char *pszFileName, const char *pszDe
 }
 
 
-void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
+void extract_out(char *b, long len, const char *title, time_t tDateTime) {
   // TODO Fix platform specific path issues...
 
   WWIV_ASSERT(b);
@@ -393,7 +393,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
                 file.Seek(-1L, File::seekEnd);
               }
             }
-            file.Write(pszTitle, strlen(pszTitle));
+            file.Write(title, strlen(title));
             file.Write("\r\n", 2);
             file.Write(b, len);
             file.Write(&ch, 1);
@@ -453,7 +453,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
             file.Seek(-1L, File::seekEnd);
           }
         }
-        file.Write(pszTitle, strlen(pszTitle));
+        file.Write(title, strlen(title));
         file.Write("\r\n", 2);
         file.Write(b, len);
         file.Write(&ch, 1);

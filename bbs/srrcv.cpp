@@ -31,7 +31,7 @@
 
 using std::string;
 
-bool NewZModemReceiveFile(const char *pszFileName);
+bool NewZModemReceiveFile(const char *file_name);
 
 #if (_MSC_VER >= 1900)
 #define timezone _timezone
@@ -152,19 +152,19 @@ int receive_block(char *b, unsigned char *bln, bool bUseCRC) {
   }
 }
 
-void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
+void xymodem_receive(const char *file_name, bool *received, bool bUseCRC) {
   char b[1025], x[81], ch;
   unsigned char bln;
   int i1, i2, i3;
 
-  File::Remove(pszFileName);
+  File::Remove(file_name);
   bool ok = true;
   bool lastcan = false;
   bool lasteot = false;
   int  nTotalErrors = 0;
   int  nConsecErrors = 0;
 
-  File file(pszFileName);
+  File file(file_name);
   if (!file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
     bout << "\r\n\nDOS error - Can't create file.\r\n\n";
     *received = false;
@@ -187,7 +187,7 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
   session()->localIO()->LocalXYPuts(52, 5, "\xB3 Total Errors : 0         ");
   session()->localIO()->LocalXYPuts(52, 6,
                                        "\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4");
-  session()->localIO()->LocalXYPuts(65, 0, stripfn(pszFileName));
+  session()->localIO()->LocalXYPuts(65, 0, stripfn(file_name));
   int nNumStartTries = 0;
   do {
     if (nNumStartTries++ > 9) {
@@ -321,7 +321,7 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
   session()->localIO()->LocalGotoXY(nOldXPos, nOldYPos);
   if (ok) {
     if (filedatetime) {
-      WWIV_SetFileTime(pszFileName, filedatetime);
+      WWIV_SetFileTime(file_name, filedatetime);
     }
     file.Close();
     *received = true;

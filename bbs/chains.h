@@ -18,7 +18,7 @@
 #ifndef __INCLUDED_BBS_CHAINS_H__
 #define __INCLUDED_BBS_CHAINS_H__
 
-void run_chain(int nChainNumber);
+void run_chain(int nChainum);
 void do_chains();
 
 

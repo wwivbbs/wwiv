@@ -121,13 +121,13 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
   }
 }
 
-// Executes a "chain", index number nChainNumber.
-void run_chain(int nChainNumber) {
-  int inst = inst_ok(INST_LOC_CHAINS, nChainNumber + 1);
+// Executes a "chain", index number nChainum.
+void run_chain(int nChainum) {
+  int inst = inst_ok(INST_LOC_CHAINS, nChainum + 1);
   if (inst != 0) {
     const string message = StringPrintf("|#2Chain %s is in use on instance %d.  ", 
-        session()->chains[nChainNumber].description, inst);
-    if (!(session()->chains[nChainNumber].ansir & ansir_multi_user)) {
+        session()->chains[nChainum].description, inst);
+    if (!(session()->chains[nChainum].ansir & ansir_multi_user)) {
       bout << message << "Try again later.\r\n";
       return;
     } else {
@@ -137,9 +137,9 @@ void run_chain(int nChainNumber) {
       }
     }
   }
-  write_inst(INST_LOC_CHAINS, static_cast<uint16_t>(nChainNumber + 1), INST_FLAGS_NONE);
+  write_inst(INST_LOC_CHAINS, static_cast<uint16_t>(nChainum + 1), INST_FLAGS_NONE);
   if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    session()->chains_reg[nChainNumber].usage++;
+    session()->chains_reg[nChainum].usage++;
     wwiv::core::DataFile<chainregrec> regFile(syscfg.datadir, CHAINS_REG,
       File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     if (regFile) {
@@ -149,16 +149,16 @@ void run_chain(int nChainNumber) {
   const string com_speed_str = StringPrintf("%d", (com_speed == 1) ? 115200 : com_speed);
   const string com_port_num_str = StringPrintf("%d", syscfgovr.primaryport);
   const string modem_speed_str = StringPrintf("%d", modem_speed);
-  const string chainCmdLine = stuff_in(session()->chains[nChainNumber].filename, create_chain_file(), com_speed_str, com_port_num_str, modem_speed_str, "");
+  const string chainCmdLine = stuff_in(session()->chains[nChainum].filename, create_chain_file(), com_speed_str, com_port_num_str, modem_speed_str, "");
 
-  sysoplogf("!Ran \"%s\"", session()->chains[nChainNumber].description);
+  sysoplogf("!Ran \"%s\"", session()->chains[nChainum].description);
   session()->user()->SetNumChainsRun(session()->user()->GetNumChainsRun() + 1);
 
   int flags = 0;
-  if (!(session()->chains[nChainNumber].ansir & ansir_no_DOS)) {
+  if (!(session()->chains[nChainum].ansir & ansir_no_DOS)) {
     flags |= EFLAG_COMIO;
   }
-  if (session()->chains[nChainNumber].ansir & ansir_emulate_fossil) {
+  if (session()->chains[nChainum].ansir & ansir_emulate_fossil) {
     flags |= EFLAG_FOSSIL;
   }
 
@@ -227,18 +227,18 @@ void do_chains() {
     bout.nl();
     bout << "|#7Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
 
-    int nChainNumber = -1;
+    int nChainum = -1;
     if (mapp < 100) {
       ss = mmkey(2);
-      nChainNumber = atoi(ss);
+      nChainum = atoi(ss);
     } else {
       string chain_number;
       input(&chain_number, 3);
-      nChainNumber = atoi(chain_number.c_str());
+      nChainum = atoi(chain_number.c_str());
     }
-    if (nChainNumber > 0 && nChainNumber <= mapp) {
+    if (nChainum > 0 && nChainum <= mapp) {
       bout << "\r\n|#6Please wait...\r\n";
-      run_chain(map[ nChainNumber - 1 ]);
+      run_chain(map[ nChainum - 1 ]);
     } else if (IsEquals(ss, "Q")) {
       done = true;
     } else if (IsEquals(ss, "?")) {
