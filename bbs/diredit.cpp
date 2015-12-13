@@ -51,7 +51,7 @@ void dirdata(int n, char *s) {
   } else {
     for (int i = 0; i < 16; i++) {
       if ((1 << i) & r.dar) {
-        x = static_cast< char >('A' + i);
+        x = static_cast<char>('A' + i);
       }
     }
   }
@@ -86,7 +86,7 @@ char* GetAttributeString(directoryrec r, char* pszAttributes) {
   if (r.dar != 0) {
     for (int i = 0; i < 16; i++) {
       if ((1 << i) & r.dar) {
-        szBuffer[0] = static_cast< char >('A' + i);
+        szBuffer[0] = static_cast<char>('A' + i);
       }
     }
     szBuffer[1] = 0;
@@ -279,8 +279,8 @@ void modify_dir(int n) {
 
 
 void swap_dirs(int dir1, int dir2) {
-  SUBCONF_TYPE dir1conv = static_cast<SUBCONF_TYPE>(dir1);
-  SUBCONF_TYPE dir2conv = static_cast<SUBCONF_TYPE>(dir2);
+  subconf_t dir1conv = static_cast<subconf_t>(dir1);
+  subconf_t dir2conv = static_cast<subconf_t>(dir2);
 
   if (dir1 < 0 || dir1 >= session()->num_dirs || dir2 < 0 || dir2 >= session()->num_dirs) {
     return;
@@ -324,7 +324,7 @@ void swap_dirs(int dir1, int dir2) {
 }
 
 void insert_dir(int n) {
-  SUBCONF_TYPE nconv = static_cast<SUBCONF_TYPE>(n);
+  subconf_t nconv = static_cast<subconf_t>(n);
 
   if (n < 0 || n > session()->num_dirs) {
     return;
@@ -332,7 +332,7 @@ void insert_dir(int n) {
 
   update_conf(CONF_DIRS, &nconv, nullptr, CONF_UPDATE_INSERT);
 
-  n = static_cast< int >(nconv);
+  n = static_cast<int>(nconv);
 
   int i;
   for (i = session()->num_dirs - 1; i >= n; i--) {
@@ -383,9 +383,9 @@ void insert_dir(int n) {
 void delete_dir(int n) {
   int i, i1;
   uint32_t *pTempQScan, *pTempQScan_n, m2, m3;
-  SUBCONF_TYPE nconv;
+  subconf_t nconv;
 
-  nconv = static_cast< SUBCONF_TYPE >(n);
+  nconv = static_cast<subconf_t>(n);
 
   if ((n < 0) || (n >= session()->num_dirs)) {
     return;
@@ -431,7 +431,7 @@ void delete_dir(int n) {
 void dlboardedit() {
   int i, i1, i2, confchg = 0;
   char s[81], s1[81], ch;
-  SUBCONF_TYPE iconv;
+  subconf_t iconv;
 
   if (!ValidateSysopPassword()) {
     return;
@@ -505,14 +505,14 @@ void dlboardedit() {
             i2 = select_conf("Put in which conference? ", CONF_DIRS, 0);
             if (i2 >= 0) {
               if (in_conference(i, &dirconfs[i2]) < 0) {
-                iconv = (SUBCONF_TYPE) i;
+                iconv = (subconf_t) i;
                 addsubconf(CONF_DIRS, &dirconfs[i2], &iconv);
                 i = static_cast<int>(iconv);
               }
             }
           } else {
             if (in_conference(i, &dirconfs[0]) < 0) {
-              iconv = (SUBCONF_TYPE) i;
+              iconv = (subconf_t) i;
               addsubconf(CONF_DIRS, &dirconfs[0], &iconv);
               i = static_cast<int>(iconv);
             }

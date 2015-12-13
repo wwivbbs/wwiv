@@ -141,7 +141,7 @@ class WUser {
     return static_cast<long>(data.sysstatus);
   }
   void SetStatus(long l)                {
-    data.sysstatus = static_cast<unsigned long>(l);
+    data.sysstatus = static_cast<uint32_t>(l);
   }
   bool HasAnsi() const                    {
     return HasStatusFlag(WUser::ansi);

@@ -182,7 +182,7 @@ void WSession::DisplaySysopWorkingIndicator(bool displayWait) {
       int nSavedAttribute = curatr;
       bout.SystemColor(user()->HasColor() ? user()->GetColor(3) : user()->GetBWColor(3));
       bout << waitString << "\x1b[" << nNumPrintableChars << "D";
-      bout.SystemColor(static_cast< unsigned char >(nSavedAttribute));
+      bout.SystemColor(static_cast<unsigned char>(nSavedAttribute));
     } else {
       bout << waitString;
     }

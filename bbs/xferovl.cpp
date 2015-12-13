@@ -134,7 +134,7 @@ void move_file() {
     if (ok && !done) {
       bout << "|#5Reset upload time for file? ";
       if (yesno()) {
-        u.daten = static_cast<unsigned long>(time(nullptr));
+        u.daten = static_cast<uint32_t>(time(nullptr));
       }
       --nCurrentPos;
       fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
@@ -425,7 +425,7 @@ bool upload_file(const char *pszFileName, int nDirectoryNum, const char *pszDesc
   strcpy(szTempFileName, pszFileName);
   align(szTempFileName);
   strcpy(u.filename, szTempFileName);
-  u.ownerusr = static_cast< unsigned short >(session()->usernum);
+  u.ownerusr = static_cast<uint16_t>(session()->usernum);
   u.ownersys = 0;
   u.numdloads = 0;
   u.unused_filetype = 0;
@@ -483,7 +483,7 @@ bool upload_file(const char *pszFileName, int nDirectoryNum, const char *pszDesc
     }
     session()->user()->SetUploadK(session()->user()->GetUploadK() + bytes_to_k(lFileSize));
     time_t tCurrentTime = time(nullptr);
-    u.daten = static_cast<unsigned long>(tCurrentTime);
+    u.daten = static_cast<uint32_t>(tCurrentTime);
     File fileDownload(g_szDownloadFileName);
     fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     for (int i = session()->numf; i >= 1; i--) {
@@ -498,7 +498,7 @@ bool upload_file(const char *pszFileName, int nDirectoryNum, const char *pszDesc
     FileAreaSetRecord(fileDownload, 0);
     fileDownload.Read(&u1, sizeof(uploadsrec));
     u1.numbytes = session()->numf;
-    u1.daten = static_cast<unsigned long>(tCurrentTime);
+    u1.daten = static_cast<uint32_t>(tCurrentTime);
     FileAreaSetRecord(fileDownload, 0);
     fileDownload.Write(&u1, sizeof(uploadsrec));
     fileDownload.Close();

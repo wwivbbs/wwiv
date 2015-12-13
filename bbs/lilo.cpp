@@ -659,27 +659,27 @@ static void CheckAndUpdateUserInfo() {
   }
 
   time_t lTime = time(nullptr);
-  if ((session()->user()->GetExpiresDateNum() < static_cast<unsigned long>(lTime + 30 * SECS_PER_DAY))
-      && (session()->user()->GetExpiresDateNum() > static_cast<unsigned long>(lTime + 10 * SECS_PER_DAY))) {
+  if ((session()->user()->GetExpiresDateNum() < static_cast<uint32_t>(lTime + 30 * SECS_PER_DAY))
+      && (session()->user()->GetExpiresDateNum() > static_cast<uint32_t>(lTime + 10 * SECS_PER_DAY))) {
     bout << "Your registration expires in " <<
                        static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / SECS_PER_DAY) <<
                        "days";
-  } else if ((session()->user()->GetExpiresDateNum() > static_cast<unsigned long>(lTime)) &&
-             (session()->user()->GetExpiresDateNum() < static_cast<unsigned long>(lTime + 10 * SECS_PER_DAY))) {
-    if (static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / static_cast<unsigned long>
+  } else if ((session()->user()->GetExpiresDateNum() > static_cast<uint32_t>(lTime)) &&
+             (session()->user()->GetExpiresDateNum() < static_cast<uint32_t>(lTime + 10 * SECS_PER_DAY))) {
+    if (static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / static_cast<uint32_t>
                          (SECS_PER_DAY)) > 1) {
       bout << "|#6Your registration expires in "
-           << static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / static_cast<unsigned long>(SECS_PER_DAY))
+           << static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / static_cast<uint32_t>(SECS_PER_DAY))
            << " days";
     } else {
       bout << "|#6Your registration expires in "
-           << static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / static_cast<unsigned long>(3600L))
+           << static_cast<int>((session()->user()->GetExpiresDateNum() - lTime) / static_cast<uint32_t>(3600L))
            << " hours.";
     }
     bout.nl(2);
     pausescr();
   }
-  if (session()->user()->GetExpiresDateNum() < static_cast<unsigned long>(lTime)) {
+  if (session()->user()->GetExpiresDateNum() < static_cast<uint32_t>(lTime)) {
     if (!so()) {
       if (session()->user()->GetSl() > syscfg.newusersl ||
           session()->user()->GetDsl() > syscfg.newuserdsl) {
@@ -977,7 +977,7 @@ void logoff() {
     unique_ptr<File> pFileEmail(OpenEmailFile(true));
     if (pFileEmail->IsOpen()) {
       session()->user()->SetNumMailWaiting(0);
-      int t = static_cast< int >(pFileEmail->GetLength() / sizeof(mailrec));
+      int t = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));
       int r = 0;
       int w = 0;
       while (r < t) {

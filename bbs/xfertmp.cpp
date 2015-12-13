@@ -831,7 +831,7 @@ void move_file_t() {
       if (ok && !done) {
         bout << "|#5Reset upload time for file? ";
         if (yesno()) {
-          u.daten = static_cast<unsigned long>(time(nullptr));
+          u.daten = static_cast<uint32_t>(time(nullptr));
         }
         --nCurPos;
         fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);

@@ -523,7 +523,19 @@ void qwk_email_text(char *text, char *title, char *to) {
     }
 
     bout.Color(8);
-    sendout_email(title, &msg, 0, un, sy, 1, session()->usernum, net_sysnum, false, session()->GetNetworkNumber());
+
+    EmailData email;
+    email.title = title;
+    email.msg = &msg;
+    email.anony = 0;
+    email.user_number = un;
+    email.system_number = sy;
+    email.an = true;
+    email.from_user = session()->usernum;
+    email.from_system = net_sysnum;
+    email.forwarded_code = 0;
+    email.from_network_number = session()->GetNetworkNumber();
+    sendout_email(email);
   }
 }
 

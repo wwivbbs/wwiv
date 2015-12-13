@@ -558,8 +558,8 @@ static void modify_sub(int n) {
 }
 
 static void swap_subs(int sub1, int sub2) {
-  SUBCONF_TYPE sub1conv = (SUBCONF_TYPE) sub1;
-  SUBCONF_TYPE sub2conv = (SUBCONF_TYPE) sub2;
+  subconf_t sub1conv = (subconf_t) sub1;
+  subconf_t sub2conv = (subconf_t) sub2;
 
   if (sub1 < 0 || sub1 >= session()->num_subs || sub2 < 0 || sub2 >= session()->num_subs) {
     return;
@@ -572,7 +572,7 @@ static void swap_subs(int sub1, int sub2) {
 
   int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
-  uint32_t *pTempQScan = static_cast< uint32_t *>(BbsAllocA(syscfg.qscn_len));
+  uint32_t *pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
   if (pTempQScan) {
     for (int i = 1; i <= nNumUserRecords; i++) {
       int i1, i2;
@@ -621,7 +621,7 @@ static void insert_sub(int n) {
   subboardrec r = { 0 };
   int i, i1, i2;
   uint32_t *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m1, m2, m3;
-  SUBCONF_TYPE nconv = (SUBCONF_TYPE) n;
+  subconf_t nconv = (subconf_t) n;
 
   if (n < 0 || n > session()->num_subs) {
     return;
@@ -693,7 +693,7 @@ static void insert_sub(int n) {
 static void delete_sub(int n) {
   int i, i1, i2, nNumUserRecords;
   uint32_t *pTempQScan, *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m2, m3;
-  SUBCONF_TYPE nconv = static_cast<SUBCONF_TYPE>(n);
+  subconf_t nconv = static_cast<subconf_t>(n);
 
   if (n < 0 || n >= session()->num_subs) {
     return;
@@ -766,7 +766,7 @@ void boardedit() {
   int i, i1, i2;
   bool confchg = false;
   char s[81];
-  SUBCONF_TYPE iconv;
+  subconf_t iconv;
 
   if (!ValidateSysopPassword()) {
     return;
@@ -845,14 +845,14 @@ void boardedit() {
             i2 = select_conf("Put in which conference? ", CONF_SUBS, 0);
             if (i2 >= 0) {
               if (in_conference(i, &subconfs[i2]) < 0) {
-                iconv = (SUBCONF_TYPE) i;
+                iconv = (subconf_t) i;
                 addsubconf(CONF_SUBS, &subconfs[i2], &iconv);
                 i = static_cast<int>(iconv);
               }
             }
           } else {
             if (in_conference(i, &subconfs[0]) < 0) {
-              iconv = static_cast<SUBCONF_TYPE>(i);
+              iconv = static_cast<subconf_t>(i);
               addsubconf(CONF_SUBS, &subconfs[0], &iconv);
               i = static_cast<int>(iconv);
             }

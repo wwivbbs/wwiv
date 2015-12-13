@@ -136,7 +136,7 @@ void resynch_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, uns
       if (m1.tosys == 0 && m1.touser == session()->usernum) {
         for (i1 = mp; i1 < mw; i1++) {
           if (same_email(mloc + i1, &m1)) {
-            mloc[i1].index = static_cast< short >(i);
+            mloc[i1].index = static_cast<int16_t>(i);
             mp = i1 + 1;
             if (i1 == rec) {
               *m = m1;
@@ -350,7 +350,7 @@ void readmail(int mode) {
       pFileEmail->Seek(i * sizeof(mailrec), File::seekBegin);
       pFileEmail->Read(&m, sizeof(mailrec));
       if ((m.tosys == 0) && (m.touser == session()->usernum)) {
-        mloc[mw].index = static_cast< short >(i);
+        mloc[mw].index = static_cast<int16_t>(i);
         mloc[mw].fromsys = m.fromsys;
         mloc[mw].fromuser = m.fromuser;
         mloc[mw].daten = m.daten;
@@ -571,7 +571,7 @@ void readmail(int mode) {
         if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
           l1 = fileAttach.Read(&fsr, sizeof(fsr));
           while (l1 > 0 && !found) {
-            if (m.daten == static_cast<unsigned long>(fsr.id)) {
+            if (m.daten == static_cast<uint32_t>(fsr.id)) {
               found = true;
               sprintf(s, "%s%s", session()->GetAttachmentDirectory().c_str(), fsr.filename);
               if (File::Exists(s)) {
@@ -811,7 +811,7 @@ void readmail(int mode) {
             p.anony = m.anony;
             p.ownersys = m.fromsys;
             session()->SetNumMessagesInCurrentMessageArea(p.owneruser);
-            p.owneruser = static_cast< unsigned short >(session()->usernum);
+            p.owneruser = static_cast<uint16_t>(session()->usernum);
             p.msg = m.msg;
             p.daten = m.daten;
             p.status = 0;
@@ -1022,15 +1022,26 @@ void readmail(int mode) {
                   }
                 }
                 bout << "Forwarding: ";
+                EmailData email;
+                email.title = m.title;
+                email.msg = &m.msg;
+                email.anony = m.anony;
+                email.user_number = nUserNumber;
+                email.system_number = nSystemNumber;
+                email.an = true;
+                email.forwarded_code = delme;  // this looks totally wrong to me...
+                email.silent_mode = false;
+
                 if (nn != 255 && nn == session()->GetNetworkNumber()) {
-                  sendout_email(m.title, &m.msg, m.anony,
-                                nUserNumber, nSystemNumber,
-                                true, m.fromuser,
-                                m.fromsys ? m.fromsys :
-                                net_networks[nn].sysnum, delme, nn);
+                  email.from_user = m.fromuser;
+                  email.from_system = m.fromsys ? m.fromsys : net_networks[nn].sysnum;
+                  email.from_network_number = nn;
+                  sendout_email(email);
                 } else {
-                  sendout_email(m.title, &m.msg, m.anony, nUserNumber, nSystemNumber, true,
-                                session()->usernum, net_sysnum, delme, session()->GetNetworkNumber());
+                  email.from_user = session()->usernum;
+                  email.from_system = net_sysnum;
+                  email.from_network_number = session()->GetNetworkNumber();
+                  sendout_email(email);
                 }
                 ++curmail;
                 if (curmail >= mw) {

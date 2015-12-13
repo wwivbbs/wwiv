@@ -775,6 +775,7 @@ enum xfertype {
 #define ability_val_net             0x0040
 
 // subboardrec.anony
+#define anony_none                  0x00
 #define anony_enable_anony          0x01
 #define anony_enable_dear_abby      0x02
 #define anony_force_anony           0x04
@@ -926,10 +927,9 @@ struct languagerec {
 #define CONF_UPDATE_DELETE     2
 #define CONF_UPDATE_SWAP       3
 
-#define SUBCONF_TYPE uint16_t
-#define MAX_CONFERENCES 26
-
-#define WWIV_MESSAGE_TITLE_LENGTH 72
+typedef uint16_t subconf_t;
+constexpr int MAX_CONFERENCES = 26;
+constexpr int WWIV_MESSAGE_TITLE_LENGTH = 72;
 
 struct confrec {
   unsigned char designator,                 // A to Z?
@@ -941,7 +941,7 @@ struct confrec {
            minage,                                  // Minimum age needed for access
            maxage,                                  // Maximum age allowed for acces
            sex;                                     // Gender: 0=male, 1=female 2=all
-  SUBCONF_TYPE status,                      // Bit-mapped stuff
+  subconf_t status,                      // Bit-mapped stuff
                minbps,                                  // Minimum bps rate for access
                ar,                                      // ARs necessary for access
                dar,                                     // DARs necessary for access
@@ -1127,9 +1127,6 @@ struct fedit_data_rec {
 };
 
 #ifndef __MSDOS__
-// MSVC 2015 shows this as an error in the IDE. Ignore it, since the real
-// compiler gets it right. See:
-// https://connect.microsoft.com/VisualStudio/feedback/details/872127/intellisense-wrongly-emits-an-error-for-a-static-assertion-checking-the-size-of-a-struct
 
 static_assert(sizeof(userrec) == 1024, "userrec == 1024");
 static_assert(sizeof(slrec) == 14, "slrec == 14");

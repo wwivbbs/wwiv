@@ -436,8 +436,8 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
              (mode == InputMode::PHONE && c != dash)) ||
             (mode != InputMode::DATE && mode != InputMode::PHONE && c != 0)) {
           if (!bInsert || pos == nLength) {
-            bputch(static_cast< unsigned char >(c));
-            szTemp[pos++] = static_cast< char >(c);
+            bputch(static_cast<unsigned char>(c));
+            szTemp[pos++] = static_cast<char>(c);
             if (pos > nLength) {
               nLength++;
             }

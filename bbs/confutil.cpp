@@ -155,13 +155,13 @@ void addusub(usersubrec * ss1, int ns, int sub, char key) {
   }
 
   if (key) {
-    ss1[last].subnum = static_cast< short >(sub);
+    ss1[last].subnum = static_cast<int16_t>(sub);
     ss1[last].keys[0] = key;
   } else {
     for (int i = last; i > last_num; i--) {
       ss1[ i ] = ss1[ i - 1 ];
     }
-    ss1[last_num].subnum = static_cast< short >(sub);
+    ss1[last_num].subnum = static_cast<int16_t>(sub);
     ss1[last_num].keys[0] = 0;
   }
 }
@@ -296,11 +296,11 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
   for (i = 0; (i < ns) && (ss1[i].keys[0] == 0) && (ss1[i].subnum != -1); i++) {
     if (i1 < 100) {
       if (((i1 % 10) == 0) && i1) {
-        xdc[dp++] = static_cast< char >('0' + (i1 / 10));
+        xdc[dp++] = static_cast<char>('0' + (i1 / 10));
       }
     } else {
       if ((i1 % 100) == 0) {
-        xtc[tp++] = static_cast< char >('0' + (i1 / 100));
+        xtc[tp++] = static_cast<char>('0' + (i1 / 100));
       }
     }
     snprintf(ss1[i].keys, sizeof(ss1[i].keys), "%d", i1++);
@@ -374,7 +374,7 @@ void changedsl() {
   int nTempSubConferenceNumber = 0;
   for (i = 0; i < subconfnum; i++) {
     if (access_conf(session()->user(), session()->GetEffectiveSl(), &(subconfs[i]))) {
-      c1.confnum = static_cast< short >(i);
+      c1.confnum = static_cast<int16_t>(i);
       uconfsub[ nTempSubConferenceNumber++ ] = c1;
     }
   }
@@ -382,7 +382,7 @@ void changedsl() {
   int nTempDirConferenceNumber = 0;
   for (i = 0; i < dirconfnum; i++) {
     if (access_conf(session()->user(), session()->GetEffectiveSl(), &(dirconfs[i ]))) {
-      c1.confnum = static_cast< short >(i);
+      c1.confnum = static_cast<int16_t>(i);
       uconfdir[ nTempDirConferenceNumber++ ] = c1;
     }
   }

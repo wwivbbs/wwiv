@@ -55,7 +55,7 @@ static void sub_req(uint16_t main_type, uint16_t minor_type, int tosys, char *ex
   nh.main_type = main_type;
   nh.minor_type = minor_type;
   nh.list_len = 0;
-  nh.daten = static_cast<unsigned long>(time(nullptr));
+  nh.daten = static_cast<uint32_t>(time(nullptr));
   nh.method = 0;
   if (minor_type == 0) {
     // This is an alphanumeric sub type.

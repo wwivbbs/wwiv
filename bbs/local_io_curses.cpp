@@ -290,7 +290,7 @@ void CursesLocalIO::skey(char ch) {
         case SF5:                          /* Shift-F5 */
           i1 = (rand() % 20) + 10;
           for (i = 0; i < i1; i++) {
-            bputch(static_cast< unsigned char >(rand() % 256));
+            bputch(static_cast<unsigned char>(rand() % 256));
           }
           hangup = true;
           session()->remoteIO()->dtr(false);

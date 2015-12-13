@@ -118,7 +118,7 @@ void input_language() {
       for (int i = 0; i < session()->num_languages; i++) {
         bout << (i + 1) << ". " << languages[i].name << wwiv::endl;
         if (i < 9) {
-          onx[i] = static_cast< char >('1' + i);
+          onx[i] = static_cast<char>('1' + i);
         }
       }
       bout.nl();
@@ -130,7 +130,7 @@ void input_language() {
       } else {
         int i;
         for (i = 1; i <= session()->num_languages / 10; i++) {
-          odc[i - 1] = static_cast< char >('0' + i);
+          odc[i - 1] = static_cast<char>('0' + i);
         }
         odc[i - 1] = 0;
         char* ss = mmkey(2);
@@ -688,7 +688,7 @@ void CreateNewUserRecord() {
   session()->ResetEffectiveSl();
   string randomPassword;
   for (int i = 0; i < 6; i++) {
-    char ch = static_cast< char >(rand() % 36);
+    char ch = static_cast<char>(rand() % 36);
     if (ch < 10) {
       ch += '0';
     } else {

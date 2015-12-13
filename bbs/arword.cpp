@@ -60,7 +60,7 @@ char *word_to_arstr(int ar) {
   if (ar) {
     for (i = 0; i < 16; i++) {
       if ((1 << i) & ar) {
-        arstr[i1++] = static_cast< char >('A' + i);
+        arstr[i1++] = static_cast<char>('A' + i);
       }
     }
   }

@@ -598,7 +598,7 @@ void chat1(char *pszChatLine, bool two_way) {
     bout << "\x1b[12;1H";
     bout.Color(7);
     for (int screencount = 0; screencount < session()->user()->GetScreenChars(); screencount++) {
-      bputch(static_cast< unsigned char >(205), true);
+      bputch(static_cast<unsigned char>(205), true);
     }
     FlushOutComChBuffer();
     sprintf(s, " %s chatting with %s ", szSysopName,

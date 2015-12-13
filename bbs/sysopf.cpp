@@ -702,7 +702,7 @@ void mailr() {
               bool found = false;
               long lAttachFileSize = attachDat.Read(&fsr, sizeof(fsr));
               while (lAttachFileSize > 0 && !found) {
-                if (m.daten == static_cast<unsigned long>(fsr.id)) {
+                if (m.daten == static_cast<uint32_t>(fsr.id)) {
                   bout << "|#9Filename.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0\r\n";
                   found = true;
                 }
@@ -738,7 +738,7 @@ void mailr() {
                 if (attachFile.Open(File::modeReadWrite | File::modeBinary)) {
                   long lAttachFileSize = attachFile.Read(&fsr, sizeof(fsr));
                   while (lAttachFileSize > 0 && !found) {
-                    if (m.daten == static_cast<unsigned long>(fsr.id)) {
+                    if (m.daten == static_cast<uint32_t>(fsr.id)) {
                       found = true;
                       fsr.id = 0;
                       attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::seekCurrent);
