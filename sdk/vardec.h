@@ -775,6 +775,7 @@ enum xfertype {
 #define ability_val_net             0x0040
 
 // subboardrec.anony
+#define anony_none                  0x00
 #define anony_enable_anony          0x01
 #define anony_enable_dear_abby      0x02
 #define anony_force_anony           0x04

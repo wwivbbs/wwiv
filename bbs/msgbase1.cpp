@@ -131,7 +131,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
             int i = atoi(&(text[len2]));
             if (((session()->GetNetworkNumber() != nNetNumber) || (nh.fromsys != i)) && (i != net_sysnum)) {
               if (valid_system(i)) {
-                pList[(nh.list_len)++] = static_cast< unsigned short >(i);
+                pList[(nh.list_len)++] = static_cast<uint16_t>(i);
               }
             }
             while ((len2 < len1) && (text[len2] >= '0') && (text[len2] <= '9')) {
@@ -240,7 +240,7 @@ void post() {
   WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
   p.qscan = pStatus->IncrementQScanPointer();
   session()->GetStatusManager()->CommitTransaction(pStatus);
-  p.daten = static_cast<unsigned long>(time(nullptr));
+  p.daten = static_cast<uint32_t>(time(nullptr));
   if (session()->user()->IsRestrictionValidate()) {
     p.status = status_unvalidated;
   } else {
