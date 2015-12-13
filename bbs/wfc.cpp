@@ -340,7 +340,7 @@ void ControlCenter::UpdateLog() {
 #if !defined ( __unix__ )
 
 // Local Functions
-void DisplayWFCScreen(const char *pszBuffer);
+void DisplayWFCScreen(const char *buffer);
 static char* pszScreenBuffer = nullptr;
 
 static int inst_num;

@@ -182,23 +182,23 @@ void sysoplog(const string& text, bool bIndent) {
 }
 
 // printf style function to write to the sysop log
-void sysoplogf(const char *pszFormat, ...) {
+void sysoplogf(const char *format, ...) {
   va_list ap;
   char szBuffer[2048];
 
-  va_start(ap, pszFormat);
-  vsnprintf(szBuffer, sizeof(szBuffer), pszFormat, ap);
+  va_start(ap, format);
+  vsnprintf(szBuffer, sizeof(szBuffer), format, ap);
   va_end(ap);
   sysoplog(szBuffer);
 }
 
 // printf style function to write to the sysop log
-void sysoplogfi(bool bIndent, const char *pszFormat, ...) {
+void sysoplogfi(bool bIndent, const char *format, ...) {
   va_list ap;
   char szBuffer[2048];
 
-  va_start(ap, pszFormat);
-  vsnprintf(szBuffer, sizeof(szBuffer), pszFormat, ap);
+  va_start(ap, format);
+  vsnprintf(szBuffer, sizeof(szBuffer), format, ap);
   va_end(ap);
   sysoplog(szBuffer, bIndent);
 }

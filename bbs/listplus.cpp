@@ -66,9 +66,9 @@ long fpts;
 #endif  // FILE_POINTS
 
 // TODO remove this hack and fix the real problem of fake spaces in filenames everywhere
-static bool ListPlusExist(const char *pszFileName) {
+static bool ListPlusExist(const char *file_name) {
   char szRealFileName[MAX_PATH];
-  strcpy(szRealFileName, pszFileName);
+  strcpy(szRealFileName, file_name);
   StringRemoveWhitespace(szRealFileName);
   return (*szRealFileName) ? File::Exists(szRealFileName) : false;
 }
@@ -267,10 +267,10 @@ int listfiles_plus(int type) {
   return nReturn;
 }
 
-int lp_add_batch(const char *pszFileName, int dn, long fs) {
+int lp_add_batch(const char *file_name, int dn, long fs) {
   double t;
 
-  if (find_batch_queue(pszFileName) > -1) {
+  if (find_batch_queue(file_name) > -1) {
     return 0;
   }
 
@@ -312,7 +312,7 @@ int lp_add_batch(const char *pszFileName, int dn, long fs) {
           batchfpts += fpts;
 #endif
 
-          strcpy(batch[session()->numbatch].filename, pszFileName);
+          strcpy(batch[session()->numbatch].filename, file_name);
           batch[session()->numbatch].dir = static_cast<short>(dn);
           batch[session()->numbatch].time = static_cast<float>(t);
           batch[session()->numbatch].sending = 1;
@@ -649,7 +649,7 @@ static void write_config_listing(int config) {
   fileUserConfig.Close();
 }
 
-int print_extended_plus(const char *pszFileName, int numlist, int indent, int color,
+int print_extended_plus(const char *file_name, int numlist, int indent, int color,
                         struct search_record * search_rec) {
   int numl = 0;
   int cpos = 0;
@@ -657,7 +657,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 
   int will_fit = 80 - std::abs(indent) - 2;
 
-  char * ss = read_extended_description(pszFileName);
+  char * ss = read_extended_description(file_name);
 
   if (!ss) {
     return 0;
@@ -1383,13 +1383,13 @@ void update_user_config_screen(uploadsrec * u, int which) {
   bout.bs();
 }
 
-static int rename_filename(const char *pszFileName, int dn) {
+static int rename_filename(const char *file_name, int dn) {
   char s[81], s1[81], s2[81], *ss, s3[81], ch;
   int i, cp, ret = 1;
   uploadsrec u;
 
   dliscan1(dn);
-  strcpy(s, pszFileName);
+  strcpy(s, file_name);
 
   if (s[0] == '\0') {
     return ret;
@@ -1506,14 +1506,14 @@ static int rename_filename(const char *pszFileName, int dn) {
   return ret;
 }
 
-static int remove_filename(const char *pszFileName, int dn) {
+static int remove_filename(const char *file_name, int dn) {
   int ret = 1;
   char szTempFileName[MAX_PATH];
   uploadsrec u;
   memset(&u, 0, sizeof(uploadsrec));
 
   dliscan1(dn);
-  strcpy(szTempFileName, pszFileName);
+  strcpy(szTempFileName, file_name);
 
   if (szTempFileName[0] == '\0') {
     return ret;
@@ -1613,12 +1613,12 @@ static int remove_filename(const char *pszFileName, int dn) {
   return ret;
 }
 
-static int move_filename(const char *pszFileName, int dn) {
+static int move_filename(const char *file_name, int dn) {
   char szTempMoveFileName[81], szSourceFileName[MAX_PATH], szDestFileName[MAX_PATH], *ss;
   int nDestDirNum = -1, ret = 1;
   uploadsrec u, u1;
 
-  strcpy(szTempMoveFileName, pszFileName);
+  strcpy(szTempMoveFileName, file_name);
   dliscan1(dn);
   align(szTempMoveFileName);
   int nRecNum = recno(szTempMoveFileName);
@@ -1802,7 +1802,7 @@ static int move_filename(const char *pszFileName, int dn) {
   return ret;
 }
 
-void do_batch_sysop_command(int mode, const char *pszFileName) {
+void do_batch_sysop_command(int mode, const char *file_name) {
   int save_curdir = session()->GetCurrentFileArea();
   int pos = 0;
 
@@ -1843,13 +1843,13 @@ void do_batch_sysop_command(int mode, const char *pszFileName) {
     // Just act on the single file
     switch (mode) {
     case SYSOP_DELETE:
-      remove_filename(pszFileName, udir[session()->GetCurrentFileArea()].subnum);
+      remove_filename(file_name, udir[session()->GetCurrentFileArea()].subnum);
       break;
     case SYSOP_RENAME:
-      rename_filename(pszFileName, udir[session()->GetCurrentFileArea()].subnum);
+      rename_filename(file_name, udir[session()->GetCurrentFileArea()].subnum);
       break;
     case SYSOP_MOVE:
-      move_filename(pszFileName, udir[session()->GetCurrentFileArea()].subnum);
+      move_filename(file_name, udir[session()->GetCurrentFileArea()].subnum);
       break;
     }
   }
@@ -1988,19 +1988,19 @@ void load_listing() {
 }
 
 
-void view_file(const char *pszFileName) {
+void view_file(const char *file_name) {
   char szBuffer[30];
   int i, i1;
   uploadsrec u;
 
   bout.cls();
 
-  strcpy(szBuffer, pszFileName);
+  strcpy(szBuffer, file_name);
   unalign(szBuffer);
 
   dliscan();
   bool abort = false;
-  i = recno(pszFileName);
+  i = recno(file_name);
   do {
     if (i > 0) {
       File fileDownload(g_szDownloadFileName);
@@ -2014,7 +2014,7 @@ void view_file(const char *pszFileName) {
         abort = true;
       }
       checka(&abort);
-      i = nrecno(pszFileName, i);
+      i = nrecno(file_name, i);
     }
   } while (i > 0 && !hangup && !abort);
   bout.nl();
@@ -2080,7 +2080,7 @@ int lp_try_to_download(const char *pszFileMask, int dn) {
   }
 }
 
-void download_plus(const char *pszFileName) {
+void download_plus(const char *file_name) {
   char szFileName[MAX_PATH];
 
   if (session()->numbatchdl != 0) {
@@ -2091,7 +2091,7 @@ void download_plus(const char *pszFileName) {
       return;
     }
   }
-  strcpy(szFileName, pszFileName);
+  strcpy(szFileName, file_name);
   if (szFileName[0] == '\0') {
     return;
   }
@@ -2137,7 +2137,7 @@ void download_plus(const char *pszFileName) {
   }
 }
 
-void request_file(const char *pszFileName) {
+void request_file(const char *file_name) {
   bout.cls();
   bout.nl();
 
@@ -2145,7 +2145,7 @@ void request_file(const char *pszFileName) {
   bout << "|#2File missing.  Request it? ";
 
   if (noyes()) {
-    ssm(1, 0, "%s is requesting file %s", session()->user()->GetName(), pszFileName);
+    ssm(1, 0, "%s is requesting file %s", session()->user()->GetName(), file_name);
     bout << "File request sent\r\n";
   } else {
     bout << "File request NOT sent\r\n";

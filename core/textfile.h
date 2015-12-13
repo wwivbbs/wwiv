@@ -43,8 +43,8 @@ public:
   // Writes a single character to a text file.
   int WriteChar(char ch) { return fputc(ch, file_); }
   
-  // Writes a line of pszFormatText like printf
-  int WriteFormatted(const char *pszFormatText, ...);
+  // Writes a line of formatText like printf
+  int WriteFormatted(const char *formatText, ...);
   
   // Writes a binary blob as binary data
   int WriteBinary(const void *pBuffer, size_t nSize) {
@@ -52,8 +52,8 @@ public:
   }
   
   // Reads one line of text, removing the \r\n in the end of the line.
-  bool ReadLine(char *pszBuffer, int nBufferSize) {
-    return (fgets(pszBuffer, nBufferSize, file_) != nullptr) ? true : false;
+  bool ReadLine(char *buffer, int nBufferSize) {
+    return (fgets(buffer, nBufferSize, file_) != nullptr) ? true : false;
   }
 
   // Reads one line of text, removing the \r\n in the end of the line.

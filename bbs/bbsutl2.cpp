@@ -77,7 +77,7 @@ std::string ctypes(int num) {
  * @see checka
  * <em>Note: osan means Output String And Next</em>
  *
- * @param pszText The text to display
+ * @param text The text to display
  * @param abort The abort flag (Output Parameter)
  * @param next The next flag (Output Parameter)
  */

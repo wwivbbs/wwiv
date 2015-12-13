@@ -30,7 +30,7 @@ namespace bbs {
 
   void set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable = false);
   void global_char(char ch);
-  void set_x_only(bool tf, const char *pszFileName, bool ovwr);
+  void set_x_only(bool tf, const char *file_name, bool ovwr);
   bool is_open() const { return fileGlobalCap.IsOpen(); }
   int wx() const { return wx_; }
   void set_wx(int wx) { wx_ = wx; }

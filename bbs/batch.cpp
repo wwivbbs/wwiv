@@ -49,15 +49,15 @@ using std::string;
 
 // module private functions
 void listbatch();
-void downloaded(char *pszFileName, long lCharsPerSecond);
-void uploaded(char *pszFileName, long lCharsPerSecond);
+void downloaded(char *file_name, long lCharsPerSecond);
+void uploaded(char *file_name, long lCharsPerSecond);
 void handle_dszline(char *l);
 double ratio1(long a);
 void ProcessDSZLogFile();
-void dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription);
+void dszbatchul(bool bHangupAfterDl, char *command_line, char *description);
 void bihangup(int up);
-int try_to_ul(char *pszFileName);
-int try_to_ul_wh(char *pszFileName);
+int try_to_ul(char *file_name);
+int try_to_ul_wh(char *file_name);
 void normalupload(int dn);
 
 
@@ -108,11 +108,11 @@ void delbatch(int nBatchEntryNum) {
   }
 }
 
-void downloaded(char *pszFileName, long lCharsPerSecond) {
+void downloaded(char *file_name, long lCharsPerSecond) {
   uploadsrec u;
 
   for (int i1 = 0; i1 < session()->numbatch; i1++) {
-    if (wwiv::strings::IsEquals(pszFileName, batch[i1].filename) &&
+    if (wwiv::strings::IsEquals(file_name, batch[i1].filename) &&
         batch[i1].sending) {
       dliscan1(batch[i1].dir);
       int nRecNum = recno(batch[i1].filename);
@@ -148,7 +148,7 @@ void downloaded(char *pszFileName, long lCharsPerSecond) {
       return;
     }
   }
-  sysoplogf("!!! Couldn't find \"%s\" in DL batch queue.", pszFileName);
+  sysoplogf("!!! Couldn't find \"%s\" in DL batch queue.", file_name);
 }
 
 void didnt_upload(int nBatchIndex) {
@@ -196,11 +196,11 @@ void didnt_upload(int nBatchIndex) {
   sysoplogf("!!! Couldn't find \"%s\" in transfer area.", batch[nBatchIndex].filename);
 }
 
-void uploaded(char *pszFileName, long lCharsPerSecond) {
+void uploaded(char *file_name, long lCharsPerSecond) {
   uploadsrec u;
 
   for (int i1 = 0; i1 < session()->numbatch; i1++) {
-    if (wwiv::strings::IsEquals(pszFileName, batch[i1].filename) &&
+    if (wwiv::strings::IsEquals(file_name, batch[i1].filename) &&
         !batch[i1].sending) {
       dliscan1(batch[i1].dir);
       int nRecNum = recno(batch[i1].filename);
@@ -217,8 +217,8 @@ void uploaded(char *pszFileName, long lCharsPerSecond) {
         downFile.Close();
         if (nRecNum != -1 && u.numbytes == 0) {
           char szSourceFileName[MAX_PATH], szDestFileName[MAX_PATH];
-          sprintf(szSourceFileName, "%s%s", syscfgovr.batchdir, pszFileName);
-          sprintf(szDestFileName, "%s%s", directories[batch[i1].dir].path, pszFileName);
+          sprintf(szSourceFileName, "%s%s", syscfgovr.batchdir, file_name);
+          sprintf(szDestFileName, "%s%s", directories[batch[i1].dir].path, file_name);
           if (!wwiv::strings::IsEquals(szSourceFileName, szDestFileName) &&
               File::Exists(szSourceFileName)) {
             bool found = false;
@@ -274,18 +274,18 @@ void uploaded(char *pszFileName, long lCharsPerSecond) {
         }
       }
       delbatch(i1);
-      if (try_to_ul(pszFileName)) {
-        sysoplogf("!!! Couldn't find file \"%s\" in directory.", pszFileName);
-        bout << "Deleting - couldn't find data for file " << pszFileName << wwiv::endl;
+      if (try_to_ul(file_name)) {
+        sysoplogf("!!! Couldn't find file \"%s\" in directory.", file_name);
+        bout << "Deleting - couldn't find data for file " << file_name << wwiv::endl;
       }
       return;
     }
   }
-  if (try_to_ul(pszFileName)) {
-    sysoplogf("!!! Couldn't find \"%s\" in UL batch queue.", pszFileName);
-    bout << "Deleting - don't know what to do with file " << pszFileName << wwiv::endl;
+  if (try_to_ul(file_name)) {
+    sysoplogf("!!! Couldn't find \"%s\" in UL batch queue.", file_name);
+    bout << "Deleting - don't know what to do with file " << file_name << wwiv::endl;
 
-    File::Remove(syscfgovr.batchdir, pszFileName);
+    File::Remove(syscfgovr.batchdir, file_name);
   }
 }
 
@@ -657,9 +657,9 @@ void ProcessDSZLogFile() {
   free(lines);
 }
 
-void dszbatchdl(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription) {
+void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description) {
   string download_log_entry = StringPrintf(
-      "%s BATCH Download: Files - %d, Time - %s", pszDescription, session()->numbatchdl, ctim(batchtime));
+      "%s BATCH Download: Files - %d, Time - %s", description, session()->numbatchdl, ctim(batchtime));
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
   }
@@ -670,11 +670,11 @@ void dszbatchdl(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription)
 
   write_inst(INST_LOC_DOWNLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
   const string list_filename = make_dl_batch_list();
-  run_cmd(pszCommandLine, list_filename, "", download_log_entry, bHangupAfterDl);
+  run_cmd(command_line, list_filename, "", download_log_entry, bHangupAfterDl);
 }
 
-void dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription) {
-  string download_log_entry = StringPrintf("%s BATCH Upload: Files - %d", pszDescription,
+void dszbatchul(bool bHangupAfterDl, char *command_line, char *description) {
+  string download_log_entry = StringPrintf("%s BATCH Upload: Files - %d", description,
           session()->numbatch - session()->numbatchdl);
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
@@ -688,7 +688,7 @@ void dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription)
   string list_filename = make_ul_batch_list();
 
   double ti = timer();
-  run_cmd(pszCommandLine, "", list_filename, download_log_entry, bHangupAfterDl);
+  run_cmd(command_line, "", list_filename, download_log_entry, bHangupAfterDl);
   ti = timer() - ti;
   if (ti < 0) {
     ti += static_cast<double>(SECONDS_PER_DAY);
@@ -933,14 +933,14 @@ void upload(int dn) {
   } while (!done && !hangup);
 }
 
-char *unalign(char *pszFileName) {
-  char* pszTemp = strstr(pszFileName, " ");
-  if (pszTemp) {
-    *pszTemp++ = '\0';
-    char* pszTemp2 = strstr(pszTemp, ".");
-    if (pszTemp2) {
-      strcat(pszFileName, pszTemp2);
+char *unalign(char *file_name) {
+  char* temp = strstr(file_name, " ");
+  if (temp) {
+    *temp++ = '\0';
+    char* temp2 = strstr(temp, ".");
+    if (temp2) {
+      strcat(file_name, temp2);
     }
   }
-  return pszFileName;
+  return file_name;
 }

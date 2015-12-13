@@ -26,10 +26,10 @@ int  extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending)
 bool ok_prot(int nProtocolNum, xfertype xt);
 char *prot_name(int nProtocolNum);
 int  get_protocol(xfertype xt);
-void ascii_send(const char *pszFileName, bool *sent, double *percent);
-void maybe_internal(const char *pszFileName, bool *xferred, double *percent, bool bSend, int prot);
-void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn, int dn, long fs);
-void receive_file(const char *pszFileName, int *received, const char *sfn, int dn);
+void ascii_send(const char *file_name, bool *sent, double *percent);
+void maybe_internal(const char *file_name, bool *xferred, double *percent, bool bSend, int prot);
+void send_file(const char *file_name, bool *sent, bool *abort, const char *sfn, int dn, long fs);
+void receive_file(const char *file_name, int *received, const char *sfn, int dn);
 char end_batch1();
 void endbatch();
 

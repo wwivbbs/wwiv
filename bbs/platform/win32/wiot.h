@@ -77,7 +77,7 @@ class WIOTelnet : public WComm {
 
  private:
   void HandleTelnetIAC(unsigned char nCmd, unsigned char nParam);
-  void AddStringToInputBuffer(int nStart, int nEnd, char* pszBuffer);
+  void AddStringToInputBuffer(int nStart, int nEnd, char* buffer);
 
  private:
   static void InboundTelnetProc(void* pTelnet);

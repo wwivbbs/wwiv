@@ -266,7 +266,7 @@ static void UpdateHeaderInformation(int8_t anon_type, bool readit, const string 
   }
 }
 
-void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next, const char *pszFileName,
+void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next, const char *file_name,
   int nFromSystem, int nFromUser) {
   string name, date;
 
@@ -279,7 +279,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   case 1:
   case 2:
   {
-    if (!readfile(pMessageRecord, pszFileName, &message_text)) {
+    if (!readfile(pMessageRecord, file_name, &message_text)) {
       return;
     }
 

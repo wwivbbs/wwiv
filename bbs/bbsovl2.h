@@ -22,7 +22,7 @@
 
 void OnlineUserEditor();
 void BackPrint(const std::string& text, int nColorCode, int nCharDelay, int nStringDelay);
-void MoveLeft(int nNumberOfChars);
+void MoveLeft(int numOfChars);
 void SpinPuts(const std::string& text, int nColorCode);
 
 #endif  // __INCLUDED_BBS_BBSOVL2_H__

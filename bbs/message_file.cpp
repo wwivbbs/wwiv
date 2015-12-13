@@ -51,7 +51,7 @@ static long gat_section;
 uint16_t *gat = nullptr;
 
 /**
-* Opens the message area file {pszMessageAreaFileName} and returns the file handle.
+* Opens the message area file {messageAreaFileName} and returns the file handle.
 * Note: This is a Private method to this module.
 */
 static File* OpenMessageFile(const string messageAreaFileName) {

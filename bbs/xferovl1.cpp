@@ -187,17 +187,17 @@ void modify_extended_description(char **sss, const char *dest) {
 }
 
 
-bool valid_desc(const char *pszDescription) {
+bool valid_desc(const char *description) {
   // I don't think this function is really doing what it should
   // be doing, but am not sure what it should be doing instead.
   size_t i = 0;
 
   do {
-    if (pszDescription[i] > '@' && pszDescription[i] < '{') {
+    if (description[i] > '@' && description[i] < '{') {
       return true;
     }
     i++;
-  } while (i < strlen(pszDescription));
+  } while (i < strlen(description));
   return false;
 }
 
@@ -687,12 +687,12 @@ void tag_files() {
 }
 
 
-int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
+int add_batch(char *description, const char *file_name, int dn, long fs) {
   char ch;
   char s1[81], s2[81];
   int i;
 
-  if (find_batch_queue(pszFileName) > -1) {
+  if (find_batch_queue(file_name) > -1) {
     return 0;
   }
 
@@ -708,20 +708,20 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
     if (dn == -1) {
       return 0;
     } else {
-      for (i = 0; i < wwiv::strings::GetStringLength(pszDescription); i++) {
-        if (pszDescription[i] == RETURN) {
-          pszDescription[i] = SPACE;
+      for (i = 0; i < wwiv::strings::GetStringLength(description); i++) {
+        if (description[i] == RETURN) {
+          description[i] = SPACE;
         }
       }
       bout.backline();
-      bout.bprintf(" |#6? |#1%s %3luK |#5%-43.43s |#7[|#2Y/N/Q|#7] |#0", pszFileName,
-                                        bytes_to_k(fs), stripcolors(pszDescription));
+      bout.bprintf(" |#6? |#1%s %3luK |#5%-43.43s |#7[|#2Y/N/Q|#7] |#0", file_name,
+                                        bytes_to_k(fs), stripcolors(description));
       ch = onek_ncr("QYN\r");
       bout.backline();
       if (wwiv::UpperCase<char>(ch) == 'Y') {
         if (directories[dn].mask & mask_cdrom) {
-          sprintf(s2, "%s%s", directories[dn].path, pszFileName);
-          sprintf(s1, "%s%s", syscfgovr.tempdir, pszFileName);
+          sprintf(s2, "%s%s", directories[dn].path, file_name);
+          sprintf(s1, "%s%s", syscfgovr.tempdir, file_name);
           if (!File::Exists(s1)) {
             if (!copyfile(s2, s1, true)) {
               bout << "|#6 file unavailable... press any key.";
@@ -731,7 +731,7 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
             bout.clreol();
           }
         } else {
-          sprintf(s2, "%s%s", directories[dn].path, pszFileName);
+          sprintf(s2, "%s%s", directories[dn].path, file_name);
           StringRemoveWhitespace(s2);
           if ((!File::Exists(s2)) && (!so())) {
             bout << "\r";
@@ -744,7 +744,7 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
           }
         }
         batchtime += static_cast<float>(t);
-        strcpy(batch[session()->numbatch].filename, pszFileName);
+        strcpy(batch[session()->numbatch].filename, file_name);
         batch[session()->numbatch].dir = static_cast<short>(dn);
         batch[session()->numbatch].time = static_cast<float>(t);
         batch[session()->numbatch].sending = 1;
@@ -1265,9 +1265,9 @@ void removenotthere() {
 }
 
 
-int find_batch_queue(const char *pszFileName) {
+int find_batch_queue(const char *file_name) {
   for (int i = 0; i < session()->numbatch; i++) {
-    if (wwiv::strings::IsEquals(pszFileName, batch[i].filename)) {
+    if (wwiv::strings::IsEquals(file_name, batch[i].filename)) {
       return i;
     }
   }
@@ -1277,8 +1277,8 @@ int find_batch_queue(const char *pszFileName) {
 
 
 // Removes a file off the batch queue specified by pszFileNam,e
-void remove_batch(const char *pszFileName) {
-  int batchNum = find_batch_queue(pszFileName);
+void remove_batch(const char *file_name) {
+  int batchNum = find_batch_queue(file_name);
   if (batchNum > -1) {
     delbatch(batchNum);
   }

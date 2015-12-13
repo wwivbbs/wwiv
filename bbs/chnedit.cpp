@@ -32,12 +32,12 @@ using wwiv::bbs::InputMode;
 using namespace wwiv::core;
 using wwiv::strings::StringPrintf;
 
-void modify_chain(int nCurrentChainNumber);
-void insert_chain(int nCurrentChainNumber);
-void delete_chain(int nCurrentChainNumber);
+void modify_chain(int nCurrentChainum);
+void insert_chain(int nCurrentChainum);
+void delete_chain(int nCurrentChainum);
 
-static string chaindata(int nCurrentChainNumber) {
-  chainfilerec c = session()->chains[ nCurrentChainNumber ];
+static string chaindata(int nCurrentChainum) {
+  chainfilerec c = session()->chains[ nCurrentChainum ];
   char chAr = SPACE;
 
   if (c.ar != 0) {
@@ -49,7 +49,7 @@ static string chaindata(int nCurrentChainNumber) {
   }
   char chAnsiReq = (c.ansir & ansir_ansi) ? 'Y' : 'N';
   return StringPrintf("|#2%2d |#1%-28.28s  |#2%-30.30s |#9%-3d    %1c  %1c",
-      nCurrentChainNumber,
+      nCurrentChainum,
       stripcolors(c.description),
       c.filename,
       c.sl,
@@ -89,19 +89,19 @@ void ShowChainCommandLineHelp() {
   bout.nl();
 }
 
-void modify_chain(int nCurrentChainNumber) {
+void modify_chain(int nCurrentChainum) {
   chainregrec r;
   char s[255], s1[255], ch, ch2;
   memset(&r, 0, sizeof(chainregrec));
 
-  chainfilerec c = session()->chains[ nCurrentChainNumber ];
+  chainfilerec c = session()->chains[ nCurrentChainum ];
   if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    r = session()->chains_reg[ nCurrentChainNumber ];
+    r = session()->chains_reg[ nCurrentChainum ];
   }
   bool done = false;
   do {
     bout.cls();
-    const string header = StringPrintf("|B1|15Editing Chain # %d", nCurrentChainNumber);
+    const string header = StringPrintf("|B1|15Editing Chain # %d", nCurrentChainum);
     bout << header;
     bout.nl(2);
     bout.Color(0);
@@ -158,29 +158,29 @@ void modify_chain(int nCurrentChainNumber) {
       done = true;
       break;
     case '[':
-      session()->chains[ nCurrentChainNumber ] = c;
+      session()->chains[ nCurrentChainum ] = c;
       if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-        session()->chains_reg[ nCurrentChainNumber ] = r;
+        session()->chains_reg[ nCurrentChainum ] = r;
       }
-      if (--nCurrentChainNumber < 0) {
-        nCurrentChainNumber = session()->chains.size() - 1;
+      if (--nCurrentChainum < 0) {
+        nCurrentChainum = session()->chains.size() - 1;
       }
-      c = session()->chains[ nCurrentChainNumber ];
+      c = session()->chains[ nCurrentChainum ];
       if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-        r = session()->chains_reg[ nCurrentChainNumber ];
+        r = session()->chains_reg[ nCurrentChainum ];
       }
       break;
     case ']':
-      session()->chains[ nCurrentChainNumber ] = c;
+      session()->chains[ nCurrentChainum ] = c;
       if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-        session()->chains_reg[ nCurrentChainNumber ] = r;
+        session()->chains_reg[ nCurrentChainum ] = r;
       }
-      if (++nCurrentChainNumber >= session()->chains.size()) {
-        nCurrentChainNumber = 0;
+      if (++nCurrentChainum >= session()->chains.size()) {
+        nCurrentChainum = 0;
       }
-      c = session()->chains[ nCurrentChainNumber ];
+      c = session()->chains[ nCurrentChainum ];
       if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-        r = session()->chains_reg[ nCurrentChainNumber ];
+        r = session()->chains_reg[ nCurrentChainum ];
       }
       break;
     case 'A':
@@ -326,13 +326,13 @@ void modify_chain(int nCurrentChainNumber) {
       break;
     }
   } while (!done && !hangup);
-  session()->chains[ nCurrentChainNumber ] = c;
+  session()->chains[ nCurrentChainum ] = c;
   if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    session()->chains_reg[ nCurrentChainNumber ] = r;
+    session()->chains_reg[ nCurrentChainum ] = r;
   }
 }
 
-void insert_chain(int nCurrentChainNumber) {
+void insert_chain(int nCurrentChainum) {
   {
     chainfilerec c;
     strcpy(c.description, "** NEW CHAIN **");
@@ -343,7 +343,7 @@ void insert_chain(int nCurrentChainNumber) {
     c.ansir |= ansir_no_DOS;
 
     auto it = session()->chains.begin();
-    std::advance(it, nCurrentChainNumber);
+    std::advance(it, nCurrentChainum);
     session()->chains.insert(it, c);
   }
   if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
@@ -352,19 +352,19 @@ void insert_chain(int nCurrentChainNumber) {
     r.maxage = 255;
 
     auto it = session()->chains_reg.begin();
-    std::advance(it, nCurrentChainNumber);
+    std::advance(it, nCurrentChainum);
     session()->chains_reg.insert(it, r);
   }
-  modify_chain(nCurrentChainNumber);
+  modify_chain(nCurrentChainum);
 }
 
-void delete_chain(int nCurrentChainNumber) {
+void delete_chain(int nCurrentChainum) {
   auto it = session()->chains.begin();
-  std::advance(it, nCurrentChainNumber);
+  std::advance(it, nCurrentChainum);
   session()->chains.erase(it);
   if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     auto rit = session()->chains_reg.begin();
-    std::advance(rit, nCurrentChainNumber);
+    std::advance(rit, nCurrentChainum);
     session()->chains_reg.erase(rit);
   }
 }

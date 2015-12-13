@@ -55,7 +55,7 @@ using namespace wwiv::strings;;
 void CreateNewUserRecord();
 bool CanCreateNewUserAccountHere();
 bool UseMinimalNewUserInfo();
-void noabort(const char *pszFileName);
+void noabort(const char *file_name);
 bool check_dupes(const char *pszPhoneNumber);
 void DoMinimalNewUser();
 bool check_zip(const char *pszZipCode, int mode);
@@ -1145,12 +1145,12 @@ void newuser() {
 /**
  * Takes an input string and reduces repeated spaces in the string to one space.
  */
-void single_space(char *pszText) {
-  if (!pszText || !*pszText) {
+void single_space(char *text) {
+  if (!text || !*text) {
     return;
   }
-  char *pInputBuffer = pszText;
-  char *pOutputBuffer = pszText;
+  char *pInputBuffer = text;
+  char *pOutputBuffer = text;
   int i = 0;
   int cnt = 0;
 
@@ -1263,7 +1263,7 @@ bool check_dupes(const char *pszPhoneNumber) {
   return false;
 }
 
-void noabort(const char *pszFileName) {
+void noabort(const char *file_name) {
   bool oic = false;
 
   if (session()->using_modem) {
@@ -1271,7 +1271,7 @@ void noabort(const char *pszFileName) {
     incom = false;
     dump();
   }
-  printfile(pszFileName);
+  printfile(file_name);
   if (session()->using_modem) {
     dump();
     incom = oic;

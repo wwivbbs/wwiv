@@ -44,8 +44,8 @@ extern char str_quit[];
 //
 int  comparedl(uploadsrec * x, uploadsrec * y, int type);
 void quicksort(int l, int r, int type);
-bool upload_file(const char *pszFileName, int nDirectoryNum, const char *pszDescription);
-long db_index(File &fileAllow, const char *pszFileName);
+bool upload_file(const char *file_name, int nDirectoryNum, const char *description);
+long db_index(File &fileAllow, const char *file_name);
 void l_config_nscan();
 void config_nscan();
 
@@ -417,12 +417,12 @@ void rename_file() {
 }
 
 
-bool upload_file(const char *pszFileName, int nDirectoryNum, const char *pszDescription) {
+bool upload_file(const char *file_name, int nDirectoryNum, const char *description) {
   uploadsrec u, u1;
 
   directoryrec d = directories[nDirectoryNum];
   char szTempFileName[ 255 ];
-  strcpy(szTempFileName, pszFileName);
+  strcpy(szTempFileName, file_name);
   align(szTempFileName);
   strcpy(u.filename, szTempFileName);
   u.ownerusr = static_cast<uint16_t>(session()->usernum);
@@ -431,7 +431,7 @@ bool upload_file(const char *pszFileName, int nDirectoryNum, const char *pszDesc
   u.unused_filetype = 0;
   u.mask = 0;
   if (!(d.mask & mask_cdrom) && !check_ul_event(nDirectoryNum, &u)) {
-    bout << pszFileName << " was deleted by upload event.\r\n";
+    bout << file_name << " was deleted by upload event.\r\n";
   } else {
     char szUnalignedFileName[ MAX_PATH ];
     strcpy(szUnalignedFileName, szTempFileName);
@@ -442,10 +442,10 @@ bool upload_file(const char *pszFileName, int nDirectoryNum, const char *pszDesc
 
     File fileUpload(szFullPathName);
     if (!fileUpload.Open(File::modeBinary | File::modeReadOnly)) {
-      if (pszDescription && (*pszDescription)) {
-        bout << "ERR: " << pszFileName << ":" << pszDescription << wwiv::endl;
+      if (description && (*description)) {
+        bout << "ERR: " << file_name << ":" << description << wwiv::endl;
       } else {
-        bout << "|#1" << pszFileName << " does not exist.";
+        bout << "|#1" << file_name << " does not exist.";
       }
       return true;
     }
@@ -464,8 +464,8 @@ bool upload_file(const char *pszFileName, int nDirectoryNum, const char *pszDesc
     strcpy(szTempDisplayFileName, u.filename);
     bout << "|#9File name   : |#2" << StringRemoveWhitespace(szTempDisplayFileName) << wwiv::endl;
     bout << "|#9File size   : |#2" << bytes_to_k(u.numbytes) << wwiv::endl;
-    if (pszDescription && *pszDescription) {
-      strncpy(u.description, pszDescription, 58);
+    if (description && *description) {
+      strncpy(u.description, description, 58);
       u.description[58] = '\0';
       bout << "|#1 Description: " << u.description << wwiv::endl;
     } else {
@@ -513,19 +513,19 @@ bool upload_file(const char *pszFileName, int nDirectoryNum, const char *pszDesc
 }
 
 
-bool maybe_upload(const char *pszFileName, int nDirectoryNum, const char *pszDescription) {
+bool maybe_upload(const char *file_name, int nDirectoryNum, const char *description) {
   char s[81], ch, s1[81];
   bool abort = false;
   bool ok = true;
   uploadsrec u;
 
-  strcpy(s, pszFileName);
+  strcpy(s, file_name);
   align(s);
   int i = recno(s);
 
   if (i == -1) {
-    if (session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH) && (!is_uploadable(pszFileName) && dcs())) {
-      bout.bprintf("|#2%-12s: ", pszFileName);
+    if (session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH) && (!is_uploadable(file_name) && dcs())) {
+      bout.bprintf("|#2%-12s: ", file_name);
       bout << "|#5In filename database - add anyway? ";
       ch = ynq();
       if (ch == *str_quit) {
@@ -534,7 +534,7 @@ bool maybe_upload(const char *pszFileName, int nDirectoryNum, const char *pszDes
         if (ch == *(YesNoString(false))) {
           bout << "|#5Delete it? ";
           if (yesno()) {
-            sprintf(s1, "%s%s", directories[nDirectoryNum].path, pszFileName);
+            sprintf(s1, "%s%s", directories[nDirectoryNum].path, file_name);
             File::Remove(s1);
             bout.nl();
             return true;
@@ -544,7 +544,7 @@ bool maybe_upload(const char *pszFileName, int nDirectoryNum, const char *pszDes
         }
       }
     }
-    if (!upload_file(s, udir[nDirectoryNum].subnum, pszDescription)) {
+    if (!upload_file(s, udir[nDirectoryNum].subnum, description)) {
       ok = false;
     }
   } else {
@@ -573,8 +573,8 @@ bool maybe_upload(const char *pszFileName, int nDirectoryNum, const char *pszDes
  * the number of optional words between the filename and description.
  * the optional words (size, date/time) are ignored completely.
  */
-void upload_files(const char *pszFileName, int nDirectoryNum, int type) {
-  char s[255], *fn1 = nullptr, *pszDescription = nullptr, last_fn[81], *ext = nullptr;
+void upload_files(const char *file_name, int nDirectoryNum, int type) {
+  char s[255], *fn1 = nullptr, *description = nullptr, last_fn[81], *ext = nullptr;
   bool abort = false;
   int ok1, i;
   bool ok = true;
@@ -583,14 +583,14 @@ void upload_files(const char *pszFileName, int nDirectoryNum, int type) {
   last_fn[0] = 0;
   dliscan1(udir[nDirectoryNum].subnum);
 
-  TextFile file(pszFileName, "r");
+  TextFile file(file_name, "r");
   if (!file.IsOpen()) {
     char szDefaultFileName[ MAX_PATH ];
-    sprintf(szDefaultFileName, "%s%s", directories[udir[nDirectoryNum].subnum].path, pszFileName);
+    sprintf(szDefaultFileName, "%s%s", directories[udir[nDirectoryNum].subnum].path, file_name);
     file.Open(szDefaultFileName, "r");
   }
   if (!file.IsOpen()) {
-    bout << pszFileName << ": not found.\r\n";
+    bout << file_name << ": not found.\r\n";
   } else {
     while (ok && file.ReadLine(s, 250)) {
       if (s[0] < SPACE) {
@@ -601,17 +601,17 @@ void upload_files(const char *pszFileName, int nDirectoryNum, int type) {
             ext = static_cast<char *>(BbsAllocA(4096L));
             *ext = 0;
           }
-          for (pszDescription = s; (*pszDescription == ' ') || (*pszDescription == '\t'); pszDescription++);
-          if (*pszDescription == '|') {
+          for (description = s; (*description == ' ') || (*description == '\t'); description++);
+          if (*description == '|') {
             do {
-              pszDescription++;
-            } while ((*pszDescription == ' ') || (*pszDescription == '\t'));
+              description++;
+            } while ((*description == ' ') || (*description == '\t'));
           }
-          fn1 = strchr(pszDescription, '\n');
+          fn1 = strchr(description, '\n');
           if (fn1) {
             *fn1 = 0;
           }
-          strcat(ext, pszDescription);
+          strcat(ext, description);
           strcat(ext, "\r\n");
         }
       } else {
@@ -625,8 +625,8 @@ void upload_files(const char *pszFileName, int nDirectoryNum, int type) {
             }
           }
           if (ok1) {
-            pszDescription = strtok(nullptr, "\n");
-            if (!pszDescription) {
+            description = strtok(nullptr, "\n");
+            if (!description) {
               ok1 = 0;
             }
           }
@@ -647,10 +647,10 @@ void upload_files(const char *pszFileName, int nDirectoryNum, int type) {
             fileDownload.Close();
             *ext = 0;
           }
-          while (*pszDescription == ' ' || *pszDescription == '\t') {
-            ++pszDescription;
+          while (*description == ' ' || *description == '\t') {
+            ++description;
           }
-          ok = maybe_upload(fn1, nDirectoryNum, pszDescription);
+          ok = maybe_upload(fn1, nDirectoryNum, description);
           checka(&abort);
           if (abort) {
             ok = false;
@@ -919,12 +919,12 @@ void edit_database()
 
 
 
-long db_index(File &fileAllow, const char *pszFileName) {
+long db_index(File &fileAllow, const char *file_name) {
   char cfn[18], tfn[81], tfn1[81];
   int i = 0;
   long hirec, lorec, currec, ocurrec = -1;
 
-  strcpy(tfn1, pszFileName);
+  strcpy(tfn1, file_name);
   align(tfn1);
   strcpy(tfn, stripfn(tfn1));
 
@@ -968,7 +968,7 @@ long db_index(File &fileAllow, const char *pszFileName) {
 
 #define ALLOW_BUFSIZE 61440
 
-void modify_database(const char *pszFileName, bool add) {
+void modify_database(const char *file_name, bool add) {
   char tfn[MAX_PATH], tfn1[MAX_PATH];
   unsigned int nb;
   long l, l1, cp;
@@ -982,7 +982,7 @@ void modify_database(const char *pszFileName, bool add) {
     return;
   }
 
-  long rec = db_index(fileAllow, pszFileName);
+  long rec = db_index(fileAllow, file_name);
 
   if ((rec < 0 && !add) || (rec > 0 && add)) {
     fileAllow.Close();
@@ -1016,7 +1016,7 @@ void modify_database(const char *pszFileName, bool add) {
     } while (nb == ALLOW_BUFSIZE);
 
     // put in the new value
-    strcpy(tfn1, pszFileName);
+    strcpy(tfn1, file_name);
     align(tfn1);
     strncpy(tfn, stripfn(tfn1), 13);
     fileAllow.Seek(cp, File::seekBegin);
@@ -1052,7 +1052,7 @@ void modify_database(const char *pszFileName, bool add) {
  * Returns 1 if file not found in filename database.
  */
 
-bool is_uploadable(const char *pszFileName) {
+bool is_uploadable(const char *file_name) {
   if (!session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
     return true;
   }
@@ -1061,7 +1061,7 @@ bool is_uploadable(const char *pszFileName) {
   if (!fileAllow.Open(File::modeBinary | File::modeReadOnly)) {
     return true;
   }
-  long rc = db_index(fileAllow, pszFileName);
+  long rc = db_index(fileAllow, file_name);
   fileAllow.Close();
   return (rc < 0) ? true : false;
 }

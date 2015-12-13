@@ -36,7 +36,7 @@ public:
 
 void tmp_disable_conf(bool disable);
 void reset_disable_conf();
-int  get_conf_info(int conftype, int *num, confrec ** cpp, char *pszFileName, int *num_s, userconfrec ** uc);
+int  get_conf_info(int conftype, int *num, confrec ** cpp, char *file_name, int *num_s, userconfrec ** uc);
 void jump_conf(int conftype);
 void update_conf(int conftype, subconf_t * sub1, subconf_t * sub2, int action);
 char first_available_designator(int conftype);
@@ -47,13 +47,13 @@ void addsubconf(int conftype, confrec * c, subconf_t * which);
 void delsubconf(int conftype, confrec * c, subconf_t * which);
 void conf_edit(int conftype);
 void list_confs(int conftype, int ssc);
-int  select_conf(const char *pszPromptText, int conftype, int listconfs);
-confrec *read_conferences(const char *pszFileName, int *nc, int max);
+int  select_conf(const char *prompt_text, int conftype, int listconfs);
+confrec *read_conferences(const char *file_name, int *nc, int max);
 void read_in_conferences(int conftype);
 void read_all_conferences();
-int get_num_conferences(const char *pszFileName);
+int get_num_conferences(const char *file_name);
 int wordcount(const std::string& instr, const char *delimstr);
 const char *extractword(int ww, const std::string& instr, const char *delimstr);
-void sort_conf_str(char *pszConferenceStr);
+void sort_conf_str(char *conference_string);
 
 #endif  // __INCLUDED_BBS_CONF_H__

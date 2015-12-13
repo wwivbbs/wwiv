@@ -322,11 +322,11 @@ void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStrin
  * This function will reposition the cursor i spaces to the left, or if the
  * cursor is on the left side of the screen already then it will not move.
  * If the user has no ANSI then nothing happens.
- * @param nNumberOfChars Number of characters to move to the left
+ * @param numOfChars Number of characters to move to the left
  */
-void MoveLeft(int nNumberOfChars) {
+void MoveLeft(int numOfChars) {
   if (okansi()) {
-    bout << "\x1b[" << nNumberOfChars << "D";
+    bout << "\x1b[" << numOfChars << "D";
   }
 }
 

@@ -26,11 +26,11 @@
 static xtrasubsnetrec *xsubsn;
 static int nn;
 
-static char *mallocin_file(const char *pszFileName, size_t *len) {
+static char *mallocin_file(const char *file_name, size_t *len) {
   *len = 0;
   char* ss = nullptr;
 
-  File file(pszFileName);
+  File file(file_name);
   if (file.Open(File::modeReadOnly | File::modeBinary)) {
     *len = file.GetLength();
     ss = static_cast<char *>(malloc(*len + 20));

@@ -328,10 +328,10 @@ void execute_ansi() {
 /* This function ouputs a string to the com port.  This is mainly used
  * for modem commands
  */
-void rputs(const char *pszText) {
+void rputs(const char *text) {
   // Rushfan fix for COM/IP weirdness
   if (ok_modem_stuff) {
-    session()->remoteIO()->write(pszText, strlen(pszText));
+    session()->remoteIO()->write(text, strlen(text));
   }
 }
 

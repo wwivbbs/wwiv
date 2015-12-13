@@ -26,7 +26,7 @@
 #include "sdk/net.h"
 #include "sdk/vardec.h"
 
-void remove_from_temp(const char *pszFileName, const char *pszDirectoryName, bool bPrintStatus);
+void remove_from_temp(const char *file_name, const char *pszDirectoryName, bool bPrintStatus);
 bool sysop1();
 void ToggleScrollLockKey();
 bool okansi();
@@ -39,12 +39,12 @@ void Wait(double d);
 long freek1(const char *pszPathName);
 void send_net(net_header_rec * nh, unsigned short int *list, const char *text, const char *byname);
 void giveup_timeslice();
-char *stripfn(const char *pszFileName);
-void stripfn_inplace(char *pszFileName);
+char *stripfn(const char *file_name);
+void stripfn_inplace(char *file_name);
 char *get_wildlist(char *pszFileMask);
 int side_menu(int *menu_pos, bool redraw, const std::vector<std::string>& menu_items, int xpos, int ypos, struct side_menu_colors * smc);
 slrec getslrec(int nSl);
-void WWIV_SetFileTime(const char* pszFileName, const time_t tTime);
+void WWIV_SetFileTime(const char* file_name, const time_t tTime);
 bool okfsed();
 std::string W_DateString(time_t tDateTime, const std::string& origMode , const std::string& timeDelim);
 

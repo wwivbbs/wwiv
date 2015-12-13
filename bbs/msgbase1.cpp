@@ -320,10 +320,10 @@ void post() {
   }
 }
 
-void grab_user_name(messagerec* pMessageRecord, const char* pszFileName) {
+void grab_user_name(messagerec* pMessageRecord, const char* file_name) {
   string text;
   net_email_name[0] = '\0';
-  if (!readfile(pMessageRecord, pszFileName, &text)) {
+  if (!readfile(pMessageRecord, file_name, &text)) {
     return;
   }
   string::size_type cr = text.find_first_of('\r');

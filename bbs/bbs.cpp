@@ -102,12 +102,12 @@ WApplication::WApplication() {
   tzset();
 }
 
-bool WApplication::LogMessage(const char* pszFormat, ...) {
+bool WApplication::LogMessage(const char* format, ...) {
   va_list ap;
   char szBuffer[2048];
 
-  va_start(ap, pszFormat);
-  vsnprintf(szBuffer, sizeof(szBuffer), pszFormat, ap);
+  va_start(ap, format);
+  vsnprintf(szBuffer, sizeof(szBuffer), format, ap);
   va_end(ap);
   sysoplog(szBuffer);
   return true;

@@ -23,21 +23,21 @@
 void zap_ed_info();
 void get_ed_info();
 unsigned long bytes_to_k(unsigned long lBytes);
-int  check_batch_queue(const char *pszFileName);
+int  check_batch_queue(const char *file_name);
 bool check_ul_event(int nDirectoryNum, uploadsrec * pUploadRecord);
 bool okfn(const std::string& fileName);
 void print_devices();
 void get_arc_cmd(char *pszOutBuffer, const char *pszArcFileName, int cmd, const char *ofn);
-int  list_arc_out(const char *pszFileName, const char *pszDirectory);
+int  list_arc_out(const char *file_name, const char *pszDirectory);
 bool ratio_ok();
 bool dcs();
 void dliscan1(int nDirectoryNum);
 void dliscan();
-void add_extended_description(const char *pszFileName, const char *pszDescription);
-void delete_extended_description(const char *pszFileName);
-char *read_extended_description(const char *pszFileName);
-void print_extended(const char *pszFileName, bool *abort, int numlist, int indent);
-void align(char *pszFileName);
+void add_extended_description(const char *file_name, const char *description);
+void delete_extended_description(const char *file_name);
+char *read_extended_description(const char *file_name);
+void print_extended(const char *file_name, bool *abort, int numlist, int indent);
+void align(char *file_name);
 bool compare(const char *pszFileName1, const char *pszFileName2);
 void printinfo(uploadsrec * pUploadRecord, bool *abort);
 void printtitle(bool *abort);
@@ -49,7 +49,7 @@ void searchall();
 int  recno(const char *pszFileMask);
 int  nrecno(const char *pszFileMask, int nStartingRec);
 int  printfileinfo(uploadsrec * pUploadRecord, int nDirectoryNum);
-void remlist(const char *pszFileName);
+void remlist(const char *file_name);
 int  FileAreaSetRecord(File &file, int nRecordNumber);
 
 #endif  // __INCLUDED_BBS_XFER_H__

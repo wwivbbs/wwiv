@@ -21,6 +21,6 @@
 int  bputch(char c, bool bUseInternalBuffer = false);
 void FlushOutComChBuffer();
 void rputch(char ch, bool bUseInternalBuffer = false);
-void rputs(const char *pszText);
+void rputs(const char *text);
 
 #endif  // __INCLUDED_BBS_BPUTCH_H__

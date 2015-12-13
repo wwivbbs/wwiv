@@ -49,26 +49,26 @@ bool inli(string* outBuffer, string* rollOver, string::size_type nMaxLen, bool b
 }
 
 // returns true if needs to keep inputting this line
-bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bAddCRLF, bool bAllowPrevious,
+bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF, bool bAllowPrevious,
           bool bTwoColorChatMode, bool clear_previous_line) {
   char szRollOver[255];
 
-  WWIV_ASSERT(pszBuffer);
-  WWIV_ASSERT(pszRollover);
+  WWIV_ASSERT(buffer);
+  WWIV_ASSERT(rollover);
 
   int cm = chatting;
 
   int begx = session()->localIO()->WhereX();
-  if (pszRollover[0] != 0) {
+  if (rollover[0] != 0) {
     char* ss = szRollOver;
-    for (int i = 0; pszRollover[i]; i++) {
-      if (pszRollover[i] == CC || pszRollover[i] == CO) {
+    for (int i = 0; rollover[i]; i++) {
+      if (rollover[i] == CC || rollover[i] == CO) {
         *ss++ = 'P' - '@';
       } else {
-        *ss++ = pszRollover[i];
+        *ss++ = rollover[i];
       }
       // Add a second ^P if we are working on RIP codes
-      if (pszRollover[i] == CO && pszRollover[i + 1] != CO && pszRollover[i - 1] != CO) {
+      if (rollover[i] == CO && rollover[i + 1] != CO && rollover[i - 1] != CO) {
         *ss++ = 'P' - '@';
       }
     }
@@ -83,7 +83,7 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
       strcpy(&charbuffer[1], szRollOver);
       charbufferpointer = 1;
     }
-    pszRollover[0] = '\0';
+    rollover[0] = '\0';
   }
   string::size_type cp = 0;
   bool done = false;
@@ -100,7 +100,7 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
     }
     if (ch >= SPACE) {
       if ((session()->localIO()->WhereX() < (session()->user()->GetScreenChars() - 1)) && (cp < nMaxLen)) {
-        pszBuffer[cp++] = ch;
+        buffer[cp++] = ch;
         bputch(ch);
         if (session()->localIO()->WhereX() == (session()->user()->GetScreenChars() - 1)) {
           done = true;
@@ -117,24 +117,24 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
         }
         break;
       case RETURN:                            // C/R
-        pszBuffer[cp] = '\0';
+        buffer[cp] = '\0';
         done = true;
         break;
       case BACKSPACE:                             // Backspace
         if (cp) {
-          if (pszBuffer[cp - 2] == CC) {
+          if (buffer[cp - 2] == CC) {
             cp -= 2;
             bout.Color(0);
-          } else if (pszBuffer[cp - 2] == CO) {
-            for (string::size_type i = strlen(interpret(pszBuffer[cp - 1])); i > 0; i--) {
+          } else if (buffer[cp - 2] == CO) {
+            for (string::size_type i = strlen(interpret(buffer[cp - 1])); i > 0; i--) {
               bout.bs();
             }
             cp -= 2;
-            if (pszBuffer[cp - 1] == CO) {
+            if (buffer[cp - 1] == CO) {
               cp--;
             }
           } else {
-            if (pszBuffer[cp - 1] == BACKSPACE) {
+            if (buffer[cp - 1] == BACKSPACE) {
               cp--;
               bputch(SPACE);
             } else {
@@ -164,38 +164,38 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
       case CW:                            // Ctrl-W
         if (cp) {
           do {
-            if (pszBuffer[cp - 2] == CC) {
+            if (buffer[cp - 2] == CC) {
               cp -= 2;
               bout.Color(0);
-            } else if (pszBuffer[cp - 1] == BACKSPACE) {
+            } else if (buffer[cp - 1] == BACKSPACE) {
               cp--;
               bputch(SPACE);
             } else {
               cp--;
               bout.bs();
             }
-          } while (cp && pszBuffer[cp - 1] != SPACE && pszBuffer[cp - 1] != BACKSPACE);
+          } while (cp && buffer[cp - 1] != SPACE && buffer[cp - 1] != BACKSPACE);
         }
         break;
       case CN:                            // Ctrl-N
         if (session()->localIO()->WhereX() && cp < nMaxLen) {
           bputch(BACKSPACE);
-          pszBuffer[cp++] = BACKSPACE;
+          buffer[cp++] = BACKSPACE;
         }
         break;
       case CP:                            // Ctrl-P
         if (cp < nMaxLen - 1) {
           ch = getkey();
           if (ch >= SPACE && ch <= 126) {
-            pszBuffer[cp++] = CC;
-            pszBuffer[cp++] = ch;
+            buffer[cp++] = CC;
+            buffer[cp++] = ch;
             bout.Color(ch - '0');
           } else if (ch == CP && cp < nMaxLen - 2) {
             ch = getkey();
             if (ch != CP) {
-              pszBuffer[cp++] = CO;
-              pszBuffer[cp++] = CO;
-              pszBuffer[cp++] = ch;
+              buffer[cp++] = CO;
+              buffer[cp++] = CO;
+              buffer[cp++] = ch;
               bputch('\xf');
               bputch('\xf');
               bputch(ch);
@@ -209,7 +209,7 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
             && (session()->localIO()->WhereX() + charsNeeded) < session()->user()->GetScreenChars()) {
           charsNeeded = 5 - ((session()->localIO()->WhereX() + 1) % 5);
           for (int j = 0; j < charsNeeded; j++) {
-            pszBuffer[cp++] = SPACE;
+            buffer[cp++] = SPACE;
             bputch(SPACE);
           }
         }
@@ -225,7 +225,7 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
 
   if (ch != RETURN) {
     string::size_type lastwordstart = cp - 1;
-    while (lastwordstart > 0 && pszBuffer[lastwordstart] != SPACE && pszBuffer[lastwordstart] != BACKSPACE) {
+    while (lastwordstart > 0 && buffer[lastwordstart] != SPACE && buffer[lastwordstart] != BACKSPACE) {
       lastwordstart--;
     }
     if (lastwordstart > static_cast<string::size_type>(session()->localIO()->WhereX() / 2)
@@ -238,13 +238,13 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
         bputch(SPACE);
       }
       for (string::size_type j = 0; j < lastwordlen; j++) {
-        pszRollover[j] = pszBuffer[cp - lastwordlen + j];
+        rollover[j] = buffer[cp - lastwordlen + j];
       }
-      pszRollover[lastwordlen] = '\0';
+      rollover[lastwordlen] = '\0';
       cp -= lastwordlen;
     }
-    pszBuffer[cp++] = CA;
-    pszBuffer[cp] = '\0';
+    buffer[cp++] = CA;
+    buffer[cp] = '\0';
   }
   if (bAddCRLF) {
     bout.nl();
@@ -350,7 +350,7 @@ bool checka(bool *abort, bool *next) {
   return *abort;
 }
 
-// Prints an abortable string (contained in *pszText). Returns 1 in *abort if the
+// Prints an abortable string (contained in *text). Returns 1 in *abort if the
 // string was aborted, else *abort should be zero.
 void pla(const string& text, bool *abort) {
   if (CheckForHangup()) {
@@ -415,10 +415,10 @@ bool sysop2() {
 
 // Returns 1 if computer type string in *s matches the current user's
 // defined computer type, else returns 0.
-bool checkcomp(const char *pszComputerType) {
-  WWIV_ASSERT(pszComputerType);
+bool checkcomp(const char *computer_type) {
+  WWIV_ASSERT(computer_type);
   const string ctype = ctypes(session()->user()->GetComputerType());
-  return strstr(ctype.c_str(), pszComputerType) ? true : false;
+  return strstr(ctype.c_str(), computer_type) ? true : false;
 }
 
 
