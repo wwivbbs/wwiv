@@ -254,14 +254,14 @@ void sub_xtr_add(int n, int nn) {
 
   memset(xnp, 0, sizeof(xtrasubsnetrec));
 
-  if (session()->GetMaxNetworkNumber() > 1) {
+  if (session()->max_net_num() > 1) {
     odc[0] = 0;
     odci = 0;
     onx[0] = 'Q';
     onx[1] = 0;
     onxi = 1;
     bout.nl();
-    for (ii = 0; ii < session()->GetMaxNetworkNumber(); ii++) {
+    for (ii = 0; ii < session()->max_net_num(); ii++) {
       if (ii < 9) {
         onx[onxi++] = static_cast<char>(ii + '1');
         onx[onxi] = 0;
@@ -274,7 +274,7 @@ void sub_xtr_add(int n, int nn) {
     }
     bout << "Q. Quit\r\n\n";
     bout << "|#2Which network (number): ";
-    if (session()->GetMaxNetworkNumber() < 9) {
+    if (session()->max_net_num() < 9) {
       ch = onek(onx);
       if (ch == 'Q') {
         ii = -1;
@@ -289,13 +289,13 @@ void sub_xtr_add(int n, int nn) {
         ii = atoi(mmk) - 1;
       }
     }
-    if (ii >= 0 && ii < session()->GetMaxNetworkNumber()) {
+    if (ii >= 0 && ii < session()->max_net_num()) {
       set_net_num(ii);
     } else {
       return;
     }
   }
-  xnp->net_num = static_cast<short>(session()->GetNetworkNumber());
+  xnp->net_num = static_cast<short>(session()->net_num());
 
   bout.nl();
   bout << "|#2What sub type? ";

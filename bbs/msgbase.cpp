@@ -62,7 +62,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
   }
   if (userRecord.GetForwardSystemNumber() != 0) {
     if (!userRecord.IsMailForwardedToInternet()) {
-      int nNetworkNumber = session()->GetNetworkNumber();
+      int nNetworkNumber = session()->net_num();
       set_net_num(userRecord.GetForwardNetNumber());
       if (!valid_system(userRecord.GetForwardSystemNumber())) {
         set_net_num(nNetworkNumber);
@@ -183,7 +183,7 @@ void sendout_email(EmailData& data) {
   m.status  = 0;
   m.daten = static_cast<uint32_t>(time(nullptr));
 
-  if (m.fromsys && session()->GetMaxNetworkNumber() > 1) {
+  if (m.fromsys && session()->max_net_num() > 1) {
     m.status |= status_new_net;
     // always trim to WWIV_MESSAGE_TITLE_LENGTH now.
     m.title[71] = '\0';
@@ -244,7 +244,7 @@ void sendout_email(EmailData& data) {
     nh.method = 0;
     unique_ptr<char[]> b1(new char[b.size() + 768]);
     i = 0;
-    if (data.user_number == 0 && data.from_network_number == session()->GetNetworkNumber()) {
+    if (data.user_number == 0 && data.from_network_number == session()->net_num()) {
       nh.main_type = main_type_email_name;
       strcpy(&(b1[i]), net_email_name);
       i += strlen(net_email_name) + 1;
@@ -257,8 +257,8 @@ void sendout_email(EmailData& data) {
       bout.bprintf("Message truncated by %lu bytes for the network.", nh.length - 32760L);
       nh.length = 32760;
     }
-    if (data.from_network_number != session()->GetNetworkNumber()) {
-      gate_msg(&nh, b1.get(), session()->GetNetworkNumber(), net_email_name, nullptr, data.from_network_number);
+    if (data.from_network_number != session()->net_num()) {
+      gate_msg(&nh, b1.get(), session()->net_num(), net_email_name, nullptr, data.from_network_number);
     } else {
       string net_filename;
       if (data.forwarded_code) {
@@ -314,7 +314,7 @@ void sendout_email(EmailData& data) {
       data.system_number == 32767) {
       logMessagePart = net_email_name;
     } else {
-      if (session()->GetMaxNetworkNumber() > 1) {
+      if (session()->max_net_num() > 1) {
         if (data.user_number == 0) {
           logMessagePart = StringPrintf("%s @%u.%s", net_email_name, data.system_number,
                            session()->GetNetworkName());
@@ -465,7 +465,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
         system_number == 32767) {
       strcpy(szDestination, net_email_name);
     } else {
-      if (session()->GetMaxNetworkNumber() > 1) {
+      if (session()->max_net_num() > 1) {
         if (user_number == 0) {
           sprintf(szDestination, "%s @%u.%s", net_email_name, system_number, session()->GetNetworkName());
         } else {
@@ -540,7 +540,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
       carbon_copy[nNumUsers].system_number = system_number;
       strcpy(carbon_copy[nNumUsers].net_name, session()->GetNetworkName());
       strcpy(carbon_copy[nNumUsers].net_email_name, net_email_name);
-      carbon_copy[nNumUsers].net_num = session()->GetNetworkNumber();
+      carbon_copy[nNumUsers].net_num = session()->net_num();
       nNumUsers++;
       do {
         string emailAddress;
@@ -557,7 +557,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
           carbon_copy[nNumUsers].system_number = ts;
           strcpy(carbon_copy[nNumUsers].net_name, session()->GetNetworkName());
           strcpy(carbon_copy[nNumUsers].net_email_name, net_email_name);
-          carbon_copy[nNumUsers].net_num = session()->GetNetworkNumber();
+          carbon_copy[nNumUsers].net_num = session()->net_num();
           nNumUsers++;
           cc = true;
         }
@@ -589,7 +589,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
           strcpy(szDestination, carbon_copy[j].net_email_name);
         } else {
           set_net_num(carbon_copy[j].net_num);
-          if (session()->GetMaxNetworkNumber() > 1) {
+          if (session()->max_net_num() > 1) {
             if (carbon_copy[j].user_number == 0) {
               sprintf(szDestination, "%s@%u.%s", carbon_copy[j].net_email_name, carbon_copy[j].system_number,
                       carbon_copy[j].net_name);
@@ -641,7 +641,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
 
   if (!cc) {
     email.system_number = system_number;
-    email.from_network_number = session()->GetNetworkNumber();
+    email.from_network_number = session()->net_num();
     sendout_email(email);
     return;
   }

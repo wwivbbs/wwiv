@@ -46,20 +46,20 @@ using std::unique_ptr;
 using std::unique_ptr;
 using wwiv::strings::StringPrintf;
 
-void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
+void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
   string text;
   if (!readfile(&(pPostRecord->msg), extra, &text)){
     return;
   }
 
   int nNetNumber;
-  int nOrigNetNumber = session()->GetNetworkNumber();
+  int nOrigNetNumber = session()->net_num();
   if (pPostRecord->status & status_post_new_net) {
     nNetNumber = pPostRecord->network.network_msg.net_number;
-  } else if (xsubs[nSubNumber].num_nets) {
-    nNetNumber = xsubs[nSubNumber].nets[0].net_num;
+  } else if (xsubs[sub_number].num_nets) {
+    nNetNumber = xsubs[sub_number].nets[0].net_num;
   } else {
-    nNetNumber = session()->GetNetworkNumber();
+    nNetNumber = session()->net_num();
   }
 
   int nn1 = nNetNumber;
@@ -91,8 +91,8 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
   strcpy(b1.get(), pPostRecord->title);
   memmove(&(b1[strlen(pPostRecord->title) + 1]), text.c_str(), lMessageLength);
 
-  for (int n = 0; n < xsubs[nSubNumber].num_nets; n++) {
-    xtrasubsnetrec* xnp = &(xsubs[nSubNumber].nets[n]);
+  for (int n = 0; n < xsubs[sub_number].num_nets; n++) {
+    xtrasubsnetrec* xnp = &(xsubs[sub_number].nets[n]);
     if (xnp->net_num == nNetNumber && xnp->host) {
       continue;
     }
@@ -129,7 +129,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
           }
           if ((text[len2] >= '0') && (text[len2] <= '9') && (len2 < len1)) {
             int i = atoi(&(text[len2]));
-            if (((session()->GetNetworkNumber() != nNetNumber) || (nh.fromsys != i)) && (i != net_sysnum)) {
+            if (((session()->net_num() != nNetNumber) || (nh.fromsys != i)) && (i != net_sysnum)) {
               if (valid_system(i)) {
                 pList[(nh.list_len)++] = static_cast<uint16_t>(i);
               }
@@ -150,7 +150,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
     if (!xnp->type) {
       nh.main_type = main_type_new_post;
     }
-    if (nn1 == session()->GetNetworkNumber()) {
+    if (nn1 == session()->net_num()) {
       send_net(&nh, pList, b1.get(), xnp->type ? nullptr : xnp->stype);
     } else {
       gate_msg(&nh, b1.get(), xnp->net_num, xnp->stype, pList, nNetNumber);
@@ -346,19 +346,18 @@ void grab_user_name(messagerec* pMessageRecord, const char* pszFileName) {
 }
 
 void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
-  int nSubNumber = usub[nBeginSubNumber].subnum;
+  int sub_number = usub[nBeginSubNumber].subnum;
   g_flags &= ~g_flag_made_find_str;
 
-  if (hangup || nSubNumber < 0) {
+  if (hangup || sub_number < 0) {
     return;
   }
   bout.nl();
-  uint32_t memory_last_read = qsc_p[nSubNumber];
+  uint32_t memory_last_read = qsc_p[sub_number];
 
-  // TODO(rushfan): Do we still need to do this?
-  iscan1(nSubNumber);
+  iscan1(sub_number);
 
-  uint32_t on_disk_last_post = WWIVReadLastRead(nSubNumber);
+  uint32_t on_disk_last_post = WWIVReadLastRead(sub_number);
   if (!on_disk_last_post || on_disk_last_post > memory_last_read) {
     int nNextSubNumber = *pnNextSubNumber;
     int nOldSubNumber = session()->GetCurrentMessageArea();
@@ -368,7 +367,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
       bout << "\r\n\003""6A file required is in use by another instance. Try again later.\r\n";
       return;
     }
-    memory_last_read = qsc_p[nSubNumber];
+    memory_last_read = qsc_p[sub_number];
 
     bout.bprintf("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n",
                                       subboards[session()->GetCurrentReadMessageArea()].name,
@@ -400,7 +399,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
     }
   } else {
     bout.bprintf("|#1< Nothing new on %s %s >",
-        subboards[nSubNumber].name,
+        subboards[sub_number].name,
         usub[nBeginSubNumber].keys);
     bout.clreol();
     bout.nl();

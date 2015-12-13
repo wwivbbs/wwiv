@@ -170,12 +170,12 @@ bool dialog_yn(CursesWindow* window, const string& text) {
   return dialog_yn(window, text_vector);
 }
 
-static void winput_password(CursesWindow* dialog, string *output, int nMaxLength) {
+static void winput_password(CursesWindow* dialog, string *output, int max_length) {
   dialog->SetColor(SchemeId::DIALOG_PROMPT);
 
   int curpos = 0;
   string s;
-  s.resize(nMaxLength);
+  s.resize(max_length);
   output->clear();
   for (;;) {
     int ch = dialog->GetChar();
@@ -229,7 +229,7 @@ static void winput_password(CursesWindow* dialog, string *output, int nMaxLength
       }
       break;
     default:
-      if (ch > 31 && curpos < nMaxLength) {
+      if (ch > 31 && curpos < max_length) {
         s[curpos++] = toupper(ch);
         dialog->AddCh(ACS_DIAMOND);
       }

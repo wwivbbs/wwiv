@@ -46,28 +46,28 @@ using namespace wwiv::strings;
 * Sets the global variables pszOutOriginStr and pszOutOriginStr2.
 * Note: This is a private function
 */
-static void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, string* outNetworkName,
+static void SetMessageOriginInfo(int system_number, int user_number, string* outNetworkName,
   string* outLocation) {
   string netName;
 
-  if (session()->GetMaxNetworkNumber() > 1) {
-    netName = StrCat(net_networks[session()->GetNetworkNumber()].name, "- ");
+  if (session()->max_net_num() > 1) {
+    netName = StrCat(net_networks[session()->net_num()].name, "- ");
   }
 
   outNetworkName->clear();
   outLocation->clear();
 
   if (IsEqualsIgnoreCase(session()->GetNetworkName(), "Internet") ||
-    nSystemNumber == 32767) {
+    system_number == 32767) {
     outNetworkName->assign("Internet Mail and Newsgroups");
     return;
   }
 
-  if (nSystemNumber && session()->GetCurrentNetworkType() == net_type_wwivnet) {
-    net_system_list_rec *csne = next_system(nSystemNumber);
+  if (system_number && session()->net_type() == net_type_wwivnet) {
+    net_system_list_rec *csne = next_system(system_number);
     if (csne) {
       string netstatus;
-      if (nUserNumber == 1) {
+      if (user_number == 1) {
         if (csne->other & other_net_coord) {
           netstatus = "{NC}";
         } else if (csne->other & other_group_coord) {
@@ -380,7 +380,7 @@ void read_post(int n, bool *next, int *val) {
   }
   if (!abort) {
     bool bReadit = (lcs() || (getslrec(session()->GetEffectiveSl()).ability & ability_read_post_anony)) ? true : false;
-    int nNetNumSaved = session()->GetNetworkNumber();
+    int nNetNumSaved = session()->net_num();
 
     if (p.status & status_post_new_net) {
       set_net_num(p.network.network_msg.net_number);
@@ -388,7 +388,7 @@ void read_post(int n, bool *next, int *val) {
     read_message1(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit, next,
       (subboards[session()->GetCurrentReadMessageArea()].filename), p.ownersys, p.owneruser);
 
-    if (nNetNumSaved != session()->GetNetworkNumber()) {
+    if (nNetNumSaved != session()->net_num()) {
       set_net_num(nNetNumSaved);
     }
 

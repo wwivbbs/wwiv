@@ -50,7 +50,7 @@ using wwiv::core::FilePath;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::msgapi;
 
-bool isr1(int nUserNumber, int nNumUsers, const char *pszName) {
+bool isr1(int user_number, int nNumUsers, const char *pszName) {
   int cp = 0;
   while (cp < nNumUsers &&
          wwiv::strings::StringCompare(pszName, reinterpret_cast<char*>(smallist[cp].name)) > 0) {
@@ -61,7 +61,7 @@ bool isr1(int nUserNumber, int nNumUsers, const char *pszName) {
   }
   smalrec sr;
   strcpy(reinterpret_cast<char*>(sr.name), pszName);
-  sr.number = static_cast<unsigned short>(nUserNumber);
+  sr.number = static_cast<unsigned short>(user_number);
   smallist[cp] = sr;
   return true;
 }
@@ -142,14 +142,14 @@ void prstatus() {
   }
 }
 
-void valuser(int nUserNumber) {
+void valuser(int user_number) {
   char s[81], s1[81], s2[81], s3[81], ar1[20], dar1[20];
 
   WUser user;
-  session()->users()->ReadUser(&user, nUserNumber);
+  session()->users()->ReadUser(&user, user_number);
   if (!user.IsUserDeleted()) {
     bout.nl();
-    bout << "|#9Name: |#2" << user.GetUserNameAndNumber(nUserNumber) << wwiv::endl;
+    bout << "|#9Name: |#2" << user.GetUserNameAndNumber(user_number) << wwiv::endl;
     bout << "|#9RN  : |#2" << user.GetRealName() << wwiv::endl;
     bout << "|#9PH  : |#2" << user.GetVoicePhoneNumber() << wwiv::endl;
     bout << "|#9Age : |#2" << user.GetAge() << " " << user.GetGender() << wwiv::endl;
@@ -173,7 +173,7 @@ void valuser(int nUserNumber) {
           bout.nl();
           bout << "|#9Delete? ";
           if (yesno()) {
-            deluser(nUserNumber);
+            deluser(user_number);
             bout.nl();
             bout << "|#6Deleted.\r\n\n";
           } else {
@@ -302,7 +302,7 @@ void valuser(int nUserNumber) {
         printfile(SRESTRCT_NOEXT);
       }
     } while (!hangup && ch1 == 0);
-    session()->users()->WriteUser(&user, nUserNumber);
+    session()->users()->WriteUser(&user, user_number);
     bout.nl();
   } else {
     bout << "\r\n|#6No Such User.\r\n\n";
@@ -334,7 +334,7 @@ void print_net_listing(bool bForcePause) {
 
   session()->GetStatusManager()->RefreshStatusCache();
 
-  if (!session()->GetMaxNetworkNumber()) {
+  if (!session()->max_net_num()) {
     return;
   }
 
@@ -349,14 +349,14 @@ void print_net_listing(bool bForcePause) {
   bool done = false;
   while (!done && !hangup) {
     bout.cls();
-    if (session()->GetMaxNetworkNumber() > 1) {
+    if (session()->max_net_num() > 1) {
       odc[0] = 0;
       int odci = 0;
       onx[0] = 'Q';
       onx[1] = 0;
       int onxi = 1;
       bout.nl();
-      for (i = 0; i < session()->GetMaxNetworkNumber(); i++) {
+      for (i = 0; i < session()->max_net_num(); i++) {
         if (i < 9) {
           onx[onxi++] = static_cast<char>(i + '1');
           onx[onxi] = 0;
@@ -369,7 +369,7 @@ void print_net_listing(bool bForcePause) {
       }
       bout << "|#2Q|#9)|#1 Quit\r\n\n";
       bout << "|#9Which network? |#2";
-      if (session()->GetMaxNetworkNumber() < 9) {
+      if (session()->max_net_num() < 9) {
         char ch = onek(onx);
         if (ch == 'Q') {
           done = true;
@@ -389,7 +389,7 @@ void print_net_listing(bool bForcePause) {
         break;
       }
 
-      if ((i < 0) || (i > session()->GetMaxNetworkNumber())) {
+      if ((i < 0) || (i > session()->max_net_num())) {
         continue;
       }
     } else {
@@ -433,7 +433,7 @@ void print_net_listing(bool bForcePause) {
 
       switch (cmd) {
       case 'Q':
-        if (session()->GetMaxNetworkNumber() < 2) {
+        if (session()->max_net_num() < 2) {
           done = true;
         }
         done1 = true;
@@ -667,7 +667,7 @@ void print_net_listing(bool bForcePause) {
 
 void read_new_stuff() {
   zap_bbs_list();
-  for (int i = 0; i < session()->GetMaxNetworkNumber(); i++) {
+  for (int i = 0; i < session()->max_net_num(); i++) {
     set_net_num(i);
     zap_call_out_list();
     zap_contacts();
@@ -781,13 +781,13 @@ void chuser() {
   bout << "|#9Enter user to change to: ";
   std::string userName;
   input(&userName, 30, true);
-  int nUserNumber = finduser1(userName);
-  if (nUserNumber > 0) {
+  int user_number = finduser1(userName);
+  if (user_number > 0) {
     session()->WriteCurrentUser();
     write_qscn(session()->usernum, qsc, false);
-    session()->ReadCurrentUser(nUserNumber);
-    read_qscn(nUserNumber, qsc, false);
-    session()->usernum = static_cast<unsigned short>(nUserNumber);
+    session()->ReadCurrentUser(user_number);
+    read_qscn(user_number, qsc, false);
+    session()->usernum = static_cast<unsigned short>(user_number);
     session()->SetEffectiveSl(255);
     sysoplogf("#*#*#* Changed to %s", session()->user()->GetUserNameAndNumber(session()->usernum));
     changedsl();
@@ -839,17 +839,17 @@ void zlog() {
 
 void set_user_age() {
   std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
-  int nUserNumber = 1;
+  int user_number = 1;
   do {
     WUser user;
-    session()->users()->ReadUser(&user, nUserNumber);
+    session()->users()->ReadUser(&user, user_number);
     int nAge = years_old(user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear());
     if (nAge != user.GetAge()) {
       user.SetAge(nAge);
-      session()->users()->WriteUser(&user, nUserNumber);
+      session()->users()->WriteUser(&user, user_number);
     }
-    ++nUserNumber;
-  } while (nUserNumber <= pStatus->GetNumUsers());
+    ++user_number;
+  } while (user_number <= pStatus->GetNumUsers());
 }
 
 
@@ -874,24 +874,24 @@ void auto_purge() {
   }
 
   time_t tTime = time(nullptr);
-  int nUserNumber = 1;
+  int user_number = 1;
   sysoplogfi(false, "Auto-Purged Inactive Users (over %d days, SL less than %d)", days, skipsl);
 
   do {
     WUser user;
-    session()->users()->ReadUser(&user, nUserNumber);
+    session()->users()->ReadUser(&user, user_number);
     if (!user.IsExemptAutoDelete()) {
       unsigned int d = static_cast<unsigned int>((tTime - user.GetLastOnDateNumber()) / SECONDS_PER_DAY_FLOAT);
       // if user is not already deleted && SL<NO_PURGE_SL && last_logon
       // greater than AUTO_USER_PURGE days ago
       if (!user.IsUserDeleted() && user.GetSl() < skipsl && d > days) {
-        sprintf(s, "*** AUTOPURGE: Deleted User: #%3.3d %s", nUserNumber, user.GetName());
+        sprintf(s, "*** AUTOPURGE: Deleted User: #%3.3d %s", user_number, user.GetName());
         sysoplog(s, false);
-        deluser(nUserNumber);
+        deluser(user_number);
       }
     }
-    ++nUserNumber;
-  } while (nUserNumber <= session()->GetStatusManager()->GetUserCount());
+    ++user_number;
+  } while (user_number <= session()->GetStatusManager()->GetUserCount());
 }
 
 

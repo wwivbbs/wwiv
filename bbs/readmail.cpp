@@ -51,7 +51,7 @@ bool same_email(tmpmailrec * tm, mailrec * m);
 void purgemail(tmpmailrec * mloc, int mw, int *curmail, mailrec * m1, slrec * ss);
 void resynch_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
 bool read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
-void add_netsubscriber(int nSystemNumber);
+void add_netsubscriber(int system_number);
 
 // Implementation
 bool same_email(tmpmailrec * tm, mailrec * m) {
@@ -220,11 +220,11 @@ bool read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, u
   return (mloc[rec].index != -1);
 }
 
-void add_netsubscriber(int nSystemNumber) {
+void add_netsubscriber(int system_number) {
   char s[10], s1[10];
 
-  if (!valid_system(nSystemNumber)) {
-    nSystemNumber = 0;
+  if (!valid_system(system_number)) {
+    system_number = 0;
   }
 
   bout.nl();
@@ -243,23 +243,23 @@ void add_netsubscriber(int nSystemNumber) {
     return;
   }
   bout.nl();
-  if (nSystemNumber) {
-    bout << "Add @" << nSystemNumber << "." << session()->GetNetworkName() << " to subtype " << s << "? ";
+  if (system_number) {
+    bout << "Add @" << system_number << "." << session()->GetNetworkName() << " to subtype " << s << "? ";
   }
-  if (!nSystemNumber || !noyes()) {
+  if (!system_number || !noyes()) {
     bout << "|#2System Number: ";
     input(s, 5, true);
     if (!s[0]) {
       return;
     }
-    nSystemNumber = atoi(s);
-    if (!valid_system(nSystemNumber)) {
-      bout << "@" << nSystemNumber << " is not a valid system in " << session()->GetNetworkName() <<
+    system_number = atoi(s);
+    if (!valid_system(system_number)) {
+      bout << "@" << system_number << " is not a valid system in " << session()->GetNetworkName() <<
                          ".\r\n\n";
       return;
     }
   }
-  sprintf(s, "%u\n", nSystemNumber);
+  sprintf(s, "%u\n", system_number);
   TextFile hostFile(szNetworkFileName, "a+t");
   if (hostFile.IsOpen()) {
     hostFile.Write(s);
@@ -269,7 +269,7 @@ void add_netsubscriber(int nSystemNumber) {
       bout << "AutoSend starter messages? ";
       if (yesno()) {
         char szAutoSendCommand[ MAX_PATH ];
-        sprintf(szAutoSendCommand, "AUTOSEND.EXE %s %u .%d", s1, nSystemNumber, session()->GetNetworkNumber());
+        sprintf(szAutoSendCommand, "AUTOSEND.EXE %s %u .%d", s1, system_number, session()->net_num());
         ExecuteExternalProgram(szAutoSendCommand, EFLAG_NONE);
       }
     }
@@ -319,7 +319,7 @@ void readmail(int mode) {
   mailrec m, m1;
   char ch;
   long num_mail, num_mail1;
-  int nUserNumber, nSystemNumber;
+  int user_number, system_number;
   net_system_list_rec *csne;
   filestatusrec fsr;
   bool attach_exists = false;
@@ -441,7 +441,7 @@ void readmail(int mode) {
                 s1[ session()->mail_who_field_len ] = '\0';
               }
             } else {
-              if (session()->GetMaxNetworkNumber() > 1) {
+              if (session()->max_net_num() > 1) {
                 sprintf(s1, "#%u @%u.%s (%s)", m.fromuser, m.fromsys, net_networks[nn].name, system_name.c_str());
               } else {
                 sprintf(s1, "#%u @%u (%s)", m.fromuser, m.fromsys, system_name.c_str());
@@ -933,40 +933,40 @@ void readmail(int mode) {
             strcat(s, " @32767");
           }
         }
-        parse_email_info(s, &nUserNumber, &nSystemNumber);
-        if (nUserNumber || nSystemNumber) {
-          if (ForwardMessage(&nUserNumber, &nSystemNumber)) {
+        parse_email_info(s, &user_number, &system_number);
+        if (user_number || system_number) {
+          if (ForwardMessage(&user_number, &system_number)) {
             bout << "Mail forwarded.\r\n";
           }
-          if ((nUserNumber == session()->usernum) && (nSystemNumber == 0) && (!cs())) {
+          if ((user_number == session()->usernum) && (system_number == 0) && (!cs())) {
             bout << "Can't forward to yourself.\r\n";
-            nUserNumber = 0;
+            user_number = 0;
           }
-          if (nUserNumber || nSystemNumber) {
-            if (nSystemNumber) {
-              if (nSystemNumber == 1 && nUserNumber == 0 &&
+          if (user_number || system_number) {
+            if (system_number) {
+              if (system_number == 1 && user_number == 0 &&
                   wwiv::strings::IsEqualsIgnoreCase(session()->GetNetworkName(), "Internet")) {
                 strcpy(s1, net_email_name);
-              } else if (session()->GetMaxNetworkNumber() > 1) {
-                if (nUserNumber) {
-                  sprintf(s1, "#%d @%d.%s", nUserNumber, nSystemNumber, session()->GetNetworkName());
+              } else if (session()->max_net_num() > 1) {
+                if (user_number) {
+                  sprintf(s1, "#%d @%d.%s", user_number, system_number, session()->GetNetworkName());
                 } else {
-                  sprintf(s1, "%s @%d.%s", net_email_name, nSystemNumber, session()->GetNetworkName());
+                  sprintf(s1, "%s @%d.%s", net_email_name, system_number, session()->GetNetworkName());
                 }
               } else {
-                if (nUserNumber) {
-                  sprintf(s1, "#%d @%d", nUserNumber, nSystemNumber);
+                if (user_number) {
+                  sprintf(s1, "#%d @%d", user_number, system_number);
                 } else {
-                  sprintf(s1, "%s @%d", net_email_name, nSystemNumber);
+                  sprintf(s1, "%s @%d", net_email_name, system_number);
                 }
               }
             } else {
               set_net_num(nn);
               WUser u;
-              session()->users()->ReadUser(&u, nUserNumber);
-              strcpy(s1, u.GetUserNameNumberAndSystem(nUserNumber, net_sysnum));
+              session()->users()->ReadUser(&u, user_number);
+              strcpy(s1, u.GetUserNameNumberAndSystem(user_number, net_sysnum));
             }
-            if (ok_to_mail(nUserNumber, nSystemNumber, false)) {
+            if (ok_to_mail(user_number, system_number, false)) {
               bout << "|#5Forward to " << s1 << "? ";
               if (yesno()) {
                 unique_ptr<File> pFileEmail(OpenEmailFile(true));
@@ -1002,7 +1002,7 @@ void readmail(int mode) {
                 m.status |= status_seen;
                 pFileEmail->Close();
 
-                i = session()->GetNetworkNumber();
+                i = session()->net_num();
                 sprintf(s, "\r\nForwarded to %s from %s.", s1,
                         session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum));
 
@@ -1026,13 +1026,13 @@ void readmail(int mode) {
                 email.title = m.title;
                 email.msg = &m.msg;
                 email.anony = m.anony;
-                email.user_number = nUserNumber;
-                email.system_number = nSystemNumber;
+                email.user_number = user_number;
+                email.system_number = system_number;
                 email.an = true;
                 email.forwarded_code = delme;  // this looks totally wrong to me...
                 email.silent_mode = false;
 
-                if (nn != 255 && nn == session()->GetNetworkNumber()) {
+                if (nn != 255 && nn == session()->net_num()) {
                   email.from_user = m.fromuser;
                   email.from_system = m.fromsys ? m.fromsys : net_networks[nn].sysnum;
                   email.from_network_number = nn;
@@ -1040,7 +1040,7 @@ void readmail(int mode) {
                 } else {
                   email.from_user = session()->usernum;
                   email.from_system = net_sysnum;
-                  email.from_network_number = session()->GetNetworkNumber();
+                  email.from_network_number = session()->net_num();
                   sendout_email(email);
                 }
                 ++curmail;
@@ -1089,9 +1089,9 @@ void readmail(int mode) {
                 strcat(s, " @32767");
               }
             }
-            parse_email_info(s, &nUserNumber, &nSystemNumber);
-            if (nUserNumber || nSystemNumber) {
-              email("", nUserNumber, nSystemNumber, false, 0);
+            parse_email_info(s, &user_number, &system_number);
+            if (user_number || system_number) {
+              email("", user_number, system_number, false, 0);
             }
           } else {
             email("", m.fromuser, m.fromsys, false, m.anony);
@@ -1216,7 +1216,7 @@ void readmail(int mode) {
   free(mloc);
 }
 
-int check_new_mail(int nUserNumber) {
+int check_new_mail(int user_number) {
   int nNumNewMessages = 0;            // number of new mail
 
   unique_ptr<File> pFileEmail(OpenEmailFile(false));
@@ -1227,7 +1227,7 @@ int check_new_mail(int nUserNumber) {
       mailrec m;
       pFileEmail->Seek(i * sizeof(mailrec), File::seekBegin);
       pFileEmail->Read(&m, sizeof(mailrec));
-      if (m.tosys == 0 && m.touser == nUserNumber) {
+      if (m.tosys == 0 && m.touser == user_number) {
         if (!(m.status & status_seen)) {
           nNumNewMessages++;
         }

@@ -150,9 +150,9 @@ static int ShowLoginAndGetUserNumber() {
   input(&user_name, 30);
   StringTrim(&user_name);
 
-  int nUserNumber = finduser(user_name);
-  if (nUserNumber > 0) {
-    return nUserNumber;
+  int user_number = finduser(user_name);
+  if (user_number > 0) {
+    return user_number;
   }
   if (!user_name.empty()) {
     bout << "Searching...";
@@ -740,7 +740,7 @@ static void DisplayUserLoginInformation() {
 
   /////////////////////////////////////////////////////////////////////////
   session()->GetStatusManager()->RefreshStatusCache();
-  for (int i = 0; i < session()->GetMaxNetworkNumber(); i++) {
+  for (int i = 0; i < session()->max_net_num(); i++) {
     if (net_networks[i].sysnum) {
       sprintf(s1, "|#9%s node|#0%s|#2 @%u", net_networks[i].name, charstr(13 - strlen(net_networks[i].name), '.'),
               net_networks[i].sysnum);
@@ -769,7 +769,7 @@ static void DisplayUserLoginInformation() {
         bout << "Forwarded to unknown system; forwarding reset.\r\n";
       } else {
         bout << "Mail set to be forwarded to ";
-        if (session()->GetMaxNetworkNumber() > 1) {
+        if (session()->max_net_num() > 1) {
           bout << "#" << session()->user()->GetForwardUserNumber()
                << " @"
                << session()->user()->GetForwardSystemNumber()

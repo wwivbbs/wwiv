@@ -155,8 +155,8 @@ void WSession::CreateComm(unsigned int nHandle) {
   bout.SetComm(comm_.get());
 }
 
-bool WSession::ReadCurrentUser(int nUserNumber, bool bForceRead) {
-  bool result = users()->ReadUser(&m_thisuser, nUserNumber, bForceRead);
+bool WSession::ReadCurrentUser(int user_number, bool bForceRead) {
+  bool result = users()->ReadUser(&m_thisuser, user_number, bForceRead);
 
   // Update all other session variables that are dependent.
   screenlinest = (session()->using_modem) ? 
@@ -164,8 +164,8 @@ bool WSession::ReadCurrentUser(int nUserNumber, bool bForceRead) {
   return result;
 }
 
-bool WSession::WriteCurrentUser(int nUserNumber) {
-  return users()->WriteUser(&m_thisuser, nUserNumber);
+bool WSession::WriteCurrentUser(int user_number) {
+  return users()->WriteUser(&m_thisuser, user_number);
 }
 
 void WSession::DisplaySysopWorkingIndicator(bool displayWait) {
@@ -375,7 +375,7 @@ int WSession::doWFCEvents() {
         break;
         // Print NetLogs
       case ',':
-        if (net_sysnum > 0 || (session()->GetMaxNetworkNumber() > 1 && AllowLocalSysop())) {
+        if (net_sysnum > 0 || (session()->max_net_num() > 1 && AllowLocalSysop())) {
           io->LocalGotoXY(2, 23);
           bout << "|#7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ";
           ch = onek("Q012");

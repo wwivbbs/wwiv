@@ -601,13 +601,13 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qscn) {
 
   int nNewUserNumber = static_cast<int>((userFile.GetLength() / syscfg.userreclen) - 1);
   userFile.Seek(syscfg.userreclen, File::seekBegin);
-  int nUserNumber = 1;
+  int user_number = 1;
 
   if (nNewUserNumber == session()->GetStatusManager()->GetUserCount()) {
-    nUserNumber = nNewUserNumber + 1;
+    user_number = nNewUserNumber + 1;
   } else {
-    while (nUserNumber <= nNewUserNumber) {
-      if (nUserNumber % 25 == 0) {
+    while (user_number <= nNewUserNumber) {
+      if (user_number % 25 == 0) {
         userFile.Close();
         for (int n = 0; !userFile.IsOpen() && (n < 20); n++) {
           if (!userFile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
@@ -617,32 +617,32 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qscn) {
         if (!userFile.IsOpen()) {
           return -1;
         }
-        userFile.Seek(static_cast<long>(nUserNumber * syscfg.userreclen), File::seekBegin);
+        userFile.Seek(static_cast<long>(user_number * syscfg.userreclen), File::seekBegin);
         nNewUserNumber = static_cast<int>((userFile.GetLength() / syscfg.userreclen) - 1);
       }
       WUser tu;
       userFile.Read(&tu.data, syscfg.userreclen);
 
       if (tu.IsUserDeleted() && tu.GetSl() != 255) {
-        userFile.Seek(static_cast<long>(nUserNumber * syscfg.userreclen), File::seekBegin);
+        userFile.Seek(static_cast<long>(user_number * syscfg.userreclen), File::seekBegin);
         userFile.Write(&pUser->data, syscfg.userreclen);
         userFile.Close();
-        write_qscn(nUserNumber, qscn, false);
-        InsertSmallRecord(nUserNumber, pUser->GetName());
-        return nUserNumber;
+        write_qscn(user_number, qscn, false);
+        InsertSmallRecord(user_number, pUser->GetName());
+        return user_number;
       } else {
-        nUserNumber++;
+        user_number++;
       }
     }
   }
 
-  if (nUserNumber <= syscfg.maxusers) {
-    userFile.Seek(static_cast<long>(nUserNumber * syscfg.userreclen), File::seekBegin);
+  if (user_number <= syscfg.maxusers) {
+    userFile.Seek(static_cast<long>(user_number * syscfg.userreclen), File::seekBegin);
     userFile.Write(&pUser->data, syscfg.userreclen);
     userFile.Close();
-    write_qscn(nUserNumber, qscn, false);
-    InsertSmallRecord(nUserNumber, pUser->GetName());
-    return nUserNumber;
+    write_qscn(user_number, qscn, false);
+    InsertSmallRecord(user_number, pUser->GetName());
+    return user_number;
   } else {
     userFile.Close();
     return -1;
@@ -1244,15 +1244,15 @@ bool check_zip(const char *pszZipCode, int mode) {
 
 
 bool check_dupes(const char *pszPhoneNumber) {
-  int nUserNumber = find_phone_number(pszPhoneNumber);
-  if (nUserNumber && nUserNumber != session()->usernum) {
+  int user_number = find_phone_number(pszPhoneNumber);
+  if (user_number && user_number != session()->usernum) {
     char szBuffer[ 255 ];
     sprintf(szBuffer, "    %s entered phone # %s", session()->user()->GetName(), pszPhoneNumber);
     sysoplog(szBuffer, false);
     ssm(1, 0, szBuffer);
 
     WUser user;
-    session()->users()->ReadUser(&user, nUserNumber);
+    session()->users()->ReadUser(&user, user_number);
     sprintf(szBuffer, "      also entered by %s", user.GetName());
     sysoplog(szBuffer, false);
     ssm(1, 0, szBuffer);

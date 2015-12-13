@@ -672,9 +672,9 @@ static void modify_mailbox() {
   }
   if (session()->user()->GetSl() >= syscfg.newusersl) {
     int nNetworkNumber = getnetnum("FILEnet");
-    session()->SetNetworkNumber(nNetworkNumber);
+    session()->set_net_num(nNetworkNumber);
     if (nNetworkNumber != -1) {
-      set_net_num(session()->GetNetworkNumber());
+      set_net_num(session()->net_num());
       bout << "|#5Do you want to forward to your Internet address? ";
       if (yesno()) {
         bout << "|#3Enter the Internet E-Mail Address.\r\n|#9:";
@@ -682,7 +682,7 @@ static void modify_mailbox() {
         if (check_inet_addr(entered_address.c_str())) {
           session()->user()->SetEmailAddress(entered_address.c_str());
           write_inet_addr(entered_address.c_str(), session()->usernum);
-          session()->user()->SetForwardNetNumber(session()->GetNetworkNumber());
+          session()->user()->SetForwardNetNumber(session()->net_num());
           session()->user()->SetForwardToInternet();
           bout << "\r\nSaved.\r\n\n";
         }
@@ -700,7 +700,7 @@ static void modify_mailbox() {
   session()->user()->SetForwardUserNumber(nTempForwardUser);
   session()->user()->SetForwardSystemNumber(nTempForwardSystem);
   if (session()->user()->GetForwardSystemNumber() != 0) {
-    session()->user()->SetForwardNetNumber(session()->GetNetworkNumber());
+    session()->user()->SetForwardNetNumber(session()->net_num());
     if (session()->user()->GetForwardUserNumber() == 0) {
       session()->user()->ClearMailboxForward();
       bout << "\r\nCan't forward to a user name, must use user number.\r\n\n";

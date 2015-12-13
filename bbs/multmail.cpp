@@ -180,7 +180,7 @@ static int mml_started;
 
 int oneuser() {
   char s[81], *ss;
-  int nUserNumber, nSystemNumber, i;
+  int user_number, system_number, i;
   WUser user;
 
   if (mml_s) {
@@ -203,34 +203,34 @@ int oneuser() {
     bout << "|#2>";
     input(s, 40);
   }
-  nUserNumber = finduser1(s);
-  if (nUserNumber == 65535) {
+  user_number = finduser1(s);
+  if (user_number == 65535) {
     return -1;
   }
   if (s[0] == 0) {
     return -1;
   }
-  if (nUserNumber <= 0) {
+  if (user_number <= 0) {
     bout.nl();
     bout << "Unknown user.\r\n\n";
     return 0;
   }
-  nSystemNumber = 0;
-  if (ForwardMessage(&nUserNumber, &nSystemNumber)) {
+  system_number = 0;
+  if (ForwardMessage(&user_number, &system_number)) {
     bout.nl();
     bout << "Forwarded.\r\n\n";
-    if (nSystemNumber) {
+    if (system_number) {
       bout << "Forwarded to another system.\r\n";
       bout << "Can't send multi-mail to another system.\r\n\n";
       return 0;
     }
   }
-  if (nUserNumber == 0) {
+  if (user_number == 0) {
     bout.nl();
     bout << "Unknown user.\r\n\n";
     return 0;
   }
-  session()->users()->ReadUser(&user, nUserNumber);
+  session()->users()->ReadUser(&user, user_number);
   if (((user.GetSl() == 255) && (user.GetNumMailWaiting() > (syscfg.maxwaiting * 5))) ||
       ((user.GetSl() != 255) && (user.GetNumMailWaiting() > syscfg.maxwaiting)) ||
       (user.GetNumMailWaiting() > 200)) {
@@ -243,8 +243,8 @@ int oneuser() {
     bout << "Deleted user.\r\n\n";
     return 0;
   }
-  bout << "     -> " << user.GetUserNameAndNumber(nUserNumber) << wwiv::endl;
-  return nUserNumber;
+  bout << "     -> " << user.GetUserNameAndNumber(user_number) << wwiv::endl;
+  return user_number;
 }
 
 
@@ -285,7 +285,7 @@ void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup) {
 
 
 void slash_e() {
-  int nUserNumber[MAX_LIST], numu, i, i1;
+  int user_number[MAX_LIST], numu, i, i1;
   char s[81], ch, *sss;
   bool bFound = false;
   WFindFile fnd;
@@ -324,7 +324,7 @@ void slash_e() {
       bout.nl();
       bout << "Enter names/numbers for users, one per line, max 20.\r\n\n";
       mml_s = nullptr;
-      add_list(nUserNumber, &numu, MAX_LIST, so());
+      add_list(user_number, &numu, MAX_LIST, so());
       break;
     case 'M': {
       sprintf(s, "%s*.MML", syscfg.datadir);
@@ -364,7 +364,7 @@ void slash_e() {
         mml_s[i1 + 1] = 0;
         fileMailList.Close();
         mml_started = 0;
-        add_list(nUserNumber, &numu, MAX_LIST, so());
+        add_list(user_number, &numu, MAX_LIST, so());
         if (mml_s) {
           free(mml_s);
           mml_s = nullptr;
@@ -377,7 +377,7 @@ void slash_e() {
         bout.nl();
         bout << "Need to specify some users first - use A or M\r\n\n";
       } else {
-        multimail(nUserNumber, numu);
+        multimail(user_number, numu);
         done = true;
       }
       break;
@@ -390,7 +390,7 @@ void slash_e() {
         if ((i > 0) && (i <= numu)) {
           --numu;
           for (i1 = i - 1; i1 < numu; i1++) {
-            nUserNumber[i1] = nUserNumber[i1 + 1];
+            user_number[i1] = user_number[i1 + 1];
           }
         }
       }
@@ -398,8 +398,8 @@ void slash_e() {
     case 'L':
       for (i = 0; i < numu; i++) {
         WUser user;
-        session()->users()->ReadUser(&user, nUserNumber[i]);
-        bout << i + 1 << ". " << user.GetUserNameAndNumber(nUserNumber[i]) << wwiv::endl;
+        session()->users()->ReadUser(&user, user_number[i]);
+        bout << i + 1 << ". " << user.GetUserNameAndNumber(user_number[i]) << wwiv::endl;
       }
       break;
     }

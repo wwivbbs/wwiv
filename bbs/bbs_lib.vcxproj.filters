@@ -373,7 +373,9 @@
     <ClCompile Include="read_message.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="message_file.cpp" />
+    <ClCompile Include="message_file.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -571,15 +573,12 @@
     <ClInclude Include="interpret.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="msgbase.h" />
     <ClInclude Include="connect1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="quote.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="uedit.h" />
-    <ClInclude Include="shortmsg.h" />
     <ClInclude Include="confutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -644,6 +643,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="bbsutl2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="msgbase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shortmsg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="uedit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

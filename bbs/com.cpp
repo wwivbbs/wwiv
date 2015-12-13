@@ -242,8 +242,8 @@ char ynq() {
   return ch;
 }
 
-char onek(const char *pszAllowableChars, bool bAutoMpl) {
-  if (bAutoMpl) {
+char onek(const char *pszAllowableChars, bool auto_mpl) {
+  if (auto_mpl) {
     bout.mpl(1);
   }
   char ch = onek_ncr(pszAllowableChars);

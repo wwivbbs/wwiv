@@ -665,10 +665,10 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
           strcat(szUserNameOrNumber, " @32767");
         }
       }
-      int nUserNumber, nSystemNumber;
-      parse_email_info(szUserNameOrNumber, &nUserNumber, &nSystemNumber);
-      if (nUserNumber || nSystemNumber) {
-        email("", nUserNumber, nSystemNumber, false, 0);
+      int user_number, system_number;
+      parse_email_info(szUserNameOrNumber, &user_number, &system_number);
+      if (user_number || system_number) {
+        email("", user_number, system_number, false, 0);
       }
       nScanOptionType = SCAN_OPTION_READ_MESSAGE;
     }

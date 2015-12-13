@@ -20,8 +20,8 @@
 
 #include "bbs/wuser.h"
 
-void deluser(int nUserNumber);
-void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScreen);
+void deluser(int user_number);
+void print_data(int user_number, WUser *pUser, bool bLongFormat, bool bClearScreen);
 void auto_val(int n, WUser *pUser);
 void uedit(int usern, int other);
 void print_affil(WUser *pUser);
