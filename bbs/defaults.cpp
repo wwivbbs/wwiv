@@ -671,9 +671,9 @@ static void modify_mailbox() {
     return;
   }
   if (session()->user()->GetSl() >= syscfg.newusersl) {
-    int nNetworkNumber = getnetnum("FILEnet");
-    session()->set_net_num(nNetworkNumber);
-    if (nNetworkNumber != -1) {
+    int network_number = getnetnum("FILEnet");
+    session()->set_net_num(network_number);
+    if (network_number != -1) {
       set_net_num(session()->net_num());
       bout << "|#5Do you want to forward to your Internet address? ";
       if (yesno()) {

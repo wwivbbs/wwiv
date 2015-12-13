@@ -549,9 +549,9 @@ void uedit(int usern, int other) {
       }
       break;
       case 'F': {
-        int nNetworkNumber = getnetnum("FILEnet");
-        session()->set_net_num(nNetworkNumber);
-        if (nNetworkNumber != -1) {
+        int network_number = getnetnum("FILEnet");
+        session()->set_net_num(network_number);
+        if (network_number != -1) {
           set_net_num(session()->net_num());
           bout << "Current Internet Address\r\n:" << user.GetEmailAddress() << wwiv::endl;
           bout << "New Address\r\n:";

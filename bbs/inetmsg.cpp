@@ -40,9 +40,9 @@ static unsigned char translate_table[] = {
 void get_user_ppp_addr() {
   session()->internetFullEmailAddress = "";
   bool found = false;
-  int nNetworkNumber = getnetnum("FILEnet");
-  session()->set_net_num(nNetworkNumber);
-  if (nNetworkNumber == -1) {
+  int network_number = getnetnum("FILEnet");
+  session()->set_net_num(network_number);
+  if (network_number == -1) {
     return;
   }
   set_net_num(session()->net_num());
@@ -95,9 +95,9 @@ void send_inet_email() {
     return;
   }
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
-  int nNetworkNumber = getnetnum("FILEnet");
-  session()->set_net_num(nNetworkNumber);
-  if (nNetworkNumber == -1) {
+  int network_number = getnetnum("FILEnet");
+  session()->set_net_num(network_number);
+  if (network_number == -1) {
     return;
   }
   set_net_num(session()->net_num());
