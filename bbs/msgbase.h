@@ -19,17 +19,40 @@
 #define __INCLUDED_BBS_MSGBASE_H__
 
 #include <string>
+#include "bbs/inmsg.h"
 #include "sdk/vardec.h"
+
+class EmailData {
+public:
+  EmailData(const MessageEditorData& msged) : title(msged.title), silent_mode(msged.silent_mode) {}
+  explicit EmailData() {}
+  ~EmailData() {}
+
+  std::string title;
+  messagerec * msg;
+  int anony = 0;
+  int user_number = 0;
+  int system_number = 0;
+  bool an = 0;
+  int from_user = 0;
+  int from_system = 0;
+  int forwarded_code = 0;
+  int from_network_number = 0;
+
+  bool silent_mode;     // Used for ASV and newemail emails.  No questions, etc.
+};
+
 
 
 bool ForwardMessage(int *pUserNumber, int *pSystemNumber);
 std::unique_ptr<File> OpenEmailFile(bool bAllowWrite);
 void sendout_email(const std::string& title, messagerec * msg, int anony, int nUserNumber, int nSystemNumber, bool an,
   int nFromUser, int nFromSystem, int nForwardedCode, int nFromNetworkNumber);
+void sendout_email(EmailData& data);
 bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit);
 void email(const std::string& title, int nUserNumber, int nSystemNumber, bool forceit, int anony, bool bAllowFSED = true);
 void imail(int nUserNumber, int nSystemNumber);
-void LoadFileIntoWorkspace(const std::string& filename, bool bNoEditAllowed);
+void LoadFileIntoWorkspace(const std::string& filename, bool bNoEditAllowed, bool silent_mode=false);
 
 
 

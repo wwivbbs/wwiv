@@ -47,7 +47,6 @@
 #include "bbs/local_io_curses.h"
 #include "bbs/message_file.h"
 #include "bbs/netsup.h"
-#include "bbs/null_local_io.h"
 #include "bbs/menu.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
@@ -106,7 +105,7 @@ WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app),
     m_nCurrentMessageArea(0), m_nCurrentConferenceFileArea(0), m_nCurrentConferenceMessageArea(0), m_nFileAreaCache(0),
     m_nMessageAreaCache(0), m_nBeginDayNodeNumber(0), m_nMaxNumberMessageAreas(0), m_nMaxNumberFileAreas(0),
     m_nNumMessagesReadThisLogon(0), m_nNetworkNumber(0), m_nMaxNetworkNumber(0), m_nCurrentNetworkType(net_type_wwivnet),
-    m_bNewMailWaiting(false), numbatch(0), numbatchdl(0),
+    numbatch(0), numbatchdl(0),
     numf(0), m_nNumMsgsInCurrentSub(0), num_dirs(0), num_languages(0), num_sec(0), num_subs(0), num_events(0),
     num_sys_list(0), screenlinest(0), subchg(0), tagging(0), tagptr(0), titled(0), using_modem(0), m_bInternalZmodem(false),
     m_bExecLogSyncFoss(false), m_nExecChildProcessWaitTime(0), m_bNewScanAtLogin(false),

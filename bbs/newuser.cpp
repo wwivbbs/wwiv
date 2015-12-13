@@ -1508,10 +1508,9 @@ void new_mail() {
   if (!file.Exists()) {
     return;
   }
-  session()->SetNewMailWaiting(true);
   int save_ed = session()->user()->GetDefaultEditor();
   session()->user()->SetDefaultEditor(0);
-  LoadFileIntoWorkspace(file.full_pathname(), true);
+  LoadFileIntoWorkspace(file.full_pathname(), true, true);
   use_workspace = true;
 
   MessageEditorData data;
@@ -1521,14 +1520,26 @@ void new_mail() {
   data.fsed_flags = INMSG_NOFSED;
   data.to_name = session()->user()->GetUserNameAndNumber(session()->usernum);
   data.msged_flags = MSGED_FLAG_NONE;
+  data.silent_mode = true;
   messagerec msg;
   msg.storage_type = 2;
   if (inmsg(data)) {
     savefile(data.title, &msg, data.aux);
-    sendout_email(data.title, &msg, 0, session()->usernum, 0, true, 1, 0, 1, 0);
+
+    EmailData email(data);
+    email.msg = &msg;
+    email.anony = 0;
+    email.user_number = session()->usernum;
+    email.system_number = 0;
+    email.an = true;
+    email.from_user = 1;
+    email.from_system = 0;
+    email.forwarded_code = 1;
+    email.from_network_number = 0;
+    email.silent_mode = true;
+    sendout_email(email);
   }
   session()->user()->SetNumMailWaiting(session()->user()->GetNumMailWaiting() + 1);
   session()->user()->SetDefaultEditor(save_ed);
-  session()->SetNewMailWaiting(false);
 }
 

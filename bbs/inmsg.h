@@ -29,7 +29,9 @@ constexpr int INMSG_FSED_WORKSPACE = 2;
 
 class MessageEditorData {
 public:
-  MessageEditorData(): need_title(false), anonymous_flag(0), msged_flags(MSGED_FLAG_NONE), fsed_flags(INMSG_NOFSED) {}
+  MessageEditorData(): need_title(false), anonymous_flag(0), 
+    msged_flags(MSGED_FLAG_NONE), fsed_flags(INMSG_NOFSED), 
+    silent_mode(false) {}
   ~MessageEditorData() {}
 
   std::string title;
@@ -39,6 +41,7 @@ public:
   int anonymous_flag;   // an
   int msged_flags;      // used to be flags
   int fsed_flags;       // fsed
+  bool silent_mode;     // Used for ASV and newemail emails.  No questions, etc.
 
   // legacy filename, used to see if it's email or not.
   std::string aux;
