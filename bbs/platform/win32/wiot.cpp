@@ -320,7 +320,7 @@ void WIOTelnet::StartThreads() {
   }
 
   mu_ = ::CreateMutex(nullptr, false, "WWIV Input Buffer");
-  read_thread_ = reinterpret_cast<HANDLE>(_beginthread(WIOTelnet::InboundTelnetProc, 0, static_cast< void * >(this)));
+  read_thread_ = reinterpret_cast<HANDLE>(_beginthread(WIOTelnet::InboundTelnetProc, 0, static_cast<void*>(this)));
   threads_started_ = true;
 }
 

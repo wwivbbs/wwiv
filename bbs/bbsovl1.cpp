@@ -244,7 +244,7 @@ void feedback(bool bNewUserFeedback) {
       if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
           !user.IsUserDeleted()) {
         bout << "|#2" << i << "|#7)|#1 " << user.GetUserNameAndNumber(i) << wwiv::endl;
-        onek_str[i1++] = static_cast< char >('0' + i);
+        onek_str[i1++] = static_cast<char>('0' + i);
       }
     }
     onek_str[i1++] = *str_quit;
@@ -258,7 +258,7 @@ void feedback(bool bNewUserFeedback) {
     bout.nl();
     i = ch - '0';
   }
-  email(irt, static_cast< unsigned short >(i), 0, false, 0, true);
+  email(irt, static_cast<uint16_t>(i), 0, false, 0, true);
 }
 
 /**

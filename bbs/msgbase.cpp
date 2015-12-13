@@ -171,7 +171,7 @@ void sendout_email(EmailData& data) {
   memset(&m, 0, sizeof(mailrec));
   strcpy(m.title, data.title.c_str());
   m.msg = *data.msg;
-  m.anony = static_cast< unsigned char >(data.anony);
+  m.anony = static_cast<unsigned char>(data.anony);
   if (data.from_system == net_sysnum) {
     m.fromsys = 0;
   } else {
@@ -195,7 +195,7 @@ void sendout_email(EmailData& data) {
     if (!pFileEmail->IsOpen()) {
       return;
     }
-    int nEmailFileLen = static_cast< int >(pFileEmail->GetLength() / sizeof(mailrec));
+    int nEmailFileLen = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));
     if (nEmailFileLen == 0) {
       i = 0;
     } else {

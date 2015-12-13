@@ -1268,9 +1268,9 @@ void force_callout(int dw) {
       }
 
       if (i2 != -1) {
-        ss[nv] = static_cast< char >(nNetNumber);
-        ss1[nv] = static_cast< char >(i);
-        ss2[nv++] = static_cast< char >(i2);
+        ss[nv] = static_cast<char>(nNetNumber);
+        ss1[nv] = static_cast<char>(i);
+        ss2[nv++] = static_cast<char>(i2);
       }
     }
   }
@@ -1286,11 +1286,11 @@ void force_callout(int dw) {
         csne = next_system(sn);
         if (csne) {
           if (i < 9) {
-            onx[onxi++] = static_cast< char >(i + '1');
+            onx[onxi++] = static_cast<char>(i + '1');
             onx[onxi] = 0;
           } else {
             odci = (i + 1) / 10;
-            odc[odci - 1] = static_cast< char >(odci + '0');
+            odc[odci - 1] = static_cast<char>(odci + '0');
             odc[odci] = 0;
           }
           if (IsEqualsIgnoreCase(net_networks[netw].name, session()->GetNetworkName())) {

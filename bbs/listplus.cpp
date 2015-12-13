@@ -1718,10 +1718,10 @@ static int move_filename(const char *pszFileName, int dn) {
       if (!bulk_move) {
         bout << "|#5Reset upload time for file? ";
         if (yesno()) {
-          u.daten = static_cast<unsigned long>(time(nullptr));
+          u.daten = static_cast<uint32_t>(time(nullptr));
         }
       } else {
-        u.daten = static_cast<unsigned long>(time(nullptr));
+        u.daten = static_cast<uint32_t>(time(nullptr));
       }
       --cp;
       if (fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {

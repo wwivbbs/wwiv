@@ -115,7 +115,7 @@ void chat_room() {
       return;
     }
     loc = INST_LOC_CH1;
-    write_inst(static_cast< unsigned short >(loc), 0, INST_FLAGS_NONE);
+    write_inst(static_cast<uint16_t>(loc), 0, INST_FLAGS_NONE);
     moving(true, loc);
     intro(loc);
     bout.nl();
@@ -861,7 +861,7 @@ int change_channels(int loc) {
         moving(false, loc);
       }
       loc = temploc + (INST_LOC_CH1 - 1);
-      write_inst(static_cast< unsigned short >(loc), 0, INST_FLAGS_NONE);
+      write_inst(static_cast<uint16_t>(loc), 0, INST_FLAGS_NONE);
       moving(true, loc);
       bout.nl();
       intro(loc);
@@ -884,7 +884,7 @@ bool check_ch(int ch) {
     return false;
   }
   if (channels[ch].ar != '0') {
-    c_ar = static_cast< unsigned short >(1 << (channels[ch].ar - 65));
+    c_ar = static_cast<uint16_t>(1 << (channels[ch].ar - 65));
   } else {
     c_ar = 0;
   }
@@ -945,7 +945,7 @@ void load_channels(IniFile *pIniFile) {
         channels[cn].sex = szTemp[0];
         break;
       case 4:
-        channels[cn].min_age = static_cast< char >(pIniFile->GetNumericValue(szBuffer));
+        channels[cn].min_age = static_cast<char>(pIniFile->GetNumericValue(szBuffer));
         break;
       case 5:
         channels[cn].max_age = wwiv::strings::StringToChar(pIniFile->GetValue(szBuffer));

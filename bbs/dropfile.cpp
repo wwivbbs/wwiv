@@ -393,7 +393,7 @@ void CreateDoorSysDropFile() {
             session()->user()->GetSl(),
             session()->user()->GetNumLogons(),
             session()->user()->GetLastOn(),
-            static_cast<unsigned long>(60L * GetMinutesRemainingForDropFile()),
+            static_cast<uint32_t>(60L * GetMinutesRemainingForDropFile()),
             GetMinutesRemainingForDropFile());
     file.WriteFormatted(szLine);
     string ansiStatus = (okansi()) ? "GR" : "NG";

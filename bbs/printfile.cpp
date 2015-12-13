@@ -56,7 +56,7 @@ char *get_file(const string& filename, long *len) {
     *len = 0L;
     return nullptr;
   }
-  *len = static_cast< long >(file.Read(pszFileText, lFileSize));
+  *len = static_cast<long>(file.Read(pszFileText, lFileSize));
   return pszFileText;
 }
 

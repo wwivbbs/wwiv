@@ -164,7 +164,7 @@ void savefile(const std::string& text, messagerec * pMessageRecord, const string
           for (int i = 0; i < nNumBlocksRequired; i++) {
             pMessageFile->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::seekBegin);
             pMessageFile->Write((&text[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
-            gat[gati[i]] = static_cast< unsigned short >(gati[i + 1]);
+            gat[gati[i]] = static_cast<uint16_t>(gati[i + 1]);
           }
           save_gat(pMessageFile.get());
           break;
@@ -257,7 +257,7 @@ void lineadd(messagerec* pMessageRecord, const string& sx, string fileName) {
       message_file->Seek(MSG_STARTING + static_cast<long>(new1)  * MSG_BLOCK_SIZE, File::seekBegin);
       message_file->Write(b + MSG_BLOCK_SIZE, MSG_BLOCK_SIZE);
       gat[new1] = 65535;
-      gat[i] = static_cast< unsigned short >(new1);
+      gat[i] = static_cast<uint16_t>(new1);
       save_gat(message_file.get());
     }
     free(b);

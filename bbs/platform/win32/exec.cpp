@@ -447,5 +447,5 @@ int ExecExternalProgram(const string commandLine, int flags) {
     session()->remoteIO()->dtr(true);
   }
 
-  return static_cast< int >(dwExitCode);
+  return static_cast<int>(dwExitCode);
 }

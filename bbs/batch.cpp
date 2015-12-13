@@ -691,7 +691,7 @@ void dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription)
   run_cmd(pszCommandLine, "", list_filename, download_log_entry, bHangupAfterDl);
   ti = timer() - ti;
   if (ti < 0) {
-    ti += static_cast< double >(SECONDS_PER_DAY);
+    ti += static_cast<double>(SECONDS_PER_DAY);
   }
   session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast< float >(ti));
 }

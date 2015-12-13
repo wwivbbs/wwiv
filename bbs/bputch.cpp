@@ -73,7 +73,7 @@ int bputch(char c, bool bUseInternalBuffer) {
     pipe_color[1] = c;
     pipe_color[2] = '\0';
 
-    if (isdigit(static_cast< unsigned char >(pipe_color[0]))) {
+    if (isdigit(static_cast<unsigned char>(pipe_color[0]))) {
       if (isdigit(pipe_color[1]) || (pipe_color[1] == ' ')) {
         nc = atoi(pipe_color);
       } else {

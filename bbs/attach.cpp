@@ -109,7 +109,7 @@ void attach_file(int mode) {
             bFound = false;
             long lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
             while (lNumRead > 0 && !bFound) {
-              if (m.daten == static_cast<unsigned long>(fsr.id)) {
+              if (m.daten == static_cast<uint32_t>(fsr.id)) {
                 bout << "|#1Filename|#0.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0";
                 bFound = true;
               }
@@ -159,7 +159,7 @@ void attach_file(int mode) {
                 bFound = false;
                 long lNumRead = attachFile.Read(&fsr, sizeof(fsr));
                 while (lNumRead > 0 && !bFound) {
-                  if (m.daten == static_cast<unsigned long>(fsr.id)) {
+                  if (m.daten == static_cast<uint32_t>(fsr.id)) {
                     fsr.id = 0;
                     File::Remove(session()->GetAttachmentDirectory(), fsr.filename);
                     attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::seekCurrent);
@@ -252,7 +252,7 @@ void attach_file(int mode) {
               if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
                 long lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
                 while (lNumRead > 0 && !bFound) {
-                  if (m.daten == static_cast<unsigned long>(fsr.id)) {
+                  if (m.daten == static_cast<uint32_t>(fsr.id)) {
                     bFound = true;
                   } else {
                     lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
@@ -347,14 +347,14 @@ void attach_file(int mode) {
           bout.nl(2);
           bout << "Title: " << m.title;
           bool next;
-          read_message1(&m.msg, static_cast< char >(m.anony & 0x0f), false, &next, "email", 0, 0);
+          read_message1(&m.msg, static_cast<char>(m.anony & 0x0f), false, &next, "email", 0, 0);
           if (m.status & status_file) {
             File fileAttach(syscfg.datadir, ATTACH_DAT);
             if (fileAttach.Open(File::modeReadOnly | File::modeBinary)) {
               bFound = false;
               long lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
               while (lNumRead > 0 && !bFound) {
-                if (m.daten == static_cast<unsigned long>(fsr.id)) {
+                if (m.daten == static_cast<uint32_t>(fsr.id)) {
                   bout << "Attached file: " << fsr.filename << " (" << fsr.numbytes << " bytes).";
                   bout.nl();
                   bFound = true;

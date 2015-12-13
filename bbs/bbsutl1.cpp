@@ -70,7 +70,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
   if (ss == nullptr) {
     nUserNumber = finduser1(szEmailAddress);
     if (nUserNumber > 0) {
-      *pUserNumber = static_cast< unsigned short >(nUserNumber);
+      *pUserNumber = static_cast<uint16_t>(nUserNumber);
     } else if (wwiv::strings::IsEquals(szEmailAddress, "SYSOP")) {     // Add 4.31 Build3
       *pUserNumber = 1;
     } else {
@@ -122,13 +122,13 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
       }
       net_email_name[i] = '\0';
       if (net_email_name[0]) {
-        *pSystemNumber = static_cast< unsigned short >(nSystemNumber);
+        *pSystemNumber = static_cast<uint16_t>(nSystemNumber);
       } else {
         bout << "Unknown user.\r\n";
       }
     } else {
-      *pUserNumber = static_cast< unsigned short >(nUserNumber);
-      *pSystemNumber = static_cast< unsigned short >(nSystemNumber);
+      *pUserNumber = static_cast<uint16_t>(nUserNumber);
+      *pSystemNumber = static_cast<uint16_t>(nSystemNumber);
     }
     if (*pSystemNumber && ss1) {
       for (i = 0; i < session()->GetMaxNetworkNumber(); i++) {
@@ -142,7 +142,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
             if (*pSystemNumber == net_sysnum) {
               *pSystemNumber = 0;
               if (*pUserNumber == 0) {
-                *pUserNumber = static_cast< unsigned short >(finduser(net_email_name));
+                *pUserNumber = static_cast<uint16_t>(finduser(net_email_name));
               }
               if (*pUserNumber == 0 || *pUserNumber > 32767) {
                 *pUserNumber = 0;
@@ -183,7 +183,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
           set_net_num(xx);
           *pSystemNumber = 0;
           if (*pUserNumber == 0) {
-            *pUserNumber = static_cast< unsigned short >(finduser(net_email_name));
+            *pUserNumber = static_cast<uint16_t>(finduser(net_email_name));
             if (*pUserNumber == 0 || *pUserNumber > 32767) {
               *pUserNumber = 0;
               bout << "Unknown user.\r\n";
@@ -203,11 +203,11 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
           csne = next_system(*pSystemNumber);
           if (csne) {
             if (i < 9) {
-              onx[onxi++] = static_cast< char >(i + '1');
+              onx[onxi++] = static_cast<char>(i + '1');
               onx[onxi] = 0;
             } else {
-              odci = static_cast< char >((i + 1) / 10);
-              odc[odci - 1] = static_cast< char >(odci + '0');
+              odci = static_cast<char>((i + 1) / 10);
+              odc[odci - 1] = static_cast<char>(odci + '0');
               odc[odci] = 0;
             }
             bout << i + 1 << ". " << session()->GetNetworkName() << " (" << csne->name << ")\r\n";
@@ -242,7 +242,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
       if (*pSystemNumber == net_sysnum) {
         *pSystemNumber = 0;
         if (*pUserNumber == 0) {
-          *pUserNumber = static_cast< unsigned short >(finduser(net_email_name));
+          *pUserNumber = static_cast<uint16_t>(finduser(net_email_name));
         }
         if (*pUserNumber == 0 || *pUserNumber > 32767) {
           *pUserNumber = 0;

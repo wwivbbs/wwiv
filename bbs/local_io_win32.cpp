@@ -128,8 +128,8 @@ void Win32ConsoleIO::LocalGotoXY(int x, int y) {
     capture_->set_wx(x);
     return;
   }
-  m_cursorPosition.X = static_cast< short >(x);
-  m_cursorPosition.Y = static_cast< short >(y);
+  m_cursorPosition.X = static_cast<int16_t>(x);
+  m_cursorPosition.Y = static_cast<int16_t>(y);
   SetConsoleCursorPosition(m_hConOut, m_cursorPosition);
 }
 
@@ -173,12 +173,12 @@ void Win32ConsoleIO::LocalLf() {
 
   if (m_cursorPosition.Y >= GetScreenBottom()) {
     dest.X = 0;
-    dest.Y = static_cast< short >(GetTopLine());
-    scrollRect.Top = static_cast< short >(GetTopLine() + 1);
-    scrollRect.Bottom = static_cast< short >(GetScreenBottom());
+    dest.Y = static_cast<int16_t>(GetTopLine());
+    scrollRect.Top = static_cast<int16_t>(GetTopLine() + 1);
+    scrollRect.Bottom = static_cast<int16_t>(GetScreenBottom());
     scrollRect.Left = 0;
     scrollRect.Right = 79;
-    fill.Attributes = static_cast< short >(curatr);
+    fill.Attributes = static_cast<int16_t>(curatr);
     fill.Char.AsciiChar = ' ';
 
     ScrollConsoleScreenBuffer(m_hConOut, &scrollRect, nullptr, dest, &fill);
@@ -208,11 +208,11 @@ void Win32ConsoleIO::LocalCls() {
 
   dest.X = 32767;
   dest.Y = 0;
-  scrollRect.Top = static_cast< short >(GetTopLine());
-  scrollRect.Bottom = static_cast< short >(GetScreenBottom());
+  scrollRect.Top = static_cast<int16_t>(GetTopLine());
+  scrollRect.Bottom = static_cast<int16_t>(GetScreenBottom());
   scrollRect.Left = 0;
   scrollRect.Right = 79;
-  fill.Attributes = static_cast< short >(curatr);
+  fill.Attributes = static_cast<int16_t>(curatr);
   fill.Char.AsciiChar = ' ';
 
   ScrollConsoleScreenBuffer(m_hConOut, &scrollRect, nullptr, dest, &fill);
@@ -247,7 +247,7 @@ void Win32ConsoleIO::LocalPutchRaw(unsigned char ch) {
 */
   DWORD cb;
 
-  SetConsoleTextAttribute(m_hConOut, static_cast< short >(curatr));
+  SetConsoleTextAttribute(m_hConOut, static_cast<int16_t>(curatr));
   WriteConsole(m_hConOut, &ch, 1, &cb, nullptr);
 
   if (m_cursorPosition.X <= 79) {
@@ -263,17 +263,17 @@ void Win32ConsoleIO::LocalPutchRaw(unsigned char ch) {
     CHAR_INFO fill;
 
     // rushfan scrolling fix (was no +1)
-    MoveRect.Top    = static_cast< short >(GetTopLine() + 1);
-    MoveRect.Bottom = static_cast< short >(GetScreenBottom());
+    MoveRect.Top    = static_cast<int16_t>(GetTopLine() + 1);
+    MoveRect.Bottom = static_cast<int16_t>(GetScreenBottom());
     MoveRect.Left   = 0;
     MoveRect.Right  = 79;
 
-    fill.Attributes = static_cast< short >(curatr);
+    fill.Attributes = static_cast<int16_t>(curatr);
     fill.Char.AsciiChar = ' ';
 
     dest.X = 0;
     // rushfan scrolling fix (was -1)
-    dest.Y = static_cast< short >(GetTopLine());
+    dest.Y = static_cast<int16_t>(GetTopLine());
 
     ScrollConsoleScreenBuffer(m_hConOut, &MoveRect, &MoveRect, dest, &fill);
   } else {
@@ -336,9 +336,9 @@ void Win32ConsoleIO::LocalFastPuts(const string& text) {
   DWORD cb = 0;
   int len = text.length();
 
-  SetConsoleTextAttribute(m_hConOut, static_cast< short >(curatr));
+  SetConsoleTextAttribute(m_hConOut, static_cast<int16_t>(curatr));
   WriteConsole(m_hConOut, text.c_str(), len, &cb, nullptr);
-  m_cursorPosition.X = m_cursorPosition.X + static_cast< short >(cb);
+  m_cursorPosition.X = m_cursorPosition.X + static_cast<int16_t>(cb);
 }
 
 int  Win32ConsoleIO::LocalPrintf(const char *pszFormattedText, ...) {
@@ -384,23 +384,23 @@ void Win32ConsoleIO::set_protect(int l) { //JZ Set_Protect Fix
   if (l != GetTopLine()) {
     COORD coord;
     coord.X = 0;
-    coord.Y = static_cast< short >(l);
+    coord.Y = static_cast<int16_t>(l);
 
     if (l > GetTopLine()) {
       if ((WhereY() + GetTopLine() - l) < 0) {
         CHAR_INFO lpFill;
         SMALL_RECT scrnl;
 
-        scrnl.Top = static_cast< short >(GetTopLine());
+        scrnl.Top = static_cast<int16_t>(GetTopLine());
         scrnl.Left = 0;
-        scrnl.Bottom = static_cast< short >(GetScreenBottom());
+        scrnl.Bottom = static_cast<int16_t>(GetScreenBottom());
         scrnl.Right = 79; //%%TODO - JZ Make the console size user defined
 
         lpFill.Char.AsciiChar = ' ';
         lpFill.Attributes = 0;
 
         coord.X = 0;
-        coord.Y = static_cast< short >(l);
+        coord.Y = static_cast<int16_t>(l);
         ScrollConsoleScreenBuffer(m_hConOut, &scrnl, nullptr, coord, &lpFill);
         LocalGotoXY(WhereX(), WhereY() + l - GetTopLine());
       }
@@ -423,8 +423,8 @@ void Win32ConsoleIO::savescreen() {
 
   GetConsoleScreenBufferInfo(m_hConOut, &bufinfo);
   topleft.Y = topleft.X = region.Top = region.Left = 0;
-  region.Bottom = static_cast< short >(bufinfo.dwSize.Y - 1);
-  region.Right  = static_cast< short >(bufinfo.dwSize.X - 1);
+  region.Bottom = static_cast<int16_t>(bufinfo.dwSize.Y - 1);
+  region.Right  = static_cast<int16_t>(bufinfo.dwSize.X - 1);
 
   if (!m_ScreenSave.scrn1) {
     m_ScreenSave.scrn1 = static_cast< CHAR_INFO *>(malloc((bufinfo.dwSize.X * bufinfo.dwSize.Y) * sizeof(CHAR_INFO)));
@@ -434,10 +434,10 @@ void Win32ConsoleIO::savescreen() {
     ReadConsoleOutput(m_hConOut, (CHAR_INFO *)m_ScreenSave.scrn1, bufinfo.dwSize, topleft, &region);
   }
 
-  m_ScreenSave.x1 = static_cast< short >(WhereX());
-  m_ScreenSave.y1 = static_cast< short >(WhereY());
-  m_ScreenSave.topline1 = static_cast< short >(GetTopLine());
-  m_ScreenSave.curatr1 = static_cast< short >(curatr);
+  m_ScreenSave.x1 = static_cast<int16_t>(WhereX());
+  m_ScreenSave.y1 = static_cast<int16_t>(WhereY());
+  m_ScreenSave.topline1 = static_cast<int16_t>(GetTopLine());
+  m_ScreenSave.curatr1 = static_cast<int16_t>(curatr);
 }
 
 /*
@@ -452,8 +452,8 @@ void Win32ConsoleIO::restorescreen() {
 
     GetConsoleScreenBufferInfo(m_hConOut, &bufinfo);
     topleft.Y = topleft.X = region.Top = region.Left = 0;
-    region.Bottom = static_cast< short >(bufinfo.dwSize.Y - 1);
-    region.Right  = static_cast< short >(bufinfo.dwSize.X - 1);
+    region.Bottom = static_cast<int16_t>(bufinfo.dwSize.Y - 1);
+    region.Right  = static_cast<int16_t>(bufinfo.dwSize.X - 1);
 
     WriteConsoleOutput(m_hConOut, m_ScreenSave.scrn1, bufinfo.dwSize, topleft, &region);
     free(m_ScreenSave.scrn1);
@@ -570,7 +570,7 @@ void Win32ConsoleIO::skey(char ch) {
         case SF5:                          /* Shift-F5 */
           i1 = (rand() % 20) + 10;
           for (i = 0; i < i1; i++) {
-            bputch(static_cast< unsigned char >(rand() % 256));
+            bputch(static_cast<unsigned char>(rand() % 256));
           }
           hangup = true;
           session()->remoteIO()->dtr(false);
@@ -792,12 +792,12 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
     strcpy(rst, restrict_string);
     for (i = 0; i <= 15; i++) {
       if (pSession->user()->HasArFlag(1 << i)) {
-        ar[i] = static_cast< char >('A' + i);
+        ar[i] = static_cast<char>('A' + i);
       } else {
         ar[i] = SPACE;
       }
       if (pSession->user()->HasDarFlag(1 << i)) {
-        dar[i] = static_cast< char >('A' + i);
+        dar[i] = static_cast<char>('A' + i);
       } else {
         dar[i] = SPACE;
       }
@@ -956,14 +956,14 @@ void Win32ConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   SMALL_RECT rect;
 
   // rect is the area on screen the buffer is to be drawn
-  rect.Top    = static_cast< short >(y);
-  rect.Left   = static_cast< short >(x);
-  rect.Right  = static_cast< short >(xlen + x - 1);
-  rect.Bottom = static_cast< short >(ylen + y - 1);
+  rect.Top    = static_cast<int16_t>(y);
+  rect.Left   = static_cast<int16_t>(x);
+  rect.Right  = static_cast<int16_t>(xlen + x - 1);
+  rect.Bottom = static_cast<int16_t>(ylen + y - 1);
 
   // size of the buffer to use (lower right hand coordinate)
-  size.X      = static_cast< short >(xlen);
-  size.Y      = static_cast< short >(ylen);
+  size.X      = static_cast<int16_t>(xlen);
+  size.Y      = static_cast<int16_t>(ylen);
 
   // our current position within the CHAR_INFO buffer
   int nCiPtr  = 0;
@@ -971,7 +971,7 @@ void Win32ConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   // Loop through Y, each time looping through X adding the right character
   for (int yloop = 0; yloop < size.Y; yloop++) {
     for (int xloop = 0; xloop < size.X; xloop++) {
-      ci[nCiPtr].Attributes = static_cast< short >(curatr);
+      ci[nCiPtr].Attributes = static_cast<int16_t>(curatr);
       if ((yloop == 0) || (yloop == size.Y - 1)) {
         ci[nCiPtr].Char.AsciiChar   = '\xC4';      // top and bottom
       } else {

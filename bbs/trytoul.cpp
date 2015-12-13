@@ -389,7 +389,7 @@ int try_to_ul_wh(char *pszFileName) {
 
   time_t tCurrentDate;
   time(&tCurrentDate);
-  u.daten = static_cast<unsigned long>(tCurrentDate);
+  u.daten = static_cast<uint32_t>(tCurrentDate);
   File fileDownload(g_szDownloadFileName);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   for (i = session()->numf; i >= 1; i--) {
@@ -405,7 +405,7 @@ int try_to_ul_wh(char *pszFileName) {
   FileAreaSetRecord(fileDownload, 0);
   fileDownload.Read(&u1, sizeof(uploadsrec));
   u1.numbytes = session()->numf;
-  u1.daten = static_cast<unsigned long>(tCurrentDate);
+  u1.daten = static_cast<uint32_t>(tCurrentDate);
   FileAreaSetRecord(fileDownload, 0);
   fileDownload.Write(&u1, sizeof(uploadsrec));
   fileDownload.Close();

@@ -71,7 +71,7 @@ void select_editor() {
     odc[ i1 ] = '\0';
   }
   bout << "0. Normal non-full screen editor\r\n";
-  for (int i = 0; i < session()->editors.size(); i++) {
+  for (size_t i = 0; i < session()->editors.size(); i++) {
     bout << i + 1 << ". " << session()->editors[i].description  << wwiv::endl;
     if (((i + 1) % 10) == 0) {
       odc[(i + 1) / 10 - 1 ] = static_cast<char>((i + 1) / 10);
@@ -231,8 +231,8 @@ const string DescribeColorCode(int nColorCode) {
 void color_list() {
   bout.nl(2);
   for (int i = 0; i < 8; i++) {
-    bout.SystemColor(static_cast< unsigned char >((i == 0) ? 0x70 : i));
-    bout << i << ". " << DisplayColorName(static_cast< char >(i)).c_str() << "|#0" << wwiv::endl;
+    bout.SystemColor(static_cast<unsigned char>((i == 0) ? 0x70 : i));
+    bout << i << ". " << DisplayColorName(static_cast<char>(i)).c_str() << "|#0" << wwiv::endl;
   }
 }
 
@@ -324,27 +324,27 @@ static void change_colors() {
         if (ch == 'Q') {
           continue;
         }
-        nc = static_cast< char >(ch - '0');
+        nc = static_cast<char>(ch - '0');
         bout << "|#9(Q=Quit) Background? ";
         ch = onek("Q01234567");
         if (ch == 'Q') {
           continue;
         }
-        nc = static_cast< char >(nc | ((ch - '0') << 4));
+        nc = static_cast<char>(nc | ((ch - '0') << 4));
       } else {
         bout.nl();
         bout << "|#9Inversed? ";
         if (yesno()) {
           if ((session()->user()->GetBWColor(1) & 0x70) == 0) {
-            nc = static_cast< char >(0 | ((session()->user()->GetBWColor(1) & 0x07) << 4));
+            nc = static_cast<char>(0 | ((session()->user()->GetBWColor(1) & 0x07) << 4));
           } else {
-            nc = static_cast< char >(session()->user()->GetBWColor(1) & 0x70);
+            nc = static_cast<char>(session()->user()->GetBWColor(1) & 0x70);
           }
         } else {
           if ((session()->user()->GetBWColor(1) & 0x70) == 0) {
-            nc = static_cast< char >(0 | (session()->user()->GetBWColor(1) & 0x07));
+            nc = static_cast<char>(0 | (session()->user()->GetBWColor(1) & 0x07));
           } else {
-            nc = static_cast< char >((session()->user()->GetBWColor(1) & 0x70) >> 4);
+            nc = static_cast<char>((session()->user()->GetBWColor(1) & 0x70) >> 4);
           }
         }
       }
@@ -508,7 +508,7 @@ static void list_macro(const char *pszMacroText) {
           break;
         default:
           bputch('^');
-          bputch(static_cast< unsigned char >(pszMacroText[i] + 64));
+          bputch(static_cast<unsigned char>(pszMacroText[i] + 64));
           break;
         }
       }

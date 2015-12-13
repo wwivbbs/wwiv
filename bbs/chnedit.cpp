@@ -112,7 +112,7 @@ void modify_chain(int nCurrentChainNumber) {
     if (c.ar != 0) {
       for (int i = 0; i < 16; i++) {
         if ((1 << i) & c.ar) {
-          s[0] = static_cast< char >('A' + i);
+          s[0] = static_cast<char>('A' + i);
         }
       }
       s[1] = 0;
@@ -216,7 +216,7 @@ void modify_chain(int nCurrentChainNumber) {
       if (ch2 == SPACE) {
         c.ar = 0;
       } else {
-        c.ar = static_cast< unsigned short >(1 << (ch2 - 'A'));
+        c.ar = static_cast<uint16_t>(1 << (ch2 - 'A'));
       }
       break;
     case 'E':
@@ -280,7 +280,7 @@ void modify_chain(int nCurrentChainNumber) {
             if (nUserNumber > 0) {
               WUser regUser;
               session()->users()->ReadUser(&regUser, nUserNumber);
-              r.regby[i] = static_cast< short >(nUserNumber);
+              r.regby[i] = static_cast<int16_t>(nUserNumber);
               bout.nl();
               bout << "|#1Registered by       |#2" << nUserNumber << " " 
                    << ((r.regby[i]) ? regUser.GetName() : "AVAILABLE");
@@ -297,7 +297,7 @@ void modify_chain(int nCurrentChainNumber) {
       bout << "|#5Times Run : ";
       input(s, 3);
       if (s[0] != 0) {
-        r.usage = static_cast< short >(atoi(s));
+        r.usage = static_cast<int16_t>(atoi(s));
       }
       break;
     case 'N':

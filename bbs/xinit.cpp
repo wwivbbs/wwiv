@@ -113,7 +113,7 @@ unsigned short WSession::str2restrict(const char *s) {
     }
   }
 
-  return static_cast< short >(r);
+  return static_cast<int16_t>(r);
 }
 
 // begin callback addition
@@ -663,7 +663,7 @@ bool WSession::read_subs() {
   }
   subboards = nullptr;
   SetMaxNumberMessageAreas(syscfg.max_subs);
-  subboards = static_cast< subboardrec * >(BbsAllocA(GetMaxNumberMessageAreas() * sizeof(subboardrec)));
+  subboards = static_cast<subboardrec*>(BbsAllocA(GetMaxNumberMessageAreas() * sizeof(subboardrec)));
 
   File file(syscfg.datadir, SUBS_DAT);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {

@@ -323,7 +323,7 @@ void dliscan1(int nDirectoryNum) {
     strcpy(u.filename, "|MARKER|");
     time_t tNow;
     time(&tNow);
-    u.daten = static_cast<unsigned long>(tNow);
+    u.daten = static_cast<uint32_t>(tNow);
     FileAreaSetRecord(fileDownload, 0);
     fileDownload.Write(&u, sizeof(uploadsrec));
   } else {
@@ -335,7 +335,7 @@ void dliscan1(int nDirectoryNum) {
       strcpy(u.filename, "|MARKER|");
       time_t l;
       time(&l);
-      u.daten = static_cast<unsigned long>(l);
+      u.daten = static_cast<uint32_t>(l);
       u.numbytes = session()->numf;
       FileAreaSetRecord(fileDownload, 0);
       fileDownload.Write(&u, sizeof(uploadsrec));
@@ -846,7 +846,7 @@ void nscandir(int nDirNum, bool *abort) {
       FileAreaSetRecord(fileDownload, i);
       uploadsrec u;
       fileDownload.Read(&u, sizeof(uploadsrec));
-      if (u.daten >= static_cast<unsigned long>(nscandate)) {
+      if (u.daten >= static_cast<uint32_t>(nscandate)) {
         fileDownload.Close();
         printinfo(&u, abort);
         fileDownload.Open(File::modeBinary | File::modeReadOnly);

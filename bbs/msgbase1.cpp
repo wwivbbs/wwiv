@@ -233,7 +233,7 @@ void post() {
   }
   savefile(data.text, &m, data.aux);
   strcpy(p.title, data.title.c_str());
-  p.anony   = static_cast< unsigned char >(data.anonymous_flag);
+  p.anony   = static_cast<unsigned char>(data.anonymous_flag);
   p.msg   = m;
   p.ownersys  = 0;
   p.owneruser = static_cast<unsigned short>(session()->usernum);

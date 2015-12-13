@@ -180,7 +180,7 @@ void jump_conf(int conftype) {
  * Removes, inserts, or swaps subs/dirs in all conferences of a specified
  * type.
  */
-void update_conf(int conftype, SUBCONF_TYPE * sub1, SUBCONF_TYPE * sub2, int action) {
+void update_conf(int conftype, subconf_t * sub1, subconf_t * sub2, int action) {
   confrec *cp = nullptr;
   int nc, num_s;
   int pos1, pos2;
@@ -274,7 +274,7 @@ char first_available_designator(int conftype) {
       }
     }
     if (i1 >= nc) {
-      return static_cast< char >(i + 'A');
+      return static_cast<char>(i + 'A');
     }
   }
 
@@ -410,7 +410,7 @@ void showsubconfs(int conftype, confrec * c) {
  * numbers. Number of numbers in the list is returned in numinlist.
  */
 bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list) {
-  SUBCONF_TYPE intarray[1024];
+  subconf_t intarray[1024];
 
   // init vars
   memset(intarray, 0, sizeof(intarray));
@@ -474,7 +474,7 @@ bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list) {
 /*
  * Function to add one subconf (sub/dir/whatever) to a conference.
  */
-void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
+void addsubconf(int conftype, confrec * c, subconf_t * which) {
   std::vector<int> intlist;
 
   if (!c || !c->subs) {
@@ -517,11 +517,10 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
       continue;
     }
     if (c->num >= c->maxnum) {
-      c->maxnum = c->maxnum + static_cast< unsigned short >(CONF_MULTIPLE);
-      SUBCONF_TYPE *tptr = static_cast<SUBCONF_TYPE *>(BbsAllocA(c->maxnum * sizeof(SUBCONF_TYPE)));
-      WWIV_ASSERT(tptr != nullptr);
+      c->maxnum = c->maxnum + static_cast<uint16_t>(CONF_MULTIPLE);
+      subconf_t *tptr = static_cast<subconf_t *>(BbsAllocA(c->maxnum * sizeof(subconf_t)));
       if (tptr) {
-        memmove(tptr, c->subs, (c->maxnum - CONF_MULTIPLE) * sizeof(SUBCONF_TYPE));
+        memmove(tptr, c->subs, (c->maxnum - CONF_MULTIPLE) * sizeof(subconf_t));
         free(c->subs);
         c->subs = tptr;
       } else {
@@ -529,7 +528,7 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
         return;
       }
     }
-    c->subs[c->num] = static_cast< unsigned short >(nConference);
+    c->subs[c->num] = static_cast<uint16_t>(nConference);
     c->num++;
   }
 }
@@ -538,7 +537,7 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
 /*
  * Function to delete one subconf (sub/dir/whatever) from a conference.
  */
-void delsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
+void delsubconf(int conftype, confrec * c, subconf_t * which) {
   if (!c || !c->subs || c->num < 1) {
     return;
   }
@@ -603,7 +602,7 @@ int modify_conf(int conftype,  int which) {
   bool ok   = false;
   bool done = false;
   int num, ns;
-  SUBCONF_TYPE i;
+  subconf_t i;
   char ch, ch1, s[81];
 
   int n = which;
@@ -810,7 +809,7 @@ int modify_conf(int conftype,  int which) {
       bout << "|#2Min BPS Rate: ";
       input(s, 5);
       if (s[0]) {
-        c.minbps = (SUBCONF_TYPE)(atol(s));
+        c.minbps = (subconf_t)(atol(s));
         changed = 1;
       }
       break;

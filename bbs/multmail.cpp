@@ -138,13 +138,13 @@ void multimail(int *pnUserNumber, int numu) {
   lineadd(&m.msg, "\003""7----", "email");
   lineadd(&m.msg, s1, "email");
 
-  m.anony = static_cast< unsigned char >(data.anonymous_flag);
+  m.anony = static_cast<unsigned char>(data.anonymous_flag);
   m.fromsys = 0;
   m.fromuser = static_cast<unsigned short>(session()->usernum);
   m.tosys = 0;
   m.touser = 0;
   m.status = status_multimail;
-  m.daten = static_cast<unsigned long>(time(nullptr));
+  m.daten = static_cast<uint32_t>(time(nullptr));
 
   unique_ptr<File> pFileEmail(OpenEmailFile(true));
   int len = pFileEmail->GetLength() / sizeof(mailrec);

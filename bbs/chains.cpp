@@ -137,7 +137,7 @@ void run_chain(int nChainNumber) {
       }
     }
   }
-  write_inst(INST_LOC_CHAINS, static_cast< unsigned short >(nChainNumber + 1), INST_FLAGS_NONE);
+  write_inst(INST_LOC_CHAINS, static_cast<uint16_t>(nChainNumber + 1), INST_FLAGS_NONE);
   if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     session()->chains_reg[nChainNumber].usage++;
     wwiv::core::DataFile<chainregrec> regFile(syscfg.datadir, CHAINS_REG,
