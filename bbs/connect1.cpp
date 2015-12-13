@@ -329,9 +329,9 @@ void read_contacts() {
   }
 }
 
-void set_net_num(int nNetworkNumber) {
-  if (nNetworkNumber >= 0 && nNetworkNumber < session()->max_net_num()) {
-    session()->set_net_num(nNetworkNumber);
+void set_net_num(int network_number) {
+  if (network_number >= 0 && network_number < session()->max_net_num()) {
+    session()->set_net_num(network_number);
     net_sysnum = net_networks[session()->net_num()].sysnum;
     session()->set_net_type(net_networks[ session()->net_num() ].type);
   }

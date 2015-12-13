@@ -62,10 +62,10 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
   }
   if (userRecord.GetForwardSystemNumber() != 0) {
     if (!userRecord.IsMailForwardedToInternet()) {
-      int nNetworkNumber = session()->net_num();
+      int network_number = session()->net_num();
       set_net_num(userRecord.GetForwardNetNumber());
       if (!valid_system(userRecord.GetForwardSystemNumber())) {
-        set_net_num(nNetworkNumber);
+        set_net_num(network_number);
         return false;
       }
       if (!userRecord.GetForwardUserNumber()) {

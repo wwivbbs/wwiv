@@ -28,6 +28,6 @@ bool valid_system(int ts);
 net_system_list_rec *next_system(int ts);
 void zap_contacts();
 void read_contacts();
-void set_net_num(int nNetworkNumber);
+void set_net_num(int network_number);
 
 #endif  // __INCLUDED_BBS_CONNECT1_H__
