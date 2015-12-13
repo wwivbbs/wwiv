@@ -42,7 +42,7 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
 
   // extra processing for net programs
   if (nFlags & EFLAG_NETPROG) {
-    write_inst(INST_LOC_NET, session()->GetNetworkNumber() + 1, INST_FLAGS_NONE);
+    write_inst(INST_LOC_NET, session()->net_num() + 1, INST_FLAGS_NONE);
   }
 
   // Execute the program and make sure the workingdir is reset

@@ -177,9 +177,9 @@ bool StatusMgr::Get(bool bLockFile) {
           mailcheck = false;
           break;
         case WStatus::fileChangeNet: {
-          int nOldNetNum = session()->GetNetworkNumber();
+          int nOldNetNum = session()->net_num();
           zap_bbs_list();
-          for (int i1 = 0; i1 < session()->GetMaxNetworkNumber(); i1++) {
+          for (int i1 = 0; i1 < session()->max_net_num(); i1++) {
             set_net_num(i1);
             zap_call_out_list();
             zap_contacts();

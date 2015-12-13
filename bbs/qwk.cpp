@@ -356,13 +356,13 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
     return;
   }
 
-  int nn = session()->GetNetworkNumber();
+  int nn = session()->net_num();
   if (p->status & status_post_new_net) {
     set_net_num(p->network.network_msg.net_number);
   }
 
   put_in_qwk(p, (subboards[session()->GetCurrentReadMessageArea()].filename), msgnum, qwk_info);
-  if (nn != session()->GetNetworkNumber()) {
+  if (nn != session()->net_num()) {
     set_net_num(nn);
   }
 

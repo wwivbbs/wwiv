@@ -727,7 +727,7 @@ void WSession::read_networks() {
       }
     }
     networksfile.Close();
-    for (int nTempNetNumber = 0; nTempNetNumber < GetMaxNetworkNumber(); nTempNetNumber++) {
+    for (int nTempNetNumber = 0; nTempNetNumber < max_net_num(); nTempNetNumber++) {
       char* ss = strchr(net_networks[nTempNetNumber].name, ' ');
       if (ss) {
         *ss = '\0';
@@ -951,7 +951,7 @@ void WSession::InitializeBBS() {
   }
 
   net_networks = nullptr;
-  SetNetworkNumber(0);
+  set_net_num(0);
   read_networks();
   set_net_num(0);
 

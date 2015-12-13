@@ -145,8 +145,8 @@ void HopDir();
 void get_user_ppp_addr();
 void send_inet_email();
 bool check_inet_addr(const char *inetaddr);
-char *read_inet_addr(char *pszInternetEmailAddress, int nUserNumber);
-void write_inet_addr(const char *pszInternetEmailAddress, int nUserNumber);
+char *read_inet_addr(char *pszInternetEmailAddress, int user_number);
+void write_inet_addr(const char *pszInternetEmailAddress, int user_number);
 void send_inst_sysstr(int whichinst, const char *pszSendString);
 
 
@@ -159,7 +159,7 @@ void broadcast(const char *fmt, ...);
 void process_inst_msgs();
 bool get_inst_info(int nInstanceNum, instancerec * ir);
 int  num_instances();
-bool  user_online(int nUserNumber, int *wi);
+bool  user_online(int user_number, int *wi);
 void instance_edit();
 void write_inst(int loc, int subloc, int flags);
 bool inst_msg_waiting();
@@ -238,7 +238,7 @@ void Packers();
 
 // File: msgbase1.cpp
 
-void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber);
+void send_net_post(postrec * pPostRecord, const char *extra, int sub_number);
 void post();
 void grab_user_name(messagerec * pMessageRecord, const char *pszFileName);
 void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan);
@@ -250,7 +250,7 @@ void remove_post();
 
 // File: multmail.cpp
 
-void multimail(int *nUserNumber, int numu);
+void multimail(int *user_number, int numu);
 void slash_e();
 
 // File: pause.cpp
@@ -264,7 +264,7 @@ void pausescr();
 // File: readmail.cpp
 
 void readmail(int mode);
-int  check_new_mail(int nUserNumber);
+int  check_new_mail(int user_number);
 
 
 // File: shortmsg.cpp
@@ -278,7 +278,7 @@ void show_files(const char *pszFileName, const char *pszDirectoryName);
 
 // File: SmallRecord.cpp
 
-void InsertSmallRecord(int nUserNumber, const char *name);
+void InsertSmallRecord(int user_number, const char *name);
 void DeleteSmallRecord(const char *name);
 
 
@@ -333,7 +333,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec* s);
 
 void RequestChat();
 void select_chat_name(char *pszSysopName);
-void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopName);
+void two_way_chat(char *pszRollover, int max_length, bool crend, char *pszSysopName);
 void chat1(char *pszChatLine, bool two_way);
 
 
@@ -355,8 +355,8 @@ void add_ass(int nNumPoints, const char *pszReason);
 
 bool open_qscn();
 void close_qscn();
-void read_qscn(int nUserNumber, uint32_t* qscn, bool bStayOpen, bool bForceRead = false);
-void write_qscn(int nUserNumber, uint32_t* qscn, bool bStayOpen);
+void read_qscn(int user_number, uint32_t* qscn, bool bStayOpen, bool bForceRead = false);
+void write_qscn(int user_number, uint32_t* qscn, bool bStayOpen);
 
 // File: xfer.cpp
 #include "bbs/xfer.h"

@@ -58,19 +58,19 @@ int finduser(const string& searchString) {
   if (searchString == "!-@NETWORK@-!") {
     return -2;
   }
-  int nUserNumber = atoi(searchString.c_str());
-  if (nUserNumber > 0) {
-    session()->users()->ReadUser(&user, nUserNumber);
+  int user_number = atoi(searchString.c_str());
+  if (user_number > 0) {
+    session()->users()->ReadUser(&user, user_number);
     if (user.IsUserDeleted()) {
       return 0;
     }
-    return nUserNumber;
+    return user_number;
   }
-  nUserNumber = session()->users()->FindUser(searchString);
-  if (nUserNumber == 0L) {
+  user_number = session()->users()->FindUser(searchString);
+  if (user_number == 0L) {
     return 0;
   } 
-  session()->users()->ReadUser(&user, nUserNumber);
+  session()->users()->ReadUser(&user, user_number);
   if (user.IsUserDeleted()) {
     return 0;
   }
@@ -78,7 +78,7 @@ int finduser(const string& searchString) {
     guest_user = true;
     session()->users()->SetUserWritesAllowed(false);
   }
-  return nUserNumber;
+  return user_number;
 }
 
 

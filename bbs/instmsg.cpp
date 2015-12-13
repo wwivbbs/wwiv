@@ -351,10 +351,10 @@ int num_instances() {
 
 
 /*
- * Returns 1 if session()->usernum nUserNumber is online, and returns instance user is on in
+ * Returns 1 if session()->usernum user_number is online, and returns instance user is on in
  * wi, else returns 0.
  */
-bool user_online(int nUserNumber, int *wi) {
+bool user_online(int user_number, int *wi) {
   int ni = num_instances();
   for (int i = 1; i <= ni; i++) {
     if (i == session()->GetInstanceNumber()) {
@@ -362,7 +362,7 @@ bool user_online(int nUserNumber, int *wi) {
     }
     instancerec ir;
     get_inst_info(i, &ir);
-    if (ir.user == nUserNumber && (ir.flags & INST_FLAGS_ONLINE)) {
+    if (ir.user == user_number && (ir.flags & INST_FLAGS_ONLINE)) {
       if (wi) {
         *wi = i;
       }

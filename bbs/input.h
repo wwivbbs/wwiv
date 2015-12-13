@@ -37,12 +37,12 @@ enum class InputMode {
 }  // namespace bbs
 }  // namespace wwiv
 
-void input(char *pszOutText, int nMaxLength, bool bAutoMpl = false);
-void input(std::string *strOutText, int nMaxLength, bool bAutoMpl = false);
-void inputl(char *pszOutText, int nMaxLength, bool bAutoMpl = false);
-void inputl(std::string *strOutText, int nMaxLength, bool bAutoMpl = false);
-void Input1(char *pszOutText, const std::string& origText, int nMaxLength, bool bInsert, wwiv::bbs::InputMode mode);
-std::string Input1(const std::string& origText, int nMaxLength, bool bInsert, wwiv::bbs::InputMode mode);
-std::string input_password(const std::string& promptText, int nMaxLength);
+void input(char *out_text, int max_length, bool auto_mpl = false);
+void input(std::string *out_text, int max_length, bool auto_mpl = false);
+void inputl(char *out_text, int max_length, bool auto_mpl = false);
+void inputl(std::string *out_text, int max_length, bool auto_mpl = false);
+void Input1(char *out_text, const std::string& orig_text, int max_length, bool bInsert, wwiv::bbs::InputMode mode);
+std::string Input1(const std::string& orig_text, int max_length, bool bInsert, wwiv::bbs::InputMode mode);
+std::string input_password(const std::string& prompt_text, int max_length);
 
 #endif  // __INCLUDED_INPUT_H__

@@ -26,49 +26,49 @@
 #include "core/wwivassert.h"
 
 char *dateFromTimeTForLog(time_t t) {
-  static char szDateString[11];
+  static char date_string[11];
   struct tm * pTm = localtime(&t);
 
-  snprintf(szDateString, sizeof(szDateString), "%02d%02d%02d", pTm->tm_year % 100, pTm->tm_mon + 1, pTm->tm_mday);
-  return szDateString;
+  snprintf(date_string, sizeof(date_string), "%02d%02d%02d", pTm->tm_year % 100, pTm->tm_mon + 1, pTm->tm_mday);
+  return date_string;
 }
 
 // Only used by fix.
 char *dateFromTimeT(time_t t) {
-  static char szDateString[11];
+  static char date_string[11];
   struct tm * pTm = localtime(&t);
 
-  snprintf(szDateString, sizeof(szDateString), "%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
-  return szDateString;
+  snprintf(date_string, sizeof(date_string), "%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
+  return date_string;
 }
 
 char *date() {
-  static char szDateString[11];
+  static char date_string[11];
   time_t t = time(nullptr);
   struct tm * pTm = localtime(&t);
 
-  snprintf(szDateString, sizeof(szDateString), "%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
-  return szDateString;
+  snprintf(date_string, sizeof(date_string), "%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
+  return date_string;
 }
 
 
 char *fulldate() {
-  static char szDateString[11];
+  static char date_string[11];
   time_t t = time(nullptr);
   struct tm * pTm = localtime(&t);
 
-  snprintf(szDateString, sizeof(szDateString), "%02d/%02d/%4d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year + 1900);
-  return szDateString;
+  snprintf(date_string, sizeof(date_string), "%02d/%02d/%4d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year + 1900);
+  return date_string;
 }
 
 
 char *times() {
-  static char szTimeString[9];
+  static char time_string[9];
 
   time_t tim = time(nullptr);
   struct tm *t = localtime(&tim);
-  snprintf(szTimeString, sizeof(szTimeString), "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
-  return szTimeString;
+  snprintf(time_string, sizeof(time_string), "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
+  return time_string;
 }
 
 

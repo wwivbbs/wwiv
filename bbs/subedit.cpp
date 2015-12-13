@@ -36,7 +36,7 @@ using wwiv::bbs::InputMode;
 using namespace wwiv::strings;
 
 static void save_subs() {
-  int nSavedNetNum = session()->GetNetworkNumber();
+  int nSavedNetNum = session()->net_num();
 
   for (int nTempNetNum = 0; nTempNetNum < session()->num_subs; nTempNetNum++) {
     subboards[nTempNetNum].type = 0;
@@ -75,7 +75,7 @@ static void save_subs() {
     }
     fileSubsXtr.Close();
   }
-  for (int nDelNetNum = 0; nDelNetNum < session()->GetMaxNetworkNumber(); nDelNetNum++) {
+  for (int nDelNetNum = 0; nDelNetNum < session()->max_net_num(); nDelNetNum++) {
     set_net_num(nDelNetNum);
 
     File::Remove(session()->GetNetworkDataDirectory(), ALLOW_NET);

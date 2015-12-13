@@ -474,7 +474,7 @@ void qwk_email_text(char *text, char *title, char *to) {
       session()->users()->ReadUser(&u, un);
       strcpy(s2, u.GetUserNameAndNumber(un));
     } else {
-      if (session()->GetMaxNetworkNumber() > 1) {
+      if (session()->max_net_num() > 1) {
         if (un == 0) {
           sprintf(s2, "%s @%u.%s", net_email_name, sy, session()->GetNetworkName());
         } else {
@@ -534,7 +534,7 @@ void qwk_email_text(char *text, char *title, char *to) {
     email.from_user = session()->usernum;
     email.from_system = net_sysnum;
     email.forwarded_code = 0;
-    email.from_network_number = session()->GetNetworkNumber();
+    email.from_network_number = session()->net_num();
     sendout_email(email);
   }
 }

@@ -118,9 +118,9 @@ public:
   void SetLastKeyLocal(bool b) { last_key_local_ = b; }
 
   bool ReadCurrentUser() { return ReadCurrentUser(usernum, false); }
-  bool ReadCurrentUser(int nUserNumber, bool bForceRead = false);
+  bool ReadCurrentUser(int user_number, bool bForceRead = false);
   bool WriteCurrentUser() { return WriteCurrentUser(usernum); }
-  bool WriteCurrentUser(int nUserNumber);
+  bool WriteCurrentUser(int user_number);
 
   void ResetEffectiveSl() { effective_sl_ = user()->GetSl(); }
   void SetEffectiveSl(int nSl) { effective_sl_ = nSl; }
@@ -215,13 +215,13 @@ public:
   bool IsTimeOnlineLimited() const { return m_bTimeOnlineLimited; }
   void SetTimeOnlineLimited(bool b) { m_bTimeOnlineLimited = b; }
 
-  int  GetCurrentNetworkType() const { return m_nCurrentNetworkType; }
-  void SetCurrentNetworkType(int n) { m_nCurrentNetworkType = n; }
+  int  net_type() const { return m_nCurrentNetworkType; }
+  void set_net_type(int n) { m_nCurrentNetworkType = n; }
    
-  int  GetNetworkNumber() const { return m_nNetworkNumber; }
-  void SetNetworkNumber(int n) { m_nNetworkNumber = n; }
+  int  net_num() const { return m_nNetworkNumber; }
+  void set_net_num(int n) { m_nNetworkNumber = n; }
 
-  int  GetMaxNetworkNumber() const { return m_nMaxNetworkNumber; }
+  int  max_net_num() const { return m_nMaxNetworkNumber; }
   void SetMaxNetworkNumber(int n) { m_nMaxNetworkNumber = n; }
 
   bool wwivmail_enabled() const { return wwivmail_enabled_; }

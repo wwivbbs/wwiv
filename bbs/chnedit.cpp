@@ -276,13 +276,13 @@ void modify_chain(int nCurrentChainNumber) {
           if (s1[0] == '0') {
             r.regby[i] = 0;
           } else {
-            int nUserNumber = finduser1(s1);
-            if (nUserNumber > 0) {
+            int user_number = finduser1(s1);
+            if (user_number > 0) {
               WUser regUser;
-              session()->users()->ReadUser(&regUser, nUserNumber);
-              r.regby[i] = static_cast<int16_t>(nUserNumber);
+              session()->users()->ReadUser(&regUser, user_number);
+              r.regby[i] = static_cast<int16_t>(user_number);
               bout.nl();
-              bout << "|#1Registered by       |#2" << nUserNumber << " " 
+              bout << "|#1Registered by       |#2" << user_number << " " 
                    << ((r.regby[i]) ? regUser.GetName() : "AVAILABLE");
             }
           }

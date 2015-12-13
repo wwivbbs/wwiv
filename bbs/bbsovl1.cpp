@@ -155,11 +155,11 @@ void send_email() {
     }
   }
 
-  int nSystemNumber, nUserNumber;
-  parse_email_info(username, &nUserNumber, &nSystemNumber);
+  int system_number, user_number;
+  parse_email_info(username, &user_number, &system_number);
   grab_quotes(nullptr, nullptr);
-  if (nUserNumber || nSystemNumber) {
-    email("", nUserNumber, nSystemNumber, false, 0);
+  if (user_number || system_number) {
+    email("", user_number, system_number, false, 0);
   }
 }
 

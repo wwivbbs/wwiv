@@ -69,7 +69,7 @@ void asv() {
     case '1':
       bout << "|#5Select a network you are in [Q=Quit].";
       bout.nl(2);
-      for (i = 0; i < session()->GetMaxNetworkNumber(); i++) {
+      for (i = 0; i < session()->max_net_num(); i++) {
         if (net_networks[i].sysnum) {
           bout << " |#3" << i + 1 << "|#1.  |#1" << net_networks[i].name << wwiv::endl;
         }
@@ -78,7 +78,7 @@ void asv() {
       bout << "|#1:";
       input(s, 2, true);
       i = atoi(s);
-      if (i < 1 || i > session()->GetMaxNetworkNumber()) {
+      if (i < 1 || i > session()->max_net_num()) {
         bout.nl();
         bout << "|#6Aborted!";
         break;
@@ -213,8 +213,8 @@ void asv() {
         session()->user()->SetHomeSystemNumber(inode);
         session()->user()->SetForwardUserNumber(1);
         session()->user()->SetHomeUserNumber(1);
-        session()->user()->SetForwardNetNumber(session()->GetNetworkNumber());
-        session()->user()->SetHomeNetNumber(session()->GetNetworkNumber());
+        session()->user()->SetForwardNetNumber(session()->net_num());
+        session()->user()->SetHomeNetNumber(session()->net_num());
         bout.nl();
         if (reg != 2) {
           if (reg) {
@@ -258,7 +258,7 @@ void asv() {
             email.from_user = 1;
             email.from_system = net_sysnum;
             email.forwarded_code = 1;
-            email.from_network_number = session()->GetNetworkNumber();
+            email.from_network_number = session()->net_num();
             email.silent_mode = true;
             sendout_email(email);
           }

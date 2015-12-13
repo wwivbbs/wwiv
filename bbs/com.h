@@ -27,6 +27,6 @@ char getkey();
 bool yesno();
 bool noyes();
 char ynq();
-char onek(const char *pszAllowableChars, bool bAutoMpl = false);
+char onek(const char *pszAllowableChars, bool auto_mpl = false);
 
 #endif  // __INCLUDED_BBS_COM_H__

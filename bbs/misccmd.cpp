@@ -300,9 +300,9 @@ void list_users(int mode) {
       found = false;
     }
 
-    int nUserNumber = (bSortByUserNumber) ? i + 1 : smallist[i].number;
-    session()->users()->ReadUser(&user, nUserNumber);
-    read_qscn(nUserNumber, qsc, false);
+    int user_number = (bSortByUserNumber) ? i + 1 : smallist[i].number;
+    session()->users()->ReadUser(&user, user_number);
+    read_qscn(user_number, qsc, false);
     changedsl();
     bool in_qscan = (qsc_q[usub[session()->GetCurrentMessageArea()].subnum / 32] & (1L <<
                      (usub[session()->GetCurrentMessageArea()].subnum % 32))) ? true : false;
@@ -362,7 +362,7 @@ void list_users(int mode) {
       char szUserListLine[ 255 ];
       sprintf(szUserListLine,
               "|#%d\xB3|#9%5d |#%d\xB3|#6%c|#1%-20.20s|#%d\xB3|#2 %-24.24s|#%d\xB3 |#1%-9s |#%d\xB3  |#3%-5u  |#%d\xB3",
-              FRAME_COLOR, nUserNumber, FRAME_COLOR, in_qscan ? '*' : ' ', properName.c_str(),
+              FRAME_COLOR, user_number, FRAME_COLOR, in_qscan ? '*' : ' ', properName.c_str(),
               FRAME_COLOR, szCity, FRAME_COLOR, user.GetLastOn(), FRAME_COLOR,
               user.GetLastBaudRate(), FRAME_COLOR);
       pla(szUserListLine, &abort);
@@ -499,7 +499,7 @@ void time_bank() {
 
 int getnetnum(const char *pszNetworkName) {
   WWIV_ASSERT(pszNetworkName);
-  for (int i = 0; i < session()->GetMaxNetworkNumber(); i++) {
+  for (int i = 0; i < session()->max_net_num(); i++) {
     if (wwiv::strings::IsEqualsIgnoreCase(net_networks[i].name, pszNetworkName)) {
       return i;
     }

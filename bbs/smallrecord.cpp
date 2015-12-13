@@ -32,7 +32,7 @@
 using namespace wwiv::strings;
 
 // Inserts a record into NAMES.LST
-void InsertSmallRecord(int nUserNumber, const char *pszName) {
+void InsertSmallRecord(int user_number, const char *pszName) {
   smalrec sr;
   int cp = 0;
   WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
@@ -44,7 +44,7 @@ void InsertSmallRecord(int nUserNumber, const char *pszName) {
     smallist[i] = smallist[i - 1];
   }
   strcpy(reinterpret_cast<char*>(sr.name), pszName);
-  sr.number = static_cast<unsigned short>(nUserNumber);
+  sr.number = static_cast<unsigned short>(user_number);
   smallist[cp] = sr;
   File namesList(syscfg.datadir, NAMES_LST);
   if (!namesList.Open(File::modeReadWrite | File::modeBinary | File::modeTruncate)) {
