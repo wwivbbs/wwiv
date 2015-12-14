@@ -44,7 +44,7 @@ static ch_action *actions[MAX_NUM_ACT];
 static ch_type channels[11];
 
 int  rip_words(int start_pos, char *cmsg, char *wd, int size, char lookfor);
-int  f_action(int start_pos, int nEndPos, char *pszAWord);
+int  f_action(int start_pos, int end_pos, char *aword);
 int  main_loop(char *message, char *from_message, char *color_string, char *messageSent, bool &bActionMode,
                int loc, int num_actions);
 void who_online(int *nodes, int loc);
@@ -181,28 +181,28 @@ int rip_words(int start_pos, char *message, char *wd, int size, char lookfor) {
   return nPos;
 }
 
-int f_action(int start_pos, int nEndPos, char *pszAWord) {
-  int test = ((nEndPos - start_pos) / 2) + start_pos;
-  if (!((nEndPos - start_pos) / 2)) {
+int f_action(int start_pos, int end_pos, char *aword) {
+  int test = ((end_pos - start_pos) / 2) + start_pos;
+  if (!((end_pos - start_pos) / 2)) {
     test++;
-    if (IsEqualsIgnoreCase(pszAWord, actions[test]->aword)) {
+    if (IsEqualsIgnoreCase(aword, actions[test]->aword)) {
       return test;
     }
-    if (IsEqualsIgnoreCase(pszAWord, actions[test - 1]->aword)) {
+    if (IsEqualsIgnoreCase(aword, actions[test - 1]->aword)) {
       return test - 1;
     } else {
       return -1;
     }
   }
-  if (wwiv::strings::StringCompareIgnoreCase(pszAWord, actions[test]->aword) < 0) {
-    nEndPos = test;
-  } else if (wwiv::strings::StringCompareIgnoreCase(pszAWord, actions[test]->aword) > 0) {
+  if (wwiv::strings::StringCompareIgnoreCase(aword, actions[test]->aword) < 0) {
+    end_pos = test;
+  } else if (wwiv::strings::StringCompareIgnoreCase(aword, actions[test]->aword) > 0) {
     start_pos = test;
   } else {
     return test;
   }
-  if (start_pos != nEndPos) {
-    test = f_action(start_pos, nEndPos, pszAWord);
+  if (start_pos != end_pos) {
+    test = f_action(start_pos, end_pos, aword);
   }
   return test;
 }
@@ -578,25 +578,25 @@ void load_actions(IniFile *pIniFile) {
     for (int ca = 0; ca <= 5; ca++) {
       char rstr[10];
       sprintf(rstr, "%d%c", cn, 65 + ca);
-      const char* pszIniValue = pIniFile->GetValue(rstr);
+      const char* ini_value = pIniFile->GetValue(rstr);
       switch (ca) {
       case 0:
-        act.r = atoi((pszIniValue != nullptr) ? pszIniValue : "0");
+        act.r = atoi((ini_value != nullptr) ? ini_value : "0");
         break;
       case 1:
-        strcpy(act.aword, (pszIniValue != nullptr) ? pszIniValue : "");
+        strcpy(act.aword, (ini_value != nullptr) ? ini_value : "");
         break;
       case 2:
-        strcpy(act.toprint, (pszIniValue != nullptr) ? pszIniValue : "");
+        strcpy(act.toprint, (ini_value != nullptr) ? ini_value : "");
         break;
       case 3:
-        strcpy(act.toperson, (pszIniValue != nullptr) ? pszIniValue : "");
+        strcpy(act.toperson, (ini_value != nullptr) ? ini_value : "");
         break;
       case 4:
-        strcpy(act.toall, (pszIniValue != nullptr) ? pszIniValue : "");
+        strcpy(act.toall, (ini_value != nullptr) ? ini_value : "");
         break;
       case 5:
-        strcpy(act.singular, (pszIniValue != nullptr) ? pszIniValue : "");
+        strcpy(act.singular, (ini_value != nullptr) ? ini_value : "");
         break;
       default:
         //TODO Should an error be displayed here?
@@ -709,23 +709,23 @@ void exec_action(const char *message, char *color_string, int loc, int nact) {
 
 // Displays help on an action
 void action_help(int num) {
-  char szBuffer[150];
+  char buffer[150];
   char ac[12], rec[17];
 
   strcpy(ac, "|#6[USER]|#1");
   strcpy(rec, "|#6[RECIPIENT]|#1");
   bout << "\r\n|#5Word:|#1 " << actions[num]->aword << wwiv::endl;
   bout << "|#5To user:|#1 " << actions[num]->toprint << wwiv::endl;
-  sprintf(szBuffer, actions[num]->toperson, ac);
-  bout << "|#5To recipient:|#1 " << szBuffer << wwiv::endl;
-  sprintf(szBuffer, actions[num]->toall, ac, rec);
-  bout << "|#5To everyone else:|#1 " << szBuffer << wwiv::endl;
+  sprintf(buffer, actions[num]->toperson, ac);
+  bout << "|#5To recipient:|#1 " << buffer << wwiv::endl;
+  sprintf(buffer, actions[num]->toall, ac, rec);
+  bout << "|#5To everyone else:|#1 " << buffer << wwiv::endl;
   if (actions[num]->r == 1) {
     bout << "|#5This action requires a recipient.\n\r\n";
     return;
   }
-  sprintf(szBuffer, actions[num]->singular, ac);
-  bout << "|#5Used singular:|#1 " << szBuffer << wwiv::endl;
+  sprintf(buffer, actions[num]->singular, ac);
+  bout << "|#5Used singular:|#1 " << buffer << wwiv::endl;
   bout << "|#5This action does not require a recipient.\n\r\n";
 }
 
@@ -736,11 +736,11 @@ void ga(const char *message, char *color_string, int loc, int type) {
     bout << "|#1[|#9A message is required after the GA command|#1]\r\n";
     return;
   }
-  char szBuffer[500];
-  sprintf(szBuffer, "%s%s%s %s", color_string, session()->user()->GetName(), (type ? "'s" : ""),
+  char buffer[500];
+  sprintf(buffer, "%s%s%s %s", color_string, session()->user()->GetName(), (type ? "'s" : ""),
           message);
   bout << "|#1[|#9Generic Action Sent|#1]\r\n";
-  out_msg(szBuffer, loc);
+  out_msg(buffer, loc);
 }
 
 // Toggles user availability, called when ctrl-N is hit
@@ -920,20 +920,20 @@ bool check_ch(int ch) {
 
 // Loads channel information into memory
 void load_channels(IniFile *pIniFile) {
-  char szBuffer[6], szTemp[10];
+  char buffer[6], szTemp[10];
 
   for (int cn = 1; cn <= 10; cn++) {
     for (int ca = 0; ca <= 5; ca++) {
-      sprintf(szBuffer, "CH%d%c", cn, 65 + ca);
+      sprintf(buffer, "CH%d%c", cn, 65 + ca);
       switch (ca) {
       case 0:
-        strcpy(channels[cn].name, pIniFile->GetValue(szBuffer));
+        strcpy(channels[cn].name, pIniFile->GetValue(buffer));
         break;
       case 1:
-        channels[cn].sl = pIniFile->GetNumericValue(szBuffer);
+        channels[cn].sl = pIniFile->GetNumericValue(buffer);
         break;
       case 2:
-        strcpy(szTemp, pIniFile->GetValue(szBuffer));
+        strcpy(szTemp, pIniFile->GetValue(buffer));
         if (szTemp[0] != '0') {
           channels[cn].ar = szTemp[0];
         } else {
@@ -941,14 +941,14 @@ void load_channels(IniFile *pIniFile) {
         }
         break;
       case 3:
-        strcpy(szTemp, pIniFile->GetValue(szBuffer));
+        strcpy(szTemp, pIniFile->GetValue(buffer));
         channels[cn].sex = szTemp[0];
         break;
       case 4:
-        channels[cn].min_age = static_cast<char>(pIniFile->GetNumericValue(szBuffer));
+        channels[cn].min_age = static_cast<char>(pIniFile->GetNumericValue(buffer));
         break;
       case 5:
-        channels[cn].max_age = wwiv::strings::StringToChar(pIniFile->GetValue(szBuffer));
+        channels[cn].max_age = wwiv::strings::StringToChar(pIniFile->GetValue(buffer));
         break;
       }
     }
@@ -993,9 +993,9 @@ int grabname(const char *message, int ch) {
   int n = atoi(message);
   if (n) {
     if (n < 1 || n > num_instances()) {
-      char szBuffer[ 255 ];
-      sprintf(szBuffer, "%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
-      bout << szBuffer;
+      char buffer[ 255 ];
+      sprintf(buffer, "%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
+      bout << buffer;
       return 0;
     }
     get_inst_info(n, &ir);
@@ -1013,9 +1013,9 @@ int grabname(const char *message, int ch) {
       }
       return n;
     }
-    char szBuffer[ 255 ];
-    sprintf(szBuffer, "%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
-    bout << szBuffer;
+    char buffer[ 255 ];
+    sprintf(buffer, "%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
+    bout << buffer;
     return 0;
   }
   while (!node && c < wwiv::strings::GetStringLength(message) && c < 40) {

@@ -2021,14 +2021,14 @@ void view_file(const char *file_name) {
   pausescr();
 }
 
-int lp_try_to_download(const char *pszFileMask, int dn) {
+int lp_try_to_download(const char *file_mask, int dn) {
   int i, rtn, ok2;
   bool abort = false;
   uploadsrec u;
   char s1[81], s3[81];
 
   dliscan1(dn);
-  i = recno(pszFileMask);
+  i = recno(file_mask);
   if (i <= 0) {
     checka(&abort);
     return (abort) ? -1 : 0;
@@ -2066,7 +2066,7 @@ int lp_try_to_download(const char *pszFileMask, int dn) {
     if (abort || (rtn == -3)) {
       ok = false;
     } else {
-      i = nrecno(pszFileMask, i);
+      i = nrecno(file_mask, i);
     }
   } while ((i > 0) && ok && !hangup);
   returning = true;

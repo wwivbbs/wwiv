@@ -137,10 +137,10 @@ void RequestChat() {
 // Allows selection of a name to "chat as". Returns selected string in *s.
 //
 
-void select_chat_name(char *pszSysopName) {
+void select_chat_name(char *sysop_name) {
   session()->DisplaySysopWorkingIndicator(true);
   session()->localIO()->savescreen();
-  strcpy(pszSysopName, syscfg.sysopname);
+  strcpy(sysop_name, syscfg.sysopname);
   curatr = session()->GetChatNameSelectionColor();
   session()->localIO()->MakeLocalWindow(20, 5, 43, 3);
   session()->localIO()->LocalXYPuts(22, 6, "Chat As: ");
@@ -149,21 +149,21 @@ void select_chat_name(char *pszSysopName) {
 
   int rc;
   session()->localIO()->LocalGotoXY(31, 6);
-  session()->localIO()->LocalEditLine(pszSysopName, 30, ALL, &rc, pszSysopName);
+  session()->localIO()->LocalEditLine(sysop_name, 30, ALL, &rc, sysop_name);
   if (rc != ABORTED) {
-    StringTrimEnd(pszSysopName);
-    int user_number = atoi(pszSysopName);
+    StringTrimEnd(sysop_name);
+    int user_number = atoi(sysop_name);
     if (user_number > 0 && user_number <= syscfg.maxusers) {
       WUser tu;
       session()->users()->ReadUser(&tu, user_number);
-      strcpy(pszSysopName, tu.GetUserNameAndNumber(user_number));
+      strcpy(sysop_name, tu.GetUserNameAndNumber(user_number));
     } else {
-      if (!pszSysopName[0]) {
-        strcpy(pszSysopName, syscfg.sysopname);
+      if (!sysop_name[0]) {
+        strcpy(sysop_name, syscfg.sysopname);
       }
     }
   } else {
-    strcpy(pszSysopName, "");
+    strcpy(sysop_name, "");
   }
   session()->localIO()->restorescreen();
   session()->DisplaySysopWorkingIndicator(false);
@@ -172,7 +172,7 @@ void select_chat_name(char *pszSysopName) {
 
 // Allows two-way chatting until sysop aborts/exits chat. or the end of line is hit,
 // then chat1 is back in control.
-void two_way_chat(char *rollover, int max_length, bool crend, char *pszSysopName) {
+void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) {
   char s2[100], temp1[100];
   int i, i1;
 
@@ -202,7 +202,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *pszSysopName
         for (int screencount = 0; screencount < session()->user()->GetScreenChars(); screencount++) {
           s2[screencount] = '\xCD';
         }
-        sprintf(temp1, "|B1|#2 %s chatting with %s |B0|#1", pszSysopName,
+        sprintf(temp1, "|B1|#2 %s chatting with %s |B0|#1", sysop_name,
                 session()->user()->GetUserNameAndNumber(session()->usernum));
         int nNumCharsToMove = (((session()->user()->GetScreenChars() - strlen(stripcolors(temp1))) / 2));
         if (nNumCharsToMove) {
@@ -546,7 +546,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *pszSysopName
  * uses normal TTY chat.
  */
 
-void chat1(char *pszChatLine, bool two_way) {
+void chat1(char *chat_line, bool two_way) {
   char cl[81], xl[81], s[255], s1[255], atr[81], s2[81], cc, szSysopName[81];
 
   select_chat_name(szSysopName);
@@ -612,7 +612,7 @@ void chat1(char *pszChatLine, bool two_way) {
   }
   bout << "|#7" << szSysopName << "'s here...";
   bout.nl(2);
-  strcpy(s1, pszChatLine);
+  strcpy(s1, chat_line);
 
   if (two_way) {
     side0 = new char[MAXLINES_SIDE][MAXLEN];

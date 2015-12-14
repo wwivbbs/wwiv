@@ -285,16 +285,16 @@ int check_for_files_lzh(const char *file_name) {
       err = 1;
       break;
     }
-    char szBuffer[256];
-    nNumRead = file.Read(szBuffer, a.fn_len);
+    char buffer[256];
+    nNumRead = file.Read(buffer, a.fn_len);
     if (nNumRead != a.fn_len) {
       bout << stripfn(file_name) << " is not a valid .LZH file.";
       err = 1;
       break;
     }
-    szBuffer[a.fn_len] = '\0';
-    strupr(szBuffer);
-    if (bad_filename(szBuffer)) {
+    buffer[a.fn_len] = '\0';
+    strupr(buffer);
+    if (bad_filename(buffer)) {
       err = 1;
       break;
     }
@@ -326,10 +326,10 @@ int check_for_files_arj(const char *file_name) {
       long l2;
       file.Read(&l2, 4);
       file.Seek(lCurPos + static_cast<long>(s1), File::seekBegin);
-      char szBuffer[256];
-      file.Read(szBuffer, 250);
-      szBuffer[250] = '\0';
-      if (strlen(szBuffer) > 240) {
+      char buffer[256];
+      file.Read(buffer, 250);
+      buffer[250] = '\0';
+      if (strlen(buffer) > 240) {
         file.Close();
         bout << stripfn(file_name) << " is not a valid .ARJ file.";
         return 1;
@@ -344,8 +344,8 @@ int check_for_files_arj(const char *file_name) {
         file.Read(&sh, 2);
       }
       lCurPos += l2;
-      strupr(szBuffer);
-      if (bad_filename(szBuffer)) {
+      strupr(buffer);
+      if (bad_filename(buffer)) {
         file.Close();
         return 1;
       }
@@ -527,9 +527,9 @@ void list_temp_dir() {
     if (!wwiv::strings::IsEqualsIgnoreCase(szFileName, "chain.txt") &&
         !wwiv::strings::IsEqualsIgnoreCase(szFileName, "door.sys")) {
       align(szFileName);
-      char szBuffer[ 255 ];
-      sprintf(szBuffer, "%12s  %-8ld", szFileName, fnd.GetFileSize());
-      pla(szBuffer, &abort);
+      char buffer[ 255 ];
+      sprintf(buffer, "%12s  %-8ld", szFileName, fnd.GetFileSize());
+      pla(buffer, &abort);
       i1 = 1;
     }
     bFound = fnd.next();

@@ -497,10 +497,10 @@ void time_bank() {
 }
 
 
-int getnetnum(const char *pszNetworkName) {
-  WWIV_ASSERT(pszNetworkName);
+int getnetnum(const char *network_name) {
+  WWIV_ASSERT(network_name);
   for (int i = 0; i < session()->max_net_num(); i++) {
-    if (wwiv::strings::IsEqualsIgnoreCase(net_networks[i].name, pszNetworkName)) {
+    if (wwiv::strings::IsEqualsIgnoreCase(net_networks[i].name, network_name)) {
       return i;
     }
   }
@@ -508,14 +508,14 @@ int getnetnum(const char *pszNetworkName) {
 }
 
 
-void uudecode(const char *pszInputFileName, const char *pszOutputFileName) {
-  bout << "|#2Now UUDECODING " << pszInputFileName;
+void uudecode(const char *input_filename, const char *output_filename) {
+  bout << "|#2Now UUDECODING " << input_filename;
   bout.nl();
 
   char szCmdLine[ MAX_PATH ];
-  sprintf(szCmdLine, "UUDECODE %s %s", pszInputFileName, pszOutputFileName);
+  sprintf(szCmdLine, "UUDECODE %s %s", input_filename, output_filename);
   ExecuteExternalProgram(szCmdLine, EFLAG_NONE);    // run command
-  File::Remove(pszInputFileName);        // delete the input file
+  File::Remove(input_filename);        // delete the input file
 }
 
 void Packers() {

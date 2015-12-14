@@ -117,18 +117,18 @@ int check_batch_queue(const char *file_name) {
 /**
  * returns true if everything is ok, false if the file
  */
-bool check_ul_event(int nDirectoryNum, uploadsrec * u) {
+bool check_ul_event(int directory_num, uploadsrec * u) {
   if (syscfg.upload_cmd.empty()) {
     return true;
   }
   const string comport = StringPrintf("%d", incom ? syscfgovr.primaryport : 0);
-  const string cmdLine = stuff_in(syscfg.upload_cmd, create_chain_file(), directories[nDirectoryNum].path,
+  const string cmdLine = stuff_in(syscfg.upload_cmd, create_chain_file(), directories[directory_num].path,
                                   stripfn(u->filename), comport, "");
   ExecuteExternalProgram(cmdLine, session()->GetSpawnOptions(SPAWNOPT_ULCHK));
 
-  File file(directories[nDirectoryNum].path, stripfn(u->filename));
+  File file(directories[directory_num].path, stripfn(u->filename));
   if (!file.Exists()) {
-    sysoplogf("File \"%s\" to %s deleted by UL event.", u->filename, directories[nDirectoryNum].name);
+    sysoplogf("File \"%s\" to %s deleted by UL event.", u->filename, directories[directory_num].name);
     bout << u->filename << " was deleted by the upload event.\r\n";
     return false;
   }
@@ -195,10 +195,10 @@ void print_devices() {
   }
 }
 
-void get_arc_cmd(char *pszOutBuffer, const char *pszArcFileName, int cmd, const char *ofn) {
+void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const char *ofn) {
   char szArcCmd[ MAX_PATH ];
 
-  pszOutBuffer[0] = '\0';
+  out_buffer[0] = '\0';
   const char* ss = strrchr(pszArcFileName, '.');
   if (ss == nullptr) {
     return;
@@ -232,7 +232,7 @@ void get_arc_cmd(char *pszOutBuffer, const char *pszArcFileName, int cmd, const 
       }
       string command = stuff_in(szArcCmd, pszArcFileName, ofn, "", "", "");
       WWIV_make_abs_cmd(session()->GetHomeDir(), &command);
-      strcpy(pszOutBuffer, command.c_str());
+      strcpy(out_buffer, command.c_str());
       return;
     }
   }
@@ -312,8 +312,8 @@ bool dcs() {
   return (cs() || session()->user()->GetDsl() >= 100) ? true : false;
 }
 
-void dliscan1(int nDirectoryNum) {
-  sprintf(g_szDownloadFileName, "%s%s.dir", syscfg.datadir, directories[nDirectoryNum].filename);
+void dliscan1(int directory_num) {
+  sprintf(g_szDownloadFileName, "%s%s.dir", syscfg.datadir, directories[directory_num].filename);
   File fileDownload(g_szDownloadFileName);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   int nNumRecords = fileDownload.GetLength() / sizeof(uploadsrec);
@@ -345,7 +345,7 @@ void dliscan1(int nDirectoryNum) {
   session()->numf = u.numbytes;
   this_date = u.daten;
 
-  sprintf(g_szExtDescrFileName, "%s%s.ext", syscfg.datadir, directories[nDirectoryNum].filename);
+  sprintf(g_szExtDescrFileName, "%s%s.ext", syscfg.datadir, directories[directory_num].filename);
   zap_ed_info();
 }
 
@@ -582,14 +582,14 @@ void align(char *file_name) {
     }
   }
 
-  char szBuffer[ MAX_PATH ];
+  char buffer[ MAX_PATH ];
   for (int i4 = 0; i4 < 12; i4++) {
-    szBuffer[ i4 ] = SPACE;
+    buffer[ i4 ] = SPACE;
   }
-  strcpy(szBuffer, szFileName);
-  szBuffer[8] = '.';
-  strcpy(&(szBuffer[9]), szExtension);
-  strcpy(file_name, szBuffer);
+  strcpy(buffer, szFileName);
+  buffer[8] = '.';
+  strcpy(&(buffer[9]), szExtension);
+  strcpy(file_name, buffer);
   for (int i5 = 0; i5 < 12; i5++) {
     file_name[ i5 ] = wwiv::UpperCase<char>(file_name[ i5 ]);
   }
@@ -693,7 +693,7 @@ void printinfo(uploadsrec * u, bool *abort) {
 }
 
 void printtitle(bool *abort) {
-  char szBuffer[ 255 ];
+  char buffer[ 255 ];
 
   if (x_only) {
     bout.nl();
@@ -707,7 +707,7 @@ void printtitle(bool *abort) {
       return;
     }
   }
-  sprintf(szBuffer, "%s%s - #%s, %d files.", ss, directories[udir[session()->GetCurrentFileArea()].subnum].name,
+  sprintf(buffer, "%s%s - #%s, %d files.", ss, directories[udir[session()->GetCurrentFileArea()].subnum].name,
           udir[session()->GetCurrentFileArea()].keys, session()->numf);
   bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
   if ((g_num_listed == 0 && session()->tagptr == 0) || session()->tagging == 0 ||
@@ -744,7 +744,7 @@ void printtitle(bool *abort) {
   if (session()->user()->IsUseExtraColor()) {
     bout.Color(2);
   }
-  pla(szBuffer, abort);
+  pla(buffer, abort);
   if (session()->tagging == 1 && !session()->user()->IsUseNoTagging() && !x_only) {
     bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
     if (okansi()) {
@@ -771,17 +771,17 @@ void printtitle(bool *abort) {
   session()->titled = 0;
 }
 
-void file_mask(char *pszFileMask) {
+void file_mask(char *file_mask) {
   bout.nl();
   bout << "|#2File mask: ";
-  input(pszFileMask, 12);
-  if (pszFileMask[0] == '\0') {
-    strcpy(pszFileMask, "*.*");
+  input(file_mask, 12);
+  if (file_mask[0] == '\0') {
+    strcpy(file_mask, "*.*");
   }
-  if (strchr(pszFileMask, '.') == nullptr) {
-    strcat(pszFileMask, ".*");
+  if (strchr(file_mask, '.') == nullptr) {
+    strcat(file_mask, ".*");
   }
-  align(pszFileMask);
+  align(file_mask);
   bout.nl();
 }
 
@@ -1013,11 +1013,11 @@ void searchall() {
   }
 }
 
-int recno(const char *pszFileMask) {
-  return nrecno(pszFileMask, 0);
+int recno(const char *file_mask) {
+  return nrecno(file_mask, 0);
 }
 
-int nrecno(const char *pszFileMask, int nStartingRec) {
+int nrecno(const char *file_mask, int nStartingRec) {
   int nRecNum = nStartingRec + 1;
   if (session()->numf < 1 || nStartingRec >= session()->numf) {
     return -1;
@@ -1028,16 +1028,16 @@ int nrecno(const char *pszFileMask, int nStartingRec) {
   FileAreaSetRecord(fileDownload, nRecNum);
   uploadsrec u;
   fileDownload.Read(&u, sizeof(uploadsrec));
-  while ((nRecNum < session()->numf) && (compare(pszFileMask, u.filename) == 0)) {
+  while ((nRecNum < session()->numf) && (compare(file_mask, u.filename) == 0)) {
     ++nRecNum;
     FileAreaSetRecord(fileDownload, nRecNum);
     fileDownload.Read(&u, sizeof(uploadsrec));
   }
   fileDownload.Close();
-  return (compare(pszFileMask, u.filename)) ? nRecNum : -1;
+  return (compare(file_mask, u.filename)) ? nRecNum : -1;
 }
 
-int printfileinfo(uploadsrec * u, int nDirectoryNum) {
+int printfileinfo(uploadsrec * u, int directory_num) {
   double d = XFER_TIME(u->numbytes);
   bout << "Filename   : " << stripfn(u->filename) << wwiv::endl;
   bout << "Description: " << u->description << wwiv::endl;
@@ -1055,10 +1055,10 @@ int printfileinfo(uploadsrec * u, int nDirectoryNum) {
     bout << "Extended Description: \r\n";
     print_extended(u->filename, &abort, 255, 0);
   }
-  char szFileName[ MAX_PATH ];
-  sprintf(szFileName, "%s%s", directories[nDirectoryNum].path, u->filename);
-  StringRemoveWhitespace(szFileName);
-  if (!File::Exists(szFileName)) {
+  char file_name[ MAX_PATH ];
+  sprintf(file_name, "%s%s", directories[directory_num].path, u->filename);
+  StringRemoveWhitespace(file_name);
+  if (!File::Exists(file_name)) {
     bout << "\r\n-=>FILE NOT THERE<=-\r\n\n";
     return -1;
   }

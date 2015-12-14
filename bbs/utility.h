@@ -41,7 +41,7 @@ void send_net(net_header_rec * nh, unsigned short int *list, const char *text, c
 void giveup_timeslice();
 char *stripfn(const char *file_name);
 void stripfn_inplace(char *file_name);
-char *get_wildlist(char *pszFileMask);
+char *get_wildlist(char *file_mask);
 int side_menu(int *menu_pos, bool redraw, const std::vector<std::string>& menu_items, int xpos, int ypos, struct side_menu_colors * smc);
 slrec getslrec(int nSl);
 void WWIV_SetFileTime(const char* file_name, const time_t tTime);

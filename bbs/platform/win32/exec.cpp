@@ -37,7 +37,7 @@
 
 // from com.cpp.
 // this is only used in the 9x support and will be remvoed shortly
-void makeansi(int attr, char *pszOutBuffer, bool forceit);
+void makeansi(int attr, char *out_buffer, bool forceit);
 
 static FILE* hLogFile;
 

@@ -68,13 +68,13 @@ namespace strings {
  * @param ... Variable arguments
  */
 string StringPrintf(const char *formatted_text, ...) {
-  char szBuffer[ 1024 ];
+  char buffer[ 1024 ];
 
   va_list ap;
   va_start(ap, formatted_text);
-  vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
+  vsnprintf(buffer, sizeof(buffer), formatted_text, ap);
   va_end(ap);
-  return string(szBuffer);
+  return string(buffer);
 }
 
 /**
@@ -362,10 +362,10 @@ bool IsColorCode(char c) {
 
 char *stripcolors(const char *pszOrig) {
   WWIV_ASSERT(pszOrig);
-  static char szNewString[255];
+  static char s[255];
   const string result = stripcolors(string(pszOrig));
-  strcpy(szNewString, result.c_str());
-  return szNewString;
+  strcpy(s, result.c_str());
+  return s;
 }
 
 /**

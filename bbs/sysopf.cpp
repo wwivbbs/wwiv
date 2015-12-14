@@ -50,17 +50,17 @@ using wwiv::core::FilePath;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::msgapi;
 
-bool isr1(int user_number, int nNumUsers, const char *pszName) {
+bool isr1(int user_number, int nNumUsers, const char *name) {
   int cp = 0;
   while (cp < nNumUsers &&
-         wwiv::strings::StringCompare(pszName, reinterpret_cast<char*>(smallist[cp].name)) > 0) {
+         wwiv::strings::StringCompare(name, reinterpret_cast<char*>(smallist[cp].name)) > 0) {
     ++cp;
   }
   for (int i = nNumUsers; i > cp; i--) {
     smallist[i] = smallist[i - 1];
   }
   smalrec sr;
-  strcpy(reinterpret_cast<char*>(sr.name), pszName);
+  strcpy(reinterpret_cast<char*>(sr.name), name);
   sr.number = static_cast<unsigned short>(user_number);
   smallist[cp] = sr;
   return true;

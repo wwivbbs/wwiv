@@ -32,18 +32,18 @@
 using namespace wwiv::strings;
 
 // Inserts a record into NAMES.LST
-void InsertSmallRecord(int user_number, const char *pszName) {
+void InsertSmallRecord(int user_number, const char *name) {
   smalrec sr;
   int cp = 0;
   WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
   while (cp < pStatus->GetNumUsers() &&
-         StringCompare(pszName, reinterpret_cast<char*>(smallist[cp].name)) > 0) {
+         StringCompare(name, reinterpret_cast<char*>(smallist[cp].name)) > 0) {
     ++cp;
   }
   for (int i = pStatus->GetNumUsers(); i > cp; i--) {
     smallist[i] = smallist[i - 1];
   }
-  strcpy(reinterpret_cast<char*>(sr.name), pszName);
+  strcpy(reinterpret_cast<char*>(sr.name), name);
   sr.number = static_cast<unsigned short>(user_number);
   smallist[cp] = sr;
   File namesList(syscfg.datadir, NAMES_LST);
@@ -63,15 +63,15 @@ void InsertSmallRecord(int user_number, const char *pszName) {
 // Deletes a record from NAMES.LST (DeleteSmallRec)
 //
 
-void DeleteSmallRecord(const char *pszName) {
+void DeleteSmallRecord(const char *name) {
   int cp = 0;
   WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
-  while (cp < pStatus->GetNumUsers() && !wwiv::strings::IsEquals(pszName, reinterpret_cast<char*>(smallist[cp].name))) {
+  while (cp < pStatus->GetNumUsers() && !wwiv::strings::IsEquals(name, reinterpret_cast<char*>(smallist[cp].name))) {
     ++cp;
   }
-  if (!wwiv::strings::IsEquals(pszName, reinterpret_cast<char*>(smallist[cp].name))) {
+  if (!wwiv::strings::IsEquals(name, reinterpret_cast<char*>(smallist[cp].name))) {
     session()->GetStatusManager()->AbortTransaction(pStatus);
-    sysoplogfi(false, "%s NOT ABLE TO BE DELETED#*#*#*#*#*#*#*#", pszName);
+    sysoplogfi(false, "%s NOT ABLE TO BE DELETED#*#*#*#*#*#*#*#", name);
     sysoplog("#*#*#*# Run //resetf to fix it", false);
     return;
   }

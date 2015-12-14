@@ -152,12 +152,12 @@ int TextFile::WriteLine(const string& text) {
 
 int TextFile::WriteFormatted(const char *formatText, ...) {
   va_list ap;
-  char szBuffer[4096];
+  char buffer[4096];
 
   va_start(ap, formatText);
-  vsnprintf(szBuffer, sizeof(szBuffer), formatText, ap);
+  vsnprintf(buffer, sizeof(buffer), formatText, ap);
   va_end(ap);
-  return Write(szBuffer);
+  return Write(buffer);
 }
 
 static void StripLineEnd(char *str) {
@@ -168,15 +168,15 @@ static void StripLineEnd(char *str) {
   str[i] = '\0';
 }
 
-bool TextFile::ReadLine(string *buffer) {
-  char szBuffer[4096];
-  char *p = fgets(szBuffer, sizeof(szBuffer), file_);
+bool TextFile::ReadLine(string *out) {
+  char s[4096];
+  char *p = fgets(s, sizeof(s), file_);
   if (p == nullptr) {
     return false;
   }
   // Strip off trailing \r\n
   StripLineEnd(p);
-  buffer->assign(p);
+  out->assign(p);
   return true;
 }
 
