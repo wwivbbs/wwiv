@@ -119,22 +119,22 @@ void CursesWindow::PutsXY(int x, int y, const std::string& text) {
  */
 void CursesWindow::Printf(const char* format, ...) {
   va_list ap;
-  char szBuffer[1024];
+  char buffer[1024];
 
   va_start(ap, format);
-  vsnprintf(szBuffer, 1024, format, ap);
+  vsnprintf(buffer, 1024, format, ap);
   va_end(ap);
-  Puts(szBuffer);
+  Puts(buffer);
 }
 
 void CursesWindow::PrintfXY(int x, int y, const char* format, ...) {
   va_list ap;
-  char szBuffer[1024];
+  char buffer[1024];
 
   va_start(ap, format);
-  vsnprintf(szBuffer, 1024, format, ap);
+  vsnprintf(buffer, 1024, format, ap);
   va_end(ap);
-  PutsXY(x, y, szBuffer);
+  PutsXY(x, y, buffer);
 }
 
 void CursesWindow::SetColor(SchemeId id) {

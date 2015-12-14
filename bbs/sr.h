@@ -22,7 +22,7 @@
 
 void calc_CRC(unsigned char b);
 char gettimeout(double d, bool *abort);
-int  extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending);
+int  extern_prot(int nProtocolNum, const char *pfile_nameToSend, bool bSending);
 bool ok_prot(int nProtocolNum, xfertype xt);
 char *prot_name(int nProtocolNum);
 int  get_protocol(xfertype xt);

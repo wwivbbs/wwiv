@@ -69,7 +69,7 @@ static xtrasubsnetrec *fsub(int netnum, int type) {
 }
 
 
-bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subs) {
+bool read_subs_xtr(int max_subs, int num_subs, subboardrec * subs) {
   char *ss1, *ss2;
   int n, curn;
   short i = 0;
@@ -77,7 +77,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subs) {
   xtrasubsnetrec *xnp;
 
   if (xsubs) {
-    for (i = 0; i < nNumSubs; i++) {
+    for (i = 0; i < num_subs; i++) {
       if ((xsubs[i].flags & XTRA_MALLOCED) && xsubs[i].nets) {
         free(xsubs[i].nets);
       }
@@ -89,7 +89,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subs) {
     xsubsn = nullptr;
     xsubs = nullptr;
   }
-  size_t l = nMaxSubs * sizeof(xtrasubsrec);
+  size_t l = max_subs * sizeof(xtrasubsrec);
   xsubs = static_cast<xtrasubsrec *>(malloc(l + 1));
   if (!xsubs) {
     std::clog << "Insufficient memory (" << l << "d bytes) for SUBS.XTR" << std::endl;
@@ -108,7 +108,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subs) {
     }
     free(ss);
   } else {
-    for (i = 0; i < nNumSubs; i++) {
+    for (i = 0; i < num_subs; i++) {
       if (subs[i].type) {
         ++nn;
       }
@@ -131,7 +131,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subs) {
         switch (*ss1) {
         case '!':                         /* sub idx */
           curn = atoi(ss1 + 1);
-          if ((curn < 0) || (curn >= nNumSubs)) {
+          if ((curn < 0) || (curn >= num_subs)) {
             curn = -1;
           }
           break;
@@ -190,7 +190,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subs) {
       }
       free(ss);
     } else {
-      for (curn = 0; curn < nNumSubs; curn++) {
+      for (curn = 0; curn < num_subs; curn++) {
         if (subs[curn].type) {
           if (subs[curn].age & 0x80) {
             xsubsn[nn].net_num = subs[curn].name[40];

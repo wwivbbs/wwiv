@@ -366,7 +366,7 @@ FILE * ZOpenFile(char *file_name, u_long crc, ZModem *info) {
 	//	struct stat	buf;
 	//	bool		exists;	/* file already exists */
 	//	static	int		changeCount = 0;
-	//	char		szFileName2[MAXPATHLEN];
+	//	char		file_name2[MAXPATHLEN];
 	//	int		apnd = 0;
 	//	int		f0,f1;
 	//	FILE		*ofile;
@@ -467,10 +467,10 @@ FILE * ZOpenFile(char *file_name, u_long crc, ZModem *info) {
 	//	  case ZMCHNG:	/* invent new filename if exists */
 	//	    if( exists ) {
 	//	      while( exists ) {
-	//		sprintf(szFileName2, "%s_%d", file_name, changeCount++);
-	//		exists = stat(szFileName2, &buf) == 0 || errno != ENOENT;
+	//		sprintf(file_name2, "%s_%d", file_name, changeCount++);
+	//		exists = stat(file_name2, &buf) == 0 || errno != ENOENT;
 	//	      }
-	//	      file_name = szFileName2;
+	//	      file_name = file_name2;
 	//	    }
 	//	    break;
 	//	}

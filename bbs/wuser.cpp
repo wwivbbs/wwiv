@@ -243,9 +243,9 @@ char *WUser::nam1(int user_number, int system_number) const {
 
   strcpy(s_szNamBuffer, nam(user_number));
   if (system_number) {
-    char szBuffer[10];
-    snprintf(szBuffer, sizeof(szBuffer), " @%u", system_number);
-    strcat(s_szNamBuffer, szBuffer);
+    char buffer[10];
+    snprintf(buffer, sizeof(buffer), " @%u", system_number);
+    strcat(s_szNamBuffer, buffer);
   }
   return s_szNamBuffer;
 }

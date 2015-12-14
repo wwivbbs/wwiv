@@ -335,9 +335,9 @@ bool fill_sec(int sn) {
     bout << "Section full.\r\n";
   }
   if (chd) {
-    char szFileName[ MAX_PATH ];
-    sprintf(szFileName, "%s%s.gfl", syscfg.datadir, gfilesec[sn].filename);
-    File gflFile(szFileName);
+    char file_name[ MAX_PATH ];
+    sprintf(file_name, "%s%s.gfl", syscfg.datadir, gfilesec[sn].filename);
+    File gflFile(file_name);
     gflFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     gflFile.Write(g, nf * sizeof(gfilerec));
     gflFile.Close();

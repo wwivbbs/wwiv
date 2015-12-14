@@ -317,34 +317,34 @@ void stripfn_inplace(char *file_name) {
   strcpy(file_name, stripfn(file_name));
 }
 
-char *get_wildlist(char *pszFileMask) {
+char *get_wildlist(char *file_mask) {
   int mark = 0;
   char *pszPath, t;
   WFindFile fnd;
 
-  WWIV_ASSERT(pszFileMask);
+  WWIV_ASSERT(file_mask);
 
-  if (!fnd.open(pszFileMask, 0)) {
+  if (!fnd.open(file_mask, 0)) {
     bout << "No files found\r\n";
-    pszFileMask[0] = '\0';
-    return pszFileMask;
+    file_mask[0] = '\0';
+    return file_mask;
   } else {
     bout.bprintf("%12.12s ", fnd.GetFileName());
   }
 
-  if (strchr(pszFileMask, File::pathSeparatorChar) == nullptr) {
-    pszFileMask[0] = '\0';
+  if (strchr(file_mask, File::pathSeparatorChar) == nullptr) {
+    file_mask[0] = '\0';
   } else {
-    for (int i = 0; i < wwiv::strings::GetStringLength(pszFileMask); i++) {
-      if (pszFileMask[i] == File::pathSeparatorChar) {
+    for (int i = 0; i < wwiv::strings::GetStringLength(file_mask); i++) {
+      if (file_mask[i] == File::pathSeparatorChar) {
         mark = i + 1;
       }
     }
   }
-  t = pszFileMask[mark];
-  pszFileMask[mark] = 0;
-  pszPath = pszFileMask;
-  pszFileMask[mark] = t;
+  t = file_mask[mark];
+  file_mask[mark] = 0;
+  pszPath = file_mask;
+  file_mask[mark] = t;
   t = static_cast<char>(wwiv::strings::GetStringLength(pszPath));
   strcat(pszPath, fnd.GetFileName());
   int i = 1;
@@ -374,8 +374,8 @@ char *get_wildlist(char *pszFileMask) {
   }
   pszPath[t] = '\0';
   bout << "Filename: ";
-  input(pszFileMask, 12, true);
-  strcat(pszPath, pszFileMask);
+  input(file_mask, 12, true);
+  strcat(pszPath, file_mask);
   return pszPath;
 }
 

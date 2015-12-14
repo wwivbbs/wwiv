@@ -62,7 +62,7 @@ char modemkey(int *tout) {
 
 
 
-int receive_block(char *b, unsigned char *bln, bool bUseCRC) {
+int receive_block(char *b, unsigned char *bln, bool use_crc) {
   bool abort = false;
   unsigned char ch = gettimeout(5.0, &abort);
   int err = 0;
@@ -93,7 +93,7 @@ int receive_block(char *b, unsigned char *bln, bool bUseCRC) {
     for (int i = 0; (i < 128) && (!hangup); i++) {
       b[i] = modemkey(&tout);
     }
-    if (!bUseCRC && !hangup) {
+    if (!use_crc && !hangup) {
       unsigned char cs1 = checksum;
       bn1 = modemkey(&tout);
       if (bn1 != cs1) {
@@ -123,7 +123,7 @@ int receive_block(char *b, unsigned char *bln, bool bUseCRC) {
     for (int i = 0; (i < 1024) && (!hangup); i++) {
       b[i] = modemkey(&tout);
     }
-    if (!bUseCRC && !hangup) {
+    if (!use_crc && !hangup) {
       unsigned char cs1 = checksum;
       bn1 = modemkey(&tout);
       if (bn1 != cs1) {
@@ -152,7 +152,7 @@ int receive_block(char *b, unsigned char *bln, bool bUseCRC) {
   }
 }
 
-void xymodem_receive(const char *file_name, bool *received, bool bUseCRC) {
+void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
   char b[1025], x[81], ch;
   unsigned char bln;
   int i1, i2, i3;
@@ -196,7 +196,7 @@ void xymodem_receive(const char *file_name, bool *received, bool bUseCRC) {
       file.Delete();
       return;
     }
-    if (bUseCRC) {
+    if (use_crc) {
       rputch('C');
     } else {
       rputch(CU);
@@ -226,7 +226,7 @@ void xymodem_receive(const char *file_name, bool *received, bool bUseCRC) {
     if (reallen) {
       session()->localIO()->LocalXYPuts(65, 1, ctim((static_cast<double>(reallen - pos)) * tpb));
     }
-    i = receive_block(b, &bln, bUseCRC);
+    i = receive_block(b, &bln, use_crc);
     if (i == 0 || i == 1) {
       if (bln == 0 && pos == 0L) {
         i1 = strlen(b) + 1;
@@ -269,7 +269,7 @@ void xymodem_receive(const char *file_name, bool *received, bool bUseCRC) {
       }
       nConsecErrors = 0;
     } else if (i == 2 || i == 7 || i == 3) {
-      if (pos == 0L && reallen == 0L && bUseCRC) {
+      if (pos == 0L && reallen == 0L && use_crc) {
         rputch('C');
       } else {
         rputch(CU);

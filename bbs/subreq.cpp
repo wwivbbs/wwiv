@@ -312,9 +312,9 @@ void sub_xtr_add(int n, int nn) {
 
   bout << "|#5Will you be hosting the sub? ";
   if (yesno()) {
-    char szFileName[MAX_PATH];
-    sprintf(szFileName, "%sn%s.net", session()->GetNetworkDataDirectory().c_str(), xnp->stype);
-    File file(szFileName);
+    char file_name[MAX_PATH];
+    sprintf(file_name, "%sn%s.net", session()->GetNetworkDataDirectory().c_str(), xnp->stype);
+    File file(file_name);
     if (file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
       file.Close();
     }

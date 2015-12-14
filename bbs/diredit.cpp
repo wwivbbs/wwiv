@@ -79,7 +79,7 @@ void showdirs() {
 }
 
 
-char* GetAttributeString(directoryrec r, char* pszAttributes) {
+char* GetAttributeString(directoryrec r, char* attributes) {
   char szBuffer[255];
 
   strcpy(szBuffer, "None.");
@@ -91,8 +91,8 @@ char* GetAttributeString(directoryrec r, char* pszAttributes) {
     }
     szBuffer[1] = 0;
   }
-  strcpy(pszAttributes, szBuffer);
-  return pszAttributes;
+  strcpy(attributes, szBuffer);
+  return attributes;
 }
 
 #define LAST(s) s[strlen(s)-1]

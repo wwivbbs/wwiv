@@ -23,5 +23,5 @@
 #define QOK 2       // "? "
 
 void Print(int nType, bool bLogIt, const char* szText, ...);
-bool OpenLogFile(const char* szFileName);
+bool OpenLogFile(const char* file_name);
 void CloseLogFile();

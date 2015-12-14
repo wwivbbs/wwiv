@@ -338,7 +338,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
 
 void gfile_sec(int sn) {
   int i, i1, i2, nf;
-  char xdc[81], *ss, *ss1, szFileName[ MAX_PATH ];
+  char xdc[81], *ss, *ss1, file_name[ MAX_PATH ];
   bool abort;
 
   gfilerec* g = read_sec(sn, &nf);
@@ -390,16 +390,16 @@ void gfile_sec(int sn) {
         if (yesno()) {
           bout << "|#5Erase file too? ";
           if (yesno()) {
-            sprintf(szFileName, "%s%s%c%s", syscfg.gfilesdir,
+            sprintf(file_name, "%s%s%c%s", syscfg.gfilesdir,
                     gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
-            File::Remove(szFileName);
+            File::Remove(file_name);
           }
           for (i1 = i; i1 < nf; i1++) {
             g[i1 - 1] = g[i1];
           }
           --nf;
-          sprintf(szFileName, "%s%s.gfl", syscfg.datadir, gfilesec[sn].filename);
-          File file(szFileName);
+          sprintf(file_name, "%s%s.gfl", syscfg.datadir, gfilesec[sn].filename);
+          File file(file_name);
           file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
           file.Write(g, nf * sizeof(gfilerec));
           file.Close();
@@ -411,8 +411,8 @@ void gfile_sec(int sn) {
     } else if (IsEquals(ss, "Q")) {
       done = true;
     } else if (i > 0 && i <= nf) {
-      sprintf(szFileName, "%s%c%s", gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
-      i1 = printfile(szFileName);
+      sprintf(file_name, "%s%c%s", gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
+      i1 = printfile(file_name);
       session()->user()->SetNumGFilesRead(session()->user()->GetNumGFilesRead() + 1);
       if (i1 == 0) {
         sysoplogf("Read G-file '%s'", g[i - 1].filename);
@@ -432,8 +432,8 @@ void gfile_sec(int sn) {
           done1 = true;
         } else if (!abort) {
           if (i2 > 0 && i2 <= nf) {
-            sprintf(szFileName, "%s%s%c%s", syscfg.gfilesdir, gfilesec[sn].filename, File::pathSeparatorChar, g[i2 - 1].filename);
-            File file(szFileName);
+            sprintf(file_name, "%s%s%c%s", syscfg.gfilesdir, gfilesec[sn].filename, File::pathSeparatorChar, g[i2 - 1].filename);
+            File file(file_name);
             if (!file.Open(File::modeReadOnly | File::modeBinary)) {
               bout << "|#6File not found : [" << file.full_pathname() << "]";
             } else {
@@ -441,7 +441,7 @@ void gfile_sec(int sn) {
               file.Close();
               bool sent = false;
               abort = false;
-              send_file(szFileName, &sent, &abort, g[i2 - 1].filename, -1, lFileSize);
+              send_file(file_name, &sent, &abort, g[i2 - 1].filename, -1, lFileSize);
               char s1[ 255 ];
               if (sent) {
                 sprintf(s1, "|#2%s |#9successfully transferred|#1.|#0\r\n", g[i2 - 1].filename);

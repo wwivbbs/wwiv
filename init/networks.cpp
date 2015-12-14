@@ -406,22 +406,22 @@ static void edit_net(int nn) {
     if (pInputFile) {
       FILE *pOutputFile = fopen(output_filename.c_str(), "w");
       if (pOutputFile) {
-        char szBuffer[255];
-        while (fgets(szBuffer, 80, pInputFile)) {
-          if (szBuffer[0] == '$') {
-            char* ss = strchr(szBuffer, ' ');
+        char buffer[255];
+        while (fgets(buffer, 80, pInputFile)) {
+          if (buffer[0] == '$') {
+            char* ss = strchr(buffer, ' ');
             if (ss) {
               *ss = 0;
-              if (strcasecmp(szOldNetworkName, szBuffer + 1) == 0) {
+              if (strcasecmp(szOldNetworkName, buffer + 1) == 0) {
                 fprintf(pOutputFile, "$%s %s", n->name, ss + 1);
               } else {
-                fprintf(pOutputFile, "%s %s", szBuffer, ss + 1);
+                fprintf(pOutputFile, "%s %s", buffer, ss + 1);
               }
             } else {
-              fprintf(pOutputFile, "%s", szBuffer);
+              fprintf(pOutputFile, "%s", buffer);
             }
           } else {
-            fprintf(pOutputFile, "%s", szBuffer);
+            fprintf(pOutputFile, "%s", buffer);
           }
         }
         fclose(pOutputFile);

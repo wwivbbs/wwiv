@@ -74,7 +74,7 @@ struct pcboard_sys_rec {
 // Local functions
 int GetDoor32Emulation();
 int GetDoor32CommType();
-void GetNamePartForDropFile(bool lastName, char *pszName);
+void GetNamePartForDropFile(bool lastName, char *name);
 void create_drop_files();
 string GetComSpeedInDropfileFormat(unsigned long lComSpeed);
 
@@ -111,15 +111,15 @@ const string create_filename(int nDropFileType) {
 /**
  * Returns first or last name from string (s) back into s
  */
-void GetNamePartForDropFile(bool lastName, char *pszName) {
+void GetNamePartForDropFile(bool lastName, char *name) {
   if (!lastName) {
-    char *ss = strchr(pszName, ' ');
+    char *ss = strchr(name, ' ');
     if (ss) {
-      pszName[ strlen(pszName) - strlen(ss) ] = '\0';
+      name[ strlen(name) - strlen(ss) ] = '\0';
     }
   } else {
-    char *ss = strrchr(pszName, ' ');
-    sprintf(pszName, "%s", (ss) ? ++ss : "");
+    char *ss = strrchr(name, ' ');
+    sprintf(name, "%s", (ss) ? ++ss : "");
   }
 }
 

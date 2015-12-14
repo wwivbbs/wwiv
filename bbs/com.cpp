@@ -77,46 +77,46 @@ static void addto(char *ansi_str, int num) {
 * screens.  Returned is a string which, when printed, will change the
 * display to the color desired, from the current function.
 */
-void makeansi(int attr, char *pszOutBuffer, bool forceit) {
+void makeansi(int attr, char *out_buffer, bool forceit) {
   static const char *temp = "04261537";
 
   int catr = curatr;
-  pszOutBuffer[0] = '\0';
+  out_buffer[0] = '\0';
   if (attr != catr) {
     if ((catr & 0x88) ^ (attr & 0x88)) {
-      addto(pszOutBuffer, 0);
-      addto(pszOutBuffer, 30 + temp[attr & 0x07] - '0');
-      addto(pszOutBuffer, 40 + temp[(attr & 0x70) >> 4] - '0');
+      addto(out_buffer, 0);
+      addto(out_buffer, 30 + temp[attr & 0x07] - '0');
+      addto(out_buffer, 40 + temp[(attr & 0x70) >> 4] - '0');
       catr = (attr & 0x77);
     }
     if ((catr & 0x07) != (attr & 0x07)) {
-      addto(pszOutBuffer, 30 + temp[attr & 0x07] - '0');
+      addto(out_buffer, 30 + temp[attr & 0x07] - '0');
     }
     if ((catr & 0x70) != (attr & 0x70)) {
-      addto(pszOutBuffer, 40 + temp[(attr & 0x70) >> 4] - '0');
+      addto(out_buffer, 40 + temp[(attr & 0x70) >> 4] - '0');
     }
     if ((catr & 0x08) ^ (attr & 0x08)) {
-      addto(pszOutBuffer, 1);
+      addto(out_buffer, 1);
     }
     if ((catr & 0x80) ^ (attr & 0x80)) {
       if (checkcomp("Mac")) {
         // This is the code for Mac's underline
         // They don't have Blinking or Italics
-        addto(pszOutBuffer, 4);
+        addto(out_buffer, 4);
       } else if (checkcomp("Ami")) {
         // Some Amiga terminals use 3 instead of
         // 5 for italics.  Using both won't hurt
-        addto(pszOutBuffer, 3);
+        addto(out_buffer, 3);
       }
       // anything, only italics will be generated
-      addto(pszOutBuffer, 5);
+      addto(out_buffer, 5);
     }
   }
-  if (pszOutBuffer[0]) {
-    strcat(pszOutBuffer, "m");
+  if (out_buffer[0]) {
+    strcat(out_buffer, "m");
   }
   if (!okansi() && !forceit) {
-    pszOutBuffer[0] = '\0';
+    out_buffer[0] = '\0';
   }
 }
 

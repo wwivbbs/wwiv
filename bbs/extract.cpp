@@ -55,7 +55,7 @@ void compress_file(const string& orig_filename, const string& directory) {
 // Allows extracting a message into a file area, directly.
 void extract_mod(const char *b, long len, time_t tDateTime) {
   char s1[81], s2[81],                  // reusable strings
-       szFileName[MAX_PATH],                    // mod filename
+       file_name[MAX_PATH],                    // mod filename
        strip_cmd[MAX_PATH],                  // Strip command
        compressed_fn[MAX_PATH],               // compressed filename
        ch,                              // switch key
@@ -120,12 +120,12 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
     if (strchr(s2, '.') == nullptr) {
       strcat(s2, ".mod");
     }
-    sprintf(szFileName, "%s%s", s1, s2);
-    if (File::Exists(szFileName)) {
+    sprintf(file_name, "%s%s", s1, s2);
+    if (File::Exists(file_name)) {
       exists = true;
-      sprintf(szFileName, "%s already exists.", s2);
+      sprintf(file_name, "%s already exists.", s2);
       bout.nl();
-      bout << szFileName;
+      bout << file_name;
       bout.nl(2);
     }
     if (exists) {
@@ -145,14 +145,14 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
 
   if (!quit && !hangup) {
     {
-      File file(szFileName);
+      File file(file_name);
       file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
       file.Seek(0L, File::seekEnd);
       file.Write(b, len);
       file.Close();
     }
-    bout << "Message written to: " << szFileName << wwiv::endl;
-    sprintf(strip_cmd, "STRIPNET.EXE %s", szFileName);
+    bout << "Message written to: " << file_name << wwiv::endl;
+    sprintf(strip_cmd, "STRIPNET.EXE %s", file_name);
     ExecuteExternalProgram(strip_cmd, EFLAG_NONE);
     compress_file(s2, s1);
     bout.nl(2);
@@ -255,24 +255,24 @@ go_away:
 }
 
 
-bool upload_mod(int nDirectoryNumber, const char *file_name, const char *description)
+bool upload_mod(int directory_number, const char *file_name, const char *description)
 /* Passes a specific filename to the upload function */
 {
   char s[81], s1[81];
 
   WWIV_ASSERT(file_name);
 
-  dliscan1(udir[nDirectoryNumber].subnum);
+  dliscan1(udir[directory_number].subnum);
   bout.nl(2);
   strcpy(s, file_name);
-  strcpy(s1, directories[udir[nDirectoryNumber].subnum].path);
-  int maxf = directories[udir[nDirectoryNumber].subnum].maxfiles;
+  strcpy(s1, directories[udir[directory_number].subnum].path);
+  int maxf = directories[udir[directory_number].subnum].maxfiles;
   strcat(s1, s);
   WFindFile fnd;
   bool bDone = fnd.open(s1, 0);
   bool ok = false;
   if (!bDone) {
-    ok = maybe_upload(fnd.GetFileName(), nDirectoryNumber, description);
+    ok = maybe_upload(fnd.GetFileName(), directory_number, description);
   }
   if (ok) {
     bout << "Uploaded " << file_name << "....\r\n";

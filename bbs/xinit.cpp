@@ -685,22 +685,22 @@ void WSession::read_networks() {
   TextFile fileNetIni("NET.INI", "rt");
   if (fileNetIni.IsOpen()) {
     while (!fileNetIni.IsEndOfFile()) {
-      char szBuffer[255];
-      fileNetIni.ReadLine(szBuffer, 80);
-      szBuffer[sizeof(szBuffer) - 1] = 0;
-      StringRemoveWhitespace(szBuffer);
-      if (!strncasecmp(szBuffer, "DOMAIN=", 7) && internetEmailDomain.empty()) {
-        internetEmailDomain = &(szBuffer[7]);
-      } else if (!strncasecmp(szBuffer, "POPNAME=", 8) && internetEmailName.empty()) {
-        internetEmailName = &(szBuffer[8]);
-      } else if (!strncasecmp(szBuffer, "FWDDOM=", 7)) {
-        internetEmailDomain = &(szBuffer[7]);
-      } else if (!strncasecmp(szBuffer, "FWDNAME=", 8)) {
-        internetEmailName = &(szBuffer[8]);
-      } else if (!strncasecmp(szBuffer, "POPDOMAIN=", 10)) {
-        internetPopDomain = &(szBuffer[10]);
-      } else if (!strncasecmp(szBuffer, "REALNAME=", 9) &&
-                 (szBuffer[9] == 'Y' || szBuffer[9] == 'y')) {
+      char buffer[255];
+      fileNetIni.ReadLine(buffer, 80);
+      buffer[sizeof(buffer) - 1] = 0;
+      StringRemoveWhitespace(buffer);
+      if (!strncasecmp(buffer, "DOMAIN=", 7) && internetEmailDomain.empty()) {
+        internetEmailDomain = &(buffer[7]);
+      } else if (!strncasecmp(buffer, "POPNAME=", 8) && internetEmailName.empty()) {
+        internetEmailName = &(buffer[8]);
+      } else if (!strncasecmp(buffer, "FWDDOM=", 7)) {
+        internetEmailDomain = &(buffer[7]);
+      } else if (!strncasecmp(buffer, "FWDNAME=", 8)) {
+        internetEmailName = &(buffer[8]);
+      } else if (!strncasecmp(buffer, "POPDOMAIN=", 10)) {
+        internetPopDomain = &(buffer[10]);
+      } else if (!strncasecmp(buffer, "REALNAME=", 9) &&
+                 (buffer[9] == 'Y' || buffer[9] == 'y')) {
         SetInternetUseRealNames(true);
       }
     }

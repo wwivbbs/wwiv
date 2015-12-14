@@ -44,7 +44,7 @@ extern char str_quit[];
 //
 int  comparedl(uploadsrec * x, uploadsrec * y, int type);
 void quicksort(int l, int r, int type);
-bool upload_file(const char *file_name, int nDirectoryNum, const char *description);
+bool upload_file(const char *file_name, int directory_num, const char *description);
 long db_index(File &fileAllow, const char *file_name);
 void l_config_nscan();
 void config_nscan();
@@ -277,8 +277,8 @@ void quicksort(int l, int r, int type) {
 }
 
 
-void sortdir(int nDirectoryNum, int type) {
-  dliscan1(nDirectoryNum);
+void sortdir(int directory_num, int type) {
+  dliscan1(directory_num);
   if (session()->numf > 1) {
     quicksort(1, session()->numf, type);
   }
@@ -417,10 +417,10 @@ void rename_file() {
 }
 
 
-bool upload_file(const char *file_name, int nDirectoryNum, const char *description) {
+bool upload_file(const char *file_name, int directory_num, const char *description) {
   uploadsrec u, u1;
 
-  directoryrec d = directories[nDirectoryNum];
+  directoryrec d = directories[directory_num];
   char szTempFileName[ 255 ];
   strcpy(szTempFileName, file_name);
   align(szTempFileName);
@@ -430,7 +430,7 @@ bool upload_file(const char *file_name, int nDirectoryNum, const char *descripti
   u.numdloads = 0;
   u.unused_filetype = 0;
   u.mask = 0;
-  if (!(d.mask & mask_cdrom) && !check_ul_event(nDirectoryNum, &u)) {
+  if (!(d.mask & mask_cdrom) && !check_ul_event(directory_num, &u)) {
     bout << file_name << " was deleted by upload event.\r\n";
   } else {
     char szUnalignedFileName[ MAX_PATH ];
@@ -476,7 +476,7 @@ bool upload_file(const char *file_name, int nDirectoryNum, const char *descripti
     if (u.description[0] == 0) {
       return false;
     }
-    get_file_idz(&u, nDirectoryNum);
+    get_file_idz(&u, directory_num);
     session()->user()->SetFilesUploaded(session()->user()->GetFilesUploaded() + 1);
     if (!(d.mask & mask_cdrom)) {
       modify_database(u.filename, true);
@@ -513,7 +513,7 @@ bool upload_file(const char *file_name, int nDirectoryNum, const char *descripti
 }
 
 
-bool maybe_upload(const char *file_name, int nDirectoryNum, const char *description) {
+bool maybe_upload(const char *file_name, int directory_num, const char *description) {
   char s[81], ch, s1[81];
   bool abort = false;
   bool ok = true;
@@ -534,7 +534,7 @@ bool maybe_upload(const char *file_name, int nDirectoryNum, const char *descript
         if (ch == *(YesNoString(false))) {
           bout << "|#5Delete it? ";
           if (yesno()) {
-            sprintf(s1, "%s%s", directories[nDirectoryNum].path, file_name);
+            sprintf(s1, "%s%s", directories[directory_num].path, file_name);
             File::Remove(s1);
             bout.nl();
             return true;
@@ -544,7 +544,7 @@ bool maybe_upload(const char *file_name, int nDirectoryNum, const char *descript
         }
       }
     }
-    if (!upload_file(s, udir[nDirectoryNum].subnum, description)) {
+    if (!upload_file(s, udir[directory_num].subnum, description)) {
       ok = false;
     }
   } else {
@@ -554,7 +554,7 @@ bool maybe_upload(const char *file_name, int nDirectoryNum, const char *descript
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
     int ocd = session()->GetCurrentFileArea();
-    session()->SetCurrentFileArea(nDirectoryNum);
+    session()->SetCurrentFileArea(directory_num);
     printinfo(&u, &abort);
     session()->SetCurrentFileArea(ocd);
     if (abort) {
@@ -573,7 +573,7 @@ bool maybe_upload(const char *file_name, int nDirectoryNum, const char *descript
  * the number of optional words between the filename and description.
  * the optional words (size, date/time) are ignored completely.
  */
-void upload_files(const char *file_name, int nDirectoryNum, int type) {
+void upload_files(const char *file_name, int directory_num, int type) {
   char s[255], *fn1 = nullptr, *description = nullptr, last_fn[81], *ext = nullptr;
   bool abort = false;
   int ok1, i;
@@ -581,12 +581,12 @@ void upload_files(const char *file_name, int nDirectoryNum, int type) {
   uploadsrec u;
 
   last_fn[0] = 0;
-  dliscan1(udir[nDirectoryNum].subnum);
+  dliscan1(udir[directory_num].subnum);
 
   TextFile file(file_name, "r");
   if (!file.IsOpen()) {
     char szDefaultFileName[ MAX_PATH ];
-    sprintf(szDefaultFileName, "%s%s", directories[udir[nDirectoryNum].subnum].path, file_name);
+    sprintf(szDefaultFileName, "%s%s", directories[udir[directory_num].subnum].path, file_name);
     file.Open(szDefaultFileName, "r");
   }
   if (!file.IsOpen()) {
@@ -650,7 +650,7 @@ void upload_files(const char *file_name, int nDirectoryNum, int type) {
           while (*description == ' ' || *description == '\t') {
             ++description;
           }
-          ok = maybe_upload(fn1, nDirectoryNum, description);
+          ok = maybe_upload(fn1, directory_num, description);
           checka(&abort);
           if (abort) {
             ok = false;
@@ -688,15 +688,15 @@ void upload_files(const char *file_name, int nDirectoryNum, int type) {
 }
 
 // returns false on abort
-bool uploadall(int nDirectoryNum) {
-  dliscan1(udir[nDirectoryNum].subnum);
+bool uploadall(int directory_num) {
+  dliscan1(udir[directory_num].subnum);
 
   char szDefaultFileSpec[ MAX_PATH ];
   strcpy(szDefaultFileSpec, "*.*");
 
   char szPathName[ MAX_PATH ];
-  sprintf(szPathName, "%s%s", directories[udir[nDirectoryNum].subnum].path, szDefaultFileSpec);
-  int maxf = directories[udir[nDirectoryNum].subnum].maxfiles;
+  sprintf(szPathName, "%s%s", directories[udir[directory_num].subnum].path, szDefaultFileSpec);
+  int maxf = directories[udir[directory_num].subnum].maxfiles;
 
   WFindFile fnd;
   bool bFound = fnd.open(szPathName, 0);
@@ -708,7 +708,7 @@ bool uploadall(int nDirectoryNum) {
         *pszCurrentFile &&
         !wwiv::strings::IsEquals(pszCurrentFile, ".") &&
         !wwiv::strings::IsEquals(pszCurrentFile, "..")) {
-      ok = maybe_upload(pszCurrentFile, nDirectoryNum, nullptr);
+      ok = maybe_upload(pszCurrentFile, directory_num, nullptr);
     }
     bFound = fnd.next();
     checka(&abort);

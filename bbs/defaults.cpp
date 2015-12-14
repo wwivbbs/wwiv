@@ -489,17 +489,17 @@ void config_qscan() {
   }
 }
 
-static void list_macro(const char *pszMacroText) {
+static void list_macro(const char *macro_text) {
   int i = 0;
 
-  while ((i < 80) && (pszMacroText[i] != 0)) {
-    if (pszMacroText[i] >= 32) {
-      bputch(pszMacroText[i]);
+  while ((i < 80) && (macro_text[i] != 0)) {
+    if (macro_text[i] >= 32) {
+      bputch(macro_text[i]);
     } else {
-      if (pszMacroText[i] == 16) {
-        bout.Color(pszMacroText[++i] - 48);
+      if (macro_text[i] == 16) {
+        bout.Color(macro_text[++i] - 48);
       } else {
-        switch (pszMacroText[i]) {
+        switch (macro_text[i]) {
         case RETURN:
           bputch('|');
           break;
@@ -508,7 +508,7 @@ static void list_macro(const char *pszMacroText) {
           break;
         default:
           bputch('^');
-          bputch(static_cast<unsigned char>(pszMacroText[i] + 64));
+          bputch(static_cast<unsigned char>(macro_text[i] + 64));
           break;
         }
       }
@@ -518,8 +518,8 @@ static void list_macro(const char *pszMacroText) {
   bout.nl();
 }
 
-static void macroedit(char *pszMacroText) {
-  *pszMacroText = '\0';
+static void macroedit(char *macro_text) {
+  *macro_text = '\0';
   bout.nl();
   bout << "|#5Enter your macro, press |#7[|#1CTRL-Z|#7]|#5 when finished.\r\n\n";
   okskey = false;
@@ -540,26 +540,26 @@ static void macroedit(char *pszMacroText) {
       if (i < 0) {
         i = 0;
       }
-      pszMacroText[i] = '\0';
+      macro_text[i] = '\0';
       break;
     case CP:
-      pszMacroText[i++] = ch;
+      macro_text[i++] = ch;
       toggle = true;
       break;
     case RETURN:
-      pszMacroText[i++] = ch;
+      macro_text[i++] = ch;
       bout.Color(0);
       bputch('|');
       bout.Color(textclr);
       break;
     case TAB:
-      pszMacroText[i++] = ch;
+      macro_text[i++] = ch;
       bout.Color(0);
       bputch('\xF9') ;
       bout.Color(textclr);
       break;
     default:
-      pszMacroText[i++] = ch;
+      macro_text[i++] = ch;
       if (toggle) {
         toggle = false;
         textclr = ch - 48;
@@ -569,14 +569,14 @@ static void macroedit(char *pszMacroText) {
       }
       break;
     }
-    pszMacroText[i + 1] = 0;
+    macro_text[i + 1] = 0;
   } while (!done && i < 80 && !hangup);
   okskey = true;
   bout.Color(0);
   bout.nl();
   bout << "|#9Is this okay? ";
   if (!yesno()) {
-    *pszMacroText = '\0';
+    *macro_text = '\0';
   }
 }
 
