@@ -118,7 +118,7 @@ void display_message_text(const std::string& text, bool *next) {
 
   bout.nl();
   for (char ch : text) {
-    if (done) {
+    if (done || abort) {
       break;
     }
     if (ch == CZ) {
