@@ -464,6 +464,8 @@ public:
 
   std::vector<newexternalrec> externs;
   std::vector<newexternalrec> over_intern;
+  std::vector<smalrec> smallist;
+
 };
 
 #endif  // #if !defined (__INCLUDED_BBS_WSESSION_H__)

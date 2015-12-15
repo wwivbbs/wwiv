@@ -328,12 +328,6 @@ int WSession::doWFCEvents() {
       case SPACE:
         lokb = this->LocalLogon();
         break;
-        // Reset User Records
-      case '=':
-        if (AllowLocalSysop()) {
-          reset_files();
-        }
-        break;
         // Show WFC Menu
       case '?':
         if (AllowLocalSysop()) {

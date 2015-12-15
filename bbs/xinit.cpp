@@ -745,21 +745,13 @@ void WSession::read_networks() {
 }
 
 bool WSession::read_names() {
-  if (smallist) {
-    free(smallist);
-  }
-
-  int maxNumberOfUsers = std::max<int>(statusMgr->GetUserCount(), syscfg.maxusers);
-
-  smallist = static_cast<smalrec *>(BbsAllocA(static_cast<long>(maxNumberOfUsers) * static_cast<long>(sizeof(smalrec))));
-
-  File file(syscfg.datadir, NAMES_LST);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    std::clog << file.GetName() << " NOT FOUND." << std::endl;
+  int max_users = std::max<int>(statusMgr->GetUserCount(), syscfg.maxusers);
+  DataFile<smalrec> file(syscfg.datadir, NAMES_LST);
+  if (!file) {
+    std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
     return false;
   }
-  file.Read(smallist, maxNumberOfUsers * sizeof(smalrec));
-  file.Close();
+  file.ReadVector(smallist, max_users);
   return true;
 }
 
@@ -978,8 +970,6 @@ void WSession::InitializeBBS() {
   XINIT_PRINTF("Reading Gfiles.");
   gfilesec = nullptr;
   read_gfile();
-
-  smallist = nullptr;
 
   XINIT_PRINTF("Reading user names.");
   if (!read_names()) {

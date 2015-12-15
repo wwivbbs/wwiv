@@ -146,7 +146,6 @@ __EXTRN__ configoverrec syscfgovr;
 __EXTRN__ statusrec status;
 #endif  // NOT_BBS
 __EXTRN__ colorrec rescolor;
-__EXTRN__ smalrec *smallist;
 __EXTRN__ subboardrec *subboards;
 __EXTRN__ directoryrec *directories;
 __EXTRN__ usersubrec *usub, *udir;

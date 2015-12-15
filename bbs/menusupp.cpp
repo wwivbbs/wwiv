@@ -519,11 +519,6 @@ void ReloadMenus() {
   read_new_stuff();
 }
 
-void ResetFiles() {
-  write_inst(INST_LOC_RESETF, 0, INST_FLAGS_NONE);
-  reset_files();
-}
-
 void ResetQscan() {
   bout << "|#5Reset all QScan/NScan pointers (For All Users)? ";
   if (yesno()) {

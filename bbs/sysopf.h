@@ -18,7 +18,6 @@
 #ifndef __INCLUDED_BBS_SYSOPF_H__
 #define __INCLUDED_BBS_SYSOPF_H__
 
-void reset_files();
 void prstatus();
 void valuser(int user_number);
 void print_net_listing(bool bForcePause);

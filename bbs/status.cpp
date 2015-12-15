@@ -24,6 +24,8 @@
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/wstatus.h"
+#include "core/datafile.h"
+#include "core/file.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
@@ -31,6 +33,7 @@ statusrec status;
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::core;
 
 // WStatus
 const int WStatus::fileChangeNames = 0;
@@ -158,15 +161,12 @@ bool StatusMgr::Get(bool bLockFile) {
     for (int i = 0; i < 7; i++) {
       if (oldFileChangeFlags[i] != status.filechange[i]) {
         switch (i) {
-        case WStatus::fileChangeNames:            // re-read names.lst
-          if (smallist) {
-            File namesFile(syscfg.datadir, NAMES_LST);
-            if (namesFile.Open(File::modeBinary | File::modeReadOnly)) {
-              namesFile.Read(smallist, (sizeof(smalrec) * status.users));
-              namesFile.Close();
-            }
+        case WStatus::fileChangeNames: {        // re-read names.lst
+          DataFile<smalrec> file(syscfg.datadir, NAMES_LST);
+          if (file) {
+            file.ReadVector(session()->smallist, status.users);
           }
-          break;
+        } break;
         case WStatus::fileChangeUpload:
         break;
         case WStatus::fileChangePosts:

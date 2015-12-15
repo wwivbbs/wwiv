@@ -96,8 +96,8 @@ int finduser1(const string& searchString) {
   string userNamePart = searchString;
   StringUpperCase(&userNamePart);
   for (int i1 = 0; i1 < session()->GetStatusManager()->GetUserCount(); i1++) {
-    if (strstr(reinterpret_cast<char*>(smallist[i1].name), userNamePart.c_str()) != nullptr) {
-      int nCurrentUserNum = smallist[i1].number;
+    if (strstr(reinterpret_cast<char*>(session()->smallist[i1].name), userNamePart.c_str()) != nullptr) {
+      int nCurrentUserNum = session()->smallist[i1].number;
       WUser user;
       session()->users()->ReadUser(&user, nCurrentUserNum);
       bout << "|#5Do you mean " << user.GetUserNameAndNumber(nCurrentUserNum) << " (Y/N/Q)? ";
