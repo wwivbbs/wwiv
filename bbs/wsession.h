@@ -465,6 +465,7 @@ public:
   std::vector<newexternalrec> externs;
   std::vector<newexternalrec> over_intern;
   std::vector<smalrec> smallist;
+  std::vector<languagerec> languages;
 
 };
 

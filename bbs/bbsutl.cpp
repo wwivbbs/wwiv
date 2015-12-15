@@ -471,24 +471,24 @@ int check_ansi() {
 // and initializes stringfiles for that language. Returns false if problem,
 // else returns true.
 bool set_language_1(int n) {
-  int idx = 0;
-  for (idx = 0; idx < session()->num_languages; idx++) {
-    if (languages[idx].num == n) {
+  size_t idx = 0;
+  for (idx = 0; idx < session()->languages.size(); idx++) {
+    if (session()->languages[idx].num == n) {
       break;
     }
   }
 
-  if (idx >= session()->num_languages && n == 0) {
+  if (idx >= session()->languages.size() && n == 0) {
     idx = 0;
   }
 
-  if (idx >= session()->num_languages) {
+  if (idx >= session()->languages.size()) {
     return false;
   }
 
   session()->SetCurrentLanguageNumber(n);
-  cur_lang_name = languages[idx].name;
-  session()->language_dir = languages[idx].dir;
+  cur_lang_name = session()->languages[idx].name;
+  session()->language_dir = session()->languages[idx].dir;
 
   strncpy(str_yes, "Yes", sizeof(str_yes) - 1);
   strncpy(str_no, "No", sizeof(str_no) - 1);

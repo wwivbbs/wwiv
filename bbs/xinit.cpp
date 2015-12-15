@@ -823,25 +823,22 @@ void WSession::read_chains() {
 }
 
 bool WSession::read_language() {
-  if (languages) {
-    free(languages);
-  }
-  languages = nullptr;
-  File file(syscfg.datadir, LANGUAGE_DAT);
-  if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    num_languages = file.GetLength() / sizeof(languagerec);
-    if (num_languages) {
-      languages = static_cast<languagerec *>(BbsAllocA(num_languages * sizeof(languagerec)));
-      file.Read(languages, num_languages * sizeof(languagerec));
+  DataFile<languagerec> file(syscfg.datadir, LANGUAGE_DAT);
+  size_t num_languages = 0;
+  if (file) {
+    num_languages = file.number_of_records();
+    if (num_languages > 0) {
+      file.ReadVector(languages);
     }
     file.Close();
   }
   if (!num_languages) {
-    languages = static_cast<languagerec *>(BbsAllocA(sizeof(languagerec)));
     num_languages = 1;
-    strcpy(languages->name, "English");
-    strncpy(languages->dir, syscfg.gfilesdir, sizeof(languages->dir) - 1);
-    strncpy(languages->mdir, syscfg.menudir, sizeof(languages->mdir) - 1);
+    languagerec lang;
+    memset(&lang, 0, sizeof(languagerec));
+    strcpy(lang.name, "English");
+    strncpy(lang.dir, syscfg.gfilesdir, sizeof(lang.dir) - 1);
+    strncpy(lang.mdir, syscfg.menudir, sizeof(lang.mdir) - 1);
   }
   SetCurrentLanguageNumber(-1);
   if (!set_language(0)) {
@@ -937,7 +934,6 @@ void WSession::InitializeBBS() {
     syscfgovr.primaryport = 1;
   }
 
-  languages = nullptr;
   if (!read_language()) {
     AbortBBS();
   }

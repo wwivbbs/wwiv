@@ -110,34 +110,34 @@ void input_dataphone() {
 }
 
 void input_language() {
-  if (session()->num_languages > 1) {
+  if (session()->languages.size() > 1) {
     session()->user()->SetLanguage(255);
     do {
       char ch = 0, onx[20];
       bout.nl(2);
-      for (int i = 0; i < session()->num_languages; i++) {
-        bout << (i + 1) << ". " << languages[i].name << wwiv::endl;
+      for (size_t i = 0; i < session()->languages.size(); i++) {
+        bout << (i + 1) << ". " << session()->languages[i].name << wwiv::endl;
         if (i < 9) {
           onx[i] = static_cast<char>('1' + i);
         }
       }
       bout.nl();
       bout << "|#2Which language? ";
-      if (session()->num_languages < 10) {
-        onx[session()->num_languages] = 0;
+      if (session()->languages.size() < 10) {
+        onx[session()->languages.size()] = 0;
         ch = onek(onx);
         ch -= '1';
       } else {
         int i;
-        for (i = 1; i <= session()->num_languages / 10; i++) {
+        for (i = 1; i <= session()->languages.size() / 10; i++) {
           odc[i - 1] = static_cast<char>('0' + i);
         }
         odc[i - 1] = 0;
         char* ss = mmkey(2);
         ch = *((ss) - 1);
       }
-      if (ch >= 0 && ch < session()->num_languages) {
-        session()->user()->SetLanguage(languages[ch].num);
+      if (ch >= 0 && ch < session()->languages.size()) {
+        session()->user()->SetLanguage(session()->languages[ch].num);
       }
     } while ((session()->user()->GetLanguage() == 255) && (!hangup));
 

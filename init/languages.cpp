@@ -59,7 +59,8 @@ static void edit_lang(languagerec& n) {
   const int COL1_POSITION = 19;
 
   EditItems items{
-    new StringEditItem<char*>(COL1_POSITION, 1, 20, n.name, false),
+    // The string is 20 total (19 usable).
+    new StringEditItem<char*>(COL1_POSITION, 1, 19, n.name, false),
     new FilePathItem(2, 3, 75, n.dir),
     new FilePathItem(2, 6, 75, n.mdir),
   };
@@ -98,9 +99,11 @@ static uint8_t get_next_langauge_num(const vector<languagerec>& languages) {
 
 void edit_languages() {
   vector<languagerec> languages;
-  DataFile<languagerec> file(syscfg.datadir, LANGUAGE_DAT);
-  if (file) {
-    file.ReadVector(languages, MAX_LANGUAGES);
+  {
+    DataFile<languagerec> file(syscfg.datadir, LANGUAGE_DAT);
+    if (file) {
+      file.ReadVector(languages, MAX_LANGUAGES);
+    }
   }
 
   bool done = false;
@@ -177,8 +180,7 @@ void edit_languages() {
 
   {
     DataFile<languagerec> file(syscfg.datadir, LANGUAGE_DAT,
-      File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate,
-      File::shareDenyReadWrite);
+      File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite);
     if (file) {
       file.WriteVector(languages, MAX_LANGUAGES);
     }
