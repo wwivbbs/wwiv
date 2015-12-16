@@ -641,6 +641,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
 
   if (!cc) {
     email.system_number = system_number;
+    email.user_number = user_number;
     email.from_network_number = session()->net_num();
     sendout_email(email);
     return;
