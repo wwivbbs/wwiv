@@ -14,7 +14,7 @@ Installation and SysOp Instructions
 ====================
 
 All the installation and SysOp administration information you 
-need is in the [WWIV 5.0 Wiki](https://github.com/wwivbbs/wwiv/wiki)
+need is in the [WWIV 5.0 Documentation](https://wwivbbs.readthedocs.org/)
 
 Get Involved
 ====================
