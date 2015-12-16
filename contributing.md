@@ -26,7 +26,7 @@ The dev team and fellow SysOps hangs out on IRC at:
 * Here are some labels:
 ...
 
-[WWIV Releases and Versioning](https://github.com/wwivbbs/wwiv/wiki/wwiv_releases_and_versioning)
+[WWIV Releases and Versioning](http://wwivbbs.readthedocs.org/en/latest/Development/wwiv_releases_and_versioning/)
 
 ## Bug Reports
 
