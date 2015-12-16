@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -25,7 +25,7 @@ int  cleanup_net1();
 void do_callout(int sn);
 void attempt_callout();
 void print_pending_list();
-void gate_msg(net_header_rec * nh, char *pszMessageText, int nNetNumber, const char *pszAuthorName,
+void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char *pszAuthorName,
   unsigned short int *pList, int nFromNetworkNumber);
 void force_callout(int dw);
 long *next_system_reg(int ts);

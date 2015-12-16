@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                 WWIV Initialization Utility Version 5.0                */
+/*                  WWIV Initialization Utility Version 5                 */
 /*              Copyright (C)2014-2015 WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -23,13 +23,8 @@
 #pragma pack(push, 1)
 
 struct initinfo_rec {
-  int numexterns;
-  int numeditors;
-  int num_languages;
   int net_num_max;
   int num_subs;
-  int usernum;
-  int nNumMsgsInCurrentSub;
 };
 #pragma pack(pop)
 

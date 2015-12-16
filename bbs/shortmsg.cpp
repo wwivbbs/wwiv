@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -19,14 +19,17 @@
 #include <cstdarg>
 #include <string>
 #include "core//strings.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using wwiv::strings::StringPrintf;
 
 // Local function prototypes
-void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char *pszMessageText);
-void SendRemoteShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char *pszMessageText);
+void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char *messageText);
+void SendRemoteShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char *messageText);
 
 /*
  * Handles reading short messages. This is also where PackScan file requests
@@ -54,7 +57,7 @@ void rsm(int nUserNum, WUser *pUser, bool bAskToSaveMsgs) {
         if (!so() || !bAskToSaveMsgs) {
           bHandledMessage = true;
         } else {
-          if (application()->HasConfigFlag(OP_FLAGS_CAN_SAVE_SSM)) {
+          if (session()->HasConfigFlag(OP_FLAGS_CAN_SAVE_SSM)) {
             if (!bHandledMessage && bAskToSaveMsgs) {
               bout << "|#5Would you like to save this notification? ";
               bHandledMessage = !yesno();
@@ -86,9 +89,9 @@ void rsm(int nUserNum, WUser *pUser, bool bAskToSaveMsgs) {
   }
 }
 
-void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char *pszMessageText) {
+void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char *messageText) {
   WUser user;
-  application()->users()->ReadUser(&user, nUserNum);
+  session()->users()->ReadUser(&user, nUserNum);
   if (!user.IsUserDeleted()) {
     File file(syscfg.datadir, SMW_DAT);
     if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
@@ -113,17 +116,17 @@ void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char 
     }
     sm.tosys = static_cast<unsigned short>(nSystemNum);
     sm.touser = static_cast<unsigned short>(nUserNum);
-    strncpy(sm.message, pszMessageText, 80);
+    strncpy(sm.message, messageText, 80);
     sm.message[80] = '\0';
     file.Seek(nNewMsgPos * sizeof(shortmsgrec), File::seekBegin);
     file.Write(&sm, sizeof(shortmsgrec));
     file.Close();
     user.SetStatusFlag(WUser::SMW);
-    application()->users()->WriteUser(&user, nUserNum);
+    session()->users()->WriteUser(&user, nUserNum);
   }
 }
 
-void SendRemoteShortMessage(int nUserNum, int nSystemNum, char *pszMessageText) {
+void SendRemoteShortMessage(int nUserNum, int nSystemNum, char *messageText) {
   net_header_rec nh;
   nh.tosys = static_cast<unsigned short>(nSystemNum);
   nh.touser = static_cast<unsigned short>(nUserNum);
@@ -132,20 +135,20 @@ void SendRemoteShortMessage(int nUserNum, int nSystemNum, char *pszMessageText) 
   nh.main_type = main_type_ssm;
   nh.minor_type = 0;
   nh.list_len = 0;
-  nh.daten = static_cast<unsigned long>(time(nullptr));
-  if (strlen(pszMessageText) > 80) {
-    pszMessageText[80] = '\0';
+  nh.daten = static_cast<uint32_t>(time(nullptr));
+  if (strlen(messageText) > 80) {
+    messageText[80] = '\0';
   }
-  nh.length = strlen(pszMessageText);
+  nh.length = strlen(messageText);
   nh.method = 0;
   const string packet_filename = StringPrintf("%sp0%s", 
     session()->GetNetworkDataDirectory().c_str(),
-    application()->GetNetworkExtension().c_str());
+    session()->GetNetworkExtension().c_str());
   File file(packet_filename);
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   file.Seek(0L, File::seekEnd);
   file.Write(&nh, sizeof(net_header_rec));
-  file.Write(pszMessageText, nh.length);
+  file.Write(messageText, nh.length);
   file.Close();
 }
 
@@ -154,7 +157,7 @@ void SendRemoteShortMessage(int nUserNum, int nSystemNum, char *pszMessageText) 
  * and short message as params. Network number should be set before calling
  * this function.
  */
-void ssm(int nUserNum, int nSystemNum, const char *pszFormat, ...) {
+void ssm(int nUserNum, int nSystemNum, const char *format, ...) {
   if (nUserNum == 65535 || nUserNum == 0 || nSystemNum == 32767) {
     return;
   }
@@ -162,8 +165,8 @@ void ssm(int nUserNum, int nSystemNum, const char *pszFormat, ...) {
   va_list ap;
   char szMessageText[2048];
 
-  va_start(ap, pszFormat);
-  vsnprintf(szMessageText, sizeof(szMessageText), pszFormat, ap);
+  va_start(ap, format);
+  vsnprintf(szMessageText, sizeof(szMessageText), format, ap);
   va_end(ap);
 
   if (nSystemNum == 0) {

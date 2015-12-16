@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015,WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -48,7 +48,7 @@ void WWIV_make_abs_cmd(const std::string root, std::string* out) {
     ".cmd",
   };
 
-  // pszOutBuffer must be at least MAX_PATH in size.
+  // out_buffer must be at least MAX_PATH in size.
   char s[MAX_PATH], s1[MAX_PATH], s2[MAX_PATH];
 
   strncpy(s1, out->c_str(), MAX_PATH);

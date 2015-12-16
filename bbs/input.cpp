@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -46,18 +46,18 @@ static const unsigned char *valid_letters =
 
 
 /**
- * This will input a line of data, maximum nMaxLength characters long, terminated
+ * This will input a line of data, maximum max_length characters long, terminated
  * by a C/R.  if (lc) is non-zero, lowercase is allowed, otherwise all
  * characters are converted to uppercase.
- * @param pszOutText the text entered by the user (output value)
- * @param nMaxLength Maximum length to allow for the input text
+ * @param out_text the text entered by the user (output value)
+ * @param max_length Maximum length to allow for the input text
  * @param lc The case to return, this can be InputMode::UPPER, InputMode::MIXED, InputMode::PROPER, or InputMode::FILENAME
  * @param crend output the CR/LF if one is entered.
- * @param bAutoMpl Call bout.mpl(nMaxLength) automatically.
+ * @param auto_mpl Call bout.mpl(max_length) automatically.
  */
-static void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAutoMpl) {
-  if (bAutoMpl) {
-    bout.mpl(nMaxLength);
+static void input1(char *out_text, int max_length, InputMode lc, bool crend, bool auto_mpl) {
+  if (auto_mpl) {
+    bout.mpl(max_length);
   }
 
   int curpos = 0, in_ansi = 0;
@@ -99,9 +99,9 @@ static void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, b
         case InputMode::PROPER:
           chCurrent = upcase(chCurrent);
           if (curpos) {
-            const char *ss = strchr(reinterpret_cast<const char*>(valid_letters), pszOutText[curpos - 1]);
-            if (ss != nullptr || pszOutText[curpos - 1] == 39) {
-              if (curpos < 2 || pszOutText[curpos - 2] != 77 || pszOutText[curpos - 1] != 99) {
+            const char *ss = strchr(reinterpret_cast<const char*>(valid_letters), out_text[curpos - 1]);
+            if (ss != nullptr || out_text[curpos - 1] == 39) {
+              if (curpos < 2 || out_text[curpos - 2] != 77 || out_text[curpos - 1] != 99) {
                 chCurrent = locase(chCurrent);
               }
             }
@@ -119,8 +119,8 @@ static void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, b
           }
         } break;
         }
-        if (curpos < nMaxLength && chCurrent) {
-          pszOutText[curpos++] = chCurrent;
+        if (curpos < max_length && chCurrent) {
+          out_text[curpos++] = chCurrent;
           bputch(chCurrent);
         }
       } else {
@@ -131,7 +131,7 @@ static void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, b
             // Handle the "one-off" case where UNIX telnet clients only return
             // '\n' (#10) instead of '\r' (#13).
             //
-            pszOutText[curpos] = '\0';
+            out_text[curpos] = '\0';
             done = true;
             local_echo = true;
             if (newline || crend) {
@@ -141,7 +141,7 @@ static void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, b
           break;
         case CN:
         case RETURN:
-          pszOutText[curpos] = '\0';
+          out_text[curpos] = '\0';
           done = true;
           local_echo = true;
           if (newline || crend) {
@@ -153,10 +153,10 @@ static void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, b
             do {
               curpos--;
               bout.bs();
-              if (pszOutText[curpos] == CZ) {
+              if (out_text[curpos] == CZ) {
                 bout.bs();
               }
-            } while (curpos && pszOutText[curpos - 1] != SPACE);
+            } while (curpos && out_text[curpos - 1] != SPACE);
           }
           break;
         case CZ:
@@ -165,7 +165,7 @@ static void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, b
           if (curpos) {
             curpos--;
             bout.bs();
-            if (pszOutText[curpos] == CZ) {
+            if (out_text[curpos] == CZ) {
               bout.bs();
             }
           }
@@ -175,7 +175,7 @@ static void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, b
           while (curpos) {
             curpos--;
             bout.bs();
-            if (pszOutText[curpos] == CZ) {
+            if (out_text[curpos] == CZ) {
               bout.bs();
             }
           }
@@ -192,43 +192,43 @@ static void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, b
     }
   }
   if (hangup) {
-    pszOutText[0] = '\0';
+    out_text[0] = '\0';
   }
 }
 
 // This will input an upper-case string
-void input(char *pszOutText, int nMaxLength, bool bAutoMpl) {
-  input1(pszOutText, nMaxLength, InputMode::UPPER, true, bAutoMpl);
+void input(char *out_text, int max_length, bool auto_mpl) {
+  input1(out_text, max_length, InputMode::UPPER, true, auto_mpl);
 }
 
 // This will input an upper-case string
-void input(string* strOutText, int nMaxLength, bool bAutoMpl) {
+void input(string* out_text, int max_length, bool auto_mpl) {
   char szTempBuffer[ 255 ];
-  input(szTempBuffer, nMaxLength, bAutoMpl);
-  strOutText->assign(szTempBuffer);
+  input(szTempBuffer, max_length, auto_mpl);
+  out_text->assign(szTempBuffer);
 }
 
 // This will input an upper or lowercase string of characters
-void inputl(char *pszOutText, int nMaxLength, bool bAutoMpl) {
-  input1(pszOutText, nMaxLength, InputMode::MIXED, true, bAutoMpl);
+void inputl(char *out_text, int max_length, bool auto_mpl) {
+  input1(out_text, max_length, InputMode::MIXED, true, auto_mpl);
 }
 
 // This will input an upper or lowercase string of characters
-void inputl(string* strOutText, int nMaxLength, bool bAutoMpl) {
+void inputl(string* out_text, int max_length, bool auto_mpl) {
   char szTempBuffer[ 255 ];
-  WWIV_ASSERT(nMaxLength < sizeof(szTempBuffer));
-  inputl(szTempBuffer, nMaxLength, bAutoMpl);
-  strOutText->assign(szTempBuffer);
+  WWIV_ASSERT(max_length < sizeof(szTempBuffer));
+  inputl(szTempBuffer, max_length, auto_mpl);
+  out_text->assign(szTempBuffer);
 }
 
-std::string input_password(const string& promptText, int nMaxLength) {
-  bout << promptText;
+std::string input_password(const string& prompt_text, int max_length) {
+  bout << prompt_text;
   local_echo = false;
 
   char szEnteredPassword[255];
-  WWIV_ASSERT(nMaxLength < sizeof(szEnteredPassword));
+  WWIV_ASSERT(max_length < sizeof(szEnteredPassword));
 
-  input1(szEnteredPassword, nMaxLength, InputMode::UPPER, true, false);
+  input1(szEnteredPassword, max_length, InputMode::UPPER, true, false);
   return string(szEnteredPassword);
 }
 
@@ -241,34 +241,34 @@ static const uint8_t input_background_char = 32; // Was '\xB1';
 // Purpose:  Input a line of text of specified length using a ansi
 //           formatted input line
 //
-// Parameters:  *pszOutText   = variable to save the input to
+// Parameters:  *out_text   = variable to save the input to
 //              *orgiText     = line to edit.  appears in edit box
-//              nMaxLength      = max characters allowed
+//              max_length      = max characters allowed
 //              bInsert     = insert mode false = off, true = on
 //              mode      = formatting mode.
 //
 // Returns: length of string
 //==================================================================
-void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInsert, InputMode mode) {
+void Input1(char *out_text, const string& orig_text, int max_length, bool bInsert, InputMode mode) {
   char szTemp[ 255 ];
   const char dash = '-';
   const char slash = '/';
 
 #if defined( __unix__ )
-  input1(szTemp, nMaxLength, mode, true, false);
-  strcpy(pszOutText, szTemp);
+  input1(szTemp, max_length, mode, true, false);
+  strcpy(out_text, szTemp);
   return;
 #endif // __unix__
 
   if (!okansi()) {
-    input1(szTemp, nMaxLength, mode, true, false);
-    strcpy(pszOutText, szTemp);
+    input1(szTemp, max_length, mode, true, false);
+    strcpy(out_text, szTemp);
     return;
   }
   int nTopDataSaved = session()->topdata;
   if (session()->topdata != LocalIO::topdataNone) {
     session()->topdata = LocalIO::topdataNone;
-    application()->UpdateTopScreen();
+    session()->UpdateTopScreen();
   }
   if (mode == InputMode::DATE || mode == InputMode::PHONE) {
     bInsert = false;
@@ -279,18 +279,18 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
   int nLength = 0;
   szTemp[0] = '\0';
 
-  nMaxLength = std::min<int>(nMaxLength, 80);
+  max_length = std::min<int>(max_length, 80);
   bout.Color(4);
   int x = session()->localIO()->WhereX() + 1;
   int y = session()->localIO()->WhereY() + 1;
 
   bout.GotoXY(x, y);
-  for (int i = 0; i < nMaxLength; i++) {
+  for (int i = 0; i < max_length; i++) {
     bout << input_background_char;
   }
   bout.GotoXY(x, y);
-  if (!origText.empty()) {
-    strcpy(szTemp, origText.c_str());
+  if (!orig_text.empty()) {
+    strcpy(szTemp, orig_text.c_str());
     bout << szTemp;
     bout.GotoXY(x, y);
     pos = nLength = strlen(szTemp);
@@ -326,7 +326,7 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
     case COMMAND_RIGHT:                   // Right Arrow
     case CD:
       if ((mode != InputMode::DATE) && (mode != InputMode::PHONE)) {
-        if ((pos != nLength) && (pos != nMaxLength)) {
+        if ((pos != nLength) && (pos != max_length)) {
           pos++;
         }
       }
@@ -392,7 +392,7 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
       done = true;
       break;
     default:                              // All others < 256
-      if (c < 255 && c > 31 && ((bInsert && nLength < nMaxLength) || (!bInsert && pos < nMaxLength))) {
+      if (c < 255 && c > 31 && ((bInsert && nLength < max_length) || (!bInsert && pos < max_length))) {
         if (mode != InputMode::MIXED && mode != InputMode::FILENAME && mode != InputMode::FULL_PATH_NAME) {
           c = upcase(static_cast<unsigned char>(c));
         }
@@ -436,8 +436,8 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
              (mode == InputMode::PHONE && c != dash)) ||
             (mode != InputMode::DATE && mode != InputMode::PHONE && c != 0)) {
           if (!bInsert || pos == nLength) {
-            bputch(static_cast< unsigned char >(c));
-            szTemp[pos++] = static_cast< char >(c);
+            bputch(static_cast<unsigned char>(c));
+            szTemp[pos++] = static_cast<char>(c);
             if (pos > nLength) {
               nLength++;
             }
@@ -458,9 +458,9 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
     CheckForHangup();
   } while (!done && !hangup);
   if (nLength) {
-    strcpy(pszOutText, szTemp);
+    strcpy(out_text, szTemp);
   } else {
-    pszOutText[0] = '\0';
+    out_text[0] = '\0';
   }
 
   session()->topdata = nTopDataSaved;
@@ -470,11 +470,11 @@ void Input1(char *pszOutText, const string& origText, int nMaxLength, bool bInse
   return;
 }
 
-string Input1(const string& origText, int nMaxLength, bool bInsert, InputMode mode) {
+string Input1(const string& orig_text, int max_length, bool bInsert, InputMode mode) {
   char szTempBuffer[255];
-  WWIV_ASSERT(nMaxLength < sizeof(szTempBuffer));
+  WWIV_ASSERT(max_length < sizeof(szTempBuffer));
 
-  Input1(szTempBuffer, origText, nMaxLength, bInsert, mode);
+  Input1(szTempBuffer, orig_text, max_length, bInsert, mode);
   return string(szTempBuffer);
 }
 

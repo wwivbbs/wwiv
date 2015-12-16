@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -27,6 +27,7 @@
 #include "bbs/connect1.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
+#include "bbs/message_file.h"
 #include "bbs/msgbase.h"
 #include "bbs/netsup.h"
 #include "bbs/newuser.h"
@@ -55,8 +56,6 @@ void asv() {
   long *reg_num, reg_num1;
   int i2 = 0, reg = 0, valfile = 0;
   bool ok = false;
-  messagerec msg;
-  int nAllowAnon = 0;
 
   bout.nl();
   bout << "|#5Are you the SysOp of a BBS? ";
@@ -70,7 +69,7 @@ void asv() {
     case '1':
       bout << "|#5Select a network you are in [Q=Quit].";
       bout.nl(2);
-      for (i = 0; i < session()->GetMaxNetworkNumber(); i++) {
+      for (i = 0; i < session()->max_net_num(); i++) {
         if (net_networks[i].sysnum) {
           bout << " |#3" << i + 1 << "|#1.  |#1" << net_networks[i].name << wwiv::endl;
         }
@@ -79,7 +78,7 @@ void asv() {
       bout << "|#1:";
       input(s, 2, true);
       i = atoi(s);
-      if (i < 1 || i > session()->GetMaxNetworkNumber()) {
+      if (i < 1 || i > session()->max_net_num()) {
         bout.nl();
         bout << "|#6Aborted!";
         break;
@@ -214,8 +213,8 @@ void asv() {
         session()->user()->SetHomeSystemNumber(inode);
         session()->user()->SetForwardUserNumber(1);
         session()->user()->SetHomeUserNumber(1);
-        session()->user()->SetForwardNetNumber(session()->GetNetworkNumber());
-        session()->user()->SetHomeNetNumber(session()->GetNetworkNumber());
+        session()->user()->SetForwardNetNumber(session()->net_num());
+        session()->user()->SetHomeNetNumber(session()->net_num());
         bout.nl();
         if (reg != 2) {
           if (reg) {
@@ -235,16 +234,36 @@ void asv() {
         }
         sprintf(s1, "%s%s", syscfg.gfilesdir, FORMASV_MSG);
         if (File::Exists(s1)) {
-          LoadFileIntoWorkspace(s1, true);
+          LoadFileIntoWorkspace(s1, true, true);
+          messagerec msg;
           msg.storage_type = 2;
-          session()->SetNewMailWaiting(true);
           sprintf(net_email_name, "%s #1@%u", syscfg.sysopname, net_sysnum);
-          string title(irt);
-          inmsg(&msg, &title, &nAllowAnon, false, "email", INMSG_NOFSED, snode, MSGED_FLAG_NONE, true);
-          sendout_email(title, &msg, 0, 1, inode, 0, 1, net_sysnum, 1, session()->GetNetworkNumber());
+          
+          MessageEditorData data;
+          data.title = irt;
+          data.anonymous_flag = 0;
+          data.aux = "email";
+          data.fsed_flags = INMSG_NOFSED;
+          data.to_name = snode;
+          data.msged_flags = MSGED_FLAG_NONE;
+          data.silent_mode = true;
+          if (inmsg(data)) {
+            savefile(data.text, &msg, data.aux);
+            EmailData email(data);
+            email.msg = &msg;
+            email.anony = 0;
+            email.user_number = 1;
+            email.system_number = inode;
+            email.an = false;
+            email.from_user = 1;
+            email.from_system = net_sysnum;
+            email.forwarded_code = 1;
+            email.from_network_number = session()->net_num();
+            email.silent_mode = true;
+            sendout_email(email);
+          }
         }
         irt[0] = '\0';
-        session()->SetNewMailWaiting(false);
       } else {
         valfile = 2;
         break;

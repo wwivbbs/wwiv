@@ -14,7 +14,7 @@
     <ProjectGuid>{BCF878F6-1997-4C3D-864E-12F0C1B5EB5E}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>bbs</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -28,7 +28,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>NotSet</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -87,17 +87,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="archivers.h" />
+    <ClInclude Include="arword.h" />
     <ClInclude Include="asv.h" />
     <ClInclude Include="attach.h" />
     <ClInclude Include="automsg.h" />
+    <ClInclude Include="batch.h" />
     <ClInclude Include="bbs.h" />
     <ClInclude Include="bbslist.h" />
+    <ClInclude Include="bbsovl1.h" />
+    <ClInclude Include="bbsovl2.h" />
+    <ClInclude Include="bbsovl3.h" />
     <ClInclude Include="bbsutl.h" />
     <ClInclude Include="bbsutl1.h" />
+    <ClInclude Include="bbsutl2.h" />
     <ClInclude Include="bgetch.h" />
     <ClInclude Include="bputch.h" />
     <ClInclude Include="callback.h" />
     <ClInclude Include="capture.h" />
+    <ClInclude Include="chains.h" />
+    <ClInclude Include="chat.h" />
+    <ClInclude Include="chnedit.h" />
     <ClInclude Include="com.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="conf.h" />
@@ -116,20 +126,23 @@
     <ClInclude Include="keycodes.h" />
     <ClInclude Include="listplus.h" />
     <ClInclude Include="local_io.h" />
+    <ClInclude Include="local_io_curses.h" />
     <ClInclude Include="local_io_win32.h" />
     <ClInclude Include="menu.h" />
     <ClInclude Include="menuspec.h" />
     <ClInclude Include="menusupp.h" />
     <ClInclude Include="menu_parser.h" />
+    <ClInclude Include="message_file.h" />
     <ClInclude Include="msgbase.h" />
-    <ClInclude Include="net.h" />
+    <ClInclude Include="multinst.h" />
+    <ClInclude Include="netsup.h" />
+    <ClInclude Include="newuser.h" />
     <ClInclude Include="new_bbslist.h" />
     <ClInclude Include="null_local_io.h" />
     <ClInclude Include="pause.h" />
     <ClInclude Include="platform\platformfcns.h" />
     <ClInclude Include="platform\win32\InternalTelnetServer.h" />
     <ClInclude Include="platform\win32\wiot.h" />
-    <ClInclude Include="platform\wutil.h" />
     <ClInclude Include="printfile.h" />
     <ClInclude Include="prot\crctab.h" />
     <ClInclude Include="prot\xmodem.h" />
@@ -137,8 +150,12 @@
     <ClInclude Include="qscan.h" />
     <ClInclude Include="quote.h" />
     <ClInclude Include="qwk.h" />
+    <ClInclude Include="read_message.h" />
     <ClInclude Include="runnable.h" />
     <ClInclude Include="shortmsg.h" />
+    <ClInclude Include="sr.h" />
+    <ClInclude Include="stuffin.h" />
+    <ClInclude Include="subacc.h" />
     <ClInclude Include="subxtr.h" />
     <ClInclude Include="sysopf.h" />
     <ClInclude Include="sysoplog.h" />
@@ -146,7 +163,6 @@
     <ClInclude Include="uedit.h" />
     <ClInclude Include="utility.h" />
     <ClInclude Include="valscan.h" />
-    <ClInclude Include="vardec.h" />
     <ClInclude Include="vars.h" />
     <ClInclude Include="vote.h" />
     <ClInclude Include="voteedit.h" />
@@ -158,14 +174,15 @@
     <ClInclude Include="wsession.h" />
     <ClInclude Include="wstatus.h" />
     <ClInclude Include="wuser.h" />
-    <ClInclude Include="wwiv.h" />
-    <ClInclude Include="wwivassert.h" />
     <ClInclude Include="wwivcolors.h" />
+    <ClInclude Include="wwiv_windows.h" />
+    <ClInclude Include="xfer.h" />
     <ClInclude Include="xfer_common.h" />
     <ClInclude Include="xinitini.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="archivers.cpp" />
+    <ClCompile Include="arword.cpp" />
     <ClCompile Include="asv.cpp" />
     <ClCompile Include="attach.cpp" />
     <ClCompile Include="automsg.cpp" />
@@ -222,6 +239,7 @@
     <ClCompile Include="menuspec.cpp" />
     <ClCompile Include="menusupp.cpp" />
     <ClCompile Include="menu_parser.cpp" />
+    <ClCompile Include="message_file.cpp" />
     <ClCompile Include="misccmd.cpp" />
     <ClCompile Include="msgbase.cpp" />
     <ClCompile Include="msgbase1.cpp" />
@@ -251,6 +269,7 @@
     <ClCompile Include="qwk.cpp" />
     <ClCompile Include="qwk1.cpp" />
     <ClCompile Include="readmail.cpp" />
+    <ClCompile Include="read_message.cpp" />
     <ClCompile Include="shortmsg.cpp" />
     <ClCompile Include="showfiles.cpp" />
     <ClCompile Include="SmallRecord.cpp" />

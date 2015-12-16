@@ -21,7 +21,9 @@
 #include <unistd.h>
 #include <string>
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/wsession.h"
 
 #include "core/strings.h"
 #include "core/file.h"
@@ -35,7 +37,7 @@ using wwiv::strings::StrCat;
 void WWIV_make_abs_cmd(const string root, string* out) {
   if (out->find("/") != string::npos) {
     string s(*out);
-    *out = StrCat(application()->GetHomeDir(), s);
+    *out = StrCat(session()->GetHomeDir(), s);
   }
 }
 #endif  // NOT_BBS

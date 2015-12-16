@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*               Copyright (C)2014-2015 WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -102,14 +102,14 @@ int CommandLineCommand::Parse(int start_pos) {
       const string key = delims[0].substr(2);
       const string value = (delims.size() > 1) ? delims[1] : "";
       if (!contains(args_allowed_, key)) {
-        throw unknown_argument_error(StrCat("unknown_argument_error: ", key));
+        throw unknown_argument_error(StrCat("key=", key));
       }
       HandleCommandLineArgument(key, value);
     } else if (starts_with(s, "/") || starts_with(s, "-")) {
       char letter = static_cast<char>(std::toupper(s[1]));
       const string key = ArgNameForKey(letter);
       if (key.empty()) {
-        throw unknown_argument_error(StrCat("unknown_argument_error: key=", key));
+        throw unknown_argument_error(StrCat("letter=", letter));
       }
       const string value = s.substr(2);
       HandleCommandLineArgument(key, value);
@@ -151,16 +151,16 @@ std::string CommandLineCommand::ToString() const {
 
 std::string CommandLineCommand::GetHelp() const {
   std::ostringstream ss;
-  string name = (name_.empty()) ? "program" : name_;
-  ss << name << " arguments:" << std::endl;
+  string program_name = (name_.empty()) ? "program" : name_;
+  ss << program_name << " arguments:" << std::endl;
   for (const auto& a : args_allowed_) {
     ss << "--" << StringPrintf("%-20s", a.second.name.c_str()) << " " << a.second.help_text << endl;
   }
   ss << endl;
   ss << "commands:" << std::endl;
   for (const auto& a : commands_allowed_) {
-    const string name = a.second.name();
-    ss << "--" << StringPrintf("%-20s", name.c_str()) << " " << a.second.help_text() << endl;
+    const string allowed_name = a.second.name();
+    ss << "--" << StringPrintf("%-20s", allowed_name.c_str()) << " " << a.second.help_text() << endl;
   }
   return ss.str();
 }
@@ -177,6 +177,11 @@ std::string CommandLine::GetHelp() const {
   return ss.str();
 }
 
+unknown_argument_error::unknown_argument_error(const std::string& message)
+    : std::runtime_error(StrCat("unknown_argument_error: ", message)) {
+}
+
 
 }  // namespace core
 }  // namespace wwiv
+

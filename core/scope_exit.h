@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*               Copyright (C)2014-2015 WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -26,8 +26,14 @@ namespace core {
 
 class ScopeExit {
 public:
+  ScopeExit() {}
   explicit ScopeExit(std::function<void()> fn) : fn_(fn) {}
-  ~ScopeExit() { fn_(); }
+  ~ScopeExit() { if (fn_) { fn_(); } }
+  // Apparently msvc always has a valid target here since this doesn't go boom:
+  // std::function<void(void)> f;
+  // if (f) { FAIL("boom"); }
+  // bool empty() const { if (fn_) return true; return false; }
+  void swap(std::function<void()> fn) { fn_.swap(fn); }
 private:
   std::function<void()> fn_;
 };

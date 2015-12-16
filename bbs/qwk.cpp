@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -32,13 +32,18 @@
 #endif
 #include <sys/stat.h>
 
+#include "bbs/bbsovl3.h"
+#include "bbs/conf.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
+#include "bbs/message_file.h"
 #include "bbs/pause.h"
 #include "bbs/qscan.h"
 #include "bbs/stuffin.h"
 #include "bbs/subxtr.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"
 #include "bbs/wstatus.h"
@@ -49,7 +54,7 @@
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
-#define qwk_iscan(x)         (iscan1(usub[x].subnum, 1))
+#define qwk_iscan(x)         (iscan1(usub[x].subnum))
 
 using std::unique_ptr;
 using namespace wwiv::strings;
@@ -239,9 +244,9 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
   }
 
   uint32_t qscnptrx = qsc_p[sn];
-  uint32_t sd = session()->m_SubDateCache[sn];
+  uint32_t sd = WWIVReadLastRead(sn);
 
-  if (qwk_percent || ((!sd) || (sd > qscnptrx))) {
+  if (qwk_percent || (!sd || sd > qscnptrx)) {
     os = session()->GetCurrentMessageArea();
     session()->SetCurrentMessageArea(bn);
     i = 1;
@@ -283,7 +288,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
       }
     }
 
-    unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+    unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
     qsc_p[session()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
     session()->SetCurrentMessageArea(os);
   } else {
@@ -351,13 +356,13 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
     return;
   }
 
-  int nn = session()->GetNetworkNumber();
+  int nn = session()->net_num();
   if (p->status & status_post_new_net) {
-    set_net_num(p->title[80]);
+    set_net_num(p->network.network_msg.net_number);
   }
 
   put_in_qwk(p, (subboards[session()->GetCurrentReadMessageArea()].filename), msgnum, qwk_info);
-  if (nn != session()->GetNetworkNumber()) {
+  if (nn != session()->net_num()) {
     set_net_num(nn);
   }
 
@@ -367,13 +372,13 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
   if (p->qscan > qsc_p[session()->GetCurrentReadMessageArea()]) { // Update qscan pointer right here
     qsc_p[session()->GetCurrentReadMessageArea()] = p->qscan;  // And here
   }
-  WStatus* pStatus1 = application()->GetStatusManager()->GetStatus();
+  WStatus* pStatus1 = session()->GetStatusManager()->GetStatus();
   uint32_t lQScanPtr = pStatus1->GetQScanPointer();
   delete pStatus1;
   if (p->qscan >= lQScanPtr) {
-    WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+    WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
     pStatus->SetQScanPointer(p->qscan + 1);
-    application()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->GetStatusManager()->CommitTransaction(pStatus);
   }
 }
 
@@ -396,15 +401,14 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   messagerec m = (m1->msg);
   int cur = 0;
 
-  long len;
-  unique_ptr<char[]> ss(readfile(&m, fn, &len));
-
-  if (!ss) {
+  string ss;
+  if (!readfile(&m, fn, &ss)) {
     bout.bprintf("File not found.");
     bout.nl();
     return;
   }
 
+  long len = ss.length();
   int p = 0;
   // n = name...
   while ((ss[p] != 13) && ((long)p < len) && (p < 200) && !hangup) {
@@ -458,7 +462,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   p1 = 0;
 
   len = len - cur;
-  make_qwk_ready(ss.get() + cur, &len, qwk_address);
+  make_qwk_ready(&ss[cur], &len, qwk_address);
 
   int amount_blocks = ((int)len / sizeof(qwk_info->qwk_rec)) + 2;
 
@@ -517,7 +521,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 
     if (this_pos < len) {
       size_t size = (this_pos + sizeof(qwk_info->qwk_rec) > static_cast<size_t>(len)) ? (len - this_pos - 1) : sizeof(qwk_info->qwk_rec);
-      memmove(&qwk_info->qwk_rec, ss.get() + cur + this_pos, size);
+      memmove(&qwk_info->qwk_rec, ss.c_str() + cur + this_pos, size);
     }
     // Save this block
     append_block(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec));
@@ -929,7 +933,7 @@ static void qwk_send_file(string fn, bool *sent, bool *abort) {
   default: {
     int exit_code = extern_prot(protocol - WWIV_NUM_INTERNAL_PROTOCOLS, fn.c_str(), 1);
     *abort = 0;
-    if (exit_code == externs[protocol - WWIV_NUM_INTERNAL_PROTOCOLS].ok1) {
+    if (exit_code == session()->externs[protocol - WWIV_NUM_INTERNAL_PROTOCOLS].ok1) {
       *sent = 1;
     }
   } break;
@@ -1271,11 +1275,11 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     sprintf(parem2, "%s*.*", QWK_DIRECTORY);
 
     string command = stuff_in(arcs[archiver].arca, parem1, parem2, "", "", "");
-    ExecuteExternalProgram(command, application()->GetSpawnOptions(SPAWNOPT_ARCH_A));
+    ExecuteExternalProgram(command, session()->GetSpawnOptions(SPAWNOPT_ARCH_A));
 
     qwk_file_to_send = wwiv::strings::StringPrintf("%s%s", QWK_DIRECTORY, qwkname);
     // TODO(rushfan): Should we just have a make abs path?
-    WWIV_make_abs_cmd(application()->GetHomeDir(), &qwk_file_to_send);
+    WWIV_make_abs_cmd(session()->GetHomeDir(), &qwk_file_to_send);
 
     File qwk_file_to_send_file(qwk_file_to_send);
     if (!File::Exists(qwk_file_to_send)){

@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015,WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -141,7 +141,6 @@ bool File::Copy(const std::string& sourceFileName, const std::string& destFileNa
 }
 
 bool File::Move(const std::string& sourceFileName, const std::string& destFileName) {
-  //TODO: Atani needs to see if Rushfan buggered up this implementation
   if (Copy(sourceFileName, destFileName)) {
     return Remove(sourceFileName);
   }

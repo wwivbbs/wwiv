@@ -287,7 +287,7 @@ int XmodemTInit( ZModem *info ) {
 
 /* called by user to begin transmission of a file */
 
-int ZmodemTFile(const char	*pszFileName,
+int ZmodemTFile(const char	*file_name,
                 const char	*pszRemoteFileName,
                 u_int	f0,
                 u_int	f1,
@@ -296,12 +296,12 @@ int ZmodemTFile(const char	*pszFileName,
                 int	filesRem,
                 int	bytesRem,
                 ZModem	*info ) {
-	if( pszFileName == nullptr || (info->file = fopen(pszFileName, "rb")) == nullptr ) {
+	if( file_name == nullptr || (info->file = fopen(file_name, "rb")) == nullptr ) {
 		return ZmErrCantOpen;
 	}
 
 	info->fileEof = 0;
-	info->filename = strdup(pszFileName);
+	info->filename = strdup(file_name);
 	info->rfilename = strdup((pszRemoteFileName != nullptr) ? pszRemoteFileName : "noname");
 	info->filesRem = filesRem;
 	info->bytesRem = bytesRem;

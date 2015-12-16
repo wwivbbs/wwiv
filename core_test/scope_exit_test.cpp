@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*               Copyright (C)2014-2015 WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -27,6 +27,23 @@ TEST(ScopeExitTest, Basic) {
   auto f = [&] { committed = true; };
   {
     ScopeExit e(f);
+    ASSERT_FALSE(committed);
+  }
+  ASSERT_TRUE(committed);
+}
+
+TEST(ScopeExitTest, Empty) {
+  // Should not crash on exit.
+  ScopeExit e;
+}
+
+TEST(ScopeExitTest, Swap) {
+  bool committed = false;
+  bool rolledback = false;
+  auto f = [&] { committed = true; };
+  {
+    ScopeExit e;
+    e.swap(f);
     ASSERT_FALSE(committed);
   }
   ASSERT_TRUE(committed);

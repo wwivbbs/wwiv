@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -24,9 +24,14 @@
 #include <unistd.h>
 #endif  // _WIN32
 
+#include "bbs/batch.h"
+#include "bbs/bbsovl3.h"
+#include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/external_edit.h"
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"
@@ -35,6 +40,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/xfer_common.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 // How far to indent extended descriptions
 static const int INDENTION = 24;
@@ -58,7 +64,7 @@ void modify_extended_description(char **sss, const char *dest) {
   do {
     if (ii) {
       bout.nl();
-      if (okfsed() && application()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
+      if (okfsed() && session()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
         bout << "|#5Modify the extended description? ";
       } else {
         bout << "|#5Enter a new extended description? ";
@@ -73,7 +79,7 @@ void modify_extended_description(char **sss, const char *dest) {
         return;
       }
     }
-    if (okfsed() && application()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
+    if (okfsed() && session()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
       sprintf(s, "%sEXTENDED.DSC", syscfgovr.tempdir);
       if (*sss) {
         File fileExtDesc(s);
@@ -181,17 +187,17 @@ void modify_extended_description(char **sss, const char *dest) {
 }
 
 
-bool valid_desc(const char *pszDescription) {
+bool valid_desc(const char *description) {
   // I don't think this function is really doing what it should
   // be doing, but am not sure what it should be doing instead.
   size_t i = 0;
 
   do {
-    if (pszDescription[i] > '@' && pszDescription[i] < '{') {
+    if (description[i] > '@' && description[i] < '{') {
       return true;
     }
     i++;
-  } while (i < strlen(pszDescription));
+  } while (i < strlen(description));
   return false;
 }
 
@@ -201,7 +207,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
   int i;
   bool ok = false;
 
-  if (application()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && (directories[dn].mask & mask_cdrom)) {
+  if (session()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && (directories[dn].mask & mask_cdrom)) {
     return false;
   }
   sprintf(s, "%s%s", directories[dn].path, stripfn(u->filename));
@@ -226,12 +232,12 @@ bool get_file_idz(uploadsrec * u, int dn) {
   chdir(directories[dn].path);
   {
 	  File file(File::current_directory(), stripfn(u->filename));
-	  application()->CdHome();
+	  session()->CdHome();
 	  get_arc_cmd(cmd, file.full_pathname().c_str(), 1, "FILE_ID.DIZ DESC.SDI");
   }
   chdir(syscfgovr.tempdir);
   ExecuteExternalProgram(cmd, EFLAG_NOHUP);
-  application()->CdHome();
+  session()->CdHome();
   sprintf(s, "%s%s", syscfgovr.tempdir, FILE_ID_DIZ);
   if (!File::Exists(s)) {
     sprintf(s, "%s%s", syscfgovr.tempdir, DESC_SDI);
@@ -258,7 +264,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
       b[session()->max_extend_lines * 256] = 0;
     }
     file.Close();
-    if (application()->HasConfigFlag(OP_FLAGS_IDZ_DESC)) {
+    if (session()->HasConfigFlag(OP_FLAGS_IDZ_DESC)) {
       ss = strtok(b, "\n");
       if (ss) {
         for (i = 0; i < wwiv::strings::GetStringLength(ss); i++) {
@@ -309,7 +315,7 @@ int read_idz_all() {
     count += read_idz(0, i);
   }
   tmp_disable_conf(false);
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
   return count;
 }
 
@@ -344,7 +350,7 @@ int read_idz(int mode, int tempdir) {
         (strstr(u.filename, ".EXE") == nullptr)) {
       chdir(directories[udir[tempdir].subnum].path);
       File file(File::current_directory(), stripfn(u.filename));
-      application()->CdHome();
+      session()->CdHome();
       if (file.Exists()) {
         if (get_file_idz(&u, udir[tempdir].subnum)) {
           count++;
@@ -357,7 +363,7 @@ int read_idz(int mode, int tempdir) {
   }
   fileDownload.Close();
   if (mode) {
-    application()->UpdateTopScreen();
+    session()->UpdateTopScreen();
   }
   return count;
 }
@@ -656,11 +662,11 @@ void tag_files() {
         if (s[0] != 0) {
           bout.nl();
           session()->tagging = 0;
-          ExecuteExternalProgram(s, application()->GetSpawnOptions(SPAWNOPT_ARCH_L));
+          ExecuteExternalProgram(s, session()->GetSpawnOptions(SPAWNOPT_ARCH_L));
           bout.nl();
           pausescr();
           session()->tagging = 1;
-          application()->UpdateTopScreen();
+          session()->UpdateTopScreen();
           bout.cls();
           relist();
         } else {
@@ -681,12 +687,12 @@ void tag_files() {
 }
 
 
-int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
+int add_batch(char *description, const char *file_name, int dn, long fs) {
   char ch;
   char s1[81], s2[81];
   int i;
 
-  if (find_batch_queue(pszFileName) > -1) {
+  if (find_batch_queue(file_name) > -1) {
     return 0;
   }
 
@@ -702,20 +708,20 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
     if (dn == -1) {
       return 0;
     } else {
-      for (i = 0; i < wwiv::strings::GetStringLength(pszDescription); i++) {
-        if (pszDescription[i] == RETURN) {
-          pszDescription[i] = SPACE;
+      for (i = 0; i < wwiv::strings::GetStringLength(description); i++) {
+        if (description[i] == RETURN) {
+          description[i] = SPACE;
         }
       }
       bout.backline();
-      bout.bprintf(" |#6? |#1%s %3luK |#5%-43.43s |#7[|#2Y/N/Q|#7] |#0", pszFileName,
-                                        bytes_to_k(fs), stripcolors(pszDescription));
+      bout.bprintf(" |#6? |#1%s %3luK |#5%-43.43s |#7[|#2Y/N/Q|#7] |#0", file_name,
+                                        bytes_to_k(fs), stripcolors(description));
       ch = onek_ncr("QYN\r");
       bout.backline();
       if (wwiv::UpperCase<char>(ch) == 'Y') {
         if (directories[dn].mask & mask_cdrom) {
-          sprintf(s2, "%s%s", directories[dn].path, pszFileName);
-          sprintf(s1, "%s%s", syscfgovr.tempdir, pszFileName);
+          sprintf(s2, "%s%s", directories[dn].path, file_name);
+          sprintf(s1, "%s%s", syscfgovr.tempdir, file_name);
           if (!File::Exists(s1)) {
             if (!copyfile(s2, s1, true)) {
               bout << "|#6 file unavailable... press any key.";
@@ -725,7 +731,7 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
             bout.clreol();
           }
         } else {
-          sprintf(s2, "%s%s", directories[dn].path, pszFileName);
+          sprintf(s2, "%s%s", directories[dn].path, file_name);
           StringRemoveWhitespace(s2);
           if ((!File::Exists(s2)) && (!so())) {
             bout << "\r";
@@ -738,7 +744,7 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
           }
         }
         batchtime += static_cast<float>(t);
-        strcpy(batch[session()->numbatch].filename, pszFileName);
+        strcpy(batch[session()->numbatch].filename, file_name);
         batch[session()->numbatch].dir = static_cast<short>(dn);
         batch[session()->numbatch].time = static_cast<float>(t);
         batch[session()->numbatch].sending = 1;
@@ -770,7 +776,7 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
 }
 
 
-int try_to_download(const char *pszFileMask, int dn) {
+int try_to_download(const char *file_mask, int dn) {
   int rtn;
   bool abort = false;
   bool ok = false;
@@ -778,7 +784,7 @@ int try_to_download(const char *pszFileMask, int dn) {
   char s1[81], s3[81];
 
   dliscan1(dn);
-  int i = recno(pszFileMask);
+  int i = recno(file_mask);
   if (i <= 0) {
     checka(&abort);
     return ((abort) ? -1 : 0);
@@ -794,7 +800,7 @@ int try_to_download(const char *pszFileMask, int dn) {
     fileDownload.Close();
 
     bool ok2 = false;
-    if (strncmp(u.filename, "WWIV4", 5) == 0 && !application()->HasConfigFlag(OP_FLAGS_NO_EASY_DL)) {
+    if (strncmp(u.filename, "WWIV4", 5) == 0 && !session()->HasConfigFlag(OP_FLAGS_NO_EASY_DL)) {
       ok2 = true;
     }
 
@@ -812,7 +818,7 @@ int try_to_download(const char *pszFileMask, int dn) {
     if (abort || rtn == -3) {
       ok = false;
     } else {
-      i = nrecno(pszFileMask, i);
+      i = nrecno(file_mask, i);
     }
   } while (i > 0 && ok && !hangup);
   returning = true;
@@ -961,9 +967,10 @@ void download() {
   if (ip > 0) {
     switch (ip) {
     case WWIV_INTERNAL_PROT_YMODEM: {
-      if (over_intern && (over_intern[2].othr & othr_override_internal) &&
-          (over_intern[2].sendbatchfn[0])) {
-        dszbatchdl(had, over_intern[2].sendbatchfn, prot_name(WWIV_INTERNAL_PROT_YMODEM));
+      if (session()->over_intern.size() > 0
+          && (session()->over_intern[2].othr & othr_override_internal)
+          && (session()->over_intern[2].sendbatchfn[0])) {
+        dszbatchdl(had, session()->over_intern[2].sendbatchfn, prot_name(WWIV_INTERNAL_PROT_YMODEM));
       } else {
         ymbatchdl(had);
       }
@@ -973,8 +980,8 @@ void download() {
       zmbatchdl(had);
     }
     default: {
-      dszbatchdl(had, externs[ip - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn,
-                 externs[ip - WWIV_NUM_INTERNAL_PROTOCOLS].description);
+      dszbatchdl(had, session()->externs[ip - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn,
+        session()->externs[ip - WWIV_NUM_INTERNAL_PROTOCOLS].description);
     }
     }
     if (!had) {
@@ -1254,13 +1261,13 @@ void removenotthere() {
     removefilesnotthere(udir[session()->GetCurrentFileArea()].subnum, &autodel);
   }
   tmp_disable_conf(false);
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
 }
 
 
-int find_batch_queue(const char *pszFileName) {
+int find_batch_queue(const char *file_name) {
   for (int i = 0; i < session()->numbatch; i++) {
-    if (wwiv::strings::IsEquals(pszFileName, batch[i].filename)) {
+    if (wwiv::strings::IsEquals(file_name, batch[i].filename)) {
       return i;
     }
   }
@@ -1270,8 +1277,8 @@ int find_batch_queue(const char *pszFileName) {
 
 
 // Removes a file off the batch queue specified by pszFileNam,e
-void remove_batch(const char *pszFileName) {
-  int batchNum = find_batch_queue(pszFileName);
+void remove_batch(const char *file_name) {
+  int batchNum = find_batch_queue(file_name);
   if (batchNum > -1) {
     delbatch(batchNum);
   }

@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -19,11 +19,14 @@
 
 #include "bbs/datetime.h"
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
+#include "sdk/filenames.h"
 
 char *gfiledata(int nSectionNum, char *pBuffer);
 
@@ -57,7 +60,7 @@ void showsec() {
 }
 
 
-char* GetArString(gfiledirrec r, char* pszBuffer) {
+char* GetArString(gfiledirrec r, char* buffer) {
   char szBuffer[ 81 ];
   strcpy(szBuffer, "None.");
   if (r.ar != 0) {
@@ -68,8 +71,8 @@ char* GetArString(gfiledirrec r, char* pszBuffer) {
     }
     szBuffer[1] = 0;
   }
-  strcpy(pszBuffer, szBuffer);
-  return pszBuffer;
+  strcpy(buffer, szBuffer);
+  return buffer;
 }
 
 
@@ -332,15 +335,15 @@ bool fill_sec(int sn) {
     bout << "Section full.\r\n";
   }
   if (chd) {
-    char szFileName[ MAX_PATH ];
-    sprintf(szFileName, "%s%s.gfl", syscfg.datadir, gfilesec[sn].filename);
-    File gflFile(szFileName);
+    char file_name[ MAX_PATH ];
+    sprintf(file_name, "%s%s.gfl", syscfg.datadir, gfilesec[sn].filename);
+    File gflFile(file_name);
     gflFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     gflFile.Write(g, nf * sizeof(gfilerec));
     gflFile.Close();
-    WStatus *pStatus = application()->GetStatusManager()->BeginTransaction();
+    WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
     pStatus->SetGFileDate(date());
-    application()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->GetStatusManager()->CommitTransaction(pStatus);
   }
   free(g);
   return !ok;

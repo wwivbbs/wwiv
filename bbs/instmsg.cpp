@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -23,25 +23,30 @@
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/multinst.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
+#include "sdk/filenames.h"
 
 // Local functions
 void send_inst_msg(inst_msg_header * ih, const char *msg);
 int  handle_inst_msg(inst_msg_header * ih, const char *msg);
-void send_inst_str1(int m, int whichinst, const char *pszSendString);
+void send_inst_str1(int m, int whichinst, const char *send_string);
 bool inst_available(instancerec * ir);
 bool inst_available_chat(instancerec * ir);
 
 using wwiv::bbs::TempDisablePause;
 
+static int32_t last_iia = 0;
+
 void send_inst_msg(inst_msg_header *ih, const char *msg) {
   char szFileName[MAX_PATH];
 
-  sprintf(szFileName, "%sTMSG%3.3u.%3.3d", syscfg.datadir, application()->GetInstanceNumber(), ih->dest_inst);
+  sprintf(szFileName, "%sTMSG%3.3u.%3.3d", syscfg.datadir, session()->GetInstanceNumber(), ih->dest_inst);
   File file(szFileName);
   if (file.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
     file.Seek(0L, File::seekEnd);
@@ -66,28 +71,28 @@ void send_inst_msg(inst_msg_header *ih, const char *msg) {
 
 #define LAST(s) s[strlen(s)-1]
 
-void send_inst_str1(int m, int whichinst, const char *pszSendString) {
+void send_inst_str1(int m, int whichinst, const char *send_string) {
   inst_msg_header ih;
   char szTempSendString[ 1024 ];
 
-  sprintf(szTempSendString, "%s\r\n", pszSendString);
+  sprintf(szTempSendString, "%s\r\n", send_string);
   ih.main = static_cast<unsigned short>(m);
   ih.minor = 0;
-  ih.from_inst = static_cast<unsigned short>(application()->GetInstanceNumber());
+  ih.from_inst = static_cast<unsigned short>(session()->GetInstanceNumber());
   ih.from_user = static_cast<unsigned short>(session()->usernum);
   ih.msg_size = strlen(szTempSendString) + 1;
   ih.dest_inst = static_cast<unsigned short>(whichinst);
-  ih.daten = static_cast<unsigned long>(time(nullptr));
+  ih.daten = static_cast<uint32_t>(time(nullptr));
 
   send_inst_msg(&ih, szTempSendString);
 }
 
-void send_inst_str(int whichinst, const char *pszSendString) {
-  send_inst_str1(INST_MSG_STRING, whichinst, pszSendString);
+void send_inst_str(int whichinst, const char *send_string) {
+  send_inst_str1(INST_MSG_STRING, whichinst, send_string);
 }
 
-void send_inst_sysstr(int whichinst, const char *pszSendString) {
-  send_inst_str1(INST_MSG_SYSMSG, whichinst, pszSendString);
+void send_inst_sysstr(int whichinst, const char *send_string) {
+  send_inst_str1(INST_MSG_SYSMSG, whichinst, send_string);
 }
 
 void send_inst_shutdown(int whichinst) {
@@ -95,11 +100,11 @@ void send_inst_shutdown(int whichinst) {
 
   ih.main = INST_MSG_SHUTDOWN;
   ih.minor = 0;
-  ih.from_inst = static_cast<unsigned short>(application()->GetInstanceNumber());
+  ih.from_inst = static_cast<unsigned short>(session()->GetInstanceNumber());
   ih.from_user = static_cast<unsigned short>(session()->usernum);
   ih.msg_size = 0;
   ih.dest_inst = static_cast<unsigned short>(whichinst);
-  ih.daten = static_cast<unsigned long>(time(nullptr));
+  ih.daten = static_cast<uint32_t>(time(nullptr));
 
   send_inst_msg(&ih, nullptr);
 }
@@ -108,7 +113,7 @@ void send_inst_cleannet() {
   inst_msg_header ih;
   instancerec ir;
 
-  if (application()->GetInstanceNumber() == 1) {
+  if (session()->GetInstanceNumber() == 1) {
     return;
   }
 
@@ -116,11 +121,11 @@ void send_inst_cleannet() {
   if (ir.loc == INST_LOC_WFC) {
     ih.main = INST_MSG_CLEANNET;
     ih.minor = 0;
-    ih.from_inst = static_cast<unsigned short>(application()->GetInstanceNumber());
+    ih.from_inst = static_cast<unsigned short>(session()->GetInstanceNumber());
     ih.from_user = 1;
     ih.msg_size = 0;
     ih.dest_inst = 1;
-    ih.daten = static_cast<unsigned long>(time(nullptr));
+    ih.daten = static_cast<uint32_t>(time(nullptr));
 
     send_inst_msg(&ih, nullptr);
   }
@@ -130,17 +135,17 @@ void send_inst_cleannet() {
 /*
  * "Broadcasts" a message to all online instances.
  */
-void _broadcast(char *pszSendString) {
+void _broadcast(char *send_string) {
   instancerec ir;
 
   int ni = num_instances();
   for (int i = 1; i <= ni; i++) {
-    if (i == application()->GetInstanceNumber()) {
+    if (i == session()->GetInstanceNumber()) {
       continue;
     }
     if (get_inst_info(i, &ir)) {
       if (inst_available(&ir)) {
-        send_inst_str(i, pszSendString);
+        send_inst_str(i, send_string);
       }
     }
   }
@@ -186,7 +191,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
       }
       if (ih->main == INST_MSG_STRING) {
         WUser user;
-        application()->users()->ReadUser(&user, ih->from_user);
+        session()->users()->ReadUser(&user, ih->from_user);
         bout.bprintf("|#1%.12s (%d)|#0> |#2", user.GetUserNameAndNumber(ih->from_user), ih->from_inst);
       } else {
         bout << "|#6[SYSTEM ANNOUNCEMENT] |#7> |#2";
@@ -200,7 +205,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
     }
     break;
   case INST_MSG_CLEANNET:
-    application()->SetCleanNetNeeded(true);
+    session()->SetCleanNetNeeded(true);
     break;
   // Handle this one in process_inst_msgs
   case INST_MSG_SHUTDOWN:
@@ -223,7 +228,7 @@ void process_inst_msgs() {
   inst_msg_header ih;
   WFindFile fnd;
 
-  sprintf(szFindFileName, "%sMSG*.%3.3u", syscfg.datadir, application()->GetInstanceNumber());
+  sprintf(szFindFileName, "%sMSG*.%3.3u", syscfg.datadir, session()->GetInstanceNumber());
   bool bDone = fnd.open(szFindFileName, 0);
   while ((bDone) && (!hangup)) {
     File file(syscfg.datadir, fnd.GetFileName());
@@ -270,7 +275,7 @@ void process_inst_msgs() {
         hangup = true;
         hang_it_up();
         Wait(1);
-        application()->QuitBBS();
+        session()->QuitBBS();
       }
     }
     file.Close();
@@ -346,18 +351,18 @@ int num_instances() {
 
 
 /*
- * Returns 1 if session()->usernum nUserNumber is online, and returns instance user is on in
+ * Returns 1 if session()->usernum user_number is online, and returns instance user is on in
  * wi, else returns 0.
  */
-bool user_online(int nUserNumber, int *wi) {
+bool user_online(int user_number, int *wi) {
   int ni = num_instances();
   for (int i = 1; i <= ni; i++) {
-    if (i == application()->GetInstanceNumber()) {
+    if (i == session()->GetInstanceNumber()) {
       continue;
     }
     instancerec ir;
     get_inst_info(i, &ir);
-    if (ir.user == nUserNumber && (ir.flags & INST_FLAGS_ONLINE)) {
+    if (ir.user == user_number && (ir.flags & INST_FLAGS_ONLINE)) {
       if (wi) {
         *wi = i;
       }
@@ -415,13 +420,13 @@ void instance_edit() {
         bout << "|#6Instance unavailable.\r\n";
         break;
       }
-      if (i == application()->GetInstanceNumber()) {
+      if (i == session()->GetInstanceNumber()) {
         session()->localIO()->SetTopLine(0);
         session()->localIO()->LocalCls();
         hangup = true;
         hang_it_up();
         Wait(1);
-        application()->QuitBBS();
+        session()->QuitBBS();
         break;
       }
       if (get_inst_info(i, &ir)) {
@@ -443,7 +448,7 @@ void instance_edit() {
       if (yesno()) {
         bout << "\r\n|#2Shutting down all instances.\r\n";
         for (int i1 = 1; i1 <= ni; i1++) {
-          if (i1 != application()->GetInstanceNumber()) {
+          if (i1 != session()->GetInstanceNumber()) {
             if (get_inst_info(i1, &ir) && ir.loc != INST_LOC_DOWN) {
               send_inst_shutdown(i1);
             }
@@ -454,7 +459,7 @@ void instance_edit() {
         hangup = true;
         hang_it_up();
         Wait(1);
-        application()->QuitBBS();
+        session()->QuitBBS();
       }
       break;
     case 'Q':
@@ -477,12 +482,12 @@ void write_inst(int loc, int subloc, int flags) {
 
   bool re_write = false;
   if (ti.user == 0) {
-    if (get_inst_info(application()->GetInstanceNumber(), &ir)) {
+    if (get_inst_info(session()->GetInstanceNumber(), &ir)) {
       ti.user = ir.user;
     } else {
       ti.user = 1;
     }
-    ti.inst_started = static_cast<unsigned long>(time(nullptr));
+    ti.inst_started = static_cast<uint32_t>(time(nullptr));
     re_write = true;
   }
 
@@ -540,9 +545,9 @@ void write_inst(int loc, int subloc, int flags) {
     re_write = true;
     ti.flags = cf;
   }
-  if (ti.number != application()->GetInstanceNumber()) {
+  if (ti.number != session()->GetInstanceNumber()) {
     re_write = true;
-    ti.number = static_cast<short>(application()->GetInstanceNumber());
+    ti.number = static_cast<short>(session()->GetInstanceNumber());
   }
   if (loc == INST_LOC_DOWN) {
     re_write = true;
@@ -573,10 +578,10 @@ void write_inst(int loc, int subloc, int flags) {
     re_write = true;
   }
   if (re_write && syscfg.datadir != nullptr) {
-    ti.last_update = static_cast<unsigned long>(time(nullptr));
+    ti.last_update = static_cast<uint32_t>(time(nullptr));
     File instFile(syscfg.datadir, INSTANCE_DAT);
     if (instFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-      instFile.Seek(static_cast<long>(application()->GetInstanceNumber() * sizeof(instancerec)), File::seekBegin);
+      instFile.Seek(static_cast<long>(session()->GetInstanceNumber() * sizeof(instancerec)), File::seekBegin);
       instFile.Write(&ti, sizeof(instancerec));
       instFile.Close();
     }
@@ -599,7 +604,7 @@ bool inst_msg_waiting() {
   }
 
   char szFileName[81];
-  sprintf(szFileName, "%sMSG*.%3.3u", syscfg.datadir, application()->GetInstanceNumber());
+  sprintf(szFileName, "%sMSG*.%3.3u", syscfg.datadir, session()->GetInstanceNumber());
   bool bExist = File::ExistsWildcard(szFileName);
   if (!bExist) {
     last_iia = l;

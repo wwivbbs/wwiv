@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              Wwiv Version 5.0x                         */
+/*                              Wwiv Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -189,13 +189,14 @@ struct valrec {
 };
 
 
-struct oldarcrec {
+struct arcrec_424_t {
   char extension[4],                          // extension for archive
        arca[32],                               // add commandline
        arce[32],                               // extract commandline
        arcl[32];                               // list commandline
 };
 
+// Archiver Configuration introduced in WWIV 4.30
 struct arcrec {
   char name[32],                              // name of the archiver
        extension[4],                           // extension for archive
@@ -264,8 +265,8 @@ struct configrec {
   char hangupphone[21],                        // string to hang up phone
        pickupphone[21];                        // string to pick up phone
 
-  uint16_t netlowtime,                         // net time on
-           nethightime;                        // net time off
+  uint16_t unused_netlowtime,                  // net time on
+           unused_nethightime;                  // net time off
 
   char unused_connect_300_a[21],               // alternate connect string
        unused_connect_1200_a[21],              // alternate connect string
@@ -273,7 +274,7 @@ struct configrec {
        unused_connect_9600_a[21],              // alternate connect string
        unused_connect_19200_a[21];             // alternate connect string
 
-  oldarcrec arcs[4];                          // old archivers
+  arcrec_424_t arcs[4];                       // old archivers (4.24 format)
 
   char unused_legacy_beginday_c[51],          // beginday event
        unused_legacy_logon_c[51];             // logon event
@@ -352,8 +353,8 @@ struct small_configrec {
            sysoplowtime,       // Chat time on
            sysophightime,      // Chat time off
            executetime,        // time to run mail router
-           netlowtime,         // net time on
-           nethightime,        // net time off
+           unused_netlowtime,  // net time on
+           unused_nethightime, // net time off
            max_subs,
            max_dirs,
            qscn_len,
@@ -480,17 +481,32 @@ struct smalrec {
 
 // TYPE TO TELL WHERE A MESSAGE IS STORED
 struct messagerec {
-  uint8_t storage_type;                 // how it is stored
-  uint32_t stored_as;                    // where it is stored
+  uint8_t storage_type;                 // how it is stored (type, 1 or 2)
+  uint32_t stored_as;                   // where it is stored (type specific)
+};
+
+// Union types used by postrec/mailrec network settings.
+struct source_verified_message_t {
+  uint8_t net_number;               // network number for the message
+  uint16_t source_verified_type;
+};
+struct network_message_t {
+  uint16_t __unused;
+  uint8_t net_number;               // network number for the message
 };
 
 
 // DATA HELD FOR EVERY POST
 struct postrec {
-  char title[81];                             // title of post
+  char title[72];                       // title of post
+  uint8_t padding_from_title[6];
+  union {
+    source_verified_message_t src_verified_msg;
+    network_message_t network_msg;
+  } network;
 
   uint8_t anony,                        // anony-stat of message
-           status;                                 // bit-mapped status
+          status;                       // bit-mapped status
 
   uint16_t ownersys,                    // what system it came from
            owneruser;                              // who posted it
@@ -505,19 +521,24 @@ struct postrec {
 
 // DATA HELD FOR EVERY E-MAIL OR F-BACK
 struct mailrec {
-  char title[81];                             // E-mail title
+  char title[72];                       // title of message
+  uint8_t padding_from_title[6];
+  union {
+    source_verified_message_t src_verified_msg;
+    network_message_t network_msg;
+  } network;
 
   uint8_t anony,                        // anonymous mail?
-           status;                                 // status for e-mail
+          status;                       // status for e-mail
 
   uint16_t fromsys,                     // originating system
-           fromuser,                               // originating user
-           tosys,                                  // destination system
-           touser;                                 // destination user
+           fromuser,                    // originating user
+           tosys,                       // destination system
+           touser;                      // destination user
 
-  uint32_t daten;                        // date it was sent
+  uint32_t daten;                       // date it was sent
 
-  messagerec msg;                             // where to find it
+  messagerec msg;                       // where to find it
 };
 
 // USED IN READMAIL TO STORE EMAIL INFO
@@ -754,6 +775,7 @@ enum xfertype {
 #define ability_val_net             0x0040
 
 // subboardrec.anony
+#define anony_none                  0x00
 #define anony_enable_anony          0x01
 #define anony_enable_dear_abby      0x02
 #define anony_force_anony           0x04
@@ -856,7 +878,7 @@ enum xfertype {
 #define NUM_ONLY            1
 #define UPPER_ONLY          2
 #define ALL                 4
-#define SET                   8
+#define SET                 8
 
 struct ext_desc_type {
   char name[13];
@@ -905,8 +927,9 @@ struct languagerec {
 #define CONF_UPDATE_DELETE     2
 #define CONF_UPDATE_SWAP       3
 
-#define SUBCONF_TYPE uint16_t
-#define MAX_CONFERENCES 26
+typedef uint16_t subconf_t;
+constexpr int MAX_CONFERENCES = 26;
+constexpr int WWIV_MESSAGE_TITLE_LENGTH = 72;
 
 struct confrec {
   unsigned char designator,                 // A to Z?
@@ -918,7 +941,7 @@ struct confrec {
            minage,                                  // Minimum age needed for access
            maxage,                                  // Maximum age allowed for acces
            sex;                                     // Gender: 0=male, 1=female 2=all
-  SUBCONF_TYPE status,                      // Bit-mapped stuff
+  subconf_t status,                      // Bit-mapped stuff
                minbps,                                  // Minimum bps rate for access
                ar,                                      // ARs necessary for access
                dar,                                     // DARs necessary for access
@@ -1104,9 +1127,6 @@ struct fedit_data_rec {
 };
 
 #ifndef __MSDOS__
-// MSVC 2015 shows this as an error in the IDE. Ignore it, since the real
-// compiler gets it right. See:
-// https://connect.microsoft.com/VisualStudio/feedback/details/872127/intellisense-wrongly-emits-an-error-for-a-static-assertion-checking-the-size-of-a-struct
 
 static_assert(sizeof(userrec) == 1024, "userrec == 1024");
 static_assert(sizeof(slrec) == 14, "slrec == 14");

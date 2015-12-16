@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -17,9 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/keycodes.h"
-
+#include "sdk/filenames.h"
 
 void get_colordata() {
   File file(syscfg.datadir, COLOR_DAT);
@@ -105,7 +107,7 @@ void color_config() {
     if (ch == CZ) {
       done = 1;
     }
-    if (ch == CR) {
+    if (ch == 18 /* CR */) {
       list_ext_colors();
       bout.GotoXY(2, 2);
     }
@@ -118,7 +120,7 @@ void color_config() {
       bout.nl();
       bout << "|#2Foreground? ";
       ch1 = onek("01234567");
-      c = static_cast< unsigned char >(ch1 - '0');
+      c = static_cast<unsigned char>(ch1 - '0');
       bout.GotoXY(41, 19);
       bout.SystemColor(c);
       bout << s;
@@ -126,7 +128,7 @@ void color_config() {
       bout.GotoXY(1, 16);
       bout << "|#2Background? ";
       ch1 = onek("01234567");
-      c = static_cast< unsigned char >(c | ((ch1 - '0') << 4));
+      c = static_cast<unsigned char>(c | ((ch1 - '0') << 4));
       bout.GotoXY(41, 19);
       bout.SystemColor(c);
       bout << s;
@@ -161,11 +163,11 @@ void color_config() {
       if (yesno()) {
         bout << "\r\nColor saved.\r\n\n";
         if ((n <= -1) && (n >= -16)) {
-          rescolor.resx[207 + std::abs(n)] = static_cast< unsigned char >(c);
+          rescolor.resx[207 + std::abs(n)] = static_cast<unsigned char>(c);
         } else if ((n >= 0) && (n <= 9)) {
           session()->user()->SetColor(n, c);
         } else {
-          rescolor.resx[n - 10] = static_cast< unsigned char >(c);
+          rescolor.resx[n - 10] = static_cast<unsigned char>(c);
         }
       } else {
         bout << "\r\nNot saved, then.\r\n\n";
@@ -185,7 +187,7 @@ void color_config() {
 
 void buildcolorfile() {
   for (int i = 0; i < 240; i++) {
-    rescolor.resx[i] = static_cast< unsigned char >(i + 1);
+    rescolor.resx[i] = static_cast<unsigned char>(i + 1);
   }
 
   bout.nl();

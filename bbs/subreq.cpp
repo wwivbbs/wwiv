@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -19,12 +19,15 @@
 
 #include "bbs/input.h"
 #include "bbs/subxtr.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "sdk/filenames.h"
 
 bool display_sub_categories();
-int find_hostfor(char *type, short *ui, char *pszDescription, short *opt);
+int find_hostfor(char *type, short *ui, char *description, short *opt);
 
 
 static void maybe_netmail(xtrasubsnetrec * ni, bool bAdd) {
@@ -38,7 +41,7 @@ static void maybe_netmail(xtrasubsnetrec * ni, bool bAdd) {
       strcat(irt, " - DROP request");
     }
     set_net_num(ni->net_num);
-    email(1, ni->host, false, 0);
+    email(irt, 1, ni->host, false, 0);
   }
 }
 
@@ -52,7 +55,7 @@ static void sub_req(uint16_t main_type, uint16_t minor_type, int tosys, char *ex
   nh.main_type = main_type;
   nh.minor_type = minor_type;
   nh.list_len = 0;
-  nh.daten = static_cast<unsigned long>(time(nullptr));
+  nh.daten = static_cast<uint32_t>(time(nullptr));
   nh.method = 0;
   if (minor_type == 0) {
     // This is an alphanumeric sub type.
@@ -80,12 +83,12 @@ static void sub_req(uint16_t main_type, uint16_t minor_type, int tosys, char *ex
 #define OPTION_ANSI   0x0010
 
 
-int find_hostfor(char *type, short *ui, char *pszDescription, short *opt) {
+int find_hostfor(char *type, short *ui, char *description, short *opt) {
   char s[255], *ss;
   int rc = 0;
 
-  if (pszDescription) {
-    *pszDescription = 0;
+  if (description) {
+    *description = 0;
   }
   *opt = 0;
 
@@ -144,8 +147,8 @@ int find_hostfor(char *type, short *ui, char *pszDescription, short *opt) {
                       done = true;
                       *opt = o;
                       rc = h;
-                      if (pszDescription) {
-                        strcpy(pszDescription, ss);
+                      if (description) {
+                        strcpy(description, ss);
                       }
                     }
                   } else {
@@ -160,8 +163,8 @@ int find_hostfor(char *type, short *ui, char *pszDescription, short *opt) {
                       *ui = h;
                       *opt = o;
                       rc = h;
-                      if (pszDescription) {
-                        strcpy(pszDescription, ss);
+                      if (description) {
+                        strcpy(description, ss);
                       }
                     }
                   }
@@ -251,14 +254,14 @@ void sub_xtr_add(int n, int nn) {
 
   memset(xnp, 0, sizeof(xtrasubsnetrec));
 
-  if (session()->GetMaxNetworkNumber() > 1) {
+  if (session()->max_net_num() > 1) {
     odc[0] = 0;
     odci = 0;
     onx[0] = 'Q';
     onx[1] = 0;
     onxi = 1;
     bout.nl();
-    for (ii = 0; ii < session()->GetMaxNetworkNumber(); ii++) {
+    for (ii = 0; ii < session()->max_net_num(); ii++) {
       if (ii < 9) {
         onx[onxi++] = static_cast<char>(ii + '1');
         onx[onxi] = 0;
@@ -271,7 +274,7 @@ void sub_xtr_add(int n, int nn) {
     }
     bout << "Q. Quit\r\n\n";
     bout << "|#2Which network (number): ";
-    if (session()->GetMaxNetworkNumber() < 9) {
+    if (session()->max_net_num() < 9) {
       ch = onek(onx);
       if (ch == 'Q') {
         ii = -1;
@@ -286,13 +289,13 @@ void sub_xtr_add(int n, int nn) {
         ii = atoi(mmk) - 1;
       }
     }
-    if (ii >= 0 && ii < session()->GetMaxNetworkNumber()) {
+    if (ii >= 0 && ii < session()->max_net_num()) {
       set_net_num(ii);
     } else {
       return;
     }
   }
-  xnp->net_num = static_cast<short>(session()->GetNetworkNumber());
+  xnp->net_num = static_cast<short>(session()->net_num());
 
   bout.nl();
   bout << "|#2What sub type? ";
@@ -309,9 +312,9 @@ void sub_xtr_add(int n, int nn) {
 
   bout << "|#5Will you be hosting the sub? ";
   if (yesno()) {
-    char szFileName[MAX_PATH];
-    sprintf(szFileName, "%sn%s.net", session()->GetNetworkDataDirectory().c_str(), xnp->stype);
-    File file(szFileName);
+    char file_name[MAX_PATH];
+    sprintf(file_name, "%sn%s.net", session()->GetNetworkDataDirectory().c_str(), xnp->stype);
+    File file(file_name);
     if (file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
       file.Close();
     }

@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                 WWIV Initialization Utility Version 5.0                */
+/*                  WWIV Initialization Utility Version 5                 */
 /*               Copyright (C)2014-2015 WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "init/paths.h"
 
-#include <curses.h>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -26,12 +25,15 @@
 #include <direct.h>
 #endif
 
+#include "core/wfndfile.h"
+#include "core/wwivport.h"
 #include "init/init.h"
 #include "initlib/input.h"
-#include "core/wwivport.h"
-#include "core/wfndfile.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
+
+// Make sure it's after windows.h
+#include <curses.h>
 
 using std::unique_ptr;
 using std::string;

@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.0x                             */
+/*                          WWIV Version 5.x                              */
 /*             Copyright (C)2014-2015 WWIV Software Services              */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -77,7 +77,7 @@ void Logger::DefaultDisplay(const std::string& s) {
 }
 
 // static
-void Logger::Init(int argc, char** argv) {
+void Logger::Init(int, char** argv) {
   string filename(argv[0]);
   if (ends_with(filename, ".exe") || ends_with(filename, ".EXE")) {
     filename = filename.substr(0, filename.size() - 4);

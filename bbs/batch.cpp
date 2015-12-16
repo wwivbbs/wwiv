@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/batch.h"
+
 #include <algorithm>
 #include <string>
 
@@ -25,9 +27,12 @@
 #include <unistd.h>
 #endif  // _WIN32
 
+#include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/instmsg.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
@@ -37,21 +42,22 @@
 #include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 using std::string;
 
 
 // module private functions
 void listbatch();
-void downloaded(char *pszFileName, long lCharsPerSecond);
-void uploaded(char *pszFileName, long lCharsPerSecond);
+void downloaded(char *file_name, long lCharsPerSecond);
+void uploaded(char *file_name, long lCharsPerSecond);
 void handle_dszline(char *l);
 double ratio1(long a);
 void ProcessDSZLogFile();
-void dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription);
+void dszbatchul(bool bHangupAfterDl, char *command_line, char *description);
 void bihangup(int up);
-int try_to_ul(char *pszFileName);
-int try_to_ul_wh(char *pszFileName);
+int try_to_ul(char *file_name);
+int try_to_ul_wh(char *file_name);
 void normalupload(int dn);
 
 
@@ -102,11 +108,11 @@ void delbatch(int nBatchEntryNum) {
   }
 }
 
-void downloaded(char *pszFileName, long lCharsPerSecond) {
+void downloaded(char *file_name, long lCharsPerSecond) {
   uploadsrec u;
 
   for (int i1 = 0; i1 < session()->numbatch; i1++) {
-    if (wwiv::strings::IsEquals(pszFileName, batch[i1].filename) &&
+    if (wwiv::strings::IsEquals(file_name, batch[i1].filename) &&
         batch[i1].sending) {
       dliscan1(batch[i1].dir);
       int nRecNum = recno(batch[i1].filename);
@@ -129,7 +135,7 @@ void downloaded(char *pszFileName, long lCharsPerSecond) {
         }
         if (syscfg.sysconfig & sysconfig_log_dl) {
           WUser user;
-          application()->users()->ReadUser(&user, u.ownerusr);
+          session()->users()->ReadUser(&user, u.ownerusr);
           if (!user.IsUserDeleted()) {
             if (date_to_daten(user.GetFirstOn()) < static_cast<time_t>(u.daten)) {
               ssm(u.ownerusr, 0, "%s downloaded|#1 \"%s\" |#7on %s",
@@ -142,7 +148,7 @@ void downloaded(char *pszFileName, long lCharsPerSecond) {
       return;
     }
   }
-  sysoplogf("!!! Couldn't find \"%s\" in DL batch queue.", pszFileName);
+  sysoplogf("!!! Couldn't find \"%s\" in DL batch queue.", file_name);
 }
 
 void didnt_upload(int nBatchIndex) {
@@ -190,11 +196,11 @@ void didnt_upload(int nBatchIndex) {
   sysoplogf("!!! Couldn't find \"%s\" in transfer area.", batch[nBatchIndex].filename);
 }
 
-void uploaded(char *pszFileName, long lCharsPerSecond) {
+void uploaded(char *file_name, long lCharsPerSecond) {
   uploadsrec u;
 
   for (int i1 = 0; i1 < session()->numbatch; i1++) {
-    if (wwiv::strings::IsEquals(pszFileName, batch[i1].filename) &&
+    if (wwiv::strings::IsEquals(file_name, batch[i1].filename) &&
         !batch[i1].sending) {
       dliscan1(batch[i1].dir);
       int nRecNum = recno(batch[i1].filename);
@@ -211,8 +217,8 @@ void uploaded(char *pszFileName, long lCharsPerSecond) {
         downFile.Close();
         if (nRecNum != -1 && u.numbytes == 0) {
           char szSourceFileName[MAX_PATH], szDestFileName[MAX_PATH];
-          sprintf(szSourceFileName, "%s%s", syscfgovr.batchdir, pszFileName);
-          sprintf(szDestFileName, "%s%s", directories[batch[i1].dir].path, pszFileName);
+          sprintf(szSourceFileName, "%s%s", syscfgovr.batchdir, file_name);
+          sprintf(szDestFileName, "%s%s", directories[batch[i1].dir].path, file_name);
           if (!wwiv::strings::IsEquals(szSourceFileName, szDestFileName) &&
               File::Exists(szSourceFileName)) {
             bool found = false;
@@ -248,10 +254,10 @@ void uploaded(char *pszFileName, long lCharsPerSecond) {
               modify_database(u.filename, true);
               session()->user()->SetUploadK(session()->user()->GetUploadK() +
                   static_cast<int>(bytes_to_k(u.numbytes)));
-              WStatus *pStatus = application()->GetStatusManager()->BeginTransaction();
+              WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
               pStatus->IncrementNumUploadsToday();
               pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
-              application()->GetStatusManager()->CommitTransaction(pStatus);
+              session()->GetStatusManager()->CommitTransaction(pStatus);
               File fileDn(g_szDownloadFileName);
               fileDn.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
               FileAreaSetRecord(fileDn, nRecNum);
@@ -268,18 +274,18 @@ void uploaded(char *pszFileName, long lCharsPerSecond) {
         }
       }
       delbatch(i1);
-      if (try_to_ul(pszFileName)) {
-        sysoplogf("!!! Couldn't find file \"%s\" in directory.", pszFileName);
-        bout << "Deleting - couldn't find data for file " << pszFileName << wwiv::endl;
+      if (try_to_ul(file_name)) {
+        sysoplogf("!!! Couldn't find file \"%s\" in directory.", file_name);
+        bout << "Deleting - couldn't find data for file " << file_name << wwiv::endl;
       }
       return;
     }
   }
-  if (try_to_ul(pszFileName)) {
-    sysoplogf("!!! Couldn't find \"%s\" in UL batch queue.", pszFileName);
-    bout << "Deleting - don't know what to do with file " << pszFileName << wwiv::endl;
+  if (try_to_ul(file_name)) {
+    sysoplogf("!!! Couldn't find \"%s\" in UL batch queue.", file_name);
+    bout << "Deleting - don't know what to do with file " << file_name << wwiv::endl;
 
-    File::Remove(syscfgovr.batchdir, pszFileName);
+    File::Remove(syscfgovr.batchdir, file_name);
   }
 }
 
@@ -497,8 +503,8 @@ double ratio1(long a) {
 }
 
 static string make_ul_batch_list() {
-  string list_filename = StringPrintf("%s%s.%3.3u", application()->GetHomeDir().c_str(), FILESUL_NOEXT,
-          application()->GetInstanceNumber());
+  string list_filename = StringPrintf("%s%s.%3.3u", session()->GetHomeDir().c_str(), FILESUL_NOEXT,
+          session()->GetInstanceNumber());
 
   File::SetFilePermissions(list_filename, File::permReadWrite);
   File::Remove(list_filename);
@@ -511,7 +517,7 @@ static string make_ul_batch_list() {
     if (!batch[i].sending) {
       chdir(directories[batch[i].dir].path);
       File file(File::current_directory(), stripfn(batch[i].filename));
-      application()->CdHome();
+      session()->CdHome();
       fileList.Write(StrCat(file.full_pathname(), "\r\n"));
     }
   }
@@ -520,8 +526,8 @@ static string make_ul_batch_list() {
 }
 
 static string make_dl_batch_list() {
-  string list_filename = StringPrintf("%s%s.%3.3u", application()->GetHomeDir().c_str(), FILESDL_NOEXT,
-          application()->GetInstanceNumber());
+  string list_filename = StringPrintf("%s%s.%3.3u", session()->GetHomeDir().c_str(), FILESDL_NOEXT,
+          session()->GetInstanceNumber());
 
   File::SetFilePermissions(list_filename, File::permReadWrite);
   File::Remove(list_filename);
@@ -552,7 +558,7 @@ static string make_dl_batch_list() {
         filename_to_send = fileToSend.full_pathname();
       }
       bool ok = true;
-      application()->CdHome();
+      session()->CdHome();
       if (nsl() < (batch[i].time + at)) {
         ok = false;
         bout << "Cannot download " << batch[i].filename << ": Not enough time" << wwiv::endl;
@@ -584,7 +590,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
       uplist);
 
   if (!commandLine.empty()) {
-    WWIV_make_abs_cmd(application()->GetHomeDir(), &commandLine);
+    WWIV_make_abs_cmd(session()->GetHomeDir(), &commandLine);
     session()->localIO()->LocalCls();
     const string message = StringPrintf(
         "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
@@ -595,7 +601,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
       File::SetFilePermissions(g_szDSZLogFileName, File::permReadWrite);
       File::Remove(g_szDSZLogFileName);
       chdir(syscfgovr.batchdir);
-      ExecuteExternalProgram(commandLine, application()->GetSpawnOptions(SPAWNOPT_PROT_BATCH));
+      ExecuteExternalProgram(commandLine, session()->GetSpawnOptions(SPAWNOPT_PROT_BATCH));
       if (bHangupAfterDl) {
         bihangup(1);
         if (!session()->remoteIO()->carrier()) {
@@ -605,7 +611,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
         bout << "\r\n|#9Please wait...\r\n\n";
       }
       ProcessDSZLogFile();
-      application()->UpdateTopScreen();
+      session()->UpdateTopScreen();
     }
   }
   if (!downlist.empty()) {
@@ -651,9 +657,9 @@ void ProcessDSZLogFile() {
   free(lines);
 }
 
-void dszbatchdl(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription) {
+void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description) {
   string download_log_entry = StringPrintf(
-      "%s BATCH Download: Files - %d, Time - %s", pszDescription, session()->numbatchdl, ctim(batchtime));
+      "%s BATCH Download: Files - %d, Time - %s", description, session()->numbatchdl, ctim(batchtime));
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
   }
@@ -664,11 +670,11 @@ void dszbatchdl(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription)
 
   write_inst(INST_LOC_DOWNLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
   const string list_filename = make_dl_batch_list();
-  run_cmd(pszCommandLine, list_filename, "", download_log_entry, bHangupAfterDl);
+  run_cmd(command_line, list_filename, "", download_log_entry, bHangupAfterDl);
 }
 
-void dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription) {
-  string download_log_entry = StringPrintf("%s BATCH Upload: Files - %d", pszDescription,
+void dszbatchul(bool bHangupAfterDl, char *command_line, char *description) {
+  string download_log_entry = StringPrintf("%s BATCH Upload: Files - %d", description,
           session()->numbatch - session()->numbatchdl);
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
@@ -682,10 +688,10 @@ void dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription)
   string list_filename = make_ul_batch_list();
 
   double ti = timer();
-  run_cmd(pszCommandLine, "", list_filename, download_log_entry, bHangupAfterDl);
+  run_cmd(command_line, "", list_filename, download_log_entry, bHangupAfterDl);
   ti = timer() - ti;
   if (ti < 0) {
-    ti += static_cast< double >(SECONDS_PER_DAY);
+    ti += static_cast<double>(SECONDS_PER_DAY);
   }
   session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast< float >(ti));
 }
@@ -771,8 +777,8 @@ int batchdl(int mode) {
         bout.nl(2);
         int i = get_protocol(xf_up_batch);
         if (i > 0) {
-          dszbatchul(bHangupAfterDl, externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn,
-                     externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
+          dszbatchul(bHangupAfterDl, session()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn,
+                     session()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
           if (!bHangupAfterDl) {
             bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
           }
@@ -800,17 +806,18 @@ int batchdl(int mode) {
         int i = get_protocol(xf_down_batch);
         if (i > 0) {
           if (i == WWIV_INTERNAL_PROT_YMODEM) {
-            if (over_intern && (over_intern[2].othr & othr_override_internal) &&
-                (over_intern[2].sendbatchfn[0])) {
-              dszbatchdl(bHangupAfterDl, over_intern[2].sendbatchfn, prot_name(4));
+            if (session()->over_intern.size() > 0 
+                && (session()->over_intern[2].othr & othr_override_internal) 
+                && (session()->over_intern[2].sendbatchfn[0])) {
+              dszbatchdl(bHangupAfterDl, session()->over_intern[2].sendbatchfn, prot_name(4));
             } else {
               ymbatchdl(bHangupAfterDl);
             }
           } else if (i == WWIV_INTERNAL_PROT_ZMODEM) {
             zmbatchdl(bHangupAfterDl);
           } else {
-            dszbatchdl(bHangupAfterDl, externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn,
-                       externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
+            dszbatchdl(bHangupAfterDl, session()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn,
+                       session()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
           }
           if (!bHangupAfterDl) {
             bout.nl();
@@ -926,14 +933,14 @@ void upload(int dn) {
   } while (!done && !hangup);
 }
 
-char *unalign(char *pszFileName) {
-  char* pszTemp = strstr(pszFileName, " ");
-  if (pszTemp) {
-    *pszTemp++ = '\0';
-    char* pszTemp2 = strstr(pszTemp, ".");
-    if (pszTemp2) {
-      strcat(pszFileName, pszTemp2);
+char *unalign(char *file_name) {
+  char* temp = strstr(file_name, " ");
+  if (temp) {
+    *temp++ = '\0';
+    char* temp2 = strstr(temp, ".");
+    if (temp2) {
+      strcat(file_name, temp2);
     }
   }
-  return pszFileName;
+  return file_name;
 }

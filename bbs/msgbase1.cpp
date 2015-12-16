@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -25,12 +25,16 @@
 #include <memory>
 #include <string>
 
+#include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/netsup.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
+#include "bbs/message_file.h"
 #include "bbs/subxtr.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
@@ -42,21 +46,20 @@ using std::unique_ptr;
 using std::unique_ptr;
 using wwiv::strings::StringPrintf;
 
-void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
-  long lMessageLength;
-  unique_ptr<char[]> b(readfile(&(pPostRecord->msg), extra, &lMessageLength));
-  if (!b) {
+void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
+  string text;
+  if (!readfile(&(pPostRecord->msg), extra, &text)){
     return;
   }
 
   int nNetNumber;
-  int nOrigNetNumber = session()->GetNetworkNumber();
+  int nOrigNetNumber = session()->net_num();
   if (pPostRecord->status & status_post_new_net) {
-    nNetNumber = pPostRecord->title[80];
-  } else if (xsubs[nSubNumber].num_nets) {
-    nNetNumber = xsubs[nSubNumber].nets[0].net_num;
+    nNetNumber = pPostRecord->network.network_msg.net_number;
+  } else if (xsubs[sub_number].num_nets) {
+    nNetNumber = xsubs[sub_number].nets[0].net_num;
   } else {
-    nNetNumber = session()->GetNetworkNumber();
+    nNetNumber = session()->net_num();
   }
 
   int nn1 = nNetNumber;
@@ -71,9 +74,10 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
   netHeaderOrig.fromuser  = pPostRecord->owneruser;
   netHeaderOrig.list_len  = 0;
   netHeaderOrig.daten   = pPostRecord->daten;
-  netHeaderOrig.length  = lMessageLength + 1 + strlen(pPostRecord->title);
+  netHeaderOrig.length  = text.size() + 1 + strlen(pPostRecord->title);
   netHeaderOrig.method  = 0;
 
+  uint32_t lMessageLength = text.size();
   if (netHeaderOrig.length > 32755) {
     bout.bprintf("Message truncated by %lu bytes for the network.", netHeaderOrig.length - 32755L);
     netHeaderOrig.length = 32755;
@@ -85,10 +89,10 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
     return;
   }
   strcpy(b1.get(), pPostRecord->title);
-  memmove(&(b1[strlen(pPostRecord->title) + 1]), b.get(), lMessageLength);
+  memmove(&(b1[strlen(pPostRecord->title) + 1]), text.c_str(), lMessageLength);
 
-  for (int n = 0; n < xsubs[nSubNumber].num_nets; n++) {
-    xtrasubsnetrec* xnp = &(xsubs[nSubNumber].nets[n]);
+  for (int n = 0; n < xsubs[sub_number].num_nets; n++) {
+    xtrasubsnetrec* xnp = &(xsubs[sub_number].nets[n]);
     if (xnp->net_num == nNetNumber && xnp->host) {
       continue;
     }
@@ -113,32 +117,28 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
           continue;
         }
         // looks like this leaks
-        b.reset(new char[len1 + 100]);
-        if (!b) {
-          free(pList);
-          continue;
-        }
-        file.Read(b.get(), len1);
+        text.clear();
+        text.resize(len1);
+        file.Read(&text[0], len1);
         file.Close();
-        b[len1] = '\0';
+        text[len1] = '\0';
         int len2 = 0;
         while (len2 < len1) {
-          while (len2 < len1 && (b[len2] < '0' || b[len2] > '9')) {
+          while (len2 < len1 && (text[len2] < '0' || text[len2] > '9')) {
             ++len2;
           }
-          if ((b[len2] >= '0') && (b[len2] <= '9') && (len2 < len1)) {
-            int i = atoi(&(b[len2]));
-            if (((session()->GetNetworkNumber() != nNetNumber) || (nh.fromsys != i)) && (i != net_sysnum)) {
+          if ((text[len2] >= '0') && (text[len2] <= '9') && (len2 < len1)) {
+            int i = atoi(&(text[len2]));
+            if (((session()->net_num() != nNetNumber) || (nh.fromsys != i)) && (i != net_sysnum)) {
               if (valid_system(i)) {
-                pList[(nh.list_len)++] = static_cast< unsigned short >(i);
+                pList[(nh.list_len)++] = static_cast<uint16_t>(i);
               }
             }
-            while ((len2 < len1) && (b[len2] >= '0') && (b[len2] <= '9')) {
+            while ((len2 < len1) && (text[len2] >= '0') && (text[len2] <= '9')) {
               ++len2;
             }
           }
         }
-        // delete[] p
       }
       if (!nh.list_len) {
         if (pList) {
@@ -150,7 +150,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
     if (!xnp->type) {
       nh.main_type = main_type_new_post;
     }
-    if (nn1 == session()->GetNetworkNumber()) {
+    if (nn1 == session()->net_num()) {
       send_net(&nh, pList, b1.get(), xnp->type ? nullptr : xnp->stype);
     } else {
       gate_msg(&nh, b1.get(), xnp->net_num, xnp->stype, pList, nNetNumber);
@@ -187,17 +187,18 @@ void post() {
     return;
   }
 
+  MessageEditorData data;
   messagerec m;
   m.storage_type = static_cast<unsigned char>(subboards[session()->GetCurrentReadMessageArea()].storage_type);
-  int a = subboards[ session()->GetCurrentReadMessageArea() ].anony & 0x0f;
-  if (a == 0 && getslrec(session()->GetEffectiveSl()).ability & ability_post_anony) {
-    a = anony_enable_anony;
+  data.anonymous_flag = subboards[ session()->GetCurrentReadMessageArea() ].anony & 0x0f;
+  if (data.anonymous_flag == 0 && getslrec(session()->GetEffectiveSl()).ability & ability_post_anony) {
+    data.anonymous_flag = anony_enable_anony;
   }
-  if (a == anony_enable_anony && session()->user()->IsRestrictionAnonymous()) {
-    a = 0;
+  if (data.anonymous_flag == anony_enable_anony && session()->user()->IsRestrictionAnonymous()) {
+    data.anonymous_flag = 0;
   }
   if (xsubs[ session()->GetCurrentReadMessageArea() ].num_nets) {
-    a &= (anony_real_name);
+    data.anonymous_flag &= (anony_real_name);
     if (session()->user()->IsRestrictionNet()) {
       bout << "\r\nYou can't post on networked sub-boards.\r\n\n";
       return;
@@ -218,143 +219,146 @@ void post() {
   write_inst(INST_LOC_POST, session()->GetCurrentReadMessageArea(), INST_FLAGS_NONE);
 
   postrec p;
-  string title;
-  inmsg(&m, &title, &a, true, (subboards[session()->GetCurrentReadMessageArea()].filename), INMSG_FSED,
-        subboards[session()->GetCurrentReadMessageArea()].name,
-        (subboards[session()->GetCurrentReadMessageArea()].anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE);
-  strcpy(p.title, title.c_str());
-  if (m.stored_as != 0xffffffff) {
-    p.anony   = static_cast< unsigned char >(a);
-    p.msg   = m;
-    p.ownersys  = 0;
-    p.owneruser = static_cast<unsigned short>(session()->usernum);
-    WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
-    p.qscan = pStatus->IncrementQScanPointer();
-    application()->GetStatusManager()->CommitTransaction(pStatus);
-    p.daten = static_cast<unsigned long>(time(nullptr));
-    if (session()->user()->IsRestrictionValidate()) {
-      p.status = status_unvalidated;
-    } else {
-      p.status = 0;
+  memset(&p, 0, sizeof(postrec));
+
+  data.aux = "email";
+  data.fsed_flags = INMSG_FSED;
+  data.msged_flags = (subboards[session()->GetCurrentReadMessageArea()].anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE;
+  data.aux = subboards[session()->GetCurrentReadMessageArea()].filename;
+  data.to_name = subboards[session()->GetCurrentReadMessageArea()].name;
+
+  if (!inmsg(data)) {
+    m.stored_as = 0xffffffff;
+    return;
+  }
+  savefile(data.text, &m, data.aux);
+  strcpy(p.title, data.title.c_str());
+  p.anony   = static_cast<unsigned char>(data.anonymous_flag);
+  p.msg   = m;
+  p.ownersys  = 0;
+  p.owneruser = static_cast<unsigned short>(session()->usernum);
+  WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
+  p.qscan = pStatus->IncrementQScanPointer();
+  session()->GetStatusManager()->CommitTransaction(pStatus);
+  p.daten = static_cast<uint32_t>(time(nullptr));
+  if (session()->user()->IsRestrictionValidate()) {
+    p.status = status_unvalidated;
+  } else {
+    p.status = 0;
+  }
+
+  open_sub(true);
+
+  if ((xsubs[session()->GetCurrentReadMessageArea()].num_nets) &&
+      (subboards[session()->GetCurrentReadMessageArea()].anony & anony_val_net) && (!lcs() || irt[0])) {
+    p.status |= status_pending_net;
+    int dm = 1;
+    for (int i = session()->GetNumMessagesInCurrentMessageArea(); (i >= 1)
+          && (i > (session()->GetNumMessagesInCurrentMessageArea() - 28)); i--) {
+      if (get_post(i)->status & status_pending_net) {
+        dm = 0;
+        break;
+      }
     }
-
-    open_sub(true);
-
-    if ((xsubs[session()->GetCurrentReadMessageArea()].num_nets) &&
-        (subboards[session()->GetCurrentReadMessageArea()].anony & anony_val_net) && (!lcs() || irt[0])) {
-      p.status |= status_pending_net;
-      int dm = 1;
-      for (int i = session()->GetNumMessagesInCurrentMessageArea(); (i >= 1)
-           && (i > (session()->GetNumMessagesInCurrentMessageArea() - 28)); i--) {
-        if (get_post(i)->status & status_pending_net) {
-          dm = 0;
-          break;
-        }
-      }
-      if (dm) {
-        ssm(1, 0, "Unvalidated net posts on %s.", subboards[session()->GetCurrentReadMessageArea()].name);
-      }
+    if (dm) {
+      ssm(1, 0, "Unvalidated net posts on %s.", subboards[session()->GetCurrentReadMessageArea()].name);
     }
-    if (session()->GetNumMessagesInCurrentMessageArea() >=
-        subboards[session()->GetCurrentReadMessageArea()].maxmsgs) {
-      int i = 1;
-      int dm = 0;
-      while (i <= session()->GetNumMessagesInCurrentMessageArea()) {
-        postrec* pp = get_post(i);
-        if (!pp) {
-          break;
-        } else if (((pp->status & status_no_delete) == 0) ||
-                   (pp->msg.storage_type != subboards[session()->GetCurrentReadMessageArea()].storage_type)) {
-          dm = i;
-          break;
-        }
-        ++i;
+  }
+  if (session()->GetNumMessagesInCurrentMessageArea() >=
+      subboards[session()->GetCurrentReadMessageArea()].maxmsgs) {
+    int i = 1;
+    int dm = 0;
+    while (i <= session()->GetNumMessagesInCurrentMessageArea()) {
+      postrec* pp = get_post(i);
+      if (!pp) {
+        break;
+      } else if (((pp->status & status_no_delete) == 0) ||
+                  (pp->msg.storage_type != subboards[session()->GetCurrentReadMessageArea()].storage_type)) {
+        dm = i;
+        break;
       }
-      if (dm == 0) {
-        dm = 1;
-      }
-      delete_message(dm);
+      ++i;
     }
-    add_post(&p);
-
-    session()->user()->SetNumMessagesPosted(session()->user()->GetNumMessagesPosted() + 1);
-    session()->user()->SetNumPostsToday(session()->user()->GetNumPostsToday() + 1);
-    pStatus = application()->GetStatusManager()->BeginTransaction();
-    pStatus->IncrementNumMessagesPostedToday();
-    pStatus->IncrementNumLocalPosts();
-
-    if (application()->HasConfigFlag(OP_FLAGS_POSTTIME_COMPENSATE)) {
-      time_t lEndTime = time(nullptr);
-      if (lStartTime > lEndTime) {
-        lEndTime += HOURS_PER_DAY * SECONDS_PER_DAY;
-      }
-      lStartTime = static_cast<long>(lEndTime - lStartTime);
-      if ((lStartTime / MINUTES_PER_HOUR_FLOAT) > getslrec(session()->GetEffectiveSl()).time_per_logon) {
-        lStartTime = static_cast<long>(static_cast<float>(getslrec(session()->GetEffectiveSl()).time_per_logon *
-                                       MINUTES_PER_HOUR_FLOAT));
-      }
-      session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>
-          (lStartTime));
+    if (dm == 0) {
+      dm = 1;
     }
-    application()->GetStatusManager()->CommitTransaction(pStatus);
-    close_sub();
+    delete_message(dm);
+  }
+  add_post(&p);
 
-    application()->UpdateTopScreen();
-    sysoplogf("+ \"%s\" posted on %s", p.title, subboards[session()->GetCurrentReadMessageArea()].name);
-    bout << "Posted on " << subboards[session()->GetCurrentReadMessageArea()].name << wwiv::endl;
-    if (xsubs[session()->GetCurrentReadMessageArea()].num_nets) {
-      session()->user()->SetNumNetPosts(session()->user()->GetNumNetPosts() + 1);
-      if (!(p.status & status_pending_net)) {
-        send_net_post(&p, subboards[session()->GetCurrentReadMessageArea()].filename,
-                      session()->GetCurrentReadMessageArea());
-      }
+  session()->user()->SetNumMessagesPosted(session()->user()->GetNumMessagesPosted() + 1);
+  session()->user()->SetNumPostsToday(session()->user()->GetNumPostsToday() + 1);
+  pStatus = session()->GetStatusManager()->BeginTransaction();
+  pStatus->IncrementNumMessagesPostedToday();
+  pStatus->IncrementNumLocalPosts();
+
+  if (session()->HasConfigFlag(OP_FLAGS_POSTTIME_COMPENSATE)) {
+    time_t lEndTime = time(nullptr);
+    if (lStartTime > lEndTime) {
+      lEndTime += HOURS_PER_DAY * SECONDS_PER_DAY;
+    }
+    lStartTime = static_cast<long>(lEndTime - lStartTime);
+    if ((lStartTime / MINUTES_PER_HOUR_FLOAT) > getslrec(session()->GetEffectiveSl()).time_per_logon) {
+      lStartTime = static_cast<long>(static_cast<float>(getslrec(session()->GetEffectiveSl()).time_per_logon *
+                                      MINUTES_PER_HOUR_FLOAT));
+    }
+    session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>
+        (lStartTime));
+  }
+  session()->GetStatusManager()->CommitTransaction(pStatus);
+  close_sub();
+
+  session()->UpdateTopScreen();
+  sysoplogf("+ \"%s\" posted on %s", p.title, subboards[session()->GetCurrentReadMessageArea()].name);
+  bout << "Posted on " << subboards[session()->GetCurrentReadMessageArea()].name << wwiv::endl;
+  if (xsubs[session()->GetCurrentReadMessageArea()].num_nets) {
+    session()->user()->SetNumNetPosts(session()->user()->GetNumNetPosts() + 1);
+    if (!(p.status & status_pending_net)) {
+      send_net_post(&p, subboards[session()->GetCurrentReadMessageArea()].filename,
+                    session()->GetCurrentReadMessageArea());
     }
   }
 }
 
-void grab_user_name(messagerec* pMessageRecord, const char* pszFileName) {
-  long lMessageLen;
-  unique_ptr<char[]> ss(readfile(pMessageRecord, pszFileName, &lMessageLen));
-  if (ss.get()) {
-    char* ss1 = strchr(ss.get(), '\r');
-    if (ss1) {
-      *ss1 = '\0';
-      char* ss2 = ss.get();
-      if (ss[0] == '`' && ss[1] == '`') {
-        for (ss1 = ss2 + 2; *ss1; ss1++) {
-          if (ss1[0] == '`' && ss1[1] == '`') {
-            ss2 = ss1 + 2;
-          }
-        }
-        while (*ss2 == ' ') {
-          ++ss2;
-        }
+void grab_user_name(messagerec* pMessageRecord, const char* file_name) {
+  string text;
+  net_email_name[0] = '\0';
+  if (!readfile(pMessageRecord, file_name, &text)) {
+    return;
+  }
+  string::size_type cr = text.find_first_of('\r');
+  if (cr == string::npos) {
+    return;
+  }
+  text.resize(cr);
+  const char* ss2 = text.c_str();
+  if (text[0] == '`' && text[1] == '`') {
+    for (const char* ss1 = ss2 + 2; *ss1; ss1++) {
+      if (ss1[0] == '`' && ss1[1] == '`') {
+        ss2 = ss1 + 2;
       }
-      strcpy(net_email_name, ss2);
-    } else {
-      net_email_name[0] = '\0';
     }
-  } else {
-    net_email_name[0] = '\0';
+    while (*ss2 == ' ') {
+      ++ss2;
+    }
+    strcpy(net_email_name, ss2);
   }
 }
 
 void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
-  int nSubNumber = usub[nBeginSubNumber].subnum;
+  int sub_number = usub[nBeginSubNumber].subnum;
   g_flags &= ~g_flag_made_find_str;
 
-  if (hangup || nSubNumber < 0) {
+  if (hangup || sub_number < 0) {
     return;
   }
   bout.nl();
-  uint32_t lQuickScanPointer = qsc_p[nSubNumber];
+  uint32_t memory_last_read = qsc_p[sub_number];
 
-  if (!session()->m_SubDateCache[nSubNumber]) {
-    iscan1(nSubNumber, true);
-  }
+  iscan1(sub_number);
 
-  uint32_t lSubDate = session()->m_SubDateCache[nSubNumber];
-  if (!lSubDate || lSubDate > lQuickScanPointer) {
+  uint32_t on_disk_last_post = WWIVReadLastRead(sub_number);
+  if (!on_disk_last_post || on_disk_last_post > memory_last_read) {
     int nNextSubNumber = *pnNextSubNumber;
     int nOldSubNumber = session()->GetCurrentMessageArea();
     session()->SetCurrentMessageArea(nBeginSubNumber);
@@ -363,7 +367,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
       bout << "\r\n\003""6A file required is in use by another instance. Try again later.\r\n";
       return;
     }
-    lQuickScanPointer = qsc_p[nSubNumber];
+    memory_last_read = qsc_p[sub_number];
 
     bout.bprintf("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n",
                                       subboards[session()->GetCurrentReadMessageArea()].name,
@@ -371,14 +375,15 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
 
     int i;
     for (i = session()->GetNumMessagesInCurrentMessageArea(); (i > 1)
-         && (get_post(i - 1)->qscan > lQuickScanPointer); i--)
+         && (get_post(i - 1)->qscan > memory_last_read); i--)
       ;
 
-    if (session()->GetNumMessagesInCurrentMessageArea() > 0 && i <= session()->GetNumMessagesInCurrentMessageArea()
+    if (session()->GetNumMessagesInCurrentMessageArea() > 0
+        && i <= session()->GetNumMessagesInCurrentMessageArea()
         && get_post(i)->qscan > qsc_p[session()->GetCurrentReadMessageArea()]) {
       scan(i, SCAN_OPTION_READ_MESSAGE, &nNextSubNumber, false);
     } else {
-      unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+      unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
       qsc_p[session()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
     }
 
@@ -393,8 +398,9 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
       bout << "\r\x1b[4A";
     }
   } else {
-    bout.bprintf("|#1< Nothing new on %s %s >", subboards[nSubNumber].name,
-                                      usub[nBeginSubNumber].keys);
+    bout.bprintf("|#1< Nothing new on %s %s >",
+        subboards[sub_number].name,
+        usub[nBeginSubNumber].keys);
     bout.clreol();
     bout.nl();
     lines_listed = 0;
@@ -410,7 +416,9 @@ void nscan(int nStartingSubNum) {
   int nNextSubNumber = 1;
 
   bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
-  for (int i = nStartingSubNum; usub[i].subnum != -1 && i < session()->num_subs && nNextSubNumber && !hangup; i++) {
+  for (int i = nStartingSubNum; 
+       usub[i].subnum != -1 && i < session()->num_subs && nNextSubNumber && !hangup; 
+       i++) {
     if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) {
       qscan(i, &nNextSubNumber);
     }
@@ -504,10 +512,10 @@ void delmail(File *pFile, int loc) {
   }
 
   if (m.tosys == 0) {
-    application()->users()->ReadUser(&user, m.touser);
+    session()->users()->ReadUser(&user, m.touser);
     if (user.GetNumMailWaiting()) {
       user.SetNumMailWaiting(user.GetNumMailWaiting() - 1);
-      application()->users()->WriteUser(&user, m.touser);
+      session()->users()->WriteUser(&user, m.touser);
     }
     if (m.touser == 1) {
       --fwaiting;
@@ -557,12 +565,12 @@ void remove_post() {
     if (((get_post(nPostNumber)->ownersys == 0) && (get_post(nPostNumber)->owneruser == session()->usernum)) || lcs()) {
       if ((get_post(nPostNumber)->owneruser == session()->usernum) && (get_post(nPostNumber)->ownersys == 0)) {
         WUser tu;
-        application()->users()->ReadUser(&tu, get_post(nPostNumber)->owneruser);
+        session()->users()->ReadUser(&tu, get_post(nPostNumber)->owneruser);
         if (!tu.IsUserDeleted()) {
           if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(get_post(nPostNumber)->daten)) {
             if (tu.GetNumMessagesPosted()) {
               tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - 1);
-              application()->users()->WriteUser(&tu, get_post(nPostNumber)->owneruser);
+              session()->users()->WriteUser(&tu, get_post(nPostNumber)->owneruser);
             }
           }
         }

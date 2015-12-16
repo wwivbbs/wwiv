@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                 WWIV Initialization Utility Version 5.0                */
+/*                  WWIV Initialization Utility Version 5                 */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -30,10 +30,12 @@
 #include <memory>
 #include <string>
 #include <set>
+#include <vector>
 #include <sys/stat.h>
 
-#include "core/strings.h"
+#include "core/datafile.h"
 #include "core/file.h"
+#include "core/strings.h"
 #include "core/wwivport.h"
 #include "init/init.h"
 #include "init/utility.h"
@@ -45,20 +47,21 @@
 using std::string;
 using std::unique_ptr;
 using std::vector;
+using wwiv::core::DataFile;
 using wwiv::strings::StringPrintf;
 
 #define MAX_LANGUAGES 100
 
 
-static void edit_lang(languagerec* n) {
+static void edit_lang(languagerec& n) {
   out->Cls(ACS_CKBOARD);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Language Configuration", 9, 78));
   const int COL1_POSITION = 19;
 
   EditItems items{
-    new StringEditItem<char*>(COL1_POSITION, 1, 20, n->name, false),
-    new FilePathItem(2, 3, 75, n->dir),
-    new FilePathItem(2, 6, 75, n->mdir),
+    new StringEditItem<char*>(COL1_POSITION, 1, 20, n.name, false),
+    new FilePathItem(2, 3, 75, n.dir),
+    new FilePathItem(2, 6, 75, n.mdir),
   };
   items.set_curses_io(out, window.get());
 
@@ -70,11 +73,11 @@ static void edit_lang(languagerec* n) {
   items.Run();
 }
 
-static uint8_t get_next_langauge_num(languagerec* languages, int size) {
+static uint8_t get_next_langauge_num(const vector<languagerec>& languages) {
   int max_num = 1;
   std::set<uint8_t> nums;
-  for (int i=0; i < size; i++) {
-    languagerec l = languages[i];
+  for (std::size_t i = 0; i < languages.size(); i++) {
+    const languagerec& l = languages[i];
     max_num = std::max<uint8_t>(max_num, l.num);
     nums.insert(l.num);
   }
@@ -94,20 +97,17 @@ static uint8_t get_next_langauge_num(languagerec* languages, int size) {
 }
 
 void edit_languages() {
-  initinfo.num_languages = 0;
-  unique_ptr<languagerec[]> languages(new languagerec[MAX_LANGUAGES]);
-  File file(syscfg.datadir, LANGUAGE_DAT);
-  if (file.Open(File::modeReadOnly|File::modeBinary)) {
-    int num_read = file.Read(languages.get(), MAX_LANGUAGES * sizeof(languagerec));
-    initinfo.num_languages = num_read / sizeof(languagerec);
-    file.Close();
+  vector<languagerec> languages;
+  DataFile<languagerec> file(syscfg.datadir, LANGUAGE_DAT);
+  if (file) {
+    file.ReadVector(languages, MAX_LANGUAGES);
   }
 
   bool done = false;
   do {
     out->Cls(ACS_CKBOARD);
     vector<ListBoxItem> items;
-    for (int i = 0; i < initinfo.num_languages; i++) {
+    for (std::size_t i = 0; i < languages.size(); i++) {
       items.emplace_back(StringPrintf("%d. %s (%s)", i + 1, languages[i].name, languages[i].dir));
     }
     CursesWindow* window = out->window();
@@ -121,17 +121,16 @@ void edit_languages() {
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
       case 'D': {
-        if (initinfo.num_languages > 1) {
+        if (languages.size() > 1) {
           string prompt = StringPrintf("Delete '%s' ?", items[result.selected].text().c_str());
           bool yn = dialog_yn(window, prompt);
           if (!yn) {
             break;
           }
-          initinfo.num_languages--;
-          for (int i1 = result.selected; i1 < initinfo.num_languages; i1++) {
-            languages[i1] = languages[i1 + 1];
-          }
-          if (initinfo.num_languages == 1) {
+          auto it = languages.begin();
+          std::advance(it, result.selected);
+          languages.erase(it);
+          if (languages.size() == 1) {
             languages[0].num = 0;
           }
         } else {
@@ -139,37 +138,49 @@ void edit_languages() {
         }
       } break;
       case 'I':
-        if (initinfo.num_languages >= MAX_LANGUAGES) {
+        if (languages.size() >= MAX_LANGUAGES) {
           messagebox(window, "Too many languages.");
           break;
         }
-        string prompt = StringPrintf("Insert before which (1-%d) : ", initinfo.num_languages + 1);
-        int i = dialog_input_number(out->window(), prompt, 1, initinfo.num_languages);
-        if ((i > 0) && (i <= initinfo.num_languages + 1)) {
-          for (int i1 = initinfo.num_languages; i1 > i - 1; i1--) {
-            languages[i1] = languages[i1 - 1];
-          }
-          initinfo.num_languages++;
-          strcpy(languages[i-1].name, "English");
-          strncpy(languages[i-1].dir, syscfg.gfilesdir, sizeof(languages[i-1].dir) - 1);
-          strncpy(languages[i-1].mdir, syscfg.gfilesdir, sizeof(languages[i-1].mdir) - 1);
-          languages[i-1].num = get_next_langauge_num(languages.get(), initinfo.num_languages);
-          edit_lang(&languages[i-1]);
+
+        string prompt = StringPrintf("Insert before which (1-%d) : ", languages.size() + 1);
+        int i = dialog_input_number(out->window(), prompt, 1, languages.size() + 1);
+        // N.B. i is one based, result.selected is 0 based.
+        if (i <= 0 || i > languages.size() + 1) {
+          break;
+        } 
+        
+        languagerec l;
+        memset(&l, 0, sizeof(languagerec));
+        strcpy(l.name, "English");
+        strcpy(l.dir, syscfg.gfilesdir);
+        strcpy(l.mdir, syscfg.gfilesdir);
+        l.num = get_next_langauge_num(languages);
+
+        if (i > languages.size()) {
+          languages.push_back(l);
+          edit_lang(languages.back());
+        } else {
+          auto it = languages.begin();
+          std::advance(it, i - 1);
+          auto new_lang = languages.insert(it, l);
+          edit_lang(*new_lang);
         }
         break;
       }
     } else if (result.type == ListBoxResultType::SELECTION) {
-      edit_lang(&languages[result.selected]);
+      edit_lang(languages[result.selected]);
     } else if (result.type == ListBoxResultType::NO_SELECTION) {
       done = true;
     }
   } while (!done);
 
   {
-    File file(syscfg.datadir, LANGUAGE_DAT);
-    if (file.Open(File::modeReadWrite|File::modeBinary|File::modeCreateFile|File::modeTruncate,
-      File::shareDenyReadWrite)) {
-      file.Write(languages.get(), initinfo.num_languages * sizeof(languagerec));
+    DataFile<languagerec> file(syscfg.datadir, LANGUAGE_DAT,
+      File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate,
+      File::shareDenyReadWrite);
+    if (file) {
+      file.WriteVector(languages, MAX_LANGUAGES);
     }
   }
 }

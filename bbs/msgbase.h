@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -19,25 +19,38 @@
 #define __INCLUDED_BBS_MSGBASE_H__
 
 #include <string>
+#include "bbs/inmsg.h"
 #include "sdk/vardec.h"
 
+class EmailData {
+public:
+  EmailData(const MessageEditorData& msged) : title(msged.title), silent_mode(msged.silent_mode) {}
+  explicit EmailData() {}
+  ~EmailData() {}
 
-void remove_link(messagerec * pMessageRecord, const std::string fileName);
-void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const std::string fileName);
-char *readfile(messagerec * pMessageRecord, const std::string fileName, long *plMessageLength);
-void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed);
-bool ForwardMessage(int *pUserNumber, int *pSystemNumber);
-std::unique_ptr<File> OpenEmailFile(bool bAllowWrite);
-void sendout_email(const std::string& title, messagerec * msg, int anony, int nUserNumber, int nSystemNumber, int an,
-  int nFromUser, int nFromSystem, int nForwardedCode, int nFromNetworkNumber);
-bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit);
-void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool force_title = false,
-  bool bAllowFSED = true);
-void imail(int nUserNumber, int nSystemNumber);
-void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next, const char *pszFileName,
-  int nFromSystem, int nFromUser);
-void read_message(int n, bool *next, int *val);
-void lineadd(messagerec* pMessageRecord, const std::string& sx, const std::string fileName);
+  std::string title;
+  messagerec * msg;
+  int anony = 0;
+  int user_number = 0;
+  int system_number = 0;
+  bool an = 0;
+  int from_user = 0;
+  int from_system = 0;
+  int forwarded_code = 0;
+  int from_network_number = 0;
+
+  bool silent_mode;     // Used for ASV and newemail emails.  No questions, etc.
+};
+
+
+
+bool ForwardMessage(int *user_number, int *system_number);
+std::unique_ptr<File> OpenEmailFile(bool allow_write);
+void sendout_email(EmailData& data);
+bool ok_to_mail(int user_number, int system_number, bool force_it);
+void email(const std::string& title, int user_number, int system_number, bool force_it, int anony, bool allow_fsed = true);
+void imail(int user_number, int system_number);
+void LoadFileIntoWorkspace(const std::string& filename, bool no_edit_allowed, bool silent_mode=false);
 
 
 

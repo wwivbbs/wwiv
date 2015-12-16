@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.0x                             */
+/*                          WWIV Version 5.x                              */
 /*               Copyright (C)2014, WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -20,6 +20,7 @@
 
 #include <cstddef>
 #include <string>
+#include <vector>
 #include "core/file.h"
 #include "core/inifile.h" // for FilePath
 
@@ -33,7 +34,7 @@ public:
            int nFileMode = File::modeDefault,
            int nShareMode = File::shareUnknown) 
       : DataFile(FilePath(dir, filename), nFileMode, nShareMode) {}
-  explicit DataFile(const std::string& full_file_name,
+  DataFile(const std::string& full_file_name,
            int nFileMode = File::modeDefault,
            int nShareMode = File::shareUnknown) 
       : file_(full_file_name) {
@@ -42,8 +43,23 @@ public:
   virtual ~DataFile() {}
 
   File& file() { return file_; }
+  void Close() { return file_.Close(); }
   bool ok() const { return file_.IsOpen(); }
-  bool Read(RECORD* record, int num_records = 1) { return file_.Read(record, num_records*SIZE) == num_records*SIZE; }
+
+  bool ReadVector(std::vector<RECORD>& records, std::size_t max_records = 0) {
+    std::size_t num_to_read = number_of_records();
+    if (max_records != 0 && max_records < num_to_read) {
+      num_to_read = max_records;
+    }
+    if (records.size() < num_to_read) {
+      records.resize(num_to_read);
+    }
+    return Read(&records[0], num_to_read);
+  }
+
+  bool Read(RECORD* record, int num_records = 1) { 
+    return file_.Read(record, num_records*SIZE) == static_cast<int>(num_records*SIZE); 
+  }
   bool Read(int record_number, RECORD* record) {
     if (!Seek(record_number)) {
       return false;
@@ -51,7 +67,17 @@ public:
     return Read(record);
   }
 
-  bool Write(const RECORD* record, int num_records = 1) { return file_.Write(record, num_records*SIZE) == num_records*SIZE; }
+  bool WriteVector(std::vector<RECORD>& records, std::size_t max_records = 0) {
+    std::size_t num = records.size();
+    if (max_records != 0 && max_records < num) {
+      num = max_records;
+    }
+    return Write(&records[0], num);
+  }
+
+  bool Write(const RECORD* record, int num_records = 1) { 
+    return file_.Write(record, num_records*SIZE) == static_cast<int>(num_records*SIZE);
+  }
   bool Write(int record_number, const RECORD* record) {
     if (!Seek(record_number)) {
       return false;

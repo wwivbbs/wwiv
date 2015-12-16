@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -22,16 +22,21 @@
 #include <string>
 
 #include "bbs/bbslist.h"
+#include "bbs/bbsovl1.h"
+#include "bbs/bbsovl3.h"
 #include "bbs/menu.h"
 #include "bbs/menuspec.h"
 #include "bbs/menusupp.h"
 #include "bbs/menu_parser.h"
 #include "bbs/new_bbslist.h"
 #include "bbs/printfile.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/inifile.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::map;
 using std::string;
@@ -57,7 +62,7 @@ public:
 map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCommandMap();
 
 bool UseNewBBSList() {
-  IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), INI_TAG);
+  IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
   if (iniFile.IsOpen()) {
     return iniFile.GetBooleanValue("USE_NEW_BBSLIST", true);
   }

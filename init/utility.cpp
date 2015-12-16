@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                 WWIV Initialization Utility Version 5.0                */
+/*                  WWIV Initialization Utility Version 5                 */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -23,7 +23,6 @@
 #include <io.h>
 #endif
 #include <string>
-#include <curses.h>
 #include <sys/stat.h>
 
 #include "bbs/common.h"
@@ -37,6 +36,9 @@
 #include "init/init.h"
 #include "init/wwivinit.h"
 #include "sdk/filenames.h"
+
+// Make sure it's after windows.h
+#include <curses.h>
 
 using namespace wwiv::core;
 using namespace wwiv::strings;

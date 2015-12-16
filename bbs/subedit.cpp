@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -18,21 +18,25 @@
 /**************************************************************************/
 #include <string>
 
+#include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/input.h"
 #include "bbs/subxtr.h"
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/textfile.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using wwiv::bbs::InputMode;
 using namespace wwiv::strings;
 
 static void save_subs() {
-  int nSavedNetNum = session()->GetNetworkNumber();
+  int nSavedNetNum = session()->net_num();
 
   for (int nTempNetNum = 0; nTempNetNum < session()->num_subs; nTempNetNum++) {
     subboards[nTempNetNum].type = 0;
@@ -71,7 +75,7 @@ static void save_subs() {
     }
     fileSubsXtr.Close();
   }
-  for (int nDelNetNum = 0; nDelNetNum < session()->GetMaxNetworkNumber(); nDelNetNum++) {
+  for (int nDelNetNum = 0; nDelNetNum < session()->max_net_num(); nDelNetNum++) {
     set_net_num(nDelNetNum);
 
     File::Remove(session()->GetNetworkDataDirectory(), ALLOW_NET);
@@ -554,8 +558,8 @@ static void modify_sub(int n) {
 }
 
 static void swap_subs(int sub1, int sub2) {
-  SUBCONF_TYPE sub1conv = (SUBCONF_TYPE) sub1;
-  SUBCONF_TYPE sub2conv = (SUBCONF_TYPE) sub2;
+  subconf_t sub1conv = (subconf_t) sub1;
+  subconf_t sub2conv = (subconf_t) sub2;
 
   if (sub1 < 0 || sub1 >= session()->num_subs || sub2 < 0 || sub2 >= session()->num_subs) {
     return;
@@ -566,9 +570,9 @@ static void swap_subs(int sub1, int sub2) {
   sub1 = static_cast<int>(sub1conv);
   sub2 = static_cast<int>(sub2conv);
 
-  int nNumUserRecords = application()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
-  uint32_t *pTempQScan = static_cast< uint32_t *>(BbsAllocA(syscfg.qscn_len));
+  uint32_t *pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
   if (pTempQScan) {
     for (int i = 1; i <= nNumUserRecords; i++) {
       int i1, i2;
@@ -606,10 +610,6 @@ static void swap_subs(int sub1, int sub2) {
   subboards[sub1]     = subboards[sub2];
   subboards[sub2]     = sbt;
 
-  uint32_t sdt   = session()->m_SubDateCache[sub1];
-  session()->m_SubDateCache[sub1]     = session()->m_SubDateCache[sub2];
-  session()->m_SubDateCache[sub2]     = sdt;
-
   xtrasubsrec xst     = xsubs[sub1];
   xsubs[sub1]         = xsubs[sub2];
   xsubs[sub2]         = xst;
@@ -621,7 +621,7 @@ static void insert_sub(int n) {
   subboardrec r = { 0 };
   int i, i1, i2;
   uint32_t *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m1, m2, m3;
-  SUBCONF_TYPE nconv = (SUBCONF_TYPE) n;
+  subconf_t nconv = (subconf_t) n;
 
   if (n < 0 || n > session()->num_subs) {
     return;
@@ -633,7 +633,6 @@ static void insert_sub(int n) {
 
   for (i = session()->num_subs - 1; i >= n; i--) {
     subboards[i + 1] = subboards[i];
-    session()->m_SubDateCache[i + 1] = session()->m_SubDateCache[i];
     xsubs[i + 1] = xsubs[i];
   }
   strcpy(r.name, "** New WWIV Message Area **");
@@ -650,7 +649,7 @@ static void insert_sub(int n) {
   subboards[n] = r;
   memset(&(xsubs[n]), 0, sizeof(xtrasubsrec));
   ++session()->num_subs;
-  int nNumUserRecords = application()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
   uint32_t* pTempQScan = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len));
   if (pTempQScan) {
@@ -694,7 +693,7 @@ static void insert_sub(int n) {
 static void delete_sub(int n) {
   int i, i1, i2, nNumUserRecords;
   uint32_t *pTempQScan, *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m2, m3;
-  SUBCONF_TYPE nconv = static_cast<SUBCONF_TYPE>(n);
+  subconf_t nconv = static_cast<subconf_t>(n);
 
   if (n < 0 || n >= session()->num_subs) {
     return;
@@ -713,11 +712,10 @@ static void delete_sub(int n) {
 
   for (i = n; i < session()->num_subs; i++) {
     subboards[i] = subboards[i + 1];
-    session()->m_SubDateCache[i] = session()->m_SubDateCache[i + 1];
     xsubs[i] = xsubs[i + 1];
   }
   --session()->num_subs;
-  nNumUserRecords = application()->users()->GetNumberOfUserRecords();
+  nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
   pTempQScan = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len + 4));
   if (pTempQScan) {
@@ -768,14 +766,14 @@ void boardedit() {
   int i, i1, i2;
   bool confchg = false;
   char s[81];
-  SUBCONF_TYPE iconv;
+  subconf_t iconv;
 
   if (!ValidateSysopPassword()) {
     return;
   }
   showsubs();
   bool done = false;
-  application()->GetStatusManager()->RefreshStatusCache();
+  session()->GetStatusManager()->RefreshStatusCache();
   do {
     bout.nl();
     bout << "|#7(Q=Quit) (D)elete, (I)nsert, (M)odify, (S)wapSubs : ";
@@ -847,14 +845,14 @@ void boardedit() {
             i2 = select_conf("Put in which conference? ", CONF_SUBS, 0);
             if (i2 >= 0) {
               if (in_conference(i, &subconfs[i2]) < 0) {
-                iconv = (SUBCONF_TYPE) i;
+                iconv = (subconf_t) i;
                 addsubconf(CONF_SUBS, &subconfs[i2], &iconv);
                 i = static_cast<int>(iconv);
               }
             }
           } else {
             if (in_conference(i, &subconfs[0]) < 0) {
-              iconv = static_cast<SUBCONF_TYPE>(i);
+              iconv = static_cast<subconf_t>(i);
               addsubconf(CONF_SUBS, &subconfs[0], &iconv);
               i = static_cast<int>(iconv);
             }
@@ -889,11 +887,10 @@ void boardedit() {
     }
   } while (!done && !hangup);
   save_subs();
-  if (!application()->GetWfcStatus()) {
+  if (!session()->GetWfcStatus()) {
     changedsl();
   }
   session()->subchg = 1;
-  //g_szMessageGatFileName[0] = '\0';
   if (confchg) {
     save_confs(CONF_SUBS, -1, nullptr);
   }

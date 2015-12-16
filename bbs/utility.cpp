@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -29,12 +29,15 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbsovl3.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/common.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
-#include "bbs/wwiv.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
@@ -55,15 +58,15 @@ template<class _Ty> inline const _Ty& in_range(const _Ty& minValue, const _Ty& m
  * Deletes files from a directory.  This is meant to be used only in the temp
  * directories of WWIV.
  *
- * @param pszFileName       Wildcard file specification to delete
+ * @param file_name       Wildcard file specification to delete
  * @param pszDirectoryName  Name of the directory to delete files from
  * @param bPrintStatus      Print out locally as files are deleted
  */
-void remove_from_temp(const char *pszFileName, const char *pszDirectoryName, bool bPrintStatus) {
-  WWIV_ASSERT(pszFileName);
+void remove_from_temp(const char *file_name, const char *pszDirectoryName, bool bPrintStatus) {
+  WWIV_ASSERT(file_name);
   WWIV_ASSERT(pszDirectoryName);
 
-  const string filespec = StrCat(pszDirectoryName, stripfn(pszFileName));
+  const string filespec = StrCat(pszDirectoryName, stripfn(file_name));
   WFindFile fnd;
   bool bFound = fnd.open(filespec, 0);
   bout.nl();
@@ -230,7 +233,7 @@ void send_net(net_header_rec * nh, unsigned short int *list, const char *text, c
 
   const string filename = StringPrintf("%sp1%s",
     session()->GetNetworkDataDirectory().c_str(),
-    application()->GetNetworkExtension().c_str());
+    session()->GetNetworkExtension().c_str());
   File file(filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;
@@ -276,22 +279,22 @@ void giveup_timeslice() {
   }
 }
 
-char *stripfn(const char *pszFileName) {
+char *stripfn(const char *file_name) {
   static char szStaticFileName[15];
   char szTempFileName[ MAX_PATH ];
 
-  WWIV_ASSERT(pszFileName);
+  WWIV_ASSERT(file_name);
 
   int nSepIndex = -1;
-  for (int i = 0; i < wwiv::strings::GetStringLength(pszFileName); i++) {
-    if (pszFileName[i] == '\\' || pszFileName[i] == ':' || pszFileName[i] == '/') {
+  for (int i = 0; i < wwiv::strings::GetStringLength(file_name); i++) {
+    if (file_name[i] == '\\' || file_name[i] == ':' || file_name[i] == '/') {
       nSepIndex = i;
     }
   }
   if (nSepIndex != -1) {
-    strcpy(szTempFileName, &(pszFileName[nSepIndex + 1]));
+    strcpy(szTempFileName, &(file_name[nSepIndex + 1]));
   } else {
-    strcpy(szTempFileName, pszFileName);
+    strcpy(szTempFileName, file_name);
   }
   for (int i1 = 0; i1 < wwiv::strings::GetStringLength(szTempFileName); i1++) {
     if (szTempFileName[i1] >= 'A' && szTempFileName[i1] <= 'Z') {
@@ -310,75 +313,38 @@ char *stripfn(const char *pszFileName) {
   return szStaticFileName;
 }
 
-void stripfn_inplace(char *pszFileName) {
-  strcpy(pszFileName, stripfn(pszFileName));
+void stripfn_inplace(char *file_name) {
+  strcpy(file_name, stripfn(file_name));
 }
 
-void preload_subs() {
-  bool abort = false;
-
-  if (g_preloaded) {
-    return;
-  }
-
-  bout.nl();
-  bout << "|#1Caching message areas";
-  int i1 = 3;
-  for (session()->SetMessageAreaCacheNumber(0);
-       session()->GetMessageAreaCacheNumber() < session()->num_subs && !abort;
-       session()->SetMessageAreaCacheNumber(session()->GetMessageAreaCacheNumber() + 1)) {
-    if (!session()->m_SubDateCache[session()->GetMessageAreaCacheNumber()]) {
-      iscan1(session()->GetMessageAreaCacheNumber(), true);
-    }
-    bout << "\x03" << i1 << ".";
-    if ((session()->GetMessageAreaCacheNumber() % 5) == 4) {
-      i1++;
-      if (i1 == 4) {
-        i1++;
-      }
-      if (i1 == 10) {
-        i1 = 3;
-      }
-      bout << "\b\b\b\b\b";
-    }
-    checka(&abort);
-  }
-  if (!abort) {
-    bout << "|#1...done!\r\n";
-  }
-  bout.nl();
-  g_preloaded = true;
-}
-
-
-char *get_wildlist(char *pszFileMask) {
+char *get_wildlist(char *file_mask) {
   int mark = 0;
   char *pszPath, t;
   WFindFile fnd;
 
-  WWIV_ASSERT(pszFileMask);
+  WWIV_ASSERT(file_mask);
 
-  if (!fnd.open(pszFileMask, 0)) {
+  if (!fnd.open(file_mask, 0)) {
     bout << "No files found\r\n";
-    pszFileMask[0] = '\0';
-    return pszFileMask;
+    file_mask[0] = '\0';
+    return file_mask;
   } else {
     bout.bprintf("%12.12s ", fnd.GetFileName());
   }
 
-  if (strchr(pszFileMask, File::pathSeparatorChar) == nullptr) {
-    pszFileMask[0] = '\0';
+  if (strchr(file_mask, File::pathSeparatorChar) == nullptr) {
+    file_mask[0] = '\0';
   } else {
-    for (int i = 0; i < wwiv::strings::GetStringLength(pszFileMask); i++) {
-      if (pszFileMask[i] == File::pathSeparatorChar) {
+    for (int i = 0; i < wwiv::strings::GetStringLength(file_mask); i++) {
+      if (file_mask[i] == File::pathSeparatorChar) {
         mark = i + 1;
       }
     }
   }
-  t = pszFileMask[mark];
-  pszFileMask[mark] = 0;
-  pszPath = pszFileMask;
-  pszFileMask[mark] = t;
+  t = file_mask[mark];
+  file_mask[mark] = 0;
+  pszPath = file_mask;
+  file_mask[mark] = t;
   t = static_cast<char>(wwiv::strings::GetStringLength(pszPath));
   strcat(pszPath, fnd.GetFileName());
   int i = 1;
@@ -408,8 +374,8 @@ char *get_wildlist(char *pszFileMask) {
   }
   pszPath[t] = '\0';
   bout << "Filename: ";
-  input(pszFileMask, 12, true);
-  strcat(pszPath, pszFileMask);
+  input(file_mask, 12, true);
+  strcat(pszPath, file_mask);
   return pszPath;
 }
 
@@ -535,29 +501,28 @@ slrec getslrec(int nSl) {
   wwiv::sdk::Config config;
   if (!config.IsInitialized()) {
     // Bad ju ju here.
-    application()->AbortBBS();
+    session()->AbortBBS();
   }
   nCurSl = nSl;
   CurSlRec = config.config()->sl[nSl];
   return CurSlRec;
 }
 
-void WWIV_SetFileTime(const char* pszFileName, const time_t tTime) {
+void WWIV_SetFileTime(const char* file_name, const time_t tTime) {
   struct utimbuf utbuf;
 
   utbuf.actime  = tTime;
   utbuf.modtime = tTime;
 
-  WWIV_ASSERT(pszFileName);
+  WWIV_ASSERT(file_name);
 
-  utime(pszFileName, &utbuf);
+  utime(file_name, &utbuf);
 }
 
 bool okfsed() {
-  return (!okansi() ||
-          !session()->user()->GetDefaultEditor() ||
-          (session()->user()->GetDefaultEditor() > session()->GetNumberOfEditors()))
-         ? false : true;
+  return okansi()
+         && session()->user()->GetDefaultEditor() > 0 
+         && session()->user()->GetDefaultEditor() <= session()->editors.size();
 }
 
 

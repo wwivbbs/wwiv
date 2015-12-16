@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                 WWIV Initialization Utility Version 5.0                */
+/*                  WWIV Initialization Utility Version 5                 */
 /*               Copyright (C)2014-2015 WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -49,9 +49,9 @@ using std::string;
 using std::vector;
 using namespace wwiv::strings;
 
-static void create_text(const char *pszFileName) {
-  TextFile file("gfiles", pszFileName, "wt");
-  file.WriteLine(StringPrintf("This is %s.", pszFileName));
+static void create_text(const char *file_name) {
+  TextFile file("gfiles", file_name, "wt");
+  file.WriteLine(StringPrintf("This is %s.", file_name));
   file.WriteLine("Edit to suit your needs.");
   file.Close();
 }
@@ -290,7 +290,7 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   window->Puts("Copying String and Miscellaneous files.\n");
   window->SetColor(SchemeId::NORMAL);
 
-  File::Rename("wwivini.500", WWIV_INI);
+  File::Rename("wwivini.510", WWIV_INI);
   File::Rename("menucmds.dat", StringPrintf("data%cmenucmds.dat", File::pathSeparatorChar));
   File::Rename("regions.dat", StringPrintf("data%cregions.dat", File::pathSeparatorChar));
   File::Rename("wfc.dat", StringPrintf("data%cwfc.dat", File::pathSeparatorChar));

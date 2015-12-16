@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -18,10 +18,12 @@
 /**************************************************************************/
 #include "bbs/vote.h"
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
-
+#include "sdk/filenames.h"
 
 static void print_quest(int mapp, int map[21]) {
   votingrec v;
@@ -84,9 +86,9 @@ static bool print_question(int i, int ii) {
     t += vr.numresponses;
   }
 
-  application()->GetStatusManager()->RefreshStatusCache();
+  session()->GetStatusManager()->RefreshStatusCache();
   sprintf(szBuffer , "|#9Users voting: |#2%4.1f%%\r\n",
-          static_cast<double>(t) / static_cast<double>(application()->GetStatusManager()->GetUserCount()) * 100.0);
+          static_cast<double>(t) / static_cast<double>(session()->GetStatusManager()->GetUserCount()) * 100.0);
   pla(szBuffer, &abort);
   int t1 = (t) ? t : 1;
   pla(" |#20|#9) |#9No Comment", &abort);

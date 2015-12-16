@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -23,5 +23,5 @@
 #define QOK 2       // "? "
 
 void Print(int nType, bool bLogIt, const char* szText, ...);
-bool OpenLogFile(const char* szFileName);
+bool OpenLogFile(const char* file_name);
 void CloseLogFile();

@@ -1,6 +1,6 @@
 //**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2007, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -28,9 +28,13 @@
 #include "curses.h"
 
 #include "bbs/asv.h"
+#include "bbs/bbsovl1.h"
+#include "bbs/bbsovl2.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
@@ -194,34 +198,34 @@ void CursesLocalIO::LocalFastPuts(const string& text) {
   window_->Puts(text.c_str());
 }
 
-int CursesLocalIO::LocalPrintf(const char *pszFormattedText, ...) {
+int CursesLocalIO::LocalPrintf(const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[1024];
 
-  va_start(ap, pszFormattedText);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
+  va_start(ap, formatted_text);
+  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
   LocalFastPuts(szBuffer);
   return nNumWritten;
 }
 
-int CursesLocalIO::LocalXYPrintf(int x, int y, const char *pszFormattedText, ...) {
+int CursesLocalIO::LocalXYPrintf(int x, int y, const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[1024];
 
-  va_start(ap, pszFormattedText);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
+  va_start(ap, formatted_text);
+  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
   LocalXYPuts(x, y, szBuffer);
   return nNumWritten;
 }
 
-int CursesLocalIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...) {
+int CursesLocalIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[1024];
 
-  va_start(ap, pszFormattedText);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
+  va_start(ap, formatted_text);
+  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
 
   int nOldColor = curatr;
@@ -256,17 +260,17 @@ void CursesLocalIO::skey(char ch) {
           break;
         case SF1:                          /* Shift-F1 */
           capture_->set_global_handle(!capture_->is_open());
-          application()->UpdateTopScreen();
+          session()->UpdateTopScreen();
           break;
         case CF1:                          /* Ctrl-F1 */
-          application()->ToggleShutDown();
+          session()->ToggleShutDown();
           break;
         case F2:                          /* F2 */
           session()->topdata++;
           if (session()->topdata > CursesLocalIO::topdataUser) {
             session()->topdata = CursesLocalIO::topdataNone;
           }
-          application()->UpdateTopScreen();
+          session()->UpdateTopScreen();
           break;
         case F3:                          /* F3 */
           if (session()->using_modem) {
@@ -277,7 +281,7 @@ void CursesLocalIO::skey(char ch) {
           break;
         case F4:                          /* F4 */
           chatcall = false;
-          application()->UpdateTopScreen();
+          session()->UpdateTopScreen();
           break;
         case F5:                          /* F5 */
           hangup = true;
@@ -286,7 +290,7 @@ void CursesLocalIO::skey(char ch) {
         case SF5:                          /* Shift-F5 */
           i1 = (rand() % 20) + 10;
           for (i = 0; i < i1; i++) {
-            bputch(static_cast< unsigned char >(rand() % 256));
+            bputch(static_cast<unsigned char>(rand() % 256));
           }
           hangup = true;
           session()->remoteIO()->dtr(false);
@@ -399,7 +403,7 @@ void CursesLocalIO::LocalClrEol() {
   window_->ClrtoEol();
 }
 
-void CursesLocalIO::LocalWriteScreenBuffer(const char *pszBuffer) {}
+void CursesLocalIO::LocalWriteScreenBuffer(const char *buffer) {}
 int CursesLocalIO::GetDefaultScreenBottom() { return window_->GetMaxY() - 1; }
 
 void CursesLocalIO::LocalEditLine(char *s, int len, int edit_status, int *returncode, char *ss) {}

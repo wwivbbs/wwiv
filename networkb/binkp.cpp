@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.0x                             */
+/*                          WWIV Version 5.x                              */
 /*               Copyright (C)2015, WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -764,8 +764,7 @@ void BinkP::Run() {
     // The other end closed the socket before we did.
     LOG << "       connection was closed by the other side.";
   } catch (socket_error& e) {
-    LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what()
-        << "\nStacktrace:\n" << stacktrace();
+    LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
   }
 
   auto end_time = std::chrono::system_clock::now();
@@ -812,6 +811,40 @@ static int System(const string& cmd) {
   return system(cmd.c_str());
 }
 
+static bool checkup2(const time_t tFileTime, std::string dir, std::string filename) {
+  File file(dir, filename);
+
+  if (file.Open(File::modeReadOnly)) {
+    time_t tNewFileTime = file.last_write_time();
+    file.Close();
+    return (tNewFileTime > (tFileTime + 2));
+  }
+  return true;
+}
+
+static bool need_network3(const std::string& dir) {
+  if (!File::Exists(dir, BBSLIST_NET)) {
+    return false;
+  }
+  if (!File::Exists(dir, CONNECT_NET)) {
+    return false;
+  }
+  if (!File::Exists(dir, CALLOUT_NET)) {
+    return false;
+  }
+  File bbsdataNet(dir, BBSDATA_NET);
+  if (!bbsdataNet.Open(File::modeReadOnly)) {
+    return false;
+  }
+
+  time_t bbsdata_time = bbsdataNet.last_write_time();
+  bbsdataNet.Close();
+
+  return checkup2(bbsdata_time, dir, BBSLIST_NET)
+    || checkup2(bbsdata_time, dir, CONNECT_NET)
+    || checkup2(bbsdata_time, dir, CALLOUT_NET);
+}
+
 void BinkP::process_network_files() const {
   const string network_name = remote_network_name();
   LOG << "STATE: process_network_files for network: " << network_name;
@@ -826,8 +859,9 @@ void BinkP::process_network_files() const {
       System(StrCat("network2 .", network_number));
     }
   }
-  // TODO(rushfan): check timestamps on network files to see if we need
-  // to run network3 .# Y.  Also look for UPD files (BBSLIST.UPD and CONNECT.UPD).
+  if (need_network3(dir)) {
+    System(StrCat("network3 .", network_number, " Y"));
+  }
 }
 
 const std::string BinkP::remote_network_name() const {

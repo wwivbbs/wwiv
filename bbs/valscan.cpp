@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -17,12 +17,17 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/valscan.h"
+
 #include <algorithm>
 
+#include "bbs/bbs.h"
+#include "bbs/conf.h"
 #include "bbs/datetime.h"
+#include "bbs/fcns.h"
 #include "bbs/input.h"
+#include "bbs/read_message.h"
 #include "bbs/subxtr.h"
-#include "bbs/wwiv.h"
+#include "bbs/vars.h"
 
 void valscan() {
   // Must be local cosysop or better
@@ -71,7 +76,7 @@ void valscan() {
         if (i > 0 && i <= session()->GetNumMessagesInCurrentMessageArea()) {
           bool next;
           int val;
-          read_message(i, &next, &val);
+          read_post(i, &next, &val);
           bout << "|#4[|#4Subboard: " << subboards[session()->GetCurrentReadMessageArea()].name << "|#1]\r\n";
           bout <<  "|#1D|#9)elete, |#1R|#9)eread |#1V|#9)alidate, |#1M|#9)ark Validated, |#1Q|#9)uit: |#2";
           char ch = onek("QDVMR");
@@ -119,7 +124,7 @@ void valscan() {
                 close_sub();
                 if (p2.ownersys == 0) {
                   WUser tu;
-                  application()->users()->ReadUser(&tu, p2.owneruser);
+                  session()->users()->ReadUser(&tu, p2.owneruser);
                   if (!tu.IsUserDeleted()) {
                     if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(p2.daten)) {
                       bout.nl();
@@ -137,8 +142,8 @@ void valscan() {
                       bout.nl();
                       bout << "|#3Post credit removed = " << nNumPostCredits << wwiv::endl;
                       tu.SetNumDeletedPosts(tu.GetNumDeletedPosts() + 1);
-                      application()->users()->WriteUser(&tu, p2.owneruser);
-                      application()->UpdateTopScreen();
+                      session()->users()->WriteUser(&tu, p2.owneruser);
+                      session()->UpdateTopScreen();
                     }
                   }
                 }

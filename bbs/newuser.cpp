@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -22,10 +22,16 @@
 #include <string>
 
 #include "bbs/asv.h"
+#include "bbs/bbsovl1.h"
+#include "bbs/bbsovl2.h"
+#include "bbs/bbsovl3.h"
 #include "bbs/confutil.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
+#include "bbs/message_file.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
 #include "bbs/printfile.h"
@@ -36,6 +42,7 @@
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using wwiv::bbs::InputMode;
@@ -48,7 +55,7 @@ using namespace wwiv::strings;;
 void CreateNewUserRecord();
 bool CanCreateNewUserAccountHere();
 bool UseMinimalNewUserInfo();
-void noabort(const char *pszFileName);
+void noabort(const char *file_name);
 bool check_dupes(const char *pszPhoneNumber);
 void DoMinimalNewUser();
 bool check_zip(const char *pszZipCode, int mode);
@@ -111,7 +118,7 @@ void input_language() {
       for (int i = 0; i < session()->num_languages; i++) {
         bout << (i + 1) << ". " << languages[i].name << wwiv::endl;
         if (i < 9) {
-          onx[i] = static_cast< char >('1' + i);
+          onx[i] = static_cast<char>('1' + i);
         }
       }
       bout.nl();
@@ -123,7 +130,7 @@ void input_language() {
       } else {
         int i;
         for (i = 1; i <= session()->num_languages / 10; i++) {
-          odc[i - 1] = static_cast< char >('0' + i);
+          odc[i - 1] = static_cast<char>('0' + i);
         }
         odc[i - 1] = 0;
         char* ss = mmkey(2);
@@ -507,27 +514,6 @@ bool CheckPasswordComplexity(WUser *, string& password) {
     //TODO - the min length should be in wwiv.ini
     return false;
   }
-
-  //if ( password.find( pUser->GetName() ) != string::npos )
-  //{
-  //    return false;
-  //}
-
-  //if ( password.find( realName ) != string::npos )
-  //{
-  //    return false;
-  //}
-
-  //if( password.find( pUser->GetVoicePhoneNumber() ) != string::npos )
-  //{
-  //    return false;
-  //}
-
-  //if ( password.find( pUser->GetDataPhoneNumber() ) != string::npos )
-  //{
-  //    return false;
-  //}
-
   return true;
 }
 
@@ -615,13 +601,13 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qscn) {
 
   int nNewUserNumber = static_cast<int>((userFile.GetLength() / syscfg.userreclen) - 1);
   userFile.Seek(syscfg.userreclen, File::seekBegin);
-  int nUserNumber = 1;
+  int user_number = 1;
 
-  if (nNewUserNumber == application()->GetStatusManager()->GetUserCount()) {
-    nUserNumber = nNewUserNumber + 1;
+  if (nNewUserNumber == session()->GetStatusManager()->GetUserCount()) {
+    user_number = nNewUserNumber + 1;
   } else {
-    while (nUserNumber <= nNewUserNumber) {
-      if (nUserNumber % 25 == 0) {
+    while (user_number <= nNewUserNumber) {
+      if (user_number % 25 == 0) {
         userFile.Close();
         for (int n = 0; !userFile.IsOpen() && (n < 20); n++) {
           if (!userFile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
@@ -631,32 +617,32 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qscn) {
         if (!userFile.IsOpen()) {
           return -1;
         }
-        userFile.Seek(static_cast<long>(nUserNumber * syscfg.userreclen), File::seekBegin);
+        userFile.Seek(static_cast<long>(user_number * syscfg.userreclen), File::seekBegin);
         nNewUserNumber = static_cast<int>((userFile.GetLength() / syscfg.userreclen) - 1);
       }
       WUser tu;
       userFile.Read(&tu.data, syscfg.userreclen);
 
       if (tu.IsUserDeleted() && tu.GetSl() != 255) {
-        userFile.Seek(static_cast<long>(nUserNumber * syscfg.userreclen), File::seekBegin);
+        userFile.Seek(static_cast<long>(user_number * syscfg.userreclen), File::seekBegin);
         userFile.Write(&pUser->data, syscfg.userreclen);
         userFile.Close();
-        write_qscn(nUserNumber, qscn, false);
-        InsertSmallRecord(nUserNumber, pUser->GetName());
-        return nUserNumber;
+        write_qscn(user_number, qscn, false);
+        InsertSmallRecord(user_number, pUser->GetName());
+        return user_number;
       } else {
-        nUserNumber++;
+        user_number++;
       }
     }
   }
 
-  if (nUserNumber <= syscfg.maxusers) {
-    userFile.Seek(static_cast<long>(nUserNumber * syscfg.userreclen), File::seekBegin);
+  if (user_number <= syscfg.maxusers) {
+    userFile.Seek(static_cast<long>(user_number * syscfg.userreclen), File::seekBegin);
     userFile.Write(&pUser->data, syscfg.userreclen);
     userFile.Close();
-    write_qscn(nUserNumber, qscn, false);
-    InsertSmallRecord(nUserNumber, pUser->GetName());
-    return nUserNumber;
+    write_qscn(user_number, qscn, false);
+    InsertSmallRecord(user_number, pUser->GetName());
+    return user_number;
   } else {
     userFile.Close();
     return -1;
@@ -702,7 +688,7 @@ void CreateNewUserRecord() {
   session()->ResetEffectiveSl();
   string randomPassword;
   for (int i = 0; i < 6; i++) {
-    char ch = static_cast< char >(rand() % 36);
+    char ch = static_cast<char>(rand() % 36);
     if (ch < 10) {
       ch += '0';
     } else {
@@ -720,7 +706,7 @@ void CreateNewUserRecord() {
 // on here, if this function returns false, a sufficient error
 // message has already been displayed to the user.
 bool CanCreateNewUserAccountHere() {
-  if (application()->GetStatusManager()->GetUserCount() >= syscfg.maxusers) {
+  if (session()->GetStatusManager()->GetUserCount() >= syscfg.maxusers) {
     bout.nl(2);
     bout << "I'm sorry, but the system currently has the maximum number of users it can\r\nhandle.\r\n\n";
     return false;
@@ -755,7 +741,7 @@ bool CanCreateNewUserAccountHere() {
 
 
 bool UseMinimalNewUserInfo() {
-  IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), INI_TAG);
+  IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
   if (iniFile.IsOpen()) {
     return iniFile.GetBooleanValue("NEWUSER_MIN");
   }
@@ -767,9 +753,9 @@ void DoFullNewUser() {
   input_name();
   input_realname();
   input_phone();
-  if (application()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
+  if (session()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
     if (check_dupes(session()->user()->GetVoicePhoneNumber())) {
-      if (application()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
+      if (session()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
         hangup = true;
         hang_it_up();
         return;
@@ -802,9 +788,9 @@ void DoFullNewUser() {
     }
     input_dataphone();
 
-    if (application()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
+    if (session()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
       if (check_dupes(session()->user()->GetDataPhoneNumber())) {
-        if (application()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
+        if (session()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
           hangup = true;
           hang_it_up();
           return;
@@ -817,18 +803,18 @@ void DoFullNewUser() {
   input_age(session()->user());
   input_comptype();
 
-  if (session()->GetNumberOfEditors() && session()->user()->HasAnsi()) {
+  if (session()->editors.size() && session()->user()->HasAnsi()) {
     bout.nl();
     bout << "|#5Select a fullscreen editor? ";
     if (yesno()) {
       select_editor();
     } else {
-      for (int nEditor = 0; nEditor < session()->GetNumberOfEditors(); nEditor++) {
+      for (int nEditor = 0; nEditor < session()->editors.size(); nEditor++) {
         char szEditorDesc[ 121 ];
-        strcpy(szEditorDesc, editors[nEditor].description);
+        strcpy(szEditorDesc, session()->editors[nEditor].description);
         if (strstr(strupr(szEditorDesc) , "WWIVEDIT") != nullptr) {
           session()->user()->SetDefaultEditor(nEditor + 1);
-          nEditor = session()->GetNumberOfEditors();
+          nEditor = session()->editors.size();
         }
       }
     }
@@ -847,11 +833,11 @@ void DoFullNewUser() {
 
 
 void DoNewUserASV() {
-  if (application()->HasConfigFlag(OP_FLAGS_ADV_ASV)) {
+  if (session()->HasConfigFlag(OP_FLAGS_ADV_ASV)) {
     asv();
     return;
   }
-  if (application()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV) &&
+  if (session()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV) &&
       session()->asv.sl > syscfg.newusersl && session()->asv.sl < 90) {
     bout.nl();
     bout << "|#5Are you currently a WWIV SysOp? ";
@@ -1035,13 +1021,13 @@ void SendNewUserFeedbackIfRequired() {
     return;
   }
 
-  if (application()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
+  if (session()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
     noabort(FEEDBACK_NOEXT);
   } else if (printfile(FEEDBACK_NOEXT)) {
     sysoplog("", false);
   }
   feedback(true);
-  if (application()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
+  if (session()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
     if (!session()->user()->GetNumEmailSent() && !session()->user()->GetNumFeedbackSent()) {
       printfile(NOFBACK_NOEXT);
       deluser(session()->usernum);
@@ -1062,7 +1048,7 @@ void ExecNewUserCommand() {
     sysoplog(commandLine.c_str(), true);
 
     session()->WriteCurrentUser();
-    ExecuteExternalProgram(commandLine, application()->GetSpawnOptions(SPAWNOPT_NEWUSER));
+    ExecuteExternalProgram(commandLine, session()->GetSpawnOptions(SPAWNOPT_NEWUSER));
     session()->ReadCurrentUser();
   }
 }
@@ -1078,7 +1064,7 @@ void newuser() {
 
   sysoplog("", false);
   sysoplogfi(false, "*** NEW USER %s   %s    %s (%ld)", fulldate(), times(), session()->GetCurrentSpeed().c_str(),
-             application()->GetInstanceNumber());
+             session()->GetInstanceNumber());
 
   if (!CanCreateNewUserAccountHere() || hangup) {
     hangup = true;
@@ -1147,7 +1133,7 @@ void newuser() {
 
   WriteNewUserInfoToSysopLog();
   ssm(1, 0, "You have a new user:  %s #%ld", session()->user()->GetName(), session()->usernum);
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
   VerifyNewUserPassword();
   SendNewUserFeedbackIfRequired();
   ExecNewUserCommand();
@@ -1159,12 +1145,12 @@ void newuser() {
 /**
  * Takes an input string and reduces repeated spaces in the string to one space.
  */
-void single_space(char *pszText) {
-  if (!pszText || !*pszText) {
+void single_space(char *text) {
+  if (!text || !*text) {
     return;
   }
-  char *pInputBuffer = pszText;
-  char *pOutputBuffer = pszText;
+  char *pInputBuffer = text;
+  char *pOutputBuffer = text;
   int i = 0;
   int cnt = 0;
 
@@ -1258,15 +1244,15 @@ bool check_zip(const char *pszZipCode, int mode) {
 
 
 bool check_dupes(const char *pszPhoneNumber) {
-  int nUserNumber = find_phone_number(pszPhoneNumber);
-  if (nUserNumber && nUserNumber != session()->usernum) {
+  int user_number = find_phone_number(pszPhoneNumber);
+  if (user_number && user_number != session()->usernum) {
     char szBuffer[ 255 ];
     sprintf(szBuffer, "    %s entered phone # %s", session()->user()->GetName(), pszPhoneNumber);
     sysoplog(szBuffer, false);
     ssm(1, 0, szBuffer);
 
     WUser user;
-    application()->users()->ReadUser(&user, nUserNumber);
+    session()->users()->ReadUser(&user, user_number);
     sprintf(szBuffer, "      also entered by %s", user.GetName());
     sysoplog(szBuffer, false);
     ssm(1, 0, szBuffer);
@@ -1277,7 +1263,7 @@ bool check_dupes(const char *pszPhoneNumber) {
   return false;
 }
 
-void noabort(const char *pszFileName) {
+void noabort(const char *file_name) {
   bool oic = false;
 
   if (session()->using_modem) {
@@ -1285,7 +1271,7 @@ void noabort(const char *pszFileName) {
     incom = false;
     dump();
   }
-  printfile(pszFileName);
+  printfile(file_name);
   if (session()->using_modem) {
     dump();
     incom = oic;
@@ -1327,7 +1313,7 @@ void DoMinimalNewUser() {
   bool done = false;
   int nSaveTopData = session()->topdata;
   session()->topdata = LocalIO::topdataNone;
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
   do {
     bout.cls();
     bout.litebar("%s New User Registration", syscfg.systemname);
@@ -1508,11 +1494,11 @@ void DoMinimalNewUser() {
   session()->user()->SetVoicePhoneNumber("999-999-9999");
   session()->user()->SetDataPhoneNumber(session()->user()->GetVoicePhoneNumber());
   session()->user()->SetStreet("None Requested");
-  if (session()->GetNumberOfEditors() && session()->user()->HasAnsi()) {
+  if (session()->editors.size() && session()->user()->HasAnsi()) {
     session()->user()->SetDefaultEditor(1);
   }
   session()->topdata = nSaveTopData;
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
   newline = true;
 }
 
@@ -1522,21 +1508,38 @@ void new_mail() {
   if (!file.Exists()) {
     return;
   }
-  session()->SetNewMailWaiting(true);
   int save_ed = session()->user()->GetDefaultEditor();
   session()->user()->SetDefaultEditor(0);
-  LoadFileIntoWorkspace(file.full_pathname().c_str(), true);
+  LoadFileIntoWorkspace(file.full_pathname(), true, true);
   use_workspace = true;
-  string userName = session()->user()->GetUserNameAndNumber(session()->usernum);
-  string title = StringPrintf("Welcome to %s!", syscfg.systemname);
 
-  int nAllowAnon = 0;
+  MessageEditorData data;
+  data.title = StringPrintf("Welcome to %s!", syscfg.systemname);
+  data.anonymous_flag = 0;
+  data.aux = "email";
+  data.fsed_flags = INMSG_NOFSED;
+  data.to_name = session()->user()->GetUserNameAndNumber(session()->usernum);
+  data.msged_flags = MSGED_FLAG_NONE;
+  data.silent_mode = true;
   messagerec msg;
   msg.storage_type = 2;
-  inmsg(&msg, &title, &nAllowAnon, false, "email", INMSG_NOFSED, userName.c_str(), MSGED_FLAG_NONE, true);
-  sendout_email(title, &msg, 0, session()->usernum, 0, 1, 1, 0, 1, 0);
+  if (inmsg(data)) {
+    savefile(data.title, &msg, data.aux);
+
+    EmailData email(data);
+    email.msg = &msg;
+    email.anony = 0;
+    email.user_number = session()->usernum;
+    email.system_number = 0;
+    email.an = true;
+    email.from_user = 1;
+    email.from_system = 0;
+    email.forwarded_code = 1;
+    email.from_network_number = 0;
+    email.silent_mode = true;
+    sendout_email(email);
+  }
   session()->user()->SetNumMailWaiting(session()->user()->GetNumMailWaiting() + 1);
   session()->user()->SetDefaultEditor(save_ed);
-  session()->SetNewMailWaiting(false);
 }
 

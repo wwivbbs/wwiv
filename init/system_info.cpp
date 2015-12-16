@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                 WWIV Initialization Utility Version 5.0                */
+/*                  WWIV Initialization Utility Version 5                 */
 /*               Copyright (C)2014-2015 WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -133,9 +133,7 @@ void sysinfo1() {
   window->PrintfXY(COL1_LINE, y++, "Newuser gold     : ");
 
   window->PrintfXY(COL1_LINE, y++, "Sysop name       : ");
-  window->PrintfXY(COL1_LINE, y++, "Sysop time: from : ");
-
-  window->PrintfXY(COL1_LINE, y++, "Net time  : from :       to: ");
+  window->PrintfXY(COL1_LINE, y++, "Sysop time: from :       to:");
 
   window->PrintfXY(COL1_LINE, y++, "Ratios    :  U/D :        Post/Call: ");
 
@@ -158,16 +156,14 @@ void sysinfo1() {
     new StringEditItem<char*>(COL1_POSITION, 10, 50, syscfg.sysopname, false),
     new TimeEditItem(COL1_POSITION, 11, &syscfg.sysoplowtime),
     new TimeEditItem(COL1_POSITION + 10, 11, &syscfg.sysophightime),
-    new TimeEditItem(COL1_POSITION, 12, &syscfg.netlowtime),
-    new TimeEditItem(COL1_POSITION + 10, 12, &syscfg.nethightime),
 
-    new Float53EditItem(COL1_POSITION, 13, &syscfg.req_ratio),
-    new Float53EditItem(COL1_POSITION + 18, 13, &syscfg.post_call_ratio),
+    new Float53EditItem(COL1_POSITION, 12, &syscfg.req_ratio),
+    new Float53EditItem(COL1_POSITION + 18, 12, &syscfg.post_call_ratio),
 
-    new NumberEditItem<uint8_t>(COL1_POSITION, 14, &syscfg.maxwaiting),
-    new NumberEditItem<uint16_t>(COL1_POSITION, 15, &syscfg.maxusers),
-    new NumberEditItem<uint32_t>(COL1_POSITION, 16, &status.callernum1),
-    new NumberEditItem<uint16_t>(COL1_POSITION, 17, &status.days),
+    new NumberEditItem<uint8_t>(COL1_POSITION, 13, &syscfg.maxwaiting),
+    new NumberEditItem<uint16_t>(COL1_POSITION, 14, &syscfg.maxusers),
+    new NumberEditItem<uint32_t>(COL1_POSITION, 15, &status.callernum1),
+    new NumberEditItem<uint16_t>(COL1_POSITION, 16, &status.days),
   };
 
   items.set_curses_io(out, window.get());

@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -22,23 +22,25 @@
 #include "bbs/datetime.h"
 #include "bbs/keycodes.h"
 #include "bbs/wcomm.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 
 using namespace wwiv::strings;
 
-bool NewZModemSendFile(const char *pszFileName);
+bool NewZModemSendFile(const char *file_name);
 
 #if (_MSC_VER >= 1900)
 #define timezone _timezone
 #endif  // MSV_VER && !timezone
 
 
-void send_block(char *b, int nBlockType, bool bUseCRC, char byBlockNumber) {
+void send_block(char *b, int block_type, bool use_crc, char byBlockNumber) {
   int nBlockSize = 0;
 
   CheckForHangup();
-  switch (nBlockType) {
+  switch (block_type) {
   case 5:
     nBlockSize = 128;
     rputch(1);
@@ -62,7 +64,7 @@ void send_block(char *b, int nBlockType, bool bUseCRC, char byBlockNumber) {
     nBlockSize = 128;
     rputch(1);
   }
-  if (nBlockType > 1 && nBlockType < 5) {
+  if (block_type > 1 && block_type < 5) {
     return;
   }
 
@@ -76,7 +78,7 @@ void send_block(char *b, int nBlockType, bool bUseCRC, char byBlockNumber) {
     calc_CRC(ch);
   }
 
-  if (bUseCRC) {
+  if (use_crc) {
     rputch(static_cast<char>(crc >> 8));
     rputch(static_cast<char>(crc & 0x00ff));
   } else {
@@ -86,15 +88,15 @@ void send_block(char *b, int nBlockType, bool bUseCRC, char byBlockNumber) {
 }
 
 
-char send_b(File &file, long pos, int nBlockType, char byBlockNumber, bool *bUseCRC, const char *pszFileName,
+char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_crc, const char *file_name,
             int *terr, bool *abort) {
   char b[1025], szTempBuffer[20];
 
   int nb = 0;
-  if (nBlockType == 0) {
+  if (block_type == 0) {
     nb = 128;
   }
-  if (nBlockType == 1) {
+  if (block_type == 1) {
     nb = 1024;
   }
   if (nb) {
@@ -103,11 +105,11 @@ char send_b(File &file, long pos, int nBlockType, char byBlockNumber, bool *bUse
     for (int i = nNumRead; i < nb; i++) {
       b[i] = '\0';
     }
-  } else if (nBlockType == 5) {
+  } else if (block_type == 5) {
     char szFileDate[20];
     memset(b, 0, 128);
     nb = 128;
-    strcpy(b, stripfn(pszFileName));
+    strcpy(b, stripfn(file_name));
     sprintf(szTempBuffer, "%ld ", pos);
     // We neede dthis cast to (long) to compile with XCode 1.5 on OS X
     sprintf(szFileDate, "%ld", (long)file.last_write_time() - (long)timezone);
@@ -121,10 +123,10 @@ char send_b(File &file, long pos, int nBlockType, char byBlockNumber, bool *bUse
   int nNumErrors = 0;
   char ch = 0;
   do {
-    send_block(b, nBlockType, *bUseCRC, byBlockNumber);
+    send_block(b, block_type, *use_crc, byBlockNumber);
     ch = gettimeout(5.0, abort);
     if (ch == 'C' && pos == 0) {
-      *bUseCRC = true;
+      *use_crc = true;
     }
     if (ch == 6 || ch == CX) {
       done = true;
@@ -149,7 +151,7 @@ char send_b(File &file, long pos, int nBlockType, char byBlockNumber, bool *bUse
 }
 
 
-bool okstart(bool *bUseCRC, bool *abort) {
+bool okstart(bool *use_crc, bool *abort) {
   double d    = timer();
   bool   ok   = false;
   bool   done = false;
@@ -157,12 +159,12 @@ bool okstart(bool *bUseCRC, bool *abort) {
   while (std::abs(timer() - d) < 90.0 && !done && !hangup && !*abort) {
     char ch = gettimeout(91.0 - d, abort);
     if (ch == 'C') {
-      *bUseCRC = true;
+      *use_crc = true;
       ok = true;
       done = true;
     }
     if (ch == CU) {
-      *bUseCRC = false;
+      *use_crc = false;
       ok = true;
       done = true;
     }
@@ -180,18 +182,18 @@ int GetXYModemBlockSize(bool bBlockSize1K) {
 }
 
 
-void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUseCRC, bool bUseYModem,
-                  bool bUseYModemBatch) {
+void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_crc, bool use_ymodem,
+                  bool use_ymodemBatch) {
   char ch;
 
   long cp = 0L;
   char byBlockNumber = 1;
   bool abort = false;
   int terr = 0;
-  char *pszWorkingFileName = strdup(pszFileName);
+  char *pszWorkingFileName = strdup(file_name);
   File file(pszWorkingFileName);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    if (!bUseYModemBatch) {
+    if (!use_ymodemBatch) {
       bout << "\r\nFile not found.\r\n\n";
     }
     *sent = false;
@@ -204,7 +206,7 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
   }
   double tpb = (12.656) / ((double) modem_speed);
 
-  if (!bUseYModemBatch) {
+  if (!use_ymodemBatch) {
     bout << "\r\n-=> Beginning file transmission, Ctrl+X to abort.\r\n";
   }
   int xx1 = session()->localIO()->WhereX();
@@ -220,22 +222,22 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
   session()->localIO()->LocalXYPuts(65, 0, stripfn(pszWorkingFileName));
   session()->localIO()->LocalXYPrintf(65, 2, "%ld - %ldk", (lFileSize + 127) / 128, bytes_to_k(lFileSize));
 
-  if (!okstart(&bUseCRC, &abort)) {
+  if (!okstart(&use_crc, &abort)) {
     abort = true;
   }
-  if (bUseYModem && !abort && !hangup) {
-    ch = send_b(file, lFileSize, 5, 0, &bUseCRC, pszWorkingFileName, &terr, &abort);
+  if (use_ymodem && !abort && !hangup) {
+    ch = send_b(file, lFileSize, 5, 0, &use_crc, pszWorkingFileName, &terr, &abort);
     if (ch == CX) {
       abort = true;
     }
     if (ch == CU) {
-      send_b(file, 0L, 3, 0, &bUseCRC, pszWorkingFileName, &terr, &abort);
+      send_b(file, 0L, 3, 0, &use_crc, pszWorkingFileName, &terr, &abort);
       abort = true;
     }
   }
   bool bUse1kBlocks = false;
   while (!hangup && !abort && cp < lFileSize) {
-    bUse1kBlocks = (bUseYModem) ? true : false;
+    bUse1kBlocks = (use_ymodem) ? true : false;
     if ((lFileSize - cp) < 128L) {
       bUse1kBlocks = false;
     }
@@ -243,13 +245,13 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
     session()->localIO()->LocalXYPuts(65, 1, ctim(((double)(lFileSize - cp)) * tpb));
     session()->localIO()->LocalXYPuts(69, 4, "0");
 
-    ch = send_b(file, cp, (bUse1kBlocks) ? 1 : 0, byBlockNumber, &bUseCRC, pszWorkingFileName, &terr, &abort);
+    ch = send_b(file, cp, (bUse1kBlocks) ? 1 : 0, byBlockNumber, &use_crc, pszWorkingFileName, &terr, &abort);
     if (ch == CX) {
       abort = true;
     } else if (ch == CU) {
       Wait(1);
       dump();
-      send_b(file, 0L, 3, 0, &bUseCRC, pszWorkingFileName, &terr, &abort);
+      send_b(file, 0L, 3, 0, &use_crc, pszWorkingFileName, &terr, &abort);
       abort = true;
     } else {
       ++byBlockNumber;
@@ -257,7 +259,7 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
     }
   }
   if (!hangup && !abort) {
-    send_b(file, 0L, 2, 0, &bUseCRC, pszWorkingFileName, &terr, &abort);
+    send_b(file, 0L, 2, 0, &use_crc, pszWorkingFileName, &terr, &abort);
   }
   if (!abort) {
     *sent = true;
@@ -274,18 +276,18 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
   }
   file.Close();
   session()->localIO()->LocalGotoXY(xx1, yy1);
-  if (*sent && !bUseYModemBatch) {
+  if (*sent && !use_ymodemBatch) {
     bout << "-=> File transmission complete.\r\n\n";
   }
   free(pszWorkingFileName);
 }
 
 
-void zmodem_send(const char *pszFileName, bool *sent, double *percent) {
+void zmodem_send(const char *file_name, bool *sent, double *percent) {
   *sent = false;
   *percent = 0.0;
 
-  char *pszWorkingFileName = strdup(pszFileName);
+  char *pszWorkingFileName = strdup(file_name);
   StringRemoveWhitespace(pszWorkingFileName);
 
   bool bOldBinaryMode = session()->remoteIO()->GetBinaryMode();

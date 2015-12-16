@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -42,9 +42,9 @@ public:
   virtual void LocalPuts(const std::string& s) override {}
   virtual void LocalXYPuts(int x, int y, const std::string& text) override {}
   virtual void LocalFastPuts(const std::string& text) override {}
-  virtual int LocalPrintf(const char *pszFormattedText, ...) override { return 0; }
-  virtual int LocalXYPrintf(int x, int y, const char *pszFormattedText, ...) override { return 0; }
-  virtual int LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...) override { return 0; }
+  virtual int LocalPrintf(const char *formatted_text, ...) override { return 0; }
+  virtual int LocalXYPrintf(int x, int y, const char *formatted_text, ...) override { return 0; }
+  virtual int LocalXYAPrintf(int x, int y, int nAttribute, const char *formatted_text, ...) override { return 0; }
   virtual void set_protect(int l) override {}
   virtual void savescreen() override {}
   virtual void restorescreen() override {}
@@ -56,7 +56,7 @@ public:
   virtual void MakeLocalWindow(int x, int y, int xlen, int ylen) override {}
   virtual void SetCursor(int cursorStyle) override {}
   virtual void LocalClrEol() override {}
-  virtual void LocalWriteScreenBuffer(const char *pszBuffer) override {}
+  virtual void LocalWriteScreenBuffer(const char *buffer) override {}
   virtual int GetDefaultScreenBottom() override { return 24; }
   virtual void LocalEditLine(char *s, int len, int statusx, int *returncode, char *ss) override {}
   virtual void UpdateNativeTitleBar() override {}

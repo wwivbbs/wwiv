@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -17,12 +17,16 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
+#include "bbs/keycodes.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
-#include "bbs/keycodes.h"
+#include "sdk/filenames.h"
 
 
 using wwiv::bbs::InputMode;
@@ -47,7 +51,7 @@ void dirdata(int n, char *s) {
   } else {
     for (int i = 0; i < 16; i++) {
       if ((1 << i) & r.dar) {
-        x = static_cast< char >('A' + i);
+        x = static_cast<char>('A' + i);
       }
     }
   }
@@ -75,20 +79,20 @@ void showdirs() {
 }
 
 
-char* GetAttributeString(directoryrec r, char* pszAttributes) {
+char* GetAttributeString(directoryrec r, char* attributes) {
   char szBuffer[255];
 
   strcpy(szBuffer, "None.");
   if (r.dar != 0) {
     for (int i = 0; i < 16; i++) {
       if ((1 << i) & r.dar) {
-        szBuffer[0] = static_cast< char >('A' + i);
+        szBuffer[0] = static_cast<char>('A' + i);
       }
     }
     szBuffer[1] = 0;
   }
-  strcpy(pszAttributes, szBuffer);
-  return pszAttributes;
+  strcpy(attributes, szBuffer);
+  return attributes;
 }
 
 #define LAST(s) s[strlen(s)-1]
@@ -168,7 +172,7 @@ void modify_dir(int n) {
       if (s[0]) {
         File dir(s);
         if (!dir.Exists()) {
-          application()->CdHome();
+          session()->CdHome();
           if (File::mkdirs(dir)) {
             bout << "|#6Unable to create or change to directory." << wwiv::endl;
             pausescr();
@@ -275,8 +279,8 @@ void modify_dir(int n) {
 
 
 void swap_dirs(int dir1, int dir2) {
-  SUBCONF_TYPE dir1conv = static_cast<SUBCONF_TYPE>(dir1);
-  SUBCONF_TYPE dir2conv = static_cast<SUBCONF_TYPE>(dir2);
+  subconf_t dir1conv = static_cast<subconf_t>(dir1);
+  subconf_t dir2conv = static_cast<subconf_t>(dir2);
 
   if (dir1 < 0 || dir1 >= session()->num_dirs || dir2 < 0 || dir2 >= session()->num_dirs) {
     return;
@@ -287,7 +291,7 @@ void swap_dirs(int dir1, int dir2) {
   dir1 = static_cast<int>(dir1conv);
   dir2 = static_cast<int>(dir2conv);
 
-  int nNumUserRecords = application()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
   uint32_t *pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
   WWIV_ASSERT(pTempQScan != nullptr);
@@ -317,15 +321,10 @@ void swap_dirs(int dir1, int dir2) {
   directoryrec drt = directories[dir1];
   directories[dir1] = directories[dir2];
   directories[dir2] = drt;
-
-  unsigned long tl = session()->m_DirectoryDateCache[dir1];
-  session()->m_DirectoryDateCache[dir1] = session()->m_DirectoryDateCache[dir2];
-  session()->m_DirectoryDateCache[dir2] = tl;
 }
 
-
 void insert_dir(int n) {
-  SUBCONF_TYPE nconv = static_cast<SUBCONF_TYPE>(n);
+  subconf_t nconv = static_cast<subconf_t>(n);
 
   if (n < 0 || n > session()->num_dirs) {
     return;
@@ -333,12 +332,11 @@ void insert_dir(int n) {
 
   update_conf(CONF_DIRS, &nconv, nullptr, CONF_UPDATE_INSERT);
 
-  n = static_cast< int >(nconv);
+  n = static_cast<int>(nconv);
 
   int i;
   for (i = session()->num_dirs - 1; i >= n; i--) {
     directories[i + 1] = directories[i];
-    session()->m_DirectoryDateCache[i + 1] = session()->m_DirectoryDateCache[i];
   }
 
   directoryrec r;
@@ -354,7 +352,7 @@ void insert_dir(int n) {
   directories[n] = r;
   ++session()->num_dirs;
 
-  int nNumUserRecords = application()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
   uint32_t* pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
   WWIV_ASSERT(pTempQScan != nullptr);
@@ -385,9 +383,9 @@ void insert_dir(int n) {
 void delete_dir(int n) {
   int i, i1;
   uint32_t *pTempQScan, *pTempQScan_n, m2, m3;
-  SUBCONF_TYPE nconv;
+  subconf_t nconv;
 
-  nconv = static_cast< SUBCONF_TYPE >(n);
+  nconv = static_cast<subconf_t>(n);
 
   if ((n < 0) || (n >= session()->num_dirs)) {
     return;
@@ -399,11 +397,10 @@ void delete_dir(int n) {
 
   for (i = n; i < session()->num_dirs; i++) {
     directories[i] = directories[i + 1];
-    session()->m_DirectoryDateCache[i] = session()->m_DirectoryDateCache[i + 1];
   }
   --session()->num_dirs;
 
-  int nNumUserRecords = application()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
   pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
   WWIV_ASSERT(pTempQScan != nullptr);
@@ -434,7 +431,7 @@ void delete_dir(int n) {
 void dlboardedit() {
   int i, i1, i2, confchg = 0;
   char s[81], s1[81], ch;
-  SUBCONF_TYPE iconv;
+  subconf_t iconv;
 
   if (!ValidateSysopPassword()) {
     return;
@@ -508,14 +505,14 @@ void dlboardedit() {
             i2 = select_conf("Put in which conference? ", CONF_DIRS, 0);
             if (i2 >= 0) {
               if (in_conference(i, &dirconfs[i2]) < 0) {
-                iconv = (SUBCONF_TYPE) i;
+                iconv = (subconf_t) i;
                 addsubconf(CONF_DIRS, &dirconfs[i2], &iconv);
                 i = static_cast<int>(iconv);
               }
             }
           } else {
             if (in_conference(i, &dirconfs[0]) < 0) {
-              iconv = (SUBCONF_TYPE) i;
+              iconv = (subconf_t) i;
               addsubconf(CONF_DIRS, &dirconfs[0], &iconv);
               i = static_cast<int>(iconv);
             }
@@ -559,7 +556,7 @@ void dlboardedit() {
   if (confchg) {
     save_confs(CONF_DIRS, -1, nullptr);
   }
-  if (!application()->GetWfcStatus()) {
+  if (!session()->GetWfcStatus()) {
     changedsl();
   }
 }

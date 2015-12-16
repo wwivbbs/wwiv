@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -21,9 +21,22 @@
 #include <memory>
 #include <string>
 
+#include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
+#include "bbs/com.h"
 #include "bbs/input.h"
+#include "bbs/msgbase.h"
+#include "bbs/read_message.h"
+#include "bbs/sr.h"
+#include "bbs/sysoplog.h"
+#include "bbs/utility.h"
 #include "bbs/wconstants.h"
-#include "bbs/wwiv.h"
+#include "bbs/woutstreambuffer.h"
+#include "bbs/vars.h"
+#include "bbs/xfer.h"
+#include "bbs/wuser.h"
+#include "core/file.h"
+#include "sdk/filenames.h"
 #include "core/wwivassert.h"
 
 using std::string;
@@ -73,15 +86,15 @@ void attach_file(int mode) {
         done1 = false;
         bout.nl();
         if (m.tosys == 0) {
-          char szBuffer[ 255 ];
-          application()->users()->ReadUser(&u, m.touser);
+          char buffer[ 255 ];
+          session()->users()->ReadUser(&u, m.touser);
           bout << "|#1  To|#7: |#2";
-          strcpy(szBuffer, u.GetUserNameAndNumber(m.touser));
+          strcpy(buffer, u.GetUserNameAndNumber(m.touser));
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da)) &&
               (getslrec(session()->GetEffectiveSl()).ability & ability_read_email_anony) == 0) {
-            strcpy(szBuffer, ">UNKNOWN<");
+            strcpy(buffer, ">UNKNOWN<");
           }
-          bout << szBuffer;
+          bout << buffer;
           bout.nl();
         } else {
           bout << "|#1To|#7: |#2User " << m.tosys << " System " << m.touser << wwiv::endl;
@@ -96,7 +109,7 @@ void attach_file(int mode) {
             bFound = false;
             long lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
             while (lNumRead > 0 && !bFound) {
-              if (m.daten == static_cast<unsigned long>(fsr.id)) {
+              if (m.daten == static_cast<uint32_t>(fsr.id)) {
                 bout << "|#1Filename|#0.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0";
                 bFound = true;
               }
@@ -146,9 +159,9 @@ void attach_file(int mode) {
                 bFound = false;
                 long lNumRead = attachFile.Read(&fsr, sizeof(fsr));
                 while (lNumRead > 0 && !bFound) {
-                  if (m.daten == static_cast<unsigned long>(fsr.id)) {
+                  if (m.daten == static_cast<uint32_t>(fsr.id)) {
                     fsr.id = 0;
-                    File::Remove(application()->GetAttachmentDirectory(), fsr.filename);
+                    File::Remove(session()->GetAttachmentDirectory(), fsr.filename);
                     attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::seekCurrent);
                     attachFile.Write(&fsr, sizeof(fsr));
                   }
@@ -166,7 +179,7 @@ void attach_file(int mode) {
             }
             }
           }
-          if (freek1(application()->GetAttachmentDirectory().c_str()) < 500) {
+          if (freek1(session()->GetAttachmentDirectory().c_str()) < 500) {
             bout << "Not enough free space to attach a file.\r\n";
           } else {
             if (!done2) {
@@ -196,7 +209,7 @@ void attach_file(int mode) {
                     }
                   }
                   if (!bFound && szFileToAttach[0]) {
-                    sprintf(szFullPathName, "%s%s", application()->GetAttachmentDirectory().c_str(), stripfn(szFileToAttach));
+                    sprintf(szFullPathName, "%s%s", session()->GetAttachmentDirectory().c_str(), stripfn(szFileToAttach));
                     bout.nl();
                     bout << "|#5" << szFileToAttach << "? ";
                     if (!yesno()) {
@@ -208,7 +221,7 @@ void attach_file(int mode) {
               if (!so() || bRemoteUpload) {
                 bout << "|#2Filename: ";
                 input(szFileToAttach, 12, true);
-                sprintf(szFullPathName, "%s%s", application()->GetAttachmentDirectory().c_str(), szFileToAttach);
+                sprintf(szFullPathName, "%s%s", session()->GetAttachmentDirectory().c_str(), szFileToAttach);
                 if (!okfn(szFileToAttach) || strchr(szFileToAttach, '?')) {
                   bFound = true;
                 }
@@ -222,7 +235,7 @@ void attach_file(int mode) {
                   if (yesno()) {
                     bout << "|#5Filename: ";
                     input(szNewFileName, 12, true);
-                    sprintf(szFullPathName, "%s%s", application()->GetAttachmentDirectory().c_str(), szNewFileName);
+                    sprintf(szFullPathName, "%s%s", session()->GetAttachmentDirectory().c_str(), szNewFileName);
                     if (okfn(szNewFileName) && !strchr(szNewFileName, '?') && !File::Exists(szFullPathName)) {
                       bFound   = false;
                       done3   = true;
@@ -239,7 +252,7 @@ void attach_file(int mode) {
               if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
                 long lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
                 while (lNumRead > 0 && !bFound) {
-                  if (m.daten == static_cast<unsigned long>(fsr.id)) {
+                  if (m.daten == static_cast<uint32_t>(fsr.id)) {
                     bFound = true;
                   } else {
                     lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
@@ -260,7 +273,7 @@ void attach_file(int mode) {
                     getkey();
                   }
                 } else {
-                  sprintf(szFullPathName, "%s%s", application()->GetAttachmentDirectory().c_str(), szFileToAttach);
+                  sprintf(szFullPathName, "%s%s", session()->GetAttachmentDirectory().c_str(), szFileToAttach);
                   receive_file(szFullPathName, &ok, "", 0);
                 }
                 if (ok) {
@@ -310,7 +323,7 @@ void attach_file(int mode) {
                         sysoplog(szLogLine);
                       }
                     } else {
-                      File::Remove(application()->GetAttachmentDirectory().c_str(), fsr.filename);
+                      File::Remove(session()->GetAttachmentDirectory().c_str(), fsr.filename);
                     }
                   }
                 }
@@ -334,14 +347,14 @@ void attach_file(int mode) {
           bout.nl(2);
           bout << "Title: " << m.title;
           bool next;
-          read_message1(&m.msg, static_cast< char >(m.anony & 0x0f), false, &next, "email", 0, 0);
+          read_message1(&m.msg, static_cast<char>(m.anony & 0x0f), false, &next, "email", 0, 0);
           if (m.status & status_file) {
             File fileAttach(syscfg.datadir, ATTACH_DAT);
             if (fileAttach.Open(File::modeReadOnly | File::modeBinary)) {
               bFound = false;
               long lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
               while (lNumRead > 0 && !bFound) {
-                if (m.daten == static_cast<unsigned long>(fsr.id)) {
+                if (m.daten == static_cast<uint32_t>(fsr.id)) {
                   bout << "Attached file: " << fsr.filename << " (" << fsr.numbytes << " bytes).";
                   bout.nl();
                   bFound = true;

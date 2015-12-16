@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -92,7 +92,7 @@ struct MenuHeader {
   uint16_t  nEmpty;
   uint8_t   nFlags;
 
-  uint8_t   nNumbers;     /* What does a number do?  Set sub#, Dir#, nothing? */
+  uint8_t   nums;     /* What does a number do?  Set sub#, Dir#, nothing? */
   uint8_t   nLogging;     /* Types of logging, Key, None, command, desc       */
 
   uint8_t   nForceHelp;   /* force, dont force, on entrance only              */

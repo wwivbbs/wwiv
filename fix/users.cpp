@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -17,17 +17,18 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
+#include <vector>
+#include <set>
 
-#include "bbs/wwiv.h"
+#include "bbs/vars.h"
+#include "bbs/wuser.h"
+#include "core/file.h"
 #include "core/strings.h"
 #include "fix/fix.h"
 #include "fix/log.h"
 #include "fix/users.h"
+#include "sdk/filenames.h"
 
-// This causes compile errors before wwiv.h That seems broken
-#include <algorithm>
-#include <vector>
-#include <set>
 
 using namespace wwiv::strings;
 

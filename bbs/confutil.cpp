@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -17,7 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
@@ -153,13 +155,13 @@ void addusub(usersubrec * ss1, int ns, int sub, char key) {
   }
 
   if (key) {
-    ss1[last].subnum = static_cast< short >(sub);
+    ss1[last].subnum = static_cast<int16_t>(sub);
     ss1[last].keys[0] = key;
   } else {
     for (int i = last; i > last_num; i--) {
       ss1[ i ] = ss1[ i - 1 ];
     }
-    ss1[last_num].subnum = static_cast< short >(sub);
+    ss1[last_num].subnum = static_cast<int16_t>(sub);
     ss1[last_num].keys[0] = 0;
   }
 }
@@ -294,11 +296,11 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
   for (i = 0; (i < ns) && (ss1[i].keys[0] == 0) && (ss1[i].subnum != -1); i++) {
     if (i1 < 100) {
       if (((i1 % 10) == 0) && i1) {
-        xdc[dp++] = static_cast< char >('0' + (i1 / 10));
+        xdc[dp++] = static_cast<char>('0' + (i1 / 10));
       }
     } else {
       if ((i1 % 100) == 0) {
-        xtc[tp++] = static_cast< char >('0' + (i1 / 100));
+        xtc[tp++] = static_cast<char>('0' + (i1 / 100));
       }
     }
     snprintf(ss1[i].keys, sizeof(ss1[i].keys), "%d", i1++);
@@ -358,7 +360,7 @@ void setuconf(int nConferenceType, int num, int nOldSubNumber) {
 void changedsl() {
   int ocurconfsub = uconfsub[session()->GetCurrentConferenceMessageArea()].confnum;
   int ocurconfdir = uconfdir[session()->GetCurrentConferenceFileArea()].confnum;
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
 
   userconfrec c1;
   c1.confnum = -1;
@@ -372,7 +374,7 @@ void changedsl() {
   int nTempSubConferenceNumber = 0;
   for (i = 0; i < subconfnum; i++) {
     if (access_conf(session()->user(), session()->GetEffectiveSl(), &(subconfs[i]))) {
-      c1.confnum = static_cast< short >(i);
+      c1.confnum = static_cast<int16_t>(i);
       uconfsub[ nTempSubConferenceNumber++ ] = c1;
     }
   }
@@ -380,7 +382,7 @@ void changedsl() {
   int nTempDirConferenceNumber = 0;
   for (i = 0; i < dirconfnum; i++) {
     if (access_conf(session()->user(), session()->GetEffectiveSl(), &(dirconfs[i ]))) {
-      c1.confnum = static_cast< short >(i);
+      c1.confnum = static_cast<int16_t>(i);
       uconfdir[ nTempDirConferenceNumber++ ] = c1;
     }
   }

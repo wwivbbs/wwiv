@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -17,7 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/wwiv.h"
+#include "bbs/bbsovl1.h"
+#include "bbs/conf.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/confutil.h"
 #include "bbs/subxtr.h"
 #include "core/strings.h"
@@ -72,7 +76,7 @@ void old_sublist() {
       } else {
         strcat(s, "  ");
       }
-      if (net_sysnum || session()->GetMaxNetworkNumber() > 1) {
+      if (net_sysnum || session()->max_net_num() > 1) {
         if (xsubs[usub[i1].subnum].num_nets) {
           const char *ss;
           if (xsubs[usub[i1].subnum].num_nets > 1) {
@@ -194,7 +198,7 @@ void SubList() {
           strcpy(s2, "|#6No ");
         }
         iscan(i1);
-        if (net_sysnum || session()->GetMaxNetworkNumber() > 1) {
+        if (net_sysnum || session()->max_net_num() > 1) {
           if (xsubs[usub[i1].subnum].num_nets) {
 	    const char* ss;
             if (xsubs[usub[i1].subnum].num_nets > 1) {
@@ -203,7 +207,7 @@ void SubList() {
             } else {
               strcpy(s3, net_networks[xsubs[usub[i1].subnum].nets[0].net_num].name);
               ss = stripcolors(s3);
-              wc = session()->GetNetworkNumber() % 8;
+              wc = session()->net_num() % 8;
             }
             if (subboards[usub[i1].subnum].anony & anony_val_net) {
               sprintf(s3, "|#7[|#%i%-8.8s|#7]", wc, ss);

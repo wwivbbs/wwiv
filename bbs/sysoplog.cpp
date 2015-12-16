@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -20,8 +20,10 @@
 #include <cstddef>
 #include <string>
 
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/datetime.h"
-#include "bbs/wwiv.h"
 #include "core/strings.h"
 
 using std::string;
@@ -45,7 +47,7 @@ string GetSysopLogFileName(const string& d) {
 * Returns instance (temporary) sysoplog filename in s.
 */
 void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName) {
-  sprintf(pszInstanceLogFileName, "inst-%3.3u.log", application()->GetInstanceNumber());
+  sprintf(pszInstanceLogFileName, "inst-%3.3u.log", session()->GetInstanceNumber());
 }
 
 /*
@@ -180,23 +182,23 @@ void sysoplog(const string& text, bool bIndent) {
 }
 
 // printf style function to write to the sysop log
-void sysoplogf(const char *pszFormat, ...) {
+void sysoplogf(const char *format, ...) {
   va_list ap;
   char szBuffer[2048];
 
-  va_start(ap, pszFormat);
-  vsnprintf(szBuffer, sizeof(szBuffer), pszFormat, ap);
+  va_start(ap, format);
+  vsnprintf(szBuffer, sizeof(szBuffer), format, ap);
   va_end(ap);
   sysoplog(szBuffer);
 }
 
 // printf style function to write to the sysop log
-void sysoplogfi(bool bIndent, const char *pszFormat, ...) {
+void sysoplogfi(bool bIndent, const char *format, ...) {
   va_list ap;
   char szBuffer[2048];
 
-  va_start(ap, pszFormat);
-  vsnprintf(szBuffer, sizeof(szBuffer), pszFormat, ap);
+  va_start(ap, format);
+  vsnprintf(szBuffer, sizeof(szBuffer), format, ap);
   va_end(ap);
   sysoplog(szBuffer, bIndent);
 }

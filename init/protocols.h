@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                 WWIV Initialization Utility Version 5.0                */
+/*                  WWIV Initialization Utility Version 5                 */
 /*               Copyright (C)2014-2015 WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -20,6 +20,5 @@
 #define __INCLUDED_PROTOCOLS_H__
 
 void extrn_prots();
-void load_protocols();
 
 #endif // __INCLUDED_PROTOCOLS_H__

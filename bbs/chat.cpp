@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -17,8 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/wwiv.h"
-
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/input.h"
 #include "core/inifile.h"
 #include "bbs/keycodes.h"
@@ -30,6 +31,7 @@
 #include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 
 using wwiv::core::IniFile;
@@ -41,34 +43,34 @@ static int g_nNumActions;
 static ch_action *actions[MAX_NUM_ACT];
 static ch_type channels[11];
 
-int  rip_words(int nStartPos, char *cmsg, char *wd, int size, char lookfor);
-int  f_action(int nStartPos, int nEndPos, char *pszAWord);
-int  main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char *pszMessageSent, bool &bActionMode,
-               int loc, int g_nNumActions);
+int  rip_words(int start_pos, char *cmsg, char *wd, int size, char lookfor);
+int  f_action(int start_pos, int end_pos, char *aword);
+int  main_loop(char *message, char *from_message, char *color_string, char *messageSent, bool &bActionMode,
+               int loc, int num_actions);
 void who_online(int *nodes, int loc);
 void intro(int loc);
-void ch_direct(const char *pszMessage, int loc, char *pszColorString, int node, int nOffSet);
-void ch_whisper(const char *pszMessage, char *pszColorString, int node, int nOffSet);
+void ch_direct(const char *message, int loc, char *color_string, int node, int nOffSet);
+void ch_whisper(const char *message, char *color_string, int node, int nOffSet);
 int  wusrinst(char *n);
 void secure_ch(int ch);
 void cleanup_chat();
 void page_user(int loc);
 void moving(bool bOnline, int loc);
-void out_msg(const char *pszMessage, int loc);
-void get_colors(char *pszColorString, IniFile *pIniFile);
+void out_msg(const char *message, int loc);
+void get_colors(char *color_string, IniFile *pIniFile);
 void load_actions(IniFile *pIniFile);
 void add_action(ch_action act);
 void free_actions();
-bool check_action(char *pszMessage, char *pszColorString, int loc);
-void exec_action(const char *pszMessage, char *pszColorString, int loc, int nact);
+bool check_action(char *message, char *color_string, int loc);
+void exec_action(const char *message, char *color_string, int loc, int nact);
 void action_help(int num);
-void ga(const char *pszMessage, char *pszColorString, int loc, int type);
+void ga(const char *message, char *color_string, int loc, int type);
 void list_channels();
 int  change_channels(int loc);
 bool check_ch(int ch);
 void load_channels(IniFile *pIniFile);
 int  userinst(char *user);
-int  grabname(const char *pszMessage, int ch);
+int  grabname(const char *message, int ch);
 bool usercomp(const char *st1, const char *st2);
 
 using wwiv::bbs::TempDisablePause;
@@ -84,7 +86,7 @@ void chat_room() {
   char szMessageSent[80], szFromMessage[50];
   strcpy(szMessageSent, "|#1[|#9Message Sent|#1]\r\n");
   strcpy(szFromMessage, "|#9From %.12s|#1: %s%s");
-  IniFile iniFile(FilePath(application()->GetHomeDir(), CHAT_INI), "CHAT");
+  IniFile iniFile(FilePath(session()->GetHomeDir(), CHAT_INI), "CHAT");
   if (iniFile.IsOpen()) {
     g_nChatOpSecLvl = iniFile.GetNumericValue("CHATOP_SL");
     bShowPrompt = iniFile.GetBooleanValue("CH_PROMPT");
@@ -113,7 +115,7 @@ void chat_room() {
       return;
     }
     loc = INST_LOC_CH1;
-    write_inst(static_cast< unsigned short >(loc), 0, INST_FLAGS_NONE);
+    write_inst(static_cast<uint16_t>(loc), 0, INST_FLAGS_NONE);
     moving(true, loc);
     intro(loc);
     bout.nl();
@@ -154,20 +156,20 @@ void chat_room() {
   in_chatroom = false;
 }
 
-int rip_words(int nStartPos, char *pszMessage, char *wd, int size, char lookfor) {
+int rip_words(int start_pos, char *message, char *wd, int size, char lookfor) {
   unsigned int nPos;
   int nSpacePos = -1;
 
-  for (nPos = nStartPos; nPos <= strlen(pszMessage); nPos++) {
-    if (nSpacePos == -1 && (pszMessage[nPos] == ' ')) {
+  for (nPos = start_pos; nPos <= strlen(message); nPos++) {
+    if (nSpacePos == -1 && (message[nPos] == ' ')) {
       continue;
     }
-    if (pszMessage[nPos] != lookfor) {
+    if (message[nPos] != lookfor) {
       nSpacePos++;
       if (nSpacePos > size) {
         break;
       }
-      wd[nSpacePos] = pszMessage[nPos];
+      wd[nSpacePos] = message[nPos];
     } else {
       nSpacePos++;
       nPos++;
@@ -179,43 +181,43 @@ int rip_words(int nStartPos, char *pszMessage, char *wd, int size, char lookfor)
   return nPos;
 }
 
-int f_action(int nStartPos, int nEndPos, char *pszAWord) {
-  int test = ((nEndPos - nStartPos) / 2) + nStartPos;
-  if (!((nEndPos - nStartPos) / 2)) {
+int f_action(int start_pos, int end_pos, char *aword) {
+  int test = ((end_pos - start_pos) / 2) + start_pos;
+  if (!((end_pos - start_pos) / 2)) {
     test++;
-    if (IsEqualsIgnoreCase(pszAWord, actions[test]->aword)) {
+    if (IsEqualsIgnoreCase(aword, actions[test]->aword)) {
       return test;
     }
-    if (IsEqualsIgnoreCase(pszAWord, actions[test - 1]->aword)) {
+    if (IsEqualsIgnoreCase(aword, actions[test - 1]->aword)) {
       return test - 1;
     } else {
       return -1;
     }
   }
-  if (wwiv::strings::StringCompareIgnoreCase(pszAWord, actions[test]->aword) < 0) {
-    nEndPos = test;
-  } else if (wwiv::strings::StringCompareIgnoreCase(pszAWord, actions[test]->aword) > 0) {
-    nStartPos = test;
+  if (wwiv::strings::StringCompareIgnoreCase(aword, actions[test]->aword) < 0) {
+    end_pos = test;
+  } else if (wwiv::strings::StringCompareIgnoreCase(aword, actions[test]->aword) > 0) {
+    start_pos = test;
   } else {
     return test;
   }
-  if (nStartPos != nEndPos) {
-    test = f_action(nStartPos, nEndPos, pszAWord);
+  if (start_pos != end_pos) {
+    test = f_action(start_pos, end_pos, aword);
   }
   return test;
 }
 
 
-int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char *pszMessageSent, bool &bActionMode,
+int main_loop(char *message, char *from_message, char *color_string, char *messageSent, bool &bActionMode,
               int loc, int num_actions) {
   char szText[300];
   WUser u;
 
   bool bActionHandled = true;
   if (bActionMode) {
-    bActionHandled = !check_action(pszMessage, pszColorString, loc);
+    bActionHandled = !check_action(message, color_string, loc);
   }
-  if (IsEqualsIgnoreCase(pszMessage, "/r")) {
+  if (IsEqualsIgnoreCase(message, "/r")) {
     /* "Undocumented Feature" - the original alpha version of WMChat had a /r
     * command to look up a user's registry from inside chat.  I took this
     * out when I released the program, but am now putting it back in due to
@@ -228,23 +230,23 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
     bout.nl();
     bActionHandled = 0;
 #endif
-  } else if (IsEqualsIgnoreCase(pszMessage, "/w")) {
+  } else if (IsEqualsIgnoreCase(message, "/w")) {
     bActionHandled = 0;
     multi_instance();
     bout.nl();
-  } else if (IsEqualsIgnoreCase(pszMessage, "list")) {
+  } else if (IsEqualsIgnoreCase(message, "list")) {
     bout.nl();
     for (int i2 = 0; i2 <= num_actions; i2++) {
       bout.bprintf("%-16.16s", actions[i2]->aword);
     }
     bout.nl();
     bActionHandled = 0;
-  } else if (IsEqualsIgnoreCase(pszMessage, "/q") ||
-             IsEqualsIgnoreCase(pszMessage, "x")) {
+  } else if (IsEqualsIgnoreCase(message, "/q") ||
+             IsEqualsIgnoreCase(message, "x")) {
     bActionHandled = 0;
     bout << "\r\n|#2Exiting Chatroom\r\n";
     return 0;
-  } else if (IsEqualsIgnoreCase(pszMessage, "/a")) {
+  } else if (IsEqualsIgnoreCase(message, "/a")) {
     bActionHandled = 0;
     if (bActionMode) {
       bout << "|#1[|#9Action mode disabled|#1]\r\n";
@@ -253,10 +255,10 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
       bout << "|#1[|#9Action mode enabled|#1]\r\n";
       bActionMode = true;
     }
-  } else if (IsEqualsIgnoreCase(pszMessage, "/s")) {
+  } else if (IsEqualsIgnoreCase(message, "/s")) {
     bActionHandled = 0;
     secure_ch(loc);
-  } else if (IsEqualsIgnoreCase(pszMessage, "/u")) {
+  } else if (IsEqualsIgnoreCase(message, "/u")) {
     bActionHandled = 0;
     char szFileName[ MAX_PATH ];
     sprintf(szFileName, "CHANNEL.%d", (loc + 1 - INST_LOC_CH1));
@@ -268,52 +270,52 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
     } else {
       bout << "|#1[|#9Channel not secured!|#1]\r\n";
     }
-  } else if (IsEqualsIgnoreCase(pszMessage, "/l") &&
+  } else if (IsEqualsIgnoreCase(message, "/l") &&
              session()->user()->GetSl() >= g_nChatOpSecLvl) {
     bout << "\r\n|#9Username: ";
     input(szText, 30);
     bout.nl();
     int nTempUserNum = finduser1(szText);
     if (nTempUserNum > 0) {
-      application()->users()->ReadUser(&u, nTempUserNum);
+      session()->users()->ReadUser(&u, nTempUserNum);
       print_data(nTempUserNum, &u, true, false);
     } else {
       bout << "|#6Unknown user.\r\n";
     }
     bActionHandled = 0;
-  } else if (IsEqualsIgnoreCase(pszMessage, "/p")) {
+  } else if (IsEqualsIgnoreCase(message, "/p")) {
     bActionHandled = 0;
     page_user(loc);
-  } else if (IsEqualsIgnoreCase(pszMessage, "/c")) {
+  } else if (IsEqualsIgnoreCase(message, "/c")) {
     int nChannel = change_channels(loc);
     loc = nChannel;
     bActionHandled = 0;
-  } else if (IsEqualsIgnoreCase(pszMessage, "?") ||
-             IsEqualsIgnoreCase(pszMessage, "/?")) {
+  } else if (IsEqualsIgnoreCase(message, "?") ||
+             IsEqualsIgnoreCase(message, "/?")) {
     bActionHandled = 0;
     printfile(CHAT_NOEXT);
-  } else if (bActionHandled && pszMessage[0] == '>') {
+  } else if (bActionHandled && message[0] == '>') {
     bActionHandled = 0;
-    int nUserNum = grabname(pszMessage + 1, loc);
+    int nUserNum = grabname(message + 1, loc);
     if (nUserNum) {
-      ch_direct(pszMessage + 1, loc, pszColorString, nUserNum, pszMessage[1]);
+      ch_direct(message + 1, loc, color_string, nUserNum, message[1]);
     }
-  } else if (bActionHandled && pszMessage[0] == '/') {
-    int nUserNum = grabname(pszMessage + 1, 0);
+  } else if (bActionHandled && message[0] == '/') {
+    int nUserNum = grabname(message + 1, 0);
     if (nUserNum) {
-      ch_whisper(pszMessage + 1, pszColorString, nUserNum, pszMessage[1]);
+      ch_whisper(message + 1, color_string, nUserNum, message[1]);
     }
     bActionHandled = 0;
   } else {
     if (bActionHandled) {
-      bout << pszMessageSent;
+      bout << messageSent;
     }
-    if (!pszMessage[0]) {
+    if (!message[0]) {
       return loc;
     }
   }
   if (bActionHandled) {
-    sprintf(szText, pszFromMessage, session()->user()->GetName(), pszColorString, pszMessage);
+    sprintf(szText, from_message, session()->user()->GetName(), color_string, message);
     out_msg(szText, loc);
   }
   return loc;
@@ -328,7 +330,7 @@ void who_online(int *nodes, int loc) {
   for (int i = 1; i <= num_instances(); i++) {
     get_inst_info(i, &ir);
     if ((!(ir.flags & INST_FLAGS_INVIS)) || so())
-      if ((ir.loc == loc) && (i != application()->GetInstanceNumber())) {
+      if ((ir.loc == loc) && (i != session()->GetInstanceNumber())) {
         c++;
         nodes[c] = ir.user;
       }
@@ -347,7 +349,7 @@ void intro(int loc) {
   if (nodes[0]) {
     for (int i = 1; i <= nodes[0]; i++) {
       WUser u;
-      application()->users()->ReadUser(&u, nodes[i]);
+      session()->users()->ReadUser(&u, nodes[i]);
       if (((nodes[0] - i) == 1) && (nodes[0] >= 2)) {
         bout << "|#1" << u.GetName() << " |#7and ";
       } else {
@@ -373,8 +375,8 @@ void intro(int loc) {
 // This function is called when a > sign is encountered at the beginning of
 //   a line, it's used for directing messages
 
-void ch_direct(const char *pszMessage, int loc, char *pszColorString, int node, int nOffSet) {
-  if (strlen(pszMessage + nOffSet) == 0) {
+void ch_direct(const char *message, int loc, char *color_string, int node, int nOffSet) {
+  if (strlen(message + nOffSet) == 0) {
     bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
     return;
   }
@@ -383,20 +385,20 @@ void ch_direct(const char *pszMessage, int loc, char *pszColorString, int node, 
   get_inst_info(node, &ir);
   char szMessage[ 512 ];
   if (ir.loc == loc) {
-    if (!strlen(pszMessage + nOffSet)) {
+    if (!strlen(message + nOffSet)) {
       bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
       return;
     }
     WUser u;
-    application()->users()->ReadUser(&u, ir.user);
+    session()->users()->ReadUser(&u, ir.user);
     char szUserName[ 81 ];
     strcpy(szUserName, u.GetName());
     sprintf(szMessage, "|#9From %.12s|#6 [to %s]|#1: %s%s",
-            session()->user()->GetName(), szUserName, pszColorString,
-            pszMessage + nOffSet + 1);
+            session()->user()->GetName(), szUserName, color_string,
+            message + nOffSet + 1);
     for (int i = 1; i <= num_instances(); i++) {
       get_inst_info(i, &ir);
-      if (ir.loc == loc &&  i != application()->GetInstanceNumber()) {
+      if (ir.loc == loc &&  i != session()->GetInstanceNumber()) {
         send_inst_str(i, szMessage);
       }
     }
@@ -409,8 +411,8 @@ void ch_direct(const char *pszMessage, int loc, char *pszColorString, int node, 
 
 // This function is called when a / sign is encountered at the beginning of
 //   a message, used for whispering
-void ch_whisper(const char *pszMessage, char *pszColorString, int node, int nOffSet) {
-  if (strlen(pszMessage + nOffSet) == 0) {
+void ch_whisper(const char *message, char *color_string, int node, int nOffSet) {
+  if (strlen(message + nOffSet) == 0) {
     bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
     return;
   }
@@ -422,14 +424,14 @@ void ch_whisper(const char *pszMessage, char *pszColorString, int node, int nOff
 
   char szText[ 512 ];
   if (ir.loc >= INST_LOC_CH1 && ir.loc <= INST_LOC_CH10) {
-    sprintf(szText, "|#9From %.12s|#6 [WHISPERED]|#2|#1:%s%s", session()->user()->GetName(), pszColorString,
-            pszMessage + nOffSet);
+    sprintf(szText, "|#9From %.12s|#6 [WHISPERED]|#2|#1:%s%s", session()->user()->GetName(), color_string,
+            message + nOffSet);
   } else {
-    strcpy(szText, pszMessage + nOffSet);
+    strcpy(szText, message + nOffSet);
   }
   send_inst_str(node, szText);
   WUser u;
-  application()->users()->ReadUser(&u, ir.user);
+  session()->users()->ReadUser(&u, ir.user);
   bout << "|#1[|#9Message sent only to " << u.GetName() << "|#1]\r\n";
 }
 
@@ -442,7 +444,7 @@ int wusrinst(char *n) {
     get_inst_info(i, &ir);
     if (ir.flags & INST_FLAGS_ONLINE) {
       WUser user;
-      application()->users()->ReadUser(&user, ir.user);
+      session()->users()->ReadUser(&user, ir.user);
       if (IsEqualsIgnoreCase(user.GetName(), n)) {
         return i;
       }
@@ -510,7 +512,7 @@ void page_user(int loc) {
     }
     i = atoi(s);
   }
-  if (i == application()->GetInstanceNumber()) {
+  if (i == session()->GetInstanceNumber()) {
     bout << "|#1[|#9Cannot page the instance you are on|#1]\r\n";
     return;
   } else {
@@ -544,23 +546,23 @@ void moving(bool bOnline, int loc) {
 }
 
 // Sends out a message to everyone in channel LOC
-void out_msg(const char *pszMessage, int loc) {
+void out_msg(const char *message, int loc) {
   for (int i = 1; i <= num_instances(); i++) {
     instancerec ir;
     get_inst_info(i, &ir);
-    if ((ir.loc == loc) && (i != application()->GetInstanceNumber())) {
-      send_inst_str(i, pszMessage);
+    if ((ir.loc == loc) && (i != session()->GetInstanceNumber())) {
+      send_inst_str(i, message);
     }
   }
 }
 
-// Sets pszColorString string for current node
+// Sets color_string string for current node
 
-void get_colors(char *pszColorString, IniFile *pIniFile) {
+void get_colors(char *color_string, IniFile *pIniFile) {
   char szKey[10];
 
-  sprintf(szKey, "C%u", application()->GetInstanceNumber());
-  strcpy(pszColorString, pIniFile->GetValue(szKey));
+  sprintf(szKey, "C%u", session()->GetInstanceNumber());
+  strcpy(color_string, pIniFile->GetValue(szKey));
 }
 
 // Loads the actions into memory
@@ -576,25 +578,25 @@ void load_actions(IniFile *pIniFile) {
     for (int ca = 0; ca <= 5; ca++) {
       char rstr[10];
       sprintf(rstr, "%d%c", cn, 65 + ca);
-      const char* pszIniValue = pIniFile->GetValue(rstr);
+      const char* ini_value = pIniFile->GetValue(rstr);
       switch (ca) {
       case 0:
-        act.r = atoi((pszIniValue != nullptr) ? pszIniValue : "0");
+        act.r = atoi((ini_value != nullptr) ? ini_value : "0");
         break;
       case 1:
-        strcpy(act.aword, (pszIniValue != nullptr) ? pszIniValue : "");
+        strcpy(act.aword, (ini_value != nullptr) ? ini_value : "");
         break;
       case 2:
-        strcpy(act.toprint, (pszIniValue != nullptr) ? pszIniValue : "");
+        strcpy(act.toprint, (ini_value != nullptr) ? ini_value : "");
         break;
       case 3:
-        strcpy(act.toperson, (pszIniValue != nullptr) ? pszIniValue : "");
+        strcpy(act.toperson, (ini_value != nullptr) ? ini_value : "");
         break;
       case 4:
-        strcpy(act.toall, (pszIniValue != nullptr) ? pszIniValue : "");
+        strcpy(act.toall, (ini_value != nullptr) ? ini_value : "");
         break;
       case 5:
-        strcpy(act.singular, (pszIniValue != nullptr) ? pszIniValue : "");
+        strcpy(act.singular, (ini_value != nullptr) ? ini_value : "");
         break;
       default:
         //TODO Should an error be displayed here?
@@ -634,24 +636,24 @@ void free_actions() {
 
 
 // Determines if a word is an action, if so, executes it
-bool check_action(char *pszMessage, char *pszColorString, int loc) {
+bool check_action(char *message, char *color_string, int loc) {
   char s[12];
 
-  unsigned int x = rip_words(0, pszMessage, s, 12, ' ');
+  unsigned int x = rip_words(0, message, s, 12, ' ');
   if (IsEqualsIgnoreCase("GA", s)) {
-    ga(pszMessage + x, pszColorString, loc, 0);
+    ga(message + x, color_string, loc, 0);
     return true;
   }
   if (IsEqualsIgnoreCase("GA's", s)) {
-    ga(pszMessage + x, pszColorString, loc, 1);
+    ga(message + x, color_string, loc, 1);
     return true;
   }
   int p = f_action(0, g_nNumActions, s);
   if (p != -1) {
-    if (strlen(pszMessage) <= x) {
-      exec_action("\0", pszColorString, loc, p);
+    if (strlen(message) <= x) {
+      exec_action("\0", color_string, loc, p);
     } else {
-      exec_action(pszMessage + x, pszColorString, loc, p);
+      exec_action(message + x, color_string, loc, p);
     }
     return true;
   }
@@ -660,27 +662,27 @@ bool check_action(char *pszMessage, char *pszColorString, int loc) {
 
 // "Executes" an action
 
-void exec_action(const char *pszMessage, char *pszColorString, int loc, int nact) {
+void exec_action(const char *message, char *color_string, int loc, int nact) {
   char tmsg[150], final[170];
   instancerec ir;
   WUser u;
 
-  bool bOk = (strlen(pszMessage) == 0) ? false : true;
-  if (IsEqualsIgnoreCase(pszMessage, "?")) {
+  bool bOk = (strlen(message) == 0) ? false : true;
+  if (IsEqualsIgnoreCase(message, "?")) {
     action_help(nact);
     return;
   }
 
   int p = 0;
   if (bOk) {
-    p = grabname(pszMessage, loc);
+    p = grabname(message, loc);
     if (!p) {
       return;
     }
   }
   if (bOk) {
     get_inst_info(p, &ir);
-    application()->users()->ReadUser(&u, ir.user);
+    session()->users()->ReadUser(&u, ir.user);
     sprintf(tmsg, actions[nact]->toperson, session()->user()->GetName());
   } else if (actions[nact]->r) {
     bout << "This action requires a recipient.\r\n";
@@ -689,16 +691,16 @@ void exec_action(const char *pszMessage, char *pszColorString, int loc, int nact
     sprintf(tmsg, actions[nact]->singular, session()->user()->GetName());
   }
   bout << actions[nact]->toprint << wwiv::endl;
-  sprintf(final, "%s%s", pszColorString, tmsg);
+  sprintf(final, "%s%s", color_string, tmsg);
   if (!bOk) {
     out_msg(final, loc);
   } else {
     send_inst_str(p, final);
     sprintf(tmsg, actions[nact]->toall, session()->user()->GetName(), u.GetName());
-    sprintf(final, "%s%s", pszColorString, tmsg);
+    sprintf(final, "%s%s", color_string, tmsg);
     for (int c = 1; c <= num_instances(); c++) {
       get_inst_info(c, &ir);
-      if ((ir.loc == loc) && (c != application()->GetInstanceNumber()) && (c != p)) {
+      if ((ir.loc == loc) && (c != session()->GetInstanceNumber()) && (c != p)) {
         send_inst_str(c, final);
       }
     }
@@ -707,38 +709,38 @@ void exec_action(const char *pszMessage, char *pszColorString, int loc, int nact
 
 // Displays help on an action
 void action_help(int num) {
-  char szBuffer[150];
+  char buffer[150];
   char ac[12], rec[17];
 
   strcpy(ac, "|#6[USER]|#1");
   strcpy(rec, "|#6[RECIPIENT]|#1");
   bout << "\r\n|#5Word:|#1 " << actions[num]->aword << wwiv::endl;
   bout << "|#5To user:|#1 " << actions[num]->toprint << wwiv::endl;
-  sprintf(szBuffer, actions[num]->toperson, ac);
-  bout << "|#5To recipient:|#1 " << szBuffer << wwiv::endl;
-  sprintf(szBuffer, actions[num]->toall, ac, rec);
-  bout << "|#5To everyone else:|#1 " << szBuffer << wwiv::endl;
+  sprintf(buffer, actions[num]->toperson, ac);
+  bout << "|#5To recipient:|#1 " << buffer << wwiv::endl;
+  sprintf(buffer, actions[num]->toall, ac, rec);
+  bout << "|#5To everyone else:|#1 " << buffer << wwiv::endl;
   if (actions[num]->r == 1) {
     bout << "|#5This action requires a recipient.\n\r\n";
     return;
   }
-  sprintf(szBuffer, actions[num]->singular, ac);
-  bout << "|#5Used singular:|#1 " << szBuffer << wwiv::endl;
+  sprintf(buffer, actions[num]->singular, ac);
+  bout << "|#5Used singular:|#1 " << buffer << wwiv::endl;
   bout << "|#5This action does not require a recipient.\n\r\n";
 }
 
 // Executes a GA command
 
-void ga(const char *pszMessage, char *pszColorString, int loc, int type) {
-  if (!strlen(pszMessage) || pszMessage[0] == '\0') {
+void ga(const char *message, char *color_string, int loc, int type) {
+  if (!strlen(message) || message[0] == '\0') {
     bout << "|#1[|#9A message is required after the GA command|#1]\r\n";
     return;
   }
-  char szBuffer[500];
-  sprintf(szBuffer, "%s%s%s %s", pszColorString, session()->user()->GetName(), (type ? "'s" : ""),
-          pszMessage);
+  char buffer[500];
+  sprintf(buffer, "%s%s%s %s", color_string, session()->user()->GetName(), (type ? "'s" : ""),
+          message);
   bout << "|#1[|#9Generic Action Sent|#1]\r\n";
-  out_msg(szBuffer, loc);
+  out_msg(buffer, loc);
 }
 
 // Toggles user availability, called when ctrl-N is hit
@@ -748,7 +750,7 @@ void toggle_avail() {
   char xl[81], cl[81], atr[81], cc;
 
   session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
-  get_inst_info(application()->GetInstanceNumber(), &ir);
+  get_inst_info(session()->GetInstanceNumber(), &ir);
   chat_avail = !chat_avail;
 
   bout << "\n\rYou are now ";
@@ -764,7 +766,7 @@ void toggle_invis() {
   char xl[81], cl[81], atr[81], cc;
 
   session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
-  get_inst_info(application()->GetInstanceNumber(), &ir);
+  get_inst_info(session()->GetInstanceNumber(), &ir);
   chat_invis = !chat_invis;
 
   bout << "\r\n|#1You are now ";
@@ -805,7 +807,7 @@ void list_channels() {
         }
         bout << "    |#9Users in channel: ";
         for (int i2 = 1; i2 <= nodes[0]; i2++) {
-          application()->users()->ReadUser(&u, nodes[i2]);
+          session()->users()->ReadUser(&u, nodes[i2]);
           if (((nodes[0] - i2) == 1) && (nodes[0] >= 2)) {
             bout << "|#1" << u.GetName() << " |#7and ";
           } else {
@@ -859,7 +861,7 @@ int change_channels(int loc) {
         moving(false, loc);
       }
       loc = temploc + (INST_LOC_CH1 - 1);
-      write_inst(static_cast< unsigned short >(loc), 0, INST_FLAGS_NONE);
+      write_inst(static_cast<uint16_t>(loc), 0, INST_FLAGS_NONE);
       moving(true, loc);
       bout.nl();
       intro(loc);
@@ -882,7 +884,7 @@ bool check_ch(int ch) {
     return false;
   }
   if (channels[ch].ar != '0') {
-    c_ar = static_cast< unsigned short >(1 << (channels[ch].ar - 65));
+    c_ar = static_cast<uint16_t>(1 << (channels[ch].ar - 65));
   } else {
     c_ar = 0;
   }
@@ -918,20 +920,20 @@ bool check_ch(int ch) {
 
 // Loads channel information into memory
 void load_channels(IniFile *pIniFile) {
-  char szBuffer[6], szTemp[10];
+  char buffer[6], szTemp[10];
 
   for (int cn = 1; cn <= 10; cn++) {
     for (int ca = 0; ca <= 5; ca++) {
-      sprintf(szBuffer, "CH%d%c", cn, 65 + ca);
+      sprintf(buffer, "CH%d%c", cn, 65 + ca);
       switch (ca) {
       case 0:
-        strcpy(channels[cn].name, pIniFile->GetValue(szBuffer));
+        strcpy(channels[cn].name, pIniFile->GetValue(buffer));
         break;
       case 1:
-        channels[cn].sl = pIniFile->GetNumericValue(szBuffer);
+        channels[cn].sl = pIniFile->GetNumericValue(buffer);
         break;
       case 2:
-        strcpy(szTemp, pIniFile->GetValue(szBuffer));
+        strcpy(szTemp, pIniFile->GetValue(buffer));
         if (szTemp[0] != '0') {
           channels[cn].ar = szTemp[0];
         } else {
@@ -939,14 +941,14 @@ void load_channels(IniFile *pIniFile) {
         }
         break;
       case 3:
-        strcpy(szTemp, pIniFile->GetValue(szBuffer));
+        strcpy(szTemp, pIniFile->GetValue(buffer));
         channels[cn].sex = szTemp[0];
         break;
       case 4:
-        channels[cn].min_age = static_cast< char >(pIniFile->GetNumericValue(szBuffer));
+        channels[cn].min_age = static_cast<char>(pIniFile->GetNumericValue(buffer));
         break;
       case 5:
-        channels[cn].max_age = wwiv::strings::StringToChar(pIniFile->GetValue(szBuffer));
+        channels[cn].max_age = wwiv::strings::StringToChar(pIniFile->GetValue(buffer));
         break;
       }
     }
@@ -978,22 +980,22 @@ int userinst(char *user) {
 }
 
 
-int grabname(const char *pszMessage, int ch) {
+int grabname(const char *message, int ch) {
   int c = 0, node = 0, dupe = 0, sp = 0;
   char name[41];
   WUser u;
   instancerec ir;
 
-  if (pszMessage[0] == ' ') {
+  if (message[0] == ' ') {
     return 0;
   }
 
-  int n = atoi(pszMessage);
+  int n = atoi(message);
   if (n) {
     if (n < 1 || n > num_instances()) {
-      char szBuffer[ 255 ];
-      sprintf(szBuffer, "%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
-      bout << szBuffer;
+      char buffer[ 255 ];
+      sprintf(buffer, "%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
+      bout << buffer;
       return 0;
     }
     get_inst_info(n, &ir);
@@ -1005,27 +1007,27 @@ int grabname(const char *pszMessage, int ch) {
       }
       while (!sp) {
         c++;
-        if ((pszMessage[c] == ' ') || (pszMessage[c] == '\0')) {
+        if ((message[c] == ' ') || (message[c] == '\0')) {
           sp = 1;
         }
       }
       return n;
     }
-    char szBuffer[ 255 ];
-    sprintf(szBuffer, "%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
-    bout << szBuffer;
+    char buffer[ 255 ];
+    sprintf(buffer, "%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
+    bout << buffer;
     return 0;
   }
-  while (!node && c < wwiv::strings::GetStringLength(pszMessage) && c < 40) {
+  while (!node && c < wwiv::strings::GetStringLength(message) && c < 40) {
     int x = 0;
     if (sp) {
       name[sp++] = ' ';
     }
     while (!x) {
-      if ((pszMessage[c] == ' ') || (pszMessage[c] == '\0')) {
+      if ((message[c] == ' ') || (message[c] == '\0')) {
         x = 1;
       } else {
-        name[sp++] = wwiv::UpperCase<char>(pszMessage[c]);
+        name[sp++] = wwiv::UpperCase<char>(message[c]);
       }
       if (sp == 40) {
         break;
@@ -1039,7 +1041,7 @@ int grabname(const char *pszMessage, int ch) {
         if (ch && (ir.loc != ch)) {
           continue;
         }
-        application()->users()->ReadUser(&u, ir.user);
+        session()->users()->ReadUser(&u, ir.user);
         int t1 = strlen(name);
         int t2 = strlen(u.GetName());
         if (t1 > t2) {

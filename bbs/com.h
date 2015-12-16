@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -21,12 +21,12 @@
 void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const char *cc);
 void dump();
 bool CheckForHangup();
-void makeansi(int attr, char *pszOutBuffer, bool forceit);
+void makeansi(int attr, char *out_buffer, bool forceit);
 void resetnsp();
 char getkey();
 bool yesno();
 bool noyes();
 char ynq();
-char onek(const char *pszAllowableChars, bool bAutoMpl = false);
+char onek(const char *allowable_chars, bool auto_mpl = false);
 
 #endif  // __INCLUDED_BBS_COM_H__

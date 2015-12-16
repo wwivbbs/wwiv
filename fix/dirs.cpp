@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -17,13 +17,17 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <iostream>
 #include <string>
 #include <vector>
 
-#include "bbs/wwiv.h"
+#include "bbs/vars.h"
+#include "core/file.h"
 #include "fix/fix.h"
 #include "fix/log.h"
 #include "fix/dirs.h"
+
+#include "sdk/vardec.h"
 
 using std::cout;
 using std::endl;
@@ -50,16 +54,16 @@ void checkAllDirsExist() {
 }
 
 // HACK - make string friendly unalign in BBS. This one is cribbed from batch.cpp
-static char *unalign(char *pszFileName) {
-	char* pszTemp = strstr(pszFileName, " ");
-	if (pszTemp) {
-		*pszTemp++ = '\0';
-		char* pszTemp2 = strstr(pszTemp, ".");
-		if (pszTemp2) {
-			strcat(pszFileName, pszTemp2 );
+static char *unalign(char *file_name) {
+	char* temp = strstr(file_name, " ");
+	if (temp) {
+		*temp++ = '\0';
+		char* temp2 = strstr(temp, ".");
+		if (temp2) {
+			strcat(file_name, temp2 );
 		}
 	}
-	return pszFileName;
+	return file_name;
 }
 
 static string Unalign(const char* filename) {
