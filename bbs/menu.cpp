@@ -449,8 +449,8 @@ void ConfigUserMenuSet() {
 
   // If menu is invalid, it picks the first one it finds
   if (!ValidateMenuSet(pSecondUserRec->szMenuSet)) {
-    if (session()->num_languages > 1 && session()->user()->GetLanguage() != 0) {
-      bout << "|#6No menus for " << languages[session()->user()->GetLanguage()].name
+    if (session()->languages.size() > 1 && session()->user()->GetLanguage() != 0) {
+      bout << "|#6No menus for " << session()->languages[session()->user()->GetLanguage()].name
            << " language.";
       input_language();
     }

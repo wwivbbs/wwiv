@@ -161,13 +161,13 @@ static int ShowLoginAndGetUserNumber() {
       if (i % 25 == 0) {   // changed from 15 since computers are faster now-a-days
         bout << ".";
       }
-      int nTempUserNumber = smallist[i].number;
+      int nTempUserNumber = session()->smallist[i].number;
       session()->ReadCurrentUser(nTempUserNumber);
       if (user_name[0] == session()->user()->GetRealName()[0]) {
         string temp_user_name(session()->user()->GetRealName());
         StringUpperCase(&temp_user_name);
         if (user_name == temp_user_name && !session()->user()->IsUserDeleted()) {
-          bout << "|#5Do you mean " << session()->user()->GetUserNameAndNumber(smallist[i].number) << "? ";
+          bout << "|#5Do you mean " << session()->user()->GetUserNameAndNumber(session()->smallist[i].number) << "? ";
           if (yesno()) {
             return nTempUserNumber;
           }

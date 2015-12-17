@@ -85,7 +85,7 @@ public:
     return Write(record);
   }
   bool Seek(int record_number) { return file_.Seek(record_number * SIZE, File::seekBegin) == (record_number * SIZE); }
-  int number_of_records() { return file_.GetLength() / SIZE; }
+  std::size_t number_of_records() { return file_.GetLength() / SIZE; }
 
   explicit operator bool() const { return file_.IsOpen(); }
 

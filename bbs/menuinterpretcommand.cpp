@@ -337,9 +337,6 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
     { "ReloadMenus", [](MenuItemContext& context) {
       ReloadMenus();
     } },
-    { "ResetUserIndex", [](MenuItemContext& context) {
-      ResetFiles();
-    } },
     { "ResetQscan", [](MenuItemContext& context) {
       ResetQscan();
     } },

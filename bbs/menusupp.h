@@ -66,7 +66,6 @@ void EditBulletins();
 void ReadAllMail();
 void RebootComputer();
 void ReloadMenus();
-void ResetFiles();
 void ResetQscan();
 void MemoryStatus();
 void PackMessages();

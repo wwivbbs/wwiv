@@ -300,7 +300,7 @@ void list_users(int mode) {
       found = false;
     }
 
-    int user_number = (bSortByUserNumber) ? i + 1 : smallist[i].number;
+    int user_number = (bSortByUserNumber) ? i + 1 : session()->smallist[i].number;
     session()->users()->ReadUser(&user, user_number);
     read_qscn(user_number, qsc, false);
     changedsl();

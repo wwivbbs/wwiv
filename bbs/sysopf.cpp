@@ -50,68 +50,6 @@ using wwiv::core::FilePath;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::msgapi;
 
-bool isr1(int user_number, int nNumUsers, const char *name) {
-  int cp = 0;
-  while (cp < nNumUsers &&
-         wwiv::strings::StringCompare(name, reinterpret_cast<char*>(smallist[cp].name)) > 0) {
-    ++cp;
-  }
-  for (int i = nNumUsers; i > cp; i--) {
-    smallist[i] = smallist[i - 1];
-  }
-  smalrec sr;
-  strcpy(reinterpret_cast<char*>(sr.name), name);
-  sr.number = static_cast<unsigned short>(user_number);
-  smallist[cp] = sr;
-  return true;
-}
-
-
-void reset_files() {
-  WUser user;
-
-  WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
-  pStatus->SetNumUsers(0);
-  bout.nl();
-  int nNumUsers = session()->users()->GetNumberOfUserRecords();
-  File userFile(syscfg.datadir, USER_LST);
-  if (userFile.Open(File::modeBinary | File::modeReadWrite)) {
-    for (int i = 1; i <= nNumUsers; i++) {
-      long pos = static_cast<long>(syscfg.userreclen) * static_cast<long>(i);
-      userFile.Seek(pos, File::seekBegin);
-      userFile.Read(&user.data, syscfg.userreclen);
-      if (!user.IsUserDeleted()) {
-        user.FixUp();
-        if (isr1(i, nNumUsers, user.GetName())) {
-          pStatus->IncrementNumUsers();
-        }
-      } else {
-        memset(&user.data, 0, syscfg.userreclen);
-        user.SetInactFlag(0);
-        user.SetInactFlag(inact_deleted);
-      }
-      userFile.Seek(pos, File::seekBegin);
-      userFile.Write(&user.data, syscfg.userreclen);
-      if ((i % 10) == 0) {
-        userFile.Close();
-        bout << i << "\r ";
-        userFile.Open(File::modeBinary | File::modeReadWrite);
-      }
-    }
-    userFile.Close();
-  }
-  bout << "\r\n\r\n";
-
-  File namesFile(syscfg.datadir, NAMES_LST);
-  if (!namesFile.Open(File::modeReadWrite | File::modeBinary | File::modeTruncate)) {
-    std::clog << namesFile.full_pathname() << " NOT FOUND" << std::endl;
-    session()->AbortBBS(true);
-  }
-  namesFile.Write(smallist, sizeof(smalrec) * pStatus->GetNumUsers());
-  namesFile.Close();
-  session()->GetStatusManager()->CommitTransaction(pStatus);
-}
-
 void prstatus() {
   session()->GetStatusManager()->RefreshStatusCache();
   bout.cls();

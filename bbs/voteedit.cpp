@@ -183,10 +183,10 @@ void voteprint() {
         text << v.responses[i2].response << "\r\n";
         votingText.Write(text.str());
         for (int i3 = 0; i3 < session()->GetStatusManager()->GetUserCount(); i3++) {
-          if (x[i1 + 20 * smallist[i3].number] == i2 + 1) {
+          if (x[i1 + 20 * session()->smallist[i3].number] == i2 + 1) {
             text.clear();
             text.str("          ");
-            text << smallist[i3].name << " #" << smallist[i3].number << "\r\n";
+            text << session()->smallist[i3].name << " #" << session()->smallist[i3].number << "\r\n";
             votingText.Write(text.str());
           }
         }

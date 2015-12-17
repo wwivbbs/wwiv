@@ -157,7 +157,7 @@ static void print_cur_stat() {
        << "|#1C|#9) Conferencing      : |#2" << YesNoString(session()->user()->IsUseConference()) << wwiv::endl;
   bout << "|#1I|#9) Internet Address  : |#2" << internet_email_address << wwiv::endl;
   bout << "|#1K|#9) Configure Menus" << wwiv::endl;
-  if (session()->num_languages > 1) {
+  if (session()->languages.size() > 1) {
     bout<< "|#1L|#9) Language          : |#2" << setw(16) << cur_lang_name << " ";
   }
   if (num_instances() > 1) {
@@ -836,7 +836,7 @@ void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
       pMenuData->reload = true;
       break;
     case 'L':
-      if (session()->num_languages > 1) {
+      if (session()->languages.size() > 1) {
         input_language();
       }
       break;
