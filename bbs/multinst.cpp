@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -19,11 +19,14 @@
 #include <string>
 #include "bbs/multinst.h"
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/instmsg.h"
 #include "bbs/wconstants.h"
 
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using namespace wwiv::strings;
@@ -46,8 +49,8 @@ string GetInstanceActivityString(instancerec &ir) {
       }
       return string("Transfer Area");
     case INST_LOC_CHAINS:
-      if (ir.subloc > 0 && ir.subloc <= session()->GetNumberOfChains()) {
-        string temp = StringPrintf("Door: %s", stripcolors(chains[ ir.subloc - 1 ].description));
+      if (ir.subloc > 0 && ir.subloc <= session()->chains.size()) {
+        string temp = StringPrintf("Door: %s", stripcolors(session()->chains[ ir.subloc - 1 ].description));
         return StrCat("Chains", temp);
       }
       return string("Chains");
@@ -140,7 +143,7 @@ void make_inst_str(int nInstanceNum, std::string *out, int nInstanceFormat) {
     std::string userName;
     if (ir.user < syscfg.maxusers && ir.user > 0) {
       WUser user;
-      application()->users()->ReadUser(&user, ir.user);
+      session()->users()->ReadUser(&user, ir.user);
       if (ir.flags & INST_FLAGS_ONLINE) {
         userName = user.GetUserNameAndNumber(ir.user);
       } else {
@@ -203,7 +206,7 @@ int inst_ok(int loc, int subloc) {
       instFile.Close();
       if (instance_temp.loc == loc &&
           instance_temp.subloc == subloc &&
-          instance_temp.number != application()->GetInstanceNumber()) {
+          instance_temp.number != session()->GetInstanceNumber()) {
         nInstNum = instance_temp.number;
       }
     }

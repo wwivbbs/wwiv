@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -35,77 +35,21 @@ class MenuInstanceData;
 
 class WUser;
 
-
-// File: batch.cpp
-
-void upload(int dn);
-void delbatch(int nBatchEntryNum);
-char *unalign(char *pszFileName);
-void dszbatchdl(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription);
-int  batchdl(int mode);
-void didnt_upload(int nBatchIndex);
-void ymbatchdl(bool bHangupAfterDl);
-void zmbatchdl(bool bHangupAfterDl);
-
-
-// File: bbsovl1.cpp
-
-void DisplayHorizontalBar(int nSize, int nColor);
-void YourInfo();
-int  GetMaxMessageLinesAllowed();
-void upload_post();
-void send_email();
-void edit_confs();
-void feedback(bool bNewUserFeedback);
-void text_edit();
-
-
-// File: bbsovl2.cpp
-
-void OnlineUserEditor();
-void BackPrint(const std::string& text, int nColorCode, int nCharDelay, int nStringDelay);
-void MoveLeft(int nNumberOfChars);
-void SpinPuts(const std::string& text, int nColorCode);
-
-
-// File: bbsovl3.cpp
-#include "bbsovl3.h"
-
-
 // File: bbsutl.cpp
-
 #include "bbs/bbsutl.h"
-
 
 // File: bbsutl1.cpp
 #include "bbs/bbsutl1.h"
 
-
 // File: bbsutl2.cpp
 
-void repeat_char(char x, int amount, int nColor = 7);
-std::string ctypes(int num);
-void osan(const std::string& text, bool *abort, bool *next);
-void plan(int nWWIVColor, const std::string& text, bool *abort, bool *next);
-std::string strip_to_node(const std::string& txt);
-
+#include "bbs/bbsutl2.h"
 
 // File: bgetch.cpp
 #include "bbs/bgetch.h"
 
 // File: bputch.cpp
 #include "bbs/bputch.h"
-
-// File: chains.cpp
-
-void run_chain(int nChainNumber);
-void do_chains();
-
-
-// File: chnedit.cpp
-
-void chainedit();
-
 
 // File: colors.cpp
 
@@ -115,37 +59,8 @@ void list_ext_colors();
 void color_config();
 void buildcolorfile();
 
-
 // File: com.cpp
 #include "bbs/com.h"
-
-
-// File: conf.cpp
-
-void tmp_disable_conf(bool disable);
-void reset_disable_conf();
-int  get_conf_info(int conftype, int *num, confrec ** cpp, char *pszFileName, int *num_s, userconfrec ** uc);
-void jump_conf(int conftype);
-void update_conf(int conftype, SUBCONF_TYPE * sub1, SUBCONF_TYPE * sub2, int action);
-uint16_t str_to_arword(const char *arstr);
-char *word_to_arstr(int ar);
-char first_available_designator(int conftype);
-int  in_conference(int subnum, confrec * c);
-void save_confs(int conftype, int whichnum, confrec * c);
-void showsubconfs(int conftype, confrec * c);
-void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which);
-void delsubconf(int conftype, confrec * c, SUBCONF_TYPE * which);
-void conf_edit(int conftype);
-void list_confs(int conftype, int ssc);
-int  select_conf(const char *pszPromptText, int conftype, int listconfs);
-confrec *read_conferences(const char *pszFileName, int *nc, int max);
-void read_in_conferences(int conftype);
-void read_all_conferences();
-int get_num_conferences(const char *pszFileName);
-int wordcount(const std::string& instr, const char *delimstr);
-const char *extractword(int ww,  const std::string& instr, const char *delimstr);
-void sort_conf_str(char *pszConferenceStr);
-
 
 // File: connect1.cpp
 #include "bbs/connect1.h"
@@ -196,8 +111,8 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags);
 // File: extract.cpp
 
 void extract_mod(const char *b, long nLength, time_t tDateTime);
-void extract_out(char *b, long nLength, const char *pszTitle, time_t tDateTime);
-bool upload_mod(int nDirectoryNumber, const char *pszFileName, const char *pszDescription);
+void extract_out(char *b, long nLength, const char *title, time_t tDateTime);
+bool upload_mod(int directory_number, const char *file_name, const char *description);
 
 
 // File: finduser.cpp
@@ -230,21 +145,21 @@ void HopDir();
 void get_user_ppp_addr();
 void send_inet_email();
 bool check_inet_addr(const char *inetaddr);
-char *read_inet_addr(char *pszInternetEmailAddress, int nUserNumber);
-void write_inet_addr(const char *pszInternetEmailAddress, int nUserNumber);
-void send_inst_sysstr(int whichinst, const char *pszSendString);
+char *read_inet_addr(char *internet_address, int user_number);
+void write_inet_addr(const char *internet_address, int user_number);
+void send_inst_sysstr(int whichinst, const char *send_string);
 
 
 // File: instmsg.cpp
 
-void send_inst_str(int whichinst, const char *pszSendString);
+void send_inst_str(int whichinst, const char *send_string);
 void send_inst_shutdown(int whichinst);
 void send_inst_cleannet();
 void broadcast(const char *fmt, ...);
 void process_inst_msgs();
 bool get_inst_info(int nInstanceNum, instancerec * ir);
 int  num_instances();
-bool  user_online(int nUserNumber, int *wi);
+bool  user_online(int user_number, int *wi);
 void instance_edit();
 void write_inst(int loc, int subloc, int flags);
 bool inst_msg_waiting();
@@ -266,13 +181,13 @@ void printtitle_plus();
 int  first_file_pos();
 void print_searching(struct search_record * search_rec);
 int  listfiles_plus(int type);
-int  lp_add_batch(const char *pszFileName, int dn, long fs);
-int  printinfo_plus(uploadsrec *pUploadRecord, int filenum, int marked, int LinesLeft,
+int  lp_add_batch(const char *file_name, int dn, long fs);
+int  printinfo_plus(uploadsrec *upload_record, int filenum, int marked, int LinesLeft,
                     struct search_record * search_rec);
-int  print_extended_plus(const char *pszFileName, int numlist, int indent, int color,
+int  print_extended_plus(const char *file_name, int numlist, int indent, int color,
                          struct search_record * search_rec);
-void show_fileinfo(uploadsrec *pUploadRecord);
-int  check_lines_needed(uploadsrec * pUploadRecord);
+void show_fileinfo(uploadsrec *upload_record);
+int  check_lines_needed(uploadsrec * upload_record);
 int  prep_search_rec(struct search_record * search_rec, int type);
 int  calc_max_lines();
 void load_lp_config();
@@ -281,14 +196,14 @@ void sysop_configure();
 short SelectColor(int which);
 void check_listplus();
 void config_file_list();
-void update_user_config_screen(uploadsrec * pUploadRecord, int which);
-void do_batch_sysop_command(int mode, const char *pszFileName);
+void update_user_config_screen(uploadsrec * upload_record, int which);
+void do_batch_sysop_command(int mode, const char *file_name);
 int  search_criteria(struct search_record * sr);
 void load_listing();
-void view_file(const char *pszFileName);
-int  lp_try_to_download(const char *pszFileMask, int dn);
-void download_plus(const char *pszFileName);
-void request_file(const char *pszFileName);
+void view_file(const char *file_name);
+int  lp_try_to_download(const char *file_mask, int dn);
+void download_plus(const char *file_name);
+void request_file(const char *file_name);
 bool ok_listplus();
 
 
@@ -313,8 +228,8 @@ void ListMenuDirs();
 void kill_old_email();
 void list_users(int mode);
 void time_bank();
-int  getnetnum(const char *pszNetworkName);
-void uudecode(const char *pszInputFileName, const char *pszOutputFileName);
+int  getnetnum(const char *network_name);
+void uudecode(const char *input_filename, const char *output_filename);
 void Packers();
 
 
@@ -323,9 +238,9 @@ void Packers();
 
 // File: msgbase1.cpp
 
-void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber);
+void send_net_post(postrec * pPostRecord, const char *extra, int sub_number);
 void post();
-void grab_user_name(messagerec * pMessageRecord, const char *pszFileName);
+void grab_user_name(messagerec * pMessageRecord, const char *file_name);
 void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan);
 void qscan(int nBeginSubNumber, int *pnNextSubNumber);
 void nscan(int nStartingSubNum = 0);
@@ -335,13 +250,8 @@ void remove_post();
 
 // File: multmail.cpp
 
-void multimail(int *nUserNumber, int numu);
+void multimail(int *user_number, int numu);
 void slash_e();
-
-
-// File: netsup.cpp
-
-// File: newuser.cpp
 
 // File: pause.cpp
 
@@ -354,7 +264,7 @@ void pausescr();
 // File: readmail.cpp
 
 void readmail(int mode);
-int  check_new_mail(int nUserNumber);
+int  check_new_mail(int user_number);
 
 
 // File: shortmsg.cpp
@@ -363,64 +273,38 @@ int  check_new_mail(int nUserNumber);
 
 // File: showfiles.cpp
 
-void show_files(const char *pszFileName, const char *pszDirectoryName);
+void show_files(const char *file_name, const char *pszDirectoryName);
 
 
 // File: SmallRecord.cpp
 
-void InsertSmallRecord(int nUserNumber, const char *name);
+void InsertSmallRecord(int user_number, const char *name);
 void DeleteSmallRecord(const char *name);
 
 
 // File: sr.cpp
-
-void calc_CRC(unsigned char b);
-char gettimeout(double d, bool *abort);
-int  extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending);
-bool ok_prot(int nProtocolNum, xfertype xt);
-char *prot_name(int nProtocolNum);
-int  get_protocol(xfertype xt);
-void ascii_send(const char *pszFileName, bool *sent, double *percent);
-void maybe_internal(const char *pszFileName, bool *xferred, double *percent, bool bSend, int prot);
-void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn, int dn, long fs);
-void receive_file(const char *pszFileName, int *received, const char *sfn, int dn);
-char end_batch1();
-void endbatch();
-
+#include "bbs/sr.h"
 
 // File: srrcv.cpp
 
 char modemkey(int *tout);
-int  receive_block(char *b, unsigned char *bln, bool bUseCRC);
-void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC);
+int  receive_block(char *b, unsigned char *bln, bool use_crc);
+void xymodem_receive(const char *file_name, bool *received, bool use_crc);
 void zmodem_receive(const std::string& filename, bool *received);
 
 
 // File: srsend.cpp
 
-void send_block(char *b, int nBlockType, bool bUseCRC, char byBlockNumber);
-char send_b(File &file, long pos, int nBlockType, char byBlockNumber, bool *bUseCRC, const char *pszFileName,
+void send_block(char *b, int block_type, bool use_crc, char byBlockNumber);
+char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_crc, const char *file_name,
             int *terr, bool *abort);
-bool okstart(bool *bUseCRC, bool *abort);
-void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUseCRC, bool bUseYModem,
-                  bool bUseYModemBatch);
-void zmodem_send(const char *pszFileName, bool *sent, double *percent);
-
+bool okstart(bool *use_crc, bool *abort);
+void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_crc, bool use_ymodem,
+                  bool use_ymodemBatch);
+void zmodem_send(const char *file_name, bool *sent, double *percent);
 
 // File: subacc.cpp
-
-void close_sub();
-bool open_sub(bool wr);
-bool iscan1(int si, bool quick);
-int iscan(int b);
-postrec *get_post(int mn);
-void delete_message(int mn);
-void write_post(int mn, postrec * pp);
-void add_post(postrec * pp);
-void resynch(int *msgnum, postrec * pp);
-void pack_all_subs();
-void pack_sub(int si);
-
+#include "bbs/subacc.h"
 
 // File: subedit.cpp
 
@@ -442,15 +326,15 @@ int  amount_of_subscribers(const char *pszNetworkFileName);
 
 // File: subxtr.cpp
 
-bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec* s);
+bool read_subs_xtr(int max_subs, int num_subs, subboardrec* s);
 
 
 // File: syschat.cpp
 
 void RequestChat();
-void select_chat_name(char *pszSysopName);
-void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopName);
-void chat1(char *pszChatLine, bool two_way);
+void select_chat_name(char *sysop_name);
+void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name);
+void chat1(char *chat_line, bool two_way);
 
 
 // File: sysoplog.cpp
@@ -458,12 +342,10 @@ void chat1(char *pszChatLine, bool two_way);
 // File: sysopf.cpp
 #include "bbs/sysopf.h"
 
-// File: uedit.cpp
-
 // File: user.cpp
 
 bool okconf(WUser *pUser);
-void add_ass(int nNumPoints, const char *pszReason);
+void add_ass(int num_points, const char *reason);
 
 // File: utility.cpp
 #include "utility.h"
@@ -473,8 +355,8 @@ void add_ass(int nNumPoints, const char *pszReason);
 
 bool open_qscn();
 void close_qscn();
-void read_qscn(int nUserNumber, uint32_t* qscn, bool bStayOpen, bool bForceRead = false);
-void write_qscn(int nUserNumber, uint32_t* qscn, bool bStayOpen);
+void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead = false);
+void write_qscn(int user_number, uint32_t* qscn, bool stay_open);
 
 // File: xfer.cpp
 #include "bbs/xfer.h"
@@ -482,16 +364,16 @@ void write_qscn(int nUserNumber, uint32_t* qscn, bool bStayOpen);
 // File: xferovl.cpp
 
 void move_file();
-void sortdir(int nDirectoryNum, int type);
+void sortdir(int directory_num, int type);
 void sort_all(int type);
 void rename_file();
-bool maybe_upload(const char *pszFileName, int nDirectoryNum, const char *pszDescription);
-void upload_files(const char *pszFileName, int nDirectoryNum, int type);
-bool uploadall(int nDirectoryNum);
+bool maybe_upload(const char *file_name, int directory_num, const char *description);
+void upload_files(const char *file_name, int directory_num, int type);
+bool uploadall(int directory_num);
 void relist();
 void edit_database();
-void modify_database(const char *pszFileName, bool add);
-bool is_uploadable(const char *pszFileName);
+void modify_database(const char *file_name, bool add);
+bool is_uploadable(const char *file_name);
 void xfer_defaults();
 void finddescription();
 void arc_l();
@@ -500,30 +382,30 @@ void arc_l();
 // File: xferovl1.cpp
 
 void modify_extended_description(char **sss, const char *dest);
-bool valid_desc(const char *pszDescription);
-bool get_file_idz(uploadsrec * pUploadRecord, int dn);
+bool valid_desc(const char *description);
+bool get_file_idz(uploadsrec * upload_record, int dn);
 int  read_idz_all();
 int  read_idz(int mode, int tempdir);
 void tag_it();
 void tag_files();
-int  add_batch(char *pszDescription, const char *pszFileName, int dn, long fs);
-int  try_to_download(const char *pszFileMask, int dn);
+int  add_batch(char *description, const char *file_name, int dn, long fs);
+int  try_to_download(const char *file_mask, int dn);
 void download();
 char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars);
 void endlist(int mode);
 void SetNewFileScanDate();
 void removefilesnotthere(int dn, int *autodel);
 void removenotthere();
-int  find_batch_queue(const char *pszFileName);
-void remove_batch(const char *pszFileName);
+int  find_batch_queue(const char *file_name);
+void remove_batch(const char *file_name);
 
 
 // File: xfertmp.cpp
 
-bool bad_filename(const char *pszFileName);
+bool bad_filename(const char *file_name);
 // returns true if the file is downloaded.
-bool download_temp_arc(const char *pszFileName, bool count_against_xfer_ratio);
-void add_arc(const char *arc, const char *pszFileName, int dos);
+bool download_temp_arc(const char *file_name, bool count_against_xfer_ratio);
+void add_arc(const char *arc, const char *file_name, int dos);
 void add_temp_arc();
 void del_temp();
 void list_temp_dir();

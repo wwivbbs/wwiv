@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-20014, WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -103,8 +103,8 @@ class WUser {
   //
   // Accessor Functions
   //
-  const char *GetUserNameAndNumber(int nUserNumber) const;
-  const char *GetUserNameNumberAndSystem(int nUserNumber, int nSystemNumber) const;
+  const char *GetUserNameAndNumber(int user_number) const;
+  const char *GetUserNameNumberAndSystem(int user_number, int system_number) const;
 
   // USERREC.inact
   void SetInactFlag(int nFlag)          {
@@ -141,7 +141,7 @@ class WUser {
     return static_cast<long>(data.sysstatus);
   }
   void SetStatus(long l)                {
-    data.sysstatus = static_cast<unsigned long>(l);
+    data.sysstatus = static_cast<uint32_t>(l);
   }
   bool HasAnsi() const                    {
     return HasStatusFlag(WUser::ansi);
@@ -844,8 +844,8 @@ class WUser {
 // Private Methods
 //
  private:
-  char *nam(int nUserNumber) const;
-  char *nam1(int nUserNumber, int nSystemNumber) const;
+  char *nam(int user_number) const;
+  char *nam1(int user_number, int system_number) const;
 
 };
 
@@ -865,10 +865,10 @@ class WUserManager {
   WUserManager(std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers);
   ~WUserManager();
   int GetNumberOfUserRecords() const;
-  bool ReadUserNoCache(WUser *pUser, int nUserNumber);
-  bool ReadUser(WUser *pUser, int nUserNumber, bool bForceRead = false);
-  bool WriteUserNoCache(WUser *pUser, int nUserNumber);
-  bool WriteUser(WUser *pUser, int nUserNumber);
+  bool ReadUserNoCache(WUser *pUser, int user_number);
+  bool ReadUser(WUser *pUser, int user_number, bool bForceRead = false);
+  bool WriteUserNoCache(WUser *pUser, int user_number);
+  bool WriteUser(WUser *pUser, int user_number);
   int FindUser(std::string searchString);
 
   void InitializeUserManager(std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers);

@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -16,12 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "fix/log.h"
+
 #include <cstdarg>
 #include <ctime>
 
-#include "log.h"
-#include "bbs/wwiv.h"
-#include "core/wwivport.h"
+#include "bbs/vars.h"
+#include "core/file.h"
 
 static File hLogFile;
 
@@ -33,13 +34,13 @@ static const char* szLogTypeArray[] = {
 };
 
 void Print(int nType, bool bLogIt, const char* szText, ...) {
-	char szBuffer[256];
+	char buffer[256];
 	va_list ap;
 
 	va_start(ap, szText);
-	vsprintf(szBuffer, szText, ap);
+	vsprintf(buffer, szText, ap);
 	va_end(ap);
-	printf("%s%s\n", szLogTypeArray[nType], szBuffer);
+	printf("%s%s\n", szLogTypeArray[nType], buffer);
 
 	if (bLogIt && hLogFile.IsOpen()) {
     char str[81];
@@ -47,7 +48,7 @@ void Print(int nType, bool bLogIt, const char* szText, ...) {
     time_t secs_now = time(nullptr);
     struct tm* time_now = localtime(&secs_now);
 		strftime(str, 80, "%H:%M:%S", time_now);
-		sprintf(szBuf, "%s%s  %s\n", szLogTypeArray[nType], str, szBuffer);
+		sprintf(szBuf, "%s%s  %s\n", szLogTypeArray[nType], str, buffer);
 		hLogFile.Write(szBuf, strlen(szBuf));
 	}
 }

@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -16,11 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/bbsovl2.h"
+
 #include <chrono>
 #include <string>
 
 #include "bbs/confutil.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/keycodes.h"
 #include "core/os.h"
 #include "core/strings.h"
@@ -318,11 +322,11 @@ void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStrin
  * This function will reposition the cursor i spaces to the left, or if the
  * cursor is on the left side of the screen already then it will not move.
  * If the user has no ANSI then nothing happens.
- * @param nNumberOfChars Number of characters to move to the left
+ * @param numOfChars Number of characters to move to the left
  */
-void MoveLeft(int nNumberOfChars) {
+void MoveLeft(int numOfChars) {
   if (okansi()) {
-    bout << "\x1b[" << nNumberOfChars << "D";
+    bout << "\x1b[" << numOfChars << "D";
   }
 }
 

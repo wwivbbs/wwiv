@@ -367,6 +367,15 @@
     <ClCompile Include="wfc_log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="arword.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="read_message.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="message_file.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -405,9 +414,6 @@
     <ClInclude Include="menusupp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="net.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="pause.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -424,9 +430,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="subxtr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vardec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vars.h">
@@ -462,19 +465,10 @@
     <ClInclude Include="wstatus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="wwiv.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wwivassert.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="wwivcolors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wuser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="platform\wutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="prot\xmodem.h">
@@ -579,16 +573,85 @@
     <ClInclude Include="interpret.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="msgbase.h" />
     <ClInclude Include="connect1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="quote.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="uedit.h" />
-    <ClInclude Include="shortmsg.h" />
     <ClInclude Include="confutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wwiv_windows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="archivers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bbsovl3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="chat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="local_io_curses.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="multinst.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="netsup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="newuser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stuffin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xfer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="batch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bbsovl1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bbsovl2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="chains.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="chnedit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="arword.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="subacc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="read_message.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="message_file.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bbsutl2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="msgbase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shortmsg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="uedit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -22,7 +22,13 @@
 
 #include "bbs/attach.h"
 #include "bbs/automsg.h"
+#include "bbs/batch.h"
+#include "bbs/bbsovl1.h"
+#include "bbs/bbsovl2.h"
 #include "bbs/chat.h"
+#include "bbs/chains.h"
+#include "bbs/chnedit.h"
+#include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
@@ -32,6 +38,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/menu.h"
 #include "bbs/menusupp.h"
+#include "bbs/message_file.h"
 #include "bbs/multinst.h"
 #include "bbs/netsup.h"
 #include "bbs/newuser.h"
@@ -40,11 +47,14 @@
 #include "bbs/valscan.h"
 #include "bbs/vote.h"
 #include "bbs/voteedit.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/printfile.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using wwiv::bbs::InputMode;
@@ -69,8 +79,9 @@ void UnQScan() {
   case 'C': {
     bout.nl();
     qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = 0;
-    bout << "Messages on " << subboards[usub[session()->GetCurrentMessageArea()].subnum].name <<
-                       " marked as unread.\r\n";
+    bout << "Messages on " 
+         << subboards[usub[session()->GetCurrentMessageArea()].subnum].name
+         << " marked as unread.\r\n";
   }
   break;
   }
@@ -212,9 +223,9 @@ void KillEMail() {
 }
 
 void LastCallers() {
-  std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
   if (pStatus->GetNumCallsToday() > 0) {
-    if (application()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
+    if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
         (syscfg.sysconfig & sysconfig_extended_info)) {
       bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
     } else {
@@ -243,7 +254,6 @@ void NewMessageScan() {
   express = false;
   expressabort = false;
   newline = false;
-  preload_subs();
   nscan();
   newline = true;
 }
@@ -277,7 +287,7 @@ void GoodBye() {
       case 'F':
         write_inst(INST_LOC_FEEDBACK, 0, INST_FLAGS_ONLINE);
         feedback(false);
-        application()->UpdateTopScreen();
+        session()->UpdateTopScreen();
         break;
       case 'T':
         write_inst(INST_LOC_BANK, 0, INST_FLAGS_ONLINE);
@@ -378,7 +388,6 @@ void ExpressScan() {
   expressabort = false;
   TempDisablePause disable_pause;
   newline = false;
-  preload_subs();
   nscan();
   newline = true;
   express = false;
@@ -431,7 +440,7 @@ void ToggleChat() {
   } else {
     bout << "|#6Unable to toggle Sysop availability (hours restriction)\r\n";
   }
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
 }
 
 void ChangeUser() {
@@ -470,10 +479,10 @@ void LoadTextFile() {
     bout << "|#5Allow editing? ";
     if (yesno()) {
       bout.nl();
-      LoadFileIntoWorkspace(fileName.c_str(), false);
+      LoadFileIntoWorkspace(fileName, false);
     } else {
       bout.nl();
-      LoadFileIntoWorkspace(fileName.c_str(), true);
+      LoadFileIntoWorkspace(fileName, true);
     }
   }
 }
@@ -510,16 +519,11 @@ void ReloadMenus() {
   read_new_stuff();
 }
 
-void ResetFiles() {
-  write_inst(INST_LOC_RESETF, 0, INST_FLAGS_NONE);
-  reset_files();
-}
-
 void ResetQscan() {
   bout << "|#5Reset all QScan/NScan pointers (For All Users)? ";
   if (yesno()) {
     write_inst(INST_LOC_RESETQSCAN, 0, INST_FLAGS_NONE);
-    for (int i = 0; i <= application()->users()->GetNumberOfUserRecords(); i++) {
+    for (int i = 0; i <= session()->users()->GetNumberOfUserRecords(); i++) {
       read_qscn(i, qsc, true);
       memset(qsc_p, 0, syscfg.qscn_len - 4 * (1 + ((session()->GetMaxNumberFileAreas() + 31) / 32) + ((
           session()->GetMaxNumberMessageAreas() + 31) / 32)));
@@ -531,7 +535,7 @@ void ResetQscan() {
 }
 
 void MemoryStatus() {
-  std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
   bout.nl();
   bout << "Qscanptr        : " << pStatus->GetQScanPointer() << wwiv::endl;
 }
@@ -540,7 +544,10 @@ void PackMessages() {
   bout.nl();
   bout << "|#5Pack all subs? ";
   if (yesno()) {
-    pack_all_subs();
+    wwiv::bbs::TempDisablePause disable_pause;
+    if (!pack_all_subs()) {
+      bout << "|#6Aborted.\r\n";
+    }
   } else {
     pack_sub(usub[session()->GetCurrentMessageArea()].subnum);
   }
@@ -587,7 +594,7 @@ void VotePrint() {
 }
 
 void YesterdaysLog() {
-  std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
   print_local_file(pStatus->GetLogFileName(1));
 }
 
@@ -644,7 +651,6 @@ void NewMsgsAllConfs() {
     ac = true;
     tmp_disable_conf(true);
   }
-  preload_subs();
   nscan();
   newline = true;
   if (ac == true) {
@@ -662,7 +668,6 @@ void InternetEmail() {
 
 void NewMsgScanFromHere() {
   newline = false;
-  preload_subs();
   nscan(session()->GetCurrentMessageArea());
   newline = true;
 }
@@ -675,17 +680,11 @@ void ValidateScan() {
 
 void ChatRoom() {
   write_inst(INST_LOC_CHATROOM, 0, INST_FLAGS_NONE);
-  if (File::Exists("WWIVCHAT.EXE")) {
-    std::ostringstream cmdline;
-    cmdline << "WWIVCHAT.EXE " << create_chain_file();
-    ExecuteExternalProgram(cmdline.str(), application()->GetSpawnOptions(SPAWNOPT_CHAT));
-  } else {
-    chat_room();
-  }
+  chat_room();
 }
 
 void DownloadPosts() {
-  if (application()->HasConfigFlag(OP_FLAGS_SLASH_SZ)) {
+  if (session()->HasConfigFlag(OP_FLAGS_SLASH_SZ)) {
     bout << "|#5This could take quite a while.  Are you sure? ";
     if (yesno()) {
       bout << "Please wait...\r\n";
@@ -695,7 +694,6 @@ void DownloadPosts() {
         ac = true;
         tmp_disable_conf(true);
       }
-      preload_subs();
       nscan();
       if (ac) {
         tmp_disable_conf(false);
@@ -708,7 +706,7 @@ void DownloadPosts() {
 }
 
 void DownloadFileList() {
-  if (application()->HasConfigFlag(OP_FLAGS_SLASH_SZ)) {
+  if (session()->HasConfigFlag(OP_FLAGS_SLASH_SZ)) {
     bout << "|#5This could take quite a while.  Are you sure? ";
     if (yesno()) {
       bout << "Please wait...\r\n";
@@ -730,7 +728,7 @@ void ClearQScan() {
   case RETURN:
     break;
   case 'A': {
-    std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+    std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
     for (int i = 0; i < session()->GetMaxNumberMessageAreas(); i++) {
       qsc_p[i] = pStatus->GetQScanPointer() - 1L;
     }
@@ -739,7 +737,7 @@ void ClearQScan() {
   }
   break;
   case 'C':
-    std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+    std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
     bout.nl();
     qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = pStatus->GetQScanPointer() - 1L;
     bout << "Messages on " << subboards[usub[session()->GetCurrentMessageArea()].subnum].name <<
@@ -995,7 +993,7 @@ void ListFiles() {
 }
 
 void NewFileScan() {
-  if (application()->HasConfigFlag(OP_FLAGS_SETLDATE)) {
+  if (session()->HasConfigFlag(OP_FLAGS_SETLDATE)) {
     SetNewFileScanDate();
   }
   bool abort = false;

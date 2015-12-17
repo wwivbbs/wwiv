@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -111,7 +111,7 @@ char bgetch() {
       if (!ch) {
         ch = session()->localIO()->LocalGetChar();
         session()->localIO()->skey(ch);
-        ch = static_cast< char >(((ch == F10) || (ch == CF10)) ? 2 : 0);
+        ch = static_cast<char>(((ch == F10) || (ch == CF10)) ? 2 : 0);
       }
     }
     timelastchar1 = timer1();
@@ -163,7 +163,7 @@ void HandleControlKey(char *ch) {
         RestoreCurrentLine(cl, atr, xl, &cc);
       }
       break;
-    case CR:
+    case 18: // CR
       if (local_echo) {
         RedrawCurrentLine();
       }

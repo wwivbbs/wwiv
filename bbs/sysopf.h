@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -18,9 +18,8 @@
 #ifndef __INCLUDED_BBS_SYSOPF_H__
 #define __INCLUDED_BBS_SYSOPF_H__
 
-void reset_files();
 void prstatus();
-void valuser(int nUserNumber);
+void valuser(int user_number);
 void print_net_listing(bool bForcePause);
 void read_new_stuff();
 void mailr();

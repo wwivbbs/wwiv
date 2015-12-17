@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -66,7 +66,6 @@ void EditBulletins();
 void ReadAllMail();
 void RebootComputer();
 void ReloadMenus();
-void ResetFiles();
 void ResetQscan();
 void MemoryStatus();
 void PackMessages();

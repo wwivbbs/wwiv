@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -22,12 +22,17 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "bbs/capture.h"
+#include "bbs/runnable.h"
 #include "bbs/wcomm.h"
+#include "bbs/wstatus.h"
 #include "bbs/wuser.h"
 #include "bbs/woutstreambuffer.h"
 #include "bbs/local_io.h"
+#include "core/inifile.h"
+#include "core/file.h"
 #include "sdk/vardec.h"
 
 //
@@ -71,8 +76,20 @@ extern WOutStream bout;
 ///////////////////////////////////////////////////////////////////////////////
 // Per-user session data
 //
-class WSession {
- public:
+class WSession : public Runnable {
+public:
+  // Constants
+  static const int exitLevelOK = 0;
+  static const int exitLevelNotOK = 1;
+  static const int exitLevelQuit = 2;
+
+  static const int shutdownNone = 0;
+  static const int shutdownThreeMinutes = 1;
+  static const int shutdownTwoMinutes = 2;
+  static const int shutdownOneMinute = 3;
+  static const int shutdownImmediate = 4;
+
+public:
   WSession(WApplication* app, LocalIO* localIO);
   virtual ~WSession();
 
@@ -88,6 +105,11 @@ class WSession {
   LocalIO* localIO() { return local_io_.get(); }
   bool reset_local_io(LocalIO* wlocal_io);
   wwiv::bbs::Capture* capture() { return capture_.get(); }
+  const std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
+  int  GetInstanceNumber() const { return instance_number_; }
+  const std::string& GetNetworkExtension() const { return network_extension; }
+
+  void UpdateTopScreen();
 
   /*! @function CreateComm Creates up the communications subsystem */
   void CreateComm(unsigned int nHandle);
@@ -96,9 +118,9 @@ class WSession {
   void SetLastKeyLocal(bool b) { last_key_local_ = b; }
 
   bool ReadCurrentUser() { return ReadCurrentUser(usernum, false); }
-  bool ReadCurrentUser(int nUserNumber, bool bForceRead = false);
+  bool ReadCurrentUser(int user_number, bool bForceRead = false);
   bool WriteCurrentUser() { return WriteCurrentUser(usernum); }
-  bool WriteCurrentUser(int nUserNumber);
+  bool WriteCurrentUser(int user_number);
 
   void ResetEffectiveSl() { effective_sl_ = user()->GetSl(); }
   void SetEffectiveSl(int nSl) { effective_sl_ = nSl; }
@@ -138,12 +160,6 @@ class WSession {
 
   bool IsUserOnline() const { return m_bUserOnline; }
   void SetUserOnline(bool b) { m_bUserOnline = b; }
-
-  int  GetFileAreaCacheNumber() const { return m_nFileAreaCache; }
-  void SetFileAreaCacheNumber(int n) { m_nFileAreaCache = n; }
-
-  int  GetMessageAreaCacheNumber() const { return m_nMessageAreaCache; }
-  void SetMessageAreaCacheNumber(int n) { m_nMessageAreaCache = n; }
 
   int  GetCurrentLanguageNumber() const { return m_nCurrentLanguageNumber; }
   void SetCurrentLanguageNumber(int n) { m_nCurrentLanguageNumber = n; }
@@ -196,29 +212,17 @@ class WSession {
   int  GetMaxNumberFileAreas() const { return m_nMaxNumberFileAreas; }
   void SetMaxNumberFileAreas(int n) { m_nMaxNumberFileAreas = n; }
 
-  bool IsNewMailWatiting() const { return m_bNewMailWaiting; }
-  void SetNewMailWaiting(bool b) { m_bNewMailWaiting = b; }
-
   bool IsTimeOnlineLimited() const { return m_bTimeOnlineLimited; }
   void SetTimeOnlineLimited(bool b) { m_bTimeOnlineLimited = b; }
 
-  int  GetCurrentNetworkType() const { return m_nCurrentNetworkType; }
-  void SetCurrentNetworkType(int n) { m_nCurrentNetworkType = n; }
+  int  net_type() const { return m_nCurrentNetworkType; }
+  void set_net_type(int n) { m_nCurrentNetworkType = n; }
    
-  int  GetNetworkNumber() const { return m_nNetworkNumber; }
-  void SetNetworkNumber(int n) { m_nNetworkNumber = n; }
+  int  net_num() const { return m_nNetworkNumber; }
+  void set_net_num(int n) { m_nNetworkNumber = n; }
 
-  int  GetMaxNetworkNumber() const { return m_nMaxNetworkNumber; }
+  int  max_net_num() const { return m_nMaxNetworkNumber; }
   void SetMaxNetworkNumber(int n) { m_nMaxNetworkNumber = n; }
-
-  int  GetNumberOfChains() const { return m_nNumberOfChains; }
-  void SetNumberOfChains(int n) { m_nNumberOfChains = n; }
-
-  int  GetNumberOfEditors() const { return m_nNumberOfEditors; }
-  void SetNumberOfEditors(int n) { m_nNumberOfEditors = n; }
-
-  int  GetNumberOfExternalProtocols() const { return m_nNumberOfExternalProtocols; }
-  void SetNumberOfExternalProtocols(int n) { m_nNumberOfExternalProtocols = n; }
 
   bool wwivmail_enabled() const { return wwivmail_enabled_; }
   void set_wwivmail_enabled(bool wwivmail_enabled) { wwivmail_enabled_ = wwivmail_enabled; }
@@ -226,7 +230,136 @@ class WSession {
   bool internal_qwk_enabled() const { return internal_qwk_enabled_; }
   void set_internal_qwk_enabled(bool internal_qwk_enabled) { internal_qwk_enabled_ = internal_qwk_enabled; }
 
+  StatusMgr* GetStatusManager() { return statusMgr.get(); }
+  WUserManager* users() { return userManager.get(); }
+
+
+  /*!
+  * @function GetHomeDir Returns the current home directory
+  */
+  const std::string GetHomeDir();
+
+  /*! @function CdHome Changes directories back to the WWIV Home directory */
+  void CdHome();
+
+  /*! @function AbortBBS - Shuts down the bbs at the not-ok error level */
+  void AbortBBS(bool bSkipShutdown = false);
+
+  /*! @function QuitBBS - Shuts down the bbs at the "QUIT" error level */
+  void QuitBBS();
+
+
+  bool SaveConfig();
+
+  void SetConfigFlag(int nFlag) { flags |= nFlag; }
+  void ToggleConfigFlag(int nFlag) { flags ^= nFlag; }
+  void ClearConfigFlag(int nFlag) { flags &= ~nFlag; }
+  bool HasConfigFlag(int nFlag) const { return (flags & nFlag) != 0; }
+  void SetConfigFlags(int nFlags) { flags = nFlags; }
+  unsigned long GetConfigFlags() const { return flags; }
+
+  unsigned short GetSpawnOptions(int nCmdID) { return spawn_opts[nCmdID]; }
+
+  bool IsCleanNetNeeded() const { return m_bNeedToCleanNetwork; }
+  void SetCleanNetNeeded(bool b) { m_bNeedToCleanNetwork = b; }
+
+  bool IsShutDownActive() const { return m_nBbsShutdownStatus > 0; }
+
+  double GetShutDownTime() const { return m_fShutDownTime; }
+  void   SetShutDownTime(double d) { m_fShutDownTime = d; }
+
+  void SetWfcStatus(int nStatus) { m_nWfcStatus = nStatus; }
+  int  GetWfcStatus() { return m_nWfcStatus; }
+
+  bool read_subs();
+  void UpdateShutDownStatus();
+  void ToggleShutDown();
+
+  // former global variables and system_operation_rec members
+  // to be moved
+  unsigned long flags;
+  unsigned short spawn_opts[20];
+
+  /*!
+  * @function ShowUsage - Shows the help screen to the user listing
+  *           all of the command line arguments for WWIV
+  */
+  void ShowUsage();
+
+  /*!
+  * @function Run main bbs loop - Invoked from the application
+  *           main method.
+  * @param argc The number of arguments
+  * @param argv arguments
+  */
+  int Run(int argc, char *argv[]);
+
+   int  GetShutDownStatus() const { return m_nBbsShutdownStatus; }
+   void SetShutDownStatus(int n) { m_nBbsShutdownStatus = n; }
+   void ShutDownBBS(int nShutDownStatus);
+
+   void ExitBBSImpl(int nExitLevel);
+
+   void InitializeBBS(); // old init() method
+   wwiv::core::IniFile* ReadINIFile(); // from xinit.cpp
+   bool ReadConfigOverlayFile(int instance_number, wwiv::core::IniFile* ini);
+   bool ReadConfig();
+
+   int LocalLogon();
+
  private:
+   unsigned short str2spawnopt(const char *s);
+   unsigned short str2restrict(const char *s);
+   unsigned char stryn2tf(const char *s);
+   void read_nextern();
+   void read_arcs();
+   void read_editors();
+   void read_nintern();
+   void read_networks();
+   bool read_names();
+   void read_voting();
+   bool read_dirs();
+   void read_chains();
+   bool read_language();
+   void read_gfile();
+   void make_abs_path(char *dir);
+   void check_phonenum();
+   void create_phone_file();
+
+ protected:
+   /*!
+   * @function GetCaller WFC Screen loop
+   */
+   void GetCaller();
+
+   int doWFCEvents();
+
+   /*!
+   * @function GotCaller login routines
+   * @param ms Modem Speed (may be a locked speed)
+   * @param cs Connect Speed (real speed)
+   */
+   void GotCaller(unsigned int ms, unsigned long cs);
+
+private:
+  unsigned short  m_unx;
+  /*! @var m_szCurrentDirectory The current directory where WWIV lives */
+  char            m_szCurrentDirectory[MAX_PATH];
+  int             m_nOkLevel;
+  int             m_nErrorLevel;
+  int             instance_number_;
+  std::string     network_extension;
+  double          last_time;
+  bool            m_bUserAlreadyOn;
+  bool            m_bNeedToCleanNetwork;
+  int             m_nBbsShutdownStatus;
+  double          m_fShutDownTime;
+  int             m_nWfcStatus;
+
+
+  std::unique_ptr<StatusMgr> statusMgr;
+  std::unique_ptr<WUserManager> userManager;
+  std::string     m_attachmentDirectory; private:
   WApplication* application_;
   WUser m_thisuser;
   bool  last_key_local_;
@@ -238,9 +371,9 @@ class WSession {
   std::unique_ptr<wwiv::bbs::Capture> capture_;
   std::string current_speed_;
 
- public:
   // Data from system_operation_rec, make it public for now, and add
   // accessors later on.
+  public:
   int
   m_nTopScreenColor,
   m_nUserEditorColor,
@@ -253,7 +386,6 @@ class WSession {
   bool        m_bAllowCC;
   bool        m_bUserOnline;
   bool        m_bQuoting;
-  bool        m_bNewMailWaiting;
   bool        m_bTimeOnlineLimited;
 
   bool        m_bNewScanAtLogin,
@@ -277,9 +409,6 @@ class WSession {
               m_nCurrentNetworkType,
               m_nNetworkNumber,
               m_nMaxNetworkNumber,
-              m_nNumberOfChains,
-              m_nNumberOfEditors,
-              m_nNumberOfExternalProtocols,
               numf,
               num_dirs,
               num_languages,
@@ -305,9 +434,6 @@ class WSession {
   std::string threadID;
   bool m_bInternetUseRealNames;
 
-  uint32_t *m_DirectoryDateCache,
-           *m_SubDateCache;
-
   std::string language_dir;
   char *cur_lang_name;
 
@@ -329,6 +455,18 @@ class WSession {
   unsigned char
   newuser_colors[10],         // skip for now
   newuser_bwcolors[10];       // skip for now
+
+public:
+  // public data structures
+  std::vector<editorrec> editors;
+  std::vector<chainfilerec> chains;
+  std::vector<chainregrec> chains_reg;
+
+  std::vector<newexternalrec> externs;
+  std::vector<newexternalrec> over_intern;
+  std::vector<smalrec> smallist;
+  std::vector<languagerec> languages;
+
 };
 
 #endif  // #if !defined (__INCLUDED_BBS_WSESSION_H__)

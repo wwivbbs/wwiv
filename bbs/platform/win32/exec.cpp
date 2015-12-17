@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015,WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -37,7 +37,7 @@
 
 // from com.cpp.
 // this is only used in the 9x support and will be remvoed shortly
-void makeansi(int attr, char *pszOutBuffer, bool forceit);
+void makeansi(int attr, char *out_buffer, bool forceit);
 
 static FILE* hLogFile;
 
@@ -68,14 +68,14 @@ static string GetSyncFosTempFilePath() {
 
 static const string GetDosXtrnPath() {
   std::stringstream sstream;
-  sstream << application()->GetHomeDir() << "DOSXTRN.EXE";
+  sstream << session()->GetHomeDir() << "DOSXTRN.EXE";
   return string(sstream.str());
 }
 
 static void CreateSyncFosCommandLine(string *out, const string& tempFilePath, int nSyncMode) {
   std::stringstream sstream;
   sstream << GetDosXtrnPath() << " " << tempFilePath << " " << "NT" << " ";
-  sstream << application()->GetInstanceNumber() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
+  sstream << session()->GetInstanceNumber() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
   out->assign(sstream.str());
 }
 
@@ -146,7 +146,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
       // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
       int nNumReadFromComm = session()->remoteIO()->read(szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE);
       fprintf(hLogFile, "Read [%d] from comm\r\n", nNumReadFromComm);
-#if 1
+
       int nLp = 0;
       for (nLp = 0; nLp < nNumReadFromComm; nLp++) {
         fprintf(hLogFile, "[%u]", static_cast<unsigned char>(szReadBuffer[ nLp ]));
@@ -156,14 +156,13 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
         fprintf(hLogFile, "[%c]", static_cast<unsigned char>(szReadBuffer[ nLp ]));
       }
       fprintf(hLogFile, "\r\n");
-#endif // 0
 
       if (hSyncWriteSlot == INVALID_HANDLE_VALUE) {
         // Create Write handle.
         char szWriteSlotName[ MAX_PATH ];
         ::Sleep(500);
         _snprintf(szWriteSlotName, sizeof(szWriteSlotName), "\\\\.\\mailslot\\sbbsexec\\wr%d",
-                  application()->GetInstanceNumber());
+                  session()->GetInstanceNumber());
         fprintf(hLogFile, "Creating Mail Slot [%s]\r\n", szWriteSlotName);
 
         hSyncWriteSlot = CreateFile(szWriteSlotName,
@@ -251,10 +250,10 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
   }
 }
 
-bool ExpandWWIVHeartCodes(char *pszBuffer) {
+bool ExpandWWIVHeartCodes(char *buffer) {
   curatr = 0;
   char szTempBuffer[ CONST_SBBSFOS_BUFFER_SIZE + 100 ];
-  char *pIn = pszBuffer;
+  char *pIn = buffer;
   char *pOut = szTempBuffer;
   int n = 0;
   while (*pIn && n++ < (CONST_SBBSFOS_BUFFER_SIZE)) {
@@ -276,7 +275,7 @@ bool ExpandWWIVHeartCodes(char *pszBuffer) {
     *pOut++ = *pIn++;
   }
   *pOut++ = '\0';
-  strcpy(pszBuffer, szTempBuffer);
+  strcpy(buffer, szTempBuffer);
   return true;
 }
 
@@ -313,7 +312,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
     bUsingSync = true;
 
     char szTempLogFileName[ MAX_PATH ];
-    _snprintf(szTempLogFileName, sizeof(szTempLogFileName), "%swwivsync.log", application()->GetHomeDir().c_str());
+    _snprintf(szTempLogFileName, sizeof(szTempLogFileName), "%swwivsync.log", session()->GetHomeDir().c_str());
     hLogFile = fopen(szTempLogFileName, "at");
     fprintf(hLogFile, charstr(78, '='));
     fprintf(hLogFile, "\r\n\r\n");
@@ -323,15 +322,15 @@ int ExecExternalProgram(const string commandLine, int flags) {
   }
 
   DWORD dwCreationFlags = 0;
-  char * pszTitle = new char[ 255 ];
-  memset(pszTitle, 0, sizeof(pszTitle));
+  char * title = new char[ 255 ];
+  memset(title, 0, sizeof(title));
   if (flags & EFLAG_NETPROG) {
-    strcpy(pszTitle, "NETWORK");
+    strcpy(title, "NETWORK");
   } else {
-    _snprintf(pszTitle, sizeof(pszTitle), "%s in door on node %d",
-              session()->user()->GetName(), application()->GetInstanceNumber());
+    _snprintf(title, sizeof(title), "%s in door on node %d",
+              session()->user()->GetName(), session()->GetInstanceNumber());
   }
-  si.lpTitle = pszTitle;
+  si.lpTitle = title;
 
   if (ok_modem_stuff && !bUsingSync && session()->using_modem) {
     session()->remoteIO()->close(true);
@@ -343,7 +342,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
   if (bUsingSync) {
     // Create Hangup Event.
     char szHangupEventName[ MAX_PATH + 1 ];
-    _snprintf(szHangupEventName, sizeof(szHangupEventName), "sbbsexec_hungup%d", application()->GetInstanceNumber());
+    _snprintf(szHangupEventName, sizeof(szHangupEventName), "sbbsexec_hungup%d", session()->GetInstanceNumber());
     hSyncHangupEvent = CreateEvent(nullptr, TRUE, FALSE, szHangupEventName);
     if (hSyncHangupEvent == INVALID_HANDLE_VALUE) {
       fprintf(hLogFile, "!!! Unable to create Hangup Event for SyncFoss External program [%ld]", GetLastError());
@@ -354,7 +353,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
     // Create Read Mail Slot
     char szReadSlotName[ MAX_PATH + 1];
     _snprintf(szReadSlotName, sizeof(szReadSlotName), "\\\\.\\mailslot\\sbbsexec\\rd%d",
-              application()->GetInstanceNumber());
+              session()->GetInstanceNumber());
     hSyncReadSlot = CreateMailslot(szReadSlotName, CONST_SBBSFOS_BUFFER_SIZE, 0, nullptr);
     if (hSyncReadSlot == INVALID_HANDLE_VALUE) {
       fprintf(hLogFile, "!!! Unable to create mail slot for reading for SyncFoss External program [%ld]", GetLastError());
@@ -378,13 +377,13 @@ int ExecExternalProgram(const string commandLine, int flags) {
                   nullptr,
                   TRUE,
                   dwCreationFlags,
-                  nullptr, // application()->xenviron not using nullptr causes things to not work.
+                  nullptr, // session()->xenviron not using nullptr causes things to not work.
                   current_directory.c_str(),
                   &si,
                   &pi);
 
   if (!bRetCP) {
-    delete[] pszTitle;
+    delete[] title;
     sysoplogf("!!! CreateProcess failed for command: [%s] with Error Code %ld", workingCommandLine.c_str(), GetLastError());
     if (bUsingSync) {
       fprintf(hLogFile, "!!! CreateProcess failed for command: [%s] with Error Code %ld", workingCommandLine.c_str(),
@@ -440,7 +439,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
   // Close process and thread handles.
   CloseHandle(pi.hProcess);
 
-  delete[] pszTitle;
+  delete[] title;
 
   // reengage comm stuff
   if (ok_modem_stuff && !bUsingSync && session()->using_modem) {
@@ -448,5 +447,5 @@ int ExecExternalProgram(const string commandLine, int flags) {
     session()->remoteIO()->dtr(true);
   }
 
-  return static_cast< int >(dwExitCode);
+  return static_cast<int>(dwExitCode);
 }

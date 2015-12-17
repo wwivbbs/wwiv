@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                 WWIV Initialization Utility Version 5.0                */
+/*                  WWIV Initialization Utility Version 5                 */
 /*               Copyright (C)2014-2015 WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -170,12 +170,12 @@ bool dialog_yn(CursesWindow* window, const string& text) {
   return dialog_yn(window, text_vector);
 }
 
-static void winput_password(CursesWindow* dialog, string *output, int nMaxLength) {
+static void winput_password(CursesWindow* dialog, string *output, int max_length) {
   dialog->SetColor(SchemeId::DIALOG_PROMPT);
 
   int curpos = 0;
   string s;
-  s.resize(nMaxLength);
+  s.resize(max_length);
   output->clear();
   for (;;) {
     int ch = dialog->GetChar();
@@ -229,7 +229,7 @@ static void winput_password(CursesWindow* dialog, string *output, int nMaxLength
       }
       break;
     default:
-      if (ch > 31 && curpos < nMaxLength) {
+      if (ch > 31 && curpos < max_length) {
         s[curpos++] = toupper(ch);
         dialog->AddCh(ACS_DIAMOND);
       }
@@ -311,19 +311,19 @@ char onek(CursesWindow* window, const char *pszKeys) {
 
 static const int background_character = 32;;
 
-static int editlinestrlen(char *pszText) {
-  int i = strlen(pszText);
-  while (i >= 0 && (static_cast<unsigned char>(pszText[i - 1]) == background_character)) {
+static int editlinestrlen(char *text) {
+  int i = strlen(text);
+  while (i >= 0 && (static_cast<unsigned char>(text[i - 1]) == background_character)) {
     --i;
   }
   return i;
 }
 
 void editline(CursesWindow* window, string* s, int len, int status, int *returncode, const char *ss) {
-  char pszBuffer[255];
-  strcpy(pszBuffer, s->c_str());
-  editline(window, pszBuffer, len, status, returncode, ss);
-  s->assign(pszBuffer);
+  char buffer[255];
+  strcpy(buffer, s->c_str());
+  editline(window, buffer, len, status, returncode, ss);
+  s->assign(buffer);
 }
 
 /* editline edits a string, doing I/O to the screen only. */

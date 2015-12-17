@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -39,6 +39,7 @@
 #define BBSDATA_NET "bbsdata.net"
 #define BBSDATA_IND "bbsdata.ind"
 #define BBSDATA_REG "bbsdata.reg"
+#define BBSLIST_NET "bbslist.net"
 
 #define BBSLIST_MSG "bbslist.msg"
 #define BBSLIST_TMP "bbslist.tmp"

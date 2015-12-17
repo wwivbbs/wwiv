@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -18,17 +18,19 @@
 /**************************************************************************/
 #include "bbs/subxtr.h"
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 static xtrasubsnetrec *xsubsn;
 static int nn;
 
-static char *mallocin_file(const char *pszFileName, size_t *len) {
+static char *mallocin_file(const char *file_name, size_t *len) {
   *len = 0;
   char* ss = nullptr;
 
-  File file(pszFileName);
+  File file(file_name);
   if (file.Open(File::modeReadOnly | File::modeBinary)) {
     *len = file.GetLength();
     ss = static_cast<char *>(malloc(*len + 20));
@@ -67,7 +69,7 @@ static xtrasubsnetrec *fsub(int netnum, int type) {
 }
 
 
-bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subs) {
+bool read_subs_xtr(int max_subs, int num_subs, subboardrec * subs) {
   char *ss1, *ss2;
   int n, curn;
   short i = 0;
@@ -75,7 +77,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subs) {
   xtrasubsnetrec *xnp;
 
   if (xsubs) {
-    for (i = 0; i < nNumSubs; i++) {
+    for (i = 0; i < num_subs; i++) {
       if ((xsubs[i].flags & XTRA_MALLOCED) && xsubs[i].nets) {
         free(xsubs[i].nets);
       }
@@ -87,7 +89,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subs) {
     xsubsn = nullptr;
     xsubs = nullptr;
   }
-  size_t l = nMaxSubs * sizeof(xtrasubsrec);
+  size_t l = max_subs * sizeof(xtrasubsrec);
   xsubs = static_cast<xtrasubsrec *>(malloc(l + 1));
   if (!xsubs) {
     std::clog << "Insufficient memory (" << l << "d bytes) for SUBS.XTR" << std::endl;
@@ -106,7 +108,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subs) {
     }
     free(ss);
   } else {
-    for (i = 0; i < nNumSubs; i++) {
+    for (i = 0; i < num_subs; i++) {
       if (subs[i].type) {
         ++nn;
       }
@@ -129,7 +131,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subs) {
         switch (*ss1) {
         case '!':                         /* sub idx */
           curn = atoi(ss1 + 1);
-          if ((curn < 0) || (curn >= nNumSubs)) {
+          if ((curn < 0) || (curn >= num_subs)) {
             curn = -1;
           }
           break;
@@ -149,12 +151,12 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subs) {
               xsubs[curn].nets = &(xsubsn[nn]);
             }
             ss2 = skipspace(++ss1);
-            for (i = 0; i < session()->GetMaxNetworkNumber(); i++) {
+            for (i = 0; i < session()->max_net_num(); i++) {
               if (wwiv::strings::IsEqualsIgnoreCase(net_networks[i].name, ss1)) {
                 break;
               }
             }
-            if ((i < session()->GetMaxNetworkNumber()) && (*ss2)) {
+            if ((i < session()->max_net_num()) && (*ss2)) {
               xsubsn[nn].net_num = i;
               ss1 = ss2;
               ss2 = skipspace(ss2);
@@ -188,14 +190,14 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subs) {
       }
       free(ss);
     } else {
-      for (curn = 0; curn < nNumSubs; curn++) {
+      for (curn = 0; curn < num_subs; curn++) {
         if (subs[curn].type) {
           if (subs[curn].age & 0x80) {
             xsubsn[nn].net_num = subs[curn].name[40];
           } else {
             xsubsn[nn].net_num = 0;
           }
-          if ((xsubsn[nn].net_num >= 0) && (xsubsn[nn].net_num < session()->GetMaxNetworkNumber())) {
+          if ((xsubsn[nn].net_num >= 0) && (xsubsn[nn].net_num < session()->max_net_num())) {
             xsubs[curn].nets = &(xsubsn[nn]);
             xsubsn[nn].type = subs[curn].type;
             sprintf(xsubsn[nn].stype, "%u", xsubsn[nn].type);
@@ -205,7 +207,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subs) {
           }
         }
       }
-      for (n = 0; n < session()->GetMaxNetworkNumber(); n++) {
+      for (n = 0; n < session()->max_net_num(); n++) {
         sprintf(s, "%s%s", net_networks[n].dir, ALLOW_NET);
         ss = mallocin_file(s, &l);
         if (ss) {

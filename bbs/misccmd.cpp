@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -19,18 +19,22 @@
 #include <memory>
 #include <string>
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/input.h"
 #include "bbs/pause.h"
 #include "bbs/qscan.h"
+#include "bbs/read_message.h"
 #include "bbs/wconstants.h"
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 // from qwk.c
 void qwk_menu();
@@ -52,7 +56,7 @@ void kill_old_email() {
     bout << "\r\nNo mail.\r\n";
     return;
   }
-  int max = static_cast< int >(pFileEmail->GetLength() / sizeof(mailrec));
+  int max = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));
   int cur = 0;
   if (forward) {
     cur = max - 1;
@@ -84,7 +88,7 @@ void kill_old_email() {
         bout << "|#1  To|#9: |#" << session()->GetMessageColor();
 
         if (m.tosys == 0) {
-          application()->users()->ReadUser(&user, m.touser);
+          session()->users()->ReadUser(&user, m.touser);
           string tempName = user.GetUserNameAndNumber(m.touser);
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da))
               && ((getslrec(session()->GetEffectiveSl()).ability & ability_read_email_anony) == 0)) {
@@ -105,7 +109,7 @@ void kill_old_email() {
             bool found = false;
             long l1 = fileAttach.Read(&fsr, sizeof(fsr));
             while (l1 > 0 && !found) {
-              if (m.daten == static_cast<unsigned long>(fsr.id)) {
+              if (m.daten == static_cast<uint32_t>(fsr.id)) {
                 bout << "|#1Filename|#0.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0" << wwiv::endl;
                 found = true;
               }
@@ -153,12 +157,12 @@ void kill_old_email() {
               if (fileAttach.Open(File::modeBinary | File::modeReadWrite)) {
                 long l1 = fileAttach.Read(&fsr, sizeof(fsr));
                 while (l1 > 0 && !found) {
-                  if (m.daten == static_cast<unsigned long>(fsr.id)) {
+                  if (m.daten == static_cast<uint32_t>(fsr.id)) {
                     found = true;
                     fsr.id = 0;
                     fileAttach.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::seekCurrent);
                     fileAttach.Write(&fsr, sizeof(filestatusrec));
-                    File::Remove(application()->GetAttachmentDirectory().c_str(), fsr.filename);
+                    File::Remove(session()->GetAttachmentDirectory().c_str(), fsr.filename);
                   } else {
                     l1 = fileAttach.Read(&fsr, sizeof(filestatusrec));
                   }
@@ -248,10 +252,10 @@ void list_users(int mode) {
   int color   = 3;
   session()->WriteCurrentUser();
   write_qscn(session()->usernum, qsc, false);
-  application()->GetStatusManager()->RefreshStatusCache();
+  session()->GetStatusManager()->RefreshStatusCache();
 
   File userList(syscfg.datadir, USER_LST);
-  int nNumUserRecords = application()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
   for (int i = 0; (i < nNumUserRecords) && !abort && !hangup; i++) {
     session()->usernum = 0;
@@ -296,9 +300,9 @@ void list_users(int mode) {
       found = false;
     }
 
-    int nUserNumber = (bSortByUserNumber) ? i + 1 : smallist[i].number;
-    application()->users()->ReadUser(&user, nUserNumber);
-    read_qscn(nUserNumber, qsc, false);
+    int user_number = (bSortByUserNumber) ? i + 1 : session()->smallist[i].number;
+    session()->users()->ReadUser(&user, user_number);
+    read_qscn(user_number, qsc, false);
     changedsl();
     bool in_qscan = (qsc_q[usub[session()->GetCurrentMessageArea()].subnum / 32] & (1L <<
                      (usub[session()->GetCurrentMessageArea()].subnum % 32))) ? true : false;
@@ -358,7 +362,7 @@ void list_users(int mode) {
       char szUserListLine[ 255 ];
       sprintf(szUserListLine,
               "|#%d\xB3|#9%5d |#%d\xB3|#6%c|#1%-20.20s|#%d\xB3|#2 %-24.24s|#%d\xB3 |#1%-9s |#%d\xB3  |#3%-5u  |#%d\xB3",
-              FRAME_COLOR, nUserNumber, FRAME_COLOR, in_qscan ? '*' : ' ', properName.c_str(),
+              FRAME_COLOR, user_number, FRAME_COLOR, in_qscan ? '*' : ' ', properName.c_str(),
               FRAME_COLOR, szCity, FRAME_COLOR, user.GetLastOn(), FRAME_COLOR,
               user.GetLastBaudRate(), FRAME_COLOR);
       pla(szUserListLine, &abort);
@@ -378,7 +382,7 @@ void list_users(int mode) {
         switch (ch) {
         case 'Q':
           abort = true;
-          i = application()->GetStatusManager()->GetUserCount();
+          i = session()->GetStatusManager()->GetUserCount();
           break;
         case SPACE:
         case RETURN:
@@ -493,10 +497,10 @@ void time_bank() {
 }
 
 
-int getnetnum(const char *pszNetworkName) {
-  WWIV_ASSERT(pszNetworkName);
-  for (int i = 0; i < session()->GetMaxNetworkNumber(); i++) {
-    if (wwiv::strings::IsEqualsIgnoreCase(net_networks[i].name, pszNetworkName)) {
+int getnetnum(const char *network_name) {
+  WWIV_ASSERT(network_name);
+  for (int i = 0; i < session()->max_net_num(); i++) {
+    if (wwiv::strings::IsEqualsIgnoreCase(net_networks[i].name, network_name)) {
       return i;
     }
   }
@@ -504,14 +508,14 @@ int getnetnum(const char *pszNetworkName) {
 }
 
 
-void uudecode(const char *pszInputFileName, const char *pszOutputFileName) {
-  bout << "|#2Now UUDECODING " << pszInputFileName;
+void uudecode(const char *input_filename, const char *output_filename) {
+  bout << "|#2Now UUDECODING " << input_filename;
   bout.nl();
 
   char szCmdLine[ MAX_PATH ];
-  sprintf(szCmdLine, "UUDECODE %s %s", pszInputFileName, pszOutputFileName);
+  sprintf(szCmdLine, "UUDECODE %s %s", input_filename, output_filename);
   ExecuteExternalProgram(szCmdLine, EFLAG_NONE);    // run command
-  File::Remove(pszInputFileName);        // delete the input file
+  File::Remove(input_filename);        // delete the input file
 }
 
 void Packers() {
@@ -560,7 +564,6 @@ void Packers() {
         if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
           ac = true;
         }
-        preload_subs();
         nscan();
         session()->capture()->set_x_only(false, nullptr, false);
         add_arc("offline", "posts.txt", 0);

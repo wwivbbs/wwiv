@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -77,12 +77,12 @@ void WUser::ZeroUserData() {
   memset(&data, 0, sizeof(userrec));
 }
 
-const char *WUser::GetUserNameAndNumber(int nUserNumber) const {
-  return nam(nUserNumber);
+const char *WUser::GetUserNameAndNumber(int user_number) const {
+  return nam(user_number);
 }
 
-const char *WUser::GetUserNameNumberAndSystem(int nUserNumber, int nSystemNumber) const {
-  return nam1(nUserNumber, nSystemNumber);
+const char *WUser::GetUserNameNumberAndSystem(int user_number, int system_number) const {
+  return nam1(user_number, system_number);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -115,7 +115,7 @@ int  WUserManager::GetNumberOfUserRecords() const {
   return 0;
 }
 
-bool WUserManager::ReadUserNoCache(WUser *pUser, int nUserNumber) {
+bool WUserManager::ReadUserNoCache(WUser *pUser, int user_number) {
   File userList(m_dataDirectory, USER_LST);
   if (!userList.Open(File::modeReadOnly | File::modeBinary)) {
     pUser->data.inact = inact_deleted;
@@ -125,24 +125,24 @@ bool WUserManager::ReadUserNoCache(WUser *pUser, int nUserNumber) {
   long nSize = userList.GetLength();
   int nNumUserRecords = (static_cast<int>(nSize / m_nUserRecordLength) - 1);
 
-  if (nUserNumber > nNumUserRecords) {
+  if (user_number > nNumUserRecords) {
     pUser->data.inact = inact_deleted;
     pUser->FixUp();
     return false;
   }
-  long pos = static_cast<long>(m_nUserRecordLength) * static_cast<long>(nUserNumber);
+  long pos = static_cast<long>(m_nUserRecordLength) * static_cast<long>(user_number);
   userList.Seek(pos, File::seekBegin);
   userList.Read(&pUser->data,  m_nUserRecordLength);
   pUser->FixUp();
   return true;
 }
 
-bool WUserManager::ReadUser(WUser *pUser, int nUserNumber, bool bForceRead) {
+bool WUserManager::ReadUser(WUser *pUser, int user_number, bool bForceRead) {
 #ifndef NOT_BBS
   if (!bForceRead) {
-    bool userOnAndCurrentUser = (session()->IsUserOnline() && (nUserNumber == session()->usernum));
-    int nWfcStatus = application()->GetWfcStatus();
-    bool wfcStatusAndUserOne = (nWfcStatus && nUserNumber == 1);
+    bool userOnAndCurrentUser = (session()->IsUserOnline() && (user_number == session()->usernum));
+    int nWfcStatus = session()->GetWfcStatus();
+    bool wfcStatusAndUserOne = (nWfcStatus && user_number == 1);
     if (userOnAndCurrentUser || wfcStatusAndUserOne) {
       pUser->data = session()->user()->data;
       pUser->FixUp();
@@ -150,13 +150,13 @@ bool WUserManager::ReadUser(WUser *pUser, int nUserNumber, bool bForceRead) {
     }
   }
 #endif // NOT_BBS
-  return this->ReadUserNoCache(pUser, nUserNumber);
+  return this->ReadUserNoCache(pUser, user_number);
 }
 
-bool WUserManager::WriteUserNoCache(WUser *pUser, int nUserNumber) {
+bool WUserManager::WriteUserNoCache(WUser *pUser, int user_number) {
   File userList(m_dataDirectory, USER_LST);
   if (userList.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-    long pos = static_cast<long>(m_nUserRecordLength) * static_cast<long>(nUserNumber);
+    long pos = static_cast<long>(m_nUserRecordLength) * static_cast<long>(user_number);
     userList.Seek(pos, File::seekBegin);
     userList.Write(&pUser->data,  m_nUserRecordLength);
     return true;
@@ -164,29 +164,29 @@ bool WUserManager::WriteUserNoCache(WUser *pUser, int nUserNumber) {
   return false;
 }
 
-bool WUserManager::WriteUser(WUser *pUser, int nUserNumber) {
-  if (nUserNumber < 1 || nUserNumber > m_nMaxNumberOfUsers || !IsUserWritesAllowed()) {
+bool WUserManager::WriteUser(WUser *pUser, int user_number) {
+  if (user_number < 1 || user_number > m_nMaxNumberOfUsers || !IsUserWritesAllowed()) {
     return true;
   }
 
 #ifndef NOT_BBS
-  if ((session()->IsUserOnline() && nUserNumber == static_cast<int>(session()->usernum)) ||
-      (application()->GetWfcStatus() && nUserNumber == 1)) {
+  if ((session()->IsUserOnline() && user_number == static_cast<int>(session()->usernum)) ||
+      (session()->GetWfcStatus() && user_number == 1)) {
     if (&pUser->data != &session()->user()->data) {
       session()->user()->data = pUser->data;
     }
   }
 #endif // NOT_BBS
-  return this->WriteUserNoCache(pUser, nUserNumber);
+  return this->WriteUserNoCache(pUser, user_number);
 }
 
 int WUserManager::FindUser(std::string searchString) {
 #ifndef NOT_BBS
   // TODO(rushfan): Put back in a binary search, but test with user.lst the size of frank's.
-  const size_t user_count = application()->GetStatusManager()->GetUserCount();
+  const size_t user_count = session()->GetStatusManager()->GetUserCount();
   for (std::size_t i = 0; i < user_count; i++) {
-    if (wwiv::strings::IsEqualsIgnoreCase(searchString.c_str(), (const char*)smallist[i].name)) {
-      return smallist[i].number;
+    if (wwiv::strings::IsEqualsIgnoreCase(searchString.c_str(), (const char*)session()->smallist[i].name)) {
+      return session()->smallist[i].number;
     }
   }
 #else
@@ -208,7 +208,7 @@ int WUserManager::FindUser(std::string searchString) {
   return 0;
 }
 
-char *WUser::nam(int nUserNumber) const {
+char *WUser::nam(int user_number) const {
   static char s_szNamBuffer[255];
   bool f = true;
   unsigned int p = 0;
@@ -234,18 +234,18 @@ char *WUser::nam(int nUserNumber) const {
   }
   s_szNamBuffer[ p++ ] = ' ';
   s_szNamBuffer[ p++ ] = '#';
-  snprintf(&s_szNamBuffer[p], sizeof(s_szNamBuffer) - p, "%d", nUserNumber);
+  snprintf(&s_szNamBuffer[p], sizeof(s_szNamBuffer) - p, "%d", user_number);
   return s_szNamBuffer;
 }
 
-char *WUser::nam1(int nUserNumber, int nSystemNumber) const {
+char *WUser::nam1(int user_number, int system_number) const {
   static char s_szNamBuffer[ 255 ];
 
-  strcpy(s_szNamBuffer, nam(nUserNumber));
-  if (nSystemNumber) {
-    char szBuffer[10];
-    snprintf(szBuffer, sizeof(szBuffer), " @%u", nSystemNumber);
-    strcat(s_szNamBuffer, szBuffer);
+  strcpy(s_szNamBuffer, nam(user_number));
+  if (system_number) {
+    char buffer[10];
+    snprintf(buffer, sizeof(buffer), " @%u", system_number);
+    strcat(s_szNamBuffer, buffer);
   }
   return s_szNamBuffer;
 }

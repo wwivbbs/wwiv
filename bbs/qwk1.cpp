@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -20,6 +20,7 @@
 
 #include <chrono>
 #include <memory>
+#include <sstream>
 #include <ctype.h>
 #include <fcntl.h>
 #ifdef _WIN32
@@ -33,21 +34,26 @@
 
 #include "bbs/archivers.h"
 #include "bbs/bbs.h"
+#include "bbs/conf.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
+#include "bbs/message_file.h"
 #include "bbs/subxtr.h"
 #include "sdk/vardec.h"
 #include "bbs/vars.h"
 #include "bbs/wstatus.h"
-#include "bbs/wwiv.h"
-
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/stuffin.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"
 #include "core/file.h"
 #include "core/os.h"
 #include "core/strings.h"
+#include "core/scope_exit.h"
 #include "core/wwivport.h"
+#include "sdk/message_utils_wwiv.h"
 
 using std::chrono::milliseconds;
 using std::string;
@@ -55,11 +61,10 @@ using std::unique_ptr;
 
 using namespace wwiv::os;
 using namespace wwiv::strings;
+using namespace wwiv::sdk::msgapi;
 
 #define SET_BLOCK(file, pos, size) lseek(file, (long)pos * (long)size, SEEK_SET)
-#define qwk_iscan_literal(x) (iscan1(x, 1))
-#define MAXMAIL 255
-#define EMAIL_STORAGE 2
+#define qwk_iscan_literal(x) (iscan1(x))
 
 extern const char *QWKFrom;
 extern int qwk_percent;
@@ -125,7 +130,7 @@ void qwk_remove_email() {
 
 
 void qwk_gather_email(struct qwk_junk *qwk_info) {
-  int i, mfl, curmail, done, tp, nn;
+  int i, mfl, curmail, done;
   char filename[201];
   mailrec m;
   postrec junk;
@@ -205,20 +210,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     } else {
       net_email_name[0] = 0;
     }
-    tp = 80;
-
-    if (m.status & status_new_net) {
-      tp--;
-      if (static_cast<int>(strlen(m.title)) <= tp) {
-        nn = m.title[tp + 1];
-      } else {
-        nn = 0;
-      }
-    } else {
-      nn = 0;
-    }
-
-    set_net_num(nn);
+    set_net_num(network_number_from(&m));
 
     // Hope this isn't killed in the future
     strcpy(junk.title, m.title);
@@ -387,7 +379,7 @@ void ready_reply_packet(const char *packet_name, const char *msg_name) {
 
   chdir(QWK_DIRECTORY);
   ExecuteExternalProgram(command, EFLAG_NONE);
-  application()->CdHome();
+  session()->CdHome();
 }
 
 // Takes reply packet and converts '227' (ã) to '13'
@@ -402,9 +394,7 @@ void make_text_ready(char *text, long len) {
   }
 }
 
-char* make_text_file(int filenumber, long *size, int curpos, int blocks) {
-  *size = 0;
-
+char* make_text_file(int filenumber, int curpos, int blocks) {
   // This memory has to be freed later, after text is 'emailed' or 'posted'
   // Enough memory is allocated for all blocks, plus 2k extra for other
   // 'addline' stuff
@@ -416,17 +406,10 @@ char* make_text_file(int filenumber, long *size, int curpos, int blocks) {
   read(filenumber, qwk, sizeof(qwk_record) * blocks);
   make_text_ready((char *)qwk, sizeof(qwk_record)*blocks);
 
-  *size = sizeof(qwk_record) * blocks;
-
-  // Remove trailing spaces
-  char* temp = reinterpret_cast<char*>(qwk);
-  while (isspace(temp[*size - 1]) && *size && !hangup) {
-    --*size;
-  }
-  return temp;
+  return reinterpret_cast<char*>(qwk);
 }
 
-void qwk_email_text(char *text, long size, char *title, char *to) {
+void qwk_email_text(char *text, char *title, char *to) {
   int sy, un;
 
   strupr(to);
@@ -488,10 +471,10 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
     if (sy == 0) {
       set_net_num(0);
       WUser u;
-      application()->users()->ReadUser(&u, un);
+      session()->users()->ReadUser(&u, un);
       strcpy(s2, u.GetUserNameAndNumber(un));
     } else {
-      if (session()->GetMaxNetworkNumber() > 1) {
+      if (session()->max_net_num() > 1) {
         if (un == 0) {
           sprintf(s2, "%s @%u.%s", net_email_name, sy, session()->GetNetworkName());
         } else {
@@ -533,49 +516,58 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
     time_t thetime = time(nullptr);
 
     const char* nam1 = session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum);
-    qwk_inmsg(text, size, &msg, "email", nam1, thetime);
+    qwk_inmsg(text, &msg, "email", nam1, thetime);
 
     if (msg.stored_as == 0xffffffff) {
       return;
     }
 
     bout.Color(8);
-    sendout_email(title, &msg, 0, un, sy, 1, session()->usernum, net_sysnum, 0, session()->GetNetworkNumber());
+
+    EmailData email;
+    email.title = title;
+    email.msg = &msg;
+    email.anony = 0;
+    email.user_number = un;
+    email.system_number = sy;
+    email.an = true;
+    email.from_user = session()->usernum;
+    email.from_system = net_sysnum;
+    email.forwarded_code = 0;
+    email.from_network_number = session()->net_num();
+    sendout_email(email);
   }
 }
 
-void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, const char *name, time_t thetime) {
+void qwk_inmsg(const char *text, messagerec *m1, const char *aux, const char *name, time_t thetime) {
   char s[181];
   int oiia = iia;
   setiia(0);
+  wwiv::core::ScopeExit  at_exit([=]() {
+    charbufferpointer = 0;
+    charbuffer[0] = 0;
+    setiia(oiia);
+  });
 
   messagerec m = *m1;
-  unique_ptr<char[]> t(new char[size + 2048]);
-  long pos = 0;
-  AddLineToMessageBuffer(t.get(), name, &pos);
+  std::ostringstream ss;
+  ss << name << "\r\n";
 
   strcpy(s, ctime(&thetime));
   s[strlen(s) - 1] = 0;
-  AddLineToMessageBuffer(t.get(), s, &pos);
+  ss << s << "\r\n";
+  ss << text << "\r\n";
 
-  memmove(t.get() + pos, text, size);
-  pos += size;
-
-  if (t[pos - 1] != 26) {
-    t[pos++] = 26;
+  std::string message_text = ss.str();
+  if (message_text.back() != CZ) {
+    message_text.push_back(CZ);
   }
-  savefile(t.get(), pos, &m, aux);
-
+  savefile(message_text, &m, aux);
   *m1 = m;
-
-  charbufferpointer = 0;
-  charbuffer[0] = 0;
-  setiia(oiia);
 }
 
 void process_reply_dat(char *name) {
   struct qwk_record qwk;
-  long size;
   int curpos = 0;
   int done = 0;
   int to_email = 0;
@@ -644,7 +636,7 @@ void process_reply_dat(char *name) {
         }
       }
 
-      char* text = make_text_file(repfile, &size, curpos, atoi(blocks) - 1);
+      char* text = make_text_file(repfile, curpos, atoi(blocks) - 1);
       if (!text) {
         curpos += atoi(blocks) - 1;
         continue;
@@ -690,14 +682,14 @@ void process_reply_dat(char *name) {
       }
             
       if (to_email) {
-        qwk_email_text(text, size, title, to);
+        qwk_email_text(text, title, to);
       } else if (freek1(syscfg.msgsdir) < 10) {
         // Not enough disk space
         bout.nl();
         bout.bputs("Sorry, not enough disk space left.");
         pausescr();
       } else {
-        qwk_post_text(text, size, title, atoi(tosub) - 1);
+        qwk_post_text(text, title, atoi(tosub) - 1);
       }
 
       free(text);
@@ -708,7 +700,7 @@ void process_reply_dat(char *name) {
   repfile = close(repfile);
 }
 
-void qwk_post_text(char *text, long size, char *title, int sub) {
+void qwk_post_text(char *text, char *title, int sub) {
   messagerec m;
   postrec p;
 
@@ -856,7 +848,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
   }
 
   time_t thetime = time(nullptr);
-  qwk_inmsg(text, size, &m, subboards[session()->GetCurrentReadMessageArea()].filename, user_name, thetime);
+  qwk_inmsg(text, &m, subboards[session()->GetCurrentReadMessageArea()].filename, user_name, thetime);
 
   if (m.stored_as != 0xffffffff) {
     char s[201];
@@ -889,9 +881,9 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     p.ownersys = 0;
     p.owneruser = static_cast<uint16_t>(session()->usernum);
     {
-      WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+      WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
       p.qscan = pStatus->IncrementQScanPointer();
-      application()->GetStatusManager()->CommitTransaction(pStatus);
+      session()->GetStatusManager()->CommitTransaction(pStatus);
     }
     time_t now = time(nullptr);
     p.daten = static_cast<uint32_t>(now);
@@ -943,10 +935,10 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     ++session()->user()->data.posttoday;
 
     {
-      WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+      WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
       pStatus->IncrementNumLocalPosts();
       pStatus->IncrementNumMessagesPostedToday();
-      application()->GetStatusManager()->CommitTransaction(pStatus);
+      session()->GetStatusManager()->CommitTransaction(pStatus);
     }
 
     close_sub();
@@ -1148,7 +1140,9 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
       while (x < qwk_cfg->amount_blts && !abort && !hangup) {
         bout.bprintf("[%d] %s Is copied over from", x + 1, qwk_cfg->bltname[x]);
         bout.nl();
-        repeat_char(' ', 5);
+        bout.Color(7);
+        bout << string(78, '\xCD');
+        bout.nl();
         bout.bprintf(qwk_cfg->blt[x]);
         bout.nl();
         abort = checka();

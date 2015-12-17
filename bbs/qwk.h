@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -31,17 +31,10 @@
 // descriptions
 // #define HUGE_TRAN
 
-#define MAXMAIL 255
-#define EMAIL_STORAGE 2
 
 #define append_block(file, memory, size) write(file, memory, size)
 #define SETREC(f,i)  lseek(f,((long) (i))*((long)sizeof(uploadsrec)),SEEK_SET);
 #define SET_BLOCK(file, pos, size) lseek(file, (long)pos * (long)size, SEEK_SET)
-
-#define GATSECLEN (4096L+2048L*512L)
-#ifndef MSG_STARTING
-#define MSG_STARTING ((current_gat_section()) * GATSECLEN + 4096L)
-#endif
 
 #define DOTS 5
 
@@ -172,11 +165,11 @@ std::string qwk_which_protocol();
 void upload_reply_packet();
 void ready_reply_packet(const char *packet_name, const char *msg_name);
 void make_text_ready(char *text, long len);
-char* make_text_file(int filenumber, long *size, int curpos, int blocks);
-void qwk_email_text(char *text, long size, char *title, char *to);
-void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, const char *name, time_t thetime);
+char* make_text_file(int filenumber, int curpos, int blocks);
+void qwk_email_text(char *text, char *title, char *to);
+void qwk_inmsg(const char *text,messagerec *m1, const char *aux, const char *name, time_t thetime);
 void process_reply_dat(char *name);
-void qwk_post_text(char *text, long size, char *title, int sub);
+void qwk_post_text(char *text, char *title, int sub);
 int find_qwk_sub(struct qwk_sub_conf *subs, int amount, int fromsub);
 void qwk_receive_file(char *fn, bool *received, int i);
 void qwk_sysop();

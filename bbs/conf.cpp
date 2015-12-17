@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -16,16 +16,21 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/conf.h"
+
 #include <algorithm>
 #include <vector>
 #include <string>
-#include "bbs/conf.h"
+#include "bbs/arword.h"
 #include "bbs/confutil.h"
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using namespace wwiv::strings;
@@ -92,7 +97,7 @@ void reset_disable_conf() {
  * Returns info on conference types
  */
 int get_conf_info(int conftype, int *num, confrec ** cpp,
-                  char *pszFileName, int *num_s, userconfrec ** uc) {
+                  char *file_name, int *num_s, userconfrec ** uc) {
   switch (conftype) {
   case CONF_SUBS:
     if (cpp) {
@@ -101,8 +106,8 @@ int get_conf_info(int conftype, int *num, confrec ** cpp,
     if (num) {
       *num = subconfnum;
     }
-    if (pszFileName) {
-      sprintf(pszFileName, "%s%s", syscfg.datadir, SUBS_CNF);
+    if (file_name) {
+      sprintf(file_name, "%s%s", syscfg.datadir, SUBS_CNF);
     }
     if (num_s) {
       *num_s = session()->num_subs;
@@ -118,8 +123,8 @@ int get_conf_info(int conftype, int *num, confrec ** cpp,
     if (num) {
       *num = dirconfnum;
     }
-    if (pszFileName) {
-      sprintf(pszFileName, "%s%s", syscfg.datadir, DIRS_CNF);
+    if (file_name) {
+      sprintf(file_name, "%s%s", syscfg.datadir, DIRS_CNF);
     }
     if (num_s) {
       *num_s = session()->num_dirs;
@@ -175,7 +180,7 @@ void jump_conf(int conftype) {
  * Removes, inserts, or swaps subs/dirs in all conferences of a specified
  * type.
  */
-void update_conf(int conftype, SUBCONF_TYPE * sub1, SUBCONF_TYPE * sub2, int action) {
+void update_conf(int conftype, subconf_t * sub1, subconf_t * sub2, int action) {
   confrec *cp = nullptr;
   int nc, num_s;
   int pos1, pos2;
@@ -249,47 +254,6 @@ void update_conf(int conftype, SUBCONF_TYPE * sub1, SUBCONF_TYPE * sub2, int act
   }
 }
 
-
-/*
- * Returns bitmapped word representing an AR or DAR string.
- */
-uint16_t str_to_arword(const char *arstr) {
-  uint16_t rar = 0;
-  char s[81];
-
-  strcpy(s, arstr);
-  strupr(s);
-
-  for (int i = 0; i < 16; i++) {
-    if (strchr(s, i + 'A') != nullptr) {
-      rar |= (1 << i);
-    }
-  }
-  return rar;
-}
-
-/*
- * Converts an int to a string representing those ARs (DARs).
- */
-char *word_to_arstr(int ar) {
-  static char arstr[17];
-  int i, i1 = 0;
-
-  if (ar) {
-    for (i = 0; i < 16; i++) {
-      if ((1 << i) & ar) {
-        arstr[i1++] = static_cast< char >('A' + i);
-      }
-    }
-  }
-  arstr[i1] = '\0';
-  if (!arstr[0]) {
-    strcpy(arstr, "-");
-  }
-  return arstr;
-}
-
-
 /*
  * Returns first available conference designator, of a specified conference
  * type.
@@ -310,7 +274,7 @@ char first_available_designator(int conftype) {
       }
     }
     if (i1 >= nc) {
-      return static_cast< char >(i + 'A');
+      return static_cast<char>(i + 'A');
     }
   }
 
@@ -446,7 +410,7 @@ void showsubconfs(int conftype, confrec * c) {
  * numbers. Number of numbers in the list is returned in numinlist.
  */
 bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list) {
-  SUBCONF_TYPE intarray[1024];
+  subconf_t intarray[1024];
 
   // init vars
   memset(intarray, 0, sizeof(intarray));
@@ -473,9 +437,9 @@ bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list) {
       break;
     case 1: {
       //This means there is no number in the range, it's just ,###,###
-      int nNumber = atoi(extractword(1, temp, " -\t\r\n"));
-      if (nNumber < 1024 && nNumber >= 0) {
-        intarray[ nNumber ] = 1;
+      int num = atoi(extractword(1, temp, " -\t\r\n"));
+      if (num < 1024 && num >= 0) {
+        intarray[ num ] = 1;
       }
     }
     break;
@@ -510,7 +474,7 @@ bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list) {
 /*
  * Function to add one subconf (sub/dir/whatever) to a conference.
  */
-void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
+void addsubconf(int conftype, confrec * c, subconf_t * which) {
   std::vector<int> intlist;
 
   if (!c || !c->subs) {
@@ -553,11 +517,10 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
       continue;
     }
     if (c->num >= c->maxnum) {
-      c->maxnum = c->maxnum + static_cast< unsigned short >(CONF_MULTIPLE);
-      SUBCONF_TYPE *tptr = static_cast<SUBCONF_TYPE *>(BbsAllocA(c->maxnum * sizeof(SUBCONF_TYPE)));
-      WWIV_ASSERT(tptr != nullptr);
+      c->maxnum = c->maxnum + static_cast<uint16_t>(CONF_MULTIPLE);
+      subconf_t *tptr = static_cast<subconf_t *>(BbsAllocA(c->maxnum * sizeof(subconf_t)));
       if (tptr) {
-        memmove(tptr, c->subs, (c->maxnum - CONF_MULTIPLE) * sizeof(SUBCONF_TYPE));
+        memmove(tptr, c->subs, (c->maxnum - CONF_MULTIPLE) * sizeof(subconf_t));
         free(c->subs);
         c->subs = tptr;
       } else {
@@ -565,7 +528,7 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
         return;
       }
     }
-    c->subs[c->num] = static_cast< unsigned short >(nConference);
+    c->subs[c->num] = static_cast<uint16_t>(nConference);
     c->num++;
   }
 }
@@ -574,7 +537,7 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
 /*
  * Function to delete one subconf (sub/dir/whatever) from a conference.
  */
-void delsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
+void delsubconf(int conftype, confrec * c, subconf_t * which) {
   if (!c || !c->subs || c->num < 1) {
     return;
   }
@@ -639,7 +602,7 @@ int modify_conf(int conftype,  int which) {
   bool ok   = false;
   bool done = false;
   int num, ns;
-  SUBCONF_TYPE i;
+  subconf_t i;
   char ch, ch1, s[81];
 
   int n = which;
@@ -846,7 +809,7 @@ int modify_conf(int conftype,  int which) {
       bout << "|#2Min BPS Rate: ";
       input(s, 5);
       if (s[0]) {
-        c.minbps = (SUBCONF_TYPE)(atol(s));
+        c.minbps = (subconf_t)(atol(s));
         changed = 1;
       }
       break;
@@ -1074,7 +1037,7 @@ void conf_edit(int conftype) {
       break;
     }
   } while (!done && !hangup);
-  if (!application()->GetWfcStatus()) {
+  if (!session()->GetWfcStatus()) {
     changedsl();
   }
 }
@@ -1110,7 +1073,7 @@ void list_confs(int conftype, int ssc) {
     strcat(s, s1);
     bout.Color(7);
     pla(s, &abort);
-    if (application()->HasConfigFlag(OP_FLAGS_SHOW_HIER)) {
+    if (session()->HasConfigFlag(OP_FLAGS_SHOW_HIER)) {
       if ((cp[i].num > 0) && (cp[i].subs != nullptr) && (ssc)) {
         for (i2 = 0; ((i2 < cp[i].num) && !abort); i2++) {
           if (cp[i].subs[i2] < num_s) {
@@ -1144,7 +1107,7 @@ void list_confs(int conftype, int ssc) {
  * (0-based), or -1 if the user aborted. Error message is printed for
  * invalid conference selections.
  */
-int select_conf(const char *pszPromptText, int conftype, int listconfs) {
+int select_conf(const char *prompt_text, int conftype, int listconfs) {
   int i = 0, i1, sl = 0;
   bool ok = false;
   char *mmk;
@@ -1155,9 +1118,9 @@ int select_conf(const char *pszPromptText, int conftype, int listconfs) {
       list_confs(conftype, 0);
       sl = 0;
     }
-    if (pszPromptText && pszPromptText[0]) {
+    if (prompt_text && prompt_text[0]) {
       bout.nl();
-      bout <<  "|#1" << pszPromptText;
+      bout <<  "|#1" << prompt_text;
     }
     mmk = mmkey(0);
     if (!mmk[0]) {
@@ -1237,21 +1200,21 @@ bool create_conf_file(int conftype) {
  * Reads in conferences and returns pointer to conference data. Out-of-memory
  * messages are shown if applicable.
  */
-confrec *read_conferences(const char *pszFileName, int *nc, int max) {
+confrec *read_conferences(const char *file_name, int *nc, int max) {
   char ts[128], *ss;
   int i, i1, i2, i3, cc = 0;
   bool ok = true;
 
-  *nc = get_num_conferences(pszFileName);
+  *nc = get_num_conferences(file_name);
   if (*nc < 1) {
     return nullptr;
   }
 
-  if (!File::Exists(pszFileName)) {
+  if (!File::Exists(file_name)) {
     return nullptr;
   }
 
-  TextFile f(pszFileName, "rt");
+  TextFile f(file_name, "rt");
   if (!f.IsOpen()) {
     return nullptr;
   }
@@ -1260,7 +1223,7 @@ confrec *read_conferences(const char *pszFileName, int *nc, int max) {
   confrec *conferences = static_cast<confrec *>(BbsAllocA(l));
   WWIV_ASSERT(conferences != nullptr);
   if (!conferences) {
-    std::clog << "Out of memory reading file [" << pszFileName << "]." << std::endl;
+    std::clog << "Out of memory reading file [" << file_name << "]." << std::endl;
     f.Close();
     return nullptr;
   }
@@ -1349,7 +1312,7 @@ confrec *read_conferences(const char *pszFileName, int *nc, int max) {
             memset(conferences[cc].subs, 0, l);
           } else {
             std::clog << "Out of memory on conference file #" << cc + 1 << ", " <<
-                      syscfg.datadir << pszFileName << "." << std::endl;
+                      syscfg.datadir << file_name << "." << std::endl;
             for (i2 = 0; i2 < cc; i2++) {
               free(conferences[i2].subs);
             }
@@ -1425,13 +1388,13 @@ void read_in_conferences(int conftype) {
   if (!File::Exists(s)) {
     if (!create_conf_file(conftype)) {
       std::clog << "Problem creating conferences." << std::endl;
-      application()->AbortBBS();
+      session()->AbortBBS();
     }
   }
   *cpp = read_conferences(s, np, max);
   if (!(*cpp)) {
     std::clog << "Problem reading conferences." << std::endl;
-    application()->AbortBBS();
+    session()->AbortBBS();
 
   }
 }
@@ -1451,14 +1414,14 @@ void read_all_conferences() {
 /*
  * Returns number of conferences in a specified conference file.
  */
-int get_num_conferences(const char *pszFileName) {
+int get_num_conferences(const char *file_name) {
   char ls[MAX_CONF_LINE];
   int i = 0;
 
-  if (!File::Exists(pszFileName)) {
+  if (!File::Exists(file_name)) {
     return 0;
   }
-  TextFile f(pszFileName, "rt");
+  TextFile f(file_name, "rt");
   if (!f.IsOpen()) {
     return 0;
   }
@@ -1514,10 +1477,10 @@ const char *extractword(int ww, const string& instr, const char *delimstr) {
 }
 
 
-void sort_conf_str(char *pszConferenceStr) {
+void sort_conf_str(char *conference_string) {
   char s1[81], s2[81];
 
-  strncpy(s1, pszConferenceStr, sizeof(s1));
+  strncpy(s1, conference_string, sizeof(s1));
   strncpy(s2, charstr(MAX_CONFERENCES, 32), sizeof(s2));
 
   for (char i = 'A'; i <= 'Z'; i++) {
@@ -1526,5 +1489,5 @@ void sort_conf_str(char *pszConferenceStr) {
     }
   }
   StringTrimEnd(s2);
-  strcpy(pszConferenceStr, s2);
+  strcpy(conference_string, s2);
 }

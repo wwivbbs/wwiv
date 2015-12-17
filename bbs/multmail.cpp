@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -17,20 +17,22 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
+#include "bbs/message_file.h"
 #include "core/wfndfile.h"
 #include "core/strings.h"
 #include "bbs/printfile.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
+#include "sdk/filenames.h"
 
 // local function prototypes
 void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup);
 int  oneuser();
-
-#define EMAIL_STORAGE 2
 
 using std::string;
 using std::unique_ptr;
@@ -40,6 +42,7 @@ void multimail(int *pnUserNumber, int numu) {
   mailrec m, m1;
   char s[255], s2[81];
   WUser user;
+  memset(&m, 0, sizeof(mailrec));
 
   if (freek1(syscfg.msgsdir) < 10) {
     bout.nl();
@@ -48,9 +51,9 @@ void multimail(int *pnUserNumber, int numu) {
   }
   bout.nl();
 
-  int i = 0;
+  MessageEditorData data;
   if (getslrec(session()->GetEffectiveSl()).ability & ability_email_anony) {
-    i = anony_enable_anony;
+    data.anonymous_flag = anony_enable_anony;
   }
   bout << "|#5Show all recipients in mail? ";
   bool show_all = yesno();
@@ -61,12 +64,15 @@ void multimail(int *pnUserNumber, int numu) {
   strcpy(irt, "Multi-Mail");
   irt_name[0] = 0;
   File::Remove(QUOTES_TXT);
-  std::string t;
-  inmsg(&m.msg, &t, &i, true, "email", INMSG_FSED, "Multi-Mail", MSGED_FLAG_NONE);
-  if (m.msg.stored_as == 0xffffffff) {
+  data.aux = "email";
+  data.fsed_flags = INMSG_NOFSED;
+  data.to_name = "Multi-Mail";
+  data.msged_flags = MSGED_FLAG_NONE;
+  if (!inmsg(data)) {
     return;
   }
-  strcpy(m.title, t.c_str());
+  savefile(data.text, &m.msg, data.aux);
+  strcpy(m.title, data.title.c_str());
 
   bout <<  "Mail sent to:\r\n";
   sysoplog("Multi-Mail to:");
@@ -77,7 +83,7 @@ void multimail(int *pnUserNumber, int numu) {
     if (pnUserNumber[cv] < 0) {
       continue;
     }
-    application()->users()->ReadUser(&user, pnUserNumber[cv]);
+    session()->users()->ReadUser(&user, pnUserNumber[cv]);
     if ((user.GetSl() == 255 && (user.GetNumMailWaiting() > (syscfg.maxwaiting * 5))) ||
         ((user.GetSl() != 255) && (user.GetNumMailWaiting() > syscfg.maxwaiting)) ||
         user.GetNumMailWaiting() > 200) {
@@ -92,12 +98,12 @@ void multimail(int *pnUserNumber, int numu) {
     }
     strcpy(s, "  ");
     user.SetNumMailWaiting(user.GetNumMailWaiting() + 1);
-    application()->users()->WriteUser(&user, pnUserNumber[cv]);
+    session()->users()->WriteUser(&user, pnUserNumber[cv]);
     if (pnUserNumber[cv] == 1) {
       ++fwaiting;
     }
     strcat(s, user.GetUserNameAndNumber(pnUserNumber[cv]));
-    WStatus* pStatus = application()->GetStatusManager()->BeginTransaction();
+    WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
     if (pnUserNumber[cv] == 1) {
       pStatus->IncrementNumFeedbackSentToday();
       session()->user()->SetNumFeedbackSentToday(session()->user()->GetNumFeedbackSentToday() + 1);
@@ -108,7 +114,7 @@ void multimail(int *pnUserNumber, int numu) {
       session()->user()->SetNumEmailSent(session()->user()->GetNumEmailSent() + 1);
       session()->user()->SetNumEmailSentToday(session()->user()->GetNumEmailSentToday() + 1);
     }
-    application()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->GetStatusManager()->CommitTransaction(pStatus);
     sysoplog(s);
     bout << s;
     bout.nl();
@@ -132,19 +138,18 @@ void multimail(int *pnUserNumber, int numu) {
   lineadd(&m.msg, "\003""7----", "email");
   lineadd(&m.msg, s1, "email");
 
-  m.anony = static_cast< unsigned char >(i);
+  m.anony = static_cast<unsigned char>(data.anonymous_flag);
   m.fromsys = 0;
   m.fromuser = static_cast<unsigned short>(session()->usernum);
   m.tosys = 0;
   m.touser = 0;
   m.status = status_multimail;
-  m.daten = static_cast<unsigned long>(time(nullptr));
+  m.daten = static_cast<uint32_t>(time(nullptr));
 
   unique_ptr<File> pFileEmail(OpenEmailFile(true));
   int len = pFileEmail->GetLength() / sizeof(mailrec);
-  if (len == 0) {
-    i = 0;
-  } else {
+  int i = 0;
+  if (len != 0) {
     i = len - 1;
     pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::seekBegin);
     pFileEmail->Read(&m1, sizeof(mailrec));
@@ -175,7 +180,7 @@ static int mml_started;
 
 int oneuser() {
   char s[81], *ss;
-  int nUserNumber, nSystemNumber, i;
+  int user_number, system_number, i;
   WUser user;
 
   if (mml_s) {
@@ -198,34 +203,34 @@ int oneuser() {
     bout << "|#2>";
     input(s, 40);
   }
-  nUserNumber = finduser1(s);
-  if (nUserNumber == 65535) {
+  user_number = finduser1(s);
+  if (user_number == 65535) {
     return -1;
   }
   if (s[0] == 0) {
     return -1;
   }
-  if (nUserNumber <= 0) {
+  if (user_number <= 0) {
     bout.nl();
     bout << "Unknown user.\r\n\n";
     return 0;
   }
-  nSystemNumber = 0;
-  if (ForwardMessage(&nUserNumber, &nSystemNumber)) {
+  system_number = 0;
+  if (ForwardMessage(&user_number, &system_number)) {
     bout.nl();
     bout << "Forwarded.\r\n\n";
-    if (nSystemNumber) {
+    if (system_number) {
       bout << "Forwarded to another system.\r\n";
       bout << "Can't send multi-mail to another system.\r\n\n";
       return 0;
     }
   }
-  if (nUserNumber == 0) {
+  if (user_number == 0) {
     bout.nl();
     bout << "Unknown user.\r\n\n";
     return 0;
   }
-  application()->users()->ReadUser(&user, nUserNumber);
+  session()->users()->ReadUser(&user, user_number);
   if (((user.GetSl() == 255) && (user.GetNumMailWaiting() > (syscfg.maxwaiting * 5))) ||
       ((user.GetSl() != 255) && (user.GetNumMailWaiting() > syscfg.maxwaiting)) ||
       (user.GetNumMailWaiting() > 200)) {
@@ -238,8 +243,8 @@ int oneuser() {
     bout << "Deleted user.\r\n\n";
     return 0;
   }
-  bout << "     -> " << user.GetUserNameAndNumber(nUserNumber) << wwiv::endl;
-  return nUserNumber;
+  bout << "     -> " << user.GetUserNameAndNumber(user_number) << wwiv::endl;
+  return user_number;
 }
 
 
@@ -280,7 +285,7 @@ void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup) {
 
 
 void slash_e() {
-  int nUserNumber[MAX_LIST], numu, i, i1;
+  int user_number[MAX_LIST], numu, i, i1;
   char s[81], ch, *sss;
   bool bFound = false;
   WFindFile fnd;
@@ -319,7 +324,7 @@ void slash_e() {
       bout.nl();
       bout << "Enter names/numbers for users, one per line, max 20.\r\n\n";
       mml_s = nullptr;
-      add_list(nUserNumber, &numu, MAX_LIST, so());
+      add_list(user_number, &numu, MAX_LIST, so());
       break;
     case 'M': {
       sprintf(s, "%s*.MML", syscfg.datadir);
@@ -359,7 +364,7 @@ void slash_e() {
         mml_s[i1 + 1] = 0;
         fileMailList.Close();
         mml_started = 0;
-        add_list(nUserNumber, &numu, MAX_LIST, so());
+        add_list(user_number, &numu, MAX_LIST, so());
         if (mml_s) {
           free(mml_s);
           mml_s = nullptr;
@@ -372,7 +377,7 @@ void slash_e() {
         bout.nl();
         bout << "Need to specify some users first - use A or M\r\n\n";
       } else {
-        multimail(nUserNumber, numu);
+        multimail(user_number, numu);
         done = true;
       }
       break;
@@ -385,7 +390,7 @@ void slash_e() {
         if ((i > 0) && (i <= numu)) {
           --numu;
           for (i1 = i - 1; i1 < numu; i1++) {
-            nUserNumber[i1] = nUserNumber[i1 + 1];
+            user_number[i1] = user_number[i1 + 1];
           }
         }
       }
@@ -393,8 +398,8 @@ void slash_e() {
     case 'L':
       for (i = 0; i < numu; i++) {
         WUser user;
-        application()->users()->ReadUser(&user, nUserNumber[i]);
-        bout << i + 1 << ". " << user.GetUserNameAndNumber(nUserNumber[i]) << wwiv::endl;
+        session()->users()->ReadUser(&user, user_number[i]);
+        bout << i + 1 << ". " << user.GetUserNameAndNumber(user_number[i]) << wwiv::endl;
       }
       break;
     }

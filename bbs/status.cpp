@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -20,14 +20,20 @@
 #include <string>
 
 #include "bbs/datetime.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wstatus.h"
+#include "core/datafile.h"
+#include "core/file.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 statusrec status;
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::core;
 
 // WStatus
 const int WStatus::fileChangeNames = 0;
@@ -143,7 +149,6 @@ bool StatusMgr::Get(bool bLockFile) {
     return false;
   } else {
     char oldFileChangeFlags[7];
-    uint32_t lQScanPtr = status.qscanptr;
     for (int nFcIndex = 0; nFcIndex < 7; nFcIndex++) {
       oldFileChangeFlags[nFcIndex] = status.filechange[nFcIndex];
     }
@@ -153,50 +158,28 @@ bool StatusMgr::Get(bool bLockFile) {
       m_statusFile.Close();
     }
 
-    if (lQScanPtr != status.qscanptr) {
-      if (session()->m_SubDateCache) {
-        // kill subs cache
-        for (int i1 = 0; i1 < session()->num_subs; i1++) {
-          session()->m_SubDateCache[i1] = 0L;
-        }
-      }
-      session()->SetMessageAreaCacheNumber(0);
-      session()->subchg = 1;
-      //g_szMessageGatFileName[0] = 0;
-    }
     for (int i = 0; i < 7; i++) {
       if (oldFileChangeFlags[i] != status.filechange[i]) {
         switch (i) {
-        case WStatus::fileChangeNames:            // re-read names.lst
-          if (smallist) {
-            File namesFile(syscfg.datadir, NAMES_LST);
-            if (namesFile.Open(File::modeBinary | File::modeReadOnly)) {
-              namesFile.Read(smallist, (sizeof(smalrec) * status.users));
-              namesFile.Close();
-            }
+        case WStatus::fileChangeNames: {        // re-read names.lst
+          DataFile<smalrec> file(syscfg.datadir, NAMES_LST);
+          if (file) {
+            file.ReadVector(session()->smallist, status.users);
           }
-          break;
-        case WStatus::fileChangeUpload: {         // kill dirs cache
-          if (session()->m_DirectoryDateCache) {
-            for (int i1 = 0; i1 < session()->num_dirs; i1++) {
-              session()->m_DirectoryDateCache[i1] = 0L;
-            }
-          }
-          session()->SetFileAreaCacheNumber(0);
-        }
+        } break;
+        case WStatus::fileChangeUpload:
         break;
         case WStatus::fileChangePosts:
           session()->subchg = 1;
-          //g_szMessageGatFileName[0] = 0;
           break;
         case WStatus::fileChangeEmail:
           emchg = true;
           mailcheck = false;
           break;
         case WStatus::fileChangeNet: {
-          int nOldNetNum = session()->GetNetworkNumber();
+          int nOldNetNum = session()->net_num();
           zap_bbs_list();
-          for (int i1 = 0; i1 < session()->GetMaxNetworkNumber(); i1++) {
+          for (int i1 = 0; i1 < session()->max_net_num(); i1++) {
             set_net_num(i1);
             zap_call_out_list();
             zap_contacts();

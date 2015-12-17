@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.0x                             */
+/*                          WWIV Version 5.x                              */
 /*                Copyright (C)2015 WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -74,20 +74,8 @@ std::string NetworkLog::CreateLogLine(
     ss << "To ";
   }
   ss << StringPrintf("%5d", node);
-  if (bytes_sent > 0) {
-    ss << StringPrintf(", S:%4uk", (bytes_sent + 1023) / 1024);
-  }
-  else {
-    // TODO(rushfan): Should this be: ", Tried S" ? like network0 does when it tries to receive
-    // Since we always try to send and receive?
-    ss << ",        ";
-  }
-  if (bytes_received > 0) {
-    ss << StringPrintf(", R:%4uk", (bytes_received + 1023) / 1024);
-  } else {
-    // TODO(rushfan): Should this be: ", Tried R" ?
-    ss << "         ";
-  }
+  ss << StringPrintf(", S:%4uk", (bytes_sent + 1023) / 1024);
+  ss << StringPrintf(", R:%4uk", (bytes_received + 1023) / 1024);
   ss << "          ";  // should be ", %4.0f cps";
   ss << " ";  // last space before time.
 

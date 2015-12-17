@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -20,7 +20,10 @@
 #include <memory>
 #include <string>
 
-#include "bbs/wwiv.h"
+#include "bbs/conf.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/input.h"
 #include "bbs/wcomm.h"
 #include "core/os.h"
@@ -28,6 +31,7 @@
 #include "core/textfile.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
+#include "sdk/filenames.h"
 
 using std::chrono::milliseconds;
 using std::string;
@@ -52,7 +56,7 @@ bool AllowLocalSysop() {
  */
 void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystemNumber) {
   char *ss1, onx[20], ch, *mmk;
-  unsigned nUserNumber, nSystemNumber;
+  unsigned user_number, system_number;
   int i, nv, on, xx, onxi, odci;
   net_system_list_rec *csne;
 
@@ -64,16 +68,16 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
   net_email_name[0] = '\0';
   char *ss = strrchr(szEmailAddress, '@');
   if (ss == nullptr) {
-    nUserNumber = finduser1(szEmailAddress);
-    if (nUserNumber > 0) {
-      *pUserNumber = static_cast< unsigned short >(nUserNumber);
+    user_number = finduser1(szEmailAddress);
+    if (user_number > 0) {
+      *pUserNumber = static_cast<uint16_t>(user_number);
     } else if (wwiv::strings::IsEquals(szEmailAddress, "SYSOP")) {     // Add 4.31 Build3
       *pUserNumber = 1;
     } else {
       bout << "Unknown user.\r\n";
     }
   } else if (atoi(ss + 1) == 0) {
-    for (i = 0; i < session()->GetMaxNetworkNumber(); i++) {
+    for (i = 0; i < session()->max_net_num(); i++) {
       set_net_num(i);
       if ((strncasecmp("internet", session()->GetNetworkName(), 8) == 0) ||
           ((strncasecmp("filenet", session()->GetNetworkName(), 7) == 0) && (*pSystemNumber == 32767))) {
@@ -87,7 +91,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
         break;
       }
     }
-    if (i >= session()->GetMaxNetworkNumber()) {
+    if (i >= session()->max_net_num()) {
       bout << "Unknown user.\r\n";
     }
   } else {
@@ -98,19 +102,19 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
       --i;
     }
     szEmailAddress[i] = 0;
-    nUserNumber = atoi(szEmailAddress);
-    if (nUserNumber == 0 && szEmailAddress[0] == '#') {
-      nUserNumber = atoi(szEmailAddress + 1);
+    user_number = atoi(szEmailAddress);
+    if (user_number == 0 && szEmailAddress[0] == '#') {
+      user_number = atoi(szEmailAddress + 1);
     }
     if (strchr(szEmailAddress, '@')) {
-      nUserNumber = 0;
+      user_number = 0;
     }
-    nSystemNumber = atoi(ss);
+    system_number = atoi(ss);
     ss1 = strchr(ss, '.');
     if (ss1) {
       ss1++;
     }
-    if (nUserNumber == 0) {
+    if (user_number == 0) {
       strcpy(net_email_name, szEmailAddress);
       i = strlen(net_email_name);
       while (i > 0 && net_email_name[i - 1] == ' ') {
@@ -118,16 +122,16 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
       }
       net_email_name[i] = '\0';
       if (net_email_name[0]) {
-        *pSystemNumber = static_cast< unsigned short >(nSystemNumber);
+        *pSystemNumber = static_cast<uint16_t>(system_number);
       } else {
         bout << "Unknown user.\r\n";
       }
     } else {
-      *pUserNumber = static_cast< unsigned short >(nUserNumber);
-      *pSystemNumber = static_cast< unsigned short >(nSystemNumber);
+      *pUserNumber = static_cast<uint16_t>(user_number);
+      *pSystemNumber = static_cast<uint16_t>(system_number);
     }
     if (*pSystemNumber && ss1) {
-      for (i = 0; i < session()->GetMaxNetworkNumber(); i++) {
+      for (i = 0; i < session()->max_net_num(); i++) {
         set_net_num(i);
         if (wwiv::strings::IsEqualsIgnoreCase(ss1, session()->GetNetworkName())) {
           if (!valid_system(*pSystemNumber)) {
@@ -138,7 +142,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
             if (*pSystemNumber == net_sysnum) {
               *pSystemNumber = 0;
               if (*pUserNumber == 0) {
-                *pUserNumber = static_cast< unsigned short >(finduser(net_email_name));
+                *pUserNumber = static_cast<uint16_t>(finduser(net_email_name));
               }
               if (*pUserNumber == 0 || *pUserNumber > 32767) {
                 *pUserNumber = 0;
@@ -149,23 +153,23 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
           break;
         }
       }
-      if (i >= session()->GetMaxNetworkNumber()) {
+      if (i >= session()->max_net_num()) {
         bout.nl();
         bout << "This system isn't connected to " << ss1 << "\r\n";
         *pSystemNumber = *pUserNumber = 0;
       }
-    } else if (*pSystemNumber && session()->GetMaxNetworkNumber() > 1) {
+    } else if (*pSystemNumber && session()->max_net_num() > 1) {
       odc[0] = '\0';
       odci = 0;
       onx[0] = 'Q';
       onx[1] = '\0';
       onxi = 1;
       nv = 0;
-      on = session()->GetNetworkNumber();
-      ss = static_cast<char *>(calloc(session()->GetMaxNetworkNumber() + 1, 1));
+      on = session()->net_num();
+      ss = static_cast<char *>(calloc(session()->max_net_num() + 1, 1));
       WWIV_ASSERT(ss != nullptr);
       xx = -1;
-      for (i = 0; i < session()->GetMaxNetworkNumber(); i++) {
+      for (i = 0; i < session()->max_net_num(); i++) {
         set_net_num(i);
         if (net_sysnum == *pSystemNumber) {
           xx = i;
@@ -179,7 +183,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
           set_net_num(xx);
           *pSystemNumber = 0;
           if (*pUserNumber == 0) {
-            *pUserNumber = static_cast< unsigned short >(finduser(net_email_name));
+            *pUserNumber = static_cast<uint16_t>(finduser(net_email_name));
             if (*pUserNumber == 0 || *pUserNumber > 32767) {
               *pUserNumber = 0;
               bout << "Unknown user.\r\n";
@@ -199,11 +203,11 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
           csne = next_system(*pSystemNumber);
           if (csne) {
             if (i < 9) {
-              onx[onxi++] = static_cast< char >(i + '1');
+              onx[onxi++] = static_cast<char>(i + '1');
               onx[onxi] = 0;
             } else {
-              odci = static_cast< char >((i + 1) / 10);
-              odc[odci - 1] = static_cast< char >(odci + '0');
+              odci = static_cast<char>((i + 1) / 10);
+              odc[odci - 1] = static_cast<char>(odci + '0');
               odc[odci] = 0;
             }
             bout << i + 1 << ". " << session()->GetNetworkName() << " (" << csne->name << ")\r\n";
@@ -238,7 +242,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
       if (*pSystemNumber == net_sysnum) {
         *pSystemNumber = 0;
         if (*pUserNumber == 0) {
-          *pUserNumber = static_cast< unsigned short >(finduser(net_email_name));
+          *pUserNumber = static_cast<uint16_t>(finduser(net_email_name));
         }
         if (*pUserNumber == 0 || *pUserNumber > 32767) {
           *pUserNumber = 0;
@@ -372,7 +376,7 @@ bool play_sdf(const string& soundFileName, bool abortable) {
 /**
  * Describes the area code as listed in regions.dat
  * @param nAreaCode The area code to describe
- * @param pszDescription point to return the description for the specified
+ * @param description point to return the description for the specified
  *        area code.
  */
 string describe_area_code(int nAreaCode) {

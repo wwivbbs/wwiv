@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -19,13 +19,16 @@
 #include <algorithm>
 #include <cmath>
 
+#include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
-#include "bbs/wwiv.h"
+#include "bbs/keycodes.h"
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
-#include "bbs/keycodes.h"
 
 extern char str_quit[];
 
@@ -62,58 +65,58 @@ bool CheckForHangup() {
   return hangup;
 }
 
-static void addto(char *pszAnsiString, int nNumber) {
+static void addto(char *ansi_str, int num) {
   char szBuffer[ 20 ];
 
-  strcat(pszAnsiString, (pszAnsiString[0]) ? ";" : "\x1b[");
-  snprintf(szBuffer, sizeof(szBuffer), "%d", nNumber);
-  strcat(pszAnsiString, szBuffer);
+  strcat(ansi_str, (ansi_str[0]) ? ";" : "\x1b[");
+  snprintf(szBuffer, sizeof(szBuffer), "%d", num);
+  strcat(ansi_str, szBuffer);
 }
 
 /* Passed to this function is a one-byte attribute as defined for IBM type
 * screens.  Returned is a string which, when printed, will change the
 * display to the color desired, from the current function.
 */
-void makeansi(int attr, char *pszOutBuffer, bool forceit) {
+void makeansi(int attr, char *out_buffer, bool forceit) {
   static const char *temp = "04261537";
 
   int catr = curatr;
-  pszOutBuffer[0] = '\0';
+  out_buffer[0] = '\0';
   if (attr != catr) {
     if ((catr & 0x88) ^ (attr & 0x88)) {
-      addto(pszOutBuffer, 0);
-      addto(pszOutBuffer, 30 + temp[attr & 0x07] - '0');
-      addto(pszOutBuffer, 40 + temp[(attr & 0x70) >> 4] - '0');
+      addto(out_buffer, 0);
+      addto(out_buffer, 30 + temp[attr & 0x07] - '0');
+      addto(out_buffer, 40 + temp[(attr & 0x70) >> 4] - '0');
       catr = (attr & 0x77);
     }
     if ((catr & 0x07) != (attr & 0x07)) {
-      addto(pszOutBuffer, 30 + temp[attr & 0x07] - '0');
+      addto(out_buffer, 30 + temp[attr & 0x07] - '0');
     }
     if ((catr & 0x70) != (attr & 0x70)) {
-      addto(pszOutBuffer, 40 + temp[(attr & 0x70) >> 4] - '0');
+      addto(out_buffer, 40 + temp[(attr & 0x70) >> 4] - '0');
     }
     if ((catr & 0x08) ^ (attr & 0x08)) {
-      addto(pszOutBuffer, 1);
+      addto(out_buffer, 1);
     }
     if ((catr & 0x80) ^ (attr & 0x80)) {
       if (checkcomp("Mac")) {
         // This is the code for Mac's underline
         // They don't have Blinking or Italics
-        addto(pszOutBuffer, 4);
+        addto(out_buffer, 4);
       } else if (checkcomp("Ami")) {
         // Some Amiga terminals use 3 instead of
         // 5 for italics.  Using both won't hurt
-        addto(pszOutBuffer, 3);
+        addto(out_buffer, 3);
       }
       // anything, only italics will be generated
-      addto(pszOutBuffer, 5);
+      addto(out_buffer, 5);
     }
   }
-  if (pszOutBuffer[0]) {
-    strcat(pszOutBuffer, "m");
+  if (out_buffer[0]) {
+    strcat(out_buffer, "m");
   }
   if (!okansi() && !forceit) {
-    pszOutBuffer[0] = '\0';
+    out_buffer[0] = '\0';
   }
 }
 
@@ -156,7 +159,7 @@ char getkey() {
         beepyet = true;
         bputch(CG);
       }
-      application()->UpdateShutDownStatus();
+      session()->UpdateShutDownStatus();
       if (std::abs(dd - timelastchar1) > tv) {
         bout.nl();
         bout << "Call back later when you are there.\r\n";
@@ -239,11 +242,11 @@ char ynq() {
   return ch;
 }
 
-char onek(const char *pszAllowableChars, bool bAutoMpl) {
-  if (bAutoMpl) {
+char onek(const char *allowable_chars, bool auto_mpl) {
+  if (auto_mpl) {
     bout.mpl(1);
   }
-  char ch = onek_ncr(pszAllowableChars);
+  char ch = onek_ncr(allowable_chars);
   bout.nl();
   return ch;
 }

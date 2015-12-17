@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -16,18 +16,23 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbsovl1.h"
 
 #include <sstream>
 #include <string>
 
+#include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/external_edit.h"
 #include "bbs/instmsg.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using namespace wwiv::strings;
@@ -42,9 +47,11 @@ extern char str_quit[];
  * @param nSize Length of the horizontal bar to display
  * @param nColor Color of the horizontal bar to display
  */
-void DisplayHorizontalBar(int nSize, int nColor) {
-  unsigned char ch = (okansi()) ? '\xC4' : '-';
-  repeat_char(ch, nSize, nColor);
+void DisplayHorizontalBar(int width, int color) {
+  char ch = (okansi()) ? '\xC4' : '-';
+  bout.Color(color);
+  bout << string(width, ch);
+  bout.nl();
 }
 
 /**
@@ -148,11 +155,11 @@ void send_email() {
     }
   }
 
-  int nSystemNumber, nUserNumber;
-  parse_email_info(username, &nUserNumber, &nSystemNumber);
+  int system_number, user_number;
+  parse_email_info(username, &user_number, &system_number);
   grab_quotes(nullptr, nullptr);
-  if (nUserNumber || nSystemNumber) {
-    email(nUserNumber, nSystemNumber, false, 0);
+  if (user_number || system_number) {
+    email("", user_number, system_number, false, 0);
   }
 }
 
@@ -200,25 +207,25 @@ void feedback(bool bNewUserFeedback) {
 
   if (bNewUserFeedback) {
     sprintf(irt, "|#1Validation Feedback (|#6%d|#2 slots left|#1)",
-            syscfg.maxusers - application()->GetStatusManager()->GetUserCount());
+            syscfg.maxusers - session()->GetStatusManager()->GetUserCount());
     // We disable the fsed here since it was hanging on some systems.  Not sure why
     // but it's better to be safe -- Rushfan 2003-12-04
-    email(1, 0, true, 0, true, false);
+    email(irt, 1, 0, true, 0, false);
     return;
   }
   if (guest_user) {
-    application()->GetStatusManager()->RefreshStatusCache();
+    session()->GetStatusManager()->RefreshStatusCache();
     strcpy(irt, "Guest Account Feedback");
-    email(1, 0, true, 0, true, true);
+    email(irt, 1, 0, true, 0, true);
     return;
   }
   strcpy(irt, "|#1Feedback");
-  int nNumUserRecords = application()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
   int i1 = 0;
 
   for (i = 2; i < 10 && i < nNumUserRecords; i++) {
     WUser user;
-    application()->users()->ReadUser(&user, i);
+    session()->users()->ReadUser(&user, i);
     if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
         !user.IsUserDeleted()) {
       i1++;
@@ -233,11 +240,11 @@ void feedback(bool bNewUserFeedback) {
     bout.nl();
     for (i = 1; (i < 10 && i < nNumUserRecords); i++) {
       WUser user;
-      application()->users()->ReadUser(&user, i);
+      session()->users()->ReadUser(&user, i);
       if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
           !user.IsUserDeleted()) {
         bout << "|#2" << i << "|#7)|#1 " << user.GetUserNameAndNumber(i) << wwiv::endl;
-        onek_str[i1++] = static_cast< char >('0' + i);
+        onek_str[i1++] = static_cast<char>('0' + i);
       }
     }
     onek_str[i1++] = *str_quit;
@@ -251,7 +258,7 @@ void feedback(bool bNewUserFeedback) {
     bout.nl();
     i = ch - '0';
   }
-  email(static_cast< unsigned short >(i), 0, false, 0, true);
+  email(irt, static_cast<uint16_t>(i), 0, false, 0, true);
 }
 
 /**

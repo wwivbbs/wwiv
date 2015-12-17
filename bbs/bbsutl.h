@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -21,7 +21,7 @@
 
 bool inli(std::string* outBuffer, std::string* rollOver, std::string::size_type nMaxLen, bool bAddCRLF = true,
   bool bAllowPrevious = false, bool bTwoColorChatMode = false, bool clear_previous_line = false);
-bool inli(char *pszBuffer, char *pszRollover, std::string::size_type nMaxLen, bool bAddCRLF = true,
+bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool bAddCRLF = true,
   bool bAllowPrevious = false, bool bTwoColorChatMode = false, bool clear_previous_line = false);
 bool so();
 bool cs();
@@ -32,7 +32,7 @@ bool checka(bool *abort, bool *next);
 void pla(const std::string& text, bool *abort);
 void plal(const std::string& text, std::string::size_type limit, bool *abort);
 bool sysop2();
-bool checkcomp(const char *pszComputerType);
+bool checkcomp(const char *computer_type);
 int  check_ansi();
 bool set_language_1(int n);
 bool set_language(int n);

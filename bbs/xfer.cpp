@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -20,6 +20,11 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
+#include "bbs/bbsovl3.h"
+#include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/input.h"
@@ -28,7 +33,6 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/xfer_common.h"
-#include "bbs/wwiv.h"
 #include "bbs/platform/platformfcns.h"
 
 using std::string;
@@ -101,9 +105,9 @@ unsigned long bytes_to_k(unsigned long lBytes) {
   return (lBytes) ? ((unsigned long)((lBytes + 1023) / 1024)) : 0L;
 }
 
-int check_batch_queue(const char *pszFileName) {
+int check_batch_queue(const char *file_name) {
   for (int i = 0; i < session()->numbatch; i++) {
-    if (IsEquals(pszFileName, batch[i].filename)) {
+    if (IsEquals(file_name, batch[i].filename)) {
       return (batch[i].sending) ? 1 : -1;
     }
   }
@@ -113,18 +117,18 @@ int check_batch_queue(const char *pszFileName) {
 /**
  * returns true if everything is ok, false if the file
  */
-bool check_ul_event(int nDirectoryNum, uploadsrec * u) {
+bool check_ul_event(int directory_num, uploadsrec * u) {
   if (syscfg.upload_cmd.empty()) {
     return true;
   }
   const string comport = StringPrintf("%d", incom ? syscfgovr.primaryport : 0);
-  const string cmdLine = stuff_in(syscfg.upload_cmd, create_chain_file(), directories[nDirectoryNum].path,
+  const string cmdLine = stuff_in(syscfg.upload_cmd, create_chain_file(), directories[directory_num].path,
                                   stripfn(u->filename), comport, "");
-  ExecuteExternalProgram(cmdLine, application()->GetSpawnOptions(SPAWNOPT_ULCHK));
+  ExecuteExternalProgram(cmdLine, session()->GetSpawnOptions(SPAWNOPT_ULCHK));
 
-  File file(directories[nDirectoryNum].path, stripfn(u->filename));
+  File file(directories[directory_num].path, stripfn(u->filename));
   if (!file.Exists()) {
-    sysoplogf("File \"%s\" to %s deleted by UL event.", u->filename, directories[nDirectoryNum].name);
+    sysoplogf("File \"%s\" to %s deleted by UL event.", u->filename, directories[directory_num].name);
     bout << u->filename << " was deleted by the upload event.\r\n";
     return false;
   }
@@ -191,10 +195,10 @@ void print_devices() {
   }
 }
 
-void get_arc_cmd(char *pszOutBuffer, const char *pszArcFileName, int cmd, const char *ofn) {
+void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const char *ofn) {
   char szArcCmd[ MAX_PATH ];
 
-  pszOutBuffer[0] = '\0';
+  out_buffer[0] = '\0';
   const char* ss = strrchr(pszArcFileName, '.');
   if (ss == nullptr) {
     return;
@@ -227,46 +231,46 @@ void get_arc_cmd(char *pszOutBuffer, const char *pszArcFileName, int cmd, const 
         return;
       }
       string command = stuff_in(szArcCmd, pszArcFileName, ofn, "", "", "");
-      WWIV_make_abs_cmd(application()->GetHomeDir(), &command);
-      strcpy(pszOutBuffer, command.c_str());
+      WWIV_make_abs_cmd(session()->GetHomeDir(), &command);
+      strcpy(out_buffer, command.c_str());
       return;
     }
   }
 }
 
-int list_arc_out(const char *pszFileName, const char *pszDirectory) {
+int list_arc_out(const char *file_name, const char *pszDirectory) {
   char szFileNameToDelete[81];
   int nRetCode = 0;
 
   szFileNameToDelete[0] = 0;
 
   char szFullPathName[ MAX_PATH ];
-  sprintf(szFullPathName, "%s%s", pszDirectory, pszFileName);
+  sprintf(szFullPathName, "%s%s", pszDirectory, file_name);
   if (directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
-    sprintf(szFullPathName, "%s%s", syscfgovr.tempdir, pszFileName);
+    sprintf(szFullPathName, "%s%s", syscfgovr.tempdir, file_name);
     if (!File::Exists(szFullPathName)) {
       char szFullPathNameInDir[ MAX_PATH ];
-      sprintf(szFullPathNameInDir, "%s%s", pszDirectory, pszFileName);
+      sprintf(szFullPathNameInDir, "%s%s", pszDirectory, file_name);
       copyfile(szFullPathNameInDir, szFullPathName, false);
       strcpy(szFileNameToDelete, szFullPathName);
     }
   }
   char szArchiveCmd[ MAX_PATH ];
   get_arc_cmd(szArchiveCmd, szFullPathName, 0, "");
-  if (!okfn(pszFileName)) {
+  if (!okfn(file_name)) {
     szArchiveCmd[0] = 0;
   }
 
   if (File::Exists(szFullPathName) && (szArchiveCmd[0] != 0)) {
     bout.nl(2);
-    bout << "Archive listing for " << pszFileName << wwiv::endl;
+    bout << "Archive listing for " << file_name << wwiv::endl;
     bout.nl();
-    nRetCode = ExecuteExternalProgram(szArchiveCmd, application()->GetSpawnOptions(SPAWNOPT_ARCH_L));
+    nRetCode = ExecuteExternalProgram(szArchiveCmd, session()->GetSpawnOptions(SPAWNOPT_ARCH_L));
     bout.nl();
   } else {
     bout.nl();
     session()->localIO()->LocalPuts("Unknown archive: ");
-    bout << pszFileName;
+    bout << file_name;
     bout.nl(2);
     nRetCode = 0;
   }
@@ -308,8 +312,8 @@ bool dcs() {
   return (cs() || session()->user()->GetDsl() >= 100) ? true : false;
 }
 
-void dliscan1(int nDirectoryNum) {
-  sprintf(g_szDownloadFileName, "%s%s.dir", syscfg.datadir, directories[nDirectoryNum].filename);
+void dliscan1(int directory_num) {
+  sprintf(g_szDownloadFileName, "%s%s.dir", syscfg.datadir, directories[directory_num].filename);
   File fileDownload(g_szDownloadFileName);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   int nNumRecords = fileDownload.GetLength() / sizeof(uploadsrec);
@@ -319,7 +323,7 @@ void dliscan1(int nDirectoryNum) {
     strcpy(u.filename, "|MARKER|");
     time_t tNow;
     time(&tNow);
-    u.daten = static_cast<unsigned long>(tNow);
+    u.daten = static_cast<uint32_t>(tNow);
     FileAreaSetRecord(fileDownload, 0);
     fileDownload.Write(&u, sizeof(uploadsrec));
   } else {
@@ -331,7 +335,7 @@ void dliscan1(int nDirectoryNum) {
       strcpy(u.filename, "|MARKER|");
       time_t l;
       time(&l);
-      u.daten = static_cast<unsigned long>(l);
+      u.daten = static_cast<uint32_t>(l);
       u.numbytes = session()->numf;
       FileAreaSetRecord(fileDownload, 0);
       fileDownload.Write(&u, sizeof(uploadsrec));
@@ -340,65 +344,32 @@ void dliscan1(int nDirectoryNum) {
   fileDownload.Close();
   session()->numf = u.numbytes;
   this_date = u.daten;
-  session()->m_DirectoryDateCache[nDirectoryNum] = this_date;
 
-  sprintf(g_szExtDescrFileName, "%s%s.ext", syscfg.datadir, directories[nDirectoryNum].filename);
+  sprintf(g_szExtDescrFileName, "%s%s.ext", syscfg.datadir, directories[directory_num].filename);
   zap_ed_info();
-}
-
-void dliscan_hash(int nDirectoryNum) {
-  uploadsrec u;
-
-  if (nDirectoryNum >= session()->num_dirs || session()->m_DirectoryDateCache[nDirectoryNum]) {
-    return;
-  }
-
-  string dir = StringPrintf("%s%s.dir",
-      syscfg.datadir, directories[nDirectoryNum].filename);
-  File file(dir);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    time_t now = time(nullptr);
-    session()->m_DirectoryDateCache[nDirectoryNum] = static_cast<uint32_t>(now);
-    return;
-  }
-  int nNumRecords = file.GetLength() / sizeof(uploadsrec);
-  if (nNumRecords < 1) {
-    time_t now = time(nullptr);
-    session()->m_DirectoryDateCache[nDirectoryNum] = static_cast<uint32_t>(now);
-  } else {
-    FileAreaSetRecord(file, 0);
-    file.Read(&u, sizeof(uploadsrec));
-    if (IsEquals(u.filename, "|MARKER|")) {
-      session()->m_DirectoryDateCache[nDirectoryNum] = u.daten;
-    } else {
-      time_t now = time(nullptr);
-      session()->m_DirectoryDateCache[nDirectoryNum] = static_cast<uint32_t>(now);
-    }
-  }
-  file.Close();
 }
 
 void dliscan() {
   dliscan1(udir[session()->GetCurrentFileArea()].subnum);
 }
 
-void add_extended_description(const char *pszFileName, const char *pszDescription) {
+void add_extended_description(const char *file_name, const char *description) {
   ext_desc_type ed;
 
-  strcpy(ed.name, pszFileName);
-  ed.len = static_cast<short>(GetStringLength(pszDescription));
+  strcpy(ed.name, file_name);
+  ed.len = static_cast<short>(GetStringLength(description));
 
   File file(g_szExtDescrFileName);
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   file.Seek(0L, File::seekEnd);
   file.Write(&ed, sizeof(ext_desc_type));
-  file.Write(pszDescription, ed.len);
+  file.Write(description, ed.len);
   file.Close();
 
   zap_ed_info();
 }
 
-void delete_extended_description(const char *pszFileName) {
+void delete_extended_description(const char *file_name) {
   ext_desc_type ed;
 
   char* ss = static_cast<char *>(BbsAllocA(10240L));
@@ -415,7 +386,7 @@ void delete_extended_description(const char *pszFileName) {
     fileExtDescr.Read(&ed, sizeof(ext_desc_type));
     if (ed.len < 10000) {
       fileExtDescr.Read(ss, ed.len);
-      if (!IsEquals(pszFileName, ed.name)) {
+      if (!IsEquals(file_name, ed.name)) {
         if (r != w) {
           fileExtDescr.Seek(w, File::seekBegin);
           fileExtDescr.Write(&ed, sizeof(ext_desc_type));
@@ -432,12 +403,12 @@ void delete_extended_description(const char *pszFileName) {
   zap_ed_info();
 }
 
-char *read_extended_description(const char *pszFileName) {
+char *read_extended_description(const char *file_name) {
   get_ed_info();
 
   if (ed_got && ed_info) {
     for (int i = 0; i < ed_num; i++) {
-      if (IsEquals(pszFileName, ed_info[i].name)) {
+      if (IsEquals(file_name, ed_info[i].name)) {
         File fileExtDescr(g_szExtDescrFileName);
         if (!fileExtDescr.Open(File::modeBinary | File::modeReadOnly)) {
           return nullptr;
@@ -446,7 +417,7 @@ char *read_extended_description(const char *pszFileName) {
         ext_desc_type ed;
         int nNumRead = fileExtDescr.Read(&ed, sizeof(ext_desc_type));
         if (nNumRead == sizeof(ext_desc_type) &&
-            IsEquals(pszFileName, ed.name)) {
+            IsEquals(file_name, ed.name)) {
           char* ss = static_cast<char *>(BbsAllocA(ed.len + 10));
           if (ss) {
             fileExtDescr.Read(ss, ed.len);
@@ -471,7 +442,7 @@ char *read_extended_description(const char *pszFileName) {
         fileExtDescr.Seek(lCurPos, File::seekBegin);
         ext_desc_type ed;
         lCurPos += static_cast<long>(fileExtDescr.Read(&ed, sizeof(ext_desc_type)));
-        if (IsEquals(pszFileName, ed.name)) {
+        if (IsEquals(file_name, ed.name)) {
           char* ss = static_cast<char *>(BbsAllocA(ed.len + 10));
           if (ss) {
             fileExtDescr.Read(ss, ed.len);
@@ -489,14 +460,14 @@ char *read_extended_description(const char *pszFileName) {
   return nullptr;
 }
 
-void print_extended(const char *pszFileName, bool *abort, int numlist, int indent) {
+void print_extended(const char *file_name, bool *abort, int numlist, int indent) {
   bool next = false;
   int numl = 0;
   int cpos = 0;
   char ch, s[81];
   int i;
 
-  char* ss = read_extended_description(pszFileName);
+  char* ss = read_extended_description(file_name);
   if (ss) {
     ch = (indent != 2) ? 10 : 0;
     while (ss[cpos] && !(*abort) && numl < numlist) {
@@ -546,35 +517,35 @@ void print_extended(const char *pszFileName, bool *abort, int numlist, int inden
   }
 }
 
-void align(char *pszFileName) {
+void align(char *file_name) {
   // TODO Modify this to handle long filenames
   char szFileName[40], szExtension[40];
 
   bool bInvalid = false;
-  if (pszFileName[ 0 ] == '.') {
+  if (file_name[ 0 ] == '.') {
     bInvalid = true;
   }
 
-  for (int i = 0; i < GetStringLength(pszFileName); i++) {
-    if (pszFileName[i] == '\\' || pszFileName[i] == '/' ||
-        pszFileName[i] == ':'  || pszFileName[i] == '<' ||
-        pszFileName[i] == '>'  || pszFileName[i] == '|') {
+  for (int i = 0; i < GetStringLength(file_name); i++) {
+    if (file_name[i] == '\\' || file_name[i] == '/' ||
+        file_name[i] == ':'  || file_name[i] == '<' ||
+        file_name[i] == '>'  || file_name[i] == '|') {
       bInvalid = true;
     }
   }
   if (bInvalid) {
-    strcpy(pszFileName, "        .   ");
+    strcpy(file_name, "        .   ");
     return;
   }
-  char* s2 = strrchr(pszFileName, '.');
-  if (s2 == nullptr || strrchr(pszFileName, '\\') > s2) {
+  char* s2 = strrchr(file_name, '.');
+  if (s2 == nullptr || strrchr(file_name, '\\') > s2) {
     szExtension[0] = '\0';
   } else {
     strcpy(szExtension, &(s2[ 1 ]));
     szExtension[3]  = '\0';
     s2[0]           = '\0';
   }
-  strcpy(szFileName, pszFileName);
+  strcpy(szFileName, file_name);
 
   for (int j = strlen(szFileName); j < 8; j++) {
     szFileName[j] = SPACE;
@@ -611,16 +582,16 @@ void align(char *pszFileName) {
     }
   }
 
-  char szBuffer[ MAX_PATH ];
+  char buffer[ MAX_PATH ];
   for (int i4 = 0; i4 < 12; i4++) {
-    szBuffer[ i4 ] = SPACE;
+    buffer[ i4 ] = SPACE;
   }
-  strcpy(szBuffer, szFileName);
-  szBuffer[8] = '.';
-  strcpy(&(szBuffer[9]), szExtension);
-  strcpy(pszFileName, szBuffer);
+  strcpy(buffer, szFileName);
+  buffer[8] = '.';
+  strcpy(&(buffer[9]), szExtension);
+  strcpy(file_name, buffer);
   for (int i5 = 0; i5 < 12; i5++) {
-    pszFileName[ i5 ] = wwiv::UpperCase<char>(pszFileName[ i5 ]);
+    file_name[ i5 ] = wwiv::UpperCase<char>(file_name[ i5 ]);
   }
 }
 
@@ -722,7 +693,7 @@ void printinfo(uploadsrec * u, bool *abort) {
 }
 
 void printtitle(bool *abort) {
-  char szBuffer[ 255 ];
+  char buffer[ 255 ];
 
   if (x_only) {
     bout.nl();
@@ -736,7 +707,7 @@ void printtitle(bool *abort) {
       return;
     }
   }
-  sprintf(szBuffer, "%s%s - #%s, %d files.", ss, directories[udir[session()->GetCurrentFileArea()].subnum].name,
+  sprintf(buffer, "%s%s - #%s, %d files.", ss, directories[udir[session()->GetCurrentFileArea()].subnum].name,
           udir[session()->GetCurrentFileArea()].keys, session()->numf);
   bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
   if ((g_num_listed == 0 && session()->tagptr == 0) || session()->tagging == 0 ||
@@ -773,7 +744,7 @@ void printtitle(bool *abort) {
   if (session()->user()->IsUseExtraColor()) {
     bout.Color(2);
   }
-  pla(szBuffer, abort);
+  pla(buffer, abort);
   if (session()->tagging == 1 && !session()->user()->IsUseNoTagging() && !x_only) {
     bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
     if (okansi()) {
@@ -800,17 +771,17 @@ void printtitle(bool *abort) {
   session()->titled = 0;
 }
 
-void file_mask(char *pszFileMask) {
+void file_mask(char *file_mask) {
   bout.nl();
   bout << "|#2File mask: ";
-  input(pszFileMask, 12);
-  if (pszFileMask[0] == '\0') {
-    strcpy(pszFileMask, "*.*");
+  input(file_mask, 12);
+  if (file_mask[0] == '\0') {
+    strcpy(file_mask, "*.*");
   }
-  if (strchr(pszFileMask, '.') == nullptr) {
-    strcat(pszFileMask, ".*");
+  if (strchr(file_mask, '.') == nullptr) {
+    strcat(file_mask, ".*");
   }
-  align(pszFileMask);
+  align(file_mask);
   bout.nl();
 }
 
@@ -859,11 +830,6 @@ void listfiles() {
 }
 
 void nscandir(int nDirNum, bool *abort) {
-  if (session()->m_DirectoryDateCache[udir[nDirNum].subnum]
-      && session()->m_DirectoryDateCache[udir[nDirNum].subnum] < static_cast<unsigned long>(nscandate)) {
-    return;
-  }
-
   int nOldCurDir = session()->GetCurrentFileArea();
   session()->SetCurrentFileArea(nDirNum);
   dliscan();
@@ -880,7 +846,7 @@ void nscandir(int nDirNum, bool *abort) {
       FileAreaSetRecord(fileDownload, i);
       uploadsrec u;
       fileDownload.Read(&u, sizeof(uploadsrec));
-      if (u.daten >= static_cast<unsigned long>(nscandate)) {
+      if (u.daten >= static_cast<uint32_t>(nscandate)) {
         fileDownload.Close();
         printinfo(&u, abort);
         fileDownload.Open(File::modeBinary | File::modeReadOnly);
@@ -1047,11 +1013,11 @@ void searchall() {
   }
 }
 
-int recno(const char *pszFileMask) {
-  return nrecno(pszFileMask, 0);
+int recno(const char *file_mask) {
+  return nrecno(file_mask, 0);
 }
 
-int nrecno(const char *pszFileMask, int nStartingRec) {
+int nrecno(const char *file_mask, int nStartingRec) {
   int nRecNum = nStartingRec + 1;
   if (session()->numf < 1 || nStartingRec >= session()->numf) {
     return -1;
@@ -1062,16 +1028,16 @@ int nrecno(const char *pszFileMask, int nStartingRec) {
   FileAreaSetRecord(fileDownload, nRecNum);
   uploadsrec u;
   fileDownload.Read(&u, sizeof(uploadsrec));
-  while ((nRecNum < session()->numf) && (compare(pszFileMask, u.filename) == 0)) {
+  while ((nRecNum < session()->numf) && (compare(file_mask, u.filename) == 0)) {
     ++nRecNum;
     FileAreaSetRecord(fileDownload, nRecNum);
     fileDownload.Read(&u, sizeof(uploadsrec));
   }
   fileDownload.Close();
-  return (compare(pszFileMask, u.filename)) ? nRecNum : -1;
+  return (compare(file_mask, u.filename)) ? nRecNum : -1;
 }
 
-int printfileinfo(uploadsrec * u, int nDirectoryNum) {
+int printfileinfo(uploadsrec * u, int directory_num) {
   double d = XFER_TIME(u->numbytes);
   bout << "Filename   : " << stripfn(u->filename) << wwiv::endl;
   bout << "Description: " << u->description << wwiv::endl;
@@ -1089,20 +1055,20 @@ int printfileinfo(uploadsrec * u, int nDirectoryNum) {
     bout << "Extended Description: \r\n";
     print_extended(u->filename, &abort, 255, 0);
   }
-  char szFileName[ MAX_PATH ];
-  sprintf(szFileName, "%s%s", directories[nDirectoryNum].path, u->filename);
-  StringRemoveWhitespace(szFileName);
-  if (!File::Exists(szFileName)) {
+  char file_name[ MAX_PATH ];
+  sprintf(file_name, "%s%s", directories[directory_num].path, u->filename);
+  StringRemoveWhitespace(file_name);
+  if (!File::Exists(file_name)) {
     bout << "\r\n-=>FILE NOT THERE<=-\r\n\n";
     return -1;
   }
   return (nsl() >= d) ? 1 : 0;
 }
 
-void remlist(const char *pszFileName) {
+void remlist(const char *file_name) {
   char szFileName[MAX_PATH], szListFileName[MAX_PATH];
 
-  sprintf(szFileName, "%s", pszFileName);
+  sprintf(szFileName, "%s", file_name);
   align(szFileName);
 
   if (filelist) {

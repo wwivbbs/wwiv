@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2004, WWIV Software Services             */
+/*                              WWIV Version 5.x                          */
+/*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -17,7 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 /////////////////////////////////////////////////////////////////////////////
-// WWIV 5.0 Structure Size test application
+// WWIV 5.x Structure Size test application
 
 #include <stdio.h>
 #ifdef __MSDOS__
@@ -45,7 +45,7 @@ int main(int argc, char * argv[])
         FILE* hOut = NULL;
         if (argc != 2)
         {
-                printf("WWIV 5.0 structure size test utility\r\n");
+                printf("WWIV 5.X structure size test utility\r\n");
                 printf("Copyright 2000-2001 Rushfan\r\n\n");
                 printf("Usage:\n\tTESTSIZE <output filename>\n\n");
                 return EXIT_BAD_PARAMS;

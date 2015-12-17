@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -17,10 +17,12 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
-
+#include "sdk/filenames.h"
 
 void add_phone_number(int usernum, const char *phone) {
   if (strstr(phone, "000-")) {
@@ -93,7 +95,7 @@ int find_phone_number(const char *phone) {
   for (i = 0; i < nNumRecords; i++) {
     if (wwiv::strings::IsEquals(reinterpret_cast<char*>(p[i].phone), phone)) {
       WUser user;
-      application()->users()->ReadUser(&user, p[i].usernum);
+      session()->users()->ReadUser(&user, p[i].usernum);
       if (!user.IsUserDeleted()) {
         break;
       }

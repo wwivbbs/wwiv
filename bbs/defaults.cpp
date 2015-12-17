@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -20,9 +20,12 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbsovl3.h"
 #include "bbs/confutil.h"
 #include "bbs/wwivcolors.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/common.h"
 #include "bbs/menu.h"
 #include "bbs/input.h"
@@ -31,6 +34,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::setw;
 using std::endl;
@@ -51,10 +55,10 @@ static const int MAX_SCREEN_LINES_TO_SHOW = 24;
 // #define NOTOGGLESYSOP
 
 void select_editor() {
-  if (session()->GetNumberOfEditors() == 0) {
+  if (session()->editors.empty()) {
     bout << "\r\nNo full screen editors available.\r\n\n";
     return;
-  } else if (session()->GetNumberOfEditors() == 1) {
+  } else if (session()->editors.size() == 1) {
     if (session()->user()->GetDefaultEditor() == 0) {
       session()->user()->SetDefaultEditor(1);
     } else {
@@ -67,17 +71,17 @@ void select_editor() {
     odc[ i1 ] = '\0';
   }
   bout << "0. Normal non-full screen editor\r\n";
-  for (int i = 0; i < session()->GetNumberOfEditors(); i++) {
-    bout << i + 1 << ". " << editors[i].description  << wwiv::endl;
+  for (size_t i = 0; i < session()->editors.size(); i++) {
+    bout << i + 1 << ". " << session()->editors[i].description  << wwiv::endl;
     if (((i + 1) % 10) == 0) {
       odc[(i + 1) / 10 - 1 ] = static_cast<char>((i + 1) / 10);
     }
   }
   bout.nl();
-  bout << "|#9Which editor (|#31-" << session()->GetNumberOfEditors() << ", <Q>=leave as is|#9) ? ";
+  bout << "|#9Which editor (|#31-" << session()->editors.size() << ", <Q>=leave as is|#9) ? ";
   char *ss = mmkey(2);
   int nEditor = atoi(ss);
-  if (nEditor >= 1 && nEditor <= session()->GetNumberOfEditors()) {
+  if (nEditor >= 1 && nEditor <= session()->editors.size()) {
     session()->user()->SetDefaultEditor(nEditor);
   } else if (IsEquals(ss, "0")) {
     session()->user()->SetDefaultEditor(0);
@@ -108,7 +112,7 @@ static string GetMailBoxStatus() {
   }
 
   WUser ur;
-  application()->users()->ReadUser(&ur, session()->user()->GetForwardUserNumber());
+  session()->users()->ReadUser(&ur, session()->user()->GetForwardUserNumber());
   if (ur.IsUserDeleted()) {
     session()->user()->SetForwardUserNumber(0);
     return string("Normal");
@@ -139,8 +143,8 @@ static void print_cur_stat() {
          << setw(45) << "|#18|#9) Change colors" << wwiv::endl;
 
     int nEditorNum = session()->user()->GetDefaultEditor();
-    const string editor_name = (nEditorNum > 0 && nEditorNum <= session()->GetNumberOfEditors()) ?
-            editors[nEditorNum-1].description : "None";
+    const string editor_name = (nEditorNum > 0 && nEditorNum <= session()->editors.size()) ?
+        session()->editors[nEditorNum-1].description : "None";
      bout << "|#19|#9) Full screen editor: |#2" << setw(16) << editor_name << " " 
           << "|#1A|#9) Extended colors   : |#2" << YesNoString(session()->user()->IsUseExtraColor()) << wwiv::endl;
   } else {
@@ -153,7 +157,7 @@ static void print_cur_stat() {
        << "|#1C|#9) Conferencing      : |#2" << YesNoString(session()->user()->IsUseConference()) << wwiv::endl;
   bout << "|#1I|#9) Internet Address  : |#2" << internet_email_address << wwiv::endl;
   bout << "|#1K|#9) Configure Menus" << wwiv::endl;
-  if (session()->num_languages > 1) {
+  if (session()->languages.size() > 1) {
     bout<< "|#1L|#9) Language          : |#2" << setw(16) << cur_lang_name << " ";
   }
   if (num_instances() > 1) {
@@ -227,8 +231,8 @@ const string DescribeColorCode(int nColorCode) {
 void color_list() {
   bout.nl(2);
   for (int i = 0; i < 8; i++) {
-    bout.SystemColor(static_cast< unsigned char >((i == 0) ? 0x70 : i));
-    bout << i << ". " << DisplayColorName(static_cast< char >(i)).c_str() << "|#0" << wwiv::endl;
+    bout.SystemColor(static_cast<unsigned char>((i == 0) ? 0x70 : i));
+    bout << i << ". " << DisplayColorName(static_cast<char>(i)).c_str() << "|#0" << wwiv::endl;
   }
 }
 
@@ -320,27 +324,27 @@ static void change_colors() {
         if (ch == 'Q') {
           continue;
         }
-        nc = static_cast< char >(ch - '0');
+        nc = static_cast<char>(ch - '0');
         bout << "|#9(Q=Quit) Background? ";
         ch = onek("Q01234567");
         if (ch == 'Q') {
           continue;
         }
-        nc = static_cast< char >(nc | ((ch - '0') << 4));
+        nc = static_cast<char>(nc | ((ch - '0') << 4));
       } else {
         bout.nl();
         bout << "|#9Inversed? ";
         if (yesno()) {
           if ((session()->user()->GetBWColor(1) & 0x70) == 0) {
-            nc = static_cast< char >(0 | ((session()->user()->GetBWColor(1) & 0x07) << 4));
+            nc = static_cast<char>(0 | ((session()->user()->GetBWColor(1) & 0x07) << 4));
           } else {
-            nc = static_cast< char >(session()->user()->GetBWColor(1) & 0x70);
+            nc = static_cast<char>(session()->user()->GetBWColor(1) & 0x70);
           }
         } else {
           if ((session()->user()->GetBWColor(1) & 0x70) == 0) {
-            nc = static_cast< char >(0 | (session()->user()->GetBWColor(1) & 0x07));
+            nc = static_cast<char>(0 | (session()->user()->GetBWColor(1) & 0x07));
           } else {
-            nc = static_cast< char >((session()->user()->GetBWColor(1) & 0x70) >> 4);
+            nc = static_cast<char>((session()->user()->GetBWColor(1) & 0x70) >> 4);
           }
         }
       }
@@ -485,17 +489,17 @@ void config_qscan() {
   }
 }
 
-static void list_macro(const char *pszMacroText) {
+static void list_macro(const char *macro_text) {
   int i = 0;
 
-  while ((i < 80) && (pszMacroText[i] != 0)) {
-    if (pszMacroText[i] >= 32) {
-      bputch(pszMacroText[i]);
+  while ((i < 80) && (macro_text[i] != 0)) {
+    if (macro_text[i] >= 32) {
+      bputch(macro_text[i]);
     } else {
-      if (pszMacroText[i] == 16) {
-        bout.Color(pszMacroText[++i] - 48);
+      if (macro_text[i] == 16) {
+        bout.Color(macro_text[++i] - 48);
       } else {
-        switch (pszMacroText[i]) {
+        switch (macro_text[i]) {
         case RETURN:
           bputch('|');
           break;
@@ -504,7 +508,7 @@ static void list_macro(const char *pszMacroText) {
           break;
         default:
           bputch('^');
-          bputch(static_cast< unsigned char >(pszMacroText[i] + 64));
+          bputch(static_cast<unsigned char>(macro_text[i] + 64));
           break;
         }
       }
@@ -514,8 +518,8 @@ static void list_macro(const char *pszMacroText) {
   bout.nl();
 }
 
-static void macroedit(char *pszMacroText) {
-  *pszMacroText = '\0';
+static void macroedit(char *macro_text) {
+  *macro_text = '\0';
   bout.nl();
   bout << "|#5Enter your macro, press |#7[|#1CTRL-Z|#7]|#5 when finished.\r\n\n";
   okskey = false;
@@ -536,26 +540,26 @@ static void macroedit(char *pszMacroText) {
       if (i < 0) {
         i = 0;
       }
-      pszMacroText[i] = '\0';
+      macro_text[i] = '\0';
       break;
     case CP:
-      pszMacroText[i++] = ch;
+      macro_text[i++] = ch;
       toggle = true;
       break;
     case RETURN:
-      pszMacroText[i++] = ch;
+      macro_text[i++] = ch;
       bout.Color(0);
       bputch('|');
       bout.Color(textclr);
       break;
     case TAB:
-      pszMacroText[i++] = ch;
+      macro_text[i++] = ch;
       bout.Color(0);
       bputch('\xF9') ;
       bout.Color(textclr);
       break;
     default:
-      pszMacroText[i++] = ch;
+      macro_text[i++] = ch;
       if (toggle) {
         toggle = false;
         textclr = ch - 48;
@@ -565,14 +569,14 @@ static void macroedit(char *pszMacroText) {
       }
       break;
     }
-    pszMacroText[i + 1] = 0;
+    macro_text[i + 1] = 0;
   } while (!done && i < 80 && !hangup);
   okskey = true;
   bout.Color(0);
   bout.nl();
   bout << "|#9Is this okay? ";
   if (!yesno()) {
-    *pszMacroText = '\0';
+    *macro_text = '\0';
   }
 }
 
@@ -667,10 +671,10 @@ static void modify_mailbox() {
     return;
   }
   if (session()->user()->GetSl() >= syscfg.newusersl) {
-    int nNetworkNumber = getnetnum("FILEnet");
-    session()->SetNetworkNumber(nNetworkNumber);
-    if (nNetworkNumber != -1) {
-      set_net_num(session()->GetNetworkNumber());
+    int network_number = getnetnum("FILEnet");
+    session()->set_net_num(network_number);
+    if (network_number != -1) {
+      set_net_num(session()->net_num());
       bout << "|#5Do you want to forward to your Internet address? ";
       if (yesno()) {
         bout << "|#3Enter the Internet E-Mail Address.\r\n|#9:";
@@ -678,7 +682,7 @@ static void modify_mailbox() {
         if (check_inet_addr(entered_address.c_str())) {
           session()->user()->SetEmailAddress(entered_address.c_str());
           write_inet_addr(entered_address.c_str(), session()->usernum);
-          session()->user()->SetForwardNetNumber(session()->GetNetworkNumber());
+          session()->user()->SetForwardNetNumber(session()->net_num());
           session()->user()->SetForwardToInternet();
           bout << "\r\nSaved.\r\n\n";
         }
@@ -696,7 +700,7 @@ static void modify_mailbox() {
   session()->user()->SetForwardUserNumber(nTempForwardUser);
   session()->user()->SetForwardSystemNumber(nTempForwardSystem);
   if (session()->user()->GetForwardSystemNumber() != 0) {
-    session()->user()->SetForwardNetNumber(session()->GetNetworkNumber());
+    session()->user()->SetForwardNetNumber(session()->net_num());
     if (session()->user()->GetForwardUserNumber() == 0) {
       session()->user()->ClearMailboxForward();
       bout << "\r\nCan't forward to a user name, must use user number.\r\n\n";
@@ -832,7 +836,7 @@ void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
       pMenuData->reload = true;
       break;
     case 'L':
-      if (session()->num_languages > 1) {
+      if (session()->languages.size() > 1) {
         input_language();
       }
       break;
@@ -890,7 +894,9 @@ static void list_config_scan_plus(int first, int *amount, int type) {
     bout.bprintf("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
                                       type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
   }
-  repeat_char('\xC4', 79);
+  bout.Color(7);
+  bout << string(79, '\xC4');
+  bout.nl();
 
   int max_lines = GetMaxLinesToShowForScanPlus();
 
@@ -991,7 +997,7 @@ void config_scan_plus(int type) {
 
   int useconf = (subconfnum > 1 && okconf(session()->user()));
   session()->topdata = LocalIO::topdataNone;
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
 
   vector<string> menu_items = { "Next",  "Previous", "Toggle", "Clear All", "Set All" };
 

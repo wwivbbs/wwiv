@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -27,7 +27,10 @@
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
 #include "bbs/wsession.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::vector;
@@ -104,7 +107,7 @@ const string stuff_in(const string& commandline, const string& arg1,
         os << ((incom) ? syscfgovr.primaryport : 0);
         break;
       case 'N':
-        os << application()->GetInstanceNumber();
+        os << session()->GetInstanceNumber();
         break;
       case 'S':
         os << ((com_speed == 1) ? 115200 : com_speed);

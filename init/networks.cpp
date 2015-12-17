@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                 WWIV Initialization Utility Version 5.0                */
+/*                  WWIV Initialization Utility Version 5                 */
 /*               Copyright (C)2014-2015 WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -122,14 +122,14 @@ static bool del_net(CursesWindow* window, int nn) {
     if (i2 >= i) {
       iscan1(i, subboards.get());
       open_sub(true);
-      for (int i1 = 1; i1 <= initinfo.nNumMsgsInCurrentSub; i1++) {
+      for (int i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
         postrec* p = get_post(i1);
         if (p->status & status_post_new_net) {
-          if (p->title[80] == nn) {
-            p->title[80] = -1;
+          if (p->network.network_msg.net_number == nn) {
+            p->network.network_msg.net_number = -1;
             write_post(i1, p);
-          } else if (p->title[80] > nn) {
-            p->title[80]--;
+          } else if (p->network.network_msg.net_number > nn) {
+            p->network.network_msg.net_number--;
             write_post(i1, p);
           }
         }
@@ -147,15 +147,23 @@ static bool del_net(CursesWindow* window, int nn) {
       emailfile.Seek(r * sizeof(mailrec), File::seekBegin);
       emailfile.Read(&m, sizeof(mailrec));
       if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
-        int i = (m.status & status_source_verified) ? 78 : 80;
-        if ((int) strlen(m.title) >= i) {
-          m.title[i] = m.title[i - 1] = 0;
+        if (strlen(m.title) >= WWIV_MESSAGE_TITLE_LENGTH) {
+          // always trim to WWIV_MESSAGE_TITLE_LENGTH now.
+          m.title[71] = 0;
         }
         m.status |= status_new_net;
-        if (m.title[i] == nn) {
-          m.title[i] = -1;
-        } else if (m.title[i] > nn) {
-          m.title[i]--;
+        if (m.status & status_source_verified) {
+          if (m.network.src_verified_msg.net_number == nn) {
+            m.network.src_verified_msg.net_number = -1;
+          } else if (m.network.src_verified_msg.net_number > nn) {
+            m.network.src_verified_msg.net_number--;
+          }
+        } else {
+          if (m.network.network_msg.net_number == nn) {
+            m.network.network_msg.net_number = -1;
+          } else if (m.network.network_msg.net_number > nn) {
+            m.network.network_msg.net_number--;
+          }
         }
         emailfile.Seek(r * sizeof(mailrec), File::seekBegin);
         emailfile.Write(&m, sizeof(mailrec));
@@ -216,11 +224,11 @@ static bool insert_net(CursesWindow* window, int nn) {
     if (i2 >= i) {
       iscan1(i, subboards.get());
       open_sub(true);
-      for (int i1 = 1; i1 <= initinfo.nNumMsgsInCurrentSub; i1++) {
+      for (int i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
         postrec* p = get_post(i1);
         if (p->status & status_post_new_net) {
-          if (p->title[80] >= nn) {
-            p->title[80]++;
+          if (p->network.network_msg.net_number >= nn) {
+            p->network.network_msg.net_number++;
             write_post(i1, p);
           }
         }
@@ -238,13 +246,19 @@ static bool insert_net(CursesWindow* window, int nn) {
       emailfile.Seek(sizeof(mailrec) * r, File::seekBegin);
       emailfile.Read(&m, sizeof(mailrec));
       if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
-        int i = (m.status & status_source_verified) ? 78 : 80;
-        if ((int) strlen(m.title) >= i) {
-          m.title[i] = m.title[i - 1] = 0;
+        if (strlen(m.title) >= WWIV_MESSAGE_TITLE_LENGTH) {
+          // always trim to WWIV_MESSAGE_TITLE_LENGTH now.
+          m.title[71] = 0;
         }
         m.status |= status_new_net;
-        if (m.title[i] >= nn) {
-          m.title[i]++;
+        if (m.status & status_source_verified) {
+          if (m.network.src_verified_msg.net_number >= nn) {
+            m.network.src_verified_msg.net_number++;
+          }
+        } else {
+          if (m.network.network_msg.net_number >= nn) {
+            m.network.network_msg.net_number++;
+          }
         }
         emailfile.Seek(sizeof(mailrec) * r, File::seekBegin);
         emailfile.Write(&m, sizeof(mailrec));
@@ -392,22 +406,22 @@ static void edit_net(int nn) {
     if (pInputFile) {
       FILE *pOutputFile = fopen(output_filename.c_str(), "w");
       if (pOutputFile) {
-        char szBuffer[255];
-        while (fgets(szBuffer, 80, pInputFile)) {
-          if (szBuffer[0] == '$') {
-            char* ss = strchr(szBuffer, ' ');
+        char buffer[255];
+        while (fgets(buffer, 80, pInputFile)) {
+          if (buffer[0] == '$') {
+            char* ss = strchr(buffer, ' ');
             if (ss) {
               *ss = 0;
-              if (strcasecmp(szOldNetworkName, szBuffer + 1) == 0) {
+              if (strcasecmp(szOldNetworkName, buffer + 1) == 0) {
                 fprintf(pOutputFile, "$%s %s", n->name, ss + 1);
               } else {
-                fprintf(pOutputFile, "%s %s", szBuffer, ss + 1);
+                fprintf(pOutputFile, "%s %s", buffer, ss + 1);
               }
             } else {
-              fprintf(pOutputFile, "%s", szBuffer);
+              fprintf(pOutputFile, "%s", buffer);
             }
           } else {
-            fprintf(pOutputFile, "%s", szBuffer);
+            fprintf(pOutputFile, "%s", buffer);
           }
         }
         fclose(pOutputFile);

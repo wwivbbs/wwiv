@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -23,17 +23,20 @@
 #include "bbs/confutil.h"
 #include "bbs/input.h"
 #include "bbs/newuser.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/printfile.h"
 #include "bbs/uedit.h"
 #include "bbs/wcomm.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::string;
 
 void wwivnode(WUser *pUser, int mode) {
   char sysnum[6], s[81];
-  int nUserNumber, nSystemNumber;
+  int user_number, system_number;
 
   if (!mode) {
     bout.nl();
@@ -57,14 +60,14 @@ void wwivnode(WUser *pUser, int mode) {
     return;
   }
   sprintf(s, "1@%s", sysnum);
-  parse_email_info(s, &nUserNumber, &nSystemNumber);
-  if (nSystemNumber == 0) {
+  parse_email_info(s, &user_number, &system_number);
+  if (system_number == 0) {
     bout << "|#2No match for " << sysnum << "." << wwiv::endl;
     pausescr();
     return;
   }
-  net_system_list_rec *csne = next_system(nSystemNumber);
-  sprintf(s, "Sysop @%u %s %s", nSystemNumber, csne->name, session()->GetNetworkName());
+  net_system_list_rec *csne = next_system(system_number);
+  sprintf(s, "Sysop @%u %s %s", system_number, csne->name, session()->GetNetworkName());
   string ph, ph1;
   if (!mode) {
     ph1 = pUser->GetDataPhoneNumber();
@@ -124,9 +127,9 @@ void wwivnode(WUser *pUser, int mode) {
       }
     }
   }
-  pUser->SetForwardNetNumber(session()->GetNetworkNumber());
+  pUser->SetForwardNetNumber(session()->net_num());
   pUser->SetHomeUserNumber(1);
-  pUser->SetHomeSystemNumber(nSystemNumber);
+  pUser->SetHomeSystemNumber(system_number);
   if (!mode) {
     print_affil(pUser);
     pausescr();

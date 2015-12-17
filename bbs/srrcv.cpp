@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -23,13 +23,15 @@
 #include "bbs/datetime.h"
 #include "bbs/keycodes.h"
 #include "bbs/wcomm.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 
 #include "core/strings.h"
 
 using std::string;
 
-bool NewZModemReceiveFile(const char *pszFileName);
+bool NewZModemReceiveFile(const char *file_name);
 
 #if (_MSC_VER >= 1900)
 #define timezone _timezone
@@ -60,7 +62,7 @@ char modemkey(int *tout) {
 
 
 
-int receive_block(char *b, unsigned char *bln, bool bUseCRC) {
+int receive_block(char *b, unsigned char *bln, bool use_crc) {
   bool abort = false;
   unsigned char ch = gettimeout(5.0, &abort);
   int err = 0;
@@ -91,7 +93,7 @@ int receive_block(char *b, unsigned char *bln, bool bUseCRC) {
     for (int i = 0; (i < 128) && (!hangup); i++) {
       b[i] = modemkey(&tout);
     }
-    if (!bUseCRC && !hangup) {
+    if (!use_crc && !hangup) {
       unsigned char cs1 = checksum;
       bn1 = modemkey(&tout);
       if (bn1 != cs1) {
@@ -121,7 +123,7 @@ int receive_block(char *b, unsigned char *bln, bool bUseCRC) {
     for (int i = 0; (i < 1024) && (!hangup); i++) {
       b[i] = modemkey(&tout);
     }
-    if (!bUseCRC && !hangup) {
+    if (!use_crc && !hangup) {
       unsigned char cs1 = checksum;
       bn1 = modemkey(&tout);
       if (bn1 != cs1) {
@@ -150,19 +152,19 @@ int receive_block(char *b, unsigned char *bln, bool bUseCRC) {
   }
 }
 
-void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
+void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
   char b[1025], x[81], ch;
   unsigned char bln;
   int i1, i2, i3;
 
-  File::Remove(pszFileName);
+  File::Remove(file_name);
   bool ok = true;
   bool lastcan = false;
   bool lasteot = false;
   int  nTotalErrors = 0;
   int  nConsecErrors = 0;
 
-  File file(pszFileName);
+  File file(file_name);
   if (!file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
     bout << "\r\n\nDOS error - Can't create file.\r\n\n";
     *received = false;
@@ -185,7 +187,7 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
   session()->localIO()->LocalXYPuts(52, 5, "\xB3 Total Errors : 0         ");
   session()->localIO()->LocalXYPuts(52, 6,
                                        "\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4");
-  session()->localIO()->LocalXYPuts(65, 0, stripfn(pszFileName));
+  session()->localIO()->LocalXYPuts(65, 0, stripfn(file_name));
   int nNumStartTries = 0;
   do {
     if (nNumStartTries++ > 9) {
@@ -194,7 +196,7 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
       file.Delete();
       return;
     }
-    if (bUseCRC) {
+    if (use_crc) {
       rputch('C');
     } else {
       rputch(CU);
@@ -224,7 +226,7 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
     if (reallen) {
       session()->localIO()->LocalXYPuts(65, 1, ctim((static_cast<double>(reallen - pos)) * tpb));
     }
-    i = receive_block(b, &bln, bUseCRC);
+    i = receive_block(b, &bln, use_crc);
     if (i == 0 || i == 1) {
       if (bln == 0 && pos == 0L) {
         i1 = strlen(b) + 1;
@@ -267,7 +269,7 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
       }
       nConsecErrors = 0;
     } else if (i == 2 || i == 7 || i == 3) {
-      if (pos == 0L && reallen == 0L && bUseCRC) {
+      if (pos == 0L && reallen == 0L && use_crc) {
         rputch('C');
       } else {
         rputch(CU);
@@ -319,7 +321,7 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
   session()->localIO()->LocalGotoXY(nOldXPos, nOldYPos);
   if (ok) {
     if (filedatetime) {
-      WWIV_SetFileTime(pszFileName, filedatetime);
+      WWIV_SetFileTime(file_name, filedatetime);
     }
     file.Close();
     *received = true;

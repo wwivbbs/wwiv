@@ -1,13 +1,12 @@
 #!/bin/bash
 #
-# WWIV 5.0 Build Script.
+# WWIV Build Script.
 #
 # Required Variables:
 # WORKSPACE - wwiv-svn root directory
 # BUILD_NUMBER - Jenkins Build number
 
 
-rm ${WORKSPACE}/wwiv-build-linux-*.zip
 rm ${WORKSPACE}/wwiv-build-linux-*.tar.gz
 
 set -e
@@ -27,7 +26,7 @@ echo "Created release dir: ${WORKSPACE}/release"
 
 echo "Building binaries"
 cd ${WORKSPACE}
-sed -i -e "s@Development@Development Build ${BUILD_NUMBER}@" core/version.cpp
+sed -i -e "s@.development@.${BUILD_NUMBER}@" core/version.cpp
 cmake .
 make -j12 
 

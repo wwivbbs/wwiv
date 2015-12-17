@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.0x                             */
+/*                          WWIV Version 5.x                              */
 /*                Copyright (C)2015 WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -54,20 +54,15 @@ Contact::Contact(const string& network_dir, bool save_on_destructor)
     return;
   }
   
-  const int num_records = file.number_of_records();
-  if (num_records > 0) {
-    // Debug CRT will crash if you try to read 0 record.
-    // Debug CRT will crash if you access the 0th item in an empty vector.
-    contacts_.resize(num_records);
-    initialized_ = file.Read(&contacts_[0], num_records);
+  if (file.number_of_records() > 0) {
+    initialized_ = file.ReadVector(contacts_);
   }
 
   if (!initialized_) {
     std::clog << "failed to read the expected number of bytes: "
-        << num_records * sizeof(net_contact_rec) << std::endl;
+        << contacts_.size() * sizeof(net_contact_rec) << std::endl;
   }
   initialized_ = true;
-  //std::clog << "Contact.NET initialized with " << num_records << " record." << std::endl;
 }
 
 Contact::Contact(std::initializer_list<net_contact_rec> l) 
@@ -94,7 +89,7 @@ bool Contact::Save() {
   if (contacts_.size() == 0) {
     return false;
   }
-  return file.Write(&contacts_[0], contacts_.size());
+  return file.WriteVector(contacts_);
 }
 
 Contact::~Contact() {

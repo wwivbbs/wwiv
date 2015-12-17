@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -56,7 +56,7 @@ char *get_file(const string& filename, long *len) {
     *len = 0L;
     return nullptr;
   }
-  *len = static_cast< long >(file.Read(pszFileText, lFileSize));
+  *len = static_cast<long>(file.Read(pszFileText, lFileSize));
   return pszFileText;
 }
 
@@ -106,10 +106,10 @@ const string CreateFullPathToPrint(const string& basename) {
 }
 
 /**
- * Prints the file pszFileName.  Returns true if the file exists and is not
+ * Prints the file file_name.  Returns true if the file exists and is not
  * zero length.  Returns false if the file does not exist or is zero length
  *
- * @param pszFileName Name of the file to display
+ * @param file_name Name of the file to display
  * @param bAbortable If true, a keyboard input may abort the display
  * @param bForcePause Should pauses be used even for ANSI files - Normally
  *        pause on screen is disabled for ANSI files.

@@ -1,4 +1,4 @@
-# CMake for WWIV 5.0
+# CMake for WWIV 5
 cmake_minimum_required (VERSION 2.6)
 project (CORE)
 include_directories(..)

@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*               Copyright (C)2014-2015 WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -107,6 +107,6 @@ TEST_F(CommandLineTest, Help) {
   cmdline.add(BooleanCommandLineArgument("help", '?', "display help", false));
 
   ASSERT_TRUE(cmdline.Parse());
-  EXPECT_TRUE(500, cmdline.arg("help").as_bool());
+  EXPECT_TRUE(cmdline.arg("help").as_bool());
 }
 

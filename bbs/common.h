@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -43,11 +43,11 @@ struct search_record {
 };
 
 
-#define MENUTYPE_REGULAR   0
-#define MENUTYPE_PULLDOWN  1
+constexpr int MENUTYPE_REGULAR = 0;
+constexpr int MENUTYPE_PULLDOWN = 1;
 
-#define HOTKEYS_ON  0
-#define HOTKEYS_OFF 1
+constexpr int HOTKEYS_ON = 0;
+constexpr int HOTKEYS_OFF = 1;
 
 
 struct user_config {

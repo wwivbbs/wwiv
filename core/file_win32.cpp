@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015,WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -119,16 +119,16 @@ bool File::Move(const std::string& sourceFileName, const std::string& destFileNa
 
 bool File::RealPath(const std::string& path, std::string* resolved) {
   const int BUFSIZE = 4096;
-  CHAR szBuffer[BUFSIZE];
+  CHAR buffer[BUFSIZE];
   CHAR** lppPart = { nullptr };
 
-  DWORD result = GetFullPathName(path.c_str(), BUFSIZE, szBuffer, lppPart);
+  DWORD result = GetFullPathName(path.c_str(), BUFSIZE, buffer, lppPart);
   if (result == 0) {
     resolved->assign(path);
     return false;
   }
 
-  resolved->assign(szBuffer);
+  resolved->assign(buffer);
   return true;
 }
 

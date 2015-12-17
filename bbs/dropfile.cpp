@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -22,7 +22,9 @@
 #include <string>
 
 #include "bbs/datetime.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
@@ -72,7 +74,7 @@ struct pcboard_sys_rec {
 // Local functions
 int GetDoor32Emulation();
 int GetDoor32CommType();
-void GetNamePartForDropFile(bool lastName, char *pszName);
+void GetNamePartForDropFile(bool lastName, char *name);
 void create_drop_files();
 string GetComSpeedInDropfileFormat(unsigned long lComSpeed);
 
@@ -109,15 +111,15 @@ const string create_filename(int nDropFileType) {
 /**
  * Returns first or last name from string (s) back into s
  */
-void GetNamePartForDropFile(bool lastName, char *pszName) {
+void GetNamePartForDropFile(bool lastName, char *name) {
   if (!lastName) {
-    char *ss = strchr(pszName, ' ');
+    char *ss = strchr(name, ' ');
     if (ss) {
-      pszName[ strlen(pszName) - strlen(ss) ] = '\0';
+      name[ strlen(name) - strlen(ss) ] = '\0';
     }
   } else {
-    char *ss = strrchr(pszName, ' ');
-    sprintf(pszName, "%s", (ss) ? ++ss : "");
+    char *ss = strrchr(name, ' ');
+    sprintf(name, "%s", (ss) ? ++ss : "");
   }
 }
 
@@ -228,7 +230,7 @@ void CreatePCBoardSysDropFile() {
     strcpy(pcb.slanguage, cur_lang_name);
     strcpy(pcb.name, session()->user()->GetName());
     pcb.sminsleft = pcb.time_limit;
-    pcb.snodenum = static_cast<char>((num_instances() > 1) ? application()->GetInstanceNumber() : 0);
+    pcb.snodenum = static_cast<char>((num_instances() > 1) ? session()->GetInstanceNumber() : 0);
     strcpy(pcb.seventtime, "01:00");
     strcpy(pcb.seventactive, " 0");
     strcpy(pcb.sslide, " 0");
@@ -236,7 +238,7 @@ void CreatePCBoardSysDropFile() {
     pcb.packflag = 27;
     pcb.bpsflag = 32;
     // Added for PCB 14.5 Revision
-    std::unique_ptr<WStatus> pStatus(application()->GetStatusManager()->GetStatus());
+    std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
     strcpy(pcb.lastevent, pStatus->GetLastDate());
     pcb.exittodos = '0';
     pcb.eventupcoming = '0';
@@ -356,7 +358,7 @@ void CreateDoor32SysDropFile() {
     file.WriteFormatted("%d\n",      session()->user()->GetSl());
     file.WriteFormatted("%d\n",      60 * GetMinutesRemainingForDropFile());
     file.WriteFormatted("%d\n",      GetDoor32Emulation());
-    file.WriteFormatted("%u\n",      application()->GetInstanceNumber());
+    file.WriteFormatted("%u\n",      session()->GetInstanceNumber());
     file.Close();
   }
 }
@@ -374,7 +376,7 @@ void CreateDoorSysDropFile() {
             (session()->using_modem) ? syscfgovr.primaryport : 0,
             cspeed.c_str(),
             '8',
-            application()->GetInstanceNumber(),                       // node
+            session()->GetInstanceNumber(),                       // node
             (session()->using_modem) ? modem_speed : 14400,
             'Y',                            // screen display
             'N',              // log to printer
@@ -391,7 +393,7 @@ void CreateDoorSysDropFile() {
             session()->user()->GetSl(),
             session()->user()->GetNumLogons(),
             session()->user()->GetLastOn(),
-            static_cast<unsigned long>(60L * GetMinutesRemainingForDropFile()),
+            static_cast<uint32_t>(60L * GetMinutesRemainingForDropFile()),
             GetMinutesRemainingForDropFile());
     file.WriteFormatted(szLine);
     string ansiStatus = (okansi()) ? "GR" : "NG";

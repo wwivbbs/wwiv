@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -25,13 +25,19 @@
 #include <unistd.h>
 #endif  // _WIN32
 
+#include "bbs/batch.h"
+#include "bbs/bbsovl3.h"
+#include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "bbs/printfile.h"
 #include "bbs/xfer_common.h"
+#include "sdk/filenames.h"
 
 // the archive type to use
 #define ARC_NUMBER 0
@@ -41,7 +47,7 @@ using std::string;
 using std::vector;
 using namespace wwiv::strings;
 
-bool bad_filename(const char *pszFileName) {
+bool bad_filename(const char *file_name) {
   // strings not to allow in a .zip file to extract from
   static const vector<string> bad_words = {
       "COMMAND",
@@ -60,13 +66,13 @@ bool bad_filename(const char *pszFileName) {
     };
 
   for (const auto& bad_word : bad_words) {
-    if (strstr(pszFileName, bad_word.c_str())) {
-      bout << "Can't extract from that because it has " << pszFileName << wwiv::endl;
+    if (strstr(file_name, bad_word.c_str())) {
+      bout << "Can't extract from that because it has " << file_name << wwiv::endl;
       return true;
     }
   }
-  if (!okfn(pszFileName)) {
-    bout << "Can't extract from that because it has " << pszFileName << wwiv::endl;
+  if (!okfn(file_name)) {
+    bout << "Can't extract from that because it has " << file_name << wwiv::endl;
     return true;
   }
   return false;
@@ -80,8 +86,8 @@ struct arch {
   int32_t size;
 };
 
-int check_for_files_arc(const char *pszFileName) {
-  File file(pszFileName);
+int check_for_files_arc(const char *file_name) {
+  File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     arch a;
     long lFileSize = file.GetLength();
@@ -90,7 +96,7 @@ int check_for_files_arc(const char *pszFileName) {
     file.Read(&a, 1);
     if (a.type != 26) {
       file.Close();
-      bout << stripfn(pszFileName) << " is not a valid .ARC file.";
+      bout << stripfn(file_name) << " is not a valid .ARC file.";
       return 1;
     }
     while (lFilePos < lFileSize) {
@@ -119,7 +125,7 @@ int check_for_files_arc(const char *pszFileName) {
       } else {
         file.Close();
         if (a.type != 0) {
-          bout << stripfn(pszFileName) << " is not a valid .ARC file.";
+          bout << stripfn(file_name) << " is not a valid .ARC file.";
           return 1;
         } else {
           lFilePos = lFileSize;
@@ -130,7 +136,7 @@ int check_for_files_arc(const char *pszFileName) {
     file.Close();
     return 0;
   }
-  bout << "File not found: " << stripfn(pszFileName) << wwiv::endl;
+  bout << "File not found: " << stripfn(file_name) << wwiv::endl;
   return 1;
 }
 
@@ -184,7 +190,7 @@ struct zip_end_dir {
   uint16_t  comment_len;
 };
 
-int check_for_files_zip(const char *pszFileName) {
+int check_for_files_zip(const char *file_name) {
   zip_local_header zl;
   zip_central_dir zc;
   zip_end_dir ze;
@@ -192,7 +198,7 @@ int check_for_files_zip(const char *pszFileName) {
 
 #define READ_FN( ln ) { file.Read( s, ln ); s[ ln ] = '\0'; }
 
-  File file(pszFileName);
+  File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     long l = 0;
     long len = file.GetLength();
@@ -237,7 +243,7 @@ int check_for_files_zip(const char *pszFileName) {
     file.Close();
     return 0;
   }
-  bout << "File not found: " << stripfn(pszFileName) << wwiv::endl;
+  bout << "File not found: " << stripfn(file_name) << wwiv::endl;
   return 1;
 }
 
@@ -253,12 +259,12 @@ struct lharc_header {
   unsigned char     fn_len;
 };
 
-int check_for_files_lzh(const char *pszFileName) {
+int check_for_files_lzh(const char *file_name) {
   lharc_header a;
 
-  File file(pszFileName);
+  File file(file_name);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    bout << "File not found: " << stripfn(pszFileName) << wwiv::endl;
+    bout << "File not found: " << stripfn(file_name) << wwiv::endl;
     return 1;
   }
   long lFileSize = file.GetLength();
@@ -275,20 +281,20 @@ int check_for_files_lzh(const char *pszFileName) {
     }
     int nNumRead = file.Read(&a, sizeof(lharc_header));
     if (nNumRead != sizeof(lharc_header)) {
-      bout << stripfn(pszFileName) << " is not a valid .LZH file.";
+      bout << stripfn(file_name) << " is not a valid .LZH file.";
       err = 1;
       break;
     }
-    char szBuffer[256];
-    nNumRead = file.Read(szBuffer, a.fn_len);
+    char buffer[256];
+    nNumRead = file.Read(buffer, a.fn_len);
     if (nNumRead != a.fn_len) {
-      bout << stripfn(pszFileName) << " is not a valid .LZH file.";
+      bout << stripfn(file_name) << " is not a valid .LZH file.";
       err = 1;
       break;
     }
-    szBuffer[a.fn_len] = '\0';
-    strupr(szBuffer);
-    if (bad_filename(szBuffer)) {
+    buffer[a.fn_len] = '\0';
+    strupr(buffer);
+    if (bad_filename(buffer)) {
       err = 1;
       break;
     }
@@ -297,8 +303,8 @@ int check_for_files_lzh(const char *pszFileName) {
   return err;
 }
 
-int check_for_files_arj(const char *pszFileName) {
-  File file(pszFileName);
+int check_for_files_arj(const char *file_name) {
+  File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileSize = file.GetLength();
     long lCurPos = 0;
@@ -309,7 +315,7 @@ int check_for_files_arj(const char *pszFileName) {
       int nNumRead = file.Read(&sh, 2);
       if (nNumRead != 2 || sh != 0xea60) {
         file.Close();
-        bout << stripfn(pszFileName) << " is not a valid .ARJ file.";
+        bout << stripfn(file_name) << " is not a valid .ARJ file.";
         return 1;
       }
       lCurPos += nNumRead + 2;
@@ -320,12 +326,12 @@ int check_for_files_arj(const char *pszFileName) {
       long l2;
       file.Read(&l2, 4);
       file.Seek(lCurPos + static_cast<long>(s1), File::seekBegin);
-      char szBuffer[256];
-      file.Read(szBuffer, 250);
-      szBuffer[250] = '\0';
-      if (strlen(szBuffer) > 240) {
+      char buffer[256];
+      file.Read(buffer, 250);
+      buffer[250] = '\0';
+      if (strlen(buffer) > 240) {
         file.Close();
-        bout << stripfn(pszFileName) << " is not a valid .ARJ file.";
+        bout << stripfn(file_name) << " is not a valid .ARJ file.";
         return 1;
       }
       lCurPos += 4 + static_cast<long>(sh);
@@ -338,8 +344,8 @@ int check_for_files_arj(const char *pszFileName) {
         file.Read(&sh, 2);
       }
       lCurPos += l2;
-      strupr(szBuffer);
-      if (bad_filename(szBuffer)) {
+      strupr(buffer);
+      if (bad_filename(buffer)) {
         file.Close();
         return 1;
       }
@@ -349,7 +355,7 @@ int check_for_files_arj(const char *pszFileName) {
     return 0;
   }
 
-  bout << "File not found: " << stripfn(pszFileName);
+  bout << "File not found: " << stripfn(file_name);
   return 1;
 }
 
@@ -365,13 +371,13 @@ static vector<arc_testers> arc_t = {
   { "ARJ", check_for_files_arj },
 };
 
-static bool check_for_files(const char *pszFileName) {
-  const char * ss = strrchr(pszFileName, '.');
+static bool check_for_files(const char *file_name) {
+  const char * ss = strrchr(file_name, '.');
   if (ss) {
     ss++;
     for (const auto& t : arc_t) {
       if (wwiv::strings::IsEqualsIgnoreCase(ss, t.arc_name)) {
-        return t.func(pszFileName) == 0;
+        return t.func(file_name) == 0;
       }
     }
   } else {
@@ -382,14 +388,14 @@ static bool check_for_files(const char *pszFileName) {
   return 0;
 }
 
-bool download_temp_arc(const char *pszFileName, bool count_against_xfer_ratio) {
-  bout << "Downloading " << pszFileName << "." << arcs[ARC_NUMBER].extension << ":\r\n\r\n";
+bool download_temp_arc(const char *file_name, bool count_against_xfer_ratio) {
+  bout << "Downloading " << file_name << "." << arcs[ARC_NUMBER].extension << ":\r\n\r\n";
   if (count_against_xfer_ratio && !ratio_ok()) {
     bout << "Ratio too low.\r\n";
     return false;
   }
   char szDownloadFileName[ MAX_PATH ];
-  sprintf(szDownloadFileName, "%s%s.%s", syscfgovr.tempdir, pszFileName, arcs[ARC_NUMBER].extension);
+  sprintf(szDownloadFileName, "%s%s.%s", syscfgovr.tempdir, file_name, arcs[ARC_NUMBER].extension);
   File file(szDownloadFileName);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     bout << "No such file.\r\n\n";
@@ -407,7 +413,7 @@ bool download_temp_arc(const char *pszFileName, bool count_against_xfer_ratio) {
     bool sent = false;
     bool abort = false;
     char szFileToSend[81];
-    sprintf(szFileToSend, "%s.%s", pszFileName, arcs[ARC_NUMBER].extension);
+    sprintf(szFileToSend, "%s.%s", file_name, arcs[ARC_NUMBER].extension);
     send_file(szDownloadFileName, &sent, &abort, szFileToSend, -1, lFileSize);
     if (sent) {
       if (count_against_xfer_ratio) {
@@ -418,7 +424,7 @@ bool download_temp_arc(const char *pszFileName, bool count_against_xfer_ratio) {
       }
       sysoplogf("Downloaded %ldk of \"%s\"", bytes_to_k(lFileSize), szFileToSend);
       if (session()->IsUserOnline()) {
-        application()->UpdateTopScreen();
+        session()->UpdateTopScreen();
       }
       return true;
     }
@@ -429,31 +435,31 @@ bool download_temp_arc(const char *pszFileName, bool count_against_xfer_ratio) {
   return false;
 }
 
-void add_arc(const char *arc, const char *pszFileName, int dos) {
+void add_arc(const char *arc, const char *file_name, int dos) {
   char szAddArchiveCommand[ MAX_PATH ], szArchiveFileName[ MAX_PATH ];
 
   sprintf(szArchiveFileName, "%s.%s", arc, arcs[ARC_NUMBER].extension);
   // TODO - This logic is still broken since chain.* and door.* won't match
-  if (wwiv::strings::IsEqualsIgnoreCase(pszFileName, "chain.txt") ||
-      wwiv::strings::IsEqualsIgnoreCase(pszFileName, "door.sys") ||
-      wwiv::strings::IsEqualsIgnoreCase(pszFileName, "chain.*")  ||
-      wwiv::strings::IsEqualsIgnoreCase(pszFileName, "door.*")) {
+  if (wwiv::strings::IsEqualsIgnoreCase(file_name, "chain.txt") ||
+      wwiv::strings::IsEqualsIgnoreCase(file_name, "door.sys") ||
+      wwiv::strings::IsEqualsIgnoreCase(file_name, "chain.*")  ||
+      wwiv::strings::IsEqualsIgnoreCase(file_name, "door.*")) {
     return;
   }
 
-  get_arc_cmd(szAddArchiveCommand, szArchiveFileName, 2, pszFileName);
+  get_arc_cmd(szAddArchiveCommand, szArchiveFileName, 2, file_name);
   if (szAddArchiveCommand[0]) {
     chdir(syscfgovr.tempdir);
     session()->localIO()->LocalPuts(szAddArchiveCommand);
     session()->localIO()->LocalPuts("\r\n");
     if (dos) {
-      ExecuteExternalProgram(szAddArchiveCommand, application()->GetSpawnOptions(SPAWNOPT_ARCH_A));
+      ExecuteExternalProgram(szAddArchiveCommand, session()->GetSpawnOptions(SPAWNOPT_ARCH_A));
     } else {
       ExecuteExternalProgram(szAddArchiveCommand, EFLAG_NONE);
-      application()->UpdateTopScreen();
+      session()->UpdateTopScreen();
     }
-    application()->CdHome();
-    sysoplogf("Added \"%s\" to %s", pszFileName, szArchiveFileName);
+    session()->CdHome();
+    sysoplogf("Added \"%s\" to %s", file_name, szArchiveFileName);
 
   } else {
     bout << "Sorry, can't add to temp archive.\r\n\n";
@@ -521,9 +527,9 @@ void list_temp_dir() {
     if (!wwiv::strings::IsEqualsIgnoreCase(szFileName, "chain.txt") &&
         !wwiv::strings::IsEqualsIgnoreCase(szFileName, "door.sys")) {
       align(szFileName);
-      char szBuffer[ 255 ];
-      sprintf(szBuffer, "%12s  %-8ld", szFileName, fnd.GetFileSize());
-      pla(szBuffer, &abort);
+      char buffer[ 255 ];
+      sprintf(buffer, "%12s  %-8ld", szFileName, fnd.GetFileSize());
+      pla(buffer, &abort);
       i1 = 1;
     }
     bFound = fnd.next();
@@ -589,7 +595,7 @@ void temp_extract() {
         chdir(directories[udir[session()->GetCurrentFileArea()].subnum].path);
       }
       File file(File::current_directory(), stripfn(u.filename));
-      application()->CdHome();
+      session()->CdHome();
       if (check_for_files(file.full_pathname().c_str())) {
         bool ok1 = false;
         do {
@@ -626,12 +632,12 @@ void temp_extract() {
               s3[0] = '\0';
             }
             if (s3[0]) {
-              ExecuteExternalProgram(s3, application()->GetSpawnOptions(SPAWNOPT_ARCH_E));
+              ExecuteExternalProgram(s3, session()->GetSpawnOptions(SPAWNOPT_ARCH_E));
               sprintf(s2, "Extracted out \"%s\" from \"%s\"", s1, u.filename);
             } else {
               s2[0] = '\0';
             }
-            application()->CdHome();
+            session()->CdHome();
             if (s2[0]) {
               sysoplog(s2);
             }
@@ -825,7 +831,7 @@ void move_file_t() {
       if (ok && !done) {
         bout << "|#5Reset upload time for file? ";
         if (yesno()) {
-          u.daten = static_cast<unsigned long>(time(nullptr));
+          u.daten = static_cast<uint32_t>(time(nullptr));
         }
         --nCurPos;
         fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
@@ -865,7 +871,6 @@ void move_file_t() {
         u1.numbytes = session()->numf;
         if (u.daten > u1.daten) {
           u1.daten = u.daten;
-          session()->m_DirectoryDateCache[d1] = u.daten;
         }
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Write(&u1, sizeof(uploadsrec));
@@ -954,7 +959,7 @@ void removefile() {
               bout << "|#5Remove DL points? ";
               bRemoveDlPoints = yesno();
             }
-            if (application()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
+            if (session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
               bout.nl();
               bout << "|#5Remove from ALLOW.DAT? ";
               if (yesno()) {
@@ -971,12 +976,12 @@ void removefile() {
             StringRemoveWhitespace(szFileNameToDelete);
             File::Remove(szFileNameToDelete);
             if (bRemoveDlPoints && u.ownersys == 0) {
-              application()->users()->ReadUser(&uu, u.ownerusr);
+              session()->users()->ReadUser(&uu, u.ownerusr);
               if (!uu.IsUserDeleted()) {
                 if (date_to_daten(uu.GetFirstOn()) < static_cast<time_t>(u.daten)) {
                   uu.SetFilesUploaded(uu.GetFilesUploaded() - 1);
                   uu.SetUploadK(uu.GetUploadK() - bytes_to_k(u.numbytes));
-                  application()->users()->WriteUser(&uu, u.ownerusr);
+                  session()->users()->WriteUser(&uu, u.ownerusr);
                 }
               }
             }

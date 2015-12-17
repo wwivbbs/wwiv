@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*               Copyright (C)2014-2015 WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -57,7 +57,7 @@ namespace wwiv {
 namespace core {
 
 struct unknown_argument_error: public std::runtime_error {
-  unknown_argument_error(const std::string& message): std::runtime_error(message) {}
+  unknown_argument_error(const std::string& message);
 };
 
 class CommandLineValue {

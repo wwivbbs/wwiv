@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -17,11 +17,15 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/wwiv.h"
+#include "bbs/bbsovl3.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "sdk/filenames.h"
 
 using namespace wwiv::strings;
 
@@ -36,12 +40,12 @@ static unsigned char translate_table[] = {
 void get_user_ppp_addr() {
   session()->internetFullEmailAddress = "";
   bool found = false;
-  int nNetworkNumber = getnetnum("FILEnet");
-  session()->SetNetworkNumber(nNetworkNumber);
-  if (nNetworkNumber == -1) {
+  int network_number = getnetnum("FILEnet");
+  session()->set_net_num(network_number);
+  if (network_number == -1) {
     return;
   }
-  set_net_num(session()->GetNetworkNumber());
+  set_net_num(session()->net_num());
   session()->internetFullEmailAddress = wwiv::strings::StringPrintf("%s@%s",
       session()->internetEmailName.c_str(),
       session()->internetEmailDomain.c_str());
@@ -91,28 +95,27 @@ void send_inet_email() {
     return;
   }
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
-  int nNetworkNumber = getnetnum("FILEnet");
-  session()->SetNetworkNumber(nNetworkNumber);
-  if (nNetworkNumber == -1) {
+  int network_number = getnetnum("FILEnet");
+  session()->set_net_num(network_number);
+  if (network_number == -1) {
     return;
   }
-  set_net_num(session()->GetNetworkNumber());
+  set_net_num(session()->net_num());
   bout.nl();
-  bout << "|#9Your Internet Address:|#1 " <<
-                     (session()->IsInternetUseRealNames() ? session()->user()->GetRealName() :
-                      session()->user()->GetName()) <<
-                     " <" << session()->internetFullEmailAddress << ">";
+  bout << "|#9Your Internet Address:|#1 "
+       << (session()->IsInternetUseRealNames() ? session()->user()->GetRealName() : session()->user()->GetName())
+       << " <" << session()->internetFullEmailAddress << ">";
   bout.nl(2);
   bout << "|#9Enter the Internet mail destination address.\r\n|#7:";
   inputl(net_email_name, 75, true);
   if (check_inet_addr(net_email_name)) {
-    unsigned short nUserNumber = 0;
-    unsigned short nSystemNumber = 32767;
+    unsigned short user_number = 0;
+    unsigned short system_number = 32767;
     irt[0] = 0;
     irt_name[0] = 0;
     grab_quotes(nullptr, nullptr);
-    if (nUserNumber || nSystemNumber) {
-      email(nUserNumber, nSystemNumber, false, 0);
+    if (user_number || system_number) {
+      email("", user_number, system_number, false, 0);
     }
   } else {
     bout.nl();
@@ -139,61 +142,60 @@ bool check_inet_addr(const char *inetaddr) {
   return true;
 }
 
-char *read_inet_addr(char *pszInternetEmailAddress, int nUserNumber) {
-  if (!nUserNumber) {
+char *read_inet_addr(char *internet_address, int user_number) {
+  if (!user_number) {
     return nullptr;
   }
 
-  if (nUserNumber == session()->usernum && check_inet_addr(session()->user()->GetEmailAddress())) {
-    strcpy(pszInternetEmailAddress, session()->user()->GetEmailAddress());
+  if (user_number == session()->usernum && check_inet_addr(session()->user()->GetEmailAddress())) {
+    strcpy(internet_address, session()->user()->GetEmailAddress());
   } else {
-    //pszInternetEmailAddress = nullptr;
-    *pszInternetEmailAddress = 0;
+    *internet_address = 0;
     File inetAddrFile(syscfg.datadir, INETADDR_DAT);
     if (!inetAddrFile.Exists()) {
       inetAddrFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
       for (int i = 0; i <= syscfg.maxusers; i++) {
         long lCurPos = 80L * static_cast<long>(i);
         inetAddrFile.Seek(lCurPos, File::seekBegin);
-        inetAddrFile.Write(pszInternetEmailAddress, 80L);
+        inetAddrFile.Write(internet_address, 80L);
       }
     } else {
       char szUserName[ 255 ];
       inetAddrFile.Open(File::modeReadOnly | File::modeBinary);
-      long lCurPos = 80L * static_cast<long>(nUserNumber);
+      long lCurPos = 80L * static_cast<long>(user_number);
       inetAddrFile.Seek(lCurPos, File::seekBegin);
       inetAddrFile.Read(szUserName, 80L);
       if (check_inet_addr(szUserName)) {
-        strcpy(pszInternetEmailAddress, szUserName);
+        strcpy(internet_address, szUserName);
       } else {
-        sprintf(pszInternetEmailAddress, "User #%d", nUserNumber);
+        sprintf(internet_address, "User #%d", user_number);
         WUser user;
-        application()->users()->ReadUser(&user, nUserNumber);
+        session()->users()->ReadUser(&user, user_number);
         user.SetEmailAddress("");
-        application()->users()->WriteUser(&user, nUserNumber);
+        session()->users()->WriteUser(&user, user_number);
       }
     }
     inetAddrFile.Close();
   }
-  return pszInternetEmailAddress;
+  return internet_address;
 }
 
-void write_inet_addr(const char *pszInternetEmailAddress, int nUserNumber) {
-  if (!nUserNumber) {
+void write_inet_addr(const char *internet_address, int user_number) {
+  if (!user_number) {
     return; /*nullptr;*/
   }
 
   File inetAddrFile(syscfg.datadir, INETADDR_DAT);
   inetAddrFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-  long lCurPos = 80L * static_cast<long>(nUserNumber);
+  long lCurPos = 80L * static_cast<long>(user_number);
   inetAddrFile.Seek(lCurPos, File::seekBegin);
-  inetAddrFile.Write(pszInternetEmailAddress, 80L);
+  inetAddrFile.Write(internet_address, 80L);
   inetAddrFile.Close();
   char szDefaultUserAddr[ 255 ];
-  sprintf(szDefaultUserAddr, "USER%d", nUserNumber);
-  session()->SetNetworkNumber(getnetnum("FILEnet"));
-  if (session()->GetNetworkNumber() != -1) {
-    set_net_num(session()->GetNetworkNumber());
+  sprintf(szDefaultUserAddr, "USER%d", user_number);
+  session()->set_net_num(getnetnum("FILEnet"));
+  if (session()->net_num() != -1) {
+    set_net_num(session()->net_num());
     TextFile in(session()->GetNetworkDataDirectory(), ACCT_INI, "rt");
     TextFile out(syscfgovr.tempdir, ACCT_INI, "wt+");
     if (in.IsOpen() && out.IsOpen()) {
@@ -213,7 +215,7 @@ void write_inet_addr(const char *pszInternetEmailAddress, int nUserNumber) {
           out.WriteFormatted(szSavedLine);
         }
       }
-      out.WriteFormatted("\nUSER%d = %s", nUserNumber, pszInternetEmailAddress);
+      out.WriteFormatted("\nUSER%d = %s", user_number, internet_address);
       in.Close();
       out.Close();
     }

@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -27,13 +27,19 @@
 #include <unistd.h>
 #endif  // _WIN32
 
-#include "bbs/wwiv.h"
+#include "bbs/arword.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
+#include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
+#include "bbs/message_file.h"
 #include "bbs/netsup.h"
 #include "bbs/pause.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
+#include "core/datafile.h"
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "core/os.h"
@@ -42,6 +48,7 @@
 #include "core/wwivport.h"
 
 #include "sdk/config.h"
+#include "sdk/filenames.h"
 
 // Additional INI file function and structure
 #include "bbs/xinitini.h"
@@ -69,7 +76,7 @@ uint32_t GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNu
 
 // Turns a string into a bitmapped unsigned short flag for use with
 // ExecuteExternalProgram calls.
-unsigned short WApplication::str2spawnopt(const char *s) {
+unsigned short WSession::str2spawnopt(const char *s) {
   char ts[ 255 ];
 
   unsigned short return_val = 0;
@@ -93,7 +100,7 @@ unsigned short WApplication::str2spawnopt(const char *s) {
 
 
 // Takes string s and creates restrict val
-unsigned short WApplication::str2restrict(const char *s) {
+unsigned short WSession::str2restrict(const char *s) {
   const char *rs = restrict_string;
   char s1[81];
 
@@ -106,12 +113,12 @@ unsigned short WApplication::str2restrict(const char *s) {
     }
   }
 
-  return static_cast< short >(r);
+  return static_cast<int16_t>(r);
 }
 
 // begin callback addition
 
-unsigned char WApplication::stryn2tf(const char *s) {
+unsigned char WSession::stryn2tf(const char *s) {
   char ch = wwiv::UpperCase<char>(*s);
 
   char yesChar = *(YesNoString(true));
@@ -124,7 +131,7 @@ unsigned char WApplication::stryn2tf(const char *s) {
 
 // end callback addition
 
-#define OFFOF(x) static_cast<int16_t>(reinterpret_cast<long>(&session()->user()->data.x) - reinterpret_cast<long>(&session()->user()->data))
+#define OFFOF(x) static_cast<int16_t>(reinterpret_cast<long>(&user()->data.x) - reinterpret_cast<long>(&user()->data))
 
 // Reads WWIV.INI info from [WWIV] subsection, overrides some config.dat
 // settings (as appropriate), updates config.dat with those values. Also
@@ -184,11 +191,11 @@ static void set_string(IniFile* ini, int key_idx, string* out) {
 #define INI_INIT_STR(n, f) { set_string(ini, n, &syscfg.f); }
 
 #define INI_GET_ASV(s, f, func, d) \
-{const char* ss; if ((ss=ini->GetValue(get_key_str(INI_STR_SIMPLE_ASV,s)))!=nullptr) session()->asv.f = func (ss); else session()->asv.f = d;}
+{const char* ss; if ((ss=ini->GetValue(get_key_str(INI_STR_SIMPLE_ASV,s)))!=nullptr) asv.f = func (ss); else asv.f = d;}
 #define INI_GET_CALLBACK(s, f, func, d) \
 {const char* ss; if ((ss=ini->GetValue(get_key_str(INI_STR_CALLBACK,s)))!=nullptr) \
-    session()->cbv.f = func (ss); \
-    else session()->cbv.f = d;}
+    cbv.f = func (ss); \
+    else cbv.f = d;}
 
 #define NEL(s) (sizeof(s) / sizeof((s)[0]))
 
@@ -245,53 +252,53 @@ static ini_flags_type sysconfig_flags[] = {
   {INI_STR_ENABLE_MCI, false, sysconfig_enable_mci},
 };
 
-IniFile* WApplication::ReadINIFile() {
-  // Setup default session()-> data
+IniFile* WSession::ReadINIFile() {
+  // Setup default  data
   for (int nTempColorNum = 0; nTempColorNum < 10; nTempColorNum++) {
-    session()->newuser_colors[ nTempColorNum ] = nucol[ nTempColorNum ];
-    session()->newuser_bwcolors[ nTempColorNum ] = nucolbw[ nTempColorNum ];
+    newuser_colors[ nTempColorNum ] = nucol[ nTempColorNum ];
+    newuser_bwcolors[ nTempColorNum ] = nucolbw[ nTempColorNum ];
   }
 
-  session()->SetTopScreenColor(31);
-  session()->SetUserEditorColor(31);
-  session()->SetEditLineColor(112);
-  session()->SetChatNameSelectionColor(95);
-  session()->SetMessageColor(2);
-  session()->max_batch = 50;
-  session()->max_extend_lines = 10;
-  session()->max_chains = 50;
-  session()->max_gfilesec = 32;
-  session()->mail_who_field_len = 35;
-  session()->SetBeginDayNodeNumber(1);
-  session()->SetUseInternalZmodem(true);
-  session()->SetExecChildProcessWaitTime(500);
-  session()->SetExecLogSyncFoss(true);
-  session()->SetNewScanAtLogin(false);
+  SetTopScreenColor(31);
+  SetUserEditorColor(31);
+  SetEditLineColor(112);
+  SetChatNameSelectionColor(95);
+  SetMessageColor(2);
+  max_batch = 50;
+  max_extend_lines = 10;
+  max_chains = 50;
+  max_gfilesec = 32;
+  mail_who_field_len = 35;
+  SetBeginDayNodeNumber(1);
+  SetUseInternalZmodem(true);
+  SetExecChildProcessWaitTime(500);
+  SetExecLogSyncFoss(true);
+  SetNewScanAtLogin(false);
 
   for (size_t nTempEventNum = 0; nTempEventNum < NEL(eventinfo); nTempEventNum++) {
-    application()->spawn_opts[ nTempEventNum ] = eventinfo[ nTempEventNum ].eflags;
+    spawn_opts[ nTempEventNum ] = eventinfo[ nTempEventNum ].eflags;
   }
 
-  // put in default WApplication::flags
-  application()->SetConfigFlags(OP_FLAGS_FIDO_PROCESS);
+  // put in default WSession::flags
+  SetConfigFlags(OP_FLAGS_FIDO_PROCESS);
 
   if (ok_modem_stuff) {
-    application()->SetConfigFlag(OP_FLAGS_NET_CALLOUT);
+    SetConfigFlag(OP_FLAGS_NET_CALLOUT);
   } else {
-    application()->ClearConfigFlag(OP_FLAGS_NET_CALLOUT);
+    ClearConfigFlag(OP_FLAGS_NET_CALLOUT);
   }
 
   // initialize ini communication
   const string instance_name = StringPrintf("WWIV-%u", GetInstanceNumber());
-  IniFile* ini(new IniFile(FilePath(application()->GetHomeDir(), WWIV_INI), instance_name, INI_TAG));
+  IniFile* ini(new IniFile(FilePath(GetHomeDir(), WWIV_INI), instance_name, INI_TAG));
   if (ini->IsOpen()) {
     // found something
     // pull out event flags
-    for (size_t nTempSpawnOptNum = 0; nTempSpawnOptNum < NEL(application()->spawn_opts); nTempSpawnOptNum++) {
+    for (size_t nTempSpawnOptNum = 0; nTempSpawnOptNum < NEL(spawn_opts); nTempSpawnOptNum++) {
       const string key_name = StringPrintf("%s[%s]", get_key_str(INI_STR_SPAWNOPT), eventinfo[nTempSpawnOptNum].name);
       const char *ss = ini->GetValue(key_name);
       if (ss != nullptr) {
-        application()->spawn_opts[nTempSpawnOptNum] = str2spawnopt(ss);
+        spawn_opts[nTempSpawnOptNum] = str2spawnopt(ss);
       }
     }
 
@@ -300,34 +307,34 @@ IniFile* WApplication::ReadINIFile() {
       string key_name = StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLOR), nTempColorNum);
       const char *ss = ini->GetValue(key_name);
       if (ss != nullptr && atoi(ss) > 0) {
-        session()->newuser_colors[nTempColorNum] = StringToUnsignedChar(ss);
+        newuser_colors[nTempColorNum] = StringToUnsignedChar(ss);
       }
       key_name = StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLOR), nTempColorNum);
       ss = ini->GetValue(key_name);
       if (ss != nullptr && atoi(ss) > 0) {
-        session()->newuser_bwcolors[nTempColorNum] = StringToUnsignedChar(ss);
+        newuser_bwcolors[nTempColorNum] = StringToUnsignedChar(ss);
       }
     }
 
-    session()->SetMessageThreadingEnabled(ini->GetBooleanValue("THREAD_SUBS"));
-    session()->SetCarbonCopyEnabled(ini->GetBooleanValue("ALLOW_CC_BCC"));
+    SetMessageThreadingEnabled(ini->GetBooleanValue("THREAD_SUBS"));
+    SetCarbonCopyEnabled(ini->GetBooleanValue("ALLOW_CC_BCC"));
 
     // pull out sysop-side colors
-    session()->SetTopScreenColor(ini->GetNumericValue(get_key_str(INI_STR_TOPCOLOR),
-                                    session()->GetTopScreenColor()));
-    session()->SetUserEditorColor(ini->GetNumericValue(get_key_str(INI_STR_F1COLOR),
-                                     session()->GetUserEditorColor()));
-    session()->SetEditLineColor(ini->GetNumericValue(get_key_str(INI_STR_EDITLINECOLOR),
-                                   session()->GetEditLineColor()));
-    session()->SetChatNameSelectionColor(ini->GetNumericValue(get_key_str(INI_STR_CHATSELCOLOR),
-                                            session()->GetChatNameSelectionColor()));
+    SetTopScreenColor(ini->GetNumericValue(get_key_str(INI_STR_TOPCOLOR),
+                                    GetTopScreenColor()));
+    SetUserEditorColor(ini->GetNumericValue(get_key_str(INI_STR_F1COLOR),
+                                     GetUserEditorColor()));
+    SetEditLineColor(ini->GetNumericValue(get_key_str(INI_STR_EDITLINECOLOR),
+                                   GetEditLineColor()));
+    SetChatNameSelectionColor(ini->GetNumericValue(get_key_str(INI_STR_CHATSELCOLOR),
+                                            GetChatNameSelectionColor()));
 
     // pull out sizing options
-    session()->max_batch = ini->GetNumericValue(get_key_str(INI_STR_MAX_BATCH), session()->max_batch);
-    session()->max_extend_lines = ini->GetNumericValue(get_key_str(INI_STR_MAX_EXTEND_LINES),
-                                     session()->max_extend_lines);
-    session()->max_chains = ini->GetNumericValue(get_key_str(INI_STR_MAX_CHAINS), session()->max_chains);
-    session()->max_gfilesec = ini->GetNumericValue(get_key_str(INI_STR_MAX_GFILESEC), session()->max_gfilesec);
+    max_batch = ini->GetNumericValue(get_key_str(INI_STR_MAX_BATCH), max_batch);
+    max_extend_lines = ini->GetNumericValue(get_key_str(INI_STR_MAX_EXTEND_LINES),
+                                            max_extend_lines);
+    max_chains = ini->GetNumericValue(get_key_str(INI_STR_MAX_CHAINS), max_chains);
+    max_gfilesec = ini->GetNumericValue(get_key_str(INI_STR_MAX_GFILESEC), max_gfilesec);
 
     // pull out strings
     INI_INIT_STR(INI_STR_UPLOAD_CMD, upload_cmd);
@@ -335,30 +342,30 @@ IniFile* WApplication::ReadINIFile() {
     INI_INIT_STR(INI_STR_NEWUSER_CMD, newuser_cmd);
     INI_INIT_STR(INI_STR_LOGON_CMD, logon_cmd);
 
-    session()->m_nForcedReadSubNumber = ini->GetNumericValue(get_key_str(INI_STR_FORCE_SCAN_SUBNUM),
-                                           session()->m_nForcedReadSubNumber);
-    session()->m_bInternalZmodem = ini->GetBooleanValue(get_key_str(INI_STR_INTERNALZMODEM),
-                                      session()->m_bInternalZmodem);
-    session()->m_bNewScanAtLogin = ini->GetBooleanValue(get_key_str(INI_STR_NEW_SCAN_AT_LOGIN),
-                                      session()->m_bNewScanAtLogin);
+    m_nForcedReadSubNumber = ini->GetNumericValue(get_key_str(INI_STR_FORCE_SCAN_SUBNUM),
+                                                  m_nForcedReadSubNumber);
+    m_bInternalZmodem = ini->GetBooleanValue(get_key_str(INI_STR_INTERNALZMODEM),
+                                             m_bInternalZmodem);
+    m_bNewScanAtLogin = ini->GetBooleanValue(get_key_str(INI_STR_NEW_SCAN_AT_LOGIN),
+                                             m_bNewScanAtLogin);
 
-    session()->m_bExecLogSyncFoss = ini->GetBooleanValue(get_key_str(INI_STR_EXEC_LOG_SYNCFOSS),
-                                       session()->m_bExecLogSyncFoss);
-    session()->m_nExecChildProcessWaitTime = ini->GetNumericValue(get_key_str(INI_STR_EXEC_CHILD_WAIT_TIME),
-        session()->m_nExecChildProcessWaitTime);
+    m_bExecLogSyncFoss = ini->GetBooleanValue(get_key_str(INI_STR_EXEC_LOG_SYNCFOSS),
+                                              m_bExecLogSyncFoss);
+    m_nExecChildProcessWaitTime = 
+        ini->GetNumericValue(get_key_str(INI_STR_EXEC_CHILD_WAIT_TIME), m_nExecChildProcessWaitTime);
 
-    session()->SetBeginDayNodeNumber(ini->GetNumericValue(get_key_str(INI_STR_BEGINDAYNODENUMBER),
-                                        session()->GetBeginDayNodeNumber()));
+    SetBeginDayNodeNumber(ini->GetNumericValue(get_key_str(INI_STR_BEGINDAYNODENUMBER),
+                                        GetBeginDayNodeNumber()));
 
     // pull out sysinfo_flags
-    application()->SetConfigFlags(GetFlagsFromIniFile(ini, sysinfo_flags, NEL(sysinfo_flags),
-                                     application()->GetConfigFlags()));
+    SetConfigFlags(GetFlagsFromIniFile(ini, sysinfo_flags, NEL(sysinfo_flags),
+                                     GetConfigFlags()));
 
     // allow override of WSession::m_nMessageColor
-    session()->SetMessageColor(ini->GetNumericValue(get_key_str(INI_STR_MSG_COLOR), session()->GetMessageColor()));
+    SetMessageColor(ini->GetNumericValue(get_key_str(INI_STR_MSG_COLOR), GetMessageColor()));
 
     // get asv values
-    if (application()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV)) {
+    if (HasConfigFlag(OP_FLAGS_SIMPLE_ASV)) {
       INI_GET_ASV("SL", sl, StringToUnsignedChar, syscfg.autoval[9].sl);
       INI_GET_ASV("DSL", dsl, StringToUnsignedChar, syscfg.autoval[9].dsl);
       INI_GET_ASV("EXEMPT", exempt, StringToUnsignedChar, 0);
@@ -366,15 +373,15 @@ IniFile* WApplication::ReadINIFile() {
       INI_GET_ASV("DAR", dar, str_to_arword, syscfg.autoval[9].dar);
       INI_GET_ASV("RESTRICT", restrict, str2restrict, 0);
     }
-    if (application()->HasConfigFlag(OP_FLAGS_ADV_ASV)) {
-      session()->advasv.reg_wwiv = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "REG_WWIV"), 1);
-      session()->advasv.nonreg_wwiv = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "NONREG_WWIV"), 1);
-      session()->advasv.non_wwiv = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "NON_WWIV"), 1);
-      session()->advasv.cosysop = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "COSYSOP"), 1);
+    if (HasConfigFlag(OP_FLAGS_ADV_ASV)) {
+      advasv.reg_wwiv = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "REG_WWIV"), 1);
+      advasv.nonreg_wwiv = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "NONREG_WWIV"), 1);
+      advasv.non_wwiv = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "NON_WWIV"), 1);
+      advasv.cosysop = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "COSYSOP"), 1);
     }
 
     // get callback values
-    if (application()->HasConfigFlag(OP_FLAGS_CALLBACK)) {
+    if (HasConfigFlag(OP_FLAGS_CALLBACK)) {
       INI_GET_CALLBACK("SL", sl, StringToUnsignedChar, syscfg.autoval[2].sl);
       INI_GET_CALLBACK("DSL", dsl, StringToUnsignedChar, syscfg.autoval[2].dsl);
       INI_GET_CALLBACK("EXEMPT", exempt, StringToUnsignedChar, 0);
@@ -394,7 +401,7 @@ IniFile* WApplication::ReadINIFile() {
     // misc stuff
     if (((ss = ini->GetValue(get_key_str(INI_STR_MAIL_WHO_LEN))) != nullptr) &&
         (atoi(ss) > 0 || ss[0] == '0')) {
-      session()->mail_who_field_len = StringToUnsignedShort(ss);
+      mail_who_field_len = StringToUnsignedShort(ss);
     }
     if ((ss = ini->GetValue(get_key_str(INI_STR_RATIO))) != nullptr) {
       syscfg.req_ratio = static_cast<float>(atof(ss));
@@ -411,35 +418,22 @@ IniFile* WApplication::ReadINIFile() {
       m_attachmentDirectory = os.str();
     }
 
-    session()->screen_saver_time = ini->GetNumericValue(get_key_str(INI_STR_SCREEN_SAVER_TIME),
-                                      session()->screen_saver_time);
+    screen_saver_time = ini->GetNumericValue(get_key_str(INI_STR_SCREEN_SAVER_TIME),
+                                             screen_saver_time);
   }
 
-  session()->max_extend_lines    = std::min<unsigned short>(session()->max_extend_lines, 99);
-  session()->max_batch           = std::min<unsigned short>(session()->max_batch , 999);
-  session()->max_chains          = std::min<unsigned short>(session()->max_chains, 999);
-  session()->max_gfilesec        = std::min<unsigned short>(session()->max_gfilesec, 999);
+  max_extend_lines    = std::min<unsigned short>(max_extend_lines, 99);
+  max_batch           = std::min<unsigned short>(max_batch , 999);
+  max_chains          = std::min<unsigned short>(max_chains, 999);
+  max_gfilesec        = std::min<unsigned short>(max_gfilesec, 999);
 
-  // can't allow user to change these on-the-fly
-  unsigned short omb = session()->max_batch;
-  if (omb) {
-    session()->max_batch = omb;
-  }
-  unsigned short omc = session()->max_chains;
-  if (omc) {
-    session()->max_chains = omc;
-  }
-  unsigned short omg = session()->max_gfilesec;
-  if (omg) {
-    session()->max_gfilesec = omg;
-  }
+  set_wwivmail_enabled(ini->GetBooleanValue("USE_WWIVMAIL", true));
+  set_internal_qwk_enabled(ini->GetBooleanValue("USE_INTERNAL_QWK", true));
 
-  session()->set_wwivmail_enabled(ini->GetBooleanValue("USE_WWIVMAIL", true));
-  session()->set_internal_qwk_enabled(ini->GetBooleanValue("USE_INTERNAL_QWK", true));
   return ini;
 }
 
-bool WApplication::ReadConfigOverlayFile(int instance_number, IniFile* ini) {
+bool WSession::ReadConfigOverlayFile(int instance_number, IniFile* ini) {
   const char* temp_directory_char = ini->GetValue("TEMP_DIRECTORY");
   if (temp_directory_char == nullptr) {
     std::clog << "TEMP_DIRECTORY must be set in WWIV.INI." << std::endl;
@@ -479,7 +473,7 @@ static char* DuplicatePath(const char* path) {
   return out;
 }
 
-bool WApplication::ReadConfig() {
+bool WSession::ReadConfig() {
   wwiv::sdk::Config full_config;
   if (!full_config.IsInitialized()) {
     std::clog << CONFIG_DAT << " NOT FOUND." << std::endl;
@@ -551,8 +545,8 @@ bool WApplication::ReadConfig() {
   syscfg.sysoplowtime     = full_config.config()->sysoplowtime;
   syscfg.sysophightime    = full_config.config()->sysophightime;
   syscfg.executetime      = full_config.config()->executetime;
-  syscfg.netlowtime       = full_config.config()->netlowtime;
-  syscfg.nethightime      = full_config.config()->nethightime;
+  syscfg.unused_netlowtime = full_config.config()->unused_netlowtime;
+  syscfg.unused_nethightime = full_config.config()->unused_nethightime;
   syscfg.max_subs         = full_config.config()->max_subs;
   syscfg.max_dirs         = full_config.config()->max_dirs;
   syscfg.qscn_len         = full_config.config()->qscn_len;
@@ -587,7 +581,7 @@ bool WApplication::ReadConfig() {
   return true;
 }
 
-bool WApplication::SaveConfig() {
+bool WSession::SaveConfig() {
   File configFile(CONFIG_DAT);
   if (configFile.Open(File::modeBinary | File::modeReadWrite)) {
     configrec full_syscfg;
@@ -611,13 +605,6 @@ bool WApplication::SaveConfig() {
     full_syscfg.autoval[8]      = syscfg.autoval[8];
     full_syscfg.autoval[9]      = syscfg.autoval[9];
 
-    for (int nTempArcNum = 0; nTempArcNum < 4; nTempArcNum++) {
-      strcpy(full_syscfg.arcs[ nTempArcNum ].extension, arcs[ nTempArcNum ].extension);
-      strcpy(full_syscfg.arcs[ nTempArcNum ].arca, arcs[ nTempArcNum ].arca);
-      strcpy(full_syscfg.arcs[ nTempArcNum ].arce, arcs[ nTempArcNum ].arce);
-      strcpy(full_syscfg.arcs[ nTempArcNum ].arcl, arcs[ nTempArcNum ].arcl);
-    }
-
     full_syscfg.unused_rrd = 0;
     memset(full_syscfg.unused_regcode, '\0', 83);
 
@@ -628,26 +615,15 @@ bool WApplication::SaveConfig() {
   return true;
 }
 
-void WApplication::read_nextern() {
-  session()->SetNumberOfExternalProtocols(0);
-  if (externs) {
-    free(externs);
-    externs = nullptr;
-  }
-
-  File externalFile(syscfg.datadir, NEXTERN_DAT);
-  if (externalFile.Open(File::modeBinary | File::modeReadOnly)) {
-    unsigned long lFileSize = externalFile.GetLength();
-    if (lFileSize > 15 * sizeof(newexternalrec)) {
-      lFileSize = 15 * sizeof(newexternalrec);
-    }
-    externs = static_cast<newexternalrec *>(BbsAllocA(lFileSize + 10));
-    WWIV_ASSERT(externs != nullptr);
-    session()->SetNumberOfExternalProtocols(externalFile.Read(externs, lFileSize) / sizeof(newexternalrec));
+void WSession::read_nextern() {
+  externs.clear();
+  DataFile<newexternalrec> externalFile(syscfg.datadir, NEXTERN_DAT);
+  if (externalFile) {
+    externalFile.ReadVector(externs, 15);
   }
 }
 
-void WApplication::read_arcs() {
+void WSession::read_arcs() {
   if (arcs) {
     free(arcs);
     arcs = nullptr;
@@ -661,89 +637,71 @@ void WApplication::read_arcs() {
     }
     arcs = static_cast<arcrec *>(BbsAllocA(lFileSize));
     archiverFile.Read(arcs, lFileSize);
-    WWIV_ASSERT(arcs != nullptr);
   }
 }
 
-void WApplication::read_editors() {
-  if (editors) {
-    free(editors);
-    editors = nullptr;
+void WSession::read_editors() {
+  editors.clear();
+  DataFile<editorrec> file(syscfg.datadir, EDITORS_DAT);
+  if (!file) {
+    return;
   }
-  session()->SetNumberOfEditors(0);
+  file.ReadVector(editors, 10);
+}
 
-  File file(syscfg.datadir, EDITORS_DAT);
-  if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    unsigned long lFileSize = file.GetLength();
-    if (lFileSize > 10 * sizeof(editorrec)) {
-      lFileSize = 10 * sizeof(editorrec);
-    }
-    editors = static_cast<editorrec *>(BbsAllocA(lFileSize + 10));
-    WWIV_ASSERT(editors != nullptr);
-    session()->SetNumberOfEditors(file.Read(editors, lFileSize) / sizeof(editorrec));
+void WSession::read_nintern() {
+  over_intern.clear();
+  DataFile<newexternalrec> file(syscfg.datadir, NINTERN_DAT);
+  if (file) {
+    file.ReadVector(over_intern, 3);
   }
 }
 
-void WApplication::read_nintern() {
-  if (over_intern) {
-    free(over_intern);
-    over_intern = nullptr;
-  }
-  File file(syscfg.datadir, NINTERN_DAT);
-  if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    over_intern = static_cast<newexternalrec *>(BbsAllocA(3 * sizeof(newexternalrec)));
-    WWIV_ASSERT(over_intern != nullptr);
-
-    file.Read(over_intern, 3 * sizeof(newexternalrec));
-  }
-}
-
-bool WApplication::read_subs() {
+bool WSession::read_subs() {
   if (subboards) {
     free(subboards);
   }
   subboards = nullptr;
-  session()->SetMaxNumberMessageAreas(syscfg.max_subs);
-  subboards = static_cast< subboardrec * >(BbsAllocA(session()->GetMaxNumberMessageAreas() * sizeof(subboardrec)));
-  WWIV_ASSERT(subboards != nullptr);
+  SetMaxNumberMessageAreas(syscfg.max_subs);
+  subboards = static_cast<subboardrec*>(BbsAllocA(GetMaxNumberMessageAreas() * sizeof(subboardrec)));
 
   File file(syscfg.datadir, SUBS_DAT);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     std::clog << file.GetName() << " NOT FOUND." << std::endl;
     return false;
   }
-  session()->num_subs = (file.Read(subboards,
-                                      (session()->GetMaxNumberMessageAreas() * sizeof(subboardrec)))) / sizeof(subboardrec);
-  return (read_subs_xtr(session()->GetMaxNumberMessageAreas(), session()->num_subs, subboards));
+  num_subs = (file.Read(subboards,
+                                      (GetMaxNumberMessageAreas() * sizeof(subboardrec)))) / sizeof(subboardrec);
+  return (read_subs_xtr(GetMaxNumberMessageAreas(), num_subs, subboards));
 }
 
-void WApplication::read_networks() {
-  session()->internetEmailName = "";
-  session()->internetEmailDomain = "";
-  session()->internetPopDomain = "";
-  session()->SetInternetUseRealNames(false);
+void WSession::read_networks() {
+  internetEmailName = "";
+  internetEmailDomain = "";
+  internetPopDomain = "";
+  SetInternetUseRealNames(false);
 
   // TODO: wire up for NetX
   TextFile fileNetIni("NET.INI", "rt");
   if (fileNetIni.IsOpen()) {
     while (!fileNetIni.IsEndOfFile()) {
-      char szBuffer[255];
-      fileNetIni.ReadLine(szBuffer, 80);
-      szBuffer[sizeof(szBuffer) - 1] = 0;
-      StringRemoveWhitespace(szBuffer);
-      if (!strncasecmp(szBuffer, "DOMAIN=", 7) && session()->internetEmailDomain.empty()) {
-        session()->internetEmailDomain = &(szBuffer[7]);
-      } else if (!strncasecmp(szBuffer, "POPNAME=", 8) && session()->internetEmailName.empty()) {
-        session()->internetEmailName = &(szBuffer[8]);
-      } else if (!strncasecmp(szBuffer, "FWDDOM=", 7)) {
-        session()->internetEmailDomain = &(szBuffer[7]);
-      } else if (!strncasecmp(szBuffer, "FWDNAME=", 8)) {
-        session()->internetEmailName = &(szBuffer[8]);
-      } else if (!strncasecmp(szBuffer, "POPDOMAIN=", 10)) {
-        session()->internetPopDomain = &(szBuffer[10]);
-      } else if (!strncasecmp(szBuffer, "REALNAME=", 9) &&
-                 (szBuffer[9] == 'Y' || szBuffer[9] == 'y')) {
-        session()->SetInternetUseRealNames(true);
+      char buffer[255];
+      fileNetIni.ReadLine(buffer, 80);
+      buffer[sizeof(buffer) - 1] = 0;
+      StringRemoveWhitespace(buffer);
+      if (!strncasecmp(buffer, "DOMAIN=", 7) && internetEmailDomain.empty()) {
+        internetEmailDomain = &(buffer[7]);
+      } else if (!strncasecmp(buffer, "POPNAME=", 8) && internetEmailName.empty()) {
+        internetEmailName = &(buffer[8]);
+      } else if (!strncasecmp(buffer, "FWDDOM=", 7)) {
+        internetEmailDomain = &(buffer[7]);
+      } else if (!strncasecmp(buffer, "FWDNAME=", 8)) {
+        internetEmailName = &(buffer[8]);
+      } else if (!strncasecmp(buffer, "POPDOMAIN=", 10)) {
+        internetPopDomain = &(buffer[10]);
+      } else if (!strncasecmp(buffer, "REALNAME=", 9) &&
+                 (buffer[9] == 'Y' || buffer[9] == 'y')) {
+        SetInternetUseRealNames(true);
       }
     }
     fileNetIni.Close();
@@ -756,7 +714,7 @@ void WApplication::read_networks() {
   File networksfile(syscfg.datadir, NETWORKS_DAT);
   if (networksfile.Open(File::modeBinary | File::modeReadOnly)) {
     int net_num_max = networksfile.GetLength() / sizeof(net_networks_rec_disk);
-    session()->SetMaxNetworkNumber(net_num_max);
+    SetMaxNetworkNumber(net_num_max);
     std::unique_ptr<net_networks_rec_disk[]> net_networks_disk(new net_networks_rec_disk[net_num_max]());
     net_networks = static_cast<net_networks_rec *>(BbsAllocA(net_num_max * sizeof(net_networks_rec)));
     if (net_num_max) {
@@ -769,7 +727,7 @@ void WApplication::read_networks() {
       }
     }
     networksfile.Close();
-    for (int nTempNetNumber = 0; nTempNetNumber < session()->GetMaxNetworkNumber(); nTempNetNumber++) {
+    for (int nTempNetNumber = 0; nTempNetNumber < max_net_num(); nTempNetNumber++) {
       char* ss = strchr(net_networks[nTempNetNumber].name, ' ');
       if (ss) {
         *ss = '\0';
@@ -779,37 +737,27 @@ void WApplication::read_networks() {
 
   if (!net_networks) {
     net_networks = static_cast<net_networks_rec *>(BbsAllocA(sizeof(net_networks_rec)));
-    WWIV_ASSERT(net_networks != nullptr);
-    session()->SetMaxNetworkNumber(1);
+    SetMaxNetworkNumber(1);
     strcpy(net_networks->name, "WWIVnet");
     strcpy(net_networks->dir, syscfg.datadir);
     net_networks->sysnum = syscfg.systemnumber;
   }
 }
 
-bool WApplication::read_names() {
-  if (smallist) {
-    free(smallist);
-  }
-
-  int maxNumberOfUsers = std::max<int>(statusMgr->GetUserCount(), syscfg.maxusers);
-
-  smallist = static_cast<smalrec *>(BbsAllocA(static_cast<long>(maxNumberOfUsers) * static_cast<long>(sizeof(smalrec))));
-  WWIV_ASSERT(smallist != nullptr);
-
-  File file(syscfg.datadir, NAMES_LST);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    std::clog << file.GetName() << " NOT FOUND." << std::endl;
+bool WSession::read_names() {
+  int max_users = std::max<int>(statusMgr->GetUserCount(), syscfg.maxusers);
+  DataFile<smalrec> file(syscfg.datadir, NAMES_LST);
+  if (!file) {
+    std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
     return false;
   }
-  file.Read(smallist, maxNumberOfUsers * sizeof(smalrec));
-  file.Close();
+  file.ReadVector(smallist, max_users);
   return true;
 }
 
-void WApplication::read_voting() {
-  for (int nTempQuestionNumber = 0; nTempQuestionNumber < 20; nTempQuestionNumber++) {
-    questused[ nTempQuestionNumber ] = 0;
+void WSession::read_voting() {
+  for (int nTempQuestionum = 0; nTempQuestionum < 20; nTempQuestionum++) {
+    questused[ nTempQuestionum ] = 0;
   }
 
   File file(syscfg.datadir, VOTING_DAT);
@@ -826,93 +774,73 @@ void WApplication::read_voting() {
   }
 }
 
-bool WApplication::read_dirs() {
+bool WSession::read_dirs() {
   if (directories) {
     free(directories);
   }
   directories = nullptr;
-  session()->SetMaxNumberFileAreas(syscfg.max_dirs);
-  directories = static_cast<directoryrec *>(BbsAllocA(static_cast<long>(session()->GetMaxNumberFileAreas()) *
+  SetMaxNumberFileAreas(syscfg.max_dirs);
+  directories = static_cast<directoryrec *>(BbsAllocA(static_cast<long>(GetMaxNumberFileAreas()) *
                 static_cast<long>(sizeof(directoryrec))));
-  WWIV_ASSERT(directories != nullptr);
 
   File file(syscfg.datadir, DIRS_DAT);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     std::clog << file.GetName() << " NOT FOUND." << std::endl;
     return false;
   }
-  session()->num_dirs = file.Read(directories,
-                                     (sizeof(directoryrec) * session()->GetMaxNumberFileAreas())) / sizeof(directoryrec);
+  num_dirs = file.Read(directories,
+                                     (sizeof(directoryrec) * GetMaxNumberFileAreas())) / sizeof(directoryrec);
   return true;
 }
 
-void WApplication::read_chains() {
-  if (chains) {
-    free(chains);
+void WSession::read_chains() {
+  chains.clear();
+  DataFile<chainfilerec> file(syscfg.datadir, CHAINS_DAT);
+  if (!file) {
+    return;
   }
-  chains = nullptr;
-  chains = static_cast<chainfilerec *>(BbsAllocA(session()->max_chains * sizeof(chainfilerec)));
-  WWIV_ASSERT(chains != nullptr);
-  File file(syscfg.datadir, CHAINS_DAT);
-  if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    session()->SetNumberOfChains(file.Read(chains,
-                                    session()->max_chains * sizeof(chainfilerec)) / sizeof(chainfilerec));
-  }
-  file.Close();
-  if (application()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    if (chains_reg) {
-      free(chains_reg);
-    }
-    chains_reg = nullptr;
-    chains_reg = static_cast<chainregrec *>(BbsAllocA(session()->max_chains * sizeof(chainregrec)));
-    WWIV_ASSERT(chains_reg != nullptr);
+  file.ReadVector(chains, max_chains);
 
-    File regFile(syscfg.datadir, CHAINS_REG);
-    if (regFile.Open(File::modeBinary | File::modeReadOnly)) {
-      regFile.Read(chains_reg, session()->max_chains * sizeof(chainregrec));
+  if (HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
+    chains_reg.clear();
+
+    DataFile<chainregrec> regFile(syscfg.datadir, CHAINS_REG);
+    if (regFile) {
+      regFile.ReadVector(chains_reg, max_chains);
     } else {
-      for (int nTempChainNum = 0; nTempChainNum < session()->GetNumberOfChains(); nTempChainNum++) {
-        for (size_t nTempRegByNum = 0;
-             nTempRegByNum < sizeof(chains_reg[ nTempChainNum ].regby) / sizeof(chains_reg[ nTempChainNum ].regby[0]);
-             nTempRegByNum++) {
-          chains_reg[ nTempChainNum ].regby[ nTempRegByNum ] = 0;
-        }
-        chains_reg[ nTempChainNum ].usage   = 0;
-        chains_reg[ nTempChainNum ].minage  = 0;
-        chains_reg[ nTempChainNum ].maxage  = 255;
+      regFile.Close();
+      for (size_t nTempChainNum = 0; nTempChainNum < chains.size(); nTempChainNum++) {
+        chainregrec reg;
+        memset(&reg, 0, sizeof(chainregrec));
+        reg.maxage = 255;
+        chains_reg.push_back(reg);
       }
-      regFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-      regFile.Write(chains_reg , sizeof(chainregrec) * session()->GetNumberOfChains());
+      DataFile<chainregrec> writeFile(syscfg.datadir, CHAINS_REG, 
+          File::modeReadWrite | File::modeBinary | File::modeCreateFile);
+      writeFile.WriteVector(chains_reg);
     }
-    regFile.Close();
   }
 }
 
-bool WApplication::read_language() {
-  if (languages) {
-    free(languages);
-  }
-  languages = nullptr;
-  File file(syscfg.datadir, LANGUAGE_DAT);
-  if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    session()->num_languages = file.GetLength() / sizeof(languagerec);
-    if (session()->num_languages) {
-      languages = static_cast<languagerec *>(BbsAllocA(session()->num_languages * sizeof(languagerec)));
-      WWIV_ASSERT(languages != nullptr);
-
-      file.Read(languages, session()->num_languages * sizeof(languagerec));
+bool WSession::read_language() {
+  DataFile<languagerec> file(syscfg.datadir, LANGUAGE_DAT);
+  size_t num_languages = 0;
+  if (file) {
+    num_languages = file.number_of_records();
+    if (num_languages > 0) {
+      file.ReadVector(languages);
     }
     file.Close();
   }
-  if (!session()->num_languages) {
-    languages = static_cast<languagerec *>(BbsAllocA(sizeof(languagerec)));
-    WWIV_ASSERT(languages != nullptr);
-    session()->num_languages = 1;
-    strcpy(languages->name, "English");
-    strncpy(languages->dir, syscfg.gfilesdir, sizeof(languages->dir) - 1);
-    strncpy(languages->mdir, syscfg.menudir, sizeof(languages->mdir) - 1);
+  if (!num_languages) {
+    num_languages = 1;
+    languagerec lang;
+    memset(&lang, 0, sizeof(languagerec));
+    strcpy(lang.name, "English");
+    strncpy(lang.dir, syscfg.gfilesdir, sizeof(lang.dir) - 1);
+    strncpy(lang.mdir, syscfg.menudir, sizeof(lang.mdir) - 1);
   }
-  session()->SetCurrentLanguageNumber(-1);
+  SetCurrentLanguageNumber(-1);
   if (!set_language(0)) {
     std::clog << "You need the default language installed to run the BBS." << std::endl;
     return false;
@@ -920,18 +848,17 @@ bool WApplication::read_language() {
   return true;
 }
 
-void WApplication::read_gfile() {
+void WSession::read_gfile() {
   if (gfilesec != nullptr) {
     free(gfilesec);
     gfilesec = nullptr;
   }
-  gfilesec = static_cast<gfiledirrec *>(BbsAllocA(static_cast<long>(session()->max_gfilesec * sizeof(gfiledirrec))));
-  WWIV_ASSERT(gfilesec != nullptr);
+  gfilesec = static_cast<gfiledirrec *>(BbsAllocA(static_cast<long>(max_gfilesec * sizeof(gfiledirrec))));
   File file(syscfg.datadir, GFILE_DAT);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    session()->num_sec = 0;
+    num_sec = 0;
   } else {
-    session()->num_sec = file.Read(gfilesec, session()->max_gfilesec * sizeof(gfiledirrec)) / sizeof(gfiledirrec);
+    num_sec = file.Read(gfilesec, max_gfilesec * sizeof(gfiledirrec)) / sizeof(gfiledirrec);
   }
 }
 
@@ -939,44 +866,35 @@ void WApplication::read_gfile() {
  * Makes a path into an absolute path, returns true if original path altered,
  * else returns false
  */
-void WApplication::make_abs_path(char *pszDirectory) {
+void WSession::make_abs_path(char *pszDirectory) {
   string base(GetHomeDir());
   string dir(pszDirectory);
   File::MakeAbsolutePath(base, &dir);
   strcpy(pszDirectory, dir.c_str());
 }
 
-void WApplication::InitializeBBS() {
-  session()->localIO()->SetScreenBottom(session()->localIO()->GetDefaultScreenBottom());
-  defscreenbottom = session()->localIO()->GetDefaultScreenBottom();
+void WSession::InitializeBBS() {
+  localIO()->SetScreenBottom(localIO()->GetDefaultScreenBottom());
+  defscreenbottom = localIO()->GetDefaultScreenBottom();
   // set default screenlinest
-  session()->screenlinest = defscreenbottom + 1;
+  screenlinest = defscreenbottom + 1;
 
-  session()->localIO()->LocalCls();
+  localIO()->LocalCls();
 #if !defined( __unix__ )
   std::clog << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2015, WWIV Software Services."
             << std::endl << std::endl
             << "\r\nInitializing BBS..." << std::endl;
 #endif // __unix__
-  session()->SetCurrentReadMessageArea(-1);
+  SetCurrentReadMessageArea(-1);
   use_workspace = false;
   chat_file = false;
-  session()->localIO()->SetSysopAlert(false);
+  localIO()->SetSysopAlert(false);
   nsp = 0;
-  session()->capture()->set_global_handle(false, true);
+  capture()->set_global_handle(false, true);
   bquote = 0;
   equote = 0;
-  session()->SetQuoting(false);
-  session()->tagptr = 0;
-
-  time_t t = time(nullptr);
-  // Struct tm_year is -= 1900
-  struct tm * pTm = localtime(&t);
-  if (pTm->tm_year < 88) {
-    // TODO9(rushfan): Is this check really needed anymore?
-    std::clog << "You need to set the date [" << pTm->tm_year << "] & time before running the BBS." << std::endl;
-    AbortBBS();
-  }
+  SetQuoting(false);
+  tagptr = 0;
 
   if (!ReadConfig()) {
     AbortBBS(true);
@@ -1016,13 +934,12 @@ void WApplication::InitializeBBS() {
     syscfgovr.primaryport = 1;
   }
 
-  languages = nullptr;
   if (!read_language()) {
     AbortBBS();
   }
 
   net_networks = nullptr;
-  session()->SetNetworkNumber(0);
+  set_net_num(0);
   read_networks();
   set_net_num(0);
 
@@ -1045,13 +962,10 @@ void WApplication::InitializeBBS() {
   statusMgr->CommitTransaction(pStatus);
 
   gat = static_cast<unsigned short *>(BbsAllocA(2048 * sizeof(short)));
-  WWIV_ASSERT(gat != nullptr);
 
   XINIT_PRINTF("Reading Gfiles.");
   gfilesec = nullptr;
   read_gfile();
-
-  smallist = nullptr;
 
   XINIT_PRINTF("Reading user names.");
   if (!read_names()) {
@@ -1071,15 +985,10 @@ void WApplication::InitializeBBS() {
   }
 
   XINIT_PRINTF("Reading Chains.");
-  session()->SetNumberOfChains(0);
-  chains = nullptr;
   read_chains();
 
   XINIT_PRINTF("Reading File Transfer Protocols.");
-  externs = nullptr;
   read_nextern();
-
-  over_intern = nullptr;
   read_nintern();
 
   XINIT_PRINTF("Reading File Archivers.");
@@ -1098,17 +1007,13 @@ void WApplication::InitializeBBS() {
 
   check_phonenum(); // dupphone addition
 
-  // allocate sub cache
-  iscan1(-1, false);
-
-  batch = static_cast<batchrec *>(BbsAllocA(session()->max_batch * sizeof(batchrec)));
-  WWIV_ASSERT(batch != nullptr);
+  batch = static_cast<batchrec *>(BbsAllocA(max_batch * sizeof(batchrec)));
 
   XINIT_PRINTF("Reading User Information.");
-  session()->ReadCurrentUser(1, false);
-  fwaiting = (session()->user()->IsUserDeleted()) ? 0 : session()->user()->GetNumMailWaiting();
+  ReadCurrentUser(1, false);
+  fwaiting = (user()->IsUserDeleted()) ? 0 : user()->GetNumMailWaiting();
   statusMgr->RefreshStatusCache();
-  session()->topdata = (syscfg.sysconfig & sysconfig_no_local) ? LocalIO::topdataNone : LocalIO::topdataUser;
+  topdata = (syscfg.sysconfig & sysconfig_no_local) ? LocalIO::topdataNone : LocalIO::topdataUser;
 
   snprintf(g_szDSZLogFileName, sizeof(g_szDSZLogFileName), "%sdsz.log", syscfgovr.tempdir);
 #if !defined ( __unix__ ) && !defined ( __APPLE__ )
@@ -1126,11 +1031,6 @@ void WApplication::InitializeBBS() {
   if (environment_variable("DSZLOG").empty()) {
     set_environment_variable("DSZLOG", g_szDSZLogFileName);
   }
-  // TODO(rushfan): we really shouldn't be using DOS pkzip anymore. Let's remove this.
-  // until then, I've at least commented what this is for.
-  // This allows DOS redirection of output. (see the addendum.doc for 2.04g) or
-  // see https://groups.google.com/forum/#!topic/comp.compression/KkVMQkA0FmA
-  set_environment_variable("PKNOFASTCHAR", "Y");
   set_environment_variable("BBS", wwiv_version);
 
 #endif // defined ( __unix__ )
@@ -1147,28 +1047,14 @@ void WApplication::InitializeBBS() {
 
   XINIT_PRINTF("Allocating Memory for Message/File Areas.");
   do_event = 0;
-  usub = static_cast<usersubrec *>(BbsAllocA(session()->GetMaxNumberMessageAreas() * sizeof(usersubrec)));
-  WWIV_ASSERT(usub != nullptr);
-  session()->m_SubDateCache = static_cast<unsigned int*>(BbsAllocA(session()->GetMaxNumberMessageAreas() * sizeof(
-                                   long)));
-  WWIV_ASSERT(session()->m_SubDateCache != nullptr);
-
-  udir = static_cast<usersubrec *>(BbsAllocA(session()->GetMaxNumberFileAreas() * sizeof(usersubrec)));
-  WWIV_ASSERT(udir != nullptr);
-  session()->m_DirectoryDateCache = static_cast<unsigned int*>(BbsAllocA(session()->GetMaxNumberFileAreas() *
-                                       sizeof(long)));
-  WWIV_ASSERT(session()->m_DirectoryDateCache != nullptr);
-
+  usub = static_cast<usersubrec *>(BbsAllocA(GetMaxNumberMessageAreas() * sizeof(usersubrec)));
+  udir = static_cast<usersubrec *>(BbsAllocA(GetMaxNumberFileAreas() * sizeof(usersubrec)));
   uconfsub = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
-  WWIV_ASSERT(uconfsub != nullptr);
   uconfdir = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
-  WWIV_ASSERT(uconfdir != nullptr);
-
   qsc = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len));
-  WWIV_ASSERT(qsc != nullptr);
   qsc_n = qsc + 1;
-  qsc_q = qsc_n + (session()->GetMaxNumberFileAreas() + 31) / 32;
-  qsc_p = qsc_q + (session()->GetMaxNumberMessageAreas() + 31) / 32;
+  qsc_q = qsc_n + (GetMaxNumberFileAreas() + 31) / 32;
+  qsc_p = qsc_q + (GetMaxNumberMessageAreas() + 31) / 32;
 
   network_extension = ".net";
   const string wwiv_instance(environment_variable("WWIV_INSTANCE"));
@@ -1218,14 +1104,14 @@ void WApplication::InitializeBBS() {
 
 // begin dupphone additions
 
-void WApplication::check_phonenum() {
+void WSession::check_phonenum() {
   File phoneFile(syscfg.datadir, PHONENUM_DAT);
   if (!phoneFile.Exists()) {
     create_phone_file();
   }
 }
 
-void WApplication::create_phone_file() {
+void WSession::create_phone_file() {
   phonerec p;
 
   File file(syscfg.datadir, USER_LST);
@@ -1234,16 +1120,16 @@ void WApplication::create_phone_file() {
   }
   long lFileSize = file.GetLength();
   file.Close();
-  int nNumberOfRecords = static_cast<int>(lFileSize / sizeof(userrec));
+  int numOfRecords = static_cast<int>(lFileSize / sizeof(userrec));
 
   File phoneNumFile(syscfg.datadir, PHONENUM_DAT);
   if (!phoneNumFile.Open(File::modeReadWrite | File::modeAppend | File::modeBinary | File::modeCreateFile)) {
     return;
   }
 
-  for (int16_t nTempUserNumber = 1; nTempUserNumber <= nNumberOfRecords; nTempUserNumber++) {
+  for (int16_t nTempUserNumber = 1; nTempUserNumber <= numOfRecords; nTempUserNumber++) {
     WUser user;
-    application()->users()->ReadUser(&user, nTempUserNumber);
+    users()->ReadUser(&user, nTempUserNumber);
     if (!user.IsUserDeleted()) {
       p.usernum = nTempUserNumber;
       char szTempVoiceNumber[ 255 ], szTempDataNumber[ 255 ];

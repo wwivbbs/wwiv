@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -21,6 +21,9 @@
 #include <string>
 #include <vector>
 
+#include "bbs/batch.h"
+#include "bbs/bbsovl3.h"
+#include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
@@ -29,11 +32,14 @@
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/wconstants.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "bbs/wwivcolors.h"
 
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::vector;
@@ -60,9 +66,9 @@ long fpts;
 #endif  // FILE_POINTS
 
 // TODO remove this hack and fix the real problem of fake spaces in filenames everywhere
-static bool ListPlusExist(const char *pszFileName) {
+static bool ListPlusExist(const char *file_name) {
   char szRealFileName[MAX_PATH];
-  strcpy(szRealFileName, pszFileName);
+  strcpy(szRealFileName, file_name);
   StringRemoveWhitespace(szRealFileName);
   return (*szRealFileName) ? File::Exists(szRealFileName) : false;
 }
@@ -234,7 +240,7 @@ int listfiles_plus(int type) {
   signal(SIGFPE, catch_divide_by_zero);
 
   session()->topdata = LocalIO::topdataNone;
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
   bout.cls();
 
   int nReturn = listfiles_plus_function(type);
@@ -256,15 +262,15 @@ int listfiles_plus(int type) {
   dliscan();
 
   session()->topdata = save_topdata;
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
 
   return nReturn;
 }
 
-int lp_add_batch(const char *pszFileName, int dn, long fs) {
+int lp_add_batch(const char *file_name, int dn, long fs) {
   double t;
 
-  if (find_batch_queue(pszFileName) > -1) {
+  if (find_batch_queue(file_name) > -1) {
     return 0;
   }
 
@@ -306,7 +312,7 @@ int lp_add_batch(const char *pszFileName, int dn, long fs) {
           batchfpts += fpts;
 #endif
 
-          strcpy(batch[session()->numbatch].filename, pszFileName);
+          strcpy(batch[session()->numbatch].filename, file_name);
           batch[session()->numbatch].dir = static_cast<short>(dn);
           batch[session()->numbatch].time = static_cast<float>(t);
           batch[session()->numbatch].sending = 1;
@@ -597,7 +603,7 @@ static int load_config_listing(int config) {
 
   if (fileConfig.Exists()) {
     WUser user;
-    application()->users()->ReadUser(&user, config);
+    session()->users()->ReadUser(&user, config);
     if (fileConfig.Open(File::modeBinary | File::modeReadOnly)) {
       fileConfig.Seek(config * sizeof(user_config), File::seekBegin);
       len = fileConfig.Read(&config_listing, sizeof(user_config));
@@ -627,7 +633,7 @@ static void write_config_listing(int config) {
   }
 
   WUser user;
-  application()->users()->ReadUser(&user, config);
+  session()->users()->ReadUser(&user, config);
   strcpy(config_listing.name, user.GetName());
 
   File fileUserConfig(syscfg.datadir, CONFIG_USR);
@@ -643,7 +649,7 @@ static void write_config_listing(int config) {
   fileUserConfig.Close();
 }
 
-int print_extended_plus(const char *pszFileName, int numlist, int indent, int color,
+int print_extended_plus(const char *file_name, int numlist, int indent, int color,
                         struct search_record * search_rec) {
   int numl = 0;
   int cpos = 0;
@@ -651,7 +657,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 
   int will_fit = 80 - std::abs(indent) - 2;
 
-  char * ss = read_extended_description(pszFileName);
+  char * ss = read_extended_description(file_name);
 
   if (!ss) {
     return 0;
@@ -713,7 +719,9 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 
 void show_fileinfo(uploadsrec * u) {
   bout.cls();
-  repeat_char('\xCD', 78);
+  bout.Color(7);
+  bout << string(78, '\xCD');
+  bout.nl();
   bout << "  |#9Filename    : |#2" << u->filename << wwiv::endl;
   bout << "  |#9Uploaded on : |#2" << u->date << " by |#2" << u->upby << wwiv::endl;
   if (u->actualdate[2] == '/' && u->actualdate[5] == '/') {
@@ -723,7 +731,9 @@ void show_fileinfo(uploadsrec * u) {
   bout << "  |#9Downloads   : |#2" << u->numdloads << "|#9" << wwiv::endl;
   bout << "  |#9Description : |#2" << u->description << wwiv::endl;
   print_extended_plus(u->filename, 255, 16, YELLOW, nullptr);
-  repeat_char('\xCD', 78);
+  bout.Color(7);
+  bout << string(78, '\xCD');
+  bout.nl();
   pausescr();
 }
 
@@ -1373,13 +1383,13 @@ void update_user_config_screen(uploadsrec * u, int which) {
   bout.bs();
 }
 
-static int rename_filename(const char *pszFileName, int dn) {
+static int rename_filename(const char *file_name, int dn) {
   char s[81], s1[81], s2[81], *ss, s3[81], ch;
   int i, cp, ret = 1;
   uploadsrec u;
 
   dliscan1(dn);
-  strcpy(s, pszFileName);
+  strcpy(s, file_name);
 
   if (s[0] == '\0') {
     return ret;
@@ -1496,14 +1506,14 @@ static int rename_filename(const char *pszFileName, int dn) {
   return ret;
 }
 
-static int remove_filename(const char *pszFileName, int dn) {
+static int remove_filename(const char *file_name, int dn) {
   int ret = 1;
   char szTempFileName[MAX_PATH];
   uploadsrec u;
   memset(&u, 0, sizeof(uploadsrec));
 
   dliscan1(dn);
-  strcpy(szTempFileName, pszFileName);
+  strcpy(szTempFileName, file_name);
 
   if (szTempFileName[0] == '\0') {
     return ret;
@@ -1540,7 +1550,7 @@ static int remove_filename(const char *pszFileName, int dn) {
             bout << "|#5Remove DL points? ";
             rdlp = yesno();
           }
-          if (application()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
+          if (session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
             bout << "|#5Remove from ALLOW.DAT? ";
             if (yesno()) {
               modify_database(szTempFileName, false);
@@ -1554,7 +1564,7 @@ static int remove_filename(const char *pszFileName, int dn) {
           File::Remove(directories[dn].path, u.filename);
           if (rdlp && u.ownersys == 0) {
             WUser user;
-            application()->users()->ReadUser(&user, u.ownerusr);
+            session()->users()->ReadUser(&user, u.ownerusr);
             if (!user.IsUserDeleted()) {
               if (date_to_daten(user.GetFirstOn()) < static_cast<time_t>(u.daten)) {
                 user.SetFilesUploaded(user.GetFilesUploaded() - 1);
@@ -1570,7 +1580,7 @@ static int remove_filename(const char *pszFileName, int dn) {
                 }
                 bout << "Removed " << (u.filepoints * 2) << " file points\r\n";
 #endif
-                application()->users()->WriteUser(&user, u.ownerusr);
+                session()->users()->WriteUser(&user, u.ownerusr);
               }
             }
           }
@@ -1603,12 +1613,12 @@ static int remove_filename(const char *pszFileName, int dn) {
   return ret;
 }
 
-static int move_filename(const char *pszFileName, int dn) {
+static int move_filename(const char *file_name, int dn) {
   char szTempMoveFileName[81], szSourceFileName[MAX_PATH], szDestFileName[MAX_PATH], *ss;
   int nDestDirNum = -1, ret = 1;
   uploadsrec u, u1;
 
-  strcpy(szTempMoveFileName, pszFileName);
+  strcpy(szTempMoveFileName, file_name);
   dliscan1(dn);
   align(szTempMoveFileName);
   int nRecNum = recno(szTempMoveFileName);
@@ -1708,10 +1718,10 @@ static int move_filename(const char *pszFileName, int dn) {
       if (!bulk_move) {
         bout << "|#5Reset upload time for file? ";
         if (yesno()) {
-          u.daten = static_cast<unsigned long>(time(nullptr));
+          u.daten = static_cast<uint32_t>(time(nullptr));
         }
       } else {
-        u.daten = static_cast<unsigned long>(time(nullptr));
+        u.daten = static_cast<uint32_t>(time(nullptr));
       }
       --cp;
       if (fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
@@ -1750,7 +1760,6 @@ static int move_filename(const char *pszFileName, int dn) {
         u1.numbytes = session()->numf;
         if (u.daten > u1.daten) {
           u1.daten = u.daten;
-          session()->m_DirectoryDateCache[nDestDirNum] = u.daten;
         }
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Write(&u1, sizeof(uploadsrec));
@@ -1793,7 +1802,7 @@ static int move_filename(const char *pszFileName, int dn) {
   return ret;
 }
 
-void do_batch_sysop_command(int mode, const char *pszFileName) {
+void do_batch_sysop_command(int mode, const char *file_name) {
   int save_curdir = session()->GetCurrentFileArea();
   int pos = 0;
 
@@ -1834,13 +1843,13 @@ void do_batch_sysop_command(int mode, const char *pszFileName) {
     // Just act on the single file
     switch (mode) {
     case SYSOP_DELETE:
-      remove_filename(pszFileName, udir[session()->GetCurrentFileArea()].subnum);
+      remove_filename(file_name, udir[session()->GetCurrentFileArea()].subnum);
       break;
     case SYSOP_RENAME:
-      rename_filename(pszFileName, udir[session()->GetCurrentFileArea()].subnum);
+      rename_filename(file_name, udir[session()->GetCurrentFileArea()].subnum);
       break;
     case SYSOP_MOVE:
-      move_filename(pszFileName, udir[session()->GetCurrentFileArea()].subnum);
+      move_filename(file_name, udir[session()->GetCurrentFileArea()].subnum);
       break;
     }
   }
@@ -1979,68 +1988,47 @@ void load_listing() {
 }
 
 
-void view_file(const char *pszFileName) {
-  char szCommandLine[MAX_PATH];
+void view_file(const char *file_name) {
   char szBuffer[30];
-  long osysstatus;
   int i, i1;
   uploadsrec u;
 
   bout.cls();
 
-  strcpy(szBuffer, pszFileName);
+  strcpy(szBuffer, file_name);
   unalign(szBuffer);
 
-  // TODO: AVIEWCOM.EXE will not work on x64 platforms, find replacement
-  if (File::Exists("AVIEWCOM.EXE")) {
-    if (incom) {
-      sprintf(szCommandLine, "AVIEWCOM.EXE %s%s -p%s -a1 -d",
-              directories[udir[session()->GetCurrentFileArea()].subnum].path, szBuffer, syscfgovr.tempdir);
-      osysstatus = session()->user()->GetStatus();
-      if (session()->user()->HasPause()) {
-        session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
+  dliscan();
+  bool abort = false;
+  i = recno(file_name);
+  do {
+    if (i > 0) {
+      File fileDownload(g_szDownloadFileName);
+      if (fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
+        FileAreaSetRecord(fileDownload, i);
+        fileDownload.Read(&u, sizeof(uploadsrec));
+        fileDownload.Close();
       }
-      ExecuteExternalProgram(szCommandLine, EFLAG_COMIO);
-      session()->user()->SetStatus(osysstatus);
-    } else {
-      sprintf(szCommandLine, "AVIEWCOM.EXE %s%s com0 -o%u -p%s -a1 -d",
-              directories[udir[session()->GetCurrentFileArea()].subnum].path, szBuffer,
-              application()->GetInstanceNumber(), syscfgovr.tempdir);
-      ExecuteExternalProgram(szCommandLine, EFLAG_NONE);
+      i1 = list_arc_out(stripfn(u.filename), directories[udir[session()->GetCurrentFileArea()].subnum].path);
+      if (i1) {
+        abort = true;
+      }
+      checka(&abort);
+      i = nrecno(file_name, i);
     }
-  } else {
-    dliscan();
-    bool abort = false;
-    i = recno(pszFileName);
-    do {
-      if (i > 0) {
-        File fileDownload(g_szDownloadFileName);
-        if (fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
-          FileAreaSetRecord(fileDownload, i);
-          fileDownload.Read(&u, sizeof(uploadsrec));
-          fileDownload.Close();
-        }
-        i1 = list_arc_out(stripfn(u.filename), directories[udir[session()->GetCurrentFileArea()].subnum].path);
-        if (i1) {
-          abort = true;
-        }
-        checka(&abort);
-        i = nrecno(pszFileName, i);
-      }
-    } while (i > 0 && !hangup && !abort);
-    bout.nl();
-    pausescr();
-  }
+  } while (i > 0 && !hangup && !abort);
+  bout.nl();
+  pausescr();
 }
 
-int lp_try_to_download(const char *pszFileMask, int dn) {
+int lp_try_to_download(const char *file_mask, int dn) {
   int i, rtn, ok2;
   bool abort = false;
   uploadsrec u;
   char s1[81], s3[81];
 
   dliscan1(dn);
-  i = recno(pszFileMask);
+  i = recno(file_mask);
   if (i <= 0) {
     checka(&abort);
     return (abort) ? -1 : 0;
@@ -2058,7 +2046,7 @@ int lp_try_to_download(const char *pszFileMask, int dn) {
 
     ok2 = 0;
     if (strncmp(u.filename, "WWIV4", 5) == 0 &&
-        !application()->HasConfigFlag(OP_FLAGS_NO_EASY_DL)) {
+        !session()->HasConfigFlag(OP_FLAGS_NO_EASY_DL)) {
       ok2 = 1;
     }
 
@@ -2078,7 +2066,7 @@ int lp_try_to_download(const char *pszFileMask, int dn) {
     if (abort || (rtn == -3)) {
       ok = false;
     } else {
-      i = nrecno(pszFileMask, i);
+      i = nrecno(file_mask, i);
     }
   } while ((i > 0) && ok && !hangup);
   returning = true;
@@ -2092,7 +2080,7 @@ int lp_try_to_download(const char *pszFileMask, int dn) {
   }
 }
 
-void download_plus(const char *pszFileName) {
+void download_plus(const char *file_name) {
   char szFileName[MAX_PATH];
 
   if (session()->numbatchdl != 0) {
@@ -2103,7 +2091,7 @@ void download_plus(const char *pszFileName) {
       return;
     }
   }
-  strcpy(szFileName, pszFileName);
+  strcpy(szFileName, file_name);
   if (szFileName[0] == '\0') {
     return;
   }
@@ -2149,7 +2137,7 @@ void download_plus(const char *pszFileName) {
   }
 }
 
-void request_file(const char *pszFileName) {
+void request_file(const char *file_name) {
   bout.cls();
   bout.nl();
 
@@ -2157,7 +2145,7 @@ void request_file(const char *pszFileName) {
   bout << "|#2File missing.  Request it? ";
 
   if (noyes()) {
-    ssm(1, 0, "%s is requesting file %s", session()->user()->GetName(), pszFileName);
+    ssm(1, 0, "%s is requesting file %s", session()->user()->GetName(), file_name);
     bout << "File request sent\r\n";
   } else {
     bout << "File request NOT sent\r\n";

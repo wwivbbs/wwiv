@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -131,9 +131,9 @@ static bool EditHeader(MenuHeader* header, File &fileEditMenu, const string& men
     }
     break;
   case 'A':
-    header->nNumbers++;
-    if (header->nNumbers == MENU_NUMFLAG_LAST) {
-      header->nNumbers = 0;
+    header->nums++;
+    if (header->nums == MENU_NUMFLAG_LAST) {
+      header->nums = 0;
     }
     break;
   case 'B':
@@ -380,7 +380,7 @@ static bool EditMenuItem(MenuRec* menu, File &fileEditMenu, int& nAmount, int& n
 }
 
 static bool GetMenuDir(string* menuName) {
-  wwiv::core::ScopeExit on_exit([] { application()->CdHome(); });
+  wwiv::core::ScopeExit on_exit([] { session()->CdHome(); });
   ListMenuDirs();
   while (!hangup) {
     bout.nl();
@@ -401,7 +401,7 @@ static bool GetMenuDir(string* menuName) {
       return false;
     }
 
-    application()->CdHome(); // go to the wwiv dir
+    session()->CdHome(); // go to the wwiv dir
     File::mkdirs(dir);  // Create the new path
     if (dir.Exists()) {
       bout << "Created\r\n";
@@ -434,7 +434,7 @@ static bool CreateNewMenu(File& file, MenuHeader* header) {
 }
 
 void EditMenus() {
-  wwiv::core::ScopeExit on_exit([] {application()->CdHome(); } );
+  wwiv::core::ScopeExit on_exit([] {session()->CdHome(); } );
   bout.cls();
   bout.litebar("WWIV Menu Editor");
 
@@ -580,8 +580,8 @@ void DisplayHeader(MenuHeader* pHeader, int nCur, const string& dirname) {
     bout << "|#90) Menu Description     :|#2 " << descriptions.description(dirname) << wwiv::endl;
     bout << "|#91) Deleted              :|#2 " << ((pHeader->nFlags & MENU_FLAG_DELETED) ? "Yes" : "No") << wwiv::endl;
     bout << "|#92) Main Menu            :|#2 " << ((pHeader->nFlags & MENU_FLAG_MAINMENU) ? "Yes" : "No") << wwiv::endl;;
-    bout << "|#9A) What do Numbers do   :|#2 " << (pHeader->nNumbers == MENU_NUMFLAG_NOTHING ? "Nothing" :
-                       pHeader->nNumbers == MENU_NUMFLAG_SUBNUMBER ? "Set sub number" : pHeader->nNumbers == MENU_NUMFLAG_DIRNUMBER ?
+    bout << "|#9A) What do Numbers do   :|#2 " << (pHeader->nums == MENU_NUMFLAG_NOTHING ? "Nothing" :
+                       pHeader->nums == MENU_NUMFLAG_SUBNUMBER ? "Set sub number" : pHeader->nums == MENU_NUMFLAG_DIRNUMBER ?
                        "Set dir number" : "Out of range") << wwiv::endl;
     bout << "|#9B) What type of logging :|#2 " << (pHeader->nLogging == MENU_LOGTYPE_KEY ? "Key entered" :
                        pHeader->nLogging == MENU_LOGTYPE_NONE ? "No logging" : pHeader->nLogging == MENU_LOGTYPE_COMMAND ?

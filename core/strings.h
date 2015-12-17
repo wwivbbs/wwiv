@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -45,12 +45,12 @@ std::string StrCat(const A& a, const Args&... args) {
   return ss.str();
 }
 
-std::string StringPrintf(const char *pszFormattedText, ...);
-int GetStringLength(const char* pszString);
-bool IsEquals(const char *pszString1, const char *pszString2);
-bool IsEqualsIgnoreCase(const char *pszString1, const char *pszString2);
-int  StringCompareIgnoreCase(const char *pszString1, const char *pszString2);
-int  StringCompare(const char *pszString1, const char *pszString2);
+std::string StringPrintf(const char *formatted_text, ...);
+int GetStringLength(const char* str);
+bool IsEquals(const char *str1, const char *str2);
+bool IsEqualsIgnoreCase(const char *str1, const char *str2);
+int  StringCompareIgnoreCase(const char *str1, const char *str2);
+int  StringCompare(const char *str1, const char *str2);
 
 int16_t StringToShort(const std::string& s);
 uint16_t StringToUnsignedShort(const std::string& s);
@@ -66,10 +66,10 @@ bool starts_with(const std::string& input, const std::string& match);
 bool ends_with(const std::string& input, const std::string& match);
 
 void StringJustify(std::string* s, std::string::size_type length, char bg, JustificationType just_type);
-void StringTrim(char *pszString);
+void StringTrim(char *str);
 void StringTrim(std::string* s);
 void StringTrimEnd(std::string* s);
-void StringTrimEnd(char *pszString);
+void StringTrimEnd(char *str);
 void StringTrimBegin(std::string* s);
 void StringUpperCase(std::string* s);
 void StringLowerCase(std::string* s);
@@ -77,7 +77,7 @@ void StringLowerCase(std::string* s);
 const char *charstr(std::string::size_type length, char fill);
 char *StringRemoveWhitespace(char *str);
 // Strips the string from the first occurence of ch
-char *StringRemoveChar(const char *pszString, char ch);
+char *StringRemoveChar(const char *str, char ch);
 
 }  // namespace strings
 
@@ -101,7 +101,7 @@ std::string stripcolors(const std::string& orig);
 unsigned char upcase(unsigned char ch);
 unsigned char locase(unsigned char ch);
 
-void properize(char *pszText);
+void properize(char *text);
 std::string properize(const std::string& text);
 
 extern const char *DELIMS_WHITE;
@@ -113,7 +113,7 @@ extern const char *DELIMS_WHITE;
 #define strcasecmp( a, b ) _stricmp( a, b )
 #define strncasecmp( a, b, c) _strnicmp( a, b, c )
 
-char *strcasestr(const char *pszString, const char *pszPattern);
+char *strcasestr(const char *str, const char *pszPattern);
 
 #else  // _WIN32
 char *strupr(char *s);

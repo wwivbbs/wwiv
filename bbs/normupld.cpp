@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -18,13 +18,16 @@
 /**************************************************************************/
 #include <string>
 
+#include "bbs/batch.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 
 using std::string;
@@ -158,7 +161,7 @@ void normalupload(int dn) {
         u.mask = mask_PD;
       }
     }
-    if (ok && !application()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
+    if (ok && !session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
       bout.nl();
       bout << "Checking for same file in other directories...\r\n\n";
       int nLastLineLength = 0;
@@ -259,7 +262,7 @@ void normalupload(int dn) {
           }
           time_t lCurrentTime;
           time(&lCurrentTime);
-          u.daten = static_cast<unsigned long>(lCurrentTime);
+          u.daten = static_cast<uint32_t>(lCurrentTime);
           File fileDownload(g_szDownloadFileName);
           fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
           for (int j = session()->numf; j >= 1; j--) {
@@ -275,21 +278,20 @@ void normalupload(int dn) {
           fileDownload.Read(&u1, sizeof(uploadsrec));
           u1.numbytes = session()->numf;
           u1.daten = static_cast<uint32_t>(lCurrentTime);
-          session()->m_DirectoryDateCache[dn] = static_cast<uint32_t>(lCurrentTime);
           FileAreaSetRecord(fileDownload, 0);
           fileDownload.Write(&u1, sizeof(uploadsrec));
           fileDownload.Close();
           if (ok == 1) {
-            WStatus *pStatus = application()->GetStatusManager()->BeginTransaction();
+            WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
             pStatus->IncrementNumUploadsToday();
             pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
-            application()->GetStatusManager()->CommitTransaction(pStatus);
+            session()->GetStatusManager()->CommitTransaction(pStatus);
             sysoplogf("+ \"%s\" uploaded on %s", u.filename, directories[dn].name);
             bout.nl(2);
             bout.bprintf("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());
             bout.nl(2);
             if (session()->IsUserOnline()) {
-              application()->UpdateTopScreen();
+              session()->UpdateTopScreen();
             }
           }
         }

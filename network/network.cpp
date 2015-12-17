@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.0x                             */
+/*                          WWIV Version 5.x                              */
 /*               Copyright (C)2015, WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -86,6 +86,10 @@ int main(int argc, char** argv) {
     cmdline.add({"network", "Network name to use (i.e. wwivnet).", ""});
     cmdline.add({"network_number", "Network number to use (i.e. 0).", "0"});
     cmdline.add({"bbsdir", "(optional) BBS directory if other than current directory", File::current_directory()});
+    cmdline.add(BooleanCommandLineArgument("allow_sendback", 'A', "Allow sendback (only used by legacy network0)", true));
+    cmdline.add({"phone_number", 'P', "Network number to use (only used by legacy network0)", ""});
+    cmdline.add({"speed", 'S', "Modem Speedto use (only used by legacy network0)", ""});
+    cmdline.add({"callout_time", 'T', "Start time of the callout (only used by legacy network0)", ""});
     cmdline.add(BooleanCommandLineArgument("help", '?', "displays help.", false));
 
     if (!cmdline.Parse() || cmdline.arg("help").as_bool()) {
@@ -146,7 +150,6 @@ int main(int argc, char** argv) {
     // Use legacy networking.
     return LaunchOldNetworkingStack("network0", argc, argv);
   } catch (const std::exception& e) {
-    LOG << "ERROR: [network]: " << e.what() << "\nStacktrace:\n";
-    LOG << stacktrace();
+    LOG << "ERROR: [network]: " << e.what();
   }
 }

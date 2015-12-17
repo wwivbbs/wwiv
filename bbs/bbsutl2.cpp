@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -19,29 +19,18 @@
 #include <string>
 #include <vector>
 
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/inifile.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::vector;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 using wwiv::strings::StringPrintf;
-
-/**
- * Display character x repeated amount times in nColor, and if bAddNL is true
- * display a new line character.
- * @param x The Character to repeat
- * @param amount The number of times to repeat x
- * @param nColor the color in which to display the string
- * @param bAddNL if true, add a new line character at the end.
- */
-void repeat_char(char x, int amount, int nColor) {
-  bout.Color(nColor);
-  bout << string(amount, x);
-  bout.nl();
-}
 
 /**
  * Returns the computer type string for computer type number num.
@@ -67,7 +56,7 @@ std::string ctypes(int num) {
     "Other",
   };
 
-  IniFile iniFile(FilePath(application()->GetHomeDir(), WWIV_INI), "CTYPES");
+  IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), "CTYPES");
   if (iniFile.IsOpen()) {
     const string comptype = StringPrintf("COMP_TYPE[%d]", num + 1);
     const char *ss = iniFile.GetValue(comptype.c_str());
@@ -88,7 +77,7 @@ std::string ctypes(int num) {
  * @see checka
  * <em>Note: osan means Output String And Next</em>
  *
- * @param pszText The text to display
+ * @param text The text to display
  * @param abort The abort flag (Output Parameter)
  * @param next The next flag (Output Parameter)
  */
@@ -103,24 +92,6 @@ void osan(const string& text, bool *abort, bool *next) {
     }
   }
   FlushOutComChBuffer();
-}
-
-/**
- * Displays pszText in color nWWIVColor which checking for abort and next with a nl
- * @see checka
- * <em>Note: osan means Output String And Next</em>
- *
- * @param nWWIVColor The WWIV color code to use.
- * @param pszText The text to display
- * @param abort The abort flag (Output Parameter)
- * @param next The next flag (Output Parameter)
- */
-void plan(int nWWIVColor, const string& text, bool *abort, bool *next) {
-  bout.Color(nWWIVColor);
-  osan(text, abort, next);
-  if (!(*abort)) {
-    bout.nl();
-  }
 }
 
 /**

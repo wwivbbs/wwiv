@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -17,8 +17,12 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "bbs/bbsovl1.h"
+#include "bbs/conf.h"
 #include "bbs/confutil.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 
 
@@ -70,24 +74,24 @@ void dirlist(int mode) {
           DisplayHorizontalBar(78, 7);
         }
         ++nd;
-        int nDirectoryNumber = udir[i1].subnum;
-        if (nDirectoryNumber == 0) {
+        int directory_number = udir[i1].subnum;
+        if (directory_number == 0) {
           is = true;
         }
         std::string scanme = "|#6No ";
-        if (qsc_n[ nDirectoryNumber / 32 ] & (1L << (nDirectoryNumber % 32))) {
+        if (qsc_n[ directory_number / 32 ] & (1L << (directory_number % 32))) {
           scanme = "|#5Yes";
         }
-        dliscan1(nDirectoryNumber);
+        dliscan1(directory_number);
         if (udir[session()->GetCurrentFileArea()].subnum == udir[i1].subnum) {
           sprintf(s, " |#9%3s |#9\xB3 |#6%3s |#9\xB3|B1|15 %-40.40s |#9\xB3 |#9%4d|B0",
-                  udir[i1].keys, scanme.c_str(), directories[nDirectoryNumber].name,
+                  udir[i1].keys, scanme.c_str(), directories[directory_number].name,
                   session()->numf);
         } else {
           sprintf(s, " |#9%3s |#9\xB3 |#6%3s |#9\xB3 %s%-40.40s |#9\xB3 |#9%4d",
                   udir[i1].keys, scanme.c_str(),
                   (((mode == 1) && (directories[udir[i1].subnum].mask & mask_cdrom)) ? "|#9" : "|#1"),
-                  directories[ nDirectoryNumber ].name, session()->numf);
+                  directories[ directory_number ].name, session()->numf);
         }
         if (okansi()) {
           osan(s, &abort, &next);

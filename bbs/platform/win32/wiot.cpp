@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -206,16 +206,16 @@ unsigned int WIOTelnet::read(char *buffer, unsigned int count) {
     return 0;
   }
   unsigned int nRet = 0;
-  char * pszTemp = buffer;
+  char * temp = buffer;
 
   WaitForSingleObject(mu_, INFINITE);
   while ((!queue_.empty()) && (nRet <= count)) {
     char ch = queue_.front();
     queue_.pop();
-    *pszTemp++ = ch;
+    *temp++ = ch;
     nRet++;
   }
-  *pszTemp++ = '\0';
+  *temp++ = '\0';
   ReleaseMutex(mu_);
   return nRet;
 }
@@ -320,7 +320,7 @@ void WIOTelnet::StartThreads() {
   }
 
   mu_ = ::CreateMutex(nullptr, false, "WWIV Input Buffer");
-  read_thread_ = reinterpret_cast<HANDLE>(_beginthread(WIOTelnet::InboundTelnetProc, 0, static_cast< void * >(this)));
+  read_thread_ = reinterpret_cast<HANDLE>(_beginthread(WIOTelnet::InboundTelnetProc, 0, static_cast<void*>(this)));
   threads_started_ = true;
 }
 
@@ -479,30 +479,30 @@ void WIOTelnet::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   }
 }
 
-void WIOTelnet::AddStringToInputBuffer(int nStart, int nEnd, char *pszBuffer) {
-  WWIV_ASSERT(pszBuffer);
+void WIOTelnet::AddStringToInputBuffer(int nStart, int nEnd, char *buffer) {
+  WWIV_ASSERT(buffer);
   WaitForSingleObject(mu_, INFINITE);
 
   bool bBinaryMode = GetBinaryMode();
   for (int i = nStart; i < nEnd; i++) {
-    if ((static_cast<unsigned char>(pszBuffer[i]) == 255)) {
-      if ((i + 1) < nEnd  && static_cast<unsigned char>(pszBuffer[i + 1]) == 255) {
-        queue_.push(pszBuffer[i + 1]);
+    if ((static_cast<unsigned char>(buffer[i]) == 255)) {
+      if ((i + 1) < nEnd  && static_cast<unsigned char>(buffer[i + 1]) == 255) {
+        queue_.push(buffer[i + 1]);
         i++;
       } else if ((i + 2) < nEnd) {
-        HandleTelnetIAC(pszBuffer[i + 1], pszBuffer[i + 2]);
+        HandleTelnetIAC(buffer[i + 1], buffer[i + 2]);
         i += 2;
       } else {
         ::OutputDebugString("WHAT THE HECK?!?!?!? 255 w/o any options or anything\r\n");
       }
-    } else if (bBinaryMode || pszBuffer[i] != '\0') {
+    } else if (bBinaryMode || buffer[i] != '\0') {
       // I think the nulls in the input buffer were being bad... RF20020906
       // This fixed the problem of telnetting with CRT to a linux machine and then telnetting from
       // that linux box to the bbs... Hopefully this will fix the Win9x built-in telnet client as
       // well as TetraTERM
-      queue_.push(pszBuffer[i]);
+      queue_.push(buffer[i]);
     } else {
-      ::OutputDebugString("pszBuffer had a null\r\n");
+      ::OutputDebugString("buffer had a null\r\n");
     }
   }
   ReleaseMutex(mu_);

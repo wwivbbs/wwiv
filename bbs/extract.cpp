@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -18,21 +18,24 @@
 /**************************************************************************/
 #include <string>
 
+#include "bbs/conf.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
 #include "bbs/stuffin.h"
 #include "bbs/printfile.h"
-#include "bbs/wwiv.h"
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
-
+#include "sdk/filenames.h"
 
 using std::string;
 using namespace wwiv::strings;
 
-// Compresses file *pszFileName to directory *pszDirectoryName.
+// Compresses file *file_name to directory *pszDirectoryName.
 void compress_file(const string& orig_filename, const string& directory) {
   bout << "|#2Now compressing " << orig_filename << wwiv::endl;
   string fileName(orig_filename);
@@ -44,15 +47,15 @@ void compress_file(const string& orig_filename, const string& directory) {
   string arcName = StrCat(directory, baseFileName);
 
   const string command = stuff_in(arcs[0].arca, arcName, orig_filename, "", "", "");
-  ExecuteExternalProgram(command, application()->GetSpawnOptions(SPAWNOPT_ARCH_A));
+  ExecuteExternalProgram(command, session()->GetSpawnOptions(SPAWNOPT_ARCH_A));
   File::Remove(orig_filename);
-  application()->UpdateTopScreen();
+  session()->UpdateTopScreen();
 }
 
 // Allows extracting a message into a file area, directly.
 void extract_mod(const char *b, long len, time_t tDateTime) {
   char s1[81], s2[81],                  // reusable strings
-       szFileName[MAX_PATH],                    // mod filename
+       file_name[MAX_PATH],                    // mod filename
        strip_cmd[MAX_PATH],                  // Strip command
        compressed_fn[MAX_PATH],               // compressed filename
        ch,                              // switch key
@@ -117,12 +120,12 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
     if (strchr(s2, '.') == nullptr) {
       strcat(s2, ".mod");
     }
-    sprintf(szFileName, "%s%s", s1, s2);
-    if (File::Exists(szFileName)) {
+    sprintf(file_name, "%s%s", s1, s2);
+    if (File::Exists(file_name)) {
       exists = true;
-      sprintf(szFileName, "%s already exists.", s2);
+      sprintf(file_name, "%s already exists.", s2);
       bout.nl();
-      bout << szFileName;
+      bout << file_name;
       bout.nl(2);
     }
     if (exists) {
@@ -142,14 +145,14 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
 
   if (!quit && !hangup) {
     {
-      File file(szFileName);
+      File file(file_name);
       file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
       file.Seek(0L, File::seekEnd);
       file.Write(b, len);
       file.Close();
     }
-    bout << "Message written to: " << szFileName << wwiv::endl;
-    sprintf(strip_cmd, "STRIPNET.EXE %s", szFileName);
+    bout << "Message written to: " << file_name << wwiv::endl;
+    sprintf(strip_cmd, "STRIPNET.EXE %s", file_name);
     ExecuteExternalProgram(strip_cmd, EFLAG_NONE);
     compress_file(s2, s1);
     bout.nl(2);
@@ -252,27 +255,27 @@ go_away:
 }
 
 
-bool upload_mod(int nDirectoryNumber, const char *pszFileName, const char *pszDescription)
+bool upload_mod(int directory_number, const char *file_name, const char *description)
 /* Passes a specific filename to the upload function */
 {
   char s[81], s1[81];
 
-  WWIV_ASSERT(pszFileName);
+  WWIV_ASSERT(file_name);
 
-  dliscan1(udir[nDirectoryNumber].subnum);
+  dliscan1(udir[directory_number].subnum);
   bout.nl(2);
-  strcpy(s, pszFileName);
-  strcpy(s1, directories[udir[nDirectoryNumber].subnum].path);
-  int maxf = directories[udir[nDirectoryNumber].subnum].maxfiles;
+  strcpy(s, file_name);
+  strcpy(s1, directories[udir[directory_number].subnum].path);
+  int maxf = directories[udir[directory_number].subnum].maxfiles;
   strcat(s1, s);
   WFindFile fnd;
   bool bDone = fnd.open(s1, 0);
   bool ok = false;
   if (!bDone) {
-    ok = maybe_upload(fnd.GetFileName(), nDirectoryNumber, pszDescription);
+    ok = maybe_upload(fnd.GetFileName(), directory_number, description);
   }
   if (ok) {
-    bout << "Uploaded " << pszFileName << "....\r\n";
+    bout << "Uploaded " << file_name << "....\r\n";
   }
   if (!ok) {
     bout << "|#6Aborted.\r\n";
@@ -284,13 +287,13 @@ bool upload_mod(int nDirectoryNumber, const char *pszFileName, const char *pszDe
 }
 
 
-void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
+void extract_out(char *b, long len, const char *title, time_t tDateTime) {
   // TODO Fix platform specific path issues...
 
   WWIV_ASSERT(b);
   char s1[81], s2[81], s3[81], ch = 26, ch1, s4[81];
 
-  if (application()->HasConfigFlag(OP_FLAGS_NEW_EXTRACT)) {
+  if (session()->HasConfigFlag(OP_FLAGS_NEW_EXTRACT)) {
     printfile(MEXTRACT_NOEXT);
     bool done = false;
     bool uued = false;
@@ -390,7 +393,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
                 file.Seek(-1L, File::seekEnd);
               }
             }
-            file.Write(pszTitle, strlen(pszTitle));
+            file.Write(title, strlen(title));
             file.Write("\r\n", 2);
             file.Write(b, len);
             file.Write(&ch, 1);
@@ -450,7 +453,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
             file.Seek(-1L, File::seekEnd);
           }
         }
-        file.Write(pszTitle, strlen(pszTitle));
+        file.Write(title, strlen(title));
         file.Write("\r\n", 2);
         file.Write(b, len);
         file.Write(&ch, 1);

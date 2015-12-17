@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -24,38 +24,37 @@
 #include "bbs/wconstants.h"
 #include "bbs/wuser.h"
 #include "bbs/wstatus.h"
+#include "core/datafile.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "sdk/filenames.h"
 
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 // Inserts a record into NAMES.LST
-void InsertSmallRecord(int nUserNumber, const char *pszName) {
+void InsertSmallRecord(int user_number, const char *name) {
+  WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
+  auto it = session()->smallist.begin();
+  for (; it != session()->smallist.end()
+    && StringCompare(name, reinterpret_cast<char*>((*it).name)) > 0;
+    it++) {}
   smalrec sr;
-  int cp = 0;
-  WStatus *pStatus = application()->GetStatusManager()->BeginTransaction();
-  while (cp < pStatus->GetNumUsers() &&
-         StringCompare(pszName, reinterpret_cast<char*>(smallist[cp].name)) > 0) {
-    ++cp;
-  }
-  for (int i = pStatus->GetNumUsers(); i > cp; i--) {
-    smallist[i] = smallist[i - 1];
-  }
-  strcpy(reinterpret_cast<char*>(sr.name), pszName);
-  sr.number = static_cast<unsigned short>(nUserNumber);
-  smallist[cp] = sr;
-  File namesList(syscfg.datadir, NAMES_LST);
-  if (!namesList.Open(File::modeReadWrite | File::modeBinary | File::modeTruncate)) {
-    std::cerr << namesList.full_pathname() << " NOT FOUND" << std::endl;
-    application()->AbortBBS();
-  }
+  strcpy(reinterpret_cast<char*>(sr.name), name);
+  sr.number = static_cast<unsigned short>(user_number);
+  session()->smallist.insert(it, sr);
+
   pStatus->IncrementNumUsers();
   pStatus->IncrementFileChangedFlag(WStatus::fileChangeNames);
-  namesList.Write(smallist, (sizeof(smalrec) * status.users));
-  namesList.Close();
-  application()->GetStatusManager()->CommitTransaction(pStatus);
+  DataFile<smalrec> file(syscfg.datadir, NAMES_LST,
+    File::modeReadWrite | File::modeBinary | File::modeTruncate);
+  if (!file) {
+    std::cerr << file.file().full_pathname() << " NOT FOUND" << std::endl;
+    session()->AbortBBS();
+  }
+  file.WriteVector(session()->smallist);
+  session()->GetStatusManager()->CommitTransaction(pStatus);
 }
 
 
@@ -63,29 +62,27 @@ void InsertSmallRecord(int nUserNumber, const char *pszName) {
 // Deletes a record from NAMES.LST (DeleteSmallRec)
 //
 
-void DeleteSmallRecord(const char *pszName) {
-  int cp = 0;
-  WStatus *pStatus = application()->GetStatusManager()->BeginTransaction();
-  while (cp < pStatus->GetNumUsers() && !wwiv::strings::IsEquals(pszName, reinterpret_cast<char*>(smallist[cp].name))) {
-    ++cp;
+void DeleteSmallRecord(const char *name) {
+  WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
+  auto it = session()->smallist.begin();
+  for (; it != session()->smallist.end()
+    && StringCompare(name, reinterpret_cast<char*>((*it).name)) > 0;
+    it++) {
   }
-  if (!wwiv::strings::IsEquals(pszName, reinterpret_cast<char*>(smallist[cp].name))) {
-    application()->GetStatusManager()->AbortTransaction(pStatus);
-    sysoplogfi(false, "%s NOT ABLE TO BE DELETED#*#*#*#*#*#*#*#", pszName);
+  if (!wwiv::strings::IsEquals(name, reinterpret_cast<char*>((*it).name))) {
+    session()->GetStatusManager()->AbortTransaction(pStatus);
+    sysoplogfi(false, "%s NOT ABLE TO BE DELETED#*#*#*#*#*#*#*#", name);
     sysoplog("#*#*#*# Run //resetf to fix it", false);
     return;
   }
-  for (int i = cp; i < pStatus->GetNumUsers() - 1; i++) {
-    smallist[i] = smallist[i + 1];
-  }
-  File namesList(syscfg.datadir, NAMES_LST);
-  if (!namesList.Open(File::modeReadWrite | File::modeBinary | File::modeTruncate)) {
-    std::cerr << namesList.full_pathname() << " COULD NOT BE CREATED" << std::endl;
-    application()->AbortBBS();
-  }
+  session()->smallist.erase(it);
   --status.users;
-  pStatus->IncrementFileChangedFlag(WStatus::fileChangeNames);
-  namesList.Write(smallist, (sizeof(smalrec) * status.users));
-  namesList.Close();
-  application()->GetStatusManager()->CommitTransaction(pStatus);
+  DataFile<smalrec> file(syscfg.datadir, NAMES_LST,
+    File::modeReadWrite | File::modeBinary | File::modeTruncate);
+  if (!file) {
+    std::cerr << file.file().full_pathname() << " NOT FOUND" << std::endl;
+    session()->AbortBBS();
+  }
+  file.WriteVector(session()->smallist);
+  session()->GetStatusManager()->CommitTransaction(pStatus);
 }

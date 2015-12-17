@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                 WWIV Initialization Utility Version 5.0                */
+/*                  WWIV Initialization Utility Version 5                 */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -23,11 +23,10 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <curses.h>
 #include <fcntl.h>
 #include <memory>
 #ifdef _WIN32
-#include <direct.h>
+#include <direct.h> 
 #include <io.h>
 #endif
 #include <locale.h>
@@ -67,6 +66,9 @@
 
 #include "sdk/filenames.h"
 
+// Make sure it's after windows.h
+#include <curses.h>
+
 using std::string;
 using std::vector;
 using wwiv::core::IniFile;
@@ -76,7 +78,6 @@ using wwiv::strings::StringReplace;
 initinfo_rec initinfo;
 configrec syscfg;
 statusrec status;
-newexternalrec *externs, *over_intern;
 net_networks_rec *net_networks;
 
 // from convert.cpp

@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -74,7 +74,6 @@ __EXTRN__ int ansiptr,
           nsp;
 
 __EXTRN__ bool  bChatLine,
-          g_preloaded,
           newline,
           global_xx,
           forcescansub,
@@ -104,11 +103,8 @@ __EXTRN__ bool  in_chatroom,
           chat_avail;
 
 __EXTRN__ unsigned short
-#if !defined ( NETWORK )
 *csn_index,
-net_sysnum,
-#endif // NETWORK
-*gat;
+net_sysnum;
 
 __EXTRN__ int modem_speed;
 
@@ -139,7 +135,7 @@ extratimecall,
 timeon,
 time_event;
 
-#if defined (INIT) || defined (NETWORK) || defined (FIX)
+#if defined (FIX)
 __EXTRN__ configrec syscfg;
 #else
 __EXTRN__ small_configrec syscfg;
@@ -150,17 +146,12 @@ __EXTRN__ configoverrec syscfgovr;
 __EXTRN__ statusrec status;
 #endif  // NOT_BBS
 __EXTRN__ colorrec rescolor;
-__EXTRN__ smalrec *smallist;
 __EXTRN__ subboardrec *subboards;
 __EXTRN__ directoryrec *directories;
 __EXTRN__ usersubrec *usub, *udir;
 __EXTRN__ userconfrec *uconfsub, *uconfdir;
 __EXTRN__ batchrec *batch;
 __EXTRN__ tagrec *filelist;
-__EXTRN__ chainfilerec *chains;
-__EXTRN__ chainregrec *chains_reg;
-__EXTRN__ newexternalrec *externs, *over_intern;
-__EXTRN__ editorrec *editors;
 __EXTRN__ gfiledirrec *gfilesec;
 __EXTRN__ net_system_list_rec *csn;
 __EXTRN__ net_networks_rec *net_networks;
@@ -174,8 +165,6 @@ __EXTRN__ char *cur_lang_name;
 __EXTRN__ confrec *subconfs, *dirconfs;
 
 __EXTRN__ int iia;
-
-__EXTRN__ int32_t last_iia;
 
 // confedit
 #define CONF_SUBS 1

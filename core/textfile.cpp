@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)2005-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -22,12 +22,14 @@
 
 #include <iostream>
 #include <cerrno>
+#include <chrono>
 #include <cstring>
 #include <cstdarg>
 #include <fcntl.h>
 #include <string>
 #include <sys/stat.h>
 
+#include "core/os.h"
 #include "core/strings.h"
 #include "core/file.h"
 #include "core/wwivport.h"
@@ -42,6 +44,9 @@
 #endif  // _WIN32
 
 using std::string;
+using std::chrono::milliseconds;
+
+using namespace wwiv::os;
 
 const int TextFile::WAIT_TIME = 10;
 const int TextFile::TRIES = 100;
@@ -94,10 +99,10 @@ FILE* TextFile::OpenImpl() {
   if (fd < 0) {
     int count = 1;
     if (File::Exists(file_name_)) {
-      ::Sleep(WAIT_TIME);
+      sleep_for(milliseconds(WAIT_TIME));
       fd = _sopen(file_name_.c_str(), md, share, S_IREAD | S_IWRITE);
       while ((fd < 0 && errno == EACCES) && count < TRIES) {
-        ::Sleep(WAIT_TIME);
+        sleep_for(milliseconds(WAIT_TIME));
         count++;
         fd = _sopen(file_name_.c_str(), md, share, S_IREAD | S_IWRITE);
       }
@@ -145,33 +150,33 @@ int TextFile::WriteLine(const string& text) {
   return num_written;
 }
 
-int TextFile::WriteFormatted(const char *pszFormatText, ...) {
+int TextFile::WriteFormatted(const char *formatText, ...) {
   va_list ap;
-  char szBuffer[4096];
+  char buffer[4096];
 
-  va_start(ap, pszFormatText);
-  vsnprintf(szBuffer, sizeof(szBuffer), pszFormatText, ap);
+  va_start(ap, formatText);
+  vsnprintf(buffer, sizeof(buffer), formatText, ap);
   va_end(ap);
-  return Write(szBuffer);
+  return Write(buffer);
 }
 
-static void StripLineEnd(char *pszString) {
-  size_t i = strlen(pszString);
-  while ((i > 0) && ((pszString[i - 1] == 10) || pszString[i-1] == 13)) {
+static void StripLineEnd(char *str) {
+  size_t i = strlen(str);
+  while ((i > 0) && ((str[i - 1] == 10) || str[i-1] == 13)) {
     --i;
   }
-  pszString[i] = '\0';
+  str[i] = '\0';
 }
 
-bool TextFile::ReadLine(string *buffer) {
-  char szBuffer[4096];
-  char *p = fgets(szBuffer, sizeof(szBuffer), file_);
+bool TextFile::ReadLine(string *out) {
+  char s[4096];
+  char *p = fgets(s, sizeof(s), file_);
   if (p == nullptr) {
     return false;
   }
   // Strip off trailing \r\n
   StripLineEnd(p);
-  buffer->assign(p);
+  out->assign(p);
   return true;
 }
 

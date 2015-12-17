@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5.x                          */
 /*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -21,6 +21,6 @@
 int  bputch(char c, bool bUseInternalBuffer = false);
 void FlushOutComChBuffer();
 void rputch(char ch, bool bUseInternalBuffer = false);
-void rputs(const char *pszText);
+void rputs(const char *text);
 
 #endif  // __INCLUDED_BBS_BPUTCH_H__
