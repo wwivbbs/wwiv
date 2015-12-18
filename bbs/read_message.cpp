@@ -51,7 +51,7 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
   string netName;
 
   if (session()->max_net_num() > 1) {
-    netName = StrCat(net_networks[session()->net_num()].name, "- ");
+    netName = StrCat(session()->net_networks[session()->net_num()].name, "- ");
   }
 
   outNetworkName->clear();

@@ -252,7 +252,7 @@ void sub_xtr_add(int n, int nn) {
         odc[odci - 1] = static_cast<char>(odci + '0');
         odc[odci] = 0;
       }
-      bout << "(" << ii + 1 << ") " << net_networks[ii].name << wwiv::endl;
+      bout << "(" << ii + 1 << ") " << session()->net_networks[ii].name << wwiv::endl;
     }
     bout << "Q. Quit\r\n\n";
     bout << "|#2Which network (number): ";

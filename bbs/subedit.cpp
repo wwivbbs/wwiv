@@ -64,16 +64,18 @@ static void save_subs() {
 
   TextFile fileSubsXtr(syscfg.datadir, SUBS_XTR, "w");
   if (fileSubsXtr.IsOpen()) {
-    for (size_t i = 0; i < session()->xsubs.size(); i++) {
-      if (!session()->xsubs[i].nets.empty()) {
-        fileSubsXtr.WriteFormatted("!%u\n@%s\n#%lu\n", i, session()->xsubs[i].desc, (session()->xsubs[i].flags));
-        for (size_t i1 = 0; i1 < session()->xsubs[i].nets.size(); i1++) {
+    int i = 0;
+    for (const auto& x : session()->xsubs) {
+      if (!x.nets.empty()) {
+        fileSubsXtr.WriteFormatted("!%u\n@%s\n#%lu\n", i, x.desc, x.flags);
+        i++;
+        for (const auto& n : x.nets) {
           fileSubsXtr.WriteFormatted("$%s %s %lu %u %u\n",
-            net_networks[session()->xsubs[i].nets[i1].net_num].name,
-            session()->xsubs[i].nets[i1].stype,
-            session()->xsubs[i].nets[i1].flags,
-            session()->xsubs[i].nets[i1].host,
-            session()->xsubs[i].nets[i1].category);
+              session()->net_networks[n.net_num].name,
+              n.stype,
+              n.flags,
+              n.host,
+              n.category);
         }
       }
     }
@@ -211,11 +213,11 @@ void DisplayNetInfo(int nSubNum) {
       strcpy(szBuffer2, " Auto-Info");
     }
     if ((*it).host == 0) {
-      const string net_file_name = StringPrintf("%sn%s.net", net_networks[(*it).net_num].dir, (*it).stype);
+      const string net_file_name = StringPrintf("%sn%s.net", session()->net_networks[(*it).net_num].dir, (*it).stype);
       int num = amount_of_subscribers(net_file_name.c_str());
       bout.bprintf("   %c) %-12.12s %-7.7s %-6.6s  %-4d  %s%s\r\n",
                     i + 'a',
-                    net_networks[(*it).net_num].name,
+                    session()->net_networks[(*it).net_num].name,
                     (*it).stype,
                     szBuffer,
                     num,
@@ -224,7 +226,7 @@ void DisplayNetInfo(int nSubNum) {
     } else {
       bout.bprintf("   %c) %-12.12s %-7.7s %-6.6s  %s%s\r\n",
                     i + 'a',
-                    net_networks[(*it).net_num].name,
+                    session()->net_networks[(*it).net_num].name,
                     (*it).stype,
                     szBuffer,
                     ((*it).flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",

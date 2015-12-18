@@ -153,7 +153,6 @@ __EXTRN__ batchrec *batch;
 __EXTRN__ tagrec *filelist;
 __EXTRN__ gfiledirrec *gfilesec;
 __EXTRN__ net_system_list_rec *csn;
-__EXTRN__ net_networks_rec *net_networks;
 __EXTRN__ arcrec *arcs;
 __EXTRN__ eventsrec *events;
 __EXTRN__ threadrec *thread;

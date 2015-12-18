@@ -82,7 +82,7 @@ void old_sublist() {
           if (session()->xsubs[usub[i1].subnum].nets.size() > 1) {
             ss = "Gated";
           } else {
-            ss = stripcolors(net_networks[session()->xsubs[usub[i1].subnum].nets[0].net_num].name);
+            ss = stripcolors(session()->net_networks[session()->xsubs[usub[i1].subnum].nets[0].net_num].name);
           }
 
           char s1[80];
@@ -205,7 +205,7 @@ void SubList() {
               wc = 6;
               ss = "Gated";
             } else {
-              strcpy(s3, net_networks[session()->xsubs[usub[i1].subnum].nets[0].net_num].name);
+              strcpy(s3, session()->net_networks[session()->xsubs[usub[i1].subnum].nets[0].net_num].name);
               ss = stripcolors(s3);
               wc = session()->net_num() % 8;
             }

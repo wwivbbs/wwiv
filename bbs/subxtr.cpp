@@ -37,8 +37,8 @@ static xtrasubsnetrec *xsubsn;
 static int nn;
 
 static int FindNetworkByName(const std::string& name) {
-  for (int i = 0; i < session()->max_net_num(); i++) {
-    if (IsEqualsIgnoreCase(net_networks[i].name, name.c_str())) {
+  for (size_t i = 0; i < session()->net_networks.size(); i++) {
+    if (IsEqualsIgnoreCase(session()->net_networks[i].name, name.c_str())) {
       return i;
     }
   }

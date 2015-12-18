@@ -741,9 +741,9 @@ static void DisplayUserLoginInformation() {
   /////////////////////////////////////////////////////////////////////////
   session()->GetStatusManager()->RefreshStatusCache();
   for (int i = 0; i < session()->max_net_num(); i++) {
-    if (net_networks[i].sysnum) {
-      sprintf(s1, "|#9%s node|#0%s|#2 @%u", net_networks[i].name, charstr(13 - strlen(net_networks[i].name), '.'),
-              net_networks[i].sysnum);
+    if (session()->net_networks[i].sysnum) {
+      sprintf(s1, "|#9%s node|#0%s|#2 @%u", session()->net_networks[i].name, charstr(13 - strlen(session()->net_networks[i].name), '.'),
+        session()->net_networks[i].sysnum);
       if (i) {
         bout << s1;
         bout.nl();

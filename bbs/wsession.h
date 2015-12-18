@@ -35,6 +35,7 @@
 #include "core/inifile.h"
 #include "core/file.h"
 #include "sdk/vardec.h"
+#include "sdk/net.h"
 
 //
 // WSession - Holds information and status data about the current user
@@ -222,8 +223,7 @@ public:
   int  net_num() const { return m_nNetworkNumber; }
   void set_net_num(int n) { m_nNetworkNumber = n; }
 
-  int  max_net_num() const { return m_nMaxNetworkNumber; }
-  void SetMaxNetworkNumber(int n) { m_nMaxNetworkNumber = n; }
+  int  max_net_num() const { return net_networks.size(); }
 
   bool wwivmail_enabled() const { return wwivmail_enabled_; }
   void set_wwivmail_enabled(bool wwivmail_enabled) { wwivmail_enabled_ = wwivmail_enabled; }
@@ -467,6 +467,8 @@ public:
   std::vector<languagerec> languages;
   std::vector<subboardrec> subboards;
   std::vector<xtrasubsrec> xsubs;
+  std::vector<net_networks_rec> net_networks;
+
 
 };
 

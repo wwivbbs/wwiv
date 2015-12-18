@@ -209,7 +209,7 @@ void post() {
         if (i) {
           bout << ", ";
         }
-        bout << net_networks[session()->xsubs[session()->GetCurrentReadMessageArea()].nets[i].net_num].name;
+        bout << session()->net_networks[session()->xsubs[session()->GetCurrentReadMessageArea()].nets[i].net_num].name;
       }
       bout << ".\r\n\n";
     }

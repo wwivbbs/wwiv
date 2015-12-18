@@ -99,7 +99,7 @@ static string GetMailBoxStatus() {
       return StringPrintf("Forward to #%u @%u.%s.",
               session()->user()->GetForwardUserNumber(),
               session()->user()->GetForwardSystemNumber(),
-              net_networks[ session()->user()->GetForwardNetNumber() ].name);
+              session()->net_networks[ session()->user()->GetForwardNetNumber() ].name);
     } else {
       char szForwardUserName[80];
       read_inet_addr(szForwardUserName, session()->usernum);

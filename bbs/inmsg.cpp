@@ -68,7 +68,7 @@ static bool GetMessageToName(const char *aux) {
   if (!session()->xsubs[session()->GetCurrentReadMessageArea()].nets.empty()) {
     for (size_t i = 0; i < session()->xsubs[session()->GetCurrentReadMessageArea()].nets.size(); i++) {
       xtrasubsnetrec& xnp = session()->xsubs[session()->GetCurrentReadMessageArea()].nets[i];
-      if (net_networks[xnp.net_num].type == net_type_fidonet &&
+      if (session()->net_networks[xnp.net_num].type == net_type_fidonet &&
           !IsEqualsIgnoreCase(aux, "email")) {
         bHasAddress = true;
         bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
@@ -351,7 +351,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
       !session()->xsubs[session()->GetCurrentReadMessageArea()].nets.empty()) {
     for (size_t i = 0; i < session()->xsubs[session()->GetCurrentReadMessageArea()].nets.size(); i++) {
       xtrasubsnetrec& xnp = session()->xsubs[session()->GetCurrentReadMessageArea()].nets[i];
-      if (net_networks[xnp.net_num].type == net_type_fidonet) {
+      if (session()->net_networks[xnp.net_num].type == net_type_fidonet) {
         const string buf = StringPrintf("0FidoAddr: %s", irt_name);
         ss << buf << crlf;
         break;
@@ -388,7 +388,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
 static string FindTagFileName() {
   for (size_t i = 0; i < session()->xsubs[session()->GetCurrentReadMessageArea()].nets.size(); i++) {
     xtrasubsnetrec& xnp = session()->xsubs[session()->GetCurrentReadMessageArea()].nets[i];
-    const char *nd = net_networks[xnp.net_num].dir;
+    const char *nd = session()->net_networks[xnp.net_num].dir;
     string filename = StringPrintf("%s%s.tag", nd, xnp.stype);
     if (File::Exists(filename)) {
       return filename;

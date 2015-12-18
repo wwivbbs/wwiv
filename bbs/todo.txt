@@ -7,7 +7,6 @@
   dependencies so it can get moved into sdk.`
 * make all wwiv datafile data into vector and not malloc'ed 
 * add subboardrec& session()->current_sub()
-* make net_networks use vector.
 
 * Move bbs logic out of WLocalIO and into WSession (probably)
 * remove extra include statements from user.cpp

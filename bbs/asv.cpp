@@ -69,16 +69,18 @@ void asv() {
     case '1':
       bout << "|#5Select a network you are in [Q=Quit].";
       bout.nl(2);
-      for (i = 0; i < session()->max_net_num(); i++) {
-        if (net_networks[i].sysnum) {
-          bout << " |#3" << i + 1 << "|#1.  |#1" << net_networks[i].name << wwiv::endl;
+      i = 1;
+      for (const auto& n : session()->net_networks) {
+        if (n.sysnum) {
+          bout << " |#3" << i  << "|#1. " << n.name << wwiv::endl;
+          i++;
         }
       }
       bout.nl();
       bout << "|#1:";
       input(s, 2, true);
       i = atoi(s);
-      if (i < 1 || i > session()->max_net_num()) {
+      if (i < 1 || i > session()->net_networks.size()) {
         bout.nl();
         bout << "|#6Aborted!";
         break;

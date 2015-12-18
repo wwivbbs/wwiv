@@ -821,7 +821,7 @@ void qwk_post_text(char *text, char *title, int sub) {
       bout.Color(3);
       for (size_t i = 0; i < session()->xsubs[session()->GetCurrentReadMessageArea()].nets.size(); i++) {
         xtrasubsnetrec& xnp = session()->xsubs[session()->GetCurrentReadMessageArea()].nets[i];
-        string network_name = net_networks[xnp.net_num].name;
+        string network_name = session()->net_networks[xnp.net_num].name;
         bout << network_name << " ";
       }
       bout.nl();
