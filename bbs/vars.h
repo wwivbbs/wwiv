@@ -156,9 +156,6 @@ __EXTRN__ arcrec *arcs;
 __EXTRN__ eventsrec *events;
 __EXTRN__ threadrec *thread;
 
-__EXTRN__ languagerec *languages;
-__EXTRN__ char *cur_lang_name;
-
 __EXTRN__ confrec *subconfs, *dirconfs;
 
 __EXTRN__ int iia;

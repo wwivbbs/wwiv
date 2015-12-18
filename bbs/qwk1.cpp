@@ -476,9 +476,9 @@ void qwk_email_text(char *text, char *title, char *to) {
     } else {
       if (session()->max_net_num() > 1) {
         if (un == 0) {
-          sprintf(s2, "%s @%u.%s", net_email_name, sy, session()->GetNetworkName());
+          sprintf(s2, "%s @%u.%s", net_email_name, sy, session()->network_name());
         } else {
-          sprintf(s2, "%u @%u.%s", un, sy, session()->GetNetworkName());
+          sprintf(s2, "%u @%u.%s", un, sy, session()->network_name());
         }
       } else {
         if (un == 0) {

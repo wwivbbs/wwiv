@@ -77,7 +77,7 @@ const char *interpret(char chKey) {
     snprintf(s, sizeof(s), "%d", session()->user()->GetAge());
     break;
   case 'a':                               // User's language
-    strcpy(s, cur_lang_name);
+    strcpy(s, session()->cur_lang_name.c_str());
     break;
   case 'B':                               // User's birthday
     snprintf(s, sizeof(s), "%d/%d/%d", session()->user()->GetBirthdayMonth(),

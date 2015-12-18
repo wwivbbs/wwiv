@@ -570,7 +570,7 @@ static void UpdateLastOnFileAndUserLog() {
           "|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
           pStatus->GetCallerNumber(),
           session()->user()->GetUserNameAndNumber(session()->usernum),
-          cur_lang_name,
+          session()->cur_lang_name.c_str(),
           times(),
           fulldate(),
           session()->GetCurrentSpeed().c_str(),
@@ -773,7 +773,7 @@ static void DisplayUserLoginInformation() {
           bout << "#" << session()->user()->GetForwardUserNumber()
                << " @"
                << session()->user()->GetForwardSystemNumber()
-               << "." << session()->GetNetworkName() << "."
+               << "." << session()->network_name() << "."
                << wwiv::endl;
         } else {
           bout << "#" << session()->user()->GetForwardUserNumber() << " @"

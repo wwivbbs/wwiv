@@ -351,7 +351,7 @@ void print_net_listing(bool bForcePause) {
 
       bout.cls();
       bout.nl();
-      bout << "|#9Network|#2: |#1" << session()->GetNetworkName() << wwiv::endl;
+      bout << "|#9Network|#2: |#1" << session()->network_name() << wwiv::endl;
       bout.nl();
 
       bout << "|#21|#9) = |#1List All\r\n";
@@ -464,7 +464,7 @@ void print_net_listing(bool bForcePause) {
       bout << "|#1Print BBS region info? ";
       bool useregion = yesno();
 
-      File bbsListFile(session()->GetNetworkDataDirectory(), BBSDATA_NET);
+      File bbsListFile(session()->network_directory(), BBSDATA_NET);
       if (!bbsListFile.Open(File::modeReadOnly | File::modeBinary)) {
         bout << "|#6Error opening " << bbsListFile.full_pathname() << "!\r\n";
         pausescr();
@@ -610,7 +610,7 @@ void read_new_stuff() {
     zap_call_out_list();
     zap_contacts();
   }
-  set_language_1(session()->GetCurrentLanguageNumber());
+  set_language_1(session()->language_number());
 }
 
 

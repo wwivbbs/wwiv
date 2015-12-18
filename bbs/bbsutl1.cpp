@@ -79,8 +79,8 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
   } else if (atoi(ss + 1) == 0) {
     for (i = 0; i < session()->max_net_num(); i++) {
       set_net_num(i);
-      if ((strncasecmp("internet", session()->GetNetworkName(), 8) == 0) ||
-          ((strncasecmp("filenet", session()->GetNetworkName(), 7) == 0) && (*pSystemNumber == 32767))) {
+      if ((strncasecmp("internet", session()->network_name(), 8) == 0) ||
+          ((strncasecmp("filenet", session()->network_name(), 7) == 0) && (*pSystemNumber == 32767))) {
         strcpy(net_email_name, szEmailAddress);
         for (ss1 = net_email_name; *ss1; ss1++) {
           if ((*ss1 >= 'A') && (*ss1 <= 'Z')) {
@@ -133,7 +133,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
     if (*pSystemNumber && ss1) {
       for (i = 0; i < session()->max_net_num(); i++) {
         set_net_num(i);
-        if (wwiv::strings::IsEqualsIgnoreCase(ss1, session()->GetNetworkName())) {
+        if (wwiv::strings::IsEqualsIgnoreCase(ss1, session()->network_name())) {
           if (!valid_system(*pSystemNumber)) {
             bout.nl();
             bout << "There is no " << ss1 << " @" << *pSystemNumber << ".\r\n\n";
@@ -210,7 +210,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
               odc[odci - 1] = static_cast<char>(odci + '0');
               odc[odci] = 0;
             }
-            bout << i + 1 << ". " << session()->GetNetworkName() << " (" << csne->name << ")\r\n";
+            bout << i + 1 << ". " << session()->network_name() << " (" << csne->name << ")\r\n";
           }
         }
         bout << "Q. Quit\r\n\n";

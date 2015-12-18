@@ -227,7 +227,7 @@ void CreatePCBoardSysDropFile() {
     pcb.time_limit = static_cast<short>(nsl());
     pcb.down_limit = 1024;
     pcb.curconf = static_cast<char>(session()->GetCurrentConferenceMessageArea());
-    strcpy(pcb.slanguage, cur_lang_name);
+    strcpy(pcb.slanguage, session()->cur_lang_name.c_str());
     strcpy(pcb.name, session()->user()->GetName());
     pcb.sminsleft = pcb.time_limit;
     pcb.snodenum = static_cast<char>((num_instances() > 1) ? session()->GetInstanceNumber() : 0);

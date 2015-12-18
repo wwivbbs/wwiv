@@ -263,11 +263,11 @@ void sendout_email(EmailData& data) {
       string net_filename;
       if (data.forwarded_code) {
         net_filename = StringPrintf("%sp1%s",
-          session()->GetNetworkDataDirectory().c_str(),
+          session()->network_directory().c_str(),
           session()->GetNetworkExtension().c_str());
       } else {
         net_filename = StringPrintf("%sp0%s",
-          session()->GetNetworkDataDirectory().c_str(),
+          session()->network_directory().c_str(),
           session()->GetNetworkExtension().c_str());
       }
       File fileNetworkPacket(net_filename);
@@ -310,16 +310,16 @@ void sendout_email(EmailData& data) {
     }
   } else {
     string logMessagePart;
-    if ((data.system_number == 1 && IsEqualsIgnoreCase(session()->GetNetworkName(), "Internet")) ||
+    if ((data.system_number == 1 && IsEqualsIgnoreCase(session()->network_name(), "Internet")) ||
       data.system_number == 32767) {
       logMessagePart = net_email_name;
     } else {
       if (session()->max_net_num() > 1) {
         if (data.user_number == 0) {
           logMessagePart = StringPrintf("%s @%u.%s", net_email_name, data.system_number,
-                           session()->GetNetworkName());
+                           session()->network_name());
         } else {
-          logMessagePart = StringPrintf("#%u @%u.%s", data.user_number, data.system_number, session()->GetNetworkName());
+          logMessagePart = StringPrintf("#%u @%u.%s", data.user_number, data.system_number, session()->network_name());
         }
       } else {
         if (data.user_number == 0) {
@@ -461,15 +461,15 @@ void email(const string& title, int user_number, int system_number, bool forceit
     }
   } else {
     if ((system_number == 1 && user_number == 0 &&
-         IsEqualsIgnoreCase(session()->GetNetworkName(), "Internet")) ||
+         IsEqualsIgnoreCase(session()->network_name(), "Internet")) ||
         system_number == 32767) {
       strcpy(szDestination, net_email_name);
     } else {
       if (session()->max_net_num() > 1) {
         if (user_number == 0) {
-          sprintf(szDestination, "%s @%u.%s", net_email_name, system_number, session()->GetNetworkName());
+          sprintf(szDestination, "%s @%u.%s", net_email_name, system_number, session()->network_name());
         } else {
-          sprintf(szDestination, "#%u @%u.%s", user_number, system_number, session()->GetNetworkName());
+          sprintf(szDestination, "#%u @%u.%s", user_number, system_number, session()->network_name());
         }
       } else {
         if (user_number == 0) {
@@ -538,7 +538,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
       bool done = false;
       carbon_copy[nNumUsers].user_number = user_number;
       carbon_copy[nNumUsers].system_number = system_number;
-      strcpy(carbon_copy[nNumUsers].net_name, session()->GetNetworkName());
+      strcpy(carbon_copy[nNumUsers].net_name, session()->network_name());
       strcpy(carbon_copy[nNumUsers].net_email_name, net_email_name);
       carbon_copy[nNumUsers].net_num = session()->net_num();
       nNumUsers++;
@@ -555,7 +555,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
         if (tu || ts) {
           carbon_copy[nNumUsers].user_number = tu;
           carbon_copy[nNumUsers].system_number = ts;
-          strcpy(carbon_copy[nNumUsers].net_name, session()->GetNetworkName());
+          strcpy(carbon_copy[nNumUsers].net_name, session()->network_name());
           strcpy(carbon_copy[nNumUsers].net_email_name, net_email_name);
           carbon_copy[nNumUsers].net_num = session()->net_num();
           nNumUsers++;

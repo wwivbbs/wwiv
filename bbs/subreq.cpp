@@ -95,9 +95,9 @@ int find_hostfor(char *type, short *ui, char *description, short *opt) {
   bool done = false;
   for (int i = 0; i < 256 && !done; i++) {
     if (i) {
-      sprintf(s, "%s%s.%d", session()->GetNetworkDataDirectory().c_str(), SUBS_NOEXT, i);
+      sprintf(s, "%s%s.%d", session()->network_directory().c_str(), SUBS_NOEXT, i);
     } else {
-      sprintf(s, "%s%s", session()->GetNetworkDataDirectory().c_str(), SUBS_LST);
+      sprintf(s, "%s%s", session()->network_directory().c_str(), SUBS_LST);
     }
     TextFile file(s, "r");
     if (file.IsOpen()) {
@@ -295,7 +295,7 @@ void sub_xtr_add(int n, int nn) {
   bout << "|#5Will you be hosting the sub? ";
   if (yesno()) {
     char file_name[MAX_PATH];
-    sprintf(file_name, "%sn%s.net", session()->GetNetworkDataDirectory().c_str(), xnp.stype);
+    sprintf(file_name, "%sn%s.net", session()->network_directory().c_str(), xnp.stype);
     File file(file_name);
     if (file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
       file.Close();
@@ -317,7 +317,7 @@ void sub_xtr_add(int n, int nn) {
           input(s, 3);
           i = wwiv::strings::StringToUnsignedShort(s);
           if (i || wwiv::strings::IsEquals(s, "0")) {
-            TextFile ff(session()->GetNetworkDataDirectory(), CATEG_NET, "rt");
+            TextFile ff(session()->network_directory(), CATEG_NET, "rt");
             while (ff.ReadLine(s, 100)) {
               int i1 = wwiv::strings::StringToUnsignedShort(s);
               if (i1 == i) {
@@ -404,7 +404,7 @@ bool display_sub_categories() {
     return false;
   }
 
-  TextFile ff(session()->GetNetworkDataDirectory(), CATEG_NET, "rt");
+  TextFile ff(session()->network_directory(), CATEG_NET, "rt");
   if (ff.IsOpen()) {
     bout.nl();
     bout << "Available sub categories are:\r\n";

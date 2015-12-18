@@ -158,7 +158,7 @@ static void print_cur_stat() {
   bout << "|#1I|#9) Internet Address  : |#2" << internet_email_address << wwiv::endl;
   bout << "|#1K|#9) Configure Menus" << wwiv::endl;
   if (session()->languages.size() > 1) {
-    bout<< "|#1L|#9) Language          : |#2" << setw(16) << cur_lang_name << " ";
+    bout<< "|#1L|#9) Language          : |#2" << setw(16) << session()->cur_lang_name << " ";
   }
   if (num_instances() > 1) {
     bout << "|#1M|#9) Allow user msgs   : |#2" << YesNoString(!session()->user()->IsIgnoreNodeMessages());

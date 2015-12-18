@@ -57,7 +57,7 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
   outNetworkName->clear();
   outLocation->clear();
 
-  if (IsEqualsIgnoreCase(session()->GetNetworkName(), "Internet") ||
+  if (IsEqualsIgnoreCase(session()->network_name(), "Internet") ||
     system_number == 32767) {
     outNetworkName->assign("Internet Mail and Newsgroups");
     return;

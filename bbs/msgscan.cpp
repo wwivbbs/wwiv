@@ -574,7 +574,7 @@ void GetScanReadPrompts(int nMessageNumber, char *pszReadPrompt, char *pszSubNam
     }
   } else {
     if (!session()->current_xsub().nets.empty()) {
-      sprintf(szLocalNetworkName, "%s", session()->GetNetworkName());
+      sprintf(szLocalNetworkName, "%s", session()->network_name());
     } else {
       set_net_num(0);
       sprintf(szLocalNetworkName, "%s", "Local");

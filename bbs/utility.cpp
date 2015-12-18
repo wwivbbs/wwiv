@@ -232,7 +232,7 @@ void send_net(net_header_rec * nh, unsigned short int *list, const char *text, c
   WWIV_ASSERT(nh);
 
   const string filename = StringPrintf("%sp1%s",
-    session()->GetNetworkDataDirectory().c_str(),
+    session()->network_directory().c_str(),
     session()->GetNetworkExtension().c_str());
   File file(filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {

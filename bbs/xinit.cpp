@@ -832,7 +832,7 @@ bool WSession::read_language() {
     languages.emplace_back(lang);
   }
 
-  SetCurrentLanguageNumber(-1);
+  set_language_number(-1);
   if (!set_language(0)) {
     std::clog << "You need the default language installed to run the BBS." << std::endl;
     return false;

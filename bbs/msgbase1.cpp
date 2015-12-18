@@ -108,7 +108,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
       nh.tosys = xnp.host;
     } else {
       nh.main_type = main_type_post;
-      const string filename = StringPrintf("%sn%s.net", session()->GetNetworkDataDirectory().c_str(), xnp.stype);
+      const string filename = StringPrintf("%sn%s.net", session()->network_directory().c_str(), xnp.stype);
       File file(filename);
       if (file.Open(File::modeBinary | File::modeReadOnly)) {
         int len1 = file.GetLength();

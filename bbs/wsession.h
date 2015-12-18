@@ -151,8 +151,8 @@ public:
 
   // This is used in sprintf in many places, so we return a char*
   // instead of a string.
-  const char* GetNetworkName() const;
-  const std::string GetNetworkDataDirectory() const;
+  const char* network_name() const;
+  const std::string network_directory() const;
 
   bool IsMessageThreadingEnabled() const { return m_bThreadSubs; }
   void SetMessageThreadingEnabled(bool b) { m_bThreadSubs = b; }
@@ -163,8 +163,14 @@ public:
   bool IsUserOnline() const { return m_bUserOnline; }
   void SetUserOnline(bool b) { m_bUserOnline = b; }
 
-  int  GetCurrentLanguageNumber() const { return m_nCurrentLanguageNumber; }
-  void SetCurrentLanguageNumber(int n) { m_nCurrentLanguageNumber = n; }
+  int  language_number() const { return m_nCurrentLanguageNumber; }
+  void set_language_number(int n) { 
+    m_nCurrentLanguageNumber = n; 
+    if (n >= 0 && n <= static_cast<int>(languages.size())) {
+      cur_lang_name = languages[n].name;
+      language_dir = languages[n].dir;
+    }
+  }
 
   bool IsInternetUseRealNames() const { return m_bInternetUseRealNames; }
   void SetInternetUseRealNames(bool b) { m_bInternetUseRealNames = b; }
@@ -436,7 +442,7 @@ private:
   bool m_bInternetUseRealNames;
 
   std::string language_dir;
-  char *cur_lang_name;
+  std::string cur_lang_name;
 
   int wfc_status;
   int usernum;

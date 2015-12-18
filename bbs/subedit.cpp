@@ -84,9 +84,9 @@ static void save_subs() {
   for (int nDelNetNum = 0; nDelNetNum < session()->max_net_num(); nDelNetNum++) {
     set_net_num(nDelNetNum);
 
-    File::Remove(session()->GetNetworkDataDirectory(), ALLOW_NET);
-    File::Remove(session()->GetNetworkDataDirectory(), SUBS_PUB);
-    File::Remove(session()->GetNetworkDataDirectory(), NNALL_NET);
+    File::Remove(session()->network_directory(), ALLOW_NET);
+    File::Remove(session()->network_directory(), SUBS_PUB);
+    File::Remove(session()->network_directory(), NNALL_NET);
   }
 
   set_net_num(nSavedNetNum);

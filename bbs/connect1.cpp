@@ -43,7 +43,7 @@ void read_call_out_list() {
 
   zap_call_out_list();
 
-  File fileCallout(session()->GetNetworkDataDirectory(), CALLOUT_NET);
+  File fileCallout(session()->network_directory(), CALLOUT_NET);
   if (fileCallout.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileCallout.GetLength();
     char *ss = nullptr;
@@ -216,7 +216,7 @@ void read_bbs_list() {
   if (net_sysnum == 0) {
     return;
   }
-  File fileBbsData(session()->GetNetworkDataDirectory(), BBSDATA_NET);
+  File fileBbsData(session()->network_directory(), BBSDATA_NET);
   if (fileBbsData.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileBbsData.GetLength();
     session()->num_sys_list = static_cast<int>(lFileLength / sizeof(net_system_list_rec));
@@ -239,7 +239,7 @@ void read_bbs_list_index() {
   if (net_sysnum == 0) {
     return;
   }
-  File fileBbsData(session()->GetNetworkDataDirectory(), BBSDATA_IND);
+  File fileBbsData(session()->network_directory(), BBSDATA_IND);
   if (fileBbsData.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileBbsData.GetLength();
     session()->num_sys_list = static_cast<int>(lFileLength / 2);
@@ -292,7 +292,7 @@ net_system_list_rec *next_system(int ts) {
   } else if (csn) {
     return ((net_system_list_rec *) & (csn[nIndex]));
   } else {
-    File fileBbsData(session()->GetNetworkDataDirectory(), BBSDATA_NET);
+    File fileBbsData(session()->network_directory(), BBSDATA_NET);
     fileBbsData.Open(File::modeBinary | File::modeReadOnly);
     fileBbsData.Seek(sizeof(net_system_list_rec) * static_cast<long>(nIndex), File::seekBegin);
     fileBbsData.Read(&csne, sizeof(net_system_list_rec));
@@ -312,7 +312,7 @@ void zap_contacts() {
 void read_contacts() {
   zap_contacts();
 
-  File fileContact(session()->GetNetworkDataDirectory(), CONTACT_NET);
+  File fileContact(session()->network_directory(), CONTACT_NET);
   if (fileContact.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileContact.GetLength();
     session()->net_networks[session()->net_num()].num_ncn = static_cast<short>(lFileLength / sizeof(net_contact_rec));
