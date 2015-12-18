@@ -178,7 +178,7 @@ void build_qwk_packet() {
   }
 
   bool msgs_ok = true;
-  for (int i = 0; (usub[i].subnum != -1) && (i < session()->num_subs) && (!hangup) && !qwk_info.abort && msgs_ok; i++) {
+  for (int i = 0; (usub[i].subnum != -1) && (i < session()->subboards.size()) && (!hangup) && !qwk_info.abort && msgs_ok; i++) {
     msgs_ok = (max_msgs ? qwk_info.qwk_rec_num <= max_msgs : true);
     if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) {
       qwk_gather_sub(i, &qwk_info);
@@ -651,7 +651,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   fprintf(fp, "%d\r\n", qwk_info->qwk_rec_num);
   
   int amount = 0;
-  for (int cur = 0; (usub[cur].subnum != -1) && (cur < session()->num_subs) && (!hangup); cur++) {
+  for (int cur = 0; (usub[cur].subnum != -1) && (cur < session()->subboards.size()) && (!hangup); cur++) {
     if (qsc_q[usub[cur].subnum / 32] & (1L << (usub[cur].subnum % 32))) {
       ++amount;
     }
@@ -661,7 +661,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   fprintf(fp, "0\r\n");
   fprintf(fp, "E-Mail\r\n");
 
-  for (int cur = 0; (usub[cur].subnum != -1) && (cur < session()->num_subs) && (!hangup); cur++) {
+  for (int cur = 0; (usub[cur].subnum != -1) && (cur < session()->subboards.size()) && (!hangup); cur++) {
     if (qsc_q[usub[cur].subnum / 32] & (1L << (usub[cur].subnum % 32))) {
       // QWK support says this should be truncated to 10 or 13 characters
       // however QWKE allows for 255 characters. This works fine in multimail which

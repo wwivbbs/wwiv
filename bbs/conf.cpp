@@ -110,7 +110,7 @@ int get_conf_info(int conftype, int *num, confrec ** cpp,
       sprintf(file_name, "%s%s", syscfg.datadir, SUBS_CNF);
     }
     if (num_s) {
-      *num_s = session()->num_subs;
+      *num_s = session()->subboards.size();
     }
     if (uc) {
       *uc = uconfsub;

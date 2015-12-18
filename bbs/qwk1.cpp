@@ -733,7 +733,7 @@ void qwk_post_text(char *text, char *title, int sub) {
     }
 
 
-    if (sub >= session()->num_subs || sub < 0) {
+    if (sub >= session()->subboards.size() || sub < 0) {
       bout.Color(5);
       bout.bputs("Sub out of range");
 

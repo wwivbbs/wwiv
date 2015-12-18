@@ -122,14 +122,14 @@ void DownSub() {
     session()->SetCurrentMessageArea(session()->GetCurrentMessageArea() - 1);
   } else {
     while (usub[session()->GetCurrentMessageArea() + 1].subnum >= 0 &&
-           session()->GetCurrentMessageArea() < session()->num_subs - 1) {
+           session()->GetCurrentMessageArea() < session()->subboards.size() - 1) {
       session()->SetCurrentMessageArea(session()->GetCurrentMessageArea() + 1);
     }
   }
 }
 
 void UpSub() {
-  if (session()->GetCurrentMessageArea() < session()->num_subs - 1 &&
+  if (session()->GetCurrentMessageArea() < session()->subboards.size() - 1 &&
       usub[session()->GetCurrentMessageArea() + 1].subnum >= 0) {
     session()->SetCurrentMessageArea(session()->GetCurrentMessageArea() + 1);
   } else {
@@ -1086,7 +1086,7 @@ bool GuestCheck() {
 }
 
 void SetSubNumber(const char *pszSubKeys) {
-  for (int i = 0; (i < session()->num_subs) && (usub[i].subnum != -1); i++) {
+  for (size_t i = 0; (i < session()->subboards.size()) && (usub[i].subnum != -1); i++) {
     if (wwiv::strings::IsEquals(usub[i].keys, pszSubKeys)) {
       session()->SetCurrentMessageArea(i);
     }

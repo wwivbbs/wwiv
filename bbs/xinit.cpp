@@ -670,7 +670,6 @@ bool WSession::read_subs() {
   if (!file.ReadVector(subboards, GetMaxNumberMessageAreas())) {
     return false;
   }
-  num_subs = subboards.size();
   return read_subs_xtr(subboards, xsubs);
 }
 

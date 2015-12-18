@@ -960,7 +960,7 @@ void HandleMessageMove(int &nMessageNumber) {
       return;
     }
     bool ok = false;
-    for (int i1 = 0; (i1 < session()->num_subs && usub[i1].subnum != -1 && !ok); i1++) {
+    for (int i1 = 0; (i1 < session()->subboards.size() && usub[i1].subnum != -1 && !ok); i1++) {
       if (IsEquals(usub[i1].keys, ss1)) {
         nTempSubNum = i1;
         bout.nl();

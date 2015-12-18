@@ -119,7 +119,7 @@ bool iscan1(int sub_index) {
   postrec p;
 
   // forget it if an invalid sub #
-  if (sub_index < 0 || sub_index >= session()->num_subs) {
+  if (sub_index < 0 || sub_index >= session()->subboards.size()) {
     return false;
   }
 
@@ -389,7 +389,7 @@ void pack_sub(int si) {
 }
 
 bool pack_all_subs() {
-  for (int i=0; i < session()->num_subs && !hangup; i++) {
+  for (size_t i=0; i < session()->subboards.size() && !hangup; i++) {
     pack_sub(i);
     if (!checka()) {
       return false;

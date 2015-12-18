@@ -413,7 +413,6 @@ private:
               numf,
               num_dirs,
               num_sec,
-              num_subs,
               num_events,
               num_sys_list,
               screenlinest,

@@ -185,8 +185,6 @@ int find_hostfor(char *type, short *ui, char *description, short *opt) {
 
 
 void sub_xtr_del(int n, int nn, int f) {
-  int i;
-
   // make a copy of the old network info.
   xtrasubsnetrec xn = session()->xsubs[n].nets[nn];
 

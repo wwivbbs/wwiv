@@ -61,7 +61,7 @@ void HopSub() {
       setuconf(CONF_SUBS, c, -1);
     }
     int i = 0;
-    while ((i < session()->num_subs) && (usub[i].subnum != -1) && !abort) {
+    while ((i < session()->subboards.size()) && (usub[i].subnum != -1) && !abort) {
       strcpy(s2, session()->subboards[usub[i].subnum].name);
       for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
         ;

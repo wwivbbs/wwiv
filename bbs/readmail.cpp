@@ -790,7 +790,7 @@ void readmail(int mode) {
             tmp_disable_conf(false);
             break;
           }
-          for (i1 = 0; (i1 < session()->num_subs) && (usub[i1].subnum != -1); i1++) {
+          for (i1 = 0; (i1 < session()->subboards.size()) && (usub[i1].subnum != -1); i1++) {
             if (wwiv::strings::IsEquals(usub[i1].keys, ss1)) {
               i = i1;
             }

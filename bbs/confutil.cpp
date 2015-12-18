@@ -181,7 +181,7 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
   case CONF_SUBS:
 
     ss1 = usub;
-    ns = session()->num_subs;
+    ns = session()->subboards.size();
     if (nOldSubNumber == -1) {
       osub = usub[session()->GetCurrentMessageArea()].subnum;
     } else {

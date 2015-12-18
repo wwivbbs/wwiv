@@ -43,7 +43,7 @@ void valscan() {
     tmp_disable_conf(true);
   }
   bool done = false;
-  for (int sn = 0; sn < session()->num_subs && !hangup && !done; sn++) {
+  for (int sn = 0; sn < session()->subboards.size() && !hangup && !done; sn++) {
     if (!iscan(sn)) {
       continue;
     }

@@ -61,8 +61,8 @@ bool ParseXSubsLine(const std::string& line, xtrasubsrec& xsub) {
   stream >> stype;
   StringTrim(&stype);
   strcpy(x.stype, stype.c_str());
-  x.type = atoi(x.stype);
-  x.net_num = net_num;
+  x.type = StringToUnsignedShort(x.stype);
+  x.net_num = static_cast<short>(net_num);
 
   stream >> x.flags;
   stream >> x.host;

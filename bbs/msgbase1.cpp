@@ -417,7 +417,7 @@ void nscan(int nStartingSubNum) {
 
   bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
   for (int i = nStartingSubNum; 
-       usub[i].subnum != -1 && i < session()->num_subs && nNextSubNumber && !hangup; 
+       usub[i].subnum != -1 && i < session()->subboards.size() && nNextSubNumber && !hangup;
        i++) {
     if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) {
       qscan(i, &nNextSubNumber);

@@ -410,7 +410,7 @@ static string FindTagFileName() {
 }
 
 static void UpdateMessageBufferTagLine(std::ostringstream& ss, const char *aux) {
-  if (session()->num_subs <= 0 && session()->GetCurrentReadMessageArea() <= 0) {
+  if (session()->subboards.size() <= 0 && session()->GetCurrentReadMessageArea() <= 0) {
     return;
   }
   const char szMultiMail[] = "Multi-Mail";

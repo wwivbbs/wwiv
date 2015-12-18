@@ -69,7 +69,7 @@ void old_sublist() {
       pla(s, &abort);
     }
     int i1 = 0;
-    while ((i1 < session()->num_subs) && (usub[i1].subnum != -1) && (!abort)) {
+    while ((i1 < session()->subboards.size()) && (usub[i1].subnum != -1) && (!abort)) {
       sprintf(s, "  |#5%4.4s|#2", usub[i1].keys);
       if (qsc_q[usub[i1].subnum / 32] & (1L << (usub[i1].subnum % 32))) {
         strcat(s, " - ");
@@ -173,7 +173,7 @@ void SubList() {
         setuconf(CONF_SUBS, i, -1);
         i1 = 0;
       }
-      while (i1 < session()->num_subs && usub[i1].subnum != -1 && !abort) {
+      while (i1 < session()->subboards.size() && usub[i1].subnum != -1 && !abort) {
         if (p) {
           p = 0;
           firstp = i1;
@@ -249,7 +249,7 @@ void SubList() {
           bout.bprintf("|#1Select |#9[|#2%d-%d, [Enter]=Next Page, Q=Quit|#9]|#0 : ", firstp + 1, lastp + 1);
           const char* ss = mmkey(0, true);
           if (isdigit(ss[0])) {
-            for (i2 = 0; i2 < session()->num_subs; i2++) {
+            for (i2 = 0; i2 < session()->subboards.size(); i2++) {
               if (wwiv::strings::IsEquals(usub[i2].keys, ss)) {
                 session()->SetCurrentMessageArea(i2);
                 oldSub = usub[session()->GetCurrentMessageArea()].subnum;
@@ -314,7 +314,7 @@ void SubList() {
           ns = i = 0;
         }
         if (isdigit(ss[0])) {
-          for (i2 = 0; i2 < session()->num_subs; i2++) {
+          for (i2 = 0; i2 < session()->subboards.size(); i2++) {
             if (wwiv::strings::IsEquals(usub[i2].keys, ss)) {
               session()->SetCurrentMessageArea(i2);
               oldSub = usub[session()->GetCurrentMessageArea()].subnum;
