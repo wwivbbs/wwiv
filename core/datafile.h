@@ -67,7 +67,7 @@ public:
     return Read(record);
   }
 
-  bool WriteVector(std::vector<RECORD>& records, std::size_t max_records = 0) {
+  bool WriteVector(const std::vector<RECORD>& records, std::size_t max_records = 0) {
     std::size_t num = records.size();
     if (max_records != 0 && max_records < num) {
       num = max_records;

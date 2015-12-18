@@ -10,7 +10,6 @@
 * update boardedit to use insert/erase on subs
 * make init use vector subs
 * add subboardrec& session()->current_sub()
-* rewrite read_subs_xtr to use vector/string lines/textfile ** it compiles - need to test and walk through with a debugger.
 
 * Move bbs logic out of WLocalIO and into WSession (probably)
 * remove extra include statements from user.cpp

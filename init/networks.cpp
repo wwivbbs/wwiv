@@ -36,6 +36,7 @@
 #include "initlib/input.h"
 #include "initlib/listbox.h"
 #include "core/strings.h"
+#include "core/datafile.h"
 #include "core/file.h"
 #include "core/wwivport.h"
 #include "core/file.h"
@@ -53,32 +54,24 @@ static void edit_net(int nn);
 using std::string;
 using std::unique_ptr;
 using std::vector;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
-unique_ptr<subboardrec[]> subboards;
-
-static bool read_subs(CursesWindow* window) {
-  File subsfile(syscfg.datadir, SUBS_DAT);
-  
-  if (subsfile.Open(File::modeBinary|File::modeReadWrite)) {
-    int num_subs = subsfile.GetLength() / sizeof(subboardrec);
-    subboards.reset(new subboardrec[num_subs]);
-    initinfo.num_subs = subsfile.Read(subboards.get(), subsfile.GetLength()) / sizeof(subboardrec);
-  } else {
-    messagebox(window, StrCat(subsfile.full_pathname(), " NOT FOUND."));
-    return false;
+static bool read_subs(CursesWindow* window, vector<subboardrec>& subboards) {
+  subboards.clear();
+  DataFile<subboardrec> subsfile(syscfg.datadir, SUBS_DAT);
+  if (subsfile) {
+    return subsfile.ReadVector(subboards);
   }
-  return true;
+  messagebox(window, StrCat(subsfile.file().full_pathname(), " NOT FOUND."));
+  return false;
 }
 
-static void write_subs() {
-  if (subboards) {
-    File subsfile(syscfg.datadir, SUBS_DAT);
-    if (subsfile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
-      subsfile.Write(subboards.get(), initinfo.num_subs * sizeof(subboardrec));
-    }
-    initinfo.num_subs = 0;
-    subboards.reset();
+static void write_subs(const vector<subboardrec>& subboards) {
+  DataFile<subboardrec> subsfile(syscfg.datadir, SUBS_DAT,
+    File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite);
+  if (subsfile) {
+    subsfile.WriteVector(subboards);
   }
 }
 
@@ -98,12 +91,13 @@ static bool save_networks_dat() {
   return false;
 }
 
-static bool del_net(CursesWindow* window, int nn) {
-  if (!read_subs(window)) {
+static bool del_net(CursesWindow* window, vector<subboardrec>& subboards, int nn) {
+  if (!read_subs(window, subboards)) {
     return false;
   }
 
-  for (int i = 0; i < initinfo.num_subs; i++) {
+  for (size_t i = 0; i < subboards.size(); i++) {
+    // TODO(rushfan): This code isn'tin the bbs anymore. We only use subs.xtr. Delerte this.
     if (subboards[i].age & 0x80) {
       if (subboards[i].name[40] == nn) {
         subboards[i].type = 0;
@@ -120,7 +114,7 @@ static bool del_net(CursesWindow* window, int nn) {
       }
     }
     if (i2 >= i) {
-      iscan1(i, subboards.get());
+      iscan1(i, subboards);
       open_sub(true);
       for (int i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
         postrec* p = get_post(i1);
@@ -138,7 +132,7 @@ static bool del_net(CursesWindow* window, int nn) {
     }
   }
 
-  write_subs();
+  write_subs(subboards);
   File emailfile(syscfg.datadir, EMAIL_DAT);
   if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
     long t = emailfile.GetLength() / sizeof(mailrec);
@@ -204,12 +198,13 @@ static bool del_net(CursesWindow* window, int nn) {
   return true;
 }
 
-static bool insert_net(CursesWindow* window, int nn) {
-  if (!read_subs(window)) {
+static bool insert_net(CursesWindow* window, vector<subboardrec>& subboards, int nn) {
+  if (!read_subs(window, subboards)) {
     return false;
   }
 
-  for (int i = 0; i < initinfo.num_subs; i++) {
+  for (size_t i = 0; i < subboards.size(); i++) {
+    // TODO(rushfan): This code isn't in the bbs anymore. Delete it.
     if (subboards[i].age & 0x80) {
       if (subboards[i].name[40] >= nn) {
         subboards[i].name[40]++;
@@ -222,7 +217,7 @@ static bool insert_net(CursesWindow* window, int nn) {
       }
     }
     if (i2 >= i) {
-      iscan1(i, subboards.get());
+      iscan1(i, subboards);
       open_sub(true);
       for (int i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
         postrec* p = get_post(i1);
@@ -237,7 +232,7 @@ static bool insert_net(CursesWindow* window, int nn) {
     }
   }
 
-  write_subs();
+  write_subs(subboards);
   File emailfile(syscfg.datadir, EMAIL_DAT);
   if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
     long t = emailfile.GetLength() / sizeof(mailrec);
@@ -296,6 +291,7 @@ static bool insert_net(CursesWindow* window, int nn) {
 #define OKAD (syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)
 
 void networks() {
+  vector<subboardrec> subboards;
   bool done = false;
   do {
     out->Cls(ACS_CKBOARD);
@@ -330,7 +326,7 @@ void networks() {
           if (yn) {
             yn = dialog_yn(window, "Are you REALLY sure? ");
             if (yn) {
-              del_net(window, result.selected);
+              del_net(window, subboards, result.selected);
             }
           }
         } else {
@@ -352,7 +348,7 @@ void networks() {
         if (nNetNumber > 0 && nNetNumber <= initinfo.net_num_max + 1) {
           bool yn = dialog_yn(window, "Are you sure? ");
           if (yn) {
-            insert_net(window, nNetNumber - 1);
+            insert_net(window, subboards, nNetNumber - 1);
           }
         }
         break;

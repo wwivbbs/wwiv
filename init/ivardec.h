@@ -24,7 +24,6 @@
 
 struct initinfo_rec {
   int net_num_max;
-  int num_subs;
 };
 #pragma pack(pop)
 
