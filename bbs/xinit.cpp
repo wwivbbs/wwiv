@@ -841,16 +841,9 @@ bool WSession::read_language() {
 }
 
 void WSession::read_gfile() {
-  if (gfilesec != nullptr) {
-    free(gfilesec);
-    gfilesec = nullptr;
-  }
-  gfilesec = static_cast<gfiledirrec *>(BbsAllocA(static_cast<long>(max_gfilesec * sizeof(gfiledirrec))));
-  File file(syscfg.datadir, GFILE_DAT);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    num_sec = 0;
-  } else {
-    num_sec = file.Read(gfilesec, max_gfilesec * sizeof(gfiledirrec)) / sizeof(gfiledirrec);
+  DataFile<gfiledirrec> file(syscfg.datadir, GFILE_DAT);
+  if (file) {
+    file.ReadVector(gfilesec, max_gfilesec);
   }
 }
 
@@ -955,7 +948,6 @@ void WSession::InitializeBBS() {
   gat = static_cast<unsigned short *>(BbsAllocA(2048 * sizeof(short)));
 
   XINIT_PRINTF("Reading Gfiles.");
-  gfilesec = nullptr;
   read_gfile();
 
   XINIT_PRINTF("Reading user names.");

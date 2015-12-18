@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
+#include <vector>
 
 #include "bbs/datetime.h"
 #include "bbs/input.h"
@@ -24,15 +26,17 @@
 #include "bbs/vars.h"
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
+#include "core/file.h"
+#include "core/datafile.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "sdk/filenames.h"
 
-char *gfiledata(int nSectionNum, char *pBuffer);
+using std::string;
+using namespace wwiv::core;
+using namespace wwiv::strings;
 
-
-char *gfiledata(int nSectionNum, char *pBuffer) {
-  gfiledirrec r = gfilesec[ nSectionNum ];
+static string gfiledata(const gfiledirrec& r, int nSectionNum) {
   char x = SPACE;
   if (r.ar != 0) {
     for (int i = 0; i < 16; i++) {
@@ -41,46 +45,39 @@ char *gfiledata(int nSectionNum, char *pBuffer) {
       }
     }
   }
-  sprintf(pBuffer, "|#2%2d |#3%1c  |#1%-40s  |#2%-8s |#9%-3d %-3d %-3d",
+  return StringPrintf("|#2%2d |#3%1c  |#1%-40s  |#2%-8s |#9%-3d %-3d %-3d",
           nSectionNum, x, stripcolors(r.name), r.filename, r.sl, r.age, r.maxfiles);
-  return pBuffer;
 }
 
-
-void showsec() {
-  char szBuffer[255];
-
+static void showsec() {
   bout.cls();
   bool abort = false;
   pla("|#2NN AR Name                                      FN       SL  AGE MAX", &abort);
   pla("|#7-- == ----------------------------------------  ======== --- === ---", &abort);
-  for (int i = 0; (i < session()->num_sec) && (!abort); i++) {
-    pla(gfiledata(i, szBuffer), &abort);
+  int current_section = 0;
+  for (const auto& r : session()->gfilesec) {
+    pla(gfiledata(r, current_section++), &abort);
+    if (abort) {
+      break;
+    }
   }
 }
 
-
-char* GetArString(gfiledirrec r, char* buffer) {
-  char szBuffer[ 81 ];
-  strcpy(szBuffer, "None.");
+static string GetArString(gfiledirrec r) {
   if (r.ar != 0) {
     for (int i = 0; i < 16; i++) {
       if ((1 << i) & r.ar) {
-        szBuffer[0] = static_cast<char>('A' + i);
+        return string(1, static_cast<char>('A' + i));
       }
     }
-    szBuffer[1] = 0;
   }
-  strcpy(buffer, szBuffer);
-  return buffer;
+  return "None.";
 }
 
-
 void modify_sec(int n) {
-  char s[81];
-
-  gfiledirrec r = gfilesec[n];
+  gfiledirrec& r = session()->gfilesec[n];
   bool done = false;
+  char s[81];
   do {
     bout.cls();
     bout.litebar("Editing G-File Area # %d", n);
@@ -89,7 +86,7 @@ void modify_sec(int n) {
     bout << "|#9C) SL         : |#2" << static_cast<int>(r.sl) << wwiv::endl;
     bout << "|#9D) Min. Age   : |#2" << static_cast<int>(r.age) << wwiv::endl;
     bout << "|#9E) Max Files  : |#2" << r.maxfiles << wwiv::endl;
-    bout << "|#9F) AR         : |#2" << GetArString(r, s) << wwiv::endl;
+    bout << "|#9F) AR         : |#2" << GetArString(r) << wwiv::endl;
     bout.nl();
     bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1F,|#1[|#7,|#1]|#7) : ";
     char ch = onek("QABCDEF[]", true);
@@ -98,18 +95,18 @@ void modify_sec(int n) {
       done = true;
       break;
     case '[':
-      gfilesec[n] = r;
+      session()->gfilesec[n] = r;
       if (--n < 0) {
-        n = session()->num_sec - 1;
+        n = session()->gfilesec.size() - 1;
       }
-      r = gfilesec[n];
+      r = session()->gfilesec[n];
       break;
     case ']':
-      gfilesec[n] = r;
-      if (++n >= session()->num_sec) {
+      session()->gfilesec[n] = r;
+      if (++n >= session()->gfilesec.size()) {
         n = 0;
       }
-      r = gfilesec[n];
+      r = session()->gfilesec[n];
       break;
     case 'A':
       bout.nl();
@@ -188,33 +185,32 @@ void modify_sec(int n) {
       break;
     }
   } while (!done && !hangup);
-  gfilesec[n] = r;
+  session()->gfilesec[n] = r;
 }
 
 
 void insert_sec(int n) {
   gfiledirrec r;
 
-  for (int i = session()->num_sec - 1; i >= n; i--) {
-    gfilesec[i + 1] = gfilesec[i];
-  }
   strcpy(r.name, "** NEW SECTION **");
   strcpy(r.filename, "NONAME");
   r.sl    = 10;
   r.age   = 0;
   r.maxfiles  = 99;
   r.ar    = 0;
-  gfilesec[n] = r;
-  ++session()->num_sec;
+
+  auto it = session()->gfilesec.begin();
+  std::advance(it, n);
+  session()->gfilesec.insert(it, r);
+
   modify_sec(n);
 }
 
 
 void delete_sec(int n) {
-  for (int i = n; i < session()->num_sec; i++) {
-    gfilesec[i] = gfilesec[i + 1];
-  }
-  --session()->num_sec;
+  auto it = session()->gfilesec.begin();
+  std::advance(it, n);
+  session()->gfilesec.erase(it);
 }
 
 
@@ -243,17 +239,17 @@ void gfileedit() {
       bout << "|#2Section number? ";
       input(s, 2);
       i = atoi(s);
-      if ((s[0] != 0) && (i >= 0) && (i < session()->num_sec)) {
+      if (s[0] != 0 && i >= 0 && i < session()->gfilesec.size()) {
         modify_sec(i);
       }
       break;
     case 'I':
-      if (session()->num_sec < session()->max_gfilesec) {
+      if (session()->gfilesec.size() < session()->max_gfilesec) {
         bout.nl();
         bout << "|#2Insert before which section? ";
         input(s, 2);
         i = atoi(s);
-        if ((s[0] != 0) && (i >= 0) && (i <= session()->num_sec)) {
+        if (s[0] != 0 && i >= 0 && i <= session()->gfilesec.size()) {
           insert_sec(i);
         }
       }
@@ -263,9 +259,9 @@ void gfileedit() {
       bout << "|#2Delete which section? ";
       input(s, 2);
       i = atoi(s);
-      if ((s[0] != 0) && (i >= 0) && (i < session()->num_sec)) {
+      if (s[0] != 0 && i >= 0 && i < session()->gfilesec.size()) {
         bout.nl();
-        bout << "|#5Delete " << gfilesec[i].name << "?";
+        bout << "|#5Delete " << session()->gfilesec[i].name << "?";
         if (yesno()) {
           delete_sec(i);
         }
@@ -273,10 +269,11 @@ void gfileedit() {
       break;
     }
   } while (!done && !hangup);
-  File gfileDat(syscfg.datadir, GFILE_DAT);
-  gfileDat.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
-  gfileDat.Write(&gfilesec[0], session()->num_sec * sizeof(gfiledirrec));
-  gfileDat.Close();
+
+  DataFile<gfiledirrec> file(syscfg.datadir, GFILE_DAT);
+  if (file) {
+    file.WriteVector(session()->gfilesec);
+  }
 }
 
 
@@ -287,11 +284,11 @@ bool fill_sec(int sn) {
   bool bFound = false;
 
   gfilerec *g = read_sec(sn, &n1);
-  sprintf(s1, "%s%s%c*.*", syscfg.gfilesdir, gfilesec[sn].filename, File::pathSeparatorChar);
+  sprintf(s1, "%s%s%c*.*", syscfg.gfilesdir, session()->gfilesec[sn].filename, File::pathSeparatorChar);
   bFound = fnd.open(s1, 0);
   bool ok = true;
   int chd = 0;
-  while ((bFound) && (!hangup) && (nf < gfilesec[sn].maxfiles) && (ok)) {
+  while ((bFound) && (!hangup) && (nf < session()->gfilesec[sn].maxfiles) && (ok)) {
     if (fnd.GetFileName()[0] == '.') {
       bFound = fnd.next();
       continue;
@@ -331,12 +328,12 @@ bool fill_sec(int sn) {
   if (!ok) {
     bout << "|#6Aborted.\r\n";
   }
-  if (nf >= gfilesec[sn].maxfiles) {
+  if (nf >= session()->gfilesec[sn].maxfiles) {
     bout << "Section full.\r\n";
   }
   if (chd) {
     char file_name[ MAX_PATH ];
-    sprintf(file_name, "%s%s.gfl", syscfg.datadir, gfilesec[sn].filename);
+    sprintf(file_name, "%s%s.gfl", syscfg.datadir, session()->gfilesec[sn].filename);
     File gflFile(file_name);
     gflFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     gflFile.Write(g, nf * sizeof(gfilerec));

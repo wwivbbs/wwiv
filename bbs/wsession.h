@@ -415,7 +415,6 @@ private:
               m_nMaxNetworkNumber,
               numf,
               num_dirs,
-              num_sec,
               num_events,
               num_sys_list,
               screenlinest,
@@ -471,6 +470,7 @@ public:
   std::vector<subboardrec> subboards;
   std::vector<xtrasubsrec> xsubs;
   std::vector<net_networks_rec> net_networks;
+  std::vector<gfiledirrec> gfilesec;
 
 
 };
