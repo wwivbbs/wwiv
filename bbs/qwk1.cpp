@@ -778,7 +778,7 @@ void qwk_post_text(char *text, char *title, int sub) {
     }
 
     // User doesn't have enough sl to post on sub
-    if (session()->GetEffectiveSl() < session()->subboards[session()->GetCurrentReadMessageArea()].postsl) {
+    if (session()->GetEffectiveSl() < session()->current_sub().postsl) {
       bout.nl();
       bout.bputs("You can't post here.");
       bout.nl();
@@ -786,11 +786,11 @@ void qwk_post_text(char *text, char *title, int sub) {
       continue;
     }
 
-    m.storage_type = static_cast<uint8_t>(session()->subboards[session()->GetCurrentReadMessageArea()].storage_type);
+    m.storage_type = static_cast<uint8_t>(session()->current_sub().storage_type);
 
     a = 0;
 
-    if (!session()->xsubs[session()->GetCurrentReadMessageArea()].nets.empty()) {
+    if (!session()->current_xsub().nets.empty()) {
       a &= (anony_real_name);
 
       if (session()->user()->data.restrict & restrict_net) {
@@ -812,15 +812,15 @@ void qwk_post_text(char *text, char *title, int sub) {
     bout.Color(2);
     bout.bprintf("Posting on : ");
     bout.Color(3);
-    bout.bputs(stripcolors(session()->subboards[session()->GetCurrentReadMessageArea()].name));
+    bout.bputs(stripcolors(session()->current_sub().name));
     bout.nl();
 
-    if (session()->xsubs[session()->GetCurrentReadMessageArea()].nets.size() > 0) {
+    if (session()->current_xsub().nets.size() > 0) {
       bout.Color(2);
       bout.bprintf("Going on   : ");
       bout.Color(3);
-      for (size_t i = 0; i < session()->xsubs[session()->GetCurrentReadMessageArea()].nets.size(); i++) {
-        xtrasubsnetrec& xnp = session()->xsubs[session()->GetCurrentReadMessageArea()].nets[i];
+      for (size_t i = 0; i < session()->current_xsub().nets.size(); i++) {
+        const xtrasubsnetrec& xnp = session()->current_xsub().nets[i];
         string network_name = session()->net_networks[xnp.net_num].name;
         bout << network_name << " ";
       }
@@ -839,7 +839,7 @@ void qwk_post_text(char *text, char *title, int sub) {
   }
   bout.nl();
 
-  if (session()->subboards[session()->GetCurrentReadMessageArea()].anony & anony_real_name) {
+  if (session()->current_sub().anony & anony_real_name) {
     strcpy(user_name, session()->user()->GetRealName());
     properize(user_name);
   } else {
@@ -848,7 +848,7 @@ void qwk_post_text(char *text, char *title, int sub) {
   }
 
   time_t thetime = time(nullptr);
-  qwk_inmsg(text, &m, session()->subboards[session()->GetCurrentReadMessageArea()].filename, user_name, thetime);
+  qwk_inmsg(text, &m, session()->current_sub().filename, user_name, thetime);
 
   if (m.stored_as != 0xffffffff) {
     char s[201];
@@ -895,8 +895,8 @@ void qwk_post_text(char *text, char *title, int sub) {
 
     open_sub(1);
 
-    if ((!session()->xsubs[session()->GetCurrentReadMessageArea()].nets.empty()) &&
-        (session()->subboards[session()->GetCurrentReadMessageArea()].anony & anony_val_net) && (!lcs() || irt[0])) {
+    if ((!session()->current_xsub().nets.empty()) &&
+        (session()->current_sub().anony & anony_val_net) && (!lcs() || irt[0])) {
       p.status |= status_pending_net;
       dm = 1;
 
@@ -908,13 +908,13 @@ void qwk_post_text(char *text, char *title, int sub) {
         }
       }
       if (dm) {
-        sprintf(s, "Unvalidated net posts on %s.", session()->subboards[session()->GetCurrentReadMessageArea()].name);
+        sprintf(s, "Unvalidated net posts on %s.", session()->current_sub().name);
         ssm(1, 0, s);
       }
     }
 
     if (session()->GetNumMessagesInCurrentMessageArea() >=
-      session()->subboards[session()->GetCurrentReadMessageArea()].maxmsgs) {
+      session()->current_sub().maxmsgs) {
       int i = 1;
       dm = 0;
       while ((dm == 0) && (i <= session()->GetNumMessagesInCurrentMessageArea()) && !hangup) {
@@ -943,13 +943,13 @@ void qwk_post_text(char *text, char *title, int sub) {
 
     close_sub();
 
-    sprintf(s, "+ \"%s\" posted on %s", p.title, session()->subboards[session()->GetCurrentReadMessageArea()].name);
+    sprintf(s, "+ \"%s\" posted on %s", p.title, session()->current_sub().name);
     sysoplog(s);
 
-    if (!session()->xsubs[session()->GetCurrentReadMessageArea()].nets.empty()) {
+    if (!session()->current_xsub().nets.empty()) {
       ++session()->user()->data.postnet;
       if (!(p.status & status_pending_net)) {
-        send_net_post(&p, session()->subboards[session()->GetCurrentReadMessageArea()].filename,
+        send_net_post(&p, session()->current_sub().filename,
                       session()->GetCurrentReadMessageArea());
       }
     }

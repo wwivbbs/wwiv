@@ -187,6 +187,9 @@ public:
   int  GetCurrentReadMessageArea() const { return m_nCurrentReadMessageArea; }
   void SetCurrentReadMessageArea(int n) { m_nCurrentReadMessageArea = n; }
 
+  const subboardrec& current_sub() const { return subboards[GetCurrentReadMessageArea()]; }
+  const xtrasubsrec& current_xsub() const { return xsubs[GetCurrentReadMessageArea()]; }
+
   int  GetCurrentConferenceMessageArea() const { return m_nCurrentConferenceMessageArea; }
   void SetCurrentConferenceMessageArea(int n) { m_nCurrentConferenceMessageArea = n; }
 

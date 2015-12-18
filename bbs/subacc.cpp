@@ -254,7 +254,7 @@ void delete_message(int mn) {
       char *pBuffer = static_cast<char *>(malloc(BUFSIZE));
       if (pBuffer) {
         postrec *p1 = get_post(mn);
-        remove_link(&(p1->msg), session()->subboards[session()->GetCurrentReadMessageArea()].filename);
+        remove_link(&(p1->msg), session()->current_sub().filename);
 
         long cp = static_cast<long>(mn + 1) * sizeof(postrec);
         long len = static_cast<long>(session()->GetNumMessagesInCurrentMessageArea() + 1) * sizeof(postrec);

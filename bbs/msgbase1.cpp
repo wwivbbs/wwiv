@@ -182,14 +182,14 @@ void post() {
     bout << "\r\nToo many messages posted today.\r\n\n";
     return;
   }
-  if (session()->GetEffectiveSl() < session()->subboards[session()->GetCurrentReadMessageArea()].postsl) {
+  if (session()->GetEffectiveSl() < session()->current_sub().postsl) {
     bout << "\r\nYou can't post here.\r\n\n";
     return;
   }
 
   MessageEditorData data;
   messagerec m;
-  m.storage_type = static_cast<unsigned char>(session()->subboards[session()->GetCurrentReadMessageArea()].storage_type);
+  m.storage_type = static_cast<unsigned char>(session()->current_sub().storage_type);
   data.anonymous_flag = session()->subboards[ session()->GetCurrentReadMessageArea() ].anony & 0x0f;
   if (data.anonymous_flag == 0 && getslrec(session()->GetEffectiveSl()).ability & ability_post_anony) {
     data.anonymous_flag = anony_enable_anony;
@@ -209,7 +209,7 @@ void post() {
         if (i) {
           bout << ", ";
         }
-        bout << session()->net_networks[session()->xsubs[session()->GetCurrentReadMessageArea()].nets[i].net_num].name;
+        bout << session()->net_networks[session()->current_xsub().nets[i].net_num].name;
       }
       bout << ".\r\n\n";
     }
@@ -223,9 +223,9 @@ void post() {
 
   data.aux = "email";
   data.fsed_flags = INMSG_FSED;
-  data.msged_flags = (session()->subboards[session()->GetCurrentReadMessageArea()].anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE;
-  data.aux = session()->subboards[session()->GetCurrentReadMessageArea()].filename;
-  data.to_name = session()->subboards[session()->GetCurrentReadMessageArea()].name;
+  data.msged_flags = (session()->current_sub().anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE;
+  data.aux = session()->current_sub().filename;
+  data.to_name = session()->current_sub().name;
 
   if (!inmsg(data)) {
     m.stored_as = 0xffffffff;
@@ -249,8 +249,8 @@ void post() {
 
   open_sub(true);
 
-  if ((!session()->xsubs[session()->GetCurrentReadMessageArea()].nets.empty()) &&
-      (session()->subboards[session()->GetCurrentReadMessageArea()].anony & anony_val_net) && (!lcs() || irt[0])) {
+  if ((!session()->current_xsub().nets.empty()) &&
+      (session()->current_sub().anony & anony_val_net) && (!lcs() || irt[0])) {
     p.status |= status_pending_net;
     int dm = 1;
     for (int i = session()->GetNumMessagesInCurrentMessageArea(); (i >= 1)
@@ -261,11 +261,11 @@ void post() {
       }
     }
     if (dm) {
-      ssm(1, 0, "Unvalidated net posts on %s.", session()->subboards[session()->GetCurrentReadMessageArea()].name);
+      ssm(1, 0, "Unvalidated net posts on %s.", session()->current_sub().name);
     }
   }
   if (session()->GetNumMessagesInCurrentMessageArea() >=
-    session()->subboards[session()->GetCurrentReadMessageArea()].maxmsgs) {
+    session()->current_sub().maxmsgs) {
     int i = 1;
     int dm = 0;
     while (i <= session()->GetNumMessagesInCurrentMessageArea()) {
@@ -273,7 +273,7 @@ void post() {
       if (!pp) {
         break;
       } else if (((pp->status & status_no_delete) == 0) ||
-                  (pp->msg.storage_type != session()->subboards[session()->GetCurrentReadMessageArea()].storage_type)) {
+                  (pp->msg.storage_type != session()->current_sub().storage_type)) {
         dm = i;
         break;
       }
@@ -309,12 +309,12 @@ void post() {
   close_sub();
 
   session()->UpdateTopScreen();
-  sysoplogf("+ \"%s\" posted on %s", p.title, session()->subboards[session()->GetCurrentReadMessageArea()].name);
-  bout << "Posted on " << session()->subboards[session()->GetCurrentReadMessageArea()].name << wwiv::endl;
-  if (!session()->xsubs[session()->GetCurrentReadMessageArea()].nets.empty()) {
+  sysoplogf("+ \"%s\" posted on %s", p.title, session()->current_sub().name);
+  bout << "Posted on " << session()->current_sub().name << wwiv::endl;
+  if (!session()->current_xsub().nets.empty()) {
     session()->user()->SetNumNetPosts(session()->user()->GetNumNetPosts() + 1);
     if (!(p.status & status_pending_net)) {
-      send_net_post(&p, session()->subboards[session()->GetCurrentReadMessageArea()].filename,
+      send_net_post(&p, session()->current_sub().filename,
                     session()->GetCurrentReadMessageArea());
     }
   }
@@ -370,7 +370,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
     memory_last_read = qsc_p[sub_number];
 
     bout.bprintf("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n",
-      session()->subboards[session()->GetCurrentReadMessageArea()].name,
+      session()->current_sub().name,
                                       usub[session()->GetCurrentMessageArea()].keys, session()->GetNumMessagesInCurrentMessageArea());
 
     int i;
@@ -389,7 +389,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
 
     session()->SetCurrentMessageArea(nOldSubNumber);
     *pnNextSubNumber = nNextSubNumber;
-    bout.bprintf("|#1< %s Q-Scan Done >", session()->subboards[session()->GetCurrentReadMessageArea()].name);
+    bout.bprintf("|#1< %s Q-Scan Done >", session()->current_sub().name);
     bout.clreol();
     bout.nl();
     lines_listed = 0;
@@ -455,7 +455,7 @@ void ScanMessageTitles() {
   }
   bout.bprintf("|#2%d |#9messages in area |#2%s\r\n",
                session()->GetNumMessagesInCurrentMessageArea(),
-               session()->subboards[session()->GetCurrentReadMessageArea()].name);
+               session()->current_sub().name);
   if (session()->GetNumMessagesInCurrentMessageArea() == 0) {
     return;
   }
@@ -543,7 +543,7 @@ void remove_post() {
   }
   bool any = false, abort = false;
   bout.bprintf("\r\n\nPosts by you on %s\r\n\n",
-    session()->subboards[session()->GetCurrentReadMessageArea()].name);
+    session()->current_sub().name);
   for (int j = 1; j <= session()->GetNumMessagesInCurrentMessageArea() && !abort; j++) {
     if (get_post(j)->ownersys == 0 && get_post(j)->owneruser == session()->usernum) {
       any = true;
@@ -577,7 +577,7 @@ void remove_post() {
         }
       }
       sysoplogf("- \"%s\" removed from %s", get_post(nPostNumber)->title,
-        session()->subboards[session()->GetCurrentReadMessageArea()].name);
+        session()->current_sub().name);
       delete_message(nPostNumber);
       bout << "\r\nMessage removed.\r\n\n";
     }

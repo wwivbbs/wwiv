@@ -635,9 +635,18 @@ static void insert_sub(int n) {
   r.type = 0;
   r.storage_type = 2;
 
-  auto it = session()->subboards.begin();
-  std::advance(it, n);
-  session()->subboards.insert(it, r);
+  {
+    auto it = session()->subboards.begin();
+    std::advance(it, n);
+    session()->subboards.insert(it, r);
+  }
+  {
+    xtrasubsrec r{};
+    memset(&r, 0, sizeof(xtrasubsrec));
+    auto it = session()->xsubs.begin();
+    std::advance(it, n);
+    session()->xsubs.insert(it, r);
+  }
 
   int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 

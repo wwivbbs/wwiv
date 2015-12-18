@@ -113,6 +113,10 @@ bool read_subs_xtr(const std::vector<subboardrec>& subs, std::vector<xtrasubsrec
       }
     }
   }
+
+  while (xsubs.size() < subs.size()) {
+    xsubs.push_back({});
+  }
   return true;
 }
 

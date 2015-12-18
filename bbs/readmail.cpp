@@ -818,16 +818,16 @@ void readmail(int mode) {
 
             iscan(i);
             open_sub(true);
-            if (!session()->xsubs[session()->GetCurrentReadMessageArea()].nets.empty()) {
+            if (!session()->current_xsub().nets.empty()) {
               p.status |= status_pending_net;
             }
-            p.msg.storage_type = (uint8_t)session()->subboards[session()->GetCurrentReadMessageArea()].storage_type;
-            savefile(b, &(p.msg), session()->subboards[session()->GetCurrentReadMessageArea()].filename);
+            p.msg.storage_type = (uint8_t)session()->current_sub().storage_type;
+            savefile(b, &(p.msg), session()->current_sub().filename);
             WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
             p.qscan = pStatus->IncrementQScanPointer();
             session()->GetStatusManager()->CommitTransaction(pStatus);
             if (session()->GetNumMessagesInCurrentMessageArea() >=
-              session()->subboards[session()->GetCurrentReadMessageArea()].maxmsgs) {
+              session()->current_sub().maxmsgs) {
               i1 = 1;
               i2 = 0;
               while (i2 == 0 && i1 <= session()->GetNumMessagesInCurrentMessageArea()) {

@@ -271,7 +271,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
           static_cast<int>(temp_percent * session()->GetNumMessagesInCurrentMessageArea());
     }
 
-    strncpy(thissub, session()->subboards[session()->GetCurrentReadMessageArea()].name, 65);
+    strncpy(thissub, session()->current_sub().name, 65);
     thissub[60] = 0;
     sprintf(subinfo, "|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
             bn + 1, thissub, session()->GetNumMessagesInCurrentMessageArea(),
@@ -298,7 +298,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
 
     qwk_iscan(session()->GetCurrentMessageArea());
 
-    strncpy(thissub, session()->subboards[session()->GetCurrentReadMessageArea()].name, 65);
+    strncpy(thissub, session()->current_sub().name, 65);
     thissub[60] = 0;
     sprintf(subinfo, "|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
             bn + 1, thissub, session()->GetNumMessagesInCurrentMessageArea(), 0);
@@ -320,8 +320,8 @@ void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
     return;
   }
   // Used to be inside do loop
-  if (!session()->xsubs[session()->GetCurrentReadMessageArea()].nets.empty()) {
-    set_net_num(session()->xsubs[session()->GetCurrentReadMessageArea()].nets[0].net_num);
+  if (!session()->current_xsub().nets.empty()) {
+    set_net_num(session()->current_xsub().nets[0].net_num);
   } else {
     set_net_num(0);
   }
@@ -361,7 +361,7 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
     set_net_num(p->network.network_msg.net_number);
   }
 
-  put_in_qwk(p, (session()->subboards[session()->GetCurrentReadMessageArea()].filename), msgnum, qwk_info);
+  put_in_qwk(p, (session()->current_sub().filename), msgnum, qwk_info);
   if (nn != session()->net_num()) {
     set_net_num(nn);
   }
