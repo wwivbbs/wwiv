@@ -23,6 +23,5 @@
 #include "init/ivardec.h"
 
 extern configrec syscfg;
-extern initinfo_rec initinfo;
 
 #endif // __INCLUDED_WWIVINIT_H__

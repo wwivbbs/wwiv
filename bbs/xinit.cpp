@@ -709,14 +709,14 @@ void WSession::read_networks() {
   }
   net_networks = nullptr;
 
-  File networksfile(syscfg.datadir, NETWORKS_DAT);
-  if (networksfile.Open(File::modeBinary | File::modeReadOnly)) {
-    int net_num_max = networksfile.GetLength() / sizeof(net_networks_rec_disk);
+  DataFile<net_networks_rec_disk> networksfile(syscfg.datadir, NETWORKS_DAT);
+  if (networksfile) {
+    int net_num_max = networksfile.number_of_records();
     SetMaxNetworkNumber(net_num_max);
     std::unique_ptr<net_networks_rec_disk[]> net_networks_disk(new net_networks_rec_disk[net_num_max]());
     net_networks = static_cast<net_networks_rec *>(BbsAllocA(net_num_max * sizeof(net_networks_rec)));
     if (net_num_max) {
-      networksfile.Read(net_networks_disk.get(), net_num_max * sizeof(net_networks_rec_disk));
+      networksfile.Read(net_networks_disk.get(), net_num_max);
       for (int i = 0; i < net_num_max; i++) {
         net_networks[i].type = net_networks_disk[i].type;
         strcpy(net_networks[i].name, net_networks_disk[i].name);

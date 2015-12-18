@@ -22,9 +22,6 @@
 // Data
 #pragma pack(push, 1)
 
-struct initinfo_rec {
-  int net_num_max;
-};
 #pragma pack(pop)
 
 
