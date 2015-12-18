@@ -404,7 +404,7 @@ void readmail(int mode) {
         if (m.fromsys == 0) {
           if (m.fromuser == 65535) {
             if (nn != 255) {
-              strcat(s, net_networks[nn].name);
+              strcat(s, session()->net_networks[nn].name);
             }
           } else {
             WUser u;
@@ -434,7 +434,7 @@ void readmail(int mode) {
                         stripcolors(strip_to_node(ss2).c_str()),
                         m.fromuser,
                         m.fromsys,
-                        net_networks[nn].name,
+                        session()->net_networks[nn].name,
                         system_name.c_str());
               }
               if (strlen(s1) > session()->mail_who_field_len) {
@@ -442,7 +442,7 @@ void readmail(int mode) {
               }
             } else {
               if (session()->max_net_num() > 1) {
-                sprintf(s1, "#%u @%u.%s (%s)", m.fromuser, m.fromsys, net_networks[nn].name, system_name.c_str());
+                sprintf(s1, "#%u @%u.%s (%s)", m.fromuser, m.fromsys, session()->net_networks[nn].name, system_name.c_str());
               } else {
                 sprintf(s1, "#%u @%u (%s)", m.fromuser, m.fromsys, system_name.c_str());
               }
@@ -790,13 +790,13 @@ void readmail(int mode) {
             tmp_disable_conf(false);
             break;
           }
-          for (i1 = 0; (i1 < session()->num_subs) && (usub[i1].subnum != -1); i1++) {
+          for (i1 = 0; (i1 < session()->subboards.size()) && (usub[i1].subnum != -1); i1++) {
             if (wwiv::strings::IsEquals(usub[i1].keys, ss1)) {
               i = i1;
             }
           }
           if (i != -1) {
-            if (session()->GetEffectiveSl() < subboards[usub[i].subnum].postsl) {
+            if (session()->GetEffectiveSl() < session()->subboards[usub[i].subnum].postsl) {
               bout << "\r\nSorry, you don't have post access on that sub.\r\n\n";
               i = -1;
             }
@@ -818,16 +818,16 @@ void readmail(int mode) {
 
             iscan(i);
             open_sub(true);
-            if (xsubs[session()->GetCurrentReadMessageArea()].num_nets) {
+            if (!session()->current_xsub().nets.empty()) {
               p.status |= status_pending_net;
             }
-            p.msg.storage_type = (uint8_t) subboards[session()->GetCurrentReadMessageArea()].storage_type;
-            savefile(b, &(p.msg), subboards[session()->GetCurrentReadMessageArea()].filename);
+            p.msg.storage_type = (uint8_t)session()->current_sub().storage_type;
+            savefile(b, &(p.msg), session()->current_sub().filename);
             WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
             p.qscan = pStatus->IncrementQScanPointer();
             session()->GetStatusManager()->CommitTransaction(pStatus);
             if (session()->GetNumMessagesInCurrentMessageArea() >=
-                subboards[session()->GetCurrentReadMessageArea()].maxmsgs) {
+              session()->current_sub().maxmsgs) {
               i1 = 1;
               i2 = 0;
               while (i2 == 0 && i1 <= session()->GetNumMessagesInCurrentMessageArea()) {
@@ -1034,7 +1034,7 @@ void readmail(int mode) {
 
                 if (nn != 255 && nn == session()->net_num()) {
                   email.from_user = m.fromuser;
-                  email.from_system = m.fromsys ? m.fromsys : net_networks[nn].sysnum;
+                  email.from_system = m.fromsys ? m.fromsys : session()->net_networks[nn].sysnum;
                   email.from_network_number = nn;
                   sendout_email(email);
                 } else {

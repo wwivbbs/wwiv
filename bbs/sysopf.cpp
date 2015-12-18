@@ -303,7 +303,7 @@ void print_net_listing(bool bForcePause) {
           odc[odci - 1] = static_cast<char>(odci + '0');
           odc[odci] = 0;
         }
-        bout << "|#2" << i + 1 << "|#9)|#1 " << net_networks[i].name << wwiv::endl;
+        bout << "|#2" << i + 1 << "|#9)|#1 " << session()->net_networks[i].name << wwiv::endl;
       }
       bout << "|#2Q|#9)|#1 Quit\r\n\n";
       bout << "|#9Which network? |#2";
@@ -605,7 +605,7 @@ void print_net_listing(bool bForcePause) {
 
 void read_new_stuff() {
   zap_bbs_list();
-  for (int i = 0; i < session()->max_net_num(); i++) {
+  for (size_t i = 0; i < session()->net_networks.size(); i++) {
     set_net_num(i);
     zap_call_out_list();
     zap_contacts();

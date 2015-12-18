@@ -80,7 +80,7 @@ void UnQScan() {
     bout.nl();
     qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = 0;
     bout << "Messages on " 
-         << subboards[usub[session()->GetCurrentMessageArea()].subnum].name
+         << session()->subboards[usub[session()->GetCurrentMessageArea()].subnum].name
          << " marked as unread.\r\n";
   }
   break;
@@ -122,14 +122,14 @@ void DownSub() {
     session()->SetCurrentMessageArea(session()->GetCurrentMessageArea() - 1);
   } else {
     while (usub[session()->GetCurrentMessageArea() + 1].subnum >= 0 &&
-           session()->GetCurrentMessageArea() < session()->num_subs - 1) {
+           session()->GetCurrentMessageArea() < session()->subboards.size() - 1) {
       session()->SetCurrentMessageArea(session()->GetCurrentMessageArea() + 1);
     }
   }
 }
 
 void UpSub() {
-  if (session()->GetCurrentMessageArea() < session()->num_subs - 1 &&
+  if (session()->GetCurrentMessageArea() < session()->subboards.size() - 1 &&
       usub[session()->GetCurrentMessageArea() + 1].subnum >= 0) {
     session()->SetCurrentMessageArea(session()->GetCurrentMessageArea() + 1);
   } else {
@@ -740,8 +740,8 @@ void ClearQScan() {
     std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
     bout.nl();
     qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = pStatus->GetQScanPointer() - 1L;
-    bout << "Messages on " << subboards[usub[session()->GetCurrentMessageArea()].subnum].name <<
-                       " marked as read.\r\n";
+    bout << "Messages on " << session()->subboards[usub[session()->GetCurrentMessageArea()].subnum].name 
+         << " marked as read.\r\n";
     break;
   }
 }
@@ -1086,7 +1086,7 @@ bool GuestCheck() {
 }
 
 void SetSubNumber(const char *pszSubKeys) {
-  for (int i = 0; (i < session()->num_subs) && (usub[i].subnum != -1); i++) {
+  for (size_t i = 0; (i < session()->subboards.size()) && (usub[i].subnum != -1); i++) {
     if (wwiv::strings::IsEquals(usub[i].keys, pszSubKeys)) {
       session()->SetCurrentMessageArea(i);
     }

@@ -17,12 +17,16 @@
 /*                                                                        */
 /**************************************************************************/
 #include <cstdlib>
+#include <vector>
+
 #include "init/wwivinit.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "sdk/vardec.h"
 #include "init/subacc.h"
 
+
+using std::vector;
 
 static File fileSub;                       // File object for '.sub' file
 static char subdat_fn[MAX_PATH];            // filename of .sub file
@@ -76,14 +80,14 @@ bool open_sub(bool wr) {
   return fileSub.IsOpen();
 }
 
-bool iscan1(int si, subboardrec *subboards) {
+bool iscan1(int si, const vector<subboardrec>& subboards) {
   // Initializes use of a sub value (subboards[], not usub[]).  If quick, then
   // don't worry about anything detailed, just grab qscan info.
   postrec p;
   memset(&p, 0, sizeof(postrec));
 
   // forget it if an invalid sub #
-  if (si < 0 || si >= initinfo.num_subs) {
+  if (si < 0 || si >= subboards.size()) {
     return false;
   }
 

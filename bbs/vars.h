@@ -146,7 +146,6 @@ __EXTRN__ configoverrec syscfgovr;
 __EXTRN__ statusrec status;
 #endif  // NOT_BBS
 __EXTRN__ colorrec rescolor;
-__EXTRN__ subboardrec *subboards;
 __EXTRN__ directoryrec *directories;
 __EXTRN__ usersubrec *usub, *udir;
 __EXTRN__ userconfrec *uconfsub, *uconfdir;
@@ -154,7 +153,6 @@ __EXTRN__ batchrec *batch;
 __EXTRN__ tagrec *filelist;
 __EXTRN__ gfiledirrec *gfilesec;
 __EXTRN__ net_system_list_rec *csn;
-__EXTRN__ net_networks_rec *net_networks;
 __EXTRN__ arcrec *arcs;
 __EXTRN__ eventsrec *events;
 __EXTRN__ threadrec *thread;

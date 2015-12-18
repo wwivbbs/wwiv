@@ -181,7 +181,7 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
   case CONF_SUBS:
 
     ss1 = usub;
-    ns = session()->num_subs;
+    ns = session()->subboards.size();
     if (nOldSubNumber == -1) {
       osub = usub[session()->GetCurrentMessageArea()].subnum;
     } else {
@@ -241,8 +241,8 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
       switch (nConferenceType) {
       case CONF_SUBS:
         if (access_sub(session()->user(), session()->GetEffectiveSl(),
-                       (subboardrec *) & subboards[c->subs[i]])) {
-          addusub(ss1, ns, c->subs[i], subboards[c->subs[i]].key);
+                       (subboardrec *) & session()->subboards[c->subs[i]])) {
+          addusub(ss1, ns, c->subs[i], session()->subboards[c->subs[i]].key);
         }
         break;
       case CONF_DIRS:
@@ -264,8 +264,8 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
         if (access_conf(session()->user(), session()->GetEffectiveSl(), &(subconfs[i]))) {
           for (i1 = 0; i1 < subconfs[i].num; i1++) {
             if (access_sub(session()->user(), session()->GetEffectiveSl(),
-                           (subboardrec *) & subboards[subconfs[i].subs[i1]])) {
-              addusub(ss1, ns, subconfs[i].subs[i1], subboards[subconfs[i].subs[i1]].key);
+                           (subboardrec *) & session()->subboards[subconfs[i].subs[i1]])) {
+              addusub(ss1, ns, subconfs[i].subs[i1], session()->subboards[subconfs[i].subs[i1]].key);
             }
           }
         }

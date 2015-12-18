@@ -30,10 +30,12 @@
 #include "bbs/wstatus.h"
 #include "bbs/wuser.h"
 #include "bbs/woutstreambuffer.h"
+#include "bbs/subxtr.h"
 #include "bbs/local_io.h"
 #include "core/inifile.h"
 #include "core/file.h"
 #include "sdk/vardec.h"
+#include "sdk/net.h"
 
 //
 // WSession - Holds information and status data about the current user
@@ -185,6 +187,9 @@ public:
   int  GetCurrentReadMessageArea() const { return m_nCurrentReadMessageArea; }
   void SetCurrentReadMessageArea(int n) { m_nCurrentReadMessageArea = n; }
 
+  const subboardrec& current_sub() const { return subboards[GetCurrentReadMessageArea()]; }
+  const xtrasubsrec& current_xsub() const { return xsubs[GetCurrentReadMessageArea()]; }
+
   int  GetCurrentConferenceMessageArea() const { return m_nCurrentConferenceMessageArea; }
   void SetCurrentConferenceMessageArea(int n) { m_nCurrentConferenceMessageArea = n; }
 
@@ -221,8 +226,7 @@ public:
   int  net_num() const { return m_nNetworkNumber; }
   void set_net_num(int n) { m_nNetworkNumber = n; }
 
-  int  max_net_num() const { return m_nMaxNetworkNumber; }
-  void SetMaxNetworkNumber(int n) { m_nMaxNetworkNumber = n; }
+  int  max_net_num() const { return net_networks.size(); }
 
   bool wwivmail_enabled() const { return wwivmail_enabled_; }
   void set_wwivmail_enabled(bool wwivmail_enabled) { wwivmail_enabled_ = wwivmail_enabled; }
@@ -411,9 +415,7 @@ private:
               m_nMaxNetworkNumber,
               numf,
               num_dirs,
-              num_languages,
               num_sec,
-              num_subs,
               num_events,
               num_sys_list,
               screenlinest,
@@ -466,6 +468,10 @@ public:
   std::vector<newexternalrec> over_intern;
   std::vector<smalrec> smallist;
   std::vector<languagerec> languages;
+  std::vector<subboardrec> subboards;
+  std::vector<xtrasubsrec> xsubs;
+  std::vector<net_networks_rec> net_networks;
+
 
 };
 

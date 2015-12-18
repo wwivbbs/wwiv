@@ -249,26 +249,6 @@ class FixApplication {
 	  Print(OK, true, "Found %d directories", num_dirs_);
   }
 
-  void initSubsDat() {
-	  File subsDat(syscfg.datadir, SUBS_DAT);
-	  if (!subsDat.Exists()) {
-		  Print(NOK, true, "%s NOT FOUND.", subsDat.full_pathname().c_str());
-		  maybeGiveUp();
-          return;
-	  } 
-	  Print(OK, true, "Reading %s...", subsDat.full_pathname().c_str());
-	  int nFileMode = File::modeReadOnly | File::modeBinary;
-	  subsDat.Open(nFileMode);
-	  subboards = (subboardrec *)malloc(subsDat.GetLength() + 1);
-	  if (subboards == nullptr) {
-		  Print(NOK, true, "Couldn't allocate %ld bytes for %s.", subsDat.GetLength(), subsDat.full_pathname().c_str());
-		  giveUp();
-	  }
-	  int num_subs = (subsDat.Read(subboards, subsDat.GetLength())) / sizeof(subboardrec);
-	  subsDat.Close();
-	  Print(OK, true, "Found %d subs", num_subs);
-  }
-
   void LoadCommands(FixConfiguration*& config) {
     command_map["dirs"] = new FixDirectoriesCommand(config, num_dirs_);
     command_map["critical_files"] = new CriticalFilesCommand(config);
@@ -301,7 +281,6 @@ class FixApplication {
 
 	  initStatusDat();
 	  initDirsDat();
-	  initSubsDat();
   }
 
   void Run(FixConfiguration *config) {

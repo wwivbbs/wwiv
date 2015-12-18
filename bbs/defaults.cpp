@@ -99,7 +99,7 @@ static string GetMailBoxStatus() {
       return StringPrintf("Forward to #%u @%u.%s.",
               session()->user()->GetForwardUserNumber(),
               session()->user()->GetForwardSystemNumber(),
-              net_networks[ session()->user()->GetForwardNetNumber() ].name);
+              session()->net_networks[ session()->user()->GetForwardNetNumber() ].name);
     } else {
       char szForwardUserName[80];
       read_inet_addr(szForwardUserName, session()->usernum);
@@ -392,11 +392,11 @@ static void change_colors() {
 void l_config_qscan() {
   bool abort = false;
   bout << "\r\n|#9Boards to q-scan marked with '*'|#0\r\n\n";
-  for (int i = 0; (i < session()->num_subs) && (usub[i].subnum != -1) && !abort; i++) {
+  for (size_t i = 0; (i < session()->subboards.size()) && (usub[i].subnum != -1) && !abort; i++) {
     pla(StringPrintf("%c %s. %s",
             (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) ? '*' : ' ',
             usub[i].keys,
-            subboards[usub[i].subnum].name), &abort);
+            session()->subboards[usub[i].subnum].name), &abort);
   }
   bout.nl(2);
 }
@@ -457,7 +457,7 @@ void config_qscan() {
         bout << "|#2Enter message base number (|#1C=Clr All, Q=Quit, S=Set All|#2): ";
         char* s = mmkey(0);
         if (s[0]) {
-          for (int i = 0; (i < session()->num_subs) && (usub[i].subnum != -1); i++) {
+          for (size_t i = 0; (i < session()->subboards.size()) && (usub[i].subnum != -1); i++) {
             if (IsEquals(usub[i].keys, s)) {
               qsc_q[usub[i].subnum / 32] ^= (1L << (usub[i].subnum % 32));
             }
@@ -901,12 +901,12 @@ static void list_config_scan_plus(int first, int *amount, int type) {
   int max_lines = GetMaxLinesToShowForScanPlus();
 
   if (type == 0) {
-    for (int this_sub = first; (this_sub < session()->num_subs) && (usub[this_sub].subnum != -1) &&
+    for (size_t this_sub = first; (this_sub < session()->subboards.size()) && (usub[this_sub].subnum != -1) &&
          *amount < max_lines * 2; this_sub++) {
       lines_listed = 0;
       sprintf(s, "|#7[|#1%c|#7] |#9%s",
               (qsc_q[usub[this_sub].subnum / 32] & (1L << (usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
-              subboards[usub[this_sub].subnum].name);
+              session()->subboards[usub[this_sub].subnum].name);
       s[44] = '\0';
       if (*amount >= max_lines) {
         bout.GotoXY(40, 3 + *amount - max_lines);
@@ -1109,7 +1109,7 @@ void config_scan_plus(int type) {
         case 0:
           top += amount;
           if (type == 0) {
-            if (top >= session()->num_subs) {
+            if (top >= session()->subboards.size()) {
               top = 0;
             }
           } else {
@@ -1150,7 +1150,7 @@ void config_scan_plus(int type) {
           break;
         case 3:
           if (type == 0) {
-            for (int this_sub = 0; this_sub < session()->num_subs; this_sub++) {
+            for (size_t this_sub = 0; this_sub < session()->subboards.size(); this_sub++) {
               if (qsc_q[usub[this_sub].subnum / 32] & (1L << (usub[this_sub].subnum % 32))) {
                 qsc_q[usub[this_sub].subnum / 32] ^= (1L << (usub[this_sub].subnum % 32));
               }
@@ -1168,7 +1168,7 @@ void config_scan_plus(int type) {
           break;
         case 4:
           if (type == 0) {
-            for (int this_sub = 0; this_sub < session()->num_subs; this_sub++) {
+            for (size_t this_sub = 0; this_sub < session()->subboards.size(); this_sub++) {
               if (!(qsc_q[usub[this_sub].subnum / 32] & (1L << (usub[this_sub].subnum % 32)))) {
                 qsc_q[usub[this_sub].subnum / 32] ^= (1L << (usub[this_sub].subnum % 32));
               }

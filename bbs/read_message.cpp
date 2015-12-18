@@ -51,7 +51,7 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
   string netName;
 
   if (session()->max_net_num() > 1) {
-    netName = StrCat(net_networks[session()->net_num()].name, "- ");
+    netName = StrCat(session()->net_networks[session()->net_num()].name, "- ");
   }
 
   outNetworkName->clear();
@@ -344,7 +344,7 @@ void read_post(int n, bool *next, int *val) {
 
   bout.bprintf(" |#9Msg|#7: [|#1%u|#7/|#1%lu|#7]|#%d |#2%s\r\n", n,
     session()->GetNumMessagesInCurrentMessageArea(), session()->GetMessageColor(),
-    subboards[session()->GetCurrentReadMessageArea()].name);
+    session()->current_sub().name);
   const string subjectLine = "|#9Subj|#7: ";
   osan(subjectLine, &abort, next);
   bout.Color(session()->GetMessageColor());
@@ -386,7 +386,7 @@ void read_post(int n, bool *next, int *val) {
       set_net_num(p.network.network_msg.net_number);
     }
     read_message1(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit, next,
-      (subboards[session()->GetCurrentReadMessageArea()].filename), p.ownersys, p.owneruser);
+      (session()->current_sub().filename), p.ownersys, p.owneruser);
 
     if (nNetNumSaved != session()->net_num()) {
       set_net_num(nNetNumSaved);

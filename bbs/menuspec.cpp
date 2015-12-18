@@ -253,7 +253,7 @@ void ChangeSubNumber() {
   bout << "|#7Select Sub number : |#0";
 
   char* s = mmkey(0);
-  for (int i = 0; (i < session()->num_subs) && (usub[i].subnum != -1); i++) {
+  for (size_t i = 0; (i < session()->subboards.size()) && (usub[i].subnum != -1); i++) {
     if (wwiv::strings::IsEquals(usub[i].keys, s)) {
       session()->SetCurrentMessageArea(i);
     }
@@ -379,7 +379,7 @@ void ReadMessages() {
       break;
     }
     if (isdigit(subsText[0])) {
-      for (int iTemp = 0; (iTemp < session()->num_subs) && (usub[iTemp].subnum != -1); iTemp++) {
+      for (size_t iTemp = 0; (iTemp < session()->subboards.size()) && (usub[iTemp].subnum != -1); iTemp++) {
         if (subsText == usub[iTemp].keys) {
           session()->SetCurrentMessageArea(iTemp);
 
@@ -409,7 +409,7 @@ void ReadSelectedMessages(int chWhichMessages, int iWhere) {
     bout.cls();
 
     bout << "|#3-=< Q-Scan All >=-\r\n";
-    for (int i = 0; (usub[i].subnum != -1) && (i < session()->num_subs) && nextsub && !hangup; i++) {
+    for (size_t i = 0; (usub[i].subnum != -1) && (i < session()->subboards.size()) && nextsub && !hangup; i++) {
       session()->SetCurrentMessageArea(i);
       iscan(session()->GetCurrentMessageArea());
       if (iWhere == RM_QSCAN_SUBS) {

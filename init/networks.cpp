@@ -36,6 +36,7 @@
 #include "initlib/input.h"
 #include "initlib/listbox.h"
 #include "core/strings.h"
+#include "core/datafile.h"
 #include "core/file.h"
 #include "core/wwivport.h"
 #include "core/file.h"
@@ -48,62 +49,85 @@
 #define UINT(u,n)  (*((int  *)(((char *)(u))+(n))))
 #define UCHAR(u,n) (*((char *)(((char *)(u))+(n))))
 
-static void edit_net(int nn);
 
 using std::string;
 using std::unique_ptr;
 using std::vector;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
-unique_ptr<subboardrec[]> subboards;
+static bool load_networks_dat(vector<net_networks_rec>& net_networks) {
+  vector<net_networks_rec_disk> net_networks_disk;
+  net_networks.clear();
+  {
+    DataFile<net_networks_rec_disk> networksfile(syscfg.datadir, NETWORKS_DAT);
+    if (!networksfile) {
+      return false;
+    }
+    if (!networksfile.ReadVector(net_networks_disk)) {
+      return false;
+    }
+  }
 
-static bool read_subs(CursesWindow* window) {
-  File subsfile(syscfg.datadir, SUBS_DAT);
-  
-  if (subsfile.Open(File::modeBinary|File::modeReadWrite)) {
-    int num_subs = subsfile.GetLength() / sizeof(subboardrec);
-    subboards.reset(new subboardrec[num_subs]);
-    initinfo.num_subs = subsfile.Read(subboards.get(), subsfile.GetLength()) / sizeof(subboardrec);
-  } else {
-    messagebox(window, StrCat(subsfile.full_pathname(), " NOT FOUND."));
-    return false;
+  for (const auto& from : net_networks_disk) {
+    net_networks_rec to{};
+    to.type = from.type;
+    strcpy(to.name, from.name);
+    strcpy(to.dir, from.dir);
+    to.sysnum = from.sysnum;
+    net_networks.emplace_back(to);
   }
   return true;
 }
 
-static void write_subs() {
-  if (subboards) {
-    File subsfile(syscfg.datadir, SUBS_DAT);
-    if (subsfile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
-      subsfile.Write(subboards.get(), initinfo.num_subs * sizeof(subboardrec));
-    }
-    initinfo.num_subs = 0;
-    subboards.reset();
+static bool read_subs(CursesWindow* window, vector<subboardrec>& subboards) {
+  subboards.clear();
+  DataFile<subboardrec> subsfile(syscfg.datadir, SUBS_DAT);
+  if (subsfile) {
+    return subsfile.ReadVector(subboards);
   }
-}
-
-static bool save_networks_dat() {
-  File networksfile(syscfg.datadir, NETWORKS_DAT);
-  std::unique_ptr<net_networks_rec_disk[]> net_networks_disk(new net_networks_rec_disk[initinfo.net_num_max]());
-  if (networksfile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
-    for (int i = 0; i < initinfo.net_num_max; i++) {
-      net_networks_disk[i].type = net_networks[i].type;
-      strcpy(net_networks_disk[i].name, net_networks[i].name);
-      strcpy(net_networks_disk[i].dir, net_networks[i].dir);
-      net_networks_disk[i].sysnum = net_networks[i].sysnum;
-    }
-    networksfile.Write(net_networks_disk.get(), initinfo.net_num_max * sizeof(net_networks_rec_disk));
-    return true;
-  }
+  messagebox(window, StrCat(subsfile.file().full_pathname(), " NOT FOUND."));
   return false;
 }
 
-static bool del_net(CursesWindow* window, int nn) {
-  if (!read_subs(window)) {
+static void write_subs(const vector<subboardrec>& subboards) {
+  DataFile<subboardrec> subsfile(syscfg.datadir, SUBS_DAT,
+    File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite);
+  if (subsfile) {
+    subsfile.WriteVector(subboards);
+  }
+}
+
+static bool save_networks_dat(const vector<net_networks_rec>& net_networks) {
+  vector<net_networks_rec_disk> disk;
+
+  for (const auto& from : net_networks) {
+    net_networks_rec_disk to{};
+    to.type = from.type;
+    strcpy(to.name, from.name);
+    strcpy(to.dir, from.dir);
+    to.sysnum = from.sysnum;
+    disk.emplace_back(to);
+  }
+
+  DataFile<net_networks_rec_disk> file(syscfg.datadir, NETWORKS_DAT,
+      File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite);
+  if (!file) {
+    return false;
+  }
+  return file.WriteVector(disk);
+}
+
+static bool del_net(
+    CursesWindow* window, vector<subboardrec>& subboards, 
+    vector<net_networks_rec>& net_networks, int nn) {
+
+  if (!read_subs(window, subboards)) {
     return false;
   }
 
-  for (int i = 0; i < initinfo.num_subs; i++) {
+  for (size_t i = 0; i < subboards.size(); i++) {
+    // TODO(rushfan): This code isn'tin the bbs anymore. We only use subs.xtr. Delerte this.
     if (subboards[i].age & 0x80) {
       if (subboards[i].name[40] == nn) {
         subboards[i].type = 0;
@@ -120,7 +144,7 @@ static bool del_net(CursesWindow* window, int nn) {
       }
     }
     if (i2 >= i) {
-      iscan1(i, subboards.get());
+      iscan1(i, subboards);
       open_sub(true);
       for (int i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
         postrec* p = get_post(i1);
@@ -138,7 +162,7 @@ static bool del_net(CursesWindow* window, int nn) {
     }
   }
 
-  write_subs();
+  write_subs(subboards);
   File emailfile(syscfg.datadir, EMAIL_DAT);
   if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
     long t = emailfile.GetLength() / sizeof(mailrec);
@@ -149,7 +173,7 @@ static bool del_net(CursesWindow* window, int nn) {
       if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
         if (strlen(m.title) >= WWIV_MESSAGE_TITLE_LENGTH) {
           // always trim to WWIV_MESSAGE_TITLE_LENGTH now.
-          m.title[71] = 0;
+          m.title[WWIV_MESSAGE_TITLE_LENGTH] = 0;
         }
         m.status |= status_new_net;
         if (m.status & status_source_verified) {
@@ -186,30 +210,99 @@ static bool del_net(CursesWindow* window, int nn) {
       }
     }
   }
-  for (int i = nn; i < initinfo.net_num_max; i++) {
-    net_networks[i] = net_networks[i + 1];
+  {
+    auto it = net_networks.begin();
+    std::advance(it, nn);
+    net_networks.erase(it);
   }
-  initinfo.net_num_max--;
-  File networksfile(syscfg.datadir, NETWORKS_DAT);
-  std::unique_ptr<net_networks_rec_disk[]> net_networks_disk(new net_networks_rec_disk[initinfo.net_num_max]());
-  if (networksfile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
-    for (int i = 0; i < initinfo.net_num_max; i++) {
-      net_networks_disk[i].type = net_networks[i].type;
-      strcpy(net_networks_disk[i].name, net_networks[i].name);
-      strcpy(net_networks_disk[i].dir, net_networks[i].dir);
-      net_networks_disk[i].sysnum = net_networks[i].sysnum;
-    }
-    networksfile.Write(net_networks_disk.get(), initinfo.net_num_max * sizeof(net_networks_rec_disk));
-  }
-  return true;
+  return save_networks_dat(net_networks);
 }
 
-static bool insert_net(CursesWindow* window, int nn) {
-  if (!read_subs(window)) {
+static void edit_net(vector<net_networks_rec>& net_networks, int nn) {
+  static const vector<string> nettypes = {
+    "WWIVnet ",
+    "Fido    ",
+    "Internet",
+  };
+
+  out->Cls(ACS_CKBOARD);
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Network Configuration", 6, 76));
+  bool done = false;
+  int cp = 1;
+  net_networks_rec& n = net_networks[nn];
+  char szOldNetworkName[20];
+  strcpy(szOldNetworkName, n.name);
+
+  if (n.type >= nettypes.size()) {
+    n.type = 0;
+  }
+
+  const int COL1_POSITION = 14;
+  EditItems items{
+    new ToggleEditItem<uint8_t>(COL1_POSITION, 1, nettypes, &n.type),
+    new StringEditItem<char*>(COL1_POSITION, 2, 15, n.name, false),
+    new NumberEditItem<uint16_t>(COL1_POSITION, 3, &n.sysnum),
+    new FilePathItem(COL1_POSITION, 4, 60, n.dir),
+  };
+  items.set_curses_io(out, window.get());
+
+  int y = 1;
+  window->PutsXY(2, y++, "Net Type  :");
+  window->PutsXY(2, y++, "Net Name  :");
+  window->PutsXY(2, y++, "Node #    :");
+  window->PutsXY(2, y++, "Directory :");
+
+  items.Run();
+
+  if (strcmp(szOldNetworkName, n.name)) {
+    const string input_filename = StringPrintf("%ssubs.xtr", syscfg.datadir);
+    const string output_filename = StringPrintf("%ssubsxtr.new", syscfg.datadir);
+    FILE *pInputFile = fopen(input_filename.c_str(), "r");
+    if (pInputFile) {
+      FILE *pOutputFile = fopen(output_filename.c_str(), "w");
+      if (pOutputFile) {
+        char buffer[255];
+        while (fgets(buffer, 80, pInputFile)) {
+          if (buffer[0] == '$') {
+            char* ss = strchr(buffer, ' ');
+            if (ss) {
+              *ss = 0;
+              if (strcasecmp(szOldNetworkName, buffer + 1) == 0) {
+                fprintf(pOutputFile, "$%s %s", n.name, ss + 1);
+              } else {
+                fprintf(pOutputFile, "%s %s", buffer, ss + 1);
+              }
+            } else {
+              fprintf(pOutputFile, "%s", buffer);
+            }
+          } else {
+            fprintf(pOutputFile, "%s", buffer);
+          }
+        }
+        fclose(pOutputFile);
+        fclose(pInputFile);
+        const string old_filename = StringPrintf("%ssubsxtr.old", syscfg.datadir);
+        File::Remove(old_filename);
+        File::Rename(input_filename, old_filename);
+        File::Remove(input_filename);
+        File::Rename(output_filename, input_filename);
+      } else {
+        fclose(pInputFile);
+      }
+    }
+  }
+}
+
+static bool insert_net(
+    CursesWindow* window, vector<subboardrec>& subboards, 
+    vector<net_networks_rec>& net_networks,
+    int nn) {
+  if (!read_subs(window, subboards)) {
     return false;
   }
 
-  for (int i = 0; i < initinfo.num_subs; i++) {
+  for (size_t i = 0; i < subboards.size(); i++) {
+    // TODO(rushfan): This code isn't in the bbs anymore. Delete it.
     if (subboards[i].age & 0x80) {
       if (subboards[i].name[40] >= nn) {
         subboards[i].name[40]++;
@@ -222,7 +315,7 @@ static bool insert_net(CursesWindow* window, int nn) {
       }
     }
     if (i2 >= i) {
-      iscan1(i, subboards.get());
+      iscan1(i, subboards);
       open_sub(true);
       for (int i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
         postrec* p = get_post(i1);
@@ -237,7 +330,7 @@ static bool insert_net(CursesWindow* window, int nn) {
     }
   }
 
-  write_subs();
+  write_subs(subboards);
   File emailfile(syscfg.datadir, EMAIL_DAT);
   if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
     long t = emailfile.GetLength() / sizeof(mailrec);
@@ -267,7 +360,6 @@ static bool insert_net(CursesWindow* window, int nn) {
   }
 
   unique_ptr<char[]> u(new char[syscfg.userreclen]);
-
   read_user(1, reinterpret_cast<userrec*>(u.get()));
   int nu = number_userrecs();
   for (int i = 1; i <= nu; i++) {
@@ -280,29 +372,35 @@ static bool insert_net(CursesWindow* window, int nn) {
     }
   }
 
-  for (int i = initinfo.net_num_max; i > nn; i--) {
-    net_networks[i] = net_networks[i - 1];
+  {
+    auto it = net_networks.begin();
+    std::advance(it, nn);
+    net_networks_rec n{};
+    strcpy(n.name, "NetNet");
+    sprintf(n.dir, "newnet.dir%c", File::pathSeparatorChar);
+    net_networks.insert(it, n);
   }
-  initinfo.net_num_max++;
-  memset(&(net_networks[nn]), 0, sizeof(net_networks_rec));
-  strcpy(net_networks[nn].name, "NewNet");
-  sprintf(net_networks[nn].dir, "newnet.dir%c", File::pathSeparatorChar);
 
-  save_networks_dat();
-  edit_net(nn);
+  save_networks_dat(net_networks);
+  edit_net(net_networks, nn);
   return true;
 }
 
 #define OKAD (syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)
 
 void networks() {
+  vector<subboardrec> subboards;
+  vector<net_networks_rec> net_networks;
+
+  // We may not load any, and that's OK since there may be none.
+  load_networks_dat(net_networks);
   bool done = false;
   do {
     out->Cls(ACS_CKBOARD);
 
     vector<ListBoxItem> items;
-    for (int i = 0; i < initinfo.net_num_max; i++) {
-      items.emplace_back(StringPrintf("@%u %s", net_networks[i].sysnum, net_networks[i].name));
+    for (const auto& n : net_networks) {
+      items.emplace_back(StringPrintf("@%u %s", n.sysnum, n.name));
     }
     CursesWindow* window = out->window();
     ListBox list(out, window, "Select Network", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
@@ -314,7 +412,7 @@ void networks() {
     ListBoxResult result = list.Run();
 
     if (result.type == ListBoxResultType::SELECTION) {
-      edit_net(result.selected);
+      edit_net(net_networks, result.selected);
     } else if (result.type == ListBoxResultType::NO_SELECTION) {
       done = true;
     } else if (result.type == ListBoxResultType::HOTKEY) {
@@ -324,13 +422,13 @@ void networks() {
           messagebox(window, { "You must run the BBS once", "to set up some variables before ", "deleting a network." });
           break;
         }
-        if (initinfo.net_num_max > 1) {
+        if (net_networks.size() > 1) {
           const string prompt = StringPrintf("Delete '%s'", net_networks[result.selected].name);
           bool yn = dialog_yn(window, prompt);
           if (yn) {
             yn = dialog_yn(window, "Are you REALLY sure? ");
             if (yn) {
-              del_net(window, result.selected);
+              del_net(window, subboards, net_networks, result.selected);
             }
           }
         } else {
@@ -343,16 +441,15 @@ void networks() {
           messagebox(window, lines);
           break;
         }
-        if (initinfo.net_num_max >= MAX_NETWORKS) {
+        if (net_networks.size() >= MAX_NETWORKS) {
           messagebox(window, "Too many networks.");
           break;
         }
-        const string prompt = StringPrintf("Insert before which (1-%d) ? ", initinfo.net_num_max + 1);
-        int nNetNumber = dialog_input_number(window, prompt, 1, initinfo.net_num_max + 1  );
-        if (nNetNumber > 0 && nNetNumber <= initinfo.net_num_max + 1) {
-          bool yn = dialog_yn(window, "Are you sure? ");
-          if (yn) {
-            insert_net(window, nNetNumber - 1);
+        const string prompt = StringPrintf("Insert before which (1-%d) ? ", net_networks.size() + 1);
+        const int net_num = dialog_input_number(window, prompt, 1, net_networks.size() + 1  );
+        if (net_num > 0 && net_num <= net_networks.size() + 1) {
+          if (dialog_yn(window, "Are you sure? ")) {
+            insert_net(window, subboards, net_networks, net_num - 1);
           }
         }
         break;
@@ -360,80 +457,6 @@ void networks() {
     }
   } while (!done);
 
-  save_networks_dat();
+  save_networks_dat(net_networks);
 }
 
-static void edit_net(int nn) {
-  static const vector<string> nettypes = {
-    "WWIVnet ",
-    "Fido    ",
-    "Internet",
-  };
-
-  out->Cls(ACS_CKBOARD);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Network Configuration", 6, 76));
-  bool done = false;
-  int cp = 1;
-  net_networks_rec *n = &(net_networks[nn]);
-  char szOldNetworkName[20];
-  strcpy(szOldNetworkName, n->name);
-
-  if (n->type >= nettypes.size()) {
-    n->type = 0;
-  }
-
-  const int COL1_POSITION = 14;
-  EditItems items{
-    new ToggleEditItem<uint8_t>(COL1_POSITION, 1, nettypes, &n->type),
-    new StringEditItem<char*>(COL1_POSITION, 2, 15, n->name, false),
-    new NumberEditItem<uint16_t>(COL1_POSITION, 3, &n->sysnum),
-    new FilePathItem(COL1_POSITION, 4, 60, n->dir),
-  };
-  items.set_curses_io(out, window.get());
-
-  int y = 1;
-  window->PutsXY(2, y++, "Net Type  :");
-  window->PutsXY(2, y++, "Net Name  :");
-  window->PutsXY(2, y++, "Node #    :");
-  window->PutsXY(2, y++, "Directory :");
-
-  items.Run();
-
-  if (strcmp(szOldNetworkName, n->name)) {
-    const string input_filename = StringPrintf("%ssubs.xtr", syscfg.datadir);
-    const string output_filename = StringPrintf("%ssubsxtr.new", syscfg.datadir);
-    FILE *pInputFile = fopen(input_filename.c_str(), "r");
-    if (pInputFile) {
-      FILE *pOutputFile = fopen(output_filename.c_str(), "w");
-      if (pOutputFile) {
-        char buffer[255];
-        while (fgets(buffer, 80, pInputFile)) {
-          if (buffer[0] == '$') {
-            char* ss = strchr(buffer, ' ');
-            if (ss) {
-              *ss = 0;
-              if (strcasecmp(szOldNetworkName, buffer + 1) == 0) {
-                fprintf(pOutputFile, "$%s %s", n->name, ss + 1);
-              } else {
-                fprintf(pOutputFile, "%s %s", buffer, ss + 1);
-              }
-            } else {
-              fprintf(pOutputFile, "%s", buffer);
-            }
-          } else {
-            fprintf(pOutputFile, "%s", buffer);
-          }
-        }
-        fclose(pOutputFile);
-        fclose(pInputFile);
-        const string old_filename = StringPrintf("%ssubsxtr.old", syscfg.datadir);
-	File::Remove(old_filename);
-	File::Rename(input_filename, old_filename);
-	File::Remove(input_filename);
-	File::Rename(output_filename, input_filename);
-      } else {
-        fclose(pInputFile);
-      }
-    }
-  }
-}

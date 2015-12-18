@@ -37,6 +37,7 @@
 #include "bbs/message_file.h"
 #include "bbs/netsup.h"
 #include "bbs/pause.h"
+#include "bbs/subxtr.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/datafile.h"
@@ -658,21 +659,18 @@ void WSession::read_nintern() {
 }
 
 bool WSession::read_subs() {
-  if (subboards) {
-    free(subboards);
-  }
-  subboards = nullptr;
   SetMaxNumberMessageAreas(syscfg.max_subs);
-  subboards = static_cast<subboardrec*>(BbsAllocA(GetMaxNumberMessageAreas() * sizeof(subboardrec)));
+  subboards.clear();
 
-  File file(syscfg.datadir, SUBS_DAT);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    std::clog << file.GetName() << " NOT FOUND." << std::endl;
+  DataFile<subboardrec> file(syscfg.datadir, SUBS_DAT);
+  if (!file) {
+    std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
     return false;
   }
-  num_subs = (file.Read(subboards,
-                                      (GetMaxNumberMessageAreas() * sizeof(subboardrec)))) / sizeof(subboardrec);
-  return (read_subs_xtr(GetMaxNumberMessageAreas(), num_subs, subboards));
+  if (!file.ReadVector(subboards, GetMaxNumberMessageAreas())) {
+    return false;
+  }
+  return read_subs_xtr(subboards, xsubs);
 }
 
 void WSession::read_networks() {
@@ -706,41 +704,35 @@ void WSession::read_networks() {
     }
     fileNetIni.Close();
   }
-  if (net_networks) {
-    free(net_networks);
-  }
-  net_networks = nullptr;
 
-  File networksfile(syscfg.datadir, NETWORKS_DAT);
-  if (networksfile.Open(File::modeBinary | File::modeReadOnly)) {
-    int net_num_max = networksfile.GetLength() / sizeof(net_networks_rec_disk);
-    SetMaxNetworkNumber(net_num_max);
-    std::unique_ptr<net_networks_rec_disk[]> net_networks_disk(new net_networks_rec_disk[net_num_max]());
-    net_networks = static_cast<net_networks_rec *>(BbsAllocA(net_num_max * sizeof(net_networks_rec)));
-    if (net_num_max) {
-      networksfile.Read(net_networks_disk.get(), net_num_max * sizeof(net_networks_rec_disk));
-      for (int i = 0; i < net_num_max; i++) {
-        net_networks[i].type = net_networks_disk[i].type;
-        strcpy(net_networks[i].name, net_networks_disk[i].name);
-        strcpy(net_networks[i].dir, net_networks_disk[i].dir);
-        net_networks[i].sysnum = net_networks_disk[i].sysnum;
-      }
-    }
-    networksfile.Close();
-    for (int nTempNetNumber = 0; nTempNetNumber < max_net_num(); nTempNetNumber++) {
-      char* ss = strchr(net_networks[nTempNetNumber].name, ' ');
-      if (ss) {
-        *ss = '\0';
-      }
-    }
+  DataFile<net_networks_rec_disk> networksfile(syscfg.datadir, NETWORKS_DAT);
+  if (!networksfile) {
+    return;
+  }
+  int net_num_max = networksfile.number_of_records();
+  std::vector<net_networks_rec_disk> net_networks_disk;
+  if (!net_num_max) {
+    return;
+  }
+  if (!networksfile.ReadVector(net_networks_disk)) {
+    return;
+  }
+  for (const auto& from : net_networks_disk) {
+    net_networks_rec to{};
+    to.type = from.type;
+    strcpy(to.name, from.name);
+    StringTrim(to.name);
+    strcpy(to.dir, from.dir);
+    to.sysnum = from.sysnum;
+    net_networks.emplace_back(to);
   }
 
-  if (!net_networks) {
-    net_networks = static_cast<net_networks_rec *>(BbsAllocA(sizeof(net_networks_rec)));
-    SetMaxNetworkNumber(1);
-    strcpy(net_networks->name, "WWIVnet");
-    strcpy(net_networks->dir, syscfg.datadir);
-    net_networks->sysnum = syscfg.systemnumber;
+  if (net_networks.empty()) {
+    // Add a default entry for us.
+    net_networks_rec n{};
+    strcpy(n.name, "WWIVnet");
+    strcpy(n.dir, syscfg.datadir);
+    n.sysnum = syscfg.systemnumber;
   }
 }
 
@@ -833,7 +825,6 @@ bool WSession::read_language() {
     file.Close();
   }
   if (!num_languages) {
-    num_languages = 1;
     languagerec lang;
     memset(&lang, 0, sizeof(languagerec));
     strcpy(lang.name, "English");
@@ -938,7 +929,6 @@ void WSession::InitializeBBS() {
     AbortBBS();
   }
 
-  net_networks = nullptr;
   set_net_num(0);
   read_networks();
   set_net_num(0);
@@ -973,7 +963,6 @@ void WSession::InitializeBBS() {
   }
 
   XINIT_PRINTF("Reading Message Areas.");
-  subboards = nullptr;
   if (!read_subs()) {
     AbortBBS();
   }

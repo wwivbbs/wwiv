@@ -84,7 +84,7 @@ uint32_t WWIVReadLastRead(int sub_number) {
   postrec p;
   memset(&p, 0, sizeof(postrec));
 
-  File subFile(syscfg.datadir, StrCat(subboards[sub_number].filename, ".sub"));
+  File subFile(syscfg.datadir, StrCat(session()->subboards[sub_number].filename, ".sub"));
   if (!subFile.Exists()) {
     bool created = subFile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     if (!created) {
@@ -113,26 +113,26 @@ uint32_t WWIVReadLastRead(int sub_number) {
   return p.qscan;
 }
 
-// Initializes use of a sub value (subboards[], not usub[]).  If quick, then
+// Initializes use of a sub value (session()->subboards[], not usub[]).  If quick, then
 // don't worry about anything detailed, just grab qscan info.
 bool iscan1(int sub_index) {
   postrec p;
 
   // forget it if an invalid sub #
-  if (sub_index < 0 || sub_index >= session()->num_subs) {
+  if (sub_index < 0 || sub_index >= session()->subboards.size()) {
     return false;
   }
 
   // go to correct net #
-  if (xsubs[sub_index].num_nets) {
-    set_net_num(xsubs[sub_index].nets[0].net_num);
+  if (!session()->xsubs[sub_index].nets.empty()) {
+    set_net_num(session()->xsubs[sub_index].nets[0].net_num);
   } else {
     set_net_num(0);
   }
 
   // set sub filename
   snprintf(subdat_fn, sizeof(subdat_fn), "%s%s.sub", 
-      syscfg.datadir, subboards[sub_index].filename);
+      syscfg.datadir, session()->subboards[sub_index].filename);
 
   // open file, and create it if necessary
   if (!File::Exists(subdat_fn)) {
@@ -164,7 +164,7 @@ bool iscan1(int sub_index) {
   return true;
 }
 
-// Initializes use of a sub (usub[] value, not subboards[] value).
+// Initializes use of a sub (usub[] value, not session()->subboards[] value).
 int iscan(int b) {
   return iscan1(usub[b].subnum);
 }
@@ -254,7 +254,7 @@ void delete_message(int mn) {
       char *pBuffer = static_cast<char *>(malloc(BUFSIZE));
       if (pBuffer) {
         postrec *p1 = get_post(mn);
-        remove_link(&(p1->msg), subboards[session()->GetCurrentReadMessageArea()].filename);
+        remove_link(&(p1->msg), session()->current_sub().filename);
 
         long cp = static_cast<long>(mn + 1) * sizeof(postrec);
         long len = static_cast<long>(session()->GetNumMessagesInCurrentMessageArea() + 1) * sizeof(postrec);
@@ -347,8 +347,8 @@ void pack_sub(int si) {
   if (!iscan1(si)) {
     return;
   }
-  if (open_sub(true) && subboards[si].storage_type == 2) {
-    const char *sfn = subboards[si].filename;
+  if (open_sub(true) && session()->subboards[si].storage_type == 2) {
+    const char *sfn = session()->subboards[si].filename;
     const char *nfn = "PACKTMP$";
 
     char fn1[MAX_PATH], fn2[MAX_PATH];
@@ -356,7 +356,7 @@ void pack_sub(int si) {
     sprintf(fn2, "%s%s.dat", syscfg.msgsdir, nfn);
 
     bout << "\r\n|#7\xFE |#1Packing Message Area: |#5" 
-         << subboards[si].name << wwiv::endl;
+         << session()->subboards[si].name << wwiv::endl;
 
     for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
       if (i % 10 == 0) {
@@ -389,7 +389,7 @@ void pack_sub(int si) {
 }
 
 bool pack_all_subs() {
-  for (int i=0; i < session()->num_subs && !hangup; i++) {
+  for (size_t i=0; i < session()->subboards.size() && !hangup; i++) {
     pack_sub(i);
     if (!checka()) {
       return false;
