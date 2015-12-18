@@ -30,6 +30,7 @@
 #include "bbs/wstatus.h"
 #include "bbs/wuser.h"
 #include "bbs/woutstreambuffer.h"
+#include "bbs/subxtr.h"
 #include "bbs/local_io.h"
 #include "core/inifile.h"
 #include "core/file.h"
@@ -411,7 +412,6 @@ private:
               m_nMaxNetworkNumber,
               numf,
               num_dirs,
-              num_languages,
               num_sec,
               num_subs,
               num_events,
@@ -466,6 +466,8 @@ public:
   std::vector<newexternalrec> over_intern;
   std::vector<smalrec> smallist;
   std::vector<languagerec> languages;
+  std::vector<subboardrec> subboards;
+  std::vector<xtrasubsrec> xsubs;
 
 };
 

@@ -236,7 +236,7 @@ void list_users(int mode) {
   }
 
   if (mode == LIST_USERS_MESSAGE_AREA) {
-    s = subboards[usub[session()->GetCurrentMessageArea()].subnum];
+    s = session()->subboards[usub[session()->GetCurrentMessageArea()].subnum];
   } else {
     d = directories[udir[session()->GetCurrentFileArea()].subnum];
   }

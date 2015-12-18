@@ -5,7 +5,12 @@
 
 * to try strip down all message base code in wwiv to have no external
   dependencies so it can get moved into sdk.`
-* make all wwiv datafile data into vector and not malloc'ed *
+* make all wwiv datafile data into vector and not malloc'ed 
+* delete num_subs
+* update boardedit to use insert/erase on subs
+* make init use vector subs
+* add subboardrec& session()->current_sub()
+* rewrite read_subs_xtr to use vector/string lines/textfile ** it compiles - need to test and walk through with a debugger.
 
 * Move bbs logic out of WLocalIO and into WSession (probably)
 * remove extra include statements from user.cpp

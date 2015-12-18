@@ -25,8 +25,6 @@
 #define _DEFINE_GLOBALS_
 // vars.h requires  _DEFINE_GLOBALS_
 #include "bbs/vars.h"
-// This has to be included here to define "xtrasubsrec *xsubs;"
-#include "bbs/subxtr.h"
 #undef _DEFINE_GLOBALS_
 
 #include <algorithm>

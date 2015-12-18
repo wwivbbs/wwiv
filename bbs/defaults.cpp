@@ -396,7 +396,7 @@ void l_config_qscan() {
     pla(StringPrintf("%c %s. %s",
             (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) ? '*' : ' ',
             usub[i].keys,
-            subboards[usub[i].subnum].name), &abort);
+            session()->subboards[usub[i].subnum].name), &abort);
   }
   bout.nl(2);
 }
@@ -906,7 +906,7 @@ static void list_config_scan_plus(int first, int *amount, int type) {
       lines_listed = 0;
       sprintf(s, "|#7[|#1%c|#7] |#9%s",
               (qsc_q[usub[this_sub].subnum / 32] & (1L << (usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
-              subboards[usub[this_sub].subnum].name);
+              session()->subboards[usub[this_sub].subnum].name);
       s[44] = '\0';
       if (*amount >= max_lines) {
         bout.GotoXY(40, 3 + *amount - max_lines);

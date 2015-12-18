@@ -54,15 +54,15 @@ void valscan() {
     uint32_t sq = qsc_p[sn];
 
     // Must be sub with validation "on"
-    if (!(xsubs[session()->GetCurrentReadMessageArea()].num_nets)
-        || !(subboards[session()->GetCurrentReadMessageArea()].anony & anony_val_net)) {
+    if (session()->xsubs[session()->GetCurrentReadMessageArea()].nets.empty()
+        || !(session()->subboards[session()->GetCurrentReadMessageArea()].anony & anony_val_net)) {
       continue;
     }
 
     bout.nl();
     bout.Color(2);
     bout.clreol();
-    bout << "{{ ValScanning " << subboards[session()->GetCurrentReadMessageArea()].name << " }}\r\n";
+    bout << "{{ ValScanning " << session()->subboards[session()->GetCurrentReadMessageArea()].name << " }}\r\n";
     lines_listed = 0;
     bout.clreol();
     if (okansi() && !newline) {
@@ -77,7 +77,7 @@ void valscan() {
           bool next;
           int val;
           read_post(i, &next, &val);
-          bout << "|#4[|#4Subboard: " << subboards[session()->GetCurrentReadMessageArea()].name << "|#1]\r\n";
+          bout << "|#4[|#4Subboard: " << session()->subboards[session()->GetCurrentReadMessageArea()].name << "|#1]\r\n";
           bout <<  "|#1D|#9)elete, |#1R|#9)eread |#1V|#9)alidate, |#1M|#9)ark Validated, |#1Q|#9)uit: |#2";
           char ch = onek("QDVMR");
           switch (ch) {
@@ -94,7 +94,7 @@ void valscan() {
             p1->status &= ~status_pending_net;
             write_post(i, p1);
             close_sub();
-            send_net_post(p1, subboards[session()->GetCurrentReadMessageArea()].filename,
+            send_net_post(p1, session()->subboards[session()->GetCurrentReadMessageArea()].filename,
                           session()->GetCurrentReadMessageArea());
             bout.nl();
             bout << "|#7Message sent.\r\n\n";
@@ -102,8 +102,8 @@ void valscan() {
           break;
           case 'M':
             if (lcs() && i > 0 && i <= session()->GetNumMessagesInCurrentMessageArea() &&
-                subboards[session()->GetCurrentReadMessageArea()].anony & anony_val_net &&
-                xsubs[session()->GetCurrentReadMessageArea()].num_nets) {
+                session()->subboards[session()->GetCurrentReadMessageArea()].anony & anony_val_net &&
+                !session()->xsubs[session()->GetCurrentReadMessageArea()].nets.empty()) {
               open_sub(true);
               resynch(&i, nullptr);
               postrec *p1 = get_post(i);

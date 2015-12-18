@@ -188,7 +188,7 @@ const char *interpret(char chKey) {
     snprintf(s, sizeof(s), "%u", session()->user()->GetFilesUploaded());
     break;
   case 'u':                               // Current sub
-    strcpy(s, subboards[usub[session()->GetCurrentMessageArea()].subnum].name);
+    strcpy(s, session()->subboards[usub[session()->GetCurrentMessageArea()].subnum].name);
     break;
   case 'W':                               // Total # of messages in sub
     snprintf(s, sizeof(s), "%d", session()->GetNumMessagesInCurrentMessageArea());

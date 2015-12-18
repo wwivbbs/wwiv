@@ -77,16 +77,16 @@ void old_sublist() {
         strcat(s, "  ");
       }
       if (net_sysnum || session()->max_net_num() > 1) {
-        if (xsubs[usub[i1].subnum].num_nets) {
+        if (!session()->xsubs[usub[i1].subnum].nets.empty()) {
           const char *ss;
-          if (xsubs[usub[i1].subnum].num_nets > 1) {
+          if (session()->xsubs[usub[i1].subnum].nets.size() > 1) {
             ss = "Gated";
           } else {
-            ss = stripcolors(net_networks[xsubs[usub[i1].subnum].nets[0].net_num].name);
+            ss = stripcolors(net_networks[session()->xsubs[usub[i1].subnum].nets[0].net_num].name);
           }
 
           char s1[80];
-          if (subboards[usub[i1].subnum].anony & anony_val_net) {
+          if (session()->subboards[usub[i1].subnum].anony & anony_val_net) {
             sprintf(s1, "|B1|15[%-8.8s]|#9 ", ss);
           } else {
             sprintf(s1, "|B1|15<%-8.8s>|#9 ", ss);
@@ -97,7 +97,7 @@ void old_sublist() {
         }
         strcat(s, "|#9");
       }
-      strcat(s, stripcolors(subboards[usub[i1].subnum].name));
+      strcat(s, stripcolors(session()->subboards[usub[i1].subnum].name));
       pla(s, &abort);
       i1++;
     }
@@ -199,17 +199,17 @@ void SubList() {
         }
         iscan(i1);
         if (net_sysnum || session()->max_net_num() > 1) {
-          if (xsubs[usub[i1].subnum].num_nets) {
-	    const char* ss;
-            if (xsubs[usub[i1].subnum].num_nets > 1) {
+          if (!session()->xsubs[usub[i1].subnum].nets.empty()) {
+	          const char* ss;
+            if (session()->xsubs[usub[i1].subnum].nets.size() > 1) {
               wc = 6;
               ss = "Gated";
             } else {
-              strcpy(s3, net_networks[xsubs[usub[i1].subnum].nets[0].net_num].name);
+              strcpy(s3, net_networks[session()->xsubs[usub[i1].subnum].nets[0].net_num].name);
               ss = stripcolors(s3);
               wc = session()->net_num() % 8;
             }
-            if (subboards[usub[i1].subnum].anony & anony_val_net) {
+            if (session()->subboards[usub[i1].subnum].anony & anony_val_net) {
               sprintf(s3, "|#7[|#%i%-8.8s|#7]", wc, ss);
             } else {
               sprintf(s3, "|#7<|#%i%-8.8s|#7>", wc, ss);
@@ -228,11 +228,11 @@ void SubList() {
         newTally = session()->GetNumMessagesInCurrentMessageArea() - msgIndex + 1;
         if (usub[session()->GetCurrentMessageArea()].subnum == usub[i1].subnum) {
           sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |B1|15%-36.36s |#9\xB3 |#9%5d |#9\xB3 |#%c%5d |#9",
-                  i1 + 1, s2, s3, subboards[usub[i1].subnum].name, session()->GetNumMessagesInCurrentMessageArea(),
+                  i1 + 1, s2, s3, session()->subboards[usub[i1].subnum].name, session()->GetNumMessagesInCurrentMessageArea(),
                   newTally ? '6' : '3', newTally);
         } else {
           sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |#1%-36.36s |#9\xB3 |#9%5d |#9\xB3 |#%c%5d |#9",
-                  i1 + 1, s2, s3, subboards[usub[i1].subnum].name, session()->GetNumMessagesInCurrentMessageArea(),
+                  i1 + 1, s2, s3, session()->subboards[usub[i1].subnum].name, session()->GetNumMessagesInCurrentMessageArea(),
                   newTally ? '6' : '3', newTally);
         }
         if (okansi()) {

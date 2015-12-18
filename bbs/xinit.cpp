@@ -37,6 +37,7 @@
 #include "bbs/message_file.h"
 #include "bbs/netsup.h"
 #include "bbs/pause.h"
+#include "bbs/subxtr.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/datafile.h"
@@ -658,21 +659,19 @@ void WSession::read_nintern() {
 }
 
 bool WSession::read_subs() {
-  if (subboards) {
-    free(subboards);
-  }
-  subboards = nullptr;
   SetMaxNumberMessageAreas(syscfg.max_subs);
-  subboards = static_cast<subboardrec*>(BbsAllocA(GetMaxNumberMessageAreas() * sizeof(subboardrec)));
+  subboards.clear();
 
-  File file(syscfg.datadir, SUBS_DAT);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    std::clog << file.GetName() << " NOT FOUND." << std::endl;
+  DataFile<subboardrec> file(syscfg.datadir, SUBS_DAT);
+  if (!file) {
+    std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
     return false;
   }
-  num_subs = (file.Read(subboards,
-                                      (GetMaxNumberMessageAreas() * sizeof(subboardrec)))) / sizeof(subboardrec);
-  return (read_subs_xtr(GetMaxNumberMessageAreas(), num_subs, subboards));
+  if (!file.ReadVector(subboards, GetMaxNumberMessageAreas())) {
+    return false;
+  }
+  num_subs = subboards.size();
+  return read_subs_xtr(subboards, xsubs);
 }
 
 void WSession::read_networks() {
@@ -833,7 +832,6 @@ bool WSession::read_language() {
     file.Close();
   }
   if (!num_languages) {
-    num_languages = 1;
     languagerec lang;
     memset(&lang, 0, sizeof(languagerec));
     strcpy(lang.name, "English");
@@ -973,7 +971,6 @@ void WSession::InitializeBBS() {
   }
 
   XINIT_PRINTF("Reading Message Areas.");
-  subboards = nullptr;
   if (!read_subs()) {
     AbortBBS();
   }

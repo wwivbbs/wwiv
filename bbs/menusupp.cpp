@@ -80,7 +80,7 @@ void UnQScan() {
     bout.nl();
     qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = 0;
     bout << "Messages on " 
-         << subboards[usub[session()->GetCurrentMessageArea()].subnum].name
+         << session()->subboards[usub[session()->GetCurrentMessageArea()].subnum].name
          << " marked as unread.\r\n";
   }
   break;
@@ -740,8 +740,8 @@ void ClearQScan() {
     std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
     bout.nl();
     qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = pStatus->GetQScanPointer() - 1L;
-    bout << "Messages on " << subboards[usub[session()->GetCurrentMessageArea()].subnum].name <<
-                       " marked as read.\r\n";
+    bout << "Messages on " << session()->subboards[usub[session()->GetCurrentMessageArea()].subnum].name 
+         << " marked as read.\r\n";
     break;
   }
 }
