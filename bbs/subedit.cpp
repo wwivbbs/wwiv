@@ -189,15 +189,15 @@ string GetAr(subboardrec r, char *pszAr) {
 
 void DisplayNetInfo(int nSubNum) {
   if (session()->xsubs.size() <= nSubNum) {
-    bout << "Not networked.\r\n";
+    bout << "|#2Not networked.\r\n";
     return;
   }
   if (session()->xsubs[nSubNum].nets.empty()) {
-    bout << "Not networked.\r\n";
+    bout << "|#2Not networked.\r\n";
     return;
   }
 
-  bout.bprintf("\r\n      %-12.12s %-7.7s %-6.6s  Scrb  %s\r\n",
+  bout.bprintf("\r\n|#9      %-12.12s %-7.7s %-6.6s  Scrb  %s\r\n",
                 "Network", "Type", "Host", " Flags");
   int i = 0;
   for (auto it = session()->xsubs[nSubNum].nets.begin(); it != session()->xsubs[nSubNum].nets.end(); i++, it++) {
@@ -215,7 +215,7 @@ void DisplayNetInfo(int nSubNum) {
     if ((*it).host == 0) {
       const string net_file_name = StringPrintf("%sn%s.net", session()->net_networks[(*it).net_num].dir, (*it).stype);
       int num = amount_of_subscribers(net_file_name.c_str());
-      bout.bprintf("   %c) %-12.12s %-7.7s %-6.6s  %-4d  %s%s\r\n",
+      bout.bprintf("   |#9%c) |#2%-12.12s %-7.7s %-6.6s  %-4d  %s%s\r\n",
                     i + 'a',
                     session()->net_networks[(*it).net_num].name,
                     (*it).stype,
@@ -224,7 +224,7 @@ void DisplayNetInfo(int nSubNum) {
                     ((*it).flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
                     ((*it).flags & XTRA_NET_AUTO_INFO) ? szBuffer2 : "");
     } else {
-      bout.bprintf("   %c) %-12.12s %-7.7s %-6.6s  %s%s\r\n",
+      bout.bprintf("   |#9%c) |#2%-12.12s %-7.7s %-6.6s  %s%s\r\n",
                     i + 'a',
                     session()->net_networks[(*it).net_num].name,
                     (*it).stype,
