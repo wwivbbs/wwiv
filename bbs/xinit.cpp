@@ -815,22 +815,23 @@ void WSession::read_chains() {
 }
 
 bool WSession::read_language() {
-  DataFile<languagerec> file(syscfg.datadir, LANGUAGE_DAT);
-  size_t num_languages = 0;
-  if (file) {
-    num_languages = file.number_of_records();
-    if (num_languages > 0) {
+  {
+    DataFile<languagerec> file(syscfg.datadir, LANGUAGE_DAT);
+    if (file) {
       file.ReadVector(languages);
     }
-    file.Close();
   }
-  if (!num_languages) {
+  if (languages.empty()) {
+    // Add a default language to the list.
     languagerec lang;
     memset(&lang, 0, sizeof(languagerec));
     strcpy(lang.name, "English");
     strncpy(lang.dir, syscfg.gfilesdir, sizeof(lang.dir) - 1);
     strncpy(lang.mdir, syscfg.menudir, sizeof(lang.mdir) - 1);
+    
+    languages.emplace_back(lang);
   }
+
   SetCurrentLanguageNumber(-1);
   if (!set_language(0)) {
     std::clog << "You need the default language installed to run the BBS." << std::endl;
