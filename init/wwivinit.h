@@ -20,7 +20,6 @@
 #define __INCLUDED_WWIVINIT_H__
 
 #include "sdk/vardec.h"
-#include "init/ivardec.h"
 
 extern configrec syscfg;
 
