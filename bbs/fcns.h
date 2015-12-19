@@ -234,7 +234,7 @@ void Packers();
 
 
 // File: msgbase.cpp
-#include "bbs/msgbase.h"
+#include "bbs/email.h"
 
 // File: msgbase1.cpp
 
@@ -245,7 +245,6 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
 void qscan(int nBeginSubNumber, int *pnNextSubNumber);
 void nscan(int nStartingSubNum = 0);
 void ScanMessageTitles();
-void delmail(File *pFile, int loc);
 void remove_post();
 
 // File: multmail.cpp

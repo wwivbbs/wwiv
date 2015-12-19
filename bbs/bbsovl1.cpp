@@ -30,6 +30,7 @@
 #include "bbs/external_edit.h"
 #include "bbs/instmsg.h"
 #include "bbs/wconstants.h"
+#include "bbs/workspace.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"

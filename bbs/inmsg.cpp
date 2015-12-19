@@ -34,6 +34,7 @@
 #include "bbs/fcns.h"
 #include "bbs/message_file.h"
 #include "bbs/vars.h"
+#include "bbs/workspace.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/textfile.h"

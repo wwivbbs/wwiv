@@ -31,7 +31,11 @@
 #include "bbs/vars.h"
 #include "bbs/wstatus.h"
 #endif // NOT_BBS
+
+// from strings.cpp
 extern unsigned char *translate_letters[];
+
+using namespace wwiv::strings;
 
 WUser::WUser() {
   ZeroUserData();
@@ -175,7 +179,7 @@ int WUserManager::FindUser(std::string searchString) {
   // TODO(rushfan): Put back in a binary search, but test with user.lst the size of frank's.
   const size_t user_count = session()->status_manager()->GetUserCount();
   for (std::size_t i = 0; i < user_count; i++) {
-    if (wwiv::strings::IsEqualsIgnoreCase(searchString.c_str(), (const char*)session()->smallist[i].name)) {
+    if (IsEqualsIgnoreCase(searchString.c_str(), (const char*)session()->smallist[i].name)) {
       return session()->smallist[i].number;
     }
   }
@@ -184,13 +188,12 @@ int WUserManager::FindUser(std::string searchString) {
   usersFile->Open(File::modeBinary | File::modeReadOnly);
   smalrec userRec;
   if (usersFile->IsOpen()) {
-    bool done = false;
-    while (!done) {
+    while (true) {
       int bytesRead = usersFile->Read(&userRec, sizeof(smalrec));
       if (bytesRead != sizeof(smalrec)) {
-        done = true;
-      } else if (!wwiv::strings::StringCompareIgnoreCase(searchString.c_str(), (const char *)userRec.name)) {
-        return (userRec.number);
+        return 0;
+      } else if (!StringCompareIgnoreCase(searchString.c_str(), (const char *)userRec.name)) {
+        return userRec.number;
       }
     }
   }

@@ -370,8 +370,9 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
     memory_last_read = qsc_p[sub_number];
 
     bout.bprintf("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n",
-      session()->current_sub().name,
-                                      usub[session()->GetCurrentMessageArea()].keys, session()->GetNumMessagesInCurrentMessageArea());
+                 session()->current_sub().name,
+                 usub[session()->GetCurrentMessageArea()].keys,
+                 session()->GetNumMessagesInCurrentMessageArea());
 
     int i;
     for (i = session()->GetNumMessagesInCurrentMessageArea(); (i > 1)
@@ -480,57 +481,6 @@ void ScanMessageTitles() {
   }
 }
 
-void delmail(File *pFile, int loc) {
-  mailrec m, m1;
-  WUser user;
-
-  pFile->Seek(static_cast<long>(loc * sizeof(mailrec)), File::seekBegin);
-  pFile->Read(&m, sizeof(mailrec));
-
-  if (m.touser == 0 && m.tosys == 0) {
-    return;
-  }
-
-  bool rm = true;
-  if (m.status & status_multimail) {
-    int t = pFile->GetLength() / sizeof(mailrec);
-    int otf = false;
-    for (int i = 0; i < t; i++) {
-      if (i != loc) {
-        pFile->Seek(static_cast<long>(i * sizeof(mailrec)), File::seekBegin);
-        pFile->Read(&m1, sizeof(mailrec));
-        if ((m.msg.stored_as == m1.msg.stored_as) && (m.msg.storage_type == m1.msg.storage_type) && (m1.daten != 0xffffffff)) {
-          otf = true;
-        }
-      }
-    }
-    if (otf) {
-      rm = false;
-    }
-  }
-  if (rm) {
-    remove_link(&m.msg, "email");
-  }
-
-  if (m.tosys == 0) {
-    session()->users()->ReadUser(&user, m.touser);
-    if (user.GetNumMailWaiting()) {
-      user.SetNumMailWaiting(user.GetNumMailWaiting() - 1);
-      session()->users()->WriteUser(&user, m.touser);
-    }
-    if (m.touser == 1) {
-      --fwaiting;
-    }
-  }
-  pFile->Seek(static_cast<long>(loc * sizeof(mailrec)), File::seekBegin);
-  m.touser = 0;
-  m.tosys = 0;
-  m.daten = 0xffffffff;
-  m.msg.storage_type = 0;
-  m.msg.stored_as = 0xffffffff;
-  pFile->Write(&m, sizeof(mailrec));
-  mailcheck = true;
-}
 
 void remove_post() {
   if (!iscan(session()->GetCurrentMessageArea())) {

@@ -38,6 +38,7 @@
 #include "bbs/common.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+#include "bbs/workspace.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"

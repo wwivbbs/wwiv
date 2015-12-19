@@ -39,6 +39,7 @@
 #include "bbs/pause.h"
 #include "bbs/subxtr.h"
 #include "bbs/wconstants.h"
+#include "bbs/workspace.h"
 #include "bbs/wstatus.h"
 #include "core/datafile.h"
 #include "core/inifile.h"

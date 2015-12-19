@@ -33,6 +33,7 @@
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/keycodes.h"
+#include "bbs/workspace.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
@@ -1056,7 +1057,6 @@ void HandleMessageLoad() {
     }
   }
 }
-
 
 void HandleMessageReply(int &nMessageNumber) {
   irt_sub[0] = 0;

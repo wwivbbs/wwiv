@@ -92,7 +92,6 @@ __EXTRN__ bool  bChatLine,
           outcom,
           okskey,
           okmacro,
-          use_workspace,
           ok_modem_stuff,
           x_only,
           returning;

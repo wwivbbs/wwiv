@@ -376,6 +376,9 @@
     <ClCompile Include="message_file.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="workspace.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -652,6 +655,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="uedit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="workspace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

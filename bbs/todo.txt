@@ -6,6 +6,7 @@
 * to try strip down all message base code in wwiv to have no external
   dependencies so it can get moved into sdk.`
 * make all wwiv datafile data into vector and not malloc'ed 
+* detangle global net_email_name (maybe it needs to be added to EmailData?)
 
 * Move bbs logic out of WLocalIO and into WSession (probably)
 * remove extra include statements from user.cpp
