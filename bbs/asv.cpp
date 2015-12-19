@@ -169,7 +169,7 @@ void asv() {
           strcpy(s1, (strstr(strupr(s), "SERVER")));
           if (wwiv::strings::IsEquals(s1, "SERVER")) {
             bout.nl();
-            bout << "|#5Is " << sysname << " a server in " << session()->GetNetworkName() << "? ";
+            bout << "|#5Is " << sysname << " a server in " << session()->network_name() << "? ";
             if (noyes()) {
               sysoplog("* Claims to run a network server.");
               reg = 2;
@@ -200,13 +200,13 @@ void asv() {
             break;
           }
         }
-        sprintf(s, "%s 1@%d (%s)", session()->GetNetworkName(), inode, sysname);
+        sprintf(s, "%s 1@%d (%s)", session()->network_name(), inode, sysname);
         s[40] = '\0';
         session()->user()->SetNote(s);
         session()->user()->SetName(s);
         properize(s);
-        ssm(1, 0, "%s validated as %s 1@%d on %s.", s, session()->GetNetworkName(), inode, fulldate());
-        sprintf(s1, "* Validated as %s 1@%d", session()->GetNetworkName(), inode);
+        ssm(1, 0, "%s validated as %s 1@%d on %s.", s, session()->network_name(), inode, fulldate());
+        sprintf(s1, "* Validated as %s 1@%d", session()->network_name(), inode);
         sysoplog(s1);
         sysoplog(s);
         session()->user()->SetStatusFlag(WUser::expert);
@@ -230,7 +230,7 @@ void asv() {
         } else {
           set_autoval(session()->advasv.reg_wwiv);
         }
-        sprintf(irt, "%s %s SysOp Auto Validation", syscfg.systemname, session()->GetNetworkName());
+        sprintf(irt, "%s %s SysOp Auto Validation", syscfg.systemname, session()->network_name());
         if (strlen(irt) > 60) {
           irt[60] = '\0';
         }

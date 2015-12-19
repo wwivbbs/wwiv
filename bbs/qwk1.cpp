@@ -476,9 +476,9 @@ void qwk_email_text(char *text, char *title, char *to) {
     } else {
       if (session()->max_net_num() > 1) {
         if (un == 0) {
-          sprintf(s2, "%s @%u.%s", net_email_name, sy, session()->GetNetworkName());
+          sprintf(s2, "%s @%u.%s", net_email_name, sy, session()->network_name());
         } else {
-          sprintf(s2, "%u @%u.%s", un, sy, session()->GetNetworkName());
+          sprintf(s2, "%u @%u.%s", un, sy, session()->network_name());
         }
       } else {
         if (un == 0) {
@@ -881,9 +881,9 @@ void qwk_post_text(char *text, char *title, int sub) {
     p.ownersys = 0;
     p.owneruser = static_cast<uint16_t>(session()->usernum);
     {
-      WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
+      WStatus* pStatus = session()->status_manager()->BeginTransaction();
       p.qscan = pStatus->IncrementQScanPointer();
-      session()->GetStatusManager()->CommitTransaction(pStatus);
+      session()->status_manager()->CommitTransaction(pStatus);
     }
     time_t now = time(nullptr);
     p.daten = static_cast<uint32_t>(now);
@@ -935,10 +935,10 @@ void qwk_post_text(char *text, char *title, int sub) {
     ++session()->user()->data.posttoday;
 
     {
-      WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
+      WStatus* pStatus = session()->status_manager()->BeginTransaction();
       pStatus->IncrementNumLocalPosts();
       pStatus->IncrementNumMessagesPostedToday();
-      session()->GetStatusManager()->CommitTransaction(pStatus);
+      session()->status_manager()->CommitTransaction(pStatus);
     }
 
     close_sub();

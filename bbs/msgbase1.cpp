@@ -108,7 +108,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
       nh.tosys = xnp.host;
     } else {
       nh.main_type = main_type_post;
-      const string filename = StringPrintf("%sn%s.net", session()->GetNetworkDataDirectory().c_str(), xnp.stype);
+      const string filename = StringPrintf("%sn%s.net", session()->network_directory().c_str(), xnp.stype);
       File file(filename);
       if (file.Open(File::modeBinary | File::modeReadOnly)) {
         int len1 = file.GetLength();
@@ -237,9 +237,9 @@ void post() {
   p.msg   = m;
   p.ownersys  = 0;
   p.owneruser = static_cast<unsigned short>(session()->usernum);
-  WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
+  WStatus* pStatus = session()->status_manager()->BeginTransaction();
   p.qscan = pStatus->IncrementQScanPointer();
-  session()->GetStatusManager()->CommitTransaction(pStatus);
+  session()->status_manager()->CommitTransaction(pStatus);
   p.daten = static_cast<uint32_t>(time(nullptr));
   if (session()->user()->IsRestrictionValidate()) {
     p.status = status_unvalidated;
@@ -288,7 +288,7 @@ void post() {
 
   session()->user()->SetNumMessagesPosted(session()->user()->GetNumMessagesPosted() + 1);
   session()->user()->SetNumPostsToday(session()->user()->GetNumPostsToday() + 1);
-  pStatus = session()->GetStatusManager()->BeginTransaction();
+  pStatus = session()->status_manager()->BeginTransaction();
   pStatus->IncrementNumMessagesPostedToday();
   pStatus->IncrementNumLocalPosts();
 
@@ -305,7 +305,7 @@ void post() {
     session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>
         (lStartTime));
   }
-  session()->GetStatusManager()->CommitTransaction(pStatus);
+  session()->status_manager()->CommitTransaction(pStatus);
   close_sub();
 
   session()->UpdateTopScreen();
@@ -383,7 +383,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
         && get_post(i)->qscan > qsc_p[session()->GetCurrentReadMessageArea()]) {
       scan(i, SCAN_OPTION_READ_MESSAGE, &nNextSubNumber, false);
     } else {
-      unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+      unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
       qsc_p[session()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
     }
 

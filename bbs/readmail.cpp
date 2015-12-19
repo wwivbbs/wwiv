@@ -189,7 +189,7 @@ bool read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, u
 
   if (!same_email(mloc + rec, m)) {
     pFileEmail->Close();
-    session()->GetStatusManager()->RefreshStatusCache();
+    session()->status_manager()->RefreshStatusCache();
     if (emchg) {
       resynch_email(mloc, mw, rec, m, del, stat);
     } else {
@@ -236,7 +236,7 @@ void add_netsubscriber(int system_number) {
   }
   strcpy(s1, s);
   char szNetworkFileName[ MAX_PATH ];
-  sprintf(szNetworkFileName, "%sn%s.net", session()->GetNetworkDataDirectory().c_str(), s);
+  sprintf(szNetworkFileName, "%sn%s.net", session()->network_directory().c_str(), s);
   if (!File::Exists(szNetworkFileName)) {
     bout.nl();
     bout << "|#6Subscriber file not found: " << szNetworkFileName << wwiv::endl;
@@ -244,7 +244,7 @@ void add_netsubscriber(int system_number) {
   }
   bout.nl();
   if (system_number) {
-    bout << "Add @" << system_number << "." << session()->GetNetworkName() << " to subtype " << s << "? ";
+    bout << "Add @" << system_number << "." << session()->network_name() << " to subtype " << s << "? ";
   }
   if (!system_number || !noyes()) {
     bout << "|#2System Number: ";
@@ -254,7 +254,7 @@ void add_netsubscriber(int system_number) {
     }
     system_number = atoi(s);
     if (!valid_system(system_number)) {
-      bout << "@" << system_number << " is not a valid system in " << session()->GetNetworkName() <<
+      bout << "@" << system_number << " is not a valid system in " << session()->network_name() <<
                          ".\r\n\n";
       return;
     }
@@ -706,7 +706,7 @@ void readmail(int mode) {
                         static_cast<long>(session()->user()->GetNumNetEmailSent());
             if (num_mail != num_mail1) {
               if (m.fromsys != 0) {
-                sprintf(s, "%s: %s", session()->GetNetworkName(),
+                sprintf(s, "%s: %s", session()->network_name(),
                         session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum));
               } else {
                 strcpy(s, session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum));
@@ -823,9 +823,9 @@ void readmail(int mode) {
             }
             p.msg.storage_type = (uint8_t)session()->current_sub().storage_type;
             savefile(b, &(p.msg), session()->current_sub().filename);
-            WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
+            WStatus* pStatus = session()->status_manager()->BeginTransaction();
             p.qscan = pStatus->IncrementQScanPointer();
-            session()->GetStatusManager()->CommitTransaction(pStatus);
+            session()->status_manager()->CommitTransaction(pStatus);
             if (session()->GetNumMessagesInCurrentMessageArea() >=
               session()->current_sub().maxmsgs) {
               i1 = 1;
@@ -842,10 +842,10 @@ void readmail(int mode) {
               delete_message(i2);
             }
             add_post(&p);
-            pStatus = session()->GetStatusManager()->BeginTransaction();
+            pStatus = session()->status_manager()->BeginTransaction();
             pStatus->IncrementNumMessagesPostedToday();
             pStatus->IncrementNumLocalPosts();
-            session()->GetStatusManager()->CommitTransaction(pStatus);
+            session()->status_manager()->CommitTransaction(pStatus);
             close_sub();
             tmp_disable_conf(false);
             iscan(session()->GetCurrentMessageArea());
@@ -867,7 +867,7 @@ void readmail(int mode) {
           break;
         }
         if (m.fromsys != 0) {
-          message = session()->GetNetworkName();
+          message = session()->network_name();
           message += ": ";
           message += session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum);
         } else {
@@ -945,13 +945,13 @@ void readmail(int mode) {
           if (user_number || system_number) {
             if (system_number) {
               if (system_number == 1 && user_number == 0 &&
-                  wwiv::strings::IsEqualsIgnoreCase(session()->GetNetworkName(), "Internet")) {
+                  wwiv::strings::IsEqualsIgnoreCase(session()->network_name(), "Internet")) {
                 strcpy(s1, net_email_name);
               } else if (session()->max_net_num() > 1) {
                 if (user_number) {
-                  sprintf(s1, "#%d @%d.%s", user_number, system_number, session()->GetNetworkName());
+                  sprintf(s1, "#%d @%d.%s", user_number, system_number, session()->network_name());
                 } else {
-                  sprintf(s1, "%s @%d.%s", net_email_name, system_number, session()->GetNetworkName());
+                  sprintf(s1, "%s @%d.%s", net_email_name, system_number, session()->network_name());
                 }
               } else {
                 if (user_number) {
@@ -1105,7 +1105,7 @@ void readmail(int mode) {
           if (num_mail != num_mail1) {
             string message;
             if (m.fromsys != 0) {
-              message = session()->GetNetworkName();
+              message = session()->network_name();
               message += ": ";
               message += session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum);
             } else {

@@ -358,8 +358,8 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
       }
     }
   }
-  if ((strncasecmp("internet", session()->GetNetworkName(), 8) == 0) ||
-      (strncasecmp("filenet", session()->GetNetworkName(), 7) == 0)) {
+  if ((strncasecmp("internet", session()->network_name(), 8) == 0) ||
+      (strncasecmp("filenet", session()->network_name(), 7) == 0)) {
     if (session()->usenetReferencesLine.length() > 0) {
       const string buf = StringPrintf("%c0RReferences: %s", CD, session()->usenetReferencesLine.c_str());
       ss << buf << crlf;

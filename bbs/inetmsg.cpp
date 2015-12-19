@@ -49,7 +49,7 @@ void get_user_ppp_addr() {
   session()->internetFullEmailAddress = wwiv::strings::StringPrintf("%s@%s",
       session()->internetEmailName.c_str(),
       session()->internetEmailDomain.c_str());
-  TextFile acctFile(session()->GetNetworkDataDirectory(), ACCT_INI, "rt");
+  TextFile acctFile(session()->network_directory(), ACCT_INI, "rt");
   char szLine[ 260 ];
   if (acctFile.IsOpen()) {
     while (acctFile.ReadLine(szLine, 255) && !found) {
@@ -196,7 +196,7 @@ void write_inet_addr(const char *internet_address, int user_number) {
   session()->set_net_num(getnetnum("FILEnet"));
   if (session()->net_num() != -1) {
     set_net_num(session()->net_num());
-    TextFile in(session()->GetNetworkDataDirectory(), ACCT_INI, "rt");
+    TextFile in(session()->network_directory(), ACCT_INI, "rt");
     TextFile out(syscfgovr.tempdir, ACCT_INI, "wt+");
     if (in.IsOpen() && out.IsOpen()) {
       char szLine[ 260 ];

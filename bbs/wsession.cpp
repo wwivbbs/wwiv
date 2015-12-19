@@ -106,7 +106,7 @@ WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app),
     m_nMessageAreaCache(0), m_nBeginDayNodeNumber(0), m_nMaxNumberMessageAreas(0), m_nMaxNumberFileAreas(0),
     m_nNumMessagesReadThisLogon(0), m_nNetworkNumber(0), m_nMaxNetworkNumber(0), m_nCurrentNetworkType(net_type_wwivnet),
     numbatch(0), numbatchdl(0),
-    numf(0), m_nNumMsgsInCurrentSub(0), num_dirs(0), num_sec(0), num_events(0),
+    numf(0), m_nNumMsgsInCurrentSub(0), num_dirs(0), num_events(0),
     num_sys_list(0), screenlinest(0), subchg(0), tagging(0), tagptr(0), titled(0), using_modem(0), m_bInternalZmodem(false),
     m_bExecLogSyncFoss(false), m_nExecChildProcessWaitTime(0), m_bNewScanAtLogin(false),
     usernum(0), local_io_(localIO), capture_(new wwiv::bbs::Capture()),
@@ -202,13 +202,13 @@ void WSession::DisplaySysopWorkingIndicator(bool displayWait) {
 
 void WSession::UpdateTopScreen() {
   if (!GetWfcStatus()) {
-    unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
-    session()->localIO()->UpdateTopScreen(pStatus.get(), session(), GetInstanceNumber());
+    unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
+    session()->localIO()->UpdateTopScreen(pStatus.get(), session(), instance_number());
   }
 }
 
-const char* WSession::GetNetworkName() const { return net_networks[m_nNetworkNumber].name; }
-const std::string WSession::GetNetworkDataDirectory() const { return std::string(net_networks[m_nNetworkNumber].dir); }
+const char* WSession::network_name() const { return net_networks[m_nNetworkNumber].name; }
+const std::string WSession::network_directory() const { return std::string(net_networks[m_nNetworkNumber].dir); }
 
 
 #if !defined ( __unix__ )
@@ -264,7 +264,7 @@ int WSession::doWFCEvents() {
   int lokb;
   LocalIO* io = localIO();
 
-  unique_ptr<WStatus> last_date_status(GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> last_date_status(status_manager()->GetStatus());
   do {
     write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
     set_net_num(0);
@@ -486,7 +486,7 @@ int WSession::doWFCEvents() {
       case 'L':
         if (AllowLocalSysop()) {
           wfc_cls();
-          unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
+          unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
           print_local_file(pStatus->GetLogFileName(0));
         }
         break;
@@ -583,7 +583,7 @@ int WSession::doWFCEvents() {
       case 'Y':
         if (AllowLocalSysop()) {
           wfc_cls();
-          unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
+          unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
           print_local_file(pStatus->GetLogFileName(1));
         }
         break;
@@ -664,7 +664,7 @@ int WSession::LocalLogon() {
           break;
         }
       }
-      if (!fast || m_unx > GetStatusManager()->GetUserCount()) {
+      if (!fast || m_unx > status_manager()->GetUserCount()) {
         return lokb;
       }
 
@@ -760,7 +760,7 @@ void WSession::ExitBBSImpl(int nExitLevel) {
     // in the logs that don't correspond to sessions every being created (network probers, etc).
     sysoplog("", false);
     sysoplogfi(false, "WWIV %s, inst %u, taken down at %s on %s with exit code %d.",
-      wwiv_version, GetInstanceNumber(), times(), fulldate(), nExitLevel);
+      wwiv_version, instance_number(), times(), fulldate(), nExitLevel);
     sysoplog("", false);
   }
   catsl();
@@ -1059,7 +1059,7 @@ int WSession::Run(int argc, char *argv[]) {
   }
 
   // Add the environment variable or overwrite the existing one
-  const string env_str = std::to_string(GetInstanceNumber());
+  const string env_str = std::to_string(instance_number());
   set_environment_variable("WWIV_INSTANCE", env_str);
 #ifndef _WIN32
   // TODO(rushfan): Don't think we need this, but need to make sure.
@@ -1095,7 +1095,7 @@ int WSession::Run(int argc, char *argv[]) {
   }
 
   if (event_only) {
-    unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
+    unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
     cleanup_events();
     if (!IsEquals(date(), pStatus->GetLastDate())) {
       // This may be another node, but the user explicitly wanted to run the beginday

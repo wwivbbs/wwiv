@@ -252,7 +252,7 @@ void list_users(int mode) {
   int color   = 3;
   session()->WriteCurrentUser();
   write_qscn(session()->usernum, qsc, false);
-  session()->GetStatusManager()->RefreshStatusCache();
+  session()->status_manager()->RefreshStatusCache();
 
   File userList(syscfg.datadir, USER_LST);
   int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
@@ -382,7 +382,7 @@ void list_users(int mode) {
         switch (ch) {
         case 'Q':
           abort = true;
-          i = session()->GetStatusManager()->GetUserCount();
+          i = session()->status_manager()->GetUserCount();
           break;
         case SPACE:
         case RETURN:

@@ -59,7 +59,7 @@ static void rename_pend(const string& directory, const string& filename) {
 }
 
 static bool checkup2(const time_t tFileTime, const char *file_name) {
-  File file(session()->GetNetworkDataDirectory(), file_name);
+  File file(session()->network_directory(), file_name);
 
   if (file.Open(File::modeReadOnly)) {
     time_t tNewFileTime = file.last_write_time();
@@ -70,8 +70,8 @@ static bool checkup2(const time_t tFileTime, const char *file_name) {
 }
 
 static bool check_bbsdata() {
-  unique_ptr<WStatus> wwiv_status_ro(session()->GetStatusManager()->GetStatus());
-  File bbsdataNet(session()->GetNetworkDataDirectory().c_str(), BBSDATA_NET);
+  unique_ptr<WStatus> wwiv_status_ro(session()->status_manager()->GetStatus());
+  File bbsdataNet(session()->network_directory().c_str(), BBSDATA_NET);
   if (bbsdataNet.Open(File::modeReadOnly)) {
     time_t tFileTime = bbsdataNet.last_write_time();
     bbsdataNet.Close();
@@ -81,20 +81,20 @@ static bool check_bbsdata() {
       return false;
     }
   }
-  if (!File::Exists(session()->GetNetworkDataDirectory(), BBSLIST_NET)) {
+  if (!File::Exists(session()->network_directory(), BBSLIST_NET)) {
     return false;
   }
-  if (!File::Exists(session()->GetNetworkDataDirectory().c_str(), CONNECT_NET)) {
+  if (!File::Exists(session()->network_directory().c_str(), CONNECT_NET)) {
     return false;
   }
-  if (!File::Exists(session()->GetNetworkDataDirectory().c_str(), CALLOUT_NET)) {
+  if (!File::Exists(session()->network_directory().c_str(), CALLOUT_NET)) {
     return false;
   }
   const string network3 = StringPrintf("network3 Y .%d", session()->net_num());
   ExecuteExternalProgram(network3, EFLAG_NETPROG);
-  WStatus* wwiv_status = session()->GetStatusManager()->BeginTransaction();
+  WStatus* wwiv_status = session()->status_manager()->BeginTransaction();
   wwiv_status->IncrementFileChangedFlag(WStatus::fileChangeNet);
-  session()->GetStatusManager()->CommitTransaction(wwiv_status);
+  session()->status_manager()->CommitTransaction(wwiv_status);
 
   zap_call_out_list();
   zap_contacts();
@@ -157,19 +157,19 @@ int cleanup_net1() {
         ok2 = 0;
         ok = 0;
         WFindFile fnd;
-        sprintf(s, "%sp*.%3.3d", session()->GetNetworkDataDirectory().c_str(), session()->GetInstanceNumber());
+        sprintf(s, "%sp*.%3.3d", session()->network_directory().c_str(), session()->instance_number());
         bool bFound = fnd.open(s, 0);
         while (bFound) {
           ok = 1;
           ++i;
-          rename_pend(session()->GetNetworkDataDirectory(), fnd.GetFileName());
+          rename_pend(session()->network_directory(), fnd.GetFileName());
           anynew = 1;
           bFound = fnd.next();
         }
 
-        if (session()->GetInstanceNumber() == 1) {
+        if (session()->instance_number() == 1) {
           if (!ok) {
-            sprintf(s, "%sp*.net", session()->GetNetworkDataDirectory().c_str());
+            sprintf(s, "%sp*.net", session()->network_directory().c_str());
             WFindFile fnd_net;
             ok = fnd_net.open(s, 0);
           }
@@ -194,7 +194,7 @@ int cleanup_net1() {
             }
             ok2 = 1;
           }
-          sprintf(s, "%s%s", session()->GetNetworkDataDirectory().c_str(), LOCAL_NET);
+          sprintf(s, "%s%s", session()->network_directory().c_str(), LOCAL_NET);
           if (File::Exists(s)) {
 #ifndef __unix__
             if (session()->wfc_status == 0) {
@@ -216,7 +216,7 @@ int cleanup_net1() {
               any = 1;
             }
             ok2 = 1;
-            session()->GetStatusManager()->RefreshStatusCache();
+            session()->status_manager()->RefreshStatusCache();
             session()->SetCurrentReadMessageArea(-1);
             session()->ReadCurrentUser(1);
             fwaiting = session()->user()->GetNumMailWaiting();
@@ -233,7 +233,7 @@ int cleanup_net1() {
       }
     }
   }
-  if (anynew && (session()->GetInstanceNumber() != 1)) {
+  if (anynew && (session()->instance_number() != 1)) {
     send_inst_cleannet();
   }
   return i;
@@ -280,7 +280,7 @@ void do_callout(int sn) {
         run_exp();
         bout << "|#7Calling out to: |#2" << csne->name << " - ";
         if (session()->max_net_num() > 1) {
-          bout << session()->GetNetworkName() << " ";
+          bout << session()->network_name() << " ";
         }
         bout << "@" << sn << wwiv::endl;
         const string regions_filename = StringPrintf("%s%s%c%s.%-3u", syscfg.datadir,
@@ -302,7 +302,7 @@ void do_callout(int sn) {
              << "|#7" << std::string(80, 205) << "|#0..." << wwiv::endl;
         ExecuteExternalProgram(s, EFLAG_NETPROG);
         zap_contacts();
-        session()->GetStatusManager()->RefreshStatusCache();
+        session()->status_manager()->RefreshStatusCache();
         last_time_c = static_cast<int>(tCurrentTime);
         global_xx = false;
         cleanup_net();
@@ -417,7 +417,7 @@ void attempt_callout() {
   net_call_out_rec *con;
   net_contact_rec *ncn;
 
-  session()->GetStatusManager()->RefreshStatusCache();
+  session()->status_manager()->RefreshStatusCache();
 
   // We always want to call out, so set net_only to be true.
   bool net_only = true;
@@ -678,7 +678,7 @@ void print_pending_list() {
 
         bout.bprintf("|#7\xB3 %-3s |#7\xB3 |#2%-8.8s |#7\xB3 |#2%5u |#7\xB3|#2%8s |#7\xB3|#2%8s "
             "|#7\xB3|#2%5s |#7\xB3|#2%4d |#7\xB3|#2%13.13s |#7\xB3|#2%4d |#7\xB3\r\n",
-            s2, session()->GetNetworkName(), ncn[i2].systemnumber, s3, s4, s5, ncn[i2].numfails, s1, i3);
+            s2, session()->network_name(), ncn[i2].systemnumber, s3, s4, s5, ncn[i2].numfails, s1, i3);
         if (!session()->user()->HasPause() && ((lines++) == 20)) {
           pausescr();
           lines = 0;
@@ -694,14 +694,14 @@ void print_pending_list() {
       continue;
     }
 
-    File deadNetFile(session()->GetNetworkDataDirectory(), DEAD_NET);
+    File deadNetFile(session()->network_directory(), DEAD_NET);
     if (deadNetFile.Open(File::modeReadOnly | File::modeBinary)) {
       long lFileSize = deadNetFile.GetLength();
       deadNetFile.Close();
       sprintf(s3, "%ldk", (lFileSize + 1023) / 1024);
       bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 |#2------- |#7\xB3|#2%5s "
                    "|#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3|#2 --- |#7\xB3\r\n",
-          session()->GetNetworkName(), s3);
+          session()->network_name(), s3);
     }
   }
 
@@ -712,14 +712,14 @@ void print_pending_list() {
       continue;
     }
 
-    File checkNetFile(session()->GetNetworkDataDirectory(), CHECK_NET);
+    File checkNetFile(session()->network_directory(), CHECK_NET);
     if (checkNetFile.Open(File::modeReadOnly | File::modeBinary)) {
       long lFileSize = checkNetFile.GetLength();
       checkNetFile.Close();
       sprintf(s3, "%ldk", (lFileSize + 1023) / 1024);
       strcat(s3, "k");
       bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6CHECK |#7\xB3 |#2------- |#7\xB3 |#2------- |#7\xB3|#2%5s |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3|#2 --- |#7\xB3\r\n",
-                                        session()->GetNetworkName(), s3);
+                                        session()->network_name(), s3);
     }
   }
 
@@ -837,7 +837,7 @@ void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char
       nh->length += strlen(pszAuthorName) + 1;
     }
     const string packet_filename = StringPrintf("%sp1%s",
-      session()->net_networks[nNetNumber].dir, session()->GetNetworkExtension().c_str());
+      session()->net_networks[nNetNumber].dir, session()->network_extension().c_str());
     File packetFile(packet_filename);
     if (packetFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       packetFile.Seek(0L, File::seekEnd);
@@ -955,7 +955,7 @@ static void print_call(int sn, int nNetNumber, int i2) {
   const string areacode= describe_area_code(atoi(csne->phone));
   const string stripped = stripcolors(areacode);
   session()->localIO()->LocalXYAPrintf(58, 19, color, "%-17.17s", stripped.c_str());
-  session()->localIO()->LocalXYAPrintf(14, 3, color, "%-11.16s", session()->GetNetworkName());
+  session()->localIO()->LocalXYAPrintf(14, 3, color, "%-11.16s", session()->network_name());
 }
 
 static void fill_call(int color, int row, int netmax, std::map<int, int>& nodenum) {
@@ -1293,7 +1293,7 @@ void force_callout(int dw) {
             odc[odci - 1] = static_cast<char>(odci + '0');
             odc[odci] = 0;
           }
-          if (IsEqualsIgnoreCase(session()->net_networks[netw].name, session()->GetNetworkName())) {
+          if (IsEqualsIgnoreCase(session()->net_networks[netw].name, session()->network_name())) {
             nitu = i;
           }
         }
@@ -1391,7 +1391,7 @@ long *next_system_reg(int ts) {
   } else {
     for (int i = 0; i < session()->num_sys_list; i++) {
       if (csn_index[i] == ts) {
-        File bbsdataReg(session()->GetNetworkDataDirectory(), BBSDATA_REG);
+        File bbsdataReg(session()->network_directory(), BBSDATA_REG);
         bbsdataReg.Open(File::modeBinary | File::modeReadOnly);
         bbsdataReg.Seek(i * sizeof(long), File::seekBegin);
         bbsdataReg.Read(&reg_num, sizeof(long));
@@ -1417,8 +1417,8 @@ void run_exp() {
   set_net_num(nFileNetNetworkNumber);
 
   char szExpCommand[MAX_PATH];
-  sprintf(szExpCommand, "exp s32767.net %s %d %s %s %s", session()->GetNetworkDataDirectory().c_str(), net_sysnum,
-          session()->internetEmailName.c_str(), session()->internetEmailDomain.c_str(), session()->GetNetworkName());
+  sprintf(szExpCommand, "exp s32767.net %s %d %s %s %s", session()->network_directory().c_str(), net_sysnum,
+          session()->internetEmailName.c_str(), session()->internetEmailDomain.c_str(), session()->network_name());
   ExecuteExternalProgram(szExpCommand, EFLAG_NETPROG);
 
   set_net_num(nOldNetworkNumber);

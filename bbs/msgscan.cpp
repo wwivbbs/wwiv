@@ -382,7 +382,7 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
                << session()->subboards[usub[session()->GetCurrentMessageArea()].subnum].name
                << " as read? ";
           if (yesno()) {
-            unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+            unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
             qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = pStatus->GetQScanPointer() - 1L;
           }
         }
@@ -574,7 +574,7 @@ void GetScanReadPrompts(int nMessageNumber, char *pszReadPrompt, char *pszSubNam
     }
   } else {
     if (!session()->current_xsub().nets.empty()) {
-      sprintf(szLocalNetworkName, "%s", session()->GetNetworkName());
+      sprintf(szLocalNetworkName, "%s", session()->network_name());
     } else {
       set_net_num(0);
       sprintf(szLocalNetworkName, "%s", "Local");
@@ -995,9 +995,9 @@ void HandleMessageMove(int &nMessageNumber) {
       open_sub(true);
       p2.msg.storage_type = static_cast<unsigned char>(session()->current_sub().storage_type);
       savefile(b, &(p2.msg), (session()->current_sub().filename));
-      WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
+      WStatus* pStatus = session()->status_manager()->BeginTransaction();
       p2.qscan = pStatus->IncrementQScanPointer();
-      session()->GetStatusManager()->CommitTransaction(pStatus);
+      session()->status_manager()->CommitTransaction(pStatus);
       if (session()->GetNumMessagesInCurrentMessageArea() >=
         session()->current_sub().maxmsgs) {
         int nTempMsgNum = 1;

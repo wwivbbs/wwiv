@@ -290,7 +290,7 @@ IniFile* WSession::ReadINIFile() {
   }
 
   // initialize ini communication
-  const string instance_name = StringPrintf("WWIV-%u", GetInstanceNumber());
+  const string instance_name = StringPrintf("WWIV-%u", instance_number());
   IniFile* ini(new IniFile(FilePath(GetHomeDir(), WWIV_INI), instance_name, INI_TAG));
   if (ini->IsOpen()) {
     // found something
@@ -490,7 +490,7 @@ bool WSession::ReadConfig() {
     AbortBBS();
   }
 
-  bool config_ovr_read = ReadConfigOverlayFile(GetInstanceNumber(),ini.get());
+  bool config_ovr_read = ReadConfigOverlayFile(instance_number(),ini.get());
   if (!config_ovr_read) {
     return false;
   }
@@ -832,7 +832,7 @@ bool WSession::read_language() {
     languages.emplace_back(lang);
   }
 
-  SetCurrentLanguageNumber(-1);
+  set_language_number(-1);
   if (!set_language(0)) {
     std::clog << "You need the default language installed to run the BBS." << std::endl;
     return false;
@@ -841,16 +841,9 @@ bool WSession::read_language() {
 }
 
 void WSession::read_gfile() {
-  if (gfilesec != nullptr) {
-    free(gfilesec);
-    gfilesec = nullptr;
-  }
-  gfilesec = static_cast<gfiledirrec *>(BbsAllocA(static_cast<long>(max_gfilesec * sizeof(gfiledirrec))));
-  File file(syscfg.datadir, GFILE_DAT);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    num_sec = 0;
-  } else {
-    num_sec = file.Read(gfilesec, max_gfilesec * sizeof(gfiledirrec)) / sizeof(gfiledirrec);
+  DataFile<gfiledirrec> file(syscfg.datadir, GFILE_DAT);
+  if (file) {
+    file.ReadVector(gfilesec, max_gfilesec);
   }
 }
 
@@ -955,7 +948,6 @@ void WSession::InitializeBBS() {
   gat = static_cast<unsigned short *>(BbsAllocA(2048 * sizeof(short)));
 
   XINIT_PRINTF("Reading Gfiles.");
-  gfilesec = nullptr;
   read_gfile();
 
   XINIT_PRINTF("Reading user names.");
@@ -1046,15 +1038,15 @@ void WSession::InitializeBBS() {
   qsc_q = qsc_n + (GetMaxNumberFileAreas() + 31) / 32;
   qsc_p = qsc_q + (GetMaxNumberMessageAreas() + 31) / 32;
 
-  network_extension = ".net";
+  network_extension_ = ".net";
   const string wwiv_instance(environment_variable("WWIV_INSTANCE"));
   if (!wwiv_instance.empty()) {
-    int nTempInstanceNumber = atoi(wwiv_instance.c_str());
-    if (nTempInstanceNumber > 0) {
-      network_extension = StringPrintf(".%3.3d", nTempInstanceNumber);
+    int inst_num = atoi(wwiv_instance.c_str());
+    if (inst_num > 0) {
+      network_extension_ = StringPrintf(".%3.3d", inst_num);
       // Fix... Set the global instance variable to match this.  When you run WWIV with the -n<instance> parameter
       // it sets the WWIV_INSTANCE environment variable, however it wasn't doing the reverse.
-      instance_number_ = nTempInstanceNumber;
+      instance_number_ = inst_num;
     }
   }
 
@@ -1074,12 +1066,10 @@ void WSession::InitializeBBS() {
   if (!m_bUserAlreadyOn) {
     sysoplog("", false);
     sysoplogfi(false, "WWIV %s%s, inst %ld, brought up at %s on %s.", wwiv_version, beta_version, 
-        GetInstanceNumber(), times(), fulldate());
+        instance_number(), times(), fulldate());
   }
-  if (GetInstanceNumber() > 1) {
-    char szFileName[MAX_PATH];
-    snprintf(szFileName, sizeof(szFileName), "%s.%3.3u", WWIV_NET_NOEXT, GetInstanceNumber());
-    File::Remove(szFileName);
+  if (instance_number() > 1) {
+    File::Remove(StringPrintf("%s.%3.3u", WWIV_NET_NOEXT, instance_number()));
   } else {
     File::Remove(WWIV_NET_DAT);
   }

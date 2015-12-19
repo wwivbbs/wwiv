@@ -1293,6 +1293,6 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
 void Win32ConsoleIO::UpdateNativeTitleBar() {
   // Set console title
   std::stringstream consoleTitleStream;
-  consoleTitleStream << "WWIV Node " << session()->GetInstanceNumber() << " (" << syscfg.systemname << ")";
+  consoleTitleStream << "WWIV Node " << session()->instance_number() << " (" << syscfg.systemname << ")";
   SetConsoleTitle(consoleTitleStream.str().c_str());
 }

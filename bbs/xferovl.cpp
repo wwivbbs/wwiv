@@ -502,10 +502,10 @@ bool upload_file(const char *file_name, int directory_num, const char *descripti
     FileAreaSetRecord(fileDownload, 0);
     fileDownload.Write(&u1, sizeof(uploadsrec));
     fileDownload.Close();
-    WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
+    WStatus *pStatus = session()->status_manager()->BeginTransaction();
     pStatus->IncrementNumUploadsToday();
     pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
-    session()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->status_manager()->CommitTransaction(pStatus);
     sysoplogf("+ \"%s\" uploaded on %s", u.filename, d.name);
     session()->UpdateTopScreen();
   }

@@ -1134,9 +1134,9 @@ void print_affil(WUser *pUser) {
   bout << "|#2   Sysp    : |#1";
   if (csne) {
     bout << "@" << pUser->GetHomeSystemNumber() << ", " << csne->name << ", on " <<
-                       session()->GetNetworkName() << ".";
+                       session()->network_name() << ".";
   } else {
-    bout << "@" << pUser->GetHomeSystemNumber() << ", <UNKNOWN>, on " << session()->GetNetworkName() <<
+    bout << "@" << pUser->GetHomeSystemNumber() << ", <UNKNOWN>, on " << session()->network_name() <<
                        ".";
   }
   bout.nl(2);

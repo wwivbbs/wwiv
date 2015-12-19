@@ -157,7 +157,7 @@ static int ShowLoginAndGetUserNumber() {
   if (!user_name.empty()) {
     bout << "Searching...";
     bool abort = false;
-    for (int i = 1; i < session()->GetStatusManager()->GetUserCount() && !hangup && !abort; i++) {
+    for (int i = 1; i < session()->status_manager()->GetUserCount() && !hangup && !abort; i++) {
       if (i % 25 == 0) {   // changed from 15 since computers are faster now-a-days
         bout << ".";
       }
@@ -238,19 +238,19 @@ static void ExecuteWWIVNetworkRequest() {
     return;
   }
 
-  session()->GetStatusManager()->RefreshStatusCache();
+  session()->status_manager()->RefreshStatusCache();
   time_t lTime = time(nullptr);
   if (session()->usernum == -2) {
     std::stringstream networkCommand;
     networkCommand << "network /B" << modem_speed << " /T" << lTime << " /F0";
     write_inst(INST_LOC_NET, 0, INST_FLAGS_NONE);
     ExecuteExternalProgram(networkCommand.str(), EFLAG_NONE);
-    if (session()->GetInstanceNumber() != 1) {
+    if (session()->instance_number() != 1) {
       send_inst_cleannet();
     }
     set_net_num(0);
   }
-  session()->GetStatusManager()->RefreshStatusCache();
+  session()->status_manager()->RefreshStatusCache();
   hangup = true;
   session()->remoteIO()->dtr(false);
   global_xx = false;
@@ -425,10 +425,10 @@ static void UpdateUserStatsForLogin() {
     session()->SetCurrentFileArea(0);
   }
   if (session()->GetEffectiveSl() != 255 && !guest_user) {
-    WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
+    WStatus* pStatus = session()->status_manager()->BeginTransaction();
     pStatus->IncrementCallerNumber();
     pStatus->IncrementNumCallsToday();
-    session()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->status_manager()->CommitTransaction(pStatus);
   }
 }
 
@@ -493,7 +493,7 @@ static string copy_line(char *pszWholeBuffer, long *plBufferPtr, long lBufferLen
 }
 
 static void UpdateLastOnFileAndUserLog() {
-  unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   const string laston_txt_filename = StrCat(syscfg.gfilesdir, LASTON_TXT);
   long len;
   unique_ptr<char[], void (*)(void*)> ss(get_file(laston_txt_filename, &len), &std::free);
@@ -538,7 +538,7 @@ static void UpdateLastOnFileAndUserLog() {
         fulldate(),
         session()->GetCurrentSpeed().c_str(),
         session()->user()->GetTimesOnToday(),
-        session()->GetInstanceNumber());
+        session()->instance_number());
 
     sysoplog("", false);
     sysoplog(stripcolors(sysop_log_line), false);
@@ -570,7 +570,7 @@ static void UpdateLastOnFileAndUserLog() {
           "|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
           pStatus->GetCallerNumber(),
           session()->user()->GetUserNameAndNumber(session()->usernum),
-          cur_lang_name,
+          session()->cur_lang_name.c_str(),
           times(),
           fulldate(),
           session()->GetCurrentSpeed().c_str(),
@@ -739,7 +739,7 @@ static void DisplayUserLoginInformation() {
   bout << "|#9System is|#0......... |#2WWIV " << wwiv_version << beta_version << "  " << wwiv::endl;
 
   /////////////////////////////////////////////////////////////////////////
-  session()->GetStatusManager()->RefreshStatusCache();
+  session()->status_manager()->RefreshStatusCache();
   for (int i = 0; i < session()->max_net_num(); i++) {
     if (session()->net_networks[i].sysnum) {
       sprintf(s1, "|#9%s node|#0%s|#2 @%u", session()->net_networks[i].name, charstr(13 - strlen(session()->net_networks[i].name), '.'),
@@ -753,14 +753,14 @@ static void DisplayUserLoginInformation() {
           s1[i1] = ' ';
         }
         s1[i1] = '\0';
-        std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+        std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
         bout << s1 << "(net" << pStatus->GetNetworkVersion() << ")\r\n";
       }
     }
   }
 
   bout << "|#9OS|#0................ |#2" << wwiv::os::os_version_string() << wwiv::endl;
-  bout << "|#9Instance|#0.......... |#2" << session()->GetInstanceNumber() << "\r\n\n";
+  bout << "|#9Instance|#0.......... |#2" << session()->instance_number() << "\r\n\n";
   if (session()->user()->GetForwardUserNumber()) {
     if (session()->user()->GetForwardSystemNumber() != 0) {
       set_net_num(session()->user()->GetForwardNetNumber());
@@ -773,7 +773,7 @@ static void DisplayUserLoginInformation() {
           bout << "#" << session()->user()->GetForwardUserNumber()
                << " @"
                << session()->user()->GetForwardSystemNumber()
-               << "." << session()->GetNetworkName() << "."
+               << "." << session()->network_name() << "."
                << wwiv::endl;
         } else {
           bout << "#" << session()->user()->GetForwardUserNumber() << " @"
@@ -961,10 +961,10 @@ void logoff() {
   session()->user()->SetTimeOnToday(session()->user()->GetTimeOnToday() + static_cast<float>
       (dTimeOnNow - extratimecall));
   {
-    WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
+    WStatus* pStatus = session()->status_manager()->BeginTransaction();
     int nActiveToday = pStatus->GetMinutesActiveToday();
     pStatus->SetMinutesActiveToday(nActiveToday + static_cast<unsigned short>(dTimeOnNow / MINUTES_PER_HOUR_FLOAT));
-    session()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->status_manager()->CommitTransaction(pStatus);
   }
   if (g_flags & g_flag_scanned_files) {
     session()->user()->SetNewScanDateNumber(session()->user()->GetLastOnDateNumber());
@@ -1006,9 +1006,9 @@ void logoff() {
         }
       }
       pFileEmail->SetLength(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w));
-      WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
+      WStatus *pStatus = session()->status_manager()->BeginTransaction();
       pStatus->IncrementFileChangedFlag(WStatus::fileChangeEmail);
-      session()->GetStatusManager()->CommitTransaction(pStatus);
+      session()->status_manager()->CommitTransaction(pStatus);
       pFileEmail->Close();
     }
   } else {

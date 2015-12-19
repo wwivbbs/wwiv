@@ -288,7 +288,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
       }
     }
 
-    unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+    unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
     qsc_p[session()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
     session()->SetCurrentMessageArea(os);
   } else {
@@ -372,13 +372,13 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
   if (p->qscan > qsc_p[session()->GetCurrentReadMessageArea()]) { // Update qscan pointer right here
     qsc_p[session()->GetCurrentReadMessageArea()] = p->qscan;  // And here
   }
-  WStatus* pStatus1 = session()->GetStatusManager()->GetStatus();
+  WStatus* pStatus1 = session()->status_manager()->GetStatus();
   uint32_t lQScanPtr = pStatus1->GetQScanPointer();
   delete pStatus1;
   if (p->qscan >= lQScanPtr) {
-    WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
+    WStatus* pStatus = session()->status_manager()->BeginTransaction();
     pStatus->SetQScanPointer(p->qscan + 1);
-    session()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->status_manager()->CommitTransaction(pStatus);
   }
 }
 

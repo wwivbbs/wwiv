@@ -84,9 +84,9 @@ static void save_subs() {
   for (int nDelNetNum = 0; nDelNetNum < session()->max_net_num(); nDelNetNum++) {
     set_net_num(nDelNetNum);
 
-    File::Remove(session()->GetNetworkDataDirectory(), ALLOW_NET);
-    File::Remove(session()->GetNetworkDataDirectory(), SUBS_PUB);
-    File::Remove(session()->GetNetworkDataDirectory(), NNALL_NET);
+    File::Remove(session()->network_directory(), ALLOW_NET);
+    File::Remove(session()->network_directory(), SUBS_PUB);
+    File::Remove(session()->network_directory(), NNALL_NET);
   }
 
   set_net_num(nSavedNetNum);
@@ -641,11 +641,11 @@ static void insert_sub(int n) {
     session()->subboards.insert(it, r);
   }
   {
-    xtrasubsrec r{};
-    memset(&r, 0, sizeof(xtrasubsrec));
+    xtrasubsrec xr{};
+    memset(&xr, 0, sizeof(xtrasubsrec));
     auto it = session()->xsubs.begin();
     std::advance(it, n);
-    session()->xsubs.insert(it, r);
+    session()->xsubs.insert(it, xr);
   }
 
   int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
@@ -761,7 +761,7 @@ void boardedit() {
   }
   showsubs();
   bool done = false;
-  session()->GetStatusManager()->RefreshStatusCache();
+  session()->status_manager()->RefreshStatusCache();
   do {
     bout.nl();
     bout << "|#7(Q=Quit) (D)elete, (I)nsert, (M)odify, (S)wapSubs : ";

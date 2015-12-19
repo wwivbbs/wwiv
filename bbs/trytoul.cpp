@@ -414,10 +414,10 @@ int try_to_ul_wh(char *file_name) {
 
   session()->user()->SetUploadK(session()->user()->GetUploadK() + bytes_to_k(u.numbytes));
 
-  WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
+  WStatus *pStatus = session()->status_manager()->BeginTransaction();
   pStatus->IncrementNumUploadsToday();
   pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
-  session()->GetStatusManager()->CommitTransaction(pStatus);
+  session()->status_manager()->CommitTransaction(pStatus);
   sysoplogf("+ \"%s\" uploaded on %s", u.filename, directories[dn].name);
   return 0;                                 // This means success
 }

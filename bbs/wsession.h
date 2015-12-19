@@ -108,8 +108,8 @@ public:
   bool reset_local_io(LocalIO* wlocal_io);
   wwiv::bbs::Capture* capture() { return capture_.get(); }
   const std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
-  int  GetInstanceNumber() const { return instance_number_; }
-  const std::string& GetNetworkExtension() const { return network_extension; }
+  int  instance_number() const { return instance_number_; }
+  const std::string& network_extension() const { return network_extension_; }
 
   void UpdateTopScreen();
 
@@ -151,8 +151,8 @@ public:
 
   // This is used in sprintf in many places, so we return a char*
   // instead of a string.
-  const char* GetNetworkName() const;
-  const std::string GetNetworkDataDirectory() const;
+  const char* network_name() const;
+  const std::string network_directory() const;
 
   bool IsMessageThreadingEnabled() const { return m_bThreadSubs; }
   void SetMessageThreadingEnabled(bool b) { m_bThreadSubs = b; }
@@ -163,8 +163,14 @@ public:
   bool IsUserOnline() const { return m_bUserOnline; }
   void SetUserOnline(bool b) { m_bUserOnline = b; }
 
-  int  GetCurrentLanguageNumber() const { return m_nCurrentLanguageNumber; }
-  void SetCurrentLanguageNumber(int n) { m_nCurrentLanguageNumber = n; }
+  int  language_number() const { return m_nCurrentLanguageNumber; }
+  void set_language_number(int n) { 
+    m_nCurrentLanguageNumber = n; 
+    if (n >= 0 && n <= static_cast<int>(languages.size())) {
+      cur_lang_name = languages[n].name;
+      language_dir = languages[n].dir;
+    }
+  }
 
   bool IsInternetUseRealNames() const { return m_bInternetUseRealNames; }
   void SetInternetUseRealNames(bool b) { m_bInternetUseRealNames = b; }
@@ -234,7 +240,7 @@ public:
   bool internal_qwk_enabled() const { return internal_qwk_enabled_; }
   void set_internal_qwk_enabled(bool internal_qwk_enabled) { internal_qwk_enabled_ = internal_qwk_enabled; }
 
-  StatusMgr* GetStatusManager() { return statusMgr.get(); }
+  StatusMgr* status_manager() { return statusMgr.get(); }
   WUserManager* users() { return userManager.get(); }
 
 
@@ -352,7 +358,7 @@ private:
   int             m_nOkLevel;
   int             m_nErrorLevel;
   int             instance_number_;
-  std::string     network_extension;
+  std::string     network_extension_;
   double          last_time;
   bool            m_bUserAlreadyOn;
   bool            m_bNeedToCleanNetwork;
@@ -415,7 +421,6 @@ private:
               m_nMaxNetworkNumber,
               numf,
               num_dirs,
-              num_sec,
               num_events,
               num_sys_list,
               screenlinest,
@@ -437,7 +442,7 @@ private:
   bool m_bInternetUseRealNames;
 
   std::string language_dir;
-  char *cur_lang_name;
+  std::string cur_lang_name;
 
   int wfc_status;
   int usernum;
@@ -471,6 +476,7 @@ public:
   std::vector<subboardrec> subboards;
   std::vector<xtrasubsrec> xsubs;
   std::vector<net_networks_rec> net_networks;
+  std::vector<gfiledirrec> gfilesec;
 
 
 };
