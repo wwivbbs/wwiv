@@ -60,7 +60,13 @@ static void save_subs() {
     }
   }
 
-  File::Remove(syscfg.datadir, SUBS_XTR);
+
+  // Backup subs.xtr
+  const string subs_xtr_old_name = StrCat(SUBS_XTR, ".old");
+  File::Remove(syscfg.datadir, subs_xtr_old_name);
+  File subs_xtr(syscfg.datadir, SUBS_XTR);
+  File subs_xtr_old(syscfg.datadir, subs_xtr_old_name);
+  File::Move(subs_xtr.full_pathname(), subs_xtr_old.full_pathname());
 
   TextFile fileSubsXtr(syscfg.datadir, SUBS_XTR, "w");
   if (fileSubsXtr.IsOpen()) {
