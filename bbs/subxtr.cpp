@@ -77,6 +77,10 @@ bool read_subs_xtr(const std::vector<subboardrec>& subs, std::vector<xtrasubsrec
   if (!subs_xtr.IsOpen()) {
     return false;
   }
+
+  // Clear the existing xsubs.
+  xsubs.clear();
+
   // Only load the configuration file if it exists.
   string line;
   int curn = -1;
