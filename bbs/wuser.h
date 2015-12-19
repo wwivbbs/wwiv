@@ -859,19 +859,17 @@ class WUserManager {
   int m_nUserRecordLength;
   int m_nMaxNumberOfUsers;
   bool m_bUserWritesAllowed;
-  bool m_bInitalized;
  public:
-  WUserManager();
-  WUserManager(std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers);
-  ~WUserManager();
-  int GetNumberOfUserRecords() const;
-  bool ReadUserNoCache(WUser *pUser, int user_number);
-  bool ReadUser(WUser *pUser, int user_number, bool bForceRead = false);
-  bool WriteUserNoCache(WUser *pUser, int user_number);
-  bool WriteUser(WUser *pUser, int user_number);
-  int FindUser(std::string searchString);
+   WUserManager() = delete;
+   WUserManager(std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers);
+   virtual ~WUserManager();
+   int GetNumberOfUserRecords() const;
+   bool ReadUserNoCache(WUser *pUser, int user_number);
+   bool ReadUser(WUser *pUser, int user_number, bool bForceRead = false);
+   bool WriteUserNoCache(WUser *pUser, int user_number);
+   bool WriteUser(WUser *pUser, int user_number);
+   int FindUser(std::string searchString);
 
-  void InitializeUserManager(std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers);
   /**
    * Setting this to false will disable writing the userrecord to disk.  This should ONLY be false when the
    * Global guest_user variable is true.

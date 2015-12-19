@@ -43,8 +43,7 @@ int FixUsersCommand::Execute() {
 		giveUp();
 	}
 
-	WUserManager userMgr;
-	userMgr.InitializeUserManager(syscfg.datadir, sizeof(userrec), syscfg.maxusers);
+	WUserManager userMgr(syscfg.datadir, sizeof(userrec), syscfg.maxusers);
 	Print(OK, true, "Checking USER.LST... found %d user records.", userMgr.GetNumberOfUserRecords());
 
 	Print(OK, true, "TBD: Check for trashed user recs.");

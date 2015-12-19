@@ -90,20 +90,10 @@ const char *WUser::GetUserNameNumberAndSystem(int user_number, int system_number
 
 WUserManager::WUserManager(std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers) :
   m_dataDirectory(dataDirectory), m_nUserRecordLength(nUserRecordLength), m_nMaxNumberOfUsers(nMaxNumberOfUsers),
-  m_bUserWritesAllowed(true), m_bInitalized(true) {
+  m_bUserWritesAllowed(true) {
 }
-
-WUserManager::WUserManager() : m_bUserWritesAllowed(true), m_bInitalized(false) { }
-
 
 WUserManager::~WUserManager() { }
-
-void WUserManager::InitializeUserManager(std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers) {
-  m_bInitalized = true;
-  m_dataDirectory = dataDirectory;
-  m_nUserRecordLength = nUserRecordLength;
-  m_nMaxNumberOfUsers = nMaxNumberOfUsers;
-}
 
 int  WUserManager::GetNumberOfUserRecords() const {
   File userList(m_dataDirectory, USER_LST);

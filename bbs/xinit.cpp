@@ -482,7 +482,8 @@ bool WSession::ReadConfig() {
   }
 
   // initialize the user manager
-  users()->InitializeUserManager(full_config.config()->datadir, full_config.config()->userreclen, full_config.config()->maxusers);
+  const configrec* config = full_config.config();
+  userManager.reset(new WUserManager(config->datadir, config->userreclen, config->maxusers));
 
   std::unique_ptr<IniFile> ini(ReadINIFile());
   if (!ini->IsOpen()) {
