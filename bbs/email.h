@@ -20,6 +20,7 @@
 
 #include <string>
 #include "bbs/inmsg.h"
+#include "core/file.h"
 #include "sdk/vardec.h"
 
 class EmailData {
@@ -48,5 +49,6 @@ void sendout_email(EmailData& data);
 bool ok_to_mail(int user_number, int system_number, bool force_it);
 void email(const std::string& title, int user_number, int system_number, bool force_it, int anony, bool allow_fsed = true);
 void imail(int user_number, int system_number);
+void delmail(File *pFile, int loc);
 
 #endif  // __INCLUDED_BBS_MSGBASE_H__

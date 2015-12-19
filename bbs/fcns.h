@@ -245,7 +245,6 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
 void qscan(int nBeginSubNumber, int *pnNextSubNumber);
 void nscan(int nStartingSubNum = 0);
 void ScanMessageTitles();
-void delmail(File *pFile, int loc);
 void remove_post();
 
 // File: multmail.cpp

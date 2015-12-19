@@ -16,6 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <memory>
+#include <string>
+
 #include "bbs/attach.h"
 #include "bbs/instmsg.h"
 #include "bbs/inmsg.h"
@@ -96,9 +99,9 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
     }
     return false;
   }
-  char *ss = static_cast<char*>(BbsAllocA(static_cast<long>(syscfg.maxusers) + 300L));
+  std::unique_ptr<bool[]> ss(new bool[syscfg.maxusers + 300]);
 
-  ss[*pUserNumber] = 1;
+  ss[*pUserNumber] = true;
   session()->users()->ReadUser(&userRecord, nCurrentUser);
   while (userRecord.GetForwardUserNumber() || userRecord.GetForwardSystemNumber()) {
     if (userRecord.GetForwardSystemNumber()) {
@@ -107,15 +110,13 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
       }
       *pUserNumber = userRecord.GetForwardUserNumber();
       *pSystemNumber = userRecord.GetForwardSystemNumber();
-      free(ss);
       set_net_num(userRecord.GetForwardNetNumber());
       return true;
     }
     if (ss[nCurrentUser]) {
-      free(ss);
       return false;
     }
-    ss[nCurrentUser] = 1;
+    ss[nCurrentUser] = true;
     if (userRecord.IsMailboxClosed()) {
       bout << "Mailbox Closed.\r\n";
       if (so()) {
@@ -126,13 +127,11 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
         *pUserNumber = 0;
         *pSystemNumber = 0;
       }
-      free(ss);
       return false;
     }
     nCurrentUser = userRecord.GetForwardUserNumber() ;
     session()->users()->ReadUser(&userRecord, nCurrentUser);
   }
-  free(ss);
   *pSystemNumber = 0;
   *pUserNumber = nCurrentUser;
   return true;
@@ -703,3 +702,54 @@ void imail(int user_number, int system_number) {
   }
 }
 
+void delmail(File *pFile, int loc) {
+  mailrec m, m1;
+  WUser user;
+
+  pFile->Seek(static_cast<long>(loc * sizeof(mailrec)), File::seekBegin);
+  pFile->Read(&m, sizeof(mailrec));
+
+  if (m.touser == 0 && m.tosys == 0) {
+    return;
+  }
+
+  bool rm = true;
+  if (m.status & status_multimail) {
+    int t = pFile->GetLength() / sizeof(mailrec);
+    int otf = false;
+    for (int i = 0; i < t; i++) {
+      if (i != loc) {
+        pFile->Seek(static_cast<long>(i * sizeof(mailrec)), File::seekBegin);
+        pFile->Read(&m1, sizeof(mailrec));
+        if ((m.msg.stored_as == m1.msg.stored_as) && (m.msg.storage_type == m1.msg.storage_type) && (m1.daten != 0xffffffff)) {
+          otf = true;
+        }
+      }
+    }
+    if (otf) {
+      rm = false;
+    }
+  }
+  if (rm) {
+    remove_link(&m.msg, "email");
+  }
+
+  if (m.tosys == 0) {
+    session()->users()->ReadUser(&user, m.touser);
+    if (user.GetNumMailWaiting()) {
+      user.SetNumMailWaiting(user.GetNumMailWaiting() - 1);
+      session()->users()->WriteUser(&user, m.touser);
+    }
+    if (m.touser == 1) {
+      --fwaiting;
+    }
+  }
+  pFile->Seek(static_cast<long>(loc * sizeof(mailrec)), File::seekBegin);
+  m.touser = 0;
+  m.tosys = 0;
+  m.daten = 0xffffffff;
+  m.msg.storage_type = 0;
+  m.msg.stored_as = 0xffffffff;
+  pFile->Write(&m, sizeof(mailrec));
+  mailcheck = true;
+}
