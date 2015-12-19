@@ -370,8 +370,9 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
     memory_last_read = qsc_p[sub_number];
 
     bout.bprintf("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n",
-      session()->current_sub().name,
-                                      usub[session()->GetCurrentMessageArea()].keys, session()->GetNumMessagesInCurrentMessageArea());
+                 session()->current_sub().name,
+                 usub[session()->GetCurrentMessageArea()].keys,
+                 session()->GetNumMessagesInCurrentMessageArea());
 
     int i;
     for (i = session()->GetNumMessagesInCurrentMessageArea(); (i > 1)
