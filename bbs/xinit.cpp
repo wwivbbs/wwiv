@@ -1069,9 +1069,7 @@ void WSession::InitializeBBS() {
         instance_number(), times(), fulldate());
   }
   if (instance_number() > 1) {
-    char szFileName[MAX_PATH];
-    snprintf(szFileName, sizeof(szFileName), "%s.%3.3u", WWIV_NET_NOEXT, instance_number());
-    File::Remove(szFileName);
+    File::Remove(StringPrintf("%s.%3.3u", WWIV_NET_NOEXT, instance_number()));
   } else {
     File::Remove(WWIV_NET_DAT);
   }
