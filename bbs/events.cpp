@@ -47,6 +47,8 @@ void modify_event(int evnt);
 void insert_event();
 void delete_event(int n);
 
+static eventsrec *events;
+
 
 int t_now() {
   time_t t = time(nullptr);
