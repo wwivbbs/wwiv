@@ -35,6 +35,7 @@
 #include "bbs/printfile.h"
 #include "bbs/uedit.h"
 #include "bbs/wstatus.h"
+#include "bbs/workspace.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"

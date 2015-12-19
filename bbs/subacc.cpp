@@ -21,8 +21,8 @@
 
 #include "bbs/bbs.h"
 #include "bbs/connect1.h"
+#include "bbs/email.h"
 #include "bbs/message_file.h"
-#include "bbs/msgbase.h"
 #include "bbs/subxtr.h"
 #include "sdk/vardec.h"
 #include "bbs/vars.h"

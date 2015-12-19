@@ -58,6 +58,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
 #include "bbs/wsession.h"
+#include "bbs/workspace.h"
 #include "bbs/wstatus.h"
 #include "bbs/platform/platformfcns.h"
 #include "core/strings.h"

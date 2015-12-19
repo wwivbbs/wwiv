@@ -234,7 +234,7 @@ void Packers();
 
 
 // File: msgbase.cpp
-#include "bbs/msgbase.h"
+#include "bbs/email.h"
 
 // File: msgbase1.cpp
 

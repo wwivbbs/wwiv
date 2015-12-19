@@ -24,11 +24,12 @@
 #include "bbs/message_file.h"
 #include "bbs/netsup.h"
 #include "bbs/read_message.h"
-#include "bbs/wconstants.h"
-#include "bbs/wstatus.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
+#include "bbs/wconstants.h"
+#include "bbs/workspace.h"
+#include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
@@ -702,32 +703,3 @@ void imail(int user_number, int system_number) {
   }
 }
 
-void LoadFileIntoWorkspace(const std::string& filename, bool bNoEditAllowed, bool silent_mode) {
-  File fileOrig(filename);
-  if (!fileOrig.Open(File::modeBinary | File::modeReadOnly)) {
-    bout << "\r\nFile not found.\r\n\n";
-    return;
-  }
-
-  long lOrigSize = fileOrig.GetLength();
-  unique_ptr<char[]> b(new char[lOrigSize + 1024]);
-  fileOrig.Read(b.get(), lOrigSize);
-  fileOrig.Close();
-  if (b[lOrigSize - 1] != CZ) {
-    b[lOrigSize++] = CZ;
-  }
-
-  File fileOut(syscfgovr.tempdir, INPUT_MSG);
-  fileOut.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  fileOut.Write(b.get(), lOrigSize);
-  fileOut.Close();
-
-  use_workspace = (bNoEditAllowed || !okfsed()) ? true : false;
-
-  if (!silent_mode) {
-    bout << "\r\nFile loaded into workspace.\r\n\n";
-    if (!use_workspace) {
-      bout << "Editing will be allowed.\r\n";
-    }
-  }
-}

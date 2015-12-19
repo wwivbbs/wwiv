@@ -133,7 +133,7 @@
     <ClInclude Include="menusupp.h" />
     <ClInclude Include="menu_parser.h" />
     <ClInclude Include="message_file.h" />
-    <ClInclude Include="msgbase.h" />
+    <ClInclude Include="email.h" />
     <ClInclude Include="multinst.h" />
     <ClInclude Include="netsup.h" />
     <ClInclude Include="newuser.h" />
@@ -170,6 +170,7 @@
     <ClInclude Include="wconstants.h" />
     <ClInclude Include="wfc.h" />
     <ClInclude Include="wfc_log.h" />
+    <ClInclude Include="workspace.h" />
     <ClInclude Include="woutstreambuffer.h" />
     <ClInclude Include="wsession.h" />
     <ClInclude Include="wstatus.h" />
@@ -241,7 +242,7 @@
     <ClCompile Include="menu_parser.cpp" />
     <ClCompile Include="message_file.cpp" />
     <ClCompile Include="misccmd.cpp" />
-    <ClCompile Include="msgbase.cpp" />
+    <ClCompile Include="email.cpp" />
     <ClCompile Include="msgbase1.cpp" />
     <ClCompile Include="msgscan.cpp" />
     <ClCompile Include="multinst.cpp" />
@@ -296,6 +297,7 @@
     <ClCompile Include="WComm.cpp" />
     <ClCompile Include="wfc.cpp" />
     <ClCompile Include="wfc_log.cpp" />
+    <ClCompile Include="workspace.cpp" />
     <ClCompile Include="WOutStream.cpp" />
     <ClCompile Include="WOutStreamBuffer.cpp" />
     <ClCompile Include="wqscn.cpp" />

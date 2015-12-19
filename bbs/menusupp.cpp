@@ -51,6 +51,7 @@
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
+#include "bbs/workspace.h"
 #include "bbs/printfile.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"

@@ -25,7 +25,7 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
-#include "bbs/msgbase.h"
+#include "bbs/email.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/vars.h"
