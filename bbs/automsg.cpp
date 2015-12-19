@@ -43,7 +43,6 @@ using std::vector;
 using namespace wwiv::strings;
 
 char ShowAMsgMenuAndGetInput(const string& autoMessageLockFileName);
-void write_automessage();
 
 /**
  * Reads the auto message
@@ -87,7 +86,7 @@ void read_automessage() {
 /**
  * Writes the auto message
  */
-void write_automessage() {
+static void write_automessage() {
   vector<string> lines;
   string rollOver;
 
@@ -114,12 +113,11 @@ void write_automessage() {
     session()->status_manager()->CommitTransaction(pStatus);
 
     TextFile file(syscfg.gfilesdir, AUTO_MSG, "wt");
-    string authorName = session()->user()->GetUserNameAndNumber(session()->usernum);
-    file.WriteFormatted("%s\r\n", authorName.c_str());
+    const string authorName = session()->user()->GetUserNameAndNumber(session()->usernum);
+    file.WriteLine(authorName);
     sysoplog("Changed Auto-message");
     for (const auto& line : lines) {
-      file.Write(line);
-      file.Write("\r\n");
+      file.WriteLine(line);
       sysoplog(line, true);
     }
     bout << "\r\n|#5Auto-message saved.\r\n\n";
