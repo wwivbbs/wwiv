@@ -55,7 +55,7 @@ uint16_t *gat = nullptr;
 * Note: This is a Private method to this module.
 */
 static File* OpenMessageFile(const string messageAreaFileName) {
-  session()->GetStatusManager()->RefreshStatusCache();
+  session()->status_manager()->RefreshStatusCache();
 
   const string filename = StrCat(syscfg.msgsdir, messageAreaFileName, FILENAME_DAT_EXTENSION);
   File *pFileMessage = new File(filename);
@@ -101,9 +101,9 @@ static void save_gat(File *pMessageFile) {
   long lSectionPos = static_cast<long>(gat_section) * GATSECLEN;
   pMessageFile->Seek(lSectionPos, File::seekBegin);
   pMessageFile->Write(gat, GAT_SECTION_SIZE);
-  WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
+  WStatus *pStatus = session()->status_manager()->BeginTransaction();
   pStatus->IncrementFileChangedFlag(WStatus::fileChangePosts);
-  session()->GetStatusManager()->CommitTransaction(pStatus);
+  session()->status_manager()->CommitTransaction(pStatus);
 }
 
 
@@ -211,7 +211,7 @@ bool readfile(messagerec * pMessageRecord, string fileName,string* out) {
   }
   file->Close();
   string::size_type last_cz = out->find_last_of(CZ);
-  int last_block_start = out->length() - MSG_BLOCK_SIZE;
+  std::string::size_type last_block_start = out->length() - MSG_BLOCK_SIZE;
   if (last_cz != string::npos && last_block_start >= 0 && last_cz > last_block_start) {
     // last block has a Control-Z in it.  Make sure we add a 0 after it.
     out->resize(last_cz);

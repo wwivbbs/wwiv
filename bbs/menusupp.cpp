@@ -223,7 +223,7 @@ void KillEMail() {
 }
 
 void LastCallers() {
-  std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   if (pStatus->GetNumCallsToday() > 0) {
     if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
         (syscfg.sysconfig & sysconfig_extended_info)) {
@@ -535,7 +535,7 @@ void ResetQscan() {
 }
 
 void MemoryStatus() {
-  std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   bout.nl();
   bout << "Qscanptr        : " << pStatus->GetQScanPointer() << wwiv::endl;
 }
@@ -594,7 +594,7 @@ void VotePrint() {
 }
 
 void YesterdaysLog() {
-  std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   print_local_file(pStatus->GetLogFileName(1));
 }
 
@@ -728,7 +728,7 @@ void ClearQScan() {
   case RETURN:
     break;
   case 'A': {
-    std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+    std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
     for (int i = 0; i < session()->GetMaxNumberMessageAreas(); i++) {
       qsc_p[i] = pStatus->GetQScanPointer() - 1L;
     }
@@ -737,7 +737,7 @@ void ClearQScan() {
   }
   break;
   case 'C':
-    std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+    std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
     bout.nl();
     qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = pStatus->GetQScanPointer() - 1L;
     bout << "Messages on " << session()->subboards[usub[session()->GetCurrentMessageArea()].subnum].name 

@@ -206,7 +206,7 @@ int inst_ok(int loc, int subloc) {
       instFile.Close();
       if (instance_temp.loc == loc &&
           instance_temp.subloc == subloc &&
-          instance_temp.number != session()->GetInstanceNumber()) {
+          instance_temp.number != session()->instance_number()) {
         nInstNum = instance_temp.number;
       }
     }

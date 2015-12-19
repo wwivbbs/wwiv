@@ -230,7 +230,7 @@ void CreatePCBoardSysDropFile() {
     strcpy(pcb.slanguage, session()->cur_lang_name.c_str());
     strcpy(pcb.name, session()->user()->GetName());
     pcb.sminsleft = pcb.time_limit;
-    pcb.snodenum = static_cast<char>((num_instances() > 1) ? session()->GetInstanceNumber() : 0);
+    pcb.snodenum = static_cast<char>((num_instances() > 1) ? session()->instance_number() : 0);
     strcpy(pcb.seventtime, "01:00");
     strcpy(pcb.seventactive, " 0");
     strcpy(pcb.sslide, " 0");
@@ -238,7 +238,7 @@ void CreatePCBoardSysDropFile() {
     pcb.packflag = 27;
     pcb.bpsflag = 32;
     // Added for PCB 14.5 Revision
-    std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+    std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
     strcpy(pcb.lastevent, pStatus->GetLastDate());
     pcb.exittodos = '0';
     pcb.eventupcoming = '0';
@@ -358,7 +358,7 @@ void CreateDoor32SysDropFile() {
     file.WriteFormatted("%d\n",      session()->user()->GetSl());
     file.WriteFormatted("%d\n",      60 * GetMinutesRemainingForDropFile());
     file.WriteFormatted("%d\n",      GetDoor32Emulation());
-    file.WriteFormatted("%u\n",      session()->GetInstanceNumber());
+    file.WriteFormatted("%u\n",      session()->instance_number());
     file.Close();
   }
 }
@@ -376,7 +376,7 @@ void CreateDoorSysDropFile() {
             (session()->using_modem) ? syscfgovr.primaryport : 0,
             cspeed.c_str(),
             '8',
-            session()->GetInstanceNumber(),                       // node
+            session()->instance_number(),                       // node
             (session()->using_modem) ? modem_speed : 14400,
             'Y',                            // screen display
             'N',              // log to printer

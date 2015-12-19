@@ -70,7 +70,7 @@ static bool checkup2(const time_t tFileTime, const char *file_name) {
 }
 
 static bool check_bbsdata() {
-  unique_ptr<WStatus> wwiv_status_ro(session()->GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> wwiv_status_ro(session()->status_manager()->GetStatus());
   File bbsdataNet(session()->network_directory().c_str(), BBSDATA_NET);
   if (bbsdataNet.Open(File::modeReadOnly)) {
     time_t tFileTime = bbsdataNet.last_write_time();
@@ -92,9 +92,9 @@ static bool check_bbsdata() {
   }
   const string network3 = StringPrintf("network3 Y .%d", session()->net_num());
   ExecuteExternalProgram(network3, EFLAG_NETPROG);
-  WStatus* wwiv_status = session()->GetStatusManager()->BeginTransaction();
+  WStatus* wwiv_status = session()->status_manager()->BeginTransaction();
   wwiv_status->IncrementFileChangedFlag(WStatus::fileChangeNet);
-  session()->GetStatusManager()->CommitTransaction(wwiv_status);
+  session()->status_manager()->CommitTransaction(wwiv_status);
 
   zap_call_out_list();
   zap_contacts();
@@ -157,7 +157,7 @@ int cleanup_net1() {
         ok2 = 0;
         ok = 0;
         WFindFile fnd;
-        sprintf(s, "%sp*.%3.3d", session()->network_directory().c_str(), session()->GetInstanceNumber());
+        sprintf(s, "%sp*.%3.3d", session()->network_directory().c_str(), session()->instance_number());
         bool bFound = fnd.open(s, 0);
         while (bFound) {
           ok = 1;
@@ -167,7 +167,7 @@ int cleanup_net1() {
           bFound = fnd.next();
         }
 
-        if (session()->GetInstanceNumber() == 1) {
+        if (session()->instance_number() == 1) {
           if (!ok) {
             sprintf(s, "%sp*.net", session()->network_directory().c_str());
             WFindFile fnd_net;
@@ -216,7 +216,7 @@ int cleanup_net1() {
               any = 1;
             }
             ok2 = 1;
-            session()->GetStatusManager()->RefreshStatusCache();
+            session()->status_manager()->RefreshStatusCache();
             session()->SetCurrentReadMessageArea(-1);
             session()->ReadCurrentUser(1);
             fwaiting = session()->user()->GetNumMailWaiting();
@@ -233,7 +233,7 @@ int cleanup_net1() {
       }
     }
   }
-  if (anynew && (session()->GetInstanceNumber() != 1)) {
+  if (anynew && (session()->instance_number() != 1)) {
     send_inst_cleannet();
   }
   return i;
@@ -302,7 +302,7 @@ void do_callout(int sn) {
              << "|#7" << std::string(80, 205) << "|#0..." << wwiv::endl;
         ExecuteExternalProgram(s, EFLAG_NETPROG);
         zap_contacts();
-        session()->GetStatusManager()->RefreshStatusCache();
+        session()->status_manager()->RefreshStatusCache();
         last_time_c = static_cast<int>(tCurrentTime);
         global_xx = false;
         cleanup_net();
@@ -417,7 +417,7 @@ void attempt_callout() {
   net_call_out_rec *con;
   net_contact_rec *ncn;
 
-  session()->GetStatusManager()->RefreshStatusCache();
+  session()->status_manager()->RefreshStatusCache();
 
   // We always want to call out, so set net_only to be true.
   bool net_only = true;
@@ -837,7 +837,7 @@ void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char
       nh->length += strlen(pszAuthorName) + 1;
     }
     const string packet_filename = StringPrintf("%sp1%s",
-      session()->net_networks[nNetNumber].dir, session()->GetNetworkExtension().c_str());
+      session()->net_networks[nNetNumber].dir, session()->network_extension().c_str());
     File packetFile(packet_filename);
     if (packetFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       packetFile.Seek(0L, File::seekEnd);

@@ -75,7 +75,7 @@ static const string GetDosXtrnPath() {
 static void CreateSyncFosCommandLine(string *out, const string& tempFilePath, int nSyncMode) {
   std::stringstream sstream;
   sstream << GetDosXtrnPath() << " " << tempFilePath << " " << "NT" << " ";
-  sstream << session()->GetInstanceNumber() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
+  sstream << session()->instance_number() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
   out->assign(sstream.str());
 }
 
@@ -162,7 +162,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
         char szWriteSlotName[ MAX_PATH ];
         ::Sleep(500);
         _snprintf(szWriteSlotName, sizeof(szWriteSlotName), "\\\\.\\mailslot\\sbbsexec\\wr%d",
-                  session()->GetInstanceNumber());
+                  session()->instance_number());
         fprintf(hLogFile, "Creating Mail Slot [%s]\r\n", szWriteSlotName);
 
         hSyncWriteSlot = CreateFile(szWriteSlotName,
@@ -328,7 +328,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
     strcpy(title, "NETWORK");
   } else {
     _snprintf(title, sizeof(title), "%s in door on node %d",
-              session()->user()->GetName(), session()->GetInstanceNumber());
+              session()->user()->GetName(), session()->instance_number());
   }
   si.lpTitle = title;
 
@@ -342,7 +342,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
   if (bUsingSync) {
     // Create Hangup Event.
     char szHangupEventName[ MAX_PATH + 1 ];
-    _snprintf(szHangupEventName, sizeof(szHangupEventName), "sbbsexec_hungup%d", session()->GetInstanceNumber());
+    _snprintf(szHangupEventName, sizeof(szHangupEventName), "sbbsexec_hungup%d", session()->instance_number());
     hSyncHangupEvent = CreateEvent(nullptr, TRUE, FALSE, szHangupEventName);
     if (hSyncHangupEvent == INVALID_HANDLE_VALUE) {
       fprintf(hLogFile, "!!! Unable to create Hangup Event for SyncFoss External program [%ld]", GetLastError());
@@ -353,7 +353,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
     // Create Read Mail Slot
     char szReadSlotName[ MAX_PATH + 1];
     _snprintf(szReadSlotName, sizeof(szReadSlotName), "\\\\.\\mailslot\\sbbsexec\\rd%d",
-              session()->GetInstanceNumber());
+              session()->instance_number());
     hSyncReadSlot = CreateMailslot(szReadSlotName, CONST_SBBSFOS_BUFFER_SIZE, 0, nullptr);
     if (hSyncReadSlot == INVALID_HANDLE_VALUE) {
       fprintf(hLogFile, "!!! Unable to create mail slot for reading for SyncFoss External program [%ld]", GetLastError());

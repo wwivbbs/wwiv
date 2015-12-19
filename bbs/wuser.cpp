@@ -183,7 +183,7 @@ bool WUserManager::WriteUser(WUser *pUser, int user_number) {
 int WUserManager::FindUser(std::string searchString) {
 #ifndef NOT_BBS
   // TODO(rushfan): Put back in a binary search, but test with user.lst the size of frank's.
-  const size_t user_count = session()->GetStatusManager()->GetUserCount();
+  const size_t user_count = session()->status_manager()->GetUserCount();
   for (std::size_t i = 0; i < user_count; i++) {
     if (wwiv::strings::IsEqualsIgnoreCase(searchString.c_str(), (const char*)session()->smallist[i].name)) {
       return session()->smallist[i].number;

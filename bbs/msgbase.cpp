@@ -264,11 +264,11 @@ void sendout_email(EmailData& data) {
       if (data.forwarded_code) {
         net_filename = StringPrintf("%sp1%s",
           session()->network_directory().c_str(),
-          session()->GetNetworkExtension().c_str());
+          session()->network_extension().c_str());
       } else {
         net_filename = StringPrintf("%sp0%s",
           session()->network_directory().c_str(),
-          session()->GetNetworkExtension().c_str());
+          session()->network_extension().c_str());
       }
       File fileNetworkPacket(net_filename);
       fileNetworkPacket.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
@@ -333,7 +333,7 @@ void sendout_email(EmailData& data) {
     sysoplog(logMessage);
   }
 
-  WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
+  WStatus* pStatus = session()->status_manager()->BeginTransaction();
   if (data.user_number == 1 && data.system_number == 0) {
     pStatus->IncrementNumFeedbackSentToday();
     session()->user()->SetNumFeedbackSent(session()->user()->GetNumFeedbackSent() + 1);
@@ -348,7 +348,7 @@ void sendout_email(EmailData& data) {
       session()->user()->SetNumNetEmailSent(session()->user()->GetNumNetEmailSent() + 1);
     }
   }
-  session()->GetStatusManager()->CommitTransaction(pStatus);
+  session()->status_manager()->CommitTransaction(pStatus);
   if (!data.silent_mode) {
     bout.Color(3);
     bout << logMessage;

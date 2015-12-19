@@ -189,7 +189,7 @@ bool read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, u
 
   if (!same_email(mloc + rec, m)) {
     pFileEmail->Close();
-    session()->GetStatusManager()->RefreshStatusCache();
+    session()->status_manager()->RefreshStatusCache();
     if (emchg) {
       resynch_email(mloc, mw, rec, m, del, stat);
     } else {
@@ -823,9 +823,9 @@ void readmail(int mode) {
             }
             p.msg.storage_type = (uint8_t)session()->current_sub().storage_type;
             savefile(b, &(p.msg), session()->current_sub().filename);
-            WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
+            WStatus* pStatus = session()->status_manager()->BeginTransaction();
             p.qscan = pStatus->IncrementQScanPointer();
-            session()->GetStatusManager()->CommitTransaction(pStatus);
+            session()->status_manager()->CommitTransaction(pStatus);
             if (session()->GetNumMessagesInCurrentMessageArea() >=
               session()->current_sub().maxmsgs) {
               i1 = 1;
@@ -842,10 +842,10 @@ void readmail(int mode) {
               delete_message(i2);
             }
             add_post(&p);
-            pStatus = session()->GetStatusManager()->BeginTransaction();
+            pStatus = session()->status_manager()->BeginTransaction();
             pStatus->IncrementNumMessagesPostedToday();
             pStatus->IncrementNumLocalPosts();
-            session()->GetStatusManager()->CommitTransaction(pStatus);
+            session()->status_manager()->CommitTransaction(pStatus);
             close_sub();
             tmp_disable_conf(false);
             iscan(session()->GetCurrentMessageArea());

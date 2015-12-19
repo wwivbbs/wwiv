@@ -103,7 +103,7 @@ void multimail(int *pnUserNumber, int numu) {
       ++fwaiting;
     }
     strcat(s, user.GetUserNameAndNumber(pnUserNumber[cv]));
-    WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
+    WStatus* pStatus = session()->status_manager()->BeginTransaction();
     if (pnUserNumber[cv] == 1) {
       pStatus->IncrementNumFeedbackSentToday();
       session()->user()->SetNumFeedbackSentToday(session()->user()->GetNumFeedbackSentToday() + 1);
@@ -114,7 +114,7 @@ void multimail(int *pnUserNumber, int numu) {
       session()->user()->SetNumEmailSent(session()->user()->GetNumEmailSent() + 1);
       session()->user()->SetNumEmailSentToday(session()->user()->GetNumEmailSentToday() + 1);
     }
-    session()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->status_manager()->CommitTransaction(pStatus);
     sysoplog(s);
     bout << s;
     bout.nl();

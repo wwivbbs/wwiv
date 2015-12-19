@@ -107,7 +107,7 @@ const string stuff_in(const string& commandline, const string& arg1,
         os << ((incom) ? syscfgovr.primaryport : 0);
         break;
       case 'N':
-        os << session()->GetInstanceNumber();
+        os << session()->instance_number();
         break;
       case 'S':
         os << ((com_speed == 1) ? 115200 : com_speed);

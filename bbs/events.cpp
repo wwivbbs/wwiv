@@ -121,7 +121,7 @@ void get_next_forced_event() {
     day = 0;
   }
   for (int i = 0; i < session()->num_events; i++) {
-    if ((events[i].instance == session()->GetInstanceNumber() || events[i].instance == 0) &&
+    if ((events[i].instance == session()->instance_number() || events[i].instance == 0) &&
         events[i].status & EVENT_FORCED) {
       if (first < 0 && events[i].time < tl && ((events[i].days & (1 << day)) > 0)) {
         first = events[i].time;
@@ -186,7 +186,7 @@ void check_event() {
   for (i = 0; i < session()->num_events && !do_event; i++) {
     if (((events[i].status & EVENT_RUNTODAY) == 0) && (events[i].time <= tl) &&
         ((events[i].days & (1 << dow())) > 0) &&
-        ((events[i].instance == session()->GetInstanceNumber()) ||
+        ((events[i].instance == session()->instance_number()) ||
          (events[i].instance == 0))) {
       // make sure the event hasn't already been executed on another node,then mark it as run
       File eventsFile(syscfg.datadir, EVENTS_DAT);
@@ -203,7 +203,7 @@ void check_event() {
       eventsFile.Close();
     } else if ((events[i].status & EVENT_PERIODIC) &&
                ((events[i].days & (1 << dow())) > 0) &&
-               ((events[i].instance == session()->GetInstanceNumber()) ||
+               ((events[i].instance == session()->instance_number()) ||
                 (events[i].instance == 0))) {
       // periodic events run after N minutes from last execution.
       short int nextrun = ((events[i].lastrun == 0) ? events[i].time : events[i].lastrun) + events[i].period;

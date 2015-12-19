@@ -108,8 +108,8 @@ public:
   bool reset_local_io(LocalIO* wlocal_io);
   wwiv::bbs::Capture* capture() { return capture_.get(); }
   const std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
-  int  GetInstanceNumber() const { return instance_number_; }
-  const std::string& GetNetworkExtension() const { return network_extension; }
+  int  instance_number() const { return instance_number_; }
+  const std::string& network_extension() const { return network_extension_; }
 
   void UpdateTopScreen();
 
@@ -240,7 +240,7 @@ public:
   bool internal_qwk_enabled() const { return internal_qwk_enabled_; }
   void set_internal_qwk_enabled(bool internal_qwk_enabled) { internal_qwk_enabled_ = internal_qwk_enabled; }
 
-  StatusMgr* GetStatusManager() { return statusMgr.get(); }
+  StatusMgr* status_manager() { return statusMgr.get(); }
   WUserManager* users() { return userManager.get(); }
 
 
@@ -358,7 +358,7 @@ private:
   int             m_nOkLevel;
   int             m_nErrorLevel;
   int             instance_number_;
-  std::string     network_extension;
+  std::string     network_extension_;
   double          last_time;
   bool            m_bUserAlreadyOn;
   bool            m_bNeedToCleanNetwork;

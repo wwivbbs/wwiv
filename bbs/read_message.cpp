@@ -403,16 +403,16 @@ void read_post(int n, bool *next, int *val) {
 
   unsigned long current_qscan_pointer = 0;
   {
-    std::unique_ptr<WStatus> wwiv_status(session()->GetStatusManager()->GetStatus());
+    std::unique_ptr<WStatus> wwiv_status(session()->status_manager()->GetStatus());
     // not sure why we check this twice...
     // maybe we need a getCachedQScanPointer?
     current_qscan_pointer = wwiv_status->GetQScanPointer();
   }
   if (p.qscan >= current_qscan_pointer) {
-    WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
+    WStatus* pStatus = session()->status_manager()->BeginTransaction();
     if (p.qscan >= pStatus->GetQScanPointer()) {
       pStatus->SetQScanPointer(p.qscan + 1);
     }
-    session()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->status_manager()->CommitTransaction(pStatus);
   }
 }

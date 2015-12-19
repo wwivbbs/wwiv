@@ -162,7 +162,7 @@ void voteprint() {
 
   File votingDat(syscfg.datadir, VOTING_DAT);
 
-  session()->GetStatusManager()->RefreshStatusCache();
+  session()->status_manager()->RefreshStatusCache();
 
   for (int i1 = 0; i1 < 20; i1++) {
     if (!votingDat.Open(File::modeReadOnly | File::modeBinary)) {
@@ -182,7 +182,7 @@ void voteprint() {
         text.str("     ");
         text << v.responses[i2].response << "\r\n";
         votingText.Write(text.str());
-        for (int i3 = 0; i3 < session()->GetStatusManager()->GetUserCount(); i3++) {
+        for (int i3 = 0; i3 < session()->status_manager()->GetUserCount(); i3++) {
           if (x[i1 + 20 * session()->smallist[i3].number] == i2 + 1) {
             text.clear();
             text.str("          ");

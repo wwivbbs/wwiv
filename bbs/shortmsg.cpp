@@ -143,7 +143,7 @@ void SendRemoteShortMessage(int nUserNum, int nSystemNum, char *messageText) {
   nh.method = 0;
   const string packet_filename = StringPrintf("%sp0%s", 
     session()->network_directory().c_str(),
-    session()->GetNetworkExtension().c_str());
+    session()->network_extension().c_str());
   File file(packet_filename);
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   file.Seek(0L, File::seekEnd);

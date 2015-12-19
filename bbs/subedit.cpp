@@ -641,11 +641,11 @@ static void insert_sub(int n) {
     session()->subboards.insert(it, r);
   }
   {
-    xtrasubsrec r{};
-    memset(&r, 0, sizeof(xtrasubsrec));
+    xtrasubsrec xr{};
+    memset(&xr, 0, sizeof(xtrasubsrec));
     auto it = session()->xsubs.begin();
     std::advance(it, n);
-    session()->xsubs.insert(it, r);
+    session()->xsubs.insert(it, xr);
   }
 
   int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
@@ -761,7 +761,7 @@ void boardedit() {
   }
   showsubs();
   bool done = false;
-  session()->GetStatusManager()->RefreshStatusCache();
+  session()->status_manager()->RefreshStatusCache();
   do {
     bout.nl();
     bout << "|#7(Q=Quit) (D)elete, (I)nsert, (M)odify, (S)wapSubs : ";
