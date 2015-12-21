@@ -391,7 +391,8 @@ void pack_sub(int si) {
 bool pack_all_subs() {
   for (size_t i=0; i < session()->subboards.size() && !hangup; i++) {
     pack_sub(i);
-    if (!checka()) {
+    if (checka() == true) {
+      // checka checks to see if abort is set.
       return false;
     }
   }
