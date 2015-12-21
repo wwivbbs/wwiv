@@ -61,6 +61,7 @@ struct xtrasubsrec {
 
 
 bool read_subs_xtr(const std::vector<subboardrec>& subs, std::vector<xtrasubsrec>& xsubs);
+bool write_subs_xtr(const std::vector<xtrasubsrec>& xsubs);
 
 
 #endif // __INCLUDED_SUBXTR_H__

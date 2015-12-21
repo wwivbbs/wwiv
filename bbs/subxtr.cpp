@@ -80,6 +80,8 @@ bool read_subs_xtr(const std::vector<subboardrec>& subs, std::vector<xtrasubsrec
 
   // Clear the existing xsubs.
   xsubs.clear();
+  // add default constructed xtrasubsrec entries
+  xsubs.resize(subs.size());
 
   // Only load the configuration file if it exists.
   string line;
@@ -93,12 +95,8 @@ bool read_subs_xtr(const std::vector<subboardrec>& subs, std::vector<xtrasubsrec
       curn = atoi(line.c_str());
       if (curn > subs.size()) {
         // Bad number on ! line.
+        curn = -1;
         break;
-      }
-      while (xsubs.size() <= curn) {
-        xtrasubsrec x;
-        memset(&x, 0, sizeof(xtrasubsrec));
-        xsubs.push_back(x);
       }
     } break;
     case '@':                         /* desc */
@@ -118,9 +116,35 @@ bool read_subs_xtr(const std::vector<subboardrec>& subs, std::vector<xtrasubsrec
     }
   }
 
-  while (xsubs.size() < subs.size()) {
-    xsubs.push_back({});
-  }
   return true;
 }
 
+bool write_subs_xtr(const vector<xtrasubsrec>& xsubs) {
+  // Backup subs.xtr
+  const string subs_xtr_old_name = StrCat(SUBS_XTR, ".old");
+  File::Remove(syscfg.datadir, subs_xtr_old_name);
+  File subs_xtr(syscfg.datadir, SUBS_XTR);
+  File subs_xtr_old(syscfg.datadir, subs_xtr_old_name);
+  File::Move(subs_xtr.full_pathname(), subs_xtr_old.full_pathname());
+
+  TextFile fileSubsXtr(syscfg.datadir, SUBS_XTR, "w");
+  if (fileSubsXtr.IsOpen()) {
+    int i = 0;
+    for (const auto& x : xsubs) {
+      if (!x.nets.empty()) {
+        fileSubsXtr.WriteFormatted("!%u\n@%s\n#%lu\n", i, x.desc, x.flags);
+        for (const auto& n : x.nets) {
+          fileSubsXtr.WriteFormatted("$%s %s %lu %u %u\n",
+            session()->net_networks[n.net_num].name,
+            n.stype,
+            n.flags,
+            n.host,
+            n.category);
+        }
+      }
+      i++;
+    }
+    fileSubsXtr.Close();
+  }
+  return true;
+}

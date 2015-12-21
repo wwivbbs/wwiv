@@ -60,33 +60,9 @@ static void save_subs() {
     }
   }
 
+  // Write out SUBS.XTR since it may have changed in boardedit.
+  write_subs_xtr(session()->xsubs);
 
-  // Backup subs.xtr
-  const string subs_xtr_old_name = StrCat(SUBS_XTR, ".old");
-  File::Remove(syscfg.datadir, subs_xtr_old_name);
-  File subs_xtr(syscfg.datadir, SUBS_XTR);
-  File subs_xtr_old(syscfg.datadir, subs_xtr_old_name);
-  File::Move(subs_xtr.full_pathname(), subs_xtr_old.full_pathname());
-
-  TextFile fileSubsXtr(syscfg.datadir, SUBS_XTR, "w");
-  if (fileSubsXtr.IsOpen()) {
-    int i = 0;
-    for (const auto& x : session()->xsubs) {
-      if (!x.nets.empty()) {
-        fileSubsXtr.WriteFormatted("!%u\n@%s\n#%lu\n", i, x.desc, x.flags);
-        i++;
-        for (const auto& n : x.nets) {
-          fileSubsXtr.WriteFormatted("$%s %s %lu %u %u\n",
-              session()->net_networks[n.net_num].name,
-              n.stype,
-              n.flags,
-              n.host,
-              n.category);
-        }
-      }
-    }
-    fileSubsXtr.Close();
-  }
   for (int nDelNetNum = 0; nDelNetNum < session()->max_net_num(); nDelNetNum++) {
     set_net_num(nDelNetNum);
 
