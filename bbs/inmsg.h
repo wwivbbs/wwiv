@@ -29,7 +29,7 @@ constexpr int INMSG_FSED_WORKSPACE = 2;
 
 class MessageEditorData {
 public:
-  MessageEditorData(): need_title(false), anonymous_flag(0), 
+  MessageEditorData(): need_title(true), anonymous_flag(0), 
     msged_flags(MSGED_FLAG_NONE), fsed_flags(INMSG_NOFSED), 
     silent_mode(false) {}
   ~MessageEditorData() {}

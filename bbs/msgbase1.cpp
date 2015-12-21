@@ -226,6 +226,7 @@ void post() {
   data.msged_flags = (session()->current_sub().anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE;
   data.aux = session()->current_sub().filename;
   data.to_name = session()->current_sub().name;
+  data.need_title = true;
 
   if (!inmsg(data)) {
     m.stored_as = 0xffffffff;

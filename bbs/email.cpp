@@ -510,6 +510,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
   messageRecord.storage_type = EMAIL_STORAGE;
   MessageEditorData data;
   data.title = title;
+  data.need_title = true;
   data.fsed_flags = (bAllowFSED) ? INMSG_FSED : INMSG_NOFSED;
   data.anonymous_flag = i;
   data.aux = "email";
