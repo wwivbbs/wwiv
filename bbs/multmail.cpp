@@ -52,6 +52,7 @@ void multimail(int *pnUserNumber, int numu) {
   bout.nl();
 
   MessageEditorData data;
+  data.need_title = true;
   if (getslrec(session()->GetEffectiveSl()).ability & ability_email_anony) {
     data.anonymous_flag = anony_enable_anony;
   }

@@ -1516,6 +1516,7 @@ void new_mail() {
 
   MessageEditorData data;
   data.title = StringPrintf("Welcome to %s!", syscfg.systemname);
+  data.need_title = true;
   data.anonymous_flag = 0;
   data.aux = "email";
   data.fsed_flags = INMSG_NOFSED;

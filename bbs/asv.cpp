@@ -250,6 +250,7 @@ void asv() {
           data.to_name = snode;
           data.msged_flags = MSGED_FLAG_NONE;
           data.silent_mode = true;
+          data.need_title = true;
           if (inmsg(data)) {
             savefile(data.text, &msg, data.aux);
             EmailData email(data);
