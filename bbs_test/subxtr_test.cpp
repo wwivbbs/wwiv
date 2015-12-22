@@ -33,24 +33,27 @@ using namespace wwiv::strings;
 
 class SubXtrTest: public testing::Test {
 protected:
-  virtual void SetUp() { helper.SetUp(); }
+  virtual void SetUp() { 
+    helper.SetUp(); 
+    net_networks.emplace_back(net_networks_rec{net_type_wwivnet, "testnet", "testnet/", 2, nullptr, nullptr, 0, 0});
+    subs.emplace_back(subboardrec{"Sub1", "S1", '1', 10, 10, 0, 0, 500, 0, 2, 0});
+    subs.emplace_back(subboardrec{"Sub2", "S2", '2', 10, 10, 0, 0, 500, 0, 2, 0});
+  }
   const string dir() { return helper.files().TempDir(); }
   string CreateTempFile(const string& name, const string& contents) {
     return helper.files().CreateTempFile(name, contents);
   }
   BbsHelper helper;
-  vector<net_networks_rec> net_networks = {{net_type_wwivnet, "testnet", "testnet/", 2, nullptr, nullptr, 0, 0}};
-  vector<subboardrec> subs = {
-    {"Sub1", "S1", '1', 10, 10, 0, 0, 500, 0, 2, 0},
-    {"Sub2", "S2", '2', 10, 10, 0, 0, 500, 0, 2, 0},
-  };
+  vector<net_networks_rec> net_networks;
+  vector<subboardrec> subs;
 };
 
 TEST_F(SubXtrTest, Write) {
-  vector<xtrasubsrec> xsubs = {
-    {0, ""},
-    {0, "this is sub2",{{0, 0, 0, 1, 1, "S2"}}},
-  };
+  vector<xtrasubsrec> xsubs;
+  xsubs.emplace_back(xtrasubsrec{0, ""});
+  xtrasubsrec s2{0, "this is sub2"};
+  s2.nets.emplace_back(xtrasubsnetrec{0, 0, 0, 1, 1, "S2"});
+  xsubs.emplace_back(s2);
 
   write_subs_xtr(net_networks, xsubs);
   TextFile subs_xtr_file(helper.data(), "subs.xtr", "r");
@@ -94,13 +97,14 @@ static bool equal(const xtrasubsrec& x1, const xtrasubsrec& x2) {
 }
 
 TEST_F(SubXtrTest, Read) {
-  vector<xtrasubsrec> expected = {
-    {0, ""},
-    {0, "this is sub2",{{0, 0, 0, 1, 1, "S2"}}},
-  };
+  vector<xtrasubsrec> expected;
+  expected.emplace_back(xtrasubsrec{0, ""});
+  xtrasubsrec s2{0, "this is sub2"};
+  s2.nets.emplace_back(xtrasubsnetrec{0, 0, 0, 1, 1, "S2"});
+  expected.emplace_back(s2);
 
   {
-    vector<string> contents = {
+    vector<string> contents{
       {"!1", "@this is sub2", "#0", "$testnet S2 0 1 1"},
     };
     TextFile subs_xtr_file(helper.data(), "subs.xtr", "w");
