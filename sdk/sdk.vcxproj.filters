@@ -28,6 +28,18 @@
     <ClInclude Include="msgapi\msgapi_wwiv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="msgapi\message_api.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="msgapi\message_api_wwiv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="msgapi\message_wwiv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="msgapi\message_area_wwiv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -54,6 +66,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="msgapi\msgapi_wwiv.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="msgapi\message_api.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="msgapi\message_api_wwiv.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="msgapi\message_area_wwiv.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

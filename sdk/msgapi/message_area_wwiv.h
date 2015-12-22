@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.x                              */
+/*                          WWIV Version 5.0x                             */
 /*               Copyright (C)2015, WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -15,75 +15,51 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_MSGAPI_H__
-#define __INCLUDED_SDK_MSGAPI_H__
+#ifndef __INCLUDED_SDK_MESSAGE_AREA_WWIV_H__
+#define __INCLUDED_SDK_MESSAGE_AREA_WWIV_H__
 
-#include <memory>
-#include <string>
-
-#include "sdk/msgapi/message_api.h"
+#include "sdk/msgapi/msgapi.h"
+#include "sdk/msgapi/message_wwiv.h"
 
 namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
-class MessageAreaHeader {
+class WWIVMessageApi;
+
+class WWIVMessageAreaHeader: public MessageAreaHeader {
 
 };
 
-class MessageHeader {
-
-};
-
-class MessageText {
+class WWIVMessageArea: public MessageArea {
 public:
-  MessageText(const std::string& text): text_(text) {}
-  virtual ~MessageText() {}
+  WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename);
+  virtual ~WWIVMessageArea();
 
-private:
-  std::string text_;
-};
-
-class Message {
-public:
-  Message(MessageHeader* header, MessageText* text);
-  ~Message();
-
-private:
-  MessageHeader header_;
-  MessageText text_;
-};
-
-class MessageApi;
-
-class MessageArea {
-public:
-  MessageArea(MessageApi* api);
-  virtual ~MessageArea();
-  
   // Message Area Specific Operations
-  virtual bool Close() = 0;
-  virtual bool Lock() = 0;
-  virtual bool Unlock() = 0;
-  virtual void ReadMessageAreaHeader(MessageAreaHeader& header) = 0;
-  virtual void WriteMessageAreaHeader(const MessageAreaHeader& header) = 0;
-  virtual int FindUserMessages(const std::string& user_name) = 0;
-  virtual int number_of_messages() =0;
+  virtual bool Close() override;
+  virtual bool Lock() override;
+  virtual bool Unlock() override;
+  virtual void ReadMessageAreaHeader(MessageAreaHeader& header) override;
+  virtual void WriteMessageAreaHeader(const MessageAreaHeader& header) override;
+  virtual int FindUserMessages(const std::string& user_name) override;
+  virtual int number_of_messages() override;
 
   // message specific
-  virtual Message* ReadMessage(int message_number) = 0;
-  virtual MessageHeader* ReadMessageHeader(int message_number) = 0;
-  virtual MessageText*  ReadMessageText(int message_number) = 0;
-  virtual bool AddMessage(const Message& message) = 0;
-  virtual bool DeleteMessage(int message_number) = 0;
-
-protected:
-  MessageApi* api_;
+  virtual WWIVMessage* ReadMessage(int message_number) override;
+  virtual WWIVMessageHeader* ReadMessageHeader(int message_number) override;
+  virtual WWIVMessageText*  ReadMessageText(int message_number) override;
+  virtual bool AddMessage(const Message& message) override;
+  virtual bool DeleteMessage(int message_number) override;
+private:
+  const std::string sub_filename_;
+  bool open_ = false;
+  int last_num_messages_ = 0;
 };
-
 
 }  // namespace msgapi
 }  // namespace sdk
 }  // namespace wwiv
 
-#endif  // __INCLUDED_SDK_MSGAPI_H__
+
+#endif  // __INCLUDED_SDK_MESSAGE_AREA_WWIV_H__

@@ -22,6 +22,7 @@
 #include <string>
 #include <utility>
 
+#include "core/datafile.h"
 #include "core/file.h"
 #include "bbs/subacc.h"
 #include "sdk/vardec.h"
@@ -29,6 +30,77 @@
 namespace wwiv {
 namespace sdk {
 namespace msgapi {
+
+using wwiv::core::DataFile;
+
+WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename) 
+  : MessageArea(api), sub_filename_(sub_filename) {
+  DataFile<postrec> sub(sub_filename_);
+  if (!sub) {
+    // TODO: throw exception
+  }
+  postrec header;
+  sub.Read(0, &header);
+  last_num_messages_ = header.owneruser;
+  open_ = true;
+}
+
+WWIVMessageArea::~WWIVMessageArea() {
+  Close();
+}
+
+bool WWIVMessageArea::Close() {
+  open_ = false;
+  return true;
+}
+
+bool WWIVMessageArea::Lock() {
+  return false;
+}
+
+bool WWIVMessageArea::Unlock() {
+  return false;
+}
+
+void WWIVMessageArea::ReadMessageAreaHeader(MessageAreaHeader& header) {
+}
+
+void WWIVMessageArea::WriteMessageAreaHeader(const MessageAreaHeader & header) {}
+
+int WWIVMessageArea::FindUserMessages(const std::string& user_name) {
+  return 0;
+}
+
+int WWIVMessageArea::number_of_messages() {
+  DataFile<postrec> sub(sub_filename_);
+  if (!sub) {
+    // TODO: throw exception
+    return 0;
+  }
+  postrec header;
+  sub.Read(0, &header);
+  return header.owneruser;
+}
+
+WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
+  return nullptr;
+}
+
+WWIVMessageHeader* WWIVMessageArea::ReadMessageHeader(int message_number) {
+  return nullptr;
+}
+
+WWIVMessageText* WWIVMessageArea::ReadMessageText(int message_number) {
+  return nullptr;
+}
+
+bool WWIVMessageArea::AddMessage(const Message & message) {
+  return false;
+}
+
+bool WWIVMessageArea::DeleteMessage(int message_number) {
+  return false;
+}
 
 
 }  // namespace msgapi

@@ -15,7 +15,6 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/msgapi/msgapi_wwiv.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 
 #include <memory>
@@ -29,6 +28,56 @@
 namespace wwiv {
 namespace sdk {
 namespace msgapi {
+
+
+WWIVMessageApi::WWIVMessageApi(const std::string& subs_directory,
+  const std::string& messages_directory): MessageApi(subs_directory, messages_directory) {}
+WWIVMessageApi::~WWIVMessageApi() {}
+
+bool WWIVMessageApi::Exist(const std::string& name) const {
+  File subs(subs_directory_, name);
+  return subs.Exists();
+}
+
+// todo(rushfan): should this be create *OR* open instead?
+WWIVMessageArea* WWIVMessageApi::Create(const std::string& name) {
+  if (File::Exists(subs_directory_, name)) {
+    return nullptr;
+  }
+  File fileSub(subs_directory_, name);
+  if (fileSub.Open(File::modeReadOnly | File::modeBinary)) {
+    return nullptr;
+  }
+
+  if (!fileSub.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
+    return nullptr;
+  }
+
+  postrec p;
+  memset(&p, 0, sizeof(postrec));
+  p.owneruser = 0;
+  fileSub.Write(&p, sizeof(postrec));
+  return new WWIVMessageArea(this, fileSub.full_pathname());
+}
+
+bool WWIVMessageApi::Remove(const std::string& name) {
+  // todo: delete lastread/qscan
+  // todo: delete sub files.
+  // todo: delete from conf
+  return false;
+}
+
+WWIVMessageArea* WWIVMessageApi::Open(const std::string& name) {
+  if (File::Exists(subs_directory_, name)) {
+    return nullptr;
+  }
+  File fileSub(subs_directory_, name);
+  if (fileSub.Open(File::modeReadOnly | File::modeBinary)) {
+    return nullptr;
+  }
+
+  return new WWIVMessageArea(this, fileSub.full_pathname());
+}
 
 
 }  // namespace msgapi

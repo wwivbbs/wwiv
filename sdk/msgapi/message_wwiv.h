@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.x                              */
+/*                          WWIV Version 5.0x                             */
 /*               Copyright (C)2015, WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -15,16 +15,41 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/msgapi/msgapi.h"
+#ifndef __INCLUDED_SDK_MESSAGE_WWIV_H__
+#define __INCLUDED_SDK_MESSAGE_WWIV_H__
 
-#include <memory>
 #include <string>
-#include <utility>
+
+#include "sdk/msgapi/msgapi.h"
 
 namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
+class WWIVMessageHeader: public MessageHeader {
+
+};
+
+class WWIVMessageText: public MessageText {
+public:
+  WWIVMessageText();
+private:
+  std::string text_;
+};
+
+class WWIVMessage: public Message {
+public:
+  WWIVMessage(MessageHeader* header, MessageText* text);
+  ~WWIVMessage();
+
+private:
+  WWIVMessageHeader header_;
+  WWIVMessageText text_;
+};
+
 }  // namespace msgapi
 }  // namespace sdk
 }  // namespace wwiv
+
+
+#endif  // __INCLUDED_SDK_MESSAGE_WWIV_H__

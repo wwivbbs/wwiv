@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.x                              */
+/*                          WWIV Version 5.0x                             */
 /*               Copyright (C)2015, WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -15,16 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/msgapi/msgapi.h"
+#ifndef __INCLUDED_SDK_TEMPLATE_H__
+#define __INCLUDED_SDK_TEMPLATE_H__
 
-#include <memory>
-#include <string>
-#include <utility>
 
-namespace wwiv {
-namespace sdk {
-namespace msgapi {
-
-}  // namespace msgapi
-}  // namespace sdk
-}  // namespace wwiv
+#endif  // __INCLUDED_SDK_TEMPLATE_H__

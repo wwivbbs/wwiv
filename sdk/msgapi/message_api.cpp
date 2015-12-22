@@ -25,6 +25,15 @@ namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
+MessageArea::MessageArea(MessageApi* api): api_(api) {}
+MessageArea::~MessageArea() {}
+
+MessageApi::MessageApi(const std::string& subs_directory,
+  const std::string& messages_directory)
+  : subs_directory_(subs_directory), messages_directory_(messages_directory) {}
+
+MessageApi::~MessageApi() {}
+
 }  // namespace msgapi
 }  // namespace sdk
 }  // namespace wwiv
