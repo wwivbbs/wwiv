@@ -15,25 +15,35 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/msgapi.h"
+#ifndef __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__
+#define __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__
+
+#include "sdk/msgapi/message_api.h"
+#include "sdk/msgapi/message_area_wwiv.h"
 
 #include <memory>
 #include <string>
-#include <utility>
 
 namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
-MessageArea::MessageArea(MessageApi* api): api_(api) {}
-MessageArea::~MessageArea() {}
+class WWIVMessageArea;
 
-MessageApi::MessageApi(const std::string& subs_directory,
-  const std::string& messages_directory)
-  : subs_directory_(subs_directory), messages_directory_(messages_directory) {}
+class WWIVMessageApi: public MessageApi {
+public:
+  WWIVMessageApi(const std::string& subs_directory,
+    const std::string& messages_directory);
+  virtual ~WWIVMessageApi();
+  virtual bool Exist(const std::string& name) const override;
+  virtual WWIVMessageArea* Create(const std::string& name) override;
+  virtual bool Remove(const std::string& name) override;
+  virtual WWIVMessageArea* Open(const std::string& name) override;
 
-MessageApi::~MessageApi() {}
+};
 
 }  // namespace msgapi
 }  // namespace sdk
 }  // namespace wwiv
+
+#endif  // __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__

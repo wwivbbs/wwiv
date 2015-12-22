@@ -53,7 +53,7 @@
 #include "core/strings.h"
 #include "core/scope_exit.h"
 #include "core/wwivport.h"
-#include "sdk/message_utils_wwiv.h"
+#include "sdk/msgapi/message_utils_wwiv.h"
 
 using std::chrono::milliseconds;
 using std::string;

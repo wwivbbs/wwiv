@@ -40,7 +40,7 @@
 #include "core/textfile.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
-#include "sdk/message_utils_wwiv.h"
+#include "sdk/msgapi/message_utils_wwiv.h"
 
 using std::string;
 using std::unique_ptr;
