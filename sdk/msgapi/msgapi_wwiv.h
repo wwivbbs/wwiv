@@ -18,7 +18,7 @@
 #ifndef __INCLUDED_SDK_MSGAPI_WWIV_H__
 #define __INCLUDED_SDK_MSGAPI_WWIV_H__
 
-#include "sdk/msgapi.h"
+#include "sdk/msgapi/msgapi.h"
 
 #include <memory>
 #include <string>
