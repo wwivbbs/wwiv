@@ -187,8 +187,17 @@ public:
   int  GetCurrentFileArea() const { return m_nCurrentFileArea; }
   void SetCurrentFileArea(int n) { m_nCurrentFileArea = n; }
 
+  // This is the current user's sub number they are sitting on.
+  // This is a user sub number (usub[b], not subboards[b]).
   int  GetCurrentMessageArea() const { return m_nCurrentMessageArea; }
   void SetCurrentMessageArea(int n) { m_nCurrentMessageArea = n; }
+
+  // This is set by iscan1 (for the most part) and is the sub number the user is
+  // currently scanning/reading.  Note. this is the subnumber from subboards
+  // not usub.
+  // The most common usage pattern is:
+  // iscan(session()->GetCurrentMessageArea());
+  // if (session()->GetCurrentReadMessageArea() < 0) { ... }
 
   int  GetCurrentReadMessageArea() const { return m_nCurrentReadMessageArea; }
   void SetCurrentReadMessageArea(int n) { m_nCurrentReadMessageArea = n; }
