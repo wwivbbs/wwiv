@@ -79,6 +79,7 @@ int WWIVMessageArea::number_of_messages() {
   }
   postrec header;
   sub.Read(0, &header);
+  last_num_messages_ = header.owneruser;
   return header.owneruser;
 }
 
@@ -87,7 +88,21 @@ WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
 }
 
 WWIVMessageHeader* WWIVMessageArea::ReadMessageHeader(int message_number) {
-  return nullptr;
+  int num_messages = number_of_messages();
+  if (message_number < 1) {
+    return nullptr;
+  } else if (message_number > num_messages) {
+    message_number = num_messages;
+  }
+
+  DataFile<postrec> sub(sub_filename_);
+  if (!sub) {
+    // TODO: throw exception
+    return nullptr;
+  }
+  postrec header;
+  sub.Read(message_number, &header);
+  return new WWIVMessageHeader(header);
 }
 
 WWIVMessageText* WWIVMessageArea::ReadMessageText(int message_number) {

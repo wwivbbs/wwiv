@@ -31,6 +31,7 @@
     <ClCompile Include="msgapi\message_api_wwiv.cpp" />
     <ClCompile Include="msgapi\message_area_wwiv.cpp" />
     <ClCompile Include="msgapi\message_utils_wwiv.cpp" />
+    <ClCompile Include="msgapi\message_wwiv.cpp" />
     <ClCompile Include="msgapi\msgapi.cpp" />
     <ClCompile Include="msgapi\msgapi_wwiv.cpp" />
     <ClCompile Include="networks.cpp" />

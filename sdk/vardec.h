@@ -509,15 +509,13 @@ struct postrec {
           status;                       // bit-mapped status
 
   uint16_t ownersys,                    // what system it came from
-           owneruser;                              // who posted it
+           owneruser;                   // who posted it
 
   uint32_t qscan,                        // qscan pointer
-           daten;                                  // numerical date posted
+           daten;                        // numerical date posted
 
-  messagerec msg;                             // where to find it
+  messagerec msg;                        // where to find it
 };
-
-
 
 // DATA HELD FOR EVERY E-MAIL OR F-BACK
 struct mailrec {
