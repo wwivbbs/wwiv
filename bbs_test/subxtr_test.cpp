@@ -94,13 +94,14 @@ static bool equal(const xtrasubsrec& x1, const xtrasubsrec& x2) {
 }
 
 TEST_F(SubXtrTest, Read) {
-  vector<xtrasubsrec> expected = {
-    {0, ""},
-    {0, "this is sub2",{{0, 0, 0, 1, 1, "S2"}}},
-  };
+  vector<xtrasubsrec> expected;
+  expected.emplace_back(xtrasubsrec{0, ""});
+  xtrasubsrec s2{0, "this is sub2"};
+  s2.nets.emplace_back(xtrasubsnetrec{0, 0, 0, 1, 1, "S2"});
+  expected.emplace_back(s2);
 
   {
-    vector<string> contents = {
+    vector<string> contents{
       {"!1", "@this is sub2", "#0", "$testnet S2 0 1 1"},
     };
     TextFile subs_xtr_file(helper.data(), "subs.xtr", "w");
