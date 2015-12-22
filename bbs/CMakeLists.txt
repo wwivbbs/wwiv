@@ -119,6 +119,7 @@ set(COMMON_SOURCES
  xinit.cpp
  wfc.cpp
  wfc_log.cpp
+ workspace.cpp
 )
 
 set(BBS_MAIN bbs_main.cpp)
