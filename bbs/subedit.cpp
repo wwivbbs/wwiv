@@ -61,7 +61,7 @@ static void save_subs() {
   }
 
   // Write out SUBS.XTR since it may have changed in boardedit.
-  write_subs_xtr(session()->xsubs);
+  write_subs_xtr(session()->net_networks, session()->xsubs);
 
   for (int nDelNetNum = 0; nDelNetNum < session()->max_net_num(); nDelNetNum++) {
     set_net_num(nDelNetNum);

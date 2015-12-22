@@ -672,7 +672,7 @@ bool WSession::read_subs() {
   if (!file.ReadVector(subboards, GetMaxNumberMessageAreas())) {
     return false;
   }
-  return read_subs_xtr(subboards, xsubs);
+  return read_subs_xtr(net_networks, subboards, xsubs);
 }
 
 void WSession::read_networks() {

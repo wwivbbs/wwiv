@@ -36,21 +36,21 @@ using namespace wwiv::strings;
 static xtrasubsnetrec *xsubsn;
 static int nn;
 
-static int FindNetworkByName(const std::string& name) {
-  for (size_t i = 0; i < session()->net_networks.size(); i++) {
-    if (IsEqualsIgnoreCase(session()->net_networks[i].name, name.c_str())) {
+static int FindNetworkByName(const std::vector<net_networks_rec>& net_networks, const std::string& name) {
+  for (size_t i = 0; i < net_networks.size(); i++) {
+    if (IsEqualsIgnoreCase(net_networks[i].name, name.c_str())) {
       return i;
     }
   }
   return -1;
 }
 
-bool ParseXSubsLine(const std::string& line, xtrasubsrec& xsub) {
+bool ParseXSubsLine(const std::vector<net_networks_rec>& net_networks, const std::string& line, xtrasubsrec& xsub) {
   std::stringstream stream(line);
   string net_name;
   stream >> net_name;
   StringTrim(&net_name);
-  int net_num = FindNetworkByName(net_name);
+  int net_num = FindNetworkByName(net_networks, net_name);
   if (net_num == -1) {
     return false;
   }
@@ -72,7 +72,7 @@ bool ParseXSubsLine(const std::string& line, xtrasubsrec& xsub) {
   return true;
 }
 
-bool read_subs_xtr(const std::vector<subboardrec>& subs, std::vector<xtrasubsrec>& xsubs) {
+bool read_subs_xtr(const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec>& subs, std::vector<xtrasubsrec>& xsubs) {
   TextFile subs_xtr(syscfg.datadir, SUBS_XTR, "rt");
   if (!subs_xtr.IsOpen()) {
     return false;
@@ -111,7 +111,7 @@ bool read_subs_xtr(const std::vector<subboardrec>& subs, std::vector<xtrasubsrec
       break;
     case '$':                         /* net info */
       if (curn >= 0) {
-        ParseXSubsLine(line, xsubs[curn]);
+        ParseXSubsLine(net_networks, line, xsubs[curn]);
       }
     }
   }
@@ -119,7 +119,7 @@ bool read_subs_xtr(const std::vector<subboardrec>& subs, std::vector<xtrasubsrec
   return true;
 }
 
-bool write_subs_xtr(const vector<xtrasubsrec>& xsubs) {
+bool write_subs_xtr(const std::vector<net_networks_rec>& net_networks, const vector<xtrasubsrec>& xsubs) {
   // Backup subs.xtr
   const string subs_xtr_old_name = StrCat(SUBS_XTR, ".old");
   File::Remove(syscfg.datadir, subs_xtr_old_name);
@@ -135,7 +135,7 @@ bool write_subs_xtr(const vector<xtrasubsrec>& xsubs) {
         fileSubsXtr.WriteFormatted("!%u\n@%s\n#%lu\n", i, x.desc, x.flags);
         for (const auto& n : x.nets) {
           fileSubsXtr.WriteFormatted("$%s %s %lu %u %u\n",
-            session()->net_networks[n.net_num].name,
+            net_networks[n.net_num].name,
             n.stype,
             n.flags,
             n.host,

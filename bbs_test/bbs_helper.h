@@ -39,9 +39,14 @@ class BbsHelper {
 public:
     virtual void SetUp();
     virtual void TearDown();
-    FileHelper& files() { return files_; }
     WUser* user() const { return user_; }
     TestIO* io() const { return io_.get(); }
+
+    // Accessors for various directories
+    FileHelper& files() { return files_; }
+    const std::string& data() { return dir_data_; }
+    const std::string& gfiles() { return dir_gfiles_; }
+
 public:
     FileHelper files_;
     std::string dir_data_;
