@@ -40,6 +40,9 @@
     <ClCompile Include="new_bbslist_test.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="subxtr_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Tests">
