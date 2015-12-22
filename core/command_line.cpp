@@ -160,7 +160,7 @@ std::string CommandLineCommand::GetHelp() const {
   ss << "commands:" << std::endl;
   for (const auto& a : commands_allowed_) {
     const string allowed_name = a.second.name();
-    ss << "--" << StringPrintf("%-20s", allowed_name.c_str()) << " " << a.second.help_text() << endl;
+    ss << StringPrintf("%-20s", allowed_name.c_str()) << " " << a.second.help_text() << endl;
   }
   return ss.str();
 }

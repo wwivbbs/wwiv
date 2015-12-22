@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_SDK_MESSAGE_AREA_WWIV_H__
 #define __INCLUDED_SDK_MESSAGE_AREA_WWIV_H__
 
+#include "core/file.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/msgapi/message_wwiv.h"
 
@@ -33,7 +34,7 @@ class WWIVMessageAreaHeader: public MessageAreaHeader {
 
 class WWIVMessageArea: public MessageArea {
 public:
-  WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename);
+  WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename, const std::string& msgs_filename);
   virtual ~WWIVMessageArea();
 
   // Message Area Specific Operations
@@ -51,10 +52,23 @@ public:
   virtual WWIVMessageText*  ReadMessageText(int message_number) override;
   virtual bool AddMessage(const Message& message) override;
   virtual bool DeleteMessage(int message_number) override;
+
 private:
+  File* OpenMessageFile(const std::string msgs_filename);
+  void set_gat_section(File *pMessageFile, int section);
+  void save_gat(File *pMessageFile);
+  bool readfile(messagerec* pMessageRecord, std::string msgs_filename, std::string* out);
+  void savefile(const std::string& text, messagerec * pMessageRecord, const std::string fileName);
+
+
   const std::string sub_filename_;
   bool open_ = false;
   int last_num_messages_ = 0;
+
+  // gat section used by wwiv message text files.
+  int32_t gat_section = 0;
+  std::unique_ptr<uint16_t[]> gat;
+
 };
 
 }  // namespace msgapi

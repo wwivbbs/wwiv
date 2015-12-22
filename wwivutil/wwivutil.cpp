@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.x                              */
-/*               Copyright (C)2015, WWIV Software Services                */
+/*                              WWIV Version 5.x                          */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,26 +14,22 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
+/*                                                                        */
 /**************************************************************************/
-#include <cctype>
-#include <cstdio>
-#include <fcntl.h>
+#include "wwivutil.h"
+
+#include <algorithm>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
+
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/stl.h"
-#include "netutil/dump.h"
-#include "netutil/dump_callout.h"
-#include "netutil/dump_contact.h"
-#include "networkb/callout.h"
-#include "networkb/connection.h"
 #include "sdk/config.h"
-#include "sdk/net.h"
-#include "sdk/networks.h"
 
 using std::clog;
 using std::cout;
@@ -43,20 +39,24 @@ using std::string;
 using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
-using wwiv::net::Callout;
-using wwiv::sdk::Config;
-using wwiv::net::Contact;
-using wwiv::sdk::Networks;
-using wwiv::stl::contains;
+using namespace wwiv::sdk;
 
-int main(int argc, char** argv) {
+namespace wwiv {
+namespace wwivutil {
+
+}  // namespace fix
+}  // namespace wwiv
+
+int main(int argc, char *argv[]) {
   try {
     CommandLine cmdline(argc, argv, "network_number");
     cmdline.add({"bbsdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory()});
-    cmdline.add_command("dump", "Dumps contents of a network packet");
-    cmdline.add_command("dump_callout", "Dumps parsed representation of CALLOUT.NET");
-    cmdline.add_command("dump_contact", "Dumps parsed representation of CONTACT.NET");
     cmdline.add(BooleanCommandLineArgument("help", '?', "Displays Help", false));
+
+    CommandLineCommand& messages = cmdline.add_command("messages", "Message Commands");
+    CommandLineCommand& messages_dump_header = messages.add_command("dump_headers", "Displays message header information");
+    messages_dump_header.add({"subname", "The base name of the sub to dump.", ""});
+    messages.add(BooleanCommandLineArgument("help", '?', "Displays Help", false));
 
     try {
       if (!cmdline.Parse()) {
@@ -80,36 +80,27 @@ int main(int argc, char** argv) {
       clog << "Unable to load CONFIG.DAT.";
       return 1;
     }
-    Networks networks(config);
-    if (!networks.IsInitialized()) {
-      clog << "Unable to load networks.";
-      return 1;
-    }
 
     const string command = cmdline.command()->name();
 
-    if (command == "dump") {
-      return dump(cmdline.command());
-    } else if (command == "dump_callout") {
-      map<const string, Callout> callouts;
-      for (const auto net : networks.networks()) {
-        string lower_case_network_name(net.name);
-        StringLowerCase(&lower_case_network_name);
-        callouts.emplace(lower_case_network_name, Callout(net.dir));
+    if (command == "messages") {
+      const string subcommand = messages.command()->name();
+      if (messages.arg("help").as_bool()) {
+        cout << messages.GetHelp();
+      } else if (subcommand == "dump_headers") {
+        cout << "TODO: dump headers" << endl;
+      } else {
+        cout << "Invalid command: \"" << subcommand << "\"." << endl;
+        cout << messages.GetHelp();
+        return 1;
       }
-      return dump_callout(callouts, cmdline.command());
-    } else if (command == "dump_contact") {
-      map<const string, Contact> contacts;
-      for (const auto net : networks.networks()) {
-        string lower_case_network_name(net.name);
-        StringLowerCase(&lower_case_network_name);
-        contacts.emplace(lower_case_network_name, Contact(net.dir, false));
-      }
-      return dump_contact(contacts, cmdline.command());
+    } else {
+      cout << "Invalid command: \"" << command << "\"." << endl;
+      cout << cmdline.GetHelp();
+      return 1;
     }
-    cout << "Invalid command: \"" << command << "\"." << endl;
-    return 1;
-  } catch (const std::exception& e) {
+  } catch (std::exception& e) {
     clog << e.what() << endl;
   }
+  return 0;
 }

@@ -32,7 +32,21 @@ class MessageAreaHeader {
 };
 
 class MessageHeader {
+public:
+  virtual std::string title() = 0;
+  virtual std::string to() = 0;
+  virtual std::string from() = 0;
+  virtual uint32_t daten() = 0;
+  virtual uint8_t status() = 0;
+  virtual uint8_t anony() = 0;
+  virtual std::string oaddress() = 0;
 
+  virtual std::string destination_address() = 0;
+
+  virtual bool is_local() = 0;
+  virtual bool is_private() = 0;
+  virtual bool is_locked() = 0;
+  virtual bool is_deleted() = 0;
 };
 
 class MessageText {
@@ -48,10 +62,6 @@ class Message {
 public:
   Message(MessageHeader* header, MessageText* text);
   ~Message();
-
-private:
-  MessageHeader header_;
-  MessageText text_;
 };
 
 class MessageApi;
