@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/msgapi_wwiv.h"
+#include "sdk/msgapi/msgapi_wwiv.h"
 
 #include <memory>
 #include <string>
