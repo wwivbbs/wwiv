@@ -151,10 +151,9 @@ static int ShowLoginAndGetUserNumber() {
   StringTrim(&user_name);
 
   int user_number = finduser(user_name);
-  if (user_number > 0) {
+  if (user_number != 0) {
     return user_number;
-  }
-  if (!user_name.empty()) {
+  } else if (!user_name.empty()) {
     bout << "Searching...";
     bool abort = false;
     for (int i = 1; i < session()->status_manager()->GetUserCount() && !hangup && !abort; i++) {
