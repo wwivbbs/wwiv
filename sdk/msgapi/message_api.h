@@ -21,6 +21,7 @@
 #include <memory>
 #include <string>
 
+#include "sdk/net.h"
 #include "sdk/msgapi/msgapi.h"
 
 namespace wwiv {
@@ -32,16 +33,20 @@ class MessageArea;
 class MessageApi {
 public:
   MessageApi(const std::string& subs_directory,
-    const std::string& messages_directory);
+    const std::string& messages_directory,
+    const std::vector<net_networks_rec>& net_networks);
   virtual ~MessageApi();
   virtual bool Exist(const std::string& name) const = 0;
   virtual MessageArea* Create(const std::string& name) = 0;
   virtual bool Remove(const std::string& name) = 0;
   virtual MessageArea* Open(const std::string& name) = 0;
 
+  const std::vector<net_networks_rec>& network() const { return net_networks_; }
+
 protected:
   std::string subs_directory_;
   std::string messages_directory_;
+  std::vector<net_networks_rec> net_networks_;
 };
 
 }  // namespace msgapi

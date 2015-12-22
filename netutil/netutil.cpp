@@ -44,10 +44,8 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using wwiv::net::Callout;
-using wwiv::sdk::Config;
-using wwiv::net::Contact;
-using wwiv::sdk::Networks;
-using wwiv::stl::contains;
+using namespace wwiv::net;
+using namespace wwiv::sdk;
 
 int main(int argc, char** argv) {
   try {

@@ -33,13 +33,13 @@ class WWIVMessageArea;
 class WWIVMessageApi: public MessageApi {
 public:
   WWIVMessageApi(const std::string& subs_directory,
-    const std::string& messages_directory);
+    const std::string& messages_directory,
+    const std::vector<net_networks_rec>& net_networks);
   virtual ~WWIVMessageApi();
   virtual bool Exist(const std::string& name) const override;
   virtual WWIVMessageArea* Create(const std::string& name) override;
   virtual bool Remove(const std::string& name) override;
   virtual WWIVMessageArea* Open(const std::string& name) override;
-
 };
 
 }  // namespace msgapi

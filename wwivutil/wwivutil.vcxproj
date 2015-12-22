@@ -82,6 +82,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="messages.cpp" />
     <ClCompile Include="wwivutil.cpp" />
   </ItemGroup>
   <ItemGroup>

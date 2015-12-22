@@ -44,8 +44,12 @@ using namespace wwiv::sdk;
 namespace wwiv {
 namespace wwivutil {
 
-}  // namespace fix
+int dump_headers(const Config& config, const CommandLineCommand* command);
+
+}  // namespace wwivutil
 }  // namespace wwiv
+
+using namespace wwiv::wwivutil;
 
 int main(int argc, char *argv[]) {
   try {
@@ -54,8 +58,10 @@ int main(int argc, char *argv[]) {
     cmdline.add(BooleanCommandLineArgument("help", '?', "Displays Help", false));
 
     CommandLineCommand& messages = cmdline.add_command("messages", "Message Commands");
-    CommandLineCommand& messages_dump_header = messages.add_command("dump_headers", "Displays message header information");
-    messages_dump_header.add({"subname", "The base name of the sub to dump.", ""});
+    CommandLineCommand& messages_dump_header = messages.add_command("dump", "Displays message header and text information");
+    messages_dump_header.add({"start", "Starting message number.", "1"});
+    messages_dump_header.add({"end", "Last message number..", "-1"});
+    messages_dump_header.add(BooleanCommandLineArgument("all", "dumps everything, control lines too", false));
     messages.add(BooleanCommandLineArgument("help", '?', "Displays Help", false));
 
     try {
@@ -87,8 +93,8 @@ int main(int argc, char *argv[]) {
       const string subcommand = messages.command()->name();
       if (messages.arg("help").as_bool()) {
         cout << messages.GetHelp();
-      } else if (subcommand == "dump_headers") {
-        cout << "TODO: dump headers" << endl;
+      } else if (subcommand == "dump") {
+        dump_headers(config, messages.command());
       } else {
         cout << "Invalid command: \"" << subcommand << "\"." << endl;
         cout << messages.GetHelp();

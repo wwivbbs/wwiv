@@ -353,7 +353,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
     for (size_t i = 0; i < session()->current_xsub().nets.size(); i++) {
       const xtrasubsnetrec& xnp = session()->current_xsub().nets[i];
       if (session()->net_networks[xnp.net_num].type == net_type_fidonet) {
-        const string buf = StringPrintf("0FidoAddr: %s", irt_name);
+        const string buf = StringPrintf("%c0FidoAddr: %s", CD, irt_name);
         ss << buf << crlf;
         break;
       }

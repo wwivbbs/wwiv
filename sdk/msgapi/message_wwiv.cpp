@@ -20,21 +20,38 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "sdk/vardec.h"
 
+using std::string;
+using std::vector;
 
 namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
-WWIVMessageHeader::WWIVMessageHeader(postrec header) : header_(header) {
+WWIVMessageHeader::WWIVMessageHeader(postrec header, const std::string& from, const std::string& to,
+  const std::string& date, const std::string& in_reply_to, std::vector<string>& control_lines) 
+  : header_(header), from_(from), to_(to), date_(date), in_reply_to_(in_reply_to),
+    control_lines_(control_lines) {
 
 }
 
 WWIVMessageHeader::~WWIVMessageHeader() {
 
 }
+
+WWIVMessageText::WWIVMessageText(const std::string& text)
+  : MessageText(), text_(text) {}
+
+WWIVMessageText::~WWIVMessageText() {}
+
+WWIVMessage::WWIVMessage(WWIVMessageHeader* header, WWIVMessageText* text)
+  : Message(), header_(header), text_(text) {}
+
+WWIVMessage::~WWIVMessage() {}
+
 
 }  // namespace msgapi
 }  // namespace sdk

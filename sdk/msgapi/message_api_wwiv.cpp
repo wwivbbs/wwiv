@@ -39,8 +39,11 @@ static constexpr int GAT_SECTION_SIZE = 4096;
 static constexpr int MSG_BLOCK_SIZE = 512;
 
 
-WWIVMessageApi::WWIVMessageApi(const std::string& subs_directory,
-  const std::string& messages_directory): MessageApi(subs_directory, messages_directory) {}
+WWIVMessageApi::WWIVMessageApi(
+  const std::string& subs_directory,
+  const std::string& messages_directory,
+  const std::vector<net_networks_rec>& net_networks)
+  : MessageApi(subs_directory, messages_directory, net_networks) {}
 WWIVMessageApi::~WWIVMessageApi() {}
 
 bool WWIVMessageApi::Exist(const std::string& name) const {
@@ -105,7 +108,7 @@ WWIVMessageArea* WWIVMessageApi::Open(const std::string& name) {
   if (!fileSub.Exists()) {
     return nullptr;
   }
-  if (fileSub.Open(File::modeReadOnly | File::modeBinary)) {
+  if (!fileSub.Open(File::modeReadOnly | File::modeBinary)) {
     return nullptr;
   }
   const string msgs_filename = StrCat(name, ".dat");
@@ -113,7 +116,7 @@ WWIVMessageArea* WWIVMessageApi::Open(const std::string& name) {
   if (!msgs_file.Exists()) {
     return nullptr;
   }
-  if (msgs_file.Open(File::modeReadOnly | File::modeBinary)) {
+  if (!msgs_file.Open(File::modeReadOnly | File::modeBinary)) {
     return nullptr;
   }
 

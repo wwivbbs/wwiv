@@ -35,10 +35,12 @@ namespace msgapi {
 
 using std::string;
 using std::unique_ptr;
+using std::vector;
 using wwiv::core::DataFile;
 using namespace wwiv::strings;
 
-constexpr int CZ = 26;
+constexpr char CD = 4;
+constexpr char CZ = 26;
 static constexpr int GAT_NUMBER_ELEMENTS = 2048;
 static constexpr int GAT_SECTION_SIZE = GAT_NUMBER_ELEMENTS * sizeof(uint16_t);
 static constexpr int MSG_BLOCK_SIZE = 512;
@@ -47,10 +49,11 @@ static constexpr int  GATSECLEN = GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_B
 #define MSG_STARTING(section__) (section__ * GATSECLEN + GAT_SECTION_SIZE)
 
 
-
-WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename, const std::string& msgs_filename)
-  : MessageArea(api), sub_filename_(sub_filename), gat(new uint16_t[GAT_NUMBER_ELEMENTS]()) {
-  DataFile<postrec> sub(sub_filename_);
+WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename, const std::string& text_filename)
+  : MessageArea(api),
+    sub_filename_(sub_filename), text_filename_(text_filename),
+    gat(new uint16_t[GAT_NUMBER_ELEMENTS]()) {
+  DataFile<postrec> sub(sub_filename_, File::modeBinary | File::modeReadOnly);
   if (!sub) {
     // TODO: throw exception
   }
@@ -78,11 +81,15 @@ bool WWIVMessageArea::Unlock() {
 }
 
 void WWIVMessageArea::ReadMessageAreaHeader(MessageAreaHeader& header) {
+  // Not implemented on wwiv.
 }
 
-void WWIVMessageArea::WriteMessageAreaHeader(const MessageAreaHeader & header) {}
+void WWIVMessageArea::WriteMessageAreaHeader(const MessageAreaHeader & header) {
+  // Not implemented on wwiv.
+}
 
 int WWIVMessageArea::FindUserMessages(const std::string& user_name) {
+  // Not implemented on wwiv.
   return 0;
 }
 
@@ -99,10 +106,6 @@ int WWIVMessageArea::number_of_messages() {
 }
 
 WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
-  return nullptr;
-}
-
-WWIVMessageHeader* WWIVMessageArea::ReadMessageHeader(int message_number) {
   int num_messages = number_of_messages();
   if (message_number < 1) {
     return nullptr;
@@ -117,19 +120,79 @@ WWIVMessageHeader* WWIVMessageArea::ReadMessageHeader(int message_number) {
   }
   postrec header;
   sub.Read(message_number, &header);
-  return new WWIVMessageHeader(header);
-}
-
-WWIVMessageText* WWIVMessageArea::ReadMessageText(int message_number) {
-  unique_ptr<WWIVMessageHeader> header(ReadMessageHeader(message_number));
-
-  const auto& p = header->data();
-  if (p.msg.storage_type != 2) {
+  if (header.msg.storage_type != 2) {
     // We only support type-2 on the WWIV API.
     return nullptr;
   }
-  const string& text = "";
-  return new WWIVMessageText();
+
+  // Some of the message header information ends up in the text.
+  // line1: From username (i.e. rushfan #1 @5161)
+  // line2: Date (again, same as daten but is formatted by the sender)
+  // optional lines:
+  // RE: Title (title this is a reply to, mostly redundant since the title will contain it too)
+  // BY: Author (author of the post this is a reply to, could be considered the "to" person for this message.
+  // ^DControl Lines (we have many)
+  // ^D# (0 = network, >0 = tag lines)
+
+  string raw_text;
+  if (!readfile(&header.msg, this->text_filename_, &raw_text)) {
+    return nullptr;
+  }
+
+  vector<string> lines = SplitString(raw_text, "\n");
+  auto it = lines.begin();
+  string from_username = StringTrim(*it++);
+  string date = StringTrim(*it++);
+  string to;
+  string in_reply_to;
+  string text;
+  vector<string> control_lines;
+    for (; it != std::end(lines); it++) {
+    auto line = StringTrim(*it);
+    if (!line.empty() && line.front() == CD) {
+      control_lines.push_back(line);
+      // TODO(rushfan): Add control line.
+    } else if (starts_with(line, "RE:")) {
+      in_reply_to = StringTrim(line.substr(3));
+    } else if (starts_with(line, "BY:")) {
+      to = StringTrim(line.substr(3));
+    } else {
+      // No more special lines, the rest is just text.
+      for (;  it != std::end(lines); it++) {
+        string text_line = *it;
+        // Terminate the string with a control-Z.
+        string::size_type cz_pos = text_line.find(CZ);
+        if (cz_pos != string::npos) {
+          text_line = text_line.substr(0, cz_pos);
+        }
+        // Trim all remaining nulls.
+        string::size_type null_pos = text_line.find((char)0);
+        if (null_pos != string::npos) {
+          text_line.resize(null_pos);
+        }
+        StringTrim(&text_line);
+        if (!text_line.empty()) {
+          text += text_line;
+          text += "\r\n";
+        }
+      }
+      break;
+    }
+  }
+  unique_ptr<WWIVMessageHeader> wwiv_header(new WWIVMessageHeader(header, from_username, to, date, in_reply_to, control_lines));
+  unique_ptr<WWIVMessageText> wwiv_text(new WWIVMessageText(text));
+
+  return new WWIVMessage(wwiv_header.release(), wwiv_text.release());
+}
+
+WWIVMessageHeader* WWIVMessageArea::ReadMessageHeader(int message_number) {
+  unique_ptr<WWIVMessage> msg(ReadMessage(message_number));
+  return msg->release_header();
+}
+
+WWIVMessageText* WWIVMessageArea::ReadMessageText(int message_number) {
+  unique_ptr<WWIVMessage> msg(ReadMessage(message_number));
+  return msg->release_text();
 }
 
 bool WWIVMessageArea::AddMessage(const Message & message) {
@@ -169,14 +232,14 @@ File* WWIVMessageArea::OpenMessageFile(const string msgs_filename) {
 
 void WWIVMessageArea::set_gat_section(File *pMessageFile, int section) {
   if (gat_section != section) {
-    long lFileSize = pMessageFile->GetLength();
-    long lSectionPos = static_cast<long>(section) * GATSECLEN;
-    if (lFileSize < lSectionPos) {
-      pMessageFile->SetLength(lSectionPos);
-      lFileSize = lSectionPos;
+    long file_size = pMessageFile->GetLength();
+    long section_pos = static_cast<long>(section) * GATSECLEN;
+    if (file_size < section_pos) {
+      pMessageFile->SetLength(section_pos);
+      file_size = section_pos;
     }
-    pMessageFile->Seek(lSectionPos, File::seekBegin);
-    if (lFileSize < (lSectionPos + GAT_SECTION_SIZE)) {
+    pMessageFile->Seek(section_pos, File::seekBegin);
+    if (file_size < (section_pos + GAT_SECTION_SIZE)) {
       for (std::size_t i = 0; i < GAT_NUMBER_ELEMENTS; i++) {
         gat[i] = 0;
       }
@@ -189,8 +252,8 @@ void WWIVMessageArea::set_gat_section(File *pMessageFile, int section) {
 }
 
 void WWIVMessageArea::save_gat(File *pMessageFile) {
-  long lSectionPos = static_cast<long>(gat_section) * GATSECLEN;
-  pMessageFile->Seek(lSectionPos, File::seekBegin);
+  long section_pos = static_cast<long>(gat_section) * GATSECLEN;
+  pMessageFile->Seek(section_pos, File::seekBegin);
   pMessageFile->Write(gat.get(), GAT_SECTION_SIZE);
 
   // TODO(rushfan): Pass in the status manager. this is needed to
@@ -202,15 +265,15 @@ void WWIVMessageArea::save_gat(File *pMessageFile) {
   // session()->status_manager()->CommitTransaction(pStatus);
 }
 
-bool WWIVMessageArea::readfile(messagerec* pMessageRecord, string msgs_filename, string* out) {
+bool WWIVMessageArea::readfile(const messagerec* msg, string msgs_filename, string* out) {
   out->clear();
   unique_ptr<File> file(OpenMessageFile(msgs_filename));
   if (!file) {
     // TODO(rushfan): set error code,
     return false;
   }
-  set_gat_section(file.get(), pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS);
-  int current_section = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
+  set_gat_section(file.get(), msg->stored_as / GAT_NUMBER_ELEMENTS);
+  int current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
   long message_length = 0;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
     message_length += MSG_BLOCK_SIZE;
@@ -221,7 +284,7 @@ bool WWIVMessageArea::readfile(messagerec* pMessageRecord, string msgs_filename,
     return false;
   }
 
-  current_section = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
+  current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
     file->Seek(MSG_STARTING(gat_section) + MSG_BLOCK_SIZE * static_cast<uint32_t>(current_section), File::seekBegin);
     char b[MSG_BLOCK_SIZE];

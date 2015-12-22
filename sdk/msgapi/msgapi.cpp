@@ -25,6 +25,14 @@ namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
+Message::Message() {
+
+}
+Message::~Message() {
+
+}
+
+
 }  // namespace msgapi
 }  // namespace sdk
 }  // namespace wwiv

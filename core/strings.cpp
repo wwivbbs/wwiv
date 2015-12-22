@@ -263,6 +263,21 @@ void StringTrim(string* s) {
   s->erase(pos + 1);
 }
 
+/**
+* Removes spaces from the beginning and the end of the string s and
+* returns it as a new stringl
+* @param s the string from which to remove spaces
+* @return s with spaces removed.
+*/
+string StringTrim(const string& orig) {
+  string s(orig);
+  string::size_type pos = s.find_first_not_of(DELIMS_WHITE);
+  s.erase(0, pos);
+
+  pos = s.find_last_not_of(DELIMS_WHITE);
+  s.erase(pos + 1);
+  return s;
+}
 void StringTrimBegin(string* s) {
   string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
   s->erase(0, pos);

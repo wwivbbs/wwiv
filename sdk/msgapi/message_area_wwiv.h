@@ -34,7 +34,7 @@ class WWIVMessageAreaHeader: public MessageAreaHeader {
 
 class WWIVMessageArea: public MessageArea {
 public:
-  WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename, const std::string& msgs_filename);
+  WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename, const std::string& text_filename);
   virtual ~WWIVMessageArea();
 
   // Message Area Specific Operations
@@ -57,11 +57,12 @@ private:
   File* OpenMessageFile(const std::string msgs_filename);
   void set_gat_section(File *pMessageFile, int section);
   void save_gat(File *pMessageFile);
-  bool readfile(messagerec* pMessageRecord, std::string msgs_filename, std::string* out);
+  bool readfile(const messagerec* pMessageRecord, std::string msgs_filename, std::string* out);
   void savefile(const std::string& text, messagerec * pMessageRecord, const std::string fileName);
 
 
   const std::string sub_filename_;
+  const std::string text_filename_;
   bool open_ = false;
   int last_num_messages_ = 0;
 
