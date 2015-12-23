@@ -25,6 +25,7 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "sdk/config.h"
+#include "sdk/net.h"
 #include "sdk/networks.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/msgapi/message_api_wwiv.h"
@@ -57,10 +58,12 @@ string daten_to_humantime(uint32_t daten) {
   return human_date;
 }
 
-static int dump(const string& basename, const string& subs_dir, const string& msgs_dir,
-                const vector<net_networks_rec>& net_networks,
+static int dump(const string& basename, const string& subs_dir,
+		const string& msgs_dir,
+                const std::vector<net_networks_rec>& net_networks,
                 int start, int end, bool all) {
-  unique_ptr<WWIVMessageApi> api(new WWIVMessageApi(subs_dir, msgs_dir, net_networks));
+  unique_ptr<WWIVMessageApi> api(new WWIVMessageApi(
+      subs_dir, msgs_dir, net_networks));
   if (!api->Exist(basename)) {
     clog << "Message area: '" << basename << "' does not exist." << endl;
     return 1;
@@ -73,20 +76,23 @@ static int dump(const string& basename, const string& subs_dir, const string& ms
   }
 
   int num_messages = (end >= 0) ? end : area->number_of_messages();
-  cout << "Message Area: '" << basename << "' has " << num_messages << " messages." << endl;
+  cout << "Message Area: '" << basename << "' has "
+       << num_messages << " messages." << endl;
   for (int current = start; current <= num_messages; current++) {
     unique_ptr<MessageHeader> header(area->ReadMessageHeader(current));
     if (!header) {
       continue;
     }
-    cout << "#" << setw(5) << std::left << current << " From: " << setw(20) << header->from()
+    cout << "#" << setw(5) << std::left << current
+	 << " From: " << setw(20) << header->from()
          << "date: " << daten_to_humantime(header->daten()) << endl
          << "title: " << header->title() << endl;
     if (all) {
       for (const auto& c : header->control_lines()) {
         cout << "c: " << c << endl;
       }
-      WWIVMessageHeader* wwiv_header = dynamic_cast<WWIVMessageHeader*>(header.get());
+      WWIVMessageHeader* wwiv_header =
+	dynamic_cast<WWIVMessageHeader*>(header.get());
       if (wwiv_header) {
         cout << "ownersys: " << wwiv_header->data().ownersys << endl;
       }
@@ -95,9 +101,11 @@ static int dump(const string& basename, const string& subs_dir, const string& ms
     if (!text) {
       continue;
     }
-    cout << "------------------------------------------------------------------------" << endl;
+    cout << "------------------------------------------------------------------------"
+	 << endl;
     cout << text->text() << endl;
-    cout << "------------------------------------------------------------------------" << endl;
+    cout << "------------------------------------------------------------------------"
+	 << endl;
   }
   return 0;
 }

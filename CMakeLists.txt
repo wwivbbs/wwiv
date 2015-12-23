@@ -22,3 +22,5 @@ add_subdirectory(networkb_test)
 add_subdirectory(nodemgr)
 add_subdirectory(sdk)
 add_subdirectory(sdk_test)
+add_subdirectory(wwivutil)
+
