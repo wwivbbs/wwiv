@@ -30,6 +30,7 @@
 #include "bbs/external_edit.h"
 #include "bbs/instmsg.h"
 #include "bbs/wconstants.h"
+#include "bbs/workspace.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
@@ -207,14 +208,14 @@ void feedback(bool bNewUserFeedback) {
 
   if (bNewUserFeedback) {
     sprintf(irt, "|#1Validation Feedback (|#6%d|#2 slots left|#1)",
-            syscfg.maxusers - session()->GetStatusManager()->GetUserCount());
+            syscfg.maxusers - session()->status_manager()->GetUserCount());
     // We disable the fsed here since it was hanging on some systems.  Not sure why
     // but it's better to be safe -- Rushfan 2003-12-04
     email(irt, 1, 0, true, 0, false);
     return;
   }
   if (guest_user) {
-    session()->GetStatusManager()->RefreshStatusCache();
+    session()->status_manager()->RefreshStatusCache();
     strcpy(irt, "Guest Account Feedback");
     email(irt, 1, 0, true, 0, true);
     return;

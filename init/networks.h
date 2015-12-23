@@ -23,8 +23,6 @@
 
 #define MAX_NETWORKS 100
 
-extern net_networks_rec *net_networks;
-
 void networks();
 
 #endif // __INCLUDED_TEMPLATE_H__

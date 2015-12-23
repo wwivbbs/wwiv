@@ -85,6 +85,14 @@ bool CommandLineCommand::HandleCommandLineArgument(
   return true;
 }
 
+const CommandLineValue CommandLineCommand::arg(const std::string name) const {
+  if (!contains(args_, name)) {
+    std::clog << "Unknown argument name: " << name << endl;
+  }
+  return args_.at(name);
+}
+
+
 std::string CommandLineCommand::ArgNameForKey(char key) {
   for (const auto& a : args_allowed_) {
     if (key == a.second.key) {
@@ -160,7 +168,7 @@ std::string CommandLineCommand::GetHelp() const {
   ss << "commands:" << std::endl;
   for (const auto& a : commands_allowed_) {
     const string allowed_name = a.second.name();
-    ss << "--" << StringPrintf("%-20s", allowed_name.c_str()) << " " << a.second.help_text() << endl;
+    ss << StringPrintf("%-20s", allowed_name.c_str()) << " " << a.second.help_text() << endl;
   }
   return ss.str();
 }

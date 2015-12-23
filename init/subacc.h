@@ -19,9 +19,12 @@
 #ifndef __INCLUDED_SUBACC_H__
 #define __INCLUDED_SUBACC_H__
 
+#include <vector>
+#include "sdk/vardec.h"
+
 void    close_sub();
 bool    open_sub(bool wr);
-bool    iscan1(int si, subboardrec *subboards);
+bool    iscan1(int si, const std::vector<subboardrec>& subboards);
 postrec *get_post(int mn);
 void    write_post(int mn, postrec * pp);
 

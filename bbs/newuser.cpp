@@ -38,6 +38,7 @@
 #include "bbs/stuffin.h"
 #include "bbs/uedit.h"
 #include "bbs/wconstants.h"
+#include "bbs/workspace.h"
 #include "bbs/wstatus.h"
 #include "core/inifile.h"
 #include "core/strings.h"
@@ -603,7 +604,7 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qscn) {
   userFile.Seek(syscfg.userreclen, File::seekBegin);
   int user_number = 1;
 
-  if (nNewUserNumber == session()->GetStatusManager()->GetUserCount()) {
+  if (nNewUserNumber == session()->status_manager()->GetUserCount()) {
     user_number = nNewUserNumber + 1;
   } else {
     while (user_number <= nNewUserNumber) {
@@ -706,7 +707,7 @@ void CreateNewUserRecord() {
 // on here, if this function returns false, a sufficient error
 // message has already been displayed to the user.
 bool CanCreateNewUserAccountHere() {
-  if (session()->GetStatusManager()->GetUserCount() >= syscfg.maxusers) {
+  if (session()->status_manager()->GetUserCount() >= syscfg.maxusers) {
     bout.nl(2);
     bout << "I'm sorry, but the system currently has the maximum number of users it can\r\nhandle.\r\n\n";
     return false;
@@ -1064,7 +1065,7 @@ void newuser() {
 
   sysoplog("", false);
   sysoplogfi(false, "*** NEW USER %s   %s    %s (%ld)", fulldate(), times(), session()->GetCurrentSpeed().c_str(),
-             session()->GetInstanceNumber());
+             session()->instance_number());
 
   if (!CanCreateNewUserAccountHere() || hangup) {
     hangup = true;
@@ -1515,6 +1516,7 @@ void new_mail() {
 
   MessageEditorData data;
   data.title = StringPrintf("Welcome to %s!", syscfg.systemname);
+  data.need_title = true;
   data.anonymous_flag = 0;
   data.aux = "email";
   data.fsed_flags = INMSG_NOFSED;

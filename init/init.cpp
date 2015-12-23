@@ -75,10 +75,8 @@ using wwiv::core::IniFile;
 using wwiv::strings::StringPrintf;
 using wwiv::strings::StringReplace;
 
-initinfo_rec initinfo;
 configrec syscfg;
 statusrec status;
-net_networks_rec *net_networks;
 
 // from convert.cpp
 void convcfg(CursesWindow* window, const string& config_filename);
@@ -199,26 +197,6 @@ int WInitApp::main(int argc, char *argv[]) {
   }
   bool bDataDirectoryOk = read_status();
   if (bDataDirectoryOk) {
-    std::unique_ptr<net_networks_rec_disk[]> net_networks_disk(new net_networks_rec_disk[MAX_NETWORKS]());
-    net_networks = (net_networks_rec *) malloc(MAX_NETWORKS * sizeof(net_networks_rec));
-    memset(net_networks, 0, MAX_NETWORKS * sizeof(net_networks_rec));
-
-    File networksfile(syscfg.datadir, NETWORKS_DAT);
-    if (networksfile.Open(File::modeBinary|File::modeReadOnly)) {
-      initinfo.net_num_max = std::min(
-          static_cast<unsigned long>(MAX_NETWORKS),
-          networksfile.GetLength() / sizeof(net_networks_rec_disk));
-      if (initinfo.net_num_max) {
-        networksfile.Read(net_networks_disk.get(), initinfo.net_num_max * sizeof(net_networks_rec_disk));
-        for (int i = 0; i < initinfo.net_num_max; i++) {
-          net_networks[i].type = net_networks_disk[i].type;
-          strcpy(net_networks[i].name, net_networks_disk[i].name);
-          strcpy(net_networks[i].dir, net_networks_disk[i].dir);
-          net_networks[i].sysnum = net_networks_disk[i].sysnum;
-        }
-      }
-      networksfile.Close();
-    }
   }
 
   if (newbbs) {

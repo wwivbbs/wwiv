@@ -51,6 +51,7 @@
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
+#include "bbs/workspace.h"
 #include "bbs/printfile.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
@@ -80,7 +81,7 @@ void UnQScan() {
     bout.nl();
     qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = 0;
     bout << "Messages on " 
-         << subboards[usub[session()->GetCurrentMessageArea()].subnum].name
+         << session()->subboards[usub[session()->GetCurrentMessageArea()].subnum].name
          << " marked as unread.\r\n";
   }
   break;
@@ -122,14 +123,14 @@ void DownSub() {
     session()->SetCurrentMessageArea(session()->GetCurrentMessageArea() - 1);
   } else {
     while (usub[session()->GetCurrentMessageArea() + 1].subnum >= 0 &&
-           session()->GetCurrentMessageArea() < session()->num_subs - 1) {
+           session()->GetCurrentMessageArea() < session()->subboards.size() - 1) {
       session()->SetCurrentMessageArea(session()->GetCurrentMessageArea() + 1);
     }
   }
 }
 
 void UpSub() {
-  if (session()->GetCurrentMessageArea() < session()->num_subs - 1 &&
+  if (session()->GetCurrentMessageArea() < session()->subboards.size() - 1 &&
       usub[session()->GetCurrentMessageArea() + 1].subnum >= 0) {
     session()->SetCurrentMessageArea(session()->GetCurrentMessageArea() + 1);
   } else {
@@ -223,7 +224,7 @@ void KillEMail() {
 }
 
 void LastCallers() {
-  std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   if (pStatus->GetNumCallsToday() > 0) {
     if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
         (syscfg.sysconfig & sysconfig_extended_info)) {
@@ -535,7 +536,7 @@ void ResetQscan() {
 }
 
 void MemoryStatus() {
-  std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   bout.nl();
   bout << "Qscanptr        : " << pStatus->GetQScanPointer() << wwiv::endl;
 }
@@ -594,7 +595,7 @@ void VotePrint() {
 }
 
 void YesterdaysLog() {
-  std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   print_local_file(pStatus->GetLogFileName(1));
 }
 
@@ -728,7 +729,7 @@ void ClearQScan() {
   case RETURN:
     break;
   case 'A': {
-    std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+    std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
     for (int i = 0; i < session()->GetMaxNumberMessageAreas(); i++) {
       qsc_p[i] = pStatus->GetQScanPointer() - 1L;
     }
@@ -737,11 +738,11 @@ void ClearQScan() {
   }
   break;
   case 'C':
-    std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+    std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
     bout.nl();
     qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = pStatus->GetQScanPointer() - 1L;
-    bout << "Messages on " << subboards[usub[session()->GetCurrentMessageArea()].subnum].name <<
-                       " marked as read.\r\n";
+    bout << "Messages on " << session()->subboards[usub[session()->GetCurrentMessageArea()].subnum].name 
+         << " marked as read.\r\n";
     break;
   }
 }
@@ -1086,7 +1087,7 @@ bool GuestCheck() {
 }
 
 void SetSubNumber(const char *pszSubKeys) {
-  for (int i = 0; (i < session()->num_subs) && (usub[i].subnum != -1); i++) {
+  for (size_t i = 0; (i < session()->subboards.size()) && (usub[i].subnum != -1); i++) {
     if (wwiv::strings::IsEquals(usub[i].keys, pszSubKeys)) {
       session()->SetCurrentMessageArea(i);
     }

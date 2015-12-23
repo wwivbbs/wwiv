@@ -282,10 +282,10 @@ void normalupload(int dn) {
           fileDownload.Write(&u1, sizeof(uploadsrec));
           fileDownload.Close();
           if (ok == 1) {
-            WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
+            WStatus *pStatus = session()->status_manager()->BeginTransaction();
             pStatus->IncrementNumUploadsToday();
             pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
-            session()->GetStatusManager()->CommitTransaction(pStatus);
+            session()->status_manager()->CommitTransaction(pStatus);
             sysoplogf("+ \"%s\" uploaded on %s", u.filename, directories[dn].name);
             bout.nl(2);
             bout.bprintf("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());

@@ -18,249 +18,133 @@
 /**************************************************************************/
 #include "bbs/subxtr.h"
 
+#include <string>
+#include <vector>
+#include <sstream>
+
 #include "bbs/bbs.h"
 #include "bbs/vars.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "sdk/filenames.h"
+
+using std::string;
+using std::vector;
+using namespace wwiv::strings;
+
 
 static xtrasubsnetrec *xsubsn;
 static int nn;
 
-static char *mallocin_file(const char *file_name, size_t *len) {
-  *len = 0;
-  char* ss = nullptr;
-
-  File file(file_name);
-  if (file.Open(File::modeReadOnly | File::modeBinary)) {
-    *len = file.GetLength();
-    ss = static_cast<char *>(malloc(*len + 20));
-    if (ss) {
-      file.Read(ss, *len);
-      ss[*len] = 0;
+static int FindNetworkByName(const std::vector<net_networks_rec>& net_networks, const std::string& name) {
+  for (size_t i = 0; i < net_networks.size(); i++) {
+    if (IsEqualsIgnoreCase(net_networks[i].name, name.c_str())) {
+      return i;
     }
-    file.Close();
-    return ss;
   }
-  return ss;
+  return -1;
 }
 
-static char *skipspace(char *ss2) {
-  while ((*ss2) && ((*ss2 != ' ') && (*ss2 != '\t'))) {
-    ++ss2;
-  }
-  if (*ss2) {
-    *ss2++ = 0;
-  }
-  while ((*ss2 == ' ') || (*ss2 == '\t')) {
-    ++ss2;
-  }
-  return ss2;
-}
-
-static xtrasubsnetrec *fsub(int netnum, int type) {
-  if (type != 0) {
-    for (int i = 0; i < nn; i++) {
-      if (xsubsn[i].net_num == netnum && xsubsn[i].type == static_cast<unsigned short>(type)) {
-        return (&(xsubsn[i]));
-      }
-    }
-  }
-  return nullptr;
-}
-
-
-bool read_subs_xtr(int max_subs, int num_subs, subboardrec * subs) {
-  char *ss1, *ss2;
-  int n, curn;
-  short i = 0;
-  char s[81];
-  xtrasubsnetrec *xnp;
-
-  if (xsubs) {
-    for (i = 0; i < num_subs; i++) {
-      if ((xsubs[i].flags & XTRA_MALLOCED) && xsubs[i].nets) {
-        free(xsubs[i].nets);
-      }
-    }
-    free(xsubs);
-    if (xsubsn) {
-      free(xsubsn);
-    }
-    xsubsn = nullptr;
-    xsubs = nullptr;
-  }
-  size_t l = max_subs * sizeof(xtrasubsrec);
-  xsubs = static_cast<xtrasubsrec *>(malloc(l + 1));
-  if (!xsubs) {
-    std::clog << "Insufficient memory (" << l << "d bytes) for SUBS.XTR" << std::endl;
+bool ParseXSubsLine(const std::vector<net_networks_rec>& net_networks, const std::string& line, xtrasubsrec& xsub) {
+  std::stringstream stream(line);
+  string net_name;
+  stream >> net_name;
+  StringTrim(&net_name);
+  int net_num = FindNetworkByName(net_networks, net_name);
+  if (net_num == -1) {
     return false;
   }
-  memset(xsubs, 0, l);
 
-  sprintf(s, "%s%s", syscfg.datadir, SUBS_XTR);
-  char* ss = mallocin_file(s, &l);
-  nn = 0;
-  if (ss) {
-    for (ss1 = strtok(ss, "\r\n"); ss1; ss1 = strtok(nullptr, "\r\n")) {
-      if (*ss1 == '$') {
-        ++nn;
+  xtrasubsnetrec x;
+
+  string stype;
+  stream >> stype;
+  StringTrim(&stype);
+  strcpy(x.stype, stype.c_str());
+  x.type = StringToUnsignedShort(x.stype);
+  x.net_num = static_cast<short>(net_num);
+
+  stream >> x.flags;
+  stream >> x.host;
+  stream >> x.category;
+
+  xsub.nets.push_back(x);
+  return true;
+}
+
+bool read_subs_xtr(const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec>& subs, std::vector<xtrasubsrec>& xsubs) {
+  TextFile subs_xtr(syscfg.datadir, SUBS_XTR, "rt");
+  if (!subs_xtr.IsOpen()) {
+    return false;
+  }
+
+  // Clear the existing xsubs.
+  xsubs.clear();
+  // add default constructed xtrasubsrec entries
+  xsubs.resize(subs.size());
+
+  // Only load the configuration file if it exists.
+  string line;
+  int curn = -1;
+  while (subs_xtr.ReadLine(&line)) {
+    StringTrim(&line);
+    char identifier = line.front();
+    line = line.substr(1);
+    switch (identifier) {
+    case '!': {                        /* sub idx */
+      curn = atoi(line.c_str());
+      if (curn > subs.size()) {
+        // Bad number on ! line.
+        curn = -1;
+        break;
       }
-    }
-    free(ss);
-  } else {
-    for (i = 0; i < num_subs; i++) {
-      if (subs[i].type) {
-        ++nn;
+    } break;
+    case '@':                         /* desc */
+      if (curn >= 0) {
+        strncpy(xsubs[curn].desc, line.c_str(), 60);
+      }
+      break;
+    case '#':                         /* flags */
+      if (curn >= 0) {
+        xsubs[curn].flags = atol(line.c_str());
+      }
+      break;
+    case '$':                         /* net info */
+      if (curn >= 0) {
+        ParseXSubsLine(net_networks, line, xsubs[curn]);
       }
     }
   }
-  if (nn) {
-    l = static_cast<long>(nn) * sizeof(xtrasubsnetrec);
-    xsubsn = static_cast<xtrasubsnetrec *>(malloc(l));
-    if (!xsubsn) {
-      std::clog << "Insufficient memory (" << l << " bytes) for net subs info" << std::endl;
-      return false;
-    }
-    memset(xsubsn, 0, l);
 
-    nn = 0;
-    ss = mallocin_file(s, &l);
-    if (ss) {
-      curn = -1;
-      for (ss1 = strtok(ss, "\r\n"); ss1; ss1 = strtok(nullptr, "\r\n")) {
-        switch (*ss1) {
-        case '!':                         /* sub idx */
-          curn = atoi(ss1 + 1);
-          if ((curn < 0) || (curn >= num_subs)) {
-            curn = -1;
-          }
-          break;
-        case '@':                         /* desc */
-          if (curn >= 0) {
-            strncpy(xsubs[curn].desc, ss1 + 1, 60);
-          }
-          break;
-        case '#':                         /* flags */
-          if (curn >= 0) {
-            xsubs[curn].flags = atol(ss1 + 1);
-          }
-          break;
-        case '$':                         /* net info */
-          if (curn >= 0) {
-            if (!xsubs[curn].num_nets) {
-              xsubs[curn].nets = &(xsubsn[nn]);
-            }
-            ss2 = skipspace(++ss1);
-            for (i = 0; i < session()->max_net_num(); i++) {
-              if (wwiv::strings::IsEqualsIgnoreCase(net_networks[i].name, ss1)) {
-                break;
-              }
-            }
-            if ((i < session()->max_net_num()) && (*ss2)) {
-              xsubsn[nn].net_num = i;
-              ss1 = ss2;
-              ss2 = skipspace(ss2);
-              strncpy(xsubsn[nn].stype, ss1, 7);
-              xsubsn[nn].type = wwiv::strings::StringToUnsignedShort(xsubsn[nn].stype);
-              if (xsubsn[nn].type) {
-                sprintf(xsubsn[nn].stype, "%u", xsubsn[nn].type);
-              }
-              ss1 = ss2;
-              ss2 = skipspace(ss2);
-              xsubsn[nn].flags = atol(ss1);
-              ss1 = ss2;
-              ss2 = skipspace(ss2);
-              xsubsn[nn].host = wwiv::strings::StringToShort(ss1);
-              ss1 = ss2;
-              ss2 = skipspace(ss2);
-              xsubsn[nn].category = wwiv::strings::StringToShort(ss1);
-              nn++;
-              xsubs[curn].num_nets++;
-              xsubs[curn].num_nets_max++;
-            } else {
-              std::clog << "Unknown network '" << ss1 << "' in SUBS.XTR" << std::endl;
-            }
-          }
-          break;
-        case 0:
-          break;
-        default:
-          break;
+  return true;
+}
+
+bool write_subs_xtr(const std::vector<net_networks_rec>& net_networks, const vector<xtrasubsrec>& xsubs) {
+  // Backup subs.xtr
+  const string subs_xtr_old_name = StrCat(SUBS_XTR, ".old");
+  File::Remove(syscfg.datadir, subs_xtr_old_name);
+  File subs_xtr(syscfg.datadir, SUBS_XTR);
+  File subs_xtr_old(syscfg.datadir, subs_xtr_old_name);
+  File::Move(subs_xtr.full_pathname(), subs_xtr_old.full_pathname());
+
+  TextFile fileSubsXtr(syscfg.datadir, SUBS_XTR, "w");
+  if (fileSubsXtr.IsOpen()) {
+    int i = 0;
+    for (const auto& x : xsubs) {
+      if (!x.nets.empty()) {
+        fileSubsXtr.WriteFormatted("!%u\n@%s\n#%lu\n", i, x.desc, x.flags);
+        for (const auto& n : x.nets) {
+          fileSubsXtr.WriteFormatted("$%s %s %lu %u %u\n",
+            net_networks[n.net_num].name,
+            n.stype,
+            n.flags,
+            n.host,
+            n.category);
         }
       }
-      free(ss);
-    } else {
-      for (curn = 0; curn < num_subs; curn++) {
-        if (subs[curn].type) {
-          if (subs[curn].age & 0x80) {
-            xsubsn[nn].net_num = subs[curn].name[40];
-          } else {
-            xsubsn[nn].net_num = 0;
-          }
-          if ((xsubsn[nn].net_num >= 0) && (xsubsn[nn].net_num < session()->max_net_num())) {
-            xsubs[curn].nets = &(xsubsn[nn]);
-            xsubsn[nn].type = subs[curn].type;
-            sprintf(xsubsn[nn].stype, "%u", xsubsn[nn].type);
-            nn++;
-            xsubs[curn].num_nets = 1;
-            xsubs[curn].num_nets_max = 1;
-          }
-        }
-      }
-      for (n = 0; n < session()->max_net_num(); n++) {
-        sprintf(s, "%s%s", net_networks[n].dir, ALLOW_NET);
-        ss = mallocin_file(s, &l);
-        if (ss) {
-          for (ss1 = strtok(ss, " \t\r\n"); ss1; ss1 = strtok(nullptr, " \t\r\n")) {
-            xnp = fsub(n, atoi(ss1));
-            if (xnp) {
-              xnp->flags |= XTRA_NET_AUTO_ADDDROP;
-            }
-          }
-          free(ss);
-        }
-        sprintf(s, "%ssubs.pub", net_networks[n].dir);
-        ss = mallocin_file(s, &l);
-        if (ss) {
-          for (ss1 = strtok(ss, " \t\r\n"); ss1; ss1 = strtok(nullptr, " \t\r\n")) {
-            xnp = fsub(n, atoi(ss1));
-            if (xnp) {
-              xnp->flags |= XTRA_NET_AUTO_INFO;
-            }
-          }
-          free(ss);
-        }
-        sprintf(s, "%snnall.net", net_networks[n].dir);
-        ss = mallocin_file(s, &l);
-        if (ss) {
-          for (ss1 = strtok(ss, "\r\n"); ss1; ss1 = strtok(nullptr, "\r\n")) {
-            while ((*ss1 == ' ') || (*ss1 == '\t')) {
-              ++ss1;
-            }
-            ss2 = skipspace(ss1);
-            xnp = fsub(n, atoi(ss1));
-            if (xnp) {
-              xnp->host = wwiv::strings::StringToShort(ss2);
-            }
-          }
-          free(ss);
-        }
-      }
-      for (i = 0; i < nn; i++) {
-        if ((xsubsn[i].type) && (!xsubsn[i].host)) {
-          sprintf(s, "%snn%u.net",
-                  net_networks[xsubsn[i].net_num].dir,
-                  xsubsn[i].type);
-          ss = mallocin_file(s, &l);
-          if (ss) {
-            for (ss1 = ss; (*ss1) && ((*ss1 < '0') || (*ss1 > '9')); ss1++)
-              ;
-            xsubsn[i].host = wwiv::strings::StringToShort(ss1);
-            free(ss);
-          }
-        }
-      }
+      i++;
     }
+    fileSubsXtr.Close();
   }
   return true;
 }

@@ -25,7 +25,7 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
-#include "bbs/msgbase.h"
+#include "bbs/email.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/vars.h"
@@ -43,14 +43,13 @@ using std::vector;
 using namespace wwiv::strings;
 
 char ShowAMsgMenuAndGetInput(const string& autoMessageLockFileName);
-void write_automessage();
 
 /**
  * Reads the auto message
  */
 void read_automessage() {
   bout.nl();
-  unique_ptr<WStatus> current_status(session()->GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> current_status(session()->status_manager()->GetStatus());
   bool bAutoMessageAnonymous = current_status->IsAutoMessageAnonymous();
 
   TextFile autoMessageFile(syscfg.gfilesdir, AUTO_MSG, "rt");
@@ -87,7 +86,7 @@ void read_automessage() {
 /**
  * Writes the auto message
  */
-void write_automessage() {
+static void write_automessage() {
   vector<string> lines;
   string rollOver;
 
@@ -108,18 +107,17 @@ void write_automessage() {
 
   bout << "|#9Is this OK? ";
   if (yesno()) {
-    WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
+    WStatus *pStatus = session()->status_manager()->BeginTransaction();
     pStatus->SetAutoMessageAnonymous(bAnonStatus);
     pStatus->SetAutoMessageAuthorUserNumber(session()->usernum);
-    session()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->status_manager()->CommitTransaction(pStatus);
 
     TextFile file(syscfg.gfilesdir, AUTO_MSG, "wt");
-    string authorName = session()->user()->GetUserNameAndNumber(session()->usernum);
-    file.WriteFormatted("%s\r\n", authorName.c_str());
+    const string authorName = session()->user()->GetUserNameAndNumber(session()->usernum);
+    file.WriteLine(authorName);
     sysoplog("Changed Auto-message");
     for (const auto& line : lines) {
-      file.Write(line);
-      file.Write("\r\n");
+      file.WriteLine(line);
       sysoplog(line, true);
     }
     bout << "\r\n|#5Auto-message saved.\r\n\n";
@@ -180,7 +178,7 @@ void do_automessage() {
       break;
     case 'A': {
       grab_quotes(nullptr, nullptr);
-      unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+      unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
       if (pStatus->GetAutoMessageAuthorUserNumber() > 0) {
         strcpy(irt, "Re: AutoMessage");
         email(irt, pStatus->GetAutoMessageAuthorUserNumber(), 0, false, pStatus->IsAutoMessageAnonymous() ? anony_sender : 0);

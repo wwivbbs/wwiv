@@ -51,13 +51,13 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
   string netName;
 
   if (session()->max_net_num() > 1) {
-    netName = StrCat(net_networks[session()->net_num()].name, "- ");
+    netName = StrCat(session()->net_networks[session()->net_num()].name, "- ");
   }
 
   outNetworkName->clear();
   outLocation->clear();
 
-  if (IsEqualsIgnoreCase(session()->GetNetworkName(), "Internet") ||
+  if (IsEqualsIgnoreCase(session()->network_name(), "Internet") ||
     system_number == 32767) {
     outNetworkName->assign("Internet Mail and Newsgroups");
     return;
@@ -344,7 +344,7 @@ void read_post(int n, bool *next, int *val) {
 
   bout.bprintf(" |#9Msg|#7: [|#1%u|#7/|#1%lu|#7]|#%d |#2%s\r\n", n,
     session()->GetNumMessagesInCurrentMessageArea(), session()->GetMessageColor(),
-    subboards[session()->GetCurrentReadMessageArea()].name);
+    session()->current_sub().name);
   const string subjectLine = "|#9Subj|#7: ";
   osan(subjectLine, &abort, next);
   bout.Color(session()->GetMessageColor());
@@ -386,7 +386,7 @@ void read_post(int n, bool *next, int *val) {
       set_net_num(p.network.network_msg.net_number);
     }
     read_message1(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit, next,
-      (subboards[session()->GetCurrentReadMessageArea()].filename), p.ownersys, p.owneruser);
+      (session()->current_sub().filename), p.ownersys, p.owneruser);
 
     if (nNetNumSaved != session()->net_num()) {
       set_net_num(nNetNumSaved);
@@ -403,16 +403,16 @@ void read_post(int n, bool *next, int *val) {
 
   unsigned long current_qscan_pointer = 0;
   {
-    std::unique_ptr<WStatus> wwiv_status(session()->GetStatusManager()->GetStatus());
+    std::unique_ptr<WStatus> wwiv_status(session()->status_manager()->GetStatus());
     // not sure why we check this twice...
     // maybe we need a getCachedQScanPointer?
     current_qscan_pointer = wwiv_status->GetQScanPointer();
   }
   if (p.qscan >= current_qscan_pointer) {
-    WStatus* pStatus = session()->GetStatusManager()->BeginTransaction();
+    WStatus* pStatus = session()->status_manager()->BeginTransaction();
     if (p.qscan >= pStatus->GetQScanPointer()) {
       pStatus->SetQScanPointer(p.qscan + 1);
     }
-    session()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->status_manager()->CommitTransaction(pStatus);
   }
 }

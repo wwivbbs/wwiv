@@ -30,10 +30,10 @@ int system_index(int ts);
 using wwiv::strings::StringPrintf;
 
 void zap_call_out_list() {
-  if (net_networks[session()->net_num()].con) {
-    free(net_networks[session()->net_num()].con);
-    net_networks[ session()->net_num() ].con = nullptr;
-    net_networks[ session()->net_num() ].num_con = 0;
+  if (session()->net_networks[session()->net_num()].con) {
+    free(session()->net_networks[session()->net_num()].con);
+    session()->net_networks[ session()->net_num() ].con = nullptr;
+    session()->net_networks[ session()->net_num() ].num_con = 0;
   }
 }
 
@@ -43,7 +43,7 @@ void read_call_out_list() {
 
   zap_call_out_list();
 
-  File fileCallout(session()->GetNetworkDataDirectory(), CALLOUT_NET);
+  File fileCallout(session()->network_directory(), CALLOUT_NET);
   if (fileCallout.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileCallout.GetLength();
     char *ss = nullptr;
@@ -55,17 +55,17 @@ void read_call_out_list() {
     fileCallout.Close();
     for (long lPos = 0L; lPos < lFileLength; lPos++) {
       if (ss[lPos] == '@') {
-        ++net_networks[session()->net_num()].num_con;
+        ++session()->net_networks[session()->net_num()].num_con;
       }
     }
     free(ss);
-    if ((net_networks[session()->net_num()].con = (net_call_out_rec *)
-         BbsAllocA(static_cast<long>((net_networks[session()->net_num()].num_con + 2) *
+    if ((session()->net_networks[session()->net_num()].con = (net_call_out_rec *)
+         BbsAllocA(static_cast<long>((session()->net_networks[session()->net_num()].num_con + 2) *
                                      sizeof(net_call_out_rec)))) == nullptr) {
-      WWIV_ASSERT(net_networks[session()->net_num()].con != nullptr);
+      WWIV_ASSERT(session()->net_networks[session()->net_num()].con != nullptr);
       session()->AbortBBS(true);
     }
-    con = net_networks[session()->net_num()].con;
+    con = session()->net_networks[session()->net_num()].con;
     con--;
     fileCallout.Open(File::modeBinary | File::modeReadOnly);
     if ((ss = static_cast<char*>(BbsAllocA(lFileLength + 512))) == nullptr) {
@@ -216,7 +216,7 @@ void read_bbs_list() {
   if (net_sysnum == 0) {
     return;
   }
-  File fileBbsData(session()->GetNetworkDataDirectory(), BBSDATA_NET);
+  File fileBbsData(session()->network_directory(), BBSDATA_NET);
   if (fileBbsData.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileBbsData.GetLength();
     session()->num_sys_list = static_cast<int>(lFileLength / sizeof(net_system_list_rec));
@@ -239,7 +239,7 @@ void read_bbs_list_index() {
   if (net_sysnum == 0) {
     return;
   }
-  File fileBbsData(session()->GetNetworkDataDirectory(), BBSDATA_IND);
+  File fileBbsData(session()->network_directory(), BBSDATA_IND);
   if (fileBbsData.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileBbsData.GetLength();
     session()->num_sys_list = static_cast<int>(lFileLength / 2);
@@ -292,7 +292,7 @@ net_system_list_rec *next_system(int ts) {
   } else if (csn) {
     return ((net_system_list_rec *) & (csn[nIndex]));
   } else {
-    File fileBbsData(session()->GetNetworkDataDirectory(), BBSDATA_NET);
+    File fileBbsData(session()->network_directory(), BBSDATA_NET);
     fileBbsData.Open(File::modeBinary | File::modeReadOnly);
     fileBbsData.Seek(sizeof(net_system_list_rec) * static_cast<long>(nIndex), File::seekBegin);
     fileBbsData.Read(&csne, sizeof(net_system_list_rec));
@@ -302,29 +302,29 @@ net_system_list_rec *next_system(int ts) {
 }
 
 void zap_contacts() {
-  if (net_networks[session()->net_num()].ncn) {
-    free(net_networks[session()->net_num()].ncn);
-    net_networks[session()->net_num()].ncn = nullptr;
-    net_networks[session()->net_num()].num_ncn = 0;
+  if (session()->net_networks[session()->net_num()].ncn) {
+    free(session()->net_networks[session()->net_num()].ncn);
+    session()->net_networks[session()->net_num()].ncn = nullptr;
+    session()->net_networks[session()->net_num()].num_ncn = 0;
   }
 }
 
 void read_contacts() {
   zap_contacts();
 
-  File fileContact(session()->GetNetworkDataDirectory(), CONTACT_NET);
+  File fileContact(session()->network_directory(), CONTACT_NET);
   if (fileContact.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileContact.GetLength();
-    net_networks[session()->net_num()].num_ncn = static_cast<short>(lFileLength / sizeof(net_contact_rec));
-    if ((net_networks[session()->net_num()].ncn =
-           static_cast<net_contact_rec *>(BbsAllocA((net_networks[session()->net_num()].num_ncn + 2) *
+    session()->net_networks[session()->net_num()].num_ncn = static_cast<short>(lFileLength / sizeof(net_contact_rec));
+    if ((session()->net_networks[session()->net_num()].ncn =
+           static_cast<net_contact_rec *>(BbsAllocA((session()->net_networks[session()->net_num()].num_ncn + 2) *
            sizeof(net_contact_rec)))) == nullptr) {
-      WWIV_ASSERT(net_networks[session()->net_num()].ncn != nullptr);
+      WWIV_ASSERT(session()->net_networks[session()->net_num()].ncn != nullptr);
       session()->AbortBBS(true);
     }
     fileContact.Seek(0L, File::seekBegin);
-    fileContact.Read(net_networks[session()->net_num()].ncn,
-                     net_networks[session()->net_num()].num_ncn * sizeof(net_contact_rec));
+    fileContact.Read(session()->net_networks[session()->net_num()].ncn,
+        session()->net_networks[session()->net_num()].num_ncn * sizeof(net_contact_rec));
     fileContact.Close();
   }
 }
@@ -332,8 +332,8 @@ void read_contacts() {
 void set_net_num(int network_number) {
   if (network_number >= 0 && network_number < session()->max_net_num()) {
     session()->set_net_num(network_number);
-    net_sysnum = net_networks[session()->net_num()].sysnum;
-    session()->set_net_type(net_networks[ session()->net_num() ].type);
+    net_sysnum = session()->net_networks[session()->net_num()].sysnum;
+    session()->set_net_type(session()->net_networks[ session()->net_num() ].type);
   }
 }
 

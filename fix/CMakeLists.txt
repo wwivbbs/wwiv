@@ -33,4 +33,4 @@ if(UNIX)
 endif()
 
 add_executable(fix ${COMMON_SOURCES} ${BBS_SOURCES} ${PLATFORM_SOURCES})
-target_link_libraries(fix core)
+target_link_libraries(fix core sdk)

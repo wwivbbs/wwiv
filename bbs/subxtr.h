@@ -20,6 +20,10 @@
 #ifndef __INCLUDED_SUBXTR_H__
 #define __INCLUDED_SUBXTR_H__
 
+#include <vector>
+
+#include "sdk/net.h"
+#include "sdk/vardec.h"
 
 /*
  * Info for each network the sub is on.
@@ -42,30 +46,23 @@ struct xtrasubsnetrec {
 
 /*
  * Extended info for each sub, relating to network.
+ * Note: This structure is not loaded/saved to disk as-is.
  *  flags - bitmask
  *  desc - long description, for auto subs.lst info
- *  num_nets - # records in "nets" field
- *  nets - pointer to network info for sub
+ *  nets - vector of network info for sub
  */
 struct xtrasubsrec {
   long flags;
   char desc[61];
-  short num_nets;
-  short num_nets_max;
-  xtrasubsnetrec *nets;
+  std::vector<xtrasubsnetrec> nets;
 };
 
 #define XTRA_NET_AUTO_ADDDROP 0x00000001    /* can auto add-drop the sub */
 #define XTRA_NET_AUTO_INFO    0x00000002    /* sends subs.lst info for sub */
-#define XTRA_MALLOCED         0x80000000    /* "nets" is malloced */
-#define XTRA_MASK             (~(XTRA_MALLOCED))
 
 
-#ifdef _DEFINE_GLOBALS_
-xtrasubsrec *xsubs;
-#else
-extern xtrasubsrec *xsubs;
-#endif
+bool read_subs_xtr(const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec>& subs, std::vector<xtrasubsrec>& xsubs);
+bool write_subs_xtr(const std::vector<net_networks_rec>& net_networks, const std::vector<xtrasubsrec>& xsubs);
 
 
 #endif // __INCLUDED_SUBXTR_H__

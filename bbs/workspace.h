@@ -15,43 +15,13 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_MSGBASE_H__
-#define __INCLUDED_BBS_MSGBASE_H__
+#ifndef __INCLUDED_BBS_WORKSPACE_H__
+#define __INCLUDED_BBS_WORKSPACE_H__
 
 #include <string>
-#include "bbs/inmsg.h"
-#include "sdk/vardec.h"
 
-class EmailData {
-public:
-  EmailData(const MessageEditorData& msged) : title(msged.title), silent_mode(msged.silent_mode) {}
-  explicit EmailData() {}
-  ~EmailData() {}
-
-  std::string title;
-  messagerec * msg;
-  int anony = 0;
-  int user_number = 0;
-  int system_number = 0;
-  bool an = 0;
-  int from_user = 0;
-  int from_system = 0;
-  int forwarded_code = 0;
-  int from_network_number = 0;
-
-  bool silent_mode;     // Used for ASV and newemail emails.  No questions, etc.
-};
+extern bool use_workspace;
+void LoadFileIntoWorkspace(const std::string& filename, bool no_edit_allowed, bool silent_mode = false);
 
 
-
-bool ForwardMessage(int *user_number, int *system_number);
-std::unique_ptr<File> OpenEmailFile(bool allow_write);
-void sendout_email(EmailData& data);
-bool ok_to_mail(int user_number, int system_number, bool force_it);
-void email(const std::string& title, int user_number, int system_number, bool force_it, int anony, bool allow_fsed = true);
-void imail(int user_number, int system_number);
-void LoadFileIntoWorkspace(const std::string& filename, bool no_edit_allowed, bool silent_mode=false);
-
-
-
-#endif  // __INCLUDED_BBS_MSGBASE_H__
+#endif  // __INCLUDED_BBS_WORKSPACE_H__

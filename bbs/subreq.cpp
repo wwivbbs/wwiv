@@ -95,9 +95,9 @@ int find_hostfor(char *type, short *ui, char *description, short *opt) {
   bool done = false;
   for (int i = 0; i < 256 && !done; i++) {
     if (i) {
-      sprintf(s, "%s%s.%d", session()->GetNetworkDataDirectory().c_str(), SUBS_NOEXT, i);
+      sprintf(s, "%s%s.%d", session()->network_directory().c_str(), SUBS_NOEXT, i);
     } else {
-      sprintf(s, "%s%s", session()->GetNetworkDataDirectory().c_str(), SUBS_LST);
+      sprintf(s, "%s%s", session()->network_directory().c_str(), SUBS_LST);
     }
     TextFile file(s, "r");
     if (file.IsOpen()) {
@@ -185,21 +185,20 @@ int find_hostfor(char *type, short *ui, char *description, short *opt) {
 
 
 void sub_xtr_del(int n, int nn, int f) {
-  int i;
-  short opt;
-
-  xtrasubsnetrec xn = xsubs[n].nets[nn];
+  // make a copy of the old network info.
+  xtrasubsnetrec xn = session()->xsubs[n].nets[nn];
 
   if (f) {
-    xsubs[n].num_nets--;
-
-    for (i = nn; i < xsubs[n].num_nets; i++) {
-      xsubs[n].nets[i] = xsubs[n].nets[i + 1];
+    auto it = session()->xsubs[n].nets.begin();
+    if (nn > 0) {
+      std::advance(it, nn);
     }
+    session()->xsubs[n].nets.erase(it);
   }
   set_net_num(xn.net_num);
 
-  if ((xn.host) && (valid_system(xn.host))) {
+  if (xn.host != 0 && valid_system(xn.host)) {
+    short opt;
     int ok = find_hostfor(xn.stype, &xn.host, nullptr, &opt);
     if (ok) {
       if (opt & OPTION_AUTO) {
@@ -222,37 +221,20 @@ void sub_xtr_del(int n, int nn, int f) {
 }
 
 void sub_xtr_add(int n, int nn) {
-  unsigned short i, i1;
+  unsigned short i;
   short opt;
   char szDescription[100], s[100], onx[20], *mmk, ch;
   int onxi, odci, ii, gc;
-  xtrasubsnetrec *xnp;
 
-  if (nn < 0 || nn >= xsubs[n].num_nets) {
-    if (xsubs[n].num_nets_max <= xsubs[n].num_nets) {
-      i1 = xsubs[n].num_nets + 4;
-      xnp = static_cast<xtrasubsnetrec *>(BbsAllocA(i1 * sizeof(xtrasubsnetrec)));
-      if (!xnp) {
-        return;
-      }
-      for (i = 0; i < xsubs[n].num_nets; i++) {
-        xnp[i] = xsubs[n].nets[i];
-      }
-
-      if (xsubs[n].flags & XTRA_MALLOCED) {
-        free(xsubs[n].nets);
-      }
-
-      xsubs[n].nets = xnp;
-      xsubs[n].num_nets_max = i1;
-      xsubs[n].flags |= XTRA_MALLOCED;
+  if (nn >= session()->xsubs[n].nets.size()) {
+    while (nn >= session()->xsubs[n].nets.size()) {
+      xtrasubsnetrec xnp;
+      memset(&xnp, 0, sizeof(xtrasubsnetrec));
+      session()->xsubs[n].nets.push_back(xnp);
     }
-    xnp = &(xsubs[n].nets[xsubs[n].num_nets]);
-  } else {
-    xnp = &(xsubs[n].nets[nn]);
   }
-
-  memset(xnp, 0, sizeof(xtrasubsnetrec));
+  xtrasubsnetrec xnp;
+  memset(&xnp, 0, sizeof(xtrasubsnetrec));
 
   if (session()->max_net_num() > 1) {
     odc[0] = 0;
@@ -270,7 +252,7 @@ void sub_xtr_add(int n, int nn) {
         odc[odci - 1] = static_cast<char>(odci + '0');
         odc[odci] = 0;
       }
-      bout << "(" << ii + 1 << ") " << net_networks[ii].name << wwiv::endl;
+      bout << "(" << ii + 1 << ") " << session()->net_networks[ii].name << wwiv::endl;
     }
     bout << "Q. Quit\r\n\n";
     bout << "|#2Which network (number): ";
@@ -295,25 +277,25 @@ void sub_xtr_add(int n, int nn) {
       return;
     }
   }
-  xnp->net_num = static_cast<short>(session()->net_num());
+  xnp.net_num = static_cast<short>(session()->net_num());
 
   bout.nl();
   bout << "|#2What sub type? ";
-  input(xnp->stype, 7);
-  if (xnp->stype[0] == 0) {
+  input(xnp.stype, 7);
+  if (xnp.stype[0] == 0) {
     return;
   }
 
-  xnp->type = wwiv::strings::StringToUnsignedShort(xnp->stype);
+  xnp.type = wwiv::strings::StringToUnsignedShort(xnp.stype);
 
-  if (xnp->type) {
-    sprintf(xnp->stype, "%u", xnp->type);
+  if (xnp.type) {
+    sprintf(xnp.stype, "%u", xnp.type);
   }
 
   bout << "|#5Will you be hosting the sub? ";
   if (yesno()) {
     char file_name[MAX_PATH];
-    sprintf(file_name, "%sn%s.net", session()->GetNetworkDataDirectory().c_str(), xnp->stype);
+    sprintf(file_name, "%sn%s.net", session()->network_directory().c_str(), xnp.stype);
     File file(file_name);
     if (file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
       file.Close();
@@ -321,12 +303,12 @@ void sub_xtr_add(int n, int nn) {
 
     bout << "|#5Allow auto add/drop requests? ";
     if (noyes()) {
-      xnp->flags |= XTRA_NET_AUTO_ADDDROP;
+      xnp.flags |= XTRA_NET_AUTO_ADDDROP;
     }
 
     bout << "|#5Make this sub public (in subs.lst)?";
     if (noyes()) {
-      xnp->flags |= XTRA_NET_AUTO_INFO;
+      xnp.flags |= XTRA_NET_AUTO_INFO;
       if (display_sub_categories()) {
         gc = 0;
         while (!gc) {
@@ -335,19 +317,19 @@ void sub_xtr_add(int n, int nn) {
           input(s, 3);
           i = wwiv::strings::StringToUnsignedShort(s);
           if (i || wwiv::strings::IsEquals(s, "0")) {
-            TextFile ff(session()->GetNetworkDataDirectory(), CATEG_NET, "rt");
+            TextFile ff(session()->network_directory(), CATEG_NET, "rt");
             while (ff.ReadLine(s, 100)) {
-              i1 = wwiv::strings::StringToUnsignedShort(s);
+              int i1 = wwiv::strings::StringToUnsignedShort(s);
               if (i1 == i) {
                 gc = 1;
-                xnp->category = i;
+                xnp.category = i;
                 break;
               }
             }
             file.Close();
             if (wwiv::strings::IsEquals(s, "0")) {
               gc = 1;
-            } else if (!xnp->category) {
+            } else if (!xnp.category) {
               bout << "Illegal/invalid category.\r\n\n";
             }
           } else {
@@ -360,46 +342,46 @@ void sub_xtr_add(int n, int nn) {
       }
     }
   } else {
-    int ok = find_hostfor(xnp->stype, &(xnp->host), szDescription, &opt);
+    int ok = find_hostfor(xnp.stype, &(xnp.host), szDescription, &opt);
 
     if (!ok) {
       bout.nl();
       bout << "|#2Which system (number) is the host? ";
       input(szDescription, 6);
-      xnp->host = static_cast<unsigned short>(atol(szDescription));
+      xnp.host = static_cast<unsigned short>(atol(szDescription));
       szDescription[0] = '\0';
     }
-    if (!xsubs[n].desc[0]) {
-      strcpy(xsubs[n].desc, szDescription);
+    if (!session()->xsubs[n].desc[0]) {
+      strcpy(session()->xsubs[n].desc, szDescription);
     }
 
-    if (xnp->host == net_sysnum) {
-      xnp->host = 0;
+    if (xnp.host == net_sysnum) {
+      xnp.host = 0;
     }
 
-    if (xnp->host) {
-      if (valid_system(xnp->host)) {
+    if (xnp.host) {
+      if (valid_system(xnp.host)) {
         if (ok) {
           if (opt & OPTION_NO_TAG) {
-            subboards[n].anony |= anony_no_tag;
+            session()->subboards[n].anony |= anony_no_tag;
           }
           bout.nl();
           if (opt & OPTION_AUTO) {
             bout << "|#5Attempt automated add request? ";
             if (yesno()) {
-              sub_req(main_type_sub_add_req, xnp->type, xnp->host, xnp->stype);
+              sub_req(main_type_sub_add_req, xnp.type, xnp.host, xnp.stype);
             }
           } else {
-            maybe_netmail(xnp, true);
+            maybe_netmail(&xnp, true);
           }
         } else {
           bout.nl();
           bout << "|#5Attempt automated add request? ";
           bool bTryAutoAddReq = yesno();
           if (bTryAutoAddReq) {
-            sub_req(main_type_sub_add_req, xnp->type, xnp->host, xnp->stype);
+            sub_req(main_type_sub_add_req, xnp.type, xnp.host, xnp.stype);
           } else {
-            maybe_netmail(xnp, true);
+            maybe_netmail(&xnp, true);
           }
         }
       } else {
@@ -409,8 +391,10 @@ void sub_xtr_add(int n, int nn) {
       }
     }
   }
-  if ((nn < 0) || (nn >= xsubs[n].num_nets)) {
-    xsubs[n].num_nets++;
+  if (nn >= session()->xsubs[n].nets.size()) {
+    session()->xsubs[n].nets.push_back(xnp);
+  } else {
+    session()->xsubs[n].nets[nn] = xnp;
   }
 }
 
@@ -420,7 +404,7 @@ bool display_sub_categories() {
     return false;
   }
 
-  TextFile ff(session()->GetNetworkDataDirectory(), CATEG_NET, "rt");
+  TextFile ff(session()->network_directory(), CATEG_NET, "rt");
   if (ff.IsOpen()) {
     bout.nl();
     bout << "Available sub categories are:\r\n";

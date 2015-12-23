@@ -94,13 +94,13 @@ auto send_email_f = []() {
 };
 
 auto view_sysop_log_f = []() {
-  unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   const string sysop_log_file = GetSysopLogFileName(date());
   print_local_file(sysop_log_file);
 };
 
 auto view_yesterday_sysop_log_f = []() {
-  unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   print_local_file(pStatus->GetLogFileName(1));
 };
 
@@ -160,7 +160,7 @@ static string GetLastUserName(int inst_num) {
 
 static void UpdateStatus(CursesWindow* statusWindow) {
   statusWindow->SetColor(SchemeId::WINDOW_DATA);
-  std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
 
   statusWindow->PrintfXY(9, 2, "%-5d", pStatus->GetNumCallsToday());
   statusWindow->PrintfXY(24, 2, "%-5d", pStatus->GetMinutesActiveToday());
@@ -190,10 +190,10 @@ static void CleanNetIfNeeded() {
 }
 
 static void RunEventsIfNeeded() {
-  unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   if (!IsEquals(date(), pStatus->GetLastDate())) {
     if ((session()->GetBeginDayNodeNumber() == 0) 
-        || (session()->GetInstanceNumber() == session()->GetBeginDayNodeNumber())) {
+        || (session()->instance_number() == session()->GetBeginDayNodeNumber())) {
       cleanup_events();
       beginday(true);
     }
@@ -388,7 +388,7 @@ void wfc_update() {
       if (inst_num > num_instances()) {
         inst_num = 1;
       }
-    } while (inst_num == session()->GetInstanceNumber());
+    } while (inst_num == session()->instance_number());
   }
 }
 
@@ -403,7 +403,7 @@ void wfc_screen() {
   }
 
   int nNumNewMessages = check_new_mail(session()->usernum);
-  std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   if (session()->wfc_status == 0) {
     session()->localIO()->SetCursor(LocalIO::cursorNone);
     session()->localIO()->LocalCls();
@@ -418,7 +418,7 @@ void wfc_screen() {
       wfcFile.Read(pszScreenBuffer, 4000);
     }
     DisplayWFCScreen(pszScreenBuffer);
-    sprintf(szBuffer, "Activity and Statistics of %s Node %d", syscfg.systemname, session()->GetInstanceNumber());
+    sprintf(szBuffer, "Activity and Statistics of %s Node %d", syscfg.systemname, session()->instance_number());
     session()->localIO()->LocalXYAPrintf(1 + ((76 - strlen(szBuffer)) / 2), 4, 15, szBuffer);
     session()->localIO()->LocalXYAPrintf(8, 1, 14, fulldate());
     std::string osVersion = wwiv::os::os_version_string();
@@ -452,7 +452,7 @@ void wfc_screen() {
     session()->localIO()->LocalXYAPrintf(58, 12, 14, "Local %code", (syscfgovr.primaryport) ? 'M' : 'N');
     session()->localIO()->LocalXYAPrintf(58, 13, 14, "Waiting For Command");
 
-    get_inst_info(session()->GetInstanceNumber(), &ir);
+    get_inst_info(session()->instance_number(), &ir);
     if (ir.user < syscfg.maxusers && ir.user > 0) {
       session()->users()->ReadUserNoCache(&u, ir.user);
       session()->localIO()->LocalXYAPrintf(33, 16, 14, "%-20.20s", u.GetUserNameAndNumber(ir.user));

@@ -47,7 +47,7 @@ string GetSysopLogFileName(const string& d) {
 * Returns instance (temporary) sysoplog filename in s.
 */
 void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName) {
-  sprintf(pszInstanceLogFileName, "inst-%3.3u.log", session()->GetInstanceNumber());
+  sprintf(pszInstanceLogFileName, "inst-%3.3u.log", session()->instance_number());
 }
 
 /*

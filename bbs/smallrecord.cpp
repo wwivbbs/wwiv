@@ -35,7 +35,7 @@ using namespace wwiv::strings;
 
 // Inserts a record into NAMES.LST
 void InsertSmallRecord(int user_number, const char *name) {
-  WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
+  WStatus *pStatus = session()->status_manager()->BeginTransaction();
   auto it = session()->smallist.begin();
   for (; it != session()->smallist.end()
     && StringCompare(name, reinterpret_cast<char*>((*it).name)) > 0;
@@ -54,7 +54,7 @@ void InsertSmallRecord(int user_number, const char *name) {
     session()->AbortBBS();
   }
   file.WriteVector(session()->smallist);
-  session()->GetStatusManager()->CommitTransaction(pStatus);
+  session()->status_manager()->CommitTransaction(pStatus);
 }
 
 
@@ -63,14 +63,14 @@ void InsertSmallRecord(int user_number, const char *name) {
 //
 
 void DeleteSmallRecord(const char *name) {
-  WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
+  WStatus *pStatus = session()->status_manager()->BeginTransaction();
   auto it = session()->smallist.begin();
   for (; it != session()->smallist.end()
     && StringCompare(name, reinterpret_cast<char*>((*it).name)) > 0;
     it++) {
   }
   if (!wwiv::strings::IsEquals(name, reinterpret_cast<char*>((*it).name))) {
-    session()->GetStatusManager()->AbortTransaction(pStatus);
+    session()->status_manager()->AbortTransaction(pStatus);
     sysoplogfi(false, "%s NOT ABLE TO BE DELETED#*#*#*#*#*#*#*#", name);
     sysoplog("#*#*#*# Run //resetf to fix it", false);
     return;
@@ -84,5 +84,5 @@ void DeleteSmallRecord(const char *name) {
     session()->AbortBBS();
   }
   file.WriteVector(session()->smallist);
-  session()->GetStatusManager()->CommitTransaction(pStatus);
+  session()->status_manager()->CommitTransaction(pStatus);
 }

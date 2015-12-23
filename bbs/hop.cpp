@@ -61,8 +61,8 @@ void HopSub() {
       setuconf(CONF_SUBS, c, -1);
     }
     int i = 0;
-    while ((i < session()->num_subs) && (usub[i].subnum != -1) && !abort) {
-      strcpy(s2, subboards[usub[i].subnum].name);
+    while ((i < session()->subboards.size()) && (usub[i].subnum != -1) && !abort) {
+      strcpy(s2, session()->subboards[usub[i].subnum].name);
       for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
         ;
       if (strstr(s2, s1) != nullptr) {
@@ -72,7 +72,7 @@ void HopSub() {
         if (!okansi()) {
           bout.nl();
         }
-        bout << "|#5Do you mean \"" << subboards[usub[i].subnum].name << "\" (Y/N/Q)? ";
+        bout << "|#5Do you mean \"" << session()->subboards[usub[i].subnum].name << "\" (Y/N/Q)? ";
         char ch = onek_ncr("QYN\r");
         if (ch == 'Y') {
           abort = true;

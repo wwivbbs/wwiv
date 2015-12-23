@@ -236,7 +236,7 @@ void list_users(int mode) {
   }
 
   if (mode == LIST_USERS_MESSAGE_AREA) {
-    s = subboards[usub[session()->GetCurrentMessageArea()].subnum];
+    s = session()->subboards[usub[session()->GetCurrentMessageArea()].subnum];
   } else {
     d = directories[udir[session()->GetCurrentFileArea()].subnum];
   }
@@ -252,7 +252,7 @@ void list_users(int mode) {
   int color   = 3;
   session()->WriteCurrentUser();
   write_qscn(session()->usernum, qsc, false);
-  session()->GetStatusManager()->RefreshStatusCache();
+  session()->status_manager()->RefreshStatusCache();
 
   File userList(syscfg.datadir, USER_LST);
   int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
@@ -382,7 +382,7 @@ void list_users(int mode) {
         switch (ch) {
         case 'Q':
           abort = true;
-          i = session()->GetStatusManager()->GetUserCount();
+          i = session()->status_manager()->GetUserCount();
           break;
         case SPACE:
         case RETURN:
@@ -500,7 +500,7 @@ void time_bank() {
 int getnetnum(const char *network_name) {
   WWIV_ASSERT(network_name);
   for (int i = 0; i < session()->max_net_num(); i++) {
-    if (wwiv::strings::IsEqualsIgnoreCase(net_networks[i].name, network_name)) {
+    if (wwiv::strings::IsEqualsIgnoreCase(session()->net_networks[i].name, network_name)) {
       return i;
     }
   }

@@ -330,7 +330,7 @@ void who_online(int *nodes, int loc) {
   for (int i = 1; i <= num_instances(); i++) {
     get_inst_info(i, &ir);
     if ((!(ir.flags & INST_FLAGS_INVIS)) || so())
-      if ((ir.loc == loc) && (i != session()->GetInstanceNumber())) {
+      if ((ir.loc == loc) && (i != session()->instance_number())) {
         c++;
         nodes[c] = ir.user;
       }
@@ -398,7 +398,7 @@ void ch_direct(const char *message, int loc, char *color_string, int node, int n
             message + nOffSet + 1);
     for (int i = 1; i <= num_instances(); i++) {
       get_inst_info(i, &ir);
-      if (ir.loc == loc &&  i != session()->GetInstanceNumber()) {
+      if (ir.loc == loc &&  i != session()->instance_number()) {
         send_inst_str(i, szMessage);
       }
     }
@@ -512,7 +512,7 @@ void page_user(int loc) {
     }
     i = atoi(s);
   }
-  if (i == session()->GetInstanceNumber()) {
+  if (i == session()->instance_number()) {
     bout << "|#1[|#9Cannot page the instance you are on|#1]\r\n";
     return;
   } else {
@@ -550,7 +550,7 @@ void out_msg(const char *message, int loc) {
   for (int i = 1; i <= num_instances(); i++) {
     instancerec ir;
     get_inst_info(i, &ir);
-    if ((ir.loc == loc) && (i != session()->GetInstanceNumber())) {
+    if ((ir.loc == loc) && (i != session()->instance_number())) {
       send_inst_str(i, message);
     }
   }
@@ -561,7 +561,7 @@ void out_msg(const char *message, int loc) {
 void get_colors(char *color_string, IniFile *pIniFile) {
   char szKey[10];
 
-  sprintf(szKey, "C%u", session()->GetInstanceNumber());
+  sprintf(szKey, "C%u", session()->instance_number());
   strcpy(color_string, pIniFile->GetValue(szKey));
 }
 
@@ -700,7 +700,7 @@ void exec_action(const char *message, char *color_string, int loc, int nact) {
     sprintf(final, "%s%s", color_string, tmsg);
     for (int c = 1; c <= num_instances(); c++) {
       get_inst_info(c, &ir);
-      if ((ir.loc == loc) && (c != session()->GetInstanceNumber()) && (c != p)) {
+      if ((ir.loc == loc) && (c != session()->instance_number()) && (c != p)) {
         send_inst_str(c, final);
       }
     }
@@ -750,7 +750,7 @@ void toggle_avail() {
   char xl[81], cl[81], atr[81], cc;
 
   session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
-  get_inst_info(session()->GetInstanceNumber(), &ir);
+  get_inst_info(session()->instance_number(), &ir);
   chat_avail = !chat_avail;
 
   bout << "\n\rYou are now ";
@@ -766,7 +766,7 @@ void toggle_invis() {
   char xl[81], cl[81], atr[81], cc;
 
   session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
-  get_inst_info(session()->GetInstanceNumber(), &ir);
+  get_inst_info(session()->instance_number(), &ir);
   chat_invis = !chat_invis;
 
   bout << "\r\n|#1You are now ";

@@ -30,10 +30,12 @@
 #include "bbs/wstatus.h"
 #include "bbs/wuser.h"
 #include "bbs/woutstreambuffer.h"
+#include "bbs/subxtr.h"
 #include "bbs/local_io.h"
 #include "core/inifile.h"
 #include "core/file.h"
 #include "sdk/vardec.h"
+#include "sdk/net.h"
 
 //
 // WSession - Holds information and status data about the current user
@@ -106,8 +108,8 @@ public:
   bool reset_local_io(LocalIO* wlocal_io);
   wwiv::bbs::Capture* capture() { return capture_.get(); }
   const std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
-  int  GetInstanceNumber() const { return instance_number_; }
-  const std::string& GetNetworkExtension() const { return network_extension; }
+  int  instance_number() const { return instance_number_; }
+  const std::string& network_extension() const { return network_extension_; }
 
   void UpdateTopScreen();
 
@@ -149,8 +151,8 @@ public:
 
   // This is used in sprintf in many places, so we return a char*
   // instead of a string.
-  const char* GetNetworkName() const;
-  const std::string GetNetworkDataDirectory() const;
+  const char* network_name() const;
+  const std::string network_directory() const;
 
   bool IsMessageThreadingEnabled() const { return m_bThreadSubs; }
   void SetMessageThreadingEnabled(bool b) { m_bThreadSubs = b; }
@@ -161,8 +163,14 @@ public:
   bool IsUserOnline() const { return m_bUserOnline; }
   void SetUserOnline(bool b) { m_bUserOnline = b; }
 
-  int  GetCurrentLanguageNumber() const { return m_nCurrentLanguageNumber; }
-  void SetCurrentLanguageNumber(int n) { m_nCurrentLanguageNumber = n; }
+  int  language_number() const { return m_nCurrentLanguageNumber; }
+  void set_language_number(int n) { 
+    m_nCurrentLanguageNumber = n; 
+    if (n >= 0 && n <= static_cast<int>(languages.size())) {
+      cur_lang_name = languages[n].name;
+      language_dir = languages[n].dir;
+    }
+  }
 
   bool IsInternetUseRealNames() const { return m_bInternetUseRealNames; }
   void SetInternetUseRealNames(bool b) { m_bInternetUseRealNames = b; }
@@ -179,11 +187,23 @@ public:
   int  GetCurrentFileArea() const { return m_nCurrentFileArea; }
   void SetCurrentFileArea(int n) { m_nCurrentFileArea = n; }
 
+  // This is the current user's sub number they are sitting on.
+  // This is a user sub number (usub[b], not subboards[b]).
   int  GetCurrentMessageArea() const { return m_nCurrentMessageArea; }
   void SetCurrentMessageArea(int n) { m_nCurrentMessageArea = n; }
 
+  // This is set by iscan1 (for the most part) and is the sub number the user is
+  // currently scanning/reading.  Note. this is the subnumber from subboards
+  // not usub.
+  // The most common usage pattern is:
+  // iscan(session()->GetCurrentMessageArea());
+  // if (session()->GetCurrentReadMessageArea() < 0) { ... }
+
   int  GetCurrentReadMessageArea() const { return m_nCurrentReadMessageArea; }
   void SetCurrentReadMessageArea(int n) { m_nCurrentReadMessageArea = n; }
+
+  const subboardrec& current_sub() const { return subboards[GetCurrentReadMessageArea()]; }
+  const xtrasubsrec& current_xsub() const { return xsubs[GetCurrentReadMessageArea()]; }
 
   int  GetCurrentConferenceMessageArea() const { return m_nCurrentConferenceMessageArea; }
   void SetCurrentConferenceMessageArea(int n) { m_nCurrentConferenceMessageArea = n; }
@@ -221,8 +241,7 @@ public:
   int  net_num() const { return m_nNetworkNumber; }
   void set_net_num(int n) { m_nNetworkNumber = n; }
 
-  int  max_net_num() const { return m_nMaxNetworkNumber; }
-  void SetMaxNetworkNumber(int n) { m_nMaxNetworkNumber = n; }
+  int  max_net_num() const { return net_networks.size(); }
 
   bool wwivmail_enabled() const { return wwivmail_enabled_; }
   void set_wwivmail_enabled(bool wwivmail_enabled) { wwivmail_enabled_ = wwivmail_enabled; }
@@ -230,7 +249,7 @@ public:
   bool internal_qwk_enabled() const { return internal_qwk_enabled_; }
   void set_internal_qwk_enabled(bool internal_qwk_enabled) { internal_qwk_enabled_ = internal_qwk_enabled; }
 
-  StatusMgr* GetStatusManager() { return statusMgr.get(); }
+  StatusMgr* status_manager() { return statusMgr.get(); }
   WUserManager* users() { return userManager.get(); }
 
 
@@ -348,7 +367,7 @@ private:
   int             m_nOkLevel;
   int             m_nErrorLevel;
   int             instance_number_;
-  std::string     network_extension;
+  std::string     network_extension_;
   double          last_time;
   bool            m_bUserAlreadyOn;
   bool            m_bNeedToCleanNetwork;
@@ -411,9 +430,6 @@ private:
               m_nMaxNetworkNumber,
               numf,
               num_dirs,
-              num_languages,
-              num_sec,
-              num_subs,
               num_events,
               num_sys_list,
               screenlinest,
@@ -435,7 +451,7 @@ private:
   bool m_bInternetUseRealNames;
 
   std::string language_dir;
-  char *cur_lang_name;
+  std::string cur_lang_name;
 
   int wfc_status;
   int usernum;
@@ -466,6 +482,11 @@ public:
   std::vector<newexternalrec> over_intern;
   std::vector<smalrec> smallist;
   std::vector<languagerec> languages;
+  std::vector<subboardrec> subboards;
+  std::vector<xtrasubsrec> xsubs;
+  std::vector<net_networks_rec> net_networks;
+  std::vector<gfiledirrec> gfilesec;
+
 
 };
 

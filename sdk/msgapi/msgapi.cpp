@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/msgapi.h"
+#include "sdk/msgapi/msgapi.h"
 
 #include <memory>
 #include <string>
@@ -25,14 +25,13 @@ namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
-MessageArea::MessageArea(MessageApi* api): api_(api) {}
-MessageArea::~MessageArea() {}
+Message::Message() {
 
-MessageApi::MessageApi(const std::string& subs_directory,
-  const std::string& messages_directory)
-  : subs_directory_(subs_directory), messages_directory_(messages_directory) {}
+}
+Message::~Message() {
 
-MessageApi::~MessageApi() {}
+}
+
 
 }  // namespace msgapi
 }  // namespace sdk

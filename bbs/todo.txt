@@ -5,7 +5,10 @@
 
 * to try strip down all message base code in wwiv to have no external
   dependencies so it can get moved into sdk.`
-* make all wwiv datafile data into vector and not malloc'ed *
+* make all wwiv datafile data into vector and not malloc'ed 
+* detangle global net_email_name (maybe it needs to be added to EmailData?)
+* change record 0 of .sub files to be a message header. Right now only owneruser
+  is used and the rest is loaded/saved as-is by the bbs code.
 
 * Move bbs logic out of WLocalIO and into WSession (probably)
 * remove extra include statements from user.cpp
@@ -13,6 +16,5 @@
 * Finish wrappering WSession
 * add IncrementXXXXX methods to WUser where it makes sense.
 * Change parameters to use strings so Runnable can use a vector of strings vs, argc, argv
-* make write_automessage use WTextFile instead of WFile
 * investigage makeing WTextFile always trim whitespace
 * Improve StringTrim(string)'s whitespace code and just have 1 copy of the whitespace string.

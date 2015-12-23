@@ -40,7 +40,7 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
-#include "sdk/message_utils_wwiv.h"
+#include "sdk/msgapi/message_utils_wwiv.h"
 
 using std::string;
 using std::unique_ptr;
@@ -51,14 +51,14 @@ using namespace wwiv::strings;
 using namespace wwiv::sdk::msgapi;
 
 void prstatus() {
-  session()->GetStatusManager()->RefreshStatusCache();
+  session()->status_manager()->RefreshStatusCache();
   bout.cls();
   if (syscfg.newuserpw[0] != '\0') {
     bout << "|#9New User Pass   : " << syscfg.newuserpw << wwiv::endl;
   }
   bout << "|#9Board is        : " << (syscfg.closedsystem ? "Closed" : "Open") << wwiv::endl;
 
-  std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   bout << "|#9Number Users    : |#2" << pStatus->GetNumUsers() << wwiv::endl;
   bout << "|#9Number Calls    : |#2" << pStatus->GetCallerNumber() << wwiv::endl;
   bout << "|#9Last Date       : |#2" << pStatus->GetLastDate() << wwiv::endl;
@@ -270,7 +270,7 @@ void print_net_listing(bool bForcePause) {
   char s[255], s1[101], s2[101], bbstype;
   bool bHadPause = false;
 
-  session()->GetStatusManager()->RefreshStatusCache();
+  session()->status_manager()->RefreshStatusCache();
 
   if (!session()->max_net_num()) {
     return;
@@ -303,7 +303,7 @@ void print_net_listing(bool bForcePause) {
           odc[odci - 1] = static_cast<char>(odci + '0');
           odc[odci] = 0;
         }
-        bout << "|#2" << i + 1 << "|#9)|#1 " << net_networks[i].name << wwiv::endl;
+        bout << "|#2" << i + 1 << "|#9)|#1 " << session()->net_networks[i].name << wwiv::endl;
       }
       bout << "|#2Q|#9)|#1 Quit\r\n\n";
       bout << "|#9Which network? |#2";
@@ -351,7 +351,7 @@ void print_net_listing(bool bForcePause) {
 
       bout.cls();
       bout.nl();
-      bout << "|#9Network|#2: |#1" << session()->GetNetworkName() << wwiv::endl;
+      bout << "|#9Network|#2: |#1" << session()->network_name() << wwiv::endl;
       bout.nl();
 
       bout << "|#21|#9) = |#1List All\r\n";
@@ -464,7 +464,7 @@ void print_net_listing(bool bForcePause) {
       bout << "|#1Print BBS region info? ";
       bool useregion = yesno();
 
-      File bbsListFile(session()->GetNetworkDataDirectory(), BBSDATA_NET);
+      File bbsListFile(session()->network_directory(), BBSDATA_NET);
       if (!bbsListFile.Open(File::modeReadOnly | File::modeBinary)) {
         bout << "|#6Error opening " << bbsListFile.full_pathname() << "!\r\n";
         pausescr();
@@ -605,12 +605,12 @@ void print_net_listing(bool bForcePause) {
 
 void read_new_stuff() {
   zap_bbs_list();
-  for (int i = 0; i < session()->max_net_num(); i++) {
+  for (size_t i = 0; i < session()->net_networks.size(); i++) {
     set_net_num(i);
     zap_call_out_list();
     zap_contacts();
   }
-  set_language_1(session()->GetCurrentLanguageNumber());
+  set_language_1(session()->language_number());
 }
 
 
@@ -776,7 +776,7 @@ void zlog() {
 
 
 void set_user_age() {
-  std::unique_ptr<WStatus> pStatus(session()->GetStatusManager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   int user_number = 1;
   do {
     WUser user;
@@ -829,22 +829,22 @@ void auto_purge() {
       }
     }
     ++user_number;
-  } while (user_number <= session()->GetStatusManager()->GetUserCount());
+  } while (user_number <= session()->status_manager()->GetUserCount());
 }
 
 
 void beginday(bool displayStatus) {
   if ((session()->GetBeginDayNodeNumber() > 0)
-      && (session()->GetInstanceNumber() != session()->GetBeginDayNodeNumber())) {
+      && (session()->instance_number() != session()->GetBeginDayNodeNumber())) {
     // If BEGINDAYNODENUMBER is > 0 or defined in WWIV.INI only handle beginday events on that node number
-    session()->GetStatusManager()->RefreshStatusCache();
+    session()->status_manager()->RefreshStatusCache();
     return;
   }
-  WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
+  WStatus *pStatus = session()->status_manager()->BeginTransaction();
   pStatus->ValidateAndFixDates();
 
   if (wwiv::strings::IsEquals(date(), pStatus->GetLastDate())) {
-    session()->GetStatusManager()->CommitTransaction(pStatus);
+    session()->status_manager()->CommitTransaction(pStatus);
     return;
   }
   if (displayStatus) {
@@ -902,7 +902,7 @@ void beginday(bool displayStatus) {
   }
   int nus = syscfg.maxusers - pStatus->GetNumUsers();
 
-  session()->GetStatusManager()->CommitTransaction(pStatus);
+  session()->status_manager()->CommitTransaction(pStatus);
   if (displayStatus) {
     bout << "  |#7* |#1Checking system directories and user space...\r\n";
   }

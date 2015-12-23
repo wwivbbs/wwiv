@@ -486,9 +486,7 @@ bool set_language_1(int n) {
     return false;
   }
 
-  session()->SetCurrentLanguageNumber(n);
-  cur_lang_name = session()->languages[idx].name;
-  session()->language_dir = session()->languages[idx].dir;
+  session()->set_language_number(n);
 
   strncpy(str_yes, "Yes", sizeof(str_yes) - 1);
   strncpy(str_no, "No", sizeof(str_no) - 1);
@@ -501,16 +499,13 @@ bool set_language_1(int n) {
   return true;
 }
 
-
-//
 // Sets language to language #n, returns false if a problem, else returns true.
-//
 bool set_language(int n) {
-  if (session()->GetCurrentLanguageNumber() == n) {
+  if (session()->language_number() == n) {
     return true;
   }
 
-  int nOldCurLang = session()->GetCurrentLanguageNumber();
+  int nOldCurLang = session()->language_number();
 
   if (!set_language_1(n)) {
     if (nOldCurLang >= 0) {
@@ -522,7 +517,6 @@ bool set_language(int n) {
   }
   return true;
 }
-
 
 char *mmkey(int dl, int area, bool bListOption) {
   static char cmd1[10], cmd2[81], ch;
@@ -597,7 +591,7 @@ char *mmkey(int dl, int area, bool bListOption) {
               if (!newline) {
                 if (isdigit(cmd2[0])) {
                   if (area == WSession::mmkeyMessageAreas && dl == 0) {
-                    for (i = 0; i < session()->num_subs && usub[i].subnum != -1; i++) {
+                    for (i = 0; i < session()->subboards.size() && usub[i].subnum != -1; i++) {
                       if (wwiv::strings::IsEquals(usub[i].keys, cmd2)) {
                         bout.nl();
                         break;
@@ -686,7 +680,6 @@ char *mmkey(int dl, int area, bool bListOption) {
   cmd1[0] = '\0';
   return cmd1;
 }
-
 
 const char *YesNoString(bool bYesNo) {
   return (bYesNo) ? str_yes : str_no;

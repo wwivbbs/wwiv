@@ -37,7 +37,9 @@
 #include "bbs/message_file.h"
 #include "bbs/netsup.h"
 #include "bbs/pause.h"
+#include "bbs/subxtr.h"
 #include "bbs/wconstants.h"
+#include "bbs/workspace.h"
 #include "bbs/wstatus.h"
 #include "core/datafile.h"
 #include "core/inifile.h"
@@ -289,7 +291,7 @@ IniFile* WSession::ReadINIFile() {
   }
 
   // initialize ini communication
-  const string instance_name = StringPrintf("WWIV-%u", GetInstanceNumber());
+  const string instance_name = StringPrintf("WWIV-%u", instance_number());
   IniFile* ini(new IniFile(FilePath(GetHomeDir(), WWIV_INI), instance_name, INI_TAG));
   if (ini->IsOpen()) {
     // found something
@@ -481,7 +483,8 @@ bool WSession::ReadConfig() {
   }
 
   // initialize the user manager
-  users()->InitializeUserManager(full_config.config()->datadir, full_config.config()->userreclen, full_config.config()->maxusers);
+  const configrec* config = full_config.config();
+  userManager.reset(new WUserManager(config->datadir, config->userreclen, config->maxusers));
 
   std::unique_ptr<IniFile> ini(ReadINIFile());
   if (!ini->IsOpen()) {
@@ -489,7 +492,7 @@ bool WSession::ReadConfig() {
     AbortBBS();
   }
 
-  bool config_ovr_read = ReadConfigOverlayFile(GetInstanceNumber(),ini.get());
+  bool config_ovr_read = ReadConfigOverlayFile(instance_number(),ini.get());
   if (!config_ovr_read) {
     return false;
   }
@@ -658,21 +661,18 @@ void WSession::read_nintern() {
 }
 
 bool WSession::read_subs() {
-  if (subboards) {
-    free(subboards);
-  }
-  subboards = nullptr;
   SetMaxNumberMessageAreas(syscfg.max_subs);
-  subboards = static_cast<subboardrec*>(BbsAllocA(GetMaxNumberMessageAreas() * sizeof(subboardrec)));
+  subboards.clear();
 
-  File file(syscfg.datadir, SUBS_DAT);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    std::clog << file.GetName() << " NOT FOUND." << std::endl;
+  DataFile<subboardrec> file(syscfg.datadir, SUBS_DAT);
+  if (!file) {
+    std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
     return false;
   }
-  num_subs = (file.Read(subboards,
-                                      (GetMaxNumberMessageAreas() * sizeof(subboardrec)))) / sizeof(subboardrec);
-  return (read_subs_xtr(GetMaxNumberMessageAreas(), num_subs, subboards));
+  if (!file.ReadVector(subboards, GetMaxNumberMessageAreas())) {
+    return false;
+  }
+  return read_subs_xtr(net_networks, subboards, xsubs);
 }
 
 void WSession::read_networks() {
@@ -706,41 +706,35 @@ void WSession::read_networks() {
     }
     fileNetIni.Close();
   }
-  if (net_networks) {
-    free(net_networks);
-  }
-  net_networks = nullptr;
 
-  File networksfile(syscfg.datadir, NETWORKS_DAT);
-  if (networksfile.Open(File::modeBinary | File::modeReadOnly)) {
-    int net_num_max = networksfile.GetLength() / sizeof(net_networks_rec_disk);
-    SetMaxNetworkNumber(net_num_max);
-    std::unique_ptr<net_networks_rec_disk[]> net_networks_disk(new net_networks_rec_disk[net_num_max]());
-    net_networks = static_cast<net_networks_rec *>(BbsAllocA(net_num_max * sizeof(net_networks_rec)));
-    if (net_num_max) {
-      networksfile.Read(net_networks_disk.get(), net_num_max * sizeof(net_networks_rec_disk));
-      for (int i = 0; i < net_num_max; i++) {
-        net_networks[i].type = net_networks_disk[i].type;
-        strcpy(net_networks[i].name, net_networks_disk[i].name);
-        strcpy(net_networks[i].dir, net_networks_disk[i].dir);
-        net_networks[i].sysnum = net_networks_disk[i].sysnum;
-      }
-    }
-    networksfile.Close();
-    for (int nTempNetNumber = 0; nTempNetNumber < max_net_num(); nTempNetNumber++) {
-      char* ss = strchr(net_networks[nTempNetNumber].name, ' ');
-      if (ss) {
-        *ss = '\0';
-      }
-    }
+  DataFile<net_networks_rec_disk> networksfile(syscfg.datadir, NETWORKS_DAT);
+  if (!networksfile) {
+    return;
+  }
+  int net_num_max = networksfile.number_of_records();
+  std::vector<net_networks_rec_disk> net_networks_disk;
+  if (!net_num_max) {
+    return;
+  }
+  if (!networksfile.ReadVector(net_networks_disk)) {
+    return;
+  }
+  for (const auto& from : net_networks_disk) {
+    net_networks_rec to{};
+    to.type = from.type;
+    strcpy(to.name, from.name);
+    StringTrim(to.name);
+    strcpy(to.dir, from.dir);
+    to.sysnum = from.sysnum;
+    net_networks.emplace_back(to);
   }
 
-  if (!net_networks) {
-    net_networks = static_cast<net_networks_rec *>(BbsAllocA(sizeof(net_networks_rec)));
-    SetMaxNetworkNumber(1);
-    strcpy(net_networks->name, "WWIVnet");
-    strcpy(net_networks->dir, syscfg.datadir);
-    net_networks->sysnum = syscfg.systemnumber;
+  if (net_networks.empty()) {
+    // Add a default entry for us.
+    net_networks_rec n{};
+    strcpy(n.name, "WWIVnet");
+    strcpy(n.dir, syscfg.datadir);
+    n.sysnum = syscfg.systemnumber;
   }
 }
 
@@ -823,24 +817,24 @@ void WSession::read_chains() {
 }
 
 bool WSession::read_language() {
-  DataFile<languagerec> file(syscfg.datadir, LANGUAGE_DAT);
-  size_t num_languages = 0;
-  if (file) {
-    num_languages = file.number_of_records();
-    if (num_languages > 0) {
+  {
+    DataFile<languagerec> file(syscfg.datadir, LANGUAGE_DAT);
+    if (file) {
       file.ReadVector(languages);
     }
-    file.Close();
   }
-  if (!num_languages) {
-    num_languages = 1;
+  if (languages.empty()) {
+    // Add a default language to the list.
     languagerec lang;
     memset(&lang, 0, sizeof(languagerec));
     strcpy(lang.name, "English");
     strncpy(lang.dir, syscfg.gfilesdir, sizeof(lang.dir) - 1);
     strncpy(lang.mdir, syscfg.menudir, sizeof(lang.mdir) - 1);
+    
+    languages.emplace_back(lang);
   }
-  SetCurrentLanguageNumber(-1);
+
+  set_language_number(-1);
   if (!set_language(0)) {
     std::clog << "You need the default language installed to run the BBS." << std::endl;
     return false;
@@ -849,16 +843,9 @@ bool WSession::read_language() {
 }
 
 void WSession::read_gfile() {
-  if (gfilesec != nullptr) {
-    free(gfilesec);
-    gfilesec = nullptr;
-  }
-  gfilesec = static_cast<gfiledirrec *>(BbsAllocA(static_cast<long>(max_gfilesec * sizeof(gfiledirrec))));
-  File file(syscfg.datadir, GFILE_DAT);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    num_sec = 0;
-  } else {
-    num_sec = file.Read(gfilesec, max_gfilesec * sizeof(gfiledirrec)) / sizeof(gfiledirrec);
+  DataFile<gfiledirrec> file(syscfg.datadir, GFILE_DAT);
+  if (file) {
+    file.ReadVector(gfilesec, max_gfilesec);
   }
 }
 
@@ -938,7 +925,6 @@ void WSession::InitializeBBS() {
     AbortBBS();
   }
 
-  net_networks = nullptr;
   set_net_num(0);
   read_networks();
   set_net_num(0);
@@ -961,10 +947,9 @@ void WSession::InitializeBBS() {
   pStatus->EnsureCallerNumberIsValid();
   statusMgr->CommitTransaction(pStatus);
 
-  gat = static_cast<unsigned short *>(BbsAllocA(2048 * sizeof(short)));
+  gat = static_cast<unsigned short *>(BbsAllocA(2048 * sizeof(uint16_t)));
 
   XINIT_PRINTF("Reading Gfiles.");
-  gfilesec = nullptr;
   read_gfile();
 
   XINIT_PRINTF("Reading user names.");
@@ -973,7 +958,6 @@ void WSession::InitializeBBS() {
   }
 
   XINIT_PRINTF("Reading Message Areas.");
-  subboards = nullptr;
   if (!read_subs()) {
     AbortBBS();
   }
@@ -1056,15 +1040,15 @@ void WSession::InitializeBBS() {
   qsc_q = qsc_n + (GetMaxNumberFileAreas() + 31) / 32;
   qsc_p = qsc_q + (GetMaxNumberMessageAreas() + 31) / 32;
 
-  network_extension = ".net";
+  network_extension_ = ".net";
   const string wwiv_instance(environment_variable("WWIV_INSTANCE"));
   if (!wwiv_instance.empty()) {
-    int nTempInstanceNumber = atoi(wwiv_instance.c_str());
-    if (nTempInstanceNumber > 0) {
-      network_extension = StringPrintf(".%3.3d", nTempInstanceNumber);
+    int inst_num = atoi(wwiv_instance.c_str());
+    if (inst_num > 0) {
+      network_extension_ = StringPrintf(".%3.3d", inst_num);
       // Fix... Set the global instance variable to match this.  When you run WWIV with the -n<instance> parameter
       // it sets the WWIV_INSTANCE environment variable, however it wasn't doing the reverse.
-      instance_number_ = nTempInstanceNumber;
+      instance_number_ = inst_num;
     }
   }
 
@@ -1084,12 +1068,10 @@ void WSession::InitializeBBS() {
   if (!m_bUserAlreadyOn) {
     sysoplog("", false);
     sysoplogfi(false, "WWIV %s%s, inst %ld, brought up at %s on %s.", wwiv_version, beta_version, 
-        GetInstanceNumber(), times(), fulldate());
+        instance_number(), times(), fulldate());
   }
-  if (GetInstanceNumber() > 1) {
-    char szFileName[MAX_PATH];
-    snprintf(szFileName, sizeof(szFileName), "%s.%3.3u", WWIV_NET_NOEXT, GetInstanceNumber());
-    File::Remove(szFileName);
+  if (instance_number() > 1) {
+    File::Remove(StringPrintf("%s.%3.3u", WWIV_NET_NOEXT, instance_number()));
   } else {
     File::Remove(WWIV_NET_DAT);
   }

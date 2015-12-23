@@ -34,6 +34,7 @@
 #include "bbs/fcns.h"
 #include "bbs/message_file.h"
 #include "bbs/vars.h"
+#include "bbs/workspace.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -65,10 +66,10 @@ static bool GetMessageToName(const char *aux) {
   bool bHasAddress = false;
   bool newlsave = newline;
 
-  if (xsubs[session()->GetCurrentReadMessageArea()].num_nets) {
-    for (int i = 0; i < xsubs[session()->GetCurrentReadMessageArea()].num_nets; i++) {
-      xtrasubsnetrec *xnp = &xsubs[session()->GetCurrentReadMessageArea()].nets[i];
-      if (net_networks[xnp->net_num].type == net_type_fidonet &&
+  if (!session()->current_xsub().nets.empty()) {
+    for (size_t i = 0; i < session()->current_xsub().nets.size(); i++) {
+      const xtrasubsnetrec& xnp = session()->current_xsub().nets[i];
+      if (session()->net_networks[xnp.net_num].type == net_type_fidonet &&
           !IsEqualsIgnoreCase(aux, "email")) {
         bHasAddress = true;
         bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
@@ -348,18 +349,18 @@ void UpdateMessageBufferTheadsInfo(std::ostringstream& ss, const char *aux) {
 static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char *aux) {
   if (irt_name[0] &&
       !IsEqualsIgnoreCase(aux, "email") &&
-      xsubs[session()->GetCurrentReadMessageArea()].num_nets) {
-    for (int i = 0; i < xsubs[session()->GetCurrentReadMessageArea()].num_nets; i++) {
-      xtrasubsnetrec *xnp = &xsubs[session()->GetCurrentReadMessageArea()].nets[i];
-      if (net_networks[xnp->net_num].type == net_type_fidonet) {
-        const string buf = StringPrintf("0FidoAddr: %s", irt_name);
+      !session()->current_xsub().nets.empty()) {
+    for (size_t i = 0; i < session()->current_xsub().nets.size(); i++) {
+      const xtrasubsnetrec& xnp = session()->current_xsub().nets[i];
+      if (session()->net_networks[xnp.net_num].type == net_type_fidonet) {
+        const string buf = StringPrintf("%c0FidoAddr: %s", CD, irt_name);
         ss << buf << crlf;
         break;
       }
     }
   }
-  if ((strncasecmp("internet", session()->GetNetworkName(), 8) == 0) ||
-      (strncasecmp("filenet", session()->GetNetworkName(), 7) == 0)) {
+  if ((strncasecmp("internet", session()->network_name(), 8) == 0) ||
+      (strncasecmp("filenet", session()->network_name(), 7) == 0)) {
     if (session()->usenetReferencesLine.length() > 0) {
       const string buf = StringPrintf("%c0RReferences: %s", CD, session()->usenetReferencesLine.c_str());
       ss << buf << crlf;
@@ -386,10 +387,10 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
 }
 
 static string FindTagFileName() {
-  for (int i = 0; i < xsubs[session()->GetCurrentReadMessageArea()].num_nets; i++) {
-    xtrasubsnetrec *xnp = &xsubs[session()->GetCurrentReadMessageArea()].nets[i];
-    const char *nd = net_networks[xnp->net_num].dir;
-    string filename = StringPrintf("%s%s.tag", nd, xnp->stype);
+  for (size_t i = 0; i < session()->current_xsub().nets.size(); i++) {
+    const xtrasubsnetrec& xnp = session()->current_xsub().nets[i];
+    const char *nd = session()->net_networks[xnp.net_num].dir;
+    string filename = StringPrintf("%s%s.tag", nd, xnp.stype);
     if (File::Exists(filename)) {
       return filename;
     }
@@ -397,7 +398,7 @@ static string FindTagFileName() {
     if (File::Exists(filename)) {
       return filename;
     }
-    filename = StringPrintf("%s%s.tag", syscfg.datadir, xnp->stype);
+    filename = StringPrintf("%s%s.tag", syscfg.datadir, xnp.stype);
     if (File::Exists(filename)) {
       return filename;
     }
@@ -410,13 +411,13 @@ static string FindTagFileName() {
 }
 
 static void UpdateMessageBufferTagLine(std::ostringstream& ss, const char *aux) {
-  if (session()->num_subs <= 0 && session()->GetCurrentReadMessageArea() <= 0) {
+  if (session()->subboards.size() <= 0 && session()->GetCurrentReadMessageArea() <= 0) {
     return;
   }
   const char szMultiMail[] = "Multi-Mail";
-  if (xsubs[session()->GetCurrentReadMessageArea()].num_nets &&
+  if (!session()->current_xsub().nets.empty() &&
       !IsEqualsIgnoreCase(aux, "email") &&
-      (!(subboards[session()->GetCurrentReadMessageArea()].anony & anony_no_tag)) &&
+      (!(session()->current_sub().anony & anony_no_tag)) &&
       !IsEqualsIgnoreCase(irt, szMultiMail)) {
 		// tag is ok
   } else {

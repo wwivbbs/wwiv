@@ -254,10 +254,10 @@ void uploaded(char *file_name, long lCharsPerSecond) {
               modify_database(u.filename, true);
               session()->user()->SetUploadK(session()->user()->GetUploadK() +
                   static_cast<int>(bytes_to_k(u.numbytes)));
-              WStatus *pStatus = session()->GetStatusManager()->BeginTransaction();
+              WStatus *pStatus = session()->status_manager()->BeginTransaction();
               pStatus->IncrementNumUploadsToday();
               pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
-              session()->GetStatusManager()->CommitTransaction(pStatus);
+              session()->status_manager()->CommitTransaction(pStatus);
               File fileDn(g_szDownloadFileName);
               fileDn.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
               FileAreaSetRecord(fileDn, nRecNum);
@@ -504,7 +504,7 @@ double ratio1(long a) {
 
 static string make_ul_batch_list() {
   string list_filename = StringPrintf("%s%s.%3.3u", session()->GetHomeDir().c_str(), FILESUL_NOEXT,
-          session()->GetInstanceNumber());
+          session()->instance_number());
 
   File::SetFilePermissions(list_filename, File::permReadWrite);
   File::Remove(list_filename);
@@ -527,7 +527,7 @@ static string make_ul_batch_list() {
 
 static string make_dl_batch_list() {
   string list_filename = StringPrintf("%s%s.%3.3u", session()->GetHomeDir().c_str(), FILESDL_NOEXT,
-          session()->GetInstanceNumber());
+          session()->instance_number());
 
   File::SetFilePermissions(list_filename, File::permReadWrite);
   File::Remove(list_filename);

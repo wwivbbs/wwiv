@@ -38,6 +38,7 @@ set(COMMON_SOURCES
  dirlist.cpp
  dropfile.cpp
  dupphone.cpp
+ email.cpp
  events.cpp
  execexternal.cpp
  external_edit.cpp
@@ -65,7 +66,6 @@ set(COMMON_SOURCES
  menusupp.cpp
  message_file.cpp
  misccmd.cpp
- msgbase.cpp
  msgbase1.cpp
  msgscan.cpp
  multinst.cpp
@@ -119,6 +119,7 @@ set(COMMON_SOURCES
  xinit.cpp
  wfc.cpp
  wfc_log.cpp
+ workspace.cpp
 )
 
 set(BBS_MAIN bbs_main.cpp)

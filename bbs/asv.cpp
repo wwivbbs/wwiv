@@ -25,10 +25,10 @@
 #include "bbs/com.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
+#include "bbs/email.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
 #include "bbs/message_file.h"
-#include "bbs/msgbase.h"
 #include "bbs/netsup.h"
 #include "bbs/newuser.h"
 #include "bbs/shortmsg.h"
@@ -39,6 +39,7 @@
 #include "bbs/utility.h"
 #include "bbs/vars.h"
 #include "bbs/wsession.h"
+#include "bbs/workspace.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/xfer.h"
@@ -69,16 +70,18 @@ void asv() {
     case '1':
       bout << "|#5Select a network you are in [Q=Quit].";
       bout.nl(2);
-      for (i = 0; i < session()->max_net_num(); i++) {
-        if (net_networks[i].sysnum) {
-          bout << " |#3" << i + 1 << "|#1.  |#1" << net_networks[i].name << wwiv::endl;
+      i = 1;
+      for (const auto& n : session()->net_networks) {
+        if (n.sysnum) {
+          bout << " |#3" << i  << "|#1. " << n.name << wwiv::endl;
+          i++;
         }
       }
       bout.nl();
       bout << "|#1:";
       input(s, 2, true);
       i = atoi(s);
-      if (i < 1 || i > session()->max_net_num()) {
+      if (i < 1 || i > session()->net_networks.size()) {
         bout.nl();
         bout << "|#6Aborted!";
         break;
@@ -167,7 +170,7 @@ void asv() {
           strcpy(s1, (strstr(strupr(s), "SERVER")));
           if (wwiv::strings::IsEquals(s1, "SERVER")) {
             bout.nl();
-            bout << "|#5Is " << sysname << " a server in " << session()->GetNetworkName() << "? ";
+            bout << "|#5Is " << sysname << " a server in " << session()->network_name() << "? ";
             if (noyes()) {
               sysoplog("* Claims to run a network server.");
               reg = 2;
@@ -198,13 +201,13 @@ void asv() {
             break;
           }
         }
-        sprintf(s, "%s 1@%d (%s)", session()->GetNetworkName(), inode, sysname);
+        sprintf(s, "%s 1@%d (%s)", session()->network_name(), inode, sysname);
         s[40] = '\0';
         session()->user()->SetNote(s);
         session()->user()->SetName(s);
         properize(s);
-        ssm(1, 0, "%s validated as %s 1@%d on %s.", s, session()->GetNetworkName(), inode, fulldate());
-        sprintf(s1, "* Validated as %s 1@%d", session()->GetNetworkName(), inode);
+        ssm(1, 0, "%s validated as %s 1@%d on %s.", s, session()->network_name(), inode, fulldate());
+        sprintf(s1, "* Validated as %s 1@%d", session()->network_name(), inode);
         sysoplog(s1);
         sysoplog(s);
         session()->user()->SetStatusFlag(WUser::expert);
@@ -228,7 +231,7 @@ void asv() {
         } else {
           set_autoval(session()->advasv.reg_wwiv);
         }
-        sprintf(irt, "%s %s SysOp Auto Validation", syscfg.systemname, session()->GetNetworkName());
+        sprintf(irt, "%s %s SysOp Auto Validation", syscfg.systemname, session()->network_name());
         if (strlen(irt) > 60) {
           irt[60] = '\0';
         }
@@ -247,6 +250,7 @@ void asv() {
           data.to_name = snode;
           data.msged_flags = MSGED_FLAG_NONE;
           data.silent_mode = true;
+          data.need_title = true;
           if (inmsg(data)) {
             savefile(data.text, &msg, data.aux);
             EmailData email(data);

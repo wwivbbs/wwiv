@@ -67,12 +67,14 @@ bool ends_with(const std::string& input, const std::string& match);
 
 void StringJustify(std::string* s, std::string::size_type length, char bg, JustificationType just_type);
 void StringTrim(char *str);
+std::string StringTrim(const std::string& s);
 void StringTrim(std::string* s);
 void StringTrimEnd(std::string* s);
 void StringTrimEnd(char *str);
 void StringTrimBegin(std::string* s);
 void StringUpperCase(std::string* s);
 void StringLowerCase(std::string* s);
+
 
 const char *charstr(std::string::size_type length, char fill);
 char *StringRemoveWhitespace(char *str);

@@ -67,7 +67,7 @@ void wwivnode(WUser *pUser, int mode) {
     return;
   }
   net_system_list_rec *csne = next_system(system_number);
-  sprintf(s, "Sysop @%u %s %s", system_number, csne->name, session()->GetNetworkName());
+  sprintf(s, "Sysop @%u %s %s", system_number, csne->name, session()->network_name());
   string ph, ph1;
   if (!mode) {
     ph1 = pUser->GetDataPhoneNumber();

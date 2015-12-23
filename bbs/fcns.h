@@ -234,7 +234,7 @@ void Packers();
 
 
 // File: msgbase.cpp
-#include "bbs/msgbase.h"
+#include "bbs/email.h"
 
 // File: msgbase1.cpp
 
@@ -245,7 +245,6 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
 void qscan(int nBeginSubNumber, int *pnNextSubNumber);
 void nscan(int nStartingSubNum = 0);
 void ScanMessageTitles();
-void delmail(File *pFile, int loc);
 void remove_post();
 
 // File: multmail.cpp
@@ -322,12 +321,6 @@ void SubList();
 void sub_xtr_del(int n, int nn, int f);
 void sub_xtr_add(int n, int nn);
 int  amount_of_subscribers(const char *pszNetworkFileName);
-
-
-// File: subxtr.cpp
-
-bool read_subs_xtr(int max_subs, int num_subs, subboardrec* s);
-
 
 // File: syschat.cpp
 

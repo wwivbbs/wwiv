@@ -38,6 +38,7 @@
 #include "bbs/common.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+#include "bbs/workspace.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
@@ -232,8 +233,8 @@ void send_net(net_header_rec * nh, unsigned short int *list, const char *text, c
   WWIV_ASSERT(nh);
 
   const string filename = StringPrintf("%sp1%s",
-    session()->GetNetworkDataDirectory().c_str(),
-    session()->GetNetworkExtension().c_str());
+    session()->network_directory().c_str(),
+    session()->network_extension().c_str());
   File file(filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;

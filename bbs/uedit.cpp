@@ -149,9 +149,9 @@ void print_data(int user_number, WUser *pUser, bool bLongFormat, bool bClearScre
     bout << "|#9   Forwarded To : |#1";
     if (pUser->GetForwardSystemNumber() != 0) {
       if (session()->max_net_num() > 1) {
-        bout << net_networks[ pUser->GetForwardNetNumber() ].name <<
-                           " #" << pUser->GetForwardUserNumber() <<
-                           " @" << pUser->GetForwardSystemNumber() << wwiv::endl;
+        bout << session()->net_networks[ pUser->GetForwardNetNumber() ].name 
+             << " #" << pUser->GetForwardUserNumber()
+             << " @" << pUser->GetForwardSystemNumber() << wwiv::endl;
       } else {
         bout << "#" << pUser->GetForwardUserNumber() << " @" << pUser->GetForwardSystemNumber() << wwiv::endl;
       }
@@ -1134,9 +1134,9 @@ void print_affil(WUser *pUser) {
   bout << "|#2   Sysp    : |#1";
   if (csne) {
     bout << "@" << pUser->GetHomeSystemNumber() << ", " << csne->name << ", on " <<
-                       session()->GetNetworkName() << ".";
+                       session()->network_name() << ".";
   } else {
-    bout << "@" << pUser->GetHomeSystemNumber() << ", <UNKNOWN>, on " << session()->GetNetworkName() <<
+    bout << "@" << pUser->GetHomeSystemNumber() << ", <UNKNOWN>, on " << session()->network_name() <<
                        ".";
   }
   bout.nl(2);
