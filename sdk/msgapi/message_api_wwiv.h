@@ -18,11 +18,13 @@
 #ifndef __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__
 #define __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__
 
+#include "sdk/net.h"
 #include "sdk/msgapi/message_api.h"
 #include "sdk/msgapi/message_area_wwiv.h"
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace wwiv {
 namespace sdk {
@@ -33,13 +35,13 @@ class WWIVMessageArea;
 class WWIVMessageApi: public MessageApi {
 public:
   WWIVMessageApi(const std::string& subs_directory,
-    const std::string& messages_directory);
+    const std::string& messages_directory,
+    const std::vector<net_networks_rec>& net_networks);
   virtual ~WWIVMessageApi();
   virtual bool Exist(const std::string& name) const override;
   virtual WWIVMessageArea* Create(const std::string& name) override;
   virtual bool Remove(const std::string& name) override;
   virtual WWIVMessageArea* Open(const std::string& name) override;
-
 };
 
 }  // namespace msgapi

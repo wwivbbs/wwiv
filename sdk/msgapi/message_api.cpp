@@ -29,8 +29,10 @@ MessageArea::MessageArea(MessageApi* api): api_(api) {}
 MessageArea::~MessageArea() {}
 
 MessageApi::MessageApi(const std::string& subs_directory,
-  const std::string& messages_directory)
-  : subs_directory_(subs_directory), messages_directory_(messages_directory) {}
+  const std::string& messages_directory,
+  const std::vector<net_networks_rec>& net_networks)
+  : subs_directory_(subs_directory), messages_directory_(messages_directory),
+    net_networks_(net_networks) {}
 
 MessageApi::~MessageApi() {}
 

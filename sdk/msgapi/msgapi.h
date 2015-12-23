@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "sdk/msgapi/message_api.h"
 
@@ -32,26 +33,38 @@ class MessageAreaHeader {
 };
 
 class MessageHeader {
+public:
+  virtual std::string title() const = 0;
+  virtual std::string to() const = 0;
+  virtual std::string from() const = 0;
+  virtual uint32_t daten() const = 0;
+  virtual uint8_t status() const = 0;
+  virtual uint8_t anony() const = 0;
+  virtual std::string oaddress() const = 0;
+  virtual std::string destination_address() const = 0;
 
+  virtual bool is_local() const = 0;
+  virtual bool is_private() const = 0;
+  virtual bool is_locked() const = 0;
+  virtual bool is_deleted() const = 0;
+  virtual const std::vector<std::string>& control_lines() const = 0;
 };
 
 class MessageText {
 public:
-  MessageText(const std::string& text): text_(text) {}
+  MessageText() {}
   virtual ~MessageText() {}
 
-private:
-  std::string text_;
+  virtual std::string text() const = 0;
 };
 
 class Message {
 public:
-  Message(MessageHeader* header, MessageText* text);
-  ~Message();
+  Message();
+  virtual ~Message();
 
-private:
-  MessageHeader header_;
-  MessageText text_;
+  virtual MessageHeader* header() const = 0;
+  virtual MessageText* text() const = 0;
 };
 
 class MessageApi;
@@ -68,12 +81,12 @@ public:
   virtual void ReadMessageAreaHeader(MessageAreaHeader& header) = 0;
   virtual void WriteMessageAreaHeader(const MessageAreaHeader& header) = 0;
   virtual int FindUserMessages(const std::string& user_name) = 0;
-  virtual int number_of_messages() =0;
+  virtual int number_of_messages() = 0;
 
   // message specific
   virtual Message* ReadMessage(int message_number) = 0;
   virtual MessageHeader* ReadMessageHeader(int message_number) = 0;
-  virtual MessageText*  ReadMessageText(int message_number) = 0;
+  virtual MessageText* ReadMessageText(int message_number) = 0;
   virtual bool AddMessage(const Message& message) = 0;
   virtual bool DeleteMessage(int message_number) = 0;
 

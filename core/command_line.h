@@ -144,7 +144,7 @@ public:
   const std::string name() const { return name_; }
   const std::string help_text() const { return help_text_; }
 
-  const CommandLineValue arg(const std::string name) const { return args_.at(name); }
+  const CommandLineValue arg(const std::string name) const;
   const CommandLineCommand* command() const { return command_; }
   std::vector<std::string> remaining() const { return remaining_; }
   std::string ToString() const;
