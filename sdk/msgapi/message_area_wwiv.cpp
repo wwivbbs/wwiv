@@ -151,7 +151,6 @@ WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
     auto line = StringTrim(*it);
     if (!line.empty() && line.front() == CD) {
       control_lines.push_back(line);
-      // TODO(rushfan): Add control line.
     } else if (starts_with(line, "RE:")) {
       in_reply_to = StringTrim(line.substr(3));
     } else if (starts_with(line, "BY:")) {
