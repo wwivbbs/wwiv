@@ -32,15 +32,31 @@ namespace sdk {
 namespace msgapi {
 
 WWIVMessageHeader::WWIVMessageHeader(postrec header, const std::string& from, const std::string& to,
-  const std::string& date, const std::string& in_reply_to, std::vector<string>& control_lines) 
+  const std::string& date, const std::string& in_reply_to, std::vector<string>& control_lines,
+  const MessageApi* api)
   : header_(header), from_(from), to_(to), date_(date), in_reply_to_(in_reply_to),
-    control_lines_(control_lines) {
+    control_lines_(control_lines), api_(api) {
 
 }
 
 WWIVMessageHeader::~WWIVMessageHeader() {
 
 }
+
+bool WWIVMessageHeader::is_local() const {
+  uint8_t net_num = header_.network.network_msg.net_number;
+  if (net_num >= api_->network().size()) {
+    // not a valid network number.
+    return true;
+  }
+  if (header_.ownersys == 0) {
+    // no network system
+    return true;
+  }
+  int local_net = api_->network().at(net_num).sysnum;
+  return local_net == header_.ownersys;
+} 
+
 
 WWIVMessageText::WWIVMessageText(const std::string& text)
   : MessageText(), text_(text) {}
