@@ -59,17 +59,18 @@ string daten_to_humantime(uint32_t daten) {
 }
 
 static int dump(const string& basename, const string& subs_dir,
-		const string& msgs_dir,
+		            const string& msgs_dir,
                 const std::vector<net_networks_rec>& net_networks,
                 int start, int end, bool all) {
-  unique_ptr<WWIVMessageApi> api(new WWIVMessageApi(
+  // TODO(rushfan): Create the right API type for the right message area.
+  unique_ptr<MessageApi> api(new WWIVMessageApi(
       subs_dir, msgs_dir, net_networks));
   if (!api->Exist(basename)) {
     clog << "Message area: '" << basename << "' does not exist." << endl;
     return 1;
   }
 
-  unique_ptr<WWIVMessageArea> area(api->Open(basename));
+  unique_ptr<MessageArea> area(api->Open(basename));
   if (!area) {
     clog << "Error opening message area: '" << basename << "'." << endl;
     return 1;
@@ -84,17 +85,25 @@ static int dump(const string& basename, const string& subs_dir,
       continue;
     }
     cout << "#" << setw(5) << std::left << current
-	 << " From: " << setw(20) << header->from()
+         << " From: " << setw(20) << header->from()
          << "date: " << daten_to_humantime(header->daten()) << endl
-         << "title: " << header->title() << endl;
+         << "title: " << header->title();
+    if (header->is_local()) {
+      cout << "[LOCAL]";
+    }
+    if (header->is_deleted()) {
+      cout << "[DELETED]";
+    }
+    if (header->is_locked()) {
+      cout << "[LOCKED]";
+    }
+    if (header->is_private()) {
+      cout << "[PRIVATE]";
+    }
+    cout << endl;
     if (all) {
       for (const auto& c : header->control_lines()) {
         cout << "c: " << c << endl;
-      }
-      WWIVMessageHeader* wwiv_header =
-	dynamic_cast<WWIVMessageHeader*>(header.get());
-      if (wwiv_header) {
-        cout << "ownersys: " << wwiv_header->data().ownersys << endl;
       }
     }
     unique_ptr<MessageText> text(area->ReadMessageText(current));
@@ -102,10 +111,10 @@ static int dump(const string& basename, const string& subs_dir,
       continue;
     }
     cout << "------------------------------------------------------------------------"
-	 << endl;
+	       << endl;
     cout << text->text() << endl;
     cout << "------------------------------------------------------------------------"
-	 << endl;
+	       << endl;
   }
   return 0;
 }

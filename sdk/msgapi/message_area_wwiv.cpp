@@ -178,7 +178,7 @@ WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
       break;
     }
   }
-  unique_ptr<WWIVMessageHeader> wwiv_header(new WWIVMessageHeader(header, from_username, to, date, in_reply_to, control_lines));
+  unique_ptr<WWIVMessageHeader> wwiv_header(new WWIVMessageHeader(header, from_username, to, date, in_reply_to, control_lines, api_));
   unique_ptr<WWIVMessageText> wwiv_text(new WWIVMessageText(text));
 
   return new WWIVMessage(wwiv_header.release(), wwiv_text.release());
