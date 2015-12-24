@@ -183,7 +183,6 @@ FSED_EXT_DESC          = Y                  ; allow fsed for extended descriptio
 FAST_TAG_RELIST        = Y                  ; don't show xfer dirs on tag relist
 MAIL_PROMPT            = Y                  ; fancy mail prompt
 SHOW_CITY_ST           = Y                  ; show city/state in laston info
-LOCAL_SYSOP            = Y                  ; allow F-keys, space-f, etc
 2WAY_CHAT              = Y                  ; 2-way local sysop chat
 OFF_HOOK               = Y                  ; phone offhook when sysop on
 LOG_DOWNLOADS          = N                  ; send SSM to uploader on file DL

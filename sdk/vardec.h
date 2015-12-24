@@ -822,7 +822,7 @@ enum xfertype {
 #define status_file                 0x80
 
 // configrec.sysconfig
-#define sysconfig_no_local          0x00001
+#define unused_sysconfig_no_local  0x00001
 #define sysconfig_no_beep           0x00002
 #define sysconfig_enable_pipes      0x00004
 #define sysconfig_no_newuser_feedback 0x00008
