@@ -238,7 +238,7 @@
       this.homeField.Name = "homeField";
       this.homeField.Size = new System.Drawing.Size(466, 20);
       this.homeField.TabIndex = 9;
-      this.homeField.Text = "C:\\bbs";
+      this.homeField.Text = "C:\\wwiv";
       // 
       // buttonBrowseExecutable
       // 
@@ -255,7 +255,7 @@
       this.executableField.Name = "executableField";
       this.executableField.Size = new System.Drawing.Size(466, 20);
       this.executableField.TabIndex = 7;
-      this.executableField.Text = "C:\\bbs\\bbs.exe";
+      this.executableField.Text = "C:\\wwiv\\bbs.exe";
       // 
       // highNodeSpinner
       // 
