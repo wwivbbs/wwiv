@@ -1,4 +1,4 @@
-|#5WWIV 5.00 USER ON-LINE COMMAND:
+|#5WWIV 5.1.0 USER ON-LINE COMMAND:
 |#7~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 |#2F1        |#9 Edit User Information       |#2CTRL+F5  |#9 Time-out; Drop Carrier   
 |#2F2        |#9 Toggle Top of Screen Data   |#2F6       |#9 Toggle User Alert        
