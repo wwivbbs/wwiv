@@ -672,7 +672,11 @@ bool WSession::read_subs() {
   if (!file.ReadVector(subboards, GetMaxNumberMessageAreas())) {
     return false;
   }
-  return read_subs_xtr(net_networks, subboards, xsubs);
+
+  // If we already read subs.dat that's sufficient to return true.
+  // since subs.xtr is created as-needed once as sub is created.
+  read_subs_xtr(net_networks, subboards, xsubs);
+  return true;
 }
 
 void WSession::read_networks() {

@@ -133,6 +133,9 @@ int cleanup_net1() {
 
   session()->SetCleanNetNeeded(false);
 
+  if (session()->net_networks.empty()) {
+    return 0;
+  }
   if (session()->net_networks[0].sysnum == 0 && session()->max_net_num() == 1) {
     return 0;
   }
@@ -585,6 +588,9 @@ void print_pending_list() {
 
   int nDow = dow();
 
+  if (session()->net_networks.empty()) {
+    return;
+  }
   if (session()->net_networks[0].sysnum == 0 && session()->max_net_num() == 1) {
     return;
   }
