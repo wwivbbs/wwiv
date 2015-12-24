@@ -87,9 +87,21 @@ int main(int argc, char *argv[]) {
       return 1;
     }
 
+    if (!cmdline.subcommand_selected()) {
+      clog << "Unable to parse command line." << endl;
+      clog << "No command selected." << endl;
+      return 1;
+    }
+
     const string command = cmdline.command()->name();
 
     if (command == "messages") {
+      // TODO(rushfan): this may be crash here if your command line is like
+      // "wwivutil messages d" since d isn't a valid command.
+      if (!messages.subcommand_selected() || messages.arg("help").as_bool()) {
+        cout << messages.GetHelp();
+        return 1;
+      }
       const string subcommand = messages.command()->name();
       if (messages.arg("help").as_bool()) {
         cout << messages.GetHelp();
