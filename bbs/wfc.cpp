@@ -74,9 +74,6 @@ static void wfc_command(int instance_location_id, std::function<void()> f,
     std::function<void()> f2 = noop, std::function<void()> f3 = noop, std::function<void()> f4 = noop) {
   session()->reset_local_io(new CursesLocalIO(out->window()->GetMaxY()));
 
-  if (!AllowLocalSysop()) {
-    return;
-  }
   wfc_cls();
   write_inst(instance_location_id, 0, INST_FLAGS_NONE);
   f();

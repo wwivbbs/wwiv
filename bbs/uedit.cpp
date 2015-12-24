@@ -160,11 +160,9 @@ void print_data(int user_number, WUser *pUser, bool bLongFormat, bool bClearScre
     }
   }
   if (bLongFormat) {
-
+    // TODO(rushfan): Should we always mask this?
     bout << "|#2H|#9) Password     : |#1";
-    if (AllowLocalSysop()) {
-      session()->localIO()->LocalPuts(pUser->GetPassword());
-    }
+    session()->localIO()->LocalPuts(pUser->GetPassword());
 
     if (incom && session()->user()->GetSl() == 255) {
       rputs(pUser->GetPassword());

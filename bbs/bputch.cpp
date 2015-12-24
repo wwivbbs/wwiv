@@ -175,7 +175,7 @@ int bputch(char c, bool bUseInternalBuffer) {
       for (int i = nScreenPos; i < (((nScreenPos / 8) + 1) * 8); i++) {
         displayed += bputch(SPACE);
       }
-    } else if (local_echo || AllowLocalSysop()) {
+    } else if (local_echo) {
       displayed = 1;
       session()->localIO()->LocalPutch(local_echo ? c : '\xFE');
 

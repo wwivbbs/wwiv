@@ -65,7 +65,7 @@ constexpr int INI_STR_FSED_EXT_DESC = 46;
 constexpr int INI_STR_FAST_TAG_RELIST = 47;
 constexpr int INI_STR_MAIL_PROMPT = 48;
 constexpr int INI_STR_SHOW_CITY_ST = 49;
-constexpr int INI_STR_LOCAL_SYSOP = 50;
+//constexpr int INI_STR_LOCAL_SYSOP = 50;
 constexpr int INI_STR_2WAY_CHAT = 51;
 constexpr int INI_STR_NO_NEWUSER_FEEDBACK = 52;
 constexpr int INI_STR_TITLEBAR = 53;
@@ -184,7 +184,7 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "FAST_TAG_RELIST",
   "MAIL_PROMPT",
   "SHOW_CITY_ST",
-  "LOCAL_SYSOP",              // 50
+  "",                         // 50
   "2WAY_CHAT",
   "NO_NEWUSER_FEEDBACK",
   "TITLEBAR",

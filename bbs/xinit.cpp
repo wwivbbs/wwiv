@@ -237,7 +237,6 @@ static ini_flags_type sysinfo_flags[] = {
 };
 
 static ini_flags_type sysconfig_flags[] = {
-  {INI_STR_LOCAL_SYSOP, true, sysconfig_no_local},
   {INI_STR_2WAY_CHAT, false, sysconfig_2_way},
   {INI_STR_NO_NEWUSER_FEEDBACK, false, sysconfig_no_newuser_feedback},
   {INI_STR_TITLEBAR, false, sysconfig_titlebar},
@@ -1001,7 +1000,7 @@ void WSession::InitializeBBS() {
   ReadCurrentUser(1, false);
   fwaiting = (user()->IsUserDeleted()) ? 0 : user()->GetNumMailWaiting();
   statusMgr->RefreshStatusCache();
-  topdata = (syscfg.sysconfig & sysconfig_no_local) ? LocalIO::topdataNone : LocalIO::topdataUser;
+  topdata = LocalIO::topdataUser;
 
   snprintf(g_szDSZLogFileName, sizeof(g_szDSZLogFileName), "%sdsz.log", syscfgovr.tempdir);
 #if !defined ( __unix__ ) && !defined ( __APPLE__ )

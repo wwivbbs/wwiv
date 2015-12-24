@@ -20,7 +20,6 @@
 
 #include <string>
 
-bool AllowLocalSysop();
 void parse_email_info(const std::string& emailAddress, int *pUserNumber, int *pSystemNumber);
 bool ValidateSysopPassword();
 void hang_it_up();

@@ -329,8 +329,7 @@ int WSession::doWFCEvents() {
         lokb = this->LocalLogon();
         break;
         // Show WFC Menu
-      case '?':
-        if (AllowLocalSysop()) {
+      case '?': {
           string helpFileName = SWFC_NOEXT;
           char chHelp = ESC;
           do {
@@ -344,13 +343,13 @@ int WSession::doWFCEvents() {
         break;
         // Force Network Callout
       case '/':
-        if (net_sysnum && AllowLocalSysop()) {
+        if (net_sysnum) {
           force_callout(0);
         }
         break;
         // War Dial Connect
       case '.':
-        if (net_sysnum && AllowLocalSysop()) {
+        if (net_sysnum) {
           force_callout(1);
         }
         break;
@@ -363,13 +362,11 @@ int WSession::doWFCEvents() {
       } break;
       // Run MenuEditor
       case '!':
-        if (AllowLocalSysop()) {
-          EditMenus();
-        }
+        EditMenus();
         break;
         // Print NetLogs
       case ',':
-        if (net_sysnum > 0 || (!session()->net_networks.empty() && AllowLocalSysop())) {
+        if (net_sysnum > 0 || !session()->net_networks.empty()) {
           io->LocalGotoXY(2, 23);
           bout << "|#7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ";
           ch = onek("Q012");
@@ -386,16 +383,14 @@ int WSession::doWFCEvents() {
         break;
         // Net List
       case '`':
-        if (net_sysnum && AllowLocalSysop()) {
+        if (net_sysnum) {
           print_net_listing(true);
         }
         break;
         // [TAB] Instance Editor
       case TAB:
-        if (AllowLocalSysop()) {
-          wfc_cls();
-          instance_edit();
-        }
+        wfc_cls();
+        instance_edit();
         break;
         // [ESC] Quit the BBS
       case ESC:
@@ -408,69 +403,52 @@ int WSession::doWFCEvents() {
         break;
         // BoardEdit
       case 'B':
-        if (AllowLocalSysop()) {
-          write_inst(INST_LOC_BOARDEDIT, 0, INST_FLAGS_NONE);
-          boardedit();
-          cleanup_net();
-        }
+        write_inst(INST_LOC_BOARDEDIT, 0, INST_FLAGS_NONE);
+        boardedit();
+        cleanup_net();
         break;
         // ChainEdit
       case 'C':
-        if (AllowLocalSysop()) {
-          write_inst(INST_LOC_CHAINEDIT, 0, INST_FLAGS_NONE);
-          chainedit();
-        }
+        write_inst(INST_LOC_CHAINEDIT, 0, INST_FLAGS_NONE);
+        chainedit();
         break;
         // DirEdit
       case 'D':
-        if (AllowLocalSysop()) {
-          write_inst(INST_LOC_DIREDIT, 0, INST_FLAGS_NONE);
-          dlboardedit();
-        }
+        write_inst(INST_LOC_DIREDIT, 0, INST_FLAGS_NONE);
+        dlboardedit();
         break;
         // Send Email
       case 'E':
-        if (AllowLocalSysop()) {
-          wfc_cls();
-          session()->usernum = 1;
-          bout << "|#1Send Email:";
-          send_email();
-          session()->WriteCurrentUser(1);
-          cleanup_net();
-        }
+        wfc_cls();
+        session()->usernum = 1;
+        bout << "|#1Send Email:";
+        send_email();
+        session()->WriteCurrentUser(1);
+        cleanup_net();
         break;
         // GfileEdit
       case 'G':
-        if (AllowLocalSysop()) {
-          write_inst(INST_LOC_GFILEEDIT, 0, INST_FLAGS_NONE);
-          gfileedit();
-        }
+        write_inst(INST_LOC_GFILEEDIT, 0, INST_FLAGS_NONE);
+        gfileedit();
         break;
         // EventEdit
       case 'H':
-        if (AllowLocalSysop()) {
-          write_inst(INST_LOC_EVENTEDIT, 0, INST_FLAGS_NONE);
-          eventedit();
-        }
+        write_inst(INST_LOC_EVENTEDIT, 0, INST_FLAGS_NONE);
+        eventedit();
         break;
         // InitVotes
       case 'I':
-        if (AllowLocalSysop()) {
-          wfc_cls();
-          write_inst(INST_LOC_VOTEEDIT, 0, INST_FLAGS_NONE);
-          ivotes();
-        }
+        wfc_cls();
+        write_inst(INST_LOC_VOTEEDIT, 0, INST_FLAGS_NONE);
+        ivotes();
         break;
         // ConfEdit
       case 'J':
-        if (AllowLocalSysop()) {
-          wfc_cls();
-          edit_confs();
-        }
+        wfc_cls();
+        edit_confs();
         break;
         // SendMailFile
-      case 'K':
-        if (AllowLocalSysop()) {
+      case 'K': {
           wfc_cls();
           session()->usernum = 1;
           bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
@@ -483,16 +461,14 @@ int WSession::doWFCEvents() {
         }
         break;
         // Print Log Daily logs
-      case 'L':
-        if (AllowLocalSysop()) {
+      case 'L': {
           wfc_cls();
           unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
           print_local_file(pStatus->GetLogFileName(0));
         }
         break;
         // Read User Mail
-      case 'M':
-        if (AllowLocalSysop()) {
+      case 'M': {
           wfc_cls();
           session()->usernum = 1;
           readmail(0);
@@ -501,15 +477,13 @@ int WSession::doWFCEvents() {
         }
         break;
         // Print Net Log
-      case 'N':
-        if (AllowLocalSysop()) {
+      case 'N': {
           wfc_cls();
           print_local_file("net.log");
         }
         break;
         // EditTextFile
-      case 'O':
-        if (AllowLocalSysop()) {
+      case 'O': {
           wfc_cls();
           write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
           bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
@@ -521,8 +495,7 @@ int WSession::doWFCEvents() {
         }
         break;
         // Print Network Pending list
-      case 'P':
-        if (AllowLocalSysop()) {
+      case 'P':{
           wfc_cls();
           print_pending_list();
         }
@@ -535,28 +508,21 @@ int WSession::doWFCEvents() {
         // Read All Mail
       case 'R':
         wfc_cls();
-        if (AllowLocalSysop()) {
-          write_inst(INST_LOC_MAILR, 0, INST_FLAGS_NONE);
-          mailr();
-        }
+        write_inst(INST_LOC_MAILR, 0, INST_FLAGS_NONE);
+        mailr();
         break;
         // Print Current Status
       case 'S':
-        if (AllowLocalSysop()) {
-          prstatus();
-          getkey();
-        }
+        prstatus();
+        getkey();
         break;
         // UserEdit
       case 'U':
-        if (AllowLocalSysop()) {
-          write_inst(INST_LOC_UEDIT, 0, INST_FLAGS_NONE);
-          uedit(1, UEDIT_NONE);
-        }
+        write_inst(INST_LOC_UEDIT, 0, INST_FLAGS_NONE);
+        uedit(1, UEDIT_NONE);
         break;
         // Send Internet Mail
-      case 'V':
-        if (AllowLocalSysop()) {
+      case 'V': {
           wfc_cls();
           session()->usernum = 1;
           session()->SetUserOnline(true);
@@ -568,8 +534,7 @@ int WSession::doWFCEvents() {
         }
         break;
         // Edit Gfile
-      case 'W':
-        if (AllowLocalSysop()) {
+      case 'W': {
           wfc_cls();
           write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
           bout << "|#1Edit " << syscfg.gfilesdir << "<filename>: \r\n";
@@ -580,16 +545,14 @@ int WSession::doWFCEvents() {
       case 'X':
         break;
         // Print Yesterday's Log
-      case 'Y':
-        if (AllowLocalSysop()) {
+      case 'Y': {
           wfc_cls();
           unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
           print_local_file(pStatus->GetLogFileName(1));
         }
         break;
         // Print Activity (Z) Log
-      case 'Z':
-        if (AllowLocalSysop()) {
+      case 'Z': {
           zlog();
           bout.nl();
           getkey();
@@ -641,9 +604,6 @@ int WSession::LocalLogon() {
       session()->localIO()->LocalGetChar();
     } else {
       bool fast = false;
-      if (!AllowLocalSysop()) {
-        return lokb;
-      }
 
       if (ch == 'F') {   // 'F' for Fast
         m_unx = 1;
@@ -1070,10 +1030,6 @@ int WSession::Run(int argc, char *argv[]) {
   session()->CreateComm(hSockOrComm);
   this->InitializeBBS();
 
-  if (syscfg.sysconfig & sysconfig_no_local) {
-    this_usernum = 0;
-    m_bUserAlreadyOn = false;
-  }
   session()->localIO()->UpdateNativeTitleBar();
 
   // If we are telnet...
