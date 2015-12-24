@@ -1130,6 +1130,14 @@ void newuser() {
     bout << "|#6Error creating user account.\r\n\n";
     hangup = true;
     return;
+  } else if (session()->usernum == 1) {
+    // This is the #1 sysop record. Tell the sysop thank you and
+    // update his user record with: s255/d255/r0
+    ssm(1, 0, "Thank you for installing WWIV! - The WWIV Development Team.");
+    WUser* user = session()->user();
+    user->SetSl(255);
+    user->SetDsl(255);
+    user->SetRestriction(0);
   }
 
   WriteNewUserInfoToSysopLog();
