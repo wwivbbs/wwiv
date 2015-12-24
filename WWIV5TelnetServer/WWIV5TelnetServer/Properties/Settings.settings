@@ -15,10 +15,10 @@
       <Value Profile="(Default)">4</Value>
     </Setting>
     <Setting Name="executable" Type="System.String" Scope="User">
-      <Value Profile="(Default)">C:\bbs\bbs.exe</Value>
+      <Value Profile="(Default)">C:\wwiv\bbs.exe</Value>
     </Setting>
     <Setting Name="homeDirectory" Type="System.String" Scope="User">
-      <Value Profile="(Default)">C:\bbs</Value>
+      <Value Profile="(Default)">C:\wwiv</Value>
     </Setting>
     <Setting Name="parameters" Type="System.String" Scope="User">
       <Value Profile="(Default)">-XT -H@H -N@N</Value>
