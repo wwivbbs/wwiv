@@ -47,7 +47,7 @@ public:
 
   virtual bool is_local() const override;
   virtual bool is_private() const override { return false;  } // we don't support private subs
-  virtual bool is_locked() const override { return (header_.status & status_no_delete != 0); } // 
+  virtual bool is_locked() const override { return (header_.status & status_no_delete) != 0; } // 
   virtual bool is_deleted() const override { return (header_.status & status_delete) != 0; }
   virtual const std::vector<std::string>& control_lines() const override { return control_lines_;  }
 

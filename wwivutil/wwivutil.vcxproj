@@ -82,10 +82,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="command.cpp" />
     <ClCompile Include="messages.cpp" />
     <ClCompile Include="wwivutil.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="command.h" />
+    <ClInclude Include="messages.h" />
     <ClInclude Include="wwivutil.h" />
   </ItemGroup>
   <ItemGroup>

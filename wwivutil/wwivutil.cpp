@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "wwivutil.h"
+#include "wwivutil/wwivutil.h"
 
 #include <algorithm>
 #include <iostream>
@@ -30,6 +30,7 @@
 #include "core/strings.h"
 #include "core/stl.h"
 #include "sdk/config.h"
+#include "wwivutil/messages.h"
 
 using std::clog;
 using std::cout;
@@ -40,15 +41,6 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
-
-namespace wwiv {
-namespace wwivutil {
-
-int dump_headers(const Config& config, const CommandLineCommand* command);
-
-}  // namespace wwivutil
-}  // namespace wwiv
-
 using namespace wwiv::wwivutil;
 
 int main(int argc, char *argv[]) {
@@ -57,68 +49,31 @@ int main(int argc, char *argv[]) {
     cmdline.add({"bbsdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory()});
     cmdline.add(BooleanCommandLineArgument("help", '?', "Displays Help", false));
 
-    CommandLineCommand& messages = cmdline.add_command("messages", "Message Commands");
-    CommandLineCommand& messages_dump_header = messages.add_command("dump", "Displays message header and text information");
-    messages_dump_header.add({"start", "Starting message number.", "1"});
-    messages_dump_header.add({"end", "Last message number..", "-1"});
-    messages_dump_header.add(BooleanCommandLineArgument("all", "dumps everything, control lines too", false));
-    messages.add(BooleanCommandLineArgument("help", '?', "Displays Help", false));
+    CommandLineCommand* messages = new CommandLineCommand("messages", "WWIV message base commands.");
+    messages->add(BooleanCommandLineArgument("help", '?', "Displays Help", false));
+    cmdline.add(messages);
 
-    try {
-      if (!cmdline.Parse()) {
-        clog << "Unable to parse command line." << endl;
-        return 1;
-      }
-    } catch (const unknown_argument_error& e) {
-      clog << "Unable to parse command line." << endl;
-      clog << e.what() << endl;
-      return 1;
+    MessagesDumpHeaderCommand* messages_dump_header = new MessagesDumpHeaderCommand();
+    messages_dump_header->add({"start", "Starting message number.", "1"});
+    messages_dump_header->add({"end", "Last message number..", "-1"});
+    messages_dump_header->add(BooleanCommandLineArgument("all", "dumps everything, control lines too", false));
+    messages->add(messages_dump_header);
+
+    int parse_result = cmdline.Parse();
+    if (parse_result != 0) {
+      return parse_result;
     }
-
-    if (argc <= 1 || !cmdline.subcommand_selected() || cmdline.arg("help").as_bool()) {
-      cout << cmdline.GetHelp();
-      return 0;
-    }
-
     string bbsdir = cmdline.arg("bbsdir").as_string();
     Config config(bbsdir);
     if (!config.IsInitialized()) {
       clog << "Unable to load CONFIG.DAT.";
       return 1;
     }
-
-    if (!cmdline.subcommand_selected()) {
-      clog << "Unable to parse command line." << endl;
-      clog << "No command selected." << endl;
-      return 1;
-    }
-
-    const string command = cmdline.command()->name();
-
-    if (command == "messages") {
-      // TODO(rushfan): this may be crash here if your command line is like
-      // "wwivutil messages d" since d isn't a valid command.
-      if (!messages.subcommand_selected() || messages.arg("help").as_bool()) {
-        cout << messages.GetHelp();
-        return 1;
-      }
-      const string subcommand = messages.command()->name();
-      if (messages.arg("help").as_bool()) {
-        cout << messages.GetHelp();
-      } else if (subcommand == "dump") {
-        dump_headers(config, messages.command());
-      } else {
-        cout << "Invalid command: \"" << subcommand << "\"." << endl;
-        cout << messages.GetHelp();
-        return 1;
-      }
-    } else {
-      cout << "Invalid command: \"" << command << "\"." << endl;
-      cout << cmdline.GetHelp();
-      return 1;
-    }
+    std::unique_ptr<Configuration> command_config(new Configuration(&config));
+    messages_dump_header->set_config(command_config.get());
+    return cmdline.Execute();
   } catch (std::exception& e) {
     clog << e.what() << endl;
   }
-  return 0;
+  return 1;
 }

@@ -21,6 +21,7 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -125,20 +126,28 @@ public:
   }
 };
 
-class CommandLineCommand {
+
+class Command {
 public:
-  CommandLineCommand(const std::string& name, const std::string& help_text, int argc, char** argv,
-      const std::string dot_argument);
+  virtual int Execute() = 0;
+  virtual std::string GetHelp() const = 0;
+};
+
+/** Generic command implementation for using the CommandLine support in core */
+class CommandLineCommand : public Command {
+public:
+  CommandLineCommand(
+      const std::string& name, const std::string& help_text);
   bool add(const CommandLineArgument& cmd);
-  bool add(const CommandLineCommand& cmd) { commands_allowed_.emplace(cmd.name(), cmd); return true; }
+  bool add(CommandLineCommand* cmd) { 
+    cmd->set_argc(argc_);
+    cmd->set_argv(argv_);
+    cmd->set_dot_argument(dot_argument_);
+    // This is ulgy but GCC 4.8 doesn't support make_unique (sigh).
+    commands_allowed_[cmd->name()] = std::unique_ptr<CommandLineCommand>(cmd);
+    return true; 
+  }
   std::string ArgNameForKey(char key);
-  CommandLineCommand& add_command(const std::string& name) {
-    return add_command(name, "");
-  }
-  CommandLineCommand& add_command(const std::string& name, const std::string& help_text) {
-    commands_allowed_.emplace(name, CommandLineCommand(name, help_text, argc_, argv_, dot_argument_));
-    return commands_allowed_.at(name);
-  }
 
   bool subcommand_selected() const { return command_ != nullptr; }
   const std::string name() const { return name_; }
@@ -148,16 +157,22 @@ public:
   const CommandLineCommand* command() const { return command_; }
   std::vector<std::string> remaining() const { return remaining_; }
   std::string ToString() const;
+  virtual int Execute();
   virtual std::string GetHelp() const;
 
 protected:
+
   bool HandleCommandLineArgument(const std::string& key, const std::string& value);
   int Parse(int start_pos);
-  int argc_ = 0;
 
+  void set_argc(int argc) { argc_ = argc; }
+  void set_argv(char** argv) { argv_ = argv; }
+  void set_dot_argument(const std::string& dot_argument) { dot_argument_ = dot_argument; }
+
+  int argc_ = 0;
   // Values as allowed to be specified on the commandline.
   std::map<const std::string, CommandLineArgument> args_allowed_;
-  std::map<const std::string, CommandLineCommand> commands_allowed_;
+  std::map<const std::string, std::unique_ptr<CommandLineCommand>> commands_allowed_;
   std::vector<std::string> remaining_;
 
 private:
@@ -167,16 +182,18 @@ private:
   const std::string name_;
   const std::string help_text_;
   char** argv_ = nullptr;
-  const std::string dot_argument_;
+  std::string dot_argument_;
 };
 
 class CommandLine : public CommandLineCommand {
 public:
   CommandLine(int argc, char** argv, const std::string dot_argument);
-  bool Parse() { return CommandLineCommand::Parse(1) >= CommandLineCommand::argc_; }
+  int Parse();
+  virtual int Execute();
   virtual std::string GetHelp() const override;
 private:
   const std::string program_name_;
+  bool ParseImpl();
 };
 
 
