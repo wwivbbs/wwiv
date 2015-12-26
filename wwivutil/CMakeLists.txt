@@ -6,6 +6,7 @@ include_directories(..)
 set(WWIVUTIL_MAIN wwivutil.cpp)
 
 set(COMMAND_SOURCES
+  command.cpp
   messages.cpp
   )
 
