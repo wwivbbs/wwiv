@@ -80,6 +80,7 @@ bool CommandLine::Parse() {
   }
 
   if (argc_ <= 1) {
+    clog << "No command line arguments specified." << endl;
     cout << GetHelp();
     return false;
   }
