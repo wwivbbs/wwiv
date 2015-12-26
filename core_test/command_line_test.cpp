@@ -32,6 +32,14 @@ using namespace wwiv::core;
 
 class CommandLineTest: public ::testing::Test {};
 
+class NoopCommandLineCommand: public CommandLineCommand {
+public:
+  NoopCommandLineCommand(const std::string& name)
+      : CommandLineCommand(name, name) {}
+  int Execute() override final { return 0; }
+  std::string GetHelp() const override final { return ""; }
+};
+
 TEST_F(CommandLineTest, Basic) {
   int argc = 3;
   char* argv[] = {"", "--foo", "--bar=baz"};
@@ -48,9 +56,11 @@ TEST_F(CommandLineTest, Command) {
   char* argv[] = {"", "--foo=bar", "print", "--all", "--some=false", "myfile.txt"};
   CommandLine cmdline(argc, argv, "");
   cmdline.add({"foo", ' ', "", "asdf"});
-  CommandLineCommand& print = cmdline.add_command("print");
-  print.add(BooleanCommandLineArgument("all", ' ', "", false));
-  print.add(BooleanCommandLineArgument("some", ' ', "", true));
+  
+  NoopCommandLineCommand* print = new NoopCommandLineCommand("print");
+  cmdline.add(print);
+  print->add(BooleanCommandLineArgument("all", ' ', "", false));
+  print->add(BooleanCommandLineArgument("some", ' ', "", true));
 
   ASSERT_TRUE(cmdline.Parse());
   EXPECT_EQ("bar", cmdline.arg("foo").as_string());
@@ -68,7 +78,8 @@ TEST_F(CommandLineTest, Several_Commands) {
   char* argv[] = {"", "--foo=bar", "print",};
   CommandLine cmdline(argc, argv, "");
   cmdline.add({"foo", ' ', "", "asdf"});
-  cmdline.add_command("print");
+  NoopCommandLineCommand* print = new NoopCommandLineCommand("print");
+  cmdline.add(print);
 
   ASSERT_TRUE(cmdline.Parse());
   EXPECT_EQ("bar", cmdline.arg("foo").as_string());

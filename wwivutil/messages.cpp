@@ -15,6 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
+#include "wwivutil/messages.h"
+
 #include <cstdio>
 #include <iomanip>
 #include <iostream>
@@ -38,19 +40,21 @@ using std::setw;
 using std::string;
 using std::unique_ptr;
 using std::vector;
-using wwiv::core::CommandLineCommand;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
 
 namespace wwiv {
 namespace wwivutil {
 
-void messages_usage() {
+MessagesDumpHeaderCommand::MessagesDumpHeaderCommand()
+  : UtilCommand("dump", "Displays message header and text information.") {}
+
+static void messages_usage() {
   cout << "Usage:   dump_headers <base sub filename>" << endl;
   cout << "Example: dump_headers general" << endl;
 }
 
-string daten_to_humantime(uint32_t daten) {
+static string daten_to_humantime(uint32_t daten) {
   time_t t = static_cast<time_t>(daten);
   string human_date = string(asctime(localtime(&t)));
   wwiv::strings::StringTrimEnd(&human_date);
@@ -58,10 +62,11 @@ string daten_to_humantime(uint32_t daten) {
   return human_date;
 }
 
-static int dump(const string& basename, const string& subs_dir,
-		            const string& msgs_dir,
-                const std::vector<net_networks_rec>& net_networks,
-                int start, int end, bool all) {
+int MessagesDumpHeaderCommand::ExecuteImpl(
+  const string& basename, const string& subs_dir,
+	const string& msgs_dir,
+  const std::vector<net_networks_rec>& net_networks,
+  int start, int end, bool all) {
   // TODO(rushfan): Create the right API type for the right message area.
   unique_ptr<MessageApi> api(new WWIVMessageApi(
       subs_dir, msgs_dir, net_networks));
@@ -119,24 +124,26 @@ static int dump(const string& basename, const string& subs_dir,
   return 0;
 }
 
-int dump_headers(const Config& config, const CommandLineCommand* command) {
-  if (command->remaining().empty()) {
-    cout << "Usage:   dump <subname>" << endl;
-    cout << "Example: dump GENERAL" << endl;
+int MessagesDumpHeaderCommand::Execute() {
+  if (remaining().empty()) {
+    clog << "Missing sub basename." << endl;
+    messages_usage();
     return 2;
   }
 
-  Networks networks(config);
+  Networks networks(*config()->config());
   if (!networks.IsInitialized()) {
     clog << "Unable to load networks.";
     return 1;
   }
 
-  const string basename(command->remaining().front());
-  const int start = command->arg("start").as_int();
-  int end = command->arg("end").as_int();
-  const bool all = command->arg("all").as_bool();
-  return dump(basename, config.datadir(), config.msgsdir(), networks.networks(), start, end, all);
+  const string basename(remaining().front());
+  const int start = arg("start").as_int();
+  int end = arg("end").as_int();
+  const bool all = arg("all").as_bool();
+  return ExecuteImpl(
+    basename, config()->config()->datadir(), config()->config()->msgsdir(), 
+    networks.networks(), start, end, all);
 }
 
 }  // namespace wwivutil

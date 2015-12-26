@@ -50,64 +50,97 @@ using namespace wwiv::sdk;
 int main(int argc, char** argv) {
   try {
     CommandLine cmdline(argc, argv, "network_number");
-    cmdline.add({"bbsdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory()});
-    cmdline.add_command("dump", "Dumps contents of a network packet");
-    cmdline.add_command("dump_callout", "Dumps parsed representation of CALLOUT.NET");
-    cmdline.add_command("dump_contact", "Dumps parsed representation of CONTACT.NET");
     cmdline.add(BooleanCommandLineArgument("help", '?', "Displays Help", false));
+    cmdline.add({"bbsdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory()});
+
+    class DumpCommand final: public CommandLineCommand {
+    public:
+      DumpCommand(): CommandLineCommand("dump", "Dumps contents of a network packet") {}
+      virtual int Execute() override final {
+        return dump(this);
+      }
+    };
+    class DumpCalloutCommand final: public CommandLineCommand {
+    public:
+      DumpCalloutCommand()
+        : CommandLineCommand("dump_callout", "Dumps parsed representation of CALLOUT.NET") {}
+      virtual int Execute() override final {
+
+        Config config(bbsdir_);
+        if (!config.IsInitialized()) {
+          clog << "Unable to load CONFIG.DAT.";
+          return 1;
+        }
+        Networks networks(config);
+        if (!networks.IsInitialized()) {
+          clog << "Unable to load networks.";
+          return 1;
+        }
+
+        map<const string, Callout> callouts;
+        for (const auto net : networks.networks()) {
+          string lower_case_network_name(net.name);
+          StringLowerCase(&lower_case_network_name);
+          callouts.emplace(lower_case_network_name, Callout(net.dir));
+        }
+        return dump_callout(callouts, this);
+      }
+      void set_bbsdir(const std::string& bbsdir) { bbsdir_ = bbsdir; }
+    private:
+      std::string bbsdir_;
+    };
+    class DumpContactCommand final: public CommandLineCommand {
+    public:
+      DumpContactCommand()
+          : CommandLineCommand("dump_contact", "Dumps parsed representation of CONTACT.NET") {}
+      virtual int Execute() override final {
+
+        Config config(bbsdir_);
+        if (!config.IsInitialized()) {
+          clog << "Unable to load CONFIG.DAT.";
+          return 1;
+        }
+        Networks networks(config);
+        if (!networks.IsInitialized()) {
+          clog << "Unable to load networks.";
+          return 1;
+        }
+
+        map<const string, Contact> contacts;
+        for (const auto net : networks.networks()) {
+          string lower_case_network_name(net.name);
+          StringLowerCase(&lower_case_network_name);
+          contacts.emplace(lower_case_network_name, Contact(net.dir, false));
+        }
+        return dump_contact(contacts, this);
+      }
+      void set_bbsdir(const std::string& bbsdir) { bbsdir_ = bbsdir; }
+    private:
+      std::string bbsdir_;
+    };
 
     try {
-      if (!cmdline.Parse()) {
-        clog << "Unable to parse command line." << endl;
-        return 1;
+      cmdline.add(new DumpCommand());
+      DumpContactCommand* dump_contact = new DumpContactCommand();
+      cmdline.add(dump_contact);
+      DumpCalloutCommand* dump_callout = new DumpCalloutCommand();
+      cmdline.add(dump_callout);
+
+      int parse_result = cmdline.Parse();
+      if (parse_result != 0) {
+        return parse_result;
       }
+      const string bbsdir = cmdline.arg("bbsdir").as_string();
+      dump_contact->set_bbsdir(bbsdir);
+      dump_callout->set_bbsdir(bbsdir);
+
+      return cmdline.Execute();
     } catch (const unknown_argument_error& e) {
       clog << "Unable to parse command line." << endl;
       clog << e.what() << endl;
-      return 1;
     }
-
-    if (argc <= 1 || !cmdline.subcommand_selected() || cmdline.arg("help").as_bool()) {
-      cout << cmdline.GetHelp();
-      return 0;
-    }
-
-    string bbsdir = cmdline.arg("bbsdir").as_string();
-    Config config(bbsdir);
-    if (!config.IsInitialized()) {
-      clog << "Unable to load CONFIG.DAT.";
-      return 1;
-    }
-    Networks networks(config);
-    if (!networks.IsInitialized()) {
-      clog << "Unable to load networks.";
-      return 1;
-    }
-
-    const string command = cmdline.command()->name();
-
-    if (command == "dump") {
-      return dump(cmdline.command());
-    } else if (command == "dump_callout") {
-      map<const string, Callout> callouts;
-      for (const auto net : networks.networks()) {
-        string lower_case_network_name(net.name);
-        StringLowerCase(&lower_case_network_name);
-        callouts.emplace(lower_case_network_name, Callout(net.dir));
-      }
-      return dump_callout(callouts, cmdline.command());
-    } else if (command == "dump_contact") {
-      map<const string, Contact> contacts;
-      for (const auto net : networks.networks()) {
-        string lower_case_network_name(net.name);
-        StringLowerCase(&lower_case_network_name);
-        contacts.emplace(lower_case_network_name, Contact(net.dir, false));
-      }
-      return dump_contact(contacts, cmdline.command());
-    }
-    cout << "Invalid command: \"" << command << "\"." << endl;
-    return 1;
   } catch (const std::exception& e) {
     clog << e.what() << endl;
   }
+  return 1;
 }

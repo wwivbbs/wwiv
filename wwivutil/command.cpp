@@ -16,15 +16,44 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_WWIVUTIL_H__
-#define __INCLUDED_WWIVUTIL_WWIVUTIL_H__
+#include "wwivutil/command.h"
 
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "core/command_line.h"
+#include "core/file.h"
+#include "core/strings.h"
+#include "core/stl.h"
+#include "sdk/config.h"
+
+using std::clog;
+using std::cout;
+using std::endl;
+using std::map;
+using std::string;
+using std::vector;
+using namespace wwiv::strings;
+using namespace wwiv::sdk;
 
 namespace wwiv {
 namespace wwivutil {
 
 
+// WWIVUTIL commands
+
+UtilCommand::UtilCommand(const std::string& name, const std::string& description)
+  : CommandLineCommand(name, description) {}
+UtilCommand::~UtilCommand() {}
+
+int UtilCommand::Execute() {
+  return 0;
+}
+
 }  // namespace wwivutil
 }  // namespace wwiv
 
-#endif  // __INCLUDED_WWIVUTIL_WWIVUTIL_H__
