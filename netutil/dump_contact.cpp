@@ -17,39 +17,18 @@
 /**************************************************************************/
 #include "netutil/dump_contact.h"
 
-#include <cstdio>
-#include <fcntl.h>
 #include <iostream>
-#ifdef _WIN32
-#include <io.h>
-#else  // _WIN32
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#endif 
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
-#include "core/command_line.h"
-#include "core/file.h"
 #include "core/strings.h"
 #include "networkb/contact.h"
-#include "networkb/connection.h"
-#include "sdk/config.h"
-#include "sdk/net.h"
-#include "sdk/networks.h"
 
-using std::cerr;
-using std::clog;
 using std::cout;
 using std::endl;
 using std::map;
 using std::string;
-using wwiv::sdk::Config;
 using wwiv::net::Contact;
-using wwiv::sdk::Networks;
-using namespace wwiv::strings;
 
 void dump_contact_usage() {
   cout << "Usage:   dump_contact" << endl;
@@ -58,9 +37,9 @@ void dump_contact_usage() {
 
 int dump_contact(map<const string, Contact> contacts, const wwiv::core::CommandLineCommand* command) {
   for (const auto& c : contacts) {
-    std::cout << "CONTACT.NET information: : " << c.first << std::endl;
-    std::cout << "===========================================================" << std::endl;
-    std::cout << c.second.ToString() << std::endl;
+    cout << "CONTACT.NET information: : " << c.first << endl;
+    cout << "===========================================================" << endl;
+    cout << c.second.ToString() << endl;
   }
 
   return 0;
