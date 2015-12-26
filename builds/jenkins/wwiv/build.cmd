@@ -90,6 +90,11 @@ echo * Building FIX
 cd %WORKSPACE%\fix
 msbuild fix.vcxproj /t:Build /p:Configuration=Release /property:EnableEnhancedInstructionSet=NoExtensions
 
+echo:
+echo * Building WWIVUTIL
+cd %WORKSPACE%\wwivutil
+msbuild wwivutil.vcxproj /t:Build /p:Configuration=Release || exit /b
+
 @rem build WINS
 echo:
 echo * Building WINS
@@ -141,6 +146,7 @@ copy /v/y %WORKSPACE%\init\Release\init.exe %WORKSPACE%\release\init.exe
 copy /v/y %WORKSPACE%\network\Release\network.exe %WORKSPACE%\release\network.exe
 copy /v/y %WORKSPACE%\networkb\Release\networkb.exe %WORKSPACE%\release\networkb.exe
 copy /v/y %WORKSPACE%\netutil\Release\netutil.exe %WORKSPACE%\release\netutil.exe
+copy /v/y %WORKSPACE%\wwivutil\Release\wwivutil.exe %WORKSPACE%\release\wwivutil.exe
 copy /v/y %WORKSPACE%\fix\Release\fix.exe %WORKSPACE%\release\fix.exe
 copy /v/y %WORKSPACE%\bbs\admin\* %WORKSPACE%\release\
 copy /v/y %WORKSPACE%\bbs\admin\win32\* %WORKSPACE%\release\
