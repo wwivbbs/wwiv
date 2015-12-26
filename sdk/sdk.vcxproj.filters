@@ -40,6 +40,9 @@
     <ClInclude Include="msgapi\message_area_wwiv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="names.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -78,6 +81,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="msgapi\message_wwiv.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="names.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

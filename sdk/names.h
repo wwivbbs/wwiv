@@ -15,13 +15,38 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_TEMPLATE_H__
-#define __INCLUDED_SDK_TEMPLATE_H__
+#ifndef __INCLUDED_SDK_NAMES_H__
+#define __INCLUDED_SDK_NAMES_H__
+
+#include <string>
+#include <vector>
+
+#include "sdk/config.h"
+#include "sdk/vardec.h"
 
 namespace wwiv {
 namespace sdk {
 
-}  // namespace sdk
-}  // namespace wwiv
 
-#endif  // __INCLUDED_SDK_TEMPLATE_H__
+class Names {
+public:
+  explicit Names(wwiv::sdk::Config& config);
+  virtual ~Names();
+
+  std::string UserName(uint32_t user_number);
+  std::string UserName(uint32_t user_number, uint32_t system_number);
+  bool Add(const std::string name, uint32_t user_number);
+  bool Remove(uint32_t user_number);
+
+private:
+  const std::string data_directory_;
+  bool loaded_ = false;
+  bool save_on_exit_ = false;
+  std::vector<smalrec> names_;
+};
+
+
+}
+}
+
+#endif  // __INCLUDED_SDK_NAMES_H__
