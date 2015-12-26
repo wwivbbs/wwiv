@@ -12,6 +12,7 @@ set(COMMON_SOURCES
   msgapi/message_api_wwiv.cpp
   msgapi/message_wwiv.cpp
   msgapi/message_area_wwiv.cpp
+  names.cpp
   networks.cpp
   phone_numbers.cpp
   )
