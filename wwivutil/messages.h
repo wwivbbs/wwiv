@@ -27,7 +27,7 @@ class MessagesDumpHeaderCommand: public UtilCommand {
 public:
   MessagesDumpHeaderCommand();
   ~MessagesDumpHeaderCommand() {}
-  virtual int Execute() override;
+  virtual int Execute() override final;
 protected:
   int ExecuteImpl(
     const std::string& basename, const std::string& subs_dir,

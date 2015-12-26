@@ -188,7 +188,7 @@ private:
 class CommandLine : public CommandLineCommand {
 public:
   CommandLine(int argc, char** argv, const std::string dot_argument);
-  int Parse();
+  bool Parse();
   virtual int Execute();
   virtual std::string GetHelp() const override;
 private:
