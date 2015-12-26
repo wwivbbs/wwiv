@@ -22,10 +22,8 @@
 #include "sdk/config.h"
 #include "sdk/networks.h"
 
-
 namespace wwiv {
 namespace wwivutil {
-
 
 class Configuration {
 public:

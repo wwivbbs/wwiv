@@ -126,10 +126,8 @@ int main(int argc, char** argv) {
       DumpCalloutCommand* dump_callout = new DumpCalloutCommand();
       cmdline.add(dump_callout);
 
-      int parse_result = cmdline.Parse();
-      if (parse_result != 0) {
-        return parse_result;
-      }
+      if (!cmdline.Parse()) { return 1; }
+
       const string bbsdir = cmdline.arg("bbsdir").as_string();
       dump_contact->set_bbsdir(bbsdir);
       dump_callout->set_bbsdir(bbsdir);

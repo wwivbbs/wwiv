@@ -67,23 +67,23 @@ CommandLine::CommandLine(int argc, char** argv, const std::string dot_argument)
   set_dot_argument(dot_argument);
 }
 
-int CommandLine::Parse() {
+bool CommandLine::Parse() {
   try {
     if (!ParseImpl()) {
       clog << "Unable to parse command line." << endl;
-      return 1;
+      return false;
     }
   } catch (const unknown_argument_error& e) {
     clog << "Unable to parse command line." << endl;
     clog << e.what() << endl;
-    return 1;
+    return false;
   }
 
   if (argc_ <= 1) {
     cout << GetHelp();
-    return 1;
+    return false;
   }
-  return 0;
+  return true;
 }
 
 bool CommandLine::ParseImpl() {

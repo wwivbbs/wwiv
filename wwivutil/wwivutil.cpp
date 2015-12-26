@@ -59,12 +59,8 @@ int main(int argc, char *argv[]) {
     messages_dump_header->add(BooleanCommandLineArgument("all", "dumps everything, control lines too", false));
     messages->add(messages_dump_header);
 
-    int parse_result = cmdline.Parse();
-    if (parse_result != 0) {
-      return parse_result;
-    }
-    string bbsdir = cmdline.arg("bbsdir").as_string();
-    Config config(bbsdir);
+    if (!cmdline.Parse()) { return 1; }
+    Config config(cmdline.arg("bbsdir").as_string());
     if (!config.IsInitialized()) {
       clog << "Unable to load CONFIG.DAT.";
       return 1;
