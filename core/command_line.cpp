@@ -126,6 +126,10 @@ const CommandLineValue CommandLineCommand::arg(const std::string name) const {
   return args_.at(name);
 }
 
+bool CommandLineCommand::AddStandardArgs() {
+  add(BooleanCommandLineArgument("help", '?', "Displays Help", false));
+  return true;
+}
 
 std::string CommandLineCommand::ArgNameForKey(char key) {
   for (const auto& a : args_allowed_) {
@@ -144,14 +148,14 @@ int CommandLineCommand::Parse(int start_pos) {
       const string key = delims[0].substr(2);
       const string value = (delims.size() > 1) ? delims[1] : "";
       if (!contains(args_allowed_, key)) {
-        throw unknown_argument_error(StrCat("key=", key));
+        throw unknown_argument_error(StrCat("Command: ", name(), "; key=", key));
       }
       HandleCommandLineArgument(key, value);
     } else if (starts_with(s, "/") || starts_with(s, "-")) {
       char letter = static_cast<char>(std::toupper(s[1]));
       const string key = ArgNameForKey(letter);
       if (key.empty()) {
-        throw unknown_argument_error(StrCat("letter=", letter));
+        throw unknown_argument_error(StrCat("Command: ", name(), "; letter=", letter));
       }
       const string value = s.substr(2);
       HandleCommandLineArgument(key, value);
@@ -235,6 +239,14 @@ std::string CommandLineCommand::GetHelp() const {
     ss << StringPrintf("%-20s", allowed_name.c_str()) << " " << a.second->help_text() << endl;
   }
   return ss.str();
+}
+
+bool CommandLine::AddStandardArgs() {
+  if (!CommandLineCommand::AddStandardArgs()) {
+    return false;
+  }
+  add({"bbsdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory()});
+  return true;
 }
 
 std::string CommandLine::GetHelp() const {

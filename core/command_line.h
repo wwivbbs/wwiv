@@ -148,6 +148,7 @@ public:
     return true; 
   }
   std::string ArgNameForKey(char key);
+  virtual bool AddStandardArgs();
 
   bool subcommand_selected() const { return command_ != nullptr; }
   const std::string name() const { return name_; }
@@ -189,8 +190,9 @@ class CommandLine : public CommandLineCommand {
 public:
   CommandLine(int argc, char** argv, const std::string dot_argument);
   bool Parse();
-  virtual int Execute();
-  virtual std::string GetHelp() const override;
+  virtual int Execute() override final;
+  virtual bool AddStandardArgs() override;
+  virtual std::string GetHelp() const override final;
 private:
   const std::string program_name_;
   bool ParseImpl();

@@ -46,18 +46,11 @@ using namespace wwiv::wwivutil;
 int main(int argc, char *argv[]) {
   try {
     CommandLine cmdline(argc, argv, "network_number");
-    cmdline.add({"bbsdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory()});
-    cmdline.add(BooleanCommandLineArgument("help", '?', "Displays Help", false));
+    cmdline.AddStandardArgs();
 
-    CommandLineCommand* messages = new CommandLineCommand("messages", "WWIV message base commands.");
-    messages->add(BooleanCommandLineArgument("help", '?', "Displays Help", false));
+    UtilCommand* messages = new MessagesCommand();
     cmdline.add(messages);
-
-    MessagesDumpHeaderCommand* messages_dump_header = new MessagesDumpHeaderCommand();
-    messages_dump_header->add({"start", "Starting message number.", "1"});
-    messages_dump_header->add({"end", "Last message number..", "-1"});
-    messages_dump_header->add(BooleanCommandLineArgument("all", "dumps everything, control lines too", false));
-    messages->add(messages_dump_header);
+    AddCommandsAndArgs(messages);
 
     if (!cmdline.Parse()) { return 1; }
     Config config(cmdline.arg("bbsdir").as_string());
@@ -66,7 +59,7 @@ int main(int argc, char *argv[]) {
       return 1;
     }
     std::unique_ptr<Configuration> command_config(new Configuration(&config));
-    messages_dump_header->set_config(command_config.get());
+    messages->set_config(command_config.get());
     return cmdline.Execute();
   } catch (std::exception& e) {
     clog << e.what() << endl;
