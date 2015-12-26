@@ -169,9 +169,6 @@
     <ClCompile Include="misccmd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="msgbase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="msgbase1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -377,6 +374,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="workspace.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="email.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -648,9 +648,6 @@
     <ClInclude Include="bbsutl2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="msgbase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="shortmsg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -658,6 +655,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="workspace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="email.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -668,5 +668,8 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{1b7782d2-8144-4eac-9827-75236a5a49b8}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="todo.txt" />
   </ItemGroup>
 </Project>

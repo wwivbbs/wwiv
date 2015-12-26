@@ -40,11 +40,19 @@ using std::setw;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
 
 namespace wwiv {
 namespace wwivutil {
+
+bool MessagesCommand::AddSubCommands() {
+  MessagesDumpHeaderCommand* dump = new MessagesDumpHeaderCommand();
+  if (!add(dump)) { return false; }
+  AddCommandsAndArgs(dump);
+  return true;
+}
 
 MessagesDumpHeaderCommand::MessagesDumpHeaderCommand()
   : UtilCommand("dump", "Displays message header and text information.") {}
@@ -60,6 +68,14 @@ static string daten_to_humantime(uint32_t daten) {
   wwiv::strings::StringTrimEnd(&human_date);
 
   return human_date;
+}
+
+bool MessagesDumpHeaderCommand::AddSubCommands() {
+  add({"start", "Starting message number.", "1"});
+  add({"end", "Last message number..", "-1"});
+  add(BooleanCommandLineArgument("all", "dumps everything, control lines too", false));
+
+  return true;
 }
 
 int MessagesDumpHeaderCommand::ExecuteImpl(

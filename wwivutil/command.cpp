@@ -50,9 +50,20 @@ UtilCommand::UtilCommand(const std::string& name, const std::string& description
   : CommandLineCommand(name, description) {}
 UtilCommand::~UtilCommand() {}
 
-int UtilCommand::Execute() {
-  return 0;
+bool UtilCommand::set_config(Configuration* config) { 
+  for (const auto s : subcommands_) {
+    s->set_config(config);
+  }
+  config_ = config;
+  return true; 
 }
+
+UtilCommand* AddCommandsAndArgs(UtilCommand* cmd) {
+  cmd->AddStandardArgs();
+  cmd->AddSubCommands();
+  return cmd;
+}
+
 
 }  // namespace wwivutil
 }  // namespace wwiv

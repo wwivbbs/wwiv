@@ -39,14 +39,21 @@ class UtilCommand: public wwiv::core::CommandLineCommand {
 public:
   UtilCommand(const std::string& name, const std::string& description);
   virtual ~UtilCommand();
-  virtual int Execute() override;
+  // Override to add all commands.
+  virtual bool AddSubCommands() = 0;
 
   Configuration* config() const { return config_; }
-  bool set_config(Configuration* config) { config_ = config; return true; }
+  bool set_config(Configuration* config);
 
 private:
   Configuration* config_;
+  std::vector<UtilCommand*> subcommands_;
 };
+
+// Calls AddStandardAtgs and AddSubCommands.
+// Note: This must to called after you add it to the parent.
+UtilCommand* AddCommandsAndArgs(UtilCommand* cmd);
+
 
 }  // namespace wwivutil
 }  // namespace wwiv

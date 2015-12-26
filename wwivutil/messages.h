@@ -23,11 +23,21 @@
 namespace wwiv {
 namespace wwivutil {
 
+class MessagesCommand: public UtilCommand {
+public:
+  MessagesCommand(): UtilCommand("messages", "WWIV message base commands.") {}
+  virtual ~MessagesCommand() {}
+  virtual bool AddSubCommands() override final;
+};
+
+
 class MessagesDumpHeaderCommand: public UtilCommand {
 public:
   MessagesDumpHeaderCommand();
-  ~MessagesDumpHeaderCommand() {}
+  virtual ~MessagesDumpHeaderCommand() {}
   virtual int Execute() override final;
+  virtual bool AddSubCommands() override final;
+
 protected:
   int ExecuteImpl(
     const std::string& basename, const std::string& subs_dir,
