@@ -178,12 +178,12 @@ int try_to_ul_wh(char *file_name) {
     ok = 0;
     s1[0] = '\0';
     for (i = 0; i < MAX_ARCS; i++) {
-      if (arcs[i].extension[0] && arcs[i].extension[0] != ' ') {
+      if (session()->arcs[i].extension[0] && session()->arcs[i].extension[0] != ' ') {
         if (s1[0]) {
           strcat(s1, ", ");
         }
-        strcat(s1, arcs[i].extension);
-        if (wwiv::strings::IsEquals(s + 9, arcs[i].extension)) {
+        strcat(s1, session()->arcs[i].extension);
+        if (wwiv::strings::IsEquals(s + 9, session()->arcs[i].extension)) {
           ok = 1;
         }
       }

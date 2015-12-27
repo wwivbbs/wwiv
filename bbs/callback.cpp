@@ -24,6 +24,7 @@
 #include "bbs/input.h"
 #include "bbs/newuser.h"
 #include "bbs/bbs.h"
+#include "bbs/defaults.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/printfile.h"
@@ -139,7 +140,6 @@ void wwivnode(WUser *pUser, int mode) {
   if (!mode) {
     bout.nl();
     if (printfile(ASV3_NOEXT)) {
-      \
       // mail forwarded
       bout.nl();
       pausescr();

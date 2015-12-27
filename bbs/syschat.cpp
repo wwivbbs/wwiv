@@ -24,6 +24,7 @@
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/datetime.h"
+#include "bbs/email.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"

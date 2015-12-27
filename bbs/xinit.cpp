@@ -29,6 +29,8 @@
 
 #include "bbs/arword.h"
 #include "bbs/bbs.h"
+#include "bbs/colors.h"
+#include "bbs/events.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/conf.h"
@@ -626,19 +628,10 @@ void WSession::read_nextern() {
 }
 
 void WSession::read_arcs() {
-  if (arcs) {
-    free(arcs);
-    arcs = nullptr;
-  }
-
-  File archiverFile(syscfg.datadir, ARCHIVER_DAT);
-  if (archiverFile.Open(File::modeBinary | File::modeReadOnly)) {
-    unsigned long lFileSize = archiverFile.GetLength();
-    if (lFileSize > MAX_ARCS * sizeof(arcrec)) {
-      lFileSize = MAX_ARCS * sizeof(arcrec);
-    }
-    arcs = static_cast<arcrec *>(BbsAllocA(lFileSize));
-    archiverFile.Read(arcs, lFileSize);
+  arcs.clear();
+  DataFile<arcrec> file(syscfg.datadir, ARCHIVER_DAT);
+  if (file) {
+    file.ReadVector(arcs, MAX_ARCS);
   }
 }
 

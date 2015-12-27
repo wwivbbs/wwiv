@@ -28,6 +28,7 @@
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/input.h"
+#include "bbs/listplus.h"
 #include "core/strings.h"
 #include "bbs/stuffin.h"
 #include "bbs/keycodes.h"
@@ -205,25 +206,25 @@ void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const ch
   }
   ++ss;
   for (int i = 0; i < MAX_ARCS; i++) {
-    if (IsEqualsIgnoreCase(ss, arcs[i].extension)) {
+    if (IsEqualsIgnoreCase(ss, session()->arcs[i].extension)) {
       switch (cmd) {
       case 0:
-        strcpy(szArcCmd, arcs[i].arcl);
+        strcpy(szArcCmd, session()->arcs[i].arcl);
         break;
       case 1:
-        strcpy(szArcCmd, arcs[i].arce);
+        strcpy(szArcCmd, session()->arcs[i].arce);
         break;
       case 2:
-        strcpy(szArcCmd, arcs[i].arca);
+        strcpy(szArcCmd, session()->arcs[i].arca);
         break;
       case 3:
-        strcpy(szArcCmd, arcs[i].arcd);
+        strcpy(szArcCmd, session()->arcs[i].arcd);
         break;
       case 4:
-        strcpy(szArcCmd, arcs[i].arck);
+        strcpy(szArcCmd, session()->arcs[i].arck);
         break;
       case 5:
-        strcpy(szArcCmd, arcs[i].arct);
+        strcpy(szArcCmd, session()->arcs[i].arct);
         break;
       }
 
@@ -784,7 +785,6 @@ void file_mask(char *file_mask) {
   align(file_mask);
   bout.nl();
 }
-
 
 void listfiles() {
   if (ok_listplus()) {

@@ -27,12 +27,6 @@
 #include "sdk/vardec.h"
 #include "sdk/net.h"
 
-namespace wwiv {
-namespace menus {
-class MenuInstanceData;
-}
-}
-
 class WUser;
 
 // File: bbsutl.cpp
@@ -42,7 +36,6 @@ class WUser;
 #include "bbs/bbsutl1.h"
 
 // File: bbsutl2.cpp
-
 #include "bbs/bbsutl2.h"
 
 // File: bgetch.cpp
@@ -51,97 +44,46 @@ class WUser;
 // File: bputch.cpp
 #include "bbs/bputch.h"
 
-// File: colors.cpp
-
-void get_colordata();
-void save_colordata();
-void list_ext_colors();
-void color_config();
-void buildcolorfile();
-
 // File: com.cpp
 #include "bbs/com.h"
 
 // File: connect1.cpp
 #include "bbs/connect1.h"
 
-// File: defaults.cpp
-
-void select_editor();
-const std::string DescribeColorCode(int nColorCode);
-void color_list();
-void config_qscan();
-void enter_regnum();
-void defaults(wwiv::menus::MenuInstanceData * MenuData);
-void config_scan_plus(int type);
-
-
 // File: diredit.cpp
-
 void dlboardedit();
 
 
 // File: dirlist.cpp
-
 void dirlist(int mode);
 
 
 // File: dupphone.cpp
-
 void add_phone_number(int usernum, const char *phone);
 void delete_phone_number(int usernum, const char *phone);
 int  find_phone_number(const char *phone);
 
-
-// File: events.cpp
-
-void init_events();
-void get_next_forced_event();
-void cleanup_events();
-void check_event();
-void run_event(int evnt);
-void eventedit();
-
-
 // File: execexternal.cpp
-
 int ExecuteExternalProgram(const std::string& commandLine, int nFlags);
 
-
-// File: extract.cpp
-
-void extract_mod(const char *b, long nLength, time_t tDateTime);
-void extract_out(char *b, long nLength, const char *title, time_t tDateTime);
-bool upload_mod(int directory_number, const char *file_name, const char *description);
-
-
 // File: finduser.cpp
-
 int finduser(const std::string& searchString);
 int finduser1(const std::string& searchString);
 
-
 // File: gfiles.cpp
-
 gfilerec *read_sec(int sn, int *nf);
 void gfiles();
 
-
 // File: gfledit.cpp
-
 void modify_sec(int n);
 void gfileedit();
 bool fill_sec(int sn);
 
-
 // File: hop.cpp
-
 void HopSub();
 void HopDir();
 
-
 // File: inetmsg.cpp
-
 void get_user_ppp_addr();
 void send_inet_email();
 bool check_inet_addr(const char *inetaddr);
@@ -149,82 +91,21 @@ char *read_inet_addr(char *internet_address, int user_number);
 void write_inet_addr(const char *internet_address, int user_number);
 void send_inst_sysstr(int whichinst, const char *send_string);
 
-
-// File: instmsg.cpp
-
-void send_inst_str(int whichinst, const char *send_string);
-void send_inst_shutdown(int whichinst);
-void send_inst_cleannet();
-void broadcast(const char *fmt, ...);
-void process_inst_msgs();
-bool get_inst_info(int nInstanceNum, instancerec * ir);
-int  num_instances();
-bool  user_online(int user_number, int *wi);
-void instance_edit();
-void write_inst(int loc, int subloc, int flags);
-bool inst_msg_waiting();
-int  setiia(int poll_ticks);
-
-
 // File: lilo.cpp
-
 bool IsPhoneNumberUSAFormat(WUser *pUser);
 void getuser();
 void logon();
 void logoff();
 void logon_guest();
 
-
-// File: listplus.cpp
-
-void printtitle_plus();
-int  first_file_pos();
-void print_searching(struct search_record * search_rec);
-int  listfiles_plus(int type);
-int  lp_add_batch(const char *file_name, int dn, long fs);
-int  printinfo_plus(uploadsrec *upload_record, int filenum, int marked, int LinesLeft,
-                    struct search_record * search_rec);
-int  print_extended_plus(const char *file_name, int numlist, int indent, int color,
-                         struct search_record * search_rec);
-void show_fileinfo(uploadsrec *upload_record);
-int  check_lines_needed(uploadsrec * upload_record);
-int  prep_search_rec(struct search_record * search_rec, int type);
-int  calc_max_lines();
-void load_lp_config();
-void save_lp_config();
-void sysop_configure();
-short SelectColor(int which);
-void check_listplus();
-void config_file_list();
-void update_user_config_screen(uploadsrec * upload_record, int which);
-void do_batch_sysop_command(int mode, const char *file_name);
-int  search_criteria(struct search_record * sr);
-void load_listing();
-void view_file(const char *file_name);
-int  lp_try_to_download(const char *file_mask, int dn);
-void download_plus(const char *file_name);
-void request_file(const char *file_name);
-bool ok_listplus();
-
-
-// File: lpfunc.cpp
-
-int  listfiles_plus_function(int type);
-
-
 // File: memory.cpp
-
 void *BbsAllocA(size_t lNumBytes);
 
 // File: menuedit.cpp
-
 void EditMenus();
 void ListMenuDirs();
 
-
-
 // File: misccmd.cpp
-
 void kill_old_email();
 void list_users(int mode);
 void time_bank();
@@ -232,68 +113,40 @@ int  getnetnum(const char *network_name);
 void uudecode(const char *input_filename, const char *output_filename);
 void Packers();
 
-
-// File: msgbase.cpp
-#include "bbs/email.h"
-
-// File: msgbase1.cpp
-
-void send_net_post(postrec * pPostRecord, const char *extra, int sub_number);
-void post();
-void grab_user_name(messagerec * pMessageRecord, const char *file_name);
-void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan);
-void qscan(int nBeginSubNumber, int *pnNextSubNumber);
-void nscan(int nStartingSubNum = 0);
-void ScanMessageTitles();
-void remove_post();
-
 // File: multmail.cpp
-
 void multimail(int *user_number, int numu);
 void slash_e();
 
 // File: pause.cpp
-
 void pausescr();
 
 // File: quote.cpp
 #include "bbs/quote.h"
 
-
 // File: readmail.cpp
-
 void readmail(int mode);
 int  check_new_mail(int user_number);
-
 
 // File: shortmsg.cpp
 #include "bbs/shortmsg.h"
 
-
 // File: showfiles.cpp
-
 void show_files(const char *file_name, const char *pszDirectoryName);
 
-
 // File: SmallRecord.cpp
-
 void InsertSmallRecord(int user_number, const char *name);
 void DeleteSmallRecord(const char *name);
-
 
 // File: sr.cpp
 #include "bbs/sr.h"
 
 // File: srrcv.cpp
-
 char modemkey(int *tout);
 int  receive_block(char *b, unsigned char *bln, bool use_crc);
 void xymodem_receive(const char *file_name, bool *received, bool use_crc);
 void zmodem_receive(const std::string& filename, bool *received);
 
-
 // File: srsend.cpp
-
 void send_block(char *b, int block_type, bool use_crc, char byBlockNumber);
 char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_crc, const char *file_name,
             int *terr, bool *abort);
@@ -306,24 +159,18 @@ void zmodem_send(const char *file_name, bool *sent, double *percent);
 #include "bbs/subacc.h"
 
 // File: subedit.cpp
-
 void boardedit();
 
-
 // File: sublist.cpp
-
 void old_sublist();
 void SubList();
 
-
 // File: subreq.cpp
-
 void sub_xtr_del(int n, int nn, int f);
 void sub_xtr_add(int n, int nn);
 int  amount_of_subscribers(const char *pszNetworkFileName);
 
 // File: syschat.cpp
-
 void RequestChat();
 void select_chat_name(char *sysop_name);
 void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name);
@@ -336,16 +183,13 @@ void chat1(char *chat_line, bool two_way);
 #include "bbs/sysopf.h"
 
 // File: user.cpp
-
 bool okconf(WUser *pUser);
 void add_ass(int num_points, const char *reason);
 
 // File: utility.cpp
 #include "utility.h"
 
-
 // File: wqscn.cpp
-
 bool open_qscn();
 void close_qscn();
 void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead = false);
@@ -355,7 +199,6 @@ void write_qscn(int user_number, uint32_t* qscn, bool stay_open);
 #include "bbs/xfer.h"
 
 // File: xferovl.cpp
-
 void move_file();
 void sortdir(int directory_num, int type);
 void sort_all(int type);
@@ -371,9 +214,7 @@ void xfer_defaults();
 void finddescription();
 void arc_l();
 
-
 // File: xferovl1.cpp
-
 void modify_extended_description(char **sss, const char *dest);
 bool valid_desc(const char *description);
 bool get_file_idz(uploadsrec * upload_record, int dn);
@@ -392,9 +233,7 @@ void removenotthere();
 int  find_batch_queue(const char *file_name);
 void remove_batch(const char *file_name);
 
-
 // File: xfertmp.cpp
-
 bool bad_filename(const char *file_name);
 // returns true if the file is downloaded.
 bool download_temp_arc(const char *file_name, bool count_against_xfer_ratio);

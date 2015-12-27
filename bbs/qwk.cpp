@@ -34,6 +34,7 @@
 
 #include "bbs/bbsovl3.h"
 #include "bbs/conf.h"
+#include "bbs/defaults.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
 #include "bbs/message_file.h"
@@ -178,7 +179,7 @@ void build_qwk_packet() {
   }
 
   bool msgs_ok = true;
-  for (int i = 0; (usub[i].subnum != -1) && (i < session()->subboards.size()) && (!hangup) && !qwk_info.abort && msgs_ok; i++) {
+  for (size_t i = 0; (usub[i].subnum != -1) && (i < session()->subboards.size()) && (!hangup) && !qwk_info.abort && msgs_ok; i++) {
     msgs_ok = (max_msgs ? qwk_info.qwk_rec_num <= max_msgs : true);
     if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) {
       qwk_gather_sub(i, &qwk_info);
@@ -651,7 +652,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   fprintf(fp, "%d\r\n", qwk_info->qwk_rec_num);
   
   int amount = 0;
-  for (int cur = 0; (usub[cur].subnum != -1) && (cur < session()->subboards.size()) && (!hangup); cur++) {
+  for (size_t cur = 0; (usub[cur].subnum != -1) && (cur < session()->subboards.size()) && (!hangup); cur++) {
     if (qsc_q[usub[cur].subnum / 32] & (1L << (usub[cur].subnum % 32))) {
       ++amount;
     }
@@ -661,7 +662,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   fprintf(fp, "0\r\n");
   fprintf(fp, "E-Mail\r\n");
 
-  for (int cur = 0; (usub[cur].subnum != -1) && (cur < session()->subboards.size()) && (!hangup); cur++) {
+  for (size_t cur = 0; (usub[cur].subnum != -1) && (cur < session()->subboards.size()) && (!hangup); cur++) {
     if (qsc_q[usub[cur].subnum / 32] & (1L << (usub[cur].subnum % 32))) {
       // QWK support says this should be truncated to 10 or 13 characters
       // however QWKE allows for 255 characters. This works fine in multimail which
@@ -1263,7 +1264,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
   strcat(qwkname, ".qwk");
 
   if (!session()->user()->data.qwk_archive
-      || !arcs[session()->user()->data.qwk_archive - 1].extension[0]) {
+      || !session()->arcs[session()->user()->data.qwk_archive - 1].extension[0]) {
     archiver = select_qwk_archiver(qwk_info, 0) - 1;
   } else {
     archiver = session()->user()->data.qwk_archive - 1;
@@ -1274,7 +1275,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     sprintf(parem1, "%s%s", QWK_DIRECTORY, qwkname);
     sprintf(parem2, "%s*.*", QWK_DIRECTORY);
 
-    string command = stuff_in(arcs[archiver].arca, parem1, parem2, "", "", "");
+    string command = stuff_in(session()->arcs[archiver].arca, parem1, parem2, "", "", "");
     ExecuteExternalProgram(command, session()->GetSpawnOptions(SPAWNOPT_ARCH_A));
 
     qwk_file_to_send = wwiv::strings::StringPrintf("%s%s", QWK_DIRECTORY, qwkname);

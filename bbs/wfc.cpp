@@ -26,6 +26,7 @@
 #include "bbs/bbsovl1.h"
 #include "bbs/chnedit.h"
 #include "bbs/bbs.h"
+#include "bbs/events.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/datetime.h"

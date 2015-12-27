@@ -389,13 +389,13 @@ static bool check_for_files(const char *file_name) {
 }
 
 bool download_temp_arc(const char *file_name, bool count_against_xfer_ratio) {
-  bout << "Downloading " << file_name << "." << arcs[ARC_NUMBER].extension << ":\r\n\r\n";
+  bout << "Downloading " << file_name << "." << session()->arcs[ARC_NUMBER].extension << ":\r\n\r\n";
   if (count_against_xfer_ratio && !ratio_ok()) {
     bout << "Ratio too low.\r\n";
     return false;
   }
   char szDownloadFileName[ MAX_PATH ];
-  sprintf(szDownloadFileName, "%s%s.%s", syscfgovr.tempdir, file_name, arcs[ARC_NUMBER].extension);
+  sprintf(szDownloadFileName, "%s%s.%s", syscfgovr.tempdir, file_name, session()->arcs[ARC_NUMBER].extension);
   File file(szDownloadFileName);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     bout << "No such file.\r\n\n";
@@ -413,7 +413,7 @@ bool download_temp_arc(const char *file_name, bool count_against_xfer_ratio) {
     bool sent = false;
     bool abort = false;
     char szFileToSend[81];
-    sprintf(szFileToSend, "%s.%s", file_name, arcs[ARC_NUMBER].extension);
+    sprintf(szFileToSend, "%s.%s", file_name, session()->arcs[ARC_NUMBER].extension);
     send_file(szDownloadFileName, &sent, &abort, szFileToSend, -1, lFileSize);
     if (sent) {
       if (count_against_xfer_ratio) {
@@ -438,7 +438,7 @@ bool download_temp_arc(const char *file_name, bool count_against_xfer_ratio) {
 void add_arc(const char *arc, const char *file_name, int dos) {
   char szAddArchiveCommand[ MAX_PATH ], szArchiveFileName[ MAX_PATH ];
 
-  sprintf(szArchiveFileName, "%s.%s", arc, arcs[ARC_NUMBER].extension);
+  sprintf(szArchiveFileName, "%s.%s", arc, session()->arcs[ARC_NUMBER].extension);
   // TODO - This logic is still broken since chain.* and door.* won't match
   if (wwiv::strings::IsEqualsIgnoreCase(file_name, "chain.txt") ||
       wwiv::strings::IsEqualsIgnoreCase(file_name, "door.sys") ||
@@ -701,7 +701,7 @@ void list_temp_text() {
 void list_temp_arc() {
   char szFileName[MAX_PATH];
 
-  sprintf(szFileName, "temp.%s", arcs[ARC_NUMBER].extension);
+  sprintf(szFileName, "temp.%s", session()->arcs[ARC_NUMBER].extension);
   list_arc_out(szFileName, syscfgovr.tempdir);
   bout.nl();
 }

@@ -24,6 +24,7 @@
 #include "bbs/bbslist.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl3.h"
+#include "bbs/colors.h"
 #include "bbs/menu.h"
 #include "bbs/menuspec.h"
 #include "bbs/menusupp.h"

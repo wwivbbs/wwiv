@@ -444,11 +444,11 @@ class WUser {
   void SetDefaultProtocol(int n)        {
     data.defprot = static_cast<unsigned char>(n);
   }
-  const int GetDefaultEditor() const      {
+  const uint8_t GetDefaultEditor() const      {
     return data.defed;
   }
-  void SetDefaultEditor(int n)          {
-    data.defed = static_cast<unsigned char>(n);
+  void SetDefaultEditor(unsigned int n) {
+    data.defed = static_cast<uint8_t>(n);
   }
   const int GetScreenChars() const        {
     return data.screenchars;

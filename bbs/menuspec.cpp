@@ -17,19 +17,21 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/chains.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
+#include "bbs/defaults.h"
 #include "bbs/input.h"
-#include "bbs/bbs.h"
+#include "bbs/msgbase1.h"
 #include "bbs/fcns.h"
-#include "bbs/vars.h"
 #include "bbs/instmsg.h"
 #include "bbs/menuspec.h"
 #include "bbs/menusupp.h"
 #include "bbs/multinst.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 
 using namespace wwiv::menus;
@@ -320,17 +322,14 @@ void EnableConf() {
   tmp_disable_conf(false);
 }
 
-
 void DisableConf() {
   tmp_disable_conf(true);
 }
-
 
 void SetNewScanMsg() {
   sysoplog("Select Subs");
   config_qscan();
 }
-
 
 void ReadMessages() {
   bout << "\r\n|#8Which messages?\r\n|#7(N)ew (A)ll (Q)uit : ";

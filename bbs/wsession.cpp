@@ -39,6 +39,7 @@
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
 #include "bbs/datetime.h"
+#include "bbs/events.h"
 #include "bbs/external_edit.h"
 #include "bbs/fcns.h"
 #include "bbs/input.h"

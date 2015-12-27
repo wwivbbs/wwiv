@@ -108,6 +108,7 @@
     <ClInclude Include="chains.h" />
     <ClInclude Include="chat.h" />
     <ClInclude Include="chnedit.h" />
+    <ClInclude Include="colors.h" />
     <ClInclude Include="com.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="conf.h" />
@@ -115,8 +116,11 @@
     <ClInclude Include="connect1.h" />
     <ClInclude Include="crc.h" />
     <ClInclude Include="datetime.h" />
+    <ClInclude Include="defaults.h" />
     <ClInclude Include="dropfile.h" />
+    <ClInclude Include="events.h" />
     <ClInclude Include="external_edit.h" />
+    <ClInclude Include="extract.h" />
     <ClInclude Include="fcns.h" />
     <ClInclude Include="filenames.h" />
     <ClInclude Include="inmsg.h" />
@@ -134,6 +138,7 @@
     <ClInclude Include="menu_parser.h" />
     <ClInclude Include="message_file.h" />
     <ClInclude Include="email.h" />
+    <ClInclude Include="msgbase1.h" />
     <ClInclude Include="multinst.h" />
     <ClInclude Include="netsup.h" />
     <ClInclude Include="newuser.h" />

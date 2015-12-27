@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/msgbase1.h"
+
 #ifdef _WIN32
 #include <direct.h>
 #else

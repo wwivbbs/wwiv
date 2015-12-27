@@ -27,6 +27,7 @@
 #include "bbs/wstatus.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
+#include "bbs/instmsg.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"

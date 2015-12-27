@@ -16,8 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/colors.h"
 
 #include "bbs/bbs.h"
+#include "bbs/defaults.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/keycodes.h"

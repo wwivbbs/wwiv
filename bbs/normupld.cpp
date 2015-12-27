@@ -83,12 +83,12 @@ void normalupload(int dn) {
     ok = 0;
     string supportedExtensions;
     for (int k = 0; k < MAX_ARCS; k++) {
-      if (arcs[k].extension[0] && arcs[k].extension[0] != ' ') {
+      if (session()->arcs[k].extension[0] && session()->arcs[k].extension[0] != ' ') {
         if (!supportedExtensions.empty()) {
           supportedExtensions += ", ";
         }
-        supportedExtensions += arcs[k].extension;
-        if (wwiv::strings::IsEquals(szInputFileName + 9, arcs[k].extension)) {
+        supportedExtensions += session()->arcs[k].extension;
+        if (wwiv::strings::IsEquals(szInputFileName + 9, session()->arcs[k].extension)) {
           ok = 1;
         }
       }
