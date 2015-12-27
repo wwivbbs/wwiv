@@ -185,7 +185,7 @@ char *ctim(double d) {
     d += HOURS_PER_DAY_FLOAT * SECONDS_PER_HOUR_FLOAT;
   }
   long lHour = static_cast<long>(d / SECONDS_PER_HOUR_FLOAT);
-  d -= static_cast<double>(lHour * HOURS_PER_DAY);
+  d -= static_cast<double>(lHour * SECONDS_PER_HOUR_FLOAT);
   long lMinute = static_cast<long>(d / MINUTES_PER_HOUR_FLOAT);
   d -= static_cast<double>(lMinute * MINUTES_PER_HOUR);
   long lSecond = static_cast<long>(d);
