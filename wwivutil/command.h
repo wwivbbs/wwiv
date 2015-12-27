@@ -27,10 +27,14 @@ namespace wwivutil {
 
 class Configuration {
 public:
-  explicit Configuration(wwiv::sdk::Config* config) : config_(config) {}
+  Configuration(const std::string bbsdir, wwiv::sdk::Config* config) 
+      : bbsdir_(bbsdir), config_(config) {}
   ~Configuration() {}
+
   wwiv::sdk::Config* config() const { return config_; }
+  const std::string bbsdir() const { return bbsdir_;  }
 private:
+  const std::string bbsdir_;
   wwiv::sdk::Config* config_;
 };
 
@@ -41,6 +45,7 @@ public:
   virtual ~UtilCommand();
   // Override to add all commands.
   virtual bool AddSubCommands() = 0;
+  virtual bool add(CommandLineCommand* cmd) override;
 
   Configuration* config() const { return config_; }
   bool set_config(Configuration* config);

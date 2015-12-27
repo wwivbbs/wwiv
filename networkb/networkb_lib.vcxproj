@@ -110,9 +110,7 @@
     <ClCompile Include="binkp.cpp" />
     <ClCompile Include="binkp_config.cpp" />
     <ClCompile Include="binkp_commands.cpp" />
-    <ClCompile Include="callout.cpp" />
     <ClCompile Include="connection.cpp" />
-    <ClCompile Include="contact.cpp" />
     <ClCompile Include="net_log.cpp" />
     <ClCompile Include="ppp_config.cpp" />
     <ClCompile Include="socket_connection.cpp" />

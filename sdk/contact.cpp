@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "networkb/contact.h"
+#include "sdk/contact.h"
 
 #include <algorithm>
 #include <iostream>
@@ -45,7 +45,7 @@ using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
 namespace wwiv {
-namespace net {
+namespace sdk {
 
 Contact::Contact(const string& network_dir, bool save_on_destructor) 
     : network_dir_(network_dir), save_on_destructor_(save_on_destructor) {

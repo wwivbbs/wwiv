@@ -18,13 +18,13 @@
 #include "gtest/gtest.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
-#include "networkb/callout.h"
+#include "sdk/callout.h"
 
 #include <cstdint>
 #include <string>
 
 using std::string;
-using namespace wwiv::net;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 class CalloutTest : public testing::Test {};

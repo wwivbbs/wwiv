@@ -71,9 +71,9 @@ static string daten_to_humantime(uint32_t daten) {
 }
 
 bool MessagesDumpHeaderCommand::AddSubCommands() {
-  add({"start", "Starting message number.", "1"});
-  add({"end", "Last message number..", "-1"});
-  add(BooleanCommandLineArgument("all", "dumps everything, control lines too", false));
+  add_argument({"start", "Starting message number.", "1"});
+  add_argument({"end", "Last message number..", "-1"});
+  add_argument(BooleanCommandLineArgument("all", "dumps everything, control lines too", false));
 
   return true;
 }

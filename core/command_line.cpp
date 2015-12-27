@@ -95,7 +95,7 @@ int CommandLine::Execute() {
   return CommandLineCommand::Execute();
 }
 
-bool CommandLineCommand::add(const CommandLineArgument& cmd) { 
+bool CommandLineCommand::add_argument(const CommandLineArgument& cmd) {
   // Add cmd to the list of allowable arguments, and also set 
   // a default empty value.
   args_allowed_.emplace(cmd.name, cmd);
@@ -127,7 +127,7 @@ const CommandLineValue CommandLineCommand::arg(const std::string name) const {
 }
 
 bool CommandLineCommand::AddStandardArgs() {
-  add(BooleanCommandLineArgument("help", '?', "Displays Help", false));
+  add_argument(BooleanCommandLineArgument("help", '?', "Displays Help", false));
   return true;
 }
 
@@ -245,7 +245,7 @@ bool CommandLine::AddStandardArgs() {
   if (!CommandLineCommand::AddStandardArgs()) {
     return false;
   }
-  add({"bbsdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory()});
+  add_argument({"bbsdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory()});
   return true;
 }
 

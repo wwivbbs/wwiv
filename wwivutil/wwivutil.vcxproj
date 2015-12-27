@@ -83,12 +83,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="command.cpp" />
+    <ClCompile Include="dump_callout.cpp" />
+    <ClCompile Include="dump_contact.cpp" />
+    <ClCompile Include="dump_packet.cpp" />
     <ClCompile Include="messages.cpp" />
+    <ClCompile Include="net.cpp" />
     <ClCompile Include="wwivutil.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="command.h" />
+    <ClInclude Include="dump_callout.h" />
+    <ClInclude Include="dump_contact.h" />
+    <ClInclude Include="dump_packet.h" />
     <ClInclude Include="messages.h" />
+    <ClInclude Include="net.h" />
+    <ClInclude Include="template.h" />
     <ClInclude Include="wwivutil.h" />
   </ItemGroup>
   <ItemGroup>

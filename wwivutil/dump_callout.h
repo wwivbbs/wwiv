@@ -15,18 +15,29 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETUTIL_DUMP_CONNECT_H__
-#define __INCLUDED_NETUTIL_DUMP_CONNECT_H__
+#ifndef __INCLUDED_WWIVUTIL_DUMP_CALLOUT_H__
+#define __INCLUDED_WWIVUTIL_DUMP_CALLOUT_H__
 
 #include <map>
 #include <string>
 
 #include "core/command_line.h"
-#include "networkb/contact.h"
+#include "sdk/callout.h"
+#include "wwivutil/command.h"
 
-void dump_contact_usage();
-int dump_contact(
-  std::map<const std::string, wwiv::net::Contact> callouts,
-  const wwiv::core::CommandLineCommand* command);
+namespace wwiv {
+namespace wwivutil {
 
-#endif  // __INCLUDED_NETUTIL_DUMP_CONNECT_H__
+class DumpCalloutCommand final: public UtilCommand {
+public:
+  DumpCalloutCommand()
+    : UtilCommand("dump_callout", "Dumps parsed representation of CALLOUT.NET") {}
+  virtual int Execute() override final;
+  virtual bool AddSubCommands() override final { return true; }
+};
+
+
+}  // namespace wwivutil
+}  // namespace wwiv
+
+#endif  // __INCLUDED_WWIVUTIL_DUMP_CALLOUT_H__

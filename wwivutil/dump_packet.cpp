@@ -15,6 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
+#include "wwivutil/dump_packet.h"
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -28,6 +30,10 @@ using std::cout;
 using std::endl;
 using std::string;
 using wwiv::core::CommandLineCommand;
+
+namespace wwiv {
+namespace wwivutil {
+
 
 static string main_type_name(int typ) {
   switch (typ) {
@@ -105,8 +111,8 @@ int dump_file(const std::string& filename) {
       return 0;
     }
     if (num_read != sizeof(net_header_rec)) {
-      cerr << "error reading header, got short read of size: " << num_read 
-           << "; expected: " << sizeof(net_header_rec) << endl;
+      cerr << "error reading header, got short read of size: " << num_read
+        << "; expected: " << sizeof(net_header_rec) << endl;
       return 1;
     }
     cout << "destination: " << h.touser << "@" << h.tosys << endl;
@@ -154,12 +160,20 @@ int dump_file(const std::string& filename) {
   return 0;
 }
 
-int dump(const CommandLineCommand* command) {
-  if (command->remaining().empty()) {
+int DumpPacketCommand::Execute() {
+  if (remaining().empty()) {
     cout << "Usage:   dump <filename>" << endl;
     cout << "Example: dump S1.NET" << endl;
     return 2;
   }
-  const string filename(command->remaining().front());
+  const string filename(remaining().front());
   return dump_file(filename);
+}
+
+bool DumpPacketCommand::AddSubCommands() {
+  return true;
+}
+
+
+}
 }

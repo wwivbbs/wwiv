@@ -9,9 +9,7 @@ set(SOURCES
  binkp.cpp
  binkp_commands.cpp
  binkp_config.cpp
- callout.cpp
  connection.cpp
- contact.cpp
  net_log.cpp
  ppp_config.cpp
  socket_connection.cpp

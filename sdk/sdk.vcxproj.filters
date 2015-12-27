@@ -43,6 +43,12 @@
     <ClInclude Include="names.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="contact.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="callout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -84,6 +90,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="names.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="callout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="contact.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

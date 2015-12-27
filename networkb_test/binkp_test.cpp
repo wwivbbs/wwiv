@@ -21,7 +21,7 @@
 #include "networkb/binkp.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/binkp_config.h"
-#include "networkb/callout.h"
+#include "sdk/callout.h"
 #include "networkb/transfer_file.h"
 #include "networkb_test/fake_connection.h"
 
@@ -35,6 +35,7 @@ using std::endl;
 using std::string;
 using std::thread;
 using std::unique_ptr;
+using wwiv::sdk::Callout;
 using namespace wwiv::net;
 using namespace wwiv::strings;
 

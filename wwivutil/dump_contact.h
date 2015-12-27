@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2004, WWIV Software Services             */
+/*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,65 +14,29 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#include "wwivutil/command.h"
+#ifndef __INCLUDED_WWIVUTIL_DUMP_CONNECT_H__
+#define __INCLUDED_WWIVUTIL_DUMP_CONNECT_H__
 
-#include <algorithm>
-#include <iostream>
 #include <map>
-#include <memory>
 #include <string>
-#include <vector>
 
 #include "core/command_line.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "core/stl.h"
-#include "sdk/config.h"
-
-using std::clog;
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
-using std::vector;
-using namespace wwiv::strings;
-using namespace wwiv::sdk;
+#include "sdk/contact.h"
+#include "wwivutil/command.h"
 
 namespace wwiv {
 namespace wwivutil {
 
-
-// WWIVUTIL commands
-
-UtilCommand::UtilCommand(const std::string& name, const std::string& description)
-  : CommandLineCommand(name, description) {}
-UtilCommand::~UtilCommand() {}
-
-bool UtilCommand::add(CommandLineCommand* cmd) {
-  UtilCommand* util_command = dynamic_cast<UtilCommand*>(cmd);
-  if (util_command != nullptr) {
-    subcommands_.push_back(util_command);
-  }
-  return CommandLineCommand::add(cmd);
-}
-
-bool UtilCommand::set_config(Configuration* config) { 
-  for (const auto s : subcommands_) {
-    s->set_config(config);
-  }
-  config_ = config;
-  return true; 
-}
-
-UtilCommand* AddCommandsAndArgs(UtilCommand* cmd) {
-  cmd->AddStandardArgs();
-  cmd->AddSubCommands();
-  return cmd;
-}
-
+class DumpContactCommand final: public UtilCommand {
+public:
+  DumpContactCommand()
+    : UtilCommand("dump_contact", "Dumps parsed representation of CONTACT.NET") {}
+  virtual int Execute() override final;
+  virtual bool AddSubCommands() override final { return true; }
+};
 
 }  // namespace wwivutil
 }  // namespace wwiv
 
+#endif  // __INCLUDED_WWIVUTIL_DUMP_CONNECT_H__

@@ -82,15 +82,15 @@ int main(int argc, char** argv) {
   try {
     ScopeExit at_exit(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "network_number");
-    cmdline.add({"node", 'n', "Network node number to dial.", "0"});
-    cmdline.add({"network", "Network name to use (i.e. wwivnet).", ""});
-    cmdline.add({"network_number", "Network number to use (i.e. 0).", "0"});
-    cmdline.add({"bbsdir", "(optional) BBS directory if other than current directory", File::current_directory()});
-    cmdline.add(BooleanCommandLineArgument("allow_sendback", 'A', "Allow sendback (only used by legacy network0)", true));
-    cmdline.add({"phone_number", 'P', "Network number to use (only used by legacy network0)", ""});
-    cmdline.add({"speed", 'S', "Modem Speedto use (only used by legacy network0)", ""});
-    cmdline.add({"callout_time", 'T', "Start time of the callout (only used by legacy network0)", ""});
-    cmdline.add(BooleanCommandLineArgument("help", '?', "displays help.", false));
+    cmdline.add_argument({"node", 'n', "Network node number to dial.", "0"});
+    cmdline.add_argument({"network", "Network name to use (i.e. wwivnet).", ""});
+    cmdline.add_argument({"network_number", "Network number to use (i.e. 0).", "0"});
+    cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", File::current_directory()});
+    cmdline.add_argument(BooleanCommandLineArgument("allow_sendback", 'A', "Allow sendback (only used by legacy network0)", true));
+    cmdline.add_argument({"phone_number", 'P', "Network number to use (only used by legacy network0)", ""});
+    cmdline.add_argument({"speed", 'S', "Modem Speedto use (only used by legacy network0)", ""});
+    cmdline.add_argument({"callout_time", 'T', "Start time of the callout (only used by legacy network0)", ""});
+    cmdline.add_argument(BooleanCommandLineArgument("help", '?', "displays help.", false));
 
     if (!cmdline.Parse() || cmdline.arg("help").as_bool()) {
       ShowHelp(cmdline);

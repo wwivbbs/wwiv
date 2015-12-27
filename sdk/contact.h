@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETORKB_CONTACT_H__
-#define __INCLUDED_NETORKB_CONTACT_H__
+#ifndef __INCLUDED_SDK_CONTACT_H__
+#define __INCLUDED_SDK_CONTACT_H__
 
 #include <ctime>
 #include <initializer_list>
@@ -27,7 +27,7 @@
 #include "sdk/net.h"
 
 namespace wwiv {
-namespace net {
+namespace sdk {
 
  /**
   * Class for manipulating CONTACT.NET
@@ -66,4 +66,4 @@ class Contact {
 }  // namespace net
 }  // namespace wwiv
 
-#endif  // __INCLUDED_NETORKB_CONTACT_H__
+#endif  // __INCLUDED_SDK_CONTACT_H__
