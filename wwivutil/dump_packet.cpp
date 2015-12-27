@@ -137,7 +137,7 @@ int dump_file(const std::string& filename) {
       // read list of addresses.
       std::vector<uint16_t> list;
       list.resize(h.list_len);
-      int list_num_read = f.Read(&list[0], 2 * h.list_len);
+      f.Read(&list[0], 2 * h.list_len);
       for (const auto item : list) {
         cout << item << " ";
       }
@@ -152,7 +152,7 @@ int dump_file(const std::string& filename) {
         f.Read(header, 146);
       }
       text.resize(length + 1);
-      int text_num_read = f.Read(&text[0], length);
+      f.Read(&text[0], length);
       cout << "Text:" << endl << text << endl << endl;
     }
     cout << "==============================================================================" << endl;
