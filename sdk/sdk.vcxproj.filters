@@ -22,24 +22,6 @@
     <ClInclude Include="vardec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="msgapi\msgapi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="msgapi\msgapi_wwiv.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="msgapi\message_api.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="msgapi\message_api_wwiv.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="msgapi\message_wwiv.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="msgapi\message_area_wwiv.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="names.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -49,6 +31,24 @@
     <ClInclude Include="callout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="msgapi\message_api.h">
+      <Filter>Header Files\msgapi</Filter>
+    </ClInclude>
+    <ClInclude Include="msgapi\message_api_wwiv.h">
+      <Filter>Header Files\msgapi</Filter>
+    </ClInclude>
+    <ClInclude Include="msgapi\message_area_wwiv.h">
+      <Filter>Header Files\msgapi</Filter>
+    </ClInclude>
+    <ClInclude Include="msgapi\message_wwiv.h">
+      <Filter>Header Files\msgapi</Filter>
+    </ClInclude>
+    <ClInclude Include="msgapi\msgapi.h">
+      <Filter>Header Files\msgapi</Filter>
+    </ClInclude>
+    <ClInclude Include="msgapi\msgapi_wwiv.h">
+      <Filter>Header Files\msgapi</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -56,6 +56,12 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{e2dd6776-8554-45b5-8ce0-9dd13daa1a79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\msgapi">
+      <UniqueIdentifier>{2e5d0f7d-e886-49a7-a037-497130322155}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\msgapi">
+      <UniqueIdentifier>{4200a725-3dba-451a-9412-9ca431716b6a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -68,27 +74,6 @@
     <ClCompile Include="phone_numbers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="msgapi\message_utils_wwiv.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="msgapi\msgapi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="msgapi\msgapi_wwiv.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="msgapi\message_api.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="msgapi\message_api_wwiv.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="msgapi\message_area_wwiv.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="msgapi\message_wwiv.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="names.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -97,6 +82,27 @@
     </ClCompile>
     <ClCompile Include="contact.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="msgapi\message_api.cpp">
+      <Filter>Source Files\msgapi</Filter>
+    </ClCompile>
+    <ClCompile Include="msgapi\message_api_wwiv.cpp">
+      <Filter>Source Files\msgapi</Filter>
+    </ClCompile>
+    <ClCompile Include="msgapi\message_area_wwiv.cpp">
+      <Filter>Source Files\msgapi</Filter>
+    </ClCompile>
+    <ClCompile Include="msgapi\message_utils_wwiv.cpp">
+      <Filter>Source Files\msgapi</Filter>
+    </ClCompile>
+    <ClCompile Include="msgapi\message_wwiv.cpp">
+      <Filter>Source Files\msgapi</Filter>
+    </ClCompile>
+    <ClCompile Include="msgapi\msgapi.cpp">
+      <Filter>Source Files\msgapi</Filter>
+    </ClCompile>
+    <ClCompile Include="msgapi\msgapi_wwiv.cpp">
+      <Filter>Source Files\msgapi</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
