@@ -17,38 +17,18 @@
 /**************************************************************************/
 #include "netutil/dump_callout.h"
 
-#include <cstdio>
-#include <fcntl.h>
 #include <iostream>
-#ifdef _WIN32
-#include <io.h>
-#else  // _WIN32
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#endif 
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
-#include "core/command_line.h"
-#include "core/file.h"
 #include "core/strings.h"
 #include "networkb/callout.h"
-#include "networkb/connection.h"
-#include "sdk/config.h"
-#include "sdk/net.h"
-#include "sdk/networks.h"
 
-using std::cerr;
-using std::clog;
 using std::cout;
 using std::endl;
 using std::map;
 using std::string;
 using wwiv::net::Callout;
-using wwiv::sdk::Config;
-using wwiv::sdk::Networks;
 using namespace wwiv::strings;
 
 void dump_callout_usage() {
@@ -59,9 +39,9 @@ void dump_callout_usage() {
 int dump_callout(map<const string, Callout> callouts,
   const wwiv::core::CommandLineCommand* command) {
   for (const auto& c : callouts) {
-    std::cout << "CALLOUT.NET information: : " << c.first << std::endl;
-    std::cout << "===========================================================" << std::endl;
-    std::cout << c.second.ToString() << std::endl;
+    cout << "CALLOUT.NET information: : " << c.first << endl;
+    cout << "===========================================================" << endl;
+    cout << c.second.ToString() << endl;
   }
 
   return 0;

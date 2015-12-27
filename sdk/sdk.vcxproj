@@ -20,6 +20,7 @@
     <ClInclude Include="msgapi\message_wwiv.h" />
     <ClInclude Include="msgapi\msgapi.h" />
     <ClInclude Include="msgapi\msgapi_wwiv.h" />
+    <ClInclude Include="names.h" />
     <ClInclude Include="net.h" />
     <ClInclude Include="networks.h" />
     <ClInclude Include="phone_numbers.h" />
@@ -34,6 +35,7 @@
     <ClCompile Include="msgapi\message_wwiv.cpp" />
     <ClCompile Include="msgapi\msgapi.cpp" />
     <ClCompile Include="msgapi\msgapi_wwiv.cpp" />
+    <ClCompile Include="names.cpp" />
     <ClCompile Include="networks.cpp" />
     <ClCompile Include="phone_numbers.cpp" />
   </ItemGroup>

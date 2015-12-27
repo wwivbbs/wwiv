@@ -19,6 +19,8 @@
 #define __INCLUDED_NETUTIL_DUMP_CALLOUT_H__
 
 #include <map>
+#include <string>
+
 #include "core/command_line.h"
 #include "networkb/callout.h"
 

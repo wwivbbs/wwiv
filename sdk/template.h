@@ -18,5 +18,10 @@
 #ifndef __INCLUDED_SDK_TEMPLATE_H__
 #define __INCLUDED_SDK_TEMPLATE_H__
 
+namespace wwiv {
+namespace sdk {
+
+}  // namespace sdk
+}  // namespace wwiv
 
 #endif  // __INCLUDED_SDK_TEMPLATE_H__

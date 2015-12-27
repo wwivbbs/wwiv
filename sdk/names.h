@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.x                              */
-/*                Copyright (C)2015 WWIV Software Services                */
+/*                          WWIV Version 5.0x                             */
+/*               Copyright (C)2015, WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,32 +15,42 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "netutil/dump_contact.h"
+#ifndef __INCLUDED_SDK_NAMES_H__
+#define __INCLUDED_SDK_NAMES_H__
 
-#include <iostream>
-#include <map>
 #include <string>
 #include <vector>
-#include "core/strings.h"
-#include "networkb/contact.h"
 
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
-using wwiv::net::Contact;
+#include "sdk/config.h"
+#include "sdk/vardec.h"
 
-void dump_contact_usage() {
-  cout << "Usage:   dump_contact" << endl;
-  cout << "Example: dump_contact" << endl;
+namespace wwiv {
+namespace sdk {
+
+
+class Names {
+public:
+  explicit Names(wwiv::sdk::Config& config);
+  virtual ~Names();
+
+  std::string UserName(uint32_t user_number) const;
+  std::string UserName(uint32_t user_number, uint32_t system_number) const;
+  bool Add(const std::string name, uint32_t user_number);
+  bool Remove(uint32_t user_number);
+
+  std::size_t size() const { return names_.size(); }
+  void set_save_on_exit(bool save_on_exit) { save_on_exit_ = save_on_exit; }
+  bool save_on_exit() const { return save_on_exit_;  }
+
+private:
+  const std::string data_directory_;
+  bool loaded_ = false;
+  bool save_on_exit_ = false;
+  std::vector<smalrec> names_;
+};
+
+
+}
 }
 
-int dump_contact(map<const string, Contact> contacts, const wwiv::core::CommandLineCommand* command) {
-  for (const auto& c : contacts) {
-    cout << "CONTACT.NET information: : " << c.first << endl;
-    cout << "===========================================================" << endl;
-    cout << c.second.ToString() << endl;
-  }
-
-  return 0;
-}
+#endif  // __INCLUDED_SDK_NAMES_H__
