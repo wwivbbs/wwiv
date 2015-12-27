@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/events.h"
 
 #include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"

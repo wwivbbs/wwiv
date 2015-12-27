@@ -19,6 +19,7 @@
 
 #include "bbs/bbsovl3.h"
 #include "bbs/bbs.h"
+#include "bbs/email.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/input.h"

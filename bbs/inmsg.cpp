@@ -32,6 +32,7 @@
 #include "bbs/printfile.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
+#include "bbs/instmsg.h"
 #include "bbs/message_file.h"
 #include "bbs/vars.h"
 #include "bbs/workspace.h"

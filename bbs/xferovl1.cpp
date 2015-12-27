@@ -219,7 +219,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
   ++ss;
   for (i = 0; i < MAX_ARCS; i++) {
     if (!ok) {
-      ok = wwiv::strings::IsEqualsIgnoreCase(ss, arcs[i].extension);
+      ok = wwiv::strings::IsEqualsIgnoreCase(ss, session()->arcs[i].extension);
     }
   }
   if (!ok) {

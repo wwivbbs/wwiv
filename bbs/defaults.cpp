@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/defaults.h"
+
 #include <iomanip>
 #include <string>
 #include <vector>
@@ -25,14 +27,16 @@
 #include "bbs/wwivcolors.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
-#include "bbs/vars.h"
+#include "bbs/instmsg.h"
 #include "bbs/common.h"
 #include "bbs/menu.h"
+#include "bbs/msgbase1.h"
 #include "bbs/input.h"
 #include "bbs/newuser.h"
 #include "bbs/printfile.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 
@@ -67,8 +71,8 @@ void select_editor() {
     }
     return;
   }
-  for (int i1 = 0; i1 <= 5; i1++) {
-    odc[ i1 ] = '\0';
+  for (size_t i1 = 0; i1 <= 5; i1++) {
+    odc[i1] = '\0';
   }
   bout << "0. Normal non-full screen editor\r\n";
   for (size_t i = 0; i < session()->editors.size(); i++) {

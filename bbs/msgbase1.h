@@ -15,41 +15,18 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_MSGBASE_H__
-#define __INCLUDED_BBS_MSGBASE_H__
+#ifndef __INCLUDED_BBS_MSGBASE1_H__
+#define __INCLUDED_BBS_MSGBASE1_H__
 
-#include <memory>
-#include <string>
-#include "bbs/inmsg.h"
-#include "core/file.h"
 #include "sdk/vardec.h"
 
-class EmailData {
-public:
-  EmailData(const MessageEditorData& msged) : title(msged.title), silent_mode(msged.silent_mode) {}
-  explicit EmailData() {}
-  ~EmailData() {}
+void send_net_post(postrec* pPostRecord, const char *extra, int sub_number);
+void post();
+void grab_user_name(messagerec* pMessageRecord, const char *file_name);
+void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan);
+void qscan(int nBeginSubNumber, int *pnNextSubNumber);
+void nscan(int nStartingSubNum = 0);
+void ScanMessageTitles();
+void remove_post();
 
-  std::string title;
-  messagerec * msg;
-  int anony = 0;
-  int user_number = 0;
-  int system_number = 0;
-  bool an = 0;
-  int from_user = 0;
-  int from_system = 0;
-  int forwarded_code = 0;
-  int from_network_number = 0;
-
-  bool silent_mode;     // Used for ASV and newemail emails.  No questions, etc.
-};
-
-bool ForwardMessage(int *user_number, int *system_number);
-std::unique_ptr<File> OpenEmailFile(bool allow_write);
-void sendout_email(EmailData& data);
-bool ok_to_mail(int user_number, int system_number, bool force_it);
-void email(const std::string& title, int user_number, int system_number, bool force_it, int anony, bool allow_fsed = true);
-void imail(int user_number, int system_number);
-void delmail(File *pFile, int loc);
-
-#endif  // __INCLUDED_BBS_MSGBASE_H__
+#endif  // __INCLUDED_BBS_MSGBASE1_H__

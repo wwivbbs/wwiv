@@ -26,6 +26,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/listplus.h"
 #include "bbs/bbs.h"
+#include "bbs/defaults.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"

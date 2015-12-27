@@ -486,7 +486,7 @@ public:
   std::vector<xtrasubsrec> xsubs;
   std::vector<net_networks_rec> net_networks;
   std::vector<gfiledirrec> gfilesec;
-
+  std::vector<arcrec> arcs;
 
 };
 

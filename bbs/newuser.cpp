@@ -22,13 +22,16 @@
 #include <string>
 
 #include "bbs/asv.h"
+#include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl2.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/confutil.h"
-#include "bbs/bbs.h"
+#include "bbs/defaults.h"
+#include "bbs/colors.h"
+#include "bbs/defaults.h"
+#include "bbs/email.h"
 #include "bbs/fcns.h"
-#include "bbs/vars.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/message_file.h"
@@ -37,6 +40,7 @@
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
 #include "bbs/uedit.h"
+#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
 #include "bbs/wstatus.h"
@@ -129,7 +133,7 @@ void input_language() {
         ch = onek(onx);
         ch -= '1';
       } else {
-        int i;
+        size_t i;
         for (i = 1; i <= session()->languages.size() / 10; i++) {
           odc[i - 1] = static_cast<char>('0' + i);
         }
@@ -749,7 +753,17 @@ bool UseMinimalNewUserInfo() {
   return false;
 }
 
-
+static void DefaultToWWIVEditIfPossible() {
+  for (size_t nEditor = 0; nEditor < session()->editors.size(); nEditor++) {
+    // TODO(rushfan): Should we get rid of this favoring of WWIVEDIT?
+    string editor_desc(session()->editors[nEditor].description);
+    StringUpperCase(&editor_desc);
+    if (editor_desc.find("WWIVEDIT") != string::npos) {
+      session()->user()->SetDefaultEditor(nEditor + 1);
+      return;
+    }
+  }
+}
 void DoFullNewUser() {
   input_name();
   input_realname();
@@ -810,14 +824,7 @@ void DoFullNewUser() {
     if (yesno()) {
       select_editor();
     } else {
-      for (int nEditor = 0; nEditor < session()->editors.size(); nEditor++) {
-        char szEditorDesc[ 121 ];
-        strcpy(szEditorDesc, session()->editors[nEditor].description);
-        if (strstr(strupr(szEditorDesc) , "WWIVEDIT") != nullptr) {
-          session()->user()->SetDefaultEditor(nEditor + 1);
-          nEditor = session()->editors.size();
-        }
-      }
+      DefaultToWWIVEditIfPossible();
     }
     bout.nl();
   }
@@ -831,7 +838,6 @@ void DoFullNewUser() {
     }
   }
 }
-
 
 void DoNewUserASV() {
   if (session()->HasConfigFlag(OP_FLAGS_ADV_ASV)) {
@@ -1053,7 +1059,6 @@ void ExecNewUserCommand() {
     session()->ReadCurrentUser();
   }
 }
-
 
 void newuser() {
   get_colordata();

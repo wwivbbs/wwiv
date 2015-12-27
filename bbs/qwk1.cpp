@@ -35,9 +35,12 @@
 #include "bbs/archivers.h"
 #include "bbs/bbs.h"
 #include "bbs/conf.h"
+#include "bbs/email.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
+#include "bbs/instmsg.h"
 #include "bbs/message_file.h"
+#include "bbs/msgbase1.h"
 #include "bbs/subxtr.h"
 #include "sdk/vardec.h"
 #include "bbs/vars.h"
@@ -249,13 +252,13 @@ int select_qwk_archiver(struct qwk_junk *qwk_info, int ask) {
     bout.bputs("0) Ask me later");
   }
   for (x = 0; x < 4; ++x) {
-    strcpy(temp, arcs[x].extension);
+    strcpy(temp, session()->arcs[x].extension);
     StringTrim(temp);
 
     if (temp[0]) {
       sprintf(temp, "%d", x + 1);
       strcat(allowed, temp);
-      bout.bprintf("1%d) 3%s", x + 1, arcs[x].extension);
+      bout.bprintf("1%d) 3%s", x + 1, session()->arcs[x].extension);
       bout.nl();
     }
   }
@@ -286,14 +289,14 @@ string qwk_which_zip() {
     session()->user()->data.qwk_archive = 0;
   }
 
-  if (arcs[session()->user()->data.qwk_archive - 1].extension[0] == 0) {
+  if (session()->arcs[session()->user()->data.qwk_archive - 1].extension[0] == 0) {
     session()->user()->data.qwk_archive = 0;
   }
 
   if (session()->user()->data.qwk_archive == 0) {
     return string("ASK");
   } else {
-    return string((arcs[session()->user()->data.qwk_archive - 1].extension));
+    return string((session()->arcs[session()->user()->data.qwk_archive - 1].extension));
   }
 }
 
@@ -375,7 +378,7 @@ void upload_reply_packet() {
 
 void ready_reply_packet(const char *packet_name, const char *msg_name) {
   int archiver = match_archiver(packet_name);
-  string command = stuff_in(arcs[archiver].arce, packet_name, msg_name, "", "", "");
+  string command = stuff_in(session()->arcs[archiver].arce, packet_name, msg_name, "", "", "");
 
   chdir(QWK_DIRECTORY);
   ExecuteExternalProgram(command, EFLAG_NONE);

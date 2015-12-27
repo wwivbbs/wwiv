@@ -10,6 +10,8 @@
 * change record 0 of .sub files to be a message header. Right now only owneruser
   is used and the rest is loaded/saved as-is by the bbs code.
 * Merge fix into wwivutil
+* remove support for registration numbers in the wwivnet data binary files.
+* Remove the CBV since it doesn't work. We'll need to rewrite one for the internet age.
 
 * Move bbs logic out of WLocalIO and into WSession (probably)
 * remove extra include statements from user.cpp

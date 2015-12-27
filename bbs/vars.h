@@ -151,7 +151,6 @@ __EXTRN__ userconfrec *uconfsub, *uconfdir;
 __EXTRN__ batchrec *batch;
 __EXTRN__ tagrec *filelist;
 __EXTRN__ net_system_list_rec *csn;
-__EXTRN__ arcrec *arcs;
 __EXTRN__ threadrec *thread;
 
 __EXTRN__ confrec *subconfs, *dirconfs;

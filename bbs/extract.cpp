@@ -16,6 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/extract.h"
+
+#include <ctime>
 #include <string>
 
 #include "bbs/conf.h"
@@ -36,24 +39,54 @@ using std::string;
 using namespace wwiv::strings;
 
 // Compresses file *file_name to directory *pszDirectoryName.
-void compress_file(const string& orig_filename, const string& directory) {
+static void compress_file(const string& orig_filename, const string& directory) {
   bout << "|#2Now compressing " << orig_filename << wwiv::endl;
   string fileName(orig_filename);
   if (fileName.find_first_of(".") == string::npos) {
     fileName += ".msg";
   }
 
-  string baseFileName = fileName.substr(0, fileName.find_last_of(".")) + arcs[0].extension;
+  string baseFileName = fileName.substr(0, fileName.find_last_of(".")) + session()->arcs[0].extension;
   string arcName = StrCat(directory, baseFileName);
 
-  const string command = stuff_in(arcs[0].arca, arcName, orig_filename, "", "", "");
+  const string command = stuff_in(session()->arcs[0].arca, arcName, orig_filename, "", "", "");
   ExecuteExternalProgram(command, session()->GetSpawnOptions(SPAWNOPT_ARCH_A));
   File::Remove(orig_filename);
   session()->UpdateTopScreen();
 }
 
+/* Passes a specific filename to the upload function */
+static bool upload_mod(int directory_number, const char *file_name, const char *description) {
+  char s[81], s1[81];
+
+  WWIV_ASSERT(file_name);
+
+  dliscan1(udir[directory_number].subnum);
+  bout.nl(2);
+  strcpy(s, file_name);
+  strcpy(s1, directories[udir[directory_number].subnum].path);
+  int maxf = directories[udir[directory_number].subnum].maxfiles;
+  strcat(s1, s);
+  WFindFile fnd;
+  bool bDone = fnd.open(s1, 0);
+  bool ok = false;
+  if (!bDone) {
+    ok = maybe_upload(fnd.GetFileName(), directory_number, description);
+  }
+  if (ok) {
+    bout << "Uploaded " << file_name << "....\r\n";
+  }
+  if (!ok) {
+    bout << "|#6Aborted.\r\n";
+  }
+  if (session()->numf >= maxf) {
+    bout << "directory full.\r\n";
+  }
+  return false;
+}
+
 // Allows extracting a message into a file area, directly.
-void extract_mod(const char *b, long len, time_t tDateTime) {
+static void extract_mod(const char *b, long len, time_t tDateTime) {
   char s1[81], s2[81],                  // reusable strings
        file_name[MAX_PATH],                    // mod filename
        strip_cmd[MAX_PATH],                  // Strip command
@@ -158,7 +191,7 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
     bout.nl(2);
     bout << "|#2//UPLOAD the file? ";
     if (noyes()) {
-      sprintf(compressed_fn, "%s.%s", StringRemoveChar(s2, '.'), arcs[0].extension);
+      sprintf(compressed_fn, "%s.%s", StringRemoveChar(s2, '.'), session()->arcs[0].extension);
       bout << "|#2Now //UPLOAD'ing the file...";
       strcpy(szDescription, stripcolors(irt));
       strcpy(author, stripcolors(StringRemoveChar(net_email_name, '#')));
@@ -253,39 +286,6 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
 go_away:
   tmp_disable_conf(false);
 }
-
-
-bool upload_mod(int directory_number, const char *file_name, const char *description)
-/* Passes a specific filename to the upload function */
-{
-  char s[81], s1[81];
-
-  WWIV_ASSERT(file_name);
-
-  dliscan1(udir[directory_number].subnum);
-  bout.nl(2);
-  strcpy(s, file_name);
-  strcpy(s1, directories[udir[directory_number].subnum].path);
-  int maxf = directories[udir[directory_number].subnum].maxfiles;
-  strcat(s1, s);
-  WFindFile fnd;
-  bool bDone = fnd.open(s1, 0);
-  bool ok = false;
-  if (!bDone) {
-    ok = maybe_upload(fnd.GetFileName(), directory_number, description);
-  }
-  if (ok) {
-    bout << "Uploaded " << file_name << "....\r\n";
-  }
-  if (!ok) {
-    bout << "|#6Aborted.\r\n";
-  }
-  if (session()->numf >= maxf) {
-    bout << "directory full.\r\n";
-  }
-  return false;
-}
-
 
 void extract_out(char *b, long len, const char *title, time_t tDateTime) {
   // TODO Fix platform specific path issues...

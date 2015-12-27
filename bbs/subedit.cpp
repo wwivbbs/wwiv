@@ -41,9 +41,9 @@ using namespace wwiv::strings;
 static void save_subs() {
   int nSavedNetNum = session()->net_num();
 
-  for (int nTempNetNum = 0; nTempNetNum < session()->subboards.size(); nTempNetNum++) {
-    session()->subboards[nTempNetNum].type = 0;
-    session()->subboards[nTempNetNum].age &= 0x7f;
+  for (auto& s : session()->subboards) {
+    s.type = 0;
+    s.age &= 0x7f;
   }
 
   {
@@ -136,11 +136,11 @@ static void showsubs() {
   }
 }
 
-static string GetKey(const subboardrec& r, char *pszKey) {
+static string GetKey(const subboardrec& r) {
   return (r.key == 0) ? "None." : string(1, r.key);
 }
 
-static string GetAnon(const subboardrec& r, char *pszAnon) {
+static string GetAnon(const subboardrec& r) {
   switch (r.anony & 0x0f) {
   case 0:
     return YesNoString(false);
@@ -157,7 +157,7 @@ static string GetAnon(const subboardrec& r, char *pszAnon) {
   }
 }
 
-string GetAr(subboardrec r, char *pszAr) {
+string GetAr(subboardrec r) {
   if (r.ar != 0) {
     for (int i = 0; i < 16; i++) {
       if ((1 << i) & r.ar) {
@@ -222,21 +222,17 @@ static void modify_sub(int n) {
   subboardrec r = session()->subboards[n];
   bool done = false;
   do {
-    char szKey[21];
-    char szAnon[81];
-    char szAr[81];
-
     bout.cls();
     bout.litebar("%s %d", "Editing Message Area #", n);
     bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
     bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
-    bout << "|#9C) Key        : |#2" << GetKey(r, szKey) << wwiv::endl;
+    bout << "|#9C) Key        : |#2" << GetKey(r) << wwiv::endl;
     bout << "|#9D) Read SL    : |#2" << static_cast<int>(r.readsl) << wwiv::endl;
     bout << "|#9E) Post SL    : |#2" << static_cast<int>(r.postsl) << wwiv::endl;
-    bout << "|#9F) Anony      : |#2" << GetAnon(r, szAnon) << wwiv::endl;
+    bout << "|#9F) Anony      : |#2" << GetAnon(r) << wwiv::endl;
     bout << "|#9G) Min. Age   : |#2" << static_cast<int>(r.age & 0x7f) << wwiv::endl;
     bout << "|#9H) Max Msgs   : |#2" << r.maxmsgs << wwiv::endl;
-    bout << "|#9I) AR         : |#2" << GetAr(r,  szAr) << wwiv::endl;
+    bout << "|#9I) AR         : |#2" << GetAr(r) << wwiv::endl;
     bout << "|#9J) Net info   : |#2";
     DisplayNetInfo(n);
 
@@ -286,9 +282,9 @@ static void modify_sub(int n) {
         char szOldSubFileName[MAX_PATH];
         sprintf(szOldSubFileName, "%s%s.sub", syscfg.datadir, szSubBaseName);
         if (File::Exists(szOldSubFileName)) {
-          for (int i = 0; i < session()->subboards.size(); i++) {
-            if (strncasecmp(session()->subboards[i].filename, szSubBaseName, strlen(szSubBaseName)) == 0) {
-              strcpy(szOldSubFileName, session()->subboards[i].name);
+          for (auto& sub : session()->subboards) {
+            if (strncasecmp(sub.filename, szSubBaseName, strlen(szSubBaseName)) == 0) {
+              strcpy(szOldSubFileName, sub.name);
               break;
             }
           }
