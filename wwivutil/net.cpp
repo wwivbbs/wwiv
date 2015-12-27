@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2004, WWIV Software Services             */
+/*                          WWIV Version 5.x                              */
+/*                Copyright (C)2015 WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,63 +14,55 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#include "wwivutil/wwivutil.h"
+#include "wwivutil/net.h"
 
-#include <algorithm>
+#include <cstdio>
+#include <iomanip>
 #include <iostream>
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
-
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/strings.h"
-#include "core/stl.h"
 #include "sdk/config.h"
-#include "wwivutil/messages.h"
-#include "wwivutil/net.h"
+#include "sdk/net.h"
+#include "sdk/networks.h"
 
+#include "wwivutil/dump_callout.h"
+#include "wwivutil/dump_contact.h"
+#include "wwivutil/dump_packet.h"
+
+using std::cerr;
 using std::clog;
 using std::cout;
 using std::endl;
-using std::map;
+using std::setw;
 using std::string;
+using std::unique_ptr;
 using std::vector;
-using namespace wwiv::core;
-using namespace wwiv::strings;
+using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
-using namespace wwiv::wwivutil;
 
-int main(int argc, char *argv[]) {
-  try {
-    CommandLine cmdline(argc, argv, "network_number");
-    cmdline.AddStandardArgs();
+namespace wwiv {
+namespace wwivutil {
 
-    UtilCommand* messages = new MessagesCommand();
-    cmdline.add(messages);
-    AddCommandsAndArgs(messages);
+bool NetCommand::AddSubCommands() {
+  DumpPacketCommand* dump_packet = new DumpPacketCommand();
+  add(dump_packet);
+  AddCommandsAndArgs(dump_packet);
 
-    UtilCommand* net= new NetCommand();
-    cmdline.add(net);
-    AddCommandsAndArgs(net);
+  DumpCalloutCommand* dump_callout = new DumpCalloutCommand();
+  add(dump_callout);
+  AddCommandsAndArgs(dump_callout);
 
-    if (!cmdline.Parse()) { return 1; }
-    const std::string bbsdir(cmdline.arg("bbsdir").as_string());
-    Config config(bbsdir);
-    if (!config.IsInitialized()) {
-      clog << "Unable to load CONFIG.DAT.";
-      return 1;
-    }
-    std::unique_ptr<Configuration> command_config(
-        new Configuration(bbsdir, &config));
-    messages->set_config(command_config.get());
-    net->set_config(command_config.get());
-    return cmdline.Execute();
-  } catch (std::exception& e) {
-    clog << e.what() << endl;
-  }
-  return 1;
+  DumpContactCommand* dump_contact = new DumpContactCommand();
+  add(dump_contact);
+  AddCommandsAndArgs(dump_contact);
+  return true;
 }
+
+
+}  // namespace wwivutil
+}  // namespace wwiv

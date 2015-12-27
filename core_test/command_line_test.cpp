@@ -44,8 +44,8 @@ TEST_F(CommandLineTest, Basic) {
   int argc = 3;
   char* argv[] = {"", "--foo", "--bar=baz"};
   CommandLine cmdline(argc, argv, "");
-  cmdline.add({"foo", "help for foo", "asdf"});
-  cmdline.add({"bar", "help for bar"});
+  cmdline.add_argument({"foo", "help for foo", "asdf"});
+  cmdline.add_argument({"bar", "help for bar"});
 
   ASSERT_TRUE(cmdline.Parse());
   EXPECT_EQ("baz", cmdline.arg("bar").as_string());
@@ -55,12 +55,12 @@ TEST_F(CommandLineTest, Command) {
   int argc = 6;
   char* argv[] = {"", "--foo=bar", "print", "--all", "--some=false", "myfile.txt"};
   CommandLine cmdline(argc, argv, "");
-  cmdline.add({"foo", ' ', "", "asdf"});
+  cmdline.add_argument({"foo", ' ', "", "asdf"});
   
   NoopCommandLineCommand* print = new NoopCommandLineCommand("print");
   cmdline.add(print);
-  print->add(BooleanCommandLineArgument("all", ' ', "", false));
-  print->add(BooleanCommandLineArgument("some", ' ', "", true));
+  print->add_argument(BooleanCommandLineArgument("all", ' ', "", false));
+  print->add_argument(BooleanCommandLineArgument("some", ' ', "", true));
 
   ASSERT_TRUE(cmdline.Parse());
   EXPECT_EQ("bar", cmdline.arg("foo").as_string());
@@ -77,7 +77,7 @@ TEST_F(CommandLineTest, Several_Commands) {
   int argc = 3;
   char* argv[] = {"", "--foo=bar", "print",};
   CommandLine cmdline(argc, argv, "");
-  cmdline.add({"foo", ' ', "", "asdf"});
+  cmdline.add_argument({"foo", ' ', "", "asdf"});
   NoopCommandLineCommand* print = new NoopCommandLineCommand("print");
   cmdline.add(print);
 
@@ -93,8 +93,8 @@ TEST_F(CommandLineTest, SlashArg) {
   int argc = 3;
   char* argv[] = {"foo.exe", "/n500", ".1"};
   CommandLine cmdline(argc, argv, "network_number");
-  cmdline.add({"node", 'n', "node to dial", "0"});
-  cmdline.add({"network_number", "network number to use.", "0"});
+  cmdline.add_argument({"node", 'n', "node to dial", "0"});
+  cmdline.add_argument({"network_number", "network number to use.", "0"});
 
   ASSERT_TRUE(cmdline.Parse());
   EXPECT_EQ(500, cmdline.arg("node").as_int());
@@ -104,8 +104,8 @@ TEST_F(CommandLineTest, DotArg) {
   int argc = 3;
   char* argv[] = {"foo.exe", "/n500", ".123"};
   CommandLine cmdline(argc, argv, "network_number");
-  cmdline.add({"node", 'n', "node to dial", "0"});
-  cmdline.add({"network_number", "network number to use.", "0"});
+  cmdline.add_argument({"node", 'n', "node to dial", "0"});
+  cmdline.add_argument({"network_number", "network number to use.", "0"});
 
   ASSERT_TRUE(cmdline.Parse());
   EXPECT_EQ(123, cmdline.arg("network_number").as_int());
@@ -115,7 +115,7 @@ TEST_F(CommandLineTest, Help) {
   int argc = 2;
   char* argv[] = {"foo.exe", "/?"};
   CommandLine cmdline(argc, argv, "network_number");
-  cmdline.add(BooleanCommandLineArgument("help", '?', "display help", false));
+  cmdline.add_argument(BooleanCommandLineArgument("help", '?', "display help", false));
 
   ASSERT_TRUE(cmdline.Parse());
   EXPECT_TRUE(cmdline.arg("help").as_bool());

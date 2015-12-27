@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.x                              */
-/*                Copyright (C)2015 WWIV Software Services                */
+/*                          WWIV Version 5.0x                             */
+/*               Copyright (C)2015, WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,34 +15,24 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "netutil/dump_callout.h"
+#ifndef __INCLUDED_WWIVUTIL_NET_H__
+#define __INCLUDED_WWIVUTIL_NET_H__
 
-#include <iostream>
-#include <map>
-#include <string>
-#include <vector>
-#include "core/strings.h"
-#include "networkb/callout.h"
+#include "wwivutil/command.h"
 
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
-using wwiv::net::Callout;
-using namespace wwiv::strings;
+namespace wwiv {
+namespace wwivutil {
 
-void dump_callout_usage() {
-  cout << "Usage:   dump_callout" << endl;
-  cout << "Example: dump_callout" << endl;
-}
+class NetCommand: public UtilCommand {
+public:
+  NetCommand(): UtilCommand("net", "WWIV network commands.") {}
+  virtual ~NetCommand() {}
+  virtual bool AddSubCommands() override final;
+};
 
-int dump_callout(map<const string, Callout> callouts,
-  const wwiv::core::CommandLineCommand* command) {
-  for (const auto& c : callouts) {
-    cout << "CALLOUT.NET information: : " << c.first << endl;
-    cout << "===========================================================" << endl;
-    cout << c.second.ToString() << endl;
-  }
 
-  return 0;
-}
+}  // namespace wwivutil
+}  // namespace wwiv
+
+
+#endif  // __INCLUDED_WWIVUTIL_NET_H__

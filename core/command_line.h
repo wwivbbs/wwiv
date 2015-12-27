@@ -38,13 +38,13 @@
  * command: bar [--barname]
  * command: baz [--bazname]
  * CommandLine cmdline(argc, argv, "set_style");
- * cmdline.add({"name", 'n', "Sets Name"});
- * cmdline.add({"location", 'l', "Sets Location"});
+ * cmdline.add_argument({"name", 'n', "Sets Name"});
+ * cmdline.add_argument({"location", 'l', "Sets Location"});
  * 
  * CommandLineCommand& bar = cmdline.add_command("bar", "Bar Commands");
- * bar.add({"barname", "Sets Bar Name"});
+ * bar.add_argument({"barname", "Sets Bar Name"});
  * CommandLineCommand& baz = cmdline.add_command("baz", "Baz Commands");
- * baz.add({"bazname", "Sets Baz Name"});
+ * baz.add_argument({"bazname", "Sets Baz Name"});
  * cmdLine.Parse();
  *
  * const string name = cmdline.arg("name").as_string();
@@ -138,8 +138,8 @@ class CommandLineCommand : public Command {
 public:
   CommandLineCommand(
       const std::string& name, const std::string& help_text);
-  bool add(const CommandLineArgument& cmd);
-  bool add(CommandLineCommand* cmd) { 
+  bool add_argument(const CommandLineArgument& cmd);
+  virtual bool add(CommandLineCommand* cmd) { 
     cmd->set_argc(argc_);
     cmd->set_argv(argv_);
     cmd->set_dot_argument(dot_argument_);

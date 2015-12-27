@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.x                              */
-/*             Copyright (C)2014-2015 WWIV Software Services              */
+/*                              WWIV Version 5.x                          */
+/*             Copyright (C)1998-2015, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,36 +15,25 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETORKB_CALLOUT_H__
-#define __INCLUDED_NETORKB_CALLOUT_H__
+#ifndef __INCLUDED_WWIVUTIL_DUMP_PACKET_H__
+#define __INCLUDED_WWIVUTIL_DUMP_PACKET_H__
 
-#include <initializer_list>
-#include <map>
-#include <string>
-
-#include "sdk/net.h"
+#include "core/command_line.h"
+#include "wwivutil/command.h"
 
 namespace wwiv {
-namespace net {
+namespace wwivutil {
 
-  
-class Callout {
- public:
-  explicit Callout(const std::string& network_dir);
-  // VisibleForTesting
-  Callout(std::initializer_list<net_call_out_rec> l);
-  virtual ~Callout();
-  const net_call_out_rec* node_config_for(int node) const;
-  Callout& operator=(const Callout& rhs) { node_config_ = rhs.node_config_; return *this; }
-  std::string ToString() const;
+void dump_usage();
 
- private:
-  std::map<uint16_t, net_call_out_rec> node_config_;
+class DumpPacketCommand final: public UtilCommand {
+public:
+  DumpPacketCommand(): UtilCommand("dump", "Dumps contents of a network packet") {}
+  virtual int Execute() override final;
+  virtual bool AddSubCommands() override final;
 };
 
-bool ParseCalloutNetLine(const std::string& line, net_call_out_rec* config);
-
-}  // namespace net
+}  // namespace wwivutil
 }  // namespace wwiv
 
-#endif  // __INCLUDED_NETORKB_CALLOUT_H__
+#endif  // __INCLUDED_WWIVUTIL_DUMP_PACKET_H__

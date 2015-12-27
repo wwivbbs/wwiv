@@ -38,9 +38,9 @@
 #include "core/wfndfile.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/binkp_config.h"
-#include "networkb/callout.h"
+#include "sdk/callout.h"
 #include "networkb/connection.h"
-#include "networkb/contact.h"
+#include "sdk/contact.h"
 #include "networkb/net_log.h"
 #include "networkb/socket_exceptions.h"
 #include "networkb/transfer_file.h"
@@ -59,6 +59,7 @@ using std::unique_ptr;
 using std::vector;
 
 using namespace wwiv::net;
+using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::os;

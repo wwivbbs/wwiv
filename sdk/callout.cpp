@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "networkb/callout.h"
+#include "sdk/callout.h"
 
 #include <algorithm>
 #include <iostream>
@@ -42,7 +42,7 @@ using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
 namespace wwiv {
-namespace net {
+namespace sdk {
 
 // [[ VisibleForTesting ]]
 bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {

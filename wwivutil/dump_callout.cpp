@@ -15,32 +15,61 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "netutil/dump_contact.h"
+#include "wwivutil/dump_callout.h"
 
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
 #include "core/strings.h"
-#include "networkb/contact.h"
+#include "sdk/callout.h"
+#include "sdk/config.h"
 
+using std::clog;
 using std::cout;
 using std::endl;
 using std::map;
 using std::string;
-using wwiv::net::Contact;
+using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
-void dump_contact_usage() {
-  cout << "Usage:   dump_contact" << endl;
-  cout << "Example: dump_contact" << endl;
+namespace wwiv {
+namespace wwivutil {
+
+static void dump_callout_usage() {
+  cout << "Usage:   dump_callout" << endl;
+  cout << "Example: dump_callout" << endl;
 }
 
-int dump_contact(map<const string, Contact> contacts, const wwiv::core::CommandLineCommand* command) {
-  for (const auto& c : contacts) {
-    cout << "CONTACT.NET information: : " << c.first << endl;
+int DumpCalloutCommand::Execute() {
+
+  Config config(config()->bbsdir());
+  if (!config.IsInitialized()) {
+    clog << "Unable to load CONFIG.DAT.";
+    return 1;
+  }
+  Networks networks(config);
+  if (!networks.IsInitialized()) {
+    clog << "Unable to load networks.";
+    return 1;
+  }
+
+  map<const string, Callout> callouts;
+  for (const auto net : networks.networks()) {
+    string lower_case_network_name(net.name);
+    StringLowerCase(&lower_case_network_name);
+    callouts.emplace(lower_case_network_name, Callout(net.dir));
+  }
+
+  for (const auto& c : callouts) {
+    cout << "CALLOUT.NET information: : " << c.first << endl;
     cout << "===========================================================" << endl;
     cout << c.second.ToString() << endl;
   }
 
   return 0;
+}
+
+
+}
 }

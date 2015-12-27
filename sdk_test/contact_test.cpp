@@ -18,13 +18,13 @@
 #include "gtest/gtest.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
-#include "networkb/contact.h"
+#include "sdk/contact.h"
 
 #include <cstdint>
 #include <string>
 
 using std::string;
-using namespace wwiv::net;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 class ContactTest : public testing::Test {

@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-#include "networkb/callout.h"
+#include "sdk/callout.h"
 #include "networkb/receive_file.h"
 
 namespace wwiv {
@@ -67,7 +67,7 @@ public:
   // connection?
   BinkP(Connection* conn,
         BinkConfig* config,
-        std::map<const std::string, Callout>& callouts,
+        std::map<const std::string, wwiv::sdk::Callout>& callouts,
 	      BinkSide side, 
 	      int expected_remote_node,
         received_transfer_file_factory_t& received_transfer_file_factory);
@@ -112,7 +112,7 @@ private:
   bool HandleFileRequest(const std::string& request_line);
 
   BinkConfig* config_;
-  std::map<const std::string, Callout> callouts_;
+  std::map<const std::string, wwiv::sdk::Callout> callouts_;
   Connection* conn_;
   std::string address_list_;
   bool ok_received_;
@@ -139,8 +139,8 @@ bool ParseFileRequestLine(const std::string& request_line,
 			  long* offset);
 
 // Returns just the expected password for a node (node) contained in the
-// CALLOUT.NET file used by the Callout class.
-std::string expected_password_for(const Callout* callout, int node);
+// CALLOUT.NET file used by the wwiv::sdk::Callout class.
+std::string expected_password_for(const wwiv::sdk::Callout* callout, int node);
 
 // Returns just the node number (such as "1") from a FTN address like
 // (such as "20000:20000/1@wwivnet")
