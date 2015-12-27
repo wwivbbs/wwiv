@@ -22,8 +22,10 @@
 #include <string>
 #include <vector>
 #include "core/strings.h"
+#include "sdk/config.h"
 #include "sdk/contact.h"
 #include "sdk/config.h"
+#include "sdk/networks.h"
 
 using std::clog;
 using std::cout;
@@ -43,12 +45,7 @@ static void dump_contact_usage() {
 }
 
 int DumpContactCommand::Execute() {
-  Config config(config()->bbsdir());
-  if (!config.IsInitialized()) {
-    clog << "Unable to load CONFIG.DAT.";
-    return 1;
-  }
-  Networks networks(config);
+  Networks networks(*config()->config());
   if (!networks.IsInitialized()) {
     clog << "Unable to load networks.";
     return 1;
