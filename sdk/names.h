@@ -33,10 +33,14 @@ public:
   explicit Names(wwiv::sdk::Config& config);
   virtual ~Names();
 
-  std::string UserName(uint32_t user_number);
-  std::string UserName(uint32_t user_number, uint32_t system_number);
+  std::string UserName(uint32_t user_number) const;
+  std::string UserName(uint32_t user_number, uint32_t system_number) const;
   bool Add(const std::string name, uint32_t user_number);
   bool Remove(uint32_t user_number);
+
+  std::size_t size() const { return names_.size(); }
+  void set_save_on_exit(bool save_on_exit) { save_on_exit_ = save_on_exit; }
+  bool save_on_exit() const { return save_on_exit_;  }
 
 private:
   const std::string data_directory_;

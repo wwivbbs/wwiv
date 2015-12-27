@@ -28,6 +28,8 @@
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
+using std::clog;
+using std::endl;
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -52,7 +54,7 @@ static smalrec smalrec_for(uint32_t user_number, const std::vector<smalrec>& nam
   return smalrec{"", 0};
 }
 
-std::string Names::UserName(uint32_t user_number) {
+std::string Names::UserName(uint32_t user_number) const {
   smalrec sr = smalrec_for(user_number, names_);
   if (sr.number == 0) {
     return "";
@@ -61,7 +63,7 @@ std::string Names::UserName(uint32_t user_number) {
   return StringPrintf("%s #%u", name.c_str(), user_number);
 }
 
-std::string Names::UserName(uint32_t user_number, uint32_t system_number) {
+std::string Names::UserName(uint32_t user_number, uint32_t system_number) const {
   const string base = UserName(user_number);
   if (base.empty()) {
     return "";
@@ -112,6 +114,8 @@ Names::~Names() {
     File::modeReadWrite | File::modeBinary | File::modeTruncate);
   if (file) {
     file.WriteVector(names_);
+  } else {
+    clog << "Error saving NAMES.LST" << endl;
   }
 }
 
