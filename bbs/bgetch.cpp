@@ -23,6 +23,7 @@
 #include "bbs/chat.h"
 #include "bbs/com.h"
 #include "bbs/datetime.h"
+#include "bbs/instmsg.h"
 #include "bbs/keycodes.h"
 #include "bbs/multinst.h"
 #include "bbs/utility.h"

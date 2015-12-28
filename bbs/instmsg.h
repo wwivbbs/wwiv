@@ -133,6 +133,9 @@ void instance_edit();
 void write_inst(int loc, int subloc, int flags);
 bool inst_msg_waiting();
 int  setiia(int poll_ticks);
+void toggle_invis();
+void toggle_avail();
+bool is_chat_invis();
 
 #endif // __INCLUDED_INSTMSG_H__
 

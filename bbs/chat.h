@@ -18,8 +18,6 @@
 #ifndef __INCLUDED_BBS_CHAT_H__
 #define __INCLUDED_BBS_CHAT_H__
 
-void toggle_avail();
-void toggle_invis();
 void chat_room();
 
 #endif  // __INCLUDED_BBS_CHAT_H__

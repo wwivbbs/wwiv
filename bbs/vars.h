@@ -97,10 +97,7 @@ __EXTRN__ bool  bChatLine,
           returning;
 
 // Chatroom additions
-__EXTRN__ bool  in_chatroom,
-          chat_invis,
-          chat_avail;
-
+__EXTRN__ bool  in_chatroom;
 __EXTRN__ unsigned short
 *csn_index,
 net_sysnum;
