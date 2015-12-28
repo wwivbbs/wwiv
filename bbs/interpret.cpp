@@ -36,7 +36,7 @@ const char *interpret(char chKey) {
 
   switch (chKey) {
   case '@':                               // Dir name
-    strcpy(s, directories[udir[session()->GetCurrentFileArea()].subnum].name);
+    strcpy(s, session()->directories[udir[session()->GetCurrentFileArea()].subnum].name);
     break;
   case '~':                               // Total mails/feedbacks sent
     snprintf(s, sizeof(s), "%u", session()->user()->GetNumEmailSent() +

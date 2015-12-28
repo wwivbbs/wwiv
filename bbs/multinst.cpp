@@ -43,8 +43,8 @@ string GetInstanceActivityString(instancerec &ir) {
     case INST_LOC_EMAIL: return string("Sending Email");
     case INST_LOC_MAIN: return string("Main Menu");
     case INST_LOC_XFER:
-      if (so() && ir.subloc < session()->num_dirs) {
-        string temp = StringPrintf("Dir : %s", stripcolors(directories[ ir.subloc ].name));
+      if (so() && ir.subloc < session()->directories.size()) {
+        string temp = StringPrintf("Dir : %s", stripcolors(session()->directories[ ir.subloc ].name));
         return StrCat("Transfer Area", temp);
       }
       return string("Transfer Area");

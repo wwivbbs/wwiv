@@ -570,10 +570,10 @@ void temp_extract() {
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
-    sprintf(s2, "%s%s", directories[udir[session()->GetCurrentFileArea()].subnum].path, u.filename);
+    sprintf(s2, "%s%s", session()->directories[udir[session()->GetCurrentFileArea()].subnum].path, u.filename);
     StringRemoveWhitespace(s2);
-    if (directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
-      sprintf(s1, "%s%s", directories[udir[session()->GetCurrentFileArea()].subnum].path, u.filename);
+    if (session()->directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
+      sprintf(s1, "%s%s", session()->directories[udir[session()->GetCurrentFileArea()].subnum].path, u.filename);
       sprintf(s2, "%s%s", syscfgovr.tempdir, u.filename);
       StringRemoveWhitespace(s1);
       if (!File::Exists(s2)) {
@@ -589,10 +589,10 @@ void temp_extract() {
       printinfo(&u, &abort);
       session()->tagging = ot;
       bout.nl();
-      if (directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
+      if (session()->directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
         chdir(syscfgovr.tempdir);
       } else {
-        chdir(directories[udir[session()->GetCurrentFileArea()].subnum].path);
+        chdir(session()->directories[udir[session()->GetCurrentFileArea()].subnum].path);
       }
       File file(File::current_directory(), stripfn(u.filename));
       session()->CdHome();
@@ -606,7 +606,7 @@ void temp_extract() {
             ok1 = false;
           }
           if (wwiv::strings::IsEquals(s1, "?")) {
-            list_arc_out(stripfn(u.filename), directories[udir[session()->GetCurrentFileArea()].subnum].path);
+            list_arc_out(stripfn(u.filename), session()->directories[udir[session()->GetCurrentFileArea()].subnum].path);
             s1[0] = '\0';
           }
           if (wwiv::strings::IsEquals(s1, "Q")) {
@@ -786,7 +786,7 @@ void move_file_t() {
         dliscan();
         return;
       } else if (ch == 'Y') {
-        sprintf(s1, "%s%s", directories[batch[nCurBatchPos].dir].path, u.filename);
+        sprintf(s1, "%s%s", session()->directories[batch[nCurBatchPos].dir].path, u.filename);
         StringRemoveWhitespace(s1);
         char *pszDirectoryNum = nullptr;
         do {
@@ -799,7 +799,7 @@ void move_file_t() {
         } while (!hangup && (pszDirectoryNum[0] == '?'));
         d1 = -1;
         if (pszDirectoryNum[0]) {
-          for (int i1 = 0; (i1 < session()->num_dirs) && (udir[i1].subnum != -1); i1++) {
+          for (int i1 = 0; (i1 < session()->directories.size()) && (udir[i1].subnum != -1); i1++) {
             if (wwiv::strings::IsEquals(udir[i1].keys, pszDirectoryNum)) {
               d1 = i1;
             }
@@ -813,11 +813,11 @@ void move_file_t() {
             ok = false;
             bout << "Filename already in use in that directory.\r\n";
           }
-          if (session()->numf >= directories[d1].maxfiles) {
+          if (session()->numf >= session()->directories[d1].maxfiles) {
             ok = false;
             bout << "Too many files in that directory.\r\n";
           }
-          if (freek1(directories[d1].path) < static_cast<long>(u.numbytes / 1024L) + 3) {
+          if (freek1(session()->directories[d1].path) < static_cast<long>(u.numbytes / 1024L) + 3) {
             ok = false;
             bout << "Not enough disk space to move it.\r\n";
           }
@@ -853,7 +853,7 @@ void move_file_t() {
           delete_extended_description(u.filename);
         }
 
-        sprintf(s2, "%s%s", directories[d1].path, u.filename);
+        sprintf(s2, "%s%s", session()->directories[d1].path, u.filename);
         StringRemoveWhitespace(s2);
         dliscan1(d1);
         fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
@@ -972,7 +972,7 @@ void removefile() {
           }
           if (bDeleteFileToo) {
             char szFileNameToDelete[ MAX_PATH ];
-            sprintf(szFileNameToDelete, "%s%s", directories[udir[session()->GetCurrentFileArea()].subnum].path, u.filename);
+            sprintf(szFileNameToDelete, "%s%s", session()->directories[udir[session()->GetCurrentFileArea()].subnum].path, u.filename);
             StringRemoveWhitespace(szFileNameToDelete);
             File::Remove(szFileNameToDelete);
             if (bRemoveDlPoints && u.ownersys == 0) {
@@ -989,7 +989,7 @@ void removefile() {
           if (u.mask & mask_extended) {
             delete_extended_description(u.filename);
           }
-          sysoplogf("- \"%s\" removed off of %s", u.filename, directories[udir[session()->GetCurrentFileArea()].subnum].name);
+          sysoplogf("- \"%s\" removed off of %s", u.filename, session()->directories[udir[session()->GetCurrentFileArea()].subnum].name);
           fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
           for (int i1 = i; i1 < session()->numf; i1++) {
             FileAreaSetRecord(fileDownload, i1 + 1);

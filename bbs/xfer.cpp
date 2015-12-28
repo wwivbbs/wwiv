@@ -123,13 +123,14 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
     return true;
   }
   const string comport = StringPrintf("%d", incom ? syscfgovr.primaryport : 0);
-  const string cmdLine = stuff_in(syscfg.upload_cmd, create_chain_file(), directories[directory_num].path,
+  const string cmdLine = stuff_in(syscfg.upload_cmd, create_chain_file(),
+                                  session()->directories[directory_num].path,
                                   stripfn(u->filename), comport, "");
   ExecuteExternalProgram(cmdLine, session()->GetSpawnOptions(SPAWNOPT_ULCHK));
 
-  File file(directories[directory_num].path, stripfn(u->filename));
+  File file(session()->directories[directory_num].path, stripfn(u->filename));
   if (!file.Exists()) {
-    sysoplogf("File \"%s\" to %s deleted by UL event.", u->filename, directories[directory_num].name);
+    sysoplogf("File \"%s\" to %s deleted by UL event.", u->filename, session()->directories[directory_num].name);
     bout << u->filename << " was deleted by the upload event.\r\n";
     return false;
   }
@@ -247,7 +248,7 @@ int list_arc_out(const char *file_name, const char *pszDirectory) {
 
   char szFullPathName[ MAX_PATH ];
   sprintf(szFullPathName, "%s%s", pszDirectory, file_name);
-  if (directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
+  if (session()->directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
     sprintf(szFullPathName, "%s%s", syscfgovr.tempdir, file_name);
     if (!File::Exists(szFullPathName)) {
       char szFullPathNameInDir[ MAX_PATH ];
@@ -314,7 +315,7 @@ bool dcs() {
 }
 
 void dliscan1(int directory_num) {
-  sprintf(g_szDownloadFileName, "%s%s.dir", syscfg.datadir, directories[directory_num].filename);
+  sprintf(g_szDownloadFileName, "%s%s.dir", syscfg.datadir, session()->directories[directory_num].filename);
   File fileDownload(g_szDownloadFileName);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   int nNumRecords = fileDownload.GetLength() / sizeof(uploadsrec);
@@ -346,7 +347,7 @@ void dliscan1(int directory_num) {
   session()->numf = u.numbytes;
   this_date = u.daten;
 
-  sprintf(g_szExtDescrFileName, "%s%s.ext", syscfg.datadir, directories[directory_num].filename);
+  sprintf(g_szExtDescrFileName, "%s%s.ext", syscfg.datadir, session()->directories[directory_num].filename);
   zap_ed_info();
 }
 
@@ -623,7 +624,7 @@ void printinfo(uploadsrec * u, bool *abort) {
     } else {
       filelist[session()->tagptr].u = *u;
       filelist[session()->tagptr].directory = udir[session()->GetCurrentFileArea()].subnum;
-      filelist[session()->tagptr].dir_mask = directories[udir[session()->GetCurrentFileArea()].subnum].mask;
+      filelist[session()->tagptr].dir_mask = session()->directories[udir[session()->GetCurrentFileArea()].subnum].mask;
       session()->tagptr++;
       sprintf(s, "\r|#%d%2d|#%d%c",
               (check_batch_queue(filelist[session()->tagptr - 1].u.filename)) ? 6 : 0,
@@ -646,8 +647,8 @@ void printinfo(uploadsrec * u, bool *abort) {
 
   sprintf(s1, "%ld""k", bytes_to_k(u->numbytes));
 
-  if (!(directories[ udir[ session()->GetCurrentFileArea() ].subnum ].mask & mask_cdrom)) {
-    strcpy(s2, directories[ udir[ session()->GetCurrentFileArea() ].subnum ].path);
+  if (!(session()->directories[ udir[ session()->GetCurrentFileArea() ].subnum ].mask & mask_cdrom)) {
+    strcpy(s2, session()->directories[ udir[ session()->GetCurrentFileArea() ].subnum ].path);
     strcat(s2, u->filename);
     if (!File::Exists(s2)) {
       strcpy(s1, "N/A");
@@ -708,7 +709,7 @@ void printtitle(bool *abort) {
       return;
     }
   }
-  sprintf(buffer, "%s%s - #%s, %d files.", ss, directories[udir[session()->GetCurrentFileArea()].subnum].name,
+  sprintf(buffer, "%s%s - #%s, %d files.", ss, session()->directories[udir[session()->GetCurrentFileArea()].subnum].name,
           udir[session()->GetCurrentFileArea()].keys, session()->numf);
   bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
   if ((g_num_listed == 0 && session()->tagptr == 0) || session()->tagging == 0 ||
@@ -892,7 +893,7 @@ void nscanall() {
   if (!x_only) {
     bout << "\r" << "|#2Searching ";
   }
-  for (int i = 0; i < session()->num_dirs && !abort && udir[i].subnum != -1 &&
+  for (int i = 0; i < session()->directories.size() && !abort && udir[i].subnum != -1 &&
        session()->tagging != 0; i++) {
     count++;
     if (!x_only) {
@@ -950,7 +951,7 @@ void searchall() {
     align(szFileMask);
   } else {
     bout.nl(2);
-    bout << "Search all directories.\r\n";
+    bout << "Search all session()->directories.\r\n";
     file_mask(szFileMask);
     if (!x_only) {
       bout.nl();
@@ -961,7 +962,7 @@ void searchall() {
   lines_listed = 0;
   int count = 0;
   int color = 3;
-  for (int i = 0; i < session()->num_dirs && !abort && !hangup && (session()->tagging || x_only)
+  for (int i = 0; i < session()->directories.size() && !abort && !hangup && (session()->tagging || x_only)
        && udir[i].subnum != -1; i++) {
     int nDirNum = udir[i].subnum;
     bool bIsDirMarked = false;
@@ -969,7 +970,7 @@ void searchall() {
       bIsDirMarked = true;
     }
     bIsDirMarked = true;
-    // remove bIsDirMarked=true to search only marked directories
+    // remove bIsDirMarked=true to search only marked session()->directories
     if (bIsDirMarked) {
       if (!x_only) {
         count++;
@@ -1056,7 +1057,7 @@ int printfileinfo(uploadsrec * u, int directory_num) {
     print_extended(u->filename, &abort, 255, 0);
   }
   char file_name[ MAX_PATH ];
-  sprintf(file_name, "%s%s", directories[directory_num].path, u->filename);
+  sprintf(file_name, "%s%s", session()->directories[directory_num].path, u->filename);
   StringRemoveWhitespace(file_name);
   if (!File::Exists(file_name)) {
     bout << "\r\n-=>FILE NOT THERE<=-\r\n\n";

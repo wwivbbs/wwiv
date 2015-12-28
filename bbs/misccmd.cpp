@@ -241,7 +241,7 @@ void list_users(int mode) {
   if (mode == LIST_USERS_MESSAGE_AREA) {
     s = session()->subboards[usub[session()->GetCurrentMessageArea()].subnum];
   } else {
-    d = directories[udir[session()->GetCurrentFileArea()].subnum];
+    d = session()->directories[udir[session()->GetCurrentFileArea()].subnum];
   }
 
   bool abort  = false;

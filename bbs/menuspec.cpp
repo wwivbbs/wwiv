@@ -87,7 +87,7 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
     bout.nl();
 
     if (bTitle) {
-      bout << "Directory  : " << directories[dn].name << wwiv::endl;
+      bout << "Directory  : " << session()->directories[dn].name << wwiv::endl;
     }
     bOkToDL = printfileinfo(&u, dn);
 
@@ -101,9 +101,9 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
     }
     if (bOkToDL || bFreeDL) {
       write_inst(INST_LOC_DOWNLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
-      sprintf(s1, "%s%s", directories[dn].path, u.filename);
-      if (directories[dn].mask & mask_cdrom) {
-        sprintf(s2, "%s%s", directories[dn].path, u.filename);
+      sprintf(s1, "%s%s", session()->directories[dn].path, u.filename);
+      if (session()->directories[dn].mask & mask_cdrom) {
+        sprintf(s2, "%s%s", session()->directories[dn].path, u.filename);
         sprintf(s1, "%s%s", syscfgovr.tempdir, u.filename);
         if (!File::Exists(s1)) {
           copyfile(s2, s1, false);
@@ -162,8 +162,8 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
 
 
 int FindDN(const char *pszDownloadFileName) {
-  for (int i = 0; (i < session()->num_dirs); i++) {
-    if (wwiv::strings::IsEqualsIgnoreCase(directories[i].filename, pszDownloadFileName)) {
+  for (int i = 0; (i < session()->directories.size()); i++) {
+    if (wwiv::strings::IsEqualsIgnoreCase(session()->directories[i].filename, pszDownloadFileName)) {
       return i;
     }
   }
@@ -275,7 +275,7 @@ void ChangeDirNumber() {
       bout.nl();
       continue;
     }
-    for (int i = 0; i < session()->num_dirs; i++) {
+    for (int i = 0; i < session()->directories.size(); i++) {
       if (wwiv::strings::IsEquals(udir[i].keys, s)) {
         session()->SetCurrentFileArea(i);
         done = true;

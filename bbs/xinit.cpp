@@ -764,20 +764,13 @@ void WSession::read_voting() {
 }
 
 bool WSession::read_dirs() {
-  if (directories) {
-    free(directories);
-  }
-  directories = nullptr;
-  directories = static_cast<directoryrec *>(BbsAllocA(static_cast<long>(syscfg.max_dirs) *
-                static_cast<long>(sizeof(directoryrec))));
-
-  File file(syscfg.datadir, DIRS_DAT);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    std::clog << file.GetName() << " NOT FOUND." << std::endl;
+  directories.clear();
+  DataFile<directoryrec> file(syscfg.datadir, DIRS_DAT);
+  if (!file) {
+    std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
     return false;
   }
-  num_dirs = file.Read(directories,
-                                     (sizeof(directoryrec) * syscfg.max_dirs)) / sizeof(directoryrec);
+  file.ReadVector(directories, syscfg.max_dirs);
   return true;
 }
 
@@ -957,7 +950,6 @@ void WSession::InitializeBBS() {
   }
 
   XINIT_PRINTF("Reading File Areas.");
-  directories = nullptr;
   if (!read_dirs()) {
     AbortBBS();
   }

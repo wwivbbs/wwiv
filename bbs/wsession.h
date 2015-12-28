@@ -423,7 +423,6 @@ private:
               m_nNetworkNumber,
               m_nMaxNetworkNumber,
               numf,
-              num_dirs,
               num_events,
               num_sys_list,
               screenlinest,
@@ -481,6 +480,7 @@ public:
   std::vector<net_networks_rec> net_networks;
   std::vector<gfiledirrec> gfilesec;
   std::vector<arcrec> arcs;
+  std::vector<directoryrec> directories;
 
 };
 
