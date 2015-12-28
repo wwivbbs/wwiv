@@ -1143,7 +1143,7 @@ void qwk_nscan() {
       dliscan();
       if (this_date >= nscandate) {
         sprintf(s, "\r\n\r\n%s - #%s, %d %s.\r\n\r\n",
-                directories[udir[session()->GetCurrentFileArea()].subnum].name,
+                session()->directories[udir[session()->GetCurrentFileArea()].subnum].name,
                 udir[session()->GetCurrentFileArea()].keys, numf, "files");
         write(newfile,  s, strlen(s));
 

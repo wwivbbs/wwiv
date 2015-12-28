@@ -103,7 +103,7 @@ int try_to_ul_wh(char *file_name) {
   bool done = false;
   if (session()->user()->IsRestrictionValidate() || session()->user()->IsRestrictionUpload() ||
       (syscfg.sysconfig & sysconfig_all_sysop)) {
-    dn = (syscfg.newuploads < session()->num_dirs) ? syscfg.newuploads : 0;
+    dn = (syscfg.newuploads < session()->directories.size()) ? syscfg.newuploads : 0;
   } else {
     char temp[10];
 
@@ -111,7 +111,7 @@ int try_to_ul_wh(char *file_name) {
     done = false;
     while (!done) {
       if (hangup) {
-        if (syscfg.newuploads < session()->num_dirs) {
+        if (syscfg.newuploads < session()->directories.size()) {
           dn = syscfg.newuploads;
         } else {
           dn = 0;
@@ -132,7 +132,7 @@ int try_to_ul_wh(char *file_name) {
           int x = atoi(temp);
           if (udir[x].subnum >= 0) {
             dliscan1(udir[x].subnum);
-            d = directories[dn];
+            d = session()->directories[dn];
             if ((d.mask & mask_no_uploads) && (!dcs())) {
               bout << "Can't upload there...\r\n";
               pausescr();
@@ -147,7 +147,7 @@ int try_to_ul_wh(char *file_name) {
   }
 
   dliscan1(dn);
-  d = directories[dn];
+  d = session()->directories[dn];
   if (session()->numf >= d.maxfiles) {
     t2u_error(file_name, "This directory is currently full.");
     return 1;
@@ -224,12 +224,12 @@ int try_to_ul_wh(char *file_name) {
   }
   if (ok && (!session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH))) {
     bout.nl();
-    bout << "Checking for same file in other directories...\r\n\n";
+    bout << "Checking for same file in other session()->directories...\r\n\n";
     i2 = 0;
 
-    for (i = 0; (i < session()->num_dirs) && (udir[i].subnum != -1); i++) {
+    for (i = 0; (i < session()->directories.size()) && (udir[i].subnum != -1); i++) {
       strcpy(s1, "Scanning ");
-      strcat(s1, directories[udir[i].subnum].name);
+      strcat(s1, session()->directories[udir[i].subnum].name);
 
       for (i3 = i4 = strlen(s1); i3 < i2; i3++) {
         s1[i3] = ' ';
@@ -244,7 +244,7 @@ int try_to_ul_wh(char *file_name) {
       i1 = recno(u.filename);
       if (i1 >= 0) {
         bout.nl();
-        bout << "Same file found on " << directories[udir[i].subnum].name << wwiv::endl;
+        bout << "Same file found on " << session()->directories[udir[i].subnum].name << wwiv::endl;
 
         if (dcs()) {
           bout.nl();
@@ -327,7 +327,7 @@ int try_to_ul_wh(char *file_name) {
             u.mask &= ~mask_extended;
           } else {
             u.mask |= mask_extended;
-            modify_extended_description(&ss, directories[udir[session()->GetCurrentFileArea()].subnum].name);
+            modify_extended_description(&ss, session()->directories[udir[session()->GetCurrentFileArea()].subnum].name);
             if (ss) {
               delete_extended_description(u.filename);
               add_extended_description(u.filename, ss);
@@ -335,7 +335,7 @@ int try_to_ul_wh(char *file_name) {
             }
           }
         } else {
-          modify_extended_description(&ss, directories[udir[session()->GetCurrentFileArea()].subnum].name);
+          modify_extended_description(&ss, session()->directories[udir[session()->GetCurrentFileArea()].subnum].name);
           if (ss) {
             add_extended_description(u.filename, ss);
             free(ss);
@@ -418,7 +418,7 @@ int try_to_ul_wh(char *file_name) {
   pStatus->IncrementNumUploadsToday();
   pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
   session()->status_manager()->CommitTransaction(pStatus);
-  sysoplogf("+ \"%s\" uploaded on %s", u.filename, directories[dn].name);
+  sysoplogf("+ \"%s\" uploaded on %s", u.filename, session()->directories[dn].name);
   return 0;                                 // This means success
 }
 

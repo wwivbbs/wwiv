@@ -26,12 +26,10 @@ namespace fix {
 
 class FixDirectoriesCommand : public BaseCommand {
 public:
-    FixDirectoriesCommand(FixConfiguration* config, int num_dirs) : BaseCommand(config), num_dirs_(num_dirs) {}
+    FixDirectoriesCommand(FixConfiguration* config) : BaseCommand(config) {}
     virtual ~FixDirectoriesCommand() {}
 
     virtual int Execute() override;;
-private:
-    int num_dirs_;
 };
 
 }  // namespace fix

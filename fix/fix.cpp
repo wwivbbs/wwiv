@@ -235,22 +235,10 @@ class FixApplication {
 		  maybeGiveUp();
       return;
     }
-
-    Print(OK, true, "Reading %s...", dirsDat.full_pathname().c_str());
-	  int nFileMode = File::modeReadOnly | File::modeBinary;
-	  dirsDat.Open(nFileMode);
-	  directories = (directoryrec *)malloc(dirsDat.GetLength() + 1);
-	  if (directories == nullptr) {
-		  Print(NOK, true, "Couldn't allocate %ld bytes for %s.", dirsDat.GetLength(), dirsDat.full_pathname().c_str());
-		  giveUp();
-	  }
-	  num_dirs_ = (dirsDat.Read(directories, dirsDat.GetLength())) / sizeof(directoryrec);
-	  dirsDat.Close();
-	  Print(OK, true, "Found %d directories", num_dirs_);
   }
 
   void LoadCommands(FixConfiguration*& config) {
-    command_map["dirs"] = new FixDirectoriesCommand(config, num_dirs_);
+    command_map["dirs"] = new FixDirectoriesCommand(config);
     command_map["critical_files"] = new CriticalFilesCommand(config);
     command_map["users"] = new FixUsersCommand(config);
   }

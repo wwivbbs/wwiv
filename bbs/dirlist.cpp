@@ -54,7 +54,7 @@ void dirlist(int mode) {
 
     while (i <= en && uconfdir[i].confnum != -1 && !abort) {
       int i1 = 0;
-      while (i1 < session()->num_dirs && udir[i1].subnum != -1 && !abort) {
+      while (i1 < session()->directories.size() && udir[i1].subnum != -1 && !abort) {
         char s[ 255 ];
         int firstp = 0;
         if (p && mode == 0) {
@@ -85,13 +85,13 @@ void dirlist(int mode) {
         dliscan1(directory_number);
         if (udir[session()->GetCurrentFileArea()].subnum == udir[i1].subnum) {
           sprintf(s, " |#9%3s |#9\xB3 |#6%3s |#9\xB3|B1|15 %-40.40s |#9\xB3 |#9%4d|B0",
-                  udir[i1].keys, scanme.c_str(), directories[directory_number].name,
+                  udir[i1].keys, scanme.c_str(), session()->directories[directory_number].name,
                   session()->numf);
         } else {
           sprintf(s, " |#9%3s |#9\xB3 |#6%3s |#9\xB3 %s%-40.40s |#9\xB3 |#9%4d",
                   udir[i1].keys, scanme.c_str(),
-                  (((mode == 1) && (directories[udir[i1].subnum].mask & mask_cdrom)) ? "|#9" : "|#1"),
-                  directories[ directory_number ].name, session()->numf);
+                  (((mode == 1) && (session()->directories[udir[i1].subnum].mask & mask_cdrom)) ? "|#9" : "|#1"),
+                  session()->directories[ directory_number ].name, session()->numf);
         }
         if (okansi()) {
           osan(s, &abort, &next);
@@ -109,7 +109,7 @@ void dirlist(int mode) {
                                             is ? firstp : firstp + 1, lastp);
           ss = mmkey(1, WSession::mmkeyFileAreas, true);
           if (isdigit(ss[0])) {
-            for (int i3 = 0; i3 < session()->num_dirs; i3++) {
+            for (int i3 = 0; i3 < session()->directories.size(); i3++) {
               if (wwiv::strings::IsEquals(udir[i3].keys, ss)) {
                 session()->SetCurrentFileArea(i3);
                 os      = udir[session()->GetCurrentFileArea()].subnum;
@@ -177,7 +177,7 @@ void dirlist(int mode) {
         is = false;
       }
       if (isdigit(ss[0])) {
-        for (int i3 = 0; i3 < session()->num_dirs; i3++) {
+        for (int i3 = 0; i3 < session()->directories.size(); i3++) {
           if (wwiv::strings::IsEquals(udir[i3].keys, ss)) {
             session()->SetCurrentFileArea(i3);
             os = udir[session()->GetCurrentFileArea()].subnum;

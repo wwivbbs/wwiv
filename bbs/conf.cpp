@@ -127,7 +127,7 @@ int get_conf_info(int conftype, int *num, confrec ** cpp,
       sprintf(file_name, "%s%s", syscfg.datadir, DIRS_CNF);
     }
     if (num_s) {
-      *num_s = session()->num_dirs;
+      *num_s = session()->directories.size();
     }
     if (uc) {
       *uc = uconfdir;
@@ -397,7 +397,7 @@ void showsubconfs(int conftype, confrec * c) {
               (test > -1) ? szIndex : charstr(4, '-'), confstr);
       break;
     case CONF_DIRS:
-      sprintf(s, "|#1%3d |#2%-39.39s |#9%4.4s %s", i, stripcolors(directories[i].name),
+      sprintf(s, "|#1%3d |#2%-39.39s |#9%4.4s %s", i, stripcolors(session()->directories[i].name),
               (test > -1) ? szIndex : charstr(4, '-'), confstr);
       break;
     }
@@ -1088,7 +1088,7 @@ void list_confs(int conftype, int ssc) {
               break;
             case CONF_DIRS:
               sprintf(s1, "%s%-3d : %s", "Dir #", dirconfs[i].subs[i2],
-                      stripcolors(directories[cp[i].subs[i2]].name));
+                      stripcolors(session()->directories[cp[i].subs[i2]].name));
               break;
             }
             strcat(s, s1);

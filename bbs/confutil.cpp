@@ -204,7 +204,7 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
     break;
   case CONF_DIRS:
     ss1 = udir;
-    ns = session()->num_dirs;
+    ns = session()->directories.size();
     if (nOldSubNumber == -1) {
       osub = udir[session()->GetCurrentFileArea()].subnum;
     } else {
@@ -247,7 +247,7 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
         break;
       case CONF_DIRS:
         if (access_dir(session()->user(), session()->GetEffectiveSl(),
-                       (directoryrec *) & directories[c->subs[i]])) {
+                       (directoryrec *) & session()->directories[c->subs[i]])) {
           addusub(ss1, ns, c->subs[i], 0);
         }
         break;
@@ -276,7 +276,7 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
         if (access_conf(session()->user(), session()->GetEffectiveSl(), &(dirconfs[i]))) {
           for (i1 = 0; i1 < static_cast<int>(dirconfs[i].num); i1++) {
             if (access_dir(session()->user(), session()->GetEffectiveSl(),
-                           (directoryrec *) & directories[dirconfs[i].subs[i1]])) {
+                           (directoryrec *) & session()->directories[dirconfs[i].subs[i1]])) {
               addusub(ss1, ns, dirconfs[i].subs[i1], 0);
             }
           }

@@ -90,7 +90,7 @@ void move_file() {
     if (ch == 'Q') {
       done = true;
     } else if (ch == 'Y') {
-      sprintf(s1, "%s%s", directories[udir[session()->GetCurrentFileArea()].subnum].path, u.filename);
+      sprintf(s1, "%s%s", session()->directories[udir[session()->GetCurrentFileArea()].subnum].path, u.filename);
       char *ss = nullptr;
       do {
         bout.nl(2);
@@ -103,7 +103,7 @@ void move_file() {
       } while ((!hangup) && (ss[0] == '?'));
       d1 = -1;
       if (ss[0]) {
-        for (int i1 = 0; (i1 < session()->num_dirs) && (udir[i1].subnum != -1); i1++) {
+        for (int i1 = 0; (i1 < session()->directories.size()) && (udir[i1].subnum != -1); i1++) {
           if (wwiv::strings::IsEquals(udir[i1].keys, ss)) {
             d1 = i1;
           }
@@ -117,11 +117,11 @@ void move_file() {
           ok = false;
           bout << "\r\nFilename already in use in that directory.\r\n";
         }
-        if (session()->numf >= directories[d1].maxfiles) {
+        if (session()->numf >= session()->directories[d1].maxfiles) {
           ok = false;
           bout << "\r\nToo many files in that directory.\r\n";
         }
-        if (freek1(directories[d1].path) < ((double)(u.numbytes / 1024L) + 3)) {
+        if (freek1(session()->directories[d1].path) < ((double)(u.numbytes / 1024L) + 3)) {
           ok = false;
           bout << "\r\nNot enough disk space to move it.\r\n";
         }
@@ -157,7 +157,7 @@ void move_file() {
         delete_extended_description(u.filename);
       }
 
-      sprintf(s2, "%s%s", directories[d1].path, u.filename);
+      sprintf(s2, "%s%s", session()->directories[d1].path, u.filename);
       dliscan1(d1);
       fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
       for (int i = session()->numf; i >= 1; i--) {
@@ -288,9 +288,9 @@ void sortdir(int directory_num, int type) {
 
 void sort_all(int type) {
   tmp_disable_conf(true);
-  for (int i = 0; (i < session()->num_dirs) && (udir[i].subnum != -1) &&
+  for (int i = 0; (i < session()->directories.size()) && (udir[i].subnum != -1) &&
        (!session()->localIO()->LocalKeyPressed()); i++) {
-    bout << "\r\n|#1Sorting " << directories[udir[i].subnum].name << wwiv::endl;
+    bout << "\r\n|#1Sorting " << session()->directories[udir[i].subnum].name << wwiv::endl;
     sortdir(i, type);
   }
   tmp_disable_conf(false);
@@ -342,7 +342,7 @@ void rename_file() {
     if (s[0]) {
       align(s);
       if (!wwiv::strings::IsEquals(s, "        .   ")) {
-        strcpy(s1, directories[udir[session()->GetCurrentFileArea()].subnum].path);
+        strcpy(s1, session()->directories[udir[session()->GetCurrentFileArea()].subnum].path);
         strcpy(s2, s1);
         strcat(s1, s);
         StringRemoveWhitespace(s1);
@@ -385,7 +385,7 @@ void rename_file() {
         } else {
           u.mask |= mask_extended;
           modify_extended_description(&ss,
-              directories[udir[session()->GetCurrentFileArea()].subnum].name);
+              session()->directories[udir[session()->GetCurrentFileArea()].subnum].name);
           if (ss) {
             delete_extended_description(u.filename);
             add_extended_description(u.filename, ss);
@@ -394,7 +394,7 @@ void rename_file() {
         }
       } else {
         modify_extended_description(&ss,
-            directories[udir[session()->GetCurrentFileArea()].subnum].name);
+            session()->directories[udir[session()->GetCurrentFileArea()].subnum].name);
         if (ss) {
           add_extended_description(u.filename, ss);
           free(ss);
@@ -421,7 +421,7 @@ void rename_file() {
 bool upload_file(const char *file_name, int directory_num, const char *description) {
   uploadsrec u, u1;
 
-  directoryrec d = directories[directory_num];
+  directoryrec d = session()->directories[directory_num];
   char szTempFileName[ 255 ];
   strcpy(szTempFileName, file_name);
   align(szTempFileName);
@@ -535,7 +535,7 @@ bool maybe_upload(const char *file_name, int directory_num, const char *descript
         if (ch == *(YesNoString(false))) {
           bout << "|#5Delete it? ";
           if (yesno()) {
-            sprintf(s1, "%s%s", directories[directory_num].path, file_name);
+            sprintf(s1, "%s%s", session()->directories[directory_num].path, file_name);
             File::Remove(s1);
             bout.nl();
             return true;
@@ -587,7 +587,7 @@ void upload_files(const char *file_name, int directory_num, int type) {
   TextFile file(file_name, "r");
   if (!file.IsOpen()) {
     char szDefaultFileName[ MAX_PATH ];
-    sprintf(szDefaultFileName, "%s%s", directories[udir[directory_num].subnum].path, file_name);
+    sprintf(szDefaultFileName, "%s%s", session()->directories[udir[directory_num].subnum].path, file_name);
     file.Open(szDefaultFileName, "r");
   }
   if (!file.IsOpen()) {
@@ -696,8 +696,8 @@ bool uploadall(int directory_num) {
   strcpy(szDefaultFileSpec, "*.*");
 
   char szPathName[ MAX_PATH ];
-  sprintf(szPathName, "%s%s", directories[udir[directory_num].subnum].path, szDefaultFileSpec);
-  int maxf = directories[udir[directory_num].subnum].maxfiles;
+  sprintf(szPathName, "%s%s", session()->directories[udir[directory_num].subnum].path, szDefaultFileSpec);
+  int maxf = session()->directories[udir[directory_num].subnum].maxfiles;
 
   WFindFile fnd;
   bool bFound = fnd.open(szPathName, 0);
@@ -763,7 +763,7 @@ void relist() {
         }
         tcd = filelist[i].directory;
         tcdi = -1;
-        for (i1 = 0; i1 < session()->num_dirs; i1++) {
+        for (i1 = 0; i1 < session()->directories.size(); i1++) {
           if (udir[i1].subnum == tcd) {
             tcdi = i1;
             break;
@@ -773,9 +773,9 @@ void relist() {
           bout.Color(2);
         }
         if (tcdi == -1) {
-          bout << directories[tcd].name << "." << wwiv::endl;
+          bout << session()->directories[tcd].name << "." << wwiv::endl;
         } else {
-          bout << directories[tcd].name << " - #" << udir[tcdi].keys << ".\r\n";
+          bout << session()->directories[tcd].name << " - #" << udir[tcdi].keys << ".\r\n";
         }
         bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
         if (okansi()) {
@@ -812,8 +812,8 @@ void relist() {
 
     sprintf(s1, "%ld""k", bytes_to_k(filelist[i].u.numbytes));
     if (!session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
-      if (!(directories[tcd].mask & mask_cdrom)) {
-        sprintf(s2, "%s%s", directories[tcd].path, filelist[i].u.filename);
+      if (!(session()->directories[tcd].mask & mask_cdrom)) {
+        sprintf(s2, "%s%s", session()->directories[tcd].path, filelist[i].u.filename);
         StringRemoveWhitespace(s2);
         if (!File::Exists(s2)) {
           strcpy(s1, "N/A");
@@ -1074,14 +1074,14 @@ void l_config_nscan() {
   bool abort = false;
   bout.nl();
   bout << "|#9Directories to new-scan marked with '|#2*|#9'\r\n\n";
-  for (i = 0; (i < session()->num_dirs) && (udir[i].subnum != -1) && (!abort); i++) {
+  for (i = 0; (i < session()->directories.size()) && (udir[i].subnum != -1) && (!abort); i++) {
     i1 = udir[i].subnum;
     if (qsc_n[i1 / 32] & (1L << (i1 % 32))) {
       strcpy(s, "* ");
     } else {
       strcpy(s, "  ");
     }
-    sprintf(s2, "%s%s. %s", s, udir[i].keys, directories[i1].name);
+    sprintf(s2, "%s%s. %s", s, udir[i].keys, session()->directories[i1].name);
     pla(s2, &abort);
   }
   bout.nl(2);
@@ -1147,7 +1147,7 @@ void config_nscan() {
         bout << "|#9Enter directory number (|#1C=Clr All, Q=Quit, S=Set All|#9): |#0";
         s = mmkey(1);
         if (s[0]) {
-          for (i = 0; i < session()->num_dirs; i++) {
+          for (i = 0; i < session()->directories.size(); i++) {
             i1 = udir[i].subnum;
             if (wwiv::strings::IsEquals(udir[i].keys, s)) {
               qsc_n[i1 / 32] ^= 1L << (i1 % 32);
@@ -1298,7 +1298,7 @@ void finddescription() {
     bout << "\r|#2Searching ";
   }
   lines_listed = 0;
-  for (i = 0; (i < session()->num_dirs) && (!abort) && (!hangup) && (session()->tagging != 0)
+  for (i = 0; (i < session()->directories.size()) && (!abort) && (!hangup) && (session()->tagging != 0)
        && (udir[i].subnum != -1); i++) {
     i1 = udir[i].subnum;
     pts = 0;
@@ -1307,7 +1307,7 @@ void finddescription() {
       pts = 1;
     }
     pts = 1;
-    // remove pts=1 to search only marked directories
+    // remove pts=1 to search only marked session()->directories
     if ((pts) && (!abort) && (session()->tagging != 0)) {
       if (!x_only) {
         count++;
@@ -1378,7 +1378,7 @@ void arc_l() {
       FileAreaSetRecord(fileDownload, nRecordNum);
       fileDownload.Read(&u, sizeof(uploadsrec));
       fileDownload.Close();
-      int i1 = list_arc_out(stripfn(u.filename), directories[udir[session()->GetCurrentFileArea()].subnum].path);
+      int i1 = list_arc_out(stripfn(u.filename), session()->directories[udir[session()->GetCurrentFileArea()].subnum].path);
       if (i1) {
         abort = true;
       }

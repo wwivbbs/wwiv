@@ -44,7 +44,7 @@ void normalupload(int dn) {
   int ok = 1;
 
   dliscan1(dn);
-  directoryrec d = directories[dn];
+  directoryrec d = session()->directories[dn];
   if (session()->numf >= d.maxfiles) {
     bout.nl(3);
     bout << "This directory is currently full.\r\n\n";
@@ -163,11 +163,11 @@ void normalupload(int dn) {
     }
     if (ok && !session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
       bout.nl();
-      bout << "Checking for same file in other directories...\r\n\n";
+      bout << "Checking for same file in other session()->directories...\r\n\n";
       int nLastLineLength = 0;
-      for (int i = 0; i < session()->num_dirs && udir[i].subnum != -1; i++) {
+      for (int i = 0; i < session()->directories.size() && udir[i].subnum != -1; i++) {
         string buffer = "Scanning ";
-        buffer += directories[udir[i].subnum].name;
+        buffer += session()->directories[udir[i].subnum].name;
         int nBufferLen = buffer.length();
         for (int i3 = nBufferLen; i3 < nLastLineLength; i3++) {
           buffer += " ";
@@ -178,7 +178,7 @@ void normalupload(int dn) {
         int i1 = recno(u.filename);
         if (i1 >= 0) {
           bout.nl();
-          bout << "Same file found on " << directories[udir[i].subnum].name << wwiv::endl;
+          bout << "Same file found on " << session()->directories[udir[i].subnum].name << wwiv::endl;
           if (dcs()) {
             bout.nl();
             bout << "|#5Upload anyway? ";
@@ -206,7 +206,7 @@ void normalupload(int dn) {
       inputl(u.description, 58);
       bout.nl();
       char *pszExtendedDescription = nullptr;
-      modify_extended_description(&pszExtendedDescription, directories[dn].name);
+      modify_extended_description(&pszExtendedDescription, session()->directories[dn].name);
       if (pszExtendedDescription) {
         add_extended_description(u.filename, pszExtendedDescription);
         u.mask |= mask_extended;
@@ -286,7 +286,7 @@ void normalupload(int dn) {
             pStatus->IncrementNumUploadsToday();
             pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
             session()->status_manager()->CommitTransaction(pStatus);
-            sysoplogf("+ \"%s\" uploaded on %s", u.filename, directories[dn].name);
+            sysoplogf("+ \"%s\" uploaded on %s", u.filename, session()->directories[dn].name);
             bout.nl(2);
             bout.bprintf("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());
             bout.nl(2);
