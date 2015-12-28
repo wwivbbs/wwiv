@@ -538,7 +538,7 @@ void page_user(int loc) {
 void moving(bool bOnline, int loc) {
   char space[55];
 
-  if (!chat_invis) {
+  if (!is_chat_invis()) {
     sprintf(space, "|#6%s %s", session()->user()->GetName(), (bOnline ? "is on the air." :
             "has signed off."));
     out_msg(space, loc);
@@ -741,38 +741,6 @@ void ga(const char *message, char *color_string, int loc, int type) {
           message);
   bout << "|#1[|#9Generic Action Sent|#1]\r\n";
   out_msg(buffer, loc);
-}
-
-// Toggles user availability, called when ctrl-N is hit
-
-void toggle_avail() {
-  instancerec ir;
-  char xl[81], cl[81], atr[81], cc;
-
-  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
-  get_inst_info(session()->instance_number(), &ir);
-  chat_avail = !chat_avail;
-
-  bout << "\n\rYou are now ";
-  bout << (chat_avail ? "available for chat.\n\r\n" : "not available for chat.\n\r\n");
-  write_inst(ir.loc, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
-  RestoreCurrentLine(cl, atr, xl, &cc);
-}
-
-// Toggles invisibility, called when ctrl-L is hit by a sysop
-
-void toggle_invis() {
-  instancerec ir;
-  char xl[81], cl[81], atr[81], cc;
-
-  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
-  get_inst_info(session()->instance_number(), &ir);
-  chat_invis = !chat_invis;
-
-  bout << "\r\n|#1You are now ";
-  bout << (chat_invis ? "invisible.\n\r\n" : "visible.\n\r\n");
-  write_inst(ir.loc, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
-  RestoreCurrentLine(cl, atr, xl, &cc);
 }
 
 // Lists the chat channels

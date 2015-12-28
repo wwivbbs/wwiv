@@ -32,6 +32,9 @@
 #include "bbs/printfile.h"
 #include "sdk/filenames.h"
 
+static bool chat_avail;
+static bool chat_invis;
+
 // Local functions
 void send_inst_msg(inst_msg_header * ih, const char *msg);
 int  handle_inst_msg(inst_msg_header * ih, const char *msg);
@@ -43,6 +46,7 @@ using wwiv::bbs::TempDisablePause;
 
 static int32_t last_iia = 0;
 
+bool is_chat_invis() { return chat_invis; }
 void send_inst_msg(inst_msg_header *ih, const char *msg) {
   char szFileName[MAX_PATH];
 
@@ -622,5 +626,37 @@ int setiia(int poll_ticks) {
   int oiia = iia;
   iia = poll_ticks;
   return oiia;
+}
+
+// Toggles user availability, called when ctrl-N is hit
+
+void toggle_avail() {
+  instancerec ir;
+  char xl[81], cl[81], atr[81], cc;
+
+  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+  get_inst_info(session()->instance_number(), &ir);
+  chat_avail = !chat_avail;
+
+  bout << "\n\rYou are now ";
+  bout << (chat_avail ? "available for chat.\n\r\n" : "not available for chat.\n\r\n");
+  write_inst(ir.loc, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+  RestoreCurrentLine(cl, atr, xl, &cc);
+}
+
+// Toggles invisibility, called when ctrl-L is hit by a sysop
+
+void toggle_invis() {
+  instancerec ir;
+  char xl[81], cl[81], atr[81], cc;
+
+  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+  get_inst_info(session()->instance_number(), &ir);
+  chat_invis = !chat_invis;
+
+  bout << "\r\n|#1You are now ";
+  bout << (chat_invis ? "invisible.\n\r\n" : "visible.\n\r\n");
+  write_inst(ir.loc, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+  RestoreCurrentLine(cl, atr, xl, &cc);
 }
 
