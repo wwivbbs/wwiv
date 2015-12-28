@@ -550,8 +550,8 @@ static void swap_subs(int sub1, int sub2) {
     int i1, i2;
     read_qscn(i, pTempQScan.get(), true);
     uint32_t *pTempQScan_n = &pTempQScan.get()[1];
-    uint32_t *pTempQScan_q = pTempQScan_n + (session()->GetMaxNumberFileAreas() + 31) / 32;
-    uint32_t *pTempQScan_p = pTempQScan_q + (session()->GetMaxNumberMessageAreas() + 31) / 32;
+    uint32_t *pTempQScan_q = pTempQScan_n + (syscfg.max_dirs + 31) / 32;
+    uint32_t *pTempQScan_p = pTempQScan_q + (syscfg.max_subs + 31) / 32;
 
     if (pTempQScan_q[sub1 / 32] & (1L << (sub1 % 32))) {
       i1 = 1;
@@ -630,8 +630,8 @@ static void insert_sub(int n) {
 
   std::unique_ptr<uint32_t[]> pTempQScan(new uint32_t[syscfg.qscn_len]);
   uint32_t* pTempQScan_n = &pTempQScan.get()[1];
-  uint32_t* pTempQScan_q = pTempQScan_n + (session()->GetMaxNumberFileAreas() + 31) / 32;
-  uint32_t* pTempQScan_p = pTempQScan_q + (session()->GetMaxNumberMessageAreas() + 31) / 32;
+  uint32_t* pTempQScan_q = pTempQScan_n + (syscfg.max_dirs + 31) / 32;
+  uint32_t* pTempQScan_p = pTempQScan_q + (syscfg.max_subs + 31) / 32;
 
   m1 = 1L << (n % 32);
   m2 = 0xffffffff << ((n % 32) + 1);
@@ -688,8 +688,8 @@ static void delete_sub(int n) {
   uint32_t *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m2, m3;
   std::unique_ptr<uint32_t[]> pTempQScan(new uint32_t[syscfg.qscn_len + 1]);
   pTempQScan_n = &pTempQScan.get()[1];
-  pTempQScan_q = pTempQScan_n + (session()->GetMaxNumberFileAreas() + 31) / 32;
-  pTempQScan_p = pTempQScan_q + (session()->GetMaxNumberMessageAreas() + 31) / 32;
+  pTempQScan_q = pTempQScan_n + (syscfg.max_dirs + 31) / 32;
+  pTempQScan_p = pTempQScan_q + (syscfg.max_subs + 31) / 32;
 
   m2 = 0xffffffff << (n % 32);
   m3 = 0xffffffff >> (32 - (n % 32));
@@ -761,7 +761,7 @@ void boardedit() {
       }
       break;
     case 'S':
-      if (session()->subboards.size() < session()->GetMaxNumberMessageAreas()) {
+      if (session()->subboards.size() < syscfg.max_subs) {
         bout.nl();
         bout << "|#2Take sub number? ";
         input(s, 4);
@@ -792,7 +792,7 @@ void boardedit() {
       }
       break;
     case 'I':
-      if (session()->subboards.size() < session()->GetMaxNumberMessageAreas()) {
+      if (session()->subboards.size() < syscfg.max_subs) {
         bout.nl();
         bout << "|#2Insert before which sub ('$' for end) : ";
         input(s, 4);

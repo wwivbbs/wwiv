@@ -677,8 +677,8 @@ void CreateNewUserRecord() {
   session()->user()->SetRestriction(syscfg.newuser_restrict);
 
   *qsc = 999;
-  memset(qsc_n, 0xff, ((session()->GetMaxNumberFileAreas() + 31) / 32) * 4);
-  memset(qsc_q, 0xff, ((session()->GetMaxNumberMessageAreas() + 31) / 32) * 4);
+  memset(qsc_n, 0xff, ((syscfg.max_dirs + 31) / 32) * 4);
+  memset(qsc_q, 0xff, ((syscfg.max_subs + 31) / 32) * 4);
 
   session()->user()->SetStatusFlag(WUser::pauseOnPage);
   session()->user()->ClearStatusFlag(WUser::conference);

@@ -28,15 +28,15 @@ namespace wwiv {
 namespace bbs {
 
 SaveQScanPointers::SaveQScanPointers() : restore_(false) {
-  save_qsc_p_.reset(new uint32_t[session()->GetMaxNumberMessageAreas()]);
-  for (int i = 0; i < session()->GetMaxNumberMessageAreas(); i++) {
+  save_qsc_p_.reset(new uint32_t[syscfg.max_subs]);
+  for (int i = 0; i < syscfg.max_subs; i++) {
     save_qsc_p_[i] = qsc_p[i];
   }
 }
 
 SaveQScanPointers::~SaveQScanPointers() {
   if (restore_) {
-    for (int i = 0; i < session()->GetMaxNumberMessageAreas(); i++) {
+    for (int i = 0; i < syscfg.max_subs; i++) {
       qsc_p[i] = save_qsc_p_[i];
     }
   }

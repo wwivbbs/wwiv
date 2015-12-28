@@ -459,7 +459,7 @@ void dlboardedit() {
       }
       break;
     case 'S':
-      if (session()->num_dirs < session()->GetMaxNumberFileAreas()) {
+      if (session()->num_dirs < syscfg.max_dirs) {
         bout.nl();
         bout << "|#2Take dir number? ";
         input(s, 4);
@@ -490,7 +490,7 @@ void dlboardedit() {
       }
       break;
     case 'I':
-      if (session()->num_dirs < session()->GetMaxNumberFileAreas()) {
+      if (session()->num_dirs < syscfg.max_dirs) {
         bout.nl();
         bout << "|#2Insert before which dir? ";
         input(s, 4);

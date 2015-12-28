@@ -66,10 +66,10 @@ static void CleanUserInfo() {
     setuconf(CONF_SUBS, session()->user()->GetLastSubConf(), 0);
     setuconf(CONF_DIRS, session()->user()->GetLastDirConf(), 0);
   }
-  if (session()->user()->GetLastSubNum() > session()->GetMaxNumberMessageAreas()) {
+  if (session()->user()->GetLastSubNum() > syscfg.max_subs) {
     session()->user()->SetLastSubNum(0);
   }
-  if (session()->user()->GetLastDirNum() > session()->GetMaxNumberFileAreas()) {
+  if (session()->user()->GetLastDirNum() > syscfg.max_dirs) {
     session()->user()->SetLastDirNum(0);
   }
   if (usub[session()->user()->GetLastSubNum()].subnum != -1) {

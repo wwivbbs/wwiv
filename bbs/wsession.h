@@ -226,12 +226,6 @@ public:
   bool IsExecLogSyncFoss() const { return m_bExecLogSyncFoss; }
   void SetExecLogSyncFoss(bool b) { m_bExecLogSyncFoss = b; }
 
-  int  GetMaxNumberMessageAreas() const { return m_nMaxNumberMessageAreas; }
-  void SetMaxNumberMessageAreas(int n) { m_nMaxNumberMessageAreas = n; }
-
-  int  GetMaxNumberFileAreas() const { return m_nMaxNumberFileAreas; }
-  void SetMaxNumberFileAreas(int n) { m_nMaxNumberFileAreas = n; }
-
   bool IsTimeOnlineLimited() const { return m_bTimeOnlineLimited; }
   void SetTimeOnlineLimited(bool b) { m_bTimeOnlineLimited = b; }
 
