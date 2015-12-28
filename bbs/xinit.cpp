@@ -653,7 +653,6 @@ void WSession::read_nintern() {
 }
 
 bool WSession::read_subs() {
-  SetMaxNumberMessageAreas(syscfg.max_subs);
   subboards.clear();
 
   DataFile<subboardrec> file(syscfg.datadir, SUBS_DAT);
@@ -661,7 +660,7 @@ bool WSession::read_subs() {
     std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
     return false;
   }
-  if (!file.ReadVector(subboards, GetMaxNumberMessageAreas())) {
+  if (!file.ReadVector(subboards, syscfg.max_subs)) {
     return false;
   }
 
@@ -769,8 +768,7 @@ bool WSession::read_dirs() {
     free(directories);
   }
   directories = nullptr;
-  SetMaxNumberFileAreas(syscfg.max_dirs);
-  directories = static_cast<directoryrec *>(BbsAllocA(static_cast<long>(GetMaxNumberFileAreas()) *
+  directories = static_cast<directoryrec *>(BbsAllocA(static_cast<long>(syscfg.max_dirs) *
                 static_cast<long>(sizeof(directoryrec))));
 
   File file(syscfg.datadir, DIRS_DAT);
@@ -779,7 +777,7 @@ bool WSession::read_dirs() {
     return false;
   }
   num_dirs = file.Read(directories,
-                                     (sizeof(directoryrec) * GetMaxNumberFileAreas())) / sizeof(directoryrec);
+                                     (sizeof(directoryrec) * syscfg.max_dirs)) / sizeof(directoryrec);
   return true;
 }
 
@@ -1027,14 +1025,14 @@ void WSession::InitializeBBS() {
 
   XINIT_PRINTF("Allocating Memory for Message/File Areas.");
   do_event = 0;
-  usub = static_cast<usersubrec *>(BbsAllocA(GetMaxNumberMessageAreas() * sizeof(usersubrec)));
-  udir = static_cast<usersubrec *>(BbsAllocA(GetMaxNumberFileAreas() * sizeof(usersubrec)));
+  usub = static_cast<usersubrec *>(BbsAllocA(syscfg.max_subs * sizeof(usersubrec)));
+  udir = static_cast<usersubrec *>(BbsAllocA(syscfg.max_dirs * sizeof(usersubrec)));
   uconfsub = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
   uconfdir = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
   qsc = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len));
   qsc_n = qsc + 1;
-  qsc_q = qsc_n + (GetMaxNumberFileAreas() + 31) / 32;
-  qsc_p = qsc_q + (GetMaxNumberMessageAreas() + 31) / 32;
+  qsc_q = qsc_n + (syscfg.max_dirs + 31) / 32;
+  qsc_p = qsc_q + (syscfg.max_subs + 31) / 32;
 
   network_extension_ = ".net";
   const string wwiv_instance(environment_variable("WWIV_INSTANCE"));

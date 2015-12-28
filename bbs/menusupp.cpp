@@ -75,7 +75,7 @@ void UnQScan() {
   case RETURN:
     break;
   case 'A': {
-    for (int i = 0; i < session()->GetMaxNumberMessageAreas(); i++) {
+    for (int i = 0; i < syscfg.max_subs; i++) {
       qsc_p[i] = 0;
     }
     bout << "\r\nQ-Scan pointers reset.\r\n\n";
@@ -530,8 +530,8 @@ void ResetQscan() {
     write_inst(INST_LOC_RESETQSCAN, 0, INST_FLAGS_NONE);
     for (int i = 0; i <= session()->users()->GetNumberOfUserRecords(); i++) {
       read_qscn(i, qsc, true);
-      memset(qsc_p, 0, syscfg.qscn_len - 4 * (1 + ((session()->GetMaxNumberFileAreas() + 31) / 32) + ((
-          session()->GetMaxNumberMessageAreas() + 31) / 32)));
+      memset(qsc_p, 0, syscfg.qscn_len - 4 * (1 + ((syscfg.max_dirs + 31) / 32) + ((
+          syscfg.max_subs + 31) / 32)));
       write_qscn(i, qsc, true);
     }
     read_qscn(1, qsc, false);
@@ -734,7 +734,7 @@ void ClearQScan() {
     break;
   case 'A': {
     std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
-    for (int i = 0; i < session()->GetMaxNumberMessageAreas(); i++) {
+    for (int i = 0; i < syscfg.max_subs; i++) {
       qsc_p[i] = pStatus->GetQScanPointer() - 1L;
     }
     bout.nl();
