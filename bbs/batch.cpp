@@ -138,8 +138,9 @@ void downloaded(char *file_name, long lCharsPerSecond) {
           session()->users()->ReadUser(&user, u.ownerusr);
           if (!user.IsUserDeleted()) {
             if (date_to_daten(user.GetFirstOn()) < static_cast<time_t>(u.daten)) {
+              const string user_name_number = session()->names()->UserName(session()->usernum);
               ssm(u.ownerusr, 0, "%s downloaded|#1 \"%s\" |#7on %s",
-                  session()->user()->GetUserNameAndNumber(session()->usernum), u.filename, fulldate());
+                  user_name_number.c_str(), u.filename, fulldate());
             }
           }
         }
@@ -592,9 +593,10 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
   if (!commandLine.empty()) {
     WWIV_make_abs_cmd(session()->GetHomeDir(), &commandLine);
     session()->localIO()->LocalCls();
+    const string user_name_number = session()->names()->UserName(session()->usernum);
     const string message = StringPrintf(
         "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
-        session()->user()->GetUserNameAndNumber(session()->usernum),
+        user_name_number.c_str(),
         modem_speed, dl.c_str(), commandLine.c_str());
     session()->localIO()->LocalPuts(message);
     if (incom) {

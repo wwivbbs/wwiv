@@ -145,10 +145,9 @@ void make_inst_str(int nInstanceNum, std::string *out, int nInstanceFormat) {
       WUser user;
       session()->users()->ReadUser(&user, ir.user);
       if (ir.flags & INST_FLAGS_ONLINE) {
-        userName = user.GetUserNameAndNumber(ir.user);
+        userName = session()->names()->UserName(ir.user);
       } else {
-        userName = "Last: ";
-        userName += user.GetUserNameAndNumber(ir.user);
+        userName = StrCat("Last: ", session()->names()->UserName(ir.user));
       }
     } else {
       userName = "(Nobody)";

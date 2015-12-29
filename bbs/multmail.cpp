@@ -17,6 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <string>
+
 #include "bbs/bbs.h"
 #include "bbs/email.h"
 #include "bbs/fcns.h"
@@ -89,7 +91,7 @@ void multimail(int *pnUserNumber, int numu) {
     if ((user.GetSl() == 255 && (user.GetNumMailWaiting() > (syscfg.maxwaiting * 5))) ||
         ((user.GetSl() != 255) && (user.GetNumMailWaiting() > syscfg.maxwaiting)) ||
         user.GetNumMailWaiting() > 200) {
-      bout << user.GetUserNameAndNumber(pnUserNumber[cv]) << " mailbox full, not sent.";
+      bout << session()->names()->UserName(pnUserNumber[cv]) << " mailbox full, not sent.";
       pnUserNumber[cv] = -1;
       continue;
     }
@@ -104,7 +106,8 @@ void multimail(int *pnUserNumber, int numu) {
     if (pnUserNumber[cv] == 1) {
       ++fwaiting;
     }
-    strcat(s, user.GetUserNameAndNumber(pnUserNumber[cv]));
+    const string pnunn = session()->names()->UserName(pnUserNumber[cv]);
+    strcat(s, pnunn.c_str());
     WStatus* pStatus = session()->status_manager()->BeginTransaction();
     if (pnUserNumber[cv] == 1) {
       pStatus->IncrementNumFeedbackSentToday();
@@ -121,7 +124,8 @@ void multimail(int *pnUserNumber, int numu) {
     bout << s;
     bout.nl();
     if (show_all) {
-      sprintf(s2, "%-22.22s  ", user.GetUserNameAndNumber(pnUserNumber[cv]));
+      const string pnunn = session()->names()->UserName(pnUserNumber[cv]);
+      sprintf(s2, "%-22.22s  ", pnunn.c_str());
       s1.assign(s2);
       j++;
       if (j >= 3) {
@@ -245,7 +249,7 @@ int oneuser() {
     bout << "Deleted user.\r\n\n";
     return 0;
   }
-  bout << "     -> " << user.GetUserNameAndNumber(user_number) << wwiv::endl;
+  bout << "     -> " << session()->names()->UserName(user_number) << wwiv::endl;
   return user_number;
 }
 
@@ -401,7 +405,7 @@ void slash_e() {
       for (i = 0; i < numu; i++) {
         WUser user;
         session()->users()->ReadUser(&user, user_number[i]);
-        bout << i + 1 << ". " << user.GetUserNameAndNumber(user_number[i]) << wwiv::endl;
+        bout << i + 1 << ". " << session()->names()->UserName(user_number[i]) << wwiv::endl;
       }
       break;
     }

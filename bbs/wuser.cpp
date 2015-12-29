@@ -82,10 +82,6 @@ void WUser::ZeroUserData() {
   memset(&data, 0, sizeof(userrec));
 }
 
-const char *WUser::GetUserNameAndNumber(int user_number) const {
-  return nam(user_number);
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // class WUserManager
 
@@ -169,34 +165,4 @@ bool WUserManager::WriteUser(WUser *pUser, int user_number) {
   }
 #endif // NOT_BBS
   return this->WriteUserNoCache(pUser, user_number);
-}
-
-char *WUser::nam(int user_number) const {
-  static char s_szNamBuffer[255];
-  bool f = true;
-  unsigned int p = 0;
-  for (p = 0; p < strlen(this->GetName()); p++) {
-    if (f) {
-      unsigned char* ss = reinterpret_cast<unsigned char*>(strchr(reinterpret_cast<char*>(translate_letters[ 1 ]),
-                          data.name[ p ]));
-      if (ss) {
-        f = false;
-      }
-      s_szNamBuffer[ p ] = data.name[ p ];
-    } else {
-      char* ss = strchr(reinterpret_cast<char*>(translate_letters[ 1 ]), data.name[ p ]);
-      if (ss) {
-        s_szNamBuffer[ p ] = locase(data.name[ p ]);
-      } else {
-        if ((data.name[ p ] >= ' ' && data.name[ p ] <= '/') && data.name[ p ] != 39) {
-          f = true;
-        }
-        s_szNamBuffer[ p ] = data.name[ p ];
-      }
-    }
-  }
-  s_szNamBuffer[ p++ ] = ' ';
-  s_szNamBuffer[ p++ ] = '#';
-  snprintf(&s_szNamBuffer[p], sizeof(s_szNamBuffer) - p, "%d", user_number);
-  return s_szNamBuffer;
 }

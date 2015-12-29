@@ -106,7 +106,8 @@ void normalupload(int dn) {
   u.numdloads = 0;
   u.unused_filetype = 0;
   u.mask = 0;
-  strcpy(u.upby, session()->user()->GetUserNameAndNumber(session()->usernum));
+  const string unn = session()->names()->UserName(session()->usernum);
+  strcpy(u.upby, unn.c_str());
   strcpy(u.date, date());
   bout.nl();
   ok = 1;

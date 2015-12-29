@@ -504,8 +504,7 @@ static void GetMessageAnonStatus(bool *real_name, int *anony, int setanon) {
     break;
   case anony_enable_dear_abby: {
     bout.nl();
-    bout << "1. " << session()->user()->GetUserNameAndNumber(
-                         session()->usernum) << wwiv::endl;
+    bout << "1. " << session()->names()->UserName(session()->usernum) << wwiv::endl;
     bout << "2. Abby\r\n";
     bout << "3. Problemed Person\r\n\n";
     bout << "|#5Which? ";

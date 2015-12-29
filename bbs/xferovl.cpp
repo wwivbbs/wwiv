@@ -17,6 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <string>
+
 #include "bbs/batch.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/conf.h"
@@ -36,6 +38,7 @@
 #include "core/textfile.h"
 #include "sdk/filenames.h"
 
+using std::string;
 using namespace wwiv::strings;
 
 extern char str_quit[];
@@ -453,7 +456,8 @@ bool upload_file(const char *file_name, int directory_num, const char *descripti
     long lFileSize = fileUpload.GetLength();
     u.numbytes = lFileSize;
     fileUpload.Close();
-    strcpy(u.upby, session()->user()->GetUserNameAndNumber(session()->usernum));
+    const string unn = session()->names()->UserName(session()->usernum);
+    strcpy(u.upby, unn.c_str());
     strcpy(u.date, date());
     filedate(szFullPathName, u.actualdate);
     if (d.mask & mask_PD) {

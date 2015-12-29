@@ -19,6 +19,7 @@
 #include "bbs/instmsg.h"
 
 #include <cstdarg>
+#include <string>
 
 #include "bbs/datetime.h"
 #include "bbs/input.h"
@@ -31,6 +32,8 @@
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "sdk/filenames.h"
+
+using std::string;
 
 static bool chat_avail;
 static bool chat_invis;
@@ -194,9 +197,9 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
         return (ih->main);
       }
       if (ih->main == INST_MSG_STRING) {
-        WUser user;
-        session()->users()->ReadUser(&user, ih->from_user);
-        bout.bprintf("|#1%.12s (%d)|#0> |#2", user.GetUserNameAndNumber(ih->from_user), ih->from_inst);
+        const string from_user_name = session()->names()->UserName(ih->from_user);
+        bout.bprintf("|#1%.12s (%d)|#0> |#2", 
+          from_user_name.c_str(), ih->from_inst);
       } else {
         bout << "|#6[SYSTEM ANNOUNCEMENT] |#7> |#2";
       }

@@ -92,7 +92,7 @@ void kill_old_email() {
 
         if (m.tosys == 0) {
           session()->users()->ReadUser(&user, m.touser);
-          string tempName = user.GetUserNameAndNumber(m.touser);
+          string tempName = session()->names()->UserName(session()->usernum);
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da))
               && ((getslrec(session()->GetEffectiveSl()).ability & ability_read_email_anony) == 0)) {
             tempName = ">UNKNOWN<";
@@ -179,7 +179,8 @@ void kill_old_email() {
               sysoplogf("Deleted mail and attached file %s.", fsr.filename);
             } else {
               bout << "Mail deleted.\r\n\n";
-              sysoplogf("Deleted mail sent to %s", user.GetUserNameAndNumber(m1.touser));
+              const string username_num = session()->names()->UserName(m1.touser);
+              sysoplogf("Deleted mail sent to %s", username_num.c_str());
             }
           } else {
             bout << "Mail file changed; try again.\r\n";

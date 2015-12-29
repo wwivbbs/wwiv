@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include <algorithm>
 #include <chrono>
+#include <string>
 
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
@@ -33,6 +34,7 @@
 #include "core/strings.h"
 #include "sdk/filenames.h"
 
+using std::string;
 using std::chrono::milliseconds;
 using namespace wwiv::os;
 using namespace wwiv::strings;
@@ -155,9 +157,8 @@ void select_chat_name(char *sysop_name) {
     StringTrimEnd(sysop_name);
     int user_number = atoi(sysop_name);
     if (user_number > 0 && user_number <= syscfg.maxusers) {
-      WUser tu;
-      session()->users()->ReadUser(&tu, user_number);
-      strcpy(sysop_name, tu.GetUserNameAndNumber(user_number));
+      const string unn = session()->names()->UserName(user_number);
+      strcpy(sysop_name, unn.c_str());
     } else {
       if (!sysop_name[0]) {
         strcpy(sysop_name, syscfg.sysopname);
@@ -203,8 +204,8 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
         for (int screencount = 0; screencount < session()->user()->GetScreenChars(); screencount++) {
           s2[screencount] = '\xCD';
         }
-        sprintf(temp1, "|B1|#2 %s chatting with %s |B0|#1", sysop_name,
-                session()->user()->GetUserNameAndNumber(session()->usernum));
+        const string unn = session()->names()->UserName(session()->usernum);
+        sprintf(temp1, "|B1|#2 %s chatting with %s |B0|#1", sysop_name, unn.c_str());
         int nNumCharsToMove = (((session()->user()->GetScreenChars() - strlen(stripcolors(temp1))) / 2));
         if (nNumCharsToMove) {
           strncpy(&s2[nNumCharsToMove - 1], temp1, (strlen(temp1)));
@@ -602,8 +603,8 @@ void chat1(char *chat_line, bool two_way) {
       bputch(static_cast<unsigned char>(205), true);
     }
     FlushOutComChBuffer();
-    sprintf(s, " %s chatting with %s ", szSysopName,
-            session()->user()->GetUserNameAndNumber(session()->usernum));
+    const string unn = session()->names()->UserName(session()->usernum);
+    sprintf(s, " %s chatting with %s ", szSysopName, unn.c_str());
     int nNumCharsToMove = ((session()->user()->GetScreenChars() - strlen(stripcolors(s))) / 2);
     sprintf(s1, "\x1b[12;%dH", std::max<int>(nNumCharsToMove, 0));
     bout << s1;

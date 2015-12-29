@@ -36,11 +36,13 @@
 #include "bbs/xfer.h"
 #include "bbs/wuser.h"
 #include "core/file.h"
-#include "sdk/filenames.h"
+#include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::strings;
 
 void attach_file(int mode) {
   bool bFound;
@@ -86,13 +88,12 @@ void attach_file(int mode) {
         done1 = false;
         bout.nl();
         if (m.tosys == 0) {
-          session()->users()->ReadUser(&u, m.touser);
           bout << "|#1  To|#7: |#2";
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da)) &&
               (getslrec(session()->GetEffectiveSl()).ability & ability_read_email_anony) == 0) {
             bout << ">UNKNOWN<";
           } else {
-            bout << u.GetUserNameAndNumber(m.touser);
+            bout << session()->names()->UserName(m.touser);
           }
           bout.nl();
         } else {
@@ -315,11 +316,10 @@ void attach_file(int mode) {
                         }
                         attachFile.Write(&fsr, sizeof(filestatusrec));
                         attachFile.Close();
-                        char szLogLine[ 255 ];
-                        sprintf(szLogLine, "Attached %s (%u bytes) in message to %s",
-                                fsr.filename, fsr.numbytes, u.GetUserNameAndNumber(m.touser));
+                        const string to_user_name = session()->names()->UserName(m.touser);
+                        sysoplog(StringPrintf("Attached %s (%u bytes) in message to %s",
+                                fsr.filename, fsr.numbytes, to_user_name.c_str()));
                         bout << "File attached.\r\n" ;
-                        sysoplog(szLogLine);
                       }
                     } else {
                       File::Remove(session()->GetAttachmentDirectory().c_str(), fsr.filename);

@@ -101,7 +101,7 @@ void OnlineUserEditor() {
   bool done = false;
 
   // heading
-  string s = StringPrintf("[%s]", session()->user()->GetUserNameAndNumber(session()->usernum));
+  string s = StrCat("[", session()->names()->UserName(session()->usernum), "]");
   StringJustify(&s, 37, SPACE, JustificationType::RIGHT);
   session()->localIO()->LocalXYAPrintf(wx + 1, wy - 1, 31, " %-29.29s%s ", "WWIV User Editor", s.c_str());
 

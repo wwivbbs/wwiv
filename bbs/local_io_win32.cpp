@@ -728,8 +728,9 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
 
   if (syscfg.sysconfig & sysconfig_titlebar) {
     // Only set the titlebar if the user wanted it that way.
+    const string username_num = pSession->names()->UserName(pSession->usernum);
     string title = StringPrintf("WWIV Node %d (User: %s)", nInstanceNumber,
-              pSession->user()->GetUserNameAndNumber(pSession->usernum));
+              username_num.c_str());
     ::SetConsoleTitle(title.c_str());
   }
 
@@ -772,8 +773,9 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
                   pStatus->GetNumUsers(), pStatus->GetCallerNumber(),
                   pStatus->GetNumCallsToday(), pStatus->GetNumLocalPosts());
 
+    const string username_num = pSession->names()->UserName(pSession->usernum);
     LocalXYPrintf(0, 2, "%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
-                  pSession->user()->GetUserNameAndNumber(pSession->usernum),
+                  username_num.c_str(),
                   pStatus->GetMinutesActiveToday(),
                   static_cast<int>(10 * pStatus->GetMinutesActiveToday() / 144),
                   pStatus->GetNumEmailSentToday());
@@ -814,8 +816,9 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
       snprintf(lo, sizeof(lo), "Today:%2d", pSession->user()->GetTimesOnToday());
     }
 
+    const string username_num = pSession->names()->UserName(pSession->usernum);
     LocalXYAPrintf(0, 0, curatr, "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u",
-                   pSession->user()->GetUserNameAndNumber(pSession->usernum),
+                   username_num.c_str(),
                    pSession->user()->GetNumMailWaiting(),
                    pSession->user()->GetFilesUploaded(),
                    pSession->user()->GetUploadK(),

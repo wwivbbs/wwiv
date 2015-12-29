@@ -1533,7 +1533,7 @@ void new_mail() {
   data.anonymous_flag = 0;
   data.aux = "email";
   data.fsed_flags = INMSG_NOFSED;
-  data.to_name = session()->user()->GetUserNameAndNumber(session()->usernum);
+  data.to_name = session()->names()->UserName(session()->usernum);
   data.msged_flags = MSGED_FLAG_NONE;
   data.silent_mode = true;
   messagerec msg;

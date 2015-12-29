@@ -204,7 +204,8 @@ int try_to_ul_wh(char *file_name) {
   u.numdloads = 0;
   u.unused_filetype = 0;
   u.mask = 0;
-  strncpy(u.upby, session()->user()->GetUserNameAndNumber(session()->usernum), sizeof(u.upby));
+  const string unn = session()->names()->UserName(session()->usernum);
+  strncpy(u.upby, unn.c_str(), sizeof(u.upby));
   u.upby[36]  = '\0';
   strcpy(u.date, date());
 
