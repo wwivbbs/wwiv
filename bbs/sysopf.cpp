@@ -48,6 +48,7 @@ using std::unique_ptr;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::msgapi;
 
@@ -84,7 +85,7 @@ void prstatus() {
 void valuser(int user_number) {
   char s[81], s1[81], s2[81], s3[81], ar1[20], dar1[20];
 
-  WUser user;
+  User user;
   session()->users()->ReadUser(&user, user_number);
   if (!user.IsUserDeleted()) {
     bout.nl();
@@ -283,7 +284,7 @@ void print_net_listing(bool bForcePause) {
   if (bForcePause) {
     bHadPause  = session()->user()->HasPause();
     if (bHadPause) {
-      session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
+      session()->user()->ToggleStatusFlag(User::pauseOnPage);
     }
   }
   bool done = false;
@@ -601,7 +602,7 @@ void print_net_listing(bool bForcePause) {
     }
   }
   if (bForcePause && bHadPause) {
-    session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
+    session()->user()->ToggleStatusFlag(User::pauseOnPage);
   }
 }
 
@@ -630,7 +631,7 @@ void mailr() {
       if (m.touser != 0) {
         pFileEmail->Close();
         do {
-          WUser user;
+          User user;
           session()->users()->ReadUser(&user, m.touser);
           const string unn = session()->names()->UserName(m.touser);
           bout << "|#9  To|#7: |#" << session()->GetMessageColor() << unn << wwiv::endl;
@@ -782,7 +783,7 @@ void set_user_age() {
   std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   int user_number = 1;
   do {
-    WUser user;
+    User user;
     session()->users()->ReadUser(&user, user_number);
     int nAge = years_old(user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear());
     if (nAge != user.GetAge()) {
@@ -819,7 +820,7 @@ void auto_purge() {
   sysoplogfi(false, "Auto-Purged Inactive Users (over %d days, SL less than %d)", days, skipsl);
 
   do {
-    WUser user;
+    User user;
     session()->users()->ReadUser(&user, user_number);
     if (!user.IsExemptAutoDelete()) {
       unsigned int d = static_cast<unsigned int>((tTime - user.GetLastOnDateNumber()) / SECONDS_PER_DAY_FLOAT);

@@ -53,6 +53,7 @@ using std::string;
 using wwiv::bbs::InputMode;
 using wwiv::core::FilePath;
 using wwiv::core::IniFile;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;;
 
 // Local function prototypes
@@ -70,7 +71,7 @@ void VerifyNewUserPassword();
 void SendNewUserFeedbackIfRequired();
 void ExecNewUserCommand();
 void new_mail();
-bool CheckPasswordComplexity(WUser *pUser, string& password);
+bool CheckPasswordComplexity(User *pUser, string& password);
 
 
 static void input_phone() {
@@ -381,7 +382,7 @@ void input_sex() {
   session()->user()->SetGender(onek("MF"));
 }
 
-void input_age(WUser *pUser) {
+void input_age(User *pUser) {
   int y = 2000, m = 1, d = 1;
   char ag[10], s[81];
   time_t t;
@@ -514,7 +515,7 @@ void input_screensize() {
 }
 
 
-bool CheckPasswordComplexity(WUser *, string& password) {
+bool CheckPasswordComplexity(User *, string& password) {
   if (password.length() < 3) {
     //TODO - the min length should be in wwiv.ini
     return false;
@@ -523,7 +524,7 @@ bool CheckPasswordComplexity(WUser *, string& password) {
 }
 
 
-void input_pw(WUser *pUser) {
+void input_pw(User *pUser) {
   string password;
   bool ok = true;
   do {
@@ -551,8 +552,8 @@ void input_pw(WUser *pUser) {
 
 
 void input_ansistat() {
-  session()->user()->ClearStatusFlag(WUser::ansi);
-  session()->user()->ClearStatusFlag(WUser::color);
+  session()->user()->ClearStatusFlag(User::ansi);
+  session()->user()->ClearStatusFlag(User::color);
   bout.nl();
   if (check_ansi() == 1) {
     bout << "ANSI graphics support detected.  Use it? ";
@@ -566,12 +567,12 @@ void input_ansistat() {
     bout << "Is the above line colored, italicized, bold, inversed, or blinking? ";
   }
   if (noyes()) {
-    session()->user()->SetStatusFlag(WUser::ansi);
+    session()->user()->SetStatusFlag(User::ansi);
     bout.nl();
     bout << "|#5Do you want color? ";
     if (noyes()) {
-      session()->user()->SetStatusFlag(WUser::color);
-      session()->user()->SetStatusFlag(WUser::extraColor);
+      session()->user()->SetStatusFlag(User::color);
+      session()->user()->SetStatusFlag(User::extraColor);
     } else {
       color_list();
       bout.nl();
@@ -593,7 +594,7 @@ void input_ansistat() {
   }
 }
 
-static int find_new_usernum(const WUser* pUser, uint32_t* qscn) {
+static int find_new_usernum(const User* pUser, uint32_t* qscn) {
   File userFile(syscfg.datadir, USER_LST);
   for (int i = 0; !userFile.IsOpen() && (i < 20); i++) {
     if (!userFile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
@@ -625,7 +626,7 @@ static int find_new_usernum(const WUser* pUser, uint32_t* qscn) {
         userFile.Seek(static_cast<long>(user_number * syscfg.userreclen), File::seekBegin);
         nNewUserNumber = static_cast<int>((userFile.GetLength() / syscfg.userreclen) - 1);
       }
-      WUser tu;
+      User tu;
       userFile.Read(&tu.data, syscfg.userreclen);
 
       if (tu.IsUserDeleted() && tu.GetSl() != 255) {
@@ -680,9 +681,9 @@ void CreateNewUserRecord() {
   memset(qsc_n, 0xff, ((syscfg.max_dirs + 31) / 32) * 4);
   memset(qsc_q, 0xff, ((syscfg.max_subs + 31) / 32) * 4);
 
-  session()->user()->SetStatusFlag(WUser::pauseOnPage);
-  session()->user()->ClearStatusFlag(WUser::conference);
-  session()->user()->ClearStatusFlag(WUser::nscanFileSystem);
+  session()->user()->SetStatusFlag(User::pauseOnPage);
+  session()->user()->ClearStatusFlag(User::conference);
+  session()->user()->ClearStatusFlag(User::nscanFileSystem);
   session()->user()->SetGold(syscfg.newusergold);
 
   for (int nColorLoop = 0; nColorLoop <= 9; nColorLoop++) {
@@ -1078,9 +1079,9 @@ void newuser() {
   }
 
   if (check_ansi()) {
-    session()->user()->SetStatusFlag(WUser::ansi);
-    session()->user()->SetStatusFlag(WUser::color);
-    session()->user()->SetStatusFlag(WUser::extraColor);
+    session()->user()->SetStatusFlag(User::ansi);
+    session()->user()->SetStatusFlag(User::color);
+    session()->user()->SetStatusFlag(User::extraColor);
   }
   printfile(SYSTEM_NOEXT);
   bout.nl();
@@ -1139,7 +1140,7 @@ void newuser() {
     // This is the #1 sysop record. Tell the sysop thank you and
     // update his user record with: s255/d255/r0
     ssm(1, 0, "Thank you for installing WWIV! - The WWIV Development Team.");
-    WUser* user = session()->user();
+    User* user = session()->user();
     user->SetSl(255);
     user->SetDsl(255);
     user->SetRestriction(0);
@@ -1265,7 +1266,7 @@ bool check_dupes(const char *pszPhoneNumber) {
     sysoplog(szBuffer, false);
     ssm(1, 0, szBuffer);
 
-    WUser user;
+    User user;
     session()->users()->ReadUser(&user, user_number);
     sprintf(szBuffer, "      also entered by %s", user.GetName());
     sysoplog(szBuffer, false);

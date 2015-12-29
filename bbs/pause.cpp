@@ -32,6 +32,7 @@ extern char str_pause[];
 
 using std::chrono::milliseconds;
 using namespace wwiv::os;
+using namespace wwiv::sdk;
 
 namespace wwiv {
 namespace bbs {
@@ -39,12 +40,12 @@ namespace bbs {
 TempDisablePause::TempDisablePause() : wwiv::core::Transaction([] {
     if (g_flags & g_flag_disable_pause) {
       g_flags &= ~g_flag_disable_pause;
-      session()->user()->SetStatusFlag(WUser::pauseOnPage);
+      session()->user()->SetStatusFlag(User::pauseOnPage);
     }
   }, nullptr) {
   if (session()->user()->HasPause()) {
     g_flags |= g_flag_disable_pause;
-    session()->user()->ClearStatusFlag(WUser::pauseOnPage);
+    session()->user()->ClearStatusFlag(User::pauseOnPage);
   }
 }
 
@@ -71,7 +72,7 @@ static char GetKeyForPause() {
   case '=':
     if (session()->user()->HasPause()) {
       nsp = 1;
-      session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
+      session()->user()->ToggleStatusFlag(User::pauseOnPage);
     }
     break;
   default:

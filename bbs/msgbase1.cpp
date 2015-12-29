@@ -46,6 +46,7 @@
 using std::string;
 using std::unique_ptr;
 using std::unique_ptr;
+using namespace wwiv::sdk;
 using wwiv::strings::StringPrintf;
 
 void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
@@ -518,7 +519,7 @@ void remove_post() {
   if (nPostNumber > 0 && nPostNumber <= session()->GetNumMessagesInCurrentMessageArea()) {
     if (((get_post(nPostNumber)->ownersys == 0) && (get_post(nPostNumber)->owneruser == session()->usernum)) || lcs()) {
       if ((get_post(nPostNumber)->owneruser == session()->usernum) && (get_post(nPostNumber)->ownersys == 0)) {
-        WUser tu;
+        User tu;
         session()->users()->ReadUser(&tu, get_post(nPostNumber)->owneruser);
         if (!tu.IsUserDeleted()) {
           if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(get_post(nPostNumber)->daten)) {

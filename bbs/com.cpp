@@ -30,6 +30,8 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
+using namespace wwiv::sdk;
+
 extern char str_quit[];
 
 void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const char *cc) {
@@ -122,7 +124,7 @@ void makeansi(int attr, char *out_buffer, bool forceit) {
 
 void resetnsp() {
   if (nsp == 1 && !(session()->user()->HasPause())) {
-    session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
+    session()->user()->ToggleStatusFlag(User::pauseOnPage);
   }
   nsp = 0;
 }

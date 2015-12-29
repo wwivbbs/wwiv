@@ -32,6 +32,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
 
 // local function prototypes
 void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup);
@@ -39,12 +40,13 @@ int  oneuser();
 
 using std::string;
 using std::unique_ptr;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 void multimail(int *pnUserNumber, int numu) {
   mailrec m, m1;
   char s[255], s2[81];
-  WUser user;
+  User user;
   memset(&m, 0, sizeof(mailrec));
 
   if (freek1(syscfg.msgsdir) < 10) {
@@ -187,7 +189,7 @@ static int mml_started;
 int oneuser() {
   char s[81], *ss;
   int user_number, system_number, i;
-  WUser user;
+  User user;
 
   if (mml_s) {
     if (mml_started) {
@@ -403,7 +405,7 @@ void slash_e() {
       break;
     case 'L':
       for (i = 0; i < numu; i++) {
-        WUser user;
+        User user;
         session()->users()->ReadUser(&user, user_number[i]);
         bout << i + 1 << ". " << session()->names()->UserName(user_number[i]) << wwiv::endl;
       }

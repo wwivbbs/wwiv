@@ -23,8 +23,11 @@
 #include <sstream>
 #include <cstring>
 #include <string>
-#include "bbs/wuser.h"
+#include "sdk/user.h"
 #include "sdk/vardec.h"
+
+namespace wwiv {
+namespace sdk {
 
 /**
  * WWIV User Manager.
@@ -42,10 +45,10 @@ class UserManager {
    UserManager(std::string data_directory, int userrec_length, int max_number_users);
    virtual ~UserManager();
    int GetNumberOfUserRecords() const;
-   bool ReadUserNoCache(WUser *pUser, int user_number);
-   bool ReadUser(WUser *pUser, int user_number);
-   bool WriteUserNoCache(WUser *pUser, int user_number);
-   bool WriteUser(WUser *pUser, int user_number);
+   bool ReadUserNoCache(User *pUser, int user_number);
+   bool ReadUser(User *pUser, int user_number);
+   bool WriteUserNoCache(User *pUser, int user_number);
+   bool WriteUser(User *pUser, int user_number);
 
   /**
    * Setting this to false will disable writing the userrecord to disk.  This should ONLY be false when the
@@ -58,5 +61,8 @@ class UserManager {
     return allow_writes_;
   }
 };
+
+}  // namespace sdk
+}  // namespace wwiv
 
 #endif // __INCLUDED_PLATFORM_WUSER_H__

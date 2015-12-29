@@ -29,6 +29,9 @@
 #include "bbs/read_message.h"
 #include "bbs/subxtr.h"
 #include "bbs/vars.h"
+#include "sdk/user.h"
+
+using namespace wwiv::sdk;
 
 void valscan() {
   // Must be local cosysop or better
@@ -124,7 +127,7 @@ void valscan() {
                 delete_message(i);
                 close_sub();
                 if (p2.ownersys == 0) {
-                  WUser tu;
+                  User tu;
                   session()->users()->ReadUser(&tu, p2.owneruser);
                   if (!tu.IsUserDeleted()) {
                     if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(p2.daten)) {

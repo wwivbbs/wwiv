@@ -26,10 +26,8 @@
 
 #include "bbs/capture.h"
 #include "bbs/runnable.h"
-#include "bbs/usermanager.h"
 #include "bbs/wcomm.h"
 #include "bbs/wstatus.h"
-#include "bbs/wuser.h"
 #include "bbs/woutstreambuffer.h"
 #include "bbs/subxtr.h"
 #include "bbs/local_io.h"
@@ -37,8 +35,10 @@
 #include "core/file.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
-#include "sdk/vardec.h"
 #include "sdk/net.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
+#include "sdk/vardec.h"
 
 //
 // WSession - Holds information and status data about the current user
@@ -103,7 +103,7 @@ public:
   static const int mmkeyMessageAreas = 1;
   static const int mmkeyFileAreas = 2;
 
-  WUser* user() { return &m_thisuser; }
+  wwiv::sdk::User* user() { return &m_thisuser; }
 
   void DisplaySysopWorkingIndicator(bool displayWait);
   WComm* remoteIO() { return comm_.get(); }
@@ -247,7 +247,7 @@ public:
   void set_internal_qwk_enabled(bool internal_qwk_enabled) { internal_qwk_enabled_ = internal_qwk_enabled; }
 
   StatusMgr* status_manager() { return statusMgr.get(); }
-  UserManager* users() { return user_manager_.get(); }
+  wwiv::sdk::UserManager* users() { return user_manager_.get(); }
 
 
   /*!
@@ -379,10 +379,10 @@ private:
 
 
   std::unique_ptr<StatusMgr> statusMgr;
-  std::unique_ptr<UserManager> user_manager_;
+  std::unique_ptr<wwiv::sdk::UserManager> user_manager_;
   std::string     m_attachmentDirectory; private:
   WApplication* application_;
-  WUser m_thisuser;
+  wwiv::sdk::User m_thisuser;
   bool  last_key_local_;
   int effective_sl_;
   bool wwivmail_enabled_;

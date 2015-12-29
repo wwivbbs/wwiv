@@ -51,9 +51,10 @@
 
 using std::string;
 using std::unique_ptr;
-using wwiv::core::IniFile;
+using namespace wwiv::core;
 using wwiv::core::FilePath;
 using wwiv::os::random_number;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 #define SECS_PER_DAY 86400L
@@ -99,7 +100,7 @@ static bool random_screen(const char *mpfn) {
   return false;
 }
 
-bool IsPhoneNumberUSAFormat(WUser *pUser) {
+bool IsPhoneNumberUSAFormat(User *pUser) {
   string country = pUser->GetCountry();
   return (country == "USA" || country == "CAN" || country == "MEX");
 }
@@ -119,8 +120,8 @@ static int GetAnsiStatusAndShowWelcomeScreen() {
   if (File::Exists(ans_filename)) {
     bout.nl();
     if (ans > 0) {
-      session()->user()->SetStatusFlag(WUser::ansi);
-      session()->user()->SetStatusFlag(WUser::color);
+      session()->user()->SetStatusFlag(User::ansi);
+      session()->user()->SetStatusFlag(User::color);
       if (!random_screen(WELCOME_NOEXT)) {
         printfile(WELCOME_ANS);
       }
@@ -274,9 +275,9 @@ static void ExecuteWWIVNetworkRequest() {
 
 static void LeaveBadPasswordFeedback(int ans) {
   if (ans > 0) {
-    session()->user()->SetStatusFlag(WUser::ansi);
+    session()->user()->SetStatusFlag(User::ansi);
   } else {
-    session()->user()->ClearStatusFlag(WUser::ansi);
+    session()->user()->ClearStatusFlag(User::ansi);
   }
   bout << "|#6Too many logon attempts!!\r\n\n";
   bout << "|#9Would you like to leave Feedback to " << syscfg.sysopname << "? ";
@@ -454,7 +455,7 @@ static void PrintLogonFile() {
 }
 
 static void PrintUserSpecificFiles() {
-  const WUser* user = session()->user();  // not-owned
+  const User* user = session()->user();  // not-owned
   printfile(StringPrintf("sl%d", user->GetSl()));
   printfile(StringPrintf("dsl%d", user->GetDsl()));
 
@@ -1055,7 +1056,7 @@ void logoff() {
         smwFile.Read(&sm, sizeof(shortmsgrec));
         if (sm.tosys != 0 || sm.touser != 0) {
           if (sm.tosys == 0 && sm.touser == session()->usernum) {
-            session()->user()->SetStatusFlag(WUser::SMW);
+            session()->user()->SetStatusFlag(User::SMW);
           }
           if (r != w) {
             smwFile.Seek(w * sizeof(shortmsgrec), File::seekBegin);

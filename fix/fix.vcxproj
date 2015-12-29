@@ -84,8 +84,6 @@
   <ItemGroup>
     <ClCompile Include="..\bbs\datetime.cpp" />
     <ClCompile Include="..\bbs\platform\win32\utility2.cpp" />
-    <ClCompile Include="..\bbs\usermanager.cpp" />
-    <ClCompile Include="..\bbs\WUser.cpp" />
     <ClCompile Include="dirs.cpp" />
     <ClCompile Include="fix.cpp" />
     <ClCompile Include="fix_config.cpp" />
@@ -94,10 +92,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\bbs\platform\platformfcns.h" />
-    <ClInclude Include="..\bbs\platform\WFile.h" />
-    <ClInclude Include="..\bbs\platform\wfndfile.h" />
-    <ClInclude Include="..\bbs\WStringUtils.h" />
-    <ClInclude Include="..\bbs\WUser.h" />
     <ClInclude Include="dirs.h" />
     <ClInclude Include="fix.h" />
     <ClInclude Include="fix_config.h" />
@@ -107,6 +101,9 @@
   <ItemGroup>
     <ProjectReference Include="..\core\core.vcxproj">
       <Project>{160ca888-2434-48a8-ad4e-02140e3b2c52}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\sdk\sdk.vcxproj">
+      <Project>{53db67db-4d42-4a8a-b176-ee83a170de86}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

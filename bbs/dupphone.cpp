@@ -23,6 +23,9 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+
+using namespace wwiv::sdk;
 
 void add_phone_number(int usernum, const char *phone) {
   if (strstr(phone, "000-")) {
@@ -94,7 +97,7 @@ int find_phone_number(const char *phone) {
   int i = 0;
   for (i = 0; i < nNumRecords; i++) {
     if (wwiv::strings::IsEquals(reinterpret_cast<char*>(p[i].phone), phone)) {
-      WUser user;
+      User user;
       session()->users()->ReadUser(&user, p[i].usernum);
       if (!user.IsUserDeleted()) {
         break;

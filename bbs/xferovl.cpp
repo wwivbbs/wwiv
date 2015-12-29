@@ -39,6 +39,7 @@
 #include "sdk/filenames.h"
 
 using std::string;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 extern char str_quit[];
@@ -1232,7 +1233,7 @@ void xfer_defaults() {
       }
       break;
     case '3':
-      session()->user()->ToggleStatusFlag(WUser::nscanFileSystem);
+      session()->user()->ToggleStatusFlag(User::nscanFileSystem);
       break;
     case '4':
       bout.nl(2);
@@ -1251,10 +1252,10 @@ void xfer_defaults() {
 #ifndef FORCE_LP
     case '5':
       if (session()->user()->IsUseNoTagging()) {
-        session()->user()->ClearStatusFlag(WUser::noTag);
+        session()->user()->ClearStatusFlag(User::noTag);
         check_listplus();
       } else {
-        session()->user()->SetStatusFlag(WUser::noTag);
+        session()->user()->SetStatusFlag(User::noTag);
       }
       break;
 #endif  // FORCE_LP

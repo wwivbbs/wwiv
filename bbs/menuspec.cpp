@@ -38,6 +38,7 @@
 
 using std::string;
 using namespace wwiv::menus;
+using namespace wwiv::sdk;
 
 /* ---------------------------------------------------------------------- */
 /* menuspec.cpp - Menu Specific support functions                           */
@@ -58,7 +59,7 @@ using namespace wwiv::menus;
 int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bool bFreeDL, bool bTitle) {
   int bOkToDL;
   uploadsrec u;
-  WUser ur;
+  User ur;
   char s1[81], s2[81];
   bool abort = false;
 

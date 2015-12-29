@@ -26,6 +26,8 @@
     <ClInclude Include="net.h" />
     <ClInclude Include="networks.h" />
     <ClInclude Include="phone_numbers.h" />
+    <ClInclude Include="user.h" />
+    <ClInclude Include="usermanager.h" />
     <ClInclude Include="vardec.h" />
   </ItemGroup>
   <ItemGroup>
@@ -42,6 +44,8 @@
     <ClCompile Include="names.cpp" />
     <ClCompile Include="networks.cpp" />
     <ClCompile Include="phone_numbers.cpp" />
+    <ClCompile Include="user.cpp" />
+    <ClCompile Include="usermanager.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{53DB67DB-4D42-4A8A-B176-EE83A170DE86}</ProjectGuid>

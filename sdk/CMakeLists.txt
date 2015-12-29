@@ -17,6 +17,8 @@ set(COMMON_SOURCES
   names.cpp
   networks.cpp
   phone_numbers.cpp
+  user.cpp
+  usermanager.cpp
   )
 
 add_library(sdk ${COMMON_SOURCES})

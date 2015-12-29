@@ -34,7 +34,7 @@
 #include "bbs/woutstreambuffer.h"
 #include "bbs/vars.h"
 #include "bbs/xfer.h"
-#include "bbs/wuser.h"
+#include "sdk/user.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
@@ -43,11 +43,12 @@
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::strings;
+using namespace wwiv::sdk;
 
 void attach_file(int mode) {
   bool bFound;
   char szFullPathName[ MAX_PATH ], szNewFileName[ MAX_PATH], szFileToAttach[ MAX_PATH ];
-  WUser u;
+  User u;
   filestatusrec fsr;
 
   bout.nl();

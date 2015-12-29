@@ -30,7 +30,7 @@
 #include "bbs/wcomm.h"
 #include "bbs/wsession.h"
 #include "bbs/wstatus.h"
-#include "bbs/wuser.h"
+#include "sdk/user.h"
 #include "core/inifile.h"
 #include "core/file.h"
 

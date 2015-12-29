@@ -18,10 +18,8 @@
 #ifndef __INCLUDED_BBS_CALLBACK_H__
 #define __INCLUDED_BBS_CALLBACK_H__
 
-#include "bbs/wuser.h"
+#include "sdk/user.h"
 
-void wwivnode(WUser *pUser, int mode);
-int  callback();
-void dial(char *phone, int xlate);
+void wwivnode(wwiv::sdk::User *pUser, int mode);
 
 #endif  // __INCLUDED_BBS_CALLBACK_H__

@@ -44,9 +44,6 @@
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
-using std::string;
-
-
 // module private functions
 void listbatch();
 void downloaded(char *file_name, long lCharsPerSecond);
@@ -61,6 +58,8 @@ int try_to_ul_wh(char *file_name);
 void normalupload(int dn);
 
 
+using std::string;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 
@@ -134,7 +133,7 @@ void downloaded(char *file_name, long lCharsPerSecond) {
           sysoplogf("Downloaded \"%s\"", u.filename);
         }
         if (syscfg.sysconfig & sysconfig_log_dl) {
-          WUser user;
+          User user;
           session()->users()->ReadUser(&user, u.ownerusr);
           if (!user.IsUserDeleted()) {
             if (date_to_daten(user.GetFirstOn()) < static_cast<time_t>(u.daten)) {

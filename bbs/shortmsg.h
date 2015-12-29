@@ -18,9 +18,9 @@
 #ifndef __INCLUDED_BBS_SHORTMSG_H__
 #define __INCLUDED_BBS_SHORTMSG_H__
 
-#include "bbs/wuser.h"
+#include "sdk/user.h"
 
-void rsm(int nUserNum, WUser * pUser, bool bAskToSaveMsgs);
+void rsm(int nUserNum, wwiv::sdk::User* pUser, bool bAskToSaveMsgs);
 void ssm(int nUserNum, int nSystemNum, const char *format, ...);
 
 #endif  // __INCLUDED_BBS_SHORTMSG_H__

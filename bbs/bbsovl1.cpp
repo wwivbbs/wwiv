@@ -46,6 +46,7 @@
 #include "sdk/filenames.h"
 
 using std::string;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -235,7 +236,7 @@ void feedback(bool bNewUserFeedback) {
   int i1 = 0;
 
   for (i = 2; i < 10 && i < nNumUserRecords; i++) {
-    WUser user;
+    User user;
     session()->users()->ReadUser(&user, i);
     if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
         !user.IsUserDeleted()) {
@@ -250,7 +251,7 @@ void feedback(bool bNewUserFeedback) {
     i1 = 0;
     bout.nl();
     for (i = 1; (i < 10 && i < nNumUserRecords); i++) {
-      WUser user;
+      User user;
       session()->users()->ReadUser(&user, i);
       if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
           !user.IsUserDeleted()) {

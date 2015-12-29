@@ -304,9 +304,6 @@
     <ClCompile Include="WSession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WUser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="xfer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -377,9 +374,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="email.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="usermanager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -472,9 +466,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wwivcolors.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wuser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="prot\xmodem.h">
@@ -674,9 +665,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="extract.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="usermanager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

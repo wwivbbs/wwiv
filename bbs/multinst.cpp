@@ -29,6 +29,7 @@
 #include "sdk/filenames.h"
 
 using std::string;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 // Local funciton prototypes
@@ -142,7 +143,7 @@ void make_inst_str(int nInstanceNum, std::string *out, int nInstanceFormat) {
   case INST_FORMAT_LIST: {
     std::string userName;
     if (ir.user < syscfg.maxusers && ir.user > 0) {
-      WUser user;
+      User user;
       session()->users()->ReadUser(&user, ir.user);
       if (ir.flags & INST_FLAGS_ONLINE) {
         userName = session()->names()->UserName(ir.user);

@@ -45,6 +45,7 @@
 
 using std::string;
 using std::vector;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 user_config config_listing;
@@ -604,7 +605,7 @@ static int load_config_listing(int config) {
   File fileConfig(syscfg.datadir, CONFIG_USR);
 
   if (fileConfig.Exists()) {
-    WUser user;
+    User user;
     session()->users()->ReadUser(&user, config);
     if (fileConfig.Open(File::modeBinary | File::modeReadOnly)) {
       fileConfig.Seek(config * sizeof(user_config), File::seekBegin);
@@ -634,7 +635,7 @@ static void write_config_listing(int config) {
     return;
   }
 
-  WUser user;
+  User user;
   session()->users()->ReadUser(&user, config);
   strcpy(config_listing.name, user.GetName());
 
@@ -1112,11 +1113,11 @@ void check_listplus() {
 
   if (noyes()) {
     if (session()->user()->IsUseListPlus()) {
-      session()->user()->ClearStatusFlag(WUser::listPlus);
+      session()->user()->ClearStatusFlag(User::listPlus);
     }
   } else {
     if (!session()->user()->IsUseListPlus()) {
-      session()->user()->SetStatusFlag(WUser::listPlus);
+      session()->user()->SetStatusFlag(User::listPlus);
     }
   }
 }
@@ -1566,7 +1567,7 @@ static int remove_filename(const char *file_name, int dn) {
         if (rm) {
           File::Remove(session()->directories[dn].path, u.filename);
           if (rdlp && u.ownersys == 0) {
-            WUser user;
+            User user;
             session()->users()->ReadUser(&user, u.ownerusr);
             if (!user.IsUserDeleted()) {
               if (date_to_daten(user.GetFirstOn()) < static_cast<time_t>(u.daten)) {

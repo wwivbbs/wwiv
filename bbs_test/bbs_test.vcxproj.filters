@@ -34,9 +34,6 @@
     <ClCompile Include="bbs_test_main.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
-    <ClCompile Include="wuser_test.cpp">
-      <Filter>Tests</Filter>
-    </ClCompile>
     <ClCompile Include="new_bbslist_test.cpp">
       <Filter>Tests</Filter>
     </ClCompile>

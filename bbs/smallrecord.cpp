@@ -22,7 +22,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
-#include "bbs/wuser.h"
+#include "sdk/user.h"
 #include "bbs/wstatus.h"
 #include "core/datafile.h"
 #include "core/file.h"
