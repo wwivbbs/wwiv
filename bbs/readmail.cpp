@@ -43,11 +43,13 @@
 #include "core/textfile.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
 
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::strings;
+using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
 
 // Local Functions
@@ -331,8 +333,10 @@ void readmail(int mode) {
   long l1;
 
   emchg = false;
-
+  
   bool next = false, abort = false;
+
+  Names names(*session()->config());
 
   tmpmailrec *mloc = static_cast<tmpmailrec *>(BbsAllocA(MAXMAIL * sizeof(tmpmailrec)));
   if (!mloc) {
@@ -709,11 +713,12 @@ void readmail(int mode) {
                         static_cast<long>(session()->user()->GetNumEmailSent()) +
                         static_cast<long>(session()->user()->GetNumNetEmailSent());
             if (num_mail != num_mail1) {
+              const string userandnet = names.UserName(session()->usernum, net_sysnum);
               if (m.fromsys != 0) {
                 sprintf(s, "%s: %s", session()->network_name(),
-                        session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum));
+                        userandnet.c_str());
               } else {
-                strcpy(s, session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum));
+                strcpy(s, userandnet.c_str());
               }
               if (m.anony & anony_receiver) {
                 strcpy(s, ">UNKNOWN<");
@@ -871,11 +876,10 @@ void readmail(int mode) {
           break;
         }
         if (m.fromsys != 0) {
-          message = session()->network_name();
-          message += ": ";
-          message += session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum);
+          message = StrCat(session()->network_name(), ": ", 
+            names.UserName(session()->usernum, net_sysnum));
         } else {
-          message = session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum);
+          message = names.UserName(session()->usernum, net_sysnum);
         }
 
         if (m.anony & anony_receiver) {
@@ -966,9 +970,8 @@ void readmail(int mode) {
               }
             } else {
               set_net_num(nn);
-              WUser u;
-              session()->users()->ReadUser(&u, user_number);
-              strcpy(s1, u.GetUserNameNumberAndSystem(user_number, net_sysnum));
+              const string name = names.UserName(user_number, net_sysnum);
+              strcpy(s1, name.c_str());
             }
             if (ok_to_mail(user_number, system_number, false)) {
               bout << "|#5Forward to " << s1 << "? ";
@@ -1007,12 +1010,12 @@ void readmail(int mode) {
                 pFileEmail->Close();
 
                 i = session()->net_num();
-                sprintf(s, "\r\nForwarded to %s from %s.", s1,
-                        session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum));
+                const string fwd_name = names.UserName(session()->usernum, net_sysnum);
+                sprintf(s, "\r\nForwarded to %s from %s.", s1, fwd_name.c_str());
 
                 set_net_num(nn);
                 lineadd(&m.msg, s, "email");
-                sprintf(s, "%s %s %s", session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum),
+                sprintf(s, "%s %s %s", fwd_name.c_str(),
                         "forwarded your mail to", s1);
                 if (!(m.status & status_source_verified)) {
                   ssm(m.fromuser, m.fromsys, s);
@@ -1108,12 +1111,13 @@ void readmail(int mode) {
         if (ch == 'A' || ch == '@') {
           if (num_mail != num_mail1) {
             string message;
+            const string name = names.UserName(session()->usernum, net_sysnum);
             if (m.fromsys != 0) {
               message = session()->network_name();
               message += ": ";
-              message += session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum);
+              message += name;
             } else {
-              message = session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum);
+              message = name;
             }
             if (m.anony & anony_receiver) {
               message = ">UNKNOWN<";

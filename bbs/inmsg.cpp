@@ -43,6 +43,7 @@
 #include "bbs/external_edit.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+#include "sdk/names.h"
 #include "sdk/filenames.h"
 
 using std::string;
@@ -619,7 +620,9 @@ bool inmsg(MessageEditorData& data) {
   } else if (data.silent_mode) {
     b << syscfg.sysopname << " #1" << crlf;
   } else {
-    b << session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum) << crlf;
+    wwiv::sdk::Names names(*session()->config());
+    const string name = names.UserName(session()->usernum, net_sysnum);
+    b << name << crlf;
   }
 
   // Add date to message body

@@ -104,7 +104,6 @@ class WUser {
   // Accessor Functions
   //
   const char *GetUserNameAndNumber(int user_number) const;
-  const char *GetUserNameNumberAndSystem(int user_number, int system_number) const;
 
   // USERREC.inact
   void SetInactFlag(int nFlag)          {
@@ -845,8 +844,6 @@ class WUser {
 //
  private:
   char *nam(int user_number) const;
-  char *nam1(int user_number, int system_number) const;
-
 };
 
 

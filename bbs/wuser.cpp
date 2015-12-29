@@ -24,6 +24,7 @@
 #include "bbs/wuser.h"
 #include "core/strings.h"
 #include "core/file.h"
+#include "sdk/names.h"
 #include "sdk/filenames.h"
 
 #ifndef NOT_BBS
@@ -83,10 +84,6 @@ void WUser::ZeroUserData() {
 
 const char *WUser::GetUserNameAndNumber(int user_number) const {
   return nam(user_number);
-}
-
-const char *WUser::GetUserNameNumberAndSystem(int user_number, int system_number) const {
-  return nam1(user_number, system_number);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -228,17 +225,5 @@ char *WUser::nam(int user_number) const {
   s_szNamBuffer[ p++ ] = ' ';
   s_szNamBuffer[ p++ ] = '#';
   snprintf(&s_szNamBuffer[p], sizeof(s_szNamBuffer) - p, "%d", user_number);
-  return s_szNamBuffer;
-}
-
-char *WUser::nam1(int user_number, int system_number) const {
-  static char s_szNamBuffer[ 255 ];
-
-  strcpy(s_szNamBuffer, nam(user_number));
-  if (system_number) {
-    char buffer[10];
-    snprintf(buffer, sizeof(buffer), " @%u", system_number);
-    strcat(s_szNamBuffer, buffer);
-  }
   return s_szNamBuffer;
 }
