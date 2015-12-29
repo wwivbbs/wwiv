@@ -14,12 +14,11 @@
 * Remove the CBV since it doesn't work. We'll need to rewrite one for the internet age.
 * delete num_events
 * make ssm take a string (use StringPrintf as needed)
-* Use session()->names vs. instantiating Names in places.
 
 * Move bbs logic out of WLocalIO and into WSession (probably)
 * remove extra include statements from user.cpp
 * Finish wrappering WSession
 * add IncrementXXXXX methods to WUser where it makes sense.
 * Change parameters to use strings so Runnable can use a vector of strings vs, argc, argv
-* investigage makeing WTextFile always trim whitespace
+* investigate making WTextFile always trim whitespace
 * Improve StringTrim(string)'s whitespace code and just have 1 copy of the whitespace string.

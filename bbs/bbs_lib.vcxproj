@@ -166,6 +166,7 @@
     <ClInclude Include="sysoplog.h" />
     <ClInclude Include="template.h" />
     <ClInclude Include="uedit.h" />
+    <ClInclude Include="usermanager.h" />
     <ClInclude Include="utility.h" />
     <ClInclude Include="valscan.h" />
     <ClInclude Include="vars.h" />
@@ -295,6 +296,7 @@
     <ClCompile Include="trytoul.cpp" />
     <ClCompile Include="uedit.cpp" />
     <ClCompile Include="user.cpp" />
+    <ClCompile Include="usermanager.cpp" />
     <ClCompile Include="utility.cpp" />
     <ClCompile Include="valscan.cpp" />
     <ClCompile Include="vote.cpp" />

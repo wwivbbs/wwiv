@@ -837,44 +837,6 @@ class WUser {
     SetForwardSystemNumber(0);
     SetForwardUserNumber(0);
   }
-
-//
-// Private Methods
-//
- private:
-  char *nam(int user_number) const;
-};
-
-
-/**
- *
- */
-class WUserManager {
- private:
-  std::string m_dataDirectory;
-  int m_nUserRecordLength;
-  int m_nMaxNumberOfUsers;
-  bool m_bUserWritesAllowed;
- public:
-   WUserManager() = delete;
-   WUserManager(std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers);
-   virtual ~WUserManager();
-   int GetNumberOfUserRecords() const;
-   bool ReadUserNoCache(WUser *pUser, int user_number);
-   bool ReadUser(WUser *pUser, int user_number, bool bForceRead = false);
-   bool WriteUserNoCache(WUser *pUser, int user_number);
-   bool WriteUser(WUser *pUser, int user_number);
-
-  /**
-   * Setting this to false will disable writing the userrecord to disk.  This should ONLY be false when the
-   * Global guest_user variable is true.
-   */
-  void SetUserWritesAllowed(bool bUserWritesAllowed) {
-    m_bUserWritesAllowed = bUserWritesAllowed;
-  }
-  bool IsUserWritesAllowed() {
-    return m_bUserWritesAllowed;
-  }
 };
 
 #endif // __INCLUDED_PLATFORM_WUSER_H__

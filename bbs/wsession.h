@@ -26,6 +26,7 @@
 
 #include "bbs/capture.h"
 #include "bbs/runnable.h"
+#include "bbs/usermanager.h"
 #include "bbs/wcomm.h"
 #include "bbs/wstatus.h"
 #include "bbs/wuser.h"
@@ -121,8 +122,8 @@ public:
   bool IsLastKeyLocal() const { return last_key_local_; }
   void SetLastKeyLocal(bool b) { last_key_local_ = b; }
 
-  bool ReadCurrentUser() { return ReadCurrentUser(usernum, false); }
-  bool ReadCurrentUser(int user_number, bool bForceRead = false);
+  bool ReadCurrentUser() { return ReadCurrentUser(usernum); }
+  bool ReadCurrentUser(int user_number);
   bool WriteCurrentUser() { return WriteCurrentUser(usernum); }
   bool WriteCurrentUser(int user_number);
 
@@ -246,7 +247,7 @@ public:
   void set_internal_qwk_enabled(bool internal_qwk_enabled) { internal_qwk_enabled_ = internal_qwk_enabled; }
 
   StatusMgr* status_manager() { return statusMgr.get(); }
-  WUserManager* users() { return userManager.get(); }
+  UserManager* users() { return user_manager_.get(); }
 
 
   /*!
@@ -378,7 +379,7 @@ private:
 
 
   std::unique_ptr<StatusMgr> statusMgr;
-  std::unique_ptr<WUserManager> userManager;
+  std::unique_ptr<UserManager> user_manager_;
   std::string     m_attachmentDirectory; private:
   WApplication* application_;
   WUser m_thisuser;

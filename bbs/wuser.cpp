@@ -27,15 +27,6 @@
 #include "sdk/names.h"
 #include "sdk/filenames.h"
 
-#ifndef NOT_BBS
-#include "bbs/bbs.h"
-#include "bbs/vars.h"
-#include "bbs/wstatus.h"
-#endif // NOT_BBS
-
-// from strings.cpp
-extern unsigned char *translate_letters[];
-
 using namespace wwiv::strings;
 
 WUser::WUser() {
@@ -80,89 +71,4 @@ void WUser::FixUp() {
 
 void WUser::ZeroUserData() {
   memset(&data, 0, sizeof(userrec));
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// class WUserManager
-
-WUserManager::WUserManager(std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers) :
-  m_dataDirectory(dataDirectory), m_nUserRecordLength(nUserRecordLength), m_nMaxNumberOfUsers(nMaxNumberOfUsers),
-  m_bUserWritesAllowed(true) {
-}
-
-WUserManager::~WUserManager() { }
-
-int  WUserManager::GetNumberOfUserRecords() const {
-  File userList(m_dataDirectory, USER_LST);
-  if (userList.Open(File::modeReadOnly | File::modeBinary)) {
-    long nSize = userList.GetLength();
-    int nNumRecords = (static_cast<int>(nSize / m_nUserRecordLength) - 1);
-    return nNumRecords;
-  }
-  return 0;
-}
-
-bool WUserManager::ReadUserNoCache(WUser *pUser, int user_number) {
-  File userList(m_dataDirectory, USER_LST);
-  if (!userList.Open(File::modeReadOnly | File::modeBinary)) {
-    pUser->data.inact = inact_deleted;
-    pUser->FixUp();
-    return false;
-  }
-  long nSize = userList.GetLength();
-  int nNumUserRecords = (static_cast<int>(nSize / m_nUserRecordLength) - 1);
-
-  if (user_number > nNumUserRecords) {
-    pUser->data.inact = inact_deleted;
-    pUser->FixUp();
-    return false;
-  }
-  long pos = static_cast<long>(m_nUserRecordLength) * static_cast<long>(user_number);
-  userList.Seek(pos, File::seekBegin);
-  userList.Read(&pUser->data,  m_nUserRecordLength);
-  pUser->FixUp();
-  return true;
-}
-
-bool WUserManager::ReadUser(WUser *pUser, int user_number, bool bForceRead) {
-#ifndef NOT_BBS
-  if (!bForceRead) {
-    bool userOnAndCurrentUser = (session()->IsUserOnline() && (user_number == session()->usernum));
-    int nWfcStatus = session()->GetWfcStatus();
-    bool wfcStatusAndUserOne = (nWfcStatus && user_number == 1);
-    if (userOnAndCurrentUser || wfcStatusAndUserOne) {
-      pUser->data = session()->user()->data;
-      pUser->FixUp();
-      return true;
-    }
-  }
-#endif // NOT_BBS
-  return this->ReadUserNoCache(pUser, user_number);
-}
-
-bool WUserManager::WriteUserNoCache(WUser *pUser, int user_number) {
-  File userList(m_dataDirectory, USER_LST);
-  if (userList.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-    long pos = static_cast<long>(m_nUserRecordLength) * static_cast<long>(user_number);
-    userList.Seek(pos, File::seekBegin);
-    userList.Write(&pUser->data,  m_nUserRecordLength);
-    return true;
-  }
-  return false;
-}
-
-bool WUserManager::WriteUser(WUser *pUser, int user_number) {
-  if (user_number < 1 || user_number > m_nMaxNumberOfUsers || !IsUserWritesAllowed()) {
-    return true;
-  }
-
-#ifndef NOT_BBS
-  if ((session()->IsUserOnline() && user_number == static_cast<int>(session()->usernum)) ||
-      (session()->GetWfcStatus() && user_number == 1)) {
-    if (&pUser->data != &session()->user()->data) {
-      session()->user()->data = pUser->data;
-    }
-  }
-#endif // NOT_BBS
-  return this->WriteUserNoCache(pUser, user_number);
 }

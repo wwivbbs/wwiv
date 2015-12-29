@@ -102,6 +102,7 @@ set(COMMON_SOURCES
  trytoul.cpp
  uedit.cpp
  user.cpp
+ usermanager.cpp
  utility.cpp
  valscan.cpp
  vote.cpp
