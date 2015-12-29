@@ -21,6 +21,7 @@
 #include <set>
 
 #include "bbs/vars.h"
+#include "bbs/usermanager.h"
 #include "bbs/wuser.h"
 #include "core/file.h"
 #include "core/strings.h"
@@ -43,7 +44,7 @@ int FixUsersCommand::Execute() {
 		giveUp();
 	}
 
-	WUserManager userMgr(syscfg.datadir, sizeof(userrec), syscfg.maxusers);
+	UserManager userMgr(syscfg.datadir, sizeof(userrec), syscfg.maxusers);
 	Print(OK, true, "Checking USER.LST... found %d user records.", userMgr.GetNumberOfUserRecords());
 
 	Print(OK, true, "TBD: Check for trashed user recs.");

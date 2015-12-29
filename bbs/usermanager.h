@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2015, WWIV Software Services             */
+/*             Copyright (C)1998-20014, WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -17,46 +17,46 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/bbs.h"
-#include "bbs/fcns.h"
-#include "bbs/vars.h"
-#include "bbs/dropfile.h"
-#include "bbs/instmsg.h"
-#include "bbs/platform/platformfcns.h"
+#ifndef __INCLUDED_USER_MANAGER_H__
+#define __INCLUDED_USER_MANAGER_H__
 
-int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
-  // forget it if the user has hung up
-  if (!(nFlags & EFLAG_NOHUP)) {
-    if (CheckForHangup()) {
-      return -1;
-    }
+#include <sstream>
+#include <cstring>
+#include <string>
+#include "bbs/wuser.h"
+#include "sdk/vardec.h"
+
+/**
+ * WWIV User Manager.
+ * 
+ * Responsible for loading and saving users.
+ */
+class UserManager {
+ private:
+  const std::string data_directory_;
+  int userrec_length_;
+  int max_number_users_;
+  bool allow_writes_ = false;
+ public:
+   UserManager() = delete;
+   UserManager(std::string data_directory, int userrec_length, int max_number_users);
+   virtual ~UserManager();
+   int GetNumberOfUserRecords() const;
+   bool ReadUserNoCache(WUser *pUser, int user_number);
+   bool ReadUser(WUser *pUser, int user_number);
+   bool WriteUserNoCache(WUser *pUser, int user_number);
+   bool WriteUser(WUser *pUser, int user_number);
+
+  /**
+   * Setting this to false will disable writing the userrecord to disk.  This should ONLY be false when the
+   * Global guest_user variable is true.
+   */
+  void SetUserWritesAllowed(bool bUserWritesAllowed) {
+    allow_writes_ = bUserWritesAllowed;
   }
-  create_chain_file();
-
-  // get ready to run it
-  if (session()->IsUserOnline()) {
-    session()->WriteCurrentUser();
-    write_qscn(session()->usernum, qsc, false);
+  bool IsUserWritesAllowed() {
+    return allow_writes_;
   }
-  session()->capture()->set_global_handle(false);
+};
 
-  // extra processing for net programs
-  if (nFlags & EFLAG_NETPROG) {
-    write_inst(INST_LOC_NET, session()->net_num() + 1, INST_FLAGS_NONE);
-  }
-
-  // Execute the program and make sure the workingdir is reset
-  int nExecRetCode = ExecExternalProgram(commandLine, nFlags);
-  session()->CdHome();
-
-  // Reread the user record.
-  if (session()->IsUserOnline()) {
-    session()->ReadCurrentUser();
-    read_qscn(session()->usernum, qsc, false, true);
-    session()->UpdateTopScreen();
-  }
-
-  // return to caller
-  return nExecRetCode;
-}
-
+#endif // __INCLUDED_PLATFORM_WUSER_H__

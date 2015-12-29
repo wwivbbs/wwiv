@@ -141,12 +141,12 @@ bool WSession::reset_local_io(LocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);
   local_io_->set_capture(capture());
 
-  const int screen_bottom = session()->localIO()->GetDefaultScreenBottom();
-  session()->localIO()->SetScreenBottom(screen_bottom);
+  const int screen_bottom = localIO()->GetDefaultScreenBottom();
+  localIO()->SetScreenBottom(screen_bottom);
   defscreenbottom = screen_bottom;
-  session()->screenlinest = screen_bottom + 1;
+  screenlinest = screen_bottom + 1;
 
-  session()->localIO()->set_protect(0);
+  localIO()->set_protect(0);
   ::bout.SetLocalIO(wlocal_io);
   return true;
 }
@@ -156,12 +156,12 @@ void WSession::CreateComm(unsigned int nHandle) {
   bout.SetComm(comm_.get());
 }
 
-bool WSession::ReadCurrentUser(int user_number, bool bForceRead) {
-  bool result = users()->ReadUser(&m_thisuser, user_number, bForceRead);
+bool WSession::ReadCurrentUser(int user_number) {
+  bool result = users()->ReadUser(&m_thisuser, user_number);
 
   // Update all other session variables that are dependent.
-  screenlinest = (session()->using_modem) ? 
-      session()->user()->GetScreenLines() : defscreenbottom + 1;
+  screenlinest = (using_modem) ? 
+      user()->GetScreenLines() : defscreenbottom + 1;
   return result;
 }
 
@@ -203,8 +203,8 @@ void WSession::DisplaySysopWorkingIndicator(bool displayWait) {
 
 void WSession::UpdateTopScreen() {
   if (!GetWfcStatus()) {
-    unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
-    session()->localIO()->UpdateTopScreen(pStatus.get(), session(), instance_number());
+    unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
+    localIO()->UpdateTopScreen(pStatus.get(), session(), instance_number());
   }
 }
 
@@ -216,24 +216,24 @@ const std::string WSession::network_directory() const { return std::string(net_n
 void WSession::GetCaller() {
   SetShutDownStatus(WSession::shutdownNone);
   wfc_init();
-  session()->remoteIO()->ClearRemoteInformation();
+  remoteIO()->ClearRemoteInformation();
   frequent_init();
-  if (session()->wfc_status == 0) {
-    session()->localIO()->LocalCls();
+  if (wfc_status == 0) {
+    localIO()->LocalCls();
   }
-  session()->usernum = 0;
+  usernum = 0;
   SetWfcStatus(0);
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
-  session()->ReadCurrentUser(1);
+  ReadCurrentUser(1);
   read_qscn(1, qsc, false);
-  session()->usernum = 1;
-  session()->ResetEffectiveSl();
-  fwaiting = session()->user()->GetNumMailWaiting();
-  if (session()->user()->IsUserDeleted()) {
-    session()->user()->SetScreenChars(80);
-    session()->user()->SetScreenLines(25);
+  usernum = 1;
+  ResetEffectiveSl();
+  fwaiting = user()->GetNumMailWaiting();
+  if (user()->IsUserDeleted()) {
+    user()->SetScreenChars(80);
+    user()->SetScreenLines(25);
   }
-  session()->screenlinest = defscreenbottom + 1;
+  screenlinest = defscreenbottom + 1;
 
   int lokb = doWFCEvents();
 
@@ -241,15 +241,15 @@ void WSession::GetCaller() {
     modem_speed = 14400;
   }
 
-  session()->using_modem = incom;
+  using_modem = incom;
   if (lokb == 2) {
-    session()->using_modem = -1;
+    using_modem = -1;
   }
 
   okskey = true;
-  session()->localIO()->LocalCls();
-  session()->localIO()->LocalPrintf("Logging on at %s ...\r\n",
-    session()->GetCurrentSpeed().c_str());
+  localIO()->LocalCls();
+  localIO()->LocalPrintf("Logging on at %s ...\r\n",
+    GetCurrentSpeed().c_str());
   SetWfcStatus(0);
 }
 
@@ -274,7 +274,7 @@ int WSession::doWFCEvents() {
 
     // If the date has changed since we last checked, then then run the beginday event.
     if (!IsEquals(date(), last_date_status->GetLastDate())) {
-      if ((session()->GetBeginDayNodeNumber() == 0) || (instance_number_ == session()->GetBeginDayNodeNumber())) {
+      if ((GetBeginDayNodeNumber() == 0) || (instance_number_ == GetBeginDayNodeNumber())) {
         cleanup_events();
         beginday(true);
         wfc_cls();
@@ -292,7 +292,7 @@ int WSession::doWFCEvents() {
     }
 
     lokb = 0;
-    session()->SetCurrentSpeed("KB");
+    SetCurrentSpeed("KB");
     time_t lCurrentTime = time(nullptr);
     if (!any && (((rand() % 8000) == 0) || (lCurrentTime - last_time_c > 1200)) &&
       net_sysnum && (this->flags & OP_FLAGS_NET_CALLOUT)) {
@@ -304,9 +304,9 @@ int WSession::doWFCEvents() {
     okskey = false;
     if (io->LocalKeyPressed()) {
       SetWfcStatus(0);
-      session()->ReadCurrentUser(1);
+      ReadCurrentUser(1);
       read_qscn(1, qsc, false);
-      fwaiting = session()->user()->GetNumMailWaiting();
+      fwaiting = user()->GetNumMailWaiting();
       SetWfcStatus(1);
       ch = wwiv::UpperCase<char>(io->LocalGetChar());
       if (ch == 0) {
@@ -367,7 +367,7 @@ int WSession::doWFCEvents() {
         break;
         // Print NetLogs
       case ',':
-        if (net_sysnum > 0 || !session()->net_networks.empty()) {
+        if (net_sysnum > 0 || !net_networks.empty()) {
           io->LocalGotoXY(2, 23);
           bout << "|#7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ";
           ch = onek("Q012");
@@ -421,10 +421,10 @@ int WSession::doWFCEvents() {
         // Send Email
       case 'E':
         wfc_cls();
-        session()->usernum = 1;
+        usernum = 1;
         bout << "|#1Send Email:";
         send_email();
-        session()->WriteCurrentUser(1);
+        WriteCurrentUser(1);
         cleanup_net();
         break;
         // GfileEdit
@@ -451,13 +451,13 @@ int WSession::doWFCEvents() {
         // SendMailFile
       case 'K': {
           wfc_cls();
-          session()->usernum = 1;
+          usernum = 1;
           bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
           string buffer;
           input(&buffer, 50);
           LoadFileIntoWorkspace(buffer, false);
           send_email();
-          session()->WriteCurrentUser(1);
+          WriteCurrentUser(1);
           cleanup_net();
         }
         break;
@@ -471,9 +471,9 @@ int WSession::doWFCEvents() {
         // Read User Mail
       case 'M': {
           wfc_cls();
-          session()->usernum = 1;
+          usernum = 1;
           readmail(0);
-          session()->WriteCurrentUser(1);
+          WriteCurrentUser(1);
           cleanup_net();
         }
         break;
@@ -525,12 +525,12 @@ int WSession::doWFCEvents() {
         // Send Internet Mail
       case 'V': {
           wfc_cls();
-          session()->usernum = 1;
-          session()->SetUserOnline(true);
+          usernum = 1;
+          SetUserOnline(true);
           get_user_ppp_addr();
           send_inet_email();
-          session()->SetUserOnline(false);
-          session()->WriteCurrentUser(1);
+          SetUserOnline(false);
+          WriteCurrentUser(1);
           cleanup_net();
         }
         break;
@@ -563,11 +563,11 @@ int WSession::doWFCEvents() {
       wfc_cls();  // moved from after getch
       if (!incom && !lokb) {
         frequent_init();
-        session()->ReadCurrentUser(1);
+        ReadCurrentUser(1);
         read_qscn(1, qsc, false);
-        fwaiting = session()->user()->GetNumMailWaiting();
-        session()->ResetEffectiveSl();
-        session()->usernum = 1;
+        fwaiting = user()->GetNumMailWaiting();
+        ResetEffectiveSl();
+        usernum = 1;
       }
       catsl();
       write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
@@ -587,22 +587,22 @@ int WSession::doWFCEvents() {
 
 
 int WSession::LocalLogon() {
-  session()->localIO()->LocalGotoXY(2, 23);
+  localIO()->LocalGotoXY(2, 23);
   bout << "|#9Log on to the BBS?";
   double d = timer();
   int lokb = 0;
-  while (!session()->localIO()->LocalKeyPressed() && (std::abs(timer() - d) < SECONDS_PER_MINUTE_FLOAT))
+  while (!localIO()->LocalKeyPressed() && (std::abs(timer() - d) < SECONDS_PER_MINUTE_FLOAT))
     ;
 
-  if (session()->localIO()->LocalKeyPressed()) {
-    char ch = wwiv::UpperCase<char>(session()->localIO()->LocalGetChar());
+  if (localIO()->LocalKeyPressed()) {
+    char ch = wwiv::UpperCase<char>(localIO()->LocalGetChar());
     if (ch == 'Y') {
-      session()->localIO()->LocalPuts(YesNoString(true));
+      localIO()->LocalPuts(YesNoString(true));
       bout << wwiv::endl;
       lokb = 1;
     } else if (ch == 0 || static_cast<unsigned char>(ch) == 224) {
       // The ch == 224 is a Win32'ism
-      session()->localIO()->LocalGetChar();
+      localIO()->LocalGetChar();
     } else {
       bool fast = false;
 
@@ -635,57 +635,57 @@ int WSession::LocalLogon() {
         return lokb;
       }
 
-      session()->usernum = m_unx;
+      usernum = m_unx;
       int nSavedWFCStatus = GetWfcStatus();
       SetWfcStatus(0);
-      session()->ReadCurrentUser();
-      read_qscn(session()->usernum, qsc, false);
+      ReadCurrentUser();
+      read_qscn(usernum, qsc, false);
       SetWfcStatus(nSavedWFCStatus);
       bputch(ch);
-      session()->localIO()->LocalPuts("\r\n\r\n\r\n\r\n\r\n\r\n");
+      localIO()->LocalPuts("\r\n\r\n\r\n\r\n\r\n\r\n");
       lokb = 2;
-      session()->ResetEffectiveSl();
+      ResetEffectiveSl();
       changedsl();
-      if (!set_language(session()->user()->GetLanguage())) {
-        session()->user()->SetLanguage(0);
+      if (!set_language(user()->GetLanguage())) {
+        user()->SetLanguage(0);
         set_language(0);
       }
       return lokb;
     }
     if (ch == 0 || static_cast<unsigned char>(ch) == 224) {
       // The 224 is a Win32'ism
-      session()->localIO()->LocalGetChar();
+      localIO()->LocalGetChar();
     }
   }
   if (lokb == 0) {
-    session()->localIO()->LocalCls();
+    localIO()->LocalCls();
   }
   return lokb;
 }
 
 void WSession::GotCaller(unsigned int ms, unsigned long cs) {
   frequent_init();
-  if (session()->wfc_status == 0) {
-    session()->localIO()->LocalCls();
+  if (wfc_status == 0) {
+    localIO()->LocalCls();
   }
   com_speed = cs;
   modem_speed = ms;
-  session()->ReadCurrentUser(1);
+  ReadCurrentUser(1);
   read_qscn(1, qsc, false);
-  session()->ResetEffectiveSl();
-  session()->usernum = 1;
-  if (session()->user()->IsUserDeleted()) {
-    session()->user()->SetScreenChars(80);
-    session()->user()->SetScreenLines(25);
+  ResetEffectiveSl();
+  usernum = 1;
+  if (user()->IsUserDeleted()) {
+    user()->SetScreenChars(80);
+    user()->SetScreenLines(25);
   }
-  session()->localIO()->LocalCls();
-  session()->localIO()->LocalPrintf("Logging on at %s...\r\n", session()->GetCurrentSpeed().c_str());
+  localIO()->LocalCls();
+  localIO()->LocalPrintf("Logging on at %s...\r\n", GetCurrentSpeed().c_str());
   if (ms) {
     incom = true;
     outcom = true;
-    session()->using_modem = 1;
+    using_modem = 1;
   } else {
-    session()->using_modem = 0;
+    using_modem = 0;
     incom = false;
     outcom = false;
   }
@@ -736,7 +736,7 @@ void WSession::ExitBBSImpl(int nExitLevel) {
 
 void WSession::ShutDownBBS(int nShutDownStatus) {
   char xl[81], cl[81], atr[81], cc;
-  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+  localIO()->SaveCurrentLine(cl, atr, xl, &cc);
 
   switch (nShutDownStatus) {
   case 1:
@@ -752,7 +752,7 @@ void WSession::ShutDownBBS(int nShutDownStatus) {
   case 4:
     bout.nl(2);
     bout << "|#7***\r\n|#7Please call back later.\r\n|#7***\r\n\n";
-    session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>
+    user()->SetExtraTime(user()->GetExtraTime() + static_cast<float>
       (nsl()));
     bout << "Time on   = " << ctim(timer() - timeon) << wwiv::endl;
     printfile(LOGOFF_NOEXT);
@@ -872,7 +872,7 @@ int WSession::Run(int argc, char *argv[]) {
         // I think this roundtrip here is just to ensure argument is really a number.
         ui = static_cast<unsigned int>(atol(argument.c_str()));
         const string current_speed_string = std::to_string(ui);
-        session()->SetCurrentSpeed(current_speed_string.c_str());
+        SetCurrentSpeed(current_speed_string.c_str());
         if (!us) {
           us = ui;
         }
@@ -926,7 +926,7 @@ int WSession::Run(int argc, char *argv[]) {
       case 'U':
         this_usernum = StringToUnsignedShort(argument);
         if (!m_bUserAlreadyOn) {
-          session()->SetCurrentSpeed("KB");
+          SetCurrentSpeed("KB");
         }
         m_bUserAlreadyOn = true;
         break;
@@ -944,13 +944,13 @@ int WSession::Run(int argc, char *argv[]) {
         if (argument2Char == 'T') {
           // This more of a hack to make sure the Telnet
           // Server's -Bxxx parameter doesn't hose us.
-          session()->SetCurrentSpeed("115200");
-          session()->SetUserOnline(false);
+          SetCurrentSpeed("115200");
+          SetUserOnline(false);
           us = 115200;
           ui = us;
           m_bUserAlreadyOn = true;
           ooneuser = true;
-          session()->using_modem = 0;
+          using_modem = 0;
           hangup = false;
           incom = true;
           outcom = false;
@@ -972,7 +972,7 @@ int WSession::Run(int argc, char *argv[]) {
       case 'K':
       {
         this->InitializeBBS();
-        session()->localIO()->LocalCls();
+        localIO()->LocalCls();
         if ((i + 1) < argc) {
           i++;
           bout << "\r\n|#7\xFE |#5Packing specified subs: \r\n";
@@ -1028,10 +1028,10 @@ int WSession::Run(int argc, char *argv[]) {
   m_bUserAlreadyOn = true;
 #endif  // _WIN32
 
-  session()->CreateComm(hSockOrComm);
+  CreateComm(hSockOrComm);
   this->InitializeBBS();
 
-  session()->localIO()->UpdateNativeTitleBar();
+  localIO()->UpdateNativeTitleBar();
 
   // If we are telnet...
   if (bTelnetInstance) {
@@ -1068,20 +1068,20 @@ int WSession::Run(int argc, char *argv[]) {
 
   do {
     if (this_usernum) {
-      session()->usernum = this_usernum;
-      session()->ReadCurrentUser();
-      if (!session()->user()->IsUserDeleted()) {
+      usernum = this_usernum;
+      ReadCurrentUser();
+      if (!user()->IsUserDeleted()) {
         GotCaller(ui, us);
-        session()->usernum = this_usernum;
-        session()->ReadCurrentUser();
-        read_qscn(session()->usernum, qsc, false);
-        session()->ResetEffectiveSl();
+        usernum = this_usernum;
+        ReadCurrentUser();
+        read_qscn(usernum, qsc, false);
+        ResetEffectiveSl();
         changedsl();
         okmacro = true;
-        if (!hangup && session()->usernum > 0 &&
-          session()->user()->IsRestrictionLogon() &&
-          IsEquals(date(), session()->user()->GetLastOn()) &&
-          session()->user()->GetTimesOnToday() > 0) {
+        if (!hangup && usernum > 0 &&
+          user()->IsRestrictionLogon() &&
+          IsEquals(date(), user()->GetLastOn()) &&
+          user()->GetTimesOnToday() > 0) {
           bout << "\r\n|#6Sorry, you can only logon once per day.\r\n\n";
           hangup = true;
         }
@@ -1100,15 +1100,15 @@ int WSession::Run(int argc, char *argv[]) {
 #endif
     }
 
-    if (session()->using_modem > -1) {
+    if (using_modem > -1) {
       if (!this_usernum) {
         getuser();
       }
     } else {
-      session()->using_modem = 0;
+      using_modem = 0;
       okmacro = true;
-      session()->usernum = m_unx;
-      session()->ResetEffectiveSl();
+      usernum = m_unx;
+      ResetEffectiveSl();
       changedsl();
     }
     this_usernum = 0;
@@ -1122,19 +1122,19 @@ int WSession::Run(int argc, char *argv[]) {
           filelist = nullptr;
         }
         zap_ed_info();
-        write_inst(INST_LOC_MAIN, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+        write_inst(INST_LOC_MAIN, usub[GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
         wwiv::menus::mainmenu();
       }
       logoff();
     }
 
-    if (!no_hangup && session()->using_modem && ok_modem_stuff) {
+    if (!no_hangup && using_modem && ok_modem_stuff) {
       hang_it_up();
     }
     catsl();
     frequent_init();
-    if (session()->wfc_status == 0) {
-      session()->localIO()->LocalCls();
+    if (wfc_status == 0) {
+      localIO()->LocalCls();
     }
     cleanup_net();
 
@@ -1142,19 +1142,19 @@ int WSession::Run(int argc, char *argv[]) {
       remoteIO()->dtr(false);
     }
     m_bUserAlreadyOn = false;
-    if (session()->localIO()->GetSysopAlert() && (!session()->localIO()->LocalKeyPressed())) {
+    if (localIO()->GetSysopAlert() && (!localIO()->LocalKeyPressed())) {
       remoteIO()->dtr(true);
       Wait(0.1);
       double dt = timer();
-      session()->localIO()->LocalCls();
+      localIO()->LocalCls();
       bout << "\r\n>> SYSOP ALERT ACTIVATED <<\r\n\n";
-      while (!session()->localIO()->LocalKeyPressed() && (std::abs(timer() - dt) < SECONDS_PER_MINUTE_FLOAT)) {
+      while (!localIO()->LocalKeyPressed() && (std::abs(timer() - dt) < SECONDS_PER_MINUTE_FLOAT)) {
         sound(500, milliseconds(250));
         sleep_for(milliseconds(1));
       }
-      session()->localIO()->LocalCls();
+      localIO()->LocalCls();
     }
-    session()->localIO()->SetSysopAlert(false);
+    localIO()->SetSysopAlert(false);
   } while (!ooneuser);
 
   return m_nOkLevel;

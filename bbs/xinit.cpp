@@ -488,7 +488,7 @@ bool WSession::ReadConfig() {
 
   // initialize the user manager
   const configrec* config = config_->config();
-  userManager.reset(new WUserManager(config->datadir, config->userreclen, config->maxusers));
+  user_manager_.reset(new UserManager(config->datadir, config->userreclen, config->maxusers));
 
   std::unique_ptr<IniFile> ini(ReadINIFile());
   if (!ini->IsOpen()) {
@@ -978,7 +978,7 @@ void WSession::InitializeBBS() {
   batch = static_cast<batchrec *>(BbsAllocA(max_batch * sizeof(batchrec)));
 
   XINIT_PRINTF("Reading User Information.");
-  ReadCurrentUser(1, false);
+  ReadCurrentUser(1);
   fwaiting = (user()->IsUserDeleted()) ? 0 : user()->GetNumMailWaiting();
   statusMgr->RefreshStatusCache();
   topdata = LocalIO::topdataUser;

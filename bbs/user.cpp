@@ -39,13 +39,8 @@ bool okconf(WUser *pUser) {
   return pUser->HasStatusFlag(WUser::conference);
 }
 
-
-
 void add_ass(int num_points, const char *reason) {
   sysoplog("***");
   sysoplogf("*** ASS-PTS: %d, Reason: [%s]", num_points, reason);
   session()->user()->IncrementAssPoints(num_points);
 }
-
-
-
