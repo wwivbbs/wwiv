@@ -474,9 +474,8 @@ void qwk_email_text(char *text, char *title, char *to) {
 
     if (sy == 0) {
       set_net_num(0);
-      WUser u;
-      session()->users()->ReadUser(&u, un);
-      strcpy(s2, u.GetUserNameAndNumber(un));
+      const string unn = session()->names()->UserName(un);
+      strcpy(s2, unn.c_str());
     } else {
       if (session()->max_net_num() > 1) {
         if (un == 0) {

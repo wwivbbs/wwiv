@@ -17,6 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <string>
+
 #include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/chains.h"
@@ -34,6 +36,7 @@
 #include "bbs/vars.h"
 #include "core/strings.h"
 
+using std::string;
 using namespace wwiv::menus;
 
 /* ---------------------------------------------------------------------- */
@@ -134,8 +137,9 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
           session()->users()->ReadUser(&ur, u.ownerusr);
           if (!ur.IsUserDeleted()) {
             if (date_to_daten(ur.GetFirstOn()) < static_cast<time_t>(u.daten)) {
+              const string username_num = session()->names()->UserName(session()->usernum);
               ssm(u.ownerusr, 0, "%s downloaded '%s' on %s",
-                  session()->user()->GetUserNameAndNumber(session()->usernum),
+                  username_num.c_str(),
                   u.filename, date());
             }
           }

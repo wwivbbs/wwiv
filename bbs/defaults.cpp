@@ -121,7 +121,7 @@ static string GetMailBoxStatus() {
     session()->user()->SetForwardUserNumber(0);
     return string("Normal");
   }
-  return StrCat("Forward to ", ur.GetUserNameAndNumber(session()->user()->GetForwardUserNumber()));
+  return StrCat("Forward to ", session()->names()->UserName(session()->user()->GetForwardUserNumber()));
 }
 
 static void print_cur_stat() {

@@ -103,7 +103,6 @@ class WUser {
   //
   // Accessor Functions
   //
-  const char *GetUserNameAndNumber(int user_number) const;
 
   // USERREC.inact
   void SetInactFlag(int nFlag)          {

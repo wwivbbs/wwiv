@@ -235,7 +235,7 @@ static void DoFailedLoginAttempt() {
   bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
 
   const string logline = StrCat("### ILLEGAL LOGON for ",
-    session()->user()->GetUserNameAndNumber(session()->usernum), 
+    session()->names()->UserName(session()->usernum),
     " (",  ctim(timer()), ")");
   sysoplog("", false);
   sysoplog(logline, false);
@@ -542,9 +542,10 @@ static void UpdateLastOnFileAndUserLog() {
   }
 
   if (session()->GetEffectiveSl() != 255 || incom) {
+    const string username_num = session()->names()->UserName(session()->usernum);
     const string sysop_log_line = StringPrintf("%ld: %s %s %s   %s - %d (%u)",
         pStatus->GetCallerNumber(),
-        session()->user()->GetUserNameAndNumber(session()->usernum),
+        username_num.c_str(),
         times(),
         fulldate(),
         session()->GetCurrentSpeed().c_str(),
@@ -565,10 +566,11 @@ static void UpdateLastOnFileAndUserLog() {
     string log_line;
     if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
         (syscfg.sysconfig & sysconfig_extended_info)) {
+      const string username_num = session()->names()->UserName(session()->usernum);
       log_line = StringPrintf(
           "|#1%-6ld %-25.25s %-5.5s %-5.5s %-15.15s %-2.2s %-3.3s %-8.8s %2d\r\n",
           pStatus->GetCallerNumber(),
-          session()->user()->GetUserNameAndNumber(session()->usernum),
+          username_num.c_str(),
           times(),
           fulldate(),
           session()->user()->GetCity(),
@@ -577,10 +579,11 @@ static void UpdateLastOnFileAndUserLog() {
           session()->GetCurrentSpeed().c_str(),
           session()->user()->GetTimesOnToday());
     } else {
+      const string username_num = session()->names()->UserName(session()->usernum);
       log_line = StringPrintf(
           "|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
           pStatus->GetCallerNumber(),
-          session()->user()->GetUserNameAndNumber(session()->usernum),
+          username_num.c_str(),
           session()->cur_lang_name.c_str(),
           times(),
           fulldate(),
@@ -697,7 +700,8 @@ static void CheckAndUpdateUserInfo() {
         session()->user()->SetSl(syscfg.newusersl);
         session()->user()->SetDsl(syscfg.newuserdsl);
         session()->user()->SetExempt(0);
-        ssm(1, 0, "%s%s", session()->user()->GetUserNameAndNumber(session()->usernum),
+        const string username_num = session()->names()->UserName(session()->usernum);
+        ssm(1, 0, "%s%s", username_num.c_str(),
             "'s registration has expired.");
         session()->WriteCurrentUser();
         session()->ResetEffectiveSl();
@@ -713,8 +717,8 @@ static void DisplayUserLoginInformation() {
   char s1[255];
   bout.nl();
 
-  bout << "|#9Name/Handle|#0....... |#2" << session()->user()->GetUserNameAndNumber(
-                       session()->usernum) << wwiv::endl;
+  const string username_num = session()->names()->UserName(session()->usernum);
+  bout << "|#9Name/Handle|#0....... |#2" << username_num << wwiv::endl;
   bout << "|#9Internet Address|#0.. |#2";
   if (check_inet_addr(session()->user()->GetEmailAddress())) {
     bout << session()->user()->GetEmailAddress() << wwiv::endl;

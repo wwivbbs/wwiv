@@ -76,8 +76,8 @@ void YourInfo() {
     bout << "|#5Your User Information:\r\n";
   }
   bout.nl();
-  bout << "|#9Your name      : |#2" << session()->user()->GetUserNameAndNumber(
-                       session()->usernum) << wwiv::endl;
+  bout << "|#9Your name      : |#2" 
+       << session()->names()->UserName(session()->usernum) << wwiv::endl;
   bout << "|#9Phone number   : |#2" << session()->user()->GetVoicePhoneNumber() << wwiv::endl;
   if (session()->user()->GetNumMailWaiting() > 0) {
     bout << "|#9Mail Waiting   : |#2" << session()->user()->GetNumMailWaiting() << wwiv::endl;
@@ -254,7 +254,7 @@ void feedback(bool bNewUserFeedback) {
       session()->users()->ReadUser(&user, i);
       if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
           !user.IsUserDeleted()) {
-        bout << "|#2" << i << "|#7)|#1 " << user.GetUserNameAndNumber(i) << wwiv::endl;
+        bout << "|#2" << i << "|#7)|#1 " << session()->names()->UserName(i) << wwiv::endl;
         onek_str[i1++] = static_cast<char>('0' + i);
       }
     }

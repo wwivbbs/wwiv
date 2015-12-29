@@ -88,7 +88,8 @@ void valuser(int user_number) {
   session()->users()->ReadUser(&user, user_number);
   if (!user.IsUserDeleted()) {
     bout.nl();
-    bout << "|#9Name: |#2" << user.GetUserNameAndNumber(user_number) << wwiv::endl;
+    const string unn = session()->names()->UserName(user_number);
+    bout << "|#9Name: |#2" << unn << wwiv::endl;
     bout << "|#9RN  : |#2" << user.GetRealName() << wwiv::endl;
     bout << "|#9PH  : |#2" << user.GetVoicePhoneNumber() << wwiv::endl;
     bout << "|#9Age : |#2" << user.GetAge() << " " << user.GetGender() << wwiv::endl;
@@ -631,8 +632,8 @@ void mailr() {
         do {
           WUser user;
           session()->users()->ReadUser(&user, m.touser);
-          bout << "|#9  To|#7: |#" << session()->GetMessageColor() 
-               << user.GetUserNameAndNumber(m.touser) << wwiv::endl;
+          const string unn = session()->names()->UserName(m.touser);
+          bout << "|#9  To|#7: |#" << session()->GetMessageColor() << unn << wwiv::endl;
           set_net_num(network_number_from(&m));
           bout << "|#9Subj|#7: |#" << session()->GetMessageColor() << m.title << wwiv::endl;
           if (m.status & status_file) {
@@ -728,7 +729,8 @@ void chuser() {
     read_qscn(user_number, qsc, false);
     session()->usernum = static_cast<unsigned short>(user_number);
     session()->SetEffectiveSl(255);
-    sysoplogf("#*#*#* Changed to %s", session()->user()->GetUserNameAndNumber(session()->usernum));
+    const string unn = session()->names()->UserName(session()->usernum);
+    sysoplogf("#*#*#* Changed to %s", unn.c_str());
     changedsl();
     session()->UpdateTopScreen();
   } else {

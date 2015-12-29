@@ -293,11 +293,10 @@ void sendout_email(EmailData& data) {
       send_inst_sysstr(i, "You just received email.");
     }
     if (data.an) {
-      logMessage += userRecord.GetUserNameAndNumber(data.user_number);
+      logMessage += session()->names()->UserName(data.user_number);
       sysoplog(logMessage.c_str());
     } else {
-      string tempLogMessage = logMessage;
-      tempLogMessage += userRecord.GetUserNameAndNumber(data.user_number);
+      string tempLogMessage = StrCat(logMessage, session()->names()->UserName(data.user_number));
       sysoplog(tempLogMessage);
       logMessage += ">UNKNOWN<";
     }
@@ -412,7 +411,6 @@ void email(const string& title, int user_number, int system_number, bool forceit
   int nNumUsers = 0;
   messagerec messageRecord;
   char szDestination[81];
-  WUser userRecord;
   net_system_list_rec *csne = nullptr;
   struct {
     int user_number, system_number, net_num;
@@ -456,8 +454,8 @@ void email(const string& title, int user_number, int system_number, bool forceit
   if (system_number == 0) {
     set_net_num(0);
     if (an) {
-      session()->users()->ReadUser(&userRecord, user_number);
-      strcpy(szDestination, userRecord.GetUserNameAndNumber(user_number));
+      const string user_name_number = session()->names()->UserName(user_number);
+      strcpy(szDestination, user_name_number.c_str());
     } else {
       strcpy(szDestination, ">UNKNOWN<");
     }
@@ -583,8 +581,8 @@ void email(const string& title, int user_number, int system_number, bool forceit
     for (int j = 0; j < nNumUsers; j++) {
       if (carbon_copy[j].system_number == 0) {
         set_net_num(0);
-        session()->users()->ReadUser(&userRecord, carbon_copy[j].user_number);
-        strcpy(szDestination, userRecord.GetUserNameAndNumber(carbon_copy[j].user_number));
+        const std::string dest_name = session()->names()->UserName(carbon_copy[j].user_number);
+        strcpy(szDestination, dest_name.c_str());
       } else {
         if (carbon_copy[j].system_number == 1 &&
             carbon_copy[j].user_number == 0 &&
@@ -660,7 +658,6 @@ void email(const string& title, int user_number, int system_number, bool forceit
 
 void imail(int user_number, int system_number) {
   char szInternetAddr[255];
-  WUser userRecord;
 
   int fwdu = user_number;
   bool fwdm = false;
@@ -680,9 +677,10 @@ void imail(int user_number, int system_number) {
 
   int i = 1;
   if (system_number == 0) {
+    WUser userRecord;
     session()->users()->ReadUser(&userRecord, user_number);
     if (!userRecord.IsUserDeleted()) {
-      bout << "|#5E-mail " << userRecord.GetUserNameAndNumber(user_number) << "? ";
+      bout << "|#5E-mail " << session()->names()->UserName(user_number) << "? ";
       if (!yesno()) {
         i = 0;
       }

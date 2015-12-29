@@ -413,9 +413,8 @@ void readmail(int mode) {
               strcat(s, session()->net_networks[nn].name);
             }
           } else {
-            WUser u;
-            session()->users()->ReadUser(&u, m.fromuser);
-            strcat(s, u.GetUserNameAndNumber(m.fromuser));
+            const string unn = session()->names()->UserName(m.fromuser);
+            strcat(s, unn.c_str());
           }
         } else {
           set_net_num(nn);

@@ -1130,7 +1130,8 @@ void config_file_list() {
   strcpy(u.filename, "WWIV50.ZIP");
   strcpy(u.description, "This is a sample description!");
   strcpy(u.date, date());
-  strcpy(reinterpret_cast<char*>(u.upby), session()->user()->GetUserNameAndNumber(session()->usernum));
+  const string username_num = session()->names()->UserName(session()->usernum);
+  strcpy(reinterpret_cast<char*>(u.upby), username_num.c_str());
   u.numdloads = 50;
   u.numbytes = 655535L;
   u.daten = static_cast<uint32_t>(time(nullptr) - 10000);
