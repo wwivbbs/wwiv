@@ -145,6 +145,35 @@ static int GetAnsiStatusAndShowWelcomeScreen() {
   return ans;
 }
 
+static int FindUserByRealName(const std::string& user_name) {
+  if (user_name.empty()) {
+    return 0;
+  }
+
+  bout << "Searching...";
+  bool abort = false;
+  int current_count = 0;
+  for (const auto& n : session()->names()->names_vector()) {
+    if (hangup || abort) { break; }
+    if (++current_count % 25 == 0) {
+      // changed from 15 since computers are faster now-a-days
+      bout << ".";
+    }
+    int current_user = n.number;
+    session()->ReadCurrentUser(current_user);
+    string temp_user_name(session()->user()->GetRealName());
+    StringUpperCase(&temp_user_name);
+    if (user_name == temp_user_name && !session()->user()->IsUserDeleted()) {
+      bout << "|#5Do you mean " << session()->names()->UserName(n.number) << "? ";
+      if (yesno()) {
+        return current_user;
+      }
+    }
+    checka(&abort);
+  }
+  return 0;
+}
+
 static int ShowLoginAndGetUserNumber() {
   bout.nl();
   bout << "Enter number or name or 'NEW'\r\n";
@@ -157,29 +186,8 @@ static int ShowLoginAndGetUserNumber() {
   int user_number = finduser(user_name);
   if (user_number != 0) {
     return user_number;
-  } else if (!user_name.empty()) {
-    bout << "Searching...";
-    bool abort = false;
-    for (int i = 1; i < session()->status_manager()->GetUserCount() && !hangup && !abort; i++) {
-      if (i % 25 == 0) {   // changed from 15 since computers are faster now-a-days
-        bout << ".";
-      }
-      int nTempUserNumber = session()->smallist[i].number;
-      session()->ReadCurrentUser(nTempUserNumber);
-      if (user_name[0] == session()->user()->GetRealName()[0]) {
-        string temp_user_name(session()->user()->GetRealName());
-        StringUpperCase(&temp_user_name);
-        if (user_name == temp_user_name && !session()->user()->IsUserDeleted()) {
-          bout << "|#5Do you mean " << session()->user()->GetUserNameAndNumber(session()->smallist[i].number) << "? ";
-          if (yesno()) {
-            return nTempUserNumber;
-          }
-        }
-      }
-      checka(&abort);
-    }
   }
-  return 0;
+  return FindUserByRealName(user_name);
 }
 
 bool IsPhoneRequired() {

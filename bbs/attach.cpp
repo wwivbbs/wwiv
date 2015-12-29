@@ -86,15 +86,14 @@ void attach_file(int mode) {
         done1 = false;
         bout.nl();
         if (m.tosys == 0) {
-          char buffer[ 255 ];
           session()->users()->ReadUser(&u, m.touser);
           bout << "|#1  To|#7: |#2";
-          strcpy(buffer, u.GetUserNameAndNumber(m.touser));
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da)) &&
               (getslrec(session()->GetEffectiveSl()).ability & ability_read_email_anony) == 0) {
-            strcpy(buffer, ">UNKNOWN<");
+            bout << ">UNKNOWN<";
+          } else {
+            bout << u.GetUserNameAndNumber(m.touser);
           }
-          bout << buffer;
           bout.nl();
         } else {
           bout << "|#1To|#7: |#2User " << m.tosys << " System " << m.touser << wwiv::endl;

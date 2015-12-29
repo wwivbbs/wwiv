@@ -36,53 +36,27 @@ using namespace wwiv::strings;
 // Inserts a record into NAMES.LST
 void InsertSmallRecord(int user_number, const char *name) {
   WStatus *pStatus = session()->status_manager()->BeginTransaction();
-  auto it = session()->smallist.begin();
-  for (; it != session()->smallist.end()
-    && StringCompare(name, reinterpret_cast<char*>((*it).name)) > 0;
-    it++) {}
-  smalrec sr;
-  strcpy(reinterpret_cast<char*>(sr.name), name);
-  sr.number = static_cast<unsigned short>(user_number);
-  session()->smallist.insert(it, sr);
+  session()->names()->Add(name, user_number);
+  session()->names()->Save();
 
   pStatus->IncrementNumUsers();
   pStatus->IncrementFileChangedFlag(WStatus::fileChangeNames);
-  DataFile<smalrec> file(syscfg.datadir, NAMES_LST,
-    File::modeReadWrite | File::modeBinary | File::modeTruncate);
-  if (!file) {
-    std::cerr << file.file().full_pathname() << " NOT FOUND" << std::endl;
-    session()->AbortBBS();
-  }
-  file.WriteVector(session()->smallist);
   session()->status_manager()->CommitTransaction(pStatus);
 }
 
-
-//
 // Deletes a record from NAMES.LST (DeleteSmallRec)
-//
-
 void DeleteSmallRecord(const char *name) {
   WStatus *pStatus = session()->status_manager()->BeginTransaction();
-  auto it = session()->smallist.begin();
-  for (; it != session()->smallist.end()
-    && StringCompare(name, reinterpret_cast<char*>((*it).name)) > 0;
-    it++) {
-  }
-  if (!wwiv::strings::IsEquals(name, reinterpret_cast<char*>((*it).name))) {
+  int found_user = session()->names()->FindUser(name);
+  if (found_user < 1) {
     session()->status_manager()->AbortTransaction(pStatus);
     sysoplogfi(false, "%s NOT ABLE TO BE DELETED#*#*#*#*#*#*#*#", name);
     sysoplog("#*#*#*# Run //resetf to fix it", false);
     return;
   }
-  session()->smallist.erase(it);
+  session()->names()->Remove(found_user);
   --status.users;
-  DataFile<smalrec> file(syscfg.datadir, NAMES_LST,
-    File::modeReadWrite | File::modeBinary | File::modeTruncate);
-  if (!file) {
-    std::cerr << file.file().full_pathname() << " NOT FOUND" << std::endl;
-    session()->AbortBBS();
-  }
-  file.WriteVector(session()->smallist);
+  pStatus->IncrementFileChangedFlag(WStatus::fileChangeNames);
+  session()->names()->Save();
   session()->status_manager()->CommitTransaction(pStatus);
 }

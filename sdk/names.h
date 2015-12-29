@@ -37,7 +37,11 @@ public:
   std::string UserName(uint32_t user_number, uint32_t system_number) const;
   bool Add(const std::string name, uint32_t user_number);
   bool Remove(uint32_t user_number);
+  bool Load();
+  bool Save();
+  int FindUser(const std::string& username);
 
+  const std::vector<smalrec>& names_vector() const { return names_;  }
   std::size_t size() const { return names_.size(); }
   void set_save_on_exit(bool save_on_exit) { save_on_exit_ = save_on_exit; }
   bool save_on_exit() const { return save_on_exit_;  }
