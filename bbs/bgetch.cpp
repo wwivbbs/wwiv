@@ -29,6 +29,8 @@
 #include "bbs/utility.h"
 #include "bbs/vars.h"
 
+using namespace wwiv::sdk;
+
 // Local data structures
 
 static int MACRO_KEY_TABLE[] = { 0, 2, 0, 0, 0, 0, 1 };
@@ -178,7 +180,7 @@ void HandleControlKey(char *ch) {
       toggle_avail();
       break;
     case CY:
-      session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
+      session()->user()->ToggleStatusFlag(User::pauseOnPage);
       break;
     }
   }

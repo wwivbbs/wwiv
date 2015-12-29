@@ -16,12 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "sdk/user.h"
+
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
-#include "bbs/wuser.h"
 #include "core/strings.h"
 #include "core/file.h"
 #include "sdk/names.h"
@@ -29,17 +30,20 @@
 
 using namespace wwiv::strings;
 
-WUser::WUser() {
+namespace wwiv {
+namespace sdk {
+
+User::User() {
   ZeroUserData();
 }
 
-WUser::~WUser() {}
+User::~User() {}
 
-WUser::WUser(const WUser& w) {
+User::User(const User& w) {
   memcpy(&data, &w.data, sizeof(userrec));
 }
 
-WUser& WUser::operator=(const WUser& rhs) {
+User& User::operator=(const User& rhs) {
   if (this == &rhs) {
     return *this;
   }
@@ -47,7 +51,7 @@ WUser& WUser::operator=(const WUser& rhs) {
   return *this;
 }
 
-void WUser::FixUp() {
+void User::FixUp() {
   data.name[sizeof(data.name) - 1]      = '\0';
   data.realname[sizeof(data.realname) - 1]  = '\0';
   data.callsign[sizeof(data.callsign) - 1]  = '\0';
@@ -69,6 +73,9 @@ void WUser::FixUp() {
   data.macros[2][sizeof(data.macros[2]) - 1]  = '\0';
 }
 
-void WUser::ZeroUserData() {
+void User::ZeroUserData() {
   memset(&data, 0, sizeof(userrec));
 }
+
+}  // namespace sdk
+}  // namespace wwiv

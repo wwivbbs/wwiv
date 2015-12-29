@@ -46,6 +46,7 @@ using std::left;
 using std::string;
 using std::vector;
 using wwiv::bbs::InputMode;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 static const int STOP_LIST = 0;
@@ -67,7 +68,7 @@ void select_editor() {
       session()->user()->SetDefaultEditor(1);
     } else {
       session()->user()->SetDefaultEditor(0);
-      session()->user()->ClearStatusFlag(WUser::autoQuote);
+      session()->user()->ClearStatusFlag(User::autoQuote);
     }
     return;
   }
@@ -89,7 +90,7 @@ void select_editor() {
     session()->user()->SetDefaultEditor(nEditor);
   } else if (IsEquals(ss, "0")) {
     session()->user()->SetDefaultEditor(0);
-    session()->user()->ClearStatusFlag(WUser::autoQuote);
+    session()->user()->ClearStatusFlag(User::autoQuote);
   }
 }
 
@@ -115,7 +116,7 @@ static string GetMailBoxStatus() {
     return string("Closed");
   }
 
-  WUser ur;
+  User ur;
   session()->users()->ReadUser(&ur, session()->user()->GetForwardUserNumber());
   if (ur.IsUserDeleted()) {
     session()->user()->SetForwardUserNumber(0);
@@ -782,7 +783,7 @@ void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
       input_ansistat();
       break;
     case '3':
-      session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
+      session()->user()->ToggleStatusFlag(User::pauseOnPage);
       break;
     case '4':
       modify_mailbox();
@@ -803,13 +804,13 @@ void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
       select_editor();
       break;
     case 'A':
-      session()->user()->ToggleStatusFlag(WUser::extraColor);
+      session()->user()->ToggleStatusFlag(User::extraColor);
       break;
     case 'B':
       optional_lines();
       break;
     case 'C':
-      session()->user()->ToggleStatusFlag(WUser::conference);
+      session()->user()->ToggleStatusFlag(User::conference);
       changedsl();
       break;
 
@@ -846,22 +847,22 @@ void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
       break;
     case 'M':
       if (num_instances() > 1) {
-        session()->user()->ClearStatusFlag(WUser::noMsgs);
+        session()->user()->ClearStatusFlag(User::noMsgs);
         bout.nl();
         bout << "|#5Allow messages sent between instances? ";
         if (!yesno()) {
-          session()->user()->SetStatusFlag(WUser::noMsgs);
+          session()->user()->SetStatusFlag(User::noMsgs);
         }
       }
       break;
     case 'S':
-      session()->user()->ToggleStatusFlag(WUser::clearScreen);
+      session()->user()->ToggleStatusFlag(User::clearScreen);
       break;
     case 'T':
-      session()->user()->ToggleStatusFlag(WUser::twentyFourHourClock);
+      session()->user()->ToggleStatusFlag(User::twentyFourHourClock);
       break;
     case 'U':
-      session()->user()->ToggleStatusFlag(WUser::autoQuote);
+      session()->user()->ToggleStatusFlag(User::autoQuote);
       break;
     case 'W':
       enter_regnum();

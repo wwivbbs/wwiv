@@ -21,23 +21,25 @@
 #include <cstring>
 #include <type_traits>
 
-#include "bbs/wuser.h"
+#include "sdk/user.h"
 
 using std::cout;
 using std::endl;
 using std::is_standard_layout;
 using std::string;
 
-TEST(WUserTest, IsStandardLayout) {
-  ASSERT_TRUE(is_standard_layout<WUser>::value);
-  EXPECT_EQ(sizeof(userrec), sizeof(WUser));
+using namespace wwiv::sdk;
+
+TEST(UserTest, IsStandardLayout) {
+  ASSERT_TRUE(is_standard_layout<User>::value);
+  EXPECT_EQ(sizeof(userrec), sizeof(User));
 }
 
-TEST(WUserTest, CanCopyToWUser) {
+TEST(UserTest, CanCopyToUser) {
   userrec u;
   strcpy(reinterpret_cast<char*>(u.name), "Test User");
 
-  WUser user;
+  User user;
   memcpy(&user, &u, sizeof(userrec));
 
   EXPECT_STREQ(reinterpret_cast<char*>(u.name), user.GetName());

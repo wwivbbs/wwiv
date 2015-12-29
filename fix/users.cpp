@@ -21,16 +21,17 @@
 #include <set>
 
 #include "bbs/vars.h"
-#include "bbs/usermanager.h"
-#include "bbs/wuser.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "fix/fix.h"
 #include "fix/log.h"
 #include "fix/users.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 namespace wwiv {
@@ -60,7 +61,7 @@ int FixUsersCommand::Execute() {
 
   const int num_user_records = userMgr.GetNumberOfUserRecords();
 	for(int i = 1; i <= num_user_records; i++) {
-		WUser user;
+		User user;
 		userMgr.ReadUser(&user, i);
 		user.FixUp();
 		userMgr.WriteUser(&user, i);

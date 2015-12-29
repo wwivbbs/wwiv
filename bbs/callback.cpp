@@ -34,8 +34,9 @@
 #include "sdk/filenames.h"
 
 using std::string;
+using namespace wwiv::sdk;
 
-void wwivnode(WUser *pUser, int mode) {
+void wwivnode(User *pUser, int mode) {
   char sysnum[6], s[81];
   int user_number, system_number;
 

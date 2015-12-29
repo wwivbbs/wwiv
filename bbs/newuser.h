@@ -19,7 +19,7 @@
 #define __INCLUDED_BBS_NEWUSER_H__
 
 #include <string>
-#include "bbs/wuser.h"
+#include "sdk/user.h"
 
 void input_dataphone();
 void input_language();
@@ -32,10 +32,10 @@ void input_state();
 void input_country();
 void input_zipcode();
 void input_sex();
-void input_age(WUser *pUser);
+void input_age(wwiv::sdk::User* spUser);
 void input_comptype();
 void input_screensize();
-void input_pw(WUser *pUser);
+void input_pw(wwiv::sdk::User* pUser);
 void input_ansistat();
 void newuser();
 

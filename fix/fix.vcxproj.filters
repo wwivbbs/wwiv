@@ -33,13 +33,7 @@
     <ClCompile Include="..\bbs\platform\win32\utility2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\bbs\WUser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\bbs\datetime.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\bbs\usermanager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -60,18 +54,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\bbs\platform\platformfcns.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\bbs\platform\WFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\bbs\platform\wfndfile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\bbs\WStringUtils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\bbs\WUser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

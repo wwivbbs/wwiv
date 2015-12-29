@@ -52,6 +52,7 @@ using std::vector;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 using wwiv::os::random_number;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 
@@ -364,7 +365,7 @@ void wfc_update() {
   }
 
   instancerec ir;
-  WUser u;
+  User u;
 
   get_inst_info(inst_num, &ir);
   session()->users()->ReadUserNoCache(&u, ir.user);
@@ -392,7 +393,7 @@ void wfc_update() {
 void wfc_screen() {
   char szBuffer[ 255 ];
   instancerec ir;
-  WUser u;
+  User u;
   static double wfc_time = 0, poll_time = 0;
 
   if (!session()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {

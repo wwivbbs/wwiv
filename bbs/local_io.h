@@ -37,13 +37,13 @@ class LocalIO {
   LocalIO(const LocalIO& copy) = delete;
   virtual ~LocalIO();
 
-  static const int cursorNone = 0;
-  static const int cursorNormal = 1;
-  static const int cursorSolid = 2;
+  static constexpr int cursorNone = 0;
+  static constexpr int cursorNormal = 1;
+  static constexpr int cursorSolid = 2;
 
-  static const int topdataNone = 0;
-  static const int topdataSystem = 1;
-  static const int topdataUser = 2;
+  static constexpr int topdataNone = 0;
+  static constexpr int topdataSystem = 1;
+  static constexpr int topdataUser = 2;
 
   void SetChatReason(const std::string& chat_reason) { m_chatReason = chat_reason; }
   void ClearChatReason() { m_chatReason.clear(); }

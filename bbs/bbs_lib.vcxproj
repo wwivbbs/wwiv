@@ -166,7 +166,6 @@
     <ClInclude Include="sysoplog.h" />
     <ClInclude Include="template.h" />
     <ClInclude Include="uedit.h" />
-    <ClInclude Include="usermanager.h" />
     <ClInclude Include="utility.h" />
     <ClInclude Include="valscan.h" />
     <ClInclude Include="vars.h" />
@@ -180,7 +179,6 @@
     <ClInclude Include="woutstreambuffer.h" />
     <ClInclude Include="wsession.h" />
     <ClInclude Include="wstatus.h" />
-    <ClInclude Include="wuser.h" />
     <ClInclude Include="wwivcolors.h" />
     <ClInclude Include="wwiv_windows.h" />
     <ClInclude Include="xfer.h" />
@@ -296,7 +294,6 @@
     <ClCompile Include="trytoul.cpp" />
     <ClCompile Include="uedit.cpp" />
     <ClCompile Include="user.cpp" />
-    <ClCompile Include="usermanager.cpp" />
     <ClCompile Include="utility.cpp" />
     <ClCompile Include="valscan.cpp" />
     <ClCompile Include="vote.cpp" />
@@ -309,7 +306,6 @@
     <ClCompile Include="WOutStreamBuffer.cpp" />
     <ClCompile Include="wqscn.cpp" />
     <ClCompile Include="WSession.cpp" />
-    <ClCompile Include="WUser.cpp" />
     <ClCompile Include="xfer.cpp" />
     <ClCompile Include="xferovl.cpp" />
     <ClCompile Include="xferovl1.cpp" />

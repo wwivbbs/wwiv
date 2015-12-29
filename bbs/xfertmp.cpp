@@ -45,6 +45,7 @@
 using std::function;
 using std::string;
 using std::vector;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 bool bad_filename(const char *file_name) {
@@ -917,7 +918,7 @@ void move_file_t() {
 
 void removefile() {
   uploadsrec u;
-  WUser uu;
+  User uu;
 
   dliscan();
   bout.nl();

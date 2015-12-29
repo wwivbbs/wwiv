@@ -46,10 +46,11 @@ using std::string;
 using std::unique_ptr;
 using wwiv::bbs::TempDisablePause;
 using wwiv::bbs::SaveQScanPointers;
+using namespace wwiv::sdk;
 
 void kill_old_email() {
   mailrec m, m1;
-  WUser user;
+  User user;
   filestatusrec fsr;
 
   bout << "|#5List mail starting at most recent? ";
@@ -212,7 +213,7 @@ void list_users(int mode) {
   directoryrec d;
   memset(&s, 0, sizeof(subboardrec));
   memset(&d, 0, sizeof(directoryrec));
-  WUser user;
+  User user;
   char szFindText[21];
 
   if (usub[session()->GetCurrentMessageArea()].subnum == -1 && mode == LIST_USERS_MESSAGE_AREA) {

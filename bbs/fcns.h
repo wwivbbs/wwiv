@@ -24,10 +24,9 @@
 #include <string>
 
 #include "core/file.h"
-#include "sdk/vardec.h"
 #include "sdk/net.h"
-
-class WUser;
+#include "sdk/user.h"
+#include "sdk/vardec.h"
 
 // File: bbsutl.cpp
 #include "bbs/bbsutl.h"
@@ -92,7 +91,7 @@ void write_inet_addr(const char *internet_address, int user_number);
 void send_inst_sysstr(int whichinst, const char *send_string);
 
 // File: lilo.cpp
-bool IsPhoneNumberUSAFormat(WUser *pUser);
+bool IsPhoneNumberUSAFormat(wwiv::sdk::User* pUser);
 void getuser();
 void logon();
 void logoff();
@@ -183,7 +182,7 @@ void chat1(char *chat_line, bool two_way);
 #include "bbs/sysopf.h"
 
 // File: user.cpp
-bool okconf(WUser *pUser);
+bool okconf(wwiv::sdk::User *pUser);
 void add_ass(int num_points, const char *reason);
 
 // File: utility.cpp

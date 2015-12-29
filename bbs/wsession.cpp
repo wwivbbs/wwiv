@@ -92,6 +92,7 @@ using std::string;
 using std::unique_ptr;
 using wwiv::bbs::InputMode;
 using namespace wwiv::os;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 extern time_t last_time_c;
@@ -629,7 +630,7 @@ int WSession::LocalLogon() {
         return lokb;
       }
 
-      WUser tu;
+      User tu;
       users()->ReadUserNoCache(&tu, m_unx);
       if (tu.GetSl() != 255 || tu.IsUserDeleted()) {
         return lokb;

@@ -25,58 +25,61 @@
 #include <string>
 #include "sdk/vardec.h"
 
+namespace wwiv {
+namespace sdk {
+
 /**
  * User Class - Represents a User record
  */
-class WUser {
+class User {
  public:
   // Constants
 
   // USERREC.inact
-  static const int userDeleted                = 0x01;
-  static const int userInactive               = 0x02;
+  static constexpr int userDeleted                = 0x01;
+  static constexpr int userInactive               = 0x02;
 
   // USERREC.exempt
-  static const int exemptRatio                = 0x01;
-  static const int exemptTime                 = 0x02;
-  static const int exemptPost                 = 0x04;
-  static const int exemptAll                  = 0x08;
-  static const int exemptAutoDelete           = 0x10;
+  static constexpr int exemptRatio                = 0x01;
+  static constexpr int exemptTime                 = 0x02;
+  static constexpr int exemptPost                 = 0x04;
+  static constexpr int exemptAll                  = 0x08;
+  static constexpr int exemptAutoDelete           = 0x10;
 
   // USERREC.restrict
-  static const int restrictLogon              = 0x0001;
-  static const int restrictChat               = 0x0002;
-  static const int restrictValidate           = 0x0004;
-  static const int restrictAutomessage        = 0x0008;
-  static const int restrictAnony              = 0x0010;
-  static const int restrictPost               = 0x0020;
-  static const int restrictEmail              = 0x0040;
-  static const int restrictVote               = 0x0080;
-  static const int restrictMultiNodeChat      = 0x0100;
-  static const int restrictNet                = 0x0200;
-  static const int restrictUpload             = 0x0400;
+  static constexpr int restrictLogon              = 0x0001;
+  static constexpr int restrictChat               = 0x0002;
+  static constexpr int restrictValidate           = 0x0004;
+  static constexpr int restrictAutomessage        = 0x0008;
+  static constexpr int restrictAnony              = 0x0010;
+  static constexpr int restrictPost               = 0x0020;
+  static constexpr int restrictEmail              = 0x0040;
+  static constexpr int restrictVote               = 0x0080;
+  static constexpr int restrictMultiNodeChat      = 0x0100;
+  static constexpr int restrictNet                = 0x0200;
+  static constexpr int restrictUpload             = 0x0400;
 
   // USERREC.sysstatus
-  static const int ansi                       = 0x00000001;
-  static const int color                      = 0x00000002;
-  static const int music                      = 0x00000004;
-  static const int pauseOnPage                = 0x00000008;
-  static const int expert                     = 0x00000010;
-  static const int SMW                        = 0x00000020;
-  static const int fullScreen                 = 0x00000040;
-  static const int nscanFileSystem            = 0x00000080;
-  static const int extraColor                 = 0x00000100;
-  static const int clearScreen                = 0x00000200;
-  static const int upperASCII                 = 0x00000400;
-  static const int noTag                      = 0x00000800;
-  static const int conference                 = 0x00001000;
-  static const int noChat                     = 0x00002000;
-  static const int noMsgs                     = 0x00004000;
-  static const int menuSys                    = 0x00008000; // not used?
-  static const int listPlus                   = 0x00010000;
-  static const int autoQuote                  = 0x00020000;
-  static const int twentyFourHourClock        = 0x00040000;
-  static const int msgPriority                = 0x00080000;  // not used?
+  static constexpr int ansi                       = 0x00000001;
+  static constexpr int color                      = 0x00000002;
+  static constexpr int music                      = 0x00000004;
+  static constexpr int pauseOnPage                = 0x00000008;
+  static constexpr int expert                     = 0x00000010;
+  static constexpr int SMW                        = 0x00000020;
+  static constexpr int fullScreen                 = 0x00000040;
+  static constexpr int nscanFileSystem            = 0x00000080;
+  static constexpr int extraColor                 = 0x00000100;
+  static constexpr int clearScreen                = 0x00000200;
+  static constexpr int upperASCII                 = 0x00000400;
+  static constexpr int noTag                      = 0x00000800;
+  static constexpr int conference                 = 0x00001000;
+  static constexpr int noChat                     = 0x00002000;
+  static constexpr int noMsgs                     = 0x00004000;
+  static constexpr int menuSys                    = 0x00008000; // not used?
+  static constexpr int listPlus                   = 0x00010000;
+  static constexpr int autoQuote                  = 0x00020000;
+  static constexpr int twentyFourHourClock        = 0x00040000;
+  static constexpr int msgPriority                = 0x00080000;  // not used?
 
   //
   // Data
@@ -88,11 +91,11 @@ class WUser {
   //
   // Constructors and Destructors
   //
-  WUser();
-  ~WUser();
+  User();
+  ~User();
 
-  WUser(const WUser& w);
-  WUser& operator=(const WUser& rhs);
+  User(const User& w);
+  User& operator=(const User& rhs);
 
   //
   // Member Functions
@@ -116,10 +119,10 @@ class WUser {
   }
   bool IsUserDeleted() const {
     /* printf( "DEBUG: User %s is deleted!\r\n", data.name );  */
-    return (data.inact & WUser::userDeleted) != 0;
+    return (data.inact & User::userDeleted) != 0;
   }
   bool IsUserInactive() const             {
-    return (data.inact & WUser::userInactive) != 0;
+    return (data.inact & User::userInactive) != 0;
   }
 
   // USERREC.sysstatus
@@ -142,55 +145,55 @@ class WUser {
     data.sysstatus = static_cast<uint32_t>(l);
   }
   bool HasAnsi() const                    {
-    return HasStatusFlag(WUser::ansi);
+    return HasStatusFlag(User::ansi);
   }
   bool HasColor() const                   {
-    return HasStatusFlag(WUser::color);
+    return HasStatusFlag(User::color);
   }
   bool HasMusic() const                   {
-    return HasStatusFlag(WUser::music);
+    return HasStatusFlag(User::music);
   }
   bool HasPause() const                   {
-    return HasStatusFlag(WUser::pauseOnPage);
+    return HasStatusFlag(User::pauseOnPage);
   }
   bool IsExpert() const                   {
-    return HasStatusFlag(WUser::expert);
+    return HasStatusFlag(User::expert);
   }
   bool HasShortMessage() const            {
-    return HasStatusFlag(WUser::SMW);
+    return HasStatusFlag(User::SMW);
   }
   bool IsFullScreen() const               {
-    return HasStatusFlag(WUser::fullScreen);
+    return HasStatusFlag(User::fullScreen);
   }
   bool IsNewScanFiles() const             {
-    return HasStatusFlag(WUser::nscanFileSystem);
+    return HasStatusFlag(User::nscanFileSystem);
   }
   bool IsUseExtraColor() const            {
-    return HasStatusFlag(WUser::extraColor);
+    return HasStatusFlag(User::extraColor);
   }
   bool IsUseClearScreen() const           {
-    return HasStatusFlag(WUser::clearScreen);
+    return HasStatusFlag(User::clearScreen);
   }
   bool IsUseNoTagging() const             {
-    return HasStatusFlag(WUser::noTag);
+    return HasStatusFlag(User::noTag);
   }
   bool IsUseConference() const            {
-    return HasStatusFlag(WUser::conference);
+    return HasStatusFlag(User::conference);
   }
   bool IsIgnoreChatRequests() const       {
-    return HasStatusFlag(WUser::noChat);
+    return HasStatusFlag(User::noChat);
   }
   bool IsIgnoreNodeMessages() const       {
-    return HasStatusFlag(WUser::noMsgs);
+    return HasStatusFlag(User::noMsgs);
   }
   bool IsUseListPlus() const              {
-    return HasStatusFlag(WUser::listPlus);
+    return HasStatusFlag(User::listPlus);
   }
   bool IsUseAutoQuote() const             {
-    return HasStatusFlag(WUser::autoQuote);
+    return HasStatusFlag(User::autoQuote);
   }
   bool IsUse24HourClock() const           {
-    return HasStatusFlag(WUser::twentyFourHourClock);
+    return HasStatusFlag(User::twentyFourHourClock);
   };
 
   // USERREC.exempt
@@ -208,19 +211,19 @@ class WUser {
   }
 
   bool IsExemptRatio()                    {
-    return HasExemptFlag(WUser::exemptRatio);
+    return HasExemptFlag(User::exemptRatio);
   }
   bool IsExemptTime()                     {
-    return HasExemptFlag(WUser::exemptTime);
+    return HasExemptFlag(User::exemptTime);
   }
   bool IsExemptPost()                     {
-    return HasExemptFlag(WUser::exemptPost);
+    return HasExemptFlag(User::exemptPost);
   }
   bool IsExemptAll()                      {
-    return HasExemptFlag(WUser::exemptAll);
+    return HasExemptFlag(User::exemptAll);
   }
   bool IsExemptAutoDelete()               {
-    return HasExemptFlag(WUser::exemptAutoDelete);
+    return HasExemptFlag(User::exemptAutoDelete);
   }
 
   // USERREC.restrict
@@ -244,37 +247,37 @@ class WUser {
   }
 
   bool IsRestrictionLogon()                   {
-    return HasRestrictionFlag(WUser::restrictLogon);
+    return HasRestrictionFlag(User::restrictLogon);
   }
   bool IsRestrictionChat()                    {
-    return HasRestrictionFlag(WUser::restrictChat);
+    return HasRestrictionFlag(User::restrictChat);
   }
   bool IsRestrictionValidate()                {
-    return HasRestrictionFlag(WUser::restrictValidate);
+    return HasRestrictionFlag(User::restrictValidate);
   }
   bool IsRestrictionAutomessage()             {
-    return HasRestrictionFlag(WUser::restrictAutomessage);
+    return HasRestrictionFlag(User::restrictAutomessage);
   }
   bool IsRestrictionAnonymous()               {
-    return HasRestrictionFlag(WUser::restrictAnony);
+    return HasRestrictionFlag(User::restrictAnony);
   }
   bool IsRestrictionPost()                    {
-    return HasRestrictionFlag(WUser::restrictPost);
+    return HasRestrictionFlag(User::restrictPost);
   }
   bool IsRestrictionEmail()                   {
-    return HasRestrictionFlag(WUser::restrictEmail);
+    return HasRestrictionFlag(User::restrictEmail);
   }
   bool IsRestrictionVote()                    {
-    return HasRestrictionFlag(WUser::restrictVote);
+    return HasRestrictionFlag(User::restrictVote);
   }
   bool IsRestrictionMultiNodeChat()           {
-    return HasRestrictionFlag(WUser::restrictMultiNodeChat);
+    return HasRestrictionFlag(User::restrictMultiNodeChat);
   }
   bool IsRestrictionNet()                     {
-    return HasRestrictionFlag(WUser::restrictNet);
+    return HasRestrictionFlag(User::restrictNet);
   }
   bool IsRestrictionUpload()                  {
-    return HasRestrictionFlag(WUser::restrictUpload);
+    return HasRestrictionFlag(User::restrictUpload);
   }
 
   void SetArFlag(int nFlag)                 {
@@ -838,5 +841,8 @@ class WUser {
     SetForwardUserNumber(0);
   }
 };
+
+}  // namespace sdk
+}  // namespace wwiv
 
 #endif // __INCLUDED_PLATFORM_WUSER_H__

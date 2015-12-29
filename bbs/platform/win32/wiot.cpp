@@ -25,7 +25,7 @@
 #include <memory>
 #include <process.h>
 
-#include "bbs/wuser.h"
+#include "sdk/user.h"
 #include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
 #include "core/file.h"

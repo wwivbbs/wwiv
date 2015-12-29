@@ -41,6 +41,7 @@ static int nSecondUserRecLoaded;            // Whos config is loaded
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
@@ -487,7 +488,7 @@ bool LoadMenuSetup(int user_number) {
   if (!userConfig.Exists()) {
     return false;
   }
-  WUser user;
+  User user;
   session()->users()->ReadUser(&user, user_number);
   if (userConfig.Open(File::modeReadOnly | File::modeBinary)) {
     userConfig.Seek(user_number * sizeof(user_config), File::seekBegin);
@@ -511,7 +512,7 @@ void WriteMenuSetup(int user_number) {
     return;
   }
 
-  WUser user;
+  User user;
   session()->users()->ReadUser(&user, user_number);
   strcpy(pSecondUserRec->name, user.GetName());
 

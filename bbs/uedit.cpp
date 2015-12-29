@@ -36,10 +36,11 @@
 #include "bbs/keycodes.h"
 #include "sdk/filenames.h"
 
-using namespace wwiv::bbs;
 using std::string;
 using std::unique_ptr;
-using wwiv::strings::IsEquals;
+using namespace wwiv::bbs;
+using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 static uint32_t *u_qsc = 0;
 static char *sp = nullptr;
@@ -47,17 +48,17 @@ static char search_pattern[81];
 char *daten_to_date(time_t dt);
 
 int  matchuser(int user_number);
-int  matchuser(WUser * pUser);
+int  matchuser(User * pUser);
 void changeopt();
 
 void deluser(int user_number) {
-  WUser user;
+  User user;
   session()->users()->ReadUser(&user, user_number);
 
   if (!user.IsUserDeleted()) {
     rsm(user_number, &user, false);
     DeleteSmallRecord(user.GetName());
-    user.SetInactFlag(WUser::userDeleted);
+    user.SetInactFlag(User::userDeleted);
     user.SetNumMailWaiting(0);
     session()->users()->WriteUser(&user, user_number);
     unique_ptr<File> pFileEmail(OpenEmailFile(true));
@@ -102,7 +103,7 @@ void deluser(int user_number) {
   }
 }
 
-void print_data(int user_number, WUser *pUser, bool bLongFormat, bool bClearScreen) {
+void print_data(int user_number, User *pUser, bool bLongFormat, bool bClearScreen) {
   char s[81], s1[81], s2[81], s3[81];
 
   if (bClearScreen) {
@@ -261,14 +262,14 @@ void print_data(int user_number, WUser *pUser, bool bLongFormat, bool bClearScre
 }
 
 int matchuser(int user_number) {
-  WUser user;
+  User user;
   session()->users()->ReadUser(&user, user_number);
   sp = search_pattern;
   return matchuser(&user);
 }
 
 
-int matchuser(WUser *pUser) {
+int matchuser(User *pUser) {
   int ok = 1, _not = 0, less = 0, cpf = 0, cpp = 0;
   int  _and = 1, gotfcn = 0, evalit = 0, tmp, tmp1, tmp2;
   char fcn[20], parm[80], ts[40];
@@ -445,7 +446,7 @@ void changeopt() {
 }
 
 
-void auto_val(int n, WUser *pUser) {
+void auto_val(int n, User *pUser) {
   if (pUser->GetSl() == 255) {
     return;
   }
@@ -466,7 +467,7 @@ void auto_val(int n, WUser *pUser) {
 void uedit(int usern, int other) {
   char s[81];
   bool bClearScreen = true;
-  WUser user;
+  User user;
 
   u_qsc = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len));
 
@@ -738,7 +739,7 @@ void uedit(int usern, int other) {
         break;
       case 'R':
         if (user.IsUserDeleted()) {
-          user.ToggleInactFlag(WUser::userDeleted);
+          user.ToggleInactFlag(User::userDeleted);
           InsertSmallRecord(user_number, user.GetName());
           session()->users()->WriteUser(&user, user_number);
 
@@ -1122,7 +1123,7 @@ char *daten_to_date(time_t dt) {
 }
 
 
-void print_affil(WUser *pUser) {
+void print_affil(User *pUser) {
   net_system_list_rec *csne;
 
   if (pUser->GetForwardNetNumber() == 0 || pUser->GetHomeSystemNumber() == 0) {

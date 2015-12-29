@@ -25,7 +25,8 @@
 #include "sdk/filenames.h"
 
 using std::string;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 // Local function prototypes
 void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char *messageText);
@@ -35,7 +36,7 @@ void SendRemoteShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char
  * Handles reading short messages. This is also where PackScan file requests
  * plug in, if such are used.
  */
-void rsm(int nUserNum, WUser *pUser, bool bAskToSaveMsgs) {
+void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
   bool bShownAnyMessage = false;
   int bShownAllMessages = true;
   if (pUser->HasShortMessage()) {
@@ -85,12 +86,12 @@ void rsm(int nUserNum, WUser *pUser, bool bAskToSaveMsgs) {
     bout.nl();
   }
   if (bShownAllMessages) {
-    pUser->SetStatusFlag(WUser::SMW);
+    pUser->SetStatusFlag(User::SMW);
   }
 }
 
 void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char *messageText) {
-  WUser user;
+  User user;
   session()->users()->ReadUser(&user, nUserNum);
   if (!user.IsUserDeleted()) {
     File file(syscfg.datadir, SMW_DAT);
@@ -121,7 +122,7 @@ void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char 
     file.Seek(nNewMsgPos * sizeof(shortmsgrec), File::seekBegin);
     file.Write(&sm, sizeof(shortmsgrec));
     file.Close();
-    user.SetStatusFlag(WUser::SMW);
+    user.SetStatusFlag(User::SMW);
     session()->users()->WriteUser(&user, nUserNum);
   }
 }

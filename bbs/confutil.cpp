@@ -23,11 +23,13 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
+using namespace wwiv::sdk;
+
 // Local functions
 bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber);
-bool access_conf(WUser * u, int sl, confrec * c);
-bool access_sub(WUser * u, int sl, subboardrec * s);
-bool access_dir(WUser * u, int sl, directoryrec * d);
+bool access_conf(User * u, int sl, confrec * c);
+bool access_sub(User * u, int sl, subboardrec * s);
+bool access_dir(User * u, int sl, directoryrec * d);
 void addusub(usersubrec * ss1, int ns, int sub, char key);
 
 
@@ -35,7 +37,7 @@ void addusub(usersubrec * ss1, int ns, int sub, char key);
  * Does user u have access to the conference
  * @return bool
  */
-bool access_conf(WUser * u, int sl, confrec * c) {
+bool access_conf(User * u, int sl, confrec * c) {
   WWIV_ASSERT(u);
   WWIV_ASSERT(c);
 
@@ -86,7 +88,7 @@ bool access_conf(WUser * u, int sl, confrec * c) {
 }
 
 
-bool access_sub(WUser * u, int sl, subboardrec * s) {
+bool access_sub(User * u, int sl, subboardrec * s) {
   WWIV_ASSERT(u);
   WWIV_ASSERT(s);
 
@@ -107,7 +109,7 @@ bool access_sub(WUser * u, int sl, subboardrec * s) {
 }
 
 
-bool access_dir(WUser * u, int sl, directoryrec * d) {
+bool access_dir(User * u, int sl, directoryrec * d) {
   WWIV_ASSERT(u);
   WWIV_ASSERT(d);
 

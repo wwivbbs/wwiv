@@ -23,7 +23,7 @@
 #include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/wconstants.h"
-#include "bbs/wuser.h"
+#include "sdk/user.h"
 #include "bbs/wsession.h"
 #include "bbs/vars.h"
 #include "bbs/wstatus.h"
@@ -32,6 +32,7 @@
 #include "sdk/filenames.h"
 
 using std::string;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 //
@@ -48,7 +49,7 @@ using namespace wwiv::strings;
 //  -2      = WWIVnet
 //
 int finduser(const string& searchString) {
-  WUser user;
+  User user;
 
   guest_user = false;
   session()->users()->SetUserWritesAllowed(true);

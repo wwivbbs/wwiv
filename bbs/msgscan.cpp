@@ -63,6 +63,7 @@ static char s_szFindString[21];
 using std::string;
 using std::unique_ptr;
 using wwiv::endl;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan) {
@@ -1095,7 +1096,7 @@ void HandleMessageDelete(int &nMessageNumber) {
       delete_message(nMessageNumber);
       close_sub();
       if (p2.ownersys == 0) {
-        WUser tu;
+        User tu;
         session()->users()->ReadUser(&tu, p2.owneruser);
         if (!tu.IsUserDeleted()) {
           if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(p2.daten)) {

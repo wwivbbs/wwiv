@@ -60,11 +60,13 @@
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
 
 using std::string;
 using wwiv::bbs::InputMode;
 using wwiv::bbs::TempDisablePause;
 using namespace wwiv::menus;
+using namespace wwiv::sdk;
 
 void UnQScan() {
   bout.nl();
@@ -385,7 +387,7 @@ void Vote() {
 }
 
 void ToggleExpert() {
-  session()->user()->ToggleStatusFlag(WUser::expert);
+  session()->user()->ToggleStatusFlag(User::expert);
 }
 
 void ExpressScan() {

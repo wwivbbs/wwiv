@@ -33,6 +33,7 @@ using std::endl;
 using std::string;
 
 using wwiv::bbs::TempDisablePause;
+using wwiv::sdk::User;
 
 class PauseTest : public ::testing::Test {
 protected:
@@ -44,7 +45,7 @@ protected:
 };
 
 TEST_F(PauseTest, Smoke) {
-  helper.user()->SetStatusFlag(WUser::pauseOnPage);
+  helper.user()->SetStatusFlag(User::pauseOnPage);
   {
     TempDisablePause disable_pause;
     EXPECT_FALSE(helper.user()->HasPause());

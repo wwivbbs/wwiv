@@ -38,6 +38,9 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+
+using namespace wwiv::sdk;
 
 #define NUM_ATTEMPTS_TO_OPEN_EMAIL 5
 #define DELAY_BETWEEN_EMAIL_ATTEMPTS 9
@@ -57,7 +60,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
     return false;
   }
 
-  WUser userRecord;
+  User userRecord;
   session()->users()->ReadUser(&userRecord, *pUserNumber);
   if (userRecord.IsUserDeleted()) {
     return false;
@@ -282,7 +285,7 @@ void sendout_email(EmailData& data) {
   }
   string logMessage = "Mail sent to ";
   if (data.system_number == 0) {
-    WUser userRecord;
+    User userRecord;
     session()->users()->ReadUser(&userRecord, data.user_number);
     userRecord.SetNumMailWaiting(userRecord.GetNumMailWaiting() + 1);
     session()->users()->WriteUser(&userRecord, data.user_number);
@@ -366,7 +369,7 @@ bool ok_to_mail(int user_number, int system_number, bool bForceit) {
     if (user_number == 0) {
       return false;
     }
-    WUser userRecord;
+    User userRecord;
     session()->users()->ReadUser(&userRecord, user_number);
     if ((userRecord.GetSl() == 255 && userRecord.GetNumMailWaiting() > (syscfg.maxwaiting * 5)) ||
         (userRecord.GetSl() != 255 && userRecord.GetNumMailWaiting() > syscfg.maxwaiting) ||
@@ -677,7 +680,7 @@ void imail(int user_number, int system_number) {
 
   int i = 1;
   if (system_number == 0) {
-    WUser userRecord;
+    User userRecord;
     session()->users()->ReadUser(&userRecord, user_number);
     if (!userRecord.IsUserDeleted()) {
       bout << "|#5E-mail " << session()->names()->UserName(user_number) << "? ";
@@ -705,7 +708,7 @@ void imail(int user_number, int system_number) {
 
 void delmail(File *pFile, int loc) {
   mailrec m, m1;
-  WUser user;
+  User user;
 
   pFile->Seek(static_cast<long>(loc * sizeof(mailrec)), File::seekBegin);
   pFile->Read(&m, sizeof(mailrec));

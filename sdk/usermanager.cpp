@@ -16,20 +16,23 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/usermanager.h"
+#include "sdk/usermanager.h"
 
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
-#include "bbs/wuser.h"
 #include "core/strings.h"
 #include "core/file.h"
 #include "sdk/names.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
 
 using namespace wwiv::strings;
+
+namespace wwiv {
+namespace sdk {
 
 /////////////////////////////////////////////////////////////////////////////
 // class UserManager
@@ -50,7 +53,7 @@ int  UserManager::GetNumberOfUserRecords() const {
   return 0;
 }
 
-bool UserManager::ReadUserNoCache(WUser *pUser, int user_number) {
+bool UserManager::ReadUserNoCache(User *pUser, int user_number) {
   File userList(data_directory_, USER_LST);
   if (!userList.Open(File::modeReadOnly | File::modeBinary)) {
     pUser->data.inact = inact_deleted;
@@ -72,11 +75,11 @@ bool UserManager::ReadUserNoCache(WUser *pUser, int user_number) {
   return true;
 }
 
-bool UserManager::ReadUser(WUser *pUser, int user_number) {
+bool UserManager::ReadUser(User *pUser, int user_number) {
   return this->ReadUserNoCache(pUser, user_number);
 }
 
-bool UserManager::WriteUserNoCache(WUser *pUser, int user_number) {
+bool UserManager::WriteUserNoCache(User *pUser, int user_number) {
   File userList(data_directory_, USER_LST);
   if (userList.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     long pos = static_cast<long>(userrec_length_) * static_cast<long>(user_number);
@@ -87,10 +90,13 @@ bool UserManager::WriteUserNoCache(WUser *pUser, int user_number) {
   return false;
 }
 
-bool UserManager::WriteUser(WUser *pUser, int user_number) {
+bool UserManager::WriteUser(User *pUser, int user_number) {
   if (user_number < 1 || user_number > max_number_users_ || !IsUserWritesAllowed()) {
     return true;
   }
 
   return this->WriteUserNoCache(pUser, user_number);
 }
+
+}  // namespace sdk
+}  // namespace wwiv

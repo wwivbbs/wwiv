@@ -75,8 +75,7 @@ using wwiv::bbs::TempDisablePause;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::strings;
-using wwiv::sdk::Config;
-using wwiv::sdk::Names;
+using namespace wwiv::sdk;
 
 uint32_t GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, uint32_t flags);
 
@@ -1094,7 +1093,7 @@ void WSession::create_phone_file() {
   }
 
   for (int16_t nTempUserNumber = 1; nTempUserNumber <= numOfRecords; nTempUserNumber++) {
-    WUser user;
+    User user;
     users()->ReadUser(&user, nTempUserNumber);
     if (!user.IsUserDeleted()) {
       p.usernum = nTempUserNumber;
