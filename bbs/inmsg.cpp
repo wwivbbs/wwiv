@@ -620,8 +620,7 @@ bool inmsg(MessageEditorData& data) {
   } else if (data.silent_mode) {
     b << syscfg.sysopname << " #1" << crlf;
   } else {
-    wwiv::sdk::Names names(*session()->config());
-    const string name = names.UserName(session()->usernum, net_sysnum);
+    const string name = session()->names()->UserName(session()->usernum, net_sysnum);
     b << name << crlf;
   }
 

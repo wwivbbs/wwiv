@@ -161,10 +161,12 @@ bool StatusMgr::Get(bool bLockFile) {
     for (int i = 0; i < 7; i++) {
       if (oldFileChangeFlags[i] != status.filechange[i]) {
         switch (i) {
-        case WStatus::fileChangeNames: {        // re-read names.lst
-          DataFile<smalrec> file(syscfg.datadir, NAMES_LST);
-          if (file) {
-            file.ReadVector(session()->smallist, status.users);
+        case WStatus::fileChangeNames: {        
+          // re-read names.lst
+          if (session()->names()) {
+            // We may not have the BBS initialized yet, so only
+            // re-read the names file if it's changed from another node.
+            session()->names()->Load();
           }
         } break;
         case WStatus::fileChangeUpload:

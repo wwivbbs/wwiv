@@ -865,7 +865,6 @@ class WUserManager {
    bool ReadUser(WUser *pUser, int user_number, bool bForceRead = false);
    bool WriteUserNoCache(WUser *pUser, int user_number);
    bool WriteUser(WUser *pUser, int user_number);
-   int FindUser(std::string searchString);
 
   /**
    * Setting this to false will disable writing the userrecord to disk.  This should ONLY be false when the

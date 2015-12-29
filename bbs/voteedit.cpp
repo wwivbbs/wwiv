@@ -182,11 +182,11 @@ void voteprint() {
         text.str("     ");
         text << v.responses[i2].response << "\r\n";
         votingText.Write(text.str());
-        for (int i3 = 0; i3 < session()->status_manager()->GetUserCount(); i3++) {
-          if (x[i1 + 20 * session()->smallist[i3].number] == i2 + 1) {
+        for (const auto& n : session()->names()->names_vector()) {
+          if (x[i1 + 20 * n.number] == i2 + 1) {
             text.clear();
             text.str("          ");
-            text << session()->smallist[i3].name << " #" << session()->smallist[i3].number << "\r\n";
+            text << n.name << " #" << n.number << "\r\n";
             votingText.Write(text.str());
           }
         }

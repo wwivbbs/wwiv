@@ -38,11 +38,7 @@ namespace wwiv {
 namespace sdk {
 
 Names::Names(wwiv::sdk::Config& config) : data_directory_(config.datadir()) {
-  DataFile<smalrec> file(data_directory_, NAMES_LST);
-  if (file) {
-    file.ReadVector(names_);
-    loaded_ = true;
-  }
+  loaded_ = Load();
 }
 
 static smalrec smalrec_for(uint32_t user_number, const std::vector<smalrec>& names) {
@@ -106,17 +102,39 @@ bool Names::Remove(uint32_t user_number) {
   return true;
 }
 
+bool Names::Load() {
+  DataFile<smalrec> file(data_directory_, NAMES_LST);
+  if (!file) {
+    return false;
+  }
+  names_.clear();
+  return file.ReadVector(names_);
+}
+
+bool Names::Save() {
+  DataFile<smalrec> file(data_directory_, NAMES_LST,
+    File::modeReadWrite | File::modeBinary | File::modeTruncate);
+  if (!file) {
+    clog << "Error saving NAMES.LST" << endl;
+    return false;
+  }
+  return file.WriteVector(names_);
+}
+
+int Names::FindUser(const std::string& search_string) {
+  for (const auto& n : names_) {
+    if (IsEqualsIgnoreCase(search_string.c_str(), reinterpret_cast<const char*>(n.name))) {
+      return n.number;
+    }
+  }
+  return 0;
+}
+
 Names::~Names() {
   if (!save_on_exit_) {
     return;
   }
-  DataFile<smalrec> file(data_directory_, NAMES_LST,
-    File::modeReadWrite | File::modeBinary | File::modeTruncate);
-  if (file) {
-    file.WriteVector(names_);
-  } else {
-    clog << "Error saving NAMES.LST" << endl;
-  }
+  Save();
 }
 
 }

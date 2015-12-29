@@ -519,8 +519,7 @@ void qwk_email_text(char *text, char *title, char *to) {
     msg.storage_type = EMAIL_STORAGE;
     time_t thetime = time(nullptr);
 
-    wwiv::sdk::Names names(*session()->config());
-    const string name = names.UserName(session()->usernum, net_sysnum);
+    const string name = session()->names()->UserName(session()->usernum, net_sysnum);
     qwk_inmsg(text, &msg, "email", name.c_str(), thetime);
 
     if (msg.stored_as == 0xffffffff) {
@@ -848,8 +847,7 @@ void qwk_post_text(char *text, char *title, int sub) {
     strcpy(user_name, session()->user()->GetRealName());
     properize(user_name);
   } else {
-    wwiv::sdk::Names names(*session()->config());
-    const string name = names.UserName(session()->usernum, net_sysnum);
+    const string name = session()->names()->UserName(session()->usernum, net_sysnum);
     strcpy(user_name, name.c_str());
   }
 

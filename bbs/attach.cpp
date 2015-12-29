@@ -86,7 +86,6 @@ void attach_file(int mode) {
         done1 = false;
         bout.nl();
         if (m.tosys == 0) {
-          char buffer[ 255 ];
           session()->users()->ReadUser(&u, m.touser);
           bout << "|#1  To|#7: |#2";
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da)) &&

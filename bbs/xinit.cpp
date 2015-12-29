@@ -53,11 +53,10 @@
 
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
 
 // Additional INI file function and structure
 #include "bbs/xinitini.h"
-
-using wwiv::sdk::Config;
 
 #ifdef __unix__
 #define XINIT_PRINTF( x )
@@ -76,6 +75,8 @@ using wwiv::bbs::TempDisablePause;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::strings;
+using wwiv::sdk::Config;
+using wwiv::sdk::Names;
 
 uint32_t GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, uint32_t flags);
 
@@ -736,13 +737,8 @@ void WSession::read_networks() {
 }
 
 bool WSession::read_names() {
-  int max_users = std::max<int>(statusMgr->GetUserCount(), syscfg.maxusers);
-  DataFile<smalrec> file(syscfg.datadir, NAMES_LST);
-  if (!file) {
-    std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
-    return false;
-  }
-  file.ReadVector(smallist, max_users);
+  // Load the SDK Names class too.
+  names_.reset(new Names(*config_.get()));
   return true;
 }
 

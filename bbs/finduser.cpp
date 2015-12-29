@@ -66,8 +66,8 @@ int finduser(const string& searchString) {
     }
     return user_number;
   }
-  user_number = session()->users()->FindUser(searchString);
-  if (user_number == 0L) {
+  user_number = session()->names()->FindUser(searchString);
+  if (user_number == 0) {
     return 0;
   } 
   session()->users()->ReadUser(&user, user_number);
@@ -95,19 +95,17 @@ int finduser1(const string& searchString) {
 
   string userNamePart = searchString;
   StringUpperCase(&userNamePart);
-  for (int i1 = 0; i1 < session()->status_manager()->GetUserCount(); i1++) {
-    if (strstr(reinterpret_cast<char*>(session()->smallist[i1].name), userNamePart.c_str()) != nullptr) {
-      int nCurrentUserNum = session()->smallist[i1].number;
-      WUser user;
-      session()->users()->ReadUser(&user, nCurrentUserNum);
-      bout << "|#5Do you mean " << user.GetUserNameAndNumber(nCurrentUserNum) << " (Y/N/Q)? ";
-      char ch = ynq();
-      if (ch == 'Y') {
-        return nCurrentUserNum;
-      }
-      if (ch == 'Q') {
-        return 0;
-      }
+  for (const auto& n : session()->names()->names_vector()) {
+    if (strstr(reinterpret_cast<const char*>(n.name), userNamePart.c_str()) == nullptr) {
+      continue;
+    }
+
+    bout << "|#5Do you mean " << session()->names()->UserName(n.number) << " (Y/N/Q)? ";
+    char ch = ynq();
+    if (ch == 'Y') {
+      return n.number;
+    } else if (ch == 'Q') {
+      return 0;
     }
   }
   return 0;
