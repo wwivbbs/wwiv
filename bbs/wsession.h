@@ -34,6 +34,8 @@
 #include "bbs/local_io.h"
 #include "core/inifile.h"
 #include "core/file.h"
+#include "sdk/config.h"
+#include "sdk/names.h"
 #include "sdk/vardec.h"
 #include "sdk/net.h"
 
@@ -284,6 +286,11 @@ public:
   void SetWfcStatus(int nStatus) { m_nWfcStatus = nStatus; }
   int  GetWfcStatus() { return m_nWfcStatus; }
 
+  /** Returns the WWIV SDK Config Object. */
+  wwiv::sdk::Config* config() const { return config_.get(); }
+  /** Returns the WWIV Names.LST Config Object. */
+  wwiv::sdk::Names* names() const { return names_.get(); }
+
   bool read_subs();
   void UpdateShutDownStatus();
   void ToggleShutDown();
@@ -383,6 +390,9 @@ private:
   std::unique_ptr<LocalIO> local_io_;
   std::unique_ptr<wwiv::bbs::Capture> capture_;
   std::string current_speed_;
+  std::unique_ptr<wwiv::sdk::Config> config_;
+  std::unique_ptr<wwiv::sdk::Names> names_;
+
 
   // Data from system_operation_rec, make it public for now, and add
   // accessors later on.
@@ -473,7 +483,6 @@ public:
 
   std::vector<newexternalrec> externs;
   std::vector<newexternalrec> over_intern;
-  std::vector<smalrec> smallist;
   std::vector<languagerec> languages;
   std::vector<subboardrec> subboards;
   std::vector<xtrasubsrec> xsubs;

@@ -56,6 +56,7 @@
 #include "core/strings.h"
 #include "core/scope_exit.h"
 #include "core/wwivport.h"
+#include "sdk/names.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
 
 using std::chrono::milliseconds;
@@ -518,8 +519,8 @@ void qwk_email_text(char *text, char *title, char *to) {
     msg.storage_type = EMAIL_STORAGE;
     time_t thetime = time(nullptr);
 
-    const char* nam1 = session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum);
-    qwk_inmsg(text, &msg, "email", nam1, thetime);
+    const string name = session()->names()->UserName(session()->usernum, net_sysnum);
+    qwk_inmsg(text, &msg, "email", name.c_str(), thetime);
 
     if (msg.stored_as == 0xffffffff) {
       return;
@@ -846,8 +847,8 @@ void qwk_post_text(char *text, char *title, int sub) {
     strcpy(user_name, session()->user()->GetRealName());
     properize(user_name);
   } else {
-    const char* nam1 = session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum);
-    strcpy(user_name, nam1);
+    const string name = session()->names()->UserName(session()->usernum, net_sysnum);
+    strcpy(user_name, name.c_str());
   }
 
   time_t thetime = time(nullptr);

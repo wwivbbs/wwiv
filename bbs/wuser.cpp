@@ -24,6 +24,7 @@
 #include "bbs/wuser.h"
 #include "core/strings.h"
 #include "core/file.h"
+#include "sdk/names.h"
 #include "sdk/filenames.h"
 
 #ifndef NOT_BBS
@@ -83,10 +84,6 @@ void WUser::ZeroUserData() {
 
 const char *WUser::GetUserNameAndNumber(int user_number) const {
   return nam(user_number);
-}
-
-const char *WUser::GetUserNameNumberAndSystem(int user_number, int system_number) const {
-  return nam1(user_number, system_number);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -174,33 +171,6 @@ bool WUserManager::WriteUser(WUser *pUser, int user_number) {
   return this->WriteUserNoCache(pUser, user_number);
 }
 
-int WUserManager::FindUser(std::string searchString) {
-#ifndef NOT_BBS
-  // TODO(rushfan): Put back in a binary search, but test with user.lst the size of frank's.
-  const size_t user_count = session()->status_manager()->GetUserCount();
-  for (std::size_t i = 0; i < user_count; i++) {
-    if (IsEqualsIgnoreCase(searchString.c_str(), (const char*)session()->smallist[i].name)) {
-      return session()->smallist[i].number;
-    }
-  }
-#else
-  std::unique_ptr<File> usersFile(new File(m_dataDirectory, USER_LST));
-  usersFile->Open(File::modeBinary | File::modeReadOnly);
-  smalrec userRec;
-  if (usersFile->IsOpen()) {
-    while (true) {
-      int bytesRead = usersFile->Read(&userRec, sizeof(smalrec));
-      if (bytesRead != sizeof(smalrec)) {
-        return 0;
-      } else if (!StringCompareIgnoreCase(searchString.c_str(), (const char *)userRec.name)) {
-        return userRec.number;
-      }
-    }
-  }
-#endif // NOT_BBS
-  return 0;
-}
-
 char *WUser::nam(int user_number) const {
   static char s_szNamBuffer[255];
   bool f = true;
@@ -228,17 +198,5 @@ char *WUser::nam(int user_number) const {
   s_szNamBuffer[ p++ ] = ' ';
   s_szNamBuffer[ p++ ] = '#';
   snprintf(&s_szNamBuffer[p], sizeof(s_szNamBuffer) - p, "%d", user_number);
-  return s_szNamBuffer;
-}
-
-char *WUser::nam1(int user_number, int system_number) const {
-  static char s_szNamBuffer[ 255 ];
-
-  strcpy(s_szNamBuffer, nam(user_number));
-  if (system_number) {
-    char buffer[10];
-    snprintf(buffer, sizeof(buffer), " @%u", system_number);
-    strcat(s_szNamBuffer, buffer);
-  }
   return s_szNamBuffer;
 }
