@@ -102,7 +102,6 @@ set(COMMON_SOURCES
  trytoul.cpp
  uedit.cpp
  user.cpp
- usermanager.cpp
  utility.cpp
  valscan.cpp
  vote.cpp
@@ -112,7 +111,6 @@ set(COMMON_SOURCES
  woutstreambuffer.cpp
  wqscn.cpp
  wsession.cpp
- wuser.cpp
  xfer.cpp
  xferovl.cpp
  xferovl1.cpp
