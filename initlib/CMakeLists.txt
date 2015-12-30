@@ -1,10 +1,7 @@
 # CMake for WWIV 5
 cmake_minimum_required (VERSION 2.6)
 project (INITLIB)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(..)
-
-add_definitions(-DNOT_BBS)
 
 set(COMMON_SOURCES
   colors.cpp

@@ -35,8 +35,6 @@ using std::vector;
 using wwiv::UpperCase;
 using wwiv::strings::StrCat;
 
-#ifndef NOT_BBS
-
 void WWIV_make_abs_cmd(const std::string root, std::string* out) {
   
   static const vector<string> exts{
@@ -112,4 +110,4 @@ void WWIV_make_abs_cmd(const std::string root, std::string* out) {
 
   *out = StrCat(root, s1, s2);
 }
-#endif
+

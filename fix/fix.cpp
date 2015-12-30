@@ -25,10 +25,10 @@
 #include <vector>
 
 #include "core/strings.h"
+#include "core/version.h"
 
 #define _DEFINE_GLOBALS_
 #include "sdk/datetime.h"
-#include "bbs/vars.h"
 #include "core/file.h"
 #include "fix/log.h"
 #include "fix/dirs.h"
@@ -36,6 +36,7 @@
 #include "fix/fix_config.h"
 
 #include "sdk/filenames.h"
+#include "sdk/vardec.h"
 
 void giveUp();
 void maybeGiveUp();
@@ -44,6 +45,9 @@ using std::cout;
 using std::string;
 using std::vector;
 using namespace wwiv::sdk;
+
+configrec syscfg;
+statusrec status;
 
 namespace wwiv {
 namespace fix {

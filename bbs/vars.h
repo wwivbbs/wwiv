@@ -131,16 +131,9 @@ extratimecall,
 timeon,
 time_event;
 
-#if defined (FIX)
-__EXTRN__ configrec syscfg;
-#else
 __EXTRN__ small_configrec syscfg;
-#endif
 
 __EXTRN__ configoverrec syscfgovr;
-#ifdef NOT_BBS
-__EXTRN__ statusrec status;
-#endif  // NOT_BBS
 __EXTRN__ colorrec rescolor;
 __EXTRN__ usersubrec *usub, *udir;
 __EXTRN__ userconfrec *uconfsub, *uconfdir;

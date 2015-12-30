@@ -3,8 +3,6 @@ cmake_minimum_required (VERSION 2.6)
 project (FIX)
 include_directories(..)
 
-add_definitions(-DFIX -DNOT_BBS)
-
 set(COMMON_SOURCES
   fix.cpp
   fix_config.cpp
