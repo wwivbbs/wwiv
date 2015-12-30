@@ -82,8 +82,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\bbs\datetime.cpp" />
-    <ClCompile Include="..\bbs\platform\win32\utility2.cpp" />
     <ClCompile Include="dirs.cpp" />
     <ClCompile Include="fix.cpp" />
     <ClCompile Include="fix_config.cpp" />
@@ -91,7 +89,6 @@
     <ClCompile Include="users.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\bbs\platform\platformfcns.h" />
     <ClInclude Include="dirs.h" />
     <ClInclude Include="fix.h" />
     <ClInclude Include="fix_config.h" />

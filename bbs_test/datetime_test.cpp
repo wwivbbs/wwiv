@@ -23,22 +23,6 @@
 
 static const time_t t20140704 = 1404460800; // 1404457200;
 
-
-TEST(DateTime, DateFromTimeTForLog) {
-  ASSERT_STREQ("140704", dateFromTimeTForLog(t20140704));
-}
-
-TEST(DateTime, DateFromTimeT) {
-  ASSERT_STREQ("07/04/14", dateFromTimeT(t20140704));
-}
-
-// TODO(rushfan): Fix this now that the VM runs in PDT
-#if 0
-TEST(DateTime, date_to_daten) {
-  ASSERT_EQ(t20140704, date_to_daten("07/04/14"));
-}
-#endif  // 0
-
 TEST(DateTime, isleap) {
   ASSERT_TRUE(isleap(2000));
   ASSERT_TRUE(isleap(2004));

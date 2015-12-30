@@ -16,24 +16,19 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_DATETIME_H__
-#define __INCLUDED_DATETIME_H__
+#ifndef __INCLUDED_SDK_DATETIME_H__
+#define __INCLUDED_SDK_DATETIME_H__
 
 #include <ctime>
 #include <string>
 
-char *date();
-char *fulldate();
-char *times();
+namespace wwiv {
+namespace sdk {
+
 time_t date_to_daten(const char *datet);
-void filedate(const char *fpath, char *rtn);
-double timer();
-long timer1();
-bool isleap(int nYear);
-int dow();
-char *ctim(double d);
-std::string ctim2(double d);
-int years_old(int nMonth, int nDay, int nYear);
 
 
-#endif // __INCLUDED_DATETIME_H__
+}
+}
+
+#endif // __INCLUDED_SDK_DATETIME_H__

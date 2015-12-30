@@ -7,6 +7,7 @@ set(COMMON_SOURCES
   callout.cpp
   config.cpp
   contact.cpp
+  datetime.cpp
   msgapi/message_api.cpp
   msgapi/message_api_wwiv.cpp
   msgapi/message_area_wwiv.cpp

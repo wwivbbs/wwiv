@@ -14,6 +14,7 @@
     <ClInclude Include="callout.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="contact.h" />
+    <ClInclude Include="datetime.h" />
     <ClInclude Include="filenames.h" />
     <ClInclude Include="msdos_stdint.h" />
     <ClInclude Include="msgapi\message_api.h" />
@@ -34,6 +35,7 @@
     <ClCompile Include="callout.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="contact.cpp" />
+    <ClCompile Include="datetime.cpp" />
     <ClCompile Include="msgapi\message_api.cpp" />
     <ClCompile Include="msgapi\message_api_wwiv.cpp" />
     <ClCompile Include="msgapi\message_area_wwiv.cpp" />

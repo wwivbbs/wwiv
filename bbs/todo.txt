@@ -14,6 +14,7 @@
 * Remove the CBV since it doesn't work. We'll need to rewrite one for the internet age.
 * delete num_events
 * make ssm take a string (use StringPrintf as needed)
+* add tests for usermanager and user (in SDK)
 
 * Move bbs logic out of WLocalIO and into WSession (probably)
 * remove extra include statements from user.cpp

@@ -101,6 +101,7 @@
     <ClCompile Include="callout_test.cpp" />
     <ClCompile Include="config_test.cpp" />
     <ClCompile Include="contact_test.cpp" />
+    <ClCompile Include="datetime_test.cpp" />
     <ClCompile Include="names_test.cpp" />
     <ClCompile Include="network_test.cpp" />
     <ClCompile Include="phone_numbers_test.cpp" />

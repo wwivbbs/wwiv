@@ -8,6 +8,7 @@ set(test_sources
   callout_test.cpp
   config_test.cpp
   contact_test.cpp
+  datetime_test.cpp
   network_test.cpp
   phone_numbers_test.cpp
   sdk_helper.cpp
