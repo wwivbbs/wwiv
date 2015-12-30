@@ -21,8 +21,8 @@
 #include <cstdarg>
 #include <ctime>
 
-#include "bbs/vars.h"
 #include "core/file.h"
+#include "core/version.h"
 
 static File hLogFile;
 

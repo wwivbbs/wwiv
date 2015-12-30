@@ -21,7 +21,6 @@
 #include <string>
 #include <vector>
 
-#include "bbs/vars.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "fix/fix.h"
@@ -37,6 +36,8 @@ using std::string;
 using std::vector;
 
 using wwiv::core::DataFile;
+
+extern configrec syscfg;
 
 namespace wwiv {
 namespace fix {

@@ -32,13 +32,10 @@
 using std::string;
 using wwiv::strings::StrCat;
 
-#if !defined(NOT_BBS)
-
 void WWIV_make_abs_cmd(const string root, string* out) {
   if (out->find("/") != string::npos) {
     string s(*out);
     *out = StrCat(session()->GetHomeDir(), s);
   }
 }
-#endif  // NOT_BBS
 

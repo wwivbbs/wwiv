@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2015, WWIV Software Services             */
+/*              Copyright (C)2014-2015 WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,24 +16,18 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_DATETIME_H__
-#define __INCLUDED_DATETIME_H__
+#include "gtest/gtest.h"
 
 #include <ctime>
-#include <string>
+#include "sdk/datetime.h"
 
-char *date();
-char *fulldate();
-char *times();
-time_t date_to_daten(const char *datet);
-void filedate(const char *fpath, char *rtn);
-double timer();
-long timer1();
-bool isleap(int nYear);
-int dow();
-char *ctim(double d);
-std::string ctim2(double d);
-int years_old(int nMonth, int nDay, int nYear);
+static const time_t t20140704 = 1404460800; // 1404457200;
 
 
-#endif // __INCLUDED_DATETIME_H__
+// TODO(rushfan): Fix this now that the VM runs in PDT
+#if 0
+TEST(DateTime, date_to_daten) {
+  ASSERT_EQ(t20140704, date_to_daten("07/04/14"));
+}
+#endif  // 0
+

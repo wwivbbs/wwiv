@@ -25,10 +25,10 @@
 #include <vector>
 
 #include "core/strings.h"
+#include "core/version.h"
 
 #define _DEFINE_GLOBALS_
-#include "bbs/datetime.h"
-#include "bbs/vars.h"
+#include "sdk/datetime.h"
 #include "core/file.h"
 #include "fix/log.h"
 #include "fix/dirs.h"
@@ -36,6 +36,7 @@
 #include "fix/fix_config.h"
 
 #include "sdk/filenames.h"
+#include "sdk/vardec.h"
 
 void giveUp();
 void maybeGiveUp();
@@ -43,9 +44,29 @@ void maybeGiveUp();
 using std::cout;
 using std::string;
 using std::vector;
+using namespace wwiv::sdk;
+
+configrec syscfg;
+statusrec status;
 
 namespace wwiv {
 namespace fix {
+
+static char *dateFromTimeT(time_t t) {
+  static char date_string[11];
+  struct tm * pTm = localtime(&t);
+
+  snprintf(date_string, sizeof(date_string), "%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
+  return date_string;
+}
+
+static char *dateFromTimeTForLog(time_t t) {
+  static char date_string[11];
+  struct tm * pTm = localtime(&t);
+
+  snprintf(date_string, sizeof(date_string), "%02d%02d%02d", pTm->tm_year % 100, pTm->tm_mon + 1, pTm->tm_mday);
+  return date_string;
+}
 
 Command::~Command() {}
 
