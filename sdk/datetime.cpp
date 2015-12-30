@@ -19,6 +19,9 @@
 // Always declare wwiv_windows.h first to avoid collisions on defines.
 #include "bbs/datetime.h"
 
+#include <cstring>
+#include <ctime>
+
 namespace wwiv {
 namespace sdk {
 
