@@ -20,7 +20,6 @@
 #include <vector>
 #include <set>
 
-#include "bbs/vars.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "fix/fix.h"
@@ -30,9 +29,11 @@
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 
-
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
+
+extern configrec syscfg;
+extern statusrec status;
 
 namespace wwiv {
 namespace fix {

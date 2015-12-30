@@ -24,23 +24,7 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
-
-char *dateFromTimeTForLog(time_t t) {
-  static char date_string[11];
-  struct tm * pTm = localtime(&t);
-
-  snprintf(date_string, sizeof(date_string), "%02d%02d%02d", pTm->tm_year % 100, pTm->tm_mon + 1, pTm->tm_mday);
-  return date_string;
-}
-
-// Only used by fix.
-char *dateFromTimeT(time_t t) {
-  static char date_string[11];
-  struct tm * pTm = localtime(&t);
-
-  snprintf(date_string, sizeof(date_string), "%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
-  return date_string;
-}
+#include "sdk/datetime.h"
 
 char *date() {
   static char date_string[11];
@@ -61,7 +45,6 @@ char *fulldate() {
   return date_string;
 }
 
-
 char *times() {
   static char time_string[9];
 
@@ -71,34 +54,14 @@ char *times() {
   return time_string;
 }
 
-
 //
 // This kludge will get us through 2019 and should not interfere anywhere
 // else.
 //
 
 time_t date_to_daten(const char *datet) {
-  if (strlen(datet) != 8) {
-    return 0;
-  }
-
-  time_t t = time(nullptr);
-  struct tm * pTm = localtime(&t);
-  pTm->tm_mon   = atoi(datet) - 1;
-  pTm->tm_mday  = atoi(datet + 3);
-  // N.B. tm_year is years since 1900
-  pTm->tm_year  = atoi(datet + 6);         // fixed for 1920-2019
-  if (datet[6] < '2') {
-    pTm->tm_year += 100;
-  }
-  pTm->tm_hour = 0;
-  pTm->tm_min = 0;
-  pTm->tm_sec = 0;
-  pTm->tm_isdst = 0;  // Since this is used for arbitrary compare of date strings, this is ok.
-
-  return mktime(pTm);
+  return wwiv::sdk::date_to_daten(datet);
 }
-
 
 /*
  * Returns the date a file was last modified as a string
@@ -108,7 +71,6 @@ time_t date_to_daten(const char *datet) {
  * filedate("bbs.exe", &date);
  * bout.bputs("BBS was last modified on %s at %s\r\n", date,
  *     filetime("BBS.EXE"));
- *
  */
 void filedate(const char *file_name, char *out) {
   File file(file_name);
@@ -121,7 +83,6 @@ void filedate(const char *file_name, char *out) {
   // We use 9 here since that is the size of the date format MM/DD/YY + nullptr
   snprintf(out, 9, "%02d/%02d/%02d", pTm->tm_mon, pTm->tm_mday, (pTm->tm_year % 100));
 }
-
 
 /* This function returns the time, in seconds since midnight. */
 double timer() {
@@ -139,7 +100,6 @@ long timer1() {
   return static_cast<long>(timer() * TICKS_PER_SECOND);
 }
 
-
 void ToggleScrollLockKey() {
 #if defined( _WIN32 )
   // Simulate a key press
@@ -148,7 +108,6 @@ void ToggleScrollLockKey() {
   keybd_event(VK_SCROLL, 0x45, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
 #endif // _WIN32
 }
-
 
 /* This function returns the status of scoll lock.  If scroll lock is active
  * (ie, the user has hit scroll lock + the light is lit if there is a
@@ -161,7 +120,6 @@ bool sysop1() {
   return false;
 #endif
 }
-
 
 bool isleap(int nYear) {
   WWIV_ASSERT(nYear >= 0);
@@ -287,5 +245,3 @@ int years_old(int nMonth, int nDay, int nYear) {
   }
   return nAge;
 }
-
-
