@@ -73,7 +73,7 @@ namespace WWIV5TelnetServer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\bbs\\bbs.exe")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\wwiv\\bbs.exe")]
         public string executable {
             get {
                 return ((string)(this["executable"]));
@@ -85,7 +85,7 @@ namespace WWIV5TelnetServer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\bbs")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\wwiv")]
         public string homeDirectory {
             get {
                 return ((string)(this["homeDirectory"]));
@@ -130,7 +130,22 @@ namespace WWIV5TelnetServer.Properties {
                 this["launchMinimized"] = value;
             }
         }
-        
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool launchLocalNodeAtStartup
+        {
+            get
+            {
+                return ((bool)(this["launchLocalNodeAtStartup"]));
+            }
+            set
+            {
+                this["launchLocalNodeAtStartup"] = value;
+            }
+        }
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
