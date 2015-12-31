@@ -178,7 +178,7 @@ void checkFileAreas() {
 							}
 							if (extDesc != nullptr) {
 								free(extDesc);
-                                extDesc = nullptr;
+                extDesc = nullptr;
 							}
 						}
 						recordFile.Close();
