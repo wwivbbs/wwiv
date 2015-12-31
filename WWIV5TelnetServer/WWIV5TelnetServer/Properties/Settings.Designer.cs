@@ -130,7 +130,22 @@ namespace WWIV5TelnetServer.Properties {
                 this["launchMinimized"] = value;
             }
         }
-        
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool launchLocalNodeAtStartup
+        {
+            get
+            {
+                return ((bool)(this["launchLocalNodeAtStartup"]));
+            }
+            set
+            {
+                this["launchLocalNodeAtStartup"] = value;
+            }
+        }
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
