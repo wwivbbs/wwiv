@@ -966,7 +966,7 @@ void HandleMessageDelete(int &nMessageNumber) {
             }
             nNumCredits = std::min<int>(nNumCredits, tu.GetNumMessagesPosted());
             if (nNumCredits) {
-              tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - static_cast<unsigned short>(nNumCredits));
+              tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - static_cast<uint16_t>(nNumCredits));
             }
             bout.nl();
             bout << "|#7Post credit removed = " << nNumCredits << endl;

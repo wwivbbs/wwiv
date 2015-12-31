@@ -101,7 +101,7 @@ void normalupload(int dn) {
     }
   }
   strcpy(u.filename, szInputFileName);
-  u.ownerusr = static_cast<unsigned short>(session()->usernum);
+  u.ownerusr = static_cast<uint16_t>(session()->usernum);
   u.ownersys = 0;
   u.numdloads = 0;
   u.unused_filetype = 0;

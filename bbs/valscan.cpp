@@ -141,7 +141,7 @@ void valscan() {
                       }
                       nNumPostCredits = std::min<int>(tu.GetNumMessagesPosted(), nNumPostCredits);
                       if (nNumPostCredits) {
-                        tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - static_cast<unsigned short>(nNumPostCredits));
+                        tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - static_cast<uint16_t>(nNumPostCredits));
                       }
                       bout.nl();
                       bout << "|#3Post credit removed = " << nNumPostCredits << wwiv::endl;

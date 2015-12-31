@@ -972,7 +972,7 @@ void logoff() {
   {
     WStatus* pStatus = session()->status_manager()->BeginTransaction();
     int nActiveToday = pStatus->GetMinutesActiveToday();
-    pStatus->SetMinutesActiveToday(nActiveToday + static_cast<unsigned short>(dTimeOnNow / MINUTES_PER_HOUR_FLOAT));
+    pStatus->SetMinutesActiveToday(nActiveToday + static_cast<uint16_t>(dTimeOnNow / MINUTES_PER_HOUR_FLOAT));
     session()->status_manager()->CommitTransaction(pStatus);
   }
   if (g_flags & g_flag_scanned_files) {

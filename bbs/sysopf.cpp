@@ -728,7 +728,7 @@ void chuser() {
     write_qscn(session()->usernum, qsc, false);
     session()->ReadCurrentUser(user_number);
     read_qscn(user_number, qsc, false);
-    session()->usernum = static_cast<unsigned short>(user_number);
+    session()->usernum = static_cast<uint16_t>(user_number);
     session()->SetEffectiveSl(255);
     const string unn = session()->names()->UserName(session()->usernum);
     sysoplogf("#*#*#* Changed to %s", unn.c_str());

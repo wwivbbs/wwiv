@@ -148,7 +148,7 @@ void multimail(int *pnUserNumber, int numu) {
 
   m.anony = static_cast<unsigned char>(data.anonymous_flag);
   m.fromsys = 0;
-  m.fromuser = static_cast<unsigned short>(session()->usernum);
+  m.fromuser = static_cast<uint16_t>(session()->usernum);
   m.tosys = 0;
   m.touser = 0;
   m.status = status_multimail;
@@ -176,7 +176,7 @@ void multimail(int *pnUserNumber, int numu) {
   pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::seekBegin);
   for (int cv = 0; cv < numu; cv++) {
     if (pnUserNumber[cv] > 0) {
-      m.touser = static_cast<unsigned short>(pnUserNumber[cv]);
+      m.touser = static_cast<uint16_t>(pnUserNumber[cv]);
       pFileEmail->Write(&m, sizeof(mailrec));
     }
   }

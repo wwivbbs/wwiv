@@ -361,7 +361,7 @@ IniFile* WSession::ReadINIFile() {
     }
 
     // sysconfig flags
-    syscfg.sysconfig = static_cast<unsigned short>(GetFlagsFromIniFile(ini, sysconfig_flags,
+    syscfg.sysconfig = static_cast<uint16_t>(GetFlagsFromIniFile(ini, sysconfig_flags,
                        NEL(sysconfig_flags), syscfg.sysconfig));
 
     const char* ss;
@@ -389,10 +389,10 @@ IniFile* WSession::ReadINIFile() {
                                              screen_saver_time);
   }
 
-  max_extend_lines    = std::min<unsigned short>(max_extend_lines, 99);
-  max_batch           = std::min<unsigned short>(max_batch , 999);
-  max_chains          = std::min<unsigned short>(max_chains, 999);
-  max_gfilesec        = std::min<unsigned short>(max_gfilesec, 999);
+  max_extend_lines    = std::min<uint16_t>(max_extend_lines, 99);
+  max_batch           = std::min<uint16_t>(max_batch , 999);
+  max_chains          = std::min<uint16_t>(max_chains, 999);
+  max_gfilesec        = std::min<uint16_t>(max_gfilesec, 999);
 
   set_wwivmail_enabled(ini->GetBooleanValue("USE_WWIVMAIL", true));
   set_internal_qwk_enabled(ini->GetBooleanValue("USE_INTERNAL_QWK", true));

@@ -141,7 +141,7 @@ void get_next_forced_event() {
   if (first >= 0 && !syscfg.executetime) {
     // all of todays events are
     time_event = static_cast<double>(first) * SECONDS_PER_MINUTE_FLOAT;     // complete, set next forced
-    syscfg.executetime = static_cast<unsigned short>(first);                // event to first one
+    syscfg.executetime = static_cast<uint16_t>(first);                // event to first one
     if (!syscfg.executetime) {                                              // scheduled for tomorrow
       ++syscfg.executetime;
     }

@@ -83,12 +83,12 @@ void send_inst_str1(int m, int whichinst, const char *send_string) {
   char szTempSendString[ 1024 ];
 
   sprintf(szTempSendString, "%s\r\n", send_string);
-  ih.main = static_cast<unsigned short>(m);
+  ih.main = static_cast<uint16_t>(m);
   ih.minor = 0;
-  ih.from_inst = static_cast<unsigned short>(session()->instance_number());
-  ih.from_user = static_cast<unsigned short>(session()->usernum);
+  ih.from_inst = static_cast<uint16_t>(session()->instance_number());
+  ih.from_user = static_cast<uint16_t>(session()->usernum);
   ih.msg_size = strlen(szTempSendString) + 1;
-  ih.dest_inst = static_cast<unsigned short>(whichinst);
+  ih.dest_inst = static_cast<uint16_t>(whichinst);
   ih.daten = static_cast<uint32_t>(time(nullptr));
 
   send_inst_msg(&ih, szTempSendString);
@@ -107,10 +107,10 @@ void send_inst_shutdown(int whichinst) {
 
   ih.main = INST_MSG_SHUTDOWN;
   ih.minor = 0;
-  ih.from_inst = static_cast<unsigned short>(session()->instance_number());
-  ih.from_user = static_cast<unsigned short>(session()->usernum);
+  ih.from_inst = static_cast<uint16_t>(session()->instance_number());
+  ih.from_user = static_cast<uint16_t>(session()->usernum);
   ih.msg_size = 0;
-  ih.dest_inst = static_cast<unsigned short>(whichinst);
+  ih.dest_inst = static_cast<uint16_t>(whichinst);
   ih.daten = static_cast<uint32_t>(time(nullptr));
 
   send_inst_msg(&ih, nullptr);
@@ -128,7 +128,7 @@ void send_inst_cleannet() {
   if (ir.loc == INST_LOC_WFC) {
     ih.main = INST_MSG_CLEANNET;
     ih.minor = 0;
-    ih.from_inst = static_cast<unsigned short>(session()->instance_number());
+    ih.from_inst = static_cast<uint16_t>(session()->instance_number());
     ih.from_user = 1;
     ih.msg_size = 0;
     ih.dest_inst = 1;
@@ -569,13 +569,13 @@ void write_inst(int loc, int subloc, int flags) {
     }
   }
 
-  if (ti.subloc != static_cast<unsigned short>(subloc)) {
+  if (ti.subloc != static_cast<uint16_t>(subloc)) {
     re_write = true;
-    ti.subloc = static_cast<unsigned short>(subloc);
+    ti.subloc = static_cast<uint16_t>(subloc);
   }
-  if (ti.loc != static_cast<unsigned short>(loc)) {
+  if (ti.loc != static_cast<uint16_t>(loc)) {
     re_write = true;
-    ti.loc = static_cast<unsigned short>(loc);
+    ti.loc = static_cast<uint16_t>(loc);
   }
   if ((((ti.flags & INST_FLAGS_INVIS) && (!chat_invis)) ||
        ((!(ti.flags & INST_FLAGS_INVIS)) && (chat_invis))) ||

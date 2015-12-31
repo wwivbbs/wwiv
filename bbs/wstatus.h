@@ -75,7 +75,7 @@ class WStatus {
     return m_pStatusRecord->localposts++;
   }
   void SetNumLocalPosts(int n) {
-    m_pStatusRecord->localposts = static_cast<unsigned short>(n);
+    m_pStatusRecord->localposts = static_cast<uint16_t>(n);
   }
 
   const int GetNumUsers() const {
@@ -88,7 +88,7 @@ class WStatus {
     return m_pStatusRecord->users--;
   }
   void SetNumUsers(int n) {
-    m_pStatusRecord->users = static_cast<unsigned short>(n);
+    m_pStatusRecord->users = static_cast<uint16_t>(n);
   }
 
   const unsigned long GetCallerNumber() const {
@@ -108,7 +108,7 @@ class WStatus {
     return m_pStatusRecord->callstoday++;
   }
   void SetNumCallsToday(int n) {
-    m_pStatusRecord->callstoday = static_cast<unsigned short>(n);
+    m_pStatusRecord->callstoday = static_cast<uint16_t>(n);
   }
 
   const int GetNumMessagesPostedToday() const {
@@ -118,7 +118,7 @@ class WStatus {
     return m_pStatusRecord->msgposttoday++;
   }
   void SetNumMessagesPostedToday(int n) {
-    m_pStatusRecord->msgposttoday = static_cast<unsigned short>(n);
+    m_pStatusRecord->msgposttoday = static_cast<uint16_t>(n);
   }
 
   const unsigned short GetNumEmailSentToday() const {
@@ -128,7 +128,7 @@ class WStatus {
     return m_pStatusRecord->emailtoday++;
   }
   void SetNumEmailSentToday(int n) {
-    m_pStatusRecord->emailtoday = static_cast<unsigned short>(n);
+    m_pStatusRecord->emailtoday = static_cast<uint16_t>(n);
   }
 
   const unsigned short GetNumFeedbackSentToday() const {
@@ -138,7 +138,7 @@ class WStatus {
     return m_pStatusRecord->fbacktoday++;
   }
   void SetNumFeedbackSentToday(int n) {
-    m_pStatusRecord->fbacktoday = static_cast<unsigned short>(n);
+    m_pStatusRecord->fbacktoday = static_cast<uint16_t>(n);
   }
 
   const unsigned short GetNumUploadsToday() const {
@@ -148,17 +148,17 @@ class WStatus {
     return m_pStatusRecord->uptoday++;
   }
   void SetNumUploadsToday(int n) {
-    m_pStatusRecord->uptoday = static_cast<unsigned short>(n);
+    m_pStatusRecord->uptoday = static_cast<uint16_t>(n);
   }
 
   const unsigned short GetMinutesActiveToday() const {
     return m_pStatusRecord->activetoday;
   }
   const int IncrementMinutesActiveToday(int nMinutes) {
-    return m_pStatusRecord->uptoday += static_cast<unsigned short>(nMinutes);
+    return m_pStatusRecord->uptoday += static_cast<uint16_t>(nMinutes);
   }
   void SetMinutesActiveToday(int n) {
-    m_pStatusRecord->activetoday = static_cast<unsigned short>(n);
+    m_pStatusRecord->activetoday = static_cast<uint16_t>(n);
   }
 
   const uint32_t GetQScanPointer() const {
@@ -182,7 +182,7 @@ class WStatus {
     return m_pStatusRecord->amsguser;
   }
   void SetAutoMessageAuthorUserNumber(int n) {
-    m_pStatusRecord->amsguser = static_cast<unsigned short>(n);
+    m_pStatusRecord->amsguser = static_cast<uint16_t>(n);
   }
 
   const bool IsUsingNetEdit() const {
@@ -193,21 +193,21 @@ class WStatus {
     return m_pStatusRecord->wwiv_version;
   }
   void SetWWIVVersion(int n) {
-    m_pStatusRecord->wwiv_version = static_cast<unsigned short>(n);
+    m_pStatusRecord->wwiv_version = static_cast<uint16_t>(n);
   }
 
   const int GetNetworkVersion() const {
     return m_pStatusRecord->net_version;
   }
   void SetNetworkVersion(int n) {
-    m_pStatusRecord->net_version = static_cast<unsigned short>(n);
+    m_pStatusRecord->net_version = static_cast<uint16_t>(n);
   }
 
   const int GetDays() const {
     return m_pStatusRecord->days;
   }
   void SetDays(int n) {
-    m_pStatusRecord->days = static_cast<unsigned short>(n);
+    m_pStatusRecord->days = static_cast<uint16_t>(n);
   }
 };
 

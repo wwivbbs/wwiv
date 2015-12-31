@@ -750,7 +750,7 @@ void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char
 
   char *pszOriginalText = messageText;
   messageText += strlen(pszOriginalText) + 1;
-  unsigned short ntl = static_cast<unsigned short>(nh->length - strlen(pszOriginalText) - 1);
+  unsigned short ntl = static_cast<uint16_t>(nh->length - strlen(pszOriginalText) - 1);
   char *ss = strchr(messageText, '\r');
   if (ss && (ss - messageText < 200) && (ss - messageText < ntl)) {
     strncpy(nm, messageText, ss - messageText);
@@ -760,7 +760,7 @@ void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char
       ss++;
     }
     nh->length -= (ss - messageText);
-    ntl = ntl - static_cast<unsigned short>(ss - messageText);
+    ntl = ntl - static_cast<uint16_t>(ss - messageText);
     messageText = ss;
 
     qn[0] = on[0] = '\0';

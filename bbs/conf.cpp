@@ -1286,10 +1286,10 @@ confrec *read_conferences(const char *file_name, int *nc, int max) {
               conferences[cc].sex = wwiv::strings::StringToUnsignedChar(ts);
               break;
             case 10:
-              conferences[cc].ar = static_cast<unsigned short>(str_to_arword(ts));
+              conferences[cc].ar = static_cast<uint16_t>(str_to_arword(ts));
               break;
             case 11:
-              conferences[cc].dar = static_cast<unsigned short>(str_to_arword(ts));
+              conferences[cc].dar = static_cast<uint16_t>(str_to_arword(ts));
               break;
             }
           }
@@ -1301,7 +1301,7 @@ confrec *read_conferences(const char *file_name, int *nc, int max) {
           if (strlen(extractword(1, ls, DELIMS_WHITE)) < 2) {
             conferences[cc].num = 0;
           } else {
-            conferences[cc].num = static_cast<unsigned short>(nw);
+            conferences[cc].num = static_cast<uint16_t>(nw);
           }
           conferences[cc].maxnum = conferences[cc].num;
           l = static_cast<long>(conferences[cc].num * sizeof(unsigned int) + 1);
@@ -1334,10 +1334,10 @@ confrec *read_conferences(const char *file_name, int *nc, int max) {
               i3 = atoi(ss);
             }
             if ((i3 >= 0) && (i3 < max)) {
-              conferences[cc].subs[i1++] = static_cast<unsigned short>(i3);
+              conferences[cc].subs[i1++] = static_cast<uint16_t>(i3);
             }
           }
-          conferences[cc].num = static_cast<unsigned short>(i1);
+          conferences[cc].num = static_cast<uint16_t>(i1);
           cc++;
           break;
         }

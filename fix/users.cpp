@@ -69,7 +69,7 @@ int FixUsersCommand::Execute() {
 		if (!user.IsUserDeleted() && !user.IsUserInactive()) {
 			smalrec sr = { 0 };
 			strcpy((char*) sr.name, user.GetName());
-			sr.number = static_cast<unsigned short>(i);
+			sr.number = static_cast<uint16_t>(i);
 			std::string namestring((char*) sr.name);
 			if (names.find(namestring) == names.end()) {
 				smallrecords.push_back(sr);
@@ -110,7 +110,7 @@ int FixUsersCommand::Execute() {
 	} else {
 		if (nameFile.Open(File::modeReadOnly | File::modeBinary)) {
 			unsigned long size = nameFile.GetLength();
-			unsigned short recs = static_cast<unsigned short>(size / sizeof(smalrec));
+			unsigned short recs = static_cast<uint16_t>(size / sizeof(smalrec));
 			if (recs != status.users) {
 				status.users = recs;
 				Print(NOK, true, "STATUS.DAT contained an incorrect user count.");
