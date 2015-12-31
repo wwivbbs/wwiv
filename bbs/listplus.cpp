@@ -64,10 +64,6 @@ static char _off_[] = "OFF";
 
 int lp_config_loaded;
 
-#ifdef FILE_POINTS
-long fpts;
-#endif  // FILE_POINTS
-
 // TODO remove this hack and fix the real problem of fake spaces in filenames everywhere
 static bool ListPlusExist(const char *file_name) {
   char szRealFileName[MAX_PATH];
@@ -133,11 +129,7 @@ static void build_header() {
   if (config_listing.lp_options & cfl_kbytes) {
     header += "Bytes ";
   }
-#ifdef FILE_POINTS
-  if (config_listing.lp_options & cfl_file_points) {
-    strcat(szHeader, "Fpts ");
-  }
-#endif
+
   if (config_listing.lp_options & cfl_days_old) {
     header += "Age ";
   }
@@ -289,47 +281,27 @@ int lp_add_batch(const char *file_name, int dn, long fs) {
     } else {
       t = 0.0;
     }
-
-#ifdef FILE_POINTS
-    if ((session()->user()->GetFilePoints() < (batchfpts + fpts))
-        && !session()->user()->IsExemptRatio()) {
+    if ((nsl() <= (batchtime + t)) && (!so())) {
       bout.GotoXY(1, session()->user()->GetScreenLines() - 1);
-      bout << "Not enough file points to download this file\r\n";
+      bout << "Not enough time left in queue.\r\n";
       pausescr();
-    } else
-#endif
-
-      if ((nsl() <= (batchtime + t)) && (!so())) {
+    } else {
+      if (dn == -1) {
         bout.GotoXY(1, session()->user()->GetScreenLines() - 1);
-        bout << "Not enough time left in queue.\r\n";
+        bout << "Can't add temporary file to batch queue.\r\n";
         pausescr();
       } else {
-        if (dn == -1) {
-          bout.GotoXY(1, session()->user()->GetScreenLines() - 1);
-          bout << "Can't add temporary file to batch queue.\r\n";
-          pausescr();
-        } else {
-          batchtime += static_cast<float>(t);
-
-#ifdef FILE_POINTS
-          batchfpts += fpts;
-#endif
-
-          strcpy(batch[session()->numbatch].filename, file_name);
-          batch[session()->numbatch].dir = static_cast<int16_t>(dn);
-          batch[session()->numbatch].time = static_cast<float>(t);
-          batch[session()->numbatch].sending = 1;
-          batch[session()->numbatch].len = fs;
-
-#ifdef FILE_POINTS
-          batch[session()->numbatch].filepoints = fpts;
-#endif
-
-          session()->numbatch++;
-          ++session()->numbatchdl;
-          return 1;
-        }
+        batchtime += static_cast<float>(t);
+        strcpy(batch[session()->numbatch].filename, file_name);
+        batch[session()->numbatch].dir = static_cast<int16_t>(dn);
+        batch[session()->numbatch].time = static_cast<float>(t);
+        batch[session()->numbatch].sending = 1;
+        batch[session()->numbatch].len = fs;
+        session()->numbatch++;
+        ++session()->numbatchdl;
+        return 1;
       }
+    }
   }
   return 0;
 }
@@ -412,23 +384,6 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
     file_information += element;
     width += 6;
   }
-#ifdef FILE_POINTS
-  if (config_listing.lp_options & cfl_file_points) {
-    if (u->mask & mask_validated) {
-      if (u->filepoints) {
-        sprintf(szBuffer, "%4u", u->filepoints);
-        szBuffer[4] = 0;
-      } else {
-        sprintf(szBuffer, "Free");
-      }
-    } else {
-      sprintf(szBuffer, "9e99");
-    }
-    sprintf(element, " |%02d%s", config_listing.lp_colors[5], szBuffer);
-    strcat(szFileInformation, element);
-    width += 5;
-  }
-#endif
 
   if (config_listing.lp_options & cfl_days_old) {
     buffer = StringPrintf("%3d", nDaysOld);
@@ -1555,17 +1510,6 @@ static int remove_filename(const char *file_name, int dn) {
               if (date_to_daten(user.GetFirstOn()) < static_cast<time_t>(u.daten)) {
                 user.SetFilesUploaded(user.GetFilesUploaded() - 1);
                 user.SetUploadK(user.GetUploadK() - bytes_to_k(u.numbytes));
-
-#ifdef FILE_POINTS
-                if (u.mask & mask_validated) {
-                  if ((u.filepoints * 2) > user.GetFilePoints()) {
-                    user.SetFilePoints(0);
-                  } else {
-                    user.SetFilePoints(user.GetFilePoints() - (u.filepoints * 2));
-                  }
-                }
-                bout << "Removed " << (u.filepoints * 2) << " file points\r\n";
-#endif
                 session()->users()->WriteUser(&user, u.ownerusr);
               }
             }

@@ -24,20 +24,6 @@
 
 #define EXTRA_SPACE
 
-// This #define speeds up the extended description searches about 3x, making
-// it barable to do a extended description search.
-// The only drawback to it is that if you are multiline, you can not add
-// an extended description while someone is listing that area, of course it
-// can be added when the person is done with the area and all...
-
-// Uncomment for use with Spotnicks File Point mod
-// #define FILE_POINTS
-
-#ifdef FILE_POINTS
-extern long fpts;
-#endif
-
-
 extern int foundany;
 
 // This is the place the first file will be printed, which defaults to line
