@@ -492,22 +492,6 @@ void tag_files() {
   if (hangup) {
     return;
   }
-  if (session()->user()->IsUseNoTagging()) {
-    if (session()->user()->HasPause()) {
-      pausescr();
-    }
-    bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
-    if (okansi()) {
-      bout << "\r" <<
-                         "\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"
-                         << wwiv::endl;
-    } else {
-      bout << "\r" << "------------+-----+-----------------------------------------------------------" <<
-                         wwiv::endl;
-    }
-    session()->tagptr = 0;
-    return;
-  }
   lines_listed = 0;
   bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
   if (okansi()) {
@@ -1026,12 +1010,12 @@ void endlist(int mode) {
   // if mode == 2, new files
   if (session()->tagging != 0) {
     if (g_num_listed) {
-      if (session()->tagging == 1 && !session()->user()->IsUseNoTagging() && filelist) {
+      if (session()->tagging == 1 && filelist) {
         tag_files();
         return;
       } else {
         bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
-        if (session()->titled != 2 && session()->tagging == 1 && !session()->user()->IsUseNoTagging()) {
+        if (session()->titled != 2 && session()->tagging == 1) {
           if (okansi()) {
             bout <<
                                "\r\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\r\n";

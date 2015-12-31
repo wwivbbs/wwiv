@@ -71,12 +71,12 @@ class User {
   static constexpr int extraColor                 = 0x00000100;
   static constexpr int clearScreen                = 0x00000200;
   static constexpr int upperASCII                 = 0x00000400;
-  static constexpr int noTag                      = 0x00000800;
+  static constexpr int unused_noTag               = 0x00000800;
   static constexpr int conference                 = 0x00001000;
   static constexpr int noChat                     = 0x00002000;
   static constexpr int noMsgs                     = 0x00004000;
   static constexpr int menuSys                    = 0x00008000; // not used?
-  static constexpr int listPlus                   = 0x00010000;
+  static constexpr int unused_listPlus            = 0x00010000;
   static constexpr int autoQuote                  = 0x00020000;
   static constexpr int twentyFourHourClock        = 0x00040000;
   static constexpr int msgPriority                = 0x00080000;  // not used?
@@ -174,9 +174,6 @@ class User {
   bool IsUseClearScreen() const {
     return HasStatusFlag(User::clearScreen);
   }
-  bool IsUseNoTagging() const {
-    return HasStatusFlag(User::noTag);
-  }
   bool IsUseConference() const {
     return HasStatusFlag(User::conference);
   }
@@ -186,9 +183,7 @@ class User {
   bool IsIgnoreNodeMessages() const {
     return HasStatusFlag(User::noMsgs);
   }
-  bool IsUseListPlus() const {
-    return HasStatusFlag(User::listPlus);
-  }
+
   bool IsUseAutoQuote() const {
     return HasStatusFlag(User::autoQuote);
   }

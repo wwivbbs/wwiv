@@ -288,9 +288,6 @@ int listfiles_plus_function(int type) {
                       amount = lines = matches = 0;
                     } else {
 ADD_OR_REMOVE_BATCH:
-#ifdef KBPERDAY
-                      kbbatch += bytes_to_k(file_recs[file_pos]->numbytes);
-#endif
                       if (find_batch_queue(file_recs[file_pos]->filename) > -1) {
                         remove_batch(file_recs[file_pos]->filename);
                         redraw = false;
@@ -334,9 +331,6 @@ ADD_OR_REMOVE_BATCH:
                                        file_recs[file_pos]->numbytes);
                         }
                       }
-#ifdef KBPERDAY
-                      kbbatch -= bytes_to_k(file_recs[file_pos]->numbytes);
-#endif
                       bout.GotoXY(1, first_file_pos() + vert_pos[file_pos] - 1);
                       bout.bprintf("|%2d %c ", lp_config.tagged_color,
                                                         check_batch_queue(file_recs[file_pos]->filename) ? '\xFE' : ' ');

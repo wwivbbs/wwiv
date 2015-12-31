@@ -326,10 +326,6 @@ int lp_add_batch(const char *file_name, int dn, long fs) {
 #endif
 
           session()->numbatch++;
-
-#ifdef KBPERDAY
-          kbbatch += bytes_to_k(fs);
-#endif
           ++session()->numbatchdl;
           return 1;
         }
@@ -1106,20 +1102,6 @@ short SelectColor(int which) {
     return nc;
   }
   return -1;
-}
-
-void check_listplus() {
-  bout << "|#5Use listplus file tagging? ";
-
-  if (noyes()) {
-    if (session()->user()->IsUseListPlus()) {
-      session()->user()->ClearStatusFlag(User::listPlus);
-    }
-  } else {
-    if (!session()->user()->IsUseListPlus()) {
-      session()->user()->SetStatusFlag(User::listPlus);
-    }
-  }
 }
 
 void config_file_list() {
@@ -2158,21 +2140,5 @@ void request_file(const char *file_name) {
 }
 
 bool ok_listplus() {
-  if (!okansi()) {
-    return false;
-  }
-
-#ifndef FORCE_LP
-  if (session()->user()->IsUseNoTagging()) {
-    return false;
-  }
-  if (!session()->user()->IsUseListPlus()) {
-    return false;
-  }
-#endif
-
-  if (x_only) {
-    return false;
-  }
-  return true;
+  return (!x_only && okansi());
 }

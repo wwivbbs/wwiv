@@ -22,10 +22,6 @@
 
 #include "common.h"
 
-// If the person has ansi, then they are foced to use listplus
-#define FORCE_LP
-
-
 #define EXTRA_SPACE
 
 // This #define speeds up the extended description searches about 3x, making
@@ -36,10 +32,6 @@
 
 // Uncomment for use with Spotnicks File Point mod
 // #define FILE_POINTS
-
-// UnComment for use with Sam's KBPERDAY mod
-// #define KBPERDAY
-
 
 #ifdef FILE_POINTS
 extern long fpts;
@@ -171,7 +163,6 @@ void load_lp_config();
 void save_lp_config();
 void sysop_configure();
 short SelectColor(int which);
-void check_listplus();
 void config_file_list();
 void update_user_config_screen(uploadsrec * upload_record, int which);
 void do_batch_sysop_command(int mode, const char *file_name);
