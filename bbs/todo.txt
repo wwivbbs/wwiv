@@ -15,7 +15,6 @@
 * make ssm take a string (use StringPrintf as needed)
 * add tests for usermanager and user (in SDK)
 * mmkey is a mess. only odc seems to be used right.
-* fix display issue on messages (rushnet 2, 4, 6)
 
 * Move bbs logic out of WLocalIO and into WSession (probably)
 * remove extra include statements from user.cpp

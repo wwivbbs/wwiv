@@ -373,9 +373,6 @@ char WLocalIO::scan_to_char(int nKeyCode) {
   return (nKeyCode >= 16 && nKeyCode <= 50) ? xlate[ nKeyCode - 16 ] : '\x00';
 }
 
-void WLocalIO::alt_key(int nKeyCode) {
-  // TODO: implement macro support
-}
 
 /*
  * skey handles all f-keys and the like hit FROM THE KEYBOARD ONLY
@@ -488,13 +485,8 @@ void WLocalIO::skey(char ch) {
             chat_file = !chat_file;
           }
           break;
-        default:
-          alt_key(nKeyCode);
-          break;
         }
       }
-    } else {
-      alt_key(nKeyCode);
     }
   }
 #endif
