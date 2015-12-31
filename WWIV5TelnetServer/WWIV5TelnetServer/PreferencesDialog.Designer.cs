@@ -1,4 +1,4 @@
-﻿namespace WWIV5TelnetServer
+namespace WWIV5TelnetServer
 {
     partial class PreferencesDialog
     {
