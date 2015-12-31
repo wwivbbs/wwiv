@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/read_message.h"
 
+#include <iostream>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -110,7 +111,7 @@ void display_message_text(const std::string& text, bool *next) {
   int ctrld = 0;
   bool done = false;
   bool printit = false;
-  bool ctrla = false;
+  bool ctrla = false; 
   bool centre = false;
   bool abort = false;
   bool ansi = false;
