@@ -114,14 +114,14 @@ constexpr int INI_STR_WFC_SCREEN = 97;
 constexpr int INI_STR_SCREEN_SAVER_TIME = 98;
 constexpr int INI_STR_WFC_DRIVE = 99;
 
-//---ASV/CALLBACK SETTINGS---
+//---ASV SETTINGS---
 constexpr int INI_STR_USE_SIMPLE_ASV = 103;
 constexpr int INI_STR_SIMPLE_ASV = 104;
 constexpr int INI_STR_USE_ADVANCED_ASV = 105;
 constexpr int INI_STR_ADVANCED_ASV = 106;
-constexpr int INI_STR_USE_CALLBACK = 107;
-constexpr int INI_STR_CALLBACK = 108;
-constexpr int INI_STR_USE_VOICE_VAL = 109;
+constexpr int UNUSED_INI_STR_USE_CALLBACK = 107;
+constexpr int UNUSED_INI_STR_CALLBACK = 108;
+constexpr int UNUSED_INI_STR_USE_VOICE_VAL = 109;
 constexpr int INI_STR_AUTO_USER_PURGE = 110;
 constexpr int INI_STR_NO_PURGE_SL = 111;
 
@@ -236,14 +236,14 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "WFC_DRIVES",
   "",                         // 100
   "",
-  "//---ASV/CALLBACK SETTINGS---*",
+  "//---ASV SETTINGS---*",
   "USE_SIMPLE_ASV",
   "SIMPLE_ASV",
   "USE_ADVANCED_ASV",         // 100
   "ADVANCED_ASV",
-  "USE_CALLBACK",
-  "CALLBACK",
-  "USE_VOICE_VAL",
+  "", // USE_CALLBACK
+  "", // CALLBACK
+  "", // USE_VOICE_VAL
   "AUTO_USER_PURGE",          // 110
   "NO_PURGE_SL",
   "",

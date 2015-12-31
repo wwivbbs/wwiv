@@ -123,7 +123,6 @@ WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app),
   memset(&newuser_bwcolors, 0, sizeof(newuser_bwcolors));
   memset(&asv, 0, sizeof(asv_rec));
   memset(&advasv, 0, sizeof(adv_asv_rec));
-  memset(&cbv, 0, sizeof(cbv_rec));
 
   // Set the home directory
   getcwd(m_szCurrentDirectory, MAX_PATH);

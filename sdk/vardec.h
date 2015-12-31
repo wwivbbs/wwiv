@@ -80,7 +80,7 @@ struct userrec {
            day,                                     // birth day
            year,                                    // birth year
            language,                                // language to use
-           cbv;                                     // called back
+           unused_cbv;                              // called back
 
   char
   res_byte[49];
@@ -1025,8 +1025,8 @@ struct filestatusrec {
 #define OP_FLAGS_USE_FORCESCAN            0x04000000
 #define OP_FLAGS_NEWUSER_MIN              0x08000000
 #define OP_FLAGS_THREAD_SUBS              0x10000000
-#define OP_FLAGS_CALLBACK                 0x20000000
-#define OP_FLAGS_VOICE_VAL                0x40000000
+#define OP_FLAGS_UNUSED_1                 0x20000000
+#define OP_FLAGS_UNUSED_2                 0x40000000
 #define OP_FLAGS_ADV_ASV                  0x80000000
 
 // QUICK REFERNCE TO FIND USER INPUT_MODE_PHONE NUMBER

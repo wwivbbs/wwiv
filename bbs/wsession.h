@@ -65,17 +65,6 @@ struct adv_asv_rec {
   uint8_t reg_wwiv, nonreg_wwiv, non_wwiv, cosysop;
 };
 
-///////////////////////////////////////////////////////////////////////////////
-// begin callback additions
-
-struct cbv_rec {
-  uint8_t
-  sl, dsl, exempt, longdistance, forced, repeat;
-
-  uint16_t
-  ar, dar, restrict;
-};
-
 extern WOutStream bout;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -462,7 +451,6 @@ private:
 
   asv_rec asv;
   adv_asv_rec advasv;
-  cbv_rec cbv;
 
   uint16_t
   mail_who_field_len,

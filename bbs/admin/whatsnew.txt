@@ -15,6 +15,11 @@ What's New in WWIV 5.1 (2015)
 * Updated menus/textfiles to reflect 5.1 and also remove commands that have
   been removed years ago.
 * LOCAL_SYSOP has been removed from wwiv.ini, it's always true now.
+* Callback support has been removed the rest of the way.
+* Threaded messages support has been removed (it didn't work anyway).
+* NETUTIL has been merged into WWIVUTIL.  Going forward, WWIVUTIL will be
+  the main external command line tool for WWIV on all platforms.
+
 
 What's New in 2015 (WWIV 5.0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

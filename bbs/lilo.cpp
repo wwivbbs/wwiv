@@ -324,10 +324,6 @@ static void CheckCallRestrictions() {
   }
 }
 
-static void DoCallBackVerification() {
-  // TODO(rushfan): This is where we would do internet email validation.
-}
-
 void getuser() {
   write_inst(INST_LOC_GETUSER, 0, INST_FLAGS_NONE);
 
@@ -400,10 +396,7 @@ void getuser() {
 
   okmacro = true;
   CheckCallRestrictions();
-
-  if (session()->HasConfigFlag(OP_FLAGS_CALLBACK) && (session()->user()->GetCbv() & 1) == 0) {
-    DoCallBackVerification();
-  }
+  // TODO(rushfan): This is where we'd do internet email validation.
 }
 
 static void FixUserLinesAndColors() {

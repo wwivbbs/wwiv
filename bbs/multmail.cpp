@@ -126,8 +126,8 @@ void multimail(int *pnUserNumber, int numu) {
     bout << s;
     bout.nl();
     if (show_all) {
-      const string pnunn = session()->names()->UserName(pnUserNumber[cv]);
-      sprintf(s2, "%-22.22s  ", pnunn.c_str());
+      const string pnunn2 = session()->names()->UserName(pnUserNumber[cv]);
+      sprintf(s2, "%-22.22s  ", pnunn2.c_str());
       s1.assign(s2);
       j++;
       if (j >= 3) {

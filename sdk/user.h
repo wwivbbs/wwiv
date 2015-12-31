@@ -560,12 +560,6 @@ class User {
   void SetLanguage(int n)               {
     data.language = static_cast<unsigned char>(n);
   }
-  const int GetCbv() const                {
-    return data.cbv;
-  }
-  void SetCbv(int n)                    {
-    data.cbv = static_cast<unsigned char>(n);
-  }
 
   const int GetHomeUserNumber() const     {
     return data.homeuser;
