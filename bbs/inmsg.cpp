@@ -325,29 +325,6 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
 }
 
 
-void UpdateMessageBufferTheadsInfo(std::ostringstream& ss, const char *aux) {
-  if (!IsEqualsIgnoreCase(aux, "email")) {
-    time_t message_time = time(nullptr);
-    const string s = ss.str();
-    unsigned long targcrc = crc32buf(s.c_str(), s.length());
-    const string msgid_buf = StringPrintf("%c0P %lX-%lX", CD, targcrc, message_time);
-    ss << msgid_buf << crlf;
-    if (thread) {
-      thread [session()->GetNumMessagesInCurrentMessageArea() + 1 ].msg_num = static_cast< unsigned short>
-          (session()->GetNumMessagesInCurrentMessageArea() + 1);
-      strcpy(thread[session()->GetNumMessagesInCurrentMessageArea() + 1].message_code, &msgid_buf.c_str()[4]);
-    }
-    if (session()->threadID.length() > 0) {
-      const string threadid_buf = StringPrintf("%c0W %s", CD, session()->threadID.c_str());
-      ss << threadid_buf << crlf;
-      if (thread) {
-        strcpy(thread[session()->GetNumMessagesInCurrentMessageArea() + 1].parent_code, &threadid_buf.c_str()[4]);
-        thread[ session()->GetNumMessagesInCurrentMessageArea() + 1 ].used = 1;
-      }
-    }
-  }
-}
-
 static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char *aux) {
   if (irt_name[0] &&
       !IsEqualsIgnoreCase(aux, "email") &&
@@ -631,9 +608,6 @@ bool inmsg(MessageEditorData& data) {
   b << time_string << crlf;
   UpdateMessageBufferQuotesCtrlLines(b);
 
-  if (session()->IsMessageThreadingEnabled()) {
-    UpdateMessageBufferTheadsInfo(b, data.aux.c_str());
-  }
   if (irt[0]) {
     UpdateMessageBufferInReplyToInfo(b, data.aux.c_str());
   }

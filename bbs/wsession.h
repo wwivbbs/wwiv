@@ -146,9 +146,6 @@ public:
   const char* network_name() const;
   const std::string network_directory() const;
 
-  bool IsMessageThreadingEnabled() const { return m_bThreadSubs; }
-  void SetMessageThreadingEnabled(bool b) { m_bThreadSubs = b; }
-
   bool IsCarbonCopyEnabled() const { return m_bAllowCC; }
   void SetCarbonCopyEnabled(bool b) { m_bAllowCC = b; }
 
@@ -395,7 +392,6 @@ private:
   m_nMessageColor;
 
   int         m_nForcedReadSubNumber;
-  bool        m_bThreadSubs;
   bool        m_bAllowCC;
   bool        m_bUserOnline;
   bool        m_bQuoting;
@@ -440,7 +436,6 @@ private:
   std::string internetEmailName;
   std::string internetFullEmailAddress;
   std::string usenetReferencesLine;
-  std::string threadID;
   bool m_bInternetUseRealNames;
 
   std::string language_dir;

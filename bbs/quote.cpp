@@ -178,20 +178,6 @@ void grab_quotes(messagerec * m, const char *aux) {
         }
         l3 = l2 = 0;
         ss1 = nullptr;
-        if (session()->IsMessageThreadingEnabled()) {
-          for (l1 = 0; l1 < ss.length(); l1++) {
-            if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'P')) {
-              l1 += 4;
-              session()->threadID = "";
-              while ((ss[l1] != '\r') && (l1 < ss.length())) {
-                sprintf(temp, "%c", ss[l1]);
-                session()->threadID += temp;
-                l1++;
-              }
-              l1 = ss.length();
-            }
-          }
-        }
         for (l1 = 0; l1 < ss.length(); l1++) {
           if (ctld == -1) {
             ctld = ss[l1];

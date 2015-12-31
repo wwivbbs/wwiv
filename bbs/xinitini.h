@@ -88,8 +88,8 @@ constexpr int INI_STR_FREE_PHONE = 69;
 constexpr int INI_STR_EXTENDED_USERINFO = 70;
 constexpr int INI_STR_NEWUSER_MIN = 71;
 constexpr int INI_STR_ALLOW_CC_BCC = 72;
-constexpr int INI_STR_THREAD_SUBS = 73;
-constexpr int INI_STR_DISABLE_PD = 74;
+constexpr int UNUSED_INI_STR_THREAD_SUBS = 73;
+constexpr int UNUSED_INI_STR_DISABLE_PD = 74;
 constexpr int INI_STR_MAIL_WHO_LEN = 75;
 constexpr int INI_STR_ATTACH_DIR = 76;
 constexpr int INI_STR_ENABLE_PIPES = 77;
@@ -207,8 +207,8 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "EXTENDED_USERINFO",        // 70
   "NEWUSER_MIN",
   "ALLOW_CC_BCC",
-  "THREAD_SUBS",
-  "DISABLE_PD",
+  "", // THREAD_SUBS
+  "", // DISABLE_PD
   "MAIL_WHO_LEN",             // 75
   "ATTACH_DIR",
   "ENABLE_PIPES",

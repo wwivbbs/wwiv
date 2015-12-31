@@ -1024,9 +1024,9 @@ struct filestatusrec {
 #define OP_FLAGS_EXTRA_COLOR              0x02000000
 #define OP_FLAGS_USE_FORCESCAN            0x04000000
 #define OP_FLAGS_NEWUSER_MIN              0x08000000
-#define OP_FLAGS_THREAD_SUBS              0x10000000
-#define OP_FLAGS_UNUSED_1                 0x20000000
-#define OP_FLAGS_UNUSED_2                 0x40000000
+#define OP_FLAGS_UNUSED_1                 0x10000000
+#define OP_FLAGS_UNUSED_2                 0x20000000
+#define OP_FLAGS_UNUSED_3                 0x40000000
 #define OP_FLAGS_ADV_ASV                  0x80000000
 
 // QUICK REFERNCE TO FIND USER INPUT_MODE_PHONE NUMBER
@@ -1061,19 +1061,6 @@ struct eventsrec {
 };
 
 // end events additions
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-struct threadrec {
-  int16_t used;                           // Record used?
-
-  uint16_t msg_num,               // Message Number
-           parent_num;                              // Parent Message #
-
-  char message_code[20],                    // Message's ID Code
-       parent_code[20];                         // Message's Reply Code
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 

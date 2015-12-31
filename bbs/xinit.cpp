@@ -210,7 +210,6 @@ static ini_flags_type sysinfo_flags[] = {
   {INI_STR_CHAIN_REG, false, OP_FLAGS_CHAIN_REG},
   {INI_STR_CAN_SAVE_SSM, false, OP_FLAGS_CAN_SAVE_SSM},
   {INI_STR_EXTRA_COLOR, false, OP_FLAGS_EXTRA_COLOR},
-  {INI_STR_THREAD_SUBS, false, OP_FLAGS_THREAD_SUBS},
   {INI_STR_USE_ADVANCED_ASV, false, OP_FLAGS_ADV_ASV},
   {INI_STR_USE_FORCE_SCAN, false, OP_FLAGS_USE_FORCESCAN},
   {INI_STR_NEWUSER_MIN, false, OP_FLAGS_NEWUSER_MIN},
@@ -298,7 +297,6 @@ IniFile* WSession::ReadINIFile() {
       }
     }
 
-    SetMessageThreadingEnabled(ini->GetBooleanValue("THREAD_SUBS"));
     SetCarbonCopyEnabled(ini->GetBooleanValue("ALLOW_CC_BCC"));
 
     // pull out sysop-side colors

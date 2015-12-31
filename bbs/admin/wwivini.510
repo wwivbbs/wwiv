@@ -204,7 +204,6 @@ LOGON_PHONE            = Y                  ; check phone # at logon?
 EXTENDED_USERINFO      = N                  ; enable addr, etc info in userrec
 NEWUSER_MIN            = Y                  ; ask minimal new user information
 ALLOW_CC_BCC           = Y                  ; allow CC: and BCC: for email?
-THREAD_SUBS            = N                  ; activate threading message code
 DISABLE_PD             = Y                  ; disable Pulldown menu support
 TITLEBAR               = Y                  ; show user in console titlebar
 ;
