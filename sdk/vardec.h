@@ -837,11 +837,11 @@ enum xfertype {
 #define sysconfig_free_phone        0x02000
 #define sysconfig_log_dl            0x04000
 #define sysconfig_extended_info     0x08000
-#define sysconfig_high_speed        0x10000 // for INIT and NET only
-//#define sysconfig_flow_control    0x20000 // for INIT and NET only
+#define unused_sysconfig_1          0x10000
+#define unused_sysconfig_2          0x20000
 
 // configoverrec.comflags
-#define comflags_buffered_uart      0x0001
+#define unused_comflags_1           0x0001
 
 #define ansir_ansi                  0x01
 #define ansir_no_DOS                0x02
