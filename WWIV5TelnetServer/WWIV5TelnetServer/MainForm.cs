@@ -1,4 +1,4 @@
-﻿/**************************************************************************/
+/**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
 /*             Copyright (C)2014-2015 WWIV Software Services              */
@@ -144,8 +144,13 @@ namespace WWIV5TelnetServer
             notifyIcon1.Text = "WWIV Telnet Server: Offline";
             if (Properties.Settings.Default.autostart)
             {
-                Console.WriteLine("AutoStarting server.");
+                Console.WriteLine("AutoStarting Server.");
                 startToolStripMenuItem_Click(sender, e);
+            }
+            if (Properties.Settings.Default.launchLocalNodeAtStartup)
+            {
+                Console.WriteLine("AutoStarting Local Node.");
+                runLocalNodeToolStripMenuItem_Click(sender, e);
             }
         }
 
