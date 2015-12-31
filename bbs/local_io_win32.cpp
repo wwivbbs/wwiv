@@ -474,53 +474,6 @@ static char scan_to_char(int nKeyCode) {
   return (nKeyCode >= 16 && nKeyCode <= 50) ? xlate[ nKeyCode - 16 ] : '\x00';
 }
 
-static void alt_key(int nKeyCode) {
-  char ch1 = scan_to_char(nKeyCode);
-  if (ch1) {
-    char szCommand[ MAX_PATH ];
-    memset(szCommand, 0, sizeof(szCommand));
-    File macroFile(syscfg.datadir, MACROS_TXT);
-    if (macroFile.Open(File::modeReadOnly | File::modeBinary)) {
-      int l = macroFile.GetLength();
-      char* ss = static_cast<char *>(BbsAllocA(l + 10));
-      if (ss) {
-        macroFile.Read(ss, l);
-        macroFile.Close();
-
-        ss[l] = 0;
-        char* ss1 = strtok(ss, "\r\n");
-        while (ss1) {
-          if (upcase(*ss1) == ch1) {
-            strtok(ss1, " \t");
-            ss1 = strtok(nullptr, "\r\n");
-            if (ss1 && (strlen(ss1) < 128)) {
-              strncpy(szCommand, ss1, sizeof(szCommand));
-            }
-            ss1 = nullptr;
-          } else {
-            ss1 = strtok(nullptr, "\r\n");
-          }
-        }
-        free(ss);
-      }
-
-      if (szCommand[0]) {
-        if (szCommand[0] == '@') {
-          if (okmacro && okskey && (!charbufferpointer) && (szCommand[1])) {
-            for (l = strlen(szCommand) - 1; l >= 0; l--) {
-              if (szCommand[l] == '{') {
-                szCommand[l] = '\r';
-              }
-              strcpy(charbuffer, szCommand);
-              charbufferpointer = 1;
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
 /*
  * skey handles all f-keys and the like hit FROM THE KEYBOARD ONLY
  */
@@ -627,13 +580,8 @@ void Win32ConsoleIO::skey(char ch) {
           chat_file = !chat_file;
         }
         break;
-      default:
-        alt_key(nKeyCode);
-        break;
       }
     }
-  } else {
-    alt_key(nKeyCode);
   }
 }
 

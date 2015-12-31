@@ -121,7 +121,6 @@
 #define LPSEARCH_NOEXT "lpsearch"
 #define LPSYSOP_NOEXT "lpsysop"
 
-#define MACROS_TXT "macros.txt"
 #define MBMAIN_NOEXT "mbmain"
 
 // QWK
