@@ -1,4 +1,4 @@
-﻿/**************************************************************************/
+/**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
 /*             Copyright (C)2014-2015 WWIV Software Services              */
@@ -51,6 +51,7 @@ namespace WWIV5TelnetServer
             beginDayCheckBox.Checked = Properties.Settings.Default.useBegindayEvent;
             runEventsCheckbox.Checked = Properties.Settings.Default.useEvents;
             launchMinimizedCheckBox.Checked = Properties.Settings.Default.launchMinimized;
+            launchLocalNodeCheckBox.Checked = Properties.Settings.Default.launchLocalNodeAtStartup;
         }
 
         private void ok_Clicked(object sender, EventArgs e)
@@ -83,6 +84,7 @@ namespace WWIV5TelnetServer
                 Properties.Settings.Default.useBegindayEvent = beginDayCheckBox.Checked;
                 Properties.Settings.Default.useEvents = runEventsCheckbox.Checked;
                 Properties.Settings.Default.launchMinimized = launchMinimizedCheckBox.Checked;
+                Properties.Settings.Default.launchLocalNodeAtStartup = launchLocalNodeCheckBox.Checked;
                 Properties.Settings.Default.Save();
             }
         }
