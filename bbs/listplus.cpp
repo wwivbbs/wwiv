@@ -316,7 +316,7 @@ int lp_add_batch(const char *file_name, int dn, long fs) {
 #endif
 
           strcpy(batch[session()->numbatch].filename, file_name);
-          batch[session()->numbatch].dir = static_cast<short>(dn);
+          batch[session()->numbatch].dir = static_cast<int16_t>(dn);
           batch[session()->numbatch].time = static_cast<float>(t);
           batch[session()->numbatch].sending = 1;
           batch[session()->numbatch].len = fs;

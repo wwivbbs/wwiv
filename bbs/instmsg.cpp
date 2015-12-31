@@ -554,7 +554,7 @@ void write_inst(int loc, int subloc, int flags) {
   }
   if (ti.number != session()->instance_number()) {
     re_write = true;
-    ti.number = static_cast<short>(session()->instance_number());
+    ti.number = static_cast<int16_t>(session()->instance_number());
   }
   if (loc == INST_LOC_DOWN) {
     re_write = true;
@@ -563,7 +563,7 @@ void write_inst(int loc, int subloc, int flags) {
       if (ti.user != session()->usernum) {
         re_write = true;
         if ((session()->usernum > 0) && (session()->usernum <= syscfg.maxusers)) {
-          ti.user = static_cast<short>(session()->usernum);
+          ti.user = static_cast<int16_t>(session()->usernum);
         }
       }
     }

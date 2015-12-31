@@ -34,7 +34,6 @@
 //
 // Local function prototypes
 //
-int ste(int i);
 char *GetQuoteInitials();
 
 
@@ -63,16 +62,16 @@ static int quotes_ind_l;
 using std::string;
 using std::unique_ptr;
 
-int ste(int i) {
+static bool ste(int i) {
   if (irt_name[i] == 32 && irt_name[i + 1] == 'O' && irt_name[i + 2] == 'F' && irt_name[i + 3] == 32) {
     if (irt_name[ i + 4 ] > 47 && irt_name[ i + 4 ] < 58) {
-      return 0;
+      return false;
     }
   }
   if (irt_name[i] == 96) {
     brtnm++;
   }
-  return 1;
+  return true;
 }
 
 

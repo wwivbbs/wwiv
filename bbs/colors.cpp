@@ -165,11 +165,11 @@ void color_config() {
       if (yesno()) {
         bout << "\r\nColor saved.\r\n\n";
         if ((n <= -1) && (n >= -16)) {
-          rescolor.resx[207 + std::abs(n)] = static_cast<unsigned char>(c);
+          rescolor.resx[207 + std::abs(n)] = c;
         } else if ((n >= 0) && (n <= 9)) {
           session()->user()->SetColor(n, c);
         } else {
-          rescolor.resx[n - 10] = static_cast<unsigned char>(c);
+          rescolor.resx[n - 10] = c;
         }
       } else {
         bout << "\r\nNot saved, then.\r\n\n";
@@ -188,8 +188,8 @@ void color_config() {
 }
 
 void buildcolorfile() {
-  for (int i = 0; i < 240; i++) {
-    rescolor.resx[i] = static_cast<unsigned char>(i + 1);
+  for (uint8_t i = 0; i < 240; i++) {
+    rescolor.resx[i] = static_cast<uint8_t>(i + 1);
   }
 
   bout.nl();

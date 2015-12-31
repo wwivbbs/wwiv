@@ -36,10 +36,10 @@
 
 struct xtrasubsnetrec {
   long flags;
-  short net_num;
-  unsigned short type;
-  short host;
-  short category;
+  int16_t net_num;
+  uint16_t type;
+  int16_t host;
+  int16_t category;
   char stype[8];
 };
 

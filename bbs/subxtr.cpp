@@ -62,7 +62,7 @@ bool ParseXSubsLine(const std::vector<net_networks_rec>& net_networks, const std
   StringTrim(&stype);
   strcpy(x.stype, stype.c_str());
   x.type = StringToUnsignedShort(x.stype);
-  x.net_num = static_cast<short>(net_num);
+  x.net_num = static_cast<int16_t>(net_num);
 
   stream >> x.flags;
   stream >> x.host;

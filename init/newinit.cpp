@@ -193,7 +193,7 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   }
 
   userrec user_record;
-  syscfg.userreclen = static_cast<short>(sizeof(user_record));
+  syscfg.userreclen = static_cast<int16_t>(sizeof(user_record));
   syscfg.waitingoffset = OFFOF(waiting);
   syscfg.inactoffset = OFFOF(inact);
   syscfg.sysstatusoffset = OFFOF(sysstatus);

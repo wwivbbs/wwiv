@@ -38,7 +38,7 @@ void add_phone_number(int usernum, const char *phone) {
   }
 
   phonerec p;
-  p.usernum = static_cast<short>(usernum);
+  p.usernum = static_cast<int16_t>(usernum);
   strcpy(reinterpret_cast<char*>(p.phone), phone);
   phoneFile.Write(&p, sizeof(phonerec));
   phoneFile.Close();

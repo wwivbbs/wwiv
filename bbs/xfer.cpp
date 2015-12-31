@@ -359,7 +359,7 @@ void add_extended_description(const char *file_name, const char *description) {
   ext_desc_type ed;
 
   strcpy(ed.name, file_name);
-  ed.len = static_cast<short>(GetStringLength(description));
+  ed.len = static_cast<int16_t>(GetStringLength(description));
 
   File file(g_szExtDescrFileName);
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);

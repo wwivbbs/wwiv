@@ -302,7 +302,7 @@ int matchuser(User *pUser) {
             sp++;
           }
         } else {
-          if (cpf < static_cast<signed int>(sizeof(fcn)) - 1) {
+          if (cpf < static_cast<int>(sizeof(fcn)) - 1) {
             fcn[ cpf++ ] = *sp++;
           } else {
             sp++;
