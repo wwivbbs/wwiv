@@ -22,29 +22,7 @@
 
 #include "common.h"
 
-// If the person has ansi, then they are foced to use listplus
-#define FORCE_LP
-
-
 #define EXTRA_SPACE
-
-// This #define speeds up the extended description searches about 3x, making
-// it barable to do a extended description search.
-// The only drawback to it is that if you are multiline, you can not add
-// an extended description while someone is listing that area, of course it
-// can be added when the person is done with the area and all...
-
-// Uncomment for use with Spotnicks File Point mod
-// #define FILE_POINTS
-
-// UnComment for use with Sam's KBPERDAY mod
-// #define KBPERDAY
-
-
-#ifdef FILE_POINTS
-extern long fpts;
-#endif
-
 
 extern int foundany;
 
@@ -171,7 +149,6 @@ void load_lp_config();
 void save_lp_config();
 void sysop_configure();
 short SelectColor(int which);
-void check_listplus();
 void config_file_list();
 void update_user_config_screen(uploadsrec * upload_record, int which);
 void do_batch_sysop_command(int mode, const char *file_name);

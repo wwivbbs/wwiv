@@ -617,7 +617,7 @@ void printinfo(uploadsrec * u, bool *abort) {
   if (session()->tagging == 0 && !x_only) {
     return;
   }
-  if (session()->tagging == 1 && !session()->user()->IsUseNoTagging() && !x_only) {
+  if (session()->tagging == 1 && !x_only) {
     if (!filelist) {
       filelist = static_cast<tagrec *>(BbsAllocA(50 * sizeof(tagrec)));
       session()->tagptr = 0;
@@ -662,7 +662,7 @@ void printinfo(uploadsrec * u, bool *abort) {
   bout.Color(2);
   osan(s, abort, &next);
 
-  if (session()->tagging == 1 && !session()->user()->IsUseNoTagging() && !x_only) {
+  if (session()->tagging == 1 && !x_only) {
     bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
     osan((okansi() ? "\xBA" : "|"), abort, &next);
     sprintf(s1, "%d", u->numdloads);
@@ -678,7 +678,7 @@ void printinfo(uploadsrec * u, bool *abort) {
   bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
   osan((okansi() ? "\xBA" : "|"), abort, &next);
   sprintf(s, "|#%d%s", (u->mask & mask_extended) ? 1 : 2, u->description);
-  if (session()->tagging && !session()->user()->IsUseNoTagging() && !x_only) {
+  if (session()->tagging && !x_only) {
     plal(s, session()->user()->GetScreenChars() - 28, abort);
   } else {
     plal(s, strlen(s), abort);
@@ -702,8 +702,7 @@ void printtitle(bool *abort) {
   }
   const char* ss = (x_only) ? "" : "\r";
 
-  if (lines_listed >= session()->screenlinest - 7 && !x_only &&
-      !session()->user()->IsUseNoTagging() && filelist && g_num_listed) {
+  if (lines_listed >= session()->screenlinest - 7 && !x_only && filelist && g_num_listed) {
     tag_files();
     if (session()->tagging == 0) {
       return;
@@ -712,15 +711,14 @@ void printtitle(bool *abort) {
   sprintf(buffer, "%s%s - #%s, %d files.", ss, session()->directories[udir[session()->GetCurrentFileArea()].subnum].name,
           udir[session()->GetCurrentFileArea()].keys, session()->numf);
   bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
-  if ((g_num_listed == 0 && session()->tagptr == 0) || session()->tagging == 0 ||
-      (session()->user()->IsUseNoTagging() && g_num_listed == 0)) {
+  if ((g_num_listed == 0 && session()->tagptr == 0) || session()->tagging == 0 || g_num_listed == 0) {
     if (okansi()) {
       bout << ss << string(78, '\xCD')  << wwiv::endl;
     } else {
       bout << ss << string(78, '-') << wwiv::endl;
     }
   } else if (lines_listed) {
-    if (session()->titled != 2 && session()->tagging == 1 && !session()->user()->IsUseNoTagging()) {
+    if (session()->titled != 2 && session()->tagging == 1) {
       if (okansi()) {
         bout << ss <<
                            "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"
@@ -730,7 +728,7 @@ void printtitle(bool *abort) {
                            wwiv::endl;
       }
     } else {
-      if ((session()->user()->IsUseNoTagging() || session()->tagging == 2) && g_num_listed != 0) {
+      if (session()->tagging == 2 && g_num_listed != 0) {
         bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
         if (okansi()) {
           bout << ss <<
@@ -747,7 +745,7 @@ void printtitle(bool *abort) {
     bout.Color(2);
   }
   pla(buffer, abort);
-  if (session()->tagging == 1 && !session()->user()->IsUseNoTagging() && !x_only) {
+  if (session()->tagging == 1 && !x_only) {
     bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
     if (okansi()) {
       bout << "\r" <<
@@ -813,7 +811,7 @@ void listfiles() {
 
       // Moved to here from bputch.cpp
       if (lines_listed >= session()->screenlinest - 3) {
-        if (session()->tagging && !session()->user()->IsUseNoTagging() && filelist && !chatting) {
+        if (session()->tagging && filelist && !chatting) {
           if (g_num_listed != 0) {
             tag_files();
           }

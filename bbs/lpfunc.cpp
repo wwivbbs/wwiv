@@ -288,24 +288,11 @@ int listfiles_plus_function(int type) {
                       amount = lines = matches = 0;
                     } else {
 ADD_OR_REMOVE_BATCH:
-#ifdef KBPERDAY
-                      kbbatch += bytes_to_k(file_recs[file_pos]->numbytes);
-#endif
                       if (find_batch_queue(file_recs[file_pos]->filename) > -1) {
                         remove_batch(file_recs[file_pos]->filename);
                         redraw = false;
                       }
-#ifdef FILE_POINTS
-                      else if (((!(file_recs[file_pos]->mask & mask_validated)) ||
-                                ((file_recs[file_pos]->filepoints > session()->user()->GetFilePoints())) &&
-                                !session()->user()->IsExemptRatio()) &&
-                               !sysop_mode) {
-                        bout.cls();
-                        bout << "You don't have enough file points to download this file\r\n";
-                        bout << "Or this file is not validated yet.\r\n";
-#else
                       else if (!ratio_ok() && !sysop_mode) {
-#endif
                         menu_done = true;
                         amount = lines = matches = 0;
                         save_file_pos = file_pos;
@@ -318,10 +305,6 @@ ADD_OR_REMOVE_BATCH:
                           strcat(szTempFile, file_recs[file_pos]->filename);
                           unalign(szTempFile);
                           if (sysop_mode || !session()->using_modem || File::Exists(szTempFile)) {
-#ifdef FILE_POINTS
-                            fpts = 0;
-                            fpts = (file_recs[file_pos]->filepoints);
-#endif
                             lp_add_batch(file_recs[file_pos]->filename, udir[session()->GetCurrentFileArea()].subnum,
                                          file_recs[file_pos]->numbytes);
                           } else if (lp_config.request_file) {
@@ -334,9 +317,6 @@ ADD_OR_REMOVE_BATCH:
                                        file_recs[file_pos]->numbytes);
                         }
                       }
-#ifdef KBPERDAY
-                      kbbatch -= bytes_to_k(file_recs[file_pos]->numbytes);
-#endif
                       bout.GotoXY(1, first_file_pos() + vert_pos[file_pos] - 1);
                       bout.bprintf("|%2d %c ", lp_config.tagged_color,
                                                         check_batch_queue(file_recs[file_pos]->filename) ? '\xFE' : ' ');
@@ -383,16 +363,7 @@ ADD_OR_REMOVE_BATCH:
                       menu_done = true;
                       save_file_pos = file_pos;
                       amount = lines = matches = 0;
-#ifdef FILE_POINTS
-                      if (((!(file_recs[file_pos]->mask & mask_validated))
-                           || ((file_recs[file_pos]->filepoints > session()->user()->GetFilePoints())) &&
-                           !session()->user()->IsExemptRatio()) && !sysop_mode) {
-                        bout.cls();
-                        bout << "You don't have enough file points to download this file\r\n";
-                        bout << "Or this file is not validated yet.\r\n";
-#else
                       if (!ratio_ok()) {
-#endif
                         pausescr();
                       } else {
                         if (!ratio_ok()  && !sysop_mode) {
@@ -408,10 +379,6 @@ ADD_OR_REMOVE_BATCH:
                             strcat(szTempFile, file_recs[file_pos]->filename);
                             unalign(szTempFile);
                             if (sysop_mode || !session()->using_modem || File::Exists(szTempFile)) {
-#ifdef FILE_POINTS
-                              fpts = 0;
-                              fpts = (file_recs[file_pos]->filepoints);
-#endif
                               lp_add_batch(file_recs[file_pos]->filename, udir[session()->GetCurrentFileArea()].subnum,
                                            file_recs[file_pos]->numbytes);
                             } else if (lp_config.request_file) {

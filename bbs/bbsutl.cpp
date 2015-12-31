@@ -327,7 +327,7 @@ bool checka(bool *abort, bool *next) {
   while (bkbhit() && !*abort && !hangup) {
     CheckForHangup();
     char ch = bgetch();
-    if (!session()->tagging || session()->user()->IsUseNoTagging()) {
+    if (!session()->tagging) {
       lines_listed = 0;
     }
     switch (ch) {

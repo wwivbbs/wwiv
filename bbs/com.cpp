@@ -142,7 +142,7 @@ char getkey() {
   long tv = (so() || IsEqualsIgnoreCase(session()->GetCurrentSpeed().c_str(), "TELNET")) ? 10920L : 3276L;
   long tv1 = tv - 1092L;     // change 4.31 Build3
 
-  if (!session()->tagging || session()->user()->IsUseNoTagging()) {
+  if (!session()->tagging) {
     lines_listed = 0;
   }
 
