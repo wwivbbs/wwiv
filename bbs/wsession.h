@@ -65,17 +65,6 @@ struct adv_asv_rec {
   uint8_t reg_wwiv, nonreg_wwiv, non_wwiv, cosysop;
 };
 
-///////////////////////////////////////////////////////////////////////////////
-// begin callback additions
-
-struct cbv_rec {
-  uint8_t
-  sl, dsl, exempt, longdistance, forced, repeat;
-
-  uint16_t
-  ar, dar, restrict;
-};
-
 extern WOutStream bout;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -156,9 +145,6 @@ public:
   // instead of a string.
   const char* network_name() const;
   const std::string network_directory() const;
-
-  bool IsMessageThreadingEnabled() const { return m_bThreadSubs; }
-  void SetMessageThreadingEnabled(bool b) { m_bThreadSubs = b; }
 
   bool IsCarbonCopyEnabled() const { return m_bAllowCC; }
   void SetCarbonCopyEnabled(bool b) { m_bAllowCC = b; }
@@ -406,7 +392,6 @@ private:
   m_nMessageColor;
 
   int         m_nForcedReadSubNumber;
-  bool        m_bThreadSubs;
   bool        m_bAllowCC;
   bool        m_bUserOnline;
   bool        m_bQuoting;
@@ -451,7 +436,6 @@ private:
   std::string internetEmailName;
   std::string internetFullEmailAddress;
   std::string usenetReferencesLine;
-  std::string threadID;
   bool m_bInternetUseRealNames;
 
   std::string language_dir;
@@ -462,7 +446,6 @@ private:
 
   asv_rec asv;
   adv_asv_rec advasv;
-  cbv_rec cbv;
 
   uint16_t
   mail_who_field_len,

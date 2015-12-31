@@ -21,7 +21,6 @@
 #include <memory>
 #include <string>
 
-#include "bbs/callback.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/newuser.h"
@@ -244,21 +243,6 @@ void print_data(int user_number, User *pUser, bool bLongFormat, bool bClearScree
   if (pUser->GetWWIVRegNumber()) {
     bout << "|#9   WWIV Reg Num : |#1" << pUser->GetWWIVRegNumber() << wwiv::endl;
   }
-  // begin callback changes
-
-  if (bLongFormat) {
-    print_affil(pUser);
-    if (session()->HasConfigFlag(OP_FLAGS_CALLBACK)) {
-      bout.bprintf("|#1User has%s been callback verified.  ",
-                                        (pUser->GetCbv() & 1) == 0 ? " |#6not" : "");
-    }
-    if (session()->HasConfigFlag(OP_FLAGS_VOICE_VAL)) {
-      bout.bprintf("|#1User has%s been voice verified.",
-                                        (pUser->GetCbv() & 2) == 0 ? " |#6not" : "");
-    }
-    bout.nl(2);
-  }
-  // end callback changes
 }
 
 int matchuser(int user_number) {
@@ -318,7 +302,7 @@ int matchuser(User *pUser) {
             sp++;
           }
         } else {
-          if (cpf < static_cast<signed int>(sizeof(fcn)) - 1) {
+          if (cpf < static_cast<int>(sizeof(fcn)) - 1) {
             fcn[ cpf++ ] = *sp++;
           } else {
             sp++;
@@ -396,17 +380,6 @@ int matchuser(User *pUser) {
             } else {
               tmp = pUser->GetLastBaudRate() > tmp1;
             }
-
-            // begin callback additions
-
-          } else if (IsEquals(fcn, "CBV")) {
-            if (less) {
-              tmp = pUser->GetCbv() < tmp1;
-            } else {
-              tmp = pUser->GetCbv() > tmp1;
-            }
-
-            // end callback additions
 
           } else if (IsEquals(fcn, "COMP_TYPE")) {
             tmp = pUser->GetComputerType() == tmp1;
@@ -493,7 +466,7 @@ void uedit(int usern, int other) {
       bout << "|#9(|#2Q|#9=|#1Quit, |#2?|#9=|#1Help|#9) User Editor Command: ";
       char ch = 0;
       if (session()->user()->GetSl() == 255 || session()->GetWfcStatus()) {
-        ch = onek("ACDEFGHILMNOPQRSTUVWXYZ0123456789[]{}/,.?~%:", true);
+        ch = onek("ACDEFGHILMNOPQRSTUWXYZ0123456789[]{}/,.?~%:", true);
       } else {
         ch = onek("ACDEFGHILMNOPQRSTUWYZ0123456789[]{}/,.?%", true);
       }
@@ -688,50 +661,6 @@ void uedit(int usern, int other) {
         }
       }
       break;
-      case 'V': {
-        bool bWriteUser = false;
-        if (session()->HasConfigFlag(OP_FLAGS_CALLBACK)) {
-          bout << "|#7Toggle callback verify flag (y/N) ? ";
-          if (yesno()) {
-            if (user.GetCbv() & 1) {
-              session()->user()->SetSl(syscfg.newusersl);
-              session()->user()->SetDsl(syscfg.newuserdsl);
-              session()->user()->SetRestriction(syscfg.newuser_restrict);
-              user.SetExempt(0);
-              user.SetAr(0);
-              user.SetDar(0);
-              user.SetCbv(user.GetCbv() - 1);
-            } else {
-              if (user.GetSl() < session()->cbv.sl) {
-                user.SetSl(session()->cbv.sl);
-              }
-              if (user.GetDsl() < session()->cbv.dsl) {
-                user.SetDsl(session()->cbv.dsl);
-              }
-              user.SetRestriction(user.GetRestriction() | session()->cbv.restrict);
-              user.SetExempt(user.GetExempt() | session()->cbv.exempt);
-              user.SetArFlag(session()->cbv.ar);
-              user.SetDarFlag(session()->cbv.dar);
-              user.SetCbv(user.GetCbv() | 1);
-            }
-            bWriteUser = true;
-          }
-        }
-        if (session()->HasConfigFlag(OP_FLAGS_VOICE_VAL)) {
-          bout << "|#7Toggle voice validated flag (y/N) ? ";
-          if (yesno()) {
-            if (user.GetCbv() & 2) {
-              user.SetCbv(user.GetCbv() - 2);
-            } else {
-              user.SetCbv(user.GetCbv() | 2);
-            }
-            bWriteUser = true;
-          }
-        }
-        if (bWriteUser) {
-          session()->users()->WriteUser(&user, user_number);
-        }
-      }
       break;
       case 'Q':
         bDoneWithUEdit = true;
@@ -812,12 +741,6 @@ void uedit(int usern, int other) {
         }
       }
       break;
-      // begin callback additions
-      case 'W':
-        wwivnode(&user, 1);
-        session()->users()->WriteUser(&user, user_number);
-        break;
-      // end callback additions
       case 'X': {
         string regDate, expDate;
         if (!session()->HasConfigFlag(OP_FLAGS_USER_REGISTRATION)) {

@@ -122,21 +122,6 @@ unsigned short WSession::str2restrict(const char *s) {
   return static_cast<int16_t>(r);
 }
 
-// begin callback addition
-
-unsigned char WSession::stryn2tf(const char *s) {
-  char ch = wwiv::UpperCase<char>(*s);
-
-  char yesChar = *(YesNoString(true));
-  if (ch == yesChar || ch == 1 || ch == '1' || ch == 'T') {
-    return 1;
-  }
-  return 0;
-}
-
-
-// end callback addition
-
 #define OFFOF(x) static_cast<int16_t>(reinterpret_cast<long>(&user()->data.x) - reinterpret_cast<long>(&user()->data))
 
 // Reads WWIV.INI info from [WWIV] subsection, overrides some config.dat
@@ -144,10 +129,8 @@ unsigned char WSession::stryn2tf(const char *s) {
 // tries to read settings from [WWIV-<instnum>] subsection - this overrides
 // those in [WWIV] subsection.
 
-
 static unsigned char nucol[] = {7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
 static unsigned char nucolbw[] = {7, 15, 15, 15, 112, 15, 15, 7, 7, 7};
-
 
 struct eventinfo_t {
   const char *name;
@@ -198,10 +181,6 @@ static void set_string(IniFile* ini, int key_idx, string* out) {
 
 #define INI_GET_ASV(s, f, func, d) \
 {const char* ss; if ((ss=ini->GetValue(get_key_str(INI_STR_SIMPLE_ASV,s)))!=nullptr) asv.f = func (ss); else asv.f = d;}
-#define INI_GET_CALLBACK(s, f, func, d) \
-{const char* ss; if ((ss=ini->GetValue(get_key_str(INI_STR_CALLBACK,s)))!=nullptr) \
-    cbv.f = func (ss); \
-    else cbv.f = d;}
 
 #define NEL(s) (sizeof(s) / sizeof((s)[0]))
 
@@ -231,9 +210,6 @@ static ini_flags_type sysinfo_flags[] = {
   {INI_STR_CHAIN_REG, false, OP_FLAGS_CHAIN_REG},
   {INI_STR_CAN_SAVE_SSM, false, OP_FLAGS_CAN_SAVE_SSM},
   {INI_STR_EXTRA_COLOR, false, OP_FLAGS_EXTRA_COLOR},
-  {INI_STR_THREAD_SUBS, false, OP_FLAGS_THREAD_SUBS},
-  {INI_STR_USE_CALLBACK, false, OP_FLAGS_CALLBACK},
-  {INI_STR_USE_VOICE_VAL, false, OP_FLAGS_VOICE_VAL},
   {INI_STR_USE_ADVANCED_ASV, false, OP_FLAGS_ADV_ASV},
   {INI_STR_USE_FORCE_SCAN, false, OP_FLAGS_USE_FORCESCAN},
   {INI_STR_NEWUSER_MIN, false, OP_FLAGS_NEWUSER_MIN},
@@ -321,7 +297,6 @@ IniFile* WSession::ReadINIFile() {
       }
     }
 
-    SetMessageThreadingEnabled(ini->GetBooleanValue("THREAD_SUBS"));
     SetCarbonCopyEnabled(ini->GetBooleanValue("ALLOW_CC_BCC"));
 
     // pull out sysop-side colors
@@ -385,21 +360,8 @@ IniFile* WSession::ReadINIFile() {
       advasv.cosysop = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "COSYSOP"), 1);
     }
 
-    // get callback values
-    if (HasConfigFlag(OP_FLAGS_CALLBACK)) {
-      INI_GET_CALLBACK("SL", sl, StringToUnsignedChar, syscfg.autoval[2].sl);
-      INI_GET_CALLBACK("DSL", dsl, StringToUnsignedChar, syscfg.autoval[2].dsl);
-      INI_GET_CALLBACK("EXEMPT", exempt, StringToUnsignedChar, 0);
-      INI_GET_CALLBACK("AR", ar, str_to_arword, syscfg.autoval[2].ar);
-      INI_GET_CALLBACK("DAR", dar, str_to_arword, syscfg.autoval[2].dar);
-      INI_GET_CALLBACK("RESTRICT", restrict, str2restrict, 0);
-      INI_GET_CALLBACK("FORCED", forced, stryn2tf, 0);
-      INI_GET_CALLBACK("LONG_DISTANCE", longdistance, stryn2tf, 0);
-      INI_GET_CALLBACK("REPEAT", repeat, StringToUnsignedChar, 0);
-    }
-
     // sysconfig flags
-    syscfg.sysconfig = static_cast<unsigned short>(GetFlagsFromIniFile(ini, sysconfig_flags,
+    syscfg.sysconfig = static_cast<uint16_t>(GetFlagsFromIniFile(ini, sysconfig_flags,
                        NEL(sysconfig_flags), syscfg.sysconfig));
 
     const char* ss;
@@ -427,10 +389,10 @@ IniFile* WSession::ReadINIFile() {
                                              screen_saver_time);
   }
 
-  max_extend_lines    = std::min<unsigned short>(max_extend_lines, 99);
-  max_batch           = std::min<unsigned short>(max_batch , 999);
-  max_chains          = std::min<unsigned short>(max_chains, 999);
-  max_gfilesec        = std::min<unsigned short>(max_gfilesec, 999);
+  max_extend_lines    = std::min<uint16_t>(max_extend_lines, 99);
+  max_batch           = std::min<uint16_t>(max_batch , 999);
+  max_chains          = std::min<uint16_t>(max_chains, 999);
+  max_gfilesec        = std::min<uint16_t>(max_gfilesec, 999);
 
   set_wwivmail_enabled(ini->GetBooleanValue("USE_WWIVMAIL", true));
   set_internal_qwk_enabled(ini->GetBooleanValue("USE_INTERNAL_QWK", true));

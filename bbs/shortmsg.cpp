@@ -115,8 +115,8 @@ void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char 
     } else {
       nNewMsgPos = 0;
     }
-    sm.tosys = static_cast<unsigned short>(nSystemNum);
-    sm.touser = static_cast<unsigned short>(nUserNum);
+    sm.tosys = static_cast<uint16_t>(nSystemNum);
+    sm.touser = static_cast<uint16_t>(nUserNum);
     strncpy(sm.message, messageText, 80);
     sm.message[80] = '\0';
     file.Seek(nNewMsgPos * sizeof(shortmsgrec), File::seekBegin);
@@ -129,10 +129,10 @@ void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char 
 
 void SendRemoteShortMessage(int nUserNum, int nSystemNum, char *messageText) {
   net_header_rec nh;
-  nh.tosys = static_cast<unsigned short>(nSystemNum);
-  nh.touser = static_cast<unsigned short>(nUserNum);
+  nh.tosys = static_cast<uint16_t>(nSystemNum);
+  nh.touser = static_cast<uint16_t>(nUserNum);
   nh.fromsys = net_sysnum;
-  nh.fromuser = static_cast<unsigned short>(session()->usernum);
+  nh.fromuser = static_cast<uint16_t>(session()->usernum);
   nh.main_type = main_type_ssm;
   nh.minor_type = 0;
   nh.list_len = 0;

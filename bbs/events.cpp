@@ -141,7 +141,7 @@ void get_next_forced_event() {
   if (first >= 0 && !syscfg.executetime) {
     // all of todays events are
     time_event = static_cast<double>(first) * SECONDS_PER_MINUTE_FLOAT;     // complete, set next forced
-    syscfg.executetime = static_cast<unsigned short>(first);                // event to first one
+    syscfg.executetime = static_cast<uint16_t>(first);                // event to first one
     if (!syscfg.executetime) {                                              // scheduled for tomorrow
       ++syscfg.executetime;
     }
@@ -461,7 +461,7 @@ void modify_event(int evnt) {
         }
       } while (ch != '\r' && !hangup);
       if (ok) {
-        events[i].time = static_cast<short>((60 * atoi(s)) + atoi(&(s[3])));
+        events[i].time = static_cast<int16_t>((60 * atoi(s)) + atoi(&(s[3])));
       }
       break;
     case 'B':
@@ -510,7 +510,7 @@ void modify_event(int evnt) {
       input(s, 3);
       j = atoi(s);
       if (s[0] != '\0' && j >= 0 && j < 1000) {
-        events[i].instance = static_cast<short>(j);
+        events[i].instance = static_cast<int16_t>(j);
       }
       break;
     case 'I':
@@ -521,7 +521,7 @@ void modify_event(int evnt) {
         input(s, 4);
         j = atoi(s);
         if (s[0] != '\0' && j >= 1 && j <= 240) {
-          events[i].period = static_cast<short>(j);
+          events[i].period = static_cast<int16_t>(j);
         } else {
           // user entered invalid time period, disable periodic
           events[i].status &= ~EVENT_PERIODIC;

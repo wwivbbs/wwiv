@@ -286,9 +286,10 @@ bool WWIVMessageArea::readfile(const messagerec* msg, string msgs_filename, stri
   current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
     file->Seek(MSG_STARTING(gat_section) + MSG_BLOCK_SIZE * static_cast<uint32_t>(current_section), File::seekBegin);
-    char b[MSG_BLOCK_SIZE];
+    char b[MSG_BLOCK_SIZE + 1];
     file->Read(b, MSG_BLOCK_SIZE);
-    out->append(string(b, MSG_BLOCK_SIZE));
+    b[MSG_BLOCK_SIZE] = 0;
+    out->append(b);
     current_section = gat[current_section];
   }
 

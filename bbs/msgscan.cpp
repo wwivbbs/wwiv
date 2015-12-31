@@ -42,7 +42,6 @@
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
-void SetupThreadRecordsBeforeScan();
 void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsub, bool &bTitleScan, bool &done,
                           bool &quit, int &val);
 void GetScanReadPrompts(int nMessageNumber, char *pszReadPrompt, char *szSubNamePrompt);
@@ -56,7 +55,6 @@ void HandleMessageReply(int &nMessageNumber);
 void HandleMessageDelete(int &nMessageNumber);
 void HandleMessageExtract(int &nMessageNumber);
 void HandleMessageHelp();
-void HandleListReplies(int nMessageNumber);
 
 static char s_szFindString[21];
 
@@ -78,25 +76,10 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
     bout << "No subs available.\r\n\n";
     return;
   }
-  if (session()->IsMessageThreadingEnabled()) {
-    SetupThreadRecordsBeforeScan();
-  }
-
+  
   bool done = false;
   bool quit = false;
   do {
-    if (session()->IsMessageThreadingEnabled()) {
-      for (int nTempOuterMessageIterator = 0; nTempOuterMessageIterator <= session()->GetNumMessagesInCurrentMessageArea();
-           nTempOuterMessageIterator++) {
-        for (int nTempMessageIterator = 0; nTempMessageIterator <= session()->GetNumMessagesInCurrentMessageArea();
-             nTempMessageIterator++) {
-          if (IsEquals(thread[nTempOuterMessageIterator].parent_code, thread[nTempMessageIterator].message_code)) {
-            thread[nTempOuterMessageIterator].parent_num = thread[nTempMessageIterator].msg_num;
-            nTempMessageIterator = session()->GetNumMessagesInCurrentMessageArea() + 1;
-          }
-        }
-      }
-    }
     session()->localIO()->tleft(true);
     CheckForHangup();
     set_net_num((session()->current_xsub().nets.empty()) ? 0 :
@@ -128,24 +111,6 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
       }
       bout.Color(0);
       bout.nl();
-      if (session()->IsMessageThreadingEnabled()) {
-        if (thread[nMessageNumber].used) {
-          bout << "|#9Current Message is a reply to Msg #|#2" << thread[nMessageNumber].parent_num << endl;
-        }
-        int nNumRepliesForThisThread = 0;
-        for (int nTempMessageIterator = 0; nTempMessageIterator <= session()->GetNumMessagesInCurrentMessageArea();
-             nTempMessageIterator++) {
-          if (IsEquals(thread[nTempMessageIterator].parent_code, thread[nMessageNumber].message_code) &&
-              nTempMessageIterator != nMessageNumber) {
-            nNumRepliesForThisThread++;
-          }
-        }
-        if (nNumRepliesForThisThread) {
-          bout << "|#9Current Message has |#6" << nNumRepliesForThisThread << "|#9"
-                             << ((nNumRepliesForThisThread == 1) ? " reply." : " replies.");
-        }
-        bout << endl;;
-      }
       if (next) {
         ++nMessageNumber;
         if (nMessageNumber > session()->GetNumMessagesInCurrentMessageArea()) {
@@ -246,74 +211,12 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
     }
   }
   bout.nl();
-  if (thread) {
-    free(thread);
-  }
-  thread = nullptr;
 }
-
-
-void SetupThreadRecordsBeforeScan() {
-  if (thread) {
-    free(thread);
-  }
-
-  // We use +2 since if we post a message we'll need more than +1
-  thread = static_cast<threadrec *>(BbsAllocA((session()->GetNumMessagesInCurrentMessageArea() + 2) * sizeof(
-                                      threadrec)));
-  WWIV_ASSERT(thread != nullptr);
-
-  for (unsigned short tempnum = 1; tempnum <= session()->GetNumMessagesInCurrentMessageArea(); tempnum++) { // was 0.
-    strcpy(thread[tempnum].parent_code, "");
-    strcpy(thread[tempnum].message_code, "");
-    thread[tempnum].msg_num = tempnum;
-    thread[tempnum].parent_num = 0;
-    thread[tempnum].used = 0;
-
-    postrec *pPostRec1 = get_post(tempnum);
-    string b;
-    readfile(&(pPostRec1->msg), (session()->current_sub().filename), &b);
-    for (size_t l1 = 0; l1 < b.length(); l1++) {
-      if (b[l1] == 4 && b[l1 + 1] == '0' && b[l1 + 2] == 'P') {
-        l1 += 4;
-        strcpy(thread[tempnum].message_code, "");
-        char szTemp[81];
-        szTemp[0] = '\0';
-        while ((b[l1] != '\r') && (l1 < b.length())) {
-          sprintf(szTemp, "%c", b[l1]);
-          strcat(thread[tempnum].message_code, szTemp);
-          l1++;
-        }
-        l1 = b.length();
-        thread[tempnum].msg_num = tempnum;
-      }
-    }
-    for (size_t l2 = 0; l2 < b.length(); l2++) {
-      if ((b[l2] == 4) && (b[l2 + 1] == '0') && (b[l2 + 2] == 'W')) {
-        l2 += 4;
-        strcpy(thread[tempnum].parent_code, "");
-        char szTemp[ 81 ];
-        szTemp[0] = '\0';
-        while ((b[l2] != '\r') && (l2 < b.length())) {
-          sprintf(szTemp, "%c", b[l2]);
-          strcat(thread[tempnum].parent_code, szTemp);
-          l2++;
-        }
-        l2 = b.length();
-        thread[tempnum].msg_num = tempnum;
-        thread[tempnum].used = 1;
-      }
-    }
-  }
-}
-
 
 void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsub, bool &bTitleScan, bool &done,
                           bool &quit, int &val) {
-  bool bFollowThread = false;
   char szReadPrompt[ 255 ];
   char szSubNamePrompt[81];
-  session()->threadID = "";
   resetnsp();
   GetScanReadPrompts(nMessageNumber, szReadPrompt, szSubNamePrompt);
   bout.nl();
@@ -343,7 +246,6 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
   }
   int nUserInput = atoi(szUserInput);
   if (szUserInput[0] == '\0') {
-    bFollowThread = false;
     nUserInput = nMessageNumber + 1;
     if (nUserInput >= session()->GetNumMessagesInCurrentMessageArea() + 1) {
       done = true;
@@ -414,7 +316,6 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
     case 'P':
       irt[0]          = '\0';
       irt_name[0]     = '\0';
-      session()->threadID = "";
       post();
       break;
     case 'W':
@@ -436,58 +337,16 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
       express = true;
       break;
     case '*':
-      HandleListReplies(nMessageNumber);
+      // This used to be threaded code.
       break;
     case '[':
-      if (session()->IsMessageThreadingEnabled()) {
-        if (forcescansub) {
-          printfile(MUSTREAD_NOEXT);
-        } else {
-          nMessageNumber = thread[nMessageNumber].parent_num;
-          nScanOptionType = SCAN_OPTION_READ_MESSAGE;
-        }
-      }
+      // This used to be threaded code.
       break;
     case ']':
-      if (session()->IsMessageThreadingEnabled()) {
-        if (forcescansub) {
-          printfile(MUSTREAD_NOEXT);
-        } else {
-          for (int j = nMessageNumber; j <= session()->GetNumMessagesInCurrentMessageArea(); j++) {
-            if (IsEquals(thread[j].parent_code, thread[nMessageNumber].message_code) &&
-                j != nMessageNumber) {
-              nMessageNumber = j;
-              j = session()->GetNumMessagesInCurrentMessageArea();
-              nScanOptionType = SCAN_OPTION_READ_MESSAGE;
-            }
-          }
-        }
-      }
+      // This used to be threaded code.
       break;
     case '>':
-      if (session()->IsMessageThreadingEnabled()) {
-        if (forcescansub) {
-          printfile(MUSTREAD_NOEXT);
-        } else {
-          int original = 0;
-          if (!bFollowThread) {
-            bFollowThread = true;
-            original = nMessageNumber;
-          }
-          int j = 0;
-          for (j = nMessageNumber; j <= session()->GetNumMessagesInCurrentMessageArea(); j++) {
-            if (IsEquals(thread[j].parent_code, thread[original].message_code) &&
-                j != nMessageNumber) {
-              nMessageNumber = j;
-              break;
-            }
-          }
-          if (j >= session()->GetNumMessagesInCurrentMessageArea()) {
-            nMessageNumber = original;
-            bFollowThread = false;
-          }
-        }
-      }
+      // This used to be threaded code.
       nScanOptionType = SCAN_OPTION_READ_MESSAGE;
       break;
 
@@ -1079,9 +938,6 @@ void HandleMessageReply(int &nMessageNumber) {
     }
   }
 
-  if (irt[0] == '\0') {
-    session()->threadID = "";
-  }
   post();
   resynch(&nMessageNumber, &p2);
   grab_quotes(nullptr, nullptr);
@@ -1110,7 +966,7 @@ void HandleMessageDelete(int &nMessageNumber) {
             }
             nNumCredits = std::min<int>(nNumCredits, tu.GetNumMessagesPosted());
             if (nNumCredits) {
-              tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - static_cast<unsigned short>(nNumCredits));
+              tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - static_cast<uint16_t>(nNumCredits));
             }
             bout.nl();
             bout << "|#7Post credit removed = " << nNumCredits << endl;
@@ -1145,27 +1001,6 @@ void HandleMessageHelp() {
       printfile(SMBMAIN_NOEXT);
     } else {
       printfile(MBMAIN_NOEXT);
-    }
-  }
-}
-
-void HandleListReplies(int nMessageNumber) {
-  if (session()->IsMessageThreadingEnabled()) {
-    if (forcescansub) {
-      printfile(MUSTREAD_NOEXT);
-    } else {
-      bout.nl();
-      bout << "|#2Current Message has the following replies:\r\n";
-      int nNumRepliesForThisThread = 0;
-      for (int j = 0; j <= session()->GetNumMessagesInCurrentMessageArea(); j++) {
-        if (IsEquals(thread[j].parent_code, thread[nMessageNumber].message_code)) {
-          bout << "    |#9Message #|#6" << j << ".\r\n";
-          nNumRepliesForThisThread++;
-        }
-      }
-      bout << "|#1 " << nNumRepliesForThisThread << " total replies.\r\n";
-      bout.nl();
-      pausescr();
     }
   }
 }

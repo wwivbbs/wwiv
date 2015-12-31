@@ -46,9 +46,6 @@
     <ClCompile Include="bputch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="callback.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chains.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -526,9 +523,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="bbslist.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="callback.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="menu_parser.h">

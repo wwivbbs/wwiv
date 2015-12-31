@@ -315,7 +315,7 @@ void read_contacts() {
   File fileContact(session()->network_directory(), CONTACT_NET);
   if (fileContact.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileContact.GetLength();
-    session()->net_networks[session()->net_num()].num_ncn = static_cast<short>(lFileLength / sizeof(net_contact_rec));
+    session()->net_networks[session()->net_num()].num_ncn = static_cast<int16_t>(lFileLength / sizeof(net_contact_rec));
     if ((session()->net_networks[session()->net_num()].ncn =
            static_cast<net_contact_rec *>(BbsAllocA((session()->net_networks[session()->net_num()].num_ncn + 2) *
            sizeof(net_contact_rec)))) == nullptr) {

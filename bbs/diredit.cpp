@@ -218,7 +218,7 @@ void modify_dir(int n) {
       input(s, 4);
       i = atoi(s);
       if ((i > 0) && (i < 10000) && (s[0])) {
-        r.maxfiles = static_cast<unsigned short>(i);
+        r.maxfiles = static_cast<uint16_t>(i);
       }
       break;
     case 'G':
@@ -239,7 +239,7 @@ void modify_dir(int n) {
       input(s, 4);
       i = atoi(s);
       if ((s[0]) && (i != r.type)) {
-        r.type = static_cast<unsigned short>(i);
+        r.type = static_cast<uint16_t>(i);
       }
       break;
     case 'J':

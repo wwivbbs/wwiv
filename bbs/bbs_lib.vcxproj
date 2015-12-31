@@ -103,7 +103,6 @@
     <ClInclude Include="bbsutl2.h" />
     <ClInclude Include="bgetch.h" />
     <ClInclude Include="bputch.h" />
-    <ClInclude Include="callback.h" />
     <ClInclude Include="capture.h" />
     <ClInclude Include="chains.h" />
     <ClInclude Include="chat.h" />
@@ -202,7 +201,6 @@
     <ClCompile Include="bbsutl2.cpp" />
     <ClCompile Include="bgetch.cpp" />
     <ClCompile Include="bputch.cpp" />
-    <ClCompile Include="callback.cpp" />
     <ClCompile Include="capture.cpp" />
     <ClCompile Include="chains.cpp" />
     <ClCompile Include="chat.cpp" />

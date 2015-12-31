@@ -169,7 +169,7 @@ void modify_sec(int n) {
       input(s, 3);
       int i = atoi(s);
       if ((i >= 0) && (i < 99) && (s[0])) {
-        r.maxfiles = static_cast<unsigned short>(i);
+        r.maxfiles = static_cast<uint16_t>(i);
       }
     }
     break;

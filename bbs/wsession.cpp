@@ -103,7 +103,7 @@ WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app),
     m_nTopScreenColor(0), m_nUserEditorColor(0), m_nEditLineColor(0), 
     m_nChatNameSelectionColor(0), m_nMessageColor(0), mail_who_field_len(0),
     max_batch(0), max_extend_lines(0), max_chains(0), max_gfilesec(0), screen_saver_time(0),
-    m_nForcedReadSubNumber(0), m_bThreadSubs(false), m_bAllowCC(false), m_bUserOnline(false),
+    m_nForcedReadSubNumber(0), m_bAllowCC(false), m_bUserOnline(false),
     m_bQuoting(false), m_bTimeOnlineLimited(false), m_nCurrentFileArea(0), m_nCurrentReadMessageArea(0),
     m_nCurrentMessageArea(0), m_nCurrentConferenceFileArea(0), m_nCurrentConferenceMessageArea(0), m_nFileAreaCache(0),
     m_nMessageAreaCache(0), m_nBeginDayNodeNumber(0), m_nMaxNumberMessageAreas(0), m_nMaxNumberFileAreas(0),
@@ -123,7 +123,6 @@ WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app),
   memset(&newuser_bwcolors, 0, sizeof(newuser_bwcolors));
   memset(&asv, 0, sizeof(asv_rec));
   memset(&advasv, 0, sizeof(adv_asv_rec));
-  memset(&cbv, 0, sizeof(cbv_rec));
 
   // Set the home directory
   getcwd(m_szCurrentDirectory, MAX_PATH);

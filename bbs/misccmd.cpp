@@ -468,7 +468,7 @@ void time_bank() {
           i = static_cast<int>(nsln / SECONDS_PER_MINUTE_FLOAT);
         }
         session()->user()->SetTimeBankMinutes(session()->user()->GetTimeBankMinutes() +
-            static_cast<unsigned short>(i));
+            static_cast<uint16_t>(i));
         session()->user()->SetExtraTime(session()->user()->GetExtraTime() - static_cast<float>
             (i * SECONDS_PER_MINUTE_FLOAT));
         session()->localIO()->tleft(false);
@@ -488,7 +488,7 @@ void time_bank() {
           i = session()->user()->GetTimeBankMinutes();
         }
         session()->user()->SetTimeBankMinutes(session()->user()->GetTimeBankMinutes() -
-            static_cast<unsigned short>(i));
+            static_cast<uint16_t>(i));
         session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>
             (i * SECONDS_PER_MINUTE_FLOAT));
         session()->localIO()->tleft(false);

@@ -1,6 +1,6 @@
 ;=============================================================================
 ;
-;                 WWIV Version 5.00 Initialization File
+;                 WWIV Version 5.1.0 Initialization File
 ;
 ;              Lines begining with a semi-colon are ignored
 ;=============================================================================
@@ -204,11 +204,8 @@ LOGON_PHONE            = Y                  ; check phone # at logon?
 EXTENDED_USERINFO      = N                  ; enable addr, etc info in userrec
 NEWUSER_MIN            = Y                  ; ask minimal new user information
 ALLOW_CC_BCC           = Y                  ; allow CC: and BCC: for email?
-THREAD_SUBS            = N                  ; activate threading message code
 DISABLE_PD             = Y                  ; disable Pulldown menu support
 TITLEBAR               = Y                  ; show user in console titlebar
-;
-;!!!NOTE: ENABLE_PIPES, EXTRA_COLOR AND ENABLE_MCI are always on in wwiv 5.0
 ;
 ;=============================================================================
 ;                           SYSTEM TUNING PARAMETERS
@@ -265,9 +262,9 @@ BATCH_DIRECTORY      = batch%n
 ;
 ;
 ;=============================================================================
-;                           ASV / CALLBACK OPTIONS
+;                           ASV OPTIONS
 ;=============================================================================
-; Auto Sysop Validation (ASV) and Callback Validation Settings allow you
+; Auto Sysop Validation (ASV) Settings allow you
 ; to tailor your system to automatically validate certain users and
 ; upgrade access levels based on the settings below.  By default, all
 ; options are OFF.  In most cases, only systems specializing in support
@@ -293,20 +290,6 @@ USE_ADVANCED_ASV                = N         ; Use Advanced ASV?
 ;ADVANCED_ASV[NONREG_WWIV]      = 1         ; Alt-[F2] for Unregistered WWIV
 ;ADVANCED_ASV[NON_WWIV]         = 2         ; Alt-[F3] for Non-WWIV
 ;ADVANCED_ASV[COSYSOP]          = 3         ; Alt-[F4] for Co-Sysops
-;
-USE_CALLBACK                    = N         ; Use Callback Verification?
-;
-; CALLBACK values
-;
-;CALLBACK[SL]                 = 20          ; SL to assign
-;CALLBACK[DSL]                = 20          ; DSL to assign
-;CALLBACK[EXEMPT]             = 0           ; Exemption to assign
-;CALLBACK[AR]                 =             ; AR to assign
-;CALLBACK[DAR]                =             ; DAR to assign
-;CALLBACK[RESTRICT]           = MA*N        ; Restriction to assign
-;CALLBACK[FORCED]             = Y           ; Force Callback?
-;CALLBACK[LONG_DISTANCE]      = Y           ; Make LD calls?
-;CALLBACK[REPEAT]             = 3           ; Number or retries
 ;
 USE_VOICE_VAL                 = N           ; Voice validation
 ;

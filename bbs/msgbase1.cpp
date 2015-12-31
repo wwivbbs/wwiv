@@ -240,7 +240,7 @@ void post() {
   p.anony   = static_cast<unsigned char>(data.anonymous_flag);
   p.msg   = m;
   p.ownersys  = 0;
-  p.owneruser = static_cast<unsigned short>(session()->usernum);
+  p.owneruser = static_cast<uint16_t>(session()->usernum);
   WStatus* pStatus = session()->status_manager()->BeginTransaction();
   p.qscan = pStatus->IncrementQScanPointer();
   session()->status_manager()->CommitTransaction(pStatus);

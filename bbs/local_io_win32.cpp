@@ -70,8 +70,8 @@ void Win32ConsoleIO::set_attr_xy(int x, int y, int a) {
   COORD loc = {0};
   DWORD cb = {0};
 
-  loc.X = static_cast<short>(x);
-  loc.Y = static_cast<short>(y);
+  loc.X = static_cast<SHORT>(x);
+  loc.Y = static_cast<SHORT>(y);
 
   WriteConsoleOutputAttribute(m_hConOut, reinterpret_cast< LPWORD >(&a), 1, loc, &cb);
 }
@@ -91,10 +91,10 @@ Win32ConsoleIO::Win32ConsoleIO() : LocalIO() {
   m_originalConsoleSize = m_consoleBufferInfo.dwSize;
   SMALL_RECT rect = m_consoleBufferInfo.srWindow;
   COORD bufSize;
-  bufSize.X = static_cast<short>(rect.Right - rect.Left + 1);
-  bufSize.Y = static_cast<short>(rect.Bottom - rect.Top + 1);
-  bufSize.X = static_cast<short>(std::min<SHORT>(bufSize.X, 80));
-  bufSize.Y = static_cast<short>(std::min<SHORT>(bufSize.Y, 25));
+  bufSize.X = static_cast<SHORT>(rect.Right - rect.Left + 1);
+  bufSize.Y = static_cast<SHORT>(rect.Bottom - rect.Top + 1);
+  bufSize.X = static_cast<SHORT>(std::min<SHORT>(bufSize.X, 80));
+  bufSize.Y = static_cast<SHORT>(std::min<SHORT>(bufSize.Y, 25));
   SetConsoleWindowInfo(m_hConOut, TRUE, &rect);
   SetConsoleScreenBufferSize(m_hConOut, bufSize);
 

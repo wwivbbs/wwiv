@@ -404,7 +404,7 @@ static void modify_sub(int n) {
       Input1(szMaxMsgs, szDef, 5, true, InputMode::UPPER);
       int nMaxMsgs = atoi(szMaxMsgs);
       if (nMaxMsgs > 0 && nMaxMsgs < 16384 && szMaxMsgs[0]) {
-        r.maxmsgs = static_cast<unsigned short>(nMaxMsgs);
+        r.maxmsgs = static_cast<uint16_t>(nMaxMsgs);
       }
     }
     break;
@@ -481,7 +481,7 @@ static void modify_sub(int n) {
       input(szStorageType, 4);
       int nStorageType = atoi(szStorageType);
       if (szStorageType[0] && nStorageType > 1 && nStorageType <= 2) {
-        r.storage_type = static_cast<unsigned short>(nStorageType);
+        r.storage_type = static_cast<uint16_t>(nStorageType);
       }
     }
     break;

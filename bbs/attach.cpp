@@ -77,7 +77,7 @@ void attach_file(int mode) {
         ++cur;
       }
       if (cur < max && cur >= 0) {
-        pFileEmail->Seek(static_cast<long>(cur) * static_cast<long>(sizeof(mailrec)), File::seekBegin);
+        pFileEmail->Seek(cur * sizeof(mailrec), File::seekBegin);
         pFileEmail->Read(&m, sizeof(mailrec));
       }
     }

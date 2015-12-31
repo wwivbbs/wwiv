@@ -34,7 +34,6 @@
 //
 // Local function prototypes
 //
-int ste(int i);
 char *GetQuoteInitials();
 
 
@@ -63,16 +62,16 @@ static int quotes_ind_l;
 using std::string;
 using std::unique_ptr;
 
-int ste(int i) {
+static bool ste(int i) {
   if (irt_name[i] == 32 && irt_name[i + 1] == 'O' && irt_name[i + 2] == 'F' && irt_name[i + 3] == 32) {
     if (irt_name[ i + 4 ] > 47 && irt_name[ i + 4 ] < 58) {
-      return 0;
+      return false;
     }
   }
   if (irt_name[i] == 96) {
     brtnm++;
   }
-  return 1;
+  return true;
 }
 
 
@@ -178,20 +177,6 @@ void grab_quotes(messagerec * m, const char *aux) {
         }
         l3 = l2 = 0;
         ss1 = nullptr;
-        if (session()->IsMessageThreadingEnabled()) {
-          for (l1 = 0; l1 < ss.length(); l1++) {
-            if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'P')) {
-              l1 += 4;
-              session()->threadID = "";
-              while ((ss[l1] != '\r') && (l1 < ss.length())) {
-                sprintf(temp, "%c", ss[l1]);
-                session()->threadID += temp;
-                l1++;
-              }
-              l1 = ss.length();
-            }
-          }
-        }
         for (l1 = 0; l1 < ss.length(); l1++) {
           if (ctld == -1) {
             ctld = ss[l1];

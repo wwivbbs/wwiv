@@ -324,10 +324,6 @@ static void CheckCallRestrictions() {
   }
 }
 
-static void DoCallBackVerification() {
-  // TODO(rushfan): This is where we would do internet email validation.
-}
-
 void getuser() {
   write_inst(INST_LOC_GETUSER, 0, INST_FLAGS_NONE);
 
@@ -400,10 +396,7 @@ void getuser() {
 
   okmacro = true;
   CheckCallRestrictions();
-
-  if (session()->HasConfigFlag(OP_FLAGS_CALLBACK) && (session()->user()->GetCbv() & 1) == 0) {
-    DoCallBackVerification();
-  }
+  // TODO(rushfan): This is where we'd do internet email validation.
 }
 
 static void FixUserLinesAndColors() {
@@ -979,7 +972,7 @@ void logoff() {
   {
     WStatus* pStatus = session()->status_manager()->BeginTransaction();
     int nActiveToday = pStatus->GetMinutesActiveToday();
-    pStatus->SetMinutesActiveToday(nActiveToday + static_cast<unsigned short>(dTimeOnNow / MINUTES_PER_HOUR_FLOAT));
+    pStatus->SetMinutesActiveToday(nActiveToday + static_cast<uint16_t>(dTimeOnNow / MINUTES_PER_HOUR_FLOAT));
     session()->status_manager()->CommitTransaction(pStatus);
   }
   if (g_flags & g_flag_scanned_files) {
