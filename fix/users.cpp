@@ -40,7 +40,7 @@ namespace fix {
 
 int FixUsersCommand::Execute() {
     std::cout << "Runnning FixUsersCommand::Execute" << std::endl;
-    	File userFile(syscfg.datadir, USER_LST);
+  File userFile(syscfg.datadir, USER_LST);
 	if (!userFile.Exists()) {
 		Print(NOK, true, "%s does not exist.", userFile.full_pathname().c_str());
 		giveUp();

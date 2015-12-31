@@ -19,7 +19,7 @@
 #ifndef __INCLUDED_FIX_H__
 #define __INCLUDED_FIX_H__
 
-class File;
+#include "core/file.h"
 
 void giveUp();
 void maybeGiveUp();
