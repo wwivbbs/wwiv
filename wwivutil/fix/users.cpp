@@ -157,6 +157,7 @@ static bool initStatusDat(const std::string& datadir) {
   if (update) {
     saveStatus(datadir);
   }
+  return true;
 }
 
 static void usage() {

@@ -55,11 +55,6 @@ private:
   std::vector<UtilCommand*> subcommands_;
 };
 
-// Calls AddStandardAtgs and AddSubCommands.
-// Note: This must to called after you add it to the parent.
-UtilCommand* AddCommandsAndArgs(UtilCommand* cmd);
-
-
 }  // namespace wwivutil
 }  // namespace wwiv
 

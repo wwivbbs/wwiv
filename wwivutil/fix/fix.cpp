@@ -49,15 +49,12 @@ namespace wwivutil {
 bool FixCommand::AddSubCommands() {
   //DumpPacketCommand* dump_packet = new DumpPacketCommand();
   //add(dump_packet);
-  //AddCommandsAndArgs(dump_packet);
 
   FixUsersCommand* fix_users = new FixUsersCommand();
   add(fix_users);
-  AddCommandsAndArgs(fix_users);
 
   FixDirectoriesCommand* fix_dirs = new FixDirectoriesCommand();
   add(fix_dirs);
-  AddCommandsAndArgs(fix_dirs);
 
   return true;
 }

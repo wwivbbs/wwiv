@@ -51,7 +51,6 @@ namespace wwivutil {
 bool MessagesCommand::AddSubCommands() {
   MessagesDumpHeaderCommand* dump = new MessagesDumpHeaderCommand();
   if (!add(dump)) { return false; }
-  AddCommandsAndArgs(dump);
   return true;
 }
 
