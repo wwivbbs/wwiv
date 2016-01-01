@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2004, WWIV Software Services             */
+/*             Copyright (C)1998-2016, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -144,7 +144,7 @@ class FixApplication {
 
   void ShowBanner() {
     cout << "WWIV Bulletin Board System " << wwiv_version << beta_version << std::endl
-        << "Copyright (c) 1998-2015, WWIV Software Services.\n"
+        << "Copyright (c) 1998-2016, WWIV Software Services.\n"
         << "All Rights Reserved.\n\n"
         << "Compile Time : " << wwiv_date << std::endl << std::endl;
   }
