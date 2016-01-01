@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2015, WWIV Software Services             */
+/*             Copyright (C)1998-2016, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -112,7 +112,7 @@ static int GetAnsiStatusAndShowWelcomeScreen() {
     bout << "CONNECT " << current_speed << "\r\n\r\n";
   }
   bout << "\r\nWWIV " << wwiv_version << beta_version << wwiv::endl;
-  bout << "Copyright (c) 1998-2015 WWIV Software Services." << wwiv::endl;
+  bout << "Copyright (c) 1998-2016 WWIV Software Services." << wwiv::endl;
   bout << "All Rights Reserved." << wwiv::endl;
 
   int ans = check_ansi();
