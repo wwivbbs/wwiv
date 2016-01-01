@@ -31,9 +31,6 @@
 #include "core/stl.h"
 #include "sdk/config.h"
 
-using std::clog;
-using std::cout;
-using std::endl;
 using std::map;
 using std::string;
 using std::vector;
@@ -54,6 +51,8 @@ bool UtilCommand::add(CommandLineCommand* cmd) {
   UtilCommand* util_command = dynamic_cast<UtilCommand*>(cmd);
   if (util_command != nullptr) {
     subcommands_.push_back(util_command);
+    util_command->AddStandardArgs();
+    util_command->AddSubCommands();
   }
   return CommandLineCommand::add(cmd);
 }
@@ -65,13 +64,6 @@ bool UtilCommand::set_config(Configuration* config) {
   config_ = config;
   return true; 
 }
-
-UtilCommand* AddCommandsAndArgs(UtilCommand* cmd) {
-  cmd->AddStandardArgs();
-  cmd->AddSubCommands();
-  return cmd;
-}
-
 
 }  // namespace wwivutil
 }  // namespace wwiv

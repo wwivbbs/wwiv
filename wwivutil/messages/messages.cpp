@@ -25,6 +25,7 @@
 #include <vector>
 #include "core/command_line.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/net.h"
@@ -50,7 +51,6 @@ namespace wwivutil {
 bool MessagesCommand::AddSubCommands() {
   MessagesDumpHeaderCommand* dump = new MessagesDumpHeaderCommand();
   if (!add(dump)) { return false; }
-  AddCommandsAndArgs(dump);
   return true;
 }
 

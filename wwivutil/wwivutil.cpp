@@ -36,51 +36,69 @@
 #include "wwivutil/net/net.h"
 #include "wwivutil/fix/fix.h"
 
-using std::clog;
-using std::cout;
-using std::endl;
 using std::map;
 using std::string;
 using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
-using namespace wwiv::wwivutil;
+
+namespace wwiv {
+namespace wwivutil {
+
+class WWIVUtil {
+public:
+  WWIVUtil(int argc, char *argv[]) : cmdline_(argc, argv, "network_number") {
+    Logger::Init(argc, argv);
+    cmdline_.AddStandardArgs();
+  }
+  ~WWIVUtil() {}
+
+  int Main() {
+    ScopeExit at_exit(Logger::ExitLogger);
+    try {
+      Add(new MessagesCommand());
+      Add(new NetCommand());
+      Add(new FixCommand());
+
+      if (!cmdline_.Parse()) { return 1; }
+      const std::string bbsdir(cmdline_.arg("bbsdir").as_string());
+      Config config(bbsdir);
+      if (!config.IsInitialized()) {
+        LOG << "Unable to load CONFIG.DAT.";
+        return 1;
+      }
+      command_config_.reset(new Configuration(bbsdir, &config));
+      SetConfigs();
+      return cmdline_.Execute();
+    } catch (std::exception& e) {
+      LOG << e.what();
+    }
+    return 1;
+  }
+
+private:
+  void Add(UtilCommand* cmd) {
+    cmdline_.add(cmd);
+    cmd->AddStandardArgs();
+    cmd->AddSubCommands();
+    subcommands_.push_back(cmd);
+  }
+
+  void SetConfigs() {
+    for (auto s : subcommands_) {
+      s->set_config(command_config_.get());
+    }
+  }
+  std::vector<UtilCommand*> subcommands_;
+  CommandLine cmdline_;
+  std::unique_ptr<Configuration> command_config_;
+};
+
+}  // namespace wwivutil
+}  // namespace wwiv
 
 int main(int argc, char *argv[]) {
-  try {
-    Logger::Init(argc, argv);
-    ScopeExit at_exit(Logger::ExitLogger);
-    CommandLine cmdline(argc, argv, "network_number");
-    cmdline.AddStandardArgs();
-
-    UtilCommand* messages = new MessagesCommand();
-    cmdline.add(messages);
-    AddCommandsAndArgs(messages);
-
-    UtilCommand* net = new NetCommand();
-    cmdline.add(net);
-    AddCommandsAndArgs(net);
-
-    UtilCommand* fix = new FixCommand();
-    cmdline.add(fix);
-    AddCommandsAndArgs(fix);
-
-    if (!cmdline.Parse()) { return 1; }
-    const std::string bbsdir(cmdline.arg("bbsdir").as_string());
-    Config config(bbsdir);
-    if (!config.IsInitialized()) {
-      LOG << "Unable to load CONFIG.DAT.";
-      return 1;
-    }
-    std::unique_ptr<Configuration> command_config(
-        new Configuration(bbsdir, &config));
-    messages->set_config(command_config.get());
-    net->set_config(command_config.get());
-    fix->set_config(command_config.get());
-    return cmdline.Execute();
-  } catch (std::exception& e) {
-    LOG << e.what();
-  }
-  return 1;
+  wwiv::wwivutil::WWIVUtil wwivutil(argc, argv);
+  return wwivutil.Main();
 }

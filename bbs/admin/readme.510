@@ -3,8 +3,9 @@ readme.510
 
                 *** Attention Windows 10 ***
 
-    You need to download the Visual Studio 2015 redistributable files from:
-    https://www.microsoft.com/en-us/download/details.aspx?id=48145
+    You need to download the Visual Studio 2015 Updte 1 redistributable
+    files from:
+    https://www.microsoft.com/en-us/download/details.aspx?id=49984
     and install this package before using WWIV (or any other software
     compiled with Visual Studio 2015).
 

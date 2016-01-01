@@ -51,15 +51,12 @@ namespace wwivutil {
 bool NetCommand::AddSubCommands() {
   DumpPacketCommand* dump_packet = new DumpPacketCommand();
   add(dump_packet);
-  AddCommandsAndArgs(dump_packet);
 
   DumpCalloutCommand* dump_callout = new DumpCalloutCommand();
   add(dump_callout);
-  AddCommandsAndArgs(dump_callout);
 
   DumpContactCommand* dump_contact = new DumpContactCommand();
   add(dump_contact);
-  AddCommandsAndArgs(dump_contact);
   return true;
 }
 

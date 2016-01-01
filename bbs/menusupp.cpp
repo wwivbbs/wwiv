@@ -420,14 +420,13 @@ void WWIVVersion() {
   if (!session()->net_networks.empty()) {
     std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
     session()->status_manager()->RefreshStatusCache();
-    bout << wwiv::endl;
-    bout << "|#9Networks:" << wwiv::endl;
+    //bout << wwiv::endl;
+    bout << "|#9Networks      : |#2" << "net" << pStatus->GetNetworkVersion() << wwiv::endl;
     for (const auto& n : session()->net_networks) {
       if (!n.sysnum) {
         continue;
       }
-      bout << "|#9" << std::setw(14) << std::left << n.name << ":|#2 @" << n.sysnum
-        << " (net" << pStatus->GetNetworkVersion() << ")" << wwiv::endl;
+      bout << "|#9" << std::setw(14) << std::left << n.name << ":|#2 @" << n.sysnum << wwiv::endl;
     }
   }
 
