@@ -174,6 +174,11 @@ bool FixUsersCommand::AddSubCommands() {
 }
 
 int FixUsersCommand::Execute() {
+  if (arg("help").as_bool()) {
+    usage();
+    cout << GetHelp();
+    return 0;
+  }
   std::cout << "Runnning FixUsersCommand::Execute" << std::endl;
 
   initStatusDat(config()->config()->datadir());
