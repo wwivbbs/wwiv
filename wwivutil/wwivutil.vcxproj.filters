@@ -60,6 +60,9 @@
     <ClCompile Include="fix\users.cpp">
       <Filter>Source Files\fix</Filter>
     </ClCompile>
+    <ClCompile Include="fix\dirs.cpp">
+      <Filter>Source Files\fix</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="wwivutil.h">
@@ -90,6 +93,9 @@
       <Filter>Header Files\fix</Filter>
     </ClInclude>
     <ClInclude Include="fix\users.h">
+      <Filter>Header Files\fix</Filter>
+    </ClInclude>
+    <ClInclude Include="fix\dirs.h">
       <Filter>Header Files\fix</Filter>
     </ClInclude>
   </ItemGroup>
