@@ -52,7 +52,7 @@ void read_automessage() {
   unique_ptr<WStatus> current_status(session()->status_manager()->GetStatus());
   bool bAutoMessageAnonymous = current_status->IsAutoMessageAnonymous();
 
-  TextFile autoMessageFile(syscfg.gfilesdir, AUTO_MSG, "rt");
+  TextFile autoMessageFile(session()->config()->gfilesdir(), AUTO_MSG, "rt");
   string line;
   if (!autoMessageFile.IsOpen() || !autoMessageFile.ReadLine(&line)) {
     bout << "|#3No auto-message.\r\n";
@@ -112,7 +112,7 @@ static void write_automessage() {
     pStatus->SetAutoMessageAuthorUserNumber(session()->usernum);
     session()->status_manager()->CommitTransaction(pStatus);
 
-    TextFile file(syscfg.gfilesdir, AUTO_MSG, "wt");
+    TextFile file(session()->config()->gfilesdir(), AUTO_MSG, "wt");
     const string authorName = session()->names()->UserName(session()->usernum);
     file.WriteLine(authorName);
     sysoplog("Changed Auto-message");

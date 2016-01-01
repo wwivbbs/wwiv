@@ -62,7 +62,7 @@ void catsl() {
 
   if (File::Exists(szInstanceLogFileName)) {
     string basename = GetSysopLogFileName(date());
-    File wholeLogFile(syscfg.gfilesdir, basename);
+    File wholeLogFile(session()->config()->gfilesdir(), basename);
 
     char* pLogBuffer = static_cast<char *>(BbsAllocA(CAT_BUFSIZE));
     if (pLogBuffer) {

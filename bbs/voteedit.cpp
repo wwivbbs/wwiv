@@ -154,7 +154,7 @@ void voteprint() {
       x[ i1 + i * 20 ] = static_cast<char>(u.GetVote(i1));
     }
   }
-  File votingText(syscfg.gfilesdir, VOTING_TXT);
+  File votingText(session()->config()->gfilesdir(), VOTING_TXT);
   votingText.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeText);
   votingText.Write(votingText.full_pathname());
 

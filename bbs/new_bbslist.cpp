@@ -446,7 +446,7 @@ void NewBBSList() {
       vector<unique_ptr<BbsListEntry>> entries;
       LoadFromJSON(session()->config()->datadir(), BBSLIST_JSON, &entries);
       if (entries.empty()) {
-        ConvertLegacyList(syscfg.gfilesdir, BBSLIST_MSG, &entries);
+        ConvertLegacyList(session()->config()->gfilesdir(), BBSLIST_MSG, &entries);
         SaveToJSON(session()->config()->datadir(), BBSLIST_JSON, entries);
       }
       ReadBBSList(entries);

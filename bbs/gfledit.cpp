@@ -118,7 +118,7 @@ void modify_sec(int n) {
       break;
     case 'B': {
       bout.nl();
-      if (File::Exists(syscfg.gfilesdir, r.filename)) {
+      if (File::Exists(session()->config()->gfilesdir(), r.filename)) {
         bout << "\r\nThere is currently a directory for this g-file section.\r\n";
         bout << "If you change the filename, the directory will still be there.\r\n\n";
       }
@@ -127,11 +127,11 @@ void modify_sec(int n) {
       input(s, 8);
       if ((s[0] != 0) && (strchr(s, '.') == 0)) {
         strcpy(r.filename, s);
-        if (!File::Exists(syscfg.gfilesdir, r.filename)) {
+        if (!File::Exists(session()->config()->gfilesdir(), r.filename)) {
           bout.nl();
           bout << "|#5Create directory for this section? ";
           if (yesno()) {
-            File dir(syscfg.gfilesdir, r.filename);
+            File dir(session()->config()->gfilesdir(), r.filename);
             File::mkdirs(dir);
           } else {
             bout << "\r\nYou will have to create the directory manually, then.\r\n\n";

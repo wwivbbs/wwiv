@@ -165,7 +165,7 @@ static bool check_name(const string userName) {
     return false;
   }
 
-  File trashFile(syscfg.gfilesdir, TRASHCAN_TXT);
+  File trashFile(session()->config()->gfilesdir(), TRASHCAN_TXT);
   if (!trashFile.Open(File::modeReadOnly | File::modeBinary)) {
     return true;
   }
@@ -1519,7 +1519,7 @@ void DoMinimalNewUser() {
 
 
 void new_mail() {
-  File file(syscfg.gfilesdir, (session()->user()->GetSl() > syscfg.newusersl) ? NEWSYSOP_MSG : NEWMAIL_MSG);
+  File file(session()->config()->gfilesdir(), (session()->user()->GetSl() > syscfg.newusersl) ? NEWSYSOP_MSG : NEWMAIL_MSG);
   if (!file.Exists()) {
     return;
   }

@@ -869,8 +869,8 @@ void beginday(bool displayStatus) {
   if (displayStatus) {
     bout << "  |#7* |#1Cleaning up log files...\r\n";
   }
-  File::Remove(syscfg.gfilesdir, pStatus->GetLogFileName(2));
-  File::Remove(syscfg.gfilesdir, USER_LOG);
+  File::Remove(session()->config()->gfilesdir(), pStatus->GetLogFileName(2));
+  File::Remove(session()->config()->gfilesdir(), USER_LOG);
 
   if (displayStatus) {
     bout << "  |#7* |#1Updating ZLOG information...\r\n";
