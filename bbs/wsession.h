@@ -24,7 +24,6 @@
 #include <string>
 #include <vector>
 
-#include "bbs/capture.h"
 #include "bbs/runnable.h"
 #include "bbs/wcomm.h"
 #include "bbs/wstatus.h"
@@ -98,7 +97,6 @@ public:
   WComm* remoteIO() { return comm_.get(); }
   LocalIO* localIO() { return local_io_.get(); }
   bool reset_local_io(LocalIO* wlocal_io);
-  wwiv::bbs::Capture* capture() { return capture_.get(); }
   const std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
   int  instance_number() const { return instance_number_; }
   const std::string& network_extension() const { return network_extension_; }
@@ -225,12 +223,6 @@ public:
   void set_net_num(int n) { m_nNetworkNumber = n; }
 
   int  max_net_num() const { return net_networks.size(); }
-
-  bool wwivmail_enabled() const { return wwivmail_enabled_; }
-  void set_wwivmail_enabled(bool wwivmail_enabled) { wwivmail_enabled_ = wwivmail_enabled; }
-
-  bool internal_qwk_enabled() const { return internal_qwk_enabled_; }
-  void set_internal_qwk_enabled(bool internal_qwk_enabled) { internal_qwk_enabled_ = internal_qwk_enabled; }
 
   StatusMgr* status_manager() { return statusMgr.get(); }
   wwiv::sdk::UserManager* users() { return user_manager_.get(); }
@@ -371,11 +363,8 @@ private:
   wwiv::sdk::User m_thisuser;
   bool  last_key_local_;
   int effective_sl_;
-  bool wwivmail_enabled_;
-  bool internal_qwk_enabled_;
   std::unique_ptr<WComm> comm_;
   std::unique_ptr<LocalIO> local_io_;
-  std::unique_ptr<wwiv::bbs::Capture> capture_;
   std::string current_speed_;
   std::unique_ptr<wwiv::sdk::Config> config_;
   std::unique_ptr<wwiv::sdk::Names> names_;

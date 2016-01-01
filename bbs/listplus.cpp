@@ -2035,24 +2035,20 @@ void download_plus(const char *file_name) {
     int count = 0;
     int color = 3;
     foundany = 0;
-    if (!x_only) {
-      bout << "\r|#2Searching ";
-    }
+    bout << "\r|#2Searching ";
     while ((dn < session()->directories.size()) && (udir[dn].subnum != -1)) {
       count++;
-      if (!x_only) {
-        bout << "|#" << color << ".";
-        if (count == NUM_DOTS) {
-          bout << "\r";
-          bout << "|#2Searching ";
+      bout << "|#" << color << ".";
+      if (count == NUM_DOTS) {
+        bout << "\r";
+        bout << "|#2Searching ";
+        color++;
+        count = 0;
+        if (color == 4) {
           color++;
-          count = 0;
-          if (color == 4) {
-            color++;
-          }
-          if (color == 10) {
-            color = 0;
-          }
+        }
+        if (color == 10) {
+          color = 0;
         }
       }
       if (lp_try_to_download(szFileName, udir[dn].subnum) < 0) {
@@ -2081,8 +2077,4 @@ void request_file(const char *file_name) {
     bout << "File request NOT sent\r\n";
   }
   pausescr();
-}
-
-bool ok_listplus() {
-  return (!x_only && okansi());
 }

@@ -235,7 +235,6 @@ void remove_batch(const char *file_name);
 // File: xfertmp.cpp
 bool bad_filename(const char *file_name);
 // returns true if the file is downloaded.
-bool download_temp_arc(const char *file_name, bool count_against_xfer_ratio);
 void add_arc(const char *arc, const char *file_name, int dos);
 void add_temp_arc();
 void del_temp();

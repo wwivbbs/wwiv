@@ -1240,22 +1240,19 @@ void xfer_defaults() {
 
 void finddescription() {
   uploadsrec u;
-  int i, i1, i2, pts, count, color, ac = 0;
+  int i, i1, i2, pts, count, color;
   char s[81], s1[81];
 
-  if (ok_listplus()) {
+  if (okansi()) {
     listfiles_plus(LP_SEARCH_ALL);
     return;
   }
 
   bout.nl();
+  bool ac = false;
   if (uconfdir[1].confnum != -1 && okconf(session()->user())) {
-    if (!x_only) {
-      bout << "|#5All conferences? ";
-      ac = yesno();
-    } else {
-      ac = 1;
-    }
+    bout << "|#5All conferences? ";
+    ac = yesno();
     if (ac) {
       tmp_disable_conf(true);
     }
@@ -1272,9 +1269,7 @@ void finddescription() {
   g_num_listed = 0;
   count = 0;
   color = 3;
-  if (!x_only) {
-    bout << "\r|#2Searching ";
-  }
+  bout << "\r|#2Searching ";
   lines_listed = 0;
   for (i = 0; (i < session()->directories.size()) && (!abort) && (!hangup) && (session()->tagging != 0)
        && (udir[i].subnum != -1); i++) {
@@ -1287,19 +1282,17 @@ void finddescription() {
     pts = 1;
     // remove pts=1 to search only marked session()->directories
     if ((pts) && (!abort) && (session()->tagging != 0)) {
-      if (!x_only) {
-        count++;
-        bout << static_cast<char>(3) << color << ".";
-        if (count == NUM_DOTS) {
-          bout << "\r|#2Searching ";
+      count++;
+      bout << static_cast<char>(3) << color << ".";
+      if (count == NUM_DOTS) {
+        bout << "\r|#2Searching ";
+        color++;
+        count = 0;
+        if (color == 4) {
           color++;
-          count = 0;
-          if (color == 4) {
-            color++;
-          }
-          if (color == 10) {
-            color = 0;
-          }
+        }
+        if (color == 10) {
+          color = 0;
         }
       }
       session()->SetCurrentFileArea(i);

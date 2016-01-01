@@ -484,7 +484,7 @@ void tag_files() {
     return;
   }
   bool abort = false;
-  if (x_only || session()->tagging == 2) {
+  if (session()->tagging == 2) {
     session()->tagptr = 0;
     return;
   }
@@ -877,20 +877,18 @@ void download() {
             foundany = dn = 0;
             while ((dn < session()->directories.size()) && (udir[dn].subnum != -1)) {
               count++;
-              if (!x_only) {
-                bout << "|#" << color;
-                if (count == NUM_DOTS) {
-                  bout << "\r";
-                  bout.Color(color);
-                  bout << s1;
+              bout << "|#" << color;
+              if (count == NUM_DOTS) {
+                bout << "\r";
+                bout.Color(color);
+                bout << s1;
+                color++;
+                count = 0;
+                if (color == 4) {
                   color++;
-                  count = 0;
-                  if (color == 4) {
-                    color++;
-                  }
-                  if (color == 10) {
-                    color = 0;
-                  }
+                }
+                if (color == 10) {
+                  color = 0;
                 }
               }
               rtn = try_to_download(s, udir[dn].subnum);

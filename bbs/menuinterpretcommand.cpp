@@ -409,12 +409,6 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
     { "ChatRoom", [](MenuItemContext& context) {
       ChatRoom();
     } },
-    { "DownloadPosts", [](MenuItemContext& context) {
-      DownloadPosts();
-    } },
-    { "DownloadFileList", [](MenuItemContext& context) {
-      DownloadFileList();
-    } },
     { "ClearQScan", [](MenuItemContext& context) {
       ClearQScan();
     } },

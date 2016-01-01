@@ -21,7 +21,6 @@ set(COMMON_SOURCES
  bbsutl2.cpp
  bgetch.cpp
  bputch.cpp
- capture.cpp
  chains.cpp
  chat.cpp
  chnedit.cpp

@@ -224,7 +224,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
 
 
 void process_inst_msgs() {
-  if (x_only || !inst_msg_waiting()) {
+  if (!inst_msg_waiting()) {
     return;
   }
   last_iia = timer1();

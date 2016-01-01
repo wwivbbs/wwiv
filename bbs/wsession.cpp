@@ -112,7 +112,7 @@ WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app),
     numf(0), m_nNumMsgsInCurrentSub(0), num_events(0),
     num_sys_list(0), screenlinest(0), subchg(0), tagging(0), tagptr(0), titled(0), using_modem(0), m_bInternalZmodem(false),
     m_bExecLogSyncFoss(false), m_nExecChildProcessWaitTime(0), m_bNewScanAtLogin(false),
-    usernum(0), local_io_(localIO), capture_(new wwiv::bbs::Capture()),
+    usernum(0), local_io_(localIO),
     statusMgr(new StatusMgr()), m_nOkLevel(exitLevelOK),
     m_nErrorLevel(exitLevelNotOK), instance_number_(-1),
     m_bUserAlreadyOn(false), m_nBbsShutdownStatus(shutdownNone),
@@ -139,7 +139,6 @@ WSession::~WSession() {
 
 bool WSession::reset_local_io(LocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);
-  local_io_->set_capture(capture());
 
   const int screen_bottom = localIO()->GetDefaultScreenBottom();
   localIO()->SetScreenBottom(screen_bottom);

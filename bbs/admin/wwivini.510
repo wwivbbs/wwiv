@@ -177,7 +177,6 @@ SHOW_HIER              = Y                  ; show conf details in //je
 IDZ_DESC               = Y                  ; 1st line of file_id.diz as descrip
 SETLDATE               = N                  ; set file date on nscan
 NEW_CHATSOUND          = Y                  ; use different chat alarm
-SLASH_SZ               = N                  ; enable "/s" and "/z" (Download Posts)
 READ_CD_IDZ            = N                  ; read file_id.diz from cdroms
 FSED_EXT_DESC          = Y                  ; allow fsed for extended descriptions
 FAST_TAG_RELIST        = Y                  ; don't show xfer dirs on tag relist
@@ -250,8 +249,6 @@ EXEC_CHILDWAITTIME     = 500                ; Time to wait for the DOOR to load
                                             ; (used under Win9X)
 NEW_SCAN_AT_LOGIN      = Y                  ; Ask the user to scan for new 
                                             ; messages when they log in.
-USE_WWIVMAIL           = N                  ; Add WWIVMail to the //QWK menu
-USE_INTERNAL_QWK       = Y                  ; Use internal QWK support
 ;
 ;=============================================================================
 ;                        TEMPORARY DIRECTORY SETTING

@@ -193,7 +193,6 @@ static ini_flags_type sysinfo_flags[] = {
   {INI_STR_SHOW_HIER, false, OP_FLAGS_SHOW_HIER},
   {INI_STR_IDZ_DESC, false, OP_FLAGS_IDZ_DESC},
   {INI_STR_SETLDATE, false, OP_FLAGS_SETLDATE},
-  {INI_STR_SLASH_SZ, false, OP_FLAGS_SLASH_SZ},
   {INI_STR_READ_CD_IDZ, false, OP_FLAGS_READ_CD_IDZ},
   {INI_STR_FSED_EXT_DESC, false, OP_FLAGS_FSED_EXT_DESC},
   {INI_STR_FAST_TAG_RELIST, false, OP_FLAGS_FAST_TAG_RELIST},
@@ -393,9 +392,6 @@ IniFile* WSession::ReadINIFile() {
   max_batch           = std::min<uint16_t>(max_batch , 999);
   max_chains          = std::min<uint16_t>(max_chains, 999);
   max_gfilesec        = std::min<uint16_t>(max_gfilesec, 999);
-
-  set_wwivmail_enabled(ini->GetBooleanValue("USE_WWIVMAIL", true));
-  set_internal_qwk_enabled(ini->GetBooleanValue("USE_INTERNAL_QWK", true));
 
   return ini;
 }
@@ -823,7 +819,6 @@ void WSession::InitializeBBS() {
   chat_file = false;
   localIO()->SetSysopAlert(false);
   nsp = 0;
-  capture()->set_global_handle(false, true);
   bquote = 0;
   equote = 0;
   SetQuoting(false);

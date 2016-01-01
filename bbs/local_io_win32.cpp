@@ -124,10 +124,6 @@ void Win32ConsoleIO::LocalGotoXY(int x, int y) {
   y += GetTopLine();
   y = std::min<int>(y, GetScreenBottom());
 
-  if (x_only) {
-    capture_->set_wx(x);
-    return;
-  }
   m_cursorPosition.X = static_cast<int16_t>(x);
   m_cursorPosition.Y = static_cast<int16_t>(y);
   SetConsoleCursorPosition(m_hConOut, m_cursorPosition);
@@ -138,10 +134,6 @@ void Win32ConsoleIO::LocalGotoXY(int x, int y) {
 * means the cursor is at the left-most position
 */
 int Win32ConsoleIO::WhereX() {
-  if (x_only) {
-    return capture_->wx();
-  }
-
   GetConsoleScreenBufferInfo(m_hConOut, &m_consoleBufferInfo);
 
   m_cursorPosition.X = m_consoleBufferInfo.dwCursorPosition.X;
@@ -286,21 +278,6 @@ void Win32ConsoleIO::LocalPutchRaw(unsigned char ch) {
  * BS, and BELL are interpreted as commands instead of characters.
  */
 void Win32ConsoleIO::LocalPutch(unsigned char ch) {
-  if (x_only) {
-    int wx = capture_->wx();
-    if (ch > 31) {
-      wx = (wx + 1) % 80;
-    } else if (ch == RETURN || ch == CL) {
-      wx = 0;
-    } else if (ch == BACKSPACE) {
-      if (wx) {
-        wx--;
-      }
-    }
-    capture_->set_wx(wx);
-    return;
-  }
-
   if (ch > 31) {
     LocalPutchRaw(ch);
   } else if (ch == CM) {
@@ -414,7 +391,6 @@ void Win32ConsoleIO::set_protect(int l) { //JZ Set_Protect Fix
     session()->screenlinest = defscreenbottom + 1 - GetTopLine();
   }
 }
-  
 
 void Win32ConsoleIO::savescreen() {
   COORD topleft;
@@ -470,10 +446,6 @@ static char xlate[] = {
   'Z', 'X', 'C', 'V', 'B', 'N', 'M',
 };
 
-static char scan_to_char(int nKeyCode) {
-  return (nKeyCode >= 16 && nKeyCode <= 50) ? xlate[ nKeyCode - 16 ] : '\x00';
-}
-
 /*
  * skey handles all f-keys and the like hit FROM THE KEYBOARD ONLY
  */
@@ -491,7 +463,7 @@ void Win32ConsoleIO::skey(char ch) {
         break;
       case SF1:
         /* Shift-F1 */
-        capture_->set_global_handle(!capture_->is_open());
+        // Nothing.
         session()->UpdateTopScreen();
         break;
       case CF1:                          /* Ctrl-F1 */
@@ -588,7 +560,7 @@ void Win32ConsoleIO::skey(char ch) {
 static const vector<string> top_screen_items = {
   "Comm Disabled",
   "Temp Sysop",
-  "Capture",
+  "",
   "Alert",
   "อออออออ",
   "Available",
@@ -622,9 +594,6 @@ void Win32ConsoleIO::tleft(bool bCheckForTimeOut) {
 
     if (session()->user()->GetSl() != 255 && session()->GetEffectiveSl() == 255) {
       LocalXYPuts(23, nLineNumber, top_screen_items[1]);
-    }
-    if (capture_->is_open()) {
-      LocalXYPuts(40, nLineNumber, top_screen_items[2]);
     }
     if (GetSysopAlert()) {
       LocalXYPuts(54, nLineNumber, top_screen_items[3]);
@@ -823,10 +792,6 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
  * @return true if a key has been pressed at the local console, false otherwise
  */
 bool Win32ConsoleIO::LocalKeyPressed() {
-  if (x_only) {
-    return false;
-  }
-
   if (ExtendedKeyWaiting) {
     return true;
   }
