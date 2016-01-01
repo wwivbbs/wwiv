@@ -207,8 +207,19 @@ void WSession::UpdateTopScreen() {
   }
 }
 
-const char* WSession::network_name() const { return net_networks[m_nNetworkNumber].name; }
-const std::string WSession::network_directory() const { return std::string(net_networks[m_nNetworkNumber].dir); }
+const char* WSession::network_name() const {
+  if (net_networks.empty()) {
+    return "";
+  }
+  return net_networks[m_nNetworkNumber].name;
+}
+
+const std::string WSession::network_directory() const {
+  if (net_networks.empty()) {
+    return "";
+  }
+  return std::string(net_networks[m_nNetworkNumber].dir);
+}
 
 
 #if !defined ( __unix__ )
