@@ -626,8 +626,7 @@ MenuDescriptions::MenuDescriptions(const std::string& menupath) :menupath_(menup
   }
 }
 
-MenuDescriptions::~MenuDescriptions() {
-}
+MenuDescriptions::~MenuDescriptions() {}
 
 const std::string MenuDescriptions::description(const std::string& name) const {
   if (contains(descriptions_, name)) {

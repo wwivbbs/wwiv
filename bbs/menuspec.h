@@ -31,7 +31,5 @@ void SetDirConf(int iConf);
 void EnableConf();
 void DisableConf();
 void SetNewScanMsg();
-void ReadMessages();
-void ReadSelectedMessages(int iWhich, int iWhere);
 
 #endif  // __INCLUDED_BBS_MENUSPEC_H__

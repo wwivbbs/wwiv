@@ -18,12 +18,6 @@
 /**************************************************************************/
 #include "bbs/msgbase1.h"
 
-#ifdef _WIN32
-#include <direct.h>
-#else
-#include <unistd.h>
-#endif  // _WIN32
-
 #include <memory>
 #include <string>
 
@@ -464,8 +458,8 @@ void ScanMessageTitles() {
   if (session()->GetNumMessagesInCurrentMessageArea() == 0) {
     return;
   }
-  bout.bprintf("|#9Start listing at (|#21|#9-|#2%d|#9): ",
-                                    session()->GetNumMessagesInCurrentMessageArea());
+  bout << "|#9Start listing at (|#21|#9-|#2"
+       << session()->GetNumMessagesInCurrentMessageArea() << "|#9): ";
   string messageNumber;
   input(&messageNumber, 5, true);
   int nMessageNumber = atoi(messageNumber.c_str());
@@ -484,7 +478,6 @@ void ScanMessageTitles() {
     scan(nMessageNumber, SCAN_OPTION_LIST_TITLES, &nNextSubNumber, true);
   }
 }
-
 
 void remove_post() {
   if (!iscan(session()->GetCurrentMessageArea())) {

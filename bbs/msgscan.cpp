@@ -161,8 +161,8 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
     bout << "|#5Network validate here? ";
     if (yesno()) {
       int nNumMsgsSent = 0;
-      open_sub(true);
       vector<postrec> to_validate;
+      open_sub(true);
       for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
         postrec *p4 = get_post(i);
         if (p4->status & status_pending_net) {
@@ -171,7 +171,6 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
           write_post(i, p4);
         }
       }
-
       close_sub();
       for (auto p : to_validate) {
         send_net_post(&p, session()->current_sub().filename, session()->GetCurrentReadMessageArea());

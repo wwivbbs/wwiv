@@ -34,4 +34,18 @@ void resynch(int *msgnum, postrec * pp);
 bool pack_all_subs();
 void pack_sub(int si);
 
+namespace wwiv {
+namespace bbs {
+
+class OpenSub {
+public:
+  OpenSub(bool write_allowed): opened_(open_sub(write_allowed)) {}
+  ~OpenSub() { if (opened_) { close_sub(); } }
+private:
+  bool opened_;
+};
+
+}
+}
+
 #endif  // __INCLUDED_BBS_SUBACC_H__
