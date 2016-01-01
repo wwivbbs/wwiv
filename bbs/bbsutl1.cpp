@@ -369,7 +369,7 @@ bool play_sdf(const string& soundFileName, bool abortable) {
  *        area code.
  */
 string describe_area_code(int nAreaCode) {
-  TextFile file(syscfg.datadir, REGIONS_DAT, "rt");
+  TextFile file(session()->config()->datadir(), REGIONS_DAT, "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file
     return "";

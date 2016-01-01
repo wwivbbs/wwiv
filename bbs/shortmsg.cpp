@@ -40,7 +40,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
   bool bShownAnyMessage = false;
   int bShownAllMessages = true;
   if (pUser->HasShortMessage()) {
-    File file(syscfg.datadir, SMW_DAT);
+    File file(session()->config()->datadir(), SMW_DAT);
     if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
     }
@@ -94,7 +94,7 @@ void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char 
   User user;
   session()->users()->ReadUser(&user, nUserNum);
   if (!user.IsUserDeleted()) {
-    File file(syscfg.datadir, SMW_DAT);
+    File file(session()->config()->datadir(), SMW_DAT);
     if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
     }

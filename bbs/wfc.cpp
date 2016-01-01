@@ -407,7 +407,7 @@ void wfc_screen() {
     session()->localIO()->LocalCls();
     if (pszScreenBuffer == nullptr) {
       pszScreenBuffer = new char[4000];
-      File wfcFile(syscfg.datadir, WFC_DAT);
+      File wfcFile(session()->config()->datadir(), WFC_DAT);
       if (!wfcFile.Open(File::modeBinary | File::modeReadOnly)) {
         wfc_cls();
         std::clog << wfcFile.full_pathname() << " NOT FOUND." << std::endl;

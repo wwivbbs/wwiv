@@ -26,7 +26,7 @@
 #include "sdk/filenames.h"
 
 void get_colordata() {
-  File file(syscfg.datadir, COLOR_DAT);
+  File file(session()->config()->datadir(), COLOR_DAT);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;
   }
@@ -34,7 +34,7 @@ void get_colordata() {
 }
 
 void save_colordata() {
-  File file(syscfg.datadir, COLOR_DAT);
+  File file(session()->config()->datadir(), COLOR_DAT);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;
   }

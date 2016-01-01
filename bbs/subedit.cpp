@@ -47,7 +47,7 @@ static void save_subs() {
   }
 
   {
-    DataFile<subboardrec> subsFile(syscfg.datadir, SUBS_DAT,
+    DataFile<subboardrec> subsFile(session()->config()->datadir(), SUBS_DAT,
       File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     if (!subsFile) {
       bout << "Error writing subs.dat file." << wwiv::endl;
@@ -841,7 +841,7 @@ void boardedit() {
           bout.nl();
           bout << "|#5Delete data files (including messages) for sub also? ";
           if (yesno()) {
-            File::Remove(StrCat(syscfg.datadir, s, ".sub"));
+            File::Remove(StrCat(session()->config()->datadir(), s, ".sub"));
             File::Remove(StrCat(syscfg.msgsdir, s, ".dat"));
           }
         }

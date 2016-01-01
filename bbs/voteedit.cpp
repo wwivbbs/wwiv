@@ -28,7 +28,7 @@
 using namespace wwiv::sdk;
 
 static void print_quests() {
-  File file(syscfg.datadir, VOTING_DAT);
+  File file(session()->config()->datadir(), VOTING_DAT);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     return;
   }
@@ -88,7 +88,7 @@ static void set_question(int ii) {
     }
   }
 
-  File votingDat(syscfg.datadir, VOTING_DAT);
+  File votingDat(session()->config()->datadir(), VOTING_DAT);
   votingDat.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   votingDat.Seek(ii * sizeof(votingrec), File::seekBegin);
   votingDat.Write(&v, sizeof(votingrec));
@@ -110,7 +110,7 @@ static void set_question(int ii) {
 void ivotes() {
   votingrec v;
 
-  File votingDat(syscfg.datadir, VOTING_DAT);
+  File votingDat(session()->config()->datadir(), VOTING_DAT);
   votingDat.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   int n = static_cast<int>((votingDat.GetLength() / sizeof(votingrec)) - 1);
   if (n < 20) {
@@ -158,7 +158,7 @@ void voteprint() {
   votingText.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeText);
   votingText.Write(votingText.full_pathname());
 
-  File votingDat(syscfg.datadir, VOTING_DAT);
+  File votingDat(session()->config()->datadir(), VOTING_DAT);
 
   session()->status_manager()->RefreshStatusCache();
 

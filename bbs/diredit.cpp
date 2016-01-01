@@ -542,7 +542,7 @@ void dlboardedit() {
       break;
     }
   } while (!done && !hangup);
-  DataFile<directoryrec> dirsFile(syscfg.datadir, DIRS_DAT,
+  DataFile<directoryrec> dirsFile(session()->config()->datadir(), DIRS_DAT,
       File::modeReadWrite | File::modeCreateFile | File::modeBinary | File::modeTruncate);
   if (!dirsFile) {
     sysoplog("!!! Unable to open DIRS.DAT for writing, some changes may have been lost", false);

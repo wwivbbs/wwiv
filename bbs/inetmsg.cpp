@@ -153,7 +153,7 @@ char *read_inet_addr(char *internet_address, int user_number) {
     strcpy(internet_address, session()->user()->GetEmailAddress());
   } else {
     *internet_address = 0;
-    File inetAddrFile(syscfg.datadir, INETADDR_DAT);
+    File inetAddrFile(session()->config()->datadir(), INETADDR_DAT);
     if (!inetAddrFile.Exists()) {
       inetAddrFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
       for (int i = 0; i <= syscfg.maxusers; i++) {
@@ -187,7 +187,7 @@ void write_inet_addr(const char *internet_address, int user_number) {
     return; /*nullptr;*/
   }
 
-  File inetAddrFile(syscfg.datadir, INETADDR_DAT);
+  File inetAddrFile(session()->config()->datadir(), INETADDR_DAT);
   inetAddrFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   long lCurPos = 80L * static_cast<long>(user_number);
   inetAddrFile.Seek(lCurPos, File::seekBegin);

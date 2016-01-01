@@ -1038,7 +1038,7 @@ void logoff() {
     }
   }
   if (smwcheck) {
-    File smwFile(syscfg.datadir, SMW_DAT);
+    File smwFile(session()->config()->datadir(), SMW_DAT);
     if (smwFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       int t = static_cast<int>(smwFile.GetLength() / sizeof(shortmsgrec));
       int r = 0;

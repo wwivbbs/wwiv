@@ -193,7 +193,7 @@ int inst_ok(int loc, int subloc) {
   }
 
   int nInstNum = 0;
-  File instFile(syscfg.datadir, INSTANCE_DAT);
+  File instFile(session()->config()->datadir(), INSTANCE_DAT);
   if (!instFile.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   }

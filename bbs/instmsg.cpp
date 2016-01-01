@@ -238,7 +238,7 @@ void process_inst_msgs() {
   sprintf(szFindFileName, "%sMSG*.%3.3u", syscfg.datadir, session()->instance_number());
   bool bDone = fnd.open(szFindFileName, 0);
   while ((bDone) && (!hangup)) {
-    File file(syscfg.datadir, fnd.GetFileName());
+    File file(session()->config()->datadir(), fnd.GetFileName());
     if (!file.Open(File::modeBinary | File::modeReadOnly)) {
       continue;
     }
@@ -301,7 +301,7 @@ bool get_inst_info(int nInstanceNum, instancerec * ir) {
 
   memset(ir, 0, sizeof(instancerec));
 
-  File instFile(syscfg.datadir, INSTANCE_DAT);
+  File instFile(session()->config()->datadir(), INSTANCE_DAT);
   if (!instFile.Open(File::modeBinary | File::modeReadOnly)) {
     return false;
   }
@@ -347,7 +347,7 @@ bool inst_available_chat(instancerec * ir) {
  * Returns max instance number.
  */
 int num_instances() {
-  File instFile(syscfg.datadir, INSTANCE_DAT);
+  File instFile(session()->config()->datadir(), INSTANCE_DAT);
   if (!instFile.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   }
@@ -586,7 +586,7 @@ void write_inst(int loc, int subloc, int flags) {
   }
   if (re_write && syscfg.datadir != nullptr) {
     ti.last_update = static_cast<uint32_t>(time(nullptr));
-    File instFile(syscfg.datadir, INSTANCE_DAT);
+    File instFile(session()->config()->datadir(), INSTANCE_DAT);
     if (instFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       instFile.Seek(static_cast<long>(session()->instance_number() * sizeof(instancerec)), File::seekBegin);
       instFile.Write(&ti, sizeof(instancerec));

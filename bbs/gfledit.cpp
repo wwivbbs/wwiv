@@ -270,7 +270,7 @@ void gfileedit() {
     }
   } while (!done && !hangup);
 
-  DataFile<gfiledirrec> file(syscfg.datadir, GFILE_DAT);
+  DataFile<gfiledirrec> file(session()->config()->datadir(), GFILE_DAT);
   if (file) {
     file.WriteVector(session()->gfilesec);
   }

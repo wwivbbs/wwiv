@@ -484,7 +484,7 @@ bool LoadMenuSetup(int user_number) {
   if (!user_number) {
     return false;
   }
-  File userConfig(syscfg.datadir, CONFIG_USR);
+  File userConfig(session()->config()->datadir(), CONFIG_USR);
   if (!userConfig.Exists()) {
     return false;
   }
@@ -516,7 +516,7 @@ void WriteMenuSetup(int user_number) {
   session()->users()->ReadUser(&user, user_number);
   strcpy(pSecondUserRec->name, user.GetName());
 
-  File userConfig(syscfg.datadir, CONFIG_USR);
+  File userConfig(session()->config()->datadir(), CONFIG_USR);
   if (!userConfig.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;
   }

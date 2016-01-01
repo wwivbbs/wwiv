@@ -32,7 +32,7 @@ void add_phone_number(int usernum, const char *phone) {
     return;
   }
 
-  File phoneFile(syscfg.datadir, PHONENUM_DAT);
+  File phoneFile(session()->config()->datadir(), PHONENUM_DAT);
   if (!phoneFile.Open(File::modeReadWrite | File::modeAppend | File::modeBinary | File::modeCreateFile)) {
     return;
   }
@@ -46,7 +46,7 @@ void add_phone_number(int usernum, const char *phone) {
 
 
 void delete_phone_number(int usernum, const char *phone) {
-  File phoneFile(syscfg.datadir, PHONENUM_DAT);
+  File phoneFile(session()->config()->datadir(), PHONENUM_DAT);
   if (!phoneFile.Open(File::modeReadWrite | File::modeBinary)) {
     return;
   }
@@ -81,7 +81,7 @@ void delete_phone_number(int usernum, const char *phone) {
 
 
 int find_phone_number(const char *phone) {
-  File phoneFile(syscfg.datadir, PHONENUM_DAT);
+  File phoneFile(session()->config()->datadir(), PHONENUM_DAT);
   if (!phoneFile.Open(File::modeReadWrite | File::modeBinary)) {
     return 0;
   }

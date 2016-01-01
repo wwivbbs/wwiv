@@ -143,7 +143,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
 }
 
 std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
-  File *file = new File(syscfg.datadir, EMAIL_DAT);
+  File *file = new File(session()->config()->datadir(), EMAIL_DAT);
 
   // If the file doesn't exist, just return the opaque handle now instead of flailing
   // around trying to open it
