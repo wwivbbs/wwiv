@@ -508,7 +508,7 @@ void remove_post() {
   string postNumberToRemove;
   input(&postNumberToRemove, 5);
   int nPostNumber = atoi(postNumberToRemove.c_str());
-  open_sub(true);
+  wwiv::bbs::OpenSub opened_sub(true);
   if (nPostNumber > 0 && nPostNumber <= session()->GetNumMessagesInCurrentMessageArea()) {
     if (((get_post(nPostNumber)->ownersys == 0) && (get_post(nPostNumber)->owneruser == session()->usernum)) || lcs()) {
       if ((get_post(nPostNumber)->owneruser == session()->usernum) && (get_post(nPostNumber)->ownersys == 0)) {
@@ -529,7 +529,6 @@ void remove_post() {
       bout << "\r\nMessage removed.\r\n\n";
     }
   }
-  close_sub();
 }
 
 

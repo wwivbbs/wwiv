@@ -108,12 +108,11 @@ void valscan() {
             if (lcs() && i > 0 && i <= session()->GetNumMessagesInCurrentMessageArea() &&
                 session()->current_sub().anony & anony_val_net &&
                 !session()->current_xsub().nets.empty()) {
-              open_sub(true);
+              wwiv::bbs::OpenSub opened_sub(true);
               resynch(&i, nullptr);
               postrec *p1 = get_post(i);
               p1->status &= ~status_pending_net;
               write_post(i, p1);
-              close_sub();
               bout.nl();
               bout << "|#9Not set for net pending now.\r\n\n";
             }
