@@ -15,58 +15,54 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "wwivutil/dump_callout.h"
+#include "wwivutil/net/net.h"
 
+#include <cstdio>
+#include <iomanip>
 #include <iostream>
-#include <map>
+#include <memory>
 #include <string>
 #include <vector>
+#include "core/command_line.h"
+#include "core/file.h"
 #include "core/strings.h"
 #include "sdk/config.h"
-#include "sdk/callout.h"
-#include "sdk/config.h"
+#include "sdk/net.h"
 #include "sdk/networks.h"
 
+#include "wwivutil/net/dump_callout.h"
+#include "wwivutil/net/dump_contact.h"
+#include "wwivutil/net/dump_packet.h"
+
+using std::cerr;
 using std::clog;
 using std::cout;
 using std::endl;
-using std::map;
+using std::setw;
 using std::string;
+using std::unique_ptr;
+using std::vector;
+using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
-using namespace wwiv::strings;
 
 namespace wwiv {
 namespace wwivutil {
 
-static void dump_callout_usage() {
-  cout << "Usage:   dump_callout" << endl;
-  cout << "Example: dump_callout" << endl;
-}
+bool NetCommand::AddSubCommands() {
+  DumpPacketCommand* dump_packet = new DumpPacketCommand();
+  add(dump_packet);
+  AddCommandsAndArgs(dump_packet);
 
-int DumpCalloutCommand::Execute() {
+  DumpCalloutCommand* dump_callout = new DumpCalloutCommand();
+  add(dump_callout);
+  AddCommandsAndArgs(dump_callout);
 
-  Networks networks(*config()->config());
-  if (!networks.IsInitialized()) {
-    clog << "Unable to load networks.";
-    return 1;
-  }
-
-  map<const string, Callout> callouts;
-  for (const auto net : networks.networks()) {
-    string lower_case_network_name(net.name);
-    StringLowerCase(&lower_case_network_name);
-    callouts.emplace(lower_case_network_name, Callout(net.dir));
-  }
-
-  for (const auto& c : callouts) {
-    cout << "CALLOUT.NET information: : " << c.first << endl;
-    cout << "===========================================================" << endl;
-    cout << c.second.ToString() << endl;
-  }
-
-  return 0;
+  DumpContactCommand* dump_contact = new DumpContactCommand();
+  add(dump_contact);
+  AddCommandsAndArgs(dump_contact);
+  return true;
 }
 
 
-}
-}
+}  // namespace wwivutil
+}  // namespace wwiv

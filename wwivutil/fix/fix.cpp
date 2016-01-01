@@ -15,57 +15,48 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "wwivutil/dump_contact.h"
+#include "wwivutil/fix/fix.h"
 
+#include <cstdio>
+#include <iomanip>
 #include <iostream>
-#include <map>
+#include <memory>
 #include <string>
 #include <vector>
+#include "core/command_line.h"
+#include "core/file.h"
 #include "core/strings.h"
 #include "sdk/config.h"
-#include "sdk/contact.h"
-#include "sdk/config.h"
+#include "sdk/net.h"
 #include "sdk/networks.h"
+#include "wwivutil/fix/users.h"
 
+using std::cerr;
 using std::clog;
 using std::cout;
 using std::endl;
-using std::map;
+using std::setw;
 using std::string;
-using wwiv::sdk::Contact;
+using std::unique_ptr;
+using std::vector;
+using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
-using namespace wwiv::strings;
 
 namespace wwiv {
 namespace wwivutil {
 
-static void dump_contact_usage() {
-  cout << "Usage:   dump_contact" << endl;
-  cout << "Example: dump_contact" << endl;
+bool FixCommand::AddSubCommands() {
+  //DumpPacketCommand* dump_packet = new DumpPacketCommand();
+  //add(dump_packet);
+  //AddCommandsAndArgs(dump_packet);
+
+  FixUsersCommand* fix_users = new FixUsersCommand();
+  add(fix_users);
+  AddCommandsAndArgs(fix_users);
+
+  return true;
 }
 
-int DumpContactCommand::Execute() {
-  Networks networks(*config()->config());
-  if (!networks.IsInitialized()) {
-    clog << "Unable to load networks.";
-    return 1;
-  }
 
-  map<const string, Contact> contacts;
-  for (const auto net : networks.networks()) {
-    string lower_case_network_name(net.name);
-    StringLowerCase(&lower_case_network_name);
-    contacts.emplace(lower_case_network_name, Contact(net.dir, false));
-  }
-
-  for (const auto& c : contacts) {
-    cout << "CONTACT.NET information: : " << c.first << endl;
-    cout << "===========================================================" << endl;
-    cout << c.second.ToString() << endl;
-  }
-
-  return 0;
-}
-
-}
-}
+}  // namespace wwivutil
+}  // namespace wwiv

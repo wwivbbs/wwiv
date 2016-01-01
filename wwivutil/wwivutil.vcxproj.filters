@@ -13,28 +13,52 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\net">
+      <UniqueIdentifier>{5004075f-efbe-48bb-802e-49fa1cc72cd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\messages">
+      <UniqueIdentifier>{b5567d86-9fcf-41d5-9321-efa57842774c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\messages">
+      <UniqueIdentifier>{ad1d186b-4a9c-4ee1-a3f9-bed5dc9006cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\net">
+      <UniqueIdentifier>{5cbd8acd-9537-4c60-9c5d-946d21b5df75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\fix">
+      <UniqueIdentifier>{4a2cc16c-815a-49fe-bf4b-02f90a9a5192}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\fix">
+      <UniqueIdentifier>{e58aa813-41c9-45c4-b67e-20218d6c2098}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="wwivutil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="messages.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="command.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dump_callout.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="net\dump_callout.cpp">
+      <Filter>Source Files\net</Filter>
     </ClCompile>
-    <ClCompile Include="dump_contact.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="net\dump_contact.cpp">
+      <Filter>Source Files\net</Filter>
     </ClCompile>
-    <ClCompile Include="dump_packet.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="net\dump_packet.cpp">
+      <Filter>Source Files\net</Filter>
     </ClCompile>
-    <ClCompile Include="net.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="net\net.cpp">
+      <Filter>Source Files\net</Filter>
+    </ClCompile>
+    <ClCompile Include="messages\messages.cpp">
+      <Filter>Source Files\messages</Filter>
+    </ClCompile>
+    <ClCompile Include="fix\fix.cpp">
+      <Filter>Source Files\fix</Filter>
+    </ClCompile>
+    <ClCompile Include="fix\users.cpp">
+      <Filter>Source Files\fix</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -44,23 +68,29 @@
     <ClInclude Include="command.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="messages.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dump_callout.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dump_contact.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dump_packet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="net.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="template.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net\dump_callout.h">
+      <Filter>Header Files\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\dump_contact.h">
+      <Filter>Header Files\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\dump_packet.h">
+      <Filter>Header Files\net</Filter>
+    </ClInclude>
+    <ClInclude Include="messages\messages.h">
+      <Filter>Header Files\messages</Filter>
+    </ClInclude>
+    <ClInclude Include="net\net.h">
+      <Filter>Header Files\net</Filter>
+    </ClInclude>
+    <ClInclude Include="fix\fix.h">
+      <Filter>Header Files\fix</Filter>
+    </ClInclude>
+    <ClInclude Include="fix\users.h">
+      <Filter>Header Files\fix</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

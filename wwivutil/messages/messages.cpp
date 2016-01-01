@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "wwivutil/messages.h"
+#include "wwivutil/messages/messages.h"
 
 #include <cstdio>
 #include <iomanip>

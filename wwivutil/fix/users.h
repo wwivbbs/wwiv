@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.x                              */
-/*                Copyright (C)2015 WWIV Software Services                */
+/*                              WWIV Version 5.x                          */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,55 +14,31 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
+/*                                                                        */
 /**************************************************************************/
-#include "wwivutil/net.h"
+#ifndef __INCLUDED_USERS_H__
+#define __INCLUDED_USERS_H__
 
-#include <cstdio>
-#include <iomanip>
-#include <iostream>
-#include <memory>
+#include <map>
 #include <string>
-#include <vector>
+
 #include "core/command_line.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "sdk/config.h"
-#include "sdk/net.h"
-#include "sdk/networks.h"
-
-#include "wwivutil/dump_callout.h"
-#include "wwivutil/dump_contact.h"
-#include "wwivutil/dump_packet.h"
-
-using std::cerr;
-using std::clog;
-using std::cout;
-using std::endl;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
-using wwiv::core::BooleanCommandLineArgument;
-using namespace wwiv::sdk;
+#include "sdk/callout.h"
+#include "wwivutil/command.h"
 
 namespace wwiv {
 namespace wwivutil {
 
-bool NetCommand::AddSubCommands() {
-  DumpPacketCommand* dump_packet = new DumpPacketCommand();
-  add(dump_packet);
-  AddCommandsAndArgs(dump_packet);
-
-  DumpCalloutCommand* dump_callout = new DumpCalloutCommand();
-  add(dump_callout);
-  AddCommandsAndArgs(dump_callout);
-
-  DumpContactCommand* dump_contact = new DumpContactCommand();
-  add(dump_contact);
-  AddCommandsAndArgs(dump_contact);
-  return true;
-}
+class FixUsersCommand final: public UtilCommand {
+public:
+  FixUsersCommand()
+    : UtilCommand("users", "Fix users.") {}
+  virtual int Execute() override final;
+  virtual bool AddSubCommands() override final;
+};
 
 
 }  // namespace wwivutil
 }  // namespace wwiv
+
+#endif  // __INCLUDED_USERS_H__
