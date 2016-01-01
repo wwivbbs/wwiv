@@ -1,5 +1,5 @@
-# CMake for WWIV 5.0
-cmake_minimum_required (VERSION 3.0)
+# CMake for WWIV
+cmake_minimum_required (VERSION 2.6)
 project (WWIV5All)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -12,7 +12,6 @@ add_subdirectory(core)
 add_subdirectory(core_test)
 add_subdirectory(bbs)
 add_subdirectory(bbs_test)
-add_subdirectory(fix)
 add_subdirectory(init)
 add_subdirectory(initlib)
 add_subdirectory(network)
