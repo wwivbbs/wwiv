@@ -36,9 +36,6 @@
 #include "wwivutil/net/net.h"
 #include "wwivutil/fix/fix.h"
 
-using std::clog;
-using std::cout;
-using std::endl;
 using std::map;
 using std::string;
 using std::vector;

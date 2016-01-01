@@ -21,6 +21,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "core/log.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/contact.h"
@@ -47,7 +48,7 @@ static void dump_contact_usage() {
 int DumpContactCommand::Execute() {
   Networks networks(*config()->config());
   if (!networks.IsInitialized()) {
-    clog << "Unable to load networks.";
+    LOG << "Unable to load networks.";
     return 1;
   }
 

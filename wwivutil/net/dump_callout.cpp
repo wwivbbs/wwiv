@@ -21,13 +21,13 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "core/log.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/callout.h"
 #include "sdk/config.h"
 #include "sdk/networks.h"
 
-using std::clog;
 using std::cout;
 using std::endl;
 using std::map;
@@ -47,7 +47,7 @@ int DumpCalloutCommand::Execute() {
 
   Networks networks(*config()->config());
   if (!networks.IsInitialized()) {
-    clog << "Unable to load networks.";
+    LOG << "Unable to load networks.";
     return 1;
   }
 

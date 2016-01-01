@@ -31,9 +31,6 @@
 #include "core/stl.h"
 #include "sdk/config.h"
 
-using std::clog;
-using std::cout;
-using std::endl;
 using std::map;
 using std::string;
 using std::vector;

@@ -24,15 +24,13 @@
 
 #include "core/command_line.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "core/version.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 
-using std::clog;
-using std::cout;
-using std::endl;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -66,14 +64,14 @@ static bool checkFileSize(File &file, unsigned long len) {
   unsigned long actual = file.GetLength();
   file.Close();
   if (actual < len) {
-    cout << file.full_pathname() << " too short (" << actual << "<"
-      << len << ")." << endl;
+    LOG << file.full_pathname() << " too short (" << actual << "<"
+      << len << ").";
     return false;
   }
   if (actual > len) {
-    cout << file.full_pathname() << " too long (" << actual << ">"
-      << len << ")." << endl;
-    cout << "Attempting to continue." << endl;
+    LOG << file.full_pathname() << " too long (" << actual << ">"
+      << len << ").";
+    LOG << "Attempting to continue.";
   }
   return true;
 }
@@ -91,8 +89,8 @@ static bool initStatusDat(const std::string& datadir) {
   bool update = false;
   File statusDat(datadir, STATUS_DAT);
   if (!statusDat.Exists()) {
-    cout << statusDat.full_pathname() << " NOT FOUND!" << endl;
-    cout << "Recreating " << statusDat.full_pathname() << endl;
+    LOG << statusDat.full_pathname() << " NOT FOUND!";
+    LOG << "Recreating " << statusDat.full_pathname() ;
     memset(&status, 0, sizeof(statusrec));
     strcpy(status.date1, "00/00/00");
     strcpy(status.date2, status.date1);
@@ -105,9 +103,9 @@ static bool initStatusDat(const std::string& datadir) {
     update = true;
   } else {
     checkFileSize(statusDat, sizeof(statusrec));
-    cout << "Reading " << statusDat.full_pathname() << "..." << endl;
+    LOG << "Reading " << statusDat.full_pathname() << "...";
     if (!statusDat.Open(nFileMode)) {
-      cout << statusDat.full_pathname() << " NOT FOUND." << endl;
+      LOG << statusDat.full_pathname() << " NOT FOUND.";
       return false;
     }
     statusDat.Read(&status, sizeof(statusrec));
@@ -115,8 +113,8 @@ static bool initStatusDat(const std::string& datadir) {
 
     // version check
     if (status.wwiv_version > wwiv_num_version) {
-      cout << "Incorrect version of fix (this is for "
-           << wwiv_num_version << ", you need " << status.wwiv_version << ")" << endl;
+      LOG << "Incorrect version of fix (this is for "
+           << wwiv_num_version << ", you need " << status.wwiv_version << ")";
     }
 
     time_t val = time(nullptr);
@@ -124,7 +122,7 @@ static bool initStatusDat(const std::string& datadir) {
     if (strcmp(status.date1, curDate)) {
       strcpy(status.date1, curDate);
       update = true;
-      cout << "Date error in STATUS.DAT (status.date1) corrected" << endl;
+      LOG << "Date error in STATUS.DAT (status.date1) corrected";
     }
 
     val -= 86400L;
@@ -132,14 +130,14 @@ static bool initStatusDat(const std::string& datadir) {
     if (strcmp(status.date2, curDate)) {
       strcpy(status.date2, curDate);
       update = true;
-      cout << "Date error in STATUS.DAT (status.date2) corrected" << endl;
+      LOG << "Date error in STATUS.DAT (status.date2) corrected";
     }
     char logFile[512];
     snprintf(logFile, sizeof(logFile), "%s.log", dateFromTimeTForLog(val));
     if (strcmp(status.log1, logFile)) {
       strcpy(status.log1, logFile);
       update = true;
-      cout << "Log filename error in STATUS.DAT (status.log1) corrected" << endl;
+      LOG << "Log filename error in STATUS.DAT (status.log1) corrected";
     }
 
     val -= 86400L;
@@ -147,13 +145,13 @@ static bool initStatusDat(const std::string& datadir) {
     if (strcmp(status.date3, curDate)) {
       strcpy(status.date3, curDate);
       update = true;
-      cout << "Date error in STATUS.DAT (status.date3) corrected" << endl;
+      LOG << "Date error in STATUS.DAT (status.date3) corrected";
     }
     snprintf(logFile, sizeof(logFile), "%s.log", dateFromTimeTForLog(val));
     if (strcmp(status.log2, logFile)) {
       strcpy(status.log2, logFile);
       update = true;
-      cout << "Log filename error in STATUS.DAT (status.log2) corrected" << endl;
+      LOG << "Log filename error in STATUS.DAT (status.log2) corrected";
     }
   }
   if (update) {
@@ -162,8 +160,8 @@ static bool initStatusDat(const std::string& datadir) {
 }
 
 static void usage() {
-  cout << "Usage:   fix users" << endl;
-  cout << "Example: WWIVUTIL fix users" << endl;
+  LOG << "Usage:   fix users";
+  LOG << "Example: WWIVUTIL fix users";
 }
 
 bool FixUsersCommand::AddSubCommands() {
@@ -176,30 +174,30 @@ bool FixUsersCommand::AddSubCommands() {
 int FixUsersCommand::Execute() {
   if (arg("help").as_bool()) {
     usage();
-    cout << GetHelp();
+    LOG << GetHelp();
     return 0;
   }
-  std::cout << "Runnning FixUsersCommand::Execute" << std::endl;
+  LOG << "Runnning FixUsersCommand::Execute";
 
   initStatusDat(config()->config()->datadir());
 
   File userFile(config()->config()->datadir(), USER_LST);
 	if (!userFile.Exists()) {
-    cout << userFile.full_pathname() << " does not exist." << endl;
+    LOG << userFile.full_pathname() << " does not exist.";
     return 1;
 	}
 
 	UserManager userMgr(config()->config()->datadir(), sizeof(userrec), 
       config()->config()->config()->maxusers);
-  cout << "Checking USER.LST... found " << userMgr.GetNumberOfUserRecords() << " user records." << endl;
-  cout << "TBD: Check for trashed user recs." << endl;
+  LOG << "Checking USER.LST... found " << userMgr.GetNumberOfUserRecords() << " user records.";
+  LOG << "TBD: Check for trashed user recs.";
 	if (userMgr.GetNumberOfUserRecords() > config()->config()->config()->maxusers) {
-    cout << "Might be too many." << endl;
+    LOG << "Might be too many.";
     if (!arg("exp").as_bool()) {
       return 1;
     }
 	} else {
-    cout << "Reasonable number." << endl;
+    LOG << "Reasonable number.";
 	}
 
 	std::vector<smalrec> smallrecords;
@@ -220,10 +218,10 @@ int FixUsersCommand::Execute() {
 				smallrecords.push_back(sr);
 				names.insert(namestring);
         if (arg("verbose").as_bool()) {
-          cout << "Keeping user: " << sr.name << " #" << sr.number << endl;
+          LOG << "Keeping user: " << sr.name << " #" << sr.number ;
         }
 			} else {
-				std::cout << "[skipping duplicate user: " << namestring << " #" << sr.number << "]";
+				LOG << "[skipping duplicate user: " << namestring << " #" << sr.number << "]";
 			}
 		}
 	};
@@ -241,11 +239,11 @@ int FixUsersCommand::Execute() {
 	});
 
 	printf("size=%lu %lu\n", smallrecords.size(), sizeof(smalrec) * smallrecords.size());
-  cout << "Checking NAMES.LST" << endl;
+  LOG << "Checking NAMES.LST";
 	File nameFile(config()->config()->datadir(), NAMES_LST);
 	if (!nameFile.Exists()) {
-    cout << nameFile.full_pathname() << " does not exist, regenerating with "
-         << smallrecords.size() << " names" << endl;
+    LOG << nameFile.full_pathname() << " does not exist, regenerating with "
+         << smallrecords.size() << " names";
 		nameFile.Open(File::modeCreateFile | File::modeBinary | File::modeWriteOnly);
 		nameFile.Write(&smallrecords[0], sizeof(smalrec) * smallrecords.size());
 		nameFile.Close();
@@ -255,9 +253,9 @@ int FixUsersCommand::Execute() {
       uint16_t recs = static_cast<uint16_t>(size / sizeof(smalrec));
 			if (recs != status.users) {
 				status.users = recs;
-        cout << "STATUS.DAT contained an incorrect user count." << endl;
+        LOG << "STATUS.DAT contained an incorrect user count.";
 			} else {
-        cout << "STATUS.DAT matches expected user count of " << status.users << " users." << endl;
+        LOG << "STATUS.DAT matches expected user count of " << status.users << " users.";
 			}
 		}
 		nameFile.Close();
