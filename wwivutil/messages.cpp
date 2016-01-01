@@ -141,9 +141,14 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
 }
 
 int MessagesDumpHeaderCommand::Execute() {
-  if (remaining().empty()) {
+  if (arg("help").as_bool()) {
+    messages_usage();
+    cout << GetHelp();
+    return 0;
+  } else if (remaining().empty()) {
     clog << "Missing sub basename." << endl;
     messages_usage();
+    cout << GetHelp();
     return 2;
   }
 

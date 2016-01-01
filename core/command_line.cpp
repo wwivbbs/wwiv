@@ -18,6 +18,8 @@
 /**************************************************************************/
 
 #include <cctype>
+#include <iomanip>
+#include <iostream>
 #include <map>
 #include <string>
 #include <sstream>
@@ -31,7 +33,9 @@
 using std::clog;
 using std::cout;
 using std::endl;
+using std::left;
 using std::map;
+using std::setw;
 using std::string;
 using std::vector;
 using namespace wwiv::strings;
@@ -230,13 +234,15 @@ std::string CommandLineCommand::GetHelp() const {
   string program_name = (name_.empty()) ? "program" : name_;
   ss << program_name << " arguments:" << std::endl;
   for (const auto& a : args_allowed_) {
-    ss << "--" << StringPrintf("%-20s", a.second.name.c_str()) << " " << a.second.help_text << endl;
+    ss << "--" << left << setw(20) << a.second.name << " " << a.second.help_text << endl;
   }
-  ss << endl;
-  ss << "commands:" << std::endl;
-  for (const auto& a : commands_allowed_) {
-    const string allowed_name = a.second->name();
-    ss << StringPrintf("%-20s", allowed_name.c_str()) << " " << a.second->help_text() << endl;
+  if (!commands_allowed_.empty()) {
+    ss << endl;
+    ss << "commands:" << std::endl;
+    for (const auto& a : commands_allowed_) {
+      const string allowed_name = a.second->name();
+      ss << setw(20) << left << allowed_name << " " << a.second->help_text() << endl;
+    }
   }
   return ss.str();
 }

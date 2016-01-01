@@ -270,7 +270,7 @@ void execute_ansi() {
       if (args[0] == 2) {
         lines_listed = 0;
         g_flags |= g_flag_ansi_movement;
-        session()->localIO()->LocalGotoXY(0, 0);
+        session()->localIO()->LocalCls();
       }
       break;
     case 'k':
