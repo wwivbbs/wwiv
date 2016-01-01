@@ -30,8 +30,8 @@
 #include "core/strings.h"
 #include "core/stl.h"
 #include "sdk/config.h"
-#include "wwivutil/messages.h"
-#include "wwivutil/net.h"
+#include "wwivutil/messages/messages.h"
+#include "wwivutil/net/net.h"
 
 using std::clog;
 using std::cout;

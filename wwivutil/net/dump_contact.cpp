@@ -15,54 +15,57 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "wwivutil/net.h"
+#include "wwivutil/net/dump_contact.h"
 
-#include <cstdio>
-#include <iomanip>
 #include <iostream>
-#include <memory>
+#include <map>
 #include <string>
 #include <vector>
-#include "core/command_line.h"
-#include "core/file.h"
 #include "core/strings.h"
 #include "sdk/config.h"
-#include "sdk/net.h"
+#include "sdk/contact.h"
+#include "sdk/config.h"
 #include "sdk/networks.h"
 
-#include "wwivutil/dump_callout.h"
-#include "wwivutil/dump_contact.h"
-#include "wwivutil/dump_packet.h"
-
-using std::cerr;
 using std::clog;
 using std::cout;
 using std::endl;
-using std::setw;
+using std::map;
 using std::string;
-using std::unique_ptr;
-using std::vector;
-using wwiv::core::BooleanCommandLineArgument;
+using wwiv::sdk::Contact;
 using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace wwivutil {
 
-bool NetCommand::AddSubCommands() {
-  DumpPacketCommand* dump_packet = new DumpPacketCommand();
-  add(dump_packet);
-  AddCommandsAndArgs(dump_packet);
-
-  DumpCalloutCommand* dump_callout = new DumpCalloutCommand();
-  add(dump_callout);
-  AddCommandsAndArgs(dump_callout);
-
-  DumpContactCommand* dump_contact = new DumpContactCommand();
-  add(dump_contact);
-  AddCommandsAndArgs(dump_contact);
-  return true;
+static void dump_contact_usage() {
+  cout << "Usage:   dump_contact" << endl;
+  cout << "Example: dump_contact" << endl;
 }
 
+int DumpContactCommand::Execute() {
+  Networks networks(*config()->config());
+  if (!networks.IsInitialized()) {
+    clog << "Unable to load networks.";
+    return 1;
+  }
 
-}  // namespace wwivutil
-}  // namespace wwiv
+  map<const string, Contact> contacts;
+  for (const auto net : networks.networks()) {
+    string lower_case_network_name(net.name);
+    StringLowerCase(&lower_case_network_name);
+    contacts.emplace(lower_case_network_name, Contact(net.dir, false));
+  }
+
+  for (const auto& c : contacts) {
+    cout << "CONTACT.NET information: : " << c.first << endl;
+    cout << "===========================================================" << endl;
+    cout << c.second.ToString() << endl;
+  }
+
+  return 0;
+}
+
+}
+}
