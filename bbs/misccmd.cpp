@@ -108,7 +108,7 @@ void kill_old_email() {
         int nDaysAgo = static_cast<int>((lCurrentTime - m.daten) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT);
         bout << "|#1Sent|#9: |#" << session()->GetMessageColor() << nDaysAgo << " days ago" << wwiv::endl;
         if (m.status & status_file) {
-          File fileAttach(syscfg.datadir, ATTACH_DAT);
+          File fileAttach(session()->config()->datadir(), ATTACH_DAT);
           if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
             bool found = false;
             long l1 = fileAttach.Read(&fsr, sizeof(fsr));
@@ -157,7 +157,7 @@ void kill_old_email() {
             delmail(delete_email_file.get(), cur);
             bool found = false;
             if (m.status & status_file) {
-              File fileAttach(syscfg.datadir, ATTACH_DAT);
+              File fileAttach(session()->config()->datadir(), ATTACH_DAT);
               if (fileAttach.Open(File::modeBinary | File::modeReadWrite)) {
                 long l1 = fileAttach.Read(&fsr, sizeof(fsr));
                 while (l1 > 0 && !found) {
@@ -259,7 +259,7 @@ void list_users(int mode) {
   write_qscn(session()->usernum, qsc, false);
   session()->status_manager()->RefreshStatusCache();
 
-  File userList(syscfg.datadir, USER_LST);
+  File userList(session()->config()->datadir(), USER_LST);
   int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
   for (int i = 0; (i < nNumUserRecords) && !abort && !hangup; i++) {

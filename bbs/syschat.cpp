@@ -568,7 +568,7 @@ void chat1(char *chat_line, bool two_way) {
     chatting = 1;
   }
   double tc_start = timer();
-  File chatFile(syscfg.gfilesdir, "chat.txt");
+  File chatFile(session()->config()->gfilesdir(), "chat.txt");
 
   session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
   s1[0] = '\0';

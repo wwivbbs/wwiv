@@ -499,7 +499,7 @@ static string copy_line(char *pszWholeBuffer, long *plBufferPtr, long lBufferLen
 
 static void UpdateLastOnFileAndUserLog() {
   unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
-  const string laston_txt_filename = StrCat(syscfg.gfilesdir, LASTON_TXT);
+  const string laston_txt_filename = StrCat(session()->config()->gfilesdir(), LASTON_TXT);
   long len;
   unique_ptr<char[], void (*)(void*)> ss(get_file(laston_txt_filename, &len), &std::free);
   long pos = 0;
@@ -586,7 +586,7 @@ static void UpdateLastOnFileAndUserLog() {
     }
 
     if (session()->GetEffectiveSl() != 255) {
-      File userLog(syscfg.gfilesdir, USER_LOG);
+      File userLog(session()->config()->gfilesdir(), USER_LOG);
       if (userLog.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
         userLog.Seek(0L, File::seekEnd);
         userLog.Write(log_line);
@@ -1038,7 +1038,7 @@ void logoff() {
     }
   }
   if (smwcheck) {
-    File smwFile(syscfg.datadir, SMW_DAT);
+    File smwFile(session()->config()->datadir(), SMW_DAT);
     if (smwFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       int t = static_cast<int>(smwFile.GetLength() / sizeof(shortmsgrec));
       int r = 0;

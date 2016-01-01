@@ -24,6 +24,11 @@
 // surface area used by wwiv is tiny.
 
 #ifdef _WIN32
+
+#ifdef MOUSE_MOVED
+#undef MOUSE_MOVED
+#endif  // MOUSE_MOVED
+
 #define NOGDICAPMASKS
 #define NOSYSMETRICS
 #define NOMENUS

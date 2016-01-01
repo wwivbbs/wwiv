@@ -27,7 +27,7 @@ static File qscanFile;
 
 bool open_qscn() {
   if (!qscanFile.IsOpen()) {
-    qscanFile.SetName(syscfg.datadir, USER_QSC);
+    qscanFile.SetName(session()->config()->datadir(), USER_QSC);
     if (!qscanFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return false;
     }

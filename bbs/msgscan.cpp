@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "bbs/bbsovl1.h"
 #include "bbs/conf.h"
@@ -60,6 +61,7 @@ static char s_szFindString[21];
 
 using std::string;
 using std::unique_ptr;
+using std::vector;
 using wwiv::endl;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -143,7 +145,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
     bout.nl();
     bout << "|#5Validate messages here? ";
     if (noyes()) {
-      open_sub(true);
+      wwiv::bbs::OpenSub opened_sub(true);
       for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
         postrec* p3 = get_post(i);
         if (p3->status & (status_unvalidated | status_delete)) {
@@ -151,7 +153,6 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
         }
         write_post(i, p3);
       }
-      close_sub();
     }
   }
   if ((val & 2) && lcs() && !express) {
@@ -159,36 +160,21 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
     bout << "|#5Network validate here? ";
     if (yesno()) {
       int nNumMsgsSent = 0;
-      open_sub(true);
-      int nMsgToValidate = 0;
-      for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
-        if (get_post(i)->status & status_pending_net) {
-          nMsgToValidate++;
-        }
-      }
-      postrec* p3 = static_cast<postrec *>(BbsAllocA(nMsgToValidate * sizeof(postrec)));
-      if (p3) {
-        nMsgToValidate = 0;
+      vector<postrec> to_validate;
+      {
+        wwiv::bbs::OpenSub opened_sub(true);
         for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
           postrec *p4 = get_post(i);
           if (p4->status & status_pending_net) {
-            p3[nMsgToValidate++] = *p4;
+            to_validate.push_back(*p4);
             p4->status &= ~status_pending_net;
             write_post(i, p4);
           }
         }
-
-        close_sub();
-
-        for (int j = 0; j < nMsgToValidate; j++) {
-          send_net_post(p3 + j, session()->current_sub().filename,
-                        session()->GetCurrentReadMessageArea());
-          nNumMsgsSent++;
-        }
-
-        free(p3);
-      } else {
-        close_sub();
+      }
+      for (auto p : to_validate) {
+        send_net_post(&p, session()->current_sub().filename, session()->GetCurrentReadMessageArea());
+        nNumMsgsSent++;
       }
 
       bout.nl();
@@ -196,18 +182,19 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
       bout.nl(2);
     }
   }
-  if (!quit && !express) {
-    bout.nl();
-    if (!session()->user()->IsRestrictionPost() &&
-        (session()->user()->GetNumPostsToday() < getslrec(session()->GetEffectiveSl()).posts) &&
-        (session()->GetEffectiveSl() >= session()->current_sub().postsl)) {
-      bout << "|#5Post on " << session()->current_sub().name << "? ";
-      irt[0] = '\0';
-      irt_name[0] = '\0';
-      grab_quotes(nullptr, nullptr);
-      if (yesno()) {
-        post();
-      }
+  bout.nl();
+  if (quit || express) {
+    return;
+  }
+  if (!session()->user()->IsRestrictionPost() &&
+      (session()->user()->GetNumPostsToday() < getslrec(session()->GetEffectiveSl()).posts) &&
+      (session()->GetEffectiveSl() >= session()->current_sub().postsl)) {
+    bout << "|#5Post on " << session()->current_sub().name << "? ";
+    irt[0] = '\0';
+    irt_name[0] = '\0';
+    grab_quotes(nullptr, nullptr);
+    if (yesno()) {
+      post();
     }
   }
   bout.nl();
@@ -361,12 +348,11 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
       break;
     case 'N':
       if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea())) {
-        open_sub(true);
+        wwiv::bbs::OpenSub opened_sub(true);
         resynch(&nMessageNumber, nullptr);
         postrec *p3 = get_post(nMessageNumber);
         p3->status ^= status_no_delete;
         write_post(nMessageNumber, p3);
-        close_sub();
         bout.nl();
         if (p3->status & status_no_delete) {
           bout << "|#9Message will |#6NOT|#9 be auto-purged.\r\n";
@@ -380,7 +366,7 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
       if (lcs() && nMessageNumber > 0 && nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea() &&
           session()->current_sub().anony & anony_val_net &&
           !session()->current_xsub().nets.empty()) {
-        open_sub(true);
+        wwiv::bbs::OpenSub opened_sub(true);
         resynch(&nMessageNumber, nullptr);
         postrec *p3 = get_post(nMessageNumber);
         p3->status ^= status_pending_net;
@@ -398,12 +384,11 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
       break;
     case 'U':
       if (lcs() && nMessageNumber > 0 && nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea()) {
-        open_sub(true);
+        wwiv::bbs::OpenSub opened_sub(true);
         resynch(&nMessageNumber, nullptr);
         postrec *p3 = get_post(nMessageNumber);
         p3->anony = 0;
         write_post(nMessageNumber, p3);
-        close_sub();
         bout.nl();
         bout << "|#9Message is not anonymous now.\r\n";
       }

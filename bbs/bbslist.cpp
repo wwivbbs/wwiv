@@ -51,7 +51,7 @@ static char ShowBBSListMenuAndGetChoice() {
 
 static bool IsBBSPhoneNumberUnique(const string& phoneNumber) {
   bool ok = true;
-  File file(syscfg.gfilesdir, BBSLIST_MSG);
+  File file(session()->config()->gfilesdir(), BBSLIST_MSG);
   if (file.Open(File::modeReadOnly | File::modeBinary)) {
     file.Seek(0L, File::seekBegin);
     long lBbsListLength = file.GetLength();
@@ -106,7 +106,7 @@ static bool IsBBSPhoneNumberValid(const string& phoneNumber) {
 }
 
 static void AddBBSListLine(const string bbsListLine) {
-  File file(syscfg.gfilesdir, BBSLIST_MSG);
+  File file(session()->config()->gfilesdir(), BBSLIST_MSG);
   bool bOpen = file.Open(File::modeReadWrite | File::modeCreateFile | File::modeBinary);
   if (bOpen && file.GetLength() > 0) {
     file.Seek(-1L, File::seekEnd);
@@ -179,8 +179,8 @@ static void DeleteBBSListEntry() {
   }
 
   bool ok = false;
-  TextFile fi(syscfg.gfilesdir, BBSLIST_MSG, "r");
-  TextFile fo(syscfg.gfilesdir, BBSLIST_TMP, "w");
+  TextFile fi(session()->config()->gfilesdir(), BBSLIST_MSG, "r");
+  TextFile fo(session()->config()->gfilesdir(), BBSLIST_TMP, "w");
   if (fi.IsOpen()) {
     if (fo.IsOpen()) {
       string line;

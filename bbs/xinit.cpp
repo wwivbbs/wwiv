@@ -581,7 +581,7 @@ bool WSession::SaveConfig() {
 
 void WSession::read_nextern() {
   externs.clear();
-  DataFile<newexternalrec> externalFile(syscfg.datadir, NEXTERN_DAT);
+  DataFile<newexternalrec> externalFile(config()->datadir(), NEXTERN_DAT);
   if (externalFile) {
     externalFile.ReadVector(externs, 15);
   }
@@ -589,7 +589,7 @@ void WSession::read_nextern() {
 
 void WSession::read_arcs() {
   arcs.clear();
-  DataFile<arcrec> file(syscfg.datadir, ARCHIVER_DAT);
+  DataFile<arcrec> file(config()->datadir(), ARCHIVER_DAT);
   if (file) {
     file.ReadVector(arcs, MAX_ARCS);
   }
@@ -597,7 +597,7 @@ void WSession::read_arcs() {
 
 void WSession::read_editors() {
   editors.clear();
-  DataFile<editorrec> file(syscfg.datadir, EDITORS_DAT);
+  DataFile<editorrec> file(config()->datadir(), EDITORS_DAT);
   if (!file) {
     return;
   }
@@ -606,7 +606,7 @@ void WSession::read_editors() {
 
 void WSession::read_nintern() {
   over_intern.clear();
-  DataFile<newexternalrec> file(syscfg.datadir, NINTERN_DAT);
+  DataFile<newexternalrec> file(config()->datadir(), NINTERN_DAT);
   if (file) {
     file.ReadVector(over_intern, 3);
   }
@@ -615,7 +615,7 @@ void WSession::read_nintern() {
 bool WSession::read_subs() {
   subboards.clear();
 
-  DataFile<subboardrec> file(syscfg.datadir, SUBS_DAT);
+  DataFile<subboardrec> file(config()->datadir(), SUBS_DAT);
   if (!file) {
     std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
     return false;
@@ -662,7 +662,7 @@ void WSession::read_networks() {
     fileNetIni.Close();
   }
 
-  DataFile<net_networks_rec_disk> networksfile(syscfg.datadir, NETWORKS_DAT);
+  DataFile<net_networks_rec_disk> networksfile(config()->datadir(), NETWORKS_DAT);
   if (!networksfile) {
     return;
   }
@@ -688,7 +688,8 @@ void WSession::read_networks() {
     // Add a default entry for us.
     net_networks_rec n{};
     strcpy(n.name, "WWIVnet");
-    strcpy(n.dir, syscfg.datadir);
+    string datadir = config()->datadir();
+    strcpy(n.dir, datadir.c_str());
     n.sysnum = syscfg.systemnumber;
   }
 }
@@ -704,7 +705,7 @@ void WSession::read_voting() {
     questused[ nTempQuestionum ] = 0;
   }
 
-  File file(syscfg.datadir, VOTING_DAT);
+  File file(config()->datadir(), VOTING_DAT);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     int n = static_cast<int>(file.GetLength() / sizeof(votingrec)) - 1;
     for (int nTempQuestUsedNum = 0; nTempQuestUsedNum < n; nTempQuestUsedNum++) {
@@ -720,7 +721,7 @@ void WSession::read_voting() {
 
 bool WSession::read_dirs() {
   directories.clear();
-  DataFile<directoryrec> file(syscfg.datadir, DIRS_DAT);
+  DataFile<directoryrec> file(config()->datadir(), DIRS_DAT);
   if (!file) {
     std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
     return false;
@@ -731,7 +732,7 @@ bool WSession::read_dirs() {
 
 void WSession::read_chains() {
   chains.clear();
-  DataFile<chainfilerec> file(syscfg.datadir, CHAINS_DAT);
+  DataFile<chainfilerec> file(config()->datadir(), CHAINS_DAT);
   if (!file) {
     return;
   }
@@ -740,7 +741,7 @@ void WSession::read_chains() {
   if (HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     chains_reg.clear();
 
-    DataFile<chainregrec> regFile(syscfg.datadir, CHAINS_REG);
+    DataFile<chainregrec> regFile(config()->datadir(), CHAINS_REG);
     if (regFile) {
       regFile.ReadVector(chains_reg, max_chains);
     } else {
@@ -751,7 +752,7 @@ void WSession::read_chains() {
         reg.maxage = 255;
         chains_reg.push_back(reg);
       }
-      DataFile<chainregrec> writeFile(syscfg.datadir, CHAINS_REG, 
+      DataFile<chainregrec> writeFile(config()->datadir(), CHAINS_REG, 
           File::modeReadWrite | File::modeBinary | File::modeCreateFile);
       writeFile.WriteVector(chains_reg);
     }
@@ -760,7 +761,7 @@ void WSession::read_chains() {
 
 bool WSession::read_language() {
   {
-    DataFile<languagerec> file(syscfg.datadir, LANGUAGE_DAT);
+    DataFile<languagerec> file(config()->datadir(), LANGUAGE_DAT);
     if (file) {
       file.ReadVector(languages);
     }
@@ -785,7 +786,7 @@ bool WSession::read_language() {
 }
 
 void WSession::read_gfile() {
-  DataFile<gfiledirrec> file(syscfg.datadir, GFILE_DAT);
+  DataFile<gfiledirrec> file(config()->datadir(), GFILE_DAT);
   if (file) {
     file.ReadVector(gfilesec, max_gfilesec);
   }
@@ -849,7 +850,7 @@ void WSession::InitializeBBS() {
 
   // make sure it is the new USERREC structure
   XINIT_PRINTF("Reading user scan pointers.");
-  File fileQScan(syscfg.datadir, USER_QSC);
+  File fileQScan(config()->datadir(), USER_QSC);
   if (!fileQScan.Exists()) {
     std::clog << "Could not open file '" << fileQScan.full_pathname() << "'" << std::endl;
     std::clog << "You must go into INIT and convert your userlist before running the BBS." << std::endl;
@@ -878,7 +879,7 @@ void WSession::InitializeBBS() {
   }
 
   XINIT_PRINTF("Reading color information.");
-  File fileColor(syscfg.datadir, COLOR_DAT);
+  File fileColor(config()->datadir(), COLOR_DAT);
   if (!fileColor.Exists()) {
     buildcolorfile();
   }
@@ -1027,7 +1028,7 @@ void WSession::InitializeBBS() {
 // begin dupphone additions
 
 void WSession::check_phonenum() {
-  File phoneFile(syscfg.datadir, PHONENUM_DAT);
+  File phoneFile(config()->datadir(), PHONENUM_DAT);
   if (!phoneFile.Exists()) {
     create_phone_file();
   }
@@ -1036,7 +1037,7 @@ void WSession::check_phonenum() {
 void WSession::create_phone_file() {
   phonerec p;
 
-  File file(syscfg.datadir, USER_LST);
+  File file(config()->datadir(), USER_LST);
   if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
@@ -1044,7 +1045,7 @@ void WSession::create_phone_file() {
   file.Close();
   int numOfRecords = static_cast<int>(lFileSize / sizeof(userrec));
 
-  File phoneNumFile(syscfg.datadir, PHONENUM_DAT);
+  File phoneNumFile(config()->datadir(), PHONENUM_DAT);
   if (!phoneNumFile.Open(File::modeReadWrite | File::modeAppend | File::modeBinary | File::modeCreateFile)) {
     return;
   }

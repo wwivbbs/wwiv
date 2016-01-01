@@ -287,7 +287,7 @@ void delete_attachment(unsigned long daten, int forceit) {
   filestatusrec fsr;
 
   bool found = false;
-  File fileAttach(syscfg.datadir, ATTACH_DAT);
+  File fileAttach(session()->config()->datadir(), ATTACH_DAT);
   if (fileAttach.Open(File::modeBinary | File::modeReadWrite)) {
     long l = fileAttach.Read(&fsr, sizeof(fsr));
     while (l > 0 && !found) {
@@ -572,7 +572,7 @@ void readmail(int mode) {
       found = false;
       attach_exists = false;
       if (m.status & status_file) {
-        File fileAttach(syscfg.datadir, ATTACH_DAT);
+        File fileAttach(session()->config()->datadir(), ATTACH_DAT);
         if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
           l1 = fileAttach.Read(&fsr, sizeof(fsr));
           while (l1 > 0 && !found) {

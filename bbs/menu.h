@@ -31,22 +31,10 @@
 #include "core/textfile.h"
 
 #define MENU
-#define MENU_VERSION 0x0100
-
-#define TEST_PADDING (5)
-
-// 'iWhich' : Which messages to read in function ReadSelectedMessages
-#define RM_ALL_MSGS   (-1)
-#define RM_QSCAN_MSGS (-2)
-
-
-// 'iWhere' : Which subs to read in function ReadSelectedMessages
-#define RM_ALL_SUBS   (-1)
-#define RM_QSCAN_SUBS (-2)
+constexpr uint16_t MENU_VERSION = 0x0100;
 
 #define MENU_FLAG_DELETED   (0x01)
 #define MENU_FLAG_MAINMENU  (0x02)
-
 
 #define MENU_NUMFLAG_NOTHING   ( 0 )
 #define MENU_NUMFLAG_SUBNUMBER ( 1 )
@@ -75,9 +63,6 @@
 #define MENU_ALLOWED_REGULAR   ( 2 )
 #define MENU_ALLOWED_LAST      ( 3 )
 
-#define PDFLAGS_NOCLEAR       (0x0001)
-#define PDFLAGS_NORESTORE     (0x0002)
-#define PDFLAGS_NOPAUSEAFTER  (0x0004)
 #define MENU_MAX_KEYS (10)
 
 #pragma pack(push, 1)
@@ -184,7 +169,7 @@ public:
   bool set_description(const std::string& name, const std::string& description);
 
 private:
-  std::string menupath_;
+  const std::string menupath_;
   std::map<std::string, std::string, wwiv::stl::ci_less> descriptions_;
 };
 

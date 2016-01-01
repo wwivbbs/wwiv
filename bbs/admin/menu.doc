@@ -602,10 +602,6 @@ SetNewScanMsg
   Enter the menu so that a user can set which subs he want to scan when doing
   a new message scan
 
-ReadMessages
-
-  Read messages in the current sub
-
 RUN
 
   In a future version, this will run a script file

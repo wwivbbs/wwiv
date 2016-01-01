@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/subacc.h"
+
 #include <memory>
 #include <string>
 
@@ -84,7 +86,7 @@ uint32_t WWIVReadLastRead(int sub_number) {
   postrec p;
   memset(&p, 0, sizeof(postrec));
 
-  File subFile(syscfg.datadir, StrCat(session()->subboards[sub_number].filename, ".sub"));
+  File subFile(session()->config()->datadir(), StrCat(session()->subboards[sub_number].filename, ".sub"));
   if (!subFile.Exists()) {
     bool created = subFile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     if (!created) {

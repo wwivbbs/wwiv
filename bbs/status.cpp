@@ -138,7 +138,7 @@ bool WStatus::NewDay() {
 // StatusMgr
 bool StatusMgr::Get(bool bLockFile) {
   if (!m_statusFile.IsOpen()) {
-    m_statusFile.SetName(syscfg.datadir, STATUS_DAT);
+    m_statusFile.SetName(session()->config()->datadir(), STATUS_DAT);
     int nLockMode = (bLockFile) ? (File::modeReadWrite | File::modeBinary) : (File::modeReadOnly | File::modeBinary);
     m_statusFile.Open(nLockMode);
   } else {
@@ -224,7 +224,7 @@ bool StatusMgr::CommitTransaction(WStatus* pStatus) {
 
 bool StatusMgr::Write(statusrec *pStatus) {
   if (!m_statusFile.IsOpen()) {
-    m_statusFile.SetName(syscfg.datadir, STATUS_DAT);
+    m_statusFile.SetName(session()->config()->datadir(), STATUS_DAT);
     m_statusFile.Open(File::modeReadWrite | File::modeBinary);
   } else {
     m_statusFile.Seek(0L, File::seekBegin);

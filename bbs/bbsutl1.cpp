@@ -311,7 +311,7 @@ bool play_sdf(const string& soundFileName, bool abortable) {
   string fullPathName;
   // append gfilesdir if no path specified
   if (soundFileName.find(File::pathSeparatorChar) == string::npos) {
-    fullPathName = StrCat(syscfg.gfilesdir, soundFileName);
+    fullPathName = StrCat(session()->config()->gfilesdir(), soundFileName);
   } else {
     fullPathName = soundFileName;
   }
@@ -369,7 +369,7 @@ bool play_sdf(const string& soundFileName, bool abortable) {
  *        area code.
  */
 string describe_area_code(int nAreaCode) {
-  TextFile file(syscfg.datadir, REGIONS_DAT, "rt");
+  TextFile file(session()->config()->datadir(), REGIONS_DAT, "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file
     return "";

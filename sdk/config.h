@@ -38,6 +38,7 @@ public:
   const std::string root_directory() const { return root_directory_; }
   const std::string datadir() const { return config_->datadir; }
   const std::string msgsdir() const { return config_->msgsdir; }
+  const std::string gfilesdir() const { return config_->gfilesdir; }
 
 private:
   bool initialized_;

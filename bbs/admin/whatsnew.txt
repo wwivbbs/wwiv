@@ -30,6 +30,8 @@ What's New in WWIV 5.1 (2015)
   menu editor since 4.3. This removed USE_WWIVMAIL and USE_INTERNAL_QWK
   from wwiv.ini.
 * removed SLASH_SZ from wwiv.ini. It wasn't enabled by default anyway.
+* Removed ReadMessages menu item. It wasn't classic WWIV
+* 
 
 What's New in 2015 (WWIV 5.0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -109,7 +111,6 @@ What's New in 5.0 Beta-2
 * Fixed missing mutex in telnet handling code.
 * 2004 Copyright
 * Misc internal code cleanups.
-
 
 What's New in 5.0 Beta-1
 ~~~~~~~~~~~~~~~~~~~~~~~~

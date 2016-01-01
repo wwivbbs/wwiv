@@ -75,7 +75,7 @@ void deluser(int user_number) {
       }
       pFileEmail->Close();
     }
-    File voteFile(syscfg.datadir, VOTING_DAT);
+    File voteFile(session()->config()->datadir(), VOTING_DAT);
     voteFile.Open(File::modeReadWrite | File::modeBinary);
     long nNumVoteRecords = static_cast<int>(voteFile.GetLength() / sizeof(votingrec)) - 1;
     for (long lCurVoteRecord = 0; lCurVoteRecord < 20; lCurVoteRecord++) {

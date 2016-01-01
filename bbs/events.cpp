@@ -103,7 +103,7 @@ void init_events() {
   events = static_cast<eventsrec *>(BbsAllocA(MAX_EVENT * sizeof(eventsrec)));
   WWIV_ASSERT(events != nullptr);
 
-  File eventsFile(syscfg.datadir, EVENTS_DAT);
+  File eventsFile(session()->config()->datadir(), EVENTS_DAT);
   if (eventsFile.Open(File::modeBinary | File::modeReadOnly)) {
     session()->num_events = eventsFile.GetLength() / sizeof(eventsrec);
     eventsFile.Read(events, session()->num_events * sizeof(eventsrec));
@@ -175,7 +175,7 @@ void cleanup_events() {
     events[i].lastrun = 0;
   }
 
-  File eventsFile(syscfg.datadir, EVENTS_DAT);
+  File eventsFile(session()->config()->datadir(), EVENTS_DAT);
   eventsFile.Open(File::modeReadWrite | File::modeBinary);
   eventsFile.Write(events, session()->num_events * sizeof(eventsrec));
   eventsFile.Close();
@@ -192,7 +192,7 @@ void check_event() {
         ((events[i].instance == session()->instance_number()) ||
          (events[i].instance == 0))) {
       // make sure the event hasn't already been executed on another node,then mark it as run
-      File eventsFile(syscfg.datadir, EVENTS_DAT);
+      File eventsFile(session()->config()->datadir(), EVENTS_DAT);
       eventsFile.Open(File::modeReadWrite | File::modeBinary);
       eventsFile.Seek(i * sizeof(eventsrec), File::seekBegin);
       eventsFile.Read(&events[i], sizeof(eventsrec));
@@ -213,7 +213,7 @@ void check_event() {
       // if the next runtime is before now trigger it to run
       if (nextrun <= tl) {
         // flag the event to run
-        File eventsFile(syscfg.datadir, EVENTS_DAT);
+        File eventsFile(session()->config()->datadir(), EVENTS_DAT);
         eventsFile.Open(File::modeReadWrite | File::modeBinary);
         eventsFile.Seek(i * sizeof(eventsrec), File::seekBegin);
         eventsFile.Read(&events[i], sizeof(eventsrec));
@@ -633,7 +633,7 @@ void eventedit() {
   } while (!done && !hangup);
   sort_events();
 
-  File eventsFile(syscfg.datadir, EVENTS_DAT);
+  File eventsFile(session()->config()->datadir(), EVENTS_DAT);
   if (session()->num_events) {
     eventsFile.Open(File::modeReadWrite | File::modeCreateFile | File::modeBinary | File::modeTruncate);
     eventsFile.Write(events, session()->num_events * sizeof(eventsrec));

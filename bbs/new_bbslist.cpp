@@ -287,7 +287,7 @@ static void ReadBBSList(const vector<unique_ptr<BbsListEntry>>& entries) {
 
 static void DeleteBbsListEntry() {
   vector<unique_ptr<BbsListEntry>> entries;
-  LoadFromJSON(syscfg.datadir, BBSLIST_JSON, &entries);
+  LoadFromJSON(session()->config()->datadir(), BBSLIST_JSON, &entries);
 
   if (entries.empty()) {
     bout << "|#6You can not delete an entry when the list is empty." << wwiv::endl;
@@ -309,7 +309,7 @@ static void DeleteBbsListEntry() {
     if (b->get()->id == entry_num) {
       entries.erase(b);
       bout << "|10Entry deleted." << wwiv::endl;
-      SaveToJSON(syscfg.datadir, BBSLIST_JSON, entries);
+      SaveToJSON(session()->config()->datadir(), BBSLIST_JSON, entries);
       return;
     }
   }
@@ -424,7 +424,7 @@ void NewBBSList() {
     switch (ch) {
     case 'A': {
       vector<unique_ptr<BbsListEntry>> entries;
-      LoadFromJSON(syscfg.datadir, BBSLIST_JSON, &entries);
+      LoadFromJSON(session()->config()->datadir(), BBSLIST_JSON, &entries);
       if (session()->GetEffectiveSl() <= 10) {
         bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
         break;
@@ -433,7 +433,7 @@ void NewBBSList() {
         break;
       }
       if (AddBBSListEntry(&entries)) {
-        SaveToJSON(syscfg.datadir, BBSLIST_JSON, entries);
+        SaveToJSON(session()->config()->datadir(), BBSLIST_JSON, entries);
       }
     } break;
     case 'D': {
@@ -444,10 +444,10 @@ void NewBBSList() {
       break;
     case 'R': {
       vector<unique_ptr<BbsListEntry>> entries;
-      LoadFromJSON(syscfg.datadir, BBSLIST_JSON, &entries);
+      LoadFromJSON(session()->config()->datadir(), BBSLIST_JSON, &entries);
       if (entries.empty()) {
-        ConvertLegacyList(syscfg.gfilesdir, BBSLIST_MSG, &entries);
-        SaveToJSON(syscfg.datadir, BBSLIST_JSON, entries);
+        ConvertLegacyList(session()->config()->gfilesdir(), BBSLIST_MSG, &entries);
+        SaveToJSON(session()->config()->datadir(), BBSLIST_JSON, entries);
       }
       ReadBBSList(entries);
     } break;

@@ -553,7 +553,7 @@ static int load_config_listing(int config) {
     return 0;
   }
 
-  File fileConfig(syscfg.datadir, CONFIG_USR);
+  File fileConfig(session()->config()->datadir(), CONFIG_USR);
 
   if (fileConfig.Exists()) {
     User user;
@@ -590,7 +590,7 @@ static void write_config_listing(int config) {
   session()->users()->ReadUser(&user, config);
   strcpy(config_listing.name, user.GetName());
 
-  File fileUserConfig(syscfg.datadir, CONFIG_USR);
+  File fileUserConfig(session()->config()->datadir(), CONFIG_USR);
   if (!fileUserConfig.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
     return;
   }
@@ -797,7 +797,7 @@ static void check_lp_colors() {
 
 void load_lp_config() {
   if (!lp_config_loaded) {
-    File fileConfig(syscfg.datadir, LISTPLUS_CFG);
+    File fileConfig(session()->config()->datadir(), LISTPLUS_CFG);
     if (!fileConfig.Open(File::modeBinary | File::modeReadOnly)) {
       memset(&lp_config, 0, sizeof(struct listplus_config));
       lp_config.fi = lp_config.lssm = static_cast<long>(time(nullptr));
@@ -841,7 +841,7 @@ void load_lp_config() {
 
 void save_lp_config() {
   if (lp_config_loaded) {
-    File fileConfig(syscfg.datadir, LISTPLUS_CFG);
+    File fileConfig(session()->config()->datadir(), LISTPLUS_CFG);
     if (fileConfig.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite)) {
       fileConfig.Write(&lp_config, sizeof(struct listplus_config));
       fileConfig.Close();

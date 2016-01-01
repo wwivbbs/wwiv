@@ -165,7 +165,7 @@ static bool check_name(const string userName) {
     return false;
   }
 
-  File trashFile(syscfg.gfilesdir, TRASHCAN_TXT);
+  File trashFile(session()->config()->gfilesdir(), TRASHCAN_TXT);
   if (!trashFile.Open(File::modeReadOnly | File::modeBinary)) {
     return true;
   }
@@ -595,7 +595,7 @@ void input_ansistat() {
 }
 
 static int find_new_usernum(const User* pUser, uint32_t* qscn) {
-  File userFile(syscfg.datadir, USER_LST);
+  File userFile(session()->config()->datadir(), USER_LST);
   for (int i = 0; !userFile.IsOpen() && (i < 20); i++) {
     if (!userFile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
       Wait(0.1);
@@ -724,7 +724,7 @@ bool CanCreateNewUserAccountHere() {
     return false;
   }
 
-  if ((syscfg.newuserpw[0] != 0) && (incom)) {
+  if ((syscfg.newuserpw[0] != 0) && incom) {
     bout.nl(2);
     bool ok = false;
     int nPasswordAttempt = 0;
@@ -1519,7 +1519,7 @@ void DoMinimalNewUser() {
 
 
 void new_mail() {
-  File file(syscfg.gfilesdir, (session()->user()->GetSl() > syscfg.newusersl) ? NEWSYSOP_MSG : NEWMAIL_MSG);
+  File file(session()->config()->gfilesdir(), (session()->user()->GetSl() > syscfg.newusersl) ? NEWSYSOP_MSG : NEWMAIL_MSG);
   if (!file.Exists()) {
     return;
   }

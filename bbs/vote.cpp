@@ -35,7 +35,7 @@ static void print_quest(int mapp, int map[21]) {
     bout << "|#5Voting Questions:\r\n\n";
   }
   bool abort = false;
-  File voteFile(syscfg.datadir, VOTING_DAT);
+  File voteFile(session()->config()->datadir(), VOTING_DAT);
   if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
@@ -59,7 +59,7 @@ static void print_quest(int mapp, int map[21]) {
 static bool print_question(int i, int ii) {
   votingrec v;
 
-  File voteFile(syscfg.datadir, VOTING_DAT);
+  File voteFile(session()->config()->datadir(), VOTING_DAT);
   if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return false;
   }
@@ -121,7 +121,7 @@ static void vote_question(int i, int ii) {
   }
 
 
-  File voteFile(syscfg.datadir, VOTING_DAT);
+  File voteFile(session()->config()->datadir(), VOTING_DAT);
   if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
@@ -183,7 +183,7 @@ static void vote_question(int i, int ii) {
 void vote() {
   votingrec v;
 
-  File voteFile(syscfg.datadir, VOTING_DAT);
+  File voteFile(session()->config()->datadir(), VOTING_DAT);
   if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
