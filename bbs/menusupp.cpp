@@ -17,6 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <iomanip>
+#include <iostream>
 #include <memory>
 #include <string>
 
@@ -58,6 +60,7 @@
 #include "bbs/workspace.h"
 #include "bbs/printfile.h"
 #include "bbs/wstatus.h"
+#include "core/os.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
@@ -410,7 +413,24 @@ void WWIVVersion() {
   bout << "|#9Please see |#1http://www.wwivbbs.org/ |#9for more information"
        << wwiv::endl << wwiv::endl;
   bout << "|#9Compile Time  : |#2" << wwiv_date << wwiv::endl;
-  bout << "|#9SysOp Name:   : |#2" << syscfg.sysopname << wwiv::endl;
+  bout << "|#9SysOp Name    : |#2" << syscfg.sysopname << wwiv::endl;
+  bout << "|#9OS            : |#2" << wwiv::os::os_version_string() << wwiv::endl;
+  bout << "|#9Instance      : |#2" << session()->instance_number() << wwiv::endl;
+
+  if (!session()->net_networks.empty()) {
+    std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
+    session()->status_manager()->RefreshStatusCache();
+    bout << wwiv::endl;
+    bout << "|#9Networks:" << wwiv::endl;
+    for (const auto& n : session()->net_networks) {
+      if (!n.sysnum) {
+        continue;
+      }
+      bout << "|#9" << std::setw(14) << std::left << n.name << ":|#2 @" << n.sysnum
+        << " (net" << pStatus->GetNetworkVersion() << ")" << wwiv::endl;
+    }
+  }
+
   bout.nl(3);
   pausescr();
 }
