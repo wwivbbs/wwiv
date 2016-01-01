@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "bbs/bbsovl1.h"
 #include "bbs/conf.h"
@@ -60,6 +61,7 @@ static char s_szFindString[21];
 
 using std::string;
 using std::unique_ptr;
+using std::vector;
 using wwiv::endl;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -160,35 +162,20 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
     if (yesno()) {
       int nNumMsgsSent = 0;
       open_sub(true);
-      int nMsgToValidate = 0;
+      vector<postrec> to_validate;
       for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
-        if (get_post(i)->status & status_pending_net) {
-          nMsgToValidate++;
+        postrec *p4 = get_post(i);
+        if (p4->status & status_pending_net) {
+          to_validate.push_back(*p4);
+          p4->status &= ~status_pending_net;
+          write_post(i, p4);
         }
       }
-      postrec* p3 = static_cast<postrec *>(BbsAllocA(nMsgToValidate * sizeof(postrec)));
-      if (p3) {
-        nMsgToValidate = 0;
-        for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
-          postrec *p4 = get_post(i);
-          if (p4->status & status_pending_net) {
-            p3[nMsgToValidate++] = *p4;
-            p4->status &= ~status_pending_net;
-            write_post(i, p4);
-          }
-        }
 
-        close_sub();
-
-        for (int j = 0; j < nMsgToValidate; j++) {
-          send_net_post(p3 + j, session()->current_sub().filename,
-                        session()->GetCurrentReadMessageArea());
-          nNumMsgsSent++;
-        }
-
-        free(p3);
-      } else {
-        close_sub();
+      close_sub();
+      for (auto p : to_validate) {
+        send_net_post(&p, session()->current_sub().filename, session()->GetCurrentReadMessageArea());
+        nNumMsgsSent++;
       }
 
       bout.nl();
@@ -196,18 +183,19 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
       bout.nl(2);
     }
   }
-  if (!quit && !express) {
-    bout.nl();
-    if (!session()->user()->IsRestrictionPost() &&
-        (session()->user()->GetNumPostsToday() < getslrec(session()->GetEffectiveSl()).posts) &&
-        (session()->GetEffectiveSl() >= session()->current_sub().postsl)) {
-      bout << "|#5Post on " << session()->current_sub().name << "? ";
-      irt[0] = '\0';
-      irt_name[0] = '\0';
-      grab_quotes(nullptr, nullptr);
-      if (yesno()) {
-        post();
-      }
+  bout.nl();
+  if (quit || express) {
+    return;
+  }
+  if (!session()->user()->IsRestrictionPost() &&
+      (session()->user()->GetNumPostsToday() < getslrec(session()->GetEffectiveSl()).posts) &&
+      (session()->GetEffectiveSl() >= session()->current_sub().postsl)) {
+    bout << "|#5Post on " << session()->current_sub().name << "? ";
+    irt[0] = '\0';
+    irt_name[0] = '\0';
+    grab_quotes(nullptr, nullptr);
+    if (yesno()) {
+      post();
     }
   }
   bout.nl();
