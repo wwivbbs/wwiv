@@ -545,7 +545,7 @@ static void swap_subs(int sub1, int sub2) {
 
   int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
-  std::unique_ptr<uint32_t[]> pTempQScan(new uint32_t[syscfg.qscn_len]);
+  std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(syscfg.qscn_len);
   for (int i = 1; i <= nNumUserRecords; i++) {
     int i1, i2;
     read_qscn(i, pTempQScan.get(), true);
@@ -628,7 +628,7 @@ static void insert_sub(int n) {
 
   int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
-  std::unique_ptr<uint32_t[]> pTempQScan(new uint32_t[syscfg.qscn_len]);
+  std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(syscfg.qscn_len);
   uint32_t* pTempQScan_n = &pTempQScan.get()[1];
   uint32_t* pTempQScan_q = pTempQScan_n + (syscfg.max_dirs + 31) / 32;
   uint32_t* pTempQScan_p = pTempQScan_q + (syscfg.max_subs + 31) / 32;
@@ -686,7 +686,7 @@ static void delete_sub(int n) {
   nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
   uint32_t *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m2, m3;
-  std::unique_ptr<uint32_t[]> pTempQScan(new uint32_t[syscfg.qscn_len + 1]);
+  std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(syscfg.qscn_len+1);
   pTempQScan_n = &pTempQScan.get()[1];
   pTempQScan_q = pTempQScan_n + (syscfg.max_dirs + 31) / 32;
   pTempQScan_p = pTempQScan_q + (syscfg.max_subs + 31) / 32;
