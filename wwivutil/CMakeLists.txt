@@ -7,6 +7,8 @@ set(WWIVUTIL_MAIN wwivutil.cpp)
 
 set(COMMAND_SOURCES
   command.cpp
+  fix/fix.cpp
+  fix/users.cpp
   messages/messages.cpp
   net/dump_callout.cpp
   net/dump_contact.cpp

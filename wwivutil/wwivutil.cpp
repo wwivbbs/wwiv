@@ -32,6 +32,7 @@
 #include "sdk/config.h"
 #include "wwivutil/messages/messages.h"
 #include "wwivutil/net/net.h"
+#include "wwivutil/fix/fix.h"
 
 using std::clog;
 using std::cout;
@@ -53,9 +54,13 @@ int main(int argc, char *argv[]) {
     cmdline.add(messages);
     AddCommandsAndArgs(messages);
 
-    UtilCommand* net= new NetCommand();
+    UtilCommand* net = new NetCommand();
     cmdline.add(net);
     AddCommandsAndArgs(net);
+
+    UtilCommand* fix = new FixCommand();
+    cmdline.add(fix);
+    AddCommandsAndArgs(fix);
 
     if (!cmdline.Parse()) { return 1; }
     const std::string bbsdir(cmdline.arg("bbsdir").as_string());
@@ -68,6 +73,7 @@ int main(int argc, char *argv[]) {
         new Configuration(bbsdir, &config));
     messages->set_config(command_config.get());
     net->set_config(command_config.get());
+    fix->set_config(command_config.get());
     return cmdline.Execute();
   } catch (std::exception& e) {
     clog << e.what() << endl;

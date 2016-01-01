@@ -25,6 +25,12 @@
     <Filter Include="Source Files\net">
       <UniqueIdentifier>{5cbd8acd-9537-4c60-9c5d-946d21b5df75}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\fix">
+      <UniqueIdentifier>{4a2cc16c-815a-49fe-bf4b-02f90a9a5192}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\fix">
+      <UniqueIdentifier>{e58aa813-41c9-45c4-b67e-20218d6c2098}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="wwivutil.cpp">
@@ -47,6 +53,12 @@
     </ClCompile>
     <ClCompile Include="messages\messages.cpp">
       <Filter>Source Files\messages</Filter>
+    </ClCompile>
+    <ClCompile Include="fix\fix.cpp">
+      <Filter>Source Files\fix</Filter>
+    </ClCompile>
+    <ClCompile Include="fix\users.cpp">
+      <Filter>Source Files\fix</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -73,6 +85,12 @@
     </ClInclude>
     <ClInclude Include="net\net.h">
       <Filter>Header Files\net</Filter>
+    </ClInclude>
+    <ClInclude Include="fix\fix.h">
+      <Filter>Header Files\fix</Filter>
+    </ClInclude>
+    <ClInclude Include="fix\users.h">
+      <Filter>Header Files\fix</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
