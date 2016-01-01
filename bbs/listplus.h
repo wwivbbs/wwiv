@@ -158,6 +158,5 @@ void view_file(const char *file_name);
 int  lp_try_to_download(const char *file_mask, int dn);
 void download_plus(const char *file_name);
 void request_file(const char *file_name);
-bool ok_listplus();
 
 #endif  // __INCLUDED_LISTPLUS_H__

@@ -139,10 +139,7 @@ int bputch(char c, bool bUseInternalBuffer) {
   } else if (change_color == BPUTCH_LITERAL_PIPE_CODE) {
     change_color = BPUTCH_NO_CODE;
   }
-  if (local_echo) {
-    session()->capture()->global_char(c);
-  }
-  if (outcom && !x_only && c != TAB) {
+  if (outcom && c != TAB) {
     if (!(!okansi() && (ansiptr || c == ESC))) {
       char x = okansi() ? '\xFE' : 'X';
       rputch(local_echo ? c : x, bUseInternalBuffer);
@@ -183,7 +180,7 @@ int bputch(char c, bool bUseInternalBuffer) {
         ++lines_listed;
         // Note: The call to end_tag has moved to listfiles() where it belongs.
         if (lines_listed >= (session()->screenlinest - 1)) {         // change Build3 + 5.0 to fix message read
-          if (session()->user()->HasPause() && !x_only) {
+          if (session()->user()->HasPause()) {
             pausescr();
           }
           lines_listed = 0;   // change Build3
@@ -273,18 +270,12 @@ void execute_ansi() {
       if (args[0] == 2) {
         lines_listed = 0;
         g_flags |= g_flag_ansi_movement;
-        if (x_only) {
-          session()->localIO()->LocalGotoXY(0, 0);
-        } else {
-          session()->localIO()->LocalCls();
-        }
+        session()->localIO()->LocalGotoXY(0, 0);
       }
       break;
     case 'k':
     case 'K':
-      if (!x_only) {
-        session()->localIO()->LocalClrEol();
-      }
+      session()->localIO()->LocalClrEol();
       break;
     case 'm':
       if (!argptr) {

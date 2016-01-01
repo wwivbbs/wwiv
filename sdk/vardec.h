@@ -1005,7 +1005,7 @@ struct filestatusrec {
 #define OP_FLAGS_SHOW_HIER                0x00000020
 #define OP_FLAGS_IDZ_DESC                 0x00000040
 #define OP_FLAGS_SETLDATE                 0x00000080
-#define OP_FLAGS_SLASH_SZ                 0x00000200
+#define OP_FLAGS_UNUSED_1                 0x00000200
 #define OP_FLAGS_READ_CD_IDZ              0x00000400
 #define OP_FLAGS_FSED_EXT_DESC            0x00000800
 #define OP_FLAGS_FAST_TAG_RELIST          0x00001000
@@ -1024,9 +1024,9 @@ struct filestatusrec {
 #define OP_FLAGS_EXTRA_COLOR              0x02000000
 #define OP_FLAGS_USE_FORCESCAN            0x04000000
 #define OP_FLAGS_NEWUSER_MIN              0x08000000
-#define OP_FLAGS_UNUSED_1                 0x10000000
-#define OP_FLAGS_UNUSED_2                 0x20000000
-#define OP_FLAGS_UNUSED_3                 0x40000000
+#define OP_FLAGS_UNUSED_2                 0x10000000
+#define OP_FLAGS_UNUSED_3                 0x20000000
+#define OP_FLAGS_UNUSED_4                 0x40000000
 #define OP_FLAGS_ADV_ASV                  0x80000000
 
 // QUICK REFERNCE TO FIND USER INPUT_MODE_PHONE NUMBER

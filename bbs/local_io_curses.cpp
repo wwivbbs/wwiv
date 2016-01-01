@@ -150,20 +150,6 @@ void CursesLocalIO::LocalPutchRaw(unsigned char ch) {
 }
 
 void CursesLocalIO::LocalPutch(unsigned char ch) {
-  if (x_only) {
-    int wx = capture_->wx();
-    if (ch > 31) {
-      wx = (wx + 1) % 80;
-    } else if (ch == RETURN || ch == CL) {
-      wx = 0;
-    } else if (ch == BACKSPACE) {
-      if (wx) {
-        wx--;
-      }
-    }
-    capture_->set_wx(wx);
-    return;
-  }
   if (ch > 31) {
     LocalPutchRaw(ch);
   } else if (ch == CM) {
@@ -258,7 +244,7 @@ void CursesLocalIO::skey(char ch) {
         OnlineUserEditor();
         break;
       case SF1:                          /* Shift-F1 */
-        capture_->set_global_handle(!capture_->is_open());
+        // Nothing
         session()->UpdateTopScreen();
         break;
       case CF1:                          /* Ctrl-F1 */

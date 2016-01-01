@@ -59,7 +59,7 @@ constexpr int INI_STR_SHOW_HIER = 40;
 constexpr int INI_STR_IDZ_DESC = 41;
 constexpr int INI_STR_SETLDATE = 42;
 //constexpr int INI_STR_NEW_CHATSOUND = 43;
-constexpr int INI_STR_SLASH_SZ = 44;
+//constexpr int INI_STR_SLASH_SZ = 44;
 constexpr int INI_STR_READ_CD_IDZ = 45;
 constexpr int INI_STR_FSED_EXT_DESC = 46;
 constexpr int INI_STR_FAST_TAG_RELIST = 47;
@@ -178,7 +178,7 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "IDZ_DESC",
   "SETLDATE",
   "NEW_CHATSOUND",
-  "SLASH_SZ",
+  "",
   "READ_CD_IDZ",              // 45
   "FSED_EXT_DESC",
   "FAST_TAG_RELIST",

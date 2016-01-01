@@ -93,9 +93,6 @@ char bgetch() {
     }
     return quotes_ind[cpointer++];
   }
-  if (x_only) {
-    return 0;
-  }
 
   if (charbufferpointer) {
     if (!charbuffer[charbufferpointer]) {
@@ -248,10 +245,6 @@ bool bkbhitraw() {
 }
 
 bool bkbhit() {
-  if (x_only) {
-    return false;
-  }
-
   if ((session()->localIO()->LocalKeyPressed() || (incom && bkbhitraw()) ||
        (charbufferpointer && charbuffer[charbufferpointer])) ||
       bquote) {

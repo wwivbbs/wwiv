@@ -439,14 +439,6 @@ ChatRoom
 
   Go into the multiuser chat room
 
-DownloadPosts
-
-  Download all new posts in a text file
-
-DownloadFileList
-
-  Download the file list in a text file
-
 ClearQScan
 
   Makes all message unread???

@@ -389,7 +389,7 @@ static bool check_for_files(const char *file_name) {
   return 0;
 }
 
-bool download_temp_arc(const char *file_name, bool count_against_xfer_ratio) {
+static bool download_temp_arc(const char *file_name, bool count_against_xfer_ratio) {
   bout << "Downloading " << file_name << "." << session()->arcs[ARC_NUMBER].extension << ":\r\n\r\n";
   if (count_against_xfer_ratio && !ratio_ok()) {
     bout << "Ratio too low.\r\n";

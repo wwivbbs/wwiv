@@ -528,59 +528,16 @@ void Packers() {
     bout.nl();
     bout << "|#2Message Packet Options:\r\n";
     bout.nl();
-    if (session()->internal_qwk_enabled()) {
-      bout << "|#9[|#2I|#9] Internal WWIV QWK\r\n";
-    }
-    if (session()->wwivmail_enabled()) {
-      bout << "|#9[|#2W|#9] WWIVMail/QWK\r\n";
-    }
-    bout << "|#9[|#2Z|#9] Zipped ASCII Text\r\n";
     bout << "|#9[|#2C|#9] Configure Sub Scan\r\n";
+    bout << "|#9[|#2I|#9] Internal WWIV QWK\r\n";
     bout << "|#9[|#2Q|#9] Quit back to BBS!\r\n";
     bout.nl();
     bout << "|#9Choice : ";
     char ch = onek("WIZCQ\r ");
     switch (ch) {
-    case 'W': {
-      if (session()->wwivmail_enabled()) {
-        // We used to write STATUS_DAT here.  I don't think we need to anymore.
-        session()->localIO()->set_protect(0);
-        sysoplog("@ Ran WWIVMail/QWK");
-        string chain_file = create_chain_file();
-        string command_line = wwiv::strings::StringPrintf("wwivqwk %s", chain_file.c_str());
-        ExecuteExternalProgram(command_line, EFLAG_FOSSIL);
-        return;
-      }
-    }
     case 'I':
-      if (session()->internal_qwk_enabled()) {
-        qwk_menu();
-      }
+      qwk_menu();
       break;
-    case 'Z':
-      // TODO(rushfan): Merge this with the code in DownloadPosts
-      bout << "|#5This could take quite a while.  Are you sure? ";
-      if (yesno()) {
-        TempDisablePause disable_pause;
-        SaveQScanPointers save_qscan;
-        bout << "\r\nPlease wait...\r\n";
-        session()->capture()->set_x_only(true, "posts.txt", false);
-        bool ac = false;
-        if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
-          ac = true;
-        }
-        nscan();
-        session()->capture()->set_x_only(false, nullptr, false);
-        add_arc("offline", "posts.txt", 0);
-        bool sent = download_temp_arc("offline", false);
-        if (!sent) {
-          // If the file was not downloaded, restore the old qscan pointers.
-          save_qscan.restore();
-        }
-      } else {
-        bout << "|#6Aborted.\r\n";
-      }
-      return;
     case 'C':
       bout.cls();
       config_qscan();

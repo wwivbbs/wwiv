@@ -89,17 +89,10 @@ void pausescr() {
   double ttotal;
   time_t tstart, tstop;
 
-  if (x_only) {
-    return;
-  }
-
   nsp = 0;
-
   int oiia = setiia(0);
-
   char* ss = str_pause;
   int i2 = i1 = strlen(ss);
-
   bool com_freeze = incom;
 
   if (!incom && outcom) {

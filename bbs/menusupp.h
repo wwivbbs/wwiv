@@ -89,8 +89,6 @@ void InternetEmail();
 void NewMsgScanFromHere();
 void ValidateScan();
 void ChatRoom();
-void DownloadPosts();
-void DownloadFileList();
 void ClearQScan();
 void FastGoodBye();
 void NewFilesAllConfs();

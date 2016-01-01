@@ -690,42 +690,6 @@ void ChatRoom() {
   chat_room();
 }
 
-void DownloadPosts() {
-  if (session()->HasConfigFlag(OP_FLAGS_SLASH_SZ)) {
-    bout << "|#5This could take quite a while.  Are you sure? ";
-    if (yesno()) {
-      bout << "Please wait...\r\n";
-      session()->capture()->set_x_only(true, "posts.txt", false);
-      bool ac = false;
-      if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
-        ac = true;
-        tmp_disable_conf(true);
-      }
-      nscan();
-      if (ac) {
-        tmp_disable_conf(false);
-      }
-      session()->capture()->set_x_only(false, nullptr, false);
-      add_arc("offline", "posts.txt", 0);
-      download_temp_arc("offline", false);
-    }
-  }
-}
-
-void DownloadFileList() {
-  if (session()->HasConfigFlag(OP_FLAGS_SLASH_SZ)) {
-    bout << "|#5This could take quite a while.  Are you sure? ";
-    if (yesno()) {
-      bout << "Please wait...\r\n";
-      session()->capture()->set_x_only(1, "files.txt", true);
-      searchall();
-      session()->capture()->set_x_only(false, nullptr, false);
-      add_arc("temp", "files.txt", 0);
-      download_temp_arc("temp", false);
-    }
-  }
-}
-
 void ClearQScan() {
   bout.nl();
   bout << "|#5Mark messages as read on [C]urrent sub or [A]ll subs (A/C/Q)? ";
@@ -988,7 +952,7 @@ void JumpDirConf() {
 }
 
 void ConfigFileList() {
-  if (ok_listplus()) {
+  if (okansi()) {
     config_file_list();
   }
 }
