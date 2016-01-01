@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.x                              */
-/*             Copyright (C)2015-2016 WWIV Software Services              */
+/*                              WWIV Version 5.x                          */
+/*             Copyright (C)1998-2016, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,54 +14,26 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
+/*                                                                        */
 /**************************************************************************/
-#include "wwivutil/fix/fix.h"
+#ifndef __INCLUDED_WWIVUTIL_FIX_DIRS_H__
+#define __INCLUDED_WWIVUTIL_FIX_DIRS_H__
 
-#include <cstdio>
-#include <iomanip>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
 #include "core/command_line.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "sdk/config.h"
-#include "sdk/net.h"
-#include "sdk/networks.h"
-#include "wwivutil/fix/dirs.h"
-#include "wwivutil/fix/users.h"
-
-using std::cerr;
-using std::clog;
-using std::cout;
-using std::endl;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
-using wwiv::core::BooleanCommandLineArgument;
-using namespace wwiv::sdk;
+#include "wwivutil/command.h"
 
 namespace wwiv {
 namespace wwivutil {
 
-bool FixCommand::AddSubCommands() {
-  //DumpPacketCommand* dump_packet = new DumpPacketCommand();
-  //add(dump_packet);
-  //AddCommandsAndArgs(dump_packet);
-
-  FixUsersCommand* fix_users = new FixUsersCommand();
-  add(fix_users);
-  AddCommandsAndArgs(fix_users);
-
-  FixDirectoriesCommand* fix_dirs = new FixDirectoriesCommand();
-  add(fix_dirs);
-  AddCommandsAndArgs(fix_dirs);
-
-  return true;
-}
-
+class FixDirectoriesCommand final: public UtilCommand {
+public:
+  FixDirectoriesCommand()
+    : UtilCommand("dirs", "Fix File Directories.") {}
+  virtual int Execute() override final;
+  virtual bool AddSubCommands() override final;
+};
 
 }  // namespace wwivutil
 }  // namespace wwiv
+
+#endif  // __INCLUDED_WWIVUTIL_FIX_DIRS_H__ 

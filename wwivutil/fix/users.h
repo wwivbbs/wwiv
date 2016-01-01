@@ -23,7 +23,6 @@
 #include <string>
 
 #include "core/command_line.h"
-#include "sdk/callout.h"
 #include "wwivutil/command.h"
 
 namespace wwiv {

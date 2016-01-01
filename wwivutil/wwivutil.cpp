@@ -26,7 +26,9 @@
 #include <vector>
 
 #include "core/command_line.h"
+#include "core/log.h"
 #include "core/file.h"
+#include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/stl.h"
 #include "sdk/config.h"
@@ -47,6 +49,8 @@ using namespace wwiv::wwivutil;
 
 int main(int argc, char *argv[]) {
   try {
+    Logger::Init(argc, argv);
+    ScopeExit at_exit(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "network_number");
     cmdline.AddStandardArgs();
 
@@ -66,7 +70,7 @@ int main(int argc, char *argv[]) {
     const std::string bbsdir(cmdline.arg("bbsdir").as_string());
     Config config(bbsdir);
     if (!config.IsInitialized()) {
-      clog << "Unable to load CONFIG.DAT.";
+      LOG << "Unable to load CONFIG.DAT.";
       return 1;
     }
     std::unique_ptr<Configuration> command_config(
@@ -76,7 +80,7 @@ int main(int argc, char *argv[]) {
     fix->set_config(command_config.get());
     return cmdline.Execute();
   } catch (std::exception& e) {
-    clog << e.what() << endl;
+    LOG << e.what();
   }
   return 1;
 }

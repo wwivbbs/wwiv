@@ -7,6 +7,7 @@ set(WWIVUTIL_MAIN wwivutil.cpp)
 
 set(COMMAND_SOURCES
   command.cpp
+  fix/dirs.cpp
   fix/fix.cpp
   fix/users.cpp
   messages/messages.cpp

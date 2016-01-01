@@ -83,6 +83,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="command.cpp" />
+    <ClCompile Include="fix\dirs.cpp" />
     <ClCompile Include="fix\fix.cpp" />
     <ClCompile Include="fix\users.cpp" />
     <ClCompile Include="messages\messages.cpp" />
@@ -94,6 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="command.h" />
+    <ClInclude Include="fix\dirs.h" />
     <ClInclude Include="fix\fix.h" />
     <ClInclude Include="fix\users.h" />
     <ClInclude Include="messages\messages.h" />
