@@ -107,7 +107,7 @@ void move_file() {
       } while ((!hangup) && (ss[0] == '?'));
       d1 = -1;
       if (ss[0]) {
-        for (int i1 = 0; (i1 < session()->directories.size()) && (udir[i1].subnum != -1); i1++) {
+        for (size_t i1 = 0; (i1 < session()->directories.size()) && (udir[i1].subnum != -1); i1++) {
           if (wwiv::strings::IsEquals(udir[i1].keys, ss)) {
             d1 = i1;
           }
@@ -292,7 +292,7 @@ void sortdir(int directory_num, int type) {
 
 void sort_all(int type) {
   tmp_disable_conf(true);
-  for (int i = 0; (i < session()->directories.size()) && (udir[i].subnum != -1) &&
+  for (size_t i = 0; (i < session()->directories.size()) && (udir[i].subnum != -1) &&
        (!session()->localIO()->LocalKeyPressed()); i++) {
     bout << "\r\n|#1Sorting " << session()->directories[udir[i].subnum].name << wwiv::endl;
     sortdir(i, type);
@@ -732,7 +732,7 @@ bool uploadall(int directory_num) {
 
 void relist() {
   char s[85], s1[40], s2[81];
-  int i, i1;
+  int i;
   bool next, abort = 0;
   int tcd = -1, otag, tcdi;
 
@@ -768,7 +768,7 @@ void relist() {
         }
         tcd = filelist[i].directory;
         tcdi = -1;
-        for (i1 = 0; i1 < session()->directories.size(); i1++) {
+        for (size_t i1 = 0; i1 < session()->directories.size(); i1++) {
           if (udir[i1].subnum == tcd) {
             tcdi = i1;
             break;
@@ -825,7 +825,8 @@ void relist() {
         }
       }
     }
-    for (i1 = 0; i1 < 5 - wwiv::strings::GetStringLength(s1); i1++) {
+    size_t i1 = 0;
+    for (; i1 < 5 - strlen(s1); i1++) {
       s[i1] = SPACE;
     }
     s[i1] = 0;
@@ -839,7 +840,7 @@ void relist() {
     osan((okansi() ? "\xBA" : "|"), &abort, &next);
     sprintf(s1, "%d", filelist[i].u.numdloads);
 
-    for (i1 = 0; i1 < 4 - wwiv::strings::GetStringLength(s1); i1++) {
+    for (i1 = 0; i1 < 4 - strlen(s1); i1++) {
       s[i1] = SPACE;
     }
     s[i1] = 0;
@@ -1073,14 +1074,13 @@ bool is_uploadable(const char *file_name) {
 }
 
 void l_config_nscan() {
-  int i, i1;
   char s[81], s2[81];
 
   bool abort = false;
   bout.nl();
   bout << "|#9Directories to new-scan marked with '|#2*|#9'\r\n\n";
-  for (i = 0; (i < session()->directories.size()) && (udir[i].subnum != -1) && (!abort); i++) {
-    i1 = udir[i].subnum;
+  for (size_t i = 0; (i < session()->directories.size()) && (udir[i].subnum != -1) && (!abort); i++) {
+    size_t i1 = udir[i].subnum;
     if (qsc_n[i1 / 32] & (1L << (i1 % 32))) {
       strcpy(s, "* ");
     } else {
@@ -1094,7 +1094,7 @@ void l_config_nscan() {
 
 void config_nscan() {
   char *s, s1[MAX_CONFERENCES + 2], s2[120], ch;
-  int i, i1, oc, os;
+  int i1, oc, os;
   bool abort = false;
   bool done, done1;
 
@@ -1114,8 +1114,8 @@ void config_nscan() {
       strcpy(s1, " ");
       bout.nl();
       bout << "Select Conference: \r\n\n";
-      i = 0;
-      while ((i < dirconfnum) && (uconfdir[i].confnum != -1) && (!abort)) {
+      size_t i = 0;
+      while (i < static_cast<size_t>(dirconfnum) && uconfdir[i].confnum != -1 && !abort) {
         sprintf(s2, "%c) %s", dirconfs[uconfdir[i].confnum].designator,
                 stripcolors(reinterpret_cast<char*>(dirconfs[uconfdir[i].confnum].name)));
         pla(s2, &abort);
@@ -1135,11 +1135,11 @@ void config_nscan() {
       break;
     default:
       if (okconf(session()->user()) && dirconfnum > 1) {
-        i = 0;
-        while ((ch != dirconfs[uconfdir[i].confnum].designator) && (i < static_cast<int>(dirconfnum))) {
+        size_t i = 0;
+        while ((ch != dirconfs[uconfdir[i].confnum].designator) && (i < static_cast<size_t>(dirconfnum))) {
           i++;
         }
-        if (i >= static_cast<int>(dirconfnum)) {
+        if (i >= static_cast<size_t>(dirconfnum)) {
           break;
         }
 
@@ -1152,7 +1152,7 @@ void config_nscan() {
         bout << "|#9Enter directory number (|#1C=Clr All, Q=Quit, S=Set All|#9): |#0";
         s = mmkey(1);
         if (s[0]) {
-          for (i = 0; i < session()->directories.size(); i++) {
+          for (size_t i = 0; i < session()->directories.size(); i++) {
             i1 = udir[i].subnum;
             if (wwiv::strings::IsEquals(udir[i].keys, s)) {
               qsc_n[i1 / 32] ^= 1L << (i1 % 32);
@@ -1240,7 +1240,7 @@ void xfer_defaults() {
 
 void finddescription() {
   uploadsrec u;
-  int i, i1, i2, pts, count, color;
+  int i2, pts, count, color;
   char s[81], s1[81];
 
   if (okansi()) {
@@ -1271,9 +1271,9 @@ void finddescription() {
   color = 3;
   bout << "\r|#2Searching ";
   lines_listed = 0;
-  for (i = 0; (i < session()->directories.size()) && (!abort) && (!hangup) && (session()->tagging != 0)
+  for (size_t i = 0; (i < session()->directories.size()) && (!abort) && (!hangup) && (session()->tagging != 0)
        && (udir[i].subnum != -1); i++) {
-    i1 = udir[i].subnum;
+    size_t i1 = udir[i].subnum;
     pts = 0;
     session()->titled = 1;
     if (qsc_n[i1 / 32] & (1L << (i1 % 32))) {
@@ -1299,7 +1299,8 @@ void finddescription() {
       dliscan();
       File fileDownload(g_szDownloadFileName);
       fileDownload.Open(File::modeBinary | File::modeReadOnly);
-      for (i1 = 1; (i1 <= session()->numf) && (!abort) && (!hangup) && (session()->tagging != 0); i1++) {
+      for (i1 = 1; i1 <= static_cast<size_t>(session()->numf) 
+           && !abort && !hangup && session()->tagging != 0; i1++) {
         FileAreaSetRecord(fileDownload, i1);
         fileDownload.Read(&u, sizeof(uploadsrec));
         strcpy(s, u.description);

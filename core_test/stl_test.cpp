@@ -73,10 +73,8 @@ TEST(StlTest, Contains_MapConstStringStrings) {
   EXPECT_FALSE(contains(strings, "zero"));
 }
 
-TEST(StlTest, Dummy) {
-  map<const string, string> strings = {{"one", "1"},{"two", "2"},{"three", "3"}};
-  strings.erase("4");
-  strings["one"] = "one";
-  EXPECT_TRUE(strings["one"] == string("one")) << strings.at("one");
-  EXPECT_FALSE(contains(strings, "zero"));
+TEST(StlTest, SizeAsInt) {
+  vector<int> v = {1, 2, 3};
+  auto vs = wwiv::stl::size(v);
+  EXPECT_TRUE(3, vs);
 }

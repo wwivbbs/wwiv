@@ -880,7 +880,7 @@ void nscanall() {
   int count       = 0;
   int color       = 3;
   bout << "\r" << "|#2Searching ";
-  for (int i = 0; i < session()->directories.size() && !abort && udir[i].subnum != -1 &&
+  for (size_t i = 0; i < session()->directories.size() && !abort && udir[i].subnum != -1 &&
        session()->tagging != 0; i++) {
     count++;
     bout << "|#" << color << ".";
@@ -936,7 +936,7 @@ void searchall() {
   lines_listed = 0;
   int count = 0;
   int color = 3;
-  for (int i = 0; i < session()->directories.size() && !abort && !hangup && session()->tagging
+  for (size_t i = 0; i < session()->directories.size() && !abort && !hangup && session()->tagging
        && udir[i].subnum != -1; i++) {
     int nDirNum = udir[i].subnum;
     bool bIsDirMarked = false;

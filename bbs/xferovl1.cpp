@@ -310,7 +310,7 @@ int read_idz_all() {
   tmp_disable_conf(true);
   TempDisablePause disable_pause;
   session()->ClearTopScreenProtection();
-  for (int i = 0; (i < session()->directories.size()) && (udir[i].subnum != -1) &&
+  for (size_t i = 0; (i < session()->directories.size()) && (udir[i].subnum != -1) &&
        (!session()->localIO()->LocalKeyPressed()); i++) {
     count += read_idz(0, i);
   }
@@ -475,7 +475,7 @@ void tag_it() {
 
 
 void tag_files() {
-  int i, i1, i2;
+  int i, i1;
   char s[255], s1[255], s2[81], ch;
   bool had = false;
   double d;
@@ -544,6 +544,7 @@ void tag_files() {
       if (s[0] && i >= 0 && i < session()->tagptr) {
         d = XFER_TIME(filelist[i].u.numbytes);
         bout.nl();
+        size_t i2;
         for (i2 = 0; i2 < session()->directories.size(); i2++) {
           if (udir[i2].subnum == filelist[i].directory) {
             break;
@@ -821,7 +822,7 @@ void download() {
   char ch, s[81], s1[81];
   int i = 0, color = 0, count;
   bool ok = true;
-  int dn, ip, rtn = 0, useconf;
+  int ip, rtn = 0, useconf;
   bool done = false;
 
   returning = false;
@@ -874,7 +875,8 @@ void download() {
             sprintf(s1, "%3d %s", session()->numbatch + 1, s);
             bout.Color(1);
             bout << s1;
-            foundany = dn = 0;
+            foundany = 0;
+            size_t dn = 0;
             while ((dn < session()->directories.size()) && (udir[dn].subnum != -1)) {
               count++;
               bout << "|#" << color;
@@ -1229,7 +1231,7 @@ void removenotthere() {
   bout.nl();
   bout << "|#5Remove N/A files in all session()->directories? ";
   if (yesno()) {
-    for (int i = 0; ((i < session()->directories.size()) && (udir[i].subnum != -1) &&
+    for (size_t i = 0; ((i < session()->directories.size()) && (udir[i].subnum != -1) &&
                      (!session()->localIO()->LocalKeyPressed())); i++) {
       bout.nl();
       bout << "|#1Removing N/A|#0 in " << session()->directories[udir[i].subnum].name;
