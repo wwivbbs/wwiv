@@ -155,8 +155,7 @@ void upload_post() {
 void send_email() {
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
   bout << "\r\n\n|#9Enter user name or number:\r\n:";
-  string username;
-  input(&username, 75, true);
+  string username = input(75, true);
   irt[0] = '\0';
   irt_name[0] = '\0';
   string::size_type atpos = username.find_first_of("@");
@@ -280,8 +279,7 @@ void feedback(bool bNewUserFeedback) {
 void text_edit() {
   bout.nl();
   bout << "|#9Enter Filename: ";
-  string filename;
-  input(&filename, 12, true);
+  string filename = input(12, true);
   if (filename.find(".log") != string::npos || !okfn(filename)) {
     return;
   }

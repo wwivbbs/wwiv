@@ -547,9 +547,8 @@ void email(const string& title, int user_number, int system_number, bool forceit
       carbon_copy[nNumUsers].net_num = session()->net_num();
       nNumUsers++;
       do {
-        string emailAddress;
         bout << "|#9Enter Address (blank to end) : ";
-        input(&emailAddress, 75);
+        string emailAddress = input(75);
         if (emailAddress.empty()) {
           done = true;
           break;

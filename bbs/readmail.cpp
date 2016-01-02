@@ -564,7 +564,7 @@ void readmail(int mode) {
         nFromUser = m.fromuser;
       }
       if (!abort) {
-        read_message1(&m.msg, (m.anony & 0x0f), (i) ? true : false, &next, "email", nFromSystem, nFromUser);
+        read_type2_message(&m.msg, (m.anony & 0x0f), (i) ? true : false, &next, "email", nFromSystem, nFromUser);
         if (!(m.status & status_seen)) {
           read_same_email(mloc, mw, curmail, &m, 0, status_seen);
         }
@@ -1173,8 +1173,7 @@ void readmail(int mode) {
           break;
         }
         bout << "\r\n|#2Filename: ";
-        string fileName;
-        input(&fileName, 50);
+        string fileName = input(50);
         if (!fileName.empty()) {
           bout.nl();
           bout << "|#5Allow editing? ";
@@ -1190,11 +1189,10 @@ void readmail(int mode) {
       break;
       case 'Y':   // Add from here
         if (curmail >= 0) {
-          string downloadFileName;
           string b;
           readfile(&(m.msg), "email", &b);
           bout << "E-mail download -\r\n\n|#2Filename: ";
-          input(&downloadFileName, 12);
+          string downloadFileName = input(12);
           if (!okfn(downloadFileName.c_str())) {
             break;
           }

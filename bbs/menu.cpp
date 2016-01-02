@@ -415,8 +415,7 @@ void ConfigUserMenuSet() {
       ListMenuDirs();
       bout.nl(2);
       bout << "|#9Enter the menu set to use : ";
-      string menuSetName;
-      inputl(&menuSetName, 8);
+      string menuSetName = inputl(8);
       if (ValidateMenuSet(menuSetName.c_str())) {
         wwiv::menus::MenuDescriptions descriptions(GetMenuDirectory());
         bout.nl();
@@ -545,8 +544,7 @@ const string GetCommand(const MenuInstanceData* menu_data) {
       return string(mmkey(2));
     }
   } else {
-    string text;
-    input(&text, 50);
+    string text = input(50);
     return string(text);
   }
 }

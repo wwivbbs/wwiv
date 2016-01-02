@@ -234,8 +234,7 @@ void do_chains() {
       ss = mmkey(2);
       nChainum = atoi(ss);
     } else {
-      string chain_number;
-      input(&chain_number, 3);
+      string chain_number = input(3);
       nChainum = atoi(chain_number.c_str());
     }
     if (nChainum > 0 && nChainum <= mapp) {

@@ -741,8 +741,7 @@ int batchdl(int mode) {
     case 'R': {
       bout.nl();
       bout << "|#9Remove which? ";
-      string s;
-      input(&s, 4);
+      string s = input(4);
       int i = atoi(s.c_str());
       if ((i > 0) && (i <= session()->numbatch)) {
         didnt_upload(i - 1);

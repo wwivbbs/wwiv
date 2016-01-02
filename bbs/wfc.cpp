@@ -337,7 +337,6 @@ void ControlCenter::UpdateLog() {
 #if !defined ( __unix__ )
 
 // Local Functions
-void DisplayWFCScreen(const char *buffer);
 static char* pszScreenBuffer = nullptr;
 
 static int inst_num;
@@ -415,7 +414,7 @@ void wfc_screen() {
       }
       wfcFile.Read(pszScreenBuffer, 4000);
     }
-    DisplayWFCScreen(pszScreenBuffer);
+    session()->localIO()->LocalWriteScreenBuffer(pszScreenBuffer);
     sprintf(szBuffer, "Activity and Statistics of %s Node %d", syscfg.systemname, session()->instance_number());
     session()->localIO()->LocalXYAPrintf(1 + ((76 - strlen(szBuffer)) / 2), 4, 15, szBuffer);
     session()->localIO()->LocalXYAPrintf(8, 1, 14, fulldate());
@@ -483,10 +482,6 @@ void wfc_screen() {
       }
     }
   }
-}
-
-void DisplayWFCScreen(const char *screenBuffer) {
-  session()->localIO()->LocalWriteScreenBuffer(screenBuffer);
 }
 
 #endif // __unix__

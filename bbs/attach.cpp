@@ -347,7 +347,7 @@ void attach_file(int mode) {
           bout.nl(2);
           bout << "Title: " << m.title;
           bool next;
-          read_message1(&m.msg, static_cast<char>(m.anony & 0x0f), false, &next, "email", 0, 0);
+          read_type2_message(&m.msg, static_cast<char>(m.anony & 0x0f), false, &next, "email", 0, 0);
           if (m.status & status_file) {
             File fileAttach(session()->config()->datadir(), ATTACH_DAT);
             if (fileAttach.Open(File::modeReadOnly | File::modeBinary)) {

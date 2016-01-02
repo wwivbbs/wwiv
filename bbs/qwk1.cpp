@@ -1061,8 +1061,7 @@ void qwk_sysop() {
       bout.Color(1);
       bout.bprintf("Enter max messages per packet, 0=No Max: ");
       bout.mpl(5);
-      string tmp;
-      input(&tmp, 5);
+      string tmp = input(5);
       qwk_cfg.max_msgs = static_cast<uint16_t>(atoi(tmp.c_str()));
     } break;
     case '6':

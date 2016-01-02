@@ -123,19 +123,20 @@ static void AddBBSListLine(const string bbsListLine) {
 
 static void AddBBSListEntryImpl() {
   bout << "\r\nPlease enter phone number:\r\n ###-###-####\r\n:";
-  string bbsPhoneNumber;
-  input(&bbsPhoneNumber, 12, true);
+  string bbsPhoneNumber = input(12, true);
+  string bbsName;
+  string bbsSpeed;
+  string bbsType;
   if (IsBBSPhoneNumberValid(bbsPhoneNumber.c_str())) {
     if (IsBBSPhoneNumberUnique(bbsPhoneNumber.c_str())) {
-      string bbsName, bbsSpeed, bbsType;
       bout << "|#3This number can be added! It is not yet in BBS list.\r\n\n\n"
                          << "|#7Enter the BBS name and comments about it (incl. V.32/HST) :\r\n:";
-      inputl(&bbsName, 50, true);
+      bbsName = inputl(50, true);
       bout << "\r\n|#7Enter maximum speed of the BBS:\r\n"
                          << "|#7(|#1example: 14.4,28.8, 33.6, 56k|#7)\r\n:";
-      input(&bbsSpeed, 4, true);
+      bbsSpeed = input(4, true);
       bout << "\r\n|#7Enter BBS type (ie, |#1WWIV|#7):\r\n:";
-      input(&bbsType, 4, true);
+      bbsType = input(4, true);
 
       char szBbsListLine[ 255 ];
       snprintf(szBbsListLine, sizeof(szBbsListLine), "%12s  %-50s  [%4s] (%4s)\r\n",
@@ -171,8 +172,7 @@ static void AddBBSListEntry() {
 static void DeleteBBSListEntry() {
   bout << "\r\n|#7Please enter phone number in the following format:\r\n";
   bout << "|#1 ###-###-####\r\n:";
-  string bbsPhoneNumber;
-  input(&bbsPhoneNumber, 12, true);
+  string bbsPhoneNumber = input(12, true);
   if (bbsPhoneNumber.length() != 12 || bbsPhoneNumber[3] != '-' || bbsPhoneNumber[7] != '-') {
     bout << "\r\n|#6Error: Please enter number in correct format.\r\n";
     return;

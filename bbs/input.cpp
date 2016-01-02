@@ -202,10 +202,10 @@ void input(char *out_text, int max_length, bool auto_mpl) {
 }
 
 // This will input an upper-case string
-void input(string* out_text, int max_length, bool auto_mpl) {
-  char szTempBuffer[ 255 ];
-  input(szTempBuffer, max_length, auto_mpl);
-  out_text->assign(szTempBuffer);
+string input(int max_length, bool auto_mpl) {
+  std::unique_ptr<char[]> line = std::make_unique<char[]>(max_length + 1);
+  input(line.get(), max_length, auto_mpl);
+  return string(line.get());
 }
 
 // This will input an upper or lowercase string of characters
@@ -214,22 +214,20 @@ void inputl(char *out_text, int max_length, bool auto_mpl) {
 }
 
 // This will input an upper or lowercase string of characters
-void inputl(string* out_text, int max_length, bool auto_mpl) {
-  char szTempBuffer[ 255 ];
-  WWIV_ASSERT(max_length < sizeof(szTempBuffer));
-  inputl(szTempBuffer, max_length, auto_mpl);
-  out_text->assign(szTempBuffer);
+std::string inputl(int max_length, bool auto_mpl) {
+  std::unique_ptr<char[]> line = std::make_unique<char[]>(max_length + 1);
+  inputl(line.get(), max_length, auto_mpl);
+  return string(line.get());
 }
 
 std::string input_password(const string& prompt_text, int max_length) {
   bout << prompt_text;
   local_echo = false;
 
-  char szEnteredPassword[255];
-  WWIV_ASSERT(max_length < sizeof(szEnteredPassword));
+  std::unique_ptr<char[]> line = std::make_unique<char[]>(max_length + 1);
 
-  input1(szEnteredPassword, max_length, InputMode::UPPER, true, false);
-  return string(szEnteredPassword);
+  input1(line.get(), max_length, InputMode::UPPER, true, false);
+  return string(line.get());
 }
 
 // TODO(rushfan): Make this a WWIV ini setting.
@@ -471,10 +469,8 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
 }
 
 string Input1(const string& orig_text, int max_length, bool bInsert, InputMode mode) {
-  char szTempBuffer[255];
-  WWIV_ASSERT(max_length < sizeof(szTempBuffer));
-
-  Input1(szTempBuffer, orig_text, max_length, bInsert, mode);
-  return string(szTempBuffer);
+  std::unique_ptr<char[]> line = std::make_unique<char[]>(max_length + 1);
+  Input1(line.get(), orig_text, max_length, bInsert, mode);
+  return string(line.get());
 }
 

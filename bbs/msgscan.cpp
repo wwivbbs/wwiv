@@ -769,8 +769,7 @@ void HandleMessageDownload(int nMessageNumber) {
     readfile(&(get_post(nMessageNumber)->msg), (session()->current_sub().filename), &b);
     bout << "|#1Message Download -\r\n\n";
     bout << "|#2Filename to use? ";
-    string filename;
-    input(&filename, 12);
+    string filename = input(12);
     if (!okfn(filename)) {
       return;
     }

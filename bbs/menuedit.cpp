@@ -104,13 +104,11 @@ static bool EditHeader(MenuHeader* header, File &fileEditMenu, const string& men
     ReadMenuRec(fileEditMenu, (MenuRec*) header, nCur);
     break;
   case '0': {
-    wwiv::menus::MenuDescriptions descriptions(GetMenuDirectory());
-    string description = descriptions.description(menuDir);
-
     bout << "|#5New desc     : ";
     bout.Color(0);
-    inputl(&description, 60);
+    string description = inputl(60);
     if (!description.empty()) {
+      wwiv::menus::MenuDescriptions descriptions(GetMenuDirectory());
       descriptions.set_description(menuDir, description);
     }
   } break;
@@ -206,8 +204,7 @@ static bool EditHeader(MenuHeader* header, File &fileEditMenu, const string& men
   case 'O':
     if (incom && header->szPassWord[0]) {
       bout << "Current PW: ";
-      string pw;
-      input(&pw, 20);
+      string pw = input(20);
       if (!IsEqualsIgnoreCase(pw.c_str(), header->szPassWord)) {
         MenuSysopLog("Unable to change PW");
         break;

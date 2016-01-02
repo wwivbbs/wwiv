@@ -692,8 +692,7 @@ void uedit(int usern, int other) {
         }
         bout.nl();
         bout << "|#7New SL? ";
-        string sl;
-        input(&sl, 3);
+        string sl = input(3);
         int nNewSL = atoi(sl.c_str());
         if (!session()->GetWfcStatus() && nNewSL >= session()->GetEffectiveSl() && user_number != 1) {
           bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
@@ -715,8 +714,7 @@ void uedit(int usern, int other) {
         }
         bout.nl();
         bout << "|#7New DSL? ";
-        string dsl;
-        input(&dsl, 3);
+        string dsl = input(3);
         int nNewDSL = atoi(dsl.c_str());
         if (!session()->GetWfcStatus() && nNewDSL >= session()->user()->GetDsl() && user_number != 1) {
           bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
@@ -732,8 +730,7 @@ void uedit(int usern, int other) {
       case 'U': {
         bout.nl();
         bout << "|#7User name/number: ";
-        string name;
-        input(&name, 30);
+        string name = input(30);
         int nFoundUserNumber = finduser1(name.c_str());
         if (nFoundUserNumber > 0) {
           user_number = nFoundUserNumber;
@@ -759,7 +756,7 @@ void uedit(int usern, int other) {
           bout.nl();
           bout << "Enter registration date, <CR> for today: \r\n";
           bout << " MM/DD/YY\r\n:";
-          input(&newRegDate, 8);
+          newRegDate = input(8);
         } while (newRegDate.length() != 8 && !newRegDate.empty());
 
         if (newRegDate.empty()) {
@@ -778,7 +775,7 @@ void uedit(int usern, int other) {
           bout.nl();
           bout << "Enter expiration date, <CR> to clear registration fields: \r\n";
           bout << " MM/DD/YY\r\n:";
-          input(&newExpDate, 8);
+          newExpDate = input(8);
         } while (newExpDate.length() != 8 && !newExpDate.empty());
         if (newExpDate.length() == 8) {
           m = atoi(newExpDate.c_str());
@@ -797,8 +794,7 @@ void uedit(int usern, int other) {
         if (u_qsc) {
           bout.nl();
           bout << "|#7(999=None) New sysop sub? ";
-          string sysopSubNum;
-          input(&sysopSubNum, 3);
+          string sysopSubNum = input(3);
           int nSysopSubNum = atoi(sysopSubNum.c_str());
           if (nSysopSubNum >= 0 && nSysopSubNum <= 999 && !sysopSubNum.empty()) {
             *u_qsc = nSysopSubNum;
