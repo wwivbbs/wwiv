@@ -697,8 +697,7 @@ static void modify_mailbox() {
   }
   bout.nl();
   bout << "|#2Forward to? ";
-  string entered_forward_to;
-  input(&entered_forward_to, 40);
+  string entered_forward_to = input(40);
 
   int nTempForwardUser, nTempForwardSystem;
   parse_email_info(entered_forward_to, &nTempForwardUser, &nTempForwardSystem);
@@ -730,8 +729,7 @@ static void optional_lines() {
   bout << "|#9You may specify your optional lines value from 0-10,\r\n" ;
   bout << "|#20 |#9being all, |#210 |#9being none.\r\n";
   bout << "|#2What value? ";
-  string lines;
-  input(&lines, 2);
+  string lines = input(2);
 
   int nNumLines = atoi(lines.c_str());
   if (!lines.empty() && nNumLines >= 0 && nNumLines < 11) {
@@ -742,8 +740,7 @@ static void optional_lines() {
 
 void enter_regnum() {
   bout << "|#7Enter your WWIV registration number, or enter '|#20|#7' for none.\r\n|#0:";
-  string regnum;
-  input(&regnum, 5, true);
+  string regnum = input(5, true);
 
   long lRegNum = atol(regnum.c_str());
   if (!regnum.empty() && lRegNum >= 0) {
@@ -815,10 +812,9 @@ void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
       break;
 
     case 'I': {
-      string internetAddress;
       bout.nl();
       bout << "|#9Enter your Internet mailing address.\r\n|#7:";
-      inputl(&internetAddress, 65, true);
+      string internetAddress = inputl(65, true);
       if (!internetAddress.empty()) {
         if (check_inet_addr(internetAddress.c_str())) {
           session()->user()->SetEmailAddress(internetAddress.c_str());

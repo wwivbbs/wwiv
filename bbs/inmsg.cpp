@@ -142,7 +142,7 @@ static void GetMessageTitle(MessageEditorData& data) {
         data.title.assign(s1);
       }
     } else {
-      inputl(&data.title, 60);
+      data.title = inputl(60);
     }
   } else {
     if (data.silent_mode || force_title) {
@@ -150,7 +150,7 @@ static void GetMessageTitle(MessageEditorData& data) {
     } else {
       bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
       bout << "Title: ";
-      inputl(&data.title, 60);
+      data.title = inputl(60);
     }
   }
 }
@@ -260,7 +260,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
         bCheckMessageSize = false;
         *curli = 0;
         bout << "Message cleared... Start over...\r\n\n";
-      } else if ((cmd == "/RL")) {
+      } else if (cmd == "/RL") {
         bCheckMessageSize = false;
         if (*curli) {
           (*curli)--;
@@ -268,10 +268,10 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
         } else {
           bout << "Nothing to replace.\r\n";
         }
-      } else if ((cmd == "/TI")) {
+      } else if (cmd == "/TI") {
         bCheckMessageSize = false;
         bout << "|#1Subj|#7: |#2" ;
-        inputl(title, 60, true);
+        *title = inputl(60, true);
         bout << "Continue...\r\n\n";
       }
       if (cmd.length() > 3) {

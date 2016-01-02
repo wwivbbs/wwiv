@@ -390,8 +390,7 @@ void chainedit() {
     case 'M': {
       bout.nl();
       bout << "|#2Chain number? ";
-      string s;
-      input(&s, 2);
+      string s = input(2);
       int i = atoi(s.c_str());
       if (s[0] != '\0' && i >= 0 && i < session()->chains.size()) {
         modify_chain(i);
@@ -402,8 +401,7 @@ void chainedit() {
         bout.nl();
         bout << "|#2Insert before which chain ('$' for end) : ";
         int chain = 0;
-        string s;
-        input(&s, 2);
+        string s = input(2);
         if (s[0] == '$') {
           chain =  session()->chains.size();
         } else {
@@ -417,8 +415,7 @@ void chainedit() {
     case 'D': {
       bout.nl();
       bout << "|#2Delete which chain? ";
-      string s;
-      input(&s, 2);
+      string s = input(2);
       int i = atoi(s.c_str());
       if (s[0] != '\0' && i >= 0 && i < session()->chains.size()) {
         bout.nl();

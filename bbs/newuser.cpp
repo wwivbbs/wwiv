@@ -255,8 +255,7 @@ void input_realname() {
 static void input_callsign() {
   bout.nl();
   bout << " |#3Enter your amateur radio callsign, or just hit <ENTER> if none.\r\n|#2:";
-  string s;
-  input(&s, 6, true);
+  string s = input(6, true);
   session()->user()->SetCallsign(s.c_str());
 }
 
@@ -328,7 +327,7 @@ void input_state() {
       bout << "|#3Enter your state (i.e. CA). \r\n";
     }
     bout << "|#2:";
-    input(&state, 2, true);
+    state = input(2, true);
 
     if (state.empty()) {
       bout.nl();
@@ -345,7 +344,7 @@ void input_country() {
     bout << "|#3Enter your country (i.e. USA). \r\n";
     bout << "|#3Hit Enter for \"USA\"\r\n";
     bout << "|#2:";
-    input(&country, 3, true);
+    country = input(3, true);
     if (country.empty()) {
       country = "USA";
     }
@@ -366,7 +365,7 @@ void input_zipcode() {
       len = 7;
     }
     bout << "|#2:";
-    input(&zipcode, len, true);
+    zipcode = input(len, true);
 
     if (zipcode.empty()) {
       bout.nl();
@@ -730,8 +729,7 @@ bool CanCreateNewUserAccountHere() {
     int nPasswordAttempt = 0;
     do {
       bout << "New User Password :";
-      string password;
-      input(&password, 20);
+      string password = input(20);
       if (password == syscfg.newuserpw) {
         ok = true;
       } else {
@@ -852,8 +850,7 @@ void DoNewUserASV() {
     if (yesno()) {
       bout.nl();
       bout << "|#5Please enter your BBS name and number.\r\n";
-      string note;
-      inputl(&note, 60, true);
+      string note = inputl(60, true);
       session()->user()->SetNote(note.c_str());
       session()->user()->SetSl(session()->asv.sl);
       session()->user()->SetDsl(session()->asv.dsl);

@@ -497,8 +497,7 @@ void addsubconf(int conftype, confrec * c, subconf_t * which) {
   if (which == nullptr) {
     bout.nl();
     bout << "|#2Add: ";
-    string text;
-    input(&text, 60, true);
+    string text = input(60, true);
     if (text.empty()) {
       return;
     }
@@ -551,8 +550,7 @@ void delsubconf(int conftype, confrec * c, subconf_t * which) {
   if (which == nullptr) {
     bout.nl();
     bout << "|#2Remove: ";
-    string text;
-    input(&text, 60, true);
+    string text = input(60, true);
     if (text.empty()) {
       return;
     }
@@ -702,8 +700,7 @@ int modify_conf(int conftype,  int which) {
     case 'B': {
       bout.nl();
       bout << "|#2Conference Name: ";
-      string conferenceName;
-      inputl(&conferenceName, 60);
+      string conferenceName = inputl(60);
       if (!conferenceName.empty()) {
         strcpy(reinterpret_cast<char*>(c.name), conferenceName.c_str());
         changed = 1;
@@ -713,8 +710,7 @@ int modify_conf(int conftype,  int which) {
     case 'C': {
       bout.nl();
       bout << "|#2Min SL: ";
-      string minSl;
-      input(&minSl, 3);
+      string minSl = input(3);
       if (!minSl.empty()) {
         if (atoi(minSl.c_str()) >= 0 && atoi(minSl.c_str()) <= 255) {
           c.minsl = wwiv::strings::StringToUnsignedChar(minSl.c_str());

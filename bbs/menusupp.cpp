@@ -150,8 +150,7 @@ void UpSub() {
 void ValidateUser() {
   bout.nl(2);
   bout << "|#9Enter user name or number:\r\n:";
-  string userName;
-  input(&userName, 30, true);
+  string userName = input(30, true);
   int nUserNum = finduser1(userName.c_str());
   if (nUserNum > 0) {
     sysoplogf("@ Validated user #%d", nUserNum);
@@ -517,8 +516,7 @@ void EditText() {
   write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
   bout.nl();
   bout << "|#7Enter Filespec: ";
-  string fileName;
-  input(&fileName, 50);
+  string fileName = input(50);
   if (!fileName.empty()) {
     external_text_edit(fileName.c_str(), "", 500, ".", MSGED_FLAG_NO_TAGLINE);
   }

@@ -460,8 +460,7 @@ void ScanMessageTitles() {
   }
   bout << "|#9Start listing at (|#21|#9-|#2"
        << session()->GetNumMessagesInCurrentMessageArea() << "|#9): ";
-  string messageNumber;
-  input(&messageNumber, 5, true);
+  string messageNumber = input(5, true);
   int nMessageNumber = atoi(messageNumber.c_str());
   if (nMessageNumber < 1) {
     nMessageNumber = 0;
@@ -505,8 +504,7 @@ void remove_post() {
     }
   }
   bout << "\r\n|#2Remove which? ";
-  string postNumberToRemove;
-  input(&postNumberToRemove, 5);
+  string postNumberToRemove = input(5);
   int nPostNumber = atoi(postNumberToRemove.c_str());
   wwiv::bbs::OpenSub opened_sub(true);
   if (nPostNumber > 0 && nPostNumber <= session()->GetNumMessagesInCurrentMessageArea()) {

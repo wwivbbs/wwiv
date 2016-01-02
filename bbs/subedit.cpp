@@ -477,8 +477,7 @@ static void modify_sub(int n) {
     case 'K': {
       bout.nl();
       bout << "|#2New Storage Type ( 2 ) ? ";
-      string storage_type_string;
-      input(&storage_type_string, 4);
+      string storage_type_string = input(4);
       uint16_t new_storage_type = StringToUnsignedShort(storage_type_string);
       if (!storage_type_string.empty() && new_storage_type > 1 && new_storage_type <= 2) {
         r.storage_type = new_storage_type;

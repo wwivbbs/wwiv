@@ -180,8 +180,7 @@ static int ShowLoginAndGetUserNumber() {
   bout << "Enter number or name or 'NEW'\r\n";
   bout << "NN: ";
 
-  string user_name;
-  input(&user_name, 30);
+  string user_name = input(30);
   StringTrim(&user_name);
 
   int user_number = finduser(user_name);
@@ -1093,9 +1092,9 @@ void logon_guest() {
   int count = 0;
   do {
     bout << "\r\n|#5Enter your real name : ";
-    input(&userName, 25, true);
+    userName = input(25, true);
     bout << "\r\n|#5Purpose of your call?\r\n";
-    input(&reason, 79, true);
+    reason = input(79, true);
     if (!userName.empty() && !reason.empty()) {
       break;
     }

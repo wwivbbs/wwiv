@@ -1173,8 +1173,7 @@ void readmail(int mode) {
           break;
         }
         bout << "\r\n|#2Filename: ";
-        string fileName;
-        input(&fileName, 50);
+        string fileName = input(50);
         if (!fileName.empty()) {
           bout.nl();
           bout << "|#5Allow editing? ";
@@ -1190,11 +1189,10 @@ void readmail(int mode) {
       break;
       case 'Y':   // Add from here
         if (curmail >= 0) {
-          string downloadFileName;
           string b;
           readfile(&(m.msg), "email", &b);
           bout << "E-mail download -\r\n\n|#2Filename: ";
-          input(&downloadFileName, 12);
+          string downloadFileName = input(12);
           if (!okfn(downloadFileName.c_str())) {
             break;
           }

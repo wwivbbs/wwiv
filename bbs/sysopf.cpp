@@ -720,8 +720,7 @@ void chuser() {
   }
 
   bout << "|#9Enter user to change to: ";
-  std::string userName;
-  input(&userName, 30, true);
+  std::string userName = input(30, true);
   int user_number = finduser1(userName);
   if (user_number > 0) {
     session()->WriteCurrentUser();

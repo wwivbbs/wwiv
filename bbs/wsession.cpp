@@ -589,8 +589,7 @@ int WSession::doWFCEvents() {
           wfc_cls();
           usernum = 1;
           bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
-          string buffer;
-          input(&buffer, 50);
+          string buffer = input(50);
           LoadFileIntoWorkspace(buffer, false);
           send_email();
           WriteCurrentUser(1);
