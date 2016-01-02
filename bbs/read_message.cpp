@@ -343,7 +343,7 @@ void read_post(int n, bool *next, int *val) {
     bout << "|#4   FORCED SCAN OF SYSOP INFORMATION - YOU MAY NOT ABORT.  PLEASE READ THESE!  |#0\r\n";
   }
 
-  bout.bprintf(" |#9Msg|#7: [|#1%u|#7/|#1%lu|#7]|#%d |#2%s\r\n", n,
+  bout.bprintf(" |#9Msg|#7: [|#1%u|#7/|#1%lu|#7]|#%d %s\r\n", n,
     session()->GetNumMessagesInCurrentMessageArea(), session()->GetMessageColor(),
     session()->current_sub().name);
   const string subjectLine = "|#9Subj|#7: ";
