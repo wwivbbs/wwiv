@@ -147,7 +147,7 @@ void select_chat_name(char *sysop_name) {
   curatr = session()->GetChatNameSelectionColor();
   session()->localIO()->MakeLocalWindow(20, 5, 43, 3);
   session()->localIO()->LocalXYPuts(22, 6, "Chat As: ");
-  curatr = session()->GetEditLineColor();
+  curatr = session()->localIO()->GetEditLineColor();
   session()->localIO()->LocalXYPuts(31, 6, std::string(30, SPACE));
 
   int rc;

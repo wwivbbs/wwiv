@@ -756,7 +756,7 @@ void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
   bool done = false;
   do {
     print_cur_stat();
-    session()->localIO()->tleft(true);
+    session()->tleft(true);
     if (hangup) {
       return;
     }

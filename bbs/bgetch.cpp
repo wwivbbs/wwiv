@@ -110,7 +110,7 @@ char bgetch() {
     if (!(g_flags & g_flag_allow_extended)) {
       if (!ch) {
         ch = session()->localIO()->LocalGetChar();
-        session()->localIO()->skey(ch);
+        session()->handle_sysop_key(static_cast<uint8_t>(ch));
         ch = static_cast<char>(((ch == F10) || (ch == CF10)) ? 2 : 0);
       }
     }

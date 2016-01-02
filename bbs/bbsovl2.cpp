@@ -49,7 +49,6 @@ void OnlineUserEditor() {
 
   session()->DisplaySysopWorkingIndicator(true);
   session()->localIO()->savescreen();
-  curatr = session()->GetUserEditorColor();
   int wx = 5;
   int wy = 3;
   session()->localIO()->MakeLocalWindow(wx, wy - 2, 70, 16 + 2);

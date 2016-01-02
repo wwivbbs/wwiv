@@ -355,7 +355,7 @@ void gfile_sec(int sn) {
   list_gfiles(g, nf, sn);
   bool done = false;
   while (!done && !hangup) {
-    session()->localIO()->tleft(true);
+    session()->tleft(true);
     bout << "|#9Current G|#1-|#9File Section |#1: |#5" << session()->gfilesec[sn].name << "|#0\r\n";
     bout << "|#9Which G|#1-|#9File |#1(|#21|#1-|#2" << nf <<
                        "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
@@ -516,7 +516,7 @@ void gfiles() {
   }
   list_sec(map, nmap);
   while (!done && !hangup) {
-    session()->localIO()->tleft(true);
+    session()->tleft(true);
     bout << "|#9G|#1-|#9Files Main Menu|#0\r\n";
     bout << "|#9Which Section |#1(|#21|#1-|#2" << nmap <<
                        "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";

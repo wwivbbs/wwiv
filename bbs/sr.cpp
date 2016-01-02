@@ -106,7 +106,7 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
   sx2[1] = '\0';
   const string command = stuff_in(s1, sx1, sx2, szFileName, sx3, "");
   if (!command.empty()) {
-    session()->localIO()->set_protect(0);
+    session()->ClearTopScreenProtection();
     const string unn = session()->names()->UserName(session()->usernum);
     sprintf(s2, "%s is currently online at %u bps", unn.c_str(), modem_speed);
     session()->localIO()->LocalPuts(s2);

@@ -471,7 +471,7 @@ void time_bank() {
             static_cast<uint16_t>(i));
         session()->user()->SetExtraTime(session()->user()->GetExtraTime() - static_cast<float>
             (i * SECONDS_PER_MINUTE_FLOAT));
-        session()->localIO()->tleft(false);
+        session()->tleft(false);
       }
       break;
     case 'W':
@@ -491,7 +491,7 @@ void time_bank() {
             static_cast<uint16_t>(i));
         session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>
             (i * SECONDS_PER_MINUTE_FLOAT));
-        session()->localIO()->tleft(false);
+        session()->tleft(false);
       }
       break;
     case 'Q':

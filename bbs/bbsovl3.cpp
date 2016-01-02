@@ -49,7 +49,7 @@ static int pd_getkey() {
 }
 
 int get_kb_event(int nNumLockMode) {
-  session()->localIO()->tleft(true);
+  session()->tleft(true);
   time_t time1 = time(nullptr);
 
   do {
@@ -281,7 +281,7 @@ bool do_sysop_command(int nCommandID) {
       bout.cls();
     }
 
-    session()->localIO()->skey(static_cast<char>(nKeyStroke));
+    session()->handle_sysop_key(static_cast<uint8_t>(nKeyStroke));
 
     if (bNeedToRedraw) {
       bout.cls();

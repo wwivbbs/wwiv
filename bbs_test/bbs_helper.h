@@ -88,11 +88,10 @@ public:
   virtual int LocalPrintf(const char *formatted_text, ...) override { return 0; }
   virtual int LocalXYPrintf(int x, int y, const char *formatted_text, ...) override { return 0; }
   virtual int LocalXYAPrintf(int x, int y, int nAttribute, const char *formatted_text, ...) override { return 0; }
-  virtual void set_protect(int l) override {}
+  virtual void set_protect(WSession* session, int l) override {}
   virtual void savescreen() override {}
   virtual void restorescreen() override {}
-  virtual void skey(char ch) override {}
-  virtual void tleft(bool bCheckForTimeOut) override {}
+  virtual void tleft(WSession* session, bool temp_sysop, bool sysop, bool user_online) override {}
   virtual bool LocalKeyPressed() override { return false; }
   virtual void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) override {}
   virtual unsigned char LocalGetChar() override { return getchar(); }
@@ -102,7 +101,7 @@ public:
   virtual void LocalWriteScreenBuffer(const char *buffer) override {}
   virtual int GetDefaultScreenBottom() override { return 25; }
   virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) override {}
-  virtual void UpdateNativeTitleBar() override {}
+  virtual void UpdateNativeTitleBar(WSession* session) override {}
   virtual void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) override {}
 
   std::string* captured_;

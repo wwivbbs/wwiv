@@ -221,135 +221,22 @@ int CursesLocalIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *form
   return nNumWritten;
 }
 
-void CursesLocalIO::set_protect(int l) {
+void CursesLocalIO::set_protect(WSession* session, int l) {
   SetTopLine(l);
-  if (!session()->using_modem) {
-    session()->screenlinest = defscreenbottom + 1 - GetTopLine();
+  if (!session->using_modem) {
+    session->screenlinest = defscreenbottom + 1 - GetTopLine();
   }
 }
 
 void CursesLocalIO::savescreen() {}
 void CursesLocalIO::restorescreen() {}
 
-void CursesLocalIO::skey(char ch) {
-  int nKeyCode = static_cast<unsigned char>(ch);
-  int i, i1;
-
-  if (okskey) {
-    if (nKeyCode >= AF1 && nKeyCode <= AF10) {
-      set_autoval(nKeyCode - 104);
-    } else {
-      switch (nKeyCode) {
-      case F1:                          /* F1 */
-        OnlineUserEditor();
-        break;
-      case SF1:                          /* Shift-F1 */
-        // Nothing
-        session()->UpdateTopScreen();
-        break;
-      case CF1:                          /* Ctrl-F1 */
-        session()->ToggleShutDown();
-        break;
-      case F2:                          /* F2 */
-        session()->topdata++;
-        if (session()->topdata > CursesLocalIO::topdataUser) {
-          session()->topdata = CursesLocalIO::topdataNone;
-        }
-        session()->UpdateTopScreen();
-        break;
-      case F3:                          /* F3 */
-        if (session()->using_modem) {
-          incom = !incom;
-          dump();
-          tleft(false);
-        }
-        break;
-      case F4:                          /* F4 */
-        chatcall = false;
-        session()->UpdateTopScreen();
-        break;
-      case F5:                          /* F5 */
-        hangup = true;
-        session()->remoteIO()->dtr(false);
-        break;
-      case SF5:                          /* Shift-F5 */
-        i1 = (rand() % 20) + 10;
-        for (i = 0; i < i1; i++) {
-          bputch(static_cast<unsigned char>(rand() % 256));
-        }
-        hangup = true;
-        session()->remoteIO()->dtr(false);
-        break;
-      case CF5:                          /* Ctrl-F5 */
-        bout << "\r\nCall back later when you are there.\r\n\n";
-        hangup = true;
-        session()->remoteIO()->dtr(false);
-        break;
-      case F6:                          /* F6 */
-        SetSysopAlert(!GetSysopAlert());
-        tleft(false);
-        break;
-      case F7:                          /* F7 */
-        session()->user()->SetExtraTime(session()->user()->GetExtraTime() -
-            static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
-        tleft(false);
-        break;
-      case F8:                          /* F8 */
-        session()->user()->SetExtraTime(session()->user()->GetExtraTime() +
-            static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
-        tleft(false);
-        break;
-      case F9:                          /* F9 */
-        if (session()->user()->GetSl() != 255) {
-          if (session()->GetEffectiveSl() != 255) {
-            session()->SetEffectiveSl(255);
-          } else {
-            session()->ResetEffectiveSl();
-          }
-          changedsl();
-          tleft(false);
-        }
-        break;
-      case F10:                          /* F10 */
-        if (chatting == 0) {
-          char szUnusedChatLine[81];
-          szUnusedChatLine[0] = 0;
-          if (syscfg.sysconfig & sysconfig_2_way) {
-            chat1(szUnusedChatLine, true);
-          } else {
-            chat1(szUnusedChatLine, false);
-          }
-        } else {
-          chatting = 0;
-        }
-        break;
-      case CF10:                         /* Ctrl-F10 */
-        if (chatting == 0) {
-          char szUnusedChatLine[81];
-          szUnusedChatLine[0] = 0;
-          chat1(szUnusedChatLine, false);
-        } else {
-          chatting = 0;
-        }
-        break;
-      case HOME:                          /* HOME */
-        if (chatting == 1) {
-          chat_file = !chat_file;
-        }
-        break;
-      default:
-        break;
-      }
-    }
-  }
-}
-
 #if defined( _MSC_VER )
 #pragma warning( push )
 #pragma warning( disable : 4125 4100 )
 #endif
 
-void CursesLocalIO::tleft(bool bCheckForTimeOut) {}
+void CursesLocalIO::tleft(WSession* session, bool temp_sysop, bool sysop, bool user_online) {}
 
 static int last_key_pressed = ERR;
 
@@ -391,7 +278,7 @@ int CursesLocalIO::GetDefaultScreenBottom() { return window_->GetMaxY() - 1; }
 
 void CursesLocalIO::LocalEditLine(char *s, int len, int edit_status, int *returncode, char *ss) {}
 
-void CursesLocalIO::UpdateNativeTitleBar() {}
+void CursesLocalIO::UpdateNativeTitleBar(WSession* session) {}
 
 void CursesLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) {}
 #if defined( _MSC_VER )

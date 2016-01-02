@@ -9,14 +9,12 @@
 * detangle global net_email_name (maybe it needs to be added to EmailData?)
 * change record 0 of .sub files to be a message header. Right now only owneruser
   is used and the rest is loaded/saved as-is by the bbs code.
-* Merge fix into wwivutil
 * remove support for registration numbers in the wwivnet data binary files.
 * delete num_events
 * make ssm take a string (use StringPrintf as needed)
 * add tests for usermanager and user (in SDK)
 * mmkey is a mess. only odc seems to be used right.
 * cleanup session()->tagging and session()->titled
-* Use LOG in wwivutil everywhere.
 * Pass in a handler for skey and tleft to WLocalIO class so it doesn't need
   to know so much about the system (since it shouldn't)
 
