@@ -227,8 +227,9 @@ void sub_xtr_add(int n, int nn) {
   char szDescription[100], s[100], onx[20], *mmk, ch;
   int onxi, odci, ii, gc;
 
-  if (nn >= session()->xsubs[n].nets.size()) {
-    while (nn >= session()->xsubs[n].nets.size()) {
+  // nn may be -1
+  if (nn >= static_cast<int>(session()->xsubs[n].nets.size())) {
+    while (nn >= static_cast<int>(session()->xsubs[n].nets.size())) {
       xtrasubsnetrec xnp;
       memset(&xnp, 0, sizeof(xtrasubsnetrec));
       session()->xsubs[n].nets.push_back(xnp);
@@ -392,13 +393,12 @@ void sub_xtr_add(int n, int nn) {
       }
     }
   }
-  if (nn >= session()->xsubs[n].nets.size()) {
+  if (nn >= static_cast<int>(session()->xsubs[n].nets.size())) {
     session()->xsubs[n].nets.push_back(xnp);
   } else {
     session()->xsubs[n].nets[nn] = xnp;
   }
 }
-
 
 bool display_sub_categories() {
   if (!net_sysnum) {
