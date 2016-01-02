@@ -76,7 +76,7 @@ void valscan() {
     for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea() && !hangup && !done; i++) {    // was i = 0
       if (get_post(i)->status & status_pending_net) {
         CheckForHangup();
-        session()->localIO()->tleft(true);
+        session()->tleft(true);
         if (i > 0 && i <= session()->GetNumMessagesInCurrentMessageArea()) {
           bool next;
           int val;

@@ -239,9 +239,6 @@ IniFile* WSession::ReadINIFile() {
     newuser_bwcolors[ nTempColorNum ] = nucolbw[ nTempColorNum ];
   }
 
-  SetTopScreenColor(31);
-  SetUserEditorColor(31);
-  SetEditLineColor(112);
   SetChatNameSelectionColor(95);
   SetMessageColor(2);
   max_batch = 50;
@@ -299,14 +296,14 @@ IniFile* WSession::ReadINIFile() {
     SetCarbonCopyEnabled(ini->GetBooleanValue("ALLOW_CC_BCC"));
 
     // pull out sysop-side colors
-    SetTopScreenColor(ini->GetNumericValue(get_key_str(INI_STR_TOPCOLOR),
-                                    GetTopScreenColor()));
-    SetUserEditorColor(ini->GetNumericValue(get_key_str(INI_STR_F1COLOR),
-                                     GetUserEditorColor()));
-    SetEditLineColor(ini->GetNumericValue(get_key_str(INI_STR_EDITLINECOLOR),
-                                   GetEditLineColor()));
-    SetChatNameSelectionColor(ini->GetNumericValue(get_key_str(INI_STR_CHATSELCOLOR),
-                                            GetChatNameSelectionColor()));
+    localIO()->SetTopScreenColor(ini->GetNumericValue(
+      get_key_str(INI_STR_TOPCOLOR), localIO()->GetTopScreenColor()));
+    localIO()->SetUserEditorColor(ini->GetNumericValue(
+      get_key_str(INI_STR_F1COLOR), localIO()->GetUserEditorColor()));
+    localIO()->SetEditLineColor(ini->GetNumericValue(
+      get_key_str(INI_STR_EDITLINECOLOR), localIO()->GetEditLineColor()));
+    SetChatNameSelectionColor(ini->GetNumericValue(
+      get_key_str(INI_STR_CHATSELCOLOR),GetChatNameSelectionColor()));
 
     // pull out sizing options
     max_batch = ini->GetNumericValue(get_key_str(INI_STR_MAX_BATCH), max_batch);

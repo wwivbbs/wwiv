@@ -136,7 +136,7 @@ void chat_room() {
       process_inst_msgs();
     }
     bout << "|#1: " << szColorString;
-    session()->localIO()->tleft(true);
+    session()->tleft(true);
     bChatLine = false;
     char szMessage[ 300 ];
     inputl(szMessage, 250);

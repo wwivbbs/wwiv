@@ -72,11 +72,12 @@ class LocalIO {
   virtual int  LocalPrintf(const char *formatted_text, ...) = 0;
   virtual int  LocalXYPrintf(int x, int y, const char *formatted_text, ...) = 0;
   virtual int  LocalXYAPrintf(int x, int y, int nAttribute, const char *formatted_text, ...) = 0;
-  virtual void set_protect(int l) = 0;
+  virtual void set_protect(WSession* session, int l) = 0;
   virtual void savescreen() = 0;
   virtual void restorescreen() = 0;
-  virtual void skey(char ch) = 0;
-  virtual void tleft(bool bCheckForTimeOut) = 0;
+  // // int topdata, tempsysop, sysop, is_user_online, 
+
+  virtual void tleft(WSession* session, bool temp_sysop, bool sysop, bool user_online) = 0;
   virtual void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) = 0;
   virtual bool LocalKeyPressed() = 0;
   virtual unsigned char LocalGetChar() = 0;
@@ -90,16 +91,28 @@ class LocalIO {
   virtual void LocalWriteScreenBuffer(const char *buffer) = 0;
   virtual int  GetDefaultScreenBottom() = 0;
   virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) = 0;
-  virtual void UpdateNativeTitleBar() = 0;
+  virtual void UpdateNativeTitleBar(WSession* session) = 0;
+
+  int  GetTopScreenColor() const { return top_screen_color_; }
+  void SetTopScreenColor(int n) { top_screen_color_ = n; }
+
+  int  GetUserEditorColor() const { return user_editor_color_; }
+  void SetUserEditorColor(int n) { user_editor_color_ = n; }
+
+  int  GetEditLineColor() const { return edit_line_color_; }
+  void SetEditLineColor(int n) { edit_line_color_ = n; }
 
 private:
   virtual void LocalFastPuts(const std::string &text) = 0;
 
 private:
   std::string m_chatReason;
-  bool m_bSysopAlert;
+  bool m_bSysopAlert = false;
   int m_nTopLine;
   int m_nScreenBottom;
+  int top_screen_color_ = 27;
+  int user_editor_color_ = 9;
+  int edit_line_color_ = 31;
 };
 
 

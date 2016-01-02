@@ -565,11 +565,10 @@ void ZIdleStr(unsigned char *buf, int len, ZModem *info) {
 void ProcessLocalKeyDuringZmodem() {
 	if ( session()->localIO()->LocalKeyPressed() ) {
 		char localChar = session()->localIO()->LocalGetChar();
-		session()->SetLastKeyLocal( true );
+		session()->SetLastKeyLocal(true);
 		if (!(g_flags & g_flag_allow_extended)) {
 			if (!localChar) {
-				localChar = session()->localIO()->LocalGetChar();
-				session()->localIO()->skey(localChar);
+				session()->handle_sysop_key(session()->localIO()->LocalGetChar());
 			}
 		}
 	}

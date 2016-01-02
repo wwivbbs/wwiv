@@ -82,7 +82,7 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
   }
   bool ok = true;
   while ((nRecordNumber > 0) && ok && !hangup) {
-    session()->localIO()->tleft(true);
+    session()->tleft(true);
     File fileDownload(g_szDownloadFileName);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, nRecordNumber);

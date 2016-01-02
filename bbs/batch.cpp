@@ -309,7 +309,7 @@ void zmbatchdl(bool bHangupAfterDl) {
   bool bRatioBad = false;
   bool ok = true;
   do {
-    session()->localIO()->tleft(true);
+    session()->tleft(true);
     if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio)) {
       bRatioBad = true;
     }
@@ -386,7 +386,7 @@ void ymbatchdl(bool bHangupAfterDl) {
   bool bRatioBad = false;
   bool ok = true;
   do {
-    session()->localIO()->tleft(true);
+    session()->tleft(true);
     if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio)) {
       bRatioBad = true;
     }

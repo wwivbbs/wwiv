@@ -93,6 +93,8 @@ public:
 
   wwiv::sdk::User* user() { return &m_thisuser; }
 
+  void handle_sysop_key(uint8_t key);
+  void tleft(bool check_for_timeout);
   void DisplaySysopWorkingIndicator(bool displayWait);
   WComm* remoteIO() { return comm_.get(); }
   LocalIO* localIO() { return local_io_.get(); }
@@ -102,6 +104,7 @@ public:
   const std::string& network_extension() const { return network_extension_; }
 
   void UpdateTopScreen();
+  void ClearTopScreenProtection();
 
   /*! @function CreateComm Creates up the communications subsystem */
   void CreateComm(unsigned int nHandle);
@@ -117,15 +120,6 @@ public:
   void ResetEffectiveSl() { effective_sl_ = user()->GetSl(); }
   void SetEffectiveSl(int nSl) { effective_sl_ = nSl; }
   int  GetEffectiveSl() const { return effective_sl_; }
-
-  int  GetTopScreenColor() const { return m_nTopScreenColor; }
-  void SetTopScreenColor(int n) { m_nTopScreenColor = n; }
-
-  int  GetUserEditorColor() const { return m_nUserEditorColor; }
-  void SetUserEditorColor(int n) { m_nUserEditorColor = n; }
-
-  int  GetEditLineColor() const { return m_nEditLineColor; }
-  void SetEditLineColor(int n) { m_nEditLineColor = n; }
 
   int  GetChatNameSelectionColor() const { return m_nChatNameSelectionColor; }
   void SetChatNameSelectionColor(int n) { m_nChatNameSelectionColor = n; }
@@ -374,9 +368,6 @@ private:
   // accessors later on.
   public:
   int
-  m_nTopScreenColor,
-  m_nUserEditorColor,
-  m_nEditLineColor,
   m_nChatNameSelectionColor,
   m_nMessageColor;
 

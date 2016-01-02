@@ -29,7 +29,9 @@
 #include <iostream>
 #include <memory>
 #include <cstdarg>
+#include "bbs/asv.h"
 #include "bbs/bbsovl1.h"
+#include "bbs/bbsovl2.h"
 #include "bbs/chnedit.h"
 #include "bbs/bgetch.h"
 #include "bbs/bputch.h"
@@ -100,7 +102,6 @@ WOutStream bout;
 
 WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app), 
     last_key_local_(true), effective_sl_(0),
-    m_nTopScreenColor(0), m_nUserEditorColor(0), m_nEditLineColor(0), 
     m_nChatNameSelectionColor(0), m_nMessageColor(0), mail_who_field_len(0),
     max_batch(0), max_extend_lines(0), max_chains(0), max_gfilesec(0), screen_saver_time(0),
     m_nForcedReadSubNumber(0), m_bAllowCC(false), m_bUserOnline(false),
@@ -145,7 +146,7 @@ bool WSession::reset_local_io(LocalIO* wlocal_io) {
   defscreenbottom = screen_bottom;
   screenlinest = screen_bottom + 1;
 
-  localIO()->set_protect(0);
+  ClearTopScreenProtection();
   ::bout.SetLocalIO(wlocal_io);
   return true;
 }
@@ -166,6 +167,126 @@ bool WSession::ReadCurrentUser(int user_number) {
 
 bool WSession::WriteCurrentUser(int user_number) {
   return users()->WriteUser(&m_thisuser, user_number);
+}
+
+void WSession::tleft(bool check_for_timeout) {
+  double nsln = nsl();
+  bool temp_sysop = session()->user()->GetSl() != 255 && session()->GetEffectiveSl() == 255;
+  bool sysop = sysop1();
+  localIO()->tleft(this, temp_sysop, sysop, IsUserOnline());
+  if (check_for_timeout && IsUserOnline()) {
+    if (nsln == 0.0) {
+      bout << "\r\nTime expired.\r\n\n";
+      hangup = true;
+    }
+  }
+}
+
+void WSession::handle_sysop_key(uint8_t key) {
+  int i, i1;
+
+  if (okskey) {
+    if (key >= AF1 && key <= AF10) {
+      set_autoval(key - 104);
+    } else {
+      switch (key) {
+      case F1:                          /* F1 */
+        OnlineUserEditor();
+        break;
+      case SF1:
+        /* Shift-F1 */
+        // Nothing.
+        UpdateTopScreen();
+        break;
+      case CF1:                          /* Ctrl-F1 */
+        ToggleShutDown();
+        break;
+      case F2:                          /* F2 */
+        topdata++;
+        if (topdata > LocalIO::topdataUser) {
+          topdata = LocalIO::topdataNone;
+        }
+        UpdateTopScreen();
+        break;
+      case F3:                          /* F3 */
+        if (using_modem) {
+          incom = !incom;
+          dump();
+          tleft(false);
+        }
+        break;
+      case F4:                          /* F4 */
+        chatcall = false;
+        UpdateTopScreen();
+        break;
+      case F5:                          /* F5 */
+        hangup = true;
+        remoteIO()->dtr(false);
+        break;
+      case SF5:                          /* Shift-F5 */
+        i1 = (rand() % 20) + 10;
+        for (i = 0; i < i1; i++) {
+          bputch(static_cast<unsigned char>(rand() % 256));
+        }
+        hangup = true;
+        remoteIO()->dtr(false);
+        break;
+      case CF5:                          /* Ctrl-F5 */
+        bout << "\r\nCall back later when you are there.\r\n\n";
+        hangup = true;
+        remoteIO()->dtr(false);
+        break;
+      case F6:                          /* F6 */
+        localIO()->SetSysopAlert(!localIO()->GetSysopAlert());
+        tleft(false);
+        break;
+      case F7:                          /* F7 */
+        user()->SetExtraTime(user()->GetExtraTime() -
+          static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
+        tleft(false);
+        break;
+      case F8:                          /* F8 */
+        user()->SetExtraTime(user()->GetExtraTime() +
+          static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
+        tleft(false);
+        break;
+      case F9:                          /* F9 */
+        if (user()->GetSl() != 255) {
+          if (GetEffectiveSl() != 255) {
+            SetEffectiveSl(255);
+          } else {
+            ResetEffectiveSl();
+          }
+          changedsl();
+          tleft(false);
+        }
+        break;
+      case F10:                          /* F10 */
+        if (chatting == 0) {
+          if (syscfg.sysconfig & sysconfig_2_way) {
+            chat1("", true);
+          } else {
+            chat1("", false);
+          }
+        } else {
+          chatting = 0;
+        }
+        break;
+      case CF10:                         /* Ctrl-F10 */
+        if (chatting == 0) {
+          chat1("", false);
+        } else {
+          chatting = 0;
+        }
+        break;
+      case HOME:                          /* HOME */
+        if (chatting == 1) {
+          chat_file = !chat_file;
+        }
+        break;
+      }
+    }
+  }
 }
 
 void WSession::DisplaySysopWorkingIndicator(bool displayWait) {
@@ -206,6 +327,11 @@ void WSession::UpdateTopScreen() {
     localIO()->UpdateTopScreen(pStatus.get(), session(), instance_number());
   }
 }
+
+void WSession::ClearTopScreenProtection() {
+  localIO()->set_protect(this, 0);
+}
+
 
 const char* WSession::network_name() const {
   if (net_networks.empty()) {
@@ -271,7 +397,7 @@ void wfc_cls() {}
 #endif  // __unix__
 
 int WSession::doWFCEvents() {
-  char ch;
+  unsigned char ch;
   int lokb;
   LocalIO* io = localIO();
 
@@ -321,7 +447,7 @@ int WSession::doWFCEvents() {
       ch = wwiv::UpperCase<char>(io->LocalGetChar());
       if (ch == 0) {
         ch = io->LocalGetChar();
-        io->skey(ch);
+        handle_sysop_key(ch);
         ch = 0;
       }
     } else {
@@ -1041,7 +1167,7 @@ int WSession::Run(int argc, char *argv[]) {
   CreateComm(hSockOrComm);
   this->InitializeBBS();
 
-  localIO()->UpdateNativeTitleBar();
+  localIO()->UpdateNativeTitleBar(this);
 
   // If we are telnet...
   if (bTelnetInstance) {

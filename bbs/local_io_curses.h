@@ -77,11 +77,10 @@ class CursesLocalIO : public LocalIO {
   virtual int  LocalPrintf(const char *formatted_text, ...) override;
   virtual int  LocalXYPrintf(int x, int y, const char *formatted_text, ...) override;
   virtual int  LocalXYAPrintf(int x, int y, int nAttribute, const char *formatted_text, ...) override;
-  virtual void set_protect(int l) override;
+  virtual void set_protect(WSession* session, int l) override;
   virtual void savescreen() override;
   virtual void restorescreen() override;
-  virtual void skey(char ch) override;
-  virtual void tleft(bool bCheckForTimeOut) override;
+  virtual void tleft(WSession* session, bool temp_sysop, bool sysop, bool user_online) override;
   virtual void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) override;
   virtual bool LocalKeyPressed() override;
   virtual unsigned char LocalGetChar() override;
@@ -92,7 +91,7 @@ class CursesLocalIO : public LocalIO {
   virtual int  GetDefaultScreenBottom() override;
 
   virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) override;
-  virtual void UpdateNativeTitleBar() override;
+  virtual void UpdateNativeTitleBar(WSession* session) override;
 
 private:
   virtual void LocalFastPuts(const std::string &text) override;

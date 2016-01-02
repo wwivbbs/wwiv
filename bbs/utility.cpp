@@ -387,7 +387,7 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
   WWIV_ASSERT(menu_pos);
   WWIV_ASSERT(smc);
 
-  session()->localIO()->tleft(true);
+  session()->tleft(true);
 
   if (bNeedsRedraw) {
     amount = 1;

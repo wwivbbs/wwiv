@@ -309,7 +309,7 @@ int read_idz_all() {
 
   tmp_disable_conf(true);
   TempDisablePause disable_pause;
-  session()->localIO()->set_protect(0);
+  session()->ClearTopScreenProtection();
   for (int i = 0; (i < session()->directories.size()) && (udir[i].subnum != -1) &&
        (!session()->localIO()->LocalKeyPressed()); i++) {
     count += read_idz(0, i);
@@ -329,7 +329,7 @@ int read_idz(int mode, int tempdir) {
   std::unique_ptr<TempDisablePause> disable_pause;
   if (mode) {
     disable_pause.reset(new TempDisablePause);
-    session()->localIO()->set_protect(0);
+    session()->ClearTopScreenProtection();
     dliscan();
     file_mask(s);
   } else {
@@ -488,7 +488,7 @@ void tag_files() {
     session()->tagptr = 0;
     return;
   }
-  session()->localIO()->tleft(true);
+  session()->tleft(true);
   if (hangup) {
     return;
   }
@@ -776,7 +776,7 @@ int try_to_download(const char *file_mask, int dn) {
   ok = true;
   foundany = 1;
   do {
-    session()->localIO()->tleft(true);
+    session()->tleft(true);
     File fileDownload(g_szDownloadFileName);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
@@ -978,12 +978,12 @@ char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars) {
   char s1[81], s2[81], s3[81];
   char ch = 0;
 
-  session()->localIO()->tleft(true);
+  session()->tleft(true);
   sprintf(s1, "\r|#2%s (|#1%s|#2)? |#0", pszPrompt, pszAcceptChars);
   sprintf(s2, "%s (%s)? ", pszPrompt, pszAcceptChars);
   int i1 = strlen(s2);
   sprintf(s3, "%s%s", pszAcceptChars, " \r");
-  session()->localIO()->tleft(true);
+  session()->tleft(true);
   if (okansi()) {
     bout << s1;
     ch = onek_ncr(s3);

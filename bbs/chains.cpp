@@ -177,7 +177,7 @@ void do_chains() {
 
   std::map<int, int> map;
 
-  session()->localIO()->tleft(true);
+  session()->tleft(true);
   int mapp = 0;
   memset(odc, 0, sizeof(odc));
   for (size_t i = 0; i < session()->chains.size(); i++) {
@@ -225,7 +225,7 @@ void do_chains() {
   char* ss = nullptr;
 
   do {
-    session()->localIO()->tleft(true);
+    session()->tleft(true);
     bout.nl();
     bout << "|#7Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
 

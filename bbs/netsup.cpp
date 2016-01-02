@@ -153,7 +153,7 @@ int cleanup_net1() {
         continue;
       }
 
-      session()->localIO()->set_protect(0);
+      session()->ClearTopScreenProtection();
 
       ok2 = 1;
       abort = false;

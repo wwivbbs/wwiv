@@ -160,7 +160,7 @@ void display_message_text(const std::string& text, bool *next) {
             g_flags &= ~g_flag_ansi_movement;
             lines_listed = 0;
             if (session()->localIO()->GetTopLine() && session()->localIO()->GetScreenBottom() == 24) {
-              session()->localIO()->set_protect(0);
+              session()->ClearTopScreenProtection();
             }
           }
           s[nNumCharsPtr++] = ch;

@@ -1967,7 +1967,7 @@ int lp_try_to_download(const char *file_mask, int dn) {
 
   foundany = 1;
   do {
-    session()->localIO()->tleft(true);
+    session()->tleft(true);
     File fileDownload(g_szDownloadFileName);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);

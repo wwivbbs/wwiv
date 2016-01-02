@@ -24,22 +24,14 @@
 #include <string>
 #include <vector>
 
-#include "bbs/asv.h"
-#include "bbs/bbsovl2.h"
-#include "bbs/confutil.h"
 #include "bbs/datetime.h"
-#include "bbs/keycodes.h"
-#include "bbs/wcomm.h"
 #include "bbs/wstatus.h"
 #include "bbs/wconstants.h"
-#include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
-#include "core/file.h"
+#include "bbs/wsession.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
-#include "sdk/filenames.h"
 
 // local functions
 bool HasKeyBeenPressed(HANDLE in);
@@ -356,7 +348,7 @@ int  Win32ConsoleIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *fo
   return nNumWritten;
 }
 
-void Win32ConsoleIO::set_protect(int l) { //JZ Set_Protect Fix
+void Win32ConsoleIO::set_protect(WSession* session, int l) {
 // set_protect sets the number of lines protected at the top of the screen.
   if (l != GetTopLine()) {
     COORD coord;
@@ -387,8 +379,8 @@ void Win32ConsoleIO::set_protect(int l) { //JZ Set_Protect Fix
     }
   }
   SetTopLine(l);
-  if (!session()->using_modem) {
-    session()->screenlinest = defscreenbottom + 1 - GetTopLine();
+  if (!session->using_modem) {
+    session->screenlinest = defscreenbottom + 1 - GetTopLine();
   }
 }
 
@@ -446,119 +438,8 @@ static char xlate[] = {
   'Z', 'X', 'C', 'V', 'B', 'N', 'M',
 };
 
-/*
- * skey handles all f-keys and the like hit FROM THE KEYBOARD ONLY
- */
-void Win32ConsoleIO::skey(char ch) {
-  int nKeyCode = static_cast<unsigned char>(ch);
-  int i, i1;
-
-  if (okskey) {
-    if (nKeyCode >= AF1 && nKeyCode <= AF10) {
-      set_autoval(nKeyCode - 104);
-    } else {
-      switch (nKeyCode) {
-      case F1:                          /* F1 */
-        OnlineUserEditor();
-        break;
-      case SF1:
-        /* Shift-F1 */
-        // Nothing.
-        session()->UpdateTopScreen();
-        break;
-      case CF1:                          /* Ctrl-F1 */
-        session()->ToggleShutDown();
-        break;
-      case F2:                          /* F2 */
-        session()->topdata++;
-        if (session()->topdata > LocalIO::topdataUser) {
-          session()->topdata = LocalIO::topdataNone;
-        }
-        session()->UpdateTopScreen();
-        break;
-      case F3:                          /* F3 */
-        if (session()->using_modem) {
-          incom = !incom;
-          dump();
-          tleft(false);
-        }
-        break;
-      case F4:                          /* F4 */
-        chatcall = false;
-        session()->UpdateTopScreen();
-        break;
-      case F5:                          /* F5 */
-        hangup = true;
-        session()->remoteIO()->dtr(false);
-        break;
-      case SF5:                          /* Shift-F5 */
-        i1 = (rand() % 20) + 10;
-        for (i = 0; i < i1; i++) {
-          bputch(static_cast<unsigned char>(rand() % 256));
-        }
-        hangup = true;
-        session()->remoteIO()->dtr(false);
-        break;
-      case CF5:                          /* Ctrl-F5 */
-        bout << "\r\nCall back later when you are there.\r\n\n";
-        hangup = true;
-        session()->remoteIO()->dtr(false);
-        break;
-      case F6:                          /* F6 */
-        SetSysopAlert(!GetSysopAlert());
-        tleft(false);
-        break;
-      case F7:                          /* F7 */
-        session()->user()->SetExtraTime(session()->user()->GetExtraTime() -
-            static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
-        tleft(false);
-        break;
-      case F8:                          /* F8 */
-        session()->user()->SetExtraTime(session()->user()->GetExtraTime() +
-            static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
-        tleft(false);
-        break;
-      case F9:                          /* F9 */
-        if (session()->user()->GetSl() != 255) {
-          if (session()->GetEffectiveSl() != 255) {
-            session()->SetEffectiveSl(255);
-          } else {
-            session()->ResetEffectiveSl();
-          }
-          changedsl();
-          tleft(false);
-        }
-        break;
-      case F10:                          /* F10 */
-        if (chatting == 0) {
-          if (syscfg.sysconfig & sysconfig_2_way) {
-            chat1("", true);
-          } else {
-            chat1("", false);
-          }
-        } else {
-          chatting = 0;
-        }
-        break;
-      case CF10:                         /* Ctrl-F10 */
-        if (chatting == 0) {
-          chat1("", false);
-        } else {
-          chatting = 0;
-        }
-        break;
-      case HOME:                          /* HOME */
-        if (chatting == 1) {
-          chat_file = !chat_file;
-        }
-        break;
-      }
-    }
-  }
-}
-
 static const vector<string> top_screen_items = {
-  "Comm Disabled",
+  "",
   "Temp Sysop",
   "",
   "Alert",
@@ -568,31 +449,25 @@ static const vector<string> top_screen_items = {
   "%s chatting with %s"
 };
 
-void Win32ConsoleIO::tleft(bool bCheckForTimeOut) {
+// int topdata, tempsysop, sysop, is_user_online, 
+void Win32ConsoleIO::tleft(WSession* session, bool temp_sysop, bool sysop, bool user_online) {
   int cx = WhereX();
   int cy = WhereY();
   int ctl = GetTopLine();
   int cc = curatr;
-  curatr = session()->GetTopScreenColor();
+  curatr = GetTopScreenColor();
   SetTopLine(0);
   double nsln = nsl();
-  int nLineNumber = (chatcall && (session()->topdata == LocalIO::topdataUser)) ? 5 : 4;
+  int nLineNumber = (chatcall && (session->topdata == LocalIO::topdataUser)) ? 5 : 4;
 
 
-  if (session()->topdata) {
-    if (session()->using_modem && !incom) {
-      LocalXYPuts(1, nLineNumber, top_screen_items[0]);
-      for (std::string::size_type i = 19; i < session()->GetCurrentSpeed().length(); i++) {
-        LocalPutch(static_cast<unsigned char>('\xCD'));
-      }
-    } else {
-      LocalXYPuts(1, nLineNumber, session()->GetCurrentSpeed());
-      for (int i = WhereX(); i < 23; i++) {
-        LocalPutch(static_cast<unsigned char>('\xCD'));
-      }
+  if (session->topdata) {
+    LocalXYPuts(1, nLineNumber, session->GetCurrentSpeed());
+    for (int i = WhereX(); i < 23; i++) {
+      LocalPutch(static_cast<unsigned char>('\xCD'));
     }
 
-    if (session()->user()->GetSl() != 255 && session()->GetEffectiveSl() == 255) {
+    if (temp_sysop) {
       LocalXYPuts(23, nLineNumber, top_screen_items[1]);
     }
     if (GetSysopAlert()) {
@@ -601,23 +476,23 @@ void Win32ConsoleIO::tleft(bool bCheckForTimeOut) {
       LocalXYPuts(54, nLineNumber, top_screen_items[4]);
     }
 
-    if (sysop1()) {
+    if (sysop) {
       LocalXYPuts(64, nLineNumber, top_screen_items[5]);
     } else {
       LocalXYPuts(64, nLineNumber, top_screen_items[6]);
     }
   }
-  switch (session()->topdata) {
+  switch (session->topdata) {
   case LocalIO::topdataSystem:
-    if (session()->IsUserOnline()) {
+    if (user_online) {
       LocalXYPrintf(18, 3, "T-%6.2f", nsln / SECONDS_PER_MINUTE_FLOAT);
     }
     break;
   case LocalIO::topdataUser: {
-    if (session()->IsUserOnline()) {
+    if (user_online) {
       LocalXYPrintf(18, 3, "T-%6.2f", nsln / SECONDS_PER_MINUTE_FLOAT);
     } else {
-      LocalXYPrintf(18, 3, session()->user()->GetPassword());
+      LocalXYPrintf(18, 3, session->user()->GetPassword());
     }
   }
   break;
@@ -625,47 +500,41 @@ void Win32ConsoleIO::tleft(bool bCheckForTimeOut) {
   SetTopLine(ctl);
   curatr = cc;
   LocalGotoXY(cx, cy);
-  if (bCheckForTimeOut && session()->IsUserOnline()) {
-    if (nsln == 0.0) {
-      bout << "\r\nTime expired.\r\n\n";
-      hangup = true;
-    }
-  }
 }
 
-void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) {
+void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *session, int nInstanceNumber) {
   char i;
   char sl[82], ar[17], dar[17], restrict[17], rst[17], lo[90];
 
   int lll = lines_listed;
 
   if (so() && !incom) {
-    pSession->topdata = LocalIO::topdataNone;
+    session->topdata = LocalIO::topdataNone;
   }
 
   if (syscfg.sysconfig & sysconfig_titlebar) {
     // Only set the titlebar if the user wanted it that way.
-    const string username_num = pSession->names()->UserName(pSession->usernum);
+    const string username_num = session->names()->UserName(session->usernum);
     string title = StringPrintf("WWIV Node %d (User: %s)", nInstanceNumber,
               username_num.c_str());
     ::SetConsoleTitle(title.c_str());
   }
 
-  switch (pSession->topdata) {
+  switch (session->topdata) {
   case LocalIO::topdataNone:
-    set_protect(0);
+    set_protect(session, 0);
     break;
   case LocalIO::topdataSystem:
-    set_protect(5);
+    set_protect(session, 5);
     break;
   case LocalIO::topdataUser:
     if (chatcall) {
-      set_protect(6);
+      set_protect(session, 6);
     } else {
       if (GetTopLine() == 6) {
-        set_protect(0);
+        set_protect(session, 0);
       }
-      set_protect(5);
+      set_protect(session, 5);
     }
     break;
   }
@@ -673,14 +542,14 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
   int cy = WhereY();
   int nOldTopLine = GetTopLine();
   int cc = curatr;
-  curatr = pSession->GetTopScreenColor();
+  curatr = GetTopScreenColor();
   SetTopLine(0);
   for (i = 0; i < 80; i++) {
     sl[i] = '\xCD';
   }
   sl[80] = '\0';
 
-  switch (pSession->topdata) {
+  switch (session->topdata) {
   case LocalIO::topdataNone:
     break;
   case LocalIO::topdataSystem: {
@@ -690,7 +559,7 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
                   pStatus->GetNumUsers(), pStatus->GetCallerNumber(),
                   pStatus->GetNumCallsToday(), pStatus->GetNumLocalPosts());
 
-    const string username_num = pSession->names()->UserName(pSession->usernum);
+    const string username_num = session->names()->UserName(session->usernum);
     LocalXYPrintf(0, 2, "%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
                   username_num.c_str(),
                   pStatus->GetMinutesActiveToday(),
@@ -698,8 +567,8 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
                   pStatus->GetNumEmailSentToday());
 
     LocalXYPrintf(0, 3, "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
-                  pSession->user()->GetSl(),
-                  pSession->user()->GetDsl(),
+                  session->user()->GetSl(),
+                  session->user()->GetDsl(),
                   fwaiting,
                   pStatus->GetNumUploadsToday(),
                   pStatus->GetNumFeedbackSentToday());
@@ -708,17 +577,17 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
   case LocalIO::topdataUser: {
     strcpy(rst, restrict_string);
     for (i = 0; i <= 15; i++) {
-      if (pSession->user()->HasArFlag(1 << i)) {
+      if (session->user()->HasArFlag(1 << i)) {
         ar[i] = static_cast<char>('A' + i);
       } else {
         ar[i] = SPACE;
       }
-      if (pSession->user()->HasDarFlag(1 << i)) {
+      if (session->user()->HasDarFlag(1 << i)) {
         dar[i] = static_cast<char>('A' + i);
       } else {
         dar[i] = SPACE;
       }
-      if (pSession->user()->HasRestrictionFlag(1 << i)) {
+      if (session->user()->HasRestrictionFlag(1 << i)) {
         restrict[i] = rst[i];
       } else {
         restrict[i] = SPACE;
@@ -727,47 +596,47 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
     dar[16] = '\0';
     ar[16] = '\0';
     restrict[16] = '\0';
-    if (!wwiv::strings::IsEquals(pSession->user()->GetLastOn(), date())) {
-      strcpy(lo, pSession->user()->GetLastOn());
+    if (!wwiv::strings::IsEquals(session->user()->GetLastOn(), date())) {
+      strcpy(lo, session->user()->GetLastOn());
     } else {
-      snprintf(lo, sizeof(lo), "Today:%2d", pSession->user()->GetTimesOnToday());
+      snprintf(lo, sizeof(lo), "Today:%2d", session->user()->GetTimesOnToday());
     }
 
-    const string username_num = pSession->names()->UserName(pSession->usernum);
+    const string username_num = session->names()->UserName(session->usernum);
     LocalXYAPrintf(0, 0, curatr, "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u",
                    username_num.c_str(),
-                   pSession->user()->GetNumMailWaiting(),
-                   pSession->user()->GetFilesUploaded(),
-                   pSession->user()->GetUploadK(),
-                   pSession->user()->GetSl(),
-                   pSession->user()->GetNumLogons(),
-                   pSession->user()->GetNumMessagesPosted());
+                   session->user()->GetNumMailWaiting(),
+                   session->user()->GetFilesUploaded(),
+                   session->user()->GetUploadK(),
+                   session->user()->GetSl(),
+                   session->user()->GetNumLogons(),
+                   session->user()->GetNumMessagesPosted());
 
     char szCallSignOrRegNum[ 41 ];
-    if (pSession->user()->GetWWIVRegNumber()) {
-      snprintf(szCallSignOrRegNum, sizeof(szCallSignOrRegNum), "%lu", pSession->user()->GetWWIVRegNumber());
+    if (session->user()->GetWWIVRegNumber()) {
+      snprintf(szCallSignOrRegNum, sizeof(szCallSignOrRegNum), "%lu", session->user()->GetWWIVRegNumber());
     } else {
-      strcpy(szCallSignOrRegNum, pSession->user()->GetCallsign());
+      strcpy(szCallSignOrRegNum, session->user()->GetCallsign());
     }
     LocalXYPrintf(0, 1, "%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0lu ES=%4u",
-                  pSession->user()->GetRealName(),
-                  pSession->user()->GetVoicePhoneNumber(),
+                  session->user()->GetRealName(),
+                  session->user()->GetVoicePhoneNumber(),
                   szCallSignOrRegNum,
-                  pSession->user()->GetFilesDownloaded(),
-                  pSession->user()->GetDownloadK(),
-                  pSession->user()->GetDsl(),
-                  static_cast<long>((pSession->user()->GetTimeOn() + timer() - timeon) / SECONDS_PER_MINUTE_FLOAT),
-                  pSession->user()->GetNumEmailSent() + pSession->user()->GetNumNetEmailSent());
+                  session->user()->GetFilesDownloaded(),
+                  session->user()->GetDownloadK(),
+                  session->user()->GetDsl(),
+                  static_cast<long>((session->user()->GetTimeOn() + timer() - timeon) / SECONDS_PER_MINUTE_FLOAT),
+                  session->user()->GetNumEmailSent() + session->user()->GetNumNetEmailSent());
 
     LocalXYPrintf(0, 2, "ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u",
-                  ar, dar, restrict, pSession->user()->GetExempt(),
-                  lo, pSession->user()->GetNumFeedbackSent());
+                  ar, dar, restrict, session->user()->GetExempt(),
+                  lo, session->user()->GetNumFeedbackSent());
 
     LocalXYPrintf(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u",
-                  pSession->user()->GetNote(),
-                  pSession->user()->GetGender(),
-                  pSession->user()->GetAge(),
-                  ctypes(pSession->user()->GetComputerType()).c_str(), fwaiting);
+                  session->user()->GetNote(),
+                  session->user()->GetGender(),
+                  session->user()->GetAge(),
+                  ctypes(session->user()->GetComputerType()).c_str(), fwaiting);
 
     if (chatcall) {
       LocalXYPuts(0, 4, m_chatReason);
@@ -781,7 +650,7 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
   SetTopLine(nOldTopLine);
   LocalGotoXY(cx, cy);
   curatr = cc;
-  tleft(false);
+  session->tleft(false);
 
   lines_listed = lll;
 }
@@ -844,6 +713,7 @@ void Win32ConsoleIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {
 
 void Win32ConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   // Make sure that we are within the range of {(0,0), (80,GetScreenBottom())}
+  curatr = GetUserEditorColor();
   xlen = std::min(xlen, 80);
   if (ylen > (GetScreenBottom() + 1 - GetTopLine())) {
     ylen = (GetScreenBottom() + 1 - GetTopLine());
@@ -885,7 +755,7 @@ void Win32ConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   // Loop through Y, each time looping through X adding the right character
   for (int yloop = 0; yloop < size.Y; yloop++) {
     for (int xloop = 0; xloop < size.X; xloop++) {
-      ci[nCiPtr].Attributes = static_cast<int16_t>(curatr);
+      ci[nCiPtr].Attributes = static_cast<int16_t>(GetUserEditorColor());
       if ((yloop == 0) || (yloop == size.Y - 1)) {
         ci[nCiPtr].Char.AsciiChar   = '\xC4';      // top and bottom
       } else {
@@ -1031,9 +901,7 @@ static int GetEditLineStringLength(const char *text) {
 
 void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_status,
     int *returncode, char *pszAllowedSet) {
-  WWIV_ASSERT(pszInOutText);
-  WWIV_ASSERT(pszAllowedSet);
-
+  
   int oldatr = curatr;
   int cx = WhereX();
   int cy = WhereY();
@@ -1041,7 +909,7 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
     pszInOutText[i] = static_cast<unsigned char>(176);
   }
   pszInOutText[len] = '\0';
-  curatr = session()->GetEditLineColor();
+  curatr = GetEditLineColor();
   LocalFastPuts(pszInOutText);
   LocalGotoXY(cx, cy);
   bool done = false;
@@ -1204,9 +1072,9 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
   LocalGotoXY(cx, cy);
 }
 
-void Win32ConsoleIO::UpdateNativeTitleBar() {
+void Win32ConsoleIO::UpdateNativeTitleBar(WSession* session) {
   // Set console title
   std::stringstream consoleTitleStream;
-  consoleTitleStream << "WWIV Node " << session()->instance_number() << " (" << syscfg.systemname << ")";
+  consoleTitleStream << "WWIV Node " << session->instance_number() << " (" << syscfg.systemname << ")";
   SetConsoleTitle(consoleTitleStream.str().c_str());
 }

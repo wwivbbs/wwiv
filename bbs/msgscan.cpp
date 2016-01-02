@@ -82,7 +82,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
   bool done = false;
   bool quit = false;
   do {
-    session()->localIO()->tleft(true);
+    session()->tleft(true);
     CheckForHangup();
     set_net_num((session()->current_xsub().nets.empty()) ? 0 :
                 session()->current_xsub().nets[0].net_num);
@@ -653,7 +653,7 @@ void HandleScanReadFind(int &nMessageNumber, int &nScanOptionType) {
         bout << "\b";
       }
       if (!(nTempMsgNum % 100)) {
-        session()->localIO()->tleft(true);
+        session()->tleft(true);
         CheckForHangup();
       }
     }
