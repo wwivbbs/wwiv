@@ -30,10 +30,10 @@ int system_index(int ts);
 using wwiv::strings::StringPrintf;
 
 void zap_call_out_list() {
-  if (session()->net_networks[session()->net_num()].con) {
-    free(session()->net_networks[session()->net_num()].con);
-    session()->net_networks[ session()->net_num() ].con = nullptr;
-    session()->net_networks[ session()->net_num() ].num_con = 0;
+  if (session()->current_net().con) {
+    free(session()->current_net().con);
+    session()->current_net().con = nullptr;
+    session()->current_net().num_con = 0;
   }
 }
 
@@ -55,17 +55,17 @@ void read_call_out_list() {
     fileCallout.Close();
     for (long lPos = 0L; lPos < lFileLength; lPos++) {
       if (ss[lPos] == '@') {
-        ++session()->net_networks[session()->net_num()].num_con;
+        ++session()->current_net().num_con;
       }
     }
     free(ss);
-    if ((session()->net_networks[session()->net_num()].con = (net_call_out_rec *)
-         BbsAllocA(static_cast<long>((session()->net_networks[session()->net_num()].num_con + 2) *
+    if ((session()->current_net().con = (net_call_out_rec *)
+         BbsAllocA(static_cast<long>((session()->current_net().num_con + 2) *
                                      sizeof(net_call_out_rec)))) == nullptr) {
-      WWIV_ASSERT(session()->net_networks[session()->net_num()].con != nullptr);
+      WWIV_ASSERT(session()->current_net().con != nullptr);
       session()->AbortBBS(true);
     }
-    con = session()->net_networks[session()->net_num()].con;
+    con = session()->current_net().con;
     con--;
     fileCallout.Open(File::modeBinary | File::modeReadOnly);
     if ((ss = static_cast<char*>(BbsAllocA(lFileLength + 512))) == nullptr) {
@@ -302,10 +302,10 @@ net_system_list_rec *next_system(int ts) {
 }
 
 void zap_contacts() {
-  if (session()->net_networks[session()->net_num()].ncn) {
-    free(session()->net_networks[session()->net_num()].ncn);
-    session()->net_networks[session()->net_num()].ncn = nullptr;
-    session()->net_networks[session()->net_num()].num_ncn = 0;
+  if (session()->current_net().ncn) {
+    free(session()->current_net().ncn);
+    session()->current_net().ncn = nullptr;
+    session()->current_net().num_ncn = 0;
   }
 }
 
@@ -315,16 +315,16 @@ void read_contacts() {
   File fileContact(session()->network_directory(), CONTACT_NET);
   if (fileContact.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileContact.GetLength();
-    session()->net_networks[session()->net_num()].num_ncn = static_cast<int16_t>(lFileLength / sizeof(net_contact_rec));
-    if ((session()->net_networks[session()->net_num()].ncn =
-           static_cast<net_contact_rec *>(BbsAllocA((session()->net_networks[session()->net_num()].num_ncn + 2) *
+    session()->current_net().num_ncn = static_cast<int16_t>(lFileLength / sizeof(net_contact_rec));
+    if ((session()->current_net().ncn =
+           static_cast<net_contact_rec *>(BbsAllocA((session()->current_net().num_ncn + 2) *
            sizeof(net_contact_rec)))) == nullptr) {
-      WWIV_ASSERT(session()->net_networks[session()->net_num()].ncn != nullptr);
+      WWIV_ASSERT(session()->current_net().ncn != nullptr);
       session()->AbortBBS(true);
     }
     fileContact.Seek(0L, File::seekBegin);
-    fileContact.Read(session()->net_networks[session()->net_num()].ncn,
-        session()->net_networks[session()->net_num()].num_ncn * sizeof(net_contact_rec));
+    fileContact.Read(session()->current_net().ncn,
+        session()->current_net().num_ncn * sizeof(net_contact_rec));
     fileContact.Close();
   }
 }
@@ -332,8 +332,8 @@ void read_contacts() {
 void set_net_num(int network_number) {
   if (network_number >= 0 && network_number < session()->max_net_num()) {
     session()->set_net_num(network_number);
-    net_sysnum = session()->net_networks[session()->net_num()].sysnum;
-    session()->set_net_type(session()->net_networks[ session()->net_num() ].type);
+    net_sysnum = session()->current_net().sysnum;
+    session()->set_net_type(session()->current_net().type);
   }
 }
 
