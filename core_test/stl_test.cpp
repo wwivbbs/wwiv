@@ -76,6 +76,6 @@ TEST(StlTest, Contains_MapConstStringStrings) {
 TEST(StlTest, SizeAsInt) {
   vector<int> v = {1, 2, 3};
   auto vs = wwiv::stl::size(v);
-  EXPECT_TRUE(3, vs);
+  EXPECT_EQ(3, vs);
   EXPECT_STREQ("int", typeid(vs).name());
 }
