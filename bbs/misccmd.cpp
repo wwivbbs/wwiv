@@ -193,7 +193,7 @@ void kill_old_email() {
           bout.nl(2);
           bout.bprintf("|#1Subj|#9: |#%d%60.60s\r\n", session()->GetMessageColor(), m.title);
           bool next;
-          read_message1(&m.msg, static_cast<char>(m.anony & 0x0f), false, &next, "email", 0, 0);
+          read_type2_message(&m.msg, static_cast<char>(m.anony & 0x0f), false, &next, "email", 0, 0);
         }
         break;
         }

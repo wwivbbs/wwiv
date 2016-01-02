@@ -660,7 +660,7 @@ void mailr() {
             }
           }
           bool next;
-          read_message1(&(m.msg), (char)(m.anony & 0x0f), true, &next, "email", m.fromsys, m.fromuser);
+          read_type2_message(&(m.msg), (char)(m.anony & 0x0f), true, &next, "email", m.fromsys, m.fromuser);
           bout << "|#2R,D,Q,<space>  : ";
           if (next) {
             c = ' ';

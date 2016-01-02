@@ -267,43 +267,29 @@ static void UpdateHeaderInformation(int8_t anon_type, bool readit, const string 
   }
 }
 
-void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next, const char *file_name,
+void read_type2_message(messagerec * pMessageRecord, char an, bool readit, bool *next, const char *file_name,
   int nFromSystem, int nFromUser) {
-  string name, date;
 
   g_flags &= ~g_flag_ansi_movement;
+  *next = false;
 
   string message_text;
-  *next = false;
-  switch (pMessageRecord->storage_type) {
-  case 0:
-  case 1:
-  case 2:
-  {
-    if (!readfile(pMessageRecord, file_name, &message_text)) {
-      return;
-    }
-
-    size_t ptr = 0;
-    for (ptr = 0; ptr < message_text.size() && message_text[ptr] != RETURN && ptr<=200; ptr++) {
-      name.push_back(message_text[ptr]);
-    }
-    if (message_text[++ptr] == SOFTRETURN) {
-      ++ptr;
-    }
-    int start = ptr;
-    for (; ptr < message_text.size() && message_text[ptr] != RETURN && ptr-start <= 60; ptr++) {
-      date.push_back(message_text[ptr]);
-    }
-    message_text = message_text.substr(ptr + 1);
-  }
-  break;
-  default:
-    // illegal storage type
-    bout.nl();
-    bout << "->ILLEGAL STORAGE TYPE<-\r\n\n";
+  if (!readfile(pMessageRecord, file_name, &message_text)) {
     return;
   }
+
+  size_t ptr = 0;
+  string name, date;
+  for (ptr = 0; ptr < message_text.size() && message_text[ptr] != RETURN && ptr<=200; ptr++) {
+    name.push_back(message_text[ptr]);
+  }
+  if (message_text[++ptr] == SOFTRETURN) {
+    ++ptr;
+  }
+  for (size_t start=ptr; ptr < message_text.size() && message_text[ptr] != RETURN && ptr-start <= 60; ptr++) {
+    date.push_back(message_text[ptr]);
+  }
+  message_text = message_text.substr(ptr + 1);
 
   irt_name[0] = '\0';
   g_flags |= g_flag_disable_mci;
@@ -386,7 +372,7 @@ void read_post(int n, bool *next, int *val) {
     if (p.status & status_post_new_net) {
       set_net_num(p.network.network_msg.net_number);
     }
-    read_message1(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit, next,
+    read_type2_message(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit, next,
       (session()->current_sub().filename), p.ownersys, p.owneruser);
 
     if (nNetNumSaved != session()->net_num()) {

@@ -20,9 +20,9 @@
 
 #include "sdk/vardec.h"
 
-void read_message1(messagerec * pMessageRecord, char an, bool readit,
-                   bool *next, const char *file_name, int nFromSystem,
-                   int nFromUser);
+void read_type2_message(messagerec * pMessageRecord, char an, bool readit,
+                        bool *next, const char *file_name, int nFromSystem,
+                        int nFromUser);
 
 void read_post(int n, bool *next, int *val);
 

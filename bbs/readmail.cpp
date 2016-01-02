@@ -564,7 +564,7 @@ void readmail(int mode) {
         nFromUser = m.fromuser;
       }
       if (!abort) {
-        read_message1(&m.msg, (m.anony & 0x0f), (i) ? true : false, &next, "email", nFromSystem, nFromUser);
+        read_type2_message(&m.msg, (m.anony & 0x0f), (i) ? true : false, &next, "email", nFromSystem, nFromUser);
         if (!(m.status & status_seen)) {
           read_same_email(mloc, mw, curmail, &m, 0, status_seen);
         }
