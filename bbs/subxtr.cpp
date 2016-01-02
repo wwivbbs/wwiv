@@ -24,14 +24,15 @@
 
 #include "bbs/bbs.h"
 #include "bbs/vars.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
 
 using std::string;
 using std::vector;
+using wwiv::stl::size;
 using namespace wwiv::strings;
-
 
 static xtrasubsnetrec *xsubsn;
 static int nn;
@@ -93,7 +94,7 @@ bool read_subs_xtr(const std::vector<net_networks_rec>& net_networks, const std:
     switch (identifier) {
     case '!': {                        /* sub idx */
       curn = atoi(line.c_str());
-      if (curn > subs.size()) {
+      if (curn >= wwiv::stl::size(subs)) {
         // Bad number on ! line.
         curn = -1;
         break;

@@ -86,7 +86,7 @@ int try_to_ul(char *file_name) {
 int try_to_ul_wh(char *file_name) {
   directoryrec d;
   char s[101], s1[MAX_PATH], s2[MAX_PATH], *ss;
-  int i, i1, i2, i3, i4, key, ok = 0, dn = 0;
+  int i1, i2, i3, i4, key, ok = 0, dn = 0;
   uploadsrec u, u1;
 
   unalign(file_name);
@@ -177,7 +177,7 @@ int try_to_ul_wh(char *file_name) {
   if (d.mask & mask_archive) {
     ok = 0;
     s1[0] = '\0';
-    for (i = 0; i < MAX_ARCS; i++) {
+    for (size_t i = 0; i < MAX_ARCS; i++) {
       if (session()->arcs[i].extension[0] && session()->arcs[i].extension[0] != ' ') {
         if (s1[0]) {
           strcat(s1, ", ");
@@ -228,7 +228,7 @@ int try_to_ul_wh(char *file_name) {
     bout << "Checking for same file in other session()->directories...\r\n\n";
     i2 = 0;
 
-    for (i = 0; (i < session()->directories.size()) && (udir[i].subnum != -1); i++) {
+    for (size_t i = 0; (i < session()->directories.size()) && (udir[i].subnum != -1); i++) {
       strcpy(s1, "Scanning ");
       strcat(s1, session()->directories[udir[i].subnum].name);
 
@@ -393,7 +393,7 @@ int try_to_ul_wh(char *file_name) {
   u.daten = static_cast<uint32_t>(tCurrentDate);
   File fileDownload(g_szDownloadFileName);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  for (i = session()->numf; i >= 1; i--) {
+  for (int i = session()->numf; i >= 1; i--) {
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u1, sizeof(uploadsrec));
     FileAreaSetRecord(fileDownload, i + 1);

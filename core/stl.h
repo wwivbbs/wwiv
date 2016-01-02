@@ -27,6 +27,7 @@
 #include <string>
 
 #include "core/strings.h"
+#include "core/wwivassert.h"
 
 namespace wwiv {
 namespace stl {
@@ -68,6 +69,13 @@ const typename C::mapped_type get_or_default(C c,
     return default_value;
   }
   return iter->second;
+}
+
+template <typename C>
+const signed int size(C c) {
+  const auto size = c.size();
+  WWIV_ASSERT(size <= static_cast<C::size_type>(std::numeric_limits<signed int>::max()));
+  return static_cast<signed int>(size);
 }
 
 }  // namespace stl

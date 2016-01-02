@@ -800,7 +800,7 @@ void move_file_t() {
         } while (!hangup && (pszDirectoryNum[0] == '?'));
         d1 = -1;
         if (pszDirectoryNum[0]) {
-          for (int i1 = 0; (i1 < session()->directories.size()) && (udir[i1].subnum != -1); i1++) {
+          for (size_t i1 = 0; (i1 < session()->directories.size()) && (udir[i1].subnum != -1); i1++) {
             if (wwiv::strings::IsEquals(udir[i1].keys, pszDirectoryNum)) {
               d1 = i1;
             }
