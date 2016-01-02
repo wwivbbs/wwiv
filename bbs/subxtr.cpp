@@ -94,7 +94,7 @@ bool read_subs_xtr(const std::vector<net_networks_rec>& net_networks, const std:
     switch (identifier) {
     case '!': {                        /* sub idx */
       curn = atoi(line.c_str());
-      if (curn > wwiv::stl::size(subs)) {
+      if (curn >= wwiv::stl::size(subs)) {
         // Bad number on ! line.
         curn = -1;
         break;
