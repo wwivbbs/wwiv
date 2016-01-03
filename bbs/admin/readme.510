@@ -28,6 +28,8 @@ Now the WWIV5TelnetServer (WTS) is listening on a socket and ready to spawn
 instances of WWIV.  You do not need to keep multiple copies of WWIV running
 at all times, as the WTS will spawn them as required.
 
+Full documentation is avalable online: https://wwivbbs.readthedocs.org
+
 *** Be sure to read WHATSNEW.TXT for a list of all the new major features and
 other changes that have happened since 5.0. ***
 
