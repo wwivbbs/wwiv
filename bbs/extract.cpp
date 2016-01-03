@@ -123,7 +123,7 @@ static void extract_mod(const char *b, long len, time_t tDateTime) {
   } while (!hangup && ss1[0] == '?');
 
   mod_dir = -1;
-  for (int i1 = 0; i1 < session()->directories.size() && udir[i1].subnum != -1; i1++) {
+  for (size_t i1 = 0; i1 < session()->directories.size() && udir[i1].subnum != -1; i1++) {
     if (wwiv::strings::IsEquals(udir[i1].keys, ss1)) {
       mod_dir = i1;
     }

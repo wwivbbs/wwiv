@@ -24,12 +24,14 @@
 #include "bbs/wconstants.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
+#include "bbs/keycodes.h"
 #include "bbs/vars.h"
 #include "core/strings.h"
+#include "core/stl.h"
 #include "core/wwivassert.h"
-#include "bbs/keycodes.h"
 
 using std::string;
+using namespace wwiv::stl;
 
 static char str_yes[81],
             str_no[81];
@@ -591,7 +593,7 @@ char *mmkey(int dl, int area, bool bListOption) {
               if (!newline) {
                 if (isdigit(cmd2[0])) {
                   if (area == WSession::mmkeyMessageAreas && dl == 0) {
-                    for (i = 0; i < session()->subboards.size() && usub[i].subnum != -1; i++) {
+                    for (i = 0; i < size_int(session()->subboards) && usub[i].subnum != -1; i++) {
                       if (wwiv::strings::IsEquals(usub[i].keys, cmd2)) {
                         bout.nl();
                         break;
@@ -599,7 +601,7 @@ char *mmkey(int dl, int area, bool bListOption) {
                     }
                   }
                   if (area == WSession::mmkeyFileAreas && dl == 1) {
-                    for (i = 0; i < session()->directories.size(); i++) {
+                    for (i = 0; i < size_int(session()->directories); i++) {
                       if (wwiv::strings::IsEquals(udir[i].keys, cmd2)) {
                         bout.nl();
                         break;

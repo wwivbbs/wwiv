@@ -47,6 +47,7 @@ using std::string;
 using std::vector;
 using wwiv::bbs::InputMode;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static const int STOP_LIST = 0;
@@ -86,7 +87,7 @@ void select_editor() {
   bout << "|#9Which editor (|#31-" << session()->editors.size() << ", <Q>=leave as is|#9) ? ";
   char *ss = mmkey(2);
   int nEditor = atoi(ss);
-  if (nEditor >= 1 && nEditor <= session()->editors.size()) {
+  if (nEditor >= 1 && nEditor <= size_int(session()->editors)) {
     session()->user()->SetDefaultEditor(nEditor);
   } else if (IsEquals(ss, "0")) {
     session()->user()->SetDefaultEditor(0);
@@ -147,7 +148,7 @@ static void print_cur_stat() {
     bout << setw(45) << "|#17|#9) Update macros" << " "
          << setw(45) << "|#18|#9) Change colors" << wwiv::endl;
 
-    int nEditorNum = session()->user()->GetDefaultEditor();
+    uint8_t nEditorNum = session()->user()->GetDefaultEditor();
     const string editor_name = (nEditorNum > 0 && nEditorNum <= session()->editors.size()) ?
         session()->editors[nEditorNum-1].description : "None";
      bout << "|#19|#9) Full screen editor: |#2" << setw(16) << editor_name << " " 
@@ -876,7 +877,7 @@ static int GetMaxLinesToShowForScanPlus() {
           session()->user()->GetScreenLines() - (4 + STOP_LIST));
 }
 
-static void list_config_scan_plus(int first, int *amount, int type) {
+static void list_config_scan_plus(unsigned int first, int *amount, int type) {
   char s[101];
 
   bool bUseConf = (subconfnum > 1 && okconf(session()->user())) ? true : false;
@@ -919,7 +920,7 @@ static void list_config_scan_plus(int first, int *amount, int type) {
       ++*amount;
     }
   } else {
-    for (int this_dir = first; (this_dir < session()->directories.size()) && (udir[this_dir].subnum != -1) &&
+    for (size_t this_dir = first; (this_dir < session()->directories.size()) && (udir[this_dir].subnum != -1) &&
          *amount < max_lines * 2; this_dir++) {
       lines_listed = 0;
       int alias_dir = udir[this_dir].subnum;
@@ -976,10 +977,10 @@ static long is_inscan(int dir) {
     sysdir = true;
   }
 
-  for (int this_dir = 0; (this_dir < session()->directories.size()); this_dir++) {
+  for (size_t this_dir = 0; (this_dir < session()->directories.size()); this_dir++) {
     const string key = StringPrintf("%d", (sysdir ? dir : (dir + 1)));
     if (key == udir[this_dir].keys) {
-      int ad = udir[this_dir].subnum;
+      int16_t ad = udir[this_dir].subnum;
       return (qsc_n[ad / 32] & (1L << ad % 32));
     }
   }
@@ -988,7 +989,8 @@ static long is_inscan(int dir) {
 
 void config_scan_plus(int type) {
   int i, command;
-  int top = 0, amount = 0, pos = 0, side_pos = 0;
+  unsigned int top = 0;
+  int amount = 0, pos = 0, side_pos = 0;
   side_menu_colors smc = {
     NORMAL_HIGHLIGHT,
     NORMAL_MENU_ITEM,
@@ -1090,7 +1092,7 @@ void config_scan_plus(int type) {
         }
         else {
           bool sysdir = IsEquals(udir[0].keys, "0");
-          for (int this_dir = 0; (this_dir < session()->directories.size()); this_dir++) {
+          for (size_t this_dir = 0; (this_dir < session()->directories.size()); this_dir++) {
             const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
             if (s == udir[this_dir].keys) {
               int ad = udir[this_dir].subnum;

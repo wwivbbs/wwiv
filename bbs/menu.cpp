@@ -57,7 +57,6 @@ bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword);
 void MenuExecuteCommand(MenuInstanceData* menu_data, const string& command);
 void LogUserFunction(const MenuInstanceData* menu_data, const string& command, MenuRec* pMenu);
 void PrintMenuPrompt(MenuInstanceData* menu_data);
-void QueryMenuSet();
 void WriteMenuSetup(int user_number);
 void UnloadMenuSetup();
 const string GetCommand(const MenuInstanceData* menu_data);
@@ -66,7 +65,6 @@ void InterpretCommand(MenuInstanceData* menu_data, const char *pszScript);
 
 static bool CheckMenuPassword(const string& original_password) {
   const string expected_password = (original_password == "*SYSTEM") ? syscfg.systempw : original_password;
-
   bout.nl();
   string actual_password = input_password("|#2SY: ", 20);
   return actual_password == expected_password;
@@ -78,10 +76,6 @@ void mainmenu() {
     pSecondUserRec = nullptr;
   }
   pSecondUserRec = static_cast<user_config *>(malloc(sizeof(user_config)));
-  if (!pSecondUserRec) {
-    return;
-  }
-
   while (!hangup) {
     StartMenus();
   }

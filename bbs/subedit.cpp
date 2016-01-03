@@ -74,7 +74,7 @@ static void save_subs() {
   set_net_num(nSavedNetNum);
 }
 
-static string boarddata(int n) {
+static string boarddata(size_t n) {
   subboardrec r = session()->subboards[n];
   char x = SPACE;
   if (r.ar != 0) {
@@ -168,8 +168,7 @@ string GetAr(subboardrec r) {
   return "None.";
 }
 
-
-void DisplayNetInfo(int nSubNum) {
+void DisplayNetInfo(size_t nSubNum) {
   if (session()->xsubs.size() <= nSubNum) {
     bout << "|#2Not networked.\r\n";
     return;
@@ -215,7 +214,6 @@ void DisplayNetInfo(int nSubNum) {
                     ((*it).flags & XTRA_NET_AUTO_INFO) ? szBuffer2 : "");
     }
   }
-
 }
 
 static void modify_sub(int n) {

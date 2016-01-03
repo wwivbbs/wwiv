@@ -24,6 +24,7 @@
 #include "bbs/keycodes.h"
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 
@@ -31,6 +32,7 @@ using std::string;
 using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 void modify_chain(int nCurrentChainum);
@@ -164,7 +166,7 @@ void modify_chain(int nCurrentChainum) {
         session()->chains_reg[ nCurrentChainum ] = r;
       }
       if (--nCurrentChainum < 0) {
-        nCurrentChainum = session()->chains.size() - 1;
+        nCurrentChainum = size_int(session()->chains) - 1;
       }
       c = session()->chains[ nCurrentChainum ];
       if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
@@ -392,7 +394,7 @@ void chainedit() {
       bout << "|#2Chain number? ";
       string s = input(2);
       int i = atoi(s.c_str());
-      if (s[0] != '\0' && i >= 0 && i < session()->chains.size()) {
+      if (s[0] != '\0' && i >= 0 && i < size_int(session()->chains)) {
         modify_chain(i);
       }
     } break;
@@ -407,7 +409,7 @@ void chainedit() {
         } else {
           chain = atoi(s.c_str());
         }
-        if (s[0] != '\0' && chain >= 0 && chain <= session()->chains.size()) {
+        if (s[0] != '\0' && chain >= 0 && chain <= size_int(session()->chains)) {
           insert_chain(chain);
         }
       }
@@ -417,7 +419,7 @@ void chainedit() {
       bout << "|#2Delete which chain? ";
       string s = input(2);
       int i = atoi(s.c_str());
-      if (s[0] != '\0' && i >= 0 && i < session()->chains.size()) {
+      if (s[0] != '\0' && i >= 0 && i < size_int(session()->chains)) {
         bout.nl();
         bout << "|#5Delete " << session()->chains[i].description << "? ";
         if (yesno()) {

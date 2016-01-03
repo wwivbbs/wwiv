@@ -13,7 +13,7 @@
 * delete num_events
 * make ssm take a string (use StringPrintf as needed)
 * add tests for usermanager and user (in SDK)
-* mmkey is a mess. only odc seems to be used right.
+* mmkey is a mess.  mostly just odc is used. confutil.cpp sets the others.
 * cleanup session()->tagging and session()->titled
 
 * remove extra include statements from user.cpp
