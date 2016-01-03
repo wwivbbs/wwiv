@@ -31,7 +31,7 @@
 
 using std::string;
 using std::vector;
-using wwiv::stl::size;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static xtrasubsnetrec *xsubsn;
@@ -94,7 +94,7 @@ bool read_subs_xtr(const std::vector<net_networks_rec>& net_networks, const std:
     switch (identifier) {
     case '!': {                        /* sub idx */
       curn = atoi(line.c_str());
-      if (curn >= wwiv::stl::size(subs)) {
+      if (curn >= size_int(subs)) {
         // Bad number on ! line.
         curn = -1;
         break;

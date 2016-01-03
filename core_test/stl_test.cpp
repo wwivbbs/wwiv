@@ -75,7 +75,28 @@ TEST(StlTest, Contains_MapConstStringStrings) {
 
 TEST(StlTest, SizeAsInt) {
   vector<int> v = {1, 2, 3};
-  auto vs = wwiv::stl::size(v);
+  auto vs = size_int(v);
   EXPECT_EQ(3, vs);
   EXPECT_STREQ("int", typeid(vs).name());
+}
+
+TEST(StlTest, SizeAsInt32) {
+  vector<int> v = {1, 2, 3};
+  auto vs = size_int32(v);
+  EXPECT_EQ(3, vs);
+  EXPECT_STREQ("int", typeid(vs).name());
+}
+
+TEST(StlTest, SizeAsInt16) {
+  vector<int> v = {1, 2, 3};
+  auto vs = size_int16(v);
+  EXPECT_EQ(3, vs);
+  EXPECT_STREQ("short", typeid(vs).name());
+}
+
+TEST(StlTest, SizeAsInt8) {
+  vector<int> v = {1, 2, 3};
+  auto vs = size_int8(v);
+  EXPECT_EQ(3, vs);
+  EXPECT_STREQ("signed char", typeid(vs).name());
 }

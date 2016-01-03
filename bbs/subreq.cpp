@@ -23,9 +23,12 @@
 #include "bbs/email.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
+
+using namespace wwiv::stl;
 
 bool display_sub_categories();
 int find_hostfor(char *type, short *ui, char *description, short *opt);
@@ -228,7 +231,7 @@ void sub_xtr_add(int n, int nn) {
   int onxi, odci, ii, gc;
 
   // nn may be -1
-  while (nn >= static_cast<int>(session()->xsubs[n].nets.size())) {
+  while (nn >= size_int(session()->xsubs[n].nets)) {
     xtrasubsnetrec xnp;
     memset(&xnp, 0, sizeof(xtrasubsnetrec));
     session()->xsubs[n].nets.push_back(xnp);
@@ -391,7 +394,7 @@ void sub_xtr_add(int n, int nn) {
       }
     }
   }
-  if (nn == -1 || nn >= static_cast<int>(session()->xsubs[n].nets.size())) {
+  if (nn == -1 || nn >= size_int(session()->xsubs[n].nets)) {
     // nn will be -1 when adding a new sub.
     session()->xsubs[n].nets.push_back(xnp);
   } else {
