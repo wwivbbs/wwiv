@@ -72,11 +72,6 @@ const typename C::mapped_type get_or_default(C c,
 }
 
 template <typename C>
-const signed int size_int(C c) {
-  return wwiv::stl::size_int32(c);
-}
-
-template <typename C>
 const int32_t size_int32(C c) {
   const auto size = c.size();
   WWIV_ASSERT(size <= static_cast<C::size_type>(std::numeric_limits<int32_t>::max()));
@@ -95,6 +90,11 @@ const int8_t size_int8(C c) {
   const auto size = c.size();
   WWIV_ASSERT(size <= static_cast<C::size_type>(std::numeric_limits<int8_t>::max()));
   return static_cast<int8_t>(size);
+}
+
+template <typename C>
+const signed int size_int(C c) {
+  return wwiv::stl::size_int32(c);
 }
 
 }  // namespace stl
