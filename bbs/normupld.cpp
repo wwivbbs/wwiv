@@ -166,7 +166,7 @@ void normalupload(int dn) {
       bout.nl();
       bout << "Checking for same file in other session()->directories...\r\n\n";
       int nLastLineLength = 0;
-      for (int i = 0; i < session()->directories.size() && udir[i].subnum != -1; i++) {
+      for (size_t i = 0; i < session()->directories.size() && udir[i].subnum != -1; i++) {
         string buffer = "Scanning ";
         buffer += session()->directories[udir[i].subnum].name;
         int nBufferLen = buffer.length();

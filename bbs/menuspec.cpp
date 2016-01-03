@@ -34,11 +34,14 @@
 #include "bbs/menusupp.h"
 #include "bbs/multinst.h"
 #include "bbs/vars.h"
+#include "core/stl.h"
 #include "core/strings.h"
 
 using std::string;
 using namespace wwiv::menus;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 /* ---------------------------------------------------------------------- */
 /* menuspec.cpp - Menu Specific support functions                           */
@@ -162,13 +165,13 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
       nRecordNumber = nrecno(pszDownloadFileName, nRecordNumber);
     }
   }
-  return (abort) ? -1 : 1;
+  return abort ? -1 : 1;
 }
 
 
 int FindDN(const char *pszDownloadFileName) {
-  for (int i = 0; (i < session()->directories.size()); i++) {
-    if (wwiv::strings::IsEqualsIgnoreCase(session()->directories[i].filename, pszDownloadFileName)) {
+  for (size_t i = 0; (i < session()->directories.size()); i++) {
+    if (IsEqualsIgnoreCase(session()->directories[i].filename, pszDownloadFileName)) {
       return i;
     }
   }
@@ -197,18 +200,15 @@ bool MenuRunDoorNumber(int nDoorNumber, bool bFree) {
   return true;
 }
 
-
-
 int FindDoorNo(const char *pszDoor) {
   for (size_t i = 0; i < session()->chains.size(); i++) {
-    if (wwiv::strings::IsEqualsIgnoreCase(session()->chains[i].description, pszDoor)) {
+    if (IsEqualsIgnoreCase(session()->chains[i].description, pszDoor)) {
       return i;
     }
   }
 
   return -1;
 }
-
 
 bool ValidateDoorAccess(int nDoorNumber) {
   int inst = inst_ok(INST_LOC_CHAINS, nDoorNumber + 1);

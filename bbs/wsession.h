@@ -170,8 +170,8 @@ public:
 
   // This is the current user's sub number they are sitting on.
   // This is a user sub number (usub[b], not subboards[b]).
-  int  GetCurrentMessageArea() const { return m_nCurrentMessageArea; }
-  void SetCurrentMessageArea(int n) { m_nCurrentMessageArea = n; }
+  size_t GetCurrentMessageArea() const { return m_nCurrentMessageArea; }
+  void SetCurrentMessageArea(size_t n) { m_nCurrentMessageArea = n; }
 
   // This is set by iscan1 (for the most part) and is the sub number the user is
   // currently scanning/reading.  Note. this is the subnumber from subboards
@@ -180,6 +180,7 @@ public:
   // iscan(session()->GetCurrentMessageArea());
   // if (session()->GetCurrentReadMessageArea() < 0) { ... }
 
+  // Note: This may be set to -1 to mean no area.
   int  GetCurrentReadMessageArea() const { return m_nCurrentReadMessageArea; }
   void SetCurrentReadMessageArea(int n) { m_nCurrentReadMessageArea = n; }
 
@@ -187,11 +188,11 @@ public:
   const xtrasubsrec& current_xsub() const { return xsubs[GetCurrentReadMessageArea()]; }
   net_networks_rec& current_net() { return net_networks[net_num()]; }
 
-  int  GetCurrentConferenceMessageArea() const { return m_nCurrentConferenceMessageArea; }
-  void SetCurrentConferenceMessageArea(int n) { m_nCurrentConferenceMessageArea = n; }
+  size_t GetCurrentConferenceMessageArea() const { return m_nCurrentConferenceMessageArea; }
+  void SetCurrentConferenceMessageArea(size_t n) { m_nCurrentConferenceMessageArea = n; }
 
-  int  GetCurrentConferenceFileArea() const { return m_nCurrentConferenceFileArea; }
-  void SetCurrentConferenceFileArea(int n) { m_nCurrentConferenceFileArea = n; }
+  size_t GetCurrentConferenceFileArea() const { return m_nCurrentConferenceFileArea; }
+  void SetCurrentConferenceFileArea(size_t n) { m_nCurrentConferenceFileArea = n; }
 
   bool IsUseInternalZmodem() const { return m_bInternalZmodem; }
   void SetUseInternalZmodem(bool b) { m_bInternalZmodem = b; }

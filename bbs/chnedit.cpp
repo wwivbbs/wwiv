@@ -178,7 +178,7 @@ void modify_chain(int nCurrentChainum) {
       if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
         session()->chains_reg[ nCurrentChainum ] = r;
       }
-      if (++nCurrentChainum >= session()->chains.size()) {
+      if (++nCurrentChainum >= size_int(session()->chains)) {
         nCurrentChainum = 0;
       }
       c = session()->chains[ nCurrentChainum ];

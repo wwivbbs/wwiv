@@ -33,16 +33,17 @@
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/instmsg.h"
+#include "bbs/external_edit.h"
+#include "bbs/keycodes.h"
+#include "bbs/wconstants.h"
 #include "bbs/message_file.h"
 #include "bbs/vars.h"
 #include "bbs/workspace.h"
 #include "core/scope_exit.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
-#include "bbs/external_edit.h"
-#include "bbs/keycodes.h"
-#include "bbs/wconstants.h"
 #include "sdk/names.h"
 #include "sdk/filenames.h"
 
@@ -50,6 +51,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 using wwiv::bbs::InputMode;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static const int LEN = 161;
@@ -216,16 +218,15 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
           if (!line.empty() && line.front() == CB) {
             line = line.substr(1);
             int i5 = 0;
-            int i4 = 0;
             // TODO(rusnfan): Make a utility function to do this in strings.h
-            for (i4 = 0; i4 < line.size(); i4++) {
+            for (size_t i4 = 0; i4 < line.size(); i4++) {
               if ((line[i4] == 8) || (line[i4] == 3)) {
                 --i5;
               } else {
                 ++i5;
               }
             }
-            for (i4 = 0; (i4 < (session()->user()->GetScreenChars() - i5) / 2) && (!abort); i4++) {
+            for (size_t i4 = 0; (i4 < (session()->user()->GetScreenChars() - i5) / 2) && (!abort); i4++) {
               osan(" ", &abort, &next);
             }
           }
@@ -299,12 +300,12 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
     }
 
     if (bCheckMessageSize) {
-      if (*curli == lin.size()) {
+      if (*curli == size_int(lin)) {
         // we're inserting a new line at the end.
         lin.emplace_back(current_line);
         // Since we added the line, let's move forward.
         (*curli)++;
-      } else if (*curli < lin.size()) {
+      } else if (*curli < size_int(lin)) {
         // replacing an older line.
         lin.at(*curli).assign(current_line);
       }

@@ -122,7 +122,7 @@ int listfiles_plus_function(int type) {
 
   g_num_listed = 0;
   bool all_done = false;
-  for (int this_dir = 0; (this_dir < session()->directories.size()) && (!hangup) && (udir[this_dir].subnum != -1)
+  for (size_t this_dir = 0; (this_dir < session()->directories.size()) && (!hangup) && (udir[this_dir].subnum != -1)
        && !all_done; this_dir++) {
     int also_this_dir = udir[this_dir].subnum;
     bool scan_dir = false;

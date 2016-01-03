@@ -33,6 +33,7 @@
 #include "bbs/wstatus.h"
 #include "core/file.h"
 #include "core/scope_exit.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
@@ -47,8 +48,9 @@ static File fileSub;                       // File object for '.sub' file
 static char subdat_fn[MAX_PATH];            // filename of .sub file
 
 using std::unique_ptr;
-using wwiv::strings::StrCat;
-using wwiv::core::ScopeExit;
+using namespace wwiv::core;
+using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 // Needed by pack_all_subs() which should move out of here.
 bool checka();
@@ -121,7 +123,7 @@ bool iscan1(int sub_index) {
   postrec p;
 
   // forget it if an invalid sub #
-  if (sub_index < 0 || sub_index >= session()->subboards.size()) {
+  if (sub_index < 0 || sub_index >= size_int(session()->subboards)) {
     return false;
   }
 

@@ -1139,7 +1139,7 @@ void config_scan_plus(int type) {
             qsc_q[usub[top + pos].subnum / 32] ^= (1L << (usub[top + pos].subnum % 32));
           } else {
             bool sysdir = IsEquals(udir[0].keys, "0");
-            for (int this_dir = 0; (this_dir < session()->directories.size()); this_dir++) {
+            for (size_t this_dir = 0; (this_dir < session()->directories.size()); this_dir++) {
               const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
               if (s == udir[this_dir].keys) {
                 int ad = udir[this_dir].subnum;
@@ -1159,7 +1159,7 @@ void config_scan_plus(int type) {
               }
             }
           } else {
-            for (int this_dir = 0; this_dir < session()->directories.size(); this_dir++) {
+            for (size_t this_dir = 0; this_dir < session()->directories.size(); this_dir++) {
               if (qsc_n[udir[this_dir].subnum / 32] & (1L << (udir[this_dir].subnum % 32))) {
                 qsc_n[udir[this_dir].subnum / 32] ^= 1L << (udir[this_dir].subnum % 32);
               }
@@ -1177,7 +1177,7 @@ void config_scan_plus(int type) {
               }
             }
           } else {
-            for (int this_dir = 0; this_dir < session()->directories.size(); this_dir++) {
+            for (size_t this_dir = 0; this_dir < session()->directories.size(); this_dir++) {
               if (!(qsc_n[udir[this_dir].subnum / 32] & (1L << (udir[this_dir].subnum % 32)))) {
                 qsc_n[udir[this_dir].subnum / 32] ^= 1L << (udir[this_dir].subnum % 32);
               }

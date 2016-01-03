@@ -61,6 +61,7 @@
 #include "bbs/printfile.h"
 #include "bbs/wstatus.h"
 #include "core/os.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
@@ -70,6 +71,8 @@ using wwiv::bbs::InputMode;
 using wwiv::bbs::TempDisablePause;
 using namespace wwiv::menus;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 void UnQScan() {
   bout.nl();
@@ -1082,8 +1085,8 @@ void SetSubNumber(const char *pszSubKeys) {
 }
 
 void SetDirNumber(const char *pszDirectoryKeys) {
-  for (int i = 0; i < session()->directories.size(); i++) {
-    if (wwiv::strings::IsEquals(udir[i].keys, pszDirectoryKeys)) {
+  for (size_t i = 0; i < session()->directories.size(); i++) {
+    if (IsEquals(udir[i].keys, pszDirectoryKeys)) {
       session()->SetCurrentFileArea(i);
     }
   }
