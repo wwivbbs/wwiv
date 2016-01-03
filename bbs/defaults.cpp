@@ -184,10 +184,6 @@ static void print_cur_stat() {
 }
 
 static const string DisplayColorName(int c) {
-  if (checkcomp("Ami") || checkcomp("Mac")) {
-    return StringPrintf("Color #%d", c);
-  }
-
   switch (c) {
   case 0:
     return "Black";
@@ -220,18 +216,12 @@ const string DescribeColorCode(int nColorCode) {
   }
 
   if (nColorCode & 0x08) {
-    os << ((checkcomp("Ami") || checkcomp("Mac")) ? ", Bold" : ", Intense");
+    os << ", Bold";
   }
   if (nColorCode & 0x80) {
-    if (checkcomp("Ami")) {
-      os << ", Italicized";
-    } else if (checkcomp("Mac")) {
-      os << ", Underlined";
-    } else {
-      os << ", Blinking";
-    }
+    os << ", Blinking";
   }
-  return string(os.str());
+  return os.str();
 }
 
 void color_list() {
@@ -354,23 +344,12 @@ static void change_colors() {
           }
         }
       }
-      if (checkcomp("Ami") || checkcomp("Mac")) {
-        bout << "|#9Bold? ";
-      } else {
-        bout << "|#9Intensified? ";
-      }
+      bout << "|#9Bold? ";
       if (yesno()) {
         nc |= 0x08;
       }
 
-      if (checkcomp("Ami")) {
-        bout << "|#9Italicized? ";
-      } else if (checkcomp("Mac")) {
-        bout << "|#9Underlined? ";
-      } else {
-        bout << "|#9Blinking? ";
-      }
-
+      bout << "|#9Blinking? ";
       if (yesno()) {
         nc |= 0x80;
       }
