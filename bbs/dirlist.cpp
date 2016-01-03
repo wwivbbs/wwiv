@@ -53,10 +53,10 @@ void dirlist(int mode) {
     char *ss = nullptr;
 
     while (i <= en && uconfdir[i].confnum != -1 && !abort) {
-      int i1 = 0;
+      size_t i1 = 0;
       while (i1 < session()->directories.size() && udir[i1].subnum != -1 && !abort) {
         char s[ 255 ];
-        int firstp = 0;
+        size_t firstp = 0;
         if (p && mode == 0) {
           p = 0;
           firstp = i1;
@@ -109,7 +109,7 @@ void dirlist(int mode) {
                                             is ? firstp : firstp + 1, lastp);
           ss = mmkey(1, WSession::mmkeyFileAreas, true);
           if (isdigit(ss[0])) {
-            for (int i3 = 0; i3 < session()->directories.size(); i3++) {
+            for (size_t i3 = 0; i3 < session()->directories.size(); i3++) {
               if (wwiv::strings::IsEquals(udir[i3].keys, ss)) {
                 session()->SetCurrentFileArea(i3);
                 os      = udir[session()->GetCurrentFileArea()].subnum;
@@ -177,7 +177,7 @@ void dirlist(int mode) {
         is = false;
       }
       if (isdigit(ss[0])) {
-        for (int i3 = 0; i3 < session()->directories.size(); i3++) {
+        for (size_t i3 = 0; i3 < session()->directories.size(); i3++) {
           if (wwiv::strings::IsEquals(udir[i3].keys, ss)) {
             session()->SetCurrentFileArea(i3);
             os = udir[session()->GetCurrentFileArea()].subnum;

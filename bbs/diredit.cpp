@@ -70,7 +70,7 @@ void showdirs() {
   bool abort = false;
   pla("|#2##   DAR Area Description                        FileName DSL AGE FIL PATH", &abort);
   pla("|#7==== --- ======================================= -------- === --- === ---------", &abort);
-  for (int i = 0; i < session()->directories.size() && !abort; i++) {
+  for (size_t i = 0; i < session()->directories.size() && !abort; i++) {
     sprintf(s, "%s %s", session()->directories[i].name, session()->directories[i].filename);
     if (strcasestr(s, s1)) {
       dirdata(i, s);
@@ -380,7 +380,6 @@ void insert_dir(int n) {
 
 
 void delete_dir(int n) {
-  int i, i1;
   uint32_t *pTempQScan, *pTempQScan_n, m2, m3;
   subconf_t nconv;
 
@@ -408,13 +407,13 @@ void delete_dir(int n) {
     m2 = 0xffffffff << (n % 32);
     m3 = 0xffffffff >> (32 - (n % 32));
 
-    for (i = 1; i <= nNumUserRecords; i++) {
+    for (size_t i = 1; i <= nNumUserRecords; i++) {
       read_qscn(i, pTempQScan, true);
 
       pTempQScan_n[n / 32] = (pTempQScan_n[n / 32] & m3) | ((pTempQScan_n[n / 32] >> 1) & m2) |
                              (pTempQScan_n[(n / 32) + 1] << 31);
 
-      for (i1 = (n / 32) + 1; i1 <= (session()->directories.size() / 32); i1++) {
+      for (size_t i1 = (n / 32) + 1; i1 <= (session()->directories.size() / 32); i1++) {
         pTempQScan_n[i1] = (pTempQScan_n[i1] >> 1) | (pTempQScan_n[i1 + 1] << 31);
       }
 

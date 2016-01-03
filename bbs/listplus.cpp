@@ -39,6 +39,7 @@
 #include "bbs/vars.h"
 #include "bbs/wwivcolors.h"
 
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
@@ -46,6 +47,7 @@
 using std::string;
 using std::vector;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 user_config config_listing;
@@ -563,7 +565,7 @@ static int load_config_listing(int config) {
       len = fileConfig.Read(&config_listing, sizeof(user_config));
       fileConfig.Close();
       if (len != sizeof(user_config) ||
-          !wwiv::strings::IsEqualsIgnoreCase(config_listing.name, user.GetName())) {
+          !IsEqualsIgnoreCase(config_listing.name, user.GetName())) {
         memset(&config_listing, 0, sizeof(config_listing));
         strcpy(config_listing.name, user.GetName());
         CheckLPColors();
@@ -965,12 +967,12 @@ void sysop_configure() {
     case 'J':
       bout << "Enter max amount of lines to show (0=disabled) ";
       input(s, 2, true);
-      lp_config.max_screen_lines_to_show = wwiv::strings::StringToShort(s);
+      lp_config.max_screen_lines_to_show = StringToShort(s);
       break;
     case 'K':
       bout << "Enter minimum extended description lines to show ";
       input(s, 2, true);
-      lp_config.show_at_least_extended = wwiv::strings::StringToShort(s);
+      lp_config.show_at_least_extended = StringToShort(s);
       break;
     case 'L':
       lp_config.no_configuration = !lp_config.no_configuration;
@@ -1372,7 +1374,7 @@ static int rename_filename(const char *file_name, int dn) {
     }
     if (s[0]) {
       align(s);
-      if (!wwiv::strings::IsEquals(s, "        .   ")) {
+      if (!IsEquals(s, "        .   ")) {
         strcpy(s1, session()->directories[dn].path);
         strcpy(s2, s1);
         strcat(s1, s);
@@ -1602,8 +1604,8 @@ static int move_filename(const char *file_name, int dn) {
 
         nDestDirNum = -1;
         if (ss[0]) {
-          for (int i1 = 0; (i1 < session()->directories.size()) && (udir[i1].subnum != -1); i1++) {
-            if (wwiv::strings::IsEquals(udir[i1].keys, ss)) {
+          for (size_t i1 = 0; (i1 < session()->directories.size()) && (udir[i1].subnum != -1); i1++) {
+            if (IsEquals(udir[i1].keys, ss)) {
               nDestDirNum = i1;
             }
           }
@@ -1699,7 +1701,7 @@ static int move_filename(const char *file_name, int dn) {
         add_extended_description(u.filename, ss);
         free(ss);
       }
-      if (!wwiv::strings::IsEquals(szSourceFileName, szDestFileName) &&
+      if (!IsEquals(szSourceFileName, szDestFileName) &&
           ListPlusExist(szSourceFileName)) {
         StringRemoveWhitespace(szSourceFileName);
         StringRemoveWhitespace(szDestFileName);

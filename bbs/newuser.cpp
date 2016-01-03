@@ -45,16 +45,17 @@
 #include "bbs/workspace.h"
 #include "bbs/wstatus.h"
 #include "core/inifile.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
 
 using std::string;
 using wwiv::bbs::InputMode;
-using wwiv::core::FilePath;
-using wwiv::core::IniFile;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
-using namespace wwiv::strings;;
+using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 // Local function prototypes
 
@@ -142,7 +143,7 @@ void input_language() {
         char* ss = mmkey(2);
         ch = *((ss) - 1);
       }
-      if (ch >= 0 && ch < session()->languages.size()) {
+      if (ch >= 0 && ch < size_int(session()->languages)) {
         session()->user()->SetLanguage(session()->languages[ch].num);
       }
     } while ((session()->user()->GetLanguage() == 255) && (!hangup));

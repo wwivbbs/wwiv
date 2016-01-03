@@ -744,7 +744,7 @@ void HandleListTitles(int &nMessageNumber, int &nScanOptionType) {
           strcpy(szTempBuffer, "");
           while (b[lTempBufferPos] != RETURN
                  && b[lTempBufferPos] && lTempBufferPos < b.length()
-                 && lTempBufferPos < (session()->user()->GetScreenChars() - 54)) {
+                 && lTempBufferPos < static_cast<size_t>(session()->user()->GetScreenChars() - 54)) {
             szTempBuffer[lTempBufferPos] = b[lTempBufferPos];
             lTempBufferPos++;
           }
@@ -808,7 +808,7 @@ void HandleMessageMove(int &nMessageNumber) {
       return;
     }
     bool ok = false;
-    for (int i1 = 0; (i1 < session()->subboards.size() && usub[i1].subnum != -1 && !ok); i1++) {
+    for (size_t i1 = 0; (i1 < session()->subboards.size() && usub[i1].subnum != -1 && !ok); i1++) {
       if (IsEquals(usub[i1].keys, ss1)) {
         nTempSubNum = i1;
         bout.nl();

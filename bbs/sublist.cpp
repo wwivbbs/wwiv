@@ -17,6 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <algorithm>
+#include <string>
+
 #include "bbs/bbsovl1.h"
 #include "bbs/conf.h"
 #include "bbs/bbs.h"
@@ -26,6 +29,7 @@
 #include "bbs/subxtr.h"
 #include "core/strings.h"
 
+using std::max;
 using namespace wwiv::strings;
 
 void old_sublist() {
@@ -68,7 +72,7 @@ void old_sublist() {
               stripcolors(reinterpret_cast<char*>(subconfs[uconfsub[i].confnum].name)));
       pla(s, &abort);
     }
-    int i1 = 0;
+    size_t i1 = 0;
     while ((i1 < session()->subboards.size()) && (usub[i1].subnum != -1) && (!abort)) {
       sprintf(s, "  |#5%4.4s|#2", usub[i1].keys);
       if (qsc_q[usub[i1].subnum / 32] & (1L << (usub[i1].subnum % 32))) {
@@ -120,27 +124,17 @@ void old_sublist() {
 
 
 void SubList() {
-  int i, i1, i2,                        //loop variables
-      ns,                               //number of subs
-      p,
-      firstp,                           //first sub on page
-      lastp,                            //last sub on page
-      wc,                               //color code
-      oldConf,                          //old conference
-      oldSub,                           //old sub
-      sn,                               //current sub number
-      en,
-      msgIndex,                         //message Index
-      newTally;                         //new message tally
+  int p,
+      wc,  // color code
+      msgIndex,  // message Index
+      newTally; // new message tally
   char ch, s[81], s2[10], s3[81], sdf[130];
   bool next;
 
-  oldConf = session()->GetCurrentConferenceMessageArea();
-  oldSub = usub[session()->GetCurrentMessageArea()].subnum;
-
-  sn = lastp = firstp = 0;
-  ns = session()->GetCurrentConferenceMessageArea();
-  en = subconfnum - 1;
+  int oldConf = session()->GetCurrentConferenceMessageArea();
+  int oldSub = usub[session()->GetCurrentMessageArea()].subnum;
+  int sn = 0;  // current sub number
+  size_t en = std::max<size_t>(0, subconfnum - 1);
 
   if (okconf(session()->user())) {
     if (uconfsub[1].confnum != -1) {
@@ -165,14 +159,15 @@ void SubList() {
   bool done = false;
   do {
     p = 1;
-    i = sn;
-    i1 = 0;
-    ns = session()->GetCurrentConferenceMessageArea();
+    size_t i = sn;
+    size_t i1 = 0;
+    int ns = session()->GetCurrentConferenceMessageArea();  //number of subs
     while (i <= en && uconfsub[i].confnum != -1 && !abort) {
       if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
         setuconf(CONF_SUBS, i, -1);
         i1 = 0;
       }
+      size_t firstp = 0;
       while (i1 < session()->subboards.size() && usub[i1].subnum != -1 && !abort) {
         if (p) {
           p = 0;
@@ -240,7 +235,7 @@ void SubList() {
         } else {
           osan(stripcolors(sdf), &abort, &next);
         }
-        lastp = i1++;
+        size_t lastp = i1++;
         bout.nl();
         if (lines_listed >= session()->screenlinest - 2) {
           p = 1;
@@ -249,8 +244,8 @@ void SubList() {
           bout.bprintf("|#1Select |#9[|#2%d-%d, [Enter]=Next Page, Q=Quit|#9]|#0 : ", firstp + 1, lastp + 1);
           const char* ss = mmkey(0, true);
           if (isdigit(ss[0])) {
-            for (i2 = 0; i2 < session()->subboards.size(); i2++) {
-              if (wwiv::strings::IsEquals(usub[i2].keys, ss)) {
+            for (size_t i2 = 0; i2 < session()->subboards.size(); i2++) {
+              if (IsEquals(usub[i2].keys, ss)) {
                 session()->SetCurrentMessageArea(i2);
                 oldSub = usub[session()->GetCurrentMessageArea()].subnum;
                 done = true;
@@ -292,21 +287,21 @@ void SubList() {
         }
         const char* ss = mmkey(0, true);
 
-        if (wwiv::strings::IsEquals(ss, "?")) {
+        if (IsEquals(ss, "?")) {
           p = 1;
           ns = i = i1 = 0;
         }
 
-        if (wwiv::strings::IsEquals(ss, " ") ||
-            wwiv::strings::IsEquals(ss, "Q") ||
-            wwiv::strings::IsEquals(ss, "\r")) {
+        if (IsEquals(ss, " ") ||
+            IsEquals(ss, "Q") ||
+            IsEquals(ss, "\r")) {
           bout.nl(2);
           done = true;
           if (!okconf(session()->user())) {
             abort = true;
           }
         }
-        if (wwiv::strings::IsEquals(ss, "J")) {
+        if (IsEquals(ss, "J")) {
           if (okconf(session()->user())) {
             jump_conf(CONF_SUBS);
           }
@@ -314,8 +309,8 @@ void SubList() {
           ns = i = 0;
         }
         if (isdigit(ss[0])) {
-          for (i2 = 0; i2 < session()->subboards.size(); i2++) {
-            if (wwiv::strings::IsEquals(usub[i2].keys, ss)) {
+          for (size_t i2 = 0; i2 < session()->subboards.size(); i2++) {
+            if (IsEquals(usub[i2].keys, ss)) {
               session()->SetCurrentMessageArea(i2);
               oldSub = usub[session()->GetCurrentMessageArea()].subnum;
               done = true;

@@ -60,7 +60,7 @@ void HopSub() {
     if (okconf(session()->user())) {
       setuconf(CONF_SUBS, c, -1);
     }
-    int i = 0;
+    size_t i = 0;
     while ((i < session()->subboards.size()) && (usub[i].subnum != -1) && !abort) {
       strcpy(s2, session()->subboards[usub[i].subnum].name);
       for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
@@ -133,7 +133,7 @@ void HopDir() {
     if (okconf(session()->user())) {
       setuconf(CONF_DIRS, c, -1);
     }
-    int i = 0;
+    size_t i = 0;
     while ((i < session()->directories.size()) && (udir[i].subnum != -1) && (!abort)) {
       strcpy(s2, session()->directories[udir[i].subnum].name);
       for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)

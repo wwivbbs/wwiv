@@ -414,8 +414,12 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
 void nscan(int nStartingSubNum) {
   int nNextSubNumber = 1;
 
+  if (nStartingSubNum < 0) {
+    // TODO(rushfan): Log error?
+    return;
+  }
   bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
-  for (int i = nStartingSubNum; 
+  for (size_t i = nStartingSubNum; 
        usub[i].subnum != -1 && i < session()->subboards.size() && nNextSubNumber && !hangup;
        i++) {
     if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) {

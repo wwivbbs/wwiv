@@ -43,11 +43,14 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/xfer.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 
 using std::string;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 int printasv(const string& filename, int num, bool abort);
 
@@ -83,7 +86,7 @@ void asv() {
       bout << "|#1:";
       input(s, 2, true);
       i = atoi(s);
-      if (i < 1 || i > session()->net_networks.size()) {
+      if (i < 1 || i > size_int(session()->net_networks)) {
         bout.nl();
         bout << "|#6Aborted!";
         break;
@@ -111,10 +114,10 @@ void asv() {
 
       ph1[0] = 0;
       if (session()->user()->GetDataPhoneNumber()[0] &&
-          !wwiv::strings::IsEquals(session()->user()->GetDataPhoneNumber(), "999-999-9999")) {
+          !IsEquals(session()->user()->GetDataPhoneNumber(), "999-999-9999")) {
         bout.nl();
-        bout << "|#9Is |#2" << session()->user()->GetDataPhoneNumber() <<
-                           "|#9 the number of your BBS? ";
+        bout << "|#9Is |#2" << session()->user()->GetDataPhoneNumber()
+             << "|#9 the number of your BBS? ";
         if (yesno()) {
           strcpy(ph1, session()->user()->GetDataPhoneNumber());
         }
@@ -170,7 +173,7 @@ void asv() {
         if (*reg_num == 0) {
           strcpy(s, sysname);
           strcpy(s1, (strstr(strupr(s), "SERVER")));
-          if (wwiv::strings::IsEquals(s1, "SERVER")) {
+          if (IsEquals(s1, "SERVER")) {
             bout.nl();
             bout << "|#5Is " << sysname << " a server in " << session()->network_name() << "? ";
             if (noyes()) {

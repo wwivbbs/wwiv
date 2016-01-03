@@ -73,7 +73,7 @@ const typename C::mapped_type get_or_default(C c,
 
 template <typename C>
 const signed int size_int(C c) {
-  return size_int32(c);
+  return wwiv::stl::size_int32(c);
 }
 
 template <typename C>
