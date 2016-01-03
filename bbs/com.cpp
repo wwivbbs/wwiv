@@ -38,7 +38,7 @@ void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const c
   if (session()->localIO()->WhereX()) {
     bout.nl();
   }
-  for (int i = 0; cl[i] != 0; i++) {
+  for (size_t i = 0; cl[i] != 0; i++) {
     bout.SystemColor(atr[i]);
     bputch(cl[i], true);
   }
@@ -101,16 +101,7 @@ void makeansi(int attr, char *out_buffer, bool forceit) {
       addto(out_buffer, 1);
     }
     if ((catr & 0x80) ^ (attr & 0x80)) {
-      if (checkcomp("Mac")) {
-        // This is the code for Mac's underline
-        // They don't have Blinking or Italics
-        addto(out_buffer, 4);
-      } else if (checkcomp("Ami")) {
-        // Some Amiga terminals use 3 instead of
-        // 5 for italics.  Using both won't hurt
-        addto(out_buffer, 3);
-      }
-      // anything, only italics will be generated
+      // Italics will be generated
       addto(out_buffer, 5);
     }
   }
@@ -174,7 +165,6 @@ char getkey() {
   return ch;
 }
 
-
 static void print_yn(bool yes) {
   bout << YesNoString(yes);
   bout.nl();
@@ -216,7 +206,7 @@ bool noyes() {
   } else {
     print_yn(true);
   }
-  return (ch == *(YesNoString(true)) || ch == RETURN) ? true : false;
+  return ch == *(YesNoString(true)) || ch == RETURN;
 }
 
 char ynq() {
@@ -226,7 +216,7 @@ char ynq() {
   while (!hangup &&
          (ch = wwiv::UpperCase<char>(getkey())) != *(YesNoString(true)) &&
          ch != *(YesNoString(false)) &&
-         (ch != *str_quit) && (ch != RETURN)) {
+         ch != *str_quit && ch != RETURN) {
     // NOP
     ;
   }

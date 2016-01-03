@@ -263,6 +263,7 @@ public:
 
   /** Returns the WWIV SDK Config Object. */
   wwiv::sdk::Config* config() const { return config_.get(); }
+  void set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config) { config_ = std::move(config); }
   /** Returns the WWIV Names.LST Config Object. */
   wwiv::sdk::Names* names() const { return names_.get(); }
 
