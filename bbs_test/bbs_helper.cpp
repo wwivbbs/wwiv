@@ -21,50 +21,70 @@
 
 #include <algorithm>
 #include <iostream>
+#include <iterator>
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "bbs/bbs.h"
+#include "bbs/vars.h"
+#include "bbs/wsession.h"
 #include "core/wwivport.h"
 #include "core/file.h"
-#include "bbs/vars.h"
+#include "sdk/config.h"
 #include "sdk/user.h"
-#include "bbs/wsession.h"
 
 #include "gtest/gtest.h"
 
+using std::begin;
+using std::end;
+using std::move;
 using std::string;
+using std::make_unique;
+using std::unique_ptr;
+using std::replace;
+
+using namespace wwiv::sdk;
 
 void BbsHelper::SetUp() {
-    string temp = files_.TempDir();
-    // We want the "BBS Home" to be our temp dir.
-    chdir(files_.TempDir().c_str());
+  string temp = files_.TempDir();
+  // We want the "BBS Home" to be our temp dir.
+  chdir(files_.TempDir().c_str());
 
-    ASSERT_TRUE(files_.Mkdir("data"));
-    ASSERT_TRUE(files_.Mkdir("gfiles"));
-    ASSERT_TRUE(files_.Mkdir("en"));
-    ASSERT_TRUE(files_.Mkdir("en/gfiles"));
-    // Use our own local IO class that will capture the output.
-    io_.reset(new TestIO());
-    // Without local_echo, we won't capture anything.
-    local_echo = true;
-    // hack - this crashes
-    //app_.reset(new WApplication());
-    sess_.reset(CreateSession(new WApplication(), io_->local_io()));
+  ASSERT_TRUE(files_.Mkdir("data"));
+  ASSERT_TRUE(files_.Mkdir("gfiles"));
+  ASSERT_TRUE(files_.Mkdir("en"));
+  ASSERT_TRUE(files_.Mkdir("en/gfiles"));
+  // Use our own local IO class that will capture the output.
+  io_.reset(new TestIO());
+  // Without local_echo, we won't capture anything.
+  local_echo = true;
+  // hack - this crashes
+  //app_.reset(new WApplication());
+  sess_.reset(CreateSession(new WApplication(), io_->local_io()));
 
-    dir_data_ = files_.DirName("data");
-    dir_gfiles_ = files_.DirName("gfiles");
-    dir_en_gfiles_ = files_.DirName("en/gfiles");
+  dir_data_ = files_.DirName("data");
+  dir_gfiles_ = files_.DirName("gfiles");
+  dir_en_gfiles_ = files_.DirName("en/gfiles");
 #ifdef _WIN32
-    std::replace(std::begin(dir_gfiles_), std::end(dir_gfiles_), '/', File::pathSeparatorChar);
-    std::replace(std::begin(dir_en_gfiles_), std::end(dir_en_gfiles_), '/', File::pathSeparatorChar);
+  replace(begin(dir_gfiles_), end(dir_gfiles_), '/', File::pathSeparatorChar);
+  replace(begin(dir_en_gfiles_), end(dir_en_gfiles_), '/', File::pathSeparatorChar);
 #endif  // _WIN32
 
-    syscfg.datadir = const_cast<char*>(dir_data_.c_str());
-    syscfg.gfilesdir = const_cast<char*>(dir_gfiles_.c_str());
-    WSession* s = session();
+  // We have to set syscfg too until everything in the bbs moves to 
+  // using the Config class internally.
+  unique_ptr<configrec> sysconfig = make_unique<configrec>();
+  syscfg.datadir = const_cast<char*>(dir_data_.c_str());
+  strcpy(sysconfig->datadir, dir_data_.c_str());
+  syscfg.gfilesdir = const_cast<char*>(dir_gfiles_.c_str());
+  strcpy(sysconfig->gfilesdir, dir_gfiles_.c_str());
 
-    s->language_dir = dir_en_gfiles_;
-    user_ = s->user();
+  session()->language_dir = dir_en_gfiles_;
+  unique_ptr<Config> config = make_unique<Config>(temp);
+  config->set_initialized_for_test(true);
+  config->set_config(sysconfig.release());
+  session()->set_config_for_test(move(config));
+  user_ = session()->user();
 }
 
 void BbsHelper::TearDown() {
