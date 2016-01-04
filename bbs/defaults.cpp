@@ -148,7 +148,7 @@ static void print_cur_stat() {
     bout << setw(45) << "|#17|#9) Update macros" << " "
          << setw(45) << "|#18|#9) Change colors" << wwiv::endl;
 
-    uint8_t nEditorNum = session()->user()->GetDefaultEditor();
+    unsigned int nEditorNum = session()->user()->GetDefaultEditor();
     const string editor_name = (nEditorNum > 0 && nEditorNum <= session()->editors.size()) ?
         session()->editors[nEditorNum-1].description : "None";
      bout << "|#19|#9) Full screen editor: |#2" << setw(16) << editor_name << " " 

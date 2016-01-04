@@ -280,7 +280,7 @@ void ChangeDirNumber() {
       bout.nl();
       continue;
     }
-    for (int i = 0; i < session()->directories.size(); i++) {
+    for (size_t i = 0; i < session()->directories.size(); i++) {
       if (wwiv::strings::IsEquals(udir[i].keys, s)) {
         session()->SetCurrentFileArea(i);
         done = true;

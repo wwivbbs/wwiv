@@ -2033,7 +2033,7 @@ void download_plus(const char *file_name) {
   align(szFileName);
   if (lp_try_to_download(szFileName, udir[session()->GetCurrentFileArea()].subnum) == 0) {
     bout << "\r\nSearching all session()->directories.\r\n\n";
-    int dn = 0;
+    size_t dn = 0;
     int count = 0;
     int color = 3;
     foundany = 0;
