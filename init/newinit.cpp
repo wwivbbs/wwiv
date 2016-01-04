@@ -62,8 +62,6 @@ static string date() {
   return StringPrintf("%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
 }
 
-#define OFFOF(x) (short) (((long)(&(user_record.x))) - ((long)&user_record))
-
 static uint32_t *qsc;
 
 static void write_qscn(unsigned int un, uint32_t *qscn) {
@@ -192,14 +190,13 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
     syscfg.sl[i] = sl;
   }
 
-  userrec user_record;
-  syscfg.userreclen = static_cast<int16_t>(sizeof(user_record));
-  syscfg.waitingoffset = OFFOF(waiting);
-  syscfg.inactoffset = OFFOF(inact);
-  syscfg.sysstatusoffset = OFFOF(sysstatus);
-  syscfg.fuoffset = OFFOF(forwardusr);
-  syscfg.fsoffset = OFFOF(forwardsys);
-  syscfg.fnoffset = OFFOF(net_num);
+  syscfg.userreclen = sizeof(userrec);
+  syscfg.waitingoffset = offsetof(userrec, waiting);
+  syscfg.inactoffset = offsetof(userrec, inact);
+  syscfg.sysstatusoffset = offsetof(userrec, sysstatus);
+  syscfg.fuoffset = offsetof(userrec, forwardusr);
+  syscfg.fsoffset = offsetof(userrec, forwardsys);
+  syscfg.fnoffset = offsetof(userrec, net_num);
 
   syscfg.max_subs = 64;
   syscfg.max_dirs = 64;

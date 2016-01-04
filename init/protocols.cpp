@@ -165,9 +165,6 @@ static void edit_prot(vector<newexternalrec>& externs, vector<newexternalrec>& o
   }
 }
 
-#define BASE_CHAR '!'
-#define END_CHAR (BASE_CHAR+10)
-
 void extrn_prots() {
   vector<newexternalrec> externs;
   vector<newexternalrec> over_interns;

@@ -122,8 +122,6 @@ unsigned short WSession::str2restrict(const char *s) {
   return static_cast<int16_t>(r);
 }
 
-#define OFFOF(x) static_cast<int16_t>(reinterpret_cast<long>(&user()->data.x) - reinterpret_cast<long>(&user()->data))
-
 // Reads WWIV.INI info from [WWIV] subsection, overrides some config.dat
 // settings (as appropriate), updates config.dat with those values. Also
 // tries to read settings from [WWIV-<instnum>] subsection - this overrides
@@ -457,12 +455,12 @@ bool WSession::ReadConfig() {
 
   // update user info data
   int16_t userreclen = static_cast<int16_t>(sizeof(userrec));
-  int16_t waitingoffset = OFFOF(waiting);
-  int16_t inactoffset = OFFOF(inact);
-  int16_t sysstatusoffset = OFFOF(sysstatus);
-  int16_t fuoffset = OFFOF(forwardusr);
-  int16_t fsoffset = OFFOF(forwardsys);
-  int16_t fnoffset = OFFOF(net_num);
+  int16_t waitingoffset = offsetof(userrec, waiting);
+  int16_t inactoffset = offsetof(userrec, inact);
+  int16_t sysstatusoffset = offsetof(userrec, sysstatus);
+  int16_t fuoffset = offsetof(userrec, forwardusr);
+  int16_t fsoffset = offsetof(userrec, forwardsys);
+  int16_t fnoffset = offsetof(userrec, net_num);
 
   if (userreclen != config_->config()->userreclen           ||
       waitingoffset != config_->config()->waitingoffset     ||

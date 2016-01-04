@@ -42,20 +42,9 @@
 #include "sdk/filenames.h"
 
 using std::string;
-using wwiv::core::FilePath;
-using wwiv::core::IniFile;
-
-static const int COL1_POSITION = 24;
-static const int PROMPT_LINE = 6;
-
-#ifdef __unix__
-#define FILENAME_UPPERCASE false
-#else
-#define FILENAME_UPPERCASE true
-#endif  // __unix__
-
 using std::unique_ptr;
 using std::vector;
+using namespace wwiv::core;
 
 void show_instance(EditItems* items) {
   items->Display();

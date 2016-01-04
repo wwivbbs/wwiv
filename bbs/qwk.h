@@ -27,24 +27,14 @@
 
 #define QWK_DIRECTORY (syscfgovr.batchdir)
 
-// If you have a HUGE transfer section, this define will not read extended
-// descriptions
-// #define HUGE_TRAN
-
-
 #define append_block(file, memory, size) write(file, memory, size)
 #define SETREC(f,i)  lseek(f,((long) (i))*((long)sizeof(uploadsrec)),SEEK_SET);
 #define SET_BLOCK(file, pos, size) lseek(file, (long)pos * (long)size, SEEK_SET)
-
-#define DOTS 5
 
 #define MAX_BULLETINS 50
 #define BULL_SIZE     81
 #define BNAME_SIZE    13
 
-
-// Give us 3000 extra bytes to play with in the message text
-#define PAD_SPACE 3000
 
 #pragma pack(push, 1)
 struct qwk_record {
@@ -143,7 +133,7 @@ void qwk_remove_null(char *memory, int size);
 void build_control_dat(struct qwk_junk *qwk_info);
 int _fmsbintoieee(float *src4, float *dest4);
 int _fieeetomsbin(float *src4, float *dest4);
-char * qwk_system_name(char *qwkname);
+char* qwk_system_name(char *qwkname);
 void qwk_menu();
 int select_qwk_protocol(struct qwk_junk *qwk_info);
 void insert_after_routing(char *text, char *text2insert, long *len);

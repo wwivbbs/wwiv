@@ -534,6 +534,9 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   ++qwk_info->qwk_rec_num;
 }
 
+// Give us 3000 extra bytes to play with in the message text
+static constexpr int PAD_SPACE = 3000;
+
 // Takes text, deletes all ascii '10' and converts '13' to '227' (ã)
 // And does other conversions as specified
 void make_qwk_ready(char *text, long *len, char *address) {
@@ -1098,6 +1101,7 @@ int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
 }
 
 void qwk_nscan() {
+  static constexpr int DOTS = 5;
 #ifdef NEVER // Not ported yet
   uploadsrec u;
   bool abort = false;
