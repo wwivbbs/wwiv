@@ -995,7 +995,7 @@ void modify_database(const char *file_name, bool add) {
     fileAllow.Close();
     return;
   }
-  char * bfr = static_cast<char *>(BbsAllocA(ALLOW_BUFSIZE));
+  char* bfr = static_cast<char *>(BbsAllocA(ALLOW_BUFSIZE));
   if (!bfr) {
     fileAllow.Close();
     return;

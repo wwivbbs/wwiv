@@ -250,10 +250,6 @@ void process_inst_msgs() {
       lFilePos += sizeof(inst_msg_header);
       if (ih.msg_size > 0) {
         m = static_cast<char*>(BbsAllocA(ih.msg_size));
-        WWIV_ASSERT(m);
-        if (m == nullptr) {
-          break;
-        }
         file.Read(m, ih.msg_size);
         lFilePos += ih.msg_size;
       }

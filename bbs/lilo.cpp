@@ -792,8 +792,8 @@ static void DisplayUserLoginInformation() {
       if (session()->user()->IsMailboxClosed()) {
         bout << "Your mailbox is closed.\r\n\n";
       } else {
-        bout << "Mail set to be forwarded to #" << session()->user()->GetForwardUserNumber() <<
-                           wwiv::endl;
+        bout << "Mail set to be forwarded to #" 
+             << session()->user()->GetForwardUserNumber() << wwiv::endl;
       }
     }
   } else if (session()->user()->GetForwardSystemNumber() != 0) {
@@ -811,14 +811,15 @@ static void LoginCheckForNewMail() {
   if (session()->user()->GetNumMailWaiting() > 0) {
     int nNumNewMessages = check_new_mail(session()->usernum);
     if (nNumNewMessages) {
-      bout << "|#9You have |#2" << nNumNewMessages << "|#9 new message(s).\r\n\r\n" <<
-                         "|#9Read your mail now? ";
+      bout << "|#9You have |#2" << nNumNewMessages 
+           << "|#9 new message(s).\r\n\r\n"
+           << "|#9Read your mail now? ";
       if (noyes()) {
         readmail(1);
       }
     } else {
-      bout << "|#9You have |#2" << session()->user()->GetNumMailWaiting() <<
-                         "|#9 old message(s) in your mailbox.\r\n";
+      bout << "|#9You have |#2" << session()->user()->GetNumMailWaiting() 
+           << "|#9 old message(s) in your mailbox.\r\n";
     }
   } else {
     bout << " |#9No mail found.\r\n";
