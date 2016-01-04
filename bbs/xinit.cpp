@@ -884,7 +884,7 @@ void WSession::InitializeBBS() {
   pStatus->EnsureCallerNumberIsValid();
   statusMgr->CommitTransaction(pStatus);
 
-  gat = static_cast<unsigned short *>(BbsAllocA(2048 * sizeof(uint16_t)));
+  gat = static_cast<unsigned short*>(BbsAllocA(2048 * sizeof(uint16_t)));
 
   XINIT_PRINTF("Reading Gfiles.");
   read_gfile();

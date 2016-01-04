@@ -44,7 +44,6 @@ void add_phone_number(int usernum, const char *phone) {
   phoneFile.Close();
 }
 
-
 void delete_phone_number(int usernum, const char *phone) {
   File phoneFile(session()->config()->datadir(), PHONENUM_DAT);
   if (!phoneFile.Open(File::modeReadWrite | File::modeBinary)) {
@@ -53,10 +52,6 @@ void delete_phone_number(int usernum, const char *phone) {
   long lFileSize = phoneFile.GetLength();
   int nNumRecords = static_cast<int>(lFileSize / sizeof(phonerec));
   phonerec *p = static_cast<phonerec *>(BbsAllocA(lFileSize));
-  WWIV_ASSERT(p);
-  if (p == nullptr) {
-    return;
-  }
   phoneFile.Read(p, lFileSize);
   phoneFile.Close();
   int i;
@@ -78,7 +73,6 @@ void delete_phone_number(int usernum, const char *phone) {
   }
   free(p);
 }
-
 
 int find_phone_number(const char *phone) {
   File phoneFile(session()->config()->datadir(), PHONENUM_DAT);
