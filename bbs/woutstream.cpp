@@ -60,7 +60,7 @@ std::streamsize WOutStreamBuffer::xsputn(const char *text, std::streamsize numCh
 }
 
 void WOutStream::Color(int wwivColor) {
-  unsigned char c = '\0';
+  int c = '\0';
 
   if (wwivColor <= -1 && wwivColor >= -16) {
     c = (session()->user()->HasColor() ?

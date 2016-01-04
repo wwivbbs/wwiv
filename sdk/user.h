@@ -421,7 +421,7 @@ class User {
   void SetEmailAddress(const char *s) {
     strcpy(reinterpret_cast<char*>(data.email), s);
   }
-  const uint8_t GetAge() const {
+  const unsigned int GetAge() const {
     return data.age;
   }
   void SetAge(int n) {
@@ -434,61 +434,61 @@ class User {
     data.comp_type = static_cast<char>(n);
   }
 
-  const uint8_t GetDefaultProtocol() const {
+  const unsigned int GetDefaultProtocol() const {
     return data.defprot;
   }
   void SetDefaultProtocol(int n) {
     data.defprot = static_cast<uint8_t>(n);
   }
-  const uint8_t GetDefaultEditor() const {
+  const unsigned int GetDefaultEditor() const {
     return data.defed;
   }
   void SetDefaultEditor(unsigned int n) {
     data.defed = static_cast<uint8_t>(n);
   }
-  const uint8_t GetScreenChars() const {
+  const unsigned int GetScreenChars() const {
     return data.screenchars;
   }
   void SetScreenChars(int n) {
     data.screenchars = static_cast<uint8_t>(n);
   }
-  const uint8_t GetScreenLines() const {
+  const unsigned int GetScreenLines() const {
     return data.screenlines;
   }
   void SetScreenLines(int n) {
     data.screenlines = static_cast<uint8_t>(n);
   }
-  const uint8_t GetNumExtended() const {
+  const unsigned int GetNumExtended() const {
     return data.num_extended;
   }
   void SetNumExtended(int n) {
     data.num_extended = static_cast<uint8_t>(n);
   }
-  const uint8_t GetOptionalVal() const {
+  const unsigned int GetOptionalVal() const {
     return data.optional_val;
   }
   void SetOptionalVal(int n) {
     data.optional_val = static_cast<uint8_t>(n);
   }
-  const uint8_t GetSl() const {
+  const unsigned int GetSl() const {
     return data.sl;
   }
   void SetSl(uint8_t n) {
     data.sl = static_cast<uint8_t>(n);
   }
-  const uint8_t GetDsl() const {
+  const unsigned int GetDsl() const {
     return data.dsl;
   }
   void SetDsl(int n) {
     data.dsl = static_cast<uint8_t>(n);
   }
-  const uint8_t GetExempt() const {
+  const unsigned int GetExempt() const {
     return data.exempt;
   }
   void SetExempt(int n) {
     data.exempt = static_cast<uint8_t>(n);
   }
-  const uint8_t GetColor(int nColor) const {
+  const unsigned int GetColor(int nColor) const {
     return data.colors[nColor];
   }
   void SetColor(int nColor, int n) {
@@ -500,37 +500,37 @@ class User {
   void SetBWColor(int nColor, int n) {
     data.bwcolors[nColor] = static_cast<uint8_t>(n);
   }
-  const uint8_t GetVote(int nVote) const {
+  const unsigned int GetVote(int nVote) const {
     return data.votes[nVote];
   }
   void SetVote(int nVote, int n) {
     data.votes[nVote] = static_cast<uint8_t>(n);
   }
-  const uint8_t GetNumIllegalLogons() const {
+  const unsigned int GetNumIllegalLogons() const {
     return data.illegal;
   }
   void SetNumIllegalLogons(int n) {
     data.illegal = static_cast<uint8_t>(n);
   }
-  const uint8_t GetNumMailWaiting() const {
+  const unsigned int GetNumMailWaiting() const {
     return data.waiting;
   }
-  void SetNumMailWaiting(int n) {
+  void SetNumMailWaiting(unsigned int n) {
     data.waiting = static_cast<uint8_t>(n);
   }
-  const uint8_t GetTimesOnToday() const {
+  const unsigned int GetTimesOnToday() const {
     return data.ontoday;
   }
   void SetTimesOnToday(int n) {
     data.ontoday = static_cast<uint8_t>(n);
   }
-  const uint8_t GetBirthdayMonth() const {
+  const unsigned int GetBirthdayMonth() const {
     return data.month;
   }
   void SetBirthdayMonth(int n) {
     data.month = static_cast<uint8_t>(n);
   }
-  const uint8_t GetBirthdayDay() const {
+  const unsigned int GetBirthdayDay() const {
     return data.day;
   }
   void SetBirthdayDay(int n) {
@@ -549,7 +549,7 @@ class User {
       data.year = static_cast<uint8_t>(n-1900);
     }
   }
-  const uint8_t GetLanguage() const {
+  const unsigned int GetLanguage() const {
     return data.language;
   }
   void SetLanguage(int n) {

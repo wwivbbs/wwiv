@@ -119,7 +119,7 @@ public:
 
   void ResetEffectiveSl() { effective_sl_ = user()->GetSl(); }
   void SetEffectiveSl(int nSl) { effective_sl_ = nSl; }
-  int  GetEffectiveSl() const { return effective_sl_; }
+  unsigned int GetEffectiveSl() const { return effective_sl_; }
 
   int  GetChatNameSelectionColor() const { return m_nChatNameSelectionColor; }
   void SetChatNameSelectionColor(int n) { m_nChatNameSelectionColor = n; }
