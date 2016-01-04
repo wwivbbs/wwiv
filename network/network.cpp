@@ -121,8 +121,13 @@ int main(int argc, char** argv) {
       network_name = networks[std::stoi(network_number)].name;
     }
 
-    int expected_remote_node = cmdline.arg("node").as_int();
-    if (expected_remote_node == 32767) {
+    int node = cmdline.arg("node").as_int();
+    if (node == 0 || node > 32767) {
+      LOG << "Invalid node number: '" << node << "' specified.";
+      ShowHelp(cmdline);
+      return 1;
+    }
+    if (node == 32767) {
       // 32767 is the PPP project address for "send everything". Some people use this
       // "magic" node number.
       LOG << "USE PPP Project to send to: Internet Email (@32767)";
@@ -130,18 +135,18 @@ int main(int argc, char** argv) {
     }
 
     BinkConfig bink_config(network_name, config, networks);
-    const BinkNodeConfig* node_config = bink_config.node_config_for(expected_remote_node);
+    const BinkNodeConfig* node_config = bink_config.node_config_for(node);
     if (node_config != nullptr) {
       // We have a node configuration for this one, use networkb.
       LOG << "USE networkb: " << node_config->host << ":" << node_config->port;
       const string command_line = StringPrintf("networkb --send --network=%s --node=%d",
-        network_name.c_str(), expected_remote_node);
+        network_name.c_str(), node);
       LOG << "Executing Command: '" << command_line << "'";
       return system(command_line.c_str());
     }
 
     PPPConfig ppp_config(network_name, config, networks);
-    const PPPNodeConfig* ppp_node_config = ppp_config.node_config_for(expected_remote_node);
+    const PPPNodeConfig* ppp_node_config = ppp_config.node_config_for(node);
     if (ppp_node_config != nullptr) {
       LOG << "USE PPP Project to send to: " << ppp_node_config->email_address;
       return LaunchOldNetworkingStack("networkp", argc, argv);
