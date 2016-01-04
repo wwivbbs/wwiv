@@ -49,7 +49,6 @@
 #define UINT(u,n)  (*((int  *)(((char *)(u))+(n))))
 #define UCHAR(u,n) (*((char *)(((char *)(u))+(n))))
 
-
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -386,8 +385,6 @@ static bool insert_net(
   return true;
 }
 
-#define OKAD (syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)
-
 void networks() {
   vector<subboardrec> subboards;
   vector<net_networks_rec> net_networks;
@@ -418,7 +415,7 @@ void networks() {
     } else if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
       case 'D':
-        if (!OKAD) {
+        if (!(syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)) {
           messagebox(window, { "You must run the BBS once", "to set up some variables before ", "deleting a network." });
           break;
         }
@@ -436,7 +433,7 @@ void networks() {
         }
         break;
       case 'I':
-        if (!OKAD) {
+        if (!(syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)) {
           vector<string> lines{ "You must run the BBS once to set up ", "some variables before inserting a network." };
           messagebox(window, lines);
           break;

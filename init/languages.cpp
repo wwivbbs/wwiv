@@ -50,8 +50,7 @@ using std::vector;
 using wwiv::core::DataFile;
 using wwiv::strings::StringPrintf;
 
-#define MAX_LANGUAGES 100
-
+static constexpr int MAX_LANGUAGES = 100;
 
 static void edit_lang(languagerec& n) {
   out->Cls(ACS_CKBOARD);
