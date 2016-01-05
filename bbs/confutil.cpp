@@ -161,7 +161,7 @@ void addusub(usersubrec * ss1, int ns, int sub, char key) {
     ss1[last].keys[0] = key;
   } else {
     for (int i = last; i > last_num; i--) {
-      ss1[ i ] = ss1[ i - 1 ];
+      ss1[i] = ss1[ i - 1 ];
     }
     ss1[last_num].subnum = static_cast<int16_t>(sub);
     ss1[last_num].keys[0] = 0;

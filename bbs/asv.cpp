@@ -349,7 +349,7 @@ int printasv(const string& filename, int num, bool abort) {
   bool asvline = false;
   bout.nl();
 
-  char szFileName[ MAX_PATH ], szFileName1[ MAX_PATH ];
+  char szFileName[MAX_PATH], szFileName1[MAX_PATH];
   sprintf(szFileName, "%s%s", syscfg.gfilesdir, filename.c_str());
   if (!strrchr(szFileName, '.')) {
     if (session()->user()->HasAnsi()) {

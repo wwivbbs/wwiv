@@ -799,7 +799,7 @@ static void DisplayUserLoginInformation() {
       }
     }
   } else if (session()->user()->GetForwardSystemNumber() != 0) {
-    char szInternetEmailAddress[ 255 ];
+    char szInternetEmailAddress[255];
     read_inet_addr(szInternetEmailAddress, session()->usernum);
     bout << "Mail forwarded to Internet " << szInternetEmailAddress << ".\r\n";
   }

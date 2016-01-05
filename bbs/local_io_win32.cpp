@@ -312,7 +312,7 @@ void Win32ConsoleIO::LocalFastPuts(const string& text) {
 
 int  Win32ConsoleIO::LocalPrintf(const char *formatted_text, ...) {
   va_list ap;
-  char szBuffer[ 1024 ];
+  char szBuffer[1024];
 
   va_start(ap, formatted_text);
   int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
@@ -323,7 +323,7 @@ int  Win32ConsoleIO::LocalPrintf(const char *formatted_text, ...) {
 
 int  Win32ConsoleIO::LocalXYPrintf(int x, int y, const char *formatted_text, ...) {
   va_list ap;
-  char szBuffer[ 1024 ];
+  char szBuffer[1024];
 
   va_start(ap, formatted_text);
   int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
@@ -334,7 +334,7 @@ int  Win32ConsoleIO::LocalXYPrintf(int x, int y, const char *formatted_text, ...
 
 int  Win32ConsoleIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *formatted_text, ...) {
   va_list ap;
-  char szBuffer[ 1024 ];
+  char szBuffer[1024];
 
   va_start(ap, formatted_text);
   int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
@@ -961,7 +961,7 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
       case KEY_DELETE:
         if (editor_status != SET) {
           for (int i = pos; i < len; i++) {
-            pszInOutText[ i ] = pszInOutText[ i + 1 ];
+            pszInOutText[i] = pszInOutText[ i + 1 ];
           }
           pszInOutText[ len - 1 ] = static_cast<unsigned char>(176);
           LocalXYPuts(cx, cy, pszInOutText);
@@ -1063,7 +1063,7 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
   }
   pszInOutText[z] = '\0';
 
-  char szFinishedString[ 260 ];
+  char szFinishedString[260];
   snprintf(szFinishedString, sizeof(szFinishedString), "%-255s", pszInOutText);
   szFinishedString[ len ] = '\0';
   LocalGotoXY(cx, cy);

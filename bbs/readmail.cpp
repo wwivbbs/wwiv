@@ -243,7 +243,7 @@ void add_netsubscriber(int system_number) {
     return;
   }
   strcpy(s1, s);
-  char szNetworkFileName[ MAX_PATH ];
+  char szNetworkFileName[MAX_PATH];
   sprintf(szNetworkFileName, "%sn%s.net", session()->network_directory().c_str(), s);
   if (!File::Exists(szNetworkFileName)) {
     bout.nl();
@@ -276,7 +276,7 @@ void add_netsubscriber(int system_number) {
     if (File::Exists("autosend.exe")) {
       bout << "AutoSend starter messages? ";
       if (yesno()) {
-        char szAutoSendCommand[ MAX_PATH ];
+        char szAutoSendCommand[MAX_PATH];
         sprintf(szAutoSendCommand, "AUTOSEND.EXE %s %u .%d", s1, system_number, session()->net_num());
         ExecuteExternalProgram(szAutoSendCommand, EFLAG_NONE);
       }

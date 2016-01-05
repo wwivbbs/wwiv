@@ -364,7 +364,7 @@ void list_users(int mode) {
         sprintf(szCity, "%s, %s", s5, user.GetState());
       }
       string properName = properize(user.GetName());
-      char szUserListLine[ 255 ];
+      char szUserListLine[255];
       sprintf(szUserListLine,
               "|#%d\xB3|#9%5d |#%d\xB3|#6%c|#1%-20.20s|#%d\xB3|#2 %-24.24s|#%d\xB3 |#1%-9s |#%d\xB3  |#3%-5u  |#%d\xB3",
               FRAME_COLOR, user_number, FRAME_COLOR, in_qscan ? '*' : ' ', properName.c_str(),
@@ -517,7 +517,7 @@ void uudecode(const char *input_filename, const char *output_filename) {
   bout << "|#2Now UUDECODING " << input_filename;
   bout.nl();
 
-  char szCmdLine[ MAX_PATH ];
+  char szCmdLine[MAX_PATH];
   sprintf(szCmdLine, "UUDECODE %s %s", input_filename, output_filename);
   ExecuteExternalProgram(szCmdLine, EFLAG_NONE);    // run command
   File::Remove(input_filename);        // delete the input file

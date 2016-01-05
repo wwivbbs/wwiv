@@ -112,7 +112,7 @@ int check_for_files_arc(const char *file_name) {
         if (a.type) {
           lFilePos += a.len;
           ++lFilePos;
-          char szArcFileName[ MAX_PATH ];
+          char szArcFileName[MAX_PATH];
           strncpy(szArcFileName, a.name, 13);
           szArcFileName[13] = 0;
           strupr(szArcFileName);
@@ -395,7 +395,7 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
     bout << "Ratio too low.\r\n";
     return false;
   }
-  char szDownloadFileName[ MAX_PATH ];
+  char szDownloadFileName[MAX_PATH];
   sprintf(szDownloadFileName, "%s%s.%s", syscfgovr.tempdir, file_name, session()->arcs[ARC_NUMBER].extension);
   File file(szDownloadFileName);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
@@ -437,7 +437,7 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
 }
 
 void add_arc(const char *arc, const char *file_name, int dos) {
-  char szAddArchiveCommand[ MAX_PATH ], szArchiveFileName[ MAX_PATH ];
+  char szAddArchiveCommand[MAX_PATH], szArchiveFileName[MAX_PATH];
 
   sprintf(szArchiveFileName, "%s.%s", arc, session()->arcs[ARC_NUMBER].extension);
   // TODO - This logic is still broken since chain.* and door.* won't match
@@ -468,7 +468,7 @@ void add_arc(const char *arc, const char *file_name, int dos) {
 }
 
 void add_temp_arc() {
-  char szInputFileMask[ MAX_PATH ], szFileMask[ MAX_PATH];
+  char szInputFileMask[MAX_PATH], szFileMask[MAX_PATH];
 
   bout.nl();
   bout << "|#7Enter filename to add to temporary archive file.  May contain wildcards.\r\n|#7:";
@@ -512,7 +512,7 @@ void del_temp() {
 }
 
 void list_temp_dir() {
-  char szFileMask[ MAX_PATH ];
+  char szFileMask[MAX_PATH];
 
   sprintf(szFileMask, "%s*.*", syscfgovr.tempdir);
   WFindFile fnd;
@@ -522,13 +522,13 @@ void list_temp_dir() {
   int i1 = 0;
   bool abort = false;
   while (bFound && !hangup && !abort) {
-    char szFileName[ MAX_PATH ];
+    char szFileName[MAX_PATH];
     strcpy(szFileName, fnd.GetFileName());
 
     if (!wwiv::strings::IsEqualsIgnoreCase(szFileName, "chain.txt") &&
         !wwiv::strings::IsEqualsIgnoreCase(szFileName, "door.sys")) {
       align(szFileName);
-      char buffer[ 255 ];
+      char buffer[255];
       sprintf(buffer, "%12s  %-8ld", szFileName, fnd.GetFileSize());
       pla(buffer, &abort);
       i1 = 1;
@@ -760,7 +760,7 @@ void move_file_t() {
   }
   for (int nCurBatchPos = session()->numbatch - 1; nCurBatchPos >= 0; nCurBatchPos--) {
     bool ok = false;
-    char szCurBatchFileName[ MAX_PATH ];
+    char szCurBatchFileName[MAX_PATH];
     strcpy(szCurBatchFileName, batch[nCurBatchPos].filename);
     align(szCurBatchFileName);
     dliscan1(batch[nCurBatchPos].dir);
@@ -923,7 +923,7 @@ void removefile() {
   dliscan();
   bout.nl();
   bout << "|#9Enter filename to remove.\r\n:";
-  char szFileToRemove[ MAX_PATH ];
+  char szFileToRemove[MAX_PATH];
   input(szFileToRemove, 12, true);
   if (szFileToRemove[0] == '\0') {
     return;
@@ -972,7 +972,7 @@ void removefile() {
             modify_database(u.filename, false);
           }
           if (bDeleteFileToo) {
-            char szFileNameToDelete[ MAX_PATH ];
+            char szFileNameToDelete[MAX_PATH];
             sprintf(szFileNameToDelete, "%s%s", session()->directories[udir[session()->GetCurrentFileArea()].subnum].path, u.filename);
             StringRemoveWhitespace(szFileNameToDelete);
             File::Remove(szFileNameToDelete);

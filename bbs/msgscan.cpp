@@ -43,9 +43,11 @@
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
+using std::string;
+
 void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsub, bool &bTitleScan, bool &done,
                           bool &quit, int &val);
-void GetScanReadPrompts(int nMessageNumber, char *pszReadPrompt, char *szSubNamePrompt);
+string GetScanReadPrompts(int nMessageNumber);
 void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int &nScanOptionType);
 void HandleScanReadFind(int &nMessageNumber, int &nScanOptionType);
 void HandleListTitles(int &nMessageNumber, int &nScanOptionType);
@@ -202,23 +204,20 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
 
 void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsub, bool &bTitleScan, bool &done,
                           bool &quit, int &val) {
-  char szReadPrompt[ 255 ];
-  char szSubNamePrompt[81];
   resetnsp();
-  GetScanReadPrompts(nMessageNumber, szReadPrompt, szSubNamePrompt);
+  string read_prompt = GetScanReadPrompts(nMessageNumber);
   bout.nl();
   char szUserInput[ 81 ];
   if (express) {
     szUserInput[0] = '\0';
-    szReadPrompt[0]   = '\0';
-    szSubNamePrompt[0]  = '\0';
+    read_prompt.clear();
     bout.nl(2);
   } else {
-    bout << szReadPrompt;
+    bout << read_prompt;
     input(szUserInput, 5, true);
     resynch(&nMessageNumber, nullptr);
     while (szUserInput[0] == 32) {
-      char szTempBuffer[ 255 ];
+      char szTempBuffer[255];
       strcpy(szTempBuffer, &(szUserInput[1]));
       strcpy(szUserInput, szTempBuffer);
     }
@@ -411,37 +410,27 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
   }
 }
 
-
-void GetScanReadPrompts(int nMessageNumber, char *pszReadPrompt, char *pszSubNamePrompt) {
-  // TODO remove pszSubNamePrompt is decided to go to 1 line format.
-  char szLocalNetworkName[81];
+string GetScanReadPrompts(int nMessageNumber) {
   if (forcescansub) {
     if (nMessageNumber < session()->GetNumMessagesInCurrentMessageArea()) {
-      strcpy(pszReadPrompt, "|#1Press |#7[|#2ENTER|#7]|#1 to go to the next message...");
+      return "|#1Press |#7[|#2ENTER|#7]|#1 to go to the next message...";
     } else {
-      sprintf(pszReadPrompt, "|#1Press |#7[|#2ENTER|#7]|#1 to continue...");
+      return "|#1Press |#7[|#2ENTER|#7]|#1 to continue...";
     }
-  } else {
-    if (!session()->current_xsub().nets.empty()) {
-      sprintf(szLocalNetworkName, "%s", session()->network_name());
-    } else {
-      set_net_num(0);
-      sprintf(szLocalNetworkName, "%s", "Local");
-    }
-    sprintf(pszSubNamePrompt, "|#7[|#1%s|#7] [|#2%s|#7]", szLocalNetworkName,
-      session()->current_sub().name);
-    char szTemp[81];
-    if (session()->GetNumMessagesInCurrentMessageArea() > nMessageNumber) {
-      sprintf(szTemp, "%d", nMessageNumber + 1);
-    } else {
-      sprintf(szTemp, "\bExit Sub");
-    }
-    //sprintf(pszReadPrompt, "|#7(|#1Read |#21-%lu|#1, |#7[|#2ENTER|#7]|#1 = #|#2%s|#7) :|#0 ", session()->GetNumMessagesInCurrentMessageArea(), szTemp);
-    sprintf(pszReadPrompt, "%s |#7(|#1Read |#2%d |#1of |#2%d|#1|#7) : ", pszSubNamePrompt, nMessageNumber,
-            session()->GetNumMessagesInCurrentMessageArea());
   }
-}
 
+  string local_network_name = "Local";
+  if (!session()->current_xsub().nets.empty()) {
+    local_network_name = session()->network_name();
+  } else {
+    set_net_num(0);
+  }
+  const string sub_name_prompt = StringPrintf("|#7[|#1%s|#7] [|#2%s|#7]",
+      local_network_name.c_str(), session()->current_sub().name);
+  return StringPrintf("%s |#7(|#1Read |#2%d |#1of |#2%d|#1|#7) : ",
+        sub_name_prompt.c_str(), nMessageNumber,
+        session()->GetNumMessagesInCurrentMessageArea());
+}
 
 void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int &nScanOptionType) {
   if (!lcs() && get_post(nMessageNumber)->status & (status_unvalidated | status_delete)) {
@@ -476,12 +465,12 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
     irt_sub[0] = 0;
     show_files("*.frm", syscfg.gfilesdir);
     bout << "|#2Which form letter: ";
-    char szFileName[ MAX_PATH ];
+    char szFileName[MAX_PATH];
     input(szFileName, 8, true);
     if (!szFileName[0]) {
       return;
     }
-    char szFullPathName[ MAX_PATH ];
+    char szFullPathName[MAX_PATH];
     sprintf(szFullPathName, "%s%s.frm", syscfg.gfilesdir, szFileName);
     if (!File::Exists(szFullPathName)) {
       sprintf(szFullPathName, "%sform%s.msg", syscfg.gfilesdir, szFileName);
@@ -543,9 +532,8 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
               fileExtract.Seek(-1L, File::seekEnd);
             }
           }
-          char szBuffer[255];
-          sprintf(szBuffer, "ON: %s", session()->current_sub().name);
-          fileExtract.Write(szBuffer, strlen(szBuffer));
+          string buffer = StringPrintf("ON: %s", session()->current_sub().name);
+          fileExtract.Write(buffer);
           fileExtract.Write("\r\n\r\n", 4);
           fileExtract.Write(get_post(nMessageNumber)->title, strlen(get_post(nMessageNumber)->title));
           fileExtract.Write("\r\n", 2);
@@ -615,7 +603,7 @@ void HandleScanReadFind(int &nMessageNumber, int &nScanOptionType) {
   }
   bout.nl();
   bout << "|#1Backwards or Forwards? ";
-  char szBuffer[ 10 ];
+  char szBuffer[10];
   szBuffer[0] = 'Q';
   szBuffer[1] = upcase(*"Backwards");
   szBuffer[2] = upcase(*"Forwards");
@@ -660,9 +648,8 @@ void HandleScanReadFind(int &nMessageNumber, int &nScanOptionType) {
     string b;
     if (readfile(&(get_post(nTempMsgNum)->msg), session()->current_sub().filename, &b)) {
       StringUpperCase(&b);
-      const char* temp = b.c_str();
       fnd = (strstr(strupr(stripcolors(get_post(nTempMsgNum)->title)), szFindString)
-             || strstr(temp, szFindString)) ? true : false;
+             || strstr(b.c_str(), szFindString)) ? true : false;
     }
   }
   if (fnd) {
@@ -688,8 +675,8 @@ void HandleListTitles(int &nMessageNumber, int &nScanOptionType) {
     ++nMessageNumber;
     postrec *p3 = get_post(nMessageNumber);
 
-    char szPrompt[ 255 ];
-    char szTempBuffer[ 255 ];
+    char szPrompt[255];
+    char szTempBuffer[255];
     if (p3->ownersys == 0 && p3->owneruser == session()->usernum) {
       sprintf(szTempBuffer, "|#7[|#1%d|#7]", nMessageNumber);
     } else if (p3->ownersys != 0) {
@@ -761,7 +748,6 @@ void HandleListTitles(int &nMessageNumber, int &nScanOptionType) {
   }
   nScanOptionType = SCAN_OPTION_READ_PROMPT;
 }
-
 
 void HandleMessageDownload(int nMessageNumber) {
   if (nMessageNumber > 0 && nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea()) {
@@ -890,7 +876,7 @@ void HandleMessageLoad() {
   }
   bout.nl();
   bout << "|#2Filename: ";
-  char szFileName[ MAX_PATH ];
+  char szFileName[MAX_PATH];
   input(szFileName, 50);
   if (szFileName[0]) {
     bout.nl();

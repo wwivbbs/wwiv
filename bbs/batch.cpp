@@ -333,10 +333,10 @@ void zmbatchdl(bool bHangupAfterDl) {
         FileAreaSetRecord(file, nRecordNumber);
         file.Read(&u, sizeof(uploadsrec));
         file.Close();
-        char szSendFileName[ MAX_PATH ];
+        char szSendFileName[MAX_PATH];
         sprintf(szSendFileName, "%s%s", session()->directories[batch[cur].dir].path, u.filename);
         if (session()->directories[batch[cur].dir].mask & mask_cdrom) {
-          char szOrigFileName[ MAX_PATH ];
+          char szOrigFileName[MAX_PATH];
           sprintf(szOrigFileName, "%s%s", session()->directories[batch[cur].dir].path, u.filename);
           sprintf(szSendFileName, "%s%s", syscfgovr.tempdir, u.filename);
           if (!File::Exists(szSendFileName)) {
@@ -410,10 +410,10 @@ void ymbatchdl(bool bHangupAfterDl) {
         FileAreaSetRecord(file, nRecordNumber);
         file.Read(&u, sizeof(uploadsrec));
         file.Close();
-        char szSendFileName[ MAX_PATH ];
+        char szSendFileName[MAX_PATH];
         sprintf(szSendFileName, "%s%s", session()->directories[batch[cur].dir].path, u.filename);
         if (session()->directories[batch[cur].dir].mask & mask_cdrom) {
-          char szOrigFileName[ MAX_PATH ];
+          char szOrigFileName[MAX_PATH];
           sprintf(szOrigFileName, "%s%s", session()->directories[batch[cur].dir].path, u.filename);
           sprintf(szSendFileName, "%s%s", syscfgovr.tempdir, u.filename);
           if (!File::Exists(szSendFileName)) {
@@ -458,7 +458,7 @@ void handle_dszline(char *l) {
   }
 
   if (ss) {
-    char szFileName[ MAX_PATH ];
+    char szFileName[MAX_PATH];
     strcpy(szFileName, stripfn(ss));
     align(szFileName);
 

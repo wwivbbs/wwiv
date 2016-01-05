@@ -159,7 +159,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
 
       if (hSyncWriteSlot == INVALID_HANDLE_VALUE) {
         // Create Write handle.
-        char szWriteSlotName[ MAX_PATH ];
+        char szWriteSlotName[MAX_PATH];
         ::Sleep(500);
         _snprintf(szWriteSlotName, sizeof(szWriteSlotName), "\\\\.\\mailslot\\sbbsexec\\wr%d",
                   session()->instance_number());
@@ -311,7 +311,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
     CreateSyncFosCommandLine(&workingCommandLine, syncFosTempFile, nSyncMode);
     bUsingSync = true;
 
-    char szTempLogFileName[ MAX_PATH ];
+    char szTempLogFileName[MAX_PATH];
     _snprintf(szTempLogFileName, sizeof(szTempLogFileName), "%swwivsync.log", session()->GetHomeDir().c_str());
     hLogFile = fopen(szTempLogFileName, "at");
     fprintf(hLogFile, charstr(78, '='));
@@ -322,7 +322,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
   }
 
   DWORD dwCreationFlags = 0;
-  char * title = new char[ 255 ];
+  char * title = new char[255];
   memset(title, 0, sizeof(title));
   if (flags & EFLAG_NETPROG) {
     strcpy(title, "NETWORK");

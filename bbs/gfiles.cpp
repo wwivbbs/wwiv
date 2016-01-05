@@ -338,7 +338,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
 
 void gfile_sec(int sn) {
   int i, i1, i2, nf;
-  char xdc[81], *ss, *ss1, file_name[ MAX_PATH ];
+  char xdc[81], *ss, *ss1, file_name[MAX_PATH];
   bool abort;
 
   gfilerec* g = read_sec(sn, &nf);
@@ -442,7 +442,7 @@ void gfile_sec(int sn) {
               bool sent = false;
               abort = false;
               send_file(file_name, &sent, &abort, g[i2 - 1].filename, -1, lFileSize);
-              char s1[ 255 ];
+              char s1[255];
               if (sent) {
                 sprintf(s1, "|#2%s |#9successfully transferred|#1.|#0\r\n", g[i2 - 1].filename);
                 done1 = true;

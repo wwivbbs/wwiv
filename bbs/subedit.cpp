@@ -276,7 +276,7 @@ static void modify_sub(int n) {
     case 'B': {
       bout.nl();
       bout << "|#2New filename? ";
-      char szSubBaseName[ MAX_PATH ];
+      char szSubBaseName[MAX_PATH];
       Input1(szSubBaseName, r.filename, 8, true, InputMode::FILENAME);
       if (szSubBaseName[0] != 0 && strchr(szSubBaseName, '.') == 0) {
         char szOldSubFileName[MAX_PATH];
@@ -299,7 +299,7 @@ static void modify_sub(int n) {
         sprintf(szOldSubFileName, "%s", r.filename);
         strcpy(r.filename, szSubBaseName);
 
-        char szFile1[ MAX_PATH ], szFile2[ MAX_PATH ];
+        char szFile1[MAX_PATH], szFile2[MAX_PATH];
         sprintf(szFile1, "%s%s.sub", syscfg.datadir, r.filename);
         sprintf(szFile2, "%s%s.dat", syscfg.msgsdir, r.filename);
         if (r.storage_type == 2 && !File::Exists(szFile1) &&

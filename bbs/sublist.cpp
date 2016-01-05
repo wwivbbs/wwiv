@@ -33,7 +33,7 @@ using std::max;
 using namespace wwiv::strings;
 
 void old_sublist() {
-  char s[ 255 ];
+  char s[255];
 
   int oc = session()->GetCurrentConferenceMessageArea();
   int os = usub[session()->GetCurrentMessageArea()].subnum;

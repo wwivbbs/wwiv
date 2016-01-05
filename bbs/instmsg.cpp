@@ -67,7 +67,7 @@ void send_inst_msg(inst_msg_header *ih, const char *msg) {
     file.Close();
 
     for (int i = 0; i < 1000; i++) {
-      char szMsgFileName[ MAX_PATH ];
+      char szMsgFileName[MAX_PATH];
       sprintf(szMsgFileName, "%sMSG%5.5d.%3.3d", syscfg.datadir, i, ih->dest_inst);
       if (!File::Rename(szFileName, szMsgFileName) || (errno != EACCES)) {
         break;
@@ -80,7 +80,7 @@ void send_inst_msg(inst_msg_header *ih, const char *msg) {
 
 void send_inst_str1(int m, int whichinst, const char *send_string) {
   inst_msg_header ih;
-  char szTempSendString[ 1024 ];
+  char szTempSendString[1024];
 
   sprintf(szTempSendString, "%s\r\n", send_string);
   ih.main = static_cast<uint16_t>(m);

@@ -198,7 +198,7 @@ void do_chains() {
     if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
       && session()->chains_reg.size() > 0 
       && (session()->GetEffectiveSl() < 255)) {
-      chainregrec r = session()->chains_reg[ i ];
+      chainregrec r = session()->chains_reg[i];
       if (r.maxage) {
         if (r.minage > session()->user()->GetAge() || r.maxage < session()->user()->GetAge()) {
           ok = false;

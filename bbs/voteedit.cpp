@@ -38,7 +38,7 @@ static void print_quests() {
 
     votingrec v;
     file.Read(&v, sizeof(votingrec));
-    char szBuffer[ 255 ];
+    char szBuffer[255];
     sprintf(szBuffer, "|#2%2d|#7) |#1%s", i, v.numanswers ? v.question : ">>> NO QUESTION <<<");
     pla(szBuffer, &abort);
   }

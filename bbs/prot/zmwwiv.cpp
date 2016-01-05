@@ -126,8 +126,8 @@ bool NewZModemReceiveFile( const char *file_name ) {
 	nDone = doIO( &info );
 	bool ret = ( nDone == ZmDone ) ? true : false;
 	if ( ret ) {
-		char szNewFileName[ MAX_PATH ];
-		char szOldFileName[ MAX_PATH ];
+		char szNewFileName[MAX_PATH];
+		char szOldFileName[MAX_PATH];
 		strcpy( szNewFileName, file_name );
 		StringRemoveWhitespace( szNewFileName );
 
@@ -356,7 +356,7 @@ void ZStatus(int type, int value, char *msg) {
 
 
 FILE * ZOpenFile(char *file_name, u_long crc, ZModem *info) {
-	char szTempFileName[ MAX_PATH ];
+	char szTempFileName[MAX_PATH];
 	sprintf( szTempFileName, "%s%s", syscfgovr.tempdir, file_name );
 #if defined(_DEBUG)
 	zmodemlog( "ZOpenFile filename=%s %s\r\n", file_name, szTempFileName );
@@ -550,7 +550,7 @@ void ZIdleStr(unsigned char *buf, int len, ZModem *info) {
 	//PutTerm(buf, len);
 	return;
 #if 0
-	char szBuffer[ 1024 ];
+	char szBuffer[1024];
 	strcpy( szBuffer, reinterpret_cast<const char *>( buf  ) );
 	szBuffer[len] = '\0';
 	if ( strlen( szBuffer ) == 1 ) {

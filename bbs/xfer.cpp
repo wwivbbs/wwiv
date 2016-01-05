@@ -198,7 +198,7 @@ void print_devices() {
 }
 
 void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const char *ofn) {
-  char szArcCmd[ MAX_PATH ];
+  char szArcCmd[MAX_PATH];
 
   out_buffer[0] = '\0';
   const char* ss = strrchr(pszArcFileName, '.');
@@ -246,18 +246,18 @@ int list_arc_out(const char *file_name, const char *pszDirectory) {
 
   szFileNameToDelete[0] = 0;
 
-  char szFullPathName[ MAX_PATH ];
+  char szFullPathName[MAX_PATH];
   sprintf(szFullPathName, "%s%s", pszDirectory, file_name);
   if (session()->directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
     sprintf(szFullPathName, "%s%s", syscfgovr.tempdir, file_name);
     if (!File::Exists(szFullPathName)) {
-      char szFullPathNameInDir[ MAX_PATH ];
+      char szFullPathNameInDir[MAX_PATH];
       sprintf(szFullPathNameInDir, "%s%s", pszDirectory, file_name);
       copyfile(szFullPathNameInDir, szFullPathName, false);
       strcpy(szFileNameToDelete, szFullPathName);
     }
   }
-  char szArchiveCmd[ MAX_PATH ];
+  char szArchiveCmd[MAX_PATH];
   get_arc_cmd(szArchiveCmd, szFullPathName, 0, "");
   if (!okfn(file_name)) {
     szArchiveCmd[0] = 0;
@@ -477,9 +477,9 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
         if (indent == 1) {
           for (i = 0; i < INDENTION; i++) {
             if (i == 12 || i == 18) {
-              s[ i ] = (okansi() ? '\xBA' : '|');
+              s[i] = (okansi() ? '\xBA' : '|');
             } else {
-              s[ i ] = SPACE;
+              s[i] = SPACE;
             }
           }
           s[INDENTION] = '\0';
@@ -491,7 +491,7 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
         } else {
           if (indent == 2) {
             for (i = 0; i < 13; i++) {
-              s[ i ] = SPACE;
+              s[i] = SPACE;
             }
             s[13] = '\0';
             osan(s, abort, &next);
@@ -543,7 +543,7 @@ void align(char *file_name) {
   if (s2 == nullptr || strrchr(file_name, '\\') > s2) {
     szExtension[0] = '\0';
   } else {
-    strcpy(szExtension, &(s2[ 1 ]));
+    strcpy(szExtension, &(s2[1]));
     szExtension[3]  = '\0';
     s2[0]           = '\0';
   }
@@ -584,7 +584,7 @@ void align(char *file_name) {
     }
   }
 
-  char buffer[ MAX_PATH ];
+  char buffer[MAX_PATH];
   for (int i4 = 0; i4 < 12; i4++) {
     buffer[ i4 ] = SPACE;
   }
@@ -637,7 +637,7 @@ void printinfo(uploadsrec * u, bool *abort) {
   strncpy(s, u->filename, 8);
   s[8] = '\0';
   osan(s, abort, &next);
-  strncpy(s, &((u->filename)[ 8 ]), 4);
+  strncpy(s, &((u->filename)[8]), 4);
   s[4] = '\0';
   bout.Color(1);
   osan(s, abort, &next);
@@ -694,7 +694,7 @@ void printinfo(uploadsrec * u, bool *abort) {
 }
 
 void printtitle(bool *abort) {
-  char buffer[ 255 ];
+  char buffer[255];
 
   if (lines_listed >= session()->screenlinest - 7 && filelist && g_num_listed) {
     tag_files();
@@ -1028,7 +1028,7 @@ int printfileinfo(uploadsrec * u, int directory_num) {
     bout << "Extended Description: \r\n";
     print_extended(u->filename, &abort, 255, 0);
   }
-  char file_name[ MAX_PATH ];
+  char file_name[MAX_PATH];
   sprintf(file_name, "%s%s", session()->directories[directory_num].path, u->filename);
   StringRemoveWhitespace(file_name);
   if (!File::Exists(file_name)) {

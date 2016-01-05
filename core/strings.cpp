@@ -69,7 +69,7 @@ namespace strings {
  * @param ... Variable arguments
  */
 string StringPrintf(const char *formatted_text, ...) {
-  char buffer[ 1024 ];
+  char buffer[1024];
 
   va_list ap;
   va_start(ap, formatted_text);
@@ -171,6 +171,11 @@ uint8_t StringToUnsignedChar(const string& s) {
 unsigned int StringToUnsignedInt(const string& s) {
   return StringToT<unsigned, unsigned long>(
     [](const string& s) { return std::stoul(s); }, s);
+}
+
+int StringToInt(const string& s) {
+  return StringToT<int, int>(
+    [](const string& s) { return std::stoi(s); }, s);
 }
 
 const string& StringReplace(string* orig, const string& old_string, const string& new_string) {
@@ -341,7 +346,7 @@ char *StringRemoveWhitespace(char *str) {
 }
 
 char *StringRemoveChar(const char *str, char ch) {
-  static char s_strip_string[ 255 ];
+  static char s_strip_string[255];
 
   WWIV_ASSERT(str);
   strcpy(s_strip_string, "");

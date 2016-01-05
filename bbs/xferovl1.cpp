@@ -1160,7 +1160,7 @@ void removefilesnotthere(int dn, int *autodel) {
   int i = recno(szAllFilesFileMask);
   bool abort = false;
   while (!hangup && i > 0 && !abort) {
-    char szCandidateFileName[ MAX_PATH ];
+    char szCandidateFileName[MAX_PATH];
     File fileDownload(g_szDownloadFileName);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);

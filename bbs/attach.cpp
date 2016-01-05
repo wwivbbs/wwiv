@@ -47,7 +47,7 @@ using namespace wwiv::sdk;
 
 void attach_file(int mode) {
   bool bFound;
-  char szFullPathName[ MAX_PATH ], szNewFileName[ MAX_PATH], szFileToAttach[ MAX_PATH ];
+  char szFullPathName[MAX_PATH], szNewFileName[MAX_PATH], szFileToAttach[MAX_PATH];
   User u;
   filestatusrec fsr;
 
