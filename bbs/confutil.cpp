@@ -95,7 +95,7 @@ bool access_sub(User * u, int sl, subboardrec * s) {
   if (sl < s->readsl) {
     return false;
   }
-  if (u->GetAge() < (s->age & 0x7f)) {
+  if (u->GetAge() < s->age) {
     return false;
   }
   if (s->ar != 0 && !u->HasArFlag(s->ar)) {

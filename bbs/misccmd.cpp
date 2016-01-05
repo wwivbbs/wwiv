@@ -319,7 +319,7 @@ void list_users(int mode) {
       if (user.GetSl() < s.readsl) {
         ok = false;
       }
-      if (user.GetAge() < (s.age & 0x7f)) {
+      if (user.GetAge() < s.age) {
         ok = false;
       }
       if (s.ar != 0 && !user.HasArFlag(s.ar)) {
@@ -376,7 +376,7 @@ void list_users(int mode) {
         numscn++;
       }
       ++p;
-      if (p == (session()->user()->GetScreenLines() - 6)) {
+      if (p == static_cast<int>(session()->user()->GetScreenLines()) - 6) {
         //bout.backline();
         bout.clreol();
         bout.Color(FRAME_COLOR);

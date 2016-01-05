@@ -46,7 +46,6 @@ static void save_subs() {
 
   for (auto& s : session()->subboards) {
     s.type = 0;
-    s.age &= 0x7f;
   }
 
   {
@@ -117,7 +116,7 @@ static string boarddata(size_t n) {
     }
   }
   return StringPrintf("|#2%4d |#9%1c  |#1%-37.37s |#2%-8s |#9%-3d %-3d %-2d %-5d %7s",
-          n, x, stripcolors(r.name), r.filename, r.readsl, r.postsl, r.age & 0x7f,
+          n, x, stripcolors(r.name), r.filename, r.readsl, r.postsl, r.age,
           r.maxmsgs, stype.c_str());
 }
 
@@ -231,7 +230,7 @@ static void modify_sub(int n) {
     bout << "|#9D) Read SL    : |#2" << static_cast<int>(r.readsl) << wwiv::endl;
     bout << "|#9E) Post SL    : |#2" << static_cast<int>(r.postsl) << wwiv::endl;
     bout << "|#9F) Anony      : |#2" << GetAnon(r) << wwiv::endl;
-    bout << "|#9G) Min. Age   : |#2" << static_cast<int>(r.age & 0x7f) << wwiv::endl;
+    bout << "|#9G) Min. Age   : |#2" << static_cast<int>(r.age) << wwiv::endl;
     bout << "|#9H) Max Msgs   : |#2" << r.maxmsgs << wwiv::endl;
     bout << "|#9I) AR         : |#2" << GetAr(r) << wwiv::endl;
     bout << "|#9J) Net info   : |#2";
@@ -392,7 +391,7 @@ static void modify_sub(int n) {
       input(szAge, 3);
       int nAge = atoi(szAge);
       if (nAge >= 0 && nAge < 128 && szAge[0]) {
-        r.age = static_cast<unsigned char>((r.age & 0x80) | (nAge & 0x7f));
+        r.age = static_cast<uint8_t>(nAge);
       }
     }
     break;
@@ -423,7 +422,7 @@ static void modify_sub(int n) {
     case 'J': {
       session()->subboards[n] = r;
       char ch2 = 'A';
-      while (session()->xsubs.size() <= n) {
+      while (size_int(session()->xsubs) <= n) {
         xtrasubsrec x;
         memset(&x, 0, sizeof(xtrasubsrec));
         session()->xsubs.push_back(x);
@@ -676,7 +675,7 @@ static void delete_sub(int n) {
 
   n = static_cast<int>(nconv);
 
-  while (session()->xsubs.size() > n && !session()->xsubs[n].nets.empty()) {
+  while (size_int(session()->xsubs) > n && !session()->xsubs[n].nets.empty()) {
     sub_xtr_del(n, 0, 1);
   }
 

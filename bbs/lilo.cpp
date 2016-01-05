@@ -906,7 +906,8 @@ void logon() {
 
   // Handle case of first conf with no subs avail
   if (usub[0].subnum == -1 && okconf(session()->user())) {
-    for (session()->SetCurrentConferenceMessageArea(0); (session()->GetCurrentConferenceMessageArea() < subconfnum)
+    for (session()->SetCurrentConferenceMessageArea(0); 
+         (session()->GetCurrentConferenceMessageArea() < subconfnum)
          && (uconfsub[session()->GetCurrentConferenceMessageArea()].confnum != -1);
          session()->SetCurrentConferenceMessageArea(session()->GetCurrentConferenceMessageArea() + 1)) {
       setuconf(CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);

@@ -126,16 +126,6 @@ static bool del_net(
   }
 
   for (size_t i = 0; i < subboards.size(); i++) {
-    // TODO(rushfan): This code isn'tin the bbs anymore. We only use subs.xtr. Delerte this.
-    if (subboards[i].age & 0x80) {
-      if (subboards[i].name[40] == nn) {
-        subboards[i].type = 0;
-        subboards[i].age &= 0x7f;
-        subboards[i].name[40] = 0;
-      } else if (subboards[i].name[40] > nn) {
-        subboards[i].name[40]--;
-      }
-    }
     size_t i2;
     for (i2 = 0; i2 < i; i2++) {
       if (strcmp(subboards[i].filename, subboards[i2].filename) == 0) {
@@ -301,12 +291,6 @@ static bool insert_net(
   }
 
   for (size_t i = 0; i < subboards.size(); i++) {
-    // TODO(rushfan): This code isn't in the bbs anymore. Delete it.
-    if (subboards[i].age & 0x80) {
-      if (subboards[i].name[40] >= nn) {
-        subboards[i].name[40]++;
-      }
-    }
     size_t i2 = 0;
     for (i2 = 0; i2 < i; i2++) {
       if (strcmp(subboards[i].filename, subboards[i2].filename) == 0) {
