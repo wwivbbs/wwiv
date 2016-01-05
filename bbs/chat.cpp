@@ -126,7 +126,7 @@ void chat_room() {
   bChatLine = false;
   in_chatroom = true;
   setiia(9);
-  char szFileName[ MAX_PATH ];
+  char szFileName[MAX_PATH];
   sprintf(szFileName, "%sEXTCHAT", syscfg.datadir);
 
   bool bActionMode = true;
@@ -261,7 +261,7 @@ int main_loop(char *message, char *from_message, char *color_string, char *messa
     secure_ch(loc);
   } else if (IsEqualsIgnoreCase(message, "/u")) {
     bActionHandled = 0;
-    char szFileName[ MAX_PATH ];
+    char szFileName[MAX_PATH];
     sprintf(szFileName, "CHANNEL.%d", (loc + 1 - INST_LOC_CH1));
     if (File::Exists(szFileName)) {
       File::Remove(szFileName);
@@ -365,7 +365,7 @@ void intro(int loc) {
   } else {
     bout << "|#7You are the only one here.\r\n";
   }
-  char szFileName[ MAX_PATH ];
+  char szFileName[MAX_PATH];
   sprintf(szFileName, "CHANNEL.%d", (loc + 1 - INST_LOC_CH1));
   if (loc != INST_LOC_CH1 && File::Exists(szFileName)) {
     bout << "|#7This channel is |#1secured|#7.\r\n";
@@ -457,7 +457,7 @@ int wusrinst(char *n) {
 // Secures a channel
 
 void secure_ch(int ch) {
-  char szFileName[ MAX_PATH ];
+  char szFileName[MAX_PATH];
   if (ch == INST_LOC_CH1) {
     bout << "|#1[|#9Cannot secure channel 1|#1]\r\n";
     return;
@@ -962,7 +962,7 @@ int grabname(const char *message, int ch) {
   int n = atoi(message);
   if (n) {
     if (n < 1 || n > num_instances()) {
-      char buffer[ 255 ];
+      char buffer[255];
       sprintf(buffer, "%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
       bout << buffer;
       return 0;
@@ -982,7 +982,7 @@ int grabname(const char *message, int ch) {
       }
       return n;
     }
-    char buffer[ 255 ];
+    char buffer[255];
     sprintf(buffer, "%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
     bout << buffer;
     return 0;

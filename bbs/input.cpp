@@ -248,7 +248,7 @@ static const uint8_t input_background_char = 32; // Was '\xB1';
 // Returns: length of string
 //==================================================================
 void Input1(char *out_text, const string& orig_text, int max_length, bool bInsert, InputMode mode) {
-  char szTemp[ 255 ];
+  char szTemp[255];
   const char dash = '-';
   const char slash = '/';
 

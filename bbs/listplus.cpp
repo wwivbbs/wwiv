@@ -1250,7 +1250,7 @@ void update_user_config_screen(uploadsrec * u, int which) {
                                    (BLUE << 4) : BLACK + (BLUE << 4)));
     bout << "\xFE ";
     bout.SystemColor(BLACK + (BLUE << 4));
-    bout << lp_color_list[ config_listing.lp_colors[ 1 ] ];
+    bout << lp_color_list[ config_listing.lp_colors[1] ];
   }
   if (which < 1 || which == 3) {
     bout.GotoXY(37, 6);

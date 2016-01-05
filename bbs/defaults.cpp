@@ -234,8 +234,8 @@ void color_list() {
 
 static void reset_user_colors_to_defaults() {
   for (int i = 0; i <= 9; i++) {
-    session()->user()->SetColor(i, session()->newuser_colors[ i ]);
-    session()->user()->SetBWColor(i, session()->newuser_bwcolors[ i ]);
+    session()->user()->SetColor(i, session()->newuser_colors[i]);
+    session()->user()->SetBWColor(i, session()->newuser_bwcolors[i]);
   }
 }
 

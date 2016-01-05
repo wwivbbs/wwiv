@@ -757,7 +757,7 @@ void zlog() {
     if (z.calls) {
       nTimePerUser = z.active / z.calls;
     }
-    char szBuffer[ 255 ];
+    char szBuffer[255];
     sprintf(szBuffer, "%s    %4d    %4d     %3d     %3d     %3d    %3d     %3d      %3d|B0",
             z.date, z.calls, z.active, z.posts, z.email, z.fback, z.up, 10 * z.active / 144, nTimePerUser);
     // alternate colors to make it easier to read across the lines

@@ -63,7 +63,7 @@ void move_file() {
   bool ok = false;
   bout.nl(2);
   bout << "|#2Filename to move: ";
-  char szFileMask[ MAX_PATH ];
+  char szFileMask[MAX_PATH];
   input(szFileMask, 12);
   if (strchr(szFileMask, '.') == nullptr) {
     strcat(szFileMask, ".*");
@@ -426,7 +426,7 @@ bool upload_file(const char *file_name, int directory_num, const char *descripti
   uploadsrec u, u1;
 
   directoryrec d = session()->directories[directory_num];
-  char szTempFileName[ 255 ];
+  char szTempFileName[255];
   strcpy(szTempFileName, file_name);
   align(szTempFileName);
   strcpy(u.filename, szTempFileName);
@@ -438,11 +438,11 @@ bool upload_file(const char *file_name, int directory_num, const char *descripti
   if (!(d.mask & mask_cdrom) && !check_ul_event(directory_num, &u)) {
     bout << file_name << " was deleted by upload event.\r\n";
   } else {
-    char szUnalignedFileName[ MAX_PATH ];
+    char szUnalignedFileName[MAX_PATH];
     strcpy(szUnalignedFileName, szTempFileName);
     unalign(szUnalignedFileName);
 
-    char szFullPathName[ MAX_PATH ];
+    char szFullPathName[MAX_PATH];
     sprintf(szFullPathName, "%s%s", d.path, szUnalignedFileName);
 
     File fileUpload(szFullPathName);
@@ -466,7 +466,7 @@ bool upload_file(const char *file_name, int directory_num, const char *descripti
     }
     bout.nl();
 
-    char szTempDisplayFileName[ MAX_PATH ];
+    char szTempDisplayFileName[MAX_PATH];
     strcpy(szTempDisplayFileName, u.filename);
     bout << "|#9File name   : |#2" << StringRemoveWhitespace(szTempDisplayFileName) << wwiv::endl;
     bout << "|#9File size   : |#2" << bytes_to_k(u.numbytes) << wwiv::endl;
@@ -591,7 +591,7 @@ void upload_files(const char *file_name, int directory_num, int type) {
 
   TextFile file(file_name, "r");
   if (!file.IsOpen()) {
-    char szDefaultFileName[ MAX_PATH ];
+    char szDefaultFileName[MAX_PATH];
     sprintf(szDefaultFileName, "%s%s", session()->directories[udir[directory_num].subnum].path, file_name);
     file.Open(szDefaultFileName, "r");
   }
@@ -697,10 +697,10 @@ void upload_files(const char *file_name, int directory_num, int type) {
 bool uploadall(int directory_num) {
   dliscan1(udir[directory_num].subnum);
 
-  char szDefaultFileSpec[ MAX_PATH ];
+  char szDefaultFileSpec[MAX_PATH];
   strcpy(szDefaultFileSpec, "*.*");
 
-  char szPathName[ MAX_PATH ];
+  char szPathName[MAX_PATH];
   sprintf(szPathName, "%s%s", session()->directories[udir[directory_num].subnum].path, szDefaultFileSpec);
   int maxf = session()->directories[udir[directory_num].subnum].maxfiles;
 

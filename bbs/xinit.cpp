@@ -83,7 +83,7 @@ uint32_t GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNu
 // Turns a string into a bitmapped unsigned short flag for use with
 // ExecuteExternalProgram calls.
 unsigned short WSession::str2spawnopt(const char *s) {
-  char ts[ 255 ];
+  char ts[255];
 
   unsigned short return_val = 0;
   strcpy(ts, s);
@@ -1050,7 +1050,7 @@ void WSession::create_phone_file() {
     users()->ReadUser(&user, nTempUserNumber);
     if (!user.IsUserDeleted()) {
       p.usernum = nTempUserNumber;
-      char szTempVoiceNumber[ 255 ], szTempDataNumber[ 255 ];
+      char szTempVoiceNumber[255], szTempDataNumber[255];
       strcpy(szTempVoiceNumber, user.GetVoicePhoneNumber());
       strcpy(szTempDataNumber, user.GetDataPhoneNumber());
       if (szTempVoiceNumber[0] && !strstr(szTempVoiceNumber, "000-")) {

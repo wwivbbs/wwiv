@@ -425,7 +425,7 @@ int try_to_ul_wh(char *file_name) {
 
 
 void t2u_error(const char *file_name, const char *msg) {
-  char szBuffer[ 255 ];
+  char szBuffer[255];
 
   bout.nl(2);
   sprintf(szBuffer, "**  %s failed T2U qualifications", file_name);

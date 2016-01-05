@@ -69,7 +69,7 @@ namespace strings {
  * @param ... Variable arguments
  */
 string StringPrintf(const char *formatted_text, ...) {
-  char buffer[ 1024 ];
+  char buffer[1024];
 
   va_list ap;
   va_start(ap, formatted_text);
@@ -341,7 +341,7 @@ char *StringRemoveWhitespace(char *str) {
 }
 
 char *StringRemoveChar(const char *str, char ch) {
-  static char s_strip_string[ 255 ];
+  static char s_strip_string[255];
 
   WWIV_ASSERT(str);
   strcpy(s_strip_string, "");

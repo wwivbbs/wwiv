@@ -138,7 +138,7 @@ static void AddBBSListEntryImpl() {
       bout << "\r\n|#7Enter BBS type (ie, |#1WWIV|#7):\r\n:";
       bbsType = input(4, true);
 
-      char szBbsListLine[ 255 ];
+      char szBbsListLine[255];
       snprintf(szBbsListLine, sizeof(szBbsListLine), "%12s  %-50s  [%4s] (%4s)\r\n",
                bbsPhoneNumber.c_str(), bbsName.c_str(), bbsSpeed.c_str(), bbsType.c_str());
       bout.nl(2);

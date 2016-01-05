@@ -283,7 +283,7 @@ void giveup_timeslice() {
 
 char *stripfn(const char *file_name) {
   static char szStaticFileName[15];
-  char szTempFileName[ MAX_PATH ];
+  char szTempFileName[MAX_PATH];
 
   WWIV_ASSERT(file_name);
 

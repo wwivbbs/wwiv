@@ -55,7 +55,7 @@ void dirlist(int mode) {
     while (i <= en && uconfdir[i].confnum != -1 && !abort) {
       size_t i1 = 0;
       while (i1 < session()->directories.size() && udir[i1].subnum != -1 && !abort) {
-        char s[ 255 ];
+        char s[255];
         size_t firstp = 0;
         if (p && mode == 0) {
           p = 0;

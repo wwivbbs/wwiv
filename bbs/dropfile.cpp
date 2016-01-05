@@ -207,7 +207,7 @@ void CreatePCBoardSysDropFile() {
       sprintf(pcb.connectbps, "%-5.5d", modem_speed);
     }
     pcb.usernum = static_cast<int16_t>(session()->usernum);
-    char szName[ 255 ];
+    char szName[255];
     sprintf(szName, "%-25.25s", session()->user()->GetName());
     char *pszFirstName = strtok(szName, " \t");
     sprintf(pcb.firstname, "%-15.15s", pszFirstName);
@@ -505,7 +505,7 @@ const string create_chain_file() {
                         session()->user()->GetScreenChars(),
                         session()->user()->GetScreenLines(),
                         session()->user()->GetSl());
-    char szTemporaryLogFileName[ MAX_PATH ];
+    char szTemporaryLogFileName[MAX_PATH];
     GetTemporaryInstanceLogFileName(szTemporaryLogFileName);
     file.WriteFormatted("%d\n%d\n%d\n%u\n%10.2f\n%s\n%s\n%s\n",
                         cs(), so(), okansi(), incom, nsl(), syscfg.gfilesdir, syscfg.datadir, szTemporaryLogFileName);

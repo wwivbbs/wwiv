@@ -275,7 +275,7 @@ int get_protocol(xfertype xt) {
   int only = 0;
   int maxprot = (WWIV_NUM_INTERNAL_PROTOCOLS - 1) + session()->externs.size();
   for (int i = 1; i <= maxprot; i++) {
-    fl[ i ] = '\0';
+    fl[i] = '\0';
     if (ok_prot(i, xt)) {
       if (i < 10) {
         oks[i1++] = static_cast<char>('0' + i);

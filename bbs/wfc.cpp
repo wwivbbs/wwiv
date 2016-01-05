@@ -390,7 +390,7 @@ void wfc_update() {
 }
 
 void wfc_screen() {
-  char szBuffer[ 255 ];
+  char szBuffer[255];
   instancerec ir;
   User u;
   static double wfc_time = 0, poll_time = 0;

@@ -52,7 +52,7 @@ void get_user_ppp_addr() {
       session()->internetEmailName.c_str(),
       session()->internetEmailDomain.c_str());
   TextFile acctFile(session()->network_directory(), ACCT_INI, "rt");
-  char szLine[ 260 ];
+  char szLine[260];
   if (acctFile.IsOpen()) {
     while (acctFile.ReadLine(szLine, 255) && !found) {
       if (strncasecmp(szLine, "USER", 4) == 0) {
@@ -77,11 +77,11 @@ void get_user_ppp_addr() {
   }
   if (!found && !session()->internetPopDomain.empty()) {
     int j = 0;
-    char szLocalUserName[ 255 ];
+    char szLocalUserName[255];
     strcpy(szLocalUserName, session()->user()->GetName());
     for (int i = 0; (i < wwiv::strings::GetStringLength(szLocalUserName)) && (i < 61); i++) {
-      if (szLocalUserName[ i ] != '.') {
-        szLine[ j++ ] = translate_table[(int)szLocalUserName[ i ] ];
+      if (szLocalUserName[i] != '.') {
+        szLine[ j++ ] = translate_table[(int)szLocalUserName[i] ];
       }
     }
     szLine[ j ] = '\0';
@@ -162,7 +162,7 @@ char *read_inet_addr(char *internet_address, int user_number) {
         inetAddrFile.Write(internet_address, 80L);
       }
     } else {
-      char szUserName[ 255 ];
+      char szUserName[255];
       inetAddrFile.Open(File::modeReadOnly | File::modeBinary);
       long lCurPos = 80L * static_cast<long>(user_number);
       inetAddrFile.Seek(lCurPos, File::seekBegin);
@@ -193,7 +193,7 @@ void write_inet_addr(const char *internet_address, int user_number) {
   inetAddrFile.Seek(lCurPos, File::seekBegin);
   inetAddrFile.Write(internet_address, 80L);
   inetAddrFile.Close();
-  char szDefaultUserAddr[ 255 ];
+  char szDefaultUserAddr[255];
   sprintf(szDefaultUserAddr, "USER%d", user_number);
   session()->set_net_num(getnetnum("FILEnet"));
   if (session()->net_num() != -1) {
@@ -201,9 +201,9 @@ void write_inet_addr(const char *internet_address, int user_number) {
     TextFile in(session()->network_directory(), ACCT_INI, "rt");
     TextFile out(syscfgovr.tempdir, ACCT_INI, "wt+");
     if (in.IsOpen() && out.IsOpen()) {
-      char szLine[ 260 ];
+      char szLine[260];
       while (in.ReadLine(szLine, 255)) {
-        char szSavedLine[ 260 ];
+        char szSavedLine[260];
         bool match = false;
         strcpy(szSavedLine, szLine);
         char* ss = strtok(szLine, "=");

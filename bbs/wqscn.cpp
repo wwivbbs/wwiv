@@ -86,7 +86,7 @@ void write_qscn(int user_number, uint32_t *qscn, bool stay_open) {
       (session()->GetWfcStatus() && user_number == 1)) {
     if (qsc != qscn) {
       for (int i = (syscfg.qscn_len / 4) - 1; i >= 0; i--) {
-        qsc[ i ] = qscn[ i ];
+        qsc[i] = qscn[i];
       }
     }
   }

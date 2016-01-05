@@ -41,12 +41,12 @@ static void print_quest(int mapp, int map[21]) {
   }
 
   for (int i = 1; i <= mapp && !abort; i++) {
-    voteFile.Seek(map[ i ] * sizeof(votingrec), File::seekBegin);
+    voteFile.Seek(map[i] * sizeof(votingrec), File::seekBegin);
     voteFile.Read(&v, sizeof(votingrec));
 
     char szBuffer[255];
     snprintf(szBuffer, sizeof(szBuffer), "|#6%c |#2%2d|#7) |#1%s",
-             session()->user()->GetVote(map[ i ]) ? ' ' : '*', i, v.question);
+             session()->user()->GetVote(map[i]) ? ' ' : '*', i, v.question);
     pla(szBuffer, &abort);
   }
   voteFile.Close();

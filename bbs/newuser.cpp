@@ -779,7 +779,7 @@ void DoFullNewUser() {
   }
   if (syscfg.sysconfig & sysconfig_extended_info) {
     input_street();
-    char szZipFileName[ MAX_PATH ];
+    char szZipFileName[MAX_PATH];
     sprintf(szZipFileName, "%s%s%czip1.dat", syscfg.datadir, ZIPCITY_DIR, File::pathSeparatorChar);
     if (File::Exists(szZipFileName)) {
       input_zipcode();
@@ -1193,7 +1193,7 @@ bool check_zip(const char *pszZipCode, int mode) {
   bool ok = true;
   bool found = false;
 
-  char szFileName[ MAX_PATH ];
+  char szFileName[MAX_PATH];
   sprintf(szFileName, "%s%s%czip%c.dat", syscfg.datadir, ZIPCITY_DIR, File::pathSeparatorChar, pszZipCode[0]);
 
   TextFile zip_file(szFileName, "r");
@@ -1259,7 +1259,7 @@ bool check_zip(const char *pszZipCode, int mode) {
 bool check_dupes(const char *pszPhoneNumber) {
   int user_number = find_phone_number(pszPhoneNumber);
   if (user_number && user_number != session()->usernum) {
-    char szBuffer[ 255 ];
+    char szBuffer[255];
     sprintf(szBuffer, "    %s entered phone # %s", session()->user()->GetName(), pszPhoneNumber);
     sysoplog(szBuffer, false);
     ssm(1, 0, szBuffer);

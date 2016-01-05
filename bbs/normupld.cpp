@@ -56,7 +56,7 @@ void normalupload(int dn) {
     return;
   }
   bout << "|#9Filename: ";
-  char szInputFileName[ MAX_PATH ];
+  char szInputFileName[MAX_PATH];
   input(szInputFileName, 12);
   if (!okfn(szInputFileName)) {
     szInputFileName[0] = '\0';
@@ -126,7 +126,7 @@ void normalupload(int dn) {
   char szUnalignedFile[MAX_PATH];
   strcpy(szUnalignedFile, szInputFileName);
   unalign(szUnalignedFile);
-  char szReceiveFileName[ MAX_PATH ];
+  char szReceiveFileName[MAX_PATH];
   sprintf(szReceiveFileName, "%s%s", d.path, szUnalignedFile);
   if (ok && yesno()) {
     if (File::Exists(d.path, szUnalignedFile)) {

@@ -271,7 +271,7 @@ void NewMessageScan() {
 }
 
 void GoodBye() {
-  char szFileName[ MAX_PATH ];
+  char szFileName[MAX_PATH];
   int cycle;
   int ch;
 

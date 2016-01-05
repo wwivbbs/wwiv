@@ -52,7 +52,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
   int i, nv, on, xx, onxi, odci;
   net_system_list_rec *csne;
 
-  char szEmailAddress[ 255 ];
+  char szEmailAddress[255];
   strcpy(szEmailAddress, emailAddress.c_str());
 
   *pUserNumber = 0;

@@ -41,7 +41,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 __EXTRN__ char  ansistr[81],
-          charbuffer[ 255 ],
+          charbuffer[255],
           dc[81],
           dcd[81],
           g_szDownloadFileName[MAX_PATH],
