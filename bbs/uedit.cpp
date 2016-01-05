@@ -254,12 +254,18 @@ int matchuser(int user_number) {
 
 
 int matchuser(User *pUser) {
-  int ok = 1, _not = 0, less = 0, cpf = 0, cpp = 0;
-  int  _and = 1, gotfcn = 0, evalit = 0, tmp, tmp1, tmp2;
+  int ok = 1;
+  bool _not = 0, less = 0;
+  int cpf = 0, cpp = 0;
+  bool  _and = true, gotfcn = false;
+  unsigned evalit = 0;
+  unsigned int tmp2;
   char fcn[20], parm[80], ts[40];
   time_t l;
 
   bool done = false;
+  bool tmp = false;
+  unsigned tmp1 = 0;
   do {
     if (*sp == 0) {
       done = true;
@@ -273,23 +279,23 @@ int matchuser(User *pUser) {
           done = true;
           break;
         case '|':
-          _and = 0;
+          _and = false;
           break;
         case '&':
-          _and = 1;
+          _and = true;
           break;
         case '!':
-          _not = 1;
+          _not = true;
           break;
         case '<':
-          less = 1;
+          less = true;
           break;
         case '>':
-          less = 0;
+          less = false;
           break;
         }
       } else if (*sp == '[') {
-        gotfcn = 1;
+        gotfcn = true;
         sp++;
       } else if (*sp == ']') {
         evalit = 1;
@@ -303,7 +309,7 @@ int matchuser(User *pUser) {
           }
         } else {
           if (cpf < static_cast<int>(sizeof(fcn)) - 1) {
-            fcn[ cpf++ ] = *sp++;
+            fcn[cpf++] = *sp++;
           } else {
             sp++;
           }
@@ -315,7 +321,7 @@ int matchuser(User *pUser) {
         if (evalit == 1) {
           fcn[cpf] = 0;
           parm[cpp] = 0;
-          tmp = 1;
+          tmp = true;
           tmp1 = atoi(parm);
 
           if (IsEquals(fcn, "SL")) {
@@ -333,16 +339,16 @@ int matchuser(User *pUser) {
           } else if (IsEquals(fcn, "AR")) {
             if (parm[0] >= 'A' && parm[0] <= 'P') {
               tmp1 = 1 << (parm[0] - 'A');
-              tmp = pUser->HasArFlag(tmp1) ? 1 : 0;
+              tmp = pUser->HasArFlag(tmp1);
             } else {
-              tmp = 0;
+              tmp = false;
             }
           } else if (IsEquals(fcn, "DAR")) {
             if ((parm[0] >= 'A') && (parm[0] <= 'P')) {
               tmp1 = 1 << (parm[0] - 'A');
-              tmp = pUser->HasDarFlag(tmp1) ? 1 : 0;
+              tmp = pUser->HasDarFlag(tmp1);
             } else {
-              tmp = 0;
+              tmp = false;
             }
           } else if (IsEquals(fcn, "SEX")) {
             tmp = parm[0] == pUser->GetGender();
@@ -382,10 +388,10 @@ int matchuser(User *pUser) {
             }
 
           } else if (IsEquals(fcn, "COMP_TYPE")) {
-            tmp = pUser->GetComputerType() == tmp1;
+            tmp = pUser->GetComputerType() == static_cast<int>(tmp1);
           }
         } else {
-          tmp = matchuser(pUser);
+          tmp = matchuser(pUser) > 0;
         }
 
         if (_not) {
@@ -397,8 +403,9 @@ int matchuser(User *pUser) {
           ok = ok || tmp;
         }
 
-        _not = less = cpf = cpp = gotfcn = evalit = 0;
-        _and = 1;
+        _not = less = gotfcn = false;
+        cpf = cpp = evalit = 0;
+        _and = true;
       }
     }
   } while (!done);
@@ -693,13 +700,11 @@ void uedit(int usern, int other) {
         bout.nl();
         bout << "|#7New SL? ";
         string sl = input(3);
-        int nNewSL = atoi(sl.c_str());
+        uint8_t nNewSL = StringToUnsignedChar(sl);
         if (!session()->GetWfcStatus() && nNewSL >= session()->GetEffectiveSl() && user_number != 1) {
           bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
           pausescr();
-          nNewSL = -1;
-        }
-        if (nNewSL >= 0 && nNewSL < 255 && sl[0]) {
+        } else  if (nNewSL < 255 && sl[0]) {
           user.SetSl(nNewSL);
           session()->users()->WriteUser(&user, user_number);
           if (user_number == session()->usernum) {
@@ -715,13 +720,11 @@ void uedit(int usern, int other) {
         bout.nl();
         bout << "|#7New DSL? ";
         string dsl = input(3);
-        int nNewDSL = atoi(dsl.c_str());
+        uint8_t nNewDSL = StringToUnsignedChar(dsl);
         if (!session()->GetWfcStatus() && nNewDSL >= session()->user()->GetDsl() && user_number != 1) {
           bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
           pausescr();
-          nNewDSL = -1;
-        }
-        if (nNewDSL >= 0 && nNewDSL < 255 && dsl[0]) {
+        } else  if (nNewDSL < 255 && dsl[0]) {
           user.SetDsl(nNewDSL);
           session()->users()->WriteUser(&user, user_number);
         }

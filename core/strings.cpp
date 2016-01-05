@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "core/strings.h"
+
 #include <algorithm>
 #include <cstdarg>
 #include <cstdio>
@@ -28,7 +30,6 @@
 #include <string>
 #include <vector>
 
-#include "core/strings.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 
@@ -153,7 +154,7 @@ int16_t StringToShort(const string& s) {
 }
 
 uint16_t StringToUnsignedShort(const string& s) {
-  return StringToT<uint16_t, int>(
+  return StringToT<uint16_t, unsigned long>(
       [](const string& s) { return std::stoul(s); }, s);
 }
 
@@ -163,8 +164,13 @@ char StringToChar(const string& s) {
 }
 
 uint8_t StringToUnsignedChar(const string& s) {
-  return StringToT<uint8_t, int>(
+  return StringToT<uint8_t, unsigned long>(
       [](const string& s) { return std::stoul(s); }, s);
+}
+
+unsigned int StringToUnsignedInt(const string& s) {
+  return StringToT<unsigned, unsigned long>(
+    [](const string& s) { return std::stoul(s); }, s);
 }
 
 const string& StringReplace(string* orig, const string& old_string, const string& new_string) {

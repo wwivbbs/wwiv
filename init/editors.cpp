@@ -32,6 +32,7 @@
 #include <vector>
 
 #include "init/init.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/datafile.h"
 #include "core/file.h"
@@ -46,7 +47,8 @@ using std::unique_ptr;
 using std::string;
 using std::vector;
 using wwiv::core::DataFile;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 static void edit_editor(editorrec& e) {
   out->Cls(ACS_CKBOARD);
@@ -130,7 +132,7 @@ void extrn_editors() {
             break;
           }
           string prompt = StringPrintf("Insert before which (1-%d) : ", editors.size() + 1);
-          int i = dialog_input_number(out->window(), prompt, 1, editors.size() + 1);
+          size_t i = dialog_input_number(out->window(), prompt, 1, editors.size() + 1);
           editorrec e;
           memset(&e, 0, sizeof(editorrec));
           // N.B. i is one based, result.selected is 0 based.

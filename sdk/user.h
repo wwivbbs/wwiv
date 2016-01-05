@@ -473,7 +473,7 @@ class User {
   const unsigned int GetSl() const {
     return data.sl;
   }
-  void SetSl(uint8_t n) {
+  void SetSl(unsigned int n) {
     data.sl = static_cast<uint8_t>(n);
   }
   const unsigned int GetDsl() const {
@@ -643,86 +643,86 @@ class User {
   void SetFilesDownloaded(int n) {
     data.downloaded = static_cast<uint16_t>(n);
   }
-  const int GetLastBaudRate() const {
+  const uint16_t GetLastBaudRate() const {
     return data.lastrate;
   }
   void SetLastBaudRate(int n) {
     data.lastrate = static_cast<uint16_t>(n);
   }
-  const int GetNumLogons() const {
+  const uint16_t GetNumLogons() const {
     return data.logons;
   }
   void SetNumLogons(int n) {
     data.logons = static_cast<uint16_t>(n);
   }
-  const int GetNumNetEmailSent() const {
+  const uint16_t GetNumNetEmailSent() const {
     return data.emailnet;
   }
   void SetNumNetEmailSent(int n) {
     data.emailnet = static_cast<uint16_t>(n);
   }
-  const int GetNumNetPosts() const {
+  const uint16_t GetNumNetPosts() const {
     return data.postnet;
   }
   void SetNumNetPosts(int n) {
     data.postnet = static_cast<uint16_t>(n);
   }
-  const int GetNumDeletedPosts() const {
+  const uint16_t GetNumDeletedPosts() const {
     return data.deletedposts;
   }
   void SetNumDeletedPosts(int n) {
     data.deletedposts = static_cast<uint16_t>(n);
   }
-  const int GetNumChainsRun() const {
+  const uint16_t GetNumChainsRun() const {
     return data.chainsrun;
   }
   void SetNumChainsRun(int n) {
     data.chainsrun = static_cast<uint16_t>(n);
   }
-  const int GetNumGFilesRead() const {
+  const uint16_t GetNumGFilesRead() const {
     return data.gfilesread;
   }
   void SetNumGFilesRead(int n) {
     data.gfilesread = static_cast<uint16_t>(n);
   }
-  const int GetTimeBankMinutes() const {
+  const uint16_t GetTimeBankMinutes() const {
     return data.banktime;
   }
   void SetTimeBankMinutes(int n) {
     data.banktime = static_cast<uint16_t>(n);
   }
-  const int GetHomeNetNumber() const {
+  const uint16_t GetHomeNetNumber() const {
     return data.homenet;
   }
   void SetHomeNetNumber(int n) {
     data.homenet = static_cast<uint16_t>(n);
   }
-  const int GetLastSubConf() const {
+  const uint16_t GetLastSubConf() const {
     return data.subconf;
   }
   void SetLastSubConf(int n) {
     data.subconf = static_cast<uint16_t>(n);
   }
-  const int GetLastDirConf() const {
+  const uint16_t GetLastDirConf() const {
     return data.dirconf;
   }
   void SetLastDirConf(int n) {
     data.dirconf = static_cast<uint16_t>(n);
   }
-  const int GetLastSubNum() const {
+  const uint16_t GetLastSubNum() const {
     return data.subnum;
   }
   void SetLastSubNum(int n) {
     data.subnum = static_cast<uint16_t>(n);
   }
-  const int GetLastDirNum() const {
+  const uint16_t GetLastDirNum() const {
     return data.dirnum;
   }
   void SetLastDirNum(int n) {
     data.dirnum = static_cast<uint16_t>(n);
   }
 
-  const unsigned long GetNumMessagesRead() const {
+  const uint32_t GetNumMessagesRead() const {
     return data.msgread;
   }
   void SetNumMessagesRead(unsigned long l) {

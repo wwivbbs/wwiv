@@ -17,16 +17,20 @@
 /*                                                                        */
 /**************************************************************************/
 #include <cstdlib>
+#include <string>
 #include <vector>
 
 #include "init/wwivinit.h"
 #include "core/file.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/vardec.h"
 #include "init/subacc.h"
 
 
 using std::vector;
+using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 static File fileSub;                       // File object for '.sub' file
 static char subdat_fn[MAX_PATH];            // filename of .sub file
@@ -87,7 +91,7 @@ bool iscan1(int si, const vector<subboardrec>& subboards) {
   memset(&p, 0, sizeof(postrec));
 
   // forget it if an invalid sub #
-  if (si < 0 || si >= subboards.size()) {
+  if (si < 0 || si >= size_int(subboards)) {
     return false;
   }
 

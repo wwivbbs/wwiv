@@ -168,6 +168,17 @@ TEST(StringsTest, StringToUnsignedShort) {
   EXPECT_EQ(0, StringToUnsignedShort("ASDF"));
 }
 
+TEST(StringsTest, StringToUnsignedInt) {
+  EXPECT_EQ(1234, StringToUnsignedInt("1234"));
+  EXPECT_EQ(0, StringToUnsignedInt("0"));
+
+  EXPECT_EQ(std::numeric_limits<uint16_t>::max(), StringToUnsignedInt("999999"));
+  EXPECT_EQ(std::numeric_limits<uint16_t>::min(), StringToUnsignedInt("-999999"));
+
+  EXPECT_EQ(0, StringToUnsignedInt(""));
+  EXPECT_EQ(0, StringToUnsignedInt("ASDF"));
+}
+
 TEST(StringsTest, StringToChar) {
   EXPECT_EQ(std::numeric_limits<int8_t>::max(), StringToChar("1234"));
   EXPECT_EQ(0, StringToChar("0"));

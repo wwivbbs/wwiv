@@ -371,7 +371,7 @@ bool ok_to_mail(int user_number, int system_number, bool bForceit) {
     }
     User userRecord;
     session()->users()->ReadUser(&userRecord, user_number);
-    if ((userRecord.GetSl() == 255 && userRecord.GetNumMailWaiting() > (syscfg.maxwaiting * 5)) ||
+    if ((userRecord.GetSl() == 255 && userRecord.GetNumMailWaiting() > (static_cast<unsigned>(syscfg.maxwaiting) * 5)) ||
         (userRecord.GetSl() != 255 && userRecord.GetNumMailWaiting() > syscfg.maxwaiting) ||
         userRecord.GetNumMailWaiting() > 200) {
       if (!bForceit) {
