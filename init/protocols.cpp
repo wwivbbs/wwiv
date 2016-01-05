@@ -38,6 +38,7 @@
 #include "initlib/listbox.h"
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "init/utility.h"
@@ -48,7 +49,8 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 using wwiv::core::DataFile;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 static const char *prot_name(const vector<newexternalrec>& externs, int pn) {
   switch (pn) {
@@ -63,7 +65,7 @@ static const char *prot_name(const vector<newexternalrec>& externs, int pn) {
   case 5:
     return "Batch";
   default:
-    if (pn > 5 || pn < (externs.size() + 6)) {
+    if (pn > 5 || pn < (size_int(externs) + 6)) {
       return externs[pn - 6].description;
     }
   }
@@ -215,8 +217,8 @@ void extrn_prots() {
           break;
         }
         string prompt = StringPrintf("Insert before which (6-%d) ? ", max_protocol_number + 1);
-        int pos = dialog_input_number(out->window(), prompt, 2, max_protocol_number + 1);
-        if ((pos >= 6) && (pos <= externs.size() + 6)) {
+        size_t pos = dialog_input_number(out->window(), prompt, 2, max_protocol_number + 1);
+        if (pos >= 6 && pos <= externs.size() + 6) {
           size_t extern_pos = pos - 6;
           newexternalrec e;
           memset(&e, 0, sizeof(newexternalrec));

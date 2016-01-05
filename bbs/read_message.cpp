@@ -142,7 +142,7 @@ void display_message_text(const std::string& text, bool *next) {
               if (session()->user()->GetOptionalVal() == 0) {
                 ctrld = 0; // display
               } else {
-                if (10 - (session()->user()->GetOptionalVal()) < (ch - '0')) {
+                if (10 - (session()->user()->GetOptionalVal()) < static_cast<unsigned>(ch - '0')) {
                   ctrld = -1; // don't display
                 } else {
                   ctrld = 0; // display
@@ -179,8 +179,8 @@ void display_message_text(const std::string& text, bool *next) {
           }
           if (nNumCharsPtr) {
             if (ctrld != -1) {
-              if ((session()->localIO()->WhereX() + nLineLenPtr >= session()->user()->GetScreenChars()) && !centre
-                && !ansi) {
+              if ((session()->localIO()->WhereX() + nLineLenPtr >= session()->user()->GetScreenChars())
+                && !centre && !ansi) {
                 bout.nl();
               }
               s[nNumCharsPtr] = '\0';

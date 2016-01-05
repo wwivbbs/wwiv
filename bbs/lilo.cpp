@@ -535,8 +535,9 @@ static void UpdateLastOnFileAndUserLog() {
   }
 
   if (session()->GetEffectiveSl() != 255 || incom) {
-    const string username_num = session()->names()->UserName(session()->usernum);
-    const string sysop_log_line = StringPrintf("%ld: %s %s %s   %s - %d (%u)",
+    {
+      const string username_num = session()->names()->UserName(session()->usernum);
+      const string sysop_log_line = StringPrintf("%ld: %s %s %s   %s - %d (%u)",
         pStatus->GetCallerNumber(),
         username_num.c_str(),
         times(),
@@ -544,10 +545,11 @@ static void UpdateLastOnFileAndUserLog() {
         session()->GetCurrentSpeed().c_str(),
         session()->user()->GetTimesOnToday(),
         session()->instance_number());
+        sysoplog("", false);
+        sysoplog(stripcolors(sysop_log_line), false);
+        sysoplog("", false);
+    }
 
-    sysoplog("", false);
-    sysoplog(stripcolors(sysop_log_line), false);
-    sysoplog("", false);
     string remoteAddress = session()->remoteIO()->GetRemoteAddress();
     string remoteName = session()->remoteIO()->GetRemoteName();
     if (remoteAddress.length() > 0) {

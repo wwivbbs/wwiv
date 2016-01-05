@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <string>
+#include <vector>
 
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
@@ -30,12 +31,14 @@
 #include "core/file.h"
 #include "core/datafile.h"
 #include "core/textfile.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 
 using std::string;
 using wwiv::bbs::InputMode;
 using namespace wwiv::core;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static void save_subs() {
@@ -238,7 +241,7 @@ static void modify_sub(int n) {
     bout << "|#9L) Val network: |#2" << YesNoString((r.anony & anony_val_net) ? true : false) << wwiv::endl;
     bout << "|#9M) Req ANSI   : |#2" << YesNoString((r.anony & anony_ansi_only) ? true : false) << wwiv::endl;
     bout << "|#9N) Disable tag: |#2" << YesNoString((r.anony & anony_no_tag) ? true : false) << wwiv::endl;
-    bout << "|#9O) Description: |#2" << ((n < session()->xsubs.size() && session()->xsubs[n].desc[0]) ? session()->xsubs[n].desc : "None.") << wwiv::endl;
+    bout << "|#9O) Description: |#2" << ((n < size_int(session()->xsubs) && session()->xsubs[n].desc[0]) ? session()->xsubs[n].desc : "None.") << wwiv::endl;
     bout.nl();
     bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
     char ch = onek("QABCDEFGHIJKLMNO[]", true);
@@ -249,13 +252,13 @@ static void modify_sub(int n) {
     case '[':
       session()->subboards[n] = r;
       if (--n < 0) {
-        n = session()->subboards.size() - 1;
+        n = size_int(session()->subboards) - 1;
       }
       r = session()->subboards[n];
       break;
     case ']':
       session()->subboards[n] = r;
-      if (++n >= session()->subboards.size()) {
+      if (++n >= size_int(session()->subboards)) {
         n = 0;
       }
       r = session()->subboards[n];
@@ -531,7 +534,7 @@ static void swap_subs(int sub1, int sub2) {
   subconf_t sub1conv = (subconf_t) sub1;
   subconf_t sub2conv = (subconf_t) sub2;
 
-  if (sub1 < 0 || sub1 >= session()->subboards.size() || sub2 < 0 || sub2 >= session()->subboards.size()) {
+  if (sub1 < 0 || sub1 >= size_int(session()->subboards) || sub2 < 0 || sub2 >= size_int(session()->subboards)) {
     return;
   }
 
@@ -589,7 +592,7 @@ static void insert_sub(int n) {
   uint32_t m1, m2, m3;
   subconf_t nconv = (subconf_t) n;
 
-  if (n < 0 || n > session()->subboards.size()) {
+  if (n < 0 || n > size_int(session()->subboards)) {
     return;
   }
 
@@ -641,12 +644,12 @@ static void insert_sub(int n) {
       (pTempQScan[0])++;
     }
 
-    for (i1 = session()->subboards.size() - 1; i1 > n; i1--) {
+    for (i1 = size_int(session()->subboards) - 1; i1 > n; i1--) {
       pTempQScan_p[i1] = pTempQScan_p[i1 - 1];
     }
     pTempQScan_p[n] = 0;
 
-    for (i2 = session()->subboards.size() / 32; i2 > n / 32; i2--) {
+    for (i2 = size_int(session()->subboards) / 32; i2 > n / 32; i2--) {
       pTempQScan_q[i2] = (pTempQScan_q[i2] << 1) | (pTempQScan_q[i2 - 1] >> 31);
     }
     pTempQScan_q[i2] = m1 | (m2 & (pTempQScan_q[i2] << 1)) | (m3 & pTempQScan_q[i2]);
@@ -665,7 +668,7 @@ static void delete_sub(int n) {
   int i, i1, i2, nNumUserRecords;
   subconf_t nconv = static_cast<subconf_t>(n);
 
-  if (n < 0 || n >= session()->subboards.size()) {
+  if (n < 0 || n >= size_int(session()->subboards)) {
     return;
   }
 
@@ -701,14 +704,14 @@ static void delete_sub(int n) {
         pTempQScan[0]--;
       }
     }
-    for (i1 = n; i1 < session()->subboards.size(); i1++) {
+    for (i1 = n; i1 < size_int(session()->subboards); i1++) {
       pTempQScan_p[i1] = pTempQScan_p[i1 + 1];
     }
 
     pTempQScan_q[n / 32] = (pTempQScan_q[n / 32] & m3) | ((pTempQScan_q[n / 32] >> 1) & m2) |
                             (pTempQScan_q[(n / 32) + 1] << 31);
 
-    for (i2 = (n / 32) + 1; i2 <= (session()->subboards.size() / 32); i2++) {
+    for (i2 = (n / 32) + 1; i2 <= (size_int(session()->subboards) / 32); i2++) {
       pTempQScan_q[i2] = (pTempQScan_q[i2] >> 1) | (pTempQScan_q[i2 + 1] << 31);
     }
 
@@ -753,7 +756,7 @@ void boardedit() {
       bout << "|#2Sub number? ";
       input(s, 4);
       i = atoi(s);
-      if (s[0] != 0 && i >= 0 && i < session()->subboards.size()) {
+      if (s[0] != 0 && i >= 0 && i < size_int(session()->subboards)) {
         modify_sub(i);
       }
       break;
@@ -763,14 +766,14 @@ void boardedit() {
         bout << "|#2Take sub number? ";
         input(s, 4);
         i1 = atoi(s);
-        if (!s[0] || i1 < 0 || i1 >= session()->subboards.size()) {
+        if (!s[0] || i1 < 0 || i1 >= size_int(session()->subboards)) {
           break;
         }
         bout.nl();
         bout << "|#2And move before sub number? ";
         input(s, 4);
         i2 = atoi(s);
-        if (!s[0] || i2 < 0 || i2 % 32 == 0 || i2 > session()->subboards.size() || i1 == i2 || i1 + 1 == i2) {
+        if (!s[0] || i2 < 0 || i2 % 32 == 0 || i2 > size_int(session()->subboards) || i1 == i2 || i1 + 1 == i2) {
           break;
         }
         bout.nl();
@@ -794,11 +797,11 @@ void boardedit() {
         bout << "|#2Insert before which sub ('$' for end) : ";
         input(s, 4);
         if (s[0] == '$') {
-          i = session()->subboards.size();
+          i = size_int(session()->subboards);
         } else {
           i = atoi(s);
         }
-        if (s[0] != 0 && i >= 0 && i <= session()->subboards.size()) {
+        if (s[0] != 0 && i >= 0 && i <= size_int(session()->subboards)) {
           insert_sub(i);
           modify_sub(i);
           confchg = true;
@@ -828,7 +831,7 @@ void boardedit() {
       bout << "|#2Delete which sub? ";
       input(s, 4);
       i = atoi(s);
-      if (s[0] != 0 && i >= 0 && i < session()->subboards.size()) {
+      if (s[0] != 0 && i >= 0 && i < size_int(session()->subboards)) {
         bout.nl();
         bout << "|#5Delete " << session()->subboards[i].name << "? ";
         if (yesno()) {

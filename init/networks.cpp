@@ -136,7 +136,7 @@ static bool del_net(
         subboards[i].name[40]--;
       }
     }
-    int i2;
+    size_t i2;
     for (i2 = 0; i2 < i; i2++) {
       if (strcmp(subboards[i].filename, subboards[i2].filename) == 0) {
         break;
@@ -307,7 +307,7 @@ static bool insert_net(
         subboards[i].name[40]++;
       }
     }
-    int i2 = 0;
+    size_t i2 = 0;
     for (i2 = 0; i2 < i; i2++) {
       if (strcmp(subboards[i].filename, subboards[i2].filename) == 0) {
         break;
@@ -443,7 +443,7 @@ void networks() {
           break;
         }
         const string prompt = StringPrintf("Insert before which (1-%d) ? ", net_networks.size() + 1);
-        const int net_num = dialog_input_number(window, prompt, 1, net_networks.size() + 1  );
+        const size_t net_num = dialog_input_number(window, prompt, 1, net_networks.size() + 1  );
         if (net_num > 0 && net_num <= net_networks.size() + 1) {
           if (dialog_yn(window, "Are you sure? ")) {
             insert_net(window, subboards, net_networks, net_num - 1);
