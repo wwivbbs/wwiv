@@ -22,6 +22,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstring>
 #include <map>
 #include <functional>
 #include <string>
