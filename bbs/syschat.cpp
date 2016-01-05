@@ -544,7 +544,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
  * uses normal TTY chat.
  */
 
-void chat1(char *chat_line, bool two_way) {
+void chat1(const char *chat_line, bool two_way) {
   char cl[81], xl[81], s[255], s1[255], atr[81], s2[81], cc, szSysopName[81];
 
   select_chat_name(szSysopName);

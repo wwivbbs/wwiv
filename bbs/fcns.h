@@ -173,7 +173,7 @@ int  amount_of_subscribers(const char *pszNetworkFileName);
 void RequestChat();
 void select_chat_name(char *sysop_name);
 void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name);
-void chat1(char *chat_line, bool two_way);
+void chat1(const char *chat_line, bool two_way);
 
 
 // File: sysoplog.cpp
