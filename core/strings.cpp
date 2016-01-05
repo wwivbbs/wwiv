@@ -173,6 +173,11 @@ unsigned int StringToUnsignedInt(const string& s) {
     [](const string& s) { return std::stoul(s); }, s);
 }
 
+int StringToInt(const string& s) {
+  return StringToT<int, int>(
+    [](const string& s) { return std::stoi(s); }, s);
+}
+
 const string& StringReplace(string* orig, const string& old_string, const string& new_string) {
   string::size_type pos = orig->find(old_string, 0);
   while (pos != string::npos) {
