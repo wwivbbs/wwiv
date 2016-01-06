@@ -30,22 +30,22 @@ class WFindFile {
  protected:
   std::string filename_;
   std::string filespec_;
-  long lFileSize;
-  long lTypeMask;
+  long file_size_;
+  unsigned int type_mask_;
   unsigned char nFileType;
-  bool bIsOpen;
+  bool open_;
 
-  void __open(const std::string& file_spec, unsigned int nTypeMask) {
+  void __open(const std::string& file_spec, unsigned int type_mask) {
     filespec_ = file_spec;
-    lTypeMask = nTypeMask;
+    type_mask_ = type_mask;
   }
 
   void __close() {
     filespec_.clear();
     filename_.clear();
-    lFileSize = 0;
-    lTypeMask = 0;
-    bIsOpen = false;
+    file_size_ = 0;
+    type_mask_ = 0;
+    open_ = false;
   }
 
 #if defined (_WIN32)
@@ -64,8 +64,8 @@ class WFindFile {
   bool close();
   virtual ~WFindFile() { close(); }
 
-  const char * GetFileName() { return filename_.c_str(); }
-  long GetFileSize() { return lFileSize; }
+  const char* GetFileName() { return filename_.c_str(); }
+  long GetFileSize() { return file_size_; }
   bool IsDirectory();
   bool IsFile();
 };

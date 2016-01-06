@@ -31,6 +31,7 @@ using std::cout;
 using std::endl;
 using std::string;
 using wwiv::core::CommandLineCommand;
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace wwivutil {
@@ -61,7 +62,7 @@ static string main_type_name(int typ) {
   case main_type_new_post: return "main_type_new_post";
   case main_type_new_extern: return "main_type_new_extern";
   case main_type_game_pack: return "main_type_game_pack";
-  default: return wwiv::strings::StringPrintf("UNKNOWN type #%d", typ);
+  default: return StringPrintf("UNKNOWN type #%d", typ);
   }
 }
 
@@ -78,7 +79,7 @@ static string net_info_minor_type_name(int typ) {
   case net_info_network_lst: return "net_info_network_lst";
   case net_info_file: return "net_info_file";
   case net_info_binkp: return "net_info_binkp";
-  default: return wwiv::strings::StringPrintf("UNKNOWN type #%d", typ);
+  default: return StringPrintf("UNKNOWN type #%d", typ);
   }
 }
 
@@ -90,7 +91,7 @@ void dump_usage() {
 static string daten_to_humantime(uint32_t daten) {
   time_t t = static_cast<time_t>(daten);
   string human_date = string(asctime(localtime(&t)));
-  wwiv::strings::StringTrimEnd(&human_date);
+  StringTrimEnd(&human_date);
 
   return human_date;
 }

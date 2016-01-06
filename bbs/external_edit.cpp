@@ -21,12 +21,6 @@
 #include <algorithm>
 #include <string>
 
-#ifdef _WIN32
-#include <direct.h>
-#else
-#include <unistd.h>
-#endif  // _WIN32
-
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
@@ -270,7 +264,7 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
 
   string strippedFileName(stripfn(edit_filename.c_str()));
   if (!new_directory.empty()) {
-    chdir(new_directory.c_str()) ;
+    File::set_current_directory(new_directory);
   }
 
   time_t tFileTime = 0;
@@ -304,7 +298,7 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   
   // After launched FSED
   lines_listed = 0;
-  chdir(new_directory.c_str());
+  File::set_current_directory(new_directory);
 
   bool bModifiedOrExists = false;
   const string full_filename = fileTempForTime.full_pathname();
@@ -319,6 +313,6 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
       }
     }
   }
-  chdir(original_directory.c_str());
+  File::set_current_directory(original_directory);
   return bModifiedOrExists;
 }

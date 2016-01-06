@@ -48,7 +48,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 using wwiv::core::DataFile;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 static constexpr int MAX_LANGUAGES = 100;
 

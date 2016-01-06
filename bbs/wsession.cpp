@@ -19,7 +19,6 @@
 #ifdef _WIN32
 // include this here so it won't get includes by local_io_win32.h
 #include "bbs/wwiv_windows.h"
-#include <direct.h>
 #endif  // WIN32
 
 #include <algorithm>
@@ -71,12 +70,9 @@
 #include "sdk/filenames.h"
 
 #if defined( _WIN32 )
-#include <direct.h>
 #include "bbs/platform/win32/InternalTelnetServer.h"
 #include "bbs/platform/win32/Wiot.h"
 #include "bbs/local_io_win32.h"
-#else
-#include <unistd.h>
 #endif // _WIN32
 
 using std::chrono::milliseconds;
@@ -126,7 +122,7 @@ WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app),
   memset(&advasv, 0, sizeof(adv_asv_rec));
 
   // Set the home directory
-  getcwd(m_szCurrentDirectory, MAX_PATH);
+  current_dir_ = File::current_directory();
 }
 
 WSession::~WSession() {
@@ -828,13 +824,13 @@ void WSession::GotCaller(unsigned int ms, unsigned long cs) {
 
 
 void WSession::CdHome() {
-  chdir(m_szCurrentDirectory);
+  File::set_current_directory(current_dir_);
 }
 
 const string WSession::GetHomeDir() {
-  string dir = m_szCurrentDirectory;
+  string dir = current_dir_;
   File::EnsureTrailingSlash(&dir);
-  return string(dir);
+  return dir;
 }
 
 void WSession::AbortBBS(bool bSkipShutdown) {
@@ -986,7 +982,7 @@ int WSession::Run(int argc, char *argv[]) {
   }
   const string wwiv_dir = environment_variable("WWIV_DIR");
   if (!wwiv_dir.empty()) {
-    chdir(wwiv_dir.c_str());
+    File::set_current_directory(wwiv_dir);
   }
 
 #if defined( __unix__ )

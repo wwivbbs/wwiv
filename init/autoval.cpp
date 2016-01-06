@@ -42,7 +42,7 @@
 using std::string;
 using std::unique_ptr;
 using std::vector;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 static string create_autoval_line(int n) {
   char s3[81], ar[20], dar[20], r[20];

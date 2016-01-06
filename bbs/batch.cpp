@@ -21,12 +21,6 @@
 #include <algorithm>
 #include <string>
 
-#ifdef _WIN32
-#include <direct.h>
-#else
-#include <unistd.h>
-#endif  // _WIN32
-
 #include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
@@ -43,6 +37,8 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+
+using namespace wwiv::strings;
 
 // module private functions
 void listbatch();
@@ -111,7 +107,7 @@ void downloaded(char *file_name, long lCharsPerSecond) {
   uploadsrec u;
 
   for (int i1 = 0; i1 < session()->numbatch; i1++) {
-    if (wwiv::strings::IsEquals(file_name, batch[i1].filename) &&
+    if (IsEquals(file_name, batch[i1].filename) &&
         batch[i1].sending) {
       dliscan1(batch[i1].dir);
       int nRecNum = recno(batch[i1].filename);
@@ -200,7 +196,7 @@ void uploaded(char *file_name, long lCharsPerSecond) {
   uploadsrec u;
 
   for (int i1 = 0; i1 < session()->numbatch; i1++) {
-    if (wwiv::strings::IsEquals(file_name, batch[i1].filename) &&
+    if (IsEquals(file_name, batch[i1].filename) &&
         !batch[i1].sending) {
       dliscan1(batch[i1].dir);
       int nRecNum = recno(batch[i1].filename);
@@ -219,7 +215,7 @@ void uploaded(char *file_name, long lCharsPerSecond) {
           char szSourceFileName[MAX_PATH], szDestFileName[MAX_PATH];
           sprintf(szSourceFileName, "%s%s", syscfgovr.batchdir, file_name);
           sprintf(szDestFileName, "%s%s", session()->directories[batch[i1].dir].path, file_name);
-          if (!wwiv::strings::IsEquals(szSourceFileName, szDestFileName) &&
+          if (!IsEquals(szSourceFileName, szDestFileName) &&
               File::Exists(szSourceFileName)) {
             bool found = false;
             if (szSourceFileName[1] != ':' && szDestFileName[1] != ':') {
@@ -515,7 +511,7 @@ static string make_ul_batch_list() {
   }
   for (int i = 0; i < session()->numbatch; i++) {
     if (!batch[i].sending) {
-      chdir(session()->directories[batch[i].dir].path);
+      File::set_current_directory(session()->directories[batch[i].dir].path);
       File file(File::current_directory(), stripfn(batch[i].filename));
       session()->CdHome();
       fileList.Write(StrCat(file.full_pathname(), "\r\n"));
@@ -543,17 +539,17 @@ static string make_dl_batch_list() {
     if (batch[i].sending) {
       string filename_to_send;
       if (session()->directories[batch[i].dir].mask & mask_cdrom) {
-        chdir(syscfgovr.tempdir);
+        File::set_current_directory(syscfgovr.tempdir);
         const string current_dir = File::current_directory();
         File fileToSend(current_dir, stripfn(batch[i].filename));
         if (!fileToSend.Exists()) {
-          chdir(session()->directories[batch[i].dir].path);
+          File::set_current_directory(session()->directories[batch[i].dir].path);
           File sourceFile(File::current_directory(), stripfn(batch[i].filename));
           copyfile(sourceFile.full_pathname(), fileToSend.full_pathname(), true);
         }
         filename_to_send = fileToSend.full_pathname();
       } else {
-        chdir(session()->directories[batch[i].dir].path);
+        File::set_current_directory(session()->directories[batch[i].dir].path);
         File fileToSend(File::current_directory(), stripfn(batch[i].filename));
         filename_to_send = fileToSend.full_pathname();
       }
@@ -601,7 +597,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
     if (incom) {
       File::SetFilePermissions(g_szDSZLogFileName, File::permReadWrite);
       File::Remove(g_szDSZLogFileName);
-      chdir(syscfgovr.batchdir);
+      File::set_current_directory(syscfgovr.batchdir);
       ExecuteExternalProgram(commandLine, session()->GetSpawnOptions(SPAWNOPT_PROT_BATCH));
       if (bHangupAfterDl) {
         bihangup(1);

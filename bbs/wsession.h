@@ -338,8 +338,8 @@ public:
 
 private:
   unsigned short  m_unx;
-  /*! @var m_szCurrentDirectory The current directory where WWIV lives */
-  char            m_szCurrentDirectory[MAX_PATH];
+  /*! The current working directory.*/
+  std::string current_dir_;
   int             m_nOkLevel;
   int             m_nErrorLevel;
   int             instance_number_;

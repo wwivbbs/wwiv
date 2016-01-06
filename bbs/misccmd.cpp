@@ -47,6 +47,7 @@ using std::unique_ptr;
 using wwiv::bbs::TempDisablePause;
 using wwiv::bbs::SaveQScanPointers;
 using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 void kill_old_email() {
   mailrec m, m1;
@@ -503,9 +504,8 @@ void time_bank() {
 
 
 int getnetnum(const char *network_name) {
-  WWIV_ASSERT(network_name);
   for (int i = 0; i < session()->max_net_num(); i++) {
-    if (wwiv::strings::IsEqualsIgnoreCase(session()->net_networks[i].name, network_name)) {
+    if (IsEqualsIgnoreCase(session()->net_networks[i].name, network_name)) {
       return i;
     }
   }

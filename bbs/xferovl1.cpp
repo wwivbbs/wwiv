@@ -18,11 +18,6 @@
 /**************************************************************************/
 
 #include <memory>
-#ifdef _WIN32
-#include <direct.h>
-#else
-#include <unistd.h>
-#endif  // _WIN32
 
 #include "bbs/batch.h"
 #include "bbs/bbsovl3.h"
@@ -219,7 +214,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
   ++ss;
   for (i = 0; i < MAX_ARCS; i++) {
     if (!ok) {
-      ok = wwiv::strings::IsEqualsIgnoreCase(ss, session()->arcs[i].extension);
+      ok = IsEqualsIgnoreCase(ss, session()->arcs[i].extension);
     }
   }
   if (!ok) {
@@ -229,13 +224,13 @@ bool get_file_idz(uploadsrec * u, int dn) {
   File::Remove(syscfgovr.tempdir, FILE_ID_DIZ);
   File::Remove(syscfgovr.tempdir, DESC_SDI);
 
-  chdir(session()->directories[dn].path);
+  File::set_current_directory(session()->directories[dn].path);
   {
 	  File file(File::current_directory(), stripfn(u->filename));
 	  session()->CdHome();
 	  get_arc_cmd(cmd, file.full_pathname().c_str(), 1, "FILE_ID.DIZ DESC.SDI");
   }
-  chdir(syscfgovr.tempdir);
+  File::set_current_directory(syscfgovr.tempdir);
   ExecuteExternalProgram(cmd, EFLAG_NOHUP);
   session()->CdHome();
   sprintf(s, "%s%s", syscfgovr.tempdir, FILE_ID_DIZ);
@@ -267,7 +262,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
     if (session()->HasConfigFlag(OP_FLAGS_IDZ_DESC)) {
       ss = strtok(b, "\n");
       if (ss) {
-        for (i = 0; i < wwiv::strings::GetStringLength(ss); i++) {
+        for (i = 0; i < GetStringLength(ss); i++) {
           if ((strchr(reinterpret_cast<char*>(const_cast<unsigned char*>(invalid_chars)), ss[i]) != nullptr) && (ss[i] != CZ)) {
             ss[i] = '\x20';
           }
@@ -348,7 +343,7 @@ int read_idz(int mode, int tempdir) {
     if ((compare(s, u.filename)) &&
         (strstr(u.filename, ".COM") == nullptr) &&
         (strstr(u.filename, ".EXE") == nullptr)) {
-      chdir(session()->directories[udir[tempdir].subnum].path);
+      File::set_current_directory(session()->directories[udir[tempdir].subnum].path);
       File file(File::current_directory(), stripfn(u.filename));
       session()->CdHome();
       if (file.Exists()) {
@@ -394,11 +389,11 @@ void tag_it() {
     }
     bout << "\r\n|#2Tagging: |#4" << s3 << wwiv::endl;
   }
-  for (i2 = 0; i2 < wwiv::strings::GetStringLength(s3); i2++) {
+  for (i2 = 0; i2 < GetStringLength(s3); i2++) {
     sprintf(s1, "%s", s3 + i2);
     i4 = 0;
     bad = false;
-    for (i3 = 0; i3 < wwiv::strings::GetStringLength(s1); i3++) {
+    for (i3 = 0; i3 < GetStringLength(s1); i3++) {
       if ((s1[i3] == ' ') || (s1[i3] == ',') || (s1[i3] == ';')) {
         s1[i3] = 0;
         i4 = 1;
@@ -693,7 +688,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
     if (dn == -1) {
       return 0;
     } else {
-      for (i = 0; i < wwiv::strings::GetStringLength(description); i++) {
+      for (i = 0; i < GetStringLength(description); i++) {
         if (description[i] == RETURN) {
           description[i] = SPACE;
         }
@@ -1251,7 +1246,7 @@ void removenotthere() {
 
 int find_batch_queue(const char *file_name) {
   for (int i = 0; i < session()->numbatch; i++) {
-    if (wwiv::strings::IsEquals(file_name, batch[i].filename)) {
+    if (IsEquals(file_name, batch[i].filename)) {
       return i;
     }
   }

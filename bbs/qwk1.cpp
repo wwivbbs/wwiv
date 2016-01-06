@@ -381,9 +381,9 @@ void upload_reply_packet() {
 
 void ready_reply_packet(const char *packet_name, const char *msg_name) {
   int archiver = match_archiver(packet_name);
-  string command = stuff_in(session()->arcs[archiver].arce, packet_name, msg_name, "", "", "");
+  const string command = stuff_in(session()->arcs[archiver].arce, packet_name, msg_name, "", "", "");
 
-  chdir(QWK_DIRECTORY);
+  File::set_current_directory(QWK_DIRECTORY);
   ExecuteExternalProgram(command, EFLAG_NONE);
   session()->CdHome();
 }

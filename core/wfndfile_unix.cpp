@@ -130,7 +130,7 @@ bool WFindFile::next() {
   struct dirent *entry = entries[nCurrentEntry++];
 
   filename_.assign(entry->d_name);
-  lFileSize = entry->d_reclen;
+  file_size_ = entry->d_reclen;
   nFileType = entry->d_type;
 
   return true;

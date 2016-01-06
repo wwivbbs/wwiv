@@ -72,8 +72,7 @@
 using std::string;
 using std::vector;
 using wwiv::core::IniFile;
-using wwiv::strings::StringPrintf;
-using wwiv::strings::StringReplace;
+using namespace wwiv::strings;
 
 configrec syscfg;
 statusrec status;

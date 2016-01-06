@@ -16,15 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+
 #include <functional>
 #include <string>
 #include <vector>
-#ifdef _WIN32
-#include <direct.h>
-#else
-#include <unistd.h>
-#endif  // _WIN32
-
 #include "bbs/batch.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/conf.h"
@@ -377,7 +372,7 @@ static bool check_for_files(const char *file_name) {
   if (ss) {
     ss++;
     for (const auto& t : arc_t) {
-      if (wwiv::strings::IsEqualsIgnoreCase(ss, t.arc_name)) {
+      if (IsEqualsIgnoreCase(ss, t.arc_name)) {
         return t.func(file_name) == 0;
       }
     }
@@ -441,16 +436,16 @@ void add_arc(const char *arc, const char *file_name, int dos) {
 
   sprintf(szArchiveFileName, "%s.%s", arc, session()->arcs[ARC_NUMBER].extension);
   // TODO - This logic is still broken since chain.* and door.* won't match
-  if (wwiv::strings::IsEqualsIgnoreCase(file_name, "chain.txt") ||
-      wwiv::strings::IsEqualsIgnoreCase(file_name, "door.sys") ||
-      wwiv::strings::IsEqualsIgnoreCase(file_name, "chain.*")  ||
-      wwiv::strings::IsEqualsIgnoreCase(file_name, "door.*")) {
+  if (IsEqualsIgnoreCase(file_name, "chain.txt") ||
+      IsEqualsIgnoreCase(file_name, "door.sys") ||
+      IsEqualsIgnoreCase(file_name, "chain.*")  ||
+      IsEqualsIgnoreCase(file_name, "door.*")) {
     return;
   }
 
   get_arc_cmd(szAddArchiveCommand, szArchiveFileName, 2, file_name);
   if (szAddArchiveCommand[0]) {
-    chdir(syscfgovr.tempdir);
+    File::set_current_directory(syscfgovr.tempdir);
     session()->localIO()->LocalPuts(szAddArchiveCommand);
     session()->localIO()->LocalPuts("\r\n");
     if (dos) {
@@ -483,7 +478,7 @@ void add_temp_arc() {
     strcat(szInputFileMask, ".*");
   }
   strcpy(szFileMask, stripfn(szInputFileMask));
-  for (int i = 0; i < wwiv::strings::GetStringLength(szFileMask); i++) {
+  for (int i = 0; i < GetStringLength(szFileMask); i++) {
     if (szFileMask[i] == '|' || szFileMask[i] == '>' ||
         szFileMask[i] == '<' || szFileMask[i] == ';' ||
         szFileMask[i] == ' ' || szFileMask[i] == ':' ||
@@ -525,8 +520,8 @@ void list_temp_dir() {
     char szFileName[MAX_PATH];
     strcpy(szFileName, fnd.GetFileName());
 
-    if (!wwiv::strings::IsEqualsIgnoreCase(szFileName, "chain.txt") &&
-        !wwiv::strings::IsEqualsIgnoreCase(szFileName, "door.sys")) {
+    if (!IsEqualsIgnoreCase(szFileName, "chain.txt") &&
+        !IsEqualsIgnoreCase(szFileName, "door.sys")) {
       align(szFileName);
       char buffer[255];
       sprintf(buffer, "%12s  %-8ld", szFileName, fnd.GetFileSize());
@@ -591,9 +586,9 @@ void temp_extract() {
       session()->tagging = ot;
       bout.nl();
       if (session()->directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
-        chdir(syscfgovr.tempdir);
+        File::set_current_directory(syscfgovr.tempdir);
       } else {
-        chdir(session()->directories[udir[session()->GetCurrentFileArea()].subnum].path);
+        File::set_current_directory(session()->directories[udir[session()->GetCurrentFileArea()].subnum].path);
       }
       File file(File::current_directory(), stripfn(u.filename));
       session()->CdHome();
@@ -606,16 +601,16 @@ void temp_extract() {
           if (!okfn(s1)) {
             ok1 = false;
           }
-          if (wwiv::strings::IsEquals(s1, "?")) {
+          if (IsEquals(s1, "?")) {
             list_arc_out(stripfn(u.filename), session()->directories[udir[session()->GetCurrentFileArea()].subnum].path);
             s1[0] = '\0';
           }
-          if (wwiv::strings::IsEquals(s1, "Q")) {
+          if (IsEquals(s1, "Q")) {
             ok = false;
             s1[0] = '\0';
           }
           i2 = 0;
-          for (i1 = 0; i1 < wwiv::strings::GetStringLength(s1); i1++) {
+          for (i1 = 0; i1 < GetStringLength(s1); i1++) {
             if ((s1[i1] == '|') || (s1[i1] == '>') || (s1[i1] == '<') || (s1[i1] == ';') || (s1[i1] == ' ')) {
               i2 = 1;
             }
@@ -628,7 +623,7 @@ void temp_extract() {
               strcat(s1, ".*");
             }
             get_arc_cmd(s3, file.full_pathname().c_str(), 1, stripfn(s1));
-            chdir(syscfgovr.tempdir);
+            File::set_current_directory(syscfgovr.tempdir);
             if (!okfn(s1)) {
               s3[0] = '\0';
             }
@@ -679,8 +674,8 @@ void list_temp_text() {
     while (bFound && ok) {
       strcpy(szFileName, fnd.GetFileName());
       sprintf(s, "%s%s", syscfgovr.tempdir, szFileName);
-      if (!wwiv::strings::IsEqualsIgnoreCase(szFileName, "chain.txt") &&
-          !wwiv::strings::IsEqualsIgnoreCase(szFileName, "door.sys")) {
+      if (!IsEqualsIgnoreCase(szFileName, "chain.txt") &&
+          !IsEqualsIgnoreCase(szFileName, "door.sys")) {
         bout.nl();
         bout << "Listing " << szFileName << wwiv::endl;
         bout.nl();
@@ -801,7 +796,7 @@ void move_file_t() {
         d1 = -1;
         if (pszDirectoryNum[0]) {
           for (size_t i1 = 0; (i1 < session()->directories.size()) && (udir[i1].subnum != -1); i1++) {
-            if (wwiv::strings::IsEquals(udir[i1].keys, pszDirectoryNum)) {
+            if (IsEquals(udir[i1].keys, pszDirectoryNum)) {
               d1 = i1;
             }
           }
@@ -882,7 +877,7 @@ void move_file_t() {
         }
         StringRemoveWhitespace(s1);
         StringRemoveWhitespace(s2);
-        if (!wwiv::strings::IsEquals(s1, s2) && File::Exists(s1)) {
+        if (!IsEquals(s1, s2) && File::Exists(s1)) {
           bool bSameDrive = false;
           if (s1[1] != ':' && s2[1] != ':') {
             bSameDrive = true;
