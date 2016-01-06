@@ -56,10 +56,10 @@ class Contact {
    /** add a contact. caled by connect or failure. */
    void add_contact(net_contact_rec* c, time_t time);
 
-   std::vector<net_contact_rec> contacts_;
-   bool save_on_destructor_;
-   bool initialized_;
    std::string network_dir_;
+   bool save_on_destructor_;
+   std::vector<net_contact_rec> contacts_;
+   bool initialized_;
 };
 
 

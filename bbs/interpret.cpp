@@ -111,7 +111,7 @@ const char *interpret(char chKey) {
     strcpy(s, session()->user()->GetFirstOn());
     break;
   case 'G':                               // MessaGes read
-    snprintf(s, sizeof(s), "%lu", session()->user()->GetNumMessagesRead());
+    snprintf(s, sizeof(s), "%u", session()->user()->GetNumMessagesRead());
     break;
   case 'g':                               // Gold
     snprintf(s, sizeof(s), "%f", session()->user()->GetGold());
