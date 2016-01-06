@@ -271,7 +271,7 @@ void do_callout(int sn) {
   if (i != -1) {
     net_system_list_rec *csne = next_system(session()->current_net().con[i].sysnum);
     if (csne) {
-      sprintf(s, "network /N%u /A%s /P%s /S%u /T%lld",
+      sprintf(s, "network /N%u /A%s /P%s /S%u /T%ld",
               sn, (session()->current_net().con[i].options & options_sendback) ? "1" : "0",
               csne->phone, 0, tCurrentTime);
       if (session()->current_net().con[i].macnum) {
@@ -653,7 +653,7 @@ void print_pending_list() {
           tLastContactTime = (tLastContactTime - se) / 60;
           m = static_cast<int32_t>(tLastContactTime % 60);
           h = static_cast<int32_t>(tLastContactTime / 60);
-          sprintf(s1, "|#2%02lld:%02lld:%02lld", h, m, se);
+          sprintf(s1, "|#2%02ld:%02ld:%02ld", h, m, se);
         } else {
           strcpy(s1, "|#6     -    ");
         }
@@ -908,9 +908,9 @@ static void print_call(int sn, int nNetNumber, int i2) {
   session()->localIO()->LocalXYAPrintf(23, 18, color, "%-10.16s", s1);
 
   if (ncn[i2].firstcontact) {
-    sprintf(s1, "%ld:", static_cast<uint32_t>(tCurrentTime - ncn[i2].firstcontact) / SECONDS_PER_HOUR);
+    sprintf(s1, "%ud:", static_cast<uint32_t>(tCurrentTime - ncn[i2].firstcontact) / SECONDS_PER_HOUR);
     time_t tTime = (((tCurrentTime - ncn[i2].firstcontact) % SECONDS_PER_HOUR) / 60);
-    sprintf(s, "%lld", tTime);
+    sprintf(s, "%ld", tTime);
     if (tTime < 10) {
       strcat(s1, "0");
       strcat(s1, s);
@@ -924,9 +924,9 @@ static void print_call(int sn, int nNetNumber, int i2) {
   session()->localIO()->LocalXYAPrintf(23, 16, color, "%-17.16s", s1);
 
   if (ncn[i2].lastcontactsent) {
-    sprintf(s1, "%ld:", static_cast<uint32_t>(tCurrentTime - ncn[i2].lastcontactsent) / SECONDS_PER_HOUR);
+    sprintf(s1, "%u:", static_cast<uint32_t>(tCurrentTime - ncn[i2].lastcontactsent) / SECONDS_PER_HOUR);
     time_t tTime = (((tCurrentTime - ncn[i2].lastcontactsent) % SECONDS_PER_HOUR) / 60);
-    sprintf(s, "%lld", tTime);
+    sprintf(s, "%ld", tTime);
     if (tTime < 10) {
       strcat(s1, "0");
       strcat(s1, s);
@@ -940,9 +940,9 @@ static void print_call(int sn, int nNetNumber, int i2) {
   session()->localIO()->LocalXYAPrintf(58, 16, color, "%-17.16s", s1);
 
   if (ncn[i2].lasttry) {
-    sprintf(s1, "%ld:", static_cast<uint32_t>(tCurrentTime - ncn[i2].lasttry) / SECONDS_PER_HOUR);
+    sprintf(s1, "%u:", static_cast<uint32_t>(tCurrentTime - ncn[i2].lasttry) / SECONDS_PER_HOUR);
     time_t tTime = (((tCurrentTime - ncn[i2].lasttry) % SECONDS_PER_HOUR) / 60);
-    sprintf(s, "%lld", tTime);
+    sprintf(s, "%ld", tTime);
     if (tTime < 10) {
       strcat(s1, "0");
       strcat(s1, s);
@@ -1223,7 +1223,7 @@ void force_callout(int dw) {
   bool ok;
   unsigned int total_attempts = 1, current_attempt = 0;
   time_t tCurrentTime;
-  char ch, s[101], onx[20];
+  char ch, s[101];
   net_system_list_rec *csne;
   unsigned long lc, cc;
 
@@ -1233,11 +1233,6 @@ void force_callout(int dw) {
     return;
   }
 
-  odc[0]  = '\0';
-  int odci    = 0;
-  onx[0]  = 'Q';
-  onx[1]  = '\0';
-  int onxi = 1;
   int nv = 0;
   unique_ptr<char[]> ss(new char[session()->max_net_num() * 3]);
   char *ss1 = ss.get() + session()->max_net_num();
@@ -1292,14 +1287,6 @@ void force_callout(int dw) {
         set_net_num(ss[i]);
         csne = next_system(sn);
         if (csne) {
-          if (i < 9) {
-            onx[onxi++] = static_cast<char>(i + '1');
-            onx[onxi] = 0;
-          } else {
-            odci = (i + 1) / 10;
-            odc[odci - 1] = static_cast<char>(odci + '0');
-            odc[odci] = 0;
-          }
           if (IsEqualsIgnoreCase(session()->net_networks[netw].name, session()->network_name())) {
             nitu = i;
           }

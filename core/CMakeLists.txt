@@ -20,6 +20,7 @@ if(UNIX)
   set(PLATFORM_SOURCES 
     wfndfile_unix.cpp
     )
+  add_definitions ("-Wall")
 endif()
 
 add_library(core ${COMMON_SOURCES} ${PLATFORM_SOURCES})

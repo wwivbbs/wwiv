@@ -23,7 +23,6 @@ using wwiv::core::ScopeExit;
 
 TEST(ScopeExitTest, Basic) {
   bool committed = false;
-  bool rolledback = false;
   auto f = [&] { committed = true; };
   {
     ScopeExit e(f);
@@ -39,7 +38,6 @@ TEST(ScopeExitTest, Empty) {
 
 TEST(ScopeExitTest, Swap) {
   bool committed = false;
-  bool rolledback = false;
   auto f = [&] { committed = true; };
   {
     ScopeExit e;

@@ -22,5 +22,9 @@ set(COMMON_SOURCES
   usermanager.cpp
   )
 
+if(UNIX) 
+  add_definitions ("-Wall")
+endif()
+
 add_library(sdk ${COMMON_SOURCES})
 target_link_libraries(sdk core)

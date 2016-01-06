@@ -19,6 +19,10 @@ set(test_sources
   textfile_test.cpp
 )
 
+if(UNIX) 
+  add_definitions ("-Wall")
+endif()
+
 add_library(core_fixtures ${fixture_sources}) 
 
 add_executable(core_tests ${test_sources})

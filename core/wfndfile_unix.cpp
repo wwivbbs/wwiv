@@ -258,7 +258,7 @@ char *strip_filename(const char *pszFileName) {
   char szTempFileName[PATH_MAX];
 
   int nSepIndex = -1;
-  for (int i = 0; i < strlen(pszFileName); i++) {
+  for (size_t i = 0; i < strlen(pszFileName); i++) {
     if (pszFileName[i] == '\\' || pszFileName[i] == ':' || pszFileName[i] == '/') {
       nSepIndex = i;
     }
@@ -268,7 +268,7 @@ char *strip_filename(const char *pszFileName) {
   } else {
     strcpy(szTempFileName, pszFileName);
   }
-  for (int i1 = 0; i1 < strlen(szTempFileName); i1++) {
+  for (size_t i1 = 0; i1 < strlen(szTempFileName); i1++) {
     if (szTempFileName[i1] >= 'A' && szTempFileName[i1] <= 'Z') {
       szTempFileName[i1] = szTempFileName[i1] - 'A' + 'a';
     }

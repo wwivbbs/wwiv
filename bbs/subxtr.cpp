@@ -34,9 +34,6 @@ using std::vector;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static xtrasubsnetrec *xsubsn;
-static int nn;
-
 static int FindNetworkByName(const std::vector<net_networks_rec>& net_networks, const std::string& name) {
   for (size_t i = 0; i < net_networks.size(); i++) {
     if (IsEqualsIgnoreCase(net_networks[i].name, name.c_str())) {
