@@ -101,6 +101,9 @@ static void GetMessageTitle(MessageEditorData& data) {
       bout << "|#2Title: ";
       bout.mpl(60);
     }
+    if (!data.title.empty()) {
+      return;
+    }
     if (irt[0] != '\xAB' && irt[0]) {
       string s1;
       char ch = '\0';
@@ -395,13 +398,17 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, const char *aux) 
     return;
   }
   const char szMultiMail[] = "Multi-Mail";
-  if (!session()->current_xsub().nets.empty() &&
-      !IsEqualsIgnoreCase(aux, "email") &&
-      (!(session()->current_sub().anony & anony_no_tag)) &&
-      !IsEqualsIgnoreCase(irt, szMultiMail)) {
-		// tag is ok
-  } else {
-		return;
+  if (IsEqualsIgnoreCase(aux, "email")) {
+    return;
+  }
+  if (session()->current_xsub().nets.empty()) {
+    return;
+  }
+  if (session()->current_sub().anony & anony_no_tag) {
+    return;
+  }
+  if (IsEqualsIgnoreCase(irt, szMultiMail)) {
+    return;
   }
 
   const string filename = FindTagFileName();

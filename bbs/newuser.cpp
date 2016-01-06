@@ -1538,7 +1538,7 @@ void new_mail() {
   messagerec msg;
   msg.storage_type = 2;
   if (inmsg(data)) {
-    savefile(data.title, &msg, data.aux);
+    savefile(data.text, &msg, data.aux);
 
     EmailData email(data);
     email.msg = &msg;

@@ -283,13 +283,15 @@ void read_type2_message(messagerec * pMessageRecord, char an, bool readit, bool 
   for (ptr = 0; ptr < message_text.size() && message_text[ptr] != RETURN && ptr<=200; ptr++) {
     name.push_back(message_text[ptr]);
   }
-  if (message_text[++ptr] == SOFTRETURN) {
+  if (ptr < message_text.size() && message_text[++ptr] == SOFTRETURN) {
     ++ptr;
   }
   for (size_t start=ptr; ptr < message_text.size() && message_text[ptr] != RETURN && ptr-start <= 60; ptr++) {
     date.push_back(message_text[ptr]);
   }
-  message_text = message_text.substr(ptr + 1);
+  if (ptr + 1 < message_text.size()) {
+    message_text = message_text.substr(ptr + 1);
+  }
 
   irt_name[0] = '\0';
   g_flags |= g_flag_disable_mci;
