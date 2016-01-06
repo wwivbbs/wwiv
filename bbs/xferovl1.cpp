@@ -18,11 +18,6 @@
 /**************************************************************************/
 
 #include <memory>
-#ifdef _WIN32
-#include <direct.h>
-#else
-#include <unistd.h>
-#endif  // _WIN32
 
 #include "bbs/batch.h"
 #include "bbs/bbsovl3.h"
@@ -229,13 +224,13 @@ bool get_file_idz(uploadsrec * u, int dn) {
   File::Remove(syscfgovr.tempdir, FILE_ID_DIZ);
   File::Remove(syscfgovr.tempdir, DESC_SDI);
 
-  chdir(session()->directories[dn].path);
+  File::set_current_directory(session()->directories[dn].path);
   {
 	  File file(File::current_directory(), stripfn(u->filename));
 	  session()->CdHome();
 	  get_arc_cmd(cmd, file.full_pathname().c_str(), 1, "FILE_ID.DIZ DESC.SDI");
   }
-  chdir(syscfgovr.tempdir);
+  File::set_current_directory(syscfgovr.tempdir);
   ExecuteExternalProgram(cmd, EFLAG_NOHUP);
   session()->CdHome();
   sprintf(s, "%s%s", syscfgovr.tempdir, FILE_ID_DIZ);
@@ -348,7 +343,7 @@ int read_idz(int mode, int tempdir) {
     if ((compare(s, u.filename)) &&
         (strstr(u.filename, ".COM") == nullptr) &&
         (strstr(u.filename, ".EXE") == nullptr)) {
-      chdir(session()->directories[udir[tempdir].subnum].path);
+      File::set_current_directory(session()->directories[udir[tempdir].subnum].path);
       File file(File::current_directory(), stripfn(u.filename));
       session()->CdHome();
       if (file.Exists()) {

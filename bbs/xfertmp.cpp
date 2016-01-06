@@ -17,12 +17,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifdef _WIN32
-#include <direct.h>
-#else
-#include <unistd.h>
-#endif  // _WIN32
-
 #include <functional>
 #include <string>
 #include <vector>
@@ -451,7 +445,7 @@ void add_arc(const char *arc, const char *file_name, int dos) {
 
   get_arc_cmd(szAddArchiveCommand, szArchiveFileName, 2, file_name);
   if (szAddArchiveCommand[0]) {
-    chdir(syscfgovr.tempdir);
+    File::set_current_directory(syscfgovr.tempdir);
     session()->localIO()->LocalPuts(szAddArchiveCommand);
     session()->localIO()->LocalPuts("\r\n");
     if (dos) {
@@ -592,9 +586,9 @@ void temp_extract() {
       session()->tagging = ot;
       bout.nl();
       if (session()->directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
-        chdir(syscfgovr.tempdir);
+        File::set_current_directory(syscfgovr.tempdir);
       } else {
-        chdir(session()->directories[udir[session()->GetCurrentFileArea()].subnum].path);
+        File::set_current_directory(session()->directories[udir[session()->GetCurrentFileArea()].subnum].path);
       }
       File file(File::current_directory(), stripfn(u.filename));
       session()->CdHome();
@@ -629,7 +623,7 @@ void temp_extract() {
               strcat(s1, ".*");
             }
             get_arc_cmd(s3, file.full_pathname().c_str(), 1, stripfn(s1));
-            chdir(syscfgovr.tempdir);
+            File::set_current_directory(syscfgovr.tempdir);
             if (!okfn(s1)) {
               s3[0] = '\0';
             }
