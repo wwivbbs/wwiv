@@ -20,30 +20,33 @@
 #include <vector>
 #include <set>
 
-#include "bbs/vars.h"
-#include "bbs/wuser.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "fix/fix.h"
 #include "fix/log.h"
 #include "fix/users.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
-
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
+
+extern configrec syscfg;
+extern statusrec status;
 
 namespace wwiv {
 namespace fix {
 
 int FixUsersCommand::Execute() {
     std::cout << "Runnning FixUsersCommand::Execute" << std::endl;
-    	File userFile(syscfg.datadir, USER_LST);
+  File userFile(syscfg.datadir, USER_LST);
 	if (!userFile.Exists()) {
 		Print(NOK, true, "%s does not exist.", userFile.full_pathname().c_str());
 		giveUp();
 	}
 
-	WUserManager userMgr(syscfg.datadir, sizeof(userrec), syscfg.maxusers);
+	UserManager userMgr(syscfg.datadir, sizeof(userrec), syscfg.maxusers);
 	Print(OK, true, "Checking USER.LST... found %d user records.", userMgr.GetNumberOfUserRecords());
 
 	Print(OK, true, "TBD: Check for trashed user recs.");
@@ -59,14 +62,14 @@ int FixUsersCommand::Execute() {
 
   const int num_user_records = userMgr.GetNumberOfUserRecords();
 	for(int i = 1; i <= num_user_records; i++) {
-		WUser user;
+		User user;
 		userMgr.ReadUser(&user, i);
 		user.FixUp();
 		userMgr.WriteUser(&user, i);
 		if (!user.IsUserDeleted() && !user.IsUserInactive()) {
 			smalrec sr = { 0 };
 			strcpy((char*) sr.name, user.GetName());
-			sr.number = static_cast<unsigned short>(i);
+			sr.number = static_cast<uint16_t>(i);
 			std::string namestring((char*) sr.name);
 			if (names.find(namestring) == names.end()) {
 				smallrecords.push_back(sr);
@@ -107,7 +110,7 @@ int FixUsersCommand::Execute() {
 	} else {
 		if (nameFile.Open(File::modeReadOnly | File::modeBinary)) {
 			unsigned long size = nameFile.GetLength();
-			unsigned short recs = static_cast<unsigned short>(size / sizeof(smalrec));
+			unsigned short recs = static_cast<uint16_t>(size / sizeof(smalrec));
 			if (recs != status.users) {
 				status.users = recs;
 				Print(NOK, true, "STATUS.DAT contained an incorrect user count.");

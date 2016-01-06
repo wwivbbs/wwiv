@@ -113,7 +113,7 @@ static void write_automessage() {
     session()->status_manager()->CommitTransaction(pStatus);
 
     TextFile file(syscfg.gfilesdir, AUTO_MSG, "wt");
-    const string authorName = session()->user()->GetUserNameAndNumber(session()->usernum);
+    const string authorName = session()->names()->UserName(session()->usernum);
     file.WriteLine(authorName);
     sysoplog("Changed Auto-message");
     for (const auto& line : lines) {

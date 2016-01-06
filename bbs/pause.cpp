@@ -23,6 +23,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
+#include "bbs/instmsg.h"
 #include "bbs/vars.h"
 #include "core/os.h"
 #include "core/strings.h"
@@ -31,6 +32,7 @@ extern char str_pause[];
 
 using std::chrono::milliseconds;
 using namespace wwiv::os;
+using namespace wwiv::sdk;
 
 namespace wwiv {
 namespace bbs {
@@ -38,12 +40,12 @@ namespace bbs {
 TempDisablePause::TempDisablePause() : wwiv::core::Transaction([] {
     if (g_flags & g_flag_disable_pause) {
       g_flags &= ~g_flag_disable_pause;
-      session()->user()->SetStatusFlag(WUser::pauseOnPage);
+      session()->user()->SetStatusFlag(User::pauseOnPage);
     }
   }, nullptr) {
   if (session()->user()->HasPause()) {
     g_flags |= g_flag_disable_pause;
-    session()->user()->ClearStatusFlag(WUser::pauseOnPage);
+    session()->user()->ClearStatusFlag(User::pauseOnPage);
   }
 }
 
@@ -70,7 +72,7 @@ static char GetKeyForPause() {
   case '=':
     if (session()->user()->HasPause()) {
       nsp = 1;
-      session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
+      session()->user()->ToggleStatusFlag(User::pauseOnPage);
     }
     break;
   default:
@@ -87,17 +89,10 @@ void pausescr() {
   double ttotal;
   time_t tstart, tstop;
 
-  if (x_only) {
-    return;
-  }
-
   nsp = 0;
-
   int oiia = setiia(0);
-
   char* ss = str_pause;
   int i2 = i1 = strlen(ss);
-
   bool com_freeze = incom;
 
   if (!incom && outcom) {

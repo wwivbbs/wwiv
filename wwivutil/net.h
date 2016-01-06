@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2015, WWIV Software Services             */
+/*                          WWIV Version 5.0x                             */
+/*               Copyright (C)2015, WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,34 +15,24 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_CAPTURE_H__
-#define __INCLUDED_BBS_CAPTURE_H__
+#ifndef __INCLUDED_WWIVUTIL_NET_H__
+#define __INCLUDED_WWIVUTIL_NET_H__
 
-#include "core/file.h"
+#include "wwivutil/command.h"
 
 namespace wwiv {
-namespace bbs {
+namespace wwivutil {
 
- class Capture {
- public:
-   Capture();
-   ~Capture();
-
-  void set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable = false);
-  void global_char(char ch);
-  void set_x_only(bool tf, const char *file_name, bool ovwr);
-  bool is_open() const { return fileGlobalCap.IsOpen(); }
-  int wx() const { return wx_; }
-  void set_wx(int wx) { wx_ = wx; }
-
- private:
-  File fileGlobalCap;
-  std::string global_buf;
-  int wx_;
- };
-
-}
-}
+class NetCommand: public UtilCommand {
+public:
+  NetCommand(): UtilCommand("net", "WWIV network commands.") {}
+  virtual ~NetCommand() {}
+  virtual bool AddSubCommands() override final;
+};
 
 
-#endif  // __INCLUDED_BBS_CAPTURE_H__
+}  // namespace wwivutil
+}  // namespace wwiv
+
+
+#endif  // __INCLUDED_WWIVUTIL_NET_H__

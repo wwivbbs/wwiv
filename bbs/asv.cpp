@@ -45,7 +45,9 @@
 #include "bbs/xfer.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
+
 using std::string;
+using namespace wwiv::sdk;
 
 int printasv(const string& filename, int num, bool abort);
 
@@ -210,7 +212,7 @@ void asv() {
         sprintf(s1, "* Validated as %s 1@%d", session()->network_name(), inode);
         sysoplog(s1);
         sysoplog(s);
-        session()->user()->SetStatusFlag(WUser::expert);
+        session()->user()->SetStatusFlag(User::expert);
         session()->user()->SetExempt(0);
         session()->user()->SetForwardSystemNumber(inode);
         session()->user()->SetHomeSystemNumber(inode);
@@ -287,7 +289,7 @@ void asv() {
       properize(s);
       ssm(1, 0, "%s validated as a WWIV SysOp on %s.", s, fulldate());
       sysoplog("* Validated as a WWIV SysOp");
-      session()->user()->SetStatusFlag(WUser::expert);
+      session()->user()->SetStatusFlag(User::expert);
       set_autoval(session()->advasv.nonreg_wwiv);
       bout.nl();
       valfile = 9;

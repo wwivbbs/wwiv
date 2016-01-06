@@ -44,9 +44,6 @@
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
-using std::string;
-
-
 // module private functions
 void listbatch();
 void downloaded(char *file_name, long lCharsPerSecond);
@@ -61,6 +58,8 @@ int try_to_ul_wh(char *file_name);
 void normalupload(int dn);
 
 
+using std::string;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 
@@ -84,9 +83,9 @@ void listbatch() {
     char szBuffer[255];
     if (batch[i].sending) {
       sprintf(szBuffer, "%d. %s %s   %s  %s", i + 1, "(D)", batch[i].filename, ctim(batch[i].time),
-              directories[batch[i].dir].name);
+              session()->directories[batch[i].dir].name);
     } else {
-      sprintf(szBuffer, "%d. %s %s             %s", i + 1, "(U)", batch[i].filename, directories[batch[i].dir].name);
+      sprintf(szBuffer, "%d. %s %s             %s", i + 1, "(U)", batch[i].filename, session()->directories[batch[i].dir].name);
     }
     pla(szBuffer, &abort);
   }
@@ -134,12 +133,13 @@ void downloaded(char *file_name, long lCharsPerSecond) {
           sysoplogf("Downloaded \"%s\"", u.filename);
         }
         if (syscfg.sysconfig & sysconfig_log_dl) {
-          WUser user;
+          User user;
           session()->users()->ReadUser(&user, u.ownerusr);
           if (!user.IsUserDeleted()) {
             if (date_to_daten(user.GetFirstOn()) < static_cast<time_t>(u.daten)) {
+              const string user_name_number = session()->names()->UserName(session()->usernum);
               ssm(u.ownerusr, 0, "%s downloaded|#1 \"%s\" |#7on %s",
-                  session()->user()->GetUserNameAndNumber(session()->usernum), u.filename, fulldate());
+                  user_name_number.c_str(), u.filename, fulldate());
             }
           }
         }
@@ -218,7 +218,7 @@ void uploaded(char *file_name, long lCharsPerSecond) {
         if (nRecNum != -1 && u.numbytes == 0) {
           char szSourceFileName[MAX_PATH], szDestFileName[MAX_PATH];
           sprintf(szSourceFileName, "%s%s", syscfgovr.batchdir, file_name);
-          sprintf(szDestFileName, "%s%s", directories[batch[i1].dir].path, file_name);
+          sprintf(szDestFileName, "%s%s", session()->directories[batch[i1].dir].path, file_name);
           if (!wwiv::strings::IsEquals(szSourceFileName, szDestFileName) &&
               File::Exists(szSourceFileName)) {
             bool found = false;
@@ -263,9 +263,9 @@ void uploaded(char *file_name, long lCharsPerSecond) {
               FileAreaSetRecord(fileDn, nRecNum);
               fileDn.Write(&u, sizeof(uploadsrec));
               fileDn.Close();
-              sysoplogf("+ \"%s\" uploaded on %s (%ld cps)", u.filename, directories[batch[i1].dir].name, lCharsPerSecond);
+              sysoplogf("+ \"%s\" uploaded on %s (%ld cps)", u.filename, session()->directories[batch[i1].dir].name, lCharsPerSecond);
               bout << "Uploaded '" << u.filename <<
-                                 "' to " << directories[batch[i1].dir].name << " (" <<
+                                 "' to " << session()->directories[batch[i1].dir].name << " (" <<
                                  lCharsPerSecond << " cps)" << wwiv::endl;
             }
           }
@@ -334,10 +334,10 @@ void zmbatchdl(bool bHangupAfterDl) {
         file.Read(&u, sizeof(uploadsrec));
         file.Close();
         char szSendFileName[ MAX_PATH ];
-        sprintf(szSendFileName, "%s%s", directories[batch[cur].dir].path, u.filename);
-        if (directories[batch[cur].dir].mask & mask_cdrom) {
+        sprintf(szSendFileName, "%s%s", session()->directories[batch[cur].dir].path, u.filename);
+        if (session()->directories[batch[cur].dir].mask & mask_cdrom) {
           char szOrigFileName[ MAX_PATH ];
-          sprintf(szOrigFileName, "%s%s", directories[batch[cur].dir].path, u.filename);
+          sprintf(szOrigFileName, "%s%s", session()->directories[batch[cur].dir].path, u.filename);
           sprintf(szSendFileName, "%s%s", syscfgovr.tempdir, u.filename);
           if (!File::Exists(szSendFileName)) {
             copyfile(szOrigFileName, szSendFileName, true);
@@ -411,10 +411,10 @@ void ymbatchdl(bool bHangupAfterDl) {
         file.Read(&u, sizeof(uploadsrec));
         file.Close();
         char szSendFileName[ MAX_PATH ];
-        sprintf(szSendFileName, "%s%s", directories[batch[cur].dir].path, u.filename);
-        if (directories[batch[cur].dir].mask & mask_cdrom) {
+        sprintf(szSendFileName, "%s%s", session()->directories[batch[cur].dir].path, u.filename);
+        if (session()->directories[batch[cur].dir].mask & mask_cdrom) {
           char szOrigFileName[ MAX_PATH ];
-          sprintf(szOrigFileName, "%s%s", directories[batch[cur].dir].path, u.filename);
+          sprintf(szOrigFileName, "%s%s", session()->directories[batch[cur].dir].path, u.filename);
           sprintf(szSendFileName, "%s%s", syscfgovr.tempdir, u.filename);
           if (!File::Exists(szSendFileName)) {
             copyfile(szOrigFileName, szSendFileName, true);
@@ -515,7 +515,7 @@ static string make_ul_batch_list() {
   }
   for (int i = 0; i < session()->numbatch; i++) {
     if (!batch[i].sending) {
-      chdir(directories[batch[i].dir].path);
+      chdir(session()->directories[batch[i].dir].path);
       File file(File::current_directory(), stripfn(batch[i].filename));
       session()->CdHome();
       fileList.Write(StrCat(file.full_pathname(), "\r\n"));
@@ -542,18 +542,18 @@ static string make_dl_batch_list() {
   for (int i = 0; i < session()->numbatch; i++) {
     if (batch[i].sending) {
       string filename_to_send;
-      if (directories[batch[i].dir].mask & mask_cdrom) {
+      if (session()->directories[batch[i].dir].mask & mask_cdrom) {
         chdir(syscfgovr.tempdir);
         const string current_dir = File::current_directory();
         File fileToSend(current_dir, stripfn(batch[i].filename));
         if (!fileToSend.Exists()) {
-          chdir(directories[batch[i].dir].path);
+          chdir(session()->directories[batch[i].dir].path);
           File sourceFile(File::current_directory(), stripfn(batch[i].filename));
           copyfile(sourceFile.full_pathname(), fileToSend.full_pathname(), true);
         }
         filename_to_send = fileToSend.full_pathname();
       } else {
-        chdir(directories[batch[i].dir].path);
+        chdir(session()->directories[batch[i].dir].path);
         File fileToSend(File::current_directory(), stripfn(batch[i].filename));
         filename_to_send = fileToSend.full_pathname();
       }
@@ -592,9 +592,10 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
   if (!commandLine.empty()) {
     WWIV_make_abs_cmd(session()->GetHomeDir(), &commandLine);
     session()->localIO()->LocalCls();
+    const string user_name_number = session()->names()->UserName(session()->usernum);
     const string message = StringPrintf(
         "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
-        session()->user()->GetUserNameAndNumber(session()->usernum),
+        user_name_number.c_str(),
         modem_speed, dl.c_str(), commandLine.c_str());
     session()->localIO()->LocalPuts(message);
     if (incom) {
@@ -891,7 +892,7 @@ void bihangup(int up) {
 
 void upload(int dn) {
   dliscan1(dn);
-  directoryrec d = directories[ dn ];
+  directoryrec d = session()->directories[ dn ];
   long lFreeSpace = freek1(d.path);
   if (lFreeSpace < 100) {
     bout << "\r\nNot enough disk space to upload here.\r\n\n";

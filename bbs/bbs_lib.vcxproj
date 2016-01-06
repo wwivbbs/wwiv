@@ -103,11 +103,10 @@
     <ClInclude Include="bbsutl2.h" />
     <ClInclude Include="bgetch.h" />
     <ClInclude Include="bputch.h" />
-    <ClInclude Include="callback.h" />
-    <ClInclude Include="capture.h" />
     <ClInclude Include="chains.h" />
     <ClInclude Include="chat.h" />
     <ClInclude Include="chnedit.h" />
+    <ClInclude Include="colors.h" />
     <ClInclude Include="com.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="conf.h" />
@@ -115,8 +114,11 @@
     <ClInclude Include="connect1.h" />
     <ClInclude Include="crc.h" />
     <ClInclude Include="datetime.h" />
+    <ClInclude Include="defaults.h" />
     <ClInclude Include="dropfile.h" />
+    <ClInclude Include="events.h" />
     <ClInclude Include="external_edit.h" />
+    <ClInclude Include="extract.h" />
     <ClInclude Include="fcns.h" />
     <ClInclude Include="filenames.h" />
     <ClInclude Include="inmsg.h" />
@@ -134,6 +136,7 @@
     <ClInclude Include="menu_parser.h" />
     <ClInclude Include="message_file.h" />
     <ClInclude Include="email.h" />
+    <ClInclude Include="msgbase1.h" />
     <ClInclude Include="multinst.h" />
     <ClInclude Include="netsup.h" />
     <ClInclude Include="newuser.h" />
@@ -174,7 +177,6 @@
     <ClInclude Include="woutstreambuffer.h" />
     <ClInclude Include="wsession.h" />
     <ClInclude Include="wstatus.h" />
-    <ClInclude Include="wuser.h" />
     <ClInclude Include="wwivcolors.h" />
     <ClInclude Include="wwiv_windows.h" />
     <ClInclude Include="xfer.h" />
@@ -198,8 +200,6 @@
     <ClCompile Include="bbsutl2.cpp" />
     <ClCompile Include="bgetch.cpp" />
     <ClCompile Include="bputch.cpp" />
-    <ClCompile Include="callback.cpp" />
-    <ClCompile Include="capture.cpp" />
     <ClCompile Include="chains.cpp" />
     <ClCompile Include="chat.cpp" />
     <ClCompile Include="chnedit.cpp" />
@@ -302,7 +302,6 @@
     <ClCompile Include="WOutStreamBuffer.cpp" />
     <ClCompile Include="wqscn.cpp" />
     <ClCompile Include="WSession.cpp" />
-    <ClCompile Include="WUser.cpp" />
     <ClCompile Include="xfer.cpp" />
     <ClCompile Include="xferovl.cpp" />
     <ClCompile Include="xferovl1.cpp" />
@@ -319,6 +318,9 @@
     <ProjectReference Include="..\sdk\sdk.vcxproj">
       <Project>{53db67db-4d42-4a8a-b176-ee83a170de86}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="todo.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -25,10 +25,9 @@
 #include "bbs/vars.h"
 #include "sdk/filenames.h"
 
-void print_quests();
-void set_question(int ii);
+using namespace wwiv::sdk;
 
-void print_quests() {
+static void print_quests() {
   File file(syscfg.datadir, VOTING_DAT);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     return;
@@ -49,8 +48,7 @@ void print_quests() {
   }
 }
 
-
-void set_question(int ii) {
+static void set_question(int ii) {
   votingrec v;
   voting_response vr;
 
@@ -98,7 +96,7 @@ void set_question(int ii) {
 
   questused[ii] = (v.numanswers) ? 1 : 0;
 
-  WUser u;
+  User u;
   session()->users()->ReadUser(&u, 1);
   int nNumUsers = session()->users()->GetNumberOfUserRecords();
   for (int i1 = 1; i1 <= nNumUsers; i1++) {
@@ -150,7 +148,7 @@ void voteprint() {
     return;
   }
   for (int i = 0; i <= nNumUserRecords; i++) {
-    WUser u;
+    User u;
     session()->users()->ReadUser(&u, i);
     for (int i1 = 0; i1 < 20; i1++) {
       x[ i1 + i * 20 ] = static_cast<char>(u.GetVote(i1));
@@ -182,11 +180,11 @@ void voteprint() {
         text.str("     ");
         text << v.responses[i2].response << "\r\n";
         votingText.Write(text.str());
-        for (int i3 = 0; i3 < session()->status_manager()->GetUserCount(); i3++) {
-          if (x[i1 + 20 * session()->smallist[i3].number] == i2 + 1) {
+        for (const auto& n : session()->names()->names_vector()) {
+          if (x[i1 + 20 * n.number] == i2 + 1) {
             text.clear();
             text.str("          ");
-            text << session()->smallist[i3].name << " #" << session()->smallist[i3].number << "\r\n";
+            text << n.name << " #" << n.number << "\r\n";
             votingText.Write(text.str());
           }
         }

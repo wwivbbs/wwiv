@@ -29,6 +29,7 @@
 #include "sdk/filenames.h"
 
 using std::string;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 // Local funciton prototypes
@@ -43,8 +44,8 @@ string GetInstanceActivityString(instancerec &ir) {
     case INST_LOC_EMAIL: return string("Sending Email");
     case INST_LOC_MAIN: return string("Main Menu");
     case INST_LOC_XFER:
-      if (so() && ir.subloc < session()->num_dirs) {
-        string temp = StringPrintf("Dir : %s", stripcolors(directories[ ir.subloc ].name));
+      if (so() && ir.subloc < session()->directories.size()) {
+        string temp = StringPrintf("Dir : %s", stripcolors(session()->directories[ ir.subloc ].name));
         return StrCat("Transfer Area", temp);
       }
       return string("Transfer Area");
@@ -142,13 +143,12 @@ void make_inst_str(int nInstanceNum, std::string *out, int nInstanceFormat) {
   case INST_FORMAT_LIST: {
     std::string userName;
     if (ir.user < syscfg.maxusers && ir.user > 0) {
-      WUser user;
+      User user;
       session()->users()->ReadUser(&user, ir.user);
       if (ir.flags & INST_FLAGS_ONLINE) {
-        userName = user.GetUserNameAndNumber(ir.user);
+        userName = session()->names()->UserName(ir.user);
       } else {
-        userName = "Last: ";
-        userName += user.GetUserNameAndNumber(ir.user);
+        userName = StrCat("Last: ", session()->names()->UserName(ir.user));
       }
     } else {
       userName = "(Nobody)";

@@ -14,7 +14,7 @@
 |#5н|#1O|#3> |#5Change Current User's Sysop Note    он|#1P|#3> |#5Change Current User's Phone #    о|#0
 |#5н|#1Q|#3> |#5Quit to Main Menu                   он|#1R|#3> |#5Restore Current User (If Deleted)о|#0
 |#5н|#1S|#3> |#5Change Current User's SL            он|#1T|#3> |#5Change Current User's DSL        о|#0
-|#5н|#1U|#3> |#5Go to a Specific User               он|#1V|#3> |#5Validate user on callback        о|#0
+|#5н|#1U|#3> |#5Go to a Specific User               он                                    о|#0
 |#5н|#1W|#3> |#5Node number ( for Callback )        он|#1X|#3> |#5Set Reg' & exp' date             о|#0
 |#5н|#1Y|#3> |#5Change Current User's Sysoped Sub   он|#1Z|#3> |#5Toggle this User's Restrictions  о|#0
 |#5н|#10-9|#3>|#5Set Auto-val Security Level        он|#1:|#3> |#5Force User to Re-Enter Some Data о|#0

@@ -28,7 +28,7 @@ namespace fix {
 class FixConfiguration {
 public:
 	FixConfiguration(const std::vector<std::string> default_commands) 
-        : flag_yes(false), flag_experimental(false), commands_(default_commands) {}
+        : commands_(default_commands) {}
 	~FixConfiguration() {}
 
   void ParseCommandLine(int argc, char** argv);
@@ -38,8 +38,8 @@ public:
 private:
   void ShowHelp();
   std::vector<std::string> commands_;
-	bool flag_yes;
-	bool flag_experimental;
+  bool flag_yes = false;
+	bool flag_experimental = false;
 };
 
 }  // namespace wwiv

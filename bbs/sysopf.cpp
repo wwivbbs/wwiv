@@ -26,6 +26,7 @@
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
+#include "bbs/email.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
@@ -47,6 +48,7 @@ using std::unique_ptr;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::msgapi;
 
@@ -83,11 +85,12 @@ void prstatus() {
 void valuser(int user_number) {
   char s[81], s1[81], s2[81], s3[81], ar1[20], dar1[20];
 
-  WUser user;
+  User user;
   session()->users()->ReadUser(&user, user_number);
   if (!user.IsUserDeleted()) {
     bout.nl();
-    bout << "|#9Name: |#2" << user.GetUserNameAndNumber(user_number) << wwiv::endl;
+    const string unn = session()->names()->UserName(user_number);
+    bout << "|#9Name: |#2" << unn << wwiv::endl;
     bout << "|#9RN  : |#2" << user.GetRealName() << wwiv::endl;
     bout << "|#9PH  : |#2" << user.GetVoicePhoneNumber() << wwiv::endl;
     bout << "|#9Age : |#2" << user.GetAge() << " " << user.GetGender() << wwiv::endl;
@@ -281,7 +284,7 @@ void print_net_listing(bool bForcePause) {
   if (bForcePause) {
     bHadPause  = session()->user()->HasPause();
     if (bHadPause) {
-      session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
+      session()->user()->ToggleStatusFlag(User::pauseOnPage);
     }
   }
   bool done = false;
@@ -599,7 +602,7 @@ void print_net_listing(bool bForcePause) {
     }
   }
   if (bForcePause && bHadPause) {
-    session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
+    session()->user()->ToggleStatusFlag(User::pauseOnPage);
   }
 }
 
@@ -628,10 +631,10 @@ void mailr() {
       if (m.touser != 0) {
         pFileEmail->Close();
         do {
-          WUser user;
+          User user;
           session()->users()->ReadUser(&user, m.touser);
-          bout << "|#9  To|#7: |#" << session()->GetMessageColor() 
-               << user.GetUserNameAndNumber(m.touser) << wwiv::endl;
+          const string unn = session()->names()->UserName(m.touser);
+          bout << "|#9  To|#7: |#" << session()->GetMessageColor() << unn << wwiv::endl;
           set_net_num(network_number_from(&m));
           bout << "|#9Subj|#7: |#" << session()->GetMessageColor() << m.title << wwiv::endl;
           if (m.status & status_file) {
@@ -725,9 +728,10 @@ void chuser() {
     write_qscn(session()->usernum, qsc, false);
     session()->ReadCurrentUser(user_number);
     read_qscn(user_number, qsc, false);
-    session()->usernum = static_cast<unsigned short>(user_number);
+    session()->usernum = static_cast<uint16_t>(user_number);
     session()->SetEffectiveSl(255);
-    sysoplogf("#*#*#* Changed to %s", session()->user()->GetUserNameAndNumber(session()->usernum));
+    const string unn = session()->names()->UserName(session()->usernum);
+    sysoplogf("#*#*#* Changed to %s", unn.c_str());
     changedsl();
     session()->UpdateTopScreen();
   } else {
@@ -779,7 +783,7 @@ void set_user_age() {
   std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   int user_number = 1;
   do {
-    WUser user;
+    User user;
     session()->users()->ReadUser(&user, user_number);
     int nAge = years_old(user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear());
     if (nAge != user.GetAge()) {
@@ -816,7 +820,7 @@ void auto_purge() {
   sysoplogfi(false, "Auto-Purged Inactive Users (over %d days, SL less than %d)", days, skipsl);
 
   do {
-    WUser user;
+    User user;
     session()->users()->ReadUser(&user, user_number);
     if (!user.IsExemptAutoDelete()) {
       unsigned int d = static_cast<unsigned int>((tTime - user.GetLastOnDateNumber()) / SECONDS_PER_DAY_FLOAT);

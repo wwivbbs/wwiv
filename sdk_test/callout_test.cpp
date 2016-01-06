@@ -18,13 +18,13 @@
 #include "gtest/gtest.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
-#include "networkb/callout.h"
+#include "sdk/callout.h"
 
 #include <cstdint>
 #include <string>
 
 using std::string;
-using namespace wwiv::net;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 class CalloutTest : public testing::Test {};
@@ -41,8 +41,8 @@ TEST_F(CalloutTest, WithPassword) {
   const string line = "@1234 &* \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
-  EXPECT_TRUE(con.options & options_dial_ten);
-  EXPECT_TRUE(con.options & options_sendback);
+  EXPECT_NE(0, con.options & options_dial_ten);
+  EXPECT_NE(0, con.options & options_sendback);
   EXPECT_STREQ("pass", con.password);
 }
 
@@ -51,9 +51,9 @@ TEST_F(CalloutTest, OncePerDay) {
   const string line = "@1234 &!24* \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
-  EXPECT_TRUE(con.options & options_dial_ten);
-  EXPECT_TRUE(con.options & options_sendback);
-  EXPECT_TRUE(con.options & options_once_per_day);
+  EXPECT_NE(0, con.options & options_dial_ten);
+  EXPECT_NE(0, con.options & options_sendback);
+  EXPECT_NE(0, con.options & options_once_per_day);
   EXPECT_STREQ("pass", con.password);
   EXPECT_EQ(24, con.times_per_day);
 }
@@ -63,9 +63,9 @@ TEST_F(CalloutTest, LotsOfOptions) {
   const string line = "@1234 &!24%21/1* \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
-  EXPECT_TRUE(con.options & options_dial_ten);
-  EXPECT_TRUE(con.options & options_sendback);
-  EXPECT_TRUE(con.options & options_once_per_day);
+  EXPECT_NE(0, con.options & options_dial_ten);
+  EXPECT_NE(0, con.options & options_sendback);
+  EXPECT_NE(0, con.options & options_once_per_day);
   EXPECT_STREQ("pass", con.password);
   EXPECT_EQ(24, con.times_per_day);
   EXPECT_EQ(21, con.macnum);
@@ -77,8 +77,8 @@ TEST_F(CalloutTest, MinMax) {
   const string line = "@1234 &(8)12* \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
-  EXPECT_TRUE(con.options & options_dial_ten);
-  EXPECT_TRUE(con.options & options_sendback);
+  EXPECT_NE(0, con.options & options_dial_ten);
+  EXPECT_NE(0, con.options & options_sendback);
   EXPECT_STREQ("pass", con.password);
   EXPECT_EQ(8, con.min_hr);
   EXPECT_EQ(12, con.max_hr);
@@ -89,8 +89,8 @@ TEST_F(CalloutTest, EveryWeekWith10k) {
   const string line = "@1234 &*#7|10 \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
-  EXPECT_TRUE(con.options & options_dial_ten);
-  EXPECT_TRUE(con.options & options_sendback);
+  EXPECT_NE(0, con.options & options_dial_ten);
+  EXPECT_NE(0, con.options & options_sendback);
   EXPECT_STREQ("pass", con.password);
   EXPECT_EQ(7, con.call_x_days);
   EXPECT_EQ(10, con.min_k);

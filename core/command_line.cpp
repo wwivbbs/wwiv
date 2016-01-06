@@ -28,6 +28,8 @@
 #include "core/strings.h"
 #include "core/stl.h"
 
+using std::clog;
+using std::cout;
 using std::endl;
 using std::map;
 using std::string;
@@ -44,9 +46,9 @@ CommandLineArgument::CommandLineArgument(
   : name(name), key(static_cast<char>(std::toupper(key))), 
     help_text(help_text), default_value(default_value) {}
 
-CommandLineCommand::CommandLineCommand(const std::string& name, const std::string& help_text, 
-    int argc, char** argv, const std::string dot_argument)
-  : name_(name), help_text_(help_text), argc_(argc), argv_(argv), dot_argument_(dot_argument) {}
+CommandLineCommand::CommandLineCommand(
+    const std::string& name, const std::string& help_text)
+  : name_(name), help_text_(help_text) {}
 
 static std::string CreateProgramName(const std::string arg) {
   string::size_type last_slash = arg.find_last_of(File::separatorChar);
@@ -57,11 +59,43 @@ static std::string CreateProgramName(const std::string arg) {
   return program_name;
 }
 
+// TODO(rushfan): Make the static command for the root commandlinehere and pass it as the invoker.
 CommandLine::CommandLine(int argc, char** argv, const std::string dot_argument)
-  : CommandLineCommand("", "", argc, argv, dot_argument), program_name_(CreateProgramName(argv[0])) {
+  : CommandLineCommand("", ""), program_name_(CreateProgramName(argv[0])) {
+  set_argc(argc);
+  set_argv(argv);
+  set_dot_argument(dot_argument);
 }
 
-bool CommandLineCommand::add(const CommandLineArgument& cmd) { 
+bool CommandLine::Parse() {
+  try {
+    if (!ParseImpl()) {
+      clog << "Unable to parse command line." << endl;
+      return false;
+    }
+  } catch (const unknown_argument_error& e) {
+    clog << "Unable to parse command line." << endl;
+    clog << e.what() << endl;
+    return false;
+  }
+
+  if (argc_ <= 1) {
+    clog << "No command line arguments specified." << endl;
+    cout << GetHelp();
+    return false;
+  }
+  return true;
+}
+
+bool CommandLine::ParseImpl() {
+  return CommandLineCommand::Parse(1) >= CommandLineCommand::argc_;
+}
+
+int CommandLine::Execute() {
+  return CommandLineCommand::Execute();
+}
+
+bool CommandLineCommand::add_argument(const CommandLineArgument& cmd) {
   // Add cmd to the list of allowable arguments, and also set 
   // a default empty value.
   args_allowed_.emplace(cmd.name, cmd);
@@ -92,6 +126,10 @@ const CommandLineValue CommandLineCommand::arg(const std::string name) const {
   return args_.at(name);
 }
 
+bool CommandLineCommand::AddStandardArgs() {
+  add_argument(BooleanCommandLineArgument("help", '?', "Displays Help", false));
+  return true;
+}
 
 std::string CommandLineCommand::ArgNameForKey(char key) {
   for (const auto& a : args_allowed_) {
@@ -110,14 +148,14 @@ int CommandLineCommand::Parse(int start_pos) {
       const string key = delims[0].substr(2);
       const string value = (delims.size() > 1) ? delims[1] : "";
       if (!contains(args_allowed_, key)) {
-        throw unknown_argument_error(StrCat("key=", key));
+        throw unknown_argument_error(StrCat("Command: ", name(), "; key=", key));
       }
       HandleCommandLineArgument(key, value);
     } else if (starts_with(s, "/") || starts_with(s, "-")) {
       char letter = static_cast<char>(std::toupper(s[1]));
       const string key = ArgNameForKey(letter);
       if (key.empty()) {
-        throw unknown_argument_error(StrCat("letter=", letter));
+        throw unknown_argument_error(StrCat("Command: ", name(), "; letter=", letter));
       }
       const string value = s.substr(2);
       HandleCommandLineArgument(key, value);
@@ -127,9 +165,8 @@ int CommandLineCommand::Parse(int start_pos) {
     } else {
       if (contains(commands_allowed_, s)) {
         // If s is a subcommand, parse it, incrementing our pointer.
-        CommandLineCommand& cmd = commands_allowed_.at(s);
-        i = cmd.Parse(++i);
-        command_ = &cmd;
+        command_ = commands_allowed_.at(s).get();
+        i = command_->Parse(++i);
       } else {
         // Add all residue to list of remaining args.
         // These usually are the positional arguments.
@@ -157,6 +194,37 @@ std::string CommandLineCommand::ToString() const {
   return ss.str();
 }
 
+int CommandLineCommand::Execute() {
+  if (arg("help").as_bool()) {
+    // Help was selected.
+    cout << GetHelp();
+    return 0;
+  }
+
+  if (command_ != nullptr) {
+    // We have sub command, so execute that.
+    return command_->Execute();
+  }
+
+  if (name_.empty() || !remaining_.empty()) {
+    // If name is empty, we're at the root command and
+    // no valid command was specified.
+    clog << "Invalid command specified: ";
+    for (const auto& a : remaining_) {
+      clog << a << " ";
+    }
+    clog << endl;
+    cout << GetHelp();
+    return 0;
+  }
+
+  // Nothing was able to be executed.
+  clog << "Nothing to do for command: " << name_ << endl;
+  cout << GetHelp();
+  return 1;
+}
+
+
 std::string CommandLineCommand::GetHelp() const {
   std::ostringstream ss;
   string program_name = (name_.empty()) ? "program" : name_;
@@ -167,10 +235,18 @@ std::string CommandLineCommand::GetHelp() const {
   ss << endl;
   ss << "commands:" << std::endl;
   for (const auto& a : commands_allowed_) {
-    const string allowed_name = a.second.name();
-    ss << StringPrintf("%-20s", allowed_name.c_str()) << " " << a.second.help_text() << endl;
+    const string allowed_name = a.second->name();
+    ss << StringPrintf("%-20s", allowed_name.c_str()) << " " << a.second->help_text() << endl;
   }
   return ss.str();
+}
+
+bool CommandLine::AddStandardArgs() {
+  if (!CommandLineCommand::AddStandardArgs()) {
+    return false;
+  }
+  add_argument({"bbsdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory()});
+  return true;
 }
 
 std::string CommandLine::GetHelp() const {

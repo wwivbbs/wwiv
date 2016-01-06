@@ -24,7 +24,7 @@
 #include "bbs/bbs.h"
 #include "core_test/file_helper.h"
 #include "bbs/local_io.h"
-#include "bbs/wuser.h"
+#include "sdk/user.h"
 
 class TestIO;
 
@@ -39,7 +39,7 @@ class BbsHelper {
 public:
     virtual void SetUp();
     virtual void TearDown();
-    WUser* user() const { return user_; }
+    wwiv::sdk::User* user() const { return user_; }
     TestIO* io() const { return io_.get(); }
 
     // Accessors for various directories
@@ -56,7 +56,7 @@ public:
     std::unique_ptr<WApplication> app_;
     std::unique_ptr<WSession> sess_;
     std::unique_ptr<TestIO> io_;
-    WUser* user_;
+    wwiv::sdk::User* user_;
 };
 
 class TestIO {

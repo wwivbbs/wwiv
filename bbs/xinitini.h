@@ -59,13 +59,13 @@ constexpr int INI_STR_SHOW_HIER = 40;
 constexpr int INI_STR_IDZ_DESC = 41;
 constexpr int INI_STR_SETLDATE = 42;
 //constexpr int INI_STR_NEW_CHATSOUND = 43;
-constexpr int INI_STR_SLASH_SZ = 44;
+//constexpr int INI_STR_SLASH_SZ = 44;
 constexpr int INI_STR_READ_CD_IDZ = 45;
 constexpr int INI_STR_FSED_EXT_DESC = 46;
 constexpr int INI_STR_FAST_TAG_RELIST = 47;
 constexpr int INI_STR_MAIL_PROMPT = 48;
 constexpr int INI_STR_SHOW_CITY_ST = 49;
-constexpr int INI_STR_LOCAL_SYSOP = 50;
+//constexpr int INI_STR_LOCAL_SYSOP = 50;
 constexpr int INI_STR_2WAY_CHAT = 51;
 constexpr int INI_STR_NO_NEWUSER_FEEDBACK = 52;
 constexpr int INI_STR_TITLEBAR = 53;
@@ -88,8 +88,8 @@ constexpr int INI_STR_FREE_PHONE = 69;
 constexpr int INI_STR_EXTENDED_USERINFO = 70;
 constexpr int INI_STR_NEWUSER_MIN = 71;
 constexpr int INI_STR_ALLOW_CC_BCC = 72;
-constexpr int INI_STR_THREAD_SUBS = 73;
-constexpr int INI_STR_DISABLE_PD = 74;
+constexpr int UNUSED_INI_STR_THREAD_SUBS = 73;
+constexpr int UNUSED_INI_STR_DISABLE_PD = 74;
 constexpr int INI_STR_MAIL_WHO_LEN = 75;
 constexpr int INI_STR_ATTACH_DIR = 76;
 constexpr int INI_STR_ENABLE_PIPES = 77;
@@ -114,14 +114,14 @@ constexpr int INI_STR_WFC_SCREEN = 97;
 constexpr int INI_STR_SCREEN_SAVER_TIME = 98;
 constexpr int INI_STR_WFC_DRIVE = 99;
 
-//---ASV/CALLBACK SETTINGS---
+//---ASV SETTINGS---
 constexpr int INI_STR_USE_SIMPLE_ASV = 103;
 constexpr int INI_STR_SIMPLE_ASV = 104;
 constexpr int INI_STR_USE_ADVANCED_ASV = 105;
 constexpr int INI_STR_ADVANCED_ASV = 106;
-constexpr int INI_STR_USE_CALLBACK = 107;
-constexpr int INI_STR_CALLBACK = 108;
-constexpr int INI_STR_USE_VOICE_VAL = 109;
+constexpr int UNUSED_INI_STR_USE_CALLBACK = 107;
+constexpr int UNUSED_INI_STR_CALLBACK = 108;
+constexpr int UNUSED_INI_STR_USE_VOICE_VAL = 109;
 constexpr int INI_STR_AUTO_USER_PURGE = 110;
 constexpr int INI_STR_NO_PURGE_SL = 111;
 
@@ -178,13 +178,13 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "IDZ_DESC",
   "SETLDATE",
   "NEW_CHATSOUND",
-  "SLASH_SZ",
+  "",
   "READ_CD_IDZ",              // 45
   "FSED_EXT_DESC",
   "FAST_TAG_RELIST",
   "MAIL_PROMPT",
   "SHOW_CITY_ST",
-  "LOCAL_SYSOP",              // 50
+  "",                         // 50
   "2WAY_CHAT",
   "NO_NEWUSER_FEEDBACK",
   "TITLEBAR",
@@ -207,8 +207,8 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "EXTENDED_USERINFO",        // 70
   "NEWUSER_MIN",
   "ALLOW_CC_BCC",
-  "THREAD_SUBS",
-  "DISABLE_PD",
+  "", // THREAD_SUBS
+  "", // DISABLE_PD
   "MAIL_WHO_LEN",             // 75
   "ATTACH_DIR",
   "ENABLE_PIPES",
@@ -236,14 +236,14 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "WFC_DRIVES",
   "",                         // 100
   "",
-  "//---ASV/CALLBACK SETTINGS---*",
+  "//---ASV SETTINGS---*",
   "USE_SIMPLE_ASV",
   "SIMPLE_ASV",
   "USE_ADVANCED_ASV",         // 100
   "ADVANCED_ASV",
-  "USE_CALLBACK",
-  "CALLBACK",
-  "USE_VOICE_VAL",
+  "", // USE_CALLBACK
+  "", // CALLBACK
+  "", // USE_VOICE_VAL
   "AUTO_USER_PURGE",          // 110
   "NO_PURGE_SL",
   "",

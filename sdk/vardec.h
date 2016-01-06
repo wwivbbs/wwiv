@@ -80,7 +80,7 @@ struct userrec {
            day,                                     // birth day
            year,                                    // birth year
            language,                                // language to use
-           cbv;                                     // called back
+           unused_cbv;                              // called back
 
   char
   res_byte[49];
@@ -822,7 +822,7 @@ enum xfertype {
 #define status_file                 0x80
 
 // configrec.sysconfig
-#define sysconfig_no_local          0x00001
+#define unused_sysconfig_no_local  0x00001
 #define sysconfig_no_beep           0x00002
 #define sysconfig_enable_pipes      0x00004
 #define sysconfig_no_newuser_feedback 0x00008
@@ -837,11 +837,11 @@ enum xfertype {
 #define sysconfig_free_phone        0x02000
 #define sysconfig_log_dl            0x04000
 #define sysconfig_extended_info     0x08000
-#define sysconfig_high_speed        0x10000 // for INIT and NET only
-//#define sysconfig_flow_control    0x20000 // for INIT and NET only
+#define unused_sysconfig_1          0x10000
+#define unused_sysconfig_2          0x20000
 
 // configoverrec.comflags
-#define comflags_buffered_uart      0x0001
+#define unused_comflags_1           0x0001
 
 #define ansir_ansi                  0x01
 #define ansir_no_DOS                0x02
@@ -1005,7 +1005,7 @@ struct filestatusrec {
 #define OP_FLAGS_SHOW_HIER                0x00000020
 #define OP_FLAGS_IDZ_DESC                 0x00000040
 #define OP_FLAGS_SETLDATE                 0x00000080
-#define OP_FLAGS_SLASH_SZ                 0x00000200
+#define OP_FLAGS_UNUSED_1                 0x00000200
 #define OP_FLAGS_READ_CD_IDZ              0x00000400
 #define OP_FLAGS_FSED_EXT_DESC            0x00000800
 #define OP_FLAGS_FAST_TAG_RELIST          0x00001000
@@ -1024,9 +1024,9 @@ struct filestatusrec {
 #define OP_FLAGS_EXTRA_COLOR              0x02000000
 #define OP_FLAGS_USE_FORCESCAN            0x04000000
 #define OP_FLAGS_NEWUSER_MIN              0x08000000
-#define OP_FLAGS_THREAD_SUBS              0x10000000
-#define OP_FLAGS_CALLBACK                 0x20000000
-#define OP_FLAGS_VOICE_VAL                0x40000000
+#define OP_FLAGS_UNUSED_2                 0x10000000
+#define OP_FLAGS_UNUSED_3                 0x20000000
+#define OP_FLAGS_UNUSED_4                 0x40000000
 #define OP_FLAGS_ADV_ASV                  0x80000000
 
 // QUICK REFERNCE TO FIND USER INPUT_MODE_PHONE NUMBER
@@ -1061,19 +1061,6 @@ struct eventsrec {
 };
 
 // end events additions
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-struct threadrec {
-  int16_t used;                           // Record used?
-
-  uint16_t msg_num,               // Message Number
-           parent_num;                              // Parent Message #
-
-  char message_code[20],                    // Message's ID Code
-       parent_code[20];                         // Message's Reply Code
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 

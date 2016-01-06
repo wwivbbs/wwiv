@@ -46,9 +46,6 @@
     <ClCompile Include="bputch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="callback.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="chains.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -167,9 +164,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="misccmd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="msgbase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="msgbase1.cpp">
@@ -307,9 +301,6 @@
     <ClCompile Include="WSession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WUser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="xfer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -352,9 +343,6 @@
     <ClCompile Include="menu_parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="capture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="local_io_win32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -377,6 +365,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="workspace.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="email.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -471,9 +462,6 @@
     <ClInclude Include="wwivcolors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="wuser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="prot\xmodem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -534,13 +522,7 @@
     <ClInclude Include="bbslist.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="callback.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="menu_parser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="capture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="local_io_win32.h">
@@ -648,9 +630,6 @@
     <ClInclude Include="bbsutl2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="msgbase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="shortmsg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -658,6 +637,22 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="workspace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="email.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="msgbase1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="colors.h" />
+    <ClInclude Include="defaults.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="events.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="extract.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -668,5 +663,8 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{1b7782d2-8144-4eac-9827-75236a5a49b8}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="todo.txt" />
   </ItemGroup>
 </Project>

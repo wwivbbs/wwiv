@@ -40,14 +40,6 @@ using namespace wwiv::os;
 using namespace wwiv::strings;
 
 /**
- * Returns true if local sysop functions accessible, else returns false.
- */
-bool AllowLocalSysop() {
-  return (syscfg.sysconfig & sysconfig_no_local) ? false : true;
-}
-
-
-/**
  * Finds session()->usernum and system number from emailAddress, sets network number as
  * appropriate.
  * @param emailAddress The text of the email address.
@@ -262,17 +254,14 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
  */
 bool ValidateSysopPassword() {
   bout.nl();
-  if (so()) {
-    if (incom) {
-      string password = input_password("|#7SY: ", 20);
-      if (password == syscfg.systempw) {
-        return true;
-      }
-    } else if (AllowLocalSysop()) {
-      return true;
-    }
+  if (!so()) {
+    return false;
   }
-  return false;
+  if (!incom) {
+    return true;
+  }
+  string password = input_password("|#7SY: ", 20);
+  return (password == syscfg.systempw);
 }
 
 /**

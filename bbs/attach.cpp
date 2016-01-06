@@ -34,18 +34,21 @@
 #include "bbs/woutstreambuffer.h"
 #include "bbs/vars.h"
 #include "bbs/xfer.h"
-#include "bbs/wuser.h"
+#include "sdk/user.h"
 #include "core/file.h"
-#include "sdk/filenames.h"
+#include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::strings;
+using namespace wwiv::sdk;
 
 void attach_file(int mode) {
   bool bFound;
   char szFullPathName[ MAX_PATH ], szNewFileName[ MAX_PATH], szFileToAttach[ MAX_PATH ];
-  WUser u;
+  User u;
   filestatusrec fsr;
 
   bout.nl();
@@ -74,7 +77,7 @@ void attach_file(int mode) {
         ++cur;
       }
       if (cur < max && cur >= 0) {
-        pFileEmail->Seek(static_cast<long>(cur) * static_cast<long>(sizeof(mailrec)), File::seekBegin);
+        pFileEmail->Seek(cur * sizeof(mailrec), File::seekBegin);
         pFileEmail->Read(&m, sizeof(mailrec));
       }
     }
@@ -86,15 +89,13 @@ void attach_file(int mode) {
         done1 = false;
         bout.nl();
         if (m.tosys == 0) {
-          char buffer[ 255 ];
-          session()->users()->ReadUser(&u, m.touser);
           bout << "|#1  To|#7: |#2";
-          strcpy(buffer, u.GetUserNameAndNumber(m.touser));
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da)) &&
               (getslrec(session()->GetEffectiveSl()).ability & ability_read_email_anony) == 0) {
-            strcpy(buffer, ">UNKNOWN<");
+            bout << ">UNKNOWN<";
+          } else {
+            bout << session()->names()->UserName(m.touser);
           }
-          bout << buffer;
           bout.nl();
         } else {
           bout << "|#1To|#7: |#2User " << m.tosys << " System " << m.touser << wwiv::endl;
@@ -316,11 +317,10 @@ void attach_file(int mode) {
                         }
                         attachFile.Write(&fsr, sizeof(filestatusrec));
                         attachFile.Close();
-                        char szLogLine[ 255 ];
-                        sprintf(szLogLine, "Attached %s (%u bytes) in message to %s",
-                                fsr.filename, fsr.numbytes, u.GetUserNameAndNumber(m.touser));
+                        const string to_user_name = session()->names()->UserName(m.touser);
+                        sysoplog(StringPrintf("Attached %s (%u bytes) in message to %s",
+                                fsr.filename, fsr.numbytes, to_user_name.c_str()));
                         bout << "File attached.\r\n" ;
-                        sysoplog(szLogLine);
                       }
                     } else {
                       File::Remove(session()->GetAttachmentDirectory().c_str(), fsr.filename);

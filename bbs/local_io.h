@@ -21,7 +21,6 @@
 
 #include <string>
 
-#include "bbs/capture.h"
 #include "bbs/keycodes.h"
 #include "core/file.h"
 // This C++ class should encompass all Local Input/Output from The BBS.
@@ -37,13 +36,13 @@ class LocalIO {
   LocalIO(const LocalIO& copy) = delete;
   virtual ~LocalIO();
 
-  static const int cursorNone = 0;
-  static const int cursorNormal = 1;
-  static const int cursorSolid = 2;
+  static constexpr int cursorNone = 0;
+  static constexpr int cursorNormal = 1;
+  static constexpr int cursorSolid = 2;
 
-  static const int topdataNone = 0;
-  static const int topdataSystem = 1;
-  static const int topdataUser = 2;
+  static constexpr int topdataNone = 0;
+  static constexpr int topdataSystem = 1;
+  static constexpr int topdataUser = 2;
 
   void SetChatReason(const std::string& chat_reason) { m_chatReason = chat_reason; }
   void ClearChatReason() { m_chatReason.clear(); }
@@ -56,8 +55,7 @@ class LocalIO {
 
   void SetSysopAlert(bool b) { m_bSysopAlert = b; }
   const bool GetSysopAlert() const { return m_bSysopAlert; }
-  void set_capture(wwiv::bbs::Capture* capture) { capture_ = capture; }
-
+  
   virtual void LocalGotoXY(int x, int y) = 0;
   virtual int  WhereX() = 0;
   virtual int  WhereY() = 0;
@@ -93,9 +91,6 @@ class LocalIO {
   virtual int  GetDefaultScreenBottom() = 0;
   virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) = 0;
   virtual void UpdateNativeTitleBar() = 0;
-
-protected:
-  wwiv::bbs::Capture* capture_;
 
 private:
   virtual void LocalFastPuts(const std::string &text) = 0;

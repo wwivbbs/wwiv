@@ -15,55 +15,57 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETORKB_CONTACT_H__
-#define __INCLUDED_NETORKB_CONTACT_H__
+#include "wwivutil/dump_contact.h"
 
-#include <ctime>
-#include <initializer_list>
+#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
+#include "core/strings.h"
+#include "sdk/config.h"
+#include "sdk/contact.h"
+#include "sdk/config.h"
+#include "sdk/networks.h"
 
-#include "sdk/net.h"
+using std::clog;
+using std::cout;
+using std::endl;
+using std::map;
+using std::string;
+using wwiv::sdk::Contact;
+using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 namespace wwiv {
-namespace net {
+namespace wwivutil {
 
- /**
-  * Class for manipulating CONTACT.NET
-  */
-class Contact {
- public:
-  Contact(const std::string& network_dir, bool save_on_destructor);
-  // VisibleForTesting
-  Contact(std::initializer_list<net_contact_rec> l);
-  virtual ~Contact();
+static void dump_contact_usage() {
+  cout << "Usage:   dump_contact" << endl;
+  cout << "Example: dump_contact" << endl;
+}
 
-  // Was this list initialized properly.
-  bool IsInitialized() const { return initialized_; }
-  // returns a mutable net_contact_rec for system number "node"
-  net_contact_rec* contact_rec_for(int node);
+int DumpContactCommand::Execute() {
+  Networks networks(*config()->config());
+  if (!networks.IsInitialized()) {
+    clog << "Unable to load networks.";
+    return 1;
+  }
 
-  /** add a connection to node, including bytes send and received. */
-  void add_connect(int node, time_t time, uint32_t bytes_sent, uint32_t bytes_received);
-  /** add a failure attempt to node */
-  void add_failure(int node, time_t time);
+  map<const string, Contact> contacts;
+  for (const auto net : networks.networks()) {
+    string lower_case_network_name(net.name);
+    StringLowerCase(&lower_case_network_name);
+    contacts.emplace(lower_case_network_name, Contact(net.dir, false));
+  }
 
-  bool Save();
-  std::string ToString() const;
+  for (const auto& c : contacts) {
+    cout << "CONTACT.NET information: : " << c.first << endl;
+    cout << "===========================================================" << endl;
+    cout << c.second.ToString() << endl;
+  }
 
- private:
-   /** add a contact. caled by connect or failure. */
-   void add_contact(net_contact_rec* c, time_t time);
+  return 0;
+}
 
-   std::vector<net_contact_rec> contacts_;
-   bool save_on_destructor_;
-   bool initialized_;
-   std::string network_dir_;
-};
-
-
-}  // namespace net
-}  // namespace wwiv
-
-#endif  // __INCLUDED_NETORKB_CONTACT_H__
+}
+}

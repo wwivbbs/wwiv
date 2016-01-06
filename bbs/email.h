@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_BBS_MSGBASE_H__
 #define __INCLUDED_BBS_MSGBASE_H__
 
+#include <memory>
 #include <string>
 #include "bbs/inmsg.h"
 #include "core/file.h"

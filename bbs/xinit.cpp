@@ -29,6 +29,8 @@
 
 #include "bbs/arword.h"
 #include "bbs/bbs.h"
+#include "bbs/colors.h"
+#include "bbs/events.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/conf.h"
@@ -51,6 +53,7 @@
 
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
 
 // Additional INI file function and structure
 #include "bbs/xinitini.h"
@@ -72,6 +75,7 @@ using wwiv::bbs::TempDisablePause;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::strings;
+using namespace wwiv::sdk;
 
 uint32_t GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, uint32_t flags);
 
@@ -118,21 +122,6 @@ unsigned short WSession::str2restrict(const char *s) {
   return static_cast<int16_t>(r);
 }
 
-// begin callback addition
-
-unsigned char WSession::stryn2tf(const char *s) {
-  char ch = wwiv::UpperCase<char>(*s);
-
-  char yesChar = *(YesNoString(true));
-  if (ch == yesChar || ch == 1 || ch == '1' || ch == 'T') {
-    return 1;
-  }
-  return 0;
-}
-
-
-// end callback addition
-
 #define OFFOF(x) static_cast<int16_t>(reinterpret_cast<long>(&user()->data.x) - reinterpret_cast<long>(&user()->data))
 
 // Reads WWIV.INI info from [WWIV] subsection, overrides some config.dat
@@ -140,10 +129,8 @@ unsigned char WSession::stryn2tf(const char *s) {
 // tries to read settings from [WWIV-<instnum>] subsection - this overrides
 // those in [WWIV] subsection.
 
-
 static unsigned char nucol[] = {7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
 static unsigned char nucolbw[] = {7, 15, 15, 15, 112, 15, 15, 7, 7, 7};
-
 
 struct eventinfo_t {
   const char *name;
@@ -194,10 +181,6 @@ static void set_string(IniFile* ini, int key_idx, string* out) {
 
 #define INI_GET_ASV(s, f, func, d) \
 {const char* ss; if ((ss=ini->GetValue(get_key_str(INI_STR_SIMPLE_ASV,s)))!=nullptr) asv.f = func (ss); else asv.f = d;}
-#define INI_GET_CALLBACK(s, f, func, d) \
-{const char* ss; if ((ss=ini->GetValue(get_key_str(INI_STR_CALLBACK,s)))!=nullptr) \
-    cbv.f = func (ss); \
-    else cbv.f = d;}
 
 #define NEL(s) (sizeof(s) / sizeof((s)[0]))
 
@@ -210,7 +193,6 @@ static ini_flags_type sysinfo_flags[] = {
   {INI_STR_SHOW_HIER, false, OP_FLAGS_SHOW_HIER},
   {INI_STR_IDZ_DESC, false, OP_FLAGS_IDZ_DESC},
   {INI_STR_SETLDATE, false, OP_FLAGS_SETLDATE},
-  {INI_STR_SLASH_SZ, false, OP_FLAGS_SLASH_SZ},
   {INI_STR_READ_CD_IDZ, false, OP_FLAGS_READ_CD_IDZ},
   {INI_STR_FSED_EXT_DESC, false, OP_FLAGS_FSED_EXT_DESC},
   {INI_STR_FAST_TAG_RELIST, false, OP_FLAGS_FAST_TAG_RELIST},
@@ -227,9 +209,6 @@ static ini_flags_type sysinfo_flags[] = {
   {INI_STR_CHAIN_REG, false, OP_FLAGS_CHAIN_REG},
   {INI_STR_CAN_SAVE_SSM, false, OP_FLAGS_CAN_SAVE_SSM},
   {INI_STR_EXTRA_COLOR, false, OP_FLAGS_EXTRA_COLOR},
-  {INI_STR_THREAD_SUBS, false, OP_FLAGS_THREAD_SUBS},
-  {INI_STR_USE_CALLBACK, false, OP_FLAGS_CALLBACK},
-  {INI_STR_USE_VOICE_VAL, false, OP_FLAGS_VOICE_VAL},
   {INI_STR_USE_ADVANCED_ASV, false, OP_FLAGS_ADV_ASV},
   {INI_STR_USE_FORCE_SCAN, false, OP_FLAGS_USE_FORCESCAN},
   {INI_STR_NEWUSER_MIN, false, OP_FLAGS_NEWUSER_MIN},
@@ -237,7 +216,6 @@ static ini_flags_type sysinfo_flags[] = {
 };
 
 static ini_flags_type sysconfig_flags[] = {
-  {INI_STR_LOCAL_SYSOP, true, sysconfig_no_local},
   {INI_STR_2WAY_CHAT, false, sysconfig_2_way},
   {INI_STR_NO_NEWUSER_FEEDBACK, false, sysconfig_no_newuser_feedback},
   {INI_STR_TITLEBAR, false, sysconfig_titlebar},
@@ -318,7 +296,6 @@ IniFile* WSession::ReadINIFile() {
       }
     }
 
-    SetMessageThreadingEnabled(ini->GetBooleanValue("THREAD_SUBS"));
     SetCarbonCopyEnabled(ini->GetBooleanValue("ALLOW_CC_BCC"));
 
     // pull out sysop-side colors
@@ -382,21 +359,8 @@ IniFile* WSession::ReadINIFile() {
       advasv.cosysop = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "COSYSOP"), 1);
     }
 
-    // get callback values
-    if (HasConfigFlag(OP_FLAGS_CALLBACK)) {
-      INI_GET_CALLBACK("SL", sl, StringToUnsignedChar, syscfg.autoval[2].sl);
-      INI_GET_CALLBACK("DSL", dsl, StringToUnsignedChar, syscfg.autoval[2].dsl);
-      INI_GET_CALLBACK("EXEMPT", exempt, StringToUnsignedChar, 0);
-      INI_GET_CALLBACK("AR", ar, str_to_arword, syscfg.autoval[2].ar);
-      INI_GET_CALLBACK("DAR", dar, str_to_arword, syscfg.autoval[2].dar);
-      INI_GET_CALLBACK("RESTRICT", restrict, str2restrict, 0);
-      INI_GET_CALLBACK("FORCED", forced, stryn2tf, 0);
-      INI_GET_CALLBACK("LONG_DISTANCE", longdistance, stryn2tf, 0);
-      INI_GET_CALLBACK("REPEAT", repeat, StringToUnsignedChar, 0);
-    }
-
     // sysconfig flags
-    syscfg.sysconfig = static_cast<unsigned short>(GetFlagsFromIniFile(ini, sysconfig_flags,
+    syscfg.sysconfig = static_cast<uint16_t>(GetFlagsFromIniFile(ini, sysconfig_flags,
                        NEL(sysconfig_flags), syscfg.sysconfig));
 
     const char* ss;
@@ -424,13 +388,10 @@ IniFile* WSession::ReadINIFile() {
                                              screen_saver_time);
   }
 
-  max_extend_lines    = std::min<unsigned short>(max_extend_lines, 99);
-  max_batch           = std::min<unsigned short>(max_batch , 999);
-  max_chains          = std::min<unsigned short>(max_chains, 999);
-  max_gfilesec        = std::min<unsigned short>(max_gfilesec, 999);
-
-  set_wwivmail_enabled(ini->GetBooleanValue("USE_WWIVMAIL", true));
-  set_internal_qwk_enabled(ini->GetBooleanValue("USE_INTERNAL_QWK", true));
+  max_extend_lines    = std::min<uint16_t>(max_extend_lines, 99);
+  max_batch           = std::min<uint16_t>(max_batch , 999);
+  max_chains          = std::min<uint16_t>(max_chains, 999);
+  max_gfilesec        = std::min<uint16_t>(max_gfilesec, 999);
 
   return ini;
 }
@@ -476,15 +437,15 @@ static char* DuplicatePath(const char* path) {
 }
 
 bool WSession::ReadConfig() {
-  wwiv::sdk::Config full_config;
-  if (!full_config.IsInitialized()) {
+  config_.reset(new Config());
+  if (!config_->IsInitialized()) {
     std::clog << CONFIG_DAT << " NOT FOUND." << std::endl;
     return false;
   }
 
   // initialize the user manager
-  const configrec* config = full_config.config();
-  userManager.reset(new WUserManager(config->datadir, config->userreclen, config->maxusers));
+  const configrec* config = config_->config();
+  user_manager_.reset(new UserManager(config->datadir, config->userreclen, config->maxusers));
 
   std::unique_ptr<IniFile> ini(ReadINIFile());
   if (!ini->IsOpen()) {
@@ -506,71 +467,71 @@ bool WSession::ReadConfig() {
   int16_t fsoffset = OFFOF(forwardsys);
   int16_t fnoffset = OFFOF(net_num);
 
-  if (userreclen != full_config.config()->userreclen           ||
-      waitingoffset != full_config.config()->waitingoffset     ||
-      inactoffset != full_config.config()->inactoffset         ||
-      sysstatusoffset != full_config.config()->sysstatusoffset ||
-      fuoffset != full_config.config()->fuoffset               ||
-      fsoffset != full_config.config()->fsoffset               ||
-      fnoffset != full_config.config()->fnoffset) {
-    full_config.config()->userreclen      = userreclen;
-    full_config.config()->waitingoffset   = waitingoffset;
-    full_config.config()->inactoffset     = inactoffset;
-    full_config.config()->sysstatusoffset = sysstatusoffset;
-    full_config.config()->fuoffset        = fuoffset;
-    full_config.config()->fsoffset        = fsoffset;
-    full_config.config()->fnoffset        = fnoffset;
+  if (userreclen != config_->config()->userreclen           ||
+      waitingoffset != config_->config()->waitingoffset     ||
+      inactoffset != config_->config()->inactoffset         ||
+      sysstatusoffset != config_->config()->sysstatusoffset ||
+      fuoffset != config_->config()->fuoffset               ||
+      fsoffset != config_->config()->fsoffset               ||
+      fnoffset != config_->config()->fnoffset) {
+    config_->config()->userreclen      = userreclen;
+    config_->config()->waitingoffset   = waitingoffset;
+    config_->config()->inactoffset     = inactoffset;
+    config_->config()->sysstatusoffset = sysstatusoffset;
+    config_->config()->fuoffset        = fuoffset;
+    config_->config()->fsoffset        = fsoffset;
+    config_->config()->fnoffset        = fnoffset;
   }
 
-  syscfg.newuserpw        = strdup(full_config.config()->newuserpw);
-  syscfg.systempw         = strdup(full_config.config()->systempw);
+  syscfg.newuserpw        = strdup(config_->config()->newuserpw);
+  syscfg.systempw         = strdup(config_->config()->systempw);
 
-  syscfg.msgsdir          = DuplicatePath(full_config.config()->msgsdir);
-  syscfg.gfilesdir        = DuplicatePath(full_config.config()->gfilesdir);
-  syscfg.datadir          = DuplicatePath(full_config.config()->datadir);
-  syscfg.dloadsdir        = DuplicatePath(full_config.config()->dloadsdir);
-  syscfg.menudir          = DuplicatePath(full_config.config()->menudir);
+  syscfg.msgsdir          = DuplicatePath(config_->config()->msgsdir);
+  syscfg.gfilesdir        = DuplicatePath(config_->config()->gfilesdir);
+  syscfg.datadir          = DuplicatePath(config_->config()->datadir);
+  syscfg.dloadsdir        = DuplicatePath(config_->config()->dloadsdir);
+  syscfg.menudir          = DuplicatePath(config_->config()->menudir);
 
-  syscfg.systemname       = strdup(full_config.config()->systemname);
-  syscfg.systemphone      = strdup(full_config.config()->systemphone);
-  syscfg.sysopname        = strdup(full_config.config()->sysopname);
+  syscfg.systemname       = strdup(config_->config()->systemname);
+  syscfg.systemphone      = strdup(config_->config()->systemphone);
+  syscfg.sysopname        = strdup(config_->config()->sysopname);
 
-  syscfg.newusersl        = full_config.config()->newusersl;
-  syscfg.newuserdsl       = full_config.config()->newuserdsl;
-  syscfg.maxwaiting       = full_config.config()->maxwaiting;
-  syscfg.newuploads       = full_config.config()->newuploads;
-  syscfg.closedsystem     = full_config.config()->closedsystem;
+  syscfg.newusersl        = config_->config()->newusersl;
+  syscfg.newuserdsl       = config_->config()->newuserdsl;
+  syscfg.maxwaiting       = config_->config()->maxwaiting;
+  syscfg.newuploads       = config_->config()->newuploads;
+  syscfg.closedsystem     = config_->config()->closedsystem;
 
-  syscfg.systemnumber     = full_config.config()->systemnumber;
-  syscfg.maxusers         = full_config.config()->maxusers;
-  syscfg.newuser_restrict = full_config.config()->newuser_restrict;
-  syscfg.sysconfig        = full_config.config()->sysconfig;
-  syscfg.sysoplowtime     = full_config.config()->sysoplowtime;
-  syscfg.sysophightime    = full_config.config()->sysophightime;
-  syscfg.executetime      = full_config.config()->executetime;
-  syscfg.unused_netlowtime = full_config.config()->unused_netlowtime;
-  syscfg.unused_nethightime = full_config.config()->unused_nethightime;
-  syscfg.max_subs         = full_config.config()->max_subs;
-  syscfg.max_dirs         = full_config.config()->max_dirs;
-  syscfg.qscn_len         = full_config.config()->qscn_len;
-  syscfg.userreclen       = full_config.config()->userreclen;
+  syscfg.systemnumber     = config_->config()->systemnumber;
+  syscfg.maxusers         = config_->config()->maxusers;
+  syscfg.newuser_restrict = config_->config()->newuser_restrict;
+  syscfg.sysconfig        = config_->config()->sysconfig;
+  syscfg.sysoplowtime     = config_->config()->sysoplowtime;
+  syscfg.sysophightime    = config_->config()->sysophightime;
+  syscfg.executetime      = config_->config()->executetime;
+  syscfg.unused_netlowtime = config_->config()->unused_netlowtime;
+  syscfg.unused_nethightime = config_->config()->unused_nethightime;
+  syscfg.max_subs         = config_->config()->max_subs;
+  syscfg.max_dirs         = config_->config()->max_dirs;
+  syscfg.qscn_len         = config_->config()->qscn_len;
+  syscfg.userreclen       = config_->config()->userreclen;
 
-  syscfg.post_call_ratio  = full_config.config()->post_call_ratio;
-  syscfg.req_ratio        = full_config.config()->req_ratio;
-  syscfg.newusergold      = full_config.config()->newusergold;
+  syscfg.post_call_ratio  = config_->config()->post_call_ratio;
+  syscfg.req_ratio        = config_->config()->req_ratio;
+  syscfg.newusergold      = config_->config()->newusergold;
 
-  syscfg.autoval[0]       = full_config.config()->autoval[0];
-  syscfg.autoval[1]       = full_config.config()->autoval[1];
-  syscfg.autoval[2]       = full_config.config()->autoval[2];
-  syscfg.autoval[3]       = full_config.config()->autoval[3];
-  syscfg.autoval[4]       = full_config.config()->autoval[4];
-  syscfg.autoval[5]       = full_config.config()->autoval[5];
-  syscfg.autoval[6]       = full_config.config()->autoval[6];
-  syscfg.autoval[7]       = full_config.config()->autoval[7];
-  syscfg.autoval[8]       = full_config.config()->autoval[8];
-  syscfg.autoval[9]       = full_config.config()->autoval[9];
+  syscfg.autoval[0]       = config_->config()->autoval[0];
+  syscfg.autoval[1]       = config_->config()->autoval[1];
+  syscfg.autoval[2]       = config_->config()->autoval[2];
+  syscfg.autoval[3]       = config_->config()->autoval[3];
+  syscfg.autoval[4]       = config_->config()->autoval[4];
+  syscfg.autoval[5]       = config_->config()->autoval[5];
+  syscfg.autoval[6]       = config_->config()->autoval[6];
+  syscfg.autoval[7]       = config_->config()->autoval[7];
+  syscfg.autoval[8]       = config_->config()->autoval[8];
+  syscfg.autoval[9]       = config_->config()->autoval[9];
 
-  syscfg.wwiv_reg_number  = full_config.config()->wwiv_reg_number;
+  syscfg.wwiv_reg_number  = config_->config()->wwiv_reg_number;
 
   make_abs_path(syscfg.gfilesdir);
   make_abs_path(syscfg.datadir);
@@ -627,19 +588,10 @@ void WSession::read_nextern() {
 }
 
 void WSession::read_arcs() {
-  if (arcs) {
-    free(arcs);
-    arcs = nullptr;
-  }
-
-  File archiverFile(syscfg.datadir, ARCHIVER_DAT);
-  if (archiverFile.Open(File::modeBinary | File::modeReadOnly)) {
-    unsigned long lFileSize = archiverFile.GetLength();
-    if (lFileSize > MAX_ARCS * sizeof(arcrec)) {
-      lFileSize = MAX_ARCS * sizeof(arcrec);
-    }
-    arcs = static_cast<arcrec *>(BbsAllocA(lFileSize));
-    archiverFile.Read(arcs, lFileSize);
+  arcs.clear();
+  DataFile<arcrec> file(syscfg.datadir, ARCHIVER_DAT);
+  if (file) {
+    file.ReadVector(arcs, MAX_ARCS);
   }
 }
 
@@ -661,7 +613,6 @@ void WSession::read_nintern() {
 }
 
 bool WSession::read_subs() {
-  SetMaxNumberMessageAreas(syscfg.max_subs);
   subboards.clear();
 
   DataFile<subboardrec> file(syscfg.datadir, SUBS_DAT);
@@ -669,10 +620,14 @@ bool WSession::read_subs() {
     std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
     return false;
   }
-  if (!file.ReadVector(subboards, GetMaxNumberMessageAreas())) {
+  if (!file.ReadVector(subboards, syscfg.max_subs)) {
     return false;
   }
-  return read_subs_xtr(net_networks, subboards, xsubs);
+
+  // If we already read subs.dat that's sufficient to return true.
+  // since subs.xtr is created as-needed once as sub is created.
+  read_subs_xtr(net_networks, subboards, xsubs);
+  return true;
 }
 
 void WSession::read_networks() {
@@ -739,13 +694,8 @@ void WSession::read_networks() {
 }
 
 bool WSession::read_names() {
-  int max_users = std::max<int>(statusMgr->GetUserCount(), syscfg.maxusers);
-  DataFile<smalrec> file(syscfg.datadir, NAMES_LST);
-  if (!file) {
-    std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
-    return false;
-  }
-  file.ReadVector(smallist, max_users);
+  // Load the SDK Names class too.
+  names_.reset(new Names(*config_.get()));
   return true;
 }
 
@@ -769,21 +719,13 @@ void WSession::read_voting() {
 }
 
 bool WSession::read_dirs() {
-  if (directories) {
-    free(directories);
-  }
-  directories = nullptr;
-  SetMaxNumberFileAreas(syscfg.max_dirs);
-  directories = static_cast<directoryrec *>(BbsAllocA(static_cast<long>(GetMaxNumberFileAreas()) *
-                static_cast<long>(sizeof(directoryrec))));
-
-  File file(syscfg.datadir, DIRS_DAT);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    std::clog << file.GetName() << " NOT FOUND." << std::endl;
+  directories.clear();
+  DataFile<directoryrec> file(syscfg.datadir, DIRS_DAT);
+  if (!file) {
+    std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
     return false;
   }
-  num_dirs = file.Read(directories,
-                                     (sizeof(directoryrec) * GetMaxNumberFileAreas())) / sizeof(directoryrec);
+  file.ReadVector(directories, syscfg.max_dirs);
   return true;
 }
 
@@ -877,7 +819,6 @@ void WSession::InitializeBBS() {
   chat_file = false;
   localIO()->SetSysopAlert(false);
   nsp = 0;
-  capture()->set_global_handle(false, true);
   bquote = 0;
   equote = 0;
   SetQuoting(false);
@@ -963,7 +904,6 @@ void WSession::InitializeBBS() {
   }
 
   XINIT_PRINTF("Reading File Areas.");
-  directories = nullptr;
   if (!read_dirs()) {
     AbortBBS();
   }
@@ -994,10 +934,10 @@ void WSession::InitializeBBS() {
   batch = static_cast<batchrec *>(BbsAllocA(max_batch * sizeof(batchrec)));
 
   XINIT_PRINTF("Reading User Information.");
-  ReadCurrentUser(1, false);
+  ReadCurrentUser(1);
   fwaiting = (user()->IsUserDeleted()) ? 0 : user()->GetNumMailWaiting();
   statusMgr->RefreshStatusCache();
-  topdata = (syscfg.sysconfig & sysconfig_no_local) ? LocalIO::topdataNone : LocalIO::topdataUser;
+  topdata = LocalIO::topdataUser;
 
   snprintf(g_szDSZLogFileName, sizeof(g_szDSZLogFileName), "%sdsz.log", syscfgovr.tempdir);
 #if !defined ( __unix__ ) && !defined ( __APPLE__ )
@@ -1031,14 +971,14 @@ void WSession::InitializeBBS() {
 
   XINIT_PRINTF("Allocating Memory for Message/File Areas.");
   do_event = 0;
-  usub = static_cast<usersubrec *>(BbsAllocA(GetMaxNumberMessageAreas() * sizeof(usersubrec)));
-  udir = static_cast<usersubrec *>(BbsAllocA(GetMaxNumberFileAreas() * sizeof(usersubrec)));
+  usub = static_cast<usersubrec *>(BbsAllocA(syscfg.max_subs * sizeof(usersubrec)));
+  udir = static_cast<usersubrec *>(BbsAllocA(syscfg.max_dirs * sizeof(usersubrec)));
   uconfsub = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
   uconfdir = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
   qsc = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len));
   qsc_n = qsc + 1;
-  qsc_q = qsc_n + (GetMaxNumberFileAreas() + 31) / 32;
-  qsc_p = qsc_q + (GetMaxNumberMessageAreas() + 31) / 32;
+  qsc_q = qsc_n + (syscfg.max_dirs + 31) / 32;
+  qsc_p = qsc_q + (syscfg.max_subs + 31) / 32;
 
   network_extension_ = ".net";
   const string wwiv_instance(environment_variable("WWIV_INSTANCE"));
@@ -1110,7 +1050,7 @@ void WSession::create_phone_file() {
   }
 
   for (int16_t nTempUserNumber = 1; nTempUserNumber <= numOfRecords; nTempUserNumber++) {
-    WUser user;
+    User user;
     users()->ReadUser(&user, nTempUserNumber);
     if (!user.IsUserDeleted()) {
       p.usernum = nTempUserNumber;

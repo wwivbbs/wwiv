@@ -7,8 +7,6 @@ include_directories(..)
 set(test_sources
   binkp_test.cpp
   binkp_config_test.cpp
-  callout_test.cpp
-  contact_test.cpp
   fake_connection.cpp
   transfer_file_test.cpp
   net_log_test.cpp

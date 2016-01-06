@@ -19,6 +19,7 @@
 #include "bbs/instmsg.h"
 
 #include <cstdarg>
+#include <string>
 
 #include "bbs/datetime.h"
 #include "bbs/input.h"
@@ -32,6 +33,11 @@
 #include "bbs/printfile.h"
 #include "sdk/filenames.h"
 
+using std::string;
+
+static bool chat_avail;
+static bool chat_invis;
+
 // Local functions
 void send_inst_msg(inst_msg_header * ih, const char *msg);
 int  handle_inst_msg(inst_msg_header * ih, const char *msg);
@@ -43,6 +49,7 @@ using wwiv::bbs::TempDisablePause;
 
 static int32_t last_iia = 0;
 
+bool is_chat_invis() { return chat_invis; }
 void send_inst_msg(inst_msg_header *ih, const char *msg) {
   char szFileName[MAX_PATH];
 
@@ -76,12 +83,12 @@ void send_inst_str1(int m, int whichinst, const char *send_string) {
   char szTempSendString[ 1024 ];
 
   sprintf(szTempSendString, "%s\r\n", send_string);
-  ih.main = static_cast<unsigned short>(m);
+  ih.main = static_cast<uint16_t>(m);
   ih.minor = 0;
-  ih.from_inst = static_cast<unsigned short>(session()->instance_number());
-  ih.from_user = static_cast<unsigned short>(session()->usernum);
+  ih.from_inst = static_cast<uint16_t>(session()->instance_number());
+  ih.from_user = static_cast<uint16_t>(session()->usernum);
   ih.msg_size = strlen(szTempSendString) + 1;
-  ih.dest_inst = static_cast<unsigned short>(whichinst);
+  ih.dest_inst = static_cast<uint16_t>(whichinst);
   ih.daten = static_cast<uint32_t>(time(nullptr));
 
   send_inst_msg(&ih, szTempSendString);
@@ -100,10 +107,10 @@ void send_inst_shutdown(int whichinst) {
 
   ih.main = INST_MSG_SHUTDOWN;
   ih.minor = 0;
-  ih.from_inst = static_cast<unsigned short>(session()->instance_number());
-  ih.from_user = static_cast<unsigned short>(session()->usernum);
+  ih.from_inst = static_cast<uint16_t>(session()->instance_number());
+  ih.from_user = static_cast<uint16_t>(session()->usernum);
   ih.msg_size = 0;
-  ih.dest_inst = static_cast<unsigned short>(whichinst);
+  ih.dest_inst = static_cast<uint16_t>(whichinst);
   ih.daten = static_cast<uint32_t>(time(nullptr));
 
   send_inst_msg(&ih, nullptr);
@@ -121,7 +128,7 @@ void send_inst_cleannet() {
   if (ir.loc == INST_LOC_WFC) {
     ih.main = INST_MSG_CLEANNET;
     ih.minor = 0;
-    ih.from_inst = static_cast<unsigned short>(session()->instance_number());
+    ih.from_inst = static_cast<uint16_t>(session()->instance_number());
     ih.from_user = 1;
     ih.msg_size = 0;
     ih.dest_inst = 1;
@@ -190,9 +197,9 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
         return (ih->main);
       }
       if (ih->main == INST_MSG_STRING) {
-        WUser user;
-        session()->users()->ReadUser(&user, ih->from_user);
-        bout.bprintf("|#1%.12s (%d)|#0> |#2", user.GetUserNameAndNumber(ih->from_user), ih->from_inst);
+        const string from_user_name = session()->names()->UserName(ih->from_user);
+        bout.bprintf("|#1%.12s (%d)|#0> |#2", 
+          from_user_name.c_str(), ih->from_inst);
       } else {
         bout << "|#6[SYSTEM ANNOUNCEMENT] |#7> |#2";
       }
@@ -217,7 +224,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
 
 
 void process_inst_msgs() {
-  if (x_only || !inst_msg_waiting()) {
+  if (!inst_msg_waiting()) {
     return;
   }
   last_iia = timer1();
@@ -547,7 +554,7 @@ void write_inst(int loc, int subloc, int flags) {
   }
   if (ti.number != session()->instance_number()) {
     re_write = true;
-    ti.number = static_cast<short>(session()->instance_number());
+    ti.number = static_cast<int16_t>(session()->instance_number());
   }
   if (loc == INST_LOC_DOWN) {
     re_write = true;
@@ -556,19 +563,19 @@ void write_inst(int loc, int subloc, int flags) {
       if (ti.user != session()->usernum) {
         re_write = true;
         if ((session()->usernum > 0) && (session()->usernum <= syscfg.maxusers)) {
-          ti.user = static_cast<short>(session()->usernum);
+          ti.user = static_cast<int16_t>(session()->usernum);
         }
       }
     }
   }
 
-  if (ti.subloc != static_cast<unsigned short>(subloc)) {
+  if (ti.subloc != static_cast<uint16_t>(subloc)) {
     re_write = true;
-    ti.subloc = static_cast<unsigned short>(subloc);
+    ti.subloc = static_cast<uint16_t>(subloc);
   }
-  if (ti.loc != static_cast<unsigned short>(loc)) {
+  if (ti.loc != static_cast<uint16_t>(loc)) {
     re_write = true;
-    ti.loc = static_cast<unsigned short>(loc);
+    ti.loc = static_cast<uint16_t>(loc);
   }
   if ((((ti.flags & INST_FLAGS_INVIS) && (!chat_invis)) ||
        ((!(ti.flags & INST_FLAGS_INVIS)) && (chat_invis))) ||
@@ -622,5 +629,37 @@ int setiia(int poll_ticks) {
   int oiia = iia;
   iia = poll_ticks;
   return oiia;
+}
+
+// Toggles user availability, called when ctrl-N is hit
+
+void toggle_avail() {
+  instancerec ir;
+  char xl[81], cl[81], atr[81], cc;
+
+  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+  get_inst_info(session()->instance_number(), &ir);
+  chat_avail = !chat_avail;
+
+  bout << "\n\rYou are now ";
+  bout << (chat_avail ? "available for chat.\n\r\n" : "not available for chat.\n\r\n");
+  write_inst(ir.loc, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+  RestoreCurrentLine(cl, atr, xl, &cc);
+}
+
+// Toggles invisibility, called when ctrl-L is hit by a sysop
+
+void toggle_invis() {
+  instancerec ir;
+  char xl[81], cl[81], atr[81], cc;
+
+  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+  get_inst_info(session()->instance_number(), &ir);
+  chat_invis = !chat_invis;
+
+  bout << "\r\n|#1You are now ";
+  bout << (chat_invis ? "invisible.\n\r\n" : "visible.\n\r\n");
+  write_inst(ir.loc, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+  RestoreCurrentLine(cl, atr, xl, &cc);
 }
 

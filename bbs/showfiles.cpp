@@ -23,6 +23,7 @@
 #include "bbs/bbs.h"
 #include "bbs/wsession.h"
 #include "bbs/local_io.h"
+#include "bbs/utility.h"
 #include "core/wwivport.h"
 #include "core/wfndfile.h"
 #include "core/strings.h"
@@ -30,7 +31,6 @@
 using namespace wwiv::strings;
 
 // prototype from utility.cpp
-bool okansi();
 char *stripfn(const char *file_name);
 
 // from xfer.cpp

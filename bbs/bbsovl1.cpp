@@ -21,21 +21,32 @@
 #include <sstream>
 #include <string>
 
+#include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/bbs.h"
-#include "bbs/fcns.h"
-#include "bbs/vars.h"
+#include "bbs/bbsutl.h"
+#include "bbs/bbsutl1.h"
+#include "bbs/email.h"
+//#include "bbs/fcns.h"
 #include "bbs/external_edit.h"
 #include "bbs/instmsg.h"
+#include "bbs/pause.h"
+#include "bbs/quote.h"
+#include "bbs/sr.h"
+#include "bbs/sysoplog.h"
+#include "bbs/utility.h"
+#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
 #include "bbs/wstatus.h"
+#include "bbs/xfer.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 
 using std::string;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -66,8 +77,8 @@ void YourInfo() {
     bout << "|#5Your User Information:\r\n";
   }
   bout.nl();
-  bout << "|#9Your name      : |#2" << session()->user()->GetUserNameAndNumber(
-                       session()->usernum) << wwiv::endl;
+  bout << "|#9Your name      : |#2" 
+       << session()->names()->UserName(session()->usernum) << wwiv::endl;
   bout << "|#9Phone number   : |#2" << session()->user()->GetVoicePhoneNumber() << wwiv::endl;
   if (session()->user()->GetNumMailWaiting() > 0) {
     bout << "|#9Mail Waiting   : |#2" << session()->user()->GetNumMailWaiting() << wwiv::endl;
@@ -225,7 +236,7 @@ void feedback(bool bNewUserFeedback) {
   int i1 = 0;
 
   for (i = 2; i < 10 && i < nNumUserRecords; i++) {
-    WUser user;
+    User user;
     session()->users()->ReadUser(&user, i);
     if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
         !user.IsUserDeleted()) {
@@ -240,11 +251,11 @@ void feedback(bool bNewUserFeedback) {
     i1 = 0;
     bout.nl();
     for (i = 1; (i < 10 && i < nNumUserRecords); i++) {
-      WUser user;
+      User user;
       session()->users()->ReadUser(&user, i);
       if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
           !user.IsUserDeleted()) {
-        bout << "|#2" << i << "|#7)|#1 " << user.GetUserNameAndNumber(i) << wwiv::endl;
+        bout << "|#2" << i << "|#7)|#1 " << session()->names()->UserName(i) << wwiv::endl;
         onek_str[i1++] = static_cast<char>('0' + i);
       }
     }

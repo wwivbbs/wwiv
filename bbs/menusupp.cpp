@@ -31,14 +31,18 @@
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
+#include "bbs/defaults.h"
 #include "bbs/dropfile.h"
+#include "bbs/events.h"
 #include "bbs/external_edit.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/keycodes.h"
+#include "bbs/listplus.h"
 #include "bbs/menu.h"
 #include "bbs/menusupp.h"
 #include "bbs/message_file.h"
+#include "bbs/msgbase1.h"
 #include "bbs/multinst.h"
 #include "bbs/netsup.h"
 #include "bbs/newuser.h"
@@ -56,11 +60,13 @@
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
 
 using std::string;
 using wwiv::bbs::InputMode;
 using wwiv::bbs::TempDisablePause;
 using namespace wwiv::menus;
+using namespace wwiv::sdk;
 
 void UnQScan() {
   bout.nl();
@@ -71,7 +77,7 @@ void UnQScan() {
   case RETURN:
     break;
   case 'A': {
-    for (int i = 0; i < session()->GetMaxNumberMessageAreas(); i++) {
+    for (int i = 0; i < syscfg.max_subs; i++) {
       qsc_p[i] = 0;
     }
     bout << "\r\nQ-Scan pointers reset.\r\n\n";
@@ -381,7 +387,7 @@ void Vote() {
 }
 
 void ToggleExpert() {
-  session()->user()->ToggleStatusFlag(WUser::expert);
+  session()->user()->ToggleStatusFlag(User::expert);
 }
 
 void ExpressScan() {
@@ -526,8 +532,8 @@ void ResetQscan() {
     write_inst(INST_LOC_RESETQSCAN, 0, INST_FLAGS_NONE);
     for (int i = 0; i <= session()->users()->GetNumberOfUserRecords(); i++) {
       read_qscn(i, qsc, true);
-      memset(qsc_p, 0, syscfg.qscn_len - 4 * (1 + ((session()->GetMaxNumberFileAreas() + 31) / 32) + ((
-          session()->GetMaxNumberMessageAreas() + 31) / 32)));
+      memset(qsc_p, 0, syscfg.qscn_len - 4 * (1 + ((syscfg.max_dirs + 31) / 32) + ((
+          syscfg.max_subs + 31) / 32)));
       write_qscn(i, qsc, true);
     }
     read_qscn(1, qsc, false);
@@ -684,42 +690,6 @@ void ChatRoom() {
   chat_room();
 }
 
-void DownloadPosts() {
-  if (session()->HasConfigFlag(OP_FLAGS_SLASH_SZ)) {
-    bout << "|#5This could take quite a while.  Are you sure? ";
-    if (yesno()) {
-      bout << "Please wait...\r\n";
-      session()->capture()->set_x_only(true, "posts.txt", false);
-      bool ac = false;
-      if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
-        ac = true;
-        tmp_disable_conf(true);
-      }
-      nscan();
-      if (ac) {
-        tmp_disable_conf(false);
-      }
-      session()->capture()->set_x_only(false, nullptr, false);
-      add_arc("offline", "posts.txt", 0);
-      download_temp_arc("offline", false);
-    }
-  }
-}
-
-void DownloadFileList() {
-  if (session()->HasConfigFlag(OP_FLAGS_SLASH_SZ)) {
-    bout << "|#5This could take quite a while.  Are you sure? ";
-    if (yesno()) {
-      bout << "Please wait...\r\n";
-      session()->capture()->set_x_only(1, "files.txt", true);
-      searchall();
-      session()->capture()->set_x_only(false, nullptr, false);
-      add_arc("temp", "files.txt", 0);
-      download_temp_arc("temp", false);
-    }
-  }
-}
-
 void ClearQScan() {
   bout.nl();
   bout << "|#5Mark messages as read on [C]urrent sub or [A]ll subs (A/C/Q)? ";
@@ -730,7 +700,7 @@ void ClearQScan() {
     break;
   case 'A': {
     std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
-    for (int i = 0; i < session()->GetMaxNumberMessageAreas(); i++) {
+    for (int i = 0; i < syscfg.max_subs; i++) {
       qsc_p[i] = pStatus->GetQScanPointer() - 1L;
     }
     bout.nl();
@@ -801,8 +771,8 @@ void RemoveNotThere() {
 void UploadAllDirs() {
   bout.nl(2);
   bool ok = true;
-  for (int nDirNum = 0; nDirNum < session()->num_dirs && udir[nDirNum].subnum >= 0 && ok && !hangup; nDirNum++) {
-    bout << "|#9Now uploading files for: |#2" << directories[udir[nDirNum].subnum].name << wwiv::endl;
+  for (int nDirNum = 0; nDirNum < session()->directories.size() && udir[nDirNum].subnum >= 0 && ok && !hangup; nDirNum++) {
+    bout << "|#9Now uploading files for: |#2" << session()->directories[udir[nDirNum].subnum].name << wwiv::endl;
     ok = uploadall(nDirNum);
   }
 }
@@ -900,7 +870,7 @@ void UpDirConf() {
 }
 
 void UpDir() {
-  if (session()->GetCurrentFileArea() < session()->num_dirs - 1
+  if (session()->GetCurrentFileArea() < session()->directories.size() - 1
       && udir[session()->GetCurrentFileArea() + 1].subnum >= 0) {
     session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
   } else {
@@ -927,7 +897,7 @@ void DownDir() {
     session()->SetCurrentFileArea(session()->GetCurrentFileArea() - 1);
   } else {
     while (udir[session()->GetCurrentFileArea() + 1].subnum >= 0 &&
-           session()->GetCurrentFileArea() < session()->num_dirs - 1) {
+           session()->GetCurrentFileArea() < session()->directories.size() - 1) {
       session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
     }
   }
@@ -982,7 +952,7 @@ void JumpDirConf() {
 }
 
 void ConfigFileList() {
-  if (ok_listplus()) {
+  if (okansi()) {
     config_file_list();
   }
 }
@@ -1041,7 +1011,7 @@ void Upload() {
   printfile(UPLOAD_NOEXT);
   if (session()->user()->IsRestrictionValidate() || session()->user()->IsRestrictionUpload() ||
       (syscfg.sysconfig & sysconfig_all_sysop)) {
-    if (syscfg.newuploads < session()->num_dirs) {
+    if (syscfg.newuploads < session()->directories.size()) {
       upload(static_cast<int>(syscfg.newuploads));
     } else {
       upload(0);
@@ -1095,7 +1065,7 @@ void SetSubNumber(const char *pszSubKeys) {
 }
 
 void SetDirNumber(const char *pszDirectoryKeys) {
-  for (int i = 0; i < session()->num_dirs; i++) {
+  for (int i = 0; i < session()->directories.size(); i++) {
     if (wwiv::strings::IsEquals(udir[i].keys, pszDirectoryKeys)) {
       session()->SetCurrentFileArea(i);
     }

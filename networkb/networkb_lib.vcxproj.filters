@@ -38,13 +38,7 @@
     <ClCompile Include="ppp_config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="callout.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="net_log.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="contact.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

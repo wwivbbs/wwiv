@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2015, WWIV Software Services             */
+/*                          WWIV Version 5.x                              */
+/*             Copyright (C)2014-2015 WWIV Software Services              */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,16 +15,36 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETUTIL_DUMP_CONNECT_H__
-#define __INCLUDED_NETUTIL_DUMP_CONNECT_H__
+#ifndef __INCLUDED_SDK_CALLOUT_H__
+#define __INCLUDED_SDK_CALLOUT_H__
 
+#include <initializer_list>
 #include <map>
-#include "core/command_line.h"
-#include "networkb/contact.h"
+#include <string>
 
-void dump_contact_usage();
-int dump_contact(
-  std::map<const std::string, wwiv::net::Contact> callouts,
-  const wwiv::core::CommandLineCommand* command);
+#include "sdk/net.h"
 
-#endif  // __INCLUDED_NETUTIL_DUMP_CONNECT_H__
+namespace wwiv {
+namespace sdk {
+
+  
+class Callout {
+ public:
+  explicit Callout(const std::string& network_dir);
+  // VisibleForTesting
+  Callout(std::initializer_list<net_call_out_rec> l);
+  virtual ~Callout();
+  const net_call_out_rec* node_config_for(int node) const;
+  Callout& operator=(const Callout& rhs) { node_config_ = rhs.node_config_; return *this; }
+  std::string ToString() const;
+
+ private:
+  std::map<uint16_t, net_call_out_rec> node_config_;
+};
+
+bool ParseCalloutNetLine(const std::string& line, net_call_out_rec* config);
+
+}  // namespace net
+}  // namespace wwiv
+
+#endif  // __INCLUDED_SDK_CALLOUT_H__

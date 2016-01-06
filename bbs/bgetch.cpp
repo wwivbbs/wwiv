@@ -23,10 +23,13 @@
 #include "bbs/chat.h"
 #include "bbs/com.h"
 #include "bbs/datetime.h"
+#include "bbs/instmsg.h"
 #include "bbs/keycodes.h"
 #include "bbs/multinst.h"
 #include "bbs/utility.h"
 #include "bbs/vars.h"
+
+using namespace wwiv::sdk;
 
 // Local data structures
 
@@ -89,9 +92,6 @@ char bgetch() {
       return RETURN;
     }
     return quotes_ind[cpointer++];
-  }
-  if (x_only) {
-    return 0;
   }
 
   if (charbufferpointer) {
@@ -177,7 +177,7 @@ void HandleControlKey(char *ch) {
       toggle_avail();
       break;
     case CY:
-      session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
+      session()->user()->ToggleStatusFlag(User::pauseOnPage);
       break;
     }
   }
@@ -245,10 +245,6 @@ bool bkbhitraw() {
 }
 
 bool bkbhit() {
-  if (x_only) {
-    return false;
-  }
-
   if ((session()->localIO()->LocalKeyPressed() || (incom && bkbhitraw()) ||
        (charbufferpointer && charbuffer[charbufferpointer])) ||
       bquote) {

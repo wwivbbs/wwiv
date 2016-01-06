@@ -36,7 +36,7 @@
 
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
-#include "networkb/callout.h"
+#include "sdk/callout.h"
 #include "networkb/connection.h"
 #include "networkb/socket_connection.h"
 #include "networkb/socket_exceptions.h"
@@ -61,14 +61,14 @@ using namespace wwiv::strings;
 using namespace wwiv::os;
 
 static void RegisterHelpCommands(CommandLine& cmdline) {
-  cmdline.add(BooleanCommandLineArgument("help", '?', "Displys Help", false));
-  cmdline.add({"bbsdir", "(optional) BBS directory if other than current directory", File::current_directory()});
-  cmdline.add({"network", "Network name to use (i.e. wwivnet)"});
-  cmdline.add(BooleanCommandLineArgument("send", "Send network traffic to --node"));
-  cmdline.add(BooleanCommandLineArgument("receive", "Receive from any node"));
-  cmdline.add({"node", "Node number (only used when sending)", "0"});
-  cmdline.add({"port", "Port number to use (receiving only)", "24554"});
-  cmdline.add(BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
+  cmdline.add_argument(BooleanCommandLineArgument("help", '?', "Displys Help", false));
+  cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", File::current_directory()});
+  cmdline.add_argument({"network", "Network name to use (i.e. wwivnet)"});
+  cmdline.add_argument(BooleanCommandLineArgument("send", "Send network traffic to --node"));
+  cmdline.add_argument(BooleanCommandLineArgument("receive", "Receive from any node"));
+  cmdline.add_argument({"node", "Node number (only used when sending)", "0"});
+  cmdline.add_argument({"port", "Port number to use (receiving only)", "24554"});
+  cmdline.add_argument(BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
 }
   
 static void ShowHelp(CommandLine& cmdline) {
@@ -87,6 +87,7 @@ int main(int argc, char** argv) {
       return 1;
     }
     if (cmdline.arg("help").as_bool()) {
+      std::clog << "Help Requested." << endl;
       ShowHelp(cmdline);
       return 0;
     }

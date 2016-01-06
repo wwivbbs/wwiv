@@ -28,9 +28,10 @@
 #include "sdk/filenames.h"
 
 using std::string;
-using wwiv::bbs::InputMode;
+using namespace wwiv::bbs;
 using namespace wwiv::core;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 void modify_chain(int nCurrentChainum);
 void insert_chain(int nCurrentChainum);
@@ -128,7 +129,7 @@ void modify_chain(int nCurrentChainum) {
     bout << "|#9K) Multi user   : |#2" << YesNoString((c.ansir & ansir_multi_user) ? true : false) <<
                        wwiv::endl;
     if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-      WUser regUser;
+      User regUser;
       if (r.regby[0]) {
         session()->users()->ReadUser(&regUser, r.regby[0]);
       }
@@ -278,7 +279,7 @@ void modify_chain(int nCurrentChainum) {
           } else {
             int user_number = finduser1(s1);
             if (user_number > 0) {
-              WUser regUser;
+              User regUser;
               session()->users()->ReadUser(&regUser, user_number);
               r.regby[i] = static_cast<int16_t>(user_number);
               bout.nl();

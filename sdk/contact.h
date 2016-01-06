@@ -15,54 +15,55 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "netutil/dump_callout.h"
+#ifndef __INCLUDED_SDK_CONTACT_H__
+#define __INCLUDED_SDK_CONTACT_H__
 
-#include <cstdio>
-#include <fcntl.h>
-#include <iostream>
-#ifdef _WIN32
-#include <io.h>
-#else  // _WIN32
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#endif 
-#include <string>
+#include <ctime>
+#include <initializer_list>
 #include <map>
+#include <string>
 #include <vector>
-#include "core/command_line.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "networkb/callout.h"
-#include "networkb/connection.h"
-#include "sdk/config.h"
+
 #include "sdk/net.h"
-#include "sdk/networks.h"
 
-using std::cerr;
-using std::clog;
-using std::cout;
-using std::endl;
-using std::map;
-using std::string;
-using wwiv::net::Callout;
-using wwiv::sdk::Config;
-using wwiv::sdk::Networks;
-using namespace wwiv::strings;
+namespace wwiv {
+namespace sdk {
 
-void dump_callout_usage() {
-  cout << "Usage:   dump_callout" << endl;
-  cout << "Example: dump_callout" << endl;
-}
+ /**
+  * Class for manipulating CONTACT.NET
+  */
+class Contact {
+ public:
+  Contact(const std::string& network_dir, bool save_on_destructor);
+  // VisibleForTesting
+  Contact(std::initializer_list<net_contact_rec> l);
+  virtual ~Contact();
 
-int dump_callout(map<const string, Callout> callouts,
-  const wwiv::core::CommandLineCommand* command) {
-  for (const auto& c : callouts) {
-    std::cout << "CALLOUT.NET information: : " << c.first << std::endl;
-    std::cout << "===========================================================" << std::endl;
-    std::cout << c.second.ToString() << std::endl;
-  }
+  // Was this list initialized properly.
+  bool IsInitialized() const { return initialized_; }
+  // returns a mutable net_contact_rec for system number "node"
+  net_contact_rec* contact_rec_for(int node);
 
-  return 0;
-}
+  /** add a connection to node, including bytes send and received. */
+  void add_connect(int node, time_t time, uint32_t bytes_sent, uint32_t bytes_received);
+  /** add a failure attempt to node */
+  void add_failure(int node, time_t time);
+
+  bool Save();
+  std::string ToString() const;
+
+ private:
+   /** add a contact. caled by connect or failure. */
+   void add_contact(net_contact_rec* c, time_t time);
+
+   std::vector<net_contact_rec> contacts_;
+   bool save_on_destructor_;
+   bool initialized_;
+   std::string network_dir_;
+};
+
+
+}  // namespace net
+}  // namespace wwiv
+
+#endif  // __INCLUDED_SDK_CONTACT_H__

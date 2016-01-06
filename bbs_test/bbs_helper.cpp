@@ -27,7 +27,7 @@
 #include "core/wwivport.h"
 #include "core/file.h"
 #include "bbs/vars.h"
-#include "bbs/wuser.h"
+#include "sdk/user.h"
 #include "bbs/wsession.h"
 
 #include "gtest/gtest.h"

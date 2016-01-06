@@ -31,7 +31,8 @@ namespace msgapi {
 class WWIVMessageHeader: public MessageHeader {
 public:
   explicit WWIVMessageHeader(postrec header, const std::string& from, const std::string& to, 
-    const std::string& date, const std::string& in_reply_to, std::vector<std::string>& control_lines);
+    const std::string& date, const std::string& in_reply_to, std::vector<std::string>& control_lines,
+    const MessageApi* api);
   virtual ~WWIVMessageHeader();
 
   virtual std::string title() const override { return header_.title;  }
@@ -44,9 +45,9 @@ public:
 
   virtual std::string destination_address() const override { return "";  }
 
-  virtual bool is_local() const override { return true; } // TODO(rushfan): Implement me!
-  virtual bool is_private() const override { return false;  }
-  virtual bool is_locked() const override { return false; }
+  virtual bool is_local() const override;
+  virtual bool is_private() const override { return false;  } // we don't support private subs
+  virtual bool is_locked() const override { return (header_.status & status_no_delete) != 0; } // 
   virtual bool is_deleted() const override { return (header_.status & status_delete) != 0; }
   virtual const std::vector<std::string>& control_lines() const override { return control_lines_;  }
 
@@ -59,6 +60,7 @@ private:
   const std::string in_reply_to_;
   const std::vector<std::string> control_lines_;
   const std::string text_;
+  const MessageApi* api_;
 
 };
 

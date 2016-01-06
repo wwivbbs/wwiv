@@ -24,6 +24,7 @@
 #include "bbs/datetime.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
+#include "bbs/instmsg.h"
 #include "bbs/vars.h"
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
@@ -205,14 +206,14 @@ void CreatePCBoardSysDropFile() {
     } else {
       sprintf(pcb.connectbps, "%-5.5d", modem_speed);
     }
-    pcb.usernum = static_cast<short>(session()->usernum);
+    pcb.usernum = static_cast<int16_t>(session()->usernum);
     char szName[ 255 ];
     sprintf(szName, "%-25.25s", session()->user()->GetName());
     char *pszFirstName = strtok(szName, " \t");
     sprintf(pcb.firstname, "%-15.15s", pszFirstName);
     // Don't write password  security
     strcpy(pcb.password, "XXX");
-    pcb.time_on = static_cast<short>(session()->user()->GetTimeOn() / 60);
+    pcb.time_on = static_cast<int16_t>(session()->user()->GetTimeOn() / 60);
     pcb.prev_used = 0;
     double d = session()->user()->GetTimeOn() / 60;
     int h1 = static_cast<int>(d / 60) / 10;
@@ -224,7 +225,7 @@ void CreatePCBoardSysDropFile() {
     pcb.time_logged[2] = ':';
     pcb.time_logged[3] = static_cast<char>(m1 + '0');
     pcb.time_logged[4] = static_cast<char>(m2 + '0');
-    pcb.time_limit = static_cast<short>(nsl());
+    pcb.time_limit = static_cast<int16_t>(nsl());
     pcb.down_limit = 1024;
     pcb.curconf = static_cast<char>(session()->GetCurrentConferenceMessageArea());
     strcpy(pcb.slanguage, session()->cur_lang_name.c_str());
@@ -242,7 +243,7 @@ void CreatePCBoardSysDropFile() {
     strcpy(pcb.lastevent, pStatus->GetLastDate());
     pcb.exittodos = '0';
     pcb.eventupcoming = '0';
-    pcb.lastconfarea = static_cast<short>(session()->GetCurrentConferenceMessageArea());
+    pcb.lastconfarea = static_cast<int16_t>(session()->GetCurrentConferenceMessageArea());
     // End Additions
 
     pcbFile.Write(&pcb, sizeof(pcb));

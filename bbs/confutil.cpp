@@ -23,11 +23,13 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
+using namespace wwiv::sdk;
+
 // Local functions
 bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber);
-bool access_conf(WUser * u, int sl, confrec * c);
-bool access_sub(WUser * u, int sl, subboardrec * s);
-bool access_dir(WUser * u, int sl, directoryrec * d);
+bool access_conf(User * u, int sl, confrec * c);
+bool access_sub(User * u, int sl, subboardrec * s);
+bool access_dir(User * u, int sl, directoryrec * d);
 void addusub(usersubrec * ss1, int ns, int sub, char key);
 
 
@@ -35,7 +37,7 @@ void addusub(usersubrec * ss1, int ns, int sub, char key);
  * Does user u have access to the conference
  * @return bool
  */
-bool access_conf(WUser * u, int sl, confrec * c) {
+bool access_conf(User * u, int sl, confrec * c) {
   WWIV_ASSERT(u);
   WWIV_ASSERT(c);
 
@@ -86,7 +88,7 @@ bool access_conf(WUser * u, int sl, confrec * c) {
 }
 
 
-bool access_sub(WUser * u, int sl, subboardrec * s) {
+bool access_sub(User * u, int sl, subboardrec * s) {
   WWIV_ASSERT(u);
   WWIV_ASSERT(s);
 
@@ -107,7 +109,7 @@ bool access_sub(WUser * u, int sl, subboardrec * s) {
 }
 
 
-bool access_dir(WUser * u, int sl, directoryrec * d) {
+bool access_dir(User * u, int sl, directoryrec * d) {
   WWIV_ASSERT(u);
   WWIV_ASSERT(d);
 
@@ -204,7 +206,7 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
     break;
   case CONF_DIRS:
     ss1 = udir;
-    ns = session()->num_dirs;
+    ns = session()->directories.size();
     if (nOldSubNumber == -1) {
       osub = udir[session()->GetCurrentFileArea()].subnum;
     } else {
@@ -247,7 +249,7 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
         break;
       case CONF_DIRS:
         if (access_dir(session()->user(), session()->GetEffectiveSl(),
-                       (directoryrec *) & directories[c->subs[i]])) {
+                       (directoryrec *) & session()->directories[c->subs[i]])) {
           addusub(ss1, ns, c->subs[i], 0);
         }
         break;
@@ -276,7 +278,7 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
         if (access_conf(session()->user(), session()->GetEffectiveSl(), &(dirconfs[i]))) {
           for (i1 = 0; i1 < static_cast<int>(dirconfs[i].num); i1++) {
             if (access_dir(session()->user(), session()->GetEffectiveSl(),
-                           (directoryrec *) & directories[dirconfs[i].subs[i1]])) {
+                           (directoryrec *) & session()->directories[dirconfs[i].subs[i1]])) {
               addusub(ss1, ns, dirconfs[i].subs[i1], 0);
             }
           }

@@ -49,12 +49,6 @@
 
 #define CALLOUT_NET "callout.net"
 #define CATEG_NET "categ.net"
-#define CBV1_NOEXT "cbv1"
-#define CBV2_NOEXT "cbv2"
-#define CBV3_NOEXT "cbv3"
-#define CBV4_NOEXT "cbv4"
-#define CBV5_NOEXT "cbv5"
-#define CBV6_NOEXT "cbv6"
 #define CHAT_NOEXT "chat"
 #define CHAINS_DAT "chains.dat"
 #define CHAINS_REG "chains.reg"
@@ -127,7 +121,6 @@
 #define LPSEARCH_NOEXT "lpsearch"
 #define LPSYSOP_NOEXT "lpsysop"
 
-#define MACROS_TXT "macros.txt"
 #define MBMAIN_NOEXT "mbmain"
 
 // QWK

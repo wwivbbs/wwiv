@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV Version 5.x                              */
-/*             Copyright (C)2014-2015 WWIV Software Services              */
+/*                Copyright (C)2015 WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,36 +15,58 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETORKB_CALLOUT_H__
-#define __INCLUDED_NETORKB_CALLOUT_H__
+#include "wwivutil/dump_callout.h"
 
-#include <initializer_list>
+#include <iostream>
 #include <map>
 #include <string>
+#include <vector>
+#include "core/strings.h"
+#include "sdk/config.h"
+#include "sdk/callout.h"
+#include "sdk/config.h"
+#include "sdk/networks.h"
 
-#include "sdk/net.h"
+using std::clog;
+using std::cout;
+using std::endl;
+using std::map;
+using std::string;
+using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 namespace wwiv {
-namespace net {
+namespace wwivutil {
 
-  
-class Callout {
- public:
-  explicit Callout(const std::string& network_dir);
-  // VisibleForTesting
-  Callout(std::initializer_list<net_call_out_rec> l);
-  virtual ~Callout();
-  const net_call_out_rec* node_config_for(int node) const;
-  Callout& operator=(const Callout& rhs) { node_config_ = rhs.node_config_; return *this; }
-  std::string ToString() const;
+static void dump_callout_usage() {
+  cout << "Usage:   dump_callout" << endl;
+  cout << "Example: dump_callout" << endl;
+}
 
- private:
-  std::map<uint16_t, net_call_out_rec> node_config_;
-};
+int DumpCalloutCommand::Execute() {
 
-bool ParseCalloutNetLine(const std::string& line, net_call_out_rec* config);
+  Networks networks(*config()->config());
+  if (!networks.IsInitialized()) {
+    clog << "Unable to load networks.";
+    return 1;
+  }
 
-}  // namespace net
-}  // namespace wwiv
+  map<const string, Callout> callouts;
+  for (const auto net : networks.networks()) {
+    string lower_case_network_name(net.name);
+    StringLowerCase(&lower_case_network_name);
+    callouts.emplace(lower_case_network_name, Callout(net.dir));
+  }
 
-#endif  // __INCLUDED_NETORKB_CALLOUT_H__
+  for (const auto& c : callouts) {
+    cout << "CALLOUT.NET information: : " << c.first << endl;
+    cout << "===========================================================" << endl;
+    cout << c.second.ToString() << endl;
+  }
+
+  return 0;
+}
+
+
+}
+}

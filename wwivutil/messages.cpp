@@ -15,6 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
+#include "wwivutil/messages.h"
+
 #include <cstdio>
 #include <iomanip>
 #include <iostream>
@@ -38,19 +40,29 @@ using std::setw;
 using std::string;
 using std::unique_ptr;
 using std::vector;
-using wwiv::core::CommandLineCommand;
+using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
 
 namespace wwiv {
 namespace wwivutil {
 
-void messages_usage() {
+bool MessagesCommand::AddSubCommands() {
+  MessagesDumpHeaderCommand* dump = new MessagesDumpHeaderCommand();
+  if (!add(dump)) { return false; }
+  AddCommandsAndArgs(dump);
+  return true;
+}
+
+MessagesDumpHeaderCommand::MessagesDumpHeaderCommand()
+  : UtilCommand("dump", "Displays message header and text information.") {}
+
+static void messages_usage() {
   cout << "Usage:   dump_headers <base sub filename>" << endl;
   cout << "Example: dump_headers general" << endl;
 }
 
-string daten_to_humantime(uint32_t daten) {
+static string daten_to_humantime(uint32_t daten) {
   time_t t = static_cast<time_t>(daten);
   string human_date = string(asctime(localtime(&t)));
   wwiv::strings::StringTrimEnd(&human_date);
@@ -58,18 +70,28 @@ string daten_to_humantime(uint32_t daten) {
   return human_date;
 }
 
-static int dump(const string& basename, const string& subs_dir,
-		const string& msgs_dir,
-                const std::vector<net_networks_rec>& net_networks,
-                int start, int end, bool all) {
-  unique_ptr<WWIVMessageApi> api(new WWIVMessageApi(
+bool MessagesDumpHeaderCommand::AddSubCommands() {
+  add_argument({"start", "Starting message number.", "1"});
+  add_argument({"end", "Last message number..", "-1"});
+  add_argument(BooleanCommandLineArgument("all", "dumps everything, control lines too", false));
+
+  return true;
+}
+
+int MessagesDumpHeaderCommand::ExecuteImpl(
+  const string& basename, const string& subs_dir,
+	const string& msgs_dir,
+  const std::vector<net_networks_rec>& net_networks,
+  int start, int end, bool all) {
+  // TODO(rushfan): Create the right API type for the right message area.
+  unique_ptr<MessageApi> api(new WWIVMessageApi(
       subs_dir, msgs_dir, net_networks));
   if (!api->Exist(basename)) {
     clog << "Message area: '" << basename << "' does not exist." << endl;
     return 1;
   }
 
-  unique_ptr<WWIVMessageArea> area(api->Open(basename));
+  unique_ptr<MessageArea> area(api->Open(basename));
   if (!area) {
     clog << "Error opening message area: '" << basename << "'." << endl;
     return 1;
@@ -84,17 +106,25 @@ static int dump(const string& basename, const string& subs_dir,
       continue;
     }
     cout << "#" << setw(5) << std::left << current
-	 << " From: " << setw(20) << header->from()
+         << " From: " << setw(20) << header->from()
          << "date: " << daten_to_humantime(header->daten()) << endl
-         << "title: " << header->title() << endl;
+         << "title: " << header->title();
+    if (header->is_local()) {
+      cout << "[LOCAL]";
+    }
+    if (header->is_deleted()) {
+      cout << "[DELETED]";
+    }
+    if (header->is_locked()) {
+      cout << "[LOCKED]";
+    }
+    if (header->is_private()) {
+      cout << "[PRIVATE]";
+    }
+    cout << endl;
     if (all) {
       for (const auto& c : header->control_lines()) {
         cout << "c: " << c << endl;
-      }
-      WWIVMessageHeader* wwiv_header =
-	dynamic_cast<WWIVMessageHeader*>(header.get());
-      if (wwiv_header) {
-        cout << "ownersys: " << wwiv_header->data().ownersys << endl;
       }
     }
     unique_ptr<MessageText> text(area->ReadMessageText(current));
@@ -102,32 +132,34 @@ static int dump(const string& basename, const string& subs_dir,
       continue;
     }
     cout << "------------------------------------------------------------------------"
-	 << endl;
+	       << endl;
     cout << text->text() << endl;
     cout << "------------------------------------------------------------------------"
-	 << endl;
+	       << endl;
   }
   return 0;
 }
 
-int dump_headers(const Config& config, const CommandLineCommand* command) {
-  if (command->remaining().empty()) {
-    cout << "Usage:   dump <subname>" << endl;
-    cout << "Example: dump GENERAL" << endl;
+int MessagesDumpHeaderCommand::Execute() {
+  if (remaining().empty()) {
+    clog << "Missing sub basename." << endl;
+    messages_usage();
     return 2;
   }
 
-  Networks networks(config);
+  Networks networks(*config()->config());
   if (!networks.IsInitialized()) {
     clog << "Unable to load networks.";
     return 1;
   }
 
-  const string basename(command->remaining().front());
-  const int start = command->arg("start").as_int();
-  int end = command->arg("end").as_int();
-  const bool all = command->arg("all").as_bool();
-  return dump(basename, config.datadir(), config.msgsdir(), networks.networks(), start, end, all);
+  const string basename(remaining().front());
+  const int start = arg("start").as_int();
+  int end = arg("end").as_int();
+  const bool all = arg("all").as_bool();
+  return ExecuteImpl(
+    basename, config()->config()->datadir(), config()->config()->msgsdir(), 
+    networks.networks(), start, end, all);
 }
 
 }  // namespace wwivutil

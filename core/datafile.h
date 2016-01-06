@@ -48,6 +48,10 @@ public:
 
   bool ReadVector(std::vector<RECORD>& records, std::size_t max_records = 0) {
     std::size_t num_to_read = number_of_records();
+    if (num_to_read == 0) {
+      // Reading nothing is always successful.
+      return true;
+    }
     if (max_records != 0 && max_records < num_to_read) {
       num_to_read = max_records;
     }
@@ -58,6 +62,10 @@ public:
   }
 
   bool Read(RECORD* record, int num_records = 1) { 
+    if (num_records == 0) {
+      // Reading nothing is always successful.
+      return true;
+    }
     return file_.Read(record, num_records*SIZE) == static_cast<int>(num_records*SIZE); 
   }
   bool Read(int record_number, RECORD* record) {

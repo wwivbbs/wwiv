@@ -17,7 +17,10 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <string>
+
 #include "bbs/bbs.h"
+#include "bbs/email.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/inmsg.h"
@@ -29,6 +32,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
 
 // local function prototypes
 void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup);
@@ -36,12 +40,13 @@ int  oneuser();
 
 using std::string;
 using std::unique_ptr;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 void multimail(int *pnUserNumber, int numu) {
   mailrec m, m1;
   char s[255], s2[81];
-  WUser user;
+  User user;
   memset(&m, 0, sizeof(mailrec));
 
   if (freek1(syscfg.msgsdir) < 10) {
@@ -88,7 +93,7 @@ void multimail(int *pnUserNumber, int numu) {
     if ((user.GetSl() == 255 && (user.GetNumMailWaiting() > (syscfg.maxwaiting * 5))) ||
         ((user.GetSl() != 255) && (user.GetNumMailWaiting() > syscfg.maxwaiting)) ||
         user.GetNumMailWaiting() > 200) {
-      bout << user.GetUserNameAndNumber(pnUserNumber[cv]) << " mailbox full, not sent.";
+      bout << session()->names()->UserName(pnUserNumber[cv]) << " mailbox full, not sent.";
       pnUserNumber[cv] = -1;
       continue;
     }
@@ -103,7 +108,8 @@ void multimail(int *pnUserNumber, int numu) {
     if (pnUserNumber[cv] == 1) {
       ++fwaiting;
     }
-    strcat(s, user.GetUserNameAndNumber(pnUserNumber[cv]));
+    const string pnunn = session()->names()->UserName(pnUserNumber[cv]);
+    strcat(s, pnunn.c_str());
     WStatus* pStatus = session()->status_manager()->BeginTransaction();
     if (pnUserNumber[cv] == 1) {
       pStatus->IncrementNumFeedbackSentToday();
@@ -120,7 +126,8 @@ void multimail(int *pnUserNumber, int numu) {
     bout << s;
     bout.nl();
     if (show_all) {
-      sprintf(s2, "%-22.22s  ", user.GetUserNameAndNumber(pnUserNumber[cv]));
+      const string pnunn2 = session()->names()->UserName(pnUserNumber[cv]);
+      sprintf(s2, "%-22.22s  ", pnunn2.c_str());
       s1.assign(s2);
       j++;
       if (j >= 3) {
@@ -141,7 +148,7 @@ void multimail(int *pnUserNumber, int numu) {
 
   m.anony = static_cast<unsigned char>(data.anonymous_flag);
   m.fromsys = 0;
-  m.fromuser = static_cast<unsigned short>(session()->usernum);
+  m.fromuser = static_cast<uint16_t>(session()->usernum);
   m.tosys = 0;
   m.touser = 0;
   m.status = status_multimail;
@@ -169,7 +176,7 @@ void multimail(int *pnUserNumber, int numu) {
   pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::seekBegin);
   for (int cv = 0; cv < numu; cv++) {
     if (pnUserNumber[cv] > 0) {
-      m.touser = static_cast<unsigned short>(pnUserNumber[cv]);
+      m.touser = static_cast<uint16_t>(pnUserNumber[cv]);
       pFileEmail->Write(&m, sizeof(mailrec));
     }
   }
@@ -182,7 +189,7 @@ static int mml_started;
 int oneuser() {
   char s[81], *ss;
   int user_number, system_number, i;
-  WUser user;
+  User user;
 
   if (mml_s) {
     if (mml_started) {
@@ -244,7 +251,7 @@ int oneuser() {
     bout << "Deleted user.\r\n\n";
     return 0;
   }
-  bout << "     -> " << user.GetUserNameAndNumber(user_number) << wwiv::endl;
+  bout << "     -> " << session()->names()->UserName(user_number) << wwiv::endl;
   return user_number;
 }
 
@@ -398,9 +405,9 @@ void slash_e() {
       break;
     case 'L':
       for (i = 0; i < numu; i++) {
-        WUser user;
+        User user;
         session()->users()->ReadUser(&user, user_number[i]);
-        bout << i + 1 << ". " << user.GetUserNameAndNumber(user_number[i]) << wwiv::endl;
+        bout << i + 1 << ". " << session()->names()->UserName(user_number[i]) << wwiv::endl;
       }
       break;
     }

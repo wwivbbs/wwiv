@@ -24,11 +24,15 @@
 #include "bbs/automsg.h"
 #include "bbs/batch.h"
 #include "bbs/dropfile.h"
+#include "bbs/email.h"
+#include "bbs/events.h"
 #include "bbs/input.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
+#include "bbs/defaults.h"
 #include "bbs/instmsg.h"
 #include "bbs/menusupp.h"
+#include "bbs/msgbase1.h"
 #include "bbs/netsup.h"
 #include "bbs/newuser.h"
 #include "bbs/printfile.h"
@@ -47,9 +51,10 @@
 
 using std::string;
 using std::unique_ptr;
-using wwiv::core::IniFile;
+using namespace wwiv::core;
 using wwiv::core::FilePath;
 using wwiv::os::random_number;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 #define SECS_PER_DAY 86400L
@@ -62,10 +67,10 @@ static void CleanUserInfo() {
     setuconf(CONF_SUBS, session()->user()->GetLastSubConf(), 0);
     setuconf(CONF_DIRS, session()->user()->GetLastDirConf(), 0);
   }
-  if (session()->user()->GetLastSubNum() > session()->GetMaxNumberMessageAreas()) {
+  if (session()->user()->GetLastSubNum() > syscfg.max_subs) {
     session()->user()->SetLastSubNum(0);
   }
-  if (session()->user()->GetLastDirNum() > session()->GetMaxNumberFileAreas()) {
+  if (session()->user()->GetLastDirNum() > syscfg.max_dirs) {
     session()->user()->SetLastDirNum(0);
   }
   if (usub[session()->user()->GetLastSubNum()].subnum != -1) {
@@ -95,7 +100,7 @@ static bool random_screen(const char *mpfn) {
   return false;
 }
 
-bool IsPhoneNumberUSAFormat(WUser *pUser) {
+bool IsPhoneNumberUSAFormat(User *pUser) {
   string country = pUser->GetCountry();
   return (country == "USA" || country == "CAN" || country == "MEX");
 }
@@ -115,8 +120,8 @@ static int GetAnsiStatusAndShowWelcomeScreen() {
   if (File::Exists(ans_filename)) {
     bout.nl();
     if (ans > 0) {
-      session()->user()->SetStatusFlag(WUser::ansi);
-      session()->user()->SetStatusFlag(WUser::color);
+      session()->user()->SetStatusFlag(User::ansi);
+      session()->user()->SetStatusFlag(User::color);
       if (!random_screen(WELCOME_NOEXT)) {
         printfile(WELCOME_ANS);
       }
@@ -141,6 +146,35 @@ static int GetAnsiStatusAndShowWelcomeScreen() {
   return ans;
 }
 
+static int FindUserByRealName(const std::string& user_name) {
+  if (user_name.empty()) {
+    return 0;
+  }
+
+  bout << "Searching...";
+  bool abort = false;
+  int current_count = 0;
+  for (const auto& n : session()->names()->names_vector()) {
+    if (hangup || abort) { break; }
+    if (++current_count % 25 == 0) {
+      // changed from 15 since computers are faster now-a-days
+      bout << ".";
+    }
+    int current_user = n.number;
+    session()->ReadCurrentUser(current_user);
+    string temp_user_name(session()->user()->GetRealName());
+    StringUpperCase(&temp_user_name);
+    if (user_name == temp_user_name && !session()->user()->IsUserDeleted()) {
+      bout << "|#5Do you mean " << session()->names()->UserName(n.number) << "? ";
+      if (yesno()) {
+        return current_user;
+      }
+    }
+    checka(&abort);
+  }
+  return 0;
+}
+
 static int ShowLoginAndGetUserNumber() {
   bout.nl();
   bout << "Enter number or name or 'NEW'\r\n";
@@ -153,29 +187,8 @@ static int ShowLoginAndGetUserNumber() {
   int user_number = finduser(user_name);
   if (user_number != 0) {
     return user_number;
-  } else if (!user_name.empty()) {
-    bout << "Searching...";
-    bool abort = false;
-    for (int i = 1; i < session()->status_manager()->GetUserCount() && !hangup && !abort; i++) {
-      if (i % 25 == 0) {   // changed from 15 since computers are faster now-a-days
-        bout << ".";
-      }
-      int nTempUserNumber = session()->smallist[i].number;
-      session()->ReadCurrentUser(nTempUserNumber);
-      if (user_name[0] == session()->user()->GetRealName()[0]) {
-        string temp_user_name(session()->user()->GetRealName());
-        StringUpperCase(&temp_user_name);
-        if (user_name == temp_user_name && !session()->user()->IsUserDeleted()) {
-          bout << "|#5Do you mean " << session()->user()->GetUserNameAndNumber(session()->smallist[i].number) << "? ";
-          if (yesno()) {
-            return nTempUserNumber;
-          }
-        }
-      }
-      checka(&abort);
-    }
   }
-  return 0;
+  return FindUserByRealName(user_name);
 }
 
 bool IsPhoneRequired() {
@@ -223,7 +236,7 @@ static void DoFailedLoginAttempt() {
   bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
 
   const string logline = StrCat("### ILLEGAL LOGON for ",
-    session()->user()->GetUserNameAndNumber(session()->usernum), 
+    session()->names()->UserName(session()->usernum),
     " (",  ctim(timer()), ")");
   sysoplog("", false);
   sysoplog(logline, false);
@@ -262,9 +275,9 @@ static void ExecuteWWIVNetworkRequest() {
 
 static void LeaveBadPasswordFeedback(int ans) {
   if (ans > 0) {
-    session()->user()->SetStatusFlag(WUser::ansi);
+    session()->user()->SetStatusFlag(User::ansi);
   } else {
-    session()->user()->ClearStatusFlag(WUser::ansi);
+    session()->user()->ClearStatusFlag(User::ansi);
   }
   bout << "|#6Too many logon attempts!!\r\n\n";
   bout << "|#9Would you like to leave Feedback to " << syscfg.sysopname << "? ";
@@ -309,10 +322,6 @@ static void CheckCallRestrictions() {
     bout << "|#6Sorry, you can only logon once per day.\r\n";
     hangup = true;
   }
-}
-
-static void DoCallBackVerification() {
-  // TODO(rushfan): This is where we would do internet email validation.
 }
 
 void getuser() {
@@ -387,10 +396,7 @@ void getuser() {
 
   okmacro = true;
   CheckCallRestrictions();
-
-  if (session()->HasConfigFlag(OP_FLAGS_CALLBACK) && (session()->user()->GetCbv() & 1) == 0) {
-    DoCallBackVerification();
-  }
+  // TODO(rushfan): This is where we'd do internet email validation.
 }
 
 static void FixUserLinesAndColors() {
@@ -442,7 +448,7 @@ static void PrintLogonFile() {
 }
 
 static void PrintUserSpecificFiles() {
-  const WUser* user = session()->user();  // not-owned
+  const User* user = session()->user();  // not-owned
   printfile(StringPrintf("sl%d", user->GetSl()));
   printfile(StringPrintf("dsl%d", user->GetDsl()));
 
@@ -530,9 +536,10 @@ static void UpdateLastOnFileAndUserLog() {
   }
 
   if (session()->GetEffectiveSl() != 255 || incom) {
+    const string username_num = session()->names()->UserName(session()->usernum);
     const string sysop_log_line = StringPrintf("%ld: %s %s %s   %s - %d (%u)",
         pStatus->GetCallerNumber(),
-        session()->user()->GetUserNameAndNumber(session()->usernum),
+        username_num.c_str(),
         times(),
         fulldate(),
         session()->GetCurrentSpeed().c_str(),
@@ -553,10 +560,11 @@ static void UpdateLastOnFileAndUserLog() {
     string log_line;
     if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
         (syscfg.sysconfig & sysconfig_extended_info)) {
+      const string username_num = session()->names()->UserName(session()->usernum);
       log_line = StringPrintf(
           "|#1%-6ld %-25.25s %-5.5s %-5.5s %-15.15s %-2.2s %-3.3s %-8.8s %2d\r\n",
           pStatus->GetCallerNumber(),
-          session()->user()->GetUserNameAndNumber(session()->usernum),
+          username_num.c_str(),
           times(),
           fulldate(),
           session()->user()->GetCity(),
@@ -565,10 +573,11 @@ static void UpdateLastOnFileAndUserLog() {
           session()->GetCurrentSpeed().c_str(),
           session()->user()->GetTimesOnToday());
     } else {
+      const string username_num = session()->names()->UserName(session()->usernum);
       log_line = StringPrintf(
           "|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
           pStatus->GetCallerNumber(),
-          session()->user()->GetUserNameAndNumber(session()->usernum),
+          username_num.c_str(),
           session()->cur_lang_name.c_str(),
           times(),
           fulldate(),
@@ -685,7 +694,8 @@ static void CheckAndUpdateUserInfo() {
         session()->user()->SetSl(syscfg.newusersl);
         session()->user()->SetDsl(syscfg.newuserdsl);
         session()->user()->SetExempt(0);
-        ssm(1, 0, "%s%s", session()->user()->GetUserNameAndNumber(session()->usernum),
+        const string username_num = session()->names()->UserName(session()->usernum);
+        ssm(1, 0, "%s%s", username_num.c_str(),
             "'s registration has expired.");
         session()->WriteCurrentUser();
         session()->ResetEffectiveSl();
@@ -701,8 +711,8 @@ static void DisplayUserLoginInformation() {
   char s1[255];
   bout.nl();
 
-  bout << "|#9Name/Handle|#0....... |#2" << session()->user()->GetUserNameAndNumber(
-                       session()->usernum) << wwiv::endl;
+  const string username_num = session()->names()->UserName(session()->usernum);
+  bout << "|#9Name/Handle|#0....... |#2" << username_num << wwiv::endl;
   bout << "|#9Internet Address|#0.. |#2";
   if (check_inet_addr(session()->user()->GetEmailAddress())) {
     bout << session()->user()->GetEmailAddress() << wwiv::endl;
@@ -962,7 +972,7 @@ void logoff() {
   {
     WStatus* pStatus = session()->status_manager()->BeginTransaction();
     int nActiveToday = pStatus->GetMinutesActiveToday();
-    pStatus->SetMinutesActiveToday(nActiveToday + static_cast<unsigned short>(dTimeOnNow / MINUTES_PER_HOUR_FLOAT));
+    pStatus->SetMinutesActiveToday(nActiveToday + static_cast<uint16_t>(dTimeOnNow / MINUTES_PER_HOUR_FLOAT));
     session()->status_manager()->CommitTransaction(pStatus);
   }
   if (g_flags & g_flag_scanned_files) {
@@ -1039,7 +1049,7 @@ void logoff() {
         smwFile.Read(&sm, sizeof(shortmsgrec));
         if (sm.tosys != 0 || sm.touser != 0) {
           if (sm.tosys == 0 && sm.touser == session()->usernum) {
-            session()->user()->SetStatusFlag(WUser::SMW);
+            session()->user()->SetStatusFlag(User::SMW);
           }
           if (r != w) {
             smwFile.Seek(w * sizeof(shortmsgrec), File::seekBegin);

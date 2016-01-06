@@ -23,7 +23,6 @@
 
 #include <string>
 
-#include "bbs/capture.h"
 #include "bbs/keycodes.h"
 #include "bbs/local_io.h"
 #include "core/file.h"

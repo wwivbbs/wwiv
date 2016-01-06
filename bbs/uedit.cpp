@@ -21,11 +21,11 @@
 #include <memory>
 #include <string>
 
-#include "bbs/callback.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/newuser.h"
 #include "bbs/bbs.h"
+#include "bbs/email.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/printfile.h"
@@ -35,10 +35,11 @@
 #include "bbs/keycodes.h"
 #include "sdk/filenames.h"
 
-using namespace wwiv::bbs;
 using std::string;
 using std::unique_ptr;
-using wwiv::strings::IsEquals;
+using namespace wwiv::bbs;
+using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 static uint32_t *u_qsc = 0;
 static char *sp = nullptr;
@@ -46,17 +47,17 @@ static char search_pattern[81];
 char *daten_to_date(time_t dt);
 
 int  matchuser(int user_number);
-int  matchuser(WUser * pUser);
+int  matchuser(User * pUser);
 void changeopt();
 
 void deluser(int user_number) {
-  WUser user;
+  User user;
   session()->users()->ReadUser(&user, user_number);
 
   if (!user.IsUserDeleted()) {
     rsm(user_number, &user, false);
     DeleteSmallRecord(user.GetName());
-    user.SetInactFlag(WUser::userDeleted);
+    user.SetInactFlag(User::userDeleted);
     user.SetNumMailWaiting(0);
     session()->users()->WriteUser(&user, user_number);
     unique_ptr<File> pFileEmail(OpenEmailFile(true));
@@ -101,7 +102,7 @@ void deluser(int user_number) {
   }
 }
 
-void print_data(int user_number, WUser *pUser, bool bLongFormat, bool bClearScreen) {
+void print_data(int user_number, User *pUser, bool bLongFormat, bool bClearScreen) {
   char s[81], s1[81], s2[81], s3[81];
 
   if (bClearScreen) {
@@ -160,11 +161,9 @@ void print_data(int user_number, WUser *pUser, bool bLongFormat, bool bClearScre
     }
   }
   if (bLongFormat) {
-
+    // TODO(rushfan): Should we always mask this?
     bout << "|#2H|#9) Password     : |#1";
-    if (AllowLocalSysop()) {
-      session()->localIO()->LocalPuts(pUser->GetPassword());
-    }
+    session()->localIO()->LocalPuts(pUser->GetPassword());
 
     if (incom && session()->user()->GetSl() == 255) {
       rputs(pUser->GetPassword());
@@ -244,32 +243,17 @@ void print_data(int user_number, WUser *pUser, bool bLongFormat, bool bClearScre
   if (pUser->GetWWIVRegNumber()) {
     bout << "|#9   WWIV Reg Num : |#1" << pUser->GetWWIVRegNumber() << wwiv::endl;
   }
-  // begin callback changes
-
-  if (bLongFormat) {
-    print_affil(pUser);
-    if (session()->HasConfigFlag(OP_FLAGS_CALLBACK)) {
-      bout.bprintf("|#1User has%s been callback verified.  ",
-                                        (pUser->GetCbv() & 1) == 0 ? " |#6not" : "");
-    }
-    if (session()->HasConfigFlag(OP_FLAGS_VOICE_VAL)) {
-      bout.bprintf("|#1User has%s been voice verified.",
-                                        (pUser->GetCbv() & 2) == 0 ? " |#6not" : "");
-    }
-    bout.nl(2);
-  }
-  // end callback changes
 }
 
 int matchuser(int user_number) {
-  WUser user;
+  User user;
   session()->users()->ReadUser(&user, user_number);
   sp = search_pattern;
   return matchuser(&user);
 }
 
 
-int matchuser(WUser *pUser) {
+int matchuser(User *pUser) {
   int ok = 1, _not = 0, less = 0, cpf = 0, cpp = 0;
   int  _and = 1, gotfcn = 0, evalit = 0, tmp, tmp1, tmp2;
   char fcn[20], parm[80], ts[40];
@@ -318,7 +302,7 @@ int matchuser(WUser *pUser) {
             sp++;
           }
         } else {
-          if (cpf < static_cast<signed int>(sizeof(fcn)) - 1) {
+          if (cpf < static_cast<int>(sizeof(fcn)) - 1) {
             fcn[ cpf++ ] = *sp++;
           } else {
             sp++;
@@ -397,17 +381,6 @@ int matchuser(WUser *pUser) {
               tmp = pUser->GetLastBaudRate() > tmp1;
             }
 
-            // begin callback additions
-
-          } else if (IsEquals(fcn, "CBV")) {
-            if (less) {
-              tmp = pUser->GetCbv() < tmp1;
-            } else {
-              tmp = pUser->GetCbv() > tmp1;
-            }
-
-            // end callback additions
-
           } else if (IsEquals(fcn, "COMP_TYPE")) {
             tmp = pUser->GetComputerType() == tmp1;
           }
@@ -446,7 +419,7 @@ void changeopt() {
 }
 
 
-void auto_val(int n, WUser *pUser) {
+void auto_val(int n, User *pUser) {
   if (pUser->GetSl() == 255) {
     return;
   }
@@ -467,7 +440,7 @@ void auto_val(int n, WUser *pUser) {
 void uedit(int usern, int other) {
   char s[81];
   bool bClearScreen = true;
-  WUser user;
+  User user;
 
   u_qsc = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len));
 
@@ -493,7 +466,7 @@ void uedit(int usern, int other) {
       bout << "|#9(|#2Q|#9=|#1Quit, |#2?|#9=|#1Help|#9) User Editor Command: ";
       char ch = 0;
       if (session()->user()->GetSl() == 255 || session()->GetWfcStatus()) {
-        ch = onek("ACDEFGHILMNOPQRSTUVWXYZ0123456789[]{}/,.?~%:", true);
+        ch = onek("ACDEFGHILMNOPQRSTUWXYZ0123456789[]{}/,.?~%:", true);
       } else {
         ch = onek("ACDEFGHILMNOPQRSTUWYZ0123456789[]{}/,.?%", true);
       }
@@ -688,50 +661,6 @@ void uedit(int usern, int other) {
         }
       }
       break;
-      case 'V': {
-        bool bWriteUser = false;
-        if (session()->HasConfigFlag(OP_FLAGS_CALLBACK)) {
-          bout << "|#7Toggle callback verify flag (y/N) ? ";
-          if (yesno()) {
-            if (user.GetCbv() & 1) {
-              session()->user()->SetSl(syscfg.newusersl);
-              session()->user()->SetDsl(syscfg.newuserdsl);
-              session()->user()->SetRestriction(syscfg.newuser_restrict);
-              user.SetExempt(0);
-              user.SetAr(0);
-              user.SetDar(0);
-              user.SetCbv(user.GetCbv() - 1);
-            } else {
-              if (user.GetSl() < session()->cbv.sl) {
-                user.SetSl(session()->cbv.sl);
-              }
-              if (user.GetDsl() < session()->cbv.dsl) {
-                user.SetDsl(session()->cbv.dsl);
-              }
-              user.SetRestriction(user.GetRestriction() | session()->cbv.restrict);
-              user.SetExempt(user.GetExempt() | session()->cbv.exempt);
-              user.SetArFlag(session()->cbv.ar);
-              user.SetDarFlag(session()->cbv.dar);
-              user.SetCbv(user.GetCbv() | 1);
-            }
-            bWriteUser = true;
-          }
-        }
-        if (session()->HasConfigFlag(OP_FLAGS_VOICE_VAL)) {
-          bout << "|#7Toggle voice validated flag (y/N) ? ";
-          if (yesno()) {
-            if (user.GetCbv() & 2) {
-              user.SetCbv(user.GetCbv() - 2);
-            } else {
-              user.SetCbv(user.GetCbv() | 2);
-            }
-            bWriteUser = true;
-          }
-        }
-        if (bWriteUser) {
-          session()->users()->WriteUser(&user, user_number);
-        }
-      }
       break;
       case 'Q':
         bDoneWithUEdit = true;
@@ -739,7 +668,7 @@ void uedit(int usern, int other) {
         break;
       case 'R':
         if (user.IsUserDeleted()) {
-          user.ToggleInactFlag(WUser::userDeleted);
+          user.ToggleInactFlag(User::userDeleted);
           InsertSmallRecord(user_number, user.GetName());
           session()->users()->WriteUser(&user, user_number);
 
@@ -812,12 +741,6 @@ void uedit(int usern, int other) {
         }
       }
       break;
-      // begin callback additions
-      case 'W':
-        wwivnode(&user, 1);
-        session()->users()->WriteUser(&user, user_number);
-        break;
-      // end callback additions
       case 'X': {
         string regDate, expDate;
         if (!session()->HasConfigFlag(OP_FLAGS_USER_REGISTRATION)) {
@@ -1123,7 +1046,7 @@ char *daten_to_date(time_t dt) {
 }
 
 
-void print_affil(WUser *pUser) {
+void print_affil(User *pUser) {
   net_system_list_rec *csne;
 
   if (pUser->GetForwardNetNumber() == 0 || pUser->GetHomeSystemNumber() == 0) {

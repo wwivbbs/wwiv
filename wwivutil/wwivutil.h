@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_FIX_H__
-#define __INCLUDED_FIX_H__
+#ifndef __INCLUDED_WWIVUTIL_WWIVUTIL_H__
+#define __INCLUDED_WWIVUTIL_WWIVUTIL_H__
 
 
 namespace wwiv {
@@ -27,4 +27,4 @@ namespace wwivutil {
 }  // namespace wwivutil
 }  // namespace wwiv
 
-#endif  // __INCLUDED_FIX_H__
+#endif  // __INCLUDED_WWIVUTIL_WWIVUTIL_H__

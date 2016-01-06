@@ -327,7 +327,7 @@ bool checka(bool *abort, bool *next) {
   while (bkbhit() && !*abort && !hangup) {
     CheckForHangup();
     char ch = bgetch();
-    if (!session()->tagging || session()->user()->IsUseNoTagging()) {
+    if (!session()->tagging) {
       lines_listed = 0;
     }
     switch (ch) {
@@ -599,7 +599,7 @@ char *mmkey(int dl, int area, bool bListOption) {
                     }
                   }
                   if (area == WSession::mmkeyFileAreas && dl == 1) {
-                    for (i = 0; i < session()->num_dirs; i++) {
+                    for (i = 0; i < session()->directories.size(); i++) {
                       if (wwiv::strings::IsEquals(udir[i].keys, cmd2)) {
                         bout.nl();
                         break;

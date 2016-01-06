@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2015, WWIV Software Services             */
+/*              Copyright (C)2014-2015 WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,14 +14,20 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
+/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_CALLBACK_H__
-#define __INCLUDED_BBS_CALLBACK_H__
+#include "gtest/gtest.h"
 
-#include "bbs/wuser.h"
+#include <ctime>
+#include "sdk/datetime.h"
 
-void wwivnode(WUser *pUser, int mode);
-int  callback();
-void dial(char *phone, int xlate);
+static const time_t t20140704 = 1404460800; // 1404457200;
 
-#endif  // __INCLUDED_BBS_CALLBACK_H__
+
+// TODO(rushfan): Fix this now that the VM runs in PDT
+#if 0
+TEST(DateTime, date_to_daten) {
+  ASSERT_EQ(t20140704, date_to_daten("07/04/14"));
+}
+#endif  // 0
+

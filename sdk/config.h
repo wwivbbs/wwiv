@@ -45,7 +45,7 @@ private:
   const std::string root_directory_;
 };
 
-}
-}
+}  // namespace sdk
+}  // namespace wwiv
 
 #endif  // __INCLUDED_SDK_CONFIG_H__

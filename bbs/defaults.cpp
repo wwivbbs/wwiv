@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/defaults.h"
+
 #include <iomanip>
 #include <string>
 #include <vector>
@@ -25,14 +27,16 @@
 #include "bbs/wwivcolors.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
-#include "bbs/vars.h"
+#include "bbs/instmsg.h"
 #include "bbs/common.h"
 #include "bbs/menu.h"
+#include "bbs/msgbase1.h"
 #include "bbs/input.h"
 #include "bbs/newuser.h"
 #include "bbs/printfile.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 
@@ -42,6 +46,7 @@ using std::left;
 using std::string;
 using std::vector;
 using wwiv::bbs::InputMode;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 static const int STOP_LIST = 0;
@@ -63,12 +68,12 @@ void select_editor() {
       session()->user()->SetDefaultEditor(1);
     } else {
       session()->user()->SetDefaultEditor(0);
-      session()->user()->ClearStatusFlag(WUser::autoQuote);
+      session()->user()->ClearStatusFlag(User::autoQuote);
     }
     return;
   }
-  for (int i1 = 0; i1 <= 5; i1++) {
-    odc[ i1 ] = '\0';
+  for (size_t i1 = 0; i1 <= 5; i1++) {
+    odc[i1] = '\0';
   }
   bout << "0. Normal non-full screen editor\r\n";
   for (size_t i = 0; i < session()->editors.size(); i++) {
@@ -85,7 +90,7 @@ void select_editor() {
     session()->user()->SetDefaultEditor(nEditor);
   } else if (IsEquals(ss, "0")) {
     session()->user()->SetDefaultEditor(0);
-    session()->user()->ClearStatusFlag(WUser::autoQuote);
+    session()->user()->ClearStatusFlag(User::autoQuote);
   }
 }
 
@@ -111,13 +116,13 @@ static string GetMailBoxStatus() {
     return string("Closed");
   }
 
-  WUser ur;
+  User ur;
   session()->users()->ReadUser(&ur, session()->user()->GetForwardUserNumber());
   if (ur.IsUserDeleted()) {
     session()->user()->SetForwardUserNumber(0);
     return string("Normal");
   }
-  return StrCat("Forward to ", ur.GetUserNameAndNumber(session()->user()->GetForwardUserNumber()));
+  return StrCat("Forward to ", session()->names()->UserName(session()->user()->GetForwardUserNumber()));
 }
 
 static void print_cur_stat() {
@@ -778,7 +783,7 @@ void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
       input_ansistat();
       break;
     case '3':
-      session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
+      session()->user()->ToggleStatusFlag(User::pauseOnPage);
       break;
     case '4':
       modify_mailbox();
@@ -799,13 +804,13 @@ void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
       select_editor();
       break;
     case 'A':
-      session()->user()->ToggleStatusFlag(WUser::extraColor);
+      session()->user()->ToggleStatusFlag(User::extraColor);
       break;
     case 'B':
       optional_lines();
       break;
     case 'C':
-      session()->user()->ToggleStatusFlag(WUser::conference);
+      session()->user()->ToggleStatusFlag(User::conference);
       changedsl();
       break;
 
@@ -842,22 +847,22 @@ void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
       break;
     case 'M':
       if (num_instances() > 1) {
-        session()->user()->ClearStatusFlag(WUser::noMsgs);
+        session()->user()->ClearStatusFlag(User::noMsgs);
         bout.nl();
         bout << "|#5Allow messages sent between instances? ";
         if (!yesno()) {
-          session()->user()->SetStatusFlag(WUser::noMsgs);
+          session()->user()->SetStatusFlag(User::noMsgs);
         }
       }
       break;
     case 'S':
-      session()->user()->ToggleStatusFlag(WUser::clearScreen);
+      session()->user()->ToggleStatusFlag(User::clearScreen);
       break;
     case 'T':
-      session()->user()->ToggleStatusFlag(WUser::twentyFourHourClock);
+      session()->user()->ToggleStatusFlag(User::twentyFourHourClock);
       break;
     case 'U':
-      session()->user()->ToggleStatusFlag(WUser::autoQuote);
+      session()->user()->ToggleStatusFlag(User::autoQuote);
       break;
     case 'W':
       enter_regnum();
@@ -918,12 +923,12 @@ static void list_config_scan_plus(int first, int *amount, int type) {
       ++*amount;
     }
   } else {
-    for (int this_dir = first; (this_dir < session()->num_dirs) && (udir[this_dir].subnum != -1) &&
+    for (int this_dir = first; (this_dir < session()->directories.size()) && (udir[this_dir].subnum != -1) &&
          *amount < max_lines * 2; this_dir++) {
       lines_listed = 0;
       int alias_dir = udir[this_dir].subnum;
       sprintf(s, "|#7[|#1%c|#7] |#2%s", qsc_n[alias_dir / 32] & (1L << (alias_dir % 32)) ? '\xFE' : ' ',
-              directories[alias_dir].name);
+        session()->directories[alias_dir].name);
       s[44] = 0;
       if (*amount >= max_lines) {
         bout.GotoXY(40, 3 + *amount - max_lines);
@@ -975,7 +980,7 @@ static long is_inscan(int dir) {
     sysdir = true;
   }
 
-  for (int this_dir = 0; (this_dir < session()->num_dirs); this_dir++) {
+  for (int this_dir = 0; (this_dir < session()->directories.size()); this_dir++) {
     const string key = StringPrintf("%d", (sysdir ? dir : (dir + 1)));
     if (key == udir[this_dir].keys) {
       int ad = udir[this_dir].subnum;
@@ -1089,7 +1094,7 @@ void config_scan_plus(int type) {
         }
         else {
           bool sysdir = IsEquals(udir[0].keys, "0");
-          for (int this_dir = 0; (this_dir < session()->num_dirs); this_dir++) {
+          for (int this_dir = 0; (this_dir < session()->directories.size()); this_dir++) {
             const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
             if (s == udir[this_dir].keys) {
               int ad = udir[this_dir].subnum;
@@ -1113,7 +1118,7 @@ void config_scan_plus(int type) {
               top = 0;
             }
           } else {
-            if (top >= session()->num_dirs) {
+            if (top >= session()->directories.size()) {
               top = 0;
             }
           }
@@ -1136,7 +1141,7 @@ void config_scan_plus(int type) {
             qsc_q[usub[top + pos].subnum / 32] ^= (1L << (usub[top + pos].subnum % 32));
           } else {
             bool sysdir = IsEquals(udir[0].keys, "0");
-            for (int this_dir = 0; (this_dir < session()->num_dirs); this_dir++) {
+            for (int this_dir = 0; (this_dir < session()->directories.size()); this_dir++) {
               const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
               if (s == udir[this_dir].keys) {
                 int ad = udir[this_dir].subnum;
@@ -1156,7 +1161,7 @@ void config_scan_plus(int type) {
               }
             }
           } else {
-            for (int this_dir = 0; this_dir < session()->num_dirs; this_dir++) {
+            for (int this_dir = 0; this_dir < session()->directories.size(); this_dir++) {
               if (qsc_n[udir[this_dir].subnum / 32] & (1L << (udir[this_dir].subnum % 32))) {
                 qsc_n[udir[this_dir].subnum / 32] ^= 1L << (udir[this_dir].subnum % 32);
               }
@@ -1174,7 +1179,7 @@ void config_scan_plus(int type) {
               }
             }
           } else {
-            for (int this_dir = 0; this_dir < session()->num_dirs; this_dir++) {
+            for (int this_dir = 0; this_dir < session()->directories.size(); this_dir++) {
               if (!(qsc_n[udir[this_dir].subnum / 32] & (1L << (udir[this_dir].subnum % 32)))) {
                 qsc_n[udir[this_dir].subnum / 32] ^= 1L << (udir[this_dir].subnum % 32);
               }

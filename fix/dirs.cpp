@@ -21,18 +21,23 @@
 #include <string>
 #include <vector>
 
-#include "bbs/vars.h"
+#include "core/datafile.h"
 #include "core/file.h"
 #include "fix/fix.h"
 #include "fix/log.h"
 #include "fix/dirs.h"
 
+#include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
 using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
+
+using wwiv::core::DataFile;
+
+extern configrec syscfg;
 
 namespace wwiv {
 namespace fix {
@@ -72,9 +77,22 @@ static string Unalign(const char* filename) {
     return string(unalign(s));
 }
 
-void checkFileAreas(int num_dirs) {
-	Print(OK, true, "Checking %d directories", num_dirs);
-	for(int i = 0; i < num_dirs; i++) {
+void checkFileAreas() {
+  vector<directoryrec> directories;
+  {
+    DataFile<directoryrec> file(syscfg.datadir, DIRS_DAT);
+    if (!file) {
+      // TODO(rushfan): show error?
+      return;
+    }
+    if (!file.ReadVector(directories)) {
+      // TODO(rushfan): show error?
+      return;
+    }
+  }
+
+	Print(OK, true, "Checking %d directories", directories.size());
+	for(size_t i = 0; i < directories.size(); i++) {
 		if (!(directories[i].mask & mask_cdrom) && !(directories[i].mask & mask_offline)) {
 			File dir(directories[i].path);
 			if (checkDirExists(dir, directories[i].name)) {
@@ -160,7 +178,7 @@ void checkFileAreas(int num_dirs) {
 							}
 							if (extDesc != nullptr) {
 								free(extDesc);
-                                extDesc = nullptr;
+                extDesc = nullptr;
 							}
 						}
 						recordFile.Close();
@@ -182,7 +200,7 @@ void checkFileAreas(int num_dirs) {
 int FixDirectoriesCommand::Execute() {
   cout << "Runnning FixDirectoriesCommand::Execute" << endl;
 	checkAllDirsExist();
-	checkFileAreas(num_dirs_);
+	checkFileAreas();
   return 0;
 }
 

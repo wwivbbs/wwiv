@@ -21,8 +21,10 @@
 #include <cstring>
 #include <string>
 
+#include "bbs/bbs.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
+#include "bbs/wsession.h"
 #include "core/strings.h"
 #include "core/file.h"
 
@@ -130,7 +132,7 @@ int match_archiver(const char *filename) {
 
   x = 0;
   while (x < 4) {
-    if (strcasecmp(type, arcs[x].extension) == 0) {
+    if (strcasecmp(type, session()->arcs[x].extension) == 0) {
       return x;
     }
     ++x;

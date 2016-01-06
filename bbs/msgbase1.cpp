@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/msgbase1.h"
+
 #ifdef _WIN32
 #include <direct.h>
 #else
@@ -44,6 +46,7 @@
 using std::string;
 using std::unique_ptr;
 using std::unique_ptr;
+using namespace wwiv::sdk;
 using wwiv::strings::StringPrintf;
 
 void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
@@ -237,7 +240,7 @@ void post() {
   p.anony   = static_cast<unsigned char>(data.anonymous_flag);
   p.msg   = m;
   p.ownersys  = 0;
-  p.owneruser = static_cast<unsigned short>(session()->usernum);
+  p.owneruser = static_cast<uint16_t>(session()->usernum);
   WStatus* pStatus = session()->status_manager()->BeginTransaction();
   p.qscan = pStatus->IncrementQScanPointer();
   session()->status_manager()->CommitTransaction(pStatus);
@@ -516,7 +519,7 @@ void remove_post() {
   if (nPostNumber > 0 && nPostNumber <= session()->GetNumMessagesInCurrentMessageArea()) {
     if (((get_post(nPostNumber)->ownersys == 0) && (get_post(nPostNumber)->owneruser == session()->usernum)) || lcs()) {
       if ((get_post(nPostNumber)->owneruser == session()->usernum) && (get_post(nPostNumber)->ownersys == 0)) {
-        WUser tu;
+        User tu;
         session()->users()->ReadUser(&tu, get_post(nPostNumber)->owneruser);
         if (!tu.IsUserDeleted()) {
           if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(get_post(nPostNumber)->daten)) {

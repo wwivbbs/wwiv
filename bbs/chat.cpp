@@ -37,6 +37,7 @@
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 using wwiv::strings::IsEqualsIgnoreCase;
+using namespace wwiv::sdk;
 
 static int g_nChatOpSecLvl;
 static int g_nNumActions;
@@ -211,7 +212,7 @@ int f_action(int start_pos, int end_pos, char *aword) {
 int main_loop(char *message, char *from_message, char *color_string, char *messageSent, bool &bActionMode,
               int loc, int num_actions) {
   char szText[300];
-  WUser u;
+  User u;
 
   bool bActionHandled = true;
   if (bActionMode) {
@@ -348,7 +349,7 @@ void intro(int loc) {
   who_online(nodes, loc);
   if (nodes[0]) {
     for (int i = 1; i <= nodes[0]; i++) {
-      WUser u;
+      User u;
       session()->users()->ReadUser(&u, nodes[i]);
       if (((nodes[0] - i) == 1) && (nodes[0] >= 2)) {
         bout << "|#1" << u.GetName() << " |#7and ";
@@ -389,7 +390,7 @@ void ch_direct(const char *message, int loc, char *color_string, int node, int n
       bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
       return;
     }
-    WUser u;
+    User u;
     session()->users()->ReadUser(&u, ir.user);
     char szUserName[ 81 ];
     strcpy(szUserName, u.GetName());
@@ -430,7 +431,7 @@ void ch_whisper(const char *message, char *color_string, int node, int nOffSet) 
     strcpy(szText, message + nOffSet);
   }
   send_inst_str(node, szText);
-  WUser u;
+  User u;
   session()->users()->ReadUser(&u, ir.user);
   bout << "|#1[|#9Message sent only to " << u.GetName() << "|#1]\r\n";
 }
@@ -443,7 +444,7 @@ int wusrinst(char *n) {
   for (int i = 0; i <= num_instances(); i++) {
     get_inst_info(i, &ir);
     if (ir.flags & INST_FLAGS_ONLINE) {
-      WUser user;
+      User user;
       session()->users()->ReadUser(&user, ir.user);
       if (IsEqualsIgnoreCase(user.GetName(), n)) {
         return i;
@@ -538,7 +539,7 @@ void page_user(int loc) {
 void moving(bool bOnline, int loc) {
   char space[55];
 
-  if (!chat_invis) {
+  if (!is_chat_invis()) {
     sprintf(space, "|#6%s %s", session()->user()->GetName(), (bOnline ? "is on the air." :
             "has signed off."));
     out_msg(space, loc);
@@ -665,7 +666,7 @@ bool check_action(char *message, char *color_string, int loc) {
 void exec_action(const char *message, char *color_string, int loc, int nact) {
   char tmsg[150], final[170];
   instancerec ir;
-  WUser u;
+  User u;
 
   bool bOk = (strlen(message) == 0) ? false : true;
   if (IsEqualsIgnoreCase(message, "?")) {
@@ -743,43 +744,11 @@ void ga(const char *message, char *color_string, int loc, int type) {
   out_msg(buffer, loc);
 }
 
-// Toggles user availability, called when ctrl-N is hit
-
-void toggle_avail() {
-  instancerec ir;
-  char xl[81], cl[81], atr[81], cc;
-
-  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
-  get_inst_info(session()->instance_number(), &ir);
-  chat_avail = !chat_avail;
-
-  bout << "\n\rYou are now ";
-  bout << (chat_avail ? "available for chat.\n\r\n" : "not available for chat.\n\r\n");
-  write_inst(ir.loc, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
-  RestoreCurrentLine(cl, atr, xl, &cc);
-}
-
-// Toggles invisibility, called when ctrl-L is hit by a sysop
-
-void toggle_invis() {
-  instancerec ir;
-  char xl[81], cl[81], atr[81], cc;
-
-  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
-  get_inst_info(session()->instance_number(), &ir);
-  chat_invis = !chat_invis;
-
-  bout << "\r\n|#1You are now ";
-  bout << (chat_invis ? "invisible.\n\r\n" : "visible.\n\r\n");
-  write_inst(ir.loc, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
-  RestoreCurrentLine(cl, atr, xl, &cc);
-}
-
 // Lists the chat channels
 void list_channels() {
   int tl = 0, nodes[20], secure[10], check[10];
   char s[12];
-  WUser u;
+  User u;
   instancerec ir;
 
   for (int i = 1; i <= 10; i++) {
@@ -983,7 +952,7 @@ int userinst(char *user) {
 int grabname(const char *message, int ch) {
   int c = 0, node = 0, dupe = 0, sp = 0;
   char name[41];
-  WUser u;
+  User u;
   instancerec ir;
 
   if (message[0] == ' ') {

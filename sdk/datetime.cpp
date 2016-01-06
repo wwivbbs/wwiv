@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)2007, WWIV Software Services                  */
+/*             Copyright (C)1998-2015,WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,29 +16,41 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
+// Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "bbs/datetime.h"
 
 #include <cstring>
-#include <type_traits>
+#include <ctime>
 
-#include "bbs/wuser.h"
+namespace wwiv {
+namespace sdk {
 
-using std::cout;
-using std::endl;
-using std::is_standard_layout;
-using std::string;
+//
+// This kludge will get us through 2019 and should not interfere anywhere
+// else.
+//
 
-TEST(WUserTest, IsStandardLayout) {
-  ASSERT_TRUE(is_standard_layout<WUser>::value);
-  EXPECT_EQ(sizeof(userrec), sizeof(WUser));
+time_t date_to_daten(const char *datet) {
+  if (strlen(datet) != 8) {
+    return 0;
+  }
+
+  time_t t = time(nullptr);
+  struct tm * pTm = localtime(&t);
+  pTm->tm_mon   = atoi(datet) - 1;
+  pTm->tm_mday  = atoi(datet + 3);
+  // N.B. tm_year is years since 1900
+  pTm->tm_year  = atoi(datet + 6);         // fixed for 1920-2019
+  if (datet[6] < '2') {
+    pTm->tm_year += 100;
+  }
+  pTm->tm_hour = 0;
+  pTm->tm_min = 0;
+  pTm->tm_sec = 0;
+  pTm->tm_isdst = 0;  // Since this is used for arbitrary compare of date strings, this is ok.
+
+  return mktime(pTm);
 }
 
-TEST(WUserTest, CanCopyToWUser) {
-  userrec u;
-  strcpy(reinterpret_cast<char*>(u.name), "Test User");
-
-  WUser user;
-  memcpy(&user, &u, sizeof(userrec));
-
-  EXPECT_STREQ(reinterpret_cast<char*>(u.name), user.GetName());
+}
 }

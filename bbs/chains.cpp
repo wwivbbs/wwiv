@@ -35,8 +35,10 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
 
 using std::string;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 // Displays the list of chains to a user
@@ -58,7 +60,7 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
       pla(StringPrintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
     }
     for (int i = 0; i < *mapp && !abort && !hangup; i++) {
-      WUser user;
+      User user;
       if (okansi()) {
         session()->users()->ReadUser(&user, session()->chains_reg[map[i]].regby[0]);
         pla(StringPrintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",

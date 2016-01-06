@@ -30,6 +30,8 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
+using namespace wwiv::sdk;
+
 extern char str_quit[];
 
 void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const char *cc) {
@@ -122,7 +124,7 @@ void makeansi(int attr, char *out_buffer, bool forceit) {
 
 void resetnsp() {
   if (nsp == 1 && !(session()->user()->HasPause())) {
-    session()->user()->ToggleStatusFlag(WUser::pauseOnPage);
+    session()->user()->ToggleStatusFlag(User::pauseOnPage);
   }
   nsp = 0;
 }
@@ -140,7 +142,7 @@ char getkey() {
   long tv = (so() || IsEqualsIgnoreCase(session()->GetCurrentSpeed().c_str(), "TELNET")) ? 10920L : 3276L;
   long tv1 = tv - 1092L;     // change 4.31 Build3
 
-  if (!session()->tagging || session()->user()->IsUseNoTagging()) {
+  if (!session()->tagging) {
     lines_listed = 0;
   }
 

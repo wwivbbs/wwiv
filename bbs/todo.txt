@@ -9,12 +9,18 @@
 * detangle global net_email_name (maybe it needs to be added to EmailData?)
 * change record 0 of .sub files to be a message header. Right now only owneruser
   is used and the rest is loaded/saved as-is by the bbs code.
+* Merge fix into wwivutil
+* remove support for registration numbers in the wwivnet data binary files.
+* delete num_events
+* make ssm take a string (use StringPrintf as needed)
+* add tests for usermanager and user (in SDK)
+* mmkey is a mess. only odc seems to be used right.
+* cleanup session()->tagging and session()->titled
 
 * Move bbs logic out of WLocalIO and into WSession (probably)
 * remove extra include statements from user.cpp
-* make GetUserNameAndNumber a static on WUser and also make a non-static one that doesn't require a usernumber.
 * Finish wrappering WSession
-* add IncrementXXXXX methods to WUser where it makes sense.
+* add IncrementXXXXX methods to User where it makes sense.
 * Change parameters to use strings so Runnable can use a vector of strings vs, argc, argv
-* investigage makeing WTextFile always trim whitespace
+* investigate making WTextFile always trim whitespace
 * Improve StringTrim(string)'s whitespace code and just have 1 copy of the whitespace string.

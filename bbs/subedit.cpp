@@ -41,9 +41,9 @@ using namespace wwiv::strings;
 static void save_subs() {
   int nSavedNetNum = session()->net_num();
 
-  for (int nTempNetNum = 0; nTempNetNum < session()->subboards.size(); nTempNetNum++) {
-    session()->subboards[nTempNetNum].type = 0;
-    session()->subboards[nTempNetNum].age &= 0x7f;
+  for (auto& s : session()->subboards) {
+    s.type = 0;
+    s.age &= 0x7f;
   }
 
   {
@@ -136,11 +136,11 @@ static void showsubs() {
   }
 }
 
-static string GetKey(const subboardrec& r, char *pszKey) {
+static string GetKey(const subboardrec& r) {
   return (r.key == 0) ? "None." : string(1, r.key);
 }
 
-static string GetAnon(const subboardrec& r, char *pszAnon) {
+static string GetAnon(const subboardrec& r) {
   switch (r.anony & 0x0f) {
   case 0:
     return YesNoString(false);
@@ -157,7 +157,7 @@ static string GetAnon(const subboardrec& r, char *pszAnon) {
   }
 }
 
-string GetAr(subboardrec r, char *pszAr) {
+string GetAr(subboardrec r) {
   if (r.ar != 0) {
     for (int i = 0; i < 16; i++) {
       if ((1 << i) & r.ar) {
@@ -222,21 +222,17 @@ static void modify_sub(int n) {
   subboardrec r = session()->subboards[n];
   bool done = false;
   do {
-    char szKey[21];
-    char szAnon[81];
-    char szAr[81];
-
     bout.cls();
     bout.litebar("%s %d", "Editing Message Area #", n);
     bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
     bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
-    bout << "|#9C) Key        : |#2" << GetKey(r, szKey) << wwiv::endl;
+    bout << "|#9C) Key        : |#2" << GetKey(r) << wwiv::endl;
     bout << "|#9D) Read SL    : |#2" << static_cast<int>(r.readsl) << wwiv::endl;
     bout << "|#9E) Post SL    : |#2" << static_cast<int>(r.postsl) << wwiv::endl;
-    bout << "|#9F) Anony      : |#2" << GetAnon(r, szAnon) << wwiv::endl;
+    bout << "|#9F) Anony      : |#2" << GetAnon(r) << wwiv::endl;
     bout << "|#9G) Min. Age   : |#2" << static_cast<int>(r.age & 0x7f) << wwiv::endl;
     bout << "|#9H) Max Msgs   : |#2" << r.maxmsgs << wwiv::endl;
-    bout << "|#9I) AR         : |#2" << GetAr(r,  szAr) << wwiv::endl;
+    bout << "|#9I) AR         : |#2" << GetAr(r) << wwiv::endl;
     bout << "|#9J) Net info   : |#2";
     DisplayNetInfo(n);
 
@@ -286,9 +282,9 @@ static void modify_sub(int n) {
         char szOldSubFileName[MAX_PATH];
         sprintf(szOldSubFileName, "%s%s.sub", syscfg.datadir, szSubBaseName);
         if (File::Exists(szOldSubFileName)) {
-          for (int i = 0; i < session()->subboards.size(); i++) {
-            if (strncasecmp(session()->subboards[i].filename, szSubBaseName, strlen(szSubBaseName)) == 0) {
-              strcpy(szOldSubFileName, session()->subboards[i].name);
+          for (auto& sub : session()->subboards) {
+            if (strncasecmp(sub.filename, szSubBaseName, strlen(szSubBaseName)) == 0) {
+              strcpy(szOldSubFileName, sub.name);
               break;
             }
           }
@@ -408,7 +404,7 @@ static void modify_sub(int n) {
       Input1(szMaxMsgs, szDef, 5, true, InputMode::UPPER);
       int nMaxMsgs = atoi(szMaxMsgs);
       if (nMaxMsgs > 0 && nMaxMsgs < 16384 && szMaxMsgs[0]) {
-        r.maxmsgs = static_cast<unsigned short>(nMaxMsgs);
+        r.maxmsgs = static_cast<uint16_t>(nMaxMsgs);
       }
     }
     break;
@@ -485,7 +481,7 @@ static void modify_sub(int n) {
       input(szStorageType, 4);
       int nStorageType = atoi(szStorageType);
       if (szStorageType[0] && nStorageType > 1 && nStorageType <= 2) {
-        r.storage_type = static_cast<unsigned short>(nStorageType);
+        r.storage_type = static_cast<uint16_t>(nStorageType);
       }
     }
     break;
@@ -554,8 +550,8 @@ static void swap_subs(int sub1, int sub2) {
     int i1, i2;
     read_qscn(i, pTempQScan.get(), true);
     uint32_t *pTempQScan_n = &pTempQScan.get()[1];
-    uint32_t *pTempQScan_q = pTempQScan_n + (session()->GetMaxNumberFileAreas() + 31) / 32;
-    uint32_t *pTempQScan_p = pTempQScan_q + (session()->GetMaxNumberMessageAreas() + 31) / 32;
+    uint32_t *pTempQScan_q = pTempQScan_n + (syscfg.max_dirs + 31) / 32;
+    uint32_t *pTempQScan_p = pTempQScan_q + (syscfg.max_subs + 31) / 32;
 
     if (pTempQScan_q[sub1 / 32] & (1L << (sub1 % 32))) {
       i1 = 1;
@@ -634,8 +630,8 @@ static void insert_sub(int n) {
 
   std::unique_ptr<uint32_t[]> pTempQScan(new uint32_t[syscfg.qscn_len]);
   uint32_t* pTempQScan_n = &pTempQScan.get()[1];
-  uint32_t* pTempQScan_q = pTempQScan_n + (session()->GetMaxNumberFileAreas() + 31) / 32;
-  uint32_t* pTempQScan_p = pTempQScan_q + (session()->GetMaxNumberMessageAreas() + 31) / 32;
+  uint32_t* pTempQScan_q = pTempQScan_n + (syscfg.max_dirs + 31) / 32;
+  uint32_t* pTempQScan_p = pTempQScan_q + (syscfg.max_subs + 31) / 32;
 
   m1 = 1L << (n % 32);
   m2 = 0xffffffff << ((n % 32) + 1);
@@ -692,8 +688,8 @@ static void delete_sub(int n) {
   uint32_t *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m2, m3;
   std::unique_ptr<uint32_t[]> pTempQScan(new uint32_t[syscfg.qscn_len + 1]);
   pTempQScan_n = &pTempQScan.get()[1];
-  pTempQScan_q = pTempQScan_n + (session()->GetMaxNumberFileAreas() + 31) / 32;
-  pTempQScan_p = pTempQScan_q + (session()->GetMaxNumberMessageAreas() + 31) / 32;
+  pTempQScan_q = pTempQScan_n + (syscfg.max_dirs + 31) / 32;
+  pTempQScan_p = pTempQScan_q + (syscfg.max_subs + 31) / 32;
 
   m2 = 0xffffffff << (n % 32);
   m3 = 0xffffffff >> (32 - (n % 32));
@@ -765,7 +761,7 @@ void boardedit() {
       }
       break;
     case 'S':
-      if (session()->subboards.size() < session()->GetMaxNumberMessageAreas()) {
+      if (session()->subboards.size() < syscfg.max_subs) {
         bout.nl();
         bout << "|#2Take sub number? ";
         input(s, 4);
@@ -796,7 +792,7 @@ void boardedit() {
       }
       break;
     case 'I':
-      if (session()->subboards.size() < session()->GetMaxNumberMessageAreas()) {
+      if (session()->subboards.size() < syscfg.max_subs) {
         bout.nl();
         bout << "|#2Insert before which sub ('$' for end) : ";
         input(s, 4);

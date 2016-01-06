@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/email.h"
+
 #include <memory>
 #include <string>
 
@@ -36,6 +38,9 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+
+using namespace wwiv::sdk;
 
 #define NUM_ATTEMPTS_TO_OPEN_EMAIL 5
 #define DELAY_BETWEEN_EMAIL_ATTEMPTS 9
@@ -55,7 +60,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
     return false;
   }
 
-  WUser userRecord;
+  User userRecord;
   session()->users()->ReadUser(&userRecord, *pUserNumber);
   if (userRecord.IsUserDeleted()) {
     return false;
@@ -280,7 +285,7 @@ void sendout_email(EmailData& data) {
   }
   string logMessage = "Mail sent to ";
   if (data.system_number == 0) {
-    WUser userRecord;
+    User userRecord;
     session()->users()->ReadUser(&userRecord, data.user_number);
     userRecord.SetNumMailWaiting(userRecord.GetNumMailWaiting() + 1);
     session()->users()->WriteUser(&userRecord, data.user_number);
@@ -291,11 +296,10 @@ void sendout_email(EmailData& data) {
       send_inst_sysstr(i, "You just received email.");
     }
     if (data.an) {
-      logMessage += userRecord.GetUserNameAndNumber(data.user_number);
+      logMessage += session()->names()->UserName(data.user_number);
       sysoplog(logMessage.c_str());
     } else {
-      string tempLogMessage = logMessage;
-      tempLogMessage += userRecord.GetUserNameAndNumber(data.user_number);
+      string tempLogMessage = StrCat(logMessage, session()->names()->UserName(data.user_number));
       sysoplog(tempLogMessage);
       logMessage += ">UNKNOWN<";
     }
@@ -365,7 +369,7 @@ bool ok_to_mail(int user_number, int system_number, bool bForceit) {
     if (user_number == 0) {
       return false;
     }
-    WUser userRecord;
+    User userRecord;
     session()->users()->ReadUser(&userRecord, user_number);
     if ((userRecord.GetSl() == 255 && userRecord.GetNumMailWaiting() > (syscfg.maxwaiting * 5)) ||
         (userRecord.GetSl() != 255 && userRecord.GetNumMailWaiting() > syscfg.maxwaiting) ||
@@ -410,7 +414,6 @@ void email(const string& title, int user_number, int system_number, bool forceit
   int nNumUsers = 0;
   messagerec messageRecord;
   char szDestination[81];
-  WUser userRecord;
   net_system_list_rec *csne = nullptr;
   struct {
     int user_number, system_number, net_num;
@@ -454,8 +457,8 @@ void email(const string& title, int user_number, int system_number, bool forceit
   if (system_number == 0) {
     set_net_num(0);
     if (an) {
-      session()->users()->ReadUser(&userRecord, user_number);
-      strcpy(szDestination, userRecord.GetUserNameAndNumber(user_number));
+      const string user_name_number = session()->names()->UserName(user_number);
+      strcpy(szDestination, user_name_number.c_str());
     } else {
       strcpy(szDestination, ">UNKNOWN<");
     }
@@ -581,8 +584,8 @@ void email(const string& title, int user_number, int system_number, bool forceit
     for (int j = 0; j < nNumUsers; j++) {
       if (carbon_copy[j].system_number == 0) {
         set_net_num(0);
-        session()->users()->ReadUser(&userRecord, carbon_copy[j].user_number);
-        strcpy(szDestination, userRecord.GetUserNameAndNumber(carbon_copy[j].user_number));
+        const std::string dest_name = session()->names()->UserName(carbon_copy[j].user_number);
+        strcpy(szDestination, dest_name.c_str());
       } else {
         if (carbon_copy[j].system_number == 1 &&
             carbon_copy[j].user_number == 0 &&
@@ -658,7 +661,6 @@ void email(const string& title, int user_number, int system_number, bool forceit
 
 void imail(int user_number, int system_number) {
   char szInternetAddr[255];
-  WUser userRecord;
 
   int fwdu = user_number;
   bool fwdm = false;
@@ -678,9 +680,10 @@ void imail(int user_number, int system_number) {
 
   int i = 1;
   if (system_number == 0) {
+    User userRecord;
     session()->users()->ReadUser(&userRecord, user_number);
     if (!userRecord.IsUserDeleted()) {
-      bout << "|#5E-mail " << userRecord.GetUserNameAndNumber(user_number) << "? ";
+      bout << "|#5E-mail " << session()->names()->UserName(user_number) << "? ";
       if (!yesno()) {
         i = 0;
       }
@@ -705,7 +708,7 @@ void imail(int user_number, int system_number) {
 
 void delmail(File *pFile, int loc) {
   mailrec m, m1;
-  WUser user;
+  User user;
 
   pFile->Seek(static_cast<long>(loc * sizeof(mailrec)), File::seekBegin);
   pFile->Read(&m, sizeof(mailrec));

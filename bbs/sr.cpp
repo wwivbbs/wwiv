@@ -107,8 +107,8 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
   const string command = stuff_in(s1, sx1, sx2, szFileName, sx3, "");
   if (!command.empty()) {
     session()->localIO()->set_protect(0);
-    sprintf(s2, "%s is currently online at %u bps",
-            session()->user()->GetUserNameAndNumber(session()->usernum), modem_speed);
+    const string unn = session()->names()->UserName(session()->usernum);
+    sprintf(s2, "%s is currently online at %u bps", unn.c_str(), modem_speed);
     session()->localIO()->LocalPuts(s2);
     session()->localIO()->LocalPuts("\r\n\r\n");
     session()->localIO()->LocalPuts(command);
@@ -532,7 +532,7 @@ void send_file(const char *file_name, bool *sent, bool *abort, const char *sfn, 
           } else {
             batchtime += static_cast<float>(t);
             strcpy(batch[session()->numbatch].filename, sfn);
-            batch[session()->numbatch].dir = static_cast<short>(dn);
+            batch[session()->numbatch].dir = static_cast<int16_t>(dn);
             batch[session()->numbatch].time = static_cast<float>(t);
             batch[session()->numbatch].sending = 1;
             batch[session()->numbatch].len = fs;
@@ -597,7 +597,7 @@ void receive_file(const char *file_name, int *received, const char *sfn, int dn)
       } else {
         *received = 2;
         strcpy(batch[session()->numbatch].filename, sfn);
-        batch[session()->numbatch].dir = static_cast<short>(dn);
+        batch[session()->numbatch].dir = static_cast<int16_t>(dn);
         batch[session()->numbatch].time = 0;
         batch[session()->numbatch].sending = 0;
         batch[session()->numbatch].len = 0;

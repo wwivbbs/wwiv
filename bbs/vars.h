@@ -93,14 +93,10 @@ __EXTRN__ bool  bChatLine,
           okskey,
           okmacro,
           ok_modem_stuff,
-          x_only,
           returning;
 
 // Chatroom additions
-__EXTRN__ bool  in_chatroom,
-          chat_invis,
-          chat_avail;
-
+__EXTRN__ bool  in_chatroom;
 __EXTRN__ unsigned short
 *csn_index,
 net_sysnum;
@@ -134,28 +130,16 @@ extratimecall,
 timeon,
 time_event;
 
-#if defined (FIX)
-__EXTRN__ configrec syscfg;
-#else
 __EXTRN__ small_configrec syscfg;
-#endif
 
 __EXTRN__ configoverrec syscfgovr;
-#ifdef NOT_BBS
-__EXTRN__ statusrec status;
-#endif  // NOT_BBS
 __EXTRN__ colorrec rescolor;
-__EXTRN__ directoryrec *directories;
 __EXTRN__ usersubrec *usub, *udir;
 __EXTRN__ userconfrec *uconfsub, *uconfdir;
 __EXTRN__ batchrec *batch;
 __EXTRN__ tagrec *filelist;
 __EXTRN__ net_system_list_rec *csn;
-__EXTRN__ arcrec *arcs;
-__EXTRN__ threadrec *thread;
-
 __EXTRN__ confrec *subconfs, *dirconfs;
-
 __EXTRN__ int iia;
 
 // confedit

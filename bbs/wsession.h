@@ -24,18 +24,20 @@
 #include <string>
 #include <vector>
 
-#include "bbs/capture.h"
 #include "bbs/runnable.h"
 #include "bbs/wcomm.h"
 #include "bbs/wstatus.h"
-#include "bbs/wuser.h"
 #include "bbs/woutstreambuffer.h"
 #include "bbs/subxtr.h"
 #include "bbs/local_io.h"
 #include "core/inifile.h"
 #include "core/file.h"
-#include "sdk/vardec.h"
+#include "sdk/config.h"
+#include "sdk/names.h"
 #include "sdk/net.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
+#include "sdk/vardec.h"
 
 //
 // WSession - Holds information and status data about the current user
@@ -60,17 +62,6 @@ struct asv_rec {
 
 struct adv_asv_rec {
   uint8_t reg_wwiv, nonreg_wwiv, non_wwiv, cosysop;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-// begin callback additions
-
-struct cbv_rec {
-  uint8_t
-  sl, dsl, exempt, longdistance, forced, repeat;
-
-  uint16_t
-  ar, dar, restrict;
 };
 
 extern WOutStream bout;
@@ -100,13 +91,12 @@ public:
   static const int mmkeyMessageAreas = 1;
   static const int mmkeyFileAreas = 2;
 
-  WUser* user() { return &m_thisuser; }
+  wwiv::sdk::User* user() { return &m_thisuser; }
 
   void DisplaySysopWorkingIndicator(bool displayWait);
   WComm* remoteIO() { return comm_.get(); }
   LocalIO* localIO() { return local_io_.get(); }
   bool reset_local_io(LocalIO* wlocal_io);
-  wwiv::bbs::Capture* capture() { return capture_.get(); }
   const std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
   int  instance_number() const { return instance_number_; }
   const std::string& network_extension() const { return network_extension_; }
@@ -119,8 +109,8 @@ public:
   bool IsLastKeyLocal() const { return last_key_local_; }
   void SetLastKeyLocal(bool b) { last_key_local_ = b; }
 
-  bool ReadCurrentUser() { return ReadCurrentUser(usernum, false); }
-  bool ReadCurrentUser(int user_number, bool bForceRead = false);
+  bool ReadCurrentUser() { return ReadCurrentUser(usernum); }
+  bool ReadCurrentUser(int user_number);
   bool WriteCurrentUser() { return WriteCurrentUser(usernum); }
   bool WriteCurrentUser(int user_number);
 
@@ -153,9 +143,6 @@ public:
   // instead of a string.
   const char* network_name() const;
   const std::string network_directory() const;
-
-  bool IsMessageThreadingEnabled() const { return m_bThreadSubs; }
-  void SetMessageThreadingEnabled(bool b) { m_bThreadSubs = b; }
 
   bool IsCarbonCopyEnabled() const { return m_bAllowCC; }
   void SetCarbonCopyEnabled(bool b) { m_bAllowCC = b; }
@@ -226,12 +213,6 @@ public:
   bool IsExecLogSyncFoss() const { return m_bExecLogSyncFoss; }
   void SetExecLogSyncFoss(bool b) { m_bExecLogSyncFoss = b; }
 
-  int  GetMaxNumberMessageAreas() const { return m_nMaxNumberMessageAreas; }
-  void SetMaxNumberMessageAreas(int n) { m_nMaxNumberMessageAreas = n; }
-
-  int  GetMaxNumberFileAreas() const { return m_nMaxNumberFileAreas; }
-  void SetMaxNumberFileAreas(int n) { m_nMaxNumberFileAreas = n; }
-
   bool IsTimeOnlineLimited() const { return m_bTimeOnlineLimited; }
   void SetTimeOnlineLimited(bool b) { m_bTimeOnlineLimited = b; }
 
@@ -243,14 +224,8 @@ public:
 
   int  max_net_num() const { return net_networks.size(); }
 
-  bool wwivmail_enabled() const { return wwivmail_enabled_; }
-  void set_wwivmail_enabled(bool wwivmail_enabled) { wwivmail_enabled_ = wwivmail_enabled; }
-
-  bool internal_qwk_enabled() const { return internal_qwk_enabled_; }
-  void set_internal_qwk_enabled(bool internal_qwk_enabled) { internal_qwk_enabled_ = internal_qwk_enabled; }
-
   StatusMgr* status_manager() { return statusMgr.get(); }
-  WUserManager* users() { return userManager.get(); }
+  wwiv::sdk::UserManager* users() { return user_manager_.get(); }
 
 
   /*!
@@ -289,6 +264,11 @@ public:
 
   void SetWfcStatus(int nStatus) { m_nWfcStatus = nStatus; }
   int  GetWfcStatus() { return m_nWfcStatus; }
+
+  /** Returns the WWIV SDK Config Object. */
+  wwiv::sdk::Config* config() const { return config_.get(); }
+  /** Returns the WWIV Names.LST Config Object. */
+  wwiv::sdk::Names* names() const { return names_.get(); }
 
   bool read_subs();
   void UpdateShutDownStatus();
@@ -377,18 +357,18 @@ private:
 
 
   std::unique_ptr<StatusMgr> statusMgr;
-  std::unique_ptr<WUserManager> userManager;
+  std::unique_ptr<wwiv::sdk::UserManager> user_manager_;
   std::string     m_attachmentDirectory; private:
   WApplication* application_;
-  WUser m_thisuser;
+  wwiv::sdk::User m_thisuser;
   bool  last_key_local_;
   int effective_sl_;
-  bool wwivmail_enabled_;
-  bool internal_qwk_enabled_;
   std::unique_ptr<WComm> comm_;
   std::unique_ptr<LocalIO> local_io_;
-  std::unique_ptr<wwiv::bbs::Capture> capture_;
   std::string current_speed_;
+  std::unique_ptr<wwiv::sdk::Config> config_;
+  std::unique_ptr<wwiv::sdk::Names> names_;
+
 
   // Data from system_operation_rec, make it public for now, and add
   // accessors later on.
@@ -401,7 +381,6 @@ private:
   m_nMessageColor;
 
   int         m_nForcedReadSubNumber;
-  bool        m_bThreadSubs;
   bool        m_bAllowCC;
   bool        m_bUserOnline;
   bool        m_bQuoting;
@@ -429,7 +408,6 @@ private:
               m_nNetworkNumber,
               m_nMaxNetworkNumber,
               numf,
-              num_dirs,
               num_events,
               num_sys_list,
               screenlinest,
@@ -447,7 +425,6 @@ private:
   std::string internetEmailName;
   std::string internetFullEmailAddress;
   std::string usenetReferencesLine;
-  std::string threadID;
   bool m_bInternetUseRealNames;
 
   std::string language_dir;
@@ -458,7 +435,6 @@ private:
 
   asv_rec asv;
   adv_asv_rec advasv;
-  cbv_rec cbv;
 
   uint16_t
   mail_who_field_len,
@@ -480,13 +456,13 @@ public:
 
   std::vector<newexternalrec> externs;
   std::vector<newexternalrec> over_intern;
-  std::vector<smalrec> smallist;
   std::vector<languagerec> languages;
   std::vector<subboardrec> subboards;
   std::vector<xtrasubsrec> xsubs;
   std::vector<net_networks_rec> net_networks;
   std::vector<gfiledirrec> gfilesec;
-
+  std::vector<arcrec> arcs;
+  std::vector<directoryrec> directories;
 
 };
 

@@ -31,14 +31,17 @@
 
 #include "bbs/bbsovl3.h"
 #include "bbs/bbs.h"
+#include "bbs/events.h"
 #include "bbs/fcns.h"
-#include "bbs/vars.h"
+#include "bbs/instmsg.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
+#include "bbs/instmsg.h"
 #include "bbs/common.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
+#include "bbs/vars.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
@@ -91,7 +94,7 @@ void remove_from_temp(const char *file_name, const char *pszDirectoryName, bool 
  * @return true if the user wants ANSI, false otherwise.
  */
 bool okansi() {
-  return session()->user()->HasAnsi() && !x_only;
+  return session()->user()->HasAnsi();
 }
 
 /**
@@ -134,11 +137,9 @@ void frequent_init() {
   use_workspace = false;
   extratimecall = 0.0;
   session()->using_modem = 0;
-  session()->capture()->set_global_handle(false);
   File::SetFilePermissions(g_szDSZLogFileName, File::permReadWrite);
   File::Remove(g_szDSZLogFileName);
   session()->SetTimeOnlineLimited(false);
-  session()->capture()->set_x_only(false, nullptr, false);
   set_net_num(0);
   set_language(session()->user()->GetLanguage());
   reset_disable_conf();

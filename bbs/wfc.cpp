@@ -26,6 +26,7 @@
 #include "bbs/bbsovl1.h"
 #include "bbs/chnedit.h"
 #include "bbs/bbs.h"
+#include "bbs/events.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/datetime.h"
@@ -51,6 +52,7 @@ using std::vector;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 using wwiv::os::random_number;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 
@@ -74,9 +76,6 @@ static void wfc_command(int instance_location_id, std::function<void()> f,
     std::function<void()> f2 = noop, std::function<void()> f3 = noop, std::function<void()> f4 = noop) {
   session()->reset_local_io(new CursesLocalIO(out->window()->GetMaxY()));
 
-  if (!AllowLocalSysop()) {
-    return;
-  }
   wfc_cls();
   write_inst(instance_location_id, 0, INST_FLAGS_NONE);
   f();
@@ -146,12 +145,10 @@ static void DrawStatus(CursesWindow* statusWindow) {
 
 static string GetLastUserName(int inst_num) {
   instancerec ir;
-  WUser u;
-
   get_inst_info(inst_num, &ir);
-  session()->users()->ReadUserNoCache(&u, ir.user);
+
   if (ir.flags & INST_FLAGS_ONLINE) {
-    return string(u.GetUserNameAndNumber(ir.user));
+    return session()->names()->UserName(ir.user);
   } else {
     return "Nobody";
   }
@@ -368,13 +365,14 @@ void wfc_update() {
   }
 
   instancerec ir;
-  WUser u;
+  User u;
 
   get_inst_info(inst_num, &ir);
   session()->users()->ReadUserNoCache(&u, ir.user);
   session()->localIO()->LocalXYAPrintf(57, 18, 15, "%-3d", inst_num);
   if (ir.flags & INST_FLAGS_ONLINE) {
-    session()->localIO()->LocalXYAPrintf(42, 19, 14, "%-25.25s", u.GetUserNameAndNumber(ir.user));
+    const string unn = session()->names()->UserName(ir.user);
+    session()->localIO()->LocalXYAPrintf(42, 19, 14, "%-25.25s", unn.c_str());
   } else {
     session()->localIO()->LocalXYAPrintf(42, 19, 14, "%-25.25s", "Nobody");
   }
@@ -395,7 +393,7 @@ void wfc_update() {
 void wfc_screen() {
   char szBuffer[ 255 ];
   instancerec ir;
-  WUser u;
+  User u;
   static double wfc_time = 0, poll_time = 0;
 
   if (!session()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
@@ -454,8 +452,8 @@ void wfc_screen() {
 
     get_inst_info(session()->instance_number(), &ir);
     if (ir.user < syscfg.maxusers && ir.user > 0) {
-      session()->users()->ReadUserNoCache(&u, ir.user);
-      session()->localIO()->LocalXYAPrintf(33, 16, 14, "%-20.20s", u.GetUserNameAndNumber(ir.user));
+      const string unn = session()->names()->UserName(ir.user);
+      session()->localIO()->LocalXYAPrintf(33, 16, 14, "%-20.20s", unn.c_str());
     } else {
       session()->localIO()->LocalXYAPrintf(33, 16, 14, "%-20.20s", "Nobody");
     }

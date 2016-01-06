@@ -22,8 +22,6 @@
 #include <ctime>
 #include <string>
 
-char *dateFromTimeTForLog(time_t t);
-char *dateFromTimeT(time_t t);
 char *date();
 char *fulldate();
 char *times();

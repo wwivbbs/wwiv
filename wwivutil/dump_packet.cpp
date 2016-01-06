@@ -15,17 +15,9 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include <cstdio>
-#include <fcntl.h>
+#include "wwivutil/dump_packet.h"
+
 #include <iostream>
-#ifdef _WIN32
-#include <io.h>
-#else  // _WIN32
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#endif 
 #include <string>
 #include <vector>
 #include "core/command_line.h"
@@ -38,6 +30,10 @@ using std::cout;
 using std::endl;
 using std::string;
 using wwiv::core::CommandLineCommand;
+
+namespace wwiv {
+namespace wwivutil {
+
 
 static string main_type_name(int typ) {
   switch (typ) {
@@ -90,7 +86,7 @@ void dump_usage() {
   cout << "Example: dump S1.NET" << endl;
 }
 
-string daten_to_humantime(uint32_t daten) {
+static string daten_to_humantime(uint32_t daten) {
   time_t t = static_cast<time_t>(daten);
   string human_date = string(asctime(localtime(&t)));
   wwiv::strings::StringTrimEnd(&human_date);
@@ -99,8 +95,8 @@ string daten_to_humantime(uint32_t daten) {
 }
 
 int dump_file(const std::string& filename) {
-  int f = open(filename.c_str(), O_BINARY | O_RDONLY);
-  if (f == -1) {
+  File f(filename);
+  if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     cerr << "Unable to open file: " << filename << endl;
     return 1;
   }
@@ -108,15 +104,15 @@ int dump_file(const std::string& filename) {
   bool done = false;
   while (!done) {
     net_header_rec h;
-    int num_read = read(f, &h, sizeof(net_header_rec));
+    int num_read = f.Read(&h, sizeof(net_header_rec));
     if (num_read == 0) {
       // at the end of the packet.
       cout << "[End of Packet]" << endl;
       return 0;
     }
     if (num_read != sizeof(net_header_rec)) {
-      cerr << "error reading header, got short read of size: " << num_read 
-           << "; expected: " << sizeof(net_header_rec) << endl;
+      cerr << "error reading header, got short read of size: " << num_read
+        << "; expected: " << sizeof(net_header_rec) << endl;
       return 1;
     }
     cout << "destination: " << h.touser << "@" << h.tosys << endl;
@@ -141,7 +137,7 @@ int dump_file(const std::string& filename) {
       // read list of addresses.
       std::vector<uint16_t> list;
       list.resize(h.list_len);
-      int list_num_read = read(f, &list[0], 2 * h.list_len);
+      f.Read(&list[0], 2 * h.list_len);
       for (const auto item : list) {
         cout << item << " ";
       }
@@ -153,24 +149,31 @@ int dump_file(const std::string& filename) {
       if (h.method > 0) {
         length -= 146; // sizeof EN/DE header.
         char header[147];
-        read(f, header, 146);
+        f.Read(header, 146);
       }
       text.resize(length + 1);
-      int text_num_read = read(f, &text[0], length);
+      f.Read(&text[0], length);
       cout << "Text:" << endl << text << endl << endl;
     }
     cout << "==============================================================================" << endl;
   }
-  close(f);
   return 0;
 }
 
-int dump(const CommandLineCommand* command) {
-  if (command->remaining().empty()) {
+int DumpPacketCommand::Execute() {
+  if (remaining().empty()) {
     cout << "Usage:   dump <filename>" << endl;
     cout << "Example: dump S1.NET" << endl;
     return 2;
   }
-  const string filename(command->remaining().front());
+  const string filename(remaining().front());
   return dump_file(filename);
+}
+
+bool DumpPacketCommand::AddSubCommands() {
+  return true;
+}
+
+
+}
 }

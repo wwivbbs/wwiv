@@ -17,22 +17,28 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <string>
+
+#include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/chains.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
+#include "bbs/defaults.h"
 #include "bbs/input.h"
-#include "bbs/bbs.h"
+#include "bbs/msgbase1.h"
 #include "bbs/fcns.h"
-#include "bbs/vars.h"
 #include "bbs/instmsg.h"
 #include "bbs/menuspec.h"
 #include "bbs/menusupp.h"
 #include "bbs/multinst.h"
+#include "bbs/vars.h"
 #include "core/strings.h"
 
+using std::string;
 using namespace wwiv::menus;
+using namespace wwiv::sdk;
 
 /* ---------------------------------------------------------------------- */
 /* menuspec.cpp - Menu Specific support functions                           */
@@ -53,7 +59,7 @@ using namespace wwiv::menus;
 int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bool bFreeDL, bool bTitle) {
   int bOkToDL;
   uploadsrec u;
-  WUser ur;
+  User ur;
   char s1[81], s2[81];
   bool abort = false;
 
@@ -85,7 +91,7 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
     bout.nl();
 
     if (bTitle) {
-      bout << "Directory  : " << directories[dn].name << wwiv::endl;
+      bout << "Directory  : " << session()->directories[dn].name << wwiv::endl;
     }
     bOkToDL = printfileinfo(&u, dn);
 
@@ -99,9 +105,9 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
     }
     if (bOkToDL || bFreeDL) {
       write_inst(INST_LOC_DOWNLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
-      sprintf(s1, "%s%s", directories[dn].path, u.filename);
-      if (directories[dn].mask & mask_cdrom) {
-        sprintf(s2, "%s%s", directories[dn].path, u.filename);
+      sprintf(s1, "%s%s", session()->directories[dn].path, u.filename);
+      if (session()->directories[dn].mask & mask_cdrom) {
+        sprintf(s2, "%s%s", session()->directories[dn].path, u.filename);
         sprintf(s1, "%s%s", syscfgovr.tempdir, u.filename);
         if (!File::Exists(s1)) {
           copyfile(s2, s1, false);
@@ -132,8 +138,9 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
           session()->users()->ReadUser(&ur, u.ownerusr);
           if (!ur.IsUserDeleted()) {
             if (date_to_daten(ur.GetFirstOn()) < static_cast<time_t>(u.daten)) {
+              const string username_num = session()->names()->UserName(session()->usernum);
               ssm(u.ownerusr, 0, "%s downloaded '%s' on %s",
-                  session()->user()->GetUserNameAndNumber(session()->usernum),
+                  username_num.c_str(),
                   u.filename, date());
             }
           }
@@ -160,8 +167,8 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
 
 
 int FindDN(const char *pszDownloadFileName) {
-  for (int i = 0; (i < session()->num_dirs); i++) {
-    if (wwiv::strings::IsEqualsIgnoreCase(directories[i].filename, pszDownloadFileName)) {
+  for (int i = 0; (i < session()->directories.size()); i++) {
+    if (wwiv::strings::IsEqualsIgnoreCase(session()->directories[i].filename, pszDownloadFileName)) {
       return i;
     }
   }
@@ -273,7 +280,7 @@ void ChangeDirNumber() {
       bout.nl();
       continue;
     }
-    for (int i = 0; i < session()->num_dirs; i++) {
+    for (int i = 0; i < session()->directories.size(); i++) {
       if (wwiv::strings::IsEquals(udir[i].keys, s)) {
         session()->SetCurrentFileArea(i);
         done = true;
@@ -320,17 +327,14 @@ void EnableConf() {
   tmp_disable_conf(false);
 }
 
-
 void DisableConf() {
   tmp_disable_conf(true);
 }
-
 
 void SetNewScanMsg() {
   sysoplog("Select Subs");
   config_qscan();
 }
-
 
 void ReadMessages() {
   bout << "\r\n|#8Which messages?\r\n|#7(N)ew (A)ll (Q)uit : ";

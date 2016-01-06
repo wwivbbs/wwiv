@@ -21,8 +21,6 @@ set(COMMON_SOURCES
  bbsutl2.cpp
  bgetch.cpp
  bputch.cpp
- callback.cpp
- capture.cpp
  chains.cpp
  chat.cpp
  chnedit.cpp
@@ -111,7 +109,6 @@ set(COMMON_SOURCES
  woutstreambuffer.cpp
  wqscn.cpp
  wsession.cpp
- wuser.cpp
  xfer.cpp
  xferovl.cpp
  xferovl1.cpp

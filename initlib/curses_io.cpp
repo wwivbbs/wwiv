@@ -94,10 +94,10 @@ CursesIO::CursesIO(const string& title)
     originalConsoleSize = consoleBufferInfo.dwSize;
     SMALL_RECT rect = consoleBufferInfo.srWindow;
     COORD bufSize;
-    bufSize.X = static_cast<short>(rect.Right - rect.Left + 1);
-    bufSize.Y = static_cast<short>(rect.Bottom - rect.Top + 1);
-    bufSize.X = static_cast<short>(std::min<SHORT>(bufSize.X, 80));
-    bufSize.Y = static_cast<short>(std::min<SHORT>(bufSize.Y, 25));
+    bufSize.X = static_cast<SHORT>(rect.Right - rect.Left + 1);
+    bufSize.Y = static_cast<SHORT>(rect.Bottom - rect.Top + 1);
+    bufSize.X = static_cast<SHORT>(std::min<SHORT>(bufSize.X, 80));
+    bufSize.Y = static_cast<SHORT>(std::min<SHORT>(bufSize.Y, 25));
     SetConsoleWindowInfo(hConOut, TRUE, &rect);
     SetConsoleScreenBufferSize(hConOut, bufSize);
 

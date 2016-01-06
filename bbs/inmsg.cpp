@@ -32,6 +32,7 @@
 #include "bbs/printfile.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
+#include "bbs/instmsg.h"
 #include "bbs/message_file.h"
 #include "bbs/vars.h"
 #include "bbs/workspace.h"
@@ -42,6 +43,7 @@
 #include "bbs/external_edit.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+#include "sdk/names.h"
 #include "sdk/filenames.h"
 
 using std::string;
@@ -323,29 +325,6 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
 }
 
 
-void UpdateMessageBufferTheadsInfo(std::ostringstream& ss, const char *aux) {
-  if (!IsEqualsIgnoreCase(aux, "email")) {
-    time_t message_time = time(nullptr);
-    const string s = ss.str();
-    unsigned long targcrc = crc32buf(s.c_str(), s.length());
-    const string msgid_buf = StringPrintf("%c0P %lX-%lX", CD, targcrc, message_time);
-    ss << msgid_buf << crlf;
-    if (thread) {
-      thread [session()->GetNumMessagesInCurrentMessageArea() + 1 ].msg_num = static_cast< unsigned short>
-          (session()->GetNumMessagesInCurrentMessageArea() + 1);
-      strcpy(thread[session()->GetNumMessagesInCurrentMessageArea() + 1].message_code, &msgid_buf.c_str()[4]);
-    }
-    if (session()->threadID.length() > 0) {
-      const string threadid_buf = StringPrintf("%c0W %s", CD, session()->threadID.c_str());
-      ss << threadid_buf << crlf;
-      if (thread) {
-        strcpy(thread[session()->GetNumMessagesInCurrentMessageArea() + 1].parent_code, &threadid_buf.c_str()[4]);
-        thread[ session()->GetNumMessagesInCurrentMessageArea() + 1 ].used = 1;
-      }
-    }
-  }
-}
-
 static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char *aux) {
   if (irt_name[0] &&
       !IsEqualsIgnoreCase(aux, "email") &&
@@ -502,8 +481,7 @@ static void GetMessageAnonStatus(bool *real_name, int *anony, int setanon) {
     break;
   case anony_enable_dear_abby: {
     bout.nl();
-    bout << "1. " << session()->user()->GetUserNameAndNumber(
-                         session()->usernum) << wwiv::endl;
+    bout << "1. " << session()->names()->UserName(session()->usernum) << wwiv::endl;
     bout << "2. Abby\r\n";
     bout << "3. Problemed Person\r\n\n";
     bout << "|#5Which? ";
@@ -618,7 +596,8 @@ bool inmsg(MessageEditorData& data) {
   } else if (data.silent_mode) {
     b << syscfg.sysopname << " #1" << crlf;
   } else {
-    b << session()->user()->GetUserNameNumberAndSystem(session()->usernum, net_sysnum) << crlf;
+    const string name = session()->names()->UserName(session()->usernum, net_sysnum);
+    b << name << crlf;
   }
 
   // Add date to message body
@@ -629,9 +608,6 @@ bool inmsg(MessageEditorData& data) {
   b << time_string << crlf;
   UpdateMessageBufferQuotesCtrlLines(b);
 
-  if (session()->IsMessageThreadingEnabled()) {
-    UpdateMessageBufferTheadsInfo(b, data.aux.c_str());
-  }
   if (irt[0]) {
     UpdateMessageBufferInReplyToInfo(b, data.aux.c_str());
   }

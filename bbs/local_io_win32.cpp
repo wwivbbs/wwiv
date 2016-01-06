@@ -70,8 +70,8 @@ void Win32ConsoleIO::set_attr_xy(int x, int y, int a) {
   COORD loc = {0};
   DWORD cb = {0};
 
-  loc.X = static_cast<short>(x);
-  loc.Y = static_cast<short>(y);
+  loc.X = static_cast<SHORT>(x);
+  loc.Y = static_cast<SHORT>(y);
 
   WriteConsoleOutputAttribute(m_hConOut, reinterpret_cast< LPWORD >(&a), 1, loc, &cb);
 }
@@ -91,10 +91,10 @@ Win32ConsoleIO::Win32ConsoleIO() : LocalIO() {
   m_originalConsoleSize = m_consoleBufferInfo.dwSize;
   SMALL_RECT rect = m_consoleBufferInfo.srWindow;
   COORD bufSize;
-  bufSize.X = static_cast<short>(rect.Right - rect.Left + 1);
-  bufSize.Y = static_cast<short>(rect.Bottom - rect.Top + 1);
-  bufSize.X = static_cast<short>(std::min<SHORT>(bufSize.X, 80));
-  bufSize.Y = static_cast<short>(std::min<SHORT>(bufSize.Y, 25));
+  bufSize.X = static_cast<SHORT>(rect.Right - rect.Left + 1);
+  bufSize.Y = static_cast<SHORT>(rect.Bottom - rect.Top + 1);
+  bufSize.X = static_cast<SHORT>(std::min<SHORT>(bufSize.X, 80));
+  bufSize.Y = static_cast<SHORT>(std::min<SHORT>(bufSize.Y, 25));
   SetConsoleWindowInfo(m_hConOut, TRUE, &rect);
   SetConsoleScreenBufferSize(m_hConOut, bufSize);
 
@@ -124,10 +124,6 @@ void Win32ConsoleIO::LocalGotoXY(int x, int y) {
   y += GetTopLine();
   y = std::min<int>(y, GetScreenBottom());
 
-  if (x_only) {
-    capture_->set_wx(x);
-    return;
-  }
   m_cursorPosition.X = static_cast<int16_t>(x);
   m_cursorPosition.Y = static_cast<int16_t>(y);
   SetConsoleCursorPosition(m_hConOut, m_cursorPosition);
@@ -138,10 +134,6 @@ void Win32ConsoleIO::LocalGotoXY(int x, int y) {
 * means the cursor is at the left-most position
 */
 int Win32ConsoleIO::WhereX() {
-  if (x_only) {
-    return capture_->wx();
-  }
-
   GetConsoleScreenBufferInfo(m_hConOut, &m_consoleBufferInfo);
 
   m_cursorPosition.X = m_consoleBufferInfo.dwCursorPosition.X;
@@ -286,21 +278,6 @@ void Win32ConsoleIO::LocalPutchRaw(unsigned char ch) {
  * BS, and BELL are interpreted as commands instead of characters.
  */
 void Win32ConsoleIO::LocalPutch(unsigned char ch) {
-  if (x_only) {
-    int wx = capture_->wx();
-    if (ch > 31) {
-      wx = (wx + 1) % 80;
-    } else if (ch == RETURN || ch == CL) {
-      wx = 0;
-    } else if (ch == BACKSPACE) {
-      if (wx) {
-        wx--;
-      }
-    }
-    capture_->set_wx(wx);
-    return;
-  }
-
   if (ch > 31) {
     LocalPutchRaw(ch);
   } else if (ch == CM) {
@@ -414,7 +391,6 @@ void Win32ConsoleIO::set_protect(int l) { //JZ Set_Protect Fix
     session()->screenlinest = defscreenbottom + 1 - GetTopLine();
   }
 }
-  
 
 void Win32ConsoleIO::savescreen() {
   COORD topleft;
@@ -470,57 +446,6 @@ static char xlate[] = {
   'Z', 'X', 'C', 'V', 'B', 'N', 'M',
 };
 
-static char scan_to_char(int nKeyCode) {
-  return (nKeyCode >= 16 && nKeyCode <= 50) ? xlate[ nKeyCode - 16 ] : '\x00';
-}
-
-static void alt_key(int nKeyCode) {
-  char ch1 = scan_to_char(nKeyCode);
-  if (ch1) {
-    char szCommand[ MAX_PATH ];
-    memset(szCommand, 0, sizeof(szCommand));
-    File macroFile(syscfg.datadir, MACROS_TXT);
-    if (macroFile.Open(File::modeReadOnly | File::modeBinary)) {
-      int l = macroFile.GetLength();
-      char* ss = static_cast<char *>(BbsAllocA(l + 10));
-      if (ss) {
-        macroFile.Read(ss, l);
-        macroFile.Close();
-
-        ss[l] = 0;
-        char* ss1 = strtok(ss, "\r\n");
-        while (ss1) {
-          if (upcase(*ss1) == ch1) {
-            strtok(ss1, " \t");
-            ss1 = strtok(nullptr, "\r\n");
-            if (ss1 && (strlen(ss1) < 128)) {
-              strncpy(szCommand, ss1, sizeof(szCommand));
-            }
-            ss1 = nullptr;
-          } else {
-            ss1 = strtok(nullptr, "\r\n");
-          }
-        }
-        free(ss);
-      }
-
-      if (szCommand[0]) {
-        if (szCommand[0] == '@') {
-          if (okmacro && okskey && (!charbufferpointer) && (szCommand[1])) {
-            for (l = strlen(szCommand) - 1; l >= 0; l--) {
-              if (szCommand[l] == '{') {
-                szCommand[l] = '\r';
-              }
-              strcpy(charbuffer, szCommand);
-              charbufferpointer = 1;
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
 /*
  * skey handles all f-keys and the like hit FROM THE KEYBOARD ONLY
  */
@@ -528,113 +453,106 @@ void Win32ConsoleIO::skey(char ch) {
   int nKeyCode = static_cast<unsigned char>(ch);
   int i, i1;
 
-  if ((syscfg.sysconfig & sysconfig_no_local) == 0) {
-    if (okskey) {
-      if (nKeyCode >= AF1 && nKeyCode <= AF10) {
-        set_autoval(nKeyCode - 104);
-      } else {
-        switch (nKeyCode) {
-        case F1:                          /* F1 */
-          OnlineUserEditor();
-          break;
-        case SF1:
-          /* Shift-F1 */
-          capture_->set_global_handle(!capture_->is_open());
-          session()->UpdateTopScreen();
-          break;
-        case CF1:                          /* Ctrl-F1 */
-          session()->ToggleShutDown();
-          break;
-        case F2:                          /* F2 */
-          session()->topdata++;
-          if (session()->topdata > LocalIO::topdataUser) {
-            session()->topdata = LocalIO::topdataNone;
-          }
-          session()->UpdateTopScreen();
-          break;
-        case F3:                          /* F3 */
-          if (session()->using_modem) {
-            incom = !incom;
-            dump();
-            tleft(false);
-          }
-          break;
-        case F4:                          /* F4 */
-          chatcall = false;
-          session()->UpdateTopScreen();
-          break;
-        case F5:                          /* F5 */
-          hangup = true;
-          session()->remoteIO()->dtr(false);
-          break;
-        case SF5:                          /* Shift-F5 */
-          i1 = (rand() % 20) + 10;
-          for (i = 0; i < i1; i++) {
-            bputch(static_cast<unsigned char>(rand() % 256));
-          }
-          hangup = true;
-          session()->remoteIO()->dtr(false);
-          break;
-        case CF5:                          /* Ctrl-F5 */
-          bout << "\r\nCall back later when you are there.\r\n\n";
-          hangup = true;
-          session()->remoteIO()->dtr(false);
-          break;
-        case F6:                          /* F6 */
-          SetSysopAlert(!GetSysopAlert());
-          tleft(false);
-          break;
-        case F7:                          /* F7 */
-          session()->user()->SetExtraTime(session()->user()->GetExtraTime() -
-              static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
-          tleft(false);
-          break;
-        case F8:                          /* F8 */
-          session()->user()->SetExtraTime(session()->user()->GetExtraTime() +
-              static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
-          tleft(false);
-          break;
-        case F9:                          /* F9 */
-          if (session()->user()->GetSl() != 255) {
-            if (session()->GetEffectiveSl() != 255) {
-              session()->SetEffectiveSl(255);
-            } else {
-              session()->ResetEffectiveSl();
-            }
-            changedsl();
-            tleft(false);
-          }
-          break;
-        case F10:                          /* F10 */
-          if (chatting == 0) {
-            if (syscfg.sysconfig & sysconfig_2_way) {
-              chat1("", true);
-            } else {
-              chat1("", false);
-            }
-          } else {
-            chatting = 0;
-          }
-          break;
-        case CF10:                         /* Ctrl-F10 */
-          if (chatting == 0) {
-            chat1("", false);
-          } else {
-            chatting = 0;
-          }
-          break;
-        case HOME:                          /* HOME */
-          if (chatting == 1) {
-            chat_file = !chat_file;
-          }
-          break;
-        default:
-          alt_key(nKeyCode);
-          break;
-        }
-      }
+  if (okskey) {
+    if (nKeyCode >= AF1 && nKeyCode <= AF10) {
+      set_autoval(nKeyCode - 104);
     } else {
-      alt_key(nKeyCode);
+      switch (nKeyCode) {
+      case F1:                          /* F1 */
+        OnlineUserEditor();
+        break;
+      case SF1:
+        /* Shift-F1 */
+        // Nothing.
+        session()->UpdateTopScreen();
+        break;
+      case CF1:                          /* Ctrl-F1 */
+        session()->ToggleShutDown();
+        break;
+      case F2:                          /* F2 */
+        session()->topdata++;
+        if (session()->topdata > LocalIO::topdataUser) {
+          session()->topdata = LocalIO::topdataNone;
+        }
+        session()->UpdateTopScreen();
+        break;
+      case F3:                          /* F3 */
+        if (session()->using_modem) {
+          incom = !incom;
+          dump();
+          tleft(false);
+        }
+        break;
+      case F4:                          /* F4 */
+        chatcall = false;
+        session()->UpdateTopScreen();
+        break;
+      case F5:                          /* F5 */
+        hangup = true;
+        session()->remoteIO()->dtr(false);
+        break;
+      case SF5:                          /* Shift-F5 */
+        i1 = (rand() % 20) + 10;
+        for (i = 0; i < i1; i++) {
+          bputch(static_cast<unsigned char>(rand() % 256));
+        }
+        hangup = true;
+        session()->remoteIO()->dtr(false);
+        break;
+      case CF5:                          /* Ctrl-F5 */
+        bout << "\r\nCall back later when you are there.\r\n\n";
+        hangup = true;
+        session()->remoteIO()->dtr(false);
+        break;
+      case F6:                          /* F6 */
+        SetSysopAlert(!GetSysopAlert());
+        tleft(false);
+        break;
+      case F7:                          /* F7 */
+        session()->user()->SetExtraTime(session()->user()->GetExtraTime() -
+            static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
+        tleft(false);
+        break;
+      case F8:                          /* F8 */
+        session()->user()->SetExtraTime(session()->user()->GetExtraTime() +
+            static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
+        tleft(false);
+        break;
+      case F9:                          /* F9 */
+        if (session()->user()->GetSl() != 255) {
+          if (session()->GetEffectiveSl() != 255) {
+            session()->SetEffectiveSl(255);
+          } else {
+            session()->ResetEffectiveSl();
+          }
+          changedsl();
+          tleft(false);
+        }
+        break;
+      case F10:                          /* F10 */
+        if (chatting == 0) {
+          if (syscfg.sysconfig & sysconfig_2_way) {
+            chat1("", true);
+          } else {
+            chat1("", false);
+          }
+        } else {
+          chatting = 0;
+        }
+        break;
+      case CF10:                         /* Ctrl-F10 */
+        if (chatting == 0) {
+          chat1("", false);
+        } else {
+          chatting = 0;
+        }
+        break;
+      case HOME:                          /* HOME */
+        if (chatting == 1) {
+          chat_file = !chat_file;
+        }
+        break;
+      }
     }
   }
 }
@@ -642,7 +560,7 @@ void Win32ConsoleIO::skey(char ch) {
 static const vector<string> top_screen_items = {
   "Comm Disabled",
   "Temp Sysop",
-  "Capture",
+  "",
   "Alert",
   "อออออออ",
   "Available",
@@ -676,9 +594,6 @@ void Win32ConsoleIO::tleft(bool bCheckForTimeOut) {
 
     if (session()->user()->GetSl() != 255 && session()->GetEffectiveSl() == 255) {
       LocalXYPuts(23, nLineNumber, top_screen_items[1]);
-    }
-    if (capture_->is_open()) {
-      LocalXYPuts(40, nLineNumber, top_screen_items[2]);
     }
     if (GetSysopAlert()) {
       LocalXYPuts(54, nLineNumber, top_screen_items[3]);
@@ -730,8 +645,9 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
 
   if (syscfg.sysconfig & sysconfig_titlebar) {
     // Only set the titlebar if the user wanted it that way.
+    const string username_num = pSession->names()->UserName(pSession->usernum);
     string title = StringPrintf("WWIV Node %d (User: %s)", nInstanceNumber,
-              pSession->user()->GetUserNameAndNumber(pSession->usernum));
+              username_num.c_str());
     ::SetConsoleTitle(title.c_str());
   }
 
@@ -774,8 +690,9 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
                   pStatus->GetNumUsers(), pStatus->GetCallerNumber(),
                   pStatus->GetNumCallsToday(), pStatus->GetNumLocalPosts());
 
+    const string username_num = pSession->names()->UserName(pSession->usernum);
     LocalXYPrintf(0, 2, "%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
-                  pSession->user()->GetUserNameAndNumber(pSession->usernum),
+                  username_num.c_str(),
                   pStatus->GetMinutesActiveToday(),
                   static_cast<int>(10 * pStatus->GetMinutesActiveToday() / 144),
                   pStatus->GetNumEmailSentToday());
@@ -816,8 +733,9 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
       snprintf(lo, sizeof(lo), "Today:%2d", pSession->user()->GetTimesOnToday());
     }
 
+    const string username_num = pSession->names()->UserName(pSession->usernum);
     LocalXYAPrintf(0, 0, curatr, "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u",
-                   pSession->user()->GetUserNameAndNumber(pSession->usernum),
+                   username_num.c_str(),
                    pSession->user()->GetNumMailWaiting(),
                    pSession->user()->GetFilesUploaded(),
                    pSession->user()->GetUploadK(),
@@ -874,10 +792,6 @@ void Win32ConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int n
  * @return true if a key has been pressed at the local console, false otherwise
  */
 bool Win32ConsoleIO::LocalKeyPressed() {
-  if (x_only) {
-    return false;
-  }
-
   if (ExtendedKeyWaiting) {
     return true;
   }

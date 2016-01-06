@@ -121,7 +121,6 @@ WApplication::~WApplication() {
 
 WSession* CreateSession(WApplication* app, LocalIO* localIO) {
   sess = new WSession(app, localIO);
-  localIO->set_capture(sess->capture());
   return sess;
 }
 

@@ -4,16 +4,22 @@ project (SDK)
 include_directories(..)
 
 set(COMMON_SOURCES
+  callout.cpp
   config.cpp
-  msgapi/message_utils_wwiv.cpp
-  msgapi/msgapi.cpp
-  msgapi/msgapi_wwiv.cpp
+  contact.cpp
+  datetime.cpp
   msgapi/message_api.cpp
   msgapi/message_api_wwiv.cpp
-  msgapi/message_wwiv.cpp
   msgapi/message_area_wwiv.cpp
+  msgapi/message_utils_wwiv.cpp
+  msgapi/message_wwiv.cpp
+  msgapi/msgapi.cpp
+  msgapi/msgapi_wwiv.cpp
+  names.cpp
   networks.cpp
   phone_numbers.cpp
+  user.cpp
+  usermanager.cpp
   )
 
 add_library(sdk ${COMMON_SOURCES})

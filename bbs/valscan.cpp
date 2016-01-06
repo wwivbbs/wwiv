@@ -25,9 +25,13 @@
 #include "bbs/datetime.h"
 #include "bbs/fcns.h"
 #include "bbs/input.h"
+#include "bbs/msgbase1.h"
 #include "bbs/read_message.h"
 #include "bbs/subxtr.h"
 #include "bbs/vars.h"
+#include "sdk/user.h"
+
+using namespace wwiv::sdk;
 
 void valscan() {
   // Must be local cosysop or better
@@ -43,7 +47,7 @@ void valscan() {
     tmp_disable_conf(true);
   }
   bool done = false;
-  for (int sn = 0; sn < session()->subboards.size() && !hangup && !done; sn++) {
+  for (size_t sn = 0; sn < session()->subboards.size() && !hangup && !done; sn++) {
     if (!iscan(sn)) {
       continue;
     }
@@ -123,7 +127,7 @@ void valscan() {
                 delete_message(i);
                 close_sub();
                 if (p2.ownersys == 0) {
-                  WUser tu;
+                  User tu;
                   session()->users()->ReadUser(&tu, p2.owneruser);
                   if (!tu.IsUserDeleted()) {
                     if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(p2.daten)) {
@@ -137,7 +141,7 @@ void valscan() {
                       }
                       nNumPostCredits = std::min<int>(tu.GetNumMessagesPosted(), nNumPostCredits);
                       if (nNumPostCredits) {
-                        tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - static_cast<unsigned short>(nNumPostCredits));
+                        tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - static_cast<uint16_t>(nNumPostCredits));
                       }
                       bout.nl();
                       bout << "|#3Post credit removed = " << nNumPostCredits << wwiv::endl;

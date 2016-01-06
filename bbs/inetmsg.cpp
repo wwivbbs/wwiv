@@ -19,6 +19,7 @@
 
 #include "bbs/bbsovl3.h"
 #include "bbs/bbs.h"
+#include "bbs/email.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/input.h"
@@ -27,6 +28,7 @@
 #include "core/textfile.h"
 #include "sdk/filenames.h"
 
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 
@@ -169,7 +171,7 @@ char *read_inet_addr(char *internet_address, int user_number) {
         strcpy(internet_address, szUserName);
       } else {
         sprintf(internet_address, "User #%d", user_number);
-        WUser user;
+        User user;
         session()->users()->ReadUser(&user, user_number);
         user.SetEmailAddress("");
         session()->users()->WriteUser(&user, user_number);

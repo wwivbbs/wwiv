@@ -41,7 +41,7 @@ static int disable_conf_cnt = 0;
 #define MAX_CONF_LINE 4096
 
 /* To prevent heap fragmentation, allocate confrec.subs in multiples. */
-#define CONF_MULTIPLE ( session()->GetMaxNumberMessageAreas() / 5 )
+#define CONF_MULTIPLE ( syscfg.max_subs / 5 )
 
 // Locals
 char* GetGenderAllowed(int nGender, char *pszGenderAllowed);
@@ -127,7 +127,7 @@ int get_conf_info(int conftype, int *num, confrec ** cpp,
       sprintf(file_name, "%s%s", syscfg.datadir, DIRS_CNF);
     }
     if (num_s) {
-      *num_s = session()->num_dirs;
+      *num_s = session()->directories.size();
     }
     if (uc) {
       *uc = uconfdir;
@@ -397,7 +397,7 @@ void showsubconfs(int conftype, confrec * c) {
               (test > -1) ? szIndex : charstr(4, '-'), confstr);
       break;
     case CONF_DIRS:
-      sprintf(s, "|#1%3d |#2%-39.39s |#9%4.4s %s", i, stripcolors(directories[i].name),
+      sprintf(s, "|#1%3d |#2%-39.39s |#9%4.4s %s", i, stripcolors(session()->directories[i].name),
               (test > -1) ? szIndex : charstr(4, '-'), confstr);
       break;
     }
@@ -1088,7 +1088,7 @@ void list_confs(int conftype, int ssc) {
               break;
             case CONF_DIRS:
               sprintf(s1, "%s%-3d : %s", "Dir #", dirconfs[i].subs[i2],
-                      stripcolors(directories[cp[i].subs[i2]].name));
+                      stripcolors(session()->directories[cp[i].subs[i2]].name));
               break;
             }
             strcat(s, s1);
@@ -1286,10 +1286,10 @@ confrec *read_conferences(const char *file_name, int *nc, int max) {
               conferences[cc].sex = wwiv::strings::StringToUnsignedChar(ts);
               break;
             case 10:
-              conferences[cc].ar = static_cast<unsigned short>(str_to_arword(ts));
+              conferences[cc].ar = static_cast<uint16_t>(str_to_arword(ts));
               break;
             case 11:
-              conferences[cc].dar = static_cast<unsigned short>(str_to_arword(ts));
+              conferences[cc].dar = static_cast<uint16_t>(str_to_arword(ts));
               break;
             }
           }
@@ -1301,7 +1301,7 @@ confrec *read_conferences(const char *file_name, int *nc, int max) {
           if (strlen(extractword(1, ls, DELIMS_WHITE)) < 2) {
             conferences[cc].num = 0;
           } else {
-            conferences[cc].num = static_cast<unsigned short>(nw);
+            conferences[cc].num = static_cast<uint16_t>(nw);
           }
           conferences[cc].maxnum = conferences[cc].num;
           l = static_cast<long>(conferences[cc].num * sizeof(unsigned int) + 1);
@@ -1334,10 +1334,10 @@ confrec *read_conferences(const char *file_name, int *nc, int max) {
               i3 = atoi(ss);
             }
             if ((i3 >= 0) && (i3 < max)) {
-              conferences[cc].subs[i1++] = static_cast<unsigned short>(i3);
+              conferences[cc].subs[i1++] = static_cast<uint16_t>(i3);
             }
           }
-          conferences[cc].num = static_cast<unsigned short>(i1);
+          conferences[cc].num = static_cast<uint16_t>(i1);
           cc++;
           break;
         }

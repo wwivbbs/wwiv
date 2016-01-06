@@ -44,7 +44,7 @@ void normalupload(int dn) {
   int ok = 1;
 
   dliscan1(dn);
-  directoryrec d = directories[dn];
+  directoryrec d = session()->directories[dn];
   if (session()->numf >= d.maxfiles) {
     bout.nl(3);
     bout << "This directory is currently full.\r\n\n";
@@ -83,12 +83,12 @@ void normalupload(int dn) {
     ok = 0;
     string supportedExtensions;
     for (int k = 0; k < MAX_ARCS; k++) {
-      if (arcs[k].extension[0] && arcs[k].extension[0] != ' ') {
+      if (session()->arcs[k].extension[0] && session()->arcs[k].extension[0] != ' ') {
         if (!supportedExtensions.empty()) {
           supportedExtensions += ", ";
         }
-        supportedExtensions += arcs[k].extension;
-        if (wwiv::strings::IsEquals(szInputFileName + 9, arcs[k].extension)) {
+        supportedExtensions += session()->arcs[k].extension;
+        if (wwiv::strings::IsEquals(szInputFileName + 9, session()->arcs[k].extension)) {
           ok = 1;
         }
       }
@@ -101,12 +101,13 @@ void normalupload(int dn) {
     }
   }
   strcpy(u.filename, szInputFileName);
-  u.ownerusr = static_cast<unsigned short>(session()->usernum);
+  u.ownerusr = static_cast<uint16_t>(session()->usernum);
   u.ownersys = 0;
   u.numdloads = 0;
   u.unused_filetype = 0;
   u.mask = 0;
-  strcpy(u.upby, session()->user()->GetUserNameAndNumber(session()->usernum));
+  const string unn = session()->names()->UserName(session()->usernum);
+  strcpy(u.upby, unn.c_str());
   strcpy(u.date, date());
   bout.nl();
   ok = 1;
@@ -163,11 +164,11 @@ void normalupload(int dn) {
     }
     if (ok && !session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
       bout.nl();
-      bout << "Checking for same file in other directories...\r\n\n";
+      bout << "Checking for same file in other session()->directories...\r\n\n";
       int nLastLineLength = 0;
-      for (int i = 0; i < session()->num_dirs && udir[i].subnum != -1; i++) {
+      for (int i = 0; i < session()->directories.size() && udir[i].subnum != -1; i++) {
         string buffer = "Scanning ";
-        buffer += directories[udir[i].subnum].name;
+        buffer += session()->directories[udir[i].subnum].name;
         int nBufferLen = buffer.length();
         for (int i3 = nBufferLen; i3 < nLastLineLength; i3++) {
           buffer += " ";
@@ -178,7 +179,7 @@ void normalupload(int dn) {
         int i1 = recno(u.filename);
         if (i1 >= 0) {
           bout.nl();
-          bout << "Same file found on " << directories[udir[i].subnum].name << wwiv::endl;
+          bout << "Same file found on " << session()->directories[udir[i].subnum].name << wwiv::endl;
           if (dcs()) {
             bout.nl();
             bout << "|#5Upload anyway? ";
@@ -206,7 +207,7 @@ void normalupload(int dn) {
       inputl(u.description, 58);
       bout.nl();
       char *pszExtendedDescription = nullptr;
-      modify_extended_description(&pszExtendedDescription, directories[dn].name);
+      modify_extended_description(&pszExtendedDescription, session()->directories[dn].name);
       if (pszExtendedDescription) {
         add_extended_description(u.filename, pszExtendedDescription);
         u.mask |= mask_extended;
@@ -286,7 +287,7 @@ void normalupload(int dn) {
             pStatus->IncrementNumUploadsToday();
             pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
             session()->status_manager()->CommitTransaction(pStatus);
-            sysoplogf("+ \"%s\" uploaded on %s", u.filename, directories[dn].name);
+            sysoplogf("+ \"%s\" uploaded on %s", u.filename, session()->directories[dn].name);
             bout.nl(2);
             bout.bprintf("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());
             bout.nl(2);

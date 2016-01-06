@@ -5,11 +5,27 @@
 
 What's New in WWIV 5.1 (2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* Message titles are not limited to 72 characters (same as FidoNet message)
+* Message titles are now limited to 72 characters (same as FidoNet message)
   limits.  In reality they would get truncated around this length anyway and
   in most places WWIV still forces a max of 60 characters.
 * Internal application-level caching for posts have been removed. It didn't help
   access times anymore and added lots of unneeded complexity.
+* Started new utility WWIVUTIL which will eventually handle maintenance
+  tasks for the bbs.
+* Updated menus/textfiles to reflect 5.1 and also remove commands that have
+  been removed years ago.
+* LOCAL_SYSOP has been removed from wwiv.ini, it's always true now.
+* Callback support has been removed the rest of the way.
+* Threaded messages support has been removed (it didn't work anyway).
+* NETUTIL has been merged into WWIVUTIL.  Going forward, WWIVUTIL will be
+  the main external command line tool for WWIV on all platforms.
+* Removed menu commands DownloadPosts and DownloadFileList and the 
+  Download Zipped Text menu item from //QWK (all did the same thing).
+* Removed ability to run WWIVMAIL.EXE from the //QWK menu. If anyone
+  wants this, then can add their own //QWK menu now that we have a
+  menu editor since 4.3. This removed USE_WWIVMAIL and USE_INTERNAL_QWK
+  from wwiv.ini.
+* removed SLASH_SZ from wwiv.ini. It wasn't enabled by default anyway.
 
 What's New in 2015 (WWIV 5.0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -14,17 +14,21 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
+/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_NETUTIL_DUMP_CALLOUT_H__
-#define __INCLUDED_NETUTIL_DUMP_CALLOUT_H__
+#ifndef __INCLUDED_SDK_DATETIME_H__
+#define __INCLUDED_SDK_DATETIME_H__
 
-#include <map>
-#include "core/command_line.h"
-#include "networkb/callout.h"
+#include <ctime>
+#include <string>
 
-void dump_callout_usage();
-int dump_callout(
-  std::map<const std::string, wwiv::net::Callout> callouts, 
-  const wwiv::core::CommandLineCommand* command);
+namespace wwiv {
+namespace sdk {
 
-#endif  // __INCLUDED_NETUTIL_DUMP_CALLOUT_H__
+time_t date_to_daten(const char *datet);
+
+
+}
+}
+
+#endif // __INCLUDED_SDK_DATETIME_H__

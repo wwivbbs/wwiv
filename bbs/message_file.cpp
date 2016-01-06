@@ -204,9 +204,10 @@ bool readfile(messagerec * pMessageRecord, string fileName,string* out) {
   lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
   while (lCurrentSection > 0 && lCurrentSection < GAT_NUMBER_ELEMENTS) {
     file->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast< long >(lCurrentSection), File::seekBegin);
-    char b[MSG_BLOCK_SIZE];
+    char b[MSG_BLOCK_SIZE + 1];
     file->Read(b, MSG_BLOCK_SIZE);
-    out->append(string(b, MSG_BLOCK_SIZE));
+    b[MSG_BLOCK_SIZE] = 0;
+    out->append(b);
     lCurrentSection = gat[lCurrentSection];
   }
   file->Close();

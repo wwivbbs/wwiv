@@ -27,6 +27,7 @@
 #include "bbs/wstatus.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
+#include "bbs/instmsg.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
@@ -133,6 +134,9 @@ int cleanup_net1() {
 
   session()->SetCleanNetNeeded(false);
 
+  if (session()->net_networks.empty()) {
+    return 0;
+  }
   if (session()->net_networks[0].sysnum == 0 && session()->max_net_num() == 1) {
     return 0;
   }
@@ -585,6 +589,9 @@ void print_pending_list() {
 
   int nDow = dow();
 
+  if (session()->net_networks.empty()) {
+    return;
+  }
   if (session()->net_networks[0].sysnum == 0 && session()->max_net_num() == 1) {
     return;
   }
@@ -743,7 +750,7 @@ void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char
 
   char *pszOriginalText = messageText;
   messageText += strlen(pszOriginalText) + 1;
-  unsigned short ntl = static_cast<unsigned short>(nh->length - strlen(pszOriginalText) - 1);
+  unsigned short ntl = static_cast<uint16_t>(nh->length - strlen(pszOriginalText) - 1);
   char *ss = strchr(messageText, '\r');
   if (ss && (ss - messageText < 200) && (ss - messageText < ntl)) {
     strncpy(nm, messageText, ss - messageText);
@@ -753,7 +760,7 @@ void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char
       ss++;
     }
     nh->length -= (ss - messageText);
-    ntl = ntl - static_cast<unsigned short>(ss - messageText);
+    ntl = ntl - static_cast<uint16_t>(ss - messageText);
     messageText = ss;
 
     qn[0] = on[0] = '\0';

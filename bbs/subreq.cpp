@@ -20,6 +20,7 @@
 #include "bbs/input.h"
 #include "bbs/subxtr.h"
 #include "bbs/bbs.h"
+#include "bbs/email.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "core/strings.h"
@@ -48,7 +49,7 @@ static void maybe_netmail(xtrasubsnetrec * ni, bool bAdd) {
 static void sub_req(uint16_t main_type, uint16_t minor_type, int tosys, char *extra) {
   net_header_rec nh;
 
-  nh.tosys = static_cast<unsigned short>(tosys);
+  nh.tosys = static_cast<uint16_t>(tosys);
   nh.touser = 1;
   nh.fromsys = net_sysnum;
   nh.fromuser = 1;
@@ -348,7 +349,7 @@ void sub_xtr_add(int n, int nn) {
       bout.nl();
       bout << "|#2Which system (number) is the host? ";
       input(szDescription, 6);
-      xnp.host = static_cast<unsigned short>(atol(szDescription));
+      xnp.host = static_cast<uint16_t>(atol(szDescription));
       szDescription[0] = '\0';
     }
     if (!session()->xsubs[n].desc[0]) {
