@@ -404,7 +404,7 @@ void config_qscan() {
       bool abort = false;
       strcpy(szConfList, " ");
       bout << "\r\nSelect Conference: \r\n\n";
-      int i = 0;
+      size_t i = 0;
       while (i < subconfnum && uconfsub[i].confnum != -1 && !abort) {
         pla(StringPrintf("%c) %s", subconfs[uconfsub[i].confnum].designator,
                 stripcolors(reinterpret_cast<char*>(subconfs[uconfsub[i].confnum].name))), &abort);
@@ -424,7 +424,7 @@ void config_qscan() {
       break;
     default:
       if (okconf(session()->user())  && uconfsub[1].confnum != -1) {
-        int i = 0;
+        size_t i = 0;
         while ((ch != subconfs[uconfsub[i].confnum].designator) && (i < subconfnum)) {
           i++;
         }

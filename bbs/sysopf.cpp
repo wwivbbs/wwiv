@@ -103,7 +103,7 @@ void valuser(int user_number) {
       bout << "|#9New : ";
       input(s, 3, true);
       if (s[0]) {
-        int nSl = atoi(s);
+        unsigned nSl = StringToUnsignedInt(s);
         if (!session()->GetWfcStatus() && nSl >= session()->GetEffectiveSl()) {
           nSl = -2;
         }
@@ -131,7 +131,7 @@ void valuser(int user_number) {
       bout << "|#9New ? ";
       input(s, 3, true);
       if (s[0]) {
-        int nDsl = atoi(s);
+        unsigned int nDsl = StringToUnsignedInt(s);
         if (!session()->GetWfcStatus() && nDsl >= session()->user()->GetDsl()) {
           nDsl = -1;
         }
@@ -784,7 +784,7 @@ void set_user_age() {
   do {
     User user;
     session()->users()->ReadUser(&user, user_number);
-    int nAge = years_old(user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear());
+    unsigned int nAge = years_old(user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear());
     if (nAge != user.GetAge()) {
       user.SetAge(nAge);
       session()->users()->WriteUser(&user, user_number);
@@ -797,7 +797,7 @@ void set_user_age() {
 void auto_purge() {
   char s[80];
   unsigned int days = 0;
-  int skipsl = 0;
+  unsigned int skipsl = 0;
 
   IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
   if (iniFile.IsOpen()) {
@@ -816,7 +816,7 @@ void auto_purge() {
 
   time_t tTime = time(nullptr);
   int user_number = 1;
-  sysoplogfi(false, "Auto-Purged Inactive Users (over %d days, SL less than %d)", days, skipsl);
+  sysoplogfi(false, "Auto-Purged Inactive Users (over %d days, SL less than %u)", days, skipsl);
 
   do {
     User user;

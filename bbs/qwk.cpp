@@ -496,7 +496,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 
   if (!qwk_info->in_email) { // Only if currently doing messages...
     // Create new index if it hasnt been already
-    if (session()->GetCurrentMessageArea() != qwk_info->cursub || qwk_info->index < 0) {
+    if (session()->GetCurrentMessageArea() != static_cast<unsigned int>(qwk_info->cursub) || qwk_info->index < 0) {
       qwk_info->cursub = session()->GetCurrentMessageArea();
       sprintf(filename, "%s%03d.NDX", QWK_DIRECTORY, usub[session()->GetCurrentMessageArea()].subnum + 1);
       if (qwk_info->index > 0) {
