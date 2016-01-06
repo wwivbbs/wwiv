@@ -39,6 +39,26 @@ using wwiv::core::FilePath;
 using wwiv::strings::IsEqualsIgnoreCase;
 using namespace wwiv::sdk;
 
+struct ch_type {
+  char name[60];
+  int sl;
+  char ar;
+  char sex;
+  uint8_t min_age;
+  uint8_t max_age;
+};
+
+struct ch_action {
+  int r;
+  char aword[12];
+  char toprint[80];
+  char toperson[80];
+  char toall[80];
+  char singular[80];
+};
+
+
+
 static unsigned int g_nChatOpSecLvl;
 static int g_nNumActions;
 static ch_action *actions[MAX_NUM_ACT];
