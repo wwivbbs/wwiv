@@ -791,7 +791,7 @@ void RemoveNotThere() {
 void UploadAllDirs() {
   bout.nl(2);
   bool ok = true;
-  for (int nDirNum = 0; nDirNum < session()->directories.size() && udir[nDirNum].subnum >= 0 && ok && !hangup; nDirNum++) {
+  for (size_t nDirNum = 0; nDirNum < session()->directories.size() && udir[nDirNum].subnum >= 0 && ok && !hangup; nDirNum++) {
     bout << "|#9Now uploading files for: |#2" << session()->directories[udir[nDirNum].subnum].name << wwiv::endl;
     ok = uploadall(nDirNum);
   }
@@ -890,7 +890,7 @@ void UpDirConf() {
 }
 
 void UpDir() {
-  if (session()->GetCurrentFileArea() < session()->directories.size() - 1
+  if (session()->GetCurrentFileArea() < size_int(session()->directories) - 1
       && udir[session()->GetCurrentFileArea() + 1].subnum >= 0) {
     session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
   } else {
@@ -917,7 +917,7 @@ void DownDir() {
     session()->SetCurrentFileArea(session()->GetCurrentFileArea() - 1);
   } else {
     while (udir[session()->GetCurrentFileArea() + 1].subnum >= 0 &&
-           session()->GetCurrentFileArea() < session()->directories.size() - 1) {
+           session()->GetCurrentFileArea() < size_int(session()->directories) - 1) {
       session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
     }
   }

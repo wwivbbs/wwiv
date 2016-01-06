@@ -167,7 +167,6 @@ void select_chat_name(char *sysop_name) {
   session()->DisplaySysopWorkingIndicator(false);
 }
 
-
 // Allows two-way chatting until sysop aborts/exits chat. or the end of line is hit,
 // then chat1 is back in control.
 void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) {
@@ -175,7 +174,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
   int i, i1;
 
   int cm = chatting;
-  int begx = session()->localIO()->WhereX();
+  unsigned int begx = session()->localIO()->WhereX();
   if (rollover[0] != 0) {
     if (charbufferpointer) {
       char szTempBuffer[255];
@@ -197,7 +196,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
     if (session()->IsLastKeyLocal()) {
       if (session()->localIO()->WhereY() == 11) {
         bout << "\x1b[12;1H";
-        for (int screencount = 0; screencount < session()->user()->GetScreenChars(); screencount++) {
+        for (size_t screencount = 0; screencount < session()->user()->GetScreenChars(); screencount++) {
           s2[screencount] = '\xCD';
         }
         const string unn = session()->names()->UserName(session()->usernum);
@@ -488,7 +487,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
              (side0[session()->localIO()->WhereY()][i - 1] == CC))) {
         i--;
       }
-      if ((i > (session()->localIO()->WhereX() / 2)) && (i != (cp0 - 1))) {
+      if ((i > static_cast<int>(session()->localIO()->WhereX() / 2)) && (i != (cp0 - 1))) {
         i1 = cp0 - i - 1;
         for (i = 0; i < i1; i++) {
           bputch(BACKSPACE);
@@ -510,7 +509,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
              (side1[session()->localIO()->WhereY() - 13][i - 1] == CC))) {
         i--;
       }
-      if ((i > (session()->localIO()->WhereX() / 2)) && (i != (cp1 - 1))) {
+      if ((i > static_cast<int>(session()->localIO()->WhereX() / 2)) && (i != (cp1 - 1))) {
         i1 = cp1 - i - 1;
         for (i = 0; i < i1; i++) {
           bputch(BACKSPACE);
@@ -595,7 +594,7 @@ void chat1(const char *chat_line, bool two_way) {
     wwiv_y1 = session()->localIO()->WhereY();
     bout << "\x1b[12;1H";
     bout.Color(7);
-    for (int screencount = 0; screencount < session()->user()->GetScreenChars(); screencount++) {
+    for (size_t screencount = 0; screencount < session()->user()->GetScreenChars(); screencount++) {
       bputch(static_cast<unsigned char>(205), true);
     }
     FlushOutComChBuffer();

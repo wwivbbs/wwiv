@@ -28,12 +28,14 @@
 #include "bbs/wstatus.h"
 #include "core/file.h"
 #include "core/datafile.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "sdk/filenames.h"
 
 using std::string;
 using namespace wwiv::core;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static string gfiledata(const gfiledirrec& r, int nSectionNum) {
@@ -103,7 +105,7 @@ void modify_sec(int n) {
       break;
     case ']':
       session()->gfilesec[n] = r;
-      if (++n >= session()->gfilesec.size()) {
+      if (++n >= size_int(session()->gfilesec)) {
         n = 0;
       }
       r = session()->gfilesec[n];
@@ -239,17 +241,17 @@ void gfileedit() {
       bout << "|#2Section number? ";
       input(s, 2);
       i = atoi(s);
-      if (s[0] != 0 && i >= 0 && i < session()->gfilesec.size()) {
+      if (s[0] != 0 && i >= 0 && i < size_int(session()->gfilesec)) {
         modify_sec(i);
       }
       break;
     case 'I':
-      if (session()->gfilesec.size() < session()->max_gfilesec) {
+      if (size_int(session()->gfilesec) < session()->max_gfilesec) {
         bout.nl();
         bout << "|#2Insert before which section? ";
         input(s, 2);
         i = atoi(s);
-        if (s[0] != 0 && i >= 0 && i <= session()->gfilesec.size()) {
+        if (s[0] != 0 && i >= 0 && i <= size_int(session()->gfilesec)) {
           insert_sec(i);
         }
       }
@@ -259,7 +261,7 @@ void gfileedit() {
       bout << "|#2Delete which section? ";
       input(s, 2);
       i = atoi(s);
-      if (s[0] != 0 && i >= 0 && i < session()->gfilesec.size()) {
+      if (s[0] != 0 && i >= 0 && i < size_int(session()->gfilesec)) {
         bout.nl();
         bout << "|#5Delete " << session()->gfilesec[i].name << "?";
         if (yesno()) {

@@ -214,7 +214,6 @@ std::string ctim2(double d) {
   return result;
 }
 
-
 int years_old(int nMonth, int nDay, int nYear) {
   time_t t = time(nullptr);
   struct tm * pTm = localtime(&t);

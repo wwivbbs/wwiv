@@ -31,12 +31,14 @@
 #include "bbs/printfile.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
 using std::string;
 using std::vector;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 // Local function prototypes
@@ -416,7 +418,7 @@ ADD_OR_REMOVE_BATCH:
                     amount = lines = matches = 0;
                     first_file = 1;
                     changedir = 1;
-                    if ((session()->GetCurrentFileArea() < session()->directories.size() - 1)
+                    if ((session()->GetCurrentFileArea() < size_int(session()->directories) - 1)
                         && (udir[session()->GetCurrentFileArea() + 1].subnum >= 0)) {
                       session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
                       ++this_dir;
@@ -440,7 +442,7 @@ ADD_OR_REMOVE_BATCH:
                       --this_dir;
                     } else {
                       while ((udir[session()->GetCurrentFileArea() + 1].subnum >= 0)
-                             && (session()->GetCurrentFileArea() < session()->directories.size() - 1)) {
+                             && (session()->GetCurrentFileArea() < size_int(session()->directories) - 1)) {
                         session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
                       }
                       this_dir = session()->GetCurrentFileArea();
@@ -506,7 +508,7 @@ TOGGLE_EXTENDED:
               if (!changedir) {
                 done = true;
               } else if (changedir == 1) {
-                if ((session()->GetCurrentFileArea() < session()->directories.size() - 1)
+                if ((session()->GetCurrentFileArea() < size_int(session()->directories) - 1)
                     && (udir[session()->GetCurrentFileArea() + 1].subnum >= 0)) {
                   session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
                 } else {
@@ -518,7 +520,7 @@ TOGGLE_EXTENDED:
                   session()->SetCurrentFileArea(session()->GetCurrentFileArea() - 1);
                 } else {
                   while ((udir[session()->GetCurrentFileArea() + 1].subnum >= 0)
-                         && (session()->GetCurrentFileArea() < session()->directories.size() - 1)) {
+                         && (session()->GetCurrentFileArea() < size_int(session()->directories) - 1)) {
                     session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
                   }
                 }
@@ -531,7 +533,7 @@ TOGGLE_EXTENDED:
           if (!changedir) {
             done = true;
           } else if (changedir == 1) {
-            if ((session()->GetCurrentFileArea() < session()->directories.size() - 1)
+            if ((session()->GetCurrentFileArea() < size_int(session()->directories) - 1)
                 && (udir[session()->GetCurrentFileArea() + 1].subnum >= 0)) {
               session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
             } else {
@@ -543,7 +545,7 @@ TOGGLE_EXTENDED:
               session()->SetCurrentFileArea(session()->GetCurrentFileArea() - 1);
             } else {
               while ((udir[session()->GetCurrentFileArea() + 1].subnum >= 0)
-                     && (session()->GetCurrentFileArea() < session()->directories.size() - 1)) {
+                     && (session()->GetCurrentFileArea() < size_int(session()->directories) - 1)) {
                 session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
               }
             }

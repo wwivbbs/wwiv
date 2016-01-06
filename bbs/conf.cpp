@@ -1104,7 +1104,7 @@ void list_confs(int conftype, int ssc) {
  * invalid conference selections.
  */
 int select_conf(const char *prompt_text, int conftype, int listconfs) {
-  int i = 0, i1, sl = 0;
+  int i = 0, sl = 0;
   bool ok = false;
   char *mmk;
 
@@ -1130,7 +1130,7 @@ int select_conf(const char *prompt_text, int conftype, int listconfs) {
       default:
         switch (conftype) {
         case CONF_SUBS:
-          for (i1 = 0; i1 < subconfnum; i1++) {
+          for (size_t i1 = 0; i1 < subconfnum; i1++) {
             if (mmk[0] == subconfs[i1].designator) {
               ok = true;
               i = i1;
@@ -1139,7 +1139,7 @@ int select_conf(const char *prompt_text, int conftype, int listconfs) {
           }
           break;
         case CONF_DIRS:
-          for (i1 = 0; i1 < dirconfnum; i1++) {
+          for (size_t i1 = 0; i1 < dirconfnum; i1++) {
             if (mmk[0] == dirconfs[i1].designator) {
               ok = true;
               i = i1;

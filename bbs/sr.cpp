@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <cmath>
 #include <string>
+#include <vector>
 
 #include "core/strings.h"
 
@@ -33,7 +34,11 @@
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 
+#include "core/stl.h"
+
 using std::string;
+
+using namespace wwiv::stl;
 
 void calc_CRC(unsigned char b) {
   checksum = checksum + b;
@@ -133,7 +138,7 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
     return false;
   }
 
-  if (nProtocolNum > 0 && nProtocolNum < (session()->externs.size() + WWIV_NUM_INTERNAL_PROTOCOLS)) {
+  if (nProtocolNum > 0 && nProtocolNum < (size_int(session()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS)) {
     switch (nProtocolNum) {
     case WWIV_INTERNAL_PROT_ASCII:
       if (xt == xf_down || xt == xf_down_temp) {
@@ -170,14 +175,14 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
       break;
     case WWIV_INTERNAL_PROT_BATCH:
       if (xt == xf_up) {
-        for (int i = 0; i < session()->externs.size(); i++) {
-          if (session()->externs[i].receivebatchfn[0]) {
+        for (const auto& e : session()->externs) {
+          if (e.receivebatchfn[0]) {
             ok = true;
           }
         }
       } else if (xt == xf_down) {
-        for (int i = 0; i < session()->externs.size(); i++) {
-          if (session()->externs[i].sendbatchfn[0]) {
+        for (const auto& e : session()->externs) {
+          if (e.sendbatchfn[0]) {
             ok = true;
           }
         }
@@ -244,7 +249,7 @@ char *prot_name(int nProtocolNum) {
     strcpy(szProtocolName, "Zmodem (Internal)");
   default:
     if (nProtocolNum >= WWIV_NUM_INTERNAL_PROTOCOLS &&
-        nProtocolNum < (session()->externs.size() + WWIV_NUM_INTERNAL_PROTOCOLS)) {
+        nProtocolNum < (size_int(session()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS)) {
       ss = session()->externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].description;
     }
     break;
@@ -376,10 +381,10 @@ int get_protocol(xfertype xt) {
     } else {
       i1 = ch - BASE_CHAR + 10;
       session()->user()->SetDefaultProtocol(i1);
-      if (i1 < session()->externs.size() + WWIV_NUM_INTERNAL_PROTOCOLS) {
+      if (i1 < size_int(session()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS) {
         return ch - BASE_CHAR + 10;
       }
-      for (int j = 3; j < session()->externs.size() + WWIV_NUM_INTERNAL_PROTOCOLS; j++) {
+      for (size_t j = 3; j < session()->externs.size() + WWIV_NUM_INTERNAL_PROTOCOLS; j++) {
         if (upcase(*prot_name(j)) == ch) {
           return j;
         }
