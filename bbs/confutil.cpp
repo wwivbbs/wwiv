@@ -171,7 +171,7 @@ void addusub(usersubrec * ss1, int ns, int sub, char key) {
 // returns true on success, false on failure
 // used to return 0 on success, 1 on failure
 bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
-  int i, i1, ns, osub;
+  int ns, osub;
   confrec *c;
   usersubrec *ss1, s1;
   char *xdc, *xtc;
@@ -195,7 +195,7 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
     if (which == -1) {
       c = nullptr;
     } else {
-      if (which < 0 || which >= subconfnum) {
+      if (which < 0 || which >= static_cast<int>(subconfnum)) {
         return false;
       }
       c = &(subconfs[which]);
@@ -218,7 +218,7 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
     if (which == -1) {
       c = nullptr;
     } else {
-      if (which < 0 || which >= dirconfnum) {
+      if (which < 0 || which >= static_cast<int>(dirconfnum)) {
         return false;
       }
       c = &(dirconfs[which]);
@@ -234,12 +234,12 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
   memset(&s1, 0, sizeof(s1));
   s1.subnum = -1;
 
-  for (i = 0; i < ns; i++) {
+  for (int i = 0; i < ns; i++) {
     ss1[i] = s1;
   }
 
   if (c) {
-    for (i = 0; i < c->num; i++) {
+    for (size_t i = 0; i < c->num; i++) {
       switch (nConferenceType) {
       case CONF_SUBS:
         if (access_sub(session()->user(), session()->GetEffectiveSl(),
@@ -262,9 +262,9 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
   } else {
     switch (nConferenceType) {
     case CONF_SUBS:
-      for (i = 0; i < subconfnum; i++) {
+      for (size_t i = 0; i < subconfnum; i++) {
         if (access_conf(session()->user(), session()->GetEffectiveSl(), &(subconfs[i]))) {
-          for (i1 = 0; i1 < subconfs[i].num; i1++) {
+          for (size_t i1 = 0; i1 < subconfs[i].num; i1++) {
             if (access_sub(session()->user(), session()->GetEffectiveSl(),
                            (subboardrec *) & session()->subboards[subconfs[i].subs[i1]])) {
               addusub(ss1, ns, subconfs[i].subs[i1], session()->subboards[subconfs[i].subs[i1]].key);
@@ -274,9 +274,9 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
       }
       break;
     case CONF_DIRS:
-      for (i = 0; i < dirconfnum; i++) {
+      for (size_t i = 0; i < dirconfnum; i++) {
         if (access_conf(session()->user(), session()->GetEffectiveSl(), &(dirconfs[i]))) {
-          for (i1 = 0; i1 < static_cast<int>(dirconfs[i].num); i1++) {
+          for (size_t i1 = 0; i1 < static_cast<int>(dirconfs[i].num); i1++) {
             if (access_dir(session()->user(), session()->GetEffectiveSl(),
                            (directoryrec *) & session()->directories[dirconfs[i].subs[i1]])) {
               addusub(ss1, ns, dirconfs[i].subs[i1], 0);
@@ -293,9 +293,9 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
     }
   }
 
-  i1 = (nConferenceType == CONF_DIRS && ss1[0].subnum == 0) ? 0 : 1;
+  int i1 = (nConferenceType == CONF_DIRS && ss1[0].subnum == 0) ? 0 : 1;
 
-  for (i = 0; (i < ns) && (ss1[i].keys[0] == 0) && (ss1[i].subnum != -1); i++) {
+  for (int i = 0; (i < ns) && (ss1[i].keys[0] == 0) && (ss1[i].subnum != -1); i++) {
     if (i1 < 100) {
       if (((i1 % 10) == 0) && i1) {
         xdc[dp++] = static_cast<char>('0' + (i1 / 10));
@@ -329,10 +329,8 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
     session()->SetCurrentFileArea(i1);
     break;
   }
-
   return true;
 }
-
 
 void setuconf(int nConferenceType, int num, int nOldSubNumber) {
   switch (nConferenceType) {
@@ -358,7 +356,6 @@ void setuconf(int nConferenceType, int num, int nOldSubNumber) {
   setconf(nConferenceType, -1, nOldSubNumber);
 }
 
-
 void changedsl() {
   int ocurconfsub = uconfsub[session()->GetCurrentConferenceMessageArea()].confnum;
   int ocurconfdir = uconfdir[session()->GetCurrentConferenceFileArea()].confnum;
@@ -367,14 +364,13 @@ void changedsl() {
   userconfrec c1;
   c1.confnum = -1;
 
-  int i;
-  for (i = 0; i < MAX_CONFERENCES; i++) {
+  for (size_t i = 0; i < MAX_CONFERENCES; i++) {
     uconfsub[i] = c1;
     uconfdir[i] = c1;
   }
 
   int nTempSubConferenceNumber = 0;
-  for (i = 0; i < subconfnum; i++) {
+  for (size_t i = 0; i < subconfnum; i++) {
     if (access_conf(session()->user(), session()->GetEffectiveSl(), &(subconfs[i]))) {
       c1.confnum = static_cast<int16_t>(i);
       uconfsub[ nTempSubConferenceNumber++ ] = c1;
@@ -382,7 +378,7 @@ void changedsl() {
   }
 
   int nTempDirConferenceNumber = 0;
-  for (i = 0; i < dirconfnum; i++) {
+  for (size_t i = 0; i < dirconfnum; i++) {
     if (access_conf(session()->user(), session()->GetEffectiveSl(), &(dirconfs[i ]))) {
       c1.confnum = static_cast<int16_t>(i);
       uconfdir[ nTempDirConferenceNumber++ ] = c1;

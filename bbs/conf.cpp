@@ -1351,7 +1351,7 @@ static confrec *read_conferences(const char *file_name, unsigned int *nc, int ma
  * necessary. If conferences cannot be read, then BBS aborts.
  */
 void read_in_conferences(int conftype) {
-  int i, max;
+  int max;
   unsigned *np = nullptr;
   char s[81];
   confrec **cpp = nullptr;
@@ -1373,7 +1373,7 @@ void read_in_conferences(int conftype) {
 
   // free up any old memory
   if (*cpp) {
-    for (i = 0; i < *np; i++) {
+    for (size_t i = 0; i < *np; i++) {
       if ((*cpp)[i].subs) {
         free((*cpp)[i].subs);
       }
@@ -1391,7 +1391,6 @@ void read_in_conferences(int conftype) {
   if (!(*cpp)) {
     std::clog << "Problem reading conferences." << std::endl;
     session()->AbortBBS();
-
   }
 }
 

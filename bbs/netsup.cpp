@@ -41,6 +41,7 @@ static int netw;
 time_t last_time_c;
 
 using std::string;
+using std::to_string;
 using std::unique_ptr;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
@@ -244,17 +245,13 @@ int cleanup_net1() {
 }
 
 void do_callout(int sn) {
-  char s[81], s1[81];
-
-  time_t tCurrentTime;
-  time(&tCurrentTime);
+  time_t tCurrentTime = time(nullptr);
   int i = -1;
   int i2 = -1;
   if (!session()->current_net().con) {
     read_call_out_list();
   }
-  int i1;
-  for (i1 = 0; i1 < session()->current_net().num_con; i1++) {
+  for (int i1 = 0; i1 < session()->current_net().num_con; i1++) {
     if (session()->current_net().con[i1].sysnum == sn) {
       i = i1;
     }
@@ -262,58 +259,61 @@ void do_callout(int sn) {
   if (!session()->current_net().ncn) {
     read_contacts();
   }
-  for (i1 = 0; i1 < session()->current_net().num_ncn; i1++) {
+  for (int i1 = 0; i1 < session()->current_net().num_ncn; i1++) {
     if (session()->current_net().ncn[i1].systemnumber == sn) {
       i2 = i1;
     }
   }
 
-  if (i != -1) {
-    net_system_list_rec *csne = next_system(session()->current_net().con[i].sysnum);
-    if (csne) {
-      sprintf(s, "network /N%u /A%s /P%s /S%u /T%ld",
-              sn, (session()->current_net().con[i].options & options_sendback) ? "1" : "0",
-              csne->phone, 0, tCurrentTime);
-      if (session()->current_net().con[i].macnum) {
-        sprintf(s1, " /M%d", static_cast<int>(session()->current_net().con[i].macnum));
-        strcat(s, s1);
-      }
-      sprintf(s1, " .%d", session()->net_num());
-      strcat(s, s1);
-      if (strncmp(csne->phone, "000", 3)) {
-        run_exp();
-        bout << "|#7Calling out to: |#2" << csne->name << " - ";
-        if (session()->max_net_num() > 1) {
-          bout << session()->network_name() << " ";
-        }
-        bout << "@" << sn << wwiv::endl;
-        const string regions_filename = StringPrintf("%s%s%c%s.%-3u", syscfg.datadir,
-                REGIONS_DAT, File::pathSeparatorChar, REGIONS_DAT, atoi(csne->phone));
-        string region = "Unknown Region";
-        if (File::Exists(regions_filename)) {
-          const string town = StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
-          region = describe_area_code_prefix(atoi(csne->phone), atoi(town.c_str()));
-        } else {
-          region = describe_area_code(atoi(csne->phone));
-        }
-        bout << "|#7Sys located in: |#2" << region << wwiv::endl;
-        if (i2 != -1 && session()->current_net().ncn[i2].bytes_waiting) {
-          bout << "|#7Amount pending: |#2"
-               << bytes_to_k(session()->current_net().ncn[i2].bytes_waiting)
-               << "k" << wwiv::endl;
-        }
-        bout << "|#7Commandline is: |#2" << s << wwiv::endl
-             << "|#7" << std::string(80, 205) << "|#0..." << wwiv::endl;
-        ExecuteExternalProgram(s, EFLAG_NETPROG);
-        zap_contacts();
-        session()->status_manager()->RefreshStatusCache();
-        last_time_c = static_cast<int>(tCurrentTime);
-        global_xx = false;
-        cleanup_net();
-        run_exp();
-        send_inst_cleannet();
-      }
+  if (i == -1) {
+    return;
+  }
+  net_system_list_rec *csne = next_system(session()->current_net().con[i].sysnum);
+  if (!csne) {
+    return;
+  }
+  std::ostringstream cmd;
+  cmd << "network /N" << sn 
+      << " /A" << ((session()->current_net().con[i].options & options_sendback) ? "1" : "0")
+      << " /P" << csne->phone 
+      << " /S0 /T" << tCurrentTime;
+
+  if (session()->current_net().con[i].macnum) {
+    cmd << " /M" << static_cast<uint32_t>(session()->current_net().con[i].macnum);
+  }
+  cmd << " ." << session()->net_num();
+  if (strncmp(csne->phone, "000", 3)) {
+    run_exp();
+    bout << "|#7Calling out to: |#2" << csne->name << " - ";
+    if (session()->max_net_num() > 1) {
+      bout << session()->network_name() << " ";
     }
+    bout << "@" << sn << wwiv::endl;
+    const string regions_filename = StringPrintf("%s%s%c%s.%-3u", syscfg.datadir,
+            REGIONS_DAT, File::pathSeparatorChar, REGIONS_DAT, atoi(csne->phone));
+    string region = "Unknown Region";
+    if (File::Exists(regions_filename)) {
+      const string town = StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
+      region = describe_area_code_prefix(atoi(csne->phone), atoi(town.c_str()));
+    } else {
+      region = describe_area_code(atoi(csne->phone));
+    }
+    bout << "|#7Sys located in: |#2" << region << wwiv::endl;
+    if (i2 != -1 && session()->current_net().ncn[i2].bytes_waiting) {
+      bout << "|#7Amount pending: |#2"
+            << bytes_to_k(session()->current_net().ncn[i2].bytes_waiting)
+            << "k" << wwiv::endl;
+    }
+    bout << "|#7Commandline is: |#2" << cmd.str() << wwiv::endl
+         << "|#7" << std::string(80, 205) << "|#0..." << wwiv::endl;
+    ExecuteExternalProgram(cmd.str(), EFLAG_NETPROG);
+    zap_contacts();
+    session()->status_manager()->RefreshStatusCache();
+    last_time_c = static_cast<int>(tCurrentTime);
+    global_xx = false;
+    cleanup_net();
+    run_exp();
+    send_inst_cleannet();
   }
 }
 
@@ -649,11 +649,11 @@ void print_pending_list() {
         int32_t m = 0, h = 0;
         if (ncn[i2].lastcontactsent) {
           time_t tLastContactTime = tCurrentTime - ncn[i2].lastcontactsent;
-          time_t se = tLastContactTime % 60;
+          int32_t se = tLastContactTime % 60;
           tLastContactTime = (tLastContactTime - se) / 60;
           m = static_cast<int32_t>(tLastContactTime % 60);
           h = static_cast<int32_t>(tLastContactTime / 60);
-          sprintf(s1, "|#2%02ld:%02ld:%02ld", h, m, se);
+          sprintf(s1, "|#2%02d:%02d:%02d", h, m, se);
         } else {
           strcpy(s1, "|#6     -    ");
         }
@@ -873,8 +873,6 @@ void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char
 
 static void print_call(int sn, int nNetNumber, int i2) {
   static int color, got_color = 0;
-
-  char s[100], s1[100];
   time_t tCurrentTime = time(nullptr);
 
   set_net_num(nNetNumber);
@@ -884,81 +882,74 @@ static void print_call(int sn, int nNetNumber, int i2) {
   net_contact_rec *ncn = session()->current_net().ncn;
   net_system_list_rec *csne = next_system(sn);
 
+  color = 30;
   if (!got_color) {
     got_color = 1;
-    color = 30;
-
     IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
     if (iniFile.IsOpen()) {
-      const char *ss = iniFile.GetValue("CALLOUT_COLOR_TEXT");
-      if (ss != nullptr) {
-        color = atoi(ss);
-      }
-      iniFile.Close();
+      color = StringToInt(iniFile.GetValue("CALLOUT_COLOR_TEXT", "30"));
     }
   }
   curatr = color;
-  sprintf(s1, "%ldk", bytes_to_k(ncn[i2].bytes_waiting));
-  session()->localIO()->LocalXYAPrintf(58, 17, color, "%-10.16s", s1);
+  string s1 = to_string(bytes_to_k(ncn[i2].bytes_waiting));
+  session()->localIO()->LocalXYAPrintf(58, 17, color, "%-10.16s", s1.c_str());
 
-  sprintf(s1, "%ldk", bytes_to_k(ncn[i2].bytes_received));
-  session()->localIO()->LocalXYAPrintf(23, 17, color, "%-10.16s", s1);
+  s1 = to_string(bytes_to_k(ncn[i2].bytes_received));
+  session()->localIO()->LocalXYAPrintf(23, 17, color, "%-10.16s", s1.c_str());
 
-  sprintf(s1, "%ldk", bytes_to_k(ncn[i2].bytes_sent));
-  session()->localIO()->LocalXYAPrintf(23, 18, color, "%-10.16s", s1);
+  s1 = to_string(bytes_to_k(ncn[i2].bytes_sent));
+  session()->localIO()->LocalXYAPrintf(23, 18, color, "%-10.16s", s1.c_str());
 
   if (ncn[i2].firstcontact) {
-    sprintf(s1, "%ud:", static_cast<uint32_t>(tCurrentTime - ncn[i2].firstcontact) / SECONDS_PER_HOUR);
+    s1 = StrCat(to_string((tCurrentTime - ncn[i2].firstcontact) / SECONDS_PER_HOUR), ":");
     time_t tTime = (((tCurrentTime - ncn[i2].firstcontact) % SECONDS_PER_HOUR) / 60);
-    sprintf(s, "%ld", tTime);
+    string s = to_string(tTime);
     if (tTime < 10) {
-      strcat(s1, "0");
-      strcat(s1, s);
+      s1 += StrCat("0", s);
     } else {
-      strcat(s1, s);
+      s1 += s;
     }
-    strcat(s1, " Hrs");
+    s1 += " Hrs";
   } else {
-    strcpy(s1, "NEVER");
+    s1 += "NEVER";
   }
-  session()->localIO()->LocalXYAPrintf(23, 16, color, "%-17.16s", s1);
+  session()->localIO()->LocalXYAPrintf(23, 16, color, "%-17.16s", s1.c_str());
 
   if (ncn[i2].lastcontactsent) {
-    sprintf(s1, "%u:", static_cast<uint32_t>(tCurrentTime - ncn[i2].lastcontactsent) / SECONDS_PER_HOUR);
+    s1 = StrCat(to_string((tCurrentTime - ncn[i2].lastcontactsent) / SECONDS_PER_HOUR), ":");
     time_t tTime = (((tCurrentTime - ncn[i2].lastcontactsent) % SECONDS_PER_HOUR) / 60);
-    sprintf(s, "%ld", tTime);
+    string s = to_string(tTime);
     if (tTime < 10) {
-      strcat(s1, "0");
-      strcat(s1, s);
+      s1 += StrCat("0", s);
     } else {
-      strcat(s1, s);
+      s1 += s;
     }
-    strcat(s1, " Hrs");
+    s1 += " Hrs";
   } else {
-    strcpy(s1, "NEVER");
+    s1 += "NEVER";
   }
-  session()->localIO()->LocalXYAPrintf(58, 16, color, "%-17.16s", s1);
+  session()->localIO()->LocalXYAPrintf(58, 16, color, "%-17.16s", s1.c_str());
 
   if (ncn[i2].lasttry) {
-    sprintf(s1, "%u:", static_cast<uint32_t>(tCurrentTime - ncn[i2].lasttry) / SECONDS_PER_HOUR);
+    string tmp = to_string((tCurrentTime - ncn[i2].lasttry) / SECONDS_PER_HOUR);
+    s1 = StrCat(tmp, ":");
     time_t tTime = (((tCurrentTime - ncn[i2].lasttry) % SECONDS_PER_HOUR) / 60);
-    sprintf(s, "%ld", tTime);
+    string s = to_string(tTime);
     if (tTime < 10) {
-      strcat(s1, "0");
-      strcat(s1, s);
+      s1 += StrCat("0", s);
     } else {
-      strcat(s1, s);
+      s1 += s;
     }
-    strcat(s1, " Hrs");
+    s1 += " Hrs";
   } else {
-    strcpy(s1, "NEVER");
+    s1 += "NEVER";
   }
-  session()->localIO()->LocalXYAPrintf(58, 15, color, "%-17.16s", s1);
+  session()->localIO()->LocalXYAPrintf(58, 15, color, "%-17.16s", s1.c_str());
   session()->localIO()->LocalXYAPrintf(23, 15, color, "%-16u", ncn[i2].numcontacts);
   session()->localIO()->LocalXYAPrintf(41, 3, color, "%-30.30s", csne->name);
   session()->localIO()->LocalXYAPrintf(23, 19, color, "%-17.17s", csne->phone);
-  sprintf(s1, "%u Bps", csne->speed);
-  session()->localIO()->LocalXYAPrintf(58, 18, color, "%-10.16s", s1);
+  s1 = StrCat(to_string(csne->speed), " BPS");
+  session()->localIO()->LocalXYAPrintf(58, 18, color, "%-10.16s", s1.c_str());
   const string areacode= describe_area_code(atoi(csne->phone));
   const string stripped = stripcolors(areacode);
   session()->localIO()->LocalXYAPrintf(58, 19, color, "%-17.17s", stripped.c_str());

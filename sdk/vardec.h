@@ -1086,25 +1086,6 @@ struct instancerec {
   extra[80];
 };
 
-struct ch_action {
-  int r;
-  char aword[12];
-  char toprint[80];
-  char toperson[80];
-  char toall[80];
-  char singular[80];
-};
-
-struct ch_type {
-  char name[60];
-  int sl;
-  char ar;
-  char sex;
-  char min_age;
-  char max_age;
-};
-
-
 struct fedit_data_rec {
   char tlen,
        ttl[81],
