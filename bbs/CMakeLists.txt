@@ -133,6 +133,7 @@ set(ZMODEM_SOURCES
 )
 
 if(UNIX) 
+  add_definitions ("-Wall")
   set(PLATFORM_SOURCES 
 	platform/unix/exec.cpp 
 	platform/unix/utility2.cpp 
@@ -141,7 +142,6 @@ if(UNIX)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} platform/osx/macversioninfo.mm)
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation -framework Foundation")
     include_directories(platform/osx)
-    message("Detected OS as APPLE.")
   endif()
 endif()
 

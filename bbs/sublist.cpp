@@ -222,11 +222,11 @@ void SubList() {
         }
         newTally = session()->GetNumMessagesInCurrentMessageArea() - msgIndex + 1;
         if (usub[session()->GetCurrentMessageArea()].subnum == usub[i1].subnum) {
-          sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |B1|15%-36.36s |#9\xB3 |#9%5d |#9\xB3 |#%c%5d |#9",
+          sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |B1|15%-36.36s |#9\xB3 |#9%5d |#9\xB3 |#%c%5u |#9",
                   i1 + 1, s2, s3, session()->subboards[usub[i1].subnum].name, session()->GetNumMessagesInCurrentMessageArea(),
                   newTally ? '6' : '3', newTally);
         } else {
-          sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |#1%-36.36s |#9\xB3 |#9%5d |#9\xB3 |#%c%5d |#9",
+          sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |#1%-36.36s |#9\xB3 |#9%5d |#9\xB3 |#%c%5u |#9",
                   i1 + 1, s2, s3, session()->subboards[usub[i1].subnum].name, session()->GetNumMessagesInCurrentMessageArea(),
                   newTally ? '6' : '3', newTally);
         }

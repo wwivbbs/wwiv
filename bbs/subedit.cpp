@@ -86,28 +86,6 @@ static string boarddata(size_t n) {
       }
     }
   }
-  char y = 'N';
-  switch (r.anony & 0x0f) {
-  case 0:
-    y = 'N';
-    break;
-  case anony_enable_anony:
-    y = 'Y';
-    break;
-  case anony_enable_dear_abby:
-    y = 'D';
-    break;
-  case anony_force_anony:
-    y = 'F';
-    break;
-  case anony_real_name:
-    y = 'R';
-    break;
-  }
-  char k = SPACE;
-  if (r.key != 0) {
-    k = r.key;
-  }
   string stype;
   if (n < session()->xsubs.size()) {
     const xtrasubsrec& xsnr = session()->xsubs[n];;

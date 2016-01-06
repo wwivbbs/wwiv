@@ -1101,8 +1101,8 @@ int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
 }
 
 void qwk_nscan() {
-  static constexpr int DOTS = 5;
 #ifdef NEVER // Not ported yet
+  static constexpr int DOTS = 5;
   uploadsrec u;
   bool abort = false;
   int od, newfile, i, i1, i5, f, count, color = 3;
