@@ -39,7 +39,7 @@ using wwiv::core::FilePath;
 using wwiv::strings::IsEqualsIgnoreCase;
 using namespace wwiv::sdk;
 
-static int g_nChatOpSecLvl;
+static unsigned int g_nChatOpSecLvl;
 static int g_nNumActions;
 static ch_action *actions[MAX_NUM_ACT];
 static ch_type channels[11];
@@ -846,7 +846,7 @@ bool check_ch(int ch) {
   unsigned short c_ar;
   char szMessage[80];
 
-  if (session()->user()->GetSl() < channels[ch].sl && !so()) {
+  if (static_cast<int>(session()->user()->GetSl()) < channels[ch].sl && !so()) {
     bout << "\r\n|#9A security level of |#1" << channels[ch].sl <<
                        "|#9 is required to access this channel.\r\n";
     bout << "|#9Your security level is |#1" << session()->user()->GetSl() << "|#9.\r\n";

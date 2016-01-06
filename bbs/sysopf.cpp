@@ -103,8 +103,8 @@ void valuser(int user_number) {
       bout << "|#9New : ";
       input(s, 3, true);
       if (s[0]) {
-        unsigned nSl = StringToUnsignedInt(s);
-        if (!session()->GetWfcStatus() && nSl >= session()->GetEffectiveSl()) {
+        int nSl = StringToUnsignedInt(s);
+        if (!session()->GetWfcStatus() && nSl >= static_cast<int>(session()->GetEffectiveSl())) {
           nSl = -2;
         }
         if (nSl >= 0 && nSl < 255) {
@@ -131,8 +131,8 @@ void valuser(int user_number) {
       bout << "|#9New ? ";
       input(s, 3, true);
       if (s[0]) {
-        unsigned int nDsl = StringToUnsignedInt(s);
-        if (!session()->GetWfcStatus() && nDsl >= session()->user()->GetDsl()) {
+        int nDsl = StringToUnsignedInt(s);
+        if (!session()->GetWfcStatus() && nDsl >= static_cast<int>(session()->user()->GetDsl())) {
           nDsl = -1;
         }
         if (nDsl >= 0 && nDsl < 255) {
