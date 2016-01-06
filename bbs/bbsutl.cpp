@@ -31,6 +31,7 @@
 #include "core/wwivassert.h"
 
 using std::string;
+using namespace wwiv::strings;
 using namespace wwiv::stl;
 
 static char str_yes[81],
@@ -594,7 +595,7 @@ char *mmkey(int dl, int area, bool bListOption) {
                 if (isdigit(cmd2[0])) {
                   if (area == WSession::mmkeyMessageAreas && dl == 0) {
                     for (i = 0; i < size_int(session()->subboards) && usub[i].subnum != -1; i++) {
-                      if (wwiv::strings::IsEquals(usub[i].keys, cmd2)) {
+                      if (IsEquals(usub[i].keys, cmd2)) {
                         bout.nl();
                         break;
                       }
@@ -602,7 +603,7 @@ char *mmkey(int dl, int area, bool bListOption) {
                   }
                   if (area == WSession::mmkeyFileAreas && dl == 1) {
                     for (i = 0; i < size_int(session()->directories); i++) {
-                      if (wwiv::strings::IsEquals(udir[i].keys, cmd2)) {
+                      if (IsEquals(udir[i].keys, cmd2)) {
                         bout.nl();
                         break;
                       }

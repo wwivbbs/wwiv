@@ -34,9 +34,8 @@
 #include "sdk/filenames.h"
 
 
-using wwiv::core::IniFile;
-using wwiv::core::FilePath;
-using wwiv::strings::IsEqualsIgnoreCase;
+using namespace wwiv::core;
+using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
 struct ch_type {
@@ -215,9 +214,9 @@ int f_action(int start_pos, int end_pos, char *aword) {
       return -1;
     }
   }
-  if (wwiv::strings::StringCompareIgnoreCase(aword, actions[test]->aword) < 0) {
+  if (StringCompareIgnoreCase(aword, actions[test]->aword) < 0) {
     end_pos = test;
-  } else if (wwiv::strings::StringCompareIgnoreCase(aword, actions[test]->aword) > 0) {
+  } else if (StringCompareIgnoreCase(aword, actions[test]->aword) > 0) {
     start_pos = test;
   } else {
     return test;
@@ -937,7 +936,7 @@ void load_channels(IniFile *pIniFile) {
         channels[cn].min_age = static_cast<char>(pIniFile->GetNumericValue(buffer));
         break;
       case 5:
-        channels[cn].max_age = wwiv::strings::StringToChar(pIniFile->GetValue(buffer));
+        channels[cn].max_age = StringToChar(pIniFile->GetValue(buffer));
         break;
       }
     }
@@ -1007,7 +1006,7 @@ int grabname(const char *message, int ch) {
     bout << buffer;
     return 0;
   }
-  while (!node && c < wwiv::strings::GetStringLength(message) && c < 40) {
+  while (!node && c < GetStringLength(message) && c < 40) {
     int x = 0;
     if (sp) {
       name[sp++] = ' ';
@@ -1064,7 +1063,7 @@ int grabname(const char *message, int ch) {
 }
 
 bool usercomp(const char *st1, const char *st2) {
-  for (int i = 0; i < wwiv::strings::GetStringLength(st1); i++) {
+  for (int i = 0; i < GetStringLength(st1); i++) {
     if (st1[i] != st2[i]) {
       return false;
     }

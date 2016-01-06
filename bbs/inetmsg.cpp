@@ -48,7 +48,7 @@ void get_user_ppp_addr() {
     return;
   }
   set_net_num(session()->net_num());
-  session()->internetFullEmailAddress = wwiv::strings::StringPrintf("%s@%s",
+  session()->internetFullEmailAddress = StringPrintf("%s@%s",
       session()->internetEmailName.c_str(),
       session()->internetEmailDomain.c_str());
   TextFile acctFile(session()->network_directory(), ACCT_INI, "rt");
@@ -79,13 +79,13 @@ void get_user_ppp_addr() {
     int j = 0;
     char szLocalUserName[255];
     strcpy(szLocalUserName, session()->user()->GetName());
-    for (int i = 0; (i < wwiv::strings::GetStringLength(szLocalUserName)) && (i < 61); i++) {
+    for (int i = 0; (i < GetStringLength(szLocalUserName)) && (i < 61); i++) {
       if (szLocalUserName[i] != '.') {
         szLine[ j++ ] = translate_table[(int)szLocalUserName[i] ];
       }
     }
     szLine[ j ] = '\0';
-    session()->internetFullEmailAddress = wwiv::strings::StringPrintf("%s@%s", szLine,
+    session()->internetFullEmailAddress = StringPrintf("%s@%s", szLine,
         session()->internetPopDomain.c_str());
   }
 }
@@ -209,7 +209,7 @@ void write_inet_addr(const char *internet_address, int user_number) {
         char* ss = strtok(szLine, "=");
         if (ss) {
           StringTrim(ss);
-          if (wwiv::strings::IsEqualsIgnoreCase(szLine, szDefaultUserAddr)) {
+          if (IsEqualsIgnoreCase(szLine, szDefaultUserAddr)) {
             match = true;
           }
         }

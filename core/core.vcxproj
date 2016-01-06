@@ -102,6 +102,9 @@
     <ClCompile Include="strings.cpp" />
     <ClCompile Include="textfile.cpp" />
     <ClCompile Include="version.cpp" />
+    <ClCompile Include="wfndfile_unix.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="wfndfile_win32.cpp" />
   </ItemGroup>
   <ItemGroup>

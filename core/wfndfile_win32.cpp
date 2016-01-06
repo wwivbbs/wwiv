@@ -35,7 +35,7 @@ bool WFindFile::open(const std::string& file_spec, unsigned int nTypeMask) {
   } else {
     filename_ = ffdata.cAlternateFileName;
   }
-  lFileSize = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
+  file_size_ = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
   return true;
 }
 
@@ -52,7 +52,7 @@ bool WFindFile::next() {
   } else {
     filename_ = ffdata.cAlternateFileName;
   }
-  lFileSize = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
+  file_size_ = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
   return true;
 }
 

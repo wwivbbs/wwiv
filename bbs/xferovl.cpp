@@ -108,7 +108,7 @@ void move_file() {
       d1 = -1;
       if (ss[0]) {
         for (size_t i1 = 0; (i1 < session()->directories.size()) && (udir[i1].subnum != -1); i1++) {
-          if (wwiv::strings::IsEquals(udir[i1].keys, ss)) {
+          if (IsEquals(udir[i1].keys, ss)) {
             d1 = i1;
           }
         }
@@ -188,7 +188,7 @@ void move_file() {
       }
       StringRemoveWhitespace(s1);
       StringRemoveWhitespace(s2);
-      if (!wwiv::strings::IsEquals(s1, s2) && File::Exists(s1)) {
+      if (!IsEquals(s1, s2) && File::Exists(s1)) {
         d2 = 0;
         if ((s1[1] != ':') && (s2[1] != ':')) {
           d2 = 1;
@@ -222,7 +222,7 @@ void move_file() {
 int comparedl(uploadsrec * x, uploadsrec * y, int type) {
   switch (type) {
   case 0:
-    return wwiv::strings::StringCompare(x->filename, y->filename);
+    return StringCompare(x->filename, y->filename);
   case 1:
     if (x->daten < y->daten) {
       return -1;
@@ -345,7 +345,7 @@ void rename_file() {
     }
     if (s[0]) {
       align(s);
-      if (!wwiv::strings::IsEquals(s, "        .   ")) {
+      if (!IsEquals(s, "        .   ")) {
         strcpy(s1, session()->directories[udir[session()->GetCurrentFileArea()].subnum].path);
         strcpy(s2, s1);
         strcat(s1, s);
@@ -643,7 +643,7 @@ void upload_files(const char *file_name, int directory_num, int type) {
             fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
             FileAreaSetRecord(fileDownload, 1);
             fileDownload.Read(&u, sizeof(uploadsrec));
-            if (wwiv::strings::IsEquals(last_fn, u.filename)) {
+            if (IsEquals(last_fn, u.filename)) {
               modify_database(u.filename, true);
               add_extended_description(last_fn, ext);
               u.mask |= mask_extended;
@@ -677,7 +677,7 @@ void upload_files(const char *file_name, int directory_num, int type) {
       fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
       FileAreaSetRecord(fileDownload, 1);
       fileDownload.Read(&u, sizeof(uploadsrec));
-      if (wwiv::strings::IsEquals(last_fn, u.filename)) {
+      if (IsEquals(last_fn, u.filename)) {
         modify_database(u.filename, true);
         add_extended_description(last_fn, ext);
         u.mask |= mask_extended;
@@ -712,8 +712,8 @@ bool uploadall(int directory_num) {
     const char *pszCurrentFile = fnd.GetFileName();
     if (pszCurrentFile &&
         *pszCurrentFile &&
-        !wwiv::strings::IsEquals(pszCurrentFile, ".") &&
-        !wwiv::strings::IsEquals(pszCurrentFile, "..")) {
+        !IsEquals(pszCurrentFile, ".") &&
+        !IsEquals(pszCurrentFile, "..")) {
       ok = maybe_upload(pszCurrentFile, directory_num, nullptr);
     }
     bFound = fnd.next();
@@ -954,7 +954,7 @@ long db_index(File &fileAllow, const char *file_name) {
     ocurrec = currec;
     fileAllow.Seek(currec * 13, File::seekBegin);
     fileAllow.Read(&cfn, 13);
-    i = wwiv::strings::StringCompare(cfn, tfn);
+    i = StringCompare(cfn, tfn);
 
     // found
     if (i == 0) {
@@ -1154,20 +1154,20 @@ void config_nscan() {
         if (s[0]) {
           for (size_t i = 0; i < session()->directories.size(); i++) {
             i1 = udir[i].subnum;
-            if (wwiv::strings::IsEquals(udir[i].keys, s)) {
+            if (IsEquals(udir[i].keys, s)) {
               qsc_n[i1 / 32] ^= 1L << (i1 % 32);
             }
-            if (wwiv::strings::IsEquals(s, "S")) {
+            if (IsEquals(s, "S")) {
               qsc_n[i1 / 32] |= 1L << (i1 % 32);
             }
-            if (wwiv::strings::IsEquals(s, "C")) {
+            if (IsEquals(s, "C")) {
               qsc_n[i1 / 32] &= ~(1L << (i1 % 32));
             }
           }
-          if (wwiv::strings::IsEquals(s, "Q")) {
+          if (IsEquals(s, "Q")) {
             done = true;
           }
-          if (wwiv::strings::IsEquals(s, "?")) {
+          if (IsEquals(s, "?")) {
             l_config_nscan();
           }
         }
@@ -1304,7 +1304,7 @@ void finddescription() {
         FileAreaSetRecord(fileDownload, i1);
         fileDownload.Read(&u, sizeof(uploadsrec));
         strcpy(s, u.description);
-        for (i2 = 0; i2 < wwiv::strings::GetStringLength(s); i2++) {
+        for (i2 = 0; i2 < GetStringLength(s); i2++) {
           s[i2] = upcase(s[i2]);
         }
         if (strstr(s, s1) != nullptr) {

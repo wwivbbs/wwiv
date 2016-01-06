@@ -29,6 +29,7 @@
 #include "sdk/filenames.h"
 
 using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 bool display_sub_categories();
 int find_hostfor(char *type, short *ui, char *description, short *opt);
@@ -109,7 +110,7 @@ int find_hostfor(char *type, short *ui, char *description, short *opt) {
         if (s[0] > ' ') {
           ss = strtok(s, " \r\n\t");
           if (ss) {
-            if (wwiv::strings::IsEqualsIgnoreCase(ss, type)) {
+            if (IsEqualsIgnoreCase(ss, type)) {
               ss = strtok(nullptr, " \r\n\t");
               if (ss) {
                 short h = static_cast<short>(atol(ss));
@@ -289,7 +290,7 @@ void sub_xtr_add(int n, int nn) {
     return;
   }
 
-  xnp.type = wwiv::strings::StringToUnsignedShort(xnp.stype);
+  xnp.type = StringToUnsignedShort(xnp.stype);
 
   if (xnp.type) {
     sprintf(xnp.stype, "%u", xnp.type);
@@ -318,11 +319,11 @@ void sub_xtr_add(int n, int nn) {
           bout.nl();
           bout << "|#2Which category is this sub in (0 for unknown/misc)? ";
           input(s, 3);
-          i = wwiv::strings::StringToUnsignedShort(s);
-          if (i || wwiv::strings::IsEquals(s, "0")) {
+          i = StringToUnsignedShort(s);
+          if (i || IsEquals(s, "0")) {
             TextFile ff(session()->network_directory(), CATEG_NET, "rt");
             while (ff.ReadLine(s, 100)) {
-              int i1 = wwiv::strings::StringToUnsignedShort(s);
+              int i1 = StringToUnsignedShort(s);
               if (i1 == i) {
                 gc = 1;
                 xnp.category = i;
@@ -330,7 +331,7 @@ void sub_xtr_add(int n, int nn) {
               }
             }
             file.Close();
-            if (wwiv::strings::IsEquals(s, "0")) {
+            if (IsEquals(s, "0")) {
               gc = 1;
             } else if (!xnp.category) {
               bout << "Illegal/invalid category.\r\n\n";

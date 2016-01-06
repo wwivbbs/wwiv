@@ -18,14 +18,14 @@
 /**************************************************************************/
 #include "bbs/batch.h"
 
-#include <algorithm>
-#include <string>
-
 #ifdef _WIN32
 #include <direct.h>
 #else
 #include <unistd.h>
 #endif  // _WIN32
+
+#include <algorithm>
+#include <string>
 
 #include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
@@ -43,6 +43,8 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+
+using namespace wwiv::strings;
 
 // module private functions
 void listbatch();
@@ -111,7 +113,7 @@ void downloaded(char *file_name, long lCharsPerSecond) {
   uploadsrec u;
 
   for (int i1 = 0; i1 < session()->numbatch; i1++) {
-    if (wwiv::strings::IsEquals(file_name, batch[i1].filename) &&
+    if (IsEquals(file_name, batch[i1].filename) &&
         batch[i1].sending) {
       dliscan1(batch[i1].dir);
       int nRecNum = recno(batch[i1].filename);
@@ -200,7 +202,7 @@ void uploaded(char *file_name, long lCharsPerSecond) {
   uploadsrec u;
 
   for (int i1 = 0; i1 < session()->numbatch; i1++) {
-    if (wwiv::strings::IsEquals(file_name, batch[i1].filename) &&
+    if (IsEquals(file_name, batch[i1].filename) &&
         !batch[i1].sending) {
       dliscan1(batch[i1].dir);
       int nRecNum = recno(batch[i1].filename);
@@ -219,7 +221,7 @@ void uploaded(char *file_name, long lCharsPerSecond) {
           char szSourceFileName[MAX_PATH], szDestFileName[MAX_PATH];
           sprintf(szSourceFileName, "%s%s", syscfgovr.batchdir, file_name);
           sprintf(szDestFileName, "%s%s", session()->directories[batch[i1].dir].path, file_name);
-          if (!wwiv::strings::IsEquals(szSourceFileName, szDestFileName) &&
+          if (!IsEquals(szSourceFileName, szDestFileName) &&
               File::Exists(szSourceFileName)) {
             bool found = false;
             if (szSourceFileName[1] != ':' && szDestFileName[1] != ':') {

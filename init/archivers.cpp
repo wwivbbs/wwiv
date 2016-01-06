@@ -46,7 +46,7 @@
 using std::string;
 using std::unique_ptr;
 using std::vector;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 static void edit_arc(int arc_number, arcrec* a) {
   out->Cls(ACS_CKBOARD);

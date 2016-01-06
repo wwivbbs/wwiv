@@ -42,7 +42,7 @@
 using std::string;
 using std::vector;
 using std::unique_ptr;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 static const int MAX_SL = 255;
 static const int MIN_SL = 0;

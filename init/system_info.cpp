@@ -32,7 +32,7 @@
 
 using std::unique_ptr;
 using std::string;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 static const int COL1_LINE = 2;
 static const int COL1_POSITION = 21;
