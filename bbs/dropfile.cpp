@@ -387,7 +387,7 @@ void CreateDoorSysDropFile() {
             session()->user()->GetCity(),
             session()->user()->GetState());
     file.WriteFormatted(szLine);
-    sprintf(szLine, "%s\n%s\n%s\n%d\n%u\n%s\n%ld\n%ld\n",
+    sprintf(szLine, "%s\n%s\n%s\n%d\n%u\n%s\n%u\n%ld\n",
             session()->user()->GetVoicePhoneNumber(),
             session()->user()->GetDataPhoneNumber(),
             "X",                            // session()->user()->GetPassword()

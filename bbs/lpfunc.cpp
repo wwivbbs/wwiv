@@ -665,7 +665,6 @@ bool lp_compare_strings_wh(char *raw, char *formula, unsigned *pos, int size) {
 
 
 int lp_get_token(char *formula, unsigned *pos) {
-  char szBuffer[255];
   int tpos = 0;
 
   while (formula[*pos] && isspace(formula[*pos])) {
@@ -675,16 +674,13 @@ int lp_get_token(char *formula, unsigned *pos) {
   if (isalpha(formula[*pos])) {
     // remove isspace to delemit on a by word basis
     while (isalnum(formula[*pos]) || isspace(formula[*pos])) {
-      szBuffer[tpos] = formula[*pos];
       ++tpos;
       ++*pos;
     }
-    szBuffer[tpos] = 0;
   }
   ++*pos;
   return formula[*pos - 1];
 }
-
 
 int lp_get_value(char *raw, char *formula, unsigned *pos) {
   char szBuffer[255];
