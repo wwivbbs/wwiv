@@ -133,7 +133,8 @@ set(ZMODEM_SOURCES
 )
 
 if(UNIX) 
-  add_definitions ("-Wall")
+  # Enable if you are cleaning them up actively.
+  # add_definitions ("-Wall")
   set(PLATFORM_SOURCES 
 	platform/unix/exec.cpp 
 	platform/unix/utility2.cpp 
