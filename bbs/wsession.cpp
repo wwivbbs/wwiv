@@ -97,23 +97,11 @@ extern time_t last_time_c;
 WOutStream bout;
 
 WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app), 
-    last_key_local_(true), effective_sl_(0),
-    m_nChatNameSelectionColor(0), m_nMessageColor(0), mail_who_field_len(0),
-    max_batch(0), max_extend_lines(0), max_chains(0), max_gfilesec(0), screen_saver_time(0),
-    m_nForcedReadSubNumber(0), m_bAllowCC(false), m_bUserOnline(false),
-    m_bQuoting(false), m_bTimeOnlineLimited(false), m_nCurrentFileArea(0), m_nCurrentReadMessageArea(0),
-    m_nCurrentMessageArea(0), m_nCurrentConferenceFileArea(0), m_nCurrentConferenceMessageArea(0), m_nFileAreaCache(0),
-    m_nMessageAreaCache(0), m_nBeginDayNodeNumber(0), m_nMaxNumberMessageAreas(0), m_nMaxNumberFileAreas(0),
-    m_nNumMessagesReadThisLogon(0), m_nNetworkNumber(0), m_nMaxNetworkNumber(0), m_nCurrentNetworkType(net_type_wwivnet),
-    numbatch(0), numbatchdl(0),
-    numf(0), m_nNumMsgsInCurrentSub(0), num_events(0),
-    num_sys_list(0), screenlinest(0), subchg(0), tagging(0), tagptr(0), titled(0), using_modem(0), m_bInternalZmodem(false),
-    m_bExecLogSyncFoss(false), m_nExecChildProcessWaitTime(0), m_bNewScanAtLogin(false),
-    usernum(0), local_io_(localIO),
-    statusMgr(new StatusMgr()), m_nOkLevel(exitLevelOK),
-    m_nErrorLevel(exitLevelNotOK), instance_number_(-1),
-    m_bUserAlreadyOn(false), m_nBbsShutdownStatus(shutdownNone),
-    m_fShutDownTime(0), m_nWfcStatus(0) {
+    local_io_(localIO),
+    statusMgr(new StatusMgr()), 
+    m_nOkLevel(exitLevelOK),
+    m_nErrorLevel(exitLevelNotOK),
+    m_nBbsShutdownStatus(shutdownNone) {
   ::bout.SetLocalIO(localIO);
 
   memset(&newuser_colors, 0, sizeof(newuser_colors));

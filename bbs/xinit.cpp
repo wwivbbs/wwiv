@@ -331,7 +331,7 @@ void WSession::ReadINIFile(IniFile& ini) {
   SetConfigFlags(GetFlagsFromIniFile(ini, sysinfo_flags, NEL(sysinfo_flags),
                                     GetConfigFlags()));
 
-  // allow override of WSession::m_nMessageColor
+  // allow override of WSession::message_color_
   SetMessageColor(ini.GetNumericValue(get_key_str(INI_STR_MSG_COLOR), GetMessageColor()));
 
   // get asv values
