@@ -48,7 +48,6 @@ void delsubconf(int conftype, confrec * c, subconf_t * which);
 void conf_edit(int conftype);
 void list_confs(int conftype, int ssc);
 int  select_conf(const char *prompt_text, int conftype, int listconfs);
-confrec *read_conferences(const char *file_name, int *nc, int max);
 void read_in_conferences(int conftype);
 void read_all_conferences();
 int get_num_conferences(const char *file_name);

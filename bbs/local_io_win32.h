@@ -41,8 +41,8 @@ class Win32ConsoleIO : public LocalIO {
   virtual ~Win32ConsoleIO();
 
   virtual void LocalGotoXY(int x, int y) override;
-  virtual int  WhereX() override;
-  virtual int  WhereY() override;
+  virtual size_t WhereX() override;
+  virtual size_t WhereY() override;
   virtual void LocalLf() override;
   virtual void LocalCr() override;
   virtual void LocalCls() override;
@@ -67,7 +67,7 @@ class Win32ConsoleIO : public LocalIO {
   virtual void MakeLocalWindow(int x, int y, int xlen, int ylen) override;
   virtual void SetCursor(int cursorStyle) override;
   virtual void LocalWriteScreenBuffer(const char *buffer) override;
-  virtual int  GetDefaultScreenBottom() override;
+  virtual size_t GetDefaultScreenBottom() override;
 
   virtual void LocalEditLine(char *s, int len, int editor_status, int *returncode, char *ss) override;
   virtual void UpdateNativeTitleBar(WSession* session) override;
@@ -79,14 +79,14 @@ private:
   std::string m_chatReason;
   bool ExtendedKeyWaiting;
 
-  COORD  m_cursorPosition;
-  HANDLE m_hConOut;
-  HANDLE m_hConIn;
-  CONSOLE_SCREEN_BUFFER_INFO m_consoleBufferInfo;
+  COORD cursor_pos_;
+  HANDLE out_;
+  HANDLE in_;
+  CONSOLE_SCREEN_BUFFER_INFO buffer_info_;
   DWORD saved_input_mode_ = 0;
 
   void set_attr_xy(int x, int y, int a);
-  COORD m_originalConsoleSize;
+  COORD original_size_;
 };
 
 

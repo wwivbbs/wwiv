@@ -62,8 +62,8 @@ class CursesLocalIO : public LocalIO {
 
   virtual void SetColor(int color);
   virtual void LocalGotoXY(int x, int y) override;
-  virtual int  WhereX() override;
-  virtual int  WhereY() override;
+  virtual size_t WhereX() override;
+  virtual size_t WhereY() override;
   virtual void LocalLf() override;
   virtual void LocalCr() override;
   virtual void LocalCls() override;
@@ -88,16 +88,15 @@ class CursesLocalIO : public LocalIO {
   virtual void MakeLocalWindow(int x, int y, int xlen, int ylen) override;
   virtual void SetCursor(int cursorStyle) override;
   virtual void LocalWriteScreenBuffer(const char *buffer) override;
-  virtual int  GetDefaultScreenBottom() override;
+  virtual size_t GetDefaultScreenBottom() override;
 
   virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) override;
   virtual void UpdateNativeTitleBar(WSession* session) override;
 
 private:
   virtual void LocalFastPuts(const std::string &text) override;
-  int m_cursorPositionX;
-  int m_cursorPositionY;
-  void set_attr_xy(int x, int y, int a);
+  size_t x_;
+  size_t y_;
 
   std::unique_ptr<CursesWindow> window_;
   const std::map<int, AnsiColor> scheme_;

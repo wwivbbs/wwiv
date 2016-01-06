@@ -53,6 +53,7 @@
 #include "bbs/wwivcolors.h"
 #include "core/file.h"
 #include "core/os.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/scope_exit.h"
 #include "core/wwivport.h"
@@ -64,6 +65,7 @@ using std::string;
 using std::unique_ptr;
 
 using namespace wwiv::os;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::msgapi;
 
@@ -736,7 +738,7 @@ void qwk_post_text(char *text, char *title, int sub) {
     }
 
 
-    if (sub >= session()->subboards.size() || sub < 0) {
+    if (sub >= size_int(session()->subboards) || sub < 0) {
       bout.Color(5);
       bout.bputs("Sub out of range");
 

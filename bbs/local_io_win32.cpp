@@ -65,7 +65,7 @@ void Win32ConsoleIO::set_attr_xy(int x, int y, int a) {
   loc.X = static_cast<SHORT>(x);
   loc.Y = static_cast<SHORT>(y);
 
-  WriteConsoleOutputAttribute(m_hConOut, reinterpret_cast< LPWORD >(&a), 1, loc, &cb);
+  WriteConsoleOutputAttribute(out_, reinterpret_cast< LPWORD >(&a), 1, loc, &cb);
 }
 
 Win32ConsoleIO::Win32ConsoleIO() : LocalIO() {
@@ -73,36 +73,36 @@ Win32ConsoleIO::Win32ConsoleIO() : LocalIO() {
   SetScreenBottom(0);
   ExtendedKeyWaiting = 0;
 
-  m_hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
-  m_hConIn  = GetStdHandle(STD_INPUT_HANDLE);
-  if (m_hConOut == INVALID_HANDLE_VALUE) {
+  out_ = GetStdHandle(STD_OUTPUT_HANDLE);
+  in_  = GetStdHandle(STD_INPUT_HANDLE);
+  if (out_ == INVALID_HANDLE_VALUE) {
     std::cout << "\n\nCan't get console handle!.\n\n";
     abort();
   }
-  GetConsoleScreenBufferInfo(m_hConOut, &m_consoleBufferInfo);
-  m_originalConsoleSize = m_consoleBufferInfo.dwSize;
-  SMALL_RECT rect = m_consoleBufferInfo.srWindow;
+  GetConsoleScreenBufferInfo(out_, &buffer_info_);
+  original_size_ = buffer_info_.dwSize;
+  SMALL_RECT rect = buffer_info_.srWindow;
   COORD bufSize;
   bufSize.X = static_cast<SHORT>(rect.Right - rect.Left + 1);
   bufSize.Y = static_cast<SHORT>(rect.Bottom - rect.Top + 1);
   bufSize.X = static_cast<SHORT>(std::min<SHORT>(bufSize.X, 80));
   bufSize.Y = static_cast<SHORT>(std::min<SHORT>(bufSize.Y, 25));
-  SetConsoleWindowInfo(m_hConOut, TRUE, &rect);
-  SetConsoleScreenBufferSize(m_hConOut, bufSize);
+  SetConsoleWindowInfo(out_, TRUE, &rect);
+  SetConsoleScreenBufferSize(out_, bufSize);
 
-  m_cursorPosition.X = m_consoleBufferInfo.dwCursorPosition.X;
-  m_cursorPosition.Y = m_consoleBufferInfo.dwCursorPosition.Y;
+  cursor_pos_.X = buffer_info_.dwCursorPosition.X;
+  cursor_pos_.Y = buffer_info_.dwCursorPosition.Y;
 
   // Have to reset this info, otherwise bad things happen.
-  GetConsoleScreenBufferInfo(m_hConOut, &m_consoleBufferInfo);
-  GetConsoleMode(m_hConIn, &saved_input_mode_);
-  SetConsoleMode(m_hConIn, 0);
+  GetConsoleScreenBufferInfo(out_, &buffer_info_);
+  GetConsoleMode(in_, &saved_input_mode_);
+  SetConsoleMode(in_, 0);
 }
 
 Win32ConsoleIO::~Win32ConsoleIO() {
-  SetConsoleScreenBufferSize(m_hConOut, m_originalConsoleSize);
-  SetConsoleTextAttribute(m_hConOut, 0x07);
-  SetConsoleMode(m_hConIn, saved_input_mode_);
+  SetConsoleScreenBufferSize(out_, original_size_);
+  SetConsoleTextAttribute(out_, 0x07);
+  SetConsoleMode(in_, saved_input_mode_);
 }
 
 
@@ -116,22 +116,22 @@ void Win32ConsoleIO::LocalGotoXY(int x, int y) {
   y += GetTopLine();
   y = std::min<int>(y, GetScreenBottom());
 
-  m_cursorPosition.X = static_cast<int16_t>(x);
-  m_cursorPosition.Y = static_cast<int16_t>(y);
-  SetConsoleCursorPosition(m_hConOut, m_cursorPosition);
+  cursor_pos_.X = static_cast<int16_t>(x);
+  cursor_pos_.Y = static_cast<int16_t>(y);
+  SetConsoleCursorPosition(out_, cursor_pos_);
 }
 
 /* This function returns the current X cursor position, as the number of
 * characters from the left hand side of the screen.  An X position of zero
 * means the cursor is at the left-most position
 */
-int Win32ConsoleIO::WhereX() {
-  GetConsoleScreenBufferInfo(m_hConOut, &m_consoleBufferInfo);
+size_t Win32ConsoleIO::WhereX() {
+  GetConsoleScreenBufferInfo(out_, &buffer_info_);
 
-  m_cursorPosition.X = m_consoleBufferInfo.dwCursorPosition.X;
-  m_cursorPosition.Y = m_consoleBufferInfo.dwCursorPosition.Y;
+  cursor_pos_.X = buffer_info_.dwCursorPosition.X;
+  cursor_pos_.Y = buffer_info_.dwCursorPosition.Y;
 
-  return m_cursorPosition.X;
+  return cursor_pos_.X;
 }
 
 /* This function returns the Y cursor position, as the line number from
@@ -139,11 +139,11 @@ int Win32ConsoleIO::WhereX() {
 * of the screen display is taken into account.  A WhereY() of zero means
 * the cursor is at the top-most position it can be at.
 */
-int Win32ConsoleIO::WhereY() {
-  GetConsoleScreenBufferInfo(m_hConOut, &m_consoleBufferInfo);
-  m_cursorPosition.X = m_consoleBufferInfo.dwCursorPosition.X;
-  m_cursorPosition.Y = m_consoleBufferInfo.dwCursorPosition.Y;
-  return m_cursorPosition.Y - GetTopLine();
+size_t Win32ConsoleIO::WhereY() {
+  GetConsoleScreenBufferInfo(out_, &buffer_info_);
+  cursor_pos_.X = buffer_info_.dwCursorPosition.X;
+  cursor_pos_.Y = buffer_info_.dwCursorPosition.Y;
+  return cursor_pos_.Y - GetTopLine();
 }
 
 void Win32ConsoleIO::LocalLf() {
@@ -155,7 +155,7 @@ void Win32ConsoleIO::LocalLf() {
   COORD dest;
   CHAR_INFO fill;
 
-  if (m_cursorPosition.Y >= GetScreenBottom()) {
+  if (static_cast<size_t>(cursor_pos_.Y) >= GetScreenBottom()) {
     dest.X = 0;
     dest.Y = static_cast<int16_t>(GetTopLine());
     scrollRect.Top = static_cast<int16_t>(GetTopLine() + 1);
@@ -165,10 +165,10 @@ void Win32ConsoleIO::LocalLf() {
     fill.Attributes = static_cast<int16_t>(curatr);
     fill.Char.AsciiChar = ' ';
 
-    ScrollConsoleScreenBuffer(m_hConOut, &scrollRect, nullptr, dest, &fill);
+    ScrollConsoleScreenBuffer(out_, &scrollRect, nullptr, dest, &fill);
   } else {
-    m_cursorPosition.Y++;
-    SetConsoleCursorPosition(m_hConOut, m_cursorPosition);
+    cursor_pos_.Y++;
+    SetConsoleCursorPosition(out_, cursor_pos_);
   }
 }
 
@@ -176,8 +176,8 @@ void Win32ConsoleIO::LocalLf() {
  * Returns the local cursor to the left-most position on the screen.
  */
 void Win32ConsoleIO::LocalCr() {
-  m_cursorPosition.X = 0;
-  SetConsoleCursorPosition(m_hConOut, m_cursorPosition);
+  cursor_pos_.X = 0;
+  SetConsoleCursorPosition(out_, cursor_pos_);
 }
 
 /**
@@ -199,7 +199,7 @@ void Win32ConsoleIO::LocalCls() {
   fill.Attributes = static_cast<int16_t>(curatr);
   fill.Char.AsciiChar = ' ';
 
-  ScrollConsoleScreenBuffer(m_hConOut, &scrollRect, nullptr, dest, &fill);
+  ScrollConsoleScreenBuffer(out_, &scrollRect, nullptr, dest, &fill);
 
   LocalGotoXY(0, 0);
   lines_listed = 0;
@@ -212,13 +212,13 @@ void Win32ConsoleIO::LocalBackspace() {
 * the previous line, except if it is on the top line, in which case nothing
 * happens.
 */
-  if (m_cursorPosition.X >= 0) {
-    m_cursorPosition.X--;
-  } else if (m_cursorPosition.Y != GetTopLine()) {
-    m_cursorPosition.Y--;
-    m_cursorPosition.X = 79;
+  if (cursor_pos_.X >= 0) {
+    cursor_pos_.X--;
+  } else if (static_cast<size_t>(cursor_pos_.Y) != GetTopLine()) {
+    cursor_pos_.Y--;
+    cursor_pos_.X = 79;
   }
-  SetConsoleCursorPosition(m_hConOut, m_cursorPosition);
+  SetConsoleCursorPosition(out_, cursor_pos_);
 }
 
 void Win32ConsoleIO::LocalPutchRaw(unsigned char ch) {
@@ -231,17 +231,17 @@ void Win32ConsoleIO::LocalPutchRaw(unsigned char ch) {
 */
   DWORD cb;
 
-  SetConsoleTextAttribute(m_hConOut, static_cast<int16_t>(curatr));
-  WriteConsole(m_hConOut, &ch, 1, &cb, nullptr);
+  SetConsoleTextAttribute(out_, static_cast<int16_t>(curatr));
+  WriteConsole(out_, &ch, 1, &cb, nullptr);
 
-  if (m_cursorPosition.X <= 79) {
-    m_cursorPosition.X++;
+  if (cursor_pos_.X <= 79) {
+    cursor_pos_.X++;
     return;
   }
 
   // Need to scroll the screen up one.
-  m_cursorPosition.X = 0;
-  if (m_cursorPosition.Y == GetScreenBottom()) {
+  cursor_pos_.X = 0;
+  if (static_cast<size_t>(cursor_pos_.Y) == GetScreenBottom()) {
     COORD dest;
     SMALL_RECT MoveRect;
     CHAR_INFO fill;
@@ -259,9 +259,9 @@ void Win32ConsoleIO::LocalPutchRaw(unsigned char ch) {
     // rushfan scrolling fix (was -1)
     dest.Y = static_cast<int16_t>(GetTopLine());
 
-    ScrollConsoleScreenBuffer(m_hConOut, &MoveRect, &MoveRect, dest, &fill);
+    ScrollConsoleScreenBuffer(out_, &MoveRect, &MoveRect, dest, &fill);
   } else {
-    m_cursorPosition.Y++;
+    cursor_pos_.Y++;
   }
 }
 
@@ -305,9 +305,9 @@ void Win32ConsoleIO::LocalFastPuts(const string& text) {
   DWORD cb = 0;
   int len = text.length();
 
-  SetConsoleTextAttribute(m_hConOut, static_cast<int16_t>(curatr));
-  WriteConsole(m_hConOut, text.c_str(), len, &cb, nullptr);
-  m_cursorPosition.X = m_cursorPosition.X + static_cast<int16_t>(cb);
+  SetConsoleTextAttribute(out_, static_cast<int16_t>(curatr));
+  WriteConsole(out_, text.c_str(), len, &cb, nullptr);
+  cursor_pos_.X = cursor_pos_.X + static_cast<int16_t>(cb);
 }
 
 int  Win32ConsoleIO::LocalPrintf(const char *formatted_text, ...) {
@@ -350,12 +350,12 @@ int  Win32ConsoleIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *fo
 
 void Win32ConsoleIO::set_protect(WSession* session, int l) {
 // set_protect sets the number of lines protected at the top of the screen.
-  if (l != GetTopLine()) {
+  if (static_cast<size_t>(l) != GetTopLine()) {
     COORD coord;
     coord.X = 0;
     coord.Y = static_cast<int16_t>(l);
 
-    if (l > GetTopLine()) {
+    if (static_cast<size_t>(l) > GetTopLine()) {
       if ((WhereY() + GetTopLine() - l) < 0) {
         CHAR_INFO lpFill;
         SMALL_RECT scrnl;
@@ -370,12 +370,12 @@ void Win32ConsoleIO::set_protect(WSession* session, int l) {
 
         coord.X = 0;
         coord.Y = static_cast<int16_t>(l);
-        ScrollConsoleScreenBuffer(m_hConOut, &scrnl, nullptr, coord, &lpFill);
+        ScrollConsoleScreenBuffer(out_, &scrnl, nullptr, coord, &lpFill);
         LocalGotoXY(WhereX(), WhereY() + l - GetTopLine());
       }
     } else {
       DWORD written;
-      FillConsoleOutputAttribute(m_hConOut, 0, (GetTopLine() - l) * 80, coord, &written);
+      FillConsoleOutputAttribute(out_, 0, (GetTopLine() - l) * 80, coord, &written);
     }
   }
   SetTopLine(l);
@@ -389,7 +389,7 @@ void Win32ConsoleIO::savescreen() {
   CONSOLE_SCREEN_BUFFER_INFO bufinfo;
   SMALL_RECT region;
 
-  GetConsoleScreenBufferInfo(m_hConOut, &bufinfo);
+  GetConsoleScreenBufferInfo(out_, &bufinfo);
   topleft.Y = topleft.X = region.Top = region.Left = 0;
   region.Bottom = static_cast<int16_t>(bufinfo.dwSize.Y - 1);
   region.Right  = static_cast<int16_t>(bufinfo.dwSize.X - 1);
@@ -399,7 +399,7 @@ void Win32ConsoleIO::savescreen() {
   }
 
   if (m_ScreenSave.scrn1) {
-    ReadConsoleOutput(m_hConOut, (CHAR_INFO *)m_ScreenSave.scrn1, bufinfo.dwSize, topleft, &region);
+    ReadConsoleOutput(out_, (CHAR_INFO *)m_ScreenSave.scrn1, bufinfo.dwSize, topleft, &region);
   }
 
   m_ScreenSave.x1 = static_cast<int16_t>(WhereX());
@@ -418,12 +418,12 @@ void Win32ConsoleIO::restorescreen() {
     CONSOLE_SCREEN_BUFFER_INFO bufinfo;
     SMALL_RECT region;
 
-    GetConsoleScreenBufferInfo(m_hConOut, &bufinfo);
+    GetConsoleScreenBufferInfo(out_, &bufinfo);
     topleft.Y = topleft.X = region.Top = region.Left = 0;
     region.Bottom = static_cast<int16_t>(bufinfo.dwSize.Y - 1);
     region.Right  = static_cast<int16_t>(bufinfo.dwSize.X - 1);
 
-    WriteConsoleOutput(m_hConOut, m_ScreenSave.scrn1, bufinfo.dwSize, topleft, &region);
+    WriteConsoleOutput(out_, m_ScreenSave.scrn1, bufinfo.dwSize, topleft, &region);
     free(m_ScreenSave.scrn1);
     m_ScreenSave.scrn1 = nullptr;
   }
@@ -665,7 +665,7 @@ bool Win32ConsoleIO::LocalKeyPressed() {
     return true;
   }
 
-  return HasKeyBeenPressed(m_hConIn);
+  return HasKeyBeenPressed(in_);
 }
 
 /*
@@ -695,13 +695,13 @@ void Win32ConsoleIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {
   {
     WORD Attr[80];
     CONSOLE_SCREEN_BUFFER_INFO ConInfo;
-    GetConsoleScreenBufferInfo(m_hConOut, &ConInfo);
+    GetConsoleScreenBufferInfo(out_, &ConInfo);
 
     int len = ConInfo.dwCursorPosition.X;
     ConInfo.dwCursorPosition.X = 0;
     DWORD cb;
-    ReadConsoleOutputCharacter(m_hConOut, cl, len, ConInfo.dwCursorPosition, &cb);
-    ReadConsoleOutputAttribute(m_hConOut, Attr, len, ConInfo.dwCursorPosition, &cb);
+    ReadConsoleOutputCharacter(out_, cl, len, ConInfo.dwCursorPosition, &cb);
+    ReadConsoleOutputAttribute(out_, Attr, len, ConInfo.dwCursorPosition, &cb);
 
     for (int i = 0; i < len; i++) {
       atr[i] = static_cast<char>(Attr[i]);   // atr is 8bit char, Attr is 16bit
@@ -715,13 +715,13 @@ void Win32ConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   // Make sure that we are within the range of {(0,0), (80,GetScreenBottom())}
   curatr = GetUserEditorColor();
   xlen = std::min(xlen, 80);
-  if (ylen > (GetScreenBottom() + 1 - GetTopLine())) {
+  if (static_cast<size_t>(ylen) > (GetScreenBottom() + 1 - GetTopLine())) {
     ylen = (GetScreenBottom() + 1 - GetTopLine());
   }
   if ((x + xlen) > 80) {
     x = 80 - xlen;
   }
-  if ((y + ylen) > GetScreenBottom() + 1) {
+  if (static_cast<size_t>(y + ylen) > GetScreenBottom() + 1) {
     y = GetScreenBottom() + 1 - ylen;
   }
 
@@ -781,7 +781,7 @@ void Win32ConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   // is MUCH slower than NT/Win2k, therefore it is MUCH faster to render the buffer off
   // screen and then write it with one fell swoop.
 
-  WriteConsoleOutput(m_hConOut, ci, size, pos, &rect);
+  WriteConsoleOutput(out_, ci, size, pos, &rect);
 
   // Draw shadow around boxed window
   for (int i = 0; i < xlen; i++) {
@@ -802,20 +802,20 @@ void Win32ConsoleIO::SetCursor(int cursorStyle) {
   case LocalIO::cursorNone: {
     cursInfo.dwSize = 20;
     cursInfo.bVisible = false;
-    SetConsoleCursorInfo(m_hConOut, &cursInfo);
+    SetConsoleCursorInfo(out_, &cursInfo);
   }
   break;
   case LocalIO::cursorSolid: {
     cursInfo.dwSize = 100;
     cursInfo.bVisible = true;
-    SetConsoleCursorInfo(m_hConOut, &cursInfo);
+    SetConsoleCursorInfo(out_, &cursInfo);
   }
   break;
   case LocalIO::cursorNormal:
   default: {
     cursInfo.dwSize = 20;
     cursInfo.bVisible = true;
-    SetConsoleCursorInfo(m_hConOut, &cursInfo);
+    SetConsoleCursorInfo(out_, &cursInfo);
   }
   }
 }
@@ -825,9 +825,9 @@ void Win32ConsoleIO::LocalClrEol() {
   DWORD cb;
   int len = 80 - WhereX();
 
-  GetConsoleScreenBufferInfo(m_hConOut, &ConInfo);
-  FillConsoleOutputCharacter(m_hConOut, ' ', len, ConInfo.dwCursorPosition, &cb);
-  FillConsoleOutputAttribute(m_hConOut, (WORD) curatr, len, ConInfo.dwCursorPosition, &cb);
+  GetConsoleScreenBufferInfo(out_, &ConInfo);
+  FillConsoleOutputCharacter(out_, ' ', len, ConInfo.dwCursorPosition, &cb);
+  FillConsoleOutputAttribute(out_, (WORD) curatr, len, ConInfo.dwCursorPosition, &cb);
 }
 
 void Win32ConsoleIO::LocalWriteScreenBuffer(const char *buffer) {
@@ -843,11 +843,11 @@ void Win32ConsoleIO::LocalWriteScreenBuffer(const char *buffer) {
   COORD size = { 80, 25 };
   SMALL_RECT rect = { 0, 0, 79, 24 };
 
-  WriteConsoleOutput(m_hConOut, ci, size, pos, &rect);
+  WriteConsoleOutput(out_, ci, size, pos, &rect);
 }
 
-int Win32ConsoleIO::GetDefaultScreenBottom() {
-  return m_consoleBufferInfo.dwSize.Y - 1;
+size_t Win32ConsoleIO::GetDefaultScreenBottom() {
+  return buffer_info_.dwSize.Y - 1;
 }
 
 bool HasKeyBeenPressed(HANDLE in) {

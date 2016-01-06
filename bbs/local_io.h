@@ -47,18 +47,18 @@ class LocalIO {
   void SetChatReason(const std::string& chat_reason) { m_chatReason = chat_reason; }
   void ClearChatReason() { m_chatReason.clear(); }
 
-  const int GetTopLine() const { return m_nTopLine; }
+  const size_t GetTopLine() const { return m_nTopLine; }
   void SetTopLine(int nTopLine) { m_nTopLine = nTopLine; }
 
-  const int GetScreenBottom() const { return m_nScreenBottom; }
+  const size_t GetScreenBottom() const { return m_nScreenBottom; }
   void SetScreenBottom(int nScreenBottom) { m_nScreenBottom = nScreenBottom; }
 
   void SetSysopAlert(bool b) { m_bSysopAlert = b; }
   const bool GetSysopAlert() const { return m_bSysopAlert; }
   
   virtual void LocalGotoXY(int x, int y) = 0;
-  virtual int  WhereX() = 0;
-  virtual int  WhereY() = 0;
+  virtual size_t WhereX() = 0;
+  virtual size_t WhereY() = 0;
   virtual void LocalLf() = 0;
   virtual void LocalCr() = 0;
   virtual void LocalCls() = 0;
@@ -89,7 +89,7 @@ class LocalIO {
   virtual void MakeLocalWindow(int x, int y, int xlen, int ylen) = 0;
   virtual void SetCursor(int cursorStyle) = 0;
   virtual void LocalWriteScreenBuffer(const char *buffer) = 0;
-  virtual int  GetDefaultScreenBottom() = 0;
+  virtual size_t GetDefaultScreenBottom() = 0;
   virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) = 0;
   virtual void UpdateNativeTitleBar(WSession* session) = 0;
 

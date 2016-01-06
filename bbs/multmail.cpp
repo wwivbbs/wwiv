@@ -90,7 +90,7 @@ void multimail(int *pnUserNumber, int numu) {
       continue;
     }
     session()->users()->ReadUser(&user, pnUserNumber[cv]);
-    if ((user.GetSl() == 255 && (user.GetNumMailWaiting() > (syscfg.maxwaiting * 5))) ||
+    if ((user.GetSl() == 255 && (user.GetNumMailWaiting() > static_cast<unsigned int>(syscfg.maxwaiting * 5))) ||
         ((user.GetSl() != 255) && (user.GetNumMailWaiting() > syscfg.maxwaiting)) ||
         user.GetNumMailWaiting() > 200) {
       bout << session()->names()->UserName(pnUserNumber[cv]) << " mailbox full, not sent.";
@@ -239,7 +239,7 @@ int oneuser() {
     return 0;
   }
   session()->users()->ReadUser(&user, user_number);
-  if (((user.GetSl() == 255) && (user.GetNumMailWaiting() > (syscfg.maxwaiting * 5))) ||
+  if (((user.GetSl() == 255) && (user.GetNumMailWaiting() > static_cast<unsigned int>(syscfg.maxwaiting * 5))) ||
       ((user.GetSl() != 255) && (user.GetNumMailWaiting() > syscfg.maxwaiting)) ||
       (user.GetNumMailWaiting() > 200)) {
     bout.nl();

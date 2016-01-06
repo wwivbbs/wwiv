@@ -92,8 +92,6 @@ static void set_question(int ii) {
   votingDat.Write(&v, sizeof(votingrec));
   votingDat.Close();
 
-  questused[ii] = (v.numanswers) ? 1 : 0;
-
   User u;
   session()->users()->ReadUser(&u, 1);
   int nNumUsers = session()->users()->GetNumberOfUserRecords();

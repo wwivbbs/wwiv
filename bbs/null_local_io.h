@@ -32,8 +32,8 @@ public:
   ~NullLocalIO();
   virtual void LocalPutch(unsigned char ch) override {};
   virtual void LocalGotoXY(int x, int y) override {}
-  virtual int WhereX() override { return 0; }
-  virtual int WhereY() override { return 0; }
+  virtual size_t WhereX() override { return 0; }
+  virtual size_t WhereY() override { return 0; }
   virtual void LocalLf() override {}
   virtual void LocalCr() override {}
   virtual void LocalCls() override {}
@@ -56,7 +56,7 @@ public:
   virtual void SetCursor(int cursorStyle) override {}
   virtual void LocalClrEol() override {}
   virtual void LocalWriteScreenBuffer(const char *buffer) override {}
-  virtual int GetDefaultScreenBottom() override { return 24; }
+  virtual size_t GetDefaultScreenBottom() override { return 24; }
   virtual void LocalEditLine(char *s, int len, int statusx, int *returncode, char *ss) override {}
   virtual void UpdateNativeTitleBar(WSession* session) override {}
   virtual void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) override {}

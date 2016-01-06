@@ -491,13 +491,13 @@ class User {
   const unsigned int GetColor(int nColor) const {
     return data.colors[nColor];
   }
-  void SetColor(int nColor, int n) {
+  void SetColor(int nColor, unsigned int n) {
     data.colors[nColor] = static_cast<uint8_t>(n);
   }
   const unsigned char GetBWColor(int nColor) const {
     return data.bwcolors[nColor];
   }
-  void SetBWColor(int nColor, int n) {
+  void SetBWColor(int nColor, unsigned int n) {
     data.bwcolors[nColor] = static_cast<uint8_t>(n);
   }
   const unsigned int GetVote(int nVote) const {
