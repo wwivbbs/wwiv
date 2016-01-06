@@ -1196,7 +1196,7 @@ bool create_conf_file(int conftype) {
  * Reads in conferences and returns pointer to conference data. Out-of-memory
  * messages are shown if applicable.
  */
-confrec *read_conferences(const char *file_name, int *nc, int max) {
+static confrec *read_conferences(const char *file_name, unsigned int *nc, int max) {
   char ts[128], *ss;
   int i, i1, i2, i3, cc = 0;
   bool ok = true;
@@ -1352,7 +1352,7 @@ confrec *read_conferences(const char *file_name, int *nc, int max) {
  */
 void read_in_conferences(int conftype) {
   int i, max;
-  int *np = nullptr;
+  unsigned *np = nullptr;
   char s[81];
   confrec **cpp = nullptr;
 

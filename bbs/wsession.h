@@ -404,7 +404,6 @@ private:
               numf,
               num_events,
               num_sys_list,
-              screenlinest,
               subchg,
               tagging,
               tagptr,
@@ -413,6 +412,7 @@ private:
               using_modem,
               numbatch,
               numbatchdl;
+  unsigned int screenlinest;
 
   std::string internetPopDomain;
   std::string internetEmailDomain;

@@ -109,24 +109,24 @@ void CursesLocalIO::LocalGotoXY(int x, int y) {
   window_->GotoXY(x, y);
 }
 
-int CursesLocalIO::WhereX() {
+size_t CursesLocalIO::WhereX() {
   return window_->GetcurX();
 }
 
-int CursesLocalIO::WhereY() {
+size_t CursesLocalIO::WhereY() {
   return window_->GetcurY();
 }
 
 void CursesLocalIO::LocalLf() {
-  m_cursorPositionY = WhereY();
-  m_cursorPositionX = WhereX();
-  m_cursorPositionY++;
+  y_ = WhereY();
+  x_ = WhereX();
+  y_++;
 
-  if (m_cursorPositionY > GetScreenBottom()) { // GetScreenBottom()) {
+  if (y_ > GetScreenBottom()) { // GetScreenBottom()) {
     scroll(window_->window());
-    m_cursorPositionY = GetScreenBottom();
+    y_ = GetScreenBottom();
   }
-  window_->GotoXY(m_cursorPositionX, m_cursorPositionY);
+  window_->GotoXY(x_, y_);
 }
 
 void CursesLocalIO::LocalCr() {
@@ -274,7 +274,7 @@ void CursesLocalIO::LocalClrEol() {
 }
 
 void CursesLocalIO::LocalWriteScreenBuffer(const char *buffer) {}
-int CursesLocalIO::GetDefaultScreenBottom() { return window_->GetMaxY() - 1; }
+size_t CursesLocalIO::GetDefaultScreenBottom() { return window_->GetMaxY() - 1; }
 
 void CursesLocalIO::LocalEditLine(char *s, int len, int edit_status, int *returncode, char *ss) {}
 

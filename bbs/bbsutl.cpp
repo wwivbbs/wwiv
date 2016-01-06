@@ -60,7 +60,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
 
   int cm = chatting;
 
-  int begx = session()->localIO()->WhereX();
+  size_t begx = session()->localIO()->WhereX();
   if (rollover[0] != 0) {
     char* ss = szRollOver;
     for (int i = 0; rollover[i]; i++) {

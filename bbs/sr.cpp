@@ -266,7 +266,7 @@ int get_protocol(xfertype xt) {
     prot = 0;
   }
 
-  unsigned char cyColorSave = session()->user()->GetColor(8);
+  int cyColorSave = session()->user()->GetColor(8);
   session()->user()->SetColor(8, 1);
   int oks1p = 0;
   oks1[0] = '\0';

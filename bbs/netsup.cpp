@@ -646,7 +646,7 @@ void print_pending_list() {
           strcpy(s2, "|#3---");
         }
 
-        time_t m = 0, h = 0;
+        int32_t m = 0, h = 0;
         if (ncn[i2].lastcontactsent) {
           time_t tLastContactTime = tCurrentTime - ncn[i2].lastcontactsent;
           time_t se = tLastContactTime % 60;

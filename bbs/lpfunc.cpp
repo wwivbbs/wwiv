@@ -92,7 +92,7 @@ int listfiles_plus_function(int type) {
   int file_handle[51];
   char vert_pos[51];
   int file_pos = 0, save_file_pos = 0, menu_pos = 0;
-  int save_dir = session()->GetCurrentFileArea();
+  size_t save_dir = session()->GetCurrentFileArea();
   bool sysop_mode = false;
   struct side_menu_colors smc;
   struct search_record search_rec;

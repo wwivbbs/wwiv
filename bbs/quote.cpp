@@ -108,7 +108,7 @@ char *GetQuoteInitials() {
 
 void grab_quotes(messagerec * m, const char *aux) {
   char *ss1, temp[255];
-  long l1, l2, l3;
+  long l2, l3;
   char *pfx;
   int cp = 0, ctla = 0, ctlc = 0, ns = 0, ctld = 0;
   int pfxlen;
@@ -151,7 +151,7 @@ void grab_quotes(messagerec * m, const char *aux) {
         session()->internetFullEmailAddress = "";
         if ((strncasecmp("internet", session()->network_name(), 8) == 0) ||
             (strncasecmp("filenet", session()->network_name(), 7) == 0)) {
-          for (l1 = 0; l1 < ss.length(); l1++) {
+          for (size_t l1 = 0; l1 < ss.length(); l1++) {
             if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'R') &&
                 (ss[l1 + 3] == 'M')) {
               l1 += 3;
@@ -177,7 +177,7 @@ void grab_quotes(messagerec * m, const char *aux) {
         }
         l3 = l2 = 0;
         ss1 = nullptr;
-        for (l1 = 0; l1 < ss.length(); l1++) {
+        for (size_t l1 = 0; l1 < ss.length(); l1++) {
           if (ctld == -1) {
             ctld = ss[l1];
           } else switch (ss[l1]) {

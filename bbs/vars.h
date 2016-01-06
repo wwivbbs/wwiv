@@ -69,9 +69,11 @@ __EXTRN__ int ansiptr,
           equote,
           fsenttoday,
           fwaiting,
-          lines_listed,
           questused[20],
           nsp;
+
+__EXTRN__ unsigned int
+lines_listed;
 
 __EXTRN__ bool  bChatLine,
           newline,
@@ -103,7 +105,8 @@ net_sysnum;
 
 __EXTRN__ int modem_speed;
 
-__EXTRN__ int curatr,
+__EXTRN__ int curatr;
+__EXTRN__ unsigned int
           dirconfnum,
           subconfnum;
 
