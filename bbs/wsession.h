@@ -121,11 +121,11 @@ public:
   void SetEffectiveSl(int nSl) { effective_sl_ = nSl; }
   unsigned int GetEffectiveSl() const { return effective_sl_; }
 
-  int  GetChatNameSelectionColor() const { return m_nChatNameSelectionColor; }
-  void SetChatNameSelectionColor(int n) { m_nChatNameSelectionColor = n; }
+  int  GetChatNameSelectionColor() const { return chatname_color_; }
+  void SetChatNameSelectionColor(int n) { chatname_color_ = n; }
 
-  int  GetMessageColor() const { return m_nMessageColor; }
-  void SetMessageColor(int n) { m_nMessageColor = n; }
+  int  GetMessageColor() const { return message_color_; }
+  void SetMessageColor(int n) { message_color_ = n; }
 
   int  GetForcedReadSubNumber() const { return m_nForcedReadSubNumber; }
   void SetForcedReadSubNumber(int n) { m_nForcedReadSubNumber = n; }
@@ -342,23 +342,22 @@ private:
   std::string current_dir_;
   int             m_nOkLevel;
   int             m_nErrorLevel;
-  int             instance_number_;
+  int             instance_number_ = -1;
   std::string     network_extension_;
-  double          last_time;
-  bool            m_bUserAlreadyOn;
-  bool            m_bNeedToCleanNetwork;
-  int             m_nBbsShutdownStatus;
-  double          m_fShutDownTime;
-  int             m_nWfcStatus;
-
+  double          last_time = 0;
+  bool            m_bUserAlreadyOn = false;
+  bool            m_bNeedToCleanNetwork = false;
+  int             m_nBbsShutdownStatus = shutdownNone;
+  double          m_fShutDownTime = 0;
+  int             m_nWfcStatus = 0;
 
   std::unique_ptr<StatusMgr> statusMgr;
   std::unique_ptr<wwiv::sdk::UserManager> user_manager_;
   std::string     m_attachmentDirectory; private:
   WApplication* application_;
   wwiv::sdk::User m_thisuser;
-  bool  last_key_local_;
-  int effective_sl_;
+  bool  last_key_local_ = true;
+  int effective_sl_ = 0;
   std::unique_ptr<WComm> comm_;
   std::unique_ptr<LocalIO> local_io_;
   std::string current_speed_;
@@ -369,49 +368,46 @@ private:
   // Data from system_operation_rec, make it public for now, and add
   // accessors later on.
   public:
-  int
-  m_nChatNameSelectionColor,
-  m_nMessageColor;
+    int chatname_color_ = 0;
+    int message_color_ = 0;
 
-  int         m_nForcedReadSubNumber;
-  bool        m_bAllowCC;
-  bool        m_bUserOnline;
-  bool        m_bQuoting;
-  bool        m_bTimeOnlineLimited;
+  int         m_nForcedReadSubNumber = 0;
+  bool        m_bAllowCC = false;
+  bool        m_bUserOnline = false;
+  bool        m_bQuoting = false;
+  bool        m_bTimeOnlineLimited = false;
 
-  bool        m_bNewScanAtLogin,
-              m_bInternalZmodem,
-              m_bExecLogSyncFoss;
+  bool        m_bNewScanAtLogin = false,
+              m_bInternalZmodem = true,
+              m_bExecLogSyncFoss = true;
 
-  int         m_nNumMessagesReadThisLogon,
-              m_nFileAreaCache,
-              m_nMessageAreaCache,
-              m_nCurrentLanguageNumber,
-              m_nCurrentFileArea,
-              m_nCurrentMessageArea,
-              m_nCurrentReadMessageArea,
-              m_nCurrentConferenceMessageArea,
-              m_nCurrentConferenceFileArea,
-              m_nNumMsgsInCurrentSub,
-              m_nBeginDayNodeNumber,
-              m_nExecChildProcessWaitTime,
-              m_nMaxNumberMessageAreas,
-              m_nMaxNumberFileAreas,
-              m_nCurrentNetworkType,
-              m_nNetworkNumber,
-              m_nMaxNetworkNumber,
-              numf,
-              num_events,
-              num_sys_list,
-              subchg,
-              tagging,
-              tagptr,
-              titled,
-              topdata,
-              using_modem,
-              numbatch,
-              numbatchdl;
-  unsigned int screenlinest;
+  int         m_nNumMessagesReadThisLogon = 0,
+              m_nCurrentLanguageNumber = 0,
+              m_nCurrentFileArea = 0,
+              m_nCurrentMessageArea = 0,
+              m_nCurrentReadMessageArea = 0,
+              m_nCurrentConferenceMessageArea = 0,
+              m_nCurrentConferenceFileArea = 0,
+              m_nNumMsgsInCurrentSub = 0,
+              m_nBeginDayNodeNumber = 0,
+              m_nExecChildProcessWaitTime = 0,
+              m_nMaxNumberMessageAreas = 0,
+              m_nMaxNumberFileAreas = 0,
+              m_nCurrentNetworkType = 0,
+              m_nNetworkNumber = 0,
+              m_nMaxNetworkNumber = 0,
+              numf = 0,
+              num_events = 0,
+              num_sys_list = 0,
+              subchg = 0,
+              tagging = 0,
+              tagptr = 0,
+              titled = 0,
+              topdata = 0,
+              using_modem = 0,
+              numbatch = 0,
+              numbatchdl = 0;
+  unsigned int screenlinest = 0;
 
   std::string internetPopDomain;
   std::string internetEmailDomain;
@@ -430,12 +426,12 @@ private:
   adv_asv_rec advasv;
 
   uint16_t
-  mail_who_field_len,
-  max_batch,
-  max_extend_lines,
-  max_chains,
-  max_gfilesec,
-  screen_saver_time;
+  mail_who_field_len = 0,
+  max_batch = 0,
+  max_extend_lines = 0,
+  max_chains = 0,
+  max_gfilesec = 0,
+  screen_saver_time = 0;
 
   unsigned char
   newuser_colors[10],         // skip for now
