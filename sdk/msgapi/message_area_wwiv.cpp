@@ -157,7 +157,7 @@ WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
       to = StringTrim(line.substr(3));
     } else {
       // No more special lines, the rest is just text.
-      for (;  it != std::end(lines); it++) {
+      for (; it != std::end(lines); it++) {
         string text_line = *it;
         // Terminate the string with a control-Z.
         string::size_type cz_pos = text_line.find(CZ);
