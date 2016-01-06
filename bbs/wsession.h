@@ -297,8 +297,8 @@ public:
    void ExitBBSImpl(int nExitLevel);
 
    void InitializeBBS(); // old init() method
-   wwiv::core::IniFile* ReadINIFile(); // from xinit.cpp
-   bool ReadConfigOverlayFile(int instance_number, wwiv::core::IniFile* ini);
+   void ReadINIFile(wwiv::core::IniFile& ini); // from xinit.cpp
+   bool ReadConfigOverlayFile(int instance_number, wwiv::core::IniFile& ini);
    bool ReadConfig();
 
    int LocalLogon();
@@ -313,7 +313,6 @@ public:
    void read_nintern();
    void read_networks();
    bool read_names();
-   void read_voting();
    bool read_dirs();
    void read_chains();
    bool read_language();

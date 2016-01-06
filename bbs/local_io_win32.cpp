@@ -155,7 +155,7 @@ void Win32ConsoleIO::LocalLf() {
   COORD dest;
   CHAR_INFO fill;
 
-  if (cursor_pos_.Y >= GetScreenBottom()) {
+  if (static_cast<size_t>(cursor_pos_.Y) >= GetScreenBottom()) {
     dest.X = 0;
     dest.Y = static_cast<int16_t>(GetTopLine());
     scrollRect.Top = static_cast<int16_t>(GetTopLine() + 1);
@@ -214,7 +214,7 @@ void Win32ConsoleIO::LocalBackspace() {
 */
   if (cursor_pos_.X >= 0) {
     cursor_pos_.X--;
-  } else if (cursor_pos_.Y != GetTopLine()) {
+  } else if (static_cast<size_t>(cursor_pos_.Y) != GetTopLine()) {
     cursor_pos_.Y--;
     cursor_pos_.X = 79;
   }
@@ -241,7 +241,7 @@ void Win32ConsoleIO::LocalPutchRaw(unsigned char ch) {
 
   // Need to scroll the screen up one.
   cursor_pos_.X = 0;
-  if (cursor_pos_.Y == GetScreenBottom()) {
+  if (static_cast<size_t>(cursor_pos_.Y) == GetScreenBottom()) {
     COORD dest;
     SMALL_RECT MoveRect;
     CHAR_INFO fill;
@@ -350,12 +350,12 @@ int  Win32ConsoleIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *fo
 
 void Win32ConsoleIO::set_protect(WSession* session, int l) {
 // set_protect sets the number of lines protected at the top of the screen.
-  if (l != GetTopLine()) {
+  if (static_cast<size_t>(l) != GetTopLine()) {
     COORD coord;
     coord.X = 0;
     coord.Y = static_cast<int16_t>(l);
 
-    if (l > GetTopLine()) {
+    if (static_cast<size_t>(l) > GetTopLine()) {
       if ((WhereY() + GetTopLine() - l) < 0) {
         CHAR_INFO lpFill;
         SMALL_RECT scrnl;
@@ -715,13 +715,13 @@ void Win32ConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   // Make sure that we are within the range of {(0,0), (80,GetScreenBottom())}
   curatr = GetUserEditorColor();
   xlen = std::min(xlen, 80);
-  if (ylen > (GetScreenBottom() + 1 - GetTopLine())) {
+  if (static_cast<size_t>(ylen) > (GetScreenBottom() + 1 - GetTopLine())) {
     ylen = (GetScreenBottom() + 1 - GetTopLine());
   }
   if ((x + xlen) > 80) {
     x = 80 - xlen;
   }
-  if ((y + ylen) > GetScreenBottom() + 1) {
+  if (static_cast<size_t>(y + ylen) > GetScreenBottom() + 1) {
     y = GetScreenBottom() + 1 - ylen;
   }
 

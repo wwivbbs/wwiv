@@ -43,18 +43,23 @@
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
+#include "core/datafile.h"
+#include "core/file.h"
 #include "core/inifile.h"
 #include "core/os.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
 using std::string;
 using std::unique_ptr;
+using std::vector;
 using namespace wwiv::core;
 using wwiv::core::FilePath;
 using wwiv::os::random_number;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 #define SECS_PER_DAY 86400L
@@ -828,7 +833,25 @@ static void LoginCheckForNewMail() {
   }
 }
 
+static vector<bool> read_voting() {
+  vector<votingrec> votes;
+  DataFile<votingrec> file(session()->config()->datadir(), VOTING_DAT);
+  vector<bool> questused(20);
+  if (file) {
+    file.ReadVector(votes);
+    int cur = 0;
+    for (const auto& v : votes) {
+      if (v.numanswers != 0) {
+        questused[cur] = true;
+      }
+      ++cur;
+    }
+  }
+  return questused;
+}
+
 static void CheckUserForVotingBooth() {
+  vector<bool> questused = read_voting();
   if (!session()->user()->IsRestrictionVote() && session()->GetEffectiveSl() > syscfg.newusersl) {
     for (int i = 0; i < 20; i++) {
       if (questused[i] && session()->user()->GetVote(i) == 0) {

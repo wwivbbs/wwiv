@@ -77,7 +77,7 @@ using namespace wwiv::os;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
-uint32_t GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, uint32_t flags);
+uint32_t GetFlagsFromIniFile(IniFile& pIniFile, ini_flags_type * fs, int nFlagNumber, uint32_t flags);
 
 
 // Turns a string into a bitmapped unsigned short flag for use with
@@ -168,8 +168,8 @@ static const char *get_key_str(int n, const char *index = nullptr) {
   return str;
 }
 
-static void set_string(IniFile* ini, int key_idx, string* out) {
-  const char *s = ini->GetValue(get_key_str(key_idx));
+static void set_string(IniFile& ini, int key_idx, string* out) {
+  const char *s = ini.GetValue(get_key_str(key_idx));
   if (s) {
     out->assign(s);
   }
@@ -178,7 +178,7 @@ static void set_string(IniFile* ini, int key_idx, string* out) {
 #define INI_INIT_STR(n, f) { set_string(ini, n, &syscfg.f); }
 
 #define INI_GET_ASV(s, f, func, d) \
-{const char* ss; if ((ss=ini->GetValue(get_key_str(INI_STR_SIMPLE_ASV,s)))!=nullptr) asv.f = func (ss); else asv.f = d;}
+{const char* ss; if ((ss=ini.GetValue(get_key_str(INI_STR_SIMPLE_ASV,s)))!=nullptr) asv.f = func (ss); else asv.f = d;}
 
 #define NEL(s) (sizeof(s) / sizeof((s)[0]))
 
@@ -230,7 +230,7 @@ static ini_flags_type sysconfig_flags[] = {
   {INI_STR_ENABLE_MCI, false, sysconfig_enable_mci},
 };
 
-IniFile* WSession::ReadINIFile() {
+void WSession::ReadINIFile(IniFile& ini) {
   // Setup default  data
   for (int nTempColorNum = 0; nTempColorNum < 10; nTempColorNum++) {
     newuser_colors[ nTempColorNum ] = nucol[ nTempColorNum ];
@@ -263,136 +263,129 @@ IniFile* WSession::ReadINIFile() {
     ClearConfigFlag(OP_FLAGS_NET_CALLOUT);
   }
 
-  // initialize ini communication
-  const string instance_name = StringPrintf("WWIV-%u", instance_number());
-  IniFile* ini(new IniFile(FilePath(GetHomeDir(), WWIV_INI), instance_name, INI_TAG));
-  if (ini->IsOpen()) {
-    // found something
-    // pull out event flags
-    for (size_t nTempSpawnOptNum = 0; nTempSpawnOptNum < NEL(spawn_opts); nTempSpawnOptNum++) {
-      const string key_name = StringPrintf("%s[%s]", get_key_str(INI_STR_SPAWNOPT), eventinfo[nTempSpawnOptNum].name);
-      const char *ss = ini->GetValue(key_name);
-      if (ss != nullptr) {
-        spawn_opts[nTempSpawnOptNum] = str2spawnopt(ss);
-      }
+  // found something
+  // pull out event flags
+  for (size_t nTempSpawnOptNum = 0; nTempSpawnOptNum < NEL(spawn_opts); nTempSpawnOptNum++) {
+    const string key_name = StringPrintf("%s[%s]", get_key_str(INI_STR_SPAWNOPT), eventinfo[nTempSpawnOptNum].name);
+    const char *ss = ini.GetValue(key_name);
+    if (ss != nullptr) {
+      spawn_opts[nTempSpawnOptNum] = str2spawnopt(ss);
     }
-
-    // pull out newuser colors
-    for (int nTempColorNum = 0; nTempColorNum < 10; nTempColorNum++) {
-      string key_name = StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLOR), nTempColorNum);
-      const char *ss = ini->GetValue(key_name);
-      if (ss != nullptr && atoi(ss) > 0) {
-        newuser_colors[nTempColorNum] = StringToUnsignedChar(ss);
-      }
-      key_name = StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLOR), nTempColorNum);
-      ss = ini->GetValue(key_name);
-      if (ss != nullptr && atoi(ss) > 0) {
-        newuser_bwcolors[nTempColorNum] = StringToUnsignedChar(ss);
-      }
-    }
-
-    SetCarbonCopyEnabled(ini->GetBooleanValue("ALLOW_CC_BCC"));
-
-    // pull out sysop-side colors
-    localIO()->SetTopScreenColor(ini->GetNumericValue(
-      get_key_str(INI_STR_TOPCOLOR), localIO()->GetTopScreenColor()));
-    localIO()->SetUserEditorColor(ini->GetNumericValue(
-      get_key_str(INI_STR_F1COLOR), localIO()->GetUserEditorColor()));
-    localIO()->SetEditLineColor(ini->GetNumericValue(
-      get_key_str(INI_STR_EDITLINECOLOR), localIO()->GetEditLineColor()));
-    SetChatNameSelectionColor(ini->GetNumericValue(
-      get_key_str(INI_STR_CHATSELCOLOR),GetChatNameSelectionColor()));
-
-    // pull out sizing options
-    max_batch = ini->GetNumericValue(get_key_str(INI_STR_MAX_BATCH), max_batch);
-    max_extend_lines = ini->GetNumericValue(get_key_str(INI_STR_MAX_EXTEND_LINES),
-                                            max_extend_lines);
-    max_chains = ini->GetNumericValue(get_key_str(INI_STR_MAX_CHAINS), max_chains);
-    max_gfilesec = ini->GetNumericValue(get_key_str(INI_STR_MAX_GFILESEC), max_gfilesec);
-
-    // pull out strings
-    INI_INIT_STR(INI_STR_UPLOAD_CMD, upload_cmd);
-    INI_INIT_STR(INI_STR_BEGINDAY_CMD, beginday_cmd);
-    INI_INIT_STR(INI_STR_NEWUSER_CMD, newuser_cmd);
-    INI_INIT_STR(INI_STR_LOGON_CMD, logon_cmd);
-
-    m_nForcedReadSubNumber = ini->GetNumericValue(get_key_str(INI_STR_FORCE_SCAN_SUBNUM),
-                                                  m_nForcedReadSubNumber);
-    m_bInternalZmodem = ini->GetBooleanValue(get_key_str(INI_STR_INTERNALZMODEM),
-                                             m_bInternalZmodem);
-    m_bNewScanAtLogin = ini->GetBooleanValue(get_key_str(INI_STR_NEW_SCAN_AT_LOGIN),
-                                             m_bNewScanAtLogin);
-
-    m_bExecLogSyncFoss = ini->GetBooleanValue(get_key_str(INI_STR_EXEC_LOG_SYNCFOSS),
-                                              m_bExecLogSyncFoss);
-    m_nExecChildProcessWaitTime = 
-        ini->GetNumericValue(get_key_str(INI_STR_EXEC_CHILD_WAIT_TIME), m_nExecChildProcessWaitTime);
-
-    SetBeginDayNodeNumber(ini->GetNumericValue(get_key_str(INI_STR_BEGINDAYNODENUMBER),
-                                        GetBeginDayNodeNumber()));
-
-    // pull out sysinfo_flags
-    SetConfigFlags(GetFlagsFromIniFile(ini, sysinfo_flags, NEL(sysinfo_flags),
-                                     GetConfigFlags()));
-
-    // allow override of WSession::m_nMessageColor
-    SetMessageColor(ini->GetNumericValue(get_key_str(INI_STR_MSG_COLOR), GetMessageColor()));
-
-    // get asv values
-    if (HasConfigFlag(OP_FLAGS_SIMPLE_ASV)) {
-      INI_GET_ASV("SL", sl, StringToUnsignedChar, syscfg.autoval[9].sl);
-      INI_GET_ASV("DSL", dsl, StringToUnsignedChar, syscfg.autoval[9].dsl);
-      INI_GET_ASV("EXEMPT", exempt, StringToUnsignedChar, 0);
-      INI_GET_ASV("AR", ar, str_to_arword, syscfg.autoval[9].ar);
-      INI_GET_ASV("DAR", dar, str_to_arword, syscfg.autoval[9].dar);
-      INI_GET_ASV("RESTRICT", restrict, str2restrict, 0);
-    }
-    if (HasConfigFlag(OP_FLAGS_ADV_ASV)) {
-      advasv.reg_wwiv = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "REG_WWIV"), 1);
-      advasv.nonreg_wwiv = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "NONREG_WWIV"), 1);
-      advasv.non_wwiv = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "NON_WWIV"), 1);
-      advasv.cosysop = ini->GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "COSYSOP"), 1);
-    }
-
-    // sysconfig flags
-    syscfg.sysconfig = static_cast<uint16_t>(GetFlagsFromIniFile(ini, sysconfig_flags,
-                       NEL(sysconfig_flags), syscfg.sysconfig));
-
-    const char* ss;
-    // misc stuff
-    if (((ss = ini->GetValue(get_key_str(INI_STR_MAIL_WHO_LEN))) != nullptr) &&
-        (atoi(ss) > 0 || ss[0] == '0')) {
-      mail_who_field_len = StringToUnsignedShort(ss);
-    }
-    if ((ss = ini->GetValue(get_key_str(INI_STR_RATIO))) != nullptr) {
-      syscfg.req_ratio = static_cast<float>(atof(ss));
-    }
-
-    if ((ss = ini->GetValue(get_key_str(INI_STR_ATTACH_DIR))) != nullptr) {
-      m_attachmentDirectory = ss;
-      if (m_attachmentDirectory.at(m_attachmentDirectory.length() - 1) != File::pathSeparatorChar) {
-        m_attachmentDirectory += File::pathSeparatorString;
-      }
-    } else {
-      std::ostringstream os;
-      os << GetHomeDir() << ATTACH_DIR << File::pathSeparatorString;
-      m_attachmentDirectory = os.str();
-    }
-
-    screen_saver_time = ini->GetNumericValue(get_key_str(INI_STR_SCREEN_SAVER_TIME),
-                                             screen_saver_time);
   }
+
+  // pull out newuser colors
+  for (int nTempColorNum = 0; nTempColorNum < 10; nTempColorNum++) {
+    string key_name = StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLOR), nTempColorNum);
+    const char *ss = ini.GetValue(key_name);
+    if (ss != nullptr && atoi(ss) > 0) {
+      newuser_colors[nTempColorNum] = StringToUnsignedChar(ss);
+    }
+    key_name = StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLOR), nTempColorNum);
+    ss = ini.GetValue(key_name);
+    if (ss != nullptr && atoi(ss) > 0) {
+      newuser_bwcolors[nTempColorNum] = StringToUnsignedChar(ss);
+    }
+  }
+
+  SetCarbonCopyEnabled(ini.GetBooleanValue("ALLOW_CC_BCC"));
+
+  // pull out sysop-side colors
+  localIO()->SetTopScreenColor(ini.GetNumericValue(
+    get_key_str(INI_STR_TOPCOLOR), localIO()->GetTopScreenColor()));
+  localIO()->SetUserEditorColor(ini.GetNumericValue(
+    get_key_str(INI_STR_F1COLOR), localIO()->GetUserEditorColor()));
+  localIO()->SetEditLineColor(ini.GetNumericValue(
+    get_key_str(INI_STR_EDITLINECOLOR), localIO()->GetEditLineColor()));
+  SetChatNameSelectionColor(ini.GetNumericValue(
+    get_key_str(INI_STR_CHATSELCOLOR),GetChatNameSelectionColor()));
+
+  // pull out sizing options
+  max_batch = ini.GetNumericValue(get_key_str(INI_STR_MAX_BATCH), max_batch);
+  max_extend_lines = ini.GetNumericValue(get_key_str(INI_STR_MAX_EXTEND_LINES),
+                                          max_extend_lines);
+  max_chains = ini.GetNumericValue(get_key_str(INI_STR_MAX_CHAINS), max_chains);
+  max_gfilesec = ini.GetNumericValue(get_key_str(INI_STR_MAX_GFILESEC), max_gfilesec);
+
+  // pull out strings
+  INI_INIT_STR(INI_STR_UPLOAD_CMD, upload_cmd);
+  INI_INIT_STR(INI_STR_BEGINDAY_CMD, beginday_cmd);
+  INI_INIT_STR(INI_STR_NEWUSER_CMD, newuser_cmd);
+  INI_INIT_STR(INI_STR_LOGON_CMD, logon_cmd);
+
+  m_nForcedReadSubNumber = ini.GetNumericValue(get_key_str(INI_STR_FORCE_SCAN_SUBNUM),
+                                                m_nForcedReadSubNumber);
+  m_bInternalZmodem = ini.GetBooleanValue(get_key_str(INI_STR_INTERNALZMODEM),
+                                            m_bInternalZmodem);
+  m_bNewScanAtLogin = ini.GetBooleanValue(get_key_str(INI_STR_NEW_SCAN_AT_LOGIN),
+                                            m_bNewScanAtLogin);
+
+  m_bExecLogSyncFoss = ini.GetBooleanValue(get_key_str(INI_STR_EXEC_LOG_SYNCFOSS),
+                                            m_bExecLogSyncFoss);
+  m_nExecChildProcessWaitTime = 
+      ini.GetNumericValue(get_key_str(INI_STR_EXEC_CHILD_WAIT_TIME), m_nExecChildProcessWaitTime);
+
+  SetBeginDayNodeNumber(ini.GetNumericValue(get_key_str(INI_STR_BEGINDAYNODENUMBER),
+                                      GetBeginDayNodeNumber()));
+
+  // pull out sysinfo_flags
+  SetConfigFlags(GetFlagsFromIniFile(ini, sysinfo_flags, NEL(sysinfo_flags),
+                                    GetConfigFlags()));
+
+  // allow override of WSession::m_nMessageColor
+  SetMessageColor(ini.GetNumericValue(get_key_str(INI_STR_MSG_COLOR), GetMessageColor()));
+
+  // get asv values
+  if (HasConfigFlag(OP_FLAGS_SIMPLE_ASV)) {
+    INI_GET_ASV("SL", sl, StringToUnsignedChar, syscfg.autoval[9].sl);
+    INI_GET_ASV("DSL", dsl, StringToUnsignedChar, syscfg.autoval[9].dsl);
+    INI_GET_ASV("EXEMPT", exempt, StringToUnsignedChar, 0);
+    INI_GET_ASV("AR", ar, str_to_arword, syscfg.autoval[9].ar);
+    INI_GET_ASV("DAR", dar, str_to_arword, syscfg.autoval[9].dar);
+    INI_GET_ASV("RESTRICT", restrict, str2restrict, 0);
+  }
+  if (HasConfigFlag(OP_FLAGS_ADV_ASV)) {
+    advasv.reg_wwiv = ini.GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "REG_WWIV"), 1);
+    advasv.nonreg_wwiv = ini.GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "NONREG_WWIV"), 1);
+    advasv.non_wwiv = ini.GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "NON_WWIV"), 1);
+    advasv.cosysop = ini.GetNumericValue<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "COSYSOP"), 1);
+  }
+
+  // sysconfig flags
+  syscfg.sysconfig = static_cast<uint16_t>(GetFlagsFromIniFile(ini, sysconfig_flags,
+                      NEL(sysconfig_flags), syscfg.sysconfig));
+
+  const char* ss;
+  // misc stuff
+  if (((ss = ini.GetValue(get_key_str(INI_STR_MAIL_WHO_LEN))) != nullptr) &&
+      (atoi(ss) > 0 || ss[0] == '0')) {
+    mail_who_field_len = StringToUnsignedShort(ss);
+  }
+  if ((ss = ini.GetValue(get_key_str(INI_STR_RATIO))) != nullptr) {
+    syscfg.req_ratio = static_cast<float>(atof(ss));
+  }
+
+  if ((ss = ini.GetValue(get_key_str(INI_STR_ATTACH_DIR))) != nullptr) {
+    m_attachmentDirectory = ss;
+    if (m_attachmentDirectory.at(m_attachmentDirectory.length() - 1) != File::pathSeparatorChar) {
+      m_attachmentDirectory += File::pathSeparatorString;
+    }
+  } else {
+    std::ostringstream os;
+    os << GetHomeDir() << ATTACH_DIR << File::pathSeparatorString;
+    m_attachmentDirectory = os.str();
+  }
+
+  screen_saver_time = ini.GetNumericValue(get_key_str(INI_STR_SCREEN_SAVER_TIME),
+                                            screen_saver_time);
 
   max_extend_lines    = std::min<uint16_t>(max_extend_lines, 99);
   max_batch           = std::min<uint16_t>(max_batch , 999);
   max_chains          = std::min<uint16_t>(max_chains, 999);
   max_gfilesec        = std::min<uint16_t>(max_gfilesec, 999);
-
-  return ini;
 }
 
-bool WSession::ReadConfigOverlayFile(int instance_number, IniFile* ini) {
-  const char* temp_directory_char = ini->GetValue("TEMP_DIRECTORY");
+bool WSession::ReadConfigOverlayFile(int instance_number, IniFile& ini) {
+  const char* temp_directory_char = ini.GetValue("TEMP_DIRECTORY");
   if (temp_directory_char == nullptr) {
     std::clog << "TEMP_DIRECTORY must be set in WWIV.INI." << std::endl;
     return false;
@@ -400,7 +393,7 @@ bool WSession::ReadConfigOverlayFile(int instance_number, IniFile* ini) {
   string temp_directory(temp_directory_char);
   // TEMP_DIRECTORY is defined in wwiv.ini, also default the batch_directory to 
   // TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
-  string batch_directory(ini->GetValue("BATCH_DIRECTORY", temp_directory.c_str()));
+  string batch_directory(ini.GetValue("BATCH_DIRECTORY", temp_directory.c_str()));
 
   // Replace %n with instance number value.
   string instance_num_string = std::to_string(instance_number);
@@ -417,7 +410,7 @@ bool WSession::ReadConfigOverlayFile(int instance_number, IniFile* ini) {
   strcpy(syscfgovr.tempdir, temp_directory.c_str());
   strcpy(syscfgovr.batchdir, batch_directory.c_str());
 
-  int max_num_instances = ini->GetNumericValue("NUM_INSTANCES", 4);
+  int max_num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
   if (instance_number > max_num_instances) {
     std::clog << "Not enough instances configured (" << max_num_instances << ")." << std::endl;
     return false;
@@ -442,13 +435,14 @@ bool WSession::ReadConfig() {
   const configrec* config = config_->config();
   user_manager_.reset(new UserManager(config->datadir, config->userreclen, config->maxusers));
 
-  std::unique_ptr<IniFile> ini(ReadINIFile());
+  const string instance_name = StringPrintf("WWIV-%u", instance_number());
+  std::unique_ptr<IniFile> ini = std::make_unique<IniFile>(FilePath(GetHomeDir(), WWIV_INI), instance_name, INI_TAG);
   if (!ini->IsOpen()) {
-    std::clog << "Insufficient memory for system info structure." << std::endl;
+    std::clog << "Unable to read WWIV.INI." << std::endl;
     AbortBBS();
   }
-
-  bool config_ovr_read = ReadConfigOverlayFile(instance_number(),ini.get());
+  ReadINIFile(*ini);
+  bool config_ovr_read = ReadConfigOverlayFile(instance_number(), *ini);
   if (!config_ovr_read) {
     return false;
   }
@@ -695,25 +689,6 @@ bool WSession::read_names() {
   return true;
 }
 
-void WSession::read_voting() {
-  for (int nTempQuestionum = 0; nTempQuestionum < 20; nTempQuestionum++) {
-    questused[ nTempQuestionum ] = 0;
-  }
-
-  File file(config()->datadir(), VOTING_DAT);
-  if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    int n = static_cast<int>(file.GetLength() / sizeof(votingrec)) - 1;
-    for (int nTempQuestUsedNum = 0; nTempQuestUsedNum < n; nTempQuestUsedNum++) {
-      votingrec v;
-      file.Seek(static_cast<long>(nTempQuestUsedNum) * sizeof(votingrec), File::seekBegin);
-      file.Read(&v, sizeof(votingrec));
-      if (v.numanswers) {
-        questused[ nTempQuestUsedNum ] = 1;
-      }
-    }
-  }
-}
-
 bool WSession::read_dirs() {
   directories.clear();
   DataFile<directoryrec> file(config()->datadir(), DIRS_DAT);
@@ -955,9 +930,6 @@ void WSession::InitializeBBS() {
 
 #endif // defined ( __unix__ )
 
-  XINIT_PRINTF("Reading Voting Booth Configuration.");
-  read_voting();
-
   XINIT_PRINTF("Reading External Events.");
   init_events();
   last_time = time_event - timer();
@@ -1068,11 +1040,11 @@ void WSession::create_phone_file() {
   phoneNumFile.Close();
 }
 
-uint32_t GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, uint32_t flags) {
+uint32_t GetFlagsFromIniFile(IniFile& ini, ini_flags_type * fs, int nFlagNumber, uint32_t flags) {
   for (int i = 0; i < nFlagNumber; i++) {
     const char* ss = INI_OPTIONS_ARRAY[ fs[i].strnum ];
-    if (ss && pIniFile->GetValue(ss)) {
-      if (pIniFile->GetBooleanValue(ss)) {
+    if (ss && ini.GetValue(ss)) {
+      if (ini.GetBooleanValue(ss)) {
         if (fs[i].sense) {
           flags &= ~fs[i].value;
         } else {

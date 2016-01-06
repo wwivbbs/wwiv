@@ -69,7 +69,6 @@ __EXTRN__ int ansiptr,
           equote,
           fsenttoday,
           fwaiting,
-          questused[20],
           nsp;
 
 __EXTRN__ unsigned int
