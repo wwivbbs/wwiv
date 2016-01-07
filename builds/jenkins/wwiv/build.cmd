@@ -167,7 +167,7 @@ copy /v/y %INFOZIP%\zip30\win32\vc6\zip___Win32_Release\zip.exe %WORKSPACE%\rele
 echo:
 echo * Creating build.nfo file
 echo Build URL %BUILD_URL% > release\build.nfo
-echo Subversion Build: %BUILD_NUMBER% >> release\build.nfo
+echo Build: 5.1.0.%BUILD_NUMBER% >> release\build.nfo
 
 echo:
 echo * Creating release archive: %RELEASE_ZIP%
