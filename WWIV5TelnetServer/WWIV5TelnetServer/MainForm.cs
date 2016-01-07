@@ -27,6 +27,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
+using System.Net;
+using System.Text.RegularExpressions;
 
 namespace WWIV5TelnetServer
 {
@@ -155,7 +157,12 @@ namespace WWIV5TelnetServer
 
             // Get Current Version
             Process p = new Process();
-            p.StartInfo.FileName = @"C:\wwiv\bbs.exe";
+            
+            // Uncomment For Release Build
+            p.StartInfo.FileName = "bbs.exe";
+            
+            // Uncomment For Debuging
+            //p.StartInfo.FileName = @"C:\wwiv\bbs.exe";
             p.StartInfo.Arguments = "-V";
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.RedirectStandardOutput = true;
@@ -178,6 +185,29 @@ namespace WWIV5TelnetServer
             currentFullVersion = "WWIV5 Telnet Server - Running WWIV: " + displayVersion;
 
             this.Text = currentFullVersion;
+
+            // Check For New Version
+            // Declare And Initilize Set Build Number Variables to 0
+            string wwivBuild5_1 = "0";
+
+            // Fetch Latest Build Number For WWIV 5.1
+            WebClient wc = new WebClient();
+            string htmlString1 = wc.DownloadString("http://build.wwivbbs.org/jenkins/job/wwiv/lastSuccessfulBuild/label=windows/");
+            Match mTitle1 = Regex.Match(htmlString1, "(?:number.*?>)(?<buildNumber1>.*?)(?:<)");
+            {
+                wwivBuild5_1 = mTitle1.Groups[1].Value;
+            }
+            string newestVersion;
+            newestVersion = wwivBuild5_1;
+
+            int newBuild = Int32.Parse(newestVersion);
+            int oldBuild = Int32.Parse(revisVersion);
+
+            if (newBuild > oldBuild)
+            {
+                MessageBox.Show("A Newer Version of WWIV is Available!");
+                // TODO Launch WWIV Update Once Packaged with Distribution.
+            }
         }
 
         private void runLocalNodeToolStripMenuItem_Click(object sender, EventArgs e)
