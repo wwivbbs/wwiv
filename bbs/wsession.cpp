@@ -935,6 +935,7 @@ void WSession::ShowUsage() {
     "  -TELSRV    - Uses internet telnet server to answer incomming session\r\n" <<
 #endif // _WIN32
     "  -U<user#>  - Pass usernumber <user#> online\r\n" <<
+    "  -V         - Display WWIV Version\r\n" <<
     "  -W         - Display Local 'WFC' menu\r\n" <<
 #if defined (_WIN32)
     "  -XT        - Someone already logged on via telnet (socket handle)\r\n" <<
@@ -1046,6 +1047,10 @@ int WSession::Run(int argc, char *argv[]) {
           SetCurrentSpeed("KB");
         }
         m_bUserAlreadyOn = true;
+        break;
+      case 'V':
+        cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]" << endl;
+        exit(0);
         break;
       case 'W':
       {
