@@ -55,12 +55,11 @@ public:
 
 private:
   File* OpenMessageFile(const std::string msgs_filename);
-  void set_gat_section(File& file, int section);
+  void set_gat_section(File& file, size_t section);
   void save_gat(File& f);
   bool readfile(const messagerec* pMessageRecord, std::string msgs_filename, std::string* out);
-  void savefile(const std::string& text, messagerec * pMessageRecord, const std::string fileName);
+  void savefile(const std::string& text, messagerec* pMessageRecord, const std::string& fileName);
   void remove_link(messagerec& msg, const std::string& fileName);
-
 
   const std::string sub_filename_;
   const std::string text_filename_;
@@ -70,7 +69,6 @@ private:
   // gat section used by wwiv message text files.
   int32_t gat_section = 0;
   std::unique_ptr<uint16_t[]> gat;
-
 };
 
 }  // namespace msgapi
