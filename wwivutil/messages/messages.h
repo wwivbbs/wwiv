@@ -30,7 +30,6 @@ public:
   virtual bool AddSubCommands() override final;
 };
 
-
 class MessagesDumpHeaderCommand: public UtilCommand {
 public:
   MessagesDumpHeaderCommand();

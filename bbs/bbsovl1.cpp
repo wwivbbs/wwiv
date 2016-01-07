@@ -190,10 +190,10 @@ void edit_confs() {
     char ch = onek("Q12", true);
     switch (ch) {
     case '1':
-      conf_edit(CONF_SUBS);
+      conf_edit(ConferenceType::CONF_SUBS);
       break;
     case '2':
-      conf_edit(CONF_DIRS);
+      conf_edit(ConferenceType::CONF_DIRS);
       break;
     case 'Q':
       return;

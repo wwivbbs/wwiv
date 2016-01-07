@@ -55,10 +55,11 @@ public:
 
 private:
   File* OpenMessageFile(const std::string msgs_filename);
-  void set_gat_section(File *pMessageFile, int section);
-  void save_gat(File *pMessageFile);
+  void set_gat_section(File& file, int section);
+  void save_gat(File& f);
   bool readfile(const messagerec* pMessageRecord, std::string msgs_filename, std::string* out);
   void savefile(const std::string& text, messagerec * pMessageRecord, const std::string fileName);
+  void remove_link(messagerec& msg, const std::string& fileName);
 
 
   const std::string sub_filename_;

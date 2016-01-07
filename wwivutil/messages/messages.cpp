@@ -39,6 +39,7 @@ using std::cout;
 using std::endl;
 using std::setw;
 using std::string;
+using std::make_unique;
 using std::unique_ptr;
 using std::vector;
 using wwiv::core::BooleanCommandLineArgument;
@@ -48,9 +49,85 @@ using namespace wwiv::sdk::msgapi;
 namespace wwiv {
 namespace wwivutil {
 
+static void delete_usage() {
+  cout << "Usage:   delete --num=NN <base sub filename>" << endl;
+  cout << "Example: delete --num=10 general" << endl;
+}
+
+class DeleteMessageCommand: public UtilCommand {
+public:
+  DeleteMessageCommand() 
+    : UtilCommand("delete", "Deletes message number specified by '--num'.") {}
+
+  virtual ~DeleteMessageCommand() {}
+  virtual int Execute() override final {
+    if (arg("help").as_bool()) {
+      delete_usage();
+      cout << GetHelp();
+      return 0;
+    } else if (remaining().empty()) {
+      clog << "Missing sub basename." << endl;
+      delete_usage();
+      cout << GetHelp();
+      return 2;
+    }
+
+    Networks networks(*config()->config());
+    if (!networks.IsInitialized()) {
+      clog << "Unable to load networks.";
+      return 1;
+    }
+
+    const string basename(remaining().front());
+    // TODO(rushfan): Create the right API type for the right message area.
+    unique_ptr<MessageApi> api = make_unique<WWIVMessageApi>(
+      config()->config()->datadir(), config()->config()->msgsdir(), networks.networks());
+    if (!api->Exist(basename)) {
+      clog << "Message area: '" << basename << "' does not exist." << endl;
+      return 1;
+    }
+
+    unique_ptr<MessageArea> area(api->Open(basename));
+    if (!area) {
+      clog << "Error opening message area: '" << basename << "'." << endl;
+      return 1;
+    }
+
+    int num_messages = area->number_of_messages();
+    int message_number = arg("num").as_int();
+    cout << "Message Area: '" << basename << "' has "
+         << num_messages << " messages." << endl;
+
+    if (message_number < 0 || message_number > num_messages) {
+      clog << "Invalid message number: " << message_number << endl;
+      return 1;
+    }
+    bool success = area->DeleteMessage(message_number);
+    if (!success) {
+      clog << "Error deleting message number: " << message_number << endl;
+      return 1;
+    }
+
+    return 0;
+  }
+
+  virtual bool AddSubCommands() override final {
+    add_argument({"num", "Message Number to delete.", "-1"});
+    return true;
+  }
+
+protected:
+  int ExecuteImpl(
+    const std::string& basename, const std::string& subs_dir,
+    const std::string& msgs_dir,
+    const std::vector<net_networks_rec>& net_networks,
+    int start, int end, bool all);
+};
+
+
 bool MessagesCommand::AddSubCommands() {
-  MessagesDumpHeaderCommand* dump = new MessagesDumpHeaderCommand();
-  if (!add(dump)) { return false; }
+  if (!add(new MessagesDumpHeaderCommand())) { return false; }
+  if (!add(new DeleteMessageCommand())) { return false; }
   return true;
 }
 

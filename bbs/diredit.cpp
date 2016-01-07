@@ -289,7 +289,7 @@ void swap_dirs(int dir1, int dir2) {
     return;
   }
 
-  update_conf(CONF_DIRS, &dir1conv, &dir2conv, CONF_UPDATE_SWAP);
+  update_conf(ConferenceType::CONF_DIRS, &dir1conv, &dir2conv, CONF_UPDATE_SWAP);
 
   dir1 = static_cast<int>(dir1conv);
   dir2 = static_cast<int>(dir2conv);
@@ -332,7 +332,7 @@ void insert_dir(int n) {
     return;
   }
 
-  update_conf(CONF_DIRS, &nconv, nullptr, CONF_UPDATE_INSERT);
+  update_conf(ConferenceType::CONF_DIRS, &nconv, nullptr, CONF_UPDATE_INSERT);
 
   n = static_cast<int>(nconv);
 
@@ -389,7 +389,7 @@ void delete_dir(int n) {
     return;
   }
 
-  update_conf(CONF_DIRS, &nconv, nullptr, CONF_UPDATE_DELETE);
+  update_conf(ConferenceType::CONF_DIRS, &nconv, nullptr, CONF_UPDATE_DELETE);
 
   n = static_cast<int>(nconv);
 
@@ -496,19 +496,19 @@ void dlboardedit() {
           confchg = 1;
           if (dirconfnum > 1) {
             bout.nl();
-            list_confs(CONF_DIRS, 0);
-            i2 = select_conf("Put in which conference? ", CONF_DIRS, 0);
+            list_confs(ConferenceType::CONF_DIRS, 0);
+            i2 = select_conf("Put in which conference? ", ConferenceType::CONF_DIRS, 0);
             if (i2 >= 0) {
               if (in_conference(i, &dirconfs[i2]) < 0) {
                 iconv = (subconf_t) i;
-                addsubconf(CONF_DIRS, &dirconfs[i2], &iconv);
+                addsubconf(ConferenceType::CONF_DIRS, &dirconfs[i2], &iconv);
                 i = static_cast<int>(iconv);
               }
             }
           } else {
             if (in_conference(i, &dirconfs[0]) < 0) {
               iconv = (subconf_t) i;
-              addsubconf(CONF_DIRS, &dirconfs[0], &iconv);
+              addsubconf(ConferenceType::CONF_DIRS, &dirconfs[0], &iconv);
               i = static_cast<int>(iconv);
             }
           }
@@ -548,7 +548,7 @@ void dlboardedit() {
     dirsFile.WriteVector(session()->directories);
   }
   if (confchg) {
-    save_confs(CONF_DIRS, -1, nullptr);
+    save_confs(ConferenceType::CONF_DIRS, -1, nullptr);
   }
   if (!session()->GetWfcStatus()) {
     changedsl();

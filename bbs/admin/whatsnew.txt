@@ -5,7 +5,8 @@
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* 
+* Removed F6 (toggle sysop alert), to page you after a session ends, since
+  this isn't needed post-DOS anymore.
 
 What's New in WWIV 5.1 (2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

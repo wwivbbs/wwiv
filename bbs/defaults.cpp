@@ -433,7 +433,7 @@ void config_qscan() {
           break;
         }
 
-        setuconf(CONF_SUBS, i, -1);
+        setuconf(ConferenceType::CONF_SUBS, i, -1);
       }
       l_config_qscan();
       done = false;
@@ -470,7 +470,7 @@ void config_qscan() {
   } while (!done1 && !hangup);
 
   if (okconf(session()->user())) {
-    setuconf(CONF_SUBS, oc, os);
+    setuconf(ConferenceType::CONF_SUBS, oc, os);
   }
 }
 
@@ -1193,7 +1193,7 @@ void config_scan_plus(int type) {
                   session()->SetCurrentConferenceMessageArea(session()->GetCurrentConferenceMessageArea() + 1);
                 }
               }
-              setuconf(CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
+              setuconf(ConferenceType::CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
             } else {
               if (session()->GetCurrentConferenceFileArea() > 0) {
                 session()->SetCurrentConferenceFileArea(session()->GetCurrentConferenceFileArea() - 1);
@@ -1203,7 +1203,7 @@ void config_scan_plus(int type) {
                   session()->SetCurrentConferenceFileArea(session()->GetCurrentConferenceFileArea() + 1);
                 }
               }
-              setuconf(CONF_DIRS, session()->GetCurrentConferenceFileArea(), -1);
+              setuconf(ConferenceType::CONF_DIRS, session()->GetCurrentConferenceFileArea(), -1);
             }
             pos = 0;
             menu_done = true;
@@ -1219,7 +1219,7 @@ void config_scan_plus(int type) {
               } else {
                 session()->SetCurrentConferenceMessageArea(0);
               }
-              setuconf(CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
+              setuconf(ConferenceType::CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
             }
 
             else {
@@ -1229,7 +1229,7 @@ void config_scan_plus(int type) {
               } else {
                 session()->SetCurrentConferenceFileArea(0);
               }
-              setuconf(CONF_DIRS, session()->GetCurrentConferenceFileArea(), -1);
+              setuconf(ConferenceType::CONF_DIRS, session()->GetCurrentConferenceFileArea(), -1);
             }
             pos = 0;
             menu_done = true;

@@ -398,10 +398,7 @@ void Win32ConsoleIO::savescreen() {
     m_ScreenSave.scrn1 = static_cast< CHAR_INFO *>(malloc((bufinfo.dwSize.X * bufinfo.dwSize.Y) * sizeof(CHAR_INFO)));
   }
 
-  if (m_ScreenSave.scrn1) {
-    ReadConsoleOutput(out_, (CHAR_INFO *)m_ScreenSave.scrn1, bufinfo.dwSize, topleft, &region);
-  }
-
+  ReadConsoleOutput(out_, (CHAR_INFO *)m_ScreenSave.scrn1, bufinfo.dwSize, topleft, &region);
   m_ScreenSave.x1 = static_cast<int16_t>(WhereX());
   m_ScreenSave.y1 = static_cast<int16_t>(WhereY());
   m_ScreenSave.topline1 = static_cast<int16_t>(GetTopLine());
@@ -432,25 +429,19 @@ void Win32ConsoleIO::restorescreen() {
   LocalGotoXY(m_ScreenSave.x1, m_ScreenSave.y1);
 }
 
-static char xlate[] = {
-  'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 0, 0, 0, 0,
-  'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 0, 0, 0, 0, 0,
-  'Z', 'X', 'C', 'V', 'B', 'N', 'M',
-};
-
-static const vector<string> top_screen_items = {
-  "",
-  "Temp Sysop",
-  "",
-  "Alert",
-  "อออออออ",
-  "Available",
-  "อออออออออออ",
-  "%s chatting with %s"
-};
-
 // int topdata, tempsysop, sysop, is_user_online, 
 void Win32ConsoleIO::tleft(WSession* session, bool temp_sysop, bool sysop, bool user_online) {
+  static const vector<string> top_screen_items = {
+    "",
+    "Temp Sysop",
+    "",
+    "", // was Alert
+    "อออออออ",
+    "Available",
+    "อออออออออออ",
+    "%s chatting with %s"
+  };
+
   int cx = WhereX();
   int cy = WhereY();
   int ctl = GetTopLine();
@@ -459,7 +450,6 @@ void Win32ConsoleIO::tleft(WSession* session, bool temp_sysop, bool sysop, bool 
   SetTopLine(0);
   double nsln = nsl();
   int nLineNumber = (chatcall && (session->topdata == LocalIO::topdataUser)) ? 5 : 4;
-
 
   if (session->topdata) {
     LocalXYPuts(1, nLineNumber, session->GetCurrentSpeed());
@@ -470,11 +460,7 @@ void Win32ConsoleIO::tleft(WSession* session, bool temp_sysop, bool sysop, bool 
     if (temp_sysop) {
       LocalXYPuts(23, nLineNumber, top_screen_items[1]);
     }
-    if (GetSysopAlert()) {
-      LocalXYPuts(54, nLineNumber, top_screen_items[3]);
-    } else {
-      LocalXYPuts(54, nLineNumber, top_screen_items[4]);
-    }
+    LocalXYPuts(54, nLineNumber, top_screen_items[4]);
 
     if (sysop) {
       LocalXYPuts(64, nLineNumber, top_screen_items[5]);
@@ -905,7 +891,7 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
   int oldatr = curatr;
   int cx = WhereX();
   int cy = WhereY();
-  for (int i = strlen(pszInOutText); i < len; i++) {
+  for (size_t i = strlen(pszInOutText); i < static_cast<size_t>(len); i++) {
     pszInOutText[i] = static_cast<unsigned char>(176);
   }
   pszInOutText[len] = '\0';

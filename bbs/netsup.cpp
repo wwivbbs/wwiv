@@ -179,15 +179,12 @@ int cleanup_net1() {
             ok = fnd_net.open(s, 0);
           }
           if (ok) {
-#ifndef __unix__
-            // TODO(rushfan): I don't think we need to guard this on unix anymore.
             if (session()->wfc_status == 0) {
               // WFC addition
               session()->localIO()->LocalCls();
             } else {
               wfc_cls();
             }
-#endif
             ++i;
             hangup = false;
             session()->using_modem = 0;
@@ -201,14 +198,12 @@ int cleanup_net1() {
           }
           sprintf(s, "%s%s", session()->network_directory().c_str(), LOCAL_NET);
           if (File::Exists(s)) {
-#ifndef __unix__
             if (session()->wfc_status == 0) {
               // WFC addition
               session()->localIO()->LocalCls();
             } else {
               wfc_cls();
             }
-#endif
             ++i;
             any = 1;
             ok = 1;

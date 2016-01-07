@@ -545,6 +545,9 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
 
 void chat1(const char *chat_line, bool two_way) {
   char cl[81], xl[81], s[255], s1[255], atr[81], s2[81], cc, szSysopName[81];
+  if (!okansi()) {
+    two_way = false;
+  }
 
   select_chat_name(szSysopName);
   if (szSysopName[0] == '\0') {
@@ -572,13 +575,6 @@ void chat1(const char *chat_line, bool two_way) {
   local_echo = true;
   bout.nl(2);
   int nSaveTopData = session()->topdata;
-  if (!okansi()) {
-    two_way = false;
-  }
-  if (modem_speed == 300) {
-    two_way = false;
-  }
-
   if (two_way) {
     session()->localIO()->LocalCls();
     cp0 = cp1 = 0;

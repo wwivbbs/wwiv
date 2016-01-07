@@ -189,7 +189,7 @@ void CreatePCBoardSysDropFile() {
     strcpy(pcb.display, "-1");
     strcpy(pcb.printer, "0"); // -1 if logging is to the printer, 0 otherwise;
     strcpy(pcb.page_bell, " 0");
-    strcpy(pcb.alarm, (session()->localIO()->GetSysopAlert()) ? "-1" : " 0");
+    strcpy(pcb.alarm, " 0");
     strcpy(pcb.errcheck, "-1");
     if (okansi()) {
       pcb.graphics = 'Y';

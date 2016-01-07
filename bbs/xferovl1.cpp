@@ -18,6 +18,8 @@
 /**************************************************************************/
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "bbs/batch.h"
 #include "bbs/bbsovl3.h"
@@ -34,6 +36,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/xfer_common.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 
@@ -48,6 +51,7 @@ static const unsigned char *invalid_chars =
   (unsigned char *)"Ú¿ÀÙÄ³Ã´ÁÂÉ»È¼ÍºÌ¹ÊËÕ¸Ô¾Í³ÆµÏÑÖ·Ó½ÄºÇ¶ÐÒÅÎØ×°±²ÛßÜÝÞ";
 
 using wwiv::bbs::TempDisablePause;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 void modify_extended_description(char **sss, const char *dest) {
@@ -371,7 +375,7 @@ void tag_it() {
   char s[255], s1[255], s2[81], s3[400];
   long fs = 0;
 
-  if (session()->numbatch >= session()->max_batch) {
+  if (session()->batch.size() >= session()->max_batch) {
     bout << "|#6No room left in batch queue.";
     getkey();
     return;
@@ -413,7 +417,7 @@ void tag_it() {
         bout << "|#6" << filelist[i].u.filename << " is already in the batch queue.\r\n";
         bad = true;
       }
-      if (session()->numbatch >= session()->max_batch) {
+      if (session()->batch.size() >= session()->max_batch) {
         bout << "|#6Batch file limit of " << session()->max_batch << " has been reached.\r\n";
         bad = true;
       }
@@ -452,13 +456,14 @@ void tag_it() {
       }
       if (!bad) {
         batchtime += static_cast<float>(t);
-        strcpy(batch[session()->numbatch].filename, filelist[i].u.filename);
-        batch[session()->numbatch].dir = filelist[i].directory;
-        batch[session()->numbatch].time = (float) t;
-        batch[session()->numbatch].sending = 1;
-        batch[session()->numbatch].len = fs;
-        session()->numbatch++;
+        batchrec b{};
+        strcpy(b.filename, filelist[i].u.filename);
+        b.dir = filelist[i].directory;
+        b.time = (float) t;
+        b.sending = 1;
+        b.len = fs;
         ++session()->numbatchdl;
+        session()->batch.emplace_back(b);
         bout << "|#1" << filelist[i].u.filename << " added to batch queue.\r\n";
       }
     } else {
@@ -467,7 +472,6 @@ void tag_it() {
     lines_listed = 0;
   }
 }
-
 
 void tag_files() {
   int i, i1;
@@ -724,17 +728,18 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
           }
         }
         batchtime += static_cast<float>(t);
-        strcpy(batch[session()->numbatch].filename, file_name);
-        batch[session()->numbatch].dir = static_cast<int16_t>(dn);
-        batch[session()->numbatch].time = static_cast<float>(t);
-        batch[session()->numbatch].sending = 1;
-        batch[session()->numbatch].len = fs;
+        batchrec b{};
+        strcpy(b.filename, file_name);
+        b.dir = static_cast<int16_t>(dn);
+        b.time = static_cast<float>(t);
+        b.sending = 1;
+        b.len = fs;
         bout << "\r";
         bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n",
-                                          session()->numbatch + 1, batch[session()->numbatch].filename, batch[session()->numbatch].len,
-                                          ctim(batch[session()->numbatch].time),
-                                          session()->directories[batch[session()->numbatch].dir].name);
-        session()->numbatch++;
+                     session()->batch.size() + 1, b.filename, b.len,
+                     ctim(b.time),
+                     session()->directories[b.dir].name);
+        session()->batch.emplace_back(b);
         ++session()->numbatchdl;
         bout << "\r";
         bout << "|#5    Continue search? ";
@@ -754,7 +759,6 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
   }
   return 0;
 }
-
 
 int try_to_download(const char *file_mask, int dn) {
   int rtn;
@@ -834,17 +838,20 @@ void download() {
       bout <<
                          "|#7\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\r\n";
     }
-    if (i < session()->numbatch) {
-      if (!returning && batch[i].sending) {
-        bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", i + 1, batch[i].filename,
-                                          batch[i].len, ctim(batch[i].time), session()->directories[batch[i].dir].name);
+    if (i < size_int(session()->batch)) {
+      const auto& b = session()->batch[i];
+      if (!returning && b.sending) {
+        bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
+          i + 1, b.filename,
+          b.len, ctim(b.time), 
+          session()->directories[b.dir].name);
       }
     } else {
       do {
         count = 0;
         ok = true;
         bout.backline();
-        bout.bprintf("|#2%3d ", session()->numbatch + 1);
+        bout.bprintf("|#2%3d ", session()->batch.size() + 1);
         bout.Color(1);
         bool onl = newline;
         newline = false;
@@ -867,7 +874,7 @@ void download() {
               }
             }
             bout.backline();
-            sprintf(s1, "%3d %s", session()->numbatch + 1, s);
+            sprintf(s1, "%3d %s", session()->batch.size() + 1, s);
             bout.Color(1);
             bout << s1;
             foundany = 0;
@@ -916,7 +923,7 @@ void download() {
       rtn = 0;
       i = 0;
     }
-  } while (!done && !hangup && (i <= session()->numbatch));
+  } while (!done && !hangup && (i <= size_int(session()->batch)));
 
   if (!session()->numbatchdl) {
     return;
@@ -929,7 +936,7 @@ void download() {
     return;
   }
   bout.nl();
-  bout << "|#1Files in Batch Queue   : |#2" << session()->numbatch << wwiv::endl;
+  bout << "|#1Files in Batch Queue   : |#2" << session()->batch.size() << wwiv::endl;
   bout << "|#1Estimated Download Time: |#2" << ctim2(batchtime) << wwiv::endl;
   bout.nl();
   rtn = batchdl(3);
@@ -1243,17 +1250,15 @@ void removenotthere() {
   session()->UpdateTopScreen();
 }
 
-
 int find_batch_queue(const char *file_name) {
-  for (int i = 0; i < session()->numbatch; i++) {
-    if (IsEquals(file_name, batch[i].filename)) {
+  for (size_t i = 0; i < session()->batch.size(); i++) {
+    if (IsEquals(file_name, session()->batch[i].filename)) {
       return i;
     }
   }
 
   return -1;
 }
-
 
 // Removes a file off the batch queue specified by pszFileNam,e
 void remove_batch(const char *file_name) {

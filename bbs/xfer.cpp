@@ -107,9 +107,9 @@ unsigned long bytes_to_k(unsigned long lBytes) {
 }
 
 int check_batch_queue(const char *file_name) {
-  for (int i = 0; i < session()->numbatch; i++) {
-    if (IsEquals(file_name, batch[i].filename)) {
-      return (batch[i].sending) ? 1 : -1;
+  for (const auto& b : session()->batch) {
+    if (IsEquals(file_name, b.filename)) {
+      return b.sending ? 1 : -1;
     }
   }
   return 0;

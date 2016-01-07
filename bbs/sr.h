@@ -20,6 +20,16 @@
 
 #include "sdk/vardec.h"
 
+enum xfertype {
+  xf_up,
+  xf_down,
+  xf_up_temp,
+  xf_down_temp,
+  xf_up_batch,
+  xf_down_batch,
+  xf_none
+};
+
 void calc_CRC(unsigned char b);
 char gettimeout(double d, bool *abort);
 int  extern_prot(int nProtocolNum, const char *pfile_nameToSend, bool bSending);
