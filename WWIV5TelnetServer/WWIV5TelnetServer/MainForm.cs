@@ -152,6 +152,32 @@ namespace WWIV5TelnetServer
                 Console.WriteLine("AutoStarting Local Node.");
                 runLocalNodeToolStripMenuItem_Click(sender, e);
             }
+
+            // Get Current Version
+            Process p = new Process();
+            p.StartInfo.FileName = @"C:\wwiv\bbs.exe";
+            p.StartInfo.Arguments = "-V";
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.Start();
+
+            string output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+            char[] delimiter = { '[', '.', ']' };
+            string currentVersion = output;
+            string[] partsVersion;
+            partsVersion = currentVersion.Split(delimiter);
+            string majorVersion = partsVersion[1];
+            string minorVersion = partsVersion[2];
+            string buildVersion = partsVersion[3];
+            string revisVersion = partsVersion[4];
+            string displayVersion;
+            displayVersion = (majorVersion + "." + minorVersion + "." + buildVersion + "." + revisVersion);
+
+            string currentFullVersion;
+            currentFullVersion = "WWIV5 Telnet Server - Running WWIV: " + displayVersion;
+
+            this.Text = currentFullVersion;
         }
 
         private void runLocalNodeToolStripMenuItem_Click(object sender, EventArgs e)
