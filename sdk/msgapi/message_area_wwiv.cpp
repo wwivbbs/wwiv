@@ -355,37 +355,41 @@ bool WWIVMessageArea::readfile(const messagerec* msg, string msgs_filename, stri
   return true;
 }
 
-void  WWIVMessageArea::savefile(const string& text, messagerec* msg, const string& msgs_filename) {
+void WWIVMessageArea::savefile(const string& text, messagerec* msg, const string& msgs_filename) {
   int gati[128];
+  memset(gati, 0, sizeof(gati));
   unique_ptr<File> msgfile(OpenMessageFile(msgs_filename));
-  if (msgfile->IsOpen()) {
-    for (size_t section = 0; section < 1024; section++) {
-      set_gat_section(*msgfile, section);
-      int gatp = 0;
-      int nNumBlocksRequired = static_cast<int>((text.length() + 511L) / MSG_BLOCK_SIZE);
-      int i4 = 1;
-      while (gatp < nNumBlocksRequired && i4 < GAT_NUMBER_ELEMENTS) {
-        if (gat[i4] == 0) {
-          gati[gatp++] = i4;
-        }
-        ++i4;
-      }
-      if (gatp >= nNumBlocksRequired) {
-        gati[gatp] = -1;
-        for (int i = 0; i < nNumBlocksRequired; i++) {
-          msgfile->Seek(MSG_STARTING(gat_section) + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::seekBegin);
-          msgfile->Write((&text[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
-          gat[gati[i]] = static_cast<uint16_t>(gati[i + 1]);
-        }
-        save_gat(*msgfile);
-        break;
-      }
-    }
-    msgfile->Close();
+  if (!msgfile->IsOpen()) {
+    // Unable to write to the message file.
+    msg->stored_as = 0xffffffff;
+    return;
   }
+  for (size_t section = 0; section < 1024; section++) {
+    set_gat_section(*msgfile, section);
+    int gatp = 0;
+    int nNumBlocksRequired = static_cast<int>((text.length() + 511L) / MSG_BLOCK_SIZE);
+    int i4 = 1;
+    while (gatp < nNumBlocksRequired && i4 < GAT_NUMBER_ELEMENTS) {
+      if (gat[i4] == 0) {
+        gati[gatp++] = i4;
+      }
+      ++i4;
+    }
+    if (gatp >= nNumBlocksRequired) {
+      gati[gatp] = -1;
+      for (int i = 0; i < nNumBlocksRequired; i++) {
+        msgfile->Seek(MSG_STARTING(gat_section) + MSG_BLOCK_SIZE * static_cast<long>(gati[i]),
+          File::seekBegin);
+        msgfile->Write((&text[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
+        gat[gati[i]] = static_cast<uint16_t>(gati[i + 1]);
+      }
+      save_gat(*msgfile);
+      break;
+    }
+  }
+  msgfile->Close();
   msg->stored_as = static_cast<uint32_t>(gati[0]) + static_cast<uint32_t>(gat_section) * GAT_NUMBER_ELEMENTS;
 }
-
 
 }  // namespace msgapi
 }  // namespace sdk
