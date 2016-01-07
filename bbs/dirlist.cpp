@@ -121,7 +121,7 @@ void dirlist(int mode) {
             switch (ss[0]) {
             case 'Q':
               if (okconf(session()->user())) {
-                setuconf(CONF_DIRS, oc, os);
+                setuconf(ConferenceType::CONF_DIRS, oc, os);
               }
               done    = true;
               abort   = true;
@@ -164,13 +164,13 @@ void dirlist(int mode) {
           wwiv::strings::IsEquals(ss, "Q") ||
           wwiv::strings::IsEquals(ss, "\r")) {
         if (okconf(session()->user())) {
-          setuconf(CONF_DIRS, oc, os);
+          setuconf(ConferenceType::CONF_DIRS, oc, os);
         }
         done = true;
       }
       if (wwiv::strings::IsEquals(ss, "J")) {
         if (okconf(session()->user())) {
-          jump_conf(CONF_DIRS);
+          jump_conf(ConferenceType::CONF_DIRS);
         }
         sn = en = oc = session()->GetCurrentConferenceFileArea();
         nd = i = 0;
@@ -188,7 +188,7 @@ void dirlist(int mode) {
       nd = 0;
     } else {
       if (okconf(session()->user())) {
-        setuconf(CONF_DIRS, oc, os);
+        setuconf(ConferenceType::CONF_DIRS, oc, os);
       }
       done = true;
     }

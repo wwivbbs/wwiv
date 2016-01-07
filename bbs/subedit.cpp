@@ -515,7 +515,7 @@ static void swap_subs(int sub1, int sub2) {
     return;
   }
 
-  update_conf(CONF_SUBS, &sub1conv, &sub2conv, CONF_UPDATE_SWAP);
+  update_conf(ConferenceType::CONF_SUBS, &sub1conv, &sub2conv, CONF_UPDATE_SWAP);
 
   sub1 = static_cast<int>(sub1conv);
   sub2 = static_cast<int>(sub2conv);
@@ -573,7 +573,7 @@ static void insert_sub(int n) {
     return;
   }
 
-  update_conf(CONF_SUBS, &nconv, nullptr, CONF_UPDATE_INSERT);
+  update_conf(ConferenceType::CONF_SUBS, &nconv, nullptr, CONF_UPDATE_INSERT);
 
   n = static_cast<int>(nconv);
 
@@ -649,7 +649,7 @@ static void delete_sub(int n) {
     return;
   }
 
-  update_conf(CONF_SUBS, &nconv, nullptr, CONF_UPDATE_DELETE);
+  update_conf(ConferenceType::CONF_SUBS, &nconv, nullptr, CONF_UPDATE_DELETE);
 
   n = static_cast<int>(nconv);
 
@@ -784,19 +784,19 @@ void boardedit() {
           confchg = true;
           if (subconfnum > 1) {
             bout.nl();
-            list_confs(CONF_SUBS, 0);
-            i2 = select_conf("Put in which conference? ", CONF_SUBS, 0);
+            list_confs(ConferenceType::CONF_SUBS, 0);
+            i2 = select_conf("Put in which conference? ", ConferenceType::CONF_SUBS, 0);
             if (i2 >= 0) {
               if (in_conference(i, &subconfs[i2]) < 0) {
                 iconv = (subconf_t) i;
-                addsubconf(CONF_SUBS, &subconfs[i2], &iconv);
+                addsubconf(ConferenceType::CONF_SUBS, &subconfs[i2], &iconv);
                 i = static_cast<int>(iconv);
               }
             }
           } else {
             if (in_conference(i, &subconfs[0]) < 0) {
               iconv = static_cast<subconf_t>(i);
-              addsubconf(CONF_SUBS, &subconfs[0], &iconv);
+              addsubconf(ConferenceType::CONF_SUBS, &subconfs[0], &iconv);
               i = static_cast<int>(iconv);
             }
           }
@@ -832,6 +832,6 @@ void boardedit() {
   }
   session()->subchg = 1;
   if (confchg) {
-    save_confs(CONF_SUBS, -1, nullptr);
+    save_confs(ConferenceType::CONF_SUBS, -1, nullptr);
   }
 }

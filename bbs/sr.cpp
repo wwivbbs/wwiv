@@ -516,7 +516,7 @@ void send_file(const char *file_name, bool *sent, bool *abort, const char *sfn, 
       break;
     case WWIV_INTERNAL_PROT_BATCH:
       ok = true;
-      if (session()->numbatch >= session()->max_batch) {
+      if (session()->batch.size() >= session()->max_batch) {
         bout.nl();
         bout << "No room left in batch queue.\r\n\n";
         *sent = false;
@@ -536,18 +536,18 @@ void send_file(const char *file_name, bool *sent, bool *abort, const char *sfn, 
             *abort = false;
           } else {
             batchtime += static_cast<float>(t);
-            strcpy(batch[session()->numbatch].filename, sfn);
-            batch[session()->numbatch].dir = static_cast<int16_t>(dn);
-            batch[session()->numbatch].time = static_cast<float>(t);
-            batch[session()->numbatch].sending = 1;
-            batch[session()->numbatch].len = fs;
-
-            session()->numbatch++;
+            batchrec b{};
+            strcpy(b.filename, sfn);
+            b.dir = static_cast<int16_t>(dn);
+            b.time = static_cast<float>(t);
+            b.sending = 1;
+            b.len = fs;
+            session()->batch.emplace_back(b);
             ++session()->numbatchdl;
             bout.nl(2);
             bout << "File added to batch queue.\r\n";
-            bout << "Batch: Files - " << session()->numbatch <<
-                               "  Time - " << ctim(batchtime) << "\r\n\n";
+            bout << "Batch: Files - " << session()->batch.size()
+                 << "  Time - " << ctim(batchtime) << "\r\n\n";
             *sent = false;
             *abort = false;
           }
@@ -595,22 +595,22 @@ void receive_file(const char *file_name, int *received, const char *sfn, int dn)
   break;
   case WWIV_INTERNAL_PROT_BATCH:
     if (dn != -1) {
-      if (session()->numbatch >= session()->max_batch) {
+      if (session()->batch.size() >= session()->max_batch) {
         bout.nl();
         bout << "No room left in batch queue.\r\n\n";
         *received = 0;
       } else {
         *received = 2;
-        strcpy(batch[session()->numbatch].filename, sfn);
-        batch[session()->numbatch].dir = static_cast<int16_t>(dn);
-        batch[session()->numbatch].time = 0;
-        batch[session()->numbatch].sending = 0;
-        batch[session()->numbatch].len = 0;
-
-        session()->numbatch++;
+        batchrec b{};
+        strcpy(b.filename, sfn);
+        b.dir = static_cast<int16_t>(dn);
+        b.time = 0;
+        b.sending = 0;
+        b.len = 0;
+        session()->batch.emplace_back(b);
         bout.nl();
         bout << "File added to batch queue.\r\n\n";
-        bout << "Batch upload: files - " << (session()->numbatch - session()->numbatchdl) << "\r\n\n";
+        bout << "Batch upload: files - " << (session()->batch.size() - session()->numbatchdl) << "\r\n\n";
       }
     } else {
       bout.nl();

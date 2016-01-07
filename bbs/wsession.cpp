@@ -220,8 +220,7 @@ void WSession::handle_sysop_key(uint8_t key) {
         hangup = true;
         remoteIO()->dtr(false);
         break;
-      case F6:                          /* F6 */
-        localIO()->SetSysopAlert(!localIO()->GetSysopAlert());
+      case F6:                          /* F6 - was Toggle Sysop Alert*/
         tleft(false);
         break;
       case F7:                          /* F7 */
@@ -940,10 +939,9 @@ void WSession::ShowUsage() {
 #if defined (_WIN32)
     "  -XT        - Someone already logged on via telnet (socket handle)\r\n" <<
 #endif // _WIN32
-    "  -Z         - Do not hang up on user when at log off\r\n" <<
-    endl;
+    "  -Z         - Do not hang up on user when at log off\r\n"
+    << endl;
 }
-
 
 int WSession::Run(int argc, char *argv[]) {
   int num_min = 0;
@@ -1148,8 +1146,7 @@ int WSession::Run(int argc, char *argv[]) {
 #endif  // _WIN32
 
   CreateComm(hSockOrComm);
-  this->InitializeBBS();
-
+  InitializeBBS();
   localIO()->UpdateNativeTitleBar(this);
 
   // If we are telnet...
@@ -1261,19 +1258,6 @@ int WSession::Run(int argc, char *argv[]) {
       remoteIO()->dtr(false);
     }
     m_bUserAlreadyOn = false;
-    if (localIO()->GetSysopAlert() && (!localIO()->LocalKeyPressed())) {
-      remoteIO()->dtr(true);
-      Wait(0.1);
-      double dt = timer();
-      localIO()->LocalCls();
-      bout << "\r\n>> SYSOP ALERT ACTIVATED <<\r\n\n";
-      while (!localIO()->LocalKeyPressed() && (std::abs(timer() - dt) < SECONDS_PER_MINUTE_FLOAT)) {
-        sound(500, milliseconds(250));
-        sleep_for(milliseconds(1));
-      }
-      localIO()->LocalCls();
-    }
-    localIO()->SetSysopAlert(false);
   } while (!ooneuser);
 
   return m_nOkLevel;

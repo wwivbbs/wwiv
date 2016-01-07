@@ -112,7 +112,7 @@ void UpSubConf() {
     } else {
       session()->SetCurrentConferenceMessageArea(0);
     }
-    setuconf(CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
+    setuconf(ConferenceType::CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
   }
 }
 
@@ -126,7 +126,7 @@ void DownSubConf() {
         session()->SetCurrentConferenceMessageArea(session()->GetCurrentConferenceMessageArea() + 1);
       }
     }
-    setuconf(CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
+    setuconf(ConferenceType::CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
   }
 }
 
@@ -223,7 +223,7 @@ void SystemInfo() {
 
 void JumpSubConf() {
   if (okconf(session()->user())) {
-    jump_conf(CONF_SUBS);
+    jump_conf(ConferenceType::CONF_SUBS);
   }
 }
 
@@ -885,7 +885,7 @@ void UpDirConf() {
     } else {
       session()->SetCurrentConferenceFileArea(0);
     }
-    setuconf(CONF_DIRS, session()->GetCurrentConferenceFileArea(), -1);
+    setuconf(ConferenceType::CONF_DIRS, session()->GetCurrentConferenceFileArea(), -1);
   }
 }
 
@@ -908,7 +908,7 @@ void DownDirConf() {
         session()->SetCurrentConferenceFileArea(session()->GetCurrentConferenceFileArea() + 1);
       }
     }
-    setuconf(CONF_DIRS, session()->GetCurrentConferenceFileArea(), -1);
+    setuconf(ConferenceType::CONF_DIRS, session()->GetCurrentConferenceFileArea(), -1);
   }
 }
 
@@ -967,7 +967,7 @@ void TemporaryStuff() {
 
 void JumpDirConf() {
   if (okconf(session()->user())) {
-    jump_conf(CONF_DIRS);
+    jump_conf(ConferenceType::CONF_DIRS);
   }
 }
 

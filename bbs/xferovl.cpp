@@ -1143,7 +1143,7 @@ void config_nscan() {
           break;
         }
 
-        setuconf(CONF_DIRS, i, -1);
+        setuconf(ConferenceType::CONF_DIRS, i, -1);
       }
       l_config_nscan();
       done = false;
@@ -1180,7 +1180,7 @@ void config_nscan() {
   } while (!done1 && !hangup);
 
   if (okconf(session()->user())) {
-    setuconf(CONF_DIRS, oc, os);
+    setuconf(ConferenceType::CONF_DIRS, oc, os);
   }
 }
 

@@ -296,11 +296,11 @@ void SetMsgConf(int iConf) {
   confrec *cp = nullptr;
   userconfrec *uc = nullptr;
 
-  get_conf_info(CONF_SUBS, &nc, &cp, nullptr, nullptr, &uc);
+  get_conf_info(ConferenceType::CONF_SUBS, &nc, &cp, nullptr, nullptr, &uc);
 
   for (int i = 0; (i < MAX_CONFERENCES) && (uc[i].confnum != -1); i++) {
     if (iConf == cp[uc[i].confnum].designator) {
-      setuconf(CONF_SUBS, i, -1);
+      setuconf(ConferenceType::CONF_SUBS, i, -1);
       break;
     }
   }
@@ -312,11 +312,11 @@ void SetDirConf(int iConf) {
   confrec *cp = nullptr;
   userconfrec *uc = nullptr;
 
-  get_conf_info(CONF_DIRS, &nc, &cp, nullptr, nullptr, &uc);
+  get_conf_info(ConferenceType::CONF_DIRS, &nc, &cp, nullptr, nullptr, &uc);
 
   for (int i = 0; (i < MAX_CONFERENCES) && (uc[i].confnum != -1); i++) {
     if (iConf == cp[uc[i].confnum].designator) {
-      setuconf(CONF_DIRS, i, -1);
+      setuconf(ConferenceType::CONF_DIRS, i, -1);
       break;
     }
   }

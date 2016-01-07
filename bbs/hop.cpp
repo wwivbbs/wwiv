@@ -58,7 +58,7 @@ void HopSub() {
 
   while ((c < nc) && !abort) {
     if (okconf(session()->user())) {
-      setuconf(CONF_SUBS, c, -1);
+      setuconf(ConferenceType::CONF_SUBS, c, -1);
     }
     size_t i = 0;
     while ((i < session()->subboards.size()) && (usub[i].subnum != -1) && !abort) {
@@ -81,7 +81,7 @@ void HopSub() {
         } else if (ch == 'Q') {
           abort = true;
           if (okconf(session()->user())) {
-            setuconf(CONF_SUBS, oc, os);
+            setuconf(ConferenceType::CONF_SUBS, oc, os);
           }
           break;
         }
@@ -94,7 +94,7 @@ void HopSub() {
     }
   }
   if (okconf(session()->user()) && !abort) {
-    setuconf(CONF_SUBS, oc, os);
+    setuconf(ConferenceType::CONF_SUBS, oc, os);
   }
 }
 
@@ -131,7 +131,7 @@ void HopDir() {
 
   while (c < nc && !abort) {
     if (okconf(session()->user())) {
-      setuconf(CONF_DIRS, c, -1);
+      setuconf(ConferenceType::CONF_DIRS, c, -1);
     }
     size_t i = 0;
     while ((i < session()->directories.size()) && (udir[i].subnum != -1) && (!abort)) {
@@ -155,7 +155,7 @@ void HopDir() {
         } else if (ch == 'Q') {
           abort = true;
           if (okconf(session()->user())) {
-            setuconf(CONF_DIRS, oc, os);
+            setuconf(ConferenceType::CONF_DIRS, oc, os);
           }
           break;
         }
@@ -168,7 +168,7 @@ void HopDir() {
     }
   }
   if (okconf(session()->user()) && !abort) {
-    setuconf(CONF_DIRS, oc, os);
+    setuconf(ConferenceType::CONF_DIRS, oc, os);
   }
 }
 

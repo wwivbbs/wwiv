@@ -788,7 +788,6 @@ void WSession::InitializeBBS() {
   SetCurrentReadMessageArea(-1);
   use_workspace = false;
   chat_file = false;
-  localIO()->SetSysopAlert(false);
   nsp = 0;
   bquote = 0;
   equote = 0;
@@ -901,8 +900,7 @@ void WSession::InitializeBBS() {
   CdHome();
 
   check_phonenum(); // dupphone addition
-
-  batch = static_cast<batchrec *>(BbsAllocA(max_batch * sizeof(batchrec)));
+  batch.clear();
 
   XINIT_PRINTF("Reading User Information.");
   ReadCurrentUser(1);

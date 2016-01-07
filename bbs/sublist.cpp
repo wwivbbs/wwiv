@@ -66,7 +66,7 @@ void old_sublist() {
   int i = sn;
   while (i <= en && uconfsub[i].confnum != -1 && !abort) {
     if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
-      setuconf(CONF_SUBS, i, -1);
+      setuconf(ConferenceType::CONF_SUBS, i, -1);
       sprintf(s, "|#1%s %c|#0:|#2 %s", "Conference",
               subconfs[uconfsub[i].confnum].designator,
               stripcolors(reinterpret_cast<char*>(subconfs[uconfsub[i].confnum].name)));
@@ -118,7 +118,7 @@ void old_sublist() {
   }
 
   if (okconf(session()->user())) {
-    setuconf(CONF_SUBS, oc, os);
+    setuconf(ConferenceType::CONF_SUBS, oc, os);
   }
 }
 
@@ -164,7 +164,7 @@ void SubList() {
     int ns = session()->GetCurrentConferenceMessageArea();  //number of subs
     while (i <= en && uconfsub[i].confnum != -1 && !abort) {
       if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
-        setuconf(CONF_SUBS, i, -1);
+        setuconf(ConferenceType::CONF_SUBS, i, -1);
         i1 = 0;
       }
       size_t firstp = 0;
@@ -256,7 +256,7 @@ void SubList() {
             switch (ss[0]) {
             case 'Q': {
               if (okconf(session()->user())) {
-                setuconf(CONF_SUBS, oldConf, oldSub);
+                setuconf(ConferenceType::CONF_SUBS, oldConf, oldSub);
               }
               done = true;
               abort = true;
@@ -303,7 +303,7 @@ void SubList() {
         }
         if (IsEquals(ss, "J")) {
           if (okconf(session()->user())) {
-            jump_conf(CONF_SUBS);
+            jump_conf(ConferenceType::CONF_SUBS);
           }
           sn = en = oldConf = session()->GetCurrentConferenceMessageArea();
           ns = i = 0;
@@ -320,7 +320,7 @@ void SubList() {
         }
       } else {
         if (okconf(session()->user())) {
-          setuconf(CONF_SUBS, oldConf, oldSub);
+          setuconf(ConferenceType::CONF_SUBS, oldConf, oldSub);
         }
         done = true;
       }
@@ -332,7 +332,7 @@ void SubList() {
   } while (!hangup && !done);
 
   if (okconf(session()->user())) {
-    setuconf(CONF_SUBS, oldConf, oldSub);
+    setuconf(ConferenceType::CONF_SUBS, oldConf, oldSub);
   }
 }
 

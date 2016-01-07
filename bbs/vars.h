@@ -21,13 +21,10 @@
 
 #include <ctime>
 
+#include "bbs/conf.h"
 #include "core/version.h"
 #include "sdk/vardec.h"
 #include "sdk/net.h"
-
-#ifndef MAX_PATH
-#define MAX_PATH 260
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -40,14 +37,15 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static constexpr int MAX_FILENAME_LENGTH = 260;
 __EXTRN__ char  ansistr[81],
           charbuffer[255],
           dc[81],
           dcd[81],
-          g_szDownloadFileName[MAX_PATH],
-          g_szDSZLogFileName[MAX_PATH],
+          g_szDownloadFileName[MAX_FILENAME_LENGTH],
+          g_szDSZLogFileName[MAX_FILENAME_LENGTH],
           dtc[81],
-          g_szExtDescrFileName[MAX_PATH],
+          g_szExtDescrFileName[MAX_FILENAME_LENGTH],
           endofline[81],
           irt[81],
           irt_name[205],
@@ -138,15 +136,10 @@ __EXTRN__ configoverrec syscfgovr;
 __EXTRN__ colorrec rescolor;
 __EXTRN__ usersubrec *usub, *udir;
 __EXTRN__ userconfrec *uconfsub, *uconfdir;
-__EXTRN__ batchrec *batch;
 __EXTRN__ tagrec *filelist;
 __EXTRN__ net_system_list_rec *csn;
 __EXTRN__ confrec *subconfs, *dirconfs;
 __EXTRN__ int iia;
-
-// confedit
-#define CONF_SUBS 1
-#define CONF_DIRS 2
 
 #endif // __INCLUDED_VARS_H__
 

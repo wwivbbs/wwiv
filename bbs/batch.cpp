@@ -19,7 +19,9 @@
 #include "bbs/batch.h"
 
 #include <algorithm>
+#include <iterator>
 #include <string>
+#include <utility>
 
 #include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
@@ -34,10 +36,12 @@
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "bbs/platform/platformfcns.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 // module private functions
@@ -53,7 +57,8 @@ int try_to_ul(char *file_name);
 int try_to_ul_wh(char *file_name);
 void normalupload(int dn);
 
-
+using std::begin;
+using std::end;
 using std::string;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -66,51 +71,63 @@ using namespace wwiv::strings;
 // download. Shows estimated time, by item, for files in the d/l queue.
 void listbatch() {
   bout.nl();
-  if (session()->numbatch == 0) {
+  if (session()->batch.empty()) {
     return;
   }
   bool abort = false;
-  bout << "|#9Files - |#2" << session()->numbatch << "  ";
+  bout << "|#9Files - |#2" << session()->batch.size() << "  ";
   if (session()->numbatchdl) {
     bout << "|#9Time - |#2" << ctim(batchtime);
   }
   bout.nl(2);
-  for (int i = 0; i < session()->numbatch && !abort && !hangup; i++) {
-    char szBuffer[255];
-    if (batch[i].sending) {
-      sprintf(szBuffer, "%d. %s %s   %s  %s", i + 1, "(D)", batch[i].filename, ctim(batch[i].time),
-              session()->directories[batch[i].dir].name);
-    } else {
-      sprintf(szBuffer, "%d. %s %s             %s", i + 1, "(U)", batch[i].filename, session()->directories[batch[i].dir].name);
+  int current_num = 0;
+  for (const auto& b : session()->batch) {
+    if (abort || hangup) {
+      break;
     }
-    pla(szBuffer, &abort);
+    string buffer;
+    ++current_num;
+    if (b.sending) {
+      buffer = StringPrintf("%d. %s %s   %s  %s", current_num, "(D)",
+          b.filename, ctim(b.time),
+          session()->directories[b.dir].name);
+    } else {
+      buffer = StringPrintf("%d. %s %s             %s", current_num, "(U)",
+          b.filename, session()->directories[b.dir].name);
+    }
+    pla(buffer, &abort);
   }
   bout.nl();
 }
 
+std::vector<batchrec>::iterator delbatch(std::vector<batchrec>::iterator it) {
+  const auto& current = *it;
+  batchtime -= current.time;
+  --session()->numbatchdl;
+  return session()->batch.erase(it);
+}
 
 // Deletes one item (index i) from the d/l batch queue.
-void delbatch(int nBatchEntryNum) {
-  if (nBatchEntryNum < session()->numbatch) {
-    if (batch[nBatchEntryNum].sending) {
-      batchtime -= batch[nBatchEntryNum].time;
-      --session()->numbatchdl;
-    }
-    --session()->numbatch;
-    for (int i1 = nBatchEntryNum; i1 <= session()->numbatch; i1++) {
-      batch[i1] = batch[i1 + 1];
-    }
+void delbatch(int num) {
+  if (num >= size_int(session()->batch)) {
+    return;
   }
+  auto it = begin(session()->batch);
+  std::advance(it, num);
+  const auto& current = *it;
+  batchtime -= current.time;
+  --session()->numbatchdl;
+  session()->batch.erase(it);
 }
 
 void downloaded(char *file_name, long lCharsPerSecond) {
   uploadsrec u;
 
-  for (int i1 = 0; i1 < session()->numbatch; i1++) {
-    if (IsEquals(file_name, batch[i1].filename) &&
-        batch[i1].sending) {
-      dliscan1(batch[i1].dir);
-      int nRecNum = recno(batch[i1].filename);
+  for (auto it = begin(session()->batch); it != end(session()->batch); it++) {
+    const auto& b = *it;
+    if (IsEquals(file_name, b.filename) && b.sending) {
+      dliscan1(b.dir);
+      int nRecNum = recno(b.filename);
       if (nRecNum > 0) {
         File file(g_szDownloadFileName);
         file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
@@ -140,22 +157,22 @@ void downloaded(char *file_name, long lCharsPerSecond) {
           }
         }
       }
-      delbatch(i1);
+      it = delbatch(it);
       return;
     }
   }
   sysoplogf("!!! Couldn't find \"%s\" in DL batch queue.", file_name);
 }
 
-void didnt_upload(int nBatchIndex) {
+void didnt_upload(const batchrec& b) {
   uploadsrec u;
 
-  if (batch[nBatchIndex].sending) {
+  if (b.sending) {
     return;
   }
 
-  dliscan1(batch[nBatchIndex].dir);
-  int nRecNum = recno(batch[nBatchIndex].filename);
+  dliscan1(b.dir);
+  int nRecNum = recno(b.filename);
   if (nRecNum > 0) {
     File file(g_szDownloadFileName);
     file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite, File::shareDenyNone);
@@ -164,7 +181,7 @@ void didnt_upload(int nBatchIndex) {
       file.Read(&u, sizeof(uploadsrec));
       if (u.numbytes != 0) {
         file.Close();
-        nRecNum = nrecno(batch[ nBatchIndex ].filename, nRecNum);
+        nRecNum = nrecno(b.filename, nRecNum);
         file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite, File::shareDenyNone);
       }
     } while (nRecNum != -1 && u.numbytes != 0);
@@ -189,17 +206,17 @@ void didnt_upload(int nBatchIndex) {
       return;
     }
   }
-  sysoplogf("!!! Couldn't find \"%s\" in transfer area.", batch[nBatchIndex].filename);
+  sysoplogf("!!! Couldn't find \"%s\" in transfer area.", b.filename);
 }
 
 void uploaded(char *file_name, long lCharsPerSecond) {
   uploadsrec u;
 
-  for (int i1 = 0; i1 < session()->numbatch; i1++) {
-    if (IsEquals(file_name, batch[i1].filename) &&
-        !batch[i1].sending) {
-      dliscan1(batch[i1].dir);
-      int nRecNum = recno(batch[i1].filename);
+  for (auto it = begin(session()->batch); it != end(session()->batch); it++) {
+    const auto& b = *it;
+    if (IsEquals(file_name, b.filename) && !b.sending) {
+      dliscan1(b.dir);
+      int nRecNum = recno(b.filename);
       if (nRecNum > 0) {
         File downFile(g_szDownloadFileName);
         downFile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
@@ -207,14 +224,14 @@ void uploaded(char *file_name, long lCharsPerSecond) {
           FileAreaSetRecord(downFile, nRecNum);
           downFile.Read(&u, sizeof(uploadsrec));
           if (u.numbytes != 0) {
-            nRecNum = nrecno(batch[i1].filename, nRecNum);
+            nRecNum = nrecno(b.filename, nRecNum);
           }
         } while (nRecNum != -1 && u.numbytes != 0);
         downFile.Close();
         if (nRecNum != -1 && u.numbytes == 0) {
           char szSourceFileName[MAX_PATH], szDestFileName[MAX_PATH];
           sprintf(szSourceFileName, "%s%s", syscfgovr.batchdir, file_name);
-          sprintf(szDestFileName, "%s%s", session()->directories[batch[i1].dir].path, file_name);
+          sprintf(szDestFileName, "%s%s", session()->directories[b.dir].path, file_name);
           if (!IsEquals(szSourceFileName, szDestFileName) &&
               File::Exists(szSourceFileName)) {
             bool found = false;
@@ -236,8 +253,8 @@ void uploaded(char *file_name, long lCharsPerSecond) {
           if (file.Open(File::modeBinary | File::modeReadOnly)) {
             if (!syscfg.upload_cmd.empty()) {
               file.Close();
-              if (!check_ul_event(batch[i1].dir, &u)) {
-                didnt_upload(i1);
+              if (!check_ul_event(b.dir, &u)) {
+                didnt_upload(b);
               } else {
                 file.Open(File::modeBinary | File::modeReadOnly);
               }
@@ -245,7 +262,7 @@ void uploaded(char *file_name, long lCharsPerSecond) {
             if (file.IsOpen()) {
               u.numbytes = file.GetLength();
               file.Close();
-              get_file_idz(&u, batch[i1].dir);
+              get_file_idz(&u, b.dir);
               session()->user()->SetFilesUploaded(session()->user()->GetFilesUploaded() + 1);
               modify_database(u.filename, true);
               session()->user()->SetUploadK(session()->user()->GetUploadK() +
@@ -259,17 +276,17 @@ void uploaded(char *file_name, long lCharsPerSecond) {
               FileAreaSetRecord(fileDn, nRecNum);
               fileDn.Write(&u, sizeof(uploadsrec));
               fileDn.Close();
-              sysoplogf("+ \"%s\" uploaded on %s (%ld cps)", u.filename, session()->directories[batch[i1].dir].name, lCharsPerSecond);
+              sysoplogf("+ \"%s\" uploaded on %s (%ld cps)", u.filename, session()->directories[b.dir].name, lCharsPerSecond);
               bout << "Uploaded '" << u.filename <<
-                                 "' to " << session()->directories[batch[i1].dir].name << " (" <<
+                                 "' to " << session()->directories[b.dir].name << " (" <<
                                  lCharsPerSecond << " cps)" << wwiv::endl;
             }
           }
-          delbatch(i1);
+          it = delbatch(it);
           return;
         }
       }
-      delbatch(i1);
+      it = delbatch(it);
       if (try_to_ul(file_name)) {
         sysoplogf("!!! Couldn't find file \"%s\" in directory.", file_name);
         bout << "Deleting - couldn't find data for file " << file_name << wwiv::endl;
@@ -304,6 +321,7 @@ void zmbatchdl(bool bHangupAfterDl) {
 
   bool bRatioBad = false;
   bool ok = true;
+  // TODO(rushfan): Rewrite this to use iterators;
   do {
     session()->tleft(true);
     if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio)) {
@@ -312,13 +330,13 @@ void zmbatchdl(bool bHangupAfterDl) {
     if (session()->user()->IsExemptRatio()) {
       bRatioBad = false;
     }
-    if (!batch[cur].sending) {
+    if (!session()->batch[cur].sending) {
       bRatioBad = false;
       ++cur;
     }
-    if ((nsl() >= batch[cur].time) && !bRatioBad) {
-      dliscan1(batch[cur].dir);
-      int nRecordNumber = recno(batch[cur].filename);
+    if ((nsl() >= session()->batch[cur].time) && !bRatioBad) {
+      dliscan1(session()->batch[cur].dir);
+      int nRecordNumber = recno(session()->batch[cur].filename);
       if (nRecordNumber <= 0) {
         delbatch(cur);
       } else {
@@ -330,10 +348,10 @@ void zmbatchdl(bool bHangupAfterDl) {
         file.Read(&u, sizeof(uploadsrec));
         file.Close();
         char szSendFileName[MAX_PATH];
-        sprintf(szSendFileName, "%s%s", session()->directories[batch[cur].dir].path, u.filename);
-        if (session()->directories[batch[cur].dir].mask & mask_cdrom) {
+        sprintf(szSendFileName, "%s%s", session()->directories[session()->batch[cur].dir].path, u.filename);
+        if (session()->directories[session()->batch[cur].dir].mask & mask_cdrom) {
           char szOrigFileName[MAX_PATH];
-          sprintf(szOrigFileName, "%s%s", session()->directories[batch[cur].dir].path, u.filename);
+          sprintf(szOrigFileName, "%s%s", session()->directories[session()->batch[cur].dir].path, u.filename);
           sprintf(szSendFileName, "%s%s", syscfgovr.tempdir, u.filename);
           if (!File::Exists(szSendFileName)) {
             copyfile(szOrigFileName, szSendFileName, true);
@@ -350,7 +368,7 @@ void zmbatchdl(bool bHangupAfterDl) {
     } else {
       delbatch(cur);
     }
-  } while (ok && !hangup && session()->numbatch > cur && !bRatioBad);
+  } while (ok && !hangup && size_int(session()->batch) > cur && !bRatioBad);
 
   if (ok && !hangup) {
     endbatch();
@@ -381,6 +399,7 @@ void ymbatchdl(bool bHangupAfterDl) {
 
   bool bRatioBad = false;
   bool ok = true;
+  //TODO(rushfan): rewrite to use iterators.
   do {
     session()->tleft(true);
     if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio)) {
@@ -389,13 +408,13 @@ void ymbatchdl(bool bHangupAfterDl) {
     if (session()->user()->IsExemptRatio()) {
       bRatioBad = false;
     }
-    if (!batch[cur].sending) {
+    if (!session()->batch[cur].sending) {
       bRatioBad = false;
       ++cur;
     }
-    if ((nsl() >= batch[cur].time) && !bRatioBad) {
-      dliscan1(batch[cur].dir);
-      int nRecordNumber = recno(batch[cur].filename);
+    if ((nsl() >= session()->batch[cur].time) && !bRatioBad) {
+      dliscan1(session()->batch[cur].dir);
+      int nRecordNumber = recno(session()->batch[cur].filename);
       if (nRecordNumber <= 0) {
         delbatch(cur);
       } else {
@@ -407,10 +426,10 @@ void ymbatchdl(bool bHangupAfterDl) {
         file.Read(&u, sizeof(uploadsrec));
         file.Close();
         char szSendFileName[MAX_PATH];
-        sprintf(szSendFileName, "%s%s", session()->directories[batch[cur].dir].path, u.filename);
-        if (session()->directories[batch[cur].dir].mask & mask_cdrom) {
+        sprintf(szSendFileName, "%s%s", session()->directories[session()->batch[cur].dir].path, u.filename);
+        if (session()->directories[session()->batch[cur].dir].mask & mask_cdrom) {
           char szOrigFileName[MAX_PATH];
-          sprintf(szOrigFileName, "%s%s", session()->directories[batch[cur].dir].path, u.filename);
+          sprintf(szOrigFileName, "%s%s", session()->directories[session()->batch[cur].dir].path, u.filename);
           sprintf(szSendFileName, "%s%s", syscfgovr.tempdir, u.filename);
           if (!File::Exists(szSendFileName)) {
             copyfile(szOrigFileName, szSendFileName, true);
@@ -426,7 +445,7 @@ void ymbatchdl(bool bHangupAfterDl) {
     } else {
       delbatch(cur);
     }
-  } while (ok && !hangup && session()->numbatch > cur && !bRatioBad);
+  } while (ok && !hangup && size_int(session()->batch) > cur && !bRatioBad);
 
   if (ok && !hangup) {
     endbatch();
@@ -494,8 +513,7 @@ double ratio1(long a) {
   }
   double r = static_cast<float>(session()->user()->GetUploadK()) /
              static_cast<float>(session()->user()->GetDownloadK() + a);
-  r  = std::min< double >(r, 99.998);
-  return r;
+  return std::min<double>(r, 99.998);
 }
 
 static string make_ul_batch_list() {
@@ -509,10 +527,10 @@ static string make_ul_batch_list() {
   if (!fileList.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite)) {
     return "";
   }
-  for (int i = 0; i < session()->numbatch; i++) {
-    if (!batch[i].sending) {
-      File::set_current_directory(session()->directories[batch[i].dir].path);
-      File file(File::current_directory(), stripfn(batch[i].filename));
+  for (const auto& b : session()->batch) {
+    if (!b.sending) {
+      File::set_current_directory(session()->directories[b.dir].path);
+      File file(File::current_directory(), stripfn(b.filename));
       session()->CdHome();
       fileList.Write(StrCat(file.full_pathname(), "\r\n"));
     }
@@ -535,40 +553,40 @@ static string make_dl_batch_list() {
 
   double at = 0.0;
   long addk = 0;
-  for (int i = 0; i < session()->numbatch; i++) {
-    if (batch[i].sending) {
+  for (const auto& b : session()->batch) {
+    if (b.sending) {
       string filename_to_send;
-      if (session()->directories[batch[i].dir].mask & mask_cdrom) {
+      if (session()->directories[b.dir].mask & mask_cdrom) {
         File::set_current_directory(syscfgovr.tempdir);
         const string current_dir = File::current_directory();
-        File fileToSend(current_dir, stripfn(batch[i].filename));
+        File fileToSend(current_dir, stripfn(b.filename));
         if (!fileToSend.Exists()) {
-          File::set_current_directory(session()->directories[batch[i].dir].path);
-          File sourceFile(File::current_directory(), stripfn(batch[i].filename));
+          File::set_current_directory(session()->directories[b.dir].path);
+          File sourceFile(File::current_directory(), stripfn(b.filename));
           copyfile(sourceFile.full_pathname(), fileToSend.full_pathname(), true);
         }
         filename_to_send = fileToSend.full_pathname();
       } else {
-        File::set_current_directory(session()->directories[batch[i].dir].path);
-        File fileToSend(File::current_directory(), stripfn(batch[i].filename));
+        File::set_current_directory(session()->directories[b.dir].path);
+        File fileToSend(File::current_directory(), stripfn(b.filename));
         filename_to_send = fileToSend.full_pathname();
       }
       bool ok = true;
       session()->CdHome();
-      if (nsl() < (batch[i].time + at)) {
+      if (nsl() < (b.time + at)) {
         ok = false;
-        bout << "Cannot download " << batch[i].filename << ": Not enough time" << wwiv::endl;
+        bout << "Cannot download " << b.filename << ": Not enough time" << wwiv::endl;
       }
-      long thisk = bytes_to_k(batch[i].len);
+      long thisk = bytes_to_k(b.len);
       if ((syscfg.req_ratio > 0.0001) &&
           (ratio1(addk + thisk) < syscfg.req_ratio) &&
           !session()->user()->IsExemptRatio()) {
         ok = false;
-        bout << "Cannot download " << batch[i].filename << ": Ratio too low" << wwiv::endl;
+        bout << "Cannot download " << b.filename << ": Ratio too low" << wwiv::endl;
       }
       if (ok) {
         fileList.Write(StrCat(filename_to_send, "\r\n"));
-        at += batch[i].time;
+        at += b.time;
         addk += thisk;
       }
     }
@@ -672,7 +690,7 @@ void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description) {
 
 void dszbatchul(bool bHangupAfterDl, char *command_line, char *description) {
   string download_log_entry = StringPrintf("%s BATCH Upload: Files - %d", description,
-          session()->numbatch - session()->numbatchdl);
+          session()->batch.size() - session()->numbatchdl);
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
   }
@@ -739,11 +757,11 @@ int batchdl(int mode) {
       bout << "|#9Remove which? ";
       string s = input(4);
       int i = atoi(s.c_str());
-      if ((i > 0) && (i <= session()->numbatch)) {
-        didnt_upload(i - 1);
-        delbatch(i - 1);
+      if (i > 0 && i <= size_int(session()->batch)) {
+        didnt_upload(session()->batch[i-1]);
+        delbatch(i-1);
       }
-      if (session()->numbatch == 0) {
+      if (session()->batch.empty()) {
         bout << "\r\nBatch queue empty.\r\n\n";
         done = true;
       }
@@ -751,10 +769,8 @@ int batchdl(int mode) {
     case 'C':
       bout << "|#5Clear queue? ";
       if (yesno()) {
-        for (int i = 0; i < session()->numbatch; i++) {
-          didnt_upload(i);
-        }
-        session()->numbatch = 0;
+        for (const auto& b : session()->batch) { didnt_upload(b); }
+        session()->batch.clear();
         session()->numbatchdl = 0;
         batchtime = 0.0;
         done = true;

@@ -29,6 +29,11 @@
 class WStatus;
 class WSession;
 
+#define NUM_ONLY            1
+#define UPPER_ONLY          2
+#define ALL                 4
+#define SET                 8
+
 class LocalIO {
  public:
   // Constructor/Destructor
@@ -53,9 +58,6 @@ class LocalIO {
   const size_t GetScreenBottom() const { return m_nScreenBottom; }
   void SetScreenBottom(int nScreenBottom) { m_nScreenBottom = nScreenBottom; }
 
-  void SetSysopAlert(bool b) { m_bSysopAlert = b; }
-  const bool GetSysopAlert() const { return m_bSysopAlert; }
-  
   virtual void LocalGotoXY(int x, int y) = 0;
   virtual size_t WhereX() = 0;
   virtual size_t WhereY() = 0;
@@ -107,7 +109,6 @@ private:
 
 private:
   std::string m_chatReason;
-  bool m_bSysopAlert = false;
   int m_nTopLine;
   int m_nScreenBottom;
   int top_screen_color_ = 27;

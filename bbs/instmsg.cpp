@@ -288,7 +288,6 @@ void process_inst_msgs() {
   setiia(oiia);
 }
 
-
 // Gets instancerec for specified instance, returns in ir.
 bool get_inst_info(int nInstanceNum, instancerec * ir) {
   if (!ir || syscfg.datadir == nullptr) {
@@ -473,8 +472,6 @@ void instance_edit() {
   }
 }
 
-
-
 /*
 * Writes BBS location data to instance.dat, so other instances can see
 * some info about this instance.
@@ -513,13 +510,13 @@ void write_inst(int loc, int subloc, int flags) {
         }
         break;
       default:
-        if ((loc >= INST_LOC_CH1) && (loc <= INST_LOC_CH10) && chat_avail) {
+        if (loc >= INST_LOC_CH1 && loc <= INST_LOC_CH10 && chat_avail) {
           cf |= INST_FLAGS_MSG_AVAIL;
         }
         break;
       }
     }
-    uint16_t ms = static_cast<uint16_t>((session()->using_modem) ? modem_speed : 0);
+    uint16_t ms = static_cast<uint16_t>(session()->using_modem ? modem_speed : 0);
     if (ti.modem_speed != ms) {
       ti.modem_speed = ms;
       re_write = true;
@@ -558,7 +555,7 @@ void write_inst(int loc, int subloc, int flags) {
     if (session()->IsUserOnline()) {
       if (ti.user != session()->usernum) {
         re_write = true;
-        if ((session()->usernum > 0) && (session()->usernum <= syscfg.maxusers)) {
+        if (session()->usernum > 0 && session()->usernum <= syscfg.maxusers) {
           ti.user = static_cast<int16_t>(session()->usernum);
         }
       }
@@ -580,7 +577,7 @@ void write_inst(int loc, int subloc, int flags) {
       (ti.loc != INST_LOC_WFC)) {
     re_write = true;
   }
-  if (re_write && syscfg.datadir != nullptr) {
+  if (re_write) {
     ti.last_update = static_cast<uint32_t>(time(nullptr));
     File instFile(session()->config()->datadir(), INSTANCE_DAT);
     if (instFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
@@ -590,8 +587,6 @@ void write_inst(int loc, int subloc, int flags) {
     }
   }
 }
-
-
 
 /*
 * Returns 1 if a message waiting for this instance, 0 otherwise.
@@ -615,9 +610,6 @@ bool inst_msg_waiting() {
 
   return bExist;
 }
-
-
-
 
 // Sets inter-instance availability on/off, for inter-instance messaging.
 // retruns the old iia value.
@@ -658,4 +650,3 @@ void toggle_invis() {
   write_inst(ir.loc, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
   RestoreCurrentLine(cl, atr, xl, &cc);
 }
-

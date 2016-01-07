@@ -45,10 +45,10 @@ static int disable_conf_cnt = 0;
 
 // Locals
 char* GetGenderAllowed(int nGender, char *pszGenderAllowed);
-int  modify_conf(int conftype, int which);
-void insert_conf(int conftype, int n);
-void delete_conf(int conftype, int n);
-bool create_conf_file(int conftype);
+int  modify_conf(ConferenceType conftype, int which);
+void insert_conf(ConferenceType conftype, int n);
+void delete_conf(ConferenceType conftype, int n);
+bool create_conf_file(ConferenceType conftype);
 bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list);
 
 
@@ -75,15 +75,15 @@ void tmp_disable_conf(bool disable) {
       oss = usub[session()->GetCurrentMessageArea()].subnum;
       ocd = session()->GetCurrentConferenceFileArea();
       osd = udir[session()->GetCurrentFileArea()].subnum;
-      setuconf(CONF_SUBS, -1, oss);
-      setuconf(CONF_DIRS, -1, osd);
+      setuconf(ConferenceType::CONF_SUBS, -1, oss);
+      setuconf(ConferenceType::CONF_DIRS, -1, osd);
     }
   } else if (disable_conf_cnt) {
     disable_conf_cnt--;
     if ((disable_conf_cnt == 0) && (g_flags & g_flag_disable_conf)) {
       g_flags &= ~g_flag_disable_conf;
-      setuconf(CONF_SUBS, ocs, oss);
-      setuconf(CONF_DIRS, ocd, osd);
+      setuconf(ConferenceType::CONF_SUBS, ocs, oss);
+      setuconf(ConferenceType::CONF_DIRS, ocd, osd);
     }
   }
 }
@@ -92,14 +92,13 @@ void reset_disable_conf() {
   disable_conf_cnt = 0;
 }
 
-
 /*
  * Returns info on conference types
  */
-int get_conf_info(int conftype, int *num, confrec ** cpp,
+int get_conf_info(ConferenceType conftype, int *num, confrec ** cpp,
                   char *file_name, int *num_s, userconfrec ** uc) {
   switch (conftype) {
-  case CONF_SUBS:
+  case ConferenceType::CONF_SUBS:
     if (cpp) {
       *cpp = subconfs;
     }
@@ -116,7 +115,7 @@ int get_conf_info(int conftype, int *num, confrec ** cpp,
       *uc = uconfsub;
     }
     return 0;
-  case CONF_DIRS:
+  case ConferenceType::CONF_DIRS:
     if (cpp) {
       *cpp = dirconfs;
     }
@@ -137,12 +136,11 @@ int get_conf_info(int conftype, int *num, confrec ** cpp,
   return 1;
 }
 
-
 /*
  * Presents user with selection of conferences, gets selection, and changes
  * conference.
  */
-void jump_conf(int conftype) {
+void jump_conf(ConferenceType conftype) {
   int i;
   char s[81], s1[101];
   confrec *cp = nullptr;
@@ -175,12 +173,11 @@ void jump_conf(int conftype) {
   }
 }
 
-
 /*
  * Removes, inserts, or swaps subs/dirs in all conferences of a specified
  * type.
  */
-void update_conf(int conftype, subconf_t * sub1, subconf_t * sub2, int action) {
+void update_conf(ConferenceType conftype, subconf_t * sub1, subconf_t * sub2, int action) {
   confrec *cp = nullptr;
   int nc, num_s;
   int pos1, pos2;
@@ -258,7 +255,7 @@ void update_conf(int conftype, subconf_t * sub1, subconf_t * sub2, int action) {
  * Returns first available conference designator, of a specified conference
  * type.
  */
-char first_available_designator(int conftype) {
+char first_available_designator(ConferenceType conftype) {
   confrec *cp = nullptr;
   int nc;
 
@@ -302,7 +299,7 @@ int in_conference(int subnum, confrec * c) {
 /*
  * Saves conferences of a specified conference-type.
  */
-void save_confs(int conftype, int whichnum, confrec * c) {
+void save_confs(ConferenceType conftype, int whichnum, confrec * c) {
   char szFileName[MAX_PATH];
   int num, num1;
   confrec *cp = nullptr;
@@ -360,7 +357,7 @@ void save_confs(int conftype, int whichnum, confrec * c) {
 /*
  * Lists subs/dirs/whatever allocated to a specific conference.
  */
-void showsubconfs(int conftype, confrec * c) {
+void showsubconfs(ConferenceType conftype, confrec * c) {
   char s[120], szIndex[5], confstr[MAX_CONFERENCES + 1], ts[2];
 
   if (!c) {
@@ -392,11 +389,11 @@ void showsubconfs(int conftype, confrec * c) {
     sort_conf_str(confstr);
 
     switch (conftype) {
-    case CONF_SUBS:
+    case ConferenceType::CONF_SUBS:
       sprintf(s, "|#1%3d |#2%-39.39s |#7%4.4s %s", i, stripcolors(session()->subboards[i].name),
               (test > -1) ? szIndex : charstr(4, '-'), confstr);
       break;
-    case CONF_DIRS:
+    case ConferenceType::CONF_DIRS:
       sprintf(s, "|#1%3d |#2%-39.39s |#9%4.4s %s", i, stripcolors(session()->directories[i].name),
               (test > -1) ? szIndex : charstr(4, '-'), confstr);
       break;
@@ -474,7 +471,7 @@ bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list) {
 /*
  * Function to add one subconf (sub/dir/whatever) to a conference.
  */
-void addsubconf(int conftype, confrec * c, subconf_t * which) {
+void addsubconf(ConferenceType conftype, confrec * c, subconf_t * which) {
   std::vector<int> intlist;
 
   if (!c || !c->subs) {
@@ -536,7 +533,7 @@ void addsubconf(int conftype, confrec * c, subconf_t * which) {
 /*
  * Function to delete one subconf (sub/dir/whatever) from a conference.
  */
-void delsubconf(int conftype, confrec * c, subconf_t * which) {
+void delsubconf(ConferenceType conftype, confrec * c, subconf_t * which) {
   if (!c || !c->subs || c->num < 1) {
     return;
   }
@@ -574,7 +571,6 @@ void delsubconf(int conftype, confrec * c, subconf_t * which) {
   }
 }
 
-
 char* GetGenderAllowed(int nGender, char *pszGenderAllowed) {
   switch (nGender) {
   case 0:
@@ -595,7 +591,7 @@ char* GetGenderAllowed(int nGender, char *pszGenderAllowed) {
 /*
  * Function for editing the data for one conference.
  */
-int modify_conf(int conftype,  int which) {
+int modify_conf(ConferenceType conftype,  int which) {
   int  changed = 0;
   bool ok   = false;
   bool done = false;
@@ -916,7 +912,7 @@ int modify_conf(int conftype,  int which) {
 /*
  * Function for inserting one conference.
  */
-void insert_conf(int conftype,  int n) {
+void insert_conf(ConferenceType conftype,  int n) {
   confrec c;
   int num;
 
@@ -958,7 +954,7 @@ void insert_conf(int conftype,  int n) {
 /*
  * Function for deleting one conference.
  */
-void delete_conf(int conftype,  int n) {
+void delete_conf(ConferenceType conftype,  int n) {
   int num;
 
   if (get_conf_info(conftype, &num, nullptr, nullptr, nullptr, nullptr) || (n >= num)) {
@@ -973,7 +969,7 @@ void delete_conf(int conftype,  int n) {
 /*
  * Function for editing conferences.
  */
-void conf_edit(int conftype) {
+void conf_edit(ConferenceType conftype) {
   bool done = false;
   char ch;
   confrec *cp;
@@ -1043,7 +1039,7 @@ void conf_edit(int conftype) {
  * Lists conferences of a specified type. If OP_FLAGS_SHOW_HIER is set,
  * then the subs (dirs, whatever) in each conference are also shown.
  */
-void list_confs(int conftype, int ssc) {
+void list_confs(ConferenceType conftype, int ssc) {
   char s[121], s1[121];
   bool abort = false;
   int i, i2, num, num_s;
@@ -1078,11 +1074,11 @@ void list_confs(int conftype, int ssc) {
                     (i != (num - 1)) ? '\xBA' : ' ',
                     (i2 == (cp[i].num - 1)) ? '\xC0' : '\xC3');
             switch (conftype) {
-            case CONF_SUBS:
+            case ConferenceType::CONF_SUBS:
               sprintf(s1, "%s%-3d : %s", "Sub #", subconfs[i].subs[i2],
                       stripcolors(session()->subboards[cp[i].subs[i2]].name));
               break;
-            case CONF_DIRS:
+            case ConferenceType::CONF_DIRS:
               sprintf(s1, "%s%-3d : %s", "Dir #", dirconfs[i].subs[i2],
                       stripcolors(session()->directories[cp[i].subs[i2]].name));
               break;
@@ -1097,13 +1093,12 @@ void list_confs(int conftype, int ssc) {
   bout.nl();
 }
 
-
 /*
  * Allows user to select a conference. Returns the conference selected
  * (0-based), or -1 if the user aborted. Error message is printed for
  * invalid conference selections.
  */
-int select_conf(const char *prompt_text, int conftype, int listconfs) {
+int select_conf(const char *prompt_text, ConferenceType conftype, int listconfs) {
   int i = 0, sl = 0;
   bool ok = false;
   char *mmk;
@@ -1129,7 +1124,7 @@ int select_conf(const char *prompt_text, int conftype, int listconfs) {
         break;
       default:
         switch (conftype) {
-        case CONF_SUBS:
+        case ConferenceType::CONF_SUBS:
           for (size_t i1 = 0; i1 < subconfnum; i1++) {
             if (mmk[0] == subconfs[i1].designator) {
               ok = true;
@@ -1138,7 +1133,7 @@ int select_conf(const char *prompt_text, int conftype, int listconfs) {
             }
           }
           break;
-        case CONF_DIRS:
+        case ConferenceType::CONF_DIRS:
           for (size_t i1 = 0; i1 < dirconfnum; i1++) {
             if (mmk[0] == dirconfs[i1].designator) {
               ok = true;
@@ -1162,12 +1157,11 @@ int select_conf(const char *prompt_text, int conftype, int listconfs) {
   return i;
 }
 
-
 /*
  * Creates a default conference file. Should only be called if no conference
  * file for that conference type already exists.
  */
-bool create_conf_file(int conftype) {
+bool create_conf_file(ConferenceType conftype) {
   char szFileName[MAX_PATH];
   int num;
 
@@ -1345,12 +1339,11 @@ static confrec *read_conferences(const char *file_name, unsigned int *nc, int ma
   return conferences;
 }
 
-
 /*
  * Reads in a conference type. Creates default conference file if it is
  * necessary. If conferences cannot be read, then BBS aborts.
  */
-void read_in_conferences(int conftype) {
+void read_in_conferences(ConferenceType conftype) {
   int max;
   unsigned *np = nullptr;
   char s[81];
@@ -1361,11 +1354,11 @@ void read_in_conferences(int conftype) {
   }
 
   switch (conftype) {
-  case CONF_SUBS:
+  case ConferenceType::CONF_SUBS:
     cpp = &subconfs;
     np = &subconfnum;
     break;
-  case CONF_DIRS:
+  case ConferenceType::CONF_DIRS:
     cpp = &dirconfs;
     np = &dirconfnum;
     break;
@@ -1401,10 +1394,9 @@ void read_in_conferences(int conftype) {
  * for "old" conference data is deallocated first.
  */
 void read_all_conferences() {
-  read_in_conferences(CONF_SUBS);
-  read_in_conferences(CONF_DIRS);
+  read_in_conferences(ConferenceType::CONF_SUBS);
+  read_in_conferences(ConferenceType::CONF_DIRS);
 }
-
 
 /*
  * Returns number of conferences in a specified conference file.
@@ -1430,7 +1422,6 @@ int get_num_conferences(const char *file_name) {
   f.Close();
   return i;
 }
-
 
 /*
  * Returns number of "words" in a specified string, using a specified set
@@ -1470,7 +1461,6 @@ const char *extractword(int ww, const string& instr, const char *delimstr) {
   }
   return "";
 }
-
 
 void sort_conf_str(char *conference_string) {
   char s1[81], s2[81];

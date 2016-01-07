@@ -271,7 +271,7 @@ int lp_add_batch(const char *file_name, int dn, long fs) {
     return 0;
   }
 
-  if (session()->numbatch >= session()->max_batch) {
+  if (session()->batch.size() >= session()->max_batch) {
     bout.GotoXY(1, session()->user()->GetScreenLines() - 1);
     bout << "No room left in batch queue.\r\n";
     pausescr();
@@ -294,12 +294,13 @@ int lp_add_batch(const char *file_name, int dn, long fs) {
         pausescr();
       } else {
         batchtime += static_cast<float>(t);
-        strcpy(batch[session()->numbatch].filename, file_name);
-        batch[session()->numbatch].dir = static_cast<int16_t>(dn);
-        batch[session()->numbatch].time = static_cast<float>(t);
-        batch[session()->numbatch].sending = 1;
-        batch[session()->numbatch].len = fs;
-        session()->numbatch++;
+        batchrec b;
+        strcpy(b.filename, file_name);
+        b.dir = static_cast<int16_t>(dn);
+        b.time = static_cast<float>(t);
+        b.sending = 1;
+        b.len = fs;
+        session()->batch.emplace_back(b);
         ++session()->numbatchdl;
         return 1;
       }
@@ -1611,7 +1612,7 @@ static int move_filename(const char *file_name, int dn) {
           }
         }
 
-        if (session()->numbatch > 1) {
+        if (session()->batch.size() > 1) {
           bout << "|#5Move all tagged files? ";
           if (yesno()) {
             bulk_move = 1;
@@ -1736,39 +1737,36 @@ static int move_filename(const char *file_name, int dn) {
 
 void do_batch_sysop_command(int mode, const char *file_name) {
   int save_curdir = session()->GetCurrentFileArea();
-  int pos = 0;
-
   bout.cls();
 
   if (session()->numbatchdl) {
     bool done = false;
-    while (pos < session()->numbatch && !done) {
-      if (batch[pos].sending) {
+    for (auto it = begin(session()->batch); it != end(session()->batch) && !done; it++) {
+      const auto& b = *it;
+      if (b.sending) {
         switch (mode) {
         case SYSOP_DELETE:
-          if (!remove_filename(batch[pos].filename, batch[pos].dir)) {
+          if (!remove_filename(b.filename, b.dir)) {
             done = true;
           } else {
-            delbatch(pos);
+            it = delbatch(it);
           }
           break;
         case SYSOP_RENAME:
-          if (!rename_filename(batch[pos].filename, batch[pos].dir)) {
+          if (!rename_filename(b.filename, b.dir)) {
             done = true;
           } else {
-            delbatch(pos);
+            it = delbatch(it);
           }
           break;
         case SYSOP_MOVE:
-          if (!move_filename(batch[pos].filename, batch[pos].dir)) {
+          if (!move_filename(b.filename, b.dir)) {
             done = true;
           } else {
-            delbatch(pos);
+            it = delbatch(it);
           }
           break;
         }
-      } else {
-        ++pos;
       }
     }
   } else {

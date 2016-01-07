@@ -405,7 +405,6 @@ private:
               titled = 0,
               topdata = 0,
               using_modem = 0,
-              numbatch = 0,
               numbatchdl = 0;
   unsigned int screenlinest = 0;
 
@@ -452,6 +451,7 @@ public:
   std::vector<gfiledirrec> gfilesec;
   std::vector<arcrec> arcs;
   std::vector<directoryrec> directories;
+  std::vector<batchrec> batch;
 
 };
 

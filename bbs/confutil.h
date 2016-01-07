@@ -18,7 +18,10 @@
 #ifndef __INCLUDED_BBS_CONFUTIL_H__
 #define __INCLUDED_BBS_CONFUTIL_H__
 
-void setuconf(int nConferenceType, int num, int nOldSubNumber);
+enum class ConferenceType { CONF_SUBS, CONF_DIRS };
+
+
+void setuconf(ConferenceType type, int num, int old_subnum);
 void changedsl();
 
 #endif  // __INCLUDED_BBS_CONFUTIL_H__

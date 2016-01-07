@@ -390,7 +390,6 @@ void wfc_update() {
 }
 
 void wfc_screen() {
-  char szBuffer[255];
   instancerec ir;
   User u;
   static double wfc_time = 0, poll_time = 0;
@@ -415,8 +414,8 @@ void wfc_screen() {
       wfcFile.Read(pszScreenBuffer, 4000);
     }
     session()->localIO()->LocalWriteScreenBuffer(pszScreenBuffer);
-    sprintf(szBuffer, "Activity and Statistics of %s Node %d", syscfg.systemname, session()->instance_number());
-    session()->localIO()->LocalXYAPrintf(1 + ((76 - strlen(szBuffer)) / 2), 4, 15, szBuffer);
+    const string title = StringPrintf("Activity and Statistics of %s Node %d", syscfg.systemname, session()->instance_number());
+    session()->localIO()->LocalXYAPrintf(1 + ((76 - title.size()) / 2), 4, 15, title.c_str());
     session()->localIO()->LocalXYAPrintf(8, 1, 14, fulldate());
     std::string osVersion = wwiv::os::os_version_string();
     session()->localIO()->LocalXYAPrintf(40, 1, 3, "OS: ");
@@ -473,10 +472,9 @@ void wfc_screen() {
       if ((timer() - poll_time > 10) || session()->wfc_status == 1) {
         session()->wfc_status = 2;
         session()->localIO()->LocalCls();
-        session()->localIO()->LocalXYAPrintf(random_number(38),
-                                                random_number(24),
-                                                random_number(14) + 1,
-                                                "WWIV Screen Saver - Press Any Key For WWIV");
+        session()->localIO()->LocalXYAPrintf(
+            random_number(38), random_number(24), random_number(14) + 1,
+            "WWIV Screen Saver - Press Any Key For WWIV");
         wfc_time = timer() - session()->screen_saver_time - 1;
         poll_time = timer();
       }

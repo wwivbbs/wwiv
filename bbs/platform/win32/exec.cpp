@@ -311,9 +311,8 @@ int ExecExternalProgram(const string commandLine, int flags) {
     CreateSyncFosCommandLine(&workingCommandLine, syncFosTempFile, nSyncMode);
     bUsingSync = true;
 
-    char szTempLogFileName[MAX_PATH];
-    _snprintf(szTempLogFileName, sizeof(szTempLogFileName), "%swwivsync.log", session()->GetHomeDir().c_str());
-    hLogFile = fopen(szTempLogFileName, "at");
+    const string logfile_name = StrCat(session()->GetHomeDir(), "wwivsync.log");
+    hLogFile = fopen(logfile_name.c_str(), "at");
     fprintf(hLogFile, charstr(78, '='));
     fprintf(hLogFile, "\r\n\r\n");
     fprintf(hLogFile, "Cmdline = [%s]\r\n\n", workingCommandLine.c_str());
@@ -337,13 +336,12 @@ int ExecExternalProgram(const string commandLine, int flags) {
   }
 
   HANDLE hSyncHangupEvent = INVALID_HANDLE_VALUE;
-  HANDLE hSyncReadSlot    = INVALID_HANDLE_VALUE;     // Mailslot for reading
+  HANDLE hSyncReadSlot = INVALID_HANDLE_VALUE;     // Mailslot for reading
     
   if (bUsingSync) {
     // Create Hangup Event.
-    char szHangupEventName[ MAX_PATH + 1 ];
-    _snprintf(szHangupEventName, sizeof(szHangupEventName), "sbbsexec_hungup%d", session()->instance_number());
-    hSyncHangupEvent = CreateEvent(nullptr, TRUE, FALSE, szHangupEventName);
+    const string event_name = StringPrintf("sbbsexec_hungup%d", session()->instance_number());
+    hSyncHangupEvent = CreateEvent(nullptr, TRUE, FALSE, event_name.c_str());
     if (hSyncHangupEvent == INVALID_HANDLE_VALUE) {
       fprintf(hLogFile, "!!! Unable to create Hangup Event for SyncFoss External program [%ld]", GetLastError());
       sysoplogf("!!! Unable to create Hangup Event for SyncFoss External program [%ld]", GetLastError());
@@ -351,10 +349,8 @@ int ExecExternalProgram(const string commandLine, int flags) {
     }
 
     // Create Read Mail Slot
-    char szReadSlotName[ MAX_PATH + 1];
-    _snprintf(szReadSlotName, sizeof(szReadSlotName), "\\\\.\\mailslot\\sbbsexec\\rd%d",
-              session()->instance_number());
-    hSyncReadSlot = CreateMailslot(szReadSlotName, CONST_SBBSFOS_BUFFER_SIZE, 0, nullptr);
+    const string readslot_name = StringPrintf("\\\\.\\mailslot\\sbbsexec\\rd%d", session()->instance_number());
+    hSyncReadSlot = CreateMailslot(readslot_name.c_str(), CONST_SBBSFOS_BUFFER_SIZE, 0, nullptr);
     if (hSyncReadSlot == INVALID_HANDLE_VALUE) {
       fprintf(hLogFile, "!!! Unable to create mail slot for reading for SyncFoss External program [%ld]", GetLastError());
       sysoplogf("!!! Unable to create mail slot for reading for SyncFoss External program [%ld]", GetLastError());
@@ -365,10 +361,10 @@ int ExecExternalProgram(const string commandLine, int flags) {
   }
 
   const string current_directory = File::current_directory();
-
   ::Sleep(250);
 
-  char szTempWorkingCommandline[MAX_PATH + 1];
+  // Need a non-const string for the commandline
+  char szTempWorkingCommandline[MAX_PATH+1];
   strncpy(szTempWorkingCommandline, workingCommandLine.c_str(), MAX_PATH);
   BOOL bRetCP = CreateProcess(
                   nullptr,
@@ -404,9 +400,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
   for (int iter = 0; iter < sleep_zero_times; iter++) {
     ::Sleep(0);
   }
-
   CloseHandle(pi.hThread);
-
 
   if (bUsingSync) {
     bool bSavedBinaryMode = session()->remoteIO()->GetBinaryMode();

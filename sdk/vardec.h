@@ -704,16 +704,6 @@ struct batchrec {
   int32_t len;
 };
 
-enum xfertype {
-  xf_up,
-  xf_down,
-  xf_up_temp,
-  xf_down_temp,
-  xf_up_batch,
-  xf_down_batch,
-  xf_none
-};
-
 // USERREC.inact
 #define inact_deleted               0x01
 #define inact_inactive              0x02
@@ -873,11 +863,6 @@ enum xfertype {
 #define g_flag_disable_mci          0x00000040
 #define g_flag_ansi_movement        0x00000080
 
-#define NUM_ONLY            1
-#define UPPER_ONLY          2
-#define ALL                 4
-#define SET                 8
-
 struct ext_desc_type {
   char name[13];
 
@@ -921,32 +906,8 @@ struct languagerec {
 #define conf_status_wwivreg    0x0002       // WWIV regnum required
 #define conf_status_offline    0x0004       // conference is "offline"
 
-#define CONF_UPDATE_INSERT     1
-#define CONF_UPDATE_DELETE     2
-#define CONF_UPDATE_SWAP       3
-
-typedef uint16_t subconf_t;
 constexpr int MAX_CONFERENCES = 26;
 constexpr int WWIV_MESSAGE_TITLE_LENGTH = 72;
-
-struct confrec {
-  unsigned char designator,                 // A to Z?
-           name[61],                                // Name of conference
-           minsl,                                   // Minimum SL needed for access
-           maxsl,                                   // Maximum SL allowed for access
-           mindsl,                                  // Minimum DSL needed for access
-           maxdsl,                                  // Maximum DSL allowed for acces
-           minage,                                  // Minimum age needed for access
-           maxage,                                  // Maximum age allowed for acces
-           sex;                                     // Gender: 0=male, 1=female 2=all
-  subconf_t status,                      // Bit-mapped stuff
-               minbps,                                  // Minimum bps rate for access
-               ar,                                      // ARs necessary for access
-               dar,                                     // DARs necessary for access
-               num,                                     // Num "subs" in this conference
-               maxnum,                                  // max num subs allocated in 'subs'
-               *subs;                                    // "Sub" numbers in the conference
-};
 
 struct filestatusrec {
   int16_t user;

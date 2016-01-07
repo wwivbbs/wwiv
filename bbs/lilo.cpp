@@ -69,8 +69,8 @@ static char g_szLastLoginDate[9];
 
 static void CleanUserInfo() {
   if (okconf(session()->user())) {
-    setuconf(CONF_SUBS, session()->user()->GetLastSubConf(), 0);
-    setuconf(CONF_DIRS, session()->user()->GetLastDirConf(), 0);
+    setuconf(ConferenceType::CONF_SUBS, session()->user()->GetLastSubConf(), 0);
+    setuconf(ConferenceType::CONF_DIRS, session()->user()->GetLastDirConf(), 0);
   }
   if (session()->user()->GetLastSubNum() > syscfg.max_subs) {
     session()->user()->SetLastSubNum(0);
@@ -910,7 +910,8 @@ void logon() {
     nscandate = session()->user()->GetLastOnDateNumber();
   }
   batchtime = 0.0;
-  session()->numbatchdl = session()->numbatch = 0;
+  session()->numbatchdl = 0;
+  session()->batch.clear();
 
   CheckUserForVotingBooth();
 
@@ -933,14 +934,14 @@ void logon() {
          (session()->GetCurrentConferenceMessageArea() < static_cast<unsigned int>(subconfnum))
          && (uconfsub[session()->GetCurrentConferenceMessageArea()].confnum != -1);
          session()->SetCurrentConferenceMessageArea(session()->GetCurrentConferenceMessageArea() + 1)) {
-      setuconf(CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
+      setuconf(ConferenceType::CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
       if (usub[0].subnum != -1) {
         break;
       }
     }
     if (usub[0].subnum == -1) {
       session()->SetCurrentConferenceMessageArea(0);
-      setuconf(CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
+      setuconf(ConferenceType::CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
     }
   }
 
@@ -993,8 +994,8 @@ void logoff() {
   }
   double dTimeOnNow = timer() - timeon;
   session()->user()->SetTimeOn(session()->user()->GetTimeOn() + static_cast<float>(dTimeOnNow));
-  session()->user()->SetTimeOnToday(session()->user()->GetTimeOnToday() + static_cast<float>
-      (dTimeOnNow - extratimecall));
+  session()->user()->SetTimeOnToday(session()->user()->GetTimeOnToday() +
+    static_cast<float>(dTimeOnNow - extratimecall));
   {
     WStatus* pStatus = session()->status_manager()->BeginTransaction();
     int nActiveToday = pStatus->GetMinutesActiveToday();
@@ -1096,16 +1097,14 @@ void logoff() {
   write_qscn(session()->usernum, qsc, false);
   remove_from_temp("*.*", syscfgovr.tempdir, false);
   remove_from_temp("*.*", syscfgovr.batchdir, false);
-  if (session()->numbatch && (session()->numbatch != session()->numbatchdl)) {
-    for (int i = 0; i < session()->numbatch; i++) {
-      if (!batch[i].sending) {
-        didnt_upload(i);
-      }
+  if (!session()->batch.empty() && (size_int(session()->batch) != session()->numbatchdl)) {
+    for (const auto& b : session()->batch) {
+      if (!b.sending) { didnt_upload(b); }
     }
   }
-  session()->numbatch = session()->numbatchdl = 0;
+  session()->batch.clear();
+  session()->numbatchdl = 0;
 }
-
 
 void logon_guest() {
   session()->SetUserOnline(true);

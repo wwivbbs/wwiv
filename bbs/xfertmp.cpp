@@ -355,20 +355,20 @@ int check_for_files_arj(const char *file_name) {
   return 1;
 }
 
-struct arc_testers {
-  const char *  arc_name;
-  function<int(const char*)> func;
-};
-
-static vector<arc_testers> arc_t = {
-  { "ZIP", check_for_files_zip },
-  { "ARC", check_for_files_arc },
-  { "LZH", check_for_files_lzh },
-  { "ARJ", check_for_files_arj },
-};
-
 static bool check_for_files(const char *file_name) {
-  const char * ss = strrchr(file_name, '.');
+  struct arc_testers {
+    const char *  arc_name;
+    function<int(const char*)> func;
+  };
+
+  static const vector<arc_testers> arc_t = {
+    {"ZIP", check_for_files_zip},
+    {"ARC", check_for_files_arc},
+    {"LZH", check_for_files_lzh},
+    {"ARJ", check_for_files_arj},
+  };
+
+  const char* ss = strrchr(file_name, '.');
   if (ss) {
     ss++;
     for (const auto& t : arc_t) {
@@ -748,17 +748,18 @@ void move_file_t() {
   tmp_disable_conf(true);
 
   bout.nl();
-  if (session()->numbatch == 0) {
+  if (session()->batch.empty()) {
     bout.nl();
     bout << "|#6No files have been tagged for movement.\r\n";
     pausescr();
   }
-  for (int nCurBatchPos = session()->numbatch - 1; nCurBatchPos >= 0; nCurBatchPos--) {
+  // TODO(rushfan): rewrite using iterators.
+  for (int nCurBatchPos = session()->batch.size() - 1; nCurBatchPos >= 0; nCurBatchPos--) {
     bool ok = false;
     char szCurBatchFileName[MAX_PATH];
-    strcpy(szCurBatchFileName, batch[nCurBatchPos].filename);
+    strcpy(szCurBatchFileName, session()->batch[nCurBatchPos].filename);
     align(szCurBatchFileName);
-    dliscan1(batch[nCurBatchPos].dir);
+    dliscan1(session()->batch[nCurBatchPos].dir);
     int nTempRecordNum = recno(szCurBatchFileName);
     if (nTempRecordNum < 0) {
       bout << "File not found.\r\n";
@@ -773,7 +774,7 @@ void move_file_t() {
       FileAreaSetRecord(fileDownload, nTempRecordNum);
       fileDownload.Read(&u, sizeof(uploadsrec));
       fileDownload.Close();
-      printfileinfo(&u, batch[nCurBatchPos].dir);
+      printfileinfo(&u, session()->batch[nCurBatchPos].dir);
       bout << "|#5Move this (Y/N/Q)? ";
       char ch = ynq();
       if (ch == 'Q') {
@@ -782,7 +783,7 @@ void move_file_t() {
         dliscan();
         return;
       } else if (ch == 'Y') {
-        sprintf(s1, "%s%s", session()->directories[batch[nCurBatchPos].dir].path, u.filename);
+        sprintf(s1, "%s%s", session()->directories[session()->batch[nCurBatchPos].dir].path, u.filename);
         StringRemoveWhitespace(s1);
         char *pszDirectoryNum = nullptr;
         do {
@@ -790,7 +791,7 @@ void move_file_t() {
           pszDirectoryNum = mmkey(1);
           if (pszDirectoryNum[0] == '?') {
             dirlist(1);
-            dliscan1(batch[nCurBatchPos].dir);
+            dliscan1(session()->batch[nCurBatchPos].dir);
           }
         } while (!hangup && (pszDirectoryNum[0] == '?'));
         d1 = -1;
@@ -897,8 +898,8 @@ void move_file_t() {
             copyfile(s1, s2, false);
             File::Remove(s1);
           }
-          remlist(batch[nCurBatchPos].filename);
-          didnt_upload(nCurBatchPos);
+          remlist(session()->batch[nCurBatchPos].filename);
+          didnt_upload(session()->batch[nCurBatchPos]);
           delbatch(nCurBatchPos);
         }
         bout << "File moved.\r\n";
@@ -909,7 +910,6 @@ void move_file_t() {
   }
   tmp_disable_conf(false);
 }
-
 
 void removefile() {
   uploadsrec u;
