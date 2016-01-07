@@ -357,6 +357,7 @@ bool WWIVMessageArea::readfile(const messagerec* msg, string msgs_filename, stri
 
 void  WWIVMessageArea::savefile(const string& text, messagerec* msg, const string& msgs_filename) {
   int gati[128];
+  memset(gati, 0, sizeof(gati));
   unique_ptr<File> msgfile(OpenMessageFile(msgs_filename));
   if (msgfile->IsOpen()) {
     for (size_t section = 0; section < 1024; section++) {
