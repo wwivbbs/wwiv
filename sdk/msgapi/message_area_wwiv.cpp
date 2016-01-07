@@ -247,11 +247,11 @@ void WWIVMessageArea::remove_link(messagerec& msg, const string& filename) {
   unique_ptr<File> file(OpenMessageFile(filename));
   if (file->IsOpen()) {
     set_gat_section(*file, static_cast<int>(msg.stored_as / GAT_NUMBER_ELEMENTS));
-    long lCurrentSection = msg.stored_as % GAT_NUMBER_ELEMENTS;
-    while (lCurrentSection > 0 && lCurrentSection < GAT_NUMBER_ELEMENTS) {
-      long lNextSection = static_cast<long>(gat[lCurrentSection]);
-      gat[lCurrentSection] = 0;
-      lCurrentSection = lNextSection;
+    uint32_t current_section = msg.stored_as % GAT_NUMBER_ELEMENTS;
+    while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
+      uint32_t next_section = static_cast<long>(gat[current_section]);
+      gat[current_section] = 0;
+      current_section = next_section;
     }
     save_gat(*file);
     file->Close();
@@ -282,7 +282,7 @@ File* WWIVMessageArea::OpenMessageFile(const string msgs_filename) {
   return message_file.release();
 }
 
-void WWIVMessageArea::set_gat_section(File& file, int section) {
+void WWIVMessageArea::set_gat_section(File& file, size_t section) {
   if (gat_section != section) {
     long file_size = file.GetLength();
     long section_pos = static_cast<long>(section) * GATSECLEN;
@@ -292,7 +292,7 @@ void WWIVMessageArea::set_gat_section(File& file, int section) {
     }
     file.Seek(section_pos, File::seekBegin);
     if (file_size < (section_pos + GAT_SECTION_SIZE)) {
-      for (std::size_t i = 0; i < GAT_NUMBER_ELEMENTS; i++) {
+      for (size_t i = 0; i < GAT_NUMBER_ELEMENTS; i++) {
         gat[i] = 0;
       }
       file.Write(gat.get(), GAT_SECTION_SIZE);
@@ -325,8 +325,8 @@ bool WWIVMessageArea::readfile(const messagerec* msg, string msgs_filename, stri
     return false;
   }
   set_gat_section(*file, msg->stored_as / GAT_NUMBER_ELEMENTS);
-  int current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
-  long message_length = 0;
+  uint32_t current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
+  uint32_t message_length = 0;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
     message_length += MSG_BLOCK_SIZE;
     current_section = gat[current_section];
@@ -355,11 +355,11 @@ bool WWIVMessageArea::readfile(const messagerec* msg, string msgs_filename, stri
   return true;
 }
 
-void  WWIVMessageArea::savefile(const string& text, messagerec* pMessageRecord, const string msgs_filename) {
+void  WWIVMessageArea::savefile(const string& text, messagerec* msg, const string& msgs_filename) {
   int gati[128];
   unique_ptr<File> msgfile(OpenMessageFile(msgs_filename));
   if (msgfile->IsOpen()) {
-    for (int section = 0; section < 1024; section++) {
+    for (size_t section = 0; section < 1024; section++) {
       set_gat_section(*msgfile, section);
       int gatp = 0;
       int nNumBlocksRequired = static_cast<int>((text.length() + 511L) / MSG_BLOCK_SIZE);
@@ -383,7 +383,7 @@ void  WWIVMessageArea::savefile(const string& text, messagerec* pMessageRecord, 
     }
     msgfile->Close();
   }
-  pMessageRecord->stored_as = static_cast<long>(gati[0]) + static_cast<long>(gat_section) * GAT_NUMBER_ELEMENTS;
+  msg->stored_as = static_cast<uint32_t>(gati[0]) + static_cast<uint32_t>(gat_section) * GAT_NUMBER_ELEMENTS;
 }
 
 
