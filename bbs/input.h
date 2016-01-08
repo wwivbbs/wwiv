@@ -19,6 +19,8 @@
 #ifndef __INCLUDED_INPUT_H__
 #define __INCLUDED_INPUT_H__
 
+#include <cmath>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 
@@ -38,11 +40,20 @@ enum class InputMode {
 }  // namespace bbs
 }  // namespace wwiv
 
+void input(char *out_text, int max_length, bool auto_mpl = false);
+std::string input(int max_length, bool auto_mpl = false);
+void inputl(char *out_text, int max_length, bool auto_mpl = false);
+std::string inputl(int max_length, bool auto_mpl = false);
+void Input1(char *out_text, const std::string& orig_text, int max_length, bool bInsert, wwiv::bbs::InputMode mode);
+std::string Input1(const std::string& orig_text, int max_length, bool bInsert, wwiv::bbs::InputMode mode);
+std::string input_password(const std::string& prompt_text, int max_length);
+
+
 template<typename T>
 typename std::enable_if<std::is_signed<T>::value, T>::type
 input_number(T current_value, T min_value, T max_value) {
   int len = static_cast<T>(ceil(log10(max_value)));
-  std::string s = Input1(std::to_string(current_value), len, true, InputMode::UPPER);
+  std::string s = Input1(std::to_string(current_value), len, true, wwiv::bbs::InputMode::UPPER);
   try {
     long value = static_cast<T>(std::stoul(s));
     if (value < min_value || value > max_value) {
@@ -58,7 +69,7 @@ template<typename T>
 typename std::enable_if<std::is_unsigned<T>::value, T>::type
 input_number(T current_value, T min_value, T max_value) {
   int len = static_cast<T>(ceil(log10(max_value)));
-  std::string s = Input1(std::to_string(current_value), len, true, InputMode::UPPER);
+  std::string s = Input1(std::to_string(current_value), len, true, wwiv::bbs::InputMode::UPPER);
   try {
     unsigned long value = std::stoul(s);
     if (value < min_value || value > max_value) {
@@ -70,12 +81,5 @@ input_number(T current_value, T min_value, T max_value) {
   }
 }
 
-void input(char *out_text, int max_length, bool auto_mpl = false);
-std::string input(int max_length, bool auto_mpl = false);
-void inputl(char *out_text, int max_length, bool auto_mpl = false);
-std::string inputl(int max_length, bool auto_mpl = false);
-void Input1(char *out_text, const std::string& orig_text, int max_length, bool bInsert, wwiv::bbs::InputMode mode);
-std::string Input1(const std::string& orig_text, int max_length, bool bInsert, wwiv::bbs::InputMode mode);
-std::string input_password(const std::string& prompt_text, int max_length);
 
 #endif  // __INCLUDED_INPUT_H__
