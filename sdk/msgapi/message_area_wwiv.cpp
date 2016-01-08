@@ -194,7 +194,7 @@ WWIVMessageText* WWIVMessageArea::ReadMessageText(int message_number) {
   return msg->release_text();
 }
 
-bool WWIVMessageArea::AddMessage(const Message & message) {
+bool WWIVMessageArea::AddMessage(const Message& message) {
   return false;
 }
 
