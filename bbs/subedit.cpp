@@ -309,12 +309,7 @@ static void modify_sub(int n) {
       sprintf(szDef, "%d", r.readsl);
       bout.nl();
       bout << "|#2New Read SL? ";
-      char szNewSL[ 10 ];
-      Input1(szNewSL, szDef, 3, true, InputMode::UPPER);
-      int nNewSL = atoi(szNewSL);
-      if (nNewSL >= 0 && nNewSL < 256 && szNewSL[0]) {
-        r.readsl = static_cast<unsigned char>(nNewSL);
-      }
+      r.readsl = input_number<uint8_t>(r.readsl, 0, 255, 0); 
     }
     break;
     case 'E': {
@@ -653,7 +648,7 @@ static void delete_sub(int n) {
 
   n = static_cast<int>(nconv);
 
-  while (size_int(session()->xsubs) > 0 && !session()->xsubs[n].nets.empty()) {
+  while (size_int(session()->xsubs) > n && !session()->xsubs[n].nets.empty()) {
     sub_xtr_del(n, 0, 1);
   }
   {
@@ -709,7 +704,6 @@ static void delete_sub(int n) {
     session()->SetCurrentReadMessageArea(session()->GetCurrentReadMessageArea() - 1);
   }
 }
-
 
 void boardedit() {
   int i, i1, i2;

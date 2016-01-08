@@ -20,6 +20,7 @@
 #define __INCLUDED_INPUT_H__
 
 #include <string>
+#include <type_traits>
 
 namespace wwiv {
 namespace bbs {
@@ -36,6 +37,38 @@ enum class InputMode {
 
 }  // namespace bbs
 }  // namespace wwiv
+
+template<typename T>
+typename std::enable_if<std::is_signed<T>::value, T>::type
+input_number(T current_value, T min_value, T max_value, T default_value) {
+  int len = static_cast<T>(ceil(log10(max_value)));
+  string s = Input1(std::to_string(current_value), len, true, InputMode::UPPER);
+  try {
+    T value = static_cast<T>(std::stoul(s));
+    if (value < min_value || value > max_value) {
+      return default_value;
+    }
+    return value;
+  } catch (std::invalid_argument&) {
+    return default_value;
+  }
+}
+
+template<typename T>
+typename std::enable_if<std::is_unsigned<T>::value, T>::type
+input_number(T current_value, T min_value, T max_value, T default_value) {
+  int len = static_cast<T>(ceil(log10(max_value)));
+  string s = Input1(std::to_string(current_value), len, true, InputMode::UPPER);
+  try {
+    T value = static_cast<T>(std::stoul(s));
+    if (value < min_value || value > max_value) {
+      return default_value;
+    }
+    return value;
+  } catch (std::invalid_argument&) {
+    return default_value;
+  }
+}
 
 void input(char *out_text, int max_length, bool auto_mpl = false);
 std::string input(int max_length, bool auto_mpl = false);
