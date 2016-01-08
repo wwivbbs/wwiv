@@ -1,7 +1,7 @@
 ﻿/**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)2014-2015 WWIV Software Services              */
+/*             Copyright (C)2014-2016 WWIV Software Services              */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -17,12 +17,6 @@
 /*                                                                        */
 /**************************************************************************/
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace WWIV5TelnetServer
@@ -52,6 +46,7 @@ namespace WWIV5TelnetServer
             runEventsCheckbox.Checked = Properties.Settings.Default.useEvents;
             launchMinimizedCheckBox.Checked = Properties.Settings.Default.launchMinimized;
             launchLocalNodeCheckBox.Checked = Properties.Settings.Default.launchLocalNodeAtStartup;
+            launchNetworkCheckBox.Checked = Properties.Settings.Default.launchNetworkAtStartup;
         }
 
         private void ok_Clicked(object sender, EventArgs e)
@@ -85,6 +80,7 @@ namespace WWIV5TelnetServer
                 Properties.Settings.Default.useEvents = runEventsCheckbox.Checked;
                 Properties.Settings.Default.launchMinimized = launchMinimizedCheckBox.Checked;
                 Properties.Settings.Default.launchLocalNodeAtStartup = launchLocalNodeCheckBox.Checked;
+                Properties.Settings.Default.launchNetworkAtStartup = launchNetworkCheckBox.Checked;
                 Properties.Settings.Default.Save();
             }
         }

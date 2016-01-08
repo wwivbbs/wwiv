@@ -1,7 +1,7 @@
 ﻿/**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)2014-2015 WWIV Software Services              */
+/*             Copyright (C)2014-2016 WWIV Software Services              */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -17,13 +17,6 @@
 /*                                                                        */
 /**************************************************************************/
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
@@ -46,9 +39,9 @@ namespace WWIV5TelnetServer
             server.StatusMessageChanged += server_StatusMessage;
             server.NodeStatusChanged += server_NodeStatusChanged;
 
-            Action<string> logger = delegate(string s)
+            Action<string> logger = delegate (string s)
             {
-              server_StatusMessage(this, new StatusMessageEventArgs(s, StatusMessageEventArgs.MessageType.LogInfo));
+                server_StatusMessage(this, new StatusMessageEventArgs(s, StatusMessageEventArgs.MessageType.LogInfo));
             };
         }
 
@@ -144,15 +137,25 @@ namespace WWIV5TelnetServer
         private void MainForm_Load(object sender, EventArgs e)
         {
             notifyIcon1.Text = "WWIV Telnet Server: Offline";
+            // Launch Telnet Server on Startup
             if (Properties.Settings.Default.autostart)
             {
                 Console.WriteLine("AutoStarting Server.");
                 startToolStripMenuItem_Click(sender, e);
             }
+            // Launch Local Node of Startup
             if (Properties.Settings.Default.launchLocalNodeAtStartup)
             {
                 Console.WriteLine("AutoStarting Local Node.");
                 runLocalNodeToolStripMenuItem_Click(sender, e);
+            }
+            // Launch binkp.cmd for WWIVNet on Startup
+            if (Properties.Settings.Default.launchNetworkAtStartup)
+            {
+                Console.WriteLine("AutoStarting WWIVNet.");
+                ProcessStartInfo binkP = new ProcessStartInfo("binkp.cmd");
+                binkP.WindowStyle = ProcessWindowStyle.Minimized;
+                Process.Start(binkP);
             }
 
             // Get Current Version
@@ -258,6 +261,5 @@ namespace WWIV5TelnetServer
           this.Show();
           this.WindowState = FormWindowState.Normal;
         }
-
     }
 }

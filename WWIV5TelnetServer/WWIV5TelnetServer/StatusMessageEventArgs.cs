@@ -1,7 +1,7 @@
 ﻿/**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)2014-2015 WWIV Software Services              */
+/*             Copyright (C)2014-2016 WWIV Software Services              */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -17,9 +17,6 @@
 /*                                                                        */
 /**************************************************************************/
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace WWIV5TelnetServer
 {
@@ -40,5 +37,4 @@ namespace WWIV5TelnetServer
       return type == MessageType.Connect || type == MessageType.Disconnect || type == MessageType.Status;
     }
   }
-
 }

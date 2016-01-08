@@ -1,7 +1,7 @@
 ﻿/**************************************************************************/
 /*                                                                        */
 /*                            WWIV Version 5.x                            */
-/*                Copyright (C)2014-2015 WWIV Software Services           */
+/*                Copyright (C)2014-2016 WWIV Software Services           */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,17 +18,10 @@
 /**************************************************************************/
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Threading;
-using System.Runtime.InteropServices;
-using System.ComponentModel;
-using System.Timers;
 
 namespace WWIV5TelnetServer
 {
@@ -70,8 +63,8 @@ namespace WWIV5TelnetServer
         {
             if (launcherThread == null)
             {
-              OnStatusMessageUpdated("ERROR: LauncherThread was never set.", StatusMessageEventArgs.MessageType.LogError);
-              return;
+                OnStatusMessageUpdated("ERROR: LauncherThread was never set.", StatusMessageEventArgs.MessageType.LogError);
+                return;
             }
             OnStatusMessageUpdated("Stopping Telnet Server.", StatusMessageEventArgs.MessageType.LogInfo);
             if (server != null)
@@ -94,8 +87,8 @@ namespace WWIV5TelnetServer
             server.Listen(4);
             while (true)
             {
-              OnStatusMessageUpdated("Waiting for connection.", StatusMessageEventArgs.MessageType.LogInfo);
-                try 
+                OnStatusMessageUpdated("Waiting for connection.", StatusMessageEventArgs.MessageType.LogInfo);
+                try
                 {
                     Socket socket = server.Accept();
                     Console.WriteLine("After accept.");
@@ -105,7 +98,7 @@ namespace WWIV5TelnetServer
                     if (ip == "202.39.236.116")
                     {
                         // This IP has been bad. Blacklist it until proper filtering is added.
-                      OnStatusMessageUpdated("Attempt from blacklisted IP.", StatusMessageEventArgs.MessageType.LogInfo);
+                        OnStatusMessageUpdated("Attempt from blacklisted IP.", StatusMessageEventArgs.MessageType.LogInfo);
                         Thread.Sleep(1000);
                         node = null;
                     }
@@ -122,15 +115,20 @@ namespace WWIV5TelnetServer
                     else
                     {
                         // Send BUSY signal.
-                      OnStatusMessageUpdated("Sending Busy Signal.", StatusMessageEventArgs.MessageType.Status);
+                        OnStatusMessageUpdated("Sending Busy Signal.", StatusMessageEventArgs.MessageType.Status);
                         byte[] busy = System.Text.Encoding.ASCII.GetBytes("BUSY");
-                        try {
+                        try
+                        {
                             socket.Send(busy);
-                        } finally {
+                        }
+                        finally
+                        {
                             socket.Close();
                         }
                     }
-                } catch (SocketException e) {
+                }
+                catch (SocketException e)
+                {
                     Console.WriteLine(e.ToString());
                 }
             }
@@ -153,19 +151,19 @@ namespace WWIV5TelnetServer
             }
             catch (SocketException e)
             {
-              Console.WriteLine(e.ToString());
+                Console.WriteLine(e.ToString());
             }
             catch (Exception e)
             {
-              Console.WriteLine(e.ToString());
+                Console.WriteLine(e.ToString());
             }
             finally
             {
-              lock (nodeLock)
-              {
-                node.InUse = false;
-              }
-              OnNodeUpdated(node);
+                lock (nodeLock)
+                {
+                    node.InUse = false;
+                }
+                OnNodeUpdated(node);
             }
         }
 
@@ -181,7 +179,8 @@ namespace WWIV5TelnetServer
         {
             lock (nodeLock)
             {
-                foreach(NodeStatus node in nodes) {
+                foreach (NodeStatus node in nodes)
+                {
                     if (!node.InUse)
                     {
                         // Mark it in use.
@@ -207,12 +206,12 @@ namespace WWIV5TelnetServer
 
         protected virtual void DebugLog(string message)
         {
-          StatusMessageEventArgs e = new StatusMessageEventArgs(message, StatusMessageEventArgs.MessageType.LogDebug);
-          var handler = StatusMessageChanged;
-          if (handler != null)
-          {
-            StatusMessageChanged(this, e);
-          }
+            StatusMessageEventArgs e = new StatusMessageEventArgs(message, StatusMessageEventArgs.MessageType.LogDebug);
+            var handler = StatusMessageChanged;
+            if (handler != null)
+            {
+                StatusMessageChanged(this, e);
+            }
         }
 
         protected virtual void OnNodeUpdated(NodeStatus nodeStatus)
@@ -225,5 +224,4 @@ namespace WWIV5TelnetServer
             }
         }
     }
-
 }
