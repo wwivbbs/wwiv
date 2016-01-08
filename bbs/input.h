@@ -42,7 +42,7 @@ template<typename T>
 typename std::enable_if<std::is_signed<T>::value, T>::type
 input_number(T current_value, T min_value, T max_value) {
   int len = static_cast<T>(ceil(log10(max_value)));
-  string s = Input1(std::to_string(current_value), len, true, InputMode::UPPER);
+  std::string s = Input1(std::to_string(current_value), len, true, InputMode::UPPER);
   try {
     long value = static_cast<T>(std::stoul(s));
     if (value < min_value || value > max_value) {
@@ -58,7 +58,7 @@ template<typename T>
 typename std::enable_if<std::is_unsigned<T>::value, T>::type
 input_number(T current_value, T min_value, T max_value) {
   int len = static_cast<T>(ceil(log10(max_value)));
-  string s = Input1(std::to_string(current_value), len, true, InputMode::UPPER);
+  std::string s = Input1(std::to_string(current_value), len, true, InputMode::UPPER);
   try {
     unsigned long value = std::stoul(s);
     if (value < min_value || value > max_value) {
