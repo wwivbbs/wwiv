@@ -653,13 +653,19 @@ static void delete_sub(int n) {
 
   n = static_cast<int>(nconv);
 
-  while (size_int(session()->xsubs) > n && !session()->xsubs[n].nets.empty()) {
+  while (size_int(session()->xsubs) > 0 && !session()->xsubs[n].nets.empty()) {
     sub_xtr_del(n, 0, 1);
   }
-
-  auto it = session()->subboards.begin();
-  std::advance(it, n);
-  session()->subboards.erase(it);
+  {
+    auto it = session()->subboards.begin();
+    std::advance(it, n);
+    session()->subboards.erase(it);
+  }
+  {
+    auto it = session()->xsubs.begin();
+    std::advance(it, n);
+    session()->xsubs.erase(it);
+  }
   nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
   uint32_t *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m2, m3;
