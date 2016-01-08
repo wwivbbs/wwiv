@@ -32,6 +32,9 @@
             this.cancelButton = new System.Windows.Forms.Button();
             this.tabControlPreferences = new System.Windows.Forms.TabControl();
             this.generalTab = new System.Windows.Forms.TabPage();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.launchNetworkCheckBox = new System.Windows.Forms.CheckBox();
             this.launchLocalNodeCheckBox = new System.Windows.Forms.CheckBox();
             this.runEventsCheckbox = new System.Windows.Forms.CheckBox();
             this.balloonsCheckBox = new System.Windows.Forms.CheckBox();
@@ -101,6 +104,9 @@
             // 
             // generalTab
             // 
+            this.generalTab.Controls.Add(this.comboBox1);
+            this.generalTab.Controls.Add(this.label1);
+            this.generalTab.Controls.Add(this.launchNetworkCheckBox);
             this.generalTab.Controls.Add(this.launchLocalNodeCheckBox);
             this.generalTab.Controls.Add(this.runEventsCheckbox);
             this.generalTab.Controls.Add(this.balloonsCheckBox);
@@ -130,14 +136,49 @@
             this.generalTab.Text = "General";
             this.generalTab.UseVisualStyleBackColor = true;
             // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Items.AddRange(new object[] {
+            "On Startup (Default)",
+            "Hourly",
+            "Daily",
+            "Weekly",
+            "Monthly"});
+            this.comboBox1.Location = new System.Drawing.Point(393, 291);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.comboBox1.Size = new System.Drawing.Size(121, 21);
+            this.comboBox1.TabIndex = 23;
+            this.comboBox1.Text = "Work In Progress";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(250, 296);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(137, 13);
+            this.label1.TabIndex = 22;
+            this.label1.Text = "Check For WWIV Updates:";
+            // 
+            // launchNetworkCheckBox
+            // 
+            this.launchNetworkCheckBox.AutoSize = true;
+            this.launchNetworkCheckBox.Location = new System.Drawing.Point(253, 271);
+            this.launchNetworkCheckBox.Name = "launchNetworkCheckBox";
+            this.launchNetworkCheckBox.Size = new System.Drawing.Size(174, 17);
+            this.launchNetworkCheckBox.TabIndex = 21;
+            this.launchNetworkCheckBox.Text = "Launch WWIVNet On Startup?";
+            this.launchNetworkCheckBox.UseVisualStyleBackColor = true;
+            // 
             // launchLocalNodeCheckBox
             // 
             this.launchLocalNodeCheckBox.AutoSize = true;
             this.launchLocalNodeCheckBox.Location = new System.Drawing.Point(253, 247);
             this.launchLocalNodeCheckBox.Name = "launchLocalNodeCheckBox";
-            this.launchLocalNodeCheckBox.Size = new System.Drawing.Size(185, 17);
+            this.launchLocalNodeCheckBox.Size = new System.Drawing.Size(180, 17);
             this.launchLocalNodeCheckBox.TabIndex = 20;
-            this.launchLocalNodeCheckBox.Text = "Launch Local Node On Start Up?";
+            this.launchLocalNodeCheckBox.Text = "Launch Local Node On Startup?";
             this.launchLocalNodeCheckBox.UseVisualStyleBackColor = true;
             // 
             // runEventsCheckbox
@@ -412,5 +453,8 @@
         private System.Windows.Forms.CheckBox launchMinimizedCheckBox;
         private System.Windows.Forms.CheckBox runEventsCheckbox;
         private System.Windows.Forms.CheckBox launchLocalNodeCheckBox;
+        private System.Windows.Forms.CheckBox launchNetworkCheckBox;
+        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.Label label1;
     }
 }

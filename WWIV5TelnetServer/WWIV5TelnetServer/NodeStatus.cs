@@ -17,9 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Text;
 
 namespace WWIV5TelnetServer
@@ -131,6 +129,5 @@ namespace WWIV5TelnetServer
                 Console.WriteLine("Firing property changed event for nodestatus: " + FullStatus);
             }
         }
-
     }
 }

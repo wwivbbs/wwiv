@@ -41,5 +41,11 @@
     <Setting Name="lastBeginDayDate" Type="System.String" Scope="User">
       <Value Profile="(Default)">2014-01-01</Value>
     </Setting>
+    <Setting Name="launchLocalNodeAtStartup" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="launchNetworkAtStartup" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

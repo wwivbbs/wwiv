@@ -17,9 +17,6 @@
 /*                                                                        */
 /**************************************************************************/
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace WWIV5TelnetServer
 {
@@ -40,5 +37,4 @@ namespace WWIV5TelnetServer
       return type == MessageType.Connect || type == MessageType.Disconnect || type == MessageType.Status;
     }
   }
-
 }

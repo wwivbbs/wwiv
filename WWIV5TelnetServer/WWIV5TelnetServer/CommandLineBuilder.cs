@@ -18,8 +18,6 @@
 /**************************************************************************/
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace WWIV5TelnetServer
@@ -68,6 +66,5 @@ namespace WWIV5TelnetServer
                 return executable;
             }
         }
-
     }
 }

@@ -130,22 +130,7 @@ namespace WWIV5TelnetServer.Properties {
                 this["launchMinimized"] = value;
             }
         }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool launchLocalNodeAtStartup
-        {
-            get
-            {
-                return ((bool)(this["launchLocalNodeAtStartup"]));
-            }
-            set
-            {
-                this["launchLocalNodeAtStartup"] = value;
-            }
-        }
-
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
@@ -191,6 +176,30 @@ namespace WWIV5TelnetServer.Properties {
             }
             set {
                 this["lastBeginDayDate"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool launchLocalNodeAtStartup {
+            get {
+                return ((bool)(this["launchLocalNodeAtStartup"]));
+            }
+            set {
+                this["launchLocalNodeAtStartup"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool launchNetworkAtStartup {
+            get {
+                return ((bool)(this["launchNetworkAtStartup"]));
+            }
+            set {
+                this["launchNetworkAtStartup"] = value;
             }
         }
     }
