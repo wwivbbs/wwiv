@@ -305,24 +305,15 @@ static void modify_sub(int n) {
     }
     break;
     case 'D': {
-      char szDef[5];
-      sprintf(szDef, "%d", r.readsl);
       bout.nl();
       bout << "|#2New Read SL? ";
-      r.readsl = input_number<uint8_t>(r.readsl, 0, 255, 0); 
+      r.readsl = input_number<uint8_t>(r.readsl, 0, 255); 
     }
     break;
     case 'E': {
-      char szDef[5];
-      sprintf(szDef, "%d", r.postsl);
       bout.nl();
       bout << "|#2New Post SL? ";
-      char szNewSL[ 10 ];
-      Input1(szNewSL, szDef, 3, true, InputMode::UPPER);
-      int nNewSL = atoi(szNewSL);
-      if (nNewSL >= 0 && nNewSL < 256 && szNewSL[0]) {
-        r.postsl = static_cast<unsigned char>(nNewSL);
-      }
+      r.postsl = input_number<int8_t>(r.postsl, 0, 255);
     }
     break;
     case 'F': {
@@ -360,25 +351,13 @@ static void modify_sub(int n) {
     case 'G': {
       bout.nl();
       bout << "|#2New Min Age? ";
-      char szAge[ 10 ];
-      input(szAge, 3);
-      int nAge = atoi(szAge);
-      if (nAge >= 0 && nAge < 128 && szAge[0]) {
-        r.age = static_cast<uint8_t>(nAge);
-      }
+      r.age = input_number<uint8_t>(r.age, 0, 128);
     }
     break;
     case 'H': {
-      char szDef[5];
-      sprintf(szDef, "%d", r.maxmsgs);
       bout.nl();
       bout << "|#2New Max Msgs? ";
-      char szMaxMsgs[ 21 ];
-      Input1(szMaxMsgs, szDef, 5, true, InputMode::UPPER);
-      int nMaxMsgs = atoi(szMaxMsgs);
-      if (nMaxMsgs > 0 && nMaxMsgs < 16384 && szMaxMsgs[0]) {
-        r.maxmsgs = static_cast<uint16_t>(nMaxMsgs);
-      }
+      r.maxmsgs = input_number<uint16_t>(r.maxmsgs, 0, 16384);
     }
     break;
     case 'I': {

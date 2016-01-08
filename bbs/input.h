@@ -40,33 +40,33 @@ enum class InputMode {
 
 template<typename T>
 typename std::enable_if<std::is_signed<T>::value, T>::type
-input_number(T current_value, T min_value, T max_value, T default_value) {
+input_number(T current_value, T min_value, T max_value) {
   int len = static_cast<T>(ceil(log10(max_value)));
   string s = Input1(std::to_string(current_value), len, true, InputMode::UPPER);
   try {
-    T value = static_cast<T>(std::stoul(s));
+    long value = static_cast<T>(std::stoul(s));
     if (value < min_value || value > max_value) {
-      return default_value;
+      return current_value;
     }
-    return value;
+    return static_cast<T>(value);
   } catch (std::invalid_argument&) {
-    return default_value;
+    return current_value;
   }
 }
 
 template<typename T>
 typename std::enable_if<std::is_unsigned<T>::value, T>::type
-input_number(T current_value, T min_value, T max_value, T default_value) {
+input_number(T current_value, T min_value, T max_value) {
   int len = static_cast<T>(ceil(log10(max_value)));
   string s = Input1(std::to_string(current_value), len, true, InputMode::UPPER);
   try {
-    T value = static_cast<T>(std::stoul(s));
+    unsigned long value = std::stoul(s);
     if (value < min_value || value > max_value) {
-      return default_value;
+      return current_value;
     }
-    return value;
+    return static_cast<T>(value);
   } catch (std::invalid_argument&) {
-    return default_value;
+    return current_value;
   }
 }
 
