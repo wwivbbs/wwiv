@@ -189,9 +189,15 @@ public:
     string from = arg("from").as_string();
     string title = arg("title").as_string();
     string to = arg("to").as_string();
-    string date = arg("date").as_string();
-    if (date.empty()) {
-      date = daten_to_humantime(time(nullptr));
+    time_t daten = time(nullptr);
+    string date_str = arg("date").as_string();
+    if (!date_str.empty()) {
+      std::istringstream ss(date_str);
+      std::tm dt = {};
+      ss >> std::get_time(&dt, "Www Mmm dd hh:mm:ss yyyy");
+      if (ss) {
+        daten = mktime(&dt);
+      }
     }
     string in_reply_to = arg("in_reply_to").as_string();
     int from_usernum = arg("from_usernum").as_int();
@@ -200,19 +206,9 @@ public:
       from = names.UserName(from_usernum);
     }
 
-    vector<string> control_lines;
     TextFile text_file(filename, "r");
     string raw_text = text_file.ReadFileIntoString();
     vector<string> lines = wwiv::strings::SplitString(raw_text, "\n");
-    for (auto it = lines.begin(); it != lines.end();) {
-      const auto& line = *it;
-      if (line.front() == CD) {
-        control_lines.emplace_back(line);
-        it = lines.erase(it);
-      } else {
-        it++;
-      }
-    }
 
     unique_ptr<WWIVMessageHeader> header = make_unique<WWIVMessageHeader>(api.get());
     header->set_from_system(0);
@@ -220,9 +216,8 @@ public:
     header->set_title(title);
     header->set_from(from);
     header->set_to(to);
-    header->set_daten(date_to_daten(date));
+    header->set_daten(static_cast<uint32_t>(daten));
     header->set_in_reply_to(in_reply_to);
-    header->set_control_lines(control_lines);
 
     unique_ptr<WWIVMessageText> text = make_unique<WWIVMessageText>(Join(lines));
     WWIVMessage message(header.release(), text.release());
@@ -244,14 +239,6 @@ MessagesDumpHeaderCommand::MessagesDumpHeaderCommand()
 static void messages_usage() {
   cout << "Usage:   dump_headers <base sub filename>" << endl;
   cout << "Example: dump_headers general" << endl;
-}
-
-static string daten_to_humantime(uint32_t daten) {
-  time_t t = static_cast<time_t>(daten);
-  string human_date = string(asctime(localtime(&t)));
-  wwiv::strings::StringTrimEnd(&human_date);
-
-  return human_date;
 }
 
 bool MessagesDumpHeaderCommand::AddSubCommands() {
@@ -306,18 +293,21 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
       cout << "[PRIVATE]";
     }
     cout << endl;
-    if (all) {
-      for (const auto& c : header->control_lines()) {
-        cout << "c: " << c << endl;
-      }
-    }
     unique_ptr<MessageText> text(area->ReadMessageText(current));
     if (!text) {
       continue;
     }
     cout << "------------------------------------------------------------------------"
 	       << endl;
-    cout << text->text() << endl;
+    std::vector<string> lines = wwiv::strings::SplitString(text->text(), "\n");
+    for (const auto& line : lines) {
+      if (line.empty()) {
+        continue;
+      }
+      if (line.front() != CD || all) {
+        cout << line << endl;
+      }
+    }
     cout << "------------------------------------------------------------------------"
 	       << endl;
   }

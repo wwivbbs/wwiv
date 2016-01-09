@@ -35,10 +35,9 @@ WWIVMessageHeader::WWIVMessageHeader(const MessageApi* api)
   : header_(postrec{}) {}
 
 WWIVMessageHeader::WWIVMessageHeader(postrec header, const std::string& from, const std::string& to,
-  const std::string& in_reply_to, std::vector<string>& control_lines,
-  const MessageApi* api)
+  const std::string& in_reply_to, const MessageApi* api)
   : header_(header), from_(from), to_(to), in_reply_to_(in_reply_to),
-    control_lines_(control_lines), api_(api) {}
+    api_(api) {}
 
 WWIVMessageHeader::~WWIVMessageHeader() {}
 
@@ -70,10 +69,6 @@ void WWIVMessageHeader::set_deleted(bool b) {
   } else {
     header_.status &= ~status_delete;
   }
-}
-
-const void WWIVMessageHeader::set_control_lines(std::vector<std::string>& control_lines) {
-  control_lines_ = control_lines;
 }
 
 void WWIVMessageHeader::set_title(std::string& t) {

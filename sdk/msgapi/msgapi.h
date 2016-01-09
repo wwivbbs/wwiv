@@ -64,8 +64,6 @@ public:
   virtual void set_locked(bool b) = 0;
   virtual bool is_deleted() const = 0;
   virtual void set_deleted(bool b) = 0;
-  virtual const std::vector<std::string>& control_lines() const = 0;
-  virtual const void set_control_lines(std::vector<std::string>& control_lines) = 0;
 };
 
 class MessageText {
