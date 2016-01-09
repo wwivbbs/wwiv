@@ -46,7 +46,9 @@ public:
   virtual int FindUserMessages(const std::string& user_name) override;
   virtual int number_of_messages() override;
 
-  // message specific
+  // message specific.
+  // I would return a unique_ptr here but that doesn't work with
+  // covariant return types for subclasses.
   virtual WWIVMessage* ReadMessage(int message_number) override;
   virtual WWIVMessageHeader* ReadMessageHeader(int message_number) override;
   virtual WWIVMessageText*  ReadMessageText(int message_number) override;
@@ -55,9 +57,9 @@ public:
 
 private:
   File* OpenMessageFile(const std::string msgs_filename);
-  void set_gat_section(File& file, size_t section);
-  void save_gat(File& f);
-  bool readfile(const messagerec* pMessageRecord, std::string msgs_filename, std::string* out);
+  std::vector<uint16_t> load_gat(File& file, size_t section);
+  void save_gat(File& f, size_t section, const std::vector<uint16_t>& gat);
+  bool readfile(const messagerec* msg, std::string msgs_filename, std::string* out);
   void savefile(const std::string& text, messagerec* pMessageRecord, const std::string& fileName);
   void remove_link(messagerec& msg, const std::string& fileName);
   bool add_post(const postrec& post);
@@ -66,10 +68,6 @@ private:
   const std::string text_filename_;
   bool open_ = false;
   int last_num_messages_ = 0;
-
-  // gat section used by wwiv message text files.
-  int32_t gat_section = 0;
-  std::unique_ptr<uint16_t[]> gat;
 
   static constexpr uint8_t STORAGE_TYPE = 2;
 };

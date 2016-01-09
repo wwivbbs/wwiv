@@ -92,7 +92,8 @@ private:
 
 class WWIVMessage: public Message {
 public:
-  WWIVMessage(WWIVMessageHeader* header, WWIVMessageText* text);
+  WWIVMessage(std::unique_ptr<WWIVMessageHeader> header, 
+    std::unique_ptr<WWIVMessageText> text);
   ~WWIVMessage();
 
   virtual WWIVMessageHeader* header() const override { return header_.get(); }

@@ -223,7 +223,7 @@ public:
     header->set_in_reply_to(in_reply_to);
 
     unique_ptr<WWIVMessageText> text = make_unique<WWIVMessageText>(Join(lines));
-    WWIVMessage message(header.release(), text.release());
+    WWIVMessage message(std::move(header), std::move(text));
 
     return area->AddMessage(message) ? 0 : 1;
   }
