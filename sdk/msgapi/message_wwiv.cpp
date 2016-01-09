@@ -84,8 +84,9 @@ WWIVMessageText::WWIVMessageText(const std::string& text)
 
 WWIVMessageText::~WWIVMessageText() {}
 
-WWIVMessage::WWIVMessage(WWIVMessageHeader* header, WWIVMessageText* text)
-  : Message(), header_(header), text_(text) {}
+WWIVMessage::WWIVMessage(std::unique_ptr<WWIVMessageHeader> header,
+  std::unique_ptr<WWIVMessageText> text)
+  : Message(), header_(std::move(header)), text_(std::move(text)) {}
 
 WWIVMessage::~WWIVMessage() {}
 

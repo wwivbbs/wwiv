@@ -21,9 +21,11 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "bbs/subacc.h"
 #include "sdk/config.h"
@@ -40,6 +42,7 @@ using std::unique_ptr;
 using std::vector;
 using wwiv::core::DataFile;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 constexpr char CD = 4;
@@ -54,8 +57,7 @@ static constexpr int  GATSECLEN = GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_B
 
 WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename, const std::string& text_filename)
   : MessageArea(api),
-    sub_filename_(sub_filename), text_filename_(text_filename),
-    gat(new uint16_t[GAT_NUMBER_ELEMENTS]()) {
+    sub_filename_(sub_filename), text_filename_(text_filename) {
   DataFile<postrec> sub(sub_filename_, File::modeBinary | File::modeReadOnly);
   if (!sub) {
     // TODO: throw exception
@@ -184,7 +186,7 @@ WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
   unique_ptr<WWIVMessageHeader> wwiv_header(new WWIVMessageHeader(header, from_username, to, in_reply_to, api_));
   unique_ptr<WWIVMessageText> wwiv_text(new WWIVMessageText(text));
 
-  return new WWIVMessage(wwiv_header.release(), wwiv_text.release());
+  return new WWIVMessage(std::move(wwiv_header), std::move(wwiv_text));
 }
 
 WWIVMessageHeader* WWIVMessageArea::ReadMessageHeader(int message_number) {
@@ -295,14 +297,15 @@ bool WWIVMessageArea::DeleteMessage(int message_number) {
 void WWIVMessageArea::remove_link(messagerec& msg, const string& filename) {
   unique_ptr<File> file(OpenMessageFile(filename));
   if (file->IsOpen()) {
-    set_gat_section(*file, static_cast<int>(msg.stored_as / GAT_NUMBER_ELEMENTS));
+    size_t section = static_cast<int>(msg.stored_as / GAT_NUMBER_ELEMENTS);
+    vector<uint16_t> gat = load_gat(*file, section);
     uint32_t current_section = msg.stored_as % GAT_NUMBER_ELEMENTS;
     while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
       uint32_t next_section = static_cast<long>(gat[current_section]);
       gat[current_section] = 0;
       current_section = next_section;
     }
-    save_gat(*file);
+    save_gat(*file, section, gat);
     file->Close();
   }
 }
@@ -344,38 +347,32 @@ File* WWIVMessageArea::OpenMessageFile(const string msgs_filename) {
     // TODO(rushfan): Set error code
     return nullptr;
   }
-  message_file->Seek(0L, File::seekBegin);
-  message_file->Read(gat.get(), GAT_SECTION_SIZE);
-
-  gat_section = 0;
   return message_file.release();
 }
 
-void WWIVMessageArea::set_gat_section(File& file, size_t section) {
-  if (gat_section != section) {
-    long file_size = file.GetLength();
-    long section_pos = static_cast<long>(section) * GATSECLEN;
-    if (file_size < section_pos) {
-      file.SetLength(section_pos);
-      file_size = section_pos;
-    }
-    file.Seek(section_pos, File::seekBegin);
-    if (file_size < (section_pos + GAT_SECTION_SIZE)) {
-      for (size_t i = 0; i < GAT_NUMBER_ELEMENTS; i++) {
-        gat[i] = 0;
-      }
-      file.Write(gat.get(), GAT_SECTION_SIZE);
-    } else {
-      file.Read(gat.get(), GAT_SECTION_SIZE);
-    }
-    gat_section = section;
+std::vector<uint16_t> WWIVMessageArea::load_gat(File& file, size_t section) {
+  std::vector<uint16_t> gat(GAT_NUMBER_ELEMENTS);
+  auto file_size = file.GetLength();
+  auto section_pos = section * GATSECLEN;
+  if (file_size < static_cast<long>(section_pos)) {
+    file.SetLength(section_pos);
+    file_size = section_pos;
   }
+  file.Seek(section_pos, File::seekBegin);
+  if (file_size < (section_pos + GAT_SECTION_SIZE)) {
+    // TODO(rushfan): Check that gat is loaded.
+    file.Write(&gat[0], GAT_SECTION_SIZE);
+  } else {
+    // TODO(rushfan): Check that gat is loaded.
+    file.Read(&gat[0], GAT_SECTION_SIZE);
+  }
+  return gat;
 }
 
-void WWIVMessageArea::save_gat(File& file) {
-  long section_pos = static_cast<long>(gat_section) * GATSECLEN;
+void WWIVMessageArea::save_gat(File& file, size_t section, const std::vector<uint16_t>& gat) {
+  long section_pos = static_cast<long>(section * GATSECLEN);
   file.Seek(section_pos, File::seekBegin);
-  file.Write(gat.get(), GAT_SECTION_SIZE);
+  file.Write(&gat[0], GAT_SECTION_SIZE);
 
   // TODO(rushfan): Pass in the status manager. this is needed to
   // set session()->subchg if any of the subs receive a post so that 
@@ -393,19 +390,10 @@ bool WWIVMessageArea::readfile(const messagerec* msg, string msgs_filename, stri
     // TODO(rushfan): set error code,
     return false;
   }
-  set_gat_section(*file, msg->stored_as / GAT_NUMBER_ELEMENTS);
-  uint32_t current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
-  uint32_t message_length = 0;
-  while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
-    message_length += MSG_BLOCK_SIZE;
-    current_section = gat[current_section];
-  }
-  if (message_length == 0) {
-    // TODO(rushfan): set error code,
-    return false;
-  }
+  const size_t gat_section = msg->stored_as / GAT_NUMBER_ELEMENTS;
+  vector<uint16_t> gat = load_gat(*file, gat_section);
 
-  current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
+  uint32_t current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
     file->Seek(MSG_STARTING(gat_section) + MSG_BLOCK_SIZE * static_cast<uint32_t>(current_section), File::seekBegin);
     char b[MSG_BLOCK_SIZE + 1];
@@ -425,39 +413,37 @@ bool WWIVMessageArea::readfile(const messagerec* msg, string msgs_filename, stri
 }
 
 void WWIVMessageArea::savefile(const string& text, messagerec* msg, const string& msgs_filename) {
-  int gati[128];
-  memset(gati, 0, sizeof(gati));
+  vector<uint16_t> gati;
   unique_ptr<File> msgfile(OpenMessageFile(msgs_filename));
   if (!msgfile->IsOpen()) {
     // Unable to write to the message file.
     msg->stored_as = 0xffffffff;
     return;
   }
-  for (size_t section = 0; section < 1024; section++) {
-    set_gat_section(*msgfile, section);
-    int gatp = 0;
+  size_t section = 0;
+  for (section = 0; section < 1024; section++) {
+    vector<uint16_t> gat = load_gat(*msgfile, section);
     int nNumBlocksRequired = static_cast<int>((text.length() + 511L) / MSG_BLOCK_SIZE);
     int i4 = 1;
-    while (gatp < nNumBlocksRequired && i4 < GAT_NUMBER_ELEMENTS) {
+    gati.clear();
+    while (size_int(gati) < nNumBlocksRequired && i4 < GAT_NUMBER_ELEMENTS) {
       if (gat[i4] == 0) {
-        gati[gatp++] = i4;
+        gati.push_back(i4);
       }
       ++i4;
     }
-    if (gatp >= nNumBlocksRequired) {
-      gati[gatp] = -1;
+    if (size_int(gati) >= nNumBlocksRequired) {
+      gati.push_back(-1);
       for (int i = 0; i < nNumBlocksRequired; i++) {
-        msgfile->Seek(MSG_STARTING(gat_section) + MSG_BLOCK_SIZE * static_cast<long>(gati[i]),
-          File::seekBegin);
+        msgfile->Seek(MSG_STARTING(section) + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::seekBegin);
         msgfile->Write((&text[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
         gat[gati[i]] = static_cast<uint16_t>(gati[i + 1]);
       }
-      save_gat(*msgfile);
+      save_gat(*msgfile, section, gat);
       break;
     }
   }
-  msgfile->Close();
-  msg->stored_as = static_cast<uint32_t>(gati[0]) + static_cast<uint32_t>(gat_section) * GAT_NUMBER_ELEMENTS;
+  msg->stored_as = static_cast<uint32_t>(gati[0]) + static_cast<uint32_t>(section) * GAT_NUMBER_ELEMENTS;
 }
 
 }  // namespace msgapi
