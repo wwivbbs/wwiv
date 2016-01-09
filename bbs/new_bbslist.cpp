@@ -34,7 +34,6 @@
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/sysopf.h"
-#include "bbs/vars.h"  // for syscfg
 #include "bbs/wsession.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -265,7 +264,7 @@ static string GetConnectionType(const BbsListEntry* entry, ConnectionType type) 
 static void ReadBBSList(const vector<unique_ptr<BbsListEntry>>& entries) {
   int cnt = 0;
   bout.cls();
-  bout.litebar("%s BBS List", syscfg.systemname);
+  bout.litebar("%s BBS List", session()->config()->config()->systemname);
   for (const auto& entry : entries) {
     bout.Color((++cnt % 2) == 0 ? 1 : 9);
     bout << left << setw(3) << entry->id << " : " << setw(60) << entry->name << " (" << entry->software << ")" << wwiv::endl;
