@@ -90,8 +90,7 @@ WWIVMessageArea* WWIVMessageApi::Create(const std::string& name) {
     msgs_file.SetLength(GAT_SECTION_SIZE + (75L * 1024L));
   }
 
-  postrec p;
-  memset(&p, 0, sizeof(postrec));
+  postrec p{};
   p.owneruser = 0;
   fileSub.Write(&p, sizeof(postrec));
   return new WWIVMessageArea(this, fileSub.full_pathname(), msgs_file.full_pathname());

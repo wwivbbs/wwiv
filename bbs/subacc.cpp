@@ -85,8 +85,7 @@ bool open_sub(bool wr) {
 
 uint32_t WWIVReadLastRead(int sub_number) {
   // open file, and create it if necessary
-  postrec p;
-  memset(&p, 0, sizeof(postrec));
+  postrec p{};
 
   File subFile(session()->config()->datadir(), StrCat(session()->subboards[sub_number].filename, ".sub"));
   if (!subFile.Exists()) {
@@ -120,7 +119,7 @@ uint32_t WWIVReadLastRead(int sub_number) {
 // Initializes use of a sub value (session()->subboards[], not usub[]).  If quick, then
 // don't worry about anything detailed, just grab qscan info.
 bool iscan1(int sub_index) {
-  postrec p;
+  postrec p{};
 
   // forget it if an invalid sub #
   if (sub_index < 0 || sub_index >= size_int(session()->subboards)) {

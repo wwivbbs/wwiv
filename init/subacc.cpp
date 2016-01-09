@@ -62,7 +62,7 @@ void close_sub() {
 }
 
 bool open_sub(bool wr) {
-  postrec p;
+  postrec p{};
 
   close_sub();
 
@@ -87,8 +87,7 @@ bool open_sub(bool wr) {
 bool iscan1(int si, const vector<subboardrec>& subboards) {
   // Initializes use of a sub value (subboards[], not usub[]).  If quick, then
   // don't worry about anything detailed, just grab qscan info.
-  postrec p;
-  memset(&p, 0, sizeof(postrec));
+  postrec p{};
 
   // forget it if an invalid sub #
   if (si < 0 || si >= size_int(subboards)) {
@@ -138,7 +137,7 @@ bool iscan1(int si, const vector<subboardrec>& subboards) {
 postrec *get_post(int mn) {
   // Returns info for a post.  Maintains a cache.  Does not correct anything
   // if the sub has changed.
-  static postrec p;
+  static postrec p{};
   // error if msg # invalid
   if (mn < 1) {
     return nullptr;
