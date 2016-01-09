@@ -149,11 +149,11 @@ WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
   string to;
   string in_reply_to;
   string text;
-  vector<string> control_lines;
-    for (; it != std::end(lines); it++) {
+  for (; it != std::end(lines); it++) {
     auto line = StringTrim(*it);
     if (!line.empty() && line.front() == CD) {
-      control_lines.push_back(line);
+      text += line;
+      text += "\r\n";
     } else if (starts_with(line, "RE:")) {
       in_reply_to = StringTrim(line.substr(3));
     } else if (starts_with(line, "BY:")) {
@@ -181,7 +181,7 @@ WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
       break;
     }
   }
-  unique_ptr<WWIVMessageHeader> wwiv_header(new WWIVMessageHeader(header, from_username, to, in_reply_to, control_lines, api_));
+  unique_ptr<WWIVMessageHeader> wwiv_header(new WWIVMessageHeader(header, from_username, to, in_reply_to, api_));
   unique_ptr<WWIVMessageText> wwiv_text(new WWIVMessageText(text));
 
   return new WWIVMessage(wwiv_header.release(), wwiv_text.release());

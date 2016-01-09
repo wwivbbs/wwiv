@@ -32,8 +32,7 @@ class WWIVMessageHeader: public MessageHeader {
 public:
   explicit WWIVMessageHeader(const MessageApi* api);
   WWIVMessageHeader(postrec header, const std::string& from, const std::string& to,
-    const std::string& in_reply_to, std::vector<std::string>& control_lines,
-    const MessageApi* api);
+    const std::string& in_reply_to, const MessageApi* api);
   virtual ~WWIVMessageHeader();
 
   virtual std::string title() const override { return header_.title;  }
@@ -66,8 +65,6 @@ public:
   virtual void set_locked(bool b) override;
   virtual bool is_deleted() const override { return (header_.status & status_delete) != 0; }
   virtual void set_deleted(bool b) override;
-  virtual const std::vector<std::string>& control_lines() const override { return control_lines_;  }
-  virtual const void set_control_lines(std::vector<std::string>& control_lines) override;
 
   const postrec& data() const { return header_;  }
 private:
@@ -78,7 +75,6 @@ private:
   std::string oaddress_;
   std::string destination_address_;
   bool private_ = false;
-  std::vector<std::string> control_lines_;
   const MessageApi* api_;
 };
 
