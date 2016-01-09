@@ -17,6 +17,7 @@
 /**************************************************************************/
 #include "sdk/msgapi/message_wwiv.h"
 
+#include <cstring>
 #include <memory>
 #include <string>
 #include <utility>
