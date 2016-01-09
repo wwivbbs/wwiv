@@ -128,7 +128,7 @@ bool iscan1(int sub_index) {
   }
 
   // go to correct net #
-  if (!session()->xsubs[sub_index].nets.empty()) {
+  if (!session()->xsubs.empty() && !session()->xsubs[sub_index].nets.empty()) {
     set_net_num(session()->xsubs[sub_index].nets[0].net_num);
   } else {
     set_net_num(0);
