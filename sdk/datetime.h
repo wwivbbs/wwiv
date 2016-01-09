@@ -25,8 +25,9 @@
 namespace wwiv {
 namespace sdk {
 
-time_t date_to_daten(const char *datet);
-
+uint32_t date_to_daten(std::string datet);
+std::string daten_to_date(time_t date);
+std::string daten_to_humantime(time_t t);
 
 }
 }

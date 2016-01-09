@@ -18,6 +18,7 @@
 #include "wwivutil/messages/messages.h"
 
 #include <cstdio>
+#include <ctime>
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -27,8 +28,11 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "sdk/config.h"
+#include "sdk/datetime.h"
 #include "sdk/net.h"
+#include "sdk/names.h"
 #include "sdk/networks.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/msgapi/message_api_wwiv.h"
@@ -45,6 +49,8 @@ using std::vector;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
+
+constexpr char CD = 4;
 
 namespace wwiv {
 namespace wwivutil {
@@ -80,7 +86,7 @@ public:
 
     const string basename(remaining().front());
     // TODO(rushfan): Create the right API type for the right message area.
-    unique_ptr<MessageApi> api = make_unique<WWIVMessageApi>(
+    unique_ptr<MessageApi> api = make_unique<WWIVMessageApi>(config()->bbsdir(),
       config()->config()->datadir(), config()->config()->msgsdir(), networks.networks());
     if (!api->Exist(basename)) {
       clog << "Message area: '" << basename << "' does not exist." << endl;
@@ -115,19 +121,120 @@ public:
     add_argument({"num", "Message Number to delete.", "-1"});
     return true;
   }
-
-protected:
-  int ExecuteImpl(
-    const std::string& basename, const std::string& subs_dir,
-    const std::string& msgs_dir,
-    const std::vector<net_networks_rec>& net_networks,
-    int start, int end, bool all);
 };
 
+static string Join(const vector<string> lines) {
+  string out;
+  for (const auto& line : lines) {
+    out += line;
+    out += "\r\n";
+  }
+  return out;
+}
+
+static void post_usage() {
+  cout << "Usage:   post --title=\"Welcome\" --from_usernum=1 <base sub filename> <text filename>" << endl;
+  cout << "Example: post --num=10 general mymessage.txt" << endl;
+}
+
+class PostMessageCommand: public UtilCommand {
+public:
+  PostMessageCommand()
+    : UtilCommand("post", "Posts a new message.") {}
+
+  virtual bool AddSubCommands() override final {
+    add_argument({"title", "message sub name to post on", ""});
+    add_argument({"from", "message sub name to post on", ""});
+    add_argument({"from_usernum", "message sub name to post on", ""});
+    add_argument({"to", "message sub name to post on", ""});
+    add_argument({"date", "message sub name to post on", ""});
+    add_argument({"in_reply_to", "message sub name to post on", ""});
+    return true;
+  }
+
+  virtual int Execute() {
+    if (arg("help").as_bool()) {
+      post_usage();
+      cout << GetHelp();
+      return 0;
+    } else if (remaining().size() < 2) {
+      clog << "Missing sub basename." << endl;
+      post_usage();
+      cout << GetHelp();
+      return 2;
+    }
+
+    Networks networks(*config()->config());
+    if (!networks.IsInitialized()) {
+      clog << "Unable to load networks.";
+      return 1;
+    }
+
+    const string basename(remaining().front());
+    // TODO(rushfan): Create the right API type for the right message area.
+    unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(config()->bbsdir(),
+      config()->config()->datadir(), config()->config()->msgsdir(), networks.networks());
+    if (!api->Exist(basename)) {
+      clog << "Message area: '" << basename << "' does not exist." << endl;
+      return 1;
+    }
+
+    unique_ptr<MessageArea> area(api->Open(basename));
+    if (!area) {
+      clog << "Error opening message area: '" << basename << "'." << endl;
+      return 1;
+    }
+
+    const string filename = remaining().at(1);
+    string from = arg("from").as_string();
+    string title = arg("title").as_string();
+    string to = arg("to").as_string();
+    string date = arg("date").as_string();
+    if (date.empty()) {
+      date = daten_to_humantime(time(nullptr));
+    }
+    string in_reply_to = arg("in_reply_to").as_string();
+    int from_usernum = arg("from_usernum").as_int();
+    if (from_usernum >= 1 && from.empty()) {
+      Names names(*config()->config());
+      from = names.UserName(from_usernum);
+    }
+
+    vector<string> control_lines;
+    TextFile text_file(filename, "r");
+    string raw_text = text_file.ReadFileIntoString();
+    vector<string> lines = wwiv::strings::SplitString(raw_text, "\n");
+    for (auto it = lines.begin(); it != lines.end();) {
+      const auto& line = *it;
+      if (line.front() == CD) {
+        control_lines.emplace_back(line);
+        it = lines.erase(it);
+      } else {
+        it++;
+      }
+    }
+
+    unique_ptr<WWIVMessageHeader> header = make_unique<WWIVMessageHeader>(api.get());
+    header->set_from_system(0);
+    header->set_from_usernum(static_cast<uint16_t>(from_usernum));
+    header->set_title(title);
+    header->set_from(from);
+    header->set_to(to);
+    header->set_daten(date_to_daten(date));
+    header->set_in_reply_to(in_reply_to);
+    header->set_control_lines(control_lines);
+
+    unique_ptr<WWIVMessageText> text = make_unique<WWIVMessageText>(Join(lines));
+    WWIVMessage message(header.release(), text.release());
+
+    return area->AddMessage(message) ? 0 : 1;
+  }
+};
 
 bool MessagesCommand::AddSubCommands() {
   if (!add(new MessagesDumpHeaderCommand())) { return false; }
   if (!add(new DeleteMessageCommand())) { return false; }
+  if (!add(new PostMessageCommand())) { return false; }
   return true;
 }
 
@@ -161,7 +268,7 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
   const std::vector<net_networks_rec>& net_networks,
   int start, int end, bool all) {
   // TODO(rushfan): Create the right API type for the right message area.
-  unique_ptr<MessageApi> api(new WWIVMessageApi(
+  unique_ptr<MessageApi> api(new WWIVMessageApi(config()->bbsdir(),
       subs_dir, msgs_dir, net_networks));
   if (!api->Exist(basename)) {
     clog << "Message area: '" << basename << "' does not exist." << endl;

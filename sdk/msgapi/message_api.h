@@ -32,7 +32,9 @@ class MessageArea;
 
 class MessageApi {
 public:
-  MessageApi(const std::string& subs_directory,
+  MessageApi(
+    const std::string& root_directory,
+    const std::string& subs_directory,
     const std::string& messages_directory,
     const std::vector<net_networks_rec>& net_networks);
   virtual ~MessageApi();
@@ -42,8 +44,10 @@ public:
   virtual MessageArea* Open(const std::string& name) = 0;
 
   const std::vector<net_networks_rec>& network() const { return net_networks_; }
+  const std::string root_directory() const { return root_directory_; }
 
 protected:
+  std::string root_directory_;
   std::string subs_directory_;
   std::string messages_directory_;
   std::vector<net_networks_rec> net_networks_;

@@ -17,10 +17,16 @@
 /*                                                                        */
 /**************************************************************************/
 // Always declare wwiv_windows.h first to avoid collisions on defines.
-#include "bbs/datetime.h"
+#include "sdk/datetime.h"
 
 #include <cstring>
 #include <ctime>
+#include <string>
+
+#include "core/strings.h"
+
+using std::string;
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace sdk {
@@ -30,17 +36,17 @@ namespace sdk {
 // else.
 //
 
-time_t date_to_daten(const char *datet) {
-  if (strlen(datet) != 8) {
+uint32_t date_to_daten(std::string datet) {
+  if (datet.size() != 8) {
     return 0;
   }
 
   time_t t = time(nullptr);
-  struct tm * pTm = localtime(&t);
-  pTm->tm_mon   = atoi(datet) - 1;
-  pTm->tm_mday  = atoi(datet + 3);
+  struct tm* pTm = localtime(&t);
+  pTm->tm_mon   = atoi(datet.c_str()) - 1;
+  pTm->tm_mday  = atoi(datet.c_str() + 3);
   // N.B. tm_year is years since 1900
-  pTm->tm_year  = atoi(datet + 6);         // fixed for 1920-2019
+  pTm->tm_year  = atoi(datet.c_str() + 6);         // fixed for 1920-2019
   if (datet[6] < '2') {
     pTm->tm_year += 100;
   }
@@ -49,7 +55,19 @@ time_t date_to_daten(const char *datet) {
   pTm->tm_sec = 0;
   pTm->tm_isdst = 0;  // Since this is used for arbitrary compare of date strings, this is ok.
 
-  return mktime(pTm);
+  return static_cast<uint32_t>(mktime(pTm));
+}
+
+std::string daten_to_date(time_t t) {
+  struct tm* pTm = localtime(&t);
+  return StringPrintf("%02d/%02d/%02d", 
+    pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
+}
+
+std::string daten_to_humantime(time_t t) {
+  string human_date = string(asctime(localtime(&t)));
+  StringTrimEnd(&human_date);
+  return human_date;
 }
 
 }

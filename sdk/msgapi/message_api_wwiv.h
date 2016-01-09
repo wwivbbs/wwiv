@@ -34,7 +34,9 @@ class WWIVMessageArea;
 
 class WWIVMessageApi: public MessageApi {
 public:
-  WWIVMessageApi(const std::string& subs_directory,
+  WWIVMessageApi(
+    const std::string& bbs_directory,
+    const std::string& subs_directory,
     const std::string& messages_directory,
     const std::vector<net_networks_rec>& net_networks);
   virtual ~WWIVMessageApi();

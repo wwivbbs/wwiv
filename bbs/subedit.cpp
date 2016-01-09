@@ -196,6 +196,15 @@ void DisplayNetInfo(size_t nSubNum) {
   }
 }
 
+// returns the sub name using the file filename or empty string.
+static string subname_using(const string& filename) {
+  for (const auto& sub : session()->subboards) {
+    if (IsEqualsIgnoreCase(filename.c_str(), sub.filename)) {
+      return sub.name;
+    }
+  }
+  return "";
+}
 static void modify_sub(int n) {
   subboardrec r = session()->subboards[n];
   bool done = false;
@@ -222,6 +231,7 @@ static void modify_sub(int n) {
     bout.nl();
     bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
     char ch = onek("QABCDEFGHIJKLMNO[]", true);
+    bout.nl();
     switch (ch) {
     case 'Q':
       done = true;
@@ -241,58 +251,50 @@ static void modify_sub(int n) {
       r = session()->subboards[n];
       break;
     case 'A': {
-      bout.nl();
       bout << "|#2New name? ";
-      char szSubName[ 81 ];
-      Input1(szSubName, r.name, 40, true, InputMode::MIXED);
-      bout.Color(0);
-      if (szSubName[0]) {
-        strcpy(r.name, szSubName);
+      string new_name = Input1(r.name, 40, true, InputMode::MIXED);
+      if (!new_name.empty()) {
+        strcpy(r.name, new_name.c_str());
       }
     }
     break;
     case 'B': {
-      bout.nl();
-      bout << "|#2New filename? ";
-      char szSubBaseName[MAX_PATH];
-      Input1(szSubBaseName, r.filename, 8, true, InputMode::FILENAME);
-      if (szSubBaseName[0] != 0 && strchr(szSubBaseName, '.') == 0) {
-        char szOldSubFileName[MAX_PATH];
-        sprintf(szOldSubFileName, "%s%s.sub", syscfg.datadir, szSubBaseName);
-        if (File::Exists(szOldSubFileName)) {
-          for (auto& sub : session()->subboards) {
-            if (strncasecmp(sub.filename, szSubBaseName, strlen(szSubBaseName)) == 0) {
-              strcpy(szOldSubFileName, sub.name);
-              break;
-            }
-          }
-          bout.nl();
-          bout << "|#6" << szSubBaseName << " already in use for \"" << szOldSubFileName << "\"" << wwiv::endl;
-          bout.nl();
-          bout << "|#5Use anyway? ";
-          if (!yesno()) {
-            break;
-          }
+      bout << "|#2New base filename (e.g. 'GENERAL')? ";
+      string new_fn = Input1(r.filename, 8, true, InputMode::FILENAME);
+      if (new_fn.empty() || contains(new_fn, '.')) {
+        break;
+      }
+      string new_sub_fullpath = StrCat(session()->config()->datadir(), new_fn, ".sub");
+      if (File::Exists(new_sub_fullpath)) {
+        // Find out which sub was using it.
+        bout.nl();
+        string sub_name_using_file = subname_using(new_fn);
+        bout << "|#6" << new_fn << " already in use for '"
+             << sub_name_using_file << "'" << wwiv::endl << wwiv::endl
+             << "|#5Use anyway? ";
+        if (!yesno()) {
+          break;
         }
-        sprintf(szOldSubFileName, "%s", r.filename);
-        strcpy(r.filename, szSubBaseName);
+      }
+      string old_subname(r.filename);
+      strcpy(r.filename, new_fn.c_str());
 
-        char szFile1[MAX_PATH], szFile2[MAX_PATH];
-        sprintf(szFile1, "%s%s.sub", syscfg.datadir, r.filename);
-        sprintf(szFile2, "%s%s.dat", syscfg.msgsdir, r.filename);
-        if (r.storage_type == 2 && !File::Exists(szFile1) &&
-            !File::Exists(szFile2) &&
-            !IsEquals(r.filename, "NONAME")) {
-          bout.nl();
-          bout << "|#7Rename current data files (.SUB/.DAT)? ";
-          if (yesno()) {
-            sprintf(szFile1, "%s%s.sub", syscfg.datadir, szOldSubFileName);
-            sprintf(szFile2, "%s%s.sub", syscfg.datadir, r.filename);
-            File::Rename(szFile1, szFile2);
-            sprintf(szFile1, "%s%s.dat", syscfg.msgsdir, szOldSubFileName);
-            sprintf(szFile2, "%s%s.dat", syscfg.msgsdir, r.filename);
-            File::Rename(szFile1, szFile2);
-          }
+      if (r.storage_type != 2) {
+        // Only rename files for type2
+        break;
+      }
+
+      string old_sub_fullpath = StrCat(session()->config()->datadir(), old_subname, ".sub");
+      string old_msg_fullpath = StrCat(session()->config()->msgsdir(), old_subname, ".dat");
+      string new_msg_fullpath = StrCat(session()->config()->msgsdir(), new_fn, ".dat");
+
+      if (!File::Exists(new_sub_fullpath) && !File::Exists(new_msg_fullpath)
+        && new_fn != "NONAME" && old_subname != "NONAME") {
+        bout.nl();
+        bout << "|#7Rename current data files (.SUB/.DAT)? ";
+        if (yesno()) {
+          File::Rename(old_sub_fullpath, new_sub_fullpath);
+          File::Rename(old_msg_fullpath, new_msg_fullpath);
         }
       }
     }
@@ -317,16 +319,17 @@ static void modify_sub(int n) {
     }
     break;
     case 'F': {
-      char szCharString[ 21 ];
+      string allowed("NYDFR");
       bout.nl();
       bout << "|#2New Anony (Y,N,D,F,R) ? ";
-      strcpy(szCharString, "NYDFR");
-      szCharString[0] = YesNoString(false)[0];
-      szCharString[1] = YesNoString(true)[0];
-      char ch2 = onek(szCharString);
-      if (ch2 == YesNoString(false)[0]) {
+      const char Y = *YesNoString(true);
+      const char N = *YesNoString(false);
+      allowed.push_back(Y);
+      allowed.push_back(N);
+      char ch2 = onek(allowed.c_str(), true);
+      if (ch2 == N) {
         ch2 = 0;
-      } else if (ch2 == YesNoString(true)[0]) {
+      } else if (ch2 == Y) {
         ch2 = 1;
       }
       r.anony &= 0xf0;
@@ -400,20 +403,17 @@ static void modify_sub(int n) {
         } else {
           bout << "|#2Modify which (a-";
         }
-        bout.bprintf("%c", 'a' + session()->xsubs[n].nets.size() - 1);
-        bout << "), <space>=Quit? ";
-        char szCharString[ 81 ];
-        szCharString[0] = ' ';
-        size_t i;
-        for (i = 0; i < session()->xsubs[n].nets.size(); i++) {
-          szCharString[i + 1] = static_cast<char>('A' + i);
+        bout << static_cast<char>('a' + session()->xsubs[n].nets.size() - 1) 
+             << "), <space>=Quit? ";
+        string charstring;
+        for (int i = 0; i < session()->xsubs[n].nets.size(); i++) {
+          charstring.push_back(static_cast<char>('A' + i));
         }
-        szCharString[i + 1] = 0;
         bout.Color(0);
-        char ch3 = onek(szCharString);
+        char ch3 = onek(charstring.c_str());
         if (ch3 != ' ') {
-          i = ch3 - 'A';
-          if (i >= 0 && i < session()->xsubs[n].nets.size()) {
+          int i = ch3 - 'A';
+          if (i >= 0 && i < size_int(session()->xsubs[n].nets)) {
             if (ch2 == 'D') {
               sub_xtr_del(n, i, 1);
             } else {
@@ -429,10 +429,9 @@ static void modify_sub(int n) {
     case 'K': {
       bout.nl();
       bout << "|#2New Storage Type ( 2 ) ? ";
-      string storage_type_string = input(4);
-      uint16_t new_storage_type = StringToUnsignedShort(storage_type_string);
-      if (!storage_type_string.empty() && new_storage_type > 1 && new_storage_type <= 2) {
-        r.storage_type = new_storage_type;
+      uint16_t new_type = input_number<uint16_t>(r.storage_type, 2, 2);
+      if (new_type == 2) {
+        r.storage_type = new_type;
       }
     }
     break;
@@ -464,8 +463,7 @@ static void modify_sub(int n) {
       bout.nl();
       bout << "|#2Enter new Description : \r\n|#7:";
       string description = Input1(session()->xsubs[n].desc, 60, true, InputMode::MIXED);
-      bout.Color(0);
-      if (description.length() > 0) {
+      if (!description.empty()) {
         strcpy(session()->xsubs[n].desc, description.c_str());
       } else {
         bout.nl();
@@ -490,10 +488,8 @@ static void swap_subs(int sub1, int sub2) {
   }
 
   update_conf(ConferenceType::CONF_SUBS, &sub1conv, &sub2conv, CONF_UPDATE_SWAP);
-
   sub1 = static_cast<int>(sub1conv);
   sub2 = static_cast<int>(sub2conv);
-
   int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
   std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(syscfg.qscn_len);
@@ -527,13 +523,13 @@ static void swap_subs(int sub1, int sub2) {
   }
   close_qscn();
 
-  subboardrec sbt     = session()->subboards[sub1];
-  session()->subboards[sub1]     = session()->subboards[sub2];
-  session()->subboards[sub2]     = sbt;
+  subboardrec sbt = session()->subboards[sub1];
+  session()->subboards[sub1]  = session()->subboards[sub2];
+  session()->subboards[sub2] = sbt;
 
-  xtrasubsrec xst     = session()->xsubs[sub1];
-  session()->xsubs[sub1]         = session()->xsubs[sub2];
-  session()->xsubs[sub2]         = xst;
+  xtrasubsrec xst = session()->xsubs[sub1];
+  session()->xsubs[sub1] = session()->xsubs[sub2];
+  session()->xsubs[sub2] = xst;
 
   save_subs();
 }
@@ -685,9 +681,7 @@ static void delete_sub(int n) {
 }
 
 void boardedit() {
-  int i, i1, i2;
   bool confchg = false;
-  char s[81];
   subconf_t iconv;
 
   if (!ValidateSysopPassword()) {
@@ -708,91 +702,94 @@ void boardedit() {
       done = true;
       break;
     case 'M':
+    {
       bout.nl();
       bout << "|#2Sub number? ";
-      input(s, 4);
-      i = atoi(s);
-      if (s[0] != 0 && i >= 0 && i < size_int(session()->subboards)) {
-        modify_sub(i);
+      int subnum = input_number(0, 1, size_int(session()->subboards), false);
+      if (subnum > 0) {
+        modify_sub(subnum);
       }
-      break;
+    } break;
     case 'S':
+    {
       if (session()->subboards.size() < syscfg.max_subs) {
         bout.nl();
         bout << "|#2Take sub number? ";
-        input(s, 4);
-        i1 = atoi(s);
-        if (!s[0] || i1 < 0 || i1 >= size_int(session()->subboards)) {
+        int subnum1 = input_number(0, 1, size_int(session()->subboards), false);
+        if (subnum1 <= 0) {
           break;
         }
         bout.nl();
         bout << "|#2And move before sub number? ";
-        input(s, 4);
-        i2 = atoi(s);
-        if (!s[0] || i2 < 0 || i2 % 32 == 0 || i2 > size_int(session()->subboards) || i1 == i2 || i1 + 1 == i2) {
+        int subnum2 = input_number(0, 1, size_int(session()->subboards), false);
+        if (subnum2 <= 0) {
           break;
         }
         bout.nl();
-        if (i2 < i1) {
-          i1++;
+        if (subnum2 < subnum1) {
+          subnum1++;
         }
         write_qscn(session()->usernum, qsc, true);
         bout << "|#1Moving sub now...Please wait...";
-        insert_sub(i2);
-        swap_subs(i1, i2);
-        delete_sub(i1);
+        insert_sub(subnum2);
+        swap_subs(subnum1, subnum2);
+        delete_sub(subnum1);
         confchg = true;
         showsubs();
       } else {
         bout << "\r\nYou must increase the number of subs in INIT.EXE first.\r\n";
       }
-      break;
+    } break;
     case 'I':
-      if (session()->subboards.size() < syscfg.max_subs) {
-        bout.nl();
-        bout << "|#2Insert before which sub ('$' for end) : ";
-        input(s, 4);
-        if (s[0] == '$') {
-          i = size_int(session()->subboards);
+    {
+      if (session()->subboards.size() >= syscfg.max_subs) {
+        break;
+      }
+      bout.nl();
+      bout << "|#2Insert before which sub ('$' for end) : ";
+      string s = input(4);
+      int subnum = 0;
+      if (s[0] == '$') {
+        subnum = size_int(session()->subboards);
+      } else {
+        subnum = StringToInt(s);
+      }
+      if (!s.empty() && subnum >= 0 && subnum <= size_int(session()->subboards)) {
+        insert_sub(subnum);
+        modify_sub(subnum);
+        confchg = true;
+        if (subconfnum > 1) {
+          bout.nl();
+          list_confs(ConferenceType::CONF_SUBS, 0);
+          int i2 = select_conf("Put in which conference? ", ConferenceType::CONF_SUBS, 0);
+          if (i2 >= 0) {
+            if (in_conference(subnum, &subconfs[i2]) < 0) {
+              iconv = (subconf_t)subnum;
+              addsubconf(ConferenceType::CONF_SUBS, &subconfs[i2], &iconv);
+              subnum = static_cast<int>(iconv);
+            }
+          }
         } else {
-          i = atoi(s);
-        }
-        if (s[0] != 0 && i >= 0 && i <= size_int(session()->subboards)) {
-          insert_sub(i);
-          modify_sub(i);
-          confchg = true;
-          if (subconfnum > 1) {
-            bout.nl();
-            list_confs(ConferenceType::CONF_SUBS, 0);
-            i2 = select_conf("Put in which conference? ", ConferenceType::CONF_SUBS, 0);
-            if (i2 >= 0) {
-              if (in_conference(i, &subconfs[i2]) < 0) {
-                iconv = (subconf_t) i;
-                addsubconf(ConferenceType::CONF_SUBS, &subconfs[i2], &iconv);
-                i = static_cast<int>(iconv);
-              }
-            }
-          } else {
-            if (in_conference(i, &subconfs[0]) < 0) {
-              iconv = static_cast<subconf_t>(i);
-              addsubconf(ConferenceType::CONF_SUBS, &subconfs[0], &iconv);
-              i = static_cast<int>(iconv);
-            }
+          if (in_conference(subnum, &subconfs[0]) < 0) {
+            iconv = static_cast<subconf_t>(subnum);
+            addsubconf(ConferenceType::CONF_SUBS, &subconfs[0], &iconv);
+            subnum = static_cast<int>(iconv);
           }
         }
       }
-      break;
+    } break;
     case 'D':
+    {
       bout.nl();
       bout << "|#2Delete which sub? ";
-      input(s, 4);
-      i = atoi(s);
-      if (s[0] != 0 && i >= 0 && i < size_int(session()->subboards)) {
+      int subnum = input_number(0, 1, size_int(session()->subboards), false);
+      if (subnum > 0) {
         bout.nl();
-        bout << "|#5Delete " << session()->subboards[i].name << "? ";
+        bout << "|#5Delete " << session()->subboards[subnum].name << "? ";
         if (yesno()) {
-          strcpy(s, session()->subboards[i].filename);
-          delete_sub(i);
+          char s[MAX_PATH];
+          strcpy(s, session()->subboards[subnum].filename);
+          delete_sub(subnum);
           confchg = true;
           bout.nl();
           bout << "|#5Delete data files (including messages) for sub also? ";
@@ -802,7 +799,7 @@ void boardedit() {
           }
         }
       }
-      break;
+    } break;
     }
   } while (!done && !hangup);
   save_subs();
