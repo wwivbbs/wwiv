@@ -31,17 +31,16 @@ namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
+WWIVMessageHeader::WWIVMessageHeader(const MessageApi* api)
+  : header_(postrec{}) {}
+
 WWIVMessageHeader::WWIVMessageHeader(postrec header, const std::string& from, const std::string& to,
-  const std::string& date, const std::string& in_reply_to, std::vector<string>& control_lines,
+  const std::string& in_reply_to, std::vector<string>& control_lines,
   const MessageApi* api)
-  : header_(header), from_(from), to_(to), date_(date), in_reply_to_(in_reply_to),
-    control_lines_(control_lines), api_(api) {
+  : header_(header), from_(from), to_(to), in_reply_to_(in_reply_to),
+    control_lines_(control_lines), api_(api) {}
 
-}
-
-WWIVMessageHeader::~WWIVMessageHeader() {
-
-}
+WWIVMessageHeader::~WWIVMessageHeader() {}
 
 bool WWIVMessageHeader::is_local() const {
   uint8_t net_num = header_.network.network_msg.net_number;
@@ -55,8 +54,34 @@ bool WWIVMessageHeader::is_local() const {
   }
   int local_net = api_->network().at(net_num).sysnum;
   return local_net == header_.ownersys;
-} 
+}
 
+void WWIVMessageHeader::set_locked(bool b) {
+  if (b) {
+    header_.status |= status_no_delete;
+  } else {
+    header_.status &= ~status_no_delete;
+  }
+}
+
+void WWIVMessageHeader::set_deleted(bool b) {
+  if (b) {
+    header_.status |= status_delete;
+  } else {
+    header_.status &= ~status_delete;
+  }
+}
+
+const void WWIVMessageHeader::set_control_lines(std::vector<std::string>& control_lines) {
+  control_lines_ = control_lines;
+}
+
+void WWIVMessageHeader::set_title(std::string& t) {
+  if (t.size() > 72) {
+    t.resize(72);
+  }
+  strcpy(header_.title, t.c_str());
+}
 
 WWIVMessageText::WWIVMessageText(const std::string& text)
   : MessageText(), text_(text) {}

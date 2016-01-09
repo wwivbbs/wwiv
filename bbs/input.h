@@ -51,9 +51,10 @@ std::string input_password(const std::string& prompt_text, int max_length);
 
 template<typename T>
 typename std::enable_if<std::is_signed<T>::value, T>::type
-input_number(T current_value, T min_value, T max_value) {
+input_number(T current_value, T min_value, T max_value, bool set_default_value = true) {
   int len = static_cast<T>(ceil(log10(max_value)));
-  std::string s = Input1(std::to_string(current_value), len, true, wwiv::bbs::InputMode::UPPER);
+  std::string default_value = (set_default_value ? std::to_string(current_value) : "");
+  std::string s = Input1(default_value, len, true, wwiv::bbs::InputMode::UPPER);
   try {
     long value = static_cast<T>(std::stoul(s));
     if (value < min_value || value > max_value) {
@@ -67,9 +68,10 @@ input_number(T current_value, T min_value, T max_value) {
 
 template<typename T>
 typename std::enable_if<std::is_unsigned<T>::value, T>::type
-input_number(T current_value, T min_value, T max_value) {
+input_number(T current_value, T min_value, T max_value, bool set_default_value = true) {
   int len = static_cast<T>(ceil(log10(max_value)));
-  std::string s = Input1(std::to_string(current_value), len, true, wwiv::bbs::InputMode::UPPER);
+  std::string default_value = (set_default_value ? std::to_string(current_value) : "");
+  std::string s = Input1(default_value, len, true, wwiv::bbs::InputMode::UPPER);
   try {
     unsigned long value = std::stoul(s);
     if (value < min_value || value > max_value) {

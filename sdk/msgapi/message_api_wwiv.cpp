@@ -41,10 +41,11 @@ static constexpr int MSG_BLOCK_SIZE = 512;
 
 
 WWIVMessageApi::WWIVMessageApi(
+  const std::string& bbs_directory,
   const std::string& subs_directory,
   const std::string& messages_directory,
   const std::vector<net_networks_rec>& net_networks)
-  : MessageApi(subs_directory, messages_directory, net_networks) {}
+  : MessageApi(bbs_directory, subs_directory, messages_directory, net_networks) {}
 WWIVMessageApi::~WWIVMessageApi() {}
 
 bool WWIVMessageApi::Exist(const std::string& name) const {

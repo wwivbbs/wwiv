@@ -26,7 +26,9 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "bbs/subacc.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/datetime.h"
 #include "sdk/vardec.h"
 
 namespace wwiv {
@@ -37,6 +39,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 using wwiv::core::DataFile;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 constexpr char CD = 4;
@@ -178,7 +181,7 @@ WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
       break;
     }
   }
-  unique_ptr<WWIVMessageHeader> wwiv_header(new WWIVMessageHeader(header, from_username, to, date, in_reply_to, control_lines, api_));
+  unique_ptr<WWIVMessageHeader> wwiv_header(new WWIVMessageHeader(header, from_username, to, in_reply_to, control_lines, api_));
   unique_ptr<WWIVMessageText> wwiv_text(new WWIVMessageText(text));
 
   return new WWIVMessage(wwiv_header.release(), wwiv_text.release());
@@ -194,8 +197,54 @@ WWIVMessageText* WWIVMessageArea::ReadMessageText(int message_number) {
   return msg->release_text();
 }
 
+static uint32_t next_qscan_value(const string& bbsdir) {
+  statusrec status;
+  uint32_t next_qscan = 0;
+  Config config(bbsdir);
+  if (!config.IsInitialized()) {
+    // LOG << "Unable to load CONFIG.DAT.";
+    return 1;
+  }
+  DataFile<statusrec> file(config.datadir(), STATUS_DAT,
+    File::modeBinary | File::modeReadWrite);
+  if (!file) {
+    return 0;
+  }
+  if (!file.Read(0, &status)) {
+    return 0;
+  }
+  next_qscan = status.qscanptr++;
+  if (!file.Write(0, &status)) {
+    return 0;
+  }
+  return next_qscan;
+}
+
 bool WWIVMessageArea::AddMessage(const Message& message) {
-  return false;
+  messagerec m{STORAGE_TYPE, 0xffffff};
+
+  const WWIVMessageHeader& header = *dynamic_cast<const WWIVMessage&>(message).header();
+  postrec p = header.data();
+  p.anony = 0;
+  p.msg = m;
+  p.ownersys = header.from_system();
+  p.owneruser = header.from_usernum();
+  p.qscan = next_qscan_value(api_->root_directory());
+  if (p.qscan == 0) {
+    // TODO(rushfan): Fail here?
+  }
+  p.daten = header.daten();
+  p.status = header.status();
+  //if (session()->user()->IsRestrictionValidate()) {
+  //  p.status |= status_unvalidated;
+  //}
+
+  string text = StrCat(header.from(), "\r\n",
+    daten_to_humantime(header.daten()), "\r\n");
+  text += message.text()->text();
+  savefile(text, &p.msg, text_filename_);
+  add_post(p);
+  return true;
 }
 
 bool WWIVMessageArea::DeleteMessage(int message_number) {
@@ -256,6 +305,26 @@ void WWIVMessageArea::remove_link(messagerec& msg, const string& filename) {
     save_gat(*file);
     file->Close();
   }
+}
+
+bool WWIVMessageArea::add_post(const postrec& post) {
+  DataFile<postrec> sub(sub_filename_, File::modeBinary|File::modeReadWrite);
+  if (!sub) {
+    return false;
+  }
+  postrec header;
+  if (!sub.Read(0, &header)) {
+    return false;
+  }
+  // increment the post count.
+  header.owneruser++;
+
+  // add the new post
+  if (!sub.Write(header.owneruser, &post)) {
+    return false;
+  }
+  // Write the header now.
+  return sub.Write(0, &header);
 }
 
 /**

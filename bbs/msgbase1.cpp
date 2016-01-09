@@ -215,10 +215,6 @@ void post() {
 
   write_inst(INST_LOC_POST, session()->GetCurrentReadMessageArea(), INST_FLAGS_NONE);
 
-  postrec p;
-  memset(&p, 0, sizeof(postrec));
-
-  data.aux = "email";
   data.fsed_flags = INMSG_FSED;
   data.msged_flags = (session()->current_sub().anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE;
   data.aux = session()->current_sub().filename;
@@ -230,19 +226,21 @@ void post() {
     return;
   }
   savefile(data.text, &m, data.aux);
+
+  postrec p;
+  memset(&p, 0, sizeof(postrec));
   strcpy(p.title, data.title.c_str());
-  p.anony   = static_cast<unsigned char>(data.anonymous_flag);
-  p.msg   = m;
+  p.anony = static_cast<unsigned char>(data.anonymous_flag);
+  p.msg = m;
   p.ownersys  = 0;
   p.owneruser = static_cast<uint16_t>(session()->usernum);
   WStatus* pStatus = session()->status_manager()->BeginTransaction();
   p.qscan = pStatus->IncrementQScanPointer();
   session()->status_manager()->CommitTransaction(pStatus);
   p.daten = static_cast<uint32_t>(time(nullptr));
+  p.status = 0;
   if (session()->user()->IsRestrictionValidate()) {
-    p.status = status_unvalidated;
-  } else {
-    p.status = 0;
+    p.status |= status_unvalidated;
   }
 
   open_sub(true);
