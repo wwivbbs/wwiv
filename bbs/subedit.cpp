@@ -705,8 +705,8 @@ void boardedit() {
     {
       bout.nl();
       bout << "|#2Sub number? ";
-      int subnum = input_number(0, 1, size_int(session()->subboards), false);
-      if (subnum > 0) {
+      int subnum = input_number(-1, 0, size_int(session()->subboards) - 1, false);
+      if (subnum >= 0) {
         modify_sub(subnum);
       }
     } break;
@@ -715,13 +715,13 @@ void boardedit() {
       if (session()->subboards.size() < syscfg.max_subs) {
         bout.nl();
         bout << "|#2Take sub number? ";
-        int subnum1 = input_number(0, 1, size_int(session()->subboards), false);
+        int subnum1 = input_number(-1, 0, size_int(session()->subboards) - 1, false);
         if (subnum1 <= 0) {
           break;
         }
         bout.nl();
         bout << "|#2And move before sub number? ";
-        int subnum2 = input_number(0, 1, size_int(session()->subboards), false);
+        int subnum2 = input_number(-1, 1, size_int(session()->subboards) - 1, false);
         if (subnum2 <= 0) {
           break;
         }
@@ -782,8 +782,8 @@ void boardedit() {
     {
       bout.nl();
       bout << "|#2Delete which sub? ";
-      int subnum = input_number(0, 1, size_int(session()->subboards), false);
-      if (subnum > 0) {
+      int subnum = input_number(-1, 1, size_int(session()->subboards) - 1, false);
+      if (subnum >= 0) {
         bout.nl();
         bout << "|#5Delete " << session()->subboards[subnum].name << "? ";
         if (yesno()) {
