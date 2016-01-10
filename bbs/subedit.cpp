@@ -76,25 +76,29 @@ static void save_subs() {
   set_net_num(nSavedNetNum);
 }
 
-static string boarddata(size_t n) {
-  subboardrec r = session()->subboards[n];
-  char x = SPACE;
+static string GetAr(subboardrec r, const string& default_value) {
   if (r.ar != 0) {
-    for (char i = 0; i < 16; i++) {
+    for (int i = 0; i < 16; i++) {
       if ((1 << i) & r.ar) {
-        x = 'A' + i;
+        return string(1, static_cast<char>('A' + i));
       }
     }
   }
+  return default_value;
+}
+
+static string boarddata(size_t n) {
+  subboardrec r = session()->subboards[n];
   string stype;
   if (n < session()->xsubs.size()) {
-    const xtrasubsrec& xsnr = session()->xsubs[n];;
+    const xtrasubsrec& xsnr = session()->xsubs[n];
     if (!xsnr.nets.empty()) {
       stype = xsnr.nets[0].stype;
     }
   }
-  return StringPrintf("|#2%4d |#9%1c  |#1%-37.37s |#2%-8s |#9%-3d %-3d %-2d %-5d %7s",
-          n, x, stripcolors(r.name), r.filename, r.readsl, r.postsl, r.age,
+  string ar = GetAr(r, " ");
+  return StringPrintf("|#2%4d |#9%1s  |#1%-37.37s |#2%-8s |#9%-3d %-3d %-2d %-5d %7s",
+          n, ar.c_str(), stripcolors(r.name), r.filename, r.readsl, r.postsl, r.age,
           r.maxmsgs, stype.c_str());
 }
 
@@ -135,17 +139,6 @@ static string GetAnon(const subboardrec& r) {
   default:
     return "Real screwed up";
   }
-}
-
-string GetAr(subboardrec r) {
-  if (r.ar != 0) {
-    for (int i = 0; i < 16; i++) {
-      if ((1 << i) & r.ar) {
-        return string(1, static_cast<char>('A' + i));
-      }
-    }
-  }
-  return "None.";
 }
 
 void DisplayNetInfo(size_t nSubNum) {
@@ -219,7 +212,7 @@ static void modify_sub(int n) {
     bout << "|#9F) Anony      : |#2" << GetAnon(r) << wwiv::endl;
     bout << "|#9G) Min. Age   : |#2" << static_cast<int>(r.age) << wwiv::endl;
     bout << "|#9H) Max Msgs   : |#2" << r.maxmsgs << wwiv::endl;
-    bout << "|#9I) AR         : |#2" << GetAr(r) << wwiv::endl;
+    bout << "|#9I) AR         : |#2" << GetAr(r, "None.") << wwiv::endl;
     bout << "|#9J) Net info   : |#2";
     DisplayNetInfo(n);
 
@@ -406,7 +399,7 @@ static void modify_sub(int n) {
         bout << static_cast<char>('a' + session()->xsubs[n].nets.size() - 1) 
              << "), <space>=Quit? ";
         string charstring;
-        for (int i = 0; i < session()->xsubs[n].nets.size(); i++) {
+        for (size_t i = 0; i < session()->xsubs[n].nets.size(); i++) {
           charstring.push_back(static_cast<char>('A' + i));
         }
         bout.Color(0);

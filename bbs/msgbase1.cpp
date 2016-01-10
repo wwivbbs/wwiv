@@ -227,7 +227,7 @@ void post() {
   }
   savefile(data.text, &m, data.aux);
 
-  postrec p;
+  postrec p{};
   memset(&p, 0, sizeof(postrec));
   strcpy(p.title, data.title.c_str());
   p.anony = static_cast<unsigned char>(data.anonymous_flag);

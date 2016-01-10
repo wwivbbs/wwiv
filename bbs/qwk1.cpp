@@ -707,7 +707,7 @@ void process_reply_dat(char *name) {
 
 void qwk_post_text(char *text, char *title, int sub) {
   messagerec m;
-  postrec p;
+  postrec p{};
 
   int dm, f, done = 0, pass = 0;
   slrec ss;

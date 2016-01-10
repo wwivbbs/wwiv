@@ -359,7 +359,7 @@ std::vector<uint16_t> WWIVMessageArea::load_gat(File& file, size_t section) {
     file_size = section_pos;
   }
   file.Seek(section_pos, File::seekBegin);
-  if (file_size < (section_pos + GAT_SECTION_SIZE)) {
+  if (file_size < static_cast<long>(section_pos + GAT_SECTION_SIZE)) {
     // TODO(rushfan): Check that gat is loaded.
     file.Write(&gat[0], GAT_SECTION_SIZE);
   } else {

@@ -813,8 +813,7 @@ void readmail(int mode) {
             string b;
             readfile(&(m.msg), "email", &b);
 
-            postrec p;
-            memset(&p, 0, sizeof(postrec));
+            postrec p{};
             strcpy(p.title, m.title);
             p.anony = m.anony;
             p.ownersys = m.fromsys;

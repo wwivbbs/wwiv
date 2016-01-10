@@ -24,6 +24,7 @@
 
 #include "core/file.h"
 #include "core/strings.h"
+#include "core/version.h"
 #include "bbs/subacc.h"
 #include "sdk/vardec.h"
 
@@ -90,10 +91,17 @@ WWIVMessageArea* WWIVMessageApi::Create(const std::string& name) {
     msgs_file.SetLength(GAT_SECTION_SIZE + (75L * 1024L));
   }
 
-  postrec p;
-  memset(&p, 0, sizeof(postrec));
-  p.owneruser = 0;
-  fileSub.Write(&p, sizeof(postrec));
+  // Create 5.1 style sub header.
+  subfile_header_t sub_header{};
+  strcpy(sub_header.signature, "WWIV\x1A");
+  sub_header.revision = 1;
+  sub_header.wwiv_version = wwiv_num_version;
+  sub_header.daten_created = static_cast<uint32_t>(time(nullptr));
+  fileSub.Write(&sub_header, sizeof(subfile_header_t));
+  // Need to close the files before creating a new WWIVMessageArea since we
+  //  have thm locked for write, and we need to open it in the constructor.
+  fileSub.Close();
+  msgs_file.Close();
   return new WWIVMessageArea(this, fileSub.full_pathname(), msgs_file.full_pathname());
 }
 
