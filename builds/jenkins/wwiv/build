@@ -3,7 +3,7 @@
 # WWIV Build Script.
 #
 # Required Variables:
-# WORKSPACE - wwiv-svn root directory
+# WORKSPACE - Jenkins workspace
 # BUILD_NUMBER - Jenkins Build number
 
 
@@ -12,6 +12,7 @@ rm ${WORKSPACE}/wwiv-build-linux-*.tar.gz
 set -e
 
 declare -r RELEASE_TGZ=${WORKSPACE}/wwiv-build-linux-${BUILD_NUMBER}.tar.gz
+echo "WWIV BBS Build"
 echo "Workspace: ${WORKSPACE}"
 echo "Version:   ${BUILD_NUMBER}"
 echo "Archive:   ${RELEASE_TGZ}"

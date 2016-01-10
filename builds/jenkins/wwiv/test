@@ -1,0 +1,67 @@
+#!/bin/bash
+#
+# WWIV Build Script.
+#
+# Required Variables:
+# WORKSPACE - Jenkins workspace
+# BUILD_NUMBER - Jenkins Build number
+# WWIV_TEST_TEMPDIR - test tempdir to use.
+
+
+# Runs a single test collecting the output into
+# ${test_name}.xml (i.e. core-test.xml)
+#
+# Args:
+# 1: test dir i.e. ${WORKSPACE}/core_tests
+# 2: test name, no suffic (i.e. core-test)
+run_test() {
+    set +e
+    local test_dir=$1
+    local test_name=$2
+    if [[ -z "${test_dir}" ]]; then
+	echo "test_dir must be specified to run_test"
+	exit 1;
+    fi
+    if [[ -z "${test_name}" ]]; then
+	echo "test_name must be specified to run_test"
+	exit 1;
+    fi
+
+    cd "${test_dir}"
+    if [[ -r result.xml ]]; then
+	rm result.xml
+    fi
+
+    ./${test_name} --test_output=xml:${test_name}.xml
+    cd ${WORKSPACE}
+    set -e
+}
+
+
+rm ${WORKSPACE}/wwiv-build-linux-*.tar.gz
+
+set -e
+
+echo "WWIV BBS Tests"
+echo "Workspace:         ${WORKSPACE}"
+echo "Version:           ${BUILD_NUMBER}"
+echo "Archive:           ${RELEASE_TGZ}"
+echo "WWIV_TEST_TEMPDIR: ${WWIV_TEST_TEMPDIR}"
+
+if [[ -z "${WWIV_TEST_TEMPDIR}" ]]; then
+    echo "WWIV_TEST_TEMPDIR must be set."
+    exit 1
+fi
+
+
+echo "Building binaries"
+cd ${WORKSPACE}
+sed -i -e "s@.development@.${BUILD_NUMBER}@" core/version.cpp
+cmake -DCMAKE_BUILD_TYPE:STRING=Debug
+make -j12 
+
+run_test "${WORKSPACE}/core_tes" core_tests
+run_test "${WORKSPACE}/sdk_test" sdk_tests
+run_test "${WORKSPACE}/networkb_test" networkb_tests
+run_test "${WORKSPACE}/bbs_tests" bbs_tests
+    
