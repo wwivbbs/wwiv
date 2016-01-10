@@ -99,7 +99,7 @@ WWIVMessageArea* WWIVMessageApi::Create(const std::string& name) {
   sub_header.daten_created = static_cast<uint32_t>(time(nullptr));
   fileSub.Write(&sub_header, sizeof(subfile_header_t));
   // Need to close the files before creating a new WWIVMessageArea since we
-  //  have thm locked for write, and we need to open it in the constructor.
+  //  have thm locked for write, and we need to open it in the constructor. 
   fileSub.Close();
   msgs_file.Close();
   return new WWIVMessageArea(this, fileSub.full_pathname(), msgs_file.full_pathname());
