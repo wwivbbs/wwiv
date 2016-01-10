@@ -63,5 +63,5 @@ make -j12
 run_test "${WORKSPACE}/core_tes" core_tests
 run_test "${WORKSPACE}/sdk_test" sdk_tests
 run_test "${WORKSPACE}/networkb_test" networkb_tests
-run_test "${WORKSPACE}/bbs_tests" bbs_tests
+run_test "${WORKSPACE}/bbs_test" bbs_tests
     
