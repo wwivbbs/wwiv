@@ -23,6 +23,7 @@
 #ifdef __MSDOS__
 #include "sdk/msdos_stdint.h"
 #else
+#include <cstddef>
 #include <cstdint>
 #endif  // __MSDOS__
 #include <string>
