@@ -32,7 +32,7 @@ run_test() {
 	rm result.xml
     fi
 
-    ./${test_name} --test_output=xml:${test_name}.xml
+    ./${test_name} --test_output=xml:result-${test_name}.xml
     cd ${WORKSPACE}
     set -e
 }
