@@ -30,6 +30,7 @@
 #include "core_test/file_helper.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/net.h"
 #include "sdk/networks.h"
 #include "sdk_test/sdk_helper.h"
 
@@ -52,6 +53,7 @@ public:
   }
 
   bool CreateNetworksDat(const Config& config, vector<string> names) {
+    std::clog << "Writing NETWORK.DAT to: " << config.datadir() << std::endl;
     File file(config.datadir(), NETWORKS_DAT);
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
     if (!file.IsOpen()) {
@@ -61,11 +63,11 @@ public:
     uint16_t sysnum = 1;
     for (const auto& name : names) {
       const string dir = StrCat(config.root_directory(), File::pathSeparatorString, name);
-      net_networks_rec rec{};
+      net_networks_rec_disk rec{};
       strcpy(rec.name, name.c_str());
       strcpy(rec.dir, dir.c_str());
       rec.sysnum = sysnum++;
-      file.Write(&rec, sizeof(net_networks_rec));
+      file.Write(&rec, sizeof(net_networks_rec_disk));
     }
 
     return true;
