@@ -15,12 +15,14 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_VERSION_H__
-#define __INCLUDED_BBS_VERSION_H__
+#ifndef __INCLUDED_CORE_VERSION_H__
+#define __INCLUDED_CORE_VERSION_H__
+
+#include <cstdint>
 
 extern const char *wwiv_version;
 extern const char *beta_version;
 extern const char *wwiv_date;
-extern unsigned short wwiv_num_version;
+extern uint16_t wwiv_num_version;
 
-#endif  // __INCLUDED_BBS_VERSION_H__
+#endif  // __INCLUDED_CORE_VERSION_H__

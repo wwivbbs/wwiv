@@ -17,15 +17,16 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <cstdint>
+
 // Version String
 const char *wwiv_version = "5.1.0";
 
 // Build Information
 const char *beta_version = ".development";
 
-// this is used to set the status.wwiv_version
-// leaving at 431 until we break file compatability
-unsigned short wwiv_num_version = 431;
+// this is used to set the status.wwiv_version.
+uint16_t wwiv_num_version = 510;
 
 // Data/time of this build
 const char *wwiv_date = __DATE__ ", " __TIME__;

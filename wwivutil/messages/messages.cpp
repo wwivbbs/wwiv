@@ -90,12 +90,16 @@ public:
       config()->config()->datadir(), config()->config()->msgsdir(), networks.networks());
     if (!api->Exist(basename)) {
       clog << "Message area: '" << basename << "' does not exist." << endl;
+      clog << "Attempting to create it." << endl;
+      // Since the area does not exist, let's create it automatically
+      // like WWIV alwyas does.
+      unique_ptr<MessageArea> creator(api->Create(basename));
       return 1;
     }
 
     unique_ptr<MessageArea> area(api->Open(basename));
     if (!area) {
-      clog << "Error opening message area: '" << basename << "'." << endl;
+      clog << "Unable to Open message area: '" << basename << "'." << endl;
       return 1;
     }
 
@@ -176,7 +180,14 @@ public:
       config()->config()->datadir(), config()->config()->msgsdir(), networks.networks());
     if (!api->Exist(basename)) {
       clog << "Message area: '" << basename << "' does not exist." << endl;
-      return 1;
+      clog << "Attempting to create it." << endl;
+      // Since the area does not exist, let's create it automatically
+      // like WWIV alwyas does.
+      unique_ptr<MessageArea> creator(api->Create(basename));
+      if (!creator) {
+        clog << "Failed to create message area: " << basename << ". Exiting." << endl;
+        return 1;
+      }
     }
 
     unique_ptr<MessageArea> area(api->Open(basename));

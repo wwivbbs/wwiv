@@ -495,6 +495,20 @@ struct network_message_t {
   uint8_t net_number;               // network number for the message
 };
 
+struct subfile_header_t {
+  char signature[6];
+  uint16_t wwiv_version;
+  uint32_t revision;
+  uint32_t daten_created;
+  uint32_t unused_padding_for_64bit_time_t;
+  uint32_t mod_count;
+  uint32_t unused_padding_for_64bit_mod_count;
+  uint32_t password_crc32;
+  uint32_t base_message_num;
+  uint8_t padding_1[49];
+  uint32_t active_message_count;
+  uint8_t padding_2[11];
+};
 
 // DATA HELD FOR EVERY POST
 struct postrec {
@@ -1068,6 +1082,9 @@ static_assert(sizeof(directoryrec) == 141, "directoryrec == 141");
 static_assert(sizeof(smalrec) == 33, "smalrec == 33");
 static_assert(sizeof(messagerec) == 5, "messagerec == 5");
 static_assert(sizeof(postrec) == 100, "postrec == 100");
+static_assert(sizeof(subfile_header_t) == 100, "subfile_header_t == 100");
+static_assert(offsetof(postrec, owneruser) == offsetof(subfile_header_t, active_message_count),
+  "owneruser offset != active_message_count: ");
 static_assert(sizeof(mailrec) == 100, "mailrec == 100");
 static_assert(sizeof(tmpmailrec) == 15, "tmpmailrec == 15");
 static_assert(sizeof(shortmsgrec) == 85, "shortmsgrec == 85");
