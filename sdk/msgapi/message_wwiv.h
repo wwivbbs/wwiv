@@ -81,10 +81,12 @@ private:
 class WWIVMessageText: public MessageText {
 public:
 
-  WWIVMessageText(const std::string& text);
+  WWIVMessageText();
+  explicit WWIVMessageText(const std::string& text);
   virtual ~WWIVMessageText();
 
-  virtual std::string text() const override { return text_;  }
+  virtual const std::string text() const override;
+  virtual void set_text(const std::string&) override;
 
 private:
   std::string text_;

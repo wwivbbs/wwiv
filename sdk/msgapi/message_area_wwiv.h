@@ -55,6 +55,8 @@ public:
   virtual bool AddMessage(const Message& message) override;
   virtual bool DeleteMessage(int message_number) override;
 
+  virtual WWIVMessage* CreateMessage() override;
+
 private:
   File* OpenMessageFile(const std::string msgs_filename);
   std::vector<uint16_t> load_gat(File& file, size_t section);

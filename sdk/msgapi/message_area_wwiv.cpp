@@ -38,6 +38,7 @@ namespace sdk {
 namespace msgapi {
 
 using std::string;
+using std::make_unique;
 using std::unique_ptr;
 using std::vector;
 using wwiv::core::DataFile;
@@ -291,6 +292,11 @@ bool WWIVMessageArea::DeleteMessage(int message_number) {
   return true;
 }
 
+WWIVMessage* WWIVMessageArea::CreateMessage() {
+  return new WWIVMessage(
+    make_unique<WWIVMessageHeader>(api_),
+    make_unique<WWIVMessageText>());
+}
 
 // Implementation Details
 

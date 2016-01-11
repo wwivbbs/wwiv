@@ -71,7 +71,8 @@ public:
   MessageText() {}
   virtual ~MessageText() {}
 
-  virtual std::string text() const = 0;
+  virtual const std::string text() const = 0;
+  virtual void set_text(const std::string&) = 0;
 };
 
 class Message {
@@ -105,6 +106,9 @@ public:
   virtual MessageText* ReadMessageText(int message_number) = 0;
   virtual bool AddMessage(const Message& message) = 0;
   virtual bool DeleteMessage(int message_number) = 0;
+
+  /** Creates a new empty message for this area. */
+  virtual Message* CreateMessage() = 0;
 
 protected:
   MessageApi* api_;
