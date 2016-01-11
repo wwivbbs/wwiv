@@ -57,11 +57,18 @@ TEST_F(MakeAbsTest, UnderRoot) {
 
 #else 
 
+#if 0
+// TODO(rushfan): Fix this test.
+// See https://github.com/wwivbbs/wwiv/issues/631
+
 TEST_F(MakeAbsTest, Smoke) {
   const string expected = "/bin/ls foo";
   string cmdline = "ls foo";
   WWIV_make_abs_cmd(root, &cmdline);
   EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
 }
+
+#endif  // 0
+
 
 #endif  // _WIN32
