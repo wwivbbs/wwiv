@@ -9,14 +9,16 @@ set(fixture_sources
 )
 
 set(test_sources
+  command_line_test.cpp
+  datafile_test.cpp
+  file_test.cpp
   inifile_test.cpp
+  os_test.cpp
   scope_exit_test.cpp
   stl_test.cpp
   strings_test.cpp
-  transaction_test.cpp
-  datafile_test.cpp
-  file_test.cpp
   textfile_test.cpp
+  transaction_test.cpp
 )
 
 if(UNIX) 

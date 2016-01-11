@@ -7,6 +7,9 @@ include_directories(..)
 set(test_sources
   bbs_helper.cpp
   bputch_test.cpp
+  datetime_test.cpp
+  make_abs_test.cpp
+  new_bbslist_test.cpp
   pause_test.cpp
   printfile_test.cpp
   stuffin_test.cpp
