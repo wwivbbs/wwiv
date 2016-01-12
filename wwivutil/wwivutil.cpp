@@ -69,6 +69,10 @@ public:
         return 1;
       }
       command_config_.reset(new Configuration(bbsdir, &config));
+      if (!command_config_->initialized()) {
+        LOG << "Unable to load NETWORKS.";
+        return 1;
+      }
       SetConfigs();
       return cmdline_.Execute();
     } catch (std::exception& e) {

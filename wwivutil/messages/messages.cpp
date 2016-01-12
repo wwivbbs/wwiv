@@ -55,9 +55,6 @@ constexpr char CD = 4;
 namespace wwiv {
 namespace wwivutil {
 
-static void delete_usage() {
-}
-
 class DeleteMessageCommand: public UtilCommand {
 public:
   DeleteMessageCommand() 
@@ -79,16 +76,10 @@ public:
       return 2;
     }
 
-    Networks networks(*config()->config());
-    if (!networks.IsInitialized()) {
-      clog << "Unable to load networks.";
-      return 1;
-    }
-
     const string basename(remaining().front());
     // TODO(rushfan): Create the right API type for the right message area.
     unique_ptr<MessageApi> api = make_unique<WWIVMessageApi>(config()->bbsdir(),
-      config()->config()->datadir(), config()->config()->msgsdir(), networks.networks());
+      config()->config()->datadir(), config()->config()->msgsdir(), config()->networks().networks());
     if (!api->Exist(basename)) {
       clog << "Message area: '" << basename << "' does not exist." << endl;
       clog << "Attempting to create it." << endl;
@@ -137,9 +128,6 @@ static string Join(const vector<string> lines) {
   return out;
 }
 
-static void post_usage() {
-}
-
 class PostMessageCommand: public UtilCommand {
 public:
   PostMessageCommand()
@@ -169,16 +157,10 @@ public:
       return 2;
     }
 
-    Networks networks(*config()->config());
-    if (!networks.IsInitialized()) {
-      clog << "Unable to load networks.";
-      return 1;
-    }
-
     const string basename(remaining().front());
     // TODO(rushfan): Create the right API type for the right message area.
     unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(config()->bbsdir(),
-      config()->config()->datadir(), config()->config()->msgsdir(), networks.networks());
+      config()->config()->datadir(), config()->config()->msgsdir(), config()->networks().networks());
     if (!api->Exist(basename)) {
       clog << "Message area: '" << basename << "' does not exist." << endl;
       clog << "Attempting to create it." << endl;
@@ -249,9 +231,11 @@ bool MessagesCommand::AddSubCommands() {
 MessagesDumpHeaderCommand::MessagesDumpHeaderCommand()
   : UtilCommand("dump", "Displays message header and text information.") {}
 
-static void messages_usage() {
-  cout << "Usage:   dump_headers <base sub filename>" << endl;
-  cout << "Example: dump_headers general" << endl;
+std::string MessagesDumpHeaderCommand::GetUsage() const {
+  std::ostringstream ss;
+  ss << "Usage:   dump_headers <base sub filename>" << endl;
+  ss << "Example: dump_headers general" << endl;
+  return ss.str();
 }
 
 bool MessagesDumpHeaderCommand::AddSubCommands() {
@@ -328,21 +312,10 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
 }
 
 int MessagesDumpHeaderCommand::Execute() {
-  if (arg("help").as_bool()) {
-    messages_usage();
-    cout << GetHelp();
-    return 0;
-  } else if (remaining().empty()) {
+  if (remaining().empty()) {
     clog << "Missing sub basename." << endl;
-    messages_usage();
-    cout << GetHelp();
+    cout << GetUsage() << GetHelp();
     return 2;
-  }
-
-  Networks networks(*config()->config());
-  if (!networks.IsInitialized()) {
-    clog << "Unable to load networks.";
-    return 1;
   }
 
   const string basename(remaining().front());
@@ -351,7 +324,7 @@ int MessagesDumpHeaderCommand::Execute() {
   const bool all = arg("all").as_bool();
   return ExecuteImpl(
     basename, config()->config()->datadir(), config()->config()->msgsdir(), 
-    networks.networks(), start, end, all);
+    config()->networks().networks(), start, end, all);
 }
 
 }  // namespace wwivutil

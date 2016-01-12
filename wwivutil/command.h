@@ -31,14 +31,25 @@ namespace wwivutil {
 class Configuration {
 public:
   Configuration(const std::string bbsdir, wwiv::sdk::Config* config) 
-      : bbsdir_(bbsdir), config_(config) {}
+      : bbsdir_(bbsdir), config_(config), networks_(*config) {
+    if (!networks_.IsInitialized()) {
+      initialized_ = false;
+    }
+
+
+  }
   ~Configuration() {}
 
   wwiv::sdk::Config* config() const { return config_; }
   const std::string bbsdir() const { return bbsdir_;  }
+  bool initialized() const { return initialized_; }
+  wwiv::sdk::Networks networks() const { return networks_; }
+
 private:
   const std::string bbsdir_;
   wwiv::sdk::Config* config_;
+  wwiv::sdk::Networks networks_;
+  bool initialized_ = true;
 };
 
 /** WWIVUTIL Command */
