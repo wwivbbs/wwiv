@@ -130,6 +130,7 @@ public:
 class Command {
 public:
   virtual int Execute() = 0;
+  virtual std::string GetUsage() const = 0;
   virtual std::string GetHelp() const = 0;
 };
 
@@ -139,12 +140,11 @@ public:
   CommandLineCommand(
       const std::string& name, const std::string& help_text);
   bool add_argument(const CommandLineArgument& cmd);
-  virtual bool add(CommandLineCommand* cmd) { 
+  virtual bool add(std::unique_ptr<CommandLineCommand> cmd) { 
     cmd->set_argc(argc_);
     cmd->set_argv(argv_);
     cmd->set_dot_argument(dot_argument_);
-    // This is ulgy but GCC 4.8 doesn't support make_unique (sigh).
-    commands_allowed_[cmd->name()] = std::unique_ptr<CommandLineCommand>(cmd);
+    commands_allowed_[cmd->name()] = std::move(cmd);
     return true; 
   }
   std::string ArgNameForKey(char key);
@@ -155,11 +155,16 @@ public:
   const std::string help_text() const { return help_text_; }
 
   const CommandLineValue arg(const std::string name) const;
+  const std::string sarg(const std::string name) const { return arg(name).as_string(); }
+  const int iarg(const std::string name) const { return arg(name).as_int(); }
+  const bool barg(const std::string name) const { return arg(name).as_bool(); }
+  const bool help_requested() const { return barg("help"); }
   const CommandLineCommand* command() const { return command_; }
   std::vector<std::string> remaining() const { return remaining_; }
   std::string ToString() const;
   virtual int Execute();
   virtual std::string GetHelp() const;
+  virtual std::string GetUsage() const { return ""; }
 
 protected:
 

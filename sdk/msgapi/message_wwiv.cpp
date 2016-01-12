@@ -79,10 +79,21 @@ void WWIVMessageHeader::set_title(std::string& t) {
   strcpy(header_.title, t.c_str());
 }
 
+WWIVMessageText::WWIVMessageText()
+  : WWIVMessageText("") {}
+
 WWIVMessageText::WWIVMessageText(const std::string& text)
   : MessageText(), text_(text) {}
 
 WWIVMessageText::~WWIVMessageText() {}
+
+void WWIVMessageText::set_text(const std::string& text) {
+  text_ = text;
+}
+
+const std::string WWIVMessageText::text() const {
+  return text_;
+}
 
 WWIVMessage::WWIVMessage(std::unique_ptr<WWIVMessageHeader> header,
   std::unique_ptr<WWIVMessageText> text)

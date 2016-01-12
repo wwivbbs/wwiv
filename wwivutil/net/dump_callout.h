@@ -33,6 +33,7 @@ public:
   DumpCalloutCommand()
     : UtilCommand("dump_callout", "Dumps parsed representation of CALLOUT.NET") {}
   virtual int Execute() override final;
+  virtual std::string GetUsage() const override final;
   virtual bool AddSubCommands() override final { return true; }
 };
 

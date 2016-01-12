@@ -20,9 +20,10 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "sdk/net.h"
-#include "sdk/msgapi/msgapi.h"
+#include "sdk/msgapi/message_area.h"
 
 namespace wwiv {
 namespace sdk {
@@ -38,6 +39,7 @@ public:
     const std::string& messages_directory,
     const std::vector<net_networks_rec>& net_networks);
   virtual ~MessageApi();
+
   virtual bool Exist(const std::string& name) const = 0;
   virtual MessageArea* Create(const std::string& name) = 0;
   virtual bool Remove(const std::string& name) = 0;

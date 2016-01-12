@@ -15,8 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/msgapi/msgapi_wwiv.h"
-#include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/msgapi/message_area_wwiv.h"
 
 #include <memory>
 #include <string>
@@ -32,12 +31,14 @@
 #include "sdk/filenames.h"
 #include "sdk/datetime.h"
 #include "sdk/vardec.h"
+#include "sdk/msgapi/message_api_wwiv.h"
 
 namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
 using std::string;
+using std::make_unique;
 using std::unique_ptr;
 using std::vector;
 using wwiv::core::DataFile;
@@ -183,10 +184,9 @@ WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
       break;
     }
   }
-  unique_ptr<WWIVMessageHeader> wwiv_header(new WWIVMessageHeader(header, from_username, to, in_reply_to, api_));
-  unique_ptr<WWIVMessageText> wwiv_text(new WWIVMessageText(text));
-
-  return new WWIVMessage(std::move(wwiv_header), std::move(wwiv_text));
+  return new WWIVMessage(
+    std::unique_ptr<WWIVMessageHeader>(new WWIVMessageHeader(header, from_username, to, in_reply_to, api_)),
+    make_unique<WWIVMessageText>(text));
 }
 
 WWIVMessageHeader* WWIVMessageArea::ReadMessageHeader(int message_number) {
@@ -200,7 +200,7 @@ WWIVMessageText* WWIVMessageArea::ReadMessageText(int message_number) {
 }
 
 static uint32_t next_qscan_value(const string& bbsdir) {
-  statusrec status;
+  statusrec status{};
   uint32_t next_qscan = 0;
   Config config(bbsdir);
   if (!config.IsInitialized()) {
@@ -291,6 +291,11 @@ bool WWIVMessageArea::DeleteMessage(int message_number) {
   return true;
 }
 
+WWIVMessage* WWIVMessageArea::CreateMessage() {
+  return new WWIVMessage(
+    make_unique<WWIVMessageHeader>(api_),
+    make_unique<WWIVMessageText>());
+}
 
 // Implementation Details
 

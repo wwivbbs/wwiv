@@ -160,10 +160,6 @@ static bool initStatusDat(const std::string& datadir) {
   return true;
 }
 
-static void usage() {
-  LOG << "Usage:   fix users";
-  LOG << "Example: WWIVUTIL fix users";
-}
 
 bool FixUsersCommand::AddSubCommands() {
   add_argument(BooleanCommandLineArgument("exp", 'x', "Enable experimental features.", false));
@@ -172,16 +168,17 @@ bool FixUsersCommand::AddSubCommands() {
   return true;
 }
 
+std::string FixUsersCommand::GetUsage() const {
+  std::ostringstream ss;
+  ss << "Usage:   fix users";
+  ss << "Example: WWIVUTIL fix users";
+  return ss.str();
+}
+
 int FixUsersCommand::Execute() {
-  if (arg("help").as_bool()) {
-    usage();
-    LOG << GetHelp();
-    return 0;
-  }
   LOG << "Runnning FixUsersCommand::Execute";
 
   initStatusDat(config()->config()->datadir());
-
   File userFile(config()->config()->datadir(), USER_LST);
 	if (!userFile.Exists()) {
     LOG << userFile.full_pathname() << " does not exist.";

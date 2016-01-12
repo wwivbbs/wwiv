@@ -38,6 +38,7 @@ using std::cerr;
 using std::clog;
 using std::cout;
 using std::endl;
+using std::make_unique;
 using std::setw;
 using std::string;
 using std::unique_ptr;
@@ -49,14 +50,9 @@ namespace wwiv {
 namespace wwivutil {
 
 bool NetCommand::AddSubCommands() {
-  DumpPacketCommand* dump_packet = new DumpPacketCommand();
-  add(dump_packet);
-
-  DumpCalloutCommand* dump_callout = new DumpCalloutCommand();
-  add(dump_callout);
-
-  DumpContactCommand* dump_contact = new DumpContactCommand();
-  add(dump_contact);
+  add(make_unique<DumpPacketCommand>());
+  add(make_unique<DumpCalloutCommand>());
+  add(make_unique<DumpContactCommand>());
   return true;
 }
 

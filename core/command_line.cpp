@@ -199,14 +199,20 @@ std::string CommandLineCommand::ToString() const {
 }
 
 int CommandLineCommand::Execute() {
-  if (arg("help").as_bool()) {
+  if (help_requested()) {
     // Help was selected.
+    cout << GetUsage();
     cout << GetHelp();
     return 0;
   }
 
   if (command_ != nullptr) {
     // We have sub command, so execute that.
+    if (command_->help_requested()) {
+      clog << command_->GetUsage();
+      clog << command_->GetHelp();
+      return 0;
+    }
     return command_->Execute();
   }
 
@@ -218,13 +224,13 @@ int CommandLineCommand::Execute() {
       clog << a << " ";
     }
     clog << endl;
-    cout << GetHelp();
+    cout << GetUsage() << GetHelp();
     return 0;
   }
 
   // Nothing was able to be executed.
   clog << "Nothing to do for command: " << name_ << endl;
-  cout << GetHelp();
+  cout << GetUsage() << GetHelp();
   return 1;
 }
 

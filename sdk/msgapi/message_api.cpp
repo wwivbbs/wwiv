@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/msgapi/msgapi.h"
+#include "sdk/msgapi/message_api.h"
 
 #include <memory>
 #include <string>

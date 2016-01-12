@@ -18,8 +18,13 @@
 #ifndef __INCLUDED_SDK_MESSAGE_AREA_WWIV_H__
 #define __INCLUDED_SDK_MESSAGE_AREA_WWIV_H__
 
+#include <cstdint>
+#include <string>
+#include <vector>
+
 #include "core/file.h"
-#include "sdk/msgapi/msgapi.h"
+#include "sdk/msgapi/message.h"
+#include "sdk/msgapi/message_api.h"
 #include "sdk/msgapi/message_wwiv.h"
 
 namespace wwiv {
@@ -54,6 +59,8 @@ public:
   virtual WWIVMessageText*  ReadMessageText(int message_number) override;
   virtual bool AddMessage(const Message& message) override;
   virtual bool DeleteMessage(int message_number) override;
+
+  virtual WWIVMessage* CreateMessage() override;
 
 private:
   File* OpenMessageFile(const std::string msgs_filename);

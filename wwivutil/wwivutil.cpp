@@ -57,9 +57,9 @@ public:
   int Main() {
     ScopeExit at_exit(Logger::ExitLogger);
     try {
-      Add(new MessagesCommand());
-      Add(new NetCommand());
-      Add(new FixCommand());
+      Add(std::make_unique<MessagesCommand>());
+      Add(std::make_unique<NetCommand>());
+      Add(std::make_unique<FixCommand>());
 
       if (!cmdline_.Parse()) { return 1; }
       const std::string bbsdir(cmdline_.arg("bbsdir").as_string());
@@ -69,6 +69,10 @@ public:
         return 1;
       }
       command_config_.reset(new Configuration(bbsdir, &config));
+      if (!command_config_->initialized()) {
+        LOG << "Unable to load NETWORKS.";
+        return 1;
+      }
       SetConfigs();
       return cmdline_.Execute();
     } catch (std::exception& e) {
@@ -78,11 +82,12 @@ public:
   }
 
 private:
-  void Add(UtilCommand* cmd) {
-    cmdline_.add(cmd);
-    cmd->AddStandardArgs();
-    cmd->AddSubCommands();
-    subcommands_.push_back(cmd);
+  void Add(std::unique_ptr<UtilCommand> cmd) {
+    UtilCommand* c = cmd.get();
+    cmdline_.add(std::move(cmd));
+    c->AddStandardArgs();
+    c->AddSubCommands();
+    subcommands_.push_back(c);
   }
 
   void SetConfigs() {

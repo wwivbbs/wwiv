@@ -17,12 +17,14 @@
     <ClInclude Include="datetime.h" />
     <ClInclude Include="filenames.h" />
     <ClInclude Include="msdos_stdint.h" />
+    <ClInclude Include="msgapi\message.h" />
     <ClInclude Include="msgapi\message_api.h" />
     <ClInclude Include="msgapi\message_api_wwiv.h" />
+    <ClInclude Include="msgapi\message_area.h" />
+    <ClInclude Include="msgapi\message_areas.h" />
     <ClInclude Include="msgapi\message_area_wwiv.h" />
     <ClInclude Include="msgapi\message_wwiv.h" />
     <ClInclude Include="msgapi\msgapi.h" />
-    <ClInclude Include="msgapi\msgapi_wwiv.h" />
     <ClInclude Include="names.h" />
     <ClInclude Include="net.h" />
     <ClInclude Include="networks.h" />
@@ -41,8 +43,6 @@
     <ClCompile Include="msgapi\message_area_wwiv.cpp" />
     <ClCompile Include="msgapi\message_utils_wwiv.cpp" />
     <ClCompile Include="msgapi\message_wwiv.cpp" />
-    <ClCompile Include="msgapi\msgapi.cpp" />
-    <ClCompile Include="msgapi\msgapi_wwiv.cpp" />
     <ClCompile Include="names.cpp" />
     <ClCompile Include="networks.cpp" />
     <ClCompile Include="phone_numbers.cpp" />

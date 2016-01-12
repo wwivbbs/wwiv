@@ -202,9 +202,11 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
 	}
 }
 
-static void usage() {
-  cout << "Usage:   fix dirs" << endl;
-  cout << "Example: WWIVUTIL fix dirs" << endl;
+std::string FixDirectoriesCommand::GetUsage() const {
+  std::ostringstream ss;
+  ss<< "Usage:   fix dirs" << endl;
+  ss << "Example: WWIVUTIL fix dirs" << endl;
+  return ss.str();
 }
 
 bool FixDirectoriesCommand::AddSubCommands() {
@@ -214,11 +216,6 @@ bool FixDirectoriesCommand::AddSubCommands() {
 }
 
 int FixDirectoriesCommand::Execute() {
-  if (arg("help").as_bool()) {
-    usage();
-    cout << GetHelp();
-    return 0;
-  }
   cout << "Runnning FixDirectoriesCommand::Execute" << endl;
 
   checkFileAreas(config()->config()->datadir(), arg("verbose").as_bool());

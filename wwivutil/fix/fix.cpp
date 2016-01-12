@@ -36,6 +36,7 @@ using std::cerr;
 using std::clog;
 using std::cout;
 using std::endl;
+using std::make_unique;
 using std::setw;
 using std::string;
 using std::unique_ptr;
@@ -47,14 +48,8 @@ namespace wwiv {
 namespace wwivutil {
 
 bool FixCommand::AddSubCommands() {
-  //DumpPacketCommand* dump_packet = new DumpPacketCommand();
-  //add(dump_packet);
-
-  FixUsersCommand* fix_users = new FixUsersCommand();
-  add(fix_users);
-
-  FixDirectoriesCommand* fix_dirs = new FixDirectoriesCommand();
-  add(fix_dirs);
+  add(make_unique<FixUsersCommand>());
+  add(make_unique<FixDirectoriesCommand>());
 
   return true;
 }
