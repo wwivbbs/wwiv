@@ -57,9 +57,9 @@ TEST_F(CommandLineTest, Command) {
   CommandLine cmdline(argc, argv, "");
   cmdline.add_argument({"foo", ' ', "", "asdf"});
   auto print = std::make_unique<NoopCommandLineCommand>("print");
-  cmdline.add(std::move(print));
   print->add_argument(BooleanCommandLineArgument("all", ' ', "", false));
   print->add_argument(BooleanCommandLineArgument("some", ' ', "", true));
+  cmdline.add(std::move(print));
 
   ASSERT_TRUE(cmdline.Parse());
   EXPECT_EQ("bar", cmdline.arg("foo").as_string());
