@@ -261,5 +261,12 @@ namespace WWIV5TelnetServer
           this.Show();
           this.WindowState = FormWindowState.Normal;
         }
+
+        private void submitBugIssueToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Launch GitHub Issues Page into Default Browser
+            string wwivIssues = "https://github.com/wwivbbs/wwiv/issues";
+            Process.Start(wwivIssues);
+        }
     }
 }
