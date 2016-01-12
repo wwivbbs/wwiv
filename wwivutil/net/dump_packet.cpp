@@ -83,16 +83,10 @@ static string net_info_minor_type_name(int typ) {
   }
 }
 
-void dump_usage() {
-  cout << "Usage:   dump <filename>" << endl;
-  cout << "Example: dump S1.NET" << endl;
-}
-
 static string daten_to_humantime(uint32_t daten) {
   time_t t = static_cast<time_t>(daten);
   string human_date = string(asctime(localtime(&t)));
   StringTrimEnd(&human_date);
-
   return human_date;
 }
 
@@ -162,10 +156,16 @@ int dump_file(const std::string& filename) {
   return 0;
 }
 
+std::string DumpPacketCommand::GetUsage() const {
+  std::ostringstream ss;
+  ss << "Usage:   dump <filename>" << endl;
+  ss << "Example: dump S1.NET" << endl;
+  return ss.str();
+}
+
 int DumpPacketCommand::Execute() {
   if (remaining().empty()) {
-    cout << "Usage:   dump <filename>" << endl;
-    cout << "Example: dump S1.NET" << endl;
+    cout << GetUsage() << GetHelp() << endl;
     return 2;
   }
   const string filename(remaining().front());

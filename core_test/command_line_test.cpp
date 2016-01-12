@@ -56,9 +56,8 @@ TEST_F(CommandLineTest, Command) {
   char* argv[] = {"", "--foo=bar", "print", "--all", "--some=false", "myfile.txt"};
   CommandLine cmdline(argc, argv, "");
   cmdline.add_argument({"foo", ' ', "", "asdf"});
-  
-  NoopCommandLineCommand* print = new NoopCommandLineCommand("print");
-  cmdline.add(print);
+  auto print = std::make_unique<NoopCommandLineCommand>("print");
+  cmdline.add(std::move(print));
   print->add_argument(BooleanCommandLineArgument("all", ' ', "", false));
   print->add_argument(BooleanCommandLineArgument("some", ' ', "", true));
 
@@ -78,8 +77,7 @@ TEST_F(CommandLineTest, Several_Commands) {
   char* argv[] = {"", "--foo=bar", "print",};
   CommandLine cmdline(argc, argv, "");
   cmdline.add_argument({"foo", ' ', "", "asdf"});
-  NoopCommandLineCommand* print = new NoopCommandLineCommand("print");
-  cmdline.add(print);
+  cmdline.add(std::make_unique<NoopCommandLineCommand>("print"));
 
   ASSERT_TRUE(cmdline.Parse());
   EXPECT_EQ("bar", cmdline.arg("foo").as_string());

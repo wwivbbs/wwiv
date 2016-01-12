@@ -56,8 +56,6 @@ namespace wwiv {
 namespace wwivutil {
 
 static void delete_usage() {
-  cout << "Usage:   delete --num=NN <base sub filename>" << endl;
-  cout << "Example: delete --num=10 general" << endl;
 }
 
 class DeleteMessageCommand: public UtilCommand {
@@ -66,15 +64,18 @@ public:
     : UtilCommand("delete", "Deletes message number specified by '--num'.") {}
 
   virtual ~DeleteMessageCommand() {}
+
+  virtual std::string GetUsage() const override final {
+    std::ostringstream ss;
+    ss << "Usage:   delete --num=NN <base sub filename>" << endl;
+    ss << "Example: delete --num=10 general" << endl;
+    return ss.str();
+  }
+
   virtual int Execute() override final {
-    if (arg("help").as_bool()) {
-      delete_usage();
-      cout << GetHelp();
-      return 0;
-    } else if (remaining().empty()) {
+    if (remaining().empty()) {
       clog << "Missing sub basename." << endl;
-      delete_usage();
-      cout << GetHelp();
+      cout << GetUsage() << GetHelp() << endl;
       return 2;
     }
 
@@ -137,8 +138,6 @@ static string Join(const vector<string> lines) {
 }
 
 static void post_usage() {
-  cout << "Usage:   post --title=\"Welcome\" --from_usernum=1 <base sub filename> <text filename>" << endl;
-  cout << "Example: post --num=10 general mymessage.txt" << endl;
 }
 
 class PostMessageCommand: public UtilCommand {
@@ -156,15 +155,17 @@ public:
     return true;
   }
 
+  virtual std::string GetUsage() const override final {
+    std::ostringstream ss;
+    ss << "Usage:   post --title=\"Welcome\" --from_usernum=1 <base sub filename> <text filename>" << endl;
+    ss << "Example: post --num=10 general mymessage.txt" << endl;
+    return ss.str();
+  }
+
   virtual int Execute() {
-    if (arg("help").as_bool()) {
-      post_usage();
-      cout << GetHelp();
-      return 0;
-    } else if (remaining().size() < 2) {
+    if (remaining().size() < 2) {
       clog << "Missing sub basename." << endl;
-      post_usage();
-      cout << GetHelp();
+      cout << GetUsage() << GetHelp();
       return 2;
     }
 
@@ -224,26 +225,24 @@ public:
     string raw_text = text_file.ReadFileIntoString();
     vector<string> lines = wwiv::strings::SplitString(raw_text, "\n");
 
-    unique_ptr<WWIVMessageHeader> header = make_unique<WWIVMessageHeader>(api.get());
-    header->set_from_system(0);
-    header->set_from_usernum(static_cast<uint16_t>(from_usernum));
-    header->set_title(title);
-    header->set_from(from);
-    header->set_to(to);
-    header->set_daten(static_cast<uint32_t>(daten));
-    header->set_in_reply_to(in_reply_to);
+    unique_ptr<Message> msg(area->CreateMessage());
+    msg->header()->set_from_system(0);
+    msg->header()->set_from_usernum(static_cast<uint16_t>(from_usernum));
+    msg->header()->set_title(title);
+    msg->header()->set_from(from);
+    msg->header()->set_to(to);
+    msg->header()->set_daten(static_cast<uint32_t>(daten));
+    msg->header()->set_in_reply_to(in_reply_to);
+    msg->text()->set_text(Join(lines));
 
-    unique_ptr<WWIVMessageText> text = make_unique<WWIVMessageText>(Join(lines));
-    WWIVMessage message(std::move(header), std::move(text));
-
-    return area->AddMessage(message) ? 0 : 1;
+    return area->AddMessage(*msg) ? 0 : 1;
   }
 };
 
 bool MessagesCommand::AddSubCommands() {
-  if (!add(new MessagesDumpHeaderCommand())) { return false; }
-  if (!add(new DeleteMessageCommand())) { return false; }
-  if (!add(new PostMessageCommand())) { return false; }
+  if (!add(make_unique<MessagesDumpHeaderCommand>())) { return false; }
+  if (!add(make_unique<DeleteMessageCommand>())) { return false; }
+  if (!add(make_unique<PostMessageCommand>())) { return false; }
   return true;
 }
 

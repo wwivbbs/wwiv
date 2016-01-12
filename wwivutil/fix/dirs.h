@@ -30,6 +30,7 @@ public:
   FixDirectoriesCommand()
     : UtilCommand("dirs", "Fix File Directories.") {}
   virtual int Execute() override final;
+  virtual std::string GetUsage() const override final;
   virtual bool AddSubCommands() override final;
 };
 

@@ -18,10 +18,14 @@
 #ifndef __INCLUDED_SDK_MESSAGE_WWIV_H__
 #define __INCLUDED_SDK_MESSAGE_WWIV_H__
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
-#include "sdk/msgapi/msgapi.h"
+//#include "sdk/msgapi/msgapi.h"
+#include "sdk/msgapi/message_area.h"
+#include "sdk/msgapi/message_api.h"
+#include "sdk/msgapi/message.h"
 #include "sdk/vardec.h"
 
 namespace wwiv {
@@ -31,8 +35,6 @@ namespace msgapi {
 class WWIVMessageHeader: public MessageHeader {
 public:
   explicit WWIVMessageHeader(const MessageApi* api);
-  WWIVMessageHeader(postrec header, const std::string& from, const std::string& to,
-    const std::string& in_reply_to, const MessageApi* api);
   virtual ~WWIVMessageHeader();
 
   virtual std::string title() const override { return header_.title;  }
@@ -67,6 +69,14 @@ public:
   virtual void set_deleted(bool b) override;
 
   const postrec& data() const { return header_;  }
+
+  // Allow access to constructor that takes a postrec.
+  friend class WWIVMessageArea;
+protected:
+  // Should only be used when reading a message from a type-2 message file.
+  WWIVMessageHeader(postrec header, const std::string& from, const std::string& to,
+    const std::string& in_reply_to, const MessageApi* api);
+
 private:
   postrec header_;
   std::string from_;

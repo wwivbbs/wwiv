@@ -38,13 +38,14 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace wwivutil {
 
-static void dump_callout_usage() {
-  cout << "Usage:   dump_callout" << endl;
-  cout << "Example: dump_callout" << endl;
+std::string DumpCalloutCommand::GetUsage() const {
+  std::ostringstream ss;
+  ss << "Usage:   dump_callout" << endl;
+  ss << "Example: dump_callout" << endl;
+  return ss.str();
 }
 
 int DumpCalloutCommand::Execute() {
-
   Networks networks(*config()->config());
   if (!networks.IsInitialized()) {
     LOG << "Unable to load networks.";

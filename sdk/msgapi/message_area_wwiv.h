@@ -18,8 +18,13 @@
 #ifndef __INCLUDED_SDK_MESSAGE_AREA_WWIV_H__
 #define __INCLUDED_SDK_MESSAGE_AREA_WWIV_H__
 
+#include <cstdint>
+#include <string>
+#include <vector>
+
 #include "core/file.h"
-#include "sdk/msgapi/msgapi.h"
+#include "sdk/msgapi/message.h"
+#include "sdk/msgapi/message_api.h"
 #include "sdk/msgapi/message_wwiv.h"
 
 namespace wwiv {

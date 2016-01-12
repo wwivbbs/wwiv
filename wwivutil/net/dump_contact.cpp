@@ -40,9 +40,11 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace wwivutil {
 
-static void dump_contact_usage() {
-  cout << "Usage:   dump_contact" << endl;
-  cout << "Example: dump_contact" << endl;
+std::string DumpContactCommand::GetUsage() const {
+  std::ostringstream ss;
+  ss << "Usage:   dump_contact" << endl;
+  ss << "Example: dump_contact" << endl;
+  return ss.str();
 }
 
 int DumpContactCommand::Execute() {

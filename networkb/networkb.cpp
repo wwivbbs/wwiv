@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
       ShowHelp(cmdline);
       return 1;
     }
-    if (cmdline.arg("help").as_bool()) {
+    if (cmdline.help_requested()) {
       std::clog << "Help Requested." << endl;
       ShowHelp(cmdline);
       return 0;

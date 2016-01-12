@@ -33,6 +33,7 @@ public:
   DumpContactCommand()
     : UtilCommand("dump_contact", "Dumps parsed representation of CONTACT.NET") {}
   virtual int Execute() override final;
+  virtual std::string GetUsage() const override final;
   virtual bool AddSubCommands() override final { return true; }
 };
 

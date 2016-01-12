@@ -18,6 +18,9 @@
 #ifndef __INCLUDED_WWIVUTIL_COMMAND_H__
 #define __INCLUDED_WWIVUTIL_COMMAND_H__
 
+#include <memory>
+#include <string>
+
 #include "core/command_line.h"
 #include "sdk/config.h"
 #include "sdk/networks.h"
@@ -45,7 +48,7 @@ public:
   virtual ~UtilCommand();
   // Override to add all commands.
   virtual bool AddSubCommands() = 0;
-  virtual bool add(CommandLineCommand* cmd) override;
+  virtual bool add(std::unique_ptr<CommandLineCommand> cmd) override;
 
   Configuration* config() const { return config_; }
   bool set_config(Configuration* config);
