@@ -64,12 +64,22 @@ static std::string CreateProgramName(const std::string arg) {
 }
 
 // TODO(rushfan): Make the static command for the root commandlinehere and pass it as the invoker.
-CommandLine::CommandLine(int argc, char** argv, const std::string dot_argument)
-  : CommandLineCommand("", ""), program_name_(CreateProgramName(argv[0])) {
-  set_argc(argc);
-  set_argv(argv);
+CommandLine::CommandLine(const std::vector<std::string>& args, const std::string dot_argument)
+  : CommandLineCommand("", ""), program_name_(CreateProgramName(args[0])) { 
+  set_raw_args(args);
   set_dot_argument(dot_argument);
 }
+
+static std::vector<std::string> make_args(int argc, char** argv) {
+  std::vector<std::string> v;
+  for (int i = 0; i < argc; i++) {
+    v.push_back(argv[i]);
+  }
+  return v;
+}
+
+CommandLine::CommandLine(int argc, char** argv, const std::string dot_argument)
+  : CommandLine(make_args(argc, argv), dot_argument) {}
 
 bool CommandLine::Parse() {
   try {
@@ -83,7 +93,7 @@ bool CommandLine::Parse() {
     return false;
   }
 
-  if (argc_ <= 1) {
+  if (raw_args_.size() <= 1) {
     clog << "No command line arguments specified." << endl;
     cout << GetHelp();
     return false;
@@ -92,7 +102,7 @@ bool CommandLine::Parse() {
 }
 
 bool CommandLine::ParseImpl() {
-  return CommandLineCommand::Parse(1) >= CommandLineCommand::argc_;
+  return CommandLineCommand::Parse(1) >= size_int(CommandLineCommand::raw_args_);
 }
 
 int CommandLine::Execute() {
@@ -104,7 +114,6 @@ bool CommandLineCommand::add_argument(const CommandLineArgument& cmd) {
   // a default empty value.
   args_allowed_.emplace(cmd.name, cmd);
   args_.emplace(cmd.name, CommandLineValue(cmd.default_value, true));
-
   return true;
 }
 
@@ -145,8 +154,8 @@ std::string CommandLineCommand::ArgNameForKey(char key) {
 }
 
 int CommandLineCommand::Parse(int start_pos) {
-  for (int i = start_pos; i < argc_; i++) {
-    const string s(argv_[i]);
+  for (size_t i = start_pos; i < raw_args_.size(); i++) {
+    const string s(raw_args_[i]);
     if (starts_with(s, "--")) {
       const vector<string> delims = SplitString(s, "=");
       const string key = delims[0].substr(2);
@@ -174,13 +183,13 @@ int CommandLineCommand::Parse(int start_pos) {
       } else {
         // Add all residue to list of remaining args.
         // These usually are the positional arguments.
-        for (; i < argc_; i++) {
-          remaining_.emplace_back(argv_[i]);
+        for (; i < raw_args_.size(); i++) {
+          remaining_.emplace_back(raw_args_[i]);
         }
       }
     }
   }
-  return argc_;
+  return raw_args_.size();
 }
 
 std::string CommandLineCommand::ToString() const {
