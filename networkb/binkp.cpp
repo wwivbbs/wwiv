@@ -163,9 +163,7 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
     return false;
   }
   const uint8_t command_id = conn_->read_uint8(d);
-  unique_ptr<char[]> data(new char[length]);
-  conn_->receive(data.get(), length - 1, d);
-  string s(data.get(), length - 1);
+  string s = conn_->receive(length, d);
 
   LOG << "RECV:  " << BinkpCommands::command_id_to_name(command_id) << ": " << s;
   switch (command_id) {
@@ -209,15 +207,15 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
   if (!conn_->is_open()) {
     return false;
   }
-  unique_ptr<char[]> data(new char[length]);
-  int length_received = conn_->receive(data.get(), length, d);
-  string s(data.get(), length);
-  LOG << "RECV:  DATA PACKET; len: " << length_received << "; expected: " << length << " duration:" << d.count();
+  string s = conn_->receive(length, d);
+  LOG << "RECV:  DATA PACKET; len: " << s.size() 
+      << "; expected: " << length
+      << " duration:" << d.count();
   if (!current_receive_file_) {
     LOG << "ERROR: Received M_DATA with no current file.";
     return false;
   }
-  current_receive_file_->WriteChunk(data.get(), length_received);
+  current_receive_file_->WriteChunk(s);
   if (current_receive_file_->length() >= current_receive_file_->expected_length()) {
     LOG << "       file finished; bytes_received: " << current_receive_file_->length();
 

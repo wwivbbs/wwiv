@@ -33,10 +33,18 @@ class  ReceiveFile {
       : file_(file), filename_(filename), expected_length_(expected_length), timestamp_(timestamp), length_(0) {}
  	~ReceiveFile() {}
 
-  bool WriteChunk (const char* chunk, size_t size) { 
-    bool ok = file_->WriteChunk(chunk, size); 
+  bool WriteChunk(const char* chunk, size_t size) {
+    bool ok = file_->WriteChunk(chunk, size);
     if (ok) {
       length_ += size;
+    }
+    return ok;
+  }
+
+  bool WriteChunk(const std::string& chunk) {
+    bool ok = file_->WriteChunk(chunk.data(), chunk.size());
+    if (ok) {
+      length_ += chunk.size();
     }
     return ok;
   }

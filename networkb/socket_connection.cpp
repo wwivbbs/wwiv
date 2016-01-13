@@ -269,6 +269,12 @@ int SocketConnection::receive(void* data, const int size, milliseconds d) {
   return num_read;
 }
 
+string SocketConnection::receive(int size, milliseconds d) {
+  std::unique_ptr<char[]> data = std::make_unique<char[]>(size);
+  int num_read = receive(data.get(), size, d);
+  return string(data.get(), num_read);
+}
+
 int SocketConnection::send(const void* data, int size, milliseconds d) {
   int sent = ::send(sock_, reinterpret_cast<const char*>(data), size, 0);
   if (open_ && sent != size) {
