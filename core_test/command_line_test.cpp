@@ -42,8 +42,7 @@ public:
 
 TEST_F(CommandLineTest, Basic) {
   int argc = 3;
-  char* argv[] = {"", "--foo", "--bar=baz"};
-  CommandLine cmdline(argc, argv, "");
+  CommandLine cmdline({"", "--foo", "--bar=baz"}, "");
   cmdline.add_argument({"foo", "help for foo", "asdf"});
   cmdline.add_argument({"bar", "help for bar"});
 
@@ -52,9 +51,7 @@ TEST_F(CommandLineTest, Basic) {
 }
 
 TEST_F(CommandLineTest, Command) {
-  int argc = 6;
-  char* argv[] = {"", "--foo=bar", "print", "--all", "--some=false", "myfile.txt"};
-  CommandLine cmdline(argc, argv, "");
+  CommandLine cmdline({"", "--foo=bar", "print", "--all", "--some=false", "myfile.txt"}, "");
   cmdline.add_argument({"foo", ' ', "", "asdf"});
   auto print = std::make_unique<NoopCommandLineCommand>("print");
   print->add_argument(BooleanCommandLineArgument("all", ' ', "", false));
@@ -73,9 +70,7 @@ TEST_F(CommandLineTest, Command) {
 }
 
 TEST_F(CommandLineTest, Several_Commands) {
-  int argc = 3;
-  char* argv[] = {"", "--foo=bar", "print",};
-  CommandLine cmdline(argc, argv, "");
+  CommandLine cmdline({"", "--foo=bar", "print",}, "");
   cmdline.add_argument({"foo", ' ', "", "asdf"});
   cmdline.add(std::make_unique<NoopCommandLineCommand>("print"));
 
@@ -88,9 +83,7 @@ TEST_F(CommandLineTest, Several_Commands) {
 }
 
 TEST_F(CommandLineTest, SlashArg) {
-  int argc = 3;
-  char* argv[] = {"foo.exe", "/n500", ".1"};
-  CommandLine cmdline(argc, argv, "network_number");
+  CommandLine cmdline({"foo.exe", "/n500", ".1"}, "network_number");
   cmdline.add_argument({"node", 'n', "node to dial", "0"});
   cmdline.add_argument({"network_number", "network number to use.", "0"});
 
@@ -99,9 +92,7 @@ TEST_F(CommandLineTest, SlashArg) {
 }
 
 TEST_F(CommandLineTest, DotArg) {
-  int argc = 3;
-  char* argv[] = {"foo.exe", "/n500", ".123"};
-  CommandLine cmdline(argc, argv, "network_number");
+  CommandLine cmdline({"foo.exe", "/n500", ".123"}, "network_number");
   cmdline.add_argument({"node", 'n', "node to dial", "0"});
   cmdline.add_argument({"network_number", "network number to use.", "0"});
 
@@ -110,9 +101,7 @@ TEST_F(CommandLineTest, DotArg) {
 }
 
 TEST_F(CommandLineTest, Help) {
-  int argc = 2;
-  char* argv[] = {"foo.exe", "/?"};
-  CommandLine cmdline(argc, argv, "network_number");
+  CommandLine cmdline({"foo.exe", "/?"}, "network_number");
   cmdline.add_argument(BooleanCommandLineArgument("help", '?', "display help", false));
 
   ASSERT_TRUE(cmdline.Parse());
