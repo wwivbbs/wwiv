@@ -56,7 +56,7 @@ fi
 
 echo "Building binaries"
 cd ${WORKSPACE}
-sed -i -e "s@.development@.${BUILD_NUMBER}@" core/version.cpp
+sed -i -e 's@beta_version = "."@beta_version = ".${BUILD_NUMBER}"@' core/version.cpp
 cmake -DCMAKE_BUILD_TYPE:STRING=Debug
 make -j12 
 
