@@ -162,10 +162,10 @@ namespace WWIV5TelnetServer
             Process p = new Process();
             
             // Uncomment For Release Build
-            //p.StartInfo.FileName = "bbs.exe";
+            p.StartInfo.FileName = "bbs.exe";
             
             // Uncomment For Debuging
-            p.StartInfo.FileName = @"C:\wwiv\bbs.exe";
+            //p.StartInfo.FileName = @"C:\wwiv\bbs.exe";
             p.StartInfo.Arguments = "-V";
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.RedirectStandardOutput = true;
