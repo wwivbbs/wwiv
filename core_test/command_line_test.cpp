@@ -41,7 +41,6 @@ public:
 };
 
 TEST_F(CommandLineTest, Basic) {
-  int argc = 3;
   CommandLine cmdline({"", "--foo", "--bar=baz"}, "");
   cmdline.add_argument({"foo", "help for foo", "asdf"});
   cmdline.add_argument({"bar", "help for bar"});

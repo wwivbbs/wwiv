@@ -92,14 +92,10 @@ WWIVMessageArea* WWIVMessageApi::Create(const std::string& name) {
   }
 
   // Create 5.1 style sub header.
-  subfile_header_t sub_header{};
-  strcpy(sub_header.signature, "WWIV\x1A");
-  sub_header.revision = 1;
-  sub_header.wwiv_version = wwiv_num_version;
-  sub_header.daten_created = static_cast<uint32_t>(time(nullptr));
-  fileSub.Write(&sub_header, sizeof(subfile_header_t));
+  WWIVMessageAreaHeader header(wwiv_num_version, 0);
+  fileSub.Write(&header.header(), sizeof(subfile_header_t));
   // Need to close the files before creating a new WWIVMessageArea since we
-  //  have thm locked for write, and we need to open it in the constructor. 
+  // have thm locked for write, and we need to open it in the constructor. 
   fileSub.Close();
   msgs_file.Close();
   return new WWIVMessageArea(this, fileSub.full_pathname(), msgs_file.full_pathname());

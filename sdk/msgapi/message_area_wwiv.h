@@ -34,7 +34,23 @@ namespace msgapi {
 class WWIVMessageApi;
 
 class WWIVMessageAreaHeader: public MessageAreaHeader {
+public:
+  explicit WWIVMessageAreaHeader(subfile_header_t& header)
+    : header_(header) {}
+  WWIVMessageAreaHeader(uint16_t wwiv_num_version, uint32_t active_message_count);
 
+  const subfile_header_t& header() const { return header_; }
+  uint32_t active_message_count() const { return header_.active_message_count; }
+  void set_active_message_count(uint32_t active_message_count) {
+    header_.active_message_count = active_message_count;
+  }
+  uint32_t increment_active_message_count() { return ++header_.active_message_count; }
+  bool initialized() const { return initialized_; }
+  void set_initialized(bool initialized) { initialized_ = initialized; }
+
+private:
+  subfile_header_t header_{};
+  bool initialized_ = true;
 };
 
 class WWIVMessageArea: public MessageArea {

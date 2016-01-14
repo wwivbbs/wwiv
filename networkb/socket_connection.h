@@ -51,6 +51,7 @@ public:
   virtual ~SocketConnection();
 
   virtual int receive(void* data, int size, std::chrono::milliseconds d) override;
+  virtual std::string receive(int size, std::chrono::milliseconds d) override;
   virtual int send(const void* data, int size, std::chrono::milliseconds d) override;
 
   virtual uint16_t read_uint16(std::chrono::milliseconds d) override;

@@ -47,17 +47,22 @@
 #include "networkb/wfile_transfer_file.h"
 #include "sdk/filenames.h"
 
-using std::chrono::milliseconds;
-using std::chrono::seconds;
 using std::boolalpha;
+using std::end;
 using std::endl;
+using std::function;
+using std::make_unique;
 using std::map;
-using std::stoi;
-using std::stol;
+using std::max;
+using std::min;
 using std::string;
+using std::size_t;
+using std::stoi;
+using std::stoul;
 using std::unique_ptr;
 using std::vector;
 
+using namespace std::chrono;
 using namespace wwiv::net;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -100,7 +105,7 @@ int node_number_from_address_list(const string& network_list, const string& netw
 // Returns the single network name from the address list (only used when we
 // are in answering mode, where a single address is presented) or the empty
 // string if no address is present.
-std::string network_name_from_single_address(const std::string& network_list) {
+string network_name_from_single_address(const string& network_list) {
   vector<string> v = SplitString(network_list, " ");
   if (v.empty()) {
     return "";
@@ -141,7 +146,7 @@ private:
   const uint16_t destination_node_;
 };
 
-BinkP::BinkP(Connection* conn, BinkConfig* config, std::map<const string, Callout>& callouts, BinkSide side,
+BinkP::BinkP(Connection* conn, BinkConfig* config, map<const string, Callout>& callouts, BinkSide side,
         int expected_remote_node,
         received_transfer_file_factory_t& received_transfer_file_factory)
   : conn_(conn),
@@ -163,9 +168,7 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
     return false;
   }
   const uint8_t command_id = conn_->read_uint8(d);
-  unique_ptr<char[]> data(new char[length]);
-  conn_->receive(data.get(), length - 1, d);
-  string s(data.get(), length - 1);
+  string s = conn_->receive(length, d);
 
   LOG << "RECV:  " << BinkpCommands::command_id_to_name(command_id) << ": " << s;
   switch (command_id) {
@@ -209,15 +212,15 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
   if (!conn_->is_open()) {
     return false;
   }
-  unique_ptr<char[]> data(new char[length]);
-  int length_received = conn_->receive(data.get(), length, d);
-  string s(data.get(), length);
-  LOG << "RECV:  DATA PACKET; len: " << length_received << "; expected: " << length << " duration:" << d.count();
+  string s = conn_->receive(length, d);
+  LOG << "RECV:  DATA PACKET; len: " << s.size() 
+      << "; expected: " << length
+      << " duration:" << d.count();
   if (!current_receive_file_) {
     LOG << "ERROR: Received M_DATA with no current file.";
     return false;
   }
-  current_receive_file_->WriteChunk(data.get(), length_received);
+  current_receive_file_->WriteChunk(s);
   if (current_receive_file_->length() >= current_receive_file_->expected_length()) {
     LOG << "       file finished; bytes_received: " << current_receive_file_->length();
 
@@ -248,7 +251,7 @@ bool BinkP::process_frames(milliseconds d) {
   return process_frames([&]() -> bool { return false; }, d);
 }
 
-bool BinkP::process_frames(std::function<bool()> predicate, milliseconds d) {
+bool BinkP::process_frames(function<bool()> predicate, milliseconds d) {
   if (!conn_->is_open()) {
     return false;
   }
@@ -279,7 +282,7 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   if (!conn_->is_open()) {
     return false;
   }
-  const std::size_t size = 3 + data.size(); /* header + command + data + null*/
+  const size_t size = 3 + data.size(); /* header + command + data + null*/
   unique_ptr<char[]> packet(new char[size]);
   // Actual packet size parameter does not include the size parameter itself.
   // And for sending a commmand this will be 2 less than our actual packet size.
@@ -300,12 +303,12 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   } else {
     // Mask the password.
     LOG << "SEND:  command: " << BinkpCommands::command_id_to_name(command_id) 
-        << ": " << std::string(data.size(), '*');
+        << ": " << string(data.size(), '*');
   }
   return true;
 }
 
-bool BinkP::send_data_packet(const char* data, std::size_t packet_length) {
+bool BinkP::send_data_packet(const char* data, size_t packet_length) {
   if (!conn_->is_open()) {
     return false;
   }
@@ -600,7 +603,7 @@ bool BinkP::SendFileData(TransferFile* file) {
   long start = 0;
   unique_ptr<char[]> chunk(new char[chunk_size]);
   for (long start = 0; start < file_length; start+=chunk_size) {
-    int size = std::min<int>(chunk_size, file_length - start);
+    int size = min<int>(chunk_size, file_length - start);
     if (!file->GetChunk(chunk.get(), start, size)) {
       // Bad chunk. Abort
     }
@@ -644,14 +647,14 @@ bool BinkP::HandleFileGetRequest(const string& request_line) {
   vector<string> s = SplitString(request_line, " ");
   const string filename = s.at(0);
   long length = stol(s.at(1));
-  time_t timestamp = std::stoul(s.at(2));
+  time_t timestamp = stoul(s.at(2));
   long offset = 0;
   if (s.size() >= 4) {
     offset = stol(s.at(3));
   }
 
   auto iter = files_to_send_.find(filename);
-  if (iter == std::end(files_to_send_)) {
+  if (iter == end(files_to_send_)) {
     LOG << "File not found: " << filename;
     return false;
   }
@@ -666,7 +669,7 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   long length = stol(s.at(1));
 
   auto iter = files_to_send_.find(filename);
-  if (iter == std::end(files_to_send_)) {
+  if (iter == end(files_to_send_)) {
     LOG << "File not found: " << filename;
     return false;
   }
@@ -674,7 +677,7 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   TransferFile* file = iter->second.get();
   // Increment the number of bytes sent.
   // Also don't increment with -1 if there's an error with the file.
-  bytes_sent_ += std::max(0, file->file_size());
+  bytes_sent_ += max(0, file->file_size());
 
   if (!file->Delete()) {
     LOG << "       *** UNABLE TO DELETE FILE: " << file->filename(); 
@@ -707,7 +710,7 @@ static void rename_pend(const string& directory, const string& filename) {
 void BinkP::Run() {
   // LOG << "STATE: Run(): side:" << static_cast<int>(side_);
   BinkState state = (side_ == BinkSide::ORIGINATING) ? BinkState::CONN_INIT : BinkState::WAIT_CONN;
-  auto start_time = std::chrono::system_clock::now();
+  auto start_time = system_clock::now();
   try {
     bool done = false;
     while (!done) {
@@ -768,7 +771,7 @@ void BinkP::Run() {
     LOG << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
   }
 
-  auto end_time = std::chrono::system_clock::now();
+  auto end_time = system_clock::now();
   rename_pending_files();
   if (!config_->skip_net()) {
     process_network_files();
@@ -776,19 +779,19 @@ void BinkP::Run() {
 
   // Log to NET.LOG
   auto diff = end_time - start_time;
-  auto sec = std::chrono::duration_cast<std::chrono::seconds>(diff);
+  auto sec = duration_cast<seconds>(diff);
 
   NetworkSide network_log_side = (side_ == BinkSide::ORIGINATING) ? NetworkSide::TO : NetworkSide::FROM;
   NetworkLog net_log(config_->gfiles_directory());
-  net_log.Log(std::chrono::system_clock::to_time_t(start_time), network_log_side,
+  net_log.Log(system_clock::to_time_t(start_time), network_log_side,
       remote_network_node(), bytes_sent_, bytes_received_, sec, remote_network_name());
 
   // Update CONTACT.NET
   Contact c(config_->network_dir(remote_network_name()), true);
   if (error_received_) {
-    c.add_failure(remote_network_node(), std::chrono::system_clock::to_time_t(start_time));
+    c.add_failure(remote_network_node(), system_clock::to_time_t(start_time));
   } else {
-    c.add_connect(remote_network_node(), std::chrono::system_clock::to_time_t(start_time),
+    c.add_connect(remote_network_node(), system_clock::to_time_t(start_time),
       bytes_sent_, bytes_received_);
   }
 }
@@ -812,7 +815,7 @@ static int System(const string& cmd) {
   return system(cmd.c_str());
 }
 
-static bool checkup2(const time_t tFileTime, std::string dir, std::string filename) {
+static bool checkup2(const time_t tFileTime, string dir, string filename) {
   File file(dir, filename);
 
   if (file.Open(File::modeReadOnly)) {
@@ -823,7 +826,7 @@ static bool checkup2(const time_t tFileTime, std::string dir, std::string filena
   return true;
 }
 
-static bool need_network3(const std::string& dir) {
+static bool need_network3(const string& dir) {
   if (!File::Exists(dir, BBSLIST_NET)) {
     return false;
   }
@@ -865,7 +868,7 @@ void BinkP::process_network_files() const {
   }
 }
 
-const std::string BinkP::remote_network_name() const {
+const string BinkP::remote_network_name() const {
   if (side_ == BinkSide::ANSWERING) {
     auto name = network_name_from_single_address(address_list_);
     if (!name.empty()) {
@@ -884,8 +887,8 @@ int BinkP::remote_network_node() const {
   return expected_remote_node_;
 }
 
-bool ParseFileRequestLine(const std::string& request_line, 
-        std::string* filename,
+bool ParseFileRequestLine(const string& request_line, 
+        string* filename,
         long* length,
         time_t* timestamp,
         long* offset) {

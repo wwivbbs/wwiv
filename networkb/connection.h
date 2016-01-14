@@ -33,6 +33,7 @@ public:
   virtual ~Connection();
 
   virtual int receive(void* data, int size, std::chrono::milliseconds d) = 0;
+  virtual std::string receive(int size, std::chrono::milliseconds d) = 0;
   virtual int send(const void* data, int size, std::chrono::milliseconds d) = 0;
 
   virtual uint16_t read_uint16(std::chrono::milliseconds d) = 0;

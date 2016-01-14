@@ -33,12 +33,14 @@
 #endif  // _WIN32
 
 #include "core/os.h"
+#include "core/scope_exit.h"
 #include "core/strings.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/socket_exceptions.h"
 
-using std::chrono::milliseconds;
+using namespace std::chrono;
 using std::string;
+using std::make_unique;
 using std::unique_ptr;
 using wwiv::os::sleep_for;
 using wwiv::os::wait_for;
@@ -112,8 +114,14 @@ uint8_t FakeConnection::read_uint8(std::chrono::milliseconds d) {
   return front.command();
 }
 
-int FakeConnection::receive(void* data, int size, std::chrono::milliseconds d) {
-  auto predicate = [&]() { 
+int FakeConnection::receive(void* data, int size, milliseconds d) {
+  string s = receive(size, d);
+  memcpy(data, s.data(), size);
+  return size;
+}
+
+string FakeConnection::receive(int size, milliseconds d) {
+  auto predicate = [&]() {
     std::lock_guard<std::mutex> lock(mu_);
     return !receive_queue_.empty();
   };
@@ -122,10 +130,9 @@ int FakeConnection::receive(void* data, int size, std::chrono::milliseconds d) {
   }
 
   std::lock_guard<std::mutex> lock(mu_);
+  wwiv::core::ScopeExit on_exit([=] { receive_queue_.pop(); });
   const FakeBinkpPacket& front = receive_queue_.front();
-  memcpy(data, front.data().data(), size);
-  receive_queue_.pop();
-  return size;
+  return front.data();
 }
 
 int FakeConnection::send(const void* data, int size, std::chrono::milliseconds d) {
