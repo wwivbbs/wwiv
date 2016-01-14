@@ -39,7 +39,7 @@ namespace wwiv {
 namespace net {
 
 WFileTransferFile::WFileTransferFile(const string& filename,
-				     std::unique_ptr<File>&& file)
+	  std::unique_ptr<File>&& file)
   : TransferFile(filename, file->Exists() ? file->last_write_time() : time(nullptr)), file_(std::move(file)) {
   if (filename.find(File::pathSeparatorChar) != string::npos) {
     // Don't allow filenames with slashes in it.

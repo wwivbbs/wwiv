@@ -419,7 +419,7 @@ void ymbatchdl(bool bHangupAfterDl) {
         delbatch(cur);
       } else {
         session()->localIO()->LocalPuts(
-			StringPrintf("Files left - %d, Time left - %s\r\n", session()->numbatchdl, ctim(batchtime)));
+			      StringPrintf("Files left - %d, Time left - %s\r\n", session()->numbatchdl, ctim(batchtime)));
         File file(g_szDownloadFileName);
         file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
         FileAreaSetRecord(file, nRecordNumber);

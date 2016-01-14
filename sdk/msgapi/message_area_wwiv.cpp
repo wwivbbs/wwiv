@@ -55,6 +55,14 @@ static constexpr int MSG_BLOCK_SIZE = 512;
 static constexpr int  GATSECLEN = GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE;
 #define MSG_STARTING(section__) (section__ * GATSECLEN + GAT_SECTION_SIZE)
 
+WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t wwiv_num_version, uint32_t num_messages)
+  : header_(subfile_header_t()) {
+  strcpy(header_.signature, "WWIV\x1A");
+  header_.revision = 1;
+  header_.wwiv_version = wwiv_num_version;
+  header_.daten_created = static_cast<uint32_t>(time(nullptr));
+  header_.active_message_count = num_messages;
+}
 
 WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename, const std::string& text_filename)
   : MessageArea(api),
@@ -315,24 +323,42 @@ void WWIVMessageArea::remove_link(messagerec& msg, const string& filename) {
   }
 }
 
+static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
+  subfile_header_t raw_header;
+  if (!file.Read(0, reinterpret_cast<postrec*>(&raw_header))) {
+    // Invalid header.
+    WWIVMessageAreaHeader header(0, 0);
+    header.set_initialized(false);
+    return header;
+  }
+  return WWIVMessageAreaHeader(raw_header);
+}
+
+static bool WriteHeader(DataFile<postrec>& file, const WWIVMessageAreaHeader& header) {
+  return file.Write(0, reinterpret_cast<const postrec*>(&header.header()));
+}
+
 bool WWIVMessageArea::add_post(const postrec& post) {
   DataFile<postrec> sub(sub_filename_, File::modeBinary|File::modeReadWrite);
   if (!sub) {
     return false;
   }
-  postrec header;
-  if (!sub.Read(0, &header)) {
+  if (sub.number_of_records() == 0) {
     return false;
   }
-  // increment the post count.
-  header.owneruser++;
+  WWIVMessageAreaHeader wwiv_header = ReadHeader(sub);
+  if (!wwiv_header.initialized()) {
+    // This is an invalid header.
+    return false;
+  }
+  uint32_t msgnum = wwiv_header.increment_active_message_count();
 
   // add the new post
-  if (!sub.Write(header.owneruser, &post)) {
+  if (!sub.Write(msgnum, &post)) {
     return false;
   }
   // Write the header now.
-  return sub.Write(0, &header);
+  return WriteHeader(sub, wwiv_header);
 }
 
 /**

@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "sdk/vardec.h"
 #include "sdk/msgapi/message.h"
 
 namespace wwiv {
@@ -29,7 +30,7 @@ namespace sdk {
 namespace msgapi {
 
 class MessageAreaHeader {
-
+public:
 };
 
 class MessageApi;
