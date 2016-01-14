@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("WWIV Software Services")]
 [assembly: AssemblyProduct("WWIV5 Telnet Server")]
-[assembly: AssemblyCopyright("Copyright © 2015 WWIV Software Services")]
+[assembly: AssemblyCopyright("Copyright © 2016 WWIV Software Services")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
