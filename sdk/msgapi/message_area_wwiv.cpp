@@ -55,6 +55,21 @@ static constexpr int MSG_BLOCK_SIZE = 512;
 static constexpr int  GATSECLEN = GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE;
 #define MSG_STARTING(section__) (section__ * GATSECLEN + GAT_SECTION_SIZE)
 
+static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
+  subfile_header_t raw_header;
+  if (!file.Read(0, reinterpret_cast<postrec*>(&raw_header))) {
+    // Invalid header.
+    WWIVMessageAreaHeader header(0, 0);
+    header.set_initialized(false);
+    return header;
+  }
+  return WWIVMessageAreaHeader(raw_header);
+}
+
+static bool WriteHeader(DataFile<postrec>& file, const WWIVMessageAreaHeader& header) {
+  return file.Write(0, reinterpret_cast<const postrec*>(&header.header()));
+}
+
 WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t wwiv_num_version, uint32_t num_messages)
   : header_(subfile_header_t()) {
   strcpy(header_.signature, "WWIV\x1A");
@@ -95,10 +110,11 @@ bool WWIVMessageArea::Unlock() {
 }
 
 void WWIVMessageArea::ReadMessageAreaHeader(MessageAreaHeader& header) {
-  // Not implemented on wwiv.
+  DataFile<postrec> sub(sub_filename_);
+  header = ReadHeader(sub);
 }
 
-void WWIVMessageArea::WriteMessageAreaHeader(const MessageAreaHeader & header) {
+void WWIVMessageArea::WriteMessageAreaHeader(const MessageAreaHeader& header) {
   // Not implemented on wwiv.
 }
 
@@ -321,21 +337,6 @@ void WWIVMessageArea::remove_link(messagerec& msg, const string& filename) {
     save_gat(*file, section, gat);
     file->Close();
   }
-}
-
-static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
-  subfile_header_t raw_header;
-  if (!file.Read(0, reinterpret_cast<postrec*>(&raw_header))) {
-    // Invalid header.
-    WWIVMessageAreaHeader header(0, 0);
-    header.set_initialized(false);
-    return header;
-  }
-  return WWIVMessageAreaHeader(raw_header);
-}
-
-static bool WriteHeader(DataFile<postrec>& file, const WWIVMessageAreaHeader& header) {
-  return file.Write(0, reinterpret_cast<const postrec*>(&header.header()));
 }
 
 bool WWIVMessageArea::add_post(const postrec& post) {
