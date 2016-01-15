@@ -78,8 +78,11 @@ public:
 
     const string basename(remaining().front());
     // TODO(rushfan): Create the right API type for the right message area.
-    unique_ptr<MessageApi> api = make_unique<WWIVMessageApi>(config()->bbsdir(),
-      config()->config()->datadir(), config()->config()->msgsdir(), config()->networks().networks());
+    unique_ptr<MessageApi> api = make_unique<WWIVMessageApi>(
+        config()->bbsdir(),
+        config()->config()->datadir(), 
+        config()->config()->msgsdir(), 
+        config()->networks().networks());
     if (!api->Exist(basename)) {
       clog << "Message area: '" << basename << "' does not exist." << endl;
       clog << "Attempting to create it." << endl;
