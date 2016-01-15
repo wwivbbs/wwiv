@@ -41,16 +41,6 @@ then
 fi
 
 #
-# backup Windows binaries since we don't use them and they cause conflicts
-#
-echo 
-echo "Moving Windows binaries"
-echo "Moving Windows binaries" >> ${WWIV_DIR}/$LOGFILE 2>&1
-mkdir win-bins
-mv *.exe win-bins
-
-
-#
 # Unzip the data files
 #
 echo
@@ -87,18 +77,10 @@ cd ${WWIV_DIR}
 # configure scripts and helper binaries.
 echo "Configuring system scripts"
 echo "Configuring system scripts" >> ${WWIV_DIR}/$LOGFILE 2>&1
-
-tar zxvf unix-scripts.tgz >> ${WWIV_DIR}/$LOGFILE 2>&1
-
-echo
-echo "Setting file permissions"
-echo "Setting file permissions" >> ${WWIV_DIR}/$LOGFILE 2>&1
-chmod 600 .fetchmailrc .procmailrc >> ${WWIV_DIR}/$LOGFILE 2>&1
-
 echo
 echo "Setting scripts to use your install location ${WWIV_DIR}"
 echo "Setting scripts to use your install location ${WWIV_DIR}" >> ${WWIV_DIR}/$LOGFILE 2>&1
-for i in bin/inbound.sh bin/outbound.sh bin/callout.py bin/processmail.sh bin/daily-cleanup.sh .wwivrc in.nodemgr .procmailrc wwiv-service
+for i in bin/processmail.sh bin/daily-cleanup.sh .wwivrc in.nodemgr wwiv-service
 do
     sed -i "s@REPLACE-WWIVBASE@${WWIV_DIR}@" $i
 done
