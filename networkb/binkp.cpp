@@ -168,7 +168,11 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
     return false;
   }
   const uint8_t command_id = conn_->read_uint8(d);
-  string s = conn_->receive(length, d);
+  // In the header, SIZE should be set to the total length of "Data string"
+  // plus one for the octet to store the command number.
+  // So we read one less than the original length as that
+  // included the command number.
+  string s = conn_->receive(length - 1, d);
 
   LOG << "RECV:  " << BinkpCommands::command_id_to_name(command_id) << ": " << s;
   switch (command_id) {
