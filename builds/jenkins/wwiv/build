@@ -78,7 +78,9 @@ echo "Build Version: ${BUILD_NUMBER}" >> ${WORKSPACE}/release/build.nfo
 
 echo "Creating release archive: ${RELEASE_TGZ}"
 cd ${WORKSPACE}/release
-tar zcvf ${RELEASE_TGZ} *
+shopt -s dotglob
+tar zcvf ${RELEASE_TGZ} * 
+shopt -u dotglob
 
 echo "Archive file: ${RELEASE_TGZ}"
 echo "File Contents:"
