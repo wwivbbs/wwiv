@@ -93,7 +93,7 @@ namespace WWIV5TelnetServer
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("WWIV5TelnetServer/C# (experimental)" + DateTime.Now);
+            MessageBox.Show("WWIV5TelnetServer/C# (experimental)");
         }
 
         private void startToolStripMenuItem_Click(object sender, EventArgs e)

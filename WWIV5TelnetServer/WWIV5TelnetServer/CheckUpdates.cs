@@ -6,7 +6,6 @@ using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
-using System.Linq;
 
 namespace WWIV5TelnetServer
 {
@@ -63,7 +62,6 @@ namespace WWIV5TelnetServer
 
             // Get Differnece In DateTimes
             TimeSpan duration = (DateTimeNow - DateTimeThen);
-            TimeSpan interval = new TimeSpan(3, 16, 42, 45, 750);
             double hourCount = duration.TotalHours;
             double dayCount = duration.TotalDays;
 
