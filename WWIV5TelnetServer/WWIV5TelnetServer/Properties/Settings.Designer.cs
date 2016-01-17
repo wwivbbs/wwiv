@@ -190,7 +190,21 @@ namespace WWIV5TelnetServer.Properties {
                 this["launchLocalNodeAtStartup"] = value;
             }
         }
-        
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("On Startup")]
+        public string checkUpdates {
+            get
+            {
+                return ((string)(this["checkUpdates"]));
+            }
+            set
+            {
+                this["checkUpdates"] = value;
+            }
+        }
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
