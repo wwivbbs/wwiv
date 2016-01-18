@@ -592,7 +592,7 @@ void ReadLog() {
 }
 
 void ReadNetLog() {
-  print_local_file("NET.LOG");
+  print_local_file("net.log");
 }
 
 void PrintPending() {

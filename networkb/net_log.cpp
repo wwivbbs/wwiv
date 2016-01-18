@@ -88,7 +88,7 @@ std::string NetworkLog::CreateLogLine(
 }
 
 std::string NetworkLog::GetContents() const {
-  TextFile file(gfiles_directory_, "NET.LOG", "r");
+  TextFile file(gfiles_directory_, "net.log", "r");
   if (!file.IsOpen()) {
     return "";
   }
@@ -105,7 +105,7 @@ bool NetworkLog::Log(
       time, side, node, bytes_sent, bytes_received, seconds_elapsed, network_name);
 
   // Opening for "w" should truncate the existing file.
-  TextFile file(gfiles_directory_, "NET.LOG", "w");
+  TextFile file(gfiles_directory_, "net.log", "w");
   file.WriteLine(log_line);
   file.Write(previous_contents);
 
@@ -114,7 +114,7 @@ bool NetworkLog::Log(
 
 
 std::string NetworkLog::ToString() const {
-  return StringPrintf("%s%cNET.LOG", gfiles_directory_.c_str(), File::pathSeparatorChar);
+  return StringPrintf("%s%cnet.log", gfiles_directory_.c_str(), File::pathSeparatorChar);
 }
 
 }  // namespace net

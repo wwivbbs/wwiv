@@ -32,9 +32,9 @@ namespace wwiv {
 namespace net {
 
 /**
- * Handles writing new log entries into NET.LOG.
+ * Handles writing new log entries into net.log.
 
- * Format of gfiles/NET.LOG:
+ * Format of gfiles/net.log:
  * 
  * 01/03/15 20:26:23 To 32767,                             0.1 min  wwivnet
  * 01/03/15 20:26:23 To     1, S : 4k, R : 3k,             0.1 min  wwivnet

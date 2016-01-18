@@ -786,7 +786,7 @@ void BinkP::Run() {
     process_network_files();
   }
 
-  // Log to NET.LOG
+  // Log to net.log
   auto diff = end_time - start_time;
   auto sec = duration_cast<seconds>(diff);
 

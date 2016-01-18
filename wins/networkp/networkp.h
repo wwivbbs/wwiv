@@ -36,7 +36,7 @@ const char *strings[] =
 	"Unable to read",
 	"Unknown error",
 	"Unable to write CONTACT.NET!",
-	"Unable to write NET.LOG!",
+	"Unable to write net.log!",
 	0L,
 };
 
