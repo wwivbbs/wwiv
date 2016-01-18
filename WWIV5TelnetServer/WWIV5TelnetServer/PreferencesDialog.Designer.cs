@@ -33,7 +33,7 @@
             this.cancelButton = new System.Windows.Forms.Button();
             this.tabControlPreferences = new System.Windows.Forms.TabControl();
             this.generalTab = new System.Windows.Forms.TabPage();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.checkUpdates = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.launchNetworkCheckBox = new System.Windows.Forms.CheckBox();
             this.launchLocalNodeCheckBox = new System.Windows.Forms.CheckBox();
@@ -105,7 +105,7 @@
             // 
             // generalTab
             // 
-            this.generalTab.Controls.Add(this.comboBox1);
+            this.generalTab.Controls.Add(this.checkUpdates);
             this.generalTab.Controls.Add(this.label1);
             this.generalTab.Controls.Add(this.launchNetworkCheckBox);
             this.generalTab.Controls.Add(this.launchLocalNodeCheckBox);
@@ -137,21 +137,21 @@
             this.generalTab.Text = "General";
             this.generalTab.UseVisualStyleBackColor = true;
             // 
-            // comboBox1
+            // checkUpdates
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
-            "On Startup (Default)",
+            this.checkUpdates.FormattingEnabled = true;
+            this.checkUpdates.Items.AddRange(new object[] {
+            "On Startup",
             "Hourly",
             "Daily",
             "Weekly",
             "Monthly"});
-            this.comboBox1.Location = new System.Drawing.Point(393, 291);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.comboBox1.Size = new System.Drawing.Size(121, 21);
-            this.comboBox1.TabIndex = 23;
-            this.comboBox1.Text = "Work In Progress";
+            this.checkUpdates.Location = new System.Drawing.Point(393, 291);
+            this.checkUpdates.Name = "checkUpdates";
+            this.checkUpdates.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.checkUpdates.Size = new System.Drawing.Size(121, 21);
+            this.checkUpdates.TabIndex = 23;
+            this.checkUpdates.Text = "UpdatePref";
             // 
             // label1
             // 
@@ -411,6 +411,7 @@
             this.Controls.Add(this.tabControlPreferences);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.okButton);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "PreferencesDialog";
             this.Text = "Preferences";
@@ -456,7 +457,7 @@
         private System.Windows.Forms.CheckBox runEventsCheckbox;
         private System.Windows.Forms.CheckBox launchLocalNodeCheckBox;
         private System.Windows.Forms.CheckBox launchNetworkCheckBox;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.ComboBox checkUpdates;
         private System.Windows.Forms.Label label1;
     }
 }
