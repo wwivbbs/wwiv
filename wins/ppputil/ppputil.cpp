@@ -285,7 +285,7 @@ bool write_netlog(int sn, long sent, long recd, char *tmused)
 	strcpy(ss, s);
 	
 	char szFileName[_MAX_PATH];
-	sprintf(szFileName, "%sNET.LOG", syscfg.gfilesdir);
+	sprintf(szFileName, "%snet.log", syscfg.gfilesdir);
 	int hFile = open_netlog(szFileName);
 	_lseek(hFile, 0L, SEEK_SET);
 	int nLength = _read(hFile, (void *) (&(ss[strlen(s)])), (int) MAX_LEN) + strlen(s);
