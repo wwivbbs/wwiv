@@ -20,6 +20,7 @@ using System;
 using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace WWIV5TelnetServer
 {
@@ -27,11 +28,12 @@ namespace WWIV5TelnetServer
     {
         private TelnetServer server = new TelnetServer();
         //private BeginDayHandler beginDay;
-        
+
         // Global Strings
+        public static string Telnet_Version;
         public static string WWIV_Version;
         public static string WWIV_Build;
-
+        
         public MainForm()
         {
             InitializeComponent();
@@ -93,7 +95,9 @@ namespace WWIV5TelnetServer
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("WWIV5TelnetServer/C# (experimental)");
+            // Get Curent WWIV5TelnetServer Version
+            Telnet_Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(); ;
+            MessageBox.Show("WWIV5TelnetServer v" + Telnet_Version + "\r\n \r\nBuilt In Microsoft Visual Studio C# | 2015");
         }
 
         private void startToolStripMenuItem_Click(object sender, EventArgs e)
@@ -160,13 +164,11 @@ namespace WWIV5TelnetServer
                 binkP.WindowStyle = ProcessWindowStyle.Minimized;
                 Process.Start(binkP);
             }
+
+            // Fetch Current WWIV Version And Build Number
             Process p = new Process();
-
-            // Uncomment For Release Build
-            p.StartInfo.FileName = "bbs.exe"; // Release Code
-
-            // Uncomment For Debuging
-            //p.StartInfo.FileName = @"C:\wwiv\bbs.exe"; // Debug Code
+            string bbsExe = Properties.Settings.Default.executable;
+            p.StartInfo.FileName = bbsExe;
             p.StartInfo.Arguments = "-V";
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.RedirectStandardOutput = true;
