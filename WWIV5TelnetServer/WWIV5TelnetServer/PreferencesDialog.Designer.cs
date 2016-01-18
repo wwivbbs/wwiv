@@ -411,6 +411,7 @@
             this.Controls.Add(this.tabControlPreferences);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.okButton);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "PreferencesDialog";
             this.Text = "Preferences";

@@ -42,11 +42,11 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.submitBugIssueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.listBoxNodes = new System.Windows.Forms.ListBox();
             this.messages = new System.Windows.Forms.TextBox();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
-            this.submitBugIssueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -81,6 +81,7 @@
             // 
             // startToolStripMenuItem
             // 
+            this.startToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.order;
             this.startToolStripMenuItem.Name = "startToolStripMenuItem";
             this.startToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.startToolStripMenuItem.Text = "Start";
@@ -88,6 +89,7 @@
             // 
             // stopToolStripMenuItem
             // 
+            this.stopToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.alert;
             this.stopToolStripMenuItem.Name = "stopToolStripMenuItem";
             this.stopToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.stopToolStripMenuItem.Text = "Stop";
@@ -95,6 +97,7 @@
             // 
             // preferencesToolStripMenuItem
             // 
+            this.preferencesToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.edit;
             this.preferencesToolStripMenuItem.Name = "preferencesToolStripMenuItem";
             this.preferencesToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.preferencesToolStripMenuItem.Text = "Preferences";
@@ -107,6 +110,7 @@
             // 
             // runLocalNodeToolStripMenuItem
             // 
+            this.runLocalNodeToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.complete;
             this.runLocalNodeToolStripMenuItem.Name = "runLocalNodeToolStripMenuItem";
             this.runLocalNodeToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.runLocalNodeToolStripMenuItem.Text = "Run Local Node";
@@ -119,6 +123,7 @@
             // 
             // exitToolStripMenuItem
             // 
+            this.exitToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.delete;
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.exitToolStripMenuItem.Text = "Exit";
@@ -135,10 +140,19 @@
             // 
             // aboutToolStripMenuItem
             // 
+            this.aboutToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.info;
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
             this.aboutToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            // 
+            // submitBugIssueToolStripMenuItem
+            // 
+            this.submitBugIssueToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.view;
+            this.submitBugIssueToolStripMenuItem.Name = "submitBugIssueToolStripMenuItem";
+            this.submitBugIssueToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.submitBugIssueToolStripMenuItem.Text = "Submit Bug Issue";
+            this.submitBugIssueToolStripMenuItem.Click += new System.EventHandler(this.submitBugIssueToolStripMenuItem_Click);
             // 
             // splitContainer1
             // 
@@ -190,13 +204,6 @@
             this.notifyIcon1.Text = "notifyIcon1";
             this.notifyIcon1.Visible = true;
             this.notifyIcon1.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon1_MouseDoubleClick);
-            // 
-            // submitBugIssueToolStripMenuItem
-            // 
-            this.submitBugIssueToolStripMenuItem.Name = "submitBugIssueToolStripMenuItem";
-            this.submitBugIssueToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
-            this.submitBugIssueToolStripMenuItem.Text = "Submit Bug Issue";
-            this.submitBugIssueToolStripMenuItem.Click += new System.EventHandler(this.submitBugIssueToolStripMenuItem_Click);
             // 
             // MainForm
             // 
