@@ -47,6 +47,7 @@ namespace WWIV5TelnetServer
             launchMinimizedCheckBox.Checked = Properties.Settings.Default.launchMinimized;
             launchLocalNodeCheckBox.Checked = Properties.Settings.Default.launchLocalNodeAtStartup;
             launchNetworkCheckBox.Checked = Properties.Settings.Default.launchNetworkAtStartup;
+            checkUpdates.Text = Properties.Settings.Default.checkUpdates;
         }
 
         private void ok_Clicked(object sender, EventArgs e)
@@ -81,6 +82,7 @@ namespace WWIV5TelnetServer
                 Properties.Settings.Default.launchMinimized = launchMinimizedCheckBox.Checked;
                 Properties.Settings.Default.launchLocalNodeAtStartup = launchLocalNodeCheckBox.Checked;
                 Properties.Settings.Default.launchNetworkAtStartup = launchNetworkCheckBox.Checked;
+                Properties.Settings.Default.checkUpdates = checkUpdates.Text;
                 Properties.Settings.Default.Save();
             }
         }
