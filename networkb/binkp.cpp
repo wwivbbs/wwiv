@@ -178,6 +178,11 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
   switch (command_id) {
   case BinkpCommands::M_NUL: {
     // TODO(rushfan): process these.
+    if (starts_with(s, "OPT")) {
+      s = s.substr(3);
+      StringTrimBegin(&s);
+      LOG << "OPT:   " << s;
+    }
   } break;
   case BinkpCommands::M_ADR: {
     address_list_ = s;
