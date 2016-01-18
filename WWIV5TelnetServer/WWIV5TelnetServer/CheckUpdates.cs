@@ -24,7 +24,6 @@ using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
-using System.Linq;
 
 namespace WWIV5TelnetServer
 {
@@ -95,6 +94,7 @@ namespace WWIV5TelnetServer
             UserUpdatePref = Properties.Settings.Default.checkUpdates;
 
             // Fetch Latest Build Number For WWIV 5.1
+            // TODO: Add Newer Short Version To Fetch Version Number From Jenkins
             WebClient wc = new WebClient();
             string htmlString1 = wc.DownloadString("http://build.wwivbbs.org/jenkins/job/wwiv/lastSuccessfulBuild/label=windows/");
             Match mTitle1 = Regex.Match(htmlString1, "(?:number.*?>)(?<buildNumber1>.*?)(?:<)");
