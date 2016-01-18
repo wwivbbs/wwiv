@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("WWIV5 Telnet Server")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("WWIV5.x Telnet Server for Windows")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("WWIV Software Services")]
 [assembly: AssemblyProduct("WWIV5 Telnet Server")]
@@ -31,5 +31,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.1.7.0")]
-[assembly: AssemblyFileVersion("1.1.7.0")]
+[assembly: AssemblyVersion("1.1.9.0")]
+[assembly: AssemblyFileVersion("1.1.9.0")]

@@ -22,52 +22,57 @@ using System.Timers;
 
 namespace WWIV5TelnetServer
 {
-  class BeginDayHandler
-  {
-    private System.Timers.Timer timer;
-    private Action<string> logger;
-
-    public BeginDayHandler(Action<string> logger)
+    class BeginDayHandler
     {
-      timer = new System.Timers.Timer(1000 * 60); // 60 seconds
-      timer.Elapsed += new ElapsedEventHandler(OnTimerEvent);
-      timer.Enabled = true;
+        private Timer timer;
+        private Action<string> logger;
 
-      this.logger = logger;
-      OnTimerEvent(this, null);
-    }
-
-    private void OnTimerEvent(object source, ElapsedEventArgs e)
-    {
-      string currentDate = DateTime.Now.ToString("yyyy-MM-dd");
-      Console.WriteLine("Checking for beginday event: current date = " + currentDate + "; last = " + Properties.Settings.Default.lastBeginDayDate);
-
-      if (Properties.Settings.Default.lastBeginDayDate != currentDate)
-      {
-        Console.WriteLine("Last date = " + Properties.Settings.Default.lastBeginDayDate);
-        Properties.Settings.Default.lastBeginDayDate = currentDate;
-        if (Properties.Settings.Default.useBegindayEvent)
+        public BeginDayHandler(Action<string> logger)
         {
-          logger.Invoke("Running BeginDay Event");
-          launchBeginDayEvent();
+            timer = new Timer(1000 * 60); // 60 seconds
+            timer.Elapsed += new ElapsedEventHandler(OnTimerEvent);
+            timer.Enabled = true;
+
+            this.logger = logger;
+            OnTimerEvent(this, null);
         }
-        else
+
+        private void OnTimerEvent(object source, ElapsedEventArgs e)
         {
-          logger.Invoke("Skipping BeginDay Event (not enabled).");
+            string currentDate = DateTime.Now.ToString("yyyy-MM-dd");
+            Console.WriteLine("Checking for beginday event: current date = " + currentDate + "; last = " + Properties.Settings.Default.lastBeginDayDate);
+
+            if (Properties.Settings.Default.lastBeginDayDate != currentDate)
+            {
+                Console.WriteLine("Last date = " + Properties.Settings.Default.lastBeginDayDate);
+                Properties.Settings.Default.lastBeginDayDate = currentDate;
+                if (Properties.Settings.Default.useBegindayEvent)
+                {
+                    logger.Invoke("Running BeginDay Event");
+                    launchBeginDayEvent();
+                }
+                else
+                {
+                    logger.Invoke("Skipping BeginDay Event (not enabled).");
+                }
+                Properties.Settings.Default.Save();
+            }
         }
-        Properties.Settings.Default.Save();
-      }
-    }
 
-    private void launchBeginDayEvent()
-    {
-      var executable = Properties.Settings.Default.executable;
-      var argumentsTemplate = Properties.Settings.Default.parameters;
-      var homeDirectory = Properties.Settings.Default.homeDirectory;
+        private void launchBeginDayEvent()
+        {
+            var executable = Properties.Settings.Default.executable;
+            var argumentsTemplate = Properties.Settings.Default.parameters;
+            var homeDirectory = Properties.Settings.Default.homeDirectory;
 
-      Launcher launcher = new Launcher(executable, homeDirectory, argumentsTemplate, logger);
-      Process p = launcher.launchBeginDayEvent(Convert.ToInt32(Properties.Settings.Default.localNode));
-      p.WaitForExit();
+            Launcher launcher = new Launcher(executable, homeDirectory, argumentsTemplate, logger);
+            Process p = launcher.launchBeginDayEvent(Convert.ToInt32(Properties.Settings.Default.localNode));
+            p.WaitForExit();
+        }
+
+        private void DoUpdateCheck(object source, ElapsedEventArgs e)
+        {
+            //Save logic
+        }
     }
-  }
 }

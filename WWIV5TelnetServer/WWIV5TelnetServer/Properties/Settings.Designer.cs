@@ -202,5 +202,17 @@ namespace WWIV5TelnetServer.Properties {
                 this["launchNetworkAtStartup"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("On Startup")]
+        public string checkUpdates {
+            get {
+                return ((string)(this["checkUpdates"]));
+            }
+            set {
+                this["checkUpdates"] = value;
+            }
+        }
     }
 }
