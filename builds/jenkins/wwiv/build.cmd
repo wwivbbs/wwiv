@@ -85,6 +85,12 @@ echo * Building WWIVUTIL
 cd %WORKSPACE%\wwivutil
 msbuild wwivutil.vcxproj /t:Build /p:Configuration=Release || exit /b
 
+echo:
+echo * Building WindowsWWIVUpdate
+cd %WORKSPACE%\windows-wwiv-update
+msbuild windows-wwiv-update.csproj /t:Build /p:Configuration=Release || exit /b
+
+
 @rem build WINS
 echo:
 echo * Building WINS
@@ -132,6 +138,7 @@ echo:
 echo * Copying BBS files to staging directory.
 copy /v/y %WORKSPACE%\bbs\Release\bbs.exe %WORKSPACE%\release\bbs.exe
 copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\release\WWIV5TelnetServer.exe %WORKSPACE%\release\WWIV5TelnetServer.exe
+copy /v/y %WORKSPACE%\windows-wwiv-update\bin\Release\wwiv-update.exe %WORKSPACE%\release\wwiv-update.exe
 copy /v/y %WORKSPACE%\init\Release\init.exe %WORKSPACE%\release\init.exe
 copy /v/y %WORKSPACE%\network\Release\network.exe %WORKSPACE%\release\network.exe
 copy /v/y %WORKSPACE%\networkb\Release\networkb.exe %WORKSPACE%\release\networkb.exe
