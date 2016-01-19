@@ -7,6 +7,9 @@ What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Removed F6 (toggle sysop alert), to page you after a session ends, since
   this isn't needed post-DOS anymore.
+* Added wwiv-update.exe (contributed to WWIV by TRI0N from 
+  https://github.com/TRI0N/Windows-WWIV-Update/) into nightly builds.  
+  wwiv-update.exe is the name of the new binary.
 
 What's New in WWIV 5.1 (2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
