@@ -21,6 +21,7 @@ using System.IO;
 using System.Net;
 using System.Timers;
 using System.Windows.Forms;
+using System.Diagnostics;
 using System.Xml;
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
@@ -55,7 +56,7 @@ namespace WWIV5TelnetServer
 
             // Do Update Check
             updateTimer = new System.Timers.Timer(1000 * 60 * 60); // Hourly - Release Code
-            //**updateTimer = new System.Timers.Timer(1000 * 10); // 10 Seconds for Testing Only
+            //updateTimer = new System.Timers.Timer(1000 * 10); // 10 Seconds for Testing Only
             updateTimer.Elapsed += new ElapsedEventHandler(DoUpdateCheck);
             updateTimer.AutoReset = true;
             updateTimer.Enabled = true;
@@ -118,34 +119,74 @@ namespace WWIV5TelnetServer
             {
                 updateTimer.AutoReset = false;
                 updateTimer.Enabled = false;
-                MessageBox.Show("A Newer Version of WWIV is Available!");
-                // TODO Launch WWIV Update For Windows Once Packaged with Distribution.
+                if (MessageBox.Show("A Newer Version of WWIV is Available!\r\n \r\nLaunch WWIV Update Now?", "UPDATE AVAILABLE", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                {
+                    // Launch WWIV Update
+                    ProcessStartInfo wwivUpdate = new ProcessStartInfo("wwiv-update.exe");
+                    Process.Start(wwivUpdate);
+                }
+                else
+                {
+                    // NO - Do Nothing...
+                }
             }
 
             // Periodical Update Checking
             if (UserUpdatePref == "Hourly" && newBuild > oldBuild && hourCount >= 1)
             {
                 updateTimer.Enabled = false;
-                MessageBox.Show("A Newer Version of WWIV is Available!");
-                // TODO Launch WWIV Update For Windows Once Packaged with Distribution.
+                if (MessageBox.Show("A Newer Version of WWIV is Available!\r\n \r\nLaunch WWIV Update Now?", "UPDATE AVAILABLE", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                {
+                    // Launch WWIV Update
+                    ProcessStartInfo wwivUpdate = new ProcessStartInfo("wwiv-update.exe");
+                    Process.Start(wwivUpdate);
+                }
+                else
+                {
+                    // NO - Do Nothing...
+                }
             }
             if (UserUpdatePref == "Daily" && newBuild > oldBuild && hourCount >= 24)
             {
                 updateTimer.Enabled = false;
-                MessageBox.Show("A Newer Version of WWIV is Available!");
-                // TODO Launch WWIV Update For Windows Once Packaged with Distribution.
+                if (MessageBox.Show("A Newer Version of WWIV is Available!\r\n \r\nLaunch WWIV Update Now?", "UPDATE AVAILABLE", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                {
+                    // Launch WWIV Update
+                    ProcessStartInfo wwivUpdate = new ProcessStartInfo("wwiv-update.exe");
+                    Process.Start(wwivUpdate);
+                }
+                else
+                {
+                    // NO - Do Nothing...
+                }
             }
             if (UserUpdatePref == "Weekly" && newBuild > oldBuild && dayCount >= 7)
             {
                 updateTimer.Enabled = false;
-                MessageBox.Show("A Newer Version of WWIV is Available!");
-                // TODO Launch WWIV Update For Windows Once Packaged with Distribution.
+                if (MessageBox.Show("A Newer Version of WWIV is Available!\r\n \r\nLaunch WWIV Update Now?", "UPDATE AVAILABLE", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                {
+                    // Launch WWIV Update
+                    ProcessStartInfo wwivUpdate = new ProcessStartInfo("wwiv-update.exe");
+                    Process.Start(wwivUpdate);
+                }
+                else
+                {
+                    // NO - Do Nothing...
+                }
             }
             if (UserUpdatePref == "Monthly" && newBuild > oldBuild && dayCount >= 30)
             {
                 updateTimer.Enabled = false;
-                MessageBox.Show("A Newer Version of WWIV is Available!");
-                // TODO Launch WWIV Update For Windows Once Packaged with Distribution.
+                if (MessageBox.Show("A Newer Version of WWIV is Available!\r\n \r\nLaunch WWIV Update Now?", "UPDATE AVAILABLE", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                {
+                    // Launch WWIV Update
+                    ProcessStartInfo wwivUpdate = new ProcessStartInfo("wwiv-update.exe");
+                    Process.Start(wwivUpdate);
+                }
+                else
+                {
+                    // NO - Do Nothing...
+                }
             }
 
             // Update XML File Last Update DateTime

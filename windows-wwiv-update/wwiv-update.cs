@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 using System;
+using System.IO;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 using System.Net;
@@ -31,6 +32,8 @@ namespace windows_wwiv_update
         public static string wwivUpdateVersion;
         public static string updateVersionLabel;
         public static string updateTagLabel;
+        //public static string appPath = Path.GetDirectoryName(Application.ExecutablePath);
+        //public static string startPath = Application.StartupPath;
 
         public Form1()
         {
