@@ -97,7 +97,7 @@ namespace WWIV5TelnetServer
         {
             // Get Curent WWIV5TelnetServer Version
             Telnet_Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            MessageBox.Show("WWIV5TelnetServer v" + Telnet_Version + "\r\n \r\nBuilt In Microsoft Visual Studio C# | 2015");
+            MessageBox.Show("WWIV5TelnetServer v" + Telnet_Version + "\r\n \r\nBuilt In Microsoft Visual Studio C# | 2015", "About WWIV5TelnetServer", MessageBoxButtons.OK);
         }
 
         private void startToolStripMenuItem_Click(object sender, EventArgs e)
