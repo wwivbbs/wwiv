@@ -141,11 +141,7 @@ int do_spawn(const char *cl)
 		}
 	}
 	ss[i] = NULL;
-#ifdef MEGA_DEBUG_LOG_INFO
-	output( "\nEXEC: " );
-	output( cl );
-	output( "\n" );
-#endif // #ifdef MEGA_DEBUG_LOG_INFO
+	output("\nEXEC: %s\n", cl);
 
 	i = (_spawnvpe(P_WAIT, ss[0], ss, environ) & 0x00ff);
 	if (ss1 != NULL)
@@ -160,7 +156,7 @@ void cd_to( const char *s )
 {
     char s1[81];
     strcpy(s1, s);
-	SEH_PUSH("cd_to()");
+	  SEH_PUSH("cd_to()");
 
     int i = strlen(s1) - 1;
     int db = (s1[i] == '\\');
