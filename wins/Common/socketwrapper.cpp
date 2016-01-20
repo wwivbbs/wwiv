@@ -95,7 +95,7 @@ int sock_gets( SOCKET s, char * pszText, int nBufSize )
 		}
 		else if ( szOverflowBuffer[0] != '\0' && ( strlen( szOverflowBuffer ) + nBufSize ) > SOCK_GETS_BUFFER_SIZE )
 		{
-			printf("\n *DEBUG* Skipping read since buffer mostly full \n");
+			//printf("\n *DEBUG* Skipping read since buffer mostly full \n");
 			bSkipSocketCall = true;
 			break;
 		}
@@ -137,7 +137,7 @@ int sock_gets( SOCKET s, char * pszText, int nBufSize )
 				memmove( start, p+2, SOCK_GETS_BUFFER_SIZE - ( p - start + 1 ) );
 			}
             
-            //printf("\n *DEBUG* sock_gets=[%s]", pszText );
+      //printf("\n *DEBUG* sock_gets=[%s]", pszText );
 			return strlen( pszText );
 		}
 		pszText[nRet] = '\0';
