@@ -177,9 +177,11 @@ namespace windows_wwiv_update
                 string zipPath = Environment.GetEnvironmentVariable("USERPROFILE") + @"\Documents\" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + "_wwiv-backup.zip";
                 string extractPath = Directory.GetCurrentDirectory();
                 string extractPath2 = Environment.GetEnvironmentVariable("SystemRoot") + @"\System32";
+                string updateTempPath = Directory.GetCurrentDirectory() + @"\update-temp";
                 string remoteUri = "http://build.wwivbbs.org/jenkins/job/wwiv/" + fetchVersion + "/label=windows/artifact/";
                 string fileName = "wwiv-build-win-" + fetchVersion + ".zip", myStringWebResource = null;
                 string updatePath = Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\wwiv-build-win-" + fetchVersion + ".zip";
+                string wwivUpdateFile = "wwiv-update.exe";
 
                 // Update Progress Bar
                 m_oWorker.ReportProgress(20);
@@ -200,15 +202,43 @@ namespace windows_wwiv_update
                 // Update Progress Bar
                 m_oWorker.ReportProgress(60);
 
+                // Create Temp Update Directory
+                Directory.CreateDirectory("update-temp");
+
+                // Create Cleanup Batch File If Not Existant
+                string cleanupFile = Path.Combine(Application.StartupPath, "cleanup.bat");
+                if (!File.Exists(cleanupFile))
+                {
+                    File.Delete(cleanupFile);
+                    using (StreamWriter w = new StreamWriter(cleanupFile))
+                    {
+                        w.WriteLine(@"@ECHO OFF");
+                        w.WriteLine(@"");
+                        w.WriteLine(@"REM This File Is Created By wwiv-update.exe. DO NOT MODIFY!");
+                        w.WriteLine(@"");
+                        w.WriteLine(@":START_CLEANUP");
+                        w.WriteLine(@"TIMEOUT /T 1");
+                        w.WriteLine(@"xcopy update-temp\*.* .\ /Y");
+                        w.WriteLine(@"rd update-temp /S /Q");
+                        w.WriteLine(@"");
+                        w.WriteLine(@":EXIT");
+                        w.Close();
+                    }
+                }
+
                 // Patch Existing WWIV Install
                 activeStatus.Text = "Patching WWIV Files For Update...";
                 using (ZipArchive archive = ZipFile.OpenRead(updatePath))
                 {
                     foreach (ZipArchiveEntry entry in archive.Entries)
                     {
-                        if (entry.FullName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                        if (entry.FullName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && !entry.FullName.Equals(wwivUpdateFile, StringComparison.OrdinalIgnoreCase))
                         {
                             entry.ExtractToFile(Path.Combine(extractPath, entry.FullName), true);
+                        }
+                        if (entry.FullName.Equals(wwivUpdateFile, StringComparison.OrdinalIgnoreCase))
+                        {
+                            entry.ExtractToFile(Path.Combine(updateTempPath, entry.FullName), true);
                         }
                         if (entry.FullName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
                         {
@@ -234,7 +264,6 @@ namespace windows_wwiv_update
             string fetchVersion;
             fetchVersion = label2.Text;
             string wwivChanges = "http://build.wwivbbs.org/jenkins/job/wwiv/" + fetchVersion + "/label=windows/changes";
-            Environment.CurrentDirectory = @"C:\wwiv";
 
             // Launch Telnet Server
             ProcessStartInfo telNet = new ProcessStartInfo("WWIV5TelnetServer.exe");
@@ -244,6 +273,11 @@ namespace windows_wwiv_update
             // Launch Latest Realse Changes into Default Browser
             Process.Start(wwivChanges);
 
+            // Run CleanUp.Bat
+            ProcessStartInfo cleanUp = new ProcessStartInfo("cleanup.bat");
+            cleanUp.WindowStyle = ProcessWindowStyle.Minimized;
+            Process.Start(cleanUp);
+
             // Exit Application
             Application.Exit();
         }
@@ -251,6 +285,17 @@ namespace windows_wwiv_update
         // Exit Program Button
         private void button5_Click(object sender, EventArgs e)
         {
+            // Launch Latest Realse Changes into Default Browser
+            string fetchVersion;
+            fetchVersion = label2.Text;
+            string wwivChanges = "http://build.wwivbbs.org/jenkins/job/wwiv/" + fetchVersion + "/label=windows/changes";
+            Process.Start(wwivChanges);
+
+            // Run CleanUp.Bat
+            ProcessStartInfo cleanUp = new ProcessStartInfo("cleanup.bat");
+            cleanUp.WindowStyle = ProcessWindowStyle.Minimized;
+            Process.Start(cleanUp);
+
             // Exit Application
             Application.Exit();
         }

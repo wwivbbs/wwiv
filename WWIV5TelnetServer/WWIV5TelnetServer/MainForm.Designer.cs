@@ -142,7 +142,7 @@
             // 
             this.aboutToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.info;
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
@@ -150,7 +150,7 @@
             // 
             this.submitBugIssueToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.view;
             this.submitBugIssueToolStripMenuItem.Name = "submitBugIssueToolStripMenuItem";
-            this.submitBugIssueToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.submitBugIssueToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.submitBugIssueToolStripMenuItem.Text = "Submit Bug Issue";
             this.submitBugIssueToolStripMenuItem.Click += new System.EventHandler(this.submitBugIssueToolStripMenuItem_Click);
             // 
