@@ -14,8 +14,11 @@
  * limitations under the License.
  */ 
 
+#include <iostream>
+
 #include "pppproj.h"
 
+using std::cout;
 
 #define WWIV_FILE_SEPERATOR_CHAR '\\'
 #define WWIV_FILE_SEPERATOR_STRING "\\"
@@ -27,14 +30,10 @@ typedef BOOL (WINAPI *P_GDFSE)(LPCTSTR, PULARGE_INTEGER,
 extern char net_data[_MAX_PATH];
 
 
-void giveup_timeslice(void)
-{
-	SEH_PUSH("giveup_timeslice4()");
+void giveup_timeslice() {
 	Sleep( 100 );
 	Sleep( 0 );
-    return;
 }
-
 
 char *stripspace(char *str)
 {
@@ -66,7 +65,7 @@ void output(const char *fmt,...)
 		va_start(v, fmt);
 		vsprintf(s, fmt, v);
 		va_end(v);
-		printf(s);
+    std::cout << s;
 	}
 }
 
@@ -88,7 +87,7 @@ void log_it( bool display, char *fmt, ... )
 			printf( "\n ! can not log a message, net_data is not set!!\n\n" );
 			if ( s && *s )
 			{
-				printf(s);
+				cout << s;
 			}
 		}
 
@@ -108,7 +107,7 @@ void log_it( bool display, char *fmt, ... )
 		}
 		if ( display && s && *s )
 		{
-			printf(s);
+			cout << s;
 		}
 	}
 }
@@ -141,11 +140,7 @@ int do_spawn(const char *cl)
 		}
 	}
 	ss[i] = NULL;
-#ifdef MEGA_DEBUG_LOG_INFO
-	output( "\nEXEC: " );
-	output( cl );
-	output( "\n" );
-#endif // #ifdef MEGA_DEBUG_LOG_INFO
+	output("\nEXEC: %s\n", cl);
 
 	i = (_spawnvpe(P_WAIT, ss[0], ss, environ) & 0x00ff);
 	if (ss1 != NULL)
@@ -160,7 +155,7 @@ void cd_to( const char *s )
 {
     char s1[81];
     strcpy(s1, s);
-	SEH_PUSH("cd_to()");
+	  SEH_PUSH("cd_to()");
 
     int i = strlen(s1) - 1;
     int db = (s1[i] == '\\');
