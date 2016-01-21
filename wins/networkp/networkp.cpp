@@ -13,8 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */ 
+
+#include <iostream>
 #include "pppproj.h"
 #include "networkp.h"
+
+using std::cout;
+using std::endl;
 
 void set_net_num(int nNetNumber)
 {
@@ -449,7 +454,7 @@ int uu_packets(void)
 			}
 			do 
 			{
-				sprintf(pktname, "%8.8lx", ++basename);
+				sprintf(pktname, "%8.8lx", static_cast<unsigned long>(++basename));
 				sprintf(temp, "%sMQUEUE\\%s.UUE", net_data, pktname);
 			} 
 			while (exist(temp));
@@ -1041,8 +1046,11 @@ int main(int argc, char *argv[])
 	clock_t starttime, mailtime, newstime;
 	struct tm *time_now;
 	time_t some;
-	const char * tasker = "Win32";
-	
+
+  log_it(true, "\n\n%s", version);
+  output("\nLicensed under the Apache License.");
+  output("\n%s\n", version_url);
+
 	get_dir(maindir, false);
 
 	if ( !ReadConfigDat( &syscfg ) )
@@ -1060,27 +1068,16 @@ int main(int argc, char *argv[])
 	
 	bool bHandleNews = false;
 	g_nNumAddresses = 0;
-	char * ss = argv[argc - 1];
+	char* ss = argv[argc - 1];
 	if ( ss && strstr((char *) ss, ".") != NULL ) 
 	{
 		if ( atoi(&ss[1]) < net_num_max ) 
 		{
 			nNetNumber = atoi(&ss[1]);
-			ok = true;
+      cout << "* Using network number: " << nNetNumber << endl;
+      ok = true;
 		}
 	} 
-	else 
-	{
-		ss = (getenv("WWIV_NET"));
-		if ( ss != NULL )
-		{
-			nNetNumber = atoi(ss);
-			if (nNetNumber < net_num_max)
-			{
-				ok = true;
-			}
-		}
-	}
 	if (!ok) 
 	{
 		strcpy(s, "WWIV_NET.DAT");
@@ -1160,12 +1157,9 @@ int main(int argc, char *argv[])
     return 1;
 	}
 
-	log_it( true, "\n\n%s", version );
-  output( "\nLicensed under the Apache License." );
-	output( "\n%s\n", version_url );
 	time(&some);
 	time_now = localtime(&some);
-	sprintf(s1, "\n \xFE Running under %s on instance %d ", tasker, nInstanceNum );
+	sprintf(s1, "\n \xFE Running on instance %d ", nInstanceNum );
 	strftime(s, 80, "at %I:%M%p, %d %b %Y", time_now);
 	strcat(s1, s);
 	log_it( true, s1);
@@ -1539,7 +1533,7 @@ int main(int argc, char *argv[])
 		set_net_num(nNetNumber);
 	}  
 
-  sprintf(s, "%s\\PPPUTIL.EXE TRIM %lu", maindir);
+  sprintf(s, "%s\\PPPUTIL.EXE TRIM %s", maindir, net_data);
 	do_spawn(s);  
 
 	cd_to(maindir);

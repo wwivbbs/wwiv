@@ -14,8 +14,11 @@
  * limitations under the License.
  */ 
 
+#include <iostream>
+
 #include "pppproj.h"
 
+using std::cout;
 
 #define WWIV_FILE_SEPERATOR_CHAR '\\'
 #define WWIV_FILE_SEPERATOR_STRING "\\"
@@ -27,14 +30,10 @@ typedef BOOL (WINAPI *P_GDFSE)(LPCTSTR, PULARGE_INTEGER,
 extern char net_data[_MAX_PATH];
 
 
-void giveup_timeslice(void)
-{
-	SEH_PUSH("giveup_timeslice4()");
+void giveup_timeslice() {
 	Sleep( 100 );
 	Sleep( 0 );
-    return;
 }
-
 
 char *stripspace(char *str)
 {
@@ -66,7 +65,7 @@ void output(const char *fmt,...)
 		va_start(v, fmt);
 		vsprintf(s, fmt, v);
 		va_end(v);
-		printf(s);
+    std::cout << s;
 	}
 }
 
@@ -88,7 +87,7 @@ void log_it( bool display, char *fmt, ... )
 			printf( "\n ! can not log a message, net_data is not set!!\n\n" );
 			if ( s && *s )
 			{
-				printf(s);
+				cout << s;
 			}
 		}
 
@@ -108,7 +107,7 @@ void log_it( bool display, char *fmt, ... )
 		}
 		if ( display && s && *s )
 		{
-			printf(s);
+			cout << s;
 		}
 	}
 }

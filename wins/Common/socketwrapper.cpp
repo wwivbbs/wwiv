@@ -90,7 +90,7 @@ int sock_gets( SOCKET s, char * pszText, int nBufSize )
 		bSkipSocketCall = ( sock_tbused( s ) == 0 ) ? true : false;
 		if (sock_tbused( s ) == 0 && szOverflowBuffer[0] == '\0')
 		{
-			Sleep(1000);
+			Sleep(100);
 			//printf("(SLEEP)");
 		}
 		else if ( szOverflowBuffer[0] != '\0' && ( strlen( szOverflowBuffer ) + nBufSize ) > SOCK_GETS_BUFFER_SIZE )
@@ -102,7 +102,7 @@ int sock_gets( SOCKET s, char * pszText, int nBufSize )
 		else if ( strchr( szOverflowBuffer, '\n' ) == NULL  && bSkipSocketCall )
 		{
 			printf( "\n *DEBUG* Sleeping since no \\n is in the buffer \n" );
-			Sleep( 1000 );
+			Sleep( 250 );
 		}
 		else
 		{
