@@ -13,8 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */ 
+
+#include <iostream>
 #include "pppproj.h"
 #include "networkp.h"
+
+using std::cout;
+using std::endl;
 
 void set_net_num(int nNetNumber)
 {
@@ -449,7 +454,7 @@ int uu_packets(void)
 			}
 			do 
 			{
-				sprintf(pktname, "%8.8lx", ++basename);
+				sprintf(pktname, "%8.8lx", static_cast<unsigned long>(++basename));
 				sprintf(temp, "%sMQUEUE\\%s.UUE", net_data, pktname);
 			} 
 			while (exist(temp));
@@ -947,30 +952,7 @@ void check_exp()
 		log_it(MOREINFO, "\n \xFE No Internet mail or newsgroup posts to process.");
 	}
 }
-
-
-
-void LaunchWWIVnetSoftware( int nNetNum, int argc, char* argv[] )
-{
-	char szBuffer[_MAX_PATH];
-	output( "\n" );
-	set_net_num( nNetNum );
-	strcpy( szBuffer, "NETWORK0.EXE" );
-	for ( int i = 1; i < argc; i++ ) 
-	{
-		strcat( szBuffer, " " );
-		strcat( szBuffer, argv[i] );
-	}
-	szBuffer[strlen(szBuffer) + 1] = '\0';
-	output( "NOTE: Launching legacy WWIV networking network0.exe\n" );
-	do_spawn( szBuffer );
-	exit( EXIT_SUCCESS );
-}
-
-
-
-bool MakeNetDataPath( const char * pszPathName )
-{
+bool MakeNetDataPath( const char * pszPathName ) {
 	char s[_MAX_PATH];
 
 	sprintf( s, "%s%s", net_data, pszPathName );
@@ -981,7 +963,6 @@ bool MakeNetDataPath( const char * pszPathName )
 	}
 	return true;
 }
-
 
 // Ensures the paths required by the application are created, by creating them if required.
 bool EnsurePaths()
@@ -1065,8 +1046,11 @@ int main(int argc, char *argv[])
 	clock_t starttime, mailtime, newstime;
 	struct tm *time_now;
 	time_t some;
-	const char * tasker = "Win32";
-	
+
+  log_it(true, "\n\n%s", version);
+  output("\nLicensed under the Apache License.");
+  output("\n%s\n", version_url);
+
 	get_dir(maindir, false);
 
 	if ( !ReadConfigDat( &syscfg ) )
@@ -1084,27 +1068,16 @@ int main(int argc, char *argv[])
 	
 	bool bHandleNews = false;
 	g_nNumAddresses = 0;
-	char * ss = argv[argc - 1];
+	char* ss = argv[argc - 1];
 	if ( ss && strstr((char *) ss, ".") != NULL ) 
 	{
 		if ( atoi(&ss[1]) < net_num_max ) 
 		{
 			nNetNumber = atoi(&ss[1]);
-			ok = true;
+      cout << "* Using network number: " << nNetNumber << endl;
+      ok = true;
 		}
 	} 
-	else 
-	{
-		ss = (getenv("WWIV_NET"));
-		if ( ss != NULL )
-		{
-			nNetNumber = atoi(ss);
-			if (nNetNumber < net_num_max)
-			{
-				ok = true;
-			}
-		}
-	}
 	if (!ok) 
 	{
 		strcpy(s, "WWIV_NET.DAT");
@@ -1140,10 +1113,9 @@ int main(int argc, char *argv[])
 			ok = false;
 		}
 	}
-	if ( !ok )
-	{
-		LaunchWWIVnetSoftware( nNetNumber, argc, argv );
-		return 0;
+	if (!ok) {
+    output("\n ! Unable to open %sADDRESS.*", net_data);
+		return 1;
 	}
 	*SMTPHOST = *POPHOST = *NEWSHOST = *TIMEHOST = *QOTDHOST = *QOTDFILE = *POPNAME = *POPPASS = *PROXY = 0;
 	*DOMAIN = *FWDNAME = *FWDDOM = KEEPSENT = CLEANUP = NOLISTNAMES = MULTINEWS = 0;
@@ -1176,24 +1148,18 @@ int main(int argc, char *argv[])
 		ok = false;
 	}
 
-	if ( !ok )
-	{
-		LaunchWWIVnetSoftware( nNetNumber, argc, argv );
-		return 0;
+	if ( !ok ) {
+		return 1;
 	}
 	
-	if ( !create_contact_ppp() )
-	{
-		LaunchWWIVnetSoftware( nNetNumber, argc, argv );
-		return 0;
+	if (!create_contact_ppp()) {
+    output("\n ! Unable to create CONTACT.PPP. Exiting.");
+    return 1;
 	}
 
-	log_it( true, "\n\n%s", version );
-  output( "\nLicensed under the Apache License." );
-	output( "\n%s\n", version_url );
 	time(&some);
 	time_now = localtime(&some);
-	sprintf(s1, "\n \xFE Running under %s on instance %d ", tasker, nInstanceNum );
+	sprintf(s1, "\n \xFE Running on instance %d ", nInstanceNum );
 	strftime(s, 80, "at %I:%M%p, %d %b %Y", time_now);
 	strcat(s1, s);
 	log_it( true, s1);
@@ -1248,18 +1214,11 @@ int main(int argc, char *argv[])
 		}
 	}
 	
-	if ( !ok )
-	{
-		LaunchWWIVnetSoftware( nNetNumber, argc, argv );
-		return 0;
+	if (!ok) {
+    return 1;
 	}
 	
-	/* -- This BLOWS up under Win32.
-	if (!MOREINFO)
-	freopen(NULL, "w", stdout);
-	*/
-	if (CLEANUP)
-	{
+	if (CLEANUP) {
 		process_mail();
 	}
 	set_net_num(nNetNumber);
@@ -1476,10 +1435,8 @@ int main(int argc, char *argv[])
 	}
 
 
-	if ( !ok )
-	{
-		LaunchWWIVnetSoftware( nNetNumber, argc, argv );
-		return 0;
+	if (!ok) {
+		return 1;
 	}
 
 	sprintf(s1, "%s\\QOTD.EXE", maindir);
@@ -1576,7 +1533,7 @@ int main(int argc, char *argv[])
 		set_net_num(nNetNumber);
 	}  
 
-  sprintf(s, "%s\\PPPUTIL.EXE TRIM %lu", maindir);
+  sprintf(s, "%s\\PPPUTIL.EXE TRIM %s", maindir, net_data);
 	do_spawn(s);  
 
 	cd_to(maindir);
