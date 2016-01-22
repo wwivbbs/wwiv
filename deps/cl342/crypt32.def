@@ -1,0 +1,78 @@
+; Definition file for the 32/64-bit cryptlib DLL.  Although the cryptlib 
+; header file already provides all the information contained in this file, 
+; the use of a redundant .DEF file is necessary because many non-C 
+; development environments require the use of the Pascal calling convention 
+; for Windows DLL's, however when this is used (via __stdcall) in VC++ it 
+; mangles the function names, which means that other environments can't even 
+; see the entry points, let alone call them.
+;
+; To avoid this, it's necessary to include this .DEF file to tell VC++ not to
+; mangle the exported names.  It'll still try to mangle them, but when the
+; linker sees the mangled names and the unmangled versions in this file, it
+; quietly forgets the mangled versions and uses these ones instead.
+;
+; An alternative way to fix this is to use a series of pragmas like:
+;
+;	#pragma comment( linker, "/export:cryptInit=_cryptInit:0" )
+;
+; in one of the source modules, but this is even uglier than the .DEF hack.
+
+LIBRARY		CL32
+EXPORTS		cryptAddCertExtension
+			cryptAddPrivateKey
+			cryptAddPublicKey
+			cryptAddRandom
+			cryptCAAddItem
+			cryptCACertManagement
+			cryptCADeleteItem
+			cryptCAGetItem
+			cryptCheckCert
+			cryptCheckSignature
+			cryptCheckSignatureEx
+			cryptCreateCert
+			cryptCreateContext
+			cryptCreateEnvelope
+			cryptCreateSession
+			cryptCreateSignature
+			cryptCreateSignatureEx
+			cryptDecrypt
+			cryptDeleteAttribute
+			cryptDeleteCertExtension
+			cryptDeleteKey
+			cryptDestroyCert
+			cryptDestroyContext
+			cryptDestroyEnvelope
+			cryptDestroyObject
+			cryptDestroySession
+			cryptDeviceClose
+			cryptDeviceCreateContext
+			cryptDeviceOpen
+			cryptDeviceQueryCapability
+			cryptEncrypt
+			cryptEnd
+			cryptExportCert
+			cryptExportKey
+			cryptExportKeyEx
+			cryptFlushData
+			cryptGenerateKey
+			cryptGetAttribute
+			cryptGetAttributeString
+			cryptGetCertExtension
+			cryptGetKey
+			cryptGetPrivateKey
+			cryptGetPublicKey
+			cryptImportCert
+			cryptImportKey
+			cryptImportKeyEx
+			cryptInit
+			cryptKeysetClose
+			cryptKeysetOpen
+			cryptLogin
+			cryptLogout
+			cryptPopData
+			cryptPushData
+			cryptQueryCapability
+			cryptQueryObject
+			cryptSetAttribute
+			cryptSetAttributeString
+			cryptSignCert
