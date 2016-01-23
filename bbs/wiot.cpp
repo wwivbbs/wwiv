@@ -135,7 +135,7 @@ unsigned int WIOTelnet::put(unsigned char ch) {
 
   unsigned char szBuffer[3] = { ch, 0, 0 };
   if (ch == TELNET_OPTION_IAC) {
-    szBuffer[1] = static_cast<char>(ch);
+    szBuffer[1] = ch;
   }
 
   for (;;) {
@@ -159,12 +159,11 @@ unsigned int WIOTelnet::put(unsigned char ch) {
 unsigned char WIOTelnet::getW() {
   if (!valid_socket()) { return 0; }
   char ch = 0;
-  WaitForSingleObject(mu_, INFINITE);
+  std::lock_guard<std::mutex> lock(mu_);
   if (!queue_.empty()) {
     ch = queue_.front();
     queue_.pop();
   }
-  ReleaseMutex(mu_);
   return static_cast<unsigned char>(ch);
 }
 
@@ -183,11 +182,10 @@ void WIOTelnet::purgeIn() {
   // Early return on invali sockets.
   if (!valid_socket()) { return; }
 
-  WaitForSingleObject(mu_, INFINITE);
+  std::lock_guard<std::mutex> lock(mu_);
   while (!queue_.empty()) {
     queue_.pop();
   }
-  ReleaseMutex(mu_);
 }
 
 unsigned int WIOTelnet::read(char *buffer, unsigned int count) {
@@ -197,22 +195,20 @@ unsigned int WIOTelnet::read(char *buffer, unsigned int count) {
   unsigned int nRet = 0;
   char * temp = buffer;
 
-  WaitForSingleObject(mu_, INFINITE);
-  while ((!queue_.empty()) && (nRet <= count)) {
+  std::lock_guard<std::mutex> lock(mu_);
+  while (!queue_.empty() && nRet <= count) {
     char ch = queue_.front();
     queue_.pop();
     *temp++ = ch;
     nRet++;
   }
   *temp++ = '\0';
-  ReleaseMutex(mu_);
   return nRet;
 }
 
 unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTranslation) {
   // Early return on invali sockets.
   if (!valid_socket()) { return 0; }
-
 
   unique_ptr<char[]> tmp_buffer(new char[count * 2 + 100]);
   memset(tmp_buffer.get(), 0, count * 2 + 100);
@@ -261,9 +257,8 @@ bool WIOTelnet::incoming() {
   // Early return on invali sockets.
   if (!valid_socket()) { return false; }
 
-  WaitForSingleObject(mu_, INFINITE);
+  std::lock_guard<std::mutex> lock(mu_);
   bool bRet = (queue_.size() > 0);
-  ReleaseMutex(mu_);
   return bRet;
 }
 
@@ -306,7 +301,6 @@ void WIOTelnet::StartThreads() {
          << " - '" << error_text << "'" << endl;
   }
 
-  mu_ = ::CreateMutex(nullptr, false, "WWIV Input Buffer");
   read_thread_ = reinterpret_cast<HANDLE>(_beginthread(WIOTelnet::InboundTelnetProc, 0, static_cast<void*>(this)));
   threads_started_ = true;
 }
@@ -467,7 +461,7 @@ void WIOTelnet::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
 
 void WIOTelnet::AddStringToInputBuffer(int nStart, int nEnd, char *buffer) {
   WWIV_ASSERT(buffer);
-  WaitForSingleObject(mu_, INFINITE);
+  std::lock_guard<std::mutex> lock(mu_);
 
   bool bBinaryMode = GetBinaryMode();
   for (int i = nStart; i < nEnd; i++) {
@@ -491,5 +485,4 @@ void WIOTelnet::AddStringToInputBuffer(int nStart, int nEnd, char *buffer) {
       ::OutputDebugString("buffer had a null\r\n");
     }
   }
-  ReleaseMutex(mu_);
 }

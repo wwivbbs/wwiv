@@ -22,6 +22,7 @@
 #include "bbs/wcomm.h"
 
 #include <cstdint>
+#include <mutex>
 #include <queue>
 
 #if defined( _WIN32 )
@@ -86,7 +87,7 @@ class WIOTelnet : public WComm {
 
  protected:
   std::queue<char> queue_;
-  mutable HANDLE mu_;
+  mutable std::mutex mu_;
   SOCKET socket_;
   HANDLE read_thread_;
   HANDLE stop_event_;
