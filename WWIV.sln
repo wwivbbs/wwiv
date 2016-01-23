@@ -47,6 +47,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wwivutil", "wwivutil\wwivut
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "windows-wwiv-update", "windows-wwiv-update\windows-wwiv-update.csproj", "{A9E07163-9312-4B95-A9F0-F8A92574FBB5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crypt32", "deps\cl342\crypt32.vcxproj", "{D0793AB4-C236-4105-AD9E-7E8B1716037B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -295,6 +297,20 @@ Global
 		{A9E07163-9312-4B95-A9F0-F8A92574FBB5}.Release|Win32.Build.0 = Release|Any CPU
 		{A9E07163-9312-4B95-A9F0-F8A92574FBB5}.Release|x64.ActiveCfg = Release|Any CPU
 		{A9E07163-9312-4B95-A9F0-F8A92574FBB5}.Release|x64.Build.0 = Release|Any CPU
+		{D0793AB4-C236-4105-AD9E-7E8B1716037B}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{D0793AB4-C236-4105-AD9E-7E8B1716037B}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{D0793AB4-C236-4105-AD9E-7E8B1716037B}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{D0793AB4-C236-4105-AD9E-7E8B1716037B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D0793AB4-C236-4105-AD9E-7E8B1716037B}.Debug|Win32.Build.0 = Debug|Win32
+		{D0793AB4-C236-4105-AD9E-7E8B1716037B}.Debug|x64.ActiveCfg = Debug|x64
+		{D0793AB4-C236-4105-AD9E-7E8B1716037B}.Debug|x64.Build.0 = Debug|x64
+		{D0793AB4-C236-4105-AD9E-7E8B1716037B}.Release|Any CPU.ActiveCfg = Release|Win32
+		{D0793AB4-C236-4105-AD9E-7E8B1716037B}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{D0793AB4-C236-4105-AD9E-7E8B1716037B}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{D0793AB4-C236-4105-AD9E-7E8B1716037B}.Release|Win32.ActiveCfg = Release|Win32
+		{D0793AB4-C236-4105-AD9E-7E8B1716037B}.Release|Win32.Build.0 = Release|Win32
+		{D0793AB4-C236-4105-AD9E-7E8B1716037B}.Release|x64.ActiveCfg = Release|x64
+		{D0793AB4-C236-4105-AD9E-7E8B1716037B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

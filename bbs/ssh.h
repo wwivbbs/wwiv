@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)2005-2016, WWIV Software Services             */
+/*             Copyright (C)1998-2016, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,28 +14,43 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
+#ifndef __INCLUDED_BBS_SSH_H__
+#define __INCLUDED_BBS_SSH_H__
 
-#if !defined (__INCLUDED_INTERNALTELNETSERVER_H__)
-#define __INCLUDED_INTERNALTELNETSERVER_H__
+#include <memory>
+#include <string>
 
-#include <winsock2.h>
+namespace wwiv {
+namespace bbs {
 
-class Runnable;
+class Key {
+public:
+  explicit Key(const std::string& filename, const std::string& password) 
+    : filename_(filename), password_(password) {}
+  virtual ~Key() {};
+  bool Open();
+  bool Create();
+  int context() const { return context_; }
 
-class WInternalTelnetServer {
- private:
-  Runnable* m_pRunnable;
-  SOCKET hSocketHandle;
+private:
+  const std::string password_;
+  const std::string filename_;
+  int context_ = 0;
+};
 
-  void CreateListener();
- public:
-  WInternalTelnetServer(Runnable* pRunnable);
-  virtual ~WInternalTelnetServer();
+class Session {
+public:
+  Session();
+  virtual ~Session() {}
+  bool AddKey(const Key& key);
 
-  void RunTelnetServer();
+private:
+  int session_ = 0;
 };
 
 
-#endif  // #if !defined (__INCLUDED_INTERNALTELNETSERVER_H__)
+}
+}
+
+#endif  // __INCLUDED_BBS_SSH_H__

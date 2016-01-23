@@ -24,7 +24,7 @@
 #include "core/wwivport.h"
 
 #if defined ( _WIN32 )
-#include "platform/win32/wiot.h"
+#include "bbs/wiot.h"
 #elif defined ( __unix__ )
 #include "bbs/platform/unix/wiou.h"
 #endif
@@ -56,9 +56,14 @@ const std::string WComm::GetLastErrorText() {
   return error_text_;
 }
 
-WComm* WComm::CreateComm(unsigned int nHandle) {
+WComm* WComm::CreateComm(unsigned int nHandle, CommunicationType type) {
 #if defined ( _WIN32 )
-  return new WIOTelnet(nHandle);
+  if (type == CommunicationType::TELNET) {
+    return new WIOTelnet(nHandle);
+  } else {
+    //return new WIOSSH(nHandle);
+    return new WIOTelnet(nHandle);
+  }
 #elif defined ( __unix__ )
   return new WIOUnix();
 #endif

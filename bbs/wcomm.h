@@ -22,6 +22,13 @@
 
 #include <string>
 
+enum class CommunicationType {
+  TELNET,
+  SSH,
+  STDIO,
+  UNIX
+};
+
 /**
  * Base Communication Class.
  */
@@ -70,7 +77,7 @@ class WComm {
 
  public:
   // static factory methods
-  static WComm* CreateComm(unsigned int nHandle);
+  static WComm* CreateComm(unsigned int nHandle, CommunicationType type);
 };
 
 

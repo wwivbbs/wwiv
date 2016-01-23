@@ -16,10 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#ifdef _WIN32
 // work around error using inet_ntoa on build machine.
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+#pragma comment(lib, "Ws2_32.lib")
+#endif  // _WIN32
 
-#include "bbs/platform/win32/wiot.h"
+#include "bbs/wiot.h"
 
 #include <iostream>
 #include <memory>
@@ -32,7 +35,6 @@
 #include "core/wwivport.h"
 #include "core/wwivassert.h"
 
-#pragma comment(lib, "Ws2_32.lib")
 
 using std::clog;
 using std::endl;
@@ -54,12 +56,6 @@ WIOTelnet::WIOTelnet(unsigned int nHandle) : socket_(static_cast<SOCKET>(nHandle
     return;
   }
 
-  if (!DuplicateHandle(GetCurrentProcess(), reinterpret_cast<HANDLE>(socket_),
-                       GetCurrentProcess(), reinterpret_cast<HANDLE*>(&duplicate_socket_),
-                       0, TRUE, DUPLICATE_SAME_ACCESS)) {
-    clog << "Error creating duplicate socket: " << GetLastError() << endl << endl;
-    // TODO(rushfan): throw exception here since this socket is useless.
-  }
   // Make sure our signal event is not set to the "signaled" state
   stop_event_ = CreateEvent(nullptr, true, false, nullptr);
   clog << "Created Stop Event: " << GetLastErrorText() << endl;
@@ -70,7 +66,7 @@ unsigned int WIOTelnet::GetHandle() const {
 }
 
 unsigned int WIOTelnet::GetDoorHandle() const {
-  return static_cast<unsigned int>(duplicate_socket_);
+  return GetHandle();
 }
 
 bool WIOTelnet::open() {
@@ -117,12 +113,12 @@ bool WIOTelnet::open() {
   return true;
 }
 
-void WIOTelnet::close(bool bIsTemporary) {
+void WIOTelnet::close(bool temporary) {
   if (socket_ == INVALID_SOCKET) {
     // Early return on invali sockets.
     return;
   }
-  if (!bIsTemporary) {
+  if (!temporary) {
     // this will stop the threads
     closesocket(socket_);
   } else {
@@ -131,10 +127,8 @@ void WIOTelnet::close(bool bIsTemporary) {
 }
 
 unsigned int WIOTelnet::put(unsigned char ch) {
-  if (socket_ == INVALID_SOCKET) {
-    // Early return on invali sockets.
-    return 0;
-  }
+  // Early return on invali sockets.
+  if (!valid_socket()) { return 0; }
 
   unsigned char szBuffer[3] = { ch, 0, 0 };
   if (ch == TELNET_OPTION_IAC) {
@@ -160,10 +154,7 @@ unsigned int WIOTelnet::put(unsigned char ch) {
 }
 
 unsigned char WIOTelnet::getW() {
-  if (socket_ == INVALID_SOCKET) {
-    // Early return on invali sockets.
-    return 0;
-  }
+  if (!valid_socket()) { return 0; }
   char ch = 0;
   WaitForSingleObject(mu_, INFINITE);
   if (!queue_.empty()) {
@@ -175,24 +166,20 @@ unsigned char WIOTelnet::getW() {
 }
 
 bool WIOTelnet::dtr(bool raise) {
-  if (socket_ == INVALID_SOCKET) {
-    // Early return on invali sockets.
-    return false;
-  }
+  // Early return on invali sockets.
+  if (!valid_socket()) { return false; }
+
   if (!raise) {
     closesocket(socket_);
-    closesocket(duplicate_socket_);
     socket_ = INVALID_SOCKET;
-    duplicate_socket_ = INVALID_SOCKET;
   }
   return true;
 }
 
 void WIOTelnet::purgeIn() {
-  if (socket_ == INVALID_SOCKET) {
-    // Early return on invali sockets.
-    return;
-  }
+  // Early return on invali sockets.
+  if (!valid_socket()) { return; }
+
   WaitForSingleObject(mu_, INFINITE);
   while (!queue_.empty()) {
     queue_.pop();
@@ -201,10 +188,9 @@ void WIOTelnet::purgeIn() {
 }
 
 unsigned int WIOTelnet::read(char *buffer, unsigned int count) {
-  if (socket_ == INVALID_SOCKET) {
-    // Early return on invali sockets.
-    return 0;
-  }
+  // Early return on invali sockets.
+  if (!valid_socket()) { return 0; }
+
   unsigned int nRet = 0;
   char * temp = buffer;
 
@@ -221,10 +207,9 @@ unsigned int WIOTelnet::read(char *buffer, unsigned int count) {
 }
 
 unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTranslation) {
-  if (socket_ == INVALID_SOCKET) {
-    // Early return on invali sockets.
-    return 0;
-  }
+  // Early return on invali sockets.
+  if (!valid_socket()) { return 0; }
+
 
   unique_ptr<char[]> tmp_buffer(new char[count * 2 + 100]);
   memset(tmp_buffer.get(), 0, count * 2 + 100);
@@ -266,14 +251,13 @@ unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTr
 }
 
 bool WIOTelnet::carrier() {
-  return (socket_ != INVALID_SOCKET);
+  return valid_socket();
 }
 
 bool WIOTelnet::incoming() {
-  if (socket_ == INVALID_SOCKET) {
-    // Early return on invali sockets.
-    return false;
-  }
+  // Early return on invali sockets.
+  if (!valid_socket()) { return false; }
+
   WaitForSingleObject(mu_, INFINITE);
   bool bRet = (queue_.size() > 0);
   ReleaseMutex(mu_);
@@ -426,10 +410,8 @@ void WIOTelnet::InboundTelnetProc(void* pTelnetVoid) {
 
   if (socket_ == INVALID_SOCKET) {
     closesocket(socket_);
-    closesocket(pTelnet->duplicate_socket_);
     socket_ = INVALID_SOCKET;
     pTelnet->socket_ = INVALID_SOCKET;
-    pTelnet->duplicate_socket_ = INVALID_SOCKET;
   }
 
   WSACloseEvent(hEvent);

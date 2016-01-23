@@ -107,7 +107,7 @@ public:
   void ClearTopScreenProtection();
 
   /*! @function CreateComm Creates up the communications subsystem */
-  void CreateComm(unsigned int nHandle);
+  void CreateComm(unsigned int nHandle, CommunicationType type);
 
   bool IsLastKeyLocal() const { return last_key_local_; }
   void SetLastKeyLocal(bool b) { last_key_local_ = b; }

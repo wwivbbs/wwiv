@@ -70,8 +70,7 @@
 #include "sdk/filenames.h"
 
 #if defined( _WIN32 )
-#include "bbs/platform/win32/InternalTelnetServer.h"
-#include "bbs/platform/win32/Wiot.h"
+#include "bbs/wiot.h"
 #include "bbs/local_io_win32.h"
 #endif // _WIN32
 
@@ -135,8 +134,8 @@ bool WSession::reset_local_io(LocalIO* wlocal_io) {
   return true;
 }
 
-void WSession::CreateComm(unsigned int nHandle) {
-  comm_.reset(WComm::CreateComm(nHandle));
+void WSession::CreateComm(unsigned int nHandle, CommunicationType type) {
+  comm_.reset(WComm::CreateComm(nHandle, type));
   bout.SetComm(comm_.get());
 }
 
@@ -931,9 +930,6 @@ void WSession::ShowUsage() {
     "  -Q<level>  - Normal exit level\r\n" <<
     "  -R<min>    - Specify max # minutes until event\r\n" <<
     "  -S<rate>   - Used only with -B, indicates com port speed\r\n" <<
-#if defined (_WIN32)
-    "  -TELSRV    - Uses internet telnet server to answer incomming session\r\n" <<
-#endif // _WIN32
     "  -U<user#>  - Pass usernumber <user#> online\r\n" <<
     "  -V         - Display WWIV Version\r\n" <<
     "  -W         - Display Local 'WFC' menu\r\n" <<
@@ -951,7 +947,7 @@ int WSession::Run(int argc, char *argv[]) {
   unsigned short this_usernum = 0;
   bool ooneuser = false;
   bool event_only = false;
-  bool bTelnetInstance = false;
+  CommunicationType type = CommunicationType::TELNET;
   unsigned int hSockOrComm = 0;
 
   curatr = 0x07;
@@ -1063,10 +1059,12 @@ int WSession::Run(int argc, char *argv[]) {
       case 'X':
       {
         char argument2Char = wwiv::UpperCase<char>(argument.at(0));
-        if (argument2Char == 'T') {
+        if (argument2Char == 'T' || argument2Char == 'S') {
           // This more of a hack to make sure the Telnet
           // Server's -Bxxx parameter doesn't hose us.
           SetCurrentSpeed("115200");
+
+          // These are needed for both Telnet or SSH
           SetUserOnline(false);
           us = 115200;
           ui = us;
@@ -1077,7 +1075,11 @@ int WSession::Run(int argc, char *argv[]) {
           incom = true;
           outcom = false;
           global_xx = false;
-          bTelnetInstance = true;
+          if (argument2Char == 'T') {
+            type = CommunicationType::TELNET;
+          } else if (argument2Char == 'S') {
+            type = CommunicationType::SSH;
+          }
         } else {
           clog << "Invalid Command line argument given '" << argumentRaw << "'" << std::endl;
           exit(m_nErrorLevel);
@@ -1149,13 +1151,12 @@ int WSession::Run(int argc, char *argv[]) {
   // it was already there.
   m_bUserAlreadyOn = true;
 #endif  // _WIN32
-
-  CreateComm(hSockOrComm);
+  CreateComm(hSockOrComm, type);
   InitializeBBS();
   localIO()->UpdateNativeTitleBar(this);
 
   // If we are telnet...
-  if (bTelnetInstance) {
+  if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
     ok_modem_stuff = true;
     remoteIO()->open();
   }

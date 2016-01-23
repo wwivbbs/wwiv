@@ -16,10 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WIOT_H__
-#define __INCLUDED_WIOT_H__
+#ifndef __INCLUDED_BBS_WIOT_H__
+#define __INCLUDED_BBS_WIOT_H__
 
-#include "WComm.h"
+#include "bbs/wcomm.h"
 
 #include <cstdint>
 #include <queue>
@@ -28,6 +28,9 @@
 extern "C" {
 #include <winsock2.h>
 }
+#else 
+
+typedef int HANDLE;
 #endif // _WIN32
 
 class WIOTelnet : public WComm {
@@ -55,7 +58,11 @@ class WIOTelnet : public WComm {
   static const uint8_t TELNET_OPTION_LINEMODE = 34;
 
  public:
-  WIOTelnet(unsigned int nHandle);
+   static void InitializeWinsock();
+
+  explicit WIOTelnet(unsigned int nHandle);
+  virtual ~WIOTelnet();
+
   virtual bool open() override;
   virtual void close(bool bIsTemporary) override;
   virtual unsigned char getW() override;
@@ -66,31 +73,25 @@ class WIOTelnet : public WComm {
   virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) override;
   virtual bool carrier() override;
   virtual bool incoming() override;
-  void StopThreads();
-  void StartThreads();
-  virtual ~WIOTelnet();
+  virtual void StopThreads();
+  virtual void StartThreads();
   virtual unsigned int GetHandle() const;
   virtual unsigned int GetDoorHandle() const;
+  virtual bool valid_socket() const { return (socket_ != INVALID_SOCKET); }
 
- public:
-  static void InitializeWinsock();
-
- private:
+ protected:
   void HandleTelnetIAC(unsigned char nCmd, unsigned char nParam);
   void AddStringToInputBuffer(int nStart, int nEnd, char* buffer);
-
- private:
   static void InboundTelnetProc(void* pTelnet);
 
  protected:
   std::queue<char> queue_;
   mutable HANDLE mu_;
   SOCKET socket_;
-  SOCKET duplicate_socket_;
   HANDLE read_thread_;
   HANDLE stop_event_;
   bool threads_started_;
 };
 
-#endif  // __INCLUDED_WIOT_H__
+#endif  // __INCLUDED_BBS_WIOT_H__
 
