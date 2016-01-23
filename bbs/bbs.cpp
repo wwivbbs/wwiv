@@ -67,7 +67,6 @@ WSession* session() { return sess; }
 
 int WApplication::BBSMainLoop(int argc, char *argv[]) {
 #if defined ( _WIN32 )
-  WIOTelnet::InitializeWinsock();
   sess = CreateSession(app_, new Win32ConsoleIO());
 #else
   sess = CreateSession(app_, new NullLocalIO());

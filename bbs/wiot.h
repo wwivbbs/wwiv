@@ -58,7 +58,7 @@ class WIOTelnet : public WComm {
   static const uint8_t TELNET_OPTION_LINEMODE = 34;
 
  public:
-   static void InitializeWinsock();
+  static bool Initialize();
 
   explicit WIOTelnet(unsigned int nHandle);
   virtual ~WIOTelnet();

@@ -43,8 +43,11 @@ using std::unique_ptr;
 using namespace wwiv::strings;
 
 
-WIOTelnet::WIOTelnet(unsigned int nHandle) : socket_(static_cast<SOCKET>(nHandle)), threads_started_(false) {
-  WIOTelnet::InitializeWinsock();
+WIOTelnet::WIOTelnet(unsigned int nHandle) 
+  : socket_(static_cast<SOCKET>(nHandle)), threads_started_(false) {
+  // assigning the value to a static causes this only to be
+  // initialized once.
+  static bool once = WIOTelnet::Initialize();
   if (nHandle == 0) {
     // This means we don't have a real socket handle, for example running in local mode.
     // so we set it to INVALID_SOCKET and don't initialize anything.
@@ -317,7 +320,7 @@ WIOTelnet::~WIOTelnet() {
 
 // Static Class Members.
 
-void WIOTelnet::InitializeWinsock() {
+bool WIOTelnet::Initialize() {
   WSADATA wsaData;
   int err = WSAStartup(0x0101, &wsaData);
 
@@ -343,6 +346,7 @@ void WIOTelnet::InitializeWinsock() {
       break;
     }
   }
+  return err == 0;
 }
 
 void WIOTelnet::InboundTelnetProc(void* pTelnetVoid) {
