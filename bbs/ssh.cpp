@@ -92,22 +92,40 @@ bool Key::Create() {
   return true;
 }
 
-SSHSession::SSHSession(int socket_handle) : socket_handle_(socket_handle) {
+SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socket_handle) {
   static bool once = ssh_once_init();
   int status = CRYPT_ERROR_INVALID;
 
   status = cryptCreateSession(&session_, CRYPT_UNUSED, CRYPT_SESSION_SSH_SERVER);
-  if (OK(status)) {
-    clog << "setting socket handle" << endl;
-    cryptSetAttribute(session_, CRYPT_SESSINFO_NETWORKSOCKET, socket_handle_);
+  if (!OK(status)) {
+    clog << "ERROR: Unable to create SSH session." << endl;
+    return;
   }
+  
+  clog << "setting private key." << endl;
+  status = cryptSetAttribute(session_, CRYPT_SESSINFO_PRIVATEKEY, key.context());
+  if (!OK(status)) {
+    clog << "ERROR: Failed to set private key" << endl;
+    return;
+  }
+
+  clog << "setting socket handle." << endl;
+  status = cryptSetAttribute(session_, CRYPT_SESSINFO_NETWORKSOCKET, socket_handle_);
+  if (!OK(status)) {
+    clog << "ERROR adding socket handle!" << endl;
+    return;
+  }
+
   bool success = false;
   for (int i = 0; i < 10; i++) {
     status = cryptSetAttribute(session_, CRYPT_SESSINFO_AUTHRESPONSE, 1);
     if (!OK(status)) {
       continue;
     }
-    cryptSetAttribute(session_, CRYPT_SESSINFO_ACTIVE, 1);
+    status = cryptSetAttribute(session_, CRYPT_SESSINFO_ACTIVE, 1);
+    if (status != CRYPT_ENVELOPE_RESOURCE) {
+      clog << "Hmm...";
+    }
     if (OK(status)) {
       success = true;
       break;
@@ -115,21 +133,23 @@ SSHSession::SSHSession(int socket_handle) : socket_handle_(socket_handle) {
   }
   if (!success) {
     clog << "We don't have a valid SSH connection here!" << endl;
+  } else {
+    // Clear out any remaining control messages.
+    int bytes_received = 0;
+    char buffer[4096];
+    cryptPopData(session_, buffer, 4096, &bytes_received);
   }
+  initialized_ = success;
   // TODO(rushfan): Grab the username/password.
-}
-
-bool SSHSession::AddKey(const Key& key) {
-  std::lock_guard<std::mutex> lock(mu_);
-  cryptSetAttribute(session_, CRYPT_SESSINFO_PRIVATEKEY, key.context());
-
-  return true;
 }
 
 int SSHSession::PushData(const char* data, size_t size) {
   int bytes_copied = 0;
+  // clog << "SSHSession::PushData: " << string(data, size) << endl;
   std::lock_guard<std::mutex> lock(mu_);
   int status = cryptPushData(session_, data, size, &bytes_copied);
+  if (!OK(status)) return 0;
+  status = cryptFlushData(session_);
   if (!OK(status)) return 0;
   return bytes_copied;
 }
@@ -169,7 +189,7 @@ static void reader_thread(SSHSession& session, SOCKET socket) {
       return;
     }
     int num_sent = send(socket, data.get(), num_read, 0);
-    clog << "reader_thread: sent " << num_sent << endl;
+    // clog << "reader_thread: sent " << num_sent << endl;
   }
 }
 
@@ -179,22 +199,26 @@ static void writer_thread(SSHSession& session, SOCKET socket) {
   std::unique_ptr<char[]> data = std::make_unique<char[]>(size);
   while (true) {
     if (!socket_avail(socket, 1)) {
-      // TODO(rushfan): Check for closed sockets, etc.
+      // TODO(): Check for closed sockets, etc.
       continue;
     }
     memset(data.get(), 0, size);
     int num_read = recv(socket, data.get(), size, 0);
-    int num_sent = session.PushData(data.get(), num_read);
-    clog << "writer_thread: pushed_data " << num_sent << endl;
+    if (num_read > 0) {
+      int num_sent = session.PushData(data.get(), num_read);
+      // clog << "writer_thread: pushed_data: " << num_sent << endl;
+    }
   }
 }
 
 IOSSH::IOSSH(SOCKET ssh_socket, Key& key) 
-  : ssh_socket_(ssh_socket), session_(ssh_socket) {
+  : ssh_socket_(ssh_socket), session_(ssh_socket, key) {
   static bool initialized = WIOTelnet::Initialize();
-  session_.AddKey(key);
   if (!ssh_initalize()) {
-    // TODO(rushfan): throw exception?
+    clog << "ERROR INITIALIZING SSH (ssh_initalize)" << endl;
+  }
+  if (!session_.initialized()) {
+    clog << "ERROR INITIALIZING SSH (SSHSession::initialized)" << endl;
   }
   io_.reset(new WIOTelnet(plain_socket_));
 }

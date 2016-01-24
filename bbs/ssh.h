@@ -45,17 +45,18 @@ private:
 
 class SSHSession {
 public:
-  SSHSession(int socket_handle);
+  SSHSession(int socket_handle, const Key& key);
   virtual ~SSHSession() {}
-  bool AddKey(const Key& key);
   int PushData(const char* data, size_t size);
   int PopData(char* data, size_t buffer_size);
   int socket_handle() const { return socket_handle_; }
+  bool initialized() const { return initialized_; }
 
 private:
   mutable std::mutex mu_;
   int session_ = 0;
   int socket_handle_ = -1;
+  bool initialized_ = false;
 };
 
 class IOSSH: public WComm {
