@@ -24,7 +24,21 @@
 #include <winsock2.h>
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #pragma comment(lib, "Ws2_32.lib")
+#include "WS2tcpip.h"
+#else
+
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+
+typedef int HANDLE;
+typedef int SOCKET;
+constexpr int SOCKET_ERROR = -1;
+#define SOCKADDR_IN sockaddr_in
+#define closesocket(s) close(s)
 #endif  // _WIN32
+
+#include <cstring>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -47,8 +61,8 @@ static constexpr char WWIV_SSH_KEY_NAME[] = "wwiv_ssh_server";
 
 static bool ssh_once_init() {
   // This only should be called once.
-  cryptInit();
-  return true;
+  int status = cryptInit();
+  return OK(status);
 }
 
 bool Key::Open() {
@@ -233,7 +247,11 @@ bool IOSSH::ssh_initalize() {
 
   SOCKET listener = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (listener == INVALID_SOCKET) {
+#ifdef _WIN32    
     int last_error = WSAGetLastError();
+#else
+    int last_error = errno;
+#endif
     clog << "WSAGetLastError: " << last_error << endl;
     return false;
   }
@@ -255,7 +273,7 @@ bool IOSSH::ssh_initalize() {
     return false;
   }
 
-  int addr_len = sizeof(a);
+  socklen_t addr_len = sizeof(a);
   result = getsockname(listener, reinterpret_cast<struct sockaddr*>(&a), &addr_len);
   if (result == SOCKET_ERROR) {
     closesocket(listener);

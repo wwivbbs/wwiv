@@ -73,6 +73,8 @@
 #if defined( _WIN32 )
 #include "bbs/wiot.h"
 #include "bbs/local_io_win32.h"
+#else
+#include "bbs/platform/unix/wiou.h"
 #endif // _WIN32
 
 using std::chrono::milliseconds;
@@ -137,7 +139,8 @@ bool WSession::reset_local_io(LocalIO* wlocal_io) {
 
 void WSession::CreateComm(unsigned int nHandle, CommunicationType type) {
 #ifdef __unix__
-return new WIOUnix();
+  comm_.reset(new WIOUnix());
+  return;
 #endif
 if (type == CommunicationType::SSH) {
     const File key_file(config_->datadir(), "wwiv.key");

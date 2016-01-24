@@ -32,6 +32,8 @@
 #else 
 
 typedef int HANDLE;
+typedef int SOCKET;
+constexpr int INVALID_SOCKET = -1;
 #endif // _WIN32
 
 class WIOTelnet : public WComm {
