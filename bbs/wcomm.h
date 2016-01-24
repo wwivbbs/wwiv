@@ -74,10 +74,6 @@ class WComm {
   void SetRemoteAddress(std::string address) { remote_address_ = address; }
   const std::string GetRemoteName() const { return remote_name_; }
   const std::string GetRemoteAddress() const { return remote_address_; }
-
- public:
-  // static factory methods
-  static WComm* CreateComm(unsigned int nHandle, CommunicationType type);
 };
 
 

@@ -24,11 +24,11 @@
 #include <cstdint>
 #include <mutex>
 #include <queue>
+#include <thread>
 
 #if defined( _WIN32 )
-extern "C" {
+#define NOCRYPT // Disable include of wincrypt.h
 #include <winsock2.h>
-}
 #else 
 
 typedef int HANDLE;
@@ -61,7 +61,7 @@ class WIOTelnet : public WComm {
  public:
   static bool Initialize();
 
-  explicit WIOTelnet(unsigned int nHandle);
+  explicit WIOTelnet(int socket_handle);
   virtual ~WIOTelnet();
 
   virtual bool open() override;
@@ -89,7 +89,7 @@ class WIOTelnet : public WComm {
   std::queue<char> queue_;
   mutable std::mutex mu_;
   SOCKET socket_;
-  HANDLE read_thread_;
+  std::thread read_thread_;
   HANDLE stop_event_;
   bool threads_started_;
 };

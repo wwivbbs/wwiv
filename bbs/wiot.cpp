@@ -32,6 +32,7 @@
 #include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
 #include "core/file.h"
+#include "core/os.h"
 #include "core/wwivport.h"
 #include "core/wwivassert.h"
 
@@ -43,18 +44,18 @@ using std::unique_ptr;
 using namespace wwiv::strings;
 
 
-WIOTelnet::WIOTelnet(unsigned int nHandle) 
-  : socket_(static_cast<SOCKET>(nHandle)), threads_started_(false) {
+WIOTelnet::WIOTelnet(int socket_handle)
+  : socket_(static_cast<SOCKET>(socket_handle)), threads_started_(false) {
   // assigning the value to a static causes this only to be
   // initialized once.
   static bool once = WIOTelnet::Initialize();
-  if (nHandle == 0) {
+  if (socket_handle == 0) {
     // This means we don't have a real socket handle, for example running in local mode.
     // so we set it to INVALID_SOCKET and don't initialize anything.
     socket_ = INVALID_SOCKET;
     return;
   }
-  else if (nHandle == INVALID_SOCKET) {
+  else if (socket_handle == INVALID_SOCKET) {
     // Also exit early if we have an invalid handle.
     return;
   }
@@ -118,7 +119,7 @@ bool WIOTelnet::open() {
 
 void WIOTelnet::close(bool temporary) {
   if (socket_ == INVALID_SOCKET) {
-    // Early return on invali sockets.
+    // Early return on invalid sockets.
     return;
   }
   if (!temporary) {
@@ -130,7 +131,7 @@ void WIOTelnet::close(bool temporary) {
 }
 
 unsigned int WIOTelnet::put(unsigned char ch) {
-  // Early return on invali sockets.
+  // Early return on invalid sockets.
   if (!valid_socket()) { return 0; }
 
   unsigned char szBuffer[3] = { ch, 0, 0 };
@@ -168,7 +169,7 @@ unsigned char WIOTelnet::getW() {
 }
 
 bool WIOTelnet::dtr(bool raise) {
-  // Early return on invali sockets.
+  // Early return on invalid sockets.
   if (!valid_socket()) { return false; }
 
   if (!raise) {
@@ -179,7 +180,7 @@ bool WIOTelnet::dtr(bool raise) {
 }
 
 void WIOTelnet::purgeIn() {
-  // Early return on invali sockets.
+  // Early return on invalid sockets.
   if (!valid_socket()) { return; }
 
   std::lock_guard<std::mutex> lock(mu_);
@@ -189,7 +190,7 @@ void WIOTelnet::purgeIn() {
 }
 
 unsigned int WIOTelnet::read(char *buffer, unsigned int count) {
-  // Early return on invali sockets.
+  // Early return on invalid sockets.
   if (!valid_socket()) { return 0; }
 
   unsigned int nRet = 0;
@@ -207,7 +208,7 @@ unsigned int WIOTelnet::read(char *buffer, unsigned int count) {
 }
 
 unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTranslation) {
-  // Early return on invali sockets.
+  // Early return on invalid sockets.
   if (!valid_socket()) { return 0; }
 
   unique_ptr<char[]> tmp_buffer(new char[count * 2 + 100]);
@@ -254,7 +255,7 @@ bool WIOTelnet::carrier() {
 }
 
 bool WIOTelnet::incoming() {
-  // Early return on invali sockets.
+  // Early return on invalid sockets.
   if (!valid_socket()) { return false; }
 
   std::lock_guard<std::mutex> lock(mu_);
@@ -274,19 +275,7 @@ void WIOTelnet::StopThreads() {
   ::Sleep(0);
 
   // Wait for read thread to exit.
-  DWORD dwRes = WaitForSingleObject(read_thread_, 5000);
-  switch (dwRes) {
-  case WAIT_OBJECT_0:
-    // Thread Ended
-    break;
-  case WAIT_TIMEOUT:
-    // The exit code of 123 doesn't mean anything, and isn't used anywhere.
-    ::TerminateThread(read_thread_, 123);
-    clog << "WIOTelnet::StopThreads: Terminated the read thread" << endl;
-    break;
-  default:
-    break;
-  }
+  read_thread_.join();
   threads_started_ = false;
 }
 
@@ -301,7 +290,7 @@ void WIOTelnet::StartThreads() {
          << " - '" << error_text << "'" << endl;
   }
 
-  read_thread_ = reinterpret_cast<HANDLE>(_beginthread(WIOTelnet::InboundTelnetProc, 0, static_cast<void*>(this)));
+  read_thread_ = std::thread([this]() { InboundTelnetProc(this); });
   threads_started_ = true;
 }
 

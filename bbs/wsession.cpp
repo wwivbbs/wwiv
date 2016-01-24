@@ -52,6 +52,7 @@
 #include "bbs/menu.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
+#include "bbs/ssh.h"
 #include "bbs/sysoplog.h"
 #include "bbs/uedit.h"
 #include "bbs/utility.h"
@@ -135,7 +136,23 @@ bool WSession::reset_local_io(LocalIO* wlocal_io) {
 }
 
 void WSession::CreateComm(unsigned int nHandle, CommunicationType type) {
-  comm_.reset(WComm::CreateComm(nHandle, type));
+#ifdef __unix__
+return new WIOUnix();
+#endif
+if (type == CommunicationType::SSH) {
+    const File key_file(config_->datadir(), "wwiv.key");
+    const string system_password = config()->config()->systempw;
+    wwiv::bbs::Key key(key_file.full_pathname(), system_password);
+    if (!key.Open()) {
+      if (!key.Create()) {
+        clog << "Unable to create or open key file!.  SSH will be disabled!" << endl;
+        type = CommunicationType::TELNET;
+      }
+    }
+    comm_.reset(new wwiv::bbs::IOSSH(nHandle, key));
+  } else {
+    comm_.reset(new WIOTelnet(nHandle));
+  }
   bout.SetComm(comm_.get());
 }
 
@@ -1079,6 +1096,8 @@ int WSession::Run(int argc, char *argv[]) {
             type = CommunicationType::TELNET;
           } else if (argument2Char == 'S') {
             type = CommunicationType::SSH;
+            cout << "Waiting for debugger" << endl;
+            getchar();
           }
         } else {
           clog << "Invalid Command line argument given '" << argumentRaw << "'" << std::endl;
@@ -1151,6 +1170,12 @@ int WSession::Run(int argc, char *argv[]) {
   // it was already there.
   m_bUserAlreadyOn = true;
 #endif  // _WIN32
+  if (!ReadConfig()) {
+    // Gotta read the config before we can create the socket handles.
+    // Since we may need the SSH key.
+    AbortBBS(true);
+  }
+
   CreateComm(hSockOrComm, type);
   InitializeBBS();
   localIO()->UpdateNativeTitleBar(this);

@@ -25,6 +25,7 @@
 
 #if defined ( _WIN32 )
 #include "bbs/wiot.h"
+#include "bbs/ssh.h"
 #elif defined ( __unix__ )
 #include "bbs/platform/unix/wiou.h"
 #endif
@@ -54,17 +55,4 @@ const std::string WComm::GetLastErrorText() {
   error_text_.assign(error_text);
 #endif
   return error_text_;
-}
-
-WComm* WComm::CreateComm(unsigned int nHandle, CommunicationType type) {
-#if defined ( _WIN32 )
-  if (type == CommunicationType::TELNET) {
-    return new WIOTelnet(nHandle);
-  } else {
-    //return new WIOSSH(nHandle);
-    return new WIOTelnet(nHandle);
-  }
-#elif defined ( __unix__ )
-  return new WIOUnix();
-#endif
 }

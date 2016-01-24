@@ -19,7 +19,11 @@
 #define __INCLUDED_BBS_SSH_H__
 
 #include <memory>
+#include <mutex>
 #include <string>
+
+#include "bbs/wcomm.h"
+#include "bbs/wiot.h"
 
 namespace wwiv {
 namespace bbs {
@@ -39,14 +43,48 @@ private:
   int context_ = 0;
 };
 
-class Session {
+class SSHSession {
 public:
-  Session();
-  virtual ~Session() {}
+  SSHSession(int socket_handle);
+  virtual ~SSHSession() {}
   bool AddKey(const Key& key);
+  int PushData(const char* data, size_t size);
+  int PopData(char* data, size_t buffer_size);
+  int socket_handle() const { return socket_handle_; }
 
 private:
+  mutable std::mutex mu_;
   int session_ = 0;
+  int socket_handle_ = -1;
+};
+
+class IOSSH: public WComm {
+public:
+  IOSSH(SOCKET socket, Key& key);
+  virtual ~IOSSH();
+
+  bool ssh_initalize();
+
+  virtual bool open() override;
+  virtual void close(bool temporary) override;
+  virtual unsigned char getW() override;
+  virtual bool dtr(bool raise) override;
+  virtual void purgeIn() override;
+  virtual unsigned int put(unsigned char ch) override;
+  virtual unsigned int read(char *buffer, unsigned int count) override;
+  virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation) override;
+  virtual bool carrier() override;
+  virtual bool incoming() override;
+  virtual unsigned int GetHandle() const override;
+  virtual unsigned int GetDoorHandle() const override;
+
+private:
+  std::thread ssh_receive_thread_;
+  std::thread ssh_send_thread_;
+  std::unique_ptr<WIOTelnet> io_;
+  SOCKET ssh_socket_;
+  SOCKET plain_socket_;
+  SSHSession session_;
 };
 
 
