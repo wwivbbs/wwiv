@@ -180,6 +180,16 @@ int SSHSession::PopData(char* data, size_t buffer_size) {
   return bytes_copied;
 }
 
+bool SSHSession::close() {
+  std::lock_guard<std::mutex> lock(mu_);
+  if (closed_.load()) {
+    return false;
+  }
+  cryptDestroySession(session_);
+  closed_.store(true);
+  return true;
+}
+
 static bool socket_avail(SOCKET sock, int seconds) {
   fd_set fds;
   FD_ZERO(&fds);
@@ -201,6 +211,9 @@ static void reader_thread(SSHSession& session, SOCKET socket) {
   std::unique_ptr<char[]> data = std::make_unique<char[]>(size);
   try {
     while (true) {
+      if (session.closed()) {
+        return;
+      }
       if (!socket_avail(session.socket_handle(), 1)) {
         continue;
       }
@@ -224,6 +237,9 @@ static void writer_thread(SSHSession& session, SOCKET socket) {
   std::unique_ptr<char[]> data = std::make_unique<char[]>(size);
   try {
     while (true) {
+        if (session.closed()) {
+          return;
+        }
       if (!socket_avail(socket, 1)) {
         continue;
       }
@@ -319,7 +335,14 @@ bool IOSSH::ssh_initalize() {
 }
 
 bool IOSSH::open() { return io_->open(); }
-void IOSSH::close(bool temporary) { return io_->close(temporary);  }
+
+void IOSSH::close(bool temporary) { 
+  if (!temporary) {
+    session_.close();
+  }
+  io_->close(temporary);
+}
+
 unsigned char IOSSH::getW() { return io_->getW();  }
 bool IOSSH::dtr(bool raise) { return io_->dtr(raise);  }
 void IOSSH::purgeIn() { io_->purgeIn();  }
