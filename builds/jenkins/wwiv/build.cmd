@@ -136,6 +136,7 @@ cd %WORKSPACE%\bbs\admin
 cd %WORKSPACE%\
 echo:
 echo * Copying BBS files to staging directory.
+copy /v/y %WORKSPACE%\deps\cl342\cl32.dll %WORKSPACE%\release\cl32.dll
 copy /v/y %WORKSPACE%\bbs\Release\bbs.exe %WORKSPACE%\release\bbs.exe
 copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\release\WWIV5TelnetServer.exe %WORKSPACE%\release\WWIV5TelnetServer.exe
 copy /v/y %WORKSPACE%\windows-wwiv-update\bin\Release\wwiv-update.exe %WORKSPACE%\release\wwiv-update.exe

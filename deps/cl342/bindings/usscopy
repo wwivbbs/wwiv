@@ -1,0 +1,35 @@
+#!/bin/sh
+
+#-----------------------------------------------------------------------
+# Cryptlib for MVS
+#
+# Developed on OS/390 2.10.
+#
+# Copy files from subdirectories under the 'test' directory to the MVS
+# data sets allocated with ussalloc.  This must be executed from the
+# 'test' directory.
+#-----------------------------------------------------------------------
+
+# The file extensions to copy from the subdirectories.
+BINEXTS="p15 p12 der pgp gpg pkr skr p7s"
+
+# The subdirectories for the test filenames.
+DIRS="certs keys misc pgp smime"
+
+# The middle-level qualifier of the test data sets.
+MLQ=CRYPTLIB
+
+for d in $DIRS; do
+  cd $d
+  for i in $BINEXTS; do
+    if `ls *.$i > /dev/null 2>&1` ; then
+      for j in `ls *.$i` ; do
+        mbr=`echo $j | awk -F '.' '{print $1}' | tr -d '_'`
+        cp -BA $j "//$MLQ.CLB$i($mbr)"
+      done
+    fi
+  done
+  cd ..
+done
+
+cp -BA test.h "//$MLQ.CLBCMP"
