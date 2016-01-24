@@ -244,7 +244,7 @@ namespace windows_wwiv_update
                         {
                             entry.ExtractToFile(Path.Combine(extractPath, entry.FullName), true);
                         }
-                        if (entry.FullName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                        if (entry.FullName.EndsWith("sbbsexec.dll", StringComparison.OrdinalIgnoreCase))
                         {
                             entry.ExtractToFile(Path.Combine(extractPath2, entry.FullName), true);
                         }
