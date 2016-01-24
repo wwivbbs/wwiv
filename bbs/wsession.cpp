@@ -1099,8 +1099,8 @@ int WSession::Run(int argc, char *argv[]) {
             type = CommunicationType::TELNET;
           } else if (argument2Char == 'S') {
             type = CommunicationType::SSH;
-            cout << "Waiting for debugger" << endl;
-            getchar();
+            //cout << "Waiting for debugger" << endl;
+            //getchar();
           }
         } else {
           clog << "Invalid Command line argument given '" << argumentRaw << "'" << std::endl;
