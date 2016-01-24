@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_BBS_SSH_H__
 #define __INCLUDED_BBS_SSH_H__
 
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -46,17 +47,20 @@ private:
 class SSHSession {
 public:
   SSHSession(int socket_handle, const Key& key);
-  virtual ~SSHSession() {}
+  virtual ~SSHSession() { close();  }
   int PushData(const char* data, size_t size);
   int PopData(char* data, size_t buffer_size);
   int socket_handle() const { return socket_handle_; }
   bool initialized() const { return initialized_; }
+  bool closed() const { return closed_.load(); }
+  bool close();
 
 private:
   mutable std::mutex mu_;
   int session_ = 0;
   int socket_handle_ = -1;
   bool initialized_ = false;
+  std::atomic<bool> closed_ = false;
 };
 
 class IOSSH: public WComm {

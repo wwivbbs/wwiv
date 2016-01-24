@@ -83,8 +83,8 @@ WIOUnix::~WIOUnix() {
 
 bool WIOUnix::open() { return true; }
 
-void WIOUnix::close(bool bIsTemporary = false) {
-  bIsTemporary = bIsTemporary;
+void WIOUnix::close(bool temporary) {
+  temporary = temporary;
 }
 
 unsigned int WIOUnix::put(unsigned char ch) {
