@@ -246,7 +246,7 @@ void run_event(int evnt) {
   if (events[evnt].status & EVENT_EXIT) {
     exitlevel = static_cast<int>(events[evnt].cmd[0]);
     if (ok_modem_stuff && session()->remoteIO() != nullptr) {
-      session()->remoteIO()->close();
+      session()->remoteIO()->close(false);
     }
     exit(exitlevel);
   }

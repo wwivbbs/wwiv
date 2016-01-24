@@ -55,6 +55,10 @@ using std::unique_ptr;
 namespace wwiv {
 namespace bbs {
 
+struct socket_error: public std::runtime_error {
+  socket_error(const std::string& message): std::runtime_error(message) {}
+};
+
 static constexpr char WWIV_SSH_KEY_NAME[] = "wwiv_ssh_server";
 #define RETURN_IF_ERROR(s) { if (!cryptStatusOK(s)) return false; }
 #define OK(s) cryptStatusOK(s)
@@ -185,25 +189,32 @@ static bool socket_avail(SOCKET sock, int seconds) {
   tv.tv_sec = seconds;
   tv.tv_usec = 0;
 
-  return select(sock + 1, &fds, 0, 0, &tv) == 1;
+  int result = select(sock + 1, &fds, 0, 0, &tv);
+  if (result == SOCKET_ERROR) {
+    throw socket_error("Error on select for socket.");
+  }
+  return result == 1;
 }
 // Reads from remote socket using session, writes to socket
 static void reader_thread(SSHSession& session, SOCKET socket) {
   constexpr size_t size = 16 * 1024;
   std::unique_ptr<char[]> data = std::make_unique<char[]>(size);
-  while (true) {
-    if (!socket_avail(session.socket_handle(), 1)) {
-      // TODO(rushfan): Check for closed sockets, etc.
-      continue;
+  try {
+    while (true) {
+      if (!socket_avail(session.socket_handle(), 1)) {
+        continue;
+      }
+      memset(data.get(), 0, size);
+      int num_read = session.PopData(data.get(), size);
+      if (num_read == -1) {
+        // error.
+        return;
+      }
+      int num_sent = send(socket, data.get(), num_read, 0);
+      // clog << "reader_thread: sent " << num_sent << endl;
     }
-    memset(data.get(), 0, size);
-    int num_read = session.PopData(data.get(), size);
-    if (num_read == -1) {
-      // error.
-      return;
-    }
-    int num_sent = send(socket, data.get(), num_read, 0);
-    // clog << "reader_thread: sent " << num_sent << endl;
+  } catch (const socket_error& e) {
+    clog << e.what() << endl;
   }
 }
 
@@ -211,17 +222,20 @@ static void reader_thread(SSHSession& session, SOCKET socket) {
 static void writer_thread(SSHSession& session, SOCKET socket) {
   constexpr size_t size = 16 * 1024;
   std::unique_ptr<char[]> data = std::make_unique<char[]>(size);
-  while (true) {
-    if (!socket_avail(socket, 1)) {
-      // TODO(): Check for closed sockets, etc.
-      continue;
+  try {
+    while (true) {
+      if (!socket_avail(socket, 1)) {
+        continue;
+      }
+      memset(data.get(), 0, size);
+      int num_read = recv(socket, data.get(), size, 0);
+      if (num_read > 0) {
+        int num_sent = session.PushData(data.get(), num_read);
+        // clog << "writer_thread: pushed_data: " << num_sent << endl;
+      }
     }
-    memset(data.get(), 0, size);
-    int num_read = recv(socket, data.get(), size, 0);
-    if (num_read > 0) {
-      int num_sent = session.PushData(data.get(), num_read);
-      // clog << "writer_thread: pushed_data: " << num_sent << endl;
-    }
+  } catch (const socket_error& e) {
+    clog << e.what() << endl;
   }
 }
 

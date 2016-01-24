@@ -49,7 +49,7 @@ class WComm {
   virtual ~WComm() {}
 
   virtual bool open() = 0;
-  virtual void close(bool bIsTemporary = false) = 0;
+  virtual void close(bool temporary) = 0;
   virtual unsigned char getW() = 0;
   virtual bool dtr(bool raise) = 0;
   virtual void purgeIn() = 0;
