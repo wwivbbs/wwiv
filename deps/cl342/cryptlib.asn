@@ -1,0 +1,1059 @@
+-/ This specification makes one slight deviation from standard ASN.1 syntax
+   to overcome an annoyance in ASN.1 which requires a separate -- at the
+   start of each and every line of comment.  Instead, this specification uses
+   -//- comment delimiters (which work like C's /**/) in place of standard
+   ASN.1 delimiters /-
+
+cryptlib DEFINITIONS ::=
+BEGIN
+
+------------------------------------------------------------------------------
+--																			--
+--								PKCS #7 Data Formats						--
+--																			--
+------------------------------------------------------------------------------
+
+-/ There are several variants of the PKCS #7/S/MIME/CMS format which gradually
+   get more flexible (but not necessarily better) over time.  The initial
+   format was PKCS #7 1.5 and earlier, 1.6 was a quick update which changed a
+   number of SETs to SEQUENCEs (which don't require sorting of the encoded
+   components), this doesn't appear to have been used by anything.  S/MIME 3/
+   CMS was an extended form of S/MIME 2 which fiddled with some of the inner
+   fields but was mostly the same as PKCS #7 1.5.  1.5 is a significant
+   improvement on most of its successors /-
+
+ContentInfo ::= SEQUENCE {
+	contentType			OBJECT IDENTIFIER,
+	content			[0]	EXPLICIT ANY DEFINED BY contentType OPTIONAL
+	}
+
+-/ Raw data /-
+
+Data ::= OCTET STRING						-- PKCS #7 1
+
+-/ Authenticated data: Digested, signed, MAC'd data /-
+
+DigestedData ::= SEQUENCE {					-- PKCS #7 5
+	version				INTEGER (0),		-- PKCS #7 v1.5
+	digestAlgorithm		AlgorithmIdentifier,-- v=2 for non id-Data
+	encapContentInfo	SEQUENCE {
+		contentType		OBJECT IDENTIFIER id-Data/Sig/Encr/Env,
+		content		[0]	EXPLICIT OCTET STRING
+		},
+	digest				OCTET STRING
+	}
+
+SignedData ::= SEQUENCE {					-- PKCS #7 2
+	version				INTEGER (1),		-- PKCS #7 v1.5
+	digestAlgorithms	SET OF AlgorithmIdentifier,
+	encapContentInfo	SEQUENCE {
+		contentType		OBJECT IDENTIFIER id-Data/Sig/Encr/Env,
+		content		[0]	EXPLICIT OCTET STRING
+		}
+	certificates	[0]	SET OF Certificate,
+	signerInfos			SET OF SignerInfo
+	}
+
+AuthenticatedData ::= SEQUENCE {			-- PKCS #9 16 1 2
+	version				INTEGER (0),		-- S/MIME v3
+	recipientInfos		SET OF RecipientInfo,
+	macAlgorithm		AlgorithmIdentifier,
+	encapContentInfo	SEQUENCE {
+		contentType		OBJECT IDENTIFIER id-Data/Sig/Encr/Env,
+		content		[0]	EXPLICIT OCTET STRING
+		}
+	authAttrs		[1]	SET OF Attribute OPTIONAL,
+	mac					OCTET STRING
+	unauthAttrs		[2]	SET OF Attribute OPTIONAL
+	}
+
+-/ Encrypted data: Raw encrypted, enveloped /-
+
+EncryptedData ::= SEQUENCE {				-- PKCS #7 6
+	version				INTEGER (0),		-- PKCS #7 v1.5
+	encrContentInfo		SEQUENCE {
+		contentType		OBJECT IDENTIFIER id-Data/Sig/Encr/Env,
+		contentEncrAlgo	AlgorithmIdentifier,
+		content		[0]	OCTET STRING
+		}
+	}
+
+EnvelopedData ::= SEQUENCE {				-- PKCS #7 3
+	version				INTEGER (0),		-- PKCS #7 v1.5, v=2 for origInfo
+	recipientInfos		SET OF RecipientInfo,
+	encrContentInfo		SEQUENCE {
+		contentType		OBJECT IDENTIFIER id-Data/Sig/Encr/Env,
+		contentEncrAlgo	AlgorithmIdentifier,
+		content		[0]	OCTET STRING
+		},
+	unauthAttrs		[1]	SET OF Attribute OPTIONAL
+	}
+
+-/ Combined encrypted + authenticated data /-
+
+ AuthEnvelopedData ::= SEQUENCE {			-- PKCS #9 16 1 23
+ 	version				INTEGER (0),		-- CMS
+	recipientInfos		SET OF RecipientInfo,
+	encrContentInfo		SEQUENCE {
+		contentType		OBJECT IDENTIFIER id-Data/Sig/Encr/Env,
+		contentEncrAlgo	AlgorithmIdentifier,
+		content		[0]	OCTET STRING
+		},
+	authAttrs		[1]	SET OF Attribute OPTIONAL,
+	mac					OCTET STRING
+	unauthAttrs		[2]	SET OF Attribute OPTIONAL
+	}
+
+------------------------------------------------------------------------------
+--																			--
+--								Key Management								--
+--																			--
+------------------------------------------------------------------------------
+
+-/ The parameters used to derive the conventional encryption key from the
+   user key.  Usually we use the key directly, but sometimes it may have
+   been derived from a longer user key, which is encoded in this record /-
+
+PBKDF2 ::= SEQUENCE {						-- PKCS #5v2 key setup parameters
+	algorithm		AlgorithmIdentifier (pkcs-5 12),
+	params			SEQUENCE {
+		salt		OCTET STRING,			-- Key setup salt
+		iterationCount						-- Key setup iterations
+					INTEGER (1..MAX),
+		}
+	}
+
+-/ CMS key transport information /-
+
+KeyTransRecipientInfo ::= SEQUENCE {		-- CMS - S/MIME
+	version			INTEGER (0),			-- CMS
+	issuerAndSerial	IssuerAndSerialNumber,	-- Encrypting certificate
+	algorithm		AlgorithmIdentifier,	-- Encryption algorithm
+	encryptedKey	OCTET STRING			-- Encryped key
+	}
+KeyTransRecipientInfo ::= SEQUENCE {		-- CMS - cryptlib
+	version			INTEGER (2),			-- CMS
+	keyID		[0]	SubjectKeyIdentifier,	-- Key ID of encrypting key
+	algorithm		AlgorithmIdentifier,	-- Encryption algorithm
+	encryptedKey	OCTET STRING			-- Encrypted key
+	}
+
+-/ CMS key agreement information, which is officially called
+   KeyAgreeRecipientInfo but in order for it to make sense it really needs
+   to be named FortezzaRecipientInfo /-
+
+FortezzaRecipientInfo ::= SEQUENCE {		-- CMS - S/MIME
+	version			INTEGER (3),			-- CMS
+	originator	[0]	EXPLICIT [ 0 ] SubjectKeyIdentifier,-- Originator pub.key
+	ukm			[1]	EXPLICIT OCTET STRING,	-- Nonce, Ra
+	algorithm		AlgorithmIdentifier,	-- Fortezza key wrap OID
+	recipientKeys	SEQUENCE OF SEQUENCE {
+		rKeyId	[0]	SEQUENCE { SubjectKeyIdentifier }, -- Recip.pubk
+		encryptedKey OCTET STRING			-- Encr.key info, TEK( MEK )
+		}
+	}
+
+-/ CMS conventional key transport information.  This structure is somewhat
+   misnamed since it's really just a kludge to work with pre-distributed
+   shared RC2 or 3DES keys for S/MIME-based mailing lists and not a general-
+   purpose KEK object, however by using the PWRI AlgorithmIdentifier for
+   KEKRI we can turn it into a general-purpose key transport mechanism /-
+
+KEKRecipientInfo ::= SEQUENCE {
+	version			INTEGER (4),			-- CMS
+	kekid			SEQUENCE {
+		keyIdent	OCTET STRING			-- Magic ID for KEK
+		},
+	keyEncAlgo		AlgorithmIdentifier,	-- Key wrap algorithm
+	encryptedKey	OCTET STRING			-- Encrypted key
+	}
+
+-/ CMS password-based key transport information.  This is also misnamed since
+   it's actually general-purpose and does what KEKRecipientInfo should do /-
+
+PasswordRecipientInfo ::= SEQUENCE {
+	version			INTEGER (0),			-- CMS
+	keyDerivationAlgorithm					-- KEK derivation algorithm,
+				[0]	AlgorithmIdentifier OPTIONAL,	-- PBKDF2 if present
+	keyEncryptionAlgorithm					-- KEK algorithm
+					AlgorithmIdentifier,	-- PWRI-KEK
+	encryptedKey	OCTET STRING
+	}
+
+-/ CMS key management /-
+
+RecipientInfo ::= CHOICE {
+	ktri			KeyTransRecipientInfo,	-- Public-key encrypted key
+	kari		[1] FortezzaRecipientInfo,	-- Fortezza key-agreement info
+	kekri		[2] KEKRecipientInfo,		-- Conventionally encrypted key
+	pwri		[3]	PasswordRecipientInfo	-- Password-encrypted key
+	}
+
+------------------------------------------------------------------------------
+--																			--
+--									Signatures								--
+--																			--
+------------------------------------------------------------------------------
+
+-/ CMS signature information /-
+
+SignerInfo ::= SEQUENCE {					-- CMS - S/MIME
+	version			INTEGER (1),			-- CMS
+	issuerAndSerial	IssuerAndSerialNumber,	-- Signing certificate
+	hashAlgorithm	AlgorithmIdentifier,	-- Hash algorithm type
+	signedAttributes						-- Authenticated attributes
+				[0]	SET OF Attribute OPTIONAL,
+	signatureAlgorithm						-- Signature algorithm type
+					AlgorithmIdentifier,
+	signature		OCTET STRING			-- The signature itself
+	unsignedAttrs							-- Countersignature
+				[1]	SET OF Attribute OPTIONAL
+	}
+SignerInfo ::= SEQUENCE {					-- CMS - cryptlib
+	version			INTEGER (3),			-- CMS
+	keyID		[0]	SubjectKeyIdentifier,	-- Key ID of signing key
+	hashAlgorithm	AlgorithmIdentifier,	-- Hash algorithm type
+	signatureAlgorithm						-- Signature algorithm type
+					AlgorithmIdentifier,
+	signature		OCTET STRING			-- The signature itself
+	}
+
+------------------------------------------------------------------------------
+--																			--
+--								Public/Private Keys							--
+--																			--
+------------------------------------------------------------------------------
+
+-/ PKCS #15 uses a very object-oriented design which follows PKCS #11 and
+   uses a lot of the expressive power of ASN.1 in the specification of its
+   PDUs.  The basic PKCS #15 object is defined as follows:
+
+	PKCS15Object( ClassAttributes, SubclassAttributes, TypeAttributes ) ->
+		SEQUENCE {
+			commonAttr		CommonObjectAttributes,
+			classAttr		ClassAttributes,
+			subclassAttr[0]	SubclassAttributes OPTIONAL,
+			typeAttr	[1]	TypeAttributes
+			}
+
+   with the attributes being filled in on a per-object basis.  Every object
+   contains common object attributes, and every key or certificate object
+   contains common key or cert class attributes.  In addition the public and
+   private key subclasses contain subclass-specific attributes, but they
+   don't contain anything which isn't present elsewhere so they're omitted.
+   Note the explicit use of EXPLICIT tagging, this is required because dummy
+   parameters like TypeAttributes are always explict-tagged to ensure tag
+   uniqueness (it's like the CHOICE explicit-tag rule):
+
+					Key									Cert
+	SEQUENCE {
+		SEQUENCE {											-- CommonObjectAttr
+			label		UTF8String,
+			...
+			},
+		SEQUENCE {							SEQUENCE {		-- ClassAttr
+			iD			OCTET STRING,			iD			OCTET STRING,
+			usage		BIT STRING,				authority	BOOLEAN DEF FALSE,
+			accessFlags	BIT STRING OPTIONAL,	trusted	[1] SEQUENCE { usage BIT STR },
+			...									keyID	[2] SEQUENCE OF KeyID,
+			},									impTrust[3]	BOOLEAN DEFAULT FALSE,
+												...
+												},
+		[0] EXPLICIT SEQUENCE {} OPTIONAL,					-- SubclassAttr
+		[1] EXPLICIT SEQUENCE {								-- TypeAttr
+			<data>
+			}
+		}
+				cryptlib config/user data
+	SEQUENCE {
+		SEQUENCE {											-- CommonObjectAttr
+			label		UTF8String,
+			...
+			},
+		SEQUENCE {											-- ClassAttr
+			...
+			appOID		OBJECT IDENTIFIER (cryptlib),
+			...
+			},
+		[1] EXPLICIT SEQUENCE {
+			<data>
+			}
+		} /-
+
+PKCS15CommonObjectAttributes ::= SEQUENCE {
+	label			UTF8String OPTIONAL,	-- Object label
+	...
+	}
+
+-/ Class attributes.  Note that the validFrom/validTo attributes were
+   added for PKCS #11 support after the PKCS #15 / ISO 7816-15 split and
+   are for the PKCS #15 v1.2 spec  /-
+
+PKCS15CommonKeyAttributes ::= SEQUENCE {
+	iD				OCTET STRING,			-- Cross-reference to cert
+	usage			BIT STRING,				-- PKCS #11 usage flags
+	accessFlags		BIT STRING b'01101' OPT,-- PKCS #11 access flags
+	validFrom		GeneralisedTime OPTIONAL,
+	validTo		[0]	GeneralisedTime OPTIONAL,
+	...
+	}
+
+PKCS15CommonCertificateAttributes ::= SEQUENCE {
+	iD				OCTET STRING,			-- Cross-reference to key
+	authority		BOOLEAN DEFAULT FALSE,	-- CA flag
+	dummy			SEQUENCE {} OPTIONAL,	-- Not used
+	dummy		[0]	SEQUENCE {} OPTIONAL,	-- Not used
+	trusted		[1]	SEQUENCE {
+		keyUsage	BIT STRING,				-- Key usage cert is trusted for
+		...
+		} OPTIONAL,
+	keyID		[2]	SEQUENCE OF KeyID OPTIONAL,
+	impTrust	[3]	BOOLEAN OPTIONAL,
+	validFrom		GeneralisedTime OPTIONAL,
+	validTo		[4] GeneralisedTime OPTIONAL,
+	...
+	}
+
+PKCS15CommonSecretKeyAttributes ::= SEQUENCE {
+	...
+	}
+
+PKCS15CommonDataObjectAttributes ::= SEQUENCE {
+	applicationName	UTF8String OPTIONAL,	-- One or both must be present
+	applicationOID	OBJECT IDENTIFIER OPTIONAL,
+	iD				OCTET STRING OPTIONAL,
+	...
+	}
+
+-/ Key identifiers.  Note that the pgp/openPGP IDs were added after the
+   PKCS #15 / ISO 7816-15 split and are for the PKCS #15 v1.2 spec /-
+
+PKCS15KeyIdentifier ::= TYPED CHOICE {
+	iAndS			SEQUENCE {				-- Not written, conv.to iAndSHash on rd
+		id			INTEGER (1),
+		value		IssuerAndSerialNumber
+		},
+	subjectKeyID	SEQUENCE {				-- Only used if different from iD
+		id			INTEGER (2),
+		value		OCTET STRING
+		},
+	iAndSHash		SEQUENCE {				-- Written and read
+		id			INTEGER (3),
+		value		OCTET STRING SIZE(20)
+		},
+	iHash			SEQUENCE {				-- Written and read
+		id			INTEGER (6),
+		value		OCTET STRING SIZE(20)
+		},
+	sHash			SEQUENCE {				-- Written and read
+		id			INTEGER (7),
+		value		OCTET STRING SIZE(20)
+		},
+	pgp				SEQUENCE {				-- Written and read
+		id			INTEGER (8),
+		value		OCTET STRING SIZE(8)
+		},
+	openPGP			SEQUENCE {				-- Written and read
+		id			INTEGER (9),
+		value		OCTET STRING SIZE(8)
+		},
+	...
+	}
+
+-/ Private key information (DLP = DSA/DH/KEA/etc) /-
+
+PKCS15PrivateRSAKeyAttributes ::= SEQUENCE {
+	value			[2]	EnvelopedData {
+						SEQUENCE {
+		modulus		[0]	INTEGER OPTIONAL,	-- n, not written
+		publicExp	[1]	INTEGER OPTIONAL,	-- e, not written
+		privateExp	[2]	INTEGER OPTIONAL,	-- d, not written
+		prime1		[3]	INTEGER OPTIONAL,	-- p
+		prime2		[4]	INTEGER OPTIONAL,	-- q
+		exponent1	[5]	INTEGER OPTIONAL,	-- d mod p-1
+		exponent2	[6]	INTEGER OPTIONAL,	-- d mod q-1
+		coefficient	[7]	INTEGER OPTIONAL	-- q^-1 mod p
+						}
+		},
+	modulusLength		INTEGER,
+	...
+	}
+
+PKCS15PrivateDLPKeyAttributes ::= SEQUENCE {
+	value			[2] EnvelopedData {
+						INTEGER				-- DSA x value
+						},
+	...
+	}
+
+PKCS15PrivateKey ::= CHOICE {
+	privateRSAKey		PKCS15Object{ PKCS15CommonKeyAttributes,
+									  PKCS15CommonPrivateKeyAttributes,
+									  PKCS15PrivateRSAKeyAttributes },
+	privateDSAKey	[2]	PKCS15Object{ PKCS15CommonKeyAttributes,
+									  PKCS15CommonPrivateKeyAttributes,
+									  PKCS15PrivateDSAKeyAttributes }
+	}
+
+-/ This expands out to:
+
+	SEQUENCE {
+		keyAttr			PKCS15CommonKeyAttributes,
+		privKeyAttr		PKCS15CommonPrivateKeyAttributes,
+		keyData		[1]	{ SEQUENCE { [2] IMPLICIT { Enveloped key data } } }
+		}
+
+   Note that when the PKCS #15 keyset is being used as structured storage
+   for a crypto hardware device then the direct-protected option
+   '[2] EnvelopedData' is replaced by an indirect 'Path' reference, where:
+
+	Path ::= SEQUENCE {
+		path			OCTET STRING
+		}
+
+   So the above would become:
+
+	SEQUENCE {
+		keyAttr			PKCS15CommonKeyAttributes,
+		privKeyAttr		PKCS15CommonPrivateKeyAttributes,
+		keyData		[1]	{ SEQUENCE { SEQUENCE { OCTET STRING } } }
+		}
+
+   with the key components stored in the crypto hardware, referenced by the
+   value in the OCTET STRING /-
+
+-/ Public key information (DLP = DSA/DH/KEA/etc) /-
+
+PKCS15PublicRSAKeyAttributes ::= SEQUENCE {
+	value			[0]	EXPLICIT {
+					[1]	SubjectPublicKeyInfo
+						},
+	modulusLength		INTEGER,
+	...
+	}
+
+PKCS15PublicDLPKeyAttributes ::= SEQUENCE {
+	value			[0]	EXPLICIT SubjectPublicKeyInfo,
+	...
+	}
+
+PKCS15PublicKey ::= CHOICE {
+	publicRSAKey		PKCS15Object{ PKCS15CommonKeyAttributes,
+									  PKCS15CommonPublicKeyAttributes,
+									  PKCS15PublicRSAKeyAttributes },
+	publicDSAKey	[2]	PKCS15Object{ PKCS15CommonKeyAttributes,
+									  PKCS15CommonPublicKeyAttributes,
+									  PKCS15PublicDSAKeyAttributes }
+	}
+
+-/ This expands out to:
+
+	SEQUENCE {
+		keyAttr			PKCS15CommonKeyAttributes,
+		privKeyAttr		PKCS15CommonPublicKeyAttributes,
+		keyData		[1]	{ SEQUENCE { [0] { Public-key data } } }
+		} /-
+
+-/ Certificate information /-
+
+PKCS15X509CertificateAttributes ::= SEQUENCE {
+	value			[0]	Certificate,
+	...
+	}
+
+PKCS15Certificate ::= CHOICE {
+	x509Certificate		PKCS15Object{ PKCS15CommonCertificateAttributes,
+									  NULL,
+									  PKCS15X509CertificateAttributes }
+	}
+
+-/ This expands out to:
+
+	SEQUENCE {
+		certAttr		PKCS15CommonCertificateAttributes,
+		classAttr		NULL,
+		certData	[1]	{ SEQUENCE { [0] IMPLICIT Certificate } }
+		} /-
+
+-/ Secret key information /-
+
+PKCS15GenericSecretKeyAttributes ::= {
+	value			[2] EnvelopedData {
+						OCTET STRING		-- Raw secret key
+						}
+	}
+
+PKCS15SecretKey ::= CHOICE {
+	des3Key			[4] PKCS15Object{ PKCS15CommonKeyAttributes,
+									  PKCS15CommonSecretKeyAttributes,
+									  PKCS15GenericSecretKeyAttributes },
+	}
+
+-/ This expands out to:
+
+	SEQUENCE {
+		keyAttr			PKCS15CommonKeyAttributes,
+		secKeyAttr		PKCS15CommonSecretKeyAttributes,
+		keyData		[1]	{ [2] { Enveloped key data } }
+		} /-
+
+-/ Data information /-
+
+ConfigOption ::= SEQUENCE {
+	type				INTEGER,			-- CRYPT_PROPERTY_xxx
+	value				ANY DEFINED BY type	-- BOOLEAN, INTEGER, UTF8String
+	}
+
+ConfigOptions ::= SEQUENCE OF ConfigOption
+
+UserIndexEntry ::= SEQUENCE {
+	iD					OCTET STRING SIZE(16),	-- User ID
+	creatorID			OCTET STRING SIZE(16),	-- Creating SO's ID
+	name				UTF8String,				-- User name
+	fileReference		INTEGER					-- Reference to user file
+	}
+
+UserIndex ::= SEQUENCE OF UserIndexEntry
+
+UserInfo ::= SEQUENCE {
+	role				ENUMERATED,				-- SO/user/CA
+	iD					OCTET STRING SIZE(16),	-- User ID
+	creatorID			OCTET STRING SIZE(16),	-- Creating SO's ID
+	name				UTF8String,				-- User name
+	}
+
+// Other user data, has to be stored elsewhere
+//	state				ENUMERATED,				-- SO inited/user inited/locked
+//	encSecKey			EncryptedData OPTIONAL	-- (Used for CAs)
+
+PKCS15OidDO ::= SEQUENCE {
+	type				OBJECT IDENTIFIER,
+	value				ANY DEFINED BY type	-- ConfigOptions/UserIndex/UserInfo
+	}
+
+PKCS15Data ::= CHOICE {
+	oidDO			[1]	PKCS15Object { PKCS15CommonDataObjectAttributes,
+									   NULL,
+									   PKCS15OidDO }
+	}
+
+-/ Overall object wrappers. The tagging is [n] PKCS15Objects.foo
+   [0] PKCS15ObjectValue.objects /-
+
+PrivateKeys ::= [0][0] SEQUENCE OF PKCS15PrivateKey
+PublicKeys ::= [1][0] SEQUENCE OF PKCS15PublicKey
+SecretKeys ::= [3][0] SEQUENCE OF PKCS15SecretKey
+Certificates ::= [4][0] SEQUENCE OF PKCS15Certificate
+DataObjects ::= [7][0] SEQUENCE OF PKCS15Data
+
+------------------------------------------------------------------------------
+--																			--
+--								User/Config Info							--
+--																			--
+------------------------------------------------------------------------------
+
+-/ User information /-
+
+-/ PKI user information needed for CMP.  The attributes always include an
+   sKID (to uniquely identify the user info) and optionally additional
+   template attributes that are applied to certificate(s) created for this
+   user.  The dual use of the attributes is somewhat ugly, in theory we
+   could split the two into attributes required for PKI user management and
+   attributes to apply to the issued certificate, but because the only one
+   that's used for user management is the sKID it's easier to special-case
+   it in the cert handling code /-
+
+userData ::= SEQUENCE {
+	name				Name,					-- Name for CMP
+	encAlgo				AlgorithmIdentifier,	-- Algo to encrypt passwords
+	encPW				OCTET STRING,			-- Encrypted passwords
+	attributes			Attributes
+	}
+
+userPW ::= SEQUENCE {
+	issuePW				OCTET STRING SIZE(11),	-- Password for ir
+	revPW				OCTET STRING SIZE(11)	-- Password for rr
+	}
+
+------------------------------------------------------------------------------
+--																			--
+--										Misc								--
+--																			--
+------------------------------------------------------------------------------
+
+-/ OCSP /-
+
+OCSPRequest ::= SEQUENCE {
+						SEQUENCE {			-- tbsRequest
+		version		[0]	EXPLICIT INTEGER DEFAULT 0,
+											-- Must be 1 if !certID used
+		reqName		[1]	EXPLICIT ... OPTIONAL
+											-- Ignored
+						SEQUENCE {			-- requestList
+						SEQUENCE {			-- request
+			certID		CertID,
+			singleReqExt
+					[0] EXPLICIT Extensions OPTIONAL
+				}
+			},
+		reqExts		[2] EXPLICIT Extensions OPTIONAL
+		},
+	signature		[0] EXPLICIT SEQUENCE {
+		sigAlgo			AlgorithmIdentifier,
+		sig				BIT STRING,
+		certs		[0]	EXPLICIT SEQUENCE OF Certificate OPTIONAL
+		} OPTIONAL
+	}
+
+OCSPResponse ::= SEQUENCE {
+	respStatus			ENUMERATED,			-- 0 = OK
+	respBytes		[0]	EXPLICIT SEQUENCE {
+		respType		OBJECT IDENTIFIER,	-- id-pkix-ocsp-basic
+		resp			OCTET STRING {
+						SEQUENCE {			-- basicOCSPResponse
+						SEQUENCE {			-- tbsRespData
+			version [0] EXPLICIT ... OPTIONAL,-- Ignored
+			respID		...,				-- Ignored
+			producedAt	...,				-- Ignored
+			responses	SEQUENCE {
+						SEQUENCE {			-- singleResponse
+				certID	...,				-- Ignored
+				certStatus [0] EXPLICIT = OK, else !OK
+						...					-- Ignored
+						}
+					},
+			respExts[0]	EXPLICIT Extensions OPTIONAL
+				}
+		sigAlgo			AlgorithmIdentifier,
+		signature		BIT STRING
+		certs		[0]	EXPLICIT SEQUENCE OF Certificate OPTIONAL
+				}
+			}
+		}
+	}
+
+CertID ::= CHOICE {
+	certID				SEQUENCE {
+		hashAlgo		AlgorithmIdentifier,
+		iNameHash		OCTET STRING,		-- Hash of issuerName
+		iKeyHash		OCTET STRING,		-- Hash of issuer SPKI w/o tag+len
+		serialNo		INTEGER
+						},
+	issuerAndSerial	[0]	IssuerAndSerialNumber,	-- OCSPv2 only
+	certificate		[1]	Certificate,		-- OCSPv2 only
+	certHash		[2] OCTET STRING		-- OCSPv2 only
+	}
+
+-/ RTCS /-
+
+RTCSRequest ::= SEQUENCE {
+						SEQUENCE {			-- requests
+						SEQUENCE {			-- requestTypeInfo
+				certHash
+						OCTET STRING SIZE(20),
+				}
+			attributes	Attributes OPTIONAL,
+			}
+		}
+
+RTCSResponse ::= SEQUENCE {
+						SEQUENCE {			-- responseBasic/Extended
+				certHash
+						OCTET STRING SIZE(20),
+				status	BOOLEAN				-- For basic response
+				status	ENUMERATED,			-- For ext.response
+						[...],				-- For ext.response
+				attributes
+					[0]	Attributes OPTIONAL	-- For ext.response
+				}
+			}
+
+-/ Timestamping /-
+
+TSARequest ::= SEQUENCE {
+	version				INTEGER (1),
+	msgImprint			SEQUENCE {
+		algorithm		AlgorithmIdentifier,
+		hash			OCTET STRING
+		},
+	policy				OBJECT IDENTIFIER OPTIONAL,
+											-- Ignored
+	nonce				INTEGER OPTIONAL,	-- Copy to output if present
+	includeSigCerts		BOOLEAN DEFAULT FALSE,
+											-- Include signer certs if set
+	extensions		[0]	Extensions OPTIONAL	-- Reject if present
+	}
+
+TSAResponse ::= SEQUENCE {
+	status				SEQUENCE {
+		status			INTEGER,			-- 0 = OK
+						... OPTIONAL
+		},
+	timeStamp			ContentInfo
+	}
+
+TSTInfo ::= SEQUENCE {
+	version				INTEGER (1),
+	policy				OBJECT IDENTIFIER,
+	msgImprint			SEQUENCE { ... }	-- From request
+	serialNo			INTEGER,			-- Unique value
+	genTime				GeneralizedTime,	-- Current time
+	nonce				INTEGER OPTIONAL	-- From input if present
+	}
+
+-/ PKCS #12.  Note that what's deployed (and documented here) bears very
+   little resemblance to what's given in the specification /-
+
+PFX ::= SEQUENCE {
+	version				INTEGER (3),
+	authSafe			SEQUENCE {			-- ContentInfo
+		contentType		OBJECT IDENTIFIER id-Data,
+		content		[0]	EXPLICIT OCTET STRING {
+			safeConts	SEQUENCE OF {
+						CHOICE {			-- Effectively a CHOICE
+				p12Data	PKCS12Data,			-- Data for encrypted keys
+				p12Encr	PKCS12Encr			-- EncrData for public keys
+						}
+					}
+				}
+			}
+		}
+	macData				SEQUENCE {
+		mac				SEQUENCE {
+			algorithm	AlgorithmIdentifier,
+			mac			OCTET STRING
+			}
+		macSalt			OCTET STRING,
+		iterations		INTEGER DEFAULT 1	-- Usually set to 2,000
+		}
+	}
+
+PKCS12Data ::= SEQUENCE {					-- For encrypted private keys
+	contentType			OBJECT IDENTIFIER id-Data,
+	content			[0]	EXPLICIT OCTET STRING {
+		safeContents	SEQUENCE OF PKCS12Bag -- SIZE(1)
+		}
+	}
+
+PKCS12Bag ::= SEQUENCE {
+	bagId				OBJECT IDENTIFIER pkcs8ShroudedKeyBag,
+	bagValue		[0]	EXPLICIT SEQUENCE {
+		encryptionAlgo	SEQUENCE {
+			algo		OBJECT IDENTIFIER pbeWithSHAAnd2-KeyTripleDES-CBC,
+			pbeParams	SEQUENCE {
+				salt	OCTET STRING,
+				iters	INTEGER
+				}
+			}
+		encryptedData	OCTET STRING		-- Encrypted PKCS #8
+		}
+	bagAttributes		SET OF Attribute
+	}
+
+PKCS8 ::= SEQUENCE {						-- Within PKCS12Bag above
+	version				INTEGER (0),
+	algorithm			AlgorithmIdentifier,
+	key					SEQUENCE {
+		version			INTEGER (0),
+		keyValues		...
+						}
+	attributes		[0]	SET OF Attribute OPTIONAL
+	}
+
+PKCS12Encr ::= SEQUENCE {					-- For public certificates
+	contentType			OBJECT IDENTIFIER id-EncryptedData,
+	content			[0]	EXPLICIT SEQUENCE {
+		version			INTEGER (0),
+		encContentInfo	SEQUENCE {
+			contentType	OBJECT IDENTIFIER id-Data,
+			contentEncAlgo SEQUENCE {
+				algo	OBJECT IDENTIFIER pbeWithSHAAnd40BitRC2-CBC,
+				pbeParams SEQUENCE {
+					salt OCTET STRING,
+					iters INTEGER
+					}
+				}
+			encryptedData OCTET STRING		-- Encrypted PKCS12CertBag
+			}
+		}
+	}
+
+PKCS12CertBag ::= SEQUENCE OF SEQUENCE {	-- Within PKCS12Enc above
+	bagId				OBJECT IDENTIFIER pkcs12CertBag,
+	bagValue		[0]	EXPLICIT SEQUENCE {
+		certId			OBJECT IDENTIFIER x509Certificate,
+		certValue	[0]	EXPLICIT OCTET STRING {
+			cert		Certificate
+			}
+		}
+	bagAttributes		SET OF Attribute
+	}
+
+------------------------------------------------------------------------------
+--																			--
+--						Certificate Mismanagement Protocol					--
+--																			--
+------------------------------------------------------------------------------
+
+-/ "If an undergraduate student handed this in as an assignment I'd fail them
+	on the grounds that it shows a complete lack of understanding of the
+	principles of workable protocol design" /-
+
+xxxRequest ::= SEQUENCE {					-- ir/cr/kur, 3.3.1/3.3.3/3.3.5
+	header				SEQUENCE {			--	Profile = B8
+		version			INTEGER (2),
+		sender		[4]	EXPLICIT DirectoryName,	-- DN of subject
+		recipient	[4]	EXPLICIT DirectoryName,	-- DN of CA
+		protAlgo	[1]	EXPLICIT AlgorithmIdentifier (PBMac),
+		protKeyID	[2] EXPLICIT OCTET STRING,
+		transID		[4] EXPLICIT OCTET STRING SIZE (16),	-- Random
+		nonce		[5] EXPLICIT OCTET STRING SIZE (16),	-- Random
+		},
+	body			[0]	EXPLICIT SEQUENCE {	-- [2] in cr, [7] in kur
+		certReqMsg		SEQUENCE {			-- RFC 2510
+						SEQUENCE {
+			cReqID		INTEGER (0),
+			cTemplate	SEQUENCE {
+				validity[1] TIME OPTIONAL,
+				subject	[5] EXPLICIT Name,
+				pubKey	[6] SubjectPublicKeyInfo,
+				exts	[9] Extensions OPTIONAL
+						},
+			cControls	SEQUENCE OF Attribute OPTIONAL		-- Ignored
+					},
+		pop			[1] EXPLICIT Signature	-- From X.509, for sig.key
+or		pop			[2] EXPLICIT [1] INTEGER (0)
+											-- For encr-only key
+				}
+			}
+		},
+	protection		[0]	EXPLICIT BIT STRING	-- ir = MAC, cr/kur = SIG
+	}
+
+xxxResponse ::= SEQUENCE {					-- ip/cp/kup, 3.3.2/3.3.4/3.3.6
+	header				SEQUENCE {			--	Profile = B8
+		version			INTEGER (2),
+		sender			SEQUENCE {...},		-- Ignored
+		recipient		SEQUENCE {...},		-- Ignored
+		messageTime	[0]	... OPTIONAL,		-- Ignored
+		protAlgo	[1]	EXPLICIT AlgorithmIdentifier (PBMac),
+		protKeyID	[2]	EXPLICIT OCTET STRING,			-- Must match previous
+		transID		[4] EXPLICIT OCTET STRING SIZE (16),-- Must match previous
+		nonceX		[5] EXPLICIT OCTET STRING SIZE (16),-- Needed in CertConf
+		...
+		},
+	body			[1] EXPLICIT SEQUENCE {			-- [3] in cp, [8] in kup
+		caPubs		[1] EXPLICIT SEQUENCE {...} OPTIONAL,-- Ignored
+		response		SEQUENCE {
+						SEQUENCE {
+			certReqID	INTEGER (0),
+			status		SEQUENCE {			-- PKIStatusInfo, 3.2.3
+				status	INTEGER,
+				statusStr SEQUENCE OF UTF8String OPTIONAL,
+				failInfo BIT STRING OPTIONAL
+				},
+			certKeyPair	SEQUENCE {			-- If status == 0 or 1
+				cert[0]	EXPLICIT Certificate,
+or				encCert						-- For encr-only key
+					[1] EXPLICIT EncryptedCert,
+						...					-- Ignored
+					}
+				}
+			}
+		},
+	protection		[0]	EXPLICIT BIT STRING	-- ip = MAC, cp/kup = SIG
+	}
+
+CertConf ::= SEQUENCE {						-- 3.3.18, profile = B8
+	header				SEQUENCE {
+		version			INTEGER (2),
+		sender			SEQUENCE {...},		-- Ignored
+		recipient		SEQUENCE {...},		-- Ignored
+		messageTime	[0]	... OPTIONAL,		-- Ignored
+		protAlgo	[1]	EXPLICIT AlgorithmIdentifier (PBMac),
+		protKeyID	[2]	EXPLICIT OCTET STRING,			-- Must match previous
+		transID		[4] EXPLICIT OCTET STRING SIZE (16),-- Must match previous
+		nonce		[5] EXPLICIT OCTET STRING SIZE (16),-- Random
+		nonceX		[6] EXPLICIT OCTET STRING SIZE (16),-- Copied from InitResp
+						...					-- Ignored
+		},
+	body		   [24]	EXPLICIT SEQUENCE {
+						SEQUENCE {
+		certHash		OCTET STRING
+		certReqID		INTEGER (0),
+			}
+		},
+	protection		[0]	EXPLICIT BIT STRING	-- ix = MAC, cx/kux = SIG
+	}
+
+Conf ::= SEQUENCE {							-- 3.3.17, profile = B8
+	header				SEQUENCE {
+		version			INTEGER (2),
+		sender			SEQUENCE {...},		-- Ignored
+		recipient		SEQUENCE {...},		-- Ignored
+		messageTime	[0]	... OPTIONAL,		-- Ignored
+		protAlgo	[1]	EXPLICIT AlgorithmIdentifier (PBMac),
+		protKeyID	[2]	EXPLICIT OCTET STRING,			-- Must match previous
+		transID		[4] EXPLICIT OCTET STRING SIZE (16),-- Must match previous
+						...					-- Ignored
+		},
+	body		   [19]	EXPLICIT NULL,
+	protection		[0]	EXPLICIT BIT STRING	-- ix = MAC, cx/kux = SIG
+	}
+
+RevRequest ::= SEQUENCE {					-- rr, 3.3.9
+	header				SEQUENCE {
+		version			INTEGER (2),
+		sender		[4]	EXPLICIT DirectoryName,	-- DN of subject
+		recipient	[4]	EXPLICIT DirectoryName,	-- DN of CA
+		protAlgo	[1]	EXPLICIT AlgorithmIdentifier (PBMac),
+		protKeyID	[2] EXPLICIT OCTET STRING,
+		transID		[4] EXPLICIT OCTET STRING SIZE (16),	-- Random
+		nonce		[5] EXPLICIT OCTET STRING SIZE (16),	-- Random
+		},
+	body		   [11]	EXPLICIT SEQUENCE {
+		revDetails		SEQUENCE {
+			cTemplate	SEQUENCE {			-- RFC 2510
+				serial	[1] INTEGER,
+				issuer	[3] EXPLICIT NAME
+						},
+			crlEntries	Extensions OPTIONAL
+					}
+				},
+	protection		[0]	EXPLICIT BIT STRING	-- MAC or SIG
+	}
+
+RevResponse ::= SEQUENCE {					-- rp, 3.3.10
+	header				SEQUENCE {
+		version			INTEGER (2),
+		sender			SEQUENCE {...},		-- Ignored
+		recipient		SEQUENCE {...},		-- Ignored
+		messageTime	[0]	... OPTIONAL,		-- Ignored
+		protAlgo	[1]	EXPLICIT AlgorithmIdentifier (PBMac),
+		protKeyID	[2]	EXPLICIT OCTET STRING,			-- Must match previous
+		transID		[4] EXPLICIT OCTET STRING SIZE (16),-- Must match previous
+						...					-- Ignored
+		},
+	body		   [12]	EXPLICIT SEQUENCE {
+		status			SEQUENCE {
+						SEQUENCE {			-- PKIStatusInfo, 3.2.3
+			status		INTEGER,
+			statusStr	SEQUENCE OF UTF8String OPTIONAL,
+			failInfo	BIT STRING OPTIONAL
+						},
+						...					-- Ignored
+					}
+						...					-- Ignored
+			},
+	protection		[0]	EXPLICIT BIT STRING	-- MAC or SIG
+	}
+
+GenMsg ::= SEQUENCE {						-- 3.3.19/3.3.20
+	header				SEQUENCE {
+		version			INTEGER (2),
+		sender			SEQUENCE {...},		-- Ignored
+		recipient		SEQUENCE {...},		-- Ignored
+		messageTime	[0]	... OPTIONAL,		-- Ignored
+		protAlgo	[1]	EXPLICIT AlgorithmIdentifier (sigAlgo),
+		protKeyID	[2]	EXPLICIT OCTET STRING,			-- Must match previous
+		transID		[4] EXPLICIT OCTET STRING SIZE (16),-- Must match previous
+						...					-- Ignored
+		},
+	body		   [21]	EXPLICIT SEQUENCE OF {
+						SEQUENCE {
+		infoType		OBJECT IDENTIFIER,
+		intoValue		ANY DEFINED BY infoType OPTIONAL
+						}
+					},
+	protection		[0]	EXPLICIT BIT STRING	-- MAC or SIG
+	}
+
+Error ::= SEQUENCE {						-- 3.3.21
+	header				SEQUENCE {
+		version			INTEGER (2),
+		sender			SEQUENCE {...},		-- Ignored
+		recipient		SEQUENCE {...},		-- Ignored
+		messageTime	[0]	... OPTIONAL,		-- Ignored
+		protAlgo	[1]	EXPLICIT AlgorithmIdentifier (sigAlgo),
+		protKeyID	[2]	EXPLICIT OCTET STRING,			-- Must match previous
+		transID		[4] EXPLICIT OCTET STRING SIZE (16),-- Must match previous
+						...					-- Ignored
+		},
+	body		   [23]	EXPLICIT SEQUENCE {
+						SEQUENCE {
+		status			INTEGER,
+						SEQUENCE {
+			statusMsg	UTF8String,
+						...					-- Ignored
+						} OPTIONAL,
+		failInfo		BIT STRING OPTIONAL
+						},
+		errorCode		INTEGER OPTIONAL,
+						SEQUENCE {
+			errorMsg	UTF8String,
+						...					-- Ignored
+						} OPTIONAL
+					},
+	protection		[0]	EXPLICIT BIT STRING	-- SIG
+	}
+
+-/ The MAC information used when the protection is a MAC /-
+
+MacInfo ::= SEQUENCE {
+	algoID				OBJECT IDENTIFIER (entrustMAC),
+	algoParams			SEQUENCE {
+		salt			OCTET STRING,
+		pwHashAlgo		AlgorithmIdentifier (SHA-1),
+		iterations		INTEGER,
+		macAlgo			AlgorithmIdentifier (HMAC-SHA1)
+		}
+	}
+
+-/ The encrypted data when the cert is returned encrypted /-
+
+EncryptedCert ::= SEQUENCE {
+	dummy			[0]	... OPTIONAL,		-- Ignored
+	cekAlg			[1]	AlgorithmIdentifier,-- CEK algorithm
+	encCEK			[2]	BIT STRING,			-- Encrypted CEK
+	dummy			[3]	... OPTIONAL,		-- Ignored
+	dummy			[4] ... OPTIONAL,		-- Ignored
+	encData			BIT STRING
+	}
+
+------------------------------------------------------------------------------
+--																			--
+--						Certificate Messages over CMS						--
+--																			--
+------------------------------------------------------------------------------
+
+-/ CMC request and response messages.  Certificates are returned as signing
+   certs attached to the CMS signed data /-
+
+PKIData ::= SEQUENCE {
+	attributes		SEQUENCE OF TaggedAttribute, -- Control attrs.
+	requests		SEQUENCE OF TaggedReq,	-- Cert.requests
+	cms				SEQUENCE OF TaggedCMS,	-- CMS messages
+	other			SEQUENCE OF OtherMsg	-- Type-and-value pairs
+	}
+
+PKIResp ::= SEQUENCE {
+	attributes		SEQUENCE OF TaggedAttribute, -- Control attrs.
+	cms				SEQUENCE OF TaggedCMS,	-- CMS messages
+	other			SEQUENCE OF OtherMsg	-- Type-and-value pairs
+	}
+
+-/ TaggedXYZ types.  OtherMsg is identical to TaggedAttribute except that
+   the value field is ANY DEFINED BY /-
+
+TaggedAttribute ::= SEQUENCE {
+	iD				INTEGER,				-- Unique 32-bit ID for this attr.
+	type			OBJECT IDENTIFIER,
+	values			SEQUENCE OF Attribute
+	}
+
+TaggedCMS ::= SEQUENCE {
+	iD				INTEGER,				-- Unique 32-bit ID for this attr.
+	value			CMS
+	}
+
+END

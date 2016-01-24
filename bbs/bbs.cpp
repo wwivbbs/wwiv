@@ -44,9 +44,8 @@
 #include "core/os.h"
 
 #if defined( _WIN32 )
-#include <direct.h>
-#include "bbs/platform/win32/InternalTelnetServer.h"
-#include "bbs/platform/win32/Wiot.h"
+//#include <direct.h>
+#include "bbs/wiot.h"
 #include "bbs/local_io_win32.h"
 #else
 #include <unistd.h>
@@ -67,20 +66,7 @@ WSession* session() { return sess; }
 
 
 int WApplication::BBSMainLoop(int argc, char *argv[]) {
-// TODO - move this to WIOTelnet
 #if defined ( _WIN32 )
-  WIOTelnet::InitializeWinsock();
-  // If there is only 1 argument "-TELSRV" then use internal telnet daemon
-  if (argc == 2 && IsEqualsIgnoreCase(argv[1], "-TELSRV")) {
-    WInternalTelnetServer server(sess);
-    server.RunTelnetServer();
-    sess = CreateSession(app_, new Win32ConsoleIO());
-    sess->ExitBBSImpl(0);
-    return 0;
-  }
-#endif // _WIN32
-
-#ifdef _WIN32
   sess = CreateSession(app_, new Win32ConsoleIO());
 #else
   sess = CreateSession(app_, new NullLocalIO());
