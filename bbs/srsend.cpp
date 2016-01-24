@@ -21,7 +21,7 @@
 #include "bbs/crc.h"
 #include "bbs/datetime.h"
 #include "bbs/keycodes.h"
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
@@ -290,10 +290,10 @@ void zmodem_send(const char *file_name, bool *sent, double *percent) {
   char *pszWorkingFileName = strdup(file_name);
   StringRemoveWhitespace(pszWorkingFileName);
 
-  bool bOldBinaryMode = session()->remoteIO()->GetBinaryMode();
-  session()->remoteIO()->SetBinaryMode(true);
+  bool bOldBinaryMode = session()->remoteIO()->binary_mode();
+  session()->remoteIO()->set_binary_mode(true);
   bool bResult = NewZModemSendFile(pszWorkingFileName);
-  session()->remoteIO()->SetBinaryMode(bOldBinaryMode);
+  session()->remoteIO()->set_binary_mode(bOldBinaryMode);
 
   if (bResult) {
     *sent = true;

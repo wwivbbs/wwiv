@@ -17,8 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#if !defined (__INCLUDED_WCOMM_H__)
-#define __INCLUDED_WCOMM_H__
+#if !defined (__INCLUDED_BBS_REMOTE_IO_H__)
+#define __INCLUDED_BBS_REMOTE_IO_H__
 
 #include <string>
 
@@ -29,24 +29,28 @@ enum class CommunicationType {
   UNIX
 };
 
+/** Information about the remote session. */
+class RemoteInfo {
+public:
+  void clear() {
+    cid_name.clear();
+    address.clear();
+    username.clear();
+    password.clear();
+  }
+
+  std::string cid_name;
+  std::string address;
+  std::string username;
+  std::string password;
+};
 /**
  * Base Communication Class.
  */
-class WComm {
- private:
-  // used by the GetLastErrorText() method
-  static std::string error_text_;
-  std::string remote_name_;
-  std::string remote_address_;
-
- protected:
-  bool binary_mode_;
-
-  static const std::string GetLastErrorText();
-
+class RemoteIO {
  public:
-  WComm() : binary_mode_(false) {}
-  virtual ~WComm() {}
+  RemoteIO() : binary_mode_(false) {}
+  virtual ~RemoteIO() {}
 
   virtual bool open() = 0;
   virtual void close(bool temporary) = 0;
@@ -62,21 +66,21 @@ class WComm {
   virtual unsigned int GetHandle() const = 0;
   virtual unsigned int GetDoorHandle() const { return GetHandle(); }
 
-  void SetBinaryMode(bool b) { binary_mode_ = b; }
-  bool GetBinaryMode() const { return binary_mode_; }
+  void set_binary_mode(bool b) { binary_mode_ = b; }
+  bool binary_mode() const { return binary_mode_; }
 
-  void ClearRemoteInformation() {
-    remote_name_ = "";
-    remote_address_ = "";
-  }
+  RemoteInfo& remote_info() { return remote_info_; }
 
-  void SetRemoteName(std::string name) { remote_name_ = name; }
-  void SetRemoteAddress(std::string address) { remote_address_ = address; }
-  const std::string GetRemoteName() const { return remote_name_; }
-  const std::string GetRemoteAddress() const { return remote_address_; }
+protected:
+  bool binary_mode_;
+
+  static const std::string GetLastErrorText();
+
+private:
+  // used by the GetLastErrorText() method
+  static std::string error_text_;
+  RemoteInfo remote_info_;
 };
 
-
-
-#endif  // #if !defined (__INCLUDED_WCOMM_H__)
+#endif  // #if !defined (__INCLUDED_BBS_REMOTE_IO_H__)
 

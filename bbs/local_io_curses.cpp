@@ -35,7 +35,7 @@
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/file.h"

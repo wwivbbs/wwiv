@@ -22,7 +22,7 @@
 #include "bbs/crc.h"
 #include "bbs/datetime.h"
 #include "bbs/keycodes.h"
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
@@ -336,10 +336,10 @@ void zmodem_receive(const string& filename, bool *received) {
   string local_filename(filename);
   wwiv::strings::RemoveWhitespace(&local_filename);
 
-  bool bOldBinaryMode = session()->remoteIO()->GetBinaryMode();
-  session()->remoteIO()->SetBinaryMode(true);
+  bool bOldBinaryMode = session()->remoteIO()->binary_mode();
+  session()->remoteIO()->set_binary_mode(true);
   bool bResult = NewZModemReceiveFile(local_filename.c_str());
-  session()->remoteIO()->SetBinaryMode(bOldBinaryMode);
+  session()->remoteIO()->set_binary_mode(bOldBinaryMode);
 
   *received = (bResult) ? true : false;
 }

@@ -38,14 +38,14 @@
 #include "bbs/bbs.h"
 #include "bbs/null_local_io.h"
 #include "bbs/sysoplog.h"
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 #include "bbs/wsession.h"
 #include "core/strings.h"
 #include "core/os.h"
 
 #if defined( _WIN32 )
 //#include <direct.h>
-#include "bbs/wiot.h"
+#include "bbs/remote_socket_io.h"
 #include "bbs/local_io_win32.h"
 #else
 #include <unistd.h>

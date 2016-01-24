@@ -23,8 +23,8 @@
 #include <mutex>
 #include <string>
 
-#include "bbs/wcomm.h"
-#include "bbs/wiot.h"
+#include "bbs/remote_io.h"
+#include "bbs/remote_socket_io.h"
 
 namespace wwiv {
 namespace bbs {
@@ -63,7 +63,7 @@ private:
   std::atomic<bool> closed_ = false;
 };
 
-class IOSSH: public WComm {
+class IOSSH: public RemoteIO {
 public:
   IOSSH(SOCKET socket, Key& key);
   virtual ~IOSSH();
@@ -86,7 +86,7 @@ public:
 private:
   std::thread ssh_receive_thread_;
   std::thread ssh_send_thread_;
-  std::unique_ptr<WIOTelnet> io_;
+  std::unique_ptr<RemoteSocketIO> io_;
   SOCKET ssh_socket_;
   SOCKET plain_socket_;
   SSHSession session_;

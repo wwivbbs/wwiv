@@ -46,6 +46,8 @@ constexpr int SOCKET_ERROR = -1;
 
 #include "cryptlib.h"
 
+#include "core/os.h"
+
 using std::clog;
 using std::endl;
 using std::string;
@@ -110,6 +112,29 @@ bool Key::Create() {
   return true;
 }
 
+static bool GetSSHUserNameAndPassword(CRYPT_HANDLE session, std::string& username, std::string& password) {
+  char username_str[CRYPT_MAX_TEXTSIZE + 1];
+  char password_str[CRYPT_MAX_TEXTSIZE + 1];
+  int usernameLength = 0;
+  int passwordLength = 0;
+
+  username.clear();
+  password.clear();
+
+  // Get the user name and password
+  if (!OK(cryptGetAttributeString(session, CRYPT_SESSINFO_USERNAME, username_str, &usernameLength))) {
+    return false;
+  }
+  username_str[usernameLength] = '\0';
+
+  if (!OK(cryptGetAttributeString(session, CRYPT_SESSINFO_PASSWORD, password_str, &passwordLength))) {
+    return false;
+  }
+  password_str[passwordLength] = '\0';
+  username.assign(username_str);
+  password.assign(password_str);
+}
+
 SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socket_handle) {
   static bool once = ssh_once_init();
   int status = CRYPT_ERROR_INVALID;
@@ -143,6 +168,7 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
     status = cryptSetAttribute(session_, CRYPT_SESSINFO_ACTIVE, 1);
     if (status != CRYPT_ENVELOPE_RESOURCE) {
       clog << "Hmm...";
+      getchar();
     }
     if (OK(status)) {
       success = true;
@@ -155,9 +181,15 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
     // Clear out any remaining control messages.
     int bytes_received = 0;
     char buffer[4096];
-    cryptPopData(session_, buffer, 4096, &bytes_received);
+    for (int count = 0; bytes_received <= 0 && count < 10; count++) {
+      cryptPopData(session_, buffer, 4096, &bytes_received);
+      wwiv::os::sleep_for(std::chrono::milliseconds(100));
+    }
   }
   initialized_ = success;
+  string username;
+  string password;
+  GetSSHUserNameAndPassword(session_, username, password);
   // TODO(rushfan): Grab the username/password.
 }
 
@@ -257,14 +289,14 @@ static void writer_thread(SSHSession& session, SOCKET socket) {
 
 IOSSH::IOSSH(SOCKET ssh_socket, Key& key) 
   : ssh_socket_(ssh_socket), session_(ssh_socket, key) {
-  static bool initialized = WIOTelnet::Initialize();
+  static bool initialized = RemoteSocketIO::Initialize();
   if (!ssh_initalize()) {
     clog << "ERROR INITIALIZING SSH (ssh_initalize)" << endl;
   }
   if (!session_.initialized()) {
     clog << "ERROR INITIALIZING SSH (SSHSession::initialized)" << endl;
   }
-  io_.reset(new WIOTelnet(plain_socket_));
+  io_.reset(new RemoteSocketIO(plain_socket_));
 }
 
 IOSSH::~IOSSH() {

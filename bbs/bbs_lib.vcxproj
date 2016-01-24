@@ -172,11 +172,11 @@
     <ClInclude Include="vars.h" />
     <ClInclude Include="vote.h" />
     <ClInclude Include="voteedit.h" />
-    <ClInclude Include="wcomm.h" />
+    <ClInclude Include="remote_io.h" />
     <ClInclude Include="wconstants.h" />
     <ClInclude Include="wfc.h" />
     <ClInclude Include="wfc_log.h" />
-    <ClInclude Include="wiot.h" />
+    <ClInclude Include="remote_socket_io.h" />
     <ClInclude Include="workspace.h" />
     <ClInclude Include="woutstreambuffer.h" />
     <ClInclude Include="wsession.h" />
@@ -297,10 +297,10 @@
     <ClCompile Include="valscan.cpp" />
     <ClCompile Include="vote.cpp" />
     <ClCompile Include="voteedit.cpp" />
-    <ClCompile Include="WComm.cpp" />
+    <ClCompile Include="remote_io.cpp" />
     <ClCompile Include="wfc.cpp" />
     <ClCompile Include="wfc_log.cpp" />
-    <ClCompile Include="wiot.cpp" />
+    <ClCompile Include="remote_socket_io.cpp" />
     <ClCompile Include="workspace.cpp" />
     <ClCompile Include="WOutStream.cpp" />
     <ClCompile Include="WOutStreamBuffer.cpp" />

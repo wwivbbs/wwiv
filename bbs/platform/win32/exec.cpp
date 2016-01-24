@@ -25,7 +25,7 @@
 #include <sstream>
 
 #include "bbs/bbs.h"
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 #include "bbs/platform/platformfcns.h"
 #include "bbs/sysoplog.h"
 #include "bbs/wsession.h"
@@ -403,8 +403,8 @@ int ExecExternalProgram(const string commandLine, int flags) {
   CloseHandle(pi.hThread);
 
   if (bUsingSync) {
-    bool bSavedBinaryMode = session()->remoteIO()->GetBinaryMode();
-    session()->remoteIO()->SetBinaryMode(true);
+    bool bSavedBinaryMode = session()->remoteIO()->binary_mode();
+    session()->remoteIO()->set_binary_mode(true);
     bool bSyncLoopStatus = DoSyncFosLoopNT(pi.hProcess, hSyncHangupEvent, hSyncReadSlot, nSyncMode);
     fprintf(hLogFile,  "DoSyncFosLoopNT: Returning %s\r\n", (bSyncLoopStatus) ? "TRUE" : "FALSE");
 
@@ -421,7 +421,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
         TerminateProcess(pi.hProcess, 0);
       }
     }
-    session()->remoteIO()->SetBinaryMode(bSavedBinaryMode);
+    session()->remoteIO()->set_binary_mode(bSavedBinaryMode);
   } else {
     // Wait until child process exits.
     WaitForSingleObject(pi.hProcess, INFINITE);

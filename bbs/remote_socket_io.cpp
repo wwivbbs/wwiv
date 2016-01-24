@@ -22,7 +22,7 @@
 #pragma comment(lib, "Ws2_32.lib")
 #endif  // _WIN32
 
-#include "bbs/wiot.h"
+#include "bbs/remote_socket_io.h"
 
 #include <iostream>
 #include <memory>
@@ -44,11 +44,11 @@ using std::unique_ptr;
 using namespace wwiv::strings;
 
 
-WIOTelnet::WIOTelnet(int socket_handle)
+RemoteSocketIO::RemoteSocketIO(int socket_handle)
   : socket_(static_cast<SOCKET>(socket_handle)), threads_started_(false) {
   // assigning the value to a static causes this only to be
   // initialized once.
-  static bool once = WIOTelnet::Initialize();
+  static bool once = RemoteSocketIO::Initialize();
   if (socket_handle == 0) {
     // This means we don't have a real socket handle, for example running in local mode.
     // so we set it to INVALID_SOCKET and don't initialize anything.
@@ -65,15 +65,15 @@ WIOTelnet::WIOTelnet(int socket_handle)
   clog << "Created Stop Event: " << GetLastErrorText() << endl;
 }
 
-unsigned int WIOTelnet::GetHandle() const {
+unsigned int RemoteSocketIO::GetHandle() const {
   return static_cast<unsigned int>(socket_);
 }
 
-unsigned int WIOTelnet::GetDoorHandle() const {
+unsigned int RemoteSocketIO::GetDoorHandle() const {
   return GetHandle();
 }
 
-bool WIOTelnet::open() {
+bool RemoteSocketIO::open() {
   if (socket_ == INVALID_SOCKET) {
     // We can not open an invalid socket.
     return false;
@@ -85,31 +85,31 @@ bool WIOTelnet::open() {
 
   getpeername(socket_, reinterpret_cast<SOCKADDR *>(&addr), &nAddrSize);
 
+  remote_info().cid_name = "Internet TELNET Session";
   const string address = inet_ntoa(addr.sin_addr);
-  SetRemoteName("Internet TELNET Session");
-  SetRemoteAddress(address);
+  remote_info().address = address;
 
   { 
     unsigned char s[3] = {
-        WIOTelnet::TELNET_OPTION_IAC,
-        WIOTelnet::TELNET_OPTION_DONT,
-        WIOTelnet::TELNET_OPTION_ECHO
+        RemoteSocketIO::TELNET_OPTION_IAC,
+        RemoteSocketIO::TELNET_OPTION_DONT,
+        RemoteSocketIO::TELNET_OPTION_ECHO
     };
     write(reinterpret_cast<char*>(s), 3, true);
   }
   { 
     unsigned char s[3] = {
-        WIOTelnet::TELNET_OPTION_IAC,
-        WIOTelnet::TELNET_OPTION_WILL,
-        WIOTelnet::TELNET_OPTION_ECHO
+        RemoteSocketIO::TELNET_OPTION_IAC,
+        RemoteSocketIO::TELNET_OPTION_WILL,
+        RemoteSocketIO::TELNET_OPTION_ECHO
     };
     write(reinterpret_cast<char*>(s), 3, true);
   }
   { 
     unsigned char s[3] = { 
-        WIOTelnet::TELNET_OPTION_IAC,
-        WIOTelnet::TELNET_OPTION_DONT,
-        WIOTelnet::TELNET_OPTION_LINEMODE 
+        RemoteSocketIO::TELNET_OPTION_IAC,
+        RemoteSocketIO::TELNET_OPTION_DONT,
+        RemoteSocketIO::TELNET_OPTION_LINEMODE 
     };
     write(reinterpret_cast<char*>(s), 3, true);
   }
@@ -117,7 +117,7 @@ bool WIOTelnet::open() {
   return true;
 }
 
-void WIOTelnet::close(bool temporary) {
+void RemoteSocketIO::close(bool temporary) {
   if (socket_ == INVALID_SOCKET) {
     // Early return on invalid sockets.
     return;
@@ -130,7 +130,7 @@ void WIOTelnet::close(bool temporary) {
   }
 }
 
-unsigned int WIOTelnet::put(unsigned char ch) {
+unsigned int RemoteSocketIO::put(unsigned char ch) {
   // Early return on invalid sockets.
   if (!valid_socket()) { return 0; }
 
@@ -157,7 +157,7 @@ unsigned int WIOTelnet::put(unsigned char ch) {
   }
 }
 
-unsigned char WIOTelnet::getW() {
+unsigned char RemoteSocketIO::getW() {
   if (!valid_socket()) { return 0; }
   char ch = 0;
   std::lock_guard<std::mutex> lock(mu_);
@@ -168,7 +168,7 @@ unsigned char WIOTelnet::getW() {
   return static_cast<unsigned char>(ch);
 }
 
-bool WIOTelnet::dtr(bool raise) {
+bool RemoteSocketIO::dtr(bool raise) {
   // Early return on invalid sockets.
   if (!valid_socket()) { return false; }
 
@@ -179,7 +179,7 @@ bool WIOTelnet::dtr(bool raise) {
   return true;
 }
 
-void WIOTelnet::purgeIn() {
+void RemoteSocketIO::purgeIn() {
   // Early return on invalid sockets.
   if (!valid_socket()) { return; }
 
@@ -189,7 +189,7 @@ void WIOTelnet::purgeIn() {
   }
 }
 
-unsigned int WIOTelnet::read(char *buffer, unsigned int count) {
+unsigned int RemoteSocketIO::read(char *buffer, unsigned int count) {
   // Early return on invalid sockets.
   if (!valid_socket()) { return 0; }
 
@@ -207,7 +207,7 @@ unsigned int WIOTelnet::read(char *buffer, unsigned int count) {
   return nRet;
 }
 
-unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTranslation) {
+unsigned int RemoteSocketIO::write(const char *buffer, unsigned int count, bool bNoTranslation) {
   // Early return on invalid sockets.
   if (!valid_socket()) { return 0; }
 
@@ -250,11 +250,11 @@ unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTr
   }
 }
 
-bool WIOTelnet::carrier() {
+bool RemoteSocketIO::carrier() {
   return valid_socket();
 }
 
-bool WIOTelnet::incoming() {
+bool RemoteSocketIO::incoming() {
   // Early return on invalid sockets.
   if (!valid_socket()) { return false; }
 
@@ -263,13 +263,13 @@ bool WIOTelnet::incoming() {
   return bRet;
 }
 
-void WIOTelnet::StopThreads() {
+void RemoteSocketIO::StopThreads() {
   if (!threads_started_) {
     return;
   }
   if (!SetEvent(stop_event_)) {
     const string error_text = GetLastErrorText();
-    clog << "WIOTelnet::StopThreads: Error with SetEvent " << GetLastError() 
+    clog << "RemoteSocketIO::StopThreads: Error with SetEvent " << GetLastError() 
          << " - '" << error_text << "'" << endl;
   }
   ::Sleep(0);
@@ -279,14 +279,14 @@ void WIOTelnet::StopThreads() {
   threads_started_ = false;
 }
 
-void WIOTelnet::StartThreads() {
+void RemoteSocketIO::StartThreads() {
   if (threads_started_) {
     return;
   }
 
   if (!ResetEvent(stop_event_)) {
     const string error_text = GetLastErrorText();
-    clog << "WIOTelnet::StartThreads: Error with ResetEvent " << GetLastError()
+    clog << "RemoteSocketIO::StartThreads: Error with ResetEvent " << GetLastError()
          << " - '" << error_text << "'" << endl;
   }
 
@@ -294,7 +294,7 @@ void WIOTelnet::StartThreads() {
   threads_started_ = true;
 }
 
-WIOTelnet::~WIOTelnet() {
+RemoteSocketIO::~RemoteSocketIO() {
   StopThreads();
   CloseHandle(stop_event_);
   stop_event_ = INVALID_HANDLE_VALUE;
@@ -303,7 +303,7 @@ WIOTelnet::~WIOTelnet() {
 
 // Static Class Members.
 
-bool WIOTelnet::Initialize() {
+bool RemoteSocketIO::Initialize() {
   WSADATA wsaData;
   int err = WSAStartup(0x0101, &wsaData);
 
@@ -332,8 +332,8 @@ bool WIOTelnet::Initialize() {
   return err == 0;
 }
 
-void WIOTelnet::InboundTelnetProc(void* pTelnetVoid) {
-  WIOTelnet* pTelnet = static_cast<WIOTelnet*>(pTelnetVoid);
+void RemoteSocketIO::InboundTelnetProc(void* pTelnetVoid) {
+  RemoteSocketIO* pTelnet = static_cast<RemoteSocketIO*>(pTelnetVoid);
   WSAEVENT hEvent = WSACreateEvent();
   WSANETWORKEVENTS events;
   char szBuffer[4096];
@@ -352,7 +352,7 @@ void WIOTelnet::InboundTelnetProc(void* pTelnetVoid) {
     if (dwWaitRet == (WSA_WAIT_EVENT_0 + 1)) {
       if (!ResetEvent(pTelnet->stop_event_)) {
         const string error_text = GetLastErrorText();
-        clog << "WIOTelnet::InboundTelnetProc: Error with ResetEvent " 
+        clog << "RemoteSocketIO::InboundTelnetProc: Error with ResetEvent " 
              << GetLastError() << " - '" << error_text << "'" << endl;
       }
 
@@ -404,7 +404,7 @@ void WIOTelnet::InboundTelnetProc(void* pTelnetVoid) {
   WSACloseEvent(hEvent);
 }
 
-void WIOTelnet::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
+void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   // We should probably start responding to the DO and DONT options....
   ::OutputDebugString("HandleTelnetIAC: ");
 
@@ -448,11 +448,11 @@ void WIOTelnet::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   }
 }
 
-void WIOTelnet::AddStringToInputBuffer(int nStart, int nEnd, char *buffer) {
+void RemoteSocketIO::AddStringToInputBuffer(int nStart, int nEnd, char *buffer) {
   WWIV_ASSERT(buffer);
   std::lock_guard<std::mutex> lock(mu_);
 
-  bool bBinaryMode = GetBinaryMode();
+  bool bBinaryMode = binary_mode();
   for (int i = nStart; i < nEnd; i++) {
     if ((static_cast<unsigned char>(buffer[i]) == 255)) {
       if ((i + 1) < nEnd  && static_cast<unsigned char>(buffer[i + 1]) == 255) {

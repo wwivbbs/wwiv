@@ -37,7 +37,7 @@
 #include "bbs/newuser.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
@@ -555,13 +555,13 @@ static void UpdateLastOnFileAndUserLog() {
         sysoplog("", false);
     }
 
-    string remoteAddress = session()->remoteIO()->GetRemoteAddress();
-    string remoteName = session()->remoteIO()->GetRemoteName();
-    if (remoteAddress.length() > 0) {
-      sysoplogf("CID NUM : %s", remoteAddress.c_str());
+    string remote_address = session()->remoteIO()->remote_info().address;
+    string cid_name = session()->remoteIO()->remote_info().cid_name;
+    if (!remote_address.empty()) {
+      sysoplogf("CID NUM : %s", remote_address.c_str());
     }
-    if (remoteName.length() > 0) {
-      sysoplogf("CID NAME: %s", remoteName.c_str());
+    if (!cid_name.empty()) {
+      sysoplogf("CID NAME: %s", cid_name.c_str());
     }
     string log_line;
     if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
