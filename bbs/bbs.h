@@ -27,7 +27,7 @@
 #include <memory>
 #include <string>
 
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 #include "bbs/wsession.h"
 #include "bbs/wstatus.h"
 #include "sdk/user.h"

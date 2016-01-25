@@ -106,7 +106,7 @@ set(COMMON_SOURCES
  valscan.cpp
  vote.cpp
  voteedit.cpp
- wcomm.cpp
+ remote_io.cpp
  woutstream.cpp
  woutstreambuffer.cpp
  wqscn.cpp

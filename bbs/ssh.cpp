@@ -46,6 +46,8 @@ constexpr int SOCKET_ERROR = -1;
 
 #include "cryptlib.h"
 
+#include "core/os.h"
+
 using std::clog;
 using std::endl;
 using std::string;
@@ -110,8 +112,35 @@ bool Key::Create() {
   return true;
 }
 
+static bool GetSSHUserNameAndPassword(CRYPT_HANDLE session, std::string& username, std::string& password) {
+  char username_str[CRYPT_MAX_TEXTSIZE + 1];
+  char password_str[CRYPT_MAX_TEXTSIZE + 1];
+  int usernameLength = 0;
+  int passwordLength = 0;
+
+  username.clear();
+  password.clear();
+
+  // Get the user name and password
+  if (!OK(cryptGetAttributeString(session, CRYPT_SESSINFO_USERNAME, username_str, &usernameLength))) {
+    return false;
+  }
+  username_str[usernameLength] = '\0';
+
+  if (!OK(cryptGetAttributeString(session, CRYPT_SESSINFO_PASSWORD, password_str, &passwordLength))) {
+    return false;
+  }
+  password_str[passwordLength] = '\0';
+  username.assign(username_str);
+  password.assign(password_str);
+
+  return true;
+}
+
 SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socket_handle) {
   static bool once = ssh_once_init();
+  // GCC 4.9 has issues with assigning this to false in the class.
+  closed_.store(false);
   int status = CRYPT_ERROR_INVALID;
 
   status = cryptCreateSession(&session_, CRYPT_UNUSED, CRYPT_SESSION_SSH_SERVER);
@@ -143,6 +172,7 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
     status = cryptSetAttribute(session_, CRYPT_SESSINFO_ACTIVE, 1);
     if (status != CRYPT_ENVELOPE_RESOURCE) {
       clog << "Hmm...";
+      //getchar();
     }
     if (OK(status)) {
       success = true;
@@ -155,10 +185,13 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
     // Clear out any remaining control messages.
     int bytes_received = 0;
     char buffer[4096];
-    cryptPopData(session_, buffer, 4096, &bytes_received);
+    for (int count = 0; bytes_received <= 0 && count < 10; count++) {
+      cryptPopData(session_, buffer, 4096, &bytes_received);
+      wwiv::os::sleep_for(std::chrono::milliseconds(100));
+    }
   }
   initialized_ = success;
-  // TODO(rushfan): Grab the username/password.
+  GetSSHUserNameAndPassword(session_, remote_username_, remote_password_);
 }
 
 int SSHSession::PushData(const char* data, size_t size) {
@@ -188,6 +221,18 @@ bool SSHSession::close() {
   cryptDestroySession(session_);
   closed_.store(true);
   return true;
+}
+
+std::string SSHSession::GetAndClearRemoteUserName() {
+  string temp = remote_username_;
+  remote_username_.clear();
+  return std::move(temp);
+}
+
+std::string SSHSession::GetAndClearRemotePassword() {
+  string temp = remote_password_;
+  remote_password_.clear();
+  return std::move(temp);
 }
 
 static bool socket_avail(SOCKET sock, int seconds) {
@@ -257,14 +302,17 @@ static void writer_thread(SSHSession& session, SOCKET socket) {
 
 IOSSH::IOSSH(SOCKET ssh_socket, Key& key) 
   : ssh_socket_(ssh_socket), session_(ssh_socket, key) {
-  static bool initialized = WIOTelnet::Initialize();
+  static bool initialized = RemoteSocketIO::Initialize();
   if (!ssh_initalize()) {
     clog << "ERROR INITIALIZING SSH (ssh_initalize)" << endl;
   }
   if (!session_.initialized()) {
     clog << "ERROR INITIALIZING SSH (SSHSession::initialized)" << endl;
   }
-  io_.reset(new WIOTelnet(plain_socket_));
+  io_.reset(new RemoteSocketIO(plain_socket_, false));
+  RemoteInfo& info = remote_info();
+  info.username = session_.GetAndClearRemoteUserName();
+  info.password = session_.GetAndClearRemotePassword();
 }
 
 IOSSH::~IOSSH() {

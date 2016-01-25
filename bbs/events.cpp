@@ -27,7 +27,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/netsup.h"
 #include "bbs/printfile.h"
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
 #include "core/wwivassert.h"

@@ -23,8 +23,8 @@
 #include <mutex>
 #include <string>
 
-#include "bbs/wcomm.h"
-#include "bbs/wiot.h"
+#include "bbs/remote_io.h"
+#include "bbs/remote_socket_io.h"
 
 namespace wwiv {
 namespace bbs {
@@ -54,16 +54,20 @@ public:
   bool initialized() const { return initialized_; }
   bool closed() const { return closed_.load(); }
   bool close();
+  std::string GetAndClearRemoteUserName();
+  std::string GetAndClearRemotePassword();
 
 private:
   mutable std::mutex mu_;
   int session_ = 0;
   int socket_handle_ = -1;
   bool initialized_ = false;
-  std::atomic<bool> closed_ = false;
+  std::atomic<bool> closed_;
+  std::string remote_username_;
+  std::string remote_password_;
 };
 
-class IOSSH: public WComm {
+class IOSSH: public RemoteIO {
 public:
   IOSSH(SOCKET socket, Key& key);
   virtual ~IOSSH();
@@ -86,7 +90,7 @@ public:
 private:
   std::thread ssh_receive_thread_;
   std::thread ssh_send_thread_;
-  std::unique_ptr<WIOTelnet> io_;
+  std::unique_ptr<RemoteSocketIO> io_;
   SOCKET ssh_socket_;
   SOCKET plain_socket_;
   SSHSession session_;
