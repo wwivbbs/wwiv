@@ -23,9 +23,9 @@
 #include <sys/poll.h>
 #include <sys/ioctl.h>
 
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 
-class WIOUnix : public WComm {
+class WIOUnix : public RemoteIO {
  private:
   int tty_open;
   struct termios ttysav;

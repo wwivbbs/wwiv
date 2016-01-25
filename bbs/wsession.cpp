@@ -57,7 +57,7 @@
 #include "bbs/uedit.h"
 #include "bbs/utility.h"
 #include "bbs/voteedit.h"
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
 #include "bbs/wsession.h"
@@ -71,7 +71,7 @@
 #include "sdk/filenames.h"
 
 #if defined( _WIN32 )
-#include "bbs/wiot.h"
+#include "bbs/remote_socket_io.h"
 #include "bbs/local_io_win32.h"
 #else
 #include "bbs/platform/unix/wiou.h"
@@ -117,7 +117,7 @@ WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app),
 
 WSession::~WSession() {
   if (comm_ && ok_modem_stuff) {
-    comm_->close();
+    comm_->close(false);
   }
   if (local_io_) {
     local_io_->SetCursor(LocalIO::cursorNormal);
@@ -154,7 +154,7 @@ if (type == CommunicationType::SSH) {
     }
     comm_.reset(new wwiv::bbs::IOSSH(nHandle, key));
   } else {
-    comm_.reset(new WIOTelnet(nHandle));
+    comm_.reset(new RemoteSocketIO(nHandle, true));
   }
   bout.SetComm(comm_.get());
 }
@@ -354,7 +354,7 @@ const std::string WSession::network_directory() const {
 void WSession::GetCaller() {
   SetShutDownStatus(WSession::shutdownNone);
   wfc_init();
-  remoteIO()->ClearRemoteInformation();
+  remoteIO()->remote_info().clear();
   frequent_init();
   if (wfc_status == 0) {
     localIO()->LocalCls();

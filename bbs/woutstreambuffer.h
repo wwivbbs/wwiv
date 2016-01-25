@@ -33,14 +33,14 @@ class WOutStreamBuffer : public std::streambuf {
   virtual std::streamsize xsputn(const char *text, std::streamsize numChars);
 };
 
-class WComm;
+class RemoteIO;
 class LocalIO;
 
 class WOutStream : public std::ostream {
  protected:
   WOutStreamBuffer buf;
   LocalIO *local_io_;
-  WComm *comm_;
+  RemoteIO *comm_;
 
  public:
   WOutStream() :
@@ -55,8 +55,8 @@ class WOutStream : public std::ostream {
   void SetLocalIO(LocalIO *local_io) { local_io_ = local_io; }
   LocalIO* localIO() const { return local_io_; }
 
-  void SetComm(WComm *comm) { comm_ = comm; }
-  WComm* remoteIO() const { return comm_; }
+  void SetComm(RemoteIO *comm) { comm_ = comm; }
+  RemoteIO* remoteIO() const { return comm_; }
 
   void Color(int wwivColor);
   void ResetColors();

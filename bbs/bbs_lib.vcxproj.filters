@@ -277,9 +277,6 @@
     <ClCompile Include="voteedit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WComm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="wfc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -367,7 +364,12 @@
     <ClCompile Include="ssh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="wiot.cpp" />
+    <ClCompile Include="remote_io.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="remote_socket_io.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -425,9 +427,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vars.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wcomm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wconstants.h">
@@ -655,7 +654,10 @@
     <ClInclude Include="ssh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="wiot.h">
+    <ClInclude Include="remote_io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="remote_socket_io.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

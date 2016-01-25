@@ -19,12 +19,12 @@
 // Always declare wwiv_windows.h first to avoid collisions on defines.
 #include "bbs/wwiv_windows.h"
 
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 
 #include "core/wwivport.h"
 
 #if defined ( _WIN32 )
-#include "bbs/wiot.h"
+#include "bbs/remote_socket_io.h"
 #include "bbs/ssh.h"
 #elif defined ( __unix__ )
 #include "bbs/platform/unix/wiou.h"
@@ -34,9 +34,9 @@
 #include "core/wwivport.h"
 
 // static
-std::string WComm::error_text_;
+std::string RemoteIO::error_text_;
 
-const std::string WComm::GetLastErrorText() {
+const std::string RemoteIO::GetLastErrorText() {
 #if defined ( _WIN32 )
   char* error_text;
   wwiv::core::ScopeExit on_exit([&error_text] {LocalFree(error_text);});

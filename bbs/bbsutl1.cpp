@@ -25,7 +25,7 @@
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/input.h"
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/textfile.h"

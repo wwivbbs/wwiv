@@ -16,10 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_WIOT_H__
-#define __INCLUDED_BBS_WIOT_H__
+#ifndef __INCLUDED_BBS_REMOTE_SOCKET_IO_H__
+#define __INCLUDED_BBS_REMOTE_SOCKET_IO_H__
 
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 
 #include <cstdint>
 #include <mutex>
@@ -36,7 +36,7 @@ typedef int SOCKET;
 constexpr int INVALID_SOCKET = -1;
 #endif // _WIN32
 
-class WIOTelnet : public WComm {
+class RemoteSocketIO : public RemoteIO {
  public:
   static const char CHAR_TELNET_OPTION_IAC = '\xFF';;
   static const uint8_t TELNET_OPTION_IAC = 255;
@@ -63,8 +63,8 @@ class WIOTelnet : public WComm {
  public:
   static bool Initialize();
 
-  explicit WIOTelnet(int socket_handle);
-  virtual ~WIOTelnet();
+  RemoteSocketIO(int socket_handle, bool telnet);
+  virtual ~RemoteSocketIO();
 
   virtual bool open() override;
   virtual void close(bool bIsTemporary) override;
@@ -93,8 +93,9 @@ class WIOTelnet : public WComm {
   SOCKET socket_;
   std::thread read_thread_;
   HANDLE stop_event_;
-  bool threads_started_;
+  bool threads_started_ = false;
+  bool telnet_ = true;
 };
 
-#endif  // __INCLUDED_BBS_WIOT_H__
+#endif  // __INCLUDED_BBS_REMOTE_SOCKET_IO_H__
 

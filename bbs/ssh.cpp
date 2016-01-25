@@ -46,6 +46,8 @@ constexpr int SOCKET_ERROR = -1;
 
 #include "cryptlib.h"
 
+#include "core/os.h"
+
 using std::clog;
 using std::endl;
 using std::string;
@@ -54,6 +56,10 @@ using std::unique_ptr;
 
 namespace wwiv {
 namespace bbs {
+
+struct socket_error: public std::runtime_error {
+  socket_error(const std::string& message): std::runtime_error(message) {}
+};
 
 static constexpr char WWIV_SSH_KEY_NAME[] = "wwiv_ssh_server";
 #define RETURN_IF_ERROR(s) { if (!cryptStatusOK(s)) return false; }
@@ -106,8 +112,35 @@ bool Key::Create() {
   return true;
 }
 
+static bool GetSSHUserNameAndPassword(CRYPT_HANDLE session, std::string& username, std::string& password) {
+  char username_str[CRYPT_MAX_TEXTSIZE + 1];
+  char password_str[CRYPT_MAX_TEXTSIZE + 1];
+  int usernameLength = 0;
+  int passwordLength = 0;
+
+  username.clear();
+  password.clear();
+
+  // Get the user name and password
+  if (!OK(cryptGetAttributeString(session, CRYPT_SESSINFO_USERNAME, username_str, &usernameLength))) {
+    return false;
+  }
+  username_str[usernameLength] = '\0';
+
+  if (!OK(cryptGetAttributeString(session, CRYPT_SESSINFO_PASSWORD, password_str, &passwordLength))) {
+    return false;
+  }
+  password_str[passwordLength] = '\0';
+  username.assign(username_str);
+  password.assign(password_str);
+
+  return true;
+}
+
 SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socket_handle) {
   static bool once = ssh_once_init();
+  // GCC 4.9 has issues with assigning this to false in the class.
+  closed_.store(false);
   int status = CRYPT_ERROR_INVALID;
 
   status = cryptCreateSession(&session_, CRYPT_UNUSED, CRYPT_SESSION_SSH_SERVER);
@@ -139,6 +172,7 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
     status = cryptSetAttribute(session_, CRYPT_SESSINFO_ACTIVE, 1);
     if (status != CRYPT_ENVELOPE_RESOURCE) {
       clog << "Hmm...";
+      //getchar();
     }
     if (OK(status)) {
       success = true;
@@ -151,10 +185,13 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
     // Clear out any remaining control messages.
     int bytes_received = 0;
     char buffer[4096];
-    cryptPopData(session_, buffer, 4096, &bytes_received);
+    for (int count = 0; bytes_received <= 0 && count < 10; count++) {
+      cryptPopData(session_, buffer, 4096, &bytes_received);
+      wwiv::os::sleep_for(std::chrono::milliseconds(100));
+    }
   }
   initialized_ = success;
-  // TODO(rushfan): Grab the username/password.
+  GetSSHUserNameAndPassword(session_, remote_username_, remote_password_);
 }
 
 int SSHSession::PushData(const char* data, size_t size) {
@@ -176,6 +213,28 @@ int SSHSession::PopData(char* data, size_t buffer_size) {
   return bytes_copied;
 }
 
+bool SSHSession::close() {
+  std::lock_guard<std::mutex> lock(mu_);
+  if (closed_.load()) {
+    return false;
+  }
+  cryptDestroySession(session_);
+  closed_.store(true);
+  return true;
+}
+
+std::string SSHSession::GetAndClearRemoteUserName() {
+  string temp = remote_username_;
+  remote_username_.clear();
+  return std::move(temp);
+}
+
+std::string SSHSession::GetAndClearRemotePassword() {
+  string temp = remote_password_;
+  remote_password_.clear();
+  return std::move(temp);
+}
+
 static bool socket_avail(SOCKET sock, int seconds) {
   fd_set fds;
   FD_ZERO(&fds);
@@ -185,25 +244,35 @@ static bool socket_avail(SOCKET sock, int seconds) {
   tv.tv_sec = seconds;
   tv.tv_usec = 0;
 
-  return select(sock + 1, &fds, 0, 0, &tv) == 1;
+  int result = select(sock + 1, &fds, 0, 0, &tv);
+  if (result == SOCKET_ERROR) {
+    throw socket_error("Error on select for socket.");
+  }
+  return result == 1;
 }
 // Reads from remote socket using session, writes to socket
 static void reader_thread(SSHSession& session, SOCKET socket) {
   constexpr size_t size = 16 * 1024;
   std::unique_ptr<char[]> data = std::make_unique<char[]>(size);
-  while (true) {
-    if (!socket_avail(session.socket_handle(), 1)) {
-      // TODO(rushfan): Check for closed sockets, etc.
-      continue;
+  try {
+    while (true) {
+      if (session.closed()) {
+        return;
+      }
+      if (!socket_avail(session.socket_handle(), 1)) {
+        continue;
+      }
+      memset(data.get(), 0, size);
+      int num_read = session.PopData(data.get(), size);
+      if (num_read == -1) {
+        // error.
+        return;
+      }
+      int num_sent = send(socket, data.get(), num_read, 0);
+      // clog << "reader_thread: sent " << num_sent << endl;
     }
-    memset(data.get(), 0, size);
-    int num_read = session.PopData(data.get(), size);
-    if (num_read == -1) {
-      // error.
-      return;
-    }
-    int num_sent = send(socket, data.get(), num_read, 0);
-    // clog << "reader_thread: sent " << num_sent << endl;
+  } catch (const socket_error& e) {
+    clog << e.what() << endl;
   }
 }
 
@@ -211,30 +280,39 @@ static void reader_thread(SSHSession& session, SOCKET socket) {
 static void writer_thread(SSHSession& session, SOCKET socket) {
   constexpr size_t size = 16 * 1024;
   std::unique_ptr<char[]> data = std::make_unique<char[]>(size);
-  while (true) {
-    if (!socket_avail(socket, 1)) {
-      // TODO(): Check for closed sockets, etc.
-      continue;
+  try {
+    while (true) {
+        if (session.closed()) {
+          return;
+        }
+      if (!socket_avail(socket, 1)) {
+        continue;
+      }
+      memset(data.get(), 0, size);
+      int num_read = recv(socket, data.get(), size, 0);
+      if (num_read > 0) {
+        int num_sent = session.PushData(data.get(), num_read);
+        // clog << "writer_thread: pushed_data: " << num_sent << endl;
+      }
     }
-    memset(data.get(), 0, size);
-    int num_read = recv(socket, data.get(), size, 0);
-    if (num_read > 0) {
-      int num_sent = session.PushData(data.get(), num_read);
-      // clog << "writer_thread: pushed_data: " << num_sent << endl;
-    }
+  } catch (const socket_error& e) {
+    clog << e.what() << endl;
   }
 }
 
 IOSSH::IOSSH(SOCKET ssh_socket, Key& key) 
   : ssh_socket_(ssh_socket), session_(ssh_socket, key) {
-  static bool initialized = WIOTelnet::Initialize();
+  static bool initialized = RemoteSocketIO::Initialize();
   if (!ssh_initalize()) {
     clog << "ERROR INITIALIZING SSH (ssh_initalize)" << endl;
   }
   if (!session_.initialized()) {
     clog << "ERROR INITIALIZING SSH (SSHSession::initialized)" << endl;
   }
-  io_.reset(new WIOTelnet(plain_socket_));
+  io_.reset(new RemoteSocketIO(plain_socket_, false));
+  RemoteInfo& info = remote_info();
+  info.username = session_.GetAndClearRemoteUserName();
+  info.password = session_.GetAndClearRemotePassword();
 }
 
 IOSSH::~IOSSH() {
@@ -305,7 +383,14 @@ bool IOSSH::ssh_initalize() {
 }
 
 bool IOSSH::open() { return io_->open(); }
-void IOSSH::close(bool temporary) { return io_->close(temporary);  }
+
+void IOSSH::close(bool temporary) { 
+  if (!temporary) {
+    session_.close();
+  }
+  io_->close(temporary);
+}
+
 unsigned char IOSSH::getW() { return io_->getW();  }
 bool IOSSH::dtr(bool raise) { return io_->dtr(raise);  }
 void IOSSH::purgeIn() { io_->purgeIn();  }
