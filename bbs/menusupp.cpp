@@ -235,18 +235,15 @@ void KillEMail() {
 }
 
 void LastCallers() {
-  std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
-  if (pStatus->GetNumCallsToday() > 0) {
-    if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
-        (syscfg.sysconfig & sysconfig_extended_info)) {
-      bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
-    } else {
-      bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
-    }
-    unsigned char i = okansi() ? 205 : '=';
-    bout << "|#7" << string(79, i) << wwiv::endl;
+  if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
+      (syscfg.sysconfig & sysconfig_extended_info)) {
+    bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
+  } else {
+    bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
   }
-  printfile(USER_LOG);
+  char filler_char = okansi() ? static_cast<char>(205) : '=';
+  bout << "|#7" << string(79, filler_char) << wwiv::endl;
+  printfile(LASTON_TXT);
 }
 
 void ReadEMail() {
