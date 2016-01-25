@@ -139,6 +139,8 @@ static bool GetSSHUserNameAndPassword(CRYPT_HANDLE session, std::string& usernam
 
 SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socket_handle) {
   static bool once = ssh_once_init();
+  // GCC 4.9 has issues with assigning this to false in the class.
+  closed_.store(false);
   int status = CRYPT_ERROR_INVALID;
 
   status = cryptCreateSession(&session_, CRYPT_UNUSED, CRYPT_SESSION_SSH_SERVER);

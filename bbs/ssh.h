@@ -62,7 +62,7 @@ private:
   int session_ = 0;
   int socket_handle_ = -1;
   bool initialized_ = false;
-  std::atomic<bool> closed_ = false;
+  std::atomic<bool> closed_;
   std::string remote_username_;
   std::string remote_password_;
 };
