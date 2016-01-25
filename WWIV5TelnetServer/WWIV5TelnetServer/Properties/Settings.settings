@@ -50,5 +50,11 @@
     <Setting Name="checkUpdates" Type="System.String" Scope="User">
       <Value Profile="(Default)">On Startup</Value>
     </Setting>
+    <Setting Name="portSSH" Type="System.Decimal" Scope="User">
+      <Value Profile="(Default)">22</Value>
+    </Setting>
+    <Setting Name="parameters2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">-XS -H@H -N@N</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
