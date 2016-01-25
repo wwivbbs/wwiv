@@ -130,9 +130,6 @@
     <ClCompile Include="instmsg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\win32\InternalTelnetServer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="interpret.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -286,9 +283,6 @@
     <ClCompile Include="wfc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\win32\wiot.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WOutStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -370,6 +364,10 @@
     <ClCompile Include="email.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ssh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="wiot.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -439,9 +437,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sysoplog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="platform\win32\wiot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="woutstreambuffer.h">
@@ -645,7 +640,6 @@
     <ClInclude Include="msgbase1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="colors.h" />
     <ClInclude Include="defaults.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -653,6 +647,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="extract.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="colors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ssh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wiot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

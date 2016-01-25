@@ -136,27 +136,28 @@ cd %WORKSPACE%\bbs\admin
 cd %WORKSPACE%\
 echo:
 echo * Copying BBS files to staging directory.
-copy /v/y %WORKSPACE%\bbs\Release\bbs.exe %WORKSPACE%\release\bbs.exe
-copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\release\WWIV5TelnetServer.exe %WORKSPACE%\release\WWIV5TelnetServer.exe
-copy /v/y %WORKSPACE%\windows-wwiv-update\bin\Release\wwiv-update.exe %WORKSPACE%\release\wwiv-update.exe
-copy /v/y %WORKSPACE%\init\Release\init.exe %WORKSPACE%\release\init.exe
-copy /v/y %WORKSPACE%\network\Release\network.exe %WORKSPACE%\release\network.exe
-copy /v/y %WORKSPACE%\networkb\Release\networkb.exe %WORKSPACE%\release\networkb.exe
-copy /v/y %WORKSPACE%\wwivutil\Release\wwivutil.exe %WORKSPACE%\release\wwivutil.exe
+copy /v/y %WORKSPACE%\deps\cl342\Release\cl32.dll %WORKSPACE%\release\cl32.dll || exit /b
+copy /v/y %WORKSPACE%\bbs\Release\bbs.exe %WORKSPACE%\release\bbs.exe || exit /b
+copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\release\WWIV5TelnetServer.exe %WORKSPACE%\release\WWIV5TelnetServer.exe || exit /b
+copy /v/y %WORKSPACE%\windows-wwiv-update\bin\Release\wwiv-update.exe %WORKSPACE%\release\wwiv-update.exe || exit /b
+copy /v/y %WORKSPACE%\init\Release\init.exe %WORKSPACE%\release\init.exe || exit /b
+copy /v/y %WORKSPACE%\network\Release\network.exe %WORKSPACE%\release\network.exe || exit /b
+copy /v/y %WORKSPACE%\networkb\Release\networkb.exe %WORKSPACE%\release\networkb.exe || exit /b
+copy /v/y %WORKSPACE%\wwivutil\Release\wwivutil.exe %WORKSPACE%\release\wwivutil.exe || exit /b
 copy /v/y %WORKSPACE%\bbs\admin\* %WORKSPACE%\release\
 copy /v/y %WORKSPACE%\bbs\admin\win32\* %WORKSPACE%\release\
 
 echo:
 echo * Copying WINS files to staging area
 set WINS=%WORKSPACE%\wins
-copy /v/y %WINS%\exp\Release\exp.exe %WORKSPACE%\release\exp.exe
-copy /v/y %WINS%\networkp\Release\networkp.exe %WORKSPACE%\release\networkp.exe
-copy /v/y %WINS%\news\Release\news.exe %WORKSPACE%\release\news.exe
-copy /v/y %WINS%\pop\Release\pop.exe %WORKSPACE%\release\pop.exe
-copy /v/y %WINS%\pppurge\Release\pppurge.exe %WORKSPACE%\release\pppurge.exe
-copy /v/y %WINS%\ppputil\Release\ppputil.exe %WORKSPACE%\release\ppputil.exe
-copy /v/y %WINS%\qotd\Release\qotd.exe %WORKSPACE%\release\qotd.exe
-copy /v/y %WINS%\uu\Release\uu.exe %WORKSPACE%\release\uu.exe
+copy /v/y %WINS%\exp\Release\exp.exe %WORKSPACE%\release\exp.exe || exit /b
+copy /v/y %WINS%\networkp\Release\networkp.exe %WORKSPACE%\release\networkp.exe || exit /b
+copy /v/y %WINS%\news\Release\news.exe %WORKSPACE%\release\news.exe || exit /b
+copy /v/y %WINS%\pop\Release\pop.exe %WORKSPACE%\release\pop.exe || exit /b
+copy /v/y %WINS%\pppurge\Release\pppurge.exe %WORKSPACE%\release\pppurge.exe || exit /b
+copy /v/y %WINS%\ppputil\Release\ppputil.exe %WORKSPACE%\release\ppputil.exe || exit /b
+copy /v/y %WINS%\qotd\Release\qotd.exe %WORKSPACE%\release\qotd.exe || exit /b
+copy /v/y %WINS%\uu\Release\uu.exe %WORKSPACE%\release\uu.exe || exit /b
 
 echo:
 echo * Copying WINS sample filesto staging area

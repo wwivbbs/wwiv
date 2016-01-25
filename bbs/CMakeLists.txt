@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 2.6)
 project (BBS)
 include_directories(..)
 include_directories(../deps/rapidjson-master/include)
+include_directories(../deps/cl342)
 
 set(COMMON_SOURCES 
  archivers.cpp
@@ -87,6 +88,7 @@ set(COMMON_SOURCES
  sr.cpp
  srrcv.cpp
  srsend.cpp
+ ssh.cpp
  status.cpp
  stuffin.cpp
  subacc.cpp
