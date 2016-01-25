@@ -154,7 +154,7 @@ if (type == CommunicationType::SSH) {
     }
     comm_.reset(new wwiv::bbs::IOSSH(nHandle, key));
   } else {
-    comm_.reset(new RemoteSocketIO(nHandle));
+    comm_.reset(new RemoteSocketIO(nHandle, true));
   }
   bout.SetComm(comm_.get());
 }

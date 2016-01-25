@@ -133,6 +133,8 @@ static bool GetSSHUserNameAndPassword(CRYPT_HANDLE session, std::string& usernam
   password_str[passwordLength] = '\0';
   username.assign(username_str);
   password.assign(password_str);
+
+  return true;
 }
 
 SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socket_handle) {
@@ -168,7 +170,7 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
     status = cryptSetAttribute(session_, CRYPT_SESSINFO_ACTIVE, 1);
     if (status != CRYPT_ENVELOPE_RESOURCE) {
       clog << "Hmm...";
-      getchar();
+      //getchar();
     }
     if (OK(status)) {
       success = true;
@@ -187,10 +189,7 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
     }
   }
   initialized_ = success;
-  string username;
-  string password;
-  GetSSHUserNameAndPassword(session_, username, password);
-  // TODO(rushfan): Grab the username/password.
+  GetSSHUserNameAndPassword(session_, remote_username_, remote_password_);
 }
 
 int SSHSession::PushData(const char* data, size_t size) {
@@ -220,6 +219,18 @@ bool SSHSession::close() {
   cryptDestroySession(session_);
   closed_.store(true);
   return true;
+}
+
+std::string SSHSession::GetAndClearRemoteUserName() {
+  string temp = remote_username_;
+  remote_username_.clear();
+  return std::move(temp);
+}
+
+std::string SSHSession::GetAndClearRemotePassword() {
+  string temp = remote_password_;
+  remote_password_.clear();
+  return std::move(temp);
 }
 
 static bool socket_avail(SOCKET sock, int seconds) {
@@ -296,7 +307,10 @@ IOSSH::IOSSH(SOCKET ssh_socket, Key& key)
   if (!session_.initialized()) {
     clog << "ERROR INITIALIZING SSH (SSHSession::initialized)" << endl;
   }
-  io_.reset(new RemoteSocketIO(plain_socket_));
+  io_.reset(new RemoteSocketIO(plain_socket_, false));
+  RemoteInfo& info = remote_info();
+  info.username = session_.GetAndClearRemoteUserName();
+  info.password = session_.GetAndClearRemotePassword();
 }
 
 IOSSH::~IOSSH() {

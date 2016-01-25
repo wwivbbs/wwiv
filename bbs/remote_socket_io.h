@@ -63,7 +63,7 @@ class RemoteSocketIO : public RemoteIO {
  public:
   static bool Initialize();
 
-  explicit RemoteSocketIO(int socket_handle);
+  RemoteSocketIO(int socket_handle, bool telnet);
   virtual ~RemoteSocketIO();
 
   virtual bool open() override;
@@ -93,7 +93,8 @@ class RemoteSocketIO : public RemoteIO {
   SOCKET socket_;
   std::thread read_thread_;
   HANDLE stop_event_;
-  bool threads_started_;
+  bool threads_started_ = false;
+  bool telnet_ = true;
 };
 
 #endif  // __INCLUDED_BBS_REMOTE_SOCKET_IO_H__

@@ -44,8 +44,8 @@ using std::unique_ptr;
 using namespace wwiv::strings;
 
 
-RemoteSocketIO::RemoteSocketIO(int socket_handle)
-  : socket_(static_cast<SOCKET>(socket_handle)), threads_started_(false) {
+RemoteSocketIO::RemoteSocketIO(int socket_handle, bool telnet)
+  : socket_(static_cast<SOCKET>(socket_handle)), telnet_(telnet) {
   // assigning the value to a static causes this only to be
   // initialized once.
   static bool once = RemoteSocketIO::Initialize();
@@ -88,30 +88,31 @@ bool RemoteSocketIO::open() {
   remote_info().cid_name = "Internet TELNET Session";
   const string address = inet_ntoa(addr.sin_addr);
   remote_info().address = address;
-
-  { 
-    unsigned char s[3] = {
-        RemoteSocketIO::TELNET_OPTION_IAC,
-        RemoteSocketIO::TELNET_OPTION_DONT,
-        RemoteSocketIO::TELNET_OPTION_ECHO
-    };
-    write(reinterpret_cast<char*>(s), 3, true);
-  }
-  { 
-    unsigned char s[3] = {
-        RemoteSocketIO::TELNET_OPTION_IAC,
-        RemoteSocketIO::TELNET_OPTION_WILL,
-        RemoteSocketIO::TELNET_OPTION_ECHO
-    };
-    write(reinterpret_cast<char*>(s), 3, true);
-  }
-  { 
-    unsigned char s[3] = { 
-        RemoteSocketIO::TELNET_OPTION_IAC,
-        RemoteSocketIO::TELNET_OPTION_DONT,
-        RemoteSocketIO::TELNET_OPTION_LINEMODE 
-    };
-    write(reinterpret_cast<char*>(s), 3, true);
+  if (telnet_) {
+    { 
+      unsigned char s[3] = {
+          RemoteSocketIO::TELNET_OPTION_IAC,
+          RemoteSocketIO::TELNET_OPTION_DONT,
+          RemoteSocketIO::TELNET_OPTION_ECHO
+      };
+      write(reinterpret_cast<char*>(s), 3, true);
+    }
+    { 
+      unsigned char s[3] = {
+          RemoteSocketIO::TELNET_OPTION_IAC,
+          RemoteSocketIO::TELNET_OPTION_WILL,
+          RemoteSocketIO::TELNET_OPTION_ECHO
+      };
+      write(reinterpret_cast<char*>(s), 3, true);
+    }
+    { 
+      unsigned char s[3] = { 
+          RemoteSocketIO::TELNET_OPTION_IAC,
+          RemoteSocketIO::TELNET_OPTION_DONT,
+          RemoteSocketIO::TELNET_OPTION_LINEMODE 
+      };
+      write(reinterpret_cast<char*>(s), 3, true);
+    }
   }
 
   return true;

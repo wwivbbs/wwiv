@@ -54,6 +54,8 @@ public:
   bool initialized() const { return initialized_; }
   bool closed() const { return closed_.load(); }
   bool close();
+  std::string GetAndClearRemoteUserName();
+  std::string GetAndClearRemotePassword();
 
 private:
   mutable std::mutex mu_;
@@ -61,6 +63,8 @@ private:
   int socket_handle_ = -1;
   bool initialized_ = false;
   std::atomic<bool> closed_ = false;
+  std::string remote_username_;
+  std::string remote_password_;
 };
 
 class IOSSH: public RemoteIO {

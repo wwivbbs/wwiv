@@ -180,12 +180,18 @@ static int FindUserByRealName(const std::string& user_name) {
   return 0;
 }
 
-static int ShowLoginAndGetUserNumber() {
+static int ShowLoginAndGetUserNumber(string remote_username) {
   bout.nl();
   bout << "Enter number or name or 'NEW'\r\n";
   bout << "NN: ";
 
-  string user_name = input(30);
+  string user_name;
+  if (remote_username.empty()) {
+    user_name = input(30);
+  } else {
+    bout << remote_username << wwiv::endl;
+    user_name = remote_username;
+  }
   StringTrim(&user_name);
 
   int user_number = finduser(user_name);
@@ -222,8 +228,12 @@ bool VerifyPhoneNumber() {
   return true;
 }
 
-static bool VerifyPassword() {
+static bool VerifyPassword(string remote_password) {
   session()->UpdateTopScreen();
+
+  if (!remote_password.empty() && remote_password == session()->user()->GetPassword()) {
+    return true;
+  }
 
   string password = input_password("PW: ", 8);
   return (password == session()->user()->GetPassword());
@@ -341,8 +351,18 @@ void getuser() {
   session()->user()->SetStatus(0);
 
   int ans = GetAnsiStatusAndShowWelcomeScreen();
+  bool first_time = true;
   do {
-    session()->usernum = ShowLoginAndGetUserNumber();
+    string remote_username;
+    string remote_password;
+    if (first_time) {
+      remote_username = session()->remoteIO()->remote_info().username;
+      remote_password = session()->remoteIO()->remote_info().password;
+      StringUpperCase(&remote_username);
+      StringUpperCase(&remote_password);
+      first_time = false;
+    }
+    session()->usernum = ShowLoginAndGetUserNumber(remote_username);
     if (session()->usernum > 0) {
       session()->ReadCurrentUser();
       read_qscn(session()->usernum, qsc, false);
@@ -360,7 +380,7 @@ void getuser() {
         logon_guest();
       } else {
         session()->SetEffectiveSl(syscfg.newusersl);
-        if (!VerifyPassword()) {
+        if (!VerifyPassword(remote_password)) {
           ok = false;
         }
 
