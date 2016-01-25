@@ -612,12 +612,6 @@ static void UpdateLastOnFileAndUserLog() {
     }
 
     if (session()->GetEffectiveSl() != 255) {
-      File userLog(session()->config()->gfilesdir(), USER_LOG);
-      if (userLog.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-        userLog.Seek(0L, File::seekEnd);
-        userLog.Write(log_line);
-        userLog.Close();
-      }
       File lastonFile(laston_txt_filename);
       if (lastonFile.Open(File::modeReadWrite | File::modeBinary |
                           File::modeCreateFile | File::modeTruncate)) {

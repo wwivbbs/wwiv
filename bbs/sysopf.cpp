@@ -869,6 +869,8 @@ void beginday(bool displayStatus) {
     bout << "  |#7* |#1Cleaning up log files...\r\n";
   }
   File::Remove(session()->config()->gfilesdir(), pStatus->GetLogFileName(2));
+  // we don't create this anymore, but still should remove it if it exists.
+  // TODO(rushfan): should this be moved to an upgrade fom 5.0 to 5.1 script?
   File::Remove(session()->config()->gfilesdir(), USER_LOG);
 
   if (displayStatus) {
