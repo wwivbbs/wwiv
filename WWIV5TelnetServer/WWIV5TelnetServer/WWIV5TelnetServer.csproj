@@ -75,6 +75,7 @@
   <ItemGroup>
     <Compile Include="BeginDayHandler.cs" />
     <Compile Include="CheckUpdates.cs" />
+    <Compile Include="NodeManager.cs" />
     <Compile Include="CommandLineBuilder.cs" />
     <Compile Include="Launcher.cs" />
     <Compile Include="NodeStatus.cs" />
