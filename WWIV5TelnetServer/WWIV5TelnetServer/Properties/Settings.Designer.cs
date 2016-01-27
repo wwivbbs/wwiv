@@ -214,5 +214,29 @@ namespace WWIV5TelnetServer.Properties {
                 this["checkUpdates"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("22")]
+        public decimal portSSH {
+            get {
+                return ((decimal)(this["portSSH"]));
+            }
+            set {
+                this["portSSH"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-XS -H@H -N@N")]
+        public string parameters2 {
+            get {
+                return ((string)(this["parameters2"]));
+            }
+            set {
+                this["parameters2"] = value;
+            }
+        }
     }
 }
