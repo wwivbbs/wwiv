@@ -248,6 +248,10 @@ namespace windows_wwiv_update
                         {
                             entry.ExtractToFile(Path.Combine(extractPath2, entry.FullName), true);
                         }
+                        if (entry.FullName.EndsWith("whatsnew.txt", StringComparison.OrdinalIgnoreCase) && entry.FullName.EndsWith("changelog.txt", StringComparison.OrdinalIgnoreCase))
+                        {
+                            entry.ExtractToFile(Path.Combine(extractPath, entry.FullName), true);
+                        }
                     }
                 }
                 // Update Progress Bar
@@ -267,7 +271,6 @@ namespace windows_wwiv_update
 
             // Launch Telnet Server
             ProcessStartInfo telNet = new ProcessStartInfo("WWIV5TelnetServer.exe");
-            telNet.WindowStyle = ProcessWindowStyle.Minimized;
             Process.Start(telNet);
 
             // Launch Latest Realse Changes into Default Browser

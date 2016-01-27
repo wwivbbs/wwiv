@@ -24,7 +24,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.1.10.%2a</ApplicationVersion>
+    <ApplicationVersion>1.2.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -74,34 +74,58 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BeginDayHandler.cs" />
-    <Compile Include="CheckUpdates.cs" />
-    <Compile Include="NodeManager.cs" />
+    <Compile Include="..\..\..\..\..\Desktop\Fuck Me\CheckUpdates.cs">
+      <Link>CheckUpdates.cs</Link>
+    </Compile>
     <Compile Include="CommandLineBuilder.cs" />
     <Compile Include="Launcher.cs" />
+    <Compile Include="..\..\..\..\..\Desktop\Fuck Me\LogForm.cs">
+      <SubType>Form</SubType>
+      <Link>LogForm.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\..\Desktop\Fuck Me\LogForm.Designer.cs">
+      <DependentUpon>LogForm.cs</DependentUpon>
+      <Link>LogForm.Designer.cs</Link>
+    </Compile>
+    <Compile Include="NodeManager.cs" />
     <Compile Include="NodeStatus.cs" />
     <Compile Include="NodeStatusEventArgs.cs" />
-    <Compile Include="PreferencesDialog.cs">
+    <Compile Include="..\..\..\..\..\Desktop\Fuck Me\PreferencesDialog.cs">
       <SubType>Form</SubType>
+      <Link>PreferencesDialog.cs</Link>
     </Compile>
-    <Compile Include="PreferencesDialog.Designer.cs">
+    <Compile Include="..\..\..\..\..\Desktop\Fuck Me\PreferencesDialog.Designer.cs">
       <DependentUpon>PreferencesDialog.cs</DependentUpon>
+      <Link>PreferencesDialog.Designer.cs</Link>
     </Compile>
+    <Compile Include="Settings.cs" />
+    <Compile Include="SSHServer.cs" />
     <Compile Include="StatusMessageEventArgs.cs" />
-    <Compile Include="TelnetServer.cs" />
-    <Compile Include="MainForm.cs">
-      <SubType>Form</SubType>
+    <Compile Include="..\..\..\..\..\Desktop\C# Projects\TelnetServer SSH\TelnetServer.cs">
+      <Link>TelnetServer.cs</Link>
     </Compile>
-    <Compile Include="MainForm.Designer.cs">
+    <Compile Include="..\..\..\..\..\Desktop\Fuck Me\MainForm.cs">
+      <SubType>Form</SubType>
+      <Link>MainForm.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\..\Desktop\Fuck Me\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
+      <Link>MainForm.Designer.cs</Link>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="MainForm.resx">
+    <EmbeddedResource Include="..\..\..\..\..\Desktop\Fuck Me\LogForm.resx">
+      <DependentUpon>LogForm.cs</DependentUpon>
+      <Link>LogForm.resx</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\..\..\..\Desktop\Fuck Me\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
       <SubType>Designer</SubType>
+      <Link>MainForm.resx</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="PreferencesDialog.resx">
+    <EmbeddedResource Include="..\..\..\..\..\Desktop\Fuck Me\PreferencesDialog.resx">
       <DependentUpon>PreferencesDialog.cs</DependentUpon>
+      <Link>PreferencesDialog.resx</Link>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -125,7 +149,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="..\..\..\..\..\Desktop\Fuck Me\App.config">
+      <SubType>Designer</SubType>
+      <Link>App.config</Link>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
@@ -160,6 +187,8 @@
     <None Include="Resources\delete.jpg" />
     <None Include="Resources\info.png" />
     <None Include="Resources\view.jpg" />
+    <None Include="Resources\bug.png" />
+    <None Include="Resources\move.jpg" />
     <Content Include="telnetserver.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -17,7 +17,6 @@
 /*                                                                        */
 /**************************************************************************/
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Diagnostics;
@@ -25,18 +24,14 @@ using System.Threading;
 
 namespace WWIV5TelnetServer
 {
-    class TelnetServer : IDisposable
+    class SSHServer : IDisposable
     {
         private Socket server;
-        private Socket server2;
         private Thread launcherThread;
-        private Object nodeLock = new Object();
-        private int lowNode;
-        private int highNode;
-        private List<NodeStatus> nodes;
-
-        // Property for Nodes
-        public List<NodeStatus> Nodes { get { return nodes; } }
+        private NodeManager nodeManager;
+        private Int32 port;
+        private string argumentsTemplate;
+        private string name;
 
         public delegate void StatusMessageEventHandler(object sender, StatusMessageEventArgs e);
         public event StatusMessageEventHandler StatusMessageChanged;
@@ -44,20 +39,20 @@ namespace WWIV5TelnetServer
         public delegate void NodeStatusEventHandler(object sender, NodeStatusEventArgs e);
         public event NodeStatusEventHandler NodeStatusChanged;
 
+        public SSHServer(NodeManager nodeManager, Int32 port, string argsTemplate, string name)
+        {
+            this.nodeManager = nodeManager;
+            this.port = port;
+            this.argumentsTemplate = argsTemplate;
+            this.name = name;
+        }
+
         public void Start()
         {
             launcherThread = new Thread(Run);
-            launcherThread.Name = "TelnetServer";
+            launcherThread.Name = "SSHServer";
             launcherThread.Start();
-            OnStatusMessageUpdated("Telnet Server Started", StatusMessageEventArgs.MessageType.LogInfo);
-            lowNode = Convert.ToInt32(Properties.Settings.Default.startNode);
-            highNode = Convert.ToInt32(Properties.Settings.Default.endNode);
-            var size = highNode - lowNode + 1;
-            nodes = new List<NodeStatus>(size);
-            for (int i = 0; i < size; i++)
-            {
-                nodes.Add(new NodeStatus(i + lowNode));
-            }
+            OnStatusMessageUpdated("SSH Server Started", StatusMessageEventArgs.MessageType.LogInfo);
         }
 
         public void Stop()
@@ -67,7 +62,7 @@ namespace WWIV5TelnetServer
                 OnStatusMessageUpdated("ERROR: LauncherThread was never set.", StatusMessageEventArgs.MessageType.LogError);
                 return;
             }
-            OnStatusMessageUpdated("Stopping Telnet Server.", StatusMessageEventArgs.MessageType.LogInfo);
+            OnStatusMessageUpdated("Stopping SSH Server.", StatusMessageEventArgs.MessageType.LogInfo);
             if (server != null)
             {
                 server.Close();
@@ -76,40 +71,24 @@ namespace WWIV5TelnetServer
             launcherThread.Abort();
             launcherThread.Join();
             launcherThread = null;
-            nodes = null;
-            OnStatusMessageUpdated("Telnet Server Stopped", StatusMessageEventArgs.MessageType.LogInfo);
+            OnStatusMessageUpdated("SSH Server Stopped", StatusMessageEventArgs.MessageType.LogInfo);
         }
 
         private void Run()
         {
-            // Telnet Server
-            Int32 port = Convert.ToInt32(Properties.Settings.Default.port);
-            Int32 portSSH = Convert.ToInt32(Properties.Settings.Default.portSSH); // SSH
             server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            server2 = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp); // SSH
             server.Bind(new IPEndPoint(IPAddress.Any, port));
-            server2.Bind(new IPEndPoint(IPAddress.Any, portSSH)); // SSH
             server.Listen(4);
-            server2.Listen(4);
+
             while (true)
             {
                 OnStatusMessageUpdated("Waiting for connection.", StatusMessageEventArgs.MessageType.LogInfo);
                 try
                 {
                     Socket socket = server.Accept();
-                    Socket socket2 = server2.Accept(); // SSH
                     Console.WriteLine("After accept.");
-                    NodeStatus node = getNextNode();
-                    string ip;
-                    if (((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString() != null)
-                    {
-                        ip = ((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString();
-                    }
-                    else
-                    {
-                        ip = ((System.Net.IPEndPoint)socket2.RemoteEndPoint).Address.ToString();
-                    }
-                    // string ip = ((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString();
+                    NodeStatus node = nodeManager.getNextNode();
+                    string ip = ((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString();
                     // HACK
                     if (ip == "202.39.236.116")
                     {
@@ -118,7 +97,7 @@ namespace WWIV5TelnetServer
                         Thread.Sleep(1000);
                         node = null;
                     }
-                    OnStatusMessageUpdated("Connection from " + ip, StatusMessageEventArgs.MessageType.Connect);
+                    OnStatusMessageUpdated(name + " from " + ip, StatusMessageEventArgs.MessageType.Connect);
                     if (node != null)
                     {
                         node.RemoteAddress = ip;
@@ -155,17 +134,6 @@ namespace WWIV5TelnetServer
             try
             {
                 var executable = Properties.Settings.Default.executable;
-                // Detect Port 22 SSH or Use Telnet
-                string bbsProperties;
-                if (server != null)
-                {
-                    bbsProperties = Properties.Settings.Default.parameters;
-                }
-                else
-                {
-                    bbsProperties = Properties.Settings.Default.parameters2;
-                }
-                var argumentsTemplate = bbsProperties;
                 var homeDirectory = Properties.Settings.Default.homeDirectory;
 
                 Launcher launcher = new Launcher(executable, homeDirectory, argumentsTemplate, DebugLog);
@@ -185,10 +153,7 @@ namespace WWIV5TelnetServer
             }
             finally
             {
-                lock (nodeLock)
-                {
-                    node.InUse = false;
-                }
+                nodeManager.freeNode(node);
                 OnNodeUpdated(node);
             }
         }
@@ -196,28 +161,6 @@ namespace WWIV5TelnetServer
         public void Dispose()
         {
             Stop();
-        }
-
-        /**
-         * Gets the next free node or null of none exists.
-         */
-        private NodeStatus getNextNode()
-        {
-            lock (nodeLock)
-            {
-                foreach (NodeStatus node in nodes)
-                {
-                    if (!node.InUse)
-                    {
-                        // Mark it in use.
-                        node.InUse = true;
-                        // return it.
-                        return node;
-                    }
-                }
-            }
-            // No node is available, return null.
-            return null;
         }
 
         protected virtual void OnStatusMessageUpdated(string message, StatusMessageEventArgs.MessageType type)
