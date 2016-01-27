@@ -125,10 +125,6 @@ namespace WWIV5TelnetServer
                     ProcessStartInfo wwivUpdate = new ProcessStartInfo("wwiv-update.exe");
                     Process.Start(wwivUpdate);
                 }
-                else
-                {
-                    // NO - Do Nothing...
-                }
             }
 
             // Periodical Update Checking
@@ -141,10 +137,6 @@ namespace WWIV5TelnetServer
                     ProcessStartInfo wwivUpdate = new ProcessStartInfo("wwiv-update.exe");
                     Process.Start(wwivUpdate);
                 }
-                else
-                {
-                    // NO - Do Nothing...
-                }
             }
             if (UserUpdatePref == "Daily" && newBuild > oldBuild && hourCount >= 24)
             {
@@ -154,10 +146,6 @@ namespace WWIV5TelnetServer
                     // Launch WWIV Update
                     ProcessStartInfo wwivUpdate = new ProcessStartInfo("wwiv-update.exe");
                     Process.Start(wwivUpdate);
-                }
-                else
-                {
-                    // NO - Do Nothing...
                 }
             }
             if (UserUpdatePref == "Weekly" && newBuild > oldBuild && dayCount >= 7)
@@ -169,10 +157,6 @@ namespace WWIV5TelnetServer
                     ProcessStartInfo wwivUpdate = new ProcessStartInfo("wwiv-update.exe");
                     Process.Start(wwivUpdate);
                 }
-                else
-                {
-                    // NO - Do Nothing...
-                }
             }
             if (UserUpdatePref == "Monthly" && newBuild > oldBuild && dayCount >= 30)
             {
@@ -182,10 +166,6 @@ namespace WWIV5TelnetServer
                     // Launch WWIV Update
                     ProcessStartInfo wwivUpdate = new ProcessStartInfo("wwiv-update.exe");
                     Process.Start(wwivUpdate);
-                }
-                else
-                {
-                    // NO - Do Nothing...
                 }
             }
 

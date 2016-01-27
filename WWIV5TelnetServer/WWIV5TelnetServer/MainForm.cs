@@ -256,5 +256,18 @@ namespace WWIV5TelnetServer
             string wwivIssues = "https://github.com/wwivbbs/wwiv/issues";
             Process.Start(wwivIssues);
         }
+
+        private void wWIVOnlineDocumentsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Launch WWIV Online Documents into Default Browser
+            string wwivDocs = "http://docs.wwivbbs.org";
+            Process.Start(wwivDocs);
+        }
+
+        private void viewWWIVLogsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LogForm wwivLogs = new LogForm();
+            wwivLogs.ShowDialog();
+        }
     }
 }

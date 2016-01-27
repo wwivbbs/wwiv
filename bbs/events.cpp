@@ -27,7 +27,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/netsup.h"
 #include "bbs/printfile.h"
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
 #include "core/wwivassert.h"
@@ -246,7 +246,7 @@ void run_event(int evnt) {
   if (events[evnt].status & EVENT_EXIT) {
     exitlevel = static_cast<int>(events[evnt].cmd[0]);
     if (ok_modem_stuff && session()->remoteIO() != nullptr) {
-      session()->remoteIO()->close();
+      session()->remoteIO()->close(false);
     }
     exit(exitlevel);
   }

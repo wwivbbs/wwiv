@@ -42,12 +42,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)\..\;$(UniversalCRT_IncludePath);$(IncludePath);$(ProjectDir)\..\deps\rapidjson-master\include;$(ProjectDir)\..\deps\pdcurses-3.4\include\</IncludePath>
+    <IncludePath>$(ProjectDir)\..\;$(UniversalCRT_IncludePath);$(IncludePath);$(ProjectDir)\..\deps\rapidjson-master\include;$(ProjectDir)\..\deps\pdcurses-3.4\include\;$(ProjectDir)\..\deps\cl342\</IncludePath>
     <IntDir>lib\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)\..\;$(UniversalCRT_IncludePath);$(IncludePath);$(ProjectDir)\..\deps\rapidjson-master\include;$(ProjectDir)\..\deps\pdcurses-3.4\include\</IncludePath>
+    <IncludePath>$(ProjectDir)\..\;$(UniversalCRT_IncludePath);$(IncludePath);$(ProjectDir)\..\deps\rapidjson-master\include;$(ProjectDir)\..\deps\pdcurses-3.4\include\;$(ProjectDir)\..\deps\cl342\</IncludePath>
     <IntDir>lib\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -148,7 +148,6 @@
     <ClInclude Include="pause.h" />
     <ClInclude Include="platform\platformfcns.h" />
     <ClInclude Include="platform\win32\InternalTelnetServer.h" />
-    <ClInclude Include="platform\win32\wiot.h" />
     <ClInclude Include="printfile.h" />
     <ClInclude Include="prot\crctab.h" />
     <ClInclude Include="prot\xmodem.h" />
@@ -160,6 +159,7 @@
     <ClInclude Include="runnable.h" />
     <ClInclude Include="shortmsg.h" />
     <ClInclude Include="sr.h" />
+    <ClInclude Include="ssh.h" />
     <ClInclude Include="stuffin.h" />
     <ClInclude Include="subacc.h" />
     <ClInclude Include="subxtr.h" />
@@ -172,10 +172,11 @@
     <ClInclude Include="vars.h" />
     <ClInclude Include="vote.h" />
     <ClInclude Include="voteedit.h" />
-    <ClInclude Include="wcomm.h" />
+    <ClInclude Include="remote_io.h" />
     <ClInclude Include="wconstants.h" />
     <ClInclude Include="wfc.h" />
     <ClInclude Include="wfc_log.h" />
+    <ClInclude Include="remote_socket_io.h" />
     <ClInclude Include="workspace.h" />
     <ClInclude Include="woutstreambuffer.h" />
     <ClInclude Include="wsession.h" />
@@ -257,9 +258,7 @@
     <ClCompile Include="pause.cpp" />
     <ClCompile Include="datetime.cpp" />
     <ClCompile Include="platform\win32\exec.cpp" />
-    <ClCompile Include="platform\win32\InternalTelnetServer.cpp" />
     <ClCompile Include="platform\win32\utility2.cpp" />
-    <ClCompile Include="platform\win32\wiot.cpp" />
     <ClCompile Include="printfile.cpp" />
     <ClCompile Include="prot\crctab.cpp" />
     <ClCompile Include="prot\zmodem.cpp" />
@@ -280,6 +279,7 @@
     <ClCompile Include="sr.cpp" />
     <ClCompile Include="srrcv.cpp" />
     <ClCompile Include="srsend.cpp" />
+    <ClCompile Include="ssh.cpp" />
     <ClCompile Include="status.cpp" />
     <ClCompile Include="stuffin.cpp" />
     <ClCompile Include="subacc.cpp" />
@@ -297,9 +297,10 @@
     <ClCompile Include="valscan.cpp" />
     <ClCompile Include="vote.cpp" />
     <ClCompile Include="voteedit.cpp" />
-    <ClCompile Include="WComm.cpp" />
+    <ClCompile Include="remote_io.cpp" />
     <ClCompile Include="wfc.cpp" />
     <ClCompile Include="wfc_log.cpp" />
+    <ClCompile Include="remote_socket_io.cpp" />
     <ClCompile Include="workspace.cpp" />
     <ClCompile Include="WOutStream.cpp" />
     <ClCompile Include="WOutStreamBuffer.cpp" />
@@ -314,6 +315,9 @@
   <ItemGroup>
     <ProjectReference Include="..\core\core.vcxproj">
       <Project>{160ca888-2434-48a8-ad4e-02140e3b2c52}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\deps\cl342\crypt32.vcxproj">
+      <Project>{d0793ab4-c236-4105-ad9e-7e8b1716037b}</Project>
     </ProjectReference>
     <ProjectReference Include="..\initlib\initlib.vcxproj">
       <Project>{8ebd5a9a-e149-4e24-b5ca-7ebe0cc45a08}</Project>

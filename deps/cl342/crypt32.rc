@@ -1,0 +1,88 @@
+/* cryptlib resource file.  We provide a slightly different version depending
+   on whether it's a debug or release build because some Windows lusers
+   complained about the fact that the code indicated a version of "beta n".
+   Shipping them exactly the same code renamed to "SPn" fixed the problem.
+
+   Unlike the C compiler, the resource compiler doesn't define platform-
+   specific macros, so it's necessary to do this manually via Properties |
+   Resources | General | Preprocessor Definitions */
+
+#ifdef APSTUDIO_INVOKED
+  #error This file should not be edited using the resource editor (ApStudio)
+#endif /* Resource editor fiddling with the file */
+
+#ifdef _WIN32_WCE
+  #include <winbase.h>
+#else
+  #include <winver.h>
+#endif /* Win32 vs. WinCE */
+#include "misc/config.h"
+
+/* If we're building with nonstandard options, mark it as a private build */
+
+#if defined( USE_CERT_DNSTRING ) || defined( USE_CRYPTOAPI ) || \
+	defined( USE_DNSSRV ) || defined( USE_GCM ) || defined( USE_LDAP ) || \
+	defined( USE_OAEP ) || defined( USE_PKCS12 ) || \
+	defined( USE_SSH_EXTENDED )
+  #define PRIVATE_BUILD
+#endif /* Nonstandard config.options */
+
+/* cryptlib version information, needed at various places in the resources */
+
+#define VERSION		3,4,2
+#define VERSION_STR	"3.4.2\0"
+
+/* The version information resource */
+
+VS_VERSION_INFO		VERSIONINFO
+FILEVERSION			VERSION
+PRODUCTVERSION		VERSION
+FILEFLAGSMASK		VS_FFI_FILEFLAGSMASK
+#if defined( _DEBUG )
+  FILEFLAGS			VS_FF_DEBUG | VS_FF_PRIVATEBUILD | VS_FF_PRERELEASE
+#elif defined( PRIVATE_BUILD )
+  FILEFLAGS			VS_FF_PRIVATEBUILD
+#else
+  FILEFLAGS			0
+#endif /* _DEBUG */
+#ifdef _WIN32_WCE
+  #if UNDER_CE >= 400
+	FILEOS			VOS_WINDOWSCE
+  #else
+	FILEOS			VOS_NT_WINDOWS32
+  #endif /* Older vs. newer eVC++ versions */
+#else
+  FILEOS			VOS_NT
+#endif /* Win32 vs. WinCE */
+FILETYPE			VFT_DLL
+FILESUBTYPE			0					; Not needed for DLLs
+BEGIN
+  BLOCK "VarFileInfo"
+  BEGIN
+	VALUE "Translation", 0x0409, 1252	; US English, Windoze charset
+  END
+
+  BLOCK "StringFileInfo"
+  BEGIN
+	BLOCK "040904E4"					; US English, Windoze charset data
+	BEGIN
+#if defined( _WIN32_WCE )
+	  VALUE "FileDescription", "cryptlib security toolkit for Windows CE\0"
+#elif defined( _WIN64 )
+	  VALUE "FileDescription", "cryptlib security toolkit (64 bit)\0"
+#else
+	  VALUE "FileDescription", "cryptlib security toolkit (32 bit)\0"
+#endif /* Win32 vs. WinCE */
+	  VALUE "ProductName", "cryptlib security toolkit\0"
+	  VALUE "CompanyName", "Peter Gutmann\0"
+	  VALUE "LegalCopyright", "Copyright \251 1994 - 2012 Peter Gutmann, Eric Young, OpenSSL\0"
+	  VALUE "FileVersion", VERSION_STR
+	  VALUE "ProductVersion", VERSION_STR
+#if defined( _DEBUG )
+	  VALUE "PrivateBuild", "Debug/test build, not for production use!\0" ; Needed for VS_FF_PRIVATEBUILD
+#elif defined( PRIVATE_BUILD )
+	  VALUE "PrivateBuild", "Nonstandard build, not an official release\0" ; Needed for VS_FF_PRIVATEBUILD
+#endif /* _DEBUG */
+	END
+  END
+END

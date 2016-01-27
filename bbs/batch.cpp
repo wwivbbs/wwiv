@@ -32,7 +32,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "bbs/platform/platformfcns.h"

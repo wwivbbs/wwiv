@@ -130,9 +130,6 @@
     <ClCompile Include="instmsg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\win32\InternalTelnetServer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="interpret.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -280,13 +277,7 @@
     <ClCompile Include="voteedit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WComm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="wfc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="platform\win32\wiot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WOutStream.cpp">
@@ -370,6 +361,15 @@
     <ClCompile Include="email.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ssh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="remote_io.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="remote_socket_io.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -429,9 +429,6 @@
     <ClInclude Include="vars.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="wcomm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="wconstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -439,9 +436,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sysoplog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="platform\win32\wiot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="woutstreambuffer.h">
@@ -645,7 +639,6 @@
     <ClInclude Include="msgbase1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="colors.h" />
     <ClInclude Include="defaults.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -653,6 +646,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="extract.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="colors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ssh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="remote_io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="remote_socket_io.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

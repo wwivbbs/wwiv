@@ -28,6 +28,7 @@ namespace WWIV5TelnetServer
     class TelnetServer : IDisposable
     {
         private Socket server;
+        private Socket server2;
         private Thread launcherThread;
         private Object nodeLock = new Object();
         private int lowNode;
@@ -81,19 +82,34 @@ namespace WWIV5TelnetServer
 
         private void Run()
         {
+            // Telnet Server
             Int32 port = Convert.ToInt32(Properties.Settings.Default.port);
+            Int32 portSSH = Convert.ToInt32(Properties.Settings.Default.portSSH); // SSH
             server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            server2 = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp); // SSH
             server.Bind(new IPEndPoint(IPAddress.Any, port));
+            server2.Bind(new IPEndPoint(IPAddress.Any, portSSH)); // SSH
             server.Listen(4);
+            server2.Listen(4);
             while (true)
             {
                 OnStatusMessageUpdated("Waiting for connection.", StatusMessageEventArgs.MessageType.LogInfo);
                 try
                 {
                     Socket socket = server.Accept();
+                    Socket socket2 = server2.Accept(); // SSH
                     Console.WriteLine("After accept.");
                     NodeStatus node = getNextNode();
-                    string ip = ((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString();
+                    string ip;
+                    if (((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString() != null)
+                    {
+                        ip = ((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString();
+                    }
+                    else
+                    {
+                        ip = ((System.Net.IPEndPoint)socket2.RemoteEndPoint).Address.ToString();
+                    }
+                    // string ip = ((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString();
                     // HACK
                     if (ip == "202.39.236.116")
                     {
@@ -139,7 +155,17 @@ namespace WWIV5TelnetServer
             try
             {
                 var executable = Properties.Settings.Default.executable;
-                var argumentsTemplate = Properties.Settings.Default.parameters;
+                // Detect Port 22 SSH or Use Telnet
+                string bbsProperties;
+                if (server != null)
+                {
+                    bbsProperties = Properties.Settings.Default.parameters;
+                }
+                else
+                {
+                    bbsProperties = Properties.Settings.Default.parameters2;
+                }
+                var argumentsTemplate = bbsProperties;
                 var homeDirectory = Properties.Settings.Default.homeDirectory;
 
                 Launcher launcher = new Launcher(executable, homeDirectory, argumentsTemplate, DebugLog);

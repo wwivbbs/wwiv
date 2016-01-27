@@ -37,7 +37,7 @@
 #include "bbs/newuser.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
@@ -180,12 +180,18 @@ static int FindUserByRealName(const std::string& user_name) {
   return 0;
 }
 
-static int ShowLoginAndGetUserNumber() {
+static int ShowLoginAndGetUserNumber(string remote_username) {
   bout.nl();
   bout << "Enter number or name or 'NEW'\r\n";
   bout << "NN: ";
 
-  string user_name = input(30);
+  string user_name;
+  if (remote_username.empty()) {
+    user_name = input(30);
+  } else {
+    bout << remote_username << wwiv::endl;
+    user_name = remote_username;
+  }
   StringTrim(&user_name);
 
   int user_number = finduser(user_name);
@@ -222,8 +228,12 @@ bool VerifyPhoneNumber() {
   return true;
 }
 
-static bool VerifyPassword() {
+static bool VerifyPassword(string remote_password) {
   session()->UpdateTopScreen();
+
+  if (!remote_password.empty() && remote_password == session()->user()->GetPassword()) {
+    return true;
+  }
 
   string password = input_password("PW: ", 8);
   return (password == session()->user()->GetPassword());
@@ -341,8 +351,18 @@ void getuser() {
   session()->user()->SetStatus(0);
 
   int ans = GetAnsiStatusAndShowWelcomeScreen();
+  bool first_time = true;
   do {
-    session()->usernum = ShowLoginAndGetUserNumber();
+    string remote_username;
+    string remote_password;
+    if (first_time) {
+      remote_username = session()->remoteIO()->remote_info().username;
+      remote_password = session()->remoteIO()->remote_info().password;
+      StringUpperCase(&remote_username);
+      StringUpperCase(&remote_password);
+      first_time = false;
+    }
+    session()->usernum = ShowLoginAndGetUserNumber(remote_username);
     if (session()->usernum > 0) {
       session()->ReadCurrentUser();
       read_qscn(session()->usernum, qsc, false);
@@ -360,7 +380,7 @@ void getuser() {
         logon_guest();
       } else {
         session()->SetEffectiveSl(syscfg.newusersl);
-        if (!VerifyPassword()) {
+        if (!VerifyPassword(remote_password)) {
           ok = false;
         }
 
@@ -555,13 +575,13 @@ static void UpdateLastOnFileAndUserLog() {
         sysoplog("", false);
     }
 
-    string remoteAddress = session()->remoteIO()->GetRemoteAddress();
-    string remoteName = session()->remoteIO()->GetRemoteName();
-    if (remoteAddress.length() > 0) {
-      sysoplogf("CID NUM : %s", remoteAddress.c_str());
+    string remote_address = session()->remoteIO()->remote_info().address;
+    string cid_name = session()->remoteIO()->remote_info().cid_name;
+    if (!remote_address.empty()) {
+      sysoplogf("CID NUM : %s", remote_address.c_str());
     }
-    if (remoteName.length() > 0) {
-      sysoplogf("CID NAME: %s", remoteName.c_str());
+    if (!cid_name.empty()) {
+      sysoplogf("CID NAME: %s", cid_name.c_str());
     }
     string log_line;
     if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
@@ -592,12 +612,6 @@ static void UpdateLastOnFileAndUserLog() {
     }
 
     if (session()->GetEffectiveSl() != 255) {
-      File userLog(session()->config()->gfilesdir(), USER_LOG);
-      if (userLog.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-        userLog.Seek(0L, File::seekEnd);
-        userLog.Write(log_line);
-        userLog.Close();
-      }
       File lastonFile(laston_txt_filename);
       if (lastonFile.Open(File::modeReadWrite | File::modeBinary |
                           File::modeCreateFile | File::modeTruncate)) {

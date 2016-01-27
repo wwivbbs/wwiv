@@ -42,7 +42,9 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.wWIVOnlineDocumentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.submitBugIssueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewWWIVLogsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.listBoxNodes = new System.Windows.Forms.ListBox();
             this.messages = new System.Windows.Forms.TextBox();
@@ -133,7 +135,9 @@
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.aboutToolStripMenuItem,
-            this.submitBugIssueToolStripMenuItem});
+            this.wWIVOnlineDocumentsToolStripMenuItem,
+            this.submitBugIssueToolStripMenuItem,
+            this.viewWWIVLogsToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.helpToolStripMenuItem.Text = "Help";
@@ -142,17 +146,33 @@
             // 
             this.aboutToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.info;
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
+            // wWIVOnlineDocumentsToolStripMenuItem
+            // 
+            this.wWIVOnlineDocumentsToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.move;
+            this.wWIVOnlineDocumentsToolStripMenuItem.Name = "wWIVOnlineDocumentsToolStripMenuItem";
+            this.wWIVOnlineDocumentsToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.wWIVOnlineDocumentsToolStripMenuItem.Text = "WWIV Online Documents";
+            this.wWIVOnlineDocumentsToolStripMenuItem.Click += new System.EventHandler(this.wWIVOnlineDocumentsToolStripMenuItem_Click);
+            // 
             // submitBugIssueToolStripMenuItem
             // 
-            this.submitBugIssueToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.view;
+            this.submitBugIssueToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.bug;
             this.submitBugIssueToolStripMenuItem.Name = "submitBugIssueToolStripMenuItem";
-            this.submitBugIssueToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
+            this.submitBugIssueToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.submitBugIssueToolStripMenuItem.Text = "Submit Bug Issue";
             this.submitBugIssueToolStripMenuItem.Click += new System.EventHandler(this.submitBugIssueToolStripMenuItem_Click);
+            // 
+            // viewWWIVLogsToolStripMenuItem
+            // 
+            this.viewWWIVLogsToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.view;
+            this.viewWWIVLogsToolStripMenuItem.Name = "viewWWIVLogsToolStripMenuItem";
+            this.viewWWIVLogsToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.viewWWIVLogsToolStripMenuItem.Text = "View WWIV Logs";
+            this.viewWWIVLogsToolStripMenuItem.Click += new System.EventHandler(this.viewWWIVLogsToolStripMenuItem_Click);
             // 
             // splitContainer1
             // 
@@ -249,6 +269,8 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.NotifyIcon notifyIcon1;
         private System.Windows.Forms.ToolStripMenuItem submitBugIssueToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem wWIVOnlineDocumentsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem viewWWIVLogsToolStripMenuItem;
     }
 }
 

@@ -27,7 +27,7 @@
 #include "bbs/pause.h"
 #include "bbs/utility.h"
 #include "bbs/vars.h"
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 #include "bbs/wconstants.h"
 #include "bbs/wsession.h"
 #include "bbs/local_io.h"

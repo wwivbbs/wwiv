@@ -25,7 +25,7 @@
 #include <vector>
 
 #include "bbs/runnable.h"
-#include "bbs/wcomm.h"
+#include "bbs/remote_io.h"
 #include "bbs/wstatus.h"
 #include "bbs/woutstreambuffer.h"
 #include "bbs/subxtr.h"
@@ -96,7 +96,7 @@ public:
   void handle_sysop_key(uint8_t key);
   void tleft(bool check_for_timeout);
   void DisplaySysopWorkingIndicator(bool displayWait);
-  WComm* remoteIO() { return comm_.get(); }
+  RemoteIO* remoteIO() { return comm_.get(); }
   LocalIO* localIO() { return local_io_.get(); }
   bool reset_local_io(LocalIO* wlocal_io);
   const std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
@@ -107,7 +107,7 @@ public:
   void ClearTopScreenProtection();
 
   /*! @function CreateComm Creates up the communications subsystem */
-  void CreateComm(unsigned int nHandle);
+  void CreateComm(unsigned int nHandle, CommunicationType type);
 
   bool IsLastKeyLocal() const { return last_key_local_; }
   void SetLastKeyLocal(bool b) { last_key_local_ = b; }
@@ -358,7 +358,7 @@ private:
   wwiv::sdk::User m_thisuser;
   bool  last_key_local_ = true;
   int effective_sl_ = 0;
-  std::unique_ptr<WComm> comm_;
+  std::unique_ptr<RemoteIO> comm_;
   std::unique_ptr<LocalIO> local_io_;
   std::string current_speed_;
   std::unique_ptr<wwiv::sdk::Config> config_;

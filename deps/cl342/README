@@ -1,0 +1,839 @@
+Changes in 3.4.2 release
+========================
+
+This is a maintenance release that adds improved diagnostics for various types
+of session-related errors, more flexible handling of a variety of rarely-used
+protocol options and capabilities added at the request of users, and the usual
+ongoing updates for OSes and compiler versions.
+
+Changes in 3.4.1 release
+========================
+
+This is a maintenance release for new OS and compiler versions, and
+specifically VS 2010, which has trouble with the VS 2005 project files that
+were included in previous releases.  Apart from various code updates, it adds
+client-side SSL/TLS session resumption alongside the existing server-side
+session resumption.
+
+Changes in 3.4 release
+======================
+
+This version of cryptlib is a minor-version stepping from the 3.3.x code base
+to the 3.4.x code base.  Minor-version steppings are source-code compatible
+with previous versions but not binary compatible.  This means that you need to
+rebuild the application calling cryptlib when you move to cryptlib 3.4.0 in
+order to to add support for new attributes introduced for the post-3.3 API.
+In addition the cryptGenerateKeyAsync()/cryptAsyncQuery()/cryptAsyncCancel()
+functions, deprecated since 2007, have been removed for the 3.4 API change,
+and the transparent rewriting of CRYPT_CERTINFO_SUBJECTNAME and
+CRYPT_CERTINFO_ISSUERNAME selection commands to the pre-2007 form has been
+disabled.
+
+This release features the usual ongoing updates for new OS and compiler
+versions.  One significant update is direct support for x86-64 under 64-bit
+versions of Windows (this previously required a custom build), with the 64-bit
+target in the project file building a cl64.dll that's analogous to the 32-bit
+cl32.dll.
+
+The TLS code has been updated to add support for TLS 1.2.  Since TLS 1.2 uses
+cryptographic mechanisms that are gratuitously incompatible with any other
+version of SSL or TLS, the default version that cryptlib will advertise in a
+handshake remains TLS 1.1.  If you want to use TLS 1.2 you need to explicitly
+enable it as described in the manual.  Note that because of the incompatible
+changes made in TLS 1.2 there is (two years after its introduction) still very
+little support for it among vendors.  Expect interoperability problems.
+
+This version of cryptlib implements RFC 5083 authenticated encryption.  PKCS
+#15 private keys are now protected in this manner (private-key data from older
+versions of cryptlib can still be read, but newer keys will be protected with
+full authenticated encryption).  In addition data enveloped using
+CRYPT_FORMAT_CRYPTLIB will automatically use authenticated encryption while
+other formats (CRYPT_FORMAT_CMS, CRYPT_FORMAT_SMIME) will stay with
+unauthenticated encryption for compatibility with existing implementations.
+You can enable authenticated encryption for the other formats (or turn it off
+for the cryptlib format) as described in the manual.
+
+Elliptic-curve cryptography is now supported, both at the low-level crypto
+mechanism level and in high-level protocols like X.509, SSL/TLS, S/MIME, and
+SSH.  To enable it, define USE_ECDH and/or USE_ECDSA in misc/config.h when you
+build cryptlib.
+
+Certificate fingerprints using SHA-2 and the future SHA-3 (when it's
+finalised) is now supported with CRYPT_CERTINFO_FINGERPRINT_SHA2 and
+CRYPT_CERTINFO_FINGERPRINT_SHAng (use of the latter will return a
+CRYPT_ERROR_NOTAVAIL, it's only present as a placeholder for future releases).
+
+Support for the Internet routing resource PKI (RPKI) has been added, see the
+manual for details.
+
+cryptlib 3.4.0 has been updated to use zlib 1.2.4, the first zlib update in
+five years.  As always, users concerned about security issues should disable
+the compression code (undefine USE_COMPRESSION in misc/config.h) unless it's
+actually required.
+
+Several ambiguous attributes have been removed or renamed to make their role
+clearer.  For the keyset types, CRYPT_KEYSET_PLUGIN and
+CRYPT_KEYSET_PLUGIN_STORE have been removed since these have always been
+handled identically to CRYPT_KEYSET_DATABASE and CRYPT_KEYSET_DATABASE_STORE.
+For the error attributes, CRYPT_ATTRIBUTE_INT_ERRORCODE has been removed since
+this wasn't very useful outside of cryptlib and
+CRYPT_ATTRIBUTE_INT_ERRORMESSAGE has been renamed CRYPT_ATTRIBUTE_ERRORMESSAGE
+to reflect its role alongside CRYPT_ATTRIBUTE_ERRORTYPE and
+CRYPT_ATTRIBUTE_ERRORLOCUS.
+
+Changes in 3.3.3 release
+========================
+
+This is another maintenance release with updates for new compiler versions and
+OS releases, as well as code changes to handle upgrades to newer hash
+algorithms in the SHA-2 family for protocols that previously used SHA-1.  In
+addition the Windows DLL version included with the release is now built with
+VS 2005 instead of VC 6, since it's unlikely that there are any systems left
+that don't have the runtime libraries needed for this.
+
+A number of rarely-used facilities that, due to their complexity, have a large
+attack surface or considerable potential for abuse, have been disabled by
+default in this release.  These are DNS SRV, LDAP, string-format X.500 DNs,
+and SSH subsystems and channel multiplexing.  If you really require any of
+these you can enable them as described in "Optional cryptlib Components" in
+the manual.  You should only enable these facilities if you absolutely need
+them, and your security guarantee is void if you do.
+
+There's one small change made to the handling of certificate attribute
+selection, currently all attributes except certificate subject and issuer
+names are selected with 'cryptSetAttribute( cryptCert,
+CRYPT_CERTINFO_CURRENT_ATTRIBUTE, <attribute-type> )' while the certificate
+subject and issuer names are selected with 'cryptSetAttribute( cryptCert,
+CRYPT_CERTINFO_SUBJECTNAME, CRYPT_UNUSED )' (this is done for historical
+reasons because the subject and issuer names aren't X.509 certificate
+extensions and so exist in a different space than standard certificate
+extensions, putting them outside the reach of the standard attribute cursor
+mechanisms).
+
+This version of cryptlib now allows issuer and subject names to be selected in
+the same way as other attributes, 'cryptSetAttribute( cryptCert,
+CRYPT_CERTINFO_CURRENT_ATTRIBUTE, CRYPT_CERTINFO_SUBJECTNAME )'.  The previous
+method is still supported for backwards-compatibility purposes, but for
+forwards compatibility you should search your code for occurrences of
+CRYPT_CERTINFO_SUBJECTNAME/ISSUERNAME and switch the attributes around to use
+the new form.  To alert you to cases where you're using the old way of doing
+things, the debug build of cryptlib will thrown an exception if it detects
+this (the standard build will continue to function as before, it's only the
+debug build that will notify you of the superseded usage).
+
+Changes in 3.3.2 release
+========================
+
+This release features numerous updates to the build mechanism and code to
+handle new compiler versions, as well as workarounds for interoperability
+problems with other implementations.  This version also features various
+reliability and stability enhancements.
+
+Changes in 3.3.1 release
+========================
+
+This release features ongoing minor updates and changes requested by users, as
+well as updates to work with the (almost-) TR 24731 stdlib replacements in VS
+2005.  This is mainly a cleanup and consolidation release after 3.3.0, however
+one important reason to upgrade is that the pre-generated test keys will
+expire shortly after the 3.3.1 release, which will produce warnings in the
+self-test and self-test failures (X.509 certs have limited lifetimes due to
+their expiry dates, and the code is warning that they're past their use-by
+date).  cryptlib has to set some sort of expiry date for the keys because the
+format requires it, but an unfortunate side-effect of this is that every now
+and then the test keys needed for the self-test expire.  This release updates
+the test keys for another few years.
+
+Changes in 3.3 release
+======================
+
+This version of cryptlib is a minor-version stepping from the 3.2.x code base
+to the 3.3.x code base.  Minor-version steppings are source-code compatible
+with previous versions but not binary compatible.  This means that you need to
+rebuild the app.calling cryptlib when you rebuild cryptlib.  In particular two
+facilities that have been included for backwards-compatibility with code from
+up to five years ago have now been removed: It's no longer possible to call
+cryptPushData() with NULL pointers as an alternative to calling
+cryptFlushData(), and the obsolete CRYPT_CERTINFO_CURRENT_xxx attributes,
+which were mapped internally to the CRYPT_ATTRIBUTE_CURRENT_xxx attributes,
+have been removed.
+
+This release features more internal changes to handle internal consistency
+checking, as well as fixes for a few minor issues arising from the 3.2.3
+release.
+
+Changes in 3.2.3 release
+========================
+
+This release features a considerable number of internal changes to clean up
+some sections of the code that had grown beyond their original design, as well
+as ongoing minor updates and changes requested by users.  This is mainly a
+cleanup and consolidation release after 3.2.2.
+
+Changes in 3.2.2 release
+========================
+
+The bignum code has been updated to the latest version, which is no less
+ghastly than before but somewhat faster, particularly on x86 systems.
+
+Changes in 3.2.1 release
+========================
+
+The zlib code has exhibited a number of security vulnerabilities, both in the
+rather dated 1998-vintage zlib 1.1.x code and the much newer zlib 1.2.x code.
+In order to avoid exposing cryptlib users to any new technology until it's
+proven itself in the field, cryptlib has stayed with the old zlib code base,
+which has avoided problems arising from the vulnerabilities found in the 1.2.x
+code.  However, the 1.2.x code base does have a number of advantages over the
+old 1.1.4 code, including better compression, much faster compression and
+decompression, and significantly less memory consumption, particularly for
+decompression.  Another potential problem with 1.1.4 is that there may be as
+yet undiscovered problems in it that no-one's found yet because they're
+concentrating on the newer 1.2.x instead.
+
+Because zlib 1.2.x includes a significant rewrite of a fair portion of the
+code, it's not possible to simply switch from one version of zlib to the other
+at the flip of a compiler switch.  Based on user feedback, the preferred
+behaviour is to have cryptlib move from the old 1.1.x to the current 1.2.x
+code base, so cryptlib 3.2.1 uses zlib 1.2.3 (those values are pure
+coincidence).  Users concerned about security issues should disable the
+compression code (undefine USE_COMPRESSION in cryptini.h) unless it's actually
+required.
+
+Support of autoproxy configuration (under operating systems that implement
+automatic network proxy discovery) has been added.  This includes support for
+SOCKS-style HTTP proxies as well as the originally implemented HTTP-
+application-gateway HTTP proxies.
+
+Several minor portability issues in 3.2 have been fixed, among other things a
+workaround for a problem in gcc 4.0 that prevented the code from compiling.
+
+Changes in 3.2 release
+======================
+
+The version that would have been released as 3.11 has been released as 3.2 to
+avoid version-numbering confusion. Future releases will use a three-digit
+numbering scheme x.y.z, where each of x, y, and z will constitute a single
+digit, to avoid confusion over whether the '11' in '3.11' is 11 or 0.11.
+
+The network timeout handling has been split into distinct read and write
+timeouts to allow more flexible configuration of network data handling,
+typically very small read timeouts to ensure that cryptlib never blocks while
+waiting for data, and slightly larger write timeouts to ensure that all data
+is completely written when requested.
+
+Client authentication for sessions that support this (only the secure data
+sessions, SSH and SSL/TLS, use client authentication) has been changed
+slightly.  In previous releases, cryptlib would always allow the client's
+authentication and complete the handshake, leaving it to the caller to shut
+down the session later on if there was a problem.  As of this release, server
+sessions will return a CRYPT_ENVELOPE_RESOURCE in the same way that envelopes
+do when you activate them, to indicate that you need to provide further
+information in order to continue.  If you receive this status when you try to
+activate a server session, you can read the user details via the
+CRYPT_SESSINFO_USERNAME and CRYPT_SESSINFO_PASSWORD attributes, and either
+comfirm the authentication by setting the CRYPT_SESSINFO_AUTHRESPONSE to true
+or deny it by setting it to false.  You then re-activate the session, and
+cryptlib will complete the handshake.  This allows you to check the
+authentication details before allowing the handshake to continue.  If you'd
+prefer the previous behaviour, just set CRYPT_SESSINFO_AUTHRESPONSE to true
+before you activate the session and cryptlib will handle confirmation of
+authentication itself.
+
+Because the handshake is now controlled by the server rather than the client
+(that is, cryptlib won't sit in a loop reading all data from the client, but
+will return to the caller to await further input), it's possible that the
+client will send further session-control information after the handshake has
+completed.  To respond to any additional information that the client may send,
+your server should try and pop client data before it sends any of its own
+data.  If the server sends its data first, the client may interpret the
+server's data as an (invalid) response to a request that it has in progress.
+The manual contains more details on the new client authentication and server
+data handling process.
+
+Starting with releases after 3.2, the attribute cursor manipulation functions
+will be unified so that they work identically for all container objects that
+maintain lists of attributes (most of this interface is already available in
+3.2 for forwards-compatibility reasons).  This means that the three attribute-
+list mechanisms CRYPT_CERTINFO_CURRENT_EXTENSION,
+CRYPT_CERTINFO_CURRENT_FIELD, and CRYPT_CERTINFO_CURRENT_COMPONENT (for
+certificates), CRYPT_ATTRIBUTE_CURRENT_GROUP (formerly
+CRYPT_ENVINFO_CURRENT_COMPONENT) for envelopes, and the future
+CRYPT_ATTRIBUTE_CURRENT_GROUP for session objects will be folded into the
+single mechanism CRYPT_ATTRIBUTE_CURRENT_GROUP, CRYPT_ATTRIBUTE_CURRENT, and
+CRYPT_ATTRIBUTE_CURRENT_INSTANCE.  This provides both a unified, consistent
+interface across the different object types and allows envelope and session
+attributes to be handled in the same way as certificates currently are.  For
+example under the older cryptlib 3.1 behaviour envelope signatures were
+implicitly selected by reading the signature attribute, which changed the
+current selection of the signature result and extra signature information
+attributes.  From releases after this one envelope signature attributes are
+grouped by signature, so selecting the first signature explicitly selects the
+associated signature key, signature result, and extra signature information
+attributes, selecting the second signature explicitly selects the associated
+information for that, and so on.  In addition reading this information under
+3.1 and earlier was something of a hunt-and-peck approach that required
+reading each possible attribute in turn to see whether it was present.  The
+attribute cursor interface allows each present attribute to be enumerated
+using the attribute cursor, with cryptlib doing the work of sorting out what's
+present and what isn't.  Finally, cryptlib 3.2 allows more session attributes
+to be accessed by the caller, which requires the use of attribute cursors
+since many of them are composite values or multi-valued attributes.
+
+As part of this unification of mechanisms, the CRYPT_ENVINFO_CURRENT_COMPONENT
+attribute has been renamed CRYPT_ATTRIBUTE_CURRENT_GROUP for compatibility
+with future cryptlib releases.  For certificates, cryptlib 3.11 supports both
+the legacy CRYPT_CERTINFO_CURRENT_xxx attributes and the new
+CRYPT_ATTRIBUTE_CURRENT_xxx ones, so you can either keep using the
+certificate-specific cursor attributes for now or move to the universal cursor
+attributes for compatibility with future versions.  All that's necessary to
+upgrade is a search and replace in your code to rename the attributes.  More
+information on the unified attribute cursor mechanism is given in the
+Introduction section of the manual.
+
+The various situation-specific SSH attributes like
+CRYPT_SESSINFO_SSH_SUBSYSTEM and CRYPT_SESSINFO_SSH_PORTFORWARD have been
+replaced with more generic forms for compatibility with future cryptlib
+versions, which allow more complete control over SSH channel types and
+parameters.  See the manual for details on creating and controlling SSH
+channels using the new attributes.
+
+The SHA-2 algorithm is now enabled by default (previously it had to be
+explicitly enabled via a compile-time option).  Note that this algorithm isn't
+supported by most software and standards, so using it in anything other than
+closed environments will lead to interoperability problems.  If you want to
+use SHA-2, you should test it against any other software that you need to
+interoperate with to ensure that it can handle this algorithm.
+
+The Unix randomness slow poll now has an early-out mechanism that avoids the
+full heavyweight slow poll if sufficient entropy is available without it.
+This typically occurs on systems with both built-in randomness sources and
+either a kernel statistics interface or an advanced /proc interface, which
+provide the same data as the full slow poll at a fraction of the overhead.
+
+Changes in 3.11 beta 1
+======================
+
+As noted in the 3.1 release notes, releases after 3.1 update the cryptlib 2.x
+legacy functions cryptImport/ExportKey(Ex), cryptCreate/CheckSignature(Ex),
+and cryptQueryObject to take a length parameter as their second argument.
+These functions never took a length parameter in their original form because
+they dealt with encoded signature/key exchange data, for which it's always
+possible to determine the length by parsing it.  However, this makes checking
+of user-supplied parameters difficult - cryptlib always knows how much output
+it'll produce, but it can't be sure that the user wants (or expects) that much
+output, particularly if they've forgotten to perform a length check before
+exporting a key or creating a signature.  In order to avoid this problem,
+releases after 3.1 make this minor API change, which fixes the last of the old
+cryptlib 2.x functions.  Since most people use the higher-level API functions,
+this change shouldn't affect the majority of users.
+
+In addition to the cryptlib 2.x legacy functions, two standard data-returning
+functions cryptExportCert and the rarely-used cryptGetCertExtension now also
+take a length parameter to specify the maximum buffer size.  This brings them
+into line with the (updated) legacy functions, and allows cryptlib to perform
+better checking of user-supplied parameters, particularly in the case of
+languages like Visual Basic and Java where the mapping of language-native data
+types to the blocks of memory used by a C-language library can be tricky.
+
+Changes in 3.1 release
+======================
+
+The final release contains mostly minor tweaks based on user feedback from the
+3.1 final betas, with no noticeable external changes.  Internally, the HTTP
+engine has been significantly improved, TLS 1.1 is now supported (although at
+release time there were no other known implementations of this to test
+against), the BeOS port has been re-done to handle the current state of the OS
+using GNU development tools instead of the original Be ones (thanks to Simon
+Taylor for providing access to his system to do the work on), and the
+perpetual tweaking of the networking subsystem to handle OS-specific quirks
+has continued.
+
+Changes in 3.1 beta 5
+=====================
+
+This release contains an extensive rewrite of the network-layer code to handle
+various quirks and system-specific peculiarities in sockets implementations.
+For this reason it's strongly recommended that if you're using secure sessions
+or networking, you move to this version as quickly as possible.  In addition
+the code is now IPv6-enabled as part of the rewrite.  In connection with this,
+it's now possible to specify connect and network timeouts at the per-session
+level rather than only as a cryptlib-wide option. To do this, set the timeout
+value giving a specific session as the target object rather than CRYPT_UNUSED
+for all of cryptlib:
+
+  cryptSetAttribute( cryptSession, CRYPT_OPTION_NET_TIMEOUT, timeout );
+
+All of the session objects now provide extensive text diagnostics of errors
+via the CRYPT_ATTRIBUTE_INT_ERRORMESSAGE attribute.  This means that if a
+session encounters a problem in communicating with another system, the
+extended error message will usually provide additional information that goes
+beyond the standard error code.
+
+Support for SSHv2 subsystems such as SFTP has been added via the
+CRYPT_SESSINFO_SSH_SUBSYSTEM attribute, and support for SSL/TLS with shared
+keys (e.g. passwords) has been added.  This allows secure SSL with mutual
+authentication of both client and server, without the need for either
+expensive server certificates or the complexity of client certificates.  In
+addition the shared-key mechanism is significantly faster than operations
+involving certificates and private keys, and places far less load on both
+client and server.
+
+The CRYPT_OPTION_CERT_OBLIVIOUS option introduced in beta 4 has been changed
+from a simple boolean value to a multivalued option
+CRYPT_OPTION_CERT_COMPLIANCELEVEL, which indicates the level of checking
+applied to certificates.  This ranges from CRYPT_COMPLIANCELEVEL_OBLIVIOUS
+(almost no checking except for the signature) through to
+CRYPT_COMPLIANCELEVEL_PKIX_FULL (full compliance with PKIX certificate
+standards).  The default is CRYPT_COMPLIANCELEVEL_STANDARD, which provides a
+reduced level of checking for compliance with other certificate software.
+
+The CRYPT_ERROR_BUSY status has been renamed to CRYPT_ERROR_TIMEOUT to make it
+more consistent with conditions like network timeouts, which is where it most
+commonly occurs.
+
+Some of the database keyset types have been renamed to make the names more
+consistent.  The three types are now CRYPT_KEYSET_ODBC for databases accessed
+through an ODBC interface, CRYPT_KEYSET_DATABASE for databases with the
+backend-specific interface code compiled into cryptlib, and
+CRYPT_KEYSET_PLUGIN for databases accessed via the cryptlib database plugin
+interface.  The CRYPT_KEYSET_DATABASE type can be selected in the usual manner
+at compile time with the USE_xxx compile options, see the manual for more
+details on databases and compile options.
+
+Changes in 3.1 beta 4
+=====================
+
+The changes in this release are mostly to fix a variety of minor problems that
+cropped up in beta 3 related to portability across different systems.  One
+notable change is the inclusion of the CRYPT_OPTION_CERT_OBLIVIOUS
+configuration option.  This option is present in order to allow cryptlib to
+handle the large number of broken certificates in use.  Enabling this option
+(setting it to TRUE) will cause cryptlib to ignore all certificate extensions
+except key usage and the CA flag, making it compatible with other PKI
+software.  A future version of cryptlib will replace this option with a
+multivalue selection allowing a choice of checking ranging from very little
+(in order to be compatible with existing software and to process existing
+certificates) through to full PKIX compliance (which will, however, reject a
+large number of certificates in use today).
+
+Changes in 3.1 beta 3
+=====================
+
+The way in which GeneralNames and DNs in GeneralNames are selected has
+changed.  Until now GeneralNames were selected with:
+
+  cryptSetAttribute( cryptCert, attributeID, CRYPT_UNUSED );
+
+which selected the GeneralName with the given attributeID and also updated the
+attribute cursor.  Selecting the DN within the GeneralName required a second
+selection to specify the DN.  This special-case behaviour was inconsistent
+with the way other attributes were handled, and caused some confusion for
+users, as well as obscuring the fact that the attribute cursor was being
+updated as it would be for an explicit attribute selection.  Beta 3 changes
+the selection mechanism so that it matches that used for all other attributes:
+
+  cryptSetAttribute( cryptCert, CRYPT_CERTINFO_CURRENT_EXTENSION,
+                     attributeID );
+
+(or whatever alternative attribute cursor mechanism is preferred).  In
+addition, it's no longer necessary to perform a two-stage select for DNs in
+GeneralNames, since these are now implicitly selected by selecting the
+GeneralName that contains them.  This means that handling of GeneralName
+attributes is now consistent with all other attribute types.
+
+Because GeneralNames are now automatically selected, you need to be careful
+when working with a DN such as the certificate subject name after selecting a
+GeneralName, since a GeneralName contains its own DN which will be the one
+that's accessed after selecting the GeneralName.  For example if you set an
+email address (which is part of the GeneralName), this will select the
+GeneralName, and any subsequent DN accesses will refer to the DN inside the
+GeneralName rather than the subject name DN.  It's good practice to move back
+to the subject name with:
+
+  cryptSetAttribute( cryptCert, CRYPT_CERTINFO_SUBJECTNAME,
+                     CRYPT_UNUSED );
+
+after working with a GeneralName to make sure that you're referring to the
+correct DN.
+
+Microsoft broke the Jet (MS Access) database engine at around SP4 (opinions on
+the exact time vary).  This version, or newer versions, may be installed
+automatically when applying service packs or installing other software
+(different broken versions of Jet are installed in Win2K SP2 and SP3, for
+example, and it's built into Windows XP).  The symptoms are that when running
+the self-test you'll get an error message "Cannot open any more tables" even
+though no tables are open, or more seriously a deadlock inside the VC++
+runtime file access routines.  The details of this problem are discussed in
+Microsoft Knowledge Base Article 304536, Microsoft Knowledge Base Article
+282010, and Microsoft Knowledge Base Article 239114.
+
+The Microsoft-recommended fix is to upgrade to Jet SP6.  This typically
+requires downloading and installing the SP6 upgrade from the Microsoft
+Download Centre, simply installing recent MDAC components won't work since
+there were no Jet components included after MDAC 2.5 SP2, and installing
+Office XP or Access 2002 may not work either since the setup programs only
+update system files in certain situations and to a certain level.  On the
+other hand Jet SP6 may not install unless it detects an appropriate service
+pack level on the system.
+
+Non-Microsoft advice is to downgrade to a version of Jet at SP3 or earlier by
+replacing msjetoledb40.dll and msjet40.dll with files from JET OLE DB SP3,
+since even the latest version (SP6) still appears to exhibit these problems.
+A better solution is to avoid the use of Jet entirely, and in particular you
+should *never* use Jet in a production environment since it's far too buggy
+and unstable to trust live data to (it was probably named Jet because it both
+sucks and blows).
+
+Changes in 3.1 beta 2
+=====================
+
+The last two type names that didn't follow the pattern xxx_TYPE, CRYPT_ALGO
+and CRYPT_MODE, have now been brought into line with the other names, so you
+need to change the type names to CRYPT_ALGO_TYPE and CRYPT_MODE_TYPE if you're
+using them in your code.
+
+SSHv2 server support is now present.
+
+PKCS #11 devices can now be auto-detected by specifying the device name as
+"[Autodetect]" if the device name isn't known.
+
+Pre-connected network sockets can be supplied to sessions as the
+CRYPT_SESSINFO_NETWORKSOCKET attribute, rather than having cryptlib
+connect/disconnect the socket itself.
+
+The PKCS #15 format has had various features added to it over time (see the
+note for 3.0 beta 1), cryptlib has supported these in a read-only manner,
+meaning that it creates keysets that are as backwards-compatible as possible
+with old versions of the code that used earlier versions of PKCS #15.  In
+order to make some features like certificate update in a keyset possible, it's
+necessary to write keyset fields from newer versions of PKCS #15.  All betas
+after this one will write these newer fields in order to enable advanced
+features of PKCS #15.  Anyone still using very old betas should upgrade to a
+current version in order to take advantage of the advanced features supported
+by newer-format PKCS #15 keysets.
+
+Changes in 3.1 beta 1
+=====================
+
+Beta 1 includes support for PGP and OpenPGP, which is handled in standard
+envelope fashion with a data format of CRYPT_FORMAT_PGP.  Note that there are
+a number of incompatible and semi-compatible variants of PGP in existence,
+with the major types being PGP 2.x, PGP 5.x, NAI PGP, GPG, and the ckt PGP
+builds, and many interesting lesser variations such as the disastry builds
+that take PGP 2.x and update it to support OpenPGP ciphers without actually
+being OpenPGP.  An overview of different PGP versions can be found at
+http://rmarq.pair.com/pgp/, and detailed information on incompatibilities can
+be found at http://www.spywarewarrior.com/uiuc/pgp-summ.htm.  cryptlib has
+been tested against most normal versions of PGP, but there will certainly be
+versions out there that produce data that cryptlib can't read (one example
+being a version that uses random key IDs in encrypted data in order to obscure
+who the data is encrypted for, which also makes it impossible to decrypt with
+any normal PGP version).  If you run into something produced by one of these
+oddball versions, please send me a copy so that I can determine whether it's
+worth adding custom code to support it.
+
+The PGP data format imposes a number of restrictions on the standard
+enveloping process, which include:
+
+ - Use of nested signed data is discouraged unless you add an intermediate
+   layer of encryption, since PGP doesn't directly handle nested signatures.
+ - When signing data, the nested content type can only be the default (data)
+   for the reason given above.
+ - It's not possible to mix password and public-key key exchange actions in
+   the same message.  Similarly, it's not possible to have more than one
+   password key exchange action in one message.
+ - Handling of separate hashing for detached signatures is somewhat peculiar
+   and requires special care.
+
+Changes in 3.0 release
+======================
+
+cryptlib 3.1 will introduce a new function cryptFlushData() to replace the
+current practice of calling cryptPushData() will all-null parameters, a change
+required for languages like Delphi and VB that don't handle C null pointers
+too well.  This function is already present in 3.0 for forwards-compatibility
+purposes, it's recommended that you update your code to call cryptFlushData()
+in place of cryptPushData() with null parameters (although the existing
+cryptPushData() mechanism will still work).
+
+The Unix randomness-gathering code will now check for and use EGD/PRNGD if
+they're available.
+
+The requirement that cryptlib be built via a network share under Windows has
+been removed.
+
+HTTP keyset access (CRYPT_KEYSET_HTTP) formerly required that the keyset be
+opened without a name being given, with the full URL being specified as the
+key ID to retrieve keys.  This was both somewhat inconsistent with the other
+keyset types, and didn't work well with persistent connections, for example
+where multiple certificates were being read from a single server.  This has
+been changed so that the server URL is given when the keyset is opened as it
+is for other keyset types, and a key ID is given when reading individual keys.
+When reading keys with a fixed URL (with no per-key ID), the special ID
+"[none]" can be used to indicate that the server URL points directly at the
+certificate.  In the simplest case the previous usage:
+
+  cryptKeysetOpen( &cryptKeyset, CRYPT_UNUSED, CRYPT_KEYSET_HTTP, NULL,
+                   CRYPT_KEYOPT_READONLY );
+  cryptGetPublicKey( cryptKeyset, &cryptCert, CRYPT_KEYID_NAME,
+                     "http://www.server.com/cert.der" );
+
+now becomes:
+
+  cryptKeysetOpen( &cryptKeyset, CRYPT_UNUSED, CRYPT_KEYSET_HTTP,
+                   "http://www.server.com/cert.der", CRYPT_KEYOPT_READONLY );
+  cryptGetPublicKey( cryptKeyset, &cryptCert, CRYPT_KEYID_NAME,
+                     "[none]" );
+
+Reading multiple certificates, for example via a CGI interface on the server,
+is done with:
+
+  cryptKeysetOpen( &cryptKeyset, CRYPT_UNUSED, CRYPT_KEYSET_HTTP,
+                   "http://www.server.com/certstore.cgi",
+                   CRYPT_KEYOPT_READONLY );
+  cryptGetPublicKey( cryptKeyset, &cryptCert, CRYPT_KEYID_NAME,
+                     "user1" );
+  cryptGetPublicKey( cryptKeyset, &cryptCert, CRYPT_KEYID_NAME,
+                     "user2" );
+  cryptGetPublicKey( cryptKeyset, &cryptCert, CRYPT_KEYID_NAME,
+                     "user3" );
+
+Changes in 3.0 final beta
+=========================
+
+The cryptlib 3.0 final release divides the network timeout parameter into two
+parts, a CRYPT_OPTION_NET_CONNECTTIMEOUT which is applied during the
+connection setup process and a CRYPT_OPTION_NET_TIMEOUT which is applied
+during reads and writes (although in practice writes are almost always
+instantaneous).  This means that it's now possible to avoid nonblocking I/O if
+required.
+
+Use of SSL/TLS client certificates is now enabled.
+
+The final version of the S/MIME PasswordRecipientInfo (PWRI) RFC contained a
+change in the way the key wrap algorithm is identified.  The cryptlib final
+release produces a PWRI that follows the final RFC, but will also read the
+older format produced by earlier versions of cryptlib.  If it's necessary to
+generate PWRI data in the old format, you can change the "#if 1" in
+keymgmt/asn1objs.c to "#if 0" to produce the older format.
+
+Support for extended CMP user configurability via PKIUser objects has been
+added, this allows user details to be pre-configured at the CA rather than
+requiring the user to know them.
+
+Changes in 3.0 beta 6
+=====================
+
+Beta 6 reduces the plethora of key generation functions by allowing the
+keysize to be specified in the more standard way of setting the corresponding
+attribute rather than having extraneous ...Ex() versions of the function that
+parallel the standard form.  If you were previously using the standard or
+asynchronous ...Ex() functions:
+
+	cryptGenerateKeyEx( cryptContext, keySize );
+
+you can change to the newer form with a simple cut and paste:
+
+	cryptSetAttribute( cryptContext, CRYPT_CTXINFO_KEYSIZE, keySize );
+	cryptGenerateKey( cryptContext );
+
+The table format for certificate stores has changed slightly to accomodate the
+requirements of CMP servers (specifically the fact that they can cause things
+to fail at inopportune moments), in order to handle this you need to recreate
+the cert store (drop the previous table and create a new one with
+CRYPT_KEYOPT_CREATE), if you need to move information across then create a new
+table and insert into <newTable> select * from <oldTable> to copy the existing
+certificates across.  The newly-created table will support the storing of
+extra information needed to handle restarts during CMP operations.
+
+Support for the proposed AES algorithm is now included.  Since this hasn't
+been finalised by NIST yet, it is strongly recommended that you not use it
+until the AES FIPS has been published.  cryptlib will implement the form
+presented in the final FIPS, which may be incompatible with the current
+version.
+
+SSL and TLS support (both client and server) is now enabled, thanks to
+endergone Zwiebeltuete for his help in getting this going.
+
+Changes in 3.0 beta 5
+=====================
+
+Beta 5 removes the configuration options CRYPT_OPTION_FIXSTRINGS and
+CRYPT_OPTION_CHECKENCODING since they shouldn't be needed any more as the
+ASN.1 code has been modified to handle all but the most broken certificates
+out there.
+
+Under Unix the library is now called libcl rather than libcrypt to reduce
+problems with naming conflicts on some systems.
+
+Support for the creation of one-step certificates that automatically work for
+any purpose has been added and is enabled by setting the certificate's
+CRYPT_CERTINFO_XYZZY attribute, more details are given in the manual.
+
+OCSP, TSP, and SSH server support is now enabled (this complements the OCSP,
+TSP, and SSH client support added in beta 3 and beta 4).
+
+Changes in 3.0 beta 4
+=====================
+
+Beta 4 removes the need to use the TCP4U library for the network interface and
+should now have networking enabled automatically on Unix and Windows systems.
+With the enhanced networking support comes support for SSH secure sessions and
+CMP (Certificate Mismanagement Protocol).
+
+The creation of arbitrary-format DN's containing any sort of component in any
+order or combination is now supported via the CRYPT_CERTINFO_DN attribute.
+
+Changes in 3.0 beta 3
+=====================
+
+Beta 3 required one unfortunate change to the object creation functions which
+involves the addition of a parameter that specifies the user who is to own the
+object.  For cryptlib 3.0 this means that as the second parameter for the
+object creation functions (cryptCreateContext, cryptKeysetOpen,
+cryptCreateEnvelope, etc etc) you should specify CRYPT_UNUSED for forwards
+compatibility with cryptlib 3.1 and later releases.  The user parameter has
+existed since the first 3.0 releases but until now has been hidden beneath the
+cryptlib API, unfortunately it's necessary to un-hide this parameter, which is
+required by certain 3.1 features such as the CA management functionality.
+
+The use of multiple certificates with the same DN/email address but different
+key usage types is now supported (previous versions treated the appearance of
+multiple certs issued to the same person as a duplicate cert problem, either
+interpretation is valid but popular opinion seems to be that the beta 3
+behaviour is better).  In order to support this in public key keysets you need
+to recreate them (drop the previous table and create a new one with
+CRYPT_KEYOPT_CREATE), if you need to move certificates across then create a
+new table and insert into <newTable> select * from <oldTable> to copy the
+existing certificates across.  The newly-created table will support the
+storing of multiple identical certificates.
+
+In order to take advantage of this capability with encrypted enveloping, you
+need to add the recipient's public key with the CRYPT_ENVINFO_RECIPIENT option
+that will allow cryptlib to automatically select the most appropriate
+certificate.  The selection of an appropriate signature checking certificate
+is handled automatically.
+
+Handling of detached signatures with externally-supplied hash values is now
+supported, see the manual for details.  This allows signature checking for
+arbitrary data without it having to be hashed via the envelope.
+
+Certificate revocation checking via OCSP is now supported if you can manage to
+find an OCSP responder anywhere.  Timestamping of signatures is also
+supported, although you'll have even less chance of locating a TSA than an
+OCSP responder.
+
+Support for mSQL has been dropped since MySQL is now GPL'd and provides far
+more functionality than mSQL (even cryptlib 2.x was pushing the limits of
+mSQL, with cryptlib 3.x it's not really sufficient any more).
+
+Changes in 3.0 beta 2
+=====================
+
+Beta 2 has three minor API changes over beta 1 that are intended to clarify
+areas that have caused problems for users in the past.
+
+The first change is that the third, usually unnecessary, parameter for
+cryptCreateContext() has been eliminated:
+
+  cryptCreateContext( &cryptContext, cryptAlgo );
+
+Only the conventional-encryption algorithms required the encryption mode
+parameter, the default is CBC but if another value is required you can specify
+it using the CRYPT_CTXINFO_MODE attribute:
+
+  cryptSetAttribute( cryptContext, CRYPT_CTXINFO_MODE, cryptMode );
+
+This attribute isn't required for anything except conventional encryption
+algorithms, and even then it's only required for the use of encryption modes
+other than the default mode of CBC.  This change simplifies the creation of
+contexts, since there's no longer any need to juggle CRYPT_USE_DEFAULT,
+CRYPT_MODE_PKC, CRYPT_MODE_NONE, or any of the other special cases that were
+used for algorithms that don't have different encryption modes.
+
+The second change (which probably won't affect most users since it's rather
+obscure) is that previously when loading raw public keys with the
+CRYPT_PKCINFO_RSA or CRYPT_PKCINFO_DLP structure the attribute used was
+CRYPT_CTXINFO_KEY and the length was given as CRYPT_UNUSED.  This required a
+number of special-case checks in the code and made error-checking of user-
+supplied data impossible because it wasn't possible to determine how much data
+was being passed in.
+
+In beta 2 this attribute now follows the pattern for every other attribute in
+that it's necessary to give the structure size (i.e. sizeof(
+CRYPT_PKCINFO_xxx)) as the length parameter rather than CRYPT_UNUSED.  In
+addition the attribute for key components is now CRYPT_CTXINFO_KEY_COMPONENTS
+to make explicit the fact that what's being loaded is a composite structure
+containing multiple components and not just a single byte string as with
+CRYPT_CTXINFO_KEY.
+
+Similarly, the length parameter when using cryptEncrypt()/cryptDecrypt() for
+public-key encryption is now the key/data length in bytes rather than
+CRYPT_UNUSED, following the standard pattern of requiring an actual length
+rather than using magic values.
+
+The third change is that the functionality of cryptCreateEnvelopeEx() has been
+folded into cryptCreateEnvelope(), which now takes a second parameter
+specifying the type of envelope to create
+
+  cryptCreateEnvelope( &cryptEnvelope, formatType );
+
+The envelope buffer size can optionally be specified with the
+CRYPT_ATTRIBUTE_BUFFERSIZE attribute once the envelope has been created:
+
+  cryptSetAttribute( cryptEnvelope, CRYPT_ATTRIBUTE_BUFFERSIZE, size );
+
+although this should only be necessary in special cases when enveloping
+larger-than-usual data quantities.  This change both simplifies the interface
+and makes it easier for cryptlib to efficiently handle resources, since it can
+allocate a small envelope buffer when enveloping begins rather than having to
+create a one-size-fits-all one on envelope creation.
+
+In addition to these changes, beta 2 includes the ability to read the label
+for the private key which is required for de-enveloping data, so you can use
+the key name in prompts when asking the user for a password.  You can do this
+with:
+
+  char label[ CRYPT_MAX_TEXTSIZE + 1 ];
+  int labelLength;
+
+  cryptGetAttributeString( cryptEnvelope, CRYPT_ENVINFO_PRIVATEKEY_LABEL,
+                           label, &labelLength );
+  label[ labelLength ] = '\0';
+
+See the manual for more information on this.
+
+Changes in 3.0 beta 1
+=====================
+
+cryptlib 3.0 features a large number of improvements over 2.1, the most
+visible one being that there is now a unified object model that applies to all
+cryptlib objects, so that the old object-type-specific functions like
+cryptGetCertComponentString() and cryptSetEnvelopeComponentNumeric() have been
+replaced by cryptSetAttribute(), which works across all object types.  This
+means that cryptlib 3.0 has a much simpler interface than 2.1 did (even with
+all the features added in 3.0, the manual is 25 pages shorter than the 2.1
+manual).
+
+Backwards compatibility with 2.1 is maintained through the use of the 2.1
+include file capi.h, which contains macros that map the 3.0 functions and
+attributes back to 2.1 versions.  Three of the more obscure functions don't
+translate cleanly, these are documented at the start of capi.h.  If you've got
+existing 2.1 code then it should work with 3.0 with a recompile.
+
+This is a beta release of the code, some sections are still subject to change
+because the standards they are based on haven't been finalised yet. The most
+obvious one is the PKCS #15 keyset format, when the cryptlib code was frozen
+the PKCS #15 file format existed only in an informal manner so that some of
+the data formatting used by cryptlib is speculative and will probably change
+when the standard stabilises.  What this means in practice is that you
+shouldn't store any long-term keys in file keysets since the format will have
+to change in the future to track changes in the standard.
+
+To a lesser extent, the compressed-data and password-protected-data formats
+are based on S/MIME drafts that may also be changed at some point.
+
+Finally, the AS/400, MVS, and VM/CMS versions have somewhat specialised
+requirements (some of this is covered in the manual), please contact me before
+trying to do anything with these versions.

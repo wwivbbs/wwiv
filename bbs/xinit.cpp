@@ -794,10 +794,6 @@ void WSession::InitializeBBS() {
   SetQuoting(false);
   tagptr = 0;
 
-  if (!ReadConfig()) {
-    AbortBBS(true);
-  }
-
   XINIT_PRINTF("Processing configuration file: WWIV.INI.");
   if (!File::Exists(syscfgovr.tempdir)) {
     if (!File::mkdirs(syscfgovr.tempdir)) {
