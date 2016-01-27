@@ -24,7 +24,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.1.10.%2a</ApplicationVersion>
+    <ApplicationVersion>1.2.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -87,6 +87,7 @@
       <DependentUpon>LogForm.cs</DependentUpon>
       <Link>LogForm.Designer.cs</Link>
     </Compile>
+    <Compile Include="NodeManager.cs" />
     <Compile Include="NodeStatus.cs" />
     <Compile Include="NodeStatusEventArgs.cs" />
     <Compile Include="..\..\..\..\..\Desktop\Fuck Me\PreferencesDialog.cs">
@@ -98,8 +99,9 @@
       <Link>PreferencesDialog.Designer.cs</Link>
     </Compile>
     <Compile Include="Settings.cs" />
+    <Compile Include="SSHServer.cs" />
     <Compile Include="StatusMessageEventArgs.cs" />
-    <Compile Include="..\..\..\..\..\Desktop\Fuck Me\TelnetServer.cs">
+    <Compile Include="..\..\..\..\..\Desktop\C# Projects\TelnetServer SSH\TelnetServer.cs">
       <Link>TelnetServer.cs</Link>
     </Compile>
     <Compile Include="..\..\..\..\..\Desktop\Fuck Me\MainForm.cs">

@@ -267,7 +267,6 @@ namespace windows_wwiv_update
 
             // Launch Telnet Server
             ProcessStartInfo telNet = new ProcessStartInfo("WWIV5TelnetServer.exe");
-            telNet.WindowStyle = ProcessWindowStyle.Minimized;
             Process.Start(telNet);
 
             // Launch Latest Realse Changes into Default Browser
