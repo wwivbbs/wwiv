@@ -109,9 +109,9 @@ namespace WWIV5TelnetServer
             int oldBuild = newBuild;
             if (!buildVersion.StartsWith("dev"))
             {
-              // Only check our current build if it's not
-              // a development build.
-              oldBuild = Int32.Parse(buildVersion);
+                // Only check our current build if it's not
+                // a development build.
+                oldBuild = Int32.Parse(buildVersion);
             }
 
             // On Startup Check For Update

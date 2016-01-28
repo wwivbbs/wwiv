@@ -74,58 +74,45 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BeginDayHandler.cs" />
-    <Compile Include="..\..\..\..\..\Desktop\Fuck Me\CheckUpdates.cs">
-      <Link>CheckUpdates.cs</Link>
-    </Compile>
+    <Compile Include="CheckUpdates.cs" />
     <Compile Include="CommandLineBuilder.cs" />
     <Compile Include="Launcher.cs" />
-    <Compile Include="..\..\..\..\..\Desktop\Fuck Me\LogForm.cs">
+    <Compile Include="LogForm.cs">
       <SubType>Form</SubType>
-      <Link>LogForm.cs</Link>
     </Compile>
-    <Compile Include="..\..\..\..\..\Desktop\Fuck Me\LogForm.Designer.cs">
+    <Compile Include="LogForm.Designer.cs">
       <DependentUpon>LogForm.cs</DependentUpon>
-      <Link>LogForm.Designer.cs</Link>
     </Compile>
     <Compile Include="NodeManager.cs" />
     <Compile Include="NodeStatus.cs" />
     <Compile Include="NodeStatusEventArgs.cs" />
-    <Compile Include="..\..\..\..\..\Desktop\Fuck Me\PreferencesDialog.cs">
+    <Compile Include="PreferencesDialog.cs">
       <SubType>Form</SubType>
-      <Link>PreferencesDialog.cs</Link>
     </Compile>
-    <Compile Include="..\..\..\..\..\Desktop\Fuck Me\PreferencesDialog.Designer.cs">
+    <Compile Include="PreferencesDialog.Designer.cs">
       <DependentUpon>PreferencesDialog.cs</DependentUpon>
-      <Link>PreferencesDialog.Designer.cs</Link>
     </Compile>
     <Compile Include="Settings.cs" />
     <Compile Include="SSHServer.cs" />
     <Compile Include="StatusMessageEventArgs.cs" />
-    <Compile Include="..\..\..\..\..\Desktop\C# Projects\TelnetServer SSH\TelnetServer.cs">
-      <Link>TelnetServer.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\..\Desktop\Fuck Me\MainForm.cs">
+    <Compile Include="TelnetServer.cs" />
+    <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
-      <Link>MainForm.cs</Link>
     </Compile>
-    <Compile Include="..\..\..\..\..\Desktop\Fuck Me\MainForm.Designer.cs">
+    <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
-      <Link>MainForm.Designer.cs</Link>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="..\..\..\..\..\Desktop\Fuck Me\LogForm.resx">
+    <EmbeddedResource Include="LogForm.resx">
       <DependentUpon>LogForm.cs</DependentUpon>
-      <Link>LogForm.resx</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\..\..\..\..\Desktop\Fuck Me\MainForm.resx">
+    <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
       <SubType>Designer</SubType>
-      <Link>MainForm.resx</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\..\..\..\..\Desktop\Fuck Me\PreferencesDialog.resx">
+    <EmbeddedResource Include="PreferencesDialog.resx">
       <DependentUpon>PreferencesDialog.cs</DependentUpon>
-      <Link>PreferencesDialog.resx</Link>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -149,9 +136,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\..\Desktop\Fuck Me\App.config">
+    <None Include="App.config">
       <SubType>Designer</SubType>
-      <Link>App.config</Link>
     </None>
   </ItemGroup>
   <ItemGroup>

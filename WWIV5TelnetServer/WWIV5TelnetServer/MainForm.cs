@@ -26,27 +26,44 @@ namespace WWIV5TelnetServer
 {
     public partial class MainForm : Form
     {
-        private TelnetServer server = new TelnetServer();
+        private NodeManager nodeManager;
+        private TelnetServer serverTelnet;
+        private SSHServer serverSSH; // SSH
         //private BeginDayHandler beginDay;
 
         // Global Strings
         public static string Telnet_Version;
         public static string WWIV_Version;
         public static string WWIV_Build;
-        
+
         public MainForm()
         {
             InitializeComponent();
             startToolStripMenuItem.Enabled = true;
             stopToolStripMenuItem.Enabled = false;
             notifyIcon1.Visible = false;
-            server.StatusMessageChanged += server_StatusMessage;
-            server.NodeStatusChanged += server_NodeStatusChanged;
+
+            var lowNode = Convert.ToInt32(Properties.Settings.Default.startNode);
+            var highNode = Convert.ToInt32(Properties.Settings.Default.endNode);
+            nodeManager = new NodeManager(lowNode, highNode);
+
+            var portTelnet = Convert.ToInt32(Properties.Settings.Default.port);
+            var argumentsTemplateTelnet = Properties.Settings.Default.parameters;
+            var portSSH = Convert.ToInt32(Properties.Settings.Default.portSSH); // SSH
+            var argumentsTemplateSSH = Properties.Settings.Default.parameters2; // SSH
+            serverTelnet = new TelnetServer(nodeManager, portTelnet, argumentsTemplateTelnet, "Telnet");
+            serverSSH = new SSHServer(nodeManager, portSSH, argumentsTemplateSSH, "SSH"); // SSH
+
+            serverTelnet.StatusMessageChanged += server_StatusMessage;
+            serverTelnet.NodeStatusChanged += server_NodeStatusChanged;
+            serverSSH.StatusMessageChanged += server_StatusMessage; // SSH
+            serverSSH.NodeStatusChanged += server_NodeStatusChanged; // SSH
 
             Action<string> logger = delegate (string s)
             {
                 server_StatusMessage(this, new StatusMessageEventArgs(s, StatusMessageEventArgs.MessageType.LogInfo));
             };
+
         }
 
         private void server_NodeStatusChanged(object sender, NodeStatusEventArgs e)
@@ -57,7 +74,7 @@ namespace WWIV5TelnetServer
             {
                 // Hack. can't figure out C# databinding. According to stackoverflow, many others can't either.
                 listBoxNodes.Items.Clear();
-                listBoxNodes.Items.AddRange(server.Nodes.ToArray());
+                listBoxNodes.Items.AddRange(nodeManager.Nodes.ToArray());
             };
             if (InvokeRequired)
             {
@@ -102,10 +119,11 @@ namespace WWIV5TelnetServer
 
         private void startToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            server.Start();
+            serverTelnet.Start();
+            serverSSH.Start(); // SSH
             // Hack. can't figure out C# databinding. According to stackoverflow, many others can't either.
             listBoxNodes.Items.Clear();
-            listBoxNodes.Items.AddRange(server.Nodes.ToArray());
+            listBoxNodes.Items.AddRange(nodeManager.Nodes.ToArray());
             startToolStripMenuItem.Enabled = false;
             stopToolStripMenuItem.Enabled = true;
             preferencesToolStripMenuItem.Enabled = false;
@@ -115,7 +133,8 @@ namespace WWIV5TelnetServer
         private void stopToolStripMenuItem_Click(object sender, EventArgs e)
         {
             listBoxNodes.DataSource = null;
-            server.Stop();
+            serverTelnet.Stop();
+            serverSSH.Stop(); // SSH
             startToolStripMenuItem.Enabled = true;
             stopToolStripMenuItem.Enabled = false;
             preferencesToolStripMenuItem.Enabled = true;
@@ -138,7 +157,8 @@ namespace WWIV5TelnetServer
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             Console.WriteLine("MainForm_FormClosing");
-            server.Stop();
+            serverTelnet.Stop();
+            serverSSH.Stop(); // SSH
         }
 
         public void MainForm_Load(object sender, EventArgs e)
@@ -165,39 +185,43 @@ namespace WWIV5TelnetServer
                 Process.Start(binkP);
             }
 
-            // Fetch Current WWIV Version And Build Number
-            Process p = new Process();
-            string bbsExe = Properties.Settings.Default.executable;
-            p.StartInfo.FileName = bbsExe;
-            p.StartInfo.Arguments = "-V";
-            p.StartInfo.UseShellExecute = false;
-            p.StartInfo.RedirectStandardOutput = true;
-            p.Start();
-            string output = p.StandardOutput.ReadToEnd();
-            p.WaitForExit();
-            char[] delimiter = { '[', '.', ']' };
-            string currentVersion = output;
-            string[] partsVersion;
-            partsVersion = currentVersion.Split(delimiter);
-            string majorVersion = partsVersion[1];
-            string minorVersion = partsVersion[2];
-            string buildVersion = partsVersion[3];
-            string revisVersion = partsVersion[4];
-            string displayVersion;
-            displayVersion = (majorVersion + "." + minorVersion + "." + buildVersion + "." + revisVersion);
-            string currentFullVersion;
-            currentFullVersion = "WWIV5 Telnet Server - Running WWIV: " + displayVersion;
+            try
+            {
+                // Fetch Current WWIV Version And Build Number.
+                // It's ok if it fails.
+                Process p = new Process();
+                string bbsExe = Properties.Settings.Default.executable;
+                p.StartInfo.FileName = bbsExe;
+                p.StartInfo.Arguments = "-V";
+                p.StartInfo.UseShellExecute = false;
+                p.StartInfo.RedirectStandardOutput = true;
+                p.Start();
+                string output = p.StandardOutput.ReadToEnd();
+                p.WaitForExit();
+                char[] delimiter = { '[', '.', ']' };
+                string currentVersion = output;
+                string[] partsVersion = currentVersion.Split(delimiter);
+                string majorVersion = partsVersion[1];
+                string minorVersion = partsVersion[2];
+                string buildVersion = partsVersion[3];
+                string revisVersion = partsVersion[4];
+                string displayVersion = (majorVersion + "." + minorVersion + "." + buildVersion + "." + revisVersion);
+                string currentFullVersion = "WWIV5 Telnet Server - Running WWIV: " + displayVersion;
+                // Set Main Wiwndow Title
+                Text = currentFullVersion;
 
-            // Set Main Wiwndow Title
-            Text = currentFullVersion;
+                // Update Global Strings
+                WWIV_Version = displayVersion;
+                WWIV_Build = revisVersion;
 
-            // Update Global Strings
-            WWIV_Version = displayVersion;
-            WWIV_Build = revisVersion;
-
-            // HERE FOR UPDATE
-            CheckUpdates instance = new CheckUpdates();
-            instance.UpdateHeartbeat();
+                // HERE FOR UPDATE
+                CheckUpdates instance = new CheckUpdates();
+                instance.UpdateHeartbeat();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("The Following Error Occured: "+ ex);
+            }
         }
 
         private void runLocalNodeToolStripMenuItem_Click(object sender, EventArgs e)
