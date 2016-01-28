@@ -39,7 +39,9 @@ namespace WWIV5TelnetServer
             homeField.Text = Properties.Settings.Default.homeDirectory;
             localNodeSpinner.Value = Properties.Settings.Default.localNode;
             parametersField.Text = Properties.Settings.Default.parameters;
+            parametersField2.Text = Properties.Settings.Default.parameters2;
             portSpinner.Value = Properties.Settings.Default.port;
+            sshSpinner.Value = Properties.Settings.Default.portSSH;
             lowNodeSpinner.Value = Properties.Settings.Default.startNode;
             balloonsCheckBox.Checked = Properties.Settings.Default.useBalloons;
             beginDayCheckBox.Checked = Properties.Settings.Default.useBegindayEvent;
@@ -74,7 +76,9 @@ namespace WWIV5TelnetServer
                 Properties.Settings.Default.homeDirectory = homeField.Text;
                 Properties.Settings.Default.localNode = localNodeSpinner.Value;
                 Properties.Settings.Default.parameters = parametersField.Text;
+                Properties.Settings.Default.parameters2 = parametersField2.Text;
                 Properties.Settings.Default.port = portSpinner.Value;
+                Properties.Settings.Default.portSSH = sshSpinner.Value;
                 Properties.Settings.Default.startNode = lowNodeSpinner.Value;
                 Properties.Settings.Default.useBalloons = balloonsCheckBox.Checked;
                 Properties.Settings.Default.useBegindayEvent = beginDayCheckBox.Checked;
