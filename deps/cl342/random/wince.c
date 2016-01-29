@@ -43,7 +43,7 @@ typedef DWORD ( *GETSYSTEMPOWERSTATUS )( PSYSTEM_POWER_STATUS_EX2 pSystemPowerSt
 
 void fastPoll( void )
 	{
-	static BOOLEAN addedFixedItems = FALSE, hasHardwareRNG = FALSE;
+	static BOOLEAN addedFixedItems = FALSE;
 	static CEGENRANDOM pCeGenRandom = NULL;
 	static GETSYSTEMPOWERSTATUS pGetSystemPowerStatusEx2 = NULL;
 	FILETIME  creationTime, exitTime, kernelTime, userTime;

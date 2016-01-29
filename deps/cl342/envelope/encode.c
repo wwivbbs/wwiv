@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *					  cryptlib Datagram Encoding Routines					*
-*						Copyright Peter Gutmann 1996-2009					*
+*						Copyright Peter Gutmann 1996-2012					*
 *																			*
 ****************************************************************************/
 
@@ -59,7 +59,7 @@ static BOOLEAN sanityCheck( const ENVELOPE_INFO *envelopeInfoPtr )
 		envelopeInfoPtr->bufPos < 0 || \
 		envelopeInfoPtr->bufPos > envelopeInfoPtr->bufSize || \
 		envelopeInfoPtr->bufSize < MIN_BUFFER_SIZE || \
-		envelopeInfoPtr->bufSize >= MAX_INTLENGTH )
+		envelopeInfoPtr->bufSize >= MAX_BUFFER_SIZE )
 		return( FALSE );
 
 	/* Make sure that the block buffer position is within bounds */
@@ -67,6 +67,12 @@ static BOOLEAN sanityCheck( const ENVELOPE_INFO *envelopeInfoPtr )
 		( envelopeInfoPtr->blockBufferPos < 0 || \
 		  envelopeInfoPtr->blockBufferPos >= envelopeInfoPtr->blockSize || \
 		  envelopeInfoPtr->blockSize > CRYPT_MAX_IVSIZE ) )
+		return( FALSE );
+
+	/* Make sure that the partial and out-of-band data buffer positions are 
+	   clear (they're only used for de-enveloping) */
+	if( envelopeInfoPtr->partialBufPos != 0 || \
+		envelopeInfoPtr->oobBufSize != 0 )
 		return( FALSE );
 
 	/* If we're drained the envelope buffer, we're done */
@@ -80,14 +86,14 @@ static BOOLEAN sanityCheck( const ENVELOPE_INFO *envelopeInfoPtr )
 	   situation-specific checks */
 	if( envelopeInfoPtr->segmentStart < 0 || \
 		envelopeInfoPtr->segmentStart > envelopeInfoPtr->segmentDataStart || \
-		envelopeInfoPtr->segmentStart > MAX_INTLENGTH )
+		envelopeInfoPtr->segmentStart > MAX_BUFFER_SIZE )
 		return( FALSE );
 	if( envelopeInfoPtr->segmentDataStart < 0 || \
 		envelopeInfoPtr->segmentDataStart > envelopeInfoPtr->bufPos || \
-		envelopeInfoPtr->segmentDataStart > MAX_INTLENGTH )
+		envelopeInfoPtr->segmentDataStart > MAX_BUFFER_SIZE )
 		return( FALSE );
 	
-	/* The sitaution-specific checks get a bit complicated because we have 
+	/* The situation-specific checks get a bit complicated because we have 
 	   to distinguish between definite- and indefinite-length encodings.  
 	   For the definite length segmentStart == segmentDataStart since there 
 	   are no intermediate segment headers, for the indefinite length 
@@ -130,7 +136,7 @@ static BOOLEAN sanityCheck( const ENVELOPE_INFO *envelopeInfoPtr )
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int hashEnvelopeData( const ACTION_LIST *actionListPtr,
 					  IN_BUFFER( dataLength ) const void *data, 
-					  IN_LENGTH const int dataLength )
+					  IN_LENGTH_Z const int dataLength )
 	{
 	int iterationCount, status;
 
@@ -138,7 +144,7 @@ int hashEnvelopeData( const ACTION_LIST *actionListPtr,
 	assert( dataLength == 0 || isReadPtr( data, dataLength ) );
 
 	REQUIRES( data != NULL );
-	REQUIRES( dataLength >= 0 && dataLength < MAX_INTLENGTH );
+	REQUIRES( dataLength >= 0 && dataLength < MAX_BUFFER_SIZE );
 
 	for( iterationCount = 0;
 		 actionListPtr != NULL && \
@@ -387,7 +393,7 @@ static int encodeSegmentHeader( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 	/* If there's not enough data present to do anything, tell the caller */
 	if( dataLen <= 0 )
 		return( CRYPT_ERROR_UNDERFLOW );
-	ENSURES( dataLen > 0 && dataLen < MAX_INTLENGTH );
+	ENSURES( dataLen > 0 && dataLen < MAX_BUFFER_SIZE );
 
 	/* If there's a header between segments and the header length encoding
 	   has shrunk (either due to the cipher block size quantization
@@ -708,7 +714,7 @@ static int flushEnvelopeData( INOUT ENVELOPE_INFO *envelopeInfoPtr )
    perform the flush (this somewhat peculiar case is because the caller
    expects to have 0 bytes copied in this case) */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_LENGTH STDC_NONNULL_ARG( ( 1 ) ) \
 static int copyToEnvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 						   IN_BUFFER_OPT( length ) const BYTE *buffer, 
 						   IN_LENGTH_Z const int length )
@@ -722,7 +728,7 @@ static int copyToEnvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 
 	REQUIRES( sanityCheck( envelopeInfoPtr ) );
 	REQUIRES( ( buffer == NULL && length == 0 ) || \
-			  ( buffer != NULL && length >= 0 && length < MAX_INTLENGTH ) );
+			  ( buffer != NULL && length >= 0 && length < MAX_BUFFER_SIZE ) );
 
 	/* If we're trying to copy into a full buffer, return a count of 0 bytes
 	   unless we're trying to flush the buffer (the calling routine may
@@ -863,9 +869,9 @@ static int copyToEnvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 static int copyFromEnvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr, 
 							 OUT_BUFFER( maxLength, *length ) BYTE *buffer, 
-							 IN_LENGTH const int maxLength, 
-							 OUT_LENGTH_Z int *length, 
-							 IN_FLAGS( ENVCOPY ) const int flags )
+							 IN_DATALENGTH const int maxLength, 
+							 OUT_DATALENGTH_Z int *length, 
+							 IN_FLAGS_Z( ENVCOPY ) const int flags )
 	{
 	int bytesToCopy = maxLength, remainder;
 
@@ -873,7 +879,7 @@ static int copyFromEnvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	assert( maxLength == 0 || isWritePtr( buffer, maxLength ) );
 
 	REQUIRES( sanityCheck( envelopeInfoPtr ) );
-	REQUIRES( maxLength > 0 && maxLength < MAX_INTLENGTH );
+	REQUIRES( maxLength > 0 && maxLength < MAX_BUFFER_SIZE );
 	REQUIRES( flags == ENVCOPY_FLAG_NONE );
 
 	/* Clear return values */
@@ -937,7 +943,7 @@ static int copyFromEnvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			envelopeInfoPtr->segmentDataStart = 0;
 		envelopeInfoPtr->segmentDataEnd -= bytesToCopy;
 		ENSURES( envelopeInfoPtr->segmentDataEnd >= 0 && \
-				 envelopeInfoPtr->segmentDataEnd < MAX_INTLENGTH );
+				 envelopeInfoPtr->segmentDataEnd < MAX_BUFFER_SIZE );
 		}
 	*length = bytesToCopy;
 

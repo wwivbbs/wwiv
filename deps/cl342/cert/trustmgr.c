@@ -21,11 +21,9 @@
 #if defined( INC_ALL )
   #include "cert.h"
   #include "trustmgr.h"
-  #include "asn1.h"
 #else
   #include "cert/cert.h"
   #include "cert/trustmgr.h"
-  #include "enc_dec/asn1.h"
 #endif /* Compiler-specific includes */
 
 /* The size of the table of trust information.  This must be a power of 2 */
@@ -76,12 +74,12 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 static int getCertIdInfo( IN_BUFFER( certObjectLength ) const void *certObject, 
 						  IN_LENGTH_SHORT_MIN( MIN_CRYPT_OBJECTSIZE ) \
 								const int certObjectLength,
-						  OUT_PTR void **subjectDNptrPtr, 
+						  OUT_PTR_COND void **subjectDNptrPtr,
 						  OUT_LENGTH_SHORT_Z int *subjectDNsizePtr )
 	{
 	STREAM stream;
-	void *subjectDNptr = DUMMY_INIT_PTR;
-	int subjectDNsize, status;
+	void *subjectDNptr DUMMY_INIT_PTR;
+	int subjectDNsize DUMMY_INIT, status;
 
 	assert( isReadPtr( certObject, certObjectLength ) );
 	assert( isWritePtr( subjectDNptrPtr, sizeof( void * ) ) );
@@ -104,8 +102,9 @@ static int getCertIdInfo( IN_BUFFER( certObjectLength ) const void *certObject,
 	readUniversal( &stream );				/* Serial number */
 	readUniversal( &stream );				/* Signature algo */
 	readUniversal( &stream );				/* Issuer DN */
-	readUniversal( &stream );				/* Validity */
-	status = getStreamObjectLength( &stream, &subjectDNsize );
+	status = readUniversal( &stream );		/* Validity */
+	if( cryptStatusOK( status ) )
+		status = getStreamObjectLength( &stream, &subjectDNsize );
 	if( cryptStatusOK( status ) )
 		status = sMemGetDataBlock( &stream, &subjectDNptr, subjectDNsize );
 	if( cryptStatusError( status ) )
@@ -115,23 +114,23 @@ static int getCertIdInfo( IN_BUFFER( certObjectLength ) const void *certObject,
 		}
 	*subjectDNptrPtr = subjectDNptr;
 	*subjectDNsizePtr = subjectDNsize;
-	status = sSkip( &stream, subjectDNsize );/* Subject DN */
+	status = sSkip( &stream, subjectDNsize, MAX_INTLENGTH_SHORT );/* Subject DN */
 #if 0	/* sKID lookup isn't used at present.  Also this code should use the 
 		   parsing mechanism from dbx_rd.c to provide better checking */
 	const BYTE *extensionPtr;
 	int extensionSize = 0;
 	status = readUniversal( &stream );		/* Public key */
-	if( cryptStatusOK( status ) && \
-		peekTag( &stream ) == MAKE_CTAG( 3 ) )
+	if( checkStatusPeekTag( stream, status, tag ) && \
+		tag == MAKE_CTAG( 3 ) )
 		{
 		status = readConstructed( &stream, &extensionSize, 3 );
 		if( cryptStatusOK( status ) )
 			{
 			extensionPtr = sMemBufPtr( &stream );
-			sSkip( &stream, extensionSize );
+			sSkip( &stream, extensionSize, MAX_INTLENGTH_SHORT );
 			}
 		}
-	if( cryptStatusOK( status ) )			/* Signature */
+	if( !cryptStatusError( status ) )		/* Signature */
 		status = readUniversal( &stream );
 #endif /* 0 */
 	sMemDisconnect( &stream );
@@ -189,7 +188,7 @@ static int getCertIdInfo( IN_BUFFER( certObjectLength ) const void *certObject,
    information internals the pointer is a void *, as it is for all other 
    externally-accessible trust management functions */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 1 ) ) \
 void *findTrustEntry( INOUT TYPECAST( TRUST_INFO ** ) void *trustInfoPtrPtr, 
 					  IN_HANDLE const CRYPT_CERTIFICATE iCryptCert,
 					  const BOOLEAN getIssuerEntry )
@@ -263,14 +262,17 @@ void *findTrustEntry( INOUT TYPECAST( TRUST_INFO ** ) void *trustInfoPtrPtr,
 
 /* Retrieve trusted certificates */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-CRYPT_CERTIFICATE getTrustedCert( INOUT TYPECAST( TRUST_INFO ** ) \
-									void *trustInfoPtrPtr )
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+int getTrustedCert( INOUT TYPECAST( TRUST_INFO ** ) void *trustInfoPtrPtr,
+					OUT_HANDLE_OPT CRYPT_CERTIFICATE *iCertificate )
 	{
 	TRUST_INFO *trustInfo = trustInfoPtrPtr;
 	int status;
 
 	assert( isWritePtr( trustInfoPtrPtr, sizeof( TRUST_INFO ) ) );
+
+	/* Clear return value */
+	*iCertificate = CRYPT_ERROR;
 
 	/* If the certificate hasn't already been instantiated yet, do so now */
 	if( trustInfo->iCryptCert == CRYPT_ERROR )
@@ -286,8 +288,15 @@ CRYPT_CERTIFICATE getTrustedCert( INOUT TYPECAST( TRUST_INFO ** ) \
 								  &createInfo, OBJECT_TYPE_CERTIFICATE );
 		if( cryptStatusError( status ) )
 			{
-			DEBUG_DIAG(( "Couldn't instantiate trusted certificate" ));
-			assert( DEBUG_WARN );
+			/* If we couldn't instantiate the certificate and it's due to a
+			   problem with the certificate rather than circumstances beyond
+			   our control, warn about the issue since a (supposedly) known-
+			   good certificate shouldn't cause problems on import */
+			if( status != CRYPT_ERROR_MEMORY )
+				{
+				DEBUG_DIAG(( "Couldn't instantiate trusted certificate" ));
+				assert( DEBUG_WARN );
+				}
 			return( status );
 			}
 
@@ -301,7 +310,9 @@ CRYPT_CERTIFICATE getTrustedCert( INOUT TYPECAST( TRUST_INFO ** ) \
 		}
 
 	/* Return the trusted certificate */
-	return( trustInfo->iCryptCert );
+	*iCertificate = trustInfo->iCryptCert;
+
+	return( CRYPT_OK );
 	}
 
 CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
@@ -350,12 +361,12 @@ int enumTrustedCerts( INOUT TYPECAST( TRUST_INFO ** ) void *trustInfoPtrPtr,
 				iterationCount < FAILSAFE_ITERATIONS_MED; \
 			 trustInfoCursor = trustInfoCursor->next, iterationCount++ )	
 			{
-			const CRYPT_CERTIFICATE iCryptCert = \
-										getTrustedCert( trustInfoCursor );
+			CRYPT_CERTIFICATE iCryptCert;
 			int status;
 
-			if( cryptStatusError( iCryptCert ) )
-				return( iCryptCert );
+			status = getTrustedCert( trustInfoCursor, &iCryptCert );
+			if( cryptStatusError( status ) )
+				return( status );
 			if( iCryptCtl != CRYPT_UNUSED )
 				{
 				/* We're sending trusted certificates to a certificate trust 
@@ -671,7 +682,7 @@ int addTrustEntry( INOUT TYPECAST( TRUST_INFO ** ) void *trustInfoPtrPtr,
 
 STDC_NONNULL_ARG( ( 1, 2 ) ) \
 void deleteTrustEntry( INOUT TYPECAST( TRUST_INFO ** ) void *trustInfoPtrPtr, 
-					   INOUT TYPECAST( TRUST_INFO * ) void *entryToDeletePtr )
+					   IN TYPECAST( TRUST_INFO * ) void *entryToDeletePtr )
 	{
 	TRUST_INFO **trustInfoIndex = ( TRUST_INFO ** ) trustInfoPtrPtr;
 	TRUST_INFO *entryToDelete = ( TRUST_INFO * ) entryToDeletePtr, *prevInfoPtr;
@@ -728,11 +739,15 @@ void deleteTrustEntry( INOUT TYPECAST( TRUST_INFO ** ) void *trustInfoPtrPtr,
 /* Initialise and shut down the trust information */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int initTrustInfo( OUT_PTR TYPECAST( TRUST_INFO ** ) void **trustInfoPtrPtr )
+int initTrustInfo( OUT_PTR_COND TYPECAST( TRUST_INFO ** ) \
+						void **trustInfoPtrPtr )
 	{
 	TRUST_INFO **trustInfoIndex;
 
 	assert( isWritePtr( trustInfoPtrPtr, sizeof( void * ) ) );
+
+	/* Clear return value */
+	*trustInfoPtrPtr = NULL;
 
 	/* Initialise the trust information table */
 	if( ( trustInfoIndex = \
@@ -746,7 +761,7 @@ int initTrustInfo( OUT_PTR TYPECAST( TRUST_INFO ** ) void **trustInfoPtrPtr )
 	}
 
 STDC_NONNULL_ARG( ( 1 ) ) \
-void endTrustInfo( INOUT TYPECAST( TRUST_INFO ** ) void *trustInfoPtrPtr )
+void endTrustInfo( IN TYPECAST( TRUST_INFO ** ) void *trustInfoPtrPtr )
 	{
 	TRUST_INFO **trustInfoIndex = ( TRUST_INFO ** ) trustInfoPtrPtr;
 	int i;

@@ -35,7 +35,7 @@ static const MAP_TABLE clibReqReqMapTbl[] = {
 	{ CRYPT_ERROR, CRYPT_ERROR }, { CRYPT_ERROR, CRYPT_ERROR }
 	};
 
-CHECK_RETVAL_RANGE( MAX_ERROR, CTAG_PB_LAST ) \
+CHECK_RETVAL_RANGE( 0, CTAG_PB_LAST ) \
 static int clibReqToReq( IN_ENUM( CRYPT_REQUESTTYPE ) const int reqType )
 	{
 	int value, status;
@@ -72,6 +72,7 @@ static int initClientInfo( INOUT SESSION_INFO *sessionInfoPtr,
 	status = protocolInfo->operation = clibReqToReq( cmpInfo->requestType );
 	if( cryptStatusError( status ) )
 		return( status );
+	status = CRYPT_OK;	/* clibReqToReq() returns request indicator */
 
 	/* If we're using public key-based authentication, set up the key and 
 	   user ID information */

@@ -128,7 +128,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4, 5 ) ) \
 static int readKeyDerivationInfo( INOUT STREAM *stream, 
 								  OUT_BUFFER( saltMaxLen, *saltLen ) void *salt,
 								  IN_LENGTH_SHORT_MIN( 16 ) const int saltMaxLen,
-								  OUT_LENGTH_SHORT_Z int *saltLen,
+								  OUT_LENGTH_BOUNDED_Z( saltMaxLen ) int *saltLen,
 								  OUT_INT_SHORT_Z int *iterations )
 	{
 	long intValue;
@@ -214,7 +214,7 @@ static int readObjectAttributes( INOUT STREAM *stream,
 			case PKCS12_ATTRIBUTE_NONE:
 				/* It's a don't-care attribute, skip it */
 				if( length > 0 )
-					status = sSkip( stream, length );
+					status = sSkip( stream, length, MAX_INTLENGTH_SHORT );
 				break;
 
 			case PKCS12_ATTRIBUTE_LABEL:
@@ -268,7 +268,7 @@ static int readObjectInfo( INOUT STREAM *stream,
 						   INOUT ERROR_INFO *errorInfo )
 	{
 	long length;
-	int payloadOffset = DUMMY_INIT;
+	int payloadOffset DUMMY_INIT;
 	int status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
@@ -292,7 +292,7 @@ static int readObjectInfo( INOUT STREAM *stream,
 	if( cryptStatusOK( status ) )
 		{
 		payloadOffset = stell( stream );
-		status = sSkip( stream, length );
+		status = sSkip( stream, length, SSKIP_MAX );
 		}
 	if( cryptStatusError( status ) )
 		{
@@ -312,9 +312,11 @@ static int readEncryptedObjectInfo( INOUT STREAM *stream,
 									const BOOLEAN isEncryptedCert,
 									INOUT ERROR_INFO *errorInfo )
 	{
+#ifdef USE_ERRMSGS
 	const char *objectName = isEncryptedCert ? "encrypted certificate" : \
 											   "encrypted private key";
-	int payloadOffset = DUMMY_INIT, payloadLength, status;
+#endif /* USE_ERRMSGS */
+	int payloadOffset DUMMY_INIT, payloadLength, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( pkcs12objectInfo, sizeof( PKCS12_OBJECT_INFO ) ) );
@@ -357,7 +359,7 @@ static int readEncryptedObjectInfo( INOUT STREAM *stream,
 	if( cryptStatusOK( status ) )
 		{
 		payloadOffset = stell( stream );
-		status = sSkip( stream, payloadLength );
+		status = sSkip( stream, payloadLength, SSKIP_MAX );
 		}
 	if( cryptStatusError( status ) )
 		{

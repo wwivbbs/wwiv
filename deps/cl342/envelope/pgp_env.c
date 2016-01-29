@@ -28,19 +28,19 @@ static BOOLEAN sanityCheck( const ENVELOPE_INFO *envelopeInfoPtr )
 	{
 	assert( isReadPtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
 
-	/* Make sure that general envelope state is in order */
-	if( envelopeInfoPtr->flags & ENVELOPE_ISDEENVELOPE )
+	/* Check the general envelope state */
+	if( !envelopeSanityCheck( envelopeInfoPtr ) )
 		return( FALSE );
-	if( envelopeInfoPtr->envState < ENVSTATE_NONE || \
-		envelopeInfoPtr->envState >= ENVSTATE_LAST )
+
+	/* Make sure that general envelope state is in order */
+	if( envelopeInfoPtr->type != CRYPT_FORMAT_PGP || \
+		( envelopeInfoPtr->flags & ENVELOPE_ISDEENVELOPE ) )
 		return( FALSE );
 
 	/* Make sure that the buffer position is within bounds */
 	if( envelopeInfoPtr->buffer == NULL || \
-		envelopeInfoPtr->bufPos < 0 || \
-		envelopeInfoPtr->bufPos > envelopeInfoPtr->bufSize || \
 		envelopeInfoPtr->bufSize < MIN_BUFFER_SIZE || \
-		envelopeInfoPtr->bufSize >= MAX_INTLENGTH )
+		envelopeInfoPtr->bufSize >= MAX_BUFFER_SIZE )
 		return( FALSE );
 
 	/* If the auxBuffer isn't being used, make sure that all values related 
@@ -82,6 +82,124 @@ BOOLEAN pgpCheckAlgo( IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo,
 	return( TRUE );
 	}
 
+/* Unlike PKCS #7/CMS/SMIME, PGP doesn't contain truly nested messages (with 
+   the outer wrapper identifying what's in the inner content) but just puts 
+   one lot of data inside the other.  This means that when the caller 
+   specifies an inner content type we then have to burrow into the data that 
+   they push in order to determine that it actually matches what they've 
+   specified as the content type.
+   
+   The following alternative to copyToEnvelope() is enabled when the inner 
+   content type isn't plain data.  It checks the data being pushed (as far 
+   as it's possible to do so) to ensure that it matches the declared content 
+   type */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+static int copyToEnvelopeAlt( INOUT ENVELOPE_INFO *envelopeInfoPtr,
+							  IN_BUFFER_OPT( length ) const BYTE *buffer, 
+							  IN_LENGTH_Z const int length )
+	{
+	static const MAP_TABLE typeMapTbl[] = {
+		{ PGP_PACKET_COPR, CRYPT_CONTENT_COMPRESSEDDATA },
+		{ PGP_PACKET_ENCR, CRYPT_CONTENT_ENCRYPTEDDATA },
+		{ PGP_PACKET_ENCR_MDC, CRYPT_CONTENT_ENCRYPTEDDATA },
+		{ PGP_PACKET_SKE, CRYPT_CONTENT_ENCRYPTEDDATA },
+		{ PGP_PACKET_PKE, CRYPT_CONTENT_ENVELOPEDDATA },
+		{ PGP_PACKET_SIGNATURE, CRYPT_CONTENT_SIGNEDDATA },
+		{ PGP_PACKET_SIGNATURE_ONEPASS, CRYPT_CONTENT_SIGNEDDATA },
+		{ CRYPT_ERROR, CRYPT_ERROR }, { CRYPT_ERROR, CRYPT_ERROR }
+		};
+	STREAM stream;
+	long contentLength;
+	int ctb DUMMY_INIT, version, packetType, value, status;
+
+	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
+	assert( length == 0 || isReadPtr( buffer, length ) );
+
+	REQUIRES( ( buffer == NULL && length == 0 ) || \
+			  ( buffer != NULL && length >= 0 && length < MAX_BUFFER_SIZE ) );
+
+	/* If it's a flush then it's always an error, since there must be nested 
+	   content */
+	if( length <= 0 )
+		{
+		retExt( CRYPT_ERROR_BADDATA,
+				( CRYPT_ERROR_BADDATA, ENVELOPE_ERRINFO,
+				  "Envelope marked as having nested content type %d can't "
+				  "contain no content", envelopeInfoPtr->contentType ) );
+		}
+
+	/* Examine the start of the data to try and make sure that it matches 
+	   the content-type that's been set by the user */
+	if( length > 1 )
+		{
+		sMemConnect( &stream, buffer, length );
+		status = pgpReadPacketHeaderI( &stream, &ctb, &contentLength, 1 );
+		sMemDisconnect( &stream );
+		if( cryptStatusError( status ) )
+			{
+			/* If we encountered an error (other than running out of input)
+			   then what's being pushed isn't PGP nested content */
+			if( status != CRYPT_ERROR_UNDERFLOW )
+				{
+				retExt( CRYPT_ERROR_BADDATA,
+						( CRYPT_ERROR_BADDATA, ENVELOPE_ERRINFO,
+						  "Data for envelope marked as having content type "
+						  "%d doesn't appear to be PGP content", 
+						  envelopeInfoPtr->contentType ) );
+				}
+			
+			/* We ran out of data to read, only look at the CTB */
+			ctb = byteToInt( *buffer );
+			}
+		}
+	else
+		{
+		REQUIRES( length == 1 );
+
+		/* There's too little data to read a full PGP header, just get the 
+		   CTB */
+		ctb = byteToInt( *buffer );
+		}
+	version = pgpGetPacketVersion( ctb );
+	packetType = pgpGetPacketType( ctb );
+	if( ( version != PGP_VERSION_2 && version != PGP_VERSION_OPENPGP ) || \
+		( packetType <= PGP_PACKET_NONE || packetType >= PGP_PACKET_LAST ) )
+		{
+		retExt( CRYPT_ERROR_BADDATA,
+				( CRYPT_ERROR_BADDATA, ENVELOPE_ERRINFO,
+				  "Data for envelope marked as having content type %d "
+				  "doesn't appear to be PGP content", 
+				  envelopeInfoPtr->contentType ) );
+		}
+
+	/* Make sure that what we've got matches the declared content-type */
+	status = mapValue( packetType, &value, typeMapTbl, 
+					   FAILSAFE_ARRAYSIZE( typeMapTbl, MAP_TABLE ) );
+	if( cryptStatusError( status ) )
+		{
+		/* Disallowed content type, set a dummy value to fail the following
+		   test while still allowing for error reporting */
+		value = 0;
+		}
+	if( value != envelopeInfoPtr->contentType || \
+		version < PGP_VERSION_2 || version > PGP_VERSION_OPENPGP )
+		{
+		retExt( CRYPT_ERROR_BADDATA,
+				( CRYPT_ERROR_BADDATA, ENVELOPE_ERRINFO,
+				  "Data for envelope marked as having content type "
+				  "%d appears to actually be of content type %d, "
+				  "version %d", envelopeInfoPtr->contentType, 
+				  value, version ) );
+		}
+
+	/* Reset the envelope data processing to the standard mechanism and pass 
+	   the data on to the standard function */
+	initEnvelopeStreaming( envelopeInfoPtr );
+	return( envelopeInfoPtr->copyToEnvelopeFunction( envelopeInfoPtr,
+										buffer, length ) );
+	}
+
 /****************************************************************************
 *																			*
 *						Write Key Exchange/Signature Packets				*
@@ -107,8 +225,8 @@ static int writeSignatureInfoPacket( INOUT STREAM *stream,
 									 IN_HANDLE const CRYPT_CONTEXT iHashContext )
 	{
 	BYTE keyID[ PGP_KEYID_SIZE + 8 ];
-	int hashAlgo, signAlgo = DUMMY_INIT;	/* int vs.enum */
-	int pgpHashAlgo, pgpCryptAlgo = DUMMY_INIT, status;
+	int hashAlgo, signAlgo DUMMY_INIT;	/* int vs.enum */
+	int pgpHashAlgo, pgpCryptAlgo DUMMY_INIT, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 
@@ -165,6 +283,8 @@ static int writeHeaderPacket( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 	int status = CRYPT_OK;
 
 	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
+
+	REQUIRES( envelopeInfoPtr->envState == ENVSTATE_HEADER );
 
 	/* If we're encrypting, set up the encryption-related information.  
 	   Since PGP doesn't perform a key exchange of a session key when 
@@ -229,6 +349,10 @@ static int writeHeaderPacket( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 								  envelopeInfoPtr->payloadSize + \
 									PGP_DATA_HEADER_SIZE );
 			status = swrite( &stream, PGP_DATA_HEADER, PGP_DATA_HEADER_SIZE );
+
+			/* The header state remains at ENVSTATE_HEADER, which means that
+			   it'll be finalised to ENVSTATE_DONE at the end of this 
+			   function as no further processing is necessary */
 			break;
 
 		case ACTION_COMPRESS:
@@ -441,23 +565,6 @@ static int createSessionKey( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 	if( cryptStatusError( status ) )
 		return( status );
 	iSessionKeyContext = createInfo.cryptHandle;
-	if( envelopeInfoPtr->defaultAlgo == CRYPT_ALGO_BLOWFISH )
-		{
-		static const int keySize = 16;
-
-		/* If we're using an algorithm with a variable-length key, restrict 
-		   it to a fixed length.  There shouldn't be any need for this 
-		   because the key length is communicated as part of the wrapped 
-		   key, but some implementations choke if it's not exactly 128 bits */
-		status = krnlSendMessage( iSessionKeyContext, IMESSAGE_SETATTRIBUTE, 
-								  ( MESSAGE_CAST ) &keySize, 
-								  CRYPT_CTXINFO_KEYSIZE );
-		if( cryptStatusError( status ) )
-			{
-			krnlSendNotifier( iSessionKeyContext, IMESSAGE_DECREFCOUNT );
-			return( status );
-			}
-		}
 	status = krnlSendMessage( iSessionKeyContext, IMESSAGE_SETATTRIBUTE, 
 							  ( MESSAGE_CAST ) &mode, CRYPT_CTXINFO_MODE );
 	if( cryptStatusOK( status ) )
@@ -590,8 +697,7 @@ static int preEnvelopeSign( const ENVELOPE_INFO *envelopeInfoPtr )
 	REQUIRES( actionListPtr->associatedAction != NULL );
 
 	/* Evaluate the size of the signature action */
-	initSigParams( &sigParams );
-	sigParams.sigType = PGP_SIG_DATA;
+	initSigParamsPGP( &sigParams, PGP_SIG_DATA, NULL, 0 );
 	return( iCryptCreateSignature( NULL, 0, &actionListPtr->encodedSize, 
 							CRYPT_FORMAT_PGP, actionListPtr->iCryptHandle, 
 							actionListPtr->associatedAction->iCryptHandle,
@@ -768,6 +874,7 @@ static int emitPreamble( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 					( status, ENVELOPE_ERRINFO,
 					  "Couldn't create envelope header" ) );
 			}
+		ENSURES( envelopeInfoPtr->envState != ENVSTATE_HEADER );
 		}
 
 	/* Handle key export actions */
@@ -802,8 +909,22 @@ static int emitPreamble( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 		/* Make sure that we start a new segment if we try to add any data */
 		envelopeInfoPtr->dataFlags |= ENVDATA_SEGMENTCOMPLETE;
 
-		/* Before we can finish we have to push in the inner data header */
-		envelopeInfoPtr->envState = ENVSTATE_DATA;
+		/* If the content type is plain data then we have to push in the 
+		   inner data header before we exit */
+		if( envelopeInfoPtr->contentType == CRYPT_CONTENT_DATA )
+			envelopeInfoPtr->envState = ENVSTATE_DATA;
+		else
+			{
+			/* We've processed the header, if this is signed data then we 
+			   start hashing from this point.  The PGP RFCs are wrong in 
+			   this regard in that only the payload is hashed and not the 
+			   entire packet */
+			if( envelopeInfoPtr->usage == ACTION_SIGN )
+				envelopeInfoPtr->dataFlags |= ENVDATA_HASHACTIONSACTIVE;
+
+			/* We're finished */
+			envelopeInfoPtr->envState = ENVSTATE_DONE;
+			}
 		}
 
 	/* Handle data payload information */
@@ -841,7 +962,7 @@ static int emitPreamble( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 					  "Couldn't emit data header into envelope header" ) );
 			}
 
-		/* We've processed the header, if this is signed data we start 
+		/* We've processed the header, if this is signed data then we start 
 		   hashing from this point.  The PGP RFCs are wrong in this regard 
 		   in that only the payload is hashed and not the entire packet */
 		if( envelopeInfoPtr->usage == ACTION_SIGN )
@@ -852,6 +973,12 @@ static int emitPreamble( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 		}
 
 	ENSURES( sanityCheck( envelopeInfoPtr ) );
+
+	/* If we're processing a nested content-type that isn't plain data, 
+	   temporarily enable an alternate processing function that deals with 
+	   PGP's way of handling this */
+	if( envelopeInfoPtr->contentType != CRYPT_CONTENT_DATA )
+		envelopeInfoPtr->copyToEnvelopeFunction = copyToEnvelopeAlt;
 
 	return( CRYPT_OK );
 	}
@@ -918,8 +1045,7 @@ static int emitPostamble( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 		return( CRYPT_ERROR_OVERFLOW );
 
 	/* Sign the data */
-	initSigParams( &sigParams );
-	sigParams.sigType = PGP_SIG_DATA;
+	initSigParamsPGP( &sigParams, PGP_SIG_DATA, NULL, 0 );
 	status = iCryptCreateSignature( envelopeInfoPtr->buffer + \
 					envelopeInfoPtr->bufPos, sigBufSize, &sigSize, 
 					CRYPT_FORMAT_PGP, 
@@ -984,7 +1110,7 @@ void initPGPEnveloping( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 							  CRYPT_OPTION_ENCR_ALGO );
 	if( cryptStatusError( status ) || \
 		cryptStatusError( cryptlibToPgpAlgo( algorithm, &dummy ) ) )
-		envelopeInfoPtr->defaultAlgo = CRYPT_ALGO_3DES;
+		envelopeInfoPtr->defaultAlgo = CRYPT_ALGO_AES;
 	else
 		envelopeInfoPtr->defaultAlgo = algorithm;	/* int vs.enum */
 	envelopeInfoPtr->defaultMAC = CRYPT_ALGO_NONE;

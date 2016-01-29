@@ -99,6 +99,9 @@ static int cloneActionContext( OUT_HANDLE_OPT CRYPT_CONTEXT *iClonedContext,
 	REQUIRES( isHandleRangeValid( cryptContext ) );
 	REQUIRES( algorithm > CRYPT_ALGO_NONE && algorithm < CRYPT_ALGO_LAST );
 
+	/* Clear return value */
+	*iClonedContext = CRYPT_ERROR;
+
 	setMessageCreateObjectInfo( &createInfo, algorithm );
 	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE,
 							  IMESSAGE_DEV_CREATEOBJECT, &createInfo,
@@ -135,8 +138,8 @@ int initEnvelopeEncryption( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 							const BOOLEAN copyContext )
 	{
 	CRYPT_CONTEXT iCryptContext = cryptContext;
-	int contextAlgorithm = DUMMY_INIT, contextMode = DUMMY_INIT;
-	int blockSize = DUMMY_INIT, status;
+	int contextAlgorithm DUMMY_INIT, contextMode DUMMY_INIT;
+	int blockSize DUMMY_INIT, status;
 
 	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
 	assert( ( iv == NULL && ivLength == 0 ) || \
@@ -387,8 +390,8 @@ static int checkMissingInfo( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int addKeysetInfo( INOUT ENVELOPE_INFO *envelopeInfoPtr,
-				   IN_RANGE( CRYPT_ENVINFO_KEYSET_ENCRYPT, \
-							 CRYPT_ENVINFO_KEYSET_SIGCHECK ) \
+				   IN_RANGE( CRYPT_ENVINFO_KEYSET_SIGCHECK, \
+							 CRYPT_ENVINFO_KEYSET_DECRYPT ) \
 					const CRYPT_ATTRIBUTE_TYPE keysetFunction,
 				   IN_HANDLE const CRYPT_KEYSET keyset )
 	{

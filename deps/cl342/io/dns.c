@@ -49,7 +49,7 @@
 
 typedef void ( SOCKET_API *FREEADDRINFO )( INOUT struct addrinfo *ai ) \
 						STDC_NONNULL_ARG( ( 1 ) );
-typedef CHECK_RETVAL int ( SOCKET_API *GETADDRINFO )\
+typedef CHECK_RETVAL int ( SOCKET_API *GETADDRINFO ) \
 						( IN_STRING const char *nodename, 
 						  IN_STRING const char *servname, 
 						  const struct addrinfo *hints,
@@ -108,18 +108,20 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 4 ) ) \
 static int SOCKET_API my_getaddrinfo( IN_STRING const char *nodename,
 									  IN_STRING const char *servname,
 									  const struct addrinfo *hints,
-									  OUT_PTR struct addrinfo **res );
+									  OUT_PTR_COND struct addrinfo **res );
 STDC_NONNULL_ARG( ( 1 ) ) \
-static void SOCKET_API my_freeaddrinfo( IN struct addrinfo *ai );
+static void SOCKET_API my_freeaddrinfo( INOUT struct addrinfo *ai );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 5 ) ) \
 static int SOCKET_API my_getnameinfo( IN_BUFFER( salen ) \
-									  const struct sockaddr *sa,
+											const struct sockaddr *sa,
 									  IN SIZE_TYPE salen, 
 									  OUT_BUFFER_FIXED( nodelen ) char *node, 
-									  IN SIZE_TYPE nodelen, 
+									  IN_LENGTH_SHORT SIZE_TYPE nodelen,
 									  OUT_BUFFER_FIXED( servicelen ) \
-									  char *service, 
-									  IN SIZE_TYPE servicelen, IN int flags );
+											char *service, 
+									  IN_LENGTH_SHORT_MIN( 8 ) SIZE_TYPE \
+											servicelen, 
+									  IN int flags );
 
 CHECK_RETVAL \
 int initDNS( const INSTANCE_HANDLE hTCP, const INSTANCE_HANDLE hAddr )
@@ -186,7 +188,7 @@ void endDNS( const INSTANCE_HANDLE hTCP )
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 3 ) ) \
 static int addAddrInfo( INOUT_OPT struct addrinfo *prevAddrInfoPtr,
-						OUT_PTR struct addrinfo **addrInfoPtrPtr,
+						OUT_PTR_COND struct addrinfo **addrInfoPtrPtr,
 						IN_BUFFER( addrLen ) const void *address, 
 						IN_RANGE( IP_ADDR_SIZE, IP_ADDR_SIZE ) \
 						const int addrLen,  IN_PORT const int port )
@@ -214,7 +216,7 @@ static int addAddrInfo( INOUT_OPT struct addrinfo *prevAddrInfoPtr,
 			clFree( "addAddrInfo", addrInfoPtr );
 		if( sockAddrPtr != NULL )
 			clFree( "addAddrInfo", sockAddrPtr );
-		return( -1 );
+		return( CRYPT_ERROR_MEMORY );
 		}
 	memset( addrInfoPtr, 0, sizeof( struct addrinfo ) );
 	memset( sockAddrPtr, 0, sizeof( struct sockaddr_in ) );
@@ -234,17 +236,17 @@ static int addAddrInfo( INOUT_OPT struct addrinfo *prevAddrInfoPtr,
 	sockAddrPtr->sin_port = htons( ( in_port_t ) port );
 	memcpy( &sockAddrPtr->sin_addr, address, addrLen );
 	*addrInfoPtrPtr = addrInfoPtr;
-	return( 0 );
+
+	return( CRYPT_OK );
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 4 ) ) \
 static int SOCKET_API my_getaddrinfo( IN_STRING const char *nodename,
 									  IN_STRING const char *servname,
 									  const struct addrinfo *hints,
-									  OUT_PTR struct addrinfo **res )
+									  OUT_PTR_COND struct addrinfo **res )
 	{
 	struct hostent *pHostent;
-	struct addrinfo *currentAddrInfoPtr = NULL;
 	int port, hostErrno, i, status;
 	gethostbyname_vars();
 
@@ -254,19 +256,19 @@ static int SOCKET_API my_getaddrinfo( IN_STRING const char *nodename,
 	static_assert( sizeof( in_addr_t ) == IP_ADDR_SIZE, \
 				   "in_addr_t size" );
 
-	REQUIRES( nodename != NULL || ( hints->ai_flags & AI_PASSIVE ) );
-	REQUIRES( servname != NULL );
-
-	/* Clear return value */
-	*res = NULL;
+	ANALYSER_HINT_STRING( nodename );
+	ANALYSER_HINT_STRING( servname );
 
 	/* Perform basic error checking.  Since this is supposed to be an 
 	   emulation of a (normally) built-in function we don't perform any 
 	   REQUIRES()-style checking but only apply the basic checks that the 
 	   normal built-in form does */
-	if( ( nodename == NULL && !( hints->ai_flags & AI_PASSIVE ) ) || \
-		servname == NULL || hints == NULL || res == NULL )
+	if( servname == NULL || hints == NULL || res == NULL || \
+		( nodename == NULL && !( hints->ai_flags & AI_PASSIVE ) ) )
 		return( -1 );
+
+	/* Clear return value */
+	*res = NULL;
 
 	/* Convert the text-string port number into a numeric value */
 	status = strGetNumeric( servname, strlen( servname ), &port, 1, 65535 );
@@ -309,21 +311,10 @@ static int SOCKET_API my_getaddrinfo( IN_STRING const char *nodename,
 		{
 		int status;
 
-		if( currentAddrInfoPtr == NULL )
-			{
-			status = addAddrInfo( NULL, res, pHostent->h_addr_list[ i ], 
-								  pHostent->h_length, port );
-			currentAddrInfoPtr = *res;
-			}
-		else
-			status = addAddrInfo( currentAddrInfoPtr, &currentAddrInfoPtr,
-								  pHostent->h_addr_list[ i ], 
-								  pHostent->h_length, port );
-		if( status != 0 )
-			{
-			freeaddrinfo( *res );
-			return( status );
-			}
+		status = addAddrInfo( NULL, res, pHostent->h_addr_list[ i ], 
+							  pHostent->h_length, port );
+		if( cryptStatusError( status ) )
+			return( -1 );
 		}
 	return( 0 );
 	}
@@ -361,7 +352,8 @@ static int SOCKET_API my_getnameinfo( IN_BUFFER( salen ) \
 									  IN_LENGTH_SHORT SIZE_TYPE nodelen,
 									  OUT_BUFFER_FIXED( servicelen ) \
 											char *service, 
-									  IN_LENGTH_SHORT SIZE_TYPE servicelen,
+									  IN_LENGTH_SHORT_MIN( 8 ) SIZE_TYPE \
+											servicelen,
 									  IN int flags )
 	{
 	const struct sockaddr_in *sockAddr = ( struct sockaddr_in * ) sa;
@@ -401,6 +393,50 @@ static int SOCKET_API my_getnameinfo( IN_BUFFER( salen ) \
 	}
 #endif /* !IPv6 || __WINDOWS__ */
 
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+static int getAddrInfoError( INOUT NET_STREAM_INFO *netStream, 
+							 const int errorCode,
+							 IN_ERROR const int status )
+	{
+#ifdef USE_ERRMSGS
+  #if defined( __WINDOWS__ )
+	BYTE errorStringBuffer[ 1024 + 8 ];
+	const char *errorString = errorStringBuffer;
+	int errorStringLen;
+  #elif defined( IPv6 )
+	const char *errorString = gai_strerror( errorCode );
+	const int errorStringLen = strlen( errorString );
+  #else
+	const char *errorString = "<<<No extended error information available>>>";
+	const int errorStringLen = 46;
+  #endif /* System-specific error string handling */
+
+	assert( isWritePtr( netStream, sizeof( NET_STREAM_INFO ) ) );
+
+	REQUIRES( cryptStatusError( status ) );
+
+	/* Get the text string describing the error that occurred */
+  #ifdef __WINDOWS__
+	errorStringLen = FormatMessageA( FORMAT_MESSAGE_FROM_SYSTEM | \
+									 FORMAT_MESSAGE_IGNORE_INSERTS | \
+									 FORMAT_MESSAGE_MAX_WIDTH_MASK, NULL,
+									 errorCode,
+									 MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ),
+									 errorStringBuffer, 1024, NULL );
+	if( errorStringLen <= 0 )
+		{
+		memcpy( errorStringBuffer, "<<<Unknown>>>", 13 );
+		errorStringLen = 13;
+		}
+  #endif /* __WINDOWS__ */
+	setErrorString( NETSTREAM_ERRINFO, errorString, errorStringLen );
+#endif /* USE_ERRMSGS */
+
+	/* Make the error status fatal and exit */
+	netStream->persistentStatus = status;
+	return( status );
+	}
+
 /****************************************************************************
 *																			*
 *						 			DNS Interface							*
@@ -411,13 +447,15 @@ static int SOCKET_API my_getnameinfo( IN_BUFFER( salen ) \
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int getAddressInfo( INOUT NET_STREAM_INFO *netStream, 
-					OUT_PTR struct addrinfo **addrInfoPtrPtr,
+					OUT_PTR_COND struct addrinfo **addrInfoPtrPtr,
 					IN_BUFFER_OPT( nameLen ) const char *name, 
 					IN_LENGTH_Z const int nameLen, 
-					IN_PORT const int port, const BOOLEAN isServer )
+					IN_PORT const int port, const BOOLEAN isServer,
+					const BOOLEAN isDgramSocket )
 	{
 	struct addrinfo hints;
 	char nameBuffer[ MAX_DNS_SIZE + 8 ], portBuffer[ 16 + 8 ];
+	int errorCode;
 
 	assert( isWritePtr( netStream, sizeof( NET_STREAM_INFO ) ) );
 	assert( isWritePtr( addrInfoPtrPtr, sizeof( struct addrinfo * ) ) );
@@ -429,6 +467,9 @@ int getAddressInfo( INOUT NET_STREAM_INFO *netStream,
 	REQUIRES( ( name == NULL && nameLen == 0 ) || \
 			  ( name != NULL && \
 				nameLen > 0 && nameLen < MAX_DNS_SIZE ) );
+
+	/* Clear return value */
+	*addrInfoPtrPtr = NULL;
 
 	/* Convert the name and port into the null-terminated text-string format 
 	   required by getaddrinfo().  The reason why the port is given as a 
@@ -546,8 +587,9 @@ int getAddressInfo( INOUT NET_STREAM_INFO *netStream,
 		hints.ai_family = PF_UNSPEC;
 		}
 #endif /* 1 */
-	hints.ai_socktype = SOCK_STREAM;
-	if( getaddrinfo( name, portBuffer, &hints, addrInfoPtrPtr ) )
+	hints.ai_socktype = isDgramSocket ? SOCK_DGRAM : SOCK_STREAM;
+	errorCode = getaddrinfo( name, portBuffer, &hints, addrInfoPtrPtr );
+	if( errorCode != 0 )
 		{
 #if 0
 		if( !forceIPv4 )
@@ -560,7 +602,8 @@ int getAddressInfo( INOUT NET_STREAM_INFO *netStream,
 		if( getaddrinfo( name, portBuffer, &hints, addrInfoPtrPtr ) )
 			return( getHostError( netStream, CRYPT_ERROR_OPEN ) );
 #else
-		return( getHostError( netStream, CRYPT_ERROR_OPEN ) );
+		return( getAddrInfoError( netStream, errorCode, 
+								  CRYPT_ERROR_OPEN ) );
 #endif /* 0 */
 		}
 	return( CRYPT_OK );
@@ -579,7 +622,7 @@ void getNameInfo( IN_BUFFER( sockAddrLen ) const void *sockAddr,
 				  IN_LENGTH_SHORT_MIN( 8 ) const int sockAddrLen,
 				  OUT_BUFFER( addressMaxLen, *addressLen ) char *address, 
 				  IN_LENGTH_DNS const int addressMaxLen, 
-				  OUT_LENGTH_DNS_Z int *addressLen, 
+				  OUT_LENGTH_BOUNDED_Z( addressMaxLen ) int *addressLen, 
 				  OUT_PORT_Z int *port )
 	{
 	char nameBuffer[ MAX_DNS_SIZE + 8 ];

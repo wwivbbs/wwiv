@@ -82,7 +82,7 @@ int initMacInfo( IN_HANDLE const CRYPT_CONTEXT iMacContext,
 				 IN_LENGTH_SHORT const int passwordLength, 
 				 IN_BUFFER( saltLength ) const void *salt, 
 				 IN_LENGTH_SHORT const int saltLength, 
-				 IN_RANGE( 1, CMP_MAX_PASSWORD_ITERATIONS ) const int iterations )
+				 IN_RANGE( 1, CMP_MAX_PW_ITERATIONS ) const int iterations )
 	{
 	MECHANISM_DERIVE_INFO mechanismInfo;
 	MESSAGE_DATA msgData;
@@ -134,11 +134,11 @@ int readMacInfo( INOUT STREAM *stream,
 				 IN_LENGTH_SHORT const int passwordLength,
 				 INOUT ERROR_INFO *errorInfo )
 	{
-	CRYPT_ALGO_TYPE algorithm;
+	CRYPT_ALGO_TYPE algorithm DUMMY_INIT;
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	BYTE salt[ CRYPT_MAX_HASHSIZE + 8 ];
-	long value = DUMMY_INIT;
-	int saltLength, iterations, status;
+	long value DUMMY_INIT;
+	int saltLength, tag, iterations, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( protocolInfo, sizeof( CMP_PROTOCOL_INFO ) ) );
@@ -158,24 +158,28 @@ int readMacInfo( INOUT STREAM *stream,
 		   error */
 		protocolInfo->pkiFailInfo = CMPFAILINFO_BADALG;
 		retExt( status, 
-				( status, errorInfo, "Unrecognised passwod-based MAC "
+				( status, errorInfo, "Unrecognised password-based MAC "
 				  "mechanism" ) );
 		}
-	if( peekTag( stream ) == BER_NULL )
+	if( checkStatusPeekTag( stream, status, tag ) && \
+		tag == BER_NULL )
 		{
 		/* No parameters, use the same values as for the previous
 		   transaction */
 		return( CRYPT_OK );
 		}
 	readSequence( stream, NULL );
-	readOctetString( stream, salt, &saltLength, 4, CRYPT_MAX_HASHSIZE );
-	status = readAlgoID( stream, &algorithm, ALGOID_CLASS_HASH );
+	status = readOctetString( stream, salt, &saltLength, 4, 
+							  CRYPT_MAX_HASHSIZE );
+	if( cryptStatusOK( status ) )
+		status = readAlgoID( stream, &algorithm, ALGOID_CLASS_HASH );
 	if( cryptStatusOK( status ) && algorithm != CRYPT_ALGO_SHA1 )
 		status = CRYPT_ERROR_NOTAVAIL;
 	if( cryptStatusOK( status ) )
 		{
-		readShortInteger( stream, &value );
-		status = readAlgoID( stream, &algorithm, ALGOID_CLASS_HASH );
+		status = readShortInteger( stream, &value );
+		if( cryptStatusOK( status ) )
+			status = readAlgoID( stream, &algorithm, ALGOID_CLASS_HASH );
 		if( cryptStatusOK( status ) && algorithm != CRYPT_ALGO_HMAC_SHA1 )
 			status = CRYPT_ERROR_NOTAVAIL;
 		}
@@ -261,8 +265,10 @@ int readMacInfo( INOUT STREAM *stream,
 				  "Couldn't initialise passwod-based MAC information" ) );
 		}
 	if( protocolInfo->iMacContext != CRYPT_ERROR )
+		{
 		krnlSendNotifier( protocolInfo->iMacContext,
 						  IMESSAGE_DECREFCOUNT );
+		}
 	protocolInfo->iMacContext = createInfo.cryptHandle;
 
 	/* Remember the parameters that were used to set up the MAC context */
@@ -335,7 +341,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 int checkMessageMAC( INOUT STREAM *stream, 
 					 INOUT CMP_PROTOCOL_INFO *protocolInfo,
 					 IN_BUFFER( messageLength ) const void *message,
-					 IN_LENGTH const int messageLength )
+					 IN_DATALENGTH const int messageLength )
 	{
 	MESSAGE_DATA msgData;
 	BYTE macValue[ CRYPT_MAX_HASHSIZE + 8 ];
@@ -345,7 +351,7 @@ int checkMessageMAC( INOUT STREAM *stream,
 	assert( isWritePtr( protocolInfo, sizeof( CMP_PROTOCOL_INFO ) ) );
 	assert( isReadPtr( message, messageLength ) );
 
-	REQUIRES( messageLength > 0 && messageLength < MAX_INTLENGTH );
+	REQUIRES( messageLength > 0 && messageLength < MAX_BUFFER_SIZE );
 
 	/* Read the BIT STRING encapsulation and get a pointer to the MAC value */
 	status = readBitStringHole( stream, &macValueLength, 16, DEFAULT_TAG );
@@ -375,7 +381,7 @@ int checkMessageMAC( INOUT STREAM *stream,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 int checkMessageSignature( INOUT CMP_PROTOCOL_INFO *protocolInfo,
 						   IN_BUFFER( messageLength ) const void *message,
-						   IN_LENGTH const int messageLength,
+						   IN_DATALENGTH const int messageLength,
 						   IN_BUFFER( signatureLength ) const void *signature,
 						   IN_LENGTH_SHORT const int signatureLength,
 						   IN_HANDLE const CRYPT_HANDLE iAuthContext )
@@ -388,7 +394,7 @@ int checkMessageSignature( INOUT CMP_PROTOCOL_INFO *protocolInfo,
 	assert( isReadPtr( message, messageLength ) );
 	assert( isReadPtr( signature, signatureLength ) );
 
-	REQUIRES( messageLength > 0 && messageLength < MAX_INTLENGTH );
+	REQUIRES( messageLength > 0 && messageLength < MAX_BUFFER_SIZE );
 	REQUIRES( signatureLength > 0 && signatureLength < MAX_INTLENGTH_SHORT );
 	REQUIRES( isHandleRangeValid( iAuthContext ) );
 
@@ -463,7 +469,8 @@ int writeMacProtinfo( IN_HANDLE const CRYPT_CONTEXT iMacContext,
 					  OUT_BUFFER( protInfoMaxLength, *protInfoLength ) \
 							void *protInfo, 
 					  IN_LENGTH_SHORT_MIN( 16 ) const int protInfoMaxLength,
-					  OUT_LENGTH_SHORT_Z int *protInfoLength )
+					  OUT_LENGTH_BOUNDED_Z( protInfoMaxLength ) \
+							int *protInfoLength )
 	{
 	STREAM macStream;
 	MESSAGE_DATA msgData;
@@ -513,8 +520,10 @@ int writeSignedProtinfo( IN_HANDLE const CRYPT_CONTEXT iSignContext,
 						 IN_LENGTH_SHORT const int messageLength,
 						 OUT_BUFFER( protInfoMaxLength, *protInfoLength ) \
 								void *protInfo, 
-						  IN_LENGTH_SHORT_MIN( 32 ) const int protInfoMaxLength,
-						  OUT_LENGTH_SHORT_Z int *protInfoLength )
+						  IN_LENGTH_SHORT_MIN( 32 ) \
+								const int protInfoMaxLength,
+						  OUT_LENGTH_BOUNDED_Z( protInfoMaxLength ) \
+								int *protInfoLength )
 	{
 	CRYPT_CONTEXT iHashContext;
 	MESSAGE_CREATEOBJECT_INFO createInfo;

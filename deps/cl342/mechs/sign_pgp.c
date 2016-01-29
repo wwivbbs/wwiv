@@ -43,9 +43,14 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 static int writePgpSigPacketHeader( OUT_BUFFER_OPT( dataMaxLen, *dataLen ) \
 										void *data, 
 									IN_LENGTH_SHORT_Z const int dataMaxLen,
-									OUT_LENGTH_SHORT_Z int *dataLen,
+									OUT_LENGTH_BOUNDED_Z( dataMaxLen ) \
+										int *dataLen,
 									IN_HANDLE const CRYPT_CONTEXT iSignContext,
 									IN_HANDLE const CRYPT_CONTEXT iHashContext,
+									IN_BUFFER_OPT( sigAttributeLength ) \
+										const void *sigAttributes,
+									IN_LENGTH_SHORT_Z \
+										const int sigAttributeLength,
 									IN_RANGE( PGP_SIG_NONE, PGP_SIG_LAST - 1 ) \
 										const int sigType,
 									IN_LENGTH_SHORT_Z const int iAndSlength )
@@ -61,6 +66,8 @@ static int writePgpSigPacketHeader( OUT_BUFFER_OPT( dataMaxLen, *dataLen ) \
 	assert( ( data == NULL && dataMaxLen == 0 ) || \
 			isWritePtr( data, dataMaxLen ) );
 	assert( isWritePtr( dataLen, sizeof( int ) ) );
+	assert( ( sigAttributes == NULL && sigAttributeLength == 0 ) || \
+			isReadPtr( sigAttributes, sigAttributeLength ) );
 
 	REQUIRES( ( data == NULL && dataMaxLen == 0 ) || \
 			  ( data != NULL && \
@@ -68,6 +75,9 @@ static int writePgpSigPacketHeader( OUT_BUFFER_OPT( dataMaxLen, *dataLen ) \
 				dataMaxLen < MAX_INTLENGTH_SHORT ) );
 	REQUIRES( isHandleRangeValid( iSignContext ) );
 	REQUIRES( isHandleRangeValid( iHashContext ) );
+	REQUIRES( ( sigAttributes == NULL && sigAttributeLength == 0 ) || \
+			  ( sigAttributes != NULL && sigAttributeLength > 0 && \
+				sigAttributeLength < MAX_INTLENGTH_SHORT ) );
 	REQUIRES( sigType >= PGP_SIG_NONE && sigType < PGP_SIG_LAST );
 	REQUIRES( iAndSlength >= 0 && iAndSlength < MAX_INTLENGTH_SHORT );
 
@@ -145,11 +155,13 @@ static int writePgpSigPacketHeader( OUT_BUFFER_OPT( dataMaxLen, *dataLen ) \
 		byte		subpacketLength = 1 + PGP_KEYID_SIZE
 		byte		ID = PGP_SUBPACKET_KEYID
 		byte[8]		signerID
+	  [ byte[]		signed attributes ]
 	  [	byte[]		typeAndValue packet for iAndS ]
 	
 	   The signer ID is optional, but if we omit it GPG fails the signature 
 	   check so we always include it */
-	length = ( 1 + 1 + UINT32_SIZE ) + ( 1 + 1 + PGP_KEYID_SIZE );
+	length = ( 1 + 1 + UINT32_SIZE ) + ( 1 + 1 + PGP_KEYID_SIZE ) + \
+			 sigAttributeLength;
 	if( iAndSlength > 0 )
 		length += iAndSHeaderLength + iAndSlength;
 	writeUint16( &stream, length );
@@ -159,6 +171,8 @@ static int writePgpSigPacketHeader( OUT_BUFFER_OPT( dataMaxLen, *dataLen ) \
 	sputc( &stream, 1 + PGP_KEYID_SIZE );	/* Signer ID */
 	sputc( &stream, PGP_SUBPACKET_KEYID );
 	status = swrite( &stream, keyID, PGP_KEYID_SIZE );
+	if( cryptStatusOK( status ) && sigAttributeLength > 0 )
+		status = swrite( &stream, sigAttributes, sigAttributeLength );
 	if( cryptStatusOK( status ) && iAndSlength > 0 )
 		{									/* TypeAndValue */
 		status = swrite( &stream, iAndSHeader, iAndSHeaderLength );
@@ -195,10 +209,14 @@ static int writePgpSigPacketHeader( OUT_BUFFER_OPT( dataMaxLen, *dataLen ) \
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int createSignaturePGP( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
-						void *signature, IN_LENGTH_Z const int sigMaxLength, 
-						OUT_LENGTH_Z int *signatureLength, 
+							void *signature, 
+						IN_DATALENGTH_Z const int sigMaxLength, 
+						OUT_DATALENGTH_Z int *signatureLength, 
 						IN_HANDLE const CRYPT_CONTEXT iSignContext,
 						IN_HANDLE const CRYPT_CONTEXT iHashContext,
+						IN_BUFFER_OPT( sigAttributeLength ) \
+							const void *sigAttributes,
+						IN_LENGTH_SHORT_Z const int sigAttributeLength,
 						IN_RANGE( PGP_SIG_NONE, PGP_SIG_LAST - 1 ) \
 							const int sigType )
 	{
@@ -208,20 +226,25 @@ int createSignaturePGP( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 	BYTE signatureData[ CRYPT_MAX_PKCSIZE + 128 + 8 ];
 	BYTE extraData[ 1024 + 8 ], *extraDataPtr = extraData;
 	BYTE extraTrailer[ 8 + 8 ];
-	int extraDataLength = 1024, extraTrailerLength = DUMMY_INIT;
-	int signatureDataLength, iAndSlength = 0, totalLength = DUMMY_INIT;
+	int extraDataLength = 1024, extraTrailerLength DUMMY_INIT;
+	int signatureDataLength, iAndSlength = 0, totalLength DUMMY_INIT;
 	int status;
 
 	assert( ( signature == NULL && sigMaxLength == 0 ) || \
 			isWritePtr( signature, sigMaxLength ) );
 	assert( isWritePtr( signatureLength, sizeof( int ) ) );
+	assert( ( sigAttributes == NULL && sigAttributeLength == 0 ) || \
+			isReadPtr( sigAttributes, sigAttributeLength ) );
 
 	REQUIRES( ( signature == NULL && sigMaxLength == 0 ) || \
 			  ( signature != NULL && \
 				sigMaxLength > MIN_CRYPT_OBJECTSIZE && \
-				sigMaxLength < MAX_INTLENGTH ) );
+				sigMaxLength < MAX_BUFFER_SIZE ) );
 	REQUIRES( isHandleRangeValid( iSignContext ) );
 	REQUIRES( isHandleRangeValid( iHashContext ) );
+	REQUIRES( ( sigAttributes == NULL && sigAttributeLength == 0 ) || \
+			  ( sigAttributes != NULL && sigAttributeLength > 0 && \
+				sigAttributeLength < MAX_INTLENGTH_SHORT ) );
 	REQUIRES( sigType >= PGP_SIG_NONE && sigType < PGP_SIG_LAST );
 
 	/* Check whether there's an issuerAndSerialNumber present */
@@ -237,6 +260,7 @@ int createSignaturePGP( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 		{
 		status = writePgpSigPacketHeader( NULL, 0, &extraDataLength, 
 										  iSignContext, iHashContext, 
+										  sigAttributes, sigAttributeLength,
 										  sigType, iAndSlength );
 		if( cryptStatusError( status ) )
 			return( status );
@@ -282,7 +306,9 @@ int createSignaturePGP( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 	   from the pre-hashed data and the length, hash check, and signature */
 	status = writePgpSigPacketHeader( extraData, extraDataLength, 
 									  &extraDataLength, iSignContext,
-									  iHashContext, sigType, iAndSlength );
+									  iHashContext, sigAttributes, 
+									  sigAttributeLength, sigType, 
+									  iAndSlength );
 	if( cryptStatusOK( status ) )
 		{
 		status = krnlSendMessage( iHashContext, IMESSAGE_CTX_HASH,
@@ -395,7 +421,7 @@ int createSignaturePGP( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int checkSignaturePGP( IN_BUFFER( signatureLength ) const void *signature, 
-					   IN_LENGTH_SHORT const int signatureLength,
+					   IN_DATALENGTH const int signatureLength,
 					   IN_HANDLE const CRYPT_CONTEXT sigCheckContext,
 					   IN_HANDLE const CRYPT_CONTEXT iHashContext )
 	{
@@ -406,7 +432,7 @@ int checkSignaturePGP( IN_BUFFER( signatureLength ) const void *signature,
 
 	assert( isReadPtr( signature, signatureLength ) );
 	
-	REQUIRES( signatureLength > 40 && signatureLength < MAX_INTLENGTH );
+	REQUIRES( signatureLength > 40 && signatureLength < MAX_BUFFER_SIZE );
 	REQUIRES( isHandleRangeValid( sigCheckContext ) );
 	REQUIRES( isHandleRangeValid( iHashContext ) );
 
@@ -435,7 +461,7 @@ int checkSignaturePGP( IN_BUFFER( signatureLength ) const void *signature,
 	if( cryptStatusOK( status ) && queryInfo.attributeLength != 5 )
 		{
 		BYTE buffer[ 8 + 8 ];
-		int length = DUMMY_INIT;
+		int length DUMMY_INIT;
 
 		/* In addition to the standard authenticated attributes OpenPGP
 		   hashes in even more stuff at the end (see the comments for 

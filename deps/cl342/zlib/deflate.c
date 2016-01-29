@@ -78,6 +78,8 @@
   #include "zlib/deflate.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_COMPRESSION
+
 const char deflate_copyright[] =
    " deflate 1.2.4 Copyright 1995-2010 Jean-loup Gailly and Mark Adler ";
 /*
@@ -1813,3 +1815,4 @@ local block_state deflate_huff(deflate_state *s, int flush)	/* pcg */
     FLUSH_BLOCK(s, flush == Z_FINISH);
     return flush == Z_FINISH ? finish_done : block_done;
 }
+#endif /* USE_COMPRESSION */

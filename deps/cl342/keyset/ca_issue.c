@@ -7,12 +7,12 @@
 
 #if defined( INC_ALL )
   #include "crypt.h"
-  #include "keyset.h"
   #include "dbms.h"
+  #include "keyset.h"
 #else
   #include "crypt.h"
-  #include "keyset/keyset.h"
   #include "keyset/dbms.h"
+  #include "keyset/keyset.h"
 #endif /* Compiler-specific includes */
 
 #ifdef USE_DBMS
@@ -189,9 +189,11 @@ static int sanitiseCertAttributes( IN_HANDLE const CRYPT_CERTIFICATE iCertificat
 								  CRYPT_CERTINFO_KEYUSAGE );
 		}
 	if( cryptStatusOK( status ) )
+		{
 		status = krnlSendMessage( iCertificate, IMESSAGE_SETATTRIBUTE,
 								  ( MESSAGE_CAST ) &iTemplateCertificate,
 								  CRYPT_IATTRIBUTE_BLOCKEDATTRS );
+		}
 	if( status == CRYPT_ERROR_INVALID )
 		{
 		/* If the request would have resulted in the creation of an invalid 
@@ -306,11 +308,13 @@ static int completeCert( INOUT DBMS_INFO *dbmsInfo,
 		char specialCertID[ ENCODED_DBXKEYID_SIZE + 8 ];
 
 		/* Turn the general certID into the form required for special-case
-		   certificate data */
-		memcpy( specialCertID, certID, certIDlength );
-		memcpy( specialCertID,
-				( addType == CERTADD_RENEWAL_COMPLETE ) ? \
+		   certificate data by overwriting the first two bytes with an out-
+		   of-band value */
+		REQUIRES( rangeCheckZ( 0, certIDlength, ENCODED_DBXKEYID_SIZE ) );
+		memcpy( specialCertID, ( addType == CERTADD_RENEWAL_COMPLETE ) ? \
 				KEYID_ESC2 : KEYID_ESC1, KEYID_ESC_SIZE );
+		memcpy( specialCertID + KEYID_ESC_SIZE, certID + KEYID_ESC_SIZE, 
+				certIDlength - KEYID_ESC_SIZE );
 		initBoundData( boundDataPtr );
 		setBoundData( boundDataPtr, 0, specialCertID, certIDlength );
 		status = dbmsUpdate( 
@@ -365,7 +369,7 @@ int completeCertRenewal( INOUT DBMS_INFO *dbmsInfo,
 						 IN_HANDLE const CRYPT_CERTIFICATE iReplaceCertificate,
 						 INOUT ERROR_INFO *errorInfo )
 	{
-	CRYPT_CERTIFICATE iOrigCertificate = DUMMY_INIT;
+	CRYPT_CERTIFICATE iOrigCertificate DUMMY_INIT;
 	char keyID[ ENCODED_DBXKEYID_SIZE + 8 ];
 	int keyIDlength, dummy, status;
 
@@ -432,8 +436,8 @@ int caIssueCert( INOUT DBMS_INFO *dbmsInfo,
 	char certID[ ENCODED_DBXKEYID_SIZE + 8 ];
 	char reqCertID[ ENCODED_DBXKEYID_SIZE + 8 ];
 	CERTADD_TYPE addType = CERTADD_NORMAL, issueType;
-	int certDataLength = DUMMY_INIT, issuerIDlength, certIDlength;
-	int reqCertIDlength = DUMMY_INIT, status;
+	int certDataLength DUMMY_INIT, issuerIDlength, certIDlength;
+	int reqCertIDlength DUMMY_INIT, status;
 
 	assert( isWritePtr( dbmsInfo, sizeof( DBMS_INFO ) ) );
 	assert( ( iCertificate == NULL ) || \
@@ -452,8 +456,11 @@ int caIssueCert( INOUT DBMS_INFO *dbmsInfo,
 	/* Extract the information that we need from the certificate request */
 	status = getCertIssueType( dbmsInfo, iCertRequest, &issueType, FALSE );
 	if( cryptStatusOK( status ) )
-		status = getKeyID( reqCertID, ENCODED_DBXKEYID_SIZE, &reqCertIDlength, 
-						   iCertRequest, CRYPT_CERTINFO_FINGERPRINT_SHA1 );
+		{
+		status = getKeyID( reqCertID, ENCODED_DBXKEYID_SIZE, 
+						   &reqCertIDlength, iCertRequest, 
+						   CRYPT_CERTINFO_FINGERPRINT_SHA1 );
+		}
 	if( cryptStatusError( status ) )
 		{
 		if( cryptArgError( status ) )
@@ -515,13 +522,17 @@ int caIssueCert( INOUT DBMS_INFO *dbmsInfo,
 	status = getKeyID( certID, ENCODED_DBXKEYID_SIZE, &certIDlength, 
 					   iLocalCertificate, CRYPT_CERTINFO_FINGERPRINT_SHA1 );
 	if( cryptStatusOK( status ) )
+		{
 		status = getKeyID( issuerID, ENCODED_DBXKEYID_SIZE, &issuerIDlength, 
 						   iLocalCertificate,
 						   CRYPT_IATTRIBUTE_ISSUERANDSERIALNUMBER );
+		}
 	if( cryptStatusOK( status ) )
+		{
 		status = extractCertData( iLocalCertificate, 
 								  CRYPT_CERTFORMAT_CERTIFICATE, certData, 
 								  MAX_CERT_SIZE, &certDataLength );
+		}
 	if( cryptStatusError( status ) )
 		{
 		krnlSendNotifier( iLocalCertificate, IMESSAGE_DECREFCOUNT );
@@ -663,8 +674,13 @@ int caIssueCertComplete( INOUT DBMS_INFO *dbmsInfo,
 		BOUND_DATA boundData[ BOUND_DATA_MAXITEMS ], *boundDataPtr = boundData;
 		char incompleteCertID[ ENCODED_DBXKEYID_SIZE + 8 ];
 
-		memcpy( incompleteCertID, certID, certIDlength );
+		/* Turn the general certID into the form required for special-case
+		   certificate data by overwriting the first two bytes with an out-
+		   of-band value, then delete the object with that ID */
+		REQUIRES( rangeCheckZ( 0, certIDlength, ENCODED_DBXKEYID_SIZE ) );
 		memcpy( incompleteCertID, KEYID_ESC1, KEYID_ESC_SIZE );
+		memcpy( incompleteCertID + KEYID_ESC_SIZE, certID + KEYID_ESC_SIZE, 
+				certIDlength - KEYID_ESC_SIZE );
 		initBoundData( boundDataPtr );
 		setBoundData( boundDataPtr, 0, incompleteCertID, certIDlength );
 		status = dbmsUpdate( 

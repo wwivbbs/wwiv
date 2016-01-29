@@ -66,6 +66,8 @@ typedef struct {
 		( attributeInfo )->iTspSession = tspSession; \
 		( attributeInfo )->maxEncodedAttributeSize = ENCODED_ATTRIBUTE_SIZE;
 
+#ifdef USE_INT_CMS
+
 /****************************************************************************
 *																			*
 *								Utility Functions 							*
@@ -91,8 +93,8 @@ static int writeCmsSignerInfo( INOUT STREAM *stream,
 							   IN_RANGE( 0, CRYPT_MAX_HASHSIZE ) \
 									const int hashAlgoParam,
 							   IN_BUFFER_OPT( attributeSize ) \
-								const void *attributes, 
-							   IN_LENGTH_Z const int attributeSize,
+									const void *attributes, 
+							   IN_DATALENGTH_Z const int attributeSize,
 							   IN_BUFFER( signatureSize ) const void *signature, 
 							   IN_LENGTH_SHORT const int signatureSize,
 							   IN_HANDLE_OPT const CRYPT_HANDLE unsignedAttrObject )
@@ -100,7 +102,7 @@ static int writeCmsSignerInfo( INOUT STREAM *stream,
 	MESSAGE_DATA msgData;
 	DYNBUF iAndSDB;
 	const int sizeofHashAlgoID = sizeofAlgoIDex( hashAlgo, hashAlgoParam, 0 );
-	int timeStampSize = DUMMY_INIT, unsignedAttributeSize = 0, status;
+	int timeStampSize DUMMY_INIT, unsignedAttributeSize = 0, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( ( attributes == NULL && attributeSize == 0 ) || \
@@ -112,7 +114,7 @@ static int writeCmsSignerInfo( INOUT STREAM *stream,
 	REQUIRES( hashAlgoParam >= 0 && hashAlgoParam <= CRYPT_MAX_HASHSIZE );
 	REQUIRES( ( attributes == NULL && attributeSize == 0 ) || \
 			  ( attributes != NULL && \
-				attributeSize > 0 && attributeSize < MAX_INTLENGTH ) );
+				attributeSize > 0 && attributeSize < MAX_BUFFER_SIZE ) );
 	REQUIRES( signatureSize > MIN_CRYPT_OBJECTSIZE && \
 			  signatureSize < MAX_INTLENGTH_SHORT );
 	REQUIRES( unsignedAttrObject == CRYPT_UNUSED || \
@@ -210,7 +212,7 @@ static int createCmsCountersignature( IN_BUFFER( dataSignatureSize ) \
 							  OBJECT_TYPE_CONTEXT );
 	if( cryptStatusError( status ) )
 		return( status );
-	if( isHashExtAlgo( hashAlgo ) )
+	if( isHashMacExtAlgo( hashAlgo ) )
 		{
 		status = krnlSendMessage( createInfo.cryptHandle, 
 								  IMESSAGE_SETATTRIBUTE, 
@@ -279,20 +281,16 @@ static void addSmimeCapabilities( IN_HANDLE const CRYPT_CERTIFICATE iCmsAttribut
 		{ CRYPT_ALGO_SHAng, CRYPT_ALGO_NONE, 
 		  CRYPT_CERTINFO_CMS_SMIMECAP_SHAng },
 #endif /* USE_SHAng */
-#ifdef USE_SHA2
 		{ CRYPT_ALGO_SHA2, CRYPT_ALGO_NONE, 
 		  CRYPT_CERTINFO_CMS_SMIMECAP_SHA2 },
-#endif /* USE_SHA2 */
 		{ CRYPT_ALGO_SHA1, CRYPT_ALGO_NONE, 
 		  CRYPT_CERTINFO_CMS_SMIMECAP_SHA1 },
 #ifdef USE_SHAng
 		{ CRYPT_ALGO_HMAC_SHAng, CRYPT_ALGO_NONE, 
 		  CRYPT_CERTINFO_CMS_SMIMECAP_HMAC_SHAng },
 #endif /* USE_SHAng */
-#ifdef USE_SHA2
 		{ CRYPT_ALGO_HMAC_SHA2, CRYPT_ALGO_NONE, 
 		  CRYPT_CERTINFO_CMS_SMIMECAP_HMAC_SHA2 },
-#endif /* USE_SHA2 */
 		{ CRYPT_ALGO_HMAC_SHA1, CRYPT_ALGO_NONE, 
 		  CRYPT_CERTINFO_CMS_SMIMECAP_HMAC_SHA1 },
 		{ CRYPT_IALGO_GENERIC_SECRET, CRYPT_ALGO_NONE, 
@@ -549,7 +547,7 @@ static int createCmsAttributes( INOUT CMS_ATTRIBUTE_INFO *cmsAttributeInfo,
 	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE,
 							  IMESSAGE_DEV_CREATEOBJECT, &createInfo,
 							  OBJECT_TYPE_CONTEXT );
-	if( cryptStatusOK( status ) && isHashExtAlgo( hashAlgo ) )
+	if( cryptStatusOK( status ) && isHashMacExtAlgo( hashAlgo ) )
 		{
 		status = krnlSendMessage( createInfo.cryptHandle, 
 								  IMESSAGE_SETATTRIBUTE, 
@@ -601,8 +599,9 @@ static int createCmsAttributes( INOUT CMS_ATTRIBUTE_INFO *cmsAttributeInfo,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int createSignatureCMS( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
-						void *signature, IN_LENGTH_Z const int sigMaxLength, 
-						OUT_LENGTH_Z int *signatureLength,
+							void *signature, 
+						IN_DATALENGTH_Z const int sigMaxLength, 
+						OUT_DATALENGTH_Z int *signatureLength,
 						IN_HANDLE const CRYPT_CONTEXT signContext,
 						IN_HANDLE const CRYPT_CONTEXT iHashContext,
 						const BOOLEAN useDefaultAuthAttr,
@@ -619,7 +618,7 @@ int createSignatureCMS( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 	BYTE *bufPtr = ( signature == NULL ) ? NULL : buffer;
 	const int bufSize = ( signature == NULL ) ? 0 : CRYPT_MAX_PKCSIZE + 128;
 	int hashAlgo, hashAlgoParam = 0;
-	int dataSignatureSize, length = DUMMY_INIT, status;
+	int dataSignatureSize, length DUMMY_INIT, status;
 
 	assert( ( signature == NULL && sigMaxLength == 0 ) || \
 			isReadPtr( signature, sigMaxLength ) );
@@ -628,7 +627,7 @@ int createSignatureCMS( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 	REQUIRES( ( signature == NULL && sigMaxLength == 0 ) || \
 			  ( signature != NULL && \
 			    sigMaxLength > MIN_CRYPT_OBJECTSIZE && \
-				sigMaxLength < MAX_INTLENGTH ) );
+				sigMaxLength < MAX_BUFFER_SIZE ) );
 	REQUIRES( isHandleRangeValid( signContext ) );
 	REQUIRES( isHandleRangeValid( iHashContext ) );
 	REQUIRES( ( iAuthAttr == CRYPT_UNUSED && \
@@ -652,7 +651,7 @@ int createSignatureCMS( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 	/* Get the message hash algo and signing certificate */
 	status = krnlSendMessage( iHashContext, IMESSAGE_GETATTRIBUTE,
 							  &hashAlgo, CRYPT_CTXINFO_ALGO );
-	if( cryptStatusOK( status ) && isHashExtAlgo( hashAlgo ) )
+	if( cryptStatusOK( status ) && isHashMacExtAlgo( hashAlgo ) )
 		status = krnlSendMessage( iHashContext, IMESSAGE_GETATTRIBUTE,
 								  &hashAlgoParam, CRYPT_CTXINFO_BLOCKSIZE );
 	if( cryptStatusError( status ) )
@@ -731,11 +730,15 @@ int createSignatureCMS( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 	return( CRYPT_OK );
 	}
 
-/* Check a CMS signature */
+/* Check a CMS signature.  The reason why there are apparently two 
+   signature-checking objects present in the function arguments is that
+   sigCheckContext is the raw public-key context while iSigCheckKey is the 
+   overall signature-checking object, which may include attached 
+   certificates and other information */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int checkSignatureCMS( IN_BUFFER( signatureLength ) const void *signature, 
-					   IN_LENGTH_SHORT const int signatureLength,
+					   IN_DATALENGTH const int signatureLength,
 					   IN_HANDLE const CRYPT_CONTEXT sigCheckContext,
 					   IN_HANDLE const CRYPT_CONTEXT iHashContext,
 					   OUT_OPT_HANDLE_OPT CRYPT_CERTIFICATE *iExtraData,
@@ -755,7 +758,7 @@ int checkSignatureCMS( IN_BUFFER( signatureLength ) const void *signature,
 	assert( ( iExtraData == NULL ) || \
 			isWritePtr( iExtraData, sizeof( CRYPT_CERTIFICATE ) ) );
 
-	REQUIRES( signatureLength > 40 && signatureLength < MAX_INTLENGTH );
+	REQUIRES( signatureLength > 40 && signatureLength < MAX_BUFFER_SIZE );
 	REQUIRES( isHandleRangeValid( sigCheckContext ) );
 	REQUIRES( isHandleRangeValid( iHashContext ) );
 	REQUIRES( isHandleRangeValid( iSigCheckKey ) );
@@ -766,7 +769,7 @@ int checkSignatureCMS( IN_BUFFER( signatureLength ) const void *signature,
 	/* Get the message hash algo */
 	status = krnlSendMessage( iHashContext, IMESSAGE_GETATTRIBUTE,
 							  &hashAlgo, CRYPT_CTXINFO_ALGO );
-	if( cryptStatusOK( status ) && isHashExtAlgo( hashAlgo ) )
+	if( cryptStatusOK( status ) && isHashMacExtAlgo( hashAlgo ) )
 		status = krnlSendMessage( iHashContext, IMESSAGE_GETATTRIBUTE,
 								  &hashAlgoParam, CRYPT_CTXINFO_BLOCKSIZE );
 	if( cryptStatusError( status ) )
@@ -821,7 +824,7 @@ int checkSignatureCMS( IN_BUFFER( signatureLength ) const void *signature,
 							  OBJECT_TYPE_CONTEXT );
 	if( cryptStatusError( status ) )
 		return( status );
-	if( isHashExtAlgo( queryInfo.hashAlgo ) )
+	if( isHashMacExtAlgo( queryInfo.hashAlgo ) )
 		{
 		status = krnlSendMessage( createInfo.cryptHandle, 
 								  IMESSAGE_SETATTRIBUTE, 
@@ -896,3 +899,4 @@ int checkSignatureCMS( IN_BUFFER( signatureLength ) const void *signature,
 
 	return( CRYPT_OK );
 	}
+#endif /* USE_INT_CMS */

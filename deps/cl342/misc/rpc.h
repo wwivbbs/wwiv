@@ -251,11 +251,13 @@ typedef int ( *COMMAND_HANDLER )( void *stateInfo, COMMAND_INFO *cmd );
    decrease due to copying, and can't handle large objects atomically due to
    limits on message size (this specifically applies to mega-CRLs).  Because 
    of this, we also allow a direct interface that just forwards the data 
-   without marshalling/unmarshalling.  Because of the change in arg handling
-   for returned data in RPC vs. direct calls (the RPC returns the data in
-   the return message, the direct call requires an extra parameter to specify
-   the location of the returned data) we also need a macro RETURN_VALUE() to
-   no-op out the extra parameter in case we're using the RPC form */
+   without marshalling/unmarshalling.
+   
+   Because of the change in arg handling for returned data in RPC vs. direct 
+   calls (the RPC returns the data in the return message, the direct call 
+   requires an extra parameter to specify the location of the returned data) 
+   we also need a macro RETURN_VALUE() to no-op out the extra parameter in 
+   case we're using the RPC form */
 
 #ifdef USE_RPCAPI
   #define DISPATCH_COMMAND( function, command ) \
@@ -265,7 +267,7 @@ typedef int ( *COMMAND_HANDLER )( void *stateInfo, COMMAND_INFO *cmd );
   #define RETURN_VALUE( value )		0
 #else
   #define DISPATCH_COMMAND( function, command ) \
-		  function( NULL, &command )
+		  function( &command )
   #define DISPATCH_COMMAND_DBX( function, command, dbmsInfo ) \
 		  function( ( dbmsInfo )->stateInfo, &command )
   #define RETURN_VALUE( value )		value

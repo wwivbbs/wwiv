@@ -7,11 +7,9 @@
 
 #if defined( INC_ALL )
   #include "cert.h"
-  #include "asn1.h"
   #include "asn1_ext.h"
 #else
   #include "cert/cert.h"
-  #include "enc_dec/asn1.h"
   #include "enc_dec/asn1_ext.h"
 #endif /* Compiler-specific includes */
 
@@ -60,7 +58,7 @@ enum { OCSP_STATUS_NOTREVOKED, OCSP_STATUS_REVOKED, OCSP_STATUS_UNKNOWN };
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 static int findRevocationEntry( const REVOCATION_INFO *listPtr,
-								OUT_OPT_PTR REVOCATION_INFO **insertPoint,
+								OUT_PTR_OPT REVOCATION_INFO **insertPoint,
 								IN_BUFFER( valueLength ) const void *value, 
 								IN_LENGTH_SHORT const int valueLength,
 								const BOOLEAN sortEntries )
@@ -126,8 +124,8 @@ static int findRevocationEntry( const REVOCATION_INFO *listPtr,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 int addRevocationEntry( INOUT_PTR REVOCATION_INFO **listHeadPtrPtr,
-						OUT_OPT_PTR REVOCATION_INFO **newEntryPosition,
-						IN_KEYID const CRYPT_KEYID_TYPE valueType,
+						OUT_OPT_PTR_COND REVOCATION_INFO **newEntryPosition,
+						IN_KEYID_OPT const CRYPT_KEYID_TYPE valueType,
 						IN_BUFFER( valueLength ) const void *value, 
 						IN_LENGTH_SHORT const int valueLength,
 						const BOOLEAN noCheck )
@@ -218,7 +216,7 @@ void deleteRevocationEntries( INOUT_PTR REVOCATION_INFO **listHeadPtrPtr )
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3, 5, 6 ) ) \
 int prepareRevocationEntries( INOUT_OPT REVOCATION_INFO *listPtr, 
 							  const time_t defaultTime,
-							  OUT_OPT_PTR REVOCATION_INFO **errorEntry,
+							  OUT_PTR_xCOND REVOCATION_INFO **errorEntry,
 							  const BOOLEAN isSingleEntry,
 							  OUT_ENUM_OPT( CRYPT_ATTRIBUTE ) \
 								CRYPT_ATTRIBUTE_TYPE *errorLocus,
@@ -340,11 +338,16 @@ int prepareRevocationEntries( INOUT_OPT REVOCATION_INFO *listPtr,
 
 /****************************************************************************
 *																			*
-*							CRL-specific Functions							*
+*						Revocation-Checking Functions						*
 *																			*
 ****************************************************************************/
 
 /* Check whether a certificate has been revoked */
+
+typedef CHECK_RETVAL int ( *CHECKREVOCATIONFUNCTION ) \
+							( const CERT_INFO *certInfoPtr, \
+							  INOUT CERT_INFO *revocationInfoPtr ) \
+								STDC_NONNULL_ARG( ( 1, 2 ) );
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int checkRevocationCRL( const CERT_INFO *certInfoPtr, 
@@ -356,6 +359,8 @@ static int checkRevocationCRL( const CERT_INFO *certInfoPtr,
 
 	assert( isReadPtr( certInfoPtr, sizeof( CERT_INFO ) ) );
 	assert( isWritePtr( revocationInfoPtr, sizeof( CERT_INFO ) ) );
+
+	REQUIRES( revocationInfoPtr->type == CRYPT_CERTTYPE_CRL );
 
 	/* If there's no revocation information present then the certificate 
 	   can't have been revoked */
@@ -386,12 +391,53 @@ static int checkRevocationCRL( const CERT_INFO *certInfoPtr,
 	return( CRYPT_ERROR_INVALID );
 	}
 
-/* Check a certificate against a CRL */
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+static int checkRevocationOCSP( const CERT_INFO *certInfoPtr, 
+							    INOUT CERT_INFO *revocationInfoPtr )
+	{
+	CERT_REV_INFO *certRevInfo = revocationInfoPtr->cCertRev;
+	REVOCATION_INFO *revocationEntry;
+	int status;
+
+	assert( isReadPtr( certInfoPtr, sizeof( CERT_INFO ) ) );
+	assert( isWritePtr( revocationInfoPtr, sizeof( CERT_INFO ) ) );
+
+	REQUIRES( revocationInfoPtr->type == CRYPT_CERTTYPE_OCSP_RESPONSE );
+
+	/* If there's no revocation information present then the certificate 
+	   can't have been revoked */
+	if( certRevInfo->revocations == NULL )
+		return( CRYPT_OK );
+
+	/* Check whether there's an entry for this certificate in the list */
+	status = findRevocationEntry( certRevInfo->revocations, &revocationEntry,
+								  certInfoPtr->cCertCert->serialNumber,
+								  certInfoPtr->cCertCert->serialNumberLength,
+								  FALSE );
+	if( cryptStatusError( status ) )
+		{
+		/* No revocation entry, the certificate is OK */
+		return( CRYPT_OK );
+		}
+	ENSURES( revocationEntry != NULL );
+
+	/* Select the entry that contains the revocation information and return
+	   the certificate's revocation status.  Because of the inability of a
+	   blacklist to return a proper status, we have to map anything other
+	   than "revoked" to "OK" */
+	certRevInfo->currentRevocation = revocationEntry;
+	return( ( revocationEntry->status == CRYPT_OCSPSTATUS_REVOKED ) ? \
+			CRYPT_ERROR_INVALID : CRYPT_OK );
+	}
+
+/* Check a certificate against a CRL or OCSP response (effectively the same 
+   thing, an OCSP response is just a custom CRL) */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int checkCRL( INOUT CERT_INFO *certInfoPtr, 
 			  IN_HANDLE const CRYPT_CERTIFICATE iCryptCRL )
 	{
+	CHECKREVOCATIONFUNCTION checkRevocationFunction;
 	CERT_INFO *crlInfoPtr;
 	int i, status;
 
@@ -399,8 +445,8 @@ int checkCRL( INOUT CERT_INFO *certInfoPtr,
 
 	REQUIRES( isHandleRangeValid( iCryptCRL ) );
 
-	/* Check that the CRL is a complete signed CRL and not just a 
-	   newly-created CRL object */
+	/* Check that the CRL/OCSP response is a complete signed CRL/response 
+	   and not just a newly-created object */
 	status = krnlAcquireObject( iCryptCRL, OBJECT_TYPE_CERTIFICATE,
 								( void ** ) &crlInfoPtr,
 								CRYPT_ARGERROR_VALUE );
@@ -412,10 +458,12 @@ int checkCRL( INOUT CERT_INFO *certInfoPtr,
 		return( CRYPT_ERROR_NOTINITED );
 		}
 	ANALYSER_HINT( crlInfoPtr != NULL );
+	checkRevocationFunction = ( crlInfoPtr->type == CRYPT_CERTTYPE_CRL ) ? \
+							  checkRevocationCRL : checkRevocationOCSP;
 
-	/* Check the base certificate against the CRL.  If it's been revoked or 
-	   there's only a single certificate present, exit */
-	status = checkRevocationCRL( certInfoPtr, crlInfoPtr );
+	/* Check the base certificate against the CRL/OCSP response.  If it's 
+	   been revoked or there's only a single certificate present, exit */
+	status = checkRevocationFunction( certInfoPtr, crlInfoPtr );
 	if( cryptStatusError( status ) || \
 		certInfoPtr->type != CRYPT_CERTTYPE_CERTCHAIN )
 		{
@@ -424,26 +472,26 @@ int checkCRL( INOUT CERT_INFO *certInfoPtr,
 		}
 
 	/* It's a certificate chain, check every remaining certificate in the 
-	   chain against the CRL.  In theory this is pointless because a CRL can 
-	   only contain information for a single certificate in the chain, 
-	   however the caller may have passed us a CRL for an intermediate 
-	   certificate (in which case the check for the leaf certificate was 
-	   pointless).  In any case it's easier to just do the check for all 
-	   certificates than to determine which certificate the CRL applies to 
-	   so we check for all certificates */
+	   chain against the CRL/OCSP response.  In theory this is pointless 
+	   because a CRL can only contain information for a single certificate 
+	   in the chain, however the caller may have passed us a CRL for an 
+	   intermediate certificate (in which case the check for the leaf 
+	   certificate was pointless).  In any case it's easier to just do the 
+	   check for all certificates than to determine which certificate the 
+	   CRL applies to so we check for all certificates */
 	for( i = 0; i < certInfoPtr->cCertCert->chainEnd && \
 				i < MAX_CHAINLENGTH; i++ )
 		{
 		CERT_INFO *certChainInfoPtr;
 
-		/* Check this certificate against the CRL */
+		/* Check this certificate against the CRL/OCSP response */
 		status = krnlAcquireObject( certInfoPtr->cCertCert->chain[ i ],
 									OBJECT_TYPE_CERTIFICATE,
 									( void ** ) &certChainInfoPtr,
 									CRYPT_ERROR_SIGNALLED );
 		if( cryptStatusOK( status ) )
 			{
-			status = checkRevocationCRL( certChainInfoPtr, crlInfoPtr );
+			status = checkRevocationFunction( certChainInfoPtr, crlInfoPtr );
 			krnlReleaseObject( certChainInfoPtr->objectHandle );
 			}
 
@@ -475,7 +523,7 @@ int checkCRL( INOUT CERT_INFO *certInfoPtr,
 			extensions			Extensions OPTIONAL
 			} */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_LENGTH_SHORT STDC_NONNULL_ARG( ( 1 ) ) \
 int sizeofCRLentry( INOUT REVOCATION_INFO *crlEntry )
 	{
 	int status;
@@ -485,7 +533,8 @@ int sizeofCRLentry( INOUT REVOCATION_INFO *crlEntry )
 	/* Remember the encoded attribute size for later when we write the
 	   attributes */
 	status = \
-		crlEntry->attributeSize = sizeofAttributes( crlEntry->attributes );
+		crlEntry->attributeSize = sizeofAttributes( crlEntry->attributes,
+													CRYPT_CERTTYPE_NONE );
 	if( cryptStatusError( status ) )
 		return( status );
 
@@ -516,6 +565,10 @@ int readCRLentry( INOUT STREAM *stream,
 	assert( isWritePtr( errorType, sizeof( CRYPT_ERRTYPE_TYPE ) ) );
 
 	REQUIRES( entryNo >= 0 && entryNo < MAX_INTLENGTH );
+
+	/* Clear return values */
+	*errorLocus = CRYPT_ATTRIBUTE_NONE;
+	*errorType = CRYPT_ERRTYPE_NONE;
 
 	/* Determine the overall size of the entry */
 	status = readSequence( stream, &length );
@@ -558,7 +611,7 @@ int readCRLentry( INOUT STREAM *stream,
 	return( CRYPT_OK );
 	}
 
-STDC_NONNULL_ARG( ( 1, 2 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int writeCRLentry( INOUT STREAM *stream, 
 				   const REVOCATION_INFO *crlEntry )
 	{
@@ -593,61 +646,6 @@ int writeCRLentry( INOUT STREAM *stream,
 *																			*
 ****************************************************************************/
 
-#if 0	/* 28/8/08 Doesn't seem to be used */
-
-/* Check whether a certificate has been revoked */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int checkRevocationOCSP( const CERT_INFO *certInfoPtr, 
-						 INOUT CERT_INFO *revocationInfoPtr )
-	{
-	CERT_REV_INFO *certRevInfo = revocationInfoPtr->cCertRev;
-	REVOCATION_INFO *revocationEntry = DUMMY_INIT_PTR;
-	BYTE certHash[ CRYPT_MAX_HASHSIZE + 8 ];
-	int certHashLength, status;
-
-	assert( isReadPtr( certInfoPtr, sizeof( CERT_INFO ) ) );
-	assert( isWritePtr( revocationInfoPtr, sizeof( CERT_INFO ) ) );
-
-	/* If there's no revocation information present then the certificate 
-	   can't have been revoked */
-	if( certRevInfo->revocations == NULL )
-		return( CRYPT_OK );
-
-	/* Get the certificate hash and use it to check whether there's an entry 
-	   for this certificate in the list.  We read the certificate hash 
-	   indirectly since it's computed on demand and may not have been 
-	   evaluated yet */
-	status = getCertComponentString( ( CERT_INFO * ) certInfoPtr,
-									 CRYPT_CERTINFO_FINGERPRINT_SHA1,
-									 certHash, CRYPT_MAX_HASHSIZE, 
-									 &certHashLength );
-	if( cryptStatusOK( status ) )
-		{
-		status = findRevocationEntry( certRevInfo->revocations,
-									  &revocationEntry, certHash,
-									  certHashLength, FALSE );
-		}
-	if( cryptStatusError( status ) )
-		{
-		/* No entry, either good or bad, we can't report anything about the 
-		   certificate */
-		return( status );
-		}
-	ENSURES( revocationEntry != NULL );
-
-	/* Select the entry that contains the revocation information and return
-	   the certificate's status.  The unknown status is a bit difficult to 
-	   report, the best that we can do is report notfound although the 
-	   notfound occurred at the responder rather than here */
-	certRevInfo->currentRevocation = revocationEntry;
-	return( ( revocationEntry->status == CRYPT_OCSPSTATUS_NOTREVOKED ) ? \
-				CRYPT_OK : \
-			( revocationEntry->status == CRYPT_OCSPSTATUS_REVOKED ) ? \
-				CRYPT_ERROR_INVALID : CRYPT_ERROR_NOTFOUND );
-	}
-#endif /* 0 */
-
 /* Copy a revocation list from an OCSP request to a response */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
@@ -655,7 +653,7 @@ int copyRevocationEntries( INOUT_PTR REVOCATION_INFO **destListHeadPtrPtr,
 						   const REVOCATION_INFO *srcListPtr )
 	{
 	const REVOCATION_INFO *srcListCursor;
-	REVOCATION_INFO *destListCursor = DUMMY_INIT_PTR;
+	REVOCATION_INFO *destListCursor DUMMY_INIT_PTR;
 	int iterationCount;
 
 	assert( isWritePtr( destListHeadPtrPtr, sizeof( REVOCATION_INFO * ) ) );
@@ -867,7 +865,7 @@ int checkOCSPResponse( INOUT CERT_INFO *certInfoPtr,
 			}
 		} */
 
-CHECK_RETVAL_RANGE( MAX_ERROR, 1024 ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_RANGE( 0, 1024 ) STDC_NONNULL_ARG( ( 1 ) ) \
 static int sizeofOcspID( const REVOCATION_INFO *ocspEntry )
 	{
 	assert( isReadPtr( ocspEntry, sizeof( REVOCATION_INFO ) ) );
@@ -885,11 +883,12 @@ static int readOcspID( INOUT STREAM *stream,
 					   OUT_ENUM_OPT( CRYPT_KEYID ) CRYPT_KEYID_TYPE *idType,
 					   OUT_BUFFER( idMaxLen, *idLen ) BYTE *id, 
 					   IN_LENGTH_SHORT_MIN( 16 ) const int idMaxLen,
-					   OUT_LENGTH_SHORT_Z int *idLen )
+					   OUT_LENGTH_BOUNDED_Z( idMaxLen ) int *idLen )
 	{
 	HASHFUNCTION_ATOMIC hashFunctionAtomic;
-	void *dataPtr = DUMMY_INIT_PTR;
-	int length, tag, status;
+	void *dataPtr DUMMY_INIT_PTR;
+	const int hashedIDlen = min( idMaxLen, KEYID_SIZE );
+	int length DUMMY_INIT, tag, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( idType, sizeof( CRYPT_KEYID_TYPE ) ) );
@@ -906,9 +905,9 @@ static int readOcspID( INOUT STREAM *stream,
 	*idLen = 0;
 
 	/* Read the ID */
-	tag = peekTag( stream );
-	if( cryptStatusError( tag ) )
-		return( tag );
+	status = tag = peekTag( stream );
+	if( cryptStatusError( status ) )
+		return( status );
 	switch( tag )
 		{
 		case BER_SEQUENCE:
@@ -932,14 +931,15 @@ static int readOcspID( INOUT STREAM *stream,
 		case MAKE_CTAG( CTAG_OI_CERTIFICATE ):
 			/* Convert the certificate to a certID */
 			*idType = CRYPT_IKEYID_CERTID;
-			*idLen = KEYID_SIZE;
+			*idLen = hashedIDlen;
 			readConstructed( stream, NULL, CTAG_OI_CERTIFICATE );
 			status = readConstructed( stream, &length, 0 );
 			if( cryptStatusOK( status ) )
 				status = sMemGetDataBlock( stream, &dataPtr, length );
 			if( cryptStatusError( status ) )
 				return( status );
-			hashFunctionAtomic( id, KEYID_SIZE, dataPtr, length );
+			ANALYSER_HINT( dataPtr != NULL );
+			hashFunctionAtomic( id, hashedIDlen, dataPtr, length );
 			return( readUniversal( stream ) );
 
 		case MAKE_CTAG( CTAG_OI_CERTIDWITHSIG ):
@@ -948,16 +948,18 @@ static int readOcspID( INOUT STREAM *stream,
 			   with it.  It's almost as unworkable as the v1 original but we 
 			   can convert the iAndS to an issuerID and use that */
 			*idType = CRYPT_IKEYID_ISSUERID;
-			*idLen = KEYID_SIZE;
+			*idLen = hashedIDlen;
 			readConstructed( stream, NULL, CTAG_OI_CERTIDWITHSIG );
-			readSequence( stream, NULL );
-			status = getStreamObjectLength( stream, &length );
+			status = readSequence( stream, NULL );
+			if( cryptStatusOK( status ) )
+				status = getStreamObjectLength( stream, &length );
 			if( cryptStatusOK( status ) )
 				status = sMemGetDataBlock( stream, &dataPtr, length );
 			if( cryptStatusError( status ) )
 				return( status );
-			hashFunctionAtomic( id, KEYID_SIZE, dataPtr, length );
-			sSkip( stream, length );			/* issuerAndSerialNumber */
+			ANALYSER_HINT( dataPtr != NULL );
+			hashFunctionAtomic( id, hashedIDlen, dataPtr, length );
+			sSkip( stream, length, MAX_INTLENGTH_SHORT );	/* issuerAndSerialNumber */
 			readUniversal( stream );			/* tbsCertificateHash */
 			return( readUniversal( stream ) );	/* certSignature */
 		}
@@ -985,21 +987,24 @@ static int writeOcspID( INOUT STREAM *stream,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int sizeofOcspRequestEntry( INOUT REVOCATION_INFO *ocspEntry )
 	{
+	const int ocspIDsize = sizeofOcspID( ocspEntry );
 	int status;
 
 	assert( isWritePtr( ocspEntry, sizeof( REVOCATION_INFO ) ) );
 	
 	REQUIRES( ocspEntry->idType == CRYPT_KEYID_NONE );
+	REQUIRES( ocspIDsize > 0 && ocspIDsize < MAX_INTLENGTH_SHORT );
 
 	/* Remember the encoded attribute size for later when we write the
 	   attributes */
 	status = \
-		ocspEntry->attributeSize = sizeofAttributes( ocspEntry->attributes );
+		ocspEntry->attributeSize = sizeofAttributes( ocspEntry->attributes,
+													 CRYPT_CERTTYPE_NONE );
 	if( cryptStatusError( status ) )
 		return( status );
 
 	return( ( int ) \
-			sizeofObject( sizeofOcspID( ocspEntry ) + \
+			sizeofObject( ocspIDsize + \
 						  ( ( ocspEntry->attributeSize > 0 ) ? \
 							( int ) \
 							sizeofObject( \
@@ -1049,7 +1054,7 @@ int readOcspRequestEntry( INOUT STREAM *stream,
 	   per-request extensions so the tag is CTAG_OR_SR_EXTENSIONS rather 
 	   than CTAG_OR_EXTENSIONS */
 	status = readConstructed( stream, &length, CTAG_OR_SR_EXTENSIONS );
-	if( cryptStatusOK( status ) )
+	if( cryptStatusOK( status ) && length > 0 )
 		{
 		status = readAttributes( stream, &currentEntry->attributes,
 								 CRYPT_CERTTYPE_NONE, length,
@@ -1078,6 +1083,7 @@ int readOcspRequestEntry( INOUT STREAM *stream,
 	status = getAttributeDataPtr( attributePtr, &certIdPtr, &certIdLength );
 	if( cryptStatusError( status ) )
 		return( status );
+	ANALYSER_HINT( certIdPtr != NULL );
 	sMemConnect( &certIdStream, certIdPtr, certIdLength );
 	readSequence( &certIdStream, NULL );
 	status = readOctetString( &certIdStream, idBuffer, &length, KEYID_SIZE, 
@@ -1099,13 +1105,17 @@ int writeOcspRequestEntry( INOUT STREAM *stream,
 	const int attributeSize = ( ocspEntry->attributeSize > 0 ) ? \
 					( int ) sizeofObject( \
 								sizeofObject( ocspEntry->attributeSize ) ) : 0;
+	const int ocspIDsize = sizeofOcspID( ocspEntry );
 	int status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isReadPtr( ocspEntry, sizeof( REVOCATION_INFO ) ) );
 
+	if( cryptStatusError( ocspIDsize ) )
+		return( ocspIDsize );
+
 	/* Write the header and ID information */
-	writeSequence( stream, sizeofOcspID( ocspEntry ) + attributeSize );
+	writeSequence( stream, ocspIDsize + attributeSize );
 	status = writeOcspID( stream, ocspEntry );
 	if( cryptStatusError( status ) || ocspEntry->attributeSize <= 0 )
 		return( status );
@@ -1141,14 +1151,18 @@ int writeOcspRequestEntry( INOUT STREAM *stream,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int sizeofOcspResponseEntry( INOUT REVOCATION_INFO *ocspEntry )
 	{
+	const int ocspIDsize = sizeofOcspID( ocspEntry );
 	int certStatusSize = 0, status;
 
 	assert( isWritePtr( ocspEntry, sizeof( REVOCATION_INFO ) ) );
 
+	REQUIRES( ocspIDsize > 0 && ocspIDsize < MAX_INTLENGTH_SHORT );
+
 	/* Remember the encoded attribute size for later when we write the
 	   attributes */
 	status = \
-		ocspEntry->attributeSize = sizeofAttributes( ocspEntry->attributes );
+		ocspEntry->attributeSize = sizeofAttributes( ocspEntry->attributes,
+													 CRYPT_CERTTYPE_NONE );
 	if( cryptStatusError( status ) )
 		return( status );
 
@@ -1157,7 +1171,7 @@ int sizeofOcspResponseEntry( INOUT REVOCATION_INFO *ocspEntry )
 					 sizeofNull() : ( int ) sizeofObject( sizeofGeneralizedTime() );
 
 	return( ( int ) \
-			sizeofObject( sizeofOcspID( ocspEntry ) + \
+			sizeofObject( ocspIDsize + \
 						  certStatusSize + sizeofGeneralizedTime() ) + \
 						  ( ( ocspEntry->attributeSize > 0 ) ? \
 							( int ) sizeofObject( ocspEntry->attributeSize ) : 0 ) );
@@ -1188,6 +1202,51 @@ int readOcspResponseEntry( INOUT STREAM *stream,
 	if( cryptStatusError( status ) )
 		return( status );
 
+	/* If we're reading an OCSPv1 ID then the ability to recover any useful 
+	   elements in it apart from the serial number has been destroyed by 
+	   passing them through a one-way hash function, so we dig down into the
+	   ID to extract just the serial number.  See the comment in 
+	   checkRevocationOCSP() on the implications of this */
+	if( idType == CRYPT_KEYID_NONE )
+		{
+		STREAM memStream;
+		BYTE integer[ MAX_SERIALNO_SIZE + 8 ];
+		int integerLength DUMMY_INIT;
+
+		static_assert( MAX_SERIALNO_SIZE <= MAX_ID_SIZE, "Buffer size" );
+
+		/* Dig down into the ID to extract the serial number and replace the
+		   overall ID with that */
+		sMemConnect( &memStream, idBuffer, length );
+		readSequence( &memStream, NULL );
+		readUniversal( &memStream );			/* AlgoID */
+		readUniversal( &memStream );			/* Hashed issuer DN */
+		status = readUniversal( &memStream );	/* Hashed partial issuer key */
+		if( cryptStatusOK( status ) )
+			{
+			status = readInteger( &memStream, integer, MAX_SERIALNO_SIZE, 
+								  &integerLength );
+			}
+		sMemDisconnect( &memStream );
+		if( cryptStatusError( status ) )
+			return( status );
+		if( integerLength <= 0 )
+			{
+			/* Some certificates may have a serial number of zero, which is 
+			   turned into a zero-length integer by the ASN.1 read code 
+			   since it truncates leading zeroes that are added due to ASN.1 
+			   encoding requirements.  If we get a zero-length integer we 
+			   turn it into a single zero byte */
+			idBuffer[ 0 ] = 0;
+			length = 1;
+			}
+		else
+			{
+			memcpy( idBuffer, integer, integerLength );
+			length = integerLength;
+			}
+		}
+
 	/* Add the entry to the revocation information list */
 	status = addRevocationEntry( listHeadPtrPtr, &currentEntry, idType,
 								 idBuffer, length, FALSE );
@@ -1210,8 +1269,8 @@ int readOcspResponseEntry( INOUT STREAM *stream,
 			readConstructed( stream, NULL, OCSP_STATUS_REVOKED );
 			status = readGeneralizedTime( stream, 
 										  &currentEntry->revocationTime );
-			if( cryptStatusOK( status ) && \
-				peekTag( stream ) == MAKE_CTAG( 0 ) )
+			if( checkStatusPeekTag( stream, status, tag ) && \
+				tag == MAKE_CTAG( 0 ) )
 				{
 				/* Remember the crlReason for later */
 				readConstructed( stream, NULL, 0 );
@@ -1230,7 +1289,8 @@ int readOcspResponseEntry( INOUT STREAM *stream,
 	if( cryptStatusError( status ) )
 		return( status );
 	status = readGeneralizedTime( stream, &certInfoPtr->startTime );
-	if( cryptStatusOK( status ) && peekTag( stream ) == MAKE_CTAG( 0 ) )
+	if( checkStatusPeekTag( stream, status, tag ) && \
+		tag == MAKE_CTAG( 0 ) )
 		{
 		readConstructed( stream, NULL, 0 );
 		status = readGeneralizedTime( stream, &certInfoPtr->endTime );
@@ -1246,7 +1306,7 @@ int readOcspResponseEntry( INOUT STREAM *stream,
 	if( stell( stream ) <= endPos - MIN_ATTRIBUTE_SIZE )
 		{
 		status = readConstructed( stream, &length, CTAG_OP_EXTENSIONS );
-		if( cryptStatusOK( status ) )
+		if( cryptStatusOK( status ) && length > 0 )
 			{
 			status = readAttributes( stream, &currentEntry->attributes,
 						CRYPT_CERTTYPE_NONE, length,
@@ -1271,9 +1331,11 @@ int readOcspResponseEntry( INOUT STREAM *stream,
 									CRYPT_ATTRIBUTE_NONE, crlReason, 0,
 									&certInfoPtr->errorLocus, 
 									&certInfoPtr->errorType );
+		if( cryptStatusError( status ) )
+			return( status );
 		}
 
-	return( status );
+	return( CRYPT_OK );
 	}
 
 STDC_NONNULL_ARG( ( 1, 2 ) ) \
@@ -1281,17 +1343,20 @@ int writeOcspResponseEntry( INOUT STREAM *stream,
 							const REVOCATION_INFO *ocspEntry,
 							const time_t entryTime )
 	{
+	const int ocspIDsize = sizeofOcspID( ocspEntry );
 	int certStatusSize, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isReadPtr( ocspEntry, sizeof( REVOCATION_INFO ) ) );
+
+	REQUIRES( ocspIDsize > 0 && ocspIDsize < MAX_INTLENGTH_SHORT );
 
 	/* Determine the size of the certificate status field */
 	certStatusSize = ( ocspEntry->status != CRYPT_OCSPSTATUS_REVOKED ) ? \
 					 sizeofNull() : ( int ) sizeofObject( sizeofGeneralizedTime() );
 
 	/* Write the header and ID information */
-	writeSequence( stream, sizeofOcspID( ocspEntry ) + \
+	writeSequence( stream, ocspIDsize + \
 				   certStatusSize + sizeofGeneralizedTime() + \
 				   ( ( ocspEntry->attributeSize > 0 ) ? \
 						( int ) sizeofObject( ocspEntry->attributeSize ) : 0 ) );

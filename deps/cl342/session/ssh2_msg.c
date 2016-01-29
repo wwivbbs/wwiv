@@ -42,11 +42,11 @@ static int handleWindowAdjust( INOUT SESSION_INFO *sessionInfoPtr,
 							   IN const long channelNo,
 							   IN_LENGTH_Z const int length )
 	{
-	int windowCount, windowSize = DUMMY_INIT, status;
+	int windowCount, windowSize DUMMY_INIT, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 
-	REQUIRES( channelNo >= 0 && channelNo <= LONG_MAX );
+	REQUIRES( channelNo >= 0 && channelNo <= CHANNEL_MAX );
 	REQUIRES( length >= 0 && length < MAX_INTLENGTH );
 
 	/* Get the window parameters */
@@ -162,7 +162,7 @@ static int handleWindowAdjust( INOUT SESSION_INFO *sessionInfoPtr,
    than-optimal 16MB window which, as a side-effect, results in a constant 
    flow of window adjusts */
 
-CHECK_RETVAL_RANGE( 10000, MAX_WINDOW_SIZE ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_RANGE_NOERROR( 10000, MAX_WINDOW_SIZE ) STDC_NONNULL_ARG( ( 1 ) ) \
 int getWindowSize( const SESSION_INFO *sessionInfoPtr )
 	{
 	assert( isReadPtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
@@ -226,6 +226,7 @@ int processChannelControlMessage( INOUT SESSION_INFO *sessionInfoPtr,
 				boolean	always_display
 				string	message
 				string	language_tag */
+			DEBUG_PRINT(( "Processing ignore/debug message.\n" ));
 			return( OK_SPECIAL );
 
 		case SSH_MSG_DISCONNECT:
@@ -289,7 +290,9 @@ int processChannelControlMessage( INOUT SESSION_INFO *sessionInfoPtr,
 				retExt( CRYPT_ERROR_BADDATA,
 						( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
 						  "Invalid channel number in channel-specific packet "
-						  "type %d", sshInfo->packetType ) );
+						  "%s (%d)", 
+						  getSSHPacketName( sshInfo->packetType ), 
+						  sshInfo->packetType ) );
 				}
 			if( channelNo != getCurrentChannelNo( sessionInfoPtr, \
 												  CHANNEL_READ ) )
@@ -304,8 +307,9 @@ int processChannelControlMessage( INOUT SESSION_INFO *sessionInfoPtr,
 					retExt( CRYPT_ERROR_BADDATA,
 							( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
 							  "Invalid channel number %lX in "
-							  "channel-specific packet type %d, current "
+							  "channel-specific packet %s (%d), current "
 							  "channel is %lX", channelNo,
+							  getSSHPacketName( sshInfo->packetType ), 
 							  sshInfo->packetType, prevChannelNo ) );
 					}
 				}
@@ -313,31 +317,58 @@ int processChannelControlMessage( INOUT SESSION_INFO *sessionInfoPtr,
 
 		default:
 			{
-			BYTE buffer[ 16 + 8 ];
-			int length;
+			char stringBuffer[ 256 + 8 ];
+			int i, length, totalLength;
+
+			/* If it's a channel message, try and read the channel number */
+			channelNo = -1;
+			if( sshInfo->packetType >= SSH_MSG_CHANNEL_OPEN && \
+				sshInfo->packetType <= SSH_MSG_CHANNEL_FAILURE )
+				{
+				channelNo = readUint32( stream );
+				if( cryptStatusError( channelNo ) )
+					channelNo = -1;
+				}
 
 			/* We got something unexpected, throw an exception in the debug
 			   version and let the caller know the details */
-			DEBUG_DIAG(( "Unexpected control packet %d", 
+			DEBUG_DIAG(( "Unexpected control packet %s (%d)", 
+						 getSSHPacketName( sshInfo->packetType ), 
 						 sshInfo->packetType ));
 			assert( DEBUG_WARN );
-			status = length = sread( stream, buffer, 8 );
-			if( cryptStatusError( status ) || length < 8 )
+			totalLength = length = sprintf_s( stringBuffer, 256, 
+							"Unexpected control packet %s (%d) received",
+							getSSHPacketName( sshInfo->packetType ), 
+							sshInfo->packetType );
+			ENSURES( length > 0 && length <= 256 );
+			if( channelNo != -1 )
 				{
-				/* There's not enough data present to dump the start of the
-				   packet, provide a more generic response */
-				retExt( CRYPT_ERROR_BADDATA,
-						( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
-						  "Unexpected control packet type %d received",
-						  sshInfo->packetType ) );
+				length = sprintf_s( stringBuffer + totalLength, 
+									256 - totalLength, ", channel = %lX", 
+									channelNo );
+				ENSURES( length > 0 && length <= 256 );
+				totalLength += length;
+				}
+			for( i = 0; i < 16; i++ )
+				{
+				const int ch = sgetc( stream );
+
+				if( cryptStatusError( ch ) )
+					break;
+				if( i == 0 )
+					{
+					length = sprintf_s( stringBuffer + totalLength, 
+										256 - totalLength, ", data begins" );
+					ENSURES( length > 0 && length <= 256 );
+					totalLength += length;
+					}
+				length = sprintf_s( stringBuffer + totalLength, 
+									256 - totalLength, " %02X", ch );
+				ENSURES( length > 0 && length <= 256 );
+				totalLength += length;
 				}
 			retExt( CRYPT_ERROR_BADDATA,
-					( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
-					  "Unexpected control packet type %d received, "
-					  "beginning %02X %02X %02X %02X %02X %02X %02X %02X",
-					  sshInfo->packetType,
-					  buffer[ 0 ], buffer[ 1 ], buffer[ 2 ], buffer[ 3 ],
-					  buffer[ 4 ], buffer[ 5 ], buffer[ 6 ], buffer[ 7 ] ) );
+					( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, stringBuffer ) );
 			}
 		}
 
@@ -358,6 +389,7 @@ int processChannelControlMessage( INOUT SESSION_INFO *sessionInfoPtr,
 			if( cryptStatusError( status ) || \
 				length < 0 || length > sessionInfoPtr->receiveBufSize )
 				return( CRYPT_ERROR_BADDATA );
+			DEBUG_PRINT(( "Processing data message, length %d.\n", length ));
 
 			/* These are messages that consume window space, adjust the data 
 			   window and communicate changes to the other side if 
@@ -396,6 +428,7 @@ int processChannelControlMessage( INOUT SESSION_INFO *sessionInfoPtr,
 		case SSH_MSG_CHANNEL_WINDOW_ADJUST:
 			/* Another noop-equivalent (but a very performance-affecting
 			   one) */
+			DEBUG_PRINT(( "Processing window adjust message.\n" ));
 			return( OK_SPECIAL );
 
 		case SSH_MSG_CHANNEL_EOF:
@@ -403,6 +436,7 @@ int processChannelControlMessage( INOUT SESSION_INFO *sessionInfoPtr,
 			   notification, however many implementations seem to use a
 			   channel EOF in place of a close before sending a disconnect
 			   message */
+			DEBUG_PRINT(( "Processing EOF message.\n" ));
 			return( OK_SPECIAL );
 
 		case SSH_MSG_CHANNEL_CLOSE:
@@ -421,6 +455,8 @@ int processChannelControlMessage( INOUT SESSION_INFO *sessionInfoPtr,
 				status = deleteChannel( sessionInfoPtr, channelNo,
 										CHANNEL_BOTH, TRUE );
 				}
+			DEBUG_PRINT(( "Processing channel close message for "
+						  "channel %d.\n", channelNo ));
 
 			/* If this wasn't the last channel, we're done */
 			if( status != OK_SPECIAL )
@@ -460,7 +496,7 @@ static int sendChannelClose( INOUT SESSION_INFO *sessionInfoPtr,
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 
-	REQUIRES( channelNo >= 0 && channelNo <= LONG_MAX );
+	REQUIRES( channelNo >= 0 && channelNo <= CHANNEL_MAX );
 	REQUIRES( channelType > CHANNEL_NONE && channelType < CHANNEL_LAST );
 
 	/* Delete the channel.  If we've deleted the last active channel

@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *					  Signature/Keyex Mechanism Header File					*
-*						Copyright Peter Gutmann 1992-2007					*
+*						Copyright Peter Gutmann 1992-2014					*
 *																			*
 ****************************************************************************/
 
@@ -79,10 +79,10 @@ typedef enum {
    input ranges gets a bit complicated because the functions are polymorphic 
    so we have to provide the lowest common denominator of all functions */
 
-typedef CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 		int ( *READSIG_FUNCTION )( INOUT STREAM *stream, 
 								   OUT QUERY_INFO *queryInfo );
-typedef CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 6 ) ) \
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 6 ) ) \
 		int ( *WRITESIG_FUNCTION )( INOUT STREAM *stream,
 									IN_HANDLE_OPT \
 										const CRYPT_CONTEXT iSignContext,
@@ -107,10 +107,10 @@ WRITESIG_FUNCTION getWriteSigFunction( IN_ENUM( SIGNATURE ) \
    input ranges gets a bit complicated because the functions are polymorphic 
    so we have to provide the lowest common denominator of all functions */
 
-typedef CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 		int ( *READKEYTRANS_FUNCTION )( INOUT STREAM *stream, 
 										OUT QUERY_INFO *queryInfo );
-typedef CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 3 ) ) \
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 		int ( *WRITEKEYTRANS_FUNCTION )( INOUT STREAM *stream,
 										 IN_HANDLE const CRYPT_CONTEXT iCryptContext,
 										 IN_BUFFER( encryptedKeyLength ) \
@@ -121,15 +121,15 @@ typedef CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 3 ) ) \
 											const void *auxInfo,
 										 IN_LENGTH_SHORT_Z \
 											const int auxInfoLength );
-typedef CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 		int ( *READKEK_FUNCTION )( INOUT STREAM *stream, 
 								   OUT QUERY_INFO *queryInfo );
-typedef CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 		int ( *WRITEKEK_FUNCTION )( STREAM *stream,
 									IN_HANDLE const CRYPT_CONTEXT iCryptContext,
 									IN_BUFFER_OPT( encryptedKeyLength ) \
 										const BYTE *encryptedKey, 
-									IN_LENGTH_SHORT_MIN( MIN_KEYSIZE ) \
+									IN_LENGTH_SHORT_Z \
 										const int encryptedKeyLength );
 
 CHECK_RETVAL_PTR \
@@ -151,8 +151,8 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int exportConventionalKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, \
 										   *encryptedKeyLength ) \
 								void *encryptedKey, 
-						   IN_LENGTH const int encryptedKeyMaxLength,
-						   OUT_LENGTH_Z int *encryptedKeyLength,
+						   IN_DATALENGTH_Z const int encryptedKeyMaxLength,
+						   OUT_DATALENGTH_Z int *encryptedKeyLength,
 						   IN_HANDLE_OPT const CRYPT_CONTEXT iSessionKeyContext,
 						   IN_HANDLE const CRYPT_CONTEXT iExportContext,
 						   IN_ENUM( KEYEX ) const KEYEX_TYPE keyexType );
@@ -160,8 +160,8 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int exportPublicKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, \
 									 *encryptedKeyLength ) \
 						void *encryptedKey, 
-					 IN_LENGTH const int encryptedKeyMaxLength,
-					 OUT_LENGTH_Z int *encryptedKeyLength,
+					 IN_DATALENGTH_Z const int encryptedKeyMaxLength,
+					 OUT_DATALENGTH_Z int *encryptedKeyLength,
 					 IN_HANDLE const CRYPT_CONTEXT iSessionKeyContext,
 					 IN_HANDLE const CRYPT_CONTEXT iExportContext,
 					 IN_BUFFER_OPT( auxInfoLength ) \
@@ -171,14 +171,14 @@ int exportPublicKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, \
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int importConventionalKey( IN_BUFFER( encryptedKeyLength ) \
 								const void *encryptedKey, 
-						   IN_LENGTH_SHORT const int encryptedKeyLength,
+						   IN_DATALENGTH const int encryptedKeyLength,
 						   IN_HANDLE const CRYPT_CONTEXT iSessionKeyContext,
 						   IN_HANDLE const CRYPT_CONTEXT iImportContext,
 						   IN_ENUM( KEYEX ) const KEYEX_TYPE keyexType );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int importPublicKey( IN_BUFFER( encryptedKeyLength ) \
 						const void *encryptedKey, 
-					 IN_LENGTH_SHORT const int encryptedKeyLength,
+					 IN_DATALENGTH const int encryptedKeyLength,
 					 IN_HANDLE_OPT const CRYPT_CONTEXT iSessionKeyContext,
 					 IN_HANDLE const CRYPT_CONTEXT iImportContext,
 					 OUT_OPT_HANDLE_OPT CRYPT_CONTEXT *iReturnedContext, 
@@ -189,8 +189,8 @@ int importPublicKey( IN_BUFFER( encryptedKeyLength ) \
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int createSignatureCMS( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 							void *signature, 
-						IN_LENGTH_Z const int sigMaxLength, 
-						OUT_LENGTH_Z int *signatureLength,
+						IN_DATALENGTH_Z const int sigMaxLength, 
+						OUT_DATALENGTH_Z int *signatureLength,
 						IN_HANDLE const CRYPT_CONTEXT signContext,
 						IN_HANDLE const CRYPT_CONTEXT iHashContext,
 						const BOOLEAN useDefaultAuthAttr,
@@ -200,7 +200,7 @@ int createSignatureCMS( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 							const CRYPT_FORMAT_TYPE formatType );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int checkSignatureCMS( IN_BUFFER( signatureLength ) const void *signature, 
-					   IN_LENGTH_SHORT const int signatureLength,
+					   IN_DATALENGTH const int signatureLength,
 					   IN_HANDLE const CRYPT_CONTEXT sigCheckContext,
 					   IN_HANDLE const CRYPT_CONTEXT iHashContext,
 					   OUT_OPT_HANDLE_OPT CRYPT_CERTIFICATE *iExtraData,
@@ -211,15 +211,18 @@ int checkSignatureCMS( IN_BUFFER( signatureLength ) const void *signature,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int createSignaturePGP( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 							void *signature, 
-						IN_LENGTH_Z const int sigMaxLength, 
-						OUT_LENGTH_Z int *signatureLength, 
+						IN_DATALENGTH_Z const int sigMaxLength, 
+						OUT_DATALENGTH_Z int *signatureLength, 
 						IN_HANDLE const CRYPT_CONTEXT iSignContext,
 						IN_HANDLE const CRYPT_CONTEXT iHashContext,
+						IN_BUFFER_OPT( sigAttributeLength ) \
+							const void *sigAttributes,
+						IN_LENGTH_SHORT_Z const int sigAttributeLength,
 						IN_RANGE( PGP_SIG_NONE, PGP_SIG_LAST - 1 ) \
 							const int sigType );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int checkSignaturePGP( IN_BUFFER( signatureLength ) const void *signature, 
-					   IN_LENGTH_SHORT const int signatureLength,
+					   IN_DATALENGTH const int signatureLength,
 					   IN_HANDLE const CRYPT_CONTEXT sigCheckContext,
 					   IN_HANDLE const CRYPT_CONTEXT iHashContext );
 
@@ -228,8 +231,8 @@ int checkSignaturePGP( IN_BUFFER( signatureLength ) const void *signature,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int createSignature( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 						void *signature, 
-					 IN_LENGTH_Z const int sigMaxLength, 
-					 OUT_LENGTH_Z int *signatureLength, 
+					 IN_DATALENGTH_Z const int sigMaxLength, 
+					 OUT_DATALENGTH_Z int *signatureLength, 
 					 IN_HANDLE const CRYPT_CONTEXT iSignContext,
 					 IN_HANDLE const CRYPT_CONTEXT iHashContext,
 					 IN_HANDLE_OPT const CRYPT_CONTEXT iHashContext2,
@@ -243,6 +246,17 @@ int checkSignature( IN_BUFFER( signatureLength ) const void *signature,
 					IN_HANDLE_OPT const CRYPT_CONTEXT iHashContext2,
 					IN_ENUM( SIGNATURE ) \
 						const SIGNATURE_TYPE signatureType );
+
+/* Prototypes for functions in keyex_rw.c */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 4 ) ) \
+int getCmsKeyIdentifier( IN_HANDLE const CRYPT_CONTEXT iCryptContext,
+						 OUT_BUFFER( keyIDMaxLength, *keyIDlength ) \
+							BYTE *keyID, 
+						 IN_LENGTH_SHORT_MIN( 32 ) \
+							const int keyIDMaxLength,
+						 OUT_LENGTH_BOUNDED_Z( keyIDMaxLength ) \
+							int *keyIDlength );
 
 /* Prototypes for functions in sign_rw.c */
 

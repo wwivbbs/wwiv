@@ -80,17 +80,18 @@ int readPkiStatusInfo( INOUT STREAM *stream,
 		extensions		[0]	Extensions OPTIONAL	-- Ignored, see below
 		} */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 5 ) ) \
 static int readTSPRequest( INOUT STREAM *stream, 
 						   INOUT TSP_PROTOCOL_INFO *protocolInfo,
 						   IN_HANDLE const CRYPT_USER iOwnerHandle, 
+						   IN_LENGTH const int endPos, 
 						   INOUT ERROR_INFO *errorInfo )
 	{
-	CRYPT_ALGO_TYPE defaultHashAlgo, msgImprintHashAlgo;
+	CRYPT_ALGO_TYPE defaultHashAlgo, msgImprintHashAlgo DUMMY_INIT;
 	STREAM msgImprintStream;
-	void *dataPtr = DUMMY_INIT_PTR;
+	void *dataPtr DUMMY_INIT_PTR;
 	long value;
-	int length, status;
+	int tag, length, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( protocolInfo, sizeof( TSP_PROTOCOL_INFO ) ) );
@@ -98,6 +99,8 @@ static int readTSPRequest( INOUT STREAM *stream,
 
 	REQUIRES( iOwnerHandle == DEFAULTUSER_OBJECT_HANDLE || \
 			  isHandleRangeValid( iOwnerHandle ) );
+	REQUIRES( endPos > 0 && endPos > stell( stream ) && \
+			  endPos < MAX_BUFFER_SIZE );
 
 	/* Read the request header and make sure everything is in order */
 	readSequence( stream, NULL );
@@ -118,7 +121,7 @@ static int readTSPRequest( INOUT STREAM *stream,
 		{
 		if( length < MIN_MSGIMPRINT_SIZE || \
 			length > MAX_MSGIMPRINT_SIZE || \
-			cryptStatusError( sSkip( stream, length ) ) )
+			cryptStatusError( sSkip( stream, length, MAX_INTLENGTH_SHORT ) ) )
 			status = CRYPT_ERROR_BADDATA;
 		}
 	if( cryptStatusError( status ) )
@@ -144,9 +147,10 @@ static int readTSPRequest( INOUT STREAM *stream,
 	   process a response with a stronger hash as well */
 	sMemConnect( &msgImprintStream, protocolInfo->msgImprint, 
 				 protocolInfo->msgImprintSize );
-	readSequence( &msgImprintStream, NULL );
-	status = readAlgoID( &msgImprintStream, &msgImprintHashAlgo, 
-						 ALGOID_CLASS_HASH );
+	status = readSequence( &msgImprintStream, NULL );
+	if( cryptStatusOK( status ) )
+		status = readAlgoID( &msgImprintStream, &msgImprintHashAlgo, 
+							 ALGOID_CLASS_HASH );
 	if( cryptStatusOK( status ) )
 		status = readOctetStringHole( &msgImprintStream, NULL, 16, 
 									  DEFAULT_TAG );
@@ -164,14 +168,16 @@ static int readTSPRequest( INOUT STREAM *stream,
 		protocolInfo->hashAlgo = msgImprintHashAlgo;
 
 	/* Check for the presence of the assorted optional fields */
-	if( peekTag( stream ) == BER_OBJECT_IDENTIFIER )
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == BER_OBJECT_IDENTIFIER )
 		{
 		/* This could be anything since it's defined as "by prior agreement"
 		   so we ignore it and give them whatever policy we happen to
-		   implement, if they don't like it they're free to ignore it */
+		   implement, if they don't like it then they're free to ignore it */
 		status = readUniversal( stream );
 		}
-	if( cryptStatusOK( status ) && peekTag( stream ) == BER_INTEGER )
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == BER_INTEGER )
 		{
 		/* For some unknown reason the nonce is encoded as an INTEGER 
 		   instead of an OCTET STRING, so in theory we'd have to jump 
@@ -182,9 +188,11 @@ static int readTSPRequest( INOUT STREAM *stream,
 								CRYPT_MAX_HASHSIZE, 
 								&protocolInfo->nonceSize, BER_INTEGER );
 		}
-	if( cryptStatusOK( status ) && peekTag( stream ) == BER_BOOLEAN )
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == BER_BOOLEAN )
 		status = readBoolean( stream, &protocolInfo->includeSigCerts );
-	if( cryptStatusOK( status ) && peekTag( stream ) == MAKE_CTAG( 0 ) )
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == MAKE_CTAG( 0 ) )
 		{
 		/* The TSP RFC specifies a truly braindamaged interpretation of
 		   extension handling, added at the last minute with no debate or
@@ -222,9 +230,12 @@ static int readTSPRequest( INOUT STREAM *stream,
 /* Sign a timestamp token */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 5 ) ) \
-static int signTSToken( OUT_BUFFER( tsaRespMaxLength, *tsaRespLength ) BYTE *tsaResp, 
-						IN_LENGTH_SHORT_MIN( 64 ) const int tsaRespMaxLength, 
-						OUT_LENGTH_SHORT_Z int *tsaRespLength,
+static int signTSToken( OUT_BUFFER( tsaRespMaxLength, *tsaRespLength ) \
+							BYTE *tsaResp, 
+						IN_LENGTH_SHORT_MIN( 64 ) \
+							const int tsaRespMaxLength, 
+						OUT_LENGTH_BOUNDED_Z( tsaRespMaxLength ) \
+							int *tsaRespLength,
 						IN_ALGO_OPT const CRYPT_ALGO_TYPE tsaRespHashAlgo,
 						IN_BUFFER( tstInfoLength ) const BYTE *tstInfo, 
 						IN_LENGTH_SHORT const int tstInfoLength,
@@ -371,6 +382,13 @@ static int sendClientRequest( INOUT SESSION_INFO *sessionInfoPtr,
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( protocolInfo, sizeof( TSP_PROTOCOL_INFO ) ) );
+
+	/* If we're fuzzing, there's no request to send out */
+#ifdef CONFIG_FUZZ
+	memset( protocolInfo->msgImprint, '*', 16 );
+	protocolInfo->msgImprintSize = 16;
+	return( CRYPT_OK );
+#endif /* CONFIG_FUZZ */
 
 	/* Create the encoded request:
 
@@ -586,7 +604,8 @@ static int readClientRequest( INOUT SESSION_INFO *sessionInfoPtr,
 	sMemConnect( &stream, sessionInfoPtr->receiveBuffer,
 				 sessionInfoPtr->receiveBufEnd );
 	status = readTSPRequest( &stream, protocolInfo, 
-							 sessionInfoPtr->ownerHandle, SESSION_ERRINFO );
+							 sessionInfoPtr->ownerHandle, 
+							 sessionInfoPtr->receiveBufEnd, SESSION_ERRINFO );
 	sMemDisconnect( &stream );
 	if( cryptStatusError( status ) )
 		{
@@ -611,13 +630,16 @@ static int sendServerResponse( INOUT SESSION_INFO *sessionInfoPtr,
 	BYTE serialNo[ 16 + 8 ];
 	BYTE *bufPtr = sessionInfoPtr->receiveBuffer;
 	const time_t currentTime = getReliableTime( sessionInfoPtr->privateKey );
-	int tstLength = DUMMY_INIT, responseLength, status;
+	int tstLength DUMMY_INIT, responseLength, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( protocolInfo, sizeof( TSP_PROTOCOL_INFO ) ) );
 
 	ENSURES( currentTime > MIN_TIME_VALUE );
 			 /* Already checked in checkAttributeFunction() */
+
+	/* If we're fuzzing, there's nothing to send */
+	FUZZ_SKIP();
 
 	/* Create a timestamp token */
 	setMessageData( &msgData, serialNo, 16 );
@@ -655,8 +677,7 @@ static int sendServerResponse( INOUT SESSION_INFO *sessionInfoPtr,
 						  protocolInfo->includeSigCerts );
 	if( cryptStatusError( status ) )
 		return( sendErrorResponse( sessionInfoPtr, respBadGeneric, status ) );
-	DEBUG_DUMP_FILE( "tsa_token",
-					 sessionInfoPtr->receiveBuffer + 9,
+	DEBUG_DUMP_FILE( "tsa_token", sessionInfoPtr->receiveBuffer + 9,
 					 responseLength );
 
 	/* Add the TSA response wrapper and send it to the client.  This assumes
@@ -670,6 +691,8 @@ static int sendServerResponse( INOUT SESSION_INFO *sessionInfoPtr,
 	swrite( &stream, "\x30\x03\x02\x01\x00", 5 );
 	sMemDisconnect( &stream );
 	sessionInfoPtr->receiveBufEnd = 9 + responseLength;
+	DEBUG_DUMP_FILE( "tsa_resp", sessionInfoPtr->receiveBuffer,
+					 sessionInfoPtr->receiveBufEnd );
 	return( writePkiDatagram( sessionInfoPtr, TSP_CONTENT_TYPE_RESP,
 							  TSP_CONTENT_TYPE_RESP_LEN ) );
 	}
@@ -691,7 +714,7 @@ static int clientTransact( INOUT SESSION_INFO *sessionInfoPtr )
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 
 	/* Make sure that we have all of the needed information */
-	if( sessionInfoPtr->sessionTSP->imprintSize == 0 )
+	if( sessionInfoPtr->sessionTSP->imprintSize <= 0 )
 		{
 		setErrorInfo( sessionInfoPtr, CRYPT_SESSINFO_TSP_MSGIMPRINT,
 					  CRYPT_ERRTYPE_ATTR_ABSENT );
@@ -730,7 +753,7 @@ static int serverTransact( INOUT SESSION_INFO *sessionInfoPtr )
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int getAttributeFunction( INOUT SESSION_INFO *sessionInfoPtr,
-								 OUT void *data, 
+								 void *data, 
 								 IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE type )
 	{
 	CRYPT_ENVELOPE *cryptEnvelopePtr = ( CRYPT_ENVELOPE * ) data;

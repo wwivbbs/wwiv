@@ -45,10 +45,11 @@ typedef enum {
 
 	FLAG_PARTIALWRITE: Used for network streams when performing bulk data 
 		transfers, in this case the write may time out and can be restarted
-		later rather than returning a timeout error
+		later rather than returning a timeout error.
 
 	FLAG_READONLY: Stream is read-only */
 
+#define STREAM_FLAG_NONE		0x0000	/* No stream flag */
 #define STREAM_FLAG_READONLY	0x0001	/* Read-only stream */
 #define STREAM_FLAG_PARTIALREAD 0x0002	/* Allow read of less than req.amount */
 #define STREAM_FLAG_PARTIALWRITE 0x0004	/* Allow write of less than req.amount */
@@ -57,13 +58,31 @@ typedef enum {
 
 /* Memory stream flags.  These are:
 
+	MFLAG_PSEUDO/PSEUDO_HTTP/PSEUDO_DIRECT: Used for memory streams 
+		emulating some other stream type, writes are discarded and reads 
+		come from the stream buffer.  The HTTP flag is an additional 
+		modifier to the standard pseudo-stream indicating that it's an
+		HTTP-style read, and the RAW flag is an indicator that the HTTP
+		stream should read the normally out-of-band header (i.e. the HTTP
+		wrapper for an encapsulated data type) as well as the actualy data.  
+		These are only available in debug builds since they're used for 
+		testing purposes.
+
 	MFLAG_VFILE: The underlying OS doesn't support conventional file I/O (it
 		may only support, for example, access to fixed blocks of flash 
 		memory) so this is a memory stream emulating a file stream */
 
-#define STREAM_MFLAG_VFILE		0x0010	/* File stream emulated via mem.stream */
-#define STREAM_MFLAG_MASK		( 0x0010 | STREAM_FLAG_MASK )	
+#define STREAM_MFLAG_VFILE		0x0020	/* File stream emulated via mem.stream */
+#ifndef NDEBUG
+  #define STREAM_MFLAG_PSEUDO	0x0040	/* Stream is pseudo-stream */
+  #define STREAM_MFLAG_PSEUDO_HTTP 0x0080	/* Stream is HTTP pseudo-stream */
+  #define STREAM_MFLAG_PSEUDO_RAW 0x0100	/* Stream reads raw data */
+  #define STREAM_MFLAG_MASK		( 0x01E0 | STREAM_FLAG_MASK )	
 										/* Mask for memory-only flags */
+#else
+  #define STREAM_MFLAG_MASK		( 0x0020 | STREAM_FLAG_MASK )	
+										/* Mask for memory-only flags */
+#endif /* !NDEBUG */
 
 /* File stream flags.  These are:
 
@@ -97,6 +116,8 @@ typedef enum {
    their own flags variable instead of using the overall stream flags.  These
    are:
 
+	NFLAG_DGRAM: The stream is run over UDP rather than the default TCP.
+
 	NFLAG_ENCAPS: The protocol is running over a lower encapsulation layer 
 		that provides additional packet control information, typically 
 		packet size and flow control information.  If this flag is set then
@@ -113,9 +134,11 @@ typedef enum {
 
 	NFLAG_HTTPPROXY/NFLAG_HTTPTUNNEL: HTTP proxy control flags.  When the 
 		proxy flag is set, HTTP requests are sent as 
-		"GET http://destination-url/location" rather than "GET location".
-		When the tunnel flag is set, HTTP requests are sent as explicit
-		proxy commands "CONNECT http://destiation-url/".
+		"GET http://destination-url/location" (sent to the proxy) rather 
+		than "GET location" (sent directly to the target host).  When the 
+		tunnel flag is set, the initial network connection-establishment 
+		request is sent as an explicit proxy command "CONNECT fqdn:port", 
+		after which normal PDUs for the protocol being tunneled are sent.
 
 		Note that the HTTP tunnel flag is currently never set by anything
 		due to the removal of the SESSION_USEHTTPTUNNEL flag at a higher
@@ -132,9 +155,12 @@ typedef enum {
 
 	NFLAG_ISSERVER: The stream is a server stream (default is client).
 
-	NFLAG_LASTMSG: This is the last message in the exchange, after which any
-		high-level shutdown (for example at the HTTP level) can be 
-		performed.
+	NFLAG_LASTMSGR/NFLAG_LASTMSGR: This is the last message in the exchange.
+		For a last-message read it means that the other side has indicated
+		(for example through an HTTP "Connection: close") that this is the 
+		case.  For a last-message write it means that we should indicate to
+		the other side (for example through an HTTP "Connection: close") 
+		that this is the case.
 
 	NFLAG_USERSOCKET: The network socket was supplied by the user rather 
 		than being created by cryptlib, so some actions such as socket
@@ -142,15 +168,17 @@ typedef enum {
 
 #define STREAM_NFLAG_ISSERVER	0x0001	/* Stream is server rather than client */
 #define STREAM_NFLAG_USERSOCKET	0x0002	/* Network socket was supplied by user */
-#define STREAM_NFLAG_HTTP10		0x0004	/* HTTP 1.0 stream */
-#define STREAM_NFLAG_HTTPPROXY	0x0008	/* Use HTTP proxy format for requests */
-#define STREAM_NFLAG_HTTPTUNNEL	0x0010	/* Use HTTP proxy tunnel for connect */
-#define STREAM_NFLAG_HTTPGET	0x0020	/* Allow HTTP GET */
-#define STREAM_NFLAG_HTTPPOST	0x0040	/* Allow HTTP POST */
-#define STREAM_NFLAG_HTTPPOST_AS_GET 0x0080	/* Implement POST as GET */
-#define STREAM_NFLAG_LASTMSG	0x0100	/* Last message in exchange */
-#define STREAM_NFLAG_ENCAPS		0x0200	/* Network transport is encapsulated */
-#define STREAM_NFLAG_FIRSTREADOK 0x0400	/* First data read succeeded */
+#define STREAM_NFLAG_DGRAM		0x0004	/* Stream is UDP rather than TCP */
+#define STREAM_NFLAG_HTTP10		0x0008	/* HTTP 1.0 stream */
+#define STREAM_NFLAG_HTTPPROXY	0x0010	/* Use HTTP proxy format for requests */
+#define STREAM_NFLAG_HTTPTUNNEL	0x0020	/* Use HTTP proxy tunnel for connect */
+#define STREAM_NFLAG_HTTPGET	0x0040	/* Allow HTTP GET */
+#define STREAM_NFLAG_HTTPPOST	0x0080	/* Allow HTTP POST */
+#define STREAM_NFLAG_HTTPPOST_AS_GET 0x0100	/* Implement POST as GET */
+#define STREAM_NFLAG_LASTMSGR	0x0200	/* Last message in exchange */
+#define STREAM_NFLAG_LASTMSGW	0x0400	/* Last message in exchange */
+#define STREAM_NFLAG_ENCAPS		0x0800	/* Network transport is encapsulated */
+#define STREAM_NFLAG_FIRSTREADOK 0x1000	/* First data read succeeded */
 #define STREAM_NFLAG_HTTPREQMASK ( STREAM_NFLAG_HTTPGET | STREAM_NFLAG_HTTPPOST | \
 								   STREAM_NFLAG_HTTPPOST_AS_GET )
 										/* Mask for permitted HTTP req.types */
@@ -190,6 +218,71 @@ typedef enum {
 
 /* The network-stream specific information stored as part of the STREAM
    data type */
+
+struct NS;
+
+typedef CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
+		BOOLEAN ( *STM_SANITYCHECKFUNCTION )( IN const struct ST *stream );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+		int ( *STM_READFUNCTION )( INOUT struct ST *stream, 
+								   OUT_BUFFER( maxLength, *length ) \
+										void *buffer, 
+								   IN_DATALENGTH const int maxLength, 
+								   OUT_DATALENGTH_Z int *length );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+		int ( *STM_WRITEFUNCTION )( INOUT struct ST *stream, 
+									IN_BUFFER( maxLength ) \
+										const void *buffer, 
+									IN_DATALENGTH const int maxLength,
+									OUT_DATALENGTH_Z int *length );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *STM_TRANSPORTCONNECTFUNCTION )( INOUT struct NS *netStream, 
+											   IN_BUFFER_OPT( hostNameLen ) \
+													const char *hostName,
+											   IN_LENGTH_DNS_Z \
+													const int hostNameLen, 
+											   IN_PORT const int port );
+typedef STDC_NONNULL_ARG( ( 1 ) ) \
+		void ( *STM_TRANSPORTDISCONNECTFUNCTION )( INOUT struct NS *netStream, 
+												   const BOOLEAN fullDisconnect );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+		int ( *STM_TRANSPORTREADFUNCTION )( INOUT struct ST *stream, 
+											OUT_BUFFER( maxLength, *length ) \
+												BYTE *buffer, 
+											IN_DATALENGTH const int maxLength, 
+											OUT_DATALENGTH_Z int *length, 
+											IN_FLAGS_Z( TRANSPORT ) \
+												const int flags );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+		int ( *STM_TRANSPORTWRITEFUNCTION )( INOUT struct ST *stream, 
+											 IN_BUFFER( maxLength ) \
+												const BYTE *buffer,
+											 IN_DATALENGTH const int maxLength, 
+											 OUT_DATALENGTH_Z int *length, 
+											 IN_FLAGS_Z( TRANSPORT ) \
+												const int flags );
+typedef CHECK_RETVAL_BOOL \
+		BOOLEAN ( *STM_TRANSPORTOKFUNCTION )( void );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *STM_TRANSPORTCHECKFUNCTION )( INOUT struct NS *netStream );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+		int ( *STM_BUFFEREDTRANSPORTREADFUNCTION )( INOUT struct ST *stream, 
+													OUT_BUFFER( maxLength, *length ) \
+														BYTE *buffer, 
+													IN_DATALENGTH \
+														const int maxLength, 
+													OUT_DATALENGTH_Z int *length, 
+													IN_FLAGS_Z( TRANSPORT ) \
+														const int flags );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+		int ( *STM_BUFFEREDTRANSPORTWRITEFUNCTION )( INOUT struct ST *stream, 
+													 IN_BUFFER( maxLength ) \
+														const BYTE *buffer,
+													 IN_DATALENGTH \
+														const int maxLength, 
+													 OUT_DATALENGTH_Z int *length, 
+													 IN_FLAGS_Z( TRANSPORT ) \
+														const int flags );
 
 typedef struct NS {
 	/* General information for the network stream.  For a server the
@@ -256,59 +349,17 @@ typedef struct NS {
 	   the transport-level read to improve performance for higher-level 
 	   protocols like HTTP that have to read a byte at a time in some 
 	   places */
-	CHECK_RETVAL_BOOL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	BOOLEAN ( *sanityCheckFunction )( IN const struct ST *stream );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
-	int ( *readFunction )( INOUT struct ST *stream, 
-						   OUT_BUFFER( maxLength, *length ) void *buffer, 
-						   IN_LENGTH const int maxLength, 
-						   OUT_LENGTH_Z int *length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
-	int ( *writeFunction )( INOUT struct ST *stream, 
-							IN_BUFFER( length ) const void *buffer, 
-							IN_LENGTH const int maxLength,
-							OUT_LENGTH_Z int *length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *transportConnectFunction )( INOUT struct NS *netStream, 
-									   IN_BUFFER_OPT( length ) const char *hostName, 
-									   IN_LENGTH_DNS_Z const int hostNameLen, 
-									   IN_PORT const int port );
-	STDC_NONNULL_ARG( ( 1 ) ) \
-	void ( *transportDisconnectFunction )( INOUT struct NS *netStream, 
-										   const BOOLEAN fullDisconnect );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
-	int ( *transportReadFunction )( INOUT struct ST *stream, 
-									OUT_BUFFER( maxLength, *length ) BYTE *buffer, 
-									IN_LENGTH const int maxLength, 
-									OUT_LENGTH_Z int *length, 
-									IN_FLAGS_Z( TRANSPORT ) \
-									const int flags );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
-	int ( *transportWriteFunction )( INOUT struct ST *stream, 
-									 IN_BUFFER( length ) const BYTE *buffer, 
-									 IN_LENGTH const int maxLength, 
-									 OUT_LENGTH_Z int *length, 
-									 IN_FLAGS_Z( TRANSPORT ) \
-										const int flags );
-	CHECK_RETVAL_BOOL_FNPTR \
-	BOOLEAN ( *transportOKFunction )( void );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *transportCheckFunction )( INOUT struct NS *netStream );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
-	int ( *bufferedTransportReadFunction )( INOUT struct ST *stream, 
-											OUT_BUFFER( maxLength, *length ) \
-												BYTE *buffer, 
-											IN_LENGTH const int maxLength, 
-											OUT_LENGTH_Z int *length, 
-											IN_FLAGS_Z( TRANSPORT ) \
-											const int flags );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
-	int ( *bufferedTransportWriteFunction )( INOUT struct ST *stream, 
-											 IN_BUFFER( length ) const BYTE *buffer,
-											 IN_LENGTH const int maxLength, 
-											 OUT_LENGTH_Z int *length, 
-											 IN_FLAGS_Z( TRANSPORT ) \
-												const int flags );
+	STM_SANITYCHECKFUNCTION sanityCheckFunction;
+	STM_READFUNCTION readFunction;
+	STM_WRITEFUNCTION writeFunction;
+	STM_TRANSPORTCONNECTFUNCTION transportConnectFunction;
+	STM_TRANSPORTDISCONNECTFUNCTION transportDisconnectFunction;
+	STM_TRANSPORTREADFUNCTION transportReadFunction;
+	STM_TRANSPORTWRITEFUNCTION transportWriteFunction;
+	STM_TRANSPORTOKFUNCTION transportOKFunction;
+	STM_TRANSPORTCHECKFUNCTION transportCheckFunction;
+	STM_BUFFEREDTRANSPORTREADFUNCTION bufferedTransportReadFunction;
+	STM_BUFFEREDTRANSPORTWRITEFUNCTION bufferedTransportWriteFunction;
 
 	/* Variable-length storage for the stream buffers */
 	DECLARE_VARSTRUCT_VARS;
@@ -326,27 +377,65 @@ typedef void *NET_STREAM_INFO;	/* Dummy for function prototypes */
 ****************************************************************************/
 
 /* Stream query functions to determine whether a stream is a memory-mapped 
-   file stream or a virtual file stream.  The memory-mapped stream check is 
-   used when we can eliminate extra buffer allocation if all data is 
-   available in memory.  The virtual file stream check is used where the 
-   low-level access routines have converted a file on a CONFIG_NO_STDIO 
-   system to a memory stream that acts like a file stream */
+   file stream, a virtual file stream, or a pseudo-stream.  The memory-
+   mapped stream check is used when we can eliminate extra buffer allocation 
+   if all data is available in memory.  The virtual file stream check is 
+   used where the low-level access routines have converted a file on a 
+   CONFIG_NO_STDIO system to a memory stream that acts like a file stream.
+   The pseudo-stream is used for testing purposes to emulate a standard
+   stream like a network stream */
 
 #define sIsMemMappedStream( stream ) \
 		( ( ( stream )->type == STREAM_TYPE_FILE ) && \
 		  ( ( stream )->flags & STREAM_FFLAG_MMAPPED ) )
-#define sIsVirtualFileStream( stream ) \
-		( ( ( stream )->type == STREAM_TYPE_MEMORY ) && \
-		  ( ( stream )->flags & STREAM_MFLAG_VFILE ) )
+#ifdef VIRTUAL_FILE_STREAM 
+  #define sIsVirtualFileStream( stream ) \
+		  ( ( ( stream )->type == STREAM_TYPE_MEMORY ) && \
+			( ( stream )->flags & STREAM_MFLAG_VFILE ) )
+#else
+  #define sIsVirtualFileStream( stream )	FALSE
+#endif /* VIRTUAL_FILE_STREAM */
+#ifndef NDEBUG
+  #define sIsPseudoStream( stream ) \
+		  ( ( ( stream )->type == STREAM_TYPE_MEMORY ) && \
+			( ( stream )->flags & STREAM_MFLAG_PSEUDO ) )
+  #define sIsPseudoHTTPStream( stream ) \
+		  ( ( ( stream )->type == STREAM_TYPE_MEMORY ) && \
+			( ( stream )->flags & STREAM_MFLAG_PSEUDO_HTTP ) )
+  #define sIsPseudoHTTPRawStream( stream ) \
+		  ( ( ( stream )->type == STREAM_TYPE_MEMORY ) && \
+			( ( ( stream )->flags & \
+				( STREAM_MFLAG_PSEUDO_HTTP | STREAM_MFLAG_PSEUDO_RAW ) ) == \
+				( STREAM_MFLAG_PSEUDO_HTTP | STREAM_MFLAG_PSEUDO_RAW ) ) )
+#endif /* !NDEBUG */
+
+/* Prototypes for functions in file.c */
+
+#ifdef USE_FILES
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+int fileRead( INOUT STREAM *stream, 
+			  OUT_BUFFER( length, *bytesRead ) void *buffer, 
+			  IN_DATALENGTH const int length, 
+			  OUT_DATALENGTH_Z int *bytesRead );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+int fileWrite( INOUT STREAM *stream, 
+			   IN_BUFFER( length ) const void *buffer, 
+			   IN_DATALENGTH const int length );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+int fileFlush( INOUT STREAM *stream );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+int fileSeek( INOUT STREAM *stream,
+			  IN_DATALENGTH_Z const long position );
+#endif /* USE_FILES */
 
 /* Network URL processing functions in net_url.c */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int parseURL( OUT URL_INFO *urlInfo, 
-			  IN_BUFFER( urlLen ) const char *url, 
+			  IN_BUFFER( urlLen ) const BYTE *url, 
 			  IN_LENGTH_SHORT const int urlLen,
 			  IN_PORT_OPT const int defaultPort, 
-			  IN_ENUM( URL_TYPE ) const URL_TYPE urlTypeHint,
+			  IN_ENUM_OPT( URL_TYPE ) const URL_TYPE urlTypeHint,
 			  const BOOLEAN preParseOnly );
 
 /* Network proxy functions in net_proxy.c */
@@ -354,12 +443,13 @@ int parseURL( OUT URL_INFO *urlInfo,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int connectViaSocksProxy( INOUT STREAM *stream );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int connectViaHttpProxy( INOUT STREAM *stream, INOUT ERROR_INFO *errorInfo );
+int connectViaHttpProxy( INOUT STREAM *stream, 
+						 INOUT ERROR_INFO *errorInfo );
 #if defined( __WIN32__ )
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
   int findProxyUrl( OUT_BUFFER( proxyMaxLen, *proxyLen ) char *proxy, 
 					IN_LENGTH_DNS const int proxyMaxLen, 
-					OUT_LENGTH_DNS_Z int *proxyLen,
+					OUT_LENGTH_BOUNDED_Z( proxyMaxLen ) int *proxyLen,
 					IN_BUFFER( urlLen ) const char *url, 
 					IN_LENGTH_DNS const int urlLen );
 #else

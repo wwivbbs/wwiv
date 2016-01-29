@@ -72,8 +72,8 @@ typedef struct DC {
 /* Type information for DN components */
 
 typedef struct {
-	const CRYPT_ATTRIBUTE_TYPE type;/* cryptlib type or index value for non-
-									   cryptlib attributes */
+	const int type;					/* cryptlib attribute type, or index 
+									   value for non-cryptlib attributes */
 	const BYTE *oid;				/* OID for this type */
 	ARRAY_FIXED( nameLen ) \
 	const char *name;				/* Name for this type */
@@ -96,35 +96,29 @@ CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 1 ) ) \
 const DN_COMPONENT_INFO *findDNInfoByLabel( IN_BUFFER( labelLength ) const char *label, 
 											IN_LENGTH_SHORT const int labelLength );
 #endif /* USE_CERT_DNSTRING */
-CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 1, 3, 7 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 7 ) ) \
 int insertDNstring( INOUT DN_COMPONENT **dnComponentListPtrPtr, 
 					IN_INT const int type,
 					IN_BUFFER( valueLength ) const void *value, 
 					IN_LENGTH_SHORT const int valueLength,
 					IN_RANGE( 1, 20 ) const int valueStringType,
 					IN_FLAGS_Z( DN ) const int flags, 
-					OUT_ENUM_OPT( CRYPT_ERRTYPE_TYPE ) \
+					OUT_ENUM_OPT( CRYPT_ERRTYPE ) \
 						CRYPT_ERRTYPE_TYPE *errorType );
 
 /* Prototypes for functions in dnstring.c */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4, 5 ) ) \
-int getAsn1StringInfo( IN_BUFFER( stringLen ) const void *string, 
-					   IN_LENGTH_SHORT const int stringLen,
-					   OUT_RANGE( 0, 20 ) int *stringType, 
-					   int *asn1StringType,
-					   OUT_LENGTH_SHORT_Z int *asn1StringLen );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 int copyToAsn1String( OUT_BUFFER( destMaxLen, *destLen ) void *dest, 
 					  IN_LENGTH_SHORT const int destMaxLen, 
-					  OUT_LENGTH_SHORT_Z int *destLen, 
+					  OUT_LENGTH_BOUNDED_Z( destMaxLen ) int *destLen, 
 					  IN_BUFFER( sourceLen ) const void *source, 
 					  IN_LENGTH_SHORT const int sourceLen,
 					  IN_RANGE( 0, 20 ) const int stringType );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4, 5 ) ) \
 int copyFromAsn1String( OUT_BUFFER( destMaxLen, *destLen ) void *dest, 
 						IN_LENGTH_SHORT const int destMaxLen, 
-						OUT_LENGTH_SHORT_Z int *destLen, 
+						OUT_LENGTH_BOUNDED_Z( destMaxLen ) int *destLen, 
 						OUT_RANGE( 0, 20 ) int *destStringType,
 						IN_BUFFER( sourceLen ) const void *source, 
 						IN_LENGTH_SHORT const int sourceLen,

@@ -28,7 +28,7 @@
 /* Get a string description of a packet type, used for diagnostic error
    messages */
 
-CHECK_RETVAL_PTR \
+CHECK_RETVAL_PTR_NONNULL \
 const char *getSSHPacketName( IN_RANGE( 0, 255 ) const int packetType )
 	{
 	typedef struct {
@@ -43,10 +43,8 @@ const char *getSSHPacketName( IN_RANGE( 0, 255 ) const int packetType )
 		{ SSH_MSG_SERVICE_ACCEPT, "SSH_MSG_SERVICE_ACCEPT" },
 		{ SSH_MSG_KEXINIT, "SSH_MSG_KEXINIT" },
 		{ SSH_MSG_NEWKEYS, "SSH_MSG_NEWKEYS" },
-		{ SSH_MSG_KEXDH_INIT, "SSH_MSG_KEXDH_INIT" },
-		{ SSH_MSG_KEXDH_REPLY,	"SSH_MSG_KEXDH_REPLY" },
-		{ SSH_MSG_KEXDH_GEX_REQUEST_OLD, "SSH_MSG_KEXDH_GEX_REQUEST_OLD" },
-		{ SSH_MSG_KEXDH_GEX_GROUP, "SSH_MSG_KEXDH_GEX_GROUP" },
+		{ SSH_MSG_KEXDH_INIT, "SSH_MSG_KEXDH_INIT/SSH_MSG_KEXDH_GEX_REQUEST_OLD/SSH_MSG_KEX_ECDH_INIT" },
+		{ SSH_MSG_KEXDH_REPLY,	"SSH_MSG_KEXDH_REPLY/SSH_MSG_KEXDH_GEX_GROUP/SSH_MSG_KEX_ECDH_REPLY" },
 		{ SSH_MSG_KEXDH_GEX_INIT, "SSH_MSG_KEXDH_GEX_INIT" },
 		{ SSH_MSG_KEXDH_GEX_REPLY, "SSH_MSG_KEXDH_GEX_REPLY" },
 		{ SSH_MSG_KEXDH_GEX_REQUEST_NEW, "SSH_MSG_KEXDH_GEX_REQUEST_NEW" },
@@ -99,7 +97,7 @@ const char *getSSHPacketName( IN_RANGE( 0, 255 ) const int packetType )
    conditions due to buggy SSH implementations, we handle these in a special
    function to avoid cluttering up the main packet-read code */
 
-CHECK_RETVAL_RANGE( MAX_ERROR, 255 ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_RANGE( 0, 255 ) STDC_NONNULL_ARG( ( 1 ) ) \
 static int readCharFunction( INOUT TYPECAST( STREAM * ) void *streamPtr )
 	{
 	STREAM *stream = streamPtr;
@@ -117,7 +115,8 @@ static int checkHandshakePacketStatus( INOUT SESSION_INFO *sessionInfoPtr,
 									   IN_RANGE( MAX_ERROR, CRYPT_OK ) \
 											const int headerStatus,
 									   IN_BUFFER( headerLength ) const BYTE *header, 
-									   IN_LENGTH_SHORT const int headerLength,
+									   IN_LENGTH_SHORT_MIN( MIN_PACKET_SIZE ) \
+											const int headerLength,
 									   IN_RANGE( SSH_MSG_DISCONNECT, 
 												 SSH_MSG_SPECIAL_REQUEST ) \
 											const int expectedType )
@@ -127,7 +126,8 @@ static int checkHandshakePacketStatus( INOUT SESSION_INFO *sessionInfoPtr,
 	
 	REQUIRES( headerStatus == CRYPT_ERROR_READ || \
 			  cryptStatusOK( headerStatus ) );
-	REQUIRES( headerLength > 0 && headerLength < MAX_INTLENGTH_SHORT );
+	REQUIRES( headerLength >= MIN_PACKET_SIZE && \
+			  headerLength < MAX_INTLENGTH_SHORT );
 	REQUIRES( expectedType >= SSH_MSG_DISCONNECT && \
 			  expectedType < SSH_MSG_SPECIAL_LAST );
 
@@ -192,7 +192,7 @@ static int checkHandshakePacketStatus( INOUT SESSION_INFO *sessionInfoPtr,
 							   sessionInfoPtr->receiveBuffer + MIN_PACKET_SIZE, 
 							   min( MAX_ERRMSG_SIZE - 128, \
 									sessionInfoPtr->receiveBufSize - 128 ), 
-							   &length, &isTextDataError );
+							   &length, &isTextDataError, FALSE );
 		if( cryptStatusError( status ) )
 			{
 			/* If we encounter an error reading the rest of the data we just 
@@ -211,7 +211,8 @@ static int checkHandshakePacketStatus( INOUT SESSION_INFO *sessionInfoPtr,
 				( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
 				  "Remote SSH software has crashed, diagnostic was: '%s'",
 				  sanitiseString( sessionInfoPtr->receiveBuffer, 
-								  MAX_ERRMSG_SIZE - 64, length ) ) );
+								  MAX_ERRMSG_SIZE - 64, 
+								  MIN_PACKET_SIZE + length ) ) );
 		}
 
 	/* No (obviously) buggy behaviour detected */
@@ -333,15 +334,25 @@ int getDisconnectInfo( INOUT SESSION_INFO *sessionInfoPtr,
 		{
 		memcpy( errorString, "<No details available>", 22 + 1 );
 		}
+	DEBUG_PRINT(( "Processing disconnect message, reason %d, "
+				  "description '%s'.\n", errorCode, errorString ));
 
 	/* Try and map the SSH status to an equivalent cryptlib one */
-	status = mapValue( errorCode, &clibStatus, errorMapTbl,
-					   FAILSAFE_ARRAYSIZE( errorMapTbl, MAP_TABLE ) );
-	if( cryptStatusError( status ) )
+	if( errorCode <= SSH_DISCONNECT_NONE || errorCode >= SSH_DISCONNECT_LAST )
 		{
-		/* We couldn't find anything appropriate, return a general error 
-		   code */
+		/* Return a general error code */
 		clibStatus = CRYPT_ERROR_READ;
+		}
+	else
+		{
+		status = mapValue( errorCode, &clibStatus, errorMapTbl,
+						   FAILSAFE_ARRAYSIZE( errorMapTbl, MAP_TABLE ) );
+		if( cryptStatusError( status ) )
+			{
+			/* We couldn't find anything appropriate, return a general error 
+			   code */
+			clibStatus = CRYPT_ERROR_READ;
+			}
 		}
 	retExt( clibStatus,
 			( clibStatus, SESSION_ERRINFO, 
@@ -356,7 +367,7 @@ int readPacketHeaderSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 									SSH_MSG_SPECIAL_REQUEST ) \
 								const int expectedType, 
 						  OUT_LENGTH_Z long *packetLength,
-						  OUT_LENGTH_Z int *packetExtraLength,
+						  OUT_DATALENGTH_Z int *packetExtraLength,
 						  INOUT SSH_INFO *sshInfo,
 						  INOUT_OPT READSTATE_INFO *readInfo )
 	{
@@ -392,7 +403,9 @@ int readPacketHeaderSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 		uint32		length (excluding MAC size)
 		byte		padLen
 		byte		type
-		byte[]		data */
+		byte[]		data 
+		byte[]		pad
+		byte[]		MAC*/
 	if( isHandshake )
 		{
 		/* Processing handshake data can run into a number of special-case
@@ -461,13 +474,14 @@ int readPacketHeaderSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 			long as the minimum-length packet */
 	sMemConnect( &stream, headerBufPtr, MIN_PACKET_SIZE );
 	length = readUint32( &stream );
-	static_assert( SSH2_HEADER_REMAINDER_SIZE == MIN_PACKET_SIZE - \
-												 LENGTH_SIZE, \
+	static_assert( SSH_HEADER_REMAINDER_SIZE == MIN_PACKET_SIZE - \
+												LENGTH_SIZE, \
 				   "Header length calculation" );
 	if( cryptStatusError( length ) || \
-		length + extraLength < SSH2_HEADER_REMAINDER_SIZE || \
+		length + extraLength < SSH_HEADER_REMAINDER_SIZE || \
 		length < ID_SIZE + PADLENGTH_SIZE + SSH2_MIN_PADLENGTH_SIZE || \
-		length + extraLength >= sessionInfoPtr->receiveBufSize )
+		length + extraLength >= sessionInfoPtr->receiveBufSize || \
+		length >= MAX_BUFFER_SIZE )
 		{
 		sMemDisconnect( &stream );
 		retExt( CRYPT_ERROR_BADDATA,
@@ -525,11 +539,11 @@ int readPacketHeaderSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 	ENSURES( ( isHandshake && sessionInfoPtr->receiveBufPos == 0 ) || \
 			 !isHandshake );
 	ENSURES( rangeCheckZ( sessionInfoPtr->receiveBufPos, 
-						  SSH2_HEADER_REMAINDER_SIZE, 
+						  SSH_HEADER_REMAINDER_SIZE, 
 						  sessionInfoPtr->receiveBufSize ) );
 	status = sread( &stream, sessionInfoPtr->receiveBuffer + \
 							 sessionInfoPtr->receiveBufPos, 
-					SSH2_HEADER_REMAINDER_SIZE );
+					SSH_HEADER_REMAINDER_SIZE );
 	sMemDisconnect( &stream );
 	if( cryptStatusError( status ) )
 		return( status );
@@ -546,7 +560,7 @@ int readPacketHeaderSSH2( INOUT SESSION_INFO *sessionInfoPtr,
    buffer so we don't have to perform special buffer-space-remaining 
    calculations */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_LENGTH_SHORT STDC_NONNULL_ARG( ( 1 ) ) \
 int readHSPacketSSH2( INOUT SESSION_INFO *sessionInfoPtr, 
 					  IN_RANGE( SSH_MSG_DISCONNECT, \
 								SSH_MSG_SPECIAL_REQUEST ) \
@@ -554,7 +568,7 @@ int readHSPacketSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 					  IN_RANGE( 1, 1024 ) const int minPacketSize )
 	{
 	SSH_INFO *sshInfo = sessionInfoPtr->sessionSSH;
-	long length = DUMMY_INIT;
+	long length DUMMY_INIT;
 	int minPacketLength = minPacketSize, noPackets, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
@@ -599,17 +613,17 @@ int readHSPacketSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 									   &extraLength, sshInfo, NULL );
 		if( cryptStatusError( status ) )
 			return( status );
-		ENSURES( length + extraLength >= SSH2_HEADER_REMAINDER_SIZE && \
+		ENSURES( length + extraLength >= SSH_HEADER_REMAINDER_SIZE && \
 				 length + extraLength < sessionInfoPtr->receiveBufSize );
 				 /* Guaranteed by readPacketHeaderSSH2() */
 
 		/* Read the remainder of the handshake-packet message.  The change 
 		   cipherspec message has length 0 so we only perform the read if 
 		   there's packet data present */
-		if( length + extraLength > SSH2_HEADER_REMAINDER_SIZE )
+		if( length + extraLength > SSH_HEADER_REMAINDER_SIZE )
 			{
 			const long remainingLength = length + extraLength - \
-										 SSH2_HEADER_REMAINDER_SIZE;
+										 SSH_HEADER_REMAINDER_SIZE;
 			int readLength;
 
 			/* Because this code is called conditionally we can't make the
@@ -618,7 +632,7 @@ int readHSPacketSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 			status = readLength = \
 				sread( &sessionInfoPtr->stream,
 					   sessionInfoPtr->receiveBuffer + \
-						SSH2_HEADER_REMAINDER_SIZE, remainingLength );
+						SSH_HEADER_REMAINDER_SIZE, remainingLength );
 			if( cryptStatusError( status ) )
 				{
 				sNetGetErrorInfo( &sessionInfoPtr->stream,
@@ -633,6 +647,7 @@ int readHSPacketSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 						  "only got %d of %ld bytes", readLength,
 						  remainingLength ) );
 				}
+			status = CRYPT_OK;	/* sread() returns byte count */
 			}
 
 		/* Decrypt and MAC the packet if required */
@@ -641,13 +656,13 @@ int readHSPacketSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 			/* Decrypt the remainder of the packet except for the MAC.
 			   Sometimes the payload can be zero-length so we have to check
 			   for this before we try the decrypt */
-			if( length > SSH2_HEADER_REMAINDER_SIZE )
+			if( length > SSH_HEADER_REMAINDER_SIZE )
 				{
 				status = krnlSendMessage( sessionInfoPtr->iCryptInContext,
 										  IMESSAGE_CTX_DECRYPT,
 										  sessionInfoPtr->receiveBuffer + \
-											SSH2_HEADER_REMAINDER_SIZE,
-										  length - SSH2_HEADER_REMAINDER_SIZE );
+											SSH_HEADER_REMAINDER_SIZE,
+										  length - SSH_HEADER_REMAINDER_SIZE );
 				if( cryptStatusError( status ) )
 					return( status );
 				}
@@ -670,11 +685,11 @@ int readHSPacketSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 					{
 					retExt( CRYPT_ERROR_WRONGKEY,
 							( CRYPT_ERROR_WRONGKEY, SESSION_ERRINFO, 
-							  "Bad message MAC for %s packet, length %ld, "
+							  "Bad message MAC for %s (%d) packet, length %ld, "
 							  "probably due to an incorrect key being used "
 							  "to generate the MAC", 
 							  getSSHPacketName( sessionInfoPtr->receiveBuffer[ 1 ] ), 
-							  length ) );
+							  sessionInfoPtr->receiveBuffer[ 1 ], length ) );
 					}
 				retExt( CRYPT_ERROR_BADDATA,
 						( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
@@ -690,6 +705,7 @@ int readHSPacketSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 					  length - ( 1 + ID_SIZE + sshInfo->padLength ) ));
 		DEBUG_DUMP_DATA( sessionInfoPtr->receiveBuffer + 1 + ID_SIZE, 
 						 length - ( 1 + ID_SIZE + sshInfo->padLength ) );
+		DEBUG_DUMP_SSH( sessionInfoPtr->receiveBuffer, length, TRUE );
 		}
 	if( noPackets >= 5 )
 		{
@@ -717,17 +733,19 @@ int readHSPacketSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 		   adjust the minPacketLength to the minimum packet length of a 
 		   disconnect packet */
 		minPacketLength = ID_SIZE + UINT32_SIZE + \
-						  sizeofString32( "", 0 ) + sizeofString32( "", 0 );
+						  sizeofString32( 0 ) + sizeofString32( 0 );
 		}
 	if( length < minPacketLength || \
-		length > sessionInfoPtr->receiveBufSize - EXTRA_PACKET_SIZE )
+		length > sessionInfoPtr->receiveBufSize - EXTRA_PACKET_SIZE || \
+		length >= MAX_INTLENGTH_SHORT )
 		{
 		retExt( CRYPT_ERROR_BADDATA,
 				( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
 				  "Invalid length %ld for %s (%d) packet, should be %d...%d", 
 				  length, getSSHPacketName( sshInfo->packetType ), 
 				  sshInfo->packetType, minPacketLength,
-				  sessionInfoPtr->receiveBufSize - EXTRA_PACKET_SIZE ) );
+				  min( sessionInfoPtr->receiveBufSize - EXTRA_PACKET_SIZE,
+					   MAX_INTLENGTH_SHORT ) ) );
 		}
 
 	/* Although the packet type is theoretically part of the packet data we
@@ -752,6 +770,8 @@ int readHSPacketSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 		{
 		STREAM stream;
 
+		if( length <= 0 )
+			return( CRYPT_ERROR_BADDATA );
 		sMemConnect( &stream, sessionInfoPtr->receiveBuffer, length );
 		status = getDisconnectInfo( sessionInfoPtr, &stream );
 		sMemDisconnect( &stream );

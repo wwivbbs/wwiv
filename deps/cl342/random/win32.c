@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						  Win32 Randomness-Gathering Code					*
-*	Copyright Peter Gutmann, Matt Thomlinson and Blake Coverett 1996-2011	*
+*	Copyright Peter Gutmann, Matt Thomlinson and Blake Coverett 1996-2013	*
 *																			*
 ****************************************************************************/
 
@@ -15,7 +15,7 @@
 
 /* OS-specific includes */
 
-#include <tlhelp32.h>
+#include <lm.h>				/* For NetStatisticsGet() */
 #include <winperf.h>
 #include <winioctl.h>
 #include <process.h>
@@ -54,11 +54,19 @@
 #endif /* BC++ */
 
 /* Map a value that may be 32 or 64 bits depending on the platform to a 
-   long */
+   long.  For 64-bit debug builds we can't use HandleToLong() because it
+   results in a runtime exception due to loss of precision so we mask it to 
+   LONG_MAX and then cast it */
 
-#if defined( _MSC_VER ) && ( _MSC_VER >= 1400 )
-  #define addRandomHandle( randomState, handle ) \
-		  addRandomLong( randomState, PtrToUlong( handle ) )
+#ifdef __WIN64__
+  #ifndef NDEBUG
+	#define addRandomHandle( randomState, handle ) \
+			addRandomLong( randomState, \
+						   ( long ) ( ( LONG_PTR ) ( handle ) & LONG_MAX ) )
+  #else
+	#define addRandomHandle( randomState, handle ) \
+			addRandomLong( randomState, HandleToLong( handle ) )
+  #endif /* Debug vs.non-debug */
 #else
   #define addRandomHandle	addRandomValue
 #endif /* 32- vs. 64-bit VC++ */
@@ -73,8 +81,7 @@
 /* Handles to various randomness objects */
 
 static HANDLE hAdvAPI32;	/* Handle to misc.library */
-static HANDLE hNetAPI32;	/* Handle to networking library */
-static HANDLE hNTAPI;		/* Handle to NT kernel library */
+static HANDLE hNTAPI;		/* Handle to Windows kernel library */
 static HANDLE hThread;		/* Background polling thread handle */
 static unsigned int threadID;	/* Background polling thread ID */
 
@@ -120,7 +127,7 @@ typedef BOOL ( WINAPI *RTLGENRANDOM )( PVOID RandomBuffer,
 									   ULONG RandomBufferLength );
 
 /* Global function pointers. These are necessary because the functions need
-   to be dynamically linked since older versions of Win95 and NT don't contain
+   to be dynamically linked since older versions of Windows NT don't contain 
    them */
 
 static CRYPTACQUIRECONTEXT pCryptAcquireContext = NULL;
@@ -269,7 +276,7 @@ static void readSystemRNG( void )
 	else
 		{
 		if( pRtlGenRandom( buffer, SYSTEMRNG_BYTES ) )
-			quality = 30;
+			quality = 60;
 		}
 	if( quality > 0 )
 		{
@@ -299,6 +306,173 @@ static void endSystemRNG( void )
 		{
 		pCryptReleaseContext( hProv, 0 );
 		hProv = NULL;
+		}
+	}
+
+/****************************************************************************
+*																			*
+*							External RNG Interface							*
+*																			*
+****************************************************************************/
+
+/* Interface to the Quantis quantum RNG */
+
+typedef void *QUANTIS_HANDLE;
+
+/* Type definitions for function pointers to call Quantis functions */
+
+typedef int ( *QUANTISOPEN )( int deviceType, unsigned int deviceNumber,
+							  QUANTIS_HANDLE* deviceHandle );
+typedef int ( *QUANTISREADHANDLE )( QUANTIS_HANDLE deviceHandle, 
+									void *buffer, size_t size );
+typedef int ( *QUANTISCLOSE )( QUANTIS_HANDLE deviceHandle );
+
+/* Global function pointers. These are necessary because the functions need
+   to be dynamically linked since most systems won't contain them */
+
+static QUANTISOPEN pQuantisOpen = NULL;
+static QUANTISREADHANDLE pQuantisReadHandled = NULL;
+static QUANTISCLOSE pQuantisClose = NULL;
+
+#if 0
+
+typedef struct {
+	int deviceNumber;
+	int deviceType;
+	/* QuantisOperations* */ void *ops;
+	void *privateData;
+	} QUANTIS_HANDLE;
+#endif
+
+/* Quantis device types */
+
+#define QUANTIS_DEVICE_PCI			1	/* PCI device */
+#define QUANTIS_DEVICE_USB			2	/* USB device */
+
+/* Quantis error codes */
+
+#define QUANTIS_SUCCESS				0
+#define QUANTIS_ERROR_NO_DRIVER		1	/* Invalid driver */
+#define QUANTIS_ERROR_INVALID_DEVICE_NUMBER	2 /* Invalid device no.*/
+#define QUANTIS_ERROR_INVALID_READ_SIZE	3 /* Invalid size to read (too high) */
+#define QUANTIS_ERROR_INVALID_PARAMETER	4 /* Invalid parameter */
+#define QUANTIS_ERROR_NO_MEMORY		5	/* Insufficient memory */
+#define QUANTIS_ERROR_NO_MODULE		6	/* No module found */
+#define QUANTIS_ERROR_IO			7	/* Input/output error */
+#define QUANTIS_ERROR_NO_DEVICE		8	/* No such device or dev.disconnected */
+#define QUANTIS_ERROR_OPERATION_NOT_SUPPORTED 9 /* Op.not supported */
+#define QUANTIS_ERROR_OTHER			99	/* Other error */
+
+/* Handle to the Quantis RNG */
+
+static BOOLEAN externalRngAvailable;	/* Whether external RNG is available */
+static HANDLE hQuantis;					/* Handle to Quantis library */
+static QUANTIS_HANDLE quantisDevice;	/* Handle to Quantis device */
+
+static void initExternalRNG( void )
+	{
+	int status;
+
+	externalRngAvailable = FALSE;
+	quantisDevice = NULL;
+
+	/* Load the Quantis library.  This is a real pain to do because we have 
+	   no idea where the Quantis DLL will be, the Quantis manual puts it in 
+	   "<path-to-quantis>\Packages\Windows\lib\<your system arch>\", and
+	   as if that isn't vague enough, in 
+	   "<path-to-filename>\Libs-Apps\Quantis\<your system arch>" if you 
+	   build the library yourself.  Because of this we wouldn't be able to
+	   hardcode in an absolute path for SafeLoadLibrary(), but in practice
+	   we require that it be stored in the Windows directory to avoid 
+	   having to break the security module for safe loads */
+	if( ( hQuantis = SafeLoadLibrary( "Quantis.dll" ) ) == NULL )
+		{
+		/* If we're building the debug build we also allow the use of the
+		   emulated RNG library */
+#if ( _MSC_VER == 1200 ) && !defined( NDEBUG )
+		if( ( hQuantis = LoadLibrary( "Quantis-NoHw.dll" ) ) != NULL )
+			{
+			DEBUG_PRINT(( "Using software emulation of Quantis hardware "
+						  "RNG.\n" ));
+			}
+		else
+#endif /* VC++ 6.0 && !NDEBUG */
+		return;
+		}
+
+	/* Get pointers to the Quantis API functions */
+	pQuantisOpen = ( QUANTISOPEN ) GetProcAddress( hQuantis, "QuantisOpen" );
+	pQuantisReadHandled = ( QUANTISREADHANDLE ) GetProcAddress( hQuantis,
+													"QuantisReadHandled" );
+	pQuantisClose = ( QUANTISCLOSE ) GetProcAddress( hQuantis, "QuantisClose" );
+	if( pQuantisOpen == NULL || pQuantisReadHandled == NULL || \
+		pQuantisClose == NULL )
+		{
+		FreeLibrary( hQuantis );
+		hQuantis = NULL;
+		return;
+		}
+
+	/* Try and connect to the Quantis device */
+	status = pQuantisOpen ( QUANTIS_DEVICE_PCI, 0, &quantisDevice );
+	if( status != QUANTIS_SUCCESS )
+		status = pQuantisOpen ( QUANTIS_DEVICE_USB, 0, &quantisDevice );
+	if( status != QUANTIS_SUCCESS )
+		{
+		FreeLibrary( hQuantis );
+		hQuantis = NULL;
+		DEBUG_PRINT(( "Quantis hardware RNG device couldn't be accessed, " 
+					  "status %d.\n", status ));
+		return;
+		}
+
+	externalRngAvailable = TRUE;
+	}
+
+/* Read data from the external RNG */
+
+static void readExternalRNG( void )
+	{
+	BYTE buffer[ SYSTEMRNG_BYTES + 8 ];
+	int count, quality = 0;
+
+	if( !externalRngAvailable )
+		return;
+
+	/* Read SYSTEMRNG_BYTES bytes from the external RNG.  Note that the docs
+	   are incorrect for this function since they claim that a successful
+	   read products QUANTIS_SUCCES (sic), it's actually a byte count */
+	count = pQuantisReadHandled( quantisDevice, buffer, SYSTEMRNG_BYTES );
+	if( count >= SYSTEMRNG_BYTES )
+		quality = 70;
+	if( quality > 0 )
+		{
+		MESSAGE_DATA msgData;
+		int status;
+
+		setMessageData( &msgData, buffer, count );
+		status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+								  IMESSAGE_SETATTRIBUTE_S, &msgData, 
+								  CRYPT_IATTRIBUTE_ENTROPY );
+		if( cryptStatusOK( status ) )
+			{
+			( void ) krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+									  IMESSAGE_SETATTRIBUTE,
+									  ( MESSAGE_CAST ) &quality,
+									  CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+			}
+		zeroise( buffer, SYSTEMRNG_BYTES );
+		}
+	}
+
+/* Clean up the external RNG access */
+
+static void endExternalRNG( void )
+	{
+	if( hQuantis != NULL )
+		{
+		FreeLibrary( hQuantis );
+		hQuantis = NULL;
 		}
 	}
 
@@ -381,14 +555,20 @@ static void readMBMData( void )
 		{
 		MESSAGE_DATA msgData;
 		static const int quality = 20;
+		int status;
 
 		setMessageData( &msgData, ( MESSAGE_CAST ) mbmDataPtr, 
 						sizeof( SharedData ) );
-		krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE_S,
-						 &msgData, CRYPT_IATTRIBUTE_ENTROPY );
-		krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE,
-						 ( MESSAGE_CAST ) &quality,
-						 CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+		status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+								  IMESSAGE_SETATTRIBUTE_S, &msgData, 
+								  CRYPT_IATTRIBUTE_ENTROPY );
+		if( cryptStatusOK( status ) )
+			{
+			( void ) krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+									  IMESSAGE_SETATTRIBUTE,
+									  ( MESSAGE_CAST ) &quality,
+									  CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+			}
 		UnmapViewOfFile( mbmDataPtr );
 		}
 	CloseHandle( hMBMData );
@@ -417,14 +597,20 @@ static void readEverestData( void )
 			{
 			MESSAGE_DATA msgData;
 			static const int quality = 40;
+			int status;
 
 			setMessageData( &msgData, ( MESSAGE_CAST ) everestDataPtr, 
 							min( length, 2048 ) );
-			krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE_S,
-							 &msgData, CRYPT_IATTRIBUTE_ENTROPY );
-			krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE,
-							 ( MESSAGE_CAST ) &quality,
-							 CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+			status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+									  IMESSAGE_SETATTRIBUTE_S, &msgData, 
+									  CRYPT_IATTRIBUTE_ENTROPY );
+			if( cryptStatusOK( status ) )
+				{
+				( void ) krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+										  IMESSAGE_SETATTRIBUTE,
+										  ( MESSAGE_CAST ) &quality,
+										  CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+				}
 			}
 		UnmapViewOfFile( everestDataPtr );
 		}
@@ -480,14 +666,20 @@ static void readSysToolData( void )
 		{
 		MESSAGE_DATA msgData;
 		static const int quality = 40;
+		int status;
 
 		setMessageData( &msgData, ( MESSAGE_CAST ) sysToolDataPtr, 
 						sizeof( SYSTOOL_SHMEM ) );
-		krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE_S,
-						 &msgData, CRYPT_IATTRIBUTE_ENTROPY );
-		krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE,
-						 ( MESSAGE_CAST ) &quality,
-						 CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+		status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+								  IMESSAGE_SETATTRIBUTE_S, &msgData, 
+								  CRYPT_IATTRIBUTE_ENTROPY );
+		if( cryptStatusOK( status ) )
+			{
+			( void ) krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+									  IMESSAGE_SETATTRIBUTE,
+									  ( MESSAGE_CAST ) &quality,
+									  CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+			}
 		UnmapViewOfFile( sysToolDataPtr );
 		}
 	CloseHandle( hSysToolData );
@@ -541,14 +733,20 @@ static void readRivaTunerData( void )
 			const int entryTotalSize = rivaTunerHeaderPtr->dwNumEntries * \
 									   rivaTunerHeaderPtr->dwEntrySize;
 			static const int quality = 10;
+			int status;
 
 			setMessageData( &msgData, ( MESSAGE_CAST ) entryPtr, 
 							min( entryTotalSize, 2048 ) );
-			krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE_S,
-							 &msgData, CRYPT_IATTRIBUTE_ENTROPY );
-			krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE,
-							 ( MESSAGE_CAST ) &quality,
-							 CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+			status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+									  IMESSAGE_SETATTRIBUTE_S, &msgData, 
+									  CRYPT_IATTRIBUTE_ENTROPY );
+			if( cryptStatusOK( status ) )
+				{
+				( void ) krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+										  IMESSAGE_SETATTRIBUTE,
+										  ( MESSAGE_CAST ) &quality,
+										  CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+				}
 			}
 		UnmapViewOfFile( rivaTunerHeaderPtr );
 		}
@@ -585,13 +783,19 @@ static void readHMonitorData( void )
 			{
 			MESSAGE_DATA msgData;
 			static const int quality = 40;
+			int status;
 
 			setMessageData( &msgData, hMonitorDataPtr, hMonitorDataPtr->length );
-			krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE_S,
-							 &msgData, CRYPT_IATTRIBUTE_ENTROPY );
-			krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE,
-							 ( MESSAGE_CAST ) &quality, 
-							 CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+			status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+									  IMESSAGE_SETATTRIBUTE_S, &msgData, 
+									  CRYPT_IATTRIBUTE_ENTROPY );
+			if( cryptStatusOK( status ) )
+				{
+				( void ) krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+										  IMESSAGE_SETATTRIBUTE,
+										  ( MESSAGE_CAST ) &quality,
+										  CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+				}
 			}
 		UnmapViewOfFile( hMonitorDataPtr );
 		}
@@ -640,14 +844,20 @@ static void readATITrayToolsData( void )
 			{
 			MESSAGE_DATA msgData;
 			static const int quality = 10;
+			int status;
 
 			setMessageData( &msgData, trayToolsDataPtr,
 							sizeof( TRAY_TOOLS_DATA ) );
-			krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE_S,
-							 &msgData, CRYPT_IATTRIBUTE_ENTROPY );
-			krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE,
-							 ( MESSAGE_CAST ) &quality,
-							 CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+			status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+									  IMESSAGE_SETATTRIBUTE_S, &msgData, 
+									  CRYPT_IATTRIBUTE_ENTROPY );
+			if( cryptStatusOK( status ) )
+				{
+				( void ) krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+										  IMESSAGE_SETATTRIBUTE,
+										  ( MESSAGE_CAST ) &quality,
+										  CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+				}
 			}
 		UnmapViewOfFile( trayToolsDataPtr );
 		}
@@ -687,14 +897,20 @@ static void readCoreTempData( void )
 		{
 		MESSAGE_DATA msgData;
 		static const int quality = 15;
+		int status;
 
 		setMessageData( &msgData, coreTempDataPtr,
 						sizeof( CORE_TEMP_SHARED_DATA ) );
-		krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE_S,
-						 &msgData, CRYPT_IATTRIBUTE_ENTROPY );
-		krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE,
-						 ( MESSAGE_CAST ) &quality,
-						 CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+		status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+								  IMESSAGE_SETATTRIBUTE_S, &msgData, 
+								  CRYPT_IATTRIBUTE_ENTROPY );
+		if( cryptStatusOK( status ) )
+			{
+			( void ) krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+									  IMESSAGE_SETATTRIBUTE,
+									  ( MESSAGE_CAST ) &quality,
+									  CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+			}
 		UnmapViewOfFile( coreTempDataPtr );
 		}
 	CloseHandle( hCoreTempData );
@@ -747,14 +963,20 @@ static void readGPUZData( void )
 			{
 			MESSAGE_DATA msgData;
 			static const int quality = 10;
+			int status;
 
 			setMessageData( &msgData, ( MESSAGE_CAST ) gpuzDataPtr, 
 							sizeof( GPUZ_SH_MEM ) );
-			krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE_S,
-							 &msgData, CRYPT_IATTRIBUTE_ENTROPY );
-			krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE,
-							 ( MESSAGE_CAST ) &quality,
-							 CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+			status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+									  IMESSAGE_SETATTRIBUTE_S, &msgData, 
+									  CRYPT_IATTRIBUTE_ENTROPY );
+			if( cryptStatusOK( status ) )
+				{
+				( void ) krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+										  IMESSAGE_SETATTRIBUTE,
+										  ( MESSAGE_CAST ) &quality,
+										  CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+				}
 			}
 		UnmapViewOfFile( gpuzDataPtr );
 		}
@@ -768,16 +990,23 @@ static void readGPUZData( void )
 ****************************************************************************/
 
 /* Read PnP configuration data.  This is mostly static per machine, but
-   differs somewhat across machines.  We have to define the values ourselves
-   here due to a combination of some of the values and functions not
-   existing at the time VC++ 6.0 was released */
+   differs somewhat across machines, which means that it acts as a per-
+   machine salt, so that if a static image is deployed (for example as a VM 
+   image) then we at least get the PRNG salted differently once the VM is 
+   started.
+
+   We have to define the values ourselves here due to some of the values and 
+   functions not existing at the time that VC++ 6.0 was released */
 
 typedef void * HDEVINFO;
 
 #define DIGCF_PRESENT		0x02
 #define DIGCF_ALLCLASSES	0x04
 
-#define SPDRP_HARDWAREID	0x01
+#define SPDRP_HARDWAREID					0x01
+#define SPDRP_PHYSICAL_DEVICE_OBJECT_NAME	0x0E
+#define SPDRP_SECURITY						0x17
+#define SPDRP_DEVICE_POWER_DATA				0x1E
 
 typedef struct _SP_DEVINFO_DATA {
 	DWORD cbSize;
@@ -807,6 +1036,11 @@ static void readPnPData( void )
 	SETUPDIENUMDEVICEINFO pSetupDiEnumDeviceInfo = NULL;
 	SETUPDIGETCLASSDEVS pSetupDiGetClassDevs = NULL;
 	SETUPDIGETDEVICEREGISTRYPROPERTY pSetupDiGetDeviceRegistryProperty = NULL;
+	SP_DEVINFO_DATA devInfoData;
+	RANDOM_STATE randomState;
+	BYTE buffer[ RANDOM_BUFSIZE + 8 ], pnpBuffer[ 1024 + 8 ];
+	DWORD cbPnPBuffer;
+	int deviceCount, iterationCount, status;
 
 	if( ( hSetupAPI = DynamicLoad( "SetupAPI.dll" ) ) == NULL )
 		return;
@@ -835,38 +1069,184 @@ static void readPnPData( void )
 	/* Get info on all PnP devices */
 	hDevInfo = pSetupDiGetClassDevs( NULL, NULL, NULL,
 									 DIGCF_PRESENT | DIGCF_ALLCLASSES );
-	if( hDevInfo != INVALID_HANDLE_VALUE )
+	if( hDevInfo == INVALID_HANDLE_VALUE )
 		{
-		SP_DEVINFO_DATA devInfoData;
-		RANDOM_STATE randomState;
-		BYTE buffer[ RANDOM_BUFSIZE + 8 ];
-		BYTE pnpBuffer[ 512 + 8 ];
-		DWORD cbPnPBuffer;
-		int deviceCount, iterationCount, status;
-
-		/* Enumerate all PnP devices */
-		status = initRandomData( randomState, buffer, RANDOM_BUFSIZE );
-		if( cryptStatusError( status ) )
-			retIntError_Void();
-		memset( &devInfoData, 0, sizeof( devInfoData ) );
-		devInfoData.cbSize = sizeof( SP_DEVINFO_DATA );
-		for( deviceCount = 0, iterationCount = 0;
-			 pSetupDiEnumDeviceInfo( hDevInfo, deviceCount, 
-									 &devInfoData ) && \
-				iterationCount < FAILSAFE_ITERATIONS_MAX; 
-			 deviceCount++, iterationCount++ )
-			{
-			if( pSetupDiGetDeviceRegistryProperty( hDevInfo, &devInfoData,
-												   SPDRP_HARDWAREID, NULL,
-												   pnpBuffer, 512, &cbPnPBuffer ) )
-				addRandomData( randomState, pnpBuffer, cbPnPBuffer );
-			}
-		ENSURES_V( iterationCount < FAILSAFE_ITERATIONS_MAX );
-		pSetupDiDestroyDeviceInfoList( hDevInfo );
-		endRandomData( randomState, 5 );
+		DynamicUnload( hSetupAPI );
+		return;
 		}
 
+	/* Enumerate all PnP devices */
+	status = initRandomData( randomState, buffer, RANDOM_BUFSIZE );
+	if( cryptStatusError( status ) )
+		{
+		DynamicUnload( hSetupAPI );
+		retIntError_Void();
+		}
+	memset( &devInfoData, 0, sizeof( devInfoData ) );
+	devInfoData.cbSize = sizeof( SP_DEVINFO_DATA );
+	for( deviceCount = 0, iterationCount = 0;
+		 pSetupDiEnumDeviceInfo( hDevInfo, deviceCount, 
+								 &devInfoData ) && \
+			iterationCount < FAILSAFE_ITERATIONS_MAX; 
+		 deviceCount++, iterationCount++ )
+		{
+		if( pSetupDiGetDeviceRegistryProperty( hDevInfo, &devInfoData,
+											   SPDRP_HARDWAREID, NULL,
+											   pnpBuffer, 1024, &cbPnPBuffer ) )
+			addRandomData( randomState, pnpBuffer, cbPnPBuffer );
+		if( pSetupDiGetDeviceRegistryProperty( hDevInfo, &devInfoData,
+											   SPDRP_DEVICE_POWER_DATA, NULL,
+											   pnpBuffer, 1024, &cbPnPBuffer ) )
+			addRandomData( randomState, pnpBuffer, cbPnPBuffer );
+		if( pSetupDiGetDeviceRegistryProperty( hDevInfo, &devInfoData,
+											   SPDRP_PHYSICAL_DEVICE_OBJECT_NAME, NULL,
+											   pnpBuffer, 1024, &cbPnPBuffer ) )
+			addRandomData( randomState, pnpBuffer, cbPnPBuffer );
+		if( pSetupDiGetDeviceRegistryProperty( hDevInfo, &devInfoData,
+											   SPDRP_SECURITY, NULL,
+											   pnpBuffer, 1024, &cbPnPBuffer ) )
+			addRandomData( randomState, pnpBuffer, cbPnPBuffer );
+		}
+	ENSURES_V( iterationCount < FAILSAFE_ITERATIONS_MAX );
+	pSetupDiDestroyDeviceInfoList( hDevInfo );
+	endRandomData( randomState, 10 );
+
 	DynamicUnload( hSetupAPI );
+	}
+
+/* Read network adapter information.  See the comment for readPnPData() for
+   the salt-like nature of the data obtained.
+
+   We have to define the values ourselves here due to some of the values and 
+   functions not existing at the time that VC++ 6.0 was released */
+
+#define AF_UNSPEC			0
+#define GAA_FLAG_NONE		0
+
+#define MAX_HOSTNAME_LEN	128
+#define MAX_DOMAIN_NAME_LEN	128
+#define MAX_SCOPE_ID_LEN	256
+
+typedef struct {
+	char String[ 4 * 4 ];
+	} IP_ADDRESS_STRING, *PIP_ADDRESS_STRING, IP_MASK_STRING, *PIP_MASK_STRING;
+
+typedef struct _IP_ADDR_STRING {
+	struct _IP_ADDR_STRING* Next;
+	IP_ADDRESS_STRING IpAddress;
+	IP_MASK_STRING IpMask;
+	DWORD Context;
+	} IP_ADDR_STRING, *PIP_ADDR_STRING;
+
+typedef struct {
+	char HostName[ MAX_HOSTNAME_LEN + 4 ];
+	char DomainName[ MAX_DOMAIN_NAME_LEN + 4 ];
+	PIP_ADDR_STRING CurrentDnsServer;
+	IP_ADDR_STRING DnsServerList;
+	UINT NodeType;
+	char ScopeId[ MAX_SCOPE_ID_LEN + 4 ];
+	UINT EnableRouting;
+	UINT EnableProxy;
+	UINT EnableDns;
+	} FIXED_INFO, *PFIXED_INFO;
+
+typedef DWORD ( WINAPI *GETNETWORKPARAMS )( FIXED_INFO *pFixedInfo, 
+											ULONG *pOutBufLen );
+typedef ULONG ( WINAPI *GETADAPTERSADDRESSES )( ULONG Family, ULONG Flags, 
+							PVOID Reserved,
+							/* IP_ADAPTER_ADDRESSES */ void *AdapterAddresses,
+							PULONG SizePointer );
+
+#define NETWORK_INFO_BUFSIZE	( RANDOM_BUFSIZE * 2 )
+
+static void readNetworkData( void )
+	{
+	HANDLE hIphlpAPI;
+	GETNETWORKPARAMS pGetNetworkParams = NULL;
+	GETADAPTERSADDRESSES pGetAdaptersAddresses = NULL;
+	MESSAGE_DATA msgData;
+	BYTE outBuf[ NETWORK_INFO_BUFSIZE + 8 ];
+	ULONG ulOutBufLen;
+	int status;
+
+	if( ( hIphlpAPI = DynamicLoad( "Iphlpapi.dll" ) ) == NULL )
+		return;
+
+	/* Get pointers to the network helper functions */
+	pGetNetworkParams = ( GETNETWORKPARAMS ) \
+				GetProcAddress( hIphlpAPI, "GetNetworkParams" );
+	pGetAdaptersAddresses = ( GETADAPTERSADDRESSES ) \
+				GetProcAddress( hIphlpAPI, "GetAdaptersAddresses" );
+	if( pGetNetworkParams == NULL || pGetAdaptersAddresses == NULL )
+		{
+		DynamicUnload( hIphlpAPI );
+		return;
+		}
+
+	/* Get the host name, domain name, DNS server info, and other odds and 
+	   ends */
+	ulOutBufLen = NETWORK_INFO_BUFSIZE;
+	if( pGetNetworkParams( ( FIXED_INFO * ) outBuf, 
+						   &ulOutBufLen ) == ERROR_SUCCESS )
+		{
+		static const int quality = 5;
+
+		setMessageData( &msgData, outBuf, sizeof( FIXED_INFO ) );
+		status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+								  IMESSAGE_SETATTRIBUTE_S, &msgData, 
+								  CRYPT_IATTRIBUTE_ENTROPY );
+		if( cryptStatusOK( status ) )
+			{
+			( void ) krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+									  IMESSAGE_SETATTRIBUTE,
+									  ( MESSAGE_CAST ) &quality,
+									  CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+			}
+		}
+
+	/* Get information on all network adapters in the system.  This returns 
+	   a linked list of information on every adapter (with per-adapter 
+	   internal embedded linked lists for address information (unicast, 
+	   anycast, multicast, DNS server), gateway and DNS data, and so on), 
+	   all linearised into a fixed memory block.  Alongside this is fixed 
+	   data like MAC address, MTU, metrics, link information, DHCPv6 data, 
+	   and other odds and ends.
+
+	   MSDN recommends calling this function with an initial 15kB buffer and 
+	   then expanding it as required (see
+	   http://msdn.microsoft.com/en-us/library/windows/desktop/aa365915%28v=vs.85%29.aspx)
+	   but we just use a buffer of RANDOM_BUFSIZE * 2 and don't try and get 
+	   fancy if it fails.  Note that ulOutBufLen isn't modified unless the 
+	   function returns ERROR_BUFFER_OVERFLOW so the length value that we 
+	   pass to addRandomData() is most likely an over-estimate, but there's 
+	   no way to tell how much of the buffer got filled without parsing the 
+	   IP_ADAPTER_ADDRESSES contents.
+
+	   Since we don't know how much data we're passing to addRandomData(), 
+	   we clear the entire buffer beforehand to avoid warnings from memory-
+	   checkers that will detect that we're passing uninitialised memory to
+	   addRandomData() */
+	ulOutBufLen = NETWORK_INFO_BUFSIZE;
+	memset( outBuf, 0, NETWORK_INFO_BUFSIZE );
+	if( pGetAdaptersAddresses( AF_UNSPEC, GAA_FLAG_NONE, NULL, outBuf, 
+							   &ulOutBufLen ) == ERROR_SUCCESS )
+		{
+		static const int quality = 10;
+
+		setMessageData( &msgData, outBuf, NETWORK_INFO_BUFSIZE );
+		status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+								  IMESSAGE_SETATTRIBUTE_S, &msgData, 
+								  CRYPT_IATTRIBUTE_ENTROPY );
+		if( cryptStatusOK( status ) )
+			{
+			( void ) krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+									  IMESSAGE_SETATTRIBUTE,
+									  ( MESSAGE_CAST ) &quality,
+									  CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+			}
+		}
+
+	DynamicUnload( hIphlpAPI );
 	}
 
 /****************************************************************************
@@ -882,7 +1262,12 @@ void fastPoll( void )
 	static BOOLEAN addedFixedItems = FALSE;
 	FILETIME  creationTime, exitTime, kernelTime, userTime;
 	SIZE_T minimumWorkingSetSize, maximumWorkingSetSize;
+#if VC_GE_2010( _MSC_VER )
+	GUITHREADINFO guiThreadInfo;
+	MEMORYSTATUSEX memoryStatus;
+#else
 	MEMORYSTATUS memoryStatus;
+#endif /* VC++ >= 2010 */
 	HANDLE handle;
 	POINT point;
 	RANDOM_STATE randomState;
@@ -915,8 +1300,13 @@ void fastPoll( void )
 	   wanders all over the place (while still averaging a fixed value).  So 
 	   timeGetTime() (which uses KeQueryInterruptTime()) isn't necessarily 
 	   more accurate than GetTickCount() (which uses KeQueryTickCount()), 
-	   just more regular.  Since we're interested in unpredictability, we 
-	   use GetTickCount() and not timeGetTime() */
+	   just more regular.  In addition GetTickCount() is meant as a 
+	   monotonically increasing counter (at 1000 ticks per second) used to
+	   measure intervals of time rather than absolute time, so its count 
+	   indication "since the system was started" really means "since 
+	   whenever the HAL initialised the PIT used for the counter".  Since 
+	   we're interested in unpredictability, we use GetTickCount() and not 
+	   timeGetTime() */
 	addRandomHandle( randomState, GetActiveWindow() );
 	addRandomHandle( randomState, GetCapture() );
 	addRandomHandle( randomState, GetClipboardOwner() );
@@ -933,7 +1323,20 @@ void fastPoll( void )
 	addRandomHandle( randomState, GetOpenClipboardWindow() );
 	addRandomHandle( randomState, GetProcessHeap() );
 	addRandomHandle( randomState, GetProcessWindowStation() );
+#if VC_GE_2010( _MSC_VER )
+	/* GetTickCount() overflows approximately every 49 days while 
+	   GetTickCount64() doesn't, however for our purposes this is a feature 
+	   since the value isn't monotonically incrementing any more, and in
+	   any case we'd just end up casting the output of GetTickCount64()
+	   to an integer to pass it to addRandomValue.  Using it does however
+	   produce a compiler warning, which we disable around the call */
+	#pragma warning( push )
+	#pragma warning( disable:28159 )
 	addRandomValue( randomState, GetTickCount() );
+	#pragma warning( pop )
+#else
+	addRandomValue( randomState, GetTickCount() );
+#endif /* VC++ >= 2010 */
 	if( krnlIsExiting() )
 		return;
 
@@ -952,9 +1355,15 @@ void fastPoll( void )
 	/* Get percent of memory in use, bytes of physical memory, bytes of free
 	   physical memory, bytes in paging file, free bytes in paging file, user
 	   bytes of address space, and free user bytes */
+#if VC_GE_2010( _MSC_VER )
+	memoryStatus.dwLength = sizeof( MEMORYSTATUSEX );
+	GlobalMemoryStatusEx( &memoryStatus );
+	addRandomData( randomState, &memoryStatus, sizeof( MEMORYSTATUSEX ) );
+#else
 	memoryStatus.dwLength = sizeof( MEMORYSTATUS );
 	GlobalMemoryStatus( &memoryStatus );
 	addRandomData( randomState, &memoryStatus, sizeof( MEMORYSTATUS ) );
+#endif /* VC++ >= 2010 */
 
 	/* Get thread and process creation time, exit time, time in kernel mode,
 	   and time in user mode in 100ns intervals */
@@ -970,6 +1379,14 @@ void fastPoll( void )
 	addRandomData( randomState, &exitTime, sizeof( FILETIME ) );
 	addRandomData( randomState, &kernelTime, sizeof( FILETIME ) );
 	addRandomData( randomState, &userTime, sizeof( FILETIME ) );
+
+	/* Get assorted window handles and related information associated with 
+	   the current thread */
+#if VC_GE_2010( _MSC_VER )
+	guiThreadInfo.cbSize = sizeof( GUITHREADINFO );
+	GetGUIThreadInfo( 0, &guiThreadInfo );
+	addRandomData( randomState, &guiThreadInfo, sizeof( GUITHREADINFO ) );
+#endif /* VC++ >= 2010 */
 
 	/* Get the minimum and maximum working set size for the current process */
 	GetProcessWorkingSetSize( handle, &minimumWorkingSetSize,
@@ -994,61 +1411,77 @@ void fastPoll( void )
 		}
 
 	/* The performance of QPC varies depending on the architecture that it's 
-	   running on and on the OS, the MS documentation is vague about the 
-	   details because they vary so much.  Under Win9x/ME it reads the 
-	   1.193180 MHz PIC timer.  Under NT/Win2K/XP/Vista/etc it may or may 
-	   not read the 64-bit TSC depending on the HAL and assorted other 
-	   circumstances, generally on machines with a uniprocessor HAL 
-	   KeQueryPerformanceCounter() uses a 3.579545MHz timer and on machines 
-	   with a multiprocessor or APIC HAL it uses the TSC (the exact time 
-	   source is controlled by the HalpUse8254 flag in the kernel).  Since 
-	   Vista-era and newer machines are generally running on multiprocessor 
-	   HALs (due to multicore processors and/or hyperthreading) we usually 
-	   get the TSC under Vista and up.
+	   running on and on the OS, the MS documentation is somewhat vague 
+	   about the details because they vary so much.  Under Win9x/ME it read 
+	   the 1.193180 MHz PIC timer.  Under Win32 it changed with almost every
+	   OS update.
+	   
+	   Under the original Windows NT on machines with a uniprocessor HAL 
+	   KeQueryPerformanceCounter() used the 3.579545MHz timer and on 
+	   machines with a multiprocessor or APIC HAL it used the TSC (the exact 
+	   time source was controlled by the HalpUse8254 flag in the kernel).  
+	   This choice of time sources was somewhat peculiar because on a 
+	   multiprocessor machine it was possible to get completely different 
+	   TSC readings depending on which CPU the thread was currently running 
+	   on while for uniprocessor machines this wasn't a problem.  This was 
+	   dealt with by having the kernel synchronise the TSCs across CPUs at 
+	   boot time if a multiprocessor HAL was used (it reset the TSC as part 
+	   of its system init).
+	   
+	   By about Windows 2000/XP it was discovered that some multiprocessor 
+	   systems couldn't have their TSCs synchronised in this manner, so you 
+	   still got inconsistent results.
+	   
+	   Under Windows Vista, QPC was changed to use the HPET (which was 
+	   mandated for the Vista hardware requirements) or, as a backup, the 
+	   ACPI power management (PM) timer, which provided a single counter 
+	   source but had a much higher access latency than the TSC.
 
-	   This choice of time sources is somewhat peculiar because on a 
-	   multiprocessor machine it's theoretically possible to get completely 
-	   different TSC readings depending on which CPU you're currently 
-	   running on, while for uniprocessor machines it's not a problem. 
-	   However the kernel synchronises the TSCs across CPUs at boot time if 
-	   a multiprocessor HAL is used (it resets the TSC as part of its system 
-	   init) so this shouldn't really be a problem.  Under WinCE it's 
-	   completely platform-dependant, if there's no hardware performance 
-	   counter available it uses the 1ms system timer.
+	   Under Windows 7, the hardware requirements were set for constant-
+	   rate TSCs (which is another issue with using the TSC, see below), so 
+	   QPC went back to using the TSC rather than the HPET if possible, with
+	   fallback to the HPET or PM timer if there were problems (like a non-
+	   constant-rate TSC, or oddball stuff like live migration of VMs).
 
-	   Another feature of the TSC (although it doesn't really affect us 
-	   here) is that mobile CPUs will turn off the TSC when they idle, 
-	   newer Pentiums and Athlons with advanced power management/clock 
-	   throttling will change the rate of the counter when they clock-
-	   throttle (to match the current CPU speed), and hyperthreading 
-	   Pentiums will turn it off when both threads are idle (this more or 
-	   less makes sense since the CPU will be in the halted state and not 
-	   executing any instructions to count).  What makes this even more 
-	   exciting is that the resulting handling of the TSC is almost entirely 
-	   nondeterministic, the only thing that's guaranteed is that the 
-	   counter is monotonically incrementing.  For example when a newer 
-	   processor with power-saving features enabled ramps down its core 
-	   clock the TSC rate is lowered to correspond to the clock rate 
-	   (assuming that the BIOS sets this up correctly, which isn't always 
-	   the case).  However various events like cache probes can cause the 
-	   core to temporarily return to the original rate to process the 
-	   event before dropping back to the throttled rate, which can cause 
-	   TSC drift across multiple cores.  Hardware-specific events like 
-	   AMDs STPCLK signalling ("shut 'er down ma, she's glowing red") can 
-	   reach different cores at different times and lead to ramping up 
-	   and down and different times and for different durations, leading 
-	   to further drift.  Newer AMD CPUs fix this by providing drift-
-	   invariant TSCs if the TscInvariant CPUID feature flag is set.
+	   Under Windows 8 the TSC is almost always used, with a better TSC
+	   synchronisation algorithm for multi-CPU systems, although even then
+	   on large multiprocessor systems it may not be possible to synchronise
+	   them, leading to the usual fallback to the HPET or PM timer.
+	   
+	   Another feature of the TSC that affects QPC but not our use is that 
+	   mobile CPUs will turn off the TSC when they idle and newer CPUs with 
+	   advanced power management/clock throttling would change the rate of 
+	   the counter when they clock-throttle to match the current CPU speed, 
+	   and some hyperthreading CPUs would turn it off when both threads were 
+	   idle (this more or less makes sense since the CPU will be in the 
+	   halted state and not executing any instructions to count).  This
+	   behaviour is known as a non-invariant TSC.
 
-	   As a result, if we're on a system with multiple cores and it doesn't 
-	   have the AMD TscInvariant fix then the TSC skew can also be a source 
-	   of entropy.  To some extent this is just timing the context switch 
-	   time across CPUs (which in itself is a source of some entropy), but 
-	   what's left is the TSC skew across cores.  If this is if interest we 
-	   can do it with code something like the following.  Note that this is 
-	   only sample code, there are various complications such as the fact 
-	   that another thread may change the process affinity mask between the 
-	   call to the initial GetProcessAffinityMask() and the final 
+	   What makes non-invariant TSCs even more exciting is that the 
+	   resulting TSC output is somewhat nondeterministic, the only thing 
+	   that's guaranteed is that the counter is monotonically incrementing.  
+	   For example when a processor with power-saving features and a non-
+	   invariant TSC ramps down its core clock the TSC rate is lowered to 
+	   correspond to the clock rate.  However various events like cache 
+	   probes can cause the core to temporarily return to the original rate 
+	   to process the event before dropping back to the throttled rate, 
+	   which can cause TSC drift across multiple cores.  Hardware-specific 
+	   events like AMDs STPCLK signalling ("shut 'er down ma, she's glowing 
+	   red") can reach different cores at different times and lead to 
+	   ramping up and down and different times and for different durations, 
+	   leading to further drift.  Updated AMD CPUs fixed this by providing 
+	   invariant TSCs if the TscInvariant CPUID feature flag is set, and
+	   more recent CPUs of all types have invariant TSCs by default.
+
+	   As a result, if we're on a system with multiple CPUs and it doesn't 
+	   have an invariant TSC then the TSC skew can also be a source of 
+	   entropy.  To some extent this is just timing the context switch time 
+	   across CPUs (which in itself is a source of some entropy), but what's 
+	   left is the TSC skew across CPUs.  If this is if interest we can do 
+	   it with code something like the following.  Note that this is only 
+	   sample code, there are various complications such as the fact that 
+	   another thread may change the process affinity mask between the call 
+	   to the initial GetProcessAffinityMask() and the final 
 	   SetThreadAffinityMask() to restore the original mask, even if we 
 	   insert another GetProcessAffinityMask() just before the 
 	   SetThreadAffinityMask() there's still a small race condition present 
@@ -1075,9 +1508,11 @@ void fastPoll( void )
 		// Restore the original thread affinity
 		SetThreadAffinityMask( GetCurrentThread(), processAfinityMask );
 
-	   Finally, there's the HPET, but this is only supported in Vista and
-	   it's not clear how to access it from user-level APIs rather than as
-	   part of the multimedia subsystem.
+	   A final complication, which doesn't actually affect us but only 
+	   causes problems when trying to count instruction timings, is that 
+	   RDTSC is affected by out-of-order instruction execution, for which
+	   newer CPUs have a RDTSCP instruction that performs a serialised
+	   read.
 
 	   To make things unambiguous, we call RDTSC directly if possible and 
 	   fall back to QPC in the highly unlikely situation where this isn't 
@@ -1195,7 +1630,7 @@ void fastPoll( void )
 		{
 		/* AMD Geode LX.  The procedure for reading this is complex and
 		   awkward, and probably only possible in kernel mode (see section
-		   6.12.2 of the Geode LX data book).  In additionthe CPU line was 
+		   6.12.2 of the Geode LX data book).  In addition the CPU line was 
 		   more or less abandoned in 2005 so we don't try and do anything 
 		   with it */
 #if 0
@@ -1231,317 +1666,7 @@ void fastPoll( void )
 *																			*
 ****************************************************************************/
 
-/* If we're running under Win64 there's no need to include Win95/98 
-   backwards-compatibility features */
-
-#ifndef __WIN64__
-
-/* Type definitions for function pointers to call Toolhelp32 functions */
-
-#if defined( _MSC_VER )
-  #if VC_GE_2005( _MSC_VER )
-	#define THREAD_ID	ULONG_PTR
-  #else
-	#define THREAD_ID	DWORD
-  #endif /* VC++ < 2005 */
-#elif defined( __MINGW32__ )
-  #define THREAD_ID	DWORD
-#endif /* Compiler-specific defines */
-
-typedef BOOL ( WINAPI *MODULEWALK )( HANDLE hSnapshot, LPMODULEENTRY32 lpme );
-typedef BOOL ( WINAPI *THREADWALK )( HANDLE hSnapshot, LPTHREADENTRY32 lpte );
-typedef BOOL ( WINAPI *PROCESSWALK )( HANDLE hSnapshot, LPPROCESSENTRY32 lppe );
-typedef BOOL ( WINAPI *HEAPLISTWALK )( HANDLE hSnapshot, LPHEAPLIST32 lphl );
-typedef BOOL ( WINAPI *HEAPFIRST )( LPHEAPENTRY32 lphe, DWORD th32ProcessID, THREAD_ID th32HeapID );
-typedef BOOL ( WINAPI *HEAPNEXT )( LPHEAPENTRY32 lphe );
-typedef HANDLE ( WINAPI *CREATESNAPSHOT )( DWORD dwFlags, DWORD th32ProcessID );
-
-/* Global function pointers. These are necessary because the functions need to
-   be dynamically linked since only the Win95 kernel currently contains them.
-   Explicitly linking to them will make the program unloadable under NT */
-
-static CREATESNAPSHOT pCreateToolhelp32Snapshot = NULL;
-static MODULEWALK pModule32First = NULL;
-static MODULEWALK pModule32Next = NULL;
-static PROCESSWALK pProcess32First = NULL;
-static PROCESSWALK pProcess32Next = NULL;
-static THREADWALK pThread32First = NULL;
-static THREADWALK pThread32Next = NULL;
-static HEAPLISTWALK pHeap32ListFirst = NULL;
-static HEAPLISTWALK pHeap32ListNext = NULL;
-static HEAPFIRST pHeap32First = NULL;
-static HEAPNEXT pHeap32Next = NULL;
-
-/* Since there are a significant number of ToolHelp data blocks, we use a
-   larger-than-usual intermediate buffer to cut down on kernel traffic */
-
-#define BIG_RANDOM_BUFSIZE	( RANDOM_BUFSIZE * 4 )
-#if BIG_RANDOM_BUFSIZE > MAX_INTLENGTH_SHORT
-  #error BIG_RANDOM_BUFSIZE exceeds randomness accumulator size
-#endif /* RANDOM_BUFSIZE > MAX_INTLENGTH_SHORT */
-
-static void slowPollWin95( void )
-	{
-	static BOOLEAN addedFixedItems = FALSE;
-	PROCESSENTRY32 pe32;
-	THREADENTRY32 te32;
-	MODULEENTRY32 me32;
-	HEAPLIST32 hl32;
-	HANDLE hSnapshot;
-	RANDOM_STATE randomState;
-	BYTE buffer[ BIG_RANDOM_BUFSIZE + 8 ];
-	int iterationCount, status;
-
-	/* The following are fixed for the lifetime of the process so we only
-	   add them once */
-	if( !addedFixedItems )
-		{
-		readPnPData();
-		addedFixedItems = TRUE;
-		}
-
-	/* Initialize the Toolhelp32 function pointers if necessary */
-	if( pCreateToolhelp32Snapshot == NULL )
-		{
-		HANDLE hKernel;
-
-		/* Obtain the module handle of the kernel to retrieve the addresses
-		   of the Toolhelp32 functions */
-		if( ( hKernel = GetModuleHandle( "Kernel32.dll" ) ) == NULL )
-			return;
-
-		/* Now get pointers to the functions */
-		pCreateToolhelp32Snapshot = ( CREATESNAPSHOT ) GetProcAddress( hKernel,
-													"CreateToolhelp32Snapshot" );
-		pModule32First = ( MODULEWALK ) GetProcAddress( hKernel,
-													"Module32First" );
-		pModule32Next = ( MODULEWALK ) GetProcAddress( hKernel,
-													"Module32Next" );
-		pProcess32First = ( PROCESSWALK ) GetProcAddress( hKernel,
-													"Process32First" );
-		pProcess32Next = ( PROCESSWALK ) GetProcAddress( hKernel,
-													"Process32Next" );
-		pThread32First = ( THREADWALK ) GetProcAddress( hKernel,
-													"Thread32First" );
-		pThread32Next = ( THREADWALK ) GetProcAddress( hKernel,
-													"Thread32Next" );
-		pHeap32ListFirst = ( HEAPLISTWALK ) GetProcAddress( hKernel,
-													"Heap32ListFirst" );
-		pHeap32ListNext = ( HEAPLISTWALK ) GetProcAddress( hKernel,
-													"Heap32ListNext" );
-		pHeap32First = ( HEAPFIRST ) GetProcAddress( hKernel,
-													"Heap32First" );
-		pHeap32Next = ( HEAPNEXT ) GetProcAddress( hKernel,
-													"Heap32Next" );
-
-		/* Make sure we got valid pointers for every Toolhelp32 function */
-		if( pModule32First == NULL || pModule32Next == NULL || \
-			pProcess32First == NULL || pProcess32Next == NULL || \
-			pThread32First == NULL || pThread32Next == NULL || \
-			pHeap32ListFirst == NULL || pHeap32ListNext == NULL || \
-			pHeap32First == NULL || pHeap32Next == NULL || \
-			pCreateToolhelp32Snapshot == NULL )
-			{
-			/* Mark the main function as unavailable in case for future
-			   reference */
-			pCreateToolhelp32Snapshot = NULL;
-			return;
-			}
-		}
-	if( krnlIsExiting() )
-		return;
-
-	status = initRandomData( randomState, buffer, BIG_RANDOM_BUFSIZE );
-	if( cryptStatusError( status ) )
-		retIntError_Void();
-
-	/* Take a snapshot of everything we can get to that's currently in the
-	   system */
-	hSnapshot = pCreateToolhelp32Snapshot( TH32CS_SNAPALL, 0 );
-	if( !hSnapshot )
-		return;
-
-	/* Walk through the local heap.  We have to be careful to not spend
-	   excessive amounts of time on this if we're linked into a large
-	   application with a great many heaps and/or heap blocks, since the
-	   heap-traversal functions are rather slow.  Fortunately this is
-	   quite rare under Win95/98, since it implies a large/long-running
-	   server app that would be run under NT/Win2K/et al rather than 
-	   Win95 (the performance of the mapped ToolHelp32 helper functions 
-	   under these OSes is even worse than under Win95, fortunately we 
-	   don't have to use them there).
-
-	   Ideally in order to prevent excessive delays we'd count the number
-	   of heaps and ensure that no_heaps * no_heap_blocks doesn't exceed
-	   some maximum value, however this requires two passes of (slow) heap
-	   traversal rather than one, which doesn't help the situation much.
-	   To provide at least some protection, we limit the total number of
-	   heaps and heap entries traversed, although this leads to slightly
-	   suboptimal performance if we have a small number of deep heaps
-	   rather than the current large number of shallow heaps.
-
-	   Unfortunately this interacts badly with a problem with the heap-
-	   traversal functions there's a Heap32First() and a Heap32Next() but 
-	   not Heap32Close().  The way Heap32First() works is that it allocates 
-	   some memory to keep track of the heap walk and stores the state in 
-	   the HEAPENTRY32.dwResvd field.  Heap32Next() then uses this to find 
-	   the next heap block to return.  Since there's no explicit 
-	   Heap32Close(), if we don't walk the heap to the end via Heap32Next() 
-	   (which does the free when it gets to the end) then we leak the memory
-	   that was allocated with Heap32First().
-
-	   The NT folks pseudo-solved this problem by making the operation
-	   stateless, allocating and freeing things on *every single call*
-	   to Heap32First() and Heap32Next().  In other words for Heap32First() 
-	   it takes a snapshot, returnd info on the first block, and frees it.
-	   For Heap32Next() it takes a snapshot, walks it until it finds the
-	   n-th block, returns info on it, and frees it.  This is an O( n^2 )
-	   process, thus the "pseudo-solution" to the problem.
-
-	   A better way to do it would be by using HeapWalk() (which doesn't 
-	   have the Heap32First()/Heap32Next() problems), however this only
-	   exists in Windows XP and newer which doesn't help much in a
-	   function called slowPollWin95().
-
-	   (Another way to do it which avoids going via the ToolHelp functions
-	   is to call directly into the not-very-documented RtlXXX() native API 
-	   functions, specifically RtlCreateQueryDebugBuffer() followed by 
-	   RtlQueryProcessDebugInformation( ..., PDI_HEAPS | PDI_HEAP_BLOCKS, ... )
-	   and then walk the internal list structure, but this is an even uglier
-	   hack and in any case similar to HeapWalk() isn't available for non-NT
-	   OS versions).
-
-	   There's also a second consideration that needs to be taken into 
-	   account when doing the walk, which is that the heap-management 
-	   functions aren't completely thread-safe, so that under (very rare) 
-	   conditions of heavy allocation/deallocation this can cause problems 
-	   when calling HeapNext().  By limiting the amount of time that we 
-	   spend in each heap, we can reduce our exposure somewhat */
-	hl32.dwSize = sizeof( HEAPLIST32 );
-	if( pHeap32ListFirst( hSnapshot, &hl32 ) )
-		{
-		int listCount = 0;
-
-		do
-			{
-			HEAPENTRY32 he32;
-
-			/* First add the information from the basic Heaplist32
-			   structure */
-			if( krnlIsExiting() )
-				{
-				CloseHandle( hSnapshot );
-				return;
-				}
-			addRandomData( randomState, &hl32, sizeof( HEAPLIST32 ) );
-
-			/* Now walk through the heap blocks getting information
-			   on each of them */
-			he32.dwSize = sizeof( HEAPENTRY32 );
-			if( pHeap32First( &he32, hl32.th32ProcessID, hl32.th32HeapID ) )
-				{
-				int entryCount = 0;
-
-				do
-					{
-					if( krnlIsExiting() )
-						{
-						CloseHandle( hSnapshot );
-						return;
-						}
-					addRandomData( randomState, &he32,
-								   sizeof( HEAPENTRY32 ) );
-					}
-				while( entryCount++ < 20 && pHeap32Next( &he32 ) );
-				}
-			}
-		while( listCount++ < 20 && pHeap32ListNext( hSnapshot, &hl32 ) );
-		}
-
-	/* Walk through all processes */
-	pe32.dwSize = sizeof( PROCESSENTRY32 );
-	iterationCount = 0;
-	if( pProcess32First( hSnapshot, &pe32 ) )
-		{
-		do
-			{
-			if( krnlIsExiting() )
-				{
-				CloseHandle( hSnapshot );
-				return;
-				}
-			addRandomData( randomState, &pe32, sizeof( PROCESSENTRY32 ) );
-			}
-		while( pProcess32Next( hSnapshot, &pe32 ) && \
-			   iterationCount++ < FAILSAFE_ITERATIONS_LARGE );
-		}
-
-	/* Walk through all threads */
-	te32.dwSize = sizeof( THREADENTRY32 );
-	iterationCount = 0;
-	if( pThread32First( hSnapshot, &te32 ) )
-		{
-		do
-			{
-			if( krnlIsExiting() )
-				{
-				CloseHandle( hSnapshot );
-				return;
-				}
-			addRandomData( randomState, &te32, sizeof( THREADENTRY32 ) );
-			}
-		while( pThread32Next( hSnapshot, &te32 ) && \
-			   iterationCount++ < FAILSAFE_ITERATIONS_LARGE );
-		}
-
-	/* Walk through all modules associated with the process */
-	me32.dwSize = sizeof( MODULEENTRY32 );
-	iterationCount = 0;
-	if( pModule32First( hSnapshot, &me32 ) )
-		{
-		do
-			{
-			if( krnlIsExiting() )
-				{
-				CloseHandle( hSnapshot );
-				return;
-				}
-			addRandomData( randomState, &me32, sizeof( MODULEENTRY32 ) );
-			}
-		while( pModule32Next( hSnapshot, &me32 ) && \
-			   iterationCount++ < FAILSAFE_ITERATIONS_LARGE );
-		}
-
-	/* Clean up the snapshot */
-	CloseHandle( hSnapshot );
-	if( krnlIsExiting() )
-		return;
-
-	/* Flush any remaining data through */
-	endRandomData( randomState, 100 );
-	}
-
-/* Perform a thread-safe slow poll for Windows 95 */
-
-unsigned __stdcall threadSafeSlowPollWin95( void *dummy )
-	{
-	UNUSED_ARG( dummy );
-
-	slowPollWin95();
-	_endthreadex( 0 );
-	return( 0 );
-	}
-#endif /* __WIN64__ */
-
-/* Type definitions for function pointers to call NetAPI32 functions */
-
-typedef DWORD ( WINAPI *NETSTATISTICSGET )( LPWSTR szServer, LPWSTR szService,
-											DWORD dwLevel, DWORD dwOptions,
-											LPBYTE *lpBuffer );
-typedef DWORD ( WINAPI *NETAPIBUFFERSIZE )( LPVOID lpBuffer, LPDWORD cbBuffer );
-typedef DWORD ( WINAPI *NETAPIBUFFERFREE )( LPVOID lpBuffer );
-
-/* Type definitions for functions to call native NT functions */
+/* Type definitions for functions to call Windows native API functions */
 
 typedef DWORD ( WINAPI *NTQUERYSYSTEMINFORMATION )( DWORD systemInformationClass,
 								PVOID systemInformation,
@@ -1556,13 +1681,6 @@ typedef DWORD ( WINAPI *NTPOWERINFORMATION )( DWORD powerInformationClass,
 								PVOID inputBuffer, ULONG inputBufferLength,
 								PVOID outputBuffer, ULONG outputBufferLength );
 
-/* Global function pointers. These are necessary because the functions need to
-   be dynamically linked since only the WinNT kernel currently contains them.
-   Explicitly linking to them will make the program unloadable under Win95 */
-
-static NETSTATISTICSGET pNetStatisticsGet = NULL;
-static NETAPIBUFFERSIZE pNetApiBufferSize = NULL;
-static NETAPIBUFFERFREE pNetApiBufferFree = NULL;
 static NTQUERYSYSTEMINFORMATION pNtQuerySystemInformation = NULL;
 static NTQUERYINFORMATIONPROCESS pNtQueryInformationProcess = NULL;
 static NTPOWERINFORMATION pNtPowerInformation = NULL;
@@ -1593,14 +1711,15 @@ static void registryPoll( void )
 		pFunction1 = ( TYPE_FUNC1 ) GetProcAddress( hDriver, NAME_FUNC1 );
 		pFunction2 = ( TYPE_FUNC1 ) GetProcAddress( hDriver, NAME_FUNC2 );
 
-	   If RegQueryValueEx() is called while the GetProcAddress()'s are in
-	   progress, it will hang indefinitely.  This is probably due to some
-	   synchronisation problem in the NT kernel where the GetProcAddress()
-	   calls affect something like a module reference count or function
-	   reference count while RegQueryValueEx() is trying to take a snapshot of
-	   the statistics, which include the reference counts.  Because of this,
-	   we have to wait until any async driver bind has completed before we can
-	   call RegQueryValueEx() */
+	   Under older Windows versions, if RegQueryValueEx() is called while 
+	   the GetProcAddress()'s are in progress, it will hang indefinitely.  
+	   This is probably due to some synchronisation problem in the Windows 
+	   kernel where the GetProcAddress() calls affect something like a 
+	   module reference count or function reference count while 
+	   RegQueryValueEx() is trying to take a snapshot of the statistics, 
+	   which include the reference counts.  Because of this we have to wait 
+	   until any async driver bind has completed before we can call 
+	   RegQueryValueEx() */
 	if( !krnlWaitSemaphore( SEMAPHORE_DRIVERBIND ) )
 		{
 		/* The kernel is shutting down, bail out */
@@ -1639,8 +1758,8 @@ static void registryPoll( void )
 	   RPC call isolates the calling app from the problem in that whatever
 	   service handles the RPC is taking the hit and not affecting the
 	   calling app.  Since this would require another round of extensive
-	   testing to verify and the NT native API call is working fine, we'll
-	   stick with the native API call for now.
+	   testing to verify and the Windows native API call is working fine, 
+	   we'll stick with the native API call for now.
 
 	   Some versions of NT4 had a problem where the amount of data returned
 	   was mis-reported and would never settle down, because of this the code
@@ -1658,15 +1777,15 @@ static void registryPoll( void )
 
 	   Even worse than the registry-based performance counters is the
 	   performance data helper (PDH) shim that tries to make the counters
-	   look like the old Win16 API (which is also used by Win95).  Under NT
-	   this can consume tens of MB of memory and huge amounts of CPU time
-	   while it gathers its data, and even running once can still consume
-	   about 1/2MB of memory.
+	   look like the old Win16 API (which is also used by Win95).  Under 
+	   Win32 this can consume tens of MB of memory and huge amounts of CPU 
+	   time while it gathers its data, and even running once can still 
+	   consume about 1/2MB of memory.
 
 	   "Windows NT is a thing of genuine beauty, if you're seriously into 
 	    genuine ugliness.  It's like a woman with a history of insanity in 
 		the family, only worse" -- Hans Chloride, "Why I Love Windows NT" */
-	pPerfData = ( PPERF_DATA_BLOCK ) clAlloc( "slowPollNT", cbPerfData );
+	pPerfData = ( PPERF_DATA_BLOCK ) clAlloc( "registryPoll", cbPerfData );
 	while( pPerfData != NULL && iterations++ < 10 )
 		{
 		dwSize = cbPerfData;
@@ -1683,12 +1802,14 @@ static void registryPoll( void )
 										  IMESSAGE_SETATTRIBUTE_S, &msgData,
 										  CRYPT_IATTRIBUTE_ENTROPY );
 				if( cryptStatusOK( status ) )
-					krnlSendMessage( SYSTEM_OBJECT_HANDLE,
-									 IMESSAGE_SETATTRIBUTE,
-									 ( MESSAGE_CAST ) &quality,
-									 CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+					{
+					( void ) krnlSendMessage( SYSTEM_OBJECT_HANDLE,
+											  IMESSAGE_SETATTRIBUTE,
+											  ( MESSAGE_CAST ) &quality,
+											  CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+					}
 				}
-			clFree( "slowPollWinNT", pPerfData );
+			clFree( "registryPoll", pPerfData );
 			pPerfData = NULL;
 			}
 		else
@@ -1703,7 +1824,7 @@ static void registryPoll( void )
 					{
 					/* The realloc failed, free the original block and force 
 					   a loop exit */
-					clFree( "slowPollWinNT", pPerfData );
+					clFree( "registryPoll", pPerfData );
 					pPerfData = NULL;
 					}
 				else
@@ -1720,7 +1841,7 @@ static void registryPoll( void )
 	RegCloseKey( HKEY_PERFORMANCE_DATA );
 	}
 
-static void slowPollWinNT( void )
+static void slowPollWindows( void )
 	{
 	static BOOLEAN addedFixedItems = FALSE;
 	static int isWorkstation = CRYPT_ERROR;
@@ -1732,7 +1853,7 @@ static void slowPollWinNT( void )
 	void *buffer;
 	int nDrive, noResults = 0, status;
 
-	/* Find out whether this is an NT server or workstation if necessary */
+	/* Find out whether this is a server or workstation if necessary */
 	if( isWorkstation == CRYPT_ERROR )
 		{
 		HKEY hKey;
@@ -1764,40 +1885,15 @@ static void slowPollWinNT( void )
 	if( !addedFixedItems )
 		{
 		readPnPData();
+		readNetworkData();
 		addedFixedItems = TRUE;
 		}
 
-	/* Initialize the NetAPI32 function pointers if necessary */
-	if( hNetAPI32 == NULL )
-		{
-		/* Obtain a handle to the module containing the Lan Manager functions */
-		if( ( hNetAPI32 = DynamicLoad( "NetAPI32.dll" ) ) != NULL )
-			{
-			/* Now get pointers to the functions */
-			pNetStatisticsGet = ( NETSTATISTICSGET ) GetProcAddress( hNetAPI32,
-														"NetStatisticsGet" );
-			pNetApiBufferSize = ( NETAPIBUFFERSIZE ) GetProcAddress( hNetAPI32,
-														"NetApiBufferSize" );
-			pNetApiBufferFree = ( NETAPIBUFFERFREE ) GetProcAddress( hNetAPI32,
-														"NetApiBufferFree" );
-
-			/* Make sure we got valid pointers for every NetAPI32 function */
-			if( pNetStatisticsGet == NULL ||
-				pNetApiBufferSize == NULL ||
-				pNetApiBufferFree == NULL )
-				{
-				/* Free the library reference and reset the static handle */
-				DynamicUnload( hNetAPI32 );
-				hNetAPI32 = NULL;
-				}
-			}
-		}
-
-	/* Initialize the NT kernel native API function pointers if necessary */
+	/* Initialize the Windows native API function pointers if necessary */
 	if( hNTAPI == NULL && \
 		( hNTAPI = GetModuleHandle( "NTDll.dll" ) ) != NULL )
 		{
-		/* Get a pointer to the NT native information query functions */
+		/* Get a pointer to the Windows native information query functions */
 		pNtQuerySystemInformation = ( NTQUERYSYSTEMINFORMATION ) \
 						GetProcAddress( hNTAPI, "NtQuerySystemInformation" );
 		pNtQueryInformationProcess = ( NTQUERYINFORMATIONPROCESS ) \
@@ -1811,22 +1907,30 @@ static void slowPollWinNT( void )
 	if( krnlIsExiting() )
 		return;
 
-	/* Get network statistics.  Note: Both NT Workstation and NT Server by
-	   default will be running both the workstation and server services.  The
-	   heuristic below is probably useful though on the assumption that the
-	   majority of the network traffic will be via the appropriate service. In
-	   any case the network statistics return almost no randomness */
-	if( hNetAPI32 != NULL &&
-		pNetStatisticsGet( NULL,
-						   isWorkstation ? L"LanmanWorkstation" : L"LanmanServer",
-						   0, 0, &lpBuffer ) == 0 )
+	/* Get network statistics.  Both workstations and servers by default 
+	   will be running both the workstation and server services, we always 
+	   get the workstation statistics since the returned structure, a 
+	   STAT_WORKSTATION_0, contains vastly more information than the 
+	   equivalent STAT_SERVER_0 */
+#if VC_GE_2010( _MSC_VER )
+	#pragma warning( push )
+	#pragma warning( disable:28159 )	/* Incorrect annotation in lmstats.h */
+#endif /* VC++ >= 2010 */
+	if( NetStatisticsGet( NULL, isWorkstation ? SERVICE_WORKSTATION : \
+												SERVICE_SERVER, 0, 0, 
+						  &lpBuffer ) == NERR_Success )
 		{
-		pNetApiBufferSize( lpBuffer, &dwSize );
-		setMessageData( &msgData, lpBuffer, dwSize );
-		krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE_S,
-						 &msgData, CRYPT_IATTRIBUTE_ENTROPY );
-		pNetApiBufferFree( lpBuffer );
+		if( NetApiBufferSize( lpBuffer, &dwSize ) == NERR_Success )
+			{
+			setMessageData( &msgData, lpBuffer, dwSize );
+			krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE_S,
+							 &msgData, CRYPT_IATTRIBUTE_ENTROPY );
+			}
+		NetApiBufferFree( lpBuffer );
 		}
+#if VC_GE_2010( _MSC_VER )
+	#pragma warning( pop )
+#endif /* VC++ >= 2010 */
 
 	/* Get disk I/O statistics for all the hard drives */
 	for( nDrive = 0; nDrive < FAILSAFE_ITERATIONS_MED; nDrive++ )
@@ -1843,9 +1947,9 @@ static void slowPollWinNT( void )
 
 		/* Note: This only works if the user has turned on the disk
 		   performance counters with 'diskperf -y'.  These counters were
-		   traditionally disabled under NT, although in newer installs of 
-		   Win2K and newer the physical disk object is enabled by default 
-		   while the logical disk object is disabled by default 
+		   traditionally disabled under Windows NT, although in newer 
+		   installs of Win2K and newer the physical disk object is enabled 
+		   by default while the logical disk object is disabled by default 
 		   ('diskperf -yv' turns on the counters for logical drives in this 
 		   case, since they're already on for physical drives).
 		   
@@ -1881,17 +1985,19 @@ static void slowPollWinNT( void )
 	   unpredictable data from the system, however this is so unreliable (see
 	   the multiple sets of comments in registryPoll()) that it's too risky
 	   to rely on it except as a fallback in emergencies.  Instead, we rely
-	   mostly on the NT native API function NtQuerySystemInformation(), which
-	   has the dual advantages that it doesn't have as many (known) problems
-	   as the Win32 equivalent and that it doesn't access the data indirectly
-	   via pseudo-registry keys, which means that it's much faster.  Note
-	   that the Win32 equivalent actually works almost all of the time, the
-	   problem is that on one or two systems it can fail in strange ways that
-	   are never the same and can't be reproduced on any other system, which
-	   is why we use the native API here.  Microsoft officially documented
-	   this function in early 2003, so it'll be fairly safe to use */
+	   mostly on the Windows native API function NtQuerySystemInformation(), 
+	   which has the dual advantages that it doesn't have as many (known) 
+	   problems as the Win32 equivalent and that it doesn't access the data 
+	   indirectly via pseudo-registry keys, which means that it's much faster.  
+	   Note that the Win32 equivalent actually works almost all of the time, 
+	   the problem is that on one or two systems it can fail in strange ways 
+	   that are never the same and can't be reproduced on any other system, 
+	   which is why we use the native API here.  Microsoft officially 
+	   documented this function in early 2003, so it'll be fairly safe to 
+	   use */
 	if( ( hNTAPI == NULL ) || \
-		( buffer = clAlloc( "slowPollNT", PERFORMANCE_BUFFER_SIZE ) ) == NULL )
+		( buffer = clAlloc( "slowPollWindows", \
+							PERFORMANCE_BUFFER_SIZE ) ) == NULL )
 		{
 		registryPoll();
 		return;
@@ -1958,7 +2064,7 @@ static void slowPollWinNT( void )
 			{
 			if( krnlIsExiting() )
 				{
-				clFree( "slowPollWinNT", buffer );
+				clFree( "slowPollWindows", buffer );
 				return;
 				}
 			setMessageData( &msgData, buffer, ulSize );
@@ -1999,7 +2105,7 @@ static void slowPollWinNT( void )
 				{
 				if( krnlIsExiting() )
 					{
-					clFree( "slowPollWinNT", buffer );
+					clFree( "slowPollWindows", buffer );
 					return;
 					}
 				setMessageData( &msgData, buffer, ulSize );
@@ -2042,7 +2148,7 @@ static void slowPollWinNT( void )
 				continue;
 			if( krnlIsExiting() )
 				{
-				clFree( "slowPollWinNT", buffer );
+				clFree( "slowPollWindows", buffer );
 				return;
 				}
 			setMessageData( &msgData, buffer, powerInfo[ i ].size );
@@ -2054,7 +2160,7 @@ static void slowPollWinNT( void )
 			}
 		ENSURES_V( i < FAILSAFE_ITERATIONS_MED );
 		}
-	clFree( "slowPollWinNT", buffer );
+	clFree( "slowPollWindows", buffer );
 
 	/* If we got enough data, we can leave now without having to try for a
 	   Win32-level performance information query */
@@ -2064,9 +2170,10 @@ static void slowPollWinNT( void )
 
 		if( krnlIsExiting() )
 			return;
-		krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE,
-						 ( MESSAGE_CAST ) &quality,
-						 CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
+		( void ) krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+								  IMESSAGE_SETATTRIBUTE,
+								  ( MESSAGE_CAST ) &quality,
+								  CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
 		return;
 		}
 	if( krnlIsExiting() )
@@ -2077,9 +2184,9 @@ static void slowPollWinNT( void )
 	registryPoll();
 	}
 
-/* Perform a thread-safe slow poll for Windows NT */
+/* Perform a thread-safe slow poll */
 
-unsigned __stdcall threadSafeSlowPollWinNT( void *dummy )
+unsigned __stdcall threadSafeSlowPollWindows( void *dummy )
 	{
 #if 0
 	typedef BOOL ( WINAPI *CREATERESTRICTEDTOKEN )( HANDLE ExistingTokenHandle,
@@ -2131,7 +2238,7 @@ unsigned __stdcall threadSafeSlowPollWinNT( void *dummy )
 		}
 #endif /* 0 */
 
-	slowPollWinNT();
+	slowPollWindows();
 #if 0
 	if( pCreateRestrictedToken != NULL )
 		RevertToSelf();
@@ -2150,6 +2257,7 @@ void slowPoll( void )
 
 	/* Read data from various hardware sources */
 	readSystemRNG();
+	readExternalRNG();
 	readMBMData();
 	readEverestData();
 	readSysToolData();
@@ -2169,37 +2277,27 @@ void slowPoll( void )
 		krnlExitMutex( MUTEX_RANDOM );
 		return;
 		}
-#ifndef __WIN64__
-	if( getSysVar( SYSVAR_ISWIN95 ) == TRUE )
-		{
-		hThread = ( HANDLE ) _beginthreadex( NULL, 0, threadSafeSlowPollWin95,
+
+	/* In theory since the thread is gathering info used (eventually) for 
+	   crypto keys we could set an ACL on the thread to make it explicit 
+	   that no-one else can mess with it:
+
+		void *aclInfo = initACLInfo( THREAD_ALL_ACCESS );
+
+		hThread = ( HANDLE ) _beginthreadex( getACLInfo( aclInfo ),
+											 0, threadSafeSlowPollWindows,
 											 NULL, 0, &threadID );
-		}
-	else
-#endif /* __WIN64__ */
-		{
-		/* In theory since the thread is gathering info used (eventually)
-		   for crypto keys we could set an ACL on the thread to make it
-		   explicit that no-one else can mess with it:
+		freeACLInfo( aclInfo );
 
-			void *aclInfo = initACLInfo( THREAD_ALL_ACCESS );
-
-			hThread = ( HANDLE ) _beginthreadex( getACLInfo( aclInfo ),
-												 0, threadSafeSlowPollWinNT,
-												 NULL, 0, &threadID );
-			freeACLInfo( aclInfo );
-
-		  However, although this is supposed to be the default access for
-		  threads anyway, when used from a service (running under the
-		  LocalSystem account) under Win2K SP4 and up, the thread creation
-		  fails with error = 22 (invalid parameter).  Presumably MS patched
-		  some security hole or other in SP4, which causes the thread
-		  creation to fail.  Because of this problem, we don't set an ACL for
-		  the thread */
-		hThread = ( HANDLE ) _beginthreadex( NULL, 0,
-											 threadSafeSlowPollWinNT,
-											 NULL, 0, &threadID );
-		}
+	  However, although this is supposed to be the default access for 
+	  threads anyway, when used from a service (running under the 
+	  LocalSystem account) under Win2K SP4 and up, the thread creation fails 
+	  with error = 22 (invalid parameter).  Presumably MS patched some 
+	  security hole or other in SP4, which causes the thread creation to 
+	  fail.  Because of this problem, we don't set an ACL for the thread */
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0,
+										 threadSafeSlowPollWindows,
+										 NULL, 0, &threadID );
 	krnlExitMutex( MUTEX_RANDOM );
 	assert( hThread );
 	}
@@ -2260,18 +2358,16 @@ int waitforRandomCompletion( const BOOLEAN force )
 void initRandomPolling( void )
 	{
 	/* Reset the various module and object handles and status info and
-	   initialise the system RNG interface if it's present */
-	hAdvAPI32 = hNetAPI32 = hThread = NULL;
+	   initialise the system and external RNG interfaces if they're 
+	   present */
+	hAdvAPI32 = hThread = NULL;
 	initSystemRNG();
+	initExternalRNG();
 	}
 
 void endRandomPolling( void )
 	{
 	assert( hThread == NULL );
-	if( hNetAPI32 )
-		{
-		DynamicUnload( hNetAPI32 );
-		hNetAPI32 = NULL;
-		}
 	endSystemRNG();
+	endExternalRNG();
 	}

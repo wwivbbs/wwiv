@@ -34,8 +34,8 @@
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 int streamBookmarkComplete( INOUT STREAM *stream, 
 							OUT_OPT_PTR void **dataPtrPtr, 
-							OUT_LENGTH_Z int *length, 
-							IN_LENGTH const int position )
+							OUT_DATALENGTH_Z int *length, 
+							IN_DATALENGTH const int position )
 	{
 	const int dataLength = stell( stream ) - position;
 
@@ -43,8 +43,9 @@ int streamBookmarkComplete( INOUT STREAM *stream,
 	assert( isWritePtr( dataPtrPtr, sizeof( void * ) ) );
 	assert( isWritePtr( length, sizeof( int ) ) );
 
-	REQUIRES( position >= 0 && position < MAX_INTLENGTH );
-	REQUIRES( dataLength > 0 || dataLength < stell( stream ) );
+	REQUIRES( position >= 0 && position < MAX_BUFFER_SIZE );
+	REQUIRES( dataLength > 0 || dataLength < stell( stream ) && \
+			  dataLength < MAX_BUFFER_SIZE );
 
 	/* Clear return values */
 	*dataPtrPtr = NULL;
@@ -80,7 +81,7 @@ int openPacketStreamSSH( OUT STREAM *stream,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int openPacketStreamSSHEx( OUT STREAM *stream, 
 						   const SESSION_INFO *sessionInfoPtr,
-						   IN_LENGTH const int bufferSize, 
+						   IN_DATALENGTH const int bufferSize, 
 						   IN_RANGE( SSH_MSG_DISCONNECT, \
 									 SSH_MSG_CHANNEL_FAILURE ) 
 							const int packetType )
@@ -91,7 +92,7 @@ int openPacketStreamSSHEx( OUT STREAM *stream,
 	assert( isReadPtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( sessionInfoPtr->sendBuffer, streamSize ) );
 	
-	REQUIRES( bufferSize > 0 && bufferSize < MAX_INTLENGTH );
+	REQUIRES( bufferSize > 0 && bufferSize < MAX_BUFFER_SIZE );
 	REQUIRES( packetType >= SSH_MSG_DISCONNECT && \
 			  packetType <= SSH_MSG_CHANNEL_FAILURE );
 	REQUIRES( streamSize > SSH2_HEADER_SIZE && \
@@ -107,7 +108,7 @@ int continuePacketStreamSSH( INOUT STREAM *stream,
 							 IN_RANGE( SSH_MSG_DISCONNECT, \
 									   SSH_MSG_CHANNEL_FAILURE ) \
 								const int packetType,
-							 OUT_LENGTH_Z int *packetOffset )
+							 OUT_DATALENGTH_Z int *packetOffset )
 	{
 	const int offset = stell( stream );
 	int status;
@@ -119,7 +120,7 @@ int continuePacketStreamSSH( INOUT STREAM *stream,
 			  packetType <= SSH_MSG_CHANNEL_FAILURE );
 	REQUIRES( stell( stream ) == 0 || \
 			  ( stell( stream ) > SSH2_HEADER_SIZE + 1 && \
-				stell( stream ) < MAX_INTLENGTH ) );
+				stell( stream ) < MAX_BUFFER_SIZE ) );
 
 	/* Clear return value */
 	*packetOffset = 0;
@@ -159,7 +160,7 @@ int continuePacketStreamSSH( INOUT STREAM *stream,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int wrapPacketSSH2( INOUT SESSION_INFO *sessionInfoPtr, 
 					INOUT STREAM *stream,
-					IN_LENGTH_Z const int offset, 
+					IN_DATALENGTH_Z const int offset, 
 					const BOOLEAN useQuantisedPadding,
 					const BOOLEAN isWriteableStream )
 	{
@@ -177,10 +178,11 @@ int wrapPacketSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( sStatusOK( stream ) );
 
-	REQUIRES( offset >= 0 && offset < MAX_INTLENGTH );
-	REQUIRES( length >= SSH2_HEADER_SIZE && length < MAX_INTLENGTH );
-	REQUIRES( payloadLength >= 0 && payloadLength < length && \
-			  offset + length + extraLength <= sessionInfoPtr->sendBufSize );
+	REQUIRES( offset >= 0 && offset < MAX_BUFFER_SIZE );
+	REQUIRES( length >= SSH2_HEADER_SIZE && length < MAX_BUFFER_SIZE );
+	REQUIRES( payloadLength >= 0 && payloadLength < length );
+	REQUIRES( extraLength >= 0 && extraLength <= CRYPT_MAX_HASHSIZE );
+	REQUIRES( offset + length + extraLength <= sessionInfoPtr->sendBufSize );
 
 	/* Evaluate the number of padding bytes that we need to add to a packet
 	   to make it a multiple of the cipher block size long, with a minimum
@@ -228,7 +230,7 @@ int wrapPacketSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 		writeUint32( stream, 1 + payloadLength + padLength );
 		status = sputc( stream, padLength );
 		if( cryptStatusOK( status ) )
-			status = sSkip( stream, payloadLength );
+			status = sSkip( stream, payloadLength, SSKIP_MAX );
 		ENSURES( cryptStatusOK( status ) );
 		}
 	else
@@ -273,7 +275,7 @@ int wrapPacketSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 			status = swrite( &trailerStream, padding, padLength );
 			sMemDisconnect( &trailerStream );
 			if( cryptStatusOK( status ) )
-				status = sSkip( stream, padLength );
+				status = sSkip( stream, padLength, MAX_INTLENGTH_SHORT );
 			}
 		ENSURES( cryptStatusOK( status ) );
 
@@ -287,7 +289,8 @@ int wrapPacketSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 							   length - LENGTH_SIZE );
 		if( cryptStatusError( status ) )
 			return( status );
-		status = sSkip( stream, sessionInfoPtr->authBlocksize );
+		status = sSkip( stream, sessionInfoPtr->authBlocksize, 
+						MAX_INTLENGTH_SHORT );
 		ENSURES( cryptStatusOK( status ) );
 
 		/* Encrypt the entire packet except for the MAC */
@@ -347,6 +350,8 @@ int sendPacketSSH2( INOUT SESSION_INFO *sessionInfoPtr,
 							  &sessionInfoPtr->errorInfo );
 		return( status );
 		}
+	DEBUG_DUMP_SSH( dataPtr, length, FALSE );
+
 	return( CRYPT_OK );	/* swrite() returns a byte count */
 	}
 #endif /* USE_SSH */

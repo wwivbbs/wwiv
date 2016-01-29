@@ -66,6 +66,8 @@
   #include "crypt/rc2locl.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_RC2
+
 /* RC2 as implemented frm a posting from
  * Newsgroups: sci.crypt
  * Sender: pgut01@cs.auckland.ac.nz (Peter Gutmann)
@@ -89,4 +91,4 @@ void RC2_ecb_encrypt(const unsigned char *in, unsigned char *out, RC2_KEY *ks,
 	l=d[1]; l2c(l,out);
 	l=d[0]=d[1]=0;
 	}
-
+#endif /* USE_RC2 */

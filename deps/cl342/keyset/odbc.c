@@ -8,12 +8,12 @@
 #include <stdio.h>		/* For sprintf() */
 #if defined( INC_ALL )
   #include "crypt.h"
-  #include "keyset.h"
   #include "dbms.h"
+  #include "keyset.h"
 #else
   #include "crypt.h"
-  #include "keyset/keyset.h"
   #include "keyset/dbms.h"
+  #include "keyset/keyset.h"
 #endif /* Compiler-specific includes */
 
 /* ODBC functions can return either SQL_SUCCESS or SQL_SUCCESS_WITH_INFO to
@@ -90,10 +90,10 @@ typedef struct {
 
 static INSTANCE_HANDLE hODBC = NULL_INSTANCE;
 
-typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLALLOCHANDLE ) \
-					( SQLSMALLINT HandleType, IN SQLHANDLE InputHandle, 
+typedef CHECK_RETVAL SQLRETURN ( SQL_API *SQLALLOCHANDLE ) \
+					( SQLSMALLINT HandleType, IN_OPT SQLHANDLE InputHandle, 
 					OUT_PTR SQLHANDLE *OutputHandlePtr );
-typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLBINDPARAMETER ) \
+typedef CHECK_RETVAL SQLRETURN ( SQL_API *SQLBINDPARAMETER ) \
 					( IN SQLHSTMT StatementHandle, 
 					SQLUSMALLINT ParameterNumber, SQLSMALLINT InputOutputType,
 					SQLSMALLINT ValueType, SQLSMALLINT ParameterType,
@@ -102,7 +102,7 @@ typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLBINDPARAMETER ) \
 					SQLINTEGER BufferLength, 
 					INOUT_OPT SQLINTEGER *StrLen_or_IndPtr );
 typedef SQLRETURN ( SQL_API *SQLCLOSECURSOR )( IN SQLHSTMT StatementHandle );
-typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLCONNECT ) \
+typedef CHECK_RETVAL SQLRETURN ( SQL_API *SQLCONNECT ) \
 					( IN SQLHDBC ConnectionHandle,
 					IN_BUFFER( NameLength1 ) SQLCHAR *ServerName, 
 					SQLSMALLINT NameLength1,
@@ -113,23 +113,23 @@ typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLCONNECT ) \
 typedef SQLRETURN ( SQL_API *SQLDISCONNECT )( IN SQLHDBC ConnectionHandle );
 typedef SQLRETURN ( SQL_API *SQLENDTRAN )( SQLSMALLINT HandleType,
 					IN SQLHANDLE Handle, SQLSMALLINT CompletionType );
-typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLEXECDIRECT ) \
+typedef CHECK_RETVAL SQLRETURN ( SQL_API *SQLEXECDIRECT ) \
 					( SQLHSTMT StatementHandle,
 					IN_BUFFER( TextLength ) SQLCHAR *StatementText, 
 					SQLINTEGER TextLength );
-typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLEXECUTE ) \
+typedef CHECK_RETVAL SQLRETURN ( SQL_API *SQLEXECUTE ) \
 					( IN SQLHSTMT StatementHandle );
-typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLFETCH ) \
+typedef CHECK_RETVAL SQLRETURN ( SQL_API *SQLFETCH ) \
 					( IN SQLHSTMT StatementHandle );
 typedef SQLRETURN ( SQL_API *SQLFREEHANDLE )( SQLSMALLINT HandleType,
 					IN SQLHANDLE Handle );
-typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLGETDATA ) \
+typedef CHECK_RETVAL SQLRETURN ( SQL_API *SQLGETDATA ) \
 					( SQLHSTMT StatementHandle, SQLUSMALLINT ColumnNumber, 
 					SQLSMALLINT TargetType, 
 					OUT_BUFFER( BufferLength, *StrLen_or_IndPtr ) \
 						SQLPOINTER TargetValuePtr, 
 					SQLINTEGER BufferLength, SQLINTEGER *StrLen_or_IndPtr );
-typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLGETDIAGREC ) \
+typedef CHECK_RETVAL SQLRETURN ( SQL_API *SQLGETDIAGREC ) \
 					( SQLSMALLINT HandleType,
 					IN SQLHANDLE Handle, SQLSMALLINT RecNumber,
 					OUT_BUFFER_FIXED( SQL_SQLSTATE_SIZE ) SQLCHAR *Sqlstate, 
@@ -137,36 +137,36 @@ typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLGETDIAGREC ) \
 					OUT_BUFFER( BufferLength, *TextLengthPtr ) \
 						SQLCHAR *MessageText, 
 					SQLSMALLINT BufferLength, SQLSMALLINT *TextLengthPtr );
-typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLGETINFO ) \
+typedef CHECK_RETVAL SQLRETURN ( SQL_API *SQLGETINFO ) \
 					( IN SQLHDBC ConnectionHandle,
 					SQLUSMALLINT InfoType, 
 					OUT_BUFFER( BufferLength, *StringLengthPtr ) \
 						SQLPOINTER InfoValuePtr, 
 					SQLSMALLINT BufferLength, SQLSMALLINT *StringLengthPtr );
-typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLGETSTMTATTR ) \
+typedef CHECK_RETVAL SQLRETURN ( SQL_API *SQLGETSTMTATTR ) \
 					( IN SQLHSTMT StatementHandle,
 					SQLINTEGER Attribute, OUT SQLPOINTER ValuePtr,
 					SQLINTEGER BufferLength, 
 					STDC_UNUSED SQLINTEGER *StringLengthPtr );
-typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLGETTYPEINFO ) \
+typedef CHECK_RETVAL SQLRETURN ( SQL_API *SQLGETTYPEINFO ) \
 					( IN SQLHSTMT StatementHandle,
 					SQLSMALLINT DataType );
-typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLPREPARE ) \
+typedef CHECK_RETVAL SQLRETURN ( SQL_API *SQLPREPARE ) \
 					( IN SQLHSTMT StatementHandle,
 					IN_BUFFER( TextLength ) SQLCHAR *StatementText, 
 					SQLINTEGER TextLength );
-typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLROWCOUNT_FN ) \
+typedef CHECK_RETVAL SQLRETURN ( SQL_API *SQLROWCOUNT_FN ) \
 					( IN SQLHSTMT StatementHandle,
 					OUT SQLINTEGER *RowCountPtr );
-typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLSETCONNECTATTR ) \
+typedef CHECK_RETVAL SQLRETURN ( SQL_API *SQLSETCONNECTATTR ) \
 					( IN SQLHDBC ConnectionHandle,
 					SQLINTEGER Attribute, SQLPOINTER ValuePtr,
 					SQLINTEGER StringLength );
-typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLSETENVATTR ) \
+typedef CHECK_RETVAL SQLRETURN ( SQL_API *SQLSETENVATTR ) \
 					( IN SQLHENV EnvironmentHandle,
 					SQLINTEGER Attribute, SQLPOINTER ValuePtr,
 					SQLINTEGER StringLength );
-typedef CHECK_RETVAL_FNPTR SQLRETURN ( SQL_API *SQLSETSTMTATTR ) \
+typedef CHECK_RETVAL SQLRETURN ( SQL_API *SQLSETSTMTATTR ) \
 					( IN SQLHSTMT StatementHandle,
 					SQLINTEGER Attribute, SQLPOINTER ValuePtr,
 					SQLINTEGER StringLength );
@@ -260,15 +260,15 @@ int dbxInitODBC( void )
 	if( hODBC < HINSTANCE_ERROR )
 		{
 		hODBC = NULL_INSTANCE;
-		return( CRYPT_ERROR );
+		return( CRYPT_ERROR_NOTAVAIL );
 		}
 #elif defined( __UNIX__ ) && !defined( __APPLE__ )
 	if( ( hODBC = DynamicLoad( ODBC_LIBNAME ) ) == NULL_INSTANCE && \
 		( hODBC = DynamicLoad( ODBC_ALT_LIBNAME ) ) == NULL_INSTANCE )
-		return( CRYPT_ERROR );
+		return( CRYPT_ERROR_NOTAVAIL );
 #else
 	if( ( hODBC = DynamicLoad( ODBC_LIBNAME ) ) == NULL_INSTANCE )
-		return( CRYPT_ERROR );
+		return( CRYPT_ERROR_NOTAVAIL );
 #endif /* __WIN32__ */
 
 	/* Now get pointers to the functions */
@@ -308,7 +308,7 @@ int dbxInitODBC( void )
 		/* Free the library reference and reset the handle */
 		DynamicUnload( hODBC );
 		hODBC = NULL_INSTANCE;
-		return( CRYPT_ERROR );
+		return( CRYPT_ERROR_NOTAVAIL );
 		}
 
 	return( CRYPT_OK );
@@ -352,8 +352,8 @@ static int getErrorInfo( INOUT DBMS_STATE_INFO *dbmsInfo,
 #ifdef USE_ERRMSGS
 	ERROR_INFO *errorInfo = &dbmsInfo->errorInfo;
 #endif /* USE_ERRMSGS */
-	char szSqlState[ SQL_SQLSTATE_SIZE + 8 ];
-	char errorString[ MAX_ERRMSG_SIZE + 8 ];
+	SQLCHAR szSqlState[ SQL_SQLSTATE_SIZE + 8 ];
+	SQLCHAR errorString[ MAX_ERRMSG_SIZE + 1 + 8 ];
 	SQLHANDLE handle;
 	SQLINTEGER dwNativeError = 0;
 	SQLSMALLINT handleType, errorStringLength;
@@ -422,6 +422,11 @@ static int getErrorInfo( INOUT DBMS_STATE_INFO *dbmsInfo,
 	   with only szSqlState set, in which case we clear the error string */
 	if( errorStringLength > 0 )
 		{
+		/* Since the error string has come from the database source we 
+		   sanitise it before returning it to the caller.  The +1 is for
+		   the '\0' that sanitiseString() adds to the string */
+		sanitiseString( errorString, errorStringLength + 1, 
+						errorStringLength );
 		setErrorString( errorInfo, errorString, errorStringLength );
 		}
 	else
@@ -491,8 +496,8 @@ void debugDiagOdbcError( IN_STRING const char *functionName,
 		  ( errorLevel != SQL_ERRLVL_STMT && \
 			hStmt == SQL_NULL_HSTMT ) );
 
-	( void * ) getErrorInfo( dbmsInfo, errorLevel, hStmt, 
-							 CRYPT_ERROR_INTERNAL );
+	( void ) getErrorInfo( dbmsInfo, errorLevel, hStmt, 
+						   CRYPT_ERROR_INTERNAL );
 	DEBUG_DIAG(( "%s reports: %s.\n", functionName,
 				 getErrorInfoString( &dbmsInfo->errorInfo ) ));
 	}
@@ -505,10 +510,11 @@ void debugDiagOdbcError( IN_STRING const char *functionName,
    specifically talking Access here) */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 6 ) ) \
-static int rewriteString( OUT_BUFFER( stringMaxLength, \
-									  *stringLength ) char *string, 
+static int rewriteString( INOUT_BUFFER( stringMaxLength, \
+										*stringLength ) char *string, 
 						  IN_LENGTH_SHORT const int stringMaxLength, 
-						  OUT_LENGTH_SHORT_Z int *stringLength, 
+						  OUT_LENGTH_BOUNDED_Z( stringMaxLength ) \
+								int *stringLength, 
 						  IN_LENGTH_SHORT const int subStringLength, 
 						  IN_LENGTH_SHORT const int origStringLength, 
 						  IN_BUFFER( newSubStringLength ) \
@@ -562,7 +568,8 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4, 5 ) ) \
 static int convertQuery( INOUT DBMS_STATE_INFO *dbmsInfo, 
 						 OUT_BUFFER( queryMaxLen, *queryLength ) char *query,
 						 IN_LENGTH_SHORT_MIN( 16 ) const int queryMaxLen, 
-						 OUT_LENGTH_SHORT_Z int *queryLength,
+						 OUT_LENGTH_BOUNDED_Z( queryMaxLen ) \
+								int *queryLength,
 						 IN_BUFFER( commandLength ) const char *command,
 						 IN_LENGTH_SHORT const int commandLength )
 	{
@@ -702,7 +709,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 3, 4 ) ) \
 static int bindParameters( const SQLHSTMT hStmt, 
 						   IN_ARRAY_C( BOUND_DATA_MAXITEMS ) \
 							const BOUND_DATA *boundData,
-						   INOUT BOUND_DATA_STATE *boundDataState,
+						   OUT BOUND_DATA_STATE *boundDataState,
 						   INOUT DBMS_STATE_INFO *dbmsInfo )
 	{
 	SQLUSMALLINT paramNo = 1;
@@ -712,6 +719,8 @@ static int bindParameters( const SQLHSTMT hStmt,
 					   sizeof( BOUND_DATA ) * BOUND_DATA_MAXITEMS ) );
 	assert( isWritePtr( boundDataState, sizeof( BOUND_DATA_STATE ) ) );
 	assert( isWritePtr( dbmsInfo, sizeof( DBMS_STATE_INFO ) ) );
+
+	memset( boundDataState, 0, sizeof( BOUND_DATA_STATE ) );
 
 	/* Bind in any necessary parameters to the hStmt */
 	for( i = 0; i < BOUND_DATA_MAXITEMS && \
@@ -763,19 +772,18 @@ static int bindParameters( const SQLHSTMT hStmt,
 		assert( ( boundDataPtr->dataLength == 0 ) || \
 				isReadPtr( boundDataPtr->data, boundDataPtr->dataLength ) );
 
+		REQUIRES( boundDataPtr != NULL );
 		REQUIRES( boundDataPtr->type == BOUND_DATA_STRING || \
 				  boundDataPtr->type == BOUND_DATA_BLOB );
 		REQUIRES( dbmsInfo->hasBinaryBlobs || \
 				  ( !dbmsInfo->hasBinaryBlobs && \
 					boundDataPtr->type == BOUND_DATA_STRING ) );
-		REQUIRES( ( boundDataPtr == NULL ) || \
-				  ( boundDataPtr != NULL && \
-					( boundDataPtr->data == NULL && \
-					  boundDataPtr->dataLength == 0 ) || \
-					( boundDataPtr->data != NULL && \
-					  boundDataPtr->dataLength > 0 && 
-					  boundDataPtr->dataLength < MAX_INTLENGTH_SHORT ) ) );
-					/* Bound data of { NULL, 0 } denotes a null parameter */
+		REQUIRES( ( boundDataPtr->data == NULL && \
+					boundDataPtr->dataLength == 0 ) || \
+				  ( boundDataPtr->data != NULL && \
+					boundDataPtr->dataLength > 0 && 
+					boundDataPtr->dataLength < MAX_INTLENGTH_SHORT ) );
+				  /* Bound data of { NULL, 0 } denotes a null parameter */
 
 		/* Null parameters have to be handled specially.  Note that we have 
 		   to set the ColumnSize parameter (no.6) to a nonzero value (even 
@@ -886,7 +894,8 @@ static int getBlobInfo( INOUT DBMS_STATE_INFO *dbmsInfo,
 				 "          to force the use of 64-bit ODBC data types (and "
 				 "report this issue\n          to the ODBC driver vendor so "
 				 "that they can sync the driver and\n          headers)."
-				 "\n\n", ( long ) dummy, sizeof( SQLINTEGER ) );
+				 "\n\n", ( long ) dummy, ( int ) sizeof( SQLINTEGER ) );
+				 /* Cast is nec. because sizeof() can be 32 or 64 bits */
 		}
 #endif /* __UNIX__ */
 	*maxFieldSize = count;
@@ -1349,15 +1358,23 @@ static int openDatabase( INOUT DBMS_STATE_INFO *dbmsInfo,
 		}
 
 	/* Once everything is set up the way that we want it, try to connect to 
-	   a data source and allocate a statement handle */
+	   a data source and allocate a statement handle.  If there's an error
+	   we dump the information to the error log, since this is a create-
+	   object function and so extended error information can't be read since
+	   the object won't be created */
 	sqlStatus = SQLConnect( dbmsInfo->hDbc,
-							nameInfo.name, ( SQLSMALLINT ) nameInfo.nameLen,
-							nameInfo.user, ( SQLSMALLINT ) nameInfo.userLen,
-							nameInfo.password, ( SQLSMALLINT ) nameInfo.passwordLen );
+							( SQLCHAR * ) nameInfo.name, 
+							( SQLSMALLINT ) nameInfo.nameLen,
+							( SQLCHAR * ) nameInfo.user, 
+							( SQLSMALLINT ) nameInfo.userLen,
+							( SQLCHAR * ) nameInfo.password, 
+							( SQLSMALLINT ) nameInfo.passwordLen );
 	if( !sqlStatusOK( sqlStatus ) )
 		{
 		status = getErrorInfo( dbmsInfo, SQL_ERRLVL_DBC, SQL_NULL_HSTMT,
 							   CRYPT_ERROR_OPEN );
+		DEBUG_DIAG(( "SQLConnect returned error %d, status:\n  '%s'.", 
+					 sqlStatus, dbmsInfo->errorInfo.errorString ));
 		closeDatabase( dbmsInfo );
 		return( status );
 		}
@@ -1365,12 +1382,16 @@ static int openDatabase( INOUT DBMS_STATE_INFO *dbmsInfo,
 
 	/* Now that the connection is open, allocate the statement handles */
 	for( i = 0; i < NO_CACHED_QUERIES && sqlStatusOK( sqlStatus ); i++ )
+		{
 		sqlStatus = SQLAllocHandle( SQL_HANDLE_STMT, dbmsInfo->hDbc,
 									&dbmsInfo->hStmt[ i ] );
+		}
 	if( !sqlStatusOK( sqlStatus ) )
 		{
 		status = getErrorInfo( dbmsInfo, SQL_ERRLVL_DBC, SQL_NULL_HSTMT,
 							   CRYPT_ERROR_OPEN );
+		DEBUG_DIAG(( "SQLAllocHandle returned error %d, status:\n  '%s'.", 
+					 sqlStatus, dbmsInfo->errorInfo.errorString ));
 		closeDatabase( dbmsInfo );
 		return( status );
 		}
@@ -1432,12 +1453,12 @@ static int openDatabase( INOUT DBMS_STATE_INFO *dbmsInfo,
 
 /* Fetch data from a query */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 4, 6 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 6 ) ) \
 static int fetchData( const SQLHSTMT hStmt, 
-					  OUT_BUFFER( dataMaxLength, *dataLength ) \
+					  OUT_BUFFER_OPT( dataMaxLength, *dataLength ) \
 						char *data,
-					  IN_LENGTH_SHORT const int dataMaxLength, 
-					  OUT_LENGTH_SHORT_Z int *dataLength, 
+					  IN_LENGTH_SHORT_Z const int dataMaxLength, 
+					  OUT_OPT_LENGTH_SHORT_Z int *dataLength, 
 					  IN_ENUM( DBMS_QUERY ) const DBMS_QUERY_TYPE queryType,
 					  INOUT DBMS_STATE_INFO *dbmsInfo )
 	{
@@ -1521,7 +1542,8 @@ static int performQuery( INOUT DBMS_STATE_INFO *dbmsInfo,
 						 OUT_BUFFER_OPT( dataMaxLength, *dataLength ) \
 							void *data, 
 						 IN_LENGTH_SHORT_Z const int dataMaxLength, 
-						 OUT_LENGTH_SHORT_Z int *dataLength, 
+						 OUT_LENGTH_BOUNDED_Z( dataMaxLength ) \
+							int *dataLength, 
 						 IN_ARRAY_OPT_C( BOUND_DATA_MAXITEMS ) \
 							TYPECAST( BOUND_DATA ) const void *boundData,
 						 IN_ENUM_OPT( DBMS_CACHEDQUERY ) \
@@ -1585,7 +1607,8 @@ static int performQuery( INOUT DBMS_STATE_INFO *dbmsInfo,
 								   &queryLength, command, commandLength );
 			if( cryptStatusError( status ) )
 				return( status );
-			sqlStatus = SQLPrepare( hStmt, query, queryLength );
+			sqlStatus = SQLPrepare( hStmt, ( SQLCHAR * ) query, 
+									queryLength );
 			if( !sqlStatusOK( sqlStatus ) )
 				return( getErrorInfo( dbmsInfo, SQL_ERRLVL_STMT, hStmt,
 									  CRYPT_ERROR_READ ) );
@@ -1752,7 +1775,7 @@ static int performUpdate( INOUT DBMS_STATE_INFO *dbmsInfo,
 						   command, commandLength );
 	if( cryptStatusError( status ) )
 		return( status );
-	sqlStatus = SQLExecDirect( hStmt, query, queryLength );
+	sqlStatus = SQLExecDirect( hStmt, ( SQLCHAR * ) query, queryLength );
 	if( !sqlStatusOK( sqlStatus ) )
 		{
 		/* If we were supposed to begin a transaction but it failed, reset

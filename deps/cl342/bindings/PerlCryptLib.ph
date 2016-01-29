@@ -2,7 +2,7 @@
 # *****************************************************************************
 # *                                                                           *
 # *                        cryptlib External API Interface                    *
-# *                       Copyright Peter Gutmann 1997-2012                   *
+# *                       Copyright Peter Gutmann 1997-2015                   *
 # *                                                                           *
 # *                 adapted for Perl Version 5.x  by Alvaro Livraghi          *
 # *****************************************************************************
@@ -12,7 +12,7 @@
 #
 # This file has been created automatically by a perl script from the file:
 #
-# "cryptlib.h" dated Wed Aug 29 15:34:08 2012, filesize = 97645.
+# "cryptlib.h" dated Mon Dec  7 02:33:30 2015, filesize = 98078.
 #
 # Please check twice that the file matches the version of cryptlib.h
 # in your cryptlib source! If this is not the right version, try to download an
@@ -25,7 +25,7 @@
 # -----------------------------------------------------------------------------
 #
 
-	sub CRYPTLIB_VERSION { 3410 }
+	sub CRYPTLIB_VERSION { 3430 }
 
 #  Additional defines for compilers that provide extended function and 
 #  function-parameter checking 
@@ -54,16 +54,16 @@
 	sub CRYPT_ALGO_IDEA { 3 }
 	# CAST-128 (only used for OpenPGP)
 	sub CRYPT_ALGO_CAST { 4 }
-	# RC2 (disabled by default)
+	# RC2 (disabled by default, used for PKCS #12)
 	sub CRYPT_ALGO_RC2 { 5 }
-	# RC4
+	# RC4 (insecure, deprecated)
 	sub CRYPT_ALGO_RC4 { 6 }
-	# RC5
-	sub CRYPT_ALGO_RC5 { 7 }
+	# Formerly RC5
+	sub CRYPT_ALGO_RESERVED1 { 7 }
 	# AES
 	sub CRYPT_ALGO_AES { 8 }
-	# Blowfish
-	sub CRYPT_ALGO_BLOWFISH { 9 }
+	# Formerly Blowfish
+	sub CRYPT_ALGO_RESERVED2 { 9 }
 
 	# Public-key encryption
 	# Diffie-Hellman
@@ -75,7 +75,7 @@
 	# ElGamal
 	sub CRYPT_ALGO_ELGAMAL { 103 }
 	# Formerly KEA
-	sub CRYPT_ALGO_RESERVED1 { 104 }
+	sub CRYPT_ALGO_RESERVED3 { 104 }
 	# ECDSA
 	sub CRYPT_ALGO_ECDSA { 105 }
 	# ECDH
@@ -83,15 +83,15 @@
 
 	# Hash algorithms
 	# Formerly MD2
-	sub CRYPT_ALGO_RESERVED2 { 200 }
+	sub CRYPT_ALGO_RESERVED4 { 200 }
 	# Formerly MD4
-	sub CRYPT_ALGO_RESERVED3 { 201 }
-	# MD5
+	sub CRYPT_ALGO_RESERVED5 { 201 }
+	# MD5 (only used for TLS 1.0/1.1)
 	sub CRYPT_ALGO_MD5 { 202 }
 	# SHA/SHA1
 	sub CRYPT_ALGO_SHA1 { 203 }
-	# RIPE-MD 160
-	sub CRYPT_ALGO_RIPEMD160 { 204 }
+	# Formerly RIPE-MD 160
+	sub CRYPT_ALGO_RESERVED6 { 204 }
 	# SHA-256
 	sub CRYPT_ALGO_SHA2 { 205 }
 	# Alternate name
@@ -100,12 +100,12 @@
 	sub CRYPT_ALGO_SHAng { 206 }
 
 	# MAC's
-	# HMAC-MD5
-	sub CRYPT_ALGO_HMAC_MD5 { 300 }
+	# Formerly HMAC-MD5
+	sub CRYPT_ALGO_RESREVED_7 { 300 }
 	# HMAC-SHA
 	sub CRYPT_ALGO_HMAC_SHA1 { 301 }
-	# HMAC-RIPEMD-160
-	sub CRYPT_ALGO_HMAC_RIPEMD160 { 302 }
+	# Formerly HMAC-RIPEMD-160
+	sub CRYPT_ALGO_RESERVED8 { 302 }
 	# HMAC-SHA2
 	sub CRYPT_ALGO_HMAC_SHA2 { 303 }
 	# HMAC-future-SHA-nextgen
@@ -154,12 +154,10 @@
 	sub CRYPT_MODE_CBC { 2 }
 	# CFB
 	sub CRYPT_MODE_CFB { 3 }
-	# OFB
-	sub CRYPT_MODE_OFB { 4 }
 	# GCM
-	sub CRYPT_MODE_GCM { 5 }
+	sub CRYPT_MODE_GCM { 4 }
 	# Last possible crypt mode value
-	sub CRYPT_MODE_LAST { 6 }
+	sub CRYPT_MODE_LAST { 5 }
 
 
 ##### END ENUM CRYPT_MODE_TYPE
@@ -286,8 +284,12 @@
 	sub CRYPT_SESSION_SSH_SERVER { 2 }
 	# SSL/TLS
 	sub CRYPT_SESSION_SSL { 3 }
+
+	sub CRYPT_SESSION_TLS { 3 }
 	# SSL/TLS server
 	sub CRYPT_SESSION_SSL_SERVER { 4 }
+
+	sub CRYPT_SESSION_TLS_SERVER { 4 }
 	# RTCS
 	sub CRYPT_SESSION_RTCS { 5 }
 	# RTCS server
@@ -402,7 +404,7 @@
 	# Internal data buffer size
 	sub CRYPT_ATTRIBUTE_BUFFERSIZE { 16 }
 
-	# User internally
+	# Used internally
 
 	sub CRYPT_GENERIC_LAST { 17 }
 	sub CRYPT_OPTION_FIRST { 100 }
@@ -596,71 +598,67 @@
 	# Certificate object type
 	sub CRYPT_CERTINFO_CERTTYPE { 2004 }
 	# Certificate fingerprints
-	sub CRYPT_CERTINFO_FINGERPRINT { 2005 }
+	sub CRYPT_CERTINFO_FINGERPRINT_SHA1 { 2005 }
 
-	sub CRYPT_CERTINFO_FINGERPRINT_MD5 { 2005 }
+	sub CRYPT_CERTINFO_FINGERPRINT_SHA2 { 2006 }
 
-	sub CRYPT_CERTINFO_FINGERPRINT_SHA1 { 2006 }
-
-	sub CRYPT_CERTINFO_FINGERPRINT_SHA { 2006 }
-
-	sub CRYPT_CERTINFO_FINGERPRINT_SHA2 { 2007 }
-
-	sub CRYPT_CERTINFO_FINGERPRINT_SHAng { 2008 }
+	sub CRYPT_CERTINFO_FINGERPRINT_SHAng { 2007 }
 	# Cursor mgt: Rel.pos in chain/CRL/OCSP
-	sub CRYPT_CERTINFO_CURRENT_CERTIFICATE { 2009 }
+	sub CRYPT_CERTINFO_CURRENT_CERTIFICATE { 2008 }
 	# Usage that cert is trusted for
-	sub CRYPT_CERTINFO_TRUSTED_USAGE { 2010 }
+	sub CRYPT_CERTINFO_TRUSTED_USAGE { 2009 }
 	# Whether cert is implicitly trusted
-	sub CRYPT_CERTINFO_TRUSTED_IMPLICIT { 2011 }
+	sub CRYPT_CERTINFO_TRUSTED_IMPLICIT { 2010 }
 	# Amount of detail to include in sigs.
-	sub CRYPT_CERTINFO_SIGNATURELEVEL { 2012 }
+	sub CRYPT_CERTINFO_SIGNATURELEVEL { 2011 }
 
 	# General certificate object information
 	# Cert.format version
-	sub CRYPT_CERTINFO_VERSION { 2013 }
+	sub CRYPT_CERTINFO_VERSION { 2012 }
 	# Serial number
-	sub CRYPT_CERTINFO_SERIALNUMBER { 2014 }
+	sub CRYPT_CERTINFO_SERIALNUMBER { 2013 }
 	# Public key
-	sub CRYPT_CERTINFO_SUBJECTPUBLICKEYINFO { 2015 }
+	sub CRYPT_CERTINFO_SUBJECTPUBLICKEYINFO { 2014 }
 	# User certificate
-	sub CRYPT_CERTINFO_CERTIFICATE { 2016 }
+	sub CRYPT_CERTINFO_CERTIFICATE { 2015 }
 
-	sub CRYPT_CERTINFO_USERCERTIFICATE { 2016 }
+	sub CRYPT_CERTINFO_USERCERTIFICATE { 2015 }
 	# CA certificate
-	sub CRYPT_CERTINFO_CACERTIFICATE { 2017 }
+	sub CRYPT_CERTINFO_CACERTIFICATE { 2016 }
 	# Issuer DN
-	sub CRYPT_CERTINFO_ISSUERNAME { 2018 }
+	sub CRYPT_CERTINFO_ISSUERNAME { 2017 }
 	# Cert valid-from time
-	sub CRYPT_CERTINFO_VALIDFROM { 2019 }
+	sub CRYPT_CERTINFO_VALIDFROM { 2018 }
 	# Cert valid-to time
-	sub CRYPT_CERTINFO_VALIDTO { 2020 }
+	sub CRYPT_CERTINFO_VALIDTO { 2019 }
 	# Subject DN
-	sub CRYPT_CERTINFO_SUBJECTNAME { 2021 }
+	sub CRYPT_CERTINFO_SUBJECTNAME { 2020 }
 	# Issuer unique ID
-	sub CRYPT_CERTINFO_ISSUERUNIQUEID { 2022 }
+	sub CRYPT_CERTINFO_ISSUERUNIQUEID { 2021 }
 	# Subject unique ID
-	sub CRYPT_CERTINFO_SUBJECTUNIQUEID { 2023 }
+	sub CRYPT_CERTINFO_SUBJECTUNIQUEID { 2022 }
 	# Cert.request (DN + public key)
-	sub CRYPT_CERTINFO_CERTREQUEST { 2024 }
+	sub CRYPT_CERTINFO_CERTREQUEST { 2023 }
 	# CRL/OCSP current-update time
-	sub CRYPT_CERTINFO_THISUPDATE { 2025 }
+	sub CRYPT_CERTINFO_THISUPDATE { 2024 }
 	# CRL/OCSP next-update time
-	sub CRYPT_CERTINFO_NEXTUPDATE { 2026 }
+	sub CRYPT_CERTINFO_NEXTUPDATE { 2025 }
 	# CRL/OCSP cert-revocation time
-	sub CRYPT_CERTINFO_REVOCATIONDATE { 2027 }
+	sub CRYPT_CERTINFO_REVOCATIONDATE { 2026 }
 	# OCSP revocation status
-	sub CRYPT_CERTINFO_REVOCATIONSTATUS { 2028 }
+	sub CRYPT_CERTINFO_REVOCATIONSTATUS { 2027 }
 	# RTCS certificate status
-	sub CRYPT_CERTINFO_CERTSTATUS { 2029 }
+	sub CRYPT_CERTINFO_CERTSTATUS { 2028 }
 	# Currently selected DN in string form
-	sub CRYPT_CERTINFO_DN { 2030 }
+	sub CRYPT_CERTINFO_DN { 2029 }
 	# PKI user ID
-	sub CRYPT_CERTINFO_PKIUSER_ID { 2031 }
+	sub CRYPT_CERTINFO_PKIUSER_ID { 2030 }
 	# PKI user issue password
-	sub CRYPT_CERTINFO_PKIUSER_ISSUEPASSWORD { 2032 }
+	sub CRYPT_CERTINFO_PKIUSER_ISSUEPASSWORD { 2031 }
 	# PKI user revocation password
-	sub CRYPT_CERTINFO_PKIUSER_REVPASSWORD { 2033 }
+	sub CRYPT_CERTINFO_PKIUSER_REVPASSWORD { 2032 }
+	# PKI user is an RA
+	sub CRYPT_CERTINFO_PKIUSER_RA { 2033 }
 
 	# X.520 Distinguished Name components.  This is a composite field, the
 	# DN to be manipulated is selected through the addition of a
@@ -1260,163 +1258,153 @@
 	sub CRYPT_CERTINFO_CMS_SMIMECAP_AES { 2507 }
 	# CAST-128 encryption
 	sub CRYPT_CERTINFO_CMS_SMIMECAP_CAST128 { 2508 }
-	# IDEA encryption
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_IDEA { 2509 }
-	# RC2 encryption (w.128 key)
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_RC2 { 2510 }
-	# RC5 encryption (w.128 key)
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_RC5 { 2511 }
-	# Skipjack encryption
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_SKIPJACK { 2512 }
-	# DES encryption
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_DES { 2513 }
 	# SHA2-ng hash
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_SHAng { 2514 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_SHAng { 2509 }
 	# SHA2-256 hash
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_SHA2 { 2515 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_SHA2 { 2510 }
 	# SHA1 hash
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_SHA1 { 2516 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_SHA1 { 2511 }
 	# HMAC-SHA2-ng MAC
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_HMAC_SHAng { 2517 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_HMAC_SHAng { 2512 }
 	# HMAC-SHA2-256 MAC
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_HMAC_SHA2 { 2518 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_HMAC_SHA2 { 2513 }
 	# HMAC-SHA1 MAC
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_HMAC_SHA1 { 2519 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_HMAC_SHA1 { 2514 }
 	# AuthEnc w.256-bit key
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_AUTHENC256 { 2520 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_AUTHENC256 { 2515 }
 	# AuthEnc w.128-bit key
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_AUTHENC128 { 2521 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_AUTHENC128 { 2516 }
 	# RSA with SHA-ng signing
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_RSA_SHAng { 2522 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_RSA_SHAng { 2517 }
 	# RSA with SHA2-256 signing
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_RSA_SHA2 { 2523 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_RSA_SHA2 { 2518 }
 	# RSA with SHA1 signing
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_RSA_SHA1 { 2524 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_RSA_SHA1 { 2519 }
 	# DSA with SHA-1 signing
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_DSA_SHA1 { 2525 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_DSA_SHA1 { 2520 }
 	# ECDSA with SHA-ng signing
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_ECDSA_SHAng { 2526 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_ECDSA_SHAng { 2521 }
 	# ECDSA with SHA2-256 signing
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_ECDSA_SHA2 { 2527 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_ECDSA_SHA2 { 2522 }
 	# ECDSA with SHA-1 signing
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_ECDSA_SHA1 { 2528 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_ECDSA_SHA1 { 2523 }
 	# preferSignedData
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_PREFERSIGNEDDATA { 2529 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_PREFERSIGNEDDATA { 2524 }
 	# canNotDecryptAny
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_CANNOTDECRYPTANY { 2530 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_CANNOTDECRYPTANY { 2525 }
 	# preferBinaryInside
-	sub CRYPT_CERTINFO_CMS_SMIMECAP_PREFERBINARYINSIDE { 2531 }
+	sub CRYPT_CERTINFO_CMS_SMIMECAP_PREFERBINARYINSIDE { 2526 }
 
 	# 1 2 840 113549 1 9 16 2 1 receiptRequest
 
-	sub CRYPT_CERTINFO_CMS_RECEIPTREQUEST { 2532 }
+	sub CRYPT_CERTINFO_CMS_RECEIPTREQUEST { 2527 }
 	# contentIdentifier
-	sub CRYPT_CERTINFO_CMS_RECEIPT_CONTENTIDENTIFIER { 2533 }
+	sub CRYPT_CERTINFO_CMS_RECEIPT_CONTENTIDENTIFIER { 2528 }
 	# receiptsFrom
-	sub CRYPT_CERTINFO_CMS_RECEIPT_FROM { 2534 }
+	sub CRYPT_CERTINFO_CMS_RECEIPT_FROM { 2529 }
 	# receiptsTo
-	sub CRYPT_CERTINFO_CMS_RECEIPT_TO { 2535 }
+	sub CRYPT_CERTINFO_CMS_RECEIPT_TO { 2530 }
 
 	# 1 2 840 113549 1 9 16 2 2 essSecurityLabel
 
-	sub CRYPT_CERTINFO_CMS_SECURITYLABEL { 2536 }
+	sub CRYPT_CERTINFO_CMS_SECURITYLABEL { 2531 }
 	# securityPolicyIdentifier
-	sub CRYPT_CERTINFO_CMS_SECLABEL_POLICY { 2537 }
+	sub CRYPT_CERTINFO_CMS_SECLABEL_POLICY { 2532 }
 	# securityClassification
-	sub CRYPT_CERTINFO_CMS_SECLABEL_CLASSIFICATION { 2538 }
+	sub CRYPT_CERTINFO_CMS_SECLABEL_CLASSIFICATION { 2533 }
 	# privacyMark
-	sub CRYPT_CERTINFO_CMS_SECLABEL_PRIVACYMARK { 2539 }
+	sub CRYPT_CERTINFO_CMS_SECLABEL_PRIVACYMARK { 2534 }
 	# securityCategories.securityCategory.type
-	sub CRYPT_CERTINFO_CMS_SECLABEL_CATTYPE { 2540 }
+	sub CRYPT_CERTINFO_CMS_SECLABEL_CATTYPE { 2535 }
 	# securityCategories.securityCategory.value
-	sub CRYPT_CERTINFO_CMS_SECLABEL_CATVALUE { 2541 }
+	sub CRYPT_CERTINFO_CMS_SECLABEL_CATVALUE { 2536 }
 
 	# 1 2 840 113549 1 9 16 2 3 mlExpansionHistory
 
-	sub CRYPT_CERTINFO_CMS_MLEXPANSIONHISTORY { 2542 }
+	sub CRYPT_CERTINFO_CMS_MLEXPANSIONHISTORY { 2537 }
 	# mlData.mailListIdentifier.issuerAndSerialNumber
-	sub CRYPT_CERTINFO_CMS_MLEXP_ENTITYIDENTIFIER { 2543 }
+	sub CRYPT_CERTINFO_CMS_MLEXP_ENTITYIDENTIFIER { 2538 }
 	# mlData.expansionTime
-	sub CRYPT_CERTINFO_CMS_MLEXP_TIME { 2544 }
+	sub CRYPT_CERTINFO_CMS_MLEXP_TIME { 2539 }
 	# mlData.mlReceiptPolicy.none
-	sub CRYPT_CERTINFO_CMS_MLEXP_NONE { 2545 }
+	sub CRYPT_CERTINFO_CMS_MLEXP_NONE { 2540 }
 	# mlData.mlReceiptPolicy.insteadOf.generalNames.generalName
-	sub CRYPT_CERTINFO_CMS_MLEXP_INSTEADOF { 2546 }
+	sub CRYPT_CERTINFO_CMS_MLEXP_INSTEADOF { 2541 }
 	# mlData.mlReceiptPolicy.inAdditionTo.generalNames.generalName
-	sub CRYPT_CERTINFO_CMS_MLEXP_INADDITIONTO { 2547 }
+	sub CRYPT_CERTINFO_CMS_MLEXP_INADDITIONTO { 2542 }
 
 	# 1 2 840 113549 1 9 16 2 4 contentHints
 
-	sub CRYPT_CERTINFO_CMS_CONTENTHINTS { 2548 }
+	sub CRYPT_CERTINFO_CMS_CONTENTHINTS { 2543 }
 	# contentDescription
-	sub CRYPT_CERTINFO_CMS_CONTENTHINT_DESCRIPTION { 2549 }
+	sub CRYPT_CERTINFO_CMS_CONTENTHINT_DESCRIPTION { 2544 }
 	# contentType
-	sub CRYPT_CERTINFO_CMS_CONTENTHINT_TYPE { 2550 }
+	sub CRYPT_CERTINFO_CMS_CONTENTHINT_TYPE { 2545 }
 
 	# 1 2 840 113549 1 9 16 2 9 equivalentLabels
 
-	sub CRYPT_CERTINFO_CMS_EQUIVALENTLABEL { 2551 }
+	sub CRYPT_CERTINFO_CMS_EQUIVALENTLABEL { 2546 }
 	# securityPolicyIdentifier
-	sub CRYPT_CERTINFO_CMS_EQVLABEL_POLICY { 2552 }
+	sub CRYPT_CERTINFO_CMS_EQVLABEL_POLICY { 2547 }
 	# securityClassification
-	sub CRYPT_CERTINFO_CMS_EQVLABEL_CLASSIFICATION { 2553 }
+	sub CRYPT_CERTINFO_CMS_EQVLABEL_CLASSIFICATION { 2548 }
 	# privacyMark
-	sub CRYPT_CERTINFO_CMS_EQVLABEL_PRIVACYMARK { 2554 }
+	sub CRYPT_CERTINFO_CMS_EQVLABEL_PRIVACYMARK { 2549 }
 	# securityCategories.securityCategory.type
-	sub CRYPT_CERTINFO_CMS_EQVLABEL_CATTYPE { 2555 }
+	sub CRYPT_CERTINFO_CMS_EQVLABEL_CATTYPE { 2550 }
 	# securityCategories.securityCategory.value
-	sub CRYPT_CERTINFO_CMS_EQVLABEL_CATVALUE { 2556 }
+	sub CRYPT_CERTINFO_CMS_EQVLABEL_CATVALUE { 2551 }
 
 	# 1 2 840 113549 1 9 16 2 12 signingCertificate
 
-	sub CRYPT_CERTINFO_CMS_SIGNINGCERTIFICATE { 2557 }
+	sub CRYPT_CERTINFO_CMS_SIGNINGCERTIFICATE { 2552 }
 	# certs.essCertID
-	sub CRYPT_CERTINFO_CMS_SIGNINGCERT_ESSCERTID { 2558 }
+	sub CRYPT_CERTINFO_CMS_SIGNINGCERT_ESSCERTID { 2553 }
 	# policies.policyInformation.policyIdentifier
-	sub CRYPT_CERTINFO_CMS_SIGNINGCERT_POLICIES { 2559 }
+	sub CRYPT_CERTINFO_CMS_SIGNINGCERT_POLICIES { 2554 }
 
 	# 1 2 840 113549 1 9 16 2 47 signingCertificateV2
 
-	sub CRYPT_CERTINFO_CMS_SIGNINGCERTIFICATEV2 { 2560 }
+	sub CRYPT_CERTINFO_CMS_SIGNINGCERTIFICATEV2 { 2555 }
 	# certs.essCertID
-	sub CRYPT_CERTINFO_CMS_SIGNINGCERTV2_ESSCERTIDV2 { 2561 }
+	sub CRYPT_CERTINFO_CMS_SIGNINGCERTV2_ESSCERTIDV2 { 2556 }
 	# policies.policyInformation.policyIdentifier
-	sub CRYPT_CERTINFO_CMS_SIGNINGCERTV2_POLICIES { 2562 }
+	sub CRYPT_CERTINFO_CMS_SIGNINGCERTV2_POLICIES { 2557 }
 
 	# 1 2 840 113549 1 9 16 2 15 signaturePolicyID
 
-	sub CRYPT_CERTINFO_CMS_SIGNATUREPOLICYID { 2563 }
+	sub CRYPT_CERTINFO_CMS_SIGNATUREPOLICYID { 2558 }
 	# sigPolicyID
-	sub CRYPT_CERTINFO_CMS_SIGPOLICYID { 2564 }
+	sub CRYPT_CERTINFO_CMS_SIGPOLICYID { 2559 }
 	# sigPolicyHash
-	sub CRYPT_CERTINFO_CMS_SIGPOLICYHASH { 2565 }
+	sub CRYPT_CERTINFO_CMS_SIGPOLICYHASH { 2560 }
 	# sigPolicyQualifiers.sigPolicyQualifier.cPSuri
-	sub CRYPT_CERTINFO_CMS_SIGPOLICY_CPSURI { 2566 }
+	sub CRYPT_CERTINFO_CMS_SIGPOLICY_CPSURI { 2561 }
 
-	sub CRYPT_CERTINFO_CMS_SIGPOLICY_ORGANIZATION { 2567 }
+	sub CRYPT_CERTINFO_CMS_SIGPOLICY_ORGANIZATION { 2562 }
 	# sigPolicyQualifiers.sigPolicyQualifier.userNotice.noticeRef.organization
 
-	sub CRYPT_CERTINFO_CMS_SIGPOLICY_NOTICENUMBERS { 2568 }
+	sub CRYPT_CERTINFO_CMS_SIGPOLICY_NOTICENUMBERS { 2563 }
 	# sigPolicyQualifiers.sigPolicyQualifier.userNotice.noticeRef.noticeNumbers
 
-	sub CRYPT_CERTINFO_CMS_SIGPOLICY_EXPLICITTEXT { 2569 }
+	sub CRYPT_CERTINFO_CMS_SIGPOLICY_EXPLICITTEXT { 2564 }
 	# sigPolicyQualifiers.sigPolicyQualifier.userNotice.explicitText
 
 	# 1 2 840 113549 1 9 16 9 signatureTypeIdentifier
 
-	sub CRYPT_CERTINFO_CMS_SIGTYPEIDENTIFIER { 2570 }
+	sub CRYPT_CERTINFO_CMS_SIGTYPEIDENTIFIER { 2565 }
 	# originatorSig
-	sub CRYPT_CERTINFO_CMS_SIGTYPEID_ORIGINATORSIG { 2571 }
+	sub CRYPT_CERTINFO_CMS_SIGTYPEID_ORIGINATORSIG { 2566 }
 	# domainSig
-	sub CRYPT_CERTINFO_CMS_SIGTYPEID_DOMAINSIG { 2572 }
+	sub CRYPT_CERTINFO_CMS_SIGTYPEID_DOMAINSIG { 2567 }
 	# additionalAttributesSig
-	sub CRYPT_CERTINFO_CMS_SIGTYPEID_ADDITIONALATTRIBUTES { 2573 }
+	sub CRYPT_CERTINFO_CMS_SIGTYPEID_ADDITIONALATTRIBUTES { 2568 }
 	# reviewSig
-	sub CRYPT_CERTINFO_CMS_SIGTYPEID_REVIEWSIG { 2574 }
+	sub CRYPT_CERTINFO_CMS_SIGTYPEID_REVIEWSIG { 2569 }
 
 	# 1 2 840 113549 1 9 25 3 randomNonce
 	# randomNonce
-	sub CRYPT_CERTINFO_CMS_NONCE { 2575 }
+	sub CRYPT_CERTINFO_CMS_NONCE { 2570 }
 
 	# SCEP attributes:
 	# 2 16 840 1 113733 1 9 2 messageType
@@ -1426,43 +1414,43 @@
 	# 2 16 840 1 113733 1 9 6 recipientNonce
 	# 2 16 840 1 113733 1 9 7 transID
 	# messageType
-	sub CRYPT_CERTINFO_SCEP_MESSAGETYPE { 2576 }
+	sub CRYPT_CERTINFO_SCEP_MESSAGETYPE { 2571 }
 	# pkiStatus
-	sub CRYPT_CERTINFO_SCEP_PKISTATUS { 2577 }
+	sub CRYPT_CERTINFO_SCEP_PKISTATUS { 2572 }
 	# failInfo
-	sub CRYPT_CERTINFO_SCEP_FAILINFO { 2578 }
+	sub CRYPT_CERTINFO_SCEP_FAILINFO { 2573 }
 	# senderNonce
-	sub CRYPT_CERTINFO_SCEP_SENDERNONCE { 2579 }
+	sub CRYPT_CERTINFO_SCEP_SENDERNONCE { 2574 }
 	# recipientNonce
-	sub CRYPT_CERTINFO_SCEP_RECIPIENTNONCE { 2580 }
+	sub CRYPT_CERTINFO_SCEP_RECIPIENTNONCE { 2575 }
 	# transID
-	sub CRYPT_CERTINFO_SCEP_TRANSACTIONID { 2581 }
+	sub CRYPT_CERTINFO_SCEP_TRANSACTIONID { 2576 }
 
 	# 1 3 6 1 4 1 311 2 1 10 spcAgencyInfo
 
-	sub CRYPT_CERTINFO_CMS_SPCAGENCYINFO { 2582 }
+	sub CRYPT_CERTINFO_CMS_SPCAGENCYINFO { 2577 }
 	# spcAgencyInfo.url
-	sub CRYPT_CERTINFO_CMS_SPCAGENCYURL { 2583 }
+	sub CRYPT_CERTINFO_CMS_SPCAGENCYURL { 2578 }
 
 	# 1 3 6 1 4 1 311 2 1 11 spcStatementType
 
-	sub CRYPT_CERTINFO_CMS_SPCSTATEMENTTYPE { 2584 }
+	sub CRYPT_CERTINFO_CMS_SPCSTATEMENTTYPE { 2579 }
 	# individualCodeSigning
-	sub CRYPT_CERTINFO_CMS_SPCSTMT_INDIVIDUALCODESIGNING { 2585 }
+	sub CRYPT_CERTINFO_CMS_SPCSTMT_INDIVIDUALCODESIGNING { 2580 }
 	# commercialCodeSigning
-	sub CRYPT_CERTINFO_CMS_SPCSTMT_COMMERCIALCODESIGNING { 2586 }
+	sub CRYPT_CERTINFO_CMS_SPCSTMT_COMMERCIALCODESIGNING { 2581 }
 
 	# 1 3 6 1 4 1 311 2 1 12 spcOpusInfo
 
-	sub CRYPT_CERTINFO_CMS_SPCOPUSINFO { 2587 }
+	sub CRYPT_CERTINFO_CMS_SPCOPUSINFO { 2582 }
 	# spcOpusInfo.name
-	sub CRYPT_CERTINFO_CMS_SPCOPUSINFO_NAME { 2588 }
+	sub CRYPT_CERTINFO_CMS_SPCOPUSINFO_NAME { 2583 }
 	# spcOpusInfo.url
-	sub CRYPT_CERTINFO_CMS_SPCOPUSINFO_URL { 2589 }
+	sub CRYPT_CERTINFO_CMS_SPCOPUSINFO_URL { 2584 }
 
 	# Used internally
 
-	sub CRYPT_CERTINFO_LAST { 2590 }
+	sub CRYPT_CERTINFO_LAST { 2585 }
 	sub CRYPT_KEYINFO_FIRST { 3000 }
 
 	# *******************
@@ -1595,7 +1583,7 @@
 	# Server port number
 	sub CRYPT_SESSINFO_SERVER_PORT { 6009 }
 	# Server key fingerprint
-	sub CRYPT_SESSINFO_SERVER_FINGERPRINT { 6010 }
+	sub CRYPT_SESSINFO_SERVER_FINGERPRINT_SHA1 { 6010 }
 	# Client name
 	sub CRYPT_SESSINFO_CLIENT_NAME { 6011 }
 	# Client port number
@@ -2025,17 +2013,26 @@
 ##### END ENUM CRYPT_CERTACTION_TYPE
 
 #  SSL/TLS protocol options.  CRYPT_SSLOPTION_MINVER_SSLV3 is the same as 
-#  CRYPT_SSLOPTION_NONE since this is the default 
+#  CRYPT_SSLOPTION_NONE since this is the baseline, although it's generally
+#  never encountered since SSLv3 is disabled 
 
-	sub CRYPT_SSLOPTION_NONE { 0x00 }
-	sub CRYPT_SSLOPTION_MINVER_SSLV3 { 0x00 }
+	sub CRYPT_SSLOPTION_NONE { 0x000 }
+	sub CRYPT_SSLOPTION_MINVER_SSLV3 { 0x000 }
 # Min.protocol version 
-	sub CRYPT_SSLOPTION_MINVER_TLS10 { 0x01 }
-	sub CRYPT_SSLOPTION_MINVER_TLS11 { 0x02 }
-	sub CRYPT_SSLOPTION_MINVER_TLS12 { 0x03 }
-	sub CRYPT_SSLOPTION_SUITEB_128 { 0x04 }
-# SuiteB security levels 
-	sub CRYPT_SSLOPTION_SUITEB_256 { 0x08 }
+	sub CRYPT_SSLOPTION_MINVER_TLS10 { 0x001 }
+	sub CRYPT_SSLOPTION_MINVER_TLS11 { 0x002 }
+	sub CRYPT_SSLOPTION_MINVER_TLS12 { 0x003 }
+	sub CRYPT_SSLOPTION_MINVER_TLS13 { 0x004 }
+	sub CRYPT_SSLOPTION_MANUAL_CERTCHECK { 0x008 }
+# Require manual cert.verif.
+	sub CRYPT_SSLOPTION_DISABLE_NAMEVERIFY { 0x010 }
+# Disable cert hostname check 
+	sub CRYPT_SSLOPTION_DISABLE_CERTVERIFY { 0x020 }
+# Disable certificate check 
+	sub CRYPT_SSLOPTION_SUITEB_128 { 0x100 }
+# SuiteB security levels (may 
+	sub CRYPT_SSLOPTION_SUITEB_256 { 0x200 }
+#  vanish in future releases) 
 
 #****************************************************************************
 #*                                                                           *
@@ -2047,7 +2044,7 @@
 
 	sub CRYPT_MAX_KEYSIZE { 256 }
 
-# The maximum IV size - 256 bits 
+# The maximum IV/cipher block size - 256 bits 
 
 	sub CRYPT_MAX_IVSIZE { 32 }
 
@@ -2223,22 +2220,24 @@ sub CRYPT_PKCINFO_DLP
 
 	# Named ECC curves.  Since these need to be mapped to all manner of
 	# protocol- and mechanism-specific identifiers, when updating this list
-	# grep for occurrences of CRYPT_ECCCURVE_P256 (the most common one) and
+	# grep for occurrences of the string "P256" (the most common one) and
 	# check whether any related mapping tables need to be updated
 	# No ECC curve type
 	sub CRYPT_ECCCURVE_NONE { 0 }
-	# NIST P192/X9.62 P192r1/SECG p192r1 curve
-	sub CRYPT_ECCCURVE_P192 { 1 }
-	# NIST P224/X9.62 P224r1/SECG p224r1 curve
-	sub CRYPT_ECCCURVE_P224 { 2 }
 	# NIST P256/X9.62 P256v1/SECG p256r1 curve
-	sub CRYPT_ECCCURVE_P256 { 3 }
+	sub CRYPT_ECCCURVE_P256 { 1 }
 	# NIST P384, SECG p384r1 curve
-	sub CRYPT_ECCCURVE_P384 { 4 }
+	sub CRYPT_ECCCURVE_P384 { 2 }
 	# NIST P521, SECG p521r1
-	sub CRYPT_ECCCURVE_P521 { 5 }
+	sub CRYPT_ECCCURVE_P521 { 3 }
+	# Brainpool p256r1
+	sub CRYPT_ECCCURVE_BRAINPOOL_P256 { 4 }
+	# Brainpool p384r1
+	sub CRYPT_ECCCURVE_BRAINPOOL_P384 { 5 }
+	# Brainpool p512r1
+	sub CRYPT_ECCCURVE_BRAINPOOL_P512 { 6 }
 	# Last valid ECC curve type
-	sub CRYPT_ECCCURVE_LAST { 6 }
+	sub CRYPT_ECCCURVE_LAST { 7 }
 
 
 ##### END ENUM CRYPT_ECCCURVE_TYPE
@@ -2458,15 +2457,16 @@ sub CRYPT_PKCINFO_ECC
 ###C_RET cryptSetAttributeString( C_IN CRYPT_HANDLE cryptHandle,
 ##                               C_IN CRYPT_ATTRIBUTE_TYPE attributeType,
 ##                               C_IN void C_PTR value, C_IN int valueLength );
-### C_NONNULL_ARG( ( 3 ) ) 
+### C_CHECK_RETVAL C_NONNULL_ARG( ( 3 ) ) 
 ###C_RET cryptGetAttribute( C_IN CRYPT_HANDLE cryptHandle,
 ##                         C_IN CRYPT_ATTRIBUTE_TYPE attributeType,
 ##                         C_OUT int C_PTR value );
+### C_CHECK_RETVAL C_NONNULL_ARG( ( 4 ) ) 
 ###C_RET cryptGetAttributeString( C_IN CRYPT_HANDLE cryptHandle,
-#                               C_IN CRYPT_ATTRIBUTE_TYPE attributeType,
-#                               C_OUT_OPT void C_PTR value,
-#                               C_OUT int C_PTR valueLength );
-##C_RET cryptDeleteAttribute( C_IN CRYPT_HANDLE cryptHandle,
+##                               C_IN CRYPT_ATTRIBUTE_TYPE attributeType,
+##                               C_OUT_OPT void C_PTR value,
+##                               C_OUT int C_PTR valueLength );
+###C_RET cryptDeleteAttribute( C_IN CRYPT_HANDLE cryptHandle,
 #                            C_IN CRYPT_ATTRIBUTE_TYPE attributeType );
 #
 #  Oddball functions: Add random data to the pool, query an encoded signature
@@ -2566,7 +2566,7 @@ sub CRYPT_PKCINFO_ECC
 ###C_RET cryptGetPrivateKey( C_IN CRYPT_KEYSET keyset,
 ##                          C_OUT CRYPT_CONTEXT C_PTR cryptContext,
 ##                          C_IN CRYPT_KEYID_TYPE keyIDtype,
-##                          C_IN_OPT C_STR keyID, C_IN C_STR password );
+##                          C_IN C_STR keyID, C_IN_OPT C_STR password );
 ### C_CHECK_RETVAL C_NONNULL_ARG( ( 2, 4 ) ) 
 #C_RET cryptGetKey( C_IN CRYPT_KEYSET keyset,
 #                   C_OUT CRYPT_CONTEXT C_PTR cryptContext,
@@ -2605,14 +2605,14 @@ sub CRYPT_PKCINFO_ECC
 #  functions whose use is discouraged, so they fix the string at char *
 #  rather than C_STR 
 
-# C_NONNULL_ARG( ( 2, 3, 6 ) ) 
+# C_CHECK_RETVAL C_NONNULL_ARG( ( 2, 3, 6 ) ) 
 ###C_RET cryptGetCertExtension( C_IN CRYPT_CERTIFICATE certificate,
 ##                             C_IN char C_PTR oid,
 ##                             C_OUT int C_PTR criticalFlag,
 ##                             C_OUT_OPT void C_PTR extension,
 ##                             C_IN int extensionMaxLength,
 ##                             C_OUT int C_PTR extensionLength );
-### C_NONNULL_ARG( ( 2, 4 ) ) 
+### C_CHECK_RETVAL C_NONNULL_ARG( ( 2, 4 ) ) 
 ###C_RET cryptAddCertExtension( C_IN CRYPT_CERTIFICATE certificate,
 ##                             C_IN char C_PTR oid, C_IN int criticalFlag,
 ##                             C_IN void C_PTR extension,

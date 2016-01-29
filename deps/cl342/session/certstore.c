@@ -17,12 +17,20 @@
   #include "session/certstore.h"
 #endif /* Compiler-specific includes */
 
+/****************************************************************************
+*																			*
+*					Shared Certstore/SCEP Utility Functions					*
+*																			*
+****************************************************************************/
+
 /* SCEP's bolted-on HTTP query mechanism requires that we use the HTTP 
    certstore access routines to return responses to certificate queries,
    so we enable the use of this code if either certstores or SCEP are
    used */
 
 #if defined( USE_CERTSTORE ) || defined( USE_SCEP )
+
+#ifdef USE_SCEP
 
 /* Table mapping a query submitted as an HTTP GET to a cryptlib-internal 
    keyset query.  Note that the first letter must be lowercase for the
@@ -40,12 +48,7 @@ static const CERTSTORE_READ_INFO certstoreReadInfo[] = {
 	{ NULL, 0, CRYPT_KEYID_NONE, CERTSTORE_FLAG_NONE },
 		{ NULL, 0, CRYPT_KEYID_NONE, CERTSTORE_FLAG_NONE }
 	};
-
-/****************************************************************************
-*																			*
-*								Utility Functions							*
-*																			*
-****************************************************************************/
+#endif /* USE_SCEP */
 
 /* Convert a query attribute into a text string suitable for use with 
    retExt() */
@@ -149,6 +152,7 @@ int processCertQuery( INOUT SESSION_INFO *sessionInfoPtr,
 	if( attribute == NULL )
 		return( CRYPT_OK );
 
+#ifdef USE_BASE64
 	/* If the query data wasn't encoded in any way, we're done */
 	if( !( queryInfoPtr->flags & CERTSTORE_FLAG_BASE64 ) )
 		{
@@ -176,6 +180,11 @@ int processCertQuery( INOUT SESSION_INFO *sessionInfoPtr,
 		}
 
 	return( CRYPT_OK );
+#else
+	return( attributeCopyParams( attribute, attributeMaxLen, 
+								 attributeLen, httpReqInfo->value, 
+								 httpReqInfo->valueLen ) );
+#endif /* USE_BASE64 */
 	}
 
 /* Send an HTTP error response to the client (the error status value is 
@@ -199,12 +208,15 @@ void sendCertErrorResponse( INOUT SESSION_INFO *sessionInfoPtr,
 	( void ) swrite( &sessionInfoPtr->stream, &httpDataInfo, 
 					 sizeof( HTTP_DATA_INFO ) );
 	}
+#endif /* USE_CERTSTORE || USE_SCEP */
 
 /****************************************************************************
 *																			*
 *								Init/Shutdown Functions						*
 *																			*
 ****************************************************************************/
+
+#ifdef USE_CERTSTORE
 
 /* Exchange data with an HTTP client */
 
@@ -226,6 +238,7 @@ static int serverTransact( INOUT SESSION_INFO *sessionInfoPtr )
 	/* Read the request data from the client.  We do a direct read rather 
 	   than using readPkiDatagram() since we're reading an idempotent HTTP 
 	   GET request and not a PKI datagram submitted via an HTTP POST */
+	memset( &httpReqInfo, 0, sizeof( HTTP_URI_INFO ) );
 	initHttpDataInfoEx( &httpDataInfo, sessionInfoPtr->receiveBuffer,
 						sessionInfoPtr->receiveBufSize, &httpReqInfo );
 	status = sread( &sessionInfoPtr->stream, &httpDataInfo,
@@ -346,4 +359,4 @@ int setAccessMethodCertstore( INOUT SESSION_INFO *sessionInfoPtr )
 
 	return( CRYPT_OK );
 	}
-#endif /* USE_CERTSTORE || USE_SCEP */
+#endif /* USE_CERTSTORE */

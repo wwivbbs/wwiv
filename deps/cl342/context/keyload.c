@@ -33,7 +33,6 @@ int attributeToFormatType( IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE attribute,
 	{
 	static const MAP_TABLE attributeMapTbl[] = {
 		{ CRYPT_IATTRIBUTE_KEY_SSH, KEYFORMAT_SSH },
-		{ CRYPT_IATTRIBUTE_KEY_SSH1,  KEYFORMAT_SSH1 },
 		{ CRYPT_IATTRIBUTE_KEY_SSL, KEYFORMAT_SSL },
 		{ CRYPT_IATTRIBUTE_KEY_PGP, KEYFORMAT_PGP },
 		{ CRYPT_IATTRIBUTE_KEY_PGP_PARTIAL, KEYFORMAT_PGP },
@@ -113,12 +112,6 @@ int initGenericParams( INOUT CONTEXT_INFO *contextInfoPtr,
 							capabilityInfoPtr->encryptCFBFunction;
 					contextInfoPtr->decryptFunction = \
 							capabilityInfoPtr->decryptCFBFunction;
-					break;
-				case CRYPT_MODE_OFB:
-					contextInfoPtr->encryptFunction = \
-							capabilityInfoPtr->encryptOFBFunction;
-					contextInfoPtr->decryptFunction = \
-							capabilityInfoPtr->decryptOFBFunction;
 					break;
 				case CRYPT_MODE_GCM:
 					contextInfoPtr->encryptFunction = \
@@ -538,7 +531,6 @@ int setEncodedKey( INOUT CONTEXT_INFO *contextInfoPtr,
 	REQUIRES( keyType == CRYPT_IATTRIBUTE_KEY_SPKI || \
 			  keyType == CRYPT_IATTRIBUTE_KEY_PGP || \
 			  keyType == CRYPT_IATTRIBUTE_KEY_SSH || \
-			  keyType == CRYPT_IATTRIBUTE_KEY_SSH1 || \
 			  keyType == CRYPT_IATTRIBUTE_KEY_SSL || \
 			  keyType == CRYPT_IATTRIBUTE_KEY_SPKI_PARTIAL || \
 			  keyType == CRYPT_IATTRIBUTE_KEY_PGP_PARTIAL );
@@ -853,16 +845,14 @@ int deriveKey( INOUT CONTEXT_INFO *contextInfoPtr,
 	{
 	MECHANISM_DERIVE_INFO mechanismInfo;
 	static const MAP_TABLE mapTbl[] = {
-		{ CRYPT_ALGO_MD5, CRYPT_ALGO_HMAC_MD5 },
 		{ CRYPT_ALGO_SHA1, CRYPT_ALGO_HMAC_SHA1 },
-		{ CRYPT_ALGO_RIPEMD160, CRYPT_ALGO_HMAC_RIPEMD160 },
 		{ CRYPT_ALGO_SHA2, CRYPT_ALGO_HMAC_SHA2 },
 		{ CRYPT_ERROR, CRYPT_ERROR }, { CRYPT_ERROR, CRYPT_ERROR }
 		};
 	int hmacAlgo = ( contextInfoPtr->type == CONTEXT_CONV ) ? \
 					 contextInfoPtr->ctxConv->keySetupAlgorithm : \
 					 contextInfoPtr->ctxMAC->keySetupAlgorithm;
-	int value = DUMMY_INIT, status;
+	int value DUMMY_INIT, status;
 
 	assert( isWritePtr( contextInfoPtr, sizeof( CONTEXT_INFO ) ) );
 	assert( isReadPtr( keyValue, keyValueLen ) );
@@ -948,7 +938,7 @@ int deriveKey( INOUT CONTEXT_INFO *contextInfoPtr,
 				return( status );
 			macInfo->saltLength = PKCS5_SALT_SIZE;
 			}
-		contextInfoPtr->ctxConv->keySetupAlgorithm = hmacAlgo;
+		macInfo->keySetupAlgorithm = hmacAlgo;
 		setMechanismDeriveInfo( &mechanismInfo, macInfo->userKey, keySize,
 								keyValue, keyValueLen, 
 								macInfo->keySetupAlgorithm, 

@@ -395,8 +395,8 @@ BN_ULONG bn_add_part_words(BN_ULONG *r,
  * a[1]*b[1]
  */
 /* dnX may not be positive, but n2/2+dnX has to be */
-void bn_mul_recursive(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b, int n2,
-	int dna, int dnb, BN_ULONG *t)
+void bn_mul_recursive(BN_ULONG *r, const BN_ULONG *a, const BN_ULONG *b, int n2,
+	int dna, int dnb, BN_ULONG *t)			/* pcg */
 	{
 	int n=n2/2,c1,c2;
 	int tna=n+dna, tnb=n+dnb;
@@ -555,8 +555,8 @@ void bn_mul_recursive(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b, int n2,
 /* n+tn is the word length
  * t needs to be n*4 is size, as does r */
 /* tnX may not be negative but less than n */
-void bn_mul_part_recursive(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b, int n,
-	     int tna, int tnb, BN_ULONG *t)
+void bn_mul_part_recursive(BN_ULONG *r, const BN_ULONG *a, const BN_ULONG *b, int n,
+	     int tna, int tnb, BN_ULONG *t)			/* pcg */
 	{
 	int i,j,n2=n*2;
 	int c1,c2,neg;
@@ -985,7 +985,17 @@ int BN_mul(BIGNUM *r, const BIGNUM *a, const BIGNUM *b, BN_CTX *ctx)
 		if ((rr = BN_CTX_get(ctx)) == NULL) goto err;
 		}
 	else
-		rr = r;
+		{
+		/* Usually we can set:
+			rr = r;
+		   but in the cases where t gets large (see the check further down
+		   for overflow due to k * 2 / k * 4) the value of rr needs to be
+		   large as well.  We can't predict in advance when this will occur 
+		   so we have to use an extended=size bignum for rr in all cases */
+		rr = ( BIGNUM * ) BN_CTX_get_ext( ctx, BIGNUM_EXT_MUL1 );	/* pcg */
+		if( rr == NULL )
+			goto err;
+		}
 	rr->neg=a->neg^b->neg;
 
 #if defined(BN_MUL_COMBA) || defined(BN_RECURSION)
@@ -1030,7 +1040,17 @@ int BN_mul(BIGNUM *r, const BIGNUM *a, const BIGNUM *b, BN_CTX *ctx)
 			j = 1<<(j-1);
 			assert(j <= al || j <= bl);
 			k = j+j;
-			t = BN_CTX_get(ctx);
+			if( ( k * 2 > BIGNUM_ALLOC_WORDS ) || \
+				( ( al > j || bl > j ) && ( k * 4 > BIGNUM_ALLOC_WORDS ) ) )	/* pcg */
+				{
+				/* We're about to expand the temporary bignum that we're 
+				   using to an enormous size, get a special extended-size 
+				   bignum that won't result in a storage size-check error
+				   when used */
+				t = BN_CTX_get_ext( ctx, BIGNUM_EXT_MUL2 );
+				}
+			else
+				t = BN_CTX_get(ctx);
 			if (t == NULL)
 				goto err;
 			if (al > j || bl > j)
@@ -1101,15 +1121,16 @@ int BN_mul(BIGNUM *r, const BIGNUM *a, const BIGNUM *b, BN_CTX *ctx)
 end:
 #endif
 	bn_correct_top(rr);
-	if (r != rr) BN_copy(r,rr);
+	if (r != rr) 
+		BN_copy(r,rr);
 	ret=1;
 err:
 	bn_check_top(r);
-	BN_CTX_end(ctx);
+	BN_CTX_end_ext( ctx, BIGNUM_EXT_MUL1 );			/* pcg */
 	return(ret);
 	}
 
-void bn_mul_normal(BN_ULONG *r, BN_ULONG *a, int na, BN_ULONG *b, int nb)
+void bn_mul_normal(BN_ULONG *r, const BN_ULONG *a, int na, const BN_ULONG *b, int nb)
 	{
 	BN_ULONG *rr;
 
@@ -1120,7 +1141,7 @@ void bn_mul_normal(BN_ULONG *r, BN_ULONG *a, int na, BN_ULONG *b, int nb)
 	if (na < nb)
 		{
 		int itmp;
-		BN_ULONG *ltmp;
+		const BN_ULONG *ltmp;	/* pcg */
 
 		itmp=na; na=nb; nb=itmp;
 		ltmp=a;   a=b;   b=ltmp;

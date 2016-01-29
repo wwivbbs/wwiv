@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *					cryptlib PKCS #15 Attribute Read Routines				*
-*						Copyright Peter Gutmann 1996-2007					*
+*						Copyright Peter Gutmann 1996-2014					*
 *																			*
 ****************************************************************************/
 
@@ -20,11 +20,6 @@
 #endif /* Compiler-specific includes */
 
 #ifdef USE_PKCS15
-
-/* A macro to check that we're OK to read more data beyond this point */
-
-#define canContinue( stream, status, endPos ) \
-		( cryptStatusOK( status ) && stell( stream ) < endPos )
 
 /* OID information used to read a PKCS #15 keyset */
 
@@ -88,7 +83,7 @@ static int readKeyIdentifiers( INOUT STREAM *stream,
 	assert( isWritePtr( pkcs15infoPtr, sizeof( PKCS15_INFO ) ) );
 	
 	REQUIRES( endPos > 0 && endPos > stell( stream ) && \
-			  endPos < MAX_INTLENGTH );
+			  endPos < MAX_BUFFER_SIZE );
 
 	for( status = CRYPT_OK, iterationCount = 0;
 		 cryptStatusOK( status ) && stell( stream ) < endPos && \
@@ -108,7 +103,7 @@ static int readKeyIdentifiers( INOUT STREAM *stream,
 			case PKCS15_KEYID_ISSUERANDSERIALNUMBER:
 				{
 				HASHFUNCTION_ATOMIC hashFunctionAtomic;
-				void *iAndSPtr = DUMMY_INIT_PTR;
+				void *iAndSPtr DUMMY_INIT_PTR;
 				int iAndSLength, hashSize;
 
 				/* If we've already got the iAndSID, use that version 
@@ -127,7 +122,10 @@ static int readKeyIdentifiers( INOUT STREAM *stream,
 					status = sMemGetDataBlock( stream, &iAndSPtr, 
 											   iAndSLength );
 				if( cryptStatusOK( status ) )
-					status = sSkip( stream, iAndSLength );
+					{
+					status = sSkip( stream, iAndSLength, 
+									MAX_INTLENGTH_SHORT );
+					}
 				if( cryptStatusError( status ) )
 					return( status );
 				hashFunctionAtomic( pkcs15infoPtr->iAndSID, KEYID_SIZE, 
@@ -211,29 +209,29 @@ static int readPubkeyAttributes( INOUT STREAM *stream,
 								 IN_LENGTH const int endPos, 
 								 const BOOLEAN isPubKeyObject )
 	{
-	int usageFlags, status;
+	int usageFlags, tag, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( pkcs15infoPtr, sizeof( PKCS15_INFO ) ) );
 
 	REQUIRES( endPos > 0 && endPos > stell( stream ) && \
-			  endPos < MAX_INTLENGTH );
+			  endPos < MAX_BUFFER_SIZE );
 
-	status = readBitString( stream, &usageFlags );		/* Usage flags */
-	if( canContinue( stream, status, endPos ) &&		/* Native flag */
-		peekTag( stream ) == BER_BOOLEAN )
+	status = readBitString( stream, &usageFlags );			/* Usage flags */
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == BER_BOOLEAN )								/* Native flag */
 		status = readUniversal( stream );
-	if( canContinue( stream, status, endPos ) &&		/* Access flags */
-		peekTag( stream ) == BER_BITSTRING )
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == BER_BITSTRING )								/* Access flags */
 		status = readUniversal( stream );
-	if( canContinue( stream, status, endPos ) &&		/* Key reference */
-		peekTag( stream ) == BER_INTEGER )
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == BER_INTEGER )								/* Key reference */
 		status = readUniversal( stream );
-	if( canContinue( stream, status, endPos ) &&		/* Start date */
-		peekTag( stream ) == BER_TIME_GENERALIZED )
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == BER_TIME_GENERALIZED )						/* Start date */
 		status = readGeneralizedTime( stream, &pkcs15infoPtr->validFrom );
-	if( canContinue( stream, status, endPos ) &&		/* End date */
-		peekTag( stream ) == MAKE_CTAG( CTAG_KA_VALIDTO ) )
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == MAKE_CTAG( CTAG_KA_VALIDTO ) )				/* End date */
 		status = readGeneralizedTimeTag( stream, &pkcs15infoPtr->validTo, 
 										 CTAG_KA_VALIDTO );
 	if( cryptStatusError( status ) )
@@ -253,42 +251,47 @@ static int readCertAttributes( INOUT STREAM *stream,
 							   INOUT PKCS15_INFO *pkcs15infoPtr,
 							   IN_LENGTH const int endPos )
 	{
-	int length, status = CRYPT_OK;
+	int tag, length, status = CRYPT_OK;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( pkcs15infoPtr, sizeof( PKCS15_INFO ) ) );
 
 	REQUIRES( endPos > 0 && endPos > stell( stream ) && \
-			  endPos < MAX_INTLENGTH );
+			  endPos < MAX_BUFFER_SIZE );
 
-	if( peekTag( stream ) == BER_BOOLEAN )			/* Authority flag */
+	if( checkStatusPeekTag( stream, status, tag ) && \
+		tag == BER_BOOLEAN )								/* Authority flag */
 		status = readUniversal( stream );
-	if( canContinue( stream, status, endPos ) &&	/* Identifier */
-		peekTag( stream ) == BER_SEQUENCE )
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == BER_SEQUENCE )								/* Identifier */
 		status = readUniversal( stream );
-	if( canContinue( stream, status, endPos ) &&	/* Thumbprint */
-		peekTag( stream ) == MAKE_CTAG( CTAG_CA_DUMMY ) )
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == MAKE_CTAG( CTAG_CA_DUMMY ) )					/* Thumbprint */
 		status = readUniversal( stream );
-	if( canContinue( stream, status, endPos ) &&	/* Trusted usage */
-		peekTag( stream ) == MAKE_CTAG( CTAG_CA_TRUSTED_USAGE ) )
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == MAKE_CTAG( CTAG_CA_TRUSTED_USAGE ) )			/* Trusted usage */
 		{
 		readConstructed( stream, NULL, CTAG_CA_TRUSTED_USAGE );
 		status = readBitString( stream, &pkcs15infoPtr->trustedUsage );
 		}
-	if( canContinue( stream, status, endPos ) &&	/* Identifiers */
-		peekTag( stream ) == MAKE_CTAG( CTAG_CA_IDENTIFIERS ) )
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == MAKE_CTAG( CTAG_CA_IDENTIFIERS ) )			/* Identifiers */
 		{
 		status = readConstructed( stream, &length, CTAG_CA_IDENTIFIERS );
-		if( cryptStatusOK( status ) )
+		if( cryptStatusOK( status ) && length > 0 )
+			{
 			status = readKeyIdentifiers( stream, pkcs15infoPtr, 
 										 stell( stream ) + length );
+			}
 		}
-	if( canContinue( stream, status, endPos ) &&	/* Implicitly trusted */
-		peekTag( stream ) == MAKE_CTAG_PRIMITIVE( CTAG_CA_TRUSTED_IMPLICIT ) )
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == MAKE_CTAG_PRIMITIVE( CTAG_CA_TRUSTED_IMPLICIT ) )
+		{													/* Implicitly trusted */
 		status = readBooleanTag( stream, &pkcs15infoPtr->implicitTrust,
 								 CTAG_CA_TRUSTED_IMPLICIT );
-	if( canContinue( stream, status, endPos ) &&	/* Validity */
-		peekTag( stream ) == MAKE_CTAG( CTAG_CA_VALIDTO ) )
+		}
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == MAKE_CTAG( CTAG_CA_VALIDTO ) )				/* Validity */
 		{
 		/* Due to miscommunication between PKCS #15 and 7816-15 there are 
 		   two ways to encode the validity information for certificates, one 
@@ -301,29 +304,329 @@ static int readCertAttributes( INOUT STREAM *stream,
 		}
 	else
 		{
-		if( canContinue( stream, status, endPos ) &&	/* Start date */
-			peekTag( stream ) == BER_TIME_GENERALIZED )
+		if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+			tag == BER_TIME_GENERALIZED )					/* Start date */
 			status = readGeneralizedTime( stream, &pkcs15infoPtr->validFrom );
-		if( canContinue( stream, status, endPos ) &&	/* End date */
-			peekTag( stream ) == MAKE_CTAG_PRIMITIVE( CTAG_CA_VALIDTO ) )
+		if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+			tag == MAKE_CTAG_PRIMITIVE( CTAG_CA_VALIDTO ) )	/* End date */
 			status = readGeneralizedTimeTag( stream, &pkcs15infoPtr->validTo,
 											 CTAG_CA_VALIDTO );
 		}
 
-	return( status );
-	}
+	return( cryptStatusError( status ) ? status : CRYPT_OK );
+	}		/* checkStatusLimitsPeekTag() can return tag as status */
 
 /* Read an object's attributes */
+
+CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+static int readClassAttributes( INOUT STREAM *stream, 
+								INOUT PKCS15_INFO *pkcs15infoPtr,
+								IN_ENUM( PKCS15_OBJECT ) \
+									const PKCS15_OBJECT_TYPE type )
+	{
+	BOOLEAN isCryptlibObject = FALSE;
+	int tag, length, endPos, status;
+
+	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+	assert( isWritePtr( pkcs15infoPtr, sizeof( PKCS15_INFO ) ) );
+
+	REQUIRES( type > PKCS15_OBJECT_NONE && type < PKCS15_OBJECT_LAST );
+
+	/* Read the attribute wrapper */
+	status = readSequence( stream, &length );
+	if( cryptStatusError( status ) )
+		return( status );
+	endPos = stell( stream ) + length;
+
+	/* Process per-object-type attributes */
+	switch( type )
+		{
+		case PKCS15_OBJECT_PUBKEY:
+		case PKCS15_OBJECT_PRIVKEY:
+			/* It's a public/private-key object, read the ID and assorted 
+			   flags */
+			if( length < sizeofObject( MIN_NAME_LENGTH ) )
+				return( CRYPT_ERROR_BADDATA );
+			status = readOctetString( stream, pkcs15infoPtr->iD,
+									  &pkcs15infoPtr->iDlength, 
+									  MIN_NAME_LENGTH, CRYPT_MAX_HASHSIZE );
+			if( cryptStatusOK( status ) && stell( stream ) < endPos )
+				{
+				status = readPubkeyAttributes( stream, pkcs15infoPtr, 
+											endPos,
+											( type == PKCS15_OBJECT_PUBKEY ) ? \
+											TRUE : FALSE );
+				}
+			break;
+
+		case PKCS15_OBJECT_CERT:
+			/* It's a certificate object, read the ID and assorted flags */
+			if( length < sizeofObject( MIN_NAME_LENGTH ) )
+				return( CRYPT_ERROR_BADDATA );
+			status = readOctetString( stream, pkcs15infoPtr->iD,
+									  &pkcs15infoPtr->iDlength, 
+									  MIN_NAME_LENGTH, CRYPT_MAX_HASHSIZE );
+			if( cryptStatusOK( status ) && stell( stream ) < endPos )
+				{
+				status = readCertAttributes( stream, pkcs15infoPtr, 
+											 endPos );
+				}
+			break;
+
+		case PKCS15_OBJECT_SECRETKEY:
+			/* It's a secret-key object, there are no attributes of interest 
+			   present */
+			break;
+
+		case PKCS15_OBJECT_DATA:
+			/* If it's a data object then all of the attributes are 
+			   optional.  If it's specifically a cryptlib data object then 
+			   it'll be identified via the cryptlib OID */
+			if( length <= 0 )
+				return( CRYPT_OK );
+			if( checkStatusPeekTag( stream, status, tag ) && \
+				tag == BER_STRING_UTF8 )
+				{
+				/* Skip application name */
+				status = readUniversal( stream );
+				}
+			if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+				tag == BER_OBJECT_IDENTIFIER )
+				{
+				int value;
+
+				status = readOID( stream, dataObjectOIDinfo, 
+								  FAILSAFE_ARRAYSIZE( dataObjectOIDinfo, \
+													  OID_INFO ), &value );
+				if( cryptStatusOK( status ) && value == TRUE )
+					isCryptlibObject = TRUE;
+				}
+			break;
+
+		case PKCS15_OBJECT_UNRECOGNISED:
+			/* It's an unrecognised object type, we don't know what to do 
+			   with any attributes that may be present */
+			break;
+		
+		default:
+			retIntError();
+		}
+	if( cryptStatusError( status ) )
+		return( status );
+
+	/* Skip any additional attribute information that may be present */
+	if( stell( stream ) < endPos )
+		{
+		status = sseek( stream, endPos );
+		if( cryptStatusError( status ) )
+			return( status );
+		}
+
+	return( isCryptlibObject ? OK_SPECIAL : CRYPT_OK );
+	}
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+static int readSubclassAttributes( INOUT STREAM *stream, 
+								   INOUT PKCS15_INFO *pkcs15infoPtr,
+								   IN_ENUM( PKCS15_OBJECT ) \
+										const PKCS15_OBJECT_TYPE type )
+	{
+	int tag, length, endPos, status;
+
+	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+	assert( isWritePtr( pkcs15infoPtr, sizeof( PKCS15_INFO ) ) );
+
+	REQUIRES( type > PKCS15_OBJECT_NONE && type < PKCS15_OBJECT_LAST );
+
+	/* Read the attribute wrapper */
+	readConstructed( stream, NULL, CTAG_OB_SUBCLASSATTR );
+	status = readSequence( stream, &length );
+	if( cryptStatusError( status ) )
+		return( status );
+	endPos = stell( stream ) + length;
+	switch( type )
+		{
+		case PKCS15_OBJECT_PRIVKEY:
+			if( checkStatusPeekTag( stream, status, tag ) && \
+				tag == BER_SEQUENCE )						/* Name */
+				status = readUniversal( stream );
+			if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+				tag == MAKE_CTAG( CTAG_PK_IDENTIFIERS ) )	/* KeyIDs */
+				{
+				status = readConstructed( stream, &length, 
+										  CTAG_PK_IDENTIFIERS );
+				if( cryptStatusOK( status ) && length > 0 )
+					{
+					status = readKeyIdentifiers( stream, pkcs15infoPtr, 
+												 stell( stream ) + length );
+					}
+				}
+			break;
+
+		case PKCS15_OBJECT_PUBKEY:
+		case PKCS15_OBJECT_CERT:
+		case PKCS15_OBJECT_SECRETKEY:
+		case PKCS15_OBJECT_DATA:
+			/* These object types don't have subclass attributes */
+			status = CRYPT_ERROR_BADDATA;
+			break;
+
+		case PKCS15_OBJECT_UNRECOGNISED:
+			/* It's an unrecognised object type, we don't know what to do 
+			   with any attributes that may be present */
+			break;
+
+		default:
+			retIntError();
+		}
+	if( cryptStatusError( status ) )
+		return( status );
+
+	/* Skip any additional attribute information that may be present */
+	if( stell( stream ) < endPos )
+		{
+		status = sseek( stream, endPos );
+		if( cryptStatusError( status ) )
+			return( status );
+		}
+
+	return( CRYPT_OK );
+	}
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+static int readTypeAttributes( INOUT STREAM *stream, 
+							   INOUT PKCS15_INFO *pkcs15infoPtr,
+							   IN_ENUM( PKCS15_OBJECT ) \
+									const PKCS15_OBJECT_TYPE type,
+							   const BOOLEAN unrecognisedAttribute,
+							   const BOOLEAN isCryptlibData )
+	{
+	int tag, length, endPos, status;
+
+	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+	assert( isWritePtr( pkcs15infoPtr, sizeof( PKCS15_INFO ) ) );
+
+	REQUIRES( type > PKCS15_OBJECT_NONE && type < PKCS15_OBJECT_LAST );
+
+	/* Read the attribute wrapper */	
+	readConstructed( stream, NULL, CTAG_OB_TYPEATTR );
+	status = readSequence( stream, &length );
+	if( cryptStatusError( status ) )
+		return( status );
+	endPos = stell( stream ) + length;
+	if( unrecognisedAttribute )
+		{
+		/* It's a non-recognised object subtype, skip it */
+		return( ( stell( stream ) < endPos ) ? \
+				sseek( stream, endPos ) : CRYPT_OK );
+		}
+
+	/* Parameterised types have special tagging requirements when using 
+	   context-specific tags and the declaration is a "Tag Type" (for 
+	   example for the "direct" choice for the ObjectValue type) and the 
+	   "Type" in the "Tag Type" is a "DummyReference".  In this case the 
+	   context tag is encoded as an EXPLICIT rather than IMPLCIIT tag (see 
+	   section F.2 of PKCS #15 v1.2 and newer).  The only case where this 
+	   occurs is for the ObjectValue.direct option.
+		   
+	   This is complicated by the fact that versions of PKCS #15 before v1.2 
+	   erroneously stated that all context-specific tags in parameterised 
+	   types should use EXPLICIT tagging, however no (known) implementation 
+	   ever did this.
+		   
+	   What this double error means is that existing implementations get 
+	   things almost right, the exception being ObjectValue.direct, which 
+	   does require an EXPLICIT tag.  To deal with this, we check for the 
+	   presence of the optional tag and skip it if it's present */
+	if( checkStatusPeekTag( stream, status, tag ) && \
+		tag == MAKE_CTAG( CTAG_OV_DIRECT ) )
+		{
+		status = readConstructed( stream, &length, CTAG_OV_DIRECT );
+		}
+	if( cryptStatusError( status ) )
+		return( status );
+
+	/* Read the payload data, which just consists of remembering where the 
+	   payload starts */
+	switch( type )
+		{
+		case PKCS15_OBJECT_PUBKEY:
+			pkcs15infoPtr->pubKeyOffset = stell( stream );
+			break;
+
+		case PKCS15_OBJECT_PRIVKEY:
+			pkcs15infoPtr->privKeyOffset = stell( stream );
+			break;
+
+		case PKCS15_OBJECT_CERT:
+			pkcs15infoPtr->certOffset = stell( stream );
+			break;
+
+		case PKCS15_OBJECT_SECRETKEY:
+			pkcs15infoPtr->secretKeyOffset = stell( stream );
+			break;
+
+		case PKCS15_OBJECT_DATA:
+			{
+			int value;
+
+			/* If it's not cryptlib data, we can't do much with it */
+			if( !isCryptlibData )
+				break;
+
+			/* It's a cryptlib data object, extract the contents */
+			status = readOID( stream, cryptlibDataOIDinfo, 
+							  FAILSAFE_ARRAYSIZE( cryptlibDataOIDinfo, \
+												  OID_INFO ), 
+							  &value );
+			if( cryptStatusError( status ) )
+				return( status );
+			if( value == CRYPT_IATTRIBUTE_CONFIGDATA || \
+				value == CRYPT_IATTRIBUTE_USERINDEX )
+				{
+				/* The configuration data and user index are SEQUENCEs of 
+				   objects */
+				status = readSequence( stream, NULL );
+				if( cryptStatusError( status ) )
+					return( status );
+				}
+			if( value == CRYPT_ATTRIBUTE_NONE )
+				{
+				/* It's a non-recognised cryptlib data subtype, skip it */
+				break;
+				}
+			pkcs15infoPtr->dataOffset = stell( stream );
+			pkcs15infoPtr->dataType = value;
+			break;
+			}
+
+		default:
+			retIntError();
+		}
+	if( cryptStatusError( status ) )
+		return( status );
+
+	/* Skip the data payload */
+	if( stell( stream ) < endPos )
+		{
+		status = sseek( stream, endPos );
+		if( cryptStatusError( status ) )
+			return( status );
+		}
+
+	return( CRYPT_OK );
+	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 int readObjectAttributes( INOUT STREAM *stream, 
 						  INOUT PKCS15_INFO *pkcs15infoPtr,
-						  IN_ENUM( PKCS15_OBJECT ) const PKCS15_OBJECT_TYPE type, 
+						  IN_ENUM( PKCS15_OBJECT ) \
+								const PKCS15_OBJECT_TYPE type, 
 						  INOUT ERROR_INFO *errorInfo )
 	{
 	const ALLOWED_ATTRIBUTE_TYPES *allowedTypeInfo;
 	BOOLEAN skipDataRead = TRUE, isCryptlibData = FALSE;
-	int length, outerLength, endPos, value, tag, i, status;
+	int tag, length, outerLength, lastTag = CRYPT_ERROR, i, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( pkcs15infoPtr, sizeof( PKCS15_INFO ) ) );
@@ -344,9 +647,9 @@ int readObjectAttributes( INOUT STREAM *stream,
 	allowedTypeInfo = &allowedTypesTbl[ i ];
 
 	/* Make sure that this is a subtype that we can handle */
-	tag = peekTag( stream );
-	if( cryptStatusError( tag ) )
-		return( tag );
+	status = tag = peekTag( stream );
+	if( cryptStatusError( status ) )
+		return( status );
 	status = readGenericHole( stream, &outerLength, MIN_OBJECT_SIZE, 
 							  DEFAULT_TAG );
 	if( cryptStatusError( status ) )
@@ -360,36 +663,33 @@ int readObjectAttributes( INOUT STREAM *stream,
 			skipDataRead = FALSE;
 			break;
 			}
+		lastTag = allowedTypeInfo->subTypes[ i ];
 		}
 	ENSURES( i < FAILSAFE_ITERATIONS_SMALL );
 
+	/* If this is an unrecognised subtype, make sure that it's at least 
+	   vaguely valid.  Tags are in the range { BER_SEQUENCE, [0]...[n] }, 
+	   we interpret "vaguely valid" to mean within a short distance of the 
+	   last tag [n] that we recognise as valid */
+	if( skipDataRead && ( tag != BER_SEQUENCE ) && \
+		( tag < MAKE_CTAG( 0 ) || tag > lastTag + 10 ) )
+		return( CRYPT_ERROR_BADDATA );
+
 	/* Process the PKCS15CommonObjectAttributes */
 	status = readSequence( stream, &length );
-#if 0	/* 12/8/10 Only ever present in one pre-release product, now fixed */
-	if( cryptStatusOK( status ) && outerLength == sizeofObject( length ) )
-		{
-		/* Due to a disagreement over IMPLICIT vs. EXPLICIT tagging for the 
-		   parameterised types used in PKCS #15 based on an error that was 
-		   in the specification up until version 1.2 (see section F.2 of the 
-		   specification) some implementations have an extra layer of 
-		   encapsulation after the type tag.  If the inner SEQUENCE fits 
-		   exactly into the outer wrapper then the tagging used was EXPLICIT 
-		   and we need to dig down another level */
-		status = readSequence( stream, &length );
-		}
-#endif /* 0 */
 	if( cryptStatusOK( status ) && length > 0 )
 		{
-		endPos = stell( stream ) + length;
+		const int endPos = stell( stream ) + length;
 
 		/* Read the label if it's present and skip anything else */
-		if( peekTag( stream ) == BER_STRING_UTF8 )
+		if( checkStatusPeekTag( stream, status, tag ) && \
+			tag == BER_STRING_UTF8 )
 			{
 			status = readCharacterString( stream,
 						pkcs15infoPtr->label, CRYPT_MAX_TEXTSIZE, 
 						&pkcs15infoPtr->labelLength, BER_STRING_UTF8 );
 			}
-		if( canContinue( stream, status, endPos ) )
+		if( !cryptStatusError( status ) && stell( stream ) < endPos )
 			status = sseek( stream, endPos );
 		}
 	if( cryptStatusError( status ) )
@@ -399,101 +699,31 @@ int readObjectAttributes( INOUT STREAM *stream,
 				  "Invalid PKCS #15 common object attributes" ) );
 		}
 
-	/* Process the PKCS15CommonXXXAttributes */
-	status = readSequence( stream, &length );
-	if( cryptStatusError( status ) )
-		return( status );
-	endPos = stell( stream ) + length;
-	switch( type )
-		{
-		case PKCS15_OBJECT_PUBKEY:
-		case PKCS15_OBJECT_PRIVKEY:
-			/* It's a public/private-key object, read the ID and assorted 
-			   flags */
-			status = readOctetString( stream, pkcs15infoPtr->iD,
-									  &pkcs15infoPtr->iDlength, 
-									  1, CRYPT_MAX_HASHSIZE );
-			if( cryptStatusOK( status ) && \
-				canContinue( stream, status, endPos ) )
-				{
-				status = readPubkeyAttributes( stream, pkcs15infoPtr, 
-											endPos,
-											( type == PKCS15_OBJECT_PUBKEY ) ? \
-											TRUE : FALSE );
-				}
-			if( cryptStatusError( status ) )
-				{
-				retExt( status, 
-						( status, errorInfo, 
-						  "Invalid PKCS #15 public/private-key "
-						  "attributes" ) );
-				}
-			break;
-
-		case PKCS15_OBJECT_CERT:
-			/* It's a certificate object, read the ID and assorted flags */
-			status = readOctetString( stream, pkcs15infoPtr->iD,
-									  &pkcs15infoPtr->iDlength, 
-									  1, CRYPT_MAX_HASHSIZE );
-			if( cryptStatusOK( status ) && \
-				canContinue( stream, status, endPos ) )
-				{
-				status = readCertAttributes( stream, pkcs15infoPtr, 
-											 endPos );
-				}
-			if( cryptStatusError( status ) )
-				{
-				retExt( status, 
-						( status, errorInfo, 
-						  "Invalid PKCS #15 certificate attributes" ) );
-				}
-			break;
-
-		case PKCS15_OBJECT_SECRETKEY:
-			/* It's a secret-key object, there are no common attributes of interest 
-			   present */
-			break;
-
-		case PKCS15_OBJECT_DATA:
-			/* If it's a data object then all of the attributes are 
-			   optional.  If it's specifically a cryptlib data object then 
-			   it'll be identified via the cryptlib OID */
-			if( length <= 0 )
-				break;
-			if( peekTag( stream ) == BER_STRING_UTF8 )
-				status = readUniversal( stream );	/* Skip application name */
-			if( canContinue( stream, status, endPos ) && \
-				peekTag( stream ) == BER_OBJECT_IDENTIFIER )
-				{
-				status = readOID( stream, dataObjectOIDinfo, 
-								  FAILSAFE_ARRAYSIZE( dataObjectOIDinfo, \
-													  OID_INFO ), &value );
-				if( cryptStatusOK( status ) && value == TRUE )
-					isCryptlibData = TRUE;
-				}
-			break;
-		
-		default:
-			retIntError();
-		}
-	if( cryptStatusError( status ) )
+	/* Process the class attributes */
+	status = readClassAttributes( stream, pkcs15infoPtr, type );
+	if( cryptStatusError( status ) && status != OK_SPECIAL )
 		{
 		retExt( status, 
 				( status, errorInfo, 
-				  "Invalid PKCS #15 common type attributes" ) );
+				  "Invalid PKCS #15 %s attributes",
+				  ( type == PKCS15_OBJECT_PUBKEY ) ? "public key" : \
+				  ( type == PKCS15_OBJECT_PRIVKEY ) ? "private key" : \
+				  ( type == PKCS15_OBJECT_CERT ) ? "certificate" : \
+				  ( type == PKCS15_OBJECT_DATA ) ? "data object" : \
+												   "class" ) );
 		}
+	if( status == OK_SPECIAL )
+		isCryptlibData = TRUE;
 
-	/* Skip any additional attribute information that may be present */
-	if( stell( stream ) < endPos )
-		{
-		status = sseek( stream, endPos );
-		if( cryptStatusError( status ) )
-			return( status );
-		}
+	/* We have to have at least an ID present for any standard object 
+	   types */
+	ENSURES( ( type == PKCS15_OBJECT_SECRETKEY || \
+			   type == PKCS15_OBJECT_DATA || \
+			   type == PKCS15_OBJECT_UNRECOGNISED ) || \
+			 pkcs15infoPtr->iDlength > 0 );
 
-	/* For now we use the iD as the keyID, this may be overridden later if
-	   there's a real keyID present */
-	if( pkcs15infoPtr->iDlength > 0 )
+	/* If there's no keyID present then we use the iD as the keyID */
+	if( pkcs15infoPtr->keyIDlength <= 0 && pkcs15infoPtr->iDlength > 0 )
 		{
 		memcpy( pkcs15infoPtr->keyID, pkcs15infoPtr->iD, 
 				pkcs15infoPtr->iDlength );
@@ -501,115 +731,35 @@ int readObjectAttributes( INOUT STREAM *stream,
 		}
 
 	/* Skip the subclass attributes if present */
-	if( peekTag( stream ) == MAKE_CTAG( CTAG_OB_SUBCLASSATTR ) )
+	if( checkStatusPeekTag( stream, status, tag ) && \
+		tag == MAKE_CTAG( CTAG_OB_SUBCLASSATTR ) )
 		{
-		status = readUniversal( stream );
+		status = readSubclassAttributes( stream, pkcs15infoPtr, type );
 		if( cryptStatusError( status ) )
 			{
 			retExt( status, 
 					( status, errorInfo, 
-					  "Invalid PKCS #15 subclass attributes" ) );
+					  "Invalid PKCS #15 %s attributes",
+					  ( type == PKCS15_OBJECT_PRIVKEY ) ? "private key" : \
+														  "subclass" ) );
 			}
 		}
 
-	/* Process the type attributes, which just consists of remembering where
-	   the payload starts */
-	readConstructed( stream, NULL, CTAG_OB_TYPEATTR );
-	status = readSequence( stream, &length );
-	if( cryptStatusError( status ) )
-		return( status );
-	endPos = stell( stream ) + length;
-	if( skipDataRead )
-		{
-		/* It's a non-recognised object subtype, skip it */
-		return( ( stell( stream ) < endPos ) ? \
-				sseek( stream, endPos ) : CRYPT_OK );
-		}
-	if( peekTag( stream ) == MAKE_CTAG( CTAG_OV_DIRECT ) )
-		{
-		/* Parameterised types have special tagging requirements when using 
-		   context-specific tags and the declaration is a "Tag Type" (for 
-		   example for the "direct" choice for the ObjectValue type) and the 
-		   "Type" in the "Tag Type" is a "DummyReference".  In this case the 
-		   context tag is encoded as an EXPLICIT rather than IMPLCIIT tag 
-		   (see section F.2 of PKCS #15 v1.2 and newer).  The only case where
-		   this occurs is for the ObjectValue.direct option.
-		   
-		   This is complicated by the fact that versions of PKCS #15 before 
-		   v1.2 erroneously stated that all context-specific tags in 
-		   parameterised types should use EXPLICIT tagging, however no 
-		   (known) implementation ever did this.
-		   
-		   What this double error means is that existing implementations get 
-		   things almost right, the exception being ObjectValue.direct, which
-		   does require an EXPLICIT tag.  To deal with this, we check for the
-		   presence of the optional tag and skip it if it's present */
-		status = readConstructed( stream, &length, CTAG_OV_DIRECT );
-		if( cryptStatusError( status ) )
-			return( status );
-		}
-	switch( type )
-		{
-		case PKCS15_OBJECT_PUBKEY:
-			pkcs15infoPtr->pubKeyOffset = stell( stream );
-			break;
-
-		case PKCS15_OBJECT_PRIVKEY:
-			pkcs15infoPtr->privKeyOffset = stell( stream );
-			break;
-
-		case PKCS15_OBJECT_CERT:
-			pkcs15infoPtr->certOffset = stell( stream );
-			break;
-
-		case PKCS15_OBJECT_SECRETKEY:
-			pkcs15infoPtr->secretKeyOffset = stell( stream );
-			break;
-
-		case PKCS15_OBJECT_DATA:
-			/* If it's not cryptlib data, we can't do much with it */
-			if( !isCryptlibData )
-				break;
-
-			/* It's a cryptlib data object, extract the contents */
-			status = readOID( stream, cryptlibDataOIDinfo, 
-							  FAILSAFE_ARRAYSIZE( cryptlibDataOIDinfo, \
-												  OID_INFO ), 
-							  &value );
-			if( cryptStatusOK( status ) && \
-				( value == CRYPT_IATTRIBUTE_CONFIGDATA || \
-				  value == CRYPT_IATTRIBUTE_USERINDEX ) )
-				{
-				/* The configuration data and user index are SEQUENCEs of 
-				   objects */
-				status = readSequence( stream, NULL );
-				}
-			if( cryptStatusError( status ) )
-				break;
-			if( value == CRYPT_ATTRIBUTE_NONE )
-				{
-				/* It's a non-recognised cryptlib data subtype, skip it */
-				break;
-				}
-			pkcs15infoPtr->dataOffset = stell( stream );
-			pkcs15infoPtr->dataType = value;
-			break;
-
-		default:
-			retIntError();
-		}
+	/* Process the type attributes */
+	status = readTypeAttributes( stream, pkcs15infoPtr, type, 
+								 skipDataRead, isCryptlibData );
 	if( cryptStatusError( status ) )
 		{
 		retExt( status, 
 				( status, errorInfo, 
-				  "Invalid PKCS #15 type attributes" ) );
+				  "Invalid PKCS #15 %s payload data",
+				  ( type == PKCS15_OBJECT_PUBKEY ) ? "public key" : \
+				  ( type == PKCS15_OBJECT_PRIVKEY ) ? "private key" : \
+				  ( type == PKCS15_OBJECT_CERT ) ? "certificate" : \
+				  ( type == PKCS15_OBJECT_DATA ) ? "data object" : \
+												   "class" ) );
 		}
 
-	/* Skip the object data and any additional attribute information that 
-	   may be present */
-	if( stell( stream ) < endPos )
-		return( sseek( stream, endPos ) );
-
-	return( CRYPT_OK );
+	return( skipDataRead ? OK_SPECIAL : CRYPT_OK );
 	}
 #endif /* USE_PKCS15 */

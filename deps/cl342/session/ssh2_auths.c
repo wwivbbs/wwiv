@@ -353,7 +353,7 @@ static int processUserAuth( INOUT SESSION_INFO *sessionInfoPtr,
 							const BOOLEAN initialAuth )
 	{
 	STREAM stream;
-	const ATTRIBUTE_LIST *attributeListPtr = DUMMY_INIT_PTR;
+	const ATTRIBUTE_LIST *attributeListPtr DUMMY_INIT_PTR;
 	const METHOD_INFO *methodInfoPtr = NULL;
 	BYTE userNameBuffer[ CRYPT_MAX_TEXTSIZE + 8 ];
 	BYTE stringBuffer[ CRYPT_MAX_TEXTSIZE + 8 ];
@@ -386,9 +386,8 @@ static int processUserAuth( INOUT SESSION_INFO *sessionInfoPtr,
 		the initialAuth flag is set then we return our allowed types list */
 	status = length = \
 		readHSPacketSSH2( sessionInfoPtr, SSH_MSG_USERAUTH_REQUEST,
-						  ID_SIZE + sizeofString32( "", 1 ) + \
-							sizeofString32( "", 8 ) + \
-							sizeofString32( "", 4 ) );
+						  ID_SIZE + sizeofString32( 1 ) + \
+							sizeofString32( 8 ) + sizeofString32( 4 ) );
 	if( cryptStatusError( status ) )
 		return( status );
 	sMemConnect( &stream, sessionInfoPtr->receiveBuffer, length );
@@ -674,7 +673,7 @@ static const FAILSAFE_AUTH_INFO failsafeAuthSuccessTemplate = \
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int processFixedAuth( INOUT SESSION_INFO *sessionInfoPtr )
 	{
-	FAILSAFE_AUTH_INFO authInfo = DUMMY_INIT_STRUCT;
+	FAILSAFE_AUTH_INFO authInfo DUMMY_INIT_STRUCT;
 	BOOLEAN isFatalError;
 	int authAttempts;
 
@@ -756,7 +755,7 @@ int processServerAuth( INOUT SESSION_INFO *sessionInfoPtr,
 	{
 	SSH_INFO *sshInfo = sessionInfoPtr->sessionSSH;
 	USERAUTH_TYPE userAuthInfo;
-	int status = DUMMY_INIT;
+	int status DUMMY_INIT;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 

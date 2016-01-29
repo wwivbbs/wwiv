@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *					 cryptlib PGP De-enveloping Routines					*
-*					 Copyright Peter Gutmann 1996-2011						*
+*					 Copyright Peter Gutmann 1996-2014						*
 *																			*
 ****************************************************************************/
 
@@ -26,102 +26,121 @@
 CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 static BOOLEAN sanityCheck( const ENVELOPE_INFO *envelopeInfoPtr )
 	{
+	assert( isReadPtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
+
+	/* Check the general envelope state */
+	if( !envelopeSanityCheck( envelopeInfoPtr ) )
+		return( FALSE );
+
 	/* Make sure that general envelope state is in order */
-	if( !( envelopeInfoPtr->flags & ENVELOPE_ISDEENVELOPE ) )
+	if( envelopeInfoPtr->type != CRYPT_FORMAT_PGP || \
+		!( envelopeInfoPtr->flags & ENVELOPE_ISDEENVELOPE ) )
 		return( FALSE );
 	if( envelopeInfoPtr->pgpDeenvState < PGP_DEENVSTATE_NONE || \
 		envelopeInfoPtr->pgpDeenvState >= PGP_DEENVSTATE_LAST )
 		return( FALSE );
 
-	/* Make sure that the buffer position is within bounds */
+	/* Make sure that the buffer position is within bounds.  Other checks 
+	   have already been done in the general envelope check */
 	if( envelopeInfoPtr->buffer == NULL || \
-		envelopeInfoPtr->bufPos < 0 || \
-		envelopeInfoPtr->bufPos > envelopeInfoPtr->bufSize || \
 		envelopeInfoPtr->bufSize < MIN_BUFFER_SIZE || \
-		envelopeInfoPtr->bufSize >= MAX_INTLENGTH )
+		envelopeInfoPtr->bufSize >= MAX_BUFFER_SIZE )
 		return( FALSE );
 
-	/* Make sure that the payload size is within bounds */
-	if( envelopeInfoPtr->payloadSize != CRYPT_UNUSED && \
-		( envelopeInfoPtr->payloadSize < 0 || \
-		  envelopeInfoPtr->payloadSize >= MAX_INTLENGTH ) )
-		return( FALSE );
-
-	/* Make sure that the out-of-band buffer state is OK.  The oobDataLeft 
-	   value is the general size of a data packet header plus the maximum 
-	   possible length for the variable-length filename portion */
-	if( envelopeInfoPtr->oobEventCount < 0 || \
-		envelopeInfoPtr->oobEventCount > 10 || \
-		envelopeInfoPtr->oobDataLeft < 0 || \
+	/* Make sure that the out-of-band buffer state is OK.  Most of this has
+	   been checked by the general envelope check, the oobDataLeft value is 
+	   the general size of a data packet header plus the maximum possible 
+	   length for the variable-length filename portion */
+	if( envelopeInfoPtr->oobDataLeft < 0 || \
 		envelopeInfoPtr->oobDataLeft >= 32 + 256 )
-		return( FALSE );
-
-	/* Make sure that the packet data information is within bounds */
-	if( envelopeInfoPtr->segmentSize < 0 || \
-		envelopeInfoPtr->segmentSize >= MAX_INTLENGTH || \
-		envelopeInfoPtr->dataLeft < 0 || \
-		envelopeInfoPtr->dataLeft >= MAX_INTLENGTH )
 		return( FALSE );
 
 	return( TRUE );
 	}
 
-/* Get information on a PGP data packet.  If the isIndefinite value is 
-   present then an indefinite length (i.e. partial packet lengths) is 
-   permitted, otherwise it isn't.  If the allowDummyPackets flag is set then
-   we allow shorter-than-normal dummy packets (PGP_PACKET_MARKER), otherwise
-   we enforce a sensible minimum packet size */
+/* Get information on a PGP data packet.  If the lengthType value is present 
+   then an indefinite length (i.e. partial packet lengths) is permitted, 
+   otherwise it isn't */
+
+typedef enum {
+	PGP_LENGTH_NONE,		/* No length type */
+	PGP_LENGTH_NORMAL,		/* Definite length */
+	PGP_LENGTH_INDEFINITE,	/* Undefinite length */
+	PGP_LENGTH_UNKNOWN,		/* "Until EOF" length */
+	PGP_LENGTH_LAST			/* Last valid length type */
+	} PGP_LENGTH_TYPE;
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 4 ) ) \
 static int getPacketInfo( INOUT STREAM *stream, 
 						  INOUT ENVELOPE_INFO *envelopeInfoPtr,
-						  OUT_ENUM_OPT( PGP_PACKET ) PGP_PACKET_TYPE *packetType, 
+						  OUT_ENUM_OPT( PGP_PACKET ) \
+								PGP_PACKET_TYPE *packetType, 
 						  OUT_LENGTH_Z long *length, 
-						  OUT_OPT_BOOL BOOLEAN *isIndefinite,
-						  IN_LENGTH_SHORT int minPacketSize )
+						  OUT_OPT_ENUM( PGP_LENGTH ) \
+								PGP_LENGTH_TYPE *lengthType,
+						  IN_LENGTH_SHORT int minPacketSize,
+						  const BOOLEAN checkPacketDataPresent )
 	{
-	int ctb, version, status;
+	int ctb, version, type, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
 	assert( isWritePtr( packetType, sizeof( PGP_PACKET_TYPE ) ) );
 	assert( isWritePtr( length, sizeof( long ) ) );
-	assert( isIndefinite == NULL || \
-			isWritePtr( isIndefinite, sizeof( BOOLEAN ) ) );
+	assert( lengthType == NULL || \
+			isWritePtr( lengthType, sizeof( PGP_LENGTH_TYPE ) ) );
 
 	ENSURES( minPacketSize > 0 && minPacketSize < MAX_INTLENGTH_SHORT );
 
 	/* Clear return values */
 	*packetType = PGP_PACKET_NONE;
 	*length = 0;
-	if( isIndefinite != NULL )
-		*isIndefinite = FALSE;
+	if( lengthType != NULL )
+		*lengthType = PGP_LENGTH_NORMAL;
 
 	/* Read the packet header and extract information from the CTB.  The 
 	   assignment of version numbers is a bit complicated since it's 
 	   possible to use PGP 2.x packet headers to wrap up OpenPGP packets, 
 	   and in fact a number of apps mix version numbers.  We treat the 
 	   version to report as the highest one that we find */
-	if( isIndefinite != NULL )
+	if( lengthType != NULL )
 		status = pgpReadPacketHeaderI( stream, &ctb, length, minPacketSize );
 	else
-		status = pgpReadPacketHeader( stream, &ctb, length, minPacketSize );
+		{
+		status = pgpReadPacketHeader( stream, &ctb, length, minPacketSize,
+									  MAX_INTLENGTH - 1 );
+		}
 	if( cryptStatusError( status ) )
 		{
 		if( status != OK_SPECIAL )
 			return( status );
-		ENSURES( isIndefinite != NULL );
+		ENSURES( lengthType != NULL );
 
 		/* Remember that the packet uses an indefinite-length encoding */
-		envelopeInfoPtr->dataFlags &= ~ENVDATA_NOSEGMENT;
-		*isIndefinite = TRUE;
+		*lengthType = PGP_LENGTH_INDEFINITE;
 		}
+
+	/* Extract the packet type */
 	version = pgpGetPacketVersion( ctb );
 	if( version > envelopeInfoPtr->version )
 		envelopeInfoPtr->version = version;
-	*packetType = pgpGetPacketType( ctb );
+	type = pgpGetPacketType( ctb );
+	if( type <= PGP_PACKET_NONE || type >= PGP_PACKET_LAST )
+		return( CRYPT_ERROR_BADDATA );
+	*packetType = type;
 
-	/* Extract and return the packet type */
+	/* Deal with implicit-length compressed data.  This is an oddball 
+	   exception to standard PGP length encodings in that it's neither
+	   definite nor indefinite-length but merely "until you run out of
+	   data", so we let the caller know this */
+	if( ctb == PGP_CTB_COMPRESSED )
+		*lengthType = PGP_LENGTH_UNKNOWN;
+
+	/* Check that all of the packet data is present in the stream if 
+	   required */
+	if( checkPacketDataPresent && sMemDataLeft( stream ) < *length )
+		return( CRYPT_ERROR_UNDERFLOW );
+
 	return( CRYPT_OK );
 	}
 
@@ -199,7 +218,8 @@ static int addContentListItem( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 
 		/* It's a one-pass signature packet, the signature information 
 		   follows in another packet that will be added later */
-		status = sSkip( stream, ( int ) queryInfo.size );
+		status = sSkip( stream, ( int ) queryInfo.size, 
+						MAX_INTLENGTH_SHORT );
 		if( cryptStatusError( status ) )
 			return( status );
 		}
@@ -330,6 +350,19 @@ static int addContentListItem( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 		   continue */
 		if( queryInfo.keySetupAlgo != CRYPT_ALGO_NONE )
 			{
+			/* In theory PGP allows three different types of password
+			   processing, a straight hash of the password, a salted hash of
+			   the password, or a salted iterated hash.  Only the last one
+			   makes any sense, although no known implementations generate 
+			   the first two we can in theory create at least the second 
+			   using GPG with the --s2k-mode argument so we allow that, but
+			   not the unsalted hash */
+			if( queryInfo.saltLength <= 0 )
+				{
+				DEBUG_DIAG(( "Insecure S2K type 0 encountered" ));
+				assert_nofuzz( DEBUG_WARN );
+				return( CRYPT_ERROR_BADDATA );
+				}
 			contentListItem->envInfo = CRYPT_ENVINFO_PASSWORD;
 			encrInfo->keySetupAlgo = queryInfo.keySetupAlgo;
 			encrInfo->keySetupIterations = queryInfo.keySetupIterations;
@@ -417,11 +450,12 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 static int processPacketHeader( INOUT ENVELOPE_INFO *envelopeInfoPtr, 
 								INOUT STREAM *stream, 
 								INOUT_ENUM( PGP_DEENVSTATE ) \
-									PGP_DEENV_STATE *state )
+									PGP_DEENV_STATE *state,
+								const BOOLEAN checkState )
 	{
 	const int streamPos = stell( stream );
 	PGP_PACKET_TYPE packetType;
-	BOOLEAN isIndefinite;
+	PGP_LENGTH_TYPE lengthType;
 	long packetLength;
 	int value, status;
 
@@ -430,19 +464,74 @@ static int processPacketHeader( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	assert( isWritePtr( state, sizeof( PGP_DEENV_STATE ) ) );
 
 	REQUIRES( sanityCheck( envelopeInfoPtr ) );
-	REQUIRES( streamPos >= 0 && streamPos < MAX_INTLENGTH );
+	REQUIRES( ( checkState && *state == PGP_DEENVSTATE_ENCR_HDR ) || \
+			  ( !checkState ) );
+	REQUIRES( streamPos >= 0 && streamPos < MAX_BUFFER_SIZE );
 
 	/* Read the PGP packet type and figure out what we've got.  If we're at
 	   the start of the data we allow noise packets like PGP_PACKET_MARKER
 	   (with a length of 3), otherwise we only allow standard packets */
 	status = getPacketInfo( stream, envelopeInfoPtr, &packetType, 
-							&packetLength, &isIndefinite,
-							( *state == PGP_DEENVSTATE_NONE ) ? 3 : 8 );
+							&packetLength, &lengthType,
+							( *state == PGP_DEENVSTATE_NONE ) ? 3 : 8, 
+							FALSE );
 	if( cryptStatusError( status ) )
 		{
 		retExt( status,
 				( status, ENVELOPE_ERRINFO,
 				  "Invalid PGP packet header" ) );
+		}
+
+	/* This is a general-purpose function that can process all packet types, 
+	   however in some cases when it's called it should only allow certain
+	   types (see the state machine diagram at the start of 
+	   processPreamble()).  If the checkState flag is set then we only allow
+	   the packet types permitted by the state machine rather than accepting
+	   any packet type */
+	if( checkState )
+		{
+		ENSURES( *state == PGP_DEENVSTATE_ENCR_HDR );
+
+		/* We're processing encryption metadata, the only valid packet types
+		   are further metadata (encrypted-key) packets, or the encrypted
+		   data that follows them */
+		if( ( packetType != PGP_PACKET_SKE ) && \
+			( packetType != PGP_PACKET_PKE ) && \
+			( packetType != PGP_PACKET_ENCR ) && \
+			( packetType != PGP_PACKET_ENCR_MDC ) )
+			{
+			retExt( CRYPT_ERROR_BADDATA,
+					( CRYPT_ERROR_BADDATA, ENVELOPE_ERRINFO,
+					  "Expected encrypted-key or encrypted-data packet but "
+					  " got packet type %d", packetType ) );
+			}
+		}
+	if( packetType == PGP_PACKET_MARKER && *state != PGP_DEENVSTATE_NONE )
+		{
+		/* Marker packets are only valid at the start of a message.  This 
+		   check is somewhat pointless, but can occur if we hit corrupted
+		   data */
+		retExt( CRYPT_ERROR_BADDATA,
+				( CRYPT_ERROR_BADDATA, ENVELOPE_ERRINFO,
+				  "Encountered obsolete PGP 5 marker packet while "
+				  "processing message data" ) );
+		}
+	if( lengthType == PGP_LENGTH_INDEFINITE )
+		{
+		/* Only packets containing data payloads can have indefinite 
+		   lengths */
+		if( packetType != PGP_PACKET_DATA && \
+			packetType != PGP_PACKET_ENCR_MDC && \
+			packetType != PGP_PACKET_ENCR )
+			{
+			retExt( CRYPT_ERROR_BADDATA,
+					( CRYPT_ERROR_BADDATA, ENVELOPE_ERRINFO,
+					  "Encountered PGP packet type %d with indefinite "
+					  "length", packetType ) );
+			}
+
+		/* Remember that the packet uses an indefinite-length encoding */
+		envelopeInfoPtr->dataFlags &= ~ENVDATA_NOSEGMENT;
 		}
 
 	/* Process as much of the header as we can and move on to the next state.  
@@ -457,10 +546,10 @@ static int processPacketHeader( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			int length;
 
 			/* Skip the content-type, filename, and date */
-			sSkip( stream, 1 );
+			sSkip( stream, 1, 1 );
 			status = length = sgetc( stream );
 			if( !cryptStatusError( status ) )
-				status = sSkip( stream, length + 4 );
+				status = sSkip( stream, length + 4, MAX_INTLENGTH_SHORT );
 			if( cryptStatusError( status ) )
 				{
 				retExt( status,
@@ -475,10 +564,6 @@ static int processPacketHeader( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			if( payloadSize < 1 || payloadSize > MAX_INTLENGTH )
 				return( CRYPT_ERROR_BADDATA );
 			envelopeInfoPtr->payloadSize = payloadSize;
-			if( isIndefinite )
-				{
-				/* See comment for PGP_PACKET_ENCR */
-				}
 			*state = PGP_DEENVSTATE_DATA;
 			break;
 			}
@@ -513,7 +598,7 @@ static int processPacketHeader( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 					return( CRYPT_ERROR_NOTAVAIL );
 				}
 			envelopeInfoPtr->flags |= ENVELOPE_ZSTREAMINITED;
-			if( packetLength != CRYPT_UNUSED )
+			if( lengthType != PGP_LENGTH_UNKNOWN )
 				{
 				const long payloadSize = packetLength - 1;
 
@@ -554,6 +639,7 @@ static int processPacketHeader( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 						  "Invalid PGP %s packet", 
 						  ( packetType == PGP_PACKET_SKE ) ? "SKE" : "PKE" ) );
 				}
+			*state = PGP_DEENVSTATE_ENCR_HDR;
 			break;
 
 		case PGP_PACKET_SIGNATURE:
@@ -645,20 +731,18 @@ static int processPacketHeader( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 				envelopeInfoPtr->usage != ACTION_CRYPT )
 				return( CRYPT_ERROR_BADDATA );
 			envelopeInfoPtr->payloadSize = packetLength;
-			if( isIndefinite )
-				{
-				/* This is only a partial length, need to mark it as such */
-				/* NB: getPacketInfo() has already cleared the
-					   envelopeInfoPtr->dataFlags & ENVDATA_NOSEGMENT setting */
-				}
 			envelopeInfoPtr->usage = ACTION_CRYPT;
 			*state = ( packetType == PGP_PACKET_ENCR_MDC ) ? \
 					 PGP_DEENVSTATE_ENCR_MDC : PGP_DEENVSTATE_ENCR;
 			break;
 
 		case PGP_PACKET_MARKER:
-			/* Obsolete marker packet, skip it */
-			return( sSkip( stream, packetLength ) );
+			/* Obsolete marker packet used to indicate that a message uses 
+			   features not present in PGP 2.6.x (via its version number), so
+			   that any attempt to process it with a 2.x version of PGP 
+			   produces a message that a newer version is required.  This is 
+			   just noise, so we skip it */
+			return( sSkip( stream, packetLength, MAX_INTLENGTH_SHORT ) );
 		
 		default:
 			/* Unrecognised/invalid packet type */
@@ -818,6 +902,7 @@ static int processPacketDataHeader( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	STREAM headerStream;
 	BYTE buffer[ 32 + 256 + 8 ];	/* Max.data packet header size */
 	PGP_PACKET_TYPE packetType;
+	PGP_LENGTH_TYPE lengthType;
 	long packetLength;
 	int value, length, status;
 
@@ -919,6 +1004,7 @@ static int processPacketDataHeader( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 		byte	filename length
 		byte[]	filename
 		byte[4]	timestamp
+	  [	byte[]	payload data ]
 
 	   The smallest size for this header (1-byte length, no filename) is 
 	   1 + 1 + 1 + 1 + 4 = 8 bytes.  This is also just enough to get us to 
@@ -938,11 +1024,34 @@ static int processPacketDataHeader( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	/* Read the header information and see what we've got */
 	sMemConnect( &headerStream, buffer, length );
 	status = getPacketInfo( &headerStream, envelopeInfoPtr, &packetType,
-							&packetLength, NULL, 8 );
+							&packetLength, &lengthType, 8, FALSE );
 	if( cryptStatusError( status ) )
 		{
 		sMemDisconnect( &headerStream );
 		return( status );
+		}
+	if( lengthType == PGP_LENGTH_INDEFINITE )
+		{
+		/* Remember that the packet uses an indefinite-length encoding */
+		envelopeInfoPtr->dataFlags &= ~ENVDATA_NOSEGMENT;
+		}
+
+	/* Compressed data is an odd case because its length is implicitly 
+	   defined as "until the end of the data stream", which means that it
+	   can't be followed by further packets as would occur with, for 
+	   example, signed data in which a signature packet would follow the
+	   compressed data.  No (known) PGP implementation creates data streams 
+	   like this.  For example GPG, when asked to compress and sign, 
+	   compresses the signed-data packet stream, and when asked to sign 
+	   compressed data encapsulates the compressed data inside a literal-
+	   data packet.  Any data stream like this is almost certainly an 
+	   error, and in any case can't really be processed, so we reject it */
+	if( packetType == PGP_PACKET_COPR && \
+		( envelopeInfoPtr->usage != ACTION_COMPRESS && \
+		  envelopeInfoPtr->usage != ACTION_CRYPT ) )
+		{
+		sMemDisconnect( &headerStream );
+		return( CRYPT_ERROR_BADDATA );
 		}
 
 	/* Remember the total data packet size unless it's compressed data, 
@@ -952,7 +1061,10 @@ static int processPacketDataHeader( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 		status = adjustDataInfo( envelopeInfoPtr, &headerStream,
 								 packetLength );
 		if( cryptStatusError( status ) )
+			{
+			sMemDisconnect( &headerStream );
 			return( status );
+			}
 		}
 
 	/* If it's a literal data packet, parse it so that we can strip it from 
@@ -967,8 +1079,16 @@ static int processPacketDataHeader( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 		status = extraLen = sgetc( &headerStream );
 		if( !cryptStatusError( status ) )
 			{
-			envelopeInfoPtr->oobDataLeft = stell( &headerStream ) + \
-										   extraLen + 4;
+			/* Make sure that the packet formatting is valid, the content 
+			   should be the type, filename length, filename, timestamp,
+			   and at least one byte of data */
+			if( packetLength < 1 + 1 + extraLen + 4 + 1 )
+				status = CRYPT_ERROR_BADDATA;
+			else
+				{
+				envelopeInfoPtr->oobDataLeft = stell( &headerStream ) + \
+											   extraLen + 4;
+				}
 			}
 		sMemDisconnect( &headerStream );
 		if( cryptStatusError( status ) )
@@ -1117,10 +1237,34 @@ static int processEncryptedPacket( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 *																			*
 ****************************************************************************/
 
+/* Check for a possible soft error when reading data.  This is necessary 
+   because if we're performing a standard data push then the caller expects 
+   to get a CRYPT_OK status with a bytes-copied count, but if they've got as 
+   far as the trailer data then they'll get a CRYPT_ERROR_UNDERFLOW unless 
+   we special-case the handling of the return status.  This is complicated 
+   by the fact that we have to carefully distinguish a CRYPT_ERROR_UNDERFLOW 
+   due to running out of input from a CRYPT_ERROR_UNDERFLOW incurred for any 
+   other reason such as parsing the input data */
+
+CHECK_RETVAL_BOOL \
+static BOOLEAN checkSoftError( IN_ERROR const int status, 
+							   const BOOLEAN isFlush )
+	{
+	REQUIRES_B( cryptStatusError( status ) );
+
+	/* If it's not a flush and we've run out of data, report it as a soft 
+	   error */
+	if( !isFlush && status == CRYPT_ERROR_UNDERFLOW )
+		return( TRUE );
+		
+	return( FALSE );
+	}
+
 /* Process an MDC packet */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-static int processMDC( INOUT ENVELOPE_INFO *envelopeInfoPtr )
+static int processMDC( INOUT ENVELOPE_INFO *envelopeInfoPtr,
+					   const BOOLEAN isFlush )
 	{
 	ACTION_LIST *actionListPtr;
 	MESSAGE_DATA msgData;
@@ -1135,6 +1279,8 @@ static int processMDC( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 	if( envelopeInfoPtr->bufPos - \
 			envelopeInfoPtr->dataLeft < PGP_MDC_PACKET_SIZE )
 		{
+		if( checkSoftError( CRYPT_ERROR_UNDERFLOW, isFlush ) )
+			return( OK_SPECIAL );
 		retExt( CRYPT_ERROR_SIGNATURE,
 				( CRYPT_ERROR_SIGNATURE, ENVELOPE_ERRINFO,
 				  "MDC packet is missing or incomplete, expected %d bytes "
@@ -1187,15 +1333,38 @@ static int processMDC( INOUT ENVELOPE_INFO *envelopeInfoPtr )
    driven state machine, but instead of reading along a (hypothetical
    Turing-machine) tape someone has taken the tape and cut it into bits and
    keeps feeding them to us and saying "See what you can do with this" (and
-   occasionally "Where's the bloody spoons?").  Since PGP uses sequential
-   discrete packets rather than the nested objects encountered in the ASN.1-
-   encoded data format the parsing code is made slightly simpler because
-   (for example) the PKC info is just an unconnected sequence of packets
-   rather than a SEQUENCE or SET OF as for cryptlib and PKCS #7/CMS.  OTOH 
-   since there's no indication of what's next we have to perform a complex
-   lookahead to see what actions we have to take once we get to the payload.
-   The end result is that teh code is actually vastly more complex than the
-   CMS equivalent */
+   occasionally "Where's the bloody spoons?").  The following code implements
+   this state machine:
+
+			PKE / SKE
+	NONE ----------------> ENC_HDR <--------+
+							  |  | PKE/SKE	|
+							  |	 +----------+	
+							  v
+						ENCR/ENCR_MDC
+							  |
+			Sign/Sig-onepass  |
+			Copr.			  |
+			Data			  v	
+		 -----------------> DATA
+							  |
+							  v
+						 DATA_HEADER
+							  |
+							  v
+							DONE
+
+   If type == Sign/Sig-onepass and detached-sig, we transition directly to 
+   DONE.
+
+   Since PGP uses sequential discrete packets rather than the nested objects 
+   encountered in the ASN.1-encoded data format the parsing code is made 
+   slightly simpler because (for example) the PKC info is just an 
+   unconnected sequence of packets rather than a SEQUENCE or SET OF as for 
+   cryptlib and PKCS #7/CMS.  OTOH since there's no indication of what's 
+   next we have to perform a complex lookahead to see what actions we have 
+   to take once we get to the payload.  The end result is that the code is 
+   actually vastly more complex than the CMS equivalent */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int processPreamble( INOUT ENVELOPE_INFO *envelopeInfoPtr )
@@ -1218,162 +1387,188 @@ static int processPreamble( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 	/* Keep consuming information until we run out of input or reach the
 	   plaintext data packet */
 	for( iterationCount = 0;
-		 state != PGP_DEENVSTATE_DONE && iterationCount < FAILSAFE_ITERATIONS_MED;
+		 cryptStatusOK( status ) && \
+			state != PGP_DEENVSTATE_DONE && \
+			iterationCount < FAILSAFE_ITERATIONS_MED;
 		 iterationCount++ )
 		{
-		/* Read the PGP packet type and figure out what we've got */
-		if( state == PGP_DEENVSTATE_NONE )
+		switch( state )
 			{
-			status = processPacketHeader( envelopeInfoPtr, &stream, &state );
-			if( cryptStatusError( status ) )
-				break;
-
-			/* Remember how far we got */
-			streamPos = stell( &stream );
-			}
-
-		/* Process the start of an encrypted data packet */
-		if( state == PGP_DEENVSTATE_ENCR || \
-			state == PGP_DEENVSTATE_ENCR_MDC )
-			{
-			status = processEncryptedPacket( envelopeInfoPtr, &stream, state );
-			if( cryptStatusError( status ) )
-				{
-				/* If it's a resource-needed status then it's not an 
-				   error */
-				if( status == CRYPT_ENVELOPE_RESOURCE )
+			/* Read the PGP packet type and figure out what we've got */
+			case PGP_DEENVSTATE_NONE:
+				status = processPacketHeader( envelopeInfoPtr, &stream, 
+											  &state, FALSE );
+				if( cryptStatusError( status ) )
 					break;
 
-				/* We may get non-data-related errors like 
-				   CRYPT_ERROR_WRONGKEY so we only set extended error 
-				   information if it's a data-related error */
-				if( isDataError( status ) )
+				/* Remember how far we got */
+				streamPos = stell( &stream );
+				break;
+
+			/* Process a PKE/SKE packet.  Since we're in the middle of 
+			   processing encrypted-data metadata, we set the checkState
+			   flag to TRUE to disallow any other packets that the 
+			   general-purpose processPacketHeader() function may 
+			   encounter */
+			case PGP_DEENVSTATE_ENCR_HDR:
+				status = processPacketHeader( envelopeInfoPtr, &stream, 
+											  &state, TRUE );
+				if( cryptStatusError( status ) )
+					break;
+
+				/* Remember how far we got */
+				streamPos = stell( &stream );
+				break;
+
+			/* Process the start of an encrypted data packet */
+			case PGP_DEENVSTATE_ENCR:
+			case PGP_DEENVSTATE_ENCR_MDC:
+				status = processEncryptedPacket( envelopeInfoPtr, &stream, 
+												 state );
+				if( cryptStatusError( status ) )
+					{
+					/* If it's a resource-needed status then it's not an 
+					   error */
+					if( status == CRYPT_ENVELOPE_RESOURCE )
+						break;
+
+					/* We may get non-data-related errors like 
+					   CRYPT_ERROR_WRONGKEY so we only set extended error 
+					   information if it's a data-related error */
+					if( isDataError( status ) )
+						{
+						setErrorString( ENVELOPE_ERRINFO, 
+										"Invalid PGP encrypted data packet "
+										"header", 40 );
+						}
+					break;
+					}
+
+				/* Remember where we are and move on to the next state */
+				streamPos = stell( &stream );
+				state = PGP_DEENVSTATE_DATA;
+				break;
+
+			/* Process the start of a data packet */
+			case PGP_DEENVSTATE_DATA:
+				{
+				const int originalDataFlags = envelopeInfoPtr->dataFlags;
+
+				/* Synchronise the data stream processing to the start of 
+				   the encapsulated data.  This is made somewhat complex by 
+				   PGP's awkward packet format (see the comment for 
+				   processPacketDataHeader()) which, unlike CMS:
+
+					[ Hdr [ Encaps [ Octet String ] ] ]
+
+				   has:
+							   [ Hdr | Octet String ]
+					  [ Keyex ][ Hdr | Octet String ]
+					[ Onepass ][ Hdr | Octet String ][ Signature ]
+					   [ Copr ][ Hdr | Octet String ]
+
+				   This means that if we're not processing a data packet 
+				   then the content isn't the payload but a futher set of 
+				   discrete packets that we don't want to touch.  To work 
+				   around this we temporarily set the ENVDATA_NOLENGTHINFO 
+				   flag to indicate that it's a blob to be processed as an 
+				   opaque unit, at the same time temporarily clearing any 
+				   other flags that might mess up the opaque-blob handling.
+
+				   In addition to this, if we're using the indefinite-length
+				   encoding then the initial segment's length has already 
+				   been read when the packet header was read.  This is 
+				   because PGP's weird indefinite-length encoding works as 
+				   follows:
+
+					[ Type | Length | Continuation flag | Data ]
+					[		 Length | Continuation flag | Data ]
+					[		 Length | Continuation flag | Data ]
+					...
+					[		 Length						| Data ]
+
+				   so we can't simply undo the read of the start of the 
+				   first packet and treat it as a standard segement because 
+				   the encoding for the first segment and the remaining 
+				   segments is different, so an attempt to treat them 
+				   identically will lead to a decoding error.  Instead we 
+				   set the ENVDATA_NOFIRSTSEGMENT flag to indicate that the 
+				   first length-read should be skipped.
+			   
+				   Finally, when we reset the flags we have to preserve the 
+				   ENVDATA_ENDOFCONTENTS flag, since we may have already 
+				   encountered the last segment during the sync operation */
+				if( envelopeInfoPtr->dataFlags & ENVDATA_NOSEGMENT )
+					{
+					if( envelopeInfoPtr->usage != ACTION_NONE )
+						envelopeInfoPtr->dataFlags |= ENVDATA_NOLENGTHINFO;
+					}
+				else
+					envelopeInfoPtr->dataFlags |= ENVDATA_NOFIRSTSEGMENT;
+				status = envelopeInfoPtr->syncDeenvelopeData( envelopeInfoPtr,
+															  &stream );
+				envelopeInfoPtr->dataFlags = originalDataFlags | \
+					( envelopeInfoPtr->dataFlags & ENVDATA_ENDOFCONTENTS );
+				if( cryptStatusError( status ) )
 					{
 					setErrorString( ENVELOPE_ERRINFO, 
-									"Invalid PGP encrypted data packet header", 
-									40 );
+									"Couldn't synchronise envelope state "
+									"prior to data payload processing", 68 );
+					break;
+					}
+				streamPos = 0;
+
+				/* Move on to the next state.  For plain data we're done,
+				   however for other content types we have to either process 
+				   or strip out the junk that PGP puts at the start of the 
+				   content */
+				if( envelopeInfoPtr->usage != ACTION_NONE )
+					{
+					envelopeInfoPtr->oobEventCount = 1;
+					state = PGP_DEENVSTATE_DATA_HEADER;
+					}
+				else
+					state = PGP_DEENVSTATE_DONE;
+
+				ENSURES( checkActions( envelopeInfoPtr ) );
+
+				break;
+				}
+
+			/* Burrow down into the encapsulated data to see what's next */
+			case PGP_DEENVSTATE_DATA_HEADER:
+				/* If there's no out-of-band data left to remove at the 
+				   start of the payload then we're done.  This out-of-band 
+				   data handling sometimes requires two passes, the first 
+				   time through oobEventCount is nonzero because it's been 
+				   set in the preceding PGP_DEENVSTATE_DATA state and we 
+				   fall through to processPacketDataHeader() which 
+				   decrements the oobEventCount to zero.  However 
+				   processPacketDataHeader() may need to read out-of-band 
+				   data in which case on the second time around oobDataLeft 
+				   will be nonzero, resulting in a second call to
+				   processPacketDataHeader() to clear the remaining out-of-
+				   band data */
+				if( envelopeInfoPtr->oobEventCount <= 0 && \
+					envelopeInfoPtr->oobDataLeft <= 0 )
+					{
+					state = PGP_DEENVSTATE_DONE;
+					break;
+					}
+
+				/* Process the encapsulated data header */
+				status = processPacketDataHeader( envelopeInfoPtr, &state );
+				if( cryptStatusError( status ) )
+					{
+					setErrorString( ENVELOPE_ERRINFO, 
+									"Invalid PGP encapsulated content "
+									"header", 39 );
+					break;
 					}
 				break;
-				}
 
-			/* Remember where we are and move on to the next state */
-			streamPos = stell( &stream );
-			state = PGP_DEENVSTATE_DATA;
-			}
-
-		/* Process the start of a data packet */
-		if( state == PGP_DEENVSTATE_DATA )
-			{
-			const int originalDataFlags = envelopeInfoPtr->dataFlags;
-
-			/* Synchronise the data stream processing to the start of the
-			   encapsulated data.  This is made somewhat complex by PGP's
-			   awkward packet format (see the comment for 
-			   processPacketDataHeader()) which, unlike CMS:
-
-				[ Hdr [ Encaps [ Octet String ] ] ]
-
-			   has:
-						   [ Hdr | Octet String ]
-				  [ Keyex ][ Hdr | Octet String ]
-				[ Onepass ][ Hdr | Octet String ][ Signature ]
-				   [ Copr ][ Hdr | Octet String ]
-
-			   This means that if we're not processing a data packet then 
-			   the content isn't the payload but a futher set of discrete 
-			   packets that we don't want to touch.  To work around this we 
-			   temporarily set the ENVDATA_NOLENGTHINFO flag to indicate 
-			   that it's a blob to be processed as an opaque unit, at the 
-			   same time temporarily clearing any other flags that might 
-			   mess up the opaque-blob handling.
-
-			   In addition to this, if we're using the indefinite-length
-			   encoding then the initial segment's length has already been 
-			   read when the packet header was read.  This is because PGP's
-			   wierd indefinite-length encoding works as follows:
-
-				[ Type | Length | Continuation flag | Data ]
-				[		 Length | Continuation flag | Data ]
-				[		 Length | Continuation flag | Data ]
-				...
-				[		 Length						| Data ]
-
-			   so we can't simply undo the read of the start of the first 
-			   packet and treat it as a standard segement because the 
-			   encoding for the first segment and the remaining segments is 
-			   different, so an attempt to treat them identically will lead 
-			   to a decoding error.  Instead we set the 
-			   ENVDATA_NOFIRSTSEGMENT flag to indicate that the first 
-			   length-read should be skipped.
-			   
-			   Finally, when we reset the flags we have to preserve the 
-			   ENVDATA_ENDOFCONTENTS flag, since we may have already 
-			   encountered the last segment during the sync operation */
-			if( envelopeInfoPtr->dataFlags & ENVDATA_NOSEGMENT )
-				{
-				if( envelopeInfoPtr->usage != ACTION_NONE )
-					envelopeInfoPtr->dataFlags |= ENVDATA_NOLENGTHINFO;
-				}
-			else
-				envelopeInfoPtr->dataFlags |= ENVDATA_NOFIRSTSEGMENT;
-			status = envelopeInfoPtr->syncDeenvelopeData( envelopeInfoPtr,
-														  &stream );
-			envelopeInfoPtr->dataFlags = originalDataFlags | \
-				( envelopeInfoPtr->dataFlags & ENVDATA_ENDOFCONTENTS );
-			if( cryptStatusError( status ) )
-				{
-				setErrorString( ENVELOPE_ERRINFO, 
-								"Couldn't synchronise envelope state prior "
-								"to data payload processing", 68 );
-				break;
-				}
-			streamPos = 0;
-
-			/* Move on to the next state.  For plain data we're done,
-			   however for other content types we have to either process or
-			   strip out the junk that PGP puts at the start of the 
-			   content */
-			if( envelopeInfoPtr->usage != ACTION_NONE )
-				{
-				envelopeInfoPtr->oobEventCount = 1;
-				state = PGP_DEENVSTATE_DATA_HEADER;
-				}
-			else
-				state = PGP_DEENVSTATE_DONE;
-			
-			ENSURES( checkActions( envelopeInfoPtr ) );
-			}
-
-		/* Burrow down into the encapsulated data to see what's next */
-		if( state == PGP_DEENVSTATE_DATA_HEADER )
-			{
-			/* If there's no out-of-band data left to remove at the start of
-			   the payload, we're done.  This out-of-band data handling 
-			   sometimes requires two passes, the first time through 
-			   oobEventCount is nonzero because it's been set in the 
-			   preceding PGP_DEENVSTATE_DATA state and we fall through to 
-			   processPacketDataHeader() which decrements the oobEventCount
-			   to zero.  However processPacketDataHeader() may need to read 
-			   out-of-band data in which case on the second time around 
-			   oobDataLeft will be nonzero, resulting in a second call to
-			   processPacketDataHeader() to clear the remaining out-of-band
-			   data */
-			if( envelopeInfoPtr->oobEventCount <= 0 && \
-				envelopeInfoPtr->oobDataLeft <= 0 )
-				{
-				state = PGP_DEENVSTATE_DONE;
-				break;
-				}
-
-			/* Process the encapsulated data header */
-			status = processPacketDataHeader( envelopeInfoPtr, &state );
-			if( cryptStatusError( status ) )
-				{
-				setErrorString( ENVELOPE_ERRINFO, 
-								"Invalid PGP encapsulated content header", 
-								39 );
-				break;
-				}
+			default:
+				retIntError();
 			}
 		}
 	sMemDisconnect( &stream );
@@ -1385,13 +1580,13 @@ static int processPreamble( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 		}
 	envelopeInfoPtr->pgpDeenvState = state;
 
-	ENSURES( streamPos >= 0 && streamPos < MAX_INTLENGTH && \
+	ENSURES( streamPos >= 0 && streamPos < MAX_BUFFER_SIZE && \
 			 envelopeInfoPtr->bufPos - streamPos >= 0 );
 
 	/* Consume the input that we've processed so far by moving everything 
 	   past the current position down to the start of the envelope buffer */
 	remainder = envelopeInfoPtr->bufPos - streamPos;
-	REQUIRES( remainder >= 0 && remainder < MAX_INTLENGTH && \
+	REQUIRES( remainder >= 0 && remainder < MAX_BUFFER_SIZE && \
 			  streamPos + remainder <= envelopeInfoPtr->bufSize );
 	if( remainder > 0 && streamPos > 0 )
 		{
@@ -1413,7 +1608,7 @@ static int processPreamble( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int processPostamble( INOUT ENVELOPE_INFO *envelopeInfoPtr,
-							 STDC_UNUSED const BOOLEAN dummy )
+							 const BOOLEAN isFlush )
 	{
 	CONTENT_LIST *contentListPtr;
 	int iterationCount, status = CRYPT_OK;
@@ -1430,7 +1625,7 @@ static int processPostamble( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	/* If there's an MDC packet present, make sure that the integrity check 
 	   matches */
 	if( envelopeInfoPtr->dataFlags & ENVDATA_HASATTACHEDOOB )
-		return( processMDC( envelopeInfoPtr ) );
+		return( processMDC( envelopeInfoPtr, isFlush ) );
 
 	/* Find the signature information in the content list.  In theory this
 	   could get ugly because there could be multiple one-pass signature
@@ -1457,23 +1652,33 @@ static int processPostamble( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 
 		/* Make sure that there's enough data left in the stream to do 
 		   something with.  We require a minimum of 44 bytes, the size
-		   of the DSA signature payload, in the stream */
+		   of the DSA signature payload */
 		if( envelopeInfoPtr->bufPos - \
 				envelopeInfoPtr->dataLeft < PGP_MAX_HEADER_SIZE + 44 )
-			return( CRYPT_ERROR_UNDERFLOW );
+			{
+			return( checkSoftError( CRYPT_ERROR_UNDERFLOW, isFlush ) ? \
+					OK_SPECIAL : CRYPT_ERROR_UNDERFLOW );
+			}
 
 		REQUIRES( moreContentItemsPossible( envelopeInfoPtr->contentList ) );
 
-		/* Read the signature packet at the end of the payload */
+		/* Read the signature packet at the end of the payload.  We set the 
+		   check-data-present flag on the call to getPacketInfo() to ensure 
+		   that we get a CRYPT_ERROR_UNDERFLOW if there's not enough data 
+		   present to process the packet, which means that we can provide 
+		   special-case soft-error handling before we try and read the 
+		   packet data in addContentListItem() */
 		sMemConnect( &stream, envelopeInfoPtr->buffer + envelopeInfoPtr->dataLeft,
 					 envelopeInfoPtr->bufPos - envelopeInfoPtr->dataLeft );
 		status = getPacketInfo( &stream, envelopeInfoPtr, &packetType, 
-								&packetLength, NULL, 8 );
+								&packetLength, NULL, 8, TRUE );
 		if( cryptStatusOK( status ) && packetType != PGP_PACKET_SIGNATURE )
 			status = CRYPT_ERROR_BADDATA;
 		if( cryptStatusError( status ) )
 			{
 			sMemDisconnect( &stream );
+			if( checkSoftError( status, isFlush ) )
+				return( OK_SPECIAL );
 			retExt( status,
 					( status, ENVELOPE_ERRINFO,
 					  "Invalid PGP signature packet header" ) );

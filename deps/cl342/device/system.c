@@ -39,8 +39,10 @@ static const MECHANISM_FUNCTION_INFO FAR_BSS mechanismFunctions[] = {
 	{ MESSAGE_DEV_EXPORT, MECHANISM_ENC_PKCS1_PGP, ( MECHANISM_FUNCTION ) exportPKCS1PGP },
 	{ MESSAGE_DEV_IMPORT, MECHANISM_ENC_PKCS1_PGP, ( MECHANISM_FUNCTION ) importPKCS1PGP },
 #endif /* USE_PGP */
+#ifdef USE_INT_CMS
 	{ MESSAGE_DEV_EXPORT, MECHANISM_ENC_CMS, ( MECHANISM_FUNCTION ) exportCMS },
 	{ MESSAGE_DEV_IMPORT, MECHANISM_ENC_CMS, ( MECHANISM_FUNCTION ) importCMS },
+#endif /* USE_INT_CMS */
 	{ MESSAGE_DEV_DERIVE, MECHANISM_DERIVE_PKCS5, ( MECHANISM_FUNCTION ) derivePKCS5 },
 #ifdef USE_ENVELOPES
 	{ MESSAGE_DEV_KDF, MECHANISM_DERIVE_PKCS5, ( MECHANISM_FUNCTION ) kdfPKCS5 },
@@ -61,12 +63,12 @@ static const MECHANISM_FUNCTION_INFO FAR_BSS mechanismFunctions[] = {
 #ifdef USE_PKCS12
 	{ MESSAGE_DEV_DERIVE, MECHANISM_DERIVE_PKCS12, ( MECHANISM_FUNCTION ) derivePKCS12 },
 #endif /* USE_PKCS12 */
-#ifdef USE_PKC
+#if defined( USE_KEYSETS ) && defined( USE_PKC )
 	{ MESSAGE_DEV_EXPORT, MECHANISM_PRIVATEKEYWRAP, ( MECHANISM_FUNCTION ) exportPrivateKey },
 	{ MESSAGE_DEV_IMPORT, MECHANISM_PRIVATEKEYWRAP, ( MECHANISM_FUNCTION ) importPrivateKey },
 	{ MESSAGE_DEV_EXPORT, MECHANISM_PRIVATEKEYWRAP_PKCS8, ( MECHANISM_FUNCTION ) exportPrivateKeyPKCS8 },
 	{ MESSAGE_DEV_IMPORT, MECHANISM_PRIVATEKEYWRAP_PKCS8, ( MECHANISM_FUNCTION ) importPrivateKeyPKCS8 },
-#endif /* USE_PKC */
+#endif /* USE_KEYSETS && USE_PKC */
 #ifdef USE_PGPKEYS
 	{ MESSAGE_DEV_IMPORT, MECHANISM_PRIVATEKEYWRAP_PGP2, ( MECHANISM_FUNCTION ) importPrivateKeyPGP2 },
 	{ MESSAGE_DEV_IMPORT, MECHANISM_PRIVATEKEYWRAP_OPENPGP_OLD, ( MECHANISM_FUNCTION ) importPrivateKeyOpenPGPOld },
@@ -355,14 +357,14 @@ static const MECHANISM_TEST_INFO FAR_BSS mechanismTestInfo[] = {
 	  { "\x87\x46\xDD\x7D\xAD\x5F\x48\xB6\xFC\x8D\x92\xC4\xDB\x38\x79\x9A"
 		"\x3D\xEA\x22\xFA\xCD\x7E\x86\xD5\x23\x6E\x10\x4C\xBD\x84\x89\xDF"
 		"\x1C\x87\x60\xBF\xFA\x2B\xCA\xFE\xFE\x65\xC7\xA2\xCF\x04\xFF\xEB", MECHANISM_OUTPUT_SIZE_SSL,
-		inputValue, MECHANISM_INPUT_SIZE_SSL, CRYPT_USE_DEFAULT, 0,
-		saltValue, MECHANISM_SALT_SIZE_SSL, 1 } },
+		inputValue, MECHANISM_INPUT_SIZE_SSL, ( CRYPT_ALGO_TYPE ) CRYPT_USE_DEFAULT, 0,
+		saltValue, MECHANISM_SALT_SIZE_SSL, 1 } },				  /* Both MD5 and SHA1 */
 	{ MECHANISM_DERIVE_TLS,
 	  { "\xD3\xD4\x2F\xD6\xE3\x7D\xC0\x3C\xA6\x9F\x92\xDF\x3E\x40\x0A\x64"
 		"\x49\xB4\x0E\xC4\x14\x04\x2F\xC8\xDD\x27\xD5\x1C\x62\xD2\x2C\x97"
 		"\x90\xAE\x08\x4B\xEE\xF4\x8D\x22\xF0\x2A\x1E\x38\x2D\x31\xCB\x68", MECHANISM_OUTPUT_SIZE_SSL,
-		inputValue, MECHANISM_INPUT_SIZE_SSL, CRYPT_USE_DEFAULT, 0,
-		saltValue, MECHANISM_SALT_SIZE_SSL, 1 } },
+		inputValue, MECHANISM_INPUT_SIZE_SSL, ( CRYPT_ALGO_TYPE ) CRYPT_USE_DEFAULT, 0,
+		saltValue, MECHANISM_SALT_SIZE_SSL, 1 } },				  /* Both MD5 and SHA1 */
 #endif /* USE_SSL */
 #ifdef USE_CMP
 	{ MECHANISM_DERIVE_CMP,
@@ -581,10 +583,12 @@ static int getRandomFunction( INOUT DEVICE_INFO *deviceInfo,
 	status = getRandomData( deviceInfo->randomInfo, buffer, length );
 	if( messageExtInfo == NULL || refCount > 1 )
 		{
+		int resumeStatus;
+
 		/* The object isn't unlockable or it's been locked recursively, 
 		   re-lock it */
-		status = krnlResumeObject( SYSTEM_OBJECT_HANDLE, refCount );
-		if( cryptStatusError( status ) )
+		resumeStatus = krnlResumeObject( SYSTEM_OBJECT_HANDLE, refCount );
+		if( cryptStatusError( resumeStatus ) )
 			{
 			/* We couldn't re-lock the system object, let the caller know.
 			   Since this is a shouldn't-occur condition we also warn the 
@@ -697,16 +701,13 @@ static int controlFunction( INOUT DEVICE_INFO *deviceInfo,
 
 static const GETCAPABILITY_FUNCTION FAR_BSS getCapabilityTable[] = {
 	get3DESCapability,
-#ifdef USE_AES
 	getAESCapability,
-#endif /* USE_AES */
-#ifdef USE_BLOWFISH
-	getBlowfishCapability,
-#endif /* USE_BLOWFISH */
 #ifdef USE_CAST
 	getCASTCapability,
 #endif /* USE_CAST */
+#ifdef USE_DES
 	getDESCapability,
+#endif /* USE_DES */
 #ifdef USE_IDEA
 	getIDEACapability,
 #endif /* USE_IDEA */
@@ -716,31 +717,15 @@ static const GETCAPABILITY_FUNCTION FAR_BSS getCapabilityTable[] = {
 #ifdef USE_RC4
 	getRC4Capability,
 #endif /* USE_RC4 */
-#ifdef USE_RC5
-	getRC5Capability,
-#endif /* USE_RC5 */
 
 #ifdef USE_MD5
 	getMD5Capability,
 #endif /* USE_MD5 */
-#ifdef USE_RIPEMD160
-	getRipemd160Capability,
-#endif /* USE_RIPEMD160 */
 	getSHA1Capability,
-#ifdef USE_SHA2
 	getSHA2Capability,
-#endif /* USE_SHA2 */
 
-#ifdef USE_HMAC_MD5
-	getHmacMD5Capability,
-#endif /* USE_HMAC_MD5 */
-#ifdef USE_HMAC_RIPEMD160
-	getHmacRipemd160Capability,
-#endif /* USE_HMAC_RIPEMD160 */
 	getHmacSHA1Capability,
-#ifdef USE_HMAC_SHA2
 	getHmacSHA2Capability,
-#endif /* USE_SHA2 */
 
 #ifdef USE_DH
 	getDHCapability,
@@ -794,7 +779,9 @@ static int initCapabilities( void )
 		{
 		const CAPABILITY_INFO *capabilityInfoPtr = getCapabilityTable[ i ]();
 
-		REQUIRES( sanityCheckCapability( capabilityInfoPtr, FALSE ) );
+#ifndef CONFIG_FUZZ
+		REQUIRES( sanityCheckCapability( capabilityInfoPtr ) );
+#endif /* !CONFIG_FUZZ */
 
 		capabilityInfoList[ i ].info = capabilityInfoPtr;
 		capabilityInfoList[ i ].next = NULL;

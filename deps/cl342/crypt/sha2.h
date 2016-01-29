@@ -76,9 +76,9 @@ extern "C"
 /* type to hold the SHA256 (and SHA224) context */
 
 typedef struct
-{   uint_32t count[2];
-    uint_32t hash[8];
-    uint_32t wbuf[16];
+{   uint32_t count[2];
+    uint32_t hash[8];
+    uint32_t wbuf[16];
 } sha256_ctx;
 
 typedef sha256_ctx  sha224_ctx;
@@ -101,7 +101,7 @@ typedef struct
 {   union
     { sha256_ctx  ctx256[1];
     } uu[1];
-    uint_32t    sha2_len;
+    uint32_t    sha2_len;
 } sha2_ctx;
 
 #define SHA2_MAX_DIGEST_SIZE    SHA256_DIGEST_SIZE
@@ -117,9 +117,9 @@ typedef struct
 /* type to hold the SHA384 (and SHA512) context */
 
 typedef struct
-{   uint_64t count[2];
-    uint_64t hash[8];
-    uint_64t wbuf[16];
+{   uint64_t count[2];
+    uint64_t hash[8];
+    uint64_t wbuf[16];
 } sha512_ctx;
 
 typedef sha512_ctx  sha384_ctx;
@@ -129,7 +129,7 @@ typedef struct
     { sha256_ctx  ctx256[1];
       sha512_ctx  ctx512[1];
     } uu[1];
-    uint_32t    sha2_len;
+    uint32_t    sha2_len;
 } sha2_ctx;
 
 VOID_RETURN sha512_compile(sha512_ctx ctx[1]);

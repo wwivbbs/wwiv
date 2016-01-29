@@ -8,12 +8,10 @@
 #if defined( INC_ALL )
   #include "cert.h"
   #include "certattr.h"
-  #include "asn1.h"
   #include "asn1_ext.h"
 #else
   #include "cert/cert.h"
   #include "cert/certattr.h"
-  #include "enc_dec/asn1.h"
   #include "enc_dec/asn1_ext.h"
 #endif /* Compiler-specific includes */
 
@@ -42,7 +40,7 @@ int setSerialNumber( INOUT CERT_INFO *certInfoPtr,
 	MESSAGE_DATA msgData;
 	BYTE buffer[ 4 + MAX_SERIALNO_SIZE + 8 ];
 	void *serialNumberPtr;
-	int length = DUMMY_INIT, bufPos = 0, status;
+	int length DUMMY_INIT, bufPos = 0, status;
 
 	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
 	assert( ( serialNumber == NULL && serialNumberLength == 0 ) || \
@@ -171,7 +169,7 @@ int setSerialNumber( INOUT CERT_INFO *certInfoPtr,
    encode serial numbers incorrectly so we normalise the values to have no 
    leading zero, which is the lowest common denominator */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
+CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 BOOLEAN compareSerialNumber( IN_BUFFER( canonSerialNumberLength ) \
 								const void *canonSerialNumber,
 							 IN_LENGTH_SHORT const int canonSerialNumberLength,
@@ -388,7 +386,7 @@ static int getEncodedDn( INOUT CERT_INFO *certInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int addCertComponent( INOUT CERT_INFO *certInfoPtr,
 					  IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE certInfoType,
-					  IN_INT_Z const int certInfo )
+					  const int certInfo )
 	{
 	CRYPT_CERTIFICATE addedCert;
 	int status;
@@ -596,7 +594,7 @@ int addCertComponent( INOUT CERT_INFO *certInfoPtr,
 							  CRYPT_ERRTYPE_ATTR_PRESENT );
 				return( CRYPT_ERROR_INITED );
 				}
-			ENSURES( certInfoPtr->version == 1 );
+			ENSURES( certInfoPtr->version == X509_V1 );
 
 			/* Get the certificate handle and make sure that it really is a 
 			   CA certificate */
@@ -629,6 +627,19 @@ int addCertComponent( INOUT CERT_INFO *certInfoPtr,
 									CRYPT_CERTINFO_CERTREQUEST, CRYPT_UNUSED ) );
 #endif /* USE_CERTREQ */
 
+#ifdef USE_PKIUSER
+		case CRYPT_CERTINFO_PKIUSER_RA:
+			/* Make sure that this flag isn't already set */
+			if( certInfoPtr->cCertUser->isRA )
+				{
+				setErrorInfo( certInfoPtr, CRYPT_CERTINFO_CERTREQUEST,
+							  CRYPT_ERRTYPE_ATTR_PRESENT );
+				return( CRYPT_ERROR_INITED );
+				}
+			certInfoPtr->cCertUser->isRA = certInfo;
+			return( CRYPT_OK );
+#endif /* USE_PKIUSER */
+
 		case CRYPT_IATTRIBUTE_CERTCOLLECTION:
 			return( copyCertChain( certInfoPtr, certInfo, TRUE ) );
 
@@ -636,9 +647,17 @@ int addCertComponent( INOUT CERT_INFO *certInfoPtr,
 		case CRYPT_IATTRIBUTE_OCSPREQUEST:
 		case CRYPT_IATTRIBUTE_REVREQUEST:
 		case CRYPT_IATTRIBUTE_PKIUSERINFO:
+#ifdef USE_DBMS	/* Only used by CA code */
 		case CRYPT_IATTRIBUTE_BLOCKEDATTRS:
+#endif /* USE_DBMS */
 			return( copyCertObject( certInfoPtr, certInfo, certInfoType, 
 									CRYPT_UNUSED ) );
+
+#ifdef USE_CERTREQ
+		case CRYPT_IATTRIBUTE_REQFROMRA:
+			certInfoPtr->cCertReq->requestFromRA = certInfo;
+			return( CRYPT_OK );
+#endif /* USE_CERTREQ */
 		}
 
 	retIntError();
@@ -852,6 +871,8 @@ int addCertComponentString( INOUT CERT_INFO *certInfoPtr,
 			time_t certTime = *( ( time_t * ) certInfo );
 			time_t *revocationTimePtr = getRevocationTimePtr( certInfoPtr );
 
+			if( revocationTimePtr == NULL )
+				return( CRYPT_ERROR_NOTFOUND );
 			if( *revocationTimePtr > 0 )
 				{
 				setErrorInfo( certInfoPtr, certInfoType,

@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *				cryptlib ECC Key Generation/Checking Routines				*
-*					Copyright Peter Gutmann 2006-2008						*
+*					Copyright Peter Gutmann 2006-2014						*
 *																			*
 ****************************************************************************/
 
@@ -17,40 +17,6 @@
 #endif /* Compiler-specific includes */
 
 #if defined( USE_ECDH ) || defined( USE_ECDSA )
-
-/****************************************************************************
-*																			*
-*							Utility Functions								*
-*																			*
-****************************************************************************/
-
-/* Enable various side-channel protection mechanisms */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-static int enableSidechannelProtection( INOUT PKC_INFO *pkcInfo,
-										IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo )
-	{
-	assert( isWritePtr( pkcInfo, sizeof( PKC_INFO ) ) );
-
-	REQUIRES( isEccAlgo( cryptAlgo ) );
-
-	/* Use constant-time modexp() to protect the private key from timing 
-	   channels.
-
-	   (There really isn't much around in the way of side-channel protection 
-	   for the ECC computations, for every operation we use a new random 
-	   secret value as the point multiplier so there doesn't seem to be much 
-	   scope for timing attacks.  In the absence of anything better to do, 
-	   we set the constant-time modexp() flag just for warm fuzzies) */
-	BN_set_flags( &pkcInfo->eccParam_d, BN_FLG_EXP_CONSTTIME );
-
-	/* Checksum the bignums to try and detect fault attacks.  Since we're 
-	   setting the checksum at this point there's no need to check the 
-	   return value */
-	( void ) calculateBignumChecksum( pkcInfo, cryptAlgo );
-
-	return( CRYPT_OK );
-	}
 
 /****************************************************************************
 *																			*
@@ -74,181 +40,10 @@ typedef struct {
 	CRYPT_ECCCURVE_TYPE paramType;
 	const int curveSizeBits;
 	const BYTE *p, *a, *b, *gx, *gy, *n, *h;
+	const BYTE *hashValue;
 	} ECC_DOMAIN_PARAMS;
 
 static const ECC_DOMAIN_PARAMS domainParamTbl[] = {
-	/* NIST P-192, X9.62 p192r1, SECG p192r1 */
-	{ CRYPT_ECCCURVE_P192, 192,
-	  MKDATA( "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFE" \
-			  "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" ),
-	  MKDATA( "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFE" \
-			  "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFC" ),
-	  MKDATA( "\x64\x21\x05\x19\xE5\x9C\x80\xE7" \
-			  "\x0F\xA7\xE9\xAB\x72\x24\x30\x49" \
-			  "\xFE\xB8\xDE\xEC\xC1\x46\xB9\xB1" ),
-	  MKDATA( "\x18\x8D\xA8\x0E\xB0\x30\x90\xF6" \
-			  "\x7C\xBF\x20\xEB\x43\xA1\x88\x00" \
-			  "\xF4\xFF\x0A\xFD\x82\xFF\x10\x12" ),
-	  MKDATA( "\x07\x19\x2B\x95\xFF\xC8\xDA\x78" \
-			  "\x63\x10\x11\xED\x6B\x24\xCD\xD5" \
-			  "\x73\xF9\x77\xA1\x1E\x79\x48\x11" ),
-	  MKDATA( "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
-			  "\xFF\xFF\xFF\xFF\x99\xDE\xF8\x36" \
-			  "\x14\x6B\xC9\xB1\xB4\xD2\x28\x31" ),
-	  MKDATA( "\x01" ) },
-#if 0
-	/* X9.62 P192v2 */
-	{ CRYPT_ECCCURVE_P192v2, 192,
-	  MKDATA( "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFE" \
-			  "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" ),
-	  MKDATA( "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFE" \
-			  "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFC" ),
-	  MKDATA( "\xCC\x22\xD6\xDF\xB9\x5C\x6B\x25" \
-			  "\xE4\x9C\x0D\x63\x64\xA4\xE5\x98" \
-			  "\x0C\x39\x3A\xA2\x16\x68\xD9\x53" ),
-	  MKDATA( "\xEE\xA2\xBA\xE7\xE1\x49\x78\x42" \
-			  "\xF2\xDE\x77\x69\xCF\xE9\xC9\x89" \
-			  "\xC0\x72\xAD\x69\x6F\x48\x03\x4A" ),
-	  MKDATA( "\x65\x74\xD1\x1D\x69\xB6\xEC\x7A" \
-			  "\x67\x2B\xB8\x2A\x08\x3D\xF2\xF2" \
-			  "\xB0\x84\x7D\xE9\x70\xB2\xDE\x15" ),
-	  MKDATA( "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFE\x5F\xB1\xA7\x24" \
-			  "\xDC\x80\x41\x86\x48\xD8\xDD\x31" ) },
-	/* X9.62 P192v3 */
-	{ CRYPT_ECCCURVE_P192v3, 192,
-	  MKDATA( "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFE" \
-			  "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" ),
-	  MKDATA( "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFE" \
-			  "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFC" ),
-	  MKDATA( "\x22\x12\x3D\xC2\x39\x5A\x05\xCA" \
-			  "\xA7\x42\x3D\xAE\xCC\xC9\x47\x60" \
-			  "\xA7\xD4\x62\x25\x6B\xD5\x69\x16" ),
-	  MKDATA( "\x7D\x29\x77\x81\x00\xC6\x5A\x1D" \
-			  "\xA1\x78\x37\x16\x58\x8D\xCE\x2B" \
-			  "\x8B\x4A\xEE\x8E\x22\x8F\x18\x96" ),
-	  MKDATA( "\x38\xA9\x0F\x22\x63\x73\x37\x33" \
-			  "\x4B\x49\xDC\xB6\x6A\x6D\xC8\xF9" \
-			  "\x97\x8A\xCA\x76\x48\xA9\x43\xB0" ),
-	  MKDATA( "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\x7A\x62\xD0\x31" \
-			  "\xC8\x3F\x42\x94\xF6\x40\xEC\x13" ) },
-#endif /* 0 */
-
-	/* NIST P-224, X9.62 P224r1, SECG p224r1 */
-	{ CRYPT_ECCCURVE_P224, 224,
-	  MKDATA( "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\x00\x00\x00\x00\x00\x00\x00\x00" \
-			  "\x00\x00\x00\x01" ),
-	  MKDATA( "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFE" \
-			  "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFE" ),
-	  MKDATA( "\xB4\x05\x0A\x85\x0C\x04\xB3\xAB" \
-			  "\xF5\x41\x32\x56\x50\x44\xB0\xB7" \
-			  "\xD7\xBF\xD8\xBA\x27\x0B\x39\x43" \
-			  "\x23\x55\xFF\xB4" ),
-	  MKDATA( "\xB7\x0E\x0C\xBD\x6B\xB4\xBF\x7F" \
-			  "\x32\x13\x90\xB9\x4A\x03\xC1\xD3" \
-			  "\x56\xC2\x11\x22\x34\x32\x80\xD6" \
-			  "\x11\x5C\x1D\x21" ),
-	  MKDATA( "\xBD\x37\x63\x88\xB5\xF7\x23\xFB" \
-			  "\x4C\x22\xDF\xE6\xCD\x43\x75\xA0" \
-			  "\x5A\x07\x47\x64\x44\xD5\x81\x99" \
-			  "\x85\x00\x7E\x34" ),
-	  MKDATA( "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\xFF\xFF\x16\xA2" \
-			  "\xE0\xB8\xF0\x3E\x13\xDD\x29\x45" \
-			  "\x5C\x5C\x2A\x3D" ),
-	  MKDATA( "\x01" ) },
-#if 0
-	/* X9.62 P239v1 */
-	{ CRYPT_ECCCURVE_P239, 239,
-	  MKDATA( "\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\x7F\xFF\xFF\xFF" \
-			  "\xFF\xFF\x80\x00\x00\x00\x00\x00" \
-			  "\x7F\xFF\xFF\xFF\xFF\xFF" ),
-	  MKDATA( "\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\x7F\xFF\xFF\xFF" \
-			  "\xFF\xFF\x80\x00\x00\x00\x00\x00" \
-			  "\x7F\xFF\xFF\xFF\xFF\xFC" ),
-	  MKDATA( "\x6B\x01\x6C\x3B\xDC\xF1\x89\x41" \
-			  "\xD0\xD6\x54\x92\x14\x75\xCA\x71" \
-			  "\xA9\xDB\x2F\xB2\x7D\x1D\x37\x79" \
-			  "\x61\x85\xC2\x94\x2C\x0A" ),
-	  MKDATA( "\x0F\xFA\x96\x3C\xDC\xA8\x81\x6C" \
-			  "\xCC\x33\xB8\x64\x2B\xED\xF9\x05" \
-			  "\xC3\xD3\x58\x57\x3D\x3F\x27\xFB" \
-			  "\xBD\x3B\x3C\xB9\xAA\xAF" ),
-	  MKDATA( "\x7D\xEB\xE8\xE4\xE9\x0A\x5D\xAE" \
-			  "\x6E\x40\x54\xCA\x53\x0B\xA0\x46" \
-			  "\x54\xB3\x68\x18\xCE\x22\x6B\x39" \
-			  "\xFC\xCB\x7B\x02\xF1\xAE" ),
-	  MKDATA( "\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\x7F\xFF\xFF\x9E" \
-			  "\x5E\x9A\x9F\x5D\x90\x71\xFB\xD1" \
-			  "\x52\x26\x88\x90\x9D\x0B" ) },
-	/* X9.62 P239v2 */
-	{ CRYPT_ECCCURVE_P239v2, 239,
-	  MKDATA( "\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\x7F\xFF\xFF\xFF" \
-			  "\xFF\xFF\x80\x00\x00\x00\x00\x00" \
-			  "\x7F\xFF\xFF\xFF\xFF\xFF" ),
-	  MKDATA( "\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\x7F\xFF\xFF\xFF" \
-			  "\xFF\xFF\x80\x00\x00\x00\x00\x00" \
-			  "\x7F\xFF\xFF\xFF\xFF\xFC" ),
-	  MKDATA( "\x61\x7F\xAB\x68\x32\x57\x6C\xBB" \
-			  "\xFE\xD5\x0D\x99\xF0\x24\x9C\x3F" \
-			  "\xEE\x58\xB9\x4B\xA0\x03\x8C\x7A" \
-			  "\xE8\x4C\x8C\x83\x2F\x2C" ),
-	  MKDATA( "\x38\xAF\x09\xD9\x87\x27\x70\x51" \
-			  "\x20\xC9\x21\xBB\x5E\x9E\x26\x29" \
-			  "\x6A\x3C\xDC\xF2\xF3\x57\x57\xA0" \
-			  "\xEA\xFD\x87\xB8\x30\xE7" ),
-	  MKDATA( "\x5B\x01\x25\xE4\xDB\xEA\x0E\xC7" \
-			  "\x20\x6D\xA0\xFC\x01\xD9\xB0\x81" \
-			  "\x32\x9F\xB5\x55\xDE\x6E\xF4\x60" \
-			  "\x23\x7D\xFF\x8B\xE4\xBA" ),
-	  MKDATA( "\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\x80\x00\x00\xCF" \
-			  "\xA7\xE8\x59\x43\x77\xD4\x14\xC0" \
-			  "\x38\x21\xBC\x58\x20\x63" ) },
-	/* X9.62 P239v3 */
-	{ CRYPT_ECCCURVE_P239v3, 239,
-	  MKDATA( "\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\x7F\xFF\xFF\xFF" \
-			  "\xFF\xFF\x80\x00\x00\x00\x00\x00" \
-			  "\x7F\xFF\xFF\xFF\xFF\xFF" ),
-	  MKDATA( "\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\x7F\xFF\xFF\xFF" \
-			  "\xFF\xFF\x80\x00\x00\x00\x00\x00" \
-			  "\x7F\xFF\xFF\xFF\xFF\xFC" ),
-	  MKDATA( "\x25\x57\x05\xFA\x2A\x30\x66\x54" \
-			  "\xB1\xF4\xCB\x03\xD6\xA7\x50\xA3" \
-			  "\x0C\x25\x01\x02\xD4\x98\x87\x17" \
-			  "\xD9\xBA\x15\xAB\x6D\x3E" ),
-	  MKDATA( "\x67\x68\xAE\x8E\x18\xBB\x92\xCF" \
-			  "\xCF\x00\x5C\x94\x9A\xA2\xC6\xD9" \
-			  "\x48\x53\xD0\xE6\x60\xBB\xF8\x54" \
-			  "\xB1\xC9\x50\x5F\xE9\x5A" ),
-	  MKDATA( "\x16\x07\xE6\x89\x8F\x39\x0C\x06" \
-			  "\xBC\x1D\x55\x2B\xAD\x22\x6F\x3B" \
-			  "\x6F\xCF\xE4\x8B\x6E\x81\x84\x99" \
-			  "\xAF\x18\xE3\xED\x6C\xF3" ),
-	  MKDATA( "\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
-			  "\xFF\xFF\xFF\xFF\x7F\xFF\xFF\x97" \
-			  "\x5D\xEB\x41\xB3\xA6\x05\x7C\x3C" \
-			  "\x43\x21\x46\x52\x65\x51" ) },
-#endif /* 0 */
-
 	/* NIST P-256, X9.62 p256r1, SECG p256r1 */
 	{ CRYPT_ECCCURVE_P256, 256,
 	  MKDATA( "\xFF\xFF\xFF\xFF\x00\x00\x00\x01" \
@@ -275,7 +70,39 @@ static const ECC_DOMAIN_PARAMS domainParamTbl[] = {
 			  "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" \
 			  "\xBC\xE6\xFA\xAD\xA7\x17\x9E\x84" \
 			  "\xF3\xB9\xCA\xC2\xFC\x63\x25\x51" ),
-	  MKDATA( "\x01" ) },
+	  MKDATA( "\x01" ),
+	  MKDATA( "\x40\x31\x2F\x8C\x04\xBB\x5E\x5C" \
+			  "\x0F\x12\x32\x75\x91\xE8\x71\x65" ) },
+
+	/* Brainpool p256r1 */
+	{ CRYPT_ECCCURVE_BRAINPOOL_P256, 256,
+	  MKDATA( "\xA9\xFB\x57\xDB\xA1\xEE\xA9\xBC" \
+			  "\x3E\x66\x0A\x90\x9D\x83\x8D\x72" \
+			  "\x6E\x3B\xF6\x23\xD5\x26\x20\x28" \
+			  "\x20\x13\x48\x1D\x1F\x6E\x53\x77" ),
+	  MKDATA( "\x7D\x5A\x09\x75\xFC\x2C\x30\x57" \
+			  "\xEE\xF6\x75\x30\x41\x7A\xFF\xE7" \
+			  "\xFB\x80\x55\xC1\x26\xDC\x5C\x6C" \
+			  "\xE9\x4A\x4B\x44\xF3\x30\xB5\xD9" ),
+	  MKDATA( "\x26\xDC\x5C\x6C\xE9\x4A\x4B\x44" \
+			  "\xF3\x30\xB5\xD9\xBB\xD7\x7C\xBF" \
+			  "\x95\x84\x16\x29\x5C\xF7\xE1\xCE" \
+			  "\x6B\xCC\xDC\x18\xFF\x8C\x07\xB6" ),
+	  MKDATA( "\x8B\xD2\xAE\xB9\xCB\x7E\x57\xCB" \
+			  "\x2C\x4B\x48\x2F\xFC\x81\xB7\xAF" \
+			  "\xB9\xDE\x27\xE1\xE3\xBD\x23\xC2" \
+			  "\x3A\x44\x53\xBD\x9A\xCE\x32\x62" ),
+	  MKDATA( "\x54\x7E\xF8\x35\xC3\xDA\xC4\xFD" \
+			  "\x97\xF8\x46\x1A\x14\x61\x1D\xC9" \
+			  "\xC2\x77\x45\x13\x2D\xED\x8E\x54" \
+			  "\x5C\x1D\x54\xC7\x2F\x04\x69\x97" ),
+	  MKDATA( "\xA9\xFB\x57\xDB\xA1\xEE\xA9\xBC" \
+			  "\x3E\x66\x0A\x90\x9D\x83\x8D\x71" \
+			  "\x8C\x39\x7A\xA3\xB5\x61\xA6\xF7" \
+			  "\x90\x1E\x0E\x82\x97\x48\x56\xA7" ),
+	  MKDATA( "\x01" ),
+	  MKDATA( "\x3F\xBF\x15\xA2\x89\x27\x68\x83" \
+			  "\x67\xAC\x82\x26\x48\xFA\x44\x8E" ) },
 
 	/* NIST P-384, SECG p384r1 */
 	{ CRYPT_ECCCURVE_P384, 384,
@@ -315,7 +142,51 @@ static const ECC_DOMAIN_PARAMS domainParamTbl[] = {
 			  "\xC7\x63\x4D\x81\xF4\x37\x2D\xDF" \
 			 "\x58\x1A\x0D\xB2\x48\xB0\xA7\x7A" \
 			 "\xEC\xEC\x19\x6A\xCC\xC5\x29\x73" ),
-	  MKDATA( "\x01" ) },
+	  MKDATA( "\x01" ),
+	  MKDATA( "\xC2\xDF\x12\x1E\x86\x76\xF9\x5A" \
+			  "\x6C\xD9\xA9\x3C\x18\xA3\xA8\x79" ) },
+
+	/* Brainpool p384r1 */
+	{ CRYPT_ECCCURVE_BRAINPOOL_P384, 384,
+	  MKDATA( "\x8C\xB9\x1E\x82\xA3\x38\x6D\x28" \
+			  "\x0F\x5D\x6F\x7E\x50\xE6\x41\xDF" \
+			  "\x15\x2F\x71\x09\xED\x54\x56\xB4" \
+			  "\x12\xB1\xDA\x19\x7F\xB7\x11\x23" \
+			  "\xAC\xD3\xA7\x29\x90\x1D\x1A\x71" \
+			  "\x87\x47\x00\x13\x31\x07\xEC\x53" ),
+	  MKDATA( "\x7B\xC3\x82\xC6\x3D\x8C\x15\x0C" \
+			  "\x3C\x72\x08\x0A\xCE\x05\xAF\xA0" \
+			  "\xC2\xBE\xA2\x8E\x4F\xB2\x27\x87" \
+			  "\x13\x91\x65\xEF\xBA\x91\xF9\x0F" \
+			  "\x8A\xA5\x81\x4A\x50\x3A\xD4\xEB" \
+			  "\x04\xA8\xC7\xDD\x22\xCE\x28\x26" ),
+	  MKDATA( "\x04\xA8\xC7\xDD\x22\xCE\x28\x26" \
+			  "\x8B\x39\xB5\x54\x16\xF0\x44\x7C" \
+			  "\x2F\xB7\x7D\xE1\x07\xDC\xD2\xA6" \
+			  "\x2E\x88\x0E\xA5\x3E\xEB\x62\xD5" \
+			  "\x7C\xB4\x39\x02\x95\xDB\xC9\x94" \
+			  "\x3A\xB7\x86\x96\xFA\x50\x4C\x11" ),
+	  MKDATA( "\x1D\x1C\x64\xF0\x68\xCF\x45\xFF" \
+			  "\xA2\xA6\x3A\x81\xB7\xC1\x3F\x6B" \
+			  "\x88\x47\xA3\xE7\x7E\xF1\x4F\xE3" \
+			  "\xDB\x7F\xCA\xFE\x0C\xBD\x10\xE8" \
+			  "\xE8\x26\xE0\x34\x36\xD6\x46\xAA" \
+			  "\xEF\x87\xB2\xE2\x47\xD4\xAF\x1E" ),
+	  MKDATA( "\x8A\xBE\x1D\x75\x20\xF9\xC2\xA4" \
+			  "\x5C\xB1\xEB\x8E\x95\xCF\xD5\x52" \
+			  "\x62\xB7\x0B\x29\xFE\xEC\x58\x64" \
+			  "\xE1\x9C\x05\x4F\xF9\x91\x29\x28" \
+			  "\x0E\x46\x46\x21\x77\x91\x81\x11" \
+			  "\x42\x82\x03\x41\x26\x3C\x53\x15" ),
+	  MKDATA( "\x8C\xB9\x1E\x82\xA3\x38\x6D\x28" \
+			  "\x0F\x5D\x6F\x7E\x50\xE6\x41\xDF" \
+			  "\x15\x2F\x71\x09\xED\x54\x56\xB3" \
+			  "\x1F\x16\x6E\x6C\xAC\x04\x25\xA7" \
+			  "\xCF\x3A\xB6\xAF\x6B\x7F\xC3\x10" \
+			  "\x3B\x88\x32\x02\xE9\x04\x65\x65" ),
+	  MKDATA( "\x01" ),
+	  MKDATA( "\x04\xDE\xA5\xE1\x39\x3B\xE0\xB5" \
+			  "\x6F\x2C\x0B\xC7\xAF\x9E\xF9\x07" ) },
 
 	/* NIST P-521, SECG p521r1 */
 	{ CRYPT_ECCCURVE_P521, 521,
@@ -373,12 +244,158 @@ static const ECC_DOMAIN_PARAMS domainParamTbl[] = {
 			  "\xA5\xD0\x3B\xB5\xC9\xB8\x89\x9C" \
 			  "\x47\xAE\xBB\x6F\xB7\x1E\x91\x38" \
 			  "\x64\x09" ),
-	  MKDATA( "\x01" ) },
+	  MKDATA( "\x01" ),
+	  MKDATA( "\xC4\x0E\xC4\xCC\x78\x19\x0A\xA6" \
+			  "\x8C\x7E\xA0\xB1\x14\xA4\xBC\x23" ) },
+
+	/* Brainpool p512r1 */
+	{ CRYPT_ECCCURVE_BRAINPOOL_P512, 512,
+	  MKDATA( "\xAA\xDD\x9D\xB8\xDB\xE9\xC4\x8B" \
+			  "\x3F\xD4\xE6\xAE\x33\xC9\xFC\x07" \
+			  "\xCB\x30\x8D\xB3\xB3\xC9\xD2\x0E" \
+			  "\xD6\x63\x9C\xCA\x70\x33\x08\x71" \
+			  "\x7D\x4D\x9B\x00\x9B\xC6\x68\x42" \
+			  "\xAE\xCD\xA1\x2A\xE6\xA3\x80\xE6" \
+			  "\x28\x81\xFF\x2F\x2D\x82\xC6\x85" \
+			  "\x28\xAA\x60\x56\x58\x3A\x48\xF3" ),
+	  MKDATA( "\x78\x30\xA3\x31\x8B\x60\x3B\x89" \
+			  "\xE2\x32\x71\x45\xAC\x23\x4C\xC5" \
+			  "\x94\xCB\xDD\x8D\x3D\xF9\x16\x10" \
+			  "\xA8\x34\x41\xCA\xEA\x98\x63\xBC" \
+			  "\x2D\xED\x5D\x5A\xA8\x25\x3A\xA1" \
+			  "\x0A\x2E\xF1\xC9\x8B\x9A\xC8\xB5" \
+			  "\x7F\x11\x17\xA7\x2B\xF2\xC7\xB9" \
+			  "\xE7\xC1\xAC\x4D\x77\xFC\x94\xCA" ),
+	  MKDATA( "\x3D\xF9\x16\x10\xA8\x34\x41\xCA" \
+			  "\xEA\x98\x63\xBC\x2D\xED\x5D\x5A" \
+			  "\xA8\x25\x3A\xA1\x0A\x2E\xF1\xC9" \
+			  "\x8B\x9A\xC8\xB5\x7F\x11\x17\xA7" \
+			  "\x2B\xF2\xC7\xB9\xE7\xC1\xAC\x4D" \
+			  "\x77\xFC\x94\xCA\xDC\x08\x3E\x67" \
+			  "\x98\x40\x50\xB7\x5E\xBA\xE5\xDD" \
+			  "\x28\x09\xBD\x63\x80\x16\xF7\x23" ),
+	  MKDATA( "\x81\xAE\xE4\xBD\xD8\x2E\xD9\x64" \
+			  "\x5A\x21\x32\x2E\x9C\x4C\x6A\x93" \
+			  "\x85\xED\x9F\x70\xB5\xD9\x16\xC1" \
+			  "\xB4\x3B\x62\xEE\xF4\xD0\x09\x8E" \
+			  "\xFF\x3B\x1F\x78\xE2\xD0\xD4\x8D" \
+			  "\x50\xD1\x68\x7B\x93\xB9\x7D\x5F" \
+			  "\x7C\x6D\x50\x47\x40\x6A\x5E\x68" \
+			  "\x8B\x35\x22\x09\xBC\xB9\xF8\x22" ),
+	  MKDATA( "\x7D\xDE\x38\x5D\x56\x63\x32\xEC" \
+			  "\xC0\xEA\xBF\xA9\xCF\x78\x22\xFD" \
+			  "\xF2\x09\xF7\x00\x24\xA5\x7B\x1A" \
+			  "\xA0\x00\xC5\x5B\x88\x1F\x81\x11" \
+			  "\xB2\xDC\xDE\x49\x4A\x5F\x48\x5E" \
+			  "\x5B\xCA\x4B\xD8\x8A\x27\x63\xAE" \
+			  "\xD1\xCA\x2B\x2F\xA8\xF0\x54\x06" \
+			  "\x78\xCD\x1E\x0F\x3A\xD8\x08\x92" ),
+	  MKDATA( "\xAA\xDD\x9D\xB8\xDB\xE9\xC4\x8B" \
+			  "\x3F\xD4\xE6\xAE\x33\xC9\xFC\x07" \
+			  "\xCB\x30\x8D\xB3\xB3\xC9\xD2\x0E" \
+			  "\xD6\x63\x9C\xCA\x70\x33\x08\x70" \
+			  "\x55\x3E\x5C\x41\x4C\xA9\x26\x19" \
+			  "\x41\x86\x61\x19\x7F\xAC\x10\x47" \
+			  "\x1D\xB1\xD3\x81\x08\x5D\xDA\xDD" \
+			  "\xB5\x87\x96\x82\x9C\xA9\x00\x69" ),
+	  MKDATA( "\x01" ),
+	  MKDATA( "\x2C\x2A\xE4\xF6\x05\xB6\xAF\xB5"
+			  "\x78\xC5\x90\x1E\x45\x9F\x4B\x5C" ) },
 
 	/* End-of-list marker */
-	{ CRYPT_ECCCURVE_NONE, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
-		{ CRYPT_ECCCURVE_NONE, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
+	{ CRYPT_ECCCURVE_NONE, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
+		{ CRYPT_ECCCURVE_NONE, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 	};
+
+/* Checksum values for the ECC data */
+
+static BOOLEAN eccChecksumsSet = FALSE;
+static int eccChecksums[ 8 + 8 ];
+
+/****************************************************************************
+*																			*
+*							Utility Functions								*
+*																			*
+****************************************************************************/
+
+/* Enable various side-channel protection mechanisms */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+static int enableSidechannelProtection( INOUT PKC_INFO *pkcInfo,
+										IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo )
+	{
+	assert( isWritePtr( pkcInfo, sizeof( PKC_INFO ) ) );
+
+	REQUIRES( isEccAlgo( cryptAlgo ) );
+
+	/* Use constant-time modexp() to protect the private key from timing 
+	   channels.
+
+	   (There really isn't much around in the way of side-channel protection 
+	   for the ECC computations, for every operation we use a new random 
+	   secret value as the point multiplier so there doesn't seem to be much 
+	   scope for timing attacks.  In the absence of anything better to do, 
+	   we set the constant-time modexp() flag just for warm fuzzies) */
+	BN_set_flags( &pkcInfo->eccParam_d, BN_FLG_EXP_CONSTTIME );
+
+	return( CRYPT_OK );
+	}
+
+/* Check that the DH key data is valid */
+
+CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
+static BOOLEAN hashECCparams( const ECC_DOMAIN_PARAMS *eccParams,
+							  IN_BUFFER( 20 ) const void *hashValue )
+	{
+	HASHFUNCTION hashFunction;
+	HASHINFO hashInfo;
+	BYTE hash[ CRYPT_MAX_HASHSIZE + 8 ];
+	const int curveSize = bitsToBytes( eccParams->curveSizeBits );
+	int hashSize;
+
+	assert( isReadPtr( eccParams, sizeof( ECC_DOMAIN_PARAMS ) ) );
+
+	getHashParameters( CRYPT_ALGO_SHA1, 0, &hashFunction, &hashSize );
+	hashFunction( hashInfo, NULL, 0, eccParams->p, curveSize, HASH_STATE_START );
+	hashFunction( hashInfo, NULL, 0, eccParams->a, curveSize, HASH_STATE_CONTINUE );
+	hashFunction( hashInfo, NULL, 0, eccParams->b, curveSize, HASH_STATE_CONTINUE );
+	hashFunction( hashInfo, NULL, 0, eccParams->gx, curveSize, HASH_STATE_CONTINUE );
+	hashFunction( hashInfo, NULL, 0, eccParams->gy, curveSize, HASH_STATE_CONTINUE );
+	hashFunction( hashInfo, NULL, 0, eccParams->n, curveSize, HASH_STATE_CONTINUE );
+	hashFunction( hashInfo, hash, CRYPT_MAX_HASHSIZE, eccParams->h, 1, HASH_STATE_END );
+
+	return( !memcmp( hash, hashValue, 16 ) ? TRUE : FALSE );
+	}
+
+CHECK_RETVAL \
+static int initCheckECCdata( void )
+	{
+	int i;
+
+	/* Check the SHA-1 values for the ECC data and set up the corresponding
+	   checksums for the overall ECC parameters */
+	for( i = 0; domainParamTbl[ i ].paramType != CRYPT_ECCCURVE_NONE && \
+				i < FAILSAFE_ARRAYSIZE( domainParamTbl, ECC_DOMAIN_PARAMS ); 
+		 i++ )
+		{
+		const ECC_DOMAIN_PARAMS *eccParams = &domainParamTbl[ i ];
+
+		if( eccParams->paramType <= CRYPT_ECCCURVE_NONE || \
+			eccParams->paramType >= CRYPT_ECCCURVE_LAST || \
+			eccParams->curveSizeBits < 192 || \
+			eccParams->curveSizeBits > 521 )
+			retIntError();
+#ifndef CONFIG_FUZZ
+		if( !hashECCparams( eccParams, eccParams->hashValue ) )
+			retIntError();
+#endif /* CONFIG_FUZZ */
+		eccChecksums[ i ] = checksumData( eccParams, 
+										  sizeof( ECC_DOMAIN_PARAMS ) );
+		}
+	eccChecksumsSet = TRUE;
+
+	return( CRYPT_OK );
+	}
 
 /* Initialise the bignums for the domain parameter values { p, a, b, gx, gy, 
    n }.  Note that although the cofactor h is given for the standard named 
@@ -390,9 +407,18 @@ static int loadECCparams( INOUT CONTEXT_INFO *contextInfoPtr )
 	{
 	PKC_INFO *pkcInfo = contextInfoPtr->ctxPKC;
 	const ECC_DOMAIN_PARAMS *eccParams = NULL;
-	int curveSize, i, bnStatus = BN_STATUS;
+	int curveSize, checksum DUMMY_INIT, i, bnStatus = BN_STATUS, status;
 
 	assert( isWritePtr( contextInfoPtr, sizeof( CONTEXT_INFO ) ) );
+
+	/* Set up the ECC parameter checksums if required */
+	if( !eccChecksumsSet )
+		{
+		status = initCheckECCdata();
+		if( cryptStatusError( status ) )
+			return( status );
+		eccChecksumsSet = TRUE;
+		}
 
 	/* Find the parameter info for this curve */
 	for( i = 0; domainParamTbl[ i ].paramType != CRYPT_ECCCURVE_NONE && \
@@ -402,11 +428,14 @@ static int loadECCparams( INOUT CONTEXT_INFO *contextInfoPtr )
 		if( domainParamTbl[ i ].paramType == pkcInfo->curveType )
 			{
 			eccParams = &domainParamTbl[ i ];
+			checksum = eccChecksums[ i ];
 			break;
 			}
 		}
 	ENSURES( i < FAILSAFE_ARRAYSIZE( domainParamTbl, ECC_DOMAIN_PARAMS ) );
 	ENSURES( eccParams != NULL );
+	if( checksum != checksumData( eccParams, sizeof( ECC_DOMAIN_PARAMS ) ) )
+		retIntError();
 
 	/* For the named curve the key size is defined by exective fiat based
 	   on the curve type rather than being taken from the public-key value 
@@ -422,7 +451,7 @@ static int loadECCparams( INOUT CONTEXT_INFO *contextInfoPtr )
 	CKPTR( BN_bin2bn( eccParams->gx, curveSize, &pkcInfo->eccParam_gx ) );
 	CKPTR( BN_bin2bn( eccParams->gy, curveSize, &pkcInfo->eccParam_gy ) );
 	CKPTR( BN_bin2bn( eccParams->n, curveSize, &pkcInfo->eccParam_n ) );
-	CKPTR( BN_bin2bn( eccParams->h, curveSize, &pkcInfo->eccParam_h ) );
+	CKPTR( BN_bin2bn( eccParams->h, 1, &pkcInfo->eccParam_h ) );
 
 	return( getBnStatus( bnStatus ) );
 	}
@@ -469,10 +498,10 @@ int getECCFieldSize( IN_ENUM( CRYPT_ECCCURVE ) \
 /* Get a CRYPT_ECCCURVE_TYPE based on a nominal ECC field size */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 2 ) ) \
-static int getECCFieldID( IN_LENGTH_SHORT_MIN( MIN_PKCSIZE_ECC ) \
-								const int fieldSize,
-						  OUT_ENUM_OPT( CRYPT_ECCCURVE ) 
-								CRYPT_ECCCURVE_TYPE *fieldID )
+int getECCFieldID( IN_LENGTH_SHORT_MIN( MIN_PKCSIZE_ECC ) \
+						const int fieldSize,
+				   OUT_ENUM_OPT( CRYPT_ECCCURVE ) 
+						CRYPT_ECCCURVE_TYPE *fieldID )
 	{
 	int i;
 
@@ -535,22 +564,26 @@ static int generateECCPrivateValue( INOUT PKC_INFO *pkcInfo,
 	/* Generate the ECC private value d s.t. 2 <= d <= p-2.  Because the mod 
 	   p-2 is expensive we do a quick check to make sure that it's really 
 	   necessary before calling it */
-	status = generateBignum( d, keyBits, 0xC0, 0 );
+	status = generateBignum( d, keyBits, 0xC0, 0, NULL, 0 );
 	if( cryptStatusError( status ) )
 		return( status );
 	CK( BN_sub_word( p, 2 ) );
 	if( BN_cmp( d, p ) > 0 )
 		{
+		int dLen;
+
 		/* Trim d down to size.  Actually we get the upper bound as p-3, 
 		   but over a 192-bit (minimum) number range this doesn't matter */
-		CK( BN_mod( d, d, p, pkcInfo->bnCTX ) );
+		CK( BN_mod( d, d, p, &pkcInfo->bnCTX ) );
 
 		/* If the value that we ended up with is too small, just generate a 
 		   new value one bit shorter, which guarantees that it'll fit the 
 		   criteria (the target is a suitably large random value, not the 
 		   closest possible fit within the range) */
-		if( bnStatusOK( bnStatus ) && BN_num_bits( d ) < keyBits - 5 )
-			status = generateBignum( d, keyBits - 1, 0xC0, 0 );
+		dLen = BN_num_bits( d );
+		REQUIRES( dLen >= 0 && dLen <= bytesToBits( CRYPT_MAX_PKCSIZE_ECC ) );
+		if( bnStatusOK( bnStatus ) && dLen < keyBits - 5 )
+			status = generateBignum( d, keyBits - 1, 0xC0, 0, NULL, 0 );
 		}
 	CK( BN_add_word( p, 2 ) );
 
@@ -569,11 +602,11 @@ static int generateECCPublicValue( INOUT PKC_INFO *pkcInfo )
 	assert( isWritePtr( pkcInfo, sizeof( PKC_INFO ) ) );
 
 	/* Calculate the public-key value Q = d * G */
-	CK( EC_POINT_mul( ecCTX, q, d, NULL, NULL, pkcInfo->bnCTX ) );
+	CK( EC_POINT_mul( ecCTX, q, d, NULL, NULL, &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 	CK( EC_POINT_get_affine_coordinates_GFp( ecCTX, q, qx, qy,
-											 pkcInfo->bnCTX ) );
+											 &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 
@@ -636,7 +669,7 @@ static BOOLEAN isPointOnCurve( const BIGNUM *y, const BIGNUM *x,
 	{
 	BIGNUM *p = &pkcInfo->eccParam_p;
 	BIGNUM *tmp1 = &pkcInfo->tmp1, *tmp2 = &pkcInfo->tmp2;
-	BN_CTX *ctx = pkcInfo->bnCTX;
+	BN_CTX *ctx = &pkcInfo->bnCTX;
 	int bnStatus = BN_STATUS;
 
 	assert( isReadPtr( y, sizeof( BIGNUM ) ) );
@@ -679,7 +712,7 @@ static int checkECCDomainParameters( INOUT PKC_INFO *pkcInfo,
 	EC_POINT *vp = pkcInfo->tmpPoint;
 	const BOOLEAN isStandardCurve = \
 			( pkcInfo->curveType != CRYPT_ECCCURVE_NONE ) ? TRUE : FALSE;
-	int length, i, plen, bnStatus = BN_STATUS;
+	int length, i, pLen, bnStatus = BN_STATUS;
 
 	assert( isWritePtr( pkcInfo, sizeof( PKC_INFO ) ) );
 
@@ -725,21 +758,32 @@ static int checkECCDomainParameters( INOUT PKC_INFO *pkcInfo,
 	if( isStandardCurve )
 		return( CRYPT_OK );
 
-	/* Verify that p is not (obviously) composite */
+	/* Verify that p is not (obviously) composite.  Note that we can't 
+	   also perform a quick check using at least a single iteration of MR 
+	   because this changes some of the values in pkcInfo, it's OK to call
+	   primeProbable() early in the keygen process before everything is set
+	   up but not after pkcInfo is fully initialised */
 	if( !primeSieve( &pkcInfo->eccParam_p ) )
 		return( CRYPT_ARGERROR_STR1 );
+#if 0
+	status = primeProbable( pkcInfo, &pkcInfo->eccParam_p, 1 );
+	if( cryptStatusError( status ) )
+		return( status );
+	if( status != TRUE )
+		return( CRYPT_ARGERROR_STR1 );
+#endif /* 0 */
 
 	/* Verify that a, b and gx, gy are integers in the range 0...p - 1.  
 	   This has already been done in the range checks performed earlier */
 
 	/* Verify that (4a^3 + 27b^2) is not congruent to zero (mod p) */
-	CK( BN_sqr( tmp1, a, pkcInfo->bnCTX ) );
-	CK( BN_mul( tmp1, tmp1, a, pkcInfo->bnCTX ) );
+	CK( BN_sqr( tmp1, a, &pkcInfo->bnCTX ) );
+	CK( BN_mul( tmp1, tmp1, a, &pkcInfo->bnCTX ) );
 	CK( BN_mul_word( tmp1, 4 ) );
-	CK( BN_sqr( tmp2, b, pkcInfo->bnCTX ) );
+	CK( BN_sqr( tmp2, b, &pkcInfo->bnCTX ) );
 	CK( BN_mul_word( tmp2, 27 ) );
 	CK( BN_add( tmp1, tmp1, tmp2 ) );
-	CK( BN_mod( tmp1, tmp1, p, pkcInfo->bnCTX ) );
+	CK( BN_mod( tmp1, tmp1, p, &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 	if( BN_is_zero( tmp1 ) )
@@ -751,7 +795,9 @@ static int checkECCDomainParameters( INOUT PKC_INFO *pkcInfo,
 
 	/* Verify that:
 
-		n is not (obviously) composite
+		n is not (obviously) composite.  Since it's very short, 
+			we can throw in a single iteration of MR as well.
+
 		n > 2^160 and n > 2^( 2s-1 ), where s is the "security level"
 
 		The second test is about ensuring that the subgroup order is large 
@@ -762,6 +808,13 @@ static int checkECCDomainParameters( INOUT PKC_INFO *pkcInfo,
 		MIN_PKCSIZE_ECC constant, and n has already been tested above */
 	if( !primeSieve( &pkcInfo->eccParam_n ) )
 		return( CRYPT_ARGERROR_STR1 );
+#if 0
+	stauts = primeProbable( pkcInfo, &pkcInfo->eccParam_n, 1 );
+	if( cryptStatusError( status ) )
+		return( status );
+	if( status != TRUE )
+		return( CRYPT_ARGERROR_STR1 );
+#endif /* 0 */
 
 	/* Verify that n * G is the point at infinity.  This runs into a nasty 
 	   catch-22 where we have to initialise at least some of the ECC 
@@ -771,7 +824,7 @@ static int checkECCDomainParameters( INOUT PKC_INFO *pkcInfo,
 	   check inline in the initCheckECCKey() code */
 	if( isFullyInitialised )
 		{
-		CK( EC_POINT_mul( ecCTX, vp, n, NULL, NULL, pkcInfo->bnCTX ) );
+		CK( EC_POINT_mul( ecCTX, vp, n, NULL, NULL, &pkcInfo->bnCTX ) );
 		if( bnStatusError( bnStatus ) )
 			return( getBnStatus( bnStatus ) );
 		if( !EC_POINT_is_at_infinity( ecCTX, vp ) )
@@ -835,11 +888,12 @@ static int checkECCDomainParameters( INOUT PKC_INFO *pkcInfo,
 
 	   For the standard named curves in GF(p) (the P-* NIST curves), h = 1
 	   and is implicitly present. */
-	plen = BN_num_bits( p );
+	pLen = BN_num_bits( p );
+	REQUIRES( pLen >= 20 && pLen <= bytesToBits( CRYPT_MAX_PKCSIZE_ECC ) );
 	CK( BN_one( tmp1 ) );
-	CK( BN_lshift( tmp1, tmp1, ( plen >> 1 ) + 3 ) );
+	CK( BN_lshift( tmp1, tmp1, ( pLen >> 1 ) + 3 ) );
 	CK( BN_add( tmp1, tmp1, p ) );
-	CK( BN_div( tmp3_h, NULL, tmp1, n, pkcInfo->bnCTX ) );
+	CK( BN_div( tmp3_h, NULL, tmp1, n, &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 	if( ( BN_num_bits( tmp3_h ) * 14 ) > BN_num_bits( n ) )
@@ -893,12 +947,12 @@ static int checkECCDomainParameters( INOUT PKC_INFO *pkcInfo,
 	   is expensive.  The X9.62 test computes q, q^2, q^3... q^100 modulo n 
 	   and checks that none of these equal one */
 	CK( BN_one( tmp1 ) );
-	CK( BN_mod( tmp2, p, n, pkcInfo->bnCTX ) );
+	CK( BN_mod( tmp2, p, n, &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 	for( i = 0; i < 100; i++ )
 		{
-		CK( BN_mod_mul( tmp1, tmp1, tmp2, n, pkcInfo->bnCTX ) );
+		CK( BN_mod_mul( tmp1, tmp1, tmp2, n, &pkcInfo->bnCTX ) );
 		if( bnStatusError( bnStatus ) )
 			return( getBnStatus( bnStatus ) );
 		if( BN_is_one( tmp1 ) )
@@ -913,7 +967,7 @@ static int checkECCDomainParameters( INOUT PKC_INFO *pkcInfo,
 
 	   The curve order is r*h, where h is the cofactor, which we computed 
 	   (and checked) above */
-	CK( BN_mul( tmp1, n, h, pkcInfo->bnCTX ) );
+	CK( BN_mul( tmp1, n, h, &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 	if( BN_cmp( tmp1, p ) == 0 )
@@ -942,7 +996,7 @@ static int checkECCPublicKey( INOUT PKC_INFO *pkcInfo )
 
 	/* Verify that Q is not the point at infinity */
 	CK( EC_POINT_set_affine_coordinates_GFp( ecCTX, q, qx, qy,
-											 pkcInfo->bnCTX ) );
+											 &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 	if( EC_POINT_is_at_infinity( ecCTX, q ) )
@@ -958,7 +1012,7 @@ static int checkECCPublicKey( INOUT PKC_INFO *pkcInfo )
 		return( CRYPT_ARGERROR_STR1 );
 
 	/* Verify that n * Q is the point at infinity */
-	CK( EC_POINT_mul( ecCTX, q, NULL, q, n, pkcInfo->bnCTX ) );
+	CK( EC_POINT_mul( ecCTX, q, NULL, q, n, &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 	if( !EC_POINT_is_at_infinity( ecCTX, q ) )
@@ -987,9 +1041,9 @@ static int checkECCPrivateKey( INOUT PKC_INFO *pkcInfo )
 		return( CRYPT_ARGERROR_STR1 );
 
 	/* Verify that Q = d * G */
-	CK( EC_POINT_mul( ecCTX, q, d, NULL, NULL, pkcInfo->bnCTX ) );
+	CK( EC_POINT_mul( ecCTX, q, d, NULL, NULL, &pkcInfo->bnCTX ) );
 	CK( EC_POINT_get_affine_coordinates_GFp( ecCTX, q, tmp1, tmp2,
-											 pkcInfo->bnCTX ) );
+											 &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 	if( BN_cmp( tmp1, &pkcInfo->eccParam_qx ) != 0 || \
@@ -1022,13 +1076,13 @@ static int initECCVariables( INOUT PKC_INFO *pkcInfo )
 
 	CK( EC_GROUP_set_curve_GFp( ecCTX, &pkcInfo->eccParam_p, 
 								&pkcInfo->eccParam_a, &pkcInfo->eccParam_b, 
-								pkcInfo->bnCTX ) );
+								&pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 	CK( EC_POINT_set_affine_coordinates_GFp( ecCTX, ecPoint, 
 											 &pkcInfo->eccParam_gx, 
 											 &pkcInfo->eccParam_gy, 
-											 pkcInfo->bnCTX ) );
+											 &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 	CK( EC_GROUP_set_generator( ecCTX, ecPoint, &pkcInfo->eccParam_n, 
@@ -1097,10 +1151,21 @@ int generateECCkey( INOUT CONTEXT_INFO *contextInfoPtr,
 		return( status );
 
 	/* Enable side-channel protection if required */
-	if( !( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION ) )
-		return( CRYPT_OK );
-	return( enableSidechannelProtection( pkcInfo, 
-							contextInfoPtr->capabilityInfo->cryptAlgo ) );
+	if( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION )
+		{
+		status = enableSidechannelProtection( pkcInfo, 
+								contextInfoPtr->capabilityInfo->cryptAlgo );
+		if( cryptStatusError( status ) )
+			return( status );
+		}
+
+	/* Checksum the bignums to try and detect fault attacks.  Since we're 
+	   setting the checksum at this point there's no need to check the 
+	   return value */
+	( void ) checksumContextData( pkcInfo, 
+							contextInfoPtr->capabilityInfo->cryptAlgo, TRUE );
+
+	return( CRYPT_OK );
 	}
 
 /* Initialise and check an ECC key.  If the isECDH flag is set then it's an 
@@ -1165,7 +1230,7 @@ int initCheckECCkey( INOUT CONTEXT_INFO *contextInfoPtr,
 	   initialisation of values that haven't been set up yet when 
 	   checkECCDomainParameters() is called */
 	CK( EC_POINT_mul( ecCTX, pkcInfo->tmpPoint, &pkcInfo->eccParam_n, 
-					  NULL, NULL, pkcInfo->bnCTX ) );
+					  NULL, NULL, &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 	if( !EC_POINT_is_at_infinity( ecCTX, pkcInfo->tmpPoint ) )
@@ -1230,9 +1295,21 @@ int initCheckECCkey( INOUT CONTEXT_INFO *contextInfoPtr,
 		pkcInfo->keySizeBits = BN_num_bits( p );
 
 	/* Enable side-channel protection if required */
-	if( !( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION ) )
-		return( CRYPT_OK );
-	return( enableSidechannelProtection( pkcInfo, 
-							contextInfoPtr->capabilityInfo->cryptAlgo ) );
+	if( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION )
+		{
+		status = enableSidechannelProtection( pkcInfo, 
+								contextInfoPtr->capabilityInfo->cryptAlgo );
+		if( cryptStatusError( status ) )
+			return( status );
+		}
+
+	/* Checksum the bignums to try and detect fault attacks.  Since we're 
+	   setting the checksum at this point there's no need to check the 
+	   return value */
+	( void ) checksumContextData( pkcInfo, 
+								  contextInfoPtr->capabilityInfo->cryptAlgo,
+								  isPrivateKey || generatedD );
+
+	return( CRYPT_OK );
 	}
 #endif /* USE_ECDH || USE_ECDSA */

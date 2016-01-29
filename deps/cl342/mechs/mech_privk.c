@@ -21,6 +21,8 @@
   #include "misc/pgp.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_KEYSETS
+
 /****************************************************************************
 *																			*
 *								Utility Routines							*
@@ -37,7 +39,7 @@ static int pgpReadDecryptMPI( INOUT STREAM *stream,
 							  IN_LENGTH_PKC const int minLength, 
 							  IN_LENGTH_PKC const int maxLength )
 	{
-	void *mpiDataPtr = DUMMY_INIT_PTR;
+	void *mpiDataPtr DUMMY_INIT_PTR;
 	const long mpiDataStartPos = stell( stream ) + UINT16_SIZE;
 	int mpiLength, dummy, status;
 
@@ -91,7 +93,8 @@ static int pgpReadDecryptMPI( INOUT STREAM *stream,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 static int pgp2DecryptKey( IN_BUFFER( dataLength ) const void *data, 
 						   IN_LENGTH_SHORT_MIN( 16 ) const int dataLength, 
-						   OUT_LENGTH_SHORT_Z int *bytesToChecksum, 
+						   OUT_LENGTH_BOUNDED_Z( dataLength ) \
+								int *bytesToChecksum, 
 						   IN_HANDLE const CRYPT_CONTEXT iCryptContext,
 						   const BOOLEAN isDlpAlgo )
 	{
@@ -287,7 +290,7 @@ static int privateKeyWrap( STDC_UNUSED void *dummy,
 	const KEYFORMAT_TYPE formatType = ( type == PRIVATEKEY_WRAP_NORMAL ) ? \
 								KEYFORMAT_PRIVATE : KEYFORMAT_PRIVATE_OLD;
 	STREAM stream;
-	int payloadSize = DUMMY_INIT, blockSize, padSize, status;
+	int payloadSize DUMMY_INIT, blockSize, padSize, status;
 
 	UNUSED_ARG( dummy );
 
@@ -394,7 +397,7 @@ static int privateKeyUnwrap( STDC_UNUSED void *dummy,
 	const KEYFORMAT_TYPE formatType = ( type == PRIVATEKEY_WRAP_NORMAL ) ? \
 								KEYFORMAT_PRIVATE : KEYFORMAT_PRIVATE_OLD;
 	void *buffer;
-	int blockSize, status, altStatus;
+	int blockSize, checksum DUMMY_INIT, status, altStatus;
 
 	UNUSED_ARG( dummy );
 
@@ -415,10 +418,7 @@ static int privateKeyUnwrap( STDC_UNUSED void *dummy,
 		return( CRYPT_ERROR_BADDATA );
 
 	/* Copy the encrypted private key data to a temporary pagelocked buffer, 
-	   decrypt it, and read it into the context.  If we get a corrupted-data 
-	   error then it's far more likely to be because we decrypted with the 
-	   wrong key than because any data was corrupted so we convert it to a 
-	   wrong-key error */
+	   decrypt it, and read it into the context */
 	if( ( status = krnlMemalloc( &buffer, \
 							mechanismInfo->wrappedDataLength ) ) != CRYPT_OK )
 		return( status );
@@ -429,6 +429,7 @@ static int privateKeyUnwrap( STDC_UNUSED void *dummy,
 							  mechanismInfo->wrappedDataLength );
 	if( cryptStatusOK( status ) )
 		{
+		checksum = checksumData( buffer, mechanismInfo->wrappedDataLength );
 		status = checkKeyIntegrity( buffer, 
 									mechanismInfo->wrappedDataLength, 
 									blockSize );
@@ -441,6 +442,15 @@ static int privateKeyUnwrap( STDC_UNUSED void *dummy,
 		status = importPrivateKeyData( &stream, mechanismInfo->keyContext,
 									   formatType );
 		sMemDisconnect( &stream );
+		if( checksumData( buffer, 
+						  mechanismInfo->wrappedDataLength ) != checksum )
+			{
+			/* The private-key data was corrupted between the decrypt and 
+			   when it was loaded into the context, we can't trust the 
+			   key */
+			DEBUG_DIAG(( "Decrypted private-key data memory corruption detected" ));
+			status = CRYPT_ERROR_FAILED;
+			}
 		}
 	zeroise( buffer, mechanismInfo->wrappedDataLength );
 	altStatus = krnlMemfree( &buffer );
@@ -519,7 +529,7 @@ static int privateKeyUnwrapPGP( STDC_UNUSED void *dummy,
 	{
 	STREAM stream;
 	void *buffer;
-	int pkcAlgorithm, bytesToChecksum = DUMMY_INIT, status, altStatus;
+	int pkcAlgorithm, bytesToChecksum DUMMY_INIT, status, altStatus;
 
 	UNUSED_ARG( dummy );
 
@@ -629,3 +639,4 @@ int importPrivateKeyOpenPGP( STDC_UNUSED void *dummy,
 								 PRIVATEKEYPGP_WRAP_OPENPGP ) );
 	}
 #endif /* USE_PGPKEYS */
+#endif /* USE_KEYSETS */

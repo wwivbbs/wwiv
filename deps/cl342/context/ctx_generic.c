@@ -67,7 +67,8 @@ static const CAPABILITY_INFO FAR_BSS capabilityInfo = {
 	CRYPT_IALGO_GENERIC_SECRET, 0, "Generic Secret", 14,
 	bitsToBytes( 128 ), bitsToBytes( 128 ), bitsToBytes( 256 ),
 	selfTest, getDefaultInfo, NULL, initGenericParams, initKey, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+	NULL, NULL, NULL, NULL, NULL, NULL, 
+	NULL, NULL
 	};
 
 const CAPABILITY_INFO *getGenericSecretCapability( void )

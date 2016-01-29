@@ -38,7 +38,7 @@
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 static int calculatePubkeyStorage( const PKCS15_INFO *pkcs15infoPtr,
-								   OUT_PTR void **newPubKeyDataPtr, 
+								   INOUT_PTR void **newPubKeyDataPtr, 
 								   OUT_LENGTH_SHORT_Z int *newPubKeyDataSize, 
 								   IN_LENGTH_SHORT const int pubKeySize,
 								   IN_LENGTH_SHORT const int pubKeyAttributeSize,
@@ -62,7 +62,8 @@ static int calculatePubkeyStorage( const PKCS15_INFO *pkcs15infoPtr,
 								sizeofObject( \
 									sizeofObject( pubKeySize ) + \
 									extraDataSize ) ) );
-	ENSURES( *newPubKeyDataSize > 0 && *newPubKeyDataSize < MAX_INTLENGTH );
+	ENSURES( *newPubKeyDataSize > 0 && \
+			 *newPubKeyDataSize < MAX_BUFFER_SIZE );
 
 	/* If the new data will fit into the existing storage, we're done */
 	if( *newPubKeyDataSize <= pkcs15infoPtr->pubKeyDataSize )
@@ -79,7 +80,7 @@ static int calculatePubkeyStorage( const PKCS15_INFO *pkcs15infoPtr,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 static int calculateCertStorage( const PKCS15_INFO *pkcs15infoPtr,
-								 OUT_PTR void **newCertDataPtr, 
+								 INOUT_PTR void **newCertDataPtr,
 								 OUT_LENGTH_SHORT_Z int *newCertDataSize,
 								 IN_LENGTH_SHORT const int certAttributeSize,
 								 IN_LENGTH_SHORT const int certSize )
@@ -105,7 +106,7 @@ static int calculateCertStorage( const PKCS15_INFO *pkcs15infoPtr,
 									 sizeofObject( \
 									   sizeofObject( certSize ) ) );
 #endif /* USE_PKCS15V12_FORM */
-	ENSURES( *newCertDataSize > 0 && *newCertDataSize < MAX_INTLENGTH );
+	ENSURES( *newCertDataSize > 0 && *newCertDataSize < MAX_BUFFER_SIZE );
 
 	/* If the new data will fit into the existing storage, we're done */
 	if( *newCertDataSize <= pkcs15infoPtr->certDataSize )
@@ -131,7 +132,7 @@ static void deletePubKey( INOUT PKCS15_INFO *pkcs15infoPtr )
 	zeroise( pkcs15infoPtr->pubKeyData, pkcs15infoPtr->pubKeyDataSize );
 	clFree( "deletePubKey", pkcs15infoPtr->pubKeyData );
 	pkcs15infoPtr->pubKeyData = NULL;
-	pkcs15infoPtr->pubKeyDataSize = 0;
+	pkcs15infoPtr->pubKeyDataSize = pkcs15infoPtr->pubKeyOffset = 0;
 	}
 
 /* Replace existing public-key or certificate data with updated 
@@ -231,9 +232,9 @@ int pkcs15AddCert( INOUT PKCS15_INFO *pkcs15infoPtr,
 	BYTE certAttributes[ KEYATTR_BUFFER_SIZE + 8 ];
 	void *newCertData = pkcs15infoPtr->certData;
 	void *newPrivKeyData = pkcs15infoPtr->privKeyData;
-	int newCertDataSize = DUMMY_INIT, certInfoSize = DUMMY_INIT;
-	int newPrivKeyDataSize = DUMMY_INIT, privKeyInfoSize = DUMMY_INIT;
-	int newCertOffset = DUMMY_INIT, certAttributeSize;
+	int newCertDataSize DUMMY_INIT, certInfoSize DUMMY_INIT;
+	int newPrivKeyDataSize DUMMY_INIT, privKeyInfoSize DUMMY_INIT;
+	int newCertOffset DUMMY_INIT, certAttributeSize;
 	int subType = PKCS15_SUBTYPE_NORMAL, keyTypeTag, status;
 
 	assert( isWritePtr( pkcs15infoPtr, sizeof( PKCS15_INFO ) ) );
@@ -510,7 +511,7 @@ int pkcs15AddPublicKey( INOUT PKCS15_INFO *pkcs15infoPtr,
 	MESSAGE_DATA msgData;
 	STREAM stream;
 	void *newPubKeyData = pkcs15infoPtr->pubKeyData;
-	int newPubKeyDataSize, newPubKeyOffset = DUMMY_INIT, pubKeySize;
+	int newPubKeyDataSize, newPubKeyOffset DUMMY_INIT, pubKeySize;
 	int extraDataSize = 0, keyTypeTag, status;
 
 	assert( isWritePtr( pkcs15infoPtr, sizeof( PKCS15_INFO ) ) );

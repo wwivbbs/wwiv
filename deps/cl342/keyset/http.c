@@ -121,6 +121,9 @@ static int getItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 	httpInfo->bufPos = 0;
 
 	/* Set up the HTTP request information */
+	memset( &httpReqInfo, 0, sizeof( HTTP_URI_INFO ) );
+	initHttpDataInfoEx( &httpDataInfo, keysetInfoPtr->keyData,
+						keysetInfoPtr->keyDataSize, &httpReqInfo );
 	if( hasExplicitKeyID )
 		{
 		const char *keyName = getKeyName( keyIDtype );
@@ -128,17 +131,10 @@ static int getItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 
 		ENSURES( keyName != NULL );
 		keyNameLen = strlen( keyName );
-		initHttpDataInfoEx( &httpDataInfo, keysetInfoPtr->keyData,
-							keysetInfoPtr->keyDataSize, &httpReqInfo );
 		memcpy( httpReqInfo.attribute, keyName, keyNameLen );
 		httpReqInfo.attributeLen = keyNameLen;
 		memcpy( httpReqInfo.value, keyID, keyIDlength );
 		httpReqInfo.valueLen = keyIDlength;
-		}
-	else
-		{
-		initHttpDataInfo( &httpDataInfo, keysetInfoPtr->keyData,
-						  keysetInfoPtr->keyDataSize );
 		}
 
 	/* Send the request to the server.  Since we don't know the size of the 
@@ -184,9 +180,21 @@ static int getItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE,
 							  IMESSAGE_DEV_CREATEOBJECT_INDIRECT,
 							  &createInfo, OBJECT_TYPE_CERTIFICATE );
-	if( cryptStatusOK( status ) )
-		*iCryptHandle = createInfo.cryptHandle;
-	return( status );
+	if( cryptStatusError( status ) )
+		return( status );
+	status = iCryptVerifyID( createInfo.cryptHandle, keyIDtype, keyID, 
+							 keyIDlength );
+	if( cryptStatusError( status ) )
+		{
+		krnlSendNotifier( createInfo.cryptHandle, IMESSAGE_DECREFCOUNT );
+		retExt( status, 
+				( status, KEYSET_ERRINFO, 
+				  "Certificate fetched for ID type %d doesn't actually "
+				  "correspond to the given ID", keyIDtype ) );
+		}
+	*iCryptHandle = createInfo.cryptHandle;
+
+	return( CRYPT_OK );
 	}
 
 /* Prepare to open a connection to an HTTP server */
@@ -250,7 +258,7 @@ static int shutdownFunction( INOUT KEYSET_INFO *keysetInfoPtr )
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int setAccessMethodHTTP( KEYSET_INFO *keysetInfoPtr )
+int setAccessMethodHTTP( INOUT KEYSET_INFO *keysetInfoPtr )
 	{
 	assert( isWritePtr( keysetInfoPtr, sizeof( KEYSET_INFO ) ) );
 

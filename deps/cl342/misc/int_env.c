@@ -26,11 +26,11 @@
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 5 ) ) \
 int envelopeWrap( IN_BUFFER( inDataLength ) const void *inData, 
-				  IN_LENGTH_MIN( 16 ) const int inDataLength, 
+				  IN_DATALENGTH_MIN( 16 ) const int inDataLength, 
 				  OUT_BUFFER( outDataMaxLength, \
 							  *outDataLength ) void *outData, 
-				  IN_LENGTH_MIN( 16 ) const int outDataMaxLength, 
-				  OUT_LENGTH_Z int *outDataLength, 
+				  IN_DATALENGTH_MIN( 16 ) const int outDataMaxLength, 
+				  OUT_DATALENGTH_Z int *outDataLength, 
 				  IN_ENUM( CRYPT_FORMAT ) const CRYPT_FORMAT_TYPE formatType,
 				  IN_ENUM_OPT( CRYPT_CONTENT ) \
 					const CRYPT_CONTENT_TYPE contentType,
@@ -48,10 +48,10 @@ int envelopeWrap( IN_BUFFER( inDataLength ) const void *inData,
 	assert( isWritePtr( outDataLength, sizeof( int ) ) );
 	assert( isWritePtr( errorInfo, sizeof( ERROR_INFO ) ) );
 
-	REQUIRES( inDataLength > 16 && inDataLength < MAX_INTLENGTH );
+	REQUIRES( inDataLength > 16 && inDataLength < MAX_BUFFER_SIZE );
 	REQUIRES( outDataMaxLength > 16 && \
 			  outDataMaxLength >= inDataLength + 512 && \
-			  outDataMaxLength < MAX_INTLENGTH );
+			  outDataMaxLength < MAX_BUFFER_SIZE );
 	REQUIRES( formatType == CRYPT_FORMAT_CRYPTLIB || \
 			  formatType == CRYPT_FORMAT_CMS );
 	REQUIRES( contentType >= CRYPT_CONTENT_NONE && \
@@ -140,11 +140,11 @@ int envelopeWrap( IN_BUFFER( inDataLength ) const void *inData,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 5 ) ) \
 int envelopeUnwrap( IN_BUFFER( inDataLength ) const void *inData, 
-					IN_LENGTH_MIN( 16 ) const int inDataLength,
+					IN_DATALENGTH_MIN( 16 ) const int inDataLength,
 					OUT_BUFFER( outDataMaxLength, \
 								*outDataLength ) void *outData, 
-					IN_LENGTH_MIN( 16 ) const int outDataMaxLength,
-					OUT_LENGTH_Z int *outDataLength, 
+					IN_DATALENGTH_MIN( 16 ) const int outDataMaxLength,
+					OUT_DATALENGTH_Z int *outDataLength, 
 					IN_HANDLE_OPT const CRYPT_CONTEXT iPrivKey,
 					OUT ERROR_INFO *errorInfo )
 	{
@@ -159,10 +159,10 @@ int envelopeUnwrap( IN_BUFFER( inDataLength ) const void *inData,
 	assert( isWritePtr( outDataLength, sizeof( int ) ) );
 	assert( isWritePtr( errorInfo, sizeof( ERROR_INFO ) ) );
 
-	REQUIRES( inDataLength > 16 && inDataLength < MAX_INTLENGTH );
+	REQUIRES( inDataLength > 16 && inDataLength < MAX_BUFFER_SIZE );
 	REQUIRES( outDataMaxLength > 16 && \
 			  outDataMaxLength >= inDataLength && \
-			  outDataMaxLength < MAX_INTLENGTH );
+			  outDataMaxLength < MAX_BUFFER_SIZE );
 	REQUIRES( ( iPrivKey == CRYPT_UNUSED ) || \
 			  isHandleRangeValid( iPrivKey ) );
 
@@ -249,11 +249,11 @@ int envelopeUnwrap( IN_BUFFER( inDataLength ) const void *inData,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3, 5 ) ) \
 int envelopeSign( IN_BUFFER_OPT( inDataLength ) const void *inData, 
-				  IN_LENGTH_Z const int inDataLength,
+				  IN_DATALENGTH_Z const int inDataLength,
 				  OUT_BUFFER( outDataMaxLength, \
 							  *outDataLength ) void *outData, 
-				  IN_LENGTH_MIN( 16 ) const int outDataMaxLength,
-				  OUT_LENGTH_Z int *outDataLength, 
+				  IN_DATALENGTH_MIN( 16 ) const int outDataMaxLength,
+				  OUT_DATALENGTH_Z int *outDataLength, 
 				  IN_ENUM_OPT( CRYPT_CONTENT ) \
 					const CRYPT_CONTENT_TYPE contentType,
 				  IN_HANDLE const CRYPT_CONTEXT iSigKey,
@@ -273,13 +273,13 @@ int envelopeSign( IN_BUFFER_OPT( inDataLength ) const void *inData,
 	assert( isWritePtr( errorInfo, sizeof( ERROR_INFO ) ) );
 
 	REQUIRES( ( inData != NULL && \
-				inDataLength > 16 && inDataLength < MAX_INTLENGTH ) || \
+				inDataLength > 16 && inDataLength < MAX_BUFFER_SIZE ) || \
 			  ( inData == NULL && inDataLength == 0 && \
 				contentType == CRYPT_CONTENT_NONE && \
 				isHandleRangeValid( iCmsAttributes ) ) );
 	REQUIRES( outDataMaxLength > 16 && \
 			  outDataMaxLength >= inDataLength + 512 && \
-			  outDataMaxLength < MAX_INTLENGTH );
+			  outDataMaxLength < MAX_BUFFER_SIZE );
 	REQUIRES( contentType >= CRYPT_CONTENT_NONE && \
 			  contentType < CRYPT_CONTENT_LAST );
 	REQUIRES( isHandleRangeValid( iSigKey ) );
@@ -386,11 +386,11 @@ int envelopeSign( IN_BUFFER_OPT( inDataLength ) const void *inData,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 5, 7 ) ) \
 int envelopeSigCheck( IN_BUFFER( inDataLength ) const void *inData, 
-					  IN_LENGTH_MIN( 16 ) const int inDataLength,
+					  IN_DATALENGTH_MIN( 16 ) const int inDataLength,
 					  OUT_BUFFER( outDataMaxLength, \
 								  *outDataLength ) void *outData, 
-					  IN_LENGTH_MIN( 16 ) const int outDataMaxLength,
-					  OUT_LENGTH_Z int *outDataLength, 
+					  IN_DATALENGTH_MIN( 16 ) const int outDataMaxLength,
+					  OUT_DATALENGTH_Z int *outDataLength, 
 					  IN_HANDLE_OPT const CRYPT_CONTEXT iSigCheckKey,
 					  OUT_STATUS int *sigResult, 
 					  OUT_OPT_HANDLE_OPT CRYPT_CERTIFICATE *iSigningCert,
@@ -399,7 +399,7 @@ int envelopeSigCheck( IN_BUFFER( inDataLength ) const void *inData,
 	{
 	CRYPT_ENVELOPE iCryptEnvelope;
 	MESSAGE_CREATEOBJECT_INFO createInfo;
-	MESSAGE_DATA msgData = { DUMMY_INIT };
+	MESSAGE_DATA msgData DUMMY_INIT_STRUCT;
 	const int minBufferSize = max( MIN_BUFFER_SIZE, inDataLength );
 	int status;
 
@@ -413,10 +413,10 @@ int envelopeSigCheck( IN_BUFFER( inDataLength ) const void *inData,
 			isWritePtr( iCmsAttributes, sizeof( CRYPT_CERTIFICATE ) ) );
 	assert( isWritePtr( errorInfo, sizeof( ERROR_INFO ) ) );
 
-	REQUIRES( inDataLength > 16 && inDataLength < MAX_INTLENGTH );
+	REQUIRES( inDataLength > 16 && inDataLength < MAX_BUFFER_SIZE );
 	REQUIRES( outDataMaxLength > 16 && \
 			  outDataMaxLength >= inDataLength && \
-			  outDataMaxLength < MAX_INTLENGTH );
+			  outDataMaxLength < MAX_BUFFER_SIZE );
 	REQUIRES( iSigCheckKey == CRYPT_UNUSED || \
 			  isHandleRangeValid( iSigCheckKey ) );
 

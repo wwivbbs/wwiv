@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *							SCEP Definitions Header File					*
-*						Copyright Peter Gutmann 1999-2011					*
+*						Copyright Peter Gutmann 1999-2013					*
 *																			*
 ****************************************************************************/
 
@@ -23,19 +23,30 @@
 		genering a new request.
 
 	PFLAG_GOTCACAPS: The GetCACaps message used to determine a server's
-		capabilities has been sent */
+		capabilities has been sent.
+	
+	PFLAG_USERCACERT: The CA certificate was fetched automatically by 
+		cryptlib as part of a SCEP protocol run rather than being added 
+		explicitly by the user.  If it was fetched automatically then it's
+		part of the output of a protocol run and can be read by the user
+		after the run is complete, otherwise it's part of the protocol 
+		parameters and write-only */
 
 #define SCEP_PFLAG_NONE			0x00	/* No protocol-specific flags */
 #define SCEP_PFLAG_PNPPKI		0x01	/* Session is PnP PKI-capable */
-#define SCEP_PFLAG_PENDING		0x02	/* Certificate issue is pending */
-#define SCEP_PFLAG_GOTCACAPS	0x04	/* Sent GetCACaps message to server */
+#define SCEP_PFLAG_FETCHEDCACERT 0x02	/* CA cert fetched via SCEP */
+#define SCEP_PFLAG_PENDING		0x08	/* Certificate issue is pending */
+#define SCEP_PFLAG_GOTCACAPS	0x10	/* Sent GetCACaps message to server */
 
 /* The SCEP message type, status, and failure information.  For some 
    bizarre reason these integer values are communicated as text strings */
 
 #define MESSAGETYPE_CERTREP				"3"
+#define MESSAGETYPE_RENEWAL				"18"
 #define MESSAGETYPE_PKCSREQ				"19"
 #define MESSAGETYPE_GETCERTINITIAL		"20"
+#define MESSAGETYPE_GETCERT				"21"
+#define MESSAGETYPE_GETCRL				"22"
 
 #define MESSAGESTATUS_SUCCESS			"0"
 #define MESSAGESTATUS_FAILURE			"2"
@@ -53,11 +64,21 @@
 /* Numeric equivalents of the above, to make them easier to work with */
 
 #define MESSAGETYPE_CERTREP_VALUE		3
+#define MESSAGETYPE_RENEWAL_VALUE		18
 #define MESSAGETYPE_PKCSREQ_VALUE		19
+#define MESSAGETYPE_GETCERTINITIAL_VALUE 20
+#define MESSAGETYPE_GETCERT_VALUE		21
+#define MESSAGETYPE_GETCRL_VALUE		22
 
 #define MESSAGESTATUS_SUCCESS_VALUE		0
 #define MESSAGESTATUS_FAILURE_VALUE		2
 #define MESSAGESTATUS_PENDING_VALUE		3
+
+#define MESSAGEFAILINFO_BADALG_VALUE	0
+#define MESSAGEFAILINFO_BADMESSAGECHECK_VALUE 1
+#define MESSAGEFAILINFO_BADREQUEST_VALUE 2
+#define MESSAGEFAILINFO_BADTIME_VALUE	3
+#define MESSAGEFAILINFO_BADCERTID_VALUE	4
 
 /* SCEP HTTP content type */
 
@@ -100,18 +121,18 @@ STDC_NONNULL_ARG( ( 1 ) ) \
 void destroySCEPprotocolInfo( INOUT SCEP_PROTOCOL_INFO *protocolInfo );
 CHECK_RETVAL_BOOL \
 BOOLEAN checkSCEPCACert( IN_HANDLE const CRYPT_CERTIFICATE iCaCert,
-						 IN_FLAGS( KEYMGMT ) const int options );
+						 IN_FLAGS_Z( KEYMGMT ) const int options );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int processKeyFingerprint( INOUT SESSION_INFO *sessionInfoPtr );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int getScepStatusValue( IN_HANDLE const CRYPT_CERTIFICATE iCmsAttributes,
 						IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE attributeType, 
 						OUT int *value );
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 4 ) ) \
 int createScepAttributes( INOUT SESSION_INFO *sessionInfoPtr,
 						  INOUT SCEP_PROTOCOL_INFO *protocolInfo,
 						  OUT_HANDLE_OPT CRYPT_CERTIFICATE *iScepAttributes,
-						  const BOOLEAN isInitiator, 
+						  IN_STRING const char *messageType,
 						  IN_STATUS const int scepStatus );
 
 /* Prototypes for functions in scep_cli/scep_svr.c */

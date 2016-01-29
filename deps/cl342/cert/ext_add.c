@@ -8,11 +8,9 @@
 #if defined( INC_ALL )
   #include "cert.h"
   #include "certattr.h"
-  #include "asn1.h"
 #else
   #include "cert/cert.h"
   #include "cert/certattr.h"
-  #include "enc_dec/asn1.h"
 #endif /* Compiler-specific includes */
 
 #ifdef USE_CERTIFICATES
@@ -34,7 +32,7 @@
 
 /* Check the validity of an attribute field */
 
-CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 2, 7 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 7 ) ) \
 static int checkAttributeField( IN_OPT const ATTRIBUTE_LIST *attributeListPtr,
 								const ATTRIBUTE_INFO *attributeInfoPtr,
 								IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE fieldID,
@@ -57,6 +55,9 @@ static int checkAttributeField( IN_OPT const ATTRIBUTE_LIST *attributeListPtr,
 				subFieldID <= CRYPT_CERTINFO_LAST_GENERALNAME ) );
 assert( ( flags & ~( ATTR_FLAG_NONE | ATTR_FLAG_CRITICAL | ATTR_FLAG_MULTIVALUED ) ) == 0 );
 	REQUIRES( flags >= ATTR_FLAG_NONE && flags <= ATTR_FLAG_MAX );
+
+	/* Clear return value */
+	*errorType = CRYPT_ERRTYPE_NONE;
 
 	/* Make sure that a valid field has been specified and that this field
 	   isn't already present as a non-default entry unless it's a field for
@@ -117,7 +118,7 @@ assert( ( flags & ~( ATTR_FLAG_NONE | ATTR_FLAG_CRITICAL | ATTR_FLAG_MULTIVALUED
 	return( CRYPT_OK );
 	}
 
-CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 2, 8, 9 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 8, 9 ) ) \
 static int checkAttributeFieldString( IN_OPT const ATTRIBUTE_LIST *attributeListPtr,
 								const ATTRIBUTE_INFO *attributeInfoPtr,
 								IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE fieldID,
@@ -148,8 +149,9 @@ static int checkAttributeFieldString( IN_OPT const ATTRIBUTE_LIST *attributeList
 assert( ( flags & ~( ATTR_FLAG_NONE | ATTR_FLAG_BLOB_PAYLOAD | ATTR_FLAG_CRITICAL | ATTR_FLAG_MULTIVALUED ) ) == 0 );
 	REQUIRES( flags >= ATTR_FLAG_NONE && flags <= ATTR_FLAG_MAX );
 
-	/* Clear return values */
+	/* Clear return value */
 	*newDataLength = 0;
+	*errorType = CRYPT_ERRTYPE_NONE;
 
 	/* Make sure that a valid field has been specified and that this field
 	   isn't already present as a non-default entry unless it's a field for
@@ -339,9 +341,9 @@ assert( ( flags & ~( ATTR_FLAG_NONE | ATTR_FLAG_BLOB_PAYLOAD | ATTR_FLAG_CRITICA
 /* Find the location in the attribute list at which to insert a new attribute 
    field */
 
-CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 2 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 2 ) ) \
 static int findFieldInsertLocation( IN_OPT const ATTRIBUTE_LIST *attributeListPtr,
-									OUT_OPT_PTR ATTRIBUTE_LIST **insertPointPtrPtr,
+									OUT_PTR_COND ATTRIBUTE_LIST **insertPointPtrPtr,
 									IN_ATTRIBUTE \
 										const CRYPT_ATTRIBUTE_TYPE fieldID,
 									IN_ATTRIBUTE_OPT \
@@ -458,7 +460,7 @@ assert( ( flags & ~( ATTR_FLAG_NONE | ATTR_FLAG_IGNORED | ATTR_FLAG_BLOB | ATTR_
 			/* Make sure that this blob attribute isn't already present */
 			if( checkAttributeProperty( insertPoint, 
 										ATTRIBUTE_PROPERTY_BLOBATTRIBUTE ) && \
-				sizeofOID( insertPoint->oid ) == oidLength && \
+				oidLength == sizeofOID( insertPoint->oid ) && \
 				!memcmp( insertPoint->oid, oid, oidLength ) )
 				return( CRYPT_ERROR_INITED );
 
@@ -496,7 +498,7 @@ int addAttributeField( INOUT ATTRIBUTE_PTR **listHeadPtr,
 					   IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE fieldID,
 					   IN_ATTRIBUTE_OPT \
 							const CRYPT_ATTRIBUTE_TYPE subFieldID,
-					   IN_INT_Z const int value,
+					   const int value,
 					   IN_FLAGS_Z( ATTR ) const int flags, 
 					   OUT_ENUM_OPT( CRYPT_ATTRIBUTE ) \
 							CRYPT_ATTRIBUTE_TYPE *errorLocus,
@@ -525,6 +527,10 @@ int addAttributeField( INOUT ATTRIBUTE_PTR **listHeadPtr,
 				subFieldID <= CRYPT_CERTINFO_LAST_GENERALNAME ) );
 assert( ( flags & ~( ATTR_FLAG_CRITICAL | ATTR_FLAG_MULTIVALUED | ATTR_FLAG_BLOB_PAYLOAD ) ) == 0 );
 	REQUIRES( flags >= ATTR_FLAG_NONE && flags <= ATTR_FLAG_MAX );
+
+	/* Clear return values */
+	*errorLocus = CRYPT_ATTRIBUTE_NONE;
+	*errorType = CRYPT_ERRTYPE_NONE;
 
 	/* Sanity-check the state */
 	ENSURES( attributeInfoPtr != NULL );
@@ -576,8 +582,15 @@ assert( ( flags & ~( ATTR_FLAG_CRITICAL | ATTR_FLAG_MULTIVALUED | ATTR_FLAG_BLOB
 			if( attributeInfoPtr->fieldType == FIELDTYPE_CHOICE )
 				{
 				/* For encoding purposes the subfield ID is set to the ID of 
-				   the CHOICE selection */
-				newElement->subFieldID = newElement->intValue;
+				   the CHOICE selection.  This isn't strictly speaking a 
+				   CRYPT_ATTRIBUTE_TYPE but something like a 
+				   CRYPT_HOLDINSTRUCTION_TYPE or CRYPT_CONTENT_TYPE, but
+				   we store it in a CRYPT_ATTRIBUTE_TYPE field */
+				REQUIRES( newElement->intValue > 0 && \
+						  newElement->intValue < 100 );
+
+				newElement->subFieldID = ( CRYPT_ATTRIBUTE_TYPE ) \
+										   newElement->intValue;
 				}
 			break;
 
@@ -639,6 +652,10 @@ int addAttributeFieldString( INOUT ATTRIBUTE_PTR **listHeadPtr,
 	REQUIRES( dataLength > 0 && dataLength <= MAX_ATTRIBUTE_SIZE );
 assert( ( flags & ~( ATTR_FLAG_BLOB_PAYLOAD | ATTR_FLAG_CRITICAL | ATTR_FLAG_MULTIVALUED ) ) == 0 );
 	REQUIRES( flags >= ATTR_FLAG_NONE && flags <= ATTR_FLAG_MAX );
+
+	/* Clear return values */
+	*errorLocus = CRYPT_ATTRIBUTE_NONE;
+	*errorType = CRYPT_ERRTYPE_NONE;
 
 	/* Sanity-check the state */
 	ENSURES( attributeInfoPtr != NULL );

@@ -17,6 +17,8 @@
   #include "misc/pgp.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_INT_CMS
+
 /****************************************************************************
 *																			*
 *							Low-level Key Export Functions					*
@@ -28,8 +30,8 @@
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int exportConventionalKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, *encryptedKeyLength ) \
 							void *encryptedKey, 
-						   IN_LENGTH const int encryptedKeyMaxLength,
-						   OUT_LENGTH_Z int *encryptedKeyLength,
+						   IN_DATALENGTH_Z const int encryptedKeyMaxLength,
+						   OUT_DATALENGTH_Z int *encryptedKeyLength,
 						   IN_HANDLE_OPT const CRYPT_CONTEXT iSessionKeyContext,
 						   IN_HANDLE const CRYPT_CONTEXT iExportContext,
 						   IN_ENUM( KEYEX ) const KEYEX_TYPE keyexType )
@@ -37,8 +39,6 @@ int exportConventionalKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, *encryptedKeyL
 	MECHANISM_WRAP_INFO mechanismInfo;
 	const WRITEKEK_FUNCTION writeKeyexFunction = getWriteKekFunction( keyexType );
 	BYTE buffer[ CRYPT_MAX_KEYSIZE + 16 + 8 ];
-	BYTE *bufPtr = ( encryptedKey == NULL ) ? NULL : buffer;
-	const int bufSize = ( encryptedKey == NULL ) ? 0 : CRYPT_MAX_KEYSIZE + 16;
 	int keySize, ivSize, status;
 
 	assert( ( encryptedKey == NULL && encryptedKeyMaxLength == 0 ) || \
@@ -48,7 +48,7 @@ int exportConventionalKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, *encryptedKeyL
 	REQUIRES( ( encryptedKey == NULL && encryptedKeyMaxLength == 0 ) || \
 			  ( encryptedKey != NULL && \
 				encryptedKeyMaxLength > MIN_CRYPT_OBJECTSIZE && \
-				encryptedKeyMaxLength < MAX_INTLENGTH ) );
+				encryptedKeyMaxLength < MAX_BUFFER_SIZE ) );
 	REQUIRES( ( keyexType == KEYEX_PGP && \
 				iSessionKeyContext == CRYPT_UNUSED ) || \
 			  ( keyexType != KEYEX_PGP && \
@@ -120,8 +120,16 @@ int exportConventionalKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, *encryptedKeyL
 		}
 
 	/* Encrypt the session key and write the result to the output stream */
-	setMechanismWrapInfo( &mechanismInfo, bufPtr, bufSize, NULL, 0, 
-						  iSessionKeyContext, iExportContext );
+	if( encryptedKey == NULL )
+		{
+		setMechanismWrapInfo( &mechanismInfo, NULL, 0, NULL, 0, 
+							  iSessionKeyContext, iExportContext );
+		}
+	else
+		{
+		setMechanismWrapInfo( &mechanismInfo, buffer, CRYPT_MAX_KEYSIZE + 16, 
+							  NULL, 0, iSessionKeyContext, iExportContext );
+		}
 	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_DEV_EXPORT,
 							  &mechanismInfo, MECHANISM_ENC_CMS );
 	if( cryptStatusOK( status ) )
@@ -154,8 +162,8 @@ int exportConventionalKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, *encryptedKeyL
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int exportPublicKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, *encryptedKeyLength ) \
 						void *encryptedKey, 
-					 IN_LENGTH const int encryptedKeyMaxLength,
-					 OUT_LENGTH_Z int *encryptedKeyLength,
+					 IN_DATALENGTH_Z const int encryptedKeyMaxLength,
+					 OUT_DATALENGTH_Z int *encryptedKeyLength,
 					 IN_HANDLE const CRYPT_CONTEXT iSessionKeyContext,
 					 IN_HANDLE const CRYPT_CONTEXT iExportContext,
 					 IN_BUFFER_OPT( auxInfoLength ) const void *auxInfo, 
@@ -163,11 +171,12 @@ int exportPublicKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, *encryptedKeyLength 
 					 IN_ENUM( KEYEX ) const KEYEX_TYPE keyexType )
 	{
 	MECHANISM_WRAP_INFO mechanismInfo;
-	const WRITEKEYTRANS_FUNCTION writeKetransFunction = getWriteKeytransFunction( keyexType );
+	const WRITEKEYTRANS_FUNCTION writeKeytransFunction = getWriteKeytransFunction( keyexType );
+	const BOOLEAN requiresSizeFixup = \
+				( ( keyexType == KEYEX_CMS || keyexType == KEYEX_CRYPTLIB ) && \
+				  ( encryptedKey != NULL ) ) ? TRUE : FALSE;
 	BYTE buffer[ MAX_PKCENCRYPTED_SIZE + 8 ];
-	BYTE *bufPtr = ( encryptedKey == NULL ) ? NULL : buffer;
-	const int bufSize = ( encryptedKey == NULL ) ? 0 : MAX_PKCENCRYPTED_SIZE;
-	int keySize, status;
+	int exportKeySize DUMMY_INIT, status;
 
 	assert( ( encryptedKey == NULL && encryptedKeyMaxLength == 0 ) || \
 			isWritePtr( encryptedKey, encryptedKeyMaxLength ) );
@@ -178,7 +187,7 @@ int exportPublicKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, *encryptedKeyLength 
 	REQUIRES( ( encryptedKey == NULL && encryptedKeyMaxLength == 0 ) || \
 			  ( encryptedKey != NULL && \
 				encryptedKeyMaxLength > MIN_CRYPT_OBJECTSIZE && \
-				encryptedKeyMaxLength < MAX_INTLENGTH ) );
+				encryptedKeyMaxLength < MAX_BUFFER_SIZE ) );
 	REQUIRES( isHandleRangeValid( iSessionKeyContext ) );
 	REQUIRES( isHandleRangeValid( iExportContext ) );
 	REQUIRES( ( auxInfo == NULL && auxInfoLength == 0 ) || \
@@ -190,18 +199,31 @@ int exportPublicKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, *encryptedKeyLength 
 	*encryptedKeyLength = 0;
 
 	/* Make sure that the requested key exchange format is available */
-	if( writeKetransFunction  == NULL )
+	if( writeKeytransFunction  == NULL )
 		return( CRYPT_ERROR_NOTAVAIL );
 
 	/* Get the export parameters */
-	status = krnlSendMessage( iSessionKeyContext, IMESSAGE_GETATTRIBUTE,
-							  &keySize, CRYPT_CTXINFO_KEYSIZE );
-	if( cryptStatusError( status ) )
-		return( cryptArgError( status ) ? CRYPT_ARGERROR_NUM1 : status );
+	if( requiresSizeFixup )
+		{
+		status = krnlSendMessage( iExportContext, IMESSAGE_GETATTRIBUTE,
+								  &exportKeySize, CRYPT_CTXINFO_KEYSIZE );
+		if( cryptStatusError( status ) )
+			return( cryptArgError( status ) ? CRYPT_ARGERROR_NUM2 : status );
+		if( exportKeySize > encryptedKeyMaxLength )
+			return( CRYPT_ERROR_OVERFLOW );
+		}
 
 	/* Encrypt the session key and write the result to the output stream */
-	setMechanismWrapInfo( &mechanismInfo, bufPtr, bufSize, NULL, 0, 
-						  iSessionKeyContext, iExportContext );
+	if( encryptedKey == NULL )
+		{
+		setMechanismWrapInfo( &mechanismInfo, NULL, 0, NULL, 0, 
+							  iSessionKeyContext, iExportContext );
+		}
+	else
+		{
+		setMechanismWrapInfo( &mechanismInfo, buffer, MAX_PKCENCRYPTED_SIZE, 
+							  NULL, 0, iSessionKeyContext, iExportContext );
+		}
 	status = krnlSendMessage( iExportContext, IMESSAGE_DEV_EXPORT,
 							  &mechanismInfo, ( keyexType == KEYEX_PGP ) ? \
 								MECHANISM_ENC_PKCS1_PGP : \
@@ -213,14 +235,34 @@ int exportPublicKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, *encryptedKeyLength 
 		/* If we're perfoming a dummy export for a length check, set up a 
 		   dummy value to write */
 		if( encryptedKey == NULL )
+			{
 			memset( buffer, 0x01, mechanismInfo.wrappedDataLength );
+			mechanismInfo.wrappedData = buffer;
+			}
+
+		/* If we're using the CMS data format then we need to fix up the 
+		   size of the wrapped key data to match the exporting key size.  
+		   This is necessary because the higher-level ASN.1 wrappers at the 
+		   CMS envelope level won't reflect the fact that the size has 
+		   changed at the CMS keyex level, so we need to adjust the data 
+		   size to ensure that the amount of data we output matches what
+		   was promised in the size check */
+		if( requiresSizeFixup && mechanismInfo.wrappedDataLength < exportKeySize )
+			{
+			const int delta = exportKeySize - mechanismInfo.wrappedDataLength;
+
+			memmove( ( BYTE * ) mechanismInfo.wrappedData + delta, 
+					 mechanismInfo.wrappedData, 
+					 mechanismInfo.wrappedDataLength );
+			memset( mechanismInfo.wrappedData, 0, delta );
+			mechanismInfo.wrappedDataLength = exportKeySize;
+			}
 
 		sMemOpenOpt( &stream, encryptedKey, encryptedKeyMaxLength );
-		status = writeKetransFunction ( &stream, iExportContext,
-										( encryptedKey != NULL ) ? \
-											mechanismInfo.wrappedData : buffer,
-										mechanismInfo.wrappedDataLength,
-										auxInfo, auxInfoLength );
+		status = writeKeytransFunction ( &stream, iExportContext, 
+										 mechanismInfo.wrappedData,
+										 mechanismInfo.wrappedDataLength,
+										 auxInfo, auxInfoLength );
 		if( cryptStatusOK( status ) )
 			*encryptedKeyLength = stell( &stream );
 		sMemDisconnect( &stream );
@@ -243,7 +285,7 @@ int exportPublicKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, *encryptedKeyLength 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int importConventionalKey( IN_BUFFER( encryptedKeyLength ) \
 							const void *encryptedKey, 
-						   IN_LENGTH_SHORT const int encryptedKeyLength,
+						   IN_DATALENGTH const int encryptedKeyLength,
 						   IN_HANDLE const CRYPT_CONTEXT iSessionKeyContext,
 						   IN_HANDLE const CRYPT_CONTEXT iImportContext,
 						   IN_ENUM( KEYEX ) const KEYEX_TYPE keyexType )
@@ -253,12 +295,12 @@ int importConventionalKey( IN_BUFFER( encryptedKeyLength ) \
 	QUERY_INFO queryInfo;
 	MESSAGE_DATA msgData;
 	STREAM stream;
-	int importAlgo, importMode = DUMMY_INIT, status;	/* int vs.enum */
+	int importAlgo, importMode DUMMY_INIT, status;	/* int vs.enum */
 
 	assert( isReadPtr( encryptedKey, encryptedKeyLength ) );
 
 	REQUIRES( encryptedKeyLength > MIN_CRYPT_OBJECTSIZE && \
-			  encryptedKeyLength < MAX_INTLENGTH_SHORT );
+			  encryptedKeyLength < MAX_BUFFER_SIZE );
 	REQUIRES( isHandleRangeValid( iSessionKeyContext ) );
 	REQUIRES( isHandleRangeValid( iImportContext ) );
 	REQUIRES( keyexType > KEYEX_NONE && keyexType < KEYEX_LAST );
@@ -336,14 +378,14 @@ int importConventionalKey( IN_BUFFER( encryptedKeyLength ) \
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int importPublicKey( IN_BUFFER( encryptedKeyLength ) const void *encryptedKey, 
-					 IN_LENGTH_SHORT const int encryptedKeyLength,
+					 IN_DATALENGTH const int encryptedKeyLength,
 					 IN_HANDLE_OPT const CRYPT_CONTEXT iSessionKeyContext,
 					 IN_HANDLE const CRYPT_CONTEXT iImportContext,
 					 OUT_OPT_HANDLE_OPT CRYPT_CONTEXT *iReturnedContext, 
 					 IN_ENUM( KEYEX ) const KEYEX_TYPE keyexType )
 	{
 	MECHANISM_WRAP_INFO mechanismInfo;
-	const READKEYTRANS_FUNCTION readKetransFunction = getReadKeytransFunction( keyexType );
+	const READKEYTRANS_FUNCTION readKeytransFunction = getReadKeytransFunction( keyexType );
 	QUERY_INFO queryInfo;
 	MESSAGE_DATA msgData;
 	STREAM stream;
@@ -355,7 +397,7 @@ int importPublicKey( IN_BUFFER( encryptedKeyLength ) const void *encryptedKey,
 			( keyexType != KEYEX_PGP && iReturnedContext == NULL ) );
 
 	REQUIRES( encryptedKeyLength > MIN_CRYPT_OBJECTSIZE && \
-			  encryptedKeyLength < MAX_INTLENGTH );
+			  encryptedKeyLength < MAX_BUFFER_SIZE );
 	REQUIRES( ( keyexType == KEYEX_PGP && \
 				iSessionKeyContext == CRYPT_UNUSED ) || \
 			  ( keyexType != KEYEX_PGP && \
@@ -370,12 +412,12 @@ int importPublicKey( IN_BUFFER( encryptedKeyLength ) const void *encryptedKey,
 		*iReturnedContext = CRYPT_ERROR;
 
 	/* Make sure that the requested key exchange format is available */
-	if( readKetransFunction == NULL )
+	if( readKeytransFunction == NULL )
 		return( CRYPT_ERROR_NOTAVAIL );
 
 	/* Read and check the encrypted key record */
 	sMemConnect( &stream, encryptedKey, encryptedKeyLength );
-	status = readKetransFunction( &stream, &queryInfo );
+	status = readKeytransFunction( &stream, &queryInfo );
 	sMemDisconnect( &stream );
 	if( cryptStatusError( status ) )
 		{
@@ -409,6 +451,18 @@ int importPublicKey( IN_BUFFER( encryptedKeyLength ) const void *encryptedKey,
 		}
 	status = krnlSendMessage( iImportContext, IMESSAGE_COMPARE, &msgData, 
 							  compareType );
+	if( cryptStatusError( status ) && \
+		compareType == MESSAGE_COMPARE_KEYID )
+		{
+		/* Checking for the keyID gets a bit complicated, in theory it's the 
+		   subjectKeyIdentifier from a certificate but in practice this form 
+		   is mostly used for certificateless public keys.  Because of this we 
+		   check for the keyID first and if that fails fall back to the 
+		   sKID */
+		status = krnlSendMessage( iImportContext, IMESSAGE_COMPARE, 
+								  &msgData, 
+								  MESSAGE_COMPARE_SUBJECTKEYIDENTIFIER );
+		}
 	if( cryptStatusError( status ) && \
 		compareType == MESSAGE_COMPARE_KEYID_OPENPGP )
 		{
@@ -457,3 +511,4 @@ int importPublicKey( IN_BUFFER( encryptedKeyLength ) const void *encryptedKey,
 
 	return( status );
 	}
+#endif /* USE_INT_CMS */

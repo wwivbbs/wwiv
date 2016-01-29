@@ -196,9 +196,9 @@ static int createOpenRequest( INOUT SESSION_INFO *sessionInfoPtr,
 												CHANNEL_WRITE );
 	const int maxPacketSize = sessionInfoPtr->sendBufSize - \
 							  EXTRA_PACKET_SIZE;
-	URL_INFO urlInfo = { DUMMY_INIT };
+	URL_INFO urlInfo DUMMY_INIT_STRUCT;
 	BYTE arg1String[ CRYPT_MAX_TEXTSIZE + 8 ];
-	int arg1Len = DUMMY_INIT, status;
+	int arg1Len DUMMY_INIT, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
@@ -206,7 +206,8 @@ static int createOpenRequest( INOUT SESSION_INFO *sessionInfoPtr,
 
 	REQUIRES( serviceType > SERVICE_NONE && serviceType < SERVICE_LAST );
 
-	/* Clear return value */
+	/* Clear return values */
+	memset( stream, 0, sizeof( STREAM ) );
 	*requestType = OPENREQUEST_NONE;
 
 	/* If it's not a generic tunnel, get any additional parameters 

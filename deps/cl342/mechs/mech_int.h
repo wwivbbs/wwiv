@@ -19,6 +19,13 @@
 
 /* Prototypes for functions in mech_int.c */
 
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
+int adjustPKCS1Data( OUT_BUFFER_FIXED( outDataMaxLen ) BYTE *outData, 
+					 IN_LENGTH_SHORT_MIN( CRYPT_MAX_PKCSIZE ) \
+						const int outDataMaxLen, 
+					 IN_BUFFER( inLen ) const BYTE *inData, 
+					 IN_LENGTH_SHORT const int inLen, 
+					 IN_LENGTH_SHORT const int keySize );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int getPkcAlgoParams( IN_HANDLE const CRYPT_CONTEXT pkcContext,
 					  OUT_OPT_ALGO_Z CRYPT_ALGO_TYPE *pkcAlgo, 
@@ -27,13 +34,6 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 2 ) ) \
 int getHashAlgoParams( IN_HANDLE const CRYPT_CONTEXT hashContext,
 					   OUT_ALGO_Z CRYPT_ALGO_TYPE *hashAlgo, 
 					   OUT_OPT_LENGTH_HASH_Z int *hashSize );
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
-int adjustPKCS1Data( OUT_BUFFER_FIXED( outDataMaxLen ) BYTE *outData, 
-					 IN_LENGTH_SHORT_MIN( CRYPT_MAX_PKCSIZE ) \
-						const int outDataMaxLen, 
-					 IN_BUFFER( inLen ) const BYTE *inData, 
-					 IN_LENGTH_SHORT const int inLen, 
-					 IN_LENGTH_SHORT const int keySize );
 
 /* Prototypes for kernel-internal access functions.  This is a bit of an odd 
    place to have them but we need to have a prototype visible to both the

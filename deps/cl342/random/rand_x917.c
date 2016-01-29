@@ -651,6 +651,7 @@ int fipsTestX917( INOUT RANDOM_INFO *testRandomInfo )
 	   values */
 	initRandomPool( testRandomInfo );
 	memcpy( keyBuffer, x917MCTdata.key, X917_KEYSIZE );
+	memset( buffer, 0, X917_BLOCKSIZE );
 	status = setKeyX917( testRandomInfo, keyBuffer, x917MCTdata.V,
 						 x917MCTdata.DT );
 	if( cryptStatusOK( status ) )

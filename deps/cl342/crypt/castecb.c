@@ -66,6 +66,8 @@
   #include "crypt/castlcl.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_CAST
+
 void CAST_ecb_encrypt(const unsigned char *in, unsigned char *out,
 		      CAST_KEY *ks, int enc)
 	{
@@ -81,4 +83,4 @@ void CAST_ecb_encrypt(const unsigned char *in, unsigned char *out,
 	l=d[1]; l2n(l,out);
 	l=d[0]=d[1]=0;
 	}
-
+#endif /* USE_CAST */

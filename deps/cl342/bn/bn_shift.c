@@ -65,7 +65,8 @@
 
 int BN_lshift1(BIGNUM *r, const BIGNUM *a)
 	{
-	register BN_ULONG *ap,*rp,t,c;
+	const BN_ULONG *ap;		/* pcg */
+	BN_ULONG *rp,t,c;
 	int i;
 
 	bn_check_top(r);
@@ -101,7 +102,8 @@ int BN_lshift1(BIGNUM *r, const BIGNUM *a)
 
 int BN_rshift1(BIGNUM *r, const BIGNUM *a)
 	{
-	BN_ULONG *ap,*rp,t,c;
+	const BN_ULONG *ap;		/* pcg */
+	BN_ULONG *rp,t,c;
 	int i;
 
 	bn_check_top(r);
@@ -135,7 +137,8 @@ int BN_rshift1(BIGNUM *r, const BIGNUM *a)
 int BN_lshift(BIGNUM *r, const BIGNUM *a, int n)
 	{
 	int i,nw,lb,rb;
-	BN_ULONG *t,*f;
+	const BN_ULONG *f;		/* pcg */
+	BN_ULONG *t;
 	BN_ULONG l;
 
 	bn_check_top(r);
@@ -171,7 +174,8 @@ int BN_lshift(BIGNUM *r, const BIGNUM *a, int n)
 int BN_rshift(BIGNUM *r, const BIGNUM *a, int n)
 	{
 	int i,j,nw,lb,rb;
-	BN_ULONG *t,*f;
+	const BN_ULONG *f;		/* pcg */
+	BN_ULONG *t;
 	BN_ULONG l,tmp;
 
 	bn_check_top(r);

@@ -22,71 +22,6 @@
 
 /****************************************************************************
 *																			*
-*							Database Keyset Headers							*
-*																			*
-****************************************************************************/
-
-/* Handle ODBC support.  This gets rather complex, with all sorts of special-
-   case handling of headers and types required across different systems */
-
-#ifdef USE_ODBC
-
-/* As part of the ever-changing way of identifying Win32, Microsoft changed 
-   the predefined constant from WIN32 to _WIN32 in VC++ 2.1.  However the 
-   ODBC header files still expect to find WIN32 and if this isn't defined 
-   will use the default (i.e. C) calling convention instead of the Pascal 
-   convention which is actually used by the ODBC functions.  This means that 
-   both the caller and the callee clean up the stack so that for each ODBC 
-   call the stack creeps upwards by a few bytes until eventually the local 
-   variables and/or return address get trashed.  This problem is usually 
-   hidden by the fact that something else defines WIN32 so everything works 
-   OK, but the October 1997 development platform upgrade changes this so 
-   that compiling the code after this update is installed breaks things.  To 
-   avoid this problem, we define WIN32 if it isn't defined, which ensures 
-   that the ODBC header files work properly */
-#if defined( __WIN32__ ) && !defined( WIN32 )
-  #define WIN32
-#endif /* __WIN32__ && !WIN32 */
-
-#ifdef __WINDOWS__
-  /* Borland have their own weird place to put ODBC headers */
-  #if defined( __BORLANDC__ )
-	#include <mfc/sqltypes.h>
-  #else
-	/* UnixODBC defines its own version of various Windows types, if we're
-	   building under Windows we have to disable this.  The UnixODBC headers 
-	   have a guard ALLREADY_HAVE_WINDOWS_TYPE (sic) but this is all-or-
-	   nothing, disabling the defining of Windows *and* SQL types.  Defining 
-	   the guard value fixes most compile problems but in order to build it 
-	   the commented-out typedefs also need to be defined.  These are 
-	   already defined in the standard (Windows) sqltypes.h so their use 
-	   needs to be manually enabled for UnixODBC under Windows, which is 
-	   unlikely to occur given that it's a Unix-only driver */
-	#define ALLREADY_HAVE_WINDOWS_TYPE
-	#if 0
-	typedef signed short RETCODE;
-	typedef short int SWORD;
-	typedef long int SDWORD;
-	typedef signed char SQLSCHAR;
-	typedef HWND SQLHWND;
-	#endif /* 0 */
-
-	#include <sql.h>
-	#include <sqlext.h>
-  #endif /* Compiler-specific include locations */
-#else
-  #include <sql.h>
-  #include <sqlext.h>
-#endif /* Windows vs.everything else */
-
-#endif /* USE_ODBC */
-
-#ifdef USE_DATABASE
-  #error Need to add database backend-specific includes
-#endif /* USE_DATABASE */
-
-/****************************************************************************
-*																			*
 *							Keyset Types and Constants						*
 *																			*
 ****************************************************************************/
@@ -129,94 +64,11 @@ typedef enum {
 	KEYSET_SUBTYPE_LAST				/* Last valid keyset subtype */
 	} KEYSET_SUBTYPE;
 
-/* When we perform a DBMS transaction there are several variations on the 
-   basic operation type.  The following values tell performQuery() and
-   performUpdate() which type of operation to perform */
-
-typedef enum {
-	DBMS_QUERY_NONE,				/* No DBMS query */
-	DBMS_QUERY_NORMAL,				/* Standard data fetch */
-	DBMS_QUERY_CHECK,				/* Check-type fetch, don't fetch data */
-	DBMS_QUERY_START,				/* Begin an ongoing query */
-	DBMS_QUERY_CONTINUE,			/* Continue an ongoing query */
-	DBMS_QUERY_CANCEL,				/* Cancel ongoing query */
-	DBMS_QUERY_LAST					/* Last valid DBMS query type */
-	} DBMS_QUERY_TYPE;
-
-typedef enum {
-	DBMS_UPDATE_NONE,				/* No DBMS update */
-	DBMS_UPDATE_NORMAL,				/* Standard update */
-	DBMS_UPDATE_BEGIN,				/* Begin a transaction */
-	DBMS_UPDATE_CONTINUE,			/* Continue an ongoing transaction */
-	DBMS_UPDATE_COMMIT,				/* Commit a transaction */
-	DBMS_UPDATE_ABORT,				/* Abort a transaction */
-	DBMS_UPDATE_LAST				/* Last valid DBMS update type */
-	} DBMS_UPDATE_TYPE;
-
-/* To optimise database accesses we use prepared queries that are prepared
-   once and then re-used whenever a new result set is required.  The following
-   values are used to refer to the prepared query types */
-
-typedef enum {
-	DBMS_CACHEDQUERY_NONE,			/* No cached query */
-	DBMS_CACHEDQUERY_CERTID,		/* Query on certificate ID */
-	DBMS_CACHEDQUERY_ISSUERID,		/* Query on issuer ID */
-	DBMS_CACHEDQUERY_NAMEID,		/* Query in name ID */
-	DBMS_CACHEDQUERY_URI,			/* Query on URI */
-	DBMS_CACHEDQUERY_LAST			/* Last valid cached query type */
-	} DBMS_CACHEDQUERY_TYPE;
-
-#define NO_CACHED_QUERIES	5
-
 /****************************************************************************
 *																			*
 *								Keyset Structures							*
 *																			*
 ****************************************************************************/
-
-/* Database state information maintained by the database back-end specific
-   code.  This storage is logically distinct from the keyset object storage,
-   and may in fact be physically distinct if the back-end is accessed via an
-   RPC mechanism */
-
-typedef struct {
-	/* DBMS status information */
-	BOOLEAN needsUpdate;			/* Whether data remains to be committed */
-	BOOLEAN hasBinaryBlobs;			/* Whether back-end supports binary blobs */
-
-	/* Error information returned by the back-end.  This is copied over to 
-	   the keyset object as required */
-	ERROR_INFO errorInfo;
-
-	/* Database-specific information */
-  #ifdef USE_ODBC
-	/* ODBC access information */
-	SQLHENV hEnv;					/* Environment handle */
-	SQLHDBC hDbc;					/* Connection handle */
-	BOOLEAN connectionOpen;			/* Whether hDbc connection is active */
-	ARRAY_FIXED( NO_CACHED_QUERIES ) \
-	SQLHSTMT hStmt[ NO_CACHED_QUERIES + 8 ];/* Statement handles */
-	ARRAY_FIXED( NO_CACHED_QUERIES ) \
-	BOOLEAN hStmtPrepared[ NO_CACHED_QUERIES + 8 ];/* Whether stmt is prepared on handle */
-	BOOLEAN transactIsDestructive;	/* Whether commit/rollback destroys prep'd queries */
-	SQLSMALLINT blobType;			/* SQL type of blob data type */
-	BUFFER( CRYPT_MAX_TEXTSIZE, blobNameLength ) \
-	char blobName[ CRYPT_MAX_TEXTSIZE + 8 ];/* Name of blob data type */
-	int blobNameLength;				/* Length of blob data type name */
-	SQLINTEGER dateTimeNameColSize;	/* Back-end specific size of datetime column */
-	BUFFER( CRYPT_MAX_TEXTSIZE, dateTimeNameLength ) \
-	char dateTimeName[ CRYPT_MAX_TEXTSIZE + 8 ];/* Name of datetime data type */
-	int dateTimeNameLength;			/* Length of datetime data type name */
-	BOOLEAN needLongLength;			/* Back-end needs blob length at bind.time */
-	int backendType;				/* Back-end type if special handling is req'd */
-  #endif /* USE_ODBC */
-  #ifdef USE_DATABASE
-	#error Need to add database backend-specific state variables
-  #endif /* USE_DATABASE */
-  #ifdef USE_TCP
-	STREAM stream;					/* Network I/O stream */
-  #endif /* USE_TCP */
-	} DBMS_STATE_INFO;
 
 /* The internal fields in a keyset that hold data for the various keyset
    types */
@@ -225,6 +77,101 @@ typedef enum { KEYSET_NONE, KEYSET_FILE, KEYSET_DBMS, KEYSET_LDAP,
 			   KEYSET_HTTP } KEYSET_TYPE;
 
 struct KI;	/* Forward declaration for argument to function pointers */
+
+#ifdef _DBMS_DEFINED
+
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 5 ) ) \
+		int ( *DBX_OPENDATABASEBACKENDFUNCTION )( INOUT DBMS_STATE_INFO *dbmsStateInfo, 
+												  IN_BUFFER( nameLen ) const char *name, 
+												  IN_LENGTH_NAME const int nameLen, 
+												  IN_ENUM_OPT( CRYPT_KEYOPT ) \
+													const CRYPT_KEYOPT_TYPE options, 
+												  OUT_FLAGS_Z( DBMS_FEATURE ) \
+													int *featureFlags );
+typedef STDC_NONNULL_ARG( ( 1 ) ) \
+		void ( *DBX_CLOSEDATABASEBACKENDFUNCTION )( INOUT DBMS_STATE_INFO *dbmsStateInfo );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *DBX_PERFORMUPDATEBACKENDFUNCTION )( INOUT DBMS_STATE_INFO *dbmsStateInfo, 
+												   IN_BUFFER_OPT( commandLength ) \
+													const char *command,
+												   IN_LENGTH_SHORT_Z \
+													const int commandLength, 
+												   IN_ARRAY_OPT( BOUND_DATA_MAXITEMS ) \
+													const void *boundData, 
+												   IN_ENUM( DBMS_UPDATE ) \
+													const DBMS_UPDATE_TYPE updateType );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *DBX_PERFORMQUERYBACKENDFUNCTION )( INOUT DBMS_STATE_INFO *dbmsStateInfo, 
+												  IN_BUFFER_OPT( commandLength ) \
+													const char *command,
+												  IN_LENGTH_SHORT_Z \
+													const int commandLength, 
+												  OUT_BUFFER_OPT( dataMaxLength, \
+																  *dataLength ) \
+													void *data, 
+												  IN_LENGTH_SHORT_Z \
+													const int dataMaxLength,  
+												  OUT_LENGTH_BOUNDED_Z( dataMaxLength ) \
+													int *dataLength, 
+												  IN_OPT const void *boundData, 
+												  IN_ENUM_OPT( DBMS_CACHEDQUERY ) \
+													const DBMS_CACHEDQUERY_TYPE queryEntry,
+												  IN_ENUM( DBMS_QUERY ) \
+													const DBMS_QUERY_TYPE queryType );
+
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 5 ) ) \
+		int ( *DBX_OPENDATABASEFUNCTION )( INOUT struct DI *dbmsInfo, 
+										   IN_BUFFER( nameLen ) const char *name, 
+										   IN_LENGTH_NAME const int nameLen, 
+										   IN_ENUM_OPT( CRYPT_KEYOPT ) \
+											const CRYPT_KEYOPT_TYPE options, 
+										   OUT_FLAGS_Z( DBMS ) \
+											int *featureFlags );
+typedef STDC_NONNULL_ARG( ( 1 ) ) \
+		void ( *DBX_CLOSEDATABASEFUNCTION )( INOUT struct DI *dbmsInfo );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *DBX_PERFORMUPDATEFUNCTION )( INOUT struct DI *dbmsInfo, 
+											IN_STRING_OPT const char *command,
+											IN_OPT const void *boundData, 
+											IN_ENUM( DBMS_UPDATE ) \
+												const DBMS_UPDATE_TYPE updateType );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *DBX_PERFORMSTATICUPDATEFUNCTION )( INOUT struct DI *dbmsInfo, 
+												  IN_STRING const char *command );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *DBX_PERFORMQUERYFUNCTION )( INOUT struct DI *dbmsInfo, 
+										   IN_STRING_OPT const char *command,
+										   OUT_BUFFER_OPT( dataMaxLength, \
+														   *dataLength ) \
+											void *data, 
+										   IN_LENGTH_SHORT_Z \
+											const int dataMaxLength, 
+										   OUT_LENGTH_BOUNDED_Z( dataMaxLength ) \
+											int *dataLength, 
+										   IN_OPT const void *boundData,
+										   IN_ENUM_OPT( DBMS_CACHEDQUERY ) \
+											const DBMS_CACHEDQUERY_TYPE queryEntry, 
+										   IN_ENUM( DBMS_QUERY ) \
+											const DBMS_QUERY_TYPE queryType );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *DBX_PERFORMSTATICQUERYFUNCTION )( INOUT struct DI *dbmsInfo, 
+												 IN_STRING_OPT const char *command,
+												 IN_ENUM_OPT( DBMS_CACHEDQUERY ) \
+													const DBMS_CACHEDQUERY_TYPE queryEntry, 
+												 IN_ENUM( DBMS_QUERY ) \
+													const DBMS_QUERY_TYPE queryType );
+#endif /* _DBMS_DEFINED */
+
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *DBX_CERTMGMTFUNCTION )( INOUT struct KI *keysetInfo, 
+									   OUT_OPT_HANDLE_OPT \
+											CRYPT_CERTIFICATE *iCryptCert,
+									   IN_HANDLE_OPT \
+											const CRYPT_CERTIFICATE caKey,
+									   IN_HANDLE_OPT \
+											const CRYPT_CERTIFICATE request,
+									   IN_ENUM( CRYPT_CERTACTION ) \
+											const CRYPT_CERTACTION_TYPE action );
 
 typedef struct {
 	/* The I/O stream and file name */
@@ -258,92 +205,41 @@ typedef struct DI {
 	   one for each back-end access type.  In addition the state information 
 	   storage contains the state data needed for the communications 
 	   channel */
-#ifdef USE_RPCAPI
+#if defined( USE_RPCAPI )
 	void ( *dispatchFunction )( void *stateInfo, BYTE *buffer );
+#elif defined( _DBMS_DEFINED )
+	DBX_OPENDATABASEBACKENDFUNCTION openDatabaseBackend;
+	DBX_CLOSEDATABASEBACKENDFUNCTION closeDatabaseBackend;
+	DBX_PERFORMUPDATEBACKENDFUNCTION performUpdateBackend;
+	DBX_PERFORMQUERYBACKENDFUNCTION performQueryBackend;
 #else
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2, 5 ) ) \
-	int ( *openDatabaseBackend )( INOUT DBMS_STATE_INFO *dbmsStateInfo, 
-								  IN_BUFFER( nameLen ) const char *name, 
-								  IN_LENGTH_NAME const int nameLen, 
-								  IN_ENUM_OPT( CRYPT_KEYOPT ) \
-									const CRYPT_KEYOPT_TYPE options, 
-								  OUT_FLAGS_Z( DBMS_FEATURE ) int *featureFlags );
-	STDC_NONNULL_ARG( ( 1 ) ) \
-	void ( *closeDatabaseBackend )( INOUT DBMS_STATE_INFO *dbmsStateInfo );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *performUpdateBackend )( INOUT DBMS_STATE_INFO *dbmsStateInfo, 
-								   IN_BUFFER_OPT( commandLength ) \
-									const char *command,
-								   IN_LENGTH_SHORT_Z const int commandLength, 
-								   IN_ARRAY_OPT( BOUND_DATA_MAXITEMS ) \
-									const void *boundData, 
-								   IN_ENUM( DBMS_UPDATE ) \
-									const DBMS_UPDATE_TYPE updateType );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *performQueryBackend )( INOUT DBMS_STATE_INFO *dbmsStateInfo, 
-								  IN_BUFFER_OPT( commandLength ) \
-									const char *command,
-								  IN_LENGTH_SHORT_Z const int commandLength, 
-								  OUT_BUFFER_OPT( dataMaxLength, *dataLength ) \
-									void *data, 
-								  IN_LENGTH_SHORT_Z const int dataMaxLength,  
-								  OUT_LENGTH_SHORT_Z int *dataLength, 
-								  IN_OPT const void *boundData, 
-								  IN_ENUM_OPT( DBMS_CACHEDQUERY ) \
-									const DBMS_CACHEDQUERY_TYPE queryEntry,
-								  IN_ENUM( DBMS_QUERY ) \
-									const DBMS_QUERY_TYPE queryType );
-#endif /* !USE_RPCAPI */
+	int ( *openDatabaseBackend )( void );
+	void ( *closeDatabaseBackend )( void );
+	int ( *performUpdateBackend )( void );
+	int ( *performQueryBackend )( void );
+#endif /* Backend function pointers */
 	void *stateInfo;
 
 	/* Database back-end access functions.  These use the dispatch function/
 	   function pointers above to communicate with the back-end */
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2, 5 ) ) \
-	int ( *openDatabaseFunction )( INOUT struct DI *dbmsInfo, 
-								   IN_BUFFER( nameLen ) const char *name, 
-								   IN_LENGTH_NAME const int nameLen, 
-								   IN_ENUM_OPT( CRYPT_KEYOPT ) \
-									const CRYPT_KEYOPT_TYPE options, 
-								   OUT_FLAGS_Z( DBMS ) int *featureFlags );
-	STDC_NONNULL_ARG( ( 1 ) ) \
-	void ( *closeDatabaseFunction )( INOUT struct DI *dbmsInfo );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *performUpdateFunction )( INOUT struct DI *dbmsInfo, 
-									IN_STRING_OPT const char *command,
-									IN_OPT const void *boundData, 
-									IN_ENUM( DBMS_UPDATE ) \
-										const DBMS_UPDATE_TYPE updateType );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *performStaticUpdateFunction )( INOUT struct DI *dbmsInfo, 
-										  IN_STRING const char *command );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *performQueryFunction )( INOUT struct DI *dbmsInfo, 
-								   IN_STRING_OPT const char *command,
-								   OUT_BUFFER_OPT( dataMaxLength, *dataLength ) \
-									void *data, 
-								   IN_LENGTH_SHORT_Z const int dataMaxLength, 
-								   OUT_LENGTH_SHORT_Z int *dataLength, 
-								   IN const void *boundData,
-								   IN_ENUM_OPT( DBMS_CACHEDQUERY ) \
-									const DBMS_CACHEDQUERY_TYPE queryEntry, 
-								   IN_ENUM( DBMS_QUERY ) \
-									const DBMS_QUERY_TYPE queryType );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *performStaticQueryFunction )( INOUT struct DI *dbmsInfo, 
-										 IN_STRING_OPT const char *command,
-										 IN_ENUM_OPT( DBMS_CACHEDQUERY ) \
-											const DBMS_CACHEDQUERY_TYPE queryEntry, 
-										 IN_ENUM( DBMS_QUERY ) \
-											const DBMS_QUERY_TYPE queryType );
+#ifdef _DBMS_DEFINED
+	DBX_OPENDATABASEFUNCTION openDatabaseFunction;
+	DBX_CLOSEDATABASEFUNCTION closeDatabaseFunction;
+	DBX_PERFORMUPDATEFUNCTION performUpdateFunction;
+	DBX_PERFORMSTATICUPDATEFUNCTION performStaticUpdateFunction;
+	DBX_PERFORMQUERYFUNCTION performQueryFunction;
+	DBX_PERFORMSTATICQUERYFUNCTION performStaticQueryFunction;
+#else
+	int ( *openDatabaseFunction )( void ); 
+	void ( *closeDatabaseFunction )( void );
+	int ( *performUpdateFunction )( void );
+	int ( *performStaticUpdateFunction )( void ); 
+	int ( *performQueryFunction )( void ); 
+	int ( *performStaticQueryFunction )( void ); 
+#endif /* _DBMS_DEFINED */
 
 	/* Pointers to database-specific keyset access methods */
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *certMgmtFunction )( INOUT struct KI *keysetInfo, 
-							   OUT_OPT_HANDLE_OPT CRYPT_CERTIFICATE *iCryptCert,
-							   IN_HANDLE_OPT const CRYPT_CERTIFICATE caKey,
-							   IN_HANDLE_OPT const CRYPT_CERTIFICATE request,
-							   IN_ENUM( CRYPT_CERTACTION ) \
-								const CRYPT_CERTACTION_TYPE action );
+	DBX_CERTMGMTFUNCTION certMgmtFunction;
 	} DBMS_INFO;
 
 typedef struct {
@@ -391,6 +287,95 @@ typedef struct {
 
 /* The structure that stores information on a keyset */
 
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+	int ( *KEY_INITFUNCTION )( INOUT struct KI *keysetInfo, 
+							   IN_BUFFER_OPT( nameLength ) const char *name, 
+							   IN_LENGTH_NAME_Z const int nameLength,
+							   IN_ENUM( CRYPT_KEYOPT ) \
+								const CRYPT_KEYOPT_TYPE options );
+typedef RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+	int ( *KEY_SHUTDOWNFUNCTION )( INOUT struct KI *keysetInfo );
+#ifdef USE_LDAP
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+	int ( *KEY_GETATTRIBUTEFUNCTION )( INOUT struct KI *keysetInfo, 
+									   OUT void *data,
+									   IN_ATTRIBUTE \
+											const CRYPT_ATTRIBUTE_TYPE type );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+	int ( *KEY_SETATTRIBUTEFUNCTION )( INOUT struct KI *keysetInfo, 
+									   const void *data,
+									   IN_ATTRIBUTE \
+											const CRYPT_ATTRIBUTE_TYPE type );
+#endif /* USE_LDAP */
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 5 ) ) \
+	int ( *KEY_GETITEMFUNCTION )( INOUT struct KI *keysetInfo,
+								  OUT_HANDLE_OPT CRYPT_HANDLE *iCryptHandle,
+								  IN_ENUM( KEYMGMT_ITEM ) \
+									const KEYMGMT_ITEM_TYPE itemType,
+								  IN_KEYID const CRYPT_KEYID_TYPE keyIDtype,
+								  IN_BUFFER( keyIDlength ) const void *keyID, 
+								  IN_LENGTH_KEYID const int keyIDlength,
+								  IN_OPT void *auxInfo, 
+								  INOUT_OPT int *auxInfoLength, 
+								  IN_FLAGS_Z( KEYMGMT ) const int flags );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 5 ) ) \
+	int ( *KEY_GETSPECIALITEMFUNCTION )( INOUT struct KI *keysetInfoPtr,
+										 IN_ATTRIBUTE \
+											const CRYPT_ATTRIBUTE_TYPE dataType,
+										 OUT_BUFFER( dataMaxLength, \
+													 *dataLength ) \
+											void *data,
+										 IN_LENGTH_SHORT \
+											const int dataMaxLength,
+										 OUT_LENGTH_BOUNDED_Z( dataMaxLength ) \
+											int *dataLength );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+	int ( *KEY_SETITEMFUNCTION )( INOUT struct KI *deviceInfo,
+								  IN_HANDLE const CRYPT_HANDLE iCryptHandle,
+								  IN_ENUM( KEYMGMT_ITEM ) \
+									const KEYMGMT_ITEM_TYPE itemType,
+								  IN_BUFFER_OPT( passwordLength ) \
+									const char *password, 
+								  IN_LENGTH_NAME_Z const int passwordLength,
+								  IN_FLAGS( KEYMGMT ) const int flags );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+	int ( *KEY_SETSPECIALITEMFUNCTION )( INOUT struct KI *deviceInfo,
+										 IN_ATTRIBUTE \
+											const CRYPT_ATTRIBUTE_TYPE dataType,
+										 IN_BUFFER( dataLength ) const void *data, 
+										 IN_LENGTH_SHORT const int dataLength );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 4 ) ) \
+	int ( *KEY_DELETEITEMFUNCTION )( INOUT struct KI *keysetInfo,
+									 IN_ENUM( KEYMGMT_ITEM ) \
+										const KEYMGMT_ITEM_TYPE itemType,
+									 IN_KEYID const CRYPT_KEYID_TYPE keyIDtype,
+									 IN_BUFFER( keyIDlength ) const void *keyID, 
+									 IN_LENGTH_KEYID const int keyIDlength );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 6 ) ) \
+	int ( *KEY_GETFIRSTITEMFUNCTION )( INOUT struct KI *keysetInfo,
+									   OUT_HANDLE_OPT \
+										CRYPT_CERTIFICATE *iCertificate,
+									   OUT int *stateInfo,
+									   IN_ENUM( KEYMGMT_ITEM ) \
+										const KEYMGMT_ITEM_TYPE itemType,
+									   IN_KEYID \
+										const CRYPT_KEYID_TYPE keyIDtype,
+									   IN_BUFFER( keyIDlength ) \
+										const void *keyID, 
+									   IN_LENGTH_KEYID const int keyIDlength,
+									   IN_FLAGS_Z( KEYMGMT ) \
+										const int options );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+	int ( *KEY_GETNEXTITEMFUNCTION )( INOUT struct KI *keysetInfo,
+									  OUT_HANDLE_OPT \
+										CRYPT_CERTIFICATE *iCertificate,
+									  INOUT_OPT int *stateInfo, 
+										/* May be absent for an ongoing query run as 
+										   { getItem, getNext, getNext, ... } */
+									  IN_FLAGS_Z( KEYMGMT ) const int options );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+	BOOLEAN ( *KEY_ISBUSYFUNCTION )( INOUT struct KI *keysetInfo );
+
 typedef struct KI {
 	/* General keyset information */
 	KEYSET_TYPE type;				/* Keyset type (native, PGP, X.509, etc) */
@@ -413,81 +398,20 @@ typedef struct KI {
 		} keysetInfo;
 
 	/* Pointers to keyset access methods */
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *initFunction )( INOUT struct KI *keysetInfo, 
-						   IN_BUFFER_OPT( nameLength ) const char *name, 
-						   IN_LENGTH_NAME_Z const int nameLength,
-						   IN_ENUM( CRYPT_KEYOPT ) \
-							const CRYPT_KEYOPT_TYPE options );
-	RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *shutdownFunction )( INOUT struct KI *keysetInfo );
+	KEY_INITFUNCTION initFunction;
+	KEY_SHUTDOWNFUNCTION shutdownFunction;
 #ifdef USE_LDAP
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *getAttributeFunction )( INOUT struct KI *keysetInfo, 
-								   OUT void *data,
-								   IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE type );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *setAttributeFunction )( INOUT struct KI *keysetInfo, 
-								   const void *data,
-								   IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE type );
+	KEY_GETATTRIBUTEFUNCTION getAttributeFunction;
+	KEY_SETATTRIBUTEFUNCTION setAttributeFunction;
 #endif /* USE_LDAP */
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2, 5 ) ) \
-	int ( *getItemFunction )( INOUT struct KI *keysetInfo,
-							  OUT_HANDLE_OPT CRYPT_HANDLE *iCryptHandle,
-							  IN_ENUM( KEYMGMT_ITEM ) \
-								const KEYMGMT_ITEM_TYPE itemType,
-							  IN_KEYID const CRYPT_KEYID_TYPE keyIDtype,
-							  IN_BUFFER( keyIDlength ) const void *keyID, 
-							  IN_LENGTH_KEYID const int keyIDlength,
-							  IN_OPT void *auxInfo, 
-							  INOUT_OPT int *auxInfoLength, 
-							  IN_FLAGS_Z( KEYMGMT ) const int flags );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 5 ) ) \
-	int ( *getSpecialItemFunction )( INOUT struct KI *keysetInfoPtr,
-									 IN_ATTRIBUTE \
-										const CRYPT_ATTRIBUTE_TYPE dataType,
-									 OUT_BUFFER( dataMaxLength, *dataLength ) \
-										void *data,
-									 IN_LENGTH_SHORT const int dataMaxLength,
-									 OUT_LENGTH_SHORT_Z int *dataLength );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *setItemFunction )( INOUT struct KI *deviceInfo,
-							  IN_HANDLE const CRYPT_HANDLE iCryptHandle,
-							  IN_ENUM( KEYMGMT_ITEM ) \
-								const KEYMGMT_ITEM_TYPE itemType,
-							  IN_BUFFER_OPT( passwordLength ) const char *password, 
-							  IN_LENGTH_NAME_Z const int passwordLength,
-							  IN_FLAGS( KEYMGMT ) const int flags );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *setSpecialItemFunction )( INOUT struct KI *deviceInfo,
-									 IN_ATTRIBUTE \
-										const CRYPT_ATTRIBUTE_TYPE dataType,
-									 IN_BUFFER( dataLength ) const void *data, 
-									 IN_LENGTH_SHORT const int dataLength );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 4 ) ) \
-	int ( *deleteItemFunction )( INOUT struct KI *keysetInfo,
-								 IN_ENUM( KEYMGMT_ITEM ) \
-									const KEYMGMT_ITEM_TYPE itemType,
-								 IN_KEYID const CRYPT_KEYID_TYPE keyIDtype,
-								 IN_BUFFER( keyIDlength ) const void *keyID, 
-								 IN_LENGTH_KEYID const int keyIDlength );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2, 3, 6 ) ) \
-	int ( *getFirstItemFunction )( INOUT struct KI *keysetInfo,
-								   OUT_HANDLE_OPT CRYPT_CERTIFICATE *iCertificate,
-								   OUT int *stateInfo,
-								   IN_ENUM( KEYMGMT_ITEM ) \
-									const KEYMGMT_ITEM_TYPE itemType,
-								   IN_KEYID const CRYPT_KEYID_TYPE keyIDtype,
-								   IN_BUFFER( keyIDlength ) const void *keyID, 
-								   IN_LENGTH_KEYID const int keyIDlength,
-								   IN_FLAGS_Z( KEYMGMT ) const int options );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
-	int ( *getNextItemFunction )( INOUT struct KI *keysetInfo,
-								  OUT_HANDLE_OPT CRYPT_CERTIFICATE *iCertificate,
-								  INOUT int *stateInfo, 
-								  IN_FLAGS_Z( KEYMGMT ) const int options );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	BOOLEAN ( *isBusyFunction )( INOUT struct KI *keysetInfo );
+	KEY_GETITEMFUNCTION getItemFunction;
+	KEY_GETSPECIALITEMFUNCTION getSpecialItemFunction;
+	KEY_SETITEMFUNCTION setItemFunction;
+	KEY_SETSPECIALITEMFUNCTION setSpecialItemFunction;
+	KEY_DELETEITEMFUNCTION deleteItemFunction;
+	KEY_GETFIRSTITEMFUNCTION getFirstItemFunction;
+	KEY_GETNEXTITEMFUNCTION getNextItemFunction;
+	KEY_ISBUSYFUNCTION isBusyFunction;
 
 	/* Some keysets require keyset-type-specific data storage, which is
 	   managed via the following variables. keyDataSize denotes the total
@@ -568,6 +492,7 @@ int setKeysetAttributeS( INOUT KEYSET_INFO *keysetInfoPtr,
   #define setAccessMethodHTTP( x )			CRYPT_ARGERROR_NUM1
 #endif /* USE_HTTP */
 #ifdef USE_LDAP
+  CHECK_RETVAL \
   int dbxInitLDAP( void );
   void dbxEndLDAP( void );
   CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
@@ -598,7 +523,16 @@ int setKeysetAttributeS( INOUT KEYSET_INFO *keysetInfoPtr,
 #else
   #define setAccessMethodPKCS15( x )		CRYPT_ARGERROR_NUM1
 #endif /* PKCS #15 */
-#ifdef USE_PKCS12
+#if defined( USE_PGPKEYS ) && defined( USE_PKCS12 )
+  #define isWriteableFileKeyset( type ) \
+		  ( ( type ) == KEYSET_SUBTYPE_PGP_PUBLIC || \
+			( type ) == KEYSET_SUBTYPE_PKCS12 || \
+			( type ) == KEYSET_SUBTYPE_PKCS15 )
+#elif defined( USE_PGPKEYS ) 
+  #define isWriteableFileKeyset( type ) \
+		  ( ( type ) == KEYSET_SUBTYPE_PGP_PUBLIC || \
+			( type ) == KEYSET_SUBTYPE_PKCS15 )
+#elif defined( USE_PKCS12 )
   #define isWriteableFileKeyset( type ) \
 		  ( ( type ) == KEYSET_SUBTYPE_PKCS12 || \
 			( type ) == KEYSET_SUBTYPE_PKCS15 )

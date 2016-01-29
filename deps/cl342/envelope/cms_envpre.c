@@ -75,13 +75,15 @@ static int createActionContext( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 		if( actionType == ACTION_CRYPT )
 			{
 			setMechanismKDFInfo( &mechanismInfo, iActionContext, 
-								 iMasterKeyContext, CRYPT_ALGO_HMAC_SHA1, 
+								 iMasterKeyContext, 
+								 envelopeInfoPtr->defaultMAC, 
 								 "encryption", 10 );
 			}
 		else
 			{
 			setMechanismKDFInfo( &mechanismInfo, iActionContext, 
-								 iMasterKeyContext, CRYPT_ALGO_HMAC_SHA1, 
+								 iMasterKeyContext, 
+								 envelopeInfoPtr->defaultMAC, 
 								 "authentication", 14 );
 			}
 		status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_DEV_KDF,
@@ -169,7 +171,7 @@ static int processKeyexchangeAction( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 										const CRYPT_DEVICE iCryptDevice )
 	{
 	ACTION_LIST *actionListPtr = envelopeInfoPtr->actionList;
-	int keyexAlgorithm = DUMMY_INIT, status;
+	int keyexAlgorithm DUMMY_INIT, status;
 
 	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
 	assert( isWritePtr( preActionListPtr, sizeof( ACTION_LIST ) ) );
@@ -325,7 +327,7 @@ int cmsPreEnvelopeEncrypt( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 									   CRYPT_UNUSED : totalSize;
 	ENSURES( ( envelopeInfoPtr->cryptActionSize == CRYPT_UNUSED ) || \
 			 ( envelopeInfoPtr->cryptActionSize > 0 && \
-			   envelopeInfoPtr->cryptActionSize < MAX_INTLENGTH ) );
+			   envelopeInfoPtr->cryptActionSize < MAX_BUFFER_SIZE ) );
 
 	/* If we're MACing the data (either directly or because we're performing
 	   authenticated encryption), hashing is now active.  The two actions 
@@ -480,7 +482,7 @@ static int processSignatureAction( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 								   INOUT ACTION_LIST *actionListPtr )
 	{
 	SIGPARAMS sigParams;
-	int signatureAlgo = DUMMY_INIT, signatureSize, status;
+	int signatureAlgo DUMMY_INIT, signatureSize, status;
 
 	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
 	assert( isWritePtr( actionListPtr, sizeof( ACTION_LIST ) ) );
@@ -539,7 +541,7 @@ static int processSignatureAction( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 		envelopeInfoPtr->signActionSize = CRYPT_UNUSED;
 	ENSURES( ( envelopeInfoPtr->signActionSize == CRYPT_UNUSED ) || \
 			 ( envelopeInfoPtr->signActionSize > 0 && \
-			   envelopeInfoPtr->signActionSize < MAX_INTLENGTH ) );
+			   envelopeInfoPtr->signActionSize < MAX_BUFFER_SIZE ) );
 
 	return( CRYPT_OK );
 	}
@@ -646,7 +648,7 @@ int cmsPreEnvelopeSign( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 		envelopeInfoPtr->extraDataSize = msgData.length;
 		}
 	ENSURES( envelopeInfoPtr->extraDataSize >= 0 && \
-			 envelopeInfoPtr->extraDataSize < MAX_INTLENGTH );
+			 envelopeInfoPtr->extraDataSize < MAX_BUFFER_SIZE );
 
 	/* Hashing is now active (you have no chance to survive make your 
 	   time) */

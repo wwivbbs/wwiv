@@ -1,10 +1,74 @@
+Changes in 3.4.3 release
+========================
+
+This release adds support for TLS encrypt-then-MAC, which fixes about fifteen
+years' worth of oracle attacks against the SSL/TLS protocol.  It also adds
+support for the protocol-downgrade signalling cipher suite (SCSV), which helps
+detect protocol-downgrade attacks.
+
+The default build environment under Windows has been updated from VS 2010 to
+VS 2013, alongside the long-standing existing option to use VC++ 6.0.
+
+All CRYPT_xxx_FINGERPRINT attributes now have explicit types as part of their
+names in order to reduce confusion about their sizes.
+CRYPT_CERTINFO_FINGERPRINT is now CRYPT_CERTINFO_FINGERPRINT_SHA1 (the
+obsolete CRYPT_CERTINFO_FINGERPRINT_MD5 is no longer supported, as part of the
+general removal of MD5 from circulation), and
+CRYPT_SESSINFO_SERVER_FINGERPRINT is now
+CRYPT_SESSINFO_SERVER_FINGERPRINT_SHA1.
+
+Support for the obsolete and/or patented and/or insecure algorithms Blowfish,
+DES, RC2, RC5, Skipjack, MD2, MD4, MD5, HMAC-MD5, RIPEMD-160, HMAC-RIPEMD has
+been removed.
+
+The SCEP implementation now supports both initialisation requests (protected
+by user name and password) and certificate update requests (protected by user
+name and signature).  Because of this you need to specify the SCEP request
+type using the CRYPT_SESSINFO_CMP_REQUESTTYPE attribute, which can be either
+CRYPT_REQUESTTYPE_INITIALISATION or CRYPT_REQUESTTYPE_CERTIFICATE.
+
+The cryptlib keyset types CRYPT_KEYSET_ODBC and CRYPT_KEYSET_DATABASE have
+been unified under the name CRYPT_KEYSET_DATABASE, since they represented the
+same thing.
+
+The encryption mode CRYPT_MODE_OFB, which wasn't used in any known protocol,
+has been removed, and replaced with CRYPT_MODE_GCM where available (in this
+case only for AES).
+
+The default key sizes used for PKC algorithms have been increased to provide a
+higher margin of security.
+
+The default hash algorithm used in various protocols is now SHA-2 rather than
+SHA-1.  Previous versions of cryptlib would automatically upgrade the hash
+algorithm used to the strongest one supported by the peer if this was
+detectable (for example by examining the hash algorithm used in the peer's
+certificate), this version now makes SHA-2 the default.  Note that some
+protocols that use hash algorithms employ them in the HMAC construct, which
+renders them immune to standard attacks, so use of HMAC-SHA1 doesn't carry the
+same concerns as use of pure SHA-1.
+
+Alongside the switch to SHA-2 as the default, support for the obsolete PGP2
+and SSLv3 protocols has been disabled.  If you need to work with them, you can
+enable them by building with USE_PGP2 or USE_SSL3, however these protocols are
+now unsupported and the code for them will be removed in a future release.  In
+conjunction with this, support for the IDEA cipher, which is only used with
+PGP2, will also be removed.
+
+cryptlib now supports the Quantis quantum random number generator.  If you
+have a quantum random number generator attached to your system, cryptlib will
+automatically identify it and use it as an additional source of entropy for
+key generation.
+
 Changes in 3.4.2 release
 ========================
 
-This is a maintenance release that adds improved diagnostics for various types
-of session-related errors, more flexible handling of a variety of rarely-used
-protocol options and capabilities added at the request of users, and the usual
-ongoing updates for OSes and compiler versions.
+This is a maintenance release that adds better text-string diagnostics for a
+number of operations, fixing a long-standing PGP authenticated-encryption
+interoperability issue that was obscure enough that no-one's ever noticed,
+compatibility (meaning lots of bug-workarounds) with Microsoft's NDES SCEP
+server, more flexible handling of a variety of rarely-used protocol options
+and capabilities added at the request of users, and the usual ongoing updates
+for OSes and compiler versions.
 
 Changes in 3.4.1 release
 ========================
@@ -22,8 +86,8 @@ This version of cryptlib is a minor-version stepping from the 3.3.x code base
 to the 3.4.x code base.  Minor-version steppings are source-code compatible
 with previous versions but not binary compatible.  This means that you need to
 rebuild the application calling cryptlib when you move to cryptlib 3.4.0 in
-order to to add support for new attributes introduced for the post-3.3 API.
-In addition the cryptGenerateKeyAsync()/cryptAsyncQuery()/cryptAsyncCancel()
+order to add support for new attributes introduced for the post-3.3 API. In
+addition the cryptGenerateKeyAsync()/cryptAsyncQuery()/cryptAsyncCancel()
 functions, deprecated since 2007, have been removed for the 3.4 API change,
 and the transparent rewriting of CRYPT_CERTINFO_SUBJECTNAME and
 CRYPT_CERTINFO_ISSUERNAME selection commands to the pre-2007 form has been
@@ -137,12 +201,12 @@ well as updates to work with the (almost-) TR 24731 stdlib replacements in VS
 2005.  This is mainly a cleanup and consolidation release after 3.3.0, however
 one important reason to upgrade is that the pre-generated test keys will
 expire shortly after the 3.3.1 release, which will produce warnings in the
-self-test and self-test failures (X.509 certs have limited lifetimes due to
-their expiry dates, and the code is warning that they're past their use-by
-date).  cryptlib has to set some sort of expiry date for the keys because the
-format requires it, but an unfortunate side-effect of this is that every now
-and then the test keys needed for the self-test expire.  This release updates
-the test keys for another few years.
+self-test and self-test failures (X.509 certificates have limited lifetimes
+due to their expiry dates, and the code is warning that they're past their
+use-by date).  cryptlib has to set some sort of expiry date for the keys
+because the format requires it, but an unfortunate side-effect of this is that
+every now and then the test keys needed for the self-test expire.  This
+release updates the test keys for another few years.
 
 Changes in 3.3 release
 ======================
@@ -150,13 +214,13 @@ Changes in 3.3 release
 This version of cryptlib is a minor-version stepping from the 3.2.x code base
 to the 3.3.x code base.  Minor-version steppings are source-code compatible
 with previous versions but not binary compatible.  This means that you need to
-rebuild the app.calling cryptlib when you rebuild cryptlib.  In particular two
-facilities that have been included for backwards-compatibility with code from
-up to five years ago have now been removed: It's no longer possible to call
-cryptPushData() with NULL pointers as an alternative to calling
-cryptFlushData(), and the obsolete CRYPT_CERTINFO_CURRENT_xxx attributes,
-which were mapped internally to the CRYPT_ATTRIBUTE_CURRENT_xxx attributes,
-have been removed.
+rebuild the application calling cryptlib when you rebuild cryptlib.  In
+particular two facilities that have been included for backwards-compatibility
+with code from up to five years ago have now been removed: It's no longer
+possible to call cryptPushData() with NULL pointers as an alternative to
+calling cryptFlushData(), and the obsolete CRYPT_CERTINFO_CURRENT_xxx
+attributes, which were mapped internally to the CRYPT_ATTRIBUTE_CURRENT_xxx
+attributes, have been removed.
 
 This release features more internal changes to handle internal consistency
 checking, as well as fixes for a few minor issues arising from the 3.2.3
@@ -232,7 +296,7 @@ do when you activate them, to indicate that you need to provide further
 information in order to continue.  If you receive this status when you try to
 activate a server session, you can read the user details via the
 CRYPT_SESSINFO_USERNAME and CRYPT_SESSINFO_PASSWORD attributes, and either
-comfirm the authentication by setting the CRYPT_SESSINFO_AUTHRESPONSE to true
+confirm the authentication by setting the CRYPT_SESSINFO_AUTHRESPONSE to true
 or deny it by setting it to false.  You then re-activate the session, and
 cryptlib will complete the handshake.  This allows you to check the
 authentication details before allowing the handshake to continue.  If you'd
@@ -638,7 +702,7 @@ you can change to the newer form with a simple cut and paste:
 	cryptSetAttribute( cryptContext, CRYPT_CTXINFO_KEYSIZE, keySize );
 	cryptGenerateKey( cryptContext );
 
-The table format for certificate stores has changed slightly to accomodate the
+The table format for certificate stores has changed slightly to accommodate the
 requirements of CMP servers (specifically the fact that they can cause things
 to fail at inopportune moments), in order to handle this you need to recreate
 the cert store (drop the previous table and create a new one with
@@ -700,8 +764,8 @@ required by certain 3.1 features such as the CA management functionality.
 
 The use of multiple certificates with the same DN/email address but different
 key usage types is now supported (previous versions treated the appearance of
-multiple certs issued to the same person as a duplicate cert problem, either
-interpretation is valid but popular opinion seems to be that the beta 3
+multiple certificates issued to the same person as a duplicate cert problem,
+either interpretation is valid but popular opinion seems to be that the beta 3
 behaviour is better).  In order to support this in public key keysets you need
 to recreate them (drop the previous table and create a new one with
 CRYPT_KEYOPT_CREATE), if you need to move certificates across then create a

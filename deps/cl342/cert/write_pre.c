@@ -7,11 +7,9 @@
 
 #if defined( INC_ALL )
   #include "cert.h"
-  #include "asn1.h"
   #include "asn1_ext.h"
 #else
   #include "cert/cert.h"
-  #include "enc_dec/asn1.h"
   #include "enc_dec/asn1_ext.h"
 #endif /* Compiler-specific includes */
 
@@ -251,6 +249,18 @@ static int addStandardExtensions( INOUT CERT_INFO *certInfoPtr )
 		}
 
 	/* Add the subjectKeyIdentifier */
+#if 0	/* 10/12/12 To test situations where keyID != sKID, enable the 
+					following code */
+{
+BYTE buffer[ 128 ];
+
+memcpy( buffer, certInfoPtr->publicKeyID, KEYID_SIZE );
+memset( buffer, 0xFF, KEYID_SIZE / 2 );
+return( addCertComponentString( certInfoPtr, 
+								CRYPT_CERTINFO_SUBJECTKEYIDENTIFIER,
+								buffer, KEYID_SIZE ) );
+}
+#endif /* 0 */
 	return( addCertComponentString( certInfoPtr, 
 									CRYPT_CERTINFO_SUBJECTKEYIDENTIFIER,
 									certInfoPtr->publicKeyID, KEYID_SIZE ) );
@@ -371,7 +381,7 @@ int preEncodeCertificate( INOUT CERT_INFO *subjectCertInfoPtr,
 			}
 
 		/* Attributes are only allowed with version 3 certificates */
-		if( subjectCertInfoPtr->version >= 3 )
+		if( subjectCertInfoPtr->version >= X509_V3 )
 			{
 			status = addStandardExtensions( subjectCertInfoPtr );
 			if( cryptStatusError( status ) )
@@ -443,7 +453,9 @@ int preEncodeCertificate( INOUT CERT_INFO *subjectCertInfoPtr,
 	if( actions & PRE_SET_REVINFO )
 		{
 		REVOCATION_INFO *revocationErrorEntry;
-		const BOOLEAN isCrlEntry = ( actions & PRE_SET_ISSUERDN ) ? FALSE : TRUE;
+		const BOOLEAN isCrlEntry = \
+						( ( subjectCertInfoPtr->type == CRYPT_CERTTYPE_CRL ) && \
+						  !( actions & PRE_SET_ISSUERDN ) ) ? TRUE : FALSE;
 
 		status = prepareRevocationEntries( subjectCertInfoPtr->cCertRev->revocations,
 										   subjectCertInfoPtr->cCertRev->revocationTime,
@@ -473,7 +485,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int preCheckCertificate( INOUT CERT_INFO *subjectCertInfoPtr,
 						 IN_OPT const CERT_INFO *issuerCertInfoPtr,
 						 IN_FLAGS( PRE_CHECK ) const int actions, 
-						 IN_FLAGS( PRE ) const int flags )
+						 IN_FLAGS_Z( PRE ) const int flags )
 	{
 	int status;
 

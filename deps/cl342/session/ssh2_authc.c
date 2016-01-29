@@ -53,15 +53,15 @@
    comment in reportAuthFailure() for details */
 
 static const ALGO_STRING_INFO FAR_BSS algoStringUserauthentPWTbl[] = {
-	{ "password", 8, CRYPT_PSEUDOALGO_PASSWORD },
-	{ "keyboard-interactive", 20, CRYPT_PSEUDOALGO_PAM },
+	{ "password", 8, MK_ALGO( PSEUDOALGO_PASSWORD ) },
+	{ "keyboard-interactive", 20, MK_ALGO( PSEUDOALGO_PAM ) },
 	{ "publickey", 9, CRYPT_ALGO_RSA },
 	{ NULL, 0, CRYPT_ALGO_NONE }, { NULL, 0, CRYPT_ALGO_NONE }
 	};
 static const ALGO_STRING_INFO FAR_BSS algoStringUserauthentPKCTbl[] = {
 	{ "publickey", 9, CRYPT_ALGO_RSA },
-	{ "password", 8, CRYPT_PSEUDOALGO_PASSWORD },
-	{ "keyboard-interactive", 20, CRYPT_PSEUDOALGO_PAM },
+	{ "password", 8, MK_ALGO( PSEUDOALGO_PASSWORD ) },
+	{ "keyboard-interactive", 20, MK_ALGO( PSEUDOALGO_PAM ) },
 	{ NULL, 0, CRYPT_ALGO_NONE }, { NULL, CRYPT_ALGO_NONE }
 	};
 
@@ -292,7 +292,7 @@ static int createPubkeyAuth( const SESSION_INFO *sessionInfoPtr,
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	void *sigDataPtr, *packetDataPtr;
 	int sigDataLength, packetDataLength;
-	int sigOffset, sigLength = DUMMY_INIT, pkcAlgo, status;
+	int sigOffset, sigLength DUMMY_INIT, pkcAlgo, status;
 
 	assert( isReadPtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isReadPtr( handshakeInfo, sizeof( SSH_HANDSHAKE_INFO ) ) );
@@ -347,7 +347,7 @@ static int createPubkeyAuth( const SESSION_INFO *sessionInfoPtr,
 
 		string		exchange hash
 		[ SSH_MSG_USERAUTH_REQUEST packet payload up to signature start ] */
-	setMessageCreateObjectInfo( &createInfo, CRYPT_ALGO_SHA1 );
+	setMessageCreateObjectInfo( &createInfo, handshakeInfo->hashAlgo );
 	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE,
 							  IMESSAGE_DEV_CREATEOBJECT, &createInfo,
 							  OBJECT_TYPE_CONTEXT );
@@ -394,7 +394,7 @@ static int createPubkeyAuth( const SESSION_INFO *sessionInfoPtr,
 						NULL );
 		}
 	if( cryptStatusOK( status ) )
-		status = sSkip( stream, sigLength );
+		status = sSkip( stream, sigLength, MAX_INTLENGTH_SHORT );
 	krnlSendNotifier( createInfo.cryptHandle, IMESSAGE_DECREFCOUNT );
 	if( cryptStatusError( status ) )
 		return( status );
@@ -453,8 +453,8 @@ static int createPubkeyAuth( const SESSION_INFO *sessionInfoPtr,
 		if( sigLength + delta > sigDataLength )
 			return( CRYPT_ERROR_OVERFLOW );
 		sseek( stream, sigOffset );
-		writeUint32( stream, sizeofString32( "", 7 ) + \
-							 sizeofString32( "", keySize ) );
+		writeUint32( stream, sizeofString32( 7 ) + \
+							 sizeofString32( keySize ) );
 		writeString32( stream, "ssh-rsa", 7 );
 		writeUint32( stream, keySize );
 		for( i = 0; i < delta; i++ )
@@ -514,8 +514,8 @@ static int pamAuthenticate( INOUT SESSION_INFO *sessionInfoPtr,
 	   so we require a nonzero number of prompts.
 
 	   If the PAM authentication (from a previous iteration) fails or 
-	   succeeds the server is supposed to send back a standard user-auth 
-	   success or failure status but could also send another
+	   succeeds then the server is supposed to send back a standard user-
+	   auth success or failure status but could also send another
 	   SSH_MSG_USERAUTH_INFO_REQUEST even if it contains no payload (an 
 	   OpenSSH bug) so we have to handle this as a special case */
 	sMemConnect( &stream, pamRequestData, pamRequestDataLength );
@@ -538,8 +538,16 @@ static int pamAuthenticate( INOUT SESSION_INFO *sessionInfoPtr,
 			}
 		}
 	if( cryptStatusOK( status ) )
+		{
 		status = readString32( &stream, promptBuffer, 
 							   CRYPT_MAX_TEXTSIZE, &promptLength );
+		if( cryptStatusOK( status ) && promptLength <= 0 )
+			{
+			/* We must have at least some sort of prompt given that we 
+			   require num_prompts to be nonzero */
+			status = CRYPT_ERROR_BADDATA;
+			}
+		}
 	sMemDisconnect( &stream );
 	if( cryptStatusError( status ) )
 		{
@@ -552,7 +560,9 @@ static int pamAuthenticate( INOUT SESSION_INFO *sessionInfoPtr,
 	   authentication.  This assumes that the prompt string begins with the 
 	   word "password" (which always seems to be the case), if it isn't then 
 	   it may be necessary to do a substring search */
-	if( promptLength < 8 || strCompare( promptBuffer, "Password", 8 ) )
+	if( promptLength < 8 || \
+		!strIsPrintable( promptBuffer, promptLength ) || \
+		strCompare( promptBuffer, "Password", 8 ) )
 		{
 		/* The following may produce somewhat inconsistent results in terms
 		   of what it reports because it's unclear what 'name' actually is, 

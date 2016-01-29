@@ -148,7 +148,7 @@ time_t getTokenTime( const CK_TOKEN_INFO *tokenInfo )
 	STREAM stream;
 	BYTE buffer[ 32 + 8 ];
 	time_t theTime = MIN_TIME_VALUE + 1;
-	int length = DUMMY_INIT, status;
+	int length DUMMY_INIT, status;
 
 	assert( isReadPtr( tokenInfo, sizeof( CK_TOKEN_INFO ) ) );
 
@@ -175,7 +175,7 @@ time_t getTokenTime( const CK_TOKEN_INFO *tokenInfo )
 CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 3 ) ) \
 int getContextDeviceInfo( IN_HANDLE const CRYPT_HANDLE iCryptContext,
 						  OUT_HANDLE_OPT CRYPT_DEVICE *iCryptDevice, 
-						  OUT_OPT_PTR PKCS11_INFO **pkcs11InfoPtrPtr )
+						  OUT_PTR_COND PKCS11_INFO **pkcs11InfoPtrPtr )
 	{
 	CRYPT_DEVICE iLocalDevice;
 	DEVICE_INFO *deviceInfo;
@@ -344,6 +344,8 @@ static int controlFunction( INOUT DEVICE_INFO *deviceInfo,
 				( type == CRYPT_DEVINFO_AUTHENT_USER ) ? CKU_USER : CKU_SO;
 #endif /* USE_EXTENDED_LOGIN */
 		
+		REQUIRES( data != NULL );
+
 		/* Make sure that the PIN is within range */
 		if( dataLength < pkcs11Info->minPinSize || \
 			dataLength > pkcs11Info->maxPinSize )
@@ -427,6 +429,8 @@ static int controlFunction( INOUT DEVICE_INFO *deviceInfo,
 		SO */
 	if( type == CRYPT_DEVINFO_SET_AUTHENT_SUPERVISOR )
 		{
+		REQUIRES( data != NULL );
+
 		/* Make sure that the PIN is within range */
 		if( dataLength < pkcs11Info->minPinSize || \
 			dataLength > pkcs11Info->maxPinSize )
@@ -453,6 +457,8 @@ static int controlFunction( INOUT DEVICE_INFO *deviceInfo,
 		}
 	if( type == CRYPT_DEVINFO_SET_AUTHENT_USER )
 		{
+		REQUIRES( data != NULL );
+
 		/* Make sure that the PIN is within range */
 		if( dataLength < pkcs11Info->minPinSize || \
 			dataLength > pkcs11Info->maxPinSize )
@@ -470,6 +476,8 @@ static int controlFunction( INOUT DEVICE_INFO *deviceInfo,
 		CK_SESSION_HANDLE hSession;
 		CK_CHAR label[ 32 + 8 ];
 		int cryptStatus;
+
+		REQUIRES( data != NULL );
 
 		/* Make sure that the PIN is within range */
 		if( dataLength < pkcs11Info->minPinSize || \
@@ -548,6 +556,8 @@ static int controlFunction( INOUT DEVICE_INFO *deviceInfo,
 		{
 		CK_TOKEN_INFO tokenInfo;
 		time_t *timePtr = ( time_t * ) data, theTime;
+
+		REQUIRES( data != NULL );
 
 		/* Get the token's time, returned as part of the token information 
 		   structure */
@@ -1060,61 +1070,6 @@ static int hmacGenerateKey( INOUT CONTEXT_INFO *contextInfoPtr,
 *																			*
 ****************************************************************************/
 
-/* Set up algorithm-specific encryption parameters */
-
-CHECK_RETVAL_RANGE( 0, 64 ) STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int initCryptParams( const CONTEXT_INFO *contextInfoPtr, 
-							INOUT void *paramData )
-	{
-	const int ivSize = contextInfoPtr->capabilityInfo->blockSize;
-
-	assert( isReadPtr( contextInfoPtr, sizeof( CONTEXT_INFO ) ) );
-	assert( isWritePtr( paramData, sizeof( int ) ) );
-			/* Minimum writable size is integer */
-
-	if( contextInfoPtr->capabilityInfo->cryptAlgo == CRYPT_ALGO_RC2 )
-		{
-		if( contextInfoPtr->ctxConv->mode == CRYPT_MODE_ECB )
-			{
-			CK_RC2_PARAMS_PTR rc2params = ( CK_RC2_PARAMS_PTR ) paramData;
-
-			*rc2params = 128;
-			return( sizeof( CK_RC2_PARAMS ) );
-			}
-		else
-			{
-			CK_RC2_CBC_PARAMS_PTR rc2params = ( CK_RC2_CBC_PARAMS_PTR ) paramData;
-
-			rc2params->ulEffectiveBits = 128;
-			memcpy( rc2params->iv, contextInfoPtr->ctxConv->currentIV, ivSize );
-			return( sizeof( CK_RC2_CBC_PARAMS ) );
-			}
-		}
-	if( contextInfoPtr->capabilityInfo->cryptAlgo == CRYPT_ALGO_RC5 )
-		{
-		if( contextInfoPtr->ctxConv->mode == CRYPT_MODE_ECB )
-			{
-			CK_RC5_PARAMS_PTR rc5params = ( CK_RC5_PARAMS_PTR ) paramData;
-
-			rc5params->ulWordsize = 4;	/* Word size in bytes = blocksize/2 */
-			rc5params->ulRounds = 12;
-			return( sizeof( CK_RC5_PARAMS ) );
-			}
-		else
-			{
-			CK_RC5_CBC_PARAMS_PTR rc5params = ( CK_RC5_CBC_PARAMS_PTR ) paramData;
-
-			rc5params->ulWordsize = 4;	/* Word size in bytes = blocksize/2 */
-			rc5params->ulRounds = 12;
-			rc5params->pIv = contextInfoPtr->ctxConv->currentIV;
-			rc5params->ulIvLen = ivSize;
-			return( sizeof( CK_RC5_CBC_PARAMS ) );
-			}
-		}
-
-	return( 0 );
-	}
-
 /* Encrypt/decrypt data */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
@@ -1126,32 +1081,20 @@ static int cipherEncrypt( INOUT CONTEXT_INFO *contextInfoPtr,
 	CK_MECHANISM mechanism = { mechanismType, NULL_PTR, 0 };
 	CRYPT_DEVICE iCryptDevice;
 	PKCS11_INFO *pkcs11Info;
-	BYTE paramDataBuffer[ 64 + 8 ];
 	const int ivSize = contextInfoPtr->capabilityInfo->blockSize;
-	int paramSize, cryptStatus;
+	int cryptStatus;
 
 	assert( isWritePtr( contextInfoPtr, sizeof( CONTEXT_INFO ) ) );
 	assert( isWritePtr( buffer, length ) );
 
 	REQUIRES( length > 0 && length < MAX_INTLENGTH );
 
-	/* Set up algorithm and mode-specific parameters */
-	paramSize = initCryptParams( contextInfoPtr, &paramDataBuffer );
-	if( paramSize > 0 )
+	/* Set up mode-specific IV parameters if required */
+	if( needsIV( contextInfoPtr->ctxConv->mode ) && \
+		!isStreamCipher( contextInfoPtr->capabilityInfo->cryptAlgo ) )
 		{
-		mechanism.pParameter = paramDataBuffer;
-		mechanism.ulParameterLen = paramSize;
-		}
-	else
-		{
-		/* Even if there are no algorithm-specific parameters, there may 
-		   still be a mode-specific IV parameter */
-		if( needsIV( contextInfoPtr->ctxConv->mode ) && \
-			!isStreamCipher( contextInfoPtr->capabilityInfo->cryptAlgo ) )
-			{
-			mechanism.pParameter = contextInfoPtr->ctxConv->currentIV;
-			mechanism.ulParameterLen = ivSize;
-			}
+		mechanism.pParameter = contextInfoPtr->ctxConv->currentIV;
+		mechanism.ulParameterLen = ivSize;
 		}
 
 	/* Get the information for the device associated with this context */
@@ -1189,36 +1132,24 @@ static int cipherDecrypt( INOUT CONTEXT_INFO *contextInfoPtr,
 	CK_MECHANISM mechanism = { mechanismType, NULL_PTR, 0 };
 	CRYPT_DEVICE iCryptDevice;
 	PKCS11_INFO *pkcs11Info;
-	BYTE paramDataBuffer[ 64 + 8 ], ivBuffer[ CRYPT_MAX_IVSIZE + 8 ];
+	BYTE ivBuffer[ CRYPT_MAX_IVSIZE + 8 ];
 	const int ivSize = contextInfoPtr->capabilityInfo->blockSize;
-	int paramSize, cryptStatus;
+	int cryptStatus;
 
 	assert( isWritePtr( contextInfoPtr, sizeof( CONTEXT_INFO ) ) );
 	assert( isWritePtr( buffer, length ) );
 
 	REQUIRES( length > 0 && length < MAX_INTLENGTH );
 
-	/* Set up algorithm and mode-specific parameters */
-	paramSize = initCryptParams( contextInfoPtr, &paramDataBuffer );
-	if( paramSize > 0 )
-		{
-		mechanism.pParameter = paramDataBuffer;
-		mechanism.ulParameterLen = paramSize;
-		}
-	else
-		/* Even if there are no algorithm-specific parameters, there may 
-		   still be a mode-specific IV parameter.  In addition we have to
-		   save the end of the ciphertext as the IV for the next block if
-		   this is required */
-		if( needsIV( contextInfoPtr->ctxConv->mode ) && \
-			!isStreamCipher( contextInfoPtr->capabilityInfo->cryptAlgo ) )
-			{
-			mechanism.pParameter = contextInfoPtr->ctxConv->currentIV;
-			mechanism.ulParameterLen = ivSize;
-			}
+	/* Set up mode-specific IV parameters if required.  In addition we have 
+	   to save the end of the ciphertext as the IV for the next block */
 	if( needsIV( contextInfoPtr->ctxConv->mode ) && \
 		!isStreamCipher( contextInfoPtr->capabilityInfo->cryptAlgo ) )
+		{
+		mechanism.pParameter = contextInfoPtr->ctxConv->currentIV;
+		mechanism.ulParameterLen = ivSize;
 		memcpy( ivBuffer, ( BYTE * ) buffer + length - ivSize, ivSize );
+		}
 
 	/* Get the information for the device associated with this context */
 	cryptStatus = getContextDeviceInfo( contextInfoPtr->objectHandle, 
@@ -1280,7 +1211,7 @@ static int cipherEncryptCBC( INOUT CONTEXT_INFO *contextInfoPtr,
 	}
 #if defined( USE_RC4 ) 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int cipherEncryptOFB( INOUT CONTEXT_INFO *contextInfoPtr, 
+static int cipherEncryptCTR( INOUT CONTEXT_INFO *contextInfoPtr, 
 							 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
 							 IN_LENGTH int length )
 	{
@@ -1293,7 +1224,7 @@ static int cipherEncryptOFB( INOUT CONTEXT_INFO *contextInfoPtr,
 		return( cipherEncrypt( contextInfoPtr, buffer, length, CKM_RC4 ) );
 	return( cipherEncrypt( contextInfoPtr, buffer, length, 
 				getMechanism( MECH_CONV, contextInfoPtr->capabilityInfo->cryptAlgo, 
-							  CRYPT_MODE_OFB ) ) );
+							  CRYPT_MODE_CTR ) ) );
 	}
 #endif /* USE_RC4 */
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
@@ -1329,7 +1260,7 @@ static int cipherDecryptCBC( INOUT CONTEXT_INFO *contextInfoPtr,
 	}
 #if defined( USE_RC4 ) 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int cipherDecryptOFB( INOUT CONTEXT_INFO *contextInfoPtr, 
+static int cipherDecryptCTR( INOUT CONTEXT_INFO *contextInfoPtr, 
 							 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
 							 IN_LENGTH int length )
 	{
@@ -1342,7 +1273,7 @@ static int cipherDecryptOFB( INOUT CONTEXT_INFO *contextInfoPtr,
 		return( cipherDecrypt( contextInfoPtr, buffer, length, CKM_RC4 ) );
 	return( cipherDecrypt( contextInfoPtr, buffer, length, 
 				getMechanism( MECH_CONV, contextInfoPtr->capabilityInfo->cryptAlgo, 
-							  CRYPT_MODE_OFB ) ) );
+							  CRYPT_MODE_CTR ) ) );
 	}
 #endif /* USE_RC4 */
 
@@ -1431,50 +1362,36 @@ static int hmac( INOUT CONTEXT_INFO *contextInfoPtr,
 
 static const PKCS11_MECHANISM_INFO mechanismInfoConv[] = {
 	/* Conventional encryption mechanisms */
-	{ CKM_DES_ECB, CKM_DES_KEY_GEN, CKM_DES_CBC, CRYPT_ALGO_DES, CRYPT_MODE_ECB, CKK_DES,
+	{ CKM_DES_ECB, CKM_DES_KEY_GEN, CKM_DES_CBC, CKF_NONE, 
+	  CRYPT_ALGO_DES, CRYPT_MODE_ECB, CKK_DES,
 	  genericEndFunction, cipherInitKey, cipherGenerateKey, 
 	  cipherEncryptECB, cipherDecryptECB, NULL, NULL },
-	{ CKM_DES_CBC, CKM_DES_KEY_GEN, CKM_DES_CBC, CRYPT_ALGO_DES, CRYPT_MODE_CBC, CKK_DES,
+	{ CKM_DES_CBC, CKM_DES_KEY_GEN, CKM_DES_CBC, CKF_NONE, 
+	  CRYPT_ALGO_DES, CRYPT_MODE_CBC, CKK_DES,
 	  genericEndFunction, cipherInitKey, cipherGenerateKey, 
 	  cipherEncryptCBC, cipherDecryptCBC, NULL, NULL },
-	{ CKM_DES3_ECB, CKM_DES3_KEY_GEN, CKM_DES3_CBC, CRYPT_ALGO_3DES, CRYPT_MODE_ECB, CKK_DES3,
+	{ CKM_DES3_ECB, CKM_DES3_KEY_GEN, CKM_DES3_CBC, CKF_NONE, 
+	  CRYPT_ALGO_3DES, CRYPT_MODE_ECB, CKK_DES3,
 	  genericEndFunction, cipherInitKey, cipherGenerateKey, 
 	  cipherEncryptECB, cipherDecryptECB, NULL, NULL },
-	{ CKM_DES3_CBC, CKM_DES3_KEY_GEN, CKM_DES3_CBC, CRYPT_ALGO_3DES, CRYPT_MODE_CBC, CKK_DES3,
+	{ CKM_DES3_CBC, CKM_DES3_KEY_GEN, CKM_DES3_CBC, CKF_NONE, 
+	  CRYPT_ALGO_3DES, CRYPT_MODE_CBC, CKK_DES3,
 	  genericEndFunction, cipherInitKey, cipherGenerateKey, 
 	  cipherEncryptCBC, cipherDecryptCBC, NULL, NULL },
-#ifdef USE_RC2
-	{ CKM_RC2_ECB, CKM_RC2_KEY_GEN, CKM_RC2_CBC, CRYPT_ALGO_RC2, CRYPT_MODE_ECB, CKK_RC2,
-	  genericEndFunction, cipherInitKey, cipherGenerateKey, 
-	  cipherEncryptECB, cipherDecryptECB, NULL, NULL },
-	{ CKM_RC2_CBC, CKM_RC2_KEY_GEN, CKM_RC2_CBC, CRYPT_ALGO_RC2, CRYPT_MODE_CBC, CKK_RC2,
-	  genericEndFunction, cipherInitKey, cipherGenerateKey, 
-	  cipherEncryptCBC, cipherDecryptCBC, NULL, NULL },
-#endif /* USE_RC2 */
 #ifdef USE_RC4
-	{ CKM_RC4, CKM_RC4_KEY_GEN, CKM_RC4, CRYPT_ALGO_RC4, CRYPT_MODE_OFB, CKK_RC4,
+	{ CKM_RC4, CKM_RC4_KEY_GEN, CKM_RC4, CKF_NONE, 
+	  CRYPT_ALGO_RC4, CRYPT_MODE_CTR, CKK_RC4,
 	  genericEndFunction, cipherInitKey, cipherGenerateKey, 
-	  cipherEncryptOFB, cipherDecryptOFB, NULL, NULL },
+	  cipherEncryptCTR, cipherDecryptCTR, NULL, NULL },
 #endif /* USE_RC4 */
-#ifdef USE_RC5
-	{ CKM_RC5_ECB, CKM_RC5_KEY_GEN, CKM_RC5_CBC, CRYPT_ALGO_RC5, CRYPT_MODE_ECB, CKK_RC5,
+	{ CKM_AES_ECB, CKM_AES_KEY_GEN, CKM_AES_CBC, CKF_NONE, 
+	  CRYPT_ALGO_AES, CRYPT_MODE_ECB, CKK_AES,
 	  genericEndFunction, cipherInitKey, cipherGenerateKey, 
 	  cipherEncryptECB, cipherDecryptECB, NULL, NULL },
-	{ CKM_RC5_CBC, CKM_RC5_KEY_GEN, CKM_RC5_CBC, CRYPT_ALGO_RC5, CRYPT_MODE_CBC, CKK_RC5,
+	{ CKM_AES_CBC, CKM_AES_KEY_GEN, CKM_AES_CBC, CKF_NONE, 
+	  CRYPT_ALGO_AES, CRYPT_MODE_CBC, CKK_AES,
 	  genericEndFunction, cipherInitKey, cipherGenerateKey, 
 	  cipherEncryptCBC, cipherDecryptCBC, NULL, NULL },
-#endif /* USE_RC5 */
-	{ CKM_AES_ECB, CKM_AES_KEY_GEN, CKM_AES_CBC, CRYPT_ALGO_AES, CRYPT_MODE_ECB, CKK_AES,
-	  genericEndFunction, cipherInitKey, cipherGenerateKey, 
-	  cipherEncryptECB, cipherDecryptECB, NULL, NULL },
-	{ CKM_AES_CBC, CKM_AES_KEY_GEN, CKM_AES_CBC, CRYPT_ALGO_AES, CRYPT_MODE_CBC, CKK_AES,
-	  genericEndFunction, cipherInitKey, cipherGenerateKey, 
-	  cipherEncryptCBC, cipherDecryptCBC, NULL, NULL },
-#ifdef USE_BLOWFISH
-	{ CKM_BLOWFISH_CBC, CKM_BLOWFISH_KEY_GEN, CKM_BLOWFISH_CBC, CRYPT_ALGO_BLOWFISH, CRYPT_MODE_CBC, CKK_BLOWFISH,
-	  genericEndFunction, cipherInitKey, cipherGenerateKey, 
-	  cipherEncryptCBC, cipherDecryptCBC, NULL, NULL },
-#endif /* USE_BLOWFISH */
 
 	/* MAC mechanisms.  The positioning of the encrypt/decrypt functions is 
 	   a bit odd because cryptlib treats hashing as an encrypt/decrypt
@@ -1489,30 +1406,20 @@ static const PKCS11_MECHANISM_INFO mechanismInfoConv[] = {
 	   and key types, we use macros for CKM_x_HMAC_KEY_GEN and CKK_x_HMAC 
 	   that expand either to the vendor-specific type or the generic CKM/CKK
 	   types */
-#ifdef USE_HMAC_MD5
-	{ CKM_MD5_HMAC, CKM_MD5_HMAC_KEY_GEN, CKM_MD5_HMAC, CRYPT_ALGO_HMAC_MD5, CRYPT_MODE_NONE, CKK_MD5_HMAC,
+	{ CKM_SHA_1_HMAC, CKM_SHA_1_HMAC_KEY_GEN, CKM_SHA_1_HMAC, CKF_NONE, 
+	  CRYPT_ALGO_HMAC_SHA1, CRYPT_MODE_NONE, CKK_SHA_1_HMAC,
 	  genericEndFunction, hmacInitKey, hmacGenerateKey, 
 	  hmac, hmac, NULL, NULL },
-#endif /* USE_HMAC_MD5 */
-	{ CKM_SHA_1_HMAC, CKM_SHA_1_HMAC_KEY_GEN, CKM_SHA_1_HMAC, CRYPT_ALGO_HMAC_SHA1, CRYPT_MODE_NONE, CKK_SHA_1_HMAC,
+	{ CKM_SHA256_HMAC, CKM_SHA256_HMAC_KEY_GEN, CKM_SHA256_HMAC, CKF_NONE, 
+	  CRYPT_ALGO_HMAC_SHA2, CRYPT_MODE_NONE, CKK_SHA256_HMAC,
 	  genericEndFunction, hmacInitKey, hmacGenerateKey, 
 	  hmac, hmac, NULL, NULL },
-#ifdef USE_HMAC_RIPEMD160
-	{ CKM_RIPEMD160_HMAC, CKM_RIPEMD160_HMAC_KEY_GEN, CKM_RIPEMD160_HMAC, CRYPT_ALGO_HMAC_RIPEMD160, CRYPT_MODE_NONE, CKK_RIPEMD160_HMAC,
-	  genericEndFunction, hmacInitKey, hmacGenerateKey, 
-	  hmac, hmac, NULL, NULL },
-#endif /* USE_HMAC_RIPEMD160 */
-#ifdef USE_HMAC_SHA2
-	{ CKM_SHA256_HMAC, CKM_SHA256_HMAC_KEY_GEN, CKM_SHA256_HMAC, CRYPT_ALGO_HMAC_SHA2, CRYPT_MODE_NONE, CKK_SHA256_HMAC,
-	  genericEndFunction, hmacInitKey, hmacGenerateKey, 
-	  hmac, hmac, NULL, NULL },
-#endif /* USE_HMAC_SHA2 */
 
-	{ CKM_NONE, CKM_NONE, CKM_NONE, CRYPT_ERROR, CRYPT_ERROR },
-		{ CKM_NONE, CKM_NONE, CKM_NONE, CRYPT_ERROR, CRYPT_ERROR }
+	{ CKM_NONE, CKM_NONE, CKM_NONE, CKF_NONE, CRYPT_ERROR, CRYPT_ERROR },
+		{ CKM_NONE, CKM_NONE, CKM_NONE, CKF_NONE, CRYPT_ERROR, CRYPT_ERROR }
 	};
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 1 ) ) \
 const PKCS11_MECHANISM_INFO *getMechanismInfoConv( OUT_LENGTH_SHORT int *mechanismInfoSize )
 	{
 	assert( isWritePtr( mechanismInfoSize, sizeof( int ) ) );

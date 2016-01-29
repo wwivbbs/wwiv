@@ -32,8 +32,10 @@
 #define ZLIB_H
 
 #if defined( INC_ALL )
+  #include "config.h"
   #include "zconf.h"
 #else
+  #include "misc/config.h"
   #include "zlib/zconf.h"
 #endif /* Compiler-specific includes */
 
@@ -41,6 +43,15 @@
 
 #define NO_GZIP
 #define NO_GUNZIP
+
+/* VxWorks includes its own internal copy of zlib so we need to correct 
+   clashing global symbols in order to avoid link errors */
+
+#ifdef __VxWorks__
+  #define inflate				cl_inflate
+  #define inflate_copyright		cl_inflate_copyright
+  #define zlibVersion			cl_zlibVersion
+#endif /* __VxWorks__ */
 
 /* Also need to disable attempt to include errno.h, this is never used so
    it's easiest to edit it out of zutil.h - pcg */

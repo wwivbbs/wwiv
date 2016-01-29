@@ -13,6 +13,8 @@
   #include "enc_dec/asn1_ext.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_INT_ASN1
+
 /****************************************************************************
 *																			*
 *							Message Digest Routines							*
@@ -69,9 +71,9 @@ int readMessageDigest( INOUT STREAM *stream,
 					   OUT_ALGO_Z CRYPT_ALGO_TYPE *hashAlgo,
 					   OUT_BUFFER( hashMaxLen, *hashSize ) void *hash, 
 					   IN_LENGTH_HASH const int hashMaxLen, 
-					   OUT_LENGTH_SHORT_Z int *hashSize )
+					   OUT_LENGTH_BOUNDED_Z( hashMaxLen ) int *hashSize )
 	{
-	int hashAlgoSize, status;
+	int hashAlgoSize DUMMY_INIT, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( hashAlgo, sizeof( CRYPT_ALGO_TYPE ) ) );
@@ -85,9 +87,10 @@ int readMessageDigest( INOUT STREAM *stream,
 	*hashSize = 0;
 
 	/* Read the message digest, enforcing sensible size values */
-	readSequence( stream, NULL );
-	status = readAlgoIDex( stream, hashAlgo, NULL, &hashAlgoSize, 
-						   ALGOID_CLASS_HASH );
+	status = readSequence( stream, NULL );
+	if( cryptStatusOK( status ) )
+		status = readAlgoIDex( stream, hashAlgo, NULL, &hashAlgoSize, 
+							   ALGOID_CLASS_HASH );
 	if( cryptStatusOK( status ) )
 		status = readOctetString( stream, hash, hashSize, 16, hashMaxLen );
 	if( cryptStatusError( status ) )
@@ -120,8 +123,8 @@ int readCMSheader( INOUT STREAM *stream,
 				   IN_FLAGS_Z( READCMS ) const int flags )
 	{
 	const OID_INFO *oidInfoPtr;
-	BOOLEAN isData = FALSE;
-	long savedLength = CRYPT_UNUSED, savedLengthDataStart = DUMMY_INIT;
+	BOOLEAN isData = FALSE, isDetachedSig = FALSE;
+	long savedLength = CRYPT_UNUSED, savedLengthDataStart DUMMY_INIT;
 	long length, value;
 	int tag, status;
 
@@ -169,15 +172,17 @@ int readCMSheader( INOUT STREAM *stream,
 				 sizeofOID( OID_CMS_DATA ) ) )
 		isData = TRUE;
 
-	/* If it's a definite length, check for special-case situations like 
-	   detached signatures */
+	/* Check for the special-case situation of a detached signature, for 
+	   which the the total content consists only of the OID, which means 
+	   that the overall object is SEQUENCE { OID data } */
 	if( length != CRYPT_UNUSED )
 		{
-		/* If the content is supplied externally (for example with a 
-		   detached signature), denoted by the fact that the total content 
-		   consists only of the OID, we're done */
 		if( length <= sizeofOID( oidInfoPtr->oid ) )
-			return( oidInfoPtr->selectionID );
+			{
+			if( length != sizeofOID( oidInfoPtr->oid ) )
+				return( sSetError( stream, CRYPT_ERROR_BADDATA ) );
+			isDetachedSig = TRUE;
+			}
 		}
 	else
 		{
@@ -187,13 +192,19 @@ int readCMSheader( INOUT STREAM *stream,
 		if( cryptStatusError( status ) )
 			return( status );
 		if( status == TRUE )
-			{
-			/* We've seen EOC octets, the item has zero length (for example
-			   with a detached signature), we're done */
-			return( oidInfoPtr->selectionID );
-			}
+			isDetachedSig = TRUE;
 		}
+	if( isDetachedSig )
+		{
+		/* It appears to be a detached signature, make sure that the 
+		   requirements are met, namely that it's data content and present
+		   in an inner header */
+		if( !( isData && ( flags & READCMS_FLAG_INNERHEADER ) ) )
+			return( sSetError( stream, CRYPT_ERROR_BADDATA ) );
 
+		/* It's a detached signature, we're done */
+		return( oidInfoPtr->selectionID );
+		}
 
 	/* Read the content [0] tag and OCTET STRING/SEQUENCE.  This requires
 	   some special-case handling, see the comment in writeCMSHeader() for
@@ -217,9 +228,9 @@ int readCMSheader( INOUT STREAM *stream,
 			*dataSize = length;
 		return( oidInfoPtr->selectionID );
 		}
-	tag = peekTag( stream );
-	if( cryptStatusError( tag ) )
-		return( tag );
+	status = tag = peekTag( stream );
+	if( cryptStatusError( status ) )
+		return( status );
 	if( isData )
 		{
 		/* It's pure data content, it must be an OCTET STRING */
@@ -291,8 +302,19 @@ int readCMSheader( INOUT STREAM *stream,
 		/* Adjust the length value for the additional content that we've 
 		   read if necessary */
 		if( length != CRYPT_UNUSED )
+			{
 			length -= stell( stream ) - startPos;
+			if( length < 0 || length > MAX_INTLENGTH )
+				return( CRYPT_ERROR_BADDATA );
+			}
 		}
+
+	/* Finally, if there's a definite length give, there has to be some 
+	   content present, at least a SEQUENCE/OCTET STRING containing a
+	   single ASN.1 item */
+	if( length != CRYPT_UNUSED && \
+		length < sizeofObject( sizeofObject( 1 ) ) )
+		return( CRYPT_ERROR_BADDATA );
 
 	if( dataSize != NULL )
 		*dataSize = length;
@@ -376,7 +398,7 @@ int sizeofCMSencrHeader( IN_BUFFER( contentOIDlength ) const BYTE *contentOID,
 						 IN_HANDLE const CRYPT_CONTEXT iCryptContext )
 	{
 	STREAM nullStream;
-	int status, cryptInfoSize = DUMMY_INIT;
+	int status, cryptInfoSize DUMMY_INIT;
 
 	assert( isReadPtr( contentOID, contentOIDlength ) && \
 			contentOIDlength == sizeofOID( contentOID ) );
@@ -398,16 +420,16 @@ int sizeofCMSencrHeader( IN_BUFFER( contentOIDlength ) const BYTE *contentOID,
 		return( status );
 
 	/* Calculate the encoded size of the SEQUENCE + OID + AlgoID + [0] for
-	   the definite or indefinite forms (the size 2 is for the tag + 0x80
-	   indefinite-length indicator and the EOC octets at the end) */
-	if( dataSize != CRYPT_UNUSED )
+	   the definite or indefinite forms */
+	if( dataSize == CRYPT_UNUSED )
 		{
-		return( ( int ) \
-				( sizeofObject( contentOIDlength + \
-								cryptInfoSize + \
-								sizeofObject( dataSize ) ) - dataSize ) );
+		/* The size 2 is for the tag + 0x80 indefinite-length indicator and 
+		   the EOC octets at the end */
+		return( 2 + contentOIDlength + cryptInfoSize + 2 );
 		}
-	return( 2 + contentOIDlength + cryptInfoSize + 2 );
+	return( ( int ) ( sizeofObject( contentOIDlength + \
+									cryptInfoSize + \
+									sizeofObject( dataSize ) ) - dataSize ) );
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
@@ -463,9 +485,9 @@ int readCMSencrHeader( INOUT STREAM *stream,
 
 	/* Read the content [0] tag, which may be either primitive or constructed
 	   depending on the content */
-	tag = peekTag( stream );
-	if( cryptStatusError( tag ) )
-		return( tag );
+	status = tag = peekTag( stream );
+	if( cryptStatusError( status ) )
+		return( status );
 	status = readLongGenericHole( stream, &length, tag );
 	if( cryptStatusOK( status ) )
 		{
@@ -504,7 +526,7 @@ int writeCMSencrHeader( INOUT STREAM *stream,
 						IN_HANDLE const CRYPT_CONTEXT iCryptContext )
 	{
 	STREAM nullStream;
-	int cryptInfoSize = DUMMY_INIT, status;
+	int cryptInfoSize DUMMY_INIT, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isReadPtr( contentOID, contentOIDlength ) && \
@@ -546,3 +568,4 @@ int writeCMSencrHeader( INOUT STREAM *stream,
 		return( status );
 	return( writeCtag0Indef( stream ) );
 	}
+#endif /* USE_INT_ASN1 */

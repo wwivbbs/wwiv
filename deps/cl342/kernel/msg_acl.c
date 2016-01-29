@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *							Message ACLs Handlers							*
-*						Copyright Peter Gutmann 1997-2011					*
+*						Copyright Peter Gutmann 1997-2013					*
 *																			*
 ****************************************************************************/
 
@@ -41,7 +41,7 @@ static const COMPARE_ACL FAR_BSS compareACLTbl[] = {
 	/* PKC keyID */
 	{ MESSAGE_COMPARE_KEYID,
 	  MK_CMPACL_S( ST_CTX_PKC,
-				   2, 128 ) },
+				   MIN_ID_LENGTH, 128 ) },
 
 	/* PGP keyID */
 	{ MESSAGE_COMPARE_KEYID_PGP,
@@ -55,29 +55,34 @@ static const COMPARE_ACL FAR_BSS compareACLTbl[] = {
 
 	/* X.509 subject DN */
 	{ MESSAGE_COMPARE_SUBJECT,
-	  MK_CMPACL_S( ST_CERT_CERT | ST_CERT_ATTRCERT | ST_CERT_CERTCHAIN,
-				   2, MAX_ATTRIBUTE_SIZE ) },
+	  MK_CMPACL_S( MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_ATTRCERT | ST_CERT_CERTCHAIN ),
+				   MIN_ID_LENGTH, MAX_ATTRIBUTE_SIZE ) },
 
 	/* PKCS #7 issuerAndSerialNumber */
 	{ MESSAGE_COMPARE_ISSUERANDSERIALNUMBER,
-	  MK_CMPACL_S( ST_CERT_CERT | ST_CERT_ATTRCERT | ST_CERT_CERTCHAIN,
-				   2, MAX_ATTRIBUTE_SIZE ) },
+	  MK_CMPACL_S( MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_ATTRCERT | ST_CERT_CERTCHAIN ),
+				   MIN_ID_LENGTH, MAX_ATTRIBUTE_SIZE ) },
+
+	/* SubjectKeyIdentifier */
+	{ MESSAGE_COMPARE_SUBJECTKEYIDENTIFIER,
+	  MK_CMPACL_S( MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_ATTRCERT | ST_CERT_CERTCHAIN ),
+				   MIN_ID_LENGTH, MAX_ATTRIBUTE_SIZE ) },
 
 	/* Certificate fingerprint for various hash algorithms */
 	{ MESSAGE_COMPARE_FINGERPRINT_SHA1,
-	  MK_CMPACL_S( ST_CERT_CERT | ST_CERT_ATTRCERT | ST_CERT_CERTCHAIN,
+	  MK_CMPACL_S( MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_ATTRCERT | ST_CERT_CERTCHAIN ),
 				   20, 20 ) },
 	{ MESSAGE_COMPARE_FINGERPRINT_SHA2,
-	  MK_CMPACL_S( ST_CERT_CERT | ST_CERT_ATTRCERT | ST_CERT_CERTCHAIN,
+	  MK_CMPACL_S( MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_ATTRCERT | ST_CERT_CERTCHAIN ),
 				   32, 32 ) },
 	{ MESSAGE_COMPARE_FINGERPRINT_SHAng,
-	  MK_CMPACL_S( ST_CERT_CERT | ST_CERT_ATTRCERT | ST_CERT_CERTCHAIN,
+	  MK_CMPACL_S( MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_ATTRCERT | ST_CERT_CERTCHAIN ),
 				   32, 32 ) },
 
 	/* Certificate object */
 	{ MESSAGE_COMPARE_CERTOBJ,
-	  MK_CMPACL_O( ST_CERT_CERT | ST_CERT_ATTRCERT | ST_CERT_CERTCHAIN,
-				   ST_CERT_CERT | ST_CERT_ATTRCERT | ST_CERT_CERTCHAIN ) },
+	  MK_CMPACL_O( MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_ATTRCERT | ST_CERT_CERTCHAIN ),
+				   MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_ATTRCERT | ST_CERT_CERTCHAIN ) ) },
 
 	/* End-of-ACL marker */
 	{ MESSAGE_COMPARE_NONE,
@@ -89,16 +94,18 @@ static const COMPARE_ACL FAR_BSS compareACLTbl[] = {
 /* Check ACL for check messages */
 
 #define PUBKEY_CERT_OBJECT		( ST_CERT_CERT | ST_CERT_ATTRCERT | \
-								  ST_CERT_CERTCHAIN | ST_CERT_CERTREQ | \
-								  ST_CERT_REQ_CERT )
+								  ST_CERT_CERTCHAIN | \
+								  MKTYPE_CERTREQ( ST_CERT_CERTREQ | ST_CERT_REQ_CERT ) )
 #define PUBKEY_KEYSET_OBJECT	( ST_KEYSET_FILE | ST_KEYSET_FILE_PARTIAL | \
-								  ST_KEYSET_FILE_RO | ST_KEYSET_DBMS | \
-								  ST_KEYSET_DBMS_STORE | ST_KEYSET_HTTP | \
-								  ST_KEYSET_LDAP | ST_DEV_P11 | \
-								  ST_DEV_CAPI | ST_DEV_HW )
+								  ST_KEYSET_FILE_RO | \
+								  MKTYPE_DBMS( ST_KEYSET_DBMS | ST_KEYSET_DBMS_STORE ) | \
+								  MKTYPE_HTTP( ST_KEYSET_HTTP ) | \
+								  MKTYPE_LDAP( ST_KEYSET_LDAP ) | \
+								  MKTYPE_PKCS11( ST_DEV_P11 ) | \
+								  MKTYPE_CAPI( ST_DEV_CAPI ) | ST_DEV_HW )
 #define PRIVKEY_KEYSET_OBJECT	( ST_KEYSET_FILE | ST_KEYSET_FILE_PARTIAL | \
-								  ST_KEYSET_FILE_RO | ST_DEV_P11 | \
-								  ST_DEV_CAPI | ST_DEV_HW )
+								  ST_KEYSET_FILE_RO | MKTYPE_PKCS11( ST_DEV_P11 ) | \
+								  MKTYPE_CAPI( ST_DEV_CAPI ) | ST_DEV_HW )
 
 /* The certificate and CA capabilities are spread across certificates (the 
    certificate or certificate with CA flag set) and contexts (the PKC 
@@ -164,35 +171,35 @@ static const CHECK_ACL FAR_BSS checkACLTbl[] = {
 	   associated public key so we have to allow both object types */
 	{ MESSAGE_CHECK_PKC,			/* Public or private key context */
 	  MK_CHKACL( MESSAGE_NONE,
-				 ST_CTX_PKC | PUBKEY_CERT_OBJECT ) },
+				 ST_CTX_PKC | MKTYPE_CERTIFICATES( PUBKEY_CERT_OBJECT ) ) },
 
 	{ MESSAGE_CHECK_PKC_PRIVATE,	/* Private key context */
 	  MK_CHKACL( MESSAGE_NONE,
-				 ST_CTX_PKC | ST_CERT_CERT | ST_CERT_CERTCHAIN ) },
+				 ST_CTX_PKC | MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_CERTCHAIN ) ) },
 
 	{ MESSAGE_CHECK_PKC_ENCRYPT,	/* Public encryption context */
 	  MK_CHKACL( MESSAGE_CTX_ENCRYPT,
-				 ST_CTX_PKC | PUBKEY_CERT_OBJECT ) },
+				 ST_CTX_PKC | MKTYPE_CERTIFICATES( PUBKEY_CERT_OBJECT ) ) },
 
 	{ MESSAGE_CHECK_PKC_DECRYPT,	/* Private decryption context */
 	  MK_CHKACL( MESSAGE_CTX_DECRYPT,
-				 ST_CTX_PKC | PUBKEY_CERT_OBJECT ) },
+				 ST_CTX_PKC | MKTYPE_CERTIFICATES( PUBKEY_CERT_OBJECT ) ) },
 
 	{ MESSAGE_CHECK_PKC_SIGCHECK,	/* Public signature check context */
 	  MK_CHKACL( MESSAGE_CTX_SIGCHECK,
-				 ST_CTX_PKC | PUBKEY_CERT_OBJECT ) },
+				 ST_CTX_PKC | MKTYPE_CERTIFICATES( PUBKEY_CERT_OBJECT ) ) },
 
 	{ MESSAGE_CHECK_PKC_SIGN,		/* Private signature context */
 	  MK_CHKACL( MESSAGE_CTX_SIGN,
-				 ST_CTX_PKC | PUBKEY_CERT_OBJECT ) },
+				 ST_CTX_PKC | MKTYPE_CERTIFICATES( PUBKEY_CERT_OBJECT ) ) },
 
 	{ MESSAGE_CHECK_PKC_KA_EXPORT,	/* Key agreement - export context */
 	  MK_CHKACL( MESSAGE_NONE,
-				 ST_CTX_PKC | PUBKEY_CERT_OBJECT ) },
+				 ST_CTX_PKC | MKTYPE_CERTIFICATES( PUBKEY_CERT_OBJECT ) ) },
 
 	{ MESSAGE_CHECK_PKC_KA_IMPORT,	/* Key agreement - import context */
 	  MK_CHKACL( MESSAGE_NONE,
-				 ST_CTX_PKC | PUBKEY_CERT_OBJECT ) },
+				 ST_CTX_PKC | MKTYPE_CERTIFICATES( PUBKEY_CERT_OBJECT ) ) },
 
 	/* Conventional encryption/hash/MAC actions */
 	{ MESSAGE_CHECK_CRYPT,			/* Conventional encryption capability */
@@ -233,31 +240,31 @@ static const CHECK_ACL FAR_BSS checkACLTbl[] = {
 	   action */
 	{ MESSAGE_CHECK_PKC_ENCRYPT_AVAIL,	/* Encryption available */
 	  MK_CHKACL_EX( MESSAGE_CTX_ENCRYPT,
-					PUBKEY_CERT_OBJECT, PUBKEY_KEYSET_OBJECT,
+					MKTYPE_CERTIFICATES( PUBKEY_CERT_OBJECT ), PUBKEY_KEYSET_OBJECT,
 					ACL_FLAG_ANY_STATE ) },
 
 	{ MESSAGE_CHECK_PKC_DECRYPT_AVAIL,	/* Decryption available */
 	  MK_CHKACL_EX( MESSAGE_CTX_DECRYPT,
-					PUBKEY_CERT_OBJECT, PRIVKEY_KEYSET_OBJECT,
+					MKTYPE_CERTIFICATES( PUBKEY_CERT_OBJECT ), PRIVKEY_KEYSET_OBJECT,
 					ACL_FLAG_ANY_STATE ) },
 
 	{ MESSAGE_CHECK_PKC_SIGCHECK_AVAIL,	/* Signature check available */
 	  MK_CHKACL_EX( MESSAGE_CTX_SIGCHECK,
-					PUBKEY_CERT_OBJECT, PUBKEY_KEYSET_OBJECT,
+					MKTYPE_CERTIFICATES( PUBKEY_CERT_OBJECT ), PUBKEY_KEYSET_OBJECT,
 					ACL_FLAG_ANY_STATE ) },
 
 	{ MESSAGE_CHECK_PKC_SIGN_AVAIL,		/* Signature available */
 	  MK_CHKACL_EX( MESSAGE_CTX_SIGN,
-					PUBKEY_CERT_OBJECT, PRIVKEY_KEYSET_OBJECT,
+					MKTYPE_CERTIFICATES( PUBKEY_CERT_OBJECT ), PRIVKEY_KEYSET_OBJECT,
 					ACL_FLAG_ANY_STATE ) },
 
 	{ MESSAGE_CHECK_PKC_KA_EXPORT_AVAIL,/* Key agreement - export available */
 	  MK_CHKACL_EX( MESSAGE_NONE,
-					PUBKEY_CERT_OBJECT, ST_NONE, ACL_FLAG_ANY_STATE ) },
+					MKTYPE_CERTIFICATES( PUBKEY_CERT_OBJECT ), ST_NONE, ACL_FLAG_ANY_STATE ) },
 
 	{ MESSAGE_CHECK_PKC_KA_IMPORT_AVAIL,/* Key agreement - import available */
 	  MK_CHKACL_EX( MESSAGE_NONE,
-					PUBKEY_CERT_OBJECT, ST_NONE, ACL_FLAG_ANY_STATE ) },
+					MKTYPE_CERTIFICATES( PUBKEY_CERT_OBJECT ), ST_NONE, ACL_FLAG_ANY_STATE ) },
 
 	/* Misc.actions.  The certificate check is used to verify that a 
 	   certificate is generally valid (for example not expired) without 
@@ -282,14 +289,14 @@ static const CHECK_ACL FAR_BSS checkACLTbl[] = {
 	{ MESSAGE_CHECK_CERT,			/* Generic certificate */
 	  MK_CHKACL_EXT( MESSAGE_NONE, ST_NONE, checkCertACLTbl ) },
 	{ MESSAGE_CHECK_CERTxx,			/* xx cert, part two of CHECK_CERT */
-	  MK_CHKACL( MESSAGE_CHECK_NONE,
-				 ST_CERT_CERT | ST_CERT_CERTCHAIN ) },
+	  MK_CHKACL( MESSAGE_NONE,
+				 MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_CERTCHAIN ) ) },
 
 	{ MESSAGE_CHECK_CA,				/* Cert signing capability */
 	  MK_CHKACL_EXT( MESSAGE_NONE, ST_NONE, checkCAACLTbl ) },
 	{ MESSAGE_CHECK_CACERT,			/* CA cert, part two of CHECK_CA */
-	  MK_CHKACL( MESSAGE_CHECK_NONE,
-				 ST_CERT_CERT | ST_CERT_CERTCHAIN ) },
+	  MK_CHKACL( MESSAGE_NONE,
+				 MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_CERTCHAIN ) ) },
 
 	/* End-of-ACL marker */
 	{ MESSAGE_CHECK_NONE,
@@ -306,7 +313,8 @@ static const ATTRIBUTE_ACL_ALT FAR_BSS formatPseudoACL[] = {
 	/* Encoded certificate data */
 	MKACL_S_ALT(
 		CRYPT_CERTFORMAT_CERTIFICATE,
-		ST_CERT_ANY_CERT | ST_CERT_ATTRCERT | ST_CERT_CRL | \
+		MKTYPE_CERTIFICATES( ST_CERT_ANY_CERT | ST_CERT_ATTRCERT ) | \
+			ST_CERT_CRL | \
 			ST_CERT_OCSP_RESP, ST_NONE, ST_NONE, 
 		ACCESS_Rxx_xxx,
 		ROUTE( OBJECT_TYPE_CERTIFICATE ), RANGE( 64, 8192 ) ),
@@ -314,56 +322,64 @@ static const ATTRIBUTE_ACL_ALT FAR_BSS formatPseudoACL[] = {
 	/* Encoded certificate chain */
 	MKACL_S_ALT(
 		CRYPT_CERTFORMAT_CERTCHAIN,
-		ST_CERT_CERT | ST_CERT_CERTCHAIN, ST_NONE, ST_NONE, 
+		MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_CERTCHAIN ), 
+			ST_NONE, ST_NONE, 
 		ACCESS_Rxx_xxx,
 		ROUTE( OBJECT_TYPE_CERTIFICATE ), RANGE( 64, 8192 ) ),
 
 	/* Base64-encoded certificate */
 	MKACL_S_ALT(
 		CRYPT_CERTFORMAT_TEXT_CERTIFICATE,
-		ST_CERT_ANY_CERT | ST_CERT_ATTRCERT | ST_CERT_CRL, ST_NONE, ST_NONE, 
+		MKTYPE_CERTIFICATES( ST_CERT_ANY_CERT | ST_CERT_ATTRCERT ) | \
+			ST_CERT_CRL, ST_NONE, ST_NONE, 
 		ACCESS_Rxx_xxx,
 		ROUTE( OBJECT_TYPE_CERTIFICATE ), RANGE( 64, 8192 ) ),
 
 	/* Base64-encoded certificate chain */
 	MKACL_S_ALT(
 		CRYPT_CERTFORMAT_TEXT_CERTCHAIN,
-		ST_CERT_CERT | ST_CERT_CERTCHAIN, ST_NONE, ST_NONE, 
+		MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_CERTCHAIN ), 
+			ST_NONE, ST_NONE, 
 		ACCESS_Rxx_xxx,
 		ROUTE( OBJECT_TYPE_CERTIFICATE ), RANGE( 64, 8192 ) ),
 
 	/* XML-encoded certificate */
 	MKACL_S_ALT(
 		CRYPT_CERTFORMAT_XML_CERTIFICATE,
-		ST_CERT_ANY_CERT | ST_CERT_ATTRCERT | ST_CERT_CRL, ST_NONE, ST_NONE, 
+		MKTYPE_CERTIFICATES( ST_CERT_ANY_CERT | ST_CERT_ATTRCERT ) | \
+			ST_CERT_CRL, ST_NONE, ST_NONE, 
 		ACCESS_Rxx_xxx,
 		ROUTE( OBJECT_TYPE_CERTIFICATE ), RANGE( 64, 8192 ) ),
 
 	/* XML-encoded certificate chain */
 	MKACL_S_ALT(
 		CRYPT_CERTFORMAT_XML_CERTCHAIN,
-		ST_CERT_CERT | ST_CERT_CERTCHAIN, ST_NONE, ST_NONE, 
+		MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_CERTCHAIN ), 
+			ST_NONE, ST_NONE, 
 		ACCESS_Rxx_xxx,
 		ROUTE( OBJECT_TYPE_CERTIFICATE ), RANGE( 64, 8192 ) ),
 
 	/* SET OF certificate in chain */
 	MKACL_S_ALT(
 		CRYPT_ICERTFORMAT_CERTSET,
-		ST_CERT_CERT | ST_CERT_CERTCHAIN, ST_NONE, ST_NONE, 
+		MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_CERTCHAIN ), 
+			ST_NONE, ST_NONE, 
 		ACCESS_INT_Rxx_xxx,
 		ROUTE( OBJECT_TYPE_CERTIFICATE ), RANGE( 16, 8192 ) ),
 
 	/* SEQUENCE OF certificate in chain */
 	MKACL_S_ALT(
 		CRYPT_ICERTFORMAT_CERTSEQUENCE,
-		ST_CERT_CERT | ST_CERT_CERTCHAIN, ST_NONE, ST_NONE, 
+		MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_CERTCHAIN ), 
+			ST_NONE, ST_NONE, 
 		ACCESS_INT_Rxx_xxx,
 		ROUTE( OBJECT_TYPE_CERTIFICATE ), RANGE( 16, 8192 ) ),
 
 	/* SSL certificate chain */
 	MKACL_S_ALT(
 		CRYPT_ICERTFORMAT_SSL_CERTCHAIN,
-		ST_CERT_CERT | ST_CERT_CERTCHAIN, ST_NONE, ST_NONE, 
+		MKTYPE_CERTIFICATES( ST_CERT_CERT | ST_CERT_CERTCHAIN ), 
+			ST_NONE, ST_NONE, 
 		ACCESS_INT_Rxx_xxx,
 		ROUTE( OBJECT_TYPE_CERTIFICATE ), RANGE( 16, 8192 ) ),
 
@@ -479,15 +495,31 @@ static const CREATE_ACL FAR_BSS createObjectACL[] = {
 /* Create-object-indirect ACLs */
 
 static const CREATE_ACL FAR_BSS certSpecialACL[] = {
+	/* Certificates can be created as data-only certificates.  The ACL used
+	   here isn't strictly accurate since we should only allow either 
+	   KEYMGMT_FLAG_NONE or KEYMGMT_FLAG_DATAONLY_CERT and/or
+	   KEYMGMT_FLAG_CERT_AS_CERTCHAIN, but there's no easy way to do this 
+	   using the existing ACL structure */
+	{ OBJECT_TYPE_CERTIFICATE,
+	  { MKACP_N_FIXED( CRYPT_CERTTYPE_CERTIFICATE ),/* Cert.type hint */
+		MKACP_N_FIXED( 0 ),
+		MKACP_N( KEYMGMT_FLAG_NONE, ( KEYMGMT_FLAG_DATAONLY_CERT | \
+									  KEYMGMT_FLAG_CERT_AS_CERTCHAIN ) ),
+										/* Creation control flag */
+		MKACP_S( 16, MAX_BUFFER_SIZE - 1 ),	/* Cert.object data */
+		MKACP_S_NONE() } },
+
 	/* PKCS #7/CMS certificate chains can include an optional key usage to 
 	   select a specific EE certificate in the case of muddled chains that
-	   contain multiple EE certificates */
+	   contain multiple EE certificates.  In addition they can contain
+	   modifiers such as KEYMGMT_FLAG_DATAONLY_CERT and 
+	   KEYMGMT_FLAG_CERT_AS_CERTCHAIN */
 	{ OBJECT_TYPE_CERTIFICATE,
 	  { MKACP_N_FIXED( CRYPT_CERTTYPE_CERTCHAIN ),/* Cert.type hint */
 		MKACP_N_FIXED( 0 ),
 		MKACP_N( KEYMGMT_FLAG_NONE, KEYMGMT_FLAG_MAX ),
 										/* EE cert usage hint */
-		MKACP_S( 16, MAX_INTLENGTH - 1 ),	/* Cert.object data */
+		MKACP_S( 16, MAX_BUFFER_SIZE - 1 ),	/* Cert.object data */
 		MKACP_S_NONE() } },
 
 	/* PKCS #7/CMS unordered certificate collections must include a 
@@ -499,8 +531,8 @@ static const CREATE_ACL FAR_BSS certSpecialACL[] = {
 		MKACP_N( CRYPT_IKEYID_KEYID, 
 				 CRYPT_IKEYID_ISSUERANDSERIALNUMBER ),/* Key ID type */
 		MKACP_N_FIXED( 0 ),
-		MKACP_S( 16, MAX_INTLENGTH - 1 ),/* Cert.object data */
-		MKACP_S( 3, MAX_INTLENGTH - 1 ) } },/* Key ID */
+		MKACP_S( 16, MAX_BUFFER_SIZE - 1 ),/* Cert.object data */
+		MKACP_S( 3, MAX_INTLENGTH_SHORT - 1 ) } },/* Key ID */
 
 	/* End-of-ACL marker */
 	{ OBJECT_TYPE_NONE, { { 0 } } },
@@ -513,12 +545,13 @@ static const CREATE_ACL FAR_BSS createObjectIndirectACL[] = {
 				 CRYPT_CERTTYPE_LAST - 1 ),	/* Cert.type hint (may be _NONE) */
 		MKACP_N_FIXED( 0 ),					/* See exception list */
 		MKACP_N_FIXED( 0 ),					/* See exception list */
-		MKACP_S( 16, MAX_INTLENGTH - 1 ),	/* Cert.object data */
+		MKACP_S( 16, MAX_BUFFER_SIZE - 1 ),	/* Cert.object data */
 		MKACP_S_NONE() },					/* See exception list */
 	  /* Exception: CMS certificate-set objects have a key ID type as the 
 	     second integer argument and a key ID as the second string 
 		 argument */
-	  { CRYPT_CERTTYPE_CERTCHAIN, CRYPT_ICERTTYPE_CMS_CERTSET }, certSpecialACL },
+	  { CRYPT_CERTTYPE_CERTIFICATE, CRYPT_CERTTYPE_CERTCHAIN, 
+			CRYPT_ICERTTYPE_CMS_CERTSET }, certSpecialACL },
 
 	/* End-of-ACL marker */
 	{ OBJECT_TYPE_NONE, { { 0 } } },
@@ -619,16 +652,40 @@ static BOOLEAN checkAttributeRangeSpecial( IN_ENUM( RANGEVAL ) \
    in the kernel, but not having it here makes correct string length range
    checking difficult */
 
+#ifdef USE_WIDECHARS
+
+CHECK_RETVAL_RANGE( 0, INT_MAX ) STDC_NONNULL_ARG( ( 1 ) ) \
+static int getWideChar( const BYTE *string )
+	{
+	long value = 0;
+	int i;
+
+#ifdef DATA_LITTLEENDIAN
+	int shiftAmount = 0;
+
+	/* Read a widechar value from a byte string */
+	for( i = 0; i < sizeof( wchar_t ); i++ )
+		{
+		value |= ( ( long ) ( string[ i ] ) << shiftAmount );
+		shiftAmount += 8;
+		}
+
+#else
+	/* Read a widechar value from a byte string */
+	for( i = 0; i < sizeof( wchar_t ); i++ )
+		value = ( value << 8 ) | string[ i ];
+#endif /* Endianness-specific wchar_t extraction */
+
+	return( ( value >= INT_MAX ) ? INT_MAX : ( int ) value );
+	}
+#endif /* USE_WIDECHARS */
+
 CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 static BOOLEAN checkAttributeRangeWidechar( const void *value,
 											IN_LENGTH const int valueLength,
 											IN_LENGTH_Z const int minLength,
 											IN_LENGTH const int maxLength )
 	{
-#ifdef USE_WIDECHARS
-	const wchar_t *wcString = value;
-#endif /* USE_WIDECHARS */
-
 	assert( isReadPtr( value, valueLength ) );
 
 	REQUIRES_B( minLength >= 0 && maxLength >= 0 && \
@@ -636,21 +693,35 @@ static BOOLEAN checkAttributeRangeWidechar( const void *value,
 
 #ifdef USE_WIDECHARS
 	/* If it's not a multiple of wchar_t in size or smaller than a
-	   wchar_t, it can't be a widechar string */
+	   wchar_t then it can't be a widechar string */
 	if( ( valueLength % WCSIZE ) || ( valueLength < WCSIZE ) )
 		{
 		return( ( valueLength < minLength || valueLength > maxLength ) ? \
 				FALSE : TRUE );
 		}
 
+	/* In theory we could also check whether we're being passed a wchar_t-
+	   aligned string and reject it if it isn't, but this would miss strings
+	   being pulled out of byte arrays, which the getWideChar() below deals
+	   with for us */
+#if 0
+	if( !IS_ALIGNED_OPT( value, WCSIZE ) )
+		return( TRUE );
+#endif /* 0 */
+
 	/* If wchar_t is > 16 bits and the bits above 16 are all zero, it's
 	   definitely a widechar string.  Note that some compilers will complain 
 	   of unreachable code here, unfortunately we can't easily fix this 
 	   since WCSIZE is usually an expression involving sizeof() which can't 
 	   be handled via the preprocessor so we have to guard it with a 
-	   preprocessor check */
+	   preprocessor check.
+	   
+	   Another problem is that wcString isn't necessarily an aligned 
+	   widechar string, so dereferencing it here and in the next code block
+	   may lead to an unaligned reference
+	   */
 #ifdef CHECK_WCSIZE
-	if( WCSIZE > 2 && *wcString < 0xFFFF )
+	if( WCSIZE > 2 && getWideChar( value ) < 0xFFFF )
 		{
 		return( ( valueLength < ( minLength * WCSIZE ) || \
 				  valueLength > ( maxLength * WCSIZE ) ) ? \
@@ -661,7 +732,8 @@ static BOOLEAN checkAttributeRangeWidechar( const void *value,
 	/* Now it gets tricky.  The only thing that we can still safely check
 	   for is something that's been bloated out into widechars from ASCII */
 	if( ( valueLength > WCSIZE * 2 ) && \
-		( wcString[ 0 ] < 0xFF && wcString[ 1 ] < 0xFF ) )
+		getWideChar( value ) < 0xFF && \
+		getWideChar( ( const BYTE * ) value + WCSIZE ) < 0xFF )
 		{
 		return( ( valueLength < ( minLength * WCSIZE ) || \
 				  valueLength > ( maxLength * WCSIZE ) ) ? \
@@ -722,9 +794,9 @@ static int checkActionPermitted( const OBJECT_INFO *objectInfoPtr,
 
 CHECK_RETVAL \
 static int findCheckACL( IN_ENUM( MESSAGE_CHECK ) const int messageValue,
-						 IN_ENUM( OBJECT ) const OBJECT_TYPE objectType,
-						 OUT_OPT_PTR_OPT const CHECK_ACL **checkACLptr,
-						 OUT_OPT_PTR_OPT const CHECK_ALT_ACL **checkAltACLptr )
+						 IN_ENUM( OBJECT_TYPE ) const OBJECT_TYPE objectType,
+						 OUT_OPT_PTR_COND const CHECK_ACL **checkACLptr,
+						 OUT_OPT_PTR_COND const CHECK_ALT_ACL **checkAltACLptr )
 	{
 	const CHECK_ACL *checkACL = NULL;
 	const CHECK_ALT_ACL *checkAltACL;
@@ -759,11 +831,11 @@ static int findCheckACL( IN_ENUM( MESSAGE_CHECK ) const int messageValue,
 		{
 		int i;
 
-		for( i = 0; checkAltACL[ i ].object != CRYPT_OBJECT_NONE && \
+		for( i = 0; checkAltACL[ i ].object != OBJECT_TYPE_NONE && \
 					checkAltACL[ i ].object != objectType && \
 					i < FAILSAFE_ITERATIONS_MED; i++ );
 		ENSURES( i < FAILSAFE_ITERATIONS_MED );
-		if( checkAltACL[ i ].object == CRYPT_OBJECT_NONE )
+		if( checkAltACL[ i ].object == OBJECT_TYPE_NONE )
 			return( CRYPT_ARGERROR_OBJECT );
 		checkAltACL = &checkAltACL[ i ];
 		if( checkAltACL->checkType > MESSAGE_CHECK_NONE && \
@@ -902,14 +974,14 @@ static BOOLEAN createAclConsistent( const CREATE_ACL *createACL,
 	ENSURES_B( i < FAILSAFE_ITERATIONS_SMALL );
 
 	/* If there are no exceptions present, we're done */
-	if( createACL->exceptions[ 0 ] == 0 && \
-		createACL->exceptions[ 1 ] == 0 && \
+	if( createACL->exceptions[ 0 ] == OBJECT_TYPE_NONE && \
+		createACL->exceptions[ 1 ] == OBJECT_TYPE_NONE && \
 		createACL->exceptionACL == NULL )
 		return( TRUE );
 
 	/* Make sure that the exception entries are consistent */
-	if( ( createACL->exceptions[ 0 ] == 0 && \
-		  createACL->exceptions[ 1 ] != 0 ) || \
+	if( ( createACL->exceptions[ 0 ] == OBJECT_TYPE_NONE && \
+		  createACL->exceptions[ 1 ] != OBJECT_TYPE_NONE ) || \
 		createACL->exceptionACL == NULL )
 		return( FALSE );
 
@@ -917,18 +989,27 @@ static BOOLEAN createAclConsistent( const CREATE_ACL *createACL,
 	if( !doRecurse )
 		return( TRUE );
 
+	/* Check that the exception ACLs are terminated at some point */
+	static_assert( sizeof( createACL->exceptions ) / sizeof( int ) == 4, \
+				   "Exception ACL size inconsistent" );
+	if( createACL->exceptions[ 0 ] != OBJECT_TYPE_NONE && \
+		createACL->exceptions[ 1 ] != OBJECT_TYPE_NONE && \
+		createACL->exceptions[ 2 ] != OBJECT_TYPE_NONE && \
+		createACL->exceptions[ 3 ] != OBJECT_TYPE_NONE )
+		return( FALSE );
+
 	/* Check the exception ACLs */
 	for( i = 0; createACL->exceptionACL[ i ].type != OBJECT_TYPE_NONE && \
 				i < FAILSAFE_ITERATIONS_MED; i++ )
 		{
 		const CREATE_ACL *exceptionACL = &createACL->exceptionACL[ i ];
-		const PARAM_ACL *paramACL = getParamACL( exceptionACL );
 
 		if( !createAclConsistent( exceptionACL, FALSE ) )
 			return( FALSE );
 
 		/* Make sure that each of the exception entries in the main ACL is
 		   handled in a sub-ACL, and that there are no duplicates */
+		paramACL = getParamACL( exceptionACL );
 		REQUIRES( paramACL->valueType == PARAM_VALUE_NUMERIC );
 		if( subType1 >= paramACL->lowRange && \
 			subType1 <= paramACL->highRange )
@@ -961,6 +1042,12 @@ int initMessageACL( INOUT KERNEL_DATA *krnlDataPtr )
 
 	assert( isWritePtr( krnlDataPtr, sizeof( KERNEL_DATA ) ) );
 
+	/* If we're running a fuzzing build, skip the lengthy self-checks */
+#ifdef CONFIG_FUZZ
+	krnlData = krnlDataPtr;
+	return( CRYPT_OK );
+#endif /* CONFIG_FUZZ */
+
 	/* Perform a consistency check on the compare ACL */
 	for( i = 0; compareACLTbl[ i ].compareType != MESSAGE_COMPARE_NONE && \
 				i < FAILSAFE_ARRAYSIZE( compareACLTbl, COMPARE_ACL ); i++ )
@@ -986,7 +1073,7 @@ int initMessageACL( INOUT KERNEL_DATA *krnlDataPtr )
 				 ( compareACL->objectACL.flags == ACL_FLAG_HIGH_STATE ) );
 		if( paramInfo( compareACL, 0 ).valueType == PARAM_VALUE_STRING )
 			{
-			ENSURES( paramInfo( compareACL, 0 ).lowRange >= 2 && \
+			ENSURES( paramInfo( compareACL, 0 ).lowRange >= MIN_ID_LENGTH && \
 					 paramInfo( compareACL, 0 ).lowRange <= \
 						paramInfo( compareACL, 0 ).highRange && \
 					 paramInfo( compareACL, 0 ).highRange <= MAX_ATTRIBUTE_SIZE );
@@ -1068,15 +1155,18 @@ int initMessageACL( INOUT KERNEL_DATA *krnlDataPtr )
 		}
 	ENSURES( i < FAILSAFE_ARRAYSIZE( checkACLTbl, CHECK_ACL ) );
 
-	/* Perform a consistency check on the certificate export pseudo-ACL */
+	/* Perform a consistency check on the certificate export pseudo-ACL.
+	   Because this is a pseudo-ACL that uses CRYPT_CERTFORMAT_TYPE instead 
+	   of CRYPT_ATTRIBUTE_TYPE, we compare entries against 
+	   CRYPT_CERTFORMAT_xxx rather than CRYPT_ATTRIBUTE_xxx */
 	for( i = 0; formatPseudoACL[ i ].attribute != CRYPT_CERTFORMAT_NONE && \
 				i < FAILSAFE_ARRAYSIZE( formatPseudoACL, ATTRIBUTE_ACL_ALT ); 
 		 i++ )
 		{
 		const ATTRIBUTE_ACL_ALT *formatACL = &formatPseudoACL[ i ];
 
-		ENSURES( formatACL->attribute > CRYPT_CERTTYPE_NONE && \
-				 formatACL->attribute < CRYPT_CERTTYPE_LAST );
+		ENSURES( formatACL->attribute > CRYPT_CERTFORMAT_NONE && \
+				 formatACL->attribute < CRYPT_CERTFORMAT_LAST );
 		if( ( formatACL->subTypeA & ~( SUBTYPE_CLASS_A | ST_CERT_ANY ) ) || \
 			formatACL->subTypeB != ST_NONE || \
 			formatACL->subTypeC != ST_NONE )
@@ -1133,7 +1223,7 @@ int initMessageACL( INOUT KERNEL_DATA *krnlDataPtr )
 					 paramInfo( createACL, 0 ).highRange < CRYPT_CERTTYPE_LAST );
 			}
 
-		/* Check the parameter ACLs within the compare ACL */
+		/* Check the parameter ACLs within the create ACL */
 		ENSURES( createAclConsistent( createACL, TRUE ) );
 		}
 	ENSURES( i < FAILSAFE_ARRAYSIZE( createObjectACL, CREATE_ACL ) );
@@ -1169,7 +1259,7 @@ int initMessageACL( INOUT KERNEL_DATA *krnlDataPtr )
 			retIntError();
 			}
 
-		/* Check the parameter ACLs within the compare ACL */
+		/* Check the parameter ACLs within the create ACL */
 		ENSURES( createAclConsistent( createACL, TRUE ) );
 		}
 	ENSURES( i < FAILSAFE_ARRAYSIZE( createObjectIndirectACL, CREATE_ACL ) );
@@ -1259,10 +1349,10 @@ int preDispatchCheckAttributeAccess( IN_HANDLE const int objectHandle,
 	const OBJECT_INFO *objectTable = krnlData->objectTable;
 	const OBJECT_INFO *objectInfo = &objectTable[ objectHandle ];
 	const MESSAGE_TYPE localMessage = message & MESSAGE_MASK;
-	const int subType = objectInfo->subType;
-	int accessType;
 	const BOOLEAN isInternalMessage = isInternalMessage( message ) ? \
 									  TRUE : FALSE;
+	const int subType = objectInfo->subType;
+	int accessType, status;
 
 	assert( isReadPtr( attributeACL, sizeof( ATTRIBUTE_ACL ) ) );
 	assert( attributeACL->attribute == messageValue );
@@ -1477,18 +1567,23 @@ int preDispatchCheckAttributeAccess( IN_HANDLE const int objectHandle,
 			/* Object must be of the correct type */
 			if( objectACL->flags & ACL_FLAG_ROUTE_TO_CTX )
 				{
-				objectParamHandle = findTargetType( *valuePtr,
-													OBJECT_TYPE_CONTEXT );
+				status = findTargetType( *valuePtr, &objectParamHandle,
+										 OBJECT_TYPE_CONTEXT );
 				}
 			else
 				{
 				if( objectACL->flags & ACL_FLAG_ROUTE_TO_CERT )
-					objectParamHandle = findTargetType( *valuePtr,
-														OBJECT_TYPE_CERTIFICATE );
+					{
+					status = findTargetType( *valuePtr, &objectParamHandle,
+											 OBJECT_TYPE_CERTIFICATE );
+					}
 				else
+					{
 					objectParamHandle = *valuePtr;
+					status = CRYPT_OK;
+					}
 				}
-			if( cryptStatusError( objectParamHandle ) )
+			if( cryptStatusError( status ) )
 				return( CRYPT_ARGERROR_NUM1 );
 			objectParamSubType = objectTable[ objectParamHandle ].subType;
 			if( !isValidSubtype( objectACL->subTypeA, objectParamSubType ) && \
@@ -1646,11 +1741,6 @@ int preDispatchCheckAttributeAccess( IN_HANDLE const int objectHandle,
 				break;
 				}
 
-			/* If we're sending the data back to the caller, we can't check
-			   it yet */
-			if( localMessage == MESSAGE_GETATTRIBUTE_S )
-				break;
-
 			/* Inner precondition: We're sending data to the object */
 			REQUIRES( localMessage == MESSAGE_SETATTRIBUTE_S );
 
@@ -1713,11 +1803,10 @@ int preDispatchCheckCompareParam( IN_HANDLE const int objectHandle,
 	REQUIRES( messageValue > MESSAGE_COMPARE_NONE && \
 			  messageValue < MESSAGE_COMPARE_LAST );
 
-	/* Find the appropriate ACL for this compare type */
-	if( messageValue > MESSAGE_COMPARE_NONE && \
-		messageValue < MESSAGE_COMPARE_LAST )
-		compareACL = &compareACLTbl[ messageValue - 1 ];
-	ENSURES( compareACL != NULL );
+	/* Find the appropriate ACL for this compare type.  Note that we don't 
+	   range-check the value of messageValue since it's already been checked
+	   by the REQUIRES() above */
+	compareACL = &compareACLTbl[ messageValue - 1 ];
 
 	/* Inner precondition: We have the correct ACL, and the full object
 	   check has been performed by the kernel */
@@ -1740,7 +1829,6 @@ int preDispatchCheckCompareParam( IN_HANDLE const int objectHandle,
 	   invalid parameter for the reason given above */
 	if( paramInfo( compareACL, 0 ).valueType == PARAM_VALUE_OBJECT )
 		{
-		STDC_UNUSED \
 		const CRYPT_HANDLE iCryptHandle = *( ( CRYPT_HANDLE * ) messageDataPtr );
 
 		REQUIRES( fullObjectCheck( iCryptHandle, message ) && \
@@ -1750,7 +1838,6 @@ int preDispatchCheckCompareParam( IN_HANDLE const int objectHandle,
 		}
 	else
 		{
-		STDC_UNUSED \
 		const MESSAGE_DATA *msgData = messageDataPtr;
 
 		REQUIRES( checkParamString( paramInfo( compareACL, 0 ),
@@ -1763,17 +1850,17 @@ int preDispatchCheckCompareParam( IN_HANDLE const int objectHandle,
 			  isValidHandle( *( ( CRYPT_HANDLE * ) messageDataPtr ) ) ) || \
 			( messageValue != MESSAGE_COMPARE_CERTOBJ && \
 			  isReadPtr( messageDataPtr, sizeof( MESSAGE_DATA ) ) && \
-			  ( ( MESSAGE_DATA * ) messageDataPtr )->length >= 2 && \
+			  ( ( MESSAGE_DATA * ) messageDataPtr )->length >= MIN_ID_LENGTH && \
 			  isReadPtr( ( ( MESSAGE_DATA * ) messageDataPtr )->data, \
 						 ( ( MESSAGE_DATA * ) messageDataPtr )->length ) ) );
 
+	ENSURES( messageDataPtr != NULL );
 	ENSURES( ( messageValue == MESSAGE_COMPARE_CERTOBJ && \
 			   isValidHandle( *( ( CRYPT_HANDLE * ) messageDataPtr ) ) ) || \
 			 ( messageValue != MESSAGE_COMPARE_CERTOBJ && \
-			   messageDataPtr != NULL && \
-			  ( ( ( MESSAGE_DATA * ) messageDataPtr )->data != NULL && \
-				( ( MESSAGE_DATA * ) messageDataPtr )->length >= 2 && \
-				( ( MESSAGE_DATA * ) messageDataPtr )->length < MAX_INTLENGTH ) ) );
+			   ( ( ( MESSAGE_DATA * ) messageDataPtr )->data != NULL && \
+				 ( ( MESSAGE_DATA * ) messageDataPtr )->length >= MIN_ID_LENGTH && \
+				 ( ( MESSAGE_DATA * ) messageDataPtr )->length < MAX_INTLENGTH ) ) );
 
 	return( CRYPT_OK );
 	}
@@ -2079,7 +2166,10 @@ int preDispatchCheckExportAccess( IN_HANDLE const int objectHandle,
 		messageValue >= CRYPT_CERTFORMAT_LAST )
 		return( CRYPT_ARGERROR_VALUE );
 
-	/* Find the appropriate ACL for this export type */
+	/* Find the appropriate ACL for this export type.  Because this is a 
+	   pseudo-ACL that uses CRYPT_CERTFORMAT_TYPE instead of 
+	   CRYPT_ATTRIBUTE_TYPE, we compare entries against 
+	   CRYPT_CERTFORMAT_xxx rather than CRYPT_ATTRIBUTE_xxx */
 	for( i = 0; formatPseudoACL[ i ].attribute != messageValue && 
 				formatPseudoACL[ i ].attribute != CRYPT_CERTFORMAT_NONE && \
 				i < FAILSAFE_ARRAYSIZE( formatPseudoACL, ATTRIBUTE_ACL_ALT );
@@ -2088,10 +2178,13 @@ int preDispatchCheckExportAccess( IN_HANDLE const int objectHandle,
 	ENSURES( formatPseudoACL[ i ].attribute != CRYPT_CERTFORMAT_NONE );
 
 	/* The easiest way to handle this check is to use an ACL, treating the
-	   format type as a pseudo-attribute type */
+	   format type as a pseudo-attribute type.  We can only check the 
+	   attribute type in the debug build because it's not present in the 
+	   release to save space */
 	formatACL = ( ATTRIBUTE_ACL * ) &formatPseudoACL[ i ];
-	assert( formatACL->attribute == messageValue );
-			/* Only in debug build, see comment in attr_acl.c */
+#ifndef NDEBUG
+	ENSURES( formatACL->attribute == messageValue );
+#endif /* NDEBUG */
 
 	return( preDispatchCheckAttributeAccess( objectHandle,
 							isInternalMessage( message ) ? \
@@ -2153,7 +2246,7 @@ int preDispatchCheckCreate( IN_HANDLE const int objectHandle,
 							IN_MESSAGE const MESSAGE_TYPE message,
 							IN_BUFFER_C( sizeof( MESSAGE_CREATEOBJECT_INFO ) ) \
 								const void *messageDataPtr,
-							IN_ENUM( OBJECT ) const int messageValue,
+							IN_ENUM( OBJECT_TYPE ) const int messageValue,
 							STDC_UNUSED const void *dummy )
 	{
 	const OBJECT_INFO *objectTable = krnlData->objectTable;
@@ -2185,7 +2278,7 @@ int preDispatchCheckCreate( IN_HANDLE const int objectHandle,
 	/* Find the appropriate ACL for this object create type */
 	for( i = 0; i < createAclSize && \
 				createACL[ i ].type != messageValue && 
-				createACL[ i ].type != CRYPT_CERTFORMAT_NONE; i++ );
+				createACL[ i ].type != OBJECT_TYPE_NONE; i++ );
 	ENSURES( i < createAclSize );
 	ENSURES( createACL[ i ].type != OBJECT_TYPE_NONE );
 	createACL = &createACL[ i ];
@@ -2198,31 +2291,31 @@ int preDispatchCheckCreate( IN_HANDLE const int objectHandle,
 	   to check for a nonzero subtype argument since for indirect object 
 	   creates the subtype arg.can be zero if type autodetection is being 
 	   used */
-	if( createInfo->arg1 != 0 && \
-		( createInfo->arg1 == createACL->exceptions[ 0 ] || \
-		  createInfo->arg1 == createACL->exceptions[ 1 ] ) )
+	if( createInfo->arg1 != 0 && createACL->exceptions[ 0 ] != 0 )
 		{
 		const int objectSubType = createInfo->arg1;
-		int i;
 
-		/* This object subtype is covered by a sub-ACL, walk down the list 
-		   of exception ACLs until we find the one that we want */
-		for( i = 0; createACL->exceptionACL[ i ].type != OBJECT_TYPE_NONE && \
-					i < FAILSAFE_ITERATIONS_MED; i++ )
+		/* There are exception ACLs present, walk down the list of exception 
+		   ACLs checking whether there's one for this objet type */
+		for( i = 0; createACL->exceptions[ i ] != OBJECT_TYPE_NONE && \
+					i < FAILSAFE_ITERATIONS_SMALL; i++ )
 			{
-			const CREATE_ACL *exceptionACL = &createACL->exceptionACL[ i ];
-			const PARAM_ACL *paramACL = getParamACL( exceptionACL );
-
-			/* If the object subtype that we're processing is the one 
-			   that's covered by this ACL then we're done */
-			if( objectSubType >= paramACL->lowRange && \
-				objectSubType <= paramACL->highRange )
+			if( objectSubType == createACL->exceptions[ i ] )
 				{
-				createACL = exceptionACL;
-				break;
+				const CREATE_ACL *exceptionACL = &createACL->exceptionACL[ i ];
+				const PARAM_ACL *paramACL = getParamACL( exceptionACL );
+
+				/* If the object subtype that we're processing is the one 
+				   that's covered by this ACL then we're done */
+				if( objectSubType >= paramACL->lowRange && \
+					objectSubType <= paramACL->highRange )
+					{
+					createACL = exceptionACL;
+					break;
+					}
 				}
 			}
-		ENSURES( i < FAILSAFE_ITERATIONS_MED );
+		ENSURES( i < FAILSAFE_ITERATIONS_SMALL );
 		}
 
 	/* Make sure that the subtype is valid for this object type */
@@ -2283,9 +2376,7 @@ int preDispatchCheckUserMgmtAccess( IN_HANDLE const int objectHandle,
 									IN_ENUM( MESSAGE_USERMGMT ) const int messageValue, 
 									STDC_UNUSED const void *dummy2 )
 	{
-	STDC_UNUSED \
 	const OBJECT_INFO *objectTable = krnlData->objectTable;
-	STDC_UNUSED \
 	const MESSAGE_TYPE localMessage = message & MESSAGE_MASK;
 
 	REQUIRES( fullObjectCheck( objectHandle, message ) && \
@@ -2319,13 +2410,14 @@ int preDispatchCheckTrustMgmtAccess( IN_HANDLE const int objectHandle,
 			ACL_FLAG_HIGH_STATE | ACL_FLAG_ROUTE_TO_CERT };
 	static const ATTRIBUTE_ACL FAR_BSS trustMgmtPseudoACL[] = {
 		MKACL_O(
-			MESSAGE_TRUSTMGMT_CHECK,	/* Generic placeholder */
+			/* Since we're using an attribute-ACL check capability to handle
+			   this, we set a dummy attribute type for the value that's 
+			   being checked */
+			CRYPT_CERTINFO_TRUSTED_IMPLICIT,
 			ST_NONE, ST_NONE, ST_USER_ANY, ACCESS_INT_Rxx_xxx,
 			ROUTE( OBJECT_TYPE_USER ), &objectTrustedCertificate )
 		};
-	STDC_UNUSED \
 	const OBJECT_INFO *objectTable = krnlData->objectTable;
-	STDC_UNUSED \
 	const MESSAGE_TYPE localMessage = message & MESSAGE_MASK;
 
 	assert( ( messageValue == MESSAGE_TRUSTMGMT_GETISSUER && \
@@ -2344,7 +2436,7 @@ int preDispatchCheckTrustMgmtAccess( IN_HANDLE const int objectHandle,
 	return( preDispatchCheckAttributeAccess( objectHandle,
 							isInternalMessage( message ) ? \
 							IMESSAGE_GETATTRIBUTE : MESSAGE_GETATTRIBUTE,
-							messageDataPtr, MESSAGE_TRUSTMGMT_CHECK, 
+							messageDataPtr, CRYPT_CERTINFO_TRUSTED_IMPLICIT, 
 							trustMgmtPseudoACL ) );
 	}
 
@@ -2437,7 +2529,7 @@ int postDispatchMakeObjectExternal( STDC_UNUSED const int dummy,
 			assert( attributeACL->attribute == messageValue );
 					/* Only in debug build, see comment in attr_acl.c */
 
-			/* If it's not an object attribute read, we're done */
+			/* If it's not an object attribute read then we're done */
 			if( attributeACL->valueType == ATTRIBUTE_VALUE_SPECIAL )
 				{
 				attributeACL = getSpecialRangeInfo( attributeACL );
@@ -2454,6 +2546,21 @@ int postDispatchMakeObjectExternal( STDC_UNUSED const int dummy,
 			REQUIRES( !isInternalMessage );
 
 			objectHandle = *( ( int * ) messageDataPtr );
+
+			/* If the object has already been read (for example a 
+			   CRYPT_ENVINFO_SIGNATURE certificate from an envelope or a
+			   CRYPT_SESSINFO_RESPONSE from a PKI session) then it'll 
+			   already be external, so all we have to do is convert an
+			   additional internal reference to an external one */
+			if( !isInternalObject( objectHandle ) && \
+				( messageValue == CRYPT_ENVINFO_SIGNATURE || \
+				  messageValue == CRYPT_ENVINFO_SIGNATURE_EXTRADATA || \
+				  messageValue == CRYPT_SESSINFO_RESPONSE || \
+				  messageValue == CRYPT_SESSINFO_CACERTIFICATE ) )
+				return( convertIntToExtRef( objectHandle ) );
+
+			ENSURES( isValidObject( objectHandle ) && \
+					 isInternalObject( objectHandle ) );
 			break;
 			}
 
@@ -2467,6 +2574,9 @@ int postDispatchMakeObjectExternal( STDC_UNUSED const int dummy,
 							   sizeof( MESSAGE_CREATEOBJECT_INFO ) ) );
 
 			objectHandle = createInfo->cryptHandle;
+
+			ENSURES( isValidObject( objectHandle ) && \
+					 isInternalObject( objectHandle ) );
 			break;
 			}
 
@@ -2481,7 +2591,9 @@ int postDispatchMakeObjectExternal( STDC_UNUSED const int dummy,
 
 			objectHandle = getkeyInfo->cryptHandle;
 
-			ENSURES( isInHighState( objectHandle ) );
+			ENSURES( isValidObject( objectHandle ) && \
+					 isInternalObject( objectHandle ) && \
+					 isInHighState( objectHandle ) );
 			break;
 			}
 
@@ -2515,7 +2627,9 @@ int postDispatchMakeObjectExternal( STDC_UNUSED const int dummy,
 
 			objectHandle = certMgmtInfo->cryptCert;
 
-			ENSURES( isInHighState( objectHandle ) );
+			ENSURES( isValidObject( objectHandle ) && \
+					 isInternalObject( objectHandle ) && \
+					 isInHighState( objectHandle ) );
 			break;
 			}
 
@@ -2523,18 +2637,13 @@ int postDispatchMakeObjectExternal( STDC_UNUSED const int dummy,
 			retIntError();
 		}
 
-	/* Postcondition: We've got a valid internal object to make externally
-	   visible */
-	ENSURES( isValidObject( objectHandle ) && \
-			 isInternalObject( objectHandle ) );
-
 	/* Make the object externally visible.  In theory we should make this
 	   attribute read-only, but it's currently still needed in init.c (the
 	   kernel self-test, which checks for internal vs. external
 	   accessibility), keyex.c (to make PGP imported contexts visible),
 	   sign.c (to make CMS signing attributes externally visible), and
 	   cryptapi.c when creating objects (to make them externally visible)
-	   and destroying objects (to make the appear destroyed if a dec-
+	   and destroying objects (to make them appear destroyed if a dec-
 	   refcount leaves it still active) */
 	status = krnlSendMessage( objectHandle, IMESSAGE_SETATTRIBUTE,
 							  MESSAGE_VALUE_FALSE,
@@ -2737,9 +2846,7 @@ int postDispatchHandleZeroise( IN_HANDLE const int objectHandle,
 							   IN_ENUM( MESSAGE_USERMGMT ) const int messageValue,
 							   STDC_UNUSED const void *dummy3 )
 	{
-	STDC_UNUSED \
 	const OBJECT_INFO *objectTable = krnlData->objectTable;
-	STDC_UNUSED \
 	const MESSAGE_TYPE localMessage = message & MESSAGE_MASK;
 
 	REQUIRES( fullObjectCheck( objectHandle, message ) && \
@@ -2748,9 +2855,8 @@ int postDispatchHandleZeroise( IN_HANDLE const int objectHandle,
 	REQUIRES( messageValue > MESSAGE_USERMGMT_NONE && \
 			  messageValue < MESSAGE_USERMGMT_LAST );
 
-	/* If it's not a zeroise operation, we're done */
-	if( messageValue != MESSAGE_USERMGMT_ZEROISE )
-		return( CRYPT_OK );
+	/* The only currently defined message is zeroise */
+	REQUIRES( messageValue == MESSAGE_USERMGMT_ZEROISE );
 
 	/* We're about to shut down, give any threads a chance to bail out */
 	krnlData->shutdownLevel = SHUTDOWN_LEVEL_THREADS;

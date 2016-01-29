@@ -35,7 +35,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 static int readInteger( INOUT STREAM *stream, 
 						OUT_BUFFER_OPT( maxLength, \
 										*integerLength ) void *integer, 
-						OUT_LENGTH_PKC_Z int *integerLength,
+						OUT_LENGTH_BOUNDED_Z( maxLength ) int *integerLength,
 						IN_LENGTH_PKC const int minLength, 
 						IN_LENGTH_PKC const int maxLength,
 						IN_ENUM( LENGTH ) const LENGTH_TYPE lengthType,
@@ -132,7 +132,7 @@ static int readInteger( INOUT STREAM *stream,
 	/* Read the value */
 	*integerLength = length;
 	if( integer == NULL )
-		return( sSkip( stream, length ) );
+		return( sSkip( stream, length, MAX_INTLENGTH_SHORT ) );
 	return( sread( stream, integer, length ) );
 	}
 
@@ -142,30 +142,35 @@ static int readInteger( INOUT STREAM *stream,
 *																			*
 ****************************************************************************/
 
-/* Read 16-, 32-, and 64-bit integer values */
+/* Read 16- and 32-bit integer values */
 
-RETVAL_RANGE( MAX_ERROR, 0xFFFF ) STDC_NONNULL_ARG( ( 1 ) ) \
+RETVAL_RANGE( 0, 0xFFFF ) STDC_NONNULL_ARG( ( 1 ) ) \
 int readUint16( INOUT STREAM *stream )
 	{
 	BYTE buffer[ UINT16_SIZE + 8 ];
-	int value, status;
+	long value;
+	int status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 
 	status = sread( stream, buffer, UINT16_SIZE );
 	if( cryptStatusError( status ) )
 		return( status );
-	value = ( ( int ) buffer[ 0 ] << 8 ) | buffer[ 1 ];
-	if( value < 0 || value > 0xFFFFL )
+	value = ( ( long ) buffer[ 0 ] << 8 ) | buffer[ 1 ];
+	if( value < 0 || value > 0xFFFFL || value >= INT_MAX )
+		{
+		/* On 16-bit systems, INT_MAX may be less than 0xFFFFL */
 		return( sSetError( stream, CRYPT_ERROR_BADDATA ) );
+		}
 	return( value );
 	}
 
-RETVAL_RANGE( MAX_ERROR, MAX_INTLENGTH ) STDC_NONNULL_ARG( ( 1 ) ) \
+RETVAL_RANGE( 0, INT_MAX ) STDC_NONNULL_ARG( ( 1 ) ) \
 int readUint32( INOUT STREAM *stream )
 	{
 	BYTE buffer[ UINT32_SIZE + 8 ];
-	int value, status;
+	long value;
+	int status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 
@@ -174,55 +179,23 @@ int readUint32( INOUT STREAM *stream )
 		return( status );
 	if( buffer[ 0 ] & 0x80 )
 		return( sSetError( stream, CRYPT_ERROR_BADDATA ) );
-	value = ( ( int ) buffer[ 0 ] << 24 ) | \
-			( ( int ) buffer[ 1 ] << 16 ) | \
-			( ( int ) buffer[ 2 ] << 8 ) | \
-					  buffer[ 3 ];
+	value = ( ( long ) buffer[ 0 ] << 24 ) | \
+			( ( long ) buffer[ 1 ] << 16 ) | \
+			( ( long ) buffer[ 2 ] << 8 ) | \
+					   buffer[ 3 ];
 	if( value < 0 || value >= MAX_INTLENGTH )
 		return( sSetError( stream, CRYPT_ERROR_BADDATA ) );
 	return( value );
 	}
 
-RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int readUint64( INOUT STREAM *stream, OUT_INT_Z long *value )
+/* Read 32-bit time values */
+
+RETVAL_RANGE( 0, INT_MAX ) STDC_NONNULL_ARG( ( 1, 2 ) ) \
+int readUint32Time( INOUT STREAM *stream, OUT time_t *timeVal )
 	{
-	BYTE buffer[ ( UINT64_SIZE / 2 ) + 8 ];
-	int localValue, status;
-
-	assert( isWritePtr( stream, sizeof( STREAM ) ) );
-	assert( isWritePtr( value, sizeof( long ) ) );
-
-	/* Clear return value */
-	*value = 0;
-
-	status = sread( stream, buffer, UINT64_SIZE / 2 );
-	if( cryptStatusError( status ) )
-		return( status );
-	if( memcmp( buffer, "\x00\x00\x00\x00", UINT64_SIZE / 2 ) )
-		return( sSetError( stream, CRYPT_ERROR_BADDATA ) );
-	status = localValue = readUint32( stream );
-	if( cryptStatusError( status ) )
-		return( status );
-	*value = localValue;
-
-	return( CRYPT_OK );
-	}
-
-/* Read 32- and 64-bit time values.  Note that we can't just call down
-   directly to readUint32() for these since time_t may be unsigned or of a
-   different integral size than int.  In addition we have to be careful 
-   about the sanity check in readUint32() against MAX_INTLENGTH, which 
-   equates to the value 0x7EFFFFFF ~= mid-2037, so that dates after this
-   point will fail the range check.  However this is only six months before
-   the hard limit of 2038 anyway, and hopefully by this time we'll be using
-   64-bit time_t's and won't have to worry about this range limit any 
-   more */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int readTime( INOUT STREAM *stream, OUT time_t *timeVal, 
-					 const BOOLEAN is64bit )
-	{
-	int value = DUMMY_INIT, status;
+	BYTE buffer[ UINT32_SIZE + 8 ];
+	long value;
+	int status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( timeVal, sizeof( time_t ) ) );
@@ -230,16 +203,56 @@ static int readTime( INOUT STREAM *stream, OUT time_t *timeVal,
 	/* Clear return value */
 	*timeVal = 0;
 
-	if( is64bit )
-		{
-		long longValue;
+	status = sread( stream, buffer, UINT32_SIZE );
+	if( cryptStatusError( status ) )
+		return( status );
+	if( buffer[ 0 ] & 0x80 )
+		return( sSetError( stream, CRYPT_ERROR_BADDATA ) );
+	value = ( ( long ) buffer[ 0 ] << 24 ) | \
+			( ( long ) buffer[ 1 ] << 16 ) | \
+			( ( long ) buffer[ 2 ] << 8 ) | \
+					   buffer[ 3 ];
+	if( value < MIN_STORED_TIME_VALUE || value >= 0x7FFFFFFFL )
+		return( sSetError( stream, CRYPT_ERROR_BADDATA ) );
+	*timeVal = ( time_t ) value;
+	return( CRYPT_OK );
+	}
 
-		status = readUint64( stream, &longValue );
-		if( cryptStatusOK( status ) )
-			value = ( int ) longValue;
-		}
-	else
-		status = value = readUint32( stream );
+#ifndef NDEBUG
+
+/* Read 64-bit integer and time values, only used by SFTP so not needed */
+
+RETVAL_RANGE( 0, INT_MAX ) STDC_NONNULL_ARG( ( 1 ) ) \
+int readUint64( INOUT STREAM *stream )
+	{
+	BYTE buffer[ ( UINT64_SIZE / 2 ) + 8 ];
+	int status;
+
+	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+
+	/* This is never a 64-bit value but always an overprovisioned int/long, 
+	   so we verify that the top four bytes are zero and then read it as
+	   a Uint32 */
+	status = sread( stream, buffer, UINT64_SIZE / 2 );
+	if( cryptStatusError( status ) )
+		return( status );
+	if( memcmp( buffer, "\x00\x00\x00\x00", UINT64_SIZE / 2 ) )
+		return( sSetError( stream, CRYPT_ERROR_BADDATA ) );
+	return( readUint32( stream ) );
+	}
+
+RETVAL_RANGE( 0, INT_MAX ) STDC_NONNULL_ARG( ( 1, 2 ) ) \
+int readUint64Time( INOUT STREAM *stream, OUT time_t *timeVal )
+	{
+	int value, status;
+
+	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+	assert( isWritePtr( timeVal, sizeof( time_t ) ) );
+
+	/* Clear return value */
+	*timeVal = 0;
+
+	status = value = readUint64( stream );
 	if( cryptStatusError( status ) )
 		return( status );
 	if( value < MIN_STORED_TIME_VALUE )
@@ -247,30 +260,7 @@ static int readTime( INOUT STREAM *stream, OUT time_t *timeVal,
 	*timeVal = ( time_t ) value;
 	return( CRYPT_OK );
 	}
-
-RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int readUint32Time( INOUT STREAM *stream, OUT time_t *timeVal )
-	{
-	assert( isWritePtr( stream, sizeof( STREAM ) ) );
-	assert( isWritePtr( timeVal, sizeof( time_t ) ) );
-
-	/* Clear return value */
-	*timeVal = 0;
-
-	return( readTime( stream, timeVal, FALSE ) );
-	}
-
-RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int readUint64Time( INOUT STREAM *stream, OUT time_t *timeVal )
-	{
-	assert( isWritePtr( stream, sizeof( STREAM ) ) );
-	assert( isWritePtr( timeVal, sizeof( time_t ) ) );
-
-	/* Clear return value */
-	*timeVal = 0;
-
-	return( readTime( stream, timeVal, TRUE ) );
-	}
+#endif /* NDEBUG */
 
 /* Read a string preceded by a 32-bit length */
 
@@ -278,7 +268,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 static int readData32( INOUT STREAM *stream, 
 					   OUT_BUFFER( dataMaxLength, *dataLength ) void *data, 
 					   IN_LENGTH_SHORT const int dataMaxLength, 
-					   OUT_LENGTH_SHORT_Z int *dataLength,
+					   OUT_LENGTH_BOUNDED_Z( dataMaxLength ) int *dataLength,
 					   const BOOLEAN includeLengthField )
 	{
 	BYTE *dataPtr = data;
@@ -320,7 +310,7 @@ int readString32( INOUT STREAM *stream,
 				  OUT_BUFFER( stringMaxLength, \
 							  *stringLength ) void *string, 
 				  IN_LENGTH_SHORT const int stringMaxLength, 
-				  OUT_LENGTH_SHORT_Z int *stringLength )
+				  OUT_LENGTH_BOUNDED_Z( stringMaxLength ) int *stringLength )
 	{
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( string, stringMaxLength ) );
@@ -336,10 +326,12 @@ int readString32( INOUT STREAM *stream,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 int readRawObject32( INOUT STREAM *stream, 
-					 OUT_BUFFER( bufferMaxLength, *bufferLength ) void *buffer, 
+					 OUT_BUFFER( bufferMaxLength, *bufferLength ) \
+						void *buffer, 
 					 IN_LENGTH_SHORT_MIN( UINT32_SIZE + 1 ) \
 						const int bufferMaxLength, 
-					 OUT_LENGTH_SHORT_Z int *bufferLength )
+					 OUT_LENGTH_BOUNDED_Z( bufferMaxLength ) \
+						int *bufferLength )
 	{
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( buffer, bufferMaxLength ) );
@@ -354,7 +346,8 @@ int readRawObject32( INOUT STREAM *stream,
 	}
 
 /* Read a universal type and discard it, used to skip unknown or unwanted
-   types */
+   types.  Since it's only used to skip short no-op fields, we limit the
+   maximum length to MAX_INTLENGTH_SHORT */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int readUniversal( INOUT STREAM *stream, 
@@ -375,7 +368,9 @@ static int readUniversal( INOUT STREAM *stream,
 		return( status );
 	if( length <= 0 )
 		return( CRYPT_OK );		/* Zero-length data */
-	return( sSkip( stream, length ) );
+	if( length >= MAX_INTLENGTH_SHORT )
+		return( CRYPT_ERROR_BADDATA );
+	return( sSkip( stream, length, MAX_INTLENGTH_SHORT ) );
 	}
 
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
@@ -396,7 +391,8 @@ RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int readInteger16U( INOUT STREAM *stream, 
 					OUT_BUFFER_OPT( maxLength, \
 									*integerLength ) void *integer, 
-					OUT_LENGTH_PKC_Z int *integerLength, 
+					OUT_LENGTH_BOUNDED_Z( maxLength ) \
+						int *integerLength, 
 					IN_LENGTH_PKC const int minLength, 
 					IN_LENGTH_PKC const int maxLength )
 	{
@@ -408,7 +404,8 @@ RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int readInteger16Ubits( INOUT STREAM *stream, 
 						OUT_BUFFER_OPT( maxLength, \
 										*integerLength ) void *integer, 
-						OUT_LENGTH_PKC_Z int *integerLength, 
+						OUT_LENGTH_BOUNDED_Z( maxLength ) \
+							int *integerLength, 
 						IN_LENGTH_PKC const int minLength, 
 						IN_LENGTH_PKC const int maxLength )
 	{
@@ -420,7 +417,7 @@ RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int readInteger32( INOUT STREAM *stream, 
 				   OUT_BUFFER_OPT( maxLength, \
 								   *integerLength ) void *integer, 
-				   OUT_LENGTH_PKC_Z int *integerLength, 
+				   OUT_LENGTH_BOUNDED_Z( maxLength  ) int *integerLength, 
 				   IN_LENGTH_PKC const int minLength, 
 				   IN_LENGTH_PKC const int maxLength )
 	{
@@ -435,8 +432,9 @@ int readInteger32( INOUT STREAM *stream,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int readInteger16UChecked( INOUT STREAM *stream, 
 						   OUT_BUFFER_OPT( maxLength, *integerLength ) \
-							void *integer, 
-						   OUT_LENGTH_PKC_Z int *integerLength, 
+								void *integer, 
+						   OUT_LENGTH_BOUNDED_Z( maxLength ) \
+								int *integerLength, 
 						   IN_LENGTH_PKC const int minLength, 
 						   IN_LENGTH_PKC const int maxLength )
 	{
@@ -447,8 +445,9 @@ int readInteger16UChecked( INOUT STREAM *stream,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int readInteger32Checked( INOUT STREAM *stream, 
 						  OUT_BUFFER_OPT( maxLength, *integerLength ) \
-							void *integer, 
-						  OUT_LENGTH_PKC_Z int *integerLength, 
+								void *integer, 
+						  OUT_LENGTH_BOUNDED_Z( maxLength ) \
+								int *integerLength, 
 						  IN_LENGTH_PKC const int minLength, 
 						  IN_LENGTH_PKC const int maxLength )
 	{
@@ -525,8 +524,8 @@ int readBignumInteger16U( INOUT STREAM *stream,
 RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int readBignumInteger16Ubits( INOUT STREAM *stream, 
 							  INOUT TYPECAST( BIGNUM * ) void *bignum, 
-							  IN_LENGTH_PKC const int minBits, 
-							  IN_LENGTH_PKC const int maxBits, 
+							  IN_LENGTH_PKC_BITS const int minBits,
+							  IN_LENGTH_PKC_BITS const int maxBits,
 							  IN_OPT TYPECAST( BIGNUM * ) const void *maxRange )
 	{
 	return( readBignumInteger( stream, bignum, bitsToBytes( minBits ),
@@ -562,8 +561,8 @@ int readBignumInteger16UChecked( INOUT STREAM *stream,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int readBignumInteger16UbitsChecked( INOUT STREAM *stream, 
 									 INOUT TYPECAST( BIGNUM * ) void *bignum, 
-									 IN_LENGTH_PKC const int minBits, 
-									 IN_LENGTH_PKC const int maxBits )
+									 IN_LENGTH_PKC_BITS const int minBits,
+									 IN_LENGTH_PKC_BITS const int maxBits )
 	{
 	return( readBignumInteger( stream, bignum, bitsToBytes( minBits ),
 							   bitsToBytes( maxBits ), NULL, 
@@ -684,6 +683,11 @@ static int writeInteger( INOUT STREAM *stream,
 	   out any superfluous leading zeroes that may be present */
 	while( length > 0 && *intPtr == 0 )
 		{
+		/* This is usually a problem since quietly changing the length of a 
+		   low-level internal value before writing it will cause problems 
+		   with higher-level code that doesn't expect to have the data 
+		   length if internal components changed */
+		assert( DEBUG_WARN );
 		intPtr++;
 		length--;
 		}
@@ -743,7 +747,7 @@ int writeInteger32( INOUT STREAM *stream,
 
 /* Write integers from bignums in various formats */
 
-CHECK_RETVAL_RANGE( MAX_ERROR, MAX_INTLENGTH_SHORT ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_RANGE( UINT32_SIZE, MAX_INTLENGTH_SHORT ) STDC_NONNULL_ARG( ( 1 ) ) \
 int sizeofBignumInteger32( const void *bignum )
 	{
 	assert( isReadPtr( bignum, sizeof( BIGNUM ) ) );

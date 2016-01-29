@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						Secure Session Routines Header File					*
-*						 Copyright Peter Gutmann 1998-2004					*
+*						 Copyright Peter Gutmann 1998-2013					*
 *																			*
 ****************************************************************************/
 
@@ -92,7 +92,11 @@
 #define SESSION_NEEDS_PRIVKEYSIGN	0x0010	/* Priv.key must have sig.capabil.*/
 #define SESSION_NEEDS_PRIVKEYCERT	0x0020	/* Priv.key must have crypt capabil.*/
 #define SESSION_NEEDS_PRIVKEYCACERT	0x0040	/* Priv key must have CA certificate */
-#define SESSION_NEEDS_KEYORPASSWORD	0x0080	/* PW can be used in place of privK */
+#define SESSION_NEEDS_KEYORPASSWORD	( 0x0080 | SESSION_NEEDS_PASSWORD | \
+									  SESSION_NEEDS_PRIVATEKEY )
+											/* Password can be used in place of 
+											   private, this is a modifier on top 
+											   of privKey/password */
 #define SESSION_NEEDS_REQUEST		0x0100	/* Must have request obj.*/
 #define SESSION_NEEDS_KEYSET		0x0200	/* Must have certificate keyset */
 #define SESSION_NEEDS_CERTSTORE		0x0400	/* Keyset must be certificate store */
@@ -125,7 +129,7 @@ typedef enum {
    to do with the request.  If they set it to AUTHRESPONSE_SUCCESS, we allow 
    the client authorisation, if they set it to AUTHRESPONSE_FAILURE we 
    disallow it and the client gets another go at authorising themselves.  
-   The default setting of AUTHRESPONSE_NONE means we ask the user for 
+   The default setting of AUTHRESPONSE_NONE means that we ask the user for 
    instructions */
 
 typedef enum {
@@ -206,9 +210,10 @@ typedef struct {
 
 struct AL;	/* Forward declaration for attribute-list access function */
 
-typedef CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 3 ) ) \
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 		int ( *ATTRACCESSFUNCTION )( INOUT struct AL *attributeListPtr,
-									 IN_ENUM( ATTR ) const ATTR_TYPE attrGetType,
+									 IN_ENUM_OPT( ATTR ) \
+										const ATTR_TYPE attrGetType,
 									 OUT_INT_Z int *value );
 
 /* An attribute list used to store session-related attributes such as 
@@ -285,6 +290,19 @@ typedef struct {
 	#define gcmWriteSalt	macWriteSecret
 	int gcmSaltSize;
 
+	/* When TLS 1.1+ explicit IVs are used the IV is stripped on read so 
+	   that the remaining packet data can be copied into the read buffer for 
+	   in-place processing, however when used with encrypt-then-MAC we need 
+	   to store the read IV in order that it can be MAC'd once the packet is 
+	   processed */
+	BYTE iv[ CRYPT_MAX_IVSIZE + 8 ];
+
+	/* When performing manual certificate checking the handshake is 
+	   interrupted halfway through, so we have to store the handshake state
+	   in order to allow it to be continued later.  The following pointer
+	   points to this state data, a buffer of size SSL_HANDSHAKE_INFO */
+	void *savedHandshakeInfo;			/* Saved handshake state */
+
 	/* The session scoreboard, used for the SSL session cache */
 	void *scoreboardInfoPtr;			/* Session scoreboard */
 
@@ -360,7 +378,8 @@ typedef struct {
 	} CMP_INFO;
 
 typedef struct {
-	/* SCEP protocol flags */
+	/* SCEP request type and protocol flags */
+	int requestType;					/* SCEP request subtype */
 	int flags;							/* Protocol flags */
 	} SCEP_INFO;
 
@@ -373,6 +392,40 @@ typedef struct {
 #define sessionSCEP		sessionInfo.scepInfo
 
 /* The structure that stores the information on a session */
+
+struct SI;
+
+typedef STDC_NONNULL_ARG( ( 1 ) ) \
+		void ( *SES_SHUTDOWNFUNCTION )( INOUT struct SI *sessionInfoPtr );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *SES_CONNECTFUNCTION )( INOUT struct SI *sessionInfoPtr );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *SES_GETATTRIBUTEFUNCTION )( INOUT struct SI *sessionInfoPtr, 
+										   OUT void *data,
+										   IN_ATTRIBUTE \
+											const CRYPT_ATTRIBUTE_TYPE type );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *SES_SETATTRIBUTEFUNCTION )( INOUT struct SI *sessionInfoPtr, 
+										   IN const void *data,
+										   IN_ATTRIBUTE \
+											const CRYPT_ATTRIBUTE_TYPE type );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *SES_CHECKATTRIBUTEFUNCTION )( INOUT struct SI *sessionInfoPtr,
+											 IN const void *data,
+											 IN_ATTRIBUTE \
+												const CRYPT_ATTRIBUTE_TYPE type );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *SES_TRANSACTFUNCTION )( INOUT struct SI *sessionInfoPtr );
+typedef CHECK_RETVAL_LENGTH STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *SES_READHEADERFUNCTION )( INOUT struct SI *sessionInfoPtr,
+										 OUT_ENUM_OPT( READINFO ) \
+											READSTATE_INFO *readInfo );
+typedef CHECK_RETVAL_LENGTH STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *SES_PROCESSBODYFUNCTION )( INOUT struct SI *sessionInfoPtr,
+										  OUT_ENUM_OPT( READINFO ) \
+											READSTATE_INFO *readInfo );
+typedef CHECK_RETVAL_LENGTH STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *SES_PREPAREPACKETFUNCTION )( INOUT struct SI *sessionInfoPtr );
 
 typedef struct SI {
 	/* Control and status information */
@@ -499,32 +552,15 @@ typedef struct SI {
 
 	/* Pointers to session access methods.  Stateful sessions use the read/
 	   write functions, stateless ones use the transact function */
-	STDC_NONNULL_ARG( ( 1 ) ) \
-	void ( *shutdownFunction )( INOUT struct SI *sessionInfoPtr );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *connectFunction )( INOUT struct SI *sessionInfoPtr );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *getAttributeFunction )( INOUT struct SI *sessionInfoPtr, 
-								   OUT void *data,
-								   IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE type );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *setAttributeFunction )( INOUT struct SI *sessionInfoPtr, 
-								   IN const void *data,
-								   IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE type );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *checkAttributeFunction )( INOUT struct SI *sessionInfoPtr,
-									 IN const void *data,
-									 IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE type );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *transactFunction )( INOUT struct SI *sessionInfoPtr );
-	CHECK_RETVAL_LENGTH_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *readHeaderFunction )( INOUT struct SI *sessionInfoPtr,
-								 INOUT_ENUM( READSTATE ) READSTATE_INFO *readInfo );
-	CHECK_RETVAL_LENGTH_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *processBodyFunction )( INOUT struct SI *sessionInfoPtr,
-								  INOUT_ENUM( READSTATE ) READSTATE_INFO *readInfo );
-	CHECK_RETVAL_LENGTH_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *preparePacketFunction )( INOUT struct SI *sessionInfoPtr );
+	SES_SHUTDOWNFUNCTION shutdownFunction;
+	SES_CONNECTFUNCTION connectFunction;
+	SES_GETATTRIBUTEFUNCTION getAttributeFunction;
+	SES_SETATTRIBUTEFUNCTION setAttributeFunction;
+	SES_CHECKATTRIBUTEFUNCTION checkAttributeFunction;
+	SES_TRANSACTFUNCTION transactFunction;
+	SES_READHEADERFUNCTION readHeaderFunction;
+	SES_PROCESSBODYFUNCTION processBodyFunction;
+	SES_PREPAREPACKETFUNCTION preparePacketFunction;
 
 	/* Error information */
 	CRYPT_ATTRIBUTE_TYPE errorLocus;/* Error locus */
@@ -573,7 +609,7 @@ int getSessionAttributeS( INOUT SESSION_INFO *sessionInfoPtr,
 						  IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE attribute );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int setSessionAttribute( INOUT SESSION_INFO *sessionInfoPtr,
-						 IN_INT_Z const int value, 
+						 IN const int value, 
 						 IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE attribute );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int setSessionAttributeS( INOUT SESSION_INFO *sessionInfoPtr,
@@ -601,7 +637,7 @@ int addSessionInfoEx( INOUT_PTR ATTRIBUTE_LIST **listHeadPtr,
 					  IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE attributeID,
 					  IN_BUFFER( dataLength ) const void *data, 
 					  IN_LENGTH_SHORT const int dataLength, 
-					  IN_FLAGS( ATTR ) const int flags );
+					  IN_FLAGS_Z( ATTR ) const int flags );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 int addSessionInfoComposite( INOUT_PTR ATTRIBUTE_LIST **listHeadPtr,
 							 IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE attributeID,
@@ -615,7 +651,7 @@ int updateSessionInfo( INOUT_PTR ATTRIBUTE_LIST **listHeadPtr,
 					   IN_BUFFER( dataLength ) const void *data, 
 					   IN_LENGTH_SHORT const int dataLength,
 					   IN_LENGTH_SHORT const int dataMaxLength, 
-					   IN_FLAGS( ATTR ) const int flags );
+					   IN_FLAGS_Z( ATTR ) const int flags );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 4 ) ) \
 int getSessionAttributeCursor( IN_OPT ATTRIBUTE_LIST *attributeListHead,
 							   IN_OPT ATTRIBUTE_LIST *attributeListCursor, 
@@ -666,20 +702,19 @@ int readFixedHeader( INOUT SESSION_INFO *sessionInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 int getSessionData( INOUT SESSION_INFO *sessionInfoPtr, 
 					OUT_BUFFER( dataMaxLength, *bytesCopied ) void *data, 
-					IN_LENGTH const int dataMaxLength, 
-					OUT_LENGTH_Z int *bytesCopied );
+					IN_DATALENGTH const int dataMaxLength, 
+					OUT_DATALENGTH_Z int *bytesCopied );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 4 ) ) \
 int putSessionData( INOUT SESSION_INFO *sessionInfoPtr, 
 					IN_BUFFER_OPT( dataLength ) const void *data,
-					IN_LENGTH_Z const int dataLength, 
-					OUT_LENGTH_Z int *bytesCopied );
+					IN_DATALENGTH_Z const int dataLength, 
+					OUT_DATALENGTH_Z int *bytesCopied );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int readPkiDatagram( INOUT SESSION_INFO *sessionInfoPtr );
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int writePkiDatagram( INOUT SESSION_INFO *sessionInfoPtr, 
-					  IN_BUFFER_OPT( contentTypeLen ) \
-							const char *contentType, 
-					  IN_LENGTH_TEXT_Z const int contentTypeLen );
+					  IN_BUFFER( contentTypeLen ) const char *contentType, 
+					  IN_LENGTH_TEXT const int contentTypeLen );
 
 /* Prototypes for functions in session.c */
 
@@ -688,21 +723,28 @@ int initSessionIO( INOUT SESSION_INFO *sessionInfoPtr );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int initSessionNetConnectInfo( const SESSION_INFO *sessionInfoPtr,
 							   OUT NET_CONNECT_INFO *connectInfo );
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 BOOLEAN checkAttributesConsistent( INOUT SESSION_INFO *sessionInfoPtr,
 								   IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE attribute );
-CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 3 ) ) \
-int checkServerCertValid( const CRYPT_CERTIFICATE iServerCert,
-						  OUT_ENUM_OPT( CRYPT_ATTRIBUTE ) \
-							CRYPT_ATTRIBUTE_TYPE *errorLocus,
-						  OUT_ENUM_OPT( CRYPT_ERRTYPE ) \
-							CRYPT_ERRTYPE_TYPE *errorType );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 2 ) ) \
+int checkServerCertValid( const CRYPT_CERTIFICATE iServerKey,
+						  INOUT ERROR_INFO *errorInfo );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int activateSession( INOUT SESSION_INFO *sessionInfoPtr );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int sendCloseNotification( INOUT SESSION_INFO *sessionInfoPtr,
 						   IN_BUFFER_OPT( length ) const void *data, 
 						   IN_LENGTH_SHORT_Z const int length );
+
+/* Prototypes for functions in sshl_dh.c */
+
+#if defined( USE_SSH ) || defined( USE_SSL )
+CHECK_RETVAL \
+int loadDHcontext( IN_HANDLE const CRYPT_CONTEXT iDHContext, 
+				   IN_LENGTH_SHORT_OPT const int requestedKeySize );
+CHECK_RETVAL \
+int checkDHdata( void );
+#endif /* USE_SSH || USE_SSL */
 
 /* Prototypes for session mapping functions */
 

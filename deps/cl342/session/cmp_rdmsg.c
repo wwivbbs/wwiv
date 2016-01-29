@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *							Read CMP Message Types							*
-*						Copyright Peter Gutmann 1999-2009					*
+*						Copyright Peter Gutmann 1999-2011					*
 *																			*
 ****************************************************************************/
 
@@ -53,7 +53,8 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 4, 5 ) ) \
 static int readEncryptedDataInfo( INOUT STREAM *stream, 
 								  OUT_BUFFER_ALLOC( *encDataLength ) \
 										void **encDataPtrPtr, 
-								  OUT_LENGTH_SHORT_Z int *encDataLength, 
+								  OUT_LENGTH_BOUNDED_Z( maxLength ) \
+										int *encDataLength, 
 								  IN_LENGTH_SHORT_MIN( 32 ) const int minLength,
 								  IN_LENGTH_SHORT_MIN( 32 ) const int maxLength )
 	{
@@ -94,8 +95,8 @@ static int readEncryptedCert( INOUT STREAM *stream,
 							  IN_HANDLE const CRYPT_CONTEXT iImportContext,
 							  OUT_BUFFER( outDataMaxLength, *outDataLength ) \
 									void *outData, 
-							  IN_LENGTH_MIN( 16 ) const int outDataMaxLength,
-							  OUT_LENGTH_Z int *outDataLength, 
+							  IN_DATALENGTH_MIN( 16 ) const int outDataMaxLength,
+							  OUT_DATALENGTH_Z int *outDataLength, 
 							  INOUT ERROR_INFO *errorInfo )
 	{
 	CRYPT_CONTEXT iSessionKey;
@@ -115,27 +116,32 @@ static int readEncryptedCert( INOUT STREAM *stream,
 	   no indication of what you're supposed to do when they're present
 	   either) so we treat an absent required value as an error and ignore
 	   the others */
-	readSequence( stream, NULL );
-	if( peekTag( stream ) == MAKE_CTAG( CTAG_EV_DUMMY1 ) )
-		readUniversal( stream );				/* Junk */
-	status = readContextAlgoID( stream, &iSessionKey, &queryInfo,
-								CTAG_EV_CEKALGO );
-	if( cryptStatusOK( status ) )				/* CEK algo */
+	status = readSequence( stream, NULL );
+	if( checkStatusPeekTag( stream, status, tag ) && \
+		tag == MAKE_CTAG( CTAG_EV_DUMMY1 ) )	/* Junk */
+		status = readUniversal( stream );
+	if( !cryptStatusError( status ) )			/* CEK algo */
+		status = readContextAlgoID( stream, &iSessionKey, &queryInfo,
+									CTAG_EV_CEKALGO );
+	if( !cryptStatusError( status ) )			/* Enc.CEK */
 		status = readEncryptedDataInfo( stream, &encKeyPtr, &encKeyLength, 
 										MIN_PKCSIZE, CRYPT_MAX_PKCSIZE );
-	if( cryptStatusError( status ) )			/* Enc.CEK */
+	if( cryptStatusError( status ) )
 		{
 		retExt( status,
 				( status, errorInfo, 
 				  "Invalid encrypted certificate CEK information" ) );
 		}
-	if( peekTag( stream ) == MAKE_CTAG( CTAG_EV_DUMMY2 ) )
-		readUniversal( stream );				/* Junk */
-	if( peekTag( stream ) == MAKE_CTAG( CTAG_EV_DUMMY3 ) )
-		readUniversal( stream );				/* Junk */
-	status = readEncryptedDataInfo( stream, &encCertPtr, &encCertLength,
-									128, 8192 );
-	if( cryptStatusOK( status ) &&				/* Enc.certificate */
+	if( checkStatusPeekTag( stream, status, tag ) && \
+		tag == MAKE_CTAG( CTAG_EV_DUMMY2 ) )
+		status = readUniversal( stream );		/* Junk */
+	if( checkStatusPeekTag( stream, status, tag ) && \
+		tag == MAKE_CTAG( CTAG_EV_DUMMY3 ) )
+		status = readUniversal( stream );		/* Junk */
+	if( !cryptStatusError( status ) )
+		status = readEncryptedDataInfo( stream, &encCertPtr, &encCertLength,
+										128, 8192 );
+	if( !cryptStatusError( status ) &&			/* Enc.certificate */
 		( queryInfo.cryptMode == CRYPT_MODE_ECB || \
 		  queryInfo.cryptMode == CRYPT_MODE_CBC ) )
 		{
@@ -190,10 +196,54 @@ static int readEncryptedCert( INOUT STREAM *stream,
 	}
 #endif /* 0 */
 
+/* Process a request that's (supposedly) been authorised by an RA rather 
+   than coming directly from a user */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 4 ) ) \
+static BOOLEAN processRARequest( INOUT CMP_PROTOCOL_INFO *protocolInfo,
+								 IN_HANDLE const CRYPT_CERTIFICATE iCertRequest,
+								 IN_ENUM_OPT( CMP_MESSAGE ) \
+									const CMP_MESSAGE_TYPE messageType,
+								 INOUT ERROR_INFO *errorInfo )
+	{
+	assert( isWritePtr( protocolInfo, sizeof( CMP_PROTOCOL_INFO ) ) );
+	assert( isWritePtr( errorInfo, sizeof( ERROR_INFO ) ) );
+
+	REQUIRES_B( isHandleRangeValid( iCertRequest ) );
+	REQUIRES_B( messageType >= CTAG_PB_IR && messageType < CTAG_PB_LAST );
+				/* CTAG_PB_IR == 0 so this is the same as _NONE */
+
+	/* If the user isn't an RA then this can't be an RA-authorised request */
+	if( !protocolInfo->userIsRA )
+		{
+		retExt( CRYPT_ERROR_INVALID,
+				( CRYPT_ERROR_INVALID, errorInfo, 
+				  "Request supposedly from an RA didn't come from an actual "
+				  "RA user" ) );
+		}
+
+	/* An RA-authorised request can only be a CR.  They can't be an IR 
+	   because they need to be signed, and they can't be a KUR or RR because 
+	   we assume that users will be updating and revoking their own 
+	   certificates, it doesn't make much sense to require an RA for this */
+	if( messageType != CTAG_PB_CR )
+		{
+		retExt( CRYPT_ERROR_INVALID,
+				( CRYPT_ERROR_INVALID, errorInfo, 
+				  "Request type %d supposedly from an RA is of the wrong "
+				  "type, should be %d", messageType, CTAG_PB_CR ) );
+		}
+
+	/* It's an RA-authorised request, mark the request as such */
+	return( krnlSendMessage( iCertRequest, IMESSAGE_SETATTRIBUTE, 
+							 MESSAGE_VALUE_TRUE, 
+							 CRYPT_IATTRIBUTE_REQFROMRA ) );
+	}
+
 /* Try and obtain more detailed information on why a certificate request
    wasn't compatible with stored PKI user information.  Note that the
    mapping table below is somewhat specific to the implementation of 
-   copyPkiUserToCertReq() in certs/comp_cert.c, we hardcode a few common 
+   copyPkiUserToCertReq() in certs/comp_pkiu.c, we hardcode a few common 
    cases here and use a generic error message for the rest */
 
 #ifdef USE_ERRMSGS
@@ -225,7 +275,7 @@ static int reportExtendedCertErrorInfo( INOUT SESSION_INFO *sessionInfoPtr,
 										IN_ERROR const int errorStatus )
 	{
 	const EXT_ERROR_MAP_INFO *extErrorInfoPtr = NULL;
-	int errorType, errorLocus = DUMMY_INIT, i, status;
+	int errorType, errorLocus DUMMY_INIT, i, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 
@@ -309,7 +359,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 static int readRequestBody( INOUT STREAM *stream, 
 							INOUT SESSION_INFO *sessionInfoPtr,
 							INOUT CMP_PROTOCOL_INFO *protocolInfo,
-							IN_ENUM_OPT( CTAG_PB ) \
+							IN_ENUM_OPT( CMP_MESSAGE ) \
 								const CMP_MESSAGE_TYPE messageType,
 							IN_LENGTH_SHORT const int messageLength )
 	{
@@ -335,7 +385,7 @@ static int readRequestBody( INOUT STREAM *stream,
 								   ( messageType == CTAG_PB_RR ) ? \
 									CRYPT_CERTTYPE_REQUEST_REVOCATION : \
 									CRYPT_CERTTYPE_REQUEST_CERT,
-								   messageLength );
+								   messageLength, KEYMGMT_FLAG_NONE );
 	if( cryptStatusError( status ) )
 		{
 		protocolInfo->pkiFailInfo = CMPFAILINFO_BADCERTTEMPLATE;
@@ -390,22 +440,24 @@ static int readRequestBody( INOUT STREAM *stream,
 	if( cryptStatusError( status ) )
 		return( status );
 
-#if 0	/* 28/9/08 Should probably apply this filtering to all requests.  
-				   This is a bit tricky since it'll break RAs and in-house
-				   CAs and other trusted-source certificate issue operations
-				   where it's assumed that the data comes in pre-validated.  
-				   The following may need to be reset to its original 
-				   behaviour depending on what user reactions are... */
-	/* If it's not an ir which requires special-case processing because of a
-	   potentially absent DN, we're done */
-	if( messageType != CTAG_PB_IR )
-		return( CRYPT_OK );
-#else
 	/* Revocation requests don't contain any information so there's nothing
 	   further to check */
 	if( messageType == CTAG_PB_RR )
 		return( CRYPT_OK );
-#endif /* 0 */
+
+	/* Check whether this request is one that's been authorised by an RA
+	   rather than coming directly from a user */
+	status = krnlSendMessage( sessionInfoPtr->iCertRequest, 
+							  IMESSAGE_GETATTRIBUTE, &value, 
+							  CRYPT_CERTINFO_KEYFEATURES );
+	if( cryptStatusOK( status ) && ( value & KEYFEATURE_FLAG_RAISSUED ) )
+		{
+		status = processRARequest( protocolInfo, 
+								   sessionInfoPtr->iCertRequest, 
+								   messageType, SESSION_ERRINFO );
+		if( cryptStatusError( status ) )
+			return( status );
+		}
 
 	/* Make sure that the information in the request is consistent with the
 	   user information template.  If it's an ir then the subject may not 
@@ -453,25 +505,27 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 static int readResponseBody( INOUT STREAM *stream, 
 							 INOUT SESSION_INFO *sessionInfoPtr,
 							 INOUT CMP_PROTOCOL_INFO *protocolInfo,
-							 STDC_UNUSED IN_ENUM_OPT( CTAG_PB ) \
+							 STDC_UNUSED IN_ENUM_OPT( CMP_MESSAGE ) \
 								const CMP_MESSAGE_TYPE messageType,
 							 STDC_UNUSED IN_LENGTH_SHORT const int messageLength )
 	{
 	MESSAGE_CREATEOBJECT_INFO createInfo;
-	void *bodyInfoPtr = DUMMY_INIT_PTR;
-	int bodyLength, tag, value, status;
+	void *bodyInfoPtr DUMMY_INIT_PTR;
+	int bodyLength, tag, value, status = CRYPT_OK;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( protocolInfo, sizeof( CMP_PROTOCOL_INFO ) ) );
 
 	/* Skip any noise before the payload if necessary */
-	if( peekTag( stream ) == MAKE_CTAG( 1 ) )
+	if( checkStatusPeekTag( stream, status, tag ) && \
+		tag == MAKE_CTAG( 1 ) )
 		{
-		status = readUniversal( stream );	/* caPubs */
-		if( cryptStatusError( status ) )
-			return( status );
+		/* caPubs */
+		status = readUniversal( stream );
 		}
+	if( cryptStatusError( status ) )
+		return( status );
 
 	/* If it's a revocation response then the only returned data is the 
 	   status value */
@@ -492,9 +546,9 @@ static int readResponseBody( INOUT STREAM *stream,
 	if( cryptStatusError( status ) )
 		return( status );
 	readSequence( stream, NULL );			/* certKeyPair wrapper */
-	tag = peekTag( stream );
-	if( cryptStatusError( tag ) )
-		return( tag );
+	status = tag = peekTag( stream );
+	if( cryptStatusError( status ) )
+		return( status );
 	tag = EXTRACT_CTAG( tag );
 	status = readConstructed( stream, &bodyLength, tag );
 	if( cryptStatusOK( status ) )
@@ -523,7 +577,16 @@ static int readResponseBody( INOUT STREAM *stream,
 			{
 			ERROR_INFO errorInfo;
 
-			/* Certificate encrypted with CMS, unwrap it */
+			/* Certificate encrypted with CMS, unwrap it.  Note that this 
+			   relies on the fact that cryptlib generates the 
+			   subjectKeyIdentifier that's used to identify the decryption 
+			   key by hashing the subjectPublicKeyInfo, this is needed 
+			   because when the newly-issued certificate is received only 
+			   the keyID is available (since the certificate hasn't been 
+			   decrypted and read yet) while the returned certificate uses 
+			   the sKID to identify the decryption key.  If the keyID and
+			   sKID aren't the same then the envelope-unwrapping code will
+			   report a CRYPT_ERROR_WRONGKEY */
 			status = envelopeUnwrap( bodyInfoPtr, bodyLength,
 									 bodyInfoPtr, bodyLength, &bodyLength,
 									 sessionInfoPtr->privateKey, &errorInfo );
@@ -545,8 +608,8 @@ static int readResponseBody( INOUT STREAM *stream,
 					  "Unknown returned certificate encapsulation type %d",
 					  tag ) );
 		}
-	if( cryptStatusError( status ) )
-		return( status );
+	ENSURES( cryptStatusOK( status ) );
+		/* All error paths have already been checked above */
 
 	/* Import the certificate as a cryptlib object */
 	setMessageCreateObjectIndirectInfo( &createInfo, bodyInfoPtr, bodyLength,
@@ -610,7 +673,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 static int readConfBody( INOUT STREAM *stream, 
 						 INOUT SESSION_INFO *sessionInfoPtr,
 						 INOUT CMP_PROTOCOL_INFO *protocolInfo,
-						 IN_ENUM_OPT( CTAG_PB ) \
+						 IN_ENUM_OPT( CMP_MESSAGE ) \
 							const CMP_MESSAGE_TYPE messageType,
 						 IN_LENGTH_SHORT const int messageLength )
 	{
@@ -694,7 +757,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int readGenMsgBody( INOUT STREAM *stream, 
 						   INOUT SESSION_INFO *sessionInfoPtr,
 						   STDC_UNUSED CMP_PROTOCOL_INFO *protocolInfo,
-						   IN_ENUM_OPT( CTAG_PB ) \
+						   IN_ENUM_OPT( CMP_MESSAGE ) \
 								const CMP_MESSAGE_TYPE messageType,
 						   IN_LENGTH_SHORT const int messageLength )
 	{
@@ -723,12 +786,12 @@ static int readGenMsgBody( INOUT STREAM *stream,
 	/* It's a PKIBoot response with the InfoTypeAndValue handled as CMS
 	   content (see the comment for writeGenMsgResponseBody() in 
 	   cmp_wrmsg.c), import the certificate trust list.  Since this isn't a 
-	   true certificate chain and isn't used as such, we use data-only 
-	   certificates (specified using the special-case CRYPT_ICERTTYPE_CTL 
-	   type specifier) */
+	   true certificate chain and isn't used as such, we import it as 
+	   data-only certificates */
 	status = importCertFromStream( stream, &sessionInfoPtr->iCertResponse,
 								   DEFAULTUSER_OBJECT_HANDLE, 
-								   CRYPT_ICERTTYPE_CTL, messageLength );
+								   CRYPT_CERTTYPE_CERTCHAIN, messageLength,
+								   KEYMGMT_FLAG_DATAONLY_CERT );
 	if( cryptStatusError( status ) )
 		retExt( status, 
 				( status, SESSION_ERRINFO, "Invalid PKIBoot response" ) );
@@ -756,7 +819,7 @@ static int readErrorBody( INOUT STREAM *stream,
 	const char *peerTypeString = isServer( sessionInfoPtr ) ? \
 								 "Client" : "Server";
 	const int endPos = stell( stream ) + messageLength;
-	int status;
+	int tag, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
@@ -775,7 +838,8 @@ static int readErrorBody( INOUT STREAM *stream,
 	   of error information which is exactly the same only different, so if 
 	   we haven't got anything from the status information we check to see 
 	   whether this layer can give us anything */
-	if( stell( stream ) < endPos && peekTag( stream ) == BER_INTEGER )
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == BER_INTEGER )
 		{
 		long value;
 
@@ -793,7 +857,8 @@ static int readErrorBody( INOUT STREAM *stream,
 					  peerTypeString, errorCode ) );
 			}
 		}
-	if( stell( stream ) < endPos && peekTag( stream ) == BER_SEQUENCE )
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == BER_SEQUENCE )
 		status = readUniversal( stream );
 
 	/* Make sure that we always return an error code.  That is, if there's no

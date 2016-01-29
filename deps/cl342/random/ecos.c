@@ -8,10 +8,10 @@
 /* This module is part of the cryptlib continuously seeded pseudorandom
    number generator.  For usage conditions, see random.c.
 
-   This code represents a template for randomness-gathering only and will
-   need to be modified to provide randomness via an external source.  In its
-   current form it does not provide any usable entropy and should not be
-   used as an entropy source */
+   eCos provides very few entropy sources, the code below provides very 
+   little usable entropy and should not be relied upon as the sole entropy 
+   source for the system but should be augmented with randomness from 
+   external hardware sources */
 
 /* General includes */
 
@@ -104,7 +104,7 @@ void slowPoll( void )
 	/* eCOS also has a CPU load-monitoring facility that we could in theory 
 	   use as a source of entropy but this is really meant for performance-
 	   monitoring and isn't very suitable for use as an entropy source.  The 
-	   way this works is that your first call a calibration function 
+	   way this works is that you first call a calibration function 
 	   cyg_cpuload_calibrate() and then when it you want to get load 
 	   statistics call cyg_cpuload_create()/cyg_cpuload_get()/
 	   cyg_cpuload_delete(), with get() returning the load over a 0.1s, 1s, 

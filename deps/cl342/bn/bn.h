@@ -125,6 +125,9 @@
 #ifndef HEADER_BN_H
 #define HEADER_BN_H
 
+#ifndef assert
+  #include <assert.h>
+#endif /* !assert */
 #if defined( INC_ALL )		/* pcg */
   #include "osconfig.h"
 #else
@@ -132,15 +135,58 @@
 #endif /* Compiler-specific includes */
 #define BNerr(a,b)
 
+/* The allocation size for the fixed-size bignum data, sized to contain the 
+   largest possible bignum in normal use, see the various comments 
+   pertaining to bignum _EXT use for more on this.  Worst-case we need to 
+   use a base alloc.size of 1024, however by careful use of _EXT bignums only
+   where needed we can use only 512 (= CRYPT_MAX_PKCSIZE).
+   
+	For BIGNUM_BASE_ALLOCSIZE = 1024, BIGNUM_ALLOC_WORDS = 260 32-bit words,
+									  BIGNUM_ALLOC_BITS = 8320.
+	For BIGNUM_BASE_ALLOCSIZE = 512,  BIGNUM_ALLOC_WORDS = 130 32-bit words,
+									  BIGNUM_ALLOC_BITS = 4115 */
+
+#if defined( CONFIG_PKC_ALLOCSIZE )
+  #define BIGNUM_BASE_ALLOCSIZE		CONFIG_PKC_ALLOCSIZE
+#else
+  #define BIGNUM_BASE_ALLOCSIZE		512
+  #if defined( CRYPT_MAX_PKCSIZE ) && CRYPT_MAX_PKCSIZE != BIGNUM_BASE_ALLOCSIZE
+	#error CRYPT_MAX_PKCSIZE doesnt match BIGNUM_BASE_ALLOCSIZE
+  #endif /* CRYPT_MAX_PKCSIZE != 512 */
+#endif /* Define of BIGNUM_BASE_ALLOCSIZE */
+#define BIGNUM_ALLOC_WORDS			( ( BIGNUM_BASE_ALLOCSIZE / BN_BYTES ) + 4 )
+#define bnWordsToBytes( bnWords )	( ( bnWords ) * BN_BYTES )
+#define bnWordsToBits( bnWords )	( ( bnWords ) * BN_BITS2 )
+
+/* Some of the temporary bignums used in multiplies grow to enormous sizes, 
+   to avoid having to make every other bignum as huge we provide a few
+   special-case entries, BIGNUM_EXTs, that are twice/four times the normal 
+   size */
+
+#define BIGNUM_ALLOC_WORDS_EXT	( BIGNUM_ALLOC_WORDS * 2 )
+#define BIGNUM_ALLOC_WORDS_EXT2	( BIGNUM_ALLOC_WORDS * 4 )
+
+/* Symbolic defines for the extended-size bignum that we want to use */
+
+typedef enum { 
+	BIGNUM_EXT_NONE, 
+	
+	/* Double-size bignums */
+	BIGNUM_EXT_MONT, 
+
+	/* Quad-size bignums */
+	BIGNUM_EXT_MUL1, 
+	BIGNUM_EXT_MUL2, 
+
+	BIGNUM_EXT_LAST } BIGNUM_EXT_TYPE;
+
 /* Other changes for cryptlib - pcg:
 
-	- Remove redefinition of NDEBUG in bn_asm.c, bn_ctx.c, bn_lib.c, bn_mul.c.
-	- Replace OPENSSL_malloc() with clBnAlloc() in bn_ctx.c, bn_exp.c,
-	  bn_lib.c, bn_mont.c, bn_recp.c.
-	- Add BN_high_bit() to the end of bn_lib.c.
-	- Add BN_checksum() et al to the end of bn_lib.c.
-	- Add BN_CTX_clear() to bn_ctx.c.
+	- Remove redefinition of NDEBUG in bn_asm.c, bn_mul.c.
+	- Replace OPENSSL_malloc() with clBnAlloc() in bn_exp.c, bn_mont.c, bn_recp.c.
 	- Add BN_xyz typedefs, which are normally defined in ossl_typ.h.
+	- Moved the typedefs for all the BN_CTX mess here after the other 
+	  structs that they require are defined.
 	- Add memory-allocation/free/zeroise macros.
 	- Add ASM_EXPORT to asm functions bn_mul_add_words(), bn_mul_words(),
 		bn_sqr_words(), bn_div_words(), bn_add_words(), and bn_sub_words()
@@ -148,7 +194,6 @@
 		and bn_sqr_comba8() in bn_lcl.h */
 
 typedef struct bignum_st BIGNUM;
-typedef struct bignum_ctx BN_CTX;
 typedef struct bn_blinding_st BN_BLINDING;
 typedef struct bn_mont_ctx_st BN_MONT_CTX;
 typedef struct bn_recp_ctx_st BN_RECP_CTX;
@@ -168,14 +213,27 @@ typedef struct bn_gencb_st BN_GENCB;
 #define OPENSSL_free				free
 #define OPENSSL_cleanse( a, b )		memset( a, 0, b )
 
-int BN_high_bit( BIGNUM *a );
-void BN_CTX_clear( BN_CTX *bnCTX );
-int checksumBignumData( const void *data, const int length,
-						const int initialSum );				/* pcg */
-void BN_checksum_metadata( BIGNUM *a, int *chk );			/* pcg */
-void BN_checksum( BIGNUM *a, int *chk );					/* pcg */
-void BN_checksum_montgomery_metadata( BN_MONT_CTX *mont, int *chk );/* pcg */
-void BN_checksum_montgomery( BN_MONT_CTX *mont, int *chk );	/* pcg */
+int BN_high_bit( const BIGNUM *bignum );
+
+#if defined( _WIN32 ) && defined( _MSC_VER ) && ( _MSC_VER <= 1200 ) && \
+	!defined( NDEBUG )
+void vc6assert( const char *exprString, const char *fileName, 
+				const int lineNo );
+#undef assert
+#define assert( expr ) \
+		( void )( ( expr ) || ( vc6assert( #expr, __FILE__, __LINE__ ), 0 ) )
+#endif /* Duplicate of code in misc/debug.h */
+
+extern int nonNullAddress;
+#define bn_expand( bignum, bits ) \
+		( ( ( bits ) > BIGNUM_ALLOC_BITS ) ? assert( 0 ), NULL : &nonNullAddress )
+#define bn_wexpand( bignum, words ) \
+		( ( ( words ) > ( bignum )->dmax ) ? assert( 0 ), NULL : &nonNullAddress )
+
+#define BN_clear_free		BN_free
+#define BN_cmp				BN_ucmp
+#define BN_MONT_CTX_copy( destMontCTX, srcMontCTX ) \
+							memcpy( destMontCTX, srcMontCTX, sizeof( BN_MONT_CTX ) )
 
 /* End of cryptlib changes - pcg */
 
@@ -346,6 +404,7 @@ extern "C" {
 
 /* get a clone of a BIGNUM with changed flags, for *temporary* use only
  * (the two BIGNUMs cannot not be used in parallel!) */
+#ifdef BN_ALLOC
 #define BN_with_flags(dest,b,n)  ((dest)->d=(b)->d, \
                                   (dest)->top=(b)->top, \
                                   (dest)->dmax=(b)->dmax, \
@@ -354,6 +413,11 @@ extern "C" {
                                                  |  ((b)->flags & ~BN_FLG_MALLOCED) \
                                                  |  BN_FLG_STATIC_DATA \
                                                  |  (n)))
+#else
+#define BN_with_flags(dest,b,n) \
+		memcpy( dest, b, sizeof( BIGNUM ) ); \
+		( dest )->flags = ( ( b )->flags & ~BN_FLG_MALLOCED ) | BN_FLG_STATIC_DATA | ( n )
+#endif /* BN_ALLOC */
 
 /* Already declared in ossl_typ.h */
 #if 0
@@ -368,13 +432,28 @@ typedef struct bn_gencb_st BN_GENCB;
 
 struct bignum_st
 	{
-	BN_ULONG *d;	/* Pointer to an array of 'BN_BITS2' bit chunks. */
+	int dmax;	/* Maximum size of d[] array */
 	int top;	/* Index of last used d +1. */
-	/* The next are internal book keeping for bn_expand. */
-	int dmax;	/* Size of the d array. */
 	int neg;	/* one if the number is negative */
 	int flags;
+	BN_ULONG d[ BIGNUM_ALLOC_WORDS + 4 ];
 	};
+typedef struct 
+	{
+	int dmax;	/* Maximum size of d[] array */
+	int top;	/* Index of last used d +1. */
+	int neg;	/* one if the number is negative */
+	int flags;
+	BN_ULONG d[ BIGNUM_ALLOC_WORDS_EXT + 4 ];
+	} BIGNUM_EXT;
+typedef struct 
+	{
+	int dmax;	/* Maximum size of d[] array */
+	int top;	/* Index of last used d +1. */
+	int neg;	/* one if the number is negative */
+	int flags;
+	BN_ULONG d[ BIGNUM_ALLOC_WORDS_EXT2 + 4 ];
+	} BIGNUM_EXT2;
 
 /* Used for montgomery multiplication */
 struct bn_mont_ctx_st
@@ -382,8 +461,10 @@ struct bn_mont_ctx_st
 	int ri;        /* number of bits in R */
 	BIGNUM RR;     /* used to convert to montgomery form */
 	BIGNUM N;      /* The modulus */
+#if 0	/* ifndef MONT_WORD, but only present in bn_mont.c */
 	BIGNUM Ni;     /* R*(1/R mod N) - N*Ni = 1
 	                * (Ni is only stored for bignum algorithm) */
+#endif /* !MONT_WORD */
 	BN_ULONG n0[2];/* least significant word(s) of Ni;
 	                  (type changed with 0.9.9, was "BN_ULONG n0;" before) */
 	int flags;
@@ -450,6 +531,34 @@ int BN_GENCB_call(BN_GENCB *cb, int a, int b);
                                 (b) >=  150 ? 18 : \
                                 /* b >= 100 */ 27)
 
+/* Changes from bn_ctx.c - pcg */
+/* The purpose, and much of the functioning, of the BN_CTX pool/stack/
+   whatever stuff is more or less incomprehensible, and in any case all 
+   of the manipulations actually have a negative effect on memory use 
+   because the bookkeeping overhead of dozens of tiny little allocations 
+   is more than just allocating a fixed-size block of bignums, which is
+   what we do instead of using bn_ctx.c */
+#define BN_CTX_ARRAY_SIZE		40
+#define BN_CTX_EXTARRAY_SIZE	1
+#define BN_CTX_EXT2ARRAY_SIZE	2
+typedef struct {
+	/* The bignum array and last-used position in the array */
+	BIGNUM bnArray[ BN_CTX_ARRAY_SIZE ];
+	int bnArrayMax;
+
+	/* Special-case bignums used to handle two temporary values in BN_mul()
+	   that grow to an enormous size, and one temporary value in 
+	   BN_mod_mul_montgomery() that briefly reaches an enormous size */
+	BIGNUM_EXT bnExtArray[ BN_CTX_EXTARRAY_SIZE ];
+	BIGNUM_EXT2 bnExt2Array[ BN_CTX_EXT2ARRAY_SIZE ];
+
+	/* The bignum stack and current position in the stack (see the long
+	   explanation in ctx_bn.c for what this is used for) */
+	int stack[ BN_CTX_ARRAY_SIZE ];
+	int stackPos;
+	} BN_CTX;
+/* End of changes from bn_ctx.c - pcg */
+
 #define BN_num_bytes(a)	((BN_num_bits(a)+7)/8)
 
 /* Note that BN_abs_is_word didn't work reliably for w == 0 until 0.9.8 */
@@ -479,22 +588,23 @@ BN_CTX *BN_CTX_new(void);
 #ifndef OPENSSL_NO_DEPRECATED
 void	BN_CTX_init(BN_CTX *c);
 #endif
-void	BN_CTX_free(BN_CTX *c);
+void	BN_CTX_free(BN_CTX *c); 
 void	BN_CTX_start(BN_CTX *ctx);
 BIGNUM *BN_CTX_get(BN_CTX *ctx);
+BIGNUM *BN_CTX_get_ext( BN_CTX *bnCTX, const BIGNUM_EXT_TYPE bnExtType );
 void	BN_CTX_end(BN_CTX *ctx);
+void BN_CTX_end_ext( BN_CTX *bnCTX, const BIGNUM_EXT_TYPE bnExtType );
 int     BN_rand(BIGNUM *rnd, int bits, int top,int bottom);
 int     BN_pseudo_rand(BIGNUM *rnd, int bits, int top,int bottom);
 int	BN_rand_range(BIGNUM *rnd, const BIGNUM *range);
 int	BN_pseudo_rand_range(BIGNUM *rnd, const BIGNUM *range);
 int	BN_num_bits(const BIGNUM *a);
-int	BN_num_bits_word(BN_ULONG);
-BIGNUM *BN_new(void);
+int	BN_num_bits_word(const BN_ULONG);
 void	BN_init(BIGNUM *);
-void	BN_clear_free(BIGNUM *a);
+BIGNUM *BN_new(void);
 BIGNUM *BN_copy(BIGNUM *a, const BIGNUM *b);
 void	BN_swap(BIGNUM *a, BIGNUM *b);
-BIGNUM *BN_bin2bn(const unsigned char *s,int len,BIGNUM *ret);
+BIGNUM *BN_bin2bn(const unsigned char *s,const int len,BIGNUM *ret);
 int	BN_bn2bin(const BIGNUM *a, unsigned char *to);
 BIGNUM *BN_mpi2bn(const unsigned char *s,int len,BIGNUM *ret);
 int	BN_bn2mpi(const BIGNUM *a, unsigned char *to);
@@ -539,7 +649,6 @@ int	BN_sub_word(BIGNUM *a, BN_ULONG w);
 int	BN_set_word(BIGNUM *a, BN_ULONG w);
 BN_ULONG BN_get_word(const BIGNUM *a);
 
-int	BN_cmp(const BIGNUM *a, const BIGNUM *b);
 void	BN_free(BIGNUM *a);
 int	BN_is_bit_set(const BIGNUM *a, int n);
 int	BN_lshift(BIGNUM *r, const BIGNUM *a, int n);
@@ -560,7 +669,7 @@ int	BN_mod_exp2_mont(BIGNUM *r, const BIGNUM *a1, const BIGNUM *p1,
 int	BN_mod_exp_simple(BIGNUM *r, const BIGNUM *a, const BIGNUM *p,
 	const BIGNUM *m,BN_CTX *ctx);
 
-int	BN_mask_bits(BIGNUM *a,int n);
+int	BN_mask_bits(BIGNUM *a,const int n);
 #ifndef OPENSSL_NO_FP_API
 int	BN_print_fp(FILE *fp, const BIGNUM *a);
 #endif
@@ -619,9 +728,6 @@ int BN_from_montgomery(BIGNUM *r,const BIGNUM *a,
 	BN_MONT_CTX *mont, BN_CTX *ctx);
 void BN_MONT_CTX_free(BN_MONT_CTX *mont);
 int BN_MONT_CTX_set(BN_MONT_CTX *mont,const BIGNUM *mod,BN_CTX *ctx);
-BN_MONT_CTX *BN_MONT_CTX_copy(BN_MONT_CTX *to,BN_MONT_CTX *from);
-BN_MONT_CTX *BN_MONT_CTX_set_locked(BN_MONT_CTX **pmont, int lock,
-					const BIGNUM *mod, BN_CTX *ctx);
 
 /* BN_BLINDING flags */
 #define	BN_BLINDING_NO_UPDATE	0x00000001
@@ -732,6 +838,7 @@ const BIGNUM *BN_get0_nist_prime_521(void);
 
 /* library internal functions */
 
+#ifdef BN_ALLOC
 #define bn_expand(a,bits) ((((((bits+BN_BITS2-1))/BN_BITS2)) <= (a)->dmax)?\
 	(a):bn_expand2((a),(bits+BN_BITS2-1)/BN_BITS2))
 #define bn_wexpand(a,words) (((words) <= (a)->dmax)?(a):bn_expand2((a),(words)))
@@ -739,6 +846,7 @@ BIGNUM *bn_expand2(BIGNUM *a, int words);
 #ifndef OPENSSL_NO_DEPRECATED
 BIGNUM *bn_dup_expand(const BIGNUM *a, int words); /* unused */
 #endif
+#endif /* BN_ALLOC */
 
 /* Bignum consistency macros
  * There is one "API" macro, bn_fix_top(), for stripping leading zeroes from
@@ -820,6 +928,7 @@ int RAND_pseudo_bytes(unsigned char *buf,int num);
 
 #endif
 
+#if 0							/* pcg */
 #define bn_correct_top(a) \
         { \
         BN_ULONG *ftl; \
@@ -832,6 +941,10 @@ int RAND_pseudo_bytes(unsigned char *buf,int num);
 		} \
 	bn_pollute(a); \
 	}
+#else
+void BN_normalise( BIGNUM *bignum );
+#define bn_correct_top		BN_normalise
+#endif /* 0 */					/* pcg */
 
 BN_ULONG bn_mul_add_words(BN_ULONG *rp, const BN_ULONG *ap, int num, BN_ULONG w);
 BN_ULONG bn_mul_words(BN_ULONG *rp, const BN_ULONG *ap, int num, BN_ULONG w);

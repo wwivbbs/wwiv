@@ -199,15 +199,36 @@
 #define decodeComplianceLevel( value ) \
 		( ( ( value ) >> FL_LEVEL_SHIFT ) & FL_LEVEL_MASK )
 
+/* Usually the field ID for the first field in an entry (the one containing
+   the OID) is the overall attribute ID, however there are one or two
+   exceptions in which the attribute ID and field ID are the same but are
+   given in separate fields (examples of this are the altNames, which have
+   a single field ID SUBJECT/ISSUERALTNAME that applies to the attribute as
+   a whole but also to the one and only field in it.
+
+   If this happens the field ID for the attribute as a whole is given the 
+   value FIELDTYPE_ID_FOLLOWS to indicate that the actual ID is present at a 
+   later point, with the first field that isn't a FIELDTYPE_ID_FOLLOWS code 
+   being treated as the attribute ID */
+
+#define FIELDID_FOLLOWS					CRYPT_XATTRIBUTE_PRIVATE
+
 /* Determine whether an attribute information entry represents the start of 
    the attribute */
 
 #define isAttributeStart( attributeInfoPtr ) \
 		( ( attributeInfoPtr )->typeInfoFlags & FL_ATTR_ATTRSTART )
 
+/* Determine whether an attribute information entry represents the end of
+   the attribute information table */
+
+#define isAttributeTableEnd( attributeInfoPtr ) \
+		( ( attributeInfoPtr )->oid == NULL && \
+		  ( attributeInfoPtr )->fieldID == CRYPT_IATTRIBUTE_LAST )
+
 /****************************************************************************
 *																			*
-*							Special-case Field Values						*
+*						Special-case Field-encoding Values					*
 *																			*
 ****************************************************************************/
 
@@ -222,7 +243,7 @@
    for the field is written to the certificate when the field is encoded.
    The parentheses are to catch potential erroneous use in an expression */
 
-#define FIELDTYPE_IDENTIFIER	( -2 )
+#define FIELDTYPE_IDENTIFIER	-2
 
 /* Some fields have no set value (these arise from ANY DEFINED BY
    definitions) or an opaque value (typically fixed parameters for type-and-
@@ -238,9 +259,9 @@
    selection lists in which the ANY blob acts spefically as an end-of-
    list marker as well as being just a catchall type */
 
-#define FIELDTYPE_BLOB_ANY				( -3 )
-#define FIELDTYPE_BLOB_BITSTRING		( -4 )
-#define FIELDTYPE_BLOB_SEQUENCE			( -5 )
+#define FIELDTYPE_BLOB_ANY		-3
+#define FIELDTYPE_BLOB_BITSTRING -4
+#define FIELDTYPE_BLOB_SEQUENCE	-5
 
 /* When a field contains a CHOICE it can contain any one of the CHOICE 
    fields, as opposed to a FL_SETOF which can contain any of the fields that
@@ -249,14 +270,14 @@
    but the encoding is handled via a separate encoding table pointed to by
    extraData that maps the value to an OID */
 
-#define FIELDTYPE_CHOICE		( -6 )
+#define FIELDTYPE_CHOICE		-6
 
 /* Some fields are composite fields that contain complete certificate data
    structures.  To denote these fields the field type is a special code that 
    specifies the type and the value member contains the handle or the data 
    member contains a pointer to the composite object */
 
-#define FIELDTYPE_DN			( -7 )
+#define FIELDTYPE_DN			-7
 
 /* As an extension of the above, some fields are complex enough to require
    complete alternative encoding tables.  The most obvious one is
@@ -265,7 +286,7 @@
    this case the extraData member is a pointer to the alternative encoding
    table */
 
-#define FIELDTYPE_SUBTYPED		( -8 )
+#define FIELDTYPE_SUBTYPED		-8
 
 /* Another variant of FIELDTYPE_DN is one where the field can contain one of
    a number of string types chosen from the ASN.1 string menagerie.  The two
@@ -279,21 +300,11 @@
    custom decoding routine that makes the appropriate choice between the 
    union of all of the above types */
 
-#define FIELDTYPE_TEXTSTRING	( -9 )
+#define FIELDTYPE_TEXTSTRING	-9
 
-/* Usually the field ID for the first field in an entry (the one containing
-   the OID) is the overall attribute ID, however there are one or two
-   exceptions in which the attribute ID and field ID are the same but are
-   given in separate fields (examples of this are the altNames, which have
-   a single field ID SUBJECT/ISSUERALTNAME that applies to the attribute as
-   a whole but also to the one and only field in it.
+/* The last possible field type */
 
-   If this happens the field ID for the attribute as a whole is given the 
-   value FIELDID_FOLLOWS to indicate that the actual ID is present at a 
-   later point, with the first field that isn't a FIELDID_FOLLOWS code being 
-   treated as the attribute ID */
-
-#define FIELDID_FOLLOWS			( -10 )
+#define FIELDTYPE_LAST			FIELDTYPE_TEXTSTRING
 
 /* Since there are multiple blob fields (due to the use of typing hints) we
    need a macro to determine whether a field is a blob of any form.  The 
@@ -317,14 +328,15 @@ typedef struct {
 	   for overall attribute definitions */
 	const BYTE FAR_BSS *oid;		/* OID for this attribute */
 
-	/* Information on this particular field in the attribute.  The fieldType
-	   is the field as defined (e.g. SEQUENCE, INTEGER), the 
-	   fieldEncodingType is the field as encoded: 0 if it's the same as the 
-	   field type or the tag if it's a tagged field.  The default tagging 
-	   is to use implicit tags (e.g. [ 0 ] IMPLICIT SEQUENCE) with a field of 
-	   type fieldType and encoding of type fieldEncodedType.  If FL_EXPLICIT 
-	   is set it's an explicitly tagged field and both fields are used for 
-	   the encoding */
+	/* Information on this particular field in the attribute.  The fieldID 
+	   is the attribute type for this field or one of the FIELDTYPE_xxx
+	   codes defined above, the fieldType is the field as defined (e.g. 
+	   SEQUENCE, INTEGER), the fieldEncodingType is the field as encoded: 0 
+	   if it's the same as the field type or the tag if it's a tagged field.  
+	   The default tagging is to use implicit tags (e.g. [ 0 ] IMPLICIT 
+	   SEQUENCE) with a field of type fieldType and encoding of type 
+	   fieldEncodedType.  If FL_EXPLICIT is set then it's an explicitly 
+	   tagged field and both fields are used for the encoding */
 	const CRYPT_ATTRIBUTE_TYPE fieldID;	/* Magic ID for this field */
 #ifndef NDEBUG
 	const char *description;		/* Text description */
@@ -477,7 +489,7 @@ typedef struct AL {
 
 /* The validation function used to perform additional validation on fields */
 
-typedef CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 		int ( *VALIDATION_FUNCTION )( const ATTRIBUTE_LIST *attributeListPtr );
 
 /* Look up an ATTRIBUTE_INFO entry based on an OID */
@@ -497,7 +509,7 @@ int getAttributeInfo( IN_ENUM( ATTRIBUTE ) const ATTRIBUTE_TYPE attributeType,
 
 /* Get the encoded tag for a field */
 
-CHECK_RETVAL_RANGE( MAX_ERROR, MAX_TAG ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_RANGE( MAKE_CTAG_PRIMITIVE( 0 ), MAX_TAG ) STDC_NONNULL_ARG( ( 1 ) ) \
 int getFieldEncodedTag( const ATTRIBUTE_INFO *attributeInfoPtr );
 
 /* Get the attribute and attributeID for a field ID */

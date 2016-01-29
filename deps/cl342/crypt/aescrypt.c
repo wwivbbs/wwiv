@@ -1,33 +1,21 @@
 /*
- ---------------------------------------------------------------------------
- Copyright (c) 1998-2006, Brian Gladman, Worcester, UK. All rights reserved.
+---------------------------------------------------------------------------
+Copyright (c) 1998-2013, Brian Gladman, Worcester, UK. All rights reserved.
 
- LICENSE TERMS
+The redistribution and use of this software (with or without changes)
+is allowed without the payment of fees or royalties provided that:
 
- The free distribution and use of this software in both source and binary
- form is allowed (with or without changes) provided that:
+  source code distributions include the above copyright notice, this
+  list of conditions and the following disclaimer;
 
-   1. distributions of this source code include the above copyright
-      notice, this list of conditions and the following disclaimer;
+  binary distributions include the above copyright notice, this list
+  of conditions and the following disclaimer in their documentation.
 
-   2. distributions in binary form include the above copyright
-      notice, this list of conditions and the following disclaimer
-      in the documentation and/or other associated materials;
-
-   3. the copyright holder's name is not used to endorse products
-      built using this software without specific written permission.
-
- ALTERNATIVELY, provided that this notice is retained in full, this product
- may be distributed under the terms of the GNU General Public License (GPL),
- in which case the provisions of the GPL apply INSTEAD OF those given above.
-
- DISCLAIMER
-
- This software is provided 'as is' with no explicit or implied warranties
- in respect of its properties, including, but not limited to, correctness
- and/or fitness for purpose.
- ---------------------------------------------------------------------------
- Issue 09/09/2006
+This software is provided 'as is' with no explicit or implied warranties
+in respect of its operation, including, but not limited to, correctness
+and fitness for purpose.
+---------------------------------------------------------------------------
+Issue Date: 20/12/2007
 */
 
 #if defined( INC_ALL )		/* pcg */
@@ -37,6 +25,17 @@
   #include "crypt/aesopt.h"
   #include "crypt/aestab.h"
 #endif /* Compiler-specific includes */
+
+#if defined( USE_INTEL_AES_IF_PRESENT )
+  #if defined( INC_ALL )	/* pcg */
+	#include "aes_ni.h"
+  #else
+	#include "crypt/aes_ni.h"
+  #endif /* Compiler-specific includes */
+#else
+/* map names here to provide the external API ('name' -> 'aes_name') */
+#  define aes_xi(x) aes_ ## x
+#endif
 
 #if defined(__cplusplus)
 extern "C"
@@ -104,19 +103,17 @@ extern "C"
 #define fwd_lrnd(y,x,k,c)   (s(y,c) = (k)[c] ^ no_table(x,t_use(s,box),fwd_var,rf1,c))
 #endif
 
-AES_RETURN aes_encrypt(const unsigned char *in, unsigned char *out, const aes_encrypt_ctx cx[1])
-{   uint_32t         locals(b0, b1);
-    const uint_32t   *kp;
+AES_RETURN aes_xi(encrypt)(const unsigned char *in, unsigned char *out, const aes_encrypt_ctx cx[1])
+{   uint32_t         locals(b0, b1);
+    const uint32_t   *kp;
 #if defined( dec_fmvars )
     dec_fmvars; /* declare variables for fwd_mcol() if needed */
 #endif
 
-#if defined( AES_ERR_CHK )
-    if( cx->inf.b[0] != 10 * 16 && cx->inf.b[0] != 12 * 16 && cx->inf.b[0] != 14 * 16 )
-        return EXIT_FAILURE;
-#endif
+	if(cx->inf.b[0] != 10 * 16 && cx->inf.b[0] != 12 * 16 && cx->inf.b[0] != 14 * 16)
+		return EXIT_FAILURE;
 
-    kp = cx->ks;
+	kp = cx->ks;
     state_in(b0, in, kp);
 
 #if (ENC_UNROLL == FULL)
@@ -147,7 +144,7 @@ AES_RETURN aes_encrypt(const unsigned char *in, unsigned char *out, const aes_en
 #else
 
 #if (ENC_UNROLL == PARTIAL)
-    {   uint_32t    rnd;
+    {   uint32_t    rnd;
         for(rnd = 0; rnd < (cx->inf.b[0] >> 5) - 1; ++rnd)
         {
             kp += N_COLS;
@@ -158,7 +155,7 @@ AES_RETURN aes_encrypt(const unsigned char *in, unsigned char *out, const aes_en
         kp += N_COLS;
         round(fwd_rnd,  b1, b0, kp);
 #else
-    {   uint_32t    rnd;
+    {   uint32_t    rnd;
         for(rnd = 0; rnd < (cx->inf.b[0] >> 4) - 1; ++rnd)
         {
             kp += N_COLS;
@@ -172,10 +169,7 @@ AES_RETURN aes_encrypt(const unsigned char *in, unsigned char *out, const aes_en
 #endif
 
     state_out(out, b0);
-
-#if defined( AES_ERR_CHK )
     return EXIT_SUCCESS;
-#endif
 }
 
 #endif
@@ -241,17 +235,15 @@ AES_RETURN aes_encrypt(const unsigned char *in, unsigned char *out, const aes_en
 #define rnd_key(n)  (kp - n * N_COLS)
 #endif
 
-AES_RETURN aes_decrypt(const unsigned char *in, unsigned char *out, const aes_decrypt_ctx cx[1])
-{   uint_32t        locals(b0, b1);
+AES_RETURN aes_xi(decrypt)(const unsigned char *in, unsigned char *out, const aes_decrypt_ctx cx[1])
+{   uint32_t        locals(b0, b1);
 #if defined( dec_imvars )
     dec_imvars; /* declare variables for inv_mcol() if needed */
 #endif
-    const uint_32t *kp;
+    const uint32_t *kp;
 
-#if defined( AES_ERR_CHK )
-    if( cx->inf.b[0] != 10 * 16 && cx->inf.b[0] != 12 * 16 && cx->inf.b[0] != 14 * 16 )
-        return EXIT_FAILURE;
-#endif
+	if(cx->inf.b[0] != 10 * 16 && cx->inf.b[0] != 12 * 16 && cx->inf.b[0] != 14 * 16)
+		return EXIT_FAILURE;
 
     kp = cx->ks + (key_ofs ? (cx->inf.b[0] >> 2) : 0);
     state_in(b0, in, kp);
@@ -283,7 +275,7 @@ AES_RETURN aes_decrypt(const unsigned char *in, unsigned char *out, const aes_de
 #else
 
 #if (DEC_UNROLL == PARTIAL)
-    {   uint_32t    rnd;
+    {   uint32_t    rnd;
         for(rnd = 0; rnd < (cx->inf.b[0] >> 5) - 1; ++rnd)
         {
             kp = rnd_key(1);
@@ -294,7 +286,7 @@ AES_RETURN aes_decrypt(const unsigned char *in, unsigned char *out, const aes_de
         kp = rnd_key(1);
         round(inv_rnd, b1, b0, kp);
 #else
-    {   uint_32t    rnd;
+    {   uint32_t    rnd;
         for(rnd = 0; rnd < (cx->inf.b[0] >> 4) - 1; ++rnd)
         {
             kp = rnd_key(1);
@@ -308,10 +300,7 @@ AES_RETURN aes_decrypt(const unsigned char *in, unsigned char *out, const aes_de
 #endif
 
     state_out(out, b0);
-
-#if defined( AES_ERR_CHK )
     return EXIT_SUCCESS;
-#endif
 }
 
 #endif

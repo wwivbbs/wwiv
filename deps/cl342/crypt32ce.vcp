@@ -7193,6 +7193,532 @@ NODEP_CPP_COMP_GE=\
 # End Source File
 # Begin Source File
 
+SOURCE=.\cert\comp_pkiu.c
+
+!IF  "$(CFG)" == "crypt32ce - Win32 (WCE SH3) Release"
+
+DEP_CPP_COMP_S=\
+	".\cert\cert.h"\
+	".\cert\certattr.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	
+NODEP_CPP_COMP_S=\
+	".\cert\cert\cert.h"\
+	".\cert\cert\certattr.h"\
+	".\cert\misc\asn1_rw.h"\
+	".\cert\misc\asn1s_rw.h"\
+	".\cert\misc\stream.h"\
+	".\cryptini.h"\
+	".\misc\asn1_rw.h"\
+	".\misc\asn1s_rw.h"\
+	".\misc\ber.h"\
+	".\misc\crypt.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\stream.h"\
+	".\misc\stream.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE SH3) Debug"
+
+DEP_CPP_COMP_S=\
+	".\cert\cert.h"\
+	".\cert\certattr.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	
+NODEP_CPP_COMP_S=\
+	".\cert\cert\cert.h"\
+	".\cert\cert\certattr.h"\
+	".\cert\misc\asn1_rw.h"\
+	".\cert\misc\asn1s_rw.h"\
+	".\cert\misc\stream.h"\
+	".\cryptini.h"\
+	".\misc\asn1_rw.h"\
+	".\misc\asn1s_rw.h"\
+	".\misc\ber.h"\
+	".\misc\crypt.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\stream.h"\
+	".\misc\stream.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE MIPSIV) Release"
+
+DEP_CPP_COMP_S=\
+	".\cert\cert.h"\
+	".\cert\certattr.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	
+NODEP_CPP_COMP_S=\
+	".\cert\cert\cert.h"\
+	".\cert\cert\certattr.h"\
+	".\cert\misc\asn1_rw.h"\
+	".\cert\misc\asn1s_rw.h"\
+	".\cert\misc\stream.h"\
+	".\cryptini.h"\
+	".\misc\asn1_rw.h"\
+	".\misc\asn1s_rw.h"\
+	".\misc\ber.h"\
+	".\misc\crypt.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\stream.h"\
+	".\misc\stream.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE MIPSIV) Debug"
+
+DEP_CPP_COMP_S=\
+	".\cert\cert.h"\
+	".\cert\certattr.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	
+NODEP_CPP_COMP_S=\
+	".\cert\cert\cert.h"\
+	".\cert\cert\certattr.h"\
+	".\cert\misc\asn1_rw.h"\
+	".\cert\misc\asn1s_rw.h"\
+	".\cert\misc\stream.h"\
+	".\cryptini.h"\
+	".\misc\asn1_rw.h"\
+	".\misc\asn1s_rw.h"\
+	".\misc\ber.h"\
+	".\misc\crypt.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\stream.h"\
+	".\misc\stream.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE emulator) Release"
+
+DEP_CPP_COMP_S=\
+	".\cert\cert.h"\
+	".\cert\certattr.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	
+NODEP_CPP_COMP_S=\
+	".\cert\cert\cert.h"\
+	".\cert\cert\certattr.h"\
+	".\cert\misc\asn1_rw.h"\
+	".\cert\misc\asn1s_rw.h"\
+	".\cert\misc\stream.h"\
+	".\cryptini.h"\
+	".\misc\asn1_rw.h"\
+	".\misc\asn1s_rw.h"\
+	".\misc\ber.h"\
+	".\misc\crypt.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\stream.h"\
+	".\misc\stream.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE emulator) Debug"
+
+DEP_CPP_COMP_S=\
+	".\cert\cert.h"\
+	".\cert\certattr.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	".\io\stream.h"\
+	".\misc\config.h"\
+	".\misc\consts.h"\
+	".\misc\int_api.h"\
+	".\misc\os_spec.h"\
+	
+NODEP_CPP_COMP_S=\
+	".\cert\asn1.h"\
+	".\cert\asn1_ext.h"\
+	".\cert\cert\cert.h"\
+	".\cert\cert\certattr.h"\
+	".\cert\io\stream.h"\
+	".\cert\misc\asn1.h"\
+	".\cert\misc\asn1_ext.h"\
+	".\config.h"\
+	".\consts.h"\
+	".\int_api.h"\
+	".\io\crypt.h"\
+	".\misc\asn1.h"\
+	".\misc\asn1_ext.h"\
+	".\misc\ber.h"\
+	".\misc\io\stream.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\config.h"\
+	".\misc\misc\stream.h"\
+	".\os_spec.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE ARMV4) Release"
+
+DEP_CPP_COMP_S=\
+	".\cert\cert.h"\
+	".\cert\certattr.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	
+NODEP_CPP_COMP_S=\
+	".\cert\cert\cert.h"\
+	".\cert\cert\certattr.h"\
+	".\cert\misc\asn1_rw.h"\
+	".\cert\misc\asn1s_rw.h"\
+	".\cert\misc\stream.h"\
+	".\cryptini.h"\
+	".\misc\asn1_rw.h"\
+	".\misc\asn1s_rw.h"\
+	".\misc\ber.h"\
+	".\misc\crypt.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\stream.h"\
+	".\misc\stream.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE ARMV4) Debug"
+
+DEP_CPP_COMP_S=\
+	".\cert\cert.h"\
+	".\cert\certattr.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	
+NODEP_CPP_COMP_S=\
+	".\cert\cert\cert.h"\
+	".\cert\cert\certattr.h"\
+	".\cert\misc\asn1_rw.h"\
+	".\cert\misc\asn1s_rw.h"\
+	".\cert\misc\stream.h"\
+	".\cryptini.h"\
+	".\misc\asn1_rw.h"\
+	".\misc\asn1s_rw.h"\
+	".\misc\ber.h"\
+	".\misc\crypt.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\stream.h"\
+	".\misc\stream.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE x86) Release"
+
+DEP_CPP_COMP_S=\
+	".\cert\cert.h"\
+	".\cert\certattr.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	
+NODEP_CPP_COMP_S=\
+	".\cert\cert\cert.h"\
+	".\cert\cert\certattr.h"\
+	".\cert\misc\asn1_rw.h"\
+	".\cert\misc\asn1s_rw.h"\
+	".\cert\misc\stream.h"\
+	".\cryptini.h"\
+	".\misc\asn1_rw.h"\
+	".\misc\asn1s_rw.h"\
+	".\misc\ber.h"\
+	".\misc\crypt.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\stream.h"\
+	".\misc\stream.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE x86) Debug"
+
+DEP_CPP_COMP_S=\
+	".\cert\cert.h"\
+	".\cert\certattr.h"\
+	".\cert\certfn.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	".\enc_dec\asn1.h"\
+	".\enc_dec\asn1_ext.h"\
+	".\io\stream.h"\
+	".\misc\analyse.h"\
+	".\misc\config.h"\
+	".\misc\consts.h"\
+	".\misc\debug.h"\
+	".\misc\int_api.h"\
+	".\misc\os_spec.h"\
+	{$(INCLUDE)}"stream.h"\
+	
+NODEP_CPP_COMP_S=\
+	".\analyse.h"\
+	".\cert\asn1.h"\
+	".\cert\asn1_ext.h"\
+	".\config.h"\
+	".\consts.h"\
+	".\debug.h"\
+	".\int_api.h"\
+	".\os_spec.h"\
+	
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\cert\dn.c
+
+!IF  "$(CFG)" == "crypt32ce - Win32 (WCE SH3) Release"
+
+DEP_CPP_DN_C3a=\
+	".\cert\cert.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	
+NODEP_CPP_DN_C3a=\
+	".\cert\cert\cert.h"\
+	".\cert\misc\asn1_rw.h"\
+	".\cert\misc\stream.h"\
+	".\cryptini.h"\
+	".\misc\asn1_rw.h"\
+	".\misc\ber.h"\
+	".\misc\crypt.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\stream.h"\
+	".\misc\stream.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE SH3) Debug"
+
+DEP_CPP_DN_C3a=\
+	".\cert\cert.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	
+NODEP_CPP_DN_C3a=\
+	".\cert\cert\cert.h"\
+	".\cert\misc\asn1_rw.h"\
+	".\cert\misc\stream.h"\
+	".\cryptini.h"\
+	".\misc\asn1_rw.h"\
+	".\misc\ber.h"\
+	".\misc\crypt.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\stream.h"\
+	".\misc\stream.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE MIPSIV) Release"
+
+DEP_CPP_DN_C3a=\
+	".\cert\cert.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	
+NODEP_CPP_DN_C3a=\
+	".\cert\cert\cert.h"\
+	".\cert\misc\asn1_rw.h"\
+	".\cert\misc\stream.h"\
+	".\cryptini.h"\
+	".\misc\asn1_rw.h"\
+	".\misc\ber.h"\
+	".\misc\crypt.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\stream.h"\
+	".\misc\stream.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE MIPSIV) Debug"
+
+DEP_CPP_DN_C3a=\
+	".\cert\cert.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	
+NODEP_CPP_DN_C3a=\
+	".\cert\cert\cert.h"\
+	".\cert\misc\asn1_rw.h"\
+	".\cert\misc\stream.h"\
+	".\cryptini.h"\
+	".\misc\asn1_rw.h"\
+	".\misc\ber.h"\
+	".\misc\crypt.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\stream.h"\
+	".\misc\stream.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE emulator) Release"
+
+DEP_CPP_DN_C3a=\
+	".\cert\cert.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	
+NODEP_CPP_DN_C3a=\
+	".\cert\cert\cert.h"\
+	".\cert\misc\asn1_rw.h"\
+	".\cert\misc\stream.h"\
+	".\cryptini.h"\
+	".\misc\asn1_rw.h"\
+	".\misc\ber.h"\
+	".\misc\crypt.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\stream.h"\
+	".\misc\stream.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE emulator) Debug"
+
+DEP_CPP_DN_C3a=\
+	".\cert\cert.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	".\io\stream.h"\
+	".\misc\config.h"\
+	".\misc\consts.h"\
+	".\misc\int_api.h"\
+	".\misc\os_spec.h"\
+	
+NODEP_CPP_DN_C3a=\
+	".\cert\asn1.h"\
+	".\cert\cert\cert.h"\
+	".\cert\io\stream.h"\
+	".\cert\misc\asn1.h"\
+	".\config.h"\
+	".\consts.h"\
+	".\int_api.h"\
+	".\io\crypt.h"\
+	".\misc\asn1.h"\
+	".\misc\ber.h"\
+	".\misc\io\stream.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\config.h"\
+	".\os_spec.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE ARMV4) Release"
+
+DEP_CPP_DN_C3a=\
+	".\cert\cert.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	
+NODEP_CPP_DN_C3a=\
+	".\cert\cert\cert.h"\
+	".\cert\misc\asn1_rw.h"\
+	".\cert\misc\stream.h"\
+	".\cryptini.h"\
+	".\misc\asn1_rw.h"\
+	".\misc\ber.h"\
+	".\misc\crypt.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\stream.h"\
+	".\misc\stream.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE ARMV4) Debug"
+
+DEP_CPP_DN_C3a=\
+	".\cert\cert.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	
+NODEP_CPP_DN_C3a=\
+	".\cert\cert\cert.h"\
+	".\cert\misc\asn1_rw.h"\
+	".\cert\misc\stream.h"\
+	".\cryptini.h"\
+	".\misc\asn1_rw.h"\
+	".\misc\ber.h"\
+	".\misc\crypt.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\stream.h"\
+	".\misc\stream.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE x86) Release"
+
+DEP_CPP_DN_C3a=\
+	".\cert\cert.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	
+NODEP_CPP_DN_C3a=\
+	".\cert\cert\cert.h"\
+	".\cert\misc\asn1_rw.h"\
+	".\cert\misc\stream.h"\
+	".\cryptini.h"\
+	".\misc\asn1_rw.h"\
+	".\misc\ber.h"\
+	".\misc\crypt.h"\
+	".\misc\misc\ber.h"\
+	".\misc\misc\stream.h"\
+	".\misc\stream.h"\
+	".\tream.h"\
+	
+
+!ELSEIF  "$(CFG)" == "crypt32ce - Win32 (WCE x86) Debug"
+
+DEP_CPP_DN_C3a=\
+	".\cert\cert.h"\
+	".\cert\certfn.h"\
+	".\cert\dn.h"\
+	".\crypt.h"\
+	".\cryptkrn.h"\
+	".\cryptlib.h"\
+	".\enc_dec\asn1.h"\
+	".\io\stream.h"\
+	".\misc\analyse.h"\
+	".\misc\config.h"\
+	".\misc\consts.h"\
+	".\misc\debug.h"\
+	".\misc\int_api.h"\
+	".\misc\os_spec.h"\
+	{$(INCLUDE)}"stream.h"\
+	
+NODEP_CPP_DN_C3a=\
+	".\analyse.h"\
+	".\cert\asn1.h"\
+	".\config.h"\
+	".\consts.h"\
+	".\debug.h"\
+	".\int_api.h"\
+	".\os_spec.h"\
+	
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\cert\comp_set.c
 
 !IF  "$(CFG)" == "crypt32ce - Win32 (WCE SH3) Release"
