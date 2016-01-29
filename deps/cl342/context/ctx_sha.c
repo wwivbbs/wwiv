@@ -133,9 +133,13 @@ static int hash( CONTEXT_INFO *contextInfoPtr, BYTE *buffer, int noBytes )
 /* Internal API: Hash a single block of memory without the overhead of
    creating an encryption context.  This always uses SHA1 */
 
-void shaHashBuffer( HASHINFO hashInfo, BYTE *outBuffer, 
-					const int outBufMaxLength, const void *inBuffer, 
-					const int inLength, const HASH_STATE hashState )
+STDC_NONNULL_ARG( ( 1 ) ) \
+void shaHashBuffer( INOUT_OPT HASHINFO hashInfo,
+					OUT_BUFFER_OPT_C( outBufMaxLength, 20 ) BYTE *outBuffer,
+					IN_LENGTH_SHORT_Z const int outBufMaxLength,
+					IN_BUFFER_OPT( inLength ) const void *inBuffer,
+					IN_LENGTH_SHORT_Z const int inLength,
+					IN_ENUM( HASH_STATE ) const HASH_STATE hashState )
 	{
 	SHA_CTX *shaInfo = ( SHA_CTX * ) hashInfo;
 
@@ -172,8 +176,11 @@ void shaHashBuffer( HASHINFO hashInfo, BYTE *outBuffer,
 		}
 	}
 
-void shaHashBufferAtomic( BYTE *outBuffer, const int outBufMaxLength, 
-						  const void *inBuffer, const int inLength )
+STDC_NONNULL_ARG( ( 1, 3 ) ) \
+void shaHashBufferAtomic( OUT_BUFFER_C( outBufMaxLength, 20 ) BYTE *outBuffer,
+						  IN_LENGTH_SHORT_MIN( 20 ) const int outBufMaxLength,
+						  IN_BUFFER( inLength ) const void *inBuffer,
+						  IN_LENGTH_SHORT const int inLength )
 	{
 	SHA_CTX shaInfo;
 

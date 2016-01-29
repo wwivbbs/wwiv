@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *					cryptlib Internal Error Reporting API					*
-*						Copyright Peter Gutmann 1992-2007					*
+*						Copyright Peter Gutmann 1992-2014					*
 *																			*
 ****************************************************************************/
 
@@ -41,18 +41,25 @@ static int convertErrorStatus( IN_ERROR const int status )
 	return( status );
 	}
 
-/* Format a printf-style error string.
+/* Format a printf-style error string.  The ERROR_INFO is annotated as
+   OUT_ALWAYS because it's initalised unconditionally, the return status 
+   exists only to signal to the caller that, in the case where further 
+   information is added to the error information, that it's OK to add this
+   further information.
 
    In the following we can't make the third arg a NONNULL_ARG because in the 
    Arm ABI it's a scalar value */
 
 RETVAL_BOOL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static BOOLEAN formatErrorString( OUT ERROR_INFO *errorInfoPtr, 
+static BOOLEAN formatErrorString( OUT_ALWAYS ERROR_INFO *errorInfoPtr, 
 								  IN_STRING const char *format, 
 								  IN va_list argPtr )
 	{
 	assert( isWritePtr( errorInfoPtr, sizeof( ERROR_INFO ) ) );
 	assert( isReadPtr( format, 4 ) );
+
+	ANALYSER_HINT_STRING( format );
+	ANALYSER_HINT_FORMAT_STRING( format );
 
 	REQUIRES_B( verifyVAList( argPtr ) );
 
@@ -96,9 +103,9 @@ static BOOLEAN formatErrorString( OUT ERROR_INFO *errorInfoPtr,
 STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static void appendErrorString( INOUT ERROR_INFO *errorInfoPtr, 
 							   IN_BUFFER( extErrorStringLength ) \
-								const char *extErrorString, 
+									const char *extErrorString, 
 							   IN_LENGTH_ERRORMESSAGE \
-								const int extErrorStringLength )
+									const int extErrorStringLength )
 	{
 	assert( isWritePtr( errorInfoPtr, sizeof( ERROR_INFO ) ) );
 	assert( isReadPtr( extErrorString, extErrorStringLength ) );
@@ -386,8 +393,8 @@ int retExtErrFn( IN_ERROR const int status,
 	BOOLEAN errorStringOK;
 	int extErrorStringLength;
 
-	/* Clear return value */
-	memset( errorInfoPtr, 0, sizeof( ERROR_INFO ) );
+	/* We can't clear the return value at this point because errorInfoPtr
+	   could be the same as existingErrorInfoPtr */
 
 	/* This function is typically used when the caller wants to convert 
 	   something like "Low-level error string" into "High-level error 
@@ -397,7 +404,7 @@ int retExtErrFn( IN_ERROR const int status,
 	   from where it can be appended back onto the string in the errorInfo 
 	   buffer */
 	if( existingErrorInfoPtr->errorStringLength > 0 && \
-		existingErrorInfoPtr->errorStringLength < MAX_ERRMSG_SIZE )
+		existingErrorInfoPtr->errorStringLength <= MAX_ERRMSG_SIZE )
 		{
 		memcpy( extErrorString, existingErrorInfoPtr->errorString,
 				existingErrorInfoPtr->errorStringLength );
@@ -409,9 +416,10 @@ int retExtErrFn( IN_ERROR const int status,
 		extErrorStringLength = 27;
 		}
 	ENSURES( extErrorStringLength > 0 && \
-			 extErrorStringLength < MAX_ERRMSG_SIZE );
+			 extErrorStringLength <= MAX_ERRMSG_SIZE );
 
 	/* Format the basic error string */
+	memset( errorInfoPtr, 0, sizeof( ERROR_INFO ) );
 	va_start( argPtr, format );
 	errorStringOK = formatErrorString( errorInfoPtr, format, argPtr );
 	va_end( argPtr );

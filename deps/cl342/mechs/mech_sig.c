@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *					cryptlib Signature Mechanism Routines					*
-*					  Copyright Peter Gutmann 1992-2008						*
+*					  Copyright Peter Gutmann 1992-2013						*
 *																			*
 ****************************************************************************/
 
@@ -16,6 +16,173 @@
   #include "enc_dec/asn1_ext.h"
   #include "mechs/mech_int.h"
 #endif /* Compiler-specific includes */
+
+/****************************************************************************
+*																			*
+*						Utility Routines - ASN.1 Replacement				*
+*																			*
+****************************************************************************/
+
+/* If we're building cryptlib without ASN.1 support then we still need some
+   minimal ASN.1 functionality in order to encode and decode MessageDigest
+   records in signatures.  The following bare-bones functions provide this
+   support, these are extremely cut-down versions of code normally found in 
+   asn1_rd.c and asn1_ext.c */
+
+#ifndef USE_INT_ASN1
+
+#define readTag					sgetc
+#define writeTag				sputc
+#define sizeofObject( length )	( 1 + 1 + ( length ) )
+#define BER_OCTETSTRING			0x04
+#define BER_NULL				0x05
+#define BER_SEQUENCE			0x30
+#define MKOID( value )			( ( const BYTE * ) value )
+#define sizeofOID( oid )		( 1 + 1 + ( int ) oid[ 1 ] )
+#define sizeofNull()			( 1 + 1 )
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+static int readRawObject( INOUT STREAM *stream, 
+						  OUT_BUFFER( bufferMaxLength, *bufferLength ) \
+								BYTE *buffer,
+						  IN_LENGTH_SHORT_MIN( 3 ) \
+								const int bufferMaxLength, 
+						  OUT_LENGTH_BOUNDED_Z( bufferMaxLength ) \
+								int *bufferLength, 
+						  IN_TAG_ENCODED const int tag )
+	{
+	const int objectTag = readTag( stream );
+	int length, offset = 0;
+
+	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+	assert( isWritePtr( buffer, bufferMaxLength ) );
+	assert( isWritePtr( bufferLength, sizeof( int ) ) );
+
+	REQUIRES_S( bufferMaxLength > 16 && \
+				bufferMaxLength < MAX_INTLENGTH_SHORT );
+	REQUIRES_S( tag == BER_SEQUENCE );
+
+	/* Clear return values */
+	memset( buffer, 0, min( 16, bufferMaxLength ) );
+	*bufferLength = 0;
+
+	/* Read the identifier field and length.  We need to remember each byte 
+	   as it's read so we can't just call readLengthValue() for the length, 
+	   but since we only need to handle lengths that can be encoded in one 
+	   byte this isn't a problem */
+	if( cryptStatusError( objectTag ) )
+		return( objectTag );
+	if( objectTag != BER_SEQUENCE )
+		return( sSetError( stream, CRYPT_ERROR_BADDATA ) );
+	buffer[ offset++ ] = intToByte( objectTag );
+	length = sgetc( stream );
+	if( cryptStatusError( length ) )
+		return( length );
+	if( length <= 0 || length > 0x7F )
+		return( sSetError( stream, CRYPT_ERROR_BADDATA ) );
+	buffer[ offset++ ] = intToByte( length );
+	if( offset + length > bufferMaxLength )
+		return( sSetError( stream, CRYPT_ERROR_OVERFLOW ) );
+
+	/* Read in the rest of the data */
+	*bufferLength = offset + length;
+	return( sread( stream, buffer + offset, length ) );
+	}
+
+RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+static int writeHeader( INOUT STREAM *stream, 
+						IN_TAG_ENCODED const int tag,
+						IN_LENGTH_SHORT const int length )
+	{
+	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+
+	REQUIRES_S( tag >= BER_OCTETSTRING && tag <= BER_SEQUENCE );
+	REQUIRES_S( length >= 0 && length <= 255 );
+
+	writeTag( stream, tag );
+	return( sputc( stream, length ) );
+	}
+
+CHECK_RETVAL_PTR \
+static const BYTE *getOID( IN_ALGO const CRYPT_ALGO_TYPE hashAlgo )
+	{
+	REQUIRES_N( isHashAlgo( hashAlgo ) );
+
+	switch( hashAlgo )
+		{
+		case CRYPT_ALGO_SHA1:
+			return( MKOID( "\x06\x05\x2B\x0E\x03\x02\x1A" ) );
+
+		case CRYPT_ALGO_SHA2:
+			return( MKOID( "\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x01" ) );
+
+		default:
+			retIntError_Null();
+		}
+
+	retIntError_Null();
+	}
+
+CHECK_RETVAL_LENGTH \
+static int sizeofAlgoIDex( IN_ALGO const CRYPT_ALGO_TYPE hashAlgo )
+	{
+	const BYTE *oid = getOID( hashAlgo );
+
+	REQUIRES( isHashAlgo( hashAlgo ) );
+	REQUIRES( oid != NULL );
+
+	return( ( int ) sizeofObject( sizeofOID( oid ) + sizeofNull() ) );
+	}
+
+CHECK_RETVAL_LENGTH \
+static int sizeofMessageDigest( IN_ALGO const CRYPT_ALGO_TYPE hashAlgo, 
+								IN_LENGTH_HASH const int hashSize )
+	{
+	const int hashParam = isParameterisedHashAlgo( hashAlgo ) ? hashSize : 0;
+	int algoInfoSize, hashInfoSize;
+
+	REQUIRES( isHashAlgo( hashAlgo ) );
+	REQUIRES( hashSize >= 16 && hashSize <= CRYPT_MAX_HASHSIZE );
+	REQUIRES( hashParam == 0 );
+
+	algoInfoSize = sizeofAlgoIDex( hashAlgo );
+	hashInfoSize = sizeofObject( hashSize );
+	ENSURES( algoInfoSize > 8 && algoInfoSize < MAX_INTLENGTH_SHORT );
+	ENSURES( hashInfoSize > hashSize && hashInfoSize < MAX_INTLENGTH_SHORT );
+
+	return( sizeofObject( algoInfoSize + hashInfoSize ) );
+	}
+
+RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
+static int writeMessageDigest( INOUT STREAM *stream, 
+							   IN_ALGO const CRYPT_ALGO_TYPE hashAlgo,
+							   IN_BUFFER( hashSize ) const void *hash, 
+							   IN_LENGTH_HASH const int hashSize )
+	{
+	const int hashParam = isParameterisedHashAlgo( hashAlgo ) ? hashSize : 0;
+	const BYTE *oid = getOID( hashAlgo );
+	
+	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+	assert( isReadPtr( hash, hashSize ) );
+
+	REQUIRES_S( isHashAlgo( hashAlgo ) );
+	REQUIRES_S( hashSize >= 16 && hashSize <= CRYPT_MAX_HASHSIZE );
+	REQUIRES_S( hashParam == 0 );
+
+	/* writeSequence() */
+	writeHeader( stream, BER_SEQUENCE, 
+				 sizeofAlgoIDex( hashAlgo ) + sizeofObject( hashSize ) );
+
+	/* writeAlgoIDex() */
+	writeHeader( stream, BER_SEQUENCE, sizeofOID( oid ) + sizeofNull() );
+	swrite( stream, oid, sizeofOID( oid ) );
+	writeHeader( stream, BER_NULL, 0 );
+
+	/* writeOctetString() */
+	writeHeader( stream, BER_OCTETSTRING, hashSize );
+	return( swrite( stream, hash, hashSize ) );
+	}
+#endif /* USE_INT_ASN1 */
 
 /****************************************************************************
 *																			*
@@ -98,7 +265,7 @@ static int compareHashInfo( INOUT STREAM *stream,
 	STREAM mdStream;
 	BYTE encodedMD[ 32 + CRYPT_MAX_HASHSIZE + 8 ];
 	BYTE recreatedMD[ 32 + CRYPT_MAX_HASHSIZE + 8 ];
-	int encodedMdLength, recreatedMdLength = DUMMY_INIT;
+	int encodedMdLength, recreatedMdLength DUMMY_INIT;
 	int status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
@@ -196,13 +363,13 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int sign( INOUT MECHANISM_SIGN_INFO *mechanismInfo, 
 				 IN_ENUM( SIGN ) const SIGN_TYPE type )
 	{
-	CRYPT_ALGO_TYPE hashAlgo = DUMMY_INIT;
+	CRYPT_ALGO_TYPE hashAlgo DUMMY_INIT;
 	MESSAGE_DATA msgData;
 	STREAM stream;
 	BYTE hash[ CRYPT_MAX_HASHSIZE + 8 ], hash2[ CRYPT_MAX_HASHSIZE + 8 ];
 	BYTE preSigData[ CRYPT_MAX_PKCSIZE + 8 ];
-	int sideChannelProtectionLevel = DUMMY_INIT;
-	int hashSize, hashSize2 = DUMMY_INIT, length, i, status;
+	int sideChannelProtectionLevel DUMMY_INIT;
+	int hashSize, hashSize2 DUMMY_INIT, length, i, status;
 
 	assert( isWritePtr( mechanismInfo, sizeof( MECHANISM_SIGN_INFO ) ) );
 
@@ -346,12 +513,12 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int sigcheck( INOUT MECHANISM_SIGN_INFO *mechanismInfo, 
 					 IN_ENUM( SIGN ) const SIGN_TYPE type )
 	{
-	CRYPT_ALGO_TYPE contextHashAlgo = DUMMY_INIT;
+	CRYPT_ALGO_TYPE contextHashAlgo DUMMY_INIT;
 	MESSAGE_DATA msgData;
 	STREAM stream;
 	BYTE decryptedSignature[ CRYPT_MAX_PKCSIZE + 8 ];
 	BYTE hash[ CRYPT_MAX_HASHSIZE + 8 ];
-	int length, hashSize = DUMMY_INIT, status;
+	int length, hashSize DUMMY_INIT, status;
 
 	assert( isWritePtr( mechanismInfo, sizeof( MECHANISM_SIGN_INFO ) ) );
 	

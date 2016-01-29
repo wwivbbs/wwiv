@@ -66,6 +66,8 @@
   #include "crypt/idealocl.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_IDEA
+
 static IDEA_INT inverse(unsigned int xin);
 void idea_set_encrypt_key(const unsigned char *key, IDEA_KEY_SCHEDULE *ks)
 	{
@@ -161,3 +163,4 @@ static IDEA_INT inverse(unsigned int xin)
 		}
 	return((IDEA_INT)b2);
 	}
+#endif /* USE_IDEA */

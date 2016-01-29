@@ -285,7 +285,7 @@ elif language == "python":
     #typedefEnumElementTemplate = "%(name)-NPADs = %(value)-VPADs"
     typedefEnumElementTemplate = """\
 
-    v = Py_BuildValue("i", %(value)s);
+    v = Py_BuildValue("i", CRYPT_%(name)s);
     PyDict_SetItemString(moduleDict, "CRYPT_%(name)s", v);
     Py_DECREF(v);"""
     typedefEnumElementTemplateComment = typedefEnumElementTemplate + " /* %(comment)s */"
@@ -853,7 +853,7 @@ while 1:
         break
     ifdefIndex = s.rfind("#if", 0, endifMatch.start())
     s = s[ : ifdefIndex] + s[endifMatch.end() : ]
-
+s = re.sub(r'\n\s*/\*.*\*/\s*\n', lambda match: '' if match.group(0).find('CRYPT_') >= 0 else match.group(0), s)
 
 #Delete lines used for extended function and function-parameter checking
 #like C_CHECK_RETVAL C_NONNULL_ARG( ( 3 ) ) \

@@ -9,13 +9,13 @@
 #if defined( INC_ALL )
   #include "crypt.h"
   #include "asn1.h"
-  #include "keyset.h"
   #include "dbms.h"
+  #include "keyset.h"
 #else
   #include "crypt.h"
   #include "enc_dec/asn1.h"
-  #include "keyset/keyset.h"
   #include "keyset/dbms.h"
+  #include "keyset/keyset.h"
 #endif /* Compiler-specific includes */
 
 #ifdef USE_DBMS
@@ -273,7 +273,7 @@ int updateCertErrorLog( INOUT DBMS_INFO *dbmsInfo,
 	STREAM stream;
 	BYTE errorData[ 64 + MAX_CERT_SIZE + 8 ];
 	const int errorStringLength = strlen( errorString );
-	int errorDataLength = DUMMY_INIT, status;
+	int errorDataLength DUMMY_INIT, status;
 
 	assert( isWritePtr( dbmsInfo, sizeof( DBMS_INFO ) ) );
 	assert( ( certID == NULL && certIDlength == 0 ) || \
@@ -284,6 +284,8 @@ int updateCertErrorLog( INOUT DBMS_INFO *dbmsInfo,
 			isReadPtr( subjCertID, subjCertIDlength ) );
 	assert( ( data == NULL && dataLength == 0 ) || \
 			isReadPtr( data, dataLength ) );
+
+	ANALYSER_HINT_STRING( errorString );
 
 	REQUIRES( cryptStatusError( errorStatus ) );
 	REQUIRES( errorString != NULL );
@@ -500,6 +502,14 @@ static int certMgmtFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 			isWritePtr( iCertificate, sizeof( CRYPT_CERTIFICATE ) ) );
 
 	REQUIRES( keysetInfoPtr->type == KEYSET_DBMS );
+	REQUIRES( ( action != CRYPT_CERTACTION_ISSUE_CRL && 
+				action != CRYPT_CERTACTION_CERT_CREATION ) || \
+			  ( ( action == CRYPT_CERTACTION_ISSUE_CRL || \
+				  action == CRYPT_CERTACTION_CERT_CREATION ) && \
+				iCertificate != NULL ) );
+			  /* An ISSUE_CERT can have iCertificate == NULL, which leaves
+			     the issued certificate in the store without returning it
+				 to the caller */
 	REQUIRES( ( caKey == CRYPT_UNUSED ) || isHandleRangeValid( caKey ) );
 	REQUIRES( ( request == CRYPT_UNUSED ) || isHandleRangeValid( request ) );
 	REQUIRES( action > CRYPT_CERTACTION_NONE && \
@@ -575,6 +585,8 @@ static int certMgmtFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 		{
 		int value;
 
+		REQUIRES( isHandleRangeValid( caKey ) );
+
 		/* If we're issuing a CRL, the key must be capable of CRL signing */
 		status = krnlSendMessage( caKey, IMESSAGE_GETATTRIBUTE, &value,
 								  CRYPT_CERTINFO_KEYUSAGE );
@@ -591,15 +603,19 @@ static int certMgmtFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 		/* For anything other than a revocation action (which just updates 
 		   the certificate store without doing anything else) the key must 
 		   be a CA key */
-		if( action != CRYPT_CERTACTION_REVOKE_CERT && \
-			cryptStatusError( \
-				krnlSendMessage( caKey, IMESSAGE_CHECK, NULL,
-								 MESSAGE_CHECK_CA ) ) )
+		if( action != CRYPT_CERTACTION_REVOKE_CERT )
 			{
-			retExtArg( CAMGMT_ARGERROR_CAKEY, 
-					   ( CAMGMT_ARGERROR_CAKEY, KEYSET_ERRINFO, 
-						 "CA certificate isn't valid for certificate "
-						 "signing" ) );
+			REQUIRES( isHandleRangeValid( caKey ) );
+
+			status = krnlSendMessage( caKey, IMESSAGE_CHECK, NULL,
+									  MESSAGE_CHECK_CA );
+			if( cryptStatusError( status ) )
+				{
+				retExtArg( CAMGMT_ARGERROR_CAKEY, 
+						   ( CAMGMT_ARGERROR_CAKEY, KEYSET_ERRINFO, 
+							 "CA certificate isn't valid for certificate "
+							 "signing" ) );
+				}
 			}
 		}
 
@@ -607,10 +623,14 @@ static int certMgmtFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 	   which we only need the CA certificate (there's no request involved) */
 	if( action == CRYPT_CERTACTION_ISSUE_CRL )
 		{
+		REQUIRES( isHandleRangeValid( caKey ) );
 		REQUIRES( request == CRYPT_UNUSED );
 
 		return( caIssueCRL( dbmsInfo, iCertificate, caKey, KEYSET_ERRINFO ) );
 		}
+
+	/* Beyond this point we need to be working with a valid request */
+	REQUIRES( isHandleRangeValid( request ) );
 
 	/* We're processing an action that requires an explicit certificate 
 	   request, perform further checks on the request */

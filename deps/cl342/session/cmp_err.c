@@ -253,7 +253,7 @@ int readPkiStatusInfo( INOUT STREAM *stream,
 	const char *failureString;
 	long endPos, value;
 	int bitString = 0, bitPos, failureStringLength, failureStatus;
-	int errorCode, length, status;
+	int errorCode, tag, length, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( errorInfo, sizeof( ERROR_INFO ) ) );
@@ -280,9 +280,10 @@ int readPkiStatusInfo( INOUT STREAM *stream,
 
 	/* Read the failure information, skipping any intervening junk that may 
 	   precede it */
-	if( stell( stream ) < endPos && peekTag( stream ) == BER_SEQUENCE )
+	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
+		tag == BER_SEQUENCE )
 		status = readUniversal( stream );
-	if( cryptStatusOK( status ) && stell( stream ) < endPos )
+	if( !cryptStatusError( status ) && stell( stream ) < endPos )
 		status = readBitString( stream, &bitString );
 	if( cryptStatusError( status ) )
 		{
@@ -334,7 +335,7 @@ int readPkiStatusInfo( INOUT STREAM *stream,
 		failInfo		BIT STRING OPTIONAL
 		} */
 
-CHECK_RETVAL \
+CHECK_RETVAL_LENGTH_SHORT_NOERROR \
 int sizeofPkiStatusInfo( IN_STATUS const int pkiStatus,
 						 IN_ENUM_OPT( CMPFAILINFO ) const long pkiFailureInfo )
 	{

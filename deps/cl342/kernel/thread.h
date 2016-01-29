@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						  cryptlib Thread/Mutex Handling  					*
-*						Copyright Peter Gutmann 1992-2011					*
+*						Copyright Peter Gutmann 1992-2014					*
 *																			*
 ****************************************************************************/
 
@@ -218,6 +218,7 @@
    don't have to jump through the hoops that are necessary with most other
    OSes */
 
+#define MUTEX_LOCKNAME( name )	&krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		MUTEX_HANDLE name##Mutex; \
 		BOOLEAN name##MutexInitialised
@@ -313,6 +314,110 @@ int threadPriority( void );
 
 /****************************************************************************
 *																			*
+*									ARINC 653								*
+*																			*
+****************************************************************************/
+
+#elif defined( __ARINC653__ )
+
+#include <apex.h>
+
+/* Object handles */
+
+#define THREAD_HANDLE			PROCESS_ID_TYPE
+#define MUTEX_HANDLE			SEMAPHORE_ID_TYPE
+
+/* The ARINC 653 API returns status codes as a by-reference parameter, in 
+   cases where we don't care about the return status we need to provide a
+   dummy value to take this */
+
+extern RETURN_CODE_TYPE dummyRetCode;
+
+/* Mutex management functions.  ARINC 653 mutexes are re-entrant so we don't 
+   have to jump through the hoops that are necessary with most other OSes */
+
+#define MUTEX_LOCKNAME( name )	&krnlData->name##Mutex
+#define MUTEX_DECLARE_STORAGE( name ) \
+		MUTEX_HANDLE name##Mutex; \
+		BOOLEAN name##MutexInitialised
+#define MUTEX_CREATE( name, status ) \
+		status = CRYPT_OK; \
+		if( !krnlData->name##MutexInitialised ) \
+			{ \
+			RETURN_CODE_TYPE retCode; \
+			\
+			CREATE_SEMAPHORE( NULL, 0, 1, FIFO, &krnlData->name##Mutex, &retCode ); \
+			if( retCode == NO_ERROR ) \
+				krnlData->name##MutexInitialised = TRUE; \
+			else \
+				status = CRYPT_ERROR; \
+			}
+#define MUTEX_DESTROY( name ) \
+		if( krnlData->name##MutexInitialised ) \
+			{ \
+			WAIT_SEMAPHORE( krnlData->name##Mutex, INFINITE_TIME_VALUE, &dummyRetCode ); \
+			SIGNAL_SEMAPHORE( krnlData->name##Mutex, &dummyRetCode ); \
+			/* ARINC 653 provides no way to delete a semaphore */ \
+			krnlData->name##MutexInitialised = FALSE; \
+			}
+#define MUTEX_LOCK( name ) \
+		WAIT_SEMAPHORE( krnlData->name##Mutex, INFINITE_TIME_VALUE, &dummyRetCode )
+#define MUTEX_UNLOCK( name ) \
+		SIGNAL_SEMAPHORE( krnlData->name##Mutex, &dummyRetCode )
+
+/* Thread management functions.  CREATE_PROCESS() creates the task in the 
+   suspended (or at least DORMANT) state so we have to RESUME() it after
+   creation.  The process attributes are underdocumented and system-
+   dependent, and will need to be set on a case-by-case basis.  ARINC 653 
+   doesn't provide any way to end a process so the best that we can do is a 
+   STOP_SELF().  A TIMED_WAIT() of 0 yields the CPU, otherwise it's the 
+   sleep time in nanoseconds */
+
+#define THREADFUNC_DEFINE( name, arg )	void name( void const *arg )
+#define THREAD_CREATE( function, arg, threadHandle, syncHandle, status ) \
+			{ \
+			PROCESS_ATTRIBUTE_TYPE attributes = \
+				{ "", ( SYSTEM_ADDRESS_TYPE ) function, 0, \
+				  MAX_PRIORITY_VALUE / 2, 0, 0, SOFT }; \
+			RETURN_CODE_TYPE retCode; \
+			\
+			CREATE_SEMAPHORE( NULL, 0, 1, FIFO, &syncHandle, &retCode ); \
+			CREATE_PROCESS( &attributes, &threadHandle, &retCode ); \
+			if( retCode != NO_ERROR ) \
+				status = CRYPT_ERROR; \
+			else \
+				{ \
+				RESUME( threadHandle, &retCode ); \
+				status = CRYPT_OK; \
+				} \
+			}
+#define THREAD_EXIT( sync )		STOP_SELF(); \
+								SIGNAL_SEMAPHORE( sync, &dummyRetCode ); \
+								return
+#define THREAD_INITIALISER		0
+#define THREAD_SAME( thread1, thread2 )	( ( thread1 ) == ( thread2 ) )
+#define THREAD_SELF()			threadSelf()
+#define THREAD_SLEEP( ms )		TIMED_WAIT( ( ms ) * 1000000, &dummyRetCode )
+#define THREAD_YIELD()			TIMED_WAIT( 0, &dummyRetCode )
+#define THREAD_WAIT( sync, status )	\
+								{ \
+								RETURN_CODE_TYPE retCode; \
+								\
+								WAIT_SEMAPHORE( sync, INFINITE_TIME_VALUE, &retCode ); \
+								if( retCode != NO_ERROR ) \
+									status = CRYPT_ERROR; \
+								/* ARINC 653 provides no way to delete a semaphore */ \
+								}
+#define THREAD_CLOSE( sync )
+
+/* The ARINC 653 thread-self function returns the thread ID via a reference 
+   parameter, because of this we have to provide a wrapper that returns it 
+   as a return value */
+
+PROCESS_ID_TYPE threadSelf( void );
+
+/****************************************************************************
+*																			*
 *									BeOS									*
 *																			*
 ****************************************************************************/
@@ -328,6 +433,7 @@ int threadPriority( void );
 
 /* Mutex management functions */
 
+#define MUTEX_LOCKNAME( name )	krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		sem_id name##Mutex; \
 		BOOLEAN name##MutexInitialised; \
@@ -427,6 +533,7 @@ int threadPriority( void );
    mutex once it's initialised, presumably it gets cleaned up when the
    owning actor terminates */
 
+#define MUTEX_LOCKNAME( name )	&krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		MUTEX_HANDLE name##Mutex; \
 		BOOLEAN name##MutexInitialised; \
@@ -534,6 +641,85 @@ int threadPriority( void );
 
 /****************************************************************************
 *																			*
+*									CMSIS									*
+*																			*
+****************************************************************************/
+
+#elif defined( __CMSIS__ )
+
+#include <cmsis_os.h>
+
+/* Object handles */
+
+#define THREAD_HANDLE			osThreadId
+#define MUTEX_HANDLE			osMutexId
+
+/* Mutex management functions.  CMSIS mutexes are re-entrant so we don't 
+   have to jump through the hoops that are necessary with most other OSes */
+
+#define MUTEX_LOCKNAME( name )	krnlData->name##Mutex
+#define MUTEX_DECLARE_STORAGE( name ) \
+		MUTEX_HANDLE name##Mutex; \
+		BOOLEAN name##MutexInitialised
+#define MUTEX_CREATE( name, status ) \
+		status = CRYPT_OK; \
+		if( !krnlData->name##MutexInitialised ) \
+			{ \
+			osMutexDef( name ); \
+			\
+			krnlData->name##Mutex = osMutexCreate( osMutex( name ) ); \
+			if( krnlData->name##Mutex != NULL ) \
+				krnlData->name##MutexInitialised = TRUE; \
+			else \
+				status = CRYPT_ERROR; \
+			}
+#define MUTEX_DESTROY( name ) \
+		if( krnlData->name##MutexInitialised ) \
+			{ \
+			osMutexWait( krnlData->name##Mutex, osWaitForever ); \
+			osMutexRelease( krnlData->name##Mutex ); \
+			osMutexDelete( krnlData->name##Mutex ); \
+			krnlData->name##MutexInitialised = FALSE; \
+			}
+#define MUTEX_LOCK( name ) \
+		osMutexWait( krnlData->name##Mutex, osWaitForever )
+#define MUTEX_UNLOCK( name ) \
+		osMutexRelease( krnlData->name##Mutex )
+
+/* Thread management functions */
+
+#define THREADFUNC_DEFINE( name, arg )	void name( void const *arg )
+#define THREAD_CREATE( function, arg, threadHandle, syncHandle, status ) \
+			{ \
+			osMutexDef( mutexDef ); \
+			osThreadDef( function, osPriorityNormal, 1, 0 ); \
+			\
+			syncHandle = osMutexCreate( osMutex( mutexDef ) ); \
+			threadHandle = osThreadCreate( osThread( function ), NULL ); \
+			if( threadHandle == NULL ) \
+				status = CRYPT_ERROR; \
+			else \
+				{ \
+				osMutexWait( syncHandle, osWaitForever ); \
+				status = CRYPT_OK; \
+				} \
+			}
+#define THREAD_EXIT( sync )		osThreadTerminate( osThreadGetId() ); \
+								osMutexRelease( sync ); \
+								return
+#define THREAD_INITIALISER		NULL
+#define THREAD_SAME( thread1, thread2 )	( ( thread1 ) == ( thread2 ) )
+#define THREAD_SELF()			osThreadGetId()
+#define THREAD_SLEEP( ms )		osDelay( ms )
+#define THREAD_YIELD()			osThreadYield()
+#define THREAD_WAIT( sync, status )	\
+								if( osMutexWait( sync, osWaitForever ) != osOK ) \
+									status = CRYPT_ERROR; \
+								osMutexDelete( sync )
+#define THREAD_CLOSE( sync )
+
+/****************************************************************************
+*																			*
 *									eCOS									*
 *																			*
 ****************************************************************************/
@@ -559,6 +745,7 @@ int threadPriority( void );
 
 /* Mutex management functions */
 
+#define MUTEX_LOCKNAME( name )	&krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		cyg_mutex_t name##Mutex; \
 		BOOLEAN name##MutexInitialised; \
@@ -684,7 +871,7 @@ int threadPriority( void );
 *																			*
 ****************************************************************************/
 
-#elif defined( __EmbOS__ )
+#elif defined( __embOS__ )
 
 /* To use resource-management wrappers for the EmbOS thread functions,
    undefine the following */
@@ -705,6 +892,7 @@ int threadPriority( void );
 /* Mutex management functions.  EmbOS mutexes are reentrant so we don't have 
    to hand-assemble reentrant mutexes as for many other OSes */
 
+#define MUTEX_LOCKNAME( name )	&krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		MUTEX_HANDLE name##Mutex; \
 		BOOLEAN name##MutexInitialised
@@ -822,6 +1010,7 @@ int threadPriority( void );
 
 #define MUTEX_WAIT_TIME		( 5000 / portTICK_RATE_MS )
 
+#define MUTEX_LOCKNAME( name )	krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		MUTEX_HANDLE name##Mutex; \
 		BOOLEAN name##MutexInitialised
@@ -900,6 +1089,7 @@ int threadPriority( void );
 
 /* Mutex management functions */
 
+#define MUTEX_LOCKNAME( name )	&krnlData->name##Semaphore
 #define MUTEX_DECLARE_STORAGE( name ) \
 		MUTEX_HANDLE name##Semaphore; \
 		BOOLEAN name##SemaphoreInitialised
@@ -954,6 +1144,7 @@ int threadPriority( void );
    using automatic assignment of handles (which requires uITRON 4.0) we may
    as well use mutexes */
 
+#define MUTEX_LOCKNAME( name )	krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		MUTEX_HANDLE name##Mutex; \
 		BOOLEAN name##MutexInitialised; \
@@ -1090,6 +1281,7 @@ ID threadSelf( void );
    to be changed to hand-assemble reentrant mutexes as is done for many 
    other OSes */
 
+#define MUTEX_LOCKNAME( name )	&krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		MUTEX_HANDLE name##Mutex; \
 		BOOLEAN name##MutexInitialised
@@ -1188,6 +1380,7 @@ ID threadSelf( void );
    manage the mutex owner value at a level beyond what's necessary with
    other OSes */
 
+#define MUTEX_LOCKNAME( name )	&krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		NU_SEMAPHORE name##Mutex; \
 		BOOLEAN name##MutexInitialised; \
@@ -1316,6 +1509,7 @@ ULONG DosGetThreadID( void );
 
 /* Mutex management functions */
 
+#define MUTEX_LOCKNAME( name )	krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		HMTX name##Mutex; \
 		BOOLEAN name##MutexInitialised
@@ -1389,6 +1583,7 @@ ULONG DosGetThreadID( void );
    on the critical-section value without having to allocate memory for
    a struct to contain the critical-section data */
 
+#define MUTEX_LOCKNAME( name )	&krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		SysCriticalSectionType name##Mutex; \
 		BOOLEAN name##MutexInitialised
@@ -1450,6 +1645,126 @@ ULONG DosGetThreadID( void );
 
 /****************************************************************************
 *																			*
+*								Quadros/RTXC								*
+*																			*
+****************************************************************************/
+
+#elif defined( __Quadros__ )
+
+/* To use resource-management wrappers for the Quadros thread functions,
+   undefine the following */
+
+/* #define QUADROS_THREAD_WRAPPERS */
+
+//#include <rtxcapi.h>
+//#include <kthread.h>
+#pragma message( "Quadros header path faked" )
+#include <quadros_rtxcapi.h>
+#include <quadros_kthread.h>
+
+/* Object handles */
+
+#define THREAD_HANDLE			THREAD
+#define MUTEX_HANDLE			MUTX
+
+/* Indicate that ThreadX has non-scalar handles */
+
+#define NONSCALAR_HANDLES
+
+/* Mutex management functions.  ThreadX mutexes are reentrant so we don't 
+   have to hand-assemble reentrant mutexes as for many other OSes.  All 
+   ThreadX objects have names (presumably for debugging) but what the 
+   requirements for these are aren't documented so we just use a dummy name 
+   for everything.  Since we don't care whether the threads waiting on the 
+   mutex get woken up in priority order, we use TX_NO_INHERIT to ignore 
+   priority inheritance */
+
+#define MUTEX_LOCKNAME( name )	&krnlData->name##Mutex
+#define MUTEX_DECLARE_STORAGE( name ) \
+		MUTEX_HANDLE name##Mutex; \
+		BOOLEAN name##MutexInitialised
+#define MUTEX_CREATE( name, status ) \
+		status = CRYPT_OK; \
+		if( !krnlData->name##MutexInitialised ) \
+			{ \
+			if( tx_mutex_create( &krnlData->name##Mutex, "name", \
+								 TX_NO_INHERIT ) == TX_SUCCESS ) \
+				krnlData->name##MutexInitialised = TRUE; \
+			else \
+				status = CRYPT_ERROR; \
+			}
+#define MUTEX_DESTROY( name ) \
+		if( krnlData->name##MutexInitialised ) \
+			{ \
+			tx_mutex_get( &krnlData->name##Mutex, TX_WAIT_FOREVER ); \
+			tx_mutex_put( &krnlData->name##Mutex ); \
+			tx_mutex_delete( &krnlData->name##Mutex ); \
+			krnlData->name##MutexInitialised = FALSE; \
+			}
+#define MUTEX_LOCK( name ) \
+		tx_mutex_get( &krnlData->name##Mutex, TX_WAIT_FOREVER )
+#define MUTEX_UNLOCK( name ) \
+		tx_mutex_put( &krnlData->name##Mutex )
+
+/* Thread management functions.  ThreadX threads require that the user 
+   allocate the stack space for them, unlike virtually every other embedded 
+   OS, which make this at most a rarely-used option.  To handle this, we use 
+   our own wrappers.
+
+   The thread function's argument is a ULONG, since we use this as a pointer
+   to parameter data we declare it as a 'void *' since that's how it's
+   treated in practice.
+
+   We give the thread a mid-range priority value and preemption threshold of
+   15 (from a range of 0 = highest ... 31 = lowest) and a 50-tick timeslice.
+   The timeslice value is HAL-dependent so it's not really possible to tell 
+   how much runtime this will actually give the thread, anyone using cryptlib
+   with ThreadX will need to set an appropriate value for their HAL.  The
+   same goes for the sleep time, the code assumes that 1 tick = 10ms so we
+   divide by 10 to convert ms to ticks */
+
+#define THREADFUNC_DEFINE( name, arg )	void name( void *, void * )
+#define THREAD_CREATE( function, arg, threadHandle, syncHandle, status ) \
+			{ \
+			BYTE *threadStack = clAlloc( EMBEDDED_STACK_SIZE ); \
+			\
+			TS_DefThreadEntry( THREADA, function ); \
+			TS_DefThreadArg (THREADA, arg ); \
+			TS_ScheduleThread( THREADA ); \
+			status = CRYPT_OK; \
+			}
+#define THREAD_EXIT( sync )		tx_mutex_put( &sync ); \
+								tx_thread_terminate( tx_thread_identify() )
+#define THREAD_INITIALISER		0
+#define THREAD_SAME( thread1, thread2 )	( ( thread1 ) == ( thread2 ) )
+#define THREAD_SELF()			TS_GetThreadID
+#define THREAD_SLEEP( ms )		tx_thread_sleep( ( ms ) / 10 )
+#define THREAD_YIELD()			tx_thread_relinquish()
+#define THREAD_WAIT( sync, status ) \
+								if( !tx_mutex_get( &sync, TX_WAIT_FOREVER ) ) \
+									status = CRYPT_ERROR; \
+								tx_mutex_delete( &sync )
+#define THREAD_CLOSE( sync )	tx_thread_delete( &sync )
+
+/* Because of the problems with resource management of Quadros threads and
+   related metadata we no-op them out unless we're using wrappers by 
+   ensuring that any attempt to spawn a thread inside cryptlib fails,
+   falling back to the non-threaded alternative.  Note that cryptlib itself
+   is still thread-safe, it just can't do its init or keygen in an internal
+   background thread */
+
+#ifndef QUADROS_THREAD_WRAPPERS
+  #undef QUADROS_CREATE
+  #undef QUADROS_EXIT
+  #undef QUADROS_CLOSE
+  #define QUADROS_CREATE( function, arg, threadHandle, syncHandle, status ) \
+								status = CRYPT_ERROR
+  #define QUADROS_EXIT( sync )
+  #define QUADROS_CLOSE( sync )
+#endif /* !QUADROS_THREAD_WRAPPERS */
+
+/****************************************************************************
+*																			*
 *									RTEMS									*
 *																			*
 ****************************************************************************/
@@ -1480,6 +1795,7 @@ ULONG DosGetThreadID( void );
    We specify the priority ceiling as zero since it's not used for the
    semaphore type that we're creating */
 
+#define MUTEX_LOCKNAME( name )	krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		MUTEX_HANDLE name##Mutex; \
 		BOOLEAN name##MutexInitialised
@@ -1588,6 +1904,131 @@ rtems_id threadSelf( void );
 
 /****************************************************************************
 *																			*
+*									SMX										*
+*																			*
+****************************************************************************/
+
+#elif defined( __SMX__ )
+
+/* SMX typedefs 'BOOLEAN', which clashes with our own BOOLEAN, so we 
+   undefine it around the include of the SMX headers */
+
+#undef BOOLEAN
+#include <smx.h>
+#define BOOLEAN			int
+
+/* SMX redefined it's API completely from 3.x to 4.x, changing the somewhat
+   chaotic namespace to a cleaner one with smx_ prefixes for all functions,
+   and so on.  In order to work with the 3.x headers we use macros to map
+   them to the 4.x namespace */
+
+#if SMX_VERSION < 0x0400
+  #define PRI_NORM				NORM /* "Women. Can't live with 'em... pass the beer nuts" */
+  #define SMX_PRI_NOCHG			PRI_NOCHG
+  #define smx_ConvSecToTicks	SMX_SEC_TO_TICKS
+  #define smx_DelayMsec			SMX_DELAY_MSEC
+  #define smx_MutexCreate( pi, ceiling, name ) \
+								create_mutex( pi, ceiling )
+  #define smx_MutexDelete		delete_mutex
+  #define smx_MutexGet			get_mutex
+  #define smx_MutexRelease		rel_mutex
+  #define smx_TaskBump			bump_task
+  #define smx_TaskCreate( code, pri, stack_size, flags, name ) \
+								create_task( code, pri, stack_size )
+  #define smx_TaskDelete		delete_task
+  #define smx_TaskStartPar		start_par
+#endif /* SMX old-style namespace */
+
+/* Object handles */
+
+#define THREAD_HANDLE			TCB_PTR
+#define MUTEX_HANDLE			MUCB_PTR
+
+/* Mutex management functions.  SMX resource semaphores are re-entrant so we
+   don't have to jump through the hoops that are necessary with most other
+   OSes */
+
+#define MUTEX_LOCKNAME( name )	krnlData->name##Mutex
+#define MUTEX_DECLARE_STORAGE( name ) \
+		MUTEX_HANDLE name##Mutex; \
+		BOOLEAN name##MutexInitialised
+#define MUTEX_CREATE( name, status ) \
+		status = CRYPT_OK; \
+		if( !krnlData->name##MutexInitialised ) \
+			{ \
+			if( ( krnlData->name##Mutex = \
+						smx_MutexCreate( 0, 0, NULL ) ) != NULL ) \
+				krnlData->name##MutexInitialised = TRUE; \
+			else \
+				status = CRYPT_ERROR; \
+			}
+#define MUTEX_DESTROY( name ) \
+		if( krnlData->name##MutexInitialised ) \
+			{ \
+			smx_MutexGet( krnlData->name##Mutex, smx_ConvSecToTicks( 1 ) / 10 ); \
+			smx_MutexRelease( krnlData->name##Mutex ); \
+			smx_MutexDelete( &krnlData->name##Mutex ); \
+			krnlData->name##MutexInitialised = FALSE; \
+			}
+#define MUTEX_LOCK( name ) \
+		smx_MutexGet( krnlData->name##Mutex, smx_ConvSecToTicks( 1 ) / 10 )
+#define MUTEX_UNLOCK( name ) \
+		smx_MutexRelease( krnlData->name##Mutex )
+
+/* SMX has an odd way of implementing its thread_self() functionality, it
+   stores the current task's ID (a pointer to the TCB) in the global 
+   variable 'ct' ("current task"), so to get the current task ID we just
+   read the value of ct.  To make this a bit more obvious we define a macro
+   that makes it look like a standard SMX function */
+
+#define smx_GetCurrentTask()	ct
+
+/* Thread management functions.  We create the thread with the same priority 
+   as the calling thread, SMX threads are created in the suspended state so 
+   after we create the thread we have to trigger it to start it running.
+   
+   Exiting a task is a bit awkward, we need to call smx_TaskDelete() but
+   because of the odd way that thread_self() works we'd have to pass a
+   reference to the global current-task variable ct, which gets cleared by
+   smx_TaskDelete().  To deal with this we take a copy of ct and pass in
+   a reference to that */
+
+typedef void ( *SMX_THREAD_FNTR )( uint arg );
+#define THREADFUNC_DEFINE( name, arg )	void name( /*INT_SZ_TYPE = uint*/ void *arg )
+#define THREAD_CREATE( function, arg, threadHandle, syncHandle, status ) \
+			{ \
+			syncHandle = smx_MutexCreate( 0, 0, NULL ); \
+			if( ( threadHandle = smx_TaskCreate( ( CODE_PTR ) function, \
+							PRI_NORM, 0, SMX_FL_NONE, NULL ) ) == NULL ) \
+				{ \
+				smx_MutexDelete( &( syncHandle ) ); \
+				status = CRYPT_ERROR; \
+				} \
+			else \
+				{ \
+				smx_MutexGet( syncHandle, smx_ConvSecToTicks( 1 ) / 10 ); \
+				smx_TaskStartPar( threadHandle, ( uint ) arg ); \
+				status = CRYPT_OK; \
+				} \
+			}
+#define THREAD_EXIT( sync )		{ \
+								TCB_PTR ctCopy = ct; \
+								smx_TaskDelete( &ctCopy ); \
+								return; \
+								}
+#define THREAD_INITIALISER		NULL
+#define THREAD_SAME( thread1, thread2 )	( ( thread1 ) == ( thread2 ) )
+#define THREAD_SELF()			smx_GetCurrentTask()
+#define THREAD_SLEEP( ms )		smx_DelayMsec( ms )
+#define THREAD_YIELD()			smx_TaskBump( smx_GetCurrentTask(), SMX_PRI_NOCHG )
+#define THREAD_WAIT( sync, status )	\
+								if( !smx_MutexGet( sync, smx_ConvSecToTicks( 1 ) / 10 ) ) \
+									status = CRYPT_ERROR; \
+								smx_MutexDelete( &( sync ) )
+#define THREAD_CLOSE( sync )	smx_MutexRelease( sync )
+
+/****************************************************************************
+*																			*
 *									ThreadX									*
 *																			*
 ****************************************************************************/
@@ -1620,6 +2061,7 @@ rtems_id threadSelf( void );
    mutex get woken up in priority order, we use TX_NO_INHERIT to ignore 
    priority inheritance */
 
+#define MUTEX_LOCKNAME( name )	&krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		MUTEX_HANDLE name##Mutex; \
 		BOOLEAN name##MutexInitialised
@@ -1729,6 +2171,7 @@ rtems_id threadSelf( void );
    using automatic assignment of handles (which requires uITRON 4.0) we may
    as well use mutexes */
 
+#define MUTEX_LOCKNAME( name )	krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		MUTEX_HANDLE name##Mutex; \
 		BOOLEAN name##MutexInitialised; \
@@ -1884,9 +2327,7 @@ rtems_id threadSelf( void );
    undefine it around the include of the uC/OS-II headers */
 
 #undef BOOLEAN
-
 #include <ucos_ucos_ii.h>
-
 #define BOOLEAN			int
 
 /* uC/OS-II defines 'BYTE' for backwards-compatibility with uC/OS-I but
@@ -1904,6 +2345,7 @@ rtems_id threadSelf( void );
    of how mutexes work in App.Note 1002 makes it clear that they're not), we
    use the standard trylock()-style mechanism to work around this */
 
+#define MUTEX_LOCKNAME( name )	krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		MUTEX_HANDLE name##Mutex; \
 		BOOLEAN name##MutexInitialised; \
@@ -2102,6 +2544,7 @@ INT8U threadSelf( void );
    the kernel should have forced any remaining threads to exit by the time
    the shutdown occurs anyway */
 
+#define MUTEX_LOCKNAME( name )	&krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		pthread_mutex_t name##Mutex; \
 		BOOLEAN name##MutexInitialised; \
@@ -2132,12 +2575,18 @@ INT8U threadSelf( void );
 			if( !THREAD_SAME( krnlData->name##MutexOwner, THREAD_SELF() ) ) \
 				pthread_mutex_lock( &krnlData->name##Mutex ); \
 			else \
+				{ \
 				krnlData->name##MutexLockcount++; \
+				ANALYSER_HINT_RECURSIVE_LOCK( krnlData->name##Mutex ); \
+				} \
 			} \
 		krnlData->name##MutexOwner = THREAD_SELF();
 #define MUTEX_UNLOCK( name ) \
 		if( krnlData->name##MutexLockcount > 0 ) \
+			{ \
 			krnlData->name##MutexLockcount--; \
+			ANALYSER_HINT_RECURSIVE_UNLOCK( krnlData->name##Mutex ); \
+			} \
 		else \
 			{ \
 			krnlData->name##MutexOwner = THREAD_INITIALISER; \
@@ -2245,7 +2694,7 @@ INT8U threadSelf( void );
   #else
 	#define THREAD_YIELD()		sched_yield()
   #endif /* Slowaris 5.7 / 7.x or newer */
-#elif defined( _AIX ) || defined( __CYGWIN__ ) || \
+#elif defined( _AIX ) || defined( __Android__ ) || defined( __CYGWIN__ ) || \
 	  ( defined( __hpux ) && ( OSVERSION >= 11 ) ) || \
 	  defined( __NetBSD__ ) || defined( __QNX__ ) || defined( __UCLIBC__ )
   #define THREAD_YIELD()		sched_yield()
@@ -2400,6 +2849,7 @@ INT8U threadSelf( void );
    binary semaphore with no (or at least near-infnite) timeout, in other 
    words a mutex */
 
+#define MUTEX_LOCKNAME( name )	krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		MUTEX_HANDLE name##Mutex; \
 		BOOLEAN name##MutexInitialised
@@ -2505,7 +2955,7 @@ INT8U threadSelf( void );
 *																			*
 ****************************************************************************/
 
-#elif defined( __VXWORKS__ )
+#elif defined( __VxWorks__ )
 
 #include <vxWorks.h>
 #include <semLib.h>
@@ -2520,6 +2970,7 @@ INT8U threadSelf( void );
    only mutex semaphores) are re-entrant, so we don't have to jump through
    the hoops that are necessary with most other OSes */
 
+#define MUTEX_LOCKNAME( name )	krnlData->name##Mutex
 #define MUTEX_DECLARE_STORAGE( name ) \
 		MUTEX_HANDLE name##Mutex; \
 		BOOLEAN name##MutexInitialised
@@ -2541,7 +2992,7 @@ INT8U threadSelf( void );
 			krnlData->name##MutexInitialised = FALSE; \
 			}
 #define MUTEX_LOCK( name ) \
-		semTake( krnlData->name##Mutex, WAIT_FOREVER ); \
+		semTake( krnlData->name##Mutex, WAIT_FOREVER ); 
 #define MUTEX_UNLOCK( name ) \
 		semGive( krnlData->name##Mutex );
 
@@ -2555,9 +3006,16 @@ INT8U threadSelf( void );
 #else
   #define TASK_ATTRIBUTES	0
 #endif /* PPC vs.non-PPC register saves */
+#ifndef T_PRIORITY
+  #define T_PRIORITY		50
+#endif /* T_PRIORITY */
 
 /* VxWorks tasks are exited using the standard ANSI exit() function rather
    than any OS-specific exit mechanism.
+
+   The argument to the thread function is actually ten long's, but all we
+   care about is the first one.  In addition since we're using it as a 
+   pointer we cheat a bit and declare it as a 'void *' rather than a 'long'.
 
    Task sleep times are measured in implementation-specific ticks rather
    than ms, but it's usually close enough to allow us to treat them as being
@@ -2566,12 +3024,12 @@ INT8U threadSelf( void );
    it's only used for general short delays rather than any fixed amount of
    time so this isn't necessary */
 
-#define THREADFUNC_DEFINE( name, arg )	thread_id name( void *arg )
+#define THREADFUNC_DEFINE( name, arg )	void name( /*long*/ void *arg )
 #define THREAD_CREATE( function, arg, threadHandle, syncHandle, status ) \
 			{ \
 			syncHandle = semBCreate( SEM_Q_FIFO, SEM_EMPTY ); \
 			threadHandle = taskSpawn( NULL, T_PRIORITY, TASK_ATTRIBUTES, \
-									  EMBEDDED_STACK_SIZE, function, \
+									  EMBEDDED_STACK_SIZE, ( FUNCPTR ) function, \
 									  ( int ) arg, 0, 0, 0, 0, 0, 0, 0, 0, 0 ); \
 			if( threadHandle == ERROR ) \
 				{ \
@@ -2684,6 +3142,7 @@ INT8U threadSelf( void );
    problems with this in internal code paths), but luckily is triggered 
    extremely rarely, if ever */
 
+#define MUTEX_LOCKNAME( name )	&krnlData->name##CriticalSection
 #define MUTEX_DECLARE_STORAGE( name ) \
 		CRITICAL_SECTION name##CriticalSection; \
 		BOOLEAN name##CriticalSectionInitialised
@@ -2859,6 +3318,7 @@ void threadYield( void );
 
 /* Mutex management functions */
 
+#define MUTEX_LOCKNAME( name )	&krnlData->name##CriticalSection
 #define MUTEX_DECLARE_STORAGE( name ) \
 		KMUTEX name##CriticalSection; \
 		BOOLEAN name##CriticalSectionInitialised
@@ -2890,6 +3350,7 @@ void threadYield( void );
 #define THREAD_HANDLE							int
 #define MUTEX_HANDLE							int
 
+#define MUTEX_LOCKNAME( name )
 #define MUTEX_DECLARE_STORAGE( name )
 #define MUTEX_CREATE( name, status )			status = CRYPT_OK
 #define MUTEX_DESTROY( name )
@@ -2920,9 +3381,9 @@ void threadYield( void );
    it if it hasn't already been defined above */
 
 #ifdef NONSCALAR_HANDLES
-  #define DUMMY_INIT_MUTEX		{ 0 }
+  #define DUMMY_INIT_MUTEX		= { 0 }
 #else
-  #define DUMMY_INIT_MUTEX		( MUTEX_HANDLE ) DUMMY_INIT
+  #define DUMMY_INIT_MUTEX		= ( MUTEX_HANDLE ) 0
 #endif /* Scalar vs. non-scalar thread handles */
 
 #endif /* _THREAD_DEFINED */

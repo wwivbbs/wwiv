@@ -4,7 +4,7 @@
 # Make sure that we've been given a single argument consisting of the OS
 # name.
 
-if [ "$1" = "" ] ; then
+if [ -z "$1" ] ; then
 	echo "$0: Missing OS name." >&2 ;
 	exit 1 ;
 fi

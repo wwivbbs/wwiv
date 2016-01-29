@@ -66,6 +66,8 @@
   #include "crypt/idealocl.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_IDEA
+
 void idea_cbc_encrypt(const unsigned char *in, unsigned char *out, long length,
 	     IDEA_KEY_SCHEDULE *ks, unsigned char *iv, int encrypt)
 	{
@@ -173,3 +175,4 @@ void idea_encrypt(unsigned long *d, IDEA_KEY_SCHEDULE *key)
 	d[0]=(t0&0xffff)|((x1&0xffff)<<16);
 	d[1]=(x4&0xffff)|((t1&0xffff)<<16);
 	}
+#endif /* USE_IDEA */

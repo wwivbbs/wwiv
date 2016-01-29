@@ -184,12 +184,18 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
   bool done = false;
   string rollover_line;
   while (!done && !hangup) {
-    bool bAllowPrevious = (*curli > 0) ? true : false;
-    while (inli(&current_line, &rollover_line, 160, true, bAllowPrevious)) {
+    while (inli(&current_line, &rollover_line, 160, true, (*curli > 0))) {
+      // returning true means we back spaced past the current line.
+      // intuitive eh?
       (*curli)--;
-      rollover_line = lin.at(*curli);
-      if (rollover_line.length() > session()->user()->GetScreenChars() - 1) {
-        rollover_line.resize(session()->user()->GetScreenChars() - 2);
+      if (*curli >= 0) {
+        // Don't keep retreating past line 0.
+        rollover_line = lin.at(*curli);
+        if (rollover_line.length() > session()->user()->GetScreenChars() - 1) {
+          rollover_line.resize(session()->user()->GetScreenChars() - 2);
+        }
+      } else {
+        *curli = 0;
       }
     }
     if (hangup) {
@@ -306,12 +312,12 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
       if (*curli == size_int(lin)) {
         // we're inserting a new line at the end.
         lin.emplace_back(current_line);
-        // Since we added the line, let's move forward.
-        (*curli)++;
       } else if (*curli < size_int(lin)) {
         // replacing an older line.
         lin.at(*curli).assign(current_line);
       }
+      // Since we added the line, let's move forward.
+      (*curli)++;
       if (*curli == (maxli + 1)) {
         bout << "\r\n-= No more lines, last line lost =-\r\n/S to save\r\n\n";
         (*curli)--;

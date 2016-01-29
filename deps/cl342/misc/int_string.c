@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						  cryptlib Internal String API						*
-*						Copyright Peter Gutmann 1992-2007					*
+*						Copyright Peter Gutmann 1992-2014					*
 *																			*
 ****************************************************************************/
 
@@ -19,7 +19,7 @@
 
 /* Perform various string-processing operations */
 
-CHECK_RETVAL_STRINGOP( strLen ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_STRINGOP STDC_NONNULL_ARG( ( 1 ) ) \
 int strFindCh( IN_BUFFER( strLen ) const char *str, 
 			   IN_LENGTH_SHORT const int strLen, 
 			   IN_CHAR const int findCh )
@@ -40,7 +40,7 @@ int strFindCh( IN_BUFFER( strLen ) const char *str,
 	return( -1 );
 	}
 
-CHECK_RETVAL_STRINGOP( strLen ) STDC_NONNULL_ARG( ( 1, 3 ) ) \
+CHECK_RETVAL_STRINGOP STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int strFindStr( IN_BUFFER( strLen ) const char *str, 
 				IN_LENGTH_SHORT const int strLen, 
 				IN_BUFFER( findStrLen ) const char *findStr, 
@@ -66,7 +66,7 @@ int strFindStr( IN_BUFFER( strLen ) const char *str,
 	return( -1 );
 	}
 
-CHECK_RETVAL_STRINGOP( strLen ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_STRINGOP STDC_NONNULL_ARG( ( 1 ) ) \
 int strSkipWhitespace( IN_BUFFER( strLen ) const char *str, 
 					   IN_LENGTH_SHORT const int strLen )
 	{
@@ -80,7 +80,7 @@ int strSkipWhitespace( IN_BUFFER( strLen ) const char *str,
 	return( ( i < strLen ) ? i : -1 );
 	}
 
-CHECK_RETVAL_STRINGOP( strLen ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_STRINGOP STDC_NONNULL_ARG( ( 1 ) ) \
 int strSkipNonWhitespace( IN_BUFFER( strLen ) const char *str, 
 						  IN_LENGTH_SHORT const int strLen )
 	{
@@ -97,8 +97,8 @@ int strSkipNonWhitespace( IN_BUFFER( strLen ) const char *str,
 	return( i > 0 ? i : -1 );
 	}
 
-CHECK_RETVAL_STRINGOP( strLen ) STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int strStripWhitespace( OUT_OPT_PTR const char **newStringPtr, 
+CHECK_RETVAL_STRINGOP STDC_NONNULL_ARG( ( 1, 2 ) ) \
+int strStripWhitespace( OUT_PTR_COND const char **newStringPtr, 
 						IN_BUFFER( strLen ) const char *string, 
 						IN_LENGTH_SHORT const int strLen )
 	{
@@ -155,13 +155,13 @@ int strStripWhitespace( OUT_OPT_PTR const char **newStringPtr,
    The order of the parameters is a bit unusual, normally we'd use 
    { str, strLen } but this makes things a bit confusing for the caller, for
    whom it's more logical to group the parameters based on the overall
-   operation beingn performed, which to extract a substring beginning at
+   operation being performed, which to extract a substring beginning at
    startOffset is { str, startOffset, strLen } */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int strExtract( OUT_OPT_PTR const char **newStringPtr, 
+int strExtract( OUT_PTR_COND const char **newStringPtr, 
 				IN_BUFFER( strLen ) const char *string,
-				IN_LENGTH_SHORT const int startOffset,
+				IN_LENGTH_SHORT_Z const int startOffset,
 				IN_LENGTH_SHORT const int strLen )
 	{
 	const int newLen = strLen - startOffset;
@@ -213,20 +213,28 @@ int strGetNumeric( IN_BUFFER( strLen ) const char *str,
 	if( strLen < 1 || strLen > 7 )
 		return( CRYPT_ERROR_BADDATA );
 
-	/* Process the numeric string */
+	/* Process the numeric string.  Note that the redundant 'value < 0' 
+	   check is necessary in order to prevent gcc from detecting what it 
+	   thinks is Undefined Behaviour (UB) and removing further checks from 
+	   the code.  In addition the second check for MAX_INTLENGTH - ch isn't
+	   really necessary because we know that value < MAX_INTLENGTH / 10,
+	   which means that value <= MAX_INTLENGTH / 10 - 1, so 
+	   value * 10 <= MAX_INTLENGTH - 10, therefore 
+	   value * 10 < MAX_INTLENGTH - 9, so value * 10 < MAX_INTLENGTH - ch,
+	   however we leave it in to make the condition explicit */
 	for( value = 0, i = 0; i < strLen; i++ )
 		{
-		const int valTmp = value * 10;
 		const int ch = byteToInt( str[ i ] ) - '0';
 
 		if( ch < 0 || ch > 9 )
 			return( CRYPT_ERROR_BADDATA );
-		if( value >= ( MAX_INTLENGTH / 10 ) || \
-			valTmp >= MAX_INTLENGTH - ch )
+		if( value < 0 || value >= MAX_INTLENGTH / 10 )
 			return( CRYPT_ERROR_BADDATA );
-		value = valTmp + ch;
-		if( value < 0 || value > MAX_INTLENGTH )
+		value *= 10;
+		if( value >= MAX_INTLENGTH - ch )
 			return( CRYPT_ERROR_BADDATA );
+		value += ch;
+		ENSURES( value >= 0 && value < MAX_INTLENGTH );
 		}
 
 	/* Make sure that the final value is within the specified range */
@@ -244,10 +252,16 @@ int strGetHex( IN_BUFFER( strLen ) const char *str,
 			   IN_RANGE( 0, 100 ) const int minValue, 
 			   IN_RANGE( minValue, MAX_INTLENGTH ) const int maxValue )
 	{
+#ifdef SYSTEM_16BIT
+	const int strMaxLen = ( maxValue > 0xFFF ) ? 4 : \
+						  ( maxValue > 0xFF ) ? 3 : \
+						  ( maxValue > 0xF ) ? 2 : 1;
+#else
 	const int strMaxLen = ( maxValue > 0xFFFF ) ? 5 : \
 						  ( maxValue > 0xFFF ) ? 4 : \
 						  ( maxValue > 0xFF ) ? 3 : \
 						  ( maxValue > 0xF ) ? 2 : 1;
+#endif /* SYSTEM_16BIT */
 	int i, value = 0;
 
 	assert( isReadPtr( str, strLen ) );
@@ -265,7 +279,9 @@ int strGetHex( IN_BUFFER( strLen ) const char *str,
 	if( strLen < 1 || strLen > strMaxLen )
 		return( CRYPT_ERROR_BADDATA );
 
-	/* Process the numeric string */
+	/* Process the numeric string.  We don't have to perform the same level 
+	   of overflow checking as we do in strGetNumeric() because the maximum
+	   value is capped to fit into an int */
 	for( i = 0; i < strLen; i++ )
 		{
 		const int ch = toLower( str[ i ] );
@@ -286,7 +302,7 @@ int strGetHex( IN_BUFFER( strLen ) const char *str,
 /* Determine whether a string is printable or not, used when checking whether
    it should be displayed to the caller as a text string or a hex dump */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 BOOLEAN strIsPrintable( IN_BUFFER( strLen ) const void *str, 
 						IN_LENGTH_SHORT const int strLen )
 	{
@@ -299,7 +315,9 @@ BOOLEAN strIsPrintable( IN_BUFFER( strLen ) const void *str,
 
 	for( i = 0; i < strLen; i++ )
 		{
-		if( !isPrint( strPtr[ i ] ) )
+		const int ch = byteToInt( strPtr[ i ] );
+
+		if( !isValidTextChar( ch ) )
 			return( FALSE );
 		}
 
@@ -309,12 +327,19 @@ BOOLEAN strIsPrintable( IN_BUFFER( strLen ) const void *str,
 /* Sanitise a string before passing it back to the user.  This is used to
    clear potential problem characters (for example control characters)
    from strings passed back from untrusted sources (nec verbum verbo 
-   curabis reddere fidus interpres - Horace).  The function returns a 
-   pointer to the string to allow it to be used in the form 
-   printf( "..%s..", sanitiseString( string, strLen ) ).  In addition it
-   formats the data to fit a fixed-length buffer, if the string is longer 
-   than the indicated buffer size then it appends a '[...]' at the end of 
-   the buffer to indicate that further data was truncated.   The 
+   curabis reddere fidus interpres - Horace).
+   
+   This function assumes that the string is in ASCII form rather than some
+   exotic character set, since this is used for processing text error
+   messages sent to us by remote systems we can reasonably assume that 
+   they should be be, well, text error messages so that we're within our
+   rights to filter out non-text data.
+   
+   The function returns a pointer to the string to allow it to be used in 
+   the form printf( "..%s..", sanitiseString( string, strLen ) ).  In 
+   addition it formats the data to fit a fixed-length buffer, if the string 
+   is longer than the indicated buffer size then it appends a '[...]' at the 
+   end of the buffer to indicate that further data was truncated.   The 
    transformation applied is as follows:
 
 	  buffer					strMaxLen
@@ -334,10 +359,11 @@ BOOLEAN strIsPrintable( IN_BUFFER( strLen ) const void *str,
    become "Error string [...]" */
 
 STDC_NONNULL_ARG( ( 1 ) ) \
-char *sanitiseString( INOUT_BUFFER( strMaxLen, strLen ) BYTE *string, 
+char *sanitiseString( INOUT_BUFFER( strMaxLen, strLen ) void *string, 
 					  IN_LENGTH_SHORT const int strMaxLen, 
 					  IN_LENGTH_SHORT const int strLen )
 	{
+	BYTE *strPtr = string;	/* See comment below */
 	const int strDataLen = min( strLen, strMaxLen );
 	int i;
 
@@ -349,31 +375,34 @@ char *sanitiseString( INOUT_BUFFER( strMaxLen, strLen ) BYTE *string,
 				  "(Internal error)" );
 
 	/* Remove any potentially unsafe characters from the string, effectively
-	   converting it from a 'BYTE *' to a 'char *' */
+	   converting it from a 'BYTE *' to a 'char *'.  This is also the reason
+	   why the function prototype declares it as a 'void *', if it's declared
+	   as a 'BYTE *' then the conversion process gives compilers and static
+	   analysers headaches */
 	for( i = 0; i < strDataLen; i++ )
 		{
-		const int ch = byteToInt( string[ i ] );
+		const int ch = byteToInt( strPtr[ i ] );
 
-		if( ch <= 0 || ch > 0x7F || !isPrint( ch ) )
-			string[ i ] = '.';
+		if( !isValidTextChar( ch ) )
+			strPtr[ i ] = '.';
 		}
 
 	/* If there was more input than we could fit into the buffer and 
 	   there's room for a continuation indicator, add this to the output 
 	   string */
-	if( ( strLen > strMaxLen ) && ( strMaxLen > 8 ) )
-		memcpy( string + strMaxLen - 6, "[...]", 5 );	/* Extra -1 for '\0' */
+	if( ( strLen >= strMaxLen ) && ( strMaxLen > 8 ) )
+		memcpy( strPtr + strMaxLen - 6, "[...]", 5 );	/* Extra -1 for '\0' */
 
 	/* Terminate the string to allow it to be used in printf()-style
 	   functions */
 	if( strLen < strMaxLen )
-		string[ strLen ] = '\0';
+		strPtr[ strLen ] = '\0';
 	else
-		string[ strMaxLen - 1 ] = '\0';
+		strPtr[ strMaxLen - 1 ] = '\0';
 
 	/* We've converted the string from BYTE * to char * so it can be 
 	   returned as a standard text string */
-	return( ( char * ) string );
+	return( ( char * ) strPtr );
 	}
 
 /****************************************************************************
@@ -443,3 +472,140 @@ int wcstombs_s( OUT size_t *retval,
 	return( 0 );
 	}
 #endif /* !__STDC_LIB_EXT1__ */
+
+/****************************************************************************
+*																			*
+*								Self-test Functions							*
+*																			*
+****************************************************************************/
+
+/* Test code for the above functions */
+
+#ifndef NDEBUG
+
+CHECK_RETVAL_BOOL \
+BOOLEAN testIntString( void )
+	{
+	BYTE buffer[ 16 + 8 ];
+	const char *stringPtr;
+	int stringLen, value;
+
+	/* Test strFindCh() */
+	if( strFindCh( "abcdefgh", 8, 'a' ) != 0 || \
+		strFindCh( "abcdefgh", 8, 'd' ) != 3 || \
+		strFindCh( "abcdefgh", 8, 'h' ) != 7 || \
+		strFindCh( "abcdefgh", 8, 'x' ) != -1 )
+		return( FALSE );
+
+	/* Test strFindStr() */
+	if( strFindStr( "abcdefgh", 8, "abc", 3 ) != 0 || \
+		strFindStr( "abcdefgh", 8, "fgh", 3 ) != 5 || \
+		strFindStr( "abcdefgh", 8, "ghi", 3 ) != -1 || \
+		strFindStr( "abcdefgh", 8, "abcdefghi", 9 ) != -1 )
+		return( FALSE );
+
+	/* Test strSkipWhitespace() */
+	if( strSkipWhitespace( "abcdefgh", 8 ) != 0 || \
+		strSkipWhitespace( " abcdefgh", 9 ) != 1 || \
+		strSkipWhitespace( " \t abcdefgh", 11 ) != 3 || \
+		strSkipWhitespace( " x abcdefgh", 11 ) != 1 || \
+		strSkipWhitespace( "  \t ", 4 ) != -1 )
+		return( FALSE );
+
+	/* Test strSkipNonWhitespace() */
+	if( strSkipNonWhitespace( "abcdefgh", 8 ) != 8 || \
+		strSkipNonWhitespace( " abcdefgh", 9 ) != -1 || \
+		strSkipNonWhitespace( "abcdefgh ", 9 ) != 8 || \
+		strSkipNonWhitespace( "abcdefgh x ", 11 ) != 8 )
+		return( FALSE );
+
+	/* Test strStripWhitespace() */
+	stringLen = strStripWhitespace( &stringPtr, "abcdefgh", 8 );
+	if( stringLen != 8 || memcmp( stringPtr, "abcdefgh", 8 ) )
+		return( FALSE );
+	stringLen = strStripWhitespace( &stringPtr, " abcdefgh", 9 );
+	if( stringLen != 8 || memcmp( stringPtr, "abcdefgh", 8 ) )
+		return( FALSE );
+	stringLen = strStripWhitespace( &stringPtr, "abcdefgh ", 9 );
+	if( stringLen != 8 || memcmp( stringPtr, "abcdefgh", 8 ) )
+		return( FALSE );
+	stringLen = strStripWhitespace( &stringPtr, " abcdefgh ", 10 );
+	if( stringLen != 8 || memcmp( stringPtr, "abcdefgh", 8 ) )
+		return( FALSE );
+	stringLen = strStripWhitespace( &stringPtr, " x abcdefgh ", 12 );
+	if( stringLen != 10 || memcmp( stringPtr, "x abcdefgh", 10 ) )
+		return( FALSE );
+	stringLen = strStripWhitespace( &stringPtr, " abcdefgh x ", 12 );
+	if( stringLen != 10 || memcmp( stringPtr, "abcdefgh x", 10 ) )
+		return( FALSE );
+	stringLen = strStripWhitespace( &stringPtr, "  \t ", 4 );
+	if( stringLen != -1 || stringPtr != NULL )
+		return( FALSE );
+
+	/* Test strExtract() */
+	stringLen = strExtract( &stringPtr, "abcdefgh", 4, 8 );
+	if( stringLen != 4 || memcmp( stringPtr, "efgh", 4 ) )
+		return( FALSE );
+	stringLen = strExtract( &stringPtr, "abcd  efgh", 4, 10 );
+	if( stringLen != 4 || memcmp( stringPtr, "efgh", 4 ) )
+		return( FALSE );
+	stringLen = strExtract( &stringPtr, "abcd  efgh  ", 4, 12 );
+	if( stringLen != 4 || memcmp( stringPtr, "efgh", 4 ) )
+		return( FALSE );
+	stringLen = strExtract( &stringPtr, "abcd  efgh  ij  ", 4, 16 );
+	if( stringLen != 8 || memcmp( stringPtr, "efgh  ij", 8 ) )
+		return( FALSE );
+
+
+	/* Test strGetNumeric() */
+	if( strGetNumeric( "0", 1, &value, 0, 10 ) != CRYPT_OK || value != 0 || \
+		strGetNumeric( "00", 2, &value, 0, 10 ) != CRYPT_OK || value != 0 || \
+		strGetNumeric( "1234", 4, &value, 0, 2000 ) != CRYPT_OK || value != 1234 || \
+		strGetNumeric( "1234x", 5, &value, 0, 2000 ) != CRYPT_ERROR_BADDATA || value != 0 || \
+		strGetNumeric( "x1234", 5, &value, 0, 2000 ) != CRYPT_ERROR_BADDATA || value != 0 || \
+		strGetNumeric( "1000", 4, &value, 0, 1000 ) != CRYPT_OK || value != 1000 || \
+		strGetNumeric( "1001", 4, &value, 0, 1000 ) != CRYPT_ERROR_BADDATA || value != 0 )
+		return( FALSE );
+
+	/* Test strGetHex() */
+	if( strGetHex( "0", 1, &value, 0, 1000 ) != CRYPT_OK || value != 0 || \
+		strGetHex( "1234", 4, &value, 0, 0x2000 ) != CRYPT_OK || value != 0x1234 || \
+		strGetHex( "1234x", 5, &value, 0, 0x2000 ) != CRYPT_ERROR_BADDATA || value != 0 || \
+		strGetHex( "x1234", 5, &value, 0, 0x2000 ) != CRYPT_ERROR_BADDATA || value != 0 || \
+		strGetHex( "12EE", 4, &value, 0, 0x12EE ) != CRYPT_OK || value != 0x12EE || \
+		strGetHex( "12EF", 4, &value, 0, 0x12EE ) != CRYPT_ERROR_BADDATA || value != 0 )
+		return( FALSE );
+
+	/* Test sanitiseString() */
+	memcpy( buffer, "abcdefgh", 8 );
+	stringPtr = sanitiseString( buffer, 16, 8 );
+	if( memcmp( stringPtr, "abcdefgh", 9 ) )
+		return( FALSE );
+	memcpy( buffer, "abc\x12" "efgh", 8 );
+	stringPtr = sanitiseString( buffer, 16, 8 );
+	if( memcmp( stringPtr, "abc.efgh", 9 ) )
+		return( FALSE );
+	memcpy( buffer, "abcdefgh", 8 );
+	stringPtr = sanitiseString( buffer, 7, 8 );
+	if( memcmp( stringPtr, "abcdef", 7 ) )
+		return( FALSE );
+	memcpy( buffer, "abcdefgh", 8 );
+	stringPtr = sanitiseString( buffer, 8, 8 );
+	if( memcmp( stringPtr, "abcdefg", 8 ) )
+		return( FALSE );
+	memcpy( buffer, "abcdefghij", 10 );
+	stringPtr = sanitiseString( buffer, 9, 10 );
+	if( memcmp( stringPtr, "abc[...]", 9 ) )
+		return( FALSE );
+	memcpy( buffer, "abcdefghij", 10 );
+	stringPtr = sanitiseString( buffer, 10, 10 );
+	if( memcmp( stringPtr, "abcd[...]", 10 ) )
+		return( FALSE );
+	memcpy( buffer, "abcdefghij", 10 );
+	stringPtr = sanitiseString( buffer, 11, 10 );
+	if( memcmp( stringPtr, "abcdefghij", 11 ) )
+		return( FALSE );
+
+	return( TRUE );
+	}
+#endif /* !NDEBUG */

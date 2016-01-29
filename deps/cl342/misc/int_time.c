@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						cryptlib Internal Time/Timer API					*
-*						Copyright Peter Gutmann 1992-2007					*
+*						Copyright Peter Gutmann 1992-2014					*
 *																			*
 ****************************************************************************/
 
@@ -30,6 +30,10 @@
    range check to avoid being caught by conversion problems if time_t is a 
    type too far removed from int */
 
+#ifndef NDEBUG
+static time_t testTimeValue = 0;
+#endif /* NDEBUG */
+
 time_t getTime( void )
 	{
 	const time_t theTime = time( NULL );
@@ -46,6 +50,13 @@ time_t getTime( void )
 time_t getApproxTime( void )
 	{
 	const time_t theTime = time( NULL );
+
+	/* If we're running a self-test with externally-controlled time, return
+	   the pre-set time value */
+#ifndef NDEBUG
+	if( testTimeValue != 0 )
+		return( testTimeValue );
+#endif /* NDEBUG */
 
 	if( ( theTime == ( time_t ) -1 ) || ( theTime <= MIN_TIME_VALUE ) )
 		{
@@ -66,7 +77,11 @@ time_t getReliableTime( IN_HANDLE const CRYPT_HANDLE cryptHandle )
 	REQUIRES_EXT( ( cryptHandle == SYSTEM_OBJECT_HANDLE || \
 					isHandleRangeValid( cryptHandle ) ), 0 );
 
-	/* Get the dependent device for the object that needs the time */
+	/* Get the dependent device for the object that needs the time.  This
+	   is typically a private key being used for signing something that 
+	   needs a timestamp, so what we're doing here is finding a time source
+	   associated with that key, for example the HSM that the key is stored
+	   in */
 	status = krnlSendMessage( cryptHandle, IMESSAGE_GETDEPENDENT,
 							  &cryptDevice, OBJECT_TYPE_DEVICE );
 	if( cryptStatusError( status ) )
@@ -101,15 +116,13 @@ time_t getReliableTime( IN_HANDLE const CRYPT_HANDLE cryptHandle )
 ****************************************************************************/
 
 /* Monotonic timer interface that protects against the system clock being 
-   changed during a timed operation like network I/O.  Even without 
-   deliberate fiddling with the system clock, a timeout during a DST switch 
-   can cause something like a 5s wait to turn into a 1hr 5s wait, so we have 
-   to abstract the standard time API into a monotonic time API.  Since these 
-   functions are purely peripheral to other operations (for example handling 
-   timeouts for network I/O) they never fail but simply return good-enough 
-   results if there's a problem (although they assert in debug mode).  This 
-   is because we don't want to abort a network session just because we've 
-   detected some trivial clock irregularity.
+   changed during a timed operation like network I/O, so we have to abstract 
+   the standard time API into a monotonic time API.  Since these functions 
+   are purely peripheral to other operations (for example handling timeouts 
+   for network I/O) they never fail but simply return good-enough results if 
+   there's a problem (although they assert in debug mode).  This is because 
+   we don't want to abort a network session just because we've detected some 
+   trivial clock irregularity.
 
    The way this works is that we record the following information for each
    timing interval:
@@ -125,8 +138,8 @@ time_t getReliableTime( IN_HANDLE const CRYPT_HANDLE cryptHandle )
    clock change has occurred and can try and correct it.  Moving forwards
    by an unexpected amount is a bit more tricky than moving back because 
    it's hard to define "unexpected", so we use an estimation method that 
-   detects the typical reasons for a clock leap (DST adjust) without 
-   yielding false positives */
+   detects the typical reasons for a clock leap (an attempt to handle a DST 
+   adjust by changing the clock) without yielding false positives */
 
 CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 static BOOLEAN sanityCheck( const MONOTIMER_INFO *timerInfo )
@@ -166,7 +179,7 @@ static void handleTimeOutOfBounds( INOUT MONOTIMER_INFO *timerInfo )
 	timerInfo->origTimeout = timerInfo->timeRemaining = 0;
 	}
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 static BOOLEAN correctMonoTimer( INOUT MONOTIMER_INFO *timerInfo,
 								 const time_t currentTime )
 	{
@@ -191,19 +204,19 @@ static BOOLEAN correctMonoTimer( INOUT MONOTIMER_INFO *timerInfo,
 		{
 		/* If we're past the timer end time, check to see whether it's 
 		   jumped by a suspicious amount.  If we're more than 30 minutes 
-		   past the timeout (which will catch things like DST changes) and 
-		   the initial timeout was less than the change (to avoid a false 
-		   positive if we've been waiting > 30 minutes for a legitimate 
-		   timeout), we need to correct this.  This can still fail if (for 
-		   example) we have a relatively short timeout and we're being run
-		   in a VM that gets suspended for more than 30 minutes and then
-		   restarted, but by then any peer communicating with us should have
-		   long since given up waiting for a response and timed out the
-		   connection.  In any case someone fiddling with suspending 
-		   processes in this manner, which will cause problems for anything
-		   doing network I/O, should be prepared to handle any problems that
-		   arise, for example by ensuring that current network I/O has
-		   completed before suspending the process */
+		   past the timeout (which will catch things like attempted DST 
+		   corrections) and the initial timeout was less than the change (to 
+		   avoid a false positive if we've been waiting > 30 minutes for a 
+		   legitimate timeout), we need to correct this.  This can still 
+		   fail if (for example) we have a relatively short timeout and 
+		   we're being run in a VM that gets suspended for more than 30 
+		   minutes and then restarted, but by then any peer communicating 
+		   with us should have long since given up waiting for a response 
+		   and timed out the connection.  In any case someone fiddling with 
+		   suspending processes in this manner, which will cause problems 
+		   for anything doing network I/O, should be prepared to handle any 
+		   problems that arise, for example by ensuring that current network 
+		   I/O has completed before suspending the process */
 		if( currentTime > timerInfo->endTime )
 			{
 			const time_t delta = currentTime - timerInfo->endTime;
@@ -216,8 +229,21 @@ static BOOLEAN correctMonoTimer( INOUT MONOTIMER_INFO *timerInfo,
 	if( !needsCorrection )
 		return( TRUE );
 
-	/* The time information has been changed, correct the recorded time
-	   information for the new time */
+	/* The time information has been changed, correct the recorded time 
+	   information for the new time.
+	   
+	   The checking for overflow in time_t is impossible to perform when the
+	   compiler uses gcc's braindamaged interpretation of the C standard.
+	   A compiler like MSVC knows that a time_t is an int or long and 
+	   produces the expected code from the following, a compiler like gcc 
+	   also knows that a time_t is an int or a long but assumes that it 
+	   could also be a GUID or a variant record or anonymous union or packed 
+	   bitfield and therefore removes the checks in the code, because trying 
+	   to perform the check on a time_t is undefined behaviour (UB).  There 
+	   is no way to work around this issue apart from switching to a less 
+	   braindamaged compiler, so we leave the code there for sane compilers
+	   under the acknowledgement that there's no way to address this with 
+	   gcc */
 	if( currentTime >= ( MAX_INTLENGTH - timerInfo->timeRemaining ) )
 		{
 		DEBUG_DIAG(( "Invalid monoTimer time correction period" ));
@@ -240,8 +266,8 @@ static BOOLEAN correctMonoTimer( INOUT MONOTIMER_INFO *timerInfo,
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int setMonoTimer( INOUT MONOTIMER_INFO *timerInfo, 
-				  IN_INT const int duration )
+int setMonoTimer( OUT MONOTIMER_INFO *timerInfo, 
+				  IN_INT_Z const int duration )
 	{
 	const time_t currentTime = getApproxTime();
 	BOOLEAN initOK;
@@ -301,7 +327,7 @@ void extendMonoTimer( INOUT MONOTIMER_INFO *timerInfo,
 
 CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 BOOLEAN checkMonoTimerExpiryImminent( INOUT MONOTIMER_INFO *timerInfo,
-									  IN_INT const int timeLeft )
+									  IN_INT_Z const int timeLeft )
 	{
 	const time_t currentTime = getApproxTime();
 	time_t timeRemaining;
@@ -333,7 +359,7 @@ BOOLEAN checkMonoTimerExpiryImminent( INOUT MONOTIMER_INFO *timerInfo,
 		timeRemaining = 0;
 		}
 	timerInfo->timeRemaining = timeRemaining;
-	return( ( timerInfo->timeRemaining < timeLeft ) ? TRUE : FALSE );
+	return( ( timerInfo->timeRemaining <= timeLeft ) ? TRUE : FALSE );
 	}
 
 CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
@@ -341,3 +367,98 @@ BOOLEAN checkMonoTimerExpired( INOUT MONOTIMER_INFO *timerInfo )
 	{
 	return( checkMonoTimerExpiryImminent( timerInfo, 0 ) );
 	}
+
+/****************************************************************************
+*																			*
+*								Self-test Functions							*
+*																			*
+****************************************************************************/
+
+/* Test code for the above functions */
+
+#ifndef NDEBUG
+
+static void setTestTime( const time_t value )
+	{
+	testTimeValue = MIN_TIME_VALUE + value;
+	}
+
+static void clearTestTime( void )
+	{
+	testTimeValue = 0;
+	}
+
+CHECK_RETVAL_BOOL \
+BOOLEAN testIntTime( void )
+	{
+	MONOTIMER_INFO timerInfo;
+	int status;
+
+	/* Test basic timer functions */
+	setTestTime( 1000 );
+	status = setMonoTimer( &timerInfo, 0 );
+	if( cryptStatusError( status ) )
+		return( FALSE );
+	if( !checkMonoTimerExpiryImminent( &timerInfo, 1 ) )
+		return( FALSE );
+	status = setMonoTimer( &timerInfo, 10 );
+	if( cryptStatusError( status ) )
+		return( FALSE );
+	if( checkMonoTimerExpiryImminent( &timerInfo, 0 ) || \
+		checkMonoTimerExpiryImminent( &timerInfo, 9 ) )
+		return( FALSE );
+	if( !checkMonoTimerExpiryImminent( &timerInfo, 10 ) )
+		return( FALSE );
+
+	/* Check timer period extension functionality */
+	setTestTime( 1000 );
+	status = setMonoTimer( &timerInfo, 0 );
+	if( cryptStatusError( status ) )
+		return( FALSE );
+	extendMonoTimer( &timerInfo, 10 );
+	if( checkMonoTimerExpiryImminent( &timerInfo, 0 ) || \
+		checkMonoTimerExpiryImminent( &timerInfo, 9 ) || \
+		!checkMonoTimerExpiryImminent( &timerInfo, 10 ) )
+		return( FALSE );
+
+	/* Check clock going forwards normally */
+	setTestTime( 1000 );
+	status = setMonoTimer( &timerInfo, 10 );
+	if( cryptStatusError( status ) )
+		return( FALSE );
+	setTestTime( 1009 );
+	if( checkMonoTimerExpiryImminent( &timerInfo, 0 ) || \
+		!checkMonoTimerExpiryImminent( &timerInfo, 1 ) )
+		return( FALSE );
+
+	/* Check clock going backwards.  This recovers by correcting to allow 
+	   the original timeout */
+	setTestTime( 1000 );
+	status = setMonoTimer( &timerInfo, 10 );
+	if( cryptStatusError( status ) )
+		return( FALSE );
+	setTestTime( 999 );
+	if( checkMonoTimerExpiryImminent( &timerInfo, 0 ) || \
+		checkMonoTimerExpiryImminent( &timerInfo, 9 ) || \
+		!checkMonoTimerExpiryImminent( &timerInfo, 10 ) )
+		return( FALSE );
+
+	/* Check clock going forwards too far.  This recovers from a time jump 
+	   of > 30 minutes by correcting to allow the original timeout period on 
+	   the assumption that the problem is with the time source rather than 
+	   that we've waited for over half an hour for a network packet to 
+	   arrive */
+	setTestTime( 1000 );
+	status = setMonoTimer( &timerInfo, 10 );
+	if( cryptStatusError( status ) )
+		return( FALSE );
+	setTestTime( 1000 + ( 45 * 60 ) );
+	if( checkMonoTimerExpiryImminent( &timerInfo, 0 ) || \
+		checkMonoTimerExpiryImminent( &timerInfo, 9 ) || \
+		!checkMonoTimerExpiryImminent( &timerInfo, 10 ) )
+		return( FALSE );
+
+	clearTestTime();
+	return( TRUE );
+	}
+#endif /* !NDEBUG */

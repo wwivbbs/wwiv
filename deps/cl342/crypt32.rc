@@ -23,14 +23,15 @@
 #if defined( USE_CERT_DNSTRING ) || defined( USE_CRYPTOAPI ) || \
 	defined( USE_DNSSRV ) || defined( USE_GCM ) || defined( USE_LDAP ) || \
 	defined( USE_OAEP ) || defined( USE_PKCS12 ) || \
-	defined( USE_SSH_EXTENDED )
+	defined( USE_SSH_EXTENDED ) || defined( USE_DES ) || \
+	defined( USE_RC2 ) || defined( USE_RC4 )
   #define PRIVATE_BUILD
 #endif /* Nonstandard config.options */
 
 /* cryptlib version information, needed at various places in the resources */
 
-#define VERSION		3,4,2
-#define VERSION_STR	"3.4.2\0"
+#define VERSION		3,4,3
+#define VERSION_STR	"3.4.3\0"
 
 /* The version information resource */
 
@@ -75,7 +76,7 @@ BEGIN
 #endif /* Win32 vs. WinCE */
 	  VALUE "ProductName", "cryptlib security toolkit\0"
 	  VALUE "CompanyName", "Peter Gutmann\0"
-	  VALUE "LegalCopyright", "Copyright \251 1994 - 2012 Peter Gutmann, Eric Young, OpenSSL\0"
+	  VALUE "LegalCopyright", "Copyright \251 1994 - 2015 Peter Gutmann, Eric Young, OpenSSL\0"
 	  VALUE "FileVersion", VERSION_STR
 	  VALUE "ProductVersion", VERSION_STR
 #if defined( _DEBUG )

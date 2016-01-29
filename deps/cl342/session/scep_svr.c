@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						 cryptlib SCEP Server Management					*
-*						Copyright Peter Gutmann 1999-2008					*
+*						Copyright Peter Gutmann 1999-2013					*
 *																			*
 ****************************************************************************/
 
@@ -64,7 +64,8 @@ static void sendErrorResponse( INOUT SESSION_INFO *sessionInfoPtr,
 
 	/* Sign the error response using the CA key and SCEP attributes */
 	status = createScepAttributes( sessionInfoPtr, protocolInfo,  
-								   &iCmsAttributes, FALSE, scepStatus );
+								   &iCmsAttributes, MESSAGETYPE_CERTREP, 
+								   scepStatus );
 	if( cryptStatusOK( status ) )
 		{
 		ERROR_INFO errorInfo;
@@ -113,9 +114,8 @@ static void sendErrorResponse( INOUT SESSION_INFO *sessionInfoPtr,
 /* Check that the information supplied in a request matches what's stored for
    a PKI user */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int checkPkiUserInfo( INOUT SESSION_INFO *sessionInfoPtr,
-							 INOUT SCEP_PROTOCOL_INFO *protocolInfo )
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+static int checkPkiUserInfo( INOUT SESSION_INFO *sessionInfoPtr )
 	{
 	const ATTRIBUTE_LIST *userNamePtr = \
 				findSessionInfo( sessionInfoPtr->attributeList,
@@ -125,11 +125,10 @@ static int checkPkiUserInfo( INOUT SESSION_INFO *sessionInfoPtr,
 	BYTE keyID[ 64 + 8 ];
 	BYTE requestPassword[ CRYPT_MAX_TEXTSIZE + 8 ];
 	BYTE userPassword[ CRYPT_MAX_TEXTSIZE + 8 ];
-	int requestPasswordSize, userPasswordSize = DUMMY_INIT;
+	int requestPasswordSize, userPasswordSize DUMMY_INIT;
 	int keyIDsize, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
-	assert( isWritePtr( protocolInfo, sizeof( SCEP_PROTOCOL_INFO ) ) );
 
 	REQUIRES( userNamePtr != NULL );
 	
@@ -209,8 +208,8 @@ static int checkPkiUserInfo( INOUT SESSION_INFO *sessionInfoPtr,
 		zeroise( requestPassword, CRYPT_MAX_TEXTSIZE );
 		zeroise( userPassword, CRYPT_MAX_TEXTSIZE );
 		krnlSendNotifier( getkeyInfo.cryptHandle, IMESSAGE_DECREFCOUNT );
-		retExt( status, 
-				( status, SESSION_ERRINFO, 
+		retExt( CRYPT_ERROR_WRONGKEY, 
+				( CRYPT_ERROR_WRONGKEY, SESSION_ERRINFO,
 				  "Password in PKCS #10 request doesn't match PKI user "
 				  "password" ) );
 		}
@@ -299,7 +298,12 @@ static int processAdditionalScepRequest( INOUT SESSION_INFO *sessionInfoPtr,
 		STREAM stream;
 
 		sMemOpen( &stream, sessionInfoPtr->receiveBuffer, 1024 );
-		status = swrite( &stream, "POSTPKIOperation\n", 17 );
+		swrite( &stream, "POSTPKIOperation\n", 17 );
+#if 0	/* 14/6/14 Too risky to implement given its current state in the 
+				   spec, see the discussion on the JSCEP mailing list for
+				   details */
+		status = swrite( &stream, "Renewal\n", 8 );
+#endif /* 0 */
 		if( algoAvailable( CRYPT_ALGO_SHA1 ) )
 			status = swrite( &stream, "SHA-1\n", 6 );
 		if( algoAvailable( CRYPT_ALGO_SHA2 ) )
@@ -318,7 +322,9 @@ static int processAdditionalScepRequest( INOUT SESSION_INFO *sessionInfoPtr,
 								  SCEP_CONTENT_TYPE_LEN ) );
 		}
 
-	/* Export the CA certificate and send it to the client */
+	/* Export the CA certificate, either as a standalone certificate or a 
+	   full certificate chain depending on what was requested, and send it 
+	   to the client */
 	setMessageData( &msgData, sessionInfoPtr->receiveBuffer,
 					sessionInfoPtr->receiveBufSize );
 	status = krnlSendMessage( sessionInfoPtr->privateKey,
@@ -354,17 +360,19 @@ static int processAdditionalScepRequest( INOUT SESSION_INFO *sessionInfoPtr,
 *																			*
 ****************************************************************************/
 
-/* Check an SCEP request message */
+/* Check a SCEP request message */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int checkScepRequest( INOUT SESSION_INFO *sessionInfoPtr,
 							 INOUT SCEP_PROTOCOL_INFO *protocolInfo, 
-							 OUT BOOLEAN *requestDataAvailable )
+							 OUT_ALWAYS BOOLEAN *requestDataAvailable )
 	{
+	SCEP_INFO *scepInfo = sessionInfoPtr->sessionSCEP;
 	CRYPT_CERTIFICATE iCmsAttributes;
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	MESSAGE_DATA msgData;
 	ERROR_INFO errorInfo;
+	BYTE keyIDbuffer[ KEYID_SIZE + 8 ];
 	int dataLength, sigResult, value, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
@@ -477,7 +485,9 @@ static int checkScepRequest( INOUT SESSION_INFO *sessionInfoPtr,
 	/* Check that we've been sent the correct type of message */
 	status = getScepStatusValue( iCmsAttributes,
 								 CRYPT_CERTINFO_SCEP_MESSAGETYPE, &value );
-	if( cryptStatusOK( status ) && value != MESSAGETYPE_PKCSREQ_VALUE )
+	if( cryptStatusOK( status ) && \
+		( value != MESSAGETYPE_PKCSREQ_VALUE && \
+		  value != MESSAGETYPE_RENEWAL_VALUE ) )
 		status = CRYPT_ERROR_BADDATA;
 	krnlSendNotifier( iCmsAttributes, IMESSAGE_DECREFCOUNT );
 	if( cryptStatusError( status ) )
@@ -486,6 +496,9 @@ static int checkScepRequest( INOUT SESSION_INFO *sessionInfoPtr,
 				( status, SESSION_ERRINFO, 
 				  "Incorrect SCEP message type %d", value ) );
 		}
+	scepInfo->requestType = ( value == MESSAGETYPE_PKCSREQ_VALUE ) ? \
+							CRYPT_REQUESTTYPE_INITIALISATION : \
+							CRYPT_REQUESTTYPE_CERTIFICATE;
 
 	/* Phase 2: Decrypt the data using our CA key */
 	status = envelopeUnwrap( sessionInfoPtr->receiveBuffer, dataLength,
@@ -500,7 +513,7 @@ static int checkScepRequest( INOUT SESSION_INFO *sessionInfoPtr,
 					 "request: " ) );
 		}
 
-	/* Finally, import the request as a PKCS #10 request */
+	/* Import the request as a PKCS #10 request */
 	setMessageCreateObjectIndirectInfo( &createInfo,
 								sessionInfoPtr->receiveBuffer, dataLength,
 								CRYPT_CERTTYPE_CERTREQUEST );
@@ -513,27 +526,81 @@ static int checkScepRequest( INOUT SESSION_INFO *sessionInfoPtr,
 				( status, SESSION_ERRINFO, 
 				  "Invalid PKCS #10 request in client request" ) );
 		}
-	sessionInfoPtr->iCertRequest = createInfo.cryptHandle;
 
+	/* Finally, check the certificate used to sign the SCEP message.  If 
+	   it's an initialisation request then the the key in the PKCS #10 
+	   request has to match the one in the signing certificate */
+	if( scepInfo->requestType == CRYPT_REQUESTTYPE_INITIALISATION )
+		{
+		setMessageData( &msgData, keyIDbuffer, KEYID_SIZE );
+		status = krnlSendMessage( createInfo.cryptHandle, 
+								  IMESSAGE_GETATTRIBUTE_S, &msgData, 
+								  CRYPT_IATTRIBUTE_KEYID );
+		if( cryptStatusOK( status ) )
+			{
+			status = krnlSendMessage( protocolInfo->iScepCert, 
+									  IMESSAGE_COMPARE, &msgData, 
+									  MESSAGE_COMPARE_KEYID );
+			}
+		if( cryptStatusError( status ) )
+			{
+			krnlSendNotifier( createInfo.cryptHandle, 
+							  IMESSAGE_DECREFCOUNT );
+			retExt( CRYPT_ERROR_INVALID, 
+					( CRYPT_ERROR_INVALID, SESSION_ERRINFO, 
+					  "Key in client request signing certificate doesn't "
+					  "match key in PKCS #10 request" ) );
+			}
+		}
+	else
+		{
+		MESSAGE_KEYMGMT_INFO getkeyInfo;
+		BYTE certIDbuffer[ CRYPT_MAX_HASHSIZE + 8 ];
+
+		/* It's a renewal request, the signing certificate has to be one
+		   that we've issued in the past */
+		setMessageData( &msgData, certIDbuffer, CRYPT_MAX_HASHSIZE );
+		status = krnlSendMessage( createInfo.cryptHandle, 
+								  IMESSAGE_GETATTRIBUTE_S, &msgData, 
+								  CRYPT_CERTINFO_FINGERPRINT_SHA1 );
+		if( cryptStatusOK( status ) )
+			{
+			setMessageKeymgmtInfo( &getkeyInfo, CRYPT_IKEYID_CERTID, 
+								   msgData.data, msgData.length, NULL, 0, 
+								   KEYMGMT_FLAG_CHECK_ONLY );
+			status = krnlSendMessage( sessionInfoPtr->cryptKeyset, 
+									  IMESSAGE_KEY_GETKEY, &getkeyInfo, 
+									  KEYMGMT_ITEM_PUBLICKEY );
+			}
+		if( cryptStatusError( status ) )
+			{
+			krnlSendNotifier( createInfo.cryptHandle, 
+							  IMESSAGE_DECREFCOUNT );
+			retExt( CRYPT_ERROR_INVALID, 
+					( CRYPT_ERROR_INVALID, SESSION_ERRINFO, 
+					  "Unrecognised certificate used to sign client "
+					  "renewal request" ) );
+			}
+		}
+
+	sessionInfoPtr->iCertRequest = createInfo.cryptHandle;
 	return( CRYPT_OK );
 	}
 
 /* Issue a certificate from a SCEP request */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int issueCertFromRequest( INOUT SESSION_INFO *sessionInfoPtr,
-								 INOUT SCEP_PROTOCOL_INFO *protocolInfo )
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+static int issueCertFromRequest( INOUT SESSION_INFO *sessionInfoPtr )
 	{
 	MESSAGE_KEYMGMT_INFO setkeyInfo;
 	MESSAGE_CERTMGMT_INFO certMgmtInfo;
 	int status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
-	assert( isWritePtr( protocolInfo, sizeof( SCEP_PROTOCOL_INFO ) ) );
 
 	/* Check that the request is permitted and add it to the certificate
 	   store */
-	status = checkPkiUserInfo( sessionInfoPtr, protocolInfo );
+	status = checkPkiUserInfo( sessionInfoPtr );
 	if( cryptStatusError( status ) )
 		return( status );
 	setMessageKeymgmtInfo( &setkeyInfo, CRYPT_KEYID_NONE, NULL, 0, 
@@ -613,7 +680,8 @@ static int createScepResponse( INOUT SESSION_INFO *sessionInfoPtr,
 
 	/* Create the SCEP signing attributes */
 	status = createScepAttributes( sessionInfoPtr, protocolInfo,  
-								   &iCmsAttributes, FALSE, CRYPT_OK );
+								   &iCmsAttributes, MESSAGETYPE_CERTREP, 
+								   CRYPT_OK );
 	if( cryptStatusError( status ) )
 		{
 		retExt( status,
@@ -647,7 +715,7 @@ static int createScepResponse( INOUT SESSION_INFO *sessionInfoPtr,
 *																			*
 ****************************************************************************/
 
-/* Exchange data with an SCEP client */
+/* Exchange data with a SCEP client */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int serverTransact( INOUT SESSION_INFO *sessionInfoPtr )
@@ -657,25 +725,30 @@ static int serverTransact( INOUT SESSION_INFO *sessionInfoPtr )
 	HTTP_URI_INFO httpReqInfo;
 	STREAM stream;
 	BOOLEAN requestDataOK, processedAdditionalRequest = TRUE;
-	int requestCount, length = DUMMY_INIT, status;
+	int requestCount, length DUMMY_INIT, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 
 	/* SCEP is a weird protocol that started out as a basic IPsec 
-	   certificate-provisioning mechanism for routers but then had a pile of 
-	   additional functionality bolted onto it via HTTP mechanisms rather 
-	   than having the protocol itself handle the extra functionality.  
-	   Because of this we have to handle not only the standard HTTP-as-a-
-	   substrate mechanism used by the other protocols but also HTTP GET 
-	   requests for additional information that the original protocol didn't 
-	   accomodate */
+	   RSA certificate-provisioning mechanism for routers but then had a 
+	   pile of additional functionality bolted onto it via HTTP mechanisms 
+	   rather than having the protocol itself handle the extra 
+	   functionality.  Because of this we have to handle not only the 
+	   standard HTTP-as-a-substrate mechanism used by the other protocols 
+	   but also HTTP GET requests for additional information that the 
+	   original protocol didn't accommodate.  This means that we have to
+	   set the allowed request type to STREAM_HTTPREQTYPE_ANY and provide
+	   an additional HTTP_URI_INFO for the HTTP_DATA_INFO to contain the
+	   GET request data if that's what the client is sending */
 	sessionInfoPtr->receiveBufEnd = 0;
 	sioctlSet( &sessionInfoPtr->stream, STREAM_IOCTL_HTTPREQTYPES, 
 			   STREAM_HTTPREQTYPE_ANY );
 	for( requestCount = 0; requestCount < 5; requestCount++ )
 		{
+		memset( &httpReqInfo, 0, sizeof( HTTP_URI_INFO ) );
 		initHttpDataInfoEx( &httpDataInfo, sessionInfoPtr->receiveBuffer,
-							sessionInfoPtr->receiveBufSize, &httpReqInfo );
+							sessionInfoPtr->receiveBufSize, 
+							&httpReqInfo );
 		status = sread( &sessionInfoPtr->stream, &httpDataInfo,
 						sizeof( HTTP_DATA_INFO ) );
 		if( cryptStatusError( status ) )
@@ -724,7 +797,10 @@ static int serverTransact( INOUT SESSION_INFO *sessionInfoPtr )
 		   requests were sent, since to get here the client would have had 
 		   to send repeated identical bolt-on requests */
 		sendCertErrorResponse( sessionInfoPtr, CRYPT_ERROR_DUPLICATE );
-		return( CRYPT_ERROR_OVERFLOW );
+		retExt( CRYPT_ERROR_OVERFLOW,
+				( CRYPT_ERROR_OVERFLOW, SESSION_ERRINFO, 
+				  "Excessive number (more than %d) of SCEP requests "
+				  "encountered", requestCount ) );
 		}
 
 	/* Unfortunately we can't use readPkiDatagram() because of the weird 
@@ -733,7 +809,7 @@ static int serverTransact( INOUT SESSION_INFO *sessionInfoPtr )
 	   variations, so we have to duplicate portions of readPkiDatagram() 
 	   here.  See the readPkiDatagram() function for code comments 
 	   explaining the following operations */
-	if( length < 4 || length >= MAX_INTLENGTH )
+	if( length < 4 || length >= MAX_BUFFER_SIZE )
 		{
 		sendCertErrorResponse( sessionInfoPtr, CRYPT_ERROR_BADDATA );
 		retExt( CRYPT_ERROR_UNDERFLOW,
@@ -790,7 +866,7 @@ static int serverTransact( INOUT SESSION_INFO *sessionInfoPtr )
 		}
 
 	/* Issue a certificate from the request */
-	status = issueCertFromRequest( sessionInfoPtr, &protocolInfo );
+	status = issueCertFromRequest( sessionInfoPtr );
 	if( cryptStatusError( status ) )
 		{
 		sendErrorResponse( sessionInfoPtr, &protocolInfo, status );

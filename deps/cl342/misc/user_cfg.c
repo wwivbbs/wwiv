@@ -34,36 +34,36 @@
 static const BUILTIN_OPTION_INFO FAR_BSS builtinOptionInfo[] = {
 	/* cryptlib information (read-only) */
 	MK_OPTION_S( CRYPT_OPTION_INFO_DESCRIPTION, "cryptlib security toolkit", 25, CRYPT_UNUSED ),
-	MK_OPTION_S( CRYPT_OPTION_INFO_COPYRIGHT, "Copyright Peter Gutmann, Eric Young, OpenSSL, 1994-2012", 55, CRYPT_UNUSED ),
+	MK_OPTION_S( CRYPT_OPTION_INFO_COPYRIGHT, "Copyright Peter Gutmann, Eric Young, OpenSSL, 1994-2015", 55, CRYPT_UNUSED ),
 	MK_OPTION( CRYPT_OPTION_INFO_MAJORVERSION, 3, CRYPT_UNUSED ),
 	MK_OPTION( CRYPT_OPTION_INFO_MINORVERSION, 4, CRYPT_UNUSED ),
-	MK_OPTION( CRYPT_OPTION_INFO_STEPPING, 2, CRYPT_UNUSED ),
+	MK_OPTION( CRYPT_OPTION_INFO_STEPPING, 3, CRYPT_UNUSED ),
 
 	/* Context options, base = 0 */
 	/* Algorithm = Conventional encryption/hash/MAC options */
-	MK_OPTION( CRYPT_OPTION_ENCR_ALGO, CRYPT_ALGO_3DES, 0 ),
-	MK_OPTION( CRYPT_OPTION_ENCR_HASH, CRYPT_ALGO_SHA1, 1 ),
-	MK_OPTION( CRYPT_OPTION_ENCR_MAC, CRYPT_ALGO_HMAC_SHA1, 2 ),
+	MK_OPTION( CRYPT_OPTION_ENCR_ALGO, CRYPT_ALGO_AES, 0 ),
+	MK_OPTION( CRYPT_OPTION_ENCR_HASH, CRYPT_ALGO_SHA2, 1 ),
+	MK_OPTION( CRYPT_OPTION_ENCR_MAC, CRYPT_ALGO_HMAC_SHA2, 2 ),
 
 	/* Algorithm = PKC options */
 	MK_OPTION( CRYPT_OPTION_PKC_ALGO, CRYPT_ALGO_RSA, 3 ),
-	MK_OPTION( CRYPT_OPTION_PKC_KEYSIZE, bitsToBytes( 1280 ), 4 ),
+	MK_OPTION( CRYPT_OPTION_PKC_KEYSIZE, bitsToBytes( 1536 ), 4 ),
 
 	/* Algorithm = Signature options */
 	MK_OPTION( CRYPT_OPTION_SIG_ALGO, CRYPT_ALGO_RSA, 5 ),
-	MK_OPTION( CRYPT_OPTION_SIG_KEYSIZE, bitsToBytes( 1280 ), 6 ),
+	MK_OPTION( CRYPT_OPTION_SIG_KEYSIZE, bitsToBytes( 1536 ), 6 ),
 
 	/* Algorithm = Key derivation options.  On a slower CPU we use a 
 	   lower number of iterations.  Conversely, on a fast CPU we use
 	   a larger number */
-	MK_OPTION( CRYPT_OPTION_KEYING_ALGO, CRYPT_ALGO_SHA1, 7 ),
+	MK_OPTION( CRYPT_OPTION_KEYING_ALGO, CRYPT_ALGO_HMAC_SHA2, 7 ),
 #if defined( CONFIG_SLOW_CPU )
-	MK_OPTION( CRYPT_OPTION_KEYING_ITERATIONS, 500, 8 ),
+	MK_OPTION( CRYPT_OPTION_KEYING_ITERATIONS, 1000, 8 ),
 #elif defined( CONFIG_FAST_CPU )
-	MK_OPTION( CRYPT_OPTION_KEYING_ITERATIONS, 20000, 8 ),
+	MK_OPTION( CRYPT_OPTION_KEYING_ITERATIONS, min( 50000, MAX_KEYSETUP_ITERATIONS ), 8 ),
 #else
-	MK_OPTION( CRYPT_OPTION_KEYING_ITERATIONS, 5000, 8 ),
-#endif /* CONFIG_SLOW_CPU */
+	MK_OPTION( CRYPT_OPTION_KEYING_ITERATIONS, 10000, 8 ),
+#endif /* Options based on CPU speed */
 
 	/* Certificate options, base = 100 */
 	MK_OPTION_B( CRYPT_OPTION_CERT_SIGNUNRECOGNISEDATTRIBUTES, FALSE, 100 ),
@@ -98,15 +98,27 @@ static const BUILTIN_OPTION_INFO FAR_BSS builtinOptionInfo[] = {
 
 	/* Miscellaneous options, base = 500.  The network options are mostly 
 	   used by sessions but also apply to other object types like network 
-	   keysets so they're classed as miscellaneous options */
+	   keysets so they're classed as miscellaneous options. 
+	   
+	   Side-channel protection is usually disabled by default because a
+	   survey of users found that a total of 0% indicated that they wanted
+	   side-channel protection in exchange for a performance drop 
+	   (particularly in embedded systems where PKC ops already consume about 
+	   150% of the available CPU budget), however on fast systems we enable 
+	   it by default because they should be fast enough that no-one will 
+	   notice */
 	MK_OPTION_S( CRYPT_OPTION_NET_SOCKS_SERVER, NULL, 0, 500 ),
 	MK_OPTION_S( CRYPT_OPTION_NET_SOCKS_USERNAME, NULL, 0, 501 ),
 	MK_OPTION_S( CRYPT_OPTION_NET_HTTP_PROXY, NULL, 0, 502 ),
-	MK_OPTION( CRYPT_OPTION_NET_CONNECTTIMEOUT, 30, 503 ),
-	MK_OPTION( CRYPT_OPTION_NET_READTIMEOUT, 0, 504 ),
-	MK_OPTION( CRYPT_OPTION_NET_WRITETIMEOUT, 2, 505 ),
+	MK_OPTION( CRYPT_OPTION_NET_CONNECTTIMEOUT, NET_TIMEOUT_CONNECT, 503 ),
+	MK_OPTION( CRYPT_OPTION_NET_READTIMEOUT, NET_TIMEOUT_READ, 504 ),
+	MK_OPTION( CRYPT_OPTION_NET_WRITETIMEOUT, NET_TIMEOUT_WRITE, 505 ),
 	MK_OPTION_B( CRYPT_OPTION_MISC_ASYNCINIT, TRUE, 506 ),
+#if defined( CONFIG_FAST_CPU )
+	MK_OPTION( CRYPT_OPTION_MISC_SIDECHANNELPROTECTION, 1, 507 ),
+#else
 	MK_OPTION( CRYPT_OPTION_MISC_SIDECHANNELPROTECTION, 0, 507 ),
+#endif /* Options based on CPU speed */
 
 	/* All options beyond this point are ephemeral and aren't stored to disk. 
 	   Remember to update the LAST_STORED_OPTION define in user_int.h when 
@@ -289,7 +301,7 @@ int getOptionString( IN_ARRAY( configOptionsCount ) TYPECAST( OPTION_INFO * ) \
 						const void *configOptions,
 					 IN_INT_SHORT const int configOptionsCount, 
 					 IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE option,
-					 OUT_OPT_PTR const void **strPtrPtr, 
+					 OUT_PTR_COND const void **strPtrPtr, 
 					 OUT_LENGTH_SHORT_Z int *strLen )
 	{
 	const OPTION_INFO *optionInfoPtr;
@@ -436,7 +448,7 @@ int setOptionSpecial( INOUT_ARRAY( configOptionsCount ) TYPECAST( OPTION_INFO * 
 					  IN_INT_SHORT const int configOptionsCount, 
 					  IN_RANGE_FIXED( CRYPT_OPTION_SELFTESTOK ) \
 							const CRYPT_ATTRIBUTE_TYPE option,
-					  IN_INT const int value )
+					  IN_INT_Z const int value )
 	{
 	OPTION_INFO *optionInfoPtr;
 
@@ -600,7 +612,7 @@ int deleteOption( INOUT_ARRAY( configOptionsCount ) TYPECAST( OPTION_INFO * ) \
 /* Initialise/shut down the configuration option handling */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int initOptions( OUT_OPT_PTR void **configOptionsPtr, 
+int initOptions( OUT_PTR_COND void **configOptionsPtr, 
 				 OUT_INT_SHORT_Z int *configOptionsCount )
 	{
 	OPTION_INFO *optionList;
@@ -611,8 +623,10 @@ int initOptions( OUT_OPT_PTR void **configOptionsPtr,
 	*configOptionsCount = 0;
 
 	/* Perform a consistency check on the options */
+#ifndef CONFIG_FUZZ
 	FORALL( i, 0, CRYPT_OPTION_LAST - CRYPT_OPTION_FIRST - 1,
 			builtinOptionInfo[ i ].option == i + CRYPT_OPTION_FIRST + 1 );
+#endif /* !CONFIG_FUZZ */
 
 	/* Allocate storage for the variable configuration data */
 	if( ( optionList = clAlloc( "initOptions", OPTION_INFO_SIZE ) ) == NULL )
@@ -642,7 +656,7 @@ int initOptions( OUT_OPT_PTR void **configOptionsPtr,
 	}
 
 STDC_NONNULL_ARG( ( 1 ) ) \
-void endOptions( INOUT_ARRAY( configOptionsCount ) TYPECAST( OPTION_INFO * ) \
+void endOptions( IN_ARRAY( configOptionsCount ) TYPECAST( OPTION_INFO * ) \
 					void *configOptions, 
 				 IN_INT_SHORT const int configOptionsCount )
 	{

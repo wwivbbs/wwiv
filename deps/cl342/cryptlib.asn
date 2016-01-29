@@ -224,7 +224,7 @@ SignerInfo ::= SEQUENCE {					-- CMS - cryptlib
 --																			--
 ------------------------------------------------------------------------------
 
--/ PKCS #15 uses a very object-oriented design which follows PKCS #11 and
+-/ PKCS #15 uses a very object-oriented design that follows PKCS #11 and
    uses a lot of the expressive power of ASN.1 in the specification of its
    PDUs.  The basic PKCS #15 object is defined as follows:
 
@@ -259,7 +259,11 @@ SignerInfo ::= SEQUENCE {					-- CMS - cryptlib
 			},									impTrust[3]	BOOLEAN DEFAULT FALSE,
 												...
 												},
-		[0] EXPLICIT SEQUENCE {} OPTIONAL,					-- SubclassAttr
+		[0] EXPLICIT SEQUENCE {								-- SubclassAttr
+			...			SEQUENCE OPTIONAL,
+			keyID	[0]	SEQUENCE OF KeyID,
+			...
+			} OPTIONAL,
 		[1] EXPLICIT SEQUENCE {								-- TypeAttr
 			<data>
 			}
@@ -325,6 +329,17 @@ PKCS15CommonDataObjectAttributes ::= SEQUENCE {
 	...
 	}
 
+-/ Subclass attributes.  These are required for public/private keys, for
+   which the ID information isn't present in the class attributes as it is
+   for certificates.  Unfortunately the ID information also isn't present
+   in the public-key subclass attributes, which means that looking up a
+   raw public key by ID is impossible /-
+
+PKCS15CommonPrivateKeyAttributes ::= SEQUENCE {
+	keyID		[0]	SEQUENCE OF KeyID OPTIONAL,
+	...
+	}
+
 -/ Key identifiers.  Note that the pgp/openPGP IDs were added after the
    PKCS #15 / ISO 7816-15 split and are for the PKCS #15 v1.2 spec /-
 
@@ -387,9 +402,9 @@ PKCS15PrivateDLPKeyAttributes ::= SEQUENCE {
 	}
 
 PKCS15PrivateKey ::= CHOICE {
-	privateRSAKey		PKCS15Object{ PKCS15CommonKeyAttributes,
-									  PKCS15CommonPrivateKeyAttributes,
-									  PKCS15PrivateRSAKeyAttributes },
+	privateRSAKey		PKCS15Object{ PKCS15CommonKeyAttributes,		-- ClassAttr
+									  PKCS15CommonPrivateKeyAttributes,	-- SubclassAttr
+									  PKCS15PrivateRSAKeyAttributes },	-- TypeAttr
 	privateDSAKey	[2]	PKCS15Object{ PKCS15CommonKeyAttributes,
 									  PKCS15CommonPrivateKeyAttributes,
 									  PKCS15PrivateDSAKeyAttributes }
@@ -438,9 +453,9 @@ PKCS15PublicDLPKeyAttributes ::= SEQUENCE {
 	}
 
 PKCS15PublicKey ::= CHOICE {
-	publicRSAKey		PKCS15Object{ PKCS15CommonKeyAttributes,
-									  PKCS15CommonPublicKeyAttributes,
-									  PKCS15PublicRSAKeyAttributes },
+	publicRSAKey		PKCS15Object{ PKCS15CommonKeyAttributes,		-- ClassAttr
+									  PKCS15CommonPublicKeyAttributes,	-- SubclassAttr
+									  PKCS15PublicRSAKeyAttributes },	-- TypeAttr
 	publicDSAKey	[2]	PKCS15Object{ PKCS15CommonKeyAttributes,
 									  PKCS15CommonPublicKeyAttributes,
 									  PKCS15PublicDSAKeyAttributes }
@@ -462,9 +477,9 @@ PKCS15X509CertificateAttributes ::= SEQUENCE {
 	}
 
 PKCS15Certificate ::= CHOICE {
-	x509Certificate		PKCS15Object{ PKCS15CommonCertificateAttributes,
-									  NULL,
-									  PKCS15X509CertificateAttributes }
+	x509Certificate		PKCS15Object{ PKCS15CommonCertificateAttributes	-- ClassAttr
+									  NULL,								-- SubclassAttr
+									  PKCS15X509CertificateAttributes }	-- TypeAttr
 	}
 
 -/ This expands out to:
@@ -484,9 +499,9 @@ PKCS15GenericSecretKeyAttributes ::= {
 	}
 
 PKCS15SecretKey ::= CHOICE {
-	des3Key			[4] PKCS15Object{ PKCS15CommonKeyAttributes,
-									  PKCS15CommonSecretKeyAttributes,
-									  PKCS15GenericSecretKeyAttributes },
+	des3Key			[4] PKCS15Object{ PKCS15CommonKeyAttributes,		-- ClassAttr
+									  PKCS15CommonSecretKeyAttributes,	-- SubclassAttr
+									  PKCS15GenericSecretKeyAttributes },-- TypeAttr
 	}
 
 -/ This expands out to:

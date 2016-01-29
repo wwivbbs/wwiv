@@ -79,7 +79,7 @@ static BOOLEAN pairwiseConsistencyTest( INOUT CONTEXT_INFO *contextInfoPtr )
 	if( bnStatusError( bnStatus ) )
 		{
 		staticDestroyContext( &checkContextInfo );
-		return( getBnStatus( bnStatus ) );
+		return( getBnStatusBool( bnStatus ) );
 		}
 
 	/* Perform the pairwise test using the check key */
@@ -151,6 +151,7 @@ static int selfTest( void )
 	{
 	CONTEXT_INFO contextInfo;
 	PKC_INFO contextData, *pkcInfo = &contextData;
+	const CAPABILITY_INFO *capabilityInfoPtr;
 	int status;
 
 	/* Initialise the key components */
@@ -176,17 +177,21 @@ static int selfTest( void )
 		staticDestroyContext( &contextInfo );
 		retIntError();
 		}
+	capabilityInfoPtr = contextInfo.capabilityInfo;
 
 	/* Perform the test key exchange on a block of data */
-	status = contextInfo.capabilityInfo->initKeyFunction( &contextInfo,  NULL, 0 );
-	if( cryptStatusOK( status ) && \
+	status = capabilityInfoPtr->initKeyFunction( &contextInfo,  NULL, 0 );
+	if( cryptStatusError( status ) || \
 		!pairwiseConsistencyTest( &contextInfo ) )
-		status = CRYPT_ERROR_FAILED;
+		{
+		staticDestroyContext( &contextInfo );
+		return( CRYPT_ERROR_FAILED );
+		}
 
 	/* Clean up */
 	staticDestroyContext( &contextInfo );
 
-	return( status );
+	return( CRYPT_OK );
 	}
 #else
 	#define selfTest	NULL
@@ -218,6 +223,14 @@ static int encryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 	REQUIRES( !BN_is_zero( &pkcInfo->eccParam_qx ) && \
 			  !BN_is_zero( &pkcInfo->eccParam_qy ) );
 
+	/* Perform side-channel attack checks */
+	if( cryptStatusError( \
+			checksumContextData( pkcInfo, CRYPT_ALGO_ECDH, TRUE ) ) )
+		{
+		DEBUG_DIAG(( "ECDH key memory corruption detected" ));
+		return( CRYPT_ERROR_FAILED );
+		}
+
 	/* Q is generated either at keygen time for static ECDH or as a side-
 	   effect of the implicit generation of the d value for ephemeral ECDH, 
 	   so all we have to do is encode it in X9.62 point form to the output */
@@ -228,13 +241,14 @@ static int encryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 	if( cryptStatusError( status ) )
 		return( status );
 
-	/* Perform side-channel attack checks if necessary */
-	if( ( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION ) && \
-		cryptStatusError( calculateBignumChecksum( pkcInfo, 
-												   CRYPT_ALGO_ECDH ) ) )
+	/* Perform side-channel attack checks */
+	if( cryptStatusError( \
+			checksumContextData( pkcInfo, CRYPT_ALGO_ECDH, TRUE ) ) )
 		{
+		DEBUG_DIAG(( "ECDH key memory corruption detected" ));
 		return( CRYPT_ERROR_FAILED );
 		}
+
 	return( CRYPT_OK );
 	}
 
@@ -261,6 +275,14 @@ static int decryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 	REQUIRES( keyAgreeParams->publicValueLen >= MIN_PKCSIZE_ECCPOINT && \
 			  keyAgreeParams->publicValueLen < MAX_INTLENGTH_SHORT );
 
+	/* Perform side-channel attack checks */
+	if( cryptStatusError( \
+			checksumContextData( pkcInfo, CRYPT_ALGO_ECDH, TRUE ) ) )
+		{
+		DEBUG_DIAG(( "ECDH key memory corruption detected" ));
+		return( CRYPT_ERROR_FAILED );
+		}
+
 	/* The other party's Q value will be stored with the key agreement info 
 	   in X9.62 point form rather than having been read in when we read the 
 	   ECDH public key */
@@ -278,18 +300,19 @@ static int decryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 	CK( EC_POINT_set_affine_coordinates_GFp( ecCTX, q,
 											 &pkcInfo->eccParam_qx,
 											 &pkcInfo->eccParam_qy,
-											 pkcInfo->bnCTX ) );
+											 &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 
 	/* Multiply Q by private key d. */
 	CK( EC_POINT_mul( ecCTX, q, NULL, q, &pkcInfo->eccParam_d,
-					  pkcInfo->bnCTX ) );
+					  &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 
 	/* Extract affine coordinates. */
-	CK( EC_POINT_get_affine_coordinates_GFp( ecCTX, q, x, y, pkcInfo->bnCTX ) );
+	CK( EC_POINT_get_affine_coordinates_GFp( ecCTX, q, x, y, 
+											 &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 
@@ -305,14 +328,21 @@ static int decryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 							 bitsToBytes( pkcInfo->keySizeBits ) );
 	if( cryptStatusError( status ) )
 		return( status );
+
+	/* Make sure that the result looks random.  This is done to defend 
+	   against (most) small-subgroup confinement attacks */
+	if( !checkEntropy( keyAgreeParams->wrappedKey, 
+					   keyAgreeParams->wrappedKeyLen ) )
+		return( CRYPT_ERROR_NOSECURE );
 	
-	/* Perform side-channel attack checks if necessary */
-	if( ( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION ) && \
-		cryptStatusError( calculateBignumChecksum( pkcInfo, 
-												   CRYPT_ALGO_ECDH ) ) )
+	/* Perform side-channel attack checks */
+	if( cryptStatusError( \
+			checksumContextData( pkcInfo, CRYPT_ALGO_ECDH, TRUE ) ) )
 		{
+		DEBUG_DIAG(( "ECDH key memory corruption detected" ));
 		return( CRYPT_ERROR_FAILED );
 		}
+
 	return( CRYPT_OK );
 	}
 
@@ -439,7 +469,7 @@ static int generateKey( INOUT CONTEXT_INFO *contextInfoPtr,
 		assert( DEBUG_WARN );
 		status = CRYPT_ERROR_FAILED;
 		}
-	return( status );
+	return( cryptArgError( status ) ? CRYPT_ERROR_FAILED : status );
 	}
 
 /****************************************************************************
@@ -451,7 +481,8 @@ static int generateKey( INOUT CONTEXT_INFO *contextInfoPtr,
 static const CAPABILITY_INFO FAR_BSS capabilityInfo = {
 	CRYPT_ALGO_ECDH, bitsToBytes( 0 ), "ECDH", 4,
 	MIN_PKCSIZE_ECC, bitsToBytes( 256 ), CRYPT_MAX_PKCSIZE_ECC,
-	selfTest, getDefaultInfo, NULL, NULL, initKey, generateKey, encryptFn, decryptFn
+	selfTest, getDefaultInfo, NULL, NULL, initKey, generateKey, 
+	encryptFn, decryptFn
 	};
 
 const CAPABILITY_INFO *getECDHCapability( void )

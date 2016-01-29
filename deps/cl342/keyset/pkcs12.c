@@ -36,6 +36,103 @@ static const FAR_BSS OID_INFO dataOIDinfo[] = {
 *																			*
 ****************************************************************************/
 
+/* Sanity-check the PKCS #12 information state */
+
+CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
+static BOOLEAN sanityCheck( const PKCS12_INFO *pkcs12infoPtr )
+	{
+	const PKCS12_OBJECT_INFO *objectInfoPtr;
+
+	assert( isReadPtr( pkcs12infoPtr, sizeof( PKCS12_INFO ) ) );
+
+	/* Check that the basic fields are in order.  Since all of the fields are
+	   optional, either of them may not be present */
+	if( pkcs12infoPtr->labelLength == 0 )
+		{
+		/* No label, there must be an ID present */
+		if( pkcs12infoPtr->idLength < 0 || \
+			pkcs12infoPtr->idLength > CRYPT_MAX_HASHSIZE )
+			return( FALSE );
+		}
+	else
+		{
+		/* There's a label, the ID is optional */
+		if( pkcs12infoPtr->labelLength <= 0 || \
+			pkcs12infoPtr->labelLength > CRYPT_MAX_TEXTSIZE || \
+			pkcs12infoPtr->idLength < 0 || \
+			pkcs12infoPtr->idLength > CRYPT_MAX_HASHSIZE )
+			return( FALSE );
+		}
+
+	/* Check that the object-specific fields have reasonable values.  This 
+	   is a general check for reasonable values that's more targeted at
+	   catching inadvertent memory corruption than a strict sanity check */
+	objectInfoPtr = &pkcs12infoPtr->keyInfo;
+	if( objectInfoPtr->data != NULL )
+		{
+		if( objectInfoPtr->dataSize <= 0 || \
+			objectInfoPtr->dataSize > MAX_INTLENGTH_SHORT || \
+			objectInfoPtr->payloadOffset <= 0 || \
+			objectInfoPtr->payloadOffset >= objectInfoPtr->dataSize || \
+			objectInfoPtr->payloadSize <= 0 || \
+			objectInfoPtr->payloadSize >= objectInfoPtr->dataSize )
+			return( FALSE );
+		}
+	else
+		{
+		if( objectInfoPtr->dataSize != 0 || \
+			objectInfoPtr->payloadOffset != 0 || \
+			objectInfoPtr->payloadSize != 0 )
+			return( FALSE );
+		}
+	if( objectInfoPtr->keySize < 0 || \
+		objectInfoPtr->keySize > CRYPT_MAX_KEYSIZE || \
+		objectInfoPtr->saltSize < 0 || \
+		objectInfoPtr->saltSize > CRYPT_MAX_HASHSIZE || \
+		objectInfoPtr->iterations < 0 || \
+		objectInfoPtr->iterations > MAX_KEYSETUP_ITERATIONS )
+		return( FALSE );
+	objectInfoPtr = &pkcs12infoPtr->certInfo;
+	if( objectInfoPtr->data != NULL )
+		{
+		/* Make sure that the payload is contained within the data.  The 
+		   payload may be the same as the data, so we can have a start offset
+		   of 0 and a size equal to the payload size */
+		if( objectInfoPtr->dataSize <= 0 || \
+			objectInfoPtr->dataSize > MAX_INTLENGTH_SHORT || \
+			objectInfoPtr->payloadOffset < 0 || \
+			objectInfoPtr->payloadOffset >= objectInfoPtr->dataSize || \
+			objectInfoPtr->payloadSize < 0 || \
+			objectInfoPtr->payloadSize > objectInfoPtr->dataSize )
+			return( FALSE );
+		}
+	else
+		{
+		if( objectInfoPtr->dataSize != 0 || \
+			objectInfoPtr->payloadOffset != 0 || \
+			objectInfoPtr->payloadSize != 0 )
+			return( FALSE );
+		}
+	if( objectInfoPtr->keySize < 0 || \
+		objectInfoPtr->keySize > CRYPT_MAX_KEYSIZE || \
+		objectInfoPtr->saltSize < 0 || \
+		objectInfoPtr->saltSize > CRYPT_MAX_HASHSIZE || \
+		objectInfoPtr->iterations < 0 || \
+		objectInfoPtr->iterations > MAX_KEYSETUP_ITERATIONS )
+		return( FALSE );
+
+	/* Check that the crypto-related fields are in order.  This is a general 
+	   check for reasonable values that's more targeted at catching 
+	   inadvertent memory corruption than a strict sanity check */
+	if( pkcs12infoPtr->macSaltSize < 0 || \
+		pkcs12infoPtr->macSaltSize > MAX_INTLENGTH_SHORT || \
+		pkcs12infoPtr->macIterations < 0 || \
+		pkcs12infoPtr->macIterations > MAX_INTLENGTH )
+		return( FALSE );
+	
+	return( TRUE );
+	}
+
 /* Locate a PKCS #12 object based on an ID */
 
 #define matchID( src, srcLen, dest, destLen ) \
@@ -77,6 +174,8 @@ PKCS12_INFO *pkcs12FindEntry( IN_ARRAY( noPkcs12objects ) \
 		if( pkcs12infoPtr->flags == PKCS12_FLAG_NONE )
 			continue;
 
+		ENSURES_N( sanityCheck( pkcs12infoPtr ) );
+
 		/* If we're doing a wildcard matches, match the first private-key 
 		   entry.  This is required because PKCS #12 provides almost no 
 		   useful indexing information, and works because most keysets 
@@ -115,11 +214,11 @@ PKCS12_INFO *pkcs12FindEntry( IN_ARRAY( noPkcs12objects ) \
 
 /* Find a free PKCS #12 entry */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 1 ) ) \
 PKCS12_INFO *pkcs12FindFreeEntry( IN_ARRAY( noPkcs12objects ) \
 									const PKCS12_INFO *pkcs12info,
 								  IN_LENGTH_SHORT const int noPkcs12objects, 
-								  OUT_OPT_LENGTH_SHORT_Z int *index )
+								  OUT_OPT_INDEX( noPkcs12objects ) int *index )
 	{
 	int i;
 
@@ -184,8 +283,8 @@ void pkcs12freeEntry( INOUT PKCS12_INFO *pkcs12info )
 	}
 
 STDC_NONNULL_ARG( ( 1 ) ) \
-static void pkcs12Free( INOUT_ARRAY( noPkcs12objects ) PKCS12_INFO *pkcs12info, 
-						IN_RANGE( 1, MAX_PKCS12_OBJECTS ) const int noPkcs12objects )
+void pkcs12Free( INOUT_ARRAY( noPkcs12objects ) PKCS12_INFO *pkcs12info, 
+				 IN_RANGE( 1, MAX_PKCS12_OBJECTS ) const int noPkcs12objects )
 	{
 	int i;
 
@@ -208,7 +307,7 @@ static int readPkcs12header( INOUT STREAM *stream,
 							 OUT_INT_Z long *endPosPtr,
 							 INOUT ERROR_INFO *errorInfo )
 	{
-	long version, endPos = DUMMY_INIT, currentPos;
+	long version, endPos DUMMY_INIT, currentPos;
 	int status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
@@ -298,7 +397,8 @@ static int initDeriveParams( IN_HANDLE const CRYPT_USER cryptOwner,
 								void *salt,
 							 IN_LENGTH_SHORT_MIN( KEYWRAP_SALTSIZE ) \
 								const int saltMaxLength,
-							 OUT_LENGTH_SHORT_Z int *saltLength,
+							 OUT_LENGTH_BOUNDED_Z( saltMaxLength ) \
+								int *saltLength,
 							 OUT_INT_Z int *iterations )
 	{
 	MESSAGE_DATA msgData;
@@ -356,7 +456,7 @@ static int initContext( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 	MESSAGE_DATA msgData;
 	BYTE key[ CRYPT_MAX_KEYSIZE + 8 ], iv[ CRYPT_MAX_IVSIZE + 8 ];
 	BYTE saltData[ 1 + CRYPT_MAX_IVSIZE + 8 ];
-	int ivSize = DUMMY_INIT, localKeySize = keySize, status;
+	int ivSize DUMMY_INIT, localKeySize = keySize, status;
 
 	assert( isWritePtr( iCryptContext, sizeof( CRYPT_CONTEXT ) ) );
 	assert( isReadPtr( password, passwordLength ) );
@@ -570,7 +670,7 @@ static int initFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 	{
 	PKCS12_INFO *pkcs12info;
 	STREAM *stream = &keysetInfoPtr->keysetFile->stream;
-	long endPos = DUMMY_INIT;
+	long endPos DUMMY_INIT;
 	int status;
 
 	assert( isWritePtr( keysetInfoPtr, sizeof( KEYSET_INFO ) ) );
@@ -610,7 +710,6 @@ static int initFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 							   KEYSET_ERRINFO );
 	if( cryptStatusError( status ) )
 		{
-		pkcs12Free( pkcs12info, MAX_PKCS12_OBJECTS );
 		clFree( "initFunction", keysetInfoPtr->keyData );
 		keysetInfoPtr->keyData = NULL;
 		keysetInfoPtr->keyDataSize = 0;

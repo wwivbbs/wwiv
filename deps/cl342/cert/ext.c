@@ -8,14 +8,27 @@
 #if defined( INC_ALL )
   #include "cert.h"
   #include "certattr.h"
-  #include "asn1.h"
 #else
   #include "cert/cert.h"
   #include "cert/certattr.h"
-  #include "enc_dec/asn1.h"
 #endif /* Compiler-specific includes */
 
 #ifdef USE_CERTIFICATES
+
+/* Special ATTRIBUTE_LIST values to indicate that an attribute field is a 
+   blob attribute, a default-value field, or a complete attribute, see the 
+   long comment for findAttributeFieldEx() in cert/ext.c for a detailed 
+   description */
+
+#define ATTR_BLOB_ATTR		{ ( CRYPT_ATTRIBUTE_TYPE ) 0, \
+							  ( CRYPT_ATTRIBUTE_TYPE ) 0, \
+							  ( CRYPT_ATTRIBUTE_TYPE ) 0 }
+#define ATTR_COMPLETE_ATTR	{ ( CRYPT_ATTRIBUTE_TYPE ) CRYPT_ERROR, \
+							  ( CRYPT_ATTRIBUTE_TYPE ) 0, \
+							  ( CRYPT_ATTRIBUTE_TYPE ) 0 }
+#define ATTR_DEFAULT_FIELD	{ ( CRYPT_ATTRIBUTE_TYPE ) 0, \
+							  ( CRYPT_ATTRIBUTE_TYPE ) CRYPT_ERROR, \
+							  ( CRYPT_ATTRIBUTE_TYPE ) 0 }
 
 /****************************************************************************
 *																			*
@@ -89,7 +102,9 @@ static const void *getAttrFunction( IN_OPT TYPECAST( ATTRIBUTE_LIST * ) \
 *																			*
 ****************************************************************************/
 
-/* Get the attribute information for a given OID */
+/* Get the attribute information for a given OID.  Note that this function
+   looks up whole attributes by OID but won't match an OID that's internal
+   to an attribute */
 
 CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 2 ) ) \
 const ATTRIBUTE_INFO *oidToAttribute( IN_ENUM( ATTRIBUTE ) \
@@ -111,14 +126,21 @@ const ATTRIBUTE_INFO *oidToAttribute( IN_ENUM( ATTRIBUTE ) \
 							   &attributeInfoSize );
 	ENSURES_N( cryptStatusOK( status ) );
 	for( iterationCount = 0;
-		 attributeInfoPtr->fieldID != CRYPT_ERROR && \
+		 !isAttributeTableEnd( attributeInfoPtr ) && \
 			iterationCount < attributeInfoSize; \
 		 attributeInfoPtr++, iterationCount++ )
 		{
 		assert( isReadPtr( attributeInfoPtr, sizeof( ATTRIBUTE_INFO ) ) );
 
-		if( attributeInfoPtr->oid != NULL && \
-			sizeofOID( attributeInfoPtr->oid ) == oidLength && \
+		/* If it's an OID that's internal to an attribute, skip it */
+		if( !isAttributeStart( attributeInfoPtr ) )
+			continue;
+
+		/* Guaranteed by the initialisation sanity-check */
+		ENSURES_N( attributeInfoPtr->oid != NULL );
+
+		/* If the OID matches the current attribute, we're done */
+		if( oidLength == sizeofOID( attributeInfoPtr->oid ) && \
 			!memcmp( attributeInfoPtr->oid, oid, oidLength ) )
 			return( attributeInfoPtr );
 		}
@@ -164,7 +186,7 @@ const ATTRIBUTE_INFO *fieldIDToAttribute( IN_ENUM( ATTRIBUTE ) \
 							   &attributeInfoSize );
 	ENSURES_N( cryptStatusOK( status ) );
 	for( iterationCount = 0; 
-		 attributeInfoPtr->fieldID != CRYPT_ERROR && \
+		 !isAttributeTableEnd( attributeInfoPtr ) && \
 			iterationCount < attributeInfoSize; 
 		 attributeInfoPtr++, iterationCount++ )
 		{
@@ -217,7 +239,7 @@ const ATTRIBUTE_INFO *fieldIDToAttribute( IN_ENUM( ATTRIBUTE ) \
 		   check in ext_def.c) */
 		for( altEncodingTable = attributeInfoPtr->extraData, \
 				innerIterationCount = 0; 
-			 altEncodingTable->fieldID != CRYPT_ERROR && \
+			 !isAttributeTableEnd( altEncodingTable ) && \
 				innerIterationCount < FAILSAFE_ITERATIONS_LARGE; 
 			 altEncodingTable++, innerIterationCount++ )
 			{
@@ -298,7 +320,7 @@ ATTRIBUTE_PTR *findAttributeByOID( IN_OPT const ATTRIBUTE_PTR *attributePtr,
 			continue;
 
 		/* If we've found the entry with the required OID, we're done */
-		if( sizeofOID( attributeListPtr->oid ) == oidLength && \
+		if( oidLength == sizeofOID( attributeListPtr->oid ) && \
 			!memcmp( attributeListPtr->oid, oid, oidLength ) )
 			return( ( ATTRIBUTE_PTR * ) attributeListPtr );
 		}
@@ -352,8 +374,8 @@ ATTRIBUTE_PTR *findAttributeFieldEx( IN_OPT const ATTRIBUTE_PTR *attributePtr,
 									 IN_ATTRIBUTE \
 										const CRYPT_ATTRIBUTE_TYPE fieldID )
 	{
-	static const ATTRIBUTE_LIST defaultField = { 0, CRYPT_ERROR, 0 };
-	static const ATTRIBUTE_LIST completeAttribute = { CRYPT_ERROR, 0, 0 };
+	static const ATTRIBUTE_LIST completeAttribute = ATTR_COMPLETE_ATTR;
+	static const ATTRIBUTE_LIST defaultField = ATTR_DEFAULT_FIELD;
 	const ATTRIBUTE_LIST *attributeListCursor;
 	const ATTRIBUTE_INFO *attributeInfoPtr;
 	const ATTRIBUTE_TYPE attributeType = \
@@ -402,19 +424,9 @@ ATTRIBUTE_PTR *findAttributeFieldEx( IN_OPT const ATTRIBUTE_PTR *attributePtr,
 	   CRYPT_CERTINFO_AUTHORITYINFO_CRLS we'd get a match if e.g. 
 	   CRYPT_CERTINFO_AUTHORITYINFO_OCSP was present since they're both in 
 	   the same attribute CRYPT_CERTINFO_AUTHORITYINFOACCESS */
-#if 0	/* 18/05/10 Changed to use attributeFindEx() */
-	for( attributeListCursor = attributePtr, iterationCount = 0;
-		 attributeListCursor != NULL && \
-			isValidAttributeField( attributeListCursor ) && \
-			attributeListCursor->attributeID != attributeID && \
-			iterationCount < FAILSAFE_ITERATIONS_LARGE; 
-		 attributeListCursor = attributeListCursor->next, iterationCount++ );
-	ENSURES_N( iterationCount < FAILSAFE_ITERATIONS_LARGE );
-#else
 	attributeListCursor = attributeFindEx( attributePtr, getAttrFunction, 
 										   attributeID, CRYPT_ATTRIBUTE_NONE, 
 										   CRYPT_ATTRIBUTE_NONE );
-#endif /* 0 */
 	if( attributeListCursor == NULL || \
 		!isValidAttributeField( attributeListCursor ) )
 		return( NULL );
@@ -455,12 +467,19 @@ CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 1 ) ) \
 ATTRIBUTE_PTR *findDnInAttribute( IN_OPT const ATTRIBUTE_PTR *attributePtr )
 	{
 	const ATTRIBUTE_LIST *attributeListPtr = attributePtr;
-	const CRYPT_ATTRIBUTE_TYPE attributeID = attributeListPtr->attributeID;
-	const CRYPT_ATTRIBUTE_TYPE fieldID = attributeListPtr->fieldID;
+	CRYPT_ATTRIBUTE_TYPE attributeID, fieldID;
 	int iterationCount;
 
 	assert( isReadPtr( attributePtr, sizeof( ATTRIBUTE_LIST ) ) );
 
+	/* If it's an empty attribute list, there's nothing to do */
+	if( attributePtr == NULL )
+		return( NULL );
+
+	/* Remember the current GeneralName type so that we don't stray 
+	   outside it */
+	attributeID = attributeListPtr->attributeID;
+	fieldID = attributeListPtr->fieldID;
 	REQUIRES_N( isGeneralNameSelectionComponent( fieldID ) );
 
 	/* Search for a DN in the current GeneralName */
@@ -526,23 +545,8 @@ ATTRIBUTE_PTR *findAttribute( IN_OPT const ATTRIBUTE_PTR *attributePtr,
 
 	/* Check whether this attribute is present in the list of attribute 
 	   fields */
-#if 0	/* 18/05/10 Changed to use attributeFindEx() */
-	for( attributeListPtr = attributePtr, iterationCount = 0;
-		 attributeListPtr != NULL && \
-			isValidAttributeField( attributeListPtr ) && \
-			iterationCount < FAILSAFE_ITERATIONS_LARGE * 10;
-		 attributeListPtr = attributeListPtr->next, iterationCount++ )
-		{
-		if( attributeListPtr->attributeID == localAttributeID )
-			return( ( ATTRIBUTE_PTR * ) attributeListPtr );
-		}
-	ENSURES_N( iterationCount < FAILSAFE_ITERATIONS_LARGE * 10 );
-
-	return( NULL );
-#else
 	return( attributeFindEx( attributePtr, getAttrFunction, localAttributeID, 
 							 CRYPT_ATTRIBUTE_NONE, CRYPT_ATTRIBUTE_NONE ) );
-#endif
 	}
 
 CHECK_RETVAL_BOOL \
@@ -574,14 +578,16 @@ BOOLEAN checkAttributeFieldPresent( IN_OPT const ATTRIBUTE_PTR *attributePtr,
 			TRUE : FALSE );
 	}
 
-/* Move the attribute cursor relative to the current cursor position */
+/* Move the attribute cursor relative to the current cursor position.  The 
+   reason for the apparently-reversed values in the IN_RANGE() annotation
+   are because the values are -ve, so last comes before first */
 
 CHECK_RETVAL_PTR \
 ATTRIBUTE_PTR *certMoveAttributeCursor( IN_OPT const ATTRIBUTE_PTR *currentCursor,
 										IN_ATTRIBUTE \
 											const CRYPT_ATTRIBUTE_TYPE certInfoType,
-										IN_RANGE( CRYPT_CURSOR_FIRST, \
-												  CRYPT_CURSOR_LAST ) \
+										IN_RANGE( CRYPT_CURSOR_LAST, \
+												  CRYPT_CURSOR_FIRST) \
 											const int position )
 	{
 	assert( currentCursor == NULL || \
@@ -611,6 +617,9 @@ BOOLEAN checkAttributeProperty( const ATTRIBUTE_PTR *attributePtr,
 								IN_ENUM( ATTRIBUTE_PROPERTY ) \
 									ATTRIBUTE_PROPERTY_TYPE property )
 	{
+	static const ATTRIBUTE_LIST blobAttribute = ATTR_BLOB_ATTR;
+	static const ATTRIBUTE_LIST completeAttribute = ATTR_COMPLETE_ATTR;
+	static const ATTRIBUTE_LIST defaultField = ATTR_DEFAULT_FIELD;
 	const ATTRIBUTE_LIST *attributeListPtr = attributePtr;
 
 	assert( isReadPtr( attributePtr, sizeof( ATTRIBUTE_LIST ) ) );
@@ -621,12 +630,13 @@ BOOLEAN checkAttributeProperty( const ATTRIBUTE_PTR *attributePtr,
 	switch( property )
 		{
 		case ATTRIBUTE_PROPERTY_BLOBATTRIBUTE:
-			return( ( attributeListPtr->fieldID == 0 && \
-					  attributeListPtr->attributeID == 0 ) ? TRUE : FALSE );
+			return( ( attributeListPtr->fieldID == blobAttribute.fieldID && \
+					  attributeListPtr->attributeID == blobAttribute.attributeID ) ? \
+					TRUE : FALSE );
 
 		case ATTRIBUTE_PROPERTY_COMPLETEATRIBUTE:
-			return( ( attributeListPtr->fieldID == 0 && \
-					  attributeListPtr->attributeID == CRYPT_ERROR ) ? \
+			return( ( attributeListPtr->fieldID == completeAttribute.fieldID && \
+					  attributeListPtr->attributeID == completeAttribute.attributeID ) ? \
 					TRUE : FALSE );
 
 		case ATTRIBUTE_PROPERTY_CRITICAL:
@@ -634,8 +644,9 @@ BOOLEAN checkAttributeProperty( const ATTRIBUTE_PTR *attributePtr,
 					TRUE : FALSE );
 
 		case ATTRIBUTE_PROPERTY_DEFAULTVALUE:
-			return( ( attributeListPtr->fieldID == CRYPT_ERROR && \
-					  attributeListPtr->attributeID == 0 ) ? TRUE : FALSE );
+			return( ( attributeListPtr->fieldID == defaultField.fieldID && \
+					  attributeListPtr->attributeID == defaultField.attributeID ) ? \
+					  TRUE : FALSE );
 
 		case ATTRIBUTE_PROPERTY_DN:
 			return( ( attributeListPtr->fieldType == FIELDTYPE_DN ) ? \

@@ -1,18 +1,16 @@
 /****************************************************************************
 *																			*
 *						Certificate DN Read/Write Routines					*
-*						Copyright Peter Gutmann 1996-2008					*
+*						Copyright Peter Gutmann 1996-2013					*
 *																			*
 ****************************************************************************/
 
 #if defined( INC_ALL )
   #include "cert.h"
   #include "dn.h"
-  #include "asn1.h"
 #else
   #include "cert/cert.h"
   #include "cert/dn.h"
-  #include "enc_dec/asn1.h"
 #endif /* Compiler-specific includes */
 
 #ifdef USE_CERTIFICATES
@@ -32,7 +30,7 @@ static int readAVABitstring( INOUT STREAM *stream,
 							 OUT_TAG_ENCODED_Z int *stringTag )
 	{
 	long streamPos;
-	int bitStringLength, innerTag, innerLength = DUMMY_INIT, status;
+	int bitStringLength, innerTag, innerLength DUMMY_INIT, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( length, sizeof( int ) ) );
@@ -130,9 +128,9 @@ static int readAVA( INOUT STREAM *stream,
 	   read the wrapper around the string type with readGenericHole() we have 
 	   to allow a minimum length of zero instead of one because of broken 
 	   AVAs with zero-length strings */
-	tag = peekTag( stream );
-	if( cryptStatusError( tag ) )
-		return( tag );
+	status = tag = peekTag( stream );
+	if( cryptStatusError( status ) )
+		return( status );
 	if( tag == BER_BITSTRING )
 		return( readAVABitstring( stream, length, stringTag ) );
 	*stringTag = tag;
@@ -162,15 +160,34 @@ static int readRDNcomponent( INOUT STREAM *stream,
 	/* Read the type information for this AVA */
 	status = readAVA( stream, &type, &valueLength, &stringTag );
 	if( cryptStatusError( status ) )
-		return( status );
-	if( valueLength <= 0 )
 		{
-		/* Skip broken AVAs with zero-length strings */
-		return( CRYPT_OK );
+		/* If this is an unrecognised AVA, don't try and process it (the
+		   content will already have been skipped in readAVA()) */
+		if( status == OK_SPECIAL )
+			return( CRYPT_OK );
+
+		return( status );
 		}
+
+	/* Make sure that the string is a valid type for a DirectoryString.  We 
+	   don't allow Universal strings since no-one in their right mind uses
+	   those.
+	   
+	   Alongside DirectoryString values we also allow IA5Strings, from the
+	   practice of stuffing email addresses into DNs */
+	if( stringTag != BER_STRING_PRINTABLE && stringTag != BER_STRING_T61 && \
+		stringTag != BER_STRING_BMP && stringTag != BER_STRING_UTF8 && \
+		stringTag != BER_STRING_IA5 )
+		return( CRYPT_ERROR_BADDATA );
+
+	/* Skip broken AVAs with zero-length strings */
+	if( valueLength <= 0 )
+		return( CRYPT_OK );
+
+	/* Record the string contents, avoiding moving it into a buffer */
 	status = sMemGetDataBlock( stream, &value, valueLength );
 	if( cryptStatusOK( status ) )
-		status = sSkip( stream, valueLength );
+		status = sSkip( stream, valueLength, MAX_INTLENGTH_SHORT );
 	if( cryptStatusError( status ) )
 		return( status );
 	ANALYSER_HINT( value != NULL );
@@ -222,7 +239,7 @@ static int readDNComponent( INOUT STREAM *stream,
 
 		status = readRDNcomponent( stream, dnComponentListPtrPtr, 
 								   rdnLength );
-		if( cryptStatusError( status ) && status != OK_SPECIAL )
+		if( cryptStatusError( status ) )
 			return( status );
 
 		rdnLength -= stell( stream ) - rdnStart;
@@ -237,7 +254,7 @@ static int readDNComponent( INOUT STREAM *stream,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int readDN( INOUT STREAM *stream, 
-			OUT_OPT_PTR DN_PTR **dnComponentListPtrPtr )
+			OUT_PTR_COND DN_PTR **dnComponentListPtrPtr )
 	{
 	DN_COMPONENT *dnComponentListPtr = NULL;
 	int length, iterationCount, status;
@@ -306,15 +323,6 @@ static int preEncodeDN( INOUT DN_COMPONENT *dnComponentPtr,
 
 	assert( isReadPtr( dnComponentPtr, sizeof( DN_COMPONENT ) ) );
 
-#if 0	/* 18/7/08 Should never happen */
-	/* If we're being fed an entry in the middle of a DN, move back to the
-	   start */
-	for( iterationCount = 0;
-		 dnComponentPtr->prev != NULL && \
-			iterationCount < FAILSAFE_ITERATIONS_MED;
-		 dnComponentPtr = dnComponentPtr->prev, iterationCount++ );
-	ENSURES( iterationCount < FAILSAFE_ITERATIONS_MED );
-#endif /* 0 */
 	ENSURES( dnComponentPtr->prev == NULL );
 
 	/* Walk down the DN pre-encoding each AVA */
@@ -338,7 +346,7 @@ static int preEncodeDN( INOUT DN_COMPONENT *dnComponentPtr,
 										dnComponentPtr->valueLength,
 										&dnComponentPtr->valueStringType, 
 										&dnComponentPtr->asn1EncodedStringType,
-										&dnStringLength );
+										&dnStringLength, TRUE );
 			if( cryptStatusError( status ) )
 				return( status );
 			dnComponentPtr->encodedAVAdataSize = ( int ) \
@@ -367,7 +375,7 @@ static int preEncodeDN( INOUT DN_COMPONENT *dnComponentPtr,
 	return( CRYPT_OK );
 	}
 
-CHECK_RETVAL \
+CHECK_RETVAL_LENGTH \
 int sizeofDN( INOUT_OPT DN_PTR *dnComponentList )
 	{
 	int length, status;
@@ -464,22 +472,23 @@ int writeDN( INOUT STREAM *stream,
 *																			*
 ****************************************************************************/
 
-/* Note that the ability to specify free-form DNs means that users can 
-   create arbitrarily garbled and broken DNs (the creation of weird 
-   nonstandard DNs is pretty much the main reason why the DN-string 
-   capability exists).  This includes DNs that can't be easily handled 
-   through normal cryptlib facilities, for example ones where the CN 
-   component consists of illegal characters or is in a form that isn't 
-   usable as a search key for functions like cryptGetPublicKey().  If users
-   want to use this oddball-DN facility it's up to them to make sure that
-   the resulting DN information works with whatever environment they're
-   intending to use it in */
+/* The ability to specify free-form DNs means that users can create 
+   arbitrarily garbled and broken DNs (the creation of weird nonstandard DNs 
+   is pretty much the main reason why the DN-string capability exists).  
+   This includes DNs that can't be easily handled through normal cryptlib 
+   facilities, for example ones where the CN component consists of illegal 
+   characters or is in a form that isn't usable as a search key for 
+   functions like cryptGetPublicKey().  Because of these problems this 
+   functionality is disabled by default, if users want to use this oddball-
+   DN facility it's up to them to make sure that the resulting DN 
+   information works with whatever environment they're intending to use it 
+   in */
 
 #ifdef USE_CERT_DNSTRING 
 
-#if defined( _MSC_VER )
+#if defined( _MSC_VER ) || defined( __GNUC__ )
   #pragma message( "  Building with string-form DNs enabled." )
-#endif /* Warn with VC++ */
+#endif /* Warn about special features enabled */
 
 /* Check whether a string can be represented as a textual DN string */
 
@@ -519,7 +528,7 @@ typedef struct {
 #define MAX_DNSTRING_COMPONENTS 32
 
 CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static BOOLEAN parseDNString( INOUT_ARRAY( MAX_DNSTRING_COMPONENTS ) \
+static BOOLEAN parseDNString( OUT_ARRAY( MAX_DNSTRING_COMPONENTS ) \
 									DN_STRING_INFO *dnStringInfo,
 							  OUT_RANGE( 0, MAX_DNSTRING_COMPONENTS ) \
 									int *dnStringInfoIndex,
@@ -745,13 +754,15 @@ int readDNstring( INOUT_PTR DN_PTR **dnComponentListPtrPtr,
 				textBuffer[ textIndex++ ] = intToByte( ch );
 				}
 			ENSURES( i < MAX_ATTRIBUTE_SIZE );
+			ENSURES( textIndex > 0 && textIndex < MAX_INTLENGTH_SHORT );
 
 			/* The value is coming from an external source, make sure that 
 			   it's representable as a certificate string type.  All that 
 			   we care about here is the validity so we ignore the returned 
 			   encoding information */
 			status = getAsn1StringInfo( textBuffer, textIndex, 
-										&valueStringType, &dummy1, &dummy2 );
+										&valueStringType, &dummy1, &dummy2, 
+										FALSE );
 			if( cryptStatusError( status ) )
 				{
 				if( dnComponentPtr != NULL )
@@ -872,12 +883,13 @@ int writeDNstring( INOUT STREAM *stream,
 		   string.  Exactly what we should return if this check fails is a
 		   bit uncertain since there's no error code that it really
 		   corresponds to, CRYPT_ERROR_NOTAVAIL appears to be the least
-		   inappropriate one to use.  An alternative is to return a special-
-		   case string like "(DN can't be represented in string form)" but
-		   this then looks (from the return status) as if it was actually
-		   representable, requiring special-case checks for valid-but-not-
-		   valid returned data, so the error status is probably the best
-		   option */
+		   inappropriate one to use.
+		   
+		   An alternative is to return a special-case string like "(DN 
+		   can't be represented in string form)" but this then looks (from 
+		   the return status) as if it was actually representable, requiring 
+		   special-case checks for valid-but-not-valid returned data, so the 
+		   error status is probably the best option */
 		if( !isTextString( dnComponentPtr->value, 
 						   dnComponentPtr->valueLength ) )
 			return( CRYPT_ERROR_NOTAVAIL );

@@ -1,33 +1,21 @@
 /*
- ---------------------------------------------------------------------------
- Copyright (c) 1998-2006, Brian Gladman, Worcester, UK. All rights reserved.
+---------------------------------------------------------------------------
+Copyright (c) 1998-2013, Brian Gladman, Worcester, UK. All rights reserved.
 
- LICENSE TERMS
+The redistribution and use of this software (with or without changes)
+is allowed without the payment of fees or royalties provided that:
 
- The free distribution and use of this software in both source and binary
- form is allowed (with or without changes) provided that:
+  source code distributions include the above copyright notice, this
+  list of conditions and the following disclaimer;
 
-   1. distributions of this source code include the above copyright
-      notice, this list of conditions and the following disclaimer;
+  binary distributions include the above copyright notice, this list
+  of conditions and the following disclaimer in their documentation.
 
-   2. distributions in binary form include the above copyright
-      notice, this list of conditions and the following disclaimer
-      in the documentation and/or other associated materials;
-
-   3. the copyright holder's name is not used to endorse products
-      built using this software without specific written permission.
-
- ALTERNATIVELY, provided that this notice is retained in full, this product
- may be distributed under the terms of the GNU General Public License (GPL),
- in which case the provisions of the GPL apply INSTEAD OF those given above.
-
- DISCLAIMER
-
- This software is provided 'as is' with no explicit or implied warranties
- in respect of its properties, including, but not limited to, correctness
- and/or fitness for purpose.
- ---------------------------------------------------------------------------
- Issue 16/04/2007
+This software is provided 'as is' with no explicit or implied warranties
+in respect of its operation, including, but not limited to, correctness
+and fitness for purpose.
+---------------------------------------------------------------------------
+Issue Date: 20/12/2007
 
  This file contains the code for declaring the tables needed to implement
  AES. The file aesopt.h is assumed to be included before this header file.
@@ -73,6 +61,10 @@
 #if !defined( _AESTAB_H )
 #define _AESTAB_H
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #define t_dec(m,n) t_##m##n
 #define t_set(m,n) t_##m##n
 #define t_use(m,n) t_##m##n
@@ -88,9 +80,7 @@
 #  define CONST
 #endif
 
-#if defined(__cplusplus)
-#  define EXTERN extern "C"
-#elif defined(DO_TABLES)
+#if defined(DO_TABLES)
 #  define EXTERN
 #else
 #  define EXTERN extern
@@ -111,53 +101,53 @@
 #if defined(DO_TABLES) && defined(FIXED_TABLES)
 #define d_1(t,n,b,e)       EXTERN ALIGN CONST XP_DIR t n[256]    =   b(e)
 #define d_4(t,n,b,e,f,g,h) EXTERN ALIGN CONST XP_DIR t n[4][256] = { b(e), b(f), b(g), b(h) }
-EXTERN ALIGN CONST uint_32t t_dec(r,c)[RC_LENGTH] = rc_data(w0);
+EXTERN ALIGN CONST uint32_t t_dec(r,c)[RC_LENGTH] = rc_data(w0);
 #else
 #define d_1(t,n,b,e)       EXTERN ALIGN CONST XP_DIR t n[256]
 #define d_4(t,n,b,e,f,g,h) EXTERN ALIGN CONST XP_DIR t n[4][256]
-EXTERN ALIGN CONST uint_32t t_dec(r,c)[RC_LENGTH];
+EXTERN ALIGN CONST uint32_t t_dec(r,c)[RC_LENGTH];
 #endif
 
 #if defined( SBX_SET )
-    d_1(uint_8t, t_dec(s,box), sb_data, h0);
+    d_1(uint8_t, t_dec(s,box), sb_data, h0);
 #endif
 #if defined( ISB_SET )
-    d_1(uint_8t, t_dec(i,box), isb_data, h0);
+    d_1(uint8_t, t_dec(i,box), isb_data, h0);
 #endif
 
 #if defined( FT1_SET )
-    d_1(uint_32t, t_dec(f,n), sb_data, u0);
+    d_1(uint32_t, t_dec(f,n), sb_data, u0);
 #endif
 #if defined( FT4_SET )
-    d_4(uint_32t, t_dec(f,n), sb_data, u0, u1, u2, u3);
+    d_4(uint32_t, t_dec(f,n), sb_data, u0, u1, u2, u3);
 #endif
 
 #if defined( FL1_SET )
-    d_1(uint_32t, t_dec(f,l), sb_data, w0);
+    d_1(uint32_t, t_dec(f,l), sb_data, w0);
 #endif
 #if defined( FL4_SET )
-    d_4(uint_32t, t_dec(f,l), sb_data, w0, w1, w2, w3);
+    d_4(uint32_t, t_dec(f,l), sb_data, w0, w1, w2, w3);
 #endif
 
 #if defined( IT1_SET )
-    d_1(uint_32t, t_dec(i,n), isb_data, v0);
+    d_1(uint32_t, t_dec(i,n), isb_data, v0);
 #endif
 #if defined( IT4_SET )
-    d_4(uint_32t, t_dec(i,n), isb_data, v0, v1, v2, v3);
+    d_4(uint32_t, t_dec(i,n), isb_data, v0, v1, v2, v3);
 #endif
 
 #if defined( IL1_SET )
-    d_1(uint_32t, t_dec(i,l), isb_data, w0);
+    d_1(uint32_t, t_dec(i,l), isb_data, w0);
 #endif
 #if defined( IL4_SET )
-    d_4(uint_32t, t_dec(i,l), isb_data, w0, w1, w2, w3);
+    d_4(uint32_t, t_dec(i,l), isb_data, w0, w1, w2, w3);
 #endif
 
 #if defined( LS1_SET )
 #if defined( FL1_SET )
 #undef  LS1_SET
 #else
-    d_1(uint_32t, t_dec(l,s), sb_data, w0);
+    d_1(uint32_t, t_dec(l,s), sb_data, w0);
 #endif
 #endif
 
@@ -165,15 +155,19 @@ EXTERN ALIGN CONST uint_32t t_dec(r,c)[RC_LENGTH];
 #if defined( FL4_SET )
 #undef  LS4_SET
 #else
-    d_4(uint_32t, t_dec(l,s), sb_data, w0, w1, w2, w3);
+    d_4(uint32_t, t_dec(l,s), sb_data, w0, w1, w2, w3);
 #endif
 #endif
 
 #if defined( IM1_SET )
-    d_1(uint_32t, t_dec(i,m), mm_data, v0);
+    d_1(uint32_t, t_dec(i,m), mm_data, v0);
 #endif
 #if defined( IM4_SET )
-    d_4(uint_32t, t_dec(i,m), mm_data, v0, v1, v2, v3);
+    d_4(uint32_t, t_dec(i,m), mm_data, v0, v1, v2, v3);
+#endif
+
+#if defined(__cplusplus)
+}
 #endif
 
 #endif

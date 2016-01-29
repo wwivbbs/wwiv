@@ -57,14 +57,6 @@
   #include "device/pkcs11.h"
 #endif /* Compiler-specific includes */
 
-/* Occasionally we need to read things into host memory from a device in a
-   manner that can't be handled by a dynBuf since the data is coming from a
-   device rather than a cryptlib object.  The following value defines the 
-   maximum size of the on-stack buffer, if the data is larger than this we 
-   dynamically allocate the buffer (this almost never occurs) */
-
-#define MAX_BUFFER_SIZE			1024
-
 /* The use of dynamically bound function pointers vs.statically linked
    functions requires a bit of sleight of hand since we can't give the
    pointers the same names as prototyped functions.  To get around this we
@@ -115,6 +107,29 @@
    software on the host system (as are the symmetric ciphers in most 
    cases) */
 
+typedef RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *P11_ENDFUNCTION )( INOUT CONTEXT_INFO *contextInfoPtr );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *P11_INITKEYFUNCTION )( INOUT CONTEXT_INFO *contextInfoPtr, 
+									  IN_BUFFER( keyLength ) const void *key, 
+									  IN_LENGTH_SHORT const int keyLength );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *P11_GENERATEKEYFUNCTION )( INOUT CONTEXT_INFO *contextInfoPtr, \
+										  IN_LENGTH_SHORT const int keySizeBits );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *P11_ENCRYPTFUNCTION )( INOUT CONTEXT_INFO *contextInfoPtr, 
+									  INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
+									  IN_LENGTH_Z int length );
+									  /* Length may be zero for hash functions */
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *P11_DECRYPTFUNCTION )( INOUT CONTEXT_INFO *contextInfoPtr, 
+									  INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
+									  IN_LENGTH int length );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *P11_SIGNFUNCTION )( INOUT CONTEXT_INFO *contextInfoPtr, 
+								   INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
+								   IN_LENGTH_SHORT_MIN( MIN_PKCSIZE ) int length );
+
 typedef struct {
 	/* Mapping information.  The mechanism type is the specific mechanism for
 	   this algorithm and mode, for example CKM_DES_CFB64 (= { CRYPT_ALGO_DES,
@@ -129,6 +144,7 @@ typedef struct {
 	const CK_MECHANISM_TYPE mechanism;	/* Mechanism type for this algo/mode */
 	const CK_MECHANISM_TYPE keygenMechanism; /* Supplementary keygen mechanism */
 	const CK_MECHANISM_TYPE defaultMechanism;/* Default mechanism for this algo */
+	const CK_FLAGS requiredFlags;		/* Required flags for this mechanism */
 	const CRYPT_ALGO_TYPE cryptAlgo;	/* cryptlib algo and mode */
 	const CRYPT_MODE_TYPE cryptMode;
 
@@ -136,32 +152,12 @@ typedef struct {
 	const CK_KEY_TYPE keyType;			/* PKCS #11 key type */
 
 	/* Function pointers */
-	STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *endFunction )( INOUT CONTEXT_INFO *contextInfoPtr );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *initKeyFunction )( INOUT CONTEXT_INFO *contextInfoPtr, 
-							  IN_BUFFER( keyLength ) const void *key, 
-							  IN_LENGTH_SHORT const int keyLength );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *generateKeyFunction )( INOUT CONTEXT_INFO *contextInfoPtr, \
-								  IN_LENGTH_SHORT const int keySizeBits );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *encryptFunction )( INOUT CONTEXT_INFO *contextInfoPtr, 
-							  INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-							  IN_LENGTH_Z int length );
-							  /* Length may be zero for hash functions */
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *decryptFunction )( INOUT CONTEXT_INFO *contextInfoPtr, 
-							  INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-							  IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *signFunction )( INOUT CONTEXT_INFO *contextInfoPtr, 
-						   INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-						   IN_LENGTH_SHORT_MIN( MIN_PKCSIZE ) int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *sigCheckFunction )( INOUT CONTEXT_INFO *contextInfoPtr, 
-							   INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-							   IN_LENGTH_SHORT_MIN( MIN_PKCSIZE ) int length );
+	P11_ENDFUNCTION endFunction;
+	P11_INITKEYFUNCTION initKeyFunction;
+	P11_GENERATEKEYFUNCTION generateKeyFunction;
+	P11_ENCRYPTFUNCTION encryptFunction;
+	P11_DECRYPTFUNCTION decryptFunction;
+	P11_SIGNFUNCTION signFunction, sigCheckFunction;
 	} PKCS11_MECHANISM_INFO;
 
 /* Encryption contexts can store extra implementation-dependant parameters.
@@ -184,6 +180,7 @@ typedef struct {
 #define CKM_NONE				( ( CK_MECHANISM_TYPE ) CRYPT_ERROR )
 #define CK_OBJECT_NONE			( ( CK_OBJECT_HANDLE ) CRYPT_ERROR )
 #define CKA_NONE				( ( CK_ATTRIBUTE_TYPE ) CRYPT_ERROR )
+#define CKF_NONE				0
 
 /* The HMAC mechanisms in PKCS #11 don't work because they have to be keyed 
    with generic secret keys (rather than specific HMAC keys) but generic 
@@ -227,27 +224,42 @@ int pkcs11MapError( const CK_RV errorCode,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 3 ) ) \
 int getContextDeviceInfo( IN_HANDLE const CRYPT_HANDLE iCryptContext,
 						  OUT_HANDLE_OPT CRYPT_DEVICE *iCryptDevice, 
-						  OUT_OPT_PTR PKCS11_INFO **pkcs11InfoPtrPtr );
+						  OUT_PTR_COND PKCS11_INFO **pkcs11InfoPtrPtr );
 STDC_NONNULL_ARG( ( 1 ) ) \
 time_t getTokenTime( const CK_TOKEN_INFO *tokenInfo );
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 1 ) ) \
 const PKCS11_MECHANISM_INFO *getMechanismInfoConv( OUT_LENGTH_SHORT int *mechanismInfoSize );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int genericEndFunction( INOUT CONTEXT_INFO *contextInfoPtr );
 
 /* Prototypes for functions in pkcs11_init.c */
 
-CHECK_RETVAL \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int initPKCS11Init( INOUT DEVICE_INFO *deviceInfo, 
-					IN_BUFFER( nameLength ) \
-					const char *name, const int nameLength ) \
-					STDC_NONNULL_ARG( ( 1, 2 ) );
+					IN_BUFFER( nameLength ) const char *name, 
+					IN_LENGTH_SHORT const int nameLength );
 
 /* Prototypes for functions in pkcs11_pkc.c */
 
-CHECK_RETVAL \
-const PKCS11_MECHANISM_INFO *getMechanismInfoPKC( OUT int *mechanismInfoSize ) \
-												  STDC_NONNULL_ARG( ( 1 ) );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+int rsaSetPublicComponents( INOUT PKCS11_INFO *pkcs11Info,
+							IN_HANDLE const CRYPT_CONTEXT iCryptContext,
+							const CK_OBJECT_HANDLE hRsaKey,
+							const BOOLEAN nativeContext );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+int dsaSetPublicComponents( INOUT PKCS11_INFO *pkcs11Info,
+							IN_HANDLE const CRYPT_CONTEXT iCryptContext,
+							const CK_OBJECT_HANDLE hDsaKey,
+							const BOOLEAN nativeContext );
+#if defined( USE_ECDSA )
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+int ecdsaSetPublicComponents( INOUT PKCS11_INFO *pkcs11Info,
+							  IN_HANDLE const CRYPT_CONTEXT iCryptContext,
+							  const CK_OBJECT_HANDLE hEcdsaKey,
+							  const BOOLEAN nativeContext );
+#endif /* USE_ECDSA */
+CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 1 ) ) \
+const PKCS11_MECHANISM_INFO *getMechanismInfoPKC( OUT int *mechanismInfoSize );
 
 /* Prototypes for functions in pkcs11_rd/wr.c */
 
@@ -260,6 +272,11 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int addIAndSToTemplate( INOUT_ARRAY_C( 2 ) CK_ATTRIBUTE *certTemplate, 
 						IN_BUFFER( iAndSLength ) const void *iAndSPtr, 
 						IN_LENGTH_SHORT const int iAndSLength );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
+int getEccCurveType( INOUT PKCS11_INFO *pkcs11Info, 
+					 const CK_OBJECT_HANDLE hObject,
+					 OUT_ENUM_OPT( CRYPT_ECCCURVE ) \
+						CRYPT_ECCCURVE_TYPE *curveType );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 int findObject( INOUT PKCS11_INFO *pkcs11Info, 
 				OUT CK_OBJECT_HANDLE *hObject,

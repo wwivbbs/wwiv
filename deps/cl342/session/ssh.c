@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						cryptlib SSH Session Management						*
-*						Copyright Peter Gutmann 1998-2008					*
+*					   Copyright Peter Gutmann 1998-2013					*
 *																			*
 ****************************************************************************/
 
@@ -17,7 +17,7 @@
   #include "session/ssh.h"
 #endif /* Compiler-specific includes */
 
-#if defined( USE_SSH ) || defined( USE_SSH1 )
+#if defined( USE_SSH )
 
 /****************************************************************************
 *																			*
@@ -25,10 +25,99 @@
 *																			*
 ****************************************************************************/
 
+#if defined( __WIN32__ ) && !defined( NDEBUG )
+
+/* Dump a message to disk for diagnostic purposes.  Rather than using the 
+   normal DEBUG_DUMP() macro we have to use a special-purpose function that 
+   provides appropriate naming based on what we're processing */
+
+STDC_NONNULL_ARG( ( 1, 2 ) ) \
+void debugDumpSSH( const SESSION_INFO *sessionInfoPtr,
+				   IN_BUFFER( length ) const void *buffer, 
+				   IN_LENGTH_SHORT const int length,
+				   const BOOLEAN isRead )
+	{
+	FILE *filePtr;
+	static int messageCount = 1;
+	const BYTE *bufPtr = buffer;
+	const BOOLEAN encryptionActive = \
+		( isRead && ( sessionInfoPtr->flags & SESSION_ISSECURE_READ ) ) || \
+		( !isRead && ( sessionInfoPtr->flags & SESSION_ISSECURE_WRITE ) );
+	const BOOLEAN isServerID = \
+		( !encryptionActive && messageCount < 10 && length >= 4 && \
+		  !memcmp( buffer, "SSH-", 4 ) ) ? TRUE : FALSE;
+	char fileName[ 1024 + 8 ], *slashPtr;
+
+	assert( isReadPtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
+	assert( isReadPtr( buffer,  length ) );
+
+	if( messageCount > 20 )
+		return;	/* Don't dump too many messages */
+	strlcpy_s( fileName, 1024, "/tmp/" );
+	sprintf_s( &fileName[ 5 ], 1024, "ssh%02d%c_", messageCount++, 
+			   isRead ? 'r' : 'w' );
+	if( isServerID )
+		{
+		/* The initial server-ID messages don't have defined packet names */
+		strlcat_s( fileName, 1024, "server_ID" );
+		}
+	else
+		{
+		if( !encryptionActive || isRead )
+			{
+			if( isRead && length > 1 )
+				strlcat_s( fileName, 1024, getSSHPacketName( bufPtr[ 1 ] ) );
+			else
+				{
+				if( !encryptionActive && length > 5 )
+					{
+					strlcat_s( fileName, 1024, 
+							   getSSHPacketName( bufPtr[ 5 ] ) );
+					}
+				else
+					strlcat_s( fileName, 1024, "truncated_packet" );
+				}
+			}
+		else
+			strlcat_s( fileName, 1024, "encrypted_packet" );
+		}
+	slashPtr = strchr( fileName + 5, '/' );
+	if( slashPtr != NULL )
+		{
+		/* Some packet names contain slashes */
+		*slashPtr = '\0'; 
+		}
+	strlcat_s( fileName, 1024, ".dat" );
+
+#ifdef __STDC_LIB_EXT1__
+	if( fopen_s( &filePtr, fileName, "wb" ) != 0 )
+		filePtr = NULL;
+#else
+	filePtr = fopen( fileName, "wb" );
+#endif /* __STDC_LIB_EXT1__ */
+	if( filePtr == NULL )
+		return;
+	if( isRead && !isServerID )
+		{
+		STREAM stream;
+		BYTE lengthBuffer[ UINT32_SIZE + 8 ];
+
+		/* The read code has stripped the length field at the start so we
+		   have to reconstruct it and prepend it to the data being written */
+		sMemOpen( &stream, lengthBuffer, UINT32_SIZE );
+		writeUint32( &stream, length );
+		sMemDisconnect( &stream );
+		fwrite( lengthBuffer, 1, UINT32_SIZE, filePtr );
+		}
+	fwrite( buffer, 1, length, filePtr );
+	fclose( filePtr );
+	}
+#endif /* Windows debug mode only */
+
 /* Initialise and destroy the handshake state information */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-static int initHandshakeInfo( OUT SSH_HANDSHAKE_INFO *handshakeInfo )
+STDC_NONNULL_ARG( ( 1 ) ) \
+static void initHandshakeInfo( OUT SSH_HANDSHAKE_INFO *handshakeInfo )
 	{
 	assert( isWritePtr( handshakeInfo, sizeof( SSH_HANDSHAKE_INFO ) ) );
 
@@ -37,9 +126,7 @@ static int initHandshakeInfo( OUT SSH_HANDSHAKE_INFO *handshakeInfo )
 	handshakeInfo->iExchangeHashContext = \
 		handshakeInfo->iExchangeHashAltContext = \
 			handshakeInfo->iServerCryptContext = CRYPT_ERROR;
-	handshakeInfo->exchangeHashAlgo = CRYPT_ALGO_SHA1;
-	
-	return( CRYPT_OK );
+	initHandshakeCrypt( handshakeInfo );
 	}
 
 STDC_NONNULL_ARG( ( 1 ) ) \
@@ -64,12 +151,12 @@ static void destroyHandshakeInfo( INOUT SSH_HANDSHAKE_INFO *handshakeInfo )
 	/* Clear the handshake state information, then reset it to explicit non-
 	   initialised values */
 	zeroise( handshakeInfo, sizeof( SSH_HANDSHAKE_INFO ) );
-	( void ) initHandshakeInfo( handshakeInfo );
+	initHandshakeInfo( handshakeInfo );
 	}
 
 /* Read the SSH version information string */
 
-CHECK_RETVAL_RANGE( MAX_ERROR, 255 ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_RANGE( 0, 255 ) STDC_NONNULL_ARG( ( 1 ) ) \
 static int readCharFunction( INOUT TYPECAST( STREAM * ) void *streamPtr )
 	{
 	STREAM *stream = streamPtr;
@@ -87,7 +174,7 @@ static int readVersionString( INOUT SESSION_INFO *sessionInfoPtr )
 	{
 	const BYTE *versionStringPtr;
 	const char *peerType = isServer( sessionInfoPtr ) ? "Client" : "Server";
-	int versionStringLength, length = DUMMY_INIT, linesRead;
+	int versionStringLength, length DUMMY_INIT, linesRead;
 	int status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
@@ -122,7 +209,8 @@ static int readVersionString( INOUT SESSION_INFO *sessionInfoPtr )
 		   diagnostics in the event of an error */
 		status = readTextLine( readCharFunction, &sessionInfoPtr->stream, 
 							   sessionInfoPtr->receiveBuffer, 
-							   SSH_ID_MAX_SIZE, &length, &isTextDataError );
+							   SSH_ID_MAX_SIZE, &length, &isTextDataError, 
+							   FALSE );
 		if( cryptStatusError( status ) )
 			{
 			const char *lcPeerType = isServer( sessionInfoPtr ) ? \
@@ -141,6 +229,7 @@ static int readVersionString( INOUT SESSION_INFO *sessionInfoPtr )
 			!memcmp( sessionInfoPtr->receiveBuffer, SSH_ID, SSH_ID_SIZE ) )
 			break;
 		}
+	DEBUG_DUMP_SSH( sessionInfoPtr->receiveBuffer, length, TRUE );
 
 	/* The peer shouldn't be throwing infinite amounts of junk at us, if we 
 	   don't get an SSH ID after reading 20 lines of input then there's a 
@@ -167,12 +256,12 @@ static int readVersionString( INOUT SESSION_INFO *sessionInfoPtr )
 				  length ) );
 		}
 
-	/* Null-terminate the string so that we can hash it to create the SSHv2
-	   exchange hash.  We actually set a block of memory following the 
-	   string to zeroes (rather than just one null character) in case of
-	   any slight range errors in the free-format text-string checks that
-	   are required further on to identify bugs in SSH implementations */
+	/* Remember how much we've got and set a block of memory following the 
+	   string to zeroes in case of any slight range errors in the free-
+	   format text-string checks that are required further on to identify 
+	   bugs in SSH implementations */
 	memset( sessionInfoPtr->receiveBuffer + length, 0, 16 );
+	sessionInfoPtr->receiveBufEnd = length;
 
 	/* Determine which version we're talking to */
 	switch( sessionInfoPtr->receiveBuffer[ SSH_ID_SIZE ] )
@@ -185,24 +274,9 @@ static int readVersionString( INOUT SESSION_INFO *sessionInfoPtr )
 				sessionInfoPtr->version = 2;
 				break;
 				}
-
-#ifdef USE_SSH1
-			/* If the caller has specifically asked for SSHv2 but all that 
-			   the server offers is SSHv1, we can't continue */
-			if( sessionInfoPtr->version >= 2 )
-				{
-				retExt( CRYPT_ERROR_NOSECURE,
-						( CRYPT_ERROR_NOSECURE, SESSION_ERRINFO, 
-						  "Server can only do SSHv1 when SSHv2 was "
-						  "requested" ) );
-				}
-			sessionInfoPtr->version = 1;
-			break;
-#else
 			retExt( CRYPT_ERROR_NOSECURE,
 					( CRYPT_ERROR_NOSECURE, SESSION_ERRINFO, 
 					  "Server can only do SSHv1" ) );
-#endif /* USE_SSH1 */
 
 		case '2':
 			sessionInfoPtr->version = 2;
@@ -432,9 +506,9 @@ static int readVersionString( INOUT SESSION_INFO *sessionInfoPtr )
 					!memcmp( versionStringPtr, "1.0", 3 ) )
 					sessionInfoPtr->protocolFlags |= SSH_PFLAG_CUTEFTP;
 				if( ( vendorIDStringLength > 8 && \
-					!memcmp( vendorIDString, "sshlib: ", 8 ) > 0 ) || \
+					!memcmp( vendorIDString, "sshlib: ", 8 ) ) || \
 					( vendorIDStringLength > 9 && \
-					!memcmp( vendorIDString, "FlowSsh: ", 9 ) > 0 ) )
+					!memcmp( vendorIDString, "FlowSsh: ", 9 ) ) )
 					sessionInfoPtr->protocolFlags |= SSH_PFLAG_ASYMMCOPR;
 				break;
 
@@ -513,19 +587,6 @@ static int initVersion( INOUT SESSION_INFO *sessionInfoPtr,
 	status = readVersionString( sessionInfoPtr );
 	if( cryptStatusError( status ) )
 		return( status );
-#ifdef USE_SSH1
-	if( sessionInfoPtr->version == 1 )
-		{
-		initSSH1processing( sessionInfoPtr, handshakeInfo,
-							isServer( sessionInfoPtr ) ? TRUE : FALSE );
-		sessionInfoPtr->sendBufStartOfs = \
-			sessionInfoPtr->receiveBufStartOfs = \
-				sessionInfoPtr->protocolInfo->sendBufStartOfs;
-		return( CRYPT_OK );
-		}
-#endif /* USE_SSH1 */
-	initSSH2processing( sessionInfoPtr, handshakeInfo,
-						isServer( sessionInfoPtr ) ? TRUE : FALSE );
 
 	/* SSHv2 hashes parts of the handshake messages for integrity-protection
 	   purposes so we create a context for the hash.  In addition since the 
@@ -601,9 +662,12 @@ static int completeStartup( INOUT SESSION_INFO *sessionInfoPtr )
 	   protocols aren't compatible in anything but name we have to peek at 
 	   the peer's initial communication and, in initVersion(), redirect 
 	   function pointers based on that */
-	status = initHandshakeInfo( &handshakeInfo );
-	if( cryptStatusOK( status ) )
-		status = initVersion( sessionInfoPtr, &handshakeInfo );
+	initHandshakeInfo( &handshakeInfo );
+	if( isServer( sessionInfoPtr ) )
+		initSSH2serverProcessing( &handshakeInfo );
+	else
+		initSSH2clientProcessing( &handshakeInfo );
+	status = initVersion( sessionInfoPtr, &handshakeInfo );
 	if( cryptStatusOK( status ) )
 		status = handshakeInfo.beginHandshake( sessionInfoPtr,
 											   &handshakeInfo );
@@ -638,10 +702,8 @@ static int completeStartup( INOUT SESSION_INFO *sessionInfoPtr )
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int serverStartup( INOUT SESSION_INFO *sessionInfoPtr )
 	{
-	const char *idString = ( sessionInfoPtr->version == 1 ) ? \
-						   SSH1_ID_STRING "\n" : SSH2_ID_STRING "\r\n";
-	const int idStringLen = SSH_ID_STRING_SIZE + \
-							( ( sessionInfoPtr->version == 1 ) ? 1 : 2 );
+	const char *idString = SSH_ID_STRING "\r\n";
+	const int idStringLen = SSH_ID_STRING_SIZE + 2;
 	int status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
@@ -653,10 +715,8 @@ static int serverStartup( INOUT SESSION_INFO *sessionInfoPtr )
 		{
 		SSH_HANDSHAKE_INFO handshakeInfo;
 
-		status = initHandshakeInfo( &handshakeInfo );
-		if( cryptStatusError( status ) )
-			return( status );
-		initSSH2processing( sessionInfoPtr, &handshakeInfo, TRUE );
+		initHandshakeInfo( &handshakeInfo );
+		initSSH2serverProcessing( &handshakeInfo );
 		return( completeHandshake( sessionInfoPtr, &handshakeInfo ) );
 		}
 
@@ -720,7 +780,7 @@ static int setAttributeFunction( INOUT SESSION_INFO *sessionInfoPtr,
 								 IN const void *data,
 								 IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE type )
 	{
-	int value = DUMMY_INIT, status;
+	int value DUMMY_INIT, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isReadPtr( data, sizeof( int ) ) );
@@ -791,8 +851,8 @@ static int checkAttributeFunction( SESSION_INFO *sessionInfoPtr,
 	STREAM stream;
 	BYTE buffer[ 128 + ( CRYPT_MAX_PKCSIZE * 4 ) + 8 ];
 	BYTE fingerPrint[ CRYPT_MAX_HASHSIZE + 8 ];
-	void *blobData = DUMMY_INIT_PTR;
-	int blobDataLength = DUMMY_INIT, hashSize, pkcAlgo, status;
+	void *blobData DUMMY_INIT_PTR;
+	int blobDataLength DUMMY_INIT, hashSize, pkcAlgo, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 
@@ -864,7 +924,7 @@ static int checkAttributeFunction( SESSION_INFO *sessionInfoPtr,
 
 	/* Add the fingerprint */
 	return( addSessionInfoS( &sessionInfoPtr->attributeList,
-							 CRYPT_SESSINFO_SERVER_FINGERPRINT,
+							 CRYPT_SESSINFO_SERVER_FINGERPRINT_SHA1,
 							 fingerPrint, hashSize ) );
 	}
 
@@ -877,25 +937,42 @@ static int checkAttributeFunction( SESSION_INFO *sessionInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int setAccessMethodSSH( INOUT SESSION_INFO *sessionInfoPtr )
 	{
+	static const PROTOCOL_INFO protocolInfo = {
+		/* General session information */
+		FALSE,						/* Request-response protocol */
+		SESSION_NONE,				/* Flags */
+		SSH_PORT,					/* SSH port */
+		SESSION_NEEDS_USERID |		/* Client attributes */
+			SESSION_NEEDS_PASSWORD | \
+			SESSION_NEEDS_KEYORPASSWORD | \
+			SESSION_NEEDS_PRIVKEYSIGN,
+				/* The client private key is optional, but if present it has
+				   to be signature-capable */
+		SESSION_NEEDS_PRIVATEKEY |	/* Server attributes */
+			SESSION_NEEDS_PRIVKEYSIGN,
+		2, 2, 2,					/* Version 2 */
+
+		/* Protocol-specific information */
+		EXTRA_PACKET_SIZE + \
+			DEFAULT_PACKET_SIZE,	/* Send/receive buffer size */
+		SSH2_HEADER_SIZE + \
+			SSH2_PAYLOAD_HEADER_SIZE,/* Payload data start */
+		DEFAULT_PACKET_SIZE			/* (Default) maximum packet size */
+		};
+
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 
 	/* Set the access method pointers */
+	sessionInfoPtr->protocolInfo = &protocolInfo;
+	sessionInfoPtr->transactFunction = ( isServer( sessionInfoPtr ) ) ? \
+									   serverStartup : completeStartup;
+	initSSH2processing( sessionInfoPtr );
 #ifdef USE_SSH_EXTENDED
 	sessionInfoPtr->getAttributeFunction = getAttributeFunction;
 	sessionInfoPtr->setAttributeFunction = setAttributeFunction;
 #endif /* USE_SSH_EXTENDED */
 	sessionInfoPtr->checkAttributeFunction = checkAttributeFunction;
-	if( isServer( sessionInfoPtr ) )
-		{
-		sessionInfoPtr->transactFunction = serverStartup;
-		initSSH2processing( sessionInfoPtr, NULL, TRUE );
-		}
-	else
-		{
-		sessionInfoPtr->transactFunction = completeStartup;
-		initSSH2processing( sessionInfoPtr, NULL, FALSE );
-		}
 
 	return( CRYPT_OK );
 	}
-#endif /* USE_SSH || USE_SSH1 */
+#endif /* USE_SSH */

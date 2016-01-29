@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						 cryptlib CMP Session Management					*
-*						Copyright Peter Gutmann 1999-2009					*
+*						Copyright Peter Gutmann 1999-2011					*
 *																			*
 ****************************************************************************/
 
@@ -33,7 +33,7 @@
    of the files that are created */
 
 STDC_NONNULL_ARG( ( 3 ) ) \
-void debugDumpCMP( IN_ENUM( CTAG_PB ) const CMP_MESSAGE_TYPE type, 
+void debugDumpCMP( IN_ENUM( CMP_MESSAGE ) const CMP_MESSAGE_TYPE type, 
 				   IN_RANGE( 1, 4 ) const int phase,
 				   const SESSION_INFO *sessionInfoPtr )
 	{
@@ -126,8 +126,8 @@ static const MAP_TABLE reqRespMapTbl[] = {
 		{ CRYPT_ERROR, CRYPT_ERROR }
 	};
 
-CHECK_RETVAL_RANGE( MAX_ERROR, CTAG_PB_LAST ) \
-int reqToResp( IN_ENUM_OPT( CTAG_PB ) const CMP_MESSAGE_TYPE reqType )
+CHECK_RETVAL_RANGE( CMP_MESSAGE_NONE, CMP_MESSAGE_LAST - 1 ) \
+int reqToResp( IN_ENUM_OPT( CMP_MESSAGE ) const CMP_MESSAGE_TYPE reqType )
 	{
 	int value, status;
 
@@ -303,14 +303,14 @@ static int getAttributeFunction( INOUT SESSION_INFO *sessionInfoPtr,
 								 OUT void *data, 
 								 IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE type )
 	{
-	CRYPT_CERTIFICATE *cmpResponsePtr = ( CRYPT_CERTIFICATE * ) data;
 	CMP_INFO *cmpInfo = sessionInfoPtr->sessionCMP;
+	CRYPT_CERTIFICATE *cmpResponsePtr = ( CRYPT_CERTIFICATE * ) data;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( data, sizeof( int ) ) );
 	
-	REQUIRES( type == CRYPT_SESSINFO_CMP_REQUESTTYPE || \
-			  type == CRYPT_SESSINFO_RESPONSE );
+	REQUIRES( type == CRYPT_SESSINFO_RESPONSE || \
+			  type == CRYPT_SESSINFO_CMP_REQUESTTYPE );
 
 	/* If it's a general protocol-specific attribute read, return the
 	   information and exit */
@@ -341,17 +341,17 @@ static int setAttributeFunction( INOUT SESSION_INFO *sessionInfoPtr,
 								 IN const void *data,
 								 IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE type )
 	{
-	CRYPT_CERTIFICATE cryptCert = *( ( CRYPT_CERTIFICATE * ) data );
 	CMP_INFO *cmpInfo = sessionInfoPtr->sessionCMP;
+	CRYPT_CERTIFICATE cryptCert = *( ( CRYPT_CERTIFICATE * ) data );
 	int certReqType, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isReadPtr( data, sizeof( int ) ) );
 
-	REQUIRES( type == CRYPT_SESSINFO_CMP_REQUESTTYPE || \
-			  type == CRYPT_SESSINFO_CMP_PRIVKEYSET || \
-			  type == CRYPT_SESSINFO_REQUEST || \
-			  type == CRYPT_SESSINFO_CACERTIFICATE );
+	REQUIRES( type == CRYPT_SESSINFO_REQUEST || \
+			  type == CRYPT_SESSINFO_CACERTIFICATE || \
+			  type == CRYPT_SESSINFO_CMP_REQUESTTYPE || \
+			  type == CRYPT_SESSINFO_CMP_PRIVKEYSET );
 
 	/* Standard CMP (with user-supplied request information) can't be 
 	   combined with plug-and-play CMP (with automatically-generated request 

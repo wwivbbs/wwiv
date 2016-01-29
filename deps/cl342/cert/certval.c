@@ -7,11 +7,9 @@
 
 #if defined( INC_ALL )
   #include "cert.h"
-  #include "asn1.h"
   #include "asn1_ext.h"
 #else
   #include "cert/cert.h"
-  #include "enc_dec/asn1.h"
   #include "enc_dec/asn1_ext.h"
 #endif /* Compiler-specific includes */
 
@@ -103,7 +101,7 @@ static int checkValidity( const CERT_INFO *certInfoPtr,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int addValidityEntry( INOUT_PTR VALIDITY_INFO **listHeadPtrPtr,
-					  OUT_OPT_PTR_OPT VALIDITY_INFO **newEntryPosition,
+					  OUT_OPT_PTR_COND VALIDITY_INFO **newEntryPosition,
 					  IN_BUFFER( valueLength ) const void *value, 
 					  IN_LENGTH_FIXED( KEYID_SIZE ) const int valueLength )
 	{
@@ -179,7 +177,7 @@ int copyValidityEntries( INOUT_PTR VALIDITY_INFO **destListHeadPtrPtr,
 						 const VALIDITY_INFO *srcListPtr )
 	{
 	const VALIDITY_INFO *srcListCursor;
-	VALIDITY_INFO *destListCursor = DUMMY_INIT_PTR;
+	VALIDITY_INFO *destListCursor DUMMY_INIT_PTR;
 	int iterationCount;
 
 	assert( isWritePtr( destListHeadPtrPtr, sizeof( VALIDITY_INFO * ) ) );
@@ -229,7 +227,7 @@ int copyValidityEntries( INOUT_PTR VALIDITY_INFO **destListHeadPtrPtr,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 3, 4 ) ) \
 int prepareValidityEntries( IN_OPT const VALIDITY_INFO *listPtr, 
-							OUT_OPT_PTR VALIDITY_INFO **errorEntry,
+							OUT_PTR_xCOND VALIDITY_INFO **errorEntry,
 							OUT_ENUM_OPT( CRYPT_ATTRIBUTE ) \
 								CRYPT_ATTRIBUTE_TYPE *errorLocus,
 							OUT_ENUM_OPT( CRYPT_ERRTYPE ) \
@@ -244,8 +242,10 @@ int prepareValidityEntries( IN_OPT const VALIDITY_INFO *listPtr,
 	assert( isWritePtr( errorLocus, sizeof( CRYPT_ATTRIBUTE_TYPE ) ) );
 	assert( isWritePtr( errorType, sizeof( CRYPT_ERRTYPE_TYPE ) ) );
 
-	/* Clear return value */
+	/* Clear return values */
 	*errorEntry = NULL;
+	*errorLocus = CRYPT_ATTRIBUTE_NONE;
+	*errorType = CRYPT_ERRTYPE_NONE;
 
 	/* If the validity list is empty there's nothing to do */
 	if( listPtr == NULL )
@@ -350,24 +350,22 @@ int checkRTCSResponse( INOUT CERT_INFO *certInfoPtr,
 		} */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int sizeofRtcsRequestEntry( INOUT VALIDITY_INFO *rtcsEntry )
+int sizeofRtcsRequestEntry( STDC_UNUSED const VALIDITY_INFO *rtcsEntry )
 	{
-	assert( isWritePtr( rtcsEntry, sizeof( VALIDITY_INFO ) ) );
+	assert( isReadPtr( rtcsEntry, sizeof( VALIDITY_INFO ) ) );
 
 	return( ( int ) sizeofObject( sizeofObject( KEYID_SIZE ) ) );
 	}
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int readRtcsRequestEntry( INOUT STREAM *stream, 
-						  INOUT_PTR VALIDITY_INFO **listHeadPtrPtr,
-						  INOUT CERT_INFO *certInfoPtr )
+						  INOUT_PTR VALIDITY_INFO **listHeadPtrPtr )
 	{
 	BYTE idBuffer[ CRYPT_MAX_HASHSIZE + 8 ];
 	int endPos, length, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( listHeadPtrPtr, sizeof( VALIDITY_INFO * ) ) );
-	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
 
 	/* Determine the overall size of the entry */
 	status = readSequence( stream, &length );
@@ -435,7 +433,8 @@ int sizeofRtcsResponseEntry( INOUT VALIDITY_INFO *rtcsEntry,
 	/* Remember the encoded attribute size for later when we write the
 	   attributes */
 	status = \
-		rtcsEntry->attributeSize = sizeofAttributes( rtcsEntry->attributes );
+		rtcsEntry->attributeSize = sizeofAttributes( rtcsEntry->attributes,
+													 CRYPT_CERTTYPE_NONE );
 	if( cryptStatusError( status ) )
 		return( status );
 
@@ -506,12 +505,14 @@ int readRtcsResponseEntry( INOUT STREAM *stream,
 	   CRYPT_CERTTYPE_NONE rather than CRYPT_CERTTYPE_RTCS to make sure
 	   that they're processed as required */
 	status = readConstructed( stream, &length, 0 );
-	if( cryptStatusError( status ) )
-		return( status );
-	return( readAttributes( stream, &newEntry->attributes,
-							CRYPT_CERTTYPE_NONE, length,
-							&certInfoPtr->errorLocus,
-							&certInfoPtr->errorType ) );
+	if( cryptStatusOK( status ) && length > 0 )
+		{
+		status = readAttributes( stream, &newEntry->attributes,
+								 CRYPT_CERTTYPE_NONE, length,
+								 &certInfoPtr->errorLocus,
+								 &certInfoPtr->errorType );
+		}
+	return( status );
 	}
 
 STDC_NONNULL_ARG( ( 1, 2 ) ) \

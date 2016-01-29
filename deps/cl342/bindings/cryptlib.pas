@@ -5,7 +5,7 @@ interface
 {****************************************************************************
 *                                                                           *
 *                     Cryptlib external API interface                       *
-*                    Copyright Peter Gutmann 1997-2012                      *
+*                    Copyright Peter Gutmann 1997-2015                      *
 *                                                                           *
 *        adapted for Delphi Version 5 (32 bit) and Kylix Version 3          *
 *                              by W. Gothier                                *
@@ -16,7 +16,7 @@ interface
 
  This file has been created automatically by a perl script from the file:
 
- "cryptlib.h" dated Wed Aug 29 15:34:08 2012, filesize = 97645.
+ "cryptlib.h" dated Mon Dec  7 02:33:30 2015, filesize = 98078.
 
  Please check twice that the file matches the version of cryptlib.h
  in your cryptlib source! If this is not the right version, try to download an
@@ -42,7 +42,7 @@ const
 
 
 const
-  CRYPTLIB_VERSION = 3410;
+  CRYPTLIB_VERSION = 3430;
 
 {****************************************************************************
 *                                                                           *
@@ -65,35 +65,35 @@ const
   CRYPT_ALGO_3DES = 2;  { Triple DES }
   CRYPT_ALGO_IDEA = 3;  { IDEA (only used for PGP 2.x) }
   CRYPT_ALGO_CAST = 4;  { CAST-128 (only used for OpenPGP) }
-  CRYPT_ALGO_RC2 = 5;  { RC2 (disabled by default) }
-  CRYPT_ALGO_RC4 = 6;  { RC4 }
-  CRYPT_ALGO_RC5 = 7;  { RC5 }
+  CRYPT_ALGO_RC2 = 5;  { RC2 (disabled by default, used for PKCS #12) }
+  CRYPT_ALGO_RC4 = 6;  { RC4 (insecure, deprecated) }
+  CRYPT_ALGO_RESERVED1 = 7;  { Formerly RC5 }
   CRYPT_ALGO_AES = 8;  { AES }
-  CRYPT_ALGO_BLOWFISH = 9;  { Blowfish }
+  CRYPT_ALGO_RESERVED2 = 9;  { Formerly Blowfish }
   
   { Public-key encryption }
   CRYPT_ALGO_DH = 100;  { Diffie-Hellman }
   CRYPT_ALGO_RSA = 101;  { RSA }
   CRYPT_ALGO_DSA = 102;  { DSA }
   CRYPT_ALGO_ELGAMAL = 103;  { ElGamal }
-  CRYPT_ALGO_RESERVED1 = 104;  { Formerly KEA }
+  CRYPT_ALGO_RESERVED3 = 104;  { Formerly KEA }
   CRYPT_ALGO_ECDSA = 105;  { ECDSA }
   CRYPT_ALGO_ECDH = 106;  { ECDH }
   
   { Hash algorithms }
-  CRYPT_ALGO_RESERVED2 = 200;  { Formerly MD2 }
-  CRYPT_ALGO_RESERVED3 = 201;  { Formerly MD4 }
-  CRYPT_ALGO_MD5 = 202;  { MD5 }
+  CRYPT_ALGO_RESERVED4 = 200;  { Formerly MD2 }
+  CRYPT_ALGO_RESERVED5 = 201;  { Formerly MD4 }
+  CRYPT_ALGO_MD5 = 202;  { MD5 (only used for TLS 1.0/1.1) }
   CRYPT_ALGO_SHA1 = 203;  { SHA/SHA1 }
-  CRYPT_ALGO_RIPEMD160 = 204;  { RIPE-MD 160 }
+  CRYPT_ALGO_RESERVED6 = 204;  { Formerly RIPE-MD 160 }
   CRYPT_ALGO_SHA2 = 205;  { SHA-256 }
   CRYPT_ALGO_SHA256 = 205; { = CRYPT_ALGO_SHA2 }  { Alternate name }
   CRYPT_ALGO_SHAng = 206;  { Future SHA-nextgen standard }
   
   { MAC's }
-  CRYPT_ALGO_HMAC_MD5 = 300;  { HMAC-MD5 }
+  CRYPT_ALGO_RESREVED_7 = 300;  { Formerly HMAC-MD5 }
   CRYPT_ALGO_HMAC_SHA1 = 301;  { HMAC-SHA }
-  CRYPT_ALGO_HMAC_RIPEMD160 = 302;  { HMAC-RIPEMD-160 }
+  CRYPT_ALGO_RESERVED8 = 302;  { Formerly HMAC-RIPEMD-160 }
   CRYPT_ALGO_HMAC_SHA2 = 303;  { HMAC-SHA2 }
   CRYPT_ALGO_HMAC_SHAng = 304;  { HMAC-future-SHA-nextgen }
   
@@ -128,7 +128,6 @@ type
     CRYPT_MODE_ECB,                 {  ECB  }
     CRYPT_MODE_CBC,                 {  CBC  }
     CRYPT_MODE_CFB,                 {  CFB  }
-    CRYPT_MODE_OFB,                 {  OFB  }
     CRYPT_MODE_GCM,                 {  GCM  }
     CRYPT_MODE_LAST                 {  Last possible crypt mode value  }
     
@@ -225,8 +224,13 @@ type
     
   );
 
+const
+  CRYPT_SESSION_TLS_SERVER: CRYPT_SESSION_TYPE = CRYPT_SESSION_SSL_SERVER;
+
 {  User subtypes  }
 
+
+type
   CRYPT_USER_TYPE = (  
     CRYPT_USER_NONE,                {  No user type  }
     CRYPT_USER_NORMAL,              {  Normal user  }
@@ -289,7 +293,7 @@ const
   CRYPT_ATTRIBUTE_CURRENT_INSTANCE = 15;  { Cursor mgt: Instance in attribute list }
   CRYPT_ATTRIBUTE_BUFFERSIZE = 16;  { Internal data buffer size }
   
-  { User internally }
+  { Used internally }
   CRYPT_GENERIC_LAST = 17;  CRYPT_OPTION_FIRST = 100;  
   
   {**************************}
@@ -411,40 +415,38 @@ const
   CRYPT_CERTINFO_IMMUTABLE = 2002;  { Cert is signed and immutable }
   CRYPT_CERTINFO_XYZZY = 2003;  { Cert is a magic just-works cert }
   CRYPT_CERTINFO_CERTTYPE = 2004;  { Certificate object type }
-  CRYPT_CERTINFO_FINGERPRINT = 2005;  { Certificate fingerprints }
-  CRYPT_CERTINFO_FINGERPRINT_MD5 = 2005; { = CRYPT_CERTINFO_FINGERPRINT }  
-  CRYPT_CERTINFO_FINGERPRINT_SHA1 = 2006;  
-  CRYPT_CERTINFO_FINGERPRINT_SHA = 2006; { = CRYPT_CERTINFO_FINGERPRINT_SHA1 }  
-  CRYPT_CERTINFO_FINGERPRINT_SHA2 = 2007;  
-  CRYPT_CERTINFO_FINGERPRINT_SHAng = 2008;  
-  CRYPT_CERTINFO_CURRENT_CERTIFICATE = 2009;  { Cursor mgt: Rel.pos in chain/CRL/OCSP }
-  CRYPT_CERTINFO_TRUSTED_USAGE = 2010;  { Usage that cert is trusted for }
-  CRYPT_CERTINFO_TRUSTED_IMPLICIT = 2011;  { Whether cert is implicitly trusted }
-  CRYPT_CERTINFO_SIGNATURELEVEL = 2012;  { Amount of detail to include in sigs.}
+  CRYPT_CERTINFO_FINGERPRINT_SHA1 = 2005;  { Certificate fingerprints }
+  CRYPT_CERTINFO_FINGERPRINT_SHA2 = 2006;  
+  CRYPT_CERTINFO_FINGERPRINT_SHAng = 2007;  
+  CRYPT_CERTINFO_CURRENT_CERTIFICATE = 2008;  { Cursor mgt: Rel.pos in chain/CRL/OCSP }
+  CRYPT_CERTINFO_TRUSTED_USAGE = 2009;  { Usage that cert is trusted for }
+  CRYPT_CERTINFO_TRUSTED_IMPLICIT = 2010;  { Whether cert is implicitly trusted }
+  CRYPT_CERTINFO_SIGNATURELEVEL = 2011;  { Amount of detail to include in sigs.}
   
   { General certificate object information }
-  CRYPT_CERTINFO_VERSION = 2013;  { Cert.format version }
-  CRYPT_CERTINFO_SERIALNUMBER = 2014;  { Serial number }
-  CRYPT_CERTINFO_SUBJECTPUBLICKEYINFO = 2015;  { Public key }
-  CRYPT_CERTINFO_CERTIFICATE = 2016;  { User certificate }
-  CRYPT_CERTINFO_USERCERTIFICATE = 2016; { = CRYPT_CERTINFO_CERTIFICATE }  
-  CRYPT_CERTINFO_CACERTIFICATE = 2017;  { CA certificate }
-  CRYPT_CERTINFO_ISSUERNAME = 2018;  { Issuer DN }
-  CRYPT_CERTINFO_VALIDFROM = 2019;  { Cert valid-from time }
-  CRYPT_CERTINFO_VALIDTO = 2020;  { Cert valid-to time }
-  CRYPT_CERTINFO_SUBJECTNAME = 2021;  { Subject DN }
-  CRYPT_CERTINFO_ISSUERUNIQUEID = 2022;  { Issuer unique ID }
-  CRYPT_CERTINFO_SUBJECTUNIQUEID = 2023;  { Subject unique ID }
-  CRYPT_CERTINFO_CERTREQUEST = 2024;  { Cert.request (DN + public key) }
-  CRYPT_CERTINFO_THISUPDATE = 2025;  { CRL/OCSP current-update time }
-  CRYPT_CERTINFO_NEXTUPDATE = 2026;  { CRL/OCSP next-update time }
-  CRYPT_CERTINFO_REVOCATIONDATE = 2027;  { CRL/OCSP cert-revocation time }
-  CRYPT_CERTINFO_REVOCATIONSTATUS = 2028;  { OCSP revocation status }
-  CRYPT_CERTINFO_CERTSTATUS = 2029;  { RTCS certificate status }
-  CRYPT_CERTINFO_DN = 2030;  { Currently selected DN in string form }
-  CRYPT_CERTINFO_PKIUSER_ID = 2031;  { PKI user ID }
-  CRYPT_CERTINFO_PKIUSER_ISSUEPASSWORD = 2032;  { PKI user issue password }
-  CRYPT_CERTINFO_PKIUSER_REVPASSWORD = 2033;  { PKI user revocation password }
+  CRYPT_CERTINFO_VERSION = 2012;  { Cert.format version }
+  CRYPT_CERTINFO_SERIALNUMBER = 2013;  { Serial number }
+  CRYPT_CERTINFO_SUBJECTPUBLICKEYINFO = 2014;  { Public key }
+  CRYPT_CERTINFO_CERTIFICATE = 2015;  { User certificate }
+  CRYPT_CERTINFO_USERCERTIFICATE = 2015; { = CRYPT_CERTINFO_CERTIFICATE }  
+  CRYPT_CERTINFO_CACERTIFICATE = 2016;  { CA certificate }
+  CRYPT_CERTINFO_ISSUERNAME = 2017;  { Issuer DN }
+  CRYPT_CERTINFO_VALIDFROM = 2018;  { Cert valid-from time }
+  CRYPT_CERTINFO_VALIDTO = 2019;  { Cert valid-to time }
+  CRYPT_CERTINFO_SUBJECTNAME = 2020;  { Subject DN }
+  CRYPT_CERTINFO_ISSUERUNIQUEID = 2021;  { Issuer unique ID }
+  CRYPT_CERTINFO_SUBJECTUNIQUEID = 2022;  { Subject unique ID }
+  CRYPT_CERTINFO_CERTREQUEST = 2023;  { Cert.request (DN + public key) }
+  CRYPT_CERTINFO_THISUPDATE = 2024;  { CRL/OCSP current-update time }
+  CRYPT_CERTINFO_NEXTUPDATE = 2025;  { CRL/OCSP next-update time }
+  CRYPT_CERTINFO_REVOCATIONDATE = 2026;  { CRL/OCSP cert-revocation time }
+  CRYPT_CERTINFO_REVOCATIONSTATUS = 2027;  { OCSP revocation status }
+  CRYPT_CERTINFO_CERTSTATUS = 2028;  { RTCS certificate status }
+  CRYPT_CERTINFO_DN = 2029;  { Currently selected DN in string form }
+  CRYPT_CERTINFO_PKIUSER_ID = 2030;  { PKI user ID }
+  CRYPT_CERTINFO_PKIUSER_ISSUEPASSWORD = 2031;  { PKI user issue password }
+  CRYPT_CERTINFO_PKIUSER_REVPASSWORD = 2032;  { PKI user revocation password }
+  CRYPT_CERTINFO_PKIUSER_RA = 2033;  { PKI user is an RA }
   
   { X.520 Distinguished Name components.  This is a composite field, the
   DN to be manipulated is selected through the addition of a
@@ -825,96 +827,91 @@ const
   CRYPT_CERTINFO_CMS_SMIMECAP_3DES = 2506;  { 3DES encryption }
   CRYPT_CERTINFO_CMS_SMIMECAP_AES = 2507;  { AES encryption }
   CRYPT_CERTINFO_CMS_SMIMECAP_CAST128 = 2508;  { CAST-128 encryption }
-  CRYPT_CERTINFO_CMS_SMIMECAP_IDEA = 2509;  { IDEA encryption }
-  CRYPT_CERTINFO_CMS_SMIMECAP_RC2 = 2510;  { RC2 encryption (w.128 key) }
-  CRYPT_CERTINFO_CMS_SMIMECAP_RC5 = 2511;  { RC5 encryption (w.128 key) }
-  CRYPT_CERTINFO_CMS_SMIMECAP_SKIPJACK = 2512;  { Skipjack encryption }
-  CRYPT_CERTINFO_CMS_SMIMECAP_DES = 2513;  { DES encryption }
-  CRYPT_CERTINFO_CMS_SMIMECAP_SHAng = 2514;  { SHA2-ng hash }
-  CRYPT_CERTINFO_CMS_SMIMECAP_SHA2 = 2515;  { SHA2-256 hash }
-  CRYPT_CERTINFO_CMS_SMIMECAP_SHA1 = 2516;  { SHA1 hash }
-  CRYPT_CERTINFO_CMS_SMIMECAP_HMAC_SHAng = 2517;  { HMAC-SHA2-ng MAC }
-  CRYPT_CERTINFO_CMS_SMIMECAP_HMAC_SHA2 = 2518;  { HMAC-SHA2-256 MAC }
-  CRYPT_CERTINFO_CMS_SMIMECAP_HMAC_SHA1 = 2519;  { HMAC-SHA1 MAC }
-  CRYPT_CERTINFO_CMS_SMIMECAP_AUTHENC256 = 2520;  { AuthEnc w.256-bit key }
-  CRYPT_CERTINFO_CMS_SMIMECAP_AUTHENC128 = 2521;  { AuthEnc w.128-bit key }
-  CRYPT_CERTINFO_CMS_SMIMECAP_RSA_SHAng = 2522;  { RSA with SHA-ng signing }
-  CRYPT_CERTINFO_CMS_SMIMECAP_RSA_SHA2 = 2523;  { RSA with SHA2-256 signing }
-  CRYPT_CERTINFO_CMS_SMIMECAP_RSA_SHA1 = 2524;  { RSA with SHA1 signing }
-  CRYPT_CERTINFO_CMS_SMIMECAP_DSA_SHA1 = 2525;  { DSA with SHA-1 signing }
-  CRYPT_CERTINFO_CMS_SMIMECAP_ECDSA_SHAng = 2526;  { ECDSA with SHA-ng signing }
-  CRYPT_CERTINFO_CMS_SMIMECAP_ECDSA_SHA2 = 2527;  { ECDSA with SHA2-256 signing }
-  CRYPT_CERTINFO_CMS_SMIMECAP_ECDSA_SHA1 = 2528;  { ECDSA with SHA-1 signing }
-  CRYPT_CERTINFO_CMS_SMIMECAP_PREFERSIGNEDDATA = 2529;  { preferSignedData }
-  CRYPT_CERTINFO_CMS_SMIMECAP_CANNOTDECRYPTANY = 2530;  { canNotDecryptAny }
-  CRYPT_CERTINFO_CMS_SMIMECAP_PREFERBINARYINSIDE = 2531;  { preferBinaryInside }
+  CRYPT_CERTINFO_CMS_SMIMECAP_SHAng = 2509;  { SHA2-ng hash }
+  CRYPT_CERTINFO_CMS_SMIMECAP_SHA2 = 2510;  { SHA2-256 hash }
+  CRYPT_CERTINFO_CMS_SMIMECAP_SHA1 = 2511;  { SHA1 hash }
+  CRYPT_CERTINFO_CMS_SMIMECAP_HMAC_SHAng = 2512;  { HMAC-SHA2-ng MAC }
+  CRYPT_CERTINFO_CMS_SMIMECAP_HMAC_SHA2 = 2513;  { HMAC-SHA2-256 MAC }
+  CRYPT_CERTINFO_CMS_SMIMECAP_HMAC_SHA1 = 2514;  { HMAC-SHA1 MAC }
+  CRYPT_CERTINFO_CMS_SMIMECAP_AUTHENC256 = 2515;  { AuthEnc w.256-bit key }
+  CRYPT_CERTINFO_CMS_SMIMECAP_AUTHENC128 = 2516;  { AuthEnc w.128-bit key }
+  CRYPT_CERTINFO_CMS_SMIMECAP_RSA_SHAng = 2517;  { RSA with SHA-ng signing }
+  CRYPT_CERTINFO_CMS_SMIMECAP_RSA_SHA2 = 2518;  { RSA with SHA2-256 signing }
+  CRYPT_CERTINFO_CMS_SMIMECAP_RSA_SHA1 = 2519;  { RSA with SHA1 signing }
+  CRYPT_CERTINFO_CMS_SMIMECAP_DSA_SHA1 = 2520;  { DSA with SHA-1 signing }
+  CRYPT_CERTINFO_CMS_SMIMECAP_ECDSA_SHAng = 2521;  { ECDSA with SHA-ng signing }
+  CRYPT_CERTINFO_CMS_SMIMECAP_ECDSA_SHA2 = 2522;  { ECDSA with SHA2-256 signing }
+  CRYPT_CERTINFO_CMS_SMIMECAP_ECDSA_SHA1 = 2523;  { ECDSA with SHA-1 signing }
+  CRYPT_CERTINFO_CMS_SMIMECAP_PREFERSIGNEDDATA = 2524;  { preferSignedData }
+  CRYPT_CERTINFO_CMS_SMIMECAP_CANNOTDECRYPTANY = 2525;  { canNotDecryptAny }
+  CRYPT_CERTINFO_CMS_SMIMECAP_PREFERBINARYINSIDE = 2526;  { preferBinaryInside }
   
   { 1 2 840 113549 1 9 16 2 1 receiptRequest }
-  CRYPT_CERTINFO_CMS_RECEIPTREQUEST = 2532;  
-  CRYPT_CERTINFO_CMS_RECEIPT_CONTENTIDENTIFIER = 2533;  { contentIdentifier }
-  CRYPT_CERTINFO_CMS_RECEIPT_FROM = 2534;  { receiptsFrom }
-  CRYPT_CERTINFO_CMS_RECEIPT_TO = 2535;  { receiptsTo }
+  CRYPT_CERTINFO_CMS_RECEIPTREQUEST = 2527;  
+  CRYPT_CERTINFO_CMS_RECEIPT_CONTENTIDENTIFIER = 2528;  { contentIdentifier }
+  CRYPT_CERTINFO_CMS_RECEIPT_FROM = 2529;  { receiptsFrom }
+  CRYPT_CERTINFO_CMS_RECEIPT_TO = 2530;  { receiptsTo }
   
   { 1 2 840 113549 1 9 16 2 2 essSecurityLabel }
-  CRYPT_CERTINFO_CMS_SECURITYLABEL = 2536;  
-  CRYPT_CERTINFO_CMS_SECLABEL_POLICY = 2537;  { securityPolicyIdentifier }
-  CRYPT_CERTINFO_CMS_SECLABEL_CLASSIFICATION = 2538;  { securityClassification }
-  CRYPT_CERTINFO_CMS_SECLABEL_PRIVACYMARK = 2539;  { privacyMark }
-  CRYPT_CERTINFO_CMS_SECLABEL_CATTYPE = 2540;  { securityCategories.securityCategory.type }
-  CRYPT_CERTINFO_CMS_SECLABEL_CATVALUE = 2541;  { securityCategories.securityCategory.value }
+  CRYPT_CERTINFO_CMS_SECURITYLABEL = 2531;  
+  CRYPT_CERTINFO_CMS_SECLABEL_POLICY = 2532;  { securityPolicyIdentifier }
+  CRYPT_CERTINFO_CMS_SECLABEL_CLASSIFICATION = 2533;  { securityClassification }
+  CRYPT_CERTINFO_CMS_SECLABEL_PRIVACYMARK = 2534;  { privacyMark }
+  CRYPT_CERTINFO_CMS_SECLABEL_CATTYPE = 2535;  { securityCategories.securityCategory.type }
+  CRYPT_CERTINFO_CMS_SECLABEL_CATVALUE = 2536;  { securityCategories.securityCategory.value }
   
   { 1 2 840 113549 1 9 16 2 3 mlExpansionHistory }
-  CRYPT_CERTINFO_CMS_MLEXPANSIONHISTORY = 2542;  
-  CRYPT_CERTINFO_CMS_MLEXP_ENTITYIDENTIFIER = 2543;  { mlData.mailListIdentifier.issuerAndSerialNumber }
-  CRYPT_CERTINFO_CMS_MLEXP_TIME = 2544;  { mlData.expansionTime }
-  CRYPT_CERTINFO_CMS_MLEXP_NONE = 2545;  { mlData.mlReceiptPolicy.none }
-  CRYPT_CERTINFO_CMS_MLEXP_INSTEADOF = 2546;  { mlData.mlReceiptPolicy.insteadOf.generalNames.generalName }
-  CRYPT_CERTINFO_CMS_MLEXP_INADDITIONTO = 2547;  { mlData.mlReceiptPolicy.inAdditionTo.generalNames.generalName }
+  CRYPT_CERTINFO_CMS_MLEXPANSIONHISTORY = 2537;  
+  CRYPT_CERTINFO_CMS_MLEXP_ENTITYIDENTIFIER = 2538;  { mlData.mailListIdentifier.issuerAndSerialNumber }
+  CRYPT_CERTINFO_CMS_MLEXP_TIME = 2539;  { mlData.expansionTime }
+  CRYPT_CERTINFO_CMS_MLEXP_NONE = 2540;  { mlData.mlReceiptPolicy.none }
+  CRYPT_CERTINFO_CMS_MLEXP_INSTEADOF = 2541;  { mlData.mlReceiptPolicy.insteadOf.generalNames.generalName }
+  CRYPT_CERTINFO_CMS_MLEXP_INADDITIONTO = 2542;  { mlData.mlReceiptPolicy.inAdditionTo.generalNames.generalName }
   
   { 1 2 840 113549 1 9 16 2 4 contentHints }
-  CRYPT_CERTINFO_CMS_CONTENTHINTS = 2548;  
-  CRYPT_CERTINFO_CMS_CONTENTHINT_DESCRIPTION = 2549;  { contentDescription }
-  CRYPT_CERTINFO_CMS_CONTENTHINT_TYPE = 2550;  { contentType }
+  CRYPT_CERTINFO_CMS_CONTENTHINTS = 2543;  
+  CRYPT_CERTINFO_CMS_CONTENTHINT_DESCRIPTION = 2544;  { contentDescription }
+  CRYPT_CERTINFO_CMS_CONTENTHINT_TYPE = 2545;  { contentType }
   
   { 1 2 840 113549 1 9 16 2 9 equivalentLabels }
-  CRYPT_CERTINFO_CMS_EQUIVALENTLABEL = 2551;  
-  CRYPT_CERTINFO_CMS_EQVLABEL_POLICY = 2552;  { securityPolicyIdentifier }
-  CRYPT_CERTINFO_CMS_EQVLABEL_CLASSIFICATION = 2553;  { securityClassification }
-  CRYPT_CERTINFO_CMS_EQVLABEL_PRIVACYMARK = 2554;  { privacyMark }
-  CRYPT_CERTINFO_CMS_EQVLABEL_CATTYPE = 2555;  { securityCategories.securityCategory.type }
-  CRYPT_CERTINFO_CMS_EQVLABEL_CATVALUE = 2556;  { securityCategories.securityCategory.value }
+  CRYPT_CERTINFO_CMS_EQUIVALENTLABEL = 2546;  
+  CRYPT_CERTINFO_CMS_EQVLABEL_POLICY = 2547;  { securityPolicyIdentifier }
+  CRYPT_CERTINFO_CMS_EQVLABEL_CLASSIFICATION = 2548;  { securityClassification }
+  CRYPT_CERTINFO_CMS_EQVLABEL_PRIVACYMARK = 2549;  { privacyMark }
+  CRYPT_CERTINFO_CMS_EQVLABEL_CATTYPE = 2550;  { securityCategories.securityCategory.type }
+  CRYPT_CERTINFO_CMS_EQVLABEL_CATVALUE = 2551;  { securityCategories.securityCategory.value }
   
   { 1 2 840 113549 1 9 16 2 12 signingCertificate }
-  CRYPT_CERTINFO_CMS_SIGNINGCERTIFICATE = 2557;  
-  CRYPT_CERTINFO_CMS_SIGNINGCERT_ESSCERTID = 2558;  { certs.essCertID }
-  CRYPT_CERTINFO_CMS_SIGNINGCERT_POLICIES = 2559;  { policies.policyInformation.policyIdentifier }
+  CRYPT_CERTINFO_CMS_SIGNINGCERTIFICATE = 2552;  
+  CRYPT_CERTINFO_CMS_SIGNINGCERT_ESSCERTID = 2553;  { certs.essCertID }
+  CRYPT_CERTINFO_CMS_SIGNINGCERT_POLICIES = 2554;  { policies.policyInformation.policyIdentifier }
   
   { 1 2 840 113549 1 9 16 2 47 signingCertificateV2 }
-  CRYPT_CERTINFO_CMS_SIGNINGCERTIFICATEV2 = 2560;  
-  CRYPT_CERTINFO_CMS_SIGNINGCERTV2_ESSCERTIDV2 = 2561;  { certs.essCertID }
-  CRYPT_CERTINFO_CMS_SIGNINGCERTV2_POLICIES = 2562;  { policies.policyInformation.policyIdentifier }
+  CRYPT_CERTINFO_CMS_SIGNINGCERTIFICATEV2 = 2555;  
+  CRYPT_CERTINFO_CMS_SIGNINGCERTV2_ESSCERTIDV2 = 2556;  { certs.essCertID }
+  CRYPT_CERTINFO_CMS_SIGNINGCERTV2_POLICIES = 2557;  { policies.policyInformation.policyIdentifier }
   
   { 1 2 840 113549 1 9 16 2 15 signaturePolicyID }
-  CRYPT_CERTINFO_CMS_SIGNATUREPOLICYID = 2563;  
-  CRYPT_CERTINFO_CMS_SIGPOLICYID = 2564;  { sigPolicyID }
-  CRYPT_CERTINFO_CMS_SIGPOLICYHASH = 2565;  { sigPolicyHash }
-  CRYPT_CERTINFO_CMS_SIGPOLICY_CPSURI = 2566;  { sigPolicyQualifiers.sigPolicyQualifier.cPSuri }
-  CRYPT_CERTINFO_CMS_SIGPOLICY_ORGANIZATION = 2567;  
+  CRYPT_CERTINFO_CMS_SIGNATUREPOLICYID = 2558;  
+  CRYPT_CERTINFO_CMS_SIGPOLICYID = 2559;  { sigPolicyID }
+  CRYPT_CERTINFO_CMS_SIGPOLICYHASH = 2560;  { sigPolicyHash }
+  CRYPT_CERTINFO_CMS_SIGPOLICY_CPSURI = 2561;  { sigPolicyQualifiers.sigPolicyQualifier.cPSuri }
+  CRYPT_CERTINFO_CMS_SIGPOLICY_ORGANIZATION = 2562;  
   { sigPolicyQualifiers.sigPolicyQualifier.userNotice.noticeRef.organization }
-  CRYPT_CERTINFO_CMS_SIGPOLICY_NOTICENUMBERS = 2568;  
+  CRYPT_CERTINFO_CMS_SIGPOLICY_NOTICENUMBERS = 2563;  
   { sigPolicyQualifiers.sigPolicyQualifier.userNotice.noticeRef.noticeNumbers }
-  CRYPT_CERTINFO_CMS_SIGPOLICY_EXPLICITTEXT = 2569;  
+  CRYPT_CERTINFO_CMS_SIGPOLICY_EXPLICITTEXT = 2564;  
   { sigPolicyQualifiers.sigPolicyQualifier.userNotice.explicitText }
   
   { 1 2 840 113549 1 9 16 9 signatureTypeIdentifier }
-  CRYPT_CERTINFO_CMS_SIGTYPEIDENTIFIER = 2570;  
-  CRYPT_CERTINFO_CMS_SIGTYPEID_ORIGINATORSIG = 2571;  { originatorSig }
-  CRYPT_CERTINFO_CMS_SIGTYPEID_DOMAINSIG = 2572;  { domainSig }
-  CRYPT_CERTINFO_CMS_SIGTYPEID_ADDITIONALATTRIBUTES = 2573;  { additionalAttributesSig }
-  CRYPT_CERTINFO_CMS_SIGTYPEID_REVIEWSIG = 2574;  { reviewSig }
+  CRYPT_CERTINFO_CMS_SIGTYPEIDENTIFIER = 2565;  
+  CRYPT_CERTINFO_CMS_SIGTYPEID_ORIGINATORSIG = 2566;  { originatorSig }
+  CRYPT_CERTINFO_CMS_SIGTYPEID_DOMAINSIG = 2567;  { domainSig }
+  CRYPT_CERTINFO_CMS_SIGTYPEID_ADDITIONALATTRIBUTES = 2568;  { additionalAttributesSig }
+  CRYPT_CERTINFO_CMS_SIGTYPEID_REVIEWSIG = 2569;  { reviewSig }
   
   { 1 2 840 113549 1 9 25 3 randomNonce }
-  CRYPT_CERTINFO_CMS_NONCE = 2575;  { randomNonce }
+  CRYPT_CERTINFO_CMS_NONCE = 2570;  { randomNonce }
   
   { SCEP attributes:
   2 16 840 1 113733 1 9 2 messageType
@@ -923,29 +920,29 @@ const
   2 16 840 1 113733 1 9 5 senderNonce
   2 16 840 1 113733 1 9 6 recipientNonce
   2 16 840 1 113733 1 9 7 transID }
-  CRYPT_CERTINFO_SCEP_MESSAGETYPE = 2576;  { messageType }
-  CRYPT_CERTINFO_SCEP_PKISTATUS = 2577;  { pkiStatus }
-  CRYPT_CERTINFO_SCEP_FAILINFO = 2578;  { failInfo }
-  CRYPT_CERTINFO_SCEP_SENDERNONCE = 2579;  { senderNonce }
-  CRYPT_CERTINFO_SCEP_RECIPIENTNONCE = 2580;  { recipientNonce }
-  CRYPT_CERTINFO_SCEP_TRANSACTIONID = 2581;  { transID }
+  CRYPT_CERTINFO_SCEP_MESSAGETYPE = 2571;  { messageType }
+  CRYPT_CERTINFO_SCEP_PKISTATUS = 2572;  { pkiStatus }
+  CRYPT_CERTINFO_SCEP_FAILINFO = 2573;  { failInfo }
+  CRYPT_CERTINFO_SCEP_SENDERNONCE = 2574;  { senderNonce }
+  CRYPT_CERTINFO_SCEP_RECIPIENTNONCE = 2575;  { recipientNonce }
+  CRYPT_CERTINFO_SCEP_TRANSACTIONID = 2576;  { transID }
   
   { 1 3 6 1 4 1 311 2 1 10 spcAgencyInfo }
-  CRYPT_CERTINFO_CMS_SPCAGENCYINFO = 2582;  
-  CRYPT_CERTINFO_CMS_SPCAGENCYURL = 2583;  { spcAgencyInfo.url }
+  CRYPT_CERTINFO_CMS_SPCAGENCYINFO = 2577;  
+  CRYPT_CERTINFO_CMS_SPCAGENCYURL = 2578;  { spcAgencyInfo.url }
   
   { 1 3 6 1 4 1 311 2 1 11 spcStatementType }
-  CRYPT_CERTINFO_CMS_SPCSTATEMENTTYPE = 2584;  
-  CRYPT_CERTINFO_CMS_SPCSTMT_INDIVIDUALCODESIGNING = 2585;  { individualCodeSigning }
-  CRYPT_CERTINFO_CMS_SPCSTMT_COMMERCIALCODESIGNING = 2586;  { commercialCodeSigning }
+  CRYPT_CERTINFO_CMS_SPCSTATEMENTTYPE = 2579;  
+  CRYPT_CERTINFO_CMS_SPCSTMT_INDIVIDUALCODESIGNING = 2580;  { individualCodeSigning }
+  CRYPT_CERTINFO_CMS_SPCSTMT_COMMERCIALCODESIGNING = 2581;  { commercialCodeSigning }
   
   { 1 3 6 1 4 1 311 2 1 12 spcOpusInfo }
-  CRYPT_CERTINFO_CMS_SPCOPUSINFO = 2587;  
-  CRYPT_CERTINFO_CMS_SPCOPUSINFO_NAME = 2588;  { spcOpusInfo.name }
-  CRYPT_CERTINFO_CMS_SPCOPUSINFO_URL = 2589;  { spcOpusInfo.url }
+  CRYPT_CERTINFO_CMS_SPCOPUSINFO = 2582;  
+  CRYPT_CERTINFO_CMS_SPCOPUSINFO_NAME = 2583;  { spcOpusInfo.name }
+  CRYPT_CERTINFO_CMS_SPCOPUSINFO_URL = 2584;  { spcOpusInfo.url }
   
   { Used internally }
-  CRYPT_CERTINFO_LAST = 2590;  CRYPT_KEYINFO_FIRST = 3000;  
+  CRYPT_CERTINFO_LAST = 2585;  CRYPT_KEYINFO_FIRST = 3000;  
   
   {*******************}
   { Keyset attributes }
@@ -1028,7 +1025,7 @@ const
   { Client/server information }
   CRYPT_SESSINFO_SERVER_NAME = 6008;  { Server name }
   CRYPT_SESSINFO_SERVER_PORT = 6009;  { Server port number }
-  CRYPT_SESSINFO_SERVER_FINGERPRINT = 6010;  { Server key fingerprint }
+  CRYPT_SESSINFO_SERVER_FINGERPRINT_SHA1 = 6010;  { Server key fingerprint }
   CRYPT_SESSINFO_CLIENT_NAME = 6011;  { Client name }
   CRYPT_SESSINFO_CLIENT_PORT = 6012;  { Client port number }
   CRYPT_SESSINFO_SESSION = 6013;  { Transport mechanism }
@@ -1356,17 +1353,22 @@ type
   );
 
 {  SSL/TLS protocol options.  CRYPT_SSLOPTION_MINVER_SSLV3 is the same as 
-   CRYPT_SSLOPTION_NONE since this is the default  }
+   CRYPT_SSLOPTION_NONE since this is the baseline, although it's generally
+   never encountered since SSLv3 is disabled  }
 
 
 const
-  CRYPT_SSLOPTION_NONE = $00;
-  CRYPT_SSLOPTION_MINVER_SSLV3 = $00;    {  Min.protocol version  }
-  CRYPT_SSLOPTION_MINVER_TLS10 = $01;
-  CRYPT_SSLOPTION_MINVER_TLS11 = $02;
-  CRYPT_SSLOPTION_MINVER_TLS12 = $03;
-  CRYPT_SSLOPTION_SUITEB_128 = $04;    {  SuiteB security levels  }
-  CRYPT_SSLOPTION_SUITEB_256 = $08;
+  CRYPT_SSLOPTION_NONE = $000;
+  CRYPT_SSLOPTION_MINVER_SSLV3 = $000;   {  Min.protocol version  }
+  CRYPT_SSLOPTION_MINVER_TLS10 = $001;
+  CRYPT_SSLOPTION_MINVER_TLS11 = $002;
+  CRYPT_SSLOPTION_MINVER_TLS12 = $003;
+  CRYPT_SSLOPTION_MINVER_TLS13 = $004;
+  CRYPT_SSLOPTION_MANUAL_CERTCHECK = $008;   {  Require manual cert.verif.}
+  CRYPT_SSLOPTION_DISABLE_NAMEVERIFY = $010;   {  Disable cert hostname check  }
+  CRYPT_SSLOPTION_DISABLE_CERTVERIFY = $020;   {  Disable certificate check  }
+  CRYPT_SSLOPTION_SUITEB_128 = $100;   {  SuiteB security levels (may  }
+  CRYPT_SSLOPTION_SUITEB_256 = $200;   {   vanish in future releases)  }
 
 {****************************************************************************
 *                                                                           *
@@ -1378,7 +1380,7 @@ const
 
   CRYPT_MAX_KEYSIZE = 256;
 
-{  The maximum IV size - 256 bits  }
+{  The maximum IV/cipher block size - 256 bits  }
 
   CRYPT_MAX_IVSIZE = 32;
 
@@ -1551,14 +1553,15 @@ type
   CRYPT_ECCCURVE_TYPE = (  
     {  Named ECC curves.  Since these need to be mapped to all manner of
        protocol- and mechanism-specific identifiers, when updating this list 
-       grep for occurrences of CRYPT_ECCCURVE_P256 (the most common one) and
+       grep for occurrences of the string "P256" (the most common one) and 
        check whether any related mapping tables need to be updated  }
     CRYPT_ECCCURVE_NONE,        {  No ECC curve type  }
-    CRYPT_ECCCURVE_P192,        {  NIST P192/X9.62 P192r1/SECG p192r1 curve  }
-    CRYPT_ECCCURVE_P224,        {  NIST P224/X9.62 P224r1/SECG p224r1 curve  }
     CRYPT_ECCCURVE_P256,        {  NIST P256/X9.62 P256v1/SECG p256r1 curve  }
     CRYPT_ECCCURVE_P384,        {  NIST P384, SECG p384r1 curve  }
     CRYPT_ECCCURVE_P521,        {  NIST P521, SECG p521r1  }
+    CRYPT_ECCCURVE_BRAINPOOL_P256, {  Brainpool p256r1  }
+    CRYPT_ECCCURVE_BRAINPOOL_P384, {  Brainpool p384r1  }
+    CRYPT_ECCCURVE_BRAINPOOL_P512, {  Brainpool p512r1  }
     CRYPT_ECCCURVE_LAST         {  Last valid ECC curve type  }
     
   );

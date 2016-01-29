@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *							Secure Memory Management						*
-*						Copyright Peter Gutmann 1995-2012					*
+*						Copyright Peter Gutmann 1995-2013					*
 *																			*
 ****************************************************************************/
 
@@ -54,7 +54,8 @@ static KERNEL_DATA *krnlData = NULL;
    thread that walks the block list touching each one).  We also insert a 
    canary at the start and end of each allocated memory block to detect 
    memory overwrites and modification, which is just a checksum of the memory
-   header that doubles as a canary.
+   header that doubles as a canary (which also makes it somewhat 
+   unpredictable).
 
    The resulting memory block looks as follows:
 
@@ -176,14 +177,35 @@ static void unlockMemory( INOUT MEM_INFO_HEADER *memHdrPtr )
 /* Under many Unix variants the SYSV/Posix mlock() call can be used, but 
    only by the superuser (with occasional OS-specific variants, for example 
    under some newer Linux variants the caller needs the specific 
-   CAP_IPC_LOCK privilege rather than just generally being root).  OSF/1 has 
-   mlock(), but this is defined to the nonexistant memlk() so we need to 
-   special-case it out.  QNX (depending on the version) either doesn't have 
-   mlock() at all or it's a dummy that just returns -1, so we no-op it out.  
+   CAP_IPC_LOCK privilege rather than just generally being root).  
+   
+   OSF/1 has mlock(), but this is defined to the nonexistant memlk() so we 
+   need to special-case it out.  
+   
+   QNX (depending on the version) either doesn't have mlock() at all or it's 
+   a dummy that just returns -1, so we no-op it out.  
+   
    Aches, A/UX, PHUX, Linux < 1.3.something, and Ultrix don't even pretend 
-   to have mlock().  Many systems also have plock(), but this is pretty 
-   crude since it locks all data, and also has various other shortcomings.  
-   Finally, PHUX has datalock(), which is just a plock() variant */
+   to have mlock().
+   
+   Many systems also have plock(), but this is pretty crude since it locks 
+   all data, and also has various other shortcomings.  
+   
+   Finally, PHUX has datalock(), which is just a plock() variant.
+   
+   Linux 2.6.32 has a kernel bug in which, under high disk-load conditions 
+   (100% disk usge) and with multiple cryptlib threads performing memory 
+   locking/unlocking the process can get stuck in the "D" state, a.k.a. 
+   TASK_UNINTERRUPTIBLE, which is an uninterruptible disk I/O sleep state.  
+   If the process doesn't snap out of it when the I/O completes then it's 
+   necessary to reboot the machine to clear the state.  To help find this 
+   issue use:
+
+	ps -eo ppid,pid,user,stat,pcpu,comm,wchan:32
+
+   which shows D-state processes via the fourth column, the last column 
+   will show the name of the kernel function in which the process is
+   currently sleeping (also check dmesg for kernel Oops'es) */
 
 #if defined( _AIX ) || defined( __alpha__ ) || defined( __aux ) || \
 	defined( _CRAY ) || defined( __CYGWIN__ ) || defined( __hpux ) || \
@@ -239,21 +261,36 @@ static void unlockMemory( INOUT MEM_INFO_HEADER *memHdrPtr )
 #define getPageEndAddress( address, size ) \
 			getPageStartAddress( ( PTR_TYPE ) address + ( size ) - 1 )
 
-/* Under Win95 the VirtualLock() function is implemented as 'return( TRUE )' 
-   ("Thank Microsoft kids" - "Thaaaanks Bill").  Under NT the function does 
-   actually work, but with a number of caveats.  The main one is that it has 
-   been claimed that VirtualLock() only guarantees that the memory won't be 
-   paged while a thread in the process is running, and when all threads are 
-   preempted the memory is still a target for paging.  This would mean that 
-   on a loaded system a process that was idle for some time could have the 
-   memory unlocked by the system and swapped out to disk (actually with NT's 
-   somewhat strange paging strategy and gradual creeping takeover of free 
-   memory for disk buffers, it can get paged even on a completely unloaded 
-   system).  However, attempts to force data to be paged under Win2K and XP 
-   under various conditions have been unsuccesful so it may be that the 
-   behaviour changed in post-NT versions of the OS.  In any case 
-   VirtualLock() under these newer OSes seems to be fairly effective in 
-   keeping data off disk.
+/* Under Win95/98/ME the VirtualLock() function was implemented as 
+   'return( TRUE )' ("Thank Microsoft kids" - "Thaaaanks Bill"), but we 
+   don't have to worry about those Windows versions any more.  Under Win32/
+   Win64 the function does actually work, but with a number of caveats.  The 
+   main one is that it was originally intended that VirtualLock() only locks
+   memory into a processes' working set, in other words it guarantees that 
+   the memory won't be paged while a thread in the process is running, and 
+   when all threads are pre-empted the memory is still a target for paging.  
+   This would mean that on a loaded system a process that was idle for some 
+   time could have the memory unlocked by the system and swapped out to disk 
+   (actually with older Windows incarnations like NT, their somewhat strange 
+   paging strategy meant that it could potentially get paged even on a 
+   completely unloaded system.  Even on relatively recent systems the 
+   gradual creeping takeover of free memory for disk buffers/cacheing can
+   cause problems, something that was still affecting Win64 systems during
+   the Windows 7 time frame.  Ironically the 1GB cache size limit on Win32
+   systems actually helped here because the cache couldn't grow beyond this
+   size and most systems had more than 1GB of RAM, while on Win64 systems 
+   without this limit there was more scope for excessive reads and writes to 
+   consume all available memory due to cacheing).
+   
+   The lock-into-working-set approach was the original intention, however 
+   the memory manager developers never got around to implementing the 
+   unlock-if-all-threads idle part.  The behaviour of VirtualLock() was 
+   evaluated back under Win2K and XP by trying to force data to be paged 
+   under various conditions, which were unsuccesful, so VirtualLock() under 
+   these OSes seems to be fairly effective in keeping data off disk.  In 
+   newer versions of Windows the contract for VirtualLock() was changed to 
+   match the actual implemented behaviour, so that now "pages are guaranteed 
+   not to be written to the pagefile while they are locked".
 
    An additional concern is that although VirtualLock() takes arbitrary 
    memory pointers and a size parameter, the locking is done on a per-page 
@@ -266,7 +303,14 @@ static void unlockMemory( INOUT MEM_INFO_HEADER *memHdrPtr )
    allocated on the same page.  Ick.
 
    For the NT kernel driver, the memory is always allocated from the non-
-   paged pool so there's no need for these gyrations */
+   paged pool so there's no need for these gyrations.
+   
+   In addition to VirtualLock() we could also use VirtualAlloc(), however 
+   this allocates in units of the allocation granularity, which is in theory
+   system-dependent and obtainable via the dwAllocationGranularity field in
+   the SYSTEM_INFO structure returned by GetSystemInfo() but in practice on
+   x86 systems is always 64K, this means the memory is nicely aligned for
+   efficient access but wastes 64K for every allocation */
 
 static void lockMemory( INOUT MEM_INFO_HEADER *memHdrPtr )
 	{
@@ -749,7 +793,7 @@ void endAllocation( void )
 
 /****************************************************************************
 *																			*
-*					Windows Secure Memory Allocation Functions				*
+*						Secure Memory Allocation Functions					*
 *																			*
 ****************************************************************************/
 
@@ -760,7 +804,6 @@ int krnlMemalloc( OUT_BUFFER_ALLOC_OPT( size ) void **pointer,
 				  IN_LENGTH int size )
 	{
 	MEM_INFO_HEADER *memHdrPtr;
-	MEM_INFO_TRAILER *memTrlPtr;
 	BYTE *memPtr;
 	const int alignedSize = roundUp( size, MEM_ROUNDSIZE );
 	const int memSize = MEM_INFO_HEADERSIZE + alignedSize + \
@@ -786,7 +829,6 @@ int krnlMemalloc( OUT_BUFFER_ALLOC_OPT( size ) void **pointer,
 
 	/* Set up the memory block header and trailer */
 	memHdrPtr = ( MEM_INFO_HEADER * ) memPtr;
-	memTrlPtr = ( MEM_INFO_TRAILER * ) ( memPtr + MEM_INFO_HEADERSIZE + alignedSize );
 	memHdrPtr->flags = MEM_FLAG_NONE;
 	memHdrPtr->size = memSize;
 

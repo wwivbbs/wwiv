@@ -19,12 +19,15 @@
 *																			*
 ****************************************************************************/
 
-/* Get information about a DN string */
+/* DN string functions */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
-int getAsn1StringType( IN_BUFFER( stringLen ) const void *string, 
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4, 5 ) ) \
+int getAsn1StringInfo( IN_BUFFER( stringLen ) const void *string, 
 					   IN_LENGTH_SHORT const int stringLen,
-					   OUT_RANGE( 0, 20 ) int *stringType );
+					   OUT_RANGE( 0, 20 ) int *stringType, 
+					   OUT_TAG_ENCODED_Z int *asn1StringType,
+					   OUT_LENGTH_SHORT_Z int *asn1StringLen,
+					   const BOOLEAN isNativeString );
 
 /* DN manipulation routines */
 
@@ -33,13 +36,13 @@ int insertDNComponent( INOUT_PTR DN_PTR **dnComponentListPtrPtr,
 					   IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE componentType,
 					   IN_BUFFER( valueLength ) const void *value, 
 					   IN_LENGTH_SHORT const int valueLength,
-					   OUT_ENUM_OPT( CRYPT_ERRTYPE_TYPE ) \
+					   OUT_ENUM_OPT( CRYPT_ERRTYPE ) \
 							CRYPT_ERRTYPE_TYPE *errorType );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int deleteDNComponent( INOUT_PTR DN_PTR **dnComponentListPtrPtr, 
 					   IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE type,
 					   IN_BUFFER_OPT( valueLength ) const void *value, 
-					   IN_LENGTH_SHORT const int valueLength );
+					   IN_LENGTH_SHORT_Z const int valueLength );
 STDC_NONNULL_ARG( ( 1 ) ) \
 void deleteDN( INOUT_PTR DN_PTR **dnComponentListPtrPtr );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
@@ -53,23 +56,25 @@ int getDNComponentValue( IN_OPT const DN_PTR *dnComponentList,
 						 OUT_BUFFER_OPT( valueMaxLength, \
 										 *valueLength ) void *value, 
 						 IN_LENGTH_SHORT_Z const int valueMaxLength, 
-						 OUT_LENGTH_SHORT_Z int *valueLength );
+						 OUT_LENGTH_BOUNDED_Z( valueMaxLength ) \
+							int *valueLength );
 
 /* Copy and compare a DN */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int copyDN( OUT_OPT_PTR DN_PTR **dnDest, IN_OPT const DN_PTR *dnSrc );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+int copyDN( OUT_PTR_COND DN_PTR **dnDest, 
+			IN const DN_PTR *dnSrc );
 CHECK_RETVAL_BOOL \
 BOOLEAN compareDN( IN_OPT const DN_PTR *dnComponentList1,
 				   IN_OPT const DN_PTR *dnComponentList2,
 				   const BOOLEAN dn1substring,
-				   OUT_OPT_PTR_OPT DN_PTR **mismatchPointPtrPtr );
+				   OUT_OPT_PTR_xCOND DN_PTR **mismatchPointPtrPtr );
 
 /* Select DN/GeneralName components */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int selectGeneralName( INOUT CERT_INFO *certInfoPtr,
-					   IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE certInfoType,
+					   IN_ATTRIBUTE_OPT const CRYPT_ATTRIBUTE_TYPE certInfoType,
 					   IN_ENUM( SELECTION_OPTION ) const SELECTION_OPTION option );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int selectGeneralNameComponent( INOUT CERT_INFO *certInfoPtr,
@@ -77,7 +82,7 @@ int selectGeneralNameComponent( INOUT CERT_INFO *certInfoPtr,
 									const CRYPT_ATTRIBUTE_TYPE certInfoType );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int selectDN( INOUT CERT_INFO *certInfoPtr, 
-			  IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE certInfoType,
+			  IN_ATTRIBUTE_OPT const CRYPT_ATTRIBUTE_TYPE certInfoType,
 			  IN_ENUM( SELECTION_OPTION ) const SELECTION_OPTION option );
 
 /* Read/write a DN */
@@ -89,12 +94,12 @@ int checkDN( IN_OPT const DN_PTR *dnComponentList,
 				CRYPT_ATTRIBUTE_TYPE *errorLocus,
 			 OUT_ENUM_OPT( CRYPT_ERRTYPE ) \
 				CRYPT_ERRTYPE_TYPE *errorType );
-CHECK_RETVAL \
+CHECK_RETVAL_LENGTH \
 int sizeofDN( INOUT_OPT DN_PTR *dnComponentList );
 			  /* Non-const because it performs a pre-encoding pass */
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int readDN( INOUT STREAM *stream, 
-			OUT_OPT_PTR DN_PTR **dnComponentListPtrPtr );
+			OUT_PTR_COND DN_PTR **dnComponentListPtrPtr );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int writeDN( INOUT STREAM *stream, 
 			 IN_OPT const DN_PTR *dnComponentList,
@@ -284,15 +289,30 @@ const ATTRIBUTE_PTR *getNextAttribute( INOUT ATTRIBUTE_ENUM_INFO *attrEnumInfo )
 CHECK_RETVAL_BOOL \
 BOOLEAN checkAttributeAvailable( IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE fieldID );
 
-/* Move the current attribute cursor */
+/* Move the current attribute cursor.  The reason for the apparently-
+   reversed values in the IN_RANGE() annotation are because the values are 
+   -ve, so last comes before first  */
 
 CHECK_RETVAL_PTR \
 ATTRIBUTE_PTR *certMoveAttributeCursor( IN_OPT const ATTRIBUTE_PTR *currentCursor,
 										IN_ATTRIBUTE \
 											const CRYPT_ATTRIBUTE_TYPE certInfoType,
-										IN_RANGE( CRYPT_CURSOR_FIRST, \
-												  CRYPT_CURSOR_LAST ) \
+										IN_RANGE( CRYPT_CURSOR_LAST, \
+												  CRYPT_CURSOR_FIRST ) \
 											const int position );
+
+/* For range-checking purposes we need to have ATTR_FLAG_NONE and 
+   ATTR_FLAG_MAX defined, since these are defined in certattr.h which isn't
+   visible in all certificate-using code we explicitly define the values 
+   here if required */
+
+#ifndef ATTR_FLAG_NONE
+  #define ATTR_FLAG_NONE	0x0000
+  #define ATTR_FLAG_MAX		0x007F
+#endif /* ATTR_FLAG_NONE */
+#if ATTR_FLAG_MAX != 0x007F
+  #error Inconsistent definition of ATTR_FLAG_MAX in certattr.h/certfn.h
+#endif /* ATTR_FLAG_MAX != 0x007F */
 
 /* Add/delete/copy attributes/attribute fields */
 
@@ -310,7 +330,7 @@ int addAttributeField( INOUT ATTRIBUTE_PTR **listHeadPtr,
 					   IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE fieldID,
 					   IN_ATTRIBUTE_OPT \
 							const CRYPT_ATTRIBUTE_TYPE subFieldID,
-					   IN_INT_Z const int value,
+					   const int value,
 					   IN_FLAGS_Z( ATTR ) const int flags, 
 					   OUT_ENUM_OPT( CRYPT_ATTRIBUTE ) \
 							CRYPT_ATTRIBUTE_TYPE *errorLocus,
@@ -394,7 +414,9 @@ int checkAttributes( IN_ENUM( ATTRIBUTE ) const ATTRIBUTE_TYPE attributeType,
 					 OUT_ENUM_OPT( CRYPT_ERRTYPE ) \
 						CRYPT_ERRTYPE_TYPE *errorType );
 CHECK_RETVAL \
-int sizeofAttributes( IN_OPT const ATTRIBUTE_PTR *attributePtr );
+int sizeofAttributes( IN_OPT const ATTRIBUTE_PTR *attributePtr,
+					  IN_ENUM_OPT( CRYPT_CERTTYPE ) \
+							const CRYPT_CERTTYPE_TYPE type );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int writeAttributes( INOUT STREAM *stream, 
 					 INOUT ATTRIBUTE_PTR *attributePtr,
@@ -421,11 +443,10 @@ int readAttributes( INOUT STREAM *stream,
 /* Read/write validity information */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int sizeofRtcsRequestEntry( INOUT VALIDITY_INFO *rtcsEntry );
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+int sizeofRtcsRequestEntry( STDC_UNUSED const VALIDITY_INFO *rtcsEntry );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int readRtcsRequestEntry( INOUT STREAM *stream, 
-						  INOUT_PTR VALIDITY_INFO **listHeadPtrPtr,
-						  INOUT CERT_INFO *certInfoPtr );
+						  INOUT_PTR VALIDITY_INFO **listHeadPtrPtr );
 STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int writeRtcsRequestEntry( INOUT STREAM *stream, 
 						   const VALIDITY_INFO *rtcsEntry );
@@ -446,12 +467,12 @@ int writeRtcsResponseEntry( INOUT STREAM *stream,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int addValidityEntry( INOUT_PTR VALIDITY_INFO **listHeadPtrPtr,
-					  OUT_OPT_PTR_OPT VALIDITY_INFO **newEntryPosition,
+					  OUT_OPT_PTR_COND VALIDITY_INFO **newEntryPosition,
 					  IN_BUFFER( valueLength ) const void *value, 
 					  IN_LENGTH_FIXED( KEYID_SIZE ) const int valueLength );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 3, 4 ) ) \
 int prepareValidityEntries( IN_OPT const VALIDITY_INFO *listPtr, 
-							OUT_OPT_PTR VALIDITY_INFO **errorEntry,
+							OUT_PTR_xCOND VALIDITY_INFO **errorEntry,
 							OUT_ENUM_OPT( CRYPT_ATTRIBUTE ) \
 								CRYPT_ATTRIBUTE_TYPE *errorLocus,
 							OUT_ENUM_OPT( CRYPT_ERRTYPE ) \
@@ -483,7 +504,7 @@ int checkRTCSResponse( INOUT CERT_INFO *certInfoPtr,
 
 /* Read/write revocation information */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_LENGTH_SHORT STDC_NONNULL_ARG( ( 1 ) ) \
 int sizeofCRLentry( INOUT REVOCATION_INFO *crlEntry );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4, 5 ) ) \
 int readCRLentry( INOUT STREAM *stream, 
@@ -493,7 +514,7 @@ int readCRLentry( INOUT STREAM *stream,
 					CRYPT_ATTRIBUTE_TYPE *errorLocus,
 				  OUT_ENUM_OPT( CRYPT_ERRTYPE ) \
 					CRYPT_ERRTYPE_TYPE *errorType );
-STDC_NONNULL_ARG( ( 1, 2 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int writeCRLentry( INOUT STREAM *stream, 
 				   const REVOCATION_INFO *crlEntry );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
@@ -520,8 +541,8 @@ int writeOcspResponseEntry( INOUT STREAM *stream,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 int addRevocationEntry( INOUT_PTR REVOCATION_INFO **listHeadPtrPtr,
-						OUT_OPT_PTR REVOCATION_INFO **newEntryPosition,
-						IN_KEYID const CRYPT_KEYID_TYPE valueType,
+						OUT_OPT_PTR_COND REVOCATION_INFO **newEntryPosition,
+						IN_KEYID_OPT const CRYPT_KEYID_TYPE valueType,
 						IN_BUFFER( valueLength ) const void *value, 
 						IN_LENGTH_SHORT const int valueLength,
 						const BOOLEAN noCheck );
@@ -529,7 +550,7 @@ int addRevocationEntry( INOUT_PTR REVOCATION_INFO **listHeadPtrPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3, 5, 6 ) ) \
 int prepareRevocationEntries( INOUT_OPT REVOCATION_INFO *listPtr, 
 							  const time_t defaultTime,
-							  OUT_OPT_PTR REVOCATION_INFO **errorEntry,
+							  OUT_PTR_xCOND REVOCATION_INFO **errorEntry,
 							  const BOOLEAN isSingleEntry,
 							  OUT_ENUM_OPT( CRYPT_ATTRIBUTE ) \
 								CRYPT_ATTRIBUTE_TYPE *errorLocus,
@@ -666,7 +687,7 @@ int copyCertChain( INOUT CERT_INFO *certInfoPtr,
 
 /* Read/write certificate collections in assorted formats */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_LENGTH STDC_NONNULL_ARG( ( 1 ) ) \
 int sizeofCertCollection( const CERT_INFO *certInfoPtr,
 						  IN_ENUM( CRYPT_CERTFORMAT ) \
 							const CRYPT_CERTFORMAT_TYPE certFormatType );
@@ -695,7 +716,7 @@ int assembleCertChain( OUT CRYPT_CERTIFICATE *iCertificate,
 /* Create a certificate object ready for further initialisation */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int createCertificateInfo( OUT_OPT_PTR CERT_INFO **certInfoPtrPtr, 
+int createCertificateInfo( OUT_PTR_COND CERT_INFO **certInfoPtrPtr, 
 						   IN_HANDLE const CRYPT_USER iCryptOwner,
 						   IN_ENUM( CRYPT_CERTTYPE ) \
 							const CRYPT_CERTTYPE_TYPE certType );
@@ -705,7 +726,7 @@ int createCertificateInfo( OUT_OPT_PTR CERT_INFO **certInfoPtrPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int addCertComponent( INOUT CERT_INFO *certInfoPtr,
 					  IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE certInfoType,
-					  IN_INT_Z const int certInfo );
+					  const int certInfo );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int addCertComponentString( INOUT CERT_INFO *certInfoPtr,
 							IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE certInfoType,
@@ -720,8 +741,9 @@ int getCertComponentString( INOUT CERT_INFO *certInfoPtr,
 							IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE certInfoType,
 							OUT_BUFFER_OPT( certInfoMaxLength, \
 											*certInfoLength ) void *certInfo, 
-							IN_LENGTH_SHORT const int certInfoMaxLength, 
-							OUT_LENGTH_SHORT_Z int *certInfoLength );
+							IN_LENGTH_SHORT_Z const int certInfoMaxLength, 
+							OUT_LENGTH_BOUNDED_Z( certInfoMaxLength ) \
+								int *certInfoLength );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int deleteCertComponent( INOUT CERT_INFO *certInfoPtr,
 						 IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE certInfoType );
@@ -742,20 +764,20 @@ int setAttributeCursor( INOUT CERT_INFO *certInfoPtr,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int importCert( IN_BUFFER( certObjectLength ) const void *certObject, 
-				IN_LENGTH const int certObjectLength,
+				IN_DATALENGTH const int certObjectLength,
 				OUT_HANDLE_OPT CRYPT_CERTIFICATE *certificate,
 				IN_HANDLE const CRYPT_USER iCryptOwner,
-				IN_KEYID const CRYPT_KEYID_TYPE keyIDtype,
+				IN_KEYID_OPT const CRYPT_KEYID_TYPE keyIDtype,
 				IN_BUFFER_OPT( keyIDlength ) const void *keyID, 
 				IN_LENGTH_KEYID_Z const int keyIDlength,
-				IN_FLAGS( KEYMGMT ) const int options,
+				IN_FLAGS_Z( KEYMGMT ) const int options,
 				IN_ENUM_OPT( CRYPT_CERTTYPE ) \
 					const CRYPT_CERTTYPE_TYPE formatHint );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3, 5 ) ) \
 int exportCert( OUT_BUFFER_OPT( certObjectMaxLength, *certObjectLength ) \
 					void *certObject, 
-				IN_LENGTH const int certObjectMaxLength, 
-				OUT_LENGTH_Z int *certObjectLength,
+				IN_DATALENGTH_Z const int certObjectMaxLength, 
+				OUT_DATALENGTH_Z int *certObjectLength,
 				IN_ENUM( CRYPT_CERTFORMAT ) \
 					const CRYPT_CERTFORMAT_TYPE certFormatType,
 				const CERT_INFO *certInfoPtr );
@@ -766,7 +788,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int setSerialNumber( INOUT CERT_INFO *certInfoPtr, 
 					 IN_BUFFER_OPT( serialNumberLength ) const void *serialNumber, 
 					 IN_LENGTH_SHORT_Z const int serialNumberLength );
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
+CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 BOOLEAN compareSerialNumber( IN_BUFFER( canonSerialNumberLength ) \
 								const void *canonSerialNumber,
 							 IN_LENGTH_SHORT const int canonSerialNumberLength,
@@ -787,13 +809,14 @@ int textToOID( IN_BUFFER( textOidLength ) const char *textOID,
 			   IN_LENGTH_TEXT const int textOidLength, 
 			   OUT_BUFFER( binaryOidMaxLen, *binaryOidLen ) BYTE *binaryOID, 
 			   IN_LENGTH_SHORT const int binaryOidMaxLen, 
-			   OUT_LENGTH_SHORT_Z int *binaryOidLen );
+			   OUT_LENGTH_BOUNDED_Z( binaryOidMaxLen ) \
+					int *binaryOidLen );
 
 /* Check that a text string contains valid characters for its string type.
    This is used in non-DN strings where we can't avoid the problem by varying
    the string type based on the characters being used */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 BOOLEAN checkTextStringData( IN_BUFFER( stringLen ) const char *string, 
 							 IN_LENGTH_SHORT const int stringLen,
 							 const BOOLEAN isPrintableString );
@@ -807,13 +830,14 @@ BOOLEAN isValidField( IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE fieldID,
 
 /* Prototypes for functions in certschk.c */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 7, 8 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 8, 9 ) ) \
 int checkCertDetails( INOUT CERT_INFO *subjectCertInfoPtr,
 					  INOUT_OPT CERT_INFO *issuerCertInfoPtr,
 					  IN_HANDLE_OPT const CRYPT_CONTEXT iIssuerPubKey,
 					  IN_OPT const X509SIG_FORMATINFO *formatInfo,
 					  const BOOLEAN trustAnchorCheck,
 					  const BOOLEAN shortCircuitCheck,
+					  const BOOLEAN basicCheckDone,
 					  OUT_ENUM_OPT( CRYPT_ATTRIBUTE ) \
 						CRYPT_ATTRIBUTE_TYPE *errorLocus,
 					  OUT_ENUM_OPT( CRYPT_ERRTYPE ) \
@@ -840,6 +864,12 @@ ATTRIBUTE_PTR *findAttributeComponent( const CERT_INFO *certInfoPtr,
 										IN_ATTRIBUTE \
 											const CRYPT_ATTRIBUTE_TYPE certInfoType );
 
+/* Prototypes for functions in comp_pkiu.c */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+int copyPkiUserToCertReq( INOUT CERT_INFO *certInfoPtr,
+						  INOUT CERT_INFO *pkiUserInfoPtr );
+
 /* Prototypes for functions in dn.c */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
@@ -865,7 +895,7 @@ BOOLEAN checkExtensionTables( void );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 4 ) ) \
 int getCertObjectInfo( INOUT STREAM *stream,
 					   OUT_LENGTH_SHORT_Z int *objectOffset, 
-					   OUT_LENGTH_Z int *objectLength, 
+					   OUT_DATALENGTH_Z int *objectLength, 
 					   OUT_ENUM_OPT( CRYPT_CERTTYPE ) \
 							CRYPT_CERTTYPE_TYPE *objectType,
 					   IN_ENUM( CRYPT_CERTTYPE ) \
@@ -881,6 +911,6 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int preCheckCertificate( INOUT CERT_INFO *subjectCertInfoPtr,
 						 IN_OPT const CERT_INFO *issuerCertInfoPtr,
 						 IN_FLAGS( PRE_CHECK ) const int actions, 
-						 IN_FLAGS( PRE ) const int flags );
+						 IN_FLAGS_Z( PRE ) const int flags );
 
 #endif /* _CERTFN_DEFINED */

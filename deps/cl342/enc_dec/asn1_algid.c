@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						ASN.1 Algorithm Identifier Routines					*
-*						Copyright Peter Gutmann 1992-2011					*
+*						Copyright Peter Gutmann 1992-2013					*
 *																			*
 ****************************************************************************/
 
@@ -12,6 +12,8 @@
   #include "enc_dec/asn1.h"
   #include "enc_dec/asn1_ext.h"
 #endif /* Compiler-specific includes */
+
+#ifdef USE_INT_ASN1
 
 /****************************************************************************
 *																			*
@@ -68,7 +70,7 @@ static int oidToAlgorithm( IN_BUFFER( oidLength ) const BYTE *oid,
 		const ALGOID_INFO *algoIDinfoPtr = &algoIDinfoTbl[ i ];
 
 		if( algoIDinfoPtr->algoClass == type && \
-			sizeofOID( algoIDinfoPtr->oid ) == oidLength && \
+			oidLength == sizeofOID( algoIDinfoPtr->oid ) && \
 			algoIDinfoPtr->oid[ 6 ] == oidByte && \
 			!memcmp( algoIDinfoPtr->oid, oid, oidLength ) )
 			{
@@ -249,7 +251,7 @@ static int readAlgoIDheader( INOUT STREAM *stream,
 
 /* EncryptionAlgorithmIdentifier parameters:
 
-	aesXcbc, aesXofb: AES FIPS
+	aesXcbc: AES FIPS
 
 		iv				OCTET STRING SIZE (16)
 
@@ -260,13 +262,10 @@ static int readAlgoIDheader( INOUT STREAM *stream,
 			noOfBits	INTEGER (128)
 			}
 
-	blowfishCBC, desCBC, desEDE3-CBC: Blowfish RFC/OIW
-		iv				OCTET STRING SIZE (8)
-
-	blowfishCFB, blowfishOFB, desCFB, desOFB: Blowfish RFC/OIW
+	cast5cbc: RFC 2144
 		SEQUENCE {
-			iv			OCTET STRING SIZE (8),
-			noBits		INTEGER (64)
+			iv			OCTET STRING DEFAULT 0,
+			keyLen		INTEGER (128)
 			}
 
 	rc2CBC: RFC 2311
@@ -278,32 +277,27 @@ static int readAlgoIDheader( INOUT STREAM *stream,
 	rc4: (Unsure where this one is from)
 		NULL
 
-	rc5: RFC 2040
-		SEQUENCE {
-			version		INTEGER (16),
-			rounds		INTEGER (12),
-			blockSize	INTEGER (64),
-			iv			OCTET STRING OPTIONAL
-			}
-
    Because of the somewhat haphazard nature of encryption
    AlgorithmIdentifier definitions we can only handle the following
    algorithm/mode combinations:
 
-	AES ECB, CBC, CFB, OFB
-	Blowfish ECB, CBC, CFB, OFB
-	DES ECB, CBC, CFB, OFB
-	3DES ECB, CBC, CFB, OFB
+	AES ECB, CBC, CFB
+	CAST128 CBC
+	DES ECB, CBC, CFB
+	3DES ECB, CBC, CFB
 	RC2 ECB, CBC
 	RC4
-	RC5 CBC
 
    In addition to the standard AlgorithmIdentifiers there's also a generic-
    secret pseudo-algorithm used for key-diversification purposes:
 
 	authEnc128/authEnc256: RFC 6476
 		SEQUENCE {
-			prf			AlgorithmIdentifier DEFAULT PBKDF2,
+			prf ::= [ 0 ] SEQUENCE {
+				salt			OCTET STRING SIZE(0),
+				iterationCount	INTEGER (1),
+				prf				AlgorithmIdentifier
+				} DEFAULT PBKDF2,
 			encAlgo		AlgorithmIdentifier,
 			macAlgo		AlgorithmIdentifier */
 
@@ -315,17 +309,20 @@ static int readAlgoIDheader( INOUT STREAM *stream,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 static int readAuthEncParamData( INOUT STREAM *stream,
-								 OUT_LENGTH_Z int *offset,
-								 OUT_LENGTH_SHORT_Z int *length,
+								 OUT_DATALENGTH_Z int *offset,
+								 OUT_LENGTH_BOUNDED_Z( maxLength ) \
+									int *length,
+								 IN_TAG_ENCODED const int tag,
 								 IN_LENGTH_SHORT const int maxLength )
 	{
 	const int paramStart = stell( stream );
-	int paramLength, status;
+	int paramLength, tagValue, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( offset, sizeof( int ) ) );
 	assert( isWritePtr( length, sizeof( int ) ) );
 
+	REQUIRES_S( tag >= 1 && tag < MAX_TAG );
 	REQUIRES( maxLength > 0 && maxLength < MAX_INTLENGTH_SHORT );
 	REQUIRES( !cryptStatusError( paramStart ) );
 
@@ -333,7 +330,12 @@ static int readAuthEncParamData( INOUT STREAM *stream,
 	*offset = *length = 0;
 
 	/* Get the start and length of the parameter data */
-	status = readUniversal( stream );
+	status = tagValue = readTag( stream );
+	if( cryptStatusError( status ) )
+		return( status );
+	if( tagValue != tag )
+		return( sSetError( stream, CRYPT_ERROR_BADDATA ) );
+	status = readUniversalData( stream );
 	if( cryptStatusError( status ) )
 		return( status );
 	paramLength = stell( stream ) - paramStart;
@@ -378,9 +380,10 @@ static int readAlgoIDInfo( INOUT STREAM *stream,
 		}
 	else
 		{
-		if( isHashAlgo( queryInfo->cryptAlgo ) )
+		if( isHashAlgo( queryInfo->cryptAlgo ) || \
+			isMacAlgo( queryInfo->cryptAlgo ) )
 			{
-			/* For hash algorithms, the optional parameter is the hash 
+			/* For hash/MAC algorithms, the optional parameter is the hash 
 			   width */
 			if( param1 != 0 )
 				queryInfo->hashAlgoParam = param1;
@@ -422,7 +425,6 @@ static int readAlgoIDInfo( INOUT STREAM *stream,
 		{
 		case CRYPT_ALGO_3DES:
 		case CRYPT_ALGO_AES:
-		case CRYPT_ALGO_BLOWFISH:
 		case CRYPT_ALGO_DES:
 			if( queryInfo->cryptMode == CRYPT_MODE_ECB )
 				{
@@ -430,9 +432,7 @@ static int readAlgoIDInfo( INOUT STREAM *stream,
 				   readAlgoIDheader() */
 				return( CRYPT_OK );
 				}
-			if( ( queryInfo->cryptMode == CRYPT_MODE_CBC ) || \
-				( queryInfo->cryptAlgo == CRYPT_ALGO_AES && \
-				  queryInfo->cryptMode == CRYPT_MODE_OFB ) )
+			if( queryInfo->cryptMode == CRYPT_MODE_CBC )
 				{
 				return( readOctetString( stream, queryInfo->iv,
 								&queryInfo->ivLength,
@@ -443,6 +443,14 @@ static int readAlgoIDInfo( INOUT STREAM *stream,
 			readOctetString( stream, queryInfo->iv, &queryInfo->ivLength,
 							 8, CRYPT_MAX_IVSIZE );
 			return( readShortInteger( stream, NULL ) );
+
+#ifdef USE_CAST
+		case CRYPT_ALGO_CAST:
+			readSequence( stream, NULL );
+			readOctetString( stream, queryInfo->iv, &queryInfo->ivLength,
+							 8, CRYPT_MAX_IVSIZE );
+			return( readShortInteger( stream, NULL ) );
+#endif /* USE_CAST */
 
 #ifdef USE_RC2
 		case CRYPT_ALGO_RC2:
@@ -466,60 +474,50 @@ static int readAlgoIDInfo( INOUT STREAM *stream,
 			return( CRYPT_OK );
 #endif /* USE_RC4 */
 
-#ifdef USE_RC5
-		case CRYPT_ALGO_RC5:
-			{
-			long val1, val2, val3;
-
-			readSequence( stream, NULL );
-			readShortInteger( stream, &val1 );			/* Version */
-			readShortInteger( stream, &val2 );			/* Rounds */
-			status = readShortInteger( stream, &val3 );	/* Block size */
-			if( cryptStatusError( status ) )
-				return( status );
-			if( val1 != 16 || val2 != 12 || val3 != 64 )
-				{
-				/* This algorithm makes enough of a feature of its variable
-				   parameters that we do actually check to make sure that
-				   they're sensible since it may just be possible that 
-				   someone playing with an implementation decides to use
-				   weird values */
-				return( CRYPT_ERROR_NOTAVAIL );
-				}
-			return( readOctetString( stream, queryInfo->iv,
-									 &queryInfo->ivLength,
-									 8, CRYPT_MAX_IVSIZE ) );
-			}
-#endif /* USE_RC5 */
-
 		case CRYPT_IALGO_GENERIC_SECRET:
 			{
-			int maxLength = 128 - 8;	/* -8 for outer wrapper + OID */
+			int innerTag, maxLength = 128 - 8;	/* -8 for outer wrapper + OID */
 
 			/* For AuthEnc data we need to MAC the encoded parameter data 
 			   after we've processed it, so we save a copy for the caller.  
 			   In addition the caller needs a copy of the encryption and MAC
 			   parameters to use when creating the encryption and MAC
 			   contexts, so we record the position within the encoded 
-			   parameter data.  First we tunnel down into the parmaeter
+			   parameter data.  First we tunnel down into the parameter
 			   data to find the locations of the encryption and MAC
 			   parameters */
 			status = readSequence( stream, NULL );
-			if( cryptStatusOK( status ) )
+			if( checkStatusPeekTag( stream, status, innerTag ) && \
+				innerTag == MAKE_CTAG( 0 ) )
+				{
+				/* Optional KDF parameters */
+				status = readAuthEncParamData( stream,
+									&queryInfo->kdfParamStart, 
+									&queryInfo->kdfParamLength, 
+									MAKE_CTAG( 0 ), maxLength - 16 );
+									/* -16 for enc/MAC param.*/
+				}
+			if( !cryptStatusError( status ) )
 				{
 				/* Encryption algorithm parameters */
 				status = readAuthEncParamData( stream,
 									&queryInfo->encParamStart, 
 									&queryInfo->encParamLength, 
-									maxLength - 8 );/* -8 for MAC param.*/
+									BER_SEQUENCE,
+									maxLength - \
+										( queryInfo->kdfParamLength + 8 ) );
+										/* -8 for MAC param */
 				}
-			if( cryptStatusOK( status ) )
+			if( !cryptStatusError( status ) )
 				{
 				/* MAC algorithm parameters */
 				status = readAuthEncParamData( stream,
 									&queryInfo->macParamStart, 
 									&queryInfo->macParamLength,
-									maxLength - queryInfo->encParamLength );
+									BER_SEQUENCE,
+									maxLength - \
+										( queryInfo->kdfParamLength + \
+										  queryInfo->encParamLength ) );
 				}
 			if( cryptStatusError( status ) )
 				return( status );
@@ -527,6 +525,7 @@ static int readAlgoIDInfo( INOUT STREAM *stream,
 			/* The encryption/MAC parameter positions are taken from the 
 			   start of the encoded data, not from the start of the 
 			   stream */
+			queryInfo->kdfParamStart -= offset;
 			queryInfo->encParamStart -= offset;
 			queryInfo->macParamStart -= offset;
 
@@ -641,29 +640,37 @@ int writeCryptContextAlgoID( INOUT STREAM *stream,
 		{
 		case CRYPT_ALGO_3DES:
 		case CRYPT_ALGO_AES:
-		case CRYPT_ALGO_BLOWFISH:
 		case CRYPT_ALGO_DES:
 			{
 			const int noBits = ( algorithm == CRYPT_ALGO_AES ) ? 128 : 64;
 
+			ANALYSER_HINT( ivSize > 0 && ivSize < CRYPT_MAX_IVSIZE );
+
 			paramSize = \
-				( mode == CRYPT_MODE_ECB ) ? \
-					sizeofNull() : \
-				( ( mode == CRYPT_MODE_CBC ) || \
-				  ( algorithm == CRYPT_ALGO_AES && mode == CRYPT_MODE_OFB ) ) ? \
-				  sizeofIV : \
+				( mode == CRYPT_MODE_ECB ) ? sizeofNull() : \
+				( mode == CRYPT_MODE_CBC ) ? sizeofIV : \
 				  ( int ) sizeofObject( sizeofIV + sizeofShortInteger( noBits ) );
 			writeSequence( stream, oidSize + paramSize );
 			swrite( stream, oid, oidSize );
 			if( mode == CRYPT_MODE_ECB )
 				return( writeNull( stream, DEFAULT_TAG ) );
-			if( ( mode == CRYPT_MODE_CBC ) || \
-				( algorithm == CRYPT_ALGO_AES && mode == CRYPT_MODE_OFB ) )
+			if( mode == CRYPT_MODE_CBC )
 				return( writeOctetString( stream, iv, ivSize, DEFAULT_TAG ) );
 			writeSequence( stream, sizeofIV + sizeofShortInteger( noBits ) );
 			writeOctetString( stream, iv, ivSize, DEFAULT_TAG );
 			return( writeShortInteger( stream, noBits, DEFAULT_TAG ) );
 			}
+
+#ifdef USE_CAST
+		case CRYPT_ALGO_CAST:
+			paramSize = sizeofIV + sizeofShortInteger( 128 );
+			writeSequence( stream, oidSize + \
+								   ( int ) sizeofObject( paramSize ) );
+			swrite( stream, oid, oidSize );
+			writeSequence( stream, paramSize );
+			writeOctetString( stream, iv, ivSize, DEFAULT_TAG );
+			return( writeShortInteger( stream, 128, DEFAULT_TAG ) );
+#endif /* USE_CAST */
 
 #ifdef USE_RC2
 		case CRYPT_ALGO_RC2:
@@ -689,32 +696,26 @@ int writeCryptContextAlgoID( INOUT STREAM *stream,
 			return( writeNull( stream, DEFAULT_TAG ) );
 #endif /* USE_RC4 */
 
-#ifdef USE_RC5
-		case CRYPT_ALGO_RC5:
-			paramSize = sizeofShortInteger( 16 ) + \
-						sizeofShortInteger( 12 ) + \
-						sizeofShortInteger( 64 ) + \
-						sizeofIV;
-			writeSequence( stream, oidSize + \
-								   ( int ) sizeofObject( paramSize ) );
-			swrite( stream, oid, oidSize );
-			writeSequence( stream, paramSize );
-			writeShortInteger( stream, 16, DEFAULT_TAG );	/* Version */
-			writeShortInteger( stream, 12, DEFAULT_TAG );	/* Rounds */
-			writeShortInteger( stream, 64, DEFAULT_TAG );	/* Block size */
-			return( writeOctetString( stream, iv, ivSize, DEFAULT_TAG ) );
-#endif /* USE_RC5 */
-
 		case CRYPT_IALGO_GENERIC_SECRET:
 			{
 			MESSAGE_DATA msgData;
+			BYTE kdfData[ CRYPT_MAX_TEXTSIZE + 8 ];
 			BYTE encAlgoData[ CRYPT_MAX_TEXTSIZE + 8 ];
 			BYTE macAlgoData[ CRYPT_MAX_TEXTSIZE + 8 ];
-			int encAlgoDataSize, macAlgoDataSize;
+			int kdfDataSize = 0, encAlgoDataSize, macAlgoDataSize;
 
-			/* Get the encoded parameters for the encryption and MAC 
-			   contexts that will be derived from the generic-secret 
-			   context */
+			/* Get the encoded parameters for the optional KDF data and 
+			   encryption and MAC contexts that will be derived from the 
+			   generic-secret context */
+			setMessageData( &msgData, kdfData, CRYPT_MAX_TEXTSIZE );
+			status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE_S,
+									  &msgData, CRYPT_IATTRIBUTE_KDFPARAMS );
+			if( status == CRYPT_OK )	
+				{
+				/* Since the KDF data is optional it may not be present, in 
+				   which case we skip it */
+				kdfDataSize = msgData.length;
+				}
 			setMessageData( &msgData, encAlgoData, CRYPT_MAX_TEXTSIZE );
 			status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE_S,
 									  &msgData, CRYPT_IATTRIBUTE_ENCPARAMS );
@@ -730,9 +731,14 @@ int writeCryptContextAlgoID( INOUT STREAM *stream,
 
 			/* Write the pre-encoded AuthEnc parameter data */
 			writeSequence( stream, oidSize + \
-						   sizeofObject( encAlgoDataSize + macAlgoDataSize ) );
+						   sizeofObject( kdfDataSize + \
+										 encAlgoDataSize + \
+										 macAlgoDataSize ) );
 			swrite( stream, oid, oidSize );
-			writeSequence( stream, encAlgoDataSize + macAlgoDataSize );
+			writeSequence( stream, kdfDataSize + encAlgoDataSize + \
+								   macAlgoDataSize );
+			if( kdfDataSize > 0 )
+				swrite( stream, kdfData, kdfDataSize );
 			swrite( stream, encAlgoData, encAlgoDataSize );
 			return( swrite( stream, macAlgoData, macAlgoDataSize ) );
 			}
@@ -754,7 +760,7 @@ int writeCryptContextAlgoID( INOUT STREAM *stream,
 
 CHECK_RETVAL_BOOL \
 BOOLEAN checkAlgoID( IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo,
-					 IN_MODE const CRYPT_MODE_TYPE cryptMode )
+					 IN_MODE_OPT const CRYPT_MODE_TYPE cryptMode )
 	{
 	REQUIRES_B( cryptAlgo > CRYPT_ALGO_NONE && cryptAlgo < CRYPT_ALGO_LAST );
 	REQUIRES_B( cryptMode >= CRYPT_MODE_NONE && cryptMode < CRYPT_MODE_LAST );
@@ -768,7 +774,7 @@ BOOLEAN checkAlgoID( IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo,
    sub-parameters (AES, SHA-2) the OIDs are the same size so there's no need
    to explicitly deal with them */
 
-CHECK_RETVAL_LENGTH \
+CHECK_RETVAL_LENGTH_SHORT \
 int sizeofAlgoIDex( IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo,
 					IN_RANGE( 0, 999 ) const int parameter, 
 					IN_LENGTH_SHORT_Z const int extraLength )
@@ -786,7 +792,7 @@ int sizeofAlgoIDex( IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo,
 														  sizeofNull() ) ) );
 	}
 
-CHECK_RETVAL_LENGTH \
+CHECK_RETVAL_LENGTH_SHORT \
 int sizeofAlgoID( IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo )
 	{
 	REQUIRES( cryptAlgo > CRYPT_ALGO_NONE && cryptAlgo < CRYPT_ALGO_LAST );
@@ -835,7 +841,7 @@ int writeAlgoIDex( INOUT STREAM *stream,
 	REQUIRES_S( parameter == CRYPT_ALGO_NONE || \
 				( parameter >= CRYPT_ALGO_FIRST_HASH && \
 				  parameter <= CRYPT_ALGO_LAST_HASH ) || \
-				( isHashExtAlgo( cryptAlgo ) && \
+				( isHashMacExtAlgo( cryptAlgo ) && \
 				  parameter >= 32 && parameter <= CRYPT_MAX_HASHSIZE ) );
 	REQUIRES_S( extraLength >= 0 && extraLength < MAX_INTLENGTH_SHORT );
 	REQUIRES_S( oid != NULL );
@@ -977,7 +983,7 @@ int sizeofContextAlgoID( IN_HANDLE const CRYPT_CONTEXT iCryptContext,
 							  &algorithm, CRYPT_CTXINFO_ALGO );
 	if( cryptStatusError( status ) )
 		return( status );
-	if( isHashExtAlgo( algorithm ) )
+	if( isHashMacExtAlgo( algorithm ) )
 		{
 		int blockSize;
 
@@ -1017,7 +1023,7 @@ int writeContextAlgoID( INOUT STREAM *stream,
 							  &algorithm, CRYPT_CTXINFO_ALGO );
 	if( cryptStatusError( status ) )
 		return( status );
-	if( isHashExtAlgo( algorithm ) )
+	if( isHashMacExtAlgo( algorithm ) )
 		{
 		int blockSize;
 
@@ -1082,7 +1088,7 @@ int readContextAlgoID( INOUT STREAM *stream,
 							  &createInfo, OBJECT_TYPE_CONTEXT );
 	if( cryptStatusError( status ) )
 		return( status );
-	if( isHashExtAlgo( queryInfoPtr->cryptAlgo ) )
+	if( isHashMacExtAlgo( queryInfoPtr->cryptAlgo ) )
 		{
 		/* It's a variable-width hash algorithm, set the output width */
 		status = krnlSendMessage( createInfo.cryptHandle, 
@@ -1186,3 +1192,104 @@ int writeGenericAlgoID( INOUT STREAM *stream,
 	writeSequence( stream, oidLength );
 	return( writeOID( stream, oid ) );
 	}
+
+/****************************************************************************
+*																			*
+*								ECC OID Routines							*
+*																			*
+****************************************************************************/
+
+#if defined( USE_ECDH ) || defined( USE_ECDSA )
+
+/* ECC curves are identified by OIDs, in order to map to and from these when 
+   working with external representations of ECC parameters we need mapping 
+   functions for the conversion.  For the OID -> curveType map we need to 
+   return a pointer to the OID table, since the OID read is handled by 
+   passing in the mapping table, which returns the matched curve ID */
+
+static const OID_INFO FAR_BSS eccOIDinfo[] = {
+	/* NIST P-256, X9.62 p256r1, SECG p256r1, 1 2 840 10045 3 1 7 */
+	{ MKOID( "\x06\x08\x2A\x86\x48\xCE\x3D\x03\x01\x07" ), CRYPT_ECCCURVE_P256 },
+	/* NIST P-384, SECG p384r1, 1 3 132 0 34 */
+	{ MKOID( "\x06\x05\x2B\x81\x04\x00\x22" ), CRYPT_ECCCURVE_P384 },
+	/* NIST P-521, SECG p521r1, 1 3 132 0 35 */
+	{ MKOID( "\x06\x05\x2B\x81\x04\x00\x23" ), CRYPT_ECCCURVE_P521 },
+	/* Brainpool p256r1, 1 3 36 3 3 2 8 1 1 7 */
+	{ MKOID( "\x06\x09\x2B\x24\x03\x03\x02\x08\x01\x01\x07" ), CRYPT_ECCCURVE_BRAINPOOL_P256 },
+	/* Brainpool p384r1, 1 3 36 3 3 2 8 1 1 11 */
+	{ MKOID( "\x06\x09\x2B\x24\x03\x03\x02\x08\x01\x01\x0B" ), CRYPT_ECCCURVE_BRAINPOOL_P384 },
+	/* Brainpool p512r1, 1 3 36 3 3 2 8 1 1 13 */
+	{ MKOID( "\x06\x09\x2B\x24\x03\x03\x02\x08\x01\x01\x0D" ), CRYPT_ECCCURVE_BRAINPOOL_P512 },
+	{ NULL, 0 }, { NULL, 0 }
+	};
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+int readECCOID( INOUT STREAM *stream, 
+				OUT_OPT CRYPT_ECCCURVE_TYPE *curveType )
+	{
+	int selectionID, status;
+
+	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+	assert( isWritePtr( curveType, sizeof( CRYPT_ECCCURVE_TYPE ) ) );
+
+	/* Clear return value */
+	*curveType = CRYPT_ECCCURVE_NONE;
+
+	/* Read the ECC OID */
+	status = readOID( stream, eccOIDinfo, 
+					  FAILSAFE_ARRAYSIZE( eccOIDinfo, OID_INFO ), 
+					  &selectionID );
+	if( cryptStatusError( status ) )
+		return( status );
+	*curveType = selectionID;	/* enum vs.int */
+
+	return( CRYPT_OK );
+	}
+
+CHECK_RETVAL_LENGTH \
+int sizeofECCOID( const CRYPT_ECCCURVE_TYPE curveType )
+	{
+	int i;
+
+	REQUIRES( curveType > CRYPT_ECCCURVE_NONE && \
+			  curveType < CRYPT_ECCCURVE_LAST );
+
+	for( i = 0; i < FAILSAFE_ARRAYSIZE( eccOIDinfo, OID_INFO ) && \
+				eccOIDinfo[ i ].oid != NULL; i++ )
+		{
+		if( eccOIDinfo[ i ].selectionID == curveType )
+			return( sizeofOID( eccOIDinfo[ i ].oid ) );
+		}
+
+	retIntError();
+	}
+
+RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+int writeECCOID( INOUT STREAM *stream, 
+				 const CRYPT_ECCCURVE_TYPE curveType )
+	{
+	const BYTE *oid = NULL;
+	int i;
+
+	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+
+	REQUIRES( curveType > CRYPT_ECCCURVE_NONE && \
+			  curveType < CRYPT_ECCCURVE_LAST );
+
+	for( i = 0; i < FAILSAFE_ARRAYSIZE( eccOIDinfo, OID_INFO ) && \
+				eccOIDinfo[ i ].oid != NULL; i++ )
+		{
+		if( eccOIDinfo[ i ].selectionID == curveType )
+			{
+			oid = eccOIDinfo[ i ].oid;
+			break;
+			}
+		}
+	ENSURES( i < FAILSAFE_ARRAYSIZE( eccOIDinfo, OID_INFO ) );
+	ENSURES( oid != NULL );
+
+	return( writeOID( stream, oid ) );
+	}
+#endif /* USE_ECDH || USE_ECDSA */
+
+#endif /* USE_INT_ASN1 */

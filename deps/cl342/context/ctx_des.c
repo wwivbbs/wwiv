@@ -15,6 +15,8 @@
   #include "crypt/des.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_DES
+
 /* The DES block size */
 
 #define DES_BLOCKSIZE			8
@@ -41,7 +43,7 @@
 /* Test the DES implementation against the test vectors given in NBS Special
    Publication 500-20, 1980 */
 
-static int testLoop( const DES_TEST *testDES, int iterations, BOOLEAN isEncrypt )
+static int testLoop( const DES_TEST *testDES, int iterations )
 	{
 	const CAPABILITY_INFO *capabilityInfo = getDESCapability();
 	BYTE keyData[ DES_KEYSIZE + 8 ];
@@ -71,16 +73,16 @@ static int selfTest( void )
 	/* Check the DES test vectors.  Note that we don't explicitly test
 	   the RS values, however these are tested implicitly since they're
 	   just the decrypt side of the KP tests */
-	if( ( testLoop( testIP, sizeof( testIP ) / sizeof( DES_TEST ),
-					TRUE ) != CRYPT_OK ) || \
-		( testLoop( testVP, sizeof( testVP ) / sizeof( DES_TEST ),
-					TRUE ) != CRYPT_OK ) || \
-		( testLoop( testKP, sizeof( testKP ) / sizeof( DES_TEST ),
-					TRUE ) != CRYPT_OK ) || \
-		( testLoop( testDP, sizeof( testDP ) / sizeof( DES_TEST ),
-					TRUE ) != CRYPT_OK ) || \
-		( testLoop( testSB, sizeof( testSB ) / sizeof( DES_TEST ),
-					TRUE ) != CRYPT_OK ) )
+	if( ( testLoop( testIP, sizeof( testIP ) / \
+							sizeof( DES_TEST ) ) != CRYPT_OK ) || \
+		( testLoop( testVP, sizeof( testVP ) / \
+							sizeof( DES_TEST ) ) != CRYPT_OK ) || \
+		( testLoop( testKP, sizeof( testKP ) / \
+							sizeof( DES_TEST ) ) != CRYPT_OK ) || \
+		( testLoop( testDP, sizeof( testDP ) / \
+							sizeof( DES_TEST ) ) != CRYPT_OK ) || \
+		( testLoop( testSB, sizeof( testSB ) / \
+							sizeof( DES_TEST ) ) != CRYPT_OK ) )
 		return( CRYPT_ERROR_FAILED );
 
 	return( CRYPT_OK );
@@ -310,108 +312,6 @@ static int decryptCFB( CONTEXT_INFO *contextInfoPtr, BYTE *buffer,
 	return( CRYPT_OK );
 	}
 
-/* Encrypt/decrypt data in OFB mode */
-
-static int encryptOFB( CONTEXT_INFO *contextInfoPtr, BYTE *buffer, 
-					   int noBytes )
-	{
-	CONV_INFO *convInfo = contextInfoPtr->ctxConv;
-	int i, ivCount = convInfo->ivCount;
-
-	/* If there's any encrypted material left in the IV, use it now */
-	if( ivCount > 0 )
-		{
-		int bytesToUse;
-
-		/* Find out how much material left in the encrypted IV we can use */
-		bytesToUse = DES_BLOCKSIZE - ivCount;
-		if( noBytes < bytesToUse )
-			bytesToUse = noBytes;
-
-		/* Encrypt the data */
-		for( i = 0; i < bytesToUse; i++ )
-			buffer[ i ] ^= convInfo->currentIV[ i + ivCount ];
-
-		/* Adjust the byte count and buffer position */
-		noBytes -= bytesToUse;
-		buffer += bytesToUse;
-		ivCount += bytesToUse;
-		}
-
-	while( noBytes > 0 )
-		{
-		ivCount = ( noBytes > DES_BLOCKSIZE ) ? DES_BLOCKSIZE : noBytes;
-
-		/* Encrypt the IV */
-		des_ecb_encrypt( ( C_Block * ) convInfo->currentIV,
-						 ( C_Block * ) convInfo->currentIV,
-						 *( DES_KEY * ) convInfo->key, DES_ENCRYPT );
-
-		/* XOR the buffer contents with the encrypted IV */
-		for( i = 0; i < ivCount; i++ )
-			buffer[ i ] ^= convInfo->currentIV[ i ];
-
-		/* Move on to next block of data */
-		noBytes -= ivCount;
-		buffer += ivCount;
-		}
-
-	/* Remember how much of the IV is still available for use */
-	convInfo->ivCount = ( ivCount % DES_BLOCKSIZE );
-
-	return( CRYPT_OK );
-	}
-
-static int decryptOFB( CONTEXT_INFO *contextInfoPtr, BYTE *buffer, 
-					   int noBytes )
-	{
-	CONV_INFO *convInfo = contextInfoPtr->ctxConv;
-	int i, ivCount = convInfo->ivCount;
-
-	/* If there's any encrypted material left in the IV, use it now */
-	if( ivCount > 0 )
-		{
-		int bytesToUse;
-
-		/* Find out how much material left in the encrypted IV we can use */
-		bytesToUse = DES_BLOCKSIZE - ivCount;
-		if( noBytes < bytesToUse )
-			bytesToUse = noBytes;
-
-		/* Decrypt the data */
-		for( i = 0; i < bytesToUse; i++ )
-			buffer[ i ] ^= convInfo->currentIV[ i + ivCount ];
-
-		/* Adjust the byte count and buffer position */
-		noBytes -= bytesToUse;
-		buffer += bytesToUse;
-		ivCount += bytesToUse;
-		}
-
-	while( noBytes > 0 )
-		{
-		ivCount = ( noBytes > DES_BLOCKSIZE ) ? DES_BLOCKSIZE : noBytes;
-
-		/* Encrypt the IV */
-		des_ecb_encrypt( ( C_Block * ) convInfo->currentIV,
-						 ( C_Block * ) convInfo->currentIV,
-						 *( DES_KEY * ) convInfo->key, DES_ENCRYPT );
-
-		/* XOR the buffer contents with the encrypted IV */
-		for( i = 0; i < ivCount; i++ )
-			buffer[ i ] ^= convInfo->currentIV[ i ];
-
-		/* Move on to next block of data */
-		noBytes -= ivCount;
-		buffer += ivCount;
-		}
-
-	/* Remember how much of the IV is still available for use */
-	convInfo->ivCount = ( ivCount % DES_BLOCKSIZE );
-
-	return( CRYPT_OK );
-	}
-
 /****************************************************************************
 *																			*
 *							DES Key Management Routines						*
@@ -456,10 +356,11 @@ static const CAPABILITY_INFO FAR_BSS capabilityInfo = {
 	MIN_KEYSIZE, bitsToBytes( 64 ), bitsToBytes( 64 ),
 	selfTest, getInfo, NULL, initGenericParams, initKey, NULL,
 	encryptECB, decryptECB, encryptCBC, decryptCBC,
-	encryptCFB, decryptCFB, encryptOFB, decryptOFB
+	encryptCFB, decryptCFB
 	};
 
 const CAPABILITY_INFO *getDESCapability( void )
 	{
 	return( &capabilityInfo );
 	}
+#endif /* USE_DES */

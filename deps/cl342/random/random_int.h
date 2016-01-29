@@ -23,17 +23,6 @@
 *																			*
 ****************************************************************************/
 
-/* The maximum amount of random data needed by any cryptlib operation,
-   equivalent to the size of a maximum-length PKC key.  However this isn't
-   the absolute length because when generating the k value for DLP
-   operations we get n + m bits and then reduce via one of the DLP
-   parameters to get the value within range.  If we just got n bits this
-   would introduce a bias into the top bit, see the DLP code for more
-   details.  Because of this we allow a length slightly larger than the
-   maximum PKC key size */
-
-#define MAX_RANDOM_BYTES	( CRYPT_MAX_PKCSIZE + 8 )
-
 /* The size in bytes of the randomness pool and the size of the X9.17
    post-processor generator pool */
 
@@ -41,8 +30,8 @@
 #define X917_POOLSIZE			8
 
 /* The allocated size of the randomness pool, which allows for the overflow
-   created by the fact that the hash function blocksize isn't any useful
-   multiple of a power of 2 */
+   created by the fact that the hash function blocksize, 20 bytes for SHA-1, 
+   isn't any useful multiple of a power of 2 */
 
 #define RANDOMPOOL_ALLOCSIZE	( ( ( RANDOMPOOL_SIZE + 20 - 1 ) / 20 ) * 20 )
 
@@ -123,10 +112,14 @@ typedef struct {
 	BUFFER_FIXED( RANDOMPOOL_SAMPLE_SIZE ) \
 	BYTE x917OuputSample[ RANDOMPOOL_SAMPLE_SIZE + 8 ];
 
-#if 0	/* See comment in addEntropyQuality */
+#if 0	/* See comment in addEntropyQuality() */
 	/* Other status information used to check the pool's operation */
 	int entropyByteCount;	/* Number of bytes entropy added */
 #endif /* 0 */
+
+	/* Pool integrity-protection checksum.  This is set to zero before the
+	   entire RANDOM_INFO structure is checksummed */
+	int checksum;			/* Integrity-protection checksum */
 
 	/* Random seed data information if seeding is done from a stored seed */
 #ifdef CONFIG_RANDSEED
@@ -146,7 +139,7 @@ typedef struct {
 /* Prototypes for functions in random.c */
 
 STDC_NONNULL_ARG( ( 1 ) ) \
-void initRandomPool( INOUT RANDOM_INFO *randomInfo );
+void initRandomPool( OUT RANDOM_INFO *randomInfo );
 STDC_NONNULL_ARG( ( 1 ) ) \
 void endRandomPool( INOUT RANDOM_INFO *randomInfo );
 

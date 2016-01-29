@@ -219,7 +219,7 @@ static int rc4Test( const BYTE *key, const int keySize,
 	memcpy( temp, plaintext, length );
 	status = capabilityInfo->initKeyFunction( &contextInfo, key, keySize );
 	if( cryptStatusOK( status ) )
-		status = capabilityInfo->encryptOFBFunction( &contextInfo, temp,
+		status = capabilityInfo->encryptCFBFunction( &contextInfo, temp,
 													 length );
 	staticDestroyContext( &contextInfo );
 	if( cryptStatusError( status ) || \
@@ -339,7 +339,7 @@ static const CAPABILITY_INFO FAR_BSS capabilityInfo = {
 	CRYPT_ALGO_RC4, bitsToBytes( 8 ), "RC4", 3,
 	MIN_KEYSIZE, bitsToBytes( 128 ), 256,
 	selfTest, getInfo, NULL, initGenericParams, initKey, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, encryptFn, encryptFn
+	NULL, NULL, NULL, NULL, encryptFn, encryptFn
 	};
 
 const CAPABILITY_INFO *getRC4Capability( void )

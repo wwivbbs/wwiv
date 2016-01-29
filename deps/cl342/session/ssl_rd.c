@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *					cryptlib SSL v3/TLS Session Read Routines				*
-*					   Copyright Peter Gutmann 1998-2010					*
+*					   Copyright Peter Gutmann 1998-2012					*
 *																			*
 ****************************************************************************/
 
@@ -128,7 +128,7 @@ static int handleSSLv2Header( SESSION_INFO *sessionInfoPtr,
 /* Get a string description of overall and handshake packet types, used for 
    diagnostic error messages */
 
-CHECK_RETVAL_PTR \
+CHECK_RETVAL_PTR_NONNULL \
 const char *getSSLPacketName( IN_RANGE( 0, 255 ) const int packetType )
 	{
 	typedef struct {
@@ -138,7 +138,13 @@ const char *getSSLPacketName( IN_RANGE( 0, 255 ) const int packetType )
 	static const PACKET_NAME_INFO packetNameInfo[] = {
 		{ SSL_MSG_CHANGE_CIPHER_SPEC, "change_cipher_spec" },
 		{ SSL_MSG_ALERT, "alert" },
-		{ SSL_MSG_HANDSHAKE, "handshake" },
+		{ SSL_MSG_HANDSHAKE, "handshake (encrypted)" },
+			/* We denote this one as an encrypted handshake packet rather 
+			  than a straight handshake packet because handshake messages 
+			  are identified via getSSLHSPacketName(), it's only when we're 
+			  encrypting the handshake messages that we can no longer dump 
+			  the inner contents, so if we ever get a handshake packet 
+			  dumped using getSSLPacketName() then it has to be encrypted */
 		{ SSL_MSG_APPLICATION_DATA, "application_data" },
 		{ CRYPT_ERROR, "<Unknown type>" },
 			{ CRYPT_ERROR, "<Unknown type>" }
@@ -159,7 +165,7 @@ const char *getSSLPacketName( IN_RANGE( 0, 255 ) const int packetType )
 	return( packetNameInfo[ i ].packetName );
 	}
 
-CHECK_RETVAL_PTR \
+CHECK_RETVAL_PTR_NONNULL \
 const char *getSSLHSPacketName( IN_RANGE( 0, 255 ) const int packetType )
 	{
 	typedef struct {
@@ -198,14 +204,27 @@ const char *getSSLHSPacketName( IN_RANGE( 0, 255 ) const int packetType )
 
 /* Process version information.  This is always called with sufficient data 
    in the input stream so we don't have to worry about special-casing error
-   reporting for stream read errors */
+   reporting for stream read errors.
+   
+   Handling of version numbering in the SSL/TLS protocol is complex and 
+   messy (or at least the way that some implementations do it is complex
+   and messy), the client and server hellos have two version numbers, one in 
+   the overall SSL/TLS message wrapper and a second one in the client/server 
+   hello itself.  Many browsers send a meaningless version number in the 
+   overall wrapper that bears no relation to the version in the hello 
+   message contents, so for the initial message we skip the outer version 
+   (or at least just check that it's approximately valid) and use the inner 
+   version number given in the hello message itself.  For subsequent 
+   messages, where the wrapper version number seems to make sense, we ensure 
+   that the version number matches */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int processVersionInfo( INOUT SESSION_INFO *sessionInfoPtr, 
 						INOUT STREAM *stream, 
-						OUT_OPT_INT_Z int *clientVersion )
+						OUT_OPT int *clientVersion,
+						const BOOLEAN generalCheckOnly )
 	{
-	int version;
+	int version, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
@@ -217,7 +236,9 @@ int processVersionInfo( INOUT SESSION_INFO *sessionInfoPtr,
 		*clientVersion = CRYPT_ERROR;
 
 	/* Check the major version number */
-	version = sgetc( stream );
+	status = version = sgetc( stream );
+	if( cryptStatusError( status ) )
+		return( status );
 	if( version != SSL_MAJOR_VERSION )
 		{
 		retExt( CRYPT_ERROR_BADDATA,
@@ -228,9 +249,31 @@ int processVersionInfo( INOUT SESSION_INFO *sessionInfoPtr,
 	/* Check the minor version number.  If we've already got the version
 	   established, make sure that it matches the existing one, otherwise
 	   determine which version we'll be using */
-	version = sgetc( stream );
+	status = version = sgetc( stream );
+	if( cryptStatusError( status ) )
+		return( status );
 	if( clientVersion == NULL )
 		{
+		/* If it's the first message in the exchange then the outer version
+		   number is meaningless and often doesn't correspond to the inner 
+		   version number in the client/server hello, so all we do is check 
+		   that it's generally within range */
+		if( generalCheckOnly )
+			{
+			if( version < SSL_MINOR_VERSION_SSL || \
+				version > SSL_MINOR_VERSION_TLS12 + 2 )
+				{
+				retExt( CRYPT_ERROR_BADDATA,
+						( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
+						  "Invalid version number 3.%d, should be "
+						  "3.0...3.%d", version, 
+						  SSL_MINOR_VERSION_TLS12 + 2 ) );
+				}
+			return( CRYPT_OK );
+			}
+
+		/* It's a subsequent message in the exchange, the version number has
+		   to match what we're expecting */
 		if( version != sessionInfoPtr->version )
 			{
 			retExt( CRYPT_ERROR_BADDATA,
@@ -240,13 +283,24 @@ int processVersionInfo( INOUT SESSION_INFO *sessionInfoPtr,
 			}
 		return( CRYPT_OK );
 		}
+	DEBUG_PRINT(( "%s offered protocol version: 3.%d.\n", 
+				  isServer( sessionInfoPtr ) ? "Client" : "Server", 
+				  version ));
 	switch( version )
 		{
 		case SSL_MINOR_VERSION_SSL:
+#ifdef USE_SSL3
 			/* If the other side can't do TLS, fall back to SSL */
 			if( sessionInfoPtr->version >= SSL_MINOR_VERSION_TLS )
 				sessionInfoPtr->version = SSL_MINOR_VERSION_SSL;
 			break;
+#else
+			retExt( CRYPT_ERROR_NOSECURE,
+					( CRYPT_ERROR_NOSECURE, SESSION_ERRINFO, 
+					  "%s requested use of insecure SSL version 3, we can "
+					  "only do TLS", 
+					  isServer( sessionInfoPtr ) ? "Client" : "Server" ) );
+#endif /* USE_SSL3 */
 
 		case SSL_MINOR_VERSION_TLS:
 			/* If the other side can't do TLS 1.1, fall back to TLS 1.0 */
@@ -283,6 +337,8 @@ int processVersionInfo( INOUT SESSION_INFO *sessionInfoPtr,
 					( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
 					  "Invalid protocol version 3.%d", version ) );
 		}
+	DEBUG_PRINT(( "Accepted protocol version: 3.%d.\n", 
+				  sessionInfoPtr->version ));
 
 	/* If there's a requirement for a minimum version, make sure that it's
 	   been met */
@@ -324,12 +380,13 @@ int processVersionInfo( INOUT SESSION_INFO *sessionInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 static int checkPacketHeader( INOUT SESSION_INFO *sessionInfoPtr, 
 							  INOUT STREAM *stream,
-							  OUT_LENGTH_Z int *packetLength, 
+							  OUT_LENGTH_BOUNDED_Z( maxLength ) \
+									int *packetLength, 
 							  IN_RANGE( SSL_MSG_FIRST, \
 										SSL_MSG_LAST_SPECIAL ) \
 									const int packetType, 
-							  IN_LENGTH_Z const int minLength, 
-							  IN_LENGTH const int maxLength )
+							  IN_DATALENGTH_Z const int minLength, 
+							  IN_DATALENGTH const int maxLength )
 	{
 	SSL_INFO *sslInfo = sessionInfoPtr->sessionSSL;
 	const int expectedPacketType = \
@@ -346,14 +403,16 @@ static int checkPacketHeader( INOUT SESSION_INFO *sessionInfoPtr,
 			  ( packetType == SSL_MSG_FIRST_HANDSHAKE ) );
 	REQUIRES( ( packetType == SSL_MSG_APPLICATION_DATA && \
 				minLength == 0 ) || \
-			  ( minLength > 0 && minLength < MAX_INTLENGTH ) );
-	REQUIRES( maxLength >= minLength && maxLength < MAX_INTLENGTH );
+			  ( minLength > 0 && minLength < MAX_BUFFER_SIZE ) );
+	REQUIRES( maxLength >= minLength && maxLength < MAX_BUFFER_SIZE );
 
 	/* Clear return value */
 	*packetLength = 0;
 
 	/* Check the packet type */
-	value = sgetc( stream );
+	status = value = sgetc( stream );
+	if( cryptStatusError( status ) )
+		return( status );
 	if( value != expectedPacketType )
 		{
 		/* There is one special case in which a mismatch is allowed and 
@@ -364,8 +423,7 @@ static int checkPacketHeader( INOUT SESSION_INFO *sessionInfoPtr,
 		   indicating that when we process the actual payload we need to 
 		   check for a re-handshake */
 		if( expectedPacketType == SSL_MSG_APPLICATION_DATA && \
-			value == SSL_MSG_HANDSHAKE && \
-			!isServer( sessionInfoPtr ) )
+			value == SSL_MSG_HANDSHAKE && !isServer( sessionInfoPtr ) )
 			{
 			/* Tell the body-read code to check for a rehandshake (via a
 			   hello_request) in the decrypted packet payload */
@@ -381,13 +439,21 @@ static int checkPacketHeader( INOUT SESSION_INFO *sessionInfoPtr,
 					  expectedPacketType ) );
 			}
 		}
-	status = processVersionInfo( sessionInfoPtr, stream, 
-				( packetType == SSL_MSG_FIRST_HANDSHAKE ) ? &value : NULL );
+
+	/* Process the version information.  Alongside not requiring a version 
+	   number match on the first message exchanged we also allow this for
+	   alert packets, since version-intolerant servers can send back alerts
+	   with lower-then-expected version numbers */
+	status = processVersionInfo( sessionInfoPtr, stream, NULL,
+						( packetType == SSL_MSG_FIRST_HANDSHAKE || \
+						  packetType == SSL_MSG_ALERT ) ? TRUE : FALSE );
 	if( cryptStatusError( status ) )
 		return( status );
 
 	/* Check the packet length */
-	length = readUint16( stream );
+	status = length = readUint16( stream );
+	if( cryptStatusError( status ) )
+		return( status );
 	if( sessionInfoPtr->flags & SESSION_ISSECURE_READ )
 		{
 		if( length < sslInfo->ivSize + minLength + \
@@ -443,7 +509,7 @@ static int checkPacketHeader( INOUT SESSION_INFO *sessionInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 int checkPacketHeaderSSL( INOUT SESSION_INFO *sessionInfoPtr, 
 						  INOUT STREAM *stream, 
-						  OUT_LENGTH_Z int *packetLength )
+						  OUT_DATALENGTH_Z int *packetLength )
 	{
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
@@ -457,12 +523,12 @@ int checkPacketHeaderSSL( INOUT SESSION_INFO *sessionInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 int checkHSPacketHeader( INOUT SESSION_INFO *sessionInfoPtr, 
 						 INOUT STREAM *stream, 
-						 OUT_LENGTH_Z int *packetLength, 
+						 OUT_DATALENGTH_Z int *packetLength, 
 						 IN_RANGE( SSL_HAND_FIRST, \
 								   SSL_HAND_LAST ) const int packetType, 
 						 IN_LENGTH_SHORT_Z const int minSize )
 	{
-	int type, length;
+	int type, length, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
@@ -488,7 +554,9 @@ int checkHSPacketHeader( INOUT SESSION_INFO *sessionInfoPtr,
 
 	/*	byte		ID = type
 		uint24		length */
-	type = sgetc( stream );
+	status = type = sgetc( stream );
+	if( cryptStatusError( status ) )
+		return( status );
 	if( type != packetType )
 		{
 		retExt( CRYPT_ERROR_BADDATA,
@@ -497,14 +565,18 @@ int checkHSPacketHeader( INOUT SESSION_INFO *sessionInfoPtr,
 				  getSSLHSPacketName( type ), type, 
 				  getSSLHSPacketName( packetType ), packetType ) );
 		}
-	length = readUint24( stream );
+	status = length = readUint24( stream );
+	if( cryptStatusError( status ) )
+		return( status );
 	if( length < minSize || length > MAX_PACKET_SIZE || \
 		length > sMemDataLeft( stream ) )
 		{
 		retExt( CRYPT_ERROR_BADDATA,
 				( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
-				  "Invalid length %d for %s (%d) handshake packet", 
-				  length, getSSLHSPacketName( type ), type ) );
+				  "Invalid length %d for %s (%d) handshake packet, should "
+				  "be %d...%d", length, getSSLHSPacketName( type ), 
+				  type, minSize, min( MAX_PACKET_SIZE, \
+									  sMemDataLeft( stream ) ) ) );
 		}
 	*packetLength = length;
 	DEBUG_PRINT(( "Read %s (%d) handshake packet, length %ld.\n", 
@@ -521,7 +593,8 @@ int checkHSPacketHeader( INOUT SESSION_INFO *sessionInfoPtr,
 *																			*
 ****************************************************************************/
 
-/* Unwrap an SSL data packet:
+/* Unwrap an SSL data packet.  There are three forms of this, the first for
+   standard MAC-then-encrypt:
 
 			  data
 				|------------			  MAC'd
@@ -532,28 +605,42 @@ int checkHSPacketHeader( INOUT SESSION_INFO *sessionInfoPtr,
 				|<---- dataMaxLen ----->|
 				|<- dLen -->|
 
+   The second for encrypt-then-MAC:
+
+			  data
+				|==================		  Encrypted
+	------------v------------------		  MAC'd
+	+-----+-----+-----------+-----+-----+
+	| hdr |(IV)	|	data	| pad | MAC |
+	+-----+-----+-----------+-----+-----+
+				|<---- dataMaxLen ----->|
+				|<- dLen -->|
+
+   And the third for GCM:
+
 			  data
 				|
-				v================		AuthEnc'd
+	------		v================		AuthEnc'd
 	+-----+-----+---------------+-----+
 	| hdr |(IV)	|	data		| ICV |
 	+-----+-----+---------------+-----+
 				|<--- dataMaxLen ---->|
 				|<--- dLen ---->|
 
-   This decrypts the data, removes the padding if necessary, checks and 
-   removes the MAC/ICV, and returns the payload length.  Processing of the 
-   header and IV have already been performed during the packet header 
+   These are sufficiently different that we use three distinct functions to
+   do the job.  These decrypt the data, remove the padding if necessary, 
+   check and remove the MAC/ICV, and return the payload length.  Processing 
+   of the header and IV have already been performed during the packet header 
    read */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
-int unwrapPacketSSL( INOUT SESSION_INFO *sessionInfoPtr, 
-					 INOUT_BUFFER( dataMaxLength, \
-								   *dataLength ) void *data, 
-					 IN_LENGTH const int dataMaxLength, 
-					 OUT_LENGTH_Z int *dataLength,
-					 IN_RANGE( SSL_HAND_FIRST, \
-							   SSL_HAND_LAST ) const int packetType )
+static int unwrapPacketSSLStd( INOUT SESSION_INFO *sessionInfoPtr, 
+							   INOUT_BUFFER( dataMaxLength, \
+											 *dataLength ) void *data, 
+							   IN_DATALENGTH const int dataMaxLength, 
+							   OUT_DATALENGTH_Z int *dataLength,
+							   IN_RANGE( SSL_HAND_FIRST, \
+										 SSL_HAND_LAST ) const int packetType )
 	{
 	BYTE dummyDataBuffer[ CRYPT_MAX_HASHSIZE + 8 ];
 	BOOLEAN badDecrypt = FALSE;
@@ -566,49 +653,13 @@ int unwrapPacketSSL( INOUT SESSION_INFO *sessionInfoPtr,
 
 	REQUIRES( dataMaxLength >= sessionInfoPtr->authBlocksize && \
 			  dataMaxLength <= MAX_PACKET_SIZE + \
-							   sessionInfoPtr->authBlocksize + 256 );
+							   sessionInfoPtr->authBlocksize + 256 && \
+			  dataMaxLength < MAX_BUFFER_SIZE );
+	REQUIRES( ( dataMaxLength % sessionInfoPtr->cryptBlocksize ) == 0 );
 	REQUIRES( packetType >= SSL_HAND_FIRST && packetType <= SSL_HAND_LAST );
 
 	/* Clear return value */
 	*dataLength = 0;
-
-	/* Make sure that the length is a multiple of the block cipher size */
-	if( sessionInfoPtr->cryptBlocksize > 1 && \
-		( dataMaxLength % sessionInfoPtr->cryptBlocksize ) )
-		{
-		retExt( CRYPT_ERROR_BADDATA,
-				( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
-				  "Invalid encrypted packet length %d relative to cipher "
-				  "block size %d for %s (%d) packet", dataMaxLength, 
-				  sessionInfoPtr->cryptBlocksize, 
-				  getSSLPacketName( packetType ), packetType ) );
-		}
-
-	/* If we're using GCM then the ICV isn't encrypted, and we have to 
-	   process the packet metadata that's normally MACed as GCM AAD */
-	if( sessionInfoPtr->protocolFlags & SSL_PFLAG_GCM )
-		{
-		SSL_INFO *sslInfo = sessionInfoPtr->sessionSSL;
-
-		/* Shorten the packet by the size of the ICV */
-		length -= sessionInfoPtr->authBlocksize;
-		if( length < 0 || length > MAX_PACKET_SIZE )
-			{
-			retExt( CRYPT_ERROR_BADDATA,
-					( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
-					  "Invalid payload length %d for %s (%d) packet", 
-					  length, getSSLPacketName( packetType ), 
-					  packetType ) );
-			}
-
-		/* Process the packet metadata as GCM AAD */
-		status = macDataTLSGCM( sessionInfoPtr->iCryptInContext, 
-								sslInfo->readSeqNo, sessionInfoPtr->version, 
-								length, packetType );
-		if( cryptStatusError( status ) )
-			return( status );
-		sslInfo->readSeqNo++;
-		}
 
 	/* Decrypt the packet in the buffer.  We allow zero-length blocks (once
 	   the padding is stripped) because some versions of OpenSSL send these 
@@ -620,7 +671,7 @@ int unwrapPacketSSL( INOUT SESSION_INFO *sessionInfoPtr,
 			return( status );
 
 		/* There's been a padding error, don't exit immediately but record 
-		   that there was a problem for after we've done the MACing.  
+		   that there was a problem for after we've done the MAC'ing.  
 		   Delaying the error reporting until then helps prevent timing 
 		   attacks of the kind described by Brice Canvel, Alain Hiltgen,
 		   Serge Vaudenay, and Martin Vuagnoux in "Password Interception 
@@ -634,16 +685,6 @@ int unwrapPacketSSL( INOUT SESSION_INFO *sessionInfoPtr,
 		badDecrypt = TRUE;
 		length = min( dataMaxLength, 
 					  MAX_PACKET_SIZE + sessionInfoPtr->authBlocksize );
-		}
-	if( sessionInfoPtr->protocolFlags & SSL_PFLAG_GCM )
-		{
-		/* If we're using GCM then the ICV check has already been 
-		   performed as part of the decryption and we're done */
-		if( cryptStatusError( status ) )
-			return( status );
-
-		*dataLength = length;
-		return( CRYPT_OK );
 		}
 	payloadLength = length - sessionInfoPtr->authBlocksize;
 	if( payloadLength < 0 || payloadLength > MAX_PACKET_SIZE )
@@ -665,10 +706,12 @@ int unwrapPacketSSL( INOUT SESSION_INFO *sessionInfoPtr,
 	/* MAC the decrypted data.  The badDecrypt flag suppresses the reporting
 	   of a MAC error due to an earlier bad decrypt, which has already been
 	   reported by decryptData() */
+#ifdef USE_SSL3
 	if( sessionInfoPtr->version == SSL_MINOR_VERSION_SSL )
 		status = checkMacSSL( sessionInfoPtr, data, length, payloadLength, 
 							  packetType, badDecrypt );
 	else
+#endif /* USE_SSL3 */
 		status = checkMacTLS( sessionInfoPtr, data, length, payloadLength, 
 							  packetType, badDecrypt );
 	if( badDecrypt )
@@ -684,13 +727,191 @@ int unwrapPacketSSL( INOUT SESSION_INFO *sessionInfoPtr,
 	return( CRYPT_OK );
 	}
 
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+static int unwrapPacketTLSMAC( INOUT SESSION_INFO *sessionInfoPtr, 
+							   INOUT_BUFFER( dataMaxLength, \
+											 *dataLength ) void *data, 
+							   IN_DATALENGTH const int dataMaxLength, 
+							   OUT_DATALENGTH_Z int *dataLength,
+							   IN_RANGE( SSL_HAND_FIRST, \
+										 SSL_HAND_LAST ) const int packetType )
+	{
+	int length = dataMaxLength, status;
+
+	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) && \
+			sessionInfoPtr->flags & SESSION_ISSECURE_READ );
+	assert( isWritePtr( data, dataMaxLength ) );
+	assert( isWritePtr( dataLength, sizeof( int ) ) );
+
+	REQUIRES( dataMaxLength >= sessionInfoPtr->authBlocksize && \
+			  dataMaxLength <= MAX_PACKET_SIZE + \
+							   sessionInfoPtr->authBlocksize + 256 && \
+			  dataMaxLength < MAX_BUFFER_SIZE );
+	REQUIRES( ( ( dataMaxLength - sessionInfoPtr->authBlocksize ) % \
+				sessionInfoPtr->cryptBlocksize ) == 0 );
+	REQUIRES( packetType >= SSL_HAND_FIRST && packetType <= SSL_HAND_LAST );
+
+	/* Clear return value */
+	*dataLength = 0;
+
+	/* MAC the encrypted data */
+	status = checkMacTLS( sessionInfoPtr, data, length, 
+						  length - sessionInfoPtr->authBlocksize, 
+						  packetType, FALSE );
+	if( cryptStatusError( status ) )
+		return( status );
+
+	/* Decrypt the packet in the buffer.  We allow zero-length blocks (once
+	   the padding is stripped) because some versions of OpenSSL send these 
+	   as a kludge to work around pre-TLS 1.1 chosen-IV attacks */
+	status = decryptData( sessionInfoPtr, data, 
+						  length - sessionInfoPtr->authBlocksize, &length );
+	if( cryptStatusError( status ) )
+		return( status );
+
+	*dataLength = length;
+	return( CRYPT_OK );
+	}
+
+#ifdef USE_GCM
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+static int unwrapPacketTLSGCM( INOUT SESSION_INFO *sessionInfoPtr, 
+							   INOUT_BUFFER( dataMaxLength, \
+											 *dataLength ) void *data, 
+							   IN_DATALENGTH const int dataMaxLength, 
+							   OUT_DATALENGTH_Z int *dataLength,
+							   IN_RANGE( SSL_HAND_FIRST, \
+										 SSL_HAND_LAST ) const int packetType )
+	{
+	SSL_INFO *sslInfo = sessionInfoPtr->sessionSSL;
+	int length = dataMaxLength, status;
+
+	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) && \
+			sessionInfoPtr->flags & SESSION_ISSECURE_READ );
+	assert( isWritePtr( data, dataMaxLength ) );
+	assert( isWritePtr( dataLength, sizeof( int ) ) );
+
+	REQUIRES( dataMaxLength >= sessionInfoPtr->authBlocksize && \
+			  dataMaxLength <= MAX_PACKET_SIZE + \
+							   sessionInfoPtr->authBlocksize + 256 && \
+			  dataMaxLength < MAX_BUFFER_SIZE );
+	REQUIRES( packetType >= SSL_HAND_FIRST && packetType <= SSL_HAND_LAST );
+
+	/* Clear return value */
+	*dataLength = 0;
+
+	/* Shorten the packet by the size of the ICV */
+	length -= sessionInfoPtr->authBlocksize;
+	if( length < 0 || length > MAX_PACKET_SIZE )
+		{
+		retExt( CRYPT_ERROR_BADDATA,
+				( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
+				  "Invalid payload length %d for %s (%d) packet", length, 
+				  getSSLPacketName( packetType ), packetType ) );
+		}
+
+	/* Process the packet metadata as GCM AAD */
+	status = macDataTLSGCM( sessionInfoPtr->iCryptInContext, 
+							sslInfo->readSeqNo, sessionInfoPtr->version, 
+							length, packetType );
+	if( cryptStatusError( status ) )
+		return( status );
+	sslInfo->readSeqNo++;
+
+	/* Decrypt the packet in the buffer.  We allow zero-length blocks (once
+	   the padding is stripped) because some versions of OpenSSL send these 
+	   as a kludge to work around pre-TLS 1.1 chosen-IV attacks */
+	status = decryptData( sessionInfoPtr, data, length, &length );
+	if( cryptStatusError( status ) )
+		{
+		/* The ICV check has been performed as part of the decryption, so 
+		   we're done */
+		return( status );
+		}
+
+	/* Tell the caller what the final data size is */
+	*dataLength = length;
+
+	return( CRYPT_OK );
+	}
+#endif /* USE_GCM */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+int unwrapPacketSSL( INOUT SESSION_INFO *sessionInfoPtr, 
+					 INOUT_BUFFER( dataMaxLength, \
+								   *dataLength ) void *data, 
+					 IN_DATALENGTH const int dataMaxLength, 
+					 OUT_DATALENGTH_Z int *dataLength,
+					 IN_RANGE( SSL_HAND_FIRST, \
+							   SSL_HAND_LAST ) const int packetType )
+	{
+	int status;
+
+	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) && \
+			sessionInfoPtr->flags & SESSION_ISSECURE_READ );
+	assert( isWritePtr( data, dataMaxLength ) );
+	assert( isWritePtr( dataLength, sizeof( int ) ) );
+
+	REQUIRES( dataMaxLength >= sessionInfoPtr->authBlocksize && \
+			  dataMaxLength <= MAX_PACKET_SIZE + \
+							   sessionInfoPtr->authBlocksize + 256 && \
+			  dataMaxLength < MAX_BUFFER_SIZE );
+	REQUIRES( packetType >= SSL_HAND_FIRST && packetType <= SSL_HAND_LAST );
+
+	/* Clear return value */
+	*dataLength = 0;
+
+	/* Make sure that the length is a multiple of the block cipher size */
+	if( sessionInfoPtr->cryptBlocksize > 1 )
+		{
+		const int encryptedDataSize = \
+			( sessionInfoPtr->protocolFlags & SSL_PFLAG_ENCTHENMAC ) ? \
+			dataMaxLength - sessionInfoPtr->authBlocksize : dataMaxLength;
+
+		if( ( encryptedDataSize % sessionInfoPtr->cryptBlocksize ) != 0 )
+			{
+			retExt( CRYPT_ERROR_BADDATA,
+					( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
+					  "Invalid encrypted packet length %d relative to cipher "
+					  "block size %d for %s (%d) packet", dataMaxLength, 
+					  sessionInfoPtr->cryptBlocksize, 
+					  getSSLPacketName( packetType ), packetType ) );
+			}
+		}
+
+	/* Unwrap the data based on the type of processing that we're using */
+	if( sessionInfoPtr->protocolFlags & SSL_PFLAG_ENCTHENMAC )
+		{
+		status = unwrapPacketTLSMAC( sessionInfoPtr, data, dataMaxLength, 
+									 dataLength, packetType );
+		}
+	else
+		{
+#ifdef USE_GCM
+		if( sessionInfoPtr->protocolFlags & SSL_PFLAG_GCM )
+			{
+			status = unwrapPacketTLSGCM( sessionInfoPtr, data, dataMaxLength, 
+										 dataLength, packetType );
+			}
+		else
+#endif /* USE_GCM */
+			{
+			status = unwrapPacketSSLStd( sessionInfoPtr, data, dataMaxLength, 
+										 dataLength, packetType );
+			}
+		}
+
+	return( status );
+	}
+
 /* Read an SSL handshake packet.  Since the data transfer phase has its own 
    read/write code we can perform some special-case handling based on this */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int readHSPacketSSL( INOUT SESSION_INFO *sessionInfoPtr,
 					 INOUT_OPT SSL_HANDSHAKE_INFO *handshakeInfo, 
-					 OUT_LENGTH_Z int *packetLength, 
+					 OUT_DATALENGTH_Z int *packetLength, 
 					 IN_RANGE( SSL_HAND_FIRST, \
 							   SSL_MSG_LAST_SPECIAL ) const int packetType )
 	{
@@ -847,6 +1068,8 @@ int readHSPacketSSL( INOUT SESSION_INFO *sessionInfoPtr,
 			return( status );
 		}
 	*packetLength = length;
+	DEBUG_DUMP_SSL( headerBuffer, sessionInfoPtr->receiveBufStartOfs,
+					sessionInfoPtr->receiveBuffer, length );
 
 	return( CRYPT_OK );
 	}
@@ -870,7 +1093,7 @@ int refreshHSStream( INOUT SESSION_INFO *sessionInfoPtr,
 		{
 		/* We need enough data to contain at least a handshake packet header 
 		   in order to continue */
-		if( length < 1 + LENGTH_SIZE || length > MAX_INTLENGTH )
+		if( length < 1 + LENGTH_SIZE || length > MAX_BUFFER_SIZE )
 			{
 			retExt( CRYPT_ERROR_BADDATA,
 					( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
@@ -886,7 +1109,9 @@ int refreshHSStream( INOUT SESSION_INFO *sessionInfoPtr,
 							  SSL_MSG_HANDSHAKE );
 	if( cryptStatusError( status ) )
 		return( status );
-	return( sMemConnect( stream, sessionInfoPtr->receiveBuffer, length ) );
+	sMemConnect( stream, sessionInfoPtr->receiveBuffer, length );
+
+	return( CRYPT_OK );
 	}		
 
 /****************************************************************************
@@ -927,6 +1152,7 @@ static const ALERT_INFO alertInfo[] = {
 	{ TLS_ALERT_PROTOCOL_VERSION, "Protocol version", 16, CRYPT_ERROR_NOTAVAIL },
 	{ TLS_ALERT_INSUFFICIENT_SECURITY, "Insufficient security", 21, CRYPT_ERROR_NOSECURE },
 	{ TLS_ALERT_INTERNAL_ERROR, "Internal error", 14, CRYPT_ERROR_FAILED },
+	{ TLS_ALERT_INAPPROPRIATE_FALLBACK, "Inappropriate fallback", 22, CRYPT_ERROR_NOSECURE },
 	{ TLS_ALERT_USER_CANCELLED, "User cancelled", 14, CRYPT_ERROR_FAILED },
 	{ TLS_ALERT_NO_RENEGOTIATION, "No renegotiation", 16, CRYPT_ERROR_FAILED },
 	{ TLS_ALERT_UNSUPPORTED_EXTENSION, "Unsupported extension", 21, CRYPT_ERROR_NOTAVAIL },
@@ -939,26 +1165,24 @@ static const ALERT_INFO alertInfo[] = {
 	};
 
 /* Process an alert packet.  IIS often just drops the connection rather than 
-   sending an alert when it encounters a problem, although we try and work
-   around some of the known problems, e.g. by sending a canary in the client
-   hello to force IIS to at least send back something rather than just 
-   dropping the connection, see ssl_hs.c.  In addition when communicating 
-   with IIS the only error indication that we sometimes get will be a 
-   "Connection closed by remote host" rather than an SSL-level error message,
-   see the comment in readHSPacketSSL() for the reason for this.  Also, when 
-   it encounters an unknown certificate MSIE will complete the handshake and 
-   then close the connection (via a proper close alert in this case rather 
-   than just closing the connection), wait while the user clicks OK several 
-   times, and then restart the connection via an SSL resume.  Netscape in 
-   contrast just hopes that the session won't time out while waiting for the 
-   user to click OK.  As a result cryptlib sees a closed connection and 
-   aborts the session setup process when talking to MSIE, requiring a second 
-   call to the session setup to continue with the resumed session */
+   sending an alert when it encounters a problem.  In addition when 
+   communicating with IIS the only error indication that we sometimes get 
+   will be a "Connection closed by remote host" rather than an SSL-level 
+   error message, see the comment in readHSPacketSSL() for the reason for 
+   this.  Also, when it encounters an unknown certificate MSIE will complete 
+   the handshake and then close the connection (via a proper close alert in 
+   this case rather than just closing the connection), wait while the user 
+   clicks OK several times, and then restart the connection via an SSL 
+   resume.  Netscape-derived browsers in contrast just hope that the session 
+   won't time out while waiting for the user to click OK.  As a result 
+   cryptlib sees a closed connection and aborts the session setup process 
+   when talking to MSIE, requiring a second call to the session setup to 
+   continue with the resumed session */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int processAlert( INOUT SESSION_INFO *sessionInfoPtr, 
 				  IN_BUFFER( headerLength ) const void *header, 
-				  IN_LENGTH const int headerLength )
+				  IN_DATALENGTH const int headerLength )
 	{
 	STREAM stream;
 	BYTE buffer[ 256 + 8 ];
@@ -967,7 +1191,7 @@ int processAlert( INOUT SESSION_INFO *sessionInfoPtr,
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isReadPtr( header, headerLength ) );
 
-	REQUIRES( headerLength > 0 && headerLength < MAX_INTLENGTH );
+	REQUIRES( headerLength > 0 && headerLength < MAX_BUFFER_SIZE );
 
 	/* Process the alert packet header */
 	sMemConnect( &stream, header, headerLength );
@@ -1059,21 +1283,24 @@ int processAlert( INOUT SESSION_INFO *sessionInfoPtr,
 	   ever since for newer protocols that want to keep the connection open.  
 	   This behaviour is nearly universal for some protocols tunneled over 
 	   SSL, for example vsftpd by default disables close-alert handling
-	   because the author was unable to find FTP client anywhere that uses
-	   it (see the manpage entry for "strict_ssl_write_shutdown").  Other 
-	   implementations still send their alert but then immediately close the 
-	   connection.  Because of this haphazard approach to closing 
+	   because the author was unable to find an FTP client anywhere that 
+	   uses it (see the manpage entry for "strict_ssl_write_shutdown").  
+	   Other implementations still send their alert but then immediately 
+	   close the connection.  Because of this haphazard approach to closing 
 	   connections many implementations allow a session to be resumed even 
 	   if no close alert is sent.  In order to be compatible with this 
-	   behaviour, we do the same (thus perpetuating the problem).  If 
-	   necessary this can be fixed by calling deleteSessionCacheEntry() if 
-	   the connection is closed without a close alert having been sent */
+	   behaviour, we do the same (thus perpetuating the problem).
+	   
+	   If required this can be fixed by calling deleteSessionCacheEntry() 
+	   if the connection is closed without a close alert having been sent */
 	if( buffer[ 0 ] != SSL_ALERTLEVEL_WARNING && \
 		buffer[ 0 ] != SSL_ALERTLEVEL_FATAL )
 		{
 		retExt( CRYPT_ERROR_BADDATA,
 				( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
-				  "Invalid alert message level %d", buffer[ 0 ] ) );
+				  "Invalid alert message level %d, expected %d or %d", 
+				  buffer[ 0 ], SSL_ALERTLEVEL_WARNING, 
+				  SSL_ALERTLEVEL_FATAL ) );
 		}
 	type = buffer[ 1 ];
 	for( i = 0; alertInfo[ i ].type != CRYPT_ERROR && \

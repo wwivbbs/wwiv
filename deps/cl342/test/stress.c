@@ -389,14 +389,6 @@ static void testDataProcessing( void )
 							"status %d.\n", cryptAlgo, status );
 					errorCount++;
 					}
-				status = testProcessing( cryptAlgo, CRYPT_MODE_CFB,
-										 cryptQueryInfo );
-				if( cryptStatusError( status ) )
-					{
-					printf( "\nAlgorithm %d CFB mode processing failed with "
-							"status %d.\n", cryptAlgo, status );
-					errorCount++;
-					}
 				status = testProcessing( cryptAlgo, CRYPT_MODE_GCM,
 										 cryptQueryInfo );
 				if( cryptStatusError( status ) )
@@ -406,11 +398,11 @@ static void testDataProcessing( void )
 					errorCount++;
 					}
 				}
-			status = testProcessing( cryptAlgo, CRYPT_MODE_OFB,
+			status = testProcessing( cryptAlgo, CRYPT_MODE_CFB,
 									 cryptQueryInfo );
 			if( cryptStatusError( status ) )
 				{
-				printf( "\nAlgorithm %d OFB mode processing failed with "
+				printf( "\nAlgorithm %d CFB mode processing failed with "
 						"status %d.\n", cryptAlgo, status );
 				errorCount++;
 				}

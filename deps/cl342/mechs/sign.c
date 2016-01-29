@@ -21,6 +21,8 @@
   #include "mechs/mech.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_INT_CMS
+
 /****************************************************************************
 *																			*
 *							Utility Functions 								*
@@ -31,7 +33,7 @@
 
 CHECK_RETVAL_ENUM( CRYPT_FORMAT ) STDC_NONNULL_ARG( ( 1 ) ) \
 static CRYPT_FORMAT_TYPE getFormatType( IN_BUFFER( dataLength ) const void *data, 
-										IN_LENGTH const int dataLength )
+										IN_DATALENGTH const int dataLength )
 	{
 	STREAM stream;
 	long value;
@@ -39,8 +41,8 @@ static CRYPT_FORMAT_TYPE getFormatType( IN_BUFFER( dataLength ) const void *data
 
 	assert( isReadPtr( data, dataLength ) );
 	
-	REQUIRES( dataLength > MIN_CRYPT_OBJECTSIZE && \
-			  dataLength < MAX_INTLENGTH );
+	REQUIRES_EXT( dataLength > MIN_CRYPT_OBJECTSIZE && \
+				  dataLength < MAX_BUFFER_SIZE, CRYPT_FORMAT_NONE );
 
 	sMemConnect( &stream, data, min( 16, dataLength ) );
 
@@ -90,7 +92,7 @@ static CRYPT_FORMAT_TYPE getFormatType( IN_BUFFER( dataLength ) const void *data
 
 #ifdef USE_PGP
 	/* It's not ASN.1 data, check for PGP data */
-	status = pgpReadPacketHeader( &stream, NULL, &value, 30 );
+	status = pgpReadPacketHeader( &stream, NULL, &value, 30, 8192 );
 	if( cryptStatusOK( status ) && value > 30 && value < 8192 )
 		{
 		sMemDisconnect( &stream );
@@ -111,6 +113,7 @@ static CRYPT_FORMAT_TYPE getFormatType( IN_BUFFER( dataLength ) const void *data
 
 /* Create an extended signature type */
 
+C_CHECK_RETVAL C_NONNULL_ARG( ( 3 ) ) \
 C_RET cryptCreateSignatureEx( C_OUT_OPT void C_PTR signature,
 							  C_IN int signatureMaxLength,
 							  C_OUT int C_PTR signatureLength,
@@ -138,7 +141,7 @@ C_RET cryptCreateSignatureEx( C_OUT_OPT void C_PTR signature,
 	if( signature != NULL )
 		{
 		if( signatureMaxLength <= MIN_CRYPT_OBJECTSIZE || \
-			signatureMaxLength >= MAX_INTLENGTH )
+			signatureMaxLength >= MAX_BUFFER_SIZE )
 			return( CRYPT_ERROR_PARAM2 );
 		if( !isWritePtr( signature, signatureMaxLength ) )
 			return( CRYPT_ERROR_PARAM1 );
@@ -227,8 +230,7 @@ C_RET cryptCreateSignatureEx( C_OUT_OPT void C_PTR signature,
 		}
 	if( formatType == CRYPT_FORMAT_PGP )
 		{
-		initSigParams( &sigParams );
-		sigParams.sigType = PGP_SIG_DATA;
+		initSigParamsPGP( &sigParams, PGP_SIG_DATA, NULL, 0 );
 		hasSigParams = TRUE;
 		}
 
@@ -246,6 +248,7 @@ C_RET cryptCreateSignatureEx( C_OUT_OPT void C_PTR signature,
 	return( status );
 	}
 
+C_CHECK_RETVAL C_NONNULL_ARG( ( 3 ) ) \
 C_RET cryptCreateSignature( C_OUT_OPT void C_PTR signature,
 							C_IN int signatureMaxLength,
 							C_OUT int C_PTR signatureLength,
@@ -277,6 +280,7 @@ C_RET cryptCreateSignature( C_OUT_OPT void C_PTR signature,
 
 /* Check an extended signature type */
 
+C_CHECK_RETVAL C_NONNULL_ARG( ( 1 ) ) \
 C_RET cryptCheckSignatureEx( C_IN void C_PTR signature,
 							 C_IN int signatureLength,
 							 C_IN CRYPT_HANDLE sigCheckKey,
@@ -284,7 +288,7 @@ C_RET cryptCheckSignatureEx( C_IN void C_PTR signature,
 							 C_OUT_OPT CRYPT_HANDLE C_PTR extraData )
 	{
 	CRYPT_FORMAT_TYPE formatType;
-	CRYPT_CERTIFICATE iExtraData = DUMMY_INIT;
+	CRYPT_CERTIFICATE iExtraData DUMMY_INIT;
 	CRYPT_CONTEXT sigCheckContext;
 	int status;
 
@@ -297,6 +301,12 @@ C_RET cryptCheckSignatureEx( C_IN void C_PTR signature,
 	if( ( formatType = getFormatType( signature, \
 									  signatureLength ) ) == CRYPT_FORMAT_NONE )
 		return( CRYPT_ERROR_BADDATA );
+
+	/* Clear return values */
+	if( extraData != NULL )
+		*extraData = CRYPT_UNUSED;
+
+	/* Perform extended error checking */
 	status = krnlSendMessage( sigCheckKey, MESSAGE_GETDEPENDENT,
 							  &sigCheckContext, OBJECT_TYPE_CONTEXT );
 	if( cryptStatusOK( status ) )
@@ -396,6 +406,7 @@ C_RET cryptCheckSignatureEx( C_IN void C_PTR signature,
 	return( CRYPT_OK );
 	}
 
+C_CHECK_RETVAL C_NONNULL_ARG( ( 1 ) ) \
 C_RET cryptCheckSignature( C_IN void C_PTR signature,
 						   C_IN int signatureLength,
 						   C_IN CRYPT_HANDLE sigCheckKey,
@@ -404,6 +415,7 @@ C_RET cryptCheckSignature( C_IN void C_PTR signature,
 	return( cryptCheckSignatureEx( signature, signatureLength, sigCheckKey,
 								   hashContext, NULL ) );
 	}
+#endif /* USE_INT_CMS */
 
 /****************************************************************************
 *																			*
@@ -419,8 +431,8 @@ C_RET cryptCheckSignature( C_IN void C_PTR signature,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int iCryptCreateSignature( OUT_BUFFER_OPT( signatureMaxLength, *signatureLength ) \
 							void *signature, 
-						   IN_LENGTH_Z const int signatureMaxLength,
-						   OUT_LENGTH_Z int *signatureLength,
+						   IN_DATALENGTH_Z const int signatureMaxLength,
+						   OUT_DATALENGTH_Z int *signatureLength,
 						   IN_ENUM( CRYPT_FORMAT ) \
 							const CRYPT_FORMAT_TYPE formatType,
 						   IN_HANDLE const CRYPT_CONTEXT iSignContext,
@@ -436,7 +448,7 @@ int iCryptCreateSignature( OUT_BUFFER_OPT( signatureMaxLength, *signatureLength 
 	REQUIRES( ( signature == NULL && signatureMaxLength == 0 ) || \
 			  ( signature != NULL && \
 				signatureMaxLength > MIN_CRYPT_OBJECTSIZE && \
-				signatureMaxLength < MAX_INTLENGTH ) );
+				signatureMaxLength < MAX_BUFFER_SIZE ) );
 	REQUIRES( formatType > CRYPT_FORMAT_NONE && \
 			  formatType < CRYPT_FORMAT_LAST );
 	REQUIRES( isHandleRangeValid( iSignContext ) );
@@ -467,7 +479,7 @@ int iCryptCreateSignature( OUT_BUFFER_OPT( signatureMaxLength, *signatureLength 
 	   are used for formats other than the obvious CRYPT_FORMAT_CMS/
 	   CRYPT_FORMAT_SMIME so we perform this operation unconditionally 
 	   rather than only for those two formats */
-	status = krnlSendMessage( iSignContext, MESSAGE_GETATTRIBUTE,
+	status = krnlSendMessage( iSignContext, IMESSAGE_GETATTRIBUTE,
 							  &certType, CRYPT_CERTINFO_CERTTYPE );
 	if( cryptStatusError( status ) )
 		{
@@ -501,6 +513,7 @@ int iCryptCreateSignature( OUT_BUFFER_OPT( signatureMaxLength, *signatureLength 
 	/* Call the low-level signature create function to create the signature */
 	switch( formatType )
 		{
+#ifdef USE_INT_CMS
 		case CRYPT_FORMAT_CRYPTLIB:
 			status = createSignature( signature, signatureMaxLength, 
 									  signatureLength, iSignContext,
@@ -531,7 +544,7 @@ int iCryptCreateSignature( OUT_BUFFER_OPT( signatureMaxLength, *signatureLength 
 										 formatType );
 			}
 			break;
-
+#endif /* USE_INT_CMS */
 
 #ifdef USE_PGP
 		case CRYPT_FORMAT_PGP:
@@ -544,7 +557,9 @@ int iCryptCreateSignature( OUT_BUFFER_OPT( signatureMaxLength, *signatureLength 
 
 			status = createSignaturePGP( signature, signatureMaxLength, 
 										 signatureLength, iSignContext,
-										 iHashContext, sigParams->sigType );
+										 iHashContext, sigParams->sigAttributes,
+										 sigParams->sigAttributeSize,
+										 sigParams->sigType );
 			break;
 #endif /* USE_PGP */
 
@@ -612,7 +627,7 @@ int iCryptCheckSignature( IN_BUFFER( signatureLength ) const void *signature,
 							const CRYPT_FORMAT_TYPE formatType,
 						  IN_HANDLE const CRYPT_HANDLE iSigCheckKey,
 						  IN_HANDLE const CRYPT_CONTEXT iHashContext,
-						  IN_HANDLE const CRYPT_CONTEXT iHash2Context,
+						  IN_HANDLE_OPT const CRYPT_CONTEXT iHash2Context,
 						  OUT_OPT_HANDLE_OPT CRYPT_HANDLE *extraData )
 	{
 	CRYPT_CONTEXT sigCheckContext;
@@ -638,6 +653,10 @@ int iCryptCheckSignature( IN_BUFFER( signatureLength ) const void *signature,
 				  formatType == CRYPT_IFORMAT_SSH ) && \
 				iHash2Context == CRYPT_UNUSED && extraData == NULL ) );
 
+	/* Clear return value */
+	if( extraData != NULL )
+		*extraData = CRYPT_ERROR;
+
 	/* Perform basic error checking */
 	status = krnlSendMessage( iSigCheckKey, IMESSAGE_GETDEPENDENT,
 							  &sigCheckContext, OBJECT_TYPE_CONTEXT );
@@ -647,11 +666,27 @@ int iCryptCheckSignature( IN_BUFFER( signatureLength ) const void *signature,
 	/* Call the low-level signature check function to check the signature */
 	switch( formatType )
 		{
+#ifdef USE_INT_CMS
 		case CRYPT_FORMAT_CRYPTLIB:
+			/* For this call we have to pass in the original handle (which 
+			   may be a certificate with an attached public-key context) 
+			   rather than the raw context because the signature format uses 
+			   the subjectKeyIdentifier to identify the key, and that's only 
+			   available via the certificate */
 			status = checkSignature( signature, signatureLength,
-									 sigCheckContext, iHashContext,
+									 iSigCheckKey, iHashContext,
 									 CRYPT_UNUSED, SIGNATURE_CRYPTLIB );
 			break;
+
+		case CRYPT_FORMAT_CMS:
+		case CRYPT_FORMAT_SMIME:
+			if( extraData != NULL )
+				*extraData = CRYPT_ERROR;
+			status = checkSignatureCMS( signature, signatureLength, 
+										sigCheckContext, iHashContext, 
+										extraData, iSigCheckKey );
+			break;
+#endif /* USE_INT_CMS */
 
 #ifdef USE_PGP
 		case CRYPT_FORMAT_PGP:
@@ -682,24 +717,72 @@ int iCryptCheckSignature( IN_BUFFER( signatureLength ) const void *signature,
 			break;
 #endif /* USE_SSH */
 
-		case CRYPT_FORMAT_CMS:
-		case CRYPT_FORMAT_SMIME:
-			if( extraData != NULL )
-				*extraData = CRYPT_ERROR;
-			status = checkSignatureCMS( signature, signatureLength, 
-										sigCheckContext, iHashContext, 
-										extraData, iSigCheckKey );
-			break;
-
 		default:
 			retIntError();
 		}
 	if( cryptArgError( status ) )
 		{
 		/* Catch any parameter errors that slip through */
-		DEBUG_DIAG(( "Signature creation return argError status" ));
+		DEBUG_DIAG(( "Signature creation returned argError status" ));
 		assert( DEBUG_WARN );
 		status = CRYPT_ERROR_SIGNATURE;
 		}
 	return( status );
 	}
+
+/****************************************************************************
+*																			*
+*						Stub Functions for non-CMS/PGP Use					*
+*																			*
+****************************************************************************/
+
+#ifndef USE_INT_CMS 
+
+C_RET cryptCreateSignatureEx( C_OUT_OPT void C_PTR signature,
+							  C_IN int signatureMaxLength,
+							  C_OUT int C_PTR signatureLength,
+							  C_IN CRYPT_FORMAT_TYPE formatType,
+							  C_IN CRYPT_CONTEXT signContext,
+							  C_IN CRYPT_CONTEXT hashContext,
+							  C_IN CRYPT_HANDLE extraData )
+	{
+	UNUSED_ARG( signature );
+	UNUSED_ARG( signatureLength );
+
+	return( CRYPT_ERROR_NOTAVAIL );
+	}
+
+C_RET cryptCreateSignature( C_OUT_OPT void C_PTR signature,
+							C_IN int signatureMaxLength,
+							C_OUT int C_PTR signatureLength,
+							C_IN CRYPT_CONTEXT signContext,
+							C_IN CRYPT_CONTEXT hashContext )
+	{
+	UNUSED_ARG( signature );
+	UNUSED_ARG( signatureLength );
+
+	return( CRYPT_ERROR_NOTAVAIL );
+	}
+
+C_RET cryptCheckSignatureEx( C_IN void C_PTR signature,
+							 C_IN int signatureLength,
+							 C_IN CRYPT_HANDLE sigCheckKey,
+							 C_IN CRYPT_CONTEXT hashContext,
+							 C_OUT_OPT CRYPT_HANDLE C_PTR extraData )
+	{
+	UNUSED_ARG( signature );
+	UNUSED_ARG( extraData );
+
+	return( CRYPT_ERROR_NOTAVAIL );
+	}
+
+C_RET cryptCheckSignature( C_IN void C_PTR signature,
+						   C_IN int signatureLength,
+						   C_IN CRYPT_HANDLE sigCheckKey,
+						   C_IN CRYPT_CONTEXT hashContext )
+	{
+	UNUSED_ARG( signature );
+
+	return( CRYPT_ERROR_NOTAVAIL );
+	}
+#endif /* USE_INT_CMS */

@@ -108,7 +108,7 @@
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int getCertInfo( const CERT_INFO *certInfoPtr,
-						INOUT_PTR CERT_INFO **certChainPtr, 
+						OUT_PTR_COND CERT_INFO **certChainPtr, 
 						IN_RANGE( -1, MAX_CHAINLENGTH - 1 ) const int certChainIndex )
 	{
 	CERT_CERT_INFO *certChainInfo = certInfoPtr->cCertCert;
@@ -237,7 +237,7 @@ static int findTrustAnchor( INOUT CERT_INFO *certInfoPtr,
 								int *trustAnchorIndexPtr, 
 							OUT_HANDLE_OPT CRYPT_CERTIFICATE *trustAnchorCert )
 	{
-	CRYPT_CERTIFICATE iIssuerCert = DUMMY_INIT;
+	CRYPT_CERTIFICATE iIssuerCert DUMMY_INIT;
 	CERT_CERT_INFO *certChainInfo = certInfoPtr->cCertCert;
 	int trustAnchorIndex, status;
 
@@ -1122,6 +1122,7 @@ int checkCertChain( INOUT CERT_INFO *certInfoPtr )
 								CRYPT_ERROR_SIGNALLED );
 	if( cryptStatusError( status ) )
 		return( status );
+	ANALYSER_HINT( issuerCertInfoPtr != NULL );
 
 	/* Add policies (both native and mapped) from the trust anchor to the 
 	   policy set */
@@ -1149,7 +1150,7 @@ int checkCertChain( INOUT CERT_INFO *certInfoPtr )
 		status = checkCertDetails( issuerCertInfoPtr, issuerCertInfoPtr, 
 						( issuerCertInfoPtr->iPubkeyContext != CRYPT_ERROR ) ? \
 							issuerCertInfoPtr->iPubkeyContext : CRYPT_UNUSED,
-						NULL, TRUE, TRUE, &dummyLocus, &dummyType );
+						NULL, TRUE, TRUE, FALSE, &dummyLocus, &dummyType );
 
 		}
 	else
@@ -1159,7 +1160,7 @@ int checkCertChain( INOUT CERT_INFO *certInfoPtr )
 		status = checkCertDetails( issuerCertInfoPtr, issuerCertInfoPtr, 
 						( issuerCertInfoPtr->iPubkeyContext != CRYPT_ERROR ) ? \
 							issuerCertInfoPtr->iPubkeyContext : CRYPT_UNUSED,
-						NULL, TRUE, TRUE, &issuerCertInfoPtr->errorLocus, 
+						NULL, TRUE, TRUE, FALSE, &issuerCertInfoPtr->errorLocus, 
 						&issuerCertInfoPtr->errorType );
 		}
 	if( cryptStatusError( status ) )
@@ -1189,7 +1190,8 @@ int checkCertChain( INOUT CERT_INFO *certInfoPtr )
 		status = checkCertDetails( subjectCertInfoPtr, issuerCertInfoPtr, 
 						( issuerCertInfoPtr->iPubkeyContext != CRYPT_ERROR ) ? \
 							issuerCertInfoPtr->iPubkeyContext : CRYPT_UNUSED,
-						NULL, FALSE, TRUE, &subjectCertInfoPtr->errorLocus, 
+						NULL, FALSE, TRUE, FALSE, 
+						&subjectCertInfoPtr->errorLocus, 
 						&subjectCertInfoPtr->errorType );
 		if( cryptStatusError( status ) )
 			{

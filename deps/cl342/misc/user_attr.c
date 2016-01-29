@@ -67,6 +67,8 @@ static int exitErrorNotFound( INOUT USER_INFO *userInfoPtr,
 					   CRYPT_ERROR_NOTFOUND ) );
 	}
 
+#ifdef USE_KEYSETS
+
 /* Process a set-attribute operation that initiates an operation that's 
    performed in two phases.  The reason for the split is that the second 
    phase doesn't require the use of the user object data any more and can be 
@@ -174,6 +176,7 @@ static int twoPhaseConfigUpdate( INOUT USER_INFO *userInfoPtr,
 
 	return( commitStatus );
 	}
+#endif /* USE_KEYSETS */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int twoPhaseSelftest( INOUT USER_INFO *userInfoPtr, 
@@ -427,6 +430,7 @@ int setUserAttribute( INOUT USER_INFO *userInfoPtr,
 			return( status );
 			}
 
+#ifdef USE_CERTIFICATES
 		case CRYPT_IATTRUBUTE_CERTKEYSET:
 			/* If it's a presence check, handle it specially */
 			if( value == CRYPT_UNUSED )
@@ -439,7 +443,6 @@ int setUserAttribute( INOUT USER_INFO *userInfoPtr,
 			return( enumTrustedCerts( userInfoPtr->trustInfoPtr, 
 									  CRYPT_UNUSED, value ) );
 
-#ifdef USE_CERTIFICATES
 		case CRYPT_IATTRIBUTE_CTL:
 			/* Add the certs via the trust list */
 			status = addTrustEntry( userInfoPtr->trustInfoPtr,
@@ -468,8 +471,10 @@ int setUserAttribute( INOUT USER_INFO *userInfoPtr,
 		return( status );
 
 	/* Complete the processing of the special options */
+#ifdef USE_KEYSETS
 	if( attribute == CRYPT_OPTION_CONFIGCHANGED )
 		return( twoPhaseConfigUpdate( userInfoPtr, value ) );
+#endif /* USE_KEYSETS */
 	return( twoPhaseSelftest( userInfoPtr, value ) );
 	}
 
@@ -478,21 +483,23 @@ int setUserAttribute( INOUT USER_INFO *userInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int setUserAttributeS( INOUT USER_INFO *userInfoPtr,
 					   IN_BUFFER( dataLength ) const void *data,
-					   IN_LENGTH const int dataLength,
+					   IN_DATALENGTH const int dataLength,
 					   IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE attribute )
 	{
 	assert( isWritePtr( userInfoPtr, sizeof( USER_INFO ) ) );
 	assert( isReadPtr( data, dataLength ) );
 
-	REQUIRES( dataLength > 0 && dataLength < MAX_INTLENGTH );
+	REQUIRES( dataLength > 0 && dataLength < MAX_BUFFER_SIZE );
 	REQUIRES( isAttribute( attribute ) || \
 			  isInternalAttribute( attribute ) );
 
+#ifdef USE_KEYSETS
 	switch( attribute )
 		{
 		case CRYPT_USERINFO_PASSWORD:
 			return( setUserPassword( userInfoPtr, data, dataLength ) );
 		}
+#endif /* USE_KEYSETS */
 
 	/* Anything else has to be a configuration option */
 	REQUIRES( attribute > CRYPT_OPTION_FIRST && \

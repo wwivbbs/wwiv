@@ -7,11 +7,9 @@
 
 #if defined( INC_ALL )
   #include "cert.h"
-  #include "asn1.h"
   #include "asn1_ext.h"
 #else
   #include "cert/cert.h"
-  #include "enc_dec/asn1.h"
   #include "enc_dec/asn1_ext.h"
 #endif /* Compiler-specific includes */
 
@@ -306,87 +304,112 @@
 *																			*
 ****************************************************************************/
 
-/* Process any additional wrapper that may surround the certificate */
+/* Process the PKCS #7/CMS wrapper that can surround a certificate chain */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int decodeCertWrapper( INOUT STREAM *stream, 
-							  OUT_ENUM_OPT( CRYPT_CERTTYPE ) \
-								CRYPT_CERTTYPE_TYPE *objectType,
-							  OUT_LENGTH_SHORT_Z int *offset )
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+static int processCertWrapper( INOUT STREAM *stream, 
+							   OUT_LENGTH_SHORT_Z int *objectOffset, 
+							   OUT_DATALENGTH_Z int *objectLength, 
+							   IN_DATALENGTH_Z const int objectStartPos )
 	{
-	BYTE oid[ MAX_OID_SIZE + 8 ];
-	long integer;
-	int oidLength, innerLength, value, status;
+	static const CMS_CONTENT_INFO FAR_BSS oidInfoSignedData = { 1, 3 };
+	static const OID_INFO FAR_BSS signedDataOIDinfo[] = {
+		{ OID_CMS_SIGNEDDATA, CRYPT_OK, &oidInfoSignedData },
+		{ NULL, 0 }, { NULL, 0 }
+		};
+	static const OID_INFO FAR_BSS dataOIDinfo[] = {
+		{ OID_CMS_DATA, CRYPT_OK, NULL },
+		{ NULL, 0 }, { NULL, 0 }
+		};
+	long length;
+	int setLength, localLength, offset DUMMY_INIT, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
-	assert( isWritePtr( offset, sizeof( int ) ) );
+	assert( isWritePtr( objectOffset, sizeof( int ) ) );
+	assert( isWritePtr( objectLength, sizeof( int ) ) );
+
+	REQUIRES( objectStartPos >= 0 && objectStartPos < MAX_BUFFER_SIZE );
 
 	/* Clear return values */
-	*objectType = CRYPT_CERTTYPE_NONE;
-	*offset = 0;
+	*objectOffset = *objectLength = 0;
 
-	/* Read the contentType OID, determine the content type based on it,
-	   and read the content encapsulation and header.  It can be either
-	   a PKCS #7 certificate chain, a Netscape certificate sequence, or an 
-	   X.509 userCertificate (which is just an oddball certificate 
-	   wrapper) */
-	status = readEncodedOID( stream, oid, MAX_OID_SIZE, &oidLength, 
-							 BER_OBJECT_IDENTIFIER );
-	if( cryptStatusError( status ) )
-		return( status );
-	if( oidLength != sizeofOID( OID_CMS_SIGNEDDATA ) || \
-		memcmp( oid, OID_CMS_SIGNEDDATA, oidLength ) )
-		return( CRYPT_ERROR_BADDATA );
-	readConstructedI( stream, NULL, 0 );
-	status = readSequenceI( stream, NULL );
+	/* Read the SignedData wrapper */
+	sseek( stream, objectStartPos );
+	status = readCMSheader( stream, signedDataOIDinfo, 
+							FAILSAFE_ARRAYSIZE( signedDataOIDinfo, OID_INFO ), 
+							&length, READCMS_FLAG_NONE );
 	if( cryptStatusError( status ) )
 		return( status );
 
-	/* Read the version number (1 = PKCS #7 v1.5, 2 = PKCS #7 v1.6, 3 = 
-	   S/MIME with attribute certificate(s)) and SET OF 
-	   DigestAlgorithmIdentifier (this is empty for a pure certificate chain, 
-	   nonempty for signed data) */
-	status = readShortInteger( stream, &integer );
-	if( cryptStatusError( status ) )
-		return( status );
-	if( integer < 1 || integer > 3 )
-		return( CRYPT_ERROR_BADDATA );
-	status = readSet( stream, &value );
-	if( cryptStatusOK( status ) && value > 0 )
-		status = sSkip( stream, value );
+	/* Read the SET OF DigestAlgorithmIdentifier, empty for a pure 
+	   certificate chain, nonempty for signed data or buggy certificate 
+	   chains */
+	status = readSet( stream, &setLength );
+	if( cryptStatusOK( status ) && setLength > 0 )
+		status = sSkip( stream, setLength, MAX_INTLENGTH_SHORT );
 	if( cryptStatusError( status ) )
 		return( status );
 
-	/* Read the ContentInfo header, contentType OID (ignored) and the inner 
-	   content encapsulation.  Sometimes we may (incorrectly) get passed 
-	   actual signed data rather than degenerate zero-length data signifying 
-	   a pure certificate chain so if there's data present we skip it */
-	readSequenceI( stream, &innerLength );
-	status = readEncodedOID( stream, oid, MAX_OID_SIZE, &oidLength, 
-							 BER_OBJECT_IDENTIFIER );
+	/* Read the ContentInfo information */
+	status = readCMSheader( stream, dataOIDinfo, 
+							FAILSAFE_ARRAYSIZE( dataOIDinfo, OID_INFO ), 
+							&length, READCMS_FLAG_INNERHEADER );
 	if( cryptStatusError( status ) )
 		return( status );
-	if( innerLength == CRYPT_UNUSED )
+
+	/* If we've been fed signed data (i.e. the ContentInfo has the content 
+	   field present), skip the content to get to the certificate chain */
+	if( length > 0 )
 		{
-		/* It's an indefinite-length ContentInfo, check for the EOC */
-		checkEOC( stream );
+		status = sSkip( stream, length, MAX_INTLENGTH_SHORT );
+		if( cryptStatusError( status ) )
+			return( status );
 		}
 	else
 		{
-		/* If we've been fed signed data (i.e. the ContentInfo has the 
-		   content field present), skip the content to get to the 
-		   certificate chain */
-		if( innerLength > sizeofObject( oidLength ) )
-			readUniversal( stream );
+		/* If we have an indefinite length then there could be up to three 
+		   EOCs present (one for each of the SEQUENCE, [0], and OCTET 
+		   STRING), which we have to skip.  In theory there could be content
+		   present as well but at that point we're going to be replicating
+		   large chunks of the de-enveloping code so we only try and process
+		   zero-length content, created by some buggy browser's cert-export
+		   code (possibly Firefox)  */
+		if( length == CRYPT_UNUSED )
+			{
+			int i;
+
+			for( i = 0; i < 3; i++ )
+				{
+				status = checkEOC( stream );
+				if( cryptStatusError( status ) )
+					return( status );
+				if( !status )
+					break;
+				}
+			}
 		}
-	status = readConstructedI( stream, NULL, 0 );
+
+	/* We've reached the inner content encapsulation, find out how long the 
+	   content (i.e. the chain of certificates) is */
+	status = getStreamObjectLength( stream, &localLength );
+	if( cryptStatusOK( status ) )
+		{
+		offset = stell( stream );
+		status = readConstructedI( stream, NULL, 0 );
+		}
 	if( cryptStatusError( status ) )
 		return( status );
 
-	/* We've finally reached the certificate(s), retry the read of the
-	   certificate start */
-	*objectType = CRYPT_CERTTYPE_CERTCHAIN;
-	return( readSequence( stream, NULL ) );
+	/* Adjust for the [0] { ... } wrapper that contains the list of 
+	   certificate, returning a pointer to the collection of certificates
+	   without any encapsulation */
+	localLength -= stell( stream ) - offset;
+	if( localLength < MIN_CERTSIZE || localLength >= MAX_INTLENGTH )
+		return( CRYPT_ERROR_BADDATA );
+	*objectOffset = stell( stream );
+	*objectLength = localLength;
+	
+	return( CRYPT_OK );
 	}
 
 /* Determine the object type and how long the total object is */
@@ -394,14 +417,34 @@ static int decodeCertWrapper( INOUT STREAM *stream,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 4 ) ) \
 int getCertObjectInfo( INOUT STREAM *stream,
 					   OUT_LENGTH_SHORT_Z int *objectOffset, 
-					   OUT_LENGTH_Z int *objectLength, 
+					   OUT_DATALENGTH_Z int *objectLength, 
 					   OUT_ENUM_OPT( CRYPT_CERTTYPE ) \
 							CRYPT_CERTTYPE_TYPE *objectType,
 					   IN_ENUM( CRYPT_CERTTYPE ) \
 							const CRYPT_CERTTYPE_TYPE formatHint )
 	{
+	static const MAP_TABLE minLengthMapTable[] = {
+				{ CRYPT_CERTTYPE_NONE, MIN_CERTSIZE },
+				{ CRYPT_CERTTYPE_CERTIFICATE, MIN_CERTSIZE },
+				{ CRYPT_CERTTYPE_ATTRIBUTE_CERT, MIN_CERTSIZE },
+				{ CRYPT_CERTTYPE_CERTCHAIN, MIN_CERTSIZE },
+				{ CRYPT_ICERTTYPE_CMS_CERTSET, MIN_CERTSIZE },
+				{ CRYPT_ICERTTYPE_SSL_CERTCHAIN, MIN_CERTSIZE },
+				{ CRYPT_CERTTYPE_CRL, 64 },
+				{ CRYPT_CERTTYPE_OCSP_RESPONSE, 64 },
+				{ CRYPT_CERTTYPE_REQUEST_CERT, 64 },
+				{ CRYPT_CERTTYPE_RTCS_REQUEST, 32 },
+				{ CRYPT_CERTTYPE_RTCS_RESPONSE, 32 },
+				{ CRYPT_CERTTYPE_OCSP_REQUEST, 32 },
+				{ CRYPT_CERTTYPE_CERTREQUEST, 32 },
+				{ CRYPT_CERTTYPE_PKIUSER, 32 },
+				{ CRYPT_CERTTYPE_CMS_ATTRIBUTES, 16 },
+				{ CRYPT_CERTTYPE_REQUEST_REVOCATION, 16 },
+				{ CRYPT_ICERTTYPE_REVINFO, 16 },
+				{ CRYPT_ERROR, 0 }, { CRYPT_ERROR, 0 }
+				};
 	BOOLEAN isContextTagged = FALSE, isLongData = FALSE;
-	int tag, length, status;
+	int tag, minLength, length, offset, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( objectOffset, sizeof( int ) ) );
@@ -415,6 +458,12 @@ int getCertObjectInfo( INOUT STREAM *stream,
 	*objectOffset = *objectLength = 0;
 	*objectType = CRYPT_CERTTYPE_NONE;
 
+	/* Figure out how much data we need to have for a minimum-length 
+	   object */
+	status = mapValue( formatHint, &minLength, minLengthMapTable,
+					   FAILSAFE_ARRAYSIZE( minLengthMapTable, MAP_TABLE ) );
+	ENSURES( cryptStatusOK( status ) );
+
 	/* If it's an SSL certificate chain then there's no recognisable 
 	   tagging, however the caller will have told us what it is */
 	if( formatHint == CRYPT_ICERTTYPE_SSL_CERTCHAIN )
@@ -426,7 +475,10 @@ int getCertObjectInfo( INOUT STREAM *stream,
 
 	/* Check whether we need to process the object wrapper using context-
 	   specific tagging rather than the usual SEQUENCE */
-	if( peekTag( stream ) == MAKE_CTAG( 0 ) || \
+	status = tag = peekTag( stream );
+	if( cryptStatusError( status ) )
+		return( status );
+	if( tag == MAKE_CTAG( 0 ) || \
 		formatHint == CRYPT_ICERTTYPE_CMS_CERTSET )
 		isContextTagged = TRUE;
 
@@ -459,9 +511,10 @@ int getCertObjectInfo( INOUT STREAM *stream,
 		return( status );
 #endif /* 16- vs. 32/64-bit systems */
 		}
-	if( length < 16 || length > MAX_INTLENGTH )
+	if( length < minLength || length > MAX_INTLENGTH )
 		return( CRYPT_ERROR_BADDATA );
 	*objectLength = length;
+	offset = stell( stream );
 
 	/* Check that the start of the object is in order */
 	if( isLongData )
@@ -481,24 +534,20 @@ int getCertObjectInfo( INOUT STREAM *stream,
 		{
 		switch( formatHint )
 			{
-			case CRYPT_ICERTTYPE_DATAONLY:
-				/* Standard certificate but created without creating a 
-				   context for the accompanying public key */
-				*objectType = CRYPT_CERTTYPE_CERTIFICATE;
-				break;
-
-			case CRYPT_ICERTTYPE_CTL:
-				/* Certificate chain used as a container for trusted 
-				   certificates, effectively a chain of 
-				   CRYPT_ICERTTYPE_DATAONLY certificates */
-				*objectType = CRYPT_CERTTYPE_CERTCHAIN;
-				break;
-
 			case CRYPT_ICERTTYPE_REVINFO:
 				/* Single CRL entry, treated as standard CRL with portions 
 				   missing */
 				*objectType = CRYPT_CERTTYPE_CRL;
 				break;
+
+			case CRYPT_CERTTYPE_CERTCHAIN:
+				/* If it's a certificate chain then we have to read past the
+				   PKCS #7/CMS wrapper to find the chain */
+				status = processCertWrapper( stream, objectOffset, 
+											 objectLength, offset );
+				if( cryptStatusError( status ) )
+					return( status );
+				/* Fall through */
 
 			default:
 				*objectType = formatHint;
@@ -515,21 +564,27 @@ int getCertObjectInfo( INOUT STREAM *stream,
 		return( isLongData ? CRYPT_ERROR_OVERFLOW : CRYPT_OK );
 		}
 
+	/* See what's next */
+	status = tag = peekTag( stream );
+	if( cryptStatusError( status ) )
+		return( status );
+
 	/* If it's a PKCS #7 certificate chain there'll be an object identifier 
 	   present, check the wrapper */
-	if( peekTag( stream ) == BER_OBJECT_IDENTIFIER )
+	if( tag == BER_OBJECT_IDENTIFIER )
 		{
-		status = decodeCertWrapper( stream, objectType, objectOffset );
+		status = processCertWrapper( stream, objectOffset, objectLength,
+									 offset );
 		if( cryptStatusError( status ) )
 			return( status );
+		*objectType = CRYPT_CERTTYPE_CERTCHAIN;
 		return( isLongData ? CRYPT_ERROR_OVERFLOW : CRYPT_OK );
 		}
 
 	/* If it's a PKCS #12 mess there'll be a version number, 3, present */
-	if( peekTag( stream ) == BER_INTEGER )
+	if( tag == BER_INTEGER )
 		{
 		long value;
-		int offset;
 
 		/* Strip off the amazing number of layers of bloat that PKCS #12 
 		   lards a certificate with.  There are any number of different
@@ -597,13 +652,17 @@ int getCertObjectInfo( INOUT STREAM *stream,
 		return( status );
 
 	/* Skip optional tagged fields and the INTEGER value */
-	if( peekTag( stream ) == MAKE_CTAG( 0 ) )
+	if( checkStatusPeekTag( stream, status, tag ) && \
+		tag == MAKE_CTAG( 0 ) )
 		status = readUniversal( stream );
-	if( peekTag( stream ) == MAKE_CTAG( 1 ) )
+	if( checkStatusPeekTag( stream, status, tag ) && \
+		tag == MAKE_CTAG( 1 ) )
 		status = readUniversal( stream );
-	if( peekTag( stream ) == MAKE_CTAG( 2 ) )
+	if( checkStatusPeekTag( stream, status, tag ) && \
+		tag == MAKE_CTAG( 2 ) )
 		status = readUniversal( stream );
-	if( peekTag( stream ) == BER_INTEGER )
+	if( checkStatusPeekTag( stream, status, tag ) && \
+		tag == BER_INTEGER )
 		status = readUniversal( stream );
 	if( cryptStatusError( status ) )
 		return( status );
@@ -612,14 +671,14 @@ int getCertObjectInfo( INOUT STREAM *stream,
 	   a SET it's PKI user information, and if we've hit a [0] or [1] 
 	   primitive tag (implicitly tagged INTEGER) or [3]...[9] it's a CRMF 
 	   revocation request */
-	tag = peekTag( stream );
-	if( cryptStatusError( tag ) )
-		return( tag );
-	if( tag == BER_TIME_GENERALIZED )
+	if( checkStatusPeekTag( stream, status, tag ) && \
+		tag == BER_TIME_GENERALIZED )
 		{
 		*objectType = CRYPT_CERTTYPE_OCSP_RESPONSE;
 		return( isLongData ? CRYPT_ERROR_OVERFLOW : CRYPT_OK );
 		}
+	if( cryptStatusError( status ) )
+		return( status );	/* Residual error from peekTag() */
 
 	/* Read the next SEQUENCE.  If it's followed by an OID it's the 
 	   AlgorithmIdentifier in a certificate or CRL, if it's followed by a 
@@ -629,17 +688,15 @@ int getCertObjectInfo( INOUT STREAM *stream,
 	status = readSequence( stream, &length );
 	if( cryptStatusError( status ) )
 		return( status );
-	if( length <= 0 || length > MAX_INTLENGTH )
+	if( length <= 0 || length > MAX_INTLENGTH_SHORT )
 		return( CRYPT_ERROR_BADDATA );
-	tag = peekTag( stream );
-	if( cryptStatusError( tag ) )
-		return( tag );
-	if( tag == BER_OBJECT_IDENTIFIER )
+	if( checkStatusPeekTag( stream, status, tag ) && \
+		tag == BER_OBJECT_IDENTIFIER )
 		{
 		/* Skip the AlgorithmIdentifier data and the following Name.  For a
 		   certificate we now have a SEQUENCE (from the Validity), for a CRL 
 		   a UTCTime or GeneralizedTime */
-		sSkip( stream, length );
+		sSkip( stream, length, MAX_INTLENGTH_SHORT );
 		readUniversal( stream );
 		tag = readTag( stream );
 		if( cryptStatusError( tag ) )
@@ -656,6 +713,8 @@ int getCertObjectInfo( INOUT STREAM *stream,
 			}
 		return( CRYPT_ERROR_BADDATA );
 		}
+	if( cryptStatusError( status ) )
+		return( status );	/* Residual error from peekTag() */
 	if( isLongData )
 		{
 		/* Beyond this point we shouldn't be seeing long-length objects */
@@ -675,7 +734,7 @@ int getCertObjectInfo( INOUT STREAM *stream,
 		}
 	if( tag == BER_SET )
 		{
-		sSkip( stream, length );
+		sSkip( stream, length, MAX_INTLENGTH_SHORT );
 		readSequence( stream, NULL );
 		tag = readTag( stream );
 		if( cryptStatusError( tag ) )

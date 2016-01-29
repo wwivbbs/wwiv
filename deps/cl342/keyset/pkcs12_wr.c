@@ -129,7 +129,7 @@ static int writePrivateKey( INOUT PKCS12_OBJECT_INFO *keyObjectInfo,
 	MECHANISM_WRAP_INFO mechanismInfo;
 	STREAM stream;
 	void *privKeyData;
-	int privKeyDataSize = DUMMY_INIT, pbeInfoDataSize, headerSize, status;
+	int privKeyDataSize DUMMY_INIT, pbeInfoDataSize, headerSize, status;
 
 	assert( isWritePtr( keyObjectInfo, sizeof( PKCS12_OBJECT_INFO ) ) );
 
@@ -297,7 +297,7 @@ static int writeMacItem( INOUT STREAM *stream,
 	const int attrDataSize = ( int ) \
 						( sizeofObject( idDataSize ) + \
 						  sizeofObject( labelDataSize ) );
-	int objectHeaderSize = DUMMY_INIT, idSize = DUMMY_INIT, i, j, status;
+	int objectHeaderSize DUMMY_INIT, idSize DUMMY_INIT, i, j, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isReadPtr( pkcs12info, sizeof( PKCS12_INFO ) ) );
@@ -381,7 +381,7 @@ static int writeMacItem( INOUT STREAM *stream,
 		{
 		/* Convert the ASCII string into a BMP string */
 		sputc( &memStream, 0 );
-		status = sputc( &memStream, pkcs12info->label[ i ] );
+		status = sputc( &memStream, byteToInt( pkcs12info->label[ i ] ) );
 		}
 	ENSURES( i < CRYPT_MAX_TEXTSIZE );
 	if( cryptStatusOK( status ) )
@@ -417,8 +417,8 @@ int pkcs12Flush( INOUT STREAM *stream,
 	BYTE objectHeaderBuffer[ 32 + 8 ];
 	BOOLEAN privateKeyPresent = FALSE;
 	const int macDataSize = sizeofMacData( pkcs12info );
-	int safeDataSize = DUMMY_INIT, authSafeDataSize;
-	int objectHeaderSize = DUMMY_INIT, i, status = CRYPT_OK;
+	int safeDataSize DUMMY_INIT, authSafeDataSize;
+	int objectHeaderSize DUMMY_INIT, i, status = CRYPT_OK;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isReadPtr( pkcs12info, \

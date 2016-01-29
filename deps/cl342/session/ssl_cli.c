@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *					cryptlib SSL v3/TLS Client Management					*
-*					   Copyright Peter Gutmann 1998-2011					*
+*					   Copyright Peter Gutmann 1998-2012					*
 *																			*
 ****************************************************************************/
 
@@ -20,7 +20,10 @@
 /* Testing the SSL/TLS code gets a bit complicated because in the presence 
    of the session cache every session after the first one will be a resumed 
    session.  To deal with this we disable the client-side session cache in 
-   the VC++ 6 debug build */
+   the VC++ 6 debug build.
+
+   Note that changing the follow requires an equivalent change in 
+   test/ssl.c */
 
 #if defined( __WINDOWS__ ) && defined( _MSC_VER ) && ( _MSC_VER == 1200 ) && \
 	!defined( NDEBUG ) && 1
@@ -94,18 +97,19 @@ static int checkSuiteBSelection( IN_RANGE( SSL_FIRST_VALID_SUITE, \
 
 /* Encode a list of available algorithms */
 
+#define MAX_NO_SUITES	32
+
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int writeCipherSuiteList( INOUT STREAM *stream, 
 								 IN_RANGE( SSL_MINOR_VERSION_SSL, \
 										   SSL_MINOR_VERSION_TLS12 ) \
 									const int sslVersion,
 								 const BOOLEAN usePSK, 
-								 const BOOLEAN isServer,
 								 IN_FLAGS_Z( SSL ) const int suiteBinfo )
 	{
 	const CIPHERSUITE_INFO **cipherSuiteInfo;
-	int availableSuites[ 32 + 8 ], cipherSuiteCount = 0, suiteIndex;
-	int cipherSuiteInfoSize, status;
+	int availableSuites[ MAX_NO_SUITES + 8 ], cipherSuiteCount = 0;
+	int suiteIndex, cipherSuiteInfoSize, status;
 #ifdef CONFIG_SUITEB
 	int suiteNo = 0;
 #endif /* CONFIG_SUITEB */
@@ -119,8 +123,7 @@ static int writeCipherSuiteList( INOUT STREAM *stream,
 #endif /* CONFIG_SUITEB */
 
 	/* Get the information for the supported cipher suites */
-	status = getCipherSuiteInfo( &cipherSuiteInfo, &cipherSuiteInfoSize, 
-								 isServer );
+	status = getCipherSuiteInfo( &cipherSuiteInfo, &cipherSuiteInfoSize );
 	if( cryptStatusError( status ) )
 		return( status );
 
@@ -129,7 +132,7 @@ static int writeCipherSuiteList( INOUT STREAM *stream,
 	for( suiteIndex = 0;
 		 suiteIndex < cipherSuiteInfoSize && \
 			cipherSuiteInfo[ suiteIndex ]->cipherSuite != SSL_NULL_WITH_NULL && \
-			cipherSuiteCount < 32;
+			cipherSuiteCount < MAX_NO_SUITES;
 		 /* No action */ )
 		{
 		const CIPHERSUITE_INFO *cipherSuiteInfoPtr = cipherSuiteInfo[ suiteIndex ];
@@ -220,7 +223,8 @@ static int writeCipherSuiteList( INOUT STREAM *stream,
 			   cipherSuiteInfo[ suiteIndex ]->authAlgo == authAlgo && \
 			   cipherSuiteInfo[ suiteIndex ]->cryptAlgo == cryptAlgo && \
 			   cipherSuiteInfo[ suiteIndex ]->macAlgo == macAlgo && \
-			   cipherSuiteCount < 32 && suiteIndex < cipherSuiteInfoSize )
+			   cipherSuiteCount < MAX_NO_SUITES && \
+			   suiteIndex < cipherSuiteInfoSize )
 			{
 			availableSuites[ cipherSuiteCount++ ] = \
 						cipherSuiteInfo[ suiteIndex++ ]->cipherSuite;
@@ -230,10 +234,10 @@ static int writeCipherSuiteList( INOUT STREAM *stream,
 #endif /* CONFIG_SUITEB */
 			}
 		ENSURES( suiteIndex < cipherSuiteInfoSize );
-		ENSURES( cipherSuiteCount < 32 );
+		ENSURES( cipherSuiteCount < MAX_NO_SUITES );
 		}
 	ENSURES( suiteIndex < cipherSuiteInfoSize );
-	ENSURES( cipherSuiteCount > 0 && cipherSuiteCount < 32 );
+	ENSURES( cipherSuiteCount > 0 && cipherSuiteCount < MAX_NO_SUITES );
 
 	/* Encode the list of available cipher suites */
 	status = writeUint16( stream, cipherSuiteCount * UINT16_SIZE );
@@ -245,7 +249,27 @@ static int writeCipherSuiteList( INOUT STREAM *stream,
 	return( status );
 	}
 
-/* Process a server's DH/ECDH key agreement data:
+/****************************************************************************
+*																			*
+*							Handle Client/Server Keyex						*
+*																			*
+****************************************************************************/
+
+/* Process the identity hint sent with the server keyex.  It's uncertain 
+   what we're supposed to do with this so we just skip it */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+static int readIdentityHint( INOUT STREAM *stream )
+	{
+	int length, status;
+
+	status = length = readUint16( stream );
+	if( !cryptStatusError( status ) && length > 0 )
+		status = sSkip( stream, length, MAX_INTLENGTH_SHORT );
+	return( status );
+	}
+
+/* Read a server's DH/ECDH key agreement data:
 
 	   DH:
 		uint16		dh_pLen
@@ -261,10 +285,10 @@ static int writeCipherSuiteList( INOUT STREAM *stream,
 		byte[]		ecPoint */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
-static int processServerKeyex( INOUT STREAM *stream, 
-							   OUT KEYAGREE_PARAMS *keyAgreeParams,
-							   OUT_HANDLE_OPT CRYPT_CONTEXT *dhContextPtr,
-							   const BOOLEAN isECC )
+static int readServerKeyex( INOUT STREAM *stream, 
+							OUT KEYAGREE_PARAMS *keyAgreeParams,
+							OUT_HANDLE_OPT CRYPT_CONTEXT *dhContextPtr,
+							const BOOLEAN isECC )
 	{
 	void *keyData;
 	const int keyDataOffset = stell( stream );
@@ -325,6 +349,385 @@ static int processServerKeyex( INOUT STREAM *stream,
 								   CRYPT_MAX_PKCSIZE ) );
 	}
 
+/* Process the optional server keyex:
+
+		byte		ID = SSL_HAND_SERVER_KEYEXCHANGE
+		uint24		len
+	   DH:
+		uint16		dh_pLen
+		byte[]		dh_p
+		uint16		dh_gLen
+		byte[]		dh_g
+		uint16		dh_YsLen
+		byte[]		dh_Ys
+	 [	byte		hashAlgoID		-- TLS 1.2 ]
+	 [	byte		sigAlgoID		-- TLS 1.2 ]
+		uint16		signatureLen
+		byte[]		signature 
+	   DH-PSK:
+		uint16		pskIdentityHintLen
+		byte		pskIdentityHint
+		uint16		dh_pLen
+		byte[]		dh_p
+		uint16		dh_gLen
+		byte[]		dh_g
+		uint16		dh_YsLen
+		byte[]		dh_Ys
+	   ECDH:
+		byte		curveType
+		uint16		namedCurve
+		uint8		ecPointLen		-- NB uint8 not uint16
+		byte[]		ecPoint
+	 [	byte		hashAlgoID		-- TLS 1.2 ]
+	 [	byte		sigAlgoID		-- TLS 1.2 ]
+		uint16		signatureLen
+		byte[]		signature */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 4, 6 ) ) \
+static int processServerKeyex( INOUT SESSION_INFO *sessionInfoPtr,
+							   INOUT SSL_HANDSHAKE_INFO *handshakeInfo,
+							   INOUT STREAM *stream,
+							   OUT_BUFFER( keyexPublicValueMaxLen, \
+										   *keyexPublicValueLen ) \
+									void *keyexPublicValue,
+							   IN_LENGTH_SHORT const int keyexPublicValueMaxLen,
+							   OUT_DATALENGTH_Z int *keyexPublicValueLen )
+
+	{
+	KEYAGREE_PARAMS keyAgreeParams, tempKeyAgreeParams;
+	void *keyData DUMMY_INIT_PTR;
+	const BOOLEAN isECC = isEccAlgo( handshakeInfo->keyexAlgo );
+	const BOOLEAN isPSK = ( handshakeInfo->authAlgo == CRYPT_ALGO_NONE ) ? \
+						  TRUE : FALSE;
+	int keyDataOffset, keyDataLength DUMMY_INIT;
+	int length, status;
+
+	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
+	assert( isWritePtr( handshakeInfo, sizeof( SSL_HANDSHAKE_INFO ) ) );
+	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+	assert( isWritePtr( keyexPublicValue, keyexPublicValueMaxLen ) );
+	assert( isWritePtr( keyexPublicValueLen, sizeof( int ) ) );
+
+	REQUIRES( keyexPublicValueMaxLen > 0 && \
+			  keyexPublicValueMaxLen < MAX_INTLENGTH_SHORT );
+
+	/* Clear return values */
+	memset( keyexPublicValue, 0, min( 16, keyexPublicValueMaxLen ) );
+	*keyexPublicValueLen = 0;
+
+	/* Make sure that we've got an appropriate server keyex packet.  We set 
+	   the minimum key size to MIN_PKCSIZE_THRESHOLD/MIN_PKCSIZE_ECC_THRESHOLD 
+	   instead of MIN_PKCSIZE/MIN_PKCSIZE_ECC in order to provide better 
+	   diagnostics if the server is using weak keys since otherwise the data 
+	   will be rejected in the packet read long before we get to the keysize 
+	   check */
+	status = checkHSPacketHeader( sessionInfoPtr, stream, &length,
+					SSL_HAND_SERVER_KEYEXCHANGE, 
+					isECC ? \
+						( 1 + UINT16_SIZE + \
+						  1 + MIN_PKCSIZE_ECCPOINT_THRESHOLD + \
+						  UINT16_SIZE + MIN_PKCSIZE_ECCPOINT_THRESHOLD ) : \
+						( UINT16_SIZE + MIN_PKCSIZE_THRESHOLD + \
+						  UINT16_SIZE + 1 + \
+						  UINT16_SIZE + MIN_PKCSIZE_THRESHOLD + \
+						  UINT16_SIZE + MIN_PKCSIZE_THRESHOLD ) );
+	if( cryptStatusError( status ) )
+		return( status );
+
+	/* If we're using a PSK suite then the keyex information is preceded by 
+	   a PSK identity hint */
+	if( isPSK )
+		{
+		status = readIdentityHint( stream );
+		if( cryptStatusError( status ) )
+			{
+			retExt( CRYPT_ERROR_BADDATA,
+					( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
+					  "Invalid PSK identity hint" ) );
+			}
+		}
+
+	/* Read the server's keyex information and convert it into a DH/ECDH 
+	   context */
+	keyDataOffset = stell( stream );
+	status = readServerKeyex( stream, &keyAgreeParams, 
+							  &handshakeInfo->dhContext, isECC );
+	if( cryptStatusOK( status ) )
+		{
+		keyDataLength = stell( stream ) - keyDataOffset;
+		status = sMemGetDataBlockAbs( stream, keyDataOffset, &keyData, 
+									  keyDataLength );
+		}
+	if( cryptStatusError( status ) )
+		{
+		/* Some misconfigured servers may use very short keys, we perform a 
+		   special-case check for these and return a more specific message 
+		   than the generic bad-data error */
+		if( status == CRYPT_ERROR_NOSECURE )
+			{
+			retExt( CRYPT_ERROR_NOSECURE,
+					( CRYPT_ERROR_NOSECURE, SESSION_ERRINFO, 
+					  "Insecure key used in key exchange" ) );
+			}
+
+		retExt( cryptArgError( status ) ? \
+				CRYPT_ERROR_BADDATA : status,
+				( cryptArgError( status ) ? CRYPT_ERROR_BADDATA : status,
+				  SESSION_ERRINFO, 
+				  "Invalid server key agreement parameters" ) );
+		}
+	ANALYSER_HINT( keyData != NULL );
+
+	/* Check the server's signature on the DH/ECDH parameters, unless it's a 
+	   PSK suite in which case the exchange is authenticated via the PSK */
+#ifndef CONFIG_FUZZ
+	if( !isPSK )
+		{
+		status = checkKeyexSignature( sessionInfoPtr, handshakeInfo, stream, 
+									  keyData, keyDataLength, isECC );
+		if( cryptStatusError( status ) )
+			{
+			retExt( status,
+					( status, SESSION_ERRINFO, 
+					  "Invalid server key agreement parameter signature" ) );
+			}
+		}
+#else
+	/* Skip the server's signature, set up a dummy premaster secret, and 
+	   exit */
+	status = readUniversal16( stream );
+	if( cryptStatusError( status ) )
+		return( status );
+	memset( handshakeInfo->premasterSecret, '*', SSL_SECRET_SIZE );
+	handshakeInfo->premasterSecretSize = SSL_SECRET_SIZE;
+	FUZZ_SKIP();
+#endif /* CONFIG_FUZZ */
+
+	/* Perform phase 1 of the DH/ECDH key agreement process and save the 
+	   result so that we can send it to the server later on.  The order of 
+	   the SSL messages is a bit unfortunate since we get the one for phase 
+	   2 before we need the phase 1 value, so we have to cache the phase 1 
+	   result for when we need it later on */
+	memset( &tempKeyAgreeParams, 0, sizeof( KEYAGREE_PARAMS ) );
+	status = krnlSendMessage( handshakeInfo->dhContext,
+							  IMESSAGE_CTX_ENCRYPT, &tempKeyAgreeParams,
+							  sizeof( KEYAGREE_PARAMS ) );
+	if( cryptStatusError( status ) )
+		{
+		zeroise( &tempKeyAgreeParams, sizeof( KEYAGREE_PARAMS ) );
+		return( status );
+		}
+	ENSURES( rangeCheckZ( 0, tempKeyAgreeParams.publicValueLen,
+						  keyexPublicValueMaxLen ) );
+	memcpy( keyexPublicValue, tempKeyAgreeParams.publicValue,
+			tempKeyAgreeParams.publicValueLen );
+	*keyexPublicValueLen = tempKeyAgreeParams.publicValueLen;
+	zeroise( &tempKeyAgreeParams, sizeof( KEYAGREE_PARAMS ) );
+
+	/* Perform phase 2 of the DH/ECDH key agreement */
+	status = krnlSendMessage( handshakeInfo->dhContext, IMESSAGE_CTX_DECRYPT, 
+							  &keyAgreeParams, sizeof( KEYAGREE_PARAMS ) );
+	if( cryptStatusError( status ) )
+		{
+		zeroise( &keyAgreeParams, sizeof( KEYAGREE_PARAMS ) );
+		return( status );
+		}
+	if( isECC )
+		{
+		const int xCoordLen = ( keyAgreeParams.wrappedKeyLen - 1 ) / 2;
+
+		/* The output of the ECDH operation is an ECC point, but for some 
+		   unknown reason TLS only uses the x coordinate and not the full 
+		   point.  To work around this we have to rewrite the point as a 
+		   standalone x coordinate, which is relatively easy because we're 
+		   using an uncompressed point format: 
+
+			+---+---------------+---------------+
+			|04	|		qx		|		qy		|
+			+---+---------------+---------------+
+				|<- fldSize --> |<- fldSize --> | */
+		REQUIRES( keyAgreeParams.wrappedKeyLen >= MIN_PKCSIZE_ECCPOINT && \
+				  keyAgreeParams.wrappedKeyLen <= MAX_PKCSIZE_ECCPOINT && \
+				  ( keyAgreeParams.wrappedKeyLen & 1 ) == 1 && \
+				  keyAgreeParams.wrappedKey[ 0 ] == 0x04 );
+		memmove( keyAgreeParams.wrappedKey, 
+				 keyAgreeParams.wrappedKey + 1, xCoordLen );
+		keyAgreeParams.wrappedKeyLen = xCoordLen;
+		}
+	ENSURES( rangeCheckZ( 0, keyAgreeParams.wrappedKeyLen,
+						  CRYPT_MAX_PKCSIZE + CRYPT_MAX_TEXTSIZE ) );
+	memcpy( handshakeInfo->premasterSecret, keyAgreeParams.wrappedKey,
+			keyAgreeParams.wrappedKeyLen );
+	handshakeInfo->premasterSecretSize = keyAgreeParams.wrappedKeyLen;
+	zeroise( &keyAgreeParams, sizeof( KEYAGREE_PARAMS ) );
+
+	return( CRYPT_OK );
+	}
+
+/* Build the client key exchange packet:
+
+	  [	byte		ID = SSL_HAND_CLIENT_KEYEXCHANGE ]
+	  [	uint24		len				-- Written by caller ]
+	   DH:
+		uint16		yLen
+		byte[]		y
+	   DH-PSK:
+		uint16		userIDLen
+		byte[]		userID
+		uint16		yLen
+		byte[]		y
+	   ECDH:
+		uint8		ecPointLen		-- NB uint8 not uint16
+		byte[]		ecPoint
+	   PSK:
+		uint16		userIDLen
+		byte[]		userID
+	   RSA:
+	  [ uint16		encKeyLen		-- TLS only ]
+		byte[]		rsaPKCS1( byte[2] { 0x03, 0x0n } || byte[46] random ) */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+static int createClientKeyex( INOUT SESSION_INFO *sessionInfoPtr,
+							  INOUT SSL_HANDSHAKE_INFO *handshakeInfo,
+							  INOUT STREAM *stream,
+							  IN_BUFFER_OPT( keyexPublicValueLen ) \
+								const BYTE *keyexPublicValue,
+							  IN_LENGTH_PKC_Z const int keyexPublicValueLen,
+							  const BOOLEAN isPSK )
+	{
+	const ATTRIBUTE_LIST *userNamePtr DUMMY_INIT_PTR;
+	const ATTRIBUTE_LIST *passwordPtr DUMMY_INIT_PTR;
+	BYTE wrappedKey[ CRYPT_MAX_PKCSIZE + 8 ];
+	int wrappedKeyLength, status;
+
+	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
+	assert( isWritePtr( handshakeInfo, sizeof( SSL_HANDSHAKE_INFO ) ) );
+	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+	assert( ( keyexPublicValue == NULL && keyexPublicValueLen == 0 ) || \
+			isReadPtr( keyexPublicValue, keyexPublicValueLen ) );
+
+	REQUIRES( ( keyexPublicValue == NULL && keyexPublicValueLen == 0 ) || \
+			  ( keyexPublicValueLen > 0 && \
+				keyexPublicValueLen <= CRYPT_MAX_PKCSIZE ) );
+
+	/* If we're using a PSK mechanism, get the user name and password/PSK */
+	if( isPSK )
+		{
+		userNamePtr = findSessionInfo( sessionInfoPtr->attributeList,
+									   CRYPT_SESSINFO_USERNAME );
+		passwordPtr = findSessionInfo( sessionInfoPtr->attributeList,
+									   CRYPT_SESSINFO_PASSWORD );
+
+		REQUIRES( passwordPtr != NULL );
+		REQUIRES( userNamePtr != NULL );
+		}
+
+	/* If we're using DH/ECDH (with optional PSK additions), write the 
+	   necessary information */
+	if( keyexPublicValue != NULL )
+		{
+		/* If it's a PSK algorithm, convert the DH/ECDH premaster secret to
+		   a DH/ECDH + PSK premaster secret and write the client identity 
+		   that's required by PSK */
+		if( isPSK )
+			{
+			BYTE premasterTempBuffer[ CRYPT_MAX_PKCSIZE + 8 ];
+			const int premasterTempSize = handshakeInfo->premasterSecretSize;
+
+			/* Since this operation rewrites the premaster secret, we have to
+			   save the original contents into a temporary buffer first */
+			REQUIRES( rangeCheckZ( 0, handshakeInfo->premasterSecretSize, 
+								   CRYPT_MAX_PKCSIZE ) );
+			memcpy( premasterTempBuffer, handshakeInfo->premasterSecret,
+					handshakeInfo->premasterSecretSize );
+			status = createSharedPremasterSecret( \
+							handshakeInfo->premasterSecret,
+							CRYPT_MAX_PKCSIZE + CRYPT_MAX_TEXTSIZE,
+							&handshakeInfo->premasterSecretSize,
+							passwordPtr->value, 
+							passwordPtr->valueLength, 
+							premasterTempBuffer, premasterTempSize,
+							( passwordPtr->flags & ATTR_FLAG_ENCODEDVALUE ) ? \
+								TRUE : FALSE );
+			zeroise( premasterTempBuffer, premasterTempSize );
+			if( cryptStatusError( status ) )
+				{
+				retExt( status,
+						( status, SESSION_ERRINFO, 
+						  "Couldn't create master secret from shared "
+						  "secret/password value" ) );
+				}
+
+			/* Write the PSK client identity */
+			writeUint16( stream, userNamePtr->valueLength );
+			status = swrite( stream, userNamePtr->value,
+							 userNamePtr->valueLength );
+			if( cryptStatusError( status ) )
+				return( status );
+			}
+
+		/* Write the DH/ECDH public value that we saved earlier when we
+		   performed phase 1 of the key agreement process */
+		if( isEccAlgo( handshakeInfo->keyexAlgo ) )
+			{
+			sputc( stream, keyexPublicValueLen );
+			status = swrite( stream, keyexPublicValue,
+							 keyexPublicValueLen );
+			}
+		else
+			{
+			status = writeInteger16U( stream, keyexPublicValue,
+									  keyexPublicValueLen );
+			}
+		
+		return( status );
+		}
+
+	/* If we're using straight PSK, write the client identity */
+	if( isPSK )
+		{
+		/* Create the shared premaster secret from the user password */
+		status = createSharedPremasterSecret( \
+							handshakeInfo->premasterSecret,
+							CRYPT_MAX_PKCSIZE + CRYPT_MAX_TEXTSIZE,
+							&handshakeInfo->premasterSecretSize,
+							passwordPtr->value, 
+							passwordPtr->valueLength, NULL, 0,
+							( passwordPtr->flags & ATTR_FLAG_ENCODEDVALUE ) ? \
+								TRUE : FALSE );
+		if( cryptStatusError( status ) )
+			{
+			retExt( status,
+					( status, SESSION_ERRINFO, 
+					  "Couldn't create master secret from shared "
+					  "secret/password value" ) );
+			}
+
+		/* Write the PSK client identity */
+		writeUint16( stream, userNamePtr->valueLength );
+		return( swrite( stream, userNamePtr->value,
+						userNamePtr->valueLength ) );
+		}
+
+	/* It's an RSA keyex, write the RSA-wrapped premaster secret */
+	status = wrapPremasterSecret( sessionInfoPtr, handshakeInfo, wrappedKey, 
+								  CRYPT_MAX_PKCSIZE, &wrappedKeyLength );
+	if( cryptStatusError( status ) )
+		return( status );
+	if( sessionInfoPtr->version <= SSL_MINOR_VERSION_SSL )
+		{
+		/* The original Netscape SSL implementation didn't provide a length 
+		   for the encrypted key and everyone copied that so it became the 
+		   de facto standard way to do it (sic faciunt omnes.  The spec 
+		   itself is ambiguous on the topic).  This was fixed in TLS 
+		   (although the spec is still ambiguous) so the encoding differs 
+		   slightly between SSL and TLS */
+		return( swrite( stream, wrappedKey, wrappedKeyLength ) );
+		}
+
+	return( writeInteger16U( stream, wrappedKey, wrappedKeyLength ) );
+	}
+
 /****************************************************************************
 *																			*
 *					Server Certificate Checking Functions					*
@@ -345,12 +748,14 @@ static int processServerKeyex( INOUT STREAM *stream,
    connections) being rejected, it's unusually loquacious about the reasons 
    for the rejection */
 
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
-static int matchName( INOUT_BUFFER_FIXED( serverNameLength ) BYTE *serverName,
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 5 ) ) \
+static int matchName( INOUT_BUFFER_FIXED( serverNameLength ) \
+						BYTE *serverName,
 					  IN_LENGTH_DNS const int serverNameLength,
-					  INOUT_BUFFER_FIXED( certNameLength ) BYTE *certName,
+					  INOUT_BUFFER_FIXED( originalCertNameLength ) \
+						BYTE *certName,
 					  IN_LENGTH_DNS const int originalCertNameLength,
-					  INOUT ERROR_INFO *errorInfo )
+					  OUT ERROR_INFO *errorInfo )
 	{
 	URL_INFO urlInfo;
 	BOOLEAN hasWildcard = FALSE;
@@ -363,6 +768,9 @@ static int matchName( INOUT_BUFFER_FIXED( serverNameLength ) BYTE *serverName,
 	REQUIRES( serverNameLength > 0 && serverNameLength <= MAX_DNS_SIZE );
 	REQUIRES( originalCertNameLength > 0 && \
 			  originalCertNameLength <= MAX_DNS_SIZE );
+
+	/* Clear return value */
+	memset( errorInfo, 0, sizeof( ERROR_INFO ) );
 
 	/* Extract the FQDN portion from the certificate name */
 	status = sNetParseURL( &urlInfo, certName, originalCertNameLength, 
@@ -407,7 +815,7 @@ static int matchName( INOUT_BUFFER_FIXED( serverNameLength ) BYTE *serverName,
 				retExt( CRYPT_ERROR_INVALID,
 						( CRYPT_ERROR_INVALID, errorInfo,
 						  "Host name '%s' in server's certificate contains "
-						  "wildcard in invalid position",
+						  "wildcard at invalid location",
 						  sanitiseString( certName, CRYPT_MAX_TEXTSIZE,
 										  certNameLength ) ) );
 				}
@@ -423,7 +831,7 @@ static int matchName( INOUT_BUFFER_FIXED( serverNameLength ) BYTE *serverName,
 		retExt( CRYPT_ERROR_INVALID,
 				( CRYPT_ERROR_INVALID, errorInfo,
 				  "Host name '%s' in server's certificate contains "
-				  "wildcard in invalid position",
+				  "wildcard at invalid domain level",
 				  sanitiseString( certName, CRYPT_MAX_TEXTSIZE,
 								  certNameLength ) ) );
 		}
@@ -467,7 +875,7 @@ static int checkHostName( const CRYPT_CERTIFICATE iCryptCert,
 						  INOUT_BUFFER_FIXED( serverNameLength ) void *serverName,
 						  IN_LENGTH_DNS const int serverNameLength,
 						  const BOOLEAN multipleNamesPresent,
-						  INOUT ERROR_INFO *errorInfo )
+						  OUT ERROR_INFO *errorInfo )
 	{
 	MESSAGE_DATA msgData;
 	static const int nameValue = CRYPT_CERTINFO_SUBJECTNAME;
@@ -481,6 +889,9 @@ static int checkHostName( const CRYPT_CERTIFICATE iCryptCert,
 
 	REQUIRES( isHandleRangeValid( iCryptCert ) );
 	REQUIRES( serverNameLength > 0 && serverNameLength <= MAX_DNS_SIZE );
+
+	/* Clear return value */
+	memset( errorInfo, 0, sizeof( ERROR_INFO ) );
 
 	/* Get the CN and check it against the host name */
 	setMessageData( &msgData, certName, MAX_DNS_SIZE );
@@ -565,7 +976,7 @@ static int checkHostName( const CRYPT_CERTIFICATE iCryptCert,
 	}
 
 /* Check that the certificate from the remote system is in order.  This 
-   involves checking that the name of the host that we've connect to
+   involves checking that the name of the host that we've connected to
    matches one of the names in the certificate, and that the certificate 
    itself is in order */
 
@@ -628,9 +1039,20 @@ static int checkCertificateInfo( INOUT SESSION_INFO *sessionInfoPtr )
 	   server's certificate verifies */
 	if( !( verifyFlags & SSL_PFLAG_DISABLE_CERTVERIFY ) )
 		{
-		/* This is still too risky to enable by default because most users
-		   outside of web browsing don't go for the commercial CA
-		   racket */
+		/* This is something that can't be easily enabled by default since 
+		   cryptlib isn't a web browser and therefore won't follow the 
+		   "trust anything from a commercial CA" model.  In particular 
+		   cryptlib users tend to fall into two classes, commercial/
+		   government users, often in high-security environments, who run 
+		   their own PKIs and definitely won't want anything from a 
+		   commercial CA to be accepted, and noncommercial users who won't 
+		   be buying certificates from a commercial CA.  In neither of these 
+		   cases is trusting certs from a commercial CA useful, in the 
+		   former case it leads to a serious security breach (as some US 
+		   government agencies have discovered), in the latter case it leads 
+		   to all certificates being rejected since they weren't bought from 
+		   a commercial CA.  The recommended solutions to this problem are 
+		   covered in the cryptlib manual */
 		}
 
 	return( CRYPT_OK );
@@ -656,7 +1078,7 @@ static int beginClientHandshake( INOUT SESSION_INFO *sessionInfoPtr,
 	MESSAGE_DATA msgData;
 	BYTE sentSessionID[ MAX_SESSIONID_SIZE + 8 ];
 	BOOLEAN sessionIDsent = FALSE;
-	int packetOffset, length, sentSessionIDlength = DUMMY_INIT, status;
+	int packetOffset, length, sentSessionIDlength DUMMY_INIT, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( handshakeInfo, sizeof( SSL_HANDSHAKE_INFO ) ) );
@@ -712,8 +1134,8 @@ static int beginClientHandshake( INOUT SESSION_INFO *sessionInfoPtr,
 		uint24		len
 		byte[2]		version = { 0x03, 0x0n }
 		byte[32]	nonce
-		byte		sessIDlen = 0
-	  [	byte[]		sessID			-- Omitted since len == 0 ]
+		byte		sessIDlen
+		byte[]		sessID
 		uint16		suiteLen
 		uint16[]	suite
 		byte		coprLen = 1
@@ -757,8 +1179,8 @@ static int beginClientHandshake( INOUT SESSION_INFO *sessionInfoPtr,
 						findSessionInfo( sessionInfoPtr->attributeList,
 										 CRYPT_SESSINFO_USERNAME ) != NULL ? \
 							TRUE : FALSE,
-						isServer( sessionInfoPtr ),
-						sessionInfoPtr->protocolFlags & SSL_PFLAG_SUITEB );
+						( sessionInfoPtr->protocolFlags & SSL_PFLAG_SUITEB ) ? \
+							TRUE : FALSE );
 	if( cryptStatusOK( status ) )
 		{
 		sputc( stream, 1 );		/* No compression */
@@ -888,7 +1310,7 @@ static int exchangeClientKeys( INOUT SESSION_INFO *sessionInfoPtr,
 	BYTE keyexPublicValue[ CRYPT_MAX_PKCSIZE + 8 ];
 	BOOLEAN needClientCert = FALSE;
 	int packetOffset, packetStreamOffset = 0, length;
-	int keyexPublicValueLen = DUMMY_INIT, status;
+	int keyexPublicValueLen = 0, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( handshakeInfo, sizeof( SSL_HANDSHAKE_INFO ) ) );
@@ -934,6 +1356,7 @@ static int exchangeClientKeys( INOUT SESSION_INFO *sessionInfoPtr,
 			}
 		}
 
+#ifndef CONFIG_FUZZ
 	/* Process the optional server certificate chain:
 
 		byte		ID = SSL_HAND_CERTIFICATE
@@ -962,168 +1385,62 @@ static int exchangeClientKeys( INOUT SESSION_INFO *sessionInfoPtr,
 			return( status );
 			}
 		}
+#endif /* CONFIG_FUZZ */
 
-	/* Process the optional server keyex:
-
-		byte		ID = SSL_HAND_SERVER_KEYEXCHANGE
-		uint24		len
-	   DH:
-		uint16		dh_pLen
-		byte[]		dh_p
-		uint16		dh_gLen
-		byte[]		dh_g
-		uint16		dh_YsLen
-		byte[]		dh_Ys
-	 [	byte		hashAlgoID		-- TLS 1.2 ]
-	 [	byte		sigAlgoID		-- TLS 1.2 ]
-		uint16		signatureLen
-		byte[]		signature 
-	   ECDH:
-		byte		curveType
-		uint16		namedCurve
-		uint8		ecPointLen		-- NB uint8 not uint16
-		byte[]		ecPoint
-	 [	byte		hashAlgoID		-- TLS 1.2 ]
-	 [	byte		sigAlgoID		-- TLS 1.2 ]
-		uint16		signatureLen
-		byte[]		signature */
+	/* Process the optional server keyex */
 	if( isKeyxAlgo( handshakeInfo->keyexAlgo ) )
 		{
-		KEYAGREE_PARAMS keyAgreeParams, tempKeyAgreeParams;
-		void *keyData = DUMMY_INIT_PTR;
-		const BOOLEAN isECC = isEccAlgo( handshakeInfo->keyexAlgo );
-		int keyDataOffset, keyDataLength = DUMMY_INIT;
-
 		status = refreshHSStream( sessionInfoPtr, handshakeInfo );
 		if( cryptStatusError( status ) )
 			return( status );
 
-		/* Make sure that we've got an appropriate server keyex packet.  We 
-		   set the minimum key size to MIN_PKCSIZE_THRESHOLD/
-		   MIN_PKCSIZE_ECC_THRESHOLD instead of MIN_PKCSIZE/MIN_PKCSIZE_ECC 
-		   in order to provide better diagnostics if the server is using 
-		   weak keys since otherwise the data will be rejected in the packet 
-		   read long before we get to the keysize check */
-		status = checkHSPacketHeader( sessionInfoPtr, stream, &length,
-						SSL_HAND_SERVER_KEYEXCHANGE, 
-						isECC ? \
-							( 1 + UINT16_SIZE + \
-							  1 + MIN_PKCSIZE_ECCPOINT_THRESHOLD + \
-							  UINT16_SIZE + MIN_PKCSIZE_ECCPOINT_THRESHOLD ) : \
-							( UINT16_SIZE + MIN_PKCSIZE_THRESHOLD + \
-							  UINT16_SIZE + 1 + \
-							  UINT16_SIZE + MIN_PKCSIZE_THRESHOLD + \
-							  UINT16_SIZE + MIN_PKCSIZE_THRESHOLD ) );
+		status = processServerKeyex( sessionInfoPtr, handshakeInfo, 
+									 stream, keyexPublicValue, 
+									 CRYPT_MAX_PKCSIZE, 
+									 &keyexPublicValueLen );
 		if( cryptStatusError( status ) )
 			{
 			sMemDisconnect( stream );
 			return( status );
 			}
-
-		/* Process the server keyex and convert it into a DH/ECDH context */
-		keyDataOffset = stell( stream );
-		status = processServerKeyex( stream, &keyAgreeParams, 
-									 &handshakeInfo->dhContext, isECC );
-		if( cryptStatusOK( status ) )
+		}
+	else
+		{
+		/* If it's a pure PSK mechanism then there may be a pointless server 
+		   keyex containing an identity hint whose purpose is never 
+		   explained (more specifically the RFC makes it a SHOULD NOT, and
+		   clients MUST ignore it), in which case we have to process the 
+		   packet to get rid of the identity hint */
+		if( handshakeInfo->authAlgo == CRYPT_ALGO_NONE )
 			{
-			keyDataLength = stell( stream ) - keyDataOffset;
-			status = sMemGetDataBlockAbs( stream, keyDataOffset, &keyData, 
-										  keyDataLength );
-			}
-		if( cryptStatusError( status ) )
-			{
-			sMemDisconnect( stream );
-
-			/* Some misconfigured servers may use very short keys, we 
-			   perform a special-case check for these and return a more 
-			   specific message than the generic bad-data error */
-			if( status == CRYPT_ERROR_NOSECURE )
+			status = refreshHSStream( sessionInfoPtr, handshakeInfo );
+			if( cryptStatusError( status ) )
+				return( status );
+			if( sPeek( stream ) == SSL_HAND_SUPPLEMENTAL_DATA )
 				{
-				retExt( CRYPT_ERROR_NOSECURE,
-						( CRYPT_ERROR_NOSECURE, SESSION_ERRINFO, 
-						  "Insecure key used in key exchange" ) );
+				status = checkHSPacketHeader( sessionInfoPtr, stream, &length,
+											  SSL_HAND_SERVER_KEYEXCHANGE, 
+											  ( UINT16_SIZE + 1 ) );
+				if( cryptStatusError( status ) )
+					return( status );
+				status = readIdentityHint( stream );
+				if( cryptStatusError( status ) )
+					{
+					retExt( CRYPT_ERROR_BADDATA,
+							( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
+							  "Invalid PSK identity hint" ) );
+					}
 				}
-
-			retExt( cryptArgError( status ) ? \
-					CRYPT_ERROR_BADDATA : status,
-					( cryptArgError( status ) ? CRYPT_ERROR_BADDATA : status,
-					  SESSION_ERRINFO, 
-					  "Invalid server key agreement parameters" ) );
-			}
-		ANALYSER_HINT( keyData != NULL );
-
-		/* Check the server's signature on the DH/ECDH parameters */
-		status = checkKeyexSignature( sessionInfoPtr, handshakeInfo,
-									  stream, keyData, keyDataLength,
-									  isECC );
-		if( cryptStatusError( status ) )
-			{
-			sMemDisconnect( stream );
-			retExt( status,
-					( status, SESSION_ERRINFO, 
-					  "Invalid server key agreement parameter signature" ) );
 			}
 
-		/* Perform phase 1 of the DH/ECDH key agreement process and save the 
-		   result so that we can send it to the server later on.  The order 
-		   of the SSL messages is a bit unfortunate since we get the one for 
-		   phase 2 before we need the phase 1 value, so we have to cache the 
-		   phase 1 result for when we need it later on */
-		memset( &tempKeyAgreeParams, 0, sizeof( KEYAGREE_PARAMS ) );
-		status = krnlSendMessage( handshakeInfo->dhContext,
-								  IMESSAGE_CTX_ENCRYPT, &tempKeyAgreeParams,
-								  sizeof( KEYAGREE_PARAMS ) );
-		if( cryptStatusError( status ) )
-			{
-			zeroise( &tempKeyAgreeParams, sizeof( KEYAGREE_PARAMS ) );
-			sMemDisconnect( stream );
-			return( status );
-			}
-		ENSURES( rangeCheckZ( 0, tempKeyAgreeParams.publicValueLen,
-							  CRYPT_MAX_PKCSIZE ) );
-		memcpy( keyexPublicValue, tempKeyAgreeParams.publicValue,
-				tempKeyAgreeParams.publicValueLen );
-		keyexPublicValueLen = tempKeyAgreeParams.publicValueLen;
-		zeroise( &tempKeyAgreeParams, sizeof( KEYAGREE_PARAMS ) );
-
-		/* Perform phase 2 of the DH/ECDH key agreement */
-		status = krnlSendMessage( handshakeInfo->dhContext,
-								  IMESSAGE_CTX_DECRYPT, &keyAgreeParams,
-								  sizeof( KEYAGREE_PARAMS ) );
-		if( cryptStatusError( status ) )
-			{
-			zeroise( &keyAgreeParams, sizeof( KEYAGREE_PARAMS ) );
-			sMemDisconnect( stream );
-			return( status );
-			}
-		if( isECC )
-			{
-			const int xCoordLen = ( keyAgreeParams.wrappedKeyLen - 1 ) / 2;
-
-			/* The output of the ECDH operation is an ECC point, but for
-			   some unknown reason TLS only uses the x coordinate and not 
-			   the full point.  To work around this we have to rewrite the
-			   point as a standalone x coordinate, which is relatively
-			   easy because we're using an "uncompressed" point format: 
-
-				+---+---------------+---------------+
-				|04	|		qx		|		qy		|
-				+---+---------------+---------------+
-					|<- fldSize --> |<- fldSize --> | */
-			REQUIRES( keyAgreeParams.wrappedKeyLen >= MIN_PKCSIZE_ECCPOINT && \
-					  keyAgreeParams.wrappedKeyLen <= MAX_PKCSIZE_ECCPOINT && \
-					  ( keyAgreeParams.wrappedKeyLen & 1 ) == 1 && \
-					  keyAgreeParams.wrappedKey[ 0 ] == 0x04 );
-			memmove( keyAgreeParams.wrappedKey, 
-					 keyAgreeParams.wrappedKey + 1, xCoordLen );
-			keyAgreeParams.wrappedKeyLen = xCoordLen;
-			}
-		ENSURES( rangeCheckZ( 0, keyAgreeParams.wrappedKeyLen,
-							  CRYPT_MAX_PKCSIZE + CRYPT_MAX_TEXTSIZE ) );
-		memcpy( handshakeInfo->premasterSecret, keyAgreeParams.wrappedKey,
-				keyAgreeParams.wrappedKeyLen );
-		handshakeInfo->premasterSecretSize = keyAgreeParams.wrappedKeyLen;
-		zeroise( &keyAgreeParams, sizeof( KEYAGREE_PARAMS ) );
+#ifdef CONFIG_FUZZ
+		/* Set up a dummy premaster secret */
+		memset( handshakeInfo->premasterSecret, '*', SSL_SECRET_SIZE );
+		handshakeInfo->premasterSecretSize = SSL_SECRET_SIZE;
+#endif /* CONFIG_FUZZ */
+		
+		/* Keep static analysers happy */
+		memset( keyexPublicValue, 0, CRYPT_MAX_PKCSIZE );
 		}
 
 	/* Process the optional server certificate request:
@@ -1184,7 +1501,7 @@ static int exchangeClientKeys( INOUT SESSION_INFO *sessionInfoPtr,
 				status = CRYPT_ERROR_BADDATA;
 			}
 		if( !cryptStatusError( status ) )
-			status = sSkip( stream, length );
+			status = sSkip( stream, length, MAX_INTLENGTH_SHORT );
 		if( cryptStatusError( status ) )
 			{
 			sMemDisconnect( stream );
@@ -1203,7 +1520,7 @@ static int exchangeClientKeys( INOUT SESSION_INFO *sessionInfoPtr,
 					status = CRYPT_ERROR_BADDATA;
 				}
 			if( !cryptStatusError( status ) )
-				status = sSkip( stream, length );
+				status = sSkip( stream, length, MAX_INTLENGTH_SHORT );
 			if( cryptStatusError( status ) )
 				{
 				sMemDisconnect( stream );
@@ -1239,6 +1556,10 @@ static int exchangeClientKeys( INOUT SESSION_INFO *sessionInfoPtr,
 		return( status );
 		}
 
+	/* If we're fuzzing the input then we don't need to go through any of 
+	   the following crypto calisthenics */
+	FUZZ_SKIP();
+
 	/* If we need a client certificate, build the client certificate packet */
 	status = openPacketStreamSSL( stream, sessionInfoPtr, CRYPT_USE_DEFAULT,
 								  SSL_MSG_HANDSHAKE );
@@ -1256,6 +1577,7 @@ static int exchangeClientKeys( INOUT SESSION_INFO *sessionInfoPtr,
 			{
 			setErrorInfo( sessionInfoPtr, CRYPT_SESSINFO_PRIVATEKEY,
 						  CRYPT_ERRTYPE_ATTR_ABSENT );
+#ifdef USE_SSL3
 			if( sessionInfoPtr->version == SSL_MINOR_VERSION_SSL )
 				{
 				static const BYTE FAR_BSS noCertAlertSSLTemplate[] = {
@@ -1271,6 +1593,7 @@ static int exchangeClientKeys( INOUT SESSION_INFO *sessionInfoPtr,
 				swrite( &sessionInfoPtr->stream, noCertAlertSSLTemplate, 7 );
 				sentResponse = TRUE;
 				}
+#endif /* USE_SSL3 */
 
 			/* The reaction to the lack of a certificate is up to the server 
 			   (some just request one anyway even though they can't do 
@@ -1294,111 +1617,17 @@ static int exchangeClientKeys( INOUT SESSION_INFO *sessionInfoPtr,
 			}
 		}
 
-	/* Build the client key exchange packet:
-
-		byte		ID = SSL_HAND_CLIENT_KEYEXCHANGE
-		uint24		len
-	   DH:
-		uint16		yLen
-		byte[]		y
-	   ECDH:
-		uint8		ecPointLen		-- NB uint8 not uint16
-		byte[]		ecPoint
-	   PSK:
-		uint16		userIDLen
-		byte[]		userID
-	   RSA:
-	  [ uint16		encKeyLen		-- TLS only ]
-		byte[]		rsaPKCS1( byte[2] { 0x03, 0x0n } || byte[46] random ) */
+	/* Build the client key exchange packet */
 	status = continueHSPacketStream( stream, SSL_HAND_CLIENT_KEYEXCHANGE,
 									 &packetOffset );
-	if( cryptStatusError( status ) )
+	if( cryptStatusOK( status ) )
 		{
-		sMemDisconnect( stream );
-		return( status );
-		}
-	if( isKeyxAlgo( handshakeInfo->keyexAlgo ) )
-		{
-		/* Write the DH/ECDH public value that we saved earlier when we
-		   performed phase 1 of the key agreement process */
-		if( isEccAlgo( handshakeInfo->keyexAlgo ) )
-			{
-			sputc( stream, keyexPublicValueLen );
-			status = swrite( stream, keyexPublicValue,
-							 keyexPublicValueLen );
-			}
-		else
-			{
-			status = writeInteger16U( stream, keyexPublicValue,
-									  keyexPublicValueLen );
-			}
-		}
-	else
-		{
-		if( handshakeInfo->authAlgo == CRYPT_ALGO_NONE )
-			{
-			const ATTRIBUTE_LIST *passwordPtr = \
-						findSessionInfo( sessionInfoPtr->attributeList,
-										 CRYPT_SESSINFO_PASSWORD );
-			const ATTRIBUTE_LIST *userNamePtr = \
-						findSessionInfo( sessionInfoPtr->attributeList,
-										 CRYPT_SESSINFO_PASSWORD );
-
-			REQUIRES( passwordPtr != NULL );
-			REQUIRES( userNamePtr != NULL );
-
-			/* Create the shared premaster secret from the user password */
-			status = createSharedPremasterSecret( \
-							handshakeInfo->premasterSecret,
-							CRYPT_MAX_PKCSIZE + CRYPT_MAX_TEXTSIZE,
-							&handshakeInfo->premasterSecretSize,
-							passwordPtr->value, 
-							passwordPtr->valueLength,
-							( passwordPtr->flags & ATTR_FLAG_ENCODEDVALUE ) ? \
-								TRUE : FALSE );
-			if( cryptStatusError( status ) )
-				{
-				sMemDisconnect( stream );
-				retExt( status,
-						( status, SESSION_ERRINFO, 
-						  "Couldn't create master secret from shared "
-						  "secret/password value" ) );
-				}
-
-			/* Write the PSK client identity */
-			writeUint16( stream, userNamePtr->valueLength );
-			status = swrite( stream, userNamePtr->value,
-							 userNamePtr->valueLength );
-			}
-		else
-			{
-			BYTE wrappedKey[ CRYPT_MAX_PKCSIZE + 8 ];
-			int wrappedKeyLength;
-
-			status = wrapPremasterSecret( sessionInfoPtr, handshakeInfo,
-										  wrappedKey, CRYPT_MAX_PKCSIZE,
-										  &wrappedKeyLength );
-			if( cryptStatusError( status ) )
-				{
-				sMemDisconnect( stream );
-				return( status );
-				}
-			if( sessionInfoPtr->version <= SSL_MINOR_VERSION_SSL )
-				{
-				/* The original Netscape SSL implementation didn't provide a
-				   length for the encrypted key and everyone copied that so
-				   it became the de facto standard way to do it (sic faciunt
-				   omnes.  The spec itself is ambiguous on the topic).  This
-				   was fixed in TLS (although the spec is still ambiguous) so
-				   the encoding differs slightly between SSL and TLS */
-				status = swrite( stream, wrappedKey, wrappedKeyLength );
-				}
-			else
-				{
-				status = writeInteger16U( stream, wrappedKey, 
-										  wrappedKeyLength );
-				}
-			}
+		status = createClientKeyex( sessionInfoPtr, handshakeInfo, stream,
+									isKeyxAlgo( handshakeInfo->keyexAlgo ) ? \
+										keyexPublicValue : NULL, 
+									keyexPublicValueLen,
+									( handshakeInfo->authAlgo == CRYPT_ALGO_NONE ) ? \
+										TRUE : FALSE );
 		}
 	if( cryptStatusOK( status ) )
 		status = completeHSPacketStream( stream, packetOffset );

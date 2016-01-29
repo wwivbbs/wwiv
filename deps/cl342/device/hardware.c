@@ -192,6 +192,7 @@ static CAPABILITY_INFO_LIST capabilityInfoList[ MAX_DEVICE_CAPABILITIES ];
 /* Initialise the cryptographic hardware and its crypto capability 
    interface */
 
+CHECK_RETVAL \
 int deviceInitHardware( void )
 	{
 	CAPABILITY_INFO *capabilityInfo;
@@ -217,7 +218,7 @@ int deviceInitHardware( void )
 	for( i = 0; i < noCapabilities && \
 				capabilityInfo[ i ].cryptAlgo != CRYPT_ALGO_NONE; i++ )
 		{
-		REQUIRES( sanityCheckCapability( &capabilityInfo[ i ], FALSE ) );
+		REQUIRES( sanityCheckCapability( &capabilityInfo[ i ] ) );
 		
 		capabilityInfoList[ i ].info = &capabilityInfo[ i ];
 		capabilityInfoList[ i ].next = NULL;
@@ -425,7 +426,7 @@ static int getRandomFunction( DEVICE_INFO *deviceInfo, void *buffer,
 	assert( isWritePtr( deviceInfo, sizeof( DEVICE_INFO ) ) );
 	assert( isWritePtr( buffer, length ) );
 
-	REQUIRES( length > 0 && length < MAX_INTLENGTH );
+	REQUIRES( length > 0 && length < MAX_BUFFER_SIZE );
 
 	/* Fill the buffer with random data */
 	return( hwGetRandom( buffer, length ) );
@@ -976,7 +977,7 @@ static int rsaGenerateComponents( CRYPT_PKCINFO_RSA *rsaKeyInfo,
 	{
 	CONTEXT_INFO staticContextInfo;
 	PKC_INFO contextData, *pkcInfo = &contextData;
-	int status;
+	int length, status;
 
 	assert( isWritePtr( rsaKeyInfo, sizeof( CRYPT_PKCINFO_RSA ) ) );
 
@@ -993,20 +994,27 @@ static int rsaGenerateComponents( CRYPT_PKCINFO_RSA *rsaKeyInfo,
 		return( status );
 
 	/* Extract the newly-generated key components for the caller to use */
-	BN_bn2bin( &pkcInfo->rsaParam_n, rsaKeyInfo->n );
 	rsaKeyInfo->nLen = BN_num_bits( &pkcInfo->rsaParam_n );
-	BN_bn2bin( &pkcInfo->rsaParam_e, rsaKeyInfo->e );
+	length = BN_bn2bin( &pkcInfo->rsaParam_n, rsaKeyInfo->n );
+	ENSURES( length == bitsToBytes( rsaKeyInfo->nLen ) );
 	rsaKeyInfo->eLen = BN_num_bits( &pkcInfo->rsaParam_e );
-	BN_bn2bin( &pkcInfo->rsaParam_p, rsaKeyInfo->p );
+	length = BN_bn2bin( &pkcInfo->rsaParam_e, rsaKeyInfo->e );
+	ENSURES( length == bitsToBytes( rsaKeyInfo->eLen ) );
 	rsaKeyInfo->pLen = BN_num_bits( &pkcInfo->rsaParam_p );
-	BN_bn2bin( &pkcInfo->rsaParam_q, rsaKeyInfo->q );
+	length = BN_bn2bin( &pkcInfo->rsaParam_p, rsaKeyInfo->p );
+	ENSURES( length == bitsToBytes( rsaKeyInfo->pLen ) );
 	rsaKeyInfo->qLen = BN_num_bits( &pkcInfo->rsaParam_q );
-	BN_bn2bin( &pkcInfo->rsaParam_exponent1, rsaKeyInfo->e1 );
+	length = BN_bn2bin( &pkcInfo->rsaParam_q, rsaKeyInfo->q );
+	ENSURES( length == bitsToBytes( rsaKeyInfo->qLen ) );
 	rsaKeyInfo->e1Len = BN_num_bits( &pkcInfo->rsaParam_exponent1 );
-	BN_bn2bin( &pkcInfo->rsaParam_exponent2, rsaKeyInfo->e2 );
+	length = BN_bn2bin( &pkcInfo->rsaParam_exponent1, rsaKeyInfo->e1 );
+	ENSURES( length == bitsToBytes( rsaKeyInfo->e1Len ) );
 	rsaKeyInfo->e2Len = BN_num_bits( &pkcInfo->rsaParam_exponent2 );
-	BN_bn2bin( &pkcInfo->rsaParam_u, rsaKeyInfo->u );
+	length = BN_bn2bin( &pkcInfo->rsaParam_exponent2, rsaKeyInfo->e2 );
+	ENSURES( length == bitsToBytes( rsaKeyInfo->e2Len ) );
 	rsaKeyInfo->uLen = BN_num_bits( &pkcInfo->rsaParam_u );
+	length = BN_bn2bin( &pkcInfo->rsaParam_u, rsaKeyInfo->u );
+	ENSURES( length == bitsToBytes( rsaKeyInfo->uLen ) );
 	staticDestroyContext( &staticContextInfo );
 
 	return( status );
@@ -1020,7 +1028,7 @@ static int dlpGenerateComponents( CRYPT_PKCINFO_DLP *dlpKeyInfo,
 	{
 	CONTEXT_INFO staticContextInfo;
 	PKC_INFO contextData, *pkcInfo = &contextData;
-	int status;
+	int length, status;
 
 	assert( isWritePtr( dlpKeyInfo, sizeof( CRYPT_PKCINFO_DLP ) ) );
 
@@ -1064,16 +1072,21 @@ static int dlpGenerateComponents( CRYPT_PKCINFO_DLP *dlpKeyInfo,
 		return( status );
 
 	/* Extract the newly-generated key components for the caller to use */
-	BN_bn2bin( &pkcInfo->dlpParam_p, dlpKeyInfo->p );
 	dlpKeyInfo->pLen = BN_num_bits( &pkcInfo->dlpParam_p );
-	BN_bn2bin( &pkcInfo->dlpParam_g, dlpKeyInfo->g );
+	length = BN_bn2bin( &pkcInfo->dlpParam_p, dlpKeyInfo->p );
+	ENSURES( length == bitsToBytes( dlpKeyInfo->pLen ) );
 	dlpKeyInfo->gLen = BN_num_bits( &pkcInfo->dlpParam_g );
-	BN_bn2bin( &pkcInfo->dlpParam_q, dlpKeyInfo->q );
+	length = BN_bn2bin( &pkcInfo->dlpParam_g, dlpKeyInfo->g );
+	ENSURES( length == bitsToBytes( dlpKeyInfo->gLen ) );
 	dlpKeyInfo->qLen = BN_num_bits( &pkcInfo->dlpParam_q );
-	BN_bn2bin( &pkcInfo->dlpParam_y, dlpKeyInfo->y );
+	length = BN_bn2bin( &pkcInfo->dlpParam_q, dlpKeyInfo->q );
+	ENSURES( length == bitsToBytes( dlpKeyInfo->qLen ) );
 	dlpKeyInfo->yLen = BN_num_bits( &pkcInfo->dlpParam_y );
-	BN_bn2bin( &pkcInfo->dlpParam_x, dlpKeyInfo->x );
+	length = BN_bn2bin( &pkcInfo->dlpParam_y, dlpKeyInfo->y );
+	ENSURES( length == bitsToBytes( dlpKeyInfo->yLen ) );
 	dlpKeyInfo->xLen = BN_num_bits( &pkcInfo->dlpParam_x );
+	length = BN_bn2bin( &pkcInfo->dlpParam_x, dlpKeyInfo->x );
+	ENSURES( length == bitsToBytes( dlpKeyInfo->xLen ) );
 	staticDestroyContext( &staticContextInfo );
 
 	return( status );
@@ -1161,13 +1174,11 @@ int setPKCinfo( CONTEXT_INFO *contextInfoPtr,
 			else
 				contextInfoPtr->flags |= CONTEXT_FLAG_PERSISTENT;
 			status = writeFlatPublicKey( keyDataBuffer, 
-										 CRYPT_MAX_PKCSIZE * 4, 
-										 &keyDataSize, CRYPT_ALGO_RSA, 
-										 rsaKeyInfo->n, 
-										 bitsToBytes( rsaKeyInfo->nLen ), 
-										 rsaKeyInfo->e, 
-										 bitsToBytes( rsaKeyInfo->eLen ), 
-										 NULL, 0, NULL, 0 );
+							CRYPT_MAX_PKCSIZE * 4, &keyDataSize, 
+							CRYPT_ALGO_RSA, 0, rsaKeyInfo->n, 
+							bitsToBytes( rsaKeyInfo->nLen ), rsaKeyInfo->e, 
+							bitsToBytes( rsaKeyInfo->eLen ), NULL, 0, 
+							NULL, 0 );
 			break;
 			}
 
@@ -1183,16 +1194,11 @@ int setPKCinfo( CONTEXT_INFO *contextInfoPtr,
 			else
 				contextInfoPtr->flags |= CONTEXT_FLAG_PERSISTENT;
 			status = writeFlatPublicKey( keyDataBuffer, 
-										 CRYPT_MAX_PKCSIZE * 4, 
-										 &keyDataSize, cryptAlgo, 
-										 dlpKeyInfo->p, 
-										 bitsToBytes( dlpKeyInfo->pLen ), 
-										 dlpKeyInfo->q, 
-										 bitsToBytes( dlpKeyInfo->qLen ), 
-										 dlpKeyInfo->g, 
-										 bitsToBytes( dlpKeyInfo->gLen ), 
-										 dlpKeyInfo->y, 
-										 bitsToBytes( dlpKeyInfo->yLen ) );
+						CRYPT_MAX_PKCSIZE * 4, &keyDataSize, cryptAlgo, 0,
+						dlpKeyInfo->p, bitsToBytes( dlpKeyInfo->pLen ), 
+						dlpKeyInfo->q, bitsToBytes( dlpKeyInfo->qLen ), 
+						dlpKeyInfo->g, bitsToBytes( dlpKeyInfo->gLen ), 
+						dlpKeyInfo->y, bitsToBytes( dlpKeyInfo->yLen ) );
 			break;
 			}
 

@@ -12,11 +12,11 @@
 
 # Make sure we've been given sufficient arguments.
 
-if [ "$1" = "" ] ; then
+if [ -z "$1" ] ; then
 	echo "$0: Missing as name." >&2 ;
 	exit 1 ;
 fi
-if [ "$2" = "" ] ; then
+if [ -z "$2" ] ; then
 	echo "$0: Missing object path." >&2 ;
 	exit 1 ;
 fi
@@ -45,14 +45,7 @@ build_asm_files()
 	TARGET=$1
 
 	build_asm_file bn/bn-$TARGET bn_asm
-	build_asm_file crypt/b-$TARGET bfenc
-	build_asm_file crypt/c-$TARGET castenc
 	build_asm_file crypt/d-$TARGET desenc
-	build_asm_file crypt/r4-$TARGET rc4enc
-	build_asm_file crypt/r5-$TARGET rc5enc
-	build_asm_file crypt/m5-$TARGET md5asm
-	build_asm_file crypt/rm-$TARGET rmdasm
-	build_asm_file crypt/s1-$TARGET sha1asm
 	}
 
 # The only difference between the "sol" and the "elf" x86 formats is that

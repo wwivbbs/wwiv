@@ -16,14 +16,15 @@
   #pragma convert( 0 )
 #endif /* IBM medium iron */
 
-/* Prototypes for functions in testcert.c */
+/* Prototypes for functions in certs.c */
 
 int initRTCS( CRYPT_CERTIFICATE *cryptRTCSRequest, 
 			  const CRYPT_CERTIFICATE cryptCertificateTemplate,
 			  const int number, const BOOLEAN multipleCerts );
-int initOCSP( CRYPT_CERTIFICATE *cryptOCSPRequest, const int number,
-			  const BOOLEAN ocspv2, const BOOLEAN revokedCert,
-			  const BOOLEAN multipleCerts,
+int initOCSP( CRYPT_CERTIFICATE *cryptOCSPRequest, 
+			  CRYPT_CERTIFICATE *cert1, CRYPT_CERTIFICATE *cert2,
+			  const int number, const BOOLEAN ocspv2, 
+			  const BOOLEAN revokedCert, const BOOLEAN multipleCerts,
 			  const CRYPT_SIGNATURELEVEL_TYPE sigLevel,
 			  const CRYPT_CONTEXT privKeyContext );
 
@@ -162,7 +163,6 @@ static int connectCertstoreClient( void )
 				status, __LINE__ );
 		return( CRYPT_ERROR_FAILED );
 		}
-
 
 	/* Read a present certificate from the keyset using the ASCII email
 	   address */
@@ -363,7 +363,7 @@ static int connectRTCS( const CRYPT_SESSION_TYPE sessionType,
 	else
 		{
 		CRYPT_KEYSET cryptKeyset;
-		CRYPT_CERTIFICATE cryptCert = DUMMY_INIT;
+		CRYPT_CERTIFICATE cryptCert DUMMY_INIT;
 
 		/* Get the certificate whose status we're checking */
 		status = cryptKeysetOpen( &cryptKeyset, CRYPT_UNUSED,
@@ -380,6 +380,7 @@ static int connectRTCS( const CRYPT_SESSION_TYPE sessionType,
 			{
 			printf( "Couldn't read certificate for RTCS status check, error "
 					"code %d, line %d.\n", status, __LINE__ );
+			puts( "  (Has the testCertManagement() code been run?)." );
 			return( FALSE );
 			}
 
@@ -625,7 +626,7 @@ int testSessionRTCSClientServer( void )
 #elif OCSP_SERVER_NO == 5
   #define OCSP_SERVER_NAME	TEXT( "http://ocsp.verisign.com/ocsp/status" )
 #elif OCSP_SERVER_NO == 7
-  #define OCSP_SERVER_NAME	TEXT( "http://142.176.86.157/ocsp" )
+	#define OCSP_SERVER_NAME	TEXT( "http://142.176.86.157/ocsp" )
 #endif /* OCSP server name kludge */
 
 /* Perform an OCSP test */
@@ -636,7 +637,7 @@ static int connectOCSP( const CRYPT_SESSION_TYPE sessionType,
 						const BOOLEAN localSession )
 	{
 	CRYPT_SESSION cryptSession;
-	CRYPT_CERTIFICATE cryptOCSPRequest;
+	CRYPT_CERTIFICATE cryptOCSPRequest, cryptCert1, cryptCert2;
 	char filenameBuffer[ FILENAME_BUFFER_SIZE ];
 #ifdef UNICODE_STRINGS
 	wchar_t wcBuffer[ FILENAME_BUFFER_SIZE ];
@@ -711,6 +712,17 @@ static int connectOCSP( const CRYPT_SESSION_TYPE sessionType,
 			cryptDestroySession( cryptSession );
 			return( CRYPT_ERROR_NOTAVAIL );
 			}
+		if( status == CRYPT_ERROR_OPEN )
+			{
+			/* This is the first of the loopback tests that requires the 
+			   presence of a certificate store (created by previous tests), 
+			   if we can't open it then we report the issue in a situation-
+			   specific manner */
+			puts( "SVR: Can't open certificate store, have the earlier "
+				  "tests that create this\n     been run?\n" );
+			cryptDestroySession( cryptSession );
+			return( status );
+			}
 		if( cryptStatusOK( status ) )
 			{
 			status = cryptSetAttribute( cryptSession,
@@ -728,8 +740,9 @@ static int connectOCSP( const CRYPT_SESSION_TYPE sessionType,
 	else
 		{
 		/* Create the OCSP request */
-		if( !initOCSP( &cryptOCSPRequest, localSession ? 1 : OCSP_SERVER_NO,
-					   FALSE, revokedCert, multipleCerts,
+		if( !initOCSP( &cryptOCSPRequest, &cryptCert1, &cryptCert2, 
+					   localSession ? 1 : OCSP_SERVER_NO, FALSE, 
+					   revokedCert, multipleCerts,
 					   CRYPT_SIGNATURELEVEL_NONE, CRYPT_UNUSED ) )
 			return( FALSE );
 
@@ -756,9 +769,11 @@ static int connectOCSP( const CRYPT_SESSION_TYPE sessionType,
 								CRYPT_SESSINFO_SERVER_NAME, OCSP_SERVER_NAME,
 								paramStrlen( OCSP_SERVER_NAME ) );
 			if( cryptStatusError( status ) )
+				{
 				return( attrErrorExit( cryptSession,
 									   "cryptSetAttributeString()", status,
 									   __LINE__ ) );
+				}
 			}
 #endif /* Kludges for incorrect/missing authorityInfoAccess values */
 		if( OCSP_SERVER_NO == 1 || localSession )
@@ -767,8 +782,10 @@ static int connectOCSP( const CRYPT_SESSION_TYPE sessionType,
 			status = cryptSetAttribute( cryptSession, CRYPT_SESSINFO_VERSION,
 										2 );
 			if( cryptStatusError( status ) )
+				{
 				return( attrErrorExit( cryptSession, "cryptSetAttribute()",
 									   status, __LINE__ ) );
+				}
 			}
 #if OCSP_SERVER_NO == 7
 		/* Some OCSP server's responses are broken so we have to turn down 
@@ -789,9 +806,12 @@ static int connectOCSP( const CRYPT_SESSION_TYPE sessionType,
 		}
 	status = cryptSetAttribute( cryptSession, CRYPT_SESSINFO_ACTIVE, TRUE );
 #if OCSP_SERVER_NO == 7
-	/* Restore normal certificate processing */
-	cryptSetAttribute( CRYPT_UNUSED, CRYPT_OPTION_CERT_COMPLIANCELEVEL,
-					   complianceValue );
+	if( !isServer )
+		{
+		/* Restore normal certificate processing */
+		cryptSetAttribute( CRYPT_UNUSED, CRYPT_OPTION_CERT_COMPLIANCELEVEL,
+						   complianceValue );
+		}
 #endif /* OCSP servers that return broken resposnes */
 	if( isServer )
 		printConnectInfo( cryptSession );
@@ -813,6 +833,9 @@ static int connectOCSP( const CRYPT_SESSION_TYPE sessionType,
 			if( cryptStatusOK( status ) && errorMessageLength >= 29 && \
 				!memcmp( errorMessage, "OCSP response doesn't contain", 29 ) )
 				{
+				cryptDestroyCert( cryptCert1 );
+				if( cryptCert2 != CRYPT_UNUSED )
+					cryptDestroyCert( cryptCert2 );
 				cryptDestroySession( cryptSession );
 				puts( "  (Verisign's OCSP responder sends broken responses, "
 					  "continuing...)\n" );
@@ -823,6 +846,9 @@ static int connectOCSP( const CRYPT_SESSION_TYPE sessionType,
 		if( !isServer && isServerDown( cryptSession, status ) )
 			{
 			puts( "  (Server could be down, faking it and continuing...)\n" );
+			cryptDestroyCert( cryptCert1 );
+			if( cryptCert2 != CRYPT_UNUSED )
+				cryptDestroyCert( cryptCert2 );
 			cryptDestroySession( cryptSession );
 			return( CRYPT_ERROR_FAILED );
 			}
@@ -835,6 +861,7 @@ static int connectOCSP( const CRYPT_SESSION_TYPE sessionType,
 		{
 		CRYPT_CERTIFICATE cryptOCSPResponse;
 		
+		/* Display the status information in the response */
 		status = cryptGetAttribute( cryptSession, CRYPT_SESSINFO_RESPONSE,
 									&cryptOCSPResponse );
 		if( cryptStatusError( status ) )
@@ -844,7 +871,24 @@ static int connectOCSP( const CRYPT_SESSION_TYPE sessionType,
 			return( FALSE );
 			}
 		printCertInfo( cryptOCSPResponse );
+
+		/* Check each certificate against the response.  This is somewhat
+		   redundant since the status has already been displayed by the code
+		   above, but it tests the check-against-response functionality */
+		status = cryptCheckCert( cryptCert1, cryptOCSPResponse );
+		printf( "Check of certificate status against OCSP response reports "
+				"status %d.\n", status );
+		if( cryptCert2 != CRYPT_UNUSED )
+			{
+			status = cryptCheckCert( cryptCert2, cryptOCSPResponse );
+			printf( "Check of second certificate status against OCSP "
+					"response reports status %d.\n", status );
+			}
+
 		cryptDestroyCert( cryptOCSPResponse );
+		cryptDestroyCert( cryptCert1 );
+		if( cryptCert2 != CRYPT_UNUSED )
+			cryptDestroyCert( cryptCert2 );
 		}
 
 	/* There are so many weird ways to delegate trust and signing authority
@@ -967,6 +1011,25 @@ int testSessionOCSPClientServer( void )
 
 	/* Connect to the local server */
 	status = connectOCSP( CRYPT_SESSION_OCSP, FALSE, FALSE, TRUE );
+	waitForThread( hThread );
+	destroyMutex();
+	return( status );
+	}
+
+int testSessionOCSPMulticertClientServer( void )
+	{
+	HANDLE hThread;
+	unsigned threadID;
+	int status;
+
+	/* Start the server and wait for it to initialise */
+	createMutex();
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, ocspServerThread,
+										 NULL, 0, &threadID );
+	Sleep( 1000 );
+
+	/* Connect to the local server */
+	status = connectOCSP( CRYPT_SESSION_OCSP, FALSE, TRUE, TRUE );
 	waitForThread( hThread );
 	destroyMutex();
 	return( status );
@@ -1184,8 +1247,12 @@ static int connectTSP( const CRYPT_SESSION_TYPE sessionType,
 			localSession ? "local " : "" );
 
 	/* Acquire the init mutex if we're the server */
-	if( localSession && isServer )
-		waitMutex();
+	if( localSession && isServer && waitMutex() == CRYPT_ERROR_TIMEOUT )
+		{
+		printf( "Timed out waiting for server to initialise, line %d.\n",
+				__LINE__ );
+		return( FALSE );
+		}		
 
 	/* Create the TSP session */
 	status = cryptCreateSession( &cryptSession, CRYPT_UNUSED, sessionType );

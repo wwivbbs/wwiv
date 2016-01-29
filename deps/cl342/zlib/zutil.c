@@ -11,6 +11,8 @@
   #include "zlib/zutil.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_COMPRESSION
+
 #ifndef NO_DUMMY_DECL
 struct internal_state      {int dummy;}; /* for buggy compilers */
 #endif
@@ -323,3 +325,4 @@ void  zcfree (voidpf opaque, voidpf ptr)		/* pcg */
 }
 
 #endif /* MY_ZCALLOC */
+#endif /* USE_COMPRESSION */

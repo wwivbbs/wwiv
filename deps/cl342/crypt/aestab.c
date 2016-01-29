@@ -1,33 +1,21 @@
 /*
- ---------------------------------------------------------------------------
- Copyright (c) 1998-2006, Brian Gladman, Worcester, UK. All rights reserved.
+---------------------------------------------------------------------------
+Copyright (c) 1998-2013, Brian Gladman, Worcester, UK. All rights reserved.
 
- LICENSE TERMS
+The redistribution and use of this software (with or without changes)
+is allowed without the payment of fees or royalties provided that:
 
- The free distribution and use of this software in both source and binary
- form is allowed (with or without changes) provided that:
+  source code distributions include the above copyright notice, this
+  list of conditions and the following disclaimer;
 
-   1. distributions of this source code include the above copyright
-      notice, this list of conditions and the following disclaimer;
+  binary distributions include the above copyright notice, this list
+  of conditions and the following disclaimer in their documentation.
 
-   2. distributions in binary form include the above copyright
-      notice, this list of conditions and the following disclaimer
-      in the documentation and/or other associated materials;
-
-   3. the copyright holder's name is not used to endorse products
-      built using this software without specific written permission.
-
- ALTERNATIVELY, provided that this notice is retained in full, this product
- may be distributed under the terms of the GNU General Public License (GPL),
- in which case the provisions of the GPL apply INSTEAD OF those given above.
-
- DISCLAIMER
-
- This software is provided 'as is' with no explicit or implied warranties
- in respect of its properties, including, but not limited to, correctness
- and/or fitness for purpose.
- ---------------------------------------------------------------------------
- Issue 09/09/2006
+This software is provided 'as is' with no explicit or implied warranties
+in respect of its operation, including, but not limited to, correctness
+and fitness for purpose.
+---------------------------------------------------------------------------
+Issue Date: 20/12/2007
 */
 
 #define DO_TABLES
@@ -187,7 +175,6 @@
 #define fb(x) ((x) ? pow[log[x] + 0x68] : 0)
 #define fd(x) ((x) ? pow[log[x] + 0xee] : 0)
 #define fe(x) ((x) ? pow[log[x] + 0xdf] : 0)
-#define fi(x) ((x) ? pow[ 255 - log[x]] : 0)
 
 #endif
 
@@ -207,13 +194,15 @@ AES_RETURN aes_init(void)
     return EXIT_SUCCESS;
 }
 
-#else   /* dynamic table generation */
+#else   /*  Generate the tables for the dynamic table option */
 
-#if !defined(FF_TABLES)
+#if defined(FF_TABLES)
 
-/*  Generate the tables for the dynamic table option
+#define gf_inv(x)   ((x) ? pow[ 255 - log[x]] : 0)
 
-    It will generally be sensible to use tables to compute finite
+#else 
+
+/*  It will generally be sensible to use tables to compute finite
     field multiplies and inverses but where memory is scarse this
     code might sometimes be better. But it only has effect during
     initialisation so its pretty unimportant in overall terms.
@@ -224,8 +213,8 @@ AES_RETURN aes_init(void)
     used so that locals within fi can be bytes rather than words
 */
 
-static uint_8t hibit(const uint_32t x)
-{   uint_8t r = (uint_8t)((x >> 1) | (x >> 2));
+static uint8_t hibit(const uint32_t x)
+{   uint8_t r = (uint8_t)((x >> 1) | (x >> 2));
 
     r |= (r >> 2);
     r |= (r >> 4);
@@ -234,47 +223,61 @@ static uint_8t hibit(const uint_32t x)
 
 /* return the inverse of the finite field element x */
 
-static uint_8t fi(const uint_8t x)
-{   uint_8t p1 = x, p2 = BPOLY, n1 = hibit(x), n2 = 0x80, v1 = 1, v2 = 0;
+static uint8_t gf_inv(const uint8_t x)
+{   uint8_t p1 = x, p2 = BPOLY, n1 = hibit(x), n2 = 0x80, v1 = 1, v2 = 0;
 
-    if(x < 2) return x;
+    if(x < 2) 
+        return x;
 
-    for(;;)
+    for( ; ; )
     {
-        if(!n1) return v1;
+        if(n1)
+            while(n2 >= n1)             /* divide polynomial p2 by p1    */
+            {
+                n2 /= n1;               /* shift smaller polynomial left */ 
+                p2 ^= (p1 * n2) & 0xff; /* and remove from larger one    */
+                v2 ^= v1 * n2;          /* shift accumulated value and   */ 
+                n2 = hibit(p2);         /* add into result               */
+            }
+        else
+            return v1;
 
-        while(n2 >= n1)
-        {
-            n2 /= n1; p2 ^= p1 * n2; v2 ^= v1 * n2; n2 = hibit(p2);
-        }
-
-        if(!n2) return v2;
-
-        while(n1 >= n2)
-        {
-            n1 /= n2; p1 ^= p2 * n1; v1 ^= v2 * n1; n1 = hibit(p1);
-        }
+        if(n2)                          /* repeat with values swapped    */ 
+            while(n1 >= n2)
+            {
+                n1 /= n2; 
+                p1 ^= p2 * n1; 
+                v1 ^= v2 * n1; 
+                n1 = hibit(p1);
+            }
+        else
+            return v2;
     }
 }
 
 #endif
 
 /* The forward and inverse affine transformations used in the S-box */
+uint8_t fwd_affine(const uint8_t x)
+{   uint32_t w = x;
+    w ^= (w << 1) ^ (w << 2) ^ (w << 3) ^ (w << 4);
+    return 0x63 ^ ((w ^ (w >> 8)) & 0xff);
+}
 
-#define fwd_affine(x) \
-    (w = (uint_32t)x, w ^= (w<<1)^(w<<2)^(w<<3)^(w<<4), 0x63^(uint_8t)(w^(w>>8)))
-
-#define inv_affine(x) \
-    (w = (uint_32t)x, w = (w<<1)^(w<<3)^(w<<6), 0x05^(uint_8t)(w^(w>>8)))
+uint8_t inv_affine(const uint8_t x)
+{   uint32_t w = x;
+    w = (w << 1) ^ (w << 3) ^ (w << 6);
+    return 0x05 ^ ((w ^ (w >> 8)) & 0xff);
+}
 
 static int init = 0;
 
 AES_RETURN aes_init(void)
-{   uint_32t  i, w;
+{   uint32_t  i, w;
 
 #if defined(FF_TABLES)
 
-    uint_8t  pow[512], log[256];
+    uint8_t  pow[512], log[256];
 
     if(init)
         return EXIT_SUCCESS;
@@ -286,9 +289,9 @@ AES_RETURN aes_init(void)
     i = 0; w = 1;
     do
     {
-        pow[i] = (uint_8t)w;
-        pow[i + 255] = (uint_8t)w;
-        log[w] = (uint_8t)i++;
+        pow[i] = (uint8_t)w;
+        pow[i + 255] = (uint8_t)w;
+        log[w] = (uint8_t)i++;
         w ^=  (w << 1) ^ (w & 0x80 ? WPOLY : 0);
     }
     while (w != 1);
@@ -305,9 +308,9 @@ AES_RETURN aes_init(void)
     }
 
     for(i = 0; i < 256; ++i)
-    {   uint_8t    b;
+    {   uint8_t    b;
 
-        b = fwd_affine(fi((uint_8t)i));
+        b = fwd_affine(gf_inv((uint8_t)i));
         w = bytes2word(f2(b), b, b, f3(b));
 
 #if defined( SBX_SET )
@@ -325,7 +328,7 @@ AES_RETURN aes_init(void)
 #endif
         w = bytes2word(b, 0, 0, 0);
 
-#if defined( FL1_SET )                 /* tables for last encryption round (may also   */
+#if defined( FL1_SET )            /* tables for last encryption round (may also   */
         t_set(f,l)[i] = w;        /* be used in the key schedule)                 */
 #endif
 #if defined( FL4_SET )
@@ -335,7 +338,7 @@ AES_RETURN aes_init(void)
         t_set(f,l)[3][i] = upr(w,3);
 #endif
 
-#if defined( LS1_SET )                 /* table for key schedule if t_set(f,l) above is    */
+#if defined( LS1_SET )			/* table for key schedule if t_set(f,l) above is*/
         t_set(l,s)[i] = w;      /* not of the required form                     */
 #endif
 #if defined( LS4_SET )
@@ -345,10 +348,10 @@ AES_RETURN aes_init(void)
         t_set(l,s)[3][i] = upr(w,3);
 #endif
 
-        b = fi(inv_affine((uint_8t)i));
+        b = gf_inv(inv_affine((uint8_t)i));
         w = bytes2word(fe(b), f9(b), fd(b), fb(b));
 
-#if defined( IM1_SET )                 /* tables for the inverse mix column operation  */
+#if defined( IM1_SET )			/* tables for the inverse mix column operation  */
         t_set(i,m)[b] = w;
 #endif
 #if defined( IM4_SET )
@@ -361,7 +364,7 @@ AES_RETURN aes_init(void)
 #if defined( ISB_SET )
         t_set(i,box)[i] = b;
 #endif
-#if defined( IT1_SET )                 /* tables for a normal decryption round */
+#if defined( IT1_SET )			/* tables for a normal decryption round */
         t_set(i,n)[i] = w;
 #endif
 #if defined( IT4_SET )
@@ -371,7 +374,7 @@ AES_RETURN aes_init(void)
         t_set(i,n)[3][i] = upr(w,3);
 #endif
         w = bytes2word(b, 0, 0, 0);
-#if defined( IL1_SET )                 /* tables for last decryption round */
+#if defined( IL1_SET )			/* tables for last decryption round */
         t_set(i,l)[i] = w;
 #endif
 #if defined( IL4_SET )

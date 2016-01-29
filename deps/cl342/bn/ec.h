@@ -80,8 +80,7 @@
 
 	- Replace OPENSSL_malloc() with clBnAlloc() in ecp_smpl.c, ec_lib.c,
 		ec_mult.c, ec_rand.c.
-	- Replace OPENSSL_free() with clBnFree() in ec_lib.c.
-	- Add BN_checksum_ec() et al to the end of ec_lib.c */
+	- Replace OPENSSL_free() with clBnFree() in ec_lib.c */
 
 #if defined( INC_ALL )		/* pcg */
   #include "osconfig.h"
@@ -148,15 +147,6 @@ typedef struct ec_group_st
 	EC_GROUP;
 
 typedef struct ec_point_st EC_POINT;
-
-/* Further cryptlib changes - pcg */
-
-void BN_checksum_ec_group_metadata( EC_GROUP *group, int *chk );	/* pcg */
-void BN_checksum_ec_group( EC_GROUP *group, int *chk );		/* pcg */
-void BN_checksum_ec_point_metadata( EC_POINT *point, int *chk );	/* pcg */
-void BN_checksum_ec_point( EC_POINT *point, int *chk );		/* pcg */
-
-/* End of cryptlib changes - pcg */
 
 /********************************************************************/
 /*               EC_METHODs for curves over GF(p)                   */       

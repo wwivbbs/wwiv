@@ -273,7 +273,7 @@ static void dummyEncrypt( const PERSONALITY_INFO *personalityInfoPtr,
 	   for things like chaining problems, which means that for stream 
 	   ciphers we really can't do anything more than repeatedly XOR with a
 	   fixed key byte */
-	if( cryptMode == CRYPT_MODE_CFB || cryptMode == CRYPT_MODE_OFB )
+	if( cryptMode == CRYPT_MODE_CFB )
 		{
 		const int keyDataOffset = CRYPT_MODE_CFB ? 0 : 1;
 
@@ -299,7 +299,7 @@ static void dummyGenRandom( void *buffer, const int length )
 
 	assert( isWritePtr( buffer, length ) );
 
-	REQUIRES_V( length >= 1 && length < MAX_INTLENGTH );
+	REQUIRES_V( length >= 1 && length < MAX_BUFFER_SIZE );
 
 	/* Fill the buffer with random-ish data.  This gets a bit tricky because
 	   we need to fool the entropy tests so we can't just fill it with a 
@@ -516,37 +516,6 @@ static int aesDecryptCFB( CONTEXT_INFO *contextInfoPtr, void *buffer,
 
 	dummyEncrypt( personalityInfoPtr, buffer, length, CRYPT_ALGO_AES,
 				  CRYPT_MODE_CFB );
-	return( CRYPT_OK );
-	}
-
-static int aesEncryptOFB( CONTEXT_INFO *contextInfoPtr, void *buffer, 
-						  int length )
-	{
-	PERSONALITY_INFO *personalityInfoPtr = \
-				&personalityInfo[ contextInfoPtr->deviceObject ];
-
-	assert( isWritePtr( contextInfoPtr, sizeof( CONTEXT_INFO ) ) );
-	assert( isWritePtr( buffer, length ) );
-
-	REQUIRES( length >= 1 && length <= MAX_INTLENGTH );
-
-	dummyEncrypt( personalityInfoPtr, buffer, length, CRYPT_ALGO_AES,
-				  CRYPT_MODE_OFB );
-	return( CRYPT_OK );
-	}
-static int aesDecryptOFB( CONTEXT_INFO *contextInfoPtr, void *buffer, 
-						  int length )
-	{
-	PERSONALITY_INFO *personalityInfoPtr = \
-				&personalityInfo[ contextInfoPtr->deviceObject ];
-
-	assert( isWritePtr( contextInfoPtr, sizeof( CONTEXT_INFO ) ) );
-	assert( isWritePtr( buffer, length ) );
-
-	REQUIRES( length >= 1 && length <= MAX_INTLENGTH );
-
-	dummyEncrypt( personalityInfoPtr, buffer, length, CRYPT_ALGO_AES,
-				  CRYPT_MODE_OFB );
 	return( CRYPT_OK );
 	}
 
@@ -856,7 +825,7 @@ static const CAPABILITY_INFO capabilities[] = {
 	{ CRYPT_ALGO_RSA, bitsToBytes( 0 ), "RSA", 3,
 		MIN_PKCSIZE, bitsToBytes( 1024 ), CRYPT_MAX_PKCSIZE,
 		rsaSelfTest, getDefaultInfo, cleanupHardwareContext, NULL, rsaInitKey, rsaGenerateKey, 
-		rsaEncrypt, rsaDecrypt, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
+		rsaEncrypt, rsaDecrypt, NULL, NULL, NULL, NULL, NULL, NULL, 
 		rsaSign, rsaSigCheck },
 
 	/* The AES capabilities */
@@ -864,8 +833,7 @@ static const CAPABILITY_INFO capabilities[] = {
 		bitsToBytes( 128 ), bitsToBytes( 128 ), bitsToBytes( 256 ),
 		aesSelfTest, getDefaultInfo, cleanupHardwareContext, initGenericParams, aesInitKey, aesGenerateKey,
 		aesEncryptECB, aesDecryptECB, aesEncryptCBC, aesDecryptCBC,
-		aesEncryptCFB, aesDecryptCFB, aesEncryptOFB, aesDecryptOFB,
-		NULL, NULL /* For GCM */ },
+		aesEncryptCFB, aesDecryptCFB, NULL, NULL /* For GCM */ },
 
 	/* The SHA-1 capabilities */
 	{ CRYPT_ALGO_SHA1, bitsToBytes( 160 ), "SHA-1", 5,
@@ -897,7 +865,7 @@ int hwGetRandom( void *buffer, const int length )
 	{
 	assert( isWritePtr( buffer, length ) );
 
-	REQUIRES( length >= 1 && length < MAX_INTLENGTH );
+	REQUIRES( length >= 1 && length < MAX_BUFFER_SIZE );
 
 	/* Fill the buffer with random-ish data */
 	dummyGenRandom( buffer, length );

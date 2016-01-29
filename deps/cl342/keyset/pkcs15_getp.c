@@ -52,7 +52,7 @@ static const OID_INFO FAR_BSS dataOIDinfo[] = {
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 static int getPermittedActions( IN_FLAGS( PKCS15_USAGE ) const int usageFlags,
 								IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo,
-								OUT_FLAGS_Z( ACTION ) int *usage )
+								OUT_FLAGS_Z( ACTION_PERM ) int *usage )
 	{
 	int actionFlags = ACTION_PERM_NONE_ALL;
 
@@ -115,8 +115,8 @@ int readPublicKeyComponents( const PKCS15_INFO *pkcs15infoPtr,
 							 IN_HANDLE const CRYPT_DEVICE iDeviceObject, 
 							 OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContextPtr,
 							 OUT_HANDLE_OPT CRYPT_CERTIFICATE *iDataCertPtr,
-							 OUT_FLAGS_Z( ACTION ) int *pubkeyActionFlags, 
-							 OUT_FLAGS_Z( ACTION ) int *privkeyActionFlags, 
+							 OUT_FLAGS_Z( ACTION_PERM ) int *pubkeyActionFlags, 
+							 OUT_FLAGS_Z( ACTION_PERM ) int *privkeyActionFlags, 
 							 INOUT ERROR_INFO *errorInfo )
 	{
 	CRYPT_CONTEXT iCryptContext;
@@ -369,7 +369,7 @@ static int importSessionKey( IN_HANDLE const CRYPT_CONTEXT iSessionKey,
 /* Initialise decryption and MAC contexts and keys from a generic-secret 
    context */
 
-CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 2, 3, 4 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 3, 4 ) ) \
 static int initKeys( IN_HANDLE const CRYPT_CONTEXT iGenericContext,
 					 OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 					 OUT_HANDLE_OPT CRYPT_CONTEXT *iMacContext,
@@ -378,7 +378,7 @@ static int initKeys( IN_HANDLE const CRYPT_CONTEXT iGenericContext,
 	{
 	CRYPT_CONTEXT iAuthEncCryptContext, iAuthEncMacContext;
 #ifdef MAC_KEYSIZE_BUG
-	CRYPT_CONTEXT iAuthEncMacAltContext = DUMMY_INIT;
+	CRYPT_CONTEXT iAuthEncMacAltContext DUMMY_INIT;
 #endif /* MAC_KEYSIZE_BUG */
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	MECHANISM_KDF_INFO mechanismInfo;
@@ -464,8 +464,9 @@ static int initKeys( IN_HANDLE const CRYPT_CONTEXT iGenericContext,
 	   EncryptedContentInfo.ContentEncryptionAlgorithmIdentifier, so we skip
 	   MAC'ing that part of the data as well */
 	setMessageCreateObjectInfo( &createInfo, CRYPT_ALGO_HMAC_SHA1 );
-	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_DEV_CREATEOBJECT,
-							  &createInfo, OBJECT_TYPE_CONTEXT );
+	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+							  IMESSAGE_DEV_CREATEOBJECT, &createInfo, 
+							  OBJECT_TYPE_CONTEXT );
 	if( cryptStatusError( status ) )
 		{
 		krnlSendNotifier( iAuthEncCryptContext, IMESSAGE_DECREFCOUNT );
@@ -477,7 +478,8 @@ static int initKeys( IN_HANDLE const CRYPT_CONTEXT iGenericContext,
 		static const int macKeySize = bitsToBytes( 128 );
 
 		iAuthEncMacAltContext = createInfo.cryptHandle;
-		status = krnlSendMessage( iAuthEncMacAltContext, IMESSAGE_SETATTRIBUTE,
+		status = krnlSendMessage( iAuthEncMacAltContext, 
+								  IMESSAGE_SETATTRIBUTE,
 								  ( MESSAGE_CAST ) &macKeySize, 
 								  CRYPT_CTXINFO_KEYSIZE );
 		}
@@ -519,7 +521,7 @@ static int verifyEncKey( INOUT_HANDLE CRYPT_CONTEXT *iCryptContext,
 							const void *macValue, 
 						 IN_LENGTH_HASH const int macValueLength, 
 						 const QUERY_INFO *queryInfo,
-						 INOUT ERROR_INFO *errorInfo )
+						 OUT ERROR_INFO *errorInfo )
 	{
 	const CRYPT_CONTEXT iOriginalCryptContext = *iCryptContext;
 	CRYPT_CONTEXT iDerivedCryptContext, iMacContext, iMacAltContext;
@@ -536,6 +538,9 @@ static int verifyEncKey( INOUT_HANDLE CRYPT_CONTEXT *iCryptContext,
 	REQUIRES( encryptedContentLength > 0 && \
 			  encryptedContentLength < MAX_INTLENGTH_SHORT );
 	REQUIRES( macValueLength >= 16 && macValueLength <= CRYPT_MAX_HASHSIZE );
+
+	/* Clear return value */
+	memset( errorInfo, 0, sizeof( ERROR_INFO ) );
 
 	/* We're using authenticated encryption so we have to apply an 
 	   intermediate step that transforms the generic-secret context into 
@@ -631,21 +636,22 @@ int readPrivateKeyComponents( const PKCS15_INFO *pkcs15infoPtr,
 	CRYPT_CONTEXT iCryptContext;
 	MECHANISM_WRAP_INFO mechanismInfo;
 	MESSAGE_DATA msgData;
-	QUERY_INFO queryInfo = DUMMY_INIT_STRUCT, contentQueryInfo;
+	QUERY_INFO queryInfo DUMMY_INIT_STRUCT, contentQueryInfo;
 	STREAM stream;
 	BYTE macValue[ CRYPT_MAX_HASHSIZE + 8 ];
 	BOOLEAN isAuthEnc = FALSE;
 	const int privKeyStartOffset = pkcs15infoPtr->privKeyOffset;
 	const int privKeyTotalSize = pkcs15infoPtr->privKeyDataSize;
-	void *encryptedKey, *encryptedContent = DUMMY_INIT_PTR;
-	int encryptedContentLength = DUMMY_INIT, macValueLength = DUMMY_INIT;
-	int tag, status;
+	void *encryptedKey, *encryptedContent DUMMY_INIT_PTR;
+	int encryptedContentLength DUMMY_INIT, macValueLength DUMMY_INIT;
+	int checksum, tag, status;
 
 	assert( isReadPtr( pkcs15infoPtr, sizeof( PKCS15_INFO ) ) );
 	assert( ( isStorageObject && \
 			  password == NULL && passwordLength == 0 ) || \
 			( !isStorageObject && \
 			  isReadPtr( password, passwordLength ) ) );
+	assert( isWritePtr( errorInfo, sizeof( ERROR_INFO ) ) );
 
 	REQUIRES( isHandleRangeValid( iPrivKeyContext ) );
 	REQUIRES( ( isStorageObject && \
@@ -748,7 +754,10 @@ int readPrivateKeyComponents( const PKCS15_INFO *pkcs15infoPtr,
 		status = sMemGetDataBlock( &stream, &encryptedContent, 
 								   encryptedContentLength );
 		if( cryptStatusOK( status ) )
-			status = sSkip( &stream, encryptedContentLength );
+			{
+			status = sSkip( &stream, encryptedContentLength, 
+							MAX_INTLENGTH_SHORT );
+			}
 		if( cryptStatusOK( status ) && \
 			( encryptedContentLength < MIN_OBJECT_SIZE || \
 			  encryptedContentLength > MAX_INTLENGTH_SHORT ) )
@@ -773,6 +782,8 @@ int readPrivateKeyComponents( const PKCS15_INFO *pkcs15infoPtr,
 				( status, errorInfo, 
 				  "Invalid encrypted private key data" ) );
 		}
+	ANALYSER_HINT( encryptedContent != NULL );
+	checksum = checksumData( encryptedContent, encryptedContentLength );
 
 	/* Import the session key using the user password */
 	status = importSessionKey( iCryptContext, encryptedKey, queryInfo.size, 
@@ -841,6 +852,15 @@ int readPrivateKeyComponents( const PKCS15_INFO *pkcs15infoPtr,
 						( status, errorInfo, 
 						  "Couldn't unwrap/import private key" ) );
 			}
+		}
+	if( checksumData( encryptedContent, 
+					  encryptedContentLength ) != checksum )
+		{
+		/* The encrypted private-key data was corrupted between the MAC 
+		   check and when it was decrypted and loaded into the context, we 
+		   can't trust the key */
+		DEBUG_DIAG(( "Encrypted private-key data memory corruption detected" ));
+		return( CRYPT_ERROR_FAILED );
 		}
 
 	return( CRYPT_OK );

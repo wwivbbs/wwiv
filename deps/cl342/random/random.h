@@ -1,13 +1,30 @@
 /****************************************************************************
 *																			*
 *						  cryptlib Randomness Interface						*
-*						Copyright Peter Gutmann 1995-2006					*
+*						Copyright Peter Gutmann 1995-2012					*
 *																			*
 ****************************************************************************/
 
 #ifndef _RANDOM_DEFINED
 
 #define _RANDOM_DEFINED
+
+/****************************************************************************
+*																			*
+*					Randomness Constants and Data Types						*
+*																			*
+****************************************************************************/
+
+/* The maximum amount of random data needed by any cryptlib operation,
+   equivalent to the size of a maximum-length PKC key.  However this isn't 
+   the absolute length because when generating the k value for DLP
+   operations we get n + m bits and then reduce via one of the DLP
+   parameters to get the value within range.  If we just got n bits this
+   would introduce a bias into the top bit, see the DLP code for more
+   details.  Because of this we allow a length slightly larger than the
+   maximum PKC key size */
+
+#define MAX_RANDOM_BYTES	( CRYPT_MAX_PKCSIZE + 8 )
 
 /****************************************************************************
 *																			*
@@ -24,9 +41,10 @@
   void endRandomPolling( void );
   CHECK_RETVAL \
   int waitforRandomCompletion( const BOOLEAN force );
-#elif defined( __UNIX__ ) && \
-	  !( defined( __MVS__ ) || defined( __TANDEM_NSK__ ) || \
-		 defined( __TANDEM_OSS__ ) )
+#elif defined( __Android__ ) || \
+	  ( defined( __UNIX__ ) && \
+		!( defined( __MVS__ ) || defined( __TANDEM_NSK__ ) || \
+		   defined( __TANDEM_OSS__ ) ) )
   void initRandomPolling( void );
   void endRandomPolling( void );
   CHECK_RETVAL \
@@ -44,9 +62,10 @@
    following function checks whether we've forked or not, which is used as a
    signal to adjust the pool contents */
 
-#if defined( __UNIX__ ) && \
-	!( defined( __MVS__ ) || defined( __TANDEM_NSK__ ) || \
-	   defined( __TANDEM_OSS__ ) )
+#if defined( __Android__ ) || \
+	( defined( __UNIX__ ) && \
+	  !( defined( __MVS__ ) || defined( __TANDEM_NSK__ ) || \
+		 defined( __TANDEM_OSS__ ) ) )
   CHECK_RETVAL_BOOL \
   BOOLEAN checkForked( void );
 #else
@@ -77,8 +96,8 @@ void fastPoll( void );
 typedef BYTE RANDOM_STATE[ 128 ];
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int initRandomData( INOUT void *statePtr, 
-					IN_BUFFER( maxSize ) void *buffer, 
+int initRandomData( OUT void *statePtr, 
+					WORKING_BUFFER( maxSize ) void *buffer, 
 					IN_LENGTH_SHORT_MIN( 16 ) const int maxSize );
 RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int addRandomData( INOUT void *statePtr, 
@@ -107,13 +126,13 @@ int endRandomData( INOUT void *statePtr, \
 /* Prototypes for functions in random.c */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int initRandomInfo( OUT_OPT_PTR void **randomInfoPtrPtr );
+int initRandomInfo( OUT_PTR_COND void **randomInfoPtrPtr );
 STDC_NONNULL_ARG( ( 1 ) ) \
 void endRandomInfo( INOUT void **randomInfoPtrPtr );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int addEntropyData( INOUT void *randomInfoPtr, 
 					IN_BUFFER( length ) const void *buffer, 
-					IN_LENGTH const int length );
+					IN_DATALENGTH const int length );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int addEntropyQuality( INOUT void *randomInfoPtr, 
 					   IN_RANGE( 1, 100 ) const int quality );

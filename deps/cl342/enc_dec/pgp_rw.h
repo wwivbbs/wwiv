@@ -33,7 +33,8 @@
 		  ( length <= 191 ) ? 1 : \
 		  ( length <= 8383 ) ? 2 : 4 )
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int pgpReadShortLength( INOUT STREAM *stream, OUT_LENGTH int *length, 
+int pgpReadShortLength( INOUT STREAM *stream, 
+						OUT_LENGTH_SHORT_Z int *length, 
 						IN_BYTE const int ctb );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int pgpReadPartialLength( INOUT STREAM *stream, 
@@ -50,7 +51,8 @@ int pgpWriteLength( INOUT STREAM *stream, IN_LENGTH const long length );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int pgpReadPacketHeader( INOUT STREAM *stream, OUT_OPT_BYTE int *ctb, 
 						 OUT_OPT_LENGTH_Z long *length, 
-						 IN_LENGTH_SHORT const int minLength );
+						 IN_LENGTH_SHORT const int minLength,
+						 IN_LENGTH const long maxLength );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int pgpReadPacketHeaderI( INOUT STREAM *stream, OUT_OPT_BYTE int *ctb, 
 						  OUT_OPT_LENGTH_Z long *length, 
@@ -58,7 +60,7 @@ int pgpReadPacketHeaderI( INOUT STREAM *stream, OUT_OPT_BYTE int *ctb,
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int pgpWritePacketHeader( INOUT STREAM *stream, 
 						  IN_ENUM( PGP_PACKET ) \
-						  const PGP_PACKET_TYPE packetType,
+							const PGP_PACKET_TYPE packetType,
 						  IN_LENGTH const long length );
 
 #endif /* _PGPRW_DEFINED */

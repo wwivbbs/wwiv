@@ -7,11 +7,9 @@
 
 #if defined( INC_ALL )
   #include "cert.h"
-  #include "asn1.h"
   #include "asn1_ext.h"
 #else
   #include "cert/cert.h"
-  #include "enc_dec/asn1.h"
   #include "enc_dec/asn1_ext.h"
 #endif /* Compiler-specific includes */
 
@@ -195,7 +193,7 @@ int deleteCertComponent( INOUT CERT_INFO *certInfoPtr,
 	if( isGeneralNameComponent( certInfoType ) )
 		{
 		SELECTION_STATE selectionState;
-		ATTRIBUTE_PTR *attributePtr = DUMMY_INIT_PTR;
+		ATTRIBUTE_PTR *attributePtr DUMMY_INIT_PTR;
 
 		/* Find the requested GeneralName component.  Since 
 		   selectGeneralNameComponent() changes the current selection within 
@@ -225,8 +223,10 @@ int deleteCertComponent( INOUT CERT_INFO *certInfoPtr,
 		status = selectDN( certInfoPtr, CRYPT_ATTRIBUTE_NONE,
 						   MUST_BE_PRESENT );
 		if( cryptStatusOK( status ) )
+			{
 			status = deleteDNComponent( certInfoPtr->currentSelection.dnPtr,
 										certInfoType, NULL, 0 );
+			}
 		return( status );
 		}
 
@@ -326,6 +326,14 @@ int deleteCertComponent( INOUT CERT_INFO *certInfoPtr,
 			return( CRYPT_OK );
 			}
 #endif /* USE_CERTREV */
+
+#ifdef USE_PKIUSER
+		case CRYPT_CERTINFO_PKIUSER_RA:
+			if( !certInfoPtr->cCertUser->isRA )
+				return( CRYPT_ERROR_NOTFOUND );
+			certInfoPtr->cCertUser->isRA = FALSE;
+			return( CRYPT_OK );
+#endif /* USE_PKIUSER */
 		}
 
 	retIntError();

@@ -9,10 +9,6 @@
 
 #define _ACL_DEFINED
 
-/* Various includes and defines needed for range checking */
-
-#include <limits.h>		/* For INT_MAX */
-
 /****************************************************************************
 *																			*
 *							Object Type Information							*
@@ -345,6 +341,13 @@ typedef enum {
 /* Attribute ACL entry.  If the code is compiled in debug mode, we also add
    the attribute type, which is used for an internal consistency check */
 
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 2 ) ) \
+	int ( *ROUTING_FUNCTION )( IN_HANDLE \
+									const CRYPT_HANDLE originalObjectHandle, 
+							   OUT_HANDLE_OPT \
+									CRYPT_HANDLE *targetObjectHandle,
+							   const long targets );
+
 typedef struct {
 #ifndef NDEBUG
 	/* The attribute type, used for consistency checking */
@@ -366,7 +369,7 @@ typedef struct {
 	   value if there are more than one type) that the attribute applies to,
 	   and the routing function applied to the attribute message */
 	const long routingTarget;		/* Target type(s) if routable */
-	int ( *routingFunction )( const int objectHandle, const long arg );
+	ROUTING_FUNCTION routingFunction;
 
 	/* Attribute value checking information */
 	const int lowRange;				/* Min/max allowed if numeric/boolean, */
@@ -507,6 +510,13 @@ typedef struct {
    ACL entry entry type (and associated setup macros) that differs from the
    standard one in that the attribute member is present unconditionally.
 
+   In addition to this, the "attribute" being checked may not be a standard 
+   attribute but some other enumerated type, so we have to make the 
+   supposed attribute a typeless 'int' to avoid type-conversion issues 
+   (CRYPT_ATTRIBUTE_TYPE has an artificial member set to INT_MAX to make 
+   sure that it's the same size as an integer for compilers with variable-
+   width enums).
+
    We have to be especially careful here because the parent type differs
    depending on whether it's a normal or debug build.  For the debug build
    the 'attribute' member is present at the start, for the release build
@@ -515,19 +525,19 @@ typedef struct {
 
 typedef struct {
 #ifndef NDEBUG
-	const CRYPT_ATTRIBUTE_TYPE attribute;/* Attribute */
+	const int /*CRYPT_ATTRIBUTE_TYPE*/ attribute;/* Attribute */
 #endif /* !NDEBUG */
 	const ATTRIBUTE_VALUE_TYPE valueType;/* Attribute value type */
 	const OBJECT_SUBTYPE subTypeA, subTypeB, subTypeC;
 	const int access;				/* Permitted access type */
 	const int flags;				/* Attribute flags */
 	const long routingTarget;		/* Target type if routable */
-	int ( *routingFunction )( const int objectHandle, const long arg );
+	ROUTING_FUNCTION routingFunction;
 	const int lowRange;				/* Min/max allowed if numeric/boolean, */
 	const int highRange;			/*	length if string */
 	const void *extendedInfo;		/* Extended access information */
 #ifdef NDEBUG
-	const CRYPT_ATTRIBUTE_TYPE attribute;/* Attribute */
+	const int /*CRYPT_ATTRIBUTE_TYPE*/ attribute;/* Attribute */
 #endif /* NDEBUG */
 	} ATTRIBUTE_ACL_ALT;
 
@@ -757,7 +767,7 @@ typedef struct {
 typedef struct CRA {
 	const OBJECT_TYPE type;			/* Object type */
 	const PARAM_ACL paramACL[ 5 ];	/* Parameter ACL information */
-	const int exceptions[ 2 ];		/* Subtypes that need special handling */
+	const int exceptions[ 4 ];		/* Subtypes that need special handling */
 	const struct CRA *exceptionACL;	/* Special-handling ACL */
 	} CREATE_ACL;
 
@@ -845,8 +855,8 @@ typedef struct CAA {
 #define MK_CHKACL_ALT( depObj, depObjSTA, fdCheck ) \
 			depObj, { depObjSTA, ST_NONE, ST_NONE, ACL_FLAG_HIGH_STATE }, fdCheck
 #define MK_CHKACL_ALT_END() \
-			MESSAGE_NONE, \
-			OBJECT_TYPE_NONE, { ST_NONE, ST_NONE, ST_NONE, ACL_FLAG_NONE }, MESSAGE_NONE, 
+			MESSAGE_CHECK_NONE, \
+			OBJECT_TYPE_NONE, { ST_NONE, ST_NONE, ST_NONE, ACL_FLAG_NONE }, MESSAGE_CHECK_NONE
 
 /* Object dependency ACL entry, used when making one object dependent on
    another */

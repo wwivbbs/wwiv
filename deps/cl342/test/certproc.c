@@ -63,7 +63,7 @@ static int createCertRequest( void *certRequest,
 	{
 	CRYPT_CERTIFICATE cryptCert;
 	CRYPT_CONTEXT cryptContext;
-	int length = DUMMY_INIT, status;
+	int length DUMMY_INIT, status;
 
 	/* Create a new key */
 	status = cryptCreateContext( &cryptContext, CRYPT_UNUSED, cryptAlgo );
@@ -320,11 +320,15 @@ int testCertProcess( void )
 		return( FALSE );
 
 	/* Now try a different hash algorithm */
-	cryptGetAttribute( CRYPT_UNUSED, CRYPT_OPTION_ENCR_HASH, &value );
+	status = cryptGetAttribute( CRYPT_UNUSED, CRYPT_OPTION_ENCR_HASH, 
+								&value );
+	if( cryptStatusError( status ) )
+		return( FALSE );
 	cryptSetAttribute( CRYPT_UNUSED, CRYPT_OPTION_ENCR_HASH,
-					   CRYPT_ALGO_SHA2 );
-	status = certProcess( CRYPT_ALGO_RSA, "RSA with SHA-256", cryptCAKey, 
-						  FALSE );
+					   ( value == CRYPT_ALGO_SHA1 ) ? \
+						 CRYPT_ALGO_SHA2 : CRYPT_ALGO_SHA1 );
+	status = certProcess( CRYPT_ALGO_RSA, "RSA with non-default hash algorithm", 
+						  cryptCAKey, FALSE );
 	cryptSetAttribute( CRYPT_UNUSED, CRYPT_OPTION_ENCR_HASH, value );
 	if( !status )
 		return( FALSE );
@@ -584,7 +588,7 @@ static int addRevRequest( const CRYPT_KEYSET cryptCertStore,
 
 	/* Find the CN of the certificate we're revoking and use it to fetch the 
 	   certificate */
-	for( i = 0; certReqData[ i ].componentType != CRYPT_ATTRIBUTE_NONE; i++ )
+	for( i = 0; certReqData[ i ].type != CRYPT_ATTRIBUTE_NONE; i++ )
 		if( certReqData[ i ].type == CRYPT_CERTINFO_COMMONNAME )
 			printf( "Revoking certificate for '%s'.\n",
 					( char * ) certReqData[ i ].stringValue );
@@ -634,7 +638,7 @@ static int issueCert( const CRYPT_KEYSET cryptCertStore,
 	int i, status;
 
 	/* Provide some feedback on what we're doing */
-	for( i = 0; certReqData[ i ].componentType != CRYPT_ATTRIBUTE_NONE; i++ )
+	for( i = 0; certReqData[ i ].type != CRYPT_ATTRIBUTE_NONE; i++ )
 		{
 		if( certReqData[ i ].type == CRYPT_CERTINFO_COMMONNAME )
 			{
@@ -680,7 +684,7 @@ static int checkInvalidIssueRejected( const CRYPT_KEYSET cryptCertStore,
 	int i, status;
 
 	/* Provide some feedback on what we're doing */
-	for( i = 0; certReqData[ i ].componentType != CRYPT_ATTRIBUTE_NONE; i++ )
+	for( i = 0; certReqData[ i ].type != CRYPT_ATTRIBUTE_NONE; i++ )
 		{
 		if( certReqData[ i ].type == CRYPT_CERTINFO_COMMONNAME )
 			{
@@ -689,7 +693,7 @@ static int checkInvalidIssueRejected( const CRYPT_KEYSET cryptCertStore,
 			break;
 			}
 		}
-	if( certReqData[ i ].componentType == CRYPT_ATTRIBUTE_NONE )
+	if( certReqData[ i ].type == CRYPT_ATTRIBUTE_NONE )
 		{
 		/* If the certificate doesn't have a CN attribute then it's one with
 		   a synthetic DN created to test the DN-validity checks */
@@ -775,9 +779,11 @@ static CRYPT_CERTIFICATE getCertFromTemplate( const CRYPT_KEYSET cryptCertStore,
 	CRYPT_CERTIFICATE cryptCert;
 	int i, status;
 
-	for( i = 0; certReqData[ i ].componentType != CRYPT_ATTRIBUTE_NONE; i++ )
+	for( i = 0; certReqData[ i ].type != CRYPT_ATTRIBUTE_NONE; i++ )
+		{
 		if( certReqData[ i ].type == CRYPT_CERTINFO_COMMONNAME )
 			break;
+		}
 	status = cryptGetPublicKey( cryptCertStore, &cryptCert, CRYPT_KEYID_NAME,
 							    certReqData[ i ].stringValue );
 	return( cryptStatusOK( status ) ? cryptCert : status );

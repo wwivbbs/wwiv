@@ -1,21 +1,31 @@
 #!/bin/sh
 # Build all cryptlib modules
 
+# Explicitly clear build flags
+
+SHARED=0
+ANALYSE=0
+BUILDWITHGCC=0
+
 # Make sure that we've been given sufficient arguments.
 
 if [ "$1" = "shared" ] ; then
     SHARED=1 ;
     shift ;
 fi
-if [ "$1" = "" ] ; then
+if [ "$1" = "analyse" ] ; then
+    ANALYSE=1 ;
+    shift ;
+fi
+if [ -z "$1" ] ; then
 	echo "$0: Missing OS name." >&2 ;
 	exit 1 ;
 fi
-if [ "$2" = "" ] ; then
+if [ -z "$2" ] ; then
 	echo "$0: Missing compiler name." >&2 ;
 	exit 1 ;
 fi
-if [ "$3" = "" ] ; then
+if [ -z "$3" ] ; then
 	echo "$0: Missing compiler flags." >&2 ;
 	exit 1 ;
 fi
@@ -31,7 +41,7 @@ shift
 
 MAJ="3"
 MIN="4"
-PLV="2"
+PLV="3"
 PROJ="cl"
 SHARED_OBJ_PATH="./shared-obj/"
 if [ $OSNAME = "Darwin" ] ; then
@@ -78,6 +88,18 @@ fi
 #	echo "" ;
 #fi
 
+# Older OS X boxes shipped with an incredibly buggy Apple-hacked version of gcc
+# 4.0.1, cryptlib contains some workarounds for this but other bugs are too
+# difficult to track down, so we have to declare it to be an unsupported
+# environment.
+
+if [ $OSNAME = "Darwin" -a `$CC -dumpversion | grep -c "4\.0\.1"` = '1' ] ; then
+  echo "This version of OS X ships with an extremely buggy, Apple-hacked version of" ;
+  echo "gcc 4.0.1 that's more than a decade out of date.  Please upgrade to a newer " ;
+  echo "compiler to build cryptlib." ;
+  exit 1 ;
+fi
+
 # Unicos has a broken uname so we override detection.
 
 if [ `uname -m | cut -c 1-4` = 'CRAY' ] ; then
@@ -91,8 +113,10 @@ fi
 # is empty, we add an extra character to the comparison string to avoid
 # syntax errors.
 
-if [ $SHARED ] ; then
+if [ $SHARED -gt 0 ] ; then
 	CFLAGS="`./tools/ccopts.sh $CC $OSNAME`" ;
+elif [ $ANALYSE -gt 0 ] ; then
+	CFLAGS="`./tools/ccopts.sh $CC analyse`" ;
 else
 	CFLAGS="`./tools/ccopts.sh $CC`" ;
 fi
@@ -115,26 +139,36 @@ if [ '$(CROSSCOMPILE)x' = '1x' ] ; then
 	echo "Cross-compiling for OS target $OSNAME" ;
 	CFLAGS="$* `./tools/ccopts.sh $CC $OSNAME` \
 			-DOSVERSION=`./tools/osversion.sh $OSNAME`" ;
-	if [ $SHARED ] ; then
+	if [ $SHARED -gt 0 ] ; then
 		make TARGET=$SLIBNAME OBJPATH=$SHARED_OBJ_PATH $CFLAGS $OSNAME ;
 	else
 		make $CFLAGS $OSNAME ;
 	fi ;
 fi
 
-# Some systems have the development tools as optional components, or the
-# tools are included but suck so much that everyone uses gcc instead (mind
-# you recent gcc versions seem to be in a race to catch up on vendor-
-# compiler suckage).  For these systems we build with gcc if it's present,
+# Some systems (AIX, PHUX, Slowaris) have the development tools as optional
+# components, or the tools are included but suck so much that everyone uses
+# gcc instead.  For these systems we build with gcc if it's present,
 # otherwise we fall back to the native development tools.
+#
+# Since recent gcc versions have been in a race to catch up on vendor-
+# compiler suckage, we make an exception for clang and don't allow it to
+# be overridden by gcc.
 
 checkForGcc()
 	{
 	OSNAME=$1
 	SHARED=$2
 
-	# If we're not running gcc, there's nothing to do
+	# If we're not running gcc, there's nothing to do.
 	if gcc -v > /dev/null 2>&1 -lt 0 ; then
+		return ;
+	fi
+
+	# If we're running clang as our default compiler, leave it
+	# as such.
+	if [ `$CC -v 2>&1 | grep -ci "clang"` -gt 0 -o \
+		 `$CC -v 2>&1 | grep -ci "llvm"` -gt 0 ] ; then
 		return ;
 	fi
 
@@ -149,7 +183,7 @@ checkForGcc()
 	echo "Building with gcc instead of the default $OSNAME compiler."
 	echo "  (Re-scanning for build options under gcc)."
 	BUILDWITHGCC=1
-	if [ $SHARED ] ; then
+	if [ $SHARED -gt 0 ] ; then
 		CFLAGS="`./tools/ccopts.sh gcc $OSNAME`" ;
 	else
 		CFLAGS="`./tools/ccopts.sh gcc`" ;
@@ -208,14 +242,14 @@ buildWithNativeToolsShared()
 
 # Build cryptlib, taking into account OS-specific quirks
 
-if [ $SHARED ] ; then
-	if [ $BUILDWITHGCC ] ; then
+if [ $SHARED -gt 0 ] ; then
+	if [ $BUILDWITHGCC -gt 0 ] ; then
 		buildWithGccShared $OSNAME $SLIBNAME $* ;
 	else
 		buildWithNativeToolsShared $OSNAME $SLIBNAME $CC $* ;
 	fi
 else
-	if [ $BUILDWITHGCC ] ; then
+	if [ $BUILDWITHGCC -gt 0 ] ; then
 		buildWithGcc $OSNAME $* ;
 	else
 		buildWithNativeTools $OSNAME $CC $* ;

@@ -51,6 +51,50 @@ typedef enum {
 
 /* The structure used to store information about the crypto capabilities */
 
+typedef CHECK_RETVAL \
+		int ( *CAP_SELFTESTFUNCTION )( void );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
+		int ( *CAP_GETINFOFUNCTION )( IN_ENUM( CAPABILITY_INFO ) \
+										const CAPABILITY_INFO_TYPE type, 
+									  INOUT_OPT CI_STRUCT *contextInfoPtr, 
+									  OUT void *data, 
+									  IN_INT_Z const int length );
+typedef RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *CAP_ENDFUNCTION )( INOUT CI_STRUCT *contextInfoPtr );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *CAP_INITPARAMSFUNCTION )( INOUT CI_STRUCT *contextInfoPtr, 
+										 IN_ENUM( KEYPARAM ) \
+											const KEYPARAM_TYPE paramType,
+										 IN_OPT const void *data, 
+										 IN_INT const int dataLength );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *CAP_INITKEYFUNCTION )( INOUT CI_STRUCT *contextInfoPtr, 
+									  IN_BUFFER_OPT( keyLength ) const void *key, 
+									  IN_LENGTH_SHORT_Z const int keyLength );
+									  /* The key data can be NULL if it's a PKC 
+									     context whose key components have been read 
+										 directly into the context, which is also 
+										 why we can't use IN_LENGTH_KEY for the 
+										 length */
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *CAP_GENERATEKEYFUNCTION )( INOUT CI_STRUCT *contextInfoPtr, \
+										  IN_RANGE( bytesToBits( MIN_KEYSIZE ),
+													bytesToBits( CRYPT_MAX_PKCSIZE ) ) \
+											const int keySizeBits );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *CAP_ENCRYPTSPECIALFUNCTION )( INOUT CI_STRUCT *contextInfoPtr, 
+											 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
+											 IN_LENGTH_Z int length );
+											 /* Length may be zero for hash functions */
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *CAP_ENCRYPTFUNCTION )( INOUT CI_STRUCT *contextInfoPtr, 
+									  INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
+									  IN_LENGTH int length );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *CAP_SIGNFUNCTION )( INOUT CI_STRUCT *contextInfoPtr, 
+								   INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
+								   IN_LENGTH_SHORT_MIN( 32 ) int length );
+
 typedef struct CA {
 	/* Basic identification information for the algorithm */
 	const CRYPT_ALGO_TYPE cryptAlgo;/* The encryption algorithm */
@@ -68,85 +112,18 @@ typedef struct CA {
 	const int maxKeySize;			/* Maximum key size in bytes */
 
 	/* The functions for implementing the algorithm */
-	CHECK_RETVAL_FNPTR \
-	int ( *selfTestFunction )( void );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 3 ) ) \
-	int ( *getInfoFunction )( IN_ENUM( CAPABILITY_INFO ) \
-								const CAPABILITY_INFO_TYPE type, 
-							  INOUT_OPT CI_STRUCT *contextInfoPtr, 
-							  OUT void *data, 
-							  IN_INT_Z const int length );
-	STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *endFunction )( INOUT CI_STRUCT *contextInfoPtr );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *initParamsFunction) ( INOUT CI_STRUCT *contextInfoPtr, 
-								 IN_ENUM( KEYPARAM ) \
-									const KEYPARAM_TYPE paramType,
-								 IN_OPT const void *data, 
-								 IN_INT const int dataLength );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *initKeyFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-							  IN_BUFFER_OPT( keyLength ) const void *key, 
-							  IN_LENGTH_SHORT_Z const int keyLength );
-							  /* The key data can be NULL if it's a PKC 
-							     context whose key components have been read 
-								 directly into the context, which is also 
-								 why we can't use IN_LENGTH_KEY for the 
-								 length */
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *generateKeyFunction )( INOUT CI_STRUCT *contextInfoPtr, \
-								  IN_RANGE( bytesToBits( MIN_KEYSIZE ),
-											bytesToBits( CRYPT_MAX_PKCSIZE ) ) \
-									const int keySizeBits );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *encryptFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-							  INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-							  IN_LENGTH_Z int length );
-							  /* Length may be zero for hash functions */
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *decryptFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-							  INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-							  IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *encryptCBCFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-								 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-								 IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *decryptCBCFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-								 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-								 IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *encryptCFBFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-								 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-								 IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *decryptCFBFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-								 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-								 IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *encryptOFBFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-								 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-								 IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *decryptOFBFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-								 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-								 IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *encryptGCMFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-								 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-								 IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *decryptGCMFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-								 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-								 IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *signFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-						   INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-						   IN_LENGTH_SHORT_MIN( MIN_PKCSIZE ) int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *sigCheckFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-							   INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-							   IN_LENGTH_SHORT_MIN( MIN_PKCSIZE ) int length );
+	CAP_SELFTESTFUNCTION selfTestFunction;
+	CAP_GETINFOFUNCTION getInfoFunction;
+	CAP_ENDFUNCTION endFunction;
+	CAP_INITPARAMSFUNCTION initParamsFunction;
+	CAP_INITKEYFUNCTION initKeyFunction;
+	CAP_GENERATEKEYFUNCTION generateKeyFunction;
+	CAP_ENCRYPTSPECIALFUNCTION encryptFunction;
+	CAP_ENCRYPTFUNCTION decryptFunction;
+	CAP_ENCRYPTFUNCTION encryptCBCFunction, decryptCBCFunction;
+	CAP_ENCRYPTFUNCTION encryptCFBFunction, decryptCFBFunction;
+	CAP_ENCRYPTFUNCTION encryptGCMFunction, decryptGCMFunction;
+	CAP_SIGNFUNCTION signFunction, sigCheckFunction;
 
 	/* Non-native implementations may require extra parameters (for example
 	   to specify the algorithm and mode in the manner required by the
@@ -182,81 +159,18 @@ typedef struct {
 	int keySize;						/* Non-const */
 	int maxKeySize;						/* Non-const */
 
-	CHECK_RETVAL_FNPTR \
-	int ( *selfTestFunction )( void );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 3 ) ) \
-	int ( *getInfoFunction )( IN_ENUM( CAPABILITY_INFO ) \
-								const CAPABILITY_INFO_TYPE type, 
-							  INOUT_OPT CI_STRUCT *contextInfoPtr, 
-							  OUT void *data, 
-							  IN_INT_Z const int length );
-	STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *endFunction )( INOUT CI_STRUCT *contextInfoPtr );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *initParamsFunction) ( INOUT CI_STRUCT *contextInfoPtr, 
-								 IN_ENUM( KEYPARAM ) \
-									const KEYPARAM_TYPE paramType,
-								 IN_OPT const void *data, 
-								 IN_INT const int dataLength );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *initKeyFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-							  IN_BUFFER_OPT( keyLength ) const void *key, 
-							  IN_LENGTH_SHORT_Z const int keyLength );
-							  /* The key data can be NULL if it's a PKC 
-							     context whose key components have been read 
-								 directly into the context */
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *generateKeyFunction )( INOUT CI_STRUCT *contextInfoPtr, \
-								  IN_LENGTH_SHORT const int keySizeBits );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *encryptFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-							  INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-							  IN_LENGTH_Z int length );
-							  /* Length may be zero for hash functions */
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *decryptFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-							  INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-							  IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *encryptCBCFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-								 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-								 IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *decryptCBCFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-								 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-								 IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *encryptCFBFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-								 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-								 IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *decryptCFBFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-								 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-								 IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *encryptOFBFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-								 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-								 IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *decryptOFBFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-								 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-								 IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *encryptGCMFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-								 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-								 IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *decryptGCMFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-								 INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-								 IN_LENGTH int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *signFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-						   INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-						   IN_LENGTH_SHORT_MIN( MIN_PKCSIZE ) int length );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *sigCheckFunction )( INOUT CI_STRUCT *contextInfoPtr, 
-							   INOUT_BUFFER_FIXED( length ) BYTE *buffer, 
-							   IN_LENGTH_SHORT_MIN( MIN_PKCSIZE ) int length );
+	CAP_SELFTESTFUNCTION selfTestFunction;
+	CAP_GETINFOFUNCTION getInfoFunction;
+	CAP_ENDFUNCTION endFunction;
+	CAP_INITPARAMSFUNCTION initParamsFunction;
+	CAP_INITKEYFUNCTION initKeyFunction;
+	CAP_GENERATEKEYFUNCTION generateKeyFunction;
+	CAP_ENCRYPTSPECIALFUNCTION encryptFunction;
+	CAP_ENCRYPTFUNCTION decryptFunction;
+	CAP_ENCRYPTFUNCTION encryptCBCFunction, decryptCBCFunction;
+	CAP_ENCRYPTFUNCTION encryptCFBFunction, decryptCFBFunction;
+	CAP_ENCRYPTFUNCTION encryptGCMFunction, decryptGCMFunction;
+	CAP_SIGNFUNCTION signFunction, sigCheckFunction;
 
 	int param1, param2, param3, param4;	/* Non-const */
 	} VARIABLE_CAPABILITY_INFO;
@@ -273,21 +187,17 @@ typedef const CAPABILITY_INFO * ( *GETCAPABILITY_FUNCTION )( void );
 
 const CAPABILITY_INFO *get3DESCapability( void );
 const CAPABILITY_INFO *getAESCapability( void );
-const CAPABILITY_INFO *getBlowfishCapability( void );
 const CAPABILITY_INFO *getCASTCapability( void );
 const CAPABILITY_INFO *getDESCapability( void );
 const CAPABILITY_INFO *getIDEACapability( void );
 const CAPABILITY_INFO *getRC2Capability( void );
 const CAPABILITY_INFO *getRC4Capability( void );
-const CAPABILITY_INFO *getRC5Capability( void );
 
 const CAPABILITY_INFO *getMD5Capability( void );
-const CAPABILITY_INFO *getRipemd160Capability( void );
 const CAPABILITY_INFO *getSHA1Capability( void );
 const CAPABILITY_INFO *getSHA2Capability( void );
 
 const CAPABILITY_INFO *getHmacMD5Capability( void );
-const CAPABILITY_INFO *getHmacRipemd160Capability( void );
 const CAPABILITY_INFO *getHmacSHA1Capability( void );
 const CAPABILITY_INFO *getHmacSHA2Capability( void );
 
@@ -318,13 +228,7 @@ STDC_NONNULL_ARG( ( 1, 2 ) ) \
 void getCapabilityInfo( OUT CRYPT_QUERY_INFO *cryptQueryInfo,
 						const CAPABILITY_INFO FAR_BSS *capabilityInfoPtr );
 CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
-BOOLEAN sanityCheckCapability( const CAPABILITY_INFO *capabilityInfoPtr,
-							   const BOOLEAN asymmetricOK );
-		/* The asymmetricOK flag indicates that the capabilities can have 
-		   asymmetric functionality, for example sign is supported but sig.
-		   check isn't (this is required for some tinkertoy implementations 
-		   in crypto tokens which support bare-minimum functionality such as 
-		   RSA private-key ops and nothing else) */
+BOOLEAN sanityCheckCapability( const CAPABILITY_INFO *capabilityInfoPtr );
 
 /* Fallback functions to handle context-specific information that isn't 
    specific to a particular context.  The initial request goes to the 

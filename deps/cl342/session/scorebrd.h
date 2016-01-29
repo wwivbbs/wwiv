@@ -55,7 +55,7 @@ typedef BYTE SCOREBOARD_STATE[ 64 ];
 
 /* Session scoreboard management functions */
 
-CHECK_RETVAL_RANGE( 0, MAX_INTLENGTH ) CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 5 ) ) \
+CHECK_RETVAL_RANGE( 0, MAX_INTLENGTH ) STDC_NONNULL_ARG( ( 1, 3, 5 ) ) \
 int lookupScoreboardEntry( INOUT void *scoreboardInfoPtr,
 						   IN_ENUM( SCOREBOARD_KEY ) \
 								const SCOREBOARD_KEY_TYPE keyType,

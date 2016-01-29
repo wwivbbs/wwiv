@@ -130,11 +130,11 @@ static int pgpGenerateChecksum( INOUT_BUFFER_FIXED( dataLength ) void *data,
 
 	/* Calculate the checksum for the MPI */
 	for( i = 0; i < keyDataLength; i++ )
-		checksum += dataPtr[ i ];
+		checksum += byteToInt( dataPtr[ i ] );
 
 	/* Append the checksum to the MPI data */
 	sMemOpen( &stream, dataPtr + keyDataLength, dataLength - keyDataLength );
-	status = writeUint16( &stream, checksum );
+	status = writeUint16( &stream, checksum & 0xFFFF );
 	sMemDisconnect( &stream );
 
 	return( status );
@@ -189,7 +189,7 @@ static int pgpExtractKey( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 	CRYPT_ALGO_TYPE cryptAlgo = CRYPT_ALGO_NONE;
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	static const int mode = CRYPT_MODE_CFB;	/* int vs.enum */
-	int status;
+	int algoParam, status;
 
 	assert( isWritePtr( iCryptContext, sizeof( CRYPT_CONTEXT ) ) );
 	assert( isReadPtr( data, dataLength ) );
@@ -200,13 +200,10 @@ static int pgpExtractKey( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 	*iCryptContext = CRYPT_ERROR;
 
 	/* Get the session key algorithm.  We delay checking the algorithm ID
-	   until after the checksum calculation to reduce the chance of being
-	   used as an oracle.
-
-	   Note that there are three different IDs for AES depending on the
-	   keysize that's being used, we ignore these since the key size is
-	   specified explicitly via the unwrapped key */
-	status = pgpToCryptlibAlgo( data[ 0 ], PGP_ALGOCLASS_CRYPT, &cryptAlgo );
+	   return status until after the checksum calculation to reduce the 
+	   chance of being used as an oracle */
+	status = pgpToCryptlibAlgo( data[ 0 ], PGP_ALGOCLASS_CRYPT, &cryptAlgo,
+								&algoParam );
 
 	/* Checksum the session key, skipping the algorithm ID at the start and
 	   the checksum at the end.  This is actually superfluous since any
@@ -230,6 +227,16 @@ static int pgpExtractKey( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 							  &createInfo, OBJECT_TYPE_CONTEXT );
 	if( cryptStatusError( status ) )
 		return( status );
+	if( algoParam != 0 )
+		{
+		/* Some algorithms have variable-size keys, if this is one of them 
+		   then indicate the key size that we want to use */
+		status = krnlSendMessage( createInfo.cryptHandle, 
+								  IMESSAGE_SETATTRIBUTE, &algoParam, 
+								  CRYPT_CTXINFO_KEYSIZE );
+		if( cryptStatusError( status ) )
+			return( status );
+		}
 	status = krnlSendMessage( createInfo.cryptHandle, IMESSAGE_SETATTRIBUTE,
 							  ( MESSAGE_CAST ) &mode, CRYPT_CTXINFO_MODE );
 	if( cryptStatusError( status ) )
@@ -292,7 +299,28 @@ static int pkcWrapData( INOUT MECHANISM_WRAP_INFO *mechanismInfo,
 								  IMESSAGE_CTX_ENCRYPT, wrappedData, 
 								  wrappedDataLength );
 		if( cryptStatusOK( status ) )
-			mechanismInfo->wrappedDataLength = wrappedDataLength;
+			{
+			const BYTE *dataPtr = mechanismInfo->wrappedData;
+			int dataLength = wrappedDataLength;
+
+			/* The PKC wrap functions take a fixed-length input and produce 
+			   a fixed-length output but some of this can be leading-zero 
+			   padding, so we strip the padding if there's any present */
+			if( *dataPtr == 0 )
+				{
+				while( *dataPtr == 0 && dataLength > 16 )
+					{
+					dataPtr++;
+					dataLength--;
+					}
+				ENSURES( dataLength >= 16 );
+				memmove( mechanismInfo->wrappedData, dataPtr, 
+						 dataLength );
+				memset( ( BYTE * ) mechanismInfo->wrappedData + dataLength, 
+						0, wrappedDataLength - dataLength );
+				}
+			mechanismInfo->wrappedDataLength = dataLength;
+			}
 		}
 	if( cryptStatusOK( status ) && !memcmp( dataSample, samplePtr, 16 ) )
 		{
@@ -315,13 +343,14 @@ static int pkcWrapData( INOUT MECHANISM_WRAP_INFO *mechanismInfo,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 static int pkcUnwrapData( MECHANISM_WRAP_INFO *mechanismInfo, 
-						  INOUT_BUFFER( dataMaxLength, *dataOutLength ) \
-							BYTE *data, 
+						  OUT_BUFFER( dataMaxLength, *dataOutLength ) \
+								BYTE *data, 
 						  IN_LENGTH_SHORT_MIN( MIN_PKCSIZE ) \
-							const int dataMaxLength, 
-						  OUT_LENGTH_PKC_Z int *dataOutLength, 
+								const int dataMaxLength, 
+						  OUT_LENGTH_BOUNDED_Z( dataMaxLength ) \
+								int *dataOutLength, 
 						  IN_LENGTH_SHORT_MIN( MIN_PKCSIZE ) \
-							const int dataInLength, 
+								const int dataInLength, 
 						  const BOOLEAN usePgpWrap, 
 						  const BOOLEAN isDlpAlgo )
 	{
@@ -391,12 +420,13 @@ static int pkcUnwrapData( MECHANISM_WRAP_INFO *mechanismInfo,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 static int generatePkcs1DataBlock( INOUT_BUFFER( dataMaxLen, *dataLength ) \
-									BYTE *data, 
+										BYTE *data, 
 								   IN_LENGTH_SHORT_MIN( MIN_PKCSIZE ) \
-									const int dataMaxLen, 
-								   OUT_LENGTH_SHORT_Z int *dataLength, 
+										const int dataMaxLen, 
+								   OUT_LENGTH_BOUNDED_Z( dataMaxLen ) \
+										int *dataLength, 
 								   IN_LENGTH_SHORT_MIN( MIN_PKCSIZE ) \
-									const int messageLen )
+										const int messageLen )
 	{
 	MESSAGE_DATA msgData;
 	const int padSize = dataMaxLen - ( messageLen + 3 );
@@ -457,7 +487,7 @@ static int recoverPkcs1DataBlock( IN_BUFFER( dataLength ) const BYTE *data,
 	assert( isReadPtr( data, dataLength ) );
 	assert( isWritePtr( padSize, sizeof( int ) ) );
 
-	REQUIRES( dataLength >= MIN_PKCSIZE && dataLength < MAX_INTLENGTH );
+	REQUIRES( dataLength >= MIN_PKCSIZE && dataLength < MAX_BUFFER_SIZE );
 
 	/* Clear return value */
 	*padSize = 0;
@@ -523,7 +553,7 @@ static int pkcs1Wrap( INOUT MECHANISM_WRAP_INFO *mechanismInfo,
 	BYTE *wrappedData = mechanismInfo->wrappedData, *dataPtr;
 	int payloadSize, length, dataBlockSize, status;
 #ifdef USE_PGP
-	int pgpAlgoID = DUMMY_INIT;
+	int pgpAlgoID DUMMY_INIT;
 #endif /* USE_PGP */
 
 	assert( isWritePtr( mechanismInfo, sizeof( MECHANISM_WRAP_INFO ) ) );
@@ -864,9 +894,11 @@ static const LHASH_INFO FAR_BSS lHashInfo[] = {
 	};
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
-static int getOaepHash( OUT_BUFFER_OPT( lHashMaxLen, *lHashLen ) void *lHash, 
+static int getOaepHash( OUT_BUFFER_OPT( lHashMaxLen, *lHashLen ) \
+							void *lHash, 
 						IN_LENGTH_SHORT_Z const int lHashMaxLen, 
-						OUT_LENGTH_SHORT_Z int *lHashLen,
+						OUT_LENGTH_BOUNDED_SHORT_Z( lHashMaxLen ) \
+							int *lHashLen,
 						IN_ALGO const CRYPT_ALGO_TYPE hashAlgo,
 						IN_INT_SHORT_Z const int hashParam )
 	{
@@ -1086,7 +1118,8 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 static int recoverOaepDataBlock( OUT_BUFFER( messageMaxLen, *messageLen ) \
 									BYTE *message, 
 								 IN_LENGTH_PKC const int messageMaxLen, 
-								 OUT_LENGTH_PKC_Z int *messageLen, 
+								 OUT_LENGTH_BOUNDED_Z( messageMaxLen ) \
+									int *messageLen, 
 								 IN_BUFFER( dataLen ) const void *data, 
 								 IN_LENGTH_PKC const int dataLen, 
 								 IN_ALGO const CRYPT_ALGO_TYPE hashAlgo,

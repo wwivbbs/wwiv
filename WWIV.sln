@@ -31,6 +31,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "networkb", "networkb\networkb.vcxproj", "{0756B545-A3C3-433D-8E27-B84FB3AE57C5}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "networkb_lib", "networkb\networkb_lib.vcxproj", "{5BDD74E7-BD9D-42CA-9B2A-397DB9CDA67C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D0793AB4-C236-4105-AD9E-7E8B1716037B} = {D0793AB4-C236-4105-AD9E-7E8B1716037B}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "networkb_test", "networkb_test\networkb_test.vcxproj", "{004B2A22-12E5-4E96-8587-15BF25A6C823}"
 EndProject

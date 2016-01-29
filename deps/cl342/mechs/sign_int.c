@@ -26,9 +26,11 @@
 /* Create a DLP signature */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
-static int createDlpSignature( OUT_BUFFER_OPT( bufSize, *length ) void *buffer,
-							   IN_RANGE( 0, CRYPT_MAX_PKCSIZE ) const int bufSize, 
-							   OUT_LENGTH_Z int *length, 
+static int createDlpSignature( OUT_BUFFER_OPT( bufSize, *length ) \
+									void *buffer,
+							   IN_RANGE( 0, CRYPT_MAX_PKCSIZE ) \
+									const int bufSize, 
+							   OUT_LENGTH_BOUNDED_Z( bufSize ) int *length, 
 							   IN_HANDLE const CRYPT_CONTEXT iSignContext,
 							   IN_HANDLE const CRYPT_CONTEXT iHashContext,
 							   IN_ENUM( SIGNATURE ) \
@@ -76,11 +78,10 @@ static int createDlpSignature( OUT_BUFFER_OPT( bufSize, *length ) void *buffer,
 		return( status );
 	hashSize = msgData.length;
 
-	/* Standard DSA is only defined for hash algorithms with a block size of 
-	   160 bits, FIPS 186-3 extends this to allow use with larger hashes but 
-	   the use with algorithms other than SHA-1 is a bit unclear so we always
-	   require 160 bits */
-	if( !isECC && hashSize != 20 )
+	/* SSH hardcodes SHA-1 (or at least two fixed-length values of 20 bytes)
+	   into its signature format, so we can't create an SSH signature unless
+	   we're using a 20-byte hash */
+	if( !isECC && signatureType == SIGNATURE_SSH && hashSize != 20 )
 		{
 		/* The error reporting here is a bit complex, see the comment in 
 		   createSignature() for how this works */
@@ -111,10 +112,31 @@ static int createDlpSignature( OUT_BUFFER_OPT( bufSize, *length ) void *buffer,
 			if( cryptStatusError( status ) )
 				return( status );
 			}
-		*length = ( signatureType == SIGNATURE_PGP ) ? \
-					2 * ( 2 + sigComponentSize ) : \
-					sizeofObject( ( 2 * sizeofObject( \
-											sigComponentSize + 1 ) ) );
+		switch( signatureType )
+			{
+#ifdef USE_PGP
+			case SIGNATURE_PGP:
+				*length = 2 * ( 2 + sigComponentSize );
+				break;
+#endif /* USE_PGP */
+
+#ifdef USE_SSH
+			case SIGNATURE_SSH:
+				*length = 2 * sigComponentSize;
+				break;
+#endif /* USE_SSH */
+
+#ifdef USE_INT_ASN1
+			default:
+				*length = sizeofObject( \
+								( 2 * sizeofObject( \
+										sigComponentSize + 1 ) ) );
+				break;
+#else
+			default:
+				retIntError();
+#endif /* USE_INT_ASN1 */
+			}
 		return( CRYPT_OK );
 		}
 
@@ -140,8 +162,7 @@ static int checkDlpSignature( IN_BUFFER( signatureDataLength ) \
 							  IN_HANDLE const CRYPT_CONTEXT iSigCheckContext,
 							  IN_HANDLE const CRYPT_CONTEXT iHashContext,
 							  IN_ENUM( SIGNATURE ) \
-									const SIGNATURE_TYPE signatureType,
-							  const BOOLEAN isECC )
+									const SIGNATURE_TYPE signatureType )
 	{
 	DLP_PARAMS dlpParams;
 	MESSAGE_DATA msgData;
@@ -164,17 +185,6 @@ static int checkDlpSignature( IN_BUFFER( signatureDataLength ) \
 	if( cryptStatusError( status ) )
 		return( status );
 	hashSize = msgData.length;
-
-	/* Standard DSA is only defined for hash algorithms with a block size of 
-	   160 bits, FIPS 186-3 extends this to allow use with larger hashes but 
-	   the use with algorithms other than SHA-1 is a bit unclear so we always
-	   require 160 bits */
-	if( !isECC && hashSize != 20 )
-		{
-		/* The error reporting here is a bit complex, see the comment in 
-		   createSignature() for how this works */
-		return( CRYPT_ARGERROR_NUM1 );
-		}
 
 	/* Check the signature validity using the encoded signature data and 
 	   hash */
@@ -200,8 +210,8 @@ static int checkDlpSignature( IN_BUFFER( signatureDataLength ) \
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int createSignature( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 						void *signature, 
-					 IN_LENGTH_Z const int sigMaxLength, 
-					 OUT_LENGTH_Z int *signatureLength, 
+					 IN_DATALENGTH_Z const int sigMaxLength, 
+					 OUT_DATALENGTH_Z int *signatureLength, 
 					 IN_HANDLE const CRYPT_CONTEXT iSignContext,
 					 IN_HANDLE const CRYPT_CONTEXT iHashContext,
 					 IN_HANDLE_OPT const CRYPT_CONTEXT iHashContext2,
@@ -213,7 +223,7 @@ int createSignature( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 	BYTE *bufPtr = ( signature == NULL ) ? NULL : buffer;
 	const BOOLEAN isSSLsig = ( signatureType == SIGNATURE_SSL ) ? TRUE : FALSE;
 	const int bufSize = ( signature == NULL ) ? 0 : CRYPT_MAX_PKCSIZE;
-	int signAlgo, hashAlgo, length = DUMMY_INIT, hashParam = 0, status;
+	int signAlgo, hashAlgo, length DUMMY_INIT, hashParam = 0, status;
 
 	assert( ( signature == NULL && sigMaxLength == 0 ) || \
 			isWritePtr( signature, sigMaxLength ) );
@@ -222,7 +232,7 @@ int createSignature( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 	REQUIRES( ( signature == NULL && sigMaxLength == 0 ) || \
 			  ( signature != NULL && \
 			    sigMaxLength > MIN_CRYPT_OBJECTSIZE && \
-				sigMaxLength < MAX_INTLENGTH ) );
+				sigMaxLength < MAX_BUFFER_SIZE ) );
 	REQUIRES( isHandleRangeValid( iSignContext ) );
 	REQUIRES( isHandleRangeValid( iHashContext ) );
 	REQUIRES( ( signatureType == SIGNATURE_SSL && \
@@ -236,6 +246,11 @@ int createSignature( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 				  signatureType == SIGNATURE_X509 ) && \
 				iHashContext2 == CRYPT_UNUSED ) );
 
+	/* Clear return value */
+	if( signature != NULL )
+		memset( signature, 0, min( 16, sigMaxLength ) );
+	*signatureLength = 0;
+
 	/* Make sure that the requested signature format is available */
 	if( writeSigFunction == NULL )
 		return( CRYPT_ERROR_NOTAVAIL );
@@ -247,7 +262,7 @@ int createSignature( OUT_BUFFER_OPT( sigMaxLength, *signatureLength ) \
 		return( cryptArgError( status ) ? CRYPT_ARGERROR_NUM1 : status );
 	status = krnlSendMessage( iHashContext, IMESSAGE_GETATTRIBUTE,
 							  &hashAlgo, CRYPT_CTXINFO_ALGO );
-	if( cryptStatusOK( status ) && isHashExtAlgo( hashAlgo ) )
+	if( cryptStatusOK( status ) && isHashMacExtAlgo( hashAlgo ) )
 		status = krnlSendMessage( iHashContext, IMESSAGE_GETATTRIBUTE,
 								  &hashParam, CRYPT_CTXINFO_BLOCKSIZE );
 	if( cryptStatusError( status ) )
@@ -335,7 +350,8 @@ int checkSignature( IN_BUFFER( signatureLength ) const void *signature,
 	STREAM stream;
 	void *signatureData;
 	const BOOLEAN isSSLsig = ( signatureType == SIGNATURE_SSL ) ? TRUE : FALSE;
-	int signAlgo, hashAlgo, signatureDataLength, hashAlgoParam = 0, status;
+	int signAlgo, hashAlgo, hashAlgoParam = 0;
+	int signatureDataLength, compareType = MESSAGE_COMPARE_NONE, status;
 
 	assert( isReadPtr( signature, signatureLength ) );
 	
@@ -365,7 +381,7 @@ int checkSignature( IN_BUFFER( signatureLength ) const void *signature,
 		return( cryptArgError( status ) ? CRYPT_ARGERROR_NUM1 : status );
 	status = krnlSendMessage( iHashContext, IMESSAGE_GETATTRIBUTE,
 							  &hashAlgo, CRYPT_CTXINFO_ALGO );
-	if( cryptStatusOK( status ) && isHashExtAlgo( hashAlgo ) )
+	if( cryptStatusOK( status ) && isHashMacExtAlgo( hashAlgo ) )
 		status = krnlSendMessage( iHashContext, IMESSAGE_GETATTRIBUTE,
 								  &hashAlgoParam, CRYPT_CTXINFO_BLOCKSIZE );
 	if( cryptStatusError( status ) )
@@ -381,18 +397,17 @@ int checkSignature( IN_BUFFER( signatureLength ) const void *signature,
 		return( status );
 		}
 
-	/* Make sure that we've been given the correct algorithms.  Raw
-	   signatures specify the algorithm information elsewhere so the check
-	   is done at a higher level when we process the signature data */
+	/* Make sure that we've been given the correct algorithms */
 	if( signatureType != SIGNATURE_RAW && signatureType != SIGNATURE_SSL )
 		{
-		if( signAlgo != queryInfo.cryptAlgo )
+		if( signAlgo != queryInfo.cryptAlgo || \
+			hashAlgo != queryInfo.hashAlgo )
 			status = CRYPT_ERROR_SIGNATURE;
 		if( signatureType != SIGNATURE_SSH )
 			{
-			if( hashAlgo != queryInfo.hashAlgo )
-				status = CRYPT_ERROR_SIGNATURE;
-			if( isHashExtAlgo( hashAlgo ) && \
+			/* SSH requires complex string-parsing to determine the optional
+			   parameters, so the check is done elsewhere */
+			if( isHashMacExtAlgo( hashAlgo ) && \
 				hashAlgoParam != queryInfo.hashAlgoParam )
 				status = CRYPT_ERROR_SIGNATURE;
 			}
@@ -404,30 +419,57 @@ int checkSignature( IN_BUFFER( signatureLength ) const void *signature,
 		}
 
 	/* Make sure that we've been given the correct key if the signature
-	   format supports this type of check.  SIGNATURE_CMS supports a check
-	   with MESSAGE_COMPARE_ISSUERANDSERIALNUMBER but this has already been
-	   done while procesing the other CMS data before we were called so we
-	   don't need to do it again */
-	if( signatureType == SIGNATURE_CRYPTLIB || \
-		signatureType == SIGNATURE_PGP )
+	   format supports this type of check */
+	switch( signatureType )
+		{
+		case SIGNATURE_CMS:
+			/* This format supports a check with 
+			   MESSAGE_COMPARE_ISSUERANDSERIALNUMBER but this has already 
+			   been done while procesing the other CMS data before we were 
+			   called so we don't need to do it again */
+			/* compareType = MESSAGE_COMPARE_ISSUERANDSERIALNUMBER; */
+			break;
+
+		case SIGNATURE_CRYPTLIB:
+			compareType = MESSAGE_COMPARE_KEYID;
+			break;
+
+		case SIGNATURE_PGP:
+			compareType = ( queryInfo.version == PGP_VERSION_2 ) ? \
+							MESSAGE_COMPARE_KEYID_PGP : \
+							MESSAGE_COMPARE_KEYID_OPENPGP;
+			break;
+
+		default:
+			/* Other format types don't include identification information
+			   with the signature */
+			break;
+		}
+	if( compareType != MESSAGE_COMPARE_NONE )
 		{
 		MESSAGE_DATA msgData;
 
 		setMessageData( &msgData, queryInfo.keyID, queryInfo.keyIDlength );
 		status = krnlSendMessage( iSigCheckContext, IMESSAGE_COMPARE,
-								  &msgData, 
-								  ( signatureType == SIGNATURE_CRYPTLIB ) ? \
-									MESSAGE_COMPARE_KEYID : \
-								  ( queryInfo.version == PGP_VERSION_2 ) ? \
-									MESSAGE_COMPARE_KEYID_PGP : \
-									MESSAGE_COMPARE_KEYID_OPENPGP );
+								  &msgData, compareType );
+		if( cryptStatusError( status ) && \
+			compareType == MESSAGE_COMPARE_KEYID )
+			{
+			/* Checking for the keyID gets a bit complicated, in theory it's 
+			   the subjectKeyIdentifier from a certificate but in practice 
+			   this form is mostly used for certificateless public keys.  
+			   Because of this we check for the keyID first and if that 
+			   fails fall back to the sKID */
+			status = krnlSendMessage( iSigCheckContext, IMESSAGE_COMPARE, 
+									  &msgData, 
+									  MESSAGE_COMPARE_SUBJECTKEYIDENTIFIER );
+			}
 		if( cryptStatusError( status ) )
 			{
 			/* A failed comparison is reported as a generic CRYPT_ERROR,
-			   convert it into a wrong-key error if necessary */
+			   convert it into a wrong-key error */
 			zeroise( &queryInfo, sizeof( QUERY_INFO ) );
-			return( ( status == CRYPT_ERROR ) ? \
-					CRYPT_ERROR_WRONGKEY : status );
+			return( CRYPT_ERROR_WRONGKEY );
 			}
 		}
 	REQUIRES( rangeCheck( queryInfo.dataStart, queryInfo.dataLength,
@@ -446,8 +488,7 @@ int checkSignature( IN_BUFFER( signatureLength ) const void *signature,
 		return( checkDlpSignature( signatureData, signatureDataLength, 
 								   iSigCheckContext, 
 								   isSSLsig ? iHashContext2 : iHashContext,
-								   signatureType, 
-								   isEccAlgo( signAlgo ) ? TRUE : FALSE ) );
+								   signatureType ) );
 		}
 
 	/* It's a standard signature, process it as normal */

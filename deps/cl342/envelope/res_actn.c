@@ -150,7 +150,7 @@ BOOLEAN moreActionsPossible( IN_OPT const ACTION_LIST *actionListPtr )
 /* Add a new action to the end of an action group in an action list */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 3 ) ) \
-static int createNewAction( OUT_OPT_PTR_OPT ACTION_LIST **newActionPtrPtr,
+static int createNewAction( OUT_OPT_PTR_COND ACTION_LIST **newActionPtrPtr,
 							INOUT_PTR ACTION_LIST **actionListHeadPtrPtr,
 							INOUT MEMPOOL_STATE memPoolState,
 							IN_ENUM( ACTION ) const ACTION_TYPE actionType,
@@ -207,8 +207,8 @@ static int createNewAction( OUT_OPT_PTR_OPT ACTION_LIST **newActionPtrPtr,
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
-int addActionEx( OUT_OPT_PTR_OPT ACTION_LIST **newActionPtrPtr,
-				 OUT_PTR ACTION_LIST **actionListHeadPtrPtr,
+int addActionEx( OUT_OPT_PTR_COND ACTION_LIST **newActionPtrPtr,
+				 INOUT_PTR ACTION_LIST **actionListHeadPtrPtr,
 				 INOUT MEMPOOL_STATE memPoolState,
 				 IN_ENUM( ACTION ) const ACTION_TYPE actionType,
 				 IN_HANDLE const CRYPT_HANDLE cryptHandle )
@@ -221,7 +221,7 @@ int addActionEx( OUT_OPT_PTR_OPT ACTION_LIST **newActionPtrPtr,
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int addAction( OUT_PTR ACTION_LIST **actionListHeadPtrPtr,
+int addAction( INOUT_PTR ACTION_LIST **actionListHeadPtrPtr,
 			   INOUT MEMPOOL_STATE memPoolState,
 			   IN_ENUM( ACTION ) const ACTION_TYPE actionType,
 			   IN_HANDLE const CRYPT_HANDLE cryptHandle )
@@ -383,7 +383,7 @@ ACTION_RESULT checkAction( IN_OPT const ACTION_LIST *actionListStart,
 	ACTION_LIST *actionListPtr = ( ACTION_LIST * ) actionListStart;
 	MESSAGE_DATA msgData;
 	BYTE keyID[ KEYID_SIZE + 8 ];
-	int algorithm = DUMMY_INIT, iterationCount, status;
+	int algorithm DUMMY_INIT, iterationCount, status;
 
 	assert( actionListPtr == NULL || \
 			isReadPtr( actionListPtr, sizeof( ACTION_LIST ) ) );
@@ -611,6 +611,11 @@ BOOLEAN checkActions( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 			envelopeInfoPtr->usage != ACTION_MAC )
 			return( FALSE );
 
+		/* If there's a pre-action then there has to be a main action 
+		   list */
+		if( envelopeInfoPtr->actionList == NULL )
+			return( FALSE );
+
 		/* Pre-actions can only be key exchange actions and have to be sorted 
 		   by action group */
 		for( actionListPtr = envelopeInfoPtr->preActionList, \
@@ -637,8 +642,30 @@ BOOLEAN checkActions( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 			return( FALSE );
 		ENSURES_B( envelopeInfoPtr->actionList != NULL );
 
-		/* Key exchange must be followed by a single crypt, one or more
-		   MAC actions, or a sequence of { generic-secret, crypt, MAC }
+		/* PGP only supports an encryption action followed by an optional 
+		   hash action for encryption with MDC */
+		if( envelopeInfoPtr->type == CRYPT_FORMAT_PGP )
+			{
+			actionListPtr = envelopeInfoPtr->actionList;
+			if( actionListPtr->action != ACTION_CRYPT )
+				return( FALSE );
+			if( actionListPtr->next != NULL )
+				{
+				actionListPtr = actionListPtr->next;
+				if( actionListPtr->action != ACTION_HASH || \
+					actionListPtr->next != NULL )
+					return( FALSE );
+				}
+
+			/* There can't be any post-actions */
+			if( envelopeInfoPtr->postActionList != NULL )
+				return( FALSE );
+
+			return( TRUE );
+			}
+
+		/* Key exchange must be followed by a single crypt, one or more 
+		   MAC actions, or a sequence of { generic-secret, crypt, MAC } 
 		   actions.  First we count the actions present */
 		for( actionListPtr = envelopeInfoPtr->actionList, iterationCount = 0;
 			 actionListPtr != NULL && \
@@ -686,16 +713,14 @@ BOOLEAN checkActions( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 				}
 			else
 				{
-				/* MACed envelope, we need one or more MAC actions */
+				/* MACed envelope, we need one or more MAC actions (the check
+				   for genericSecretActionCount is redudant since we already
+				   know that it's 0, but it's included here to document the
+				   required condition) */
 				if( genericSecretActionCount != 0 || cryptActionCount != 0 )
 					return( FALSE );
 				}
 			}
-
-		/* PGP doesn't support MACed envelopes or AuthEnc encryption */
-		if( envelopeInfoPtr->type == CRYPT_FORMAT_PGP && \
-			( macActionCount != 0 || genericSecretActionCount != 0 ) )
-			return( FALSE );
 
 		/* There can't be any post-actions */
 		if( envelopeInfoPtr->postActionList != NULL )

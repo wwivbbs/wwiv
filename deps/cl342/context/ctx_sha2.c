@@ -15,8 +15,6 @@
   #include "crypt/sha2.h"
 #endif /* Compiler-specific includes */
 
-#ifdef USE_SHA2
-
 #define HASH_STATE_SIZE		sizeof( sha2_ctx )
 
 #if defined( USE_SHA2_EXT ) && !defined( SHA512_DIGEST_SIZE )
@@ -206,9 +204,13 @@ static int hash( CONTEXT_INFO *contextInfoPtr, BYTE *buffer, int noBytes )
 /* Internal API: Hash a single block of memory without the overhead of
    creating an encryption context.*/
 
-void sha2HashBuffer( HASHINFO hashInfo, BYTE *outBuffer, 
-					 const int outBufMaxLength, const void *inBuffer, 
-					 const int inLength, const HASH_STATE hashState )
+STDC_NONNULL_ARG( ( 1 ) ) \
+void sha2HashBuffer( INOUT_OPT HASHINFO hashInfo,
+					 OUT_BUFFER_OPT_C( outBufMaxLength, 32 ) BYTE *outBuffer,
+					 IN_LENGTH_SHORT_Z const int outBufMaxLength,
+					 IN_BUFFER_OPT( inLength ) const void *inBuffer,
+					 IN_LENGTH_SHORT_Z const int inLength,
+					 IN_ENUM( HASH_STATE ) const HASH_STATE hashState )
 	{
 	sha2_ctx *shaInfo = ( sha2_ctx * ) hashInfo;
 	
@@ -246,8 +248,11 @@ void sha2HashBuffer( HASHINFO hashInfo, BYTE *outBuffer,
 		}
 	}
 
-void sha2HashBufferAtomic( BYTE *outBuffer, const int outBufMaxLength, 
-						   const void *inBuffer, const int inLength )
+STDC_NONNULL_ARG( ( 1, 3 ) ) \
+void sha2HashBufferAtomic( OUT_BUFFER_C( outBufMaxLength, 32 ) BYTE *outBuffer,
+						   IN_LENGTH_SHORT_MIN( 32 ) const int outBufMaxLength,
+						   IN_BUFFER( inLength ) const void *inBuffer,
+						   IN_LENGTH_SHORT const int inLength )
 	{
 	sha2_ctx shaInfo;
 
@@ -272,9 +277,13 @@ void sha2HashBufferAtomic( BYTE *outBuffer, const int outBufMaxLength,
   #define SHA2EXT_DIGEST_SIZE	SHA512_DIGEST_SIZE
 #endif /* Suite B vs. generic use */
 
-void sha2_ExtHashBuffer( HASHINFO hashInfo, BYTE *outBuffer, 
-						 const int outBufMaxLength, const void *inBuffer, 
-						 const int inLength, const HASH_STATE hashState )
+STDC_NONNULL_ARG( ( 1 ) ) \
+void sha2_ExtHashBuffer( INOUT_OPT HASHINFO hashInfo, 
+						 OUT_BUFFER_OPT_C( outBufMaxLength, 64 ) BYTE *outBuffer, 
+						 IN_LENGTH_SHORT_Z const int outBufMaxLength,
+						 IN_BUFFER_OPT( inLength ) const void *inBuffer, 
+						 IN_LENGTH_SHORT_Z const int inLength,
+						 IN_ENUM( HASH_STATE ) const HASH_STATE hashState )
 	{
 	sha2_ctx *shaInfo = ( sha2_ctx * ) hashInfo;
 
@@ -314,8 +323,11 @@ void sha2_ExtHashBuffer( HASHINFO hashInfo, BYTE *outBuffer,
 		}
 	}
 
-void sha2_ExtHashBufferAtomic( BYTE *outBuffer, const int outBufMaxLength, 
-							   const void *inBuffer, const int inLength )
+STDC_NONNULL_ARG( ( 1, 3 ) ) \
+void sha2_ExtHashBufferAtomic( OUT_BUFFER_C( outBufMaxLength, 64 ) BYTE *outBuffer, 
+							   IN_LENGTH_SHORT_MIN( 64 ) const int outBufMaxLength,
+							   IN_BUFFER( inLength ) const void *inBuffer, 
+							   IN_LENGTH_SHORT const int inLength )
 	{
 	sha2_ctx shaInfo;
 
@@ -426,4 +438,3 @@ const CAPABILITY_INFO *getSHA2Capability( void )
 	{
 	return( &capabilityInfo );
 	}
-#endif /* USE_SHA2 */

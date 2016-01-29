@@ -10,6 +10,7 @@ set(SOURCES
  binkp_commands.cpp
  binkp_config.cpp
  connection.cpp
+ cram.cpp
  net_log.cpp
  ppp_config.cpp
  socket_connection.cpp

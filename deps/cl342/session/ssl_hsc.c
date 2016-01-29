@@ -40,9 +40,9 @@ static const BYTE finishedTemplateTLS[] = \
 /* Destroy cloned hash contexts, used to clean up dual-hash (SSL, TLS 1.0-1.1)
    or single-hash (TLS 1.2+) contexts */
 
-static void destroyHashContexts( IN_HANDLE const CRYPT_CONTEXT hashContext1,
-								 IN_HANDLE const CRYPT_CONTEXT hashContext2,
-								 IN_HANDLE const CRYPT_CONTEXT hashContext3 )
+static void destroyHashContexts( IN_HANDLE_OPT const CRYPT_CONTEXT hashContext1,
+								 IN_HANDLE_OPT const CRYPT_CONTEXT hashContext2,
+								 IN_HANDLE_OPT const CRYPT_CONTEXT hashContext3 )
 	{
 	REQUIRES_V( ( isHandleRangeValid( hashContext1 ) && \
 				  isHandleRangeValid( hashContext2 ) && \
@@ -104,12 +104,26 @@ static int addSessionToCache( INOUT SESSION_INFO *sessionInfoPtr,
 		}
 	else
 		{
+		BYTE sessionIDbuffer[ KEYID_SIZE + 8 ];
+		const BYTE *sessionIDptr = handshakeInfo->sessionID;
+		int sessionIDlength = handshakeInfo->sessionIDlength;
+
 		/* We're the server, add the client's state information indexed by 
 		   the sessionID */
+		if( handshakeInfo->hashedSNIpresent )
+			{
+			/* If there's an SNI present, update the session ID to include 
+			   it */
+			status = convertSNISessionID( handshakeInfo, sessionIDbuffer, 
+										  KEYID_SIZE );
+			if( cryptStatusError( status ) )
+				return( status );
+			sessionIDptr = sessionIDbuffer;
+			sessionIDlength = KEYID_SIZE;
+			}
 		status = cachedID = \
 				addScoreboardEntry( sslInfo->scoreboardInfoPtr,
-									handshakeInfo->sessionID,
-									handshakeInfo->sessionIDlength,
+									sessionIDptr, sessionIDlength,
 									masterSecret, masterSecretSize );
 		}
 	if( cryptStatusError( status ) )
@@ -428,14 +442,17 @@ int completeHandshakeSSL( INOUT SESSION_INFO *sessionInfoPtr,
 	BYTE masterSecret[ SSL_SECRET_SIZE + 8 ];
 	BYTE initiatorHashes[ ( CRYPT_MAX_HASHSIZE * 2 ) + 8 ];
 	BYTE responderHashes[ ( CRYPT_MAX_HASHSIZE * 2 ) + 8 ];
+#ifdef USE_SSL3
 	const void *sslInitiatorString, *sslResponderString;
+	int sslLabelLength;
+#endif /* USE_SSL3 */
 	const void *tlsInitiatorString, *tlsResponderString;
 	const BOOLEAN isInitiator = isResumedSession ? !isClient : isClient;
 	const BOOLEAN updateSessionCache = 	\
 			( !isResumedSession && handshakeInfo->sessionIDlength > 0 ) ? \
 			TRUE : FALSE;
 	int initiatorHashLength, responderHashLength;
-	int sslLabelLength, tlsLabelLength, status;
+	int tlsLabelLength, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( handshakeInfo, sizeof( SSL_HANDSHAKE_INFO ) ) );
@@ -454,20 +471,26 @@ int completeHandshakeSSL( INOUT SESSION_INFO *sessionInfoPtr,
 	if( isResumedSession )
 		{
 		/* Resumed session, initiator = server, responder = client */
+#ifdef USE_SSL3
 		sslInitiatorString = SSL_SENDER_SERVERLABEL;
 		sslResponderString = SSL_SENDER_CLIENTLABEL;
+#endif /* USE_SSL3 */
 		tlsInitiatorString = "server finished";
 		tlsResponderString = "client finished";
 		}
 	else
 		{
 		/* Normal session, initiator = client, responder = server */
+#ifdef USE_SSL3
 		sslInitiatorString = SSL_SENDER_CLIENTLABEL;
 		sslResponderString = SSL_SENDER_SERVERLABEL;
+#endif /* USE_SSL3 */
 		tlsInitiatorString = "client finished";
 		tlsResponderString = "server finished";
 		}
+#ifdef USE_SSL3
 	sslLabelLength = SSL_SENDERLABEL_SIZE;
+#endif /* USE_SSL3 */
 	tlsLabelLength = 15;
 
 	/* Initialise and load cryptovariables into all encryption contexts */
@@ -483,6 +506,7 @@ int completeHandshakeSSL( INOUT SESSION_INFO *sessionInfoPtr,
 	   change cipherspec and finished messages.  To handle this we clone 
 	   the initiator's hash context(s) so that we can contine the hashing 
 	   after the initiator has wrapped things up */
+#ifndef CONFIG_FUZZ
 	if( sessionInfoPtr->version < SSL_MINOR_VERSION_TLS12 )
 		{
 		status = cloneHashContext( initiatorMD5context, 
@@ -509,6 +533,7 @@ int completeHandshakeSSL( INOUT SESSION_INFO *sessionInfoPtr,
 	/* Complete the dual-MAC/MAC of the initiator-side messages and, if 
 	   we're the responder, check that the MACs match the ones supplied by
 	   the initiator */
+#ifdef USE_SSL3
 	if( sessionInfoPtr->version <= SSL_MINOR_VERSION_SSL )
 		{
 		status = completeSSLDualMAC( initiatorMD5context, initiatorSHA1context,
@@ -517,6 +542,7 @@ int completeHandshakeSSL( INOUT SESSION_INFO *sessionInfoPtr,
 							sslLabelLength, masterSecret, SSL_SECRET_SIZE );
 		}
 	else
+#endif /* USE_SSL3 */
 		{
 		if( sessionInfoPtr->version < SSL_MINOR_VERSION_TLS12 )
 			{
@@ -534,6 +560,10 @@ int completeHandshakeSSL( INOUT SESSION_INFO *sessionInfoPtr,
 							tlsLabelLength, masterSecret, SSL_SECRET_SIZE );
 			}
 		}
+#else
+	initiatorHashLength = TLS_HASHEDMAC_SIZE;
+	status = CRYPT_OK;
+#endif /* CONFIG_FUZZ */
 	if( cryptStatusOK( status ) && !isInitiator )
 		{
 		status = readHandshakeCompletionData( sessionInfoPtr, 
@@ -547,6 +577,7 @@ int completeHandshakeSSL( INOUT SESSION_INFO *sessionInfoPtr,
 							 responderSHA2context );
 		return( status );
 		}
+#ifndef CONFIG_FUZZ
 
 	/* Now that we have the initiator MACs, complete the dual-hashing/
 	   hashing and dual-MAC/MAC of the responder-side messages and destroy 
@@ -589,6 +620,7 @@ int completeHandshakeSSL( INOUT SESSION_INFO *sessionInfoPtr,
 							 responderSHA2context );
 		return( status );
 		}
+#ifdef USE_SSL3
 	if( sessionInfoPtr->version <= SSL_MINOR_VERSION_SSL )
 		{
 		status = completeSSLDualMAC( responderMD5context, responderSHA1context,
@@ -597,6 +629,7 @@ int completeHandshakeSSL( INOUT SESSION_INFO *sessionInfoPtr,
 							sslLabelLength, masterSecret, SSL_SECRET_SIZE );
 		}
 	else
+#endif /* USE_SSL3 */
 		{
 		if( sessionInfoPtr->version < SSL_MINOR_VERSION_TLS12 )
 			{
@@ -635,6 +668,7 @@ int completeHandshakeSSL( INOUT SESSION_INFO *sessionInfoPtr,
 										   /* Same as responderHashLength */
 										   ( isClient && !isResumedSession ) || \
 										   ( !isClient && isResumedSession ) );
+#endif /* CONFIG_FUZZ */
 	if( cryptStatusOK( status ) && isInitiator )
 		{
 		status = readHandshakeCompletionData( sessionInfoPtr, responderHashes,
