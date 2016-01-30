@@ -169,36 +169,39 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
 
   bool success = false;
   for (int i = 0; i < 10; i++) {
+    clog << "Looping to activate SSH Sessoin" << status << std::endl;
     status = cryptSetAttribute(session_, CRYPT_SESSINFO_AUTHRESPONSE, 1);
     if (!OK(status)) {
+      clog << "Error setting CRYPT_SESSINFO_AUTHRESPONSE " << status << std::endl;
       continue;
     }
     status = cryptSetAttribute(session_, CRYPT_SESSINFO_ACTIVE, 1);
-    if (status != CRYPT_ENVELOPE_RESOURCE) {
-      // TODO(rushfan): should we do something here?
-#ifdef PAUSE_ON_SSH_CONNECT_FOR_DEBUGGER
-      clog << "Waiting for debugger...";
-      getchar();
-#endif  // PAUSE_ON_SSH_CONNECT_FOR_DEBUGGER
-    }
     if (OK(status)) {
+      clog << "Success setting CRYPT_SESSINFO_ACTIVE " << status << std::endl;
       success = true;
       break;
+    } else {
+      clog << "Error setting CRYPT_SESSINFO_ACTIVE " << status << std::endl;
     }
   }
+
+#ifdef PAUSE_ON_SSH_CONNECT_FOR_DEBUGGER
+  clog << "Waiting for debugger..." << std::endl;
+  getchar();
+#endif  // PAUSE_ON_SSH_CONNECT_FOR_DEBUGGER
+
   if (!success) {
     clog << "We don't have a valid SSH connection here!" << endl;
+    getchar();
   } else {
     // Clear out any remaining control messages.
     int bytes_received = 0;
     char buffer[4096];
-    for (int count = 0; bytes_received <= 0 && count < 10; count++) {
-      cryptPopData(session_, buffer, 4096, &bytes_received);
-      wwiv::os::sleep_for(std::chrono::milliseconds(100));
-    }
+    cryptPopData(session_, buffer, 4096, &bytes_received);
   }
   initialized_ = success;
   GetSSHUserNameAndPassword(session_, remote_username_, remote_password_);
+  clog << "Got Username and Password!" << endl;
 }
 
 int SSHSession::PushData(const char* data, size_t size) {
