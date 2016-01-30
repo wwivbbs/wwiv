@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						cryptlib Configuration Settings  					*
-*					   Copyright Peter Gutmann 1992-2014					*
+*					   Copyright Peter Gutmann 1992-2012					*
 *																			*
 ****************************************************************************/
 
@@ -9,25 +9,27 @@
 
 #define _CONFIG_DEFINED
 
-/****************************************************************************
-*																			*
-*						Custom Configuration Profiles						*
-*																			*
-****************************************************************************/
-
 /* The following defines can be used to enable specific specific cryptlib 
    profiles that only enable the functionality needed for one particular
    application:
 
 	#define CONFIG_PROFILE_SMIME
-	#define CONFIG_PROFILE_PGP
 	#define CONFIG_PROFILE_SSL
 	#define CONFIG_PROFILE_SSH
 
    The configuration is set up in the section "Application Profiles" at the
-   end of this file.  Note that this sort of thing would normally be done by 
-   the build command (e.g. in a makefile), the following is mostly intended 
-   for debugging */
+   end of this file.
+
+   Note that VC 7.1 allows selective inheritance of defines set at the top
+   level into source files within projects.  For some bizarre reason this
+   defaults to 'none' so that setting USE_xxx values at the project level
+   doesn't filter down to any of the source files unless it's manually
+   enabled in the compiler config options.
+
+   In addition to the above profile defines, the following can be used to
+   remove entire blocks of cryptlib functionality.  Note that this sort of
+   thing would normally be done by the build command (e.g. in a makefile), 
+   the following is mostly intended for debugging */
 
 #if 0
   #define CONFIG_NO_CERTIFICATES
@@ -40,90 +42,14 @@
   #endif /* Exception for testing rarely-used facilities under VC++ 6.0 */
 #endif /* 0 */
 
-/* The following configuration options can be used for custom builds of
-   cryptlib to fit constrained environments.  Note that these builds 
-   severely constrain the options available for cryptlib use, for example 
-   removing certificate support and using CONFIG_USE_PSEUDOCERTIFICATES in 
-   combination with CONFIG_PROFILE_SSL requires using a pre-encoded SSL/TLS 
-   certificate chain with cryptCreateAttachedCert() to create the server's 
-   key, since no certificate import or export capabilities are present */
-
-#if 0	/* Embedded SSL/TLS server */
-#define CONFIG_PROFILE_SSL
-#define CONFIG_CONSERVE_MEMORY
-#define CONFIG_NO_KEYSETS
-#define CONFIG_NO_CERTIFICATES
-#define CONFIG_NO_DEVICES 
-#define CONFIG_NO_ENVELOPES
-#define CONFIG_USE_PSEUDOCERTIFICATES
-#endif /* 0 */
-
-#if 0	/* Embedded SSL/TLS server with SCEP */
-#define CONFIG_CONSERVE_MEMORY
-#define CONFIG_NO_CONTEXTS		/* Only a few algorithms */
-#define USE_AES
-#define USE_DH
-#define USE_MD5
-#define USE_RSA
-#define USE_PKC
-#define CONFIG_NO_CERTIFICATES	/* Only basic certificates */
-#define USE_CERTIFICATES 
-#define USE_CERTLEVEL_STANDARD
-#define USE_INT_ASN1
-#define CONFIG_NO_DEVICES 
-#define CONFIG_NO_ENVELOPES		/* Only CMS envelopes */
-#define USE_ENVELOPES
-#define USE_CMS
-#define USE_INT_CMS
-#define CONFIG_NO_KEYSETS		/* Only PKCS #15 keysets */
-//#define USE_KEYSETS
-//#define USE_PKCS15
-//#define USE_FILES
-#define CONFIG_NO_SESSIONS		/* Only SCEP sessions */
-#define USE_SESSIONS
-#define USE_SSL
-#define USE_SCEP
-#endif /* 0 */
-
-/* The blanket low-memory configuration option changes other configuration 
-   settings as well */
-
-#ifdef CONFIG_CONSERVE_MEMORY
-  #ifndef CONFIG_NUM_OBJECTS
-	#define CONFIG_NUM_OBJECTS		128
-  #endif /* CONFIG_NUM_OBJECTS */
-  #ifndef CONFIG_PKC_ALLOCSIZE
-	#define CONFIG_PKC_ALLOCSIZE	256
-  #endif /* CONFIG_PKC_ALLOCSIZE */
-#endif /* CONFIG_CONSERVE_MEMORY */
-
-/* Some standard cryptlib settings can be overridden by user-set 
-   configuration options */
-
-#ifdef CONFIG_PKC_ALLOCSIZE
-  #if CONFIG_PKC_ALLOCSIZE < 128 || CONFIG_PKC_ALLOCSIZE > 512
-	#error CONFIG_PKC_ALLOCSIZE must be between 128 and 512 (1024 to 4096 bits).
-  #endif /* CONFIG_PKC_ALLOCSIZE range check */
-  #undef CRYPT_MAX_PKCSIZE
-  #define CRYPT_MAX_PKCSIZE			CONFIG_PKC_ALLOCSIZE
-#endif /* CONFIG_PKC_ALLOCSIZE */
-
-/****************************************************************************
-*																			*
-*								General Capabilities						*
-*																			*
-****************************************************************************/
-
 /* General capabilities that affect further config options */
 
 #if defined( __BEOS__ ) || defined( __CHORUS__ ) || \
 	( defined( __ECOS__ ) && defined( CYGPKG_NET ) ) || \
-	defined( __MVS__ ) || defined( __Nucleus__ ) || \
-	defined( __PALMOS__ ) || defined( __RTEMS__ ) || \
+	defined( __MVS__ ) || defined( __PALMOS__ ) || defined( __RTEMS__ ) || \
 	defined( __SYMBIAN32__ ) || defined( __TANDEM_NSK__ ) || \
 	defined( __TANDEM_OSS__ ) || defined( __UNIX__ ) || \
-	defined( __VxWorks__ ) || defined( _WIN32 ) || \
-	defined( _WIN64 ) || defined( _WIN32_WCE )
+	defined( __WINDOWS__ )
   #define USE_TCP
 #endif /* Systems with TCP/IP networking available */
 
@@ -151,30 +77,17 @@
   #define USE_ERRMSGS
 #endif /* Low-memory builds */
 
-/* When certificates are disabled in order to reduce code size it may still
-   be necessary to be able to at least send out certificates in things like 
-   SSL/TLS handshakes.  The following define enables support for pseudo-
-   certificate objects, objects that support just enough of the required
-   certificate functionality to act as storage containers for encoded
-   certificate data that can be attached to messages */
-
-#ifdef CONFIG_USE_PSEUDOCERTIFICATES
-  #define USE_PSEUDOCERTIFICATES
-#endif /* CONFIG_USE_PSEUDOCERTIFICATES */
-
 /****************************************************************************
 *																			*
 *									Contexts								*
 *																			*
 ****************************************************************************/
 
-#ifndef CONFIG_NO_CONTEXTS
-
 /* The umbrella define USE_PATENTED_ALGORITHMS can be used to drop all
-   patented algorithms (currently no patented algorithms are left), 
-   USE_DEPRECATED_ALGORITHMS can be used to drop deprecated (obsolete or 
+   patented algorithms (currently only RC5 is still left),
+   USE_DEPRECATED_ALGORITHMS can be used to drop deprecated (obsolete or
    weak) algorithms, and USE_OBSCURE_ALGORITHMS can be used to drop little-
-   used algorithms.  Technically both DES and MD5 are also deprecated but 
+   used algorithms.  Technically both DES and MD5 are also deprecated but
    they're still so widely used that it's not really possible to drop them */
 
 #if 0
@@ -188,17 +101,17 @@
 /* Patented algorithms */
 
 #ifdef USE_PATENTED_ALGORITHMS
+  #define USE_RC5
 #endif /* Use of patented algorithms */
 
 /* Obsolete and/or weak algorithms, disabled by default.  There are some 
    algorithms that are never enabled, among them KEA (which never gained any 
    real acceptance, and in any case when it was finally analysed by Kristin 
    Lauter and Anton Mityagin was found to have a variety of problems) and 
-   MD2 and MD4 (which are either completely broken or obsolete/never used 
-   any more) */
+   MD2, MD4, and CAST (which are either completely broken or obsolete/never
+   used any more) */
 
 #ifdef USE_DEPRECATED_ALGORITHMS
-  #define USE_DES
   #define USE_RC2
   #define USE_RC4
 #endif /* Obsolete and/or weak algorithms */
@@ -207,30 +120,53 @@
 
 #ifdef USE_OBSCURE_ALGORITHMS
   #define USE_ELGAMAL
+  #define USE_HMAC_MD5
+  #define USE_HMAC_RIPEMD160
   #define USE_IDEA
+  #define USE_RIPEMD160
 #endif /* Obscure algorithms */
 
-/* Problematic algorithms that can cause issues due to memory/code size (for
-   example AES-GCM uses eight times as much memory as straight AES, and 
-   that's for the variant with the small lookup tables, and the ECC 
-   algorithms have a sizeable code and memory footprint) or because the 
-   cryptosystems are brittle and problematic (the ECC algorithms again) */
+/* Obscure algorithms and modes not supported by most other implementations.  
+   Note that AES-GCM uses eight times as much memory as straight AES, and 
+   that's for the variant with the small lookup tables */
 
-#ifdef USE_PROBLEMATIC_ALGORITHMS
+#if !defined( NDEBUG ) && 0
   #define USE_ECDH
   #define USE_ECDSA
   #define USE_GCM
   #define USE_SHA2_EXT
-#endif /* Problematic algorithms */
+#endif /* Win32 debug */
 
-/* Other algorithms.  Note that DES/3DES, AES, SHA1 and SHA2 are always 
-   enabled as they're either used internally by cryptlib or used by all
-   cryptlib protocols/mechanisms */
+/* Other algorithms.  Note that DES/3DES and SHA1 are always enabled as
+   they're used internally by cryptlib */
 
+#define USE_AES
+#define USE_BLOWFISH
 #define USE_DH
 #define USE_DSA
 #define USE_MD5
 #define USE_RSA
+#define USE_SHA2
+#define USE_HMAC_SHA2
+#if defined( __UNIX__ ) && defined( _CRAY )
+  /* The AES and SHA-2 reference code require a 32-bit data type, but Crays
+	 only have 8-bit and 64-bit types */
+  #undef USE_AES
+  #undef USE_SHA2
+  #undef USE_HMAC_SHA2
+#endif /* Crays */
+#if defined( __MSDOS__ )
+  /* Remove some of the more memory-intensive or unlikely-to-be-used-under-DOS
+	 algorithms */
+  #undef USE_BLOWFISH
+  #undef USE_DH
+  #undef USE_MD5
+  #undef USE_SHA2
+  #undef USE_HMAC_SHA2
+
+  /* Remove further algorithms to save space */
+  #undef USE_DSA
+#endif /* DOS */
 
 /* General PKC context usage */
 
@@ -238,8 +174,6 @@
 	defined( USE_RSA ) || defined( USE_ECDH ) || defined( USE_ECDSA )
   #define USE_PKC
 #endif /* PKC types */
-
-#endif /* CONFIG_NO_CONTEXTS */
 
 /****************************************************************************
 *																			*
@@ -295,24 +229,6 @@
   #define USE_CERTLEVEL_PKIX_PARTIAL
 #endif /* USE_CERTLEVEL_PKIX_FULL && !USE_CERTLEVEL_PKIX_PARTIAL */
 
-/* Certificates can be given to us in base64-encoded form, so we need to 
-   enable base64 decoding to deal with them */
-
-#define USE_BASE64
-
-/* Certificates need ASN.1 support */
-
-#if defined( USE_CERTIFICATES ) && !defined( USE_INT_ASN1 )
-  #define USE_INT_ASN1
-#endif /* USE_CERTIFICATES && !USE_INT_ASN1 */
-
-/* If we're using pseudo-certificates then we can't also use full 
-   certificates */
-
-#if defined( USE_PSEUDOCERTIFICATES ) && defined( USE_CERTIFICATES )
-  #error Cant use both full certificates and pseudocertificates at the same time
-#endif /* USE_PSEUDOCERTIFICATES && USE_CERTIFICATES */
-
 /* The following are used to control handling of obscure certificate and CMS 
    attributes like qualified certificates, SigG certificates, CMS receipts, 
    security labels, and AuthentiCode, and completely obsolete certificate 
@@ -333,8 +249,7 @@
   #define USE_CERT_DNSTRING
 #endif /* 0 */
 
-#if ( defined( USE_CERTIFICATES ) || defined( USE_PSEUDOCERTIFICATES ) ) && \
-	!defined( USE_PKC )
+#if defined( USE_CERTIFICATES ) && !defined( USE_PKC )
   #error Use of certificates requires use of PKC algorithms to be enabled
 #endif /* USE_CERTIFICATES && !USE_PKC */
 
@@ -352,7 +267,9 @@
    mechanism, which sets HAS_PKCS11 if PKCS #11 support is available */
 
 #if defined( __WIN32__ )
-  #define USE_PKCS11
+  #ifndef __BORLANDC__
+	#define USE_PKCS11
+  #endif /* Borland C can't handle PKCS #11 headers */
   #if !defined( NDEBUG )
 	#define USE_HARDWARE
   #endif /* Windows debug mode only */
@@ -360,6 +277,9 @@
 #ifdef HAS_PKCS11
   #define USE_PKCS11
 #endif /* PKCS #11 under Unix autoconfig */
+
+/* General device usage */
+
 #if defined( USE_PKCS11 ) || defined( USE_CRYPTOAPI )
   #define USE_DEVICES
 #endif /* Device types */
@@ -374,44 +294,32 @@
 
 #ifndef CONFIG_NO_ENVELOPES
 
+/* CMS envelopes */
+
 #define USE_CMS
+#if !defined( __MSDOS__ ) && !defined( __WIN16__ )
+  #define USE_COMPRESSION
+#endif /* __MSDOS__ || __WIN16__ */
+
+/* PGP envelopes.  Note that we don't force USE_IDEA for PGP (even though 
+   the patents have expired and it's freely usable) since this should now 
+   hopefully be extinct */
+
 #define USE_PGP
+#if defined( USE_PGP )
+  #ifndef USE_ELGAMAL
+	#define USE_ELGAMAL
+  #endif /* OpenPGP requires ElGamal */
+  #ifndef USE_CAST
+	#define USE_CAST
+  #endif /* Some OpenPGP implementations still (!!) default to CAST5 */
+#endif /* OpenPGP-specific algorithms */
+
+/* General envelope usage */
 
 #if defined( USE_CMS ) || defined( USE_PGP )
   #define USE_ENVELOPES
 #endif /* Enveloping types */
-
-/* CMS envelopes require CMS data formats and compression support */
-
-#if defined( USE_CMS ) && !defined( USE_INT_CMS )
-  /* CMS enveloping requires CMS data format support */
-  #define USE_INT_CMS
-  #define USE_COMPRESSION
-#endif /* USE_CMS */
-
-/* PGP envelopes require Elgamal, CAST, and compression support.  Note that 
-   we don't force USE_IDEA for PGP (even though the patents have expired and 
-   it's freely usable) since this should now hopefully be extinct */
-
-#if defined( USE_PGP )
-  #ifndef USE_ELGAMAL
-	/* OpenPGP requires ElGamal */
-	#define USE_ELGAMAL
-  #endif /* !USE_ELGAMAL */
-  #ifndef USE_CAST
-	/* Some OpenPGP implementations still (!!) default to CAST5 */
-	#define USE_CAST
-  #endif /* !USE_CAST */
-  #ifndef USE_COMPRESSION
-	/* Decoding PGP messages from other implementations requires 
-	   compression support */
-	#define USE_COMPRESSION
-  #endif /* !USE_COMPRESSION */
-#endif /* OpenPGP-specific algorithms */
-
-/* Envelopes require PKC algorithms (they can be done with symmetric 
-   algorithms only, but it's rather unikely that anyone will be doing 
-   this) */
 
 #if defined( USE_ENVELOPES ) && !defined( USE_PKC )
   #error Use of envelopes requires use of PKC algorithms to be enabled
@@ -426,47 +334,6 @@
 ****************************************************************************/
 
 #ifndef CONFIG_NO_KEYSETS
-
-/* File keysets */
-
-/* By uncommenting the following PKCS #12 define or enabling equivalent
-   functionality in any other manner you acknowledge that you are disabling
-   safety features in the code and take full responbility for any
-   consequences arising from this action.  You also indemnify the cryptlib
-   authors against all actions, claims, losses, costs, and expenses that
-   may be suffered or incurred and that may have arisen directly or
-   indirectly as a result of any use of cryptlib with this change made.  If
-   you receive the code with the safety features already disabled, you must
-   immediately obtain and use an original, unmodified version */
-/* #define USE_PKCS12 */
-
-#define USE_PKCS15
-#define USE_PGPKEYS
-
-#if defined( USE_PKCS15 ) && !defined( USE_INT_CMS )
-  /* PKCS #15 needs CMS support for iCryptImport/ExportKey() */
-  #define USE_INT_CMS
-#endif /* USE_PKCS15 && !USE_INT_CMS */
-#if defined( USE_PGPKEYS ) && !defined( USE_CAST )
-  /* Some OpenPGP implementations still (!!) default to CAST5 */
-  #define USE_CAST
-#endif /* USE_PGPKEYS && !USE_CAST */
-#ifdef USE_PKCS12
-  /* If we use PKCS #12 then we have to enable RC2 in order to handle 
-	 Microsoft's continuing use of RC2-40 */
-  #define USE_RC2
-#endif /* USE_PKCS12 */
-#if ( defined( USE_PKCS15 ) || defined( USE_PGPKEYS ) ) && \
-	!defined( USE_FILES )
-  /* PKCS #15/PGP keysets need file I/O support */
-  #define USE_FILES
-#endif /* ( USE_PKCS15 || USE_PGPKEYS ) && !USE_FILES */
-
-#if defined( USE_PGPKEYS ) || defined( USE_PKCS15 )
-  #ifndef USE_PKC
-	#error Use of PGP/PKCS #15 keysets requires use of PKC algorithms to be enabled
-  #endif /* USE_PKC */
-#endif /* USE_PGPKEYS || USE_PKCS15 */
 
 /* Database keysets.  ODBC can also be enabled under Unix by the auto-config 
    mechanism, which sets HAS_ODBC if ODBC support is available */
@@ -484,19 +351,12 @@
   #define USE_DBMS
 #endif /* RDBMS types */
 
-/* If we're using a database keyset then we need to be able to encode binary
-   identifiers as text, which requires the use of base64 encoding */
-
-#if defined( USE_DBMS )
-  #define USE_BASE64
-#endif /* USE_BASE64 */
-
 /* Network keysets.  LDAP can also be enabled under Unix by the auto-config 
    mechanism, which sets HAS_LDAP if LDAP support is available.
 
    Note that LDAP is disabled by default because of its very large attack 
-   surface, you should only enable this if it's absolutely essential.  Your 
-   security guarantee is void when you do this */
+   surface, you should only enable this if it's absolutely essential, and 
+   your security guarantee is void when using it */
 
 #if defined( __WIN32__ ) && \
 	!( defined( NT_DRIVER ) || defined( WIN_DDK ) || \
@@ -509,6 +369,35 @@
 #ifdef USE_TCP
   #define USE_HTTP
 #endif /* TCP/IP networking */
+
+/* File keysets */
+
+/* By uncommenting the following PKCS #12 define or enabling equivalent
+   functionality in any other manner you acknowledge that you are disabling
+   safety features in the code and take full responbility for any
+   consequences arising from this action.  You also indemnify the cryptlib
+   authors against all actions, claims, losses, costs, and expenses that
+   may be suffered or incurred and that may have arisen directly or
+   indirectly as a result of any use of cryptlib with this change made.  If
+   you receive the code with the safety features already disabled, you must
+   obtain an original, unmodified version */
+/* #define USE_PKCS12 */
+#ifdef USE_PKCS12
+  /* If we use PKCS #12 then we have to enable RC2 in order to handle 
+	 Microsoft's continuing use of RC2-40 */
+  #define USE_RC2
+#endif /* USE_PKCS12 */
+
+#define USE_PGPKEYS
+#define USE_PKCS15
+#if defined( USE_PGPKEYS ) || defined( USE_PKCS15 )
+  #ifndef USE_PKC
+	#error Use of PGP/PKCS #15 keysets requires use of PKC algorithms to be enabled
+  #endif /* USE_PKC */
+#endif /* USE_PGPKEYS || USE_PKCS15 */
+#if defined( USE_PGPKEYS ) && !defined( USE_CAST )
+  #define USE_CAST
+#endif /* Some OpenPGP implementations still (!!) default to CAST5 */
 
 /* General keyset usage */
 
@@ -527,74 +416,63 @@
 
 #ifndef CONFIG_NO_SESSIONS
 
-#define USE_CERTSTORE
-#define USE_CMP
-#define USE_RTCS
-#define USE_OCSP
-#define USE_SCEP
-#define USE_SSH
-#define USE_SSL
-#define USE_TSP
+/* SSHv1 is explicitly disabled (or at least not enabled), you should only
+   enable this if there's a very good reason to use it since this code is 
+   very old, unmaintained, and hasn't been subject to ongoing security
+   audits.  Enabling it here will also produce a double-check warning in 
+   ssh1.c that needs to be turned off to allow the code to build */
 
-#if defined( USE_CERTSTORE ) || defined( USE_CMP ) || defined( USE_RTCS ) || \
-	defined( USE_OCSP ) || defined( USE_SCEP ) || defined( USE_SSH ) || \
+#ifdef USE_TCP
+  #define USE_CERTSTORE
+  #define USE_CMP
+  #define USE_RTCS
+  #define USE_OCSP
+  #define USE_SCEP
+  #define USE_SSH
+  #define USE_SSL
+  #define USE_TSP
+#endif /* USE_TCP */
+
+/* Make sure that prerequisites are met for sessions that require 
+   certificate components */
+
+#if defined( USE_CERTSTORE ) && !defined( USE_CERTIFICATES )
+  #error Use of a certificate store requires use of certificates to be enabled
+#endif /* USE_CERTSTORE && !USE_CERTIFICATES */
+#if defined( USE_CMP ) && !defined( USE_CERTREQ )
+  #error Use of CMP requires use of certificate requests to be enabled
+#endif /* USE_CMP && !USE_CERTREQ */
+#if defined( USE_RTCS ) && !( defined( USE_CERTVAL ) && defined( USE_CMSATTR ) )
+  /* RTCS needs CRYPT_CERTINFO_CMS_NONCE */
+  #error Use of RTCS requires use of certificate validation and CMS attributes to be enabled
+#endif /* USE_RTCS && !( USE_CERTVAL && USE_CMSATTR ) */
+#if defined( USE_OCSP ) && !defined( USE_CERTREV )
+  #error Use of OCSP requires use of certificate revocation to be enabled
+#endif /* USE_OCSP && !USE_CERTREV */
+#if defined( USE_SCEP ) && !( defined( USE_CERTREQ ) && defined( USE_CMSATTR ) )
+  /* SCEP needs CRYPT_CERTINFO_CHALLENGEPASSWORD for PKCS #10 requests and 
+     CRYPT_CERTINFO_SCEP_xyz for CMS attributes */
+  #error Use of SCEP requires use of certificate requests and CMS attributes to be enabled
+#endif /* USE_SCEP && !( USE_CERTREQ && USE_CMSATTR ) */
+#if defined( USE_SSL ) && !defined( USE_CERTIFICATES )
+  #error Use of SSL requires use of certificates to be enabled
+#endif /* USE_SSL && !USE_CERTIFICATES */
+#if defined( USE_TSP ) && !defined( USE_CMSATTR )
+  /* TSP requires CRYPT_CERTINFO_CMS_SIGNINGCERT_ESSCERTID */
+  #error Use of TSP requires use of CMS attributes to be enabled
+#endif /* USE_TSP && !USE_CERTIFICATES */
+
+/* General session usage */
+
+#if defined( USE_CMP ) || defined( USE_RTCS ) || defined( USE_OCSP ) || \
+	defined( USE_SCEP ) || defined( USE_SSH1 ) || defined( USE_SSH ) || \
 	defined( USE_SSL ) || defined( USE_TSP )
   #define USE_SESSIONS
 #endif /* Session types */
 
-/* We can't use secure sessions if there's no networking available */
-
-#ifndef USE_TCP
-  #error Use of secure sessions requires the use of TCP/IP
-#endif /* !USE_TCP */
-
-/* Make sure that prerequisites are met for sessions that require 
-   certificate components.  We can only check these if there's no specific
-   session-based profile defined, because a profile for (for example) SSH
-   enables sessions, but only the SSH session and not any others, which
-   means that the dependency checks will produce false positives */
-
-#if !defined( CONFIG_PROFILE_SSH ) && !defined( CONFIG_PROFILE_SSL )
-  #if defined( USE_CERTSTORE ) && !defined( USE_CERTIFICATES )
-	#error Use of a certificate store requires use of certificates to be enabled
-  #endif /* USE_CERTSTORE && !USE_CERTIFICATES */
-  #if defined( USE_CMP ) && !defined( USE_CERTREQ )
-	#error Use of CMP requires use of certificate requests to be enabled
-  #endif /* USE_CMP && !USE_CERTREQ */
-  #if defined( USE_RTCS ) && !( defined( USE_CERTVAL ) && defined( USE_CMSATTR ) )
-	/* RTCS needs CRYPT_CERTINFO_CMS_NONCE */
-	#error Use of RTCS requires use of certificate validation and CMS attributes to be enabled
-  #endif /* USE_RTCS && !( USE_CERTVAL && USE_CMSATTR ) */
-  #if defined( USE_OCSP ) && !defined( USE_CERTREV )
-	#error Use of OCSP requires use of certificate revocation to be enabled
-  #endif /* USE_OCSP && !USE_CERTREV */
-  #if defined( USE_SCEP ) && !( defined( USE_CERTREQ ) && defined( USE_CMSATTR ) )
-	/* SCEP needs CRYPT_CERTINFO_CHALLENGEPASSWORD for PKCS #10 requests and 
-	   CRYPT_CERTINFO_SCEP_xyz for CMS attributes */
-	#error Use of SCEP requires use of certificate requests and CMS attributes to be enabled
-  #endif /* USE_SCEP && !( USE_CERTREQ && USE_CMSATTR ) */
-  #if defined( USE_SSL ) && !defined( USE_CERTIFICATES )
-	#error Use of SSL requires use of certificates to be enabled
-  #endif /* USE_SSL && !USE_CERTIFICATES */
-  #if defined( USE_TSP ) && !defined( USE_CMSATTR )
-	/* TSP requires CRYPT_CERTINFO_CMS_SIGNINGCERT_ESSCERTID */
-	#error Use of TSP requires use of CMS attributes to be enabled
-  #endif /* USE_TSP && !USE_CERTIFICATES */
-#endif /* !CONFIG_PROFILE_SSH && !CONFIG_PROFILE_SSL */
-
-/* General session usage */
-
 #if defined( USE_SESSIONS ) && !defined( USE_PKC )
   #error Use of secure sessions requires use of PKC algorithms to be enabled
 #endif /* USE_SESSIONS && !USE_PKC */
-
-/* If we're using SCEP then we need to deal with broken servers that require 
-   the use of a POST disguised as a GET, for which we need to base64-encode 
-   the binary data that we're sending */
-
-#if defined( USE_SCEP )
-  #define USE_BASE64
-#endif /* USE_SCEP */
 
 /* Finally, we provide the ability to disable various complex and therefore
    error-prone mechanisms that aren't likely to see much use.  By default 
@@ -614,14 +492,13 @@
 
 /* Threads */
 
-#if defined( __AMX__  ) || defined( __ARINC653__ ) || defined( __BEOS__ ) || \
-	defined( __CHORUS__ ) || defined( __CMSIS__ ) || defined( __ECOS__ ) || \
-	defined( __EmbOS__ ) || defined( __FreeRTOS__ ) || defined( __ITRON__ ) || \
-	defined( __MQX__ ) || defined( __Nucleus__ ) || defined( __OS2__ ) || \
-	defined( __PALMOS__ ) || defined( __RTEMS__ ) || defined( __SMX__ ) || \
+#if defined( __AMX__  ) || defined( __BEOS__ ) || defined( __CHORUS__ ) || \
+	defined( __ECOS__ ) || defined( __EmbOS__ ) || defined( __FreeRTOS__ ) || \
+	defined( __ITRON__ ) || defined( __MQX__ ) || defined( __Nucleus__ ) || \
+	defined( __OS2__ ) || defined( __PALMOS__ ) || defined( __RTEMS__ ) || \
 	defined( __ThreadX__ ) || defined( __TKernel__ ) || defined( __UCOS__ ) || \
-	defined( __VDK__ ) || defined( __VxWorks__ ) || defined( __WIN32__ ) || \
-	defined( __WINCE__ ) || defined( __XMK__ ) 
+	defined( __VDK__ ) || defined( __VXWORKS__ ) || defined( __WIN32__ ) || \
+	defined( __WINCE__ ) || defined( __XMK__ ) || defined( __VXWORKS__ )
   #define USE_THREADS
 #endif /* Non-Unix systems with threads */
 
@@ -639,8 +516,8 @@
 
 /* Widechars */
 
-#if defined( __Android__ ) || defined( __BEOS__ ) || defined( __ECOS__ ) || \
-	defined( __MSDOS32__ ) || defined( __OS2__ ) || defined( __RTEMS__ ) || \
+#if defined( __BEOS__ ) || defined( __ECOS__ ) || defined( __MSDOS32__ ) || \
+	defined( __OS2__ ) || defined( __RTEMS__ ) || \
 	( ( defined( __WIN32__ ) || defined( __WINCE__ ) ) && \
 	  !( defined( __BORLANDC__ ) && ( __BORLANDC__ < 0x500 ) ) ) || \
 	defined( __XMK__ )
@@ -665,12 +542,11 @@
    WinCE and PalmOS which are treated as OSes in their own right, while all 
    USE_EMBEDDED_OS OSes are a single amorphous blob */
 
-#if defined( __AMX__ ) || defined( __Android__ ) || defined( __ARINC653__ ) || \
-	defined( __CHORUS__ ) || defined( __CMSIS__ ) || defined( __ECOS__ ) || \
+#if defined( __AMX__ ) || defined( __CHORUS__ ) || defined( __ECOS__ ) || \
 	defined( __EmbOS__ ) || defined( __FreeRTOS__ ) || defined( __ITRON__ ) || \
 	defined( __MQX__ ) || defined( __RTEMS__ ) || defined( __ThreadX__ ) || \
 	defined( __TKernel__ ) || defined( __UCOS__ ) || defined( __VDK__ ) || \
-	defined( __VxWorks__ ) || defined( __XMK__ )
+	defined( __VXWORKS__ ) || defined( __XMK__ )
   #define USE_EMBEDDED_OS
 #endif /* Embedded OSes */
 
@@ -678,9 +554,9 @@
    sources available so we enable the use of the random seed file by 
    default */
 
-#if defined( USE_EMBEDDED_OS ) && !defined( CONFIG_RANDSEED )
+#ifdef USE_EMBEDDED_OS
   #define CONFIG_RANDSEED
-#endif /* USE_EMBEDDED_OS && !CONFIG_RANDSEED */
+#endif /* USE_EMBEDDED_OS */
 
 /* Networking.  DNS SRV is very rarely used and somewhat risky to leave 
    enabled by default because the high level of complexity of DNS packet 
@@ -695,30 +571,14 @@
 
 /* If we're on a particularly slow or fast CPU we disable or enable certain 
    processor-intensive operations.  In the absence of any easy compile-time 
-   metric we define the following:
-
-	Slow: All 16-bit CPUs 
-	Fast: All 64-bit CPUs.  Windows PCs.
-
-   This isn't perfect, but is a reasonable approximation */
+   metric we define all 16-bit CPUs to be slow and all 64-bit CPUs to be 
+   fast, which is a reasonable approximation */
 
 #if defined( SYSTEM_16BIT )
   #define CONFIG_SLOW_CPU
-#elif defined( SYSTEM_64BIT ) || defined( __WINDOWS__ )
+#elif defined( SYSTEM_64BIT )
   #define CONFIG_FAST_CPU
 #endif /* Approximation of CPU speeds */
-
-/****************************************************************************
-*																			*
-*						Internal/Low-level Formats							*
-*																			*
-****************************************************************************/
-
-/* The CMS data format requires the use of ASN.1 */
-
-#if defined( USE_INT_CMS ) && !defined( USE_INT_ASN1 )
-  #define USE_INT_ASN1
-#endif /* USE_INT_CMS && !USE_INT_ASN1 */
 
 /****************************************************************************
 *																			*
@@ -729,16 +589,19 @@
 /* The following profiles can be used to enable specific functionality for
    applications like SSL, SSH, and S/MIME */
 
-#if defined( CONFIG_PROFILE_SMIME ) || defined( CONFIG_PROFILE_PGP ) || \
-	defined( CONFIG_PROFILE_SSH ) || defined( CONFIG_PROFILE_SSL )
+#if defined( CONFIG_PROFILE_SMIME ) || defined( CONFIG_PROFILE_SSH ) || \
+	defined( CONFIG_PROFILE_SSL )
 
 	/* Contexts */
-	#undef USE_CAST
-	#undef USE_DES
+	#undef USE_BLOWFISH
 	#undef USE_ELGAMAL
+	#undef USE_HMAC_MD5
+	#undef USE_HMAC_RIPEMD160
 	#undef USE_IDEA
 	#undef USE_RC2
 	#undef USE_RC4
+	#undef USE_RC5
+	#undef USE_RIPEMD160
 
 	/* Certificates */
 	#undef USE_CERTREV
@@ -758,15 +621,13 @@
 	#undef USE_LDAP
 	#undef USE_ODBC
 
-	/* Misc */
-	#undef USE_BASE64
-
 	/* Sessions */
 	#undef USE_CERTSTORE
 	#undef USE_CMP
 	#undef USE_OCSP
 	#undef USE_RTCS
 	#undef USE_SCEP
+	#undef USE_SSH1
 	#undef USE_TSP
 	#undef USE_DNSSRV
 
@@ -780,8 +641,6 @@
 	#undef USE_CMSATTR
 
 	/* Envelopes */
-	#undef USE_ENVELOPES
-	#undef USE_CMS
 	#undef USE_PGP
 	#undef USE_COMPRESSION
 
@@ -790,9 +649,6 @@
 
 	/* Sessions */
 	#undef USE_SSH
-
-	/* Internal data formats */
-	#undef USE_INT_CMS
 
 #endif /* CONFIG_PROFILE_SSL */
 
@@ -805,8 +661,6 @@
 	#undef USE_CMSATTR
 
 	/* Envelopes */
-	#undef USE_ENVELOPES
-	#undef USE_CMS
 	#undef USE_PGP
 	#undef USE_COMPRESSION
 
@@ -816,9 +670,6 @@
 	/* Sessions */
 	#undef USE_SSL
 
-	/* Internal data formats */
-	#undef USE_INT_CMS
-
 #endif /* CONFIG_PROFILE_SSH */
 
 #ifdef CONFIG_PROFILE_SMIME
@@ -826,6 +677,8 @@
 	/* Contexts */
 	#undef USE_DH
 	#undef USE_DSA
+	#undef USE_HMAC_SHA2
+	#undef USE_SHA2
 
 	/* Envelopes */
 	#undef USE_PGP
@@ -840,71 +693,6 @@
 	#undef USE_SESSIONS
 
 #endif /* CONFIG_PROFILE_SSH */
-
-#ifdef CONFIG_PROFILE_PGP
-
-	/* Contexts */
-	#undef USE_DH
-	#define USE_ELGAMAL	/* Re-enable algorithms that nothing else uses */
-	#define USE_CAST
-
-	/* Certificages */
-	#undef USE_CERTIFICATES
-
-	/* Envelopes */
-	#undef USE_CMS
-
-	/* Sessions */
-	#undef USE_SSH
-	#undef USE_SSL
-	#undef USE_TCP
-	#undef USE_SESSIONS
-
-	/* Internal data formats */
-	#undef USE_INT_CMS
-	#undef USE_INT_ASN1
-
-#endif /* CONFIG_PROFILE_SSH */
-
-/****************************************************************************
-*																			*
-*							Fixups for Build Dependencies					*
-*																			*
-****************************************************************************/
-
-/* Some of the high-level configuration options above retroactively affect 
-   the availability of low-level options.  For example USE_SESSIONS can't be 
-   enabled unless USE_TCP is already defined, but then if USE_SESSIONS 
-   isn't defined then there's no need for USE_TCP any more.  The following
-   fixups handle situations like this */
-
-/* If use of ASN.1 isn't enabled then we can't use the DLP signature 
-   algorithms, which need ASN.1 support to write the signature format.
-   Technically this isn't quite true since we could be writing the signature
-   in SSL/TLS or SSH format, but the self-test uses the ASN.1 format, and we
-   assume that a build that includes SSL/TLS or SSH will also include the
-   ASN.1 capabilities for things like private key storage */
-
-#ifndef USE_INT_ASN1
-  #ifdef USE_DSA
-	#undef USE_DSA
-  #endif /* USE_DSA */
-  #ifdef USE_ELGAMAL
-	#undef USE_ELGAMAL
-  #endif /* USE_ELGAMAL */
-  #ifdef USE_ECDSA
-	#undef USE_ECDSA
-  #endif /* USE_ECDSA */
-#endif /* USE_INT_ASN1 */
-
-/* If sessions or HTTP keysets aren't being used then there's no need for 
-   TCP networking */
-
-#if !defined( USE_SESSIONS ) && !( defined( USE_KEYSETS ) && defined( USE_HTTP ) )
-  #ifdef USE_TCP
-	#undef USE_TCP
-  #endif /* USE_TCP */
-#endif /* USE_SESSIONS */
 
 /****************************************************************************
 *																			*
@@ -921,46 +709,36 @@
 #if defined( _WIN32 ) && defined( _MSC_VER ) && ( _MSC_VER == 1200 ) && \
 	!defined( NDEBUG ) && !defined( NO_OBSCURE_FEATURES ) && \
 	!( defined( __WINCE__ ) || defined( CONFIG_PROFILE_SMIME ) || \
-	   defined( CONFIG_PROFILE_PGP ) || defined( CONFIG_PROFILE_SSH ) || \
-	   defined( CONFIG_PROFILE_SSL ) )
+	   defined( CONFIG_PROFILE_SSH ) || defined( CONFIG_PROFILE_SSL ) )
   #define USE_CERT_DNSTRING
   #define USE_CRYPTOAPI
   #define USE_ECDH
   #define USE_ECDSA
   #define USE_GCM
-  #define USE_SHA2_EXT
   #define USE_LDAP
   #define USE_OAEP
   #define USE_PKCS12
   #define USE_RC2		/* Needed for PKCS #12 */
   #ifdef USE_TCP
-	#define USE_SSL3
 	#define USE_SSH_EXTENDED
 	#define USE_DNSSRV
   #endif /* USE_TCP */
-  #define USE_PGP2
 #endif /* Win32 debug build under VC++ 6.0 */
 
 /* If we're using a static analyser then we also enable some additional 
    functionality to allow the analyser to check it */
 
 #if ( defined( _MSC_VER ) && defined( _PREFAST_ ) ) || \
-	( defined( __clang_analyzer__ ) ) || \
-	( defined( USE_ANALYSER ) )
+	( defined( __clang_analyzer__ ) )
   #define USE_CERT_DNSTRING
   #define USE_DNSSRV
   #define USE_ECDH
   #define USE_ECDSA
   #define USE_GCM
-  #if defined( _PREFAST_ ) || defined( __clang_analyzer__ )
-	#define USE_LDAP
-  #endif /* Analysers on development machines */
+  #define USE_LDAP
   #define USE_OAEP
   #define USE_PKCS12
-  #define USE_RC2
   #define USE_SSH_EXTENDED
-  #define USE_DNSSRV
-  #define USE_PGP2
 #endif /* Static analyser builds */
 
 /* If we're using Suite B we have to explicitly enable certain algorithms, 
@@ -998,6 +776,7 @@
   #undef USE_RTCS
   #undef USE_OCSP
   #undef USE_SCEP
+  #undef USE_SSH1
   #undef USE_SSH
   #undef USE_SSL
   #undef USE_TSP

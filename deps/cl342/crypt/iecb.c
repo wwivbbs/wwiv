@@ -66,8 +66,6 @@
   #include "crypt/idealocl.h"
 #endif /* Compiler-specific includes */
 
-#ifdef USE_IDEA
-
 const char *idea_options(void)
 	{
 	if (sizeof(short) != sizeof(IDEA_INT))
@@ -88,4 +86,4 @@ void idea_ecb_encrypt(const unsigned char *in, unsigned char *out,
 	l1=d[1]; l2n(l1,out);
 	l0=l1=d[0]=d[1]=0;
 	}
-#endif /* USE_IDEA */
+

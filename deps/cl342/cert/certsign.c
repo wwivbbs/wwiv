@@ -7,8 +7,10 @@
 
 #if defined( INC_ALL )
   #include "cert.h"
+  #include "asn1.h"
 #else
   #include "cert/cert.h"
+  #include "enc_dec/asn1.h"
 #endif /* Compiler-specific includes */
 
 #ifdef USE_CERTIFICATES
@@ -37,7 +39,7 @@ static int recoverCertData( INOUT CERT_INFO *certInfoPtr,
 								const int encodedCertDataLength )
 	{
 	STREAM stream;
-	int tag, status;
+	int status;
 
 	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
 	assert( isReadPtr( encodedCertData, encodedCertDataLength ) );
@@ -98,11 +100,11 @@ static int recoverCertData( INOUT CERT_INFO *certInfoPtr,
 		readSequence( &stream, NULL );
 		readUniversal( &stream );				/* Request ID */
 		status = readSequence( &stream, NULL );	/* Inner wrapper */
-		if( checkStatusPeekTag( &stream, status, tag ) && \
-			tag == MAKE_CTAG( 4 ) )
+		if( cryptStatusOK( status ) && \
+			peekTag( &stream ) == MAKE_CTAG( 4 ) )
 			status = readUniversal( &stream );	/* Validity */
-		if( checkStatusPeekTag( &stream, status, tag ) && \
-			tag == MAKE_CTAG( 5 ) )
+		if( cryptStatusOK( status ) && \
+			peekTag( &stream ) == MAKE_CTAG( 5 ) )
 			{									/* Subj.name wrapper */
 			status = readConstructed( &stream, NULL, 5 );
 			if( cryptStatusOK( status ) && certInfoPtr->subjectDNsize > 0 )
@@ -113,10 +115,10 @@ static int recoverCertData( INOUT CERT_INFO *certInfoPtr,
 			ENSURES( cryptStatusOK( status ) );
 			status = readUniversal( &stream );	/* Subject name */
 			}
-		if( checkStatusPeekTag( &stream, status, tag ) && \
-			tag != MAKE_CTAG( 6 ) )
-			status = CRYPT_ERROR_BADDATA;		/* Public key */
-		if( !cryptStatusError( status ) )
+		if( cryptStatusOK( status ) && \
+			peekTag( &stream ) != MAKE_CTAG( 6 ) )	/* Public key */
+			status = CRYPT_ERROR_BADDATA;
+		if( cryptStatusOK( status ) )
 			status = sMemGetDataBlock( &stream, &certInfoPtr->publicKeyInfo, 
 									   certInfoPtr->publicKeyInfoSize );
 		ENSURES( cryptStatusOK( status ) );
@@ -148,8 +150,8 @@ static int recoverCertData( INOUT CERT_INFO *certInfoPtr,
 	sMemConnect( &stream, encodedCertData, encodedCertDataLength );
 	readSequence( &stream, NULL );			/* Outer wrapper */
 	status = readSequence( &stream, NULL );	/* Inner wrapper */
-	if( checkStatusPeekTag( &stream, status, tag ) && \
-		tag == MAKE_CTAG( 0 ) )
+	if( cryptStatusOK( status ) && \
+		peekTag( &stream ) == MAKE_CTAG( 0 ) )
 		readUniversal( &stream );			/* Version */
 	readUniversal( &stream );				/* Serial number */
 	status = readUniversal( &stream );		/* Signature algo */
@@ -190,6 +192,7 @@ static int recoverCertData( INOUT CERT_INFO *certInfoPtr,
 		certInfoPtr->flags &= ~CERT_FLAG_DATAONLY;
 	return( status );
 	}
+
 
 /* Check the key being used to sign a certificate object */
 
@@ -419,12 +422,10 @@ static int initSignatureInfo( INOUT CERT_INFO *certInfoPtr,
 							  IN_HANDLE_OPT const CRYPT_CONTEXT iSignContext,
 							  const BOOLEAN isCertificate,
 							  OUT_ALGO_Z CRYPT_ALGO_TYPE *hashAlgo,
-							  IN_ENUM_OPT( CRYPT_SIGNATURELEVEL ) \
+							  IN_ENUM( CRYPT_SIGNATURELEVEL ) \
 								const CRYPT_SIGNATURELEVEL_TYPE signatureLevel,
 							  OUT_OPT_LENGTH_SHORT_Z int *extraDataLength )
 	{
-	const CRYPT_ALGO_TYPE signingAlgo = ( issuerCertInfoPtr != NULL ) ? \
-				issuerCertInfoPtr->publicKeyAlgo : certInfoPtr->publicKeyAlgo;
 	int status;
 
 	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
@@ -510,18 +511,6 @@ static int initSignatureInfo( INOUT CERT_INFO *certInfoPtr,
 							  CRYPT_OPTION_ENCR_HASH );
 	if( cryptStatusError( status ) )
 		return( status );
-	if( signingAlgo == CRYPT_ALGO_DSA )
-		{
-		/* If we're going to be signing with DSA then things get a bit 
-		   complicated, the only OID defined for non-SHA1 DSA is for 256-bit
-		   SHA2, and even then in order to use it with a generic 1024-bit 
-		   key we have to truncate the hash.  It's not clear how many 
-		   implementations can handle this, and if we're using a hash wider
-		   than SHA-2/256 or a newer hash like SHAng then we can't encode 
-		   the result at all.  To deal with this we restrict the hash used 
-		   with DSA to SHA-1 only */
-		*hashAlgo = CRYPT_ALGO_SHA1;
-		}
 	if( certInfoPtr->type == CRYPT_CERTTYPE_CERTIFICATE || \
 		certInfoPtr->type == CRYPT_CERTTYPE_CERTCHAIN || \
 		certInfoPtr->type == CRYPT_CERTTYPE_ATTRIBUTE_CERT )
@@ -683,20 +672,19 @@ static int pseudoSignCertificate( INOUT CERT_INFO *certInfoPtr,
 /* Sign the certificate information */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4, 6 ) ) \
-static int signCertInfo( OUT_BUFFER( signedObjectMaxLength, \
-									 *signedObjectLength ) \
-							void *signedObject, 
-						 IN_DATALENGTH const int signedObjectMaxLength, 
-						 OUT_DATALENGTH_Z int *signedObjectLength,
-						 IN_BUFFER( objectLength ) const void *object, 
-						 IN_DATALENGTH const int objectLength,
-						 INOUT CERT_INFO *certInfoPtr, 
-						 IN_HANDLE const CRYPT_CONTEXT iSignContext,
-						 IN_ALGO const CRYPT_ALGO_TYPE hashAlgo,
-						 IN_ENUM( CRYPT_SIGNATURELEVEL ) \
-							const CRYPT_SIGNATURELEVEL_TYPE signatureLevel,
-						 IN_LENGTH_SHORT_Z const int extraDataLength,
-						 IN_OPT const CERT_INFO *issuerCertInfoPtr )
+int signCertInfo( OUT_BUFFER( signedObjectMaxLength, *signedObjectLength ) \
+					void *signedObject, 
+				  IN_LENGTH const int signedObjectMaxLength, 
+				  OUT_LENGTH_Z int *signedObjectLength,
+				  IN_BUFFER( objectLength ) const void *object, 
+				  IN_LENGTH const int objectLength,
+				  INOUT CERT_INFO *certInfoPtr, 
+				  IN_HANDLE const CRYPT_CONTEXT iSignContext,
+				  IN_ALGO const CRYPT_ALGO_TYPE hashAlgo,
+				  IN_ENUM( CRYPT_SIGNATURELEVEL ) \
+					const CRYPT_SIGNATURELEVEL_TYPE signatureLevel,
+				  IN_LENGTH_SHORT_Z const int extraDataLength,
+				  const CERT_INFO *issuerCertInfoPtr )
 	{
 	STREAM stream;
 	const int extraDataType = \
@@ -713,18 +701,17 @@ static int signCertInfo( OUT_BUFFER( signedObjectMaxLength, \
 	assert( issuerCertInfoPtr == NULL || \
 			isReadPtr( issuerCertInfoPtr, sizeof( CERT_INFO ) ) );
 
-	REQUIRES( signedObjectMaxLength >= MIN_CRYPT_OBJECTSIZE && \
-			  signedObjectMaxLength < MAX_BUFFER_SIZE );
+	REQUIRES( signedObjectMaxLength >= 16 && \
+			  signedObjectMaxLength < MAX_INTLENGTH_SHORT );
 	REQUIRES( objectLength >= 16 && \
 			  objectLength <= signedObjectMaxLength && \
-			  objectLength < MAX_BUFFER_SIZE );
+			  objectLength < MAX_INTLENGTH_SHORT );
 	REQUIRES( isHandleRangeValid( iSignContext ) );
 	REQUIRES( isHashAlgo( hashAlgo ) );
 	REQUIRES( signatureLevel >= CRYPT_SIGNATURELEVEL_NONE && \
 			  signatureLevel < CRYPT_SIGNATURELEVEL_LAST );
 	REQUIRES( extraDataLength >= 0 && \
 			  extraDataLength < MAX_INTLENGTH_SHORT );
-	REQUIRES( extraDataLength <= 0 || issuerCertInfoPtr != NULL );
 
 	/* Sign the certificate information.  CRMF and OCSP use a b0rken
 	   signature format (the authors couldn't quite manage a cut & paste of
@@ -772,7 +759,7 @@ static int signCertInfo( OUT_BUFFER( signedObjectMaxLength, \
 	if( cryptStatusError( status ) )
 		return( cryptArgError( status ) ? CRYPT_ARGERROR_VALUE : status );
 
-	/* If there's no extra data to handle then we're done */
+	/* If there's no extra data to handle, we're done */
 	if( extraDataLength <= 0 )
 		{
 		ENSURES( !cryptStatusError( \
@@ -780,20 +767,6 @@ static int signCertInfo( OUT_BUFFER( signedObjectMaxLength, \
 										 *signedObjectLength ) ) );
 		return( CRYPT_OK );
 		}
-	
-	/* The extra data consists of signing certificates, so we can't continue
-	   if there are none provided.  Figuring out how we get to this point is 
-	   rather complex, if we have a certificate, a CRL, or an OCSP object 
-	   with an associated signing key then we have an issuer cert present 
-	   (from signCert()).  If it's an OCSP request then the signature level 
-	   is something other than CRYPT_SIGNATURELEVEL_NONE, at which point if 
-	   there's an issuer certificate present then extraDataLength != 0 (from 
-	   initSignatureInfo()).  After this, signCert() will exit if there's no 
-	   signing key present since there's nothing further to do.  This means 
-	   that when we get here and extraDataLength != 0 then it means that 
-	   there's an issuer certificate present.  The following check ensures 
-	   that this is indeed the case */
-	ENSURES( issuerCertInfoPtr != NULL );
 
 	/* If we need to include extra data with the signature attach it to the 
 	   end of the signature */
@@ -850,7 +823,7 @@ int signCert( INOUT CERT_INFO *certInfoPtr,
 	BOOLEAN issuerCertAcquired = FALSE, nonSigningKey = FALSE;
 	BYTE certObjectBuffer[ 1024 + 8 ], *certObjectPtr = certObjectBuffer;
 	void *signedCertObject;
-	int certObjectLength DUMMY_INIT, signedCertObjectLength;
+	int certObjectLength = DUMMY_INIT, signedCertObjectLength;
 	int signedCertAllocSize, extraDataLength = 0, complianceLevel, status;
 
 	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
@@ -958,8 +931,6 @@ int signCert( INOUT CERT_INFO *certInfoPtr,
 			krnlReleaseObject( issuerCertInfoPtr->objectHandle );
 		return( status );
 		}
-	ANALYSER_HINT( certObjectLength > 0 && \
-				   certObjectLength < MAX_INTLENGTH );
 	signedCertAllocSize = certObjectLength + 1024 + extraDataLength;
 	if( certObjectLength > 1024 )
 		certObjectPtr = clDynAlloc( "signCert", certObjectLength );

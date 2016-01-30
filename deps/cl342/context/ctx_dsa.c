@@ -42,64 +42,6 @@
 
 /****************************************************************************
 *																			*
-*								Utility Routines							*
-*																			*
-****************************************************************************/
-
-/* Technically, post-FIPS 186-2 DSA can be used with any hash function, 
-   including ones with a block size larger than the subgroup order (although 
-   in practice the hash function always seems to be matched to the subgroup 
-   size).  To handle the possibility of a mismatched size we use the 
-   following custom conversion function, which applies the conversion rules 
-   for transforming the hash value into an integer from FIPS 186-3, "the 
-   leftmost min( N, outlen ) bits of Hash( M )" where N = sizeof( q ).  
-   Mathematically, this is equivalent to first converting the value to a 
-   bignum and then right-shifting it by hlen - nlen bits, where hlen is the 
-   hash length in bits (a more generic way to view the required conversion is 
-   'while( BN_num_bits( hash ) > BN_num_bits( n ) { BN_rshift( hash, 1 ); }') */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
-static int hashToBignum( INOUT BIGNUM *bigNum, 
-						 IN_BUFFER( hashLength ) const void *hash, 
-						 IN_LENGTH_HASH const int hashLength, 
-						 const BIGNUM *q )
-	{
-	const int hLen = bytesToBits( hashLength );
-	const int qLen = BN_num_bits( q );
-	int bnStatus = BN_STATUS, status;
-
-	assert( isWritePtr( bigNum, sizeof( BIGNUM ) ) );
-	assert( isReadPtr( hash, hashLength ) );
-	assert( isReadPtr( q, sizeof( BIGNUM ) ) );
-
-	REQUIRES( hashLength >= 20 && hashLength <= CRYPT_MAX_HASHSIZE );
-	REQUIRES( qLen >= bytesToBits( 20 ) && \
-			  qLen <= bytesToBits( CRYPT_MAX_PKCSIZE ) );
-
-	/* Convert the hash value into a bignum.  We have to be careful when
-	   we specify the bounds because, with increasingly smaller 
-	   probabilities, the leading bytes of the hash value may be zero.
-	   The check used here gives one in 4 billion chance of a false
-	   positive */
-	status = importBignum( bigNum, hash, hashLength, 
-						   hashLength - 3, hashLength + 1, NULL, 
-						   KEYSIZE_CHECK_NONE );
-	if( cryptStatusError( status ) )
-		return( status );
-
-	/* Shift out any extra bits */
-	if( hLen > qLen )
-		{
-		CK( BN_rshift( bigNum, bigNum, hLen - qLen ) );
-		if( bnStatusError( bnStatus ) )
-			return( getBnStatus( bnStatus ) );
-		}
-
-	return( CRYPT_OK );
-	}
-
-/****************************************************************************
-*																			*
 *								Algorithm Self-test							*
 *																			*
 ****************************************************************************/
@@ -289,9 +231,6 @@ static int selfTest( void )
 	{
 	CONTEXT_INFO contextInfo;
 	PKC_INFO contextData, *pkcInfo = &contextData;
-	const CAPABILITY_INFO *capabilityInfoPtr;
-	DLP_PARAMS dlpParams;
-	BYTE buffer[ 128 + 8 ];
 	int status;
 
 	/* Initialise the key components */
@@ -299,7 +238,7 @@ static int selfTest( void )
 								getDSACapability(), &contextData, 
 								sizeof( PKC_INFO ), NULL );
 	if( cryptStatusError( status ) )
-		return( status );
+		return( CRYPT_ERROR_FAILED );
 	status = importBignum( &pkcInfo->dlpParam_p, dlpTestKey.p, 
 						   dlpTestKey.pLen, DLPPARAM_MIN_P, 
 						   DLPPARAM_MAX_P, NULL, KEYSIZE_CHECK_PKC );
@@ -324,39 +263,18 @@ static int selfTest( void )
 							   DLPPARAM_MAX_X, &pkcInfo->dlpParam_p, 
 							   KEYSIZE_CHECK_NONE );
 	if( cryptStatusError( status ) ) 
-		{
-		staticDestroyContext( &contextInfo );
 		retIntError();
-		}
-	capabilityInfoPtr = contextInfo.capabilityInfo;
 
 	/* Perform the test sign/sig.check of the FIPS 186 test values */
-	status = capabilityInfoPtr->initKeyFunction( &contextInfo, NULL, 0 );
-	if( cryptStatusError( status ) || \
+	status = contextInfo.capabilityInfo->initKeyFunction( &contextInfo, NULL, 0 );
+	if( cryptStatusOK( status ) && \
 		!pairwiseConsistencyTest( &contextInfo ) )
-		{
-		staticDestroyContext( &contextInfo );
-		return( CRYPT_ERROR_FAILED );
-		}
-
-	/* Finally, make sure that the memory fault-detection is working */
-	pkcInfo->dlpParam_g.d[ 8 ] ^= 0x0011;
-	setDLPParams( &dlpParams, shaM, 20, buffer, 128 );
-	dlpParams.inLen2 = -999;
-	status = capabilityInfoPtr->signFunction( &contextInfo,
-						( BYTE * ) &dlpParams, sizeof( DLP_PARAMS ) );
-	if( cryptStatusOK( status ) )
-		{
-		/* The fault-detection couldn't detect a bit-flip, there's a 
-		   problem */
-		staticDestroyContext( &contextInfo );
-		return( CRYPT_ERROR_FAILED );
-		}
+		status = CRYPT_ERROR_FAILED;
 
 	/* Clean up */
 	staticDestroyContext( &contextInfo );
 
-	return( CRYPT_OK );
+	return( status );
 	}
 #else
 	#define selfTest	NULL
@@ -377,7 +295,13 @@ static int selfTest( void )
 	Dss-Sig ::= SEQUENCE {
 		r	INTEGER,
 		s	INTEGER
-		} */
+		}
+
+   The input is the 160-bit hash, usually SHA but possibly also RIPEMD-160 */
+
+/* The size of each DSA signature component - 160 bits */
+
+#define DSA_SIGPART_SIZE	20
 
 /* Sign a single block of data  */
 
@@ -400,20 +324,11 @@ static int sign( INOUT CONTEXT_INFO *contextInfoPtr,
 	assert( isWritePtr( dlpParams->outParam, dlpParams->outLen ) );
 
 	REQUIRES( noBytes == sizeof( DLP_PARAMS ) );
-	REQUIRES( dlpParams->inLen1 >= 20 && \
-			  dlpParams->inLen1 <= CRYPT_MAX_HASHSIZE );
+	REQUIRES( dlpParams->inLen1 == DSA_SIGPART_SIZE );
 	REQUIRES( dlpParams->inParam2 == NULL && \
 			  ( dlpParams->inLen2 == 0 || dlpParams->inLen2 == -999 ) );
-	REQUIRES( dlpParams->outLen >= ( 2 + dlpParams->inLen1 ) * 2 && \
+	REQUIRES( dlpParams->outLen >= ( 2 + DSA_SIGPART_SIZE ) * 2 && \
 			  dlpParams->outLen < MAX_INTLENGTH_SHORT );
-
-	/* Perform side-channel attack checks */
-	if( cryptStatusError( \
-			checksumContextData( pkcInfo, CRYPT_ALGO_DSA, TRUE ) ) )
-		{
-		DEBUG_DIAG(( "DSA key memory corruption detected" ));
-		return( CRYPT_ERROR_FAILED );
-		}
 
 	/* Generate the secret random value k.  During the initial self-test
 	   the random data pool may not exist yet, and may in fact never exist in
@@ -425,19 +340,15 @@ static int sign( INOUT CONTEXT_INFO *contextInfoPtr,
 	   also means that we can use the FIPS 186 self-test value for k).  This 
 	   is a somewhat ugly use of 'magic numbers', but it's safe because this
 	   function can only be called internally, so all we need to trap is
-	   accidental use of the parameter which is normally unused.
-	   
-	   Since the size of k, in bits, is less than 160 (20 bytes), we give
-	   the minimum length as 19 bytes rather than 20 */
+	   accidental use of the parameter which is normally unused */
 	if( dlpParams->inLen2 == -999 )
 		{
-		status = importBignum( k, ( BYTE * ) kVal, 20, 19, 20, NULL, 
+		status = importBignum( k, ( BYTE * ) kVal, DSA_SIGPART_SIZE,
+							   DSA_SIGPART_SIZE, DSA_SIGPART_SIZE, NULL, 
 							   KEYSIZE_CHECK_NONE );
 		}
 	else
 		{
-		const int qLen = BN_num_bits( q );
-
 		/* Generate the random value k.  FIPS 186 requires (Appendix 3)
 		   that this be done with:
 
@@ -450,22 +361,24 @@ static int sign( INOUT CONTEXT_INFO *contextInfoPtr,
 		   generated, the number of bits leaked, the how recent the attack 
 		   is (they get better over time).  The best reference for this is 
 		   probably "The Insecurity of the Digital Signature Algorithm with 
-		   Partially Known Nonces" by Phong Nguyen and Igor Shparlinski or 
-		   more recently Serge Vaudenay's "Evaluation Report on DSA"), but 
+		   Partially Known Nonces" by Phong Nguyen and Igor Shparlinski, but 
 		   as a rule of thumb even three or four known bits and a handful of 
 		   signatures is enough to allow recovery of x.  Because of this we 
 		   start with a value which is DLP_OVERFLOW_SIZE bytes larger than q 
-		   and then do the reduction, eliminating the bias, which was also
-		   required by later versions of FIPS 186.
+		   and then do the reduction, eliminating the bias.
 		   
-		   We also add (meaning "mix in" rather than strictly 
-		   "arithmetically add") the message hash to k to curtail problems 
-		   in the incredibly unlikely situation that the RNG value repeats */
-		REQUIRES( qLen >= bytesToBits( 20 ) && \
-				  qLen <= bytesToBits( CRYPT_MAX_PKCSIZE ) );
-		status = generateBignum( k, qLen + bytesToBits( DLP_OVERFLOW_SIZE ), 
-								 0x80, 0, dlpParams->inParam1, 
-								 dlpParams->inLen1 );
+		   In theory we could also add (meaning "mix in" rather than 
+		   strictly "arithmetically add") the message hash to k to curtail 
+		   problems where the RNG value repeats, but the heavy-duty self-
+		   checking of the RNG makes it somewhat unlikely that this 
+		   condition would go undetected.  The one time when this can occur 
+		   is when we're running in a VM and get rolled back, but it seems a 
+		   bit uncertain how far down we want to chase this: at how many 
+		   other locations in the code do we need to include Rube Goldberg 
+		   protections against rollback?  Under what conditions can rollback 
+		   occur?  When can rollback occur? */
+		status = generateBignum( k, bytesToBits( DSA_SIGPART_SIZE + \
+											     DLP_OVERFLOW_SIZE ), 0x80, 0 );
 		}
 	if( cryptStatusError( status ) )
 		return( status );
@@ -479,7 +392,7 @@ static int sign( INOUT CONTEXT_INFO *contextInfoPtr,
 		BN_set_flags( k, BN_FLG_EXP_CONSTTIME );
 		}
 	CK( BN_mod( k, k, q, 				/* Reduce k to the correct range */
-				&pkcInfo->bnCTX ) );
+				pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 
@@ -489,28 +402,35 @@ static int sign( INOUT CONTEXT_INFO *contextInfoPtr,
 	   bound to complain if we don't check */
 	ENSURES( BN_num_bytes( k ) > 8 );
 
-	/* Convert the hash value to an integer in the proper range */
-	status = hashToBignum( hash, dlpParams->inParam1, dlpParams->inLen1, q );
+	/* Get the hash as a bignum.  The range checking for the resulting value 
+	   is a bit odd, we need to take "the leftmost sizeof( q ) bits of the 
+	   hash" as the input, to handle this we require that the bit size of q 
+	   be at least as large as the (nominal) bit size of the hash */
+	if( dlpParams->inLen1 > BN_num_bytes( q ) )
+		return( CRYPT_ERROR_BADDATA );
+	status = importBignum( hash, ( BYTE * ) dlpParams->inParam1, 
+						   DSA_SIGPART_SIZE, DSA_SIGPART_SIZE / 2, 
+						   DSA_SIGPART_SIZE, NULL, KEYSIZE_CHECK_NONE );
 	if( cryptStatusError( status ) )
 		return( status );
 
 	/* r = ( g ^ k mod p ) mod q */
-	CK( BN_mod_exp_mont( r, g, k, p, &pkcInfo->bnCTX,
+	CK( BN_mod_exp_mont( r, g, k, p, pkcInfo->bnCTX,
 						 &pkcInfo->dlpParam_mont_p ) );
-	CK( BN_mod( r, r, q, &pkcInfo->bnCTX ) );
+	CK( BN_mod( r, r, q, pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 
 	/* s = k^-1 * ( hash + x * r ) mod q */
 	CKPTR( BN_mod_inverse( kInv, k, q,	/* temp = k^-1 mod q */
-						   &pkcInfo->bnCTX ) );
+						   pkcInfo->bnCTX ) );
 	CK( BN_mod_mul( s, x, r, q,			/* s = ( x * r ) mod q */
-					&pkcInfo->bnCTX ) );
+					pkcInfo->bnCTX ) );
 	CK( BN_add( s, s, hash ) );			/* s = s + hash */
 	if( BN_cmp( s, q ) > 0 )			/* if s > q */
 		CK( BN_sub( s, s, q ) );		/*   s = s - q (fast mod) */
 	CK( BN_mod_mul( s, s, kInv, q,		/* s = k^-1 * ( hash + x * r ) mod q */
-					&pkcInfo->bnCTX ) );
+					pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 
@@ -525,15 +445,13 @@ static int sign( INOUT CONTEXT_INFO *contextInfoPtr,
 	if( cryptStatusError( status ) )
 		return( status );
 
-	/* Perform side-channel attack checks */
-	if( cryptStatusError( \
-			checksumContextData( pkcInfo, CRYPT_ALGO_DSA, TRUE ) ) )
+	/* Perform side-channel attack checks if necessary */
+	if( ( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION ) && \
+		cryptStatusError( calculateBignumChecksum( pkcInfo, 
+												   CRYPT_ALGO_DSA ) ) )
 		{
-		if( dlpParams->inLen2 != -999 )	/* Don't trigger on self-test */
-			{ DEBUG_DIAG(( "DSA key memory corruption detected" )); }
 		return( CRYPT_ERROR_FAILED );
 		}
-
 	return( CRYPT_OK );
 	}
 
@@ -561,22 +479,11 @@ static int sigCheck( INOUT CONTEXT_INFO *contextInfoPtr,
 	REQUIRES( ( dlpParams->formatType == CRYPT_FORMAT_CRYPTLIB && \
 				( dlpParams->inLen2 >= 42 && dlpParams->inLen2 <= 128 ) ) || \
 			  ( dlpParams->formatType == CRYPT_FORMAT_PGP && \
-				( dlpParams->inLen2 >= 42 && dlpParams->inLen2 <= 128 ) ) || \
+				( dlpParams->inLen2 >= 42 && dlpParams->inLen2 <= 44 ) ) || \
 			  ( dlpParams->formatType == CRYPT_IFORMAT_SSH && \
 				dlpParams->inLen2 == 40 ) );
-	REQUIRES( dlpParams->inLen1 >= 20 && \
-			  dlpParams->inLen1 <= CRYPT_MAX_HASHSIZE );
+	REQUIRES( dlpParams->inLen1 == 20 );
 	REQUIRES( dlpParams->outParam == NULL && dlpParams->outLen == 0 );
-
-	/* Perform side-channel attack checks */
-	if( cryptStatusError( \
-			checksumContextData( pkcInfo, CRYPT_ALGO_DSA, 
-					( contextInfoPtr->flags & CONTEXT_FLAG_ISPUBLICKEY ) ? \
-					FALSE : TRUE ) ) )
-		{
-		DEBUG_DIAG(( "DSA key memory corruption detected" ));
-		return( CRYPT_ERROR_FAILED );
-		}
 
 	/* Decode the values from a DL data block and make sure that r and s are
 	   valid, i.e. r, s = [1...q-1] */
@@ -586,33 +493,40 @@ static int sigCheck( INOUT CONTEXT_INFO *contextInfoPtr,
 	if( cryptStatusError( status ) )
 		return( status );
 
-	/* Convert the hash value to an integer in the proper range */
-	status = hashToBignum( u1, dlpParams->inParam1, dlpParams->inLen1, q );
+	/* Get the hash as a bignum.  The range checking for the resulting value 
+	   is a bit odd, we need to take "the leftmost sizeof( q ) bits of the 
+	   hash" as the input, to handle this we require that the bit size of q 
+	   be at least as large as the (nominal) bit size of the hash */
+	if( dlpParams->inLen1 > BN_num_bytes( q ) )
+		return( CRYPT_ERROR_BADDATA );
+	status = importBignum( u1, ( BYTE * ) dlpParams->inParam1, 
+						   DSA_SIGPART_SIZE, DSA_SIGPART_SIZE / 2, 
+						   DSA_SIGPART_SIZE, NULL, KEYSIZE_CHECK_NONE );
 	if( cryptStatusError( status ) )
 		return( status );
 
 	/* w = s^-1 mod q */
 	CKPTR( BN_mod_inverse( u2, s, q,	/* w = s^-1 mod q */
-						   &pkcInfo->bnCTX ) );
+						   pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 
 	/* u1 = ( hash * w ) mod q */
 	CK( BN_mod_mul( u1, u1, u2, q,		/* u1 = ( hash * w ) mod q */
-					&pkcInfo->bnCTX ) );
+					pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 
 	/* u2 = ( r * w ) mod q */
 	CK( BN_mod_mul( u2, r, u2, q,		/* u2 = ( r * w ) mod q */
-					&pkcInfo->bnCTX ) );
+					pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 
 	/* v = ( ( ( g^u1 ) * ( y^u2 ) ) mod p ) mod q */
-	CK( BN_mod_exp2_mont( u2, g, u1, y, u2, p, &pkcInfo->bnCTX,
+	CK( BN_mod_exp2_mont( u2, g, u1, y, u2, p, pkcInfo->bnCTX,
 						  &pkcInfo->dlpParam_mont_p ) );
-	CK( BN_mod( s, u2, q, &pkcInfo->bnCTX ) );
+	CK( BN_mod( s, u2, q, pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 
@@ -620,16 +534,13 @@ static int sigCheck( INOUT CONTEXT_INFO *contextInfoPtr,
 	if( BN_cmp( r, s ) )
 		return( CRYPT_ERROR_SIGNATURE );
 
-	/* Perform side-channel attack checks */
-	if( cryptStatusError( \
-			checksumContextData( pkcInfo, CRYPT_ALGO_DSA,
-					( contextInfoPtr->flags & CONTEXT_FLAG_ISPUBLICKEY ) ? \
-					FALSE : TRUE ) ) )
+	/* Perform side-channel attack checks if necessary */
+	if( ( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION ) && \
+		cryptStatusError( calculateBignumChecksum( pkcInfo, 
+												   CRYPT_ALGO_DSA ) ) )
 		{
-		DEBUG_DIAG(( "DSA key memory corruption detected" ));
 		return( CRYPT_ERROR_FAILED );
 		}
-
 	return( CRYPT_OK );
 	}
 
@@ -718,7 +629,10 @@ static int generateKey( INOUT CONTEXT_INFO *contextInfoPtr,
 			  keySizeBits <= bytesToBits( CRYPT_MAX_PKCSIZE ) );
 
 	status = generateDLPkey( contextInfoPtr, ( keySizeBits / 64 ) * 64 );
-	if( cryptStatusOK( status ) && \
+	if( cryptStatusOK( status ) &&
+#ifndef USE_FIPS140
+		( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION ) &&
+#endif /* USE_FIPS140 */
 		!pairwiseConsistencyTest( contextInfoPtr ) )
 		{
 		DEBUG_DIAG(( "Consistency check of freshly-generated DSA key "
@@ -726,7 +640,7 @@ static int generateKey( INOUT CONTEXT_INFO *contextInfoPtr,
 		assert( DEBUG_WARN );
 		status = CRYPT_ERROR_FAILED;
 		}
-	return( cryptArgError( status ) ? CRYPT_ERROR_FAILED : status );
+	return( status );
 	}
 
 /****************************************************************************
@@ -739,7 +653,7 @@ static const CAPABILITY_INFO FAR_BSS capabilityInfo = {
 	CRYPT_ALGO_DSA, bitsToBytes( 0 ), "DSA", 3,
 	MIN_PKCSIZE, bitsToBytes( 1024 ), CRYPT_MAX_PKCSIZE,
 	selfTest, getDefaultInfo, NULL, NULL, initKey, generateKey,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
 	sign, sigCheck
 	};
 

@@ -31,8 +31,6 @@
   #include "zlib/zutil.h"
 #endif /* Compiler-specific includes */
 
-#ifdef USE_COMPRESSION
-
 #define local static
 
 local uLong adler32_combine_(uLong adler1, uLong adler2, z_off64_t len2);
@@ -181,4 +179,3 @@ uLong ZEXPORT adler32_combine64(uLong adler1, uLong adler2, z_off64_t len2)	/* p
 {
     return adler32_combine_(adler1, adler2, len2);
 }
-#endif /* USE_COMPRESSION */

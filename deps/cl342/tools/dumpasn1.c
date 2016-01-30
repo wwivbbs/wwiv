@@ -7,15 +7,13 @@
    Manger and several other people whose names I've misplaced.
 
    Available from http://www.cs.auckland.ac.nz/~pgut001/dumpasn1.c. Last
-   updated 8 August 2015 (version 20150808, if you prefer it that way).  
+   updated 2 September 2012 (version 20120902, if you prefer it that way).  
    To build under Windows, use 'cl /MD dumpasn1.c'.  To build on OS390 or 
    z/OS, use '/bin/c89 -D OS390 -o dumpasn1 dumpasn1.c'.
 
    This code grew slowly over time without much design or planning, and with
    extra features being tacked on as required.  It's not representative of my
-   normal coding style, and should only be used as a debugging/diagnostic 
-   tool and not in a production environment (I'm not sure how you'd use
-   it in production anyway, but felt I should point that out).  cryptlib,
+   normal coding style.  cryptlib,
    http://www.cs.auckland.ac.nz/~pgut001/cryptlib/, does a much better job of
    checking ASN.1 than this does, since dumpasn1 is a display program written
    to accept the widest possible range of input and not a compliance checker.
@@ -38,16 +36,8 @@
    that you use a utility like uudeview, which will strip virtually any kind
    of encoding (MIME, PEM, PGP, whatever) to recover the binary original.
 
-   You can use this code in whatever way you want, as long as you don't try 
-   to claim you wrote it.
-
-   (Someone asked for clarification on what this means, treat it as a very 
-   mild form of the BSD license in which you're not required to include LONG 
-   LEGAL DISCLAIMERS IN ALL CAPS but just a small note in a corner somewhere 
-   (e.g. the back of a manual) that you're using the dumpasn1 code.  And if 
-   you do use it, please make sure you're using a recent version, I 
-   occasionally see screen shots from incredibly ancient versions that are
-   nowhere near as good as what current versions produce).
+   You can use this code in whatever way you want, as long as you don't try to
+   claim you wrote it.
 
    Editing notes: Tabs to 4, phasers to malky (and in case anyone wants to
    complain about that, see "Program Indentation and Comprehensiblity",
@@ -66,7 +56,7 @@
 
 /* The update string, printed as part of the help screen */
 
-#define UPDATE_STRING	"8 August 2015"
+#define UPDATE_STRING	"2 September 2012"
 
 /* Useful defines */
 
@@ -74,9 +64,6 @@
   #define FALSE	0
   #define TRUE	( !FALSE )
 #endif /* TRUE */
-#ifndef BYTE
-  typedef unsigned char		BYTE;
-#endif /* BYTE */
 
 /* Tandem Guardian NonStop Kernel options */
 
@@ -118,7 +105,6 @@
 #if ( defined( _WINDOWS ) || defined( WIN32 ) || defined( _WIN32 ) || \
 	  defined( __WIN32__ ) )
   #include <windows.h>
-  #include <io.h>					/* For _setmode() */
   #include <fcntl.h>				/* For _setmode() codes */
   #ifndef _O_U16TEXT 
 	#define _O_U16TEXT		0x20000	/* _setmode() code */
@@ -171,7 +157,7 @@
 
 /* Macros to avoid problems with sign extension */
 
-#define byteToInt( x )	( ( BYTE ) ( x ) )
+#define byteToInt( x )	( ( unsigned char ) ( x ) )
 
 /* The level of recursion can get scary for deeply-nested structures so we
    use a larger-than-normal stack under DOS */
@@ -251,7 +237,6 @@ typedef enum {
 	STR_PRINTABLE,			/* Check it's a PrintableString */
 	STR_IA5,				/* Check it's an IA5String */
 	STR_LATIN1,				/* Read and display string as latin-1 */
-	STR_UTF8,				/* Read and display string as UTF8 */
 	STR_BMP,				/* Read and display string as Unicode */
 	STR_BMP_REVERSED		/* STR_BMP with incorrect endianness */
 	} STR_OPTION;
@@ -264,7 +249,7 @@ typedef struct {
 	long length;				/* Data length */
 	int indefinite;				/* Item has indefinite length */
 	int nonCanonical;			/* Non-canonical length encoding used */
-	BYTE header[ 16 ];			/* Tag+length data */
+	unsigned char header[ 16 ];	/* Tag+length data */
 	int headerSize;				/* Size of tag+length */
 	} ASN1_ITEM;
 
@@ -351,18 +336,13 @@ static int fPos = 0;				/* Absolute position in data */
 
 static FILE *output;				/* Output stream */
 
-/* OID data sizes.  Because of Microsoft's "encode random noise and call it 
-   an OID" approach, we maintain two size limits, a sane one and one capable
-   of holding the random-noise OID data, which we warn about */
-
-#define MAX_OID_SIZE		40
-#define MAX_SANE_OID_SIZE	32
-
 /* Information on an ASN.1 Object Identifier */
+
+#define MAX_OID_SIZE	32
 
 typedef struct tagOIDINFO {
 	struct tagOIDINFO *next;		/* Next item in list */
-	BYTE oid[ MAX_OID_SIZE ];
+	unsigned char oid[ MAX_OID_SIZE ];
 	int oidLength;
 	char *comment, *description;	/* Name, rank, serial number */
 	int warn;						/* Whether to warn if OID encountered */
@@ -393,9 +373,11 @@ static const char *configPaths[] = {
 #elif defined( __WIN32__ )
 
 static const char *configPaths[] = {
-	/* Windoze absolute paths (yeah, this code has been around for awhile, 
-	   why do you ask?) */
-	"c:\\windows\\", "c:\\winnt\\", 
+	/* Windoze absolute paths.  Usually things are on C:, but older NT setups
+	   are easier to do on D: if the initial copy is done to C: (yeah, this
+	   code has been around for awhile, why do you ask?) */
+	"c:\\dos\\", "d:\\dos\\", "c:\\windows\\", "d:\\windows\\",
+	"c:\\winnt\\", "d:\\winnt\\",
 
 	/* It's my program, I'm allowed to hardcode in strange paths that no-one
 	   else uses */
@@ -679,7 +661,7 @@ static int readLine( FILE *file, char *buffer )
 		while( !feof( file ) )
 			{
 			/* Keep going until we hit the true EOF (or some sort of error) */
-			( void ) getc( file );
+			ch = getc( file );
 			}
 		}
 
@@ -692,7 +674,7 @@ static int processOID( OIDINFO *oidInfo, char *string )
 	{
 	BYTE binaryOID[ MAX_OID_SIZE ];
 	long value;
-	int firstValue = -1, valueIndex = 0, oidIndex = 3;
+	int firstValue, valueIndex = 0, oidIndex = 3;
 
 	memset( binaryOID, 0, MAX_OID_SIZE );
 	binaryOID[ 0 ] = OID;
@@ -881,25 +863,6 @@ static int readConfig( const char *path, const int isDefaultConfig )
 				if( !processOID( oidPtr, buffer + 6 ) )
 					return( FALSE );
 				}
-
-			/* Check that this OID isn't already present in the OID list.  
-			   This is a quick-and-dirty n^2 algorithm so it's not enabled 
-			   by default */
-#if 0
-			{
-			OIDINFO *oidCursor;
-
-			for( oidCursor = oidList; oidCursor->next != NULL; oidCursor = oidCursor->next )
-				{
-				if( oidCursor->oidLength == oidPtr->oidLength && \
-					!memcmp( oidCursor->oid, oidPtr->oid, oidCursor->oidLength ) )
-					{
-					printf( "Duplicate OID '%s' at line %d.\n",
-							buffer, lineNo );
-					}
-				}
-			}
-#endif /* 0 */
 			}
 		else if( !strncmp( buffer, "Description = ", 14 ) )
 			{
@@ -1222,7 +1185,7 @@ static void complain( const char *message, const int messageParam,
 	if( level < maxNestLevel )
 		{
 		if( !doPure )
-			fprintf( output, "%s", INDENT_STRING );
+			fprintf( output, INDENT_STRING );
 		doIndent( level + 1 );
 		}
 	fputs( "Error: ", output );
@@ -1233,24 +1196,6 @@ static void complain( const char *message, const int messageParam,
 
 static void complainLength( const ASN1_ITEM *item, const int level )
 	{
-#if 0
-	/* This is a general error so we don't indent the message to the level
-	   of the item */
-#else
-	if( level < maxNestLevel )
-		{
-		if( !doPure )
-			fprintf( output, "%s", INDENT_STRING );
-		doIndent( level + 1 );
-		}
-#endif /* 0 */
-	fprintf( output, "Error: %s has invalid length %ld.\n", 
-			 idstr( item->tag ), item->length );
-	noErrors++;
-	}
-
-static void complainLengthCanonical( const ASN1_ITEM *item, const int level )
-	{
 	int i;
 
 #if 0
@@ -1260,7 +1205,7 @@ static void complainLengthCanonical( const ASN1_ITEM *item, const int level )
 	if( level < maxNestLevel )
 		{
 		if( !doPure )
-			fprintf( output, "%s", INDENT_STRING );
+			fprintf( output, INDENT_STRING );
 		doIndent( level + 1 );
 		}
 #endif /* 0 */
@@ -1280,7 +1225,7 @@ static void complainInt( const BYTE *intValue, const int level )
 	if( level < maxNestLevel )
 		{
 		if( !doPure )
-			fprintf( output, "%s", INDENT_STRING );
+			fprintf( output, INDENT_STRING );
 		doIndent( level + 1 );
 		}
 	fprintf( output, "Error: Integer '%02X %02X ...' has non-DER encoding.\n", 
@@ -1335,9 +1280,8 @@ static int displayUnicode( const wchar_t wCh, const int level )
 						
 		/* To output Unicode to the Win32 console we need to switch the 
 		   output stream to Unicode-16 mode, but the following may also 
-		   depend on which code page is currently set for the console, which 
-		   font is being used, and the phase of the moon (including the moons
-		   for Mars and Jupiter) */
+		   depend on which code page is currently set for the console and 
+		   which font is being used */
 		fflush( output );
 		oldmode = _setmode( fileno( output ), _O_U16TEXT );
 		fputwc( wCh, output );
@@ -1429,15 +1373,12 @@ static void printValue( FILE *inFile, const int valueLength,
 		}
 	fPos += valueLength;
 
-	/* Display the integer value and any associated warnings.  Note that 
-	   this will display an incorrectly-encoded integer as a negative value
-	   rather than the unsigned value that was probably intended to 
-	   emphasise that it's incorrect */
+	/* Display the integer value and any associated warnings */
 	printString( level, " %ld\n", value );
 	if( warnNonDER )
 		complainInt( intBuffer, level );
 	if( warnNegative )
-		complain( "Integer is encoded as a negative value", 0, level );
+		complain( "Integer has a negative value", 0, level );
 	}
 
 /* Dump data as a string of hex digits up to a maximum of 128 bytes */
@@ -1499,12 +1440,6 @@ static void dumpHex( FILE *inFile, long length, int level,
 				}
 			}
 		ch = getc( inFile );
-		if( ch == EOF )
-			{
-			printString( level, "%c", '\n' );
-			complain( "Unexpected EOF, %d bytes missing", length - i, level );
-			return;
-			}
 		printString( level, "%s%02X", ( i % lineLength ) ? " " : "", ch );
 		printable[ i % 8 ] = ( ch >= ' ' && ch < 127 ) ? ch : '.';
 		fPos++;
@@ -1567,23 +1502,23 @@ static void dumpHex( FILE *inFile, long length, int level,
 		if( warnPadding )
 			complainInt( intBuffer, level );
 		if( warnNegative )
-			complain( "Integer is encoded as a negative value", 0, level );
+			complain( "Integer has a negative value", 0, level );
 		}
 	}
 
 /* Convert a binary OID to its string equivalent */
 
 static int oidToString( char *textOID, int *textOIDlength,
-						const BYTE *oid, const int oidLength )
+						const unsigned char *oid, const int oidLength )
 	{
-	BYTE uuidBuffer[ 32 ];
+	unsigned char uuidBuffer[ 32 ];
 	long value;
 	int length = 0, uuidBufPos = -1, uuidBitCount = 5, i;
 	int validEncoding = TRUE, isUUID = FALSE;
 
 	for( i = 0, value = 0; i < oidLength; i++ )
 		{
-		const BYTE data = oid[ i ];
+		const unsigned char data = oid[ i ];
 		const long valTmp = value << 7;
 
 		/* Pick apart the encoding.  We keep going after hitting an encoding
@@ -1685,11 +1620,11 @@ static int oidToString( char *textOID, int *textOIDlength,
 					}
 				length = sprintf( textOID, "%ld %ld", x, y );
 
-				/* A totally stupid ITU facility lets people register UUIDs 
-				   as OIDs (see http://www.itu.int/ITU-T/asn1/uuid.html), if 
-				   we find one of these, which live under the arc '2 25' = 
-				   0x69 we have to continue decoding the OID as a UUID 
-				   instead of a standard OID */
+				/* An insane ITU facility lets people register UUIDs as OIDs
+				   (see http://www.itu.int/ITU-T/asn1/uuid.html), if we find
+				   one of these, which live under the arc '2 25' = 0x69 we
+				   have to continue decoding the OID as a UUID instead of a
+				   standard OID */
 				if( data == 0x69 )
 					isUUID = TRUE;
 				}
@@ -1725,35 +1660,17 @@ static void dumpBitString( FILE *inFile, const int length, const int unused,
 
 	/* ASN.1 bitstrings start at bit 0, so we need to reverse the order of
 	   the bits if necessary */
-	if( length > 0 )
+	if( length )
 		{
 		bitString = fgetc( inFile );
-		if( bitString == EOF )
-			{
-			noBits = 0;
-			errorStr = "Truncated BIT STRING data";
-			}
 		fPos++;
 		}
 	for( i = noBits - 8; i > 0; i -= 8 )
 		{
-		const int ch = fgetc( inFile );
-
-		if( ch == EOF )
-			{
-			errorStr = "Truncated BIT STRING data";
-			break;
-			}
-		bitString = ( bitString << 8 ) | ch;
+		bitString = ( bitString << 8 ) | fgetc( inFile );
 		currentBitMask <<= 8;
 		remainderMask = ( remainderMask << 8 ) | 0xFF;
 		fPos++;
-		}
-	if( errorStr != NULL )
-		{
-		printString( level, "%c", '\n' );
-		complain( errorStr, 0, level );
-		return;
 		}
 	if( reverseBitString )
 		{
@@ -1761,7 +1678,7 @@ static void dumpBitString( FILE *inFile, const int length, const int unused,
 			{
 			if( bitString & currentBitMask )
 				value |= bitFlag;
-			if( !( bitString & remainderMask ) && errorStr != NULL )
+			if( !( bitString & remainderMask ) )
 				{
 				/* The last valid bit should be a one bit */
 				errorStr = "Spurious zero bits in bitstring";
@@ -1770,8 +1687,7 @@ static void dumpBitString( FILE *inFile, const int length, const int unused,
 			bitString <<= 1;
 			}
 		if( noBits < sizeof( int ) && \
-			( ( remainderMask << noBits ) & value ) && \
-			errorStr != NULL )
+			( ( remainderMask << noBits ) & value ) )
 			{
 			/* There shouldn't be any bits set after the last valid one.  We
 			   have to do the noBits check to avoid a fencepost error when
@@ -1886,40 +1802,6 @@ static void displayString( FILE *inFile, long length, int level,
 				   displaying it as normal text */
 				ungetc( wCh & 0xFF, inFile );
 				}
-			}
-		if( strOption == STR_UTF8 && ( ch & 0x80 ) )
-			{
-			const int secondCh = getc( inFile );
-			wchar_t wCh;
-
-			/* It's a multibyte UTF8 character, read it as a widechar */
-			if( ( ch & 0xE0 ) == 0xC0 )		/* 111xxxxx -> 110xxxxx */
-				{
-				/* 2-byte character in the range 0x80...0x7FF */
-				wCh = ( ( ch & 0x1F ) << 6 ) | ( secondCh & 0x3F );
-				i++;		/* We've read 2 characters */
-				fPos += 2;
-				}
-			else
-				{
-				if( ( ch & 0xF0 ) == 0xE0 )	/* 1111xxxx -> 1110xxxx */
-					{
-					const int thirdCh = getc( inFile );
-
-					/* 3-byte character in the range 0x800...0xFFFF */
-					wCh = ( ( ch & 0x1F ) << 12 ) | \
-						  ( ( secondCh & 0x3F ) << 6 ) | \
-						  ( thirdCh & 0x3F );
-					}
-				else
-					wCh = '.';
-				i += 2;		/* We've read 3 characters */
-				fPos += 3;
-				}
-			if( !displayUnicode( wCh, level ) )
-				printString( level, "%c", '.' );
-			lineLength++;
-			continue;
 			}
 #endif /* __WIN32__ || __UNIX__ || __OS390__ */
 		switch( strOption )
@@ -2067,8 +1949,6 @@ static int getItem( FILE *inFile, ASN1_ITEM *item )
 	memset( item, 0, sizeof( ASN1_ITEM ) );
 	item->indefinite = FALSE;
 	tag = item->header[ index++ ] = fgetc( inFile );
-	if( tag == EOF )
-		return( FALSE );
 	item->id = tag & ~TAG_MASK;
 	tag &= TAG_MASK;
 	if( tag == TAG_MASK )
@@ -2082,8 +1962,6 @@ static int getItem( FILE *inFile, ASN1_ITEM *item )
 		do
 			{
 			value = fgetc( inFile );
-			if( value == EOF )
-				return( FALSE );
 			tag = ( tag << 7 ) | ( value & 0x7F );
 			item->header[ index++ ] = value;
 			fPos++;
@@ -2103,8 +1981,6 @@ static int getItem( FILE *inFile, ASN1_ITEM *item )
 		}
 	fPos += 2;			/* Tag + length */
 	length = item->header[ index++ ] = fgetc( inFile );
-	if( length == EOF )
-		return( FALSE );
 	item->headerSize = index;
 	if( length & LEN_XTND )
 		{
@@ -2125,21 +2001,11 @@ static int getItem( FILE *inFile, ASN1_ITEM *item )
 		for( i = 0; i < length; i++ )
 			{
 			int ch = fgetc( inFile );
-	
-			if( ch == EOF )
-				{
-				fPos += length - i;
-				return( FALSE );
-				}
+
 			item->length = ( item->length << 8 ) | ch;
 			item->header[ i + index ] = ch;
 			}
 		fPos += length;
-
-		/* Check for the length being less then 128, which means it 
-		   shouldn't be encoded as a long length */
-		if( !item->indefinite && item->length < 128 )
-			item->nonCanonical = lengthStart;
 
 		/* Check for the first 9 bits of the length being identical and
 		   if they are, remember where the encoded non-canonical length
@@ -2316,8 +2182,6 @@ static STR_OPTION checkForText( FILE *inFile, const int length )
 		   short strings are used in some places (eg PKCS #12 files) as
 		   IDs */
 		sampleLength = fread( buffer, 1, sampleLength, inFile );
-		if( sampleLength <= 0 )
-			return( STR_NONE );
 		fseek( inFile, -sampleLength, SEEK_CUR );
 		for( i = 0; i < sampleLength; i++ )
 			{
@@ -2331,8 +2195,6 @@ static STR_OPTION checkForText( FILE *inFile, const int length )
 
 	/* Check for ASCII-looking text */
 	sampleLength = fread( buffer, 1, sampleLength, inFile );
-	if( sampleLength <= 0 )
-		return( STR_NONE );
 	fseek( inFile, -sampleLength, SEEK_CUR );
 	if( isdigit( byteToInt( buffer[ 0 ] ) ) && \
 		( length == 13 || length == 15 ) && \
@@ -2440,15 +2302,12 @@ static void dumpHeader( FILE *inFile, const ASN1_ITEM *item, const int level )
 
 		for( i = 0; i < extraLen; i++ )
 			{
-			const int ch = fgetc( inFile );
+			int ch = fgetc( inFile );
 
-			if( ch == EOF )
-				{
-				/* Exit loop and get fseek() offset correct */
-				extraLen = i;
-				break;
-				}
-			printString( level, " %02X", ch );
+			if( feof( inFile ) )
+				extraLen = i;	/* Exit loop and get fseek() correct */
+			else
+				printString( level, " %02X", ch );
 			}
 		fseek( inFile, -extraLen, SEEK_CUR );
 		}
@@ -2470,13 +2329,13 @@ static void printConstructed( FILE *inFile, int level, const ASN1_ITEM *item )
 		{
 		printString( level, "%s", " {}\n" );
 		if( item->nonCanonical )
-			complainLengthCanonical( item, level );
+			complainLength( item, level );
 		return;
 		}
 
 	printString( level, "%s", " {\n" );
 	if( item->nonCanonical )
-		complainLengthCanonical( item, level );
+		complainLength( item, level );
 	result = printAsn1( inFile, level + 1, item->length, item->indefinite );
 	if( result )
 		{
@@ -2497,7 +2356,7 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 	{
 	OIDINFO *oidInfo;
 	STR_OPTION stringType;
-	BYTE buffer[ MAX_OID_SIZE ];
+	unsigned char buffer[ MAX_OID_SIZE ];
 	const int nonOutlineObject = \
 			( doOutlineOnly && ( item->id & FORM_MASK ) != CONSTRUCTED ) ? \
 			TRUE : FALSE;
@@ -2534,7 +2393,7 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 			printString( level, "%c", '\n' );
 			complain( "Object has zero length", 0, level );
 			if( item->nonCanonical )
-				complainLengthCanonical( item, level );
+				complainLength( item, level );
 			return;
 			}
 
@@ -2553,7 +2412,7 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 			{
 			dumpHex( inFile, item->length, 1000, FALSE );
 			if( item->nonCanonical )
-				complainLengthCanonical( item, level );
+				complainLength( item, level );
 			printString( level, "%c", '\n' );
 			return;
 			}
@@ -2566,14 +2425,14 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 			/* It looks like a text string, dump it as text */
 			displayString( inFile, item->length, level, stringType );
 			if( item->nonCanonical )
-				complainLengthCanonical( item, level );
+				complainLength( item, level );
 			return;
 			}
 
 		/* This could be anything, dump it as hex data */
 		dumpHex( inFile, item->length, level, FALSE );
 		if( item->nonCanonical )
-			complainLengthCanonical( item, level );
+			complainLength( item, level );
 
 		return;
 		}
@@ -2617,7 +2476,7 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 		printString( level, "%c", '\n' );
 		complain( "Object has zero length", 0, level );
 		if( item->nonCanonical )
-			complainLengthCanonical( item, level );
+			complainLength( item, level );
 		return;
 		}
 	switch( item->tag )
@@ -2626,8 +2485,6 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 			{
 			int ch;
 
-			if( item->length != 1 )	
-				complainLength( item, level );
 			ch = getc( inFile );
 			printString( level, " %s\n", ch ? "TRUE" : "FALSE" );
 			if( ch != 0 && ch != 0xFF )
@@ -2636,7 +2493,7 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 						  level );
 				}
 			if( item->nonCanonical )
-				complainLengthCanonical( item, level );
+				complainLength( item, level );
 			fPos++;
 			break;
 			}
@@ -2647,13 +2504,13 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 				{
 				dumpHex( inFile, item->length, level, TRUE );
 				if( item->nonCanonical )
-					complainLengthCanonical( item, level );
+					complainLength( item, level );
 				}
 			else
 				{
 				printValue( inFile, item->length, level );
 				if( item->nonCanonical )
-					complainLengthCanonical( item, level );
+					complainLength( item, level );
 				}
 			break;
 
@@ -2661,8 +2518,6 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 			{
 			int ch;
 
-			if( item->length < 2 )	
-				complainLength( item, level );
 			if( ( ch = getc( inFile ) ) != 0 )
 				{
 				printString( level, " %d unused bit%s",
@@ -2674,7 +2529,7 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 				printString( level, "%c", '\n' );
 				complain( "Object has zero length", 0, level );
 				if( item->nonCanonical )
-					complainLengthCanonical( item, level );
+					complainLength( item, level );
 				return;
 				}
 			if( item->length <= sizeof( int ) )
@@ -2683,7 +2538,7 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 				   of bits */
 				dumpBitString( inFile, ( int ) item->length, ch, level );
 				if( item->nonCanonical )
-					complainLengthCanonical( item, level );
+					complainLength( item, level );
 				break;
 				}
 			/* Drop through to dump it as an octet string */
@@ -2711,12 +2566,12 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 										 stringType == STR_PRINTABLE ) ) ? \
 					STR_NONE : stringType );
 				if( item->nonCanonical )
-					complainLengthCanonical( item, level );
+					complainLength( item, level );
 				return;
 				}
 			dumpHex( inFile, item->length, level, FALSE );
 			if( item->nonCanonical )
-				complainLengthCanonical( item, level );
+				complainLength( item, level );
 			break;
 
 		case OID:
@@ -2725,27 +2580,15 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 			int length, isValid;
 
 			/* Hierarchical Object Identifier */
-			if( item->length <= 0 || item->length >= MAX_OID_SIZE )
+			if( item->length > MAX_OID_SIZE )
 				{
 				fflush( stdout );
 				fprintf( stderr, "\nError: Object identifier length %ld too "
 						 "large.\n", item->length );
 				exit( EXIT_FAILURE );
 				}
-			length = fread( buffer, 1, ( size_t ) item->length, inFile );
+			fread( buffer, 1, ( size_t ) item->length, inFile );
 			fPos += item->length;
-			if( item->length < 3 )	
-				{
-				fputs( ".\n", output );
-				complainLength( item, level );
-				break;
-				}
-			if( length < item->length )
-				{
-				fputs( ".\n", output );
-				complain( "Invalid OID data", 0, level );
-				break;
-				}
 			if( ( oidInfo = getOIDinfo( buffer, ( int ) item->length ) ) != NULL )
 				{
 				/* Convert the binary OID to text form */
@@ -2777,7 +2620,7 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 				if( !isValid )
 					complain( "OID has invalid encoding", 0, level );
 				if( item->nonCanonical )
-					complainLengthCanonical( item, level );
+					complainLength( item, level );
 
 				/* If there's a warning associated with this OID, remember
 				   that there was a problem */
@@ -2791,17 +2634,10 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 			isValid = oidToString( textOID, &length, buffer, 
 								   ( int ) item->length );
 			printString( level, " '%s'\n", textOID );
-			if( item->length > MAX_SANE_OID_SIZE )
-				{
-				/* This only occurs with Microsoft's "encode random noise 
-				   and call it an OID" values, so we warn about the fact 
-				   that it's not really an OID */
-				complain( "OID contains random garbage", 0, level );
-				}
 			if( !isValid )
 				complain( "OID has invalid encoding", 0, level );
 			if( item->nonCanonical )
-				complainLengthCanonical( item, level );
+				complainLength( item, level );
 			break;
 			}
 
@@ -2809,7 +2645,7 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 		case NULLTAG:
 			printString( level, "%c", '\n' );
 			if( item->nonCanonical )
-				complainLengthCanonical( item, level );
+				complainLength( item, level );
 			break;
 
 		case OBJDESCRIPTOR:
@@ -2819,50 +2655,40 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 		case UNIVERSALSTRING:
 		case NUMERICSTRING:
 		case VIDEOTEXSTRING:
+		case UTF8STRING:
+			displayString( inFile, item->length, level, STR_NONE );
+			if( item->nonCanonical )
+				complainLength( item, level );
+			break;
 		case PRINTABLESTRING:
 			displayString( inFile, item->length, level, STR_PRINTABLE );
 			if( item->nonCanonical )
-				complainLengthCanonical( item, level );
-			break;
-		case UTF8STRING:
-			displayString( inFile, item->length, level, STR_UTF8 );
-			if( item->nonCanonical )
-				complainLengthCanonical( item, level );
+				complainLength( item, level );
 			break;
 		case BMPSTRING:
 			displayString( inFile, item->length, level, STR_BMP );
 			if( item->nonCanonical )
-				complainLengthCanonical( item, level );
+				complainLength( item, level );
 			break;
 		case UTCTIME:
 			displayString( inFile, item->length, level, STR_UTCTIME );
 			if( item->nonCanonical )
-				complainLengthCanonical( item, level );
+				complainLength( item, level );
 			break;
 		case GENERALIZEDTIME:
 			displayString( inFile, item->length, level, STR_GENERALIZED );
 			if( item->nonCanonical )
-				complainLengthCanonical( item, level );
+				complainLength( item, level );
 			break;
 		case IA5STRING:
 			displayString( inFile, item->length, level, STR_IA5 );
 			if( item->nonCanonical )
-				complainLengthCanonical( item, level );
+				complainLength( item, level );
 			break;
 		case T61STRING:
 			displayString( inFile, item->length, level, STR_LATIN1 );
 			if( item->nonCanonical )
-				complainLengthCanonical( item, level );
-			break;
-
-		case SEQUENCE:
-			printString( level, "%c", '\n' );
-			complain( "SEQUENCE has invalid primitive encoding", 0, level );
-			break;
-
-		case SET:
-			printString( level, "%c", '\n' );
-			complain( "SET has invalid primitive encoding", 0, level );
+				complainLength( item, level );
 			break;
 
 		default:
@@ -2874,7 +2700,7 @@ static void printASN1object( FILE *inFile, ASN1_ITEM *item, int level )
 						 "Unrecognised primitive, hex value is:");
 			dumpHex( inFile, item->length, level, FALSE );
 			if( item->nonCanonical )
-				complainLengthCanonical( item, level );
+				complainLength( item, level );
 			noErrors++;		/* Treat it as an error */
 		}
 	}
@@ -3004,9 +2830,6 @@ static int printAsn1( FILE *inFile, const int level, long length,
 				if( length == 1 )
 					{
 					const int ch = fgetc( inFile );
-
-					if( ch == EOF )
-						return( 0 );
 
 					/* No object can be one byte long, try and recover.  This
 					   only works sometimes because it can be caused by
@@ -3238,11 +3061,11 @@ int main( int argc, char *argv[] )
 					   garbage all over it for files larger than about 16K
 					   (which isn't), so we have to make sure that the
 					   stdout handle is pointed to something somewhere */
-					( void ) freopen( "nul", "w", stdout );
+					freopen( "nul", "w", stdout );
 #elif defined( __UNIX__ )
 					/* Safety feature in case any Unix libc is as broken
 					   as the Win32 version */
-					( void ) freopen( "/dev/null", "w", stdout );
+					freopen( "/dev/null", "w", stdout );
 #else
 					fclose( stdout );
 #endif /* OS-specific bypassing of stdout */
@@ -3366,7 +3189,7 @@ int main( int argc, char *argv[] )
 	printAsn1( inFile, 0, LENGTH_MAGIC, 0 );
 	if( !useStdin && offset == 0 )
 		{
-		BYTE buffer[ 16 ];
+		unsigned char buffer[ 16 ];
 		long position = ftell( inFile );
 
 		/* If we're dumping a standalone ASN.1 object and there's further
@@ -3378,7 +3201,7 @@ int main( int argc, char *argv[] )
 		   have to stop at min( data_end, EOCs ).  To avoid false positives,
 		   we skip at least 4 EOCs worth of data and if there's still more
 		   present, we complain */
-		( void ) fread( buffer, 1, 8, inFile );		/* Skip 4 EOCs */
+		fread( buffer, 1, 8, inFile );	/* Skip 4 EOCs */
 		if( !feof( inFile ) )
 			{
 			fprintf( output, "Warning: Further data follows ASN.1 data at "

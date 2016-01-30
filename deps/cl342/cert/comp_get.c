@@ -1,15 +1,17 @@
 /****************************************************************************
 *																			*
 *						Get/Delete Certificate Components					*
-*						Copyright Peter Gutmann 1997-2013					*
+*						Copyright Peter Gutmann 1997-2009					*
 *																			*
 ****************************************************************************/
 
 #if defined( INC_ALL )
   #include "cert.h"
+  #include "asn1.h"
   #include "asn1_ext.h"
 #else
   #include "cert/cert.h"
+  #include "enc_dec/asn1.h"
   #include "enc_dec/asn1_ext.h"
 #endif /* Compiler-specific includes */
 
@@ -209,10 +211,11 @@ static int getCertCopy( const CERT_INFO *certInfoPtr,
 		{
 		MESSAGE_CREATEOBJECT_INFO createInfo;
 
-		setMessageCreateObjectIndirectInfoEx( &createInfo, certDataPtr,
-							msgData.length, certInfoPtr->type,
-							isDataOnlyCert ? KEYMGMT_FLAG_DATAONLY_CERT : \
-											 KEYMGMT_FLAG_NONE );
+		setMessageCreateObjectIndirectInfo( &createInfo, certDataPtr,
+											msgData.length,
+											isDataOnlyCert ? \
+												CRYPT_ICERTTYPE_DATAONLY : \
+												certInfoPtr->type );
 		status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
 								  IMESSAGE_DEV_CREATEOBJECT_INDIRECT, 
 								  &createInfo, OBJECT_TYPE_CERTIFICATE );
@@ -265,10 +268,8 @@ int getCertComponent( INOUT CERT_INFO *certInfoPtr,
 		status = selectGeneralName( certInfoPtr, certInfoType, 
 									MAY_BE_ABSENT );
 		if( cryptStatusOK( status ) )
-			{
 			status = selectGeneralName( certInfoPtr, CRYPT_ATTRIBUTE_NONE, 
 										MUST_BE_PRESENT );
-			}
 		restoreSelectionState( savedState, certInfoPtr );
 		*certInfo = cryptStatusOK( status ) ? TRUE : FALSE;
 
@@ -473,21 +474,6 @@ int getCertComponent( INOUT CERT_INFO *certInfoPtr,
 			return( CRYPT_OK );
 			}
 
-#ifdef USE_CERTREV
-		case CRYPT_CERTINFO_REVOCATIONSTATUS:
-			{
-			const CERT_REV_INFO *certRevInfo = certInfoPtr->cCertRev;
-			const REVOCATION_INFO *revInfoPtr = \
-					( certRevInfo->currentRevocation != NULL ) ? \
-					certRevInfo->currentRevocation : certRevInfo->revocations;
-
-			if( revInfoPtr == NULL )
-				return( CRYPT_ERROR_NOTFOUND );
-			*certInfo = revInfoPtr->status;
-			return( CRYPT_OK );
-			}
-#endif /* USE_CERTREV */
-
 #ifdef USE_CERTVAL
 		case CRYPT_CERTINFO_CERTSTATUS:
 			{
@@ -503,11 +489,20 @@ int getCertComponent( INOUT CERT_INFO *certInfoPtr,
 			}
 #endif /* USE_CERTVAL */
 
-#ifdef USE_PKIUSER
-		case CRYPT_CERTINFO_PKIUSER_RA:
-			*certInfo = certInfoPtr->cCertUser->isRA;
+#ifdef USE_CERTREV
+		case CRYPT_CERTINFO_REVOCATIONSTATUS:
+			{
+			const CERT_REV_INFO *certRevInfo = certInfoPtr->cCertRev;
+			const REVOCATION_INFO *revInfoPtr = \
+					( certRevInfo->currentRevocation != NULL ) ? \
+					certRevInfo->currentRevocation : certRevInfo->revocations;
+
+			if( revInfoPtr == NULL )
+				return( CRYPT_ERROR_NOTFOUND );
+			*certInfo = revInfoPtr->status;
 			return( CRYPT_OK );
-#endif /* USE_PKIUSER */
+			}
+#endif /* USE_CERTREV */
 
 		case CRYPT_IATTRIBUTE_CERTKEYALGO:
 			*certInfo = certInfoPtr->publicKeyAlgo;
@@ -516,12 +511,6 @@ int getCertComponent( INOUT CERT_INFO *certInfoPtr,
 		case CRYPT_IATTRIBUTE_CERTHASHALGO:
 			*certInfo = certInfoPtr->cCertCert->hashAlgo;
 			return( CRYPT_OK );
-
-#ifdef USE_CERTREQ
-		case CRYPT_IATTRIBUTE_REQFROMRA:
-			*certInfo = certInfoPtr->cCertReq->requestFromRA;
-			return( CRYPT_OK );
-#endif /* USE_CERTREQ */
 
 		case CRYPT_IATTRIBUTE_CERTCOPY:
 			{

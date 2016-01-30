@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *								cryptlib Test Code							*
-*						Copyright Peter Gutmann 1995-2015					*
+*						Copyright Peter Gutmann 1995-2012					*
 *																			*
 ****************************************************************************/
 
@@ -49,9 +49,9 @@
 
 /* Warn about nonstandard build options */
 
-#if defined( CONFIG_SUITEB_TESTS ) && ( defined( _MSC_VER ) || defined( __GNUC__ ) )
+#if defined( CONFIG_SUITEB_TESTS ) && defined( _MSC_VER )
   #pragma message( "  Building Suite B command-line test configuration." )
-#endif /* CONFIG_SUITEB_TESTS with VC++/gcc */
+#endif /* CONFIG_SUITEB_TESTS with VC++ */
 
 /* Whether various keyset tests worked, the results are used later to test
    other routines.  We initially set the key read result to TRUE in case the
@@ -59,10 +59,6 @@
    keys in other tests */
 
 int keyReadOK = TRUE, doubleCertOK = FALSE;
-
-/* The output stream to which diagnostic output is sent */
-
-FILE *outputStream;
 
 /* There are some sizeable (for DOS) data structures used, so we increase the
    stack size to allow for them */
@@ -162,8 +158,6 @@ static void updateConfig( void )
 	const char *driverPath = "psepkcs11.dll";		/* A-Sign */
 	const char *driverPath = "asepkcs.dll";			/* Athena */
 	const char *driverPath = "c:/temp/bpkcs11.dll";	/* Bloomberg */
-	const char *driverPath = "opensc-pkcs11.dll";	/* CardContact (via OpenSC) under Windows */
-	const char *driverPath = "/usr/lib/opensc-pkcs11.so";	/* CardContact (OpenSC) under Linux */
 	const char *driverPath = "cryst32.dll";			/* Chrysalis */
 	const char *driverPath = "c:/program files/luna/cryst201.dll";	/* Chrysalis */
 	const char *driverPath = "pkcs201n.dll";		/* Datakey */
@@ -195,12 +189,11 @@ static void updateConfig( void )
 	const char *driverPath = "smartp11.dll";		/* SmartTrust */
 	const char *driverPath = "SpyPK11.dll";			/* Spyrus */
 #endif /* 0 */
-//	const char *driverPath = "c:/program files/eracom/cprov sw/cryptoki.dll";	/* Eracom (old, OK) */
-	const char *driverPath = "opensc-pkcs11.dll";	/* CardContact (via OpenSC) */
+	const char *driverPath = "c:/program files/eracom/cprov sw/cryptoki.dll";	/* Eracom (old, OK) */
 	int status;
 
 	printf( "Updating cryptlib configuration to load PKCS #11 driver\n  "
-			"'%s' as default driver...", driverPath );
+			"'%s'\n  as default driver...", driverPath );
 
 	/* Set the path for a PKCS #11 device driver.  We only enable one of
 	   these at a time to speed the startup time */
@@ -327,15 +320,15 @@ static void usageExit( void )
 
 /* Process command-line arguments */
 
-static int processArgs( int argc, char **argv, int *argFlags, 
-						const char **zCmdPtrPtr, const char **zArgPtrPtr )
+static int processArgs( int argc, char **argv, 
+						int *argFlags, const char **zargPtrPtr )
 	{
 	const char *zargPtr = NULL;
-	BOOLEAN moreArgs = TRUE, isZArg = FALSE;
+	BOOLEAN moreArgs = TRUE;
 
-	/* Clear return values */
+	/* Clear return value */
 	*argFlags = 0;
-	*zCmdPtrPtr = *zArgPtrPtr = NULL;
+	*zargPtrPtr = NULL;
 
 	/* No args means test everything */
 	if( argc <= 0 )
@@ -346,20 +339,9 @@ static int processArgs( int argc, char **argv, int *argFlags,
 		}
 
 	/* Check for arguments */
-	while( argc > 0 && ( *argv[ 0 ] == '-' || isZArg ) && moreArgs )
+	while( argc > 0 && *argv[ 0 ] == '-' && moreArgs )
 		{
 		const char *argPtr = argv[ 0 ] + 1;
-
-		/* If the last argument was a -z one, this is the argument value 
-		   that goes with it */
-		if( isZArg )
-			{
-			isZArg = FALSE;
-			*zArgPtrPtr = argv[ 0 ];
-			argv++;
-			argc--;
-			continue;
-			}
 
 		while( *argPtr )
 			{
@@ -442,8 +424,7 @@ static int processArgs( int argc, char **argv, int *argFlags,
 						}
 					while( argPtr[ 1 ] )
 						argPtr++;	/* Skip rest of arg */
-					*zCmdPtrPtr = zargPtr;
-					isZArg = TRUE;
+					*zargPtrPtr = zargPtr;
 					break;
 
 				default:
@@ -466,375 +447,6 @@ static int processArgs( int argc, char **argv, int *argFlags,
 
 /****************************************************************************
 *																			*
-*								Fuzzing Wrapper								*
-*																			*
-****************************************************************************/
-
-/* Wrapper for injecting fuzz data */
-
-// #define CONFIG_FUZZ
-
-#if defined( CONFIG_FUZZ ) && !defined( NDEBUG )
-
-void __afl_manual_init( void );
-
-static int fuzzSession( const CRYPT_SESSION_TYPE sessionType,
-						const char *fuzzFileName )
-	{
-	CRYPT_SESSION cryptSession;
-	CRYPT_CONTEXT cryptPrivKey = CRYPT_UNUSED;
-	BYTE buffer[ 4096 ];
-	const BOOLEAN isServer = \
-			( sessionType == CRYPT_SESSION_SSH_SERVER || \
-			  sessionType == CRYPT_SESSION_SSL_SERVER || \
-			  sessionType == CRYPT_SESSION_OCSP_SERVER || \
-			  sessionType == CRYPT_SESSION_RTCS_SERVER || \
-			  sessionType == CRYPT_SESSION_TSP_SERVER || \
-			  sessionType == CRYPT_SESSION_CMP_SERVER || \
-			  sessionType == CRYPT_SESSION_SCEP_SERVER ) ? \
-			TRUE : FALSE;
-	int length, status;
-
-	/* Create the session */
-	status = cryptCreateSession( &cryptSession, CRYPT_UNUSED, sessionType );
-	if( cryptStatusError( status ) )
-		return( status );
-
-	/* Set up the various attributes needed to establish a minimal session */
-	if( !isServer )
-		{
-		status = cryptSetAttributeString( cryptSession,
-										  CRYPT_SESSINFO_SERVER_NAME,
-										  "localhost", 9 );
-		if( cryptStatusError( status ) )
-			return( status );
-		}
-	if( isServer )
-		{
-		if( !loadRSAContexts( CRYPT_UNUSED, NULL, &cryptPrivKey ) )
-			return( CRYPT_ERROR_FAILED );
-		}
-	if( sessionType == CRYPT_SESSION_SSH || \
-		sessionType == CRYPT_SESSION_CMP )
-		{
-		status = cryptSetAttributeString( cryptSession,
-										  CRYPT_SESSINFO_USERNAME,
-										  SSH_USER_NAME,
-										  paramStrlen( SSH_USER_NAME ) );
-		if( cryptStatusOK( status ) )
-			{
-			status = cryptSetAttributeString( cryptSession,
-											  CRYPT_SESSINFO_PASSWORD,
-											  SSH_PASSWORD,
-											  paramStrlen( SSH_PASSWORD ) );
-			}
-		if( cryptStatusError( status ) )
-			return( status );
-		}
-	if( sessionType == CRYPT_SESSION_CMP )
-		{
-		status = cryptSetAttribute( cryptSession,
-									CRYPT_SESSINFO_CMP_REQUESTTYPE,
-									CRYPT_REQUESTTYPE_INITIALISATION );
-		if( cryptStatusError( status ) )
-			return( status );
-		}
-
-	/* Perform any final session initialisation */
-	cryptFuzzInit( cryptSession, cryptPrivKey );
-
-	/* We're ready to go, start the forkserver and read the mutable data */
-#ifndef __WINDOWS__
-	__afl_manual_init();
-#endif /* !__WINDOWS__ */
-	length = readFileData( fuzzFileName, fuzzFileName, buffer, 4096, 32, 
-						   TRUE );
-	if( length < 32 )
-		return( CRYPT_ERROR_READ );
-
-	/* Perform the fuzzing */
-	status = cryptSetFuzzData( cryptSession, buffer, length );
-	cryptDestroySession( cryptSession );
-	if( cryptPrivKey != CRYPT_UNUSED )
-		cryptDestroyContext( cryptPrivKey );
-
-	return( CRYPT_OK );
-	}
-
-static int fuzzFile( const char *fuzzFileName )
-	{
-	CRYPT_CERTIFICATE cryptCert;
-	BYTE buffer[ 4096 ];
-	int length, status;
-
-	/* Read the data to fuzz */
-	length = readFileData( fuzzFileName, fuzzFileName, buffer, 4096, 64, 
-						   TRUE );
-	if( length < 64 )
-		return( CRYPT_ERROR_READ );
-
-	/* Process the input file */
-	status = cryptImportCert( buffer, length, CRYPT_UNUSED, &cryptCert );
-	if( cryptStatusOK( status ) )
-		cryptDestroyCert( cryptCert );
-
-	return( CRYPT_OK );
-	}
-
-static int fuzzEnvelope( const char *fuzzFileName )
-	{
-	CRYPT_ENVELOPE cryptEnvelope;
-	BYTE buffer[ 4096 ];
-	int length, bytesIn, status;
-
-	/* Create the envelope */
-	status = cryptCreateEnvelope( &cryptEnvelope, CRYPT_UNUSED, 
-								  CRYPT_FORMAT_AUTO );
-	if( cryptStatusError( status ) )
-		return( status );
-
-	/* We're ready to go, start the forkserver and read the mutable data */
-#ifndef __WINDOWS__
-	__afl_manual_init();
-#endif /* !__WINDOWS__ */
-	length = readFileData( fuzzFileName, fuzzFileName, buffer, 4096, 64, 
-						   TRUE );
-	if( length < 64 )
-		return( CRYPT_ERROR_READ );
-
-	/* Process the input file */
-	status = cryptPushData( cryptEnvelope, buffer, length, &bytesIn );
-	cryptDestroyEnvelope( cryptEnvelope );
-
-	return( CRYPT_OK );
-	}
-
-static int fuzzKeyset( const char *fuzzFileName )
-	{
-	CRYPT_KEYSET cryptKeyset;
-	int status;
-
-	/* Start the forkserver */
-#ifndef __WINDOWS__
-	__afl_manual_init();
-#endif /* !__WINDOWS__ */
-
-	/* Process the input file */
-	status = cryptKeysetOpen( &cryptKeyset, CRYPT_UNUSED, CRYPT_KEYSET_FILE,
-							  fuzzFileName, CRYPT_KEYOPT_READONLY );
-	if( cryptStatusOK( status ) )
-		cryptKeysetClose( cryptKeyset );
-
-	return( CRYPT_OK );
-	}
-
-static int fuzzSpecial( const int fuzzType, const char *fuzzFileName )
-	{
-	BYTE buffer[ 8192 ];
-	int length, status;
-
-	/* We're ready to go, start the forkserver and read the mutable data */
-#ifndef __WINDOWS__
-	__afl_manual_init();
-#endif /* !__WINDOWS__ */
-	length = readFileData( fuzzFileName, fuzzFileName, buffer, 8192, 16, 
-						   TRUE );
-	if( length < 16 )
-		return( CRYPT_ERROR_READ );
-
-	/* Process the input file */
-	status = cryptFuzzSpecial( buffer, length, 
-							   ( fuzzType == 4000 ) ? TRUE : FALSE );
-
-	return( CRYPT_OK );
-	}
-
-static int fuzz( const char *cmd, const char *arg )
-	{
-	static const struct {
-		const char *fuzzTypeName;
-		const int fuzzType;
-		} fuzzTypeMap[] = {
-		{ "base64", 1000 }, { "certificate", 1001 },
-		{ "certchain", 1002 }, { "certreq", 1002 },
-		{ "cms", 2000 }, { "pgp", 2001 },
-		{ "pkcs12", 3000 }, { "pkcs15", 3001 },
-		{ "pgppub", 3002 }, { "pgpsec", 3003 },
-		{ "http-req", 4000 }, { "http-resp", 4001 },
-		{ "ssh-client", CRYPT_SESSION_SSH },
-		{ "ssh-server", CRYPT_SESSION_SSH_SERVER },
-		{ "ssl-client", CRYPT_SESSION_SSL },
-		{ "ssl-server", CRYPT_SESSION_SSL_SERVER },
-		{ "ocsp-client", CRYPT_SESSION_OCSP },
-		{ "ocsp-server", CRYPT_SESSION_OCSP_SERVER },
-		{ "rtcs-client", CRYPT_SESSION_RTCS },
-		{ "rtcs-server", CRYPT_SESSION_RTCS_SERVER },
-		{ "tsp-client", CRYPT_SESSION_TSP },
-		{ "tsp-server", CRYPT_SESSION_TSP_SERVER },
-		{ "scep-client", CRYPT_SESSION_SCEP },
-		{ "scep-server", CRYPT_SESSION_SCEP_SERVER },
-		{ "cmp-client", CRYPT_SESSION_CMP },
-		{ "cmp-server", CRYPT_SESSION_CMP_SERVER },
-		{ NULL, 0 }
-		};
-	int i, fuzzType = -1, status;
-
-	/* Test harness for code checking */
-#if defined( CONFIG_FUZZ ) && !defined( NDEBUG ) && defined( __WINDOWS__ ) && 1
-//	Fuzzed:
-//	100-150M: pgp, p12, pgppub, pgpsec.
-//	300M: cms, p15.
-//	200M: base64, cert, certchain, certreq.
-//	300-500M: ssh-client, ssh-server, tsp-client, tsp-server
-//	100M: ssl-client, ssl-server
-//	50M: http-req, http-resp
-//	Next: ocsp-client, ocsp-server
-//	cmd = "base64"; arg = "test/fuzz/base64.dat";
-//	cmd = "certificate"; arg = "test/fuzz/certificate.dat";
-//	cmd = "certchain"; arg = "test/fuzz/certchain.dat";
-//	cmd = "certreq"; arg = "test/fuzz/certreq.dat";
-//	cmd = "cms"; arg = "test/fuzz/cms.dat";
-//	cmd = "pgp"; arg = "test/fuzz/pgp.dat";
-//	cmd = "pkcs12"; arg = "test/fuzz/pkcs12.dat";
-//	cmd = "pkcs15"; arg = "test/fuzz/pkcs15.dat";
-//	arg = "pgppub"; arg = "test/fuzz/pgppub.dat";
-//	arg = "pgpsec"; arg = "test/fuzz/pgpsec.dat";
-//	cmd = "ssl-client"; arg = "test/fuzz/ssl_svr.dat";
-//	cmd = "ssl-server"; arg = "test/fuzz/ssl_cli.dat";
-//	cmd = "ssh-client"; arg = "test/fuzz/ssh_svr.dat";
-//	cmd = "ssh-server"; arg = "test/fuzz/ssh_cli.dat";
-//	cmd = "ocsp-client"; arg = "test/fuzz/ocsp_svr.dat";
-//	cmd = "ocsp-server"; arg = "test/fuzz/ocsp_cli.dat";
-//	cmd = "tsp-client"; arg = "test/fuzz/tsp_svr.dat";
-//	cmd = "tsp-server"; arg = "test/fuzz/tsp_cli.dat";
-//	cmd = "cmp-client"; arg = "test/fuzz/cmp_svr.dat";
-//	cmd = "cmp-server"; arg = "test/fuzz/cmp_cli.dat";
-//	cmd = "scep-client"; cmd = "scep-server"; See comments above
-//	cmd = "http-req"; arg = "test/fuzz/http_req.dat";
-	cmd = "http-resp"; arg = "test/fuzz/http_resp.dat";
-#endif /* __WINDOWS__ test */
-
-	/* Make sure that we've got an input arg */
-	if( cmd == NULL )
-		{
-		printf( "Error: Missing argument fuzz type.\n" );
-		exit( EXIT_FAILURE );
-		}
-	if( arg == NULL )
-		{
-		printf( "Error: Missing argument fuzz filename.\n" );
-		exit( EXIT_FAILURE );
-		}
-
-	/* Figure out which type of fuzzing we're doing */
-	for( i = 0; fuzzTypeMap[ i ].fuzzTypeName != NULL; i++ )
-		{
-		if( !strcmp( fuzzTypeMap[ i ].fuzzTypeName, cmd ) )
-			{
-			fuzzType = fuzzTypeMap[ i ].fuzzType;
-			break;
-			}
-		}
-	if( fuzzType == -1 )
-		{
-		printf( "Error: Invalid fuzz type '%s'.\n", cmd );
-		exit( EXIT_FAILURE );
-		}
-	if( fuzzType == CRYPT_SESSION_SCEP || \
-		fuzzType == CRYPT_SESSION_SCEP_SERVER )
-		{
-		/* SCEP uses CMS envelopes, which are already handled directly by
-		   the envelope fuzzing.  In addition SCEP clients need to decrypt 
-		   CMS messages returned by the server, encrypted to the certificate 
-		   that they've just generated, which can't be emulated with static 
-		   data */
-		printf( "Error: SCEP uses CMS messages which are fuzzed via "
-				"envelopes.\n" );
-		exit( EXIT_FAILURE );
-		}
-
-	/* Make sure that things are set up for deferred forking */
-#ifndef __WINDOWS__
-	if( getenv( "AFL_DEFER_FORKSRV" ) == NULL )
-		{
-		/* In order for the manual forkserv init to work, AFL_DEFER_FORKSRV 
-		   must be set */
-		puts( "Error: AFL_DEFER_FORKSRV isn't set in environment." );
-		exit( EXIT_FAILURE );
-		}
-#endif /* !__WINDOWS__ */
-
-	/* Fake out the randomness polling */
-	cryptAddRandom( "xyzzy", 5 );
-
-	/* Patch point for checking crashes */
-#if defined( __WINDOWS__ ) && 1
-	{
-	char buffer[ 128 ];
-
-	for( i = 0/*0*/; i < 200; i++ )
-		{
-		FILE *filePtr;
-
-		sprintf( buffer, "r:/%s/%06d.dat", cmd, i );
-		filePtr = fopen( buffer, "rb" );
-		if( filePtr == NULL )
-			{
-			puts( "No more files, exiting." );
-			break;
-			}
-		fclose( filePtr );
-		printf( "Fuzzing %s file %d (%s).\n", cmd, i, buffer );
-		if( fuzzType >= 1000 && fuzzType <= 1100 )
-			status = fuzzFile( buffer );
-		else 
-		if( fuzzType >= 2000 && fuzzType <= 2100 )
-			status = fuzzEnvelope( buffer );
-		else 
-		if( fuzzType >= 3000 && fuzzType <= 3100 )
-			status = fuzzKeyset( buffer );
-		else 
-		if( fuzzType >= 4000 && fuzzType <= 4100 )
-			status = fuzzSpecial( fuzzType, buffer );
-		else
-			status = fuzzSession( fuzzType, buffer );
-		}
-	puts( "Done." );
-	}
-#endif /* __WINDOWS__ test */
-
-	/* Fuzz the target file */
-	if( fuzzType >= 1000 && fuzzType <= 1100 )
-		status = fuzzFile( arg );
-	else 
-	if( fuzzType >= 2000 && fuzzType <= 2100 )
-		status = fuzzEnvelope( arg );
-	else 
-	if( fuzzType >= 3000 && fuzzType <= 3100 )
-		status = fuzzKeyset( arg );
-	else
-	if( fuzzType >= 4000 && fuzzType <= 4100 )
-		status = fuzzSpecial( fuzzType, arg );
-	else
-	if( fuzzType > CRYPT_SESSION_NONE && fuzzType < CRYPT_SESSION_LAST )
-		status = fuzzSession( fuzzType, arg );
-	else
-		{
-		printf( "Error: Unknown fuzz type '%d'.\n", fuzzType );
-		exit( EXIT_FAILURE );
-		}
-	if( cryptStatusError( status ) )
-		{
-		/* The fuzz init failed, make sure that the wrapper records this */
-		exit( EXIT_FAILURE );
-		}
-
-	exit( EXIT_SUCCESS );
-	}
-#endif /* CONFIG_FUZZ && debug mode */
-
-/****************************************************************************
-*																			*
 *								Misc.Kludges								*
 *																			*
 ****************************************************************************/
@@ -843,20 +455,50 @@ static int fuzz( const char *cmd, const char *arg )
    before any of the other tests are run and can be used to handle special-
    case tests that aren't part of the main test suite */
 
-void initDatabaseKeysets( void );	/* Call before calling cert-mgt.code */
-
-static void testKludge( const char *cmd, const char *arg )
+static void testKludge( const char *argPtr )
 	{
-	/* Fuzzing test harness.  This is a noreturn function */
-#ifdef CONFIG_FUZZ
-	fuzz( cmd, arg );
-#endif /* CONFIG_FUZZ */
+#if 0
+	testReadCorruptedKey();
+#endif /* 0 */
+
+	/* To test dodgy certificate collections */
+#if 0
+	int result;
+
+	if( argPtr == NULL )
+		{
+		printf( "Error: Missing argument.\n" );
+		exit( EXIT_FAILURE );
+		}
+	if( *argPtr == '@' )
+		{
+		cryptSetAttribute( CRYPT_UNUSED, CRYPT_OPTION_CERT_COMPLIANCELEVEL,
+						   CRYPT_COMPLIANCELEVEL_OBLIVIOUS );
+		argPtr++;
+		}
+	if( *argPtr == '#' )
+		{
+		cryptSetAttribute( CRYPT_UNUSED, CRYPT_OPTION_CERT_COMPLIANCELEVEL,
+						   CRYPT_COMPLIANCELEVEL_PKIX_FULL );
+		argPtr++;
+		}
+	result = xxxCertImport( argPtr );
+	cryptEnd();
+	exit( result ? EXIT_SUCCESS : EXIT_FAILURE );
+#endif /* 1 */
 
 	/* Performance-testing test harness */
 #if 0
 	void performanceTests( const CRYPT_DEVICE cryptDevice );
 
 	performanceTests( CRYPT_UNUSED );
+#endif /* 0 */
+
+	/* Memory diagnostic test harness */
+#if 0
+	testReadFileCertPrivkey();
+	testEnvelopePKCCrypt();		/* Use "Datasize, certificate" */
+	testEnvelopeSign();			/* Use "Datasize, certificate" */
 #endif /* 0 */
 
 	/* Simple (brute-force) server code. NB: Remember to change
@@ -889,7 +531,7 @@ static void testKludge( const char *cmd, const char *arg )
 
 int main( int argc, char **argv )
 	{
-	const char *zCmdPtr = NULL, *zArgPtr = NULL;
+	const char *zargPtr = NULL;
 	BOOLEAN sessionTestError = FALSE, loopbackTestError = FALSE;
 	int flags, status;
 	void testSystemSpecific1( void );
@@ -903,17 +545,12 @@ int main( int argc, char **argv )
 	/* Print a general banner to let the user know what's going on */
 	printf( "testlib - cryptlib %d-bit self-test framework.\n", 
 			( int ) sizeof( long ) * 8 );	/* Cast for gcc */
-	puts( "Copyright Peter Gutmann 1995 - 2015." );
-#ifdef CONFIG_FUZZ
-	puts( "" );
-	puts( "Warning: This is a custom fuzz-test build that operates in a nonstandard manner." );
-	puts( "         Not to be used in a standard test or production environment." );
-#endif /* CONFIG_FUZZ */
+	puts( "Copyright Peter Gutmann 1995 - 2012." );
 	puts( "" );
 
 	/* Skip the program name and process any command-line arguments */
 	argv++; argc--;
-	status = processArgs( argc, argv, &flags, &zCmdPtr, &zArgPtr );
+	status = processArgs( argc, argv, &flags, &zargPtr );
 	if( !status )
 		exit( EXIT_FAILURE );
 
@@ -933,16 +570,6 @@ int main( int argc, char **argv )
 	tzset();
 #endif /* VisualAge C++ */
 
-	/* Set up the output stream to which diagnostic output is sent */
-	outputStream = stdout;
-
-	/* Perform memory-allocation fault injection.  We have to do this before
-	   we call cryptInit() since the init code itself is tested by the
-	   memory fault-injection */
-#ifdef TEST_MEMFAULT
-	testMemFault();
-#endif /* TEST_MEMFAULT */
-
 	/* Initialise cryptlib */
 	printf( "Initialising cryptlib..." );
 	status = cryptInit();
@@ -954,11 +581,11 @@ int main( int argc, char **argv )
 		}
 	puts( "done." );
 
+#ifndef TEST_RANDOM
 	/* In order to avoid having to do a randomness poll for every test run,
 	   we bypass the randomness-handling by adding some junk.  This is only
 	   enabled when cryptlib is built in debug mode so it won't work with 
 	   any production systems */
-#ifndef TEST_RANDOM
   #if defined( __MVS__ ) || defined( __VMCMS__ )
 	#pragma convlit( resume )
 	cryptAddRandom( "xyzzy", 5 );
@@ -970,13 +597,11 @@ int main( int argc, char **argv )
 
 	/* Perform a general sanity check to make sure that the self-test is
 	   being run the right way */
-#ifndef CONFIG_FUZZ
 	if( !checkFileAccess() )
 		{
 		cryptEnd();
 		exit( EXIT_FAILURE );
 		}
-#endif /* CONFIG_FUZZ */
 
 	/* Make sure that further system-specific features that require cryptlib 
 	   to be initialised to check are set right */
@@ -990,7 +615,7 @@ int main( int argc, char **argv )
 
 	/* For general testing purposes we can insert test code at this point to
 	   test special cases that aren't covered in the general tests below */
-	testKludge( zCmdPtr, zArgPtr );
+	testKludge( zargPtr );
 
 #ifdef SMOKE_TEST
 	/* Perform a general smoke test of the kernel */
@@ -1096,7 +721,7 @@ errorExit1:
 		}
 
 	cleanExit( EXIT_FAILURE );
-	return( EXIT_FAILURE );		/* Exists only to get rid of compiler warnings */
+	return( EXIT_FAILURE );			/* Get rid of compiler warnings */
 	}
 
 /* PalmOS wrapper for main() */
@@ -1165,11 +790,6 @@ TInt E32Dll( TDllReason )
 #undef FALSE
 #undef TRUE
 #undef FAR_BSS
-#define IN_STRING		/* No-op out define normally in analyse.h */
-#ifdef HIRES_FORMAT_SPECIFIER
-  #undef HIRES_FORMAT_SPECIFIER
-  #define HIRES_TIME	HIRES_TIME_ALT	/* Rename typedef'd value */
-#endif /* HIRES_TIME */
 #if defined( __MVS__ ) || defined( __VMCMS__ )
   #pragma convlit( resume )
 #endif /* Resume ASCII use on EBCDIC systems */
@@ -1212,14 +832,6 @@ void testSystemSpecific1( void )
 #if 0	/* See comment below */
 	const CRYPT_ATTRIBUTE_TYPE testType = -1;
 #endif /* 0 */
-	struct {
-		/* We have to make sure that the following char string is longword-
-		   aligned since we're about to cast it to a long and dereference 
-		   it */
-		const void *alignDummy;
-		const char endiannessCheck[ 10 ];
-		} 
-	endiannessCheckValue = { NULL, "\x80\x00\x00\x00\x00\x00\x00\x00" };
 	int bigEndian;
 #ifndef _WIN32_WCE
 	int i;
@@ -1230,7 +842,7 @@ void testSystemSpecific1( void )
 	   otherwise it will be unsigned.  We can't easily test for things like
 	   middle-endianness without knowing the size of the data types, but
 	   then again it's unlikely we're being run on a PDP-11 */
-	bigEndian = ( *( long * ) endiannessCheckValue.endiannessCheck < 0 );
+	bigEndian = ( *( long * ) "\x80\x00\x00\x00\x00\x00\x00\x00" < 0 );
 #ifdef DATA_LITTLEENDIAN
 	if( bigEndian )
 		{

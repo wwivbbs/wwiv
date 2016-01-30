@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *					cryptlib Certificate Handling Test Routines				*
-*						Copyright Peter Gutmann 1997-2013					*
+*						Copyright Peter Gutmann 1997-2009					*
 *																			*
 ****************************************************************************/
 
@@ -34,10 +34,10 @@
    Unlike every other system on the planet, the Mac Classic takes the time_t 
    epoch as 1904 rather than 1970 (even VMS, MVS, VM/CMS, the AS/400, Tandem 
    NSK, and God knows what other sort of strangeness stick to 1970 as the 
-   time_t epoch) so we have to add an offset of 2082844800L to adjust for 
-   this.  ANSI and ISO C are very careful to avoid specifying what the epoch 
-   actually is, so it's legal to do this in the same way that it's legal for 
-   Microsoft to break Kerberos because the standard doesn't say they can't.
+   time_t epoch).  ANSI and ISO C are very careful to avoid specifying what 
+   the epoch actually is, so it's legal to do this in the same way that it's 
+   legal for Microsoft to break Kerberos because the standard doesn't say 
+   they can't.
    
    Note that the Y2K time-test value isn't really used any more because Y2K
    has long since come and gone, but it's left in here for historical 
@@ -46,15 +46,14 @@
 
 #define ONE_YEAR_TIME	( 365 * 86400L )
 #if defined( __MWERKS__ ) || defined( SYMANTEC_C ) || defined( __MRC__ )
-  #define CERTTIME_DATETEST	( ( ( 2014 - 1970 ) * ONE_YEAR_TIME ) + 2082844800L )
+  #define CERTTIME_DATETEST	( ( ( 2012 - 1970 ) * ONE_YEAR_TIME ) + 2082844800L )
   #define CERTTIME_Y2KTEST	( ( ( 2020 - 1970 ) * ONE_YEAR_TIME ) + 2082844800L )
 #else
-  #define CERTTIME_DATETEST	( ( 2014 - 1970 ) * ONE_YEAR_TIME )
+  #define CERTTIME_DATETEST	( ( 2012 - 1970 ) * ONE_YEAR_TIME )
   #define CERTTIME_Y2KTEST	( ( 2020 - 1970 ) * ONE_YEAR_TIME )
 #endif /* Macintosh-specific weird epoch */
-#include "misc/consts.h"
-#if CERTTIME_DATETEST <= MIN_TIME_VALUE
-  #error CERTTIME_DATETEST must be > MIN_TIME_VALUE
+#if CERTTIME_DATETEST < MIN_TIME_VALUE
+  #error CERTTIME_DATETEST must be >= MIN_TIME_VALUE
 #endif /* Safety check of time test value against MIN_TIME_VALUE */
 
 /****************************************************************************
@@ -78,41 +77,11 @@ int setRootTrust( const CRYPT_CERTIFICATE cryptCertChain,
 	if( cryptStatusError( status ) )
 		return( status );
 	if( oldTrustValue != NULL )
-		{
-		status = cryptGetAttribute( cryptCertChain, 
-									CRYPT_CERTINFO_TRUSTED_IMPLICIT,
-									oldTrustValue );
-		if( cryptStatusError( status ) )
-			return( status );
-		}
+		cryptGetAttribute( cryptCertChain, CRYPT_CERTINFO_TRUSTED_IMPLICIT,
+						   oldTrustValue );
 	return( cryptSetAttribute( cryptCertChain,
 							   CRYPT_CERTINFO_TRUSTED_IMPLICIT,
 							   newTrustValue ) );
-	}
-
-/* Export a certificate in a given format and make sure that the resulting 
-   size is consistent with the calculated size */
-
-static int checkExportCert( const CRYPT_CERTIFICATE cryptCert,
-							const BOOLEAN isCertChain,
-							const CRYPT_CERTFORMAT_TYPE format,
-							const C_STR formatDescription )
-	{
-	BYTE buffer[ 4096 ];
-	int size, status;
-
-	status = cryptExportCert( NULL, 0, &size, format, cryptCert );
-	if( cryptStatusOK( status ) )
-		status = cryptExportCert( buffer, size, &size, format, cryptCert );
-	if( cryptStatusError( status ) )
-		{
-		fprintf( outputStream, "Certificate%s export in %s format failed\n  "
-				 "with status %d, line %d.\n", isCertChain ? " chain" : "", 
-				 formatDescription, status, __LINE__ );
-		return( FALSE );
-		}
-
-	return( TRUE );
 	}
 
 /****************************************************************************
@@ -165,7 +134,7 @@ int testBasicCert( void )
 		}
 #endif /* VC++ 1.5 bug check */
 
-	fputs( "Testing certificate creation/export...\n", outputStream );
+	puts( "Testing certificate creation/export..." );
 
 	/* Create the RSA en/decryption contexts */
 	if( !loadRSAContexts( CRYPT_UNUSED, &pubKeyContext, &privKeyContext ) )
@@ -176,8 +145,8 @@ int testBasicCert( void )
 							  CRYPT_CERTTYPE_CERTIFICATE );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -243,28 +212,8 @@ int testBasicCert( void )
 		puts( "Exported certificate size != actual data size." );
 		return( FALSE );
 		}
-	fprintf( outputStream, "Exported certificate is %d bytes long.\n", 
-			 certificateLength );
+	printf( "Exported certificate is %d bytes long.\n", certificateLength );
 	debugDump( "cert", certBuffer, certificateLength );
-
-	/* Export the chain in the various text formats to make sure that each
-	   one works correctly */
-	if( !checkExportCert( cryptCert, FALSE, 
-						  CRYPT_CERTFORMAT_TEXT_CERTIFICATE,
-						  "CRYPT_CERTFORMAT_TEXT_CERTIFICATE" ) )
-		return( FALSE );
-	if( !checkExportCert( cryptCert, FALSE, 
-						  CRYPT_CERTFORMAT_TEXT_CERTCHAIN,
-						  "CRYPT_CERTFORMAT_TEXT_CERTCHAIN" ) )
-		return( FALSE );
-	if( !checkExportCert( cryptCert, FALSE, 
-						  CRYPT_CERTFORMAT_XML_CERTIFICATE,
-						  "CRYPT_CERTFORMAT_XML_CERTIFICATE" ) )
-		return( FALSE );
-	if( !checkExportCert( cryptCert, FALSE, 
-						  CRYPT_CERTFORMAT_XML_CERTCHAIN,
-						  "CRYPT_CERTFORMAT_XML_CERTCHAIN" ) )
-		return( FALSE );
 
 	/* Destroy the certificate */
 	status = cryptDestroyCert( cryptCert );
@@ -280,8 +229,8 @@ int testBasicCert( void )
 							  &cryptCert );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptCheckCert( cryptCert, CRYPT_UNUSED );
@@ -316,7 +265,7 @@ int testBasicCert( void )
 	cryptDestroyCert( cryptCert );
 
 	/* Clean up */
-	fputs( "Certificate creation succeeded.\n\n", outputStream );
+	puts( "Certificate creation succeeded.\n" );
 	return( TRUE );
 	}
 
@@ -360,10 +309,10 @@ int testCACert( void )
 	{
 	CRYPT_CERTIFICATE cryptCert;
 	CRYPT_CONTEXT pubKeyContext, privKeyContext;
-	time_t startTime, endTime DUMMY_INIT;
+	time_t startTime, endTime = DUMMY_INIT;
 	int value, status;
 
-	fputs( "Testing CA certificate creation/export...\n", outputStream );
+	puts( "Testing CA certificate creation/export..." );
 
 	/* Create the RSA en/decryption contexts */
 	if( !loadRSAContexts( CRYPT_UNUSED, &pubKeyContext, &privKeyContext ) )
@@ -374,8 +323,8 @@ int testCACert( void )
 							  CRYPT_CERTTYPE_CERTIFICATE );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -398,7 +347,7 @@ int testCACert( void )
 		}
 	if( cryptStatusError( status ) )
 		{
-		printf( "Automatic 64 <-> 32-bit time_t correction failed, "
+		printf( "Automatic 32 <-> 32-bit time_t correction failed, "
 				"line %d.\n", __LINE__ );
 		return( FALSE );
 		}
@@ -439,8 +388,7 @@ int testCACert( void )
 		puts( "Exported certificate size != actual data size." );
 		return( FALSE );
 		}
-	fprintf( outputStream, "Exported certificate is %d bytes long.\n", 
-			 certificateLength );
+	printf( "Exported certificate is %d bytes long.\n", certificateLength );
 	debugDump( "cacert", certBuffer, certificateLength );
 
 	/* Destroy the certificate */
@@ -462,8 +410,8 @@ int testCACert( void )
 							  &cryptCert );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptCheckCert( cryptCert, cryptCert );
@@ -520,7 +468,7 @@ int testCACert( void )
 #endif /* System with known-good time handling */
 
 	/* Clean up */
-	fputs( "CA certificate creation succeeded.\n\n", outputStream );
+	puts( "CA certificate creation succeeded.\n" );
 	return( TRUE );
 	}
 
@@ -540,8 +488,8 @@ static int xyzzyCert( const BOOLEAN useAltAlgo )
 	CRYPT_CONTEXT pubKeyContext, privKeyContext;
 	int status;
 
-	fprintf( outputStream, "Testing %sXYZZY certificate creation/export...\n",
-			 useAltAlgo ? "DSA " : "" );
+	printf( "Testing %sXYZZY certificate creation/export...\n",
+			useAltAlgo ? "DSA " : "" );
 
 	/* Create the RSA en/decryption contexts */
 	if( useAltAlgo )
@@ -560,8 +508,8 @@ static int xyzzyCert( const BOOLEAN useAltAlgo )
 							  CRYPT_CERTTYPE_CERTIFICATE );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -596,8 +544,7 @@ static int xyzzyCert( const BOOLEAN useAltAlgo )
 	if( cryptStatusError( status ) )
 		return( attrErrorExit( cryptCert, "cryptExportCert()", status,
 							   __LINE__ ) );
-	fprintf( outputStream, "Exported certificate is %d bytes long.\n", 
-			 certificateLength );
+	printf( "Exported certificate is %d bytes long.\n", certificateLength );
 	debugDump( useAltAlgo ? "certxyd" : "certxy", certBuffer, 
 			   certificateLength );
 
@@ -615,8 +562,8 @@ static int xyzzyCert( const BOOLEAN useAltAlgo )
 							  &cryptCert );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptCheckCert( cryptCert, CRYPT_UNUSED );
@@ -626,8 +573,8 @@ static int xyzzyCert( const BOOLEAN useAltAlgo )
 	cryptDestroyCert( cryptCert );
 
 	/* Clean up */
-	fprintf( outputStream, "%sXYZZY certificate creation succeeded.\n\n",
-			 useAltAlgo ? "DSA " : "" );
+	printf( "%sXYZZY certificate creation succeeded.\n\n",
+			useAltAlgo ? "DSA " : "" );
 	return( TRUE );
 	}
 
@@ -683,8 +630,7 @@ int testTextStringCert( void )
 	CRYPT_CONTEXT pubKeyContext, privKeyContext;
 	int i, status;
 
-	fputs( "Testing complex string type certificate creation/export...\n", 
-		   outputStream );
+	puts( "Testing complex string type certificate creation/export..." );
 
 	/* Create the RSA en/decryption contexts */
 	if( !loadRSAContexts( CRYPT_UNUSED, &pubKeyContext, &privKeyContext ) )
@@ -695,8 +641,8 @@ int testTextStringCert( void )
 							  CRYPT_CERTTYPE_CERTIFICATE );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -731,8 +677,7 @@ int testTextStringCert( void )
 	if( cryptStatusError( status ) )
 		return( attrErrorExit( cryptCert, "cryptExportCert()", status,
 							   __LINE__ ) );
-	fprintf( outputStream, "Exported certificate is %d bytes long.\n",
-			 certificateLength );
+	printf( "Exported certificate is %d bytes long.\n", certificateLength );
 	debugDump( "certstr", certBuffer, certificateLength );
 
 	/* Destroy the certificate */
@@ -749,8 +694,8 @@ int testTextStringCert( void )
 							  &cryptCert );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptCheckCert( cryptCert, CRYPT_UNUSED );
@@ -790,9 +735,9 @@ int testTextStringCert( void )
 					}
 				printf( "Widechar DN value %d read from certificate with value\n", 
 						attribute );
-				printHex( "  ", buffer, length );
+				printHex( buffer, length );
 				printf( "doesn't match value\n" );
-				printHex( "  ", textStringCertData[ i ].stringValue, wstrLen );
+				printHex( textStringCertData[ i ].stringValue, wstrLen );
 				printf( "that was written, line %d.\n", __LINE__ );
 				return( FALSE );
 				}
@@ -815,9 +760,9 @@ int testTextStringCert( void )
 					}
 				printf( "DN value %d read from certificate with value\n", 
 						attribute );
-				printHex( "  ", buffer, length );
+				printHex( buffer, length );
 				printf( "doesn't match value\n" );
-				printHex( "  ", textStringCertData[ i ].stringValue, strLen );
+				printHex( textStringCertData[ i ].stringValue, strLen );
 				printf( "that was written, line %d.\n", __LINE__ );
 				return( FALSE );
 				}
@@ -826,8 +771,7 @@ int testTextStringCert( void )
 	cryptDestroyCert( cryptCert );
 
 	/* Clean up */
-	fputs( "Complex string type certificate creation succeeded.\n\n", 
-		   outputStream );
+	puts( "Complex string type certificate creation succeeded.\n" );
 	return( TRUE );
 	}
 #else
@@ -898,10 +842,9 @@ int testComplexCert( void )
 	CRYPT_CERTIFICATE cryptCert;
 	CRYPT_CONTEXT pubKeyContext, privKeyContext;
 	C_CHR buffer1[ 64 ], buffer2[ 64 ];
-	int length1 DUMMY_INIT, length2 DUMMY_INIT, status;
+	int length1 = DUMMY_INIT, length2 = DUMMY_INIT, status;
 
-	fputs( "Testing complex certificate creation/export...\n", 
-		   outputStream );
+	puts( "Testing complex certificate creation/export..." );
 
 	/* Create the RSA en/decryption contexts */
 	if( !loadRSAContexts( CRYPT_UNUSED, &pubKeyContext, &privKeyContext ) )
@@ -912,8 +855,8 @@ int testComplexCert( void )
 							  CRYPT_CERTTYPE_CERTIFICATE );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -1036,8 +979,7 @@ int testComplexCert( void )
 	if( cryptStatusError( status ) )
 		return( attrErrorExit( cryptCert, "cryptExportCert()", status,
 							   __LINE__ ) );
-	fprintf( outputStream, "Exported certificate is %d bytes long.\n", 
-			 certificateLength );
+	printf( "Exported certificate is %d bytes long.\n", certificateLength );
 	debugDump( "certc", certBuffer, certificateLength );
 
 	/* Destroy the certificate */
@@ -1054,8 +996,8 @@ int testComplexCert( void )
 							  &cryptCert );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptCheckCert( cryptCert, CRYPT_UNUSED );
@@ -1065,7 +1007,7 @@ int testComplexCert( void )
 	cryptDestroyCert( cryptCert );
 
 	/* Clean up */
-	fputs( "Complex certificate creation succeeded.\n\n", outputStream );
+	puts( "Complex certificate creation succeeded.\n" );
 	return( TRUE );
 	}
 
@@ -1077,8 +1019,7 @@ int testCertExtension( void )
 	const char *extensionData = "\x0C\x04Test";
 	int value, length, status;
 
-	fputs( "Testing certificate with nonstd.extension creation/export...\n",
-		   outputStream );
+	puts( "Testing certificate with nonstd.extension creation/export..." );
 
 	/* Create the RSA en/decryption contexts */
 	if( !loadRSAContexts( CRYPT_UNUSED, &pubKeyContext, &privKeyContext ) )
@@ -1089,8 +1030,8 @@ int testCertExtension( void )
 							  CRYPT_CERTTYPE_CERTIFICATE );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptSetAttribute( cryptCert,
@@ -1112,11 +1053,8 @@ int testCertExtension( void )
 	/* Sign the certificate.  Since we're adding a nonstandard extension we
 	   have to set the CRYPT_OPTION_CERT_SIGNUNRECOGNISEDATTRIBUTES flag to
 	   make sure that cryptlib will sign it */
-	status = cryptGetAttribute( CRYPT_UNUSED,
-								CRYPT_OPTION_CERT_SIGNUNRECOGNISEDATTRIBUTES, 
-								&value );
-	if( cryptStatusError( status ) )
-		return( FALSE );
+	cryptGetAttribute( CRYPT_UNUSED,
+					   CRYPT_OPTION_CERT_SIGNUNRECOGNISEDATTRIBUTES, &value );
 	cryptSetAttribute( CRYPT_UNUSED,
 					   CRYPT_OPTION_CERT_SIGNUNRECOGNISEDATTRIBUTES, TRUE );
 	status = cryptSignCert( cryptCert, privKeyContext );
@@ -1138,16 +1076,15 @@ int testCertExtension( void )
 	if( cryptStatusError( status ) )
 		return( attrErrorExit( cryptCert, "cryptExportCert()", status,
 							   __LINE__ ) );
-	fprintf( outputStream, "Exported certificate is %d bytes long.\n", 
-			 certificateLength );
+	printf( "Exported certificate is %d bytes long.\n", certificateLength );
 	debugDump( "certext", certBuffer, certificateLength );
 	cryptDestroyCert( cryptCert );
 	status = cryptImportCert( certBuffer, certificateLength, CRYPT_UNUSED,
 							  &cryptCert );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -1162,8 +1099,8 @@ int testCertExtension( void )
 				__LINE__ );
 		return( FALSE );
 		}
-	( void ) cryptGetAttribute( CRYPT_UNUSED, 
-								CRYPT_OPTION_CERT_COMPLIANCELEVEL, &value );
+	cryptGetAttribute( CRYPT_UNUSED, CRYPT_OPTION_CERT_COMPLIANCELEVEL,
+					   &value );
 	cryptSetAttribute( CRYPT_UNUSED, CRYPT_OPTION_CERT_COMPLIANCELEVEL,
 					   CRYPT_COMPLIANCELEVEL_REDUCED );
 	status = cryptCheckCert( cryptCert, CRYPT_UNUSED );
@@ -1189,8 +1126,7 @@ int testCertExtension( void )
 
 	/* Clean up */
 	cryptDestroyCert( cryptCert );
-	fputs( "Certificate with nonstd.extension creation succeeded.\n\n", 
-		   outputStream );
+	puts( "Certificate with nonstd.extension creation succeeded.\n" );
 	return( TRUE );
 	}
 
@@ -1218,8 +1154,7 @@ int testCustomDNCert( void )
 	char buffer[ BUFFER_SIZE ];
 	int length, i, status;
 
-	fputs( "Testing certificate with custom DN creation/export...\n", 
-		   outputStream );
+	puts( "Testing certificate with custom DN creation/export..." );
 
 	/* Create the RSA en/decryption contexts */
 	if( !loadRSAContexts( CRYPT_UNUSED, &pubKeyContext, &privKeyContext ) )
@@ -1230,8 +1165,8 @@ int testCustomDNCert( void )
 							  CRYPT_CERTTYPE_CERTIFICATE );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptSetAttribute( cryptCert,
@@ -1281,16 +1216,15 @@ int testCustomDNCert( void )
 	if( cryptStatusError( status ) )
 		return( attrErrorExit( cryptCert, "cryptExportCert()", status,
 							   __LINE__ ) );
-	fprintf( outputStream, "Exported certificate is %d bytes long.\n", 
-			 certificateLength );
+	printf( "Exported certificate is %d bytes long.\n", certificateLength );
 	debugDump( "certext", certBuffer, certificateLength );
 	cryptDestroyCert( cryptCert );
 	status = cryptImportCert( certBuffer, certificateLength, CRYPT_UNUSED,
 							  &cryptCert );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptCheckCert( cryptCert, CRYPT_UNUSED );
@@ -1315,12 +1249,11 @@ int testCustomDNCert( void )
 
 	/* Clean up */
 	cryptDestroyCert( cryptCert );
-	fputs( "Certificate with custom DN creation succeeded.\n\n", 
-		   outputStream );
+	puts( "Certificate with custom DN creation succeeded.\n" );
 #else
-	fputs( "Skipping custom DN certificate creation/export test because "
-		   "support for\nthis capability has been disabled via the cryptlib "
-		   "config options.\n\n", outputStream );
+	puts( "Skipping custom DN certificate creation/export test because "
+		  "support for\nthis capability has been disabled via the cryptlib "
+		  "config options.\n" );
 #endif /* USE_CERT_DNSTRING */
 	return( TRUE );
 	}
@@ -1338,7 +1271,7 @@ int testCertAttributeHandling( void )
 	char buffer[ BUFFER_SIZE ];
 	int length, value, status;
 
-	fputs( "Testing certificate attribute handling...\n", outputStream );
+	puts( "Testing certificate attribute handling..." );
 
 	/* Create the RSA en/decryption contexts */
 	if( !loadRSAContexts( CRYPT_UNUSED, &pubKeyContext, &privKeyContext ) )
@@ -1349,8 +1282,8 @@ int testCertAttributeHandling( void )
 							  CRYPT_CERTTYPE_CERTIFICATE );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptSetAttribute( cryptCert,
@@ -1565,11 +1498,11 @@ int testCertAttributeHandling( void )
 
 	/* Clean up */
 	cryptDestroyCert( cryptCert );
-	fputs( "Certificate attribute handling succeeded.\n\n", outputStream );
+	puts( "Certificate attribute handling succeeded.\n" );
 #else
-	fputs( "Skipping certificate attribute handling test because support "
-		   "for the\nrequired custom DN creation has been disabled via the "
-		   "cryptlib config\noptions.\n\n", outputStream );
+	puts( "Skipping certificate attribute handling test because support "
+		  "for the\nrequired custom DN creation has been disabled via the "
+		  "cryptlib config\noptions.\n" );
 #endif /* USE_CERT_DNSTRING */
 	return( TRUE );
 	}
@@ -1606,7 +1539,7 @@ int testSETCert( void )
 	CRYPT_CONTEXT pubKeyContext, privKeyContext;
 	int status;
 
-	fputs( "Testing SET certificate creation/export...\n", outputStream );
+	puts( "Testing SET certificate creation/export..." );
 
 	/* Create the RSA en/decryption contexts */
 	if( !loadRSAContexts( CRYPT_UNUSED, &pubKeyContext, &privKeyContext ) )
@@ -1617,8 +1550,8 @@ int testSETCert( void )
 							  CRYPT_CERTTYPE_CERTIFICATE );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -1645,8 +1578,7 @@ int testSETCert( void )
 	if( cryptStatusError( status ) )
 		return( attrErrorExit( cryptCert, "cryptExportCert()", status,
 							   __LINE__ ) );
-	fprintf( outputStream, "Exported certificate is %d bytes long.\n", 
-			 certificateLength );
+	printf( "Exported certificate is %d bytes long.\n", certificateLength );
 	debugDump( "certset", certBuffer, certificateLength );
 
 	/* Destroy the certificate */
@@ -1663,8 +1595,8 @@ int testSETCert( void )
 							  &cryptCert );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptCheckCert( cryptCert, CRYPT_UNUSED );
@@ -1675,11 +1607,11 @@ int testSETCert( void )
 
 	/* Clean up */
 	destroyContexts( CRYPT_UNUSED, pubKeyContext, privKeyContext );
-	fputs( "SET certificate creation succeeded.\n\n", outputStream );
+	puts( "SET certificate creation succeeded.\n" );
 #else
-	fputs( "Skipping SET certificate creation/export test because support "
-		   "for this\ncertificate type has been disabled via the cryptlib "
-		   "config options.\n\n", outputStream );
+	puts( "Skipping SET certificate creation/export test because support "
+		  "for this\ncertificate type has been disabled via the cryptlib "
+		  "config options.\n" );
 #endif /* USE_CERT_OBSOLETE */
 	return( TRUE );
 	}
@@ -1700,16 +1632,15 @@ int testAttributeCert( void )
 	CRYPT_CONTEXT cryptAuthorityKey;
 	int status;
 
-	fputs( "Testing attribute certificate creation/export...\n", 
-		   outputStream );
+	puts( "Testing attribute certificate creation/export..." );
 
 	/* Get the authority's private key */
 	status = getPrivateKey( &cryptAuthorityKey, CA_PRIVKEY_FILE,
 							CA_PRIVKEY_LABEL, TEST_PRIVKEY_PASSWORD );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "Authority private key read failed with "
-				 "error code %d, line %d.\n", status, __LINE__ );
+		printf( "Authority private key read failed with error code %d, "
+				"line %d.\n", status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -1718,8 +1649,8 @@ int testAttributeCert( void )
 							  CRYPT_CERTTYPE_ATTRIBUTE_CERT );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -1743,8 +1674,7 @@ int testAttributeCert( void )
 	if( cryptStatusError( status ) )
 		return( attrErrorExit( cryptCert, "cryptExportCert()", status,
 							   __LINE__ ) );
-	fprintf( outputStream, "Exported certificate is %d bytes long.\n", 
-			 certificateLength );
+	printf( "Exported certificate is %d bytes long.\n", certificateLength );
 	debugDump( "certattr", certBuffer, certificateLength );
 
 	/* Destroy the certificate */
@@ -1761,8 +1691,8 @@ int testAttributeCert( void )
 							  &cryptCert );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptCheckCert( cryptCert, cryptAuthorityKey );
@@ -1773,7 +1703,7 @@ int testAttributeCert( void )
 
 	/* Clean up */
 	cryptDestroyContext( cryptAuthorityKey );
-	fputs( "Attribute certificate creation succeeded.\n\n", outputStream );
+	puts( "Attribute certificate creation succeeded.\n" );
 	return( TRUE );
 	}
 
@@ -1813,41 +1743,14 @@ static const CERT_DATA FAR_BSS complexCertRequestData[] = {
 	{ CRYPT_ATTRIBUTE_NONE, IS_VOID }
 	};
 
-static const CERT_DATA FAR_BSS certRequestAttrib1Data[] = {
+static const CERT_DATA FAR_BSS certRequestAttribData[] = {
 	/* Identification information */
 	{ CRYPT_CERTINFO_COUNTRYNAME, IS_STRING, 0, TEXT( "PT" ) },
 	{ CRYPT_CERTINFO_ORGANIZATIONNAME, IS_STRING, 0, TEXT( "Dave's Wetaburgers" ) },
 	{ CRYPT_CERTINFO_ORGANIZATIONALUNITNAME, IS_STRING, 0, TEXT( "Procurement" ) },
 	{ CRYPT_CERTINFO_COMMONNAME, IS_STRING, 0, TEXT( "Dave Smith" ) },
 
-	/* Subject altName encoded as an extensionReq */
-	{ CRYPT_CERTINFO_RFC822NAME, IS_STRING, 0, TEXT( "dave@wetas-r-us.com" ) },
-	{ CRYPT_CERTINFO_UNIFORMRESOURCEIDENTIFIER, IS_STRING, 0, TEXT( "http://www.wetas-r-us.com" ) },
-
-	{ CRYPT_ATTRIBUTE_NONE, 0, 0, NULL }
-	};
-
-static const CERT_DATA FAR_BSS certRequestAttrib2Data[] = {
-	/* Identification information */
-	{ CRYPT_CERTINFO_COUNTRYNAME, IS_STRING, 0, TEXT( "PT" ) },
-	{ CRYPT_CERTINFO_ORGANIZATIONNAME, IS_STRING, 0, TEXT( "Dave's Wetaburgers" ) },
-	{ CRYPT_CERTINFO_ORGANIZATIONALUNITNAME, IS_STRING, 0, TEXT( "Procurement" ) },
-	{ CRYPT_CERTINFO_COMMONNAME, IS_STRING, 0, TEXT( "Dave Smith" ) },
-
-	/* PKCS #9 attribute that isn't encoded as an extensionReq */
-	{ CRYPT_CERTINFO_CHALLENGEPASSWORD, IS_STRING, 0, TEXT( "password" ) },
-
-	{ CRYPT_ATTRIBUTE_NONE, 0, 0, NULL }
-	};
-
-static const CERT_DATA FAR_BSS certRequestAttrib3Data[] = {
-	/* Identification information */
-	{ CRYPT_CERTINFO_COUNTRYNAME, IS_STRING, 0, TEXT( "PT" ) },
-	{ CRYPT_CERTINFO_ORGANIZATIONNAME, IS_STRING, 0, TEXT( "Dave's Wetaburgers" ) },
-	{ CRYPT_CERTINFO_ORGANIZATIONALUNITNAME, IS_STRING, 0, TEXT( "Procurement" ) },
-	{ CRYPT_CERTINFO_COMMONNAME, IS_STRING, 0, TEXT( "Dave Smith" ) },
-
-	/* Subject altName encoded as an extensionReq */
+	/* Subject altName */
 	{ CRYPT_CERTINFO_RFC822NAME, IS_STRING, 0, TEXT( "dave@wetas-r-us.com" ) },
 	{ CRYPT_CERTINFO_UNIFORMRESOURCEIDENTIFIER, IS_STRING, 0, TEXT( "http://www.wetas-r-us.com" ) },
 
@@ -1866,9 +1769,9 @@ static int createCertRequest( const char *description,
 	{
 	CRYPT_CERTIFICATE cryptCert;
 	CRYPT_CONTEXT pubKeyContext, privKeyContext;
-	int dummy, status;
+	int status;
 
-	fprintf( outputStream, "Testing %s creation/export...\n", description );
+	printf( "Testing %s creation/export...\n", description );
 
 	/* Create the RSA en/decryption contexts */
 	if( !loadRSAContexts( CRYPT_UNUSED, &pubKeyContext, &privKeyContext ) )
@@ -1879,8 +1782,8 @@ static int createCertRequest( const char *description,
 							  CRYPT_CERTTYPE_CERTREQUEST );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -1914,32 +1817,9 @@ static int createCertRequest( const char *description,
 	if( cryptStatusError( status ) )
 		return( attrErrorExit( cryptCert, "cryptExportCert()", status,
 							   __LINE__ ) );
-	fprintf( outputStream, "Exported %s is %d bytes long.\n", description, 
-			 certificateLength );
+	printf( "Exported %s is %d bytes long.\n", description, 
+			certificateLength );
 	debugDump( fileName, certBuffer, certificateLength );
-
-	/* Make sure that an export in an illogical format is disallowed */
-	status = cryptExportCert( NULL, 0, &dummy, CRYPT_CERTFORMAT_CERTCHAIN, 
-							  cryptCert );
-	if( cryptStatusError( status ) )
-		{
-		status = cryptExportCert( NULL, 0, &dummy, 
-								  CRYPT_CERTFORMAT_TEXT_CERTCHAIN, 
-								  cryptCert );
-		}
-	if( cryptStatusError( status ) )
-		{
-		status = cryptExportCert( NULL, 0, &dummy, 
-								  CRYPT_CERTFORMAT_XML_CERTCHAIN, 
-								  cryptCert );
-		}
-	if( cryptStatusOK( status ) )
-		{
-		printf( "Attempt to export certificate request in illogical format "
-				"succeeded when it\n  should have failed, line %d.\n", 
-				__LINE__ );
-		return( FALSE );
-		}
 
 	/* Destroy the certificate */
 	status = cryptDestroyCert( cryptCert );
@@ -1955,8 +1835,8 @@ static int createCertRequest( const char *description,
 							  &cryptCert );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptCheckCert( cryptCert, CRYPT_UNUSED );
@@ -1967,7 +1847,7 @@ static int createCertRequest( const char *description,
 
 	/* Clean up */
 	destroyContexts( CRYPT_UNUSED, pubKeyContext, privKeyContext );
-	fprintf( outputStream, "Creation of %s succeeded.\n\n", description );
+	printf( "Creation of %s succeeded.\n\n", description );
 	return( TRUE );
 	}
 
@@ -1986,57 +1866,31 @@ int testComplexCertRequest( void )
 
 int testCertRequestAttrib( void )
 	{
-	if( !createCertRequest( "cert.request with non-encapsulated attributes", 
-							certRequestAttrib1Data, "certreqa1" ) )
-		return( FALSE );	/* extReq attribute */
-	if( !createCertRequest( "cert.request with encapsulated attributes", 
-							certRequestAttrib2Data, "certreqa2" ) )
-		return( FALSE );	/* Non-extReq attribute */
-	return( createCertRequest( "cert.request with both types of attributes", 
-							   certRequestAttrib3Data, "certreqa3" ) );
-	}						/* Both types of attributes */
+	return( createCertRequest( "certification request with attribute", 
+							   certRequestAttribData, "certreqa" ) );
+	}
 
 /* Test CRMF certification request code */
 
-static int crmfRequest( const CRYPT_ALGO_TYPE cryptAlgo )
+int testCRMFRequest( void )
 	{
 	CRYPT_CERTIFICATE cryptCert;
 	CRYPT_CONTEXT pubKeyContext, privKeyContext;
 	int status;
 
-	fprintf( outputStream, "Testing CRMF %s certification request "
-			 "creation/export...\n",
-			 ( cryptAlgo == CRYPT_ALGO_DSA ) ? "DSA" : \
-			 ( cryptAlgo == CRYPT_ALGO_ECDSA ) ? "ECDSA" : "RSA" );
+	puts( "Testing CRMF certification request creation/export..." );
 
-	/* Create the en/decryption contexts */
-	switch( cryptAlgo )
-		{
-		case CRYPT_ALGO_DSA:
-			if( !loadDSAContexts( CRYPT_UNUSED, &pubKeyContext, 
-								  &privKeyContext ) )
-				return( FALSE );
-			break;
-
-		case CRYPT_ALGO_ECDSA:
-			if( !loadECDSAContexts( CRYPT_UNUSED, &pubKeyContext, 
-								  &privKeyContext ) )
-				return( FALSE );
-			break;
-
-		default:
-			if( !loadRSAContexts( CRYPT_UNUSED, &pubKeyContext, 
-								  &privKeyContext ) )
-				return( FALSE );
-		}
+	/* Create the RSA en/decryption contexts */
+	if( !loadRSAContexts( CRYPT_UNUSED, &pubKeyContext, &privKeyContext ) )
+		return( FALSE );
 
 	/* Create the certificate object */
 	status = cryptCreateCert( &cryptCert, CRYPT_UNUSED,
 							  CRYPT_CERTTYPE_REQUEST_CERT );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -2070,11 +1924,9 @@ static int crmfRequest( const CRYPT_ALGO_TYPE cryptAlgo )
 	if( cryptStatusError( status ) )
 		return( attrErrorExit( cryptCert, "cryptExportCert()", status,
 							   __LINE__ ) );
-	fprintf( outputStream, "Exported certification request is %d bytes "
-			 "long.\n", certificateLength );
-	debugDump( ( cryptAlgo == CRYPT_ALGO_DSA ) ? "req_crmf_d" : \
-			   ( cryptAlgo == CRYPT_ALGO_ECDSA ) ? "req_crmf_ec" : "req_crmf_r",
-			   certBuffer, certificateLength );
+	printf( "Exported certification request is %d bytes long.\n",
+			certificateLength );
+	debugDump( "req_crmf", certBuffer, certificateLength );
 
 	/* Destroy the certificate */
 	status = cryptDestroyCert( cryptCert );
@@ -2090,8 +1942,8 @@ static int crmfRequest( const CRYPT_ALGO_TYPE cryptAlgo )
 							  &cryptCert );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptCheckCert( cryptCert, CRYPT_UNUSED );
@@ -2102,22 +1954,7 @@ static int crmfRequest( const CRYPT_ALGO_TYPE cryptAlgo )
 
 	/* Clean up */
 	destroyContexts( CRYPT_UNUSED, pubKeyContext, privKeyContext );
-	fputs( "CRMF certification request creation succeeded.\n\n", 
-		   outputStream );
-	return( TRUE );
-	}
-
-int testCRMFRequest( void )
-	{
-	if( !crmfRequest( CRYPT_ALGO_RSA ) )
-		return( FALSE );
-	if( !crmfRequest( CRYPT_ALGO_DSA ) )
-		return( FALSE );
-	if( cryptQueryCapability( CRYPT_ALGO_ECDSA, NULL ) != CRYPT_ERROR_NOTAVAIL )
-		{
-		if( !crmfRequest( CRYPT_ALGO_ECDSA ) )
-			return( FALSE );
-		}
+	puts( "CRMF certification request creation succeeded.\n" );
 	return( TRUE );
 	}
 
@@ -2127,8 +1964,7 @@ int testComplexCRMFRequest( void )
 	CRYPT_CONTEXT pubKeyContext, privKeyContext;
 	int status;
 
-	fputs( "Testing complex CRMF certification request "
-		   "creation/export...\n", outputStream );
+	puts( "Testing complex CRMF certification request creation/export..." );
 
 	/* Create the RSA en/decryption contexts */
 	if( !loadRSAContexts( CRYPT_UNUSED, &pubKeyContext, &privKeyContext ) )
@@ -2139,8 +1975,8 @@ int testComplexCRMFRequest( void )
 							  CRYPT_CERTTYPE_REQUEST_CERT );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -2174,8 +2010,8 @@ int testComplexCRMFRequest( void )
 	if( cryptStatusError( status ) )
 		return( attrErrorExit( cryptCert, "cryptExportCert()", status,
 							   __LINE__ ) );
-	fprintf( outputStream, "Exported certification request is %d bytes "
-			 "long.\n", certificateLength );
+	printf( "Exported certification request is %d bytes long.\n",
+			certificateLength );
 	debugDump( "req_crmfc", certBuffer, certificateLength );
 
 	/* Destroy the certificate */
@@ -2192,8 +2028,8 @@ int testComplexCRMFRequest( void )
 							  &cryptCert );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptCheckCert( cryptCert, CRYPT_UNUSED );
@@ -2204,8 +2040,7 @@ int testComplexCRMFRequest( void )
 
 	/* Clean up */
 	destroyContexts( CRYPT_UNUSED, pubKeyContext, privKeyContext );
-	fputs( "Complex CRMF certification request creation succeeded.\n\n", 
-		   outputStream );
+	puts( "Complex CRMF certification request creation succeeded.\n" );
 	return( TRUE );
 	}
 
@@ -2221,15 +2056,15 @@ int testCRL( void )
 	CRYPT_CONTEXT cryptCAKey;
 	int status;
 
-	fputs( "Testing CRL creation/export...\n", outputStream );
+	puts( "Testing CRL creation/export..." );
 
 	/* Get the CA's private key */
 	status = getPrivateKey( &cryptCAKey, CA_PRIVKEY_FILE,
 							CA_PRIVKEY_LABEL, TEST_PRIVKEY_PASSWORD );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "CA private key read failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "CA private key read failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -2237,8 +2072,8 @@ int testCRL( void )
 	status = cryptCreateCert( &cryptCRL, CRYPT_UNUSED, CRYPT_CERTTYPE_CRL );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -2273,8 +2108,7 @@ int testCRL( void )
 	if( cryptStatusError( status ) )
 		return( attrErrorExit( cryptCRL, "cryptExportCert()", status,
 							   __LINE__ ) );
-	fprintf( outputStream, "Exported CRL is %d bytes long.\n", 
-			 certificateLength );
+	printf( "Exported CRL is %d bytes long.\n", certificateLength );
 	debugDump( "crl", certBuffer, certificateLength );
 
 	/* Destroy the CRL */
@@ -2291,8 +2125,8 @@ int testCRL( void )
 							  &cryptCRL );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptCheckCert( cryptCRL, cryptCAKey );
@@ -2303,7 +2137,7 @@ int testCRL( void )
 	cryptDestroyContext( cryptCAKey );
 
 	/* Clean up */
-	fputs( "CRL creation succeeded.\n\n", outputStream );
+	puts( "CRL creation succeeded.\n" );
 	return( TRUE );
 	}
 
@@ -2330,17 +2164,17 @@ int testComplexCRL( void )
 	CRYPT_CERTIFICATE cryptCRL, cryptRevokeCert;
 	CRYPT_CONTEXT cryptCAKey;
 	time_t revocationTime;
-	int revocationReason DUMMY_INIT, dummy, status;
+	int revocationReason = DUMMY_INIT, dummy, status;
 
-	fputs( "Testing complex CRL creation/export...\n", outputStream );
+	puts( "Testing complex CRL creation/export..." );
 
 	/* Get the CA's private key */
 	status = getPrivateKey( &cryptCAKey, CA_PRIVKEY_FILE,
 							CA_PRIVKEY_LABEL, TEST_PRIVKEY_PASSWORD );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "CA private key read failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "CA private key read failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -2348,8 +2182,8 @@ int testComplexCRL( void )
 	status = cryptCreateCert( &cryptCRL, CRYPT_UNUSED, CRYPT_CERTTYPE_CRL );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -2368,10 +2202,8 @@ int testComplexCRL( void )
 									CRYPT_CRLREASON_CACOMPROMISE );
 		}
 	if( cryptStatusOK( status ) )
-		{
 		status = importCertFromTemplate( &cryptRevokeCert,
 										 CRLCERT_FILE_TEMPLATE, 1 );
-		}
 	if( cryptStatusOK( status ) )
 		{
 		status = cryptSetAttribute( cryptCRL, CRYPT_CERTINFO_CERTIFICATE,
@@ -2406,10 +2238,8 @@ int testComplexCRL( void )
 			}
 		}
 	if( cryptStatusError( status ) )
-		{
-		return( attrErrorExit( cryptCRL, "cryptSetAttribute(), certificate "
-							   "#1", status, __LINE__ ) );
-		}
+		return( attrErrorExit( cryptCRL, "cryptSetAttribute(), certificate #1", 
+							   status, __LINE__ ) );
 	status = importCertFromTemplate( &cryptRevokeCert,
 									 CRLCERT_FILE_TEMPLATE, 2 );
 	if( cryptStatusOK( status ) )
@@ -2430,18 +2260,14 @@ int testComplexCRL( void )
 					sizeof( time_t ) );
 		}
 	if( cryptStatusError( status ) )
-		{
-		return( attrErrorExit( cryptCRL, "cryptSetAttribute(), certificate "
-							   "#2", status, __LINE__ ) );
-		}
+		return( attrErrorExit( cryptCRL, "cryptSetAttribute(), certificate #2", 
+							   status, __LINE__ ) );
 
 	/* Sign the CRL */
 	status = cryptSignCert( cryptCRL, cryptCAKey );
 	if( cryptStatusError( status ) )
-		{
 		return( attrErrorExit( cryptCRL, "cryptSignCert()", status,
 							   __LINE__ ) );
-		}
 
 	/* Print information on what we've got */
 	if( !printCertInfo( cryptCRL ) )
@@ -2451,21 +2277,16 @@ int testComplexCRL( void )
 	   use that to check the signature */
 	status = cryptCheckCert( cryptCRL, cryptCAKey );
 	if( cryptStatusError( status ) )
-		{
 		return( attrErrorExit( cryptCRL, "cryptCheckCert()", status,
 							   __LINE__ ) );
-		}
 
 	/* Export the CRL */
 	status = cryptExportCert( certBuffer, BUFFER_SIZE, &certificateLength,
 							  CRYPT_CERTFORMAT_CERTIFICATE, cryptCRL );
 	if( cryptStatusError( status ) )
-		{
 		return( attrErrorExit( cryptCRL, "cryptExportCert()", status,
 							   __LINE__ ) );
-		}
-	fprintf( outputStream, "Exported CRL is %d bytes long.\n", 
-			 certificateLength );
+	printf( "Exported CRL is %d bytes long.\n", certificateLength );
 	debugDump( "crlc", certBuffer, certificateLength );
 
 	/* Destroy the CRL */
@@ -2482,16 +2303,14 @@ int testComplexCRL( void )
 							  &cryptCRL );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptCheckCert( cryptCRL, cryptCAKey );
 	if( cryptStatusError( status ) )
-		{
 		return( attrErrorExit( cryptCRL, "cryptCheckCert()", status,
 							   __LINE__ ) );
-		}
 
 	/* Check the newly-revoked CA key agains the CRL */
 	status = cryptCheckCert( cryptCAKey, cryptCRL );
@@ -2507,10 +2326,8 @@ int testComplexCRL( void )
 		status = cryptGetAttribute( cryptCRL, CRYPT_CERTINFO_CRLREASON,
 									&revocationReason );
 	if( cryptStatusError( status ) )
-		{
 		return( attrErrorExit( cryptCRL, "cryptGetAttribute()", status,
 							   __LINE__ ) );
-		}
 	if( revocationReason != CRYPT_CRLREASON_CACOMPROMISE )
 		{
 		printf( "Revocation reason was %d, should have been %d, line %d.\n",
@@ -2521,7 +2338,7 @@ int testComplexCRL( void )
 	/* Clean up */
 	cryptDestroyCert( cryptCRL );
 	cryptDestroyContext( cryptCAKey );
-	fputs( "CRL creation succeeded.\n\n", outputStream );
+	puts( "CRL creation succeeded.\n" );
 	return( TRUE );
 	}
 
@@ -2544,7 +2361,7 @@ int testRevRequest( void )
 	BYTE buffer[ BUFFER_SIZE ];
 	int count, status;
 
-	fputs( "Testing revocation request creation/export...\n", outputStream );
+	puts( "Testing revocation request creation/export..." );
 
 	filenameFromTemplate( buffer, CERT_FILE_TEMPLATE, 1 );
 	if( ( filePtr = fopen( buffer, "rb" ) ) == NULL )
@@ -2557,8 +2374,8 @@ int testRevRequest( void )
 	status = cryptImportCert( buffer, count, CRYPT_UNUSED, &cryptCert );
 	if( cryptStatusError( status ) )
 		{
-		fputs( "Certificate import failed, skipping test of revocation "
-			   "request...\n", outputStream );
+		puts( "Certificate import failed, skipping test of revocation "
+			  "request..." );
 		return( TRUE );
 		}
 
@@ -2568,8 +2385,8 @@ int testRevRequest( void )
 							  CRYPT_CERTTYPE_REQUEST_REVOCATION );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	status = cryptSetAttribute( cryptRequest, CRYPT_CERTINFO_CERTIFICATE,
@@ -2594,8 +2411,8 @@ int testRevRequest( void )
 	if( cryptStatusError( status ) )
 		return( attrErrorExit( cryptRequest, "cryptExportCert()", status,
 							   __LINE__ ) );
-	fprintf( outputStream, "Exported revocation request is %d bytes "
-			 "long.\n", certificateLength );
+	printf( "Exported revocation request is %d bytes long.\n",
+			certificateLength );
 	debugDump( "req_rev", certBuffer, certificateLength );
 
 	/* Destroy the certificate */
@@ -2612,15 +2429,15 @@ int testRevRequest( void )
 							  &cryptRequest );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 #endif /* 0 */
 	cryptDestroyCert( cryptRequest );
 
 	/* Clean up */
-	fputs( "Revocation request creation succeeded.\n\n", outputStream );
+	puts( "Revocation request creation succeeded.\n" );
 	return( TRUE );
 	}
 
@@ -2647,8 +2464,8 @@ static int createChain( CRYPT_CERTIFICATE *cryptCertChain,
 							  CRYPT_CERTTYPE_CERTCHAIN );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -2666,8 +2483,8 @@ static int createChain( CRYPT_CERTIFICATE *cryptCertChain,
 	destroyContexts( CRYPT_UNUSED, pubKeyContext, privKeyContext );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "Certificate creation failed with "
-				 "status %d, line %d.\n", status, __LINE__ );
+		printf( "Certificate creation failed with status %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -2691,15 +2508,15 @@ int testCertChain( void )
 	CRYPT_CONTEXT cryptCAKey;
 	int value, status;
 
-	fputs( "Testing certificate chain creation/export...\n", outputStream );
+	puts( "Testing certificate chain creation/export..." );
 
 	/* Get the CA's private key */
 	status = getPrivateKey( &cryptCAKey, CA_PRIVKEY_FILE,
 							CA_PRIVKEY_LABEL, TEST_PRIVKEY_PASSWORD );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "CA private key read failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "CA private key read failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -2749,28 +2566,9 @@ int testCertChain( void )
 	if( cryptStatusError( status ) )
 		return( attrErrorExit( cryptCertChain, "cryptExportCert()", status,
 							   __LINE__ ) );
-	fprintf( outputStream, "Exported certificate chain is %d bytes long.\n", 
-			 certificateLength );
+	printf( "Exported certificate chain is %d bytes long.\n", 
+			certificateLength );
 	debugDump( "certchn", certBuffer, certificateLength );
-
-	/* Export the chain in the various text formats to make sure that each
-	   one works correctly */
-	if( !checkExportCert( cryptCertChain, TRUE, 
-						  CRYPT_CERTFORMAT_TEXT_CERTIFICATE,
-						  "CRYPT_CERTFORMAT_TEXT_CERTIFICATE" ) )
-		return( FALSE );
-	if( !checkExportCert( cryptCertChain, TRUE, 
-						  CRYPT_CERTFORMAT_TEXT_CERTCHAIN,
-						  "CRYPT_CERTFORMAT_TEXT_CERTCHAIN" ) )
-		return( FALSE );
-	if( !checkExportCert( cryptCertChain, TRUE, 
-						  CRYPT_CERTFORMAT_XML_CERTIFICATE,
-						  "CRYPT_CERTFORMAT_XML_CERTIFICATE" ) )
-		return( FALSE );
-	if( !checkExportCert( cryptCertChain, TRUE, 
-						  CRYPT_CERTFORMAT_XML_CERTCHAIN,
-						  "CRYPT_CERTFORMAT_XML_CERTCHAIN" ) )
-		return( FALSE );
 
 	/* Destroy the certificate chain */
 	status = cryptDestroyCert( cryptCertChain );
@@ -2786,11 +2584,11 @@ int testCertChain( void )
 							  &cryptCertChain );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
-	fprintf( outputStream, "Checking signatures... " );
+	printf( "Checking signatures... " );
 	status = setRootTrust( cryptCertChain, &value, 1 );
 	if( cryptStatusError( status ) )
 		return( attrErrorExit( cryptCertChain, "Setting certificate chain "
@@ -2800,7 +2598,7 @@ int testCertChain( void )
 	if( cryptStatusError( status ) )
 		return( attrErrorExit( cryptCertChain, "cryptCheckCert()", status,
 							   __LINE__ ) );
-	fputs( "signatures verified.\n", outputStream );
+	puts( "signatures verified." );
 
 	/* Display info on each certificate in the chain */
 	if( !printCertChainInfo( cryptCertChain ) )
@@ -2813,15 +2611,14 @@ int testCertChain( void )
 	status = createChain( &cryptCertChain, cryptCAKey, TRUE, FALSE );
 	if( status != -1 )
 		{
-		fprintf( outputStream, "Attempt to create certificate with null "
-				 "DN %s, line %d.\n",
-				 ( status == FALSE ) ? \
+		printf( "Attempt to create certificate with null DN %s, line %d.\n",
+				( status == FALSE ) ? \
 					"failed" : "succeeded when it should have failed",
-				 __LINE__ );
+				__LINE__ );
 		return( FALSE );
 		}
-	( void ) cryptGetAttribute( CRYPT_UNUSED, 
-								CRYPT_OPTION_CERT_COMPLIANCELEVEL, &value );
+	cryptGetAttribute( CRYPT_UNUSED, CRYPT_OPTION_CERT_COMPLIANCELEVEL,
+					   &value );
 	status = cryptSetAttribute( CRYPT_UNUSED, 
 								CRYPT_OPTION_CERT_COMPLIANCELEVEL,
 								CRYPT_COMPLIANCELEVEL_PKIX_FULL );
@@ -2837,10 +2634,10 @@ int testCertChain( void )
 					"%d, line %d.\n", status, __LINE__ );
 			return( FALSE );
 			}
-		fputs( "(Couldn't set compliance level to "
-			   "CRYPT_COMPLIANCELEVEL_PKIX_FULL, probably\n because cryptlib "
-			   "has been configured not to use this level, skipping final\n"
-			   " tests...).\n", outputStream );
+		puts( "(Couldn't set compliance level to "
+			  "CRYPT_COMPLIANCELEVEL_PKIX_FULL, probably\n because cryptlib "
+			  "has been configured not to use this level, skipping final\n"
+			  " tests...)" );
 		}
 	else
 		{
@@ -2864,8 +2661,8 @@ int testCertChain( void )
 								  &cryptCertChain );
 		if( cryptStatusError( status ) )
 			{
-			fprintf( outputStream, "cryptImportCert() failed with error "
-					 "code %d, line %d.\n", status, __LINE__ );
+			printf( "cryptImportCert() failed with error code %d, line %d.\n",
+					status, __LINE__ );
 			return( FALSE );
 			}
 		}
@@ -2873,7 +2670,7 @@ int testCertChain( void )
 	/* Clean up */
 	cryptDestroyCert( cryptCertChain );
 	cryptDestroyContext( cryptCAKey );
-	fputs( "Certificate chain creation succeeded.\n\n", outputStream );
+	puts( "Certificate chain creation succeeded.\n" );
 	return( TRUE );
 	}
 
@@ -2894,15 +2691,15 @@ int testCMSAttributes( void )
 	CRYPT_CERTIFICATE cryptAttributes;
 	int status;
 
-	fputs( "Testing CMS attribute creation...\n", outputStream );
+	puts( "Testing CMS attribute creation..." );
 
 	/* Create the CMS attribute container */
 	status = cryptCreateCert( &cryptAttributes, CRYPT_UNUSED,
 							  CRYPT_CERTTYPE_CMS_ATTRIBUTES );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -2926,25 +2723,22 @@ int testCMSAttributes( void )
 		}
 
 	/* Clean up */
-	fputs( "CMS attribute creation succeeded.\n\n", outputStream );
+	puts( "CMS attribute creation succeeded.\n" );
 	return( TRUE );
 	}
 
 /* Test RTCS request/response code.  This test routine itself doesn't
    actually test much since this object type is just a basic data container
    used for RTCS sessions, however the shared initRTCS() routine is used by
-   the RTCS session code to test the rest of the functionality.
-   
-   initRTCS() is also called by the RTCS session code, which is why it's
-   declared non-static */
+   the RTCS session code to test the rest of the functionality */
 
 int initRTCS( CRYPT_CERTIFICATE *cryptRTCSRequest, 
-			  const CRYPT_CERTIFICATE cryptCert, 
+			  const CRYPT_CERTIFICATE cryptCert, const int number, 
 			  const BOOLEAN multipleCerts )
 	{
 	CRYPT_CERTIFICATE cryptErrorObject;
 	C_CHR rtcsURL[ 512 ];
-	int count DUMMY_INIT, status;
+	int count = DUMMY_INIT, status;
 
 	/* Select the RTCS responder location from the EE certificate and read 
 	   the URL/FQDN value (this isn't used but is purely for display to the 
@@ -2979,10 +2773,10 @@ int initRTCS( CRYPT_CERTIFICATE *cryptRTCSRequest,
 		{
 #ifdef UNICODE_STRINGS
 		rtcsURL[ count / sizeof( wchar_t ) ] = TEXT( '\0' );
-		fprintf( outputStream, "RTCS responder URL = %sS.\n", rtcsURL );
+		printf( "RTCS responder URL = %sS.\n", rtcsURL );
 #else
 		rtcsURL[ count ] = '\0';
-		fprintf( outputStream, "RTCS responder URL = %s.\n", rtcsURL );
+		printf( "RTCS responder URL = %s.\n", rtcsURL );
 #endif /* UNICODE_STRINGS */
 		}
 
@@ -2991,8 +2785,8 @@ int initRTCS( CRYPT_CERTIFICATE *cryptRTCSRequest,
 							  CRYPT_CERTTYPE_RTCS_REQUEST );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	cryptErrorObject = *cryptRTCSRequest;
@@ -3038,21 +2832,21 @@ int testRTCSReqResp( void )
 	CRYPT_CERTIFICATE cryptRTCSRequest, cryptCert;
 	int status;
 
-	fputs( "Testing RTCS request creation...\n", outputStream );
+	puts( "Testing RTCS request creation..." );
 
 	/* Import the EE certificate for the RTCS request */
 	status = importCertFromTemplate( &cryptCert, RTCS_FILE_TEMPLATE, 
 									 1 );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptImportCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptImportCert() failed with error code %d, line %d.\n", 
+				status, __LINE__ );
 		return( FALSE );
 		}
 
 	/* Create the RTCS request using the certs and print information on what
 	   we've got */
-	if( !initRTCS( &cryptRTCSRequest, cryptCert, FALSE ) )
+	if( !initRTCS( &cryptRTCSRequest, cryptCert, 1, FALSE ) )
 		return( FALSE );
 	cryptDestroyCert( cryptCert );
 	if( !printCertInfo( cryptRTCSRequest ) )
@@ -3068,7 +2862,7 @@ int testRTCSReqResp( void )
 		return( FALSE );
 		}
 
-	fputs( "RTCS request creation succeeded.\n\n", outputStream );
+	puts( "RTCS request creation succeeded.\n" );
 	return( TRUE );
 	}
 
@@ -3077,25 +2871,18 @@ int testRTCSReqResp( void )
    used for OCSP sessions, however the shared initOCSP() routine is used by
    the OCSP session code to test the rest of the functionality */
 
-int initOCSP( CRYPT_CERTIFICATE *cryptOCSPRequest, 
-			  CRYPT_CERTIFICATE *cert1, CRYPT_CERTIFICATE *cert2,
-			  const int number, const BOOLEAN ocspv2, 
-			  const BOOLEAN revokedCert, const BOOLEAN multipleCerts,
+int initOCSP( CRYPT_CERTIFICATE *cryptOCSPRequest, const int number,
+			  const BOOLEAN ocspv2, const BOOLEAN revokedCert,
+			  const BOOLEAN multipleCerts,
 			  const CRYPT_SIGNATURELEVEL_TYPE sigLevel,
 			  const CRYPT_CONTEXT privKeyContext )
 	{
-	CRYPT_CERTIFICATE cryptOCSPEE = CRYPT_UNUSED, cryptOCSPEE2 = CRYPT_UNUSED;
-	CRYPT_CERTIFICATE cryptOCSPCA, cryptErrorObject;
+	CRYPT_CERTIFICATE cryptOCSPCA, cryptOCSPEE;
+	CRYPT_CERTIFICATE cryptErrorObject;
 	C_CHR ocspURL[ 512 ];
-	int count DUMMY_INIT, status;
+	int count = DUMMY_INIT, status;
 
-	assert( ( cert1 == NULL && cert2 == NULL ) || \
-			( cert1 != NULL && cert2 != NULL ) );
 	assert( !ocspv2 );
-
-	/* Clear return values */
-	if( cert1 != NULL )
-		*cert1 = *cert2 = CRYPT_UNUSED;
 
 	/* Import the OCSP CA (if required) and EE certs */
 	if( !ocspv2 )
@@ -3104,8 +2891,8 @@ int initOCSP( CRYPT_CERTIFICATE *cryptOCSPRequest,
 										 OCSP_CA_FILE_TEMPLATE, number );
 		if( cryptStatusError( status ) )
 			{
-			fprintf( outputStream, "CA cryptImportCert() failed with "
-					 "error code %d, line %d.\n", status, __LINE__ );
+			printf( "CA cryptImportCert() failed with error code %d, line "
+					"%d.\n", status, __LINE__ );
 			return( FALSE );
 			}
 		}
@@ -3114,8 +2901,8 @@ int initOCSP( CRYPT_CERTIFICATE *cryptOCSPRequest,
 						number );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "EE cryptImportCert() failed with "
-				 "error code %d, line %d.\n", status, __LINE__ );
+		printf( "EE cryptImportCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 
@@ -3137,8 +2924,8 @@ int initOCSP( CRYPT_CERTIFICATE *cryptOCSPRequest,
 		{
 		if( status == CRYPT_ERROR_NOTFOUND )
 			{
-			fputs( "OCSP responder URL not present in certificate, server "
-				   "name must be provided\n  externally.\n", outputStream );
+			puts( "OCSP responder URL not present in certificate, server "
+				  "name must be provided\n  externally." );
 			}
 		else
 			{
@@ -3152,10 +2939,10 @@ int initOCSP( CRYPT_CERTIFICATE *cryptOCSPRequest,
 		{
 #ifdef UNICODE_STRINGS
 		ocspURL[ count / sizeof( wchar_t ) ] = TEXT( '\0' );
-		fprintf( outputStream, "OCSP responder URL = %S.\n", ocspURL );
+		printf( "OCSP responder URL = %S.\n", ocspURL );
 #else
 		ocspURL[ count ] = '\0';
-		fprintf( outputStream, "OCSP responder URL = %s.\n", ocspURL );
+		printf( "OCSP responder URL = %s.\n", ocspURL );
 #endif /* UNICODE_STRINGS */
 		}
 
@@ -3164,8 +2951,8 @@ int initOCSP( CRYPT_CERTIFICATE *cryptOCSPRequest,
 							  CRYPT_CERTTYPE_OCSP_REQUEST );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	cryptErrorObject = *cryptOCSPRequest;
@@ -3197,13 +2984,14 @@ int initOCSP( CRYPT_CERTIFICATE *cryptOCSPRequest,
 	   certificate for which we expect an 'unknown' response */
 	if( multipleCerts )
 		{
-		status = importCertFromTemplate( &cryptOCSPEE2, CERT_FILE_TEMPLATE, 1 );
+		cryptDestroyCert( cryptOCSPEE );
+		status = importCertFromTemplate( &cryptOCSPEE, CERT_FILE_TEMPLATE, 1 );
 		if( cryptStatusOK( status ) )
 			{
 			status = cryptSetAttribute( *cryptOCSPRequest,
-										CRYPT_CERTINFO_CERTIFICATE, cryptOCSPEE2 );
+										CRYPT_CERTINFO_CERTIFICATE, cryptOCSPEE );
 			if( status == CRYPT_ERROR_PARAM3 )
-				cryptErrorObject = cryptOCSPEE2;
+				cryptErrorObject = cryptOCSPEE;
 			}
 		if( cryptStatusError( status ) )
 			return( attrErrorExit( *cryptOCSPRequest, "cryptSetAttribute()",
@@ -3229,18 +3017,7 @@ int initOCSP( CRYPT_CERTIFICATE *cryptOCSPRequest,
 	/* Clean up */
 	if( !ocspv2 )
 		cryptDestroyCert( cryptOCSPCA );
-	if( cert1 == NULL )
-		{
-		cryptDestroyCert( cryptOCSPEE );
-		if( cryptOCSPEE != CRYPT_UNUSED )
-			cryptDestroyCert( cryptOCSPEE2 );
-		}
-	else
-		{
-		/* Return the certificates to the caller */
-		*cert1 = cryptOCSPEE;
-		*cert2 = cryptOCSPEE2;
-		}
+	cryptDestroyCert( cryptOCSPEE );
 
 	return( TRUE );
 	}
@@ -3251,14 +3028,14 @@ int testOCSPReqResp( void )
 	CRYPT_CONTEXT cryptPrivateKey;
 	int status;
 
-	fputs( "Testing OCSP request creation...\n", outputStream );
+	puts( "Testing OCSP request creation..." );
 
 	/* Create the OCSP request using the certs and print information on what
 	   we've got */
-	if( !initOCSP( &cryptOCSPRequest, NULL, NULL, 1, FALSE, FALSE, FALSE,
+	if( !initOCSP( &cryptOCSPRequest, 1, FALSE, FALSE, FALSE,
 				   CRYPT_SIGNATURELEVEL_NONE, CRYPT_UNUSED ) )
 		return( FALSE );
-	fputs( "OCSPv1 succeeded.\n", outputStream );
+	puts( "OCSPv1 succeeded." );
 	if( !printCertInfo( cryptOCSPRequest ) )
 		return( FALSE );
 
@@ -3276,10 +3053,10 @@ int testOCSPReqResp( void )
 	/* Try again with a v2 request.  This only differs from the v1 request in
 	   the way the ID generation is handled so we don't bother printing any
 	   information on the request */
-	if( !initOCSP( &cryptOCSPRequest, NULL, NULL, 1, TRUE, FALSE, FALSE,
+	if( !initOCSP( &cryptOCSPRequest, 1, TRUE, FALSE, FALSE,
 				   CRYPT_SIGNATURELEVEL_NONE, CRYPT_UNUSED ) )
 		return( FALSE );
-	fputs( "OCSPv2 succeeded.\n", outputStream );
+	puts( "OCSPv2 succeeded." );
 	cryptDestroyCert( cryptOCSPRequest );
 #endif
 
@@ -3289,30 +3066,28 @@ int testOCSPReqResp( void )
 							USER_PRIVKEY_LABEL, TEST_PRIVKEY_PASSWORD );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "User private key read failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "User private key read failed with error code %d, line "
+				"%d.\n", status, __LINE__ );
 		return( FALSE );
 		}
-	if( !initOCSP( &cryptOCSPRequest, NULL, NULL, 1, FALSE, FALSE, FALSE,
+	if( !initOCSP( &cryptOCSPRequest, 1, FALSE, FALSE, FALSE,
 				   CRYPT_SIGNATURELEVEL_NONE, cryptPrivateKey ) )
 		return( FALSE );
 	cryptDestroyCert( cryptOCSPRequest );
-	fputs( "Signed OCSP request succeeded.\n", outputStream );
-	if( !initOCSP( &cryptOCSPRequest, NULL, NULL, 1, FALSE, FALSE, FALSE,
+	puts( "Signed OCSP request succeeded." );
+	if( !initOCSP( &cryptOCSPRequest, 1, FALSE, FALSE, FALSE,
 				   CRYPT_SIGNATURELEVEL_SIGNERCERT, cryptPrivateKey ) )
 		return( FALSE );
 	cryptDestroyCert( cryptOCSPRequest );
-	fputs( "Signed OCSP request with single signing certificate "
-		   "succeeded.\n", outputStream );
-	if( !initOCSP( &cryptOCSPRequest, NULL, NULL, 1, FALSE, FALSE, FALSE,
+	puts( "Signed OCSP request with single signing certificate succeeded." );
+	if( !initOCSP( &cryptOCSPRequest, 1, FALSE, FALSE, FALSE,
 				   CRYPT_SIGNATURELEVEL_ALL, cryptPrivateKey ) )
 		return( FALSE );
 	cryptDestroyCert( cryptOCSPRequest );
-	fputs( "Signed OCSP request with signing certificate chain "
-		   "succeeded.\n", outputStream );
+	puts( "Signed OCSP request with signing certificate chain succeeded." );
 	cryptDestroyContext( cryptPrivateKey );
 
-	fputs( "OCSP request creation succeeded.\n\n", outputStream );
+	puts( "OCSP request creation succeeded.\n" );
 	return( TRUE );
 	}
 
@@ -3356,18 +3131,6 @@ static const CERT_DATA FAR_BSS pkiUserCAData[] = {
 
 	{ CRYPT_ATTRIBUTE_NONE, IS_VOID }
 	};
-static const CERT_DATA FAR_BSS pkiUserRAData[] = {
-	/* Identification information */
-	{ CRYPT_CERTINFO_COUNTRYNAME, IS_STRING, 0, TEXT( "NZ" ) },
-	{ CRYPT_CERTINFO_ORGANIZATIONNAME, IS_STRING, 0, TEXT( "Dave's Wetaburgers" ) },
-	{ CRYPT_CERTINFO_ORGANIZATIONALUNITNAME, IS_STRING, 0, TEXT( "Procurement" ) },
-	{ CRYPT_CERTINFO_COMMONNAME, IS_STRING, 0, TEXT( "Test RA PKI user" ) },
-
-	/* RA flag */
-	{ CRYPT_CERTINFO_PKIUSER_RA, IS_NUMERIC, TRUE },
-
-	{ CRYPT_ATTRIBUTE_NONE, IS_VOID }
-	};
 
 #define PKIUSER_NAME_INDEX	3	/* Index of name in CERT_DATA info */
 
@@ -3382,8 +3145,8 @@ static int testPKIUserCreate( const CERT_DATA *pkiUserInfo )
 							  CRYPT_CERTTYPE_PKIUSER );
 	if( cryptStatusError( status ) )
 		{
-		fprintf( outputStream, "cryptCreateCert() failed with error "
-				 "code %d, line %d.\n", status, __LINE__ );
+		printf( "cryptCreateCert() failed with error code %d, line %d.\n",
+				status, __LINE__ );
 		return( FALSE );
 		}
 	if( !addCertFields( cryptPKIUser, pkiUserInfo, __LINE__ ) )
@@ -3400,15 +3163,13 @@ static int testPKIUserCreate( const CERT_DATA *pkiUserInfo )
 
 int testPKIUser( void )
 	{
-	fputs( "Testing PKI user information creation...\n", outputStream );
+	puts( "Testing PKI user information creation..." );
 	if( !testPKIUserCreate( pkiUserData ) )
 		return( FALSE );
 	if( !testPKIUserCreate( pkiUserExtData ) )
 		return( FALSE );
 	if( !testPKIUserCreate( pkiUserCAData ) )
 		return( FALSE );
-	if( !testPKIUserCreate( pkiUserRAData ) )
-		return( FALSE );
-	fputs( "PKI user information creation succeeded.\n\n", outputStream );
+	puts( "PKI user information creation succeeded.\n" );
 	return( TRUE );
 	}

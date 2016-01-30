@@ -7,12 +7,12 @@
 
 #if defined( INC_ALL )
   #include "crypt.h"
-  #include "dbms.h"
   #include "keyset.h"
+  #include "dbms.h"
 #else
   #include "crypt.h"
-  #include "keyset/dbms.h"
   #include "keyset/keyset.h"
+  #include "keyset/dbms.h"
 #endif /* Compiler-specific includes */
 
 /* A structure to store ID information extracted from a certificate before 
@@ -231,6 +231,7 @@ static int extractCertIdData( IN_HANDLE const CRYPT_CERTIFICATE iCryptHandle,
 								const CRYPT_CERTTYPE_TYPE certType,
 							  INOUT CERT_ID_DATA *certIdData )
 	{
+	MESSAGE_DATA msgData;
 	int status;
 
 	assert( isWritePtr( certIdData, sizeof( CERT_ID_DATA ) ) );
@@ -264,8 +265,28 @@ static int extractCertIdData( IN_HANDLE const CRYPT_CERTIFICATE iCryptHandle,
 		}
 	if( certType == CRYPT_CERTTYPE_PKIUSER )
 		{
-		status = getPkiUserKeyID( certIdData->keyID, ENCODED_DBXKEYID_SIZE, 
-								  &certIdData->keyIDlength, iCryptHandle );
+		BYTE binaryKeyID[ 64 + 8 ];
+		char encKeyID[ CRYPT_MAX_TEXTSIZE + 8 ];
+		int binaryKeyIDlength;
+
+		/* Get the PKI user ID.  We can't read this directly since it's
+		   returned in text form for use by end users so we have to read the
+		   encoded form, decode it, and then turn the decoded binary value
+		   into a key ID.  We identify the result as a keyID,
+		   (== subjectKeyIdentifier, which it isn't really) but we need to
+		   use this to ensure that it's hashed/expanded out to the correct
+		   size */
+		setMessageData( &msgData, encKeyID, CRYPT_MAX_TEXTSIZE );
+		status = krnlSendMessage( iCryptHandle, IMESSAGE_GETATTRIBUTE_S,
+								  &msgData, CRYPT_CERTINFO_PKIUSER_ID );
+		if( cryptStatusError( status ) )
+			return( status );
+		status =  decodePKIUserValue( binaryKeyID, 64, &binaryKeyIDlength, 
+									  encKeyID, msgData.length );
+		if( cryptStatusOK( status ) )
+			status = makeKeyID( certIdData->keyID, ENCODED_DBXKEYID_SIZE, 
+								&certIdData->keyIDlength, CRYPT_IKEYID_KEYID, 
+								binaryKeyID, binaryKeyIDlength );
 		if( cryptStatusOK( status ) )
 			status = getKeyID( certIdData->nameID, ENCODED_DBXKEYID_SIZE, 
 							   &certIdData->nameIDlength, iCryptHandle, 
@@ -345,7 +366,7 @@ int addCert( INOUT DBMS_INFO *dbmsInfo,
 	char encodedCertData[ MAX_ENCODED_CERT_SIZE + 8 ];
 	const char *sqlString;
 	time_t boundDate;
-	int certDataLength DUMMY_INIT, boundDataIndex, status;
+	int certDataLength = DUMMY_INIT, boundDataIndex, status;
 
 	assert( isWritePtr( dbmsInfo, sizeof( DBMS_INFO ) ) );
 
@@ -358,12 +379,7 @@ int addCert( INOUT DBMS_INFO *dbmsInfo,
 			  updateType < DBMS_UPDATE_LAST );
 	REQUIRES( errorInfo != NULL );
 
-	/* Extract name-related information from the certificate.  We explicitly
-	   initialise certIdData before calling extractCertNameData() because,
-	   although it's initialised by extractCertNameData(), this can return
-	   an error code implying that it wasn't initialised, which violates the
-	   contract for the function */
-	memset( &certIdData, 0, sizeof( CERT_ID_DATA ) );
+	/* Extract name-related information from the certificate */
 	status = extractCertNameData( iCryptHandle, certType, &certIdData );
 	if( ( cryptStatusOK( status ) || status == CRYPT_ERROR_NOTFOUND ) && \
 		( certType == CRYPT_CERTTYPE_CERTIFICATE ) )
@@ -523,7 +539,7 @@ int addCRL( INOUT DBMS_INFO *dbmsInfo,
 	char encodedCertData[ MAX_ENCODED_CERT_SIZE + 8 ];
 	const char *sqlString;
 	time_t expiryDate = 0;
-	int certDataLength DUMMY_INIT, boundDataIndex, status;
+	int certDataLength = DUMMY_INIT, boundDataIndex, status;
 
 	assert( isWritePtr( dbmsInfo, sizeof( DBMS_INFO ) ) );
 
@@ -718,16 +734,12 @@ static int setItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 		{
 		/* Add the certificate or CRL */
 		if( type == CRYPT_CERTTYPE_CRL )
-			{
 			status = addCRL( dbmsInfo, iCryptHandle, CRYPT_UNUSED,
 							 DBMS_UPDATE_NORMAL, KEYSET_ERRINFO );
-			}
 		else
-			{
 			status = addCert( dbmsInfo, iCryptHandle,
 							  CRYPT_CERTTYPE_CERTIFICATE, CERTADD_NORMAL,
 							  DBMS_UPDATE_NORMAL, KEYSET_ERRINFO );
-			}
 
 		/* An item being added may already be present but we can't fail
 		   immediately because what's being added may be a chain containing

@@ -224,9 +224,6 @@ typedef struct {
 	BUFFER( 128, authEncParamLength ) \
 	BYTE authEncParamData[ 128 + 8 ];
 	int authEncParamLength;			/* AuthEnc parameter data */
-	BUFFER_FIXED( kdfDataLength ) \
-	void *kdfData;
-	int kdfDataLength;				/* Opt.KDF algorithm params */
 	BUFFER_FIXED( encParamDataLength ) \
 	void *encParamData;
 	int encParamDataLength;			/* Encryption algorithm params */
@@ -281,13 +278,12 @@ typedef struct CL {
    associated with detached signatures) */
 
 typedef enum {
-	ENVELOPE_STATE_NONE,			/* No envelope state */
-	ENVELOPE_STATE_PREDATA,			/* Emitting header information */
-	ENVELOPE_STATE_DATA,			/* During (de)enveloping of data */
-	ENVELOPE_STATE_POSTDATA,		/* After (de)enveloping of data */
-	ENVELOPE_STATE_EXTRADATA,		/* Additional out-of-band data */
-	ENVELOPE_STATE_FINISHED,		/* Finished processing */
-	ENVELOPE_STATE_LAST				/* Last valid enveloping state */
+	STATE_PREDATA,					/* Emitting header information */
+	STATE_DATA,						/* During (de)enveloping of data */
+	STATE_POSTDATA,					/* After (de)enveloping of data */
+	STATE_EXTRADATA,				/* Additional out-of-band data */
+	STATE_FINISHED,					/* Finished processing */
+	STATE_LAST						/* Last valid enveloping state */
 	} ENVELOPE_STATE;
 
 /* The current state of the processing of CMS headers that contain non-data
@@ -354,10 +350,9 @@ typedef enum {
 	DEENVSTATE_ENCRCONTENT,			/* Processing EncrContentInfo */
 
 	DEENVSTATE_SET_HASH,			/* Processing start of SET OF DigestAlgoID */
-	DEENVSTATE_HASH,				/* Processing DigestAlgoID (for hash) records */
-	DEENVSTATE_MAC,					/* Processing DigestAlgoID (for MAC) records */
-	
+	DEENVSTATE_HASH,				/* Processing DigestAlgoID records */
 	DEENVSTATE_CONTENT,				/* Processing ContentInfo */
+
 	DEENVSTATE_DATA,				/* Processing data payload */
 
 	/* Trailer state information */
@@ -393,7 +388,6 @@ typedef enum {
 	PGP_DEENVSTATE_NONE,			/* No message processing/before message */
 
 	/* Header state information */
-	PGP_DEENVSTATE_ENCR_HDR,		/* PKE/SKE packet */
 	PGP_DEENVSTATE_ENCR,			/* Encrypted data packet */
 	PGP_DEENVSTATE_ENCR_MDC,		/* Encrypted data with MDC */
 
@@ -510,70 +504,13 @@ typedef enum {
 
 #define ENVCOPY_FLAG_NONE		0x00	/* No special action */
 #define ENVCOPY_FLAG_OOBDATA	0x01	/* Data is OOB rather than payload data */
-#define ENVCOPY_FLAG_MAX		0x01	/* Maximum possible flag value */
 
-/* The size of the buffers used to handle read-ahead into out-of-band data 
-   at  the start of the payload, and to buffer leftover bytes when the data 
-   that we're given is split exactly over a header (OCTET STRING + length
-   for CMS, partial length for PGP) that we can't leave with the payload 
-   data but have to store until we get fed the rest of the header.  See
-   the longer comments where the variables are declared for details */
+/* The size of the buffer used to handle read-ahead into out-of-band data at 
+   the start of the payload */
 
 #define OOB_BUFFER_SIZE			8
-#define PARTIAL_BUFFER_SIZE		16
 
 /* The structure that stores the information on an envelope */
-
-struct EI;
-
-typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-		int ( *ENV_ADDINFOFUNCTION )( INOUT struct EI *envelopeInfoPtr,
-									  IN_ATTRIBUTE \
-										const CRYPT_ATTRIBUTE_TYPE envInfo,
-									  IN_INT_Z const int value );
-typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
-		int ( *ENV_ADDINFOSTRINGFUNCTION )( INOUT struct EI *envelopeInfoPtr,
-											IN_RANGE( CRYPT_ENVINFO_PASSWORD, \
-													  CRYPT_ENVINFO_PASSWORD ) \
-												const CRYPT_ATTRIBUTE_TYPE envInfo,
-											IN_BUFFER( valueLength ) \
-												const void *value, 
-											IN_RANGE( 1, CRYPT_MAX_TEXTSIZE ) \
-												const int valueLength );
-typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-		int ( *ENV_CHECKMISSINGINFOFUNCTION )( INOUT struct EI *envelopeInfoPtr,
-											   const BOOLEAN isFlush );
-typedef CHECK_RETVAL \
-		BOOLEAN ( *ENV_CHECKALGOFUNCTION )( IN_ALGO \
-												const CRYPT_ALGO_TYPE cryptAlgo, 
-											IN_MODE_OPT \
-												const CRYPT_MODE_TYPE cryptMode );
-typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-		int ( *ENV_PROCESSPREAMBLEFUNCTION )( INOUT struct EI *envelopeInfoPtr );
-typedef CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 1 ) ) \
-		int ( *ENV_PROCESSPOSTAMBLEFUNCTION )( INOUT struct EI *envelopeInfoPtr,
-											   const BOOLEAN isFlush );
-typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-		int ( *ENV_COPYTOENVELOPEFUNCTION )( INOUT struct EI *envelopeInfoPtr, 
-											 IN_BUFFER_OPT( length ) \
-												const BYTE *buffer, 
-											 IN_DATALENGTH_Z const int length );
-typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
-		int ( *ENV_COPYFROMENVELOPEFUNCTION )( INOUT struct EI *envelopeInfoPtr, 
-											   OUT_BUFFER( maxLength, *length ) \
-													BYTE *buffer, 
-											   IN_DATALENGTH const int maxLength, 
-											   OUT_DATALENGTH_Z int *length, 
-											   IN_FLAGS_Z( ENVCOPY ) \
-													const int flags );
-typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-		int ( *ENV_PROCESSEXTRADATAFUNCTION )( INOUT struct EI *envelopeInfoPtr, 
-											   IN_BUFFER( length ) \
-													const void *buffer, 
-											   IN_DATALENGTH_Z const int length );
-typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-		int ( *ENV_SYNCDEENVELOPEDATAFUNCTION )( INOUT struct EI *envelopeInfoPtr, 
-												 INOUT STREAM *stream );
 
 typedef struct EI {
 	/* Control and status information */
@@ -701,68 +638,25 @@ typedef struct EI {
 #endif /* USE_PGP */
 	long hdrSetLength;				/* Remaining bytes in SET OF EKeyInfo */
 
-	/* When we pushe data into an envelope it may end up breaking the push 
-	   over an intermediate header.  This occurs if we're pushing indefinite-
-	   length data and stop halfway through a tag, either an EOC or an OCTET 
-	   STRING segment (or its PGP equivalent):
-
-		+-------+-----------+-----+---------+
-		| Header|	Body	|00 00| Trailer |
-		+-------+-----------+-----+---------+
-							   ^	
-							   |
-							 bufPos
-							   +-------+
-									   v
-		+-------+--------+----------+--------+----------+-----+---------+
-		| Header|04 xx xx|	Body	|04 xx xx|	Body	|00 00|	Trailer |
-		+-------+--------+----------+--------+----------+-----+---------+
-
-	   In this case we can't decode the intermediate header and have to
-	   buffer the data somewhere until the next push.  We can't report the
-	   remainder to the caller as un-consumed data because this may be an
-	   implicit push, for example when we add a keying resource to an 
-	   encrypted envelope, which continues processing with previously-pushed 
-	   data when it initialises the cryptovariables from the data.  In this
-	   case since no data is being pushed, there's no way to report that 
-	   some of the data was unconsumed.
-	   
-	   Because of this we have to buffer any partial information until the
-	   next data push.  This can only occur when we break across a partial
-	   header, so the amount of data to be buffered is minimal.
-	   
-	   (It also occurs extremely rarely since it requires indefinite-length 
-	   data and there's usually only a single byte location where this can 
-	   occur, this situation almost never occurs) */
-	BUFFER( PARTIAL_BUFFER_SIZE, partialBufPos ) \
-	BYTE partialBuffer[ PARTIAL_BUFFER_SIZE + 8 ];	/* Buffered partial header data */
-	int partialBufPos;
-
 	/* Some data formats place out-of-band data at the start of the payload
-	   rather than putting it in the header, so we need to be able to peek
-	   ahead into the processed (e.g. decrypted) data via a lookahead read 
-	   in order to determine what to do next.  The out-of-band (OOB) buffer 
-	   and associated variables take care of this.
-	   
-	   The OOB data-left variable keeps track of how many bytes of data 
-	   still need to be removed before we can return actual payload data to 
-	   the caller.  In some cases the amount of data can't be specified as a 
-	   simple byte count but involves format-specific events (e.g. the 
-	   presence of a flag or data count in the OOB data that indicates that 
-	   there's more data present), the OOB event-count variable records how 
-	   many of these events still need to be handled before we can return 
-	   data to the caller.
-	   
-	   Finally, some content types (e.g. compressed data) don't allow 
-	   lookahead reads, which are necessary in some cases to determine how 
-	   the payload needs to be handled.  To handle this we have to remember 
-	   the returned OOB data (if it's read via a lookahead read) so that we 
-	   can reinsert it into the output stream on the next read call */
+	   rather than putting it in the header, the data-left variable keeps
+	   track of how many bytes of data still need to be removed before we
+	   can return actual payload data to the caller.  In some cases the 
+	   amount of data can't be specified as a simple byte count but involves 
+	   format-specific events (e.g. the presence of a flag or data count in 
+	   the OOB data that indicates that there's more data present), the 
+	   event-count variable records how many of these events still need to 
+	   be handled before we can return data to the caller.  Finally, some 
+	   content types (e.g. compressed data) don't allow lookahead reads, 
+	   which are necessary in some cases to determine how the payload needs 
+	   to be handled.  To handle this we have to remember the returned OOB 
+	   data (if it's read via a lookahead read) so that we can reinsert it 
+	   into the output stream on the next read call */
 	int oobDataLeft;				/* Remaining out-of-band data in payload */
 	int oobEventCount;				/* No.events left to process */
-	BUFFER( OOB_BUFFER_SIZE, oobBufSize ) \
+	BUFFER( OOB_BUFFER_SIZE, oobBufPos ) \
 	BYTE oobBuffer[ OOB_BUFFER_SIZE + 8 ];	/* Buffered OOB data */
-	int oobBufSize;
+	int oobBufPos;
 
 	/* Information on the current OCTET STRING segment in the buffer during
 	   the de-enveloping process.  We keep track of the segment start point 
@@ -823,16 +717,46 @@ typedef struct EI {
 	ERROR_INFO errorInfo;
 
 	/* Pointers to the enveloping/de-enveloping functions */
-	ENV_ADDINFOFUNCTION addInfo;
-	ENV_ADDINFOSTRINGFUNCTION addInfoString;
-	ENV_CHECKMISSINGINFOFUNCTION checkMissingInfo;
-	ENV_CHECKALGOFUNCTION checkAlgo;
-	ENV_PROCESSPREAMBLEFUNCTION processPreambleFunction;
-	ENV_PROCESSPOSTAMBLEFUNCTION processPostambleFunction;
-	ENV_COPYTOENVELOPEFUNCTION copyToEnvelopeFunction;
-	ENV_COPYFROMENVELOPEFUNCTION copyFromEnvelopeFunction;
-	ENV_PROCESSEXTRADATAFUNCTION processExtraData;
-	ENV_SYNCDEENVELOPEDATAFUNCTION syncDeenvelopeData;
+	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
+	int ( *addInfo )( INOUT struct EI *envelopeInfoPtr,
+					  IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE envInfo,
+					  IN_INT_Z const int value );
+	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 3 ) ) \
+	int ( *addInfoString )( INOUT struct EI *envelopeInfoPtr,
+							IN_RANGE( CRYPT_ENVINFO_PASSWORD, \
+									  CRYPT_ENVINFO_PASSWORD ) \
+							const CRYPT_ATTRIBUTE_TYPE envInfo,
+							IN_BUFFER( valueLength ) const void *value, 
+							IN_RANGE( 1, CRYPT_MAX_TEXTSIZE ) \
+							const int valueLength );
+	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
+	int ( *checkMissingInfo )( INOUT struct EI *envelopeInfoPtr,
+							   const BOOLEAN isFlush );
+	CHECK_RETVAL_FNPTR \
+	BOOLEAN ( *checkAlgo )( IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo, 
+							IN_MODE_OPT const CRYPT_MODE_TYPE cryptMode );
+	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
+	int ( *processPreambleFunction )( INOUT struct EI *envelopeInfoPtr );
+	CHECK_RETVAL_SPECIAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
+	int ( *processPostambleFunction )( INOUT struct EI *envelopeInfoPtr,
+									   const BOOLEAN isFlush );
+	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
+	int ( *copyToEnvelopeFunction )( INOUT struct EI *envelopeInfoPtr, 
+									 IN_BUFFER_OPT( length ) const BYTE *buffer, 
+									 IN_LENGTH_Z const int length );
+	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+	int ( *copyFromEnvelopeFunction )( INOUT struct EI *envelopeInfoPtr, 
+									   OUT_BUFFER( maxLength, length ) BYTE *buffer, 
+									   IN_LENGTH const int maxLength, 
+									   OUT_LENGTH_Z int *length, 
+									   IN_FLAGS( ENVCOPY ) const int flags );
+	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
+	int ( *processExtraData )( INOUT struct EI *envelopeInfoPtr, 
+							   IN_BUFFER( length ) const void *buffer, 
+							   IN_LENGTH const int length );
+	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
+	int ( *syncDeenvelopeData )( INOUT struct EI *envelopeInfoPtr, 
+								 INOUT STREAM *stream );
 
 	/* The object's handle and the handle of the user who owns this object.
 	   The former is used when sending messages to the object when only the 
@@ -878,20 +802,20 @@ int setEnvelopeAttributeS( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 
 /* Prototypes for envelope action management functions */
 
-typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+typedef CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
 		int ( *CHECKACTIONFUNCTION )( const ACTION_LIST *actionListPtr,
 									  IN_INT_Z const int intParam );
 
 CHECK_RETVAL_BOOL \
 BOOLEAN moreActionsPossible( IN_OPT const ACTION_LIST *actionListPtr );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int addAction( INOUT_PTR ACTION_LIST **actionListHeadPtrPtr,
+int addAction( OUT_PTR ACTION_LIST **actionListHeadPtrPtr,
 			   INOUT MEMPOOL_STATE memPoolState,
 			   IN_ENUM( ACTION ) const ACTION_TYPE actionType,
 			   IN_HANDLE const CRYPT_HANDLE cryptHandle );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
-int addActionEx( OUT_OPT_PTR_COND ACTION_LIST **newActionPtrPtr,
-				 INOUT_PTR ACTION_LIST **actionListHeadPtrPtr,
+int addActionEx( OUT_OPT_PTR_OPT ACTION_LIST **newActionPtrPtr,
+				 OUT_PTR ACTION_LIST **actionListHeadPtrPtr,
 				 INOUT MEMPOOL_STATE memPoolState,
 				 IN_ENUM( ACTION ) const ACTION_TYPE actionType,
 				 IN_HANDLE const CRYPT_HANDLE cryptHandle );
@@ -930,9 +854,8 @@ BOOLEAN checkActions( INOUT ENVELOPE_INFO *envelopeInfoPtr );
 CHECK_RETVAL_BOOL \
 BOOLEAN moreContentItemsPossible( IN_OPT const CONTENT_LIST *contentListPtr );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int createContentListItem( OUT_BUFFER_ALLOC_OPT( sizeof( CONTENT_LIST ) ) \
-								CONTENT_LIST **newContentListItemPtrPtr,
-						   INOUT MEMPOOL_STATE memPoolState,
+int createContentListItem( OUT_PTR CONTENT_LIST **newContentListItemPtrPtr,
+						   INOUT MEMPOOL_STATE memPoolState, 
 						   IN_ENUM( CONTENT ) const CONTENT_TYPE type,
 						   IN_ENUM( CRYPT_FORMAT ) \
 								const CRYPT_FORMAT_TYPE formatType,
@@ -947,13 +870,11 @@ int deleteContentList( INOUT MEMPOOL_STATE memPoolState,
 
 /* Prototypes for misc.management functions */
 
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
-BOOLEAN envelopeSanityCheck( const ENVELOPE_INFO *envelopeInfoPtr );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int addKeysetInfo( INOUT ENVELOPE_INFO *envelopeInfoPtr,
-				   IN_RANGE( CRYPT_ENVINFO_KEYSET_SIGCHECK, \
-							 CRYPT_ENVINFO_KEYSET_DECRYPT ) \
-					const CRYPT_ATTRIBUTE_TYPE keysetFunction,
+				   IN_RANGE( CRYPT_ENVINFO_KEYSET_ENCRYPT, \
+							 CRYPT_ENVINFO_KEYSET_SIGCHECK ) \
+				   const CRYPT_ATTRIBUTE_TYPE keysetFunction,
 				   IN_HANDLE const CRYPT_KEYSET keyset );
 CHECK_RETVAL_BOOL \
 BOOLEAN cmsCheckAlgo( IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo,
@@ -982,7 +903,7 @@ int cmsPreEnvelopeSign( INOUT ENVELOPE_INFO *envelopeInfoPtr );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int hashEnvelopeData( const ACTION_LIST *hashActionPtr,
 					  IN_BUFFER( dataLength ) const void *data, 
-					  IN_LENGTH_Z const int dataLength );
+					  IN_LENGTH const int dataLength );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 4 ) ) \
 int cmsInitSigParams( const ACTION_LIST *actionListPtr,
 					  IN_ENUM( CRYPT_FORMAT ) const CRYPT_FORMAT_TYPE formatType,

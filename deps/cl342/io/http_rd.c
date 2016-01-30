@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						  cryptlib HTTP Read Routines						*
-*						Copyright Peter Gutmann 1998-2014					*
+*						Copyright Peter Gutmann 1998-2011					*
 *																			*
 ****************************************************************************/
 
@@ -108,7 +108,7 @@ static int readRequestHeader( INOUT STREAM *stream,
 	STREAM_HTTPREQTYPE_TYPE reqType = STREAM_HTTPREQTYPE_NONE;
 	BOOLEAN isTextDataError, isSoftError;
 	char *bufPtr;
-	int length, offset, reqNameLen DUMMY_INIT, i, status;
+	int length, offset, reqNameLen = DUMMY_INIT, i, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( lineBuffer, lineBufSize ) );
@@ -116,14 +116,9 @@ static int readRequestHeader( INOUT STREAM *stream,
 	assert( isWritePtr( flags, sizeof( int ) ) );
 
 	REQUIRES( netStream->nFlags & STREAM_NFLAG_ISSERVER );
-	REQUIRES( ( ( netStream->nFlags & STREAM_NFLAG_HTTPGET ) && \
-				uriInfo != NULL ) || \
-			  ( !( netStream->nFlags & STREAM_NFLAG_HTTPGET ) && \
-				uriInfo == NULL ) );
 	REQUIRES( lineBufSize >= 256 && lineBufSize < MAX_INTLENGTH_SHORT );
 
-	/* Clear return values */
-	memset( lineBuffer, 0, min( 16, lineBufSize ) );
+	/* Clear return value */
 	*flags = HTTP_FLAG_NONE;
 
 	/* Read the header and check for "POST/GET x HTTP/1.x".  In theory this
@@ -135,7 +130,7 @@ static int readRequestHeader( INOUT STREAM *stream,
 	   HTTP-as-a-transport-layer) clients, which are unlikely to be hitting a
 	   PKI responder */
 	status = readTextLine( readCharFunction, stream, lineBuffer, 
-						   lineBufSize, &length, &isTextDataError, FALSE );
+						   lineBufSize, &length, &isTextDataError );
 	if( cryptStatusError( status ) )
 		{
 		/* If it's an HTTP-level error (e.g. line too long), send back an
@@ -213,7 +208,7 @@ static int readRequestHeader( INOUT STREAM *stream,
 		   returns two length values, the new length after the in-place
 		   decoding has occurred, and the offset of the next character of
 		   data as usual */
-		status = offset = parseUriInfo( bufPtr, length, &length, uriInfo );
+		offset = parseUriInfo( bufPtr, length, &length, uriInfo );
 		}
 	else
 		{
@@ -221,9 +216,9 @@ static int readRequestHeader( INOUT STREAM *stream,
 		   since it's not relevant for anything, so we just skip the URI.
 		   This also avoids complications with absolute vs. relative URLs,
 		   character encoding/escape sequences, and so on */
-		status = offset = strSkipNonWhitespace( bufPtr, length );
+		offset = strSkipNonWhitespace( bufPtr, length );
 		}
-	if( cryptStatusError( status ) )
+	if( cryptStatusError( offset ) )
 		{
 		sendHTTPError( stream, lineBuffer, lineBufSize, 400 );
 		retExt( CRYPT_ERROR_BADDATA,
@@ -308,10 +303,6 @@ static int readResponseHeader( INOUT STREAM *stream,
 	assert( isWritePtr( httpDataInfo, sizeof( HTTP_DATA_INFO ) ) );
 	assert( isWritePtr( flags, sizeof( int ) ) );
 
-	REQUIRES( ( ( netStream->nFlags & STREAM_NFLAG_HTTPGET ) && \
-				httpDataInfo->reqInfo != NULL ) || \
-			  ( !( netStream->nFlags & STREAM_NFLAG_HTTPGET ) && \
-				httpDataInfo->reqInfo == NULL ) );
 	REQUIRES( lineBufSize >= 256 && lineBufSize < MAX_INTLENGTH_SHORT );
 
 	/* Clear return value */
@@ -385,7 +376,7 @@ static int readResponseHeader( INOUT STREAM *stream,
 		   (yes, there are CAs that are issuing 150MB CRLs) */
 		initHeaderInfo( &headerInfo, 5,
 						httpDataInfo->bufferResize ? \
-							min( MAX_BUFFER_SIZE, 8388608L ) : \
+							min( MAX_INTLENGTH, 8388608L ) : \
 							httpDataInfo->bufSize,
 						*flags );
 		status = readHeaderLines( stream, lineBuffer, lineBufSize,
@@ -401,23 +392,19 @@ static int readResponseHeader( INOUT STREAM *stream,
 		*flags = headerInfo.flags & ~HTTP_FLAG_NOOP;
 		httpDataInfo->bytesAvail = headerInfo.contentLength;
 
+		/* If this was a soft error due to not finding the requested item, 
+		   pass the status on to the caller.  The low-level error
+		   information will still be present from readFirstHeaderLine() */
+		if( isResponseSoftError )
+			{
+			return( cryptStatusError( persistentStatus ) ? \
+					persistentStatus : CRYPT_ERROR_NOTFOUND );
+			}
+
 		/* If it's not something like a redirect that needs special-case
 		   handling, we're done */
 		if( !needsSpecialHandling )
-			{
-			/* If this was a soft error due to not finding the requested 
-			   item, pass the status on to the caller.  The low-level error 
-			   information will still be present from 
-			   readFirstHeaderLine() */
-			if( isResponseSoftError )
-				{
-				return( cryptStatusError( persistentStatus ) ? \
-						persistentStatus : CRYPT_ERROR_NOTFOUND );
-				}
-
-			/* There's no special-case handling required, we're done */
 			return( CRYPT_OK );
-			}
 
 		REQUIRES( httpStatus == 100 || httpStatus == 301 || \
 				  httpStatus == 302 || httpStatus == 307 );
@@ -491,18 +478,14 @@ static int readResponseHeader( INOUT STREAM *stream,
 *																			*
 ****************************************************************************/
 
-/* Read data from an HTTP stream.  This has a nonstandard interpretation of
-   the read buffer in that it's not a direct pointer to the read buffer but
-   to an HTTP_DATA_INFO structure that contains additional metadata about 
-   the HTTP read.  For this reason it's an INOUT_BUFFER rather than an 
-   OUT_BUFFER */
+/* Read data from an HTTP stream */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 static int readFunction( INOUT STREAM *stream, 
-						 INOUT_BUFFER( maxLength, *length ) void *buffer, 
+						 OUT_BUFFER( maxLength, *length ) void *buffer, 
 						 IN_LENGTH_FIXED( sizeof( HTTP_DATA_INFO ) ) \
 							const int maxLength, 
-						 OUT_DATALENGTH_Z int *length )
+						 OUT_LENGTH_Z int *length )
 	{
 	NET_STREAM_INFO *netStream = ( NET_STREAM_INFO * ) stream->netStreamInfo;
 	HTTP_DATA_INFO *httpDataInfo = ( HTTP_DATA_INFO * ) buffer;
@@ -512,44 +495,19 @@ static int readFunction( INOUT STREAM *stream,
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isReadPtr( buffer, maxLength ) );
 	assert( isWritePtr( length, sizeof( int ) ) );
-	assert( !( netStream->nFlags & STREAM_NFLAG_HTTPGET ) || \
-			isReadPtr( httpDataInfo->reqInfo, sizeof( HTTP_URI_INFO ) ) );
 
-	/* The handling of reqInfo in the httpDataInfo is somewhat complex and 
-	   runs as follows:
-
-		Action			Type	reqInfo status
-		------			----	--------------
-		readRequest		GET		Writeable, filled with data from the GET.
-						POST	NULL.
-		readResponse	GET		Read-only (used to create the initial GET 
-								that triggers the response).
-						POST	NULL */
 	REQUIRES( maxLength == sizeof( HTTP_DATA_INFO ) );
-	REQUIRES( ( ( netStream->nFlags & STREAM_NFLAG_HTTPGET ) && \
-				httpDataInfo->reqInfo != NULL ) || \
-			  ( !( netStream->nFlags & STREAM_NFLAG_HTTPGET ) && \
-				httpDataInfo->reqInfo == NULL ) );
 
 	/* Clear return value */
 	*length = 0;
 
-	/* Check whether the other side has indicated that it closed the 
-	   connection after the previous message was read.  This operates at a 
-	   different level to the usual stream-level connection management 
-	   because the network connection may still be open but any further 
-	   attempts to do anything with it will return an error */
-	if( netStream->nFlags & STREAM_NFLAG_LASTMSGR )
-		{
-		retExt( CRYPT_ERROR_COMPLETE,
-				( CRYPT_ERROR_COMPLETE, NETSTREAM_ERRINFO, 
-				  "Peer has closed the connection via HTTP 'Connection: "
-				  "close'" ) );
-		}
-
 	/* Read the HTTP packet header */
 	if( netStream->nFlags & STREAM_NFLAG_ISSERVER )
 		{
+		assert( !( netStream->nFlags & STREAM_NFLAG_HTTPGET ) || \
+				isWritePtr( httpDataInfo->reqInfo, \
+							sizeof( HTTP_URI_INFO ) ) );
+
 		status = readRequestHeader( stream, headerBuffer, HTTP_LINEBUF_SIZE,
 									httpDataInfo, &flags );
 		}
@@ -563,7 +521,7 @@ static int readFunction( INOUT STREAM *stream,
 			void *newBuffer;
 
 			REQUIRES( httpDataInfo->bytesAvail > 0 && \
-					  httpDataInfo->bytesAvail < MAX_BUFFER_SIZE );
+					  httpDataInfo->bytesAvail < MAX_INTLENGTH );
 
 			/* readResponseHeader() will only allow content larger than the 
 			   buffer size if it's marked as a resizeable buffer */
@@ -624,7 +582,7 @@ static int readFunction( INOUT STREAM *stream,
 		}
 
 	/* If it's a plain-text error message, return it to the caller */
-	if( ( flags & HTTP_FLAG_TEXTMSG ) && !httpDataInfo->responseIsText )
+	if( flags & HTTP_FLAG_TEXTMSG )
 		{
 		BYTE *byteBufPtr = httpDataInfo->buffer;
 

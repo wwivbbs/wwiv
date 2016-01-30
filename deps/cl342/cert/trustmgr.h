@@ -12,9 +12,9 @@
 /* Prototypes for certificate trust managemer functions */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int initTrustInfo( OUT_PTR_COND void **trustInfoPtrPtr );
+int initTrustInfo( OUT_PTR void **trustInfoPtrPtr );
 STDC_NONNULL_ARG( ( 1 ) ) \
-void endTrustInfo( IN void *trustInfoPtr );
+void endTrustInfo( INOUT void *trustInfoPtr );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int addTrustEntry( INOUT void *trustInfoPtr, 
 				   IN_HANDLE_OPT const CRYPT_CERTIFICATE iCryptCert,
@@ -23,14 +23,13 @@ int addTrustEntry( INOUT void *trustInfoPtr,
 				   const BOOLEAN addSingleCert );
 STDC_NONNULL_ARG( ( 1, 2 ) ) \
 void deleteTrustEntry( INOUT void *trustInfoPtr, 
-					   IN void *entryToDeletePtr );
-CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 1 ) ) \
+					   INOUT void *entryToDeletePtr );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 void *findTrustEntry( INOUT void *trustInfoPtr, 
 					  IN_HANDLE const CRYPT_CERTIFICATE iCryptCert,
 					  const BOOLEAN getIssuerEntry );
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int getTrustedCert( INOUT void *trustInfoPtrPtr,
-					OUT_HANDLE_OPT CRYPT_CERTIFICATE *iCertificate );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CRYPT_CERTIFICATE getTrustedCert( INOUT void *trustInfoPtr );
 CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 BOOLEAN trustedCertsPresent( TYPECAST( TRUST_INFO ** ) const void *trustInfoPtrPtr );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \

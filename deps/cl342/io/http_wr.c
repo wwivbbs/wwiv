@@ -98,7 +98,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int sendHTTPData( INOUT STREAM *stream, 
 				  IN_BUFFER( length ) void *buffer, 
 				  IN_LENGTH const int length, 
-				  IN_FLAGS_Z( HTTP ) const int flags )
+				  IN_FLAGS( HTTP ) const int flags )
 	{
 	NET_STREAM_INFO *netStream = ( NET_STREAM_INFO * ) stream->netStreamInfo;
 	int bytesWritten, status;
@@ -106,7 +106,7 @@ int sendHTTPData( INOUT STREAM *stream,
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( buffer, length ) );
 
-	REQUIRES( length > 0 && length < MAX_BUFFER_SIZE );
+	REQUIRES( length > 0 && length < MAX_INTLENGTH );
 	REQUIRES( flags >= HTTP_FLAG_NONE && flags <= HTTP_FLAG_MAX );
 
 	status = netStream->bufferedTransportWriteFunction( stream, buffer, 
@@ -151,7 +151,7 @@ int writeRequestHeader( INOUT STREAM *stream,
 	char headerBuffer[ HTTP_LINEBUF_SIZE + 8 ];
 	const int transportFlag = ( contentLength > 0 && !forceGet ) ? \
 							  TRANSPORT_FLAG_NONE : TRANSPORT_FLAG_FLUSH;
-	int headerLength DUMMY_INIT, status DUMMY_INIT;
+	int headerLength = DUMMY_INIT, status = DUMMY_INIT;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( ( httpReqInfo == NULL ) || \
@@ -163,9 +163,9 @@ int writeRequestHeader( INOUT STREAM *stream,
 	
 	REQUIRES( ( contentLength == 0 && contentType == NULL && \
 				contentTypeLen == 0 ) || \
-			  ( contentLength > 0 && contentLength < MAX_BUFFER_SIZE && \
+			  ( contentLength > 0 && contentLength < MAX_INTLENGTH && \
 			    contentType != NULL && \
-				contentTypeLen > 0 && contentTypeLen < MAX_INTLENGTH_SHORT ) );
+				contentTypeLen > 0 && contentTypeLen < MAX_INTLENGTH ) );
 	REQUIRES( ( httpReqInfo == NULL ) || \
 			  ( httpReqInfo->attributeLen == 0 && \
 				httpReqInfo->valueLen == 0 ) || \
@@ -232,26 +232,14 @@ int writeRequestHeader( INOUT STREAM *stream,
 	if( !forceGet )
 		{
 		if( isHTTP10( stream ) )
-			{
 			swrite( &headerStream, " HTTP/1.0\r\n", 11 );
-			swrite( &headerStream, "Connection: keep-alive\r\n", 24 );
-			}
 		else
 			{
 			swrite( &headerStream, " HTTP/1.1\r\nHost: ", 17 );
 			swrite( &headerStream, netStream->host, netStream->hostLen );
 			swrite( &headerStream, "\r\n", 2 );
-			if( netStream->nFlags & STREAM_NFLAG_LASTMSGW )
+			if( netStream->nFlags & STREAM_NFLAG_LASTMSG )
 				swrite( &headerStream, "Connection: close\r\n", 19 );
-			else
-				{
-				/* This shouldn't be required for HTTP 1.1 but there are a 
-				   sufficient number of broken caches and proxies around 
-				   that we need to include it for the ones that helpfully
-				   close the *HTTP 1.1 persistent* connection for us if they 
-				   don't see an HTTP 1.0 keepalive in the header */
-				swrite( &headerStream, "Connection: keep-alive\r\n", 24 );
-				}
 			}
 		if( contentLength > 0 )
 			{
@@ -293,34 +281,22 @@ static int writeResponseHeader( INOUT STREAM *stream,
 	NET_STREAM_INFO *netStream = ( NET_STREAM_INFO * ) stream->netStreamInfo;
 	STREAM headerStream;
 	char headerBuffer[ HTTP_LINEBUF_SIZE + 8 ], lengthString[ 16 + 8 ];
-	int headerLength DUMMY_INIT, lengthStringLength, status;
+	int headerLength = DUMMY_INIT, lengthStringLength, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isReadPtr( contentType, contentTypeLen ) );
 
-	REQUIRES( contentTypeLen > 0 && contentTypeLen < MAX_INTLENGTH_SHORT );
-	REQUIRES( contentLength > 0 && contentLength < MAX_BUFFER_SIZE );
+	REQUIRES( contentTypeLen > 0 && contentTypeLen < MAX_INTLENGTH );
+	REQUIRES( contentLength > 0 && contentLength < MAX_INTLENGTH );
 
 	sMemOpen( &headerStream, headerBuffer, HTTP_LINEBUF_SIZE );
 	if( isHTTP10( stream ) )
-		{
 		swrite( &headerStream, "HTTP/1.0 200 OK\r\n", 17 );
-		swrite( &headerStream, "Connection: keep-alive\r\n", 24 );
-		}
 	else
 		{
 		swrite( &headerStream, "HTTP/1.1 200 OK\r\n", 17 );
-		if( netStream->nFlags & STREAM_NFLAG_LASTMSGW )
+		if( netStream->nFlags & STREAM_NFLAG_LASTMSG )
 			swrite( &headerStream, "Connection: close\r\n", 19 );
-		else
-			{
-			/* This shouldn't be required for HTTP 1.1 but there are a 
-			   sufficient number of broken caches and proxies around that we 
-			   need to include it for the ones that helpfully close the 
-			   *HTTP 1.1 persistent* connection for us if they don't see an 
-			   HTTP 1.0 keepalive in the header */
-			swrite( &headerStream, "Connection: keep-alive\r\n", 24 );
-			}
 		}
 	swrite( &headerStream, "Content-Type: ", 14 );
 	swrite( &headerStream, contentType, contentTypeLen );
@@ -329,11 +305,8 @@ static int writeResponseHeader( INOUT STREAM *stream,
 									contentLength );
 	swrite( &headerStream, lengthString, lengthStringLength );
 	swrite( &headerStream, "\r\nCache-Control: no-cache\r\n", 27 );
-	if( isHTTP10( stream ) )
-		{		
-		/* See note above on "no-cache" */
+	if( isHTTP10( stream ) )	/* See note above on "no-cache" */
 		swrite( &headerStream, "Pragma: no-cache\r\n", 18 );
-		}
 	status = swrite( &headerStream, "\r\n", 2 );
 	if( cryptStatusOK( status ) )
 		headerLength = stell( &headerStream );
@@ -356,7 +329,7 @@ static int writeFunction( INOUT STREAM *stream,
 						  IN_BUFFER( maxLength ) const void *buffer, 
 						  IN_LENGTH_FIXED( sizeof( HTTP_DATA_INFO ) ) \
 							const int maxLength, 
-						  OUT_DATALENGTH_Z int *length )
+						  OUT_LENGTH_Z int *length )
 	{
 	NET_STREAM_INFO *netStream = ( NET_STREAM_INFO * ) stream->netStreamInfo;
 	HTTP_DATA_INFO *httpDataInfo = ( HTTP_DATA_INFO * ) buffer;
@@ -413,14 +386,8 @@ static int writeFunction( INOUT STREAM *stream,
 		   request header it writes the start of the "HTTP GET..." line
 		   and then exits, leaving the rest of the GET URI to be written
 		   as the payload data */
-#if 1	/* 18/9/15 The following must be true or the call to the transport 
-				   write function that follows would fail */
-		REQUIRES( httpDataInfo->bufSize > 0 );
-		if( netStream->nFlags & STREAM_NFLAG_HTTPPOST_AS_GET )
-#else
 		if( httpDataInfo->bufSize > 0 && \
 			( netStream->nFlags & STREAM_NFLAG_HTTPPOST_AS_GET ) )
-#endif
 			{
 			status = writeRequestHeader( stream, httpDataInfo->reqInfo, 
 										 NULL, 0, 0, TRUE );
@@ -449,7 +416,7 @@ static int writeFunction( INOUT STREAM *stream,
 		{
 		STREAM headerStream;
 		char headerBuffer[ HTTP_LINEBUF_SIZE + 8 ];
-		int headerLength DUMMY_INIT;
+		int headerLength = DUMMY_INIT;
 
 		/* We've been forced to override the use of a POST with a GET due to 
 		   a broken server so the header write was split into two parts with 
@@ -457,26 +424,14 @@ static int writeFunction( INOUT STREAM *stream,
 		   of the header */
 		sMemOpen( &headerStream, headerBuffer, HTTP_LINEBUF_SIZE );
 		if( isHTTP10( stream ) )
-			{
 			swrite( &headerStream, " HTTP/1.0\r\n", 11 );
-			swrite( &headerStream, "Connection: keep-alive\r\n", 24 );
-			}
 		else
 			{
 			swrite( &headerStream, " HTTP/1.1\r\nHost: ", 17 );
 			swrite( &headerStream, netStream->host, netStream->hostLen );
 			swrite( &headerStream, "\r\n", 2 );
-			if( netStream->nFlags & STREAM_NFLAG_LASTMSGW )
+			if( netStream->nFlags & STREAM_NFLAG_LASTMSG )
 				swrite( &headerStream, "Connection: close\r\n", 19 );
-			else
-				{
-				/* This shouldn't be required for HTTP 1.1 but there are a 
-				   sufficient number of broken caches and proxies around 
-				   that we need to include it for the ones that helpfully
-				   close the *HTTP 1.1 persistent* connection for us if they 
-				   don't see an HTTP 1.0 keepalive in the header */
-				swrite( &headerStream, "Connection: keep-alive\r\n", 24 );
-				}
 			}
 		status = swrite( &headerStream, "\r\n", 2 );
 		if( cryptStatusOK( status ) )

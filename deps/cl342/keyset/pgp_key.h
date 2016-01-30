@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						PGP Keyset Definitions Header File					*
-*						Copyright Peter Gutmann 1996-2014					*
+*						Copyright Peter Gutmann 1996-2007					*
 *																			*
 ****************************************************************************/
 
@@ -51,10 +51,9 @@
 typedef struct {
 	/* Key data information */
 	CRYPT_ALGO_TYPE pkcAlgo;		/* Key algorithm */
-	CRYPT_ECCCURVE_TYPE curveType;	/* Curve type for ECC */
 	int usageFlags;					/* Keymgmt flags permitted usage */
 	BUFFER_FIXED( PGP_KEYID_SIZE ) \
-	BYTE pgp2KeyID[ PGP_KEYID_SIZE + 8 ];
+	BYTE pgpKeyID[ PGP_KEYID_SIZE + 8 ];
 	BUFFER_FIXED( PGP_KEYID_SIZE ) \
 	BYTE openPGPkeyID[ PGP_KEYID_SIZE + 8 ];
 	BUFFER_FIXED( pubKeyDataLen ) \
@@ -65,12 +64,11 @@ typedef struct {
 
 	/* Key data protection information */
 	CRYPT_ALGO_TYPE cryptAlgo;		/* Key wrap algorithm */
-	int cryptAlgoParam;				/* Optional parameter for key wrap algo */
+	int aesKeySize;					/* Key size if algo == AES */
 	BUFFER( CRYPT_MAX_IVSIZE, ivSize ) \
 	BYTE iv[ CRYPT_MAX_IVSIZE + 8 ];/* Key wrap IV */
 	int ivSize;
 	CRYPT_ALGO_TYPE hashAlgo;		/* Password hashing algo */
-	int hashAlgoParam;				/* Optional parameter for hash algo */
 	BUFFER( PGP_SALTSIZE, saltSize ) \
 	BYTE salt[ PGP_SALTSIZE + 8 ];	/* Password hashing salt */
 	int saltSize;
@@ -87,41 +85,20 @@ typedef struct {
    locations of relevant data (public and private keys and user IDs) within
    the overall key data.  To further complicate matters, there can be a key
    and subkey associated with the same information, so we have to maintain
-   two lots of physical keying information for each logical key.
-   
-   Writing keys is no easier, because a single logical key can consist of 
-   one or more keys and subkeys we can potentially need to add data from 
-   multiple contexts to produce a single logical key.  We restrict what can
-   be added to a single signature+encryption key or a signature key with an
-   encryption key as a subkey.  The isComplete flag records whether further
-   key data can be added or not */
+   two lots of physical keying information for each logical key */
 
 typedef struct {
-	/* Key and subkey data */
 	BUFFER_FIXED( keyDataLen ) \
 	void *keyData;					/* Encoded key data */
 	int keyDataLen;
 	PGP_KEYINFO key, subKey;		/* Key and subkey information */
-
-	/* User ID(s) */
 	ARRAY( MAX_PGP_USERIDS, lastUserID ) \
 	char *userID[ MAX_PGP_USERIDS + 8 ];/* UserIDs */
 	ARRAY( MAX_PGP_USERIDS, lastUserID ) \
 	int userIDlen[ MAX_PGP_USERIDS + 8 ];
 	int lastUserID;					/* Last used userID */
-
-	/* Miscellaneous data */
 	BOOLEAN isOpenPGP;				/* Whether data is PGP 2.x or OpenPGP */
-	BOOLEAN isComplete;				/* Whether all key information is present */
 	} PGP_INFO;
-
-#define resetPGPInfo( pgpInfo ) \
-		memset( &( pgpInfo )->key, 0, sizeof( PGP_KEYINFO ) ); \
-		memset( &( pgpInfo )->subKey, 0, sizeof( PGP_KEYINFO ) ); \
-		memset( ( pgpInfo )->userID, 0, sizeof( char * ) * MAX_PGP_USERIDS ); \
-		memset( ( pgpInfo )->userIDlen, 0, sizeof( int ) * MAX_PGP_USERIDS ); \
-		( pgpInfo )->lastUserID = 0; \
-		( pgpInfo )->isOpenPGP = ( pgpInfo )->isComplete = FALSE
 
 /* When we're searching for a key, we need to compare each one against a
    collection of match criteria.  The following structure contains the 
@@ -152,22 +129,12 @@ BOOLEAN pgpCheckKeyMatch( const PGP_INFO *pgpInfo,
 
 /* Prototypes for functions in pgp_rd.c */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 4, 5 ) ) \
-int pgpScanPubKeyring( INOUT STREAM *stream, 
-					   INOUT PGP_INFO *pgpInfo, 
-					   const KEY_MATCH_INFO *keyMatchInfo,
-					   INOUT PGP_KEYINFO **matchedKeyInfoPtrPtr,
-					   INOUT ERROR_INFO *errorInfo );
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
-int pgpReadPrivKeyring( INOUT STREAM *stream, 
-						IN_ARRAY( maxNoPgpObjects ) PGP_INFO *pgpInfo, 
-						IN_LENGTH_SHORT const int maxNoPgpObjects,
-						INOUT ERROR_INFO *errorInfo );
-
-/* Prototypes for functions in pgp_wr.c */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int pgpWritePubkey( INOUT PGP_INFO *pgpInfoPtr,
-					IN_HANDLE const CRYPT_HANDLE cryptHandle );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 6 ) ) \
+int pgpReadKeyring( INOUT STREAM *stream, 
+					IN_ARRAY( maxNoPgpObjects ) PGP_INFO *pgpInfo, 
+					IN_LENGTH_SHORT const int maxNoPgpObjects,
+					IN_OPT const KEY_MATCH_INFO *keyMatchInfo,
+					INOUT_OPT PGP_KEYINFO **matchedKeyInfoPtrPtr,
+					INOUT ERROR_INFO *errorInfo );
 
 #endif /* _PGPKEY_DEFINED */

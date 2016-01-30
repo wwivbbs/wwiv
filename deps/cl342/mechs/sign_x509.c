@@ -19,8 +19,6 @@
   #include "mechs/mech.h"
 #endif /* Compiler-specific includes */
 
-#ifdef USE_CERTIFICATES
-
 /****************************************************************************
 *																			*
 *							X.509-style Signature Functions 				*
@@ -41,14 +39,14 @@
    unnecessary extra tagging and wrappers to the signature.  These odds and
    ends are specified in the formatInfo structure */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
-int createX509signature( OUT_BUFFER( signedObjectMaxLength, \
-									 *signedObjectLength ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 3, 4 ) ) \
+int createX509signature( OUT_BUFFER_OPT( signedObjectMaxLength, \
+										 *signedObjectLength ) \
 							void *signedObject, 
-						 IN_DATALENGTH_Z const int signedObjectMaxLength, 
-						 OUT_DATALENGTH_Z int *signedObjectLength,
+						 IN_LENGTH_Z const int signedObjectMaxLength, 
+						 OUT_LENGTH_Z int *signedObjectLength,
 						 IN_BUFFER( objectLength ) const void *object, 
-						 IN_DATALENGTH const int objectLength,
+						 IN_LENGTH const int objectLength,
 						 IN_HANDLE const CRYPT_CONTEXT iSignContext,
 						 IN_ALGO const CRYPT_ALGO_TYPE hashAlgo,
 						 IN_OPT const X509SIG_FORMATINFO *formatInfo )
@@ -59,7 +57,8 @@ int createX509signature( OUT_BUFFER( signedObjectMaxLength, \
 	BYTE dataSignature[ CRYPT_MAX_PKCSIZE + 128 + 8 ];
 	int signatureLength, totalSigLength, status;
 
-	assert( isWritePtr( signedObject, signedObjectMaxLength ) );
+	assert( signedObject == NULL || \
+			isWritePtr( signedObject, signedObjectMaxLength ) );
 	assert( isWritePtr( signedObjectLength, sizeof( int ) ) );
 	assert( isReadPtr( object, objectLength ) && \
 			!cryptStatusError( checkObjectEncoding( object, \
@@ -67,9 +66,11 @@ int createX509signature( OUT_BUFFER( signedObjectMaxLength, \
 	assert( formatInfo == NULL || \
 			isReadPtr( formatInfo, sizeof( X509SIG_FORMATINFO ) ) );
 
-	REQUIRES( signedObjectMaxLength > MIN_CRYPT_OBJECTSIZE && \
-			  signedObjectMaxLength < MAX_BUFFER_SIZE );
-	REQUIRES( objectLength > 0 && objectLength < MAX_BUFFER_SIZE );
+	REQUIRES( ( signedObject == NULL && signedObjectMaxLength == 0 ) || \
+			  ( signedObject != NULL && \
+				signedObjectMaxLength > MIN_CRYPT_OBJECTSIZE && \
+				signedObjectMaxLength < MAX_INTLENGTH ) );
+	REQUIRES( objectLength > 0 && objectLength < MAX_INTLENGTH );
 	REQUIRES( isHandleRangeValid( iSignContext ) );
 	REQUIRES( isHashAlgo( hashAlgo ) );
 	REQUIRES( formatInfo == NULL || \
@@ -79,7 +80,8 @@ int createX509signature( OUT_BUFFER( signedObjectMaxLength, \
 				  formatInfo->extraLength < MAX_INTLENGTH_SHORT ) ) );
 
 	/* Clear return values */
-	memset( signedObject, 0, min( 16, signedObjectMaxLength ) );
+	if( signedObject != NULL )
+		memset( signedObject, 0, min( 16, signedObjectMaxLength ) );
 	*signedObjectLength = 0;
 
 	/* Hash the data to be signed */
@@ -111,22 +113,31 @@ int createX509signature( OUT_BUFFER( signedObjectMaxLength, \
 		{
 		/* It's a nonstandard format, figure out the size due to the 
 		   additional signature wrapper and other odds and ends */
-		totalSigLength = ( int ) \
-				sizeofObject( signatureLength + formatInfo->extraLength );
 		if( formatInfo->isExplicit )
-			totalSigLength = ( int ) sizeofObject( totalSigLength );
+			{
+			totalSigLength = ( int ) \
+				sizeofObject( \
+					sizeofObject( signatureLength + \
+								  formatInfo->extraLength ) );
+			}
+		else
+			{
+			totalSigLength = ( int ) \
+				sizeofObject( signatureLength + formatInfo->extraLength );
+			}
 		}
-	ENSURES( totalSigLength > 40 && totalSigLength < MAX_BUFFER_SIZE );
+	ENSURES( totalSigLength > 40 && totalSigLength < MAX_INTLENGTH );
 
-	/* Make sure that there's enough room for the signed object in the 
-	   output buffer.  This will be checked by the stream handling anyway 
-	   but we make it explicit here */
-	if( sizeofObject( objectLength + totalSigLength ) > signedObjectMaxLength )
+	/* If we're not just performing a length check, make sure that there's 
+	   enough room for the signed object in the output buffer.  This will be
+	   checked by the stream handling anyway but we make it explicit here */
+	if( signedObject != NULL && \
+		sizeofObject( objectLength + totalSigLength ) > signedObjectMaxLength )
 		return( CRYPT_ERROR_OVERFLOW );
 
 	/* Write the outer SEQUENCE wrapper and copy the payload into place 
 	   behind it */
-	sMemOpen( &stream, signedObject, signedObjectMaxLength );
+	sMemOpenOpt( &stream, signedObject, signedObjectMaxLength );
 	writeSequence( &stream, objectLength + totalSigLength );
 	swrite( &stream, object, objectLength );
 
@@ -168,7 +179,7 @@ int createX509signature( OUT_BUFFER( signedObjectMaxLength, \
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int checkX509signature( IN_BUFFER( signedObjectLength ) const void *signedObject, 
-						IN_DATALENGTH const int signedObjectLength,
+						IN_LENGTH const int signedObjectLength,
 						IN_HANDLE const CRYPT_CONTEXT iSigCheckContext,
 						IN_OPT const X509SIG_FORMATINFO *formatInfo )
 	{
@@ -176,7 +187,7 @@ int checkX509signature( IN_BUFFER( signedObjectLength ) const void *signedObject
 	CRYPT_CONTEXT iHashContext;
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	STREAM stream;
-	void *objectPtr DUMMY_INIT_PTR, *sigPtr;
+	void *objectPtr = DUMMY_INIT_PTR, *sigPtr;
 	long length;
 	int sigCheckAlgo, sigLength, hashParam, status;	/* int vs.enum */
 
@@ -184,8 +195,7 @@ int checkX509signature( IN_BUFFER( signedObjectLength ) const void *signedObject
 	assert( formatInfo == NULL || \
 			isReadPtr( formatInfo, sizeof( X509SIG_FORMATINFO ) ) );
 
-	REQUIRES( signedObjectLength > 0 && \
-			  signedObjectLength < MAX_BUFFER_SIZE );
+	REQUIRES( signedObjectLength > 0 && signedObjectLength < MAX_INTLENGTH );
 	REQUIRES( isHandleRangeValid( iSigCheckContext ) );
 	REQUIRES( formatInfo == NULL || \
 			  ( ( formatInfo->tag >= 0 && \
@@ -208,7 +218,7 @@ int checkX509signature( IN_BUFFER( signedObjectLength ) const void *signedObject
 	if( cryptStatusOK( status ) )
 		status = sMemGetDataBlock( &stream, &objectPtr, length );
 	if( cryptStatusOK( status ) )
-		status = sSkip( &stream, length, SSKIP_MAX );
+		status = sSkip( &stream, length );
 	if( cryptStatusError( status ) )
 		{
 		sMemDisconnect( &stream );
@@ -307,8 +317,7 @@ int createRawSignature( OUT_BUFFER( sigMaxLength, *signatureLength ) \
 							void *signature, 
 						IN_LENGTH_SHORT_MIN( MIN_CRYPT_OBJECTSIZE ) \
 							const int sigMaxLength, 
-						OUT_LENGTH_BOUNDED_Z( sigMaxLength ) \
-							int *signatureLength, 
+						OUT_LENGTH_SHORT_Z int *signatureLength, 
 						IN_HANDLE const CRYPT_CONTEXT iSignContext,
 						IN_HANDLE const CRYPT_CONTEXT iHashContext )
 	{
@@ -340,4 +349,3 @@ int checkRawSignature( IN_BUFFER( signatureLength ) const void *signature,
 	return( checkSignature( signature, signatureLength, iSigCheckContext,
 							iHashContext, CRYPT_UNUSED, SIGNATURE_RAW ) );
 	}
-#endif /* USE_CERTIFICATES */

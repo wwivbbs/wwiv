@@ -347,6 +347,110 @@ static int decryptCFB( CONTEXT_INFO *contextInfoPtr, BYTE *buffer,
 	return( CRYPT_OK );
 	}
 
+/* Encrypt/decrypt data in OFB mode */
+
+static int encryptOFB( CONTEXT_INFO *contextInfoPtr, BYTE *buffer,
+					   int noBytes )
+	{
+	CONV_INFO *convInfo = contextInfoPtr->ctxConv;
+	IDEA_KEY *ideaKey = ( IDEA_KEY * ) convInfo->key;
+	int i, ivCount = convInfo->ivCount;
+
+	/* If there's any encrypted material left in the IV, use it now */
+	if( ivCount > 0 )
+		{
+		int bytesToUse;
+
+		/* Find out how much material left in the encrypted IV we can use */
+		bytesToUse = IDEA_BLOCKSIZE - ivCount;
+		if( noBytes < bytesToUse )
+			bytesToUse = noBytes;
+
+		/* Encrypt the data */
+		for( i = 0; i < bytesToUse; i++ )
+			buffer[ i ] ^= convInfo->currentIV[ i + ivCount ];
+
+		/* Adjust the byte count and buffer position */
+		noBytes -= bytesToUse;
+		buffer += bytesToUse;
+		ivCount += bytesToUse;
+		}
+
+	while( noBytes > 0 )
+		{
+		ivCount = ( noBytes > IDEA_BLOCKSIZE ) ? IDEA_BLOCKSIZE : noBytes;
+
+		/* Encrypt the IV */
+		idea_ecb_encrypt( convInfo->currentIV, convInfo->currentIV,
+						  &ideaKey->eKey );
+
+		/* XOR the buffer contents with the encrypted IV */
+		for( i = 0; i < ivCount; i++ )
+			buffer[ i ] ^= convInfo->currentIV[ i ];
+
+		/* Move on to next block of data */
+		noBytes -= ivCount;
+		buffer += ivCount;
+		}
+
+	/* Remember how much of the IV is still available for use */
+	convInfo->ivCount = ( ivCount % IDEA_BLOCKSIZE );
+
+	return( CRYPT_OK );
+	}
+
+/* Decrypt data in OFB mode */
+
+static int decryptOFB( CONTEXT_INFO *contextInfoPtr, BYTE *buffer,
+					   int noBytes )
+	{
+	CONV_INFO *convInfo = contextInfoPtr->ctxConv;
+	IDEA_KEY *ideaKey = ( IDEA_KEY * ) convInfo->key;
+	int i, ivCount = convInfo->ivCount;
+
+	/* If there's any encrypted material left in the IV, use it now */
+	if( ivCount > 0 )
+		{
+		int bytesToUse;
+
+		/* Find out how much material left in the encrypted IV we can use */
+		bytesToUse = IDEA_BLOCKSIZE - ivCount;
+		if( noBytes < bytesToUse )
+			bytesToUse = noBytes;
+
+		/* Decrypt the data */
+		for( i = 0; i < bytesToUse; i++ )
+			buffer[ i ] ^= convInfo->currentIV[ i + ivCount ];
+
+		/* Adjust the byte count and buffer position */
+		noBytes -= bytesToUse;
+		buffer += bytesToUse;
+		ivCount += bytesToUse;
+		}
+
+	while( noBytes > 0 )
+		{
+		ivCount = ( noBytes > IDEA_BLOCKSIZE ) ? IDEA_BLOCKSIZE : noBytes;
+
+		/* Encrypt the IV */
+		idea_ecb_encrypt( convInfo->currentIV, convInfo->currentIV,
+						  &ideaKey->eKey );
+
+		/* XOR the buffer contents with the encrypted IV */
+		for( i = 0; i < ivCount; i++ )
+			buffer[ i ] ^= convInfo->currentIV[ i ];
+
+		/* Move on to next block of data */
+		noBytes -= ivCount;
+		buffer += ivCount;
+		}
+
+	/* Remember how much of the IV is still available for use */
+	convInfo->ivCount = ( ivCount % IDEA_BLOCKSIZE );
+
+	return( CRYPT_OK );
+	}
+
 /****************************************************************************
 *																			*
 *							IDEA Key Management Routines					*
@@ -384,7 +488,7 @@ static const CAPABILITY_INFO FAR_BSS capabilityInfo = {
 	MIN_KEYSIZE, bitsToBytes( 128 ), bitsToBytes( 128 ),
 	selfTest, getInfo, NULL, initGenericParams, initKey, NULL,
 	encryptECB, decryptECB, encryptCBC, decryptCBC,
-	encryptCFB, decryptCFB
+	encryptCFB, decryptCFB, encryptOFB, decryptOFB
 	};
 
 const CAPABILITY_INFO *getIDEACapability( void )

@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						cryptlib RSA Encryption Routines					*
-*						Copyright Peter Gutmann 1993-2014					*
+*						Copyright Peter Gutmann 1993-2005					*
 *																			*
 ****************************************************************************/
 
@@ -171,24 +171,21 @@ static const RSA_KEY FAR_BSS rsaTestKey = {
 	  0x4B, 0xAE, 0xF4, 0xAD, 0x35, 0x63, 0x37, 0x71 }
 	};
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int initContext( OUT CONTEXT_INFO *contextInfo,
-						OUT PKC_INFO *pkcInfo )
+CHECK_RETVAL \
+static int selfTest( void )
 	{
+	CONTEXT_INFO contextInfo;
+	PKC_INFO contextData, *pkcInfo = &contextData;
+	BYTE buffer[ 128 + 8 ];
+	const CAPABILITY_INFO *capabilityInfoPtr;
 	int status;
 
-	assert( isWritePtr( contextInfo, sizeof( CONTEXT_INFO ) ) );
-	assert( isWritePtr( pkcInfo, sizeof( PKC_INFO ) ) );
-
-	/* Clear return values */
-	memset( contextInfo, 0, sizeof( CONTEXT_INFO ) );
-	memset( pkcInfo, 0, sizeof( PKC_INFO ) );
-
-	status = staticInitContext( contextInfo, CONTEXT_PKC, 
-								getRSACapability(), pkcInfo, 
+	/* Initialise the key components */
+	status = staticInitContext( &contextInfo, CONTEXT_PKC, 
+								getRSACapability(), &contextData, 
 								sizeof( PKC_INFO ), NULL );
 	if( cryptStatusError( status ) )
-		return( status );
+		return( CRYPT_ERROR_FAILED );
 	status = importBignum( &pkcInfo->rsaParam_n, rsaTestKey.n, 
 						   rsaTestKey.nLen, RSAPARAM_MIN_N, 
 						   RSAPARAM_MAX_N, NULL, KEYSIZE_CHECK_PKC );
@@ -227,92 +224,54 @@ static int initContext( OUT CONTEXT_INFO *contextInfo,
 							   rsaTestKey.e2Len, RSAPARAM_MIN_EXP2, 
 							   RSAPARAM_MAX_EXP2, &pkcInfo->rsaParam_n,
 							   KEYSIZE_CHECK_NONE );
-	return( status );
-	}
-
-CHECK_RETVAL \
-static int selfTest( void )
-	{
-	CONTEXT_INFO contextInfo;
-	PKC_INFO contextData, *pkcInfo = &contextData;
-	const CAPABILITY_INFO *capabilityInfoPtr;
-	BYTE buffer[ 128 + 8 ];
-	int status;
-
-	/* Initialise the key components */
-	status = initContext( &contextInfo, pkcInfo );
 	if( cryptStatusError( status ) )
-		return( status );
+		retIntError();
 
 	/* Perform the test en/decryption of a block of data */
 	capabilityInfoPtr = contextInfo.capabilityInfo;
 	status = capabilityInfoPtr->initKeyFunction( &contextInfo, NULL, 0 );
-	if( cryptStatusError( status ) || \
+	if( cryptStatusOK( status ) && \
 		!pairwiseConsistencyTest( &contextInfo ) )
+		status = CRYPT_ERROR_FAILED;
+	else
 		{
-		staticDestroyContext( &contextInfo );
-		return( CRYPT_ERROR_FAILED );
-		}
-	staticDestroyContext( &contextInfo );
-
-	/* Try it again with blinding enabled.  Note that this uses the 
-	   randomness subsystem, which can significantly slow down the self-test 
-	   if it's being performed before the polling has completed.
-	   
-	   Since we're still using the same key but changing the way that it's
-	   used, we have to call initKeyFunction() on the existing data, which
-	   isn't normally done.  Because the re-init with blinding changed the
-	   bignum state, we reset the checksums to force them to be re-
-	   calculated */
-	memcpy( buffer, "abcde", 5 );
-	memset( buffer + 5, 0, rsaTestKey.nLen - 5 );
-	status = initContext( &contextInfo, pkcInfo );
-	if( cryptStatusError( status ) )
-		return( status );
-	contextInfo.flags |= CONTEXT_FLAG_SIDECHANNELPROTECTION;
-	status = capabilityInfoPtr->initKeyFunction( &contextInfo, NULL, 0 );
-	if( cryptStatusOK( status ) )
-		status = capabilityInfoPtr->encryptFunction( &contextInfo,
-													 buffer, rsaTestKey.nLen );
-	if( cryptStatusOK( status ) )
-		status = capabilityInfoPtr->decryptFunction( &contextInfo,
-													 buffer, rsaTestKey.nLen );
-	if( cryptStatusError( status ) || memcmp( buffer, "abcde", 5 ) )
-		{
-		staticDestroyContext( &contextInfo );
-		return( CRYPT_ERROR_FAILED );
-		}
-
-	/* And one last time to ensure that the blinding value update works */
-	memcpy( buffer, "fghij", 5 );
-	memset( buffer + 5, 0, rsaTestKey.nLen - 5 );
-	status = capabilityInfoPtr->encryptFunction( &contextInfo,
-												 buffer, rsaTestKey.nLen );
-	if( cryptStatusOK( status ) )
-		status = capabilityInfoPtr->decryptFunction( &contextInfo,
-													 buffer, rsaTestKey.nLen );
-	if( cryptStatusError( status ) || memcmp( buffer, "fghij", 5 ) )
-		{
-		staticDestroyContext( &contextInfo );
-		return( CRYPT_ERROR_FAILED );
-		}
-
-	/* Finally, make sure that the memory fault-detection is working */
-	pkcInfo->rsaParam_n.d[ 8 ] ^= 0x0100;
-	status = capabilityInfoPtr->encryptFunction( &contextInfo,
-												 buffer, rsaTestKey.nLen );
-	if( cryptStatusOK( status ) )
-		{
-		/* The fault-detection couldn't detect a bit-flip, there's a 
-		   problem */
-		staticDestroyContext( &contextInfo );
-		return( CRYPT_ERROR_FAILED );
+		/* Try it again with blinding enabled.  Note that this uses the
+		   randomness subsystem, which can significantly slow down the self-
+		   test if it's being performed before the polling has completed */
+		memset( buffer, 0, rsaTestKey.nLen );
+		memcpy( buffer, "abcde", 5 );
+		contextInfo.flags |= CONTEXT_FLAG_SIDECHANNELPROTECTION;
+		status = capabilityInfoPtr->initKeyFunction( &contextInfo, NULL, 0 );
+		if( cryptStatusOK( status ) )
+			status = capabilityInfoPtr->encryptFunction( &contextInfo,
+														 buffer, rsaTestKey.nLen );
+		if( cryptStatusOK( status ) )
+			status = capabilityInfoPtr->decryptFunction( &contextInfo,
+														 buffer, rsaTestKey.nLen );
+		if( cryptStatusError( status ) || memcmp( buffer, "abcde", 5 ) )
+			status = CRYPT_ERROR_FAILED;
+		else
+			{
+			/* And one last time to ensure that the blinding value update
+			   works */
+			memset( buffer, 0, rsaTestKey.nLen );
+			memcpy( buffer, "abcde", 5 );
+			status = capabilityInfoPtr->initKeyFunction( &contextInfo, NULL, 0 );
+			if( cryptStatusOK( status ) )
+				status = capabilityInfoPtr->encryptFunction( &contextInfo,
+															 buffer, rsaTestKey.nLen );
+			if( cryptStatusOK( status ) )
+				status = capabilityInfoPtr->decryptFunction( &contextInfo,
+															 buffer, rsaTestKey.nLen );
+			if( cryptStatusError( status ) || memcmp( buffer, "abcde", 5 ) )
+				status = CRYPT_ERROR_FAILED;
+			}
 		}
 
 	/* Clean up */
 	staticDestroyContext( &contextInfo );
 
-	return( CRYPT_OK );
+	return( status );
 	}
 #else
 	#define selfTest	NULL
@@ -345,16 +304,6 @@ static int encryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 	REQUIRES( noBytes == length );
 	REQUIRES( noBytes > 0 && noBytes < MAX_INTLENGTH_SHORT );
 
-	/* Perform side-channel attack checks */
-	if( cryptStatusError( \
-			checksumContextData( pkcInfo, CRYPT_ALGO_RSA,
-					( contextInfoPtr->flags & CONTEXT_FLAG_ISPUBLICKEY ) ? \
-					FALSE : TRUE ) ) )
-		{
-		DEBUG_DIAG(( "RSA key memory corruption detected" ));
-		return( CRYPT_ERROR_FAILED );
-		}
-
 	/* Move the data from the buffer into a bignum */
 	status = importBignum( data, buffer, length, 
 						   MIN_PKCSIZE - 8, CRYPT_MAX_PKCSIZE, n, 
@@ -363,11 +312,12 @@ static int encryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 		return( status );
 
 	/* Perform the modexp and move the result back into the buffer.  Since 
-	   this function takes a fixed-length input and produces a fixed-length
-	   result but the bignum code performs leading-zero truncation, we have 
-	   to adjust where we copy the result to in the buffer to take into 
-	   account extra zero bytes that aren't extracted from the bignum */
-	CK( BN_mod_exp_mont( data, data, e, n, &pkcInfo->bnCTX,
+	   the bignum code performs leading-zero truncation, we have to adjust 
+	   where we copy the result to in the buffer to take into account extra 
+	   zero bytes that aren't extracted from the bignum.  In addition we 
+	   can't use the length returned from exportBignum() because this is the 
+	   length of the zero-truncated result, not the full length */
+	CK( BN_mod_exp_mont( data, data, e, n, pkcInfo->bnCTX,
 						 &pkcInfo->rsaParam_mont_n ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
@@ -378,16 +328,13 @@ static int encryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 	if( cryptStatusError( status ) )
 		return( status );
 
-	/* Perform side-channel attack checks */
-	if( cryptStatusError( \
-			checksumContextData( pkcInfo, CRYPT_ALGO_RSA,
-					( contextInfoPtr->flags & CONTEXT_FLAG_ISPUBLICKEY ) ? \
-					FALSE : TRUE ) ) )
+	/* Perform side-channel attack checks if necessary */
+	if( ( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION ) && \
+		cryptStatusError( calculateBignumChecksum( pkcInfo, 
+												   CRYPT_ALGO_RSA ) ) )
 		{
-		DEBUG_DIAG(( "RSA key memory corruption detected" ));
 		return( CRYPT_ERROR_FAILED );
 		}
-
 	return( CRYPT_OK );
 	}
 
@@ -413,45 +360,23 @@ static int encryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
    the Presence of Faults", Journal of Cryptology, Vol.12, No.4 (Autumn
    1999), p.241, based on an earlier result "On the importance of checking
    cryptographic protocols for faults", Dan Boneh, Richard DeMillo, and
-   Richard Lipton, Proceedings of EuroCrypt'97, Springer-Verlag LNCS 
-   Vol.1233, May 1997, p.37.  Adi Shamir presented one possible solution to 
-   the problem in the conference's rump session in "How to check modular 
-   exponentiation", which performs a parallel computation of the potentially 
-   fault-affected portions of the CRT operation in blinded form and then 
-   checks that the two outputs are consistent.  This has three drawbacks: 
-   It's slow, Shamir patented it (US Patent 5,991,415), and if one CRT is 
-   faulty there's no guarantee that the parallel CRT won't be faulty as 
-   well.  Better solutions were suggested by Sung-Ming Yen, Seungjoo Kim, 
-   Seongan Lim, and Sangjae Moon in "RSA Speedup with Residue Number System 
-   Immune against Hardware Fault Cryptanalysis", Proceedings of the 
-   Information Security and Cryptology Conference (ICISC'01), Springer-
-   Verlag LNCS Vol.2288, December 2001, p.397.  These have less overhead 
-   than Shamir's approach and are also less patented, but like Shamir's 
-   approach they involve messing around with the CRT computation.  A further 
-   update to this given by Sung-Ming Yen, Sangjae Kim, and Jae-Cheol Ha in 
-   "Hardware Fault Attack on RSA with CRT Revisited", Proceedings of the 
-   Information Security and Cryptology Conference (ICISC'02), Springer-
-   Verlag LNCS Vol.2587, November 2002, p.374, which updated the earlier 
-   work and also found flaws in Shamir's solution.  Numerous further updates
-   and ideas followed, for example "RSA with CRT: A New Cost-Effective 
-   Solution to Thwart Fault Attacks", David Vigilant, Proceedings of the
-   Workshop on Cryptographic Hardware and Embedded Systems (CHES'08), 
-   Springer-Verlag LNCS No.5154, August 2008, p.130, "Fault Attacks and 
-   Countermeasures on Vigilant's RSA-CRT Algorithm", Jean-Sébastien Coron, 
-   Christophe Giraud, Nicolas Morin, Gilles Piret and David Vigilant, 
-   Proceedings of the Workshop on Fault Diagnosis and Tolerance in 
-   Cryptography (FDTC'10), August 2010, p.89, and "Formal Analysis of 
-   CRT-RSA Vigilant's Countermeasure Against the BellCoRe Attack", Pablo 
-   Rauzy and Sylvain Guilley, Proceedings of the Program Protection and 
-   Reverse Engineering Workshop (PPREW'14), January 2014, Article No.2.  
-   More updates, with comprehensive surveys of existing approaches, are
-   "The Fault Attack Jungle - A Classification Model to Guide You", 
-   Proceedings of the Workshop on Fault Diagnosis and Tolerance in 
-   Cryptography (FDTC'11), p.3 and "Countermeasures Against High-Order 
-   Fault-Injection Attacks on CRT-RSA" by Pablo Rauzy and Sylvain Guilley, 
-   Proceedings of the Workshop on Fault Diagnosis and Tolerance in 
-   Cryptography (FDTC'14), currently unpublished but the paper is available 
-   as https://eprint.iacr.org/2014/559.
+   Richard Lipton, EuroCrypt'97, LNCS Vol.1233, p.37.  Adi Shamir presented
+   one possible solution to the problem in the conference's rump session in
+   "How to check modular exponentiation", which performs a parallel
+   computation of the potentially fault-affected portions of the CRT
+   operation in blinded form and then checks that the two outputs are
+   consistent.  This has three drawbacks: It's slow, Shamir patented it
+   (US Patent 5,991,415), and if one CRT is faulty there's no guarantee
+   that the parallel CRT won't be faulty as well.  Better solutions were
+   suggested by Sung-Ming Yen, Seungjoo Kim, Seongan Lim, and Sangjae
+   Moon in "RSA Speedup with Residue Number System Immune against Hardware
+   Fault Cryptanalysis", ICISC'01, LNCS Vol.2288, p.397.  These have less
+   overhead than Shamir's approach and are also less patented, but like
+   Shamir's approach they involve messing around with the CRT computation.
+   A further update to this given by Sung-Ming Yen, Sangjae Kim, and Jae-
+   Cheol Ha in "Hardware Fault Attack on RSA with CRT Revisited", ICISC'02,
+   LNCS Vol.2587, p.374, which updated the earlier work and also found flaws
+   in Shamir's solution.
 
    A much simpler solution is just to verify the CRT-based private-key
    operation with the matching public-key operation after we perform it.
@@ -480,14 +405,6 @@ static int decryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 	REQUIRES( noBytes == length );
 	REQUIRES( noBytes > 0 && noBytes < MAX_INTLENGTH_SHORT );
 
-	/* Perform side-channel attack checks */
-	if( cryptStatusError( \
-			checksumContextData( pkcInfo, CRYPT_ALGO_RSA, TRUE ) ) )
-		{
-		DEBUG_DIAG(( "RSA key memory corruption detected" ));
-		return( CRYPT_ERROR_FAILED );
-		}
-
 	/* Move the data from the buffer into a bignum.  We need to make an 
 	   unfortunate exception to the valid-length check for SSL's weird 
 	   signatures, which sign a raw concatenated MD5 and SHA-1 hash with a 
@@ -504,38 +421,27 @@ static int decryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 		return( CRYPT_ERROR_BADDATA );
 		}
 
-	/* If we're blinding the RSA operation, set:
-
-		data = ( ( rand^e ) * data ) mod n (where k = rand^e) 
-	
-	   In theory we could use BN_mod_mul_montgomery() for this and the later
-	   un-blinding and k update, but that would require converting data to
-	   its Montgomery form (as well as k/kInv, but we could keep that in
-	   the Montgomery form all the time).  It's not clear how much benefit
-	   would be gained by this, since it requires two Montgomery-form 
-	   conversions for each RSA operation */
+	/* If we're blinding the RSA operation, set
+	   data = ( ( rand^e ) * data ) mod n */
 	if( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION )
 		{
-		BIGNUM *k = &pkcInfo->rsaParam_blind_k;
-
-		CK( BN_mod_mul( data, data, k, &pkcInfo->rsaParam_n, 
-						&pkcInfo->bnCTX ) );
+		CK( BN_mod_mul( data, data, &pkcInfo->rsaParam_blind_k,
+						&pkcInfo->rsaParam_n, pkcInfo->bnCTX ) );
 		if( bnStatusError( bnStatus ) )
 			return( getBnStatus( bnStatus ) );
 		}
 
 	/* Rather than decrypting by computing a modexp with full mod n
 	   precision, compute a shorter modexp with mod p and mod q precision:
-
 		p2 = ( ( C mod p ) ** exponent1 ) mod p
 		q2 = ( ( C mod q ) ** exponent2 ) mod q */
 	CK( BN_mod( p2, data, p,			/* p2 = C mod p  */
-				&pkcInfo->bnCTX ) );
-	CK( BN_mod_exp_mont( p2, p2, e1, p, &pkcInfo->bnCTX,
+				pkcInfo->bnCTX ) );
+	CK( BN_mod_exp_mont( p2, p2, e1, p, pkcInfo->bnCTX,
 						 &pkcInfo->rsaParam_mont_p ) );
 	CK( BN_mod( q2, data, q,			/* q2 = C mod q  */
-				&pkcInfo->bnCTX ) );
-	CK( BN_mod_exp_mont( q2, q2, e2, q, &pkcInfo->bnCTX,
+				pkcInfo->bnCTX ) );
+	CK( BN_mod_exp_mont( q2, q2, e2, q, pkcInfo->bnCTX,
 						 &pkcInfo->rsaParam_mont_q ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
@@ -557,24 +463,23 @@ static int decryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 
 	/* M = ( ( ( p2 * u ) mod p ) * q ) + q2 */
 	CK( BN_mod_mul( data, p2, u, p,		/* data = ( p2 * u ) mod p */
-					&pkcInfo->bnCTX ) );
+					pkcInfo->bnCTX ) );
 	CK( BN_mul( p2, data, q,			/* p2 = data * q (bn can't reuse data) */
-				&pkcInfo->bnCTX ) );
+				pkcInfo->bnCTX ) );
 	CK( BN_add( data, p2, q2 ) );		/* data = p2 + q2 */
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 
 	/* If we're blinding the RSA operation, set
-
-		data = ( ( data^e ) / rand ) mod n
-			 = ( rand^-1 * data ) mod n */
+	   data = ( ( data^e ) / rand ) mod n
+			= ( rand^-1 * data ) mod n */
 	if( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION )
 		{
 		BIGNUM *n = &pkcInfo->rsaParam_n;
 		BIGNUM *k = &pkcInfo->rsaParam_blind_k;
 		BIGNUM *kInv = &pkcInfo->rsaParam_blind_kInv;
 
-		CK( BN_mod_mul( data, data, kInv, n, &pkcInfo->bnCTX ) );
+		CK( BN_mod_mul( data, data, kInv, n, pkcInfo->bnCTX ) );
 		if( bnStatusError( bnStatus ) )
 			return( getBnStatus( bnStatus ) );
 
@@ -591,17 +496,18 @@ static int decryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 		   can do much with this and leads to problems of its own since the
 		   process of calculating the new blinding value is itself 
 		   susceptible to side-channel attacks */
-		CK( BN_mod_mul( k, k, k, n, &pkcInfo->bnCTX ) );
-		CK( BN_mod_mul( kInv, kInv, kInv, n, &pkcInfo->bnCTX ) );
+		CK( BN_mod_mul( k, k, k, n, pkcInfo->bnCTX ) );
+		CK( BN_mod_mul( kInv, kInv, kInv, n, pkcInfo->bnCTX ) );
 		if( bnStatusError( bnStatus ) )
 			return( getBnStatus( bnStatus ) );
 		}
 
-	/* Perform the modexp and move the result back into the buffer.  Since 
-	   this function takes a fixed-length input and produces a fixed-length
-	   result but the bignum code performs leading-zero truncation, we have 
-	   to adjust where we copy the result to in the buffer to take into 
-	   account extra zero bytes that aren't extracted from the bignum */
+	/* Copy the result to the output.  Since the bignum code performs
+	   leading-zero truncation, we have to adjust where we copy the
+	   result to in the buffer to take into account extra zero bytes
+	   that aren't extracted from the bignum.  In addition we can't use
+	   the length returned from exportBignum() because this is the length 
+	   of the zero-truncated result, not the full length */
 	offset = length - BN_num_bytes( data );
 	if( offset > 0 )
 		memset( buffer, 0, offset );
@@ -609,14 +515,13 @@ static int decryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 	if( cryptStatusError( status ) )
 		return( status );
 
-	/* Perform side-channel attack checks */
-	if( cryptStatusError( \
-			checksumContextData( pkcInfo, CRYPT_ALGO_RSA, TRUE ) ) )
+	/* Perform side-channel attack checks if necessary */
+	if( ( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION ) && \
+		cryptStatusError( calculateBignumChecksum( pkcInfo, 
+												   CRYPT_ALGO_RSA ) ) )
 		{
-		DEBUG_DIAG(( "RSA key memory corruption detected" ));
 		return( CRYPT_ERROR_FAILED );
 		}
-
 	return( CRYPT_OK );
 	}
 
@@ -736,7 +641,7 @@ static int generateKey( INOUT CONTEXT_INFO *contextInfoPtr,
 		assert( DEBUG_WARN );
 		status = CRYPT_ERROR_FAILED;
 		}
-	return( cryptArgError( status ) ? CRYPT_ERROR_FAILED : status );
+	return( status );
 	}
 
 /****************************************************************************
@@ -747,9 +652,9 @@ static int generateKey( INOUT CONTEXT_INFO *contextInfoPtr,
 
 static const CAPABILITY_INFO FAR_BSS capabilityInfo = {
 	CRYPT_ALGO_RSA, bitsToBytes( 0 ), "RSA", 3,
-	MIN_PKCSIZE, bitsToBytes( 1536 ), CRYPT_MAX_PKCSIZE,
-	selfTest, getDefaultInfo, NULL, NULL, initKey, generateKey, 
-	encryptFn, decryptFn, NULL, NULL, NULL, NULL, NULL, NULL, 
+	MIN_PKCSIZE, bitsToBytes( 1024 ), CRYPT_MAX_PKCSIZE,
+	selfTest, getDefaultInfo, NULL, NULL, initKey, generateKey, encryptFn, decryptFn,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
 	decryptFn, encryptFn
 	};
 

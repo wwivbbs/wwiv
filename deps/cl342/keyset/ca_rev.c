@@ -7,12 +7,12 @@
 
 #if defined( INC_ALL )
   #include "crypt.h"
-  #include "dbms.h"
   #include "keyset.h"
+  #include "dbms.h"
 #else
   #include "crypt.h"
-  #include "keyset/dbms.h"
   #include "keyset/keyset.h"
+  #include "keyset/dbms.h"
 #endif /* Compiler-specific includes */
 
 #ifdef USE_DBMS
@@ -211,8 +211,8 @@ int caRevokeCert( INOUT DBMS_INFO *dbmsInfo,
 					( action == CRYPT_CERTACTION_RESTART_REVOKE_CERT || \
 					  ( action == CRYPT_CERTACTION_REVOKE_CERT && \
 						iCertificate == CRYPT_UNUSED ) ) ? TRUE : FALSE;
-	int certDataLength DUMMY_INIT, reqCertIDlength, subjCertIDlength;
-	int specialCertIDlength DUMMY_INIT, status = CRYPT_OK;
+	int certDataLength = DUMMY_INIT, reqCertIDlength, subjCertIDlength;
+	int specialCertIDlength = DUMMY_INIT, status = CRYPT_OK;
 
 	assert( isWritePtr( dbmsInfo, sizeof( DBMS_INFO ) ) );
 	
@@ -329,13 +329,8 @@ int caRevokeCert( INOUT DBMS_INFO *dbmsInfo,
 	   special-case certificate data */
 	if( action == CRYPT_CERTACTION_CERT_CREATION_REVERSE )
 		{
-		/* Turn the general certID into the form required for special-case
-		   certificate data by overwriting the first two bytes with an out-
-		   of-band value */
-		REQUIRES( rangeCheckZ( 0, subjCertIDlength, ENCODED_DBXKEYID_SIZE ) );
+		memcpy( specialCertID, subjCertID, subjCertIDlength );
 		memcpy( specialCertID, KEYID_ESC1, KEYID_ESC_SIZE );
-		memcpy( specialCertID + KEYID_ESC_SIZE, subjCertID + KEYID_ESC_SIZE, 
-				subjCertIDlength - KEYID_ESC_SIZE );
 		specialCertIDlength = subjCertIDlength;
 		}
 
@@ -451,10 +446,10 @@ int caRevokeCert( INOUT DBMS_INFO *dbmsInfo,
 	if( cryptStatusOK( status ) )
 		{
 		/* The fallback straight delete succeeded, exit with a warning */
-		setErrorString( errorInfo, "Warning: Direct certificate revocation "
-						"operation failed, revocation was handled via "
-						"straight delete", 99);
-		return( CRYPT_OK ); 
+		retExt( CRYPT_OK, 
+				( CRYPT_OK, errorInfo, 
+				  "Warning: Direct certificate revocation operation failed, "
+				  "revocation was handled via straight delete" ) );
 		}
 
 	/* The fallback failed as well, we've run out of options */

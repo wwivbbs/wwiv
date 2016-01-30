@@ -132,13 +132,17 @@ static int getRandomChecked( INOUT DEVICE_INFO *deviceInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int getRandomNonzero( INOUT DEVICE_INFO *deviceInfoPtr, 
 							 OUT_BUFFER_FIXED( length ) void *data,
-							 IN_LENGTH_SHORT const int length )
+							 IN_LENGTH_SHORT const int length,
+							 INOUT_OPT MESSAGE_FUNCTION_EXTINFO *messageExtInfo )
 	{
 	BYTE randomBuffer[ 128 + 8 ], *outBuffer = data;
 	int count, iterationCount, status = CRYPT_OK;
 
 	assert( isWritePtr( deviceInfoPtr, sizeof( DEVICE_INFO ) ) );
 	assert( isWritePtr( data, length ) );
+	assert( messageExtInfo == NULL || \
+			( isWritePtr( messageExtInfo, \
+						  sizeof( MESSAGE_FUNCTION_EXTINFO ) ) ) );
 
 	REQUIRES( length > 0 && length < MAX_INTLENGTH_SHORT );
 
@@ -159,10 +163,7 @@ static int getRandomNonzero( INOUT DEVICE_INFO *deviceInfoPtr,
 		   it again for further reads */
 		status = getRandomChecked( deviceInfoPtr, randomBuffer, 128, NULL );
 		if( cryptStatusError( status ) )
-			{
-			zeroise( data, length );
-			return( status );
-			}
+			break;
 		for( i = 0; count < length && i < 128; i++ )
 			{
 			if( randomBuffer[ i ] != 0 )
@@ -171,10 +172,11 @@ static int getRandomNonzero( INOUT DEVICE_INFO *deviceInfoPtr,
 		}
 	ENSURES( iterationCount < FAILSAFE_ITERATIONS_LARGE );
 	FORALL( i, 0, length, \
-			outBuffer[ i ] != 0 );
+			( ( BYTE * ) data )[ i ] != 0 );
 	zeroise( randomBuffer, 128 );
-
-	return( CRYPT_OK );
+	if( cryptStatusError( status ) )
+		zeroise( data, length );
+	return( status );
 	}
 
 /****************************************************************************
@@ -296,7 +298,7 @@ int getDeviceAttributeS( INOUT DEVICE_INFO *deviceInfoPtr,
 			if( deviceInfoPtr->getRandomFunction == NULL )
 				return( CRYPT_ERROR_RANDOM );
 			return( getRandomNonzero( deviceInfoPtr, msgData->data,
-									  msgData->length ) );
+									  msgData->length, messageExtInfo ) );
 
 		case CRYPT_IATTRIBUTE_RANDOM_NONCE:
 			if( deviceInfoPtr->getRandomFunction == NULL )

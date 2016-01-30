@@ -3,19 +3,19 @@
 
 # Make sure that we've been given sufficient arguments.
 
-if [ -z "$1" ] ; then
+if [ "$1" = "" ] ; then
 	echo "$0: Missing OS name." >&2 ;
 	exit 1 ;
 fi
-if [ -z "$2" ] ; then
+if [ "$2" = "" ] ; then
 	echo "$0: Missing library name." >&2 ;
 	exit 1 ;
 fi
-if [ -z "$3" ] ; then
+if [ "$3" = "" ] ; then
 	echo "$0: Missing 'ar' command name." >&2 ;
 	exit 1 ;
 fi
-if [ -z "$4" ] ; then
+if [ "$4" = "" ] ; then
 	echo "$0: Missing object filenames." >&2 ;
 	exit 1 ;
 fi

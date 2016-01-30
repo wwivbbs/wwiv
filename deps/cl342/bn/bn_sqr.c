@@ -63,13 +63,6 @@
   #include "bn/bn_lcl.h"
 #endif /* Compiler-specific includes */
 
-/* If BN_RECURSION is defined this uses an algorithm for BN_sqr() that 
-   results in very large values being generated which produces a huge 
-   increase in storage requirements for the fixed-size bignums, so we
-   disable it for this one module - pcg */
-
-#undef BN_RECURSION			/* pcg */
-
 /* r must not be a */
 /* I've just gone over this and it is now %20 faster on x86 - eay - 27 Jun 96 */
 int BN_sqr(BIGNUM *r, const BIGNUM *a, BN_CTX *ctx)
@@ -92,7 +85,7 @@ int BN_sqr(BIGNUM *r, const BIGNUM *a, BN_CTX *ctx)
 
 	BN_CTX_start(ctx);
 	rr=(a != r) ? r : BN_CTX_get(ctx);
-	tmp = BN_CTX_get_ext( ctx, BIGNUM_EXT_MUL1 );	/* pcg */
+	tmp=BN_CTX_get(ctx);
 	if (!rr || !tmp) goto err;
 
 	max = 2 * al; /* Non-zero (from above) */
@@ -160,7 +153,7 @@ int BN_sqr(BIGNUM *r, const BIGNUM *a, BN_CTX *ctx)
  err:
 	bn_check_top(rr);
 	bn_check_top(tmp);
-	BN_CTX_end_ext( ctx, BIGNUM_EXT_MUL1 );			/* pcg */
+	BN_CTX_end(ctx);
 	return(ret);
 	}
 

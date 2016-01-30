@@ -34,9 +34,9 @@
 
 #if defined( USE_TCP ) && defined( USE_DNSSRV )
 
-#if defined( _MSC_VER ) || defined( __GNUC__ )
+#if defined( _MSC_VER )
   #pragma message( "  Building with DNS SRV enabled." )
-#endif /* Warn about special features enabled */
+#endif /* Warn with VC++ */
 
 /****************************************************************************
 *																			*
@@ -169,10 +169,8 @@ static int convertToSrv( OUT_BUFFER_FIXED( srvNameMaxLen ) char *srvName,
 
 	assert( isReadPtr( srvName, srvNameMaxLen ) );
 	assert( isReadPtr( hostName, MIN_DNS_SIZE ) );
-	
-	ANALYSER_HINT_STRING( hostName );
 
-	REQUIRES( srvNameMaxLen > 16 && srvNameMaxLen <= MAX_DNS_SIZE );
+	REQUIRES( srvNameMaxLen > 0 && srvNameMaxLen <= MAX_DNS_SIZE );
 	REQUIRES( srvName != hostName );
 
 	/* Clear return value */
@@ -258,9 +256,8 @@ static int getSrvFQDN( INOUT NET_STREAM_INFO *netStream,
 
 			/* Check for a name */
 			if( DnsQuery( cachedFQDN, DNS_TYPE_PTR, DNS_QUERY_BYPASS_CACHE,
-						  NULL, &pDns, NULL ) == ERROR_SUCCESS )
+						  NULL, &pDns, NULL ) == 0 )
 				break;
-			pDns = NULL;
 			}
 		}
 	if( pDns == NULL )
@@ -301,7 +298,7 @@ int findHostInfo( INOUT NET_STREAM_INFO *netStream,
 				  IN_LENGTH_DNS const int nameLen )
 	{
 	PDNS_RECORD pDns = NULL, pDnsInfo = NULL, pDnsCursor;
-	DNS_STATUS dnsStatus;
+	DWORD dwRet;
 	char nameBuffer[ MAX_DNS_SIZE + 8 ];
 	int priority = 32767, i;
 
@@ -346,9 +343,9 @@ int findHostInfo( INOUT NET_STREAM_INFO *netStream,
 	   balancing facilities but for now we just use the highest-priority 
 	   host that we find (it's rarely-enough used that we'll be lucky to
 	   find SRV info let alone any load-balancing setup) */
-	dnsStatus = DnsQuery( ( const LPSTR ) name, DNS_TYPE_SRV, DNS_QUERY_STANDARD,
-						  NULL, &pDns, NULL );
-	if( dnsStatus != 0 || pDns == NULL )
+	dwRet = DnsQuery( ( const LPSTR ) name, DNS_TYPE_SRV, DNS_QUERY_STANDARD,
+					  NULL, &pDns, NULL );
+	if( dwRet != 0 || pDns == NULL )
 		{
 		int dummy;
 
@@ -409,7 +406,7 @@ int findHostInfo( INOUT NET_STREAM_INFO *netStream,
 #define SRV_NAME_OFFSET		( NS_RRFIXEDSZ + 6 )
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int getFQDN( STDC_UNUSED INOUT NET_STREAM_INFO *netStream, 
+static int getFQDN( INOUT NET_STREAM_INFO *netStream, 
 					OUT_BUFFER_FIXED( fqdnMaxLen ) char *fqdn, 
 					IN_LENGTH_DNS const int fqdnMaxLen )
 	{
@@ -606,8 +603,7 @@ int findHostInfo( INOUT NET_STREAM_INFO *netStream,
 		int priority, port;
 
 		nameSegmentLen = dn_skipname( namePtr, endPtr );
-		if( nameSegmentLen <= 0 || nameSegmentLen > MAX_DNS_SIZE || \
-			namePtr + nameSegmentLen + NS_SRVFIXEDSZ > endPtr )
+		if( nameSegmentLen <= 0 || nameSegmentLen > MAX_DNS_SIZE )
 			{
 	        return( setSocketError( netStream, "RR contains invalid answer", 26,
 	                                CRYPT_ERROR_BADDATA, FALSE ) );
@@ -629,14 +625,18 @@ int findHostInfo( INOUT NET_STREAM_INFO *netStream,
 			/* It's a lower-priority host, skip it */
 			nameSegmentLen = dn_skipname( namePtr, endPtr );
 			}
-		if( nameSegmentLen <= 0 || nameSegmentLen > MAX_DNS_SIZE || \
-			namePtr + nameSegmentLen > endPtr )
+		if( nameSegmentLen <= 0 || nameSegmentLen > MAX_DNS_SIZE )
 			{
 	        return( setSocketError( netStream, "RR contains invalid answer", 26,
 	                                CRYPT_ERROR_NOTFOUND, FALSE ) );
 			}
 		hostName[ nameSegmentLen ] = '\0';
 		namePtr += nameSegmentLen;
+		}
+	if( namePtr > endPtr )
+		{
+		return( setSocketError( netStream, "RR contains invalid data", 24,
+								CRYPT_ERROR_BADDATA, FALSE ) );
 		}
 #ifdef EBCDIC_CHARS
 	ebcdicToAscii( hostName, strlen( hostName ) );

@@ -36,7 +36,7 @@ static int processKeyFingerprint( INOUT SESSION_INFO *sessionInfoPtr,
 	HASHFUNCTION_ATOMIC hashFunctionAtomic;
 	const ATTRIBUTE_LIST *attributeListPtr = \
 				findSessionInfo( sessionInfoPtr->attributeList,
-								 CRYPT_SESSINFO_SERVER_FINGERPRINT_SHA1 );
+								 CRYPT_SESSINFO_SERVER_FINGERPRINT );
 	BYTE fingerPrint[ CRYPT_MAX_HASHSIZE + 8 ];
 	int hashSize;
 
@@ -53,7 +53,7 @@ static int processKeyFingerprint( INOUT SESSION_INFO *sessionInfoPtr,
 		{
 		/* Remember the value for the caller */
 		return( addSessionInfoS( &sessionInfoPtr->attributeList,
-								 CRYPT_SESSINFO_SERVER_FINGERPRINT_SHA1,
+								 CRYPT_SESSINFO_SERVER_FINGERPRINT,
 								 fingerPrint, hashSize ) );
 		}
 
@@ -112,9 +112,9 @@ static int processDHE( INOUT SESSION_INFO *sessionInfoPtr,
 					   INOUT STREAM *stream, 
 					   INOUT KEYAGREE_PARAMS *keyAgreeParams )
 	{
-	const int keyDataHdrSize = LENGTH_SIZE + sizeofString32( 6 );
-	void *keyexInfoPtr DUMMY_INIT_PTR;
-	int keyexInfoLength DUMMY_INIT, length, packetOffset, dummy, status;
+	const int keyDataHdrSize = LENGTH_SIZE + sizeofString32( "ssh-dh", 6 );
+	void *keyexInfoPtr = DUMMY_INIT_PTR;
+	int keyexInfoLength = DUMMY_INIT, length, packetOffset, dummy, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( handshakeInfo, sizeof( SSH_HANDSHAKE_INFO ) ) );
@@ -123,13 +123,13 @@ static int processDHE( INOUT SESSION_INFO *sessionInfoPtr,
 
 	/*	...
 		byte	type = SSH_MSG_KEXDH_GEX_REQUEST_OLD
-		uint32	n = SSH_DEFAULT_KEYSIZE bits
+		uint32	n = 1024 bits
 
 	   There's an alternative format that allows the client to specify a
 	   range of key sizes:
 
 		byte	type = SSH_MSG_KEXDH_GEX_REQUEST_NEW
-		uint32	min = MIN_PKCSIZE bits
+		uint32	min = 1024 bits
 		uint32	n = SSH_DEFAULT_KEYSIZE (as bits)
 		uint32	max = CRYPT_MAX_PKCSIZE (as bits)
 
@@ -150,7 +150,7 @@ static int processDHE( INOUT SESSION_INFO *sessionInfoPtr,
 	if( cryptStatusOK( status ) )
 		{
 		streamBookmarkSet( stream, keyexInfoLength );
-		writeUint32( stream, bytesToBits( MIN_PKCSIZE ) );
+		writeUint32( stream, 1024 );
 		writeUint32( stream, bytesToBits( SSH2_DEFAULT_KEYSIZE ) );
 		status = writeUint32( stream, bytesToBits( CRYPT_MAX_PKCSIZE ) );
 		}
@@ -182,8 +182,8 @@ static int processDHE( INOUT SESSION_INFO *sessionInfoPtr,
 		mpint	g */
 	status = length = \
 		readHSPacketSSH2( sessionInfoPtr, SSH_MSG_KEXDH_GEX_GROUP,
-						  ID_SIZE + sizeofString32( MIN_PKCSIZE ) + \
-							sizeofString32( 1 ) );
+						  ID_SIZE + sizeofString32( "", MIN_PKCSIZE ) + \
+							sizeofString32( "", 1 ) );
 	if( cryptStatusError( status ) )
 		return( status );
 	sMemConnect( stream, sessionInfoPtr->receiveBuffer, length );
@@ -232,7 +232,7 @@ static int processDHE( INOUT SESSION_INFO *sessionInfoPtr,
 	memmove( ( BYTE * ) keyexInfoPtr + keyDataHdrSize, keyexInfoPtr, 
 			 keyexInfoLength );
 	sMemOpen( stream, keyexInfoPtr, keyDataHdrSize );
-	writeUint32( stream, sizeofString32( 6 ) + keyexInfoLength );
+	writeUint32( stream, sizeofString32( "ssh-dh", 6 ) + keyexInfoLength );
 	status = writeString32( stream, "ssh-dh", 6 );
 	sMemDisconnect( stream );
 	ENSURES( cryptStatusOK( status ) );
@@ -268,12 +268,14 @@ static int processDHE( INOUT SESSION_INFO *sessionInfoPtr,
 /* Switch from using DH contexts and a DH exchange to the equivalent ECDH 
    contexts and values */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int switchToECDH( INOUT SSH_HANDSHAKE_INFO *handshakeInfo,
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+static int switchToECDH( INOUT SESSION_INFO *sessionInfoPtr,
+						 INOUT SSH_HANDSHAKE_INFO *handshakeInfo,
 						 INOUT KEYAGREE_PARAMS *keyAgreeParams )
 	{
 	int status;
 
+	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( handshakeInfo, sizeof( SSH_HANDSHAKE_INFO ) ) );
 	assert( isWritePtr( keyAgreeParams, sizeof( KEYAGREE_PARAMS ) ) );
 
@@ -309,8 +311,8 @@ static int beginClientHandshake( INOUT SESSION_INFO *sessionInfoPtr,
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	KEYAGREE_PARAMS keyAgreeParams;
 	STREAM stream;
-	void *clientHelloPtr DUMMY_INIT_PTR, *keyexPtr DUMMY_INIT_PTR;
-	int serverHelloLength, clientHelloLength, keyexLength DUMMY_INIT;
+	void *clientHelloPtr = DUMMY_INIT_PTR, *keyexPtr = DUMMY_INIT_PTR;
+	int serverHelloLength, clientHelloLength, keyexLength = DUMMY_INIT;
 	int packetOffset = 0, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
@@ -318,7 +320,7 @@ static int beginClientHandshake( INOUT SESSION_INFO *sessionInfoPtr,
 
 	/* The higher-level code has already read the server version information, 
 	   send back our own version information */
-	status = swrite( &sessionInfoPtr->stream, SSH_ID_STRING "\r\n",
+	status = swrite( &sessionInfoPtr->stream, SSH2_ID_STRING "\r\n",
 					 SSH_ID_STRING_SIZE + 2 );
 	if( cryptStatusError( status ) )
 		{
@@ -327,19 +329,32 @@ static int beginClientHandshake( INOUT SESSION_INFO *sessionInfoPtr,
 		return( status );
 		}
 
-	/* SSH hashes the handshake ID strings for integrity-protection purposes, 
-	   first our client string and then the server string that we read 
-	   previously */
-	status = hashHandshakeStrings( handshakeInfo, 
-								   SSH_ID_STRING, SSH_ID_STRING_SIZE,
+	/* SSH hashes parts of the handshake messages for integrity-protection
+	   purposes so we hash the ID strings (first our client string, then the
+	   server string that we read previously) encoded as SSH string values 
+	   and without the CRLF terminator that we sent above, which isn't part
+	   of the hashed data.  In addition since the handshake can 
+	   retroactively switch to a different hash algorithm mid-exchange we 
+	   have to speculatively hash the messages with alternative algorithms
+	   in case the other side decides to switch */
+	status = hashAsString( handshakeInfo->iExchangeHashContext, 
+						   SSH2_ID_STRING, SSH_ID_STRING_SIZE );
+	if( cryptStatusOK( status ) )
+		status = hashAsString( handshakeInfo->iExchangeHashContext,
+							   sessionInfoPtr->receiveBuffer,
+							   strlen( sessionInfoPtr->receiveBuffer ) );
+	if( cryptStatusOK( status ) && \
+		handshakeInfo->iExchangeHashAltContext != CRYPT_ERROR )
+		{
+		status = hashAsString( handshakeInfo->iExchangeHashAltContext, 
+							   SSH2_ID_STRING, SSH_ID_STRING_SIZE );
+		if( cryptStatusOK( status ) )
+			status = hashAsString( handshakeInfo->iExchangeHashAltContext,
 								   sessionInfoPtr->receiveBuffer,
-								   sessionInfoPtr->receiveBufEnd );
+								   strlen( sessionInfoPtr->receiveBuffer ) );
+		}
 	if( cryptStatusError( status ) )
 		return( status );
-
-	/* Now that we've processed the out-of-band data in the receive buffer, 
-	   mark it as empty */
-	sessionInfoPtr->receiveBufEnd = 0;
 
 	/* While we wait for the server to digest our version information and 
 	   send back its response we can create the context with the DH key and
@@ -361,11 +376,6 @@ static int beginClientHandshake( INOUT SESSION_INFO *sessionInfoPtr,
 							  &serverHelloLength, FALSE );
 	if( cryptStatusError( status ) )
 		return( status );
-
-	/* If we're fuzzing the input then we're reading static data and no 
-	   further input is processed after this point, exit now to minimise
-	   the overhead during fuzz testing */
-	FUZZ_EXIT();
 
 	/* Build the client hello and DH/ECDH phase 1 keyex packet:
 
@@ -420,8 +430,7 @@ static int beginClientHandshake( INOUT SESSION_INFO *sessionInfoPtr,
 		}
 	status = writeAlgoString( &stream, handshakeInfo->keyexAlgo );
 	if( cryptStatusOK( status ) )
-		status = writeAlgoStringEx( &stream, handshakeInfo->pubkeyAlgo, 
-									handshakeInfo->hashAlgo );
+		status = writeAlgoString( &stream, handshakeInfo->pubkeyAlgo );
 	if( cryptStatusOK( status ) )
 		status = writeAlgoString( &stream, sessionInfoPtr->cryptAlgo );
 	if( cryptStatusOK( status ) )
@@ -431,9 +440,9 @@ static int beginClientHandshake( INOUT SESSION_INFO *sessionInfoPtr,
 	if( cryptStatusOK( status ) )
 		status = writeAlgoString( &stream, sessionInfoPtr->integrityAlgo );
 	if( cryptStatusOK( status ) )
-		status = writeAlgoClassList( &stream, SSH_ALGOCLASS_COPR );
+		status = writeAlgoString( &stream, CRYPT_PSEUDOALGO_COPR );
 	if( cryptStatusOK( status ) )
-		status = writeAlgoClassList( &stream, SSH_ALGOCLASS_COPR );
+		status = writeAlgoString( &stream, CRYPT_PSEUDOALGO_COPR );
 	if( cryptStatusError( status ) )
 		return( status );
 	writeUint32( &stream, 0 );	/* No language tag */
@@ -501,7 +510,8 @@ static int beginClientHandshake( INOUT SESSION_INFO *sessionInfoPtr,
 	   and a DH exchange to the equivalent ECDH contexts and values */
 	if( handshakeInfo->isECDH )
 		{
-		status = switchToECDH( handshakeInfo, &keyAgreeParams );
+		status = switchToECDH( sessionInfoPtr, handshakeInfo, 
+							   &keyAgreeParams );
 		if( cryptStatusError( status ) )
 			{
 			sMemDisconnect( &stream );
@@ -523,8 +533,6 @@ static int beginClientHandshake( INOUT SESSION_INFO *sessionInfoPtr,
 		   DH packet exchange so we need to create a new stream */
 		status = openPacketStreamSSH( &stream, sessionInfoPtr, 
 									  SSH_MSG_KEXDH_GEX_INIT );
-		if( cryptStatusError( status ) )
-			return( status );
 		}
 	else
 		{
@@ -587,12 +595,12 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int exchangeClientKeys( INOUT SESSION_INFO *sessionInfoPtr,
 							   INOUT SSH_HANDSHAKE_INFO *handshakeInfo )
 	{
-	CRYPT_ALGO_TYPE pubkeyAlgo DUMMY_INIT;
+	CRYPT_ALGO_TYPE pubkeyAlgo = DUMMY_INIT;
 	STREAM stream;
 	MESSAGE_DATA msgData;
-	void *keyPtr DUMMY_INIT_PTR, *keyBlobPtr DUMMY_INIT_PTR;
-	void *sigPtr DUMMY_INIT_PTR;
-	int keyLength DUMMY_INIT, keyBlobLength, sigLength, length;
+	void *keyPtr = DUMMY_INIT_PTR, *keyBlobPtr = DUMMY_INIT_PTR;
+	void *sigPtr = DUMMY_INIT_PTR;
+	int keyLength = DUMMY_INIT, keyBlobLength, sigLength, length;
 	int dummy, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
@@ -635,11 +643,11 @@ static int exchangeClientKeys( INOUT SESSION_INFO *sessionInfoPtr,
 		readHSPacketSSH2( sessionInfoPtr,
 						  ( handshakeInfo->requestedServerKeySize > 0 ) ? \
 							SSH_MSG_KEXDH_GEX_REPLY : SSH_MSG_KEXDH_REPLY,
-						  ID_SIZE + LENGTH_SIZE + sizeofString32( 6 ) + \
-							sizeofString32( 1 ) + \
-							sizeofString32( bitsToBytes( 512 ) - 4 ) + \
-							sizeofString32( bitsToBytes( 512 ) - 4 ) + \
-							LENGTH_SIZE + sizeofString32( 6 ) + 40 );
+						  ID_SIZE + LENGTH_SIZE + sizeofString32( "", 6 ) + \
+							sizeofString32( "", 1 ) + \
+							sizeofString32( "", bitsToBytes( 512 ) - 4 ) + \
+							sizeofString32( "", bitsToBytes( 512 ) - 4 ) + \
+							LENGTH_SIZE + sizeofString32( "", 6 ) + 40 );
 	if( cryptStatusError( status ) )
 		return( status );
 	sMemConnect( &stream, sessionInfoPtr->receiveBuffer, length );
@@ -798,7 +806,7 @@ static int exchangeClientKeys( INOUT SESSION_INFO *sessionInfoPtr,
 	streamBookmarkSet( &stream, sigLength );
 	status = length = readUint32( &stream );
 	if( !cryptStatusError( status ) )
-		status = sSkip( &stream, length, MAX_INTLENGTH_SHORT );
+		status = sSkip( &stream, length );
 	if( cryptStatusOK( status ) )
 		status = streamBookmarkComplete( &stream, &sigPtr, &sigLength, 
 										 sigLength );
@@ -844,7 +852,7 @@ static int exchangeClientKeys( INOUT SESSION_INFO *sessionInfoPtr,
 		  memcmp( ( BYTE * ) sigPtr + LENGTH_SIZE + LENGTH_SIZE,
 				  "pgp-sign-dss", 12 ) ) )
 		{
-		int fixedSigLength DUMMY_INIT;
+		int fixedSigLength = DUMMY_INIT;
 
 		/* Rewrite the signature to fix up the overall length at the start 
 		   and insert the algorithm name and signature length.  We can 
@@ -853,8 +861,8 @@ static int exchangeClientKeys( INOUT SESSION_INFO *sessionInfoPtr,
 		   which is far longer than the 12 bytes of header plus signature 
 		   that we'll be writing there */
 		sMemOpen( &stream, sessionInfoPtr->receiveBuffer,
-				  LENGTH_SIZE + sizeofString32( 7 ) + sigLength );
-		writeUint32( &stream, sizeofString32( 7 ) + sigLength );
+				  LENGTH_SIZE + sizeofString32( "", 7 ) + sigLength );
+		writeUint32( &stream, sizeofString32( "", 7 ) + sigLength );
 		writeString32( &stream, "ssh-dss", 7 );
 		status = swrite( &stream, sigPtr, sigLength );
 		if( cryptStatusOK( status ) )
@@ -921,9 +929,8 @@ static int completeClientHandshake( INOUT SESSION_INFO *sessionInfoPtr,
 
 	   After this point the write channel is in the secure state */
 	status = openPacketStreamSSH( &stream, sessionInfoPtr, SSH_MSG_NEWKEYS );
-	if( cryptStatusError( status ) )
-		return( status );
-	status = wrapPacketSSH2( sessionInfoPtr, &stream, 0, FALSE, TRUE );
+	if( cryptStatusOK( status ) )
+		status = wrapPacketSSH2( sessionInfoPtr, &stream, 0, FALSE, TRUE );
 	if( cryptStatusError( status ) )
 		{
 		sMemDisconnect( &stream );
@@ -1030,7 +1037,7 @@ static int completeClientHandshake( INOUT SESSION_INFO *sessionInfoPtr,
 			string	service_name = "ssh-userauth" */
 		status = length = \
 			readHSPacketSSH2( sessionInfoPtr, SSH_MSG_SERVICE_ACCEPT,
-							  ID_SIZE + sizeofString32( 8 ) );
+							  ID_SIZE + sizeofString32( "", 8 ) );
 		if( cryptStatusError( status ) )
 			return( status );
 		sMemConnect( &stream, sessionInfoPtr->receiveBuffer, length );
@@ -1093,9 +1100,11 @@ static int completeClientHandshake( INOUT SESSION_INFO *sessionInfoPtr,
 *																			*
 ****************************************************************************/
 
-STDC_NONNULL_ARG( ( 1 ) ) \
-void initSSH2clientProcessing( INOUT SSH_HANDSHAKE_INFO *handshakeInfo )
+STDC_NONNULL_ARG( ( 1, 2 ) ) \
+void initSSH2clientProcessing( STDC_UNUSED SESSION_INFO *sessionInfoPtr,
+							   INOUT SSH_HANDSHAKE_INFO *handshakeInfo )
 	{
+	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( handshakeInfo, sizeof( SSH_HANDSHAKE_INFO ) ) );
 
 	handshakeInfo->beginHandshake = beginClientHandshake;

@@ -339,6 +339,114 @@ static int decryptCFB( CONTEXT_INFO *contextInfoPtr, BYTE *buffer,
 	return( CRYPT_OK );
 	}
 
+/* Encrypt/decrypt data in OFB mode */
+
+static int encryptOFB( CONTEXT_INFO *contextInfoPtr, BYTE *buffer, 
+					   int noBytes )
+	{
+	CONV_INFO *convInfo = contextInfoPtr->ctxConv;
+	DES3_KEY *des3Key = ( DES3_KEY * ) convInfo->key;
+	int i, ivCount = convInfo->ivCount;
+
+	/* If there's any encrypted material left in the IV, use it now */
+	if( ivCount > 0 )
+		{
+		int bytesToUse;
+
+		/* Find out how much material left in the encrypted IV we can use */
+		bytesToUse = DES_BLOCKSIZE - ivCount;
+		if( noBytes < bytesToUse )
+			bytesToUse = noBytes;
+
+		/* Encrypt the data */
+		for( i = 0; i < bytesToUse; i++ )
+			buffer[ i ] ^= convInfo->currentIV[ i + ivCount ];
+
+		/* Adjust the byte count and buffer position */
+		noBytes -= bytesToUse;
+		buffer += bytesToUse;
+		ivCount += bytesToUse;
+		}
+
+	while( noBytes > 0 )
+		{
+		ivCount = ( noBytes > DES_BLOCKSIZE ) ? DES_BLOCKSIZE : noBytes;
+
+		/* Encrypt the IV */
+		des_ecb3_encrypt( ( C_Block * ) convInfo->currentIV,
+						  ( C_Block * ) convInfo->currentIV,
+						  des3Key->desKey1, des3Key->desKey2,
+						  des3Key->desKey3, DES_ENCRYPT );
+
+		/* XOR the buffer contents with the encrypted IV */
+		for( i = 0; i < ivCount; i++ )
+			buffer[ i ] ^= convInfo->currentIV[ i ];
+
+		/* Move on to next block of data */
+		noBytes -= ivCount;
+		buffer += ivCount;
+		}
+
+	/* Remember how much of the IV is still available for use */
+	convInfo->ivCount = ( ivCount % DES_BLOCKSIZE );
+
+	return( CRYPT_OK );
+	}
+
+/* Decrypt data in OFB mode */
+
+static int decryptOFB( CONTEXT_INFO *contextInfoPtr, BYTE *buffer, 
+					   int noBytes )
+	{
+	CONV_INFO *convInfo = contextInfoPtr->ctxConv;
+	DES3_KEY *des3Key = ( DES3_KEY * ) convInfo->key;
+	int i, ivCount = convInfo->ivCount;
+
+	/* If there's any encrypted material left in the IV, use it now */
+	if( ivCount > 0 )
+		{
+		int bytesToUse;
+
+		/* Find out how much material left in the encrypted IV we can use */
+		bytesToUse = DES_BLOCKSIZE - ivCount;
+		if( noBytes < bytesToUse )
+			bytesToUse = noBytes;
+
+		/* Decrypt the data */
+		for( i = 0; i < bytesToUse; i++ )
+			buffer[ i ] ^= convInfo->currentIV[ i + ivCount ];
+
+		/* Adjust the byte count and buffer position */
+		noBytes -= bytesToUse;
+		buffer += bytesToUse;
+		ivCount += bytesToUse;
+		}
+
+	while( noBytes > 0 )
+		{
+		ivCount = ( noBytes > DES_BLOCKSIZE ) ? DES_BLOCKSIZE : noBytes;
+
+		/* Encrypt the IV */
+		des_ecb3_encrypt( ( C_Block * ) convInfo->currentIV,
+						  ( C_Block * ) convInfo->currentIV,
+						  des3Key->desKey1, des3Key->desKey2,
+						  des3Key->desKey3, DES_ENCRYPT );
+
+		/* XOR the buffer contents with the encrypted IV */
+		for( i = 0; i < ivCount; i++ )
+			buffer[ i ] ^= convInfo->currentIV[ i ];
+
+		/* Move on to next block of data */
+		noBytes -= ivCount;
+		buffer += ivCount;
+		}
+
+	/* Remember how much of the IV is still available for use */
+	convInfo->ivCount = ( ivCount % DES_BLOCKSIZE );
+
+	return( CRYPT_OK );
+	}
+
 /****************************************************************************
 *																			*
 *							3DES Key Management Routines					*
@@ -422,7 +530,7 @@ static const CAPABILITY_INFO FAR_BSS capabilityInfo = {
 	bitsToBytes( 128 ), bitsToBytes( 192 ), bitsToBytes( 192 ),
 	selfTest, getInfo, NULL, initGenericParams, initKey, NULL,
 	encryptECB, decryptECB, encryptCBC, decryptCBC,
-	encryptCFB, decryptCFB
+	encryptCFB, decryptCFB, encryptOFB, decryptOFB
 	};
 
 const CAPABILITY_INFO *get3DESCapability( void )

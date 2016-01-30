@@ -159,8 +159,7 @@ int BN_exp(BIGNUM *r, const BIGNUM *a, const BIGNUM *p, BN_CTX *ctx)
 		}
 	ret=1;
 err:
-	if (r != rr && rr != NULL) /* pcg - Added check for rr == NULL */
-	  BN_copy(r,rr);
+	if (r != rr) BN_copy(r,rr);
 	BN_CTX_end(ctx);
 	bn_check_top(r);
 	return(ret);
@@ -532,7 +531,8 @@ static int MOD_EXP_CTIME_COPY_TO_PREBUF(BIGNUM *b, int top, unsigned char *buf, 
 	{
 	size_t i, j;
 
-	if (bn_wexpand(b, top) == NULL) return 0;
+	if (bn_wexpand(b, top) == NULL)
+		return 0;
 	while (b->top < top)
 		{
 		b->d[b->top++] = 0;
@@ -551,7 +551,9 @@ static int MOD_EXP_CTIME_COPY_FROM_PREBUF(BIGNUM *b, int top, unsigned char *buf
 	{
 	size_t i, j;
 
-	if (bn_wexpand(b, top) == NULL) return 0;
+	if (bn_wexpand(b, top) == NULL)
+		return 0;
+
 	for (i=0, j=idx; i < top * sizeof b->d[0]; i++, j+=width)
 		{
 		((unsigned char*)b->d)[i] = buf[j];

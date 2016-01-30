@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *					cryptlib Randomness Management Routines					*
-*						Copyright Peter Gutmann 1995-2014					*
+*						Copyright Peter Gutmann 1995-2007					*
 *																			*
 ****************************************************************************/
 
@@ -56,16 +56,15 @@
 
 /* If we don't have a defined randomness interface, complain */
 
-#if !( defined( __Android__ ) || defined( __BEOS__ ) || \
-	   defined( __ECOS__ ) || defined( __IBM4758__ ) || \
-	   defined( __iOS__ ) || defined( __MAC__ ) || defined( __MSDOS__ ) || \
-	   defined( __MVS__ ) || defined( __Nucleus__ ) || \
-	   defined( __OS2__ ) || defined( __PALMOS__ ) || \
-	   defined( __SMX__ ) || defined( __TANDEM_NSK__ ) || \
+#if !( defined( __BEOS__ ) || defined( __ECOS__ ) || \
+	   defined( __IBM4758__ ) || defined( __MAC__ ) || \
+	   defined( __MSDOS__ ) || defined( __MVS__ ) || \
+	   defined( __Nucleus__ ) || defined( __OS2__ ) || \
+	   defined( __PALMOS__ ) || defined( __TANDEM_NSK__ ) || \
 	   defined( __TANDEM_OSS__ ) || defined( __UNIX__ ) || \
-	   defined( __VMCMS__ ) || defined( __VxWorks__ ) || \
-	   defined( __WIN16__ ) || defined( __WIN32__ ) || \
-	   defined( __WINCE__ ) || defined( __XMK__ ) )
+	   defined( __VMCMS__ ) || defined( __WIN16__ ) || \
+	   defined( __WIN32__ ) || defined( __WINCE__ ) || \
+	   defined( __XMK__ ) )
   #error You need to create OS-specific randomness-gathering functions in random/<os-name>.c
 #endif /* Various OS-specific defines */
 
@@ -74,15 +73,8 @@
 
 #ifdef CONFIG_RANDSEED
   #ifndef CONFIG_RANDSEED_QUALITY
-	/* If the user hasn't provided a quality estimate, default to 90.  This
-	   isn't necessarily because the quality is that good, but because many
-	   embedded systems provide so little entropy that setting it to 
-	   anything less then 90 would result in us never reaching the required 
-	   entropy level.  This isn't as arbitrary as it seems because the seed-
-	   file entropy is in theory 100 since it's meant to be produced from a
-	   cryptographically strong source, the use of a non-100 value is just
-	   to force an entropy poll if the user hasn't performed one */
-	#define CONFIG_RANDSEED_QUALITY		90
+	/* If the user hasn't provided a quality estimate, default to 80 */
+	#define CONFIG_RANDSEED_QUALITY		80
   #endif /* !CONFIG_RANDSEED_QUALITY */
   #if ( CONFIG_RANDSEED_QUALITY < 10 ) || ( CONFIG_RANDSEED_QUALITY > 100 )
 	#error CONFIG_RANDSEED_QUALITY must be between 10 and 100
@@ -92,6 +84,13 @@
   STDC_NONNULL_ARG( ( 1 ) ) \
   static void addStoredSeedData( INOUT RANDOM_INFO *randomInfo );
 #endif /* CONFIG_RANDSEED */
+
+/* A custom form of REQUIRES()/ENSURES() that takes care of unlocking the
+   randomness mutex on the way out */
+
+#define REQUIRES_MUTEX( x )	\
+		if( !( x ) ) { krnlExitMutex( MUTEX_RANDOM ); retIntError(); }
+#define ENSURES_MUTEX	REQUIRES_MUTEX
 
 /****************************************************************************
 *																			*
@@ -139,23 +138,6 @@ static BOOLEAN sanityCheck( const RANDOM_INFO *randomInfo )
 	return( TRUE );
 	}
 
-/* Checksum the randomness state */
-
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
-static BOOLEAN checksumRandomPool( RANDOM_INFO *randomInfo )
-	{
-	const int oldChecksum = randomInfo->checksum;
-	int newChecksum;
-
-	assert( isWritePtr( randomInfo, sizeof( RANDOM_INFO ) ) );
-
-	randomInfo->checksum = 0;
-	newChecksum = checksumData( randomInfo, sizeof( RANDOM_INFO ) );
-	randomInfo->checksum = newChecksum;
-
-	return( ( oldChecksum == newChecksum ) ? TRUE : FALSE );
-	}
-
 /****************************************************************************
 *																			*
 *						Random Pool Management Routines						*
@@ -165,12 +147,11 @@ static BOOLEAN checksumRandomPool( RANDOM_INFO *randomInfo )
 /* Initialise and shut down the random pool */
 
 STDC_NONNULL_ARG( ( 1 ) ) \
-void initRandomPool( OUT RANDOM_INFO *randomInfo )
+void initRandomPool( INOUT RANDOM_INFO *randomInfo )
 	{
 	assert( isWritePtr( randomInfo, sizeof( RANDOM_INFO ) ) );
 
 	memset( randomInfo, 0, sizeof( RANDOM_INFO ) );
-	( void ) checksumRandomPool( randomInfo );
 	}
 
 STDC_NONNULL_ARG( ( 1 ) ) \
@@ -305,11 +286,11 @@ static int mixRandomPool( INOUT RANDOM_INFO *randomInfo )
    design here predates Barak-Halevi by about 10 years but the principle is
    the same).
    
-   The transformed version of the pool from which the output data will be 
-   drawn is then further processed by running each 64-bit block through the 
-   X9.17 generator.  As an additional precaution the output data is folded 
-   in half to ensure that not even a hashed or encrypted form of the 
-   previous contents is available.  No pool data ever leaves the pool.
+   The transformed version of the pool from which the key data will be drawn 
+   is then further processed by running each 64-bit block through the X9.17
+   generator.  As an additional precaution the key data is folded in half to
+   ensure that not even a hashed or encrypted form of the previous contents
+   is available.  No pool data ever leaves the pool.
 
    This function performs a more paranoid version of the FIPS 140 continuous
    tests on both the main pool contents and the X9.17 generator output to
@@ -369,10 +350,7 @@ static int tryGetRandomOutput( INOUT RANDOM_INFO *randomInfo,
 	if( cryptStatusOK( status ) )
 		status = mixRandomPool( exportedRandomInfo );
 	if( cryptStatusError( status ) )
-		{
-		endRandomPool( exportedRandomInfo );
 		return( status );
-		}
 
 	/* Postcondition for the mixing: The two pools differ, and the difference
 	   is more than just the bit flipping (this has a ~1e-14 chance of a false
@@ -406,7 +384,6 @@ static int tryGetRandomOutput( INOUT RANDOM_INFO *randomInfo,
 			{
 			/* We're repeating previous output, tell the caller to try
 			   again */
-			endRandomPool( exportedRandomInfo );
 			return( OK_SPECIAL );
 			}
 		}
@@ -420,10 +397,7 @@ static int tryGetRandomOutput( INOUT RANDOM_INFO *randomInfo,
 	status = generateX917( randomInfo, exportedRandomInfo->randomPool,
 						   RANDOMPOOL_ALLOCSIZE );
 	if( cryptStatusError( status ) )
-		{
-		endRandomPool( exportedRandomInfo );
 		return( status );
-		}
 
 	/* Check for stuck-at faults in the X9.17 generator by comparing a short
 	   sample from the current output with samples from the previous
@@ -454,13 +428,11 @@ static int tryGetRandomOutput( INOUT RANDOM_INFO *randomInfo,
 						 exportedRandomInfo->randomPool,
 						 RANDOMPOOL_SAMPLE_SIZE ) )
 				{
-				endRandomPool( exportedRandomInfo );
 				retIntError();
 				}
 
 			/* We're repeating previous output, tell the caller to try
 			   again */
-			endRandomPool( exportedRandomInfo );
 			return( OK_SPECIAL );
 			}
 		}
@@ -492,12 +464,10 @@ static int getRandomOutput( INOUT RANDOM_INFO *randomInfo,
 				   "Random pool size" );
 
 	/* Precondition for output quantity: We're being asked for a valid output
-	   length and we're not trying to use more than half the pool contents.
-	   Note that we've already checked that RANDOM_OUTPUTSIZE == 
-	   RANDOMPOOL_SIZE / 2 so we only check RANDOM_OUTPUTSIZE in the 
-	   REQUIRES() */
+	   length and we're not trying to use more than half the pool contents */
 	REQUIRES( sanityCheck( randomInfo ) );
-	REQUIRES( length > 0 && length <= RANDOM_OUTPUTSIZE );
+	REQUIRES( length > 0 && length <= RANDOM_OUTPUTSIZE && \
+			  length <= RANDOMPOOL_SIZE / 2 );
 
 	/* If the X9.17 generator cryptovariables haven't been initialised yet
 	   or have reached their use-by date, set the generator key and seed from
@@ -544,8 +514,6 @@ static int getRandomOutput( INOUT RANDOM_INFO *randomInfo,
 	     status == OK_SPECIAL && noRandomRetries < RANDOMPOOL_RETRIES; 
 		 noRandomRetries++ )
 		{
-		/* Reset the random pool before we retry */
-		initRandomPool( &exportedRandomInfo );
 		status = tryGetRandomOutput( randomInfo, &exportedRandomInfo );
 		}
 	if( cryptStatusError( status ) )
@@ -618,7 +586,6 @@ int getRandomData( INOUT TYPECAST( RANDOM_INFO * ) void *randomInfoPtr,
 	{
 	RANDOM_INFO *randomInfo = ( RANDOM_INFO * ) randomInfoPtr;
 	BYTE *bufPtr = buffer;
-	BOOLEAN randomInfoOK = FALSE;
 	int randomQuality, count, iterationCount, status;
 
 	assert( isWritePtr( randomInfo, sizeof( RANDOM_INFO ) ) );
@@ -635,24 +602,17 @@ int getRandomData( INOUT TYPECAST( RANDOM_INFO * ) void *randomInfoPtr,
 	status = krnlEnterMutex( MUTEX_RANDOM );
 	if( cryptStatusError( status ) )
 		return( status );
-
-	/* Make sure that the random information is in order */
-	if( sanityCheck( randomInfo ) && checksumRandomPool( randomInfo ) )
-		randomInfoOK = TRUE;
+	REQUIRES_MUTEX( sanityCheck( randomInfo ) );
 
 	/* If we're using a stored random seed, add it to the entropy pool if
-	   necessary and update the random information checksum since the seed
-	   update changes the pool state.  Note that we add the seed here rather 
-	   than when we initialise the randomness subsystem both because at that 
-	   point the stream subsystem may not be ready for use yet and because 
-	   there may be a requirement to periodically re-read the seed data if 
-	   it's changed by another process/task */
+	   necessary.  Note that we do this here rather than when we initialise
+	   the randomness subsystem both because at that point the stream
+	   subsystem may not be ready for use yet and because there may be a
+	   requirement to periodically re-read the seed data if it's changed
+	   by another process/task */
 #ifdef CONFIG_RANDSEED
-	if( randomInfoOK && !randomInfo->seedProcessed )
-		{
+	if( !randomInfo->seedProcessed )
 		addStoredSeedData( randomInfo );
-		( void ) checksumRandomPool( randomInfo );
-		}
 #endif /* CONFIG_RANDSEED */
 
 	/* Get the randomness quality before we release the randomness info
@@ -660,11 +620,6 @@ int getRandomData( INOUT TYPECAST( RANDOM_INFO * ) void *randomInfoPtr,
 	randomQuality = randomInfo->randomQuality;
 
 	krnlExitMutex( MUTEX_RANDOM );
-
-	/* If there's a problem with the randomness information, don't try and
-	   go any further */
-	if( !randomInfoOK )
-		retIntError();
 
 	/* Perform a failsafe check to make sure that there's data available.
 	   This should only ever be called once per application because after 
@@ -684,20 +639,13 @@ int getRandomData( INOUT TYPECAST( RANDOM_INFO * ) void *randomInfoPtr,
 	status = krnlEnterMutex( MUTEX_RANDOM );
 	if( cryptStatusError( status ) )
 		return( status );
-
-	/* Re-check the random information */
-	if( !sanityCheck( randomInfo ) || !checksumRandomPool( randomInfo ) )
-		{
-		krnlExitMutex( MUTEX_RANDOM );
-		retIntError();
-		}
+	REQUIRES_MUTEX( sanityCheck( randomInfo ) );
 
 	/* If we still can't get any random information, let the user know */
 	if( randomInfo->randomQuality < 100 )
 		{
-		DEBUG_DIAG(( "Insufficient random data available, only got %d out "
-					 "of 100", randomInfo->randomQuality ));
 		krnlExitMutex( MUTEX_RANDOM );
+		DEBUG_DIAG(( "No random data available" ));
 		assert( DEBUG_WARN );
 		return( CRYPT_ERROR_RANDOM );
 		}
@@ -715,10 +663,8 @@ int getRandomData( INOUT TYPECAST( RANDOM_INFO * ) void *randomInfoPtr,
 	   occcurred (although getSysVars() can detect the presence of some 
 	   common VMs it can't detect whether a rollback has occurred).  In this 
 	   case we'd roll back to a previous state of the RNG and continue from 
-	   there.  
-	   
-	   It's hard however to identify a situation in which this would pose a 
-	   serious threat.  Consider for example SSL/TLS or SSH session key 
+	   there.  OTOH it's hard to identify a situation in which this would 
+	   pose a serious threat.  Consider for example SSL or SSH session key 
 	   setup/generation: If we haven't committed the data to the remote 
 	   system yet it's no problem and if we have then we're now out of sync 
 	   with the remote system and the handshake will fail.  Similarly, if 
@@ -756,32 +702,18 @@ restartPoint:
 		status = mixRandomPool( randomInfo );
 		if( cryptStatusError( status ) )
 			{
-			( void ) checksumRandomPool( randomInfo );
 			krnlExitMutex( MUTEX_RANDOM );
 			return( status );
 			}
-		ENSURES_KRNLMUTEX( randomInfo->randomPoolMixes == RANDOMPOOL_MIXES || \
-						   randomInfo->randomPoolMixes == \
-									ORIGINAL_VALUE( randomPoolMixes ) + 1, \
-						   MUTEX_RANDOM );
+		ENSURES( randomInfo->randomPoolMixes == RANDOMPOOL_MIXES || \
+				 randomInfo->randomPoolMixes == \
+								ORIGINAL_VALUE( randomPoolMixes ) + 1 );
 
 		/* If the pool is sufficiently mixed, we're done */
 		if( randomInfo->randomPoolMixes >= RANDOMPOOL_MIXES )
 			break;
-
-		/* Since the mixRandomPool() has changed the state of the pool, we 
-		   need to recalculate the checksum on the pool information before
-		   the next call to fastPoll().  This is a bit of an unusual 
-		   situation because the fastPoll() is called from the current 
-		   thread with the pool mutex already held so there's no explicit
-		   unlock/relock with an accompanying recalculation of the pool
-		   checksum, so we have to explicitly recalculate it here otherwise
-		   the next fastPoll() will detect apparent pool corruption caused
-		   by the mixing */
-		( void ) checksumRandomPool( randomInfo );
 		}
-	ENSURES_KRNLMUTEX( iterationCount < FAILSAFE_ITERATIONS_LARGE, \
-					   MUTEX_RANDOM );
+	ENSURES_MUTEX( iterationCount < FAILSAFE_ITERATIONS_LARGE );
 
 	/* Keep producing RANDOMPOOL_OUTPUTSIZE bytes of output until the request
 	   is satisfied */
@@ -793,15 +725,13 @@ restartPoint:
 		/* Precondition for output quantity: Either we're on the last output
 		   block or we're producing the maximum-size output quantity, and
 		   we're never trying to use more than half the pool contents */
-		REQUIRES_KRNLMUTEX( length - count < RANDOM_OUTPUTSIZE || \
-							outputBytes == RANDOM_OUTPUTSIZE, MUTEX_RANDOM );
-		REQUIRES_KRNLMUTEX( outputBytes <= RANDOMPOOL_SIZE / 2, \
-							MUTEX_RANDOM );
+		REQUIRES_MUTEX( length - count < RANDOM_OUTPUTSIZE || \
+						outputBytes == RANDOM_OUTPUTSIZE );
+		REQUIRES_MUTEX( outputBytes <= RANDOMPOOL_SIZE / 2 );
 
 		status = getRandomOutput( randomInfo, bufPtr, outputBytes );
 		if( cryptStatusError( status ) )
 			{
-			( void ) checksumRandomPool( randomInfo );
 			krnlExitMutex( MUTEX_RANDOM );
 			return( status );
 			}
@@ -809,16 +739,14 @@ restartPoint:
 
 		/* Postcondition: We're filling the output buffer and we wrote the
 		   output to the correct portion of the output buffer */
-		ENSURES_KRNLMUTEX( ( bufPtr > ( BYTE * ) buffer ) && \
-						   ( bufPtr <= ( BYTE * ) buffer + length ),
-						   MUTEX_RANDOM );
-		ENSURES_KRNLMUTEX( bufPtr == ORIGINAL_VALUE( bufPtr ) + outputBytes, \
-						   MUTEX_RANDOM );
+		ENSURES( ( bufPtr > ( BYTE * ) buffer ) && \
+				 ( bufPtr <= ( BYTE * ) buffer + length ) );
+		ENSURES( bufPtr == ORIGINAL_VALUE( bufPtr ) + outputBytes );
 		}
 
 	/* Postcondition: We filled the output buffer with the required amount
 	   of output */
-	ENSURES_KRNLMUTEX( bufPtr == ( BYTE * ) buffer + length, MUTEX_RANDOM );
+	ENSURES_MUTEX( bufPtr == ( BYTE * ) buffer + length );
 
 	/* Check whether the process forked while we were generating output.  If
 	   it did, force a complete remix of the pool and restart the output
@@ -830,10 +758,6 @@ restartPoint:
 		bufPtr = buffer;
 		goto restartPoint;
 		}
-
-	/* Recalculate the random information checksum after the changes that 
-	   we've made */
-	( void ) checksumRandomPool( randomInfo );
 
 	krnlExitMutex( MUTEX_RANDOM );
 
@@ -849,7 +773,7 @@ restartPoint:
 /* Initialise the randomness subsystem */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int initRandomInfo( OUT_PTR_COND TYPECAST( RANDOM_INFO ** ) void **randomInfoPtrPtr )
+int initRandomInfo( OUT_OPT_PTR TYPECAST( RANDOM_INFO ** ) void **randomInfoPtrPtr )
 	{
 	RANDOM_INFO testRandomInfo, *randomInfoPtr;
 	BYTE buffer[ 16 + 8 ];
@@ -859,9 +783,6 @@ int initRandomInfo( OUT_PTR_COND TYPECAST( RANDOM_INFO ** ) void **randomInfoPtr
 
 	/* Clear return value */
 	*randomInfoPtrPtr = NULL;
-
-	/* If we're running a fuzzing build, skip the lengthy self-checks */
-#ifndef CONFIG_FUZZ
 
 	/* Make sure that the crypto that we need is functioning as required */
 	status = randomAlgorithmSelfTest();
@@ -924,7 +845,6 @@ int initRandomInfo( OUT_PTR_COND TYPECAST( RANDOM_INFO ** ) void **randomInfoPtr
 		endRandomPool( &testRandomInfo );
 		retIntError();
 		}
-#endif /* !CONFIG_FUZZ */
 
 	/* Allocate and initialise the random pool */
 	if( ( status = krnlMemalloc( ( void ** ) &randomInfoPtr, \
@@ -989,7 +909,7 @@ void endRandomInfo( INOUT TYPECAST( RANDOM_INFO ** ) void **randomInfoPtrPtr )
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int addEntropyData( INOUT TYPECAST( RANDOM_INFO * ) void *randomInfoPtr, 
 					IN_BUFFER( length ) const void *buffer, 
-					IN_DATALENGTH const int length )
+					IN_LENGTH const int length )
 	{
 	RANDOM_INFO *randomInfo = ( RANDOM_INFO * ) randomInfoPtr;
 	const BYTE *bufPtr = ( BYTE * ) buffer;
@@ -1001,18 +921,12 @@ int addEntropyData( INOUT TYPECAST( RANDOM_INFO * ) void *randomInfoPtr,
 	assert( isWritePtr( randomInfo, sizeof( RANDOM_INFO ) ) );
 	assert( isReadPtr( buffer, length ) );
 
-	REQUIRES( length > 0 && length < MAX_BUFFER_SIZE );
+	REQUIRES( length > 0 && length < MAX_INTLENGTH );
 
 	status = krnlEnterMutex( MUTEX_RANDOM );
 	if( cryptStatusError( status ) )
 		return( status );
-
-	/* Make sure that the random information is in order */
-	if( !sanityCheck( randomInfo ) || !checksumRandomPool( randomInfo ) )
-		{
-		krnlExitMutex( MUTEX_RANDOM );
-		retIntError();
-		}
+	REQUIRES_MUTEX( sanityCheck( randomInfo ) );
 
 #if 0	/* See comment in addEntropyQuality */
 	STORE_ORIGINAL_INT( entropyByteCount, randomInfo->entropyByteCount );
@@ -1038,11 +952,10 @@ int addEntropyData( INOUT TYPECAST( RANDOM_INFO * ) void *randomInfoPtr,
 			status = mixRandomPool( randomInfo );
 			if( cryptStatusError( status ) )
 				{
-				( void ) checksumRandomPool( randomInfo );
 				krnlExitMutex( MUTEX_RANDOM );
 				return( status );
 				}
-			ENSURES_KRNLMUTEX( randomInfo->randomPoolPos == 0, MUTEX_RANDOM );
+			ENSURES_MUTEX( randomInfo->randomPoolPos == 0 );
 			}
 
 		STORE_ORIGINAL_INT( poolVal,
@@ -1050,9 +963,8 @@ int addEntropyData( INOUT TYPECAST( RANDOM_INFO * ) void *randomInfoPtr,
 		STORE_ORIGINAL_INT( poolPos, randomInfo->randomPoolPos );
 
 		/* Precondition: We're adding data inside the pool */
-		REQUIRES_KRNLMUTEX( randomInfo->randomPoolPos >= 0 && \
-							randomInfo->randomPoolPos < RANDOMPOOL_SIZE, \
-							MUTEX_RANDOM );
+		REQUIRES_MUTEX( randomInfo->randomPoolPos >= 0 && \
+						randomInfo->randomPoolPos < RANDOMPOOL_SIZE );
 
 		randomInfo->randomPool[ randomInfo->randomPoolPos++ ] ^= bufPtr[ count ];
 
@@ -1065,15 +977,13 @@ int addEntropyData( INOUT TYPECAST( RANDOM_INFO * ) void *randomInfoPtr,
 		   GPG/add_randomness.  Note that in this case we can use a non-XOR
 		   operation to check that the XOR succeeded, unlike the pool mixing
 		   code which requires an XOR to check the original XOR */
-		ENSURES_KRNLMUTEX( randomInfo->randomPoolPos == \
-								ORIGINAL_VALUE( poolPos ) + 1, 
-						   MUTEX_RANDOM );
-		ENSURES_KRNLMUTEX( ( ( ORIGINAL_VALUE( newPoolVal ) == \
-								ORIGINAL_VALUE( bufVal ) ) && \
-							 ( ORIGINAL_VALUE( poolVal ) == 0 ) ) || \
-						   ( ORIGINAL_VALUE( newPoolVal ) != \
-								ORIGINAL_VALUE( bufVal ) ),
-						   MUTEX_RANDOM );
+		ENSURES( randomInfo->randomPoolPos == \
+						ORIGINAL_VALUE( poolPos ) + 1 );
+		ENSURES( ( ( ORIGINAL_VALUE( newPoolVal ) == \
+						ORIGINAL_VALUE( bufVal ) ) && \
+				   ( ORIGINAL_VALUE( poolVal ) == 0 ) ) || \
+				 ( ORIGINAL_VALUE( newPoolVal ) != \
+						ORIGINAL_VALUE( bufVal ) ) );
 		}
 
 #if 0	/* See comment in addEntropyQuality */
@@ -1082,18 +992,13 @@ int addEntropyData( INOUT TYPECAST( RANDOM_INFO * ) void *randomInfoPtr,
 #endif /* 0 */
 
 	/* Postcondition: We processed all of the data */
-	ENSURES_KRNLMUTEX( count == length, MUTEX_RANDOM );
+	ENSURES( count == length );
 #if 0	/* See comment in addEntropyQuality */
-	ENSURES_KRNLMUTEX( randomInfo->entropyByteCount == \
-						 ORIGINAL_VALUE( entropyByteCount ) + length, \
-					   MUTEX_RANDOM );
+	ENSURES( randomInfo->entropyByteCount == \
+			 ORIGINAL_VALUE( entropyByteCount ) + length );
 #endif /* 0 */
 
-	ENSURES_KRNLMUTEX( sanityCheck( randomInfo ), MUTEX_RANDOM );
-
-	/* Recalculate the random information checksum after the changes that 
-	   we've made */
-	( void ) checksumRandomPool( randomInfo );
+	ENSURES_MUTEX( sanityCheck( randomInfo ) );
 
 	krnlExitMutex( MUTEX_RANDOM );
 
@@ -1114,13 +1019,7 @@ int addEntropyQuality( INOUT TYPECAST( RANDOM_INFO * ) void *randomInfoPtr,
 	status = krnlEnterMutex( MUTEX_RANDOM );
 	if( cryptStatusError( status ) )
 		return( status );
-
-	/* Make sure that the random information is in order */
-	if( !sanityCheck( randomInfo ) || !checksumRandomPool( randomInfo ) )
-		{
-		krnlExitMutex( MUTEX_RANDOM );
-		retIntError();
-		}
+	REQUIRES_MUTEX( sanityCheck( randomInfo ) );
 
 	/* In theory we could check to ensure that the claimed entropy quality
 	   corresponds approximately to the amount of entropy data added,
@@ -1178,11 +1077,7 @@ int addEntropyQuality( INOUT TYPECAST( RANDOM_INFO * ) void *randomInfoPtr,
 			randomInfo->randomQuality += quality;
 		}
 
-	ENSURES_KRNLMUTEX( sanityCheck( randomInfo ), MUTEX_RANDOM );
-
-	/* Recalculate the random information checksum after the changes that 
-	   we've made */
-	( void ) checksumRandomPool( randomInfo );
+	ENSURES_MUTEX( sanityCheck( randomInfo ) );
 
 	krnlExitMutex( MUTEX_RANDOM );
 
@@ -1191,18 +1086,13 @@ int addEntropyQuality( INOUT TYPECAST( RANDOM_INFO * ) void *randomInfoPtr,
 
 #ifdef CONFIG_RANDSEED
 
-/* Add entropy data from a stored seed value.  This is called with 
-   MUTEX_RANDOM held so we don't need to perform any explicit mutex 
-   management here */
-
-#define RANDSEED_MAX_SIZE	1024
+/* Add entropy data from a stored seed value */
 
 STDC_NONNULL_ARG( ( 1 ) ) \
 static void addStoredSeedData( INOUT RANDOM_INFO *randomInfo )
 	{
 	STREAM stream;
-	BYTE streamBuffer[ STREAM_BUFSIZE + 8 ];
-	BYTE seedBuffer[ RANDSEED_MAX_SIZE + 8 ];
+	BYTE streamBuffer[ STREAM_BUFSIZE + 8 ], seedBuffer[ 1024 + 8 ];
 	char seedFilePath[ MAX_PATH_LENGTH + 8 ];
 	int seedFilePathLen, poolCount, length, status;
 
@@ -1225,17 +1115,16 @@ static void addStoredSeedData( INOUT RANDOM_INFO *randomInfo )
 		{
 		/* The seed data isn't present, don't try and access it again */
 		randomInfo->seedProcessed = TRUE;
-		DEBUG_DIAG(( "Error opening random seed file, status %d", status ));
+		DEBUG_DIAG(( "Error opening random seed file" ));
 		assert( DEBUG_WARN );
 		return;
 		}
 
-	/* Read up to RANDSEED_MAX_SIZE of data from the stored seed */
-	memset( seedBuffer, 0, RANDSEED_MAX_SIZE );
+	/* Read up to 1K of data from the stored seed */
 	sioctlSetString( &stream, STREAM_IOCTL_IOBUFFER, streamBuffer, 
 					 STREAM_BUFSIZE );
 	sioctlSet( &stream, STREAM_IOCTL_PARTIALREAD, TRUE );
-	status = length = sread( &stream, seedBuffer, RANDSEED_MAX_SIZE );
+	status = length = sread( &stream, seedBuffer, 1024 );
 	sFileClose( &stream );
 	zeroise( streamBuffer, STREAM_BUFSIZE );
 	if( cryptStatusError( status ) || length <= 16 )
@@ -1243,12 +1132,11 @@ static void addStoredSeedData( INOUT RANDOM_INFO *randomInfo )
 		/* The seed data is present but we can't read it or there's not 
 		   enough present to use, don't try and access it again */
 		randomInfo->seedProcessed = TRUE;
-		DEBUG_DIAG(( "Error reading random seed file, status %d, length %d",
-					 status, length ));
+		DEBUG_DIAG(( "Error reading random seed file" ));
 		assert( DEBUG_WARN );
 		return;
 		}
-	ENSURES_V( length >= 16 && length <= RANDSEED_MAX_SIZE );
+	ENSURES_V( length >= 16 && length <= 1024 );
 	randomInfo->seedSize = length;
 
 	/* Precondition: We got at least some non-zero data */
@@ -1264,18 +1152,18 @@ static void addStoredSeedData( INOUT RANDOM_INFO *randomInfo )
 	for( poolCount = RANDOMPOOL_SIZE; poolCount > 0; poolCount -= length )
 		{
 		status = addEntropyData( randomInfo, seedBuffer, length );
-		ENSURES_V( cryptStatusOK( status ) );
+		assert( cryptStatusOK( status ) );
 		}
 
 	/* There were at least 128 bits of entropy present in the seed, set the 
 	   entropy quality to the user-provided value */
 	status = addEntropyQuality( randomInfo, CONFIG_RANDSEED_QUALITY );
-	ENSURES_V( cryptStatusOK( status ) );
+	assert( cryptStatusOK( status ) );
 
-	zeroise( seedBuffer, RANDSEED_MAX_SIZE );
+	zeroise( seedBuffer, 1024 );
 
 	/* Postcondition: Nulla vestigia retrorsum */
-	FORALL( i, 0, RANDSEED_MAX_SIZE,
+	FORALL( i, 0, 1024,
 			seedBuffer[ i ] == 0 );
 	}
 #endif /* CONFIG_RANDSEED */
@@ -1302,8 +1190,8 @@ typedef struct {
 	} RANDOM_STATE_INFO;
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int initRandomData( OUT TYPECAST( RANDOM_STATE_INFO * ) void *statePtr, 
-					WORKING_BUFFER( maxSize ) void *buffer, 
+int initRandomData( INOUT TYPECAST( RANDOM_STATE_INFO * ) void *statePtr, 
+					IN_BUFFER( maxSize ) void *buffer, 
 					IN_LENGTH_SHORT_MIN( 16 ) const int maxSize )
 	{
 	RANDOM_STATE_INFO *state = ( RANDOM_STATE_INFO * ) statePtr;
@@ -1316,13 +1204,6 @@ int initRandomData( OUT TYPECAST( RANDOM_STATE_INFO * ) void *statePtr,
 
 	REQUIRES( maxSize >= 16 && maxSize < MAX_INTLENGTH_SHORT );
 
-	/* The buffer is used purely as scratch space so it's neither an input
-	   nor an output parameter, but some analysers will complain about the 
-	   use of uninitialised memory in this case, so we clear it (or at least
-	   some of it) to keep checkers happy */
-	memset( buffer, 0, min( 16, maxSize ) );
-
-	/* Set up the state information */
 	memset( state, 0, sizeof( RANDOM_STATE_INFO ) );
 	state->buffer = buffer;
 	state->bufSize = maxSize;

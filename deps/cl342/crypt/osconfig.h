@@ -30,6 +30,9 @@
 #include <string.h>			/* For memset() */
 #ifdef USE_ASM				/* Defined via makefile for Unix systems */
   #define BN_ASM
+  #define MD5_ASM
+  #define RMD160_ASM
+  #define SHA1_ASM
 #endif /* USE_ASM */
 #if defined( USE_ASM ) && defined( __WATCOMC__ )
   #define ASM_EXPORT	__cdecl
@@ -37,12 +40,9 @@
   #define ASM_EXPORT
 #endif /* System-specific interface to ASM files */
 
-/* General defines.  An older generic config from the original OpenSSL 
-   version can be found at 
-   http://lists.alioth.debian.org/pipermail/pkg-openssl-changes/2005-October/000012.html 
-   (which is just the OpenSSL Configure file, posted to the web), the 
-   current one is at 
-   https://github.com/openssl/openssl/blob/master/Configurations/10-main.conf */
+/* General defines.  A generic config from the original OpenSSL version can 
+   be found at http://lists.alioth.debian.org/pipermail/pkg-openssl-changes/-
+   2005-October/000012.html */
 
 #include <limits.h>
 #if ULONG_MAX > 0xFFFFFFFFUL
@@ -69,7 +69,6 @@
 /* Alpha */
 #if defined( __osf__ ) || defined( __alpha__ )
   #define L_ENDIAN
-  #undef SIXTY_FOUR_BIT
   #define SIXTY_FOUR_BIT_LONG
   #define DES_INT
   #define DES_UNROLL
@@ -89,6 +88,7 @@
   #elif defined( __ppc__ )
 	#define B_ENDIAN
 	#define BN_LLONG
+	#define BF_PTR
 	#define DES_RISC1
 	#define DES_UNROLL
 	#define RC4_CHAR
@@ -139,19 +139,21 @@
 	  #define L_ENDIAN
 	#endif	/* Usually little-endian but may be big-endian */
 	#define BN_LLONG
+	#define BF_PTR
 	#define DES_RISC2
 	#define DES_PTR
 	#define DES_UNROLL
 	#define RC4_INDEX
 	#define RC4_CHAR
 	#define RC4_CHUNK
-  #elif defined( __ppc__ ) || defined( __powerpc ) || defined( __powerpc__ )
+  #elif defined( __ppc__ ) || defined( __powerpc__ )
 	#ifdef DATA_LITTLEENDIAN
 	  #define L_ENDIAN
 	#else
 	  #define B_ENDIAN
 	#endif	/* Usually big-endian but may be little-endian */
 	#define BN_LLONG
+	#define BF_PTR
 	#define DES_RISC1
 	#define DES_UNROLL
 	#define RC4_CHAR
@@ -168,6 +170,7 @@
 	#define B_ENDIAN
 	#define BN_DIV2W
 	#define BN_LLONG
+	#define BF_PTR
 	#define DES_UNROLL
 	#define RC4_CHAR
 	#define RC4_CHUNK
@@ -187,6 +190,7 @@
 	  #define L_ENDIAN
 	#endif	/* Usually little-endian but may be big-endian */
 	#define BN_LLONG
+	#define BF_PTR
 	#define DES_RISC2
 	#define DES_PTR
 	#define DES_UNROLL
@@ -247,6 +251,7 @@
   #if ( OSVERSION <= 5 )
 	#define B_ENDIAN
 	#define BN_LLONG
+	#define BF_PTR
 	#define DES_RISC2
 	#define DES_PTR
 	#define DES_UNROLL
@@ -266,6 +271,8 @@
 	#define DES_UNROLL
 	#define DES_RISC2
 	#define DES_PTR
+	#define BF_PTR
+	#define SIXTY_FOUR_BIT
 	/* Pure 64-bit should also define SIXTY_FOUR_BIT_LONG */
   #endif /* Irix versions */
 #endif /* Irix */
@@ -274,6 +281,7 @@
 #if defined( __MWERKS__ ) || defined( SYMANTEC_C ) || defined( __MRC__ )
   #define B_ENDIAN
   #define BN_LLONG
+  #define BF_PTR
   #define DES_UNROLL
   #define RC4_CHAR
   #define RC4_CHUNK
@@ -282,26 +290,18 @@
 /* Mac OS X / iOS */
 #if defined( __APPLE__ ) && !defined( __MAC__ )
   #include <TargetConditionals.h>
-  #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR || TARGET_OS_WATCH
+  #if defined( TARGET_OS_IPHONE ) || defined( TARGET_IPHONE_SIMULATOR )
 	#define L_ENDIAN
 	#define BN_LLONG
 	#define DES_RISC1
   #elif defined( __ppc__ )
 	#define B_ENDIAN
 	#define BN_LLONG
+	#define BF_PTR
 	#define DES_RISC1
 	#define DES_UNROLL
 	#define RC4_CHAR
 	#define RC4_CHUNK
-  #elif defined( __x86_64__ )
-	/* See the comment for the BSDs and Linux above */
-	#define L_ENDIAN
-	#define DES_INT
-	#define DES_RISC1
-	#define DES_UNROLL
-	#define RC4_CHUNK
-	#undef SIXTY_FOUR_BIT
-	#define SIXTY_FOUR_BIT_LONG
   #else
 	#define L_ENDIAN
 	#define BN_LLONG
@@ -434,98 +434,52 @@
 
   /* Solaris Sparc */
   #ifdef sparc
-	#define B_ENDIAN
 
 	/* Solaris Sparc gcc */
 	#if defined( __GNUC__ )
-	  #if !defined( __sparc64 )	/* No obvious test for 32-bit Sparc */
-		#define BN_DIV2W
-		#define BN_LLONG
-		#define DES_UNROLL
-		#define RC4_CHAR
-		#define RC4_CHUNK
-	  #elif defined( __sparc64__ )
-		#define DES_INT 
-		#define DES_PTR 
-		#define DES_RISC1 
-		#define DES_UNROLL 
-		#define RC4_CHAR
-		#define RC4_CHUNK 
-		#undef SIXTY_FOUR_BIT
-		#define SIXTY_FOUR_BIT_LONG 
-	  #else
-		#error Unknown Sparc architecture (neither 32- nor 64-bit) encountered
-	  #endif /* 32- vs 64-bit */
+	  #define B_ENDIAN
+	  #define BN_DIV2W
+	  #define BN_LLONG
+	  #define BF_PTR
+	  #define DES_UNROLL
+	  #define RC4_CHAR
+	  #define RC4_CHUNK
 
 	/* Solaris Sparc Sun C */
-	#elif defined( __SUNPRO_C )
-	  #if !defined( __sparc64 )	/* No obvious test for 32-bit Sparc */
-		#define BN_DIV2W
-		#define BN_LLONG
-		#define DES_PTR
-		#define DES_RISC1
-		#define DES_UNROLL
-		#define RC4_CHAR
-		#define RC4_CHUNK
-	  #elif defined( __sparc64 )
-		#define DES_INT 
-		#define DES_PTR 
-		#define DES_RISC1
-		#define DES_UNROLL 
-		#define RC4_CHAR 
-		#define RC4_CHUNK 
-		#undef SIXTY_FOUR_BIT
-		#define SIXTY_FOUR_BIT_LONG 
-	  #else
-		#error Unknown Sparc architecture (neither 32- nor 64-bit) encountered
-	  #endif /* 32- vs 64-bit */
-
 	#else
-	  #error Unknown Solaris architecture (neither x86/x64 nor Sparc) encountered
+	  #define B_ENDIAN
+	  #define BN_DIV2W
+	  #define BN_LLONG
+	  #define BF_PTR
+	  #define DES_PTR
+	  #define DES_RISC1
+	  #define DES_UNROLL
+	  #define RC4_CHAR
+	  #define RC4_CHUNK
+	  /* Pure 64-bit should also define SIXTY_FOUR_BIT_LONG and DES_INT */
 	#endif /* Solaris Sparc */
 
   /* Solaris x86 */
   #else
-	#define L_ENDIAN
 
 	/* Solaris x86 gcc */
 	#if defined( __GNUC__ )
-	  #if defined( __i386__ )
-		#define BN_LLONG
-		#define DES_PTR
-		#define DES_RISC1
-		#define DES_UNROLL
-		#define RC4_INDEX
-	  #elif defined( __x86_64__ )
-		#define DES_INT 
-		#define DES_UNROLL
-		#define RC4_CHUNK 
-		#undef SIXTY_FOUR_BIT
-		#define SIXTY_FOUR_BIT_LONG 
-	  #else
-		#error Unknown Sparc architecture (neither 32- nor 64-bit) encountered
-	  #endif /* 32- vs 64-bit */
+	  #define L_ENDIAN
+	  #define BN_LLONG
+	  #define DES_PTR
+	  #define DES_RISC1
+	  #define DES_UNROLL
+	  #define RC4_INDEX
 
 	/* Solaris x86 Sun C */
-	#elif defined( __SUNPRO_C )
-	  #if defined( __i386__ )
-		#define BN_LLONG
-		#define DES_PTR
-		#define DES_UNROLL
-		#define RC4_CHAR
-		#define RC4_CHUNK
-	  #elif defined( __x86_64__ )
-		#define DES_INT
-		#define DES_UNROLL
-		#define RC4_CHUNK 
-		#undef SIXTY_FOUR_BIT
-		#define SIXTY_FOUR_BIT_LONG 
-	  #else
-		#error Unknown Sparc architecture (neither 32- nor 64-bit) encountered
-	  #endif /* 32- vs 64-bit */
-
 	#else
-	  #error Unknown Solaris architecture (neither x86/x64 nor Sparc) encountered
+	  #define L_ENDIAN
+	  #define BN_LLONG
+	  #define BF_PTR
+	  #define DES_PTR
+	  #define DES_UNROLL
+	  #define RC4_CHAR
+	  #define RC4_CHUNK
 	#endif /* Solaris x86 */
   #endif /* Solaris Sparc vs x86 */
 #endif /* Slowaris */
@@ -539,6 +493,7 @@
   #elif defined( __EMU_SYMBIAN_OS__ )
 	#define L_ENDIAN
 	#define BN_LLONG
+	#define BF_PTR
 	#define DES_PTR
 	#define DES_UNROLL
 	#define RC4_INDEX
@@ -550,6 +505,7 @@
 /* Tandem NSK/OSS */
 #ifdef __TANDEM
   #define B_ENDIAN
+  #define BF_PTR
   #define DES_RISC2
   #define DES_PTR
   #define DES_UNROLL
@@ -642,13 +598,14 @@
 	#if defined( __mb__ )
 	  #define B_ENDIAN
 	  /* Not sure what other options the MicroBlaze build should enable... */
-	#elif defined( __ppc__ ) || defined( __powerpc ) || defined( __powerpc__ )
+	#elif defined( __ppc__ )
 	  #ifdef DATA_LITTLEENDIAN
 		#define L_ENDIAN
 	  #else
 		#define B_ENDIAN
 	  #endif	/* Usually big-endian but may be little-endian */
 	  #define BN_LLONG
+	  #define BF_PTR
 	  #define DES_RISC1
 	  #define DES_UNROLL
 	  #define RC4_CHAR
@@ -665,13 +622,14 @@
 	#define DES_RISC1
 	#define DES_UNROLL
 	#define RC4_INDEX
-  #elif defined( __ppc__ ) || defined( __powerpc ) || defined( __powerpc__ )
+  #elif defined( __ppc__ ) || defined( __powerpc__ )
 	#ifdef DATA_LITTLEENDIAN
 	  #define L_ENDIAN
 	#else
 	  #define B_ENDIAN
 	#endif	/* Usually big-endian but may be little-endian */
 	#define BN_LLONG
+	#define BF_PTR
 	#define DES_RISC1
 	#define DES_UNROLL
 	#define RC4_CHAR

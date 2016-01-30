@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *					  cryptlib Datagram Decoding Routines					*
-*						Copyright Peter Gutmann 1996-2013					*
+*						Copyright Peter Gutmann 1996-2011					*
 *																			*
 ****************************************************************************/
 
@@ -63,7 +63,7 @@ static BOOLEAN sanityCheck( const ENVELOPE_INFO *envelopeInfoPtr )
 		envelopeInfoPtr->bufPos < 0 || \
 		envelopeInfoPtr->bufPos > envelopeInfoPtr->bufSize || \
 		envelopeInfoPtr->bufSize < MIN_BUFFER_SIZE || \
-		envelopeInfoPtr->bufSize >= MAX_BUFFER_SIZE )
+		envelopeInfoPtr->bufSize >= MAX_INTLENGTH )
 		return( FALSE );
 
 	/* Make sure that the block buffer position is within bounds */
@@ -73,14 +73,9 @@ static BOOLEAN sanityCheck( const ENVELOPE_INFO *envelopeInfoPtr )
 		  envelopeInfoPtr->blockSize > CRYPT_MAX_IVSIZE ) )
 		return( FALSE );
 
-	/* Make sure that the partial buffer position is within bounds */
-	if( envelopeInfoPtr->partialBufPos < 0 || \
-		envelopeInfoPtr->partialBufPos > PARTIAL_BUFFER_SIZE )
-		return( FALSE );
-
 	/* Make sure that the out-of-band data buffer is within bounds */
-	if( envelopeInfoPtr->oobBufSize < 0 || \
-		envelopeInfoPtr->oobBufSize > OOB_BUFFER_SIZE )
+	if( envelopeInfoPtr->oobBufPos < 0 || \
+		envelopeInfoPtr->oobBufPos > OOB_BUFFER_SIZE )
 		return( FALSE );
 
 	/* Make sure that the envelope internal bookeeping is OK */
@@ -93,7 +88,13 @@ static BOOLEAN sanityCheck( const ENVELOPE_INFO *envelopeInfoPtr )
 	return( TRUE );
 	}
 
-/* Handle the end-of-data, with PKCS #5 block padding if necessary:
+/****************************************************************************
+*																			*
+*							Header Processing Routines						*
+*																			*
+****************************************************************************/
+
+/* Handle the end-of-data and PKCS #5 block padding if necessary:
 
 			   pad
 	+-------+-------+-------+
@@ -101,26 +102,11 @@ static BOOLEAN sanityCheck( const ENVELOPE_INFO *envelopeInfoPtr )
 	+-------+-------+-------+
 			^		^
 			|		|
-		 padPtr	  bPos 
-
-   This function needs to return a different error status value if 
-   authenticated encryption is being used, because corruption of the PKCS #5
-   padding is probably due to message data corruption (there's admittedly 
-   also the extremely unlikely possibility that it's due to buggy sending 
-   software).  Since the padding check occurs before the final MAC check, 
-   the ensuing CRYPT_ERROR_BADDATA would override the later 
-   CRYPT_ERROR_SIGNATURE from the MAC check.  In order to deal with this we
-   convert a CRYPT_ERROR_BADDATA to a CRYPT_ERROR_SIGNATURE if authenticated
-   encryption is being used */
+		 padPtr	  bPos */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int processDataEnd( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 	{
-	const int errorStatus = \
-			( envelopeInfoPtr->dataFlags & ENVDATA_AUTHENCACTIONSACTIVE ) ? \
-			CRYPT_ERROR_SIGNATURE : CRYPT_ERROR_BADDATA;
-	int value = 0;
-
 	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
 
 	REQUIRES( sanityCheck( envelopeInfoPtr ) );
@@ -129,30 +115,23 @@ static int processDataEnd( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 	   present at the end of the block */
 	if( envelopeInfoPtr->blockSize > 1 )
 		{
-		const BYTE *padPtr;
 		int padSize, i;
 
-		/* Make sure that the padding size is valid.  There's no easy way to 
-		   perform these checks in a timing-independent manner because we're 
-		   using them to reject completely malformed data (out-of-bounds 
-		   array references), but hopefully the few cycles difference won't 
-		   be measurable in the overall scheme of things */
+		/* Make sure that the padding size is valid */
 		padSize = envelopeInfoPtr->buffer[ envelopeInfoPtr->bufPos - 1 ];
 		if( padSize < 1 || padSize > envelopeInfoPtr->blockSize || \
 			padSize > envelopeInfoPtr->bufPos )
-			return( errorStatus );
+			return( CRYPT_ERROR_BADDATA );
 
-		/* Adjust the buffer for the padding */
+		/* Check the padding data */
 		envelopeInfoPtr->bufPos -= padSize;
+		for( i = 0; i < padSize - 1; i++ )
+			{
+			if( envelopeInfoPtr->buffer[ envelopeInfoPtr->bufPos + i ] != padSize )
+				return( CRYPT_ERROR_BADDATA );
+			}
 		ENSURES( envelopeInfoPtr->bufPos >= 0 && \
 				 envelopeInfoPtr->bufPos < envelopeInfoPtr->bufSize );
-		padPtr = envelopeInfoPtr->buffer + envelopeInfoPtr->bufPos;
-
-		/* Check the padding data in a timing-independent manner */
-		for( i = 0; i < padSize - 1; i++ )
-			value |= padPtr[ i ] ^ padSize;
-		if( value != 0 )
-			return( errorStatus );
 		}
 
 	/* Remember that we've reached the end of the payload and where the
@@ -179,113 +158,20 @@ static int processDataEnd( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 	return( CRYPT_OK );
 	}
 
-/****************************************************************************
-*																			*
-*						Payload Segment Processing Routines					*
-*																			*
-****************************************************************************/
-
-/* The minimum number of bytes of data that we need in order to try and 
-   process a segment header.  For a PGP envelope a partial header is a 
-   single byte, for a PKCS #7/CMS envelope it's two bytes (tag + length). 
-   The setting can't be set too high because anything below the limit is 
-   absorbed into the temporary header buffer, if the final header size is 
-   less than what's absorbed by the buffer then the data will be lost 
-   because data can't be pushed back out of the header buffer into the 
-   main envelope buffer without messing up the buffer accounting due to data 
-   (apparently) appearing out of nowhere */
-
-#define MIN_HEADER_BYTES	2
-
-/* Check for special-case segment conditions for which no further segment-
-   processing action is necessary */
-
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
-static BOOLEAN isEndOfSegment( INOUT ENVELOPE_INFO *envelopeInfoPtr )
-	{
-	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
-
-	/* If we've already processed the entire payload, don't do anything.
-	   This can happen when we're using the definite encoding form and the 
-	   EOC flag is set elsewhere as soon as the entire payload has been 
-	   copied to the buffer */
-	if( envelopeInfoPtr->dataFlags & ENVDATA_ENDOFCONTENTS )
-		{
-		REQUIRES( envelopeInfoPtr->segmentSize <= 0 );
-
-		return( TRUE );
-		}
-
-	/* It's a standard segment */
-	return( FALSE );
-	}
-
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
-static BOOLEAN isFixedLengthSegment( INOUT ENVELOPE_INFO *envelopeInfoPtr )
-	{
-	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
-
-	/* If the payload data is segmented but the first segment doesn't have 
-	   an explicit length then the length of the first segment is defined 
-	   as "whatever's left".  This is used to handle PGP's odd indefinite-
-	   length encoding, for which the initial length has already been read 
-	   when the packet header was read */
-	if( envelopeInfoPtr->dataFlags & ENVDATA_NOFIRSTSEGMENT )
-		{
-		REQUIRES( envelopeInfoPtr->type == CRYPT_FORMAT_PGP );
-
-		envelopeInfoPtr->dataFlags &= ~ENVDATA_NOFIRSTSEGMENT;
-		envelopeInfoPtr->segmentSize = envelopeInfoPtr->payloadSize;
-		envelopeInfoPtr->payloadSize = CRYPT_UNUSED;
-
-		return( TRUE );
-		}
-
-	/* If we're using the definite encoding form there's a single segment 
-	   equal in length to the entire payload */
-	if( envelopeInfoPtr->payloadSize != CRYPT_UNUSED )
-		{
-		envelopeInfoPtr->segmentSize = envelopeInfoPtr->payloadSize;
-
-		return( TRUE );
-		}
-
-	/* If we're using the indefinite form but it's an envelope type that
-	   doesn't segment data then the length is implicitly defined as "until 
-	   we run out of input".  This odd situation is encountered for PGP
-	   envelopes when working with compressed data for which there's no 
-	   length stored or when we're synchronising the envelope data prior to 
-	   processing and there are abitrary further packets (typically PGP 
-	   signature packets, where we want to process the packets in a 
-	   connected series rather than stopping at the end of the first packet 
-	   in the series) following the current one.  In both cases we don't 
-	   know the overall length because we'd need to be able to look ahead an 
-	   arbitrary distance in the stream to figure out where the compressed 
-	   data or any further packets end */
-	if( envelopeInfoPtr->dataFlags & ENVDATA_NOLENGTHINFO )
-		{
-		REQUIRES( envelopeInfoPtr->type == CRYPT_FORMAT_PGP );
-		REQUIRES( envelopeInfoPtr->segmentSize <= 0 );
-
-		return( TRUE );
-		}
-
-	/* It's a standard segment */
-	return( FALSE );
-	}
-
-/* Process a CMS- or PGP-format sub-segment */
+/* Process a sub-segment */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
-static int processCmsSegment( INOUT ENVELOPE_INFO *envelopeInfoPtr, 
-							  INOUT STREAM *stream, 
-							  OUT_LENGTH_Z long *segmentLength )
+static int processSegment( INOUT ENVELOPE_INFO *envelopeInfoPtr, 
+						   INOUT STREAM *stream, 
+						   OUT_LENGTH_Z long *segmentLength )
 	{
 	int status;
 
 	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( segmentLength, sizeof( long ) ) );
+
+	REQUIRES( sanityCheck( envelopeInfoPtr ) );
 
 	/* Clear return value */
 	*segmentLength = 0;
@@ -327,6 +213,8 @@ static int processPgpSegment( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( segmentLength, sizeof( long ) ) );
 
+	REQUIRES( sanityCheck( envelopeInfoPtr ) );
+
 	/* Clear return value */
 	*segmentLength = 0;
 
@@ -334,9 +222,9 @@ static int processPgpSegment( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	status = pgpReadPartialLength( stream, segmentLength );
 	if( cryptStatusError( status ) )
 		{
-		/* If we get an OK_SPECIAL returned then it's just an indication 
-		   that we've got another partial length (with other segments to 
-		   follow) and not an actual error */
+		/* If we get an OK_SPECIAL returned it's just an indication that 
+		   we've got another partial length (with other segments to follow) 
+		   and not an actual error */
 		if( status == OK_SPECIAL )
 			return( CRYPT_OK );
 
@@ -356,6 +244,34 @@ static int processPgpSegment( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			return( status );
 		}
 
+#if 0	/* 28/12/11 This should be adjusted later since we still need to 
+					process the encrypted MDC data even if it's not part of 
+					the payload */
+	/* We've now reached the last segment, if this is a packet with an MDC 
+	   packet tacked on, adjust the data length to account for the length of 
+	   the MDC packet */
+	if( envelopeInfoPtr->dataFlags & ENVDATA_HASATTACHEDOOB )
+		{
+		/* If the MDC data is larger than the length of the last segment, 
+		   adjust its effective size to zero.  This is rather problematic 
+		   in that if the sender chooses to break the MDC packet across the 
+		   partial-header boundary it'll include some of the MDC data with 
+		   the payload, but there's no easy solution to this, the problem 
+		   lies in the PGP spec for allowing a length encoding form that 
+		   makes one-pass processing impossible.  Hopefully implementations 
+		   will realise this and never break the MDC data over a partial-
+		   length header */
+		*segmentLength -= PGP_MDC_PACKET_SIZE;
+		if( *segmentLength < 0 )
+			{
+			DEBUG_DIAG(( "MDC data was broken over a partial-length "
+						 "segment" ));
+			assert( DEBUG_WARN );
+
+			*segmentLength = 0;
+			}
+		}
+#else
 	/* We've now reached the last segment, if this is a packet with an MDC 
 	   packet tacked on and the MDC data is larger than the length of the 
 	   last segment, adjust its effective size to zero and pretend that it's 
@@ -390,6 +306,7 @@ static int processPgpSegment( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 		envelopeInfoPtr->dataFlags &= ~ENVDATA_HASATTACHEDOOB;
 		*segmentLength = 0;
 		}
+#endif /* 0 */
 
 	/* Convert the last segment into a definite-length segment.  When we 
 	   return from this the calling code will immediately call 
@@ -400,18 +317,30 @@ static int processPgpSegment( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	envelopeInfoPtr->payloadSize = *segmentLength;
 	*segmentLength = 0;
 
+	ENSURES( sanityCheck( envelopeInfoPtr ) );
+
 	return( CRYPT_OK );
 	}
 #endif /* USE_PGP */
 
 /* Decode the header for the next segment in the buffer.  Returns the number
-   of bytes consumed */
+   of bytes consumed or zero if more data is required to decode the header */
 
-CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+typedef enum {
+	SEGMENT_NONE,			/* No segment status */
+	SEGMENT_FIXEDLENGTH,	/* Single fixed-length segment, no more segments 
+							   to process */
+	SEGMENT_INSUFFICIENTDATA,/* Need more data to continue */
+	SEGMENT_ENDOFDATA,		/* No more data to process */
+	SEGMENT_LAST			/* Last possible segment status */
+	} SEGMENT_STATUS;
+
+CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 1, 2, 4, 5 ) ) \
 static int getNextSegment( INOUT ENVELOPE_INFO *envelopeInfoPtr, 
 						   IN_BUFFER( length ) const BYTE *buffer, 
 						   IN_LENGTH const int length, 
-						   OUT_LENGTH_SHORT_Z int *bytesConsumed )
+						   OUT_LENGTH_SHORT_Z int *bytesConsumed,
+						   OUT_ENUM_OPT( SEGMENT ) SEGMENT_STATUS *segmentStatus )
 	{
 	STREAM stream;
 	long segmentLength;
@@ -420,18 +349,86 @@ static int getNextSegment( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
 	assert( isReadPtr( buffer, length ) );
 	assert( isWritePtr( bytesConsumed, sizeof( int ) ) );
+	assert( isWritePtr( segmentStatus, sizeof( SEGMENT_STATUS ) ) );
 
 	REQUIRES( sanityCheck( envelopeInfoPtr ) );
-	REQUIRES( length > 0 && length < MAX_BUFFER_SIZE );
+	REQUIRES( length > 0 && length < MAX_INTLENGTH );
 
 	/* Clear return values */
 	*bytesConsumed = 0;
+	*segmentStatus = SEGMENT_NONE;
+
+	/* If we've already processed the entire payload, don't do anything.
+	   This can happen when we're using the definite encoding form, since
+	   the EOC flag is set elsewhere as soon as the entire payload has been
+	   copied to the buffer */
+	if( envelopeInfoPtr->dataFlags & ENVDATA_ENDOFCONTENTS )
+		{
+		REQUIRES( envelopeInfoPtr->segmentSize <= 0 );
+
+		*segmentStatus = SEGMENT_ENDOFDATA;
+		return( OK_SPECIAL );
+		}
+
+	/* If the payload data is segmented but the first segment doesn't have 
+	   an explicit length then the length of the first segment is defined 
+	   as "whatever's left".  This is used to handle PGP's odd indefinite-
+	   length encoding, for which the initial length has already been read 
+	   when the packet header was read */
+	if( envelopeInfoPtr->dataFlags & ENVDATA_NOFIRSTSEGMENT )
+		{
+		REQUIRES( envelopeInfoPtr->type == CRYPT_FORMAT_PGP );
+
+		envelopeInfoPtr->dataFlags &= ~ENVDATA_NOFIRSTSEGMENT;
+		envelopeInfoPtr->segmentSize = envelopeInfoPtr->payloadSize;
+		envelopeInfoPtr->payloadSize = CRYPT_UNUSED;
+		*segmentStatus = SEGMENT_FIXEDLENGTH;
+		return( OK_SPECIAL );
+		}
+
+	/* If we're using the definite encoding form there's a single segment 
+	   equal in length to the entire payload */
+	if( envelopeInfoPtr->payloadSize != CRYPT_UNUSED )
+		{
+		envelopeInfoPtr->segmentSize = envelopeInfoPtr->payloadSize;
+		*segmentStatus = SEGMENT_FIXEDLENGTH;
+		return( OK_SPECIAL );
+		}
+
+	/* If we're using the indefinite form but it's an envelope type that
+	   doesn't segment data then the length is implicitly defined as "until 
+	   we run out of input".  This odd situation is encountered for PGP
+	   envelopes when working with compressed data for which there's no 
+	   length stored or when we're synchronising the envelope data prior to 
+	   processing and there are abitrary further packets (typically PGP 
+	   signature packets, where we want to process the packets in a 
+	   connected series rather than stopping at the end of the first packet 
+	   in the series) following the current one.  In both cases we don't 
+	   know the overall length because we'd need to be able to look ahead an 
+	   arbitrary distance in the stream to figure out where the compressed 
+	   data or any further packets end */
+	if( envelopeInfoPtr->dataFlags & ENVDATA_NOLENGTHINFO )
+		{
+		REQUIRES( envelopeInfoPtr->type == CRYPT_FORMAT_PGP );
+		REQUIRES( envelopeInfoPtr->segmentSize <= 0 );
+
+		*segmentStatus = SEGMENT_FIXEDLENGTH;
+		return( OK_SPECIAL );
+		}
 
 	/* If there's not enough data left to contain the header for a
 	   reasonable-sized segment, tell the caller to try again with more data 
-	   (the bytesConsumed value has already been set to zero earlier) */
-	if( length < MIN_HEADER_BYTES )
-		return( OK_SPECIAL );
+	   (the bytesConsumed value has already been set to zero earlier).  For 
+	   a PGP envelope a partial header is a single byte, for a PKCS #7/CMS 
+	   envelope it's two bytes (tag + length) but most segments will be 
+	   longer than 256 bytes, requiring at least three bytes of tag + length 
+	   data.  A reasonable tradeoff is to require three bytes before trying 
+	   to decode the length */
+	if( length < 3 )
+		{
+		*segmentStatus = SEGMENT_INSUFFICIENTDATA;
+		return( CRYPT_OK );
+		}
 
 	/* Get the sub-segment info */
 	sMemConnect( &stream, buffer, length );
@@ -444,8 +441,8 @@ static int getNextSegment( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	else
 #endif /* USE_PGP */
 		{
-		status = processCmsSegment( envelopeInfoPtr, &stream, 
-								    &segmentLength );
+		status = processSegment( envelopeInfoPtr, &stream, 
+								 &segmentLength );
 		}
 	if( cryptStatusOK( status ) )
 		*bytesConsumed = stell( &stream );
@@ -456,8 +453,10 @@ static int getNextSegment( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 		   continue when the user pushes more data, so we return normally
 		   with bytesConsumed set to zero */
 		if( status == CRYPT_ERROR_UNDERFLOW )
-			return( OK_SPECIAL );
-
+			{
+			*segmentStatus = SEGMENT_INSUFFICIENTDATA;
+			return( CRYPT_OK );
+			}
 		return( status );
 		}
 	ENSURES( *bytesConsumed > 0 && *bytesConsumed <= length );
@@ -467,173 +466,6 @@ static int getNextSegment( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 
 	ENSURES( sanityCheck( envelopeInfoPtr ) );
 
-	return( CRYPT_OK );
-	}
-
-/* Process the header for a new payload data segment. There's one specific 
-   situation where we can run into problems and that's where we're pushing 
-   indefinite-length data and run out of data halfway through a tag, either 
-   an EOC or an OCTET STRING segment (or its PGP equivalent):
-
-	+-------+-----------+-----+---------+
-	| Header|	Body	|00 00| Trailer |
-	+-------+-----------+-----+---------+
-						   ^	
-						   |
-						length
-						   +-------+
-								   v
-	+-------+--------+----------+--------+----------+-----+---------+
-	| Header|04 xx xx|	Body	|04 xx xx|	Body	|00 00|	Trailer |
-	+-------+--------+----------+--------+----------+-----+---------+
-
-   In this case getNextSegment() will return OK_SPECIAL and we have to 
-   buffer the data somewhere until the next push.  We can't report the 
-   remainder to the caller as un-consumed data because this may be an 
-   implicit push, for example when we add a keying resource to an encrypted 
-   envelope, which continues processing with previously-pushed data when it 
-   initialises the cryptovariables from the data.  In this case since no 
-   data is being pushed there's no way to report that some of the data was 
-   unconsumed, so we have to store it in the partial-header buffer until the 
-   next push.
-   
-   This function returns additional operation-control information in the 
-   form of a SEG_ACTION_TYPE, which can be one of the following:
-
-	SEG_ACTION_NONE: Segment information for the next segment has been 
-					 obtained, processing of data can continue.
-
-	SEG_ACTION_BREAK: Data consists of a single segment, caller should break 
-					  from segment-handling loop.
-
-	SEG_ACTION_CALLEREXIT: Caller should exit since no further action is 
-						   possible.
-
-	SEG_ACTION_CONTINUE: No-op segment (e.g. a zero-size segment), caller 
-						 should try again */
-
-typedef enum {
-	SEG_ACTION_NONE,		/* No special segment action */
-	SEG_ACTION_BREAK,		/* Caller should break from seg-handling loop */
-	SEG_ACTION_CALLEREXIT,	/* Caller should exit */
-	SEG_ACTION_CONTINUE,	/* No-op segment, caller should try again */
-	SEG_ACTION_LAST			/* Last possible segment action */
-	} SEG_ACTION_TYPE;
-
-CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 1, 2, 4, 5 ) ) \
-static int processSegment( INOUT ENVELOPE_INFO *envelopeInfoPtr,
-						   IN_BUFFER( length ) const BYTE *buffer, 
-						   IN_LENGTH const int length,
-						   OUT_LENGTH_SHORT_Z int *bytesConsumed,
-						   OUT_ENUM_OPT( SEG_ACTION ) \
-								SEG_ACTION_TYPE *segAction )
-	{
-	BYTE *bufPtr = ( BYTE * ) buffer;
-	const BYTE *headerPtr = bufPtr;
-	int headerLength = length, status;
-
-	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
-	assert( isReadPtr( buffer, length ) );
-	assert( isWritePtr( bytesConsumed, sizeof( int ) ) );
-	assert( isWritePtr( segAction, sizeof( SEG_ACTION_TYPE ) ) );
-
-	REQUIRES( length > 0 && length < MAX_BUFFER_SIZE );
-	REQUIRES( sanityCheck( envelopeInfoPtr ) );
-
-	/* Clear return values */
-	*bytesConsumed = 0;
-	*segAction = SEG_ACTION_NONE;
-
-	/* If we've already processed the entire payload, don't do anything */
-	if( isEndOfSegment( envelopeInfoPtr ) )
-		{
-		REQUIRES( envelopeInfoPtr->partialBufPos == 0 );
-
-		/* We're done, tell the caller to exit */
-		*segAction = SEG_ACTION_CALLEREXIT;
-		return( CRYPT_OK );
-		}
-
-	/* If it's a fixed-length segment, no further action is necessary */
-	if( isFixedLengthSegment( envelopeInfoPtr ) )
-		{
-		REQUIRES( envelopeInfoPtr->partialBufPos == 0 );
-
-		*segAction = SEG_ACTION_BREAK;
-		return( CRYPT_OK );
-		}
-
-	/* At this point we're after new segment information */
-	REQUIRES( envelopeInfoPtr->segmentSize == 0 );
-
-	/* If there's buffered partial header data present from a previous 
-	   operation, use that along with any new data to try and construct a 
-	   complete header */
-	if( envelopeInfoPtr->partialBufPos > 0 )
-		{
-		const int remainder = min( PARTIAL_BUFFER_SIZE - \
-											envelopeInfoPtr->partialBufPos,
-								   length );
-		if( remainder > 0 )
-			{
-			memcpy( envelopeInfoPtr->partialBuffer + \
-						envelopeInfoPtr->partialBufPos, bufPtr, remainder );
-			}
-		headerPtr = envelopeInfoPtr->partialBuffer;
-		headerLength = envelopeInfoPtr->partialBufPos + remainder;
-		}
-
-	/* Try and get the next segment's information from the header data */
-	status = getNextSegment( envelopeInfoPtr, headerPtr, headerLength, 
-							 bytesConsumed );
-	if( cryptStatusError( status ) )
-		{
-		/* If we don't have enough input data left to read the information 
-		   for the next segment, buffer what we've got so far and tell the 
-		   caller that we've consumed all of our input */
-		if( status == OK_SPECIAL )
-			{
-			ENSURES( *bytesConsumed <= 0 );
-
-			/* Save the partial header information for next time */
-			REQUIRES( rangeCheckZ( envelopeInfoPtr->partialBufPos,
-								   length, PARTIAL_BUFFER_SIZE ) );
-			memcpy( envelopeInfoPtr->partialBuffer + \
-						envelopeInfoPtr->partialBufPos, bufPtr, length );
-			envelopeInfoPtr->partialBufPos += length;
-
-			/* We've absorbed any remaining data into the partial-header 
-			   buffer, tell the caller to exit */
-			*bytesConsumed = length;
-			*segAction = SEG_ACTION_CALLEREXIT;
-			return( CRYPT_OK );
-			}
-
-		return( status );
-		}
-
-	/* We've got information on a new segment, clear the buffered header 
-	   data if necessary and adjust for how much data we've consumed */
-	if( envelopeInfoPtr->partialBufPos > 0 )
-		{
-		ENSURES( envelopeInfoPtr->partialBufPos <= *bytesConsumed );
-
-		*bytesConsumed -= envelopeInfoPtr->partialBufPos;
-		envelopeInfoPtr->partialBufPos = 0;
-		}
-
-	/* If we've reached the EOC or consumed all of the input data, exit */
-	if( ( envelopeInfoPtr->dataFlags & ENVDATA_ENDOFCONTENTS ) || \
-		( length - *bytesConsumed ) <= 0 )
-		{
-		*segAction = SEG_ACTION_CALLEREXIT;
-		return( CRYPT_OK );
-		}
-
-	/* We've got a new data segment, if it's of nonzero size we're done, 
-	   otherwise the caller has to try again */
-	*segAction = ( envelopeInfoPtr->segmentSize > 0 ) ? \
-				 SEG_ACTION_NONE : SEG_ACTION_CONTINUE;								
 	return( CRYPT_OK );
 	}
 
@@ -664,7 +496,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 static int copyEncryptedDataBlocks( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 									IN_BUFFER( length ) const BYTE *buffer, 
 									IN_LENGTH const int length,
-									OUT_DATALENGTH_Z int *bytesCopied )
+									OUT_LENGTH_Z int *bytesCopied )
 	{
 	BYTE *bufPtr = envelopeInfoPtr->buffer + envelopeInfoPtr->bufPos;
 	int bytesFromBB = 0, quantizedBytesToCopy, bytesToBB, status;
@@ -674,7 +506,7 @@ static int copyEncryptedDataBlocks( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	assert( isWritePtr( bytesCopied, sizeof( int ) ) );
 
 	REQUIRES( sanityCheck( envelopeInfoPtr ) );
-	REQUIRES( length > 0 && length < MAX_BUFFER_SIZE && \
+	REQUIRES( length > 0 && length < MAX_INTLENGTH && \
 			  envelopeInfoPtr->bufPos + \
 				envelopeInfoPtr->blockBufferPos + \
 				length <= envelopeInfoPtr->bufSize + \
@@ -826,8 +658,8 @@ static int copyEncryptedDataBlocks( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 static int copyData( INOUT ENVELOPE_INFO *envelopeInfoPtr, 
 					 IN_BUFFER( length ) const BYTE *buffer, 
-					 IN_DATALENGTH const int length,
-					 OUT_DATALENGTH_Z int *bytesCopied )
+					 IN_LENGTH const int length,
+					 OUT_LENGTH_Z int *bytesCopied )
 	{
 	BYTE *bufPtr = envelopeInfoPtr->buffer + envelopeInfoPtr->bufPos;
 	int bytesToCopy = length, bytesLeft, status;
@@ -837,7 +669,7 @@ static int copyData( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	assert( isWritePtr( bytesCopied, sizeof( int ) ) );
 
 	REQUIRES( sanityCheck( envelopeInfoPtr ) );
-	REQUIRES( length > 0 && length < MAX_BUFFER_SIZE );
+	REQUIRES( length > 0 && length < MAX_INTLENGTH );
 
 	/* Clear return value */
 	*bytesCopied = 0;
@@ -952,7 +784,7 @@ static int copyData( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 				bytesToCopy >= envelopeInfoPtr->segmentSize )
 				{
 				bytesToHash -= PGP_MDC_PACKET_SIZE;
-				ENSURES( bytesToHash > 0 && bytesToHash < MAX_BUFFER_SIZE );
+				ENSURES( bytesToHash > 0 && bytesToHash < MAX_INTLENGTH );
 				}
 			status = hashEnvelopeData( envelopeInfoPtr->actionList, bufPtr,
 									   bytesToHash );
@@ -987,31 +819,22 @@ static int copyData( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 /* Copy data into the de-enveloping envelope.  Returns the number of bytes
    copied */
 
-CHECK_RETVAL_LENGTH STDC_NONNULL_ARG( ( 1, 2 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int copyToDeenvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 							 IN_BUFFER( length ) const BYTE *buffer, 
 							 IN_LENGTH const int length )
 	{
 	BYTE *bufPtr = ( BYTE * ) buffer;
-	const int maxIterations = ( length <= FAILSAFE_ITERATIONS_LARGE * 1024 ) ? \
-								FAILSAFE_ITERATIONS_LARGE : \
-								length / FAILSAFE_ITERATIONS_LARGE;
 	int currentLength = length, bytesCopied, iterationCount;
-		/* The calculation for maxIterations is necessary in order to deal 
-		   with the use of very large data quantities and buffers, if the
-		   input data contains (say) 1K segments and 10MB of data then we
-		   can exceed the fixed FAILSAFE_ITERATIONS_xxx value so we have to
-		   adjust it dynamically based on the data size */
 
 	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
 	assert( isReadPtr( buffer, length ) );
 
 	REQUIRES( sanityCheck( envelopeInfoPtr ) );
-	REQUIRES( length > 0 && length < MAX_BUFFER_SIZE );
-	REQUIRES( maxIterations > 0 && maxIterations < MAX_INTLENGTH );
+	REQUIRES( length > 0 && length < MAX_INTLENGTH );
 
 	/* If we're trying to copy data into a full buffer, return a count of 0
-	   bytes (the caller may convert this to an overflow error if 
+	   bytes (the calling routine may convert this to an overflow error if
 	   necessary) */
 	if( envelopeInfoPtr->bufPos >= envelopeInfoPtr->bufSize )
 		return( 0 );
@@ -1031,83 +854,72 @@ static int copyToDeenvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 		return( cryptStatusError( status ) ? status : currentLength );
 		}
 
-	/* Keep processing data until we either run out of input or we can't copy
+	/* Keep processing data until either we run out of input or we can't copy
 	   in any more data.  The code sequence within this loop acts as a simple
 	   FSM so that if we exit at any point then the next call to this
 	   function will resume where we left off */
-	for( iterationCount = 0; \
-		 iterationCount < maxIterations && currentLength > 0; \
-		 iterationCount++ )
+	iterationCount = 0;
+	do
 		{
-		SEG_ACTION_TYPE segAction = ( envelopeInfoPtr->segmentSize <= 0 ) ? \
-									SEG_ACTION_CONTINUE : SEG_ACTION_NONE;
 		int segmentCount, status;
 
-		/* If there's no segment information currently available then we 
-		   need to process a segment header before we can handle any data.  
-		   The use of a loop is necessary to handle some broken 
-		   implementations that emit zero-length sub-segments, and as a 
-		   corollary it also helps avoid a pile of special-case code to 
-		   manage PGP's strange way of handling the last segment in 
-		   indefinite-length encodings.  We limit the segment count to 
-		   FAILSAFE_ITERATIONS_SMALL sub-segments to make sure that we don't 
-		   spend forever trying to process extremely broken data */
+		/* If there's no segment information currently available we need to
+		   process a segment header before we can handle any data.  The use
+		   of a loop is necessary to handle some broken implementations that
+		   emit zero-length sub-segments, and as a corollary it also helps
+		   avoid a pile of special-case code to manage PGP's strange way of
+		   handling the last segment in indefinite-length encodings.  We 
+		   limit the segment count to FAILSAFE_ITERATIONS_SMALL sub-segments 
+		   to make sure that we don't spend forever trying to process 
+		   extremely broken data */
 		for( segmentCount = 0; \
-			 segAction == SEG_ACTION_CONTINUE && \
-				segmentCount < FAILSAFE_ITERATIONS_SMALL; \
+			 segmentCount < FAILSAFE_ITERATIONS_SMALL && \
+				envelopeInfoPtr->segmentSize <= 0; \
 			 segmentCount++ )
 			{
+			SEGMENT_STATUS segmentStatus;
 			int bytesConsumed;
 
-			status = processSegment( envelopeInfoPtr, bufPtr, currentLength, 
-									 &bytesConsumed, &segAction );
+			status = getNextSegment( envelopeInfoPtr, bufPtr, currentLength,
+									 &bytesConsumed, &segmentStatus );
+			if( status == OK_SPECIAL )
+				{
+				/* If we've reached the end of the payload, we're done */
+				if( segmentStatus == SEGMENT_ENDOFDATA )
+					return( length - currentLength );
+
+				/* We got the length via some other mechanism because it's a
+				   definite-length or non-segmenting encoding, no input was
+				   consumed and we can exit */
+				ENSURES( segmentStatus == SEGMENT_FIXEDLENGTH );
+				break;
+				}
 			if( cryptStatusError( status ) )
 				return( status );
-			switch( segAction )
+			if( bytesConsumed <= 0 )
 				{
-				case SEG_ACTION_CALLEREXIT:
-					{
-					const int bytesLeft = currentLength - bytesConsumed;
+				const int prevBytesConsumed = length - currentLength;
 
-					/* We've completed processing the payload data, exit */
-					ENSURES( bytesLeft >= 0 && bytesLeft < length );
-					ENSURES( sanityCheck( envelopeInfoPtr ) );
-					
-					return( length - bytesLeft );
-					}
-
-				case SEG_ACTION_BREAK:
-					/* The data consists of a single segment, there's 
-					   nothing further to do.  Since segAction isn't set to 
-					   SEG_ACTION_CONTINUE, we'll exit the segment loop at 
-					   the end of this iteration */
-					ENSURES( bytesConsumed == 0 );
-					break;
-
-				case SEG_ACTION_CONTINUE:
-				case SEG_ACTION_NONE:
-					/* We either need to process another segment in order to 
-					   continue or we've got segment information and can 
-					   exit the loop.
-					   
-					   We can get bytesConsumed == 0 if all input was taken
-					   from the header buffer and the header itself was less
-					   than MIN_HEADER_BYTES in size.  This occurs because
-					   we don't try and process data quantities less than 
-					   MIN_HEADER_BYTES, if the header eventually fits inside
-					   MIN_HEADER_BYTES then no data is consumed while 
-					   processing it */
-					ENSURES( bytesConsumed >= 0 );
-					break;
-
-				default:
-					retIntError();
+				/* We don't have enough input data left to read the
+				   information for the next segment, exit.  If we couldn't
+				   process any data at all we return a more specific
+				   underflow error rather than just a zero byte-count */
+				ENSURES( segmentStatus == SEGMENT_INSUFFICIENTDATA );
+				ENSURES( sanityCheck( envelopeInfoPtr ) );
+				return( ( prevBytesConsumed <= 0 ) ?
+						CRYPT_ERROR_UNDERFLOW : prevBytesConsumed );
 				}
-
-			/* Adjust the payload information by the amount of data that was
-			   consumed and continue */
 			bufPtr += bytesConsumed;
 			currentLength -= bytesConsumed;
+
+			/* If we've reached the EOC or consumed all of the input data,
+			   exit */
+			if( ( envelopeInfoPtr->dataFlags & ENVDATA_ENDOFCONTENTS ) || \
+				currentLength <= 0 )
+				{
+				ENSURES( sanityCheck( envelopeInfoPtr ) );
+				return( length - currentLength );
+				}
 			}
 		if( segmentCount >= FAILSAFE_ITERATIONS_SMALL )
 			{
@@ -1117,7 +929,7 @@ static int copyToDeenvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			return( CRYPT_ERROR_BADDATA );
 			}
 		ENSURES( currentLength > 0 && currentLength <= length && \
-				 currentLength < MAX_BUFFER_SIZE );
+				 currentLength < MAX_INTLENGTH );
 
 		/* Copy the data into the envelope, decrypting it as we go if
 		   necessary.  In theory we could also check to see whether any
@@ -1135,18 +947,16 @@ static int copyToDeenvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 
 		ENSURES( sanityCheck( envelopeInfoPtr ) );
 		ENSURES( currentLength >= 0 && currentLength <= length && \
-				 currentLength < MAX_BUFFER_SIZE );
-
-		/* If we couldn't copy any more data then we're done */
-		if( bytesCopied <= 0 )
-			break;
+				 currentLength < MAX_INTLENGTH );
 
 		assert( ( envelopeInfoPtr->segmentSize >= 0 ) || \
 				( ( envelopeInfoPtr->dataFlags & ENVDATA_NOSEGMENT ) && \
 				  ( envelopeInfoPtr->payloadSize == CRYPT_UNUSED ) && \
 				  ( envelopeInfoPtr->segmentSize == CRYPT_UNUSED ) ) );
 		}
-	ENSURES( iterationCount < maxIterations );
+	while( currentLength > 0 && bytesCopied > 0 && \
+		   iterationCount++ < FAILSAFE_ITERATIONS_LARGE );
+	ENSURES( iterationCount < FAILSAFE_ITERATIONS_LARGE );
 
 	ENSURES( sanityCheck( envelopeInfoPtr ) );
 	return( length - currentLength );
@@ -1165,21 +975,21 @@ static int copyToDeenvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 static int copyOobData( INOUT ENVELOPE_INFO *envelopeInfoPtr, 
 						OUT_BUFFER( maxLength, *length ) BYTE *buffer, 
-						IN_DATALENGTH const int maxLength, 
-						OUT_DATALENGTH_Z int *length,
+						IN_LENGTH const int maxLength, 
+						OUT_LENGTH_Z int *length,
 						const BOOLEAN retainInBuffer )
 	{
-	const int oobBytesToCopy = min( maxLength, envelopeInfoPtr->oobBufSize );
-	const int oobRemainder = envelopeInfoPtr->oobBufSize - oobBytesToCopy;
+	const int oobBytesToCopy = min( maxLength, envelopeInfoPtr->oobBufPos );
+	const int oobRemainder = envelopeInfoPtr->oobBufPos - oobBytesToCopy;
 
 	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
 	assert( isWritePtr( buffer, maxLength ) );
 	assert( isWritePtr( length, sizeof( int ) ) );
 
 	REQUIRES( sanityCheck( envelopeInfoPtr ) );
-	REQUIRES( maxLength > 0 && maxLength < MAX_BUFFER_SIZE );
+	REQUIRES( maxLength > 0 && maxLength < MAX_INTLENGTH );
 	REQUIRES( oobBytesToCopy > 0 && \
-			  oobBytesToCopy <= envelopeInfoPtr->oobBufSize && \
+			  oobBytesToCopy <= envelopeInfoPtr->oobBufPos && \
 			  oobBytesToCopy <= OOB_BUFFER_SIZE );
 
 	memcpy( buffer, envelopeInfoPtr->oobBuffer, oobBytesToCopy );
@@ -1202,7 +1012,7 @@ static int copyOobData( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 		memmove( envelopeInfoPtr->oobBuffer,
 				 envelopeInfoPtr->oobBuffer + oobBytesToCopy, oobRemainder );
 		}
-	envelopeInfoPtr->oobBufSize = oobRemainder;
+	envelopeInfoPtr->oobBufPos = oobRemainder;
 
 	ENSURES( sanityCheck( envelopeInfoPtr ) );
 
@@ -1214,9 +1024,9 @@ static int copyOobData( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 static int copyFromDeenvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr, 
 							   OUT_BUFFER( maxLength, *length ) BYTE *buffer, 
-							   IN_DATALENGTH const int maxLength, 
-							   OUT_DATALENGTH_Z int *length, 
-							   IN_FLAGS_Z( ENVCOPY ) const int flags )
+							   IN_LENGTH const int maxLength, 
+							   OUT_LENGTH_Z int *length, 
+							   IN_FLAGS( ENVCOPY ) const int flags )
 	{
 	const BOOLEAN isLookaheadRead = ( flags & ENVCOPY_FLAG_OOBDATA ) ? \
 									TRUE : FALSE;
@@ -1228,7 +1038,7 @@ static int copyFromDeenvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	assert( isWritePtr( length, sizeof( int ) ) );
 
 	REQUIRES( sanityCheck( envelopeInfoPtr ) );
-	REQUIRES( maxLength > 0 && maxLength < MAX_BUFFER_SIZE );
+	REQUIRES( maxLength > 0 && maxLength < MAX_INTLENGTH );
 	REQUIRES( !isLookaheadRead || \
 			  ( isLookaheadRead && \
 			    ( bytesToCopy > 0 && bytesToCopy <= OOB_BUFFER_SIZE ) ) );
@@ -1246,7 +1056,7 @@ static int copyFromDeenvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 
 	/* If there's buffered out-of-band data from an earlier lookahead read 
 	   present, insert it into the output stream */
-	if( envelopeInfoPtr->oobBufSize > 0 )
+	if( envelopeInfoPtr->oobBufPos > 0 )
 		{
 		status = copyOobData( envelopeInfoPtr, buffer, bytesToCopy, 
 							  &oobBytesCopied, isLookaheadRead );
@@ -1263,7 +1073,7 @@ static int copyFromDeenvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			}
 		}
 	ENSURES( bytesToCopy > 0 && bytesToCopy <= maxLength && \
-			 bytesToCopy < MAX_BUFFER_SIZE );
+			 bytesToCopy < MAX_INTLENGTH );
 
 	/* If we're using compression, expand the data from the buffer to the
 	   output via the zStream */
@@ -1324,9 +1134,35 @@ static int copyFromDeenvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 		   the zStream to the output (bytesToCopy) */
 		bytesCopied = bytesIn - envelopeInfoPtr->zStream.avail_in;
 		bytesToCopy -= envelopeInfoPtr->zStream.avail_out;
-		ENSURES( bytesCopied >= 0 && bytesCopied < MAX_BUFFER_SIZE && \
+		ENSURES( bytesCopied >= 0 && bytesCopied < MAX_INTLENGTH && \
 				 bytesToCopy >= 0 && bytesToCopy <= originalInLength && \
-				 bytesToCopy < MAX_BUFFER_SIZE );
+				 bytesToCopy < MAX_INTLENGTH );
+
+#if 0	/* 7/6/07 This check doesn't seem to serve any useful purpose since 
+				  EOCs are handled at a higher level.  In particular the 
+				  check for a single pair of EOCs produces false positives 
+				  when there's a string of EOCs present at the end of the 
+				  data.  This code goes back to at least 3.0 while the EOC 
+				  handling has changed a fair bit since then so it's likely 
+				  that it's an artefact from much older code */
+		/* If we consumed all of the input and there's extra data left after
+		   the end of the data stream, it's EOC information, mark that as
+		   consumed as well */
+		if( envelopeInfoPtr->zStream.avail_in <= 0 && \
+			envelopeInfoPtr->dataLeft > 0 && \
+			envelopeInfoPtr->dataLeft < envelopeInfoPtr->bufPos )
+			{
+			if( envelopeInfoPtr->type != CRYPT_FORMAT_PGP && \
+				( !( envelopeInfoPtr->dataFlags & ENVDATA_ENDOFCONTENTS ) || \
+				  ( envelopeInfoPtr->bufPos - envelopeInfoPtr->dataLeft != 2 ) ) )
+				{
+				/* We should only have the EOC octets { 0x00 0x00 } present
+				   at this point */
+				retIntError();
+				}
+			envelopeInfoPtr->dataLeft = envelopeInfoPtr->bufPos;
+			}
+#endif /* 0 */
 
 		/* If we're doing a lookahead read we can't just copy the data out 
 		   of the envelope buffer as we would for any other content type 
@@ -1339,12 +1175,12 @@ static int copyFromDeenvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 		   read can never exceed the OOB buffer size */
 		if( isLookaheadRead )
 			{
-			REQUIRES( envelopeInfoPtr->oobBufSize + \
+			REQUIRES( envelopeInfoPtr->oobBufPos + \
 					  originalInLength <= OOB_BUFFER_SIZE );
 
-			memcpy( envelopeInfoPtr->oobBuffer + envelopeInfoPtr->oobBufSize,
+			memcpy( envelopeInfoPtr->oobBuffer + envelopeInfoPtr->oobBufPos,
 					buffer, originalInLength );
-			envelopeInfoPtr->oobBufSize += originalInLength;
+			envelopeInfoPtr->oobBufPos += originalInLength;
 			}
 		}
 	else
@@ -1358,7 +1194,7 @@ static int copyFromDeenvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			bytesToCopy > envelopeInfoPtr->dataLeft )
 			bytesToCopy = envelopeInfoPtr->dataLeft;
 		ENSURES( bytesToCopy >= 0 && bytesToCopy <= maxLength && \
-				 bytesToCopy < MAX_BUFFER_SIZE );
+				 bytesToCopy < MAX_INTLENGTH );
 
 		/* We perform the postcondition check here because there are 
 		   numerous exit points in the following code and this avoids having 
@@ -1396,7 +1232,7 @@ static int copyFromDeenvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			*length = oobBytesCopied;
 			return( CRYPT_OK );
 			}
-		ENSURES( bytesToCopy > 0 && bytesToCopy < MAX_BUFFER_SIZE );
+		ENSURES( bytesToCopy > 0 && bytesToCopy < MAX_INTLENGTH );
 
 		/* If we've seen the end-of-contents octets and there's no payload
 		   left to copy out, exit */
@@ -1441,8 +1277,8 @@ static int copyFromDeenvelope( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 
 	/* Move any remaining data down to the start of the buffer  */
 	remainder = envelopeInfoPtr->bufPos - bytesCopied;
-	ENSURES( remainder >= 0 && remainder < MAX_BUFFER_SIZE && \
-			 bytesCopied >= 0 && bytesCopied < MAX_BUFFER_SIZE && \
+	ENSURES( remainder >= 0 && remainder < MAX_INTLENGTH && \
+			 bytesCopied >= 0 && bytesCopied < MAX_INTLENGTH && \
 			 bytesCopied + remainder <= envelopeInfoPtr->bufSize );
 	if( remainder > 0 && bytesCopied > 0 )
 		{
@@ -1479,14 +1315,14 @@ static int syncDeenvelopeData( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	{
 	const long dataStartPos = stell( stream );
 	const int oldBufPos = envelopeInfoPtr->bufPos;
-	const int bytesLeftToCopy = sMemDataLeft( stream );
+	const int bytesLeft = sMemDataLeft( stream );
 	int bytesCopied;
 
 	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 
 	REQUIRES( sanityCheck( envelopeInfoPtr ) );
-	REQUIRES( dataStartPos >= 0 && dataStartPos < MAX_BUFFER_SIZE );
+	REQUIRES( dataStartPos >= 0 && dataStartPos < MAX_INTLENGTH );
 
 	/* After the envelope header has been processed, what's left is payload
 	   data that requires special processing because of segmenting and
@@ -1505,19 +1341,16 @@ static int syncDeenvelopeData( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	   copyToDeenvelope() overflowing the envelope since the source is the
 	   envelope buffer so the data must fit within the envelope */
 	envelopeInfoPtr->bufPos = 0;
-	if( bytesLeftToCopy <= 0 )
+	if( bytesLeft <= 0 )
 		{
-		/* Handle the special case of the data ending at exactly this 
-		   point.  There's nothing further to do since all data has been
-		   consumed and the next push will give us the payload data */
+		/* Handle the special case of the data ending at exactly this point */
 		sseek( stream, 0 );
-		return( CRYPT_OK );
+		return( CRYPT_ERROR_UNDERFLOW );
 		}
 	sMemDisconnect( stream );
-	sMemConnect( stream, envelopeInfoPtr->buffer, bytesLeftToCopy );
+	sMemConnect( stream, envelopeInfoPtr->buffer, bytesLeft );
 	bytesCopied = envelopeInfoPtr->copyToEnvelopeFunction( envelopeInfoPtr,
-							envelopeInfoPtr->buffer + dataStartPos, 
-							bytesLeftToCopy );
+							envelopeInfoPtr->buffer + dataStartPos, bytesLeft );
 	if( cryptStatusError( bytesCopied ) )
 		{
 		/* Undo the buffer position reset.  This isn't 100% effective if
@@ -1530,7 +1363,7 @@ static int syncDeenvelopeData( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 		ENSURES( sanityCheck( envelopeInfoPtr ) );
 		return( bytesCopied );
 		}
-	ENSURES( bytesCopied >= 0 && bytesCopied < MAX_BUFFER_SIZE );
+	ENSURES( bytesCopied >= 0 && bytesCopied < MAX_INTLENGTH );
 
 	/* If we copied over less than the total available and have hit the
 	   end-of-data marker it means that there's extra data following the
@@ -1563,11 +1396,11 @@ static int syncDeenvelopeData( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 					|		|
 				 dLeft	  bufPos */
 	if( ( envelopeInfoPtr->dataFlags & ENVDATA_ENDOFCONTENTS ) && \
-		bytesCopied < bytesLeftToCopy )
+		bytesCopied < bytesLeft )
 		{
-		const int bytesToCopy = bytesLeftToCopy - bytesCopied;
+		const int bytesToCopy = bytesLeft - bytesCopied;
 
-		REQUIRES( bytesToCopy > 0 && bytesToCopy < MAX_BUFFER_SIZE && \
+		REQUIRES( bytesToCopy > 0 && bytesToCopy < MAX_INTLENGTH && \
 				  envelopeInfoPtr->dataLeft + \
 						bytesToCopy <= envelopeInfoPtr->bufSize && \
 				  bytesCopied + dataStartPos + \
@@ -1576,13 +1409,7 @@ static int syncDeenvelopeData( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 				 envelopeInfoPtr->buffer + dataStartPos + bytesCopied,
 				 bytesToCopy );
 		envelopeInfoPtr->bufPos = envelopeInfoPtr->dataLeft + bytesToCopy;
-
-		ENSURES( sanityCheck( envelopeInfoPtr ) );
-		return( CRYPT_OK );
 		}
-
-	/* At this point we've copied everything over */
-	ENSURES( bytesCopied == bytesLeftToCopy );
 
 	ENSURES( sanityCheck( envelopeInfoPtr ) );
 	return( CRYPT_OK );
@@ -1594,7 +1421,7 @@ static int syncDeenvelopeData( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int processExtraData( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 							 IN_BUFFER( length ) const void *buffer, 
-							 IN_DATALENGTH_Z const int length )
+							 IN_LENGTH const int length )
 	{
 	int status;
 
@@ -1602,7 +1429,7 @@ static int processExtraData( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	assert( length == 0 || isReadPtr( buffer, length ) );
 
 	REQUIRES( sanityCheck( envelopeInfoPtr ) );
-	REQUIRES( length >= 0 && length < MAX_BUFFER_SIZE );
+	REQUIRES( length >= 0 && length < MAX_INTLENGTH );
 
 	/* If the hash value was supplied externally (which means that there's
 	   nothing for us to hash since it's already been done by the caller),

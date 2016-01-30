@@ -561,7 +561,7 @@ BN_ULONG bn_sub_words(BN_ULONG *r, const BN_ULONG *a, const BN_ULONG *b, int n)
 	mul_add_c2((a)[i],(a)[j],c0,c1,c2)
 #endif /* !BN_LLONG */
 
-void bn_mul_comba8(BN_ULONG *r, const BN_ULONG *a, const BN_ULONG *b)	/* pcg */
+void bn_mul_comba8(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b)
 	{
 #if defined( BN_LLONG )	/* pcg */
 	BN_ULLONG t;
@@ -670,7 +670,7 @@ void bn_mul_comba8(BN_ULONG *r, const BN_ULONG *a, const BN_ULONG *b)	/* pcg */
 	r[15]=c1;
 	}
 
-void bn_mul_comba4(BN_ULONG *r, const BN_ULONG *a, const BN_ULONG *b)	/* pcg */
+void bn_mul_comba4(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b)
 	{
 #if defined( BN_LLONG )	/* pcg */
 	BN_ULLONG t;

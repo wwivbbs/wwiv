@@ -9,12 +9,14 @@
 #include <stdarg.h>
 #if defined( INC_ALL )
   #include "crypt.h"
-  #include "dbms.h"
   #include "keyset.h"
+  #include "dbms.h"
+  #include "rpc.h"
 #else
   #include "crypt.h"
-  #include "keyset/dbms.h"
   #include "keyset/keyset.h"
+  #include "keyset/dbms.h"
+  #include "misc/rpc.h"
 #endif /* Compiler-specific includes */
 
 #ifdef USE_DBMS
@@ -107,8 +109,6 @@ static int performUpdate( INOUT DBMS_INFO *dbmsInfo,
 			isReadPtr( boundData, \
 					   sizeof( BOUND_DATA ) * BOUND_DATA_MAXITEMS ) );
 
-	ANALYSER_HINT_STRING( command );
-
 	REQUIRES( ( updateType == DBMS_UPDATE_ABORT && \
 				command == NULL && commandLength == 0 ) || \
 			  ( updateType != DBMS_UPDATE_ABORT && \
@@ -180,8 +180,6 @@ static int performQuery( INOUT DBMS_INFO *dbmsInfo,
 	assert( ( boundData == NULL ) || \
 			isReadPtr( boundData, \
 					   sizeof( BOUND_DATA ) * BOUND_DATA_MAXITEMS ) );
-
-	ANALYSER_HINT_STRING( command );
 
 	REQUIRES( ( ( queryType == DBMS_QUERY_CONTINUE || \
 				  queryType == DBMS_QUERY_CANCEL ) && \
@@ -298,7 +296,7 @@ static int performStaticQuery( INOUT DBMS_INFO *dbmsInfo,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 static int copyChar( OUT_BUFFER( bufMaxLen, *bufPos ) char *buffer, 
 					 IN_LENGTH_SHORT const int bufMaxLen, 
-					 OUT_LENGTH_BOUNDED_Z( bufMaxLen ) int *bufPos, 
+					 OUT_LENGTH_SHORT_Z int *bufPos, 
 					 IN_BYTE const int ch, const BOOLEAN escapeQuotes )
 	{
 	int position = 0;
@@ -355,7 +353,7 @@ static int copyChar( OUT_BUFFER( bufMaxLen, *bufPos ) char *buffer,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 static int copyStringArg( OUT_BUFFER( bufMaxLen, *bufPos ) char *buffer, 
 						  IN_LENGTH_SHORT_Z const int bufMaxLen, 
-						  OUT_LENGTH_BOUNDED_Z( bufMaxLen ) int *bufPos, 
+						  OUT_LENGTH_SHORT_Z int *bufPos, 
 						  IN_BUFFER( stringLen ) const char *string,
 						  IN_LENGTH_SHORT const int stringLen )
 	{
@@ -381,8 +379,7 @@ static int copyStringArg( OUT_BUFFER( bufMaxLen, *bufPos ) char *buffer,
 		int charsWritten, status;
 
 		status = copyChar( buffer + position, bufMaxLen - position, 
-						   &charsWritten, byteToInt( string[ index ] ), 
-						   TRUE );
+						   &charsWritten, string[ index ], TRUE );
 		if( cryptStatusError( status ) )
 			return( status );
 		position += charsWritten;
@@ -406,7 +403,7 @@ static int copyStringArg( OUT_BUFFER( bufMaxLen, *bufPos ) char *buffer,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 int dbmsFormatQuery( OUT_BUFFER( outMaxLength, *outLength ) char *output, 
 					 IN_LENGTH_SHORT const int outMaxLength, 
-					 OUT_LENGTH_BOUNDED_Z( outMaxLength ) int *outLength,
+					 OUT_LENGTH_SHORT_Z int *outLength,
 					 IN_BUFFER( inputLength ) const char *input, 
 					 IN_LENGTH_SHORT const int inputLength )
 	{
@@ -530,7 +527,7 @@ int dbmsFormatQuery( OUT_BUFFER( outMaxLength, *outLength ) char *output,
    by name rather than by server */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int dbmsParseName( OUT DBMS_NAME_INFO *nameInfo, 
+int dbmsParseName( INOUT DBMS_NAME_INFO *nameInfo, 
 				   IN_BUFFER( nameLen ) const char *name, 
 				   IN_LENGTH_NAME const int nameLen )
 	{
@@ -542,7 +539,6 @@ int dbmsParseName( OUT DBMS_NAME_INFO *nameInfo,
 	REQUIRES( nameLen >= MIN_NAME_LENGTH && \
 			  nameLen < MAX_ATTRIBUTE_SIZE );
 
-	/* Clear return value */
 	memset( nameInfo, 0, sizeof( DBMS_NAME_INFO ) );
 
 	/* Check for a complex database name */

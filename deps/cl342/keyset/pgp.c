@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						  cryptlib PGP Keyset Routines						*
-*						Copyright Peter Gutmann 1992-2014					*
+*						Copyright Peter Gutmann 1992-2007					*
 *																			*
 ****************************************************************************/
 
@@ -43,25 +43,30 @@
 *																			*
 ****************************************************************************/
 
-/* Sanity-check the PGP information state */
+/* Find a free PGP keyset entry */
 
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
-static BOOLEAN sanityCheck( const PGP_INFO *pgpInfoPtr )
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+static PGP_INFO *findFreeEntry( IN_ARRAY( noPgpObjects ) \
+									const PGP_INFO *pgpInfo,
+								IN_LENGTH_SHORT const int noPgpObjects )
 	{
-	assert( isReadPtr( pgpInfoPtr, sizeof( PGP_INFO ) ) );
+	int i;
 
-	/* Check that the basic fields are in order */
-	if( pgpInfoPtr->keyDataLen < 0 || \
-		pgpInfoPtr->keyDataLen >= MAX_INTLENGTH_SHORT || \
-		pgpInfoPtr->lastUserID < 0 || \
-		pgpInfoPtr->lastUserID > MAX_PGP_USERIDS || \
-		( pgpInfoPtr->isOpenPGP != FALSE && \
-		  pgpInfoPtr->isOpenPGP != TRUE ) || \
-		( pgpInfoPtr->isComplete != FALSE && \
-		  pgpInfoPtr->isComplete != TRUE ) )
-		return( FALSE );
-	
-	return( TRUE );
+	assert( isReadPtr( pgpInfo, \
+					   sizeof( PGP_INFO ) * noPgpObjects ) );
+
+	REQUIRES_N( noPgpObjects >= 1 && noPgpObjects < MAX_INTLENGTH_SHORT );
+
+	for( i = 0; i < noPgpObjects && i < FAILSAFE_ITERATIONS_MED; i++ )
+		{
+		if( pgpInfo[ i ].keyData == NULL )
+			break;
+		}
+	ENSURES_N( i < FAILSAFE_ITERATIONS_MED );
+	if( i >= noPgpObjects )
+		return( NULL );
+
+	return( ( PGP_INFO * ) &pgpInfo[ i ] );
 	}
 
 /* Free object entries */
@@ -117,8 +122,8 @@ static int createDecryptionContext( OUT_HANDLE_OPT CRYPT_CONTEXT *iSessionKey,
 		{
 		status = pgpPasswordToKey( iLocalContext, 
 								   ( keyInfo->cryptAlgo == CRYPT_ALGO_AES && \
-								     keyInfo->cryptAlgoParam > 0 ) ? \
-									keyInfo->cryptAlgoParam : CRYPT_UNUSED,
+								     keyInfo->aesKeySize > 0 ) ? \
+									keyInfo->aesKeySize : CRYPT_UNUSED,
 								   password, passwordLength, 
 								   keyInfo->hashAlgo, 
 								   ( keyInfo->saltSize > 0 ) ? \
@@ -202,7 +207,7 @@ static BOOLEAN matchKeyID( const PGP_KEYINFO *keyInfo,
 		if( !memcmp( requiredID, keyInfo->openPGPkeyID, PGP_KEYID_SIZE ) )
 			return( TRUE );
 		return( ( keyInfo->pkcAlgo == CRYPT_ALGO_RSA ) && \
-				!memcmp( requiredID, keyInfo->pgp2KeyID, PGP_KEYID_SIZE ) );
+				!memcmp( requiredID, keyInfo->pgpKeyID, PGP_KEYID_SIZE ) );
 		}
 	ENSURES_B( requiredIDlength == KEYID_SIZE );
 
@@ -315,7 +320,7 @@ static PGP_INFO *findEntry( const PGP_INFO *pgpInfo,
 							IN_BUFFER( keyIDlength ) const void *keyID, 
 							IN_LENGTH_KEYID const int keyIDlength,
 							IN_FLAGS_Z( KEYMGMT ) const int requestedUsage, 
-							OUT_OPT_PTR_COND PGP_KEYINFO **keyInfo )
+							OUT_OPT_PTR_OPT PGP_KEYINFO **keyInfo )
 	{
 	CONST_INIT_STRUCT_4( KEY_MATCH_INFO keyMatchInfo, \
 						 keyIDtype, keyID, keyIDlength, requestedUsage );
@@ -349,27 +354,19 @@ static PGP_INFO *findEntry( const PGP_INFO *pgpInfo,
 
 	for( i = 0; i < noPgpObjects && i < FAILSAFE_ITERATIONS_MED; i++ )
 		{
-		const PGP_INFO *pgpInfoPtr = &pgpInfo[ i ];
-
-		/* If there's no entry at this position, continue */
-		if( pgpInfoPtr->keyData == NULL )
-			continue;
-
-		ENSURES_N( sanityCheck( pgpInfoPtr ) );
-
-		if( pgpCheckKeyMatch( pgpInfoPtr, &pgpInfoPtr->key,
+		if( pgpCheckKeyMatch( &pgpInfo[ i ], &pgpInfo[ i ].key,
 							  &keyMatchInfo ) )
 			{
 			if( keyInfo != NULL )
-				*keyInfo = ( PGP_KEYINFO * ) &pgpInfoPtr->key;
-			return( ( PGP_INFO * ) pgpInfoPtr );
+				*keyInfo = ( PGP_KEYINFO * ) &pgpInfo[ i ].key;
+			return( ( PGP_INFO * ) &pgpInfo[ i ] );
 			}
-		if( pgpCheckKeyMatch( pgpInfoPtr, &pgpInfoPtr->subKey,
+		if( pgpCheckKeyMatch( &pgpInfo[ i ], &pgpInfo[ i ].subKey,
 							  &keyMatchInfo ) )
 			{
 			if( keyInfo != NULL )
-				*keyInfo = ( PGP_KEYINFO * ) &pgpInfoPtr->subKey;
-			return( ( PGP_INFO * ) pgpInfoPtr );
+				*keyInfo = ( PGP_KEYINFO * ) &pgpInfo[ i ].subKey;
+			return( ( PGP_INFO * ) &pgpInfo[ i ] );
 			}
 		}
 	ENSURES_N( i < FAILSAFE_ITERATIONS_MED );
@@ -397,7 +394,7 @@ static int getItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 							INOUT_OPT int *auxInfoLength,
 							IN_FLAGS_Z( KEYMGMT ) const int flags )
 	{
-	CRYPT_CONTEXT iDecryptionKey DUMMY_INIT, iLocalContext;
+	CRYPT_CONTEXT iDecryptionKey = DUMMY_INIT, iLocalContext;
 	PGP_INFO *pgpInfo = ( PGP_INFO * ) keysetInfoPtr->keyData;
 	PGP_KEYINFO *keyInfo;
 	MESSAGE_CREATEOBJECT_INFO createInfo;
@@ -429,9 +426,6 @@ static int getItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 				*auxInfoLength < MAX_INTLENGTH_SHORT ) );
 	REQUIRES( flags >= KEYMGMT_FLAG_NONE && flags < KEYMGMT_FLAG_MAX );
 
-	/* Clear return value */
-	*iCryptHandle = CRYPT_ERROR;
-
 	/* Find the requested item.  This is complicated somewhat by the fact
 	   that private keys are held in memory while public keys (which can
 	   be arbitrarily numerous) are held on disk.  This means that the former
@@ -460,9 +454,9 @@ static int getItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 
 		/* Try and find the required key in the keyset */
 		sseek( &keysetInfoPtr->keysetFile->stream, 0 );
-		status = pgpScanPubKeyring( &keysetInfoPtr->keysetFile->stream,
-									pgpInfo, &keyMatchInfo, &keyInfo, 
-									KEYSET_ERRINFO );
+		status = pgpReadKeyring( &keysetInfoPtr->keysetFile->stream,
+								 pgpInfo, 1, &keyMatchInfo, &keyInfo, 
+								 KEYSET_ERRINFO );
 		if( cryptStatusError( status ) && status != OK_SPECIAL )
 			return( status );
 		}
@@ -614,12 +608,12 @@ static int setItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 							IN_LENGTH_NAME_Z const int passwordLength,
 							IN_FLAGS( KEYMGMT ) const int flags )
 	{
-	PGP_INFO *pgpInfoPtr;
+	PGP_INFO *pgpInfo = ( PGP_INFO * ) keysetInfoPtr->keyData, *pgpInfoPtr;
 	MESSAGE_DATA msgData;
-	BYTE keyID[ CRYPT_MAX_HASHSIZE + 8 ];
-	BOOLEAN encryptionOnlyKey = FALSE, privkeyPresent;
-	char label[ CRYPT_MAX_TEXTSIZE + 8 ];
-	int algorithm, keyIDsize DUMMY_INIT, status;
+	BYTE iD[ CRYPT_MAX_HASHSIZE + 8 ];
+	BOOLEAN privkeyPresent;
+	char label[ CRYPT_MAX_TEXTSIZE + 1 + 8 ];
+	int algorithm, iDsize = DUMMY_INIT, status;
 
 	assert( isWritePtr( keysetInfoPtr, sizeof( KEYSET_INFO ) ) );
 	assert( ( itemType == KEYMGMT_ITEM_PUBLICKEY && \
@@ -628,7 +622,8 @@ static int setItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 			  isReadPtr( password, passwordLength ) ) );
 
 	REQUIRES( keysetInfoPtr->type == KEYSET_FILE && \
-			  keysetInfoPtr->subType == KEYSET_SUBTYPE_PGP_PUBLIC );
+			  ( keysetInfoPtr->subType == KEYSET_SUBTYPE_PGP_PUBLIC || 
+				keysetInfoPtr->subType == KEYSET_SUBTYPE_PGP_PRIVATE ) );
 	REQUIRES( isHandleRangeValid( cryptHandle ) );
 	REQUIRES( itemType == KEYMGMT_ITEM_PUBLICKEY || \
 			  itemType == KEYMGMT_ITEM_PRIVATEKEY );
@@ -647,50 +642,30 @@ static int setItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 							  MESSAGE_CHECK_PKC );
 	if( cryptStatusOK( status ) )
 		{
-		setMessageData( &msgData, keyID, CRYPT_MAX_HASHSIZE );
+		status = krnlSendMessage( cryptHandle, IMESSAGE_GETATTRIBUTE,
+								  &algorithm, CRYPT_CTXINFO_ALGO );
+		if( cryptStatusOK( status ) && algorithm != CRYPT_ALGO_RSA )
+			{
+			/* For now we can only store RSA keys because of the peculiar
+			   properties of PGP DLP keys, which are actually two keys
+			   with entirely different semantics and attributes but are
+			   nevertheless occasionally treated as a single key by PGP */
+			status = CRYPT_ARGERROR_NUM1;
+			}
+		}
+	if( cryptStatusOK( status ) )
+		{
+		setMessageData( &msgData, iD, CRYPT_MAX_HASHSIZE );
 		status = krnlSendMessage( cryptHandle, IMESSAGE_GETATTRIBUTE_S,
 								  &msgData, CRYPT_IATTRIBUTE_KEYID );
 		if( cryptStatusOK( status ) )
-			keyIDsize = msgData.length;
+			iDsize = msgData.length;
 		}
 	if( cryptStatusError( status ) )
 		{
 		return( ( status == CRYPT_ARGERROR_OBJECT ) ? \
 				CRYPT_ARGERROR_NUM1 : status );
 		}
-	if( findEntry( keysetInfoPtr->keyData, 1, CRYPT_IKEYID_KEYID, keyID, 
-				   keyIDsize, KEYMGMT_FLAG_NONE, NULL ) != NULL )
-		{
-		retExt( CRYPT_ERROR_DUPLICATE, 
-				( CRYPT_ERROR_DUPLICATE, KEYSET_ERRINFO, 
-				  "Item is already present in keyset" ) );
-		}
-
-	/* Find out what sort of key we're trying to store */
-	status = krnlSendMessage( cryptHandle, IMESSAGE_GETATTRIBUTE,
-							  &algorithm, CRYPT_CTXINFO_ALGO );
-	if( cryptStatusOK( status ) )
-		{
-		switch( algorithm )
-			{
-			case CRYPT_ALGO_ELGAMAL:
-			case CRYPT_ALGO_ECDH:
-				/* If it's an encryption-only algorithm then we can only 
-				   store the key data but can't sign metadata */
-				encryptionOnlyKey = TRUE;
-				break;
-
-			case CRYPT_ALGO_RSA:
-			case CRYPT_ALGO_DSA:
-			case CRYPT_ALGO_ECDSA:
-				break;
-
-			default:
-				status = CRYPT_ARGERROR_NUM1;
-			}
-		}
-	if( cryptStatusError( status ) )
-		return( status );
 	privkeyPresent = cryptStatusOK( \
 			krnlSendMessage( cryptHandle, IMESSAGE_CHECK, NULL,
 							 MESSAGE_CHECK_PKC_PRIVATE ) ) ? TRUE : FALSE;
@@ -725,125 +700,50 @@ static int setItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 			retIntError();
 		}
 
+	/* Find out where we can add data and what needs to be added.  At the 
+	   moment we only allow atomic adds since the semantics of PGP's dual 
+	   keys, with assorted optional attributes attached to one or both keys 
+	   can't easily be handled using a straightforward add */
+	pgpInfoPtr = findEntry( keysetInfoPtr->keyData, MAX_PGP_OBJECTS, 
+							CRYPT_IKEYID_KEYID, iD,  iDsize, 
+							KEYMGMT_FLAG_NONE, NULL );
+	if( pgpInfoPtr != NULL )
+		{
+		retExt( CRYPT_ERROR_DUPLICATE, 
+				( CRYPT_ERROR_DUPLICATE, KEYSET_ERRINFO, 
+				  "Item is already present in keyset" ) );
+		}
+
 	/* Make sure that the label of what we're adding doesn't duplicate the 
 	   label of an existing object */
 	if( privkeyPresent )
 		{
-		int labelLength;
-
 		setMessageData( &msgData, label, CRYPT_MAX_TEXTSIZE );
 		status = krnlSendMessage( cryptHandle, IMESSAGE_GETATTRIBUTE_S,
 								  &msgData, CRYPT_CTXINFO_LABEL );
 		if( cryptStatusError( status ) )
 			return( status );
-		labelLength = msgData.length;
-		if( findEntry( keysetInfoPtr->keyData, 1, CRYPT_KEYID_NAME, label, 
-					   labelLength, KEYMGMT_FLAG_NONE, NULL ) != NULL )
+		if( findEntry( keysetInfoPtr->keyData, MAX_PGP_OBJECTS, 
+					   CRYPT_KEYID_NAME, msgData.data, msgData.length, 
+					   KEYMGMT_FLAG_NONE, NULL ) != NULL )
 			{
 			retExt( CRYPT_ERROR_DUPLICATE, 
 					( CRYPT_ERROR_DUPLICATE, KEYSET_ERRINFO, 
-					  "Item with label '%s' is already present",
-					  sanitiseString( label, CRYPT_MAX_TEXTSIZE, 
-									  labelLength ) ) );
+					  "Item with this label is already present" ) );
 			}
 		}
 
-	/* Storing PGP private keys is quite complicated and there's no good 
-	   reason to use this format instead of PKCS #15, so for now we don't
-	   implement it */
-	if( itemType == KEYMGMT_ITEM_PRIVATEKEY )
-		{
-		retExt( CRYPT_ERROR_NOTAVAIL, 
-				( CRYPT_ERROR_NOTAVAIL, KEYSET_ERRINFO, 
-				  "Storing private keys in PGP format isn't supported" ) );
-		}
-
-	/* Find out where we can add data and what needs to be added.  This is 
-	   quite problematic because of the way that PGP creates a single 
-	   logical key out of multiple physical keys, unless two keys being 
-	   added have the same label it's not possible to tell whether they're 
-	   meant to be part of the same logical key or not.
-	   
-	   To deal with this we only allow a single logical key (comprising one 
-	   or more physical keys) to be added, so instead of using findEntry() 
-	   to locate a possible match we always choose the first entry */
-#if 0
-	pgpInfoPtr = findEntry( keysetInfoPtr->keyData, 1, ... );
+	/* Find out where we can add the new key data */
+	pgpInfoPtr = findFreeEntry( pgpInfo, MAX_PGP_OBJECTS );
 	if( pgpInfoPtr == NULL )
 		{
-		pgpInfoPtr = findFreeEntry( keysetInfoPtr->keyData, 1 );
-		if( pgpInfoPtr == NULL )
-			{
-			retExt( CRYPT_ERROR_OVERFLOW, 
-					( CRYPT_ERROR_OVERFLOW, KEYSET_ERRINFO, 
-					  "No more room in keyset to add this item" ) );
-			}
-		}
-	else
-		...
-#endif /* 0 */
-	pgpInfoPtr = ( PGP_INFO * ) keysetInfoPtr->keyData;	/* Pointer to first entry */
-	if( pgpInfoPtr->isComplete )
-		{
-		retExt( CRYPT_ERROR_COMPLETE, 
-				( CRYPT_ERROR_COMPLETE, KEYSET_ERRINFO, 
-				  "No further keys can be added for this entry" ) );
-		}
-	if( encryptionOnlyKey && pgpInfoPtr->keyData != NULL )
-		{
-		retExt( CRYPT_ERROR_DUPLICATE, 
-				( CRYPT_ERROR_DUPLICATE, KEYSET_ERRINFO, 
-				  "This entry already contains an encryption key" ) );
+		retExt( CRYPT_ERROR_OVERFLOW, 
+				( CRYPT_ERROR_OVERFLOW, KEYSET_ERRINFO, 
+				  "No more room in keyset to add this item" ) );
 		}
 
-	/* If it's an encryption-only key then we need to save the key data away 
-	    for later use, where it'll be signed using a signature key */
-	if( encryptionOnlyKey )
-		{
-		void *keyData;
-		int keyDataSize;
-
-		/* Allocate storage for the key data, write the data to the storage, 
-		   and remember it for later */
-		setMessageData( &msgData, NULL, 0 );
-		status = krnlSendMessage( cryptHandle, IMESSAGE_GETATTRIBUTE_S,
-								  &msgData, CRYPT_IATTRIBUTE_KEY_PGP );
-		if( cryptStatusError( status ) )
-			return( status );
-		keyDataSize = msgData.length;
-		if( ( keyData = clAlloc( "setItemFunction", keyDataSize ) ) == NULL )
-			return( CRYPT_ERROR_MEMORY );
-		setMessageData( &msgData, keyData, keyDataSize );
-		status = krnlSendMessage( cryptHandle, IMESSAGE_GETATTRIBUTE_S,
-								  &msgData, CRYPT_IATTRIBUTE_KEY_PGP );
-		if( cryptStatusError( status ) )
-			{
-			clFree( "setItemFunction", keyData ); 
-			return( status );
-			}
-		pgpInfoPtr->keyData = keyData;
-		pgpInfoPtr->keyDataLen = keyDataSize;
-
-		return( CRYPT_OK );
-		}
-
-	/* In order to write the key data we need to be able to bind metadata to 
-	   the main key using signatures, so we need to have been passed a 
-	   private key in order to generate the signatures */
-	if( !privkeyPresent )
-		{
-		retExt( CRYPT_ARGERROR_NUM1, 
-				( CRYPT_ARGERROR_NUM1, KEYSET_ERRINFO, 
-				  "Key must be a private key in order to sign public "
-				  "keyring data" ) );
-		}
-
-	/* Write the key data and associated metadata in PGP keyring format */
-	status = pgpWritePubkey( pgpInfoPtr, cryptHandle );
-	if( cryptStatusOK( status ) )
-		pgpInfoPtr->isComplete = TRUE;
-
-	return( status );
+	/* Not implemented yet */
+	return( CRYPT_ERROR_NOTAVAIL );
 	}
 
 /****************************************************************************
@@ -858,7 +758,6 @@ RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int shutdownFunction( INOUT KEYSET_INFO *keysetInfoPtr )
 	{
 	PGP_INFO *pgpInfo = ( PGP_INFO * ) keysetInfoPtr->keyData;
-	int status = CRYPT_OK;
 
 	assert( isWritePtr( keysetInfoPtr, sizeof( KEYSET_INFO ) ) );
 
@@ -866,24 +765,9 @@ static int shutdownFunction( INOUT KEYSET_INFO *keysetInfoPtr )
 			  ( keysetInfoPtr->subType == KEYSET_SUBTYPE_PGP_PUBLIC || 
 				keysetInfoPtr->subType == KEYSET_SUBTYPE_PGP_PRIVATE ) );
 
-	/* If there's no PGP key information present, we're done */
+	/* If there's no PGP information data cached, we're done */
 	if( pgpInfo == NULL )
 		return( CRYPT_OK );
-
-	/* If the contents have been changed, commit the changes to disk */
-	if( keysetInfoPtr->flags & KEYSET_DIRTY )
-		{
-		STREAM *stream = &keysetInfoPtr->keysetFile->stream;
-		BYTE buffer[ STREAM_BUFSIZE + 8 ];
-
-		sseek( stream, 0 );
-		sioctlSetString( stream, STREAM_IOCTL_IOBUFFER, buffer, 
-						 STREAM_BUFSIZE );
-		status = swrite( stream, pgpInfo->keyData, pgpInfo->keyDataLen );
-		if( cryptStatusOK( status ) )
-			status = sflush( stream );
-		sioctlSet( stream, STREAM_IOCTL_IOBUFFER, 0 );
-		}
 
 	/* Free the cached key information */
 	if( keysetInfoPtr->subType == KEYSET_SUBTYPE_PGP_PRIVATE )
@@ -899,7 +783,7 @@ static int shutdownFunction( INOUT KEYSET_INFO *keysetInfoPtr )
 	keysetInfoPtr->keyData = NULL;
 	keysetInfoPtr->keyDataSize = 0;
 
-	return( status );
+	return( CRYPT_OK );
 	}
 
 /* PGP public keyrings can be arbitrarily large so we don't try to do any
@@ -921,24 +805,18 @@ static int initPublicFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 	REQUIRES( name == NULL && nameLength == 0 );
 	REQUIRES( options >= CRYPT_KEYOPT_NONE && options < CRYPT_KEYOPT_LAST );
 
-	/* Allocate memory for the key information.  Since we're just scanning 
-	   the keyring for a single matching key or writing a single key, we 
-	   only need to allocate room for one entry.  If we're reading the 
-	   keyring we also need to allocate a read buffer */
+	/* Allocate memory for the key information */
 	if( ( pgpInfo = clAlloc( "initPublicFunction", \
 							 sizeof( PGP_INFO ) ) ) == NULL )
 		return( CRYPT_ERROR_MEMORY );
 	memset( pgpInfo, 0, sizeof( PGP_INFO ) );
-	if( options != CRYPT_KEYOPT_CREATE )
+	if( ( pgpInfo->keyData = clAlloc( "initPublicFunction", \
+									  KEYRING_BUFSIZE ) ) == NULL )
 		{
-		if( ( pgpInfo->keyData = clAlloc( "initPublicFunction", \
-										  KEYRING_BUFSIZE ) ) == NULL )
-			{
-			clFree( "initPublicFunction", pgpInfo );
-			return( CRYPT_ERROR_MEMORY );
-			}
-		pgpInfo->keyDataLen = KEYRING_BUFSIZE;
+		clFree( "initPublicFunction", pgpInfo );
+		return( CRYPT_ERROR_MEMORY );
 		}
+	pgpInfo->keyDataLen = KEYRING_BUFSIZE;
 	keysetInfoPtr->keyData = pgpInfo;
 	keysetInfoPtr->keyDataSize = sizeof( PGP_INFO );
 
@@ -979,8 +857,8 @@ static int initPrivateFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 		return( CRYPT_OK );
 
 	/* Read all of the keys in the keyring */
-	status = pgpReadPrivKeyring( &keysetInfoPtr->keysetFile->stream, 
-								 pgpInfo, MAX_PGP_OBJECTS, KEYSET_ERRINFO );
+	status = pgpReadKeyring( &keysetInfoPtr->keysetFile->stream, pgpInfo, 
+							 MAX_PGP_OBJECTS, NULL, NULL, KEYSET_ERRINFO );
 	if( status == OK_SPECIAL )
 		{
 		/* We couldn't process one or more packets, make the keyset read-

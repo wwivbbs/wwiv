@@ -242,7 +242,7 @@ void postShutdown( void )
    mutex locked between the two calls to allow external initialisation of
    further, non-kernel-related items */
 
-CHECK_RETVAL_ACQUIRELOCK( MUTEX_LOCKNAME( initialisation ) ) \
+CHECK_RETVAL \
 int krnlBeginInit( void )
 	{
 	int status;
@@ -313,22 +313,15 @@ int krnlBeginInit( void )
 	if( cryptStatusError( status ) )
 		{
 		MUTEX_UNLOCK( initialisation );
-#ifdef CONFIG_FAULT_MALLOC
-		/* If we're using memory fault-injection then a failure at this 
-		   point is expected */
-		return( CRYPT_ERROR_MEMORY );
-#else
 		retIntError();
-#endif /* CONFIG_FAULT_MALLOC */
 		}
 
 	/* The kernel data block has been initialised */
 	krnlData->initLevel = INIT_LEVEL_KRNLDATA;
 
-	return( CRYPT_OK );
+	return( TRUE );
 	}
 
-RELEASELOCK( MUTEX_LOCKNAME( initialisation ) ) \
 void krnlCompleteInit( void )
 	{
 	/* We've completed the initialisation process */
@@ -352,7 +345,7 @@ void krnlCompleteInit( void )
 		(shutdownLevel = SHUTDOWN_LEVEL_MUTEXES);
 	clear kernel data; */
 
-CHECK_RETVAL_ACQUIRELOCK( MUTEX_LOCKNAME( initialisation ) ) \
+CHECK_RETVAL \
 int krnlBeginShutdown( void )
 	{
 	/* Lock the initialisation mutex to make sure that other threads don't
@@ -360,8 +353,7 @@ int krnlBeginShutdown( void )
 	MUTEX_LOCK( initialisation );
 
 	/* We can only begin a shutdown if we're fully initialised */
-	REQUIRES_MUTEX( krnlData->initLevel == INIT_LEVEL_FULL, \
-					initialisation );
+	REQUIRES( krnlData->initLevel == INIT_LEVEL_FULL );
 
 	/* If we're already shut down, don't to anything */
 	if( krnlData->initLevel <= INIT_LEVEL_NONE )
@@ -378,7 +370,6 @@ int krnlBeginShutdown( void )
 	return( CRYPT_OK );
 	}
 
-RETVAL_RELEASELOCK( MUTEX_LOCKNAME( initialisation ) ) \
 int krnlCompleteShutdown( void )
 	{
 	/* Once the kernel objects have been destroyed, we're in the closing-down

@@ -28,14 +28,13 @@
 /* Initialise and destroy the crypto information in the handshake state
    information */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int initHandshakeCryptInfo( INOUT SESSION_INFO *sessionInfoPtr,
-							INOUT SSL_HANDSHAKE_INFO *handshakeInfo )
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+int initHandshakeCryptInfo( INOUT SSL_HANDSHAKE_INFO *handshakeInfo,
+							const BOOLEAN isTLS12 )
 	{
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	int status;
 
-	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( handshakeInfo, sizeof( SSL_HANDSHAKE_INFO ) ) );
 
 	/* Clear the handshake information contexts */
@@ -68,7 +67,7 @@ int initHandshakeCryptInfo( INOUT SESSION_INFO *sessionInfoPtr,
 	if( cryptStatusOK( status ) )
 		{
 		handshakeInfo->sha1context = createInfo.cryptHandle;
-		if( sessionInfoPtr->version < SSL_MINOR_VERSION_TLS12 )
+		if( !isTLS12 )
 			return( CRYPT_OK );
 		}
 #ifdef CONFIG_SUITEB
@@ -162,20 +161,15 @@ void destroyHandshakeCryptInfo( INOUT SSL_HANDSHAKE_INFO *handshakeInfo )
 
 /* Initialise and destroy the session security contexts */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-static int initSecurityContextsSSL( INOUT SESSION_INFO *sessionInfoPtr
-#ifdef CONFIG_SUITEB
-									, INOUT SSL_HANDSHAKE_INFO *handshakeInfo
-#endif /* CONFIG_SUITEB */
-								   )
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+static int initSecurityContextsSSL( INOUT SESSION_INFO *sessionInfoPtr,
+									INOUT SSL_HANDSHAKE_INFO *handshakeInfo )
 	{
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	int status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
-#ifdef CONFIG_SUITEB
 	assert( isWritePtr( handshakeInfo, sizeof( SSL_HANDSHAKE_INFO ) ) );
-#endif /* CONFIG_SUITEB */
 
 	/* Create the authentication contexts, unless we're using a combined
 	   encryption+authentication mode */
@@ -361,50 +355,105 @@ int cloneHashContext( IN_HANDLE const CRYPT_CONTEXT hashContext,
 *																			*
 ****************************************************************************/
 
-/* Load a DH/ECDH key into a context */
+/* Load a DH key into a context, with the fixed value below being used for
+   the SSL server.  The prime is the value 2^1024 - 2^960 - 1 +
+   2^64 * { [2^894 pi] + 129093 }, from the Oakley spec (RFC 2412) */
 
-#ifdef USE_ECDH
+static const BYTE FAR_BSS dh1024SSL[] = {
+	0x00, 0x80,		/* p */
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xC9, 0x0F, 0xDA, 0xA2, 0x21, 0x68, 0xC2, 0x34,
+		0xC4, 0xC6, 0x62, 0x8B, 0x80, 0xDC, 0x1C, 0xD1,
+		0x29, 0x02, 0x4E, 0x08, 0x8A, 0x67, 0xCC, 0x74,
+		0x02, 0x0B, 0xBE, 0xA6, 0x3B, 0x13, 0x9B, 0x22,
+		0x51, 0x4A, 0x08, 0x79, 0x8E, 0x34, 0x04, 0xDD,
+		0xEF, 0x95, 0x19, 0xB3, 0xCD, 0x3A, 0x43, 0x1B,
+		0x30, 0x2B, 0x0A, 0x6D, 0xF2, 0x5F, 0x14, 0x37,
+		0x4F, 0xE1, 0x35, 0x6D, 0x6D, 0x51, 0xC2, 0x45,
+		0xE4, 0x85, 0xB5, 0x76, 0x62, 0x5E, 0x7E, 0xC6,
+		0xF4, 0x4C, 0x42, 0xE9, 0xA6, 0x37, 0xED, 0x6B,
+		0x0B, 0xFF, 0x5C, 0xB6, 0xF4, 0x06, 0xB7, 0xED,
+		0xEE, 0x38, 0x6B, 0xFB, 0x5A, 0x89, 0x9F, 0xA5,
+		0xAE, 0x9F, 0x24, 0x11, 0x7C, 0x4B, 0x1F, 0xE6,
+		0x49, 0x28, 0x66, 0x51, 0xEC, 0xE6, 0x53, 0x81,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0x00, 0x01,		/* g */
+		0x02
+	};
+
+static const BYTE FAR_BSS dh2048SSL[] = {
+	0x01, 0x01,		/* p */
+		0x00,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xC9, 0x0F, 0xDA, 0xA2, 0x21, 0x68, 0xC2, 0x34,
+		0xC4, 0xC6, 0x62, 0x8B, 0x80, 0xDC, 0x1C, 0xD1,
+		0x29, 0x02, 0x4E, 0x08, 0x8A, 0x67, 0xCC, 0x74,
+		0x02, 0x0B, 0xBE, 0xA6, 0x3B, 0x13, 0x9B, 0x22,
+		0x51, 0x4A, 0x08, 0x79, 0x8E, 0x34, 0x04, 0xDD,
+		0xEF, 0x95, 0x19, 0xB3, 0xCD, 0x3A, 0x43, 0x1B,
+		0x30, 0x2B, 0x0A, 0x6D, 0xF2, 0x5F, 0x14, 0x37,
+		0x4F, 0xE1, 0x35, 0x6D, 0x6D, 0x51, 0xC2, 0x45,
+		0xE4, 0x85, 0xB5, 0x76, 0x62, 0x5E, 0x7E, 0xC6,
+		0xF4, 0x4C, 0x42, 0xE9, 0xA6, 0x37, 0xED, 0x6B,
+		0x0B, 0xFF, 0x5C, 0xB6, 0xF4, 0x06, 0xB7, 0xED,
+		0xEE, 0x38, 0x6B, 0xFB, 0x5A, 0x89, 0x9F, 0xA5,
+		0xAE, 0x9F, 0x24, 0x11, 0x7C, 0x4B, 0x1F, 0xE6,
+		0x49, 0x28, 0x66, 0x51, 0xEC, 0xE4, 0x5B, 0x3D,
+		0xC2, 0x00, 0x7C, 0xB8, 0xA1, 0x63, 0xBF, 0x05,
+		0x98, 0xDA, 0x48, 0x36, 0x1C, 0x55, 0xD3, 0x9A,
+		0x69, 0x16, 0x3F, 0xA8, 0xFD, 0x24, 0xCF, 0x5F,
+		0x83, 0x65, 0x5D, 0x23, 0xDC, 0xA3, 0xAD, 0x96,
+		0x1C, 0x62, 0xF3, 0x56, 0x20, 0x85, 0x52, 0xBB,
+		0x9E, 0xD5, 0x29, 0x07, 0x70, 0x96, 0x96, 0x6D,
+		0x67, 0x0C, 0x35, 0x4E, 0x4A, 0xBC, 0x98, 0x04,
+		0xF1, 0x74, 0x6C, 0x08, 0xCA, 0x18, 0x21, 0x7C,
+		0x32, 0x90, 0x5E, 0x46, 0x2E, 0x36, 0xCE, 0x3B,
+		0xE3, 0x9E, 0x77, 0x2C, 0x18, 0x0E, 0x86, 0x03,
+		0x9B, 0x27, 0x83, 0xA2, 0xEC, 0x07, 0xA2, 0x8F,
+		0xB5, 0xC5, 0x5D, 0xF0, 0x6F, 0x4C, 0x52, 0xC9,
+		0xDE, 0x2B, 0xCB, 0xF6, 0x95, 0x58, 0x17, 0x18,
+		0x39, 0x95, 0x49, 0x7C, 0xEA, 0x95, 0x6A, 0xE5,
+		0x15, 0xD2, 0x26, 0x18, 0x98, 0xFA, 0x05, 0x10,
+		0x15, 0x72, 0x8E, 0x5A, 0x8A, 0xAC, 0xAA, 0x68,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0x00, 0x01,		/* g */
+		0x02
+	};
 
 typedef struct {
 	const CRYPT_ECCCURVE_TYPE curveType;
 	const BYTE FAR_BSS *curveData;
 	} ECCCURVE_SSL_INFO;
 
-static const BYTE FAR_BSS ecdhP256SSL[] = {
+static const BYTE FAR_BSS ecdh192SSL[] = {
+	0x03,		/* NamedCurve */
+	0x00, 0x13	/* P192 */
+	};
+static const BYTE FAR_BSS ecdh224SSL[] = {
+	0x03,		/* NamedCurve */
+	0x00, 0x15	/* P224 */
+	};
+static const BYTE FAR_BSS ecdh256SSL[] = {
 	0x03,		/* NamedCurve */
 	0x00, 0x17	/* P256 */
 	};
-static const BYTE FAR_BSS ecdhP384SSL[] = {
+static const BYTE FAR_BSS ecdh384SSL[] = {
 	0x03,		/* NamedCurve */
 	0x00, 0x18	/* P384 */
 	};
-static const BYTE FAR_BSS ecdhP521SSL[] = {
+static const BYTE FAR_BSS ecdh521SSL[] = {
 	0x03,		/* NamedCurve */
 	0x00, 0x19	/* P521 */
 	};
-static const BYTE FAR_BSS ecdhBP256SSL[] = {
-	0x03,		/* NamedCurve */
-	0x00, 0x1A	/* Brainpool P256 */
-	};
-static const BYTE FAR_BSS ecdhBP384SSL[] = {
-	0x03,		/* NamedCurve */
-	0x00, 0x1B	/* Brainpool P384 */
-	};
-static const BYTE FAR_BSS ecdhBP512SSL[] = {
-	0x03,		/* NamedCurve */
-	0x00, 0x1C	/* Brainpool P512 */
-	};
 static const ECCCURVE_SSL_INFO eccCurveMapTbl[] = {
-	{ CRYPT_ECCCURVE_P256, ecdhP256SSL },
-	{ CRYPT_ECCCURVE_P384, ecdhP384SSL },
-	{ CRYPT_ECCCURVE_P521, ecdhP521SSL },
-	{ CRYPT_ECCCURVE_BRAINPOOL_P256, ecdhBP256SSL },
-	{ CRYPT_ECCCURVE_BRAINPOOL_P384, ecdhBP384SSL },
-	{ CRYPT_ECCCURVE_BRAINPOOL_P512, ecdhBP512SSL },
+	{ CRYPT_ECCCURVE_P192, ecdh192SSL },
+	{ CRYPT_ECCCURVE_P224, ecdh224SSL },
+	{ CRYPT_ECCCURVE_P256, ecdh256SSL },
+	{ CRYPT_ECCCURVE_P384, ecdh384SSL },
+	{ CRYPT_ECCCURVE_P521, ecdh521SSL },
 	{ CRYPT_ECCCURVE_NONE, NULL }, 
 		{ CRYPT_ECCCURVE_NONE, NULL }
 	};
-#endif /* USE_ECDH */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int initDHcontextSSL( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext, 
@@ -416,7 +465,7 @@ int initDHcontextSSL( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 	{
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	MESSAGE_DATA msgData;
-	int keySize = TLS_DH_KEYSIZE, status;
+	int keySize = bitsToBytes( 1024 ), status;
 
 	assert( isWritePtr( iCryptContext, sizeof( CRYPT_CONTEXT ) ) );
 	assert( ( keyData == NULL && keyDataLength == 0 ) || \
@@ -435,8 +484,10 @@ int initDHcontextSSL( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 
 	/* If we're loading a built-in DH key, match the key size to the server 
 	   authentication key size.  If there's no server key present, we 
-	   default to the TLS_DH_KEYSIZE-byte key because we don't know how much 
-	   processing power the client has */
+	   default to the 1024-bit key because we don't know how much processing
+	   power the client has, and if we're using anon-DH anyway (implied by 
+	   the lack of server authentication key) then 1024 vs. 2048 bits isn't 
+	   a big loss */
 	if( keyData == NULL && iServerKeyTemplate != CRYPT_UNUSED && \
 		eccParams == CRYPT_ECCCURVE_NONE )
 		{
@@ -471,13 +522,9 @@ int initDHcontextSSL( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 		/* If we're the client we'll have been sent DH/ECDH key components 
 		   by the server */
 		setMessageData( &msgData, ( MESSAGE_CAST ) keyData, keyDataLength ); 
-		status = krnlSendMessage( createInfo.cryptHandle,
-								  IMESSAGE_SETATTRIBUTE_S, &msgData,
-								  CRYPT_IATTRIBUTE_KEY_SSL );
 		}
 	else
 		{
-#ifdef USE_ECDH 
 		/* If we've been given ECC parameter information then we're using
 		   ECDH */
 		if( eccParams != CRYPT_ECCCURVE_NONE )
@@ -501,17 +548,24 @@ int initDHcontextSSL( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 			ENSURES( eccCurveInfoPtr != NULL );
 			setMessageData( &msgData, 
 							( MESSAGE_CAST ) eccCurveInfoPtr->curveData, 3 );
-			status = krnlSendMessage( createInfo.cryptHandle,
-									  IMESSAGE_SETATTRIBUTE_S, &msgData,
-									  CRYPT_IATTRIBUTE_KEY_SSL );
 			}
 		else
-#endif /* USE_ECDH */
 			{
-			/* We're loading a standard DH key of the appropriate size */
-			status = loadDHcontext( createInfo.cryptHandle, keySize );
+			/* We're using straight DH, use a key that corresponds 
+			   approximately in size to the server authentication key.  We 
+			   allow for a bit of slop to avoid having a 1025-bit server 
+			   authentication key lead to the use of a 2048-bit DH  key */
+			if( keySize > bitsToBytes( 1024 ) + 16 )
+				{ setMessageData( &msgData, ( MESSAGE_CAST ) dh2048SSL,
+								  sizeof( dh2048SSL ) ); }
+			else
+				{ setMessageData( &msgData, ( MESSAGE_CAST ) dh1024SSL,
+								  sizeof( dh1024SSL ) ); }
 			}
 		}
+	status = krnlSendMessage( createInfo.cryptHandle,
+							  IMESSAGE_SETATTRIBUTE_S, &msgData,
+							  CRYPT_IATTRIBUTE_KEY_SSL );
 	if( cryptStatusError( status ) )
 		{
 		krnlSendNotifier( createInfo.cryptHandle, IMESSAGE_DECREFCOUNT );
@@ -528,7 +582,7 @@ int initDHcontextSSL( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 	return( CRYPT_OK );
 	}
 
-/* Create the master secret from a shared (PSK) secret value, typically a
+/* Create the master secret from a shared secret value, typically a
    password */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
@@ -537,61 +591,53 @@ int createSharedPremasterSecret( OUT_BUFFER( premasterSecretMaxLength, \
 									void *premasterSecret, 
 								 IN_LENGTH_SHORT \
 									const int premasterSecretMaxLength, 
-								 OUT_LENGTH_BOUNDED_Z( premasterSecretMaxLength ) \
-									int *premasterSecretLength,
+								 OUT_LENGTH_SHORT_Z int *premasterSecretLength,
 								 IN_BUFFER( sharedSecretLength ) \
 									const void *sharedSecret, 
 								 IN_LENGTH_SHORT const int sharedSecretLength,
-								 IN_BUFFER_OPT( otherSecretLength ) \
-									const void *otherSecret, 
-								 IN_LENGTH_PKC_Z const int otherSecretLength,
 								 const BOOLEAN isEncodedValue )
 	{
 	STREAM stream;
-	BYTE decodedValue[ 64 + 8 ];
-	static const BYTE zeroes[ CRYPT_MAX_TEXTSIZE + 8 ] = { 0 };
-	int valueLength = sharedSecretLength;
+	BYTE zeroes[ CRYPT_MAX_TEXTSIZE + 8 ];
 	int status;
 
 	assert( isWritePtr( premasterSecret, premasterSecretMaxLength ) );
 	assert( isWritePtr( premasterSecretLength, sizeof( int ) ) );
 	assert( isReadPtr( sharedSecret, sharedSecretLength ) );
-	assert( otherSecret == NULL || \
-			isReadPtr( otherSecret, otherSecretLength ) );
 
 	REQUIRES( premasterSecretMaxLength > 0 && \
 			  premasterSecretMaxLength < MAX_INTLENGTH_SHORT );
 	REQUIRES( sharedSecretLength > 0 && \
 			  sharedSecretLength < MAX_INTLENGTH_SHORT );
-	REQUIRES( ( otherSecret == NULL && otherSecretLength == 0 ) || \
-			  ( otherSecret != NULL && \
-				otherSecretLength > 0 && \
-				otherSecretLength <= CRYPT_MAX_PKCSIZE ) );
 
-	/* Clear return values */
-	memset( premasterSecret, 0, min( 16, premasterSecretMaxLength ) );
+	/* Clear return value */
 	*premasterSecretLength = 0;
 
 	/* Write the PSK-derived premaster secret value:
 
 		uint16	otherSecretLen
-		byte[]	otherSecret		-- DH value for DHE-PSK, zeroes for pure PSK
+		byte[]	otherSecret
 		uint16	pskLen
 		byte[]	psk
 
 	   Because the TLS PRF splits the input into two halves of which one half 
 	   is processed by HMAC-MD5 and the other by HMAC-SHA1, it's necessary
 	   to extend the PSK in some way to provide input to both halves of the
-	   PRF.  In a rather dubious decision, the spec requires that for pure
-	   PSK (not DHE-PSK or RSA-PSK) the MD5 half be set to all zeroes, with 
-	   only the SHA1 half being used.  This is done by writing otherSecret 
-	   as a number of zero bytes equal in length to the password */
+	   PRF.  In a rather dubious decision, the spec requires that the MD5
+	   half be set to all zeroes, with only the SHA1 half being used.  This 
+	   is done by writing otherSecret as a number of zero bytes equal in 
+	   length to the password (when used with RSA or DH/ECDH otherSecret
+	   contains the RSA/DH/ECDH value, for pure PSK it contains zeroes) */
+	memset( zeroes, 0, CRYPT_MAX_TEXTSIZE );
 	sMemOpen( &stream, premasterSecret, premasterSecretMaxLength );
 	if( isEncodedValue )
 		{
+		BYTE decodedValue[ 64 + 8 ];
+		int decodedValueLength;
+
 		/* It's a cryptlib-style encoded password, decode it into its binary
 		   value */
-		status = decodePKIUserValue( decodedValue, 64, &valueLength,
+		status = decodePKIUserValue( decodedValue, 64, &decodedValueLength,
 									 sharedSecret, sharedSecretLength );
 		if( cryptStatusError( status ) )
 			{
@@ -600,23 +646,19 @@ int createSharedPremasterSecret( OUT_BUFFER( premasterSecretMaxLength, \
 			assert( DEBUG_WARN );
 			return( status );
 			}
-		sharedSecret = decodedValue;
-		}
-	if( otherSecret != NULL )
-		{
-		writeUint16( &stream, otherSecretLength );
-		swrite( &stream, otherSecret, otherSecretLength );
+		writeUint16( &stream, decodedValueLength );
+		swrite( &stream, zeroes, decodedValueLength );
+		writeUint16( &stream, decodedValueLength );
+		status = swrite( &stream, decodedValue, decodedValueLength );
+		zeroise( decodedValue, decodedValueLength );
 		}
 	else
 		{
-		/* It's pure PSK, otherSecret is a string of zeroes */
-		writeUint16( &stream, valueLength );
-		swrite( &stream, zeroes, valueLength );
+		writeUint16( &stream, sharedSecretLength );
+		swrite( &stream, zeroes, sharedSecretLength );
+		writeUint16( &stream, sharedSecretLength );
+		status = swrite( &stream, sharedSecret, sharedSecretLength );
 		}
-	writeUint16( &stream, valueLength );
-	status = swrite( &stream, sharedSecret, valueLength );
-	if( isEncodedValue )
-		zeroise( decodedValue, valueLength );
 	if( cryptStatusError( status ) )
 		return( status );
 	*premasterSecretLength = stell( &stream );
@@ -632,8 +674,7 @@ int wrapPremasterSecret( INOUT SESSION_INFO *sessionInfoPtr,
 						 INOUT SSL_HANDSHAKE_INFO *handshakeInfo,
 						 OUT_BUFFER( dataMaxLength, *dataLength ) void *data, 
 						 IN_LENGTH_SHORT const int dataMaxLength, 
-						 OUT_LENGTH_BOUNDED_Z( dataMaxLength ) \
-							int *dataLength )
+						 OUT_LENGTH_SHORT_Z int *dataLength )
 	{
 	MECHANISM_WRAP_INFO mechanismInfo;
 	MESSAGE_DATA msgData;
@@ -705,7 +746,7 @@ int unwrapPremasterSecret( INOUT SESSION_INFO *sessionInfoPtr,
 	   cryptlib just returns a generic "failed" response for any handshake
 	   failure, so this explicit defence isn't really necessary, and not
 	   doing this avoids a trivial DoS attack in which a client sends us
-	   junk and forces us to continue with the handshake even though we've
+	   junk and forces us to continue with the handshake even tbough we've
 	   detected that it's junk.
 
 	   There's a second, lower-grade level of oracle that an attacker can
@@ -797,7 +838,6 @@ static int premasterToMaster( const SESSION_INFO *sessionInfoPtr,
 	DEBUG_PRINT(( "Premaster secret:\n" ));
 	DEBUG_DUMP_DATA( handshakeInfo->premasterSecret, 
 					 handshakeInfo->premasterSecretSize );
-#ifdef USE_SSL3
 	if( sessionInfoPtr->version == SSL_MINOR_VERSION_SSL )
 		{
 		memcpy( nonceBuffer, handshakeInfo->clientNonce, SSL_NONCE_SIZE );
@@ -807,13 +847,11 @@ static int premasterToMaster( const SESSION_INFO *sessionInfoPtr,
 								masterSecretLength, 
 								handshakeInfo->premasterSecret,
 								handshakeInfo->premasterSecretSize,
-								( CRYPT_ALGO_TYPE ) CRYPT_USE_DEFAULT, 
-								nonceBuffer, 
+								CRYPT_USE_DEFAULT, nonceBuffer,
 								SSL_NONCE_SIZE + SSL_NONCE_SIZE, 1 );
 		return( krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_DEV_DERIVE,
 								 &mechanismInfo, MECHANISM_DERIVE_SSL ) );
 		}
-#endif /* USE_SSL3 */
 
 	memcpy( nonceBuffer, "master secret", 13 );
 	memcpy( nonceBuffer + 13, handshakeInfo->clientNonce, SSL_NONCE_SIZE );
@@ -835,8 +873,7 @@ static int premasterToMaster( const SESSION_INFO *sessionInfoPtr,
 	setMechanismDeriveInfo( &mechanismInfo, masterSecret, masterSecretLength,
 							handshakeInfo->premasterSecret,
 							handshakeInfo->premasterSecretSize,
-							( CRYPT_ALGO_TYPE ) CRYPT_USE_DEFAULT, 
-							nonceBuffer,
+							CRYPT_USE_DEFAULT, nonceBuffer,
 							13 + SSL_NONCE_SIZE + SSL_NONCE_SIZE, 1 );
 	return( krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_DEV_DERIVE,
 							 &mechanismInfo, MECHANISM_DERIVE_TLS ) );
@@ -866,7 +903,6 @@ static int masterToKeys( const SESSION_INFO *sessionInfoPtr,
 
 	DEBUG_PRINT(( "Master secret:\n" ));
 	DEBUG_DUMP_DATA( masterSecret, masterSecretLength );
-#ifdef USE_SSL3
 	if( sessionInfoPtr->version == SSL_MINOR_VERSION_SSL )
 		{
 		memcpy( nonceBuffer, handshakeInfo->serverNonce, SSL_NONCE_SIZE );
@@ -874,13 +910,11 @@ static int masterToKeys( const SESSION_INFO *sessionInfoPtr,
 				SSL_NONCE_SIZE );
 		setMechanismDeriveInfo( &mechanismInfo, keyBlock, keyBlockLength,
 								masterSecret, masterSecretLength, 
-								( CRYPT_ALGO_TYPE ) CRYPT_USE_DEFAULT, 
-								nonceBuffer, 
+								CRYPT_USE_DEFAULT, nonceBuffer, 
 								SSL_NONCE_SIZE + SSL_NONCE_SIZE, 1 );
 		return( krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_DEV_DERIVE,
 								 &mechanismInfo, MECHANISM_DERIVE_SSL ) );
 		}
-#endif /* USE_SSL3 */
 
 	memcpy( nonceBuffer, "key expansion", 13 );
 	memcpy( nonceBuffer + 13, handshakeInfo->serverNonce, SSL_NONCE_SIZE );
@@ -899,8 +933,7 @@ static int masterToKeys( const SESSION_INFO *sessionInfoPtr,
 		}
 	setMechanismDeriveInfo( &mechanismInfo, keyBlock, keyBlockLength,
 							masterSecret, masterSecretLength, 
-							( CRYPT_ALGO_TYPE ) CRYPT_USE_DEFAULT, 
-							nonceBuffer, 
+							CRYPT_USE_DEFAULT, nonceBuffer, 
 							13 + SSL_NONCE_SIZE + SSL_NONCE_SIZE, 1 );
 	return( krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_DEV_DERIVE,
 							 &mechanismInfo, MECHANISM_DERIVE_TLS ) );
@@ -1060,7 +1093,7 @@ int initCryptoSSL( INOUT SESSION_INFO *sessionInfoPtr,
 			  masterSecretSize < MAX_INTLENGTH_SHORT );
 
 	/* Create the security contexts required for the session */
-	status = initSecurityContextsSSL( sessionInfoPtr );
+	status = initSecurityContextsSSL( sessionInfoPtr, handshakeInfo );
 	if( cryptStatusError( status ) )
 		return( status );
 
@@ -1130,13 +1163,8 @@ int loadExplicitIV( INOUT SESSION_INFO *sessionInfoPtr,
 
 	/* Read and load the IV */
 	status = sread( stream, iv, sslInfo->ivSize );
-	if( cryptStatusError( status ) )
-		{
-		retExt( status, 
-				( status, SESSION_ERRINFO, 
-				  "Packet IV read" ) );
-		}
-	if( sessionInfoPtr->protocolFlags & SSL_PFLAG_GCM )
+	if( cryptStatusOK( status ) && \
+		( sessionInfoPtr->protocolFlags & SSL_PFLAG_GCM ) )
 		{
 		/* If we're using GCM then the IV has to be assembled from the 
 		   implicit and explicit portions */
@@ -1145,12 +1173,6 @@ int loadExplicitIV( INOUT SESSION_INFO *sessionInfoPtr,
 		memmove( iv + sslInfo->gcmSaltSize, iv, sslInfo->ivSize );
 		memcpy( iv, sslInfo->gcmReadSalt, sslInfo->gcmSaltSize );
 		ivSize += sslInfo->gcmSaltSize;
-		}
-	if( sessionInfoPtr->protocolFlags & SSL_PFLAG_ENCTHENMAC )
-		{
-		/* If we're using encrypt-then-MAC then we have to save a copy of
-		   the IV for MAC'ing when the packet is processed */
-		memcpy( sslInfo->iv, iv, sslInfo->ivSize );
 		}
 	if( cryptStatusOK( status ) )
 		{
@@ -1163,7 +1185,7 @@ int loadExplicitIV( INOUT SESSION_INFO *sessionInfoPtr,
 		{
 		retExt( status, 
 				( status, SESSION_ERRINFO, 
-				  "Packet IV load failed" ) );
+				  "Packet IV read/load failed" ) );
 		}
 
 	/* Tell the caller how much data we've consumed */

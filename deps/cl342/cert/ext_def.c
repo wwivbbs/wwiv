@@ -8,10 +8,12 @@
 #if defined( INC_ALL )
   #include "cert.h"
   #include "certattr.h"
+  #include "asn1.h"
   #include "asn1_ext.h"
 #else
   #include "cert/cert.h"
   #include "cert/certattr.h"
+  #include "enc_dec/asn1.h"
   #include "enc_dec/asn1_ext.h"
 #endif /* Compiler-specific includes */
 
@@ -118,6 +120,8 @@
 #define ENCODING( tag )		BER_##tag, CRYPT_UNUSED
 #define ENCODING_SPECIAL( value ) \
 							FIELDTYPE_##value, CRYPT_UNUSED
+#define ENCODING_ALIAS( tag, aliasTag ) \
+							BER_##tag, aliasTag
 #define ENCODING_TAGGED( tag, outerTag ) \
 							BER_##tag, outerTag
 #define ENCODING_SPECIAL_TAGGED( tag, outerTag ) \
@@ -352,7 +356,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, CRYPT_CERTINFO_AUTHORITYINFO_CERTSTORE,
 	  DESCRIPTION( "authorityInfoAccess.accessDescription.accessLocation (httpCerts)" )
 	  ENCODING_SPECIAL( SUBTYPED ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED | FL_SEQEND, ENCODED_OBJECT( generalNameInfo ) },
+	  0, FL_MULTIVALUED | FL_OPTIONAL | FL_SEQEND, ENCODED_OBJECT( generalNameInfo ) },
 	{ NULL, 0,
 	  DESCRIPTION( "authorityInfoAccess.accessDescription (httpCRLs)" )
 	  ENCODING( SEQUENCE ),
@@ -364,7 +368,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, CRYPT_CERTINFO_AUTHORITYINFO_CRLS,
 	  DESCRIPTION( "authorityInfoAccess.accessDescription.accessLocation (httpCRLs)" )
 	  ENCODING_SPECIAL( SUBTYPED ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED | FL_SEQEND, ENCODED_OBJECT( generalNameInfo ) },
+	  0, FL_MULTIVALUED | FL_OPTIONAL | FL_SEQEND, ENCODED_OBJECT( generalNameInfo ) },
 	{ NULL, 0,
 	  DESCRIPTION( "authorityInfoAccess.accessDescription (catchAll)" )
 	  ENCODING( SEQUENCE ),
@@ -372,7 +376,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, 0,
 	  DESCRIPTION( "authorityInfoAccess.catchAll" )
 	  ENCODING_SPECIAL( BLOB_ANY ),	/* Match anything and ignore it */
-	  FL_ATTR_ATTREND, FL_NONENCODING | FL_SEQEND_2 /*FL_SEQEND*/, RANGE_NONE },
+	  FL_ATTR_ATTREND, FL_OPTIONAL | FL_NONENCODING | FL_SEQEND_2 /*FL_SEQEND*/, RANGE_NONE },
 
 #ifdef USE_CERTLEVEL_PKIX_FULL
 	/* biometricInfo (QualifiedCert):
@@ -454,7 +458,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, CRYPT_CERTINFO_QCSTATEMENT_SEMANTICS,
 	  DESCRIPTION( "qcStatements.qcStatement.statementInfo.semanticsIdentifier (statementID)" )
 	  ENCODING( OBJECT_IDENTIFIER ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED, RANGE_OID },
+	  0, FL_MULTIVALUED | FL_OPTIONAL, RANGE_OID },
 	{ NULL, 0,
 	  DESCRIPTION( "qcStatements.qcStatement.statementInfo.nameRegistrationAuthorities (statementID)" )
 	  ENCODING( SEQUENCE ),
@@ -508,7 +512,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, CRYPT_CERTINFO_IPADDRESSBLOCKS_PREFIX,
 	  DESCRIPTION( "ipAddrBlocks.ipAddressFamily.addressesOrRanges.addressPrefix" )
 	  ENCODING_SPECIAL( BLOB_BITSTRING ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED, 3, 19 },
+	  0, FL_MULTIVALUED | FL_OPTIONAL, 3, 19 },
 	{ NULL, 0,
 	  DESCRIPTION( "ipAddrBlocks.ipAddressFamily.addressesOrRanges.addressRange" )
 	  ENCODING( SEQUENCE ),
@@ -557,7 +561,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, CRYPT_CERTINFO_AUTONOMOUSSYSIDS_ASNUM_ID,
 	  DESCRIPTION( "autonomousSysIds.asnum.asIdsOrRanges.asId" )
 	  ENCODING( INTEGER ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED, 1, 500000 },
+	  0, FL_MULTIVALUED | FL_OPTIONAL, 1, 500000 },
 	{ NULL, 0,
 	  DESCRIPTION( "autonomousSysIds.asnum.asIdsOrRanges.asRange" )
 	  ENCODING( SEQUENCE ),
@@ -672,7 +676,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, CRYPT_CERTINFO_SUBJECTINFO_TIMESTAMPING,
 	  DESCRIPTION( "subjectInfoAccess.accessDescription.accessLocation (timeStamping)" )
 	  ENCODING_SPECIAL( SUBTYPED ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED | FL_SEQEND, ENCODED_OBJECT( generalNameInfo ) },
+	  0, FL_MULTIVALUED | FL_OPTIONAL | FL_SEQEND, ENCODED_OBJECT( generalNameInfo ) },
 	{ NULL, 0,
 	  DESCRIPTION( "subjectInfoAccess.accessDescription (caRepository)" )
 	  ENCODING( SEQUENCE ),
@@ -684,7 +688,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, CRYPT_CERTINFO_SUBJECTINFO_CAREPOSITORY,
 	  DESCRIPTION( "subjectInfoAccess.accessDescription.accessLocation (caRepository)" )
 	  ENCODING_SPECIAL( SUBTYPED ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED | FL_SEQEND, ENCODED_OBJECT( generalNameInfo ) },
+	  0, FL_MULTIVALUED | FL_OPTIONAL | FL_SEQEND, ENCODED_OBJECT( generalNameInfo ) },
 	{ NULL, 0,
 	  DESCRIPTION( "subjectInfoAccess.accessDescription (signedObjectRepository)" )
 	  ENCODING( SEQUENCE ),
@@ -696,7 +700,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, CRYPT_CERTINFO_SUBJECTINFO_SIGNEDOBJECTREPOSITORY,
 	  DESCRIPTION( "subjectInfoAccess.accessDescription.accessLocation (signedObjectRepository)" )
 	  ENCODING_SPECIAL( SUBTYPED ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED | FL_SEQEND, ENCODED_OBJECT( generalNameInfo ) },
+	  0, FL_MULTIVALUED | FL_OPTIONAL | FL_SEQEND, ENCODED_OBJECT( generalNameInfo ) },
 	{ NULL, 0,
 	  DESCRIPTION( "subjectInfoAccess.accessDescription (rpkiManifest)" )
 	  ENCODING( SEQUENCE ),
@@ -708,7 +712,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, CRYPT_CERTINFO_SUBJECTINFO_RPKIMANIFEST,
 	  DESCRIPTION( "subjectInfoAccess.accessDescription.accessLocation (rpkiManifest)" )
 	  ENCODING_SPECIAL( SUBTYPED ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED | FL_SEQEND, ENCODED_OBJECT( generalNameInfo ) },
+	  0, FL_MULTIVALUED | FL_OPTIONAL | FL_SEQEND, ENCODED_OBJECT( generalNameInfo ) },
 	{ NULL, 0,
 	  DESCRIPTION( "subjectInfoAccess.accessDescription (signedObject)" )
 	  ENCODING( SEQUENCE ),
@@ -720,7 +724,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, CRYPT_CERTINFO_SUBJECTINFO_SIGNEDOBJECT,
 	  DESCRIPTION( "subjectInfoAccess.accessDescription.accessLocation (signedObject)" )
 	  ENCODING_SPECIAL( SUBTYPED ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED | FL_SEQEND, ENCODED_OBJECT( generalNameInfo ) },
+	  0, FL_MULTIVALUED | FL_OPTIONAL | FL_SEQEND, ENCODED_OBJECT( generalNameInfo ) },
 	{ NULL, 0,
 	  DESCRIPTION( "subjectInfoAccess.accessDescription (catchAll)" )
 	  ENCODING( SEQUENCE ),
@@ -728,7 +732,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, 0,
 	  DESCRIPTION( "subjectInfoAccess.catchAll" )
 	  ENCODING_SPECIAL( BLOB_ANY ),	/* Match anything and ignore it */
-	  FL_ATTR_ATTREND, FL_NONENCODING | FL_SEQEND_2 /*FL_SEQEND*/, RANGE_NONE },
+	  FL_ATTR_ATTREND, FL_OPTIONAL | FL_NONENCODING | FL_SEQEND_2 /*FL_SEQEND*/, RANGE_NONE },
 
 #if defined( USE_CERT_OBSCURE ) && defined( USE_CERTLEVEL_PKIX_PARTIAL )
 	/* dateOfCertGen (SigG)
@@ -757,11 +761,11 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, CRYPT_CERTINFO_SIGG_PROCURE_COUNTRY,
 	  DESCRIPTION( "procuration.country" )
 	  ENCODING_TAGGED( STRING_PRINTABLE, 1 ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED | FL_EXPLICIT, RANGE( 2, 2 ) },
+	  0, FL_MULTIVALUED | FL_EXPLICIT | FL_OPTIONAL, RANGE( 2, 2 ) },
 	{ NULL, CRYPT_CERTINFO_SIGG_PROCURE_TYPEOFSUBSTITUTION,
 	  DESCRIPTION( "procuration.typeOfSubstitution" )
 	  ENCODING_TAGGED( STRING_PRINTABLE, 2 ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED | FL_EXPLICIT, RANGE( 1, 128 ) },
+	  0, FL_MULTIVALUED | FL_EXPLICIT | FL_OPTIONAL, RANGE( 1, 128 ) },
 	{ NULL, CRYPT_CERTINFO_SIGG_PROCURE_SIGNINGFOR,
 	  DESCRIPTION( "procuration.signingFor.thirdPerson" )
 	  ENCODING_SPECIAL_TAGGED( SUBTYPED, 3 ),
@@ -810,19 +814,19 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, 0,
 	  DESCRIPTION( "admissions.content.namingAuthority" )
 	  ENCODING_TAGGED( SEQUENCE, 1 ),
-	  0, FL_OPTIONAL | FL_EXPLICIT, RANGE_NONE },
+	  0, FL_EXPLICIT | FL_OPTIONAL, RANGE_NONE },
 	{ NULL, CRYPT_CERTINFO_SIGG_ADMISSIONS_NAMINGAUTHID,
 	  DESCRIPTION( "admissions.content.namingAuthority.namingAuthID" )
 	  ENCODING( OBJECT_IDENTIFIER ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED, RANGE_OID },
+	  0, FL_MULTIVALUED | FL_OPTIONAL, RANGE_OID },
 	{ NULL, CRYPT_CERTINFO_SIGG_ADMISSIONS_NAMINGAUTHURL,
 	  DESCRIPTION( "admissions.content.namingAuthority.namingAuthURL" )
 	  ENCODING( STRING_IA5 ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED, RANGE_TEXTSTRING },
+	  0, FL_MULTIVALUED | FL_OPTIONAL, RANGE_TEXTSTRING },
 	{ NULL, CRYPT_CERTINFO_SIGG_ADMISSIONS_NAMINGAUTHTEXT,
 	  DESCRIPTION( "admissions.content.namingAuthority.namingAuthText" )
 	  ENCODING( STRING_PRINTABLE ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED | FL_SEQEND, RANGE_TEXTSTRING },
+	  0, FL_MULTIVALUED | FL_OPTIONAL | FL_SEQEND, RANGE_TEXTSTRING },
 	{ NULL, 0,
 	  DESCRIPTION( "admissions.professionInfo" )
 	  ENCODING( SEQUENCE ),
@@ -842,11 +846,11 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, CRYPT_CERTINFO_SIGG_ADMISSIONS_PROFESSIONOID,
 	  DESCRIPTION( "admissions.professionInfo.professionOIDs.professionOID" )
 	  ENCODING( OBJECT_IDENTIFIER ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED | FL_SEQEND, RANGE_OID },
+	  0, FL_MULTIVALUED | FL_SEQEND | FL_OPTIONAL, RANGE_OID },
 	{ NULL, CRYPT_CERTINFO_SIGG_ADMISSIONS_REGISTRATIONNUMBER,
 	  DESCRIPTION( "admissions.professionInfo.professionItems.registrationNumber" )
 	  ENCODING( STRING_PRINTABLE ),
-	  FL_ATTR_ATTREND, FL_OPTIONAL | FL_MULTIVALUED | FL_SEQEND_3, RANGE_TEXTSTRING },
+	  FL_ATTR_ATTREND, FL_MULTIVALUED | FL_SEQEND_3 | FL_OPTIONAL, RANGE_TEXTSTRING },
 
 	/* monetaryLimit (SigG)
 
@@ -1282,7 +1286,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, 0,
 	  DESCRIPTION( "nameConstraints.permittedSubtrees" )
 	  ENCODING_TAGGED( SEQUENCE, 0 ),
-	  0, FL_OPTIONAL | FL_SETOF, RANGE_NONE },
+	  0, FL_SETOF | FL_OPTIONAL, RANGE_NONE },
 	{ NULL, 0,
 	  DESCRIPTION( "nameConstraints.permittedSubtrees.sequenceOf" )
 	  ENCODING( SEQUENCE ),
@@ -1294,7 +1298,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, 0,
 	  DESCRIPTION( "nameConstraints.excludedSubtrees" )
 	  ENCODING_TAGGED( SEQUENCE, 1 ),
-	  0, FL_OPTIONAL | FL_SETOF, RANGE_NONE },
+	  0, FL_SETOF | FL_OPTIONAL, RANGE_NONE },
 	{ NULL, 0,
 	  DESCRIPTION( "nameConstraints.excludedSubtrees.sequenceOf" )
 	  ENCODING( SEQUENCE ),
@@ -1346,7 +1350,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, 0,
 	  DESCRIPTION( "cRLDistributionPoints.distPoint.cRLIssuer" )
 	  ENCODING_TAGGED( SEQUENCE, 2 ),
-	  0, FL_OPTIONAL | FL_SETOF, RANGE_NONE },
+	  0, FL_SETOF | FL_OPTIONAL, RANGE_NONE },
 	{ NULL, CRYPT_CERTINFO_CRLDIST_CRLISSUER,
 	  DESCRIPTION( "cRLDistributionPoints.distPoint.cRLIssuer.generalName" )
 	  ENCODING_SPECIAL( SUBTYPED ),
@@ -1399,7 +1403,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, 0,
 	  DESCRIPTION( "certPolicies.policyInfo.policyQualifiers" )
 	  ENCODING( SEQUENCE ),
-	  0, FL_OPTIONAL | FL_SETOF, RANGE_NONE },
+	  0, FL_SETOF | FL_OPTIONAL, RANGE_NONE },
 	{ NULL, 0,
 	  DESCRIPTION( "certPolicies.policyInfo.policyQual" )
 	  ENCODING( SEQUENCE ),
@@ -1427,7 +1431,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, 0,
 	  DESCRIPTION( "certPolicies.policyInfo.policyQual.userNotice.noticeRef" )
 	  ENCODING( SEQUENCE ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED, RANGE_NONE },
+	  0, FL_MULTIVALUED | FL_OPTIONAL, RANGE_NONE },
 	{ NULL, CRYPT_CERTINFO_CERTPOLICY_ORGANIZATION,
 	  DESCRIPTION( "certPolicies.policyInfo.policyQual.userNotice.noticeRef.organization" )
 	  ENCODING_SPECIAL( TEXTSTRING ),
@@ -1501,7 +1505,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, 0,
 	  DESCRIPTION( "authorityKeyIdentifier.authorityCertIssuer" )
 	  ENCODING_TAGGED( SEQUENCE, 1 ),
-	  0, FL_OPTIONAL | FL_SETOF, RANGE_NONE },
+	  0, FL_SETOF | FL_OPTIONAL, RANGE_NONE },
 	{ NULL, CRYPT_CERTINFO_AUTHORITY_CERTISSUER,
 	  DESCRIPTION( "authorityKeyIdentifier.authorityCertIssuer.generalName" )
 	  ENCODING_SPECIAL( SUBTYPED ),
@@ -1628,7 +1632,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, 0,
 	  DESCRIPTION( "extKeyUsage.catchAll" )
 	  ENCODING_SPECIAL( BLOB_ANY ),	/* Match anything and ignore it */
-	  FL_ATTR_ATTREND, FL_NONENCODING | FL_SEQEND /*NONE*/, RANGE_NONE },
+	  FL_ATTR_ATTREND, FL_OPTIONAL | FL_NONENCODING | FL_SEQEND /*NONE*/, RANGE_NONE },
 
 #ifdef USE_CERTLEVEL_PKIX_FULL
 #ifdef USE_REV
@@ -1732,7 +1736,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, 0,
 	  DESCRIPTION( "freshestCRL.distributionPoint.cRLIssuer" )
 	  ENCODING_TAGGED( SEQUENCE, 2 ),
-	  0, FL_OPTIONAL | FL_SETOF, RANGE_NONE },
+	  0, FL_SETOF | FL_OPTIONAL, RANGE_NONE },
 	{ NULL, CRYPT_CERTINFO_FRESHESTCRL_CRLISSUER,
 	  DESCRIPTION( "freshestCRL.distributionPoint.cRLIssuer.generalName" )
 	  ENCODING_SPECIAL( SUBTYPED ),
@@ -2134,11 +2138,11 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	{ NULL, CRYPT_CERTINFO_SET_MERCHANTSTATEPROVINCE,
 	  DESCRIPTION( "merchantData.merNameSeq.merNames.stateProvince" )
 	  ENCODING_TAGGED( STRING_ISO646, 3 ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED | FL_EXPLICIT, RANGE( 1, 50 ) },
+	  0, FL_MULTIVALUED | FL_EXPLICIT | FL_OPTIONAL, RANGE( 1, 50 ) },
 	{ NULL, CRYPT_CERTINFO_SET_MERCHANTPOSTALCODE,
 	  DESCRIPTION( "merchantData.merNameSeq.merNames.postalCode" )
 	  ENCODING_TAGGED( STRING_ISO646, 4 ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED | FL_EXPLICIT, RANGE( 1, 50 ) },
+	  0, FL_MULTIVALUED | FL_EXPLICIT | FL_OPTIONAL, RANGE( 1, 50 ) },
 	{ NULL, CRYPT_CERTINFO_SET_MERCHANTCOUNTRYNAME,
 	  DESCRIPTION( "merchantData.merNameSeq.merNames.countryName" )
 	  ENCODING_TAGGED( STRING_ISO646, 5 ),
@@ -2188,7 +2192,7 @@ static const ATTRIBUTE_INFO FAR_BSS extensionInfo[] = {
 	  FL_ATTR_ATTREND, FL_MULTIVALUED | FL_SEQEND, RANGE_OID },
 #endif /* USE_CERT_OBSOLETE */
 
-	{ NULL, CRYPT_IATTRIBUTE_LAST }, { NULL, CRYPT_IATTRIBUTE_LAST }
+	{ NULL, CRYPT_ERROR }, { NULL, CRYPT_ERROR }
 	};
 
 #if ( defined( USE_CERTREV ) || defined( USE_CERTREQ ) ) && \
@@ -2214,7 +2218,7 @@ STATIC_DATA const ATTRIBUTE_INFO FAR_BSS holdInstructionInfo[] = {
 	  ENCODING_SPECIAL( IDENTIFIER ),
 	  FL_ATTR_ATTREND, FL_OPTIONAL, RANGE_NONE },
 
-	{ NULL, CRYPT_IATTRIBUTE_LAST }, { NULL, CRYPT_IATTRIBUTE_LAST }
+	{ NULL, CRYPT_ERROR }, { NULL, CRYPT_ERROR }
 	};
 #endif /* ( USE_CERTREV || USE_CERTREQ ) && USE_CERTLEVEL_PKIX_FULL */
 
@@ -2344,10 +2348,21 @@ STATIC_DATA const ATTRIBUTE_INFO FAR_BSS generalNameInfo[] = {
 	  0, FL_OPTIONAL, CHECK_DNS },
 	
 	/* directoryName */
+#if 0	/* 28/4/08 This form seems to have worked purely by coincidence... */
+	{ NULL, 0,
+	  DESCRIPTION( "generalName.directoryName" )
+	  ENCODING_TAGGED( SEQUENCE, 4 ),
+	  0, FL_OPTIONAL, RANGE_NONE },
+	{ NULL, CRYPT_CERTINFO_DIRECTORYNAME,
+	  DESCRIPTION( "generalName.directoryName.name" )
+	  ENCODING_ALIAS( FIELDTYPE_DN, BER_SEQUENCE ),
+	  0, FL_OPTIONAL | FL_ALIAS | FL_SEQEND, CHECK_X500 },
+#else
 	{ NULL, CRYPT_CERTINFO_DIRECTORYNAME,
 	  DESCRIPTION( "generalName.directoryName" )
 	  ENCODING_SPECIAL_TAGGED( DN, 4 ),
 	  0, FL_OPTIONAL | FL_EXPLICIT, CHECK_X500 },
+#endif /* 0 */
 
 	/* ediPartyName */
 	{ NULL, 0,
@@ -2390,7 +2405,7 @@ STATIC_DATA const ATTRIBUTE_INFO FAR_BSS generalNameInfo[] = {
 	  ENCODING_TAGGED( OBJECT_IDENTIFIER, 8 ),
 	  FL_ATTR_ATTREND, FL_OPTIONAL, RANGE_OID },
 
-	{ NULL, CRYPT_IATTRIBUTE_LAST }, { NULL, CRYPT_IATTRIBUTE_LAST }
+	{ NULL, CRYPT_ERROR }, { NULL, CRYPT_ERROR }
 	};
 
 /****************************************************************************
@@ -2504,6 +2519,54 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	  DESCRIPTION( "sMIMECapabilities.capability.cast5CBC.parameter" )
 	  ENCODING_SPECIAL( BLOB_ANY ),	/* 128-bit key */
 	  0, FL_NONENCODING | FL_SEQEND, 0, 0, 4, "\x02\x02\x00\x80" },
+	{ NULL, 0,
+	  DESCRIPTION( "sMIMECapabilities.capability (ideaCBC)" )
+	  ENCODING( SEQUENCE ),
+	  0, FL_IDENTIFIER, RANGE_NONE },
+	{ MKOID( "\x06\x0B\x2B\x06\x01\x04\x01\x81\x3C\x07\x01\x01\x02" ), CRYPT_CERTINFO_CMS_SMIMECAP_IDEA,
+	  DESCRIPTION( "sMIMECapabilities.capability.ideaCBC (Ascom Tech variant)" )
+	  ENCODING_SPECIAL( IDENTIFIER ),
+	  0, FL_NONENCODING | FL_SEQEND, RANGE_NONE },
+	{ NULL, 0,
+	  DESCRIPTION( "sMIMECapabilities.capability (rc2CBC)" )
+	  ENCODING( SEQUENCE ),
+	  0, FL_IDENTIFIER, RANGE_NONE },
+	{ MKOID( "\x06\x08\x2A\x86\x48\x86\xF7\x0D\x03\x02" ), CRYPT_CERTINFO_CMS_SMIMECAP_RC2,
+	  DESCRIPTION( "sMIMECapabilities.capability.rc2CBC" )
+	  ENCODING_SPECIAL( IDENTIFIER ),
+	  0, FL_NONENCODING, RANGE_NONE },
+	{ NULL, 0,
+	  DESCRIPTION( "sMIMECapabilities.capability.rc2CBC.parameters" )
+	  ENCODING_SPECIAL( BLOB_ANY ),	/* 128-bit key */
+	  0, FL_NONENCODING | FL_SEQEND, 0, 0, 4, "\x02\x02\x00\x80" },
+	{ NULL, 0,
+	  DESCRIPTION( "sMIMECapabilities.capability (rC5-CBCPad)" )
+	  ENCODING( SEQUENCE ),
+	  0, FL_IDENTIFIER, RANGE_NONE },
+	{ MKOID( "\x06\x08\x2A\x86\x48\x86\xF7\x0D\x03\x09" ), CRYPT_CERTINFO_CMS_SMIMECAP_RC5,
+	  DESCRIPTION( "sMIMECapabilities.capability.rC5-CBCPad" )
+	  ENCODING_SPECIAL( IDENTIFIER ),
+	  0, FL_NONENCODING, RANGE_NONE },
+	{ NULL, 0,
+	  DESCRIPTION( "sMIMECapabilities.capability.rC5-CBCPad.parameters" )
+	  ENCODING_SPECIAL( BLOB_SEQUENCE ),/* 16-byte key, 12 rounds, 64-bit blocks */
+	  0, FL_NONENCODING | FL_SEQEND, 0, 0, 11, "\x30\x09\x02\x01\x10\x02\x01\x0C\x02\x01\x40" },
+	{ NULL, 0,
+	  DESCRIPTION( "sMIMECapabilities.capability (fortezzaConfidentialityAlgorithm)" )
+	  ENCODING( SEQUENCE ),
+	  0, FL_IDENTIFIER, RANGE_NONE },
+	{ MKOID( "\x06\x09\x60\x86\x48\x01\x65\x02\x01\x01\x04" ), CRYPT_CERTINFO_CMS_SMIMECAP_SKIPJACK,
+	  DESCRIPTION( "sMIMECapabilities.capability.fortezzaConfidentialityAlgorithm" )
+	  ENCODING_SPECIAL( IDENTIFIER ),
+	  0, FL_NONENCODING | FL_SEQEND, RANGE_NONE },
+	{ NULL, 0,
+	  DESCRIPTION( "sMIMECapabilities.capability (desCBC)" )
+	  ENCODING( SEQUENCE ),
+	  0, FL_IDENTIFIER, RANGE_NONE },
+	{ MKOID( "\x06\x05\x2B\x0E\x03\x02\x07" ), CRYPT_CERTINFO_CMS_SMIMECAP_DES,
+	  DESCRIPTION( "sMIMECapabilities.capability.desCBC" )
+	  ENCODING_SPECIAL( IDENTIFIER ),
+	  0, FL_NONENCODING | FL_SEQEND, RANGE_NONE },
 	{ NULL, 0,
 	  DESCRIPTION( "sMIMECapabilities.capability (sha-ng)" )
 	  ENCODING( SEQUENCE ),
@@ -2644,7 +2707,7 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	  DESCRIPTION( "sMIMECapabilities.capability (preferBinaryInside)" )
 	  ENCODING( SEQUENCE ),
 	  0, FL_IDENTIFIER, RANGE_NONE },
-	{ MKOID( "\x06\x0B\x2A\x86\x48\x86\xF7\x0D\x01\x09\x10\x0B\x01" ), CRYPT_CERTINFO_CMS_SMIMECAP_PREFERBINARYINSIDE,
+	{ MKOID( "\x06\x0A\x2A\x86\x48\x86\xF7\x0D\x01\x09\x10\x01" ), CRYPT_CERTINFO_CMS_SMIMECAP_PREFERBINARYINSIDE,
 	  DESCRIPTION( "sMIMECapabilities.capability.preferBinaryInside" )
 	  ENCODING_SPECIAL( IDENTIFIER ),
 	  0, FL_NONENCODING | FL_SEQEND, RANGE_NONE },
@@ -2652,7 +2715,7 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	  DESCRIPTION( "sMIMECapabilities.capability (catchAll)" )
 	  ENCODING( SEQUENCE ),
 	  0, FL_IDENTIFIER, RANGE_NONE },
-	{ NULL, 0,
+	{ NULL, 10000,
 	  DESCRIPTION( "sMIMECapabilities.capability.catchAll" )
 	  ENCODING_SPECIAL( BLOB_ANY ),	/* Match anything and ignore it */
 	  FL_ATTR_ATTREND, FL_NONENCODING | FL_SEQEND_2 /*FL_SEQEND*/, RANGE_NONE },
@@ -2732,7 +2795,7 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	{ NULL, 0,
 	  DESCRIPTION( "essSecurityLabel.securityCategories" )
 	  ENCODING( SET ),
-	  0, FL_OPTIONAL | FL_SETOF, RANGE_NONE },
+	  0, FL_SETOF | FL_OPTIONAL, RANGE_NONE },
 	{ NULL, 0,
 	  DESCRIPTION( "essSecurityLabel.securityCategories.securityCategory" )
 	  ENCODING( SEQUENCE ),
@@ -2740,11 +2803,11 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	{ NULL, CRYPT_CERTINFO_CMS_SECLABEL_CATTYPE,
 	  DESCRIPTION( "essSecurityLabel.securityCategories.securityCategory.type" )
 	  ENCODING_TAGGED( OBJECT_IDENTIFIER, 0 ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED, RANGE_OID },
+	  0, FL_MULTIVALUED | FL_OPTIONAL, RANGE_OID },
 	{ NULL, CRYPT_CERTINFO_CMS_SECLABEL_CATVALUE,
 	  DESCRIPTION( "essSecurityLabel.securityCategories.securityCategory.value" )
 	  ENCODING_SPECIAL_TAGGED( BLOB_ANY, 1 ),
-	  FL_ATTR_ATTREND, FL_OPTIONAL | FL_MULTIVALUED | FL_SEQEND /*FL_SEQEND_2, or _3*/, RANGE_ATTRIBUTEBLOB },
+	  FL_ATTR_ATTREND, FL_MULTIVALUED | FL_SEQEND /*FL_SEQEND_2, or _3*/ | FL_OPTIONAL, RANGE_ATTRIBUTEBLOB },
 
 	/* mlExpansionHistory:
 
@@ -2796,7 +2859,7 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	{ NULL, CRYPT_CERTINFO_CMS_MLEXP_INSTEADOF,
 	  DESCRIPTION( "mlExpansionHistory.mlData.mlReceiptPolicy.insteadOf.generalNames.generalName" )
 	  ENCODING_SPECIAL( SUBTYPED ),
-	  0, FL_OPTIONAL | FL_SEQEND_2 | FL_MULTIVALUED, ENCODED_OBJECT( generalNameInfo ) },
+	  0, FL_SEQEND_2 | FL_MULTIVALUED | FL_OPTIONAL, ENCODED_OBJECT( generalNameInfo ) },
 	{ NULL, 0,
 	  DESCRIPTION( "mlExpansionHistory.mlData.mlReceiptPolicy.inAdditionTo" )
 	  ENCODING_TAGGED( SEQUENCE, 2 ),
@@ -2808,7 +2871,7 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	{ NULL, CRYPT_CERTINFO_CMS_MLEXP_INADDITIONTO,
 	  DESCRIPTION( "mlExpansionHistory.mlData.mlReceiptPolicy.inAdditionTo.generalNames.generalName" )
 	  ENCODING_SPECIAL( SUBTYPED ),
-	  FL_ATTR_ATTREND, FL_OPTIONAL | FL_SEQEND_2 /*FL_SEQEND_3, or _4*/ | FL_MULTIVALUED, ENCODED_OBJECT( generalNameInfo ) },
+	  FL_ATTR_ATTREND, FL_SEQEND_2 /*FL_SEQEND_3, or _4*/ | FL_MULTIVALUED | FL_OPTIONAL, ENCODED_OBJECT( generalNameInfo ) },
 
 	/* contentHints:
 
@@ -2863,7 +2926,7 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	{ NULL, CRYPT_CERTINFO_CMS_EQVLABEL_CLASSIFICATION,
 	  DESCRIPTION( "equivalentLabels.set.securityClassification" )
 	  ENCODING( INTEGER ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED, CRYPT_CLASSIFICATION_UNMARKED, CRYPT_CLASSIFICATION_LAST, 0, NULL },
+	  0, FL_MULTIVALUED | FL_OPTIONAL, CRYPT_CLASSIFICATION_UNMARKED, CRYPT_CLASSIFICATION_LAST, 0, NULL },
 	{ NULL, CRYPT_CERTINFO_CMS_EQVLABEL_POLICY,
 	  DESCRIPTION( "equivalentLabels.set.securityPolicyIdentifier" )
 	  ENCODING( OBJECT_IDENTIFIER ),
@@ -2871,11 +2934,11 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	{ NULL, CRYPT_CERTINFO_CMS_EQVLABEL_PRIVACYMARK,
 	  DESCRIPTION( "equivalentLabels.set.privacyMark" )
 	  ENCODING( STRING_PRINTABLE ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED, RANGE_TEXTSTRING },
+	  0, FL_MULTIVALUED | FL_OPTIONAL, RANGE_TEXTSTRING },
 	{ NULL, 0,
 	  DESCRIPTION( "equivalentLabels.set.securityCategories" )
 	  ENCODING( SET ),
-	  0, FL_OPTIONAL | FL_SETOF, RANGE_NONE },
+	  0, FL_SETOF | FL_OPTIONAL, RANGE_NONE },
 	{ NULL, 0,
 	  DESCRIPTION( "equivalentLabels.set.securityCategories.securityCategory" )
 	  ENCODING( SEQUENCE ),
@@ -2883,11 +2946,11 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	{ NULL, CRYPT_CERTINFO_CMS_EQVLABEL_CATTYPE,
 	  DESCRIPTION( "equivalentLabels.set.securityCategories.securityCategory.type" )
 	  ENCODING_TAGGED( OBJECT_IDENTIFIER, 0 ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED, RANGE_OID },
+	  0, FL_MULTIVALUED | FL_OPTIONAL, RANGE_OID },
 	{ NULL, CRYPT_CERTINFO_CMS_EQVLABEL_CATVALUE,
 	  DESCRIPTION( "equivalentLabels.set.securityCategories.securityCategory.value" )
 	  ENCODING_SPECIAL_TAGGED( BLOB_ANY, 1 ),
-	  FL_ATTR_ATTREND, FL_OPTIONAL | FL_MULTIVALUED | FL_SEQEND_2 /*or _4*/, RANGE_ATTRIBUTEBLOB },
+	  FL_ATTR_ATTREND, FL_MULTIVALUED | FL_SEQEND_2 /*or _4*/ | FL_OPTIONAL, RANGE_ATTRIBUTEBLOB },
 #endif /* USE_CMSATTR_OBSCURE */
 
 #if defined( USE_CMSATTR_OBSCURE ) || defined( USE_CERTREV ) || defined( USE_TSP )
@@ -2923,7 +2986,7 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	{ NULL, 0,
 	  DESCRIPTION( "signingCertificate.policies" )
 	  ENCODING( SEQUENCE ),
-	  0, FL_OPTIONAL | FL_SETOF, RANGE_NONE },
+	  0, FL_SETOF | FL_OPTIONAL, RANGE_NONE },
 	{ NULL, 0,
 	  DESCRIPTION( "signingCertificate.policies.policyInfo" )
 	  ENCODING( SEQUENCE ),
@@ -2931,7 +2994,7 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	{ NULL, CRYPT_CERTINFO_CMS_SIGNINGCERT_POLICIES,
 	  DESCRIPTION( "signingCertificate.policies.policyInfo.policyIdentifier" )
 	  ENCODING( OBJECT_IDENTIFIER ),
-	  FL_ATTR_ATTREND, FL_OPTIONAL | FL_MULTIVALUED | FL_SEQEND /*or _3*/, RANGE_OID },
+	  FL_ATTR_ATTREND, FL_MULTIVALUED | FL_OPTIONAL | FL_SEQEND /*or _3*/, RANGE_OID },
 #endif /* USE_CMSATTR_OBSCURE || USE_CERTREV || USE_TSP */
 
 #ifdef USE_CMSATTR_OBSCURE
@@ -2965,7 +3028,7 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	{ NULL, 0,
 	  DESCRIPTION( "signingCertificate.policies" )
 	  ENCODING( SEQUENCE ),
-	  0, FL_OPTIONAL | FL_SETOF, RANGE_NONE },
+	  0, FL_SETOF | FL_OPTIONAL, RANGE_NONE },
 	{ NULL, 0,
 	  DESCRIPTION( "signingCertificate.policies.policyInfo" )
 	  ENCODING( SEQUENCE ),
@@ -2973,7 +3036,7 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	{ NULL, CRYPT_CERTINFO_CMS_SIGNINGCERTV2_POLICIES,
 	  DESCRIPTION( "signingCertificate.policies.policyInfo.policyIdentifier" )
 	  ENCODING( OBJECT_IDENTIFIER ),
-	  FL_ATTR_ATTREND, FL_OPTIONAL | FL_MULTIVALUED | FL_SEQEND /*or _3*/, RANGE_OID },
+	  FL_ATTR_ATTREND, FL_MULTIVALUED | FL_OPTIONAL | FL_SEQEND /*or _3*/, RANGE_OID },
 
 	/* signaturePolicyID:
 
@@ -3014,7 +3077,7 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	{ NULL, 0,
 	  DESCRIPTION( "signaturePolicyID.sigPolicyQualifiers" )
 	  ENCODING( SEQUENCE ),
-	  0, FL_OPTIONAL | FL_SETOF, RANGE_NONE },
+	  0, FL_SETOF | FL_OPTIONAL, RANGE_NONE },
 	{ NULL, 0,
 	  DESCRIPTION( "signaturePolicyID.sigPolicyQualifiers.sigPolicyQualifier" )
 	  ENCODING( SEQUENCE ),
@@ -3026,7 +3089,7 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	{ NULL, CRYPT_CERTINFO_CMS_SIGPOLICY_CPSURI,
 	  DESCRIPTION( "signaturePolicyID.sigPolicyQualifiers.sigPolicyQualifier.cPSuri" )
 	  ENCODING( STRING_IA5 ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED | FL_SEQEND_2, CHECK_URL },
+	  0, FL_MULTIVALUED | FL_OPTIONAL | FL_SEQEND_2, CHECK_URL },
 	{ NULL, 0,
 	  DESCRIPTION( "signaturePolicyID.sigPolicyQualifiers.sigPolicyQualifier" )
 	  ENCODING( SEQUENCE ),
@@ -3042,15 +3105,15 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	{ NULL, 0,
 	  DESCRIPTION( "signaturePolicyID.sigPolicyQualifiers.sigPolicyQualifier.userNotice.noticeRef" )
 	  ENCODING( SEQUENCE ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED, RANGE_NONE },
+	  0, FL_MULTIVALUED | FL_OPTIONAL, RANGE_NONE },
 	{ NULL, CRYPT_CERTINFO_CMS_SIGPOLICY_ORGANIZATION,
 	  DESCRIPTION( "signaturePolicyID.sigPolicyQualifiers.sigPolicyQualifier.userNotice.noticeRef.organization" )
 	  ENCODING( STRING_UTF8 ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED, RANGE( 1, 200 ) },
+	  0, FL_MULTIVALUED | FL_OPTIONAL, RANGE( 1, 200 ) },
 	{ NULL, CRYPT_CERTINFO_CMS_SIGPOLICY_ORGANIZATION,	/* Backwards-compat.handling for VisibleString */
 	  DESCRIPTION( "signaturePolicyID.sigPolicyQualifiers.sigPolicyQualifier.userNotice.noticeRef.organization" )
 	  ENCODING( STRING_ISO646 ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED, RANGE( 1, 200 ) },
+	  0, FL_MULTIVALUED | FL_OPTIONAL, RANGE( 1, 200 ) },
 	{ NULL, 0,
 	  DESCRIPTION( "signaturePolicyID.sigPolicyQualifiers.sigPolicyQualifier.userNotice.noticeRef.noticeNumbers" )
 	  ENCODING( SEQUENCE ),
@@ -3058,7 +3121,7 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	{ NULL, CRYPT_CERTINFO_CMS_SIGPOLICY_NOTICENUMBERS,
 	  DESCRIPTION( "signaturePolicyID.sigPolicyQualifiers.sigPolicyQualifier.userNotice.noticeRef.noticeNumbers" )
 	  ENCODING( INTEGER ),
-	  0, FL_OPTIONAL | FL_MULTIVALUED | FL_SEQEND_2, RANGE( 1, 1000 ) },
+	  0, FL_MULTIVALUED | FL_OPTIONAL | FL_SEQEND_2, RANGE( 1, 1000 ) },
 	{ NULL, CRYPT_CERTINFO_CMS_SIGPOLICY_EXPLICITTEXT,
 	  DESCRIPTION( "signaturePolicyID.sigPolicyQualifiers.sigPolicyQualifier.userNotice.explicitText" )
 	  ENCODING( STRING_UTF8 ),
@@ -3254,80 +3317,75 @@ static const ATTRIBUTE_INFO FAR_BSS cmsAttributeInfo[] = {
 	  FL_ATTR_ATTREND, FL_OPTIONAL | FL_SEQEND, CHECK_HTTP },
 #endif /* USE_CMSATTR_OBSCURE */
 
-	{ NULL, CRYPT_IATTRIBUTE_LAST }, { NULL, CRYPT_IATTRIBUTE_LAST }
+	{ NULL, CRYPT_ERROR }, { NULL, CRYPT_ERROR }
 	};
 
-/* Subtable for encoding the contentType.  Since the fieldID that we're 
-   using for this subtable is a CRYPT_CONTENT_TYPE rather than the 
-   CRYPT_ATTRIBUTE_TYPE that's used for the standard encoding tables, we 
-   define a macro to convert to the appropriate type */
-
-#define MK_FIELDID( value )		( CRYPT_ATTRIBUTE_TYPE ) ( value )
+/* Subtable for encoding the contentType */
 
 STATIC_DATA const ATTRIBUTE_INFO FAR_BSS contentTypeInfo[] = {
-	{ OID_CMS_DATA, MK_FIELDID( CRYPT_CONTENT_DATA ),
+	{ OID_CMS_DATA, CRYPT_CONTENT_DATA,
 	  DESCRIPTION( "contentType.data (1 2 840 113549 1 7 1)" )
 	  ENCODING_SPECIAL( IDENTIFIER ),
 	  FL_ATTR_ATTRSTART, FL_OPTIONAL, RANGE_NONE },
-	{ OID_CMS_SIGNEDDATA, MK_FIELDID( CRYPT_CONTENT_SIGNEDDATA ),
+	{ OID_CMS_SIGNEDDATA, CRYPT_CONTENT_SIGNEDDATA,
 	  DESCRIPTION( "contentType.signedData (1 2 840 113549 1 7 2)" )
 	  ENCODING_SPECIAL( IDENTIFIER ),
 	  0, FL_OPTIONAL, RANGE_NONE },
-	{ OID_CMS_ENVELOPEDDATA, MK_FIELDID( CRYPT_CONTENT_ENVELOPEDDATA ),
+	{ OID_CMS_ENVELOPEDDATA, CRYPT_CONTENT_ENVELOPEDDATA,
 	  DESCRIPTION( "contentType.envelopedData (1 2 840 113549 1 7 3)" )
 	  ENCODING_SPECIAL( IDENTIFIER ),
 	  0, FL_OPTIONAL, RANGE_NONE },
 #ifdef USE_CMSATTR_OBSCURE
-	{ MKOID( "\x06\x09\x2A\x86\x48\x86\xF7\x0D\x01\x07\x04" ), MK_FIELDID( CRYPT_CONTENT_SIGNEDANDENVELOPEDDATA ),
+	{ MKOID( "\x06\x09\x2A\x86\x48\x86\xF7\x0D\x01\x07\x04" ), CRYPT_CONTENT_SIGNEDANDENVELOPEDDATA,
 	  DESCRIPTION( "contentType.signedAndEnvelopedData (1 2 840 113549 1 7 4)" )
 	  ENCODING_SPECIAL( IDENTIFIER ),
 	  0, FL_OPTIONAL, RANGE_NONE },
 #endif /* USE_CMSATTR_OBSCURE */
-	{ OID_CMS_DIGESTEDDATA, MK_FIELDID( CRYPT_CONTENT_DIGESTEDDATA ),
+	{ OID_CMS_DIGESTEDDATA, CRYPT_CONTENT_DIGESTEDDATA,
 	  DESCRIPTION( "contentType.digestedData (1 2 840 113549 1 7 5)" )
 	  ENCODING_SPECIAL( IDENTIFIER ),
 	  0, FL_OPTIONAL, RANGE_NONE },
-	{ OID_CMS_ENCRYPTEDDATA, MK_FIELDID( CRYPT_CONTENT_ENCRYPTEDDATA ),
+	{ OID_CMS_ENCRYPTEDDATA, CRYPT_CONTENT_ENCRYPTEDDATA,
 	  DESCRIPTION( "contentType.encryptedData (1 2 840 113549 1 7 6)" )
 	  ENCODING_SPECIAL( IDENTIFIER ),
 	  0, FL_OPTIONAL, RANGE_NONE },
 #ifdef USE_COMPRESSION
-	{ OID_CMS_COMPRESSEDDATA, MK_FIELDID( CRYPT_CONTENT_COMPRESSEDDATA ),
+	{ OID_CMS_COMPRESSEDDATA, CRYPT_CONTENT_COMPRESSEDDATA,
 	  DESCRIPTION( "contentType.compressedData (1 2 840 113549 1 9 16 1 9)" )
 	  ENCODING_SPECIAL( IDENTIFIER ),
 	  0, FL_OPTIONAL, RANGE_NONE },
 #endif /* USE_COMPRESSION */
 #ifdef USE_TSP
-	{ OID_CMS_TSTOKEN, MK_FIELDID( CRYPT_CONTENT_TSTINFO ),
+	{ OID_CMS_TSTOKEN, CRYPT_CONTENT_TSTINFO,
 	  DESCRIPTION( "contentType.tstInfo (1 2 840 113549 1 9 16 1 4)" )
 	  ENCODING_SPECIAL( IDENTIFIER ),
 	  0, FL_OPTIONAL, RANGE_NONE },
 #endif /* USE_TSP */
 #ifdef USE_CMSATTR_OBSCURE
-	{ OID_MS_SPCINDIRECTDATACONTEXT, MK_FIELDID( CRYPT_CONTENT_SPCINDIRECTDATACONTEXT ),
+	{ OID_MS_SPCINDIRECTDATACONTEXT, CRYPT_CONTENT_SPCINDIRECTDATACONTEXT,
 	  DESCRIPTION( "contentType.spcIndirectDataContext (1 3 6 1 4 1 311 2 1 4)" )
 	  ENCODING_SPECIAL( IDENTIFIER ),
 	  0, FL_OPTIONAL, RANGE_NONE },
 #endif /* USE_CMSATTR_OBSCURE */
 #ifdef USE_CERTVAL
-	{ OID_CRYPTLIB_RTCSREQ, MK_FIELDID( CRYPT_CONTENT_RTCSREQUEST ),
+	{ OID_CRYPTLIB_RTCSREQ, CRYPT_CONTENT_RTCSREQUEST,
 	  DESCRIPTION( "contentType.rtcsRequest (1 3 6 1 4 1 3029 4 1 4)" )
 	  ENCODING_SPECIAL( IDENTIFIER ),
 	  0, FL_OPTIONAL, RANGE_NONE },
-	{ OID_CRYPTLIB_RTCSRESP, MK_FIELDID( CRYPT_CONTENT_RTCSRESPONSE ),
+	{ OID_CRYPTLIB_RTCSRESP, CRYPT_CONTENT_RTCSRESPONSE,
 	  DESCRIPTION( "contentType.rtcsResponse (1 3 6 1 4 1 3029 4 1 5)" )
 	  ENCODING_SPECIAL( IDENTIFIER ),
 	  0, FL_OPTIONAL, RANGE_NONE },
-	{ OID_CRYPTLIB_RTCSRESP_EXT, MK_FIELDID( CRYPT_CONTENT_RTCSRESPONSE_EXT ),
+	{ OID_CRYPTLIB_RTCSRESP_EXT, CRYPT_CONTENT_RTCSRESPONSE_EXT,
 	  DESCRIPTION( "contentType.rtcsResponseExt (1 3 6 1 4 1 3029 4 1 6)" )
 	  ENCODING_SPECIAL( IDENTIFIER ),
 	  0, FL_OPTIONAL, RANGE_NONE },
 #endif /* USE_CERTVAL */
-	{ MKOID( "\x06\x06\x67\x81\x08\x01\x01\x01" ), MK_FIELDID( CRYPT_CONTENT_MRTD ),
+	{ MKOID( "\x06\x06\x67\x81\x08\x01\x01\x01" ), CRYPT_CONTENT_MRTD,
 	  DESCRIPTION( "contentType.mRTD (2 23 136 1 1 1)" )
 	  ENCODING_SPECIAL( IDENTIFIER ),
 	  FL_ATTR_ATTREND, FL_OPTIONAL, RANGE_NONE },
-	{ NULL, CRYPT_IATTRIBUTE_LAST }, { NULL, CRYPT_IATTRIBUTE_LAST }
+	{ NULL, CRYPT_ERROR }, { NULL, CRYPT_ERROR }
 	};
 
 /* Select the appropriate attribute information table for encoding/type 
@@ -3374,7 +3432,6 @@ static BOOLEAN checkExtension( IN_ARRAY( noAttributeInfoEntries ) \
 								const ATTRIBUTE_INFO *attributeInfoPtr,
 							   IN_LENGTH_SHORT const int noAttributeInfoEntries,
 							   IN_ATTRIBUTE CRYPT_ATTRIBUTE_TYPE firstAttributeID,
-							   const BOOLEAN isStandardAttribute, 
 							   const BOOLEAN isSubTable )
 	{
 	CRYPT_ATTRIBUTE_TYPE prevFieldID = CRYPT_ATTRIBUTE_NONE;
@@ -3396,11 +3453,8 @@ static BOOLEAN checkExtension( IN_ARRAY( noAttributeInfoEntries ) \
 				   than CRYPT_ATTRIBUTE_TYPE so the values are outside the
 				   usual CRYPT_CERTINFO_xxx range */
 
-	/* The first entry must be marked as the attribute start and must have an
-	   associated OID */
+	/* The first entry must be marked as the attribute start */
 	if( !( attributeInfoPtr->typeInfoFlags & FL_ATTR_ATTRSTART ) )
-		return( FALSE );
-	if( isStandardAttribute && attributeInfoPtr->oid == NULL )
 		return( FALSE );
 
 	/* The overall attribute can't have a lower attribute ID than any 
@@ -3417,7 +3471,7 @@ static BOOLEAN checkExtension( IN_ARRAY( noAttributeInfoEntries ) \
 		}
 
 	for( iterationCount = 0;
-		 !isAttributeTableEnd( attributeInfoPtr ) && \
+		 attributeInfoPtr->fieldID != CRYPT_ERROR && \
 			iterationCount < noAttributeInfoEntries;
 		 attributeInfoPtr++, iterationCount++ )
 		{
@@ -3476,9 +3530,6 @@ static BOOLEAN checkExtension( IN_ARRAY( noAttributeInfoEntries ) \
 
 		/* Make sure that the field entries are consistent with the field 
 		   type */
-		if( attributeInfoPtr->fieldType < FIELDTYPE_LAST || \
-			attributeInfoPtr->fieldType >= MAX_TAG )
-			return( FALSE ); 
 		if( attributeInfoPtr->fieldType == FIELDTYPE_CHOICE && \
 			attributeInfoPtr->extraData == NULL )
 			{
@@ -3489,17 +3540,6 @@ static BOOLEAN checkExtension( IN_ARRAY( noAttributeInfoEntries ) \
 			attributeInfoPtr->extraData == NULL )
 			{
 			/* DN must have a DN entry checking function */
-			return( FALSE );
-			}
-		if( ( attributeInfoPtr->fieldType == FIELDTYPE_DN || \
-			  attributeInfoPtr->fieldType == FIELDTYPE_BLOB_ANY ) && \
-			  ( attributeInfoPtr->encodingFlags & FL_OPTIONAL ) && \
-			  !( attributeInfoPtr->encodingFlags & FL_EXPLICIT ) )
-			{
-			/* A FIELDTYPE_BLOB_ANY or FIELDTYPE_DN can't be optional fields 
-			   (unless they're explicitly tagged) because with no type 
-			   information for them available there's no way to check 
-			   whether we've encountered them or not */
 			return( FALSE );
 			}
 		if( attributeInfoPtr->fieldType == FIELDTYPE_SUBTYPED )
@@ -3518,8 +3558,7 @@ static BOOLEAN checkExtension( IN_ARRAY( noAttributeInfoEntries ) \
 			const ATTRIBUTE_INFO *nextAttributeInfoPtr = attributeInfoPtr + 1;
 
 			/* FIELDID_FOLLOWS entry must be at the start of the attribute 
-			   and must followed by the one that contains the actual field 
-			   ID */
+			   and must followed by the one that contains the actual field ID */
 			if( !( attributeInfoPtr->typeInfoFlags & FL_ATTR_ATTRSTART ) )
 				return( FALSE );
 			if( nextAttributeInfoPtr->fieldID < CRYPT_CERTINFO_FIRST_EXTENSION || \
@@ -3583,7 +3622,7 @@ static BOOLEAN checkExtension( IN_ARRAY( noAttributeInfoEntries ) \
 
 			for( subTableInfoPtr = attributeInfoPtr->extraData, \
 					innerIterationCount = 0;
-				 !isAttributeTableEnd( subTableInfoPtr ) && \
+				 subTableInfoPtr->fieldID != CRYPT_ERROR && \
 					innerIterationCount < FAILSAFE_ITERATIONS_MED;
 				 subTableInfoPtr++, innerIterationCount++ )
 				{
@@ -3657,7 +3696,6 @@ CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 static BOOLEAN checkExtensionTable( IN_ARRAY( noAttributeInfoEntries ) \
 										const ATTRIBUTE_INFO *attributeInfoPtr,
 									IN_LENGTH_SHORT const int noAttributeInfoEntries,
-									const BOOLEAN isStandardAttribute, 
 									const BOOLEAN isSubTable )
 	{
 	CRYPT_ATTRIBUTE_TYPE baseAttributeID;
@@ -3672,7 +3710,7 @@ static BOOLEAN checkExtensionTable( IN_ARRAY( noAttributeInfoEntries ) \
 	baseAttributeID = ( attributeInfoPtr->fieldID == FIELDID_FOLLOWS ) ? \
 					  attributeInfoPtr[ 1 ].fieldID : attributeInfoPtr->fieldID;
 	for( index = 0;
-		 !isAttributeTableEnd( attributeInfoPtr ) && \
+		 attributeInfoPtr->fieldID != CRYPT_ERROR && \
 			index < noAttributeInfoEntries;
 		 attributeInfoPtr++, index++ )
 		{
@@ -3680,8 +3718,7 @@ static BOOLEAN checkExtensionTable( IN_ARRAY( noAttributeInfoEntries ) \
 
 		if( !checkExtension( attributeInfoPtr, \
 								noAttributeInfoEntries - index,
-							 baseAttributeID, isStandardAttribute, 
-							 isSubTable ) )
+							 baseAttributeID, isSubTable ) )
 			{
 			DEBUG_DIAG(( "Extension '%s' definition consistency check failed",
 						 ( attributeInfoPtr->description != NULL ) ? \
@@ -3704,7 +3741,7 @@ static BOOLEAN checkExtensionTable( IN_ARRAY( noAttributeInfoEntries ) \
 
 		/* Skip the remainder of this attribute */
 		for( iterationCount = 0;
-			 !isAttributeTableEnd( attributeInfoPtr ) && \
+			 attributeInfoPtr->fieldID != CRYPT_ERROR && \
 				!( attributeInfoPtr->typeInfoFlags & FL_ATTR_ATTREND ) && \
 				iterationCount < noAttributeInfoEntries;
 			 attributeInfoPtr++, iterationCount++ );
@@ -3764,24 +3801,21 @@ BOOLEAN checkExtensionTables( void )
 	/* Check each encoding table */
 	if( !checkExtensionTable( extensionInfo, 
 							  FAILSAFE_ARRAYSIZE( extensionInfo, \
-												  ATTRIBUTE_INFO ), 
-							  TRUE, FALSE ) )
+												  ATTRIBUTE_INFO ), FALSE ) )
 		{
 		DEBUG_DIAG(( "Certificate extension definition consistency check failed" ));
 		retIntError_Boolean();
 		}
 	if( !checkExtensionTable( cmsAttributeInfo,
 							  FAILSAFE_ARRAYSIZE( cmsAttributeInfo, \
-												  ATTRIBUTE_INFO ), 
-							  TRUE, FALSE ) )
+												  ATTRIBUTE_INFO ), FALSE ) )
 		{
 		DEBUG_DIAG(( "CMS attribute definition consistency check failed" ));
 		retIntError_Boolean();
 		}
 	if( !checkExtensionTable( generalNameInfo,
 							  FAILSAFE_ARRAYSIZE( generalNameInfo, \
-												  ATTRIBUTE_INFO ), 
-							  FALSE, FALSE ) )
+												  ATTRIBUTE_INFO ), FALSE ) )
 		{
 		DEBUG_DIAG(( "GeneralName definition consistency check failed" ));
 		retIntError_Boolean();
@@ -3790,8 +3824,7 @@ BOOLEAN checkExtensionTables( void )
 	defined( USE_CERTLEVEL_PKIX_FULL )
 	if( !checkExtensionTable( holdInstructionInfo,
 							  FAILSAFE_ARRAYSIZE( holdInstructionInfo, \
-												  ATTRIBUTE_INFO ), 
-							  TRUE, TRUE ) )
+												  ATTRIBUTE_INFO ), TRUE ) )
 		{
 		DEBUG_DIAG(( "HoldInstructionInfo definition consistency check failed" ));
 		retIntError_Boolean();
@@ -3799,8 +3832,7 @@ BOOLEAN checkExtensionTables( void )
 #endif /* ( USE_CERTREV || USE_CERTREQ ) && USE_CERTLEVEL_PKIX_FULL */
 	if( !checkExtensionTable( contentTypeInfo,
 							  FAILSAFE_ARRAYSIZE( contentTypeInfo, \
-												  ATTRIBUTE_INFO ), 
-							  TRUE, TRUE ) )
+												  ATTRIBUTE_INFO ), TRUE ) )
 		{
 		DEBUG_DIAG(( "ContentTypeInfo definition consistency check failed" ));
 		retIntError_Boolean();
@@ -3846,12 +3878,10 @@ static int checkURLString( IN_BUFFER( urlLength ) const char *url,
 
 	assert( isReadPtr( url, urlLength ) );
 
-	REQUIRES_EXT( urlLength >= MIN_RFC822_SIZE && urlLength < MAX_URL_SIZE,
-				  CRYPT_ERRTYPE_ATTR_VALUE );
-				  /* MIN_RFC822_SIZE is the shortest value allow, 
-				     MAX_URL_SIZE is the largest */
-	REQUIRES_EXT( urlType > URL_NONE && urlType < URL_LAST,
-				  CRYPT_ERRTYPE_ATTR_VALUE );
+	REQUIRES( urlLength >= MIN_RFC822_SIZE && urlLength < MAX_URL_SIZE );
+			  /* MIN_RFC822_SIZE is the shortest value allow, MAX_URL_SIZE
+			     is the largest */
+	REQUIRES( urlType > URL_NONE && urlType < URL_LAST );
 
 	/* Make a first pass over the URL checking that it follows the RFC 1738 
 	   rules for valid characters.  Because of the use of wildcards in 
@@ -3861,7 +3891,7 @@ static int checkURLString( IN_BUFFER( urlLength ) const char *url,
 		{
 		const int ch = byteToInt( url[ i ] );
 
-		if( !isValidTextChar( ch ) || \
+		if( ch <= 0 || ch > 0x7F || !isPrint( ch ) || \
 			ch == ' ' || ch == '<' || ch == '>' || ch == '"' || \
 			ch == '{' || ch == '}' || ch == '|' || ch == '\\' || \
 			ch == '^' || ch == '[' || ch == ']' || ch == '`' )
@@ -3898,8 +3928,7 @@ static int checkURLString( IN_BUFFER( urlLength ) const char *url,
 		url += offset;
 		length = urlLength - offset;
 		}
-	ENSURES_EXT( rangeCheckZ( schemaLength, length, urlLength ),
-				 CRYPT_ERRTYPE_ATTR_VALUE );
+	ENSURES( rangeCheckZ( schemaLength, length, urlLength ) );
 
 	/* Make sure that the start of the URL looks valid.  Note that this 
 	   simply checks for obvious mistakes (e.g. setting an IP address for a 
@@ -3981,7 +4010,7 @@ static int checkURLString( IN_BUFFER( urlLength ) const char *url,
 			return( CRYPT_ERRTYPE_ATTR_VALUE );
 		}
 
-	return( CRYPT_ERRTYPE_NONE );
+	return( CRYPT_OK );
 	}
 
 CHECK_RETVAL_ENUM( CRYPT_ERRTYPE ) STDC_NONNULL_ARG( ( 1 ) ) \
@@ -4086,7 +4115,7 @@ BOOLEAN checkAttributeAvailable( IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE fieldID
 
 /* Get the encoded tag value for a field */
 
-CHECK_RETVAL_RANGE( MAKE_CTAG_PRIMITIVE( 0 ), MAX_TAG ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_RANGE( MAX_ERROR, MAX_TAG ) STDC_NONNULL_ARG( ( 1 ) ) \
 int getFieldEncodedTag( const ATTRIBUTE_INFO *attributeInfoPtr )
 	{
 	int tag;

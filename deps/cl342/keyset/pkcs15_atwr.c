@@ -213,7 +213,7 @@ static int getCertIDs( INOUT PKCS15_INFO *pkcs15infoPtr,
 
 /* Get the PKCS #15 key usage flags for a context */
 
-CHECK_RETVAL_RANGE( PKSC15_USAGE_FLAG_NONE, PKCS15_USAGE_FLAG_MAX ) \
+CHECK_RETVAL \
 static int getKeyUsageFlags( IN_HANDLE const CRYPT_HANDLE iCryptContext,
 							 IN_FLAGS( PKCS15_USAGE ) const int privKeyUsage )
 	{
@@ -293,7 +293,7 @@ static int getKeyUsageFlags( IN_HANDLE const CRYPT_HANDLE iCryptContext,
 
 	/* If the key ends up being unusable, tell the caller */
 	if( keyUsage <= PKSC15_USAGE_FLAG_NONE )
-		return( PKSC15_USAGE_FLAG_NONE );
+		return( 0 );
 
 	/* If this is a public-key object which is updating a private-key one
 	   then the only key usages that we'll have found are public-key ones.  
@@ -322,7 +322,7 @@ static int getKeyUsageFlags( IN_HANDLE const CRYPT_HANDLE iCryptContext,
 
 /* Write PKCS #15 identifier values */
 
-CHECK_RETVAL_RANGE_NOERROR( 1, MAX_INTLENGTH_SHORT ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_RANGE( 0, MAX_INTLENGTH_SHORT ) STDC_NONNULL_ARG( ( 1 ) ) \
 static int sizeofObjectIDs( const PKCS15_INFO *pkcs15infoPtr )
 	{
 	int identifierSize;
@@ -334,40 +334,30 @@ static int sizeofObjectIDs( const PKCS15_INFO *pkcs15infoPtr )
 				sizeofShortInteger( PKCS15_KEYID_SUBJECTKEYIDENTIFIER ) + \
 				sizeofObject( pkcs15infoPtr->keyIDlength ) );
 	if( pkcs15infoPtr->iAndSIDlength > 0 )
-		{
 		identifierSize += ( int ) \
 			sizeofObject( \
 				sizeofShortInteger( PKCS15_KEYID_ISSUERANDSERIALNUMBERHASH ) + \
 				sizeofObject( pkcs15infoPtr->iAndSIDlength ) );
-		}
 	if( pkcs15infoPtr->issuerNameIDlength > 0 )
-		{
 		identifierSize += ( int ) \
 			sizeofObject( \
 				sizeofShortInteger( PKCS15_KEYID_ISSUERNAMEHASH ) + \
 				sizeofObject( pkcs15infoPtr->issuerNameIDlength ) );
-		}
 	if( pkcs15infoPtr->subjectNameIDlength > 0 )
-		{
 		identifierSize += ( int ) \
 			sizeofObject( \
 				sizeofShortInteger( PKCS15_KEYID_SUBJECTNAMEHASH ) + \
 				sizeofObject( pkcs15infoPtr->subjectNameIDlength ) );
-		}
 	if( pkcs15infoPtr->pgp2KeyIDlength > 0 )
-		{
 		identifierSize += ( int ) \
 			sizeofObject( \
 				sizeofShortInteger( PKCS15_KEYID_PGP2 ) + \
 				sizeofObject( pkcs15infoPtr->pgp2KeyIDlength ) );
-		}
 	if( pkcs15infoPtr->openPGPKeyIDlength > 0 )
-		{
 		identifierSize += ( int ) \
 			sizeofObject( \
 				sizeofShortInteger( PKCS15_KEYID_OPENPGP ) + \
 				sizeofObject( pkcs15infoPtr->openPGPKeyIDlength ) );
-		}
 
 	return( identifierSize );
 	}
@@ -455,22 +445,18 @@ int writeKeyAttributes( OUT_BUFFER( privKeyAttributeMaxLen, \
 							void *privKeyAttributes, 
 						IN_LENGTH_SHORT_MIN( 16 ) \
 							const int privKeyAttributeMaxLen,
-						OUT_LENGTH_BOUNDED_Z( privKeyAttributeMaxLen ) \
-							int *privKeyAttributeSize, 
+						OUT_LENGTH_SHORT_Z int *privKeyAttributeSize, 
 						OUT_BUFFER( pubKeyAttributeMaxLen, \
 									*pubKeyAttributeSize ) \
 							void *pubKeyAttributes, 
 						IN_LENGTH_SHORT_MIN( 16 ) \
 							const int pubKeyAttributeMaxLen,
-						OUT_LENGTH_BOUNDED_Z( pubKeyAttributeMaxLen ) \
-							int *pubKeyAttributeSize, 
+						OUT_LENGTH_SHORT_Z int *pubKeyAttributeSize, 
 						INOUT PKCS15_INFO *pkcs15infoPtr, 
-						IN_HANDLE const CRYPT_HANDLE iCryptContext,
-						const BOOLEAN writeKeyIDs )
+						IN_HANDLE const CRYPT_HANDLE iCryptContext )
 	{
 	STREAM stream;
-	int commonAttributeSize, commonKeyAttributeSize;
-	int keyIdentifierDataSize DUMMY_INIT, keyUsage, status;
+	int commonAttributeSize, commonKeyAttributeSize, keyUsage, status;
 
 	assert( isWritePtr( privKeyAttributes, privKeyAttributeMaxLen ) );
 	assert( isWritePtr( privKeyAttributeSize, sizeof( int ) ) );
@@ -523,8 +509,6 @@ int writeKeyAttributes( OUT_BUFFER( privKeyAttributeMaxLen, \
 		commonKeyAttributeSize += sizeofGeneralizedTime();
 	if( pkcs15infoPtr->validTo > MIN_TIME_VALUE )
 		commonKeyAttributeSize += sizeofGeneralizedTime();
-	if( writeKeyIDs )
-		keyIdentifierDataSize = sizeofObjectIDs( pkcs15infoPtr );
 
 	/* Write the private key attributes */
 	sMemOpen( &stream, privKeyAttributes, privKeyAttributeMaxLen );
@@ -542,21 +526,6 @@ int writeKeyAttributes( OUT_BUFFER( privKeyAttributeMaxLen, \
 	if( pkcs15infoPtr->validTo > MIN_TIME_VALUE )
 		status = writeGeneralizedTime( &stream, pkcs15infoPtr->validTo, 
 									   CTAG_KA_VALIDTO );
-	if( writeKeyIDs )
-		{
-		/* Writing the keyIDs gets rather messy because the identifiers are 
-		   present as standard certificate attributes (written in 
-		   writeCertAttributes()), but only as subclass attributes for 
-		   private keys, and not at all for public keys.  Because of this we
-		   can only write them for private keys */
-		writeConstructed( &stream, sizeofObject( \
-									sizeofObject( keyIdentifierDataSize ) ), 
-						  CTAG_OB_SUBCLASSATTR );
-		writeSequence( &stream, sizeofObject( keyIdentifierDataSize ) );
-		status = writeObjectIDs( &stream, pkcs15infoPtr, 
-								 keyIdentifierDataSize, 
-								 CTAG_PK_IDENTIFIERS );
-		}
 	if( cryptStatusOK( status ) )
 		*privKeyAttributeSize = stell( &stream );
 	sMemDisconnect( &stream );
@@ -601,10 +570,8 @@ int writeKeyAttributes( OUT_BUFFER( privKeyAttributeMaxLen, \
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 int writeCertAttributes( OUT_BUFFER( certAttributeMaxLen, *certAttributeSize ) \
 							void *certAttributes, 
-						 IN_LENGTH_SHORT_MIN( 16 ) \
-							const int certAttributeMaxLen,
-						 OUT_LENGTH_BOUNDED_Z( certAttributeMaxLen ) \
-							int *certAttributeSize, 
+						 IN_LENGTH_SHORT_MIN( 16 ) const int certAttributeMaxLen,
+						 OUT_LENGTH_SHORT_Z int *certAttributeSize, 
 						 INOUT PKCS15_INFO *pkcs15infoPtr, 
 						 IN_HANDLE const CRYPT_HANDLE iCryptCert )
 	{

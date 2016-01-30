@@ -223,7 +223,7 @@ static int writeEncryptedResponseBody( INOUT STREAM *stream,
 			 /* Should never occur since it implies that we're overwritten
 				the start of the wrapped certificate */
 	memmove( destPtr, srcPtr, dataLength );
-	return( sSkip( stream, dataLength, SSKIP_MAX ) );
+	return( sSkip( stream, dataLength ) );
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
@@ -285,6 +285,7 @@ static int writeConfBody( INOUT STREAM *stream,
 						  const CMP_PROTOCOL_INFO *protocolInfo )
 	{
 	static const MAP_TABLE fingerprintMapTable[] = {
+		{ CRYPT_ALGO_MD5, CRYPT_CERTINFO_FINGERPRINT_MD5 },
 		{ CRYPT_ALGO_SHA1, CRYPT_CERTINFO_FINGERPRINT_SHA1 },
 		{ CRYPT_ALGO_SHA2, CRYPT_CERTINFO_FINGERPRINT_SHA2 },
 		{ CRYPT_ALGO_SHAng, CRYPT_CERTINFO_FINGERPRINT_SHAng },
@@ -326,7 +327,7 @@ static int writeConfBody( INOUT STREAM *stream,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int writePKIConfBody( INOUT STREAM *stream,
-							 STDC_UNUSED SESSION_INFO *sessionInfoPtr,
+							 STDC_UNUSED INOUT SESSION_INFO *sessionInfoPtr,
 							 STDC_UNUSED const CMP_PROTOCOL_INFO *protocolInfo )
 	{
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
@@ -346,7 +347,7 @@ static int writePKIConfBody( INOUT STREAM *stream,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int writeGenMsgRequestBody( INOUT STREAM *stream,
-							STDC_UNUSED SESSION_INFO *sessionInfoPtr,
+							STDC_UNUSED INOUT SESSION_INFO *sessionInfoPtr,
 							STDC_UNUSED const CMP_PROTOCOL_INFO *protocolInfo )
 	{
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
@@ -450,7 +451,7 @@ static int writeGenMsgResponseBody( INOUT STREAM *stream,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 static int writeErrorBody( INOUT STREAM *stream,
-						   STDC_UNUSED SESSION_INFO *sessionInfoPtr,
+						   STDC_UNUSED INOUT SESSION_INFO *sessionInfoPtr,
 						   const CMP_PROTOCOL_INFO *protocolInfo )
 	{
 	const int statusInfoLength = \
@@ -506,7 +507,7 @@ WRITEMESSAGE_FUNCTION getMessageWriteFunction( IN_ENUM( CMPBODY ) \
 	if( isServer )
 		{
 		for( i = 0; 
-			 messageWriteServerTable[ i ].type != CMPBODY_NONE && \
+			 messageWriteServerTable[ i ].type != CTAG_PB_LAST && \
 				i < FAILSAFE_ARRAYSIZE( messageWriteServerTable, MESSAGEWRITE_INFO ); 
 			 i++ )
 			{
@@ -518,7 +519,7 @@ WRITEMESSAGE_FUNCTION getMessageWriteFunction( IN_ENUM( CMPBODY ) \
 	else
 		{
 		for( i = 0; 
-			 messageWriteClientTable[ i ].type != CMPBODY_NONE && \
+			 messageWriteClientTable[ i ].type != CTAG_PB_LAST && \
 				i < FAILSAFE_ARRAYSIZE( messageWriteClientTable, MESSAGEWRITE_INFO ); 
 			 i++ )
 			{

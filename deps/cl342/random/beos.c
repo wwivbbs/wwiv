@@ -50,6 +50,8 @@ void fastPoll( void )
 	BYTE buffer[ RANDOM_BUFSIZE + 8 ];
 	struct timeval tv;
 	system_info info;
+	bigtime_t idleTime;
+	uint32 value;
 
 	initRandomData( randomState, buffer, RANDOM_BUFSIZE );
 
@@ -60,9 +62,6 @@ void fastPoll( void )
 	/* Get the number of microseconds since the user last provided any input
 	   to any part of the system, the state of keyboard shift keys */
 #if 0	/* See comment at start */
-	bigtime_t idleTime;
-	uint32 value;
-
 	idleTime = idle_time();
 	addRandomData( randomState, &idleTime, sizeof( bigtime_t ) );
 	value = modifiers();

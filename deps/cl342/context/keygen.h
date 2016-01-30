@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *					cryptlib PKC Keygen Header File 						*
-*					Copyright Peter Gutmann 1997-2012						*
+*					Copyright Peter Gutmann 1997-2004						*
 *																			*
 ****************************************************************************/
 
@@ -23,14 +23,10 @@
 
 CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 BOOLEAN primeSieve( const BIGNUM *candidate );
-CHECK_RETVAL_RANGE( FALSE, TRUE ) STDC_NONNULL_ARG( ( 1, 2 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int primeProbable( INOUT PKC_INFO *pkcInfo, 
 				   INOUT BIGNUM *n, 
 				   IN_RANGE( 1, 100 ) const int noChecks );
-CHECK_RETVAL_RANGE( FALSE, TRUE ) STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
-int primeProbableFermat( INOUT PKC_INFO *pkcInfo, 
-						 INOUT BIGNUM *n,
-						 INOUT BN_MONT_CTX *montCTX_n );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int generatePrime( INOUT PKC_INFO *pkcInfo, 
 				   INOUT BIGNUM *candidate, 

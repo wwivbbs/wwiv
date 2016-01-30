@@ -134,16 +134,13 @@ static const OID_INFO FAR_BSS ocspOIDinfo[] = {
 
 /* Send a request to an OCSP server */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 static int sendClientRequest( INOUT SESSION_INFO *sessionInfoPtr )
 	{
 	MESSAGE_DATA msgData;
 	int status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
-
-	/* If we're fuzzing, there's no request to send out */
-	FUZZ_SKIP();
 
 	/* Get the encoded request data.  We store this in the session buffer, 
 	   which at its minimum size is roughly two orders of magnitude larger 
@@ -171,12 +168,11 @@ static int sendClientRequest( INOUT SESSION_INFO *sessionInfoPtr )
 
 /* Read the response from the OCSP server */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 static int readServerResponse( INOUT SESSION_INFO *sessionInfoPtr )
 	{
 	CRYPT_CERTIFICATE iCertResponse;
 	MESSAGE_DATA msgData;
-	STREAM_PEER_TYPE peerSystemType;
 	STREAM stream;
 	BYTE nonceBuffer[ CRYPT_MAX_HASHSIZE + 8 ];
 	const char *errorString = NULL;
@@ -190,13 +186,6 @@ static int readServerResponse( INOUT SESSION_INFO *sessionInfoPtr )
 		return( status );
 	DEBUG_DUMP_FILE( "ocsp_resp", sessionInfoPtr->receiveBuffer,
 					 sessionInfoPtr->receiveBufEnd );
-
-	/* See whether we can determine the remote system type, used to work 
-	   around bugs in implementations */
-	status = sioctlGet( &sessionInfoPtr->stream, STREAM_IOCTL_GETPEERTYPE, 
-						&peerSystemType, sizeof( STREAM_PEER_TYPE ) );
-	if( cryptStatusError( status ) )
-		peerSystemType = STREAM_PEER_NONE;
 
 	/* Try and extract an OCSP status code from the returned object:
 
@@ -237,16 +226,7 @@ static int readServerResponse( INOUT SESSION_INFO *sessionInfoPtr )
 			break;
 
 		case OCSP_RESP_UNAUTHORISED:
-			if( peerSystemType == STREAM_PEER_MICROSOFT )
-				{
-				errorString = "Client isn't authorised to perform query.  "
-							  "This is probably due to a Windows Server "
-							  "configuration issue, the server administrator "
-							  "needs to enable 'Allow Nonce requests' for "
-							  "compliance with RFC 2560";
-				}
-			else
-				errorString = "Client isn't authorised to perform query";
+			errorString = "Client isn't authorised to perform query";
 			status = CRYPT_ERROR_PERMISSION;
 			break;
 
@@ -279,29 +259,13 @@ static int readServerResponse( INOUT SESSION_INFO *sessionInfoPtr )
 				( status, SESSION_ERRINFO, 
 				  "Invalid OCSP response data header" ) );
 		}
-	if( length < MIN_CRYPT_OBJECTSIZE || length >= MAX_INTLENGTH_SHORT )
-		{
-		sMemDisconnect( &stream );
-		retExt( CRYPT_ERROR_BADDATA, 
-				( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
-				  "Invalid OCSP response size %d, should be %d...%d", 
-				  length, MIN_CRYPT_OBJECTSIZE, MAX_INTLENGTH_SHORT ) );
-		}
 	status = importCertFromStream( &stream, &iCertResponse, 
 								   DEFAULTUSER_OBJECT_HANDLE,
-								   CRYPT_CERTTYPE_OCSP_RESPONSE, length,
-								   KEYMGMT_FLAG_NONE );
+								   CRYPT_CERTTYPE_OCSP_RESPONSE, length );
 	sMemDisconnect( &stream );
 	if( cryptStatusError( status ) )
-		{
 		retExt( status, 
 				( status, SESSION_ERRINFO, "Invalid OCSP response data" ) );
-		}
-
-	/* If we're fuzzing the input then we're reading static data for which 
-	   the nonces won't match so the check that follows will fail, so we 
-	   have to exit now */
-	FUZZ_EXIT();
 
 	/* If the request went out with a nonce included (which it does by
 	   default), make sure that it matches the nonce in the response */
@@ -364,13 +328,13 @@ static const BYTE FAR_BSS respIntError[] = {
 
 /* Read a request from an OCSP client */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 static int readClientRequest( INOUT SESSION_INFO *sessionInfoPtr )
 	{
 	CRYPT_CERTIFICATE iOcspRequest;
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	STREAM stream;
-	int tag, status;
+	int status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 
@@ -396,18 +360,13 @@ static int readClientRequest( INOUT SESSION_INFO *sessionInfoPtr )
 	sMemConnect( &stream, sessionInfoPtr->receiveBuffer,
 				 sessionInfoPtr->receiveBufEnd );
 	readSequence( &stream, NULL );
+	readSequence( &stream, NULL );
+	if( peekTag( &stream ) == MAKE_CTAG( 0 ) )
+		readUniversal( &stream );
+	if( peekTag( &stream ) == MAKE_CTAG( 1 ) )
+		readUniversal( &stream );
+	readSequence( &stream, NULL );
 	status = readSequence( &stream, NULL );
-	if( checkStatusPeekTag( &stream, status, tag ) && \
-		tag == MAKE_CTAG( 0 ) )
-		status = readUniversal( &stream );
-	if( checkStatusPeekTag( &stream, status, tag ) && \
-		tag == MAKE_CTAG( 1 ) )
-		status = readUniversal( &stream );
-	if( !cryptStatusError( status ) )
-		{
-		readSequence( &stream, NULL );
-		status = readSequence( &stream, NULL );
-		}
 	sMemDisconnect( &stream );
 	if( cryptStatusError( status ) )
 		{
@@ -430,9 +389,6 @@ static int readClientRequest( INOUT SESSION_INFO *sessionInfoPtr )
 				( status, SESSION_ERRINFO, "Invalid OCSP request data" ) );
 		}
 	iOcspRequest = createInfo.cryptHandle;
-
-	/* If we're fuzzing the input then we're done */
-	FUZZ_EXIT();
 
 	/* Create an OCSP response and add the request information to it */
 	setMessageCreateObjectInfo( &createInfo, CRYPT_CERTTYPE_OCSP_RESPONSE );
@@ -462,7 +418,7 @@ static int readClientRequest( INOUT SESSION_INFO *sessionInfoPtr )
 
 /* Return a response to an OCSP client */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 static int sendServerResponse( INOUT SESSION_INFO *sessionInfoPtr )
 	{
 	MESSAGE_DATA msgData;
@@ -550,7 +506,7 @@ static int sendServerResponse( INOUT SESSION_INFO *sessionInfoPtr )
 
 /* Exchange data with an OCSP client/server */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 static int clientTransact( INOUT SESSION_INFO *sessionInfoPtr )
 	{
 	int status;
@@ -564,7 +520,7 @@ static int clientTransact( INOUT SESSION_INFO *sessionInfoPtr )
 	return( status );
 	}
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 static int serverTransact( INOUT SESSION_INFO *sessionInfoPtr )
 	{
 	int status;

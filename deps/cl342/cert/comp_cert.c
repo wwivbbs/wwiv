@@ -1,28 +1,23 @@
 /****************************************************************************
 *																			*
 *							Set Certificate Components						*
-*						Copyright Peter Gutmann 1997-2012					*
+*						Copyright Peter Gutmann 1997-2011					*
 *																			*
 ****************************************************************************/
 
 #if defined( INC_ALL )
   #include "cert.h"
   #include "certattr.h"
+  #include "asn1.h"
   #include "asn1_ext.h"
 #else
   #include "cert/cert.h"
   #include "cert/certattr.h"
+  #include "enc_dec/asn1.h"
   #include "enc_dec/asn1_ext.h"
 #endif /* Compiler-specific includes */
 
 #ifdef USE_CERTIFICATES
-
-/* Determine whether anyone ever uses the higher compliance levels */
-
-#if defined( USE_CERTLEVEL_PKIX_FULL )
-  #error If you see this message, please let the cryptlib developers know,
-  #error then remove the error directive that caused it and recompile as normal.
-#endif /* USE_CERTLEVEL_PKIX_FULL */
 
 /****************************************************************************
 *																			*
@@ -43,7 +38,6 @@ static int copyIssuerDnData( INOUT CERT_INFO *destCertInfoPtr,
 	assert( isWritePtr( destCertInfoPtr, sizeof( CERT_INFO ) ) );
 	assert( isReadPtr( srcCertInfoPtr, sizeof( CERT_INFO ) ) );
 
-	REQUIRES( destCertInfoPtr->issuerDNptr == NULL );
 	REQUIRES( srcCertInfoPtr->issuerDNptr != NULL );
 
 	if( ( dnDataPtr = clAlloc( "copyIssuerDnData",
@@ -56,6 +50,84 @@ static int copyIssuerDnData( INOUT CERT_INFO *destCertInfoPtr,
 
 	return( CRYPT_OK );
 	}
+#endif /* USE_CERTREQ || USE_CERTREV */
+
+#if defined( USE_CERTREV ) || defined( USE_CERTVAL )
+
+/* Copy an RTCS or OCSP responder URL from a certificate into a request */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+static int copyResponderURL( INOUT CERT_INFO *requestInfoPtr,
+							 INOUT CERT_INFO *userCertInfoPtr )
+	{
+	const CRYPT_ATTRIBUTE_TYPE aiaAttribute = \
+				( requestInfoPtr->type == CRYPT_CERTTYPE_RTCS_REQUEST ) ? \
+				CRYPT_CERTINFO_AUTHORITYINFO_RTCS : \
+				CRYPT_CERTINFO_AUTHORITYINFO_OCSP;
+	SELECTION_STATE savedState;
+	void *responderUrl;
+	int urlSize = DUMMY_INIT, status;
+
+	REQUIRES( requestInfoPtr->type == CRYPT_CERTTYPE_RTCS_REQUEST || \
+			  requestInfoPtr->type == CRYPT_CERTTYPE_OCSP_REQUEST );
+	REQUIRES( userCertInfoPtr->type == CRYPT_CERTTYPE_CERTIFICATE || \
+			  userCertInfoPtr->type == CRYPT_CERTTYPE_CERTCHAIN );
+
+	/* There's no responder URL set, check whether the user certificate 
+	   contains a responder URL in the RTCS/OCSP authorityInfoAccess 
+	   GeneralName */
+	saveSelectionState( savedState, userCertInfoPtr );
+	status = selectGeneralName( userCertInfoPtr, aiaAttribute,
+								MAY_BE_ABSENT );
+	if( cryptStatusOK( status ) )
+		status = selectGeneralName( userCertInfoPtr,
+									CRYPT_ATTRIBUTE_NONE,
+									MUST_BE_PRESENT );
+	if( cryptStatusOK( status ) )
+		status = getCertComponentString( userCertInfoPtr,
+								CRYPT_CERTINFO_UNIFORMRESOURCEIDENTIFIER,
+								NULL, 0, &urlSize );
+	if( cryptStatusError( status ) )
+		{
+		/* If there's no responder URL present then it's not a (fatal) 
+		   error */
+		restoreSelectionState( savedState, userCertInfoPtr );
+		return( CRYPT_OK );
+		}
+
+	/* There's a responder URL present, copy it to the request */
+	if( ( responderUrl = clAlloc( "copyResponderURL", urlSize ) ) == NULL )
+		{
+		restoreSelectionState( savedState, userCertInfoPtr );
+		return( CRYPT_ERROR_MEMORY );
+		}
+	status = getCertComponentString( userCertInfoPtr,
+									 CRYPT_CERTINFO_UNIFORMRESOURCEIDENTIFIER,
+									 responderUrl, urlSize, &urlSize );
+	if( cryptStatusOK( status ) )
+		{
+		if( requestInfoPtr->type == CRYPT_CERTTYPE_RTCS_REQUEST )
+			{
+			requestInfoPtr->cCertVal->responderUrl = responderUrl;
+			requestInfoPtr->cCertVal->responderUrlSize = urlSize;
+			}
+		else
+			{
+			requestInfoPtr->cCertRev->responderUrl = responderUrl;
+			requestInfoPtr->cCertRev->responderUrlSize = urlSize;
+			}
+		}
+	else
+		{
+		clFree( "copyResponderURL", responderUrl );
+		}
+	restoreSelectionState( savedState, userCertInfoPtr );
+
+	return( status );
+	}
+#endif /* USE_CERTREV || USE_CERTVAL */
+
+#if defined( USE_CERTREQ ) || defined( USE_CERTREV )
 
 /* Copy revocation information into a CRL or revocation request */
 
@@ -133,238 +205,13 @@ static int copyRevocationInfo( INOUT CERT_INFO *certInfoPtr,
 	}
 #endif /* USE_CERTREQ || USE_CERTREV */
 
-#if defined( USE_CERTREV ) || defined( USE_CERTVAL )
-
-/* Copy an RTCS or OCSP responder URL from a certificate into a request */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int copyResponderURL( INOUT CERT_INFO *requestInfoPtr,
-							 INOUT CERT_INFO *userCertInfoPtr )
-	{
-	const CRYPT_ATTRIBUTE_TYPE aiaAttribute = \
-				( requestInfoPtr->type == CRYPT_CERTTYPE_RTCS_REQUEST ) ? \
-				CRYPT_CERTINFO_AUTHORITYINFO_RTCS : \
-				CRYPT_CERTINFO_AUTHORITYINFO_OCSP;
-	SELECTION_STATE savedState;
-	void *responderUrl;
-	int urlSize DUMMY_INIT, status;
-
-	REQUIRES( requestInfoPtr->type == CRYPT_CERTTYPE_RTCS_REQUEST || \
-			  requestInfoPtr->type == CRYPT_CERTTYPE_OCSP_REQUEST );
-	REQUIRES( userCertInfoPtr->type == CRYPT_CERTTYPE_CERTIFICATE || \
-			  userCertInfoPtr->type == CRYPT_CERTTYPE_CERTCHAIN );
-
-	/* There's no responder URL set, check whether the user certificate 
-	   contains a responder URL in the RTCS/OCSP authorityInfoAccess 
-	   GeneralName */
-	saveSelectionState( savedState, userCertInfoPtr );
-	status = selectGeneralName( userCertInfoPtr, aiaAttribute,
-								MAY_BE_ABSENT );
-	if( cryptStatusOK( status ) )
-		{
-		status = selectGeneralName( userCertInfoPtr,
-									CRYPT_ATTRIBUTE_NONE,
-									MUST_BE_PRESENT );
-		}
-	if( cryptStatusOK( status ) )
-		{
-		status = getCertComponentString( userCertInfoPtr,
-								CRYPT_CERTINFO_UNIFORMRESOURCEIDENTIFIER,
-								NULL, 0, &urlSize );
-		}
-	if( cryptStatusError( status ) )
-		{
-		/* If there's no responder URL present then it's not a (fatal) 
-		   error */
-		restoreSelectionState( savedState, userCertInfoPtr );
-		return( CRYPT_OK );
-		}
-
-	/* There's a responder URL present, copy it to the request */
-	if( ( responderUrl = clAlloc( "copyResponderURL", urlSize ) ) == NULL )
-		{
-		restoreSelectionState( savedState, userCertInfoPtr );
-		return( CRYPT_ERROR_MEMORY );
-		}
-	status = getCertComponentString( userCertInfoPtr,
-									 CRYPT_CERTINFO_UNIFORMRESOURCEIDENTIFIER,
-									 responderUrl, urlSize, &urlSize );
-	if( cryptStatusOK( status ) )
-		{
-		if( requestInfoPtr->type == CRYPT_CERTTYPE_RTCS_REQUEST )
-			{
-			REQUIRES( requestInfoPtr->cCertVal->responderUrl == NULL );
-
-			requestInfoPtr->cCertVal->responderUrl = responderUrl;
-			requestInfoPtr->cCertVal->responderUrlSize = urlSize;
-			}
-		else
-			{
-			REQUIRES( requestInfoPtr->cCertRev->responderUrl == NULL );
-
-			requestInfoPtr->cCertRev->responderUrl = responderUrl;
-			requestInfoPtr->cCertRev->responderUrlSize = urlSize;
-			}
-		}
-	else
-		{
-		clFree( "copyResponderURL", responderUrl );
-		}
-	restoreSelectionState( savedState, userCertInfoPtr );
-
-	return( status );
-	}
-#endif /* USE_CERTREV || USE_CERTVAL */
-
 /****************************************************************************
 *																			*
 *							Copy Certificate Data							*
 *																			*
 ****************************************************************************/
 
-/* Check that the key in a XYZZY certificate is signature-capable (or at 
-   least sig-check capable, since it may be just the public key that's being 
-   used), since XYZZY certificates are self-signed.  Then set the 
-   appropriate signature keyUsage and optional encryption usage if the key 
-   can also do that */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-static int setXyzzyKeyUsage( INOUT CERT_INFO *certInfoPtr,
-							 IN_HANDLE const CRYPT_CONTEXT iCryptContext )
-	{
-	int keyUsage = KEYUSAGE_SIGN | KEYUSAGE_CA, status;
-
-	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
-
-	REQUIRES( isHandleRangeValid( iCryptContext ) );
-
-	/* Make sure that the key is signature-capable.  We have to check for a 
-	   capability to either sign or sig-check since a pure public key will 
-	   only have a sig-check capability while a private key held in a device 
-	   (from which we're going to extract the public-key components) may be 
-	   only signature-capable */
-	status = krnlSendMessage( iCryptContext, IMESSAGE_CHECK, NULL,
-							  MESSAGE_CHECK_PKC_SIGCHECK );
-	if( cryptStatusError( status ) )
-		status = krnlSendMessage( iCryptContext, IMESSAGE_CHECK, NULL,
-								  MESSAGE_CHECK_PKC_SIGN );
-	if( cryptStatusError( status ) )
-		{
-		setErrorInfo( certInfoPtr, CRYPT_CERTINFO_KEYUSAGE,
-					  CRYPT_ERRTYPE_ATTR_VALUE );
-		return( CRYPT_ERROR_INVALID );
-		}
-
-	/* If the key is encryption-capable (with the same caveat as for the 
-	   signature check above), enable that usage as well */
-	status = krnlSendMessage( iCryptContext, IMESSAGE_CHECK, NULL,
-							  MESSAGE_CHECK_PKC_ENCRYPT );
-	if( cryptStatusError( status ) )
-		status = krnlSendMessage( iCryptContext, IMESSAGE_CHECK, NULL,
-								  MESSAGE_CHECK_PKC_DECRYPT );
-	if( cryptStatusOK( status ) )
-		keyUsage |= CRYPT_KEYUSAGE_KEYENCIPHERMENT;
-
-	/* Clear the existing usage and replace it with our usage.  See the 
-	   comment in setXyzzyInfo() for why it's done this way */
-	( void ) deleteCertComponent( certInfoPtr, CRYPT_CERTINFO_KEYUSAGE );
-	return( addCertComponent( certInfoPtr, CRYPT_CERTINFO_KEYUSAGE, 
-							  keyUsage ) );
-	}
-
 /* Copy public key data into a certificate object */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-static int copyKeyFromCertificate( INOUT CERT_INFO *destCertInfoPtr,
-								   const CERT_INFO *srcCertInfoPtr )
-	{
-	void *publicKeyInfoPtr;
-
-	assert( isWritePtr( destCertInfoPtr, sizeof( CERT_INFO ) ) );
-	assert( isReadPtr( srcCertInfoPtr, sizeof( CERT_INFO ) ) );
-
-	REQUIRES( destCertInfoPtr->publicKeyInfo == NULL );
-	REQUIRES( srcCertInfoPtr->publicKeyInfo != NULL );
-
-	if( ( publicKeyInfoPtr = \
-				clAlloc( "copyPublicKeyInfo", 
-						 srcCertInfoPtr->publicKeyInfoSize ) ) == NULL )
-		return( CRYPT_ERROR_MEMORY );
-	memcpy( publicKeyInfoPtr, srcCertInfoPtr->publicKeyInfo, 
-			srcCertInfoPtr->publicKeyInfoSize );
-	destCertInfoPtr->publicKeyData = destCertInfoPtr->publicKeyInfo = \
-		publicKeyInfoPtr;
-	destCertInfoPtr->publicKeyInfoSize = srcCertInfoPtr->publicKeyInfoSize;
-	destCertInfoPtr->publicKeyAlgo = srcCertInfoPtr->publicKeyAlgo;
-	destCertInfoPtr->publicKeyFeatures = srcCertInfoPtr->publicKeyFeatures;
-	memcpy( destCertInfoPtr->publicKeyID, srcCertInfoPtr->publicKeyID, 
-			KEYID_SIZE );
-	destCertInfoPtr->flags |= CERT_FLAG_DATAONLY;
-
-	return( CRYPT_OK );
-	}
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-static int copyKeyFromContext( INOUT CERT_INFO *destCertInfoPtr,
-							   IN_HANDLE const CRYPT_CONTEXT iCryptContext )
-	{
-	MESSAGE_DATA msgData;
-	void *publicKeyInfoPtr;
-	int length, status;
-
-	assert( isWritePtr( destCertInfoPtr, sizeof( CERT_INFO ) ) );
-
-	REQUIRES( destCertInfoPtr->publicKeyInfo == NULL );
-	REQUIRES( isHandleRangeValid( iCryptContext ) );
-
-	/* Get the key metadata from the context */
-	status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE,
-							  &destCertInfoPtr->publicKeyAlgo,
-							  CRYPT_CTXINFO_ALGO );
-	if( cryptStatusOK( status ) )
-		status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE,
-								  &destCertInfoPtr->publicKeyFeatures,
-								  CRYPT_IATTRIBUTE_KEYFEATURES );
-	if( cryptStatusOK( status ) )
-		{
-		setMessageData( &msgData, destCertInfoPtr->publicKeyID, KEYID_SIZE );
-		status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE_S,
-								  &msgData, CRYPT_IATTRIBUTE_KEYID );
-		}
-	if( cryptStatusError( status ) )
-		return( status );
-
-	/* Copy over the public-key data.  We perform a copy rather than keeping 
-	   a reference to the context for two reasons.  Firstly, when the 
-	   certificate is transitioned into the high state it will constrain the 
-	   attached context so a context shared between two certificates could 
-	   be constrained in unexpected ways.  Secondly, the context could be a 
-	   private-key context and attaching that to a certificate would be 
-	   rather inappropriate.  Furthermore, the constraint issue is even more 
-	   problematic in that a context constrained by an encryption-only 
-	   request could then no longer be used to sign the request or a PKI 
-	   protocol message containing the request */
-	setMessageData( &msgData, NULL, 0 );
-	status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE_S,
-							  &msgData, CRYPT_IATTRIBUTE_KEY_SPKI );
-	if( cryptStatusError( status ) )
-		return( status );
-	length = msgData.length;
-	if( ( publicKeyInfoPtr = clAlloc( "copyPublicKeyInfo", 
-									  length ) ) == NULL )
-		return( CRYPT_ERROR_MEMORY );
-	setMessageData( &msgData, publicKeyInfoPtr, length );
-	status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE_S,
-							  &msgData, CRYPT_IATTRIBUTE_KEY_SPKI );
-	if( cryptStatusError( status ) )
-		return( status );
-	destCertInfoPtr->publicKeyData = destCertInfoPtr->publicKeyInfo = \
-		publicKeyInfoPtr;
-	destCertInfoPtr->publicKeyInfoSize = length;
-	destCertInfoPtr->flags |= CERT_FLAG_DATAONLY;
-
-	return( CRYPT_OK );
-	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int copyPublicKeyInfo( INOUT CERT_INFO *certInfoPtr,
@@ -372,7 +219,9 @@ int copyPublicKeyInfo( INOUT CERT_INFO *certInfoPtr,
 					   IN_OPT const CERT_INFO *srcCertInfoPtr )
 	{
 	CRYPT_CONTEXT iCryptContext;
-	int isXyzzyCert, status;
+	MESSAGE_DATA msgData;
+	void *publicKeyInfoPtr;
+	int isXyzzyCert, length = DUMMY_INIT, status;
 
 	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
 	assert( ( isHandleRangeValid( cryptHandle ) && \
@@ -405,7 +254,27 @@ int copyPublicKeyInfo( INOUT CERT_INFO *certInfoPtr,
 	/* If we've been given a data-only certificate then all that we need to 
 	   do is copy over the public key data */
 	if( srcCertInfoPtr != NULL )
-		return( copyKeyFromCertificate( certInfoPtr, srcCertInfoPtr ) );
+		{
+		REQUIRES( memcmp( srcCertInfoPtr->publicKeyID,
+						  "\x00\x00\x00\x00\x00\x00\x00\x00", 8 ) );
+
+		if( ( publicKeyInfoPtr = \
+					clAlloc( "copyPublicKeyInfo", 
+							 srcCertInfoPtr->publicKeyInfoSize ) ) == NULL )
+			return( CRYPT_ERROR_MEMORY );
+		memcpy( publicKeyInfoPtr, srcCertInfoPtr->publicKeyInfo, 
+				srcCertInfoPtr->publicKeyInfoSize );
+		certInfoPtr->publicKeyData = certInfoPtr->publicKeyInfo = \
+			publicKeyInfoPtr;
+		certInfoPtr->publicKeyInfoSize = srcCertInfoPtr->publicKeyInfoSize;
+		certInfoPtr->publicKeyAlgo = srcCertInfoPtr->publicKeyAlgo;
+		certInfoPtr->publicKeyFeatures = srcCertInfoPtr->publicKeyFeatures;
+		memcpy( certInfoPtr->publicKeyID, srcCertInfoPtr->publicKeyID,
+				KEYID_SIZE );
+		certInfoPtr->flags |= CERT_FLAG_DATAONLY;
+
+		return( CRYPT_OK );
+		}
 
 	/* Get the context handle.  All other checking has already been 
 	   performed by the kernel */
@@ -418,22 +287,100 @@ int copyPublicKeyInfo( INOUT CERT_INFO *certInfoPtr,
 		return( status );
 		}
 
-	/* If it's a XYZZY certificate then we need to perform additional
-	   processing for XYZZY-specific key usage requirements */
+	/* Get the key information */
+	status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE,
+							  &certInfoPtr->publicKeyAlgo,
+							  CRYPT_CTXINFO_ALGO );
+	if( cryptStatusOK( status ) )
+		status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE,
+								  &certInfoPtr->publicKeyFeatures,
+								  CRYPT_IATTRIBUTE_KEYFEATURES );
+	if( cryptStatusOK( status ) )
+		{
+		setMessageData( &msgData, certInfoPtr->publicKeyID, KEYID_SIZE );
+		status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE_S,
+								  &msgData, CRYPT_IATTRIBUTE_KEYID );
+		}
+	if( cryptStatusError( status ) )
+		return( status );
+
+	/* If it's a XYZZY certificate then we need to check that the key is 
+	   signature-capable (or at least sig-check capable, since it may be
+	   just the public key that's being added), since XYZZY certificates 
+	   are self-signed */
 	status = getCertComponent( certInfoPtr, CRYPT_CERTINFO_XYZZY, 
 							   &isXyzzyCert );
 	if( cryptStatusOK( status ) && isXyzzyCert )
 		{
-		status = setXyzzyKeyUsage( certInfoPtr, iCryptContext);
+		int keyUsage = KEYUSAGE_SIGN | KEYUSAGE_CA;
+
+		/* Make sure that the key is signature-capable.  We have to check 
+		   for a capability to either sign or sig-check since a pure public 
+		   key will only have a sig-check capability while a private key 
+		   held in a device (from which we're going to extract the public-
+		   key components) may be only signature-capable */
+		status = krnlSendMessage( iCryptContext, IMESSAGE_CHECK, NULL,
+								  MESSAGE_CHECK_PKC_SIGCHECK );
+		if( cryptStatusError( status ) )
+			status = krnlSendMessage( iCryptContext, IMESSAGE_CHECK, NULL,
+									  MESSAGE_CHECK_PKC_SIGN );
+		if( cryptStatusError( status ) )
+			{
+			setErrorInfo( certInfoPtr, CRYPT_CERTINFO_KEYUSAGE,
+						  CRYPT_ERRTYPE_ATTR_VALUE );
+			return( CRYPT_ERROR_INVALID );
+			}
+
+		/* If the key is encryption-capable (with the same caveat as for the 
+		   signature check above), enable that usage as well */
+		status = krnlSendMessage( iCryptContext, IMESSAGE_CHECK, NULL,
+								  MESSAGE_CHECK_PKC_ENCRYPT );
+		if( cryptStatusError( status ) )
+			status = krnlSendMessage( iCryptContext, IMESSAGE_CHECK, NULL,
+									  MESSAGE_CHECK_PKC_DECRYPT );
+		if( cryptStatusOK( status ) )
+			keyUsage |= CRYPT_KEYUSAGE_KEYENCIPHERMENT;
+
+		/* Clear the existing usage and replace it with our usage.  See 
+		   the comment in setXyzzyInfo() for why it's done this way */
+		( void ) deleteCertComponent( certInfoPtr, CRYPT_CERTINFO_KEYUSAGE );
+		status = addCertComponent( certInfoPtr, CRYPT_CERTINFO_KEYUSAGE,
+								   keyUsage );
 		if( cryptStatusError( status ) )
 			return( status );
 		}
 
-	/* Copy the public-key data from the encryption context */
-	return( copyKeyFromContext( certInfoPtr, iCryptContext ) );
-	}
+	/* Copy over the public-key data.  We copy the data rather than keeping 
+	   a reference to the context for two reasons.  Firstly, when the 
+	   certificate is transitioned into the high state it will constrain the 
+	   attached context so a context shared between two certificates could 
+	   be constrained in unexpected ways.  Secondly, the context could be a 
+	   private-key context and attaching that to a certificate would be 
+	   rather inappropriate.  Furthermore, the constraint issue is even more 
+	   problematic in that a context constrained by an encryption-only 
+	   request could then no longer be used to sign the request or a PKI 
+	   protocol message containing the request */
+	setMessageData( &msgData, NULL, 0 );
+	status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE_S,
+							  &msgData, CRYPT_IATTRIBUTE_KEY_SPKI );
+	if( cryptStatusError( status ) )
+		return( status );
+	length = msgData.length;
+	if( ( publicKeyInfoPtr = clAlloc( "copyPublicKeyInfo", 
+									  length ) ) == NULL )
+		return( CRYPT_ERROR_MEMORY );
+	setMessageData( &msgData, publicKeyInfoPtr, length );
+	status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE_S,
+							  &msgData, CRYPT_IATTRIBUTE_KEY_SPKI );
+	if( cryptStatusError( status ) )
+		return( status );
+	certInfoPtr->publicKeyData = certInfoPtr->publicKeyInfo = \
+		publicKeyInfoPtr;
+	certInfoPtr->publicKeyInfoSize = length;
+	certInfoPtr->flags |= CERT_FLAG_DATAONLY;
 
-#ifdef USE_DBMS	/* Only used by CA code */
+	return( CRYPT_OK );
+	}
 
 /* Sanitise certificate attributes based on a user-supplied template.  This 
    is used to prevent a user from supplying potentially dangerous attributes 
@@ -468,7 +415,7 @@ int copyPublicKeyInfo( INOUT CERT_INFO *certInfoPtr,
    revoked.  Except for the invalidity date they're not so much of a 
    security threat, and even for the date the consistency vs. accuracy issue 
    for CRLs debate means the CA will put who knows what date in the CRL 
-   anyway:
+   anyway):
 
 	CRYPT_CERTINFO_CRLEXTREASON
 	CRYPT_CERTINFO_CRLREASON
@@ -482,19 +429,25 @@ int copyPublicKeyInfo( INOUT CERT_INFO *certInfoPtr,
    an attacker from playing games with DN forms.  This should be safe 
    because the only things that create such weird DNs tend to be European
    in-house CAs following (or justifying their bugs through) peculiar 
-   requirements in digital signature legislation, and those guys will be 
-   creating their own certificates from scratch themselves rather than using 
-   cryptlib for it */
+   requirements in digital signature legislation, who will be creating their 
+   own certificates from scratch themselves rather than using cryptlib for 
+   it */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int checkCertWellFormed( INOUT CERT_INFO *certInfoPtr )
 	{
-	ATTRIBUTE_PTR *attributePtr;
 	int status;
 
 	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
 
-	/* Check that the subject DN is well-formed */
+	/* Check that the subject DN is well-formed.  There can potentially be 
+	   any number of other DNs in a certificate (either as the issuer DN or
+	   hidden in GeneralName fields), it's not really certain what we should
+	   do with these (or even how we can effectively track them all down).  
+	   Since the reason why we're doing this in the first place is to avoid 
+	   shenanigans due to the more or less arbitrary handling of complex DNs 
+	   by implementations, and the only one that anyone really pays any 
+	   attention to is the subject name, we only check the subject name */
 	status = checkDN( certInfoPtr->subjectName, 
 					  CHECKDN_FLAG_COUNTRY | CHECKDN_FLAG_COMMONNAME | \
 							CHECKDN_FLAG_WELLFORMED,
@@ -503,47 +456,21 @@ static int checkCertWellFormed( INOUT CERT_INFO *certInfoPtr )
 	if( cryptStatusError( status ) )
 		return( status );
 
-	/* There can potentially be any number of other DNs in a certificate 
-	   (typically hidden in GeneralName fields), it's not really certain 
-	   what we should do with these or even how we can effectively track 
-	   them all down.  Since the reason why we're doing this in the first 
-	   place is to avoid shenanigans due to the more or less arbitrary 
-	   handling of complex DNs by implementations, and the only one that 
-	   anyone really pays any attention to is the subject name, we check 
-	   the subject name and at least have a go at the subjectAltName, but 
-	   leave the rest (it's not even certain what a DN in, say, an AIA
-	   would mean, let alone how to check it) */
-	attributePtr = findAttribute( certInfoPtr->attributes,
-								  CRYPT_CERTINFO_SUBJECTALTNAME, TRUE );
-	if( attributePtr != NULL )
-		attributePtr = findAttributeField( attributePtr, 
-										   CRYPT_CERTINFO_SUBJECTALTNAME,
-										   CRYPT_CERTINFO_DIRECTORYNAME );
-	if( attributePtr != NULL )
-		{
-		CRYPT_ATTRIBUTE_TYPE dummy1;
-		CRYPT_ERRTYPE_TYPE dummy2;
-		DN_PTR **dnPtr;
+#if 0	/* Not really sure what else we should be checking for, or 
+		   disallowing, here */
+	SELECTION_STATE selectionState;
 
-		status = getAttributeDataDN( attributePtr, &dnPtr );
-		if( cryptStatusOK( status ) )
-			{
-			status = checkDN( dnPtr, CHECKDN_FLAG_COUNTRY | \
-									 CHECKDN_FLAG_COMMONNAME | \
-									 CHECKDN_FLAG_WELLFORMED,
-							  &dummy1, &dummy2 );
-			if( cryptStatusError( status ) )
-				{
-				/* Reporting this one is a bit complicated because we're 
-				   dealing with a complex nested attribute, the best that we 
-				   can do is report a general problem with the altName */
-				setErrorInfo( certInfoPtr, 
-							  CRYPT_CERTINFO_SUBJECTALTNAME,
-							  CRYPT_ERRTYPE_ATTR_VALUE );
-				return( status );
-				}
-			}
+	/* Check that the subject altName is well-formed.  The reason for 
+	   checking just this particular field are as for the subject DN check
+	   above */
+	saveSelectionState( selectionState, certInfoPtr );
+	status = addCertComponent( certInfoPtr, CRYPT_ATTRIBUTE_CURRENT, 
+							   CRYPT_CERTINFO_SUBJECTALTNAME );
+	if( cryptStatusOK( status ) )
+		{
 		}
+	restoreSelectionState( selectionState, certInfoPtr );
+#endif /* 0 */
 
 	return( CRYPT_OK );
 	}
@@ -611,6 +538,50 @@ static int sanitiseCertAttributes( INOUT CERT_INFO *certInfoPtr,
 									ATTRIBUTE_PROPERTY_LOCKED ) )
 			continue;
 
+#if 0	/* 10/5/09 The original behaviour of this function was as its name
+				   suggests, disallowed attribute values were selectively 
+				   disabled and, if any permitted values were still present, 
+				   the remainder were allowed (this assumed that the value 
+				   was a bitflag, which occurs for the only attribute that's
+				   currently handled this way, the keyUsage).  However this
+				   probably isn't the right behaviour, if there's any
+				   disallowed information present then the certificate-
+				   creation process as a whole should be rejected rather 
+				   than returning a certificate that's different from what 
+				   was requested */
+		int constrainedAttributeValue, constrainingAttributeValue;
+
+		/* Get the attribute values and, if there's no conflict, continue */
+		status = getAttributeDataValue( certAttributePtr, 
+										&constrainedAttributeValue );
+		if( cryptStatusError( status ) )
+			return( status );
+		status = getAttributeDataValue( templateAttributeCursor, 
+										&constrainingAttributeValue );
+		if( cryptStatusError( status ) )
+			return( status );
+		if( !( constrainedAttributeValue & constrainingAttributeValue ) )
+			continue;
+
+		/* The attribute contains a value that's disallowed by the
+		   constraining attribute, correct it if possible */
+		value = constrainedAttributeValue & ~constrainingAttributeValue;
+		if( value <= 0 )
+			{
+			/* The attribute contains only invalid bits and can't be
+			   permitted */
+			status = getAttributeIdInfo( certAttributePtr, NULL, &fieldID, 
+										 NULL );
+			if( cryptStatusOK( status ) )
+				{
+				certInfoPtr->errorLocus = fieldID;
+				certInfoPtr->errorType = CRYPT_ERRTYPE_ATTR_VALUE;
+				}
+			return( CRYPT_ERROR_INVALID );
+			}
+		setAttributeProperty( certAttributePtr, ATTRIBUTE_PROPERTY_VALUE, 
+							  value );		/* Set adjusted value */
+#else
 		/* There are conflicting attributes present, disallow the 
 		   certificate issue */
 		status = getAttributeIdInfo( certAttributePtr, NULL, &fieldID, 
@@ -639,12 +610,12 @@ static int sanitiseCertAttributes( INOUT CERT_INFO *certInfoPtr,
 		certInfoPtr->errorLocus = fieldID;
 		certInfoPtr->errorType = CRYPT_ERRTYPE_ATTR_VALUE;
 		return( CRYPT_ERROR_INVALID );
+#endif /* 0 */
 		}
 	ENSURES( iterationCount < FAILSAFE_ITERATIONS_MAX );
 
 	return( checkCertWellFormed( certInfoPtr ) );
 	}
-#endif /* USE_DBMS*/
 
 /****************************************************************************
 *																			*
@@ -670,7 +641,6 @@ static int copyCertReqToCert( INOUT CERT_INFO *certInfoPtr,
 	REQUIRES( certInfoPtr->type == CRYPT_CERTTYPE_CERTIFICATE || \
 			  certInfoPtr->type == CRYPT_CERTTYPE_ATTRIBUTE_CERT || \
 			  certInfoPtr->type == CRYPT_CERTTYPE_CERTCHAIN );
-	REQUIRES( certInfoPtr->subjectName == NULL );
 	REQUIRES( certRequestInfoPtr->type == CRYPT_CERTTYPE_CERTREQUEST || \
 			  certRequestInfoPtr->type == CRYPT_CERTTYPE_REQUEST_CERT );
 
@@ -703,12 +673,11 @@ static int copyCertReqToCert( INOUT CERT_INFO *certInfoPtr,
 								 certRequestInfoPtr->attributes,
 								 &certInfoPtr->errorLocus,
 								 &certInfoPtr->errorType );
+		if( cryptStatusError( status ) )
+			deleteDN( &certInfoPtr->subjectName );
 		}
 	if( cryptStatusError( status ) )
-		{
-		deleteDN( &certInfoPtr->subjectName );
 		return( status );
-		}
 
 	/* If it's a CRMF request there could also be a validity period
 	   specified */
@@ -769,7 +738,6 @@ static int copyCertToRequest( INOUT CERT_INFO *crmfRequestInfoPtr,
 	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
 
 	REQUIRES( crmfRequestInfoPtr->type == CRYPT_CERTTYPE_REQUEST_CERT );
-	REQUIRES( crmfRequestInfoPtr->subjectName == NULL );
 	REQUIRES( certInfoPtr->type == CRYPT_CERTTYPE_CERTIFICATE || \
 			  certInfoPtr->type == CRYPT_CERTTYPE_ATTRIBUTE_CERT || \
 			  certInfoPtr->type == CRYPT_CERTTYPE_CERTCHAIN );
@@ -816,7 +784,6 @@ static int copyCertToRevRequest( INOUT CERT_INFO *crmfRevRequestInfoPtr,
 	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
 
 	REQUIRES( crmfRevRequestInfoPtr->type == CRYPT_CERTTYPE_REQUEST_REVOCATION );
-	REQUIRES( crmfRevRequestInfoPtr->subjectName == NULL );
 	REQUIRES( certInfoPtr->type == CRYPT_CERTTYPE_CERTIFICATE || \
 			  certInfoPtr->type == CRYPT_CERTTYPE_ATTRIBUTE_CERT || \
 			  certInfoPtr->type == CRYPT_CERTTYPE_CERTCHAIN );
@@ -860,7 +827,6 @@ static int copyCertToRevRequest( INOUT CERT_INFO *crmfRevRequestInfoPtr,
 					crmfRevRequestInfoPtr->cCertCert->serialNumber );
 			}
 		crmfRevRequestInfoPtr->cCertCert->serialNumber = NULL;
-		crmfRevRequestInfoPtr->cCertCert->serialNumberLength = 0;
 		return( status );
 		}
 
@@ -943,7 +909,6 @@ static int copyOcspReqToResp( INOUT CERT_INFO *certInfoPtr,
 	assert( isWritePtr( ocspRequestInfoPtr, sizeof( CERT_INFO ) ) );
 
 	REQUIRES( certInfoPtr->type == CRYPT_CERTTYPE_OCSP_RESPONSE );
-	REQUIRES( certInfoPtr->cCertRev->revocations == NULL );
 	REQUIRES( ocspRequestInfoPtr->type == CRYPT_CERTTYPE_OCSP_REQUEST );
 
 	/* Copy the revocation information and extensions */
@@ -971,7 +936,7 @@ static int copyCertToOCSPRequest( INOUT CERT_INFO *ocspRequestInfoPtr,
 	STREAM stream;
 	DYNBUF essCertDB;
 	BYTE idBuffer[ 256 + 8 ], *idBufPtr = idBuffer;
-	int idLength DUMMY_INIT, status;
+	int idLength = DUMMY_INIT, status;
 
 	assert( isWritePtr( ocspRequestInfoPtr, sizeof( CERT_INFO ) ) );
 	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
@@ -1061,7 +1026,7 @@ static int copyCaCertToOCSPReq( INOUT CERT_INFO *certInfoPtr,
 	{
 	HASHFUNCTION_ATOMIC hashFunctionAtomic;
 	STREAM stream;
-	void *dataPtr DUMMY_INIT_PTR;
+	void *dataPtr = DUMMY_INIT_PTR;
 	int length, status;
 
 	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
@@ -1124,7 +1089,6 @@ static int copyRtcsReqToResp( INOUT CERT_INFO *certInfoPtr,
 	assert( isWritePtr( rtcsRequestInfoPtr, sizeof( CERT_INFO ) ) );
 
 	REQUIRES( certInfoPtr->type == CRYPT_CERTTYPE_RTCS_RESPONSE );
-	REQUIRES( certInfoPtr->cCertVal->validityInfo == NULL );
 	REQUIRES( rtcsRequestInfoPtr->type == CRYPT_CERTTYPE_RTCS_REQUEST );
 
 	/* Copy the certificate validity information and extensions */
@@ -1175,6 +1139,491 @@ static int copyCertToRTCSRequest( INOUT CERT_INFO *rtcsRequestInfoPtr,
 	return( status );
 	}
 #endif /* USE_CERTVAL */
+
+/****************************************************************************
+*																			*
+*							Copy PKI User Data								*
+*																			*
+****************************************************************************/
+
+#ifdef USE_PKIUSER
+
+/* Set or modify data in a certificate request based on the PKI user 
+   information.  This is rather more complicated than the standard copy
+   operations because we potentially have to merge information already
+   present in the request with information in the PKI user object, checking
+   for consistency/conflicts in the process.
+   
+   The attributes that can be specified in requests are severely limited 
+   (see the long comment for sanitiseCertAttributes() in comp_set.c) so
+   the only ones that we really need to handle are the altName and a special-
+   case keyUsage check for CA key usages, along with special handling for 
+   the SCEP challenge password (see the comment in the code below) */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+static int copyPkiUserAttributes( INOUT CERT_INFO *certInfoPtr,
+								  INOUT ATTRIBUTE_PTR *pkiUserAttributes )
+	{
+	ATTRIBUTE_PTR *requestAttrPtr, *pkiUserAttrPtr;
+	int value, status;
+
+	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
+	assert( isWritePtr( pkiUserAttributes, sizeof( ATTRIBUTE_LIST ) ) );
+
+	REQUIRES( certInfoPtr->type == CRYPT_CERTTYPE_CERTREQUEST || \
+			  certInfoPtr->type == CRYPT_CERTTYPE_REQUEST_CERT );
+
+	/* If there are altNames present in both the PKI user data and the
+	   request, make sure that they match */
+	requestAttrPtr = findAttribute( certInfoPtr->attributes,
+									CRYPT_CERTINFO_SUBJECTALTNAME, FALSE );
+	pkiUserAttrPtr = findAttribute( pkiUserAttributes,
+									CRYPT_CERTINFO_SUBJECTALTNAME, FALSE );
+	if( requestAttrPtr != NULL && pkiUserAttrPtr != NULL )
+		{
+		/* Both the certificate request and the PKI user have altNames,
+		   make sure that they're identical */
+		if( !compareAttribute( requestAttrPtr, pkiUserAttrPtr ) )
+			{
+			setErrorInfo( certInfoPtr, CRYPT_CERTINFO_SUBJECTALTNAME,
+						  CRYPT_ERRTYPE_ISSUERCONSTRAINT );
+			return( CRYPT_ERROR_INVALID );
+			}
+
+		/* The two altNames are identical, delete the one in the request to
+		   allow the one from the PKI user data to be copied across */
+		status = deleteAttribute( &certInfoPtr->attributes,
+								  &certInfoPtr->attributeCursor, 
+								  requestAttrPtr,
+								  certInfoPtr->currentSelection.dnPtr );
+		if( cryptStatusError( status ) )
+			return( status );
+		}
+
+	/* There's one rather ugly special-case situation that we have to handle 
+	   which is when the user has submitted a PnP PKI request for a generic 
+	   signing certificate but their PKI user information indicates that 
+	   they're intended to be a CA user.  The processing flow for this is:
+
+			Read request data from an external source into certificate 
+				request object, creating a state=high object;
+
+			Add PKI user information to state=high request;
+
+	   When augmenting the request with the PKI user information the 
+	   incoming request will contain a keyUsage of digitalSignature while 
+	   the PKI user information will contain a keyUsage of keyCertSign 
+	   and/or crlSign.  We can't fix this up at the PnP processing level 
+	   because the request object will be in the high state once it's
+	   instantiated and no changes to the attributes can be made (the PKI 
+	   user information is a special case that can be added to an object in 
+	   the high state but which modifies attributes in it as if it were 
+	   still in the low state).
+
+	   To avoid the attribute conflict, if we find this situation in the 
+	   request/pkiUser combination we delete the keyUsage in the request to 
+	   allow it to be replaced by the pkiUser keyUsage.  Hardcoding in this 
+	   special case isn't very elegant but it's the only way to make the PnP 
+	   PKI issue work without requiring that the user explicitly specify 
+	   that they want to be a CA in the request's keyUsage, which makes it 
+	   rather non-PnP and would also lead to slightly strange requests since
+	   basicConstraints can't be specified in requests while the CA keyUsage
+	   can */
+	status = getAttributeFieldValue( certInfoPtr->attributes,
+									 CRYPT_CERTINFO_KEYUSAGE, 
+									 CRYPT_ATTRIBUTE_NONE, &value );
+	if( cryptStatusOK( status ) && value == CRYPT_KEYUSAGE_DIGITALSIGNATURE )
+		{
+		status = getAttributeFieldValue( pkiUserAttributes, 
+										 CRYPT_CERTINFO_KEYUSAGE,
+										 CRYPT_ATTRIBUTE_NONE, &value );
+		if( cryptStatusOK( status ) && ( value & KEYUSAGE_CA ) )
+			{
+			/* The certificate contains a digitalSignature keyUsage and the 
+			   PKI user information contains a CA usage, delete the 
+			   certificate's keyUsage to make way for the PKI user's CA 
+			   keyUsage */
+			status = deleteCompleteAttribute( &certInfoPtr->attributes,
+											  &certInfoPtr->attributeCursor, 
+											  CRYPT_CERTINFO_KEYUSAGE, 
+											  certInfoPtr->currentSelection.dnPtr );
+			if( cryptStatusError( status ) )
+				return( status );
+			}
+		}
+
+	/* Copy the attributes from the PKI user information into the 
+	   certificate */
+	status = copyAttributes( &certInfoPtr->attributes, pkiUserAttributes,
+							 &certInfoPtr->errorLocus,
+							 &certInfoPtr->errorType );
+	if( cryptStatusError( status ) )
+		return( status );
+
+	/* There's another special that we have to handle which occurs for the 
+	   SCEP challenge password, which the SCEP protocol requires to be 
+	   placed in the PKCS #10 request instead of being included in the SCEP 
+	   metadata.  This shouldn't be copied across to the certificate since 
+	   the NOCOPY flag is set for the attribute, but to make absolutely 
+	   certain we try and delete it anyway.  Since this could in theory be 
+	   present in non-SCEP requests as well (the request-processing code 
+	   just knows about PKCS #10 requests as a whole, not requests from a 
+	   SCEP source vs. requests not from a SCEP source), we make the delete 
+	   unconditional */
+	if( findAttributeField( certInfoPtr->attributes,
+							CRYPT_CERTINFO_CHALLENGEPASSWORD, 
+							CRYPT_ATTRIBUTE_NONE ) != NULL )
+		{
+		status = deleteCompleteAttribute( &certInfoPtr->attributes,
+										  &certInfoPtr->attributeCursor, 
+										  CRYPT_CERTINFO_CHALLENGEPASSWORD, 
+										  certInfoPtr->currentSelection.dnPtr );
+		if( cryptStatusError( status ) )
+			return( status );
+		}
+
+	/* The PKI user information contains an sKID that's used to uniquely 
+	   identify the user, this applies to the user information itself rather 
+	   than the certificate that'll be issued from it.  Since this will have 
+	   been copied over alongside the other attributes we need to explicitly 
+	   delete it before we continue */
+	if( findAttributeField( certInfoPtr->attributes,
+							CRYPT_CERTINFO_SUBJECTKEYIDENTIFIER, 
+							CRYPT_ATTRIBUTE_NONE ) != NULL )
+		{
+		status = deleteCompleteAttribute( &certInfoPtr->attributes,
+										  &certInfoPtr->attributeCursor, 
+										  CRYPT_CERTINFO_SUBJECTKEYIDENTIFIER, 
+										  certInfoPtr->currentSelection.dnPtr );
+		if( cryptStatusError( status ) )
+			return( status );
+		}
+
+	return( CRYPT_OK );
+	}
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+static int assemblePkiUserDN( INOUT CERT_INFO *certInfoPtr,
+							  const DN_PTR *pkiUserSubjectName,
+							  IN_BUFFER( commonNameLength ) const void *commonName, 
+							  IN_LENGTH_SHORT const int commonNameLength )
+	{
+	STREAM stream;
+	void *tempDN = NULL, *tempDNdata;
+	int tempDNsize = DUMMY_INIT, status;
+
+	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
+	assert( isReadPtr( commonName, commonNameLength ) );
+
+	REQUIRES( certInfoPtr->type == CRYPT_CERTTYPE_REQUEST_CERT );
+	REQUIRES( pkiUserSubjectName != NULL );
+	REQUIRES( commonNameLength > 0 && \
+			  commonNameLength < MAX_INTLENGTH_SHORT );
+
+	/* Copy the DN template, append the user-supplied CN, and allocate room 
+	   for the encoded form */
+	status = copyDN( &tempDN, pkiUserSubjectName );
+	if( cryptStatusError( status ) )
+		return( status );
+	status = insertDNComponent( &tempDN, CRYPT_CERTINFO_COMMONNAME,
+								commonName, commonNameLength,
+								&certInfoPtr->errorType );
+	if( cryptStatusOK( status ) )
+		status = tempDNsize = sizeofDN( tempDN );
+	if( cryptStatusError( status ) )
+		{
+		deleteDN( &tempDN );
+		return( status );
+		}
+	if( ( tempDNdata = clAlloc( "assemblePkiUserDN", tempDNsize ) ) == NULL )
+		{
+		deleteDN( &tempDN );
+		return( CRYPT_ERROR_MEMORY );
+		}
+
+	/* Replace the existing DN with the new one and set up the encoded 
+	   form.  At this point we could already have an encoded DN present if 
+	   the request was read from encoded form, with the subject DN pointer
+	   pointing into the encoded request data (if the request was created 
+	   from scratch then there's no DN present).  We replace the (possible)
+	   existing pointer into the certificate data with a pointer to the
+	   updated encoded DN written to our newly-allocated block of memory */
+	deleteDN( &certInfoPtr->subjectName );
+	certInfoPtr->subjectName = tempDN;
+	sMemOpen( &stream, tempDNdata, tempDNsize );
+	status = writeDN( &stream, tempDN, DEFAULT_TAG );
+	ENSURES( cryptStatusOK( status ) );
+	sMemDisconnect( &stream );
+	certInfoPtr->subjectDNdata = certInfoPtr->subjectDNptr = tempDNdata;
+	certInfoPtr->subjectDNsize = tempDNsize;
+
+	return( CRYPT_OK );
+	}
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+static int copyPkiUserToCertReq( INOUT CERT_INFO *certInfoPtr,
+								 INOUT CERT_INFO *pkiUserInfoPtr )
+	{
+	CRYPT_ATTRIBUTE_TYPE dnComponentType;
+	DN_PTR *requestDNSubset, *pkiUserDNSubset;
+	BOOLEAN dnContinues;
+	int dummy, status;
+
+	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
+	assert( isWritePtr( pkiUserInfoPtr, sizeof( CERT_INFO ) ) );
+
+	REQUIRES( certInfoPtr->type == CRYPT_CERTTYPE_CERTREQUEST || \
+			  certInfoPtr->type == CRYPT_CERTTYPE_REQUEST_CERT );
+	REQUIRES( pkiUserInfoPtr->type == CRYPT_CERTTYPE_PKIUSER );
+	REQUIRES( pkiUserInfoPtr->certificate != NULL );
+
+	/* Because a DN can be made up of elements from both the certificate 
+	   request and the PKI user information, it's possible that neither can
+	   contain a DN, expecting it to be supplied by the other side.  
+	   Although the lack of a DN would be caught anyway when the certificate
+	   is signed, it's better to alert the caller at this early stage rather
+	   than later on in the certification process.  First we check for an
+	   overall missing DN and then for the more specific case of a missing 
+	   CN.
+
+	   Note that both here and in all of the following checks we return an
+	   error status of CRYPT_ERROR_INVALID rather than CRYPT_ERROR_NOTINITED
+	   since this is a validity check of the certificate request against the
+	   PKI user information and not a general object-ready-to-encode check */
+	if( certInfoPtr->subjectName == NULL && \
+		pkiUserInfoPtr->subjectName == NULL )
+		{
+		setErrorInfo( certInfoPtr, CRYPT_CERTINFO_SUBJECTNAME,
+					  CRYPT_ERRTYPE_ATTR_ABSENT );
+		return( CRYPT_ERROR_INVALID );
+		}
+	if( ( certInfoPtr->subjectName == NULL || \
+		  cryptStatusError( \
+				getDNComponentValue( certInfoPtr->subjectName, 
+									 CRYPT_CERTINFO_COMMONNAME, 0, NULL, 0, 
+									 &dummy ) ) ) && \
+		( pkiUserInfoPtr->subjectName == NULL || \
+		  cryptStatusError( \
+				getDNComponentValue( pkiUserInfoPtr->subjectName, 
+									 CRYPT_CERTINFO_COMMONNAME, 0, NULL, 0, 
+									 &dummy ) ) ) )
+		{
+		setErrorInfo( certInfoPtr, CRYPT_CERTINFO_COMMONNAME,
+					  CRYPT_ERRTYPE_ATTR_ABSENT );
+		return( CRYPT_ERROR_INVALID );
+		}
+
+	/* If there's no DN present in the request then one has been supplied by 
+	   the CA in the PKI user information, copy over the DN and its encoded 
+	   form from the user information */
+	if( certInfoPtr->subjectName == NULL )
+		{
+		status = copyDN( &certInfoPtr->subjectName,
+						 pkiUserInfoPtr->subjectName );
+		if( cryptStatusError( status ) )
+			return( status );
+		ENSURES( pkiUserInfoPtr->subjectDNptr != NULL );
+		if( ( certInfoPtr->subjectDNdata = \
+					clAlloc( "copyPkiUserToCertReq",
+							 pkiUserInfoPtr->subjectDNsize ) ) == NULL )
+			{
+			deleteDN( &certInfoPtr->subjectName );
+			return( CRYPT_ERROR_MEMORY );
+			}
+		memcpy( certInfoPtr->subjectDNdata, pkiUserInfoPtr->subjectDNptr,
+				pkiUserInfoPtr->subjectDNsize );
+		certInfoPtr->subjectDNptr = certInfoPtr->subjectDNdata;
+		certInfoPtr->subjectDNsize = pkiUserInfoPtr->subjectDNsize;
+
+		/* Copy any additional attributes across */
+		return( copyPkiUserAttributes( certInfoPtr,
+									   pkiUserInfoPtr->attributes ) );
+		}
+
+	/* If there's no PKI user DN with the potential to conflict with the one
+	   in the request present, copy any additional attributes across and
+	   exit */
+	if( pkiUserInfoPtr->subjectName == NULL )
+		{
+		ENSURES( certInfoPtr->subjectName != NULL );
+		return( copyPkiUserAttributes( certInfoPtr,
+									   pkiUserInfoPtr->attributes ) );
+		}
+
+	/* If there are full DNs present in both objects and they match, copy 
+	   any additional attributes across and exit */
+	if( compareDN( certInfoPtr->subjectName,
+				   pkiUserInfoPtr->subjectName, FALSE, NULL ) )
+		{
+		return( copyPkiUserAttributes( certInfoPtr,
+									   pkiUserInfoPtr->attributes ) );
+		}
+
+	/* Now things get complicated because there are distinct request DN and 
+	   PKI user DNs present and we need to reconcile the two.  Typically the 
+	   CA will have provided a partial DN with the user providing the rest:
+
+		pkiUser: A - B - C - D
+		request: A - B - C - D - E - F
+
+	   in which case we could just allow the request DN (in theory we're 
+	   merging the two, but since the pkiUser DN is a proper subset of the 
+	   request DN it just acts as a filter).  The real problem though occurs 
+	   when we get a request like:
+
+		pkiUser: A - B - C - D
+		request: X
+
+	   where X can be any of:
+
+		'D': Legal, this duplicates a single permitted element
+		'E': Legal, this adds a new sub-element
+		'D - E': Legal, this duplicates a legal element and adds a new sub-
+			element
+		'A - B - C - D#' where 'D#' doesn't match 'D', for example it's a CN 
+			that differs from the pkiUser CN: Not legal since it violates a
+			CA-imposed constraint.
+		'A - B - C - D - E - F': Legal, this is the scenario given above 
+			where one is a proper subset of the other.
+		'D - A': This is somewhat dubious and probably not legal, for 
+			example if 'A' is a countryName.
+		'D - A - B - C - D': This is almost certainly not legal because in a 
+			hierarchy like this 'A' is probably a countryName so an attempt 
+			to merge the request DN at point 'D' in the pkiUser DN could 
+			lead to a malformed DN.
+		'E - C - D - E': This may or may not be legal if the middle elements 
+			are things like O's and OU's, which can be mixed up arbitrarily.
+
+	   Handling this really requires human intervention to decide what's 
+	   legal or not.  In the absence of an AI capability in the software
+	   we restrict ourselves to allowing only two cases:
+
+		1. If the PKI user contains a DN without a CN and the request
+		   contains only a CN (typically used where the CA provides a
+		   template for the user's DN and the user supplies only their
+		   name), we merge the CA-provided DN-without-CN with the user-
+		   provided CN.
+
+		2. If the PKI user contains a DN without a CN and the request
+		   contains a full DN (a variation of the above where the user
+		   knows their full DN), we make sure that the rest of the DN
+		   matches.
+
+	   First we check that the user DN contains a CN, optionally preceded
+	   by a prefix of the PKI user's DN, by passing them to compareDN(), 
+	   which checks whether the first DN is a proper subset of the second.  
+	   Some sample DN configurations and their results are:
+
+		request = CN				result = FALSE, mismatchSubset = CN
+		pkiUser = C - O - OU
+
+		request = ... X				result = FALSE, mismatchSubset = X
+		pkiUser = C - O - OU
+
+		request = C - O - OU - CN	result = FALSE, mismatchSubset = CN
+		pkiUser = C - O - OU
+
+		request = C - O - OU - CN1	result = FALSE, mismatchSubset = CN1
+		pkiUser = C - O - OU - CN2
+
+		request = C - O - OU		result = TRUE, mismatchSubset = NULL
+		pkiUser = C - O - OU - CN
+
+	   The set of DNs with a prefix-match-result of TRUE (in other words the
+	   request contains a subset of the PKI user's DN) are trivially 
+	   invalid, so we can reject them immediately */
+	if( compareDN( certInfoPtr->subjectName, pkiUserInfoPtr->subjectName, 
+				   TRUE, &requestDNSubset ) )
+		{
+		/* The issuer-constraint error is technically accurate if a little 
+		   unexpected at this point, since the PKIUser information has been 
+		   set as a constraint by the CA */
+		setErrorInfo( certInfoPtr, CRYPT_CERTINFO_SUBJECTNAME,
+					  CRYPT_ERRTYPE_ISSUERCONSTRAINT );
+		return( CRYPT_ERROR_INVALID );
+		}
+	ANALYSER_HINT( requestDNSubset != NULL );
+
+	/* The request DN is a prefix (possibly an empty one) of the PKI user 
+	   DN, check that the mis-matching part is only a CN */
+	status = getDNComponentInfo( requestDNSubset, &dnComponentType, 
+								 &dnContinues );
+	if( cryptStatusError( status ) )
+		{
+		/* This is an even more problematic situation to report (since it's
+		   a shouldn't-occur type error), the best that we can do is report
+		   a generic issuer constraint */
+		setErrorInfo( certInfoPtr, CRYPT_CERTINFO_SUBJECTNAME,
+					  CRYPT_ERRTYPE_ISSUERCONSTRAINT );
+		return( CRYPT_ERROR_INVALID );
+		}
+	if( dnComponentType != CRYPT_CERTINFO_COMMONNAME || dnContinues )
+		{
+		/* Check for the special case of there being no CN at all present in 
+		   the request DN, which lets us return a more specific error 
+		   indicator (this is a more specific case of the check performed
+		   earlier for a CN in the request or the PKI user object) */
+		status = getDNComponentValue( requestDNSubset, 
+									  CRYPT_CERTINFO_COMMONNAME, 0, NULL, 0, 
+									  &dummy );
+		if( cryptStatusError( status ) )
+			{
+			setErrorInfo( certInfoPtr, CRYPT_CERTINFO_COMMONNAME,
+						  CRYPT_ERRTYPE_ATTR_ABSENT );
+			return( CRYPT_ERROR_INVALID );
+			}
+
+		/* The mismatching portion of the request DN isn't just a CN */
+		setErrorInfo( certInfoPtr, CRYPT_CERTINFO_SUBJECTNAME,
+					  CRYPT_ERRTYPE_ISSUERCONSTRAINT );
+		return( CRYPT_ERROR_INVALID );
+		}
+
+	/* There's one special case that we have to handle where both DNs 
+	   consist of identical prefixes ending in CNs but the CNs differ, which 
+	   passes the above check.  We do this by reversing the order of the 
+	   match performed above, if what's left is also a CN then there was a 
+	   mismatch in the CNs */
+	if( !compareDN( pkiUserInfoPtr->subjectName, certInfoPtr->subjectName,
+					TRUE, &pkiUserDNSubset ) )
+		{
+		status = getDNComponentInfo( pkiUserDNSubset, &dnComponentType, 
+									 &dnContinues );
+		if( cryptStatusError( status ) || \
+			dnComponentType == CRYPT_CERTINFO_COMMONNAME )
+			{
+			setErrorInfo( certInfoPtr, CRYPT_CERTINFO_COMMONNAME,
+						  CRYPT_ERRTYPE_ISSUERCONSTRAINT );
+			return( CRYPT_ERROR_INVALID );
+			}
+		}
+
+	/* If the request DN consists only of a CN, replace the request DN with 
+	   the merged DN prefix from the PKI user DN and the CN from the request 
+	   DN.  Otherwise, the request DN contains a full DN including a CN that
+	   matches the full PKI user DN and there's nothing to do beyond the 
+	   checks that we've already performed above */
+	if( certInfoPtr->subjectName == requestDNSubset )
+		{
+		char commonName[ CRYPT_MAX_TEXTSIZE + 8 ];
+		int commonNameLength;
+
+		status = getDNComponentValue( requestDNSubset, 
+									  CRYPT_CERTINFO_COMMONNAME, 0, 
+									  commonName, CRYPT_MAX_TEXTSIZE, 
+									  &commonNameLength );
+		if( cryptStatusOK( status ) )
+		status = assemblePkiUserDN( certInfoPtr,
+									pkiUserInfoPtr->subjectName,
+									commonName, commonNameLength );
+		if( cryptStatusError( status ) )
+			return( status );
+		}
+
+	/* Copy any additional attributes across */
+	return( copyPkiUserAttributes( certInfoPtr, pkiUserInfoPtr->attributes ) );
+	}
+#endif /* USE_PKIUSER */
 
 /****************************************************************************
 *																			*
@@ -1280,7 +1729,6 @@ int copyCertObject( INOUT CERT_INFO *certInfoPtr,
 								CRYPT_ARGERROR_NUM1 );
 	if( cryptStatusError( status ) )
 		return( status );
-	ANALYSER_HINT( addedCertInfoPtr != NULL );
 	switch( certInfoType )
 		{
 		case CRYPT_CERTINFO_CERTIFICATE:
@@ -1322,12 +1770,10 @@ int copyCertObject( INOUT CERT_INFO *certInfoPtr,
 			break;
 #endif /* USE_PKIUSER */
 
-#ifdef USE_DBMS	/* Only used by CA code */
 		case CRYPT_IATTRIBUTE_BLOCKEDATTRS:
 			status = sanitiseCertAttributes( certInfoPtr,
 											 addedCertInfoPtr->attributes );
 			break;
-#endif /* USE_DBMS */
 
 		default:
 			retIntError();

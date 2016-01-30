@@ -20,8 +20,6 @@
 
 #define secParamInfo( parentACL, paramNo )	parentACL->secParamACL[ paramNo ]
 
-#if defined( USE_CERTIFICATES ) && defined( USE_KEYSETS )
-
 /* A pointer to the kernel data block */
 
 static KERNEL_DATA *krnlData = NULL;
@@ -178,14 +176,8 @@ int initCertMgmtACL( INOUT KERNEL_DATA *krnlDataPtr )
 
 	assert( isWritePtr( krnlDataPtr, sizeof( KERNEL_DATA ) ) );
 
-	/* If we're running a fuzzing build, skip the lengthy self-checks */
-#ifdef CONFIG_FUZZ
-	krnlData = krnlDataPtr;
-	return( CRYPT_OK );
-#endif /* CONFIG_FUZZ */
-
 	/* Perform a consistency check on the cert management ACLs */
-	for( i = 0; certMgmtACLTbl[ i ].action != CRYPT_CERTACTION_NONE && \
+	for( i = 0; certMgmtACLTbl[ i ].action != MECHANISM_NONE && \
 				i < FAILSAFE_ARRAYSIZE( certMgmtACLTbl, CERTMGMT_ACL ); i++ )
 		{
 		const CERTMGMT_ACL *certMgmtACL = &certMgmtACLTbl[ i ];
@@ -288,11 +280,11 @@ int preDispatchCheckCertMgmtAccess( IN_HANDLE const int objectHandle,
 
 	/* Find the appropriate ACL for this mechanism */
 	for( i = 0; certMgmtACL[ i ].action != messageValue && \
-				certMgmtACL[ i ].action != CRYPT_CERTACTION_NONE && \
+				certMgmtACL[ i ].action != MECHANISM_NONE && \
 				i < FAILSAFE_ARRAYSIZE( certMgmtACLTbl, CERTMGMT_ACL ); 
 		 i++ );
 	ENSURES( i < FAILSAFE_ARRAYSIZE( certMgmtACLTbl, CERTMGMT_ACL ) );
-	ENSURES( certMgmtACL[ i ].action != CRYPT_CERTACTION_NONE );
+	ENSURES( certMgmtACL[ i ].action != MECHANISM_NONE );
 	certMgmtACL = &certMgmtACL[ i ];
 
 	/* Make sure that the access is valid.  Most cert management actions can
@@ -376,19 +368,3 @@ int preDispatchCheckCertMgmtAccess( IN_HANDLE const int objectHandle,
 
 	return( CRYPT_OK );
 	}
-#else
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
-int preDispatchCheckCertMgmtAccess( IN_HANDLE const int objectHandle,
-									IN_MESSAGE const MESSAGE_TYPE message,
-									IN_BUFFER_C( sizeof( MESSAGE_CERTMGMT_INFO ) ) \
-										const void *messageDataPtr,
-									IN_ENUM( CRYPT_CERTACTION ) \
-										const int messageValue,
-									STDC_UNUSED const void *dummy )
-	{
-	UNUSED_ARG( messageDataPtr );
-
-	return( CRYPT_ERROR_PERMISSION );
-	}
-#endif /* USE_CERTIFICATES && USE_KEYSETS */

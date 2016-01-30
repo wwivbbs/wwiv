@@ -490,12 +490,6 @@ int initMechanismACL( INOUT KERNEL_DATA *krnlDataPtr )
 	{
 	assert( isWritePtr( krnlDataPtr, sizeof( KERNEL_DATA ) ) );
 
-	/* If we're running a fuzzing build, skip the lengthy self-checks */
-#ifdef CONFIG_FUZZ
-	krnlData = krnlDataPtr;
-	return( CRYPT_OK );
-#endif /* CONFIG_FUZZ */
-
 	/* Perform a consistency check on the various message ACLs */
 	if( !mechanismAclConsistent( mechanismWrapACL, 
 				FAILSAFE_ARRAYSIZE( mechanismWrapACL, MECHANISM_ACL ) ) )
@@ -555,7 +549,7 @@ int preDispatchCheckMechanismWrapAccess( IN_HANDLE const int objectHandle,
 				FAILSAFE_ARRAYSIZE( mechanismWrapACL, MECHANISM_ACL ) : \
 				FAILSAFE_ARRAYSIZE( mechanismUnwrapACL, MECHANISM_ACL );
 	BOOLEAN isRawMechanism;
-	int contextHandle, i, status;
+	int contextHandle, i;
 
 	assert( isReadPtr( messageDataPtr, sizeof( MECHANISM_WRAP_INFO ) ) );
 
@@ -614,9 +608,9 @@ int preDispatchCheckMechanismWrapAccess( IN_HANDLE const int objectHandle,
 			   certificate that isn't the required object type, in order to
 			   perform the following check on it we have to first find the
 			   ultimate target object */
-			status = findTargetType( mechanismInfo->keyContext,	
-									 &contextHandle, OBJECT_TYPE_CONTEXT );
-			if( cryptStatusError( status ) )
+			contextHandle = findTargetType( mechanismInfo->keyContext,
+											OBJECT_TYPE_CONTEXT );
+			if( cryptStatusError( contextHandle ) )
 				return( CRYPT_ARGERROR_NUM1 );
 			}
 		else
@@ -649,9 +643,9 @@ int preDispatchCheckMechanismWrapAccess( IN_HANDLE const int objectHandle,
 		   certificate that isn't the required object type, in order to
 		   perform the following check on it we have to first find the
 		   ultimate target object */
-		status = findTargetType( mechanismInfo->wrapContext,
-								 &contextHandle, OBJECT_TYPE_CONTEXT );
-		if( cryptStatusError( status ) )
+		contextHandle = findTargetType( mechanismInfo->wrapContext,
+										OBJECT_TYPE_CONTEXT );
+		if( cryptStatusError( contextHandle ) )
 			return( CRYPT_ARGERROR_NUM2 );
 		}
 	else
@@ -724,7 +718,7 @@ int preDispatchCheckMechanismSignAccess( IN_HANDLE const int objectHandle,
 				( ( message & MESSAGE_MASK ) == MESSAGE_DEV_SIGN ) ? \
 				FAILSAFE_ARRAYSIZE( mechanismSignACL, MECHANISM_ACL ) : \
 				FAILSAFE_ARRAYSIZE( mechanismSigCheckACL, MECHANISM_ACL );
-	int contextHandle, i, status;
+	int contextHandle, i;
 
 	assert( isReadPtr( messageDataPtr, sizeof( MECHANISM_WRAP_INFO ) ) );
 
@@ -781,9 +775,9 @@ int preDispatchCheckMechanismSignAccess( IN_HANDLE const int objectHandle,
 		   certificate that isn't the required object type, in order to
 		   perform the following check on it we have to first find the
 		   ultimate target object */
-		status = findTargetType( mechanismInfo->signContext,
-								 &contextHandle, OBJECT_TYPE_CONTEXT );
-		if( cryptStatusError( status ) )
+		contextHandle = findTargetType( mechanismInfo->signContext,
+										OBJECT_TYPE_CONTEXT );
+		if( cryptStatusError( contextHandle ) )
 			return( CRYPT_ARGERROR_NUM2 );
 		}
 	else
