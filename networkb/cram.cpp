@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "networkb/cram.h"
 
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
