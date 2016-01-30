@@ -434,7 +434,7 @@ static void printTimes( HIRES_TIME times[ NO_TESTS + 1 ][ 8 ],
 		if( throughput <= 0 )
 			puts( ", throughput < 1 MB/s." );
 		else
-			printf( ", throughput %ld MB/s.\n", throughput );
+			printf( ", throughput %d MB/s.\n", throughput );
 		}
 	}
 
@@ -549,6 +549,7 @@ static void performanceTests( const CRYPT_DEVICE cryptDevice,
 	putchar( '\n' );
 	encTests( cryptDevice, CRYPT_ALGO_3DES, CRYPT_MODE_ECB, buffer, ticksPerSec );
 	encTests( cryptDevice, CRYPT_ALGO_3DES, CRYPT_MODE_CBC, buffer, ticksPerSec );
+	encTests( cryptDevice, CRYPT_ALGO_RC4, CRYPT_MODE_OFB, buffer, ticksPerSec );
 	putchar( '\n' );
 	encTests( cryptDevice, CRYPT_ALGO_AES, CRYPT_MODE_CBC, buffer, ticksPerSec );
 	putchar( '\n' );

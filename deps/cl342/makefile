@@ -1,7 +1,7 @@
 #****************************************************************************
 #*																			*
 #*							Makefile for cryptlib 3.4.x						*
-#*						Copyright Peter Gutmann 1995-2015					*
+#*						Copyright Peter Gutmann 1995-2012					*
 #*																			*
 #****************************************************************************
 
@@ -36,7 +36,7 @@
 
 MAJ		= 3
 MIN		= 4
-PLV		= 3
+PLV		= 2
 PROJ	= cl
 LIBNAME	= lib$(PROJ).a
 SLIBNAME = lib$(PROJ).so.$(MAJ).$(MIN).$(PLV)
@@ -56,10 +56,7 @@ DYLIBNAME = lib$(PROJ).$(MAJ).$(MIN).dylib
 # compiled with this option.  As a general comment, to build the debug
 # version remove the -DNDEBUG below and build with
 # 'make CFLAGS="-g3 -ggdb -O0"' (the -O0 is required because the default
-# is -O1, which is enough to mess up debugging at times, the
-# -fno-omit-frame-pointer is requierd in x86-64 and ARM because the ABI
-# specifies that no frame pointer is used, so for debugging we have to
-# explicitly enable it to provide better diagnostics), or use the debug
+# is -O1, which is enough to mess up debugging at times), or use the debug
 # target "make debug".  This assumes a certain amount of gnu-ishness in the
 # debug environment (which seems to be the universal default), if you're
 # using something else then you'll have to modify CFLAGS_DEBUG below.  In
@@ -73,30 +70,11 @@ DYLIBNAME = lib$(PROJ).$(MAJ).$(MIN).dylib
 # binaries then you can get the 64-bit version by adding "-m64" to CFLAGS
 # and LDFLAGS, at least for gcc.
 #
-# The Gnu coverage-analysis tools are at about the level that cavemen used to
-# debug fire, you need to enable CFLAGS_COVERAGE and LDLAGS_COVERAGE below,
-# then run ./testlib, then manually run gcov on each source file, which at
-# best can be done with:
-#	gcov -o static-obj/ session/*.c
-# which dumps the resulting gcov files in the current directory.  This then
-# needs further processing with lcov:
-#	lcov --directory . --capture --output-file testlib.info
-# to produce output that needs even more processing with genhtml:
-#	genhtml --output-directory testlib_html testlib.info
-# that can finally be viewed with a web browser.  The resulting summary info
-# is graphical, but the per-file information is in crude ASCII-art form.
-# Overall it's not worth it, just turn on profiling in Visual Studio.
-#
 # Further cc flags are gathered dynamically at runtime via the ccopts.sh
 # script.
 
 CFLAGS		= -c -D__UNIX__ -DNDEBUG -I.
-CFLAGS_ANALYSE = -c -D__UNIX__ -I.
-CFLAGS_COVERAGE = -c -D__UNIX__ -I. -ggdb3 -fno-omit-frame-pointer -O1 --coverage -fprofile-arcs -ftest-coverage
-CFLAGS_DEBUG = -c -D__UNIX__ -I. -ggdb3 -fno-omit-frame-pointer -O0
-CFLAGS_FUZZ = -c -D__UNIX__ -I. -ggdb3 -fno-omit-frame-pointer -funwind-tables -fsanitize=address -O1 -DCONFIG_FUZZ
-CFLAGS_UBSAN = -c -D__UNIX__ -I. -ggdb3 -fno-omit-frame-pointer -funwind-tables -fsanitize=undefined -fsanitize-blacklist=ubsan_blacklist.txt -O1
-CFLAGS_VALGRIND	= -c -D__UNIX__ -I. -ggdb3 -fno-omit-frame-pointer -O1
+CFLAGS_DEBUG = -c -D__UNIX__ -I. -g3 -ggdb -O0
 
 # Paths and command names.  We have to be careful with comments attached to
 # path defines because some makes don't strip trailing spaces.
@@ -112,6 +90,7 @@ SHARED_OBJ_PATH = ./shared-obj/
 SHARED_OBJ_DIR = ./shared-obj
 CPP			= $(CC) -E
 LD			= $(CC)
+LDFLAGS		=
 AR			= ar
 STRIP		= strip
 SHELL		= /bin/sh
@@ -139,9 +118,6 @@ DEFINES		= $(TARGET) OBJPATH=$(OBJPATH) OSNAME=$(OSNAME)
 XCFLAGS		= -c -DNDEBUG -I.
 XDEFINES	= $(TARGET) OBJPATH=$(OBJPATH) CROSSCOMPILE=1
 
-XSCFLAGS	= -c -DNDEBUG -I.
-XSDEFINES	= $(SLIBNAME) OBJPATH=$(SHARED_OBJ_PATH) CROSSCOMPILE=1
-
 # Cross-compilation paths.  The Palm SDK under Cygwin only understands
 # heavily-escaped absolute MSDOS pathnames, so it's necessary to specify
 # (for example)
@@ -161,46 +137,51 @@ PALMSDK_PATH	= "d:/Palm\\\ SDK/sdk-6"
 
 # The object files that make up cryptlib.
 
-BNOBJS		= $(OBJPATH)bn_add.o $(OBJPATH)bn_asm.o $(OBJPATH)bn_div.o \
-			  $(OBJPATH)bn_exp.o $(OBJPATH)bn_exp2.o $(OBJPATH)bn_gcd.o \
-			  $(OBJPATH)bn_mod.o $(OBJPATH)bn_mont.o $(OBJPATH)bn_mul.o \
-			  $(OBJPATH)bn_recp.o $(OBJPATH)bn_shift.o $(OBJPATH)bn_sqr.o \
-			  $(OBJPATH)bn_word.o $(OBJPATH)ec_lib.o $(OBJPATH)ecp_mont.o \
-			  $(OBJPATH)ecp_smpl.o $(OBJPATH)ec_mult.o $(OBJPATH)ec_rand.o \
-			  $(OBJPATH)ec_kron.o $(OBJPATH)ec_sqrt.o
+ASMOBJS		= $(OBJPATH)md5asm.o $(OBJPATH)rmdasm.o $(OBJPATH)sha1asm.o
+
+BNOBJS		= $(OBJPATH)bn_add.o $(OBJPATH)bn_asm.o $(OBJPATH)bn_ctx.o \
+			  $(OBJPATH)bn_div.o $(OBJPATH)bn_exp.o $(OBJPATH)bn_exp2.o \
+			  $(OBJPATH)bn_gcd.o $(OBJPATH)bn_lib.o $(OBJPATH)bn_mod.o \
+			  $(OBJPATH)bn_mont.o $(OBJPATH)bn_mul.o $(OBJPATH)bn_recp.o \
+			  $(OBJPATH)bn_shift.o $(OBJPATH)bn_sqr.o $(OBJPATH)bn_word.o \
+			  $(OBJPATH)ec_lib.o $(OBJPATH)ecp_mont.o $(OBJPATH)ecp_smpl.o \
+			  $(OBJPATH)ec_mult.o $(OBJPATH)ec_rand.o $(OBJPATH)ec_kron.o \
+			  $(OBJPATH)ec_sqrt.o
 
 CERTOBJS	= $(OBJPATH)certrev.o $(OBJPATH)certschk.o $(OBJPATH)certsign.o \
 			  $(OBJPATH)certval.o $(OBJPATH)chain.o $(OBJPATH)chk_cert.o \
 			  $(OBJPATH)chk_chn.o $(OBJPATH)chk_use.o $(OBJPATH)comp_cert.o \
 			  $(OBJPATH)comp_curs.o $(OBJPATH)comp_del.o $(OBJPATH)comp_get.o \
-			  $(OBJPATH)comp_gets.o $(OBJPATH)comp_pkiu.o $(OBJPATH)comp_set.o \
-			  $(OBJPATH)dn.o $(OBJPATH)dn_rw.o $(OBJPATH)dnstring.o \
-			  $(OBJPATH)ext.o $(OBJPATH)ext_add.o $(OBJPATH)ext_chk.o \
-			  $(OBJPATH)ext_copy.o $(OBJPATH)ext_def.o $(OBJPATH)ext_rd.o \
-			  $(OBJPATH)ext_wr.o $(OBJPATH)imp_chk.o $(OBJPATH)imp_exp.o \
-			  $(OBJPATH)read.o $(OBJPATH)trustmgr.o $(OBJPATH)write.o \
-			  $(OBJPATH)write_pre.o
+			  $(OBJPATH)comp_gets.o $(OBJPATH)comp_set.o $(OBJPATH)dn.o \
+			  $(OBJPATH)dn_rw.o $(OBJPATH)dnstring.o $(OBJPATH)ext.o \
+			  $(OBJPATH)ext_add.o $(OBJPATH)ext_chk.o $(OBJPATH)ext_copy.o \
+			  $(OBJPATH)ext_def.o $(OBJPATH)ext_rd.o $(OBJPATH)ext_wr.o \
+			  $(OBJPATH)imp_chk.o $(OBJPATH)imp_exp.o $(OBJPATH)read.o \
+			  $(OBJPATH)trustmgr.o $(OBJPATH)write.o $(OBJPATH)write_pre.o
 
 CRYPTOBJS	= $(OBJPATH)aes_modes.o $(OBJPATH)aescrypt.o $(OBJPATH)aeskey.o \
-			  $(OBJPATH)aestab.o $(OBJPATH)castecb.o $(OBJPATH)castenc.o \
+			  $(OBJPATH)aestab.o $(OBJPATH)bfecb.o $(OBJPATH)bfenc.o \
+			  $(OBJPATH)bfskey.o $(OBJPATH)castecb.o $(OBJPATH)castenc.o \
 			  $(OBJPATH)castskey.o $(OBJPATH)descbc.o $(OBJPATH)desecb.o \
 			  $(OBJPATH)desecb3.o $(OBJPATH)desenc.o $(OBJPATH)desskey.o \
 			  $(OBJPATH)gcm.o $(OBJPATH)gf128mul.o $(OBJPATH)icbc.o \
 			  $(OBJPATH)iecb.o $(OBJPATH)iskey.o $(OBJPATH)rc2cbc.o \
 			  $(OBJPATH)rc2ecb.o $(OBJPATH)rc2skey.o $(OBJPATH)rc4enc.o \
-			  $(OBJPATH)rc4skey.o 
+			  $(OBJPATH)rc4skey.o $(OBJPATH)rc5ecb.o $(OBJPATH)rc5enc.o \
+			  $(OBJPATH)rc5skey.o
 
 CTXOBJS		= $(OBJPATH)ctx_3des.o $(OBJPATH)ctx_aes.o $(OBJPATH)ctx_attr.o \
-			  $(OBJPATH)ctx_bn.o $(OBJPATH)ctx_cast.o $(OBJPATH)ctx_des.o \
+			  $(OBJPATH)ctx_bf.o $(OBJPATH)ctx_cast.o $(OBJPATH)ctx_des.o \
 			  $(OBJPATH)ctx_dh.o $(OBJPATH)ctx_dsa.o $(OBJPATH)ctx_ecdh.o \
-			  $(OBJPATH)ctx_ecdsa.o $(OBJPATH)ctx_elg.o $(OBJPATH)ctx_generic.o \
+			  $(OBJPATH)ctx_ecdsa.o $(OBJPATH)ctx_elg.o \
+			  $(OBJPATH)ctx_generic.o $(OBJPATH)ctx_hmd5.o $(OBJPATH)ctx_hrmd.o \
 			  $(OBJPATH)ctx_hsha.o $(OBJPATH)ctx_hsha2.o $(OBJPATH)ctx_idea.o \
 			  $(OBJPATH)ctx_md5.o $(OBJPATH)ctx_misc.o $(OBJPATH)ctx_rc2.o \
-			  $(OBJPATH)ctx_rc4.o $(OBJPATH)ctx_rsa.o $(OBJPATH)ctx_sha.o \
-			  $(OBJPATH)ctx_sha2.o $(OBJPATH)kg_dlp.o $(OBJPATH)kg_ecc.o \
-			  $(OBJPATH)kg_prime.o $(OBJPATH)kg_rsa.o $(OBJPATH)keyload.o \
-			  $(OBJPATH)key_id.o $(OBJPATH)key_rdpri.o $(OBJPATH)key_rdpub.o \
-			  $(OBJPATH)key_wr.o
+			  $(OBJPATH)ctx_rc4.o $(OBJPATH)ctx_rc5.o $(OBJPATH)ctx_ripe.o \
+			  $(OBJPATH)ctx_rsa.o $(OBJPATH)ctx_sha.o $(OBJPATH)ctx_sha2.o \
+			  $(OBJPATH)kg_dlp.o $(OBJPATH)kg_ecc.o $(OBJPATH)kg_prime.o \
+			  $(OBJPATH)kg_rsa.o $(OBJPATH)keyload.o $(OBJPATH)key_id.o \
+			  $(OBJPATH)key_rd.o $(OBJPATH)key_wr.o
 
 DEVOBJS		= $(OBJPATH)dev_attr.o $(OBJPATH)hardware.o $(OBJPATH)hw_dummy.o \
 			  $(OBJPATH)pkcs11.o $(OBJPATH)pkcs11_init.o $(OBJPATH)pkcs11_pkc.o \
@@ -215,7 +196,8 @@ ENVOBJS		= $(OBJPATH)cms_denv.o $(OBJPATH)cms_env.o $(OBJPATH)cms_envpre.o \
 			  $(OBJPATH)pgp_denv.o $(OBJPATH)pgp_env.o $(OBJPATH)res_actn.o \
 			  $(OBJPATH)res_denv.o $(OBJPATH)res_env.o
 
-HASHOBJS	= $(OBJPATH)md5dgst.o $(OBJPATH)sha1dgst.o $(OBJPATH)sha2.o
+HASHOBJS	= $(OBJPATH)md5dgst.o $(OBJPATH)rmddgst.o $(OBJPATH)sha1dgst.o \
+			  $(OBJPATH)sha2.o
 
 IOOBJS		= $(OBJPATH)dns.o $(OBJPATH)dns_srv.o $(OBJPATH)file.o \
 			  $(OBJPATH)http_rd.o $(OBJPATH)http_parse.o $(OBJPATH)http_wr.o \
@@ -228,13 +210,13 @@ KEYSETOBJS	= $(OBJPATH)dbms.o $(OBJPATH)ca_add.o $(OBJPATH)ca_clean.o \
 			  $(OBJPATH)dbx_misc.o $(OBJPATH)dbx_rd.o $(OBJPATH)dbx_wr.o \
 			  $(OBJPATH)http.o $(OBJPATH)key_attr.o $(OBJPATH)ldap.o \
 			  $(OBJPATH)odbc.o $(OBJPATH)pgp.o $(OBJPATH)pgp_rd.o \
-			  $(OBJPATH)pgp_wr.o $(OBJPATH)pkcs12.o $(OBJPATH)pkcs12_rd.o \
-			  $(OBJPATH)pkcs12_rdo.o $(OBJPATH)pkcs12_wr.o $(OBJPATH)pkcs15.o \
-			  $(OBJPATH)pkcs15_add.o $(OBJPATH)pkcs15_adpb.o \
-			  $(OBJPATH)pkcs15_adpr.o $(OBJPATH)pkcs15_atrd.o \
-			  $(OBJPATH)pkcs15_atwr.o $(OBJPATH)pkcs15_get.o \
-			  $(OBJPATH)pkcs15_getp.o $(OBJPATH)pkcs15_rd.o \
-			  $(OBJPATH)pkcs15_set.o $(OBJPATH)pkcs15_wr.o
+			  $(OBJPATH)pkcs12.o $(OBJPATH)pkcs12_rd.o $(OBJPATH)pkcs12_rdo.o \
+			  $(OBJPATH)pkcs12_wr.o $(OBJPATH)pkcs15.o $(OBJPATH)pkcs15_add.o \
+			  $(OBJPATH)pkcs15_adpb.o $(OBJPATH)pkcs15_adpr.o \
+			  $(OBJPATH)pkcs15_atrd.o $(OBJPATH)pkcs15_atwr.o \
+			  $(OBJPATH)pkcs15_get.o $(OBJPATH)pkcs15_getp.o \
+			  $(OBJPATH)pkcs15_rd.o $(OBJPATH)pkcs15_set.o \
+			  $(OBJPATH)pkcs15_wr.o
 
 KRNLOBJS	= $(OBJPATH)attr_acl.o $(OBJPATH)certm_acl.o $(OBJPATH)init.o \
 			  $(OBJPATH)int_msg.o $(OBJPATH)key_acl.o $(OBJPATH)mech_acl.o \
@@ -267,15 +249,16 @@ SESSOBJS	= $(OBJPATH)certstore.o $(OBJPATH)cmp.o $(OBJPATH)cmp_cli.o \
 			  $(OBJPATH)rtcs.o $(OBJPATH)scep.o $(OBJPATH)scep_cli.o \
 			  $(OBJPATH)scep_svr.o $(OBJPATH)scorebrd.o $(OBJPATH)sess_attr.o \
 			  $(OBJPATH)sess_iattr.o $(OBJPATH)sess_rw.o $(OBJPATH)session.o \
-			  $(OBJPATH)ssh.o $(OBJPATH)ssh2.o $(OBJPATH)ssh2_authc.o \
-			  $(OBJPATH)ssh2_auths.o $(OBJPATH)ssh2_chn.o $(OBJPATH)ssh2_cli.o \
-			  $(OBJPATH)ssh2_cry.o $(OBJPATH)ssh2_msg.o $(OBJPATH)ssh2_msgc.o \
+			  $(OBJPATH)ssh.o $(OBJPATH)ssh1.o $(OBJPATH)ssh2.o \
+			  $(OBJPATH)ssh2_authc.o $(OBJPATH)ssh2_auths.o \
+			  $(OBJPATH)ssh2_chn.o $(OBJPATH)ssh2_cli.o $(OBJPATH)ssh2_cry.o \
+			  $(OBJPATH)ssh2_msg.o $(OBJPATH)ssh2_msgc.o \
 			  $(OBJPATH)ssh2_msgs.o $(OBJPATH)ssh2_rd.o $(OBJPATH)ssh2_svr.o \
-			  $(OBJPATH)ssh2_wr.o $(OBJPATH)sshl_dh.o $(OBJPATH)ssl.o \
-			  $(OBJPATH)ssl_cli.o $(OBJPATH)ssl_cry.o $(OBJPATH)ssl_ext.o \
-			  $(OBJPATH)ssl_hs.o $(OBJPATH)ssl_hsc.o $(OBJPATH)ssl_kmgmt.o \
-			  $(OBJPATH)ssl_rd.o $(OBJPATH)ssl_suites.o $(OBJPATH)ssl_svr.o \
-			  $(OBJPATH)ssl_wr.o $(OBJPATH)tsp.o
+			  $(OBJPATH)ssh2_wr.o $(OBJPATH)ssl.o $(OBJPATH)ssl_cli.o \
+			  $(OBJPATH)ssl_cry.o $(OBJPATH)ssl_ext.o $(OBJPATH)ssl_hs.o \
+			  $(OBJPATH)ssl_hsc.o $(OBJPATH)ssl_kmgmt.o $(OBJPATH)ssl_rd.o \
+			  $(OBJPATH)ssl_suites.o $(OBJPATH)ssl_svr.o $(OBJPATH)ssl_wr.o \
+			  $(OBJPATH)tsp.o
 
 ZLIBOBJS	= $(OBJPATH)adler32.o $(OBJPATH)deflate.o $(OBJPATH)inffast.o \
 			  $(OBJPATH)inflate.o $(OBJPATH)inftrees.o $(OBJPATH)trees.o \
@@ -285,6 +268,14 @@ OBJS		= $(BNOBJS) $(CERTOBJS) $(CRYPTOBJS) $(CTXOBJS) $(DEVOBJS) \
 			  $(ENCDECOBJS) $(ENVOBJS) $(HASHOBJS) $(IOOBJS) $(KEYSETOBJS) \
 			  $(KRNLOBJS) $(LIBOBJS) $(MECHOBJS) $(MISCOBJS) $(SESSOBJS) \
 			  $(ZLIBOBJS) $(OSOBJS)
+
+# Win32 object files that replace ASMOBJS when building for Win32
+# using Unix tools
+
+WIN32ASMOBJS= bn/bn-win32.obj crypt/aescrypt2.obj crypt/b-win32.obj \
+			  crypt/c-win32.obj crypt/d-win32.obj crypt/m5-win32.obj \
+			  crypt/r4-win32.obj crypt/r5-win32.obj crypt/rm-win32.obj \
+			  crypt/s1-win32.obj zlib/inffas32.obj zlib/match686.obj
 
 # Object files for the self-test code
 
@@ -303,7 +294,7 @@ ASN1_DEP = $(IO_DEP) enc_dec/asn1.h enc_dec/asn1_ext.h
 CERT_DEP = cert/cert.h cert/certfn.h
 
 CRYPT_DEP	= cryptlib.h crypt.h cryptkrn.h misc/config.h misc/consts.h \
-			  misc/debug.h misc/fault.h misc/int_api.h misc/os_spec.h
+			  misc/debug.h misc/int_api.h misc/os_spec.h
 
 KERNEL_DEP	= kernel/acl.h kernel/acl_perm.h kernel/kernel.h kernel/thread.h
 
@@ -348,60 +339,31 @@ ZLIB_DEP = zlib/zconf.h zlib/zlib.h zlib/zutil.h
 # an extra character to the comparison string to avoid syntax errors.
 
 default:
-	@make common-tasks
-	@./tools/buildall.sh $(OSNAME) $(CC) $(CFLAGS)
-
-shared:
-	@make common-tasks
-	@./tools/buildall.sh shared $(OSNAME) $(CC) $(CFLAGS)
-
-analyse:
-	@make common-tasks
-	@./tools/buildall.sh analyse $(OSNAME) $(CC) $(CFLAGS_ANALYSE)
-
-debug:
-	@make common-tasks
-	@./tools/buildall.sh $(OSNAME) $(CC) $(CFLAGS_DEBUG)
-
-fuzz:
-	@make check-clang
-	@make common-tasks
-	@export AFL_HARDEN=1 ; export AFL_USE_ASAN=1 ; \
-		./tools/buildall.sh $(OSNAME) ~/afl-1*/afl-clang-fast $(CFLAGS_FUZZ)
-	@rm -f $(LINKFILE)
-	@echo $(TESTOBJS) > $(LINKFILE)
-	clang -o testlib -fsanitize=address `cat $(LINKFILE)` ~/afl-1*/afl-llvm-rt.o \
-		-L. -l$(PROJ) `./tools/getlibs.sh autodetect`
-	@rm -f $(LINKFILE)
-	@mv ./testlib ./fuzz-clib
-
-valgrind:
-	@make common-tasks
-	@./tools/buildall.sh analyse $(OSNAME) $(CC) $(CFLAGS_VALGRIND)
-
-ubsan:
-	@make check-clang
-	@make common-tasks
-	@./tools/buildall.sh $(OSNAME) clang $(CFLAGS_UBSAN)
-	@rm -f $(LINKFILE)
-	@echo $(TESTOBJS) > $(LINKFILE)
-	clang -o testlib -fsanitize=undefined `cat $(LINKFILE)` -L. \
-		-l$(PROJ) `./tools/getlibs.sh autodetect`
-	@rm -f $(LINKFILE)
-
-check-clang:
-	@if [ ! `which clang` ] ; then \
-		echo "LLVM isn't present in \$$PATH." >&2 ; \
-		exit 1 ; \
-	fi
-
-common-tasks:
 	@make directories
 	@make toolscripts
 	@- if [ $(OSNAME) = 'OS/390' -a "$(_C89_CCMODE)" != "1" ] ; then \
 		echo "The c89 environment variable _C89_CCMODE must be set to 1." >&2 ; \
 		exit 1 ; \
 	fi
+	@./tools/buildall.sh $(OSNAME) $(CC) $(CFLAGS)
+
+shared:
+	@make directories
+	@make toolscripts
+	@- if [ $(OSNAME) = 'OS/390' -a "$(_C89_CCMODE)" != "1" ] ; then \
+		echo "The c89 environment variable _C89_CCMODE must be set to 1." >&2 ; \
+		exit 1; \
+	fi
+	@./tools/buildall.sh shared $(OSNAME) $(CC) $(CFLAGS)
+
+debug:
+	@make directories
+	@make toolscripts
+	@- if [ $(OSNAME) = 'OS/390' -a "$(_C89_CCMODE)" != "1" ] ; then \
+		echo "The c89 environment variable _C89_CCMODE must be set to 1." >&2 ; \
+		exit 1; \
+	fi
+	@./tools/buildall.sh $(OSNAME) $(CC) $(CFLAGS_DEBUG)
 
 directories:
 	@- if [ ! -d $(STATIC_OBJ_PATH) ] ; then mkdir $(STATIC_OBJ_DIR) ; fi
@@ -475,6 +437,9 @@ $(OBJPATH)bn_add.o:		crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/bn_add.c
 $(OBJPATH)bn_asm.o:		crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/bn_asm.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)bn_asm.o bn/bn_asm.c
 
+$(OBJPATH)bn_ctx.o:		crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/bn_ctx.c
+						$(CC) $(CFLAGS) -o $(OBJPATH)bn_ctx.o bn/bn_ctx.c
+
 $(OBJPATH)bn_div.o:		crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/bn_div.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)bn_div.o bn/bn_div.c
 
@@ -486,6 +451,9 @@ $(OBJPATH)bn_exp2.o:	crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/bn_exp2.c
 
 $(OBJPATH)bn_gcd.o:		crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/bn_gcd.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)bn_gcd.o bn/bn_gcd.c
+
+$(OBJPATH)bn_lib.o:		crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/bn_lib.c
+						$(CC) $(CFLAGS) -o $(OBJPATH)bn_lib.o bn/bn_lib.c
 
 $(OBJPATH)bn_mod.o:		crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/bn_mod.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)bn_mod.o bn/bn_mod.c
@@ -570,9 +538,6 @@ $(OBJPATH)comp_get.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/comp_get.c
 $(OBJPATH)comp_gets.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/comp_gets.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)comp_gets.o cert/comp_gets.c
 
-$(OBJPATH)comp_pkiu.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/comp_pkiu.c
-						$(CC) $(CFLAGS) -o $(OBJPATH)comp_pkiu.o cert/comp_pkiu.c
-
 $(OBJPATH)comp_set.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/comp_set.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)comp_set.o cert/comp_set.c
 
@@ -636,8 +601,8 @@ $(OBJPATH)ctx_aes.o:	$(CRYPT_DEP) context/context.h crypt/aes.h crypt/aesopt.h \
 $(OBJPATH)ctx_attr.o:	$(CRYPT_DEP) context/context.h context/ctx_attr.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_attr.o context/ctx_attr.c
 
-$(OBJPATH)ctx_bn.o:		$(CRYPT_DEP) context/context.h context/ctx_bn.c
-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_bn.o context/ctx_bn.c
+$(OBJPATH)ctx_bf.o:		$(CRYPT_DEP) context/context.h crypt/blowfish.h context/ctx_bf.c
+						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_bf.o context/ctx_bf.c
 
 $(OBJPATH)ctx_cast.o:	$(CRYPT_DEP) context/context.h crypt/cast.h context/ctx_cast.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_cast.o context/ctx_cast.c
@@ -667,6 +632,9 @@ $(OBJPATH)ctx_generic.o: $(CRYPT_DEP) context/context.h context/ctx_generic.c
 $(OBJPATH)ctx_hmd5.o:	$(CRYPT_DEP) context/context.h crypt/md5.h context/ctx_hmd5.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_hmd5.o context/ctx_hmd5.c
 
+$(OBJPATH)ctx_hrmd.o:	$(CRYPT_DEP) context/context.h crypt/ripemd.h context/ctx_hrmd.c
+						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_hrmd.o context/ctx_hrmd.c
+
 $(OBJPATH)ctx_hsha.o:	$(CRYPT_DEP) context/context.h crypt/sha.h context/ctx_hsha.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_hsha.o context/ctx_hsha.c
 
@@ -687,6 +655,12 @@ $(OBJPATH)ctx_rc2.o:	$(CRYPT_DEP) context/context.h crypt/rc2.h context/ctx_rc2.
 
 $(OBJPATH)ctx_rc4.o:	$(CRYPT_DEP) context/context.h crypt/rc4.h context/ctx_rc4.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_rc4.o context/ctx_rc4.c
+
+$(OBJPATH)ctx_rc5.o:	$(CRYPT_DEP) context/context.h crypt/rc5.h context/ctx_rc5.c
+						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_rc5.o context/ctx_rc5.c
+
+$(OBJPATH)ctx_ripe.o:	$(CRYPT_DEP) context/context.h crypt/ripemd.h context/ctx_ripe.c
+						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_ripe.o context/ctx_ripe.c
 
 $(OBJPATH)ctx_rsa.o:	$(CRYPT_DEP) context/context.h bn/bn.h context/ctx_rsa.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_rsa.o context/ctx_rsa.c
@@ -715,11 +689,8 @@ $(OBJPATH)keyload.o:	$(CRYPT_DEP) context/context.h context/keyload.c
 $(OBJPATH)key_id.o:		$(CRYPT_DEP) $(ASN1_DEP) context/key_id.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)key_id.o context/key_id.c
 
-$(OBJPATH)key_rdpri.o:	$(CRYPT_DEP) $(ASN1_DEP) context/key_rdpri.c
-						$(CC) $(CFLAGS) -o $(OBJPATH)key_rdpri.o context/key_rdpri.c
-
-$(OBJPATH)key_rdpub.o:	$(CRYPT_DEP) $(ASN1_DEP) context/key_rdpub.c
-						$(CC) $(CFLAGS) -o $(OBJPATH)key_rdpub.o context/key_rdpub.c
+$(OBJPATH)key_rd.o:		$(CRYPT_DEP) $(ASN1_DEP) context/key_rd.c
+						$(CC) $(CFLAGS) -o $(OBJPATH)key_rd.o context/key_rd.c
 
 $(OBJPATH)key_wr.o:		$(CRYPT_DEP) $(ASN1_DEP) context/key_wr.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)key_wr.o context/key_wr.c
@@ -737,6 +708,16 @@ $(OBJPATH)aeskey.o:		$(CRYPT_DEP) crypt/aes.h crypt/aesopt.h crypt/aeskey.c
 
 $(OBJPATH)aestab.o:		$(CRYPT_DEP) crypt/aes.h crypt/aesopt.h crypt/aestab.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)aestab.o crypt/aestab.c
+
+$(OBJPATH)bfecb.o:		crypt/osconfig.h crypt/blowfish.h crypt/bflocl.h crypt/bfecb.c
+						$(CC) $(CFLAGS) -o $(OBJPATH)bfecb.o crypt/bfecb.c
+
+$(OBJPATH)bfenc.o:		crypt/osconfig.h crypt/blowfish.h crypt/bflocl.h crypt/bfenc.c
+						$(CC) $(CFLAGS) -o $(OBJPATH)bfenc.o crypt/bfenc.c
+
+$(OBJPATH)bfskey.o:		crypt/osconfig.h crypt/blowfish.h crypt/bflocl.h crypt/bfpi.h \
+						crypt/bfskey.c
+						$(CC) $(CFLAGS) -o $(OBJPATH)bfskey.o crypt/bfskey.c
 
 $(OBJPATH)castecb.o:	crypt/osconfig.h crypt/cast.h crypt/castlcl.h crypt/castecb.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)castecb.o crypt/castecb.c
@@ -795,14 +776,27 @@ $(OBJPATH)rc4enc.o:		crypt/osconfig.h crypt/rc4.h crypt/rc4locl.h crypt/rc4enc.c
 $(OBJPATH)rc4skey.o:	crypt/osconfig.h crypt/rc4.h crypt/rc4locl.h crypt/rc4skey.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)rc4skey.o crypt/rc4skey.c
 
+$(OBJPATH)rc5ecb.o:		crypt/osconfig.h crypt/rc5.h crypt/rc5locl.h crypt/rc5ecb.c
+						$(CC) $(CFLAGS) -o $(OBJPATH)rc5ecb.o crypt/rc5ecb.c
+
+$(OBJPATH)rc5enc.o:		crypt/osconfig.h crypt/rc5.h crypt/rc5locl.h crypt/rc5enc.c
+						$(CC) $(CFLAGS) -o $(OBJPATH)rc5enc.o crypt/rc5enc.c
+
+$(OBJPATH)rc5skey.o:	crypt/osconfig.h crypt/rc5.h crypt/rc5locl.h crypt/rc5skey.c
+						$(CC) $(CFLAGS) -o $(OBJPATH)rc5skey.o crypt/rc5skey.c
+
 # crypt subdirectory - hash algos
 
 $(OBJPATH)md5dgst.o:	crypt/osconfig.h crypt/md5.h crypt/md5locl.h \
-						crypt/md32com.h crypt/md5dgst.c
+						crypt/md5dgst.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)md5dgst.o crypt/md5dgst.c
 
+$(OBJPATH)rmddgst.o:	crypt/osconfig.h crypt/ripemd.h crypt/rmdlocl.h \
+						crypt/rmddgst.c
+						$(CC) $(CFLAGS) -o $(OBJPATH)rmddgst.o crypt/rmddgst.c
+
 $(OBJPATH)sha1dgst.o:	crypt/osconfig.h crypt/sha.h crypt/sha1locl.h \
-						crypt/md32com.h crypt/sha1dgst.c
+						crypt/sha1dgst.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)sha1dgst.o crypt/sha1dgst.c
 
 $(OBJPATH)sha2.o:		crypt/osconfig.h crypt/sha.h crypt/sha1locl.h crypt/sha2.c
@@ -1039,9 +1033,6 @@ $(OBJPATH)pgp.o:		$(CRYPT_DEP) misc/pgp.h keyset/pgp.c
 $(OBJPATH)pgp_rd.o:		$(CRYPT_DEP) misc/pgp.h keyset/pgp_rd.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)pgp_rd.o keyset/pgp_rd.c
 
-$(OBJPATH)pgp_wr.o:		$(CRYPT_DEP) misc/pgp.h keyset/pgp_wr.c
-						$(CC) $(CFLAGS) -o $(OBJPATH)pgp_wr.o keyset/pgp_wr.c
-
 $(OBJPATH)pkcs12.o:		$(CRYPT_DEP) keyset/keyset.h keyset/pkcs12.h keyset/pkcs12.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs12.o keyset/pkcs12.c
 
@@ -1273,6 +1264,10 @@ $(OBJPATH)ssh.o:		$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
 						session/ssh.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)ssh.o session/ssh.c
 
+$(OBJPATH)ssh1.o:		$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
+						session/ssh1.c
+						$(CC) $(CFLAGS) -o $(OBJPATH)ssh1.o session/ssh1.c
+
 $(OBJPATH)ssh2.o:		$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
 						session/ssh2.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)ssh2.o session/ssh2.c
@@ -1320,9 +1315,6 @@ $(OBJPATH)ssh2_svr.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
 $(OBJPATH)ssh2_wr.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
 						session/ssh2_wr.c
 						$(CC) $(CFLAGS) -o $(OBJPATH)ssh2_wr.o session/ssh2_wr.c
-
-$(OBJPATH)sshl_dh.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/sshl_dh.c
-						$(CC) $(CFLAGS) -o $(OBJPATH)sshl_dh.o session/sshl_dh.c
 
 $(OBJPATH)ssl.o:		$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssl.h \
 						session/ssl.c
@@ -1536,7 +1528,7 @@ $(DYLIBNAME):	$(OBJS) $(EXTRAOBJS) $(TESTOBJS)
 #
 #	env MALLOC_OPTIONS="AJVX" ./testlib
 
-testlib:		$(TESTOBJS) $(LIBNAME)
+testlib:		$(TESTOBJS)
 				@rm -f $(LINKFILE)
 				@echo $(TESTOBJS) > $(LINKFILE)
 				@if [ $(OSNAME) = 'SunOS' ] ; then \
@@ -1561,7 +1553,7 @@ testlib:		$(TESTOBJS) $(LIBNAME)
 				fi
 				@rm -f $(LINKFILE)
 
-stestlib:		$(TESTOBJS) $(SLIBNAME)
+stestlib:		$(TESTOBJS)
 				@rm -f $(LINKFILE)
 				@echo $(TESTOBJS) > $(LINKFILE)
 				@if [ $(OSNAME) = 'AIX' ] ; then \
@@ -1610,6 +1602,16 @@ AIX:
 		make $(DEFINES) CFLAGS="$(CFLAGS) -O2 -qmaxmem=-1 -qroconst -D_REENTRANT" ; \
 	fi
 
+# Apollo: Yeah, this makefile has been around for awhile.  Why do you ask?
+
+Apollo:
+	@make $(DEFINES) CFLAGS="$(CFLAGS) -O4"
+
+# AUX: su root; rm -rf /; echo "Now install MkLinux"
+
+A/UX:
+	@make $(DEFINES) CFLAGS="$(CFLAGS) -O4"
+
 # Millions of Intel BSD's (many are really BSE's, with incredibly archaic
 #			development tools and libs, although it's slowly getting better):
 #			cc is gcc except when it isn't.  Most are still using a.out,
@@ -1635,18 +1637,22 @@ AIX:
 
 BSD386:
 	@./tools/buildasm.sh $(AS) $(OBJPATH)
-	@make $(DEFINES) CFLAGS="$(CFLAGS) -DUSE_ASM -fomit-frame-pointer -O3"
+	@make $(DEFINES) EXTRAOBJS="$(ASMOBJS)" CFLAGS="$(CFLAGS) -DUSE_ASM \
+		-fomit-frame-pointer -O3"
 iBSD:
 	@./tools/buildasm.sh $(AS) $(OBJPATH)
-	@make $(DEFINES) CFLAGS="$(CFLAGS) -DUSE_ASM -fomit-frame-pointer -O3"
+	@make $(DEFINES) EXTRAOBJS="$(ASMOBJS)" CFLAGS="$(CFLAGS) -DUSE_ASM \
+		-fomit-frame-pointer -O3"
 BSD/OS:
 	@./tools/buildasm.sh $(AS) $(OBJPATH)
-	@make $(DEFINES) CFLAGS="$(CFLAGS) -DUSE_ASM -fomit-frame-pointer -O3"
+	@make $(DEFINES) EXTRAOBJS="$(ASMOBJS)" CFLAGS="$(CFLAGS) -DUSE_ASM \
+		-fomit-frame-pointer -O3"
 
 FreeBSD:
 	@if uname -m | grep "i[3,4,5,6]86" > /dev/null; then \
 		./tools/buildasm.sh $(AS) $(OBJPATH) ; \
-		make $(DEFINES) CFLAGS="$(CFLAGS) -DUSE_ASM -fomit-frame-pointer -pthread" ; \
+		make $(DEFINES) EXTRAOBJS="$(ASMOBJS)" CFLAGS="$(CFLAGS) -DUSE_ASM \
+			-fomit-frame-pointer -pthread" ; \
 	else \
 		make $(DEFINES) CFLAGS="$(CFLAGS) -fomit-frame-pointer -pthread" ; \
 	fi
@@ -1654,7 +1660,8 @@ FreeBSD:
 NetBSD:
 	@if uname -m | grep "i[3,4,5,6]86" > /dev/null; then \
 		./tools/buildasm.sh $(AS) $(OBJPATH) ; \
-		make $(DEFINES) CFLAGS="$(CFLAGS) -DUSE_ASM -fomit-frame-pointer -pthread" ; \
+		make $(DEFINES) EXTRAOBJS="$(ASMOBJS)" CFLAGS="$(CFLAGS) -DUSE_ASM \
+			-fomit-frame-pointer -pthread" ; \
 	else \
 		make $(DEFINES) CFLAGS="$(CFLAGS) -fomit-frame-pointer -pthread" ; \
 	fi
@@ -1662,10 +1669,16 @@ NetBSD:
 OpenBSD:
 	@if uname -m | grep "i[3,4,5,6]86" > /dev/null; then \
 		./tools/buildasm.sh $(AS) $(OBJPATH) ; \
-		make $(DEFINES) CFLAGS="$(CFLAGS) -DUSE_ASM -fomit-frame-pointer" ; \
+		make $(DEFINES) EXTRAOBJS="$(ASMOBJS)" CFLAGS="$(CFLAGS) -DUSE_ASM \
+			-fomit-frame-pointer" ; \
 	else \
 		make $(DEFINES) CFLAGS="$(CFLAGS) -fomit-frame-pointer" ; \
 	fi
+
+# Convex:
+
+Convex:
+	@make $(DEFINES) CFLAGS="$(CFLAGS) -O4"
 
 # Cray Unicos: The Cray compiler complains about char * vs. unsigned char
 #			   passed to functions, there's no way to disable this directly
@@ -1680,13 +1693,18 @@ CRAY:
 
 CYGWIN_NT-5.1:
 	@./tools/buildasm.sh $(AS) $(OBJPATH)
-	@make $(DEFINES) CFLAGS="$(CFLAGS) -DUSE_ASM -fomit-frame-pointer \
-		-O3 -D__CYGWIN__ -I/usr/local/include"
+	@make $(DEFINES) EXTRAOBJS="$(ASMOBJS)" CFLAGS="$(CFLAGS) -DUSE_ASM \
+		-fomit-frame-pointer -O3 -D__CYGWIN__ -I/usr/local/include"
 
 CYGWIN_NT-6.1:
 	@./tools/buildasm.sh $(AS) $(OBJPATH)
-	@make $(DEFINES) CFLAGS="$(CFLAGS) -DUSE_ASM -fomit-frame-pointer \
-		-O3 -D__CYGWIN__ -I/usr/local/include"
+	@make $(DEFINES) EXTRAOBJS="$(ASMOBJS)" CFLAGS="$(CFLAGS) -DUSE_ASM \
+		-fomit-frame-pointer -O3 -D__CYGWIN__ -I/usr/local/include"
+
+# DGUX: cc is a modified gcc.
+
+dgux:
+	@make $(DEFINES) CFLAGS="$(CFLAGS) -ansi -fomit-frame-pointer -O3"
 
 # PHUX: A SYSVR2 layer with a SYSVR3 glaze on top of an adapted BSD 4.2
 #		kernel.  Use cc, the exact incantation varies somewhat depending on
@@ -1816,20 +1834,26 @@ IRIX64:
 	@./tools/buildasm.sh $(AS) $(OBJPATH)
 	@make $(DEFINES) CFLAGS="$(CFLAGS) -O3"
 
-# Linux: cc is usually gcc, although with some luck it'll eventually be killed by
-#		 LLVM.  Optimisation level is set via the ccopts.sh script.
+# ISC Unix: Use gcc.
+
+ISC:
+	@./tools/buildasm.sh $(AS) $(OBJPATH)
+	@make $(DEFINES) CC=gcc CFLAGS="$(CFLAGS) -fomit-frame-pointer -O3 -mcpu=pentium"
+
+# Linux: cc is gcc.  Optimisation level is set via the ccopts.sh script.
 
 Linux:
 	@if uname -m | grep "i[3,4,5,6]86" > /dev/null; then \
 		./tools/buildasm.sh $(AS) $(OBJPATH) ; \
-		make $(DEFINES) CFLAGS="$(CFLAGS) -DUSE_ASM -fomit-frame-pointer -D_REENTRANT" ; \
+		make $(DEFINES) EXTRAOBJS="$(ASMOBJS)" CFLAGS="$(CFLAGS) -DUSE_ASM \
+			-fomit-frame-pointer -D_REENTRANT" ; \
 	else \
 		make $(DEFINES) CFLAGS="$(CFLAGS) -fomit-frame-pointer -D_REENTRANT" ; \
 	fi
 
 # Mac OS X: BSD variant.  Optimisation level is set via the ccopts.sh script.
-#			If you want to build a universal binary you can use a command a
-#			bit like the following (with the path to your SDK install
+#			If you want to build a universal binary you can use the a command
+#			a bit like the following (with the path to your SDK install
 #			substituted for the one in the command-lines below):
 #
 # make LDFLAGS='-isysroot /Developer/SDKs/MacOSX10.5.sdk' CFLAGS='-c -isysroot \
@@ -1839,7 +1863,8 @@ Linux:
 # make LDFLAGS='-arch i386 -arch x86_64' CFLAGS='-c -O2 -mmacosx-version-min=10.5 \
 # -arch i386 -arch x86_64 -D__UNIX__ -DNDEBUG -I.'
 #
-#			This will also require adding $(LDFLAGS) to the dylib build rule.
+#			This will also required adding $(LDFLAGS) to the dylib build rule,
+#			and removing LDFLAGS="-object -s" from the overall OS X build rule.
 #
 #			This build method is rather trouble-prone because the low-level
 #			crypto code has to configure itself for CPU endianness and word
@@ -1850,7 +1875,7 @@ Linux:
 #			decide to try it.
 
 Darwin:
-	@make $(DEFINES) CFLAGS="$(CFLAGS) -fomit-frame-pointer"
+	@make $(DEFINES) CFLAGS="$(CFLAGS) -fomit-frame-pointer" LDFLAGS="-object -s"
 
 # MinGW: cc is gcc.  Note that we have to use the cross-compile flags
 # XCFLAGS rather than CFLAGS because the latter implies a native Unix
@@ -1879,6 +1904,19 @@ UNIX_SV:
 		-O2 -Xa -Hnocopyr -K xpg42 -K catchnull '-Hpragma=Offwarn(39)' \
 		'-Hpragma=Offwarn(73)'"
 
+# NeXT 3.0:
+
+NeXT:
+	@make $(DEFINES) LDFLAGS="-object -s"
+
+# OSF 1: If you're using the OSF1 cc you need to use "-std1" to force ANSI
+#		 compliance and "-msg_disable ptrmismatch1" to turn off vast numbers
+#		 of bogus warnings about things like unsigned chars passed to string
+#		 functions.
+
+OSF1:
+	@make $(DEFINES) CC=gcc CFLAGS="$(CFLAGS) -fomit-frame-pointer -O3 -D_REENTRANT"
+
 # QNX: Older versions of QNX (4.x) use braindamaged old 16-bit MSDOS-era
 #	   Watcom tools that can't handle Unix-style code (or behaviour).
 #	   The handling of compiler flags is particularly painful, in order to
@@ -1894,8 +1932,8 @@ UNIX_SV:
 QNX:
 	@if gcc -v > /dev/null 2>&1 ; then \
 		./tools/buildasm.sh $(AS) $(OBJPATH) ; \
-		make $(DEFINES) CFLAGS="$(CFLAGS) -DUSE_ASM -fomit-frame-pointer \
-			-O3 -D_REENTRANT"; \
+		make $(DEFINES) EXTRAOBJS="$(ASMOBJS)" CFLAGS="$(CFLAGS) -DUSE_ASM \
+			-fomit-frame-pointer -O3 -D_REENTRANT"; \
 	else \
 		if [ `./tools/osversion.sh QNX` = '4' ] ; then \
 			make $(DEFINES) CFLAGS="$(CFLAGS) -O4 -Wc,-ei -zc" ; \
@@ -1979,8 +2017,8 @@ QNX:
 SCO:
 	@if gcc -v > /dev/null 2>&1 ; then \
 		./tools/buildasm.sh $(AS) $(OBJPATH) ; \
-		make $(DEFINES) CFLAGS="$(CFLAGS) -DUSE_ASM -fomit-frame-pointer \
-			-O3 -D_REENTRANT"; \
+		make $(DEFINES) EXTRAOBJS="$(ASMOBJS)" CFLAGS="$(CFLAGS) -DUSE_ASM \
+			-fomit-frame-pointer -O3 -D_REENTRANT"; \
 	else \
 		echo "Please read the entry for SCO in the makefile before continuing." ; \
 		make $(TARGET) CFLAGS="$(CFLAGS) -O" ; \
@@ -1989,8 +2027,8 @@ SCO:
 UnixWare:
 	@if gcc -v > /dev/null 2>&1 ; then \
 		./tools/buildasm.sh $(AS) $(OBJPATH) ; \
-		make $(DEFINES) CFLAGS="$(CFLAGS) -DUSE_ASM -fomit-frame-pointer \
-			-O3 -D_REENTRANT"; \
+		make $(DEFINES) EXTRAOBJS="$(ASMOBJS)" CFLAGS="$(CFLAGS) -DUSE_ASM \
+			-fomit-frame-pointer -O3 -D_REENTRANT"; \
 	else \
 		echo "Please read the entry for UnixWare in the makefile before continuing." ; \
 		make $(DEFINES) CFLAGS="$(CFLAGS) -O -Xa -Khost -Kthread" ; \
@@ -2029,8 +2067,8 @@ SunOS:
 SunOS-gcc:
 	@- if [ `uname -m` = 'i86pc' -a `echo $(CFLAGS) | grep -c -- '-m64'` = 0 ] ; then \
 		./tools/buildasm.sh $(AS) $(OBJPATH) ; \
-		make $(DEFINES) CC=gcc CFLAGS="$(CFLAGS) -DUSE_ASM -fomit-frame-pointer \
-			-O3 -D_REENTRANT" ; \
+		make $(DEFINES) EXTRAOBJS="$(ASMOBJS)" CC=gcc \
+			CFLAGS="$(CFLAGS) -fomit-frame-pointer -O3 -DUSE_ASM -D_REENTRANT" ; \
 	else \
 		make $(DEFINES) CC=gcc CFLAGS="$(CFLAGS) -fomit-frame-pointer \
 			-O3 -D_REENTRANT" ; \
@@ -2039,12 +2077,20 @@ SunOS-gcc:
 SunOS-SunPro:
 	@- if [ `uname -m` = 'i86pc' -a `echo $(CFLAGS) | grep -c -- '-m64'` = 0 ] ; then \
 		./tools/buildasm.sh $(AS) $(OBJPATH) ; \
-		make $(DEFINES) CFLAGS="$(CFLAGS) -DUSE_ASM \
-			-erroff=E_ARG_INCOMPATIBLE_WITH_ARG -xO2 -D_REENTRANT" ; \
+		make $(DEFINES) EXTRAOBJS="$(ASMOBJS)" \
+			CFLAGS="$(CFLAGS) -erroff=E_ARG_INCOMPATIBLE_WITH_ARG \
+			-xO2 -DUSE_ASM -D_REENTRANT" ; \
 	else \
 		make $(DEFINES) CFLAGS="$(CFLAGS) -erroff=E_ARG_INCOMPATIBLE_WITH_ARG \
 			-xO2 -D_REENTRANT" ; \
 	fi
+
+# SVR4: Better results can be obtained by upgrading your OS to 4.4 BSD.
+#		A few SVR4 unames don't report the OS name properly (Olivetti Unix)
+#		so it's necessary to specify the SVR4 target on the command line.
+
+SVR4:
+	@make $(DEFINES) CFLAGS="$(CFLAGS) -O3"
 
 # Ultrix: Use vcc or gcc.
 
@@ -2078,8 +2124,8 @@ BeOS:
 	fi
 	@if [ `uname -m` = 'BePC' ]; then \
 		make asm_elf OBJPATH=$(OBJPATH) ; \
-		make $(DEFINES) CFLAGS="$(XCFLAGS) -DUSE_ASM -D__BEOS__ \
-			-fomit-frame-pointer -O3 -D_REENTRANT" ; \
+		make $(DEFINES) EXTRAOBJS="$(ASMOBJS)" CFLAGS="$(XCFLAGS) -DUSE_ASM \
+			-D__BEOS__ -fomit-frame-pointer -O3 -D_REENTRANT" ; \
 	else \
 		make $(DEFINES) CFLAGS="$(CFLAGS) -U__UNIX__ -D__BEOS__ \
 			-fomit-frame-pointer -O3 -D_REENTRANT" ; \
@@ -2177,7 +2223,7 @@ NONSTOP_KERNEL:
 # entry is:
 #
 # target-X:
-#	@make OSNAME=target-X target-init
+#	@make directories
 #	make $(DEFINES) OSNAME=target-X CC=target-cc CFLAGS="$(XCFLAGS) \
 #		-DCONFIG_DATA_xxxENDIAN -DOSVERSION=major_version \
 #		-fomit-frame-pointer -O3 -D_REENTRANT"
@@ -2188,107 +2234,35 @@ NONSTOP_KERNEL:
 
 target-init:
 	@make directories
-	@make toolscripts
 	@if grep "unix\.o" makefile > /dev/null ; then \
 		sed s/unix\.o/$(OSNAME)\.o/g makefile | sed s/unix\.c/$(OSNAME)\.c/g > makefile.tmp || exit 1 ; \
 		mv -f makefile.tmp makefile || exit 1 ; \
 	fi
-
-target-init-unix:
-	@make directories
-	@make toolscripts
-
-embedded-comments:
-	echo The build for $(OSNAME) targets an embedded system with no native entropy
-	echo (randomness) source for key generation.  This means that you need to provide
-	echo an entropy seed file, see "Random Data Sources" in the manual for details.
 
 # (Kadak) AMX: Gnu toolchain under Unix or Cygwin or ARM cc for ARM CPUs.
 
 target-amx-arm:
 	@make OSNAME=amx target-init
 	make $(XDEFINES) OSNAME=AMX CC=armcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__AMX__ -O2"
-	@make OSNAME=AMX embedded-comments
+		-DCONFIG_DATA_LITTLEENDIAN -D__AMX__ -O2"
 
 target-amx-mips:
 	@make OSNAME=amx target-init
 	make $(XDEFINES) OSNAME=AMX CC=mips-elf-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__AMX__ -O2 \
+		-DCONFIG_DATA_LITTLEENDIAN -D__AMX__ -O2 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=AMX embedded-comments
 
 target-amx-ppc:
 	@make OSNAME=amx target-init
 	make $(XDEFINES) OSNAME=AMX CC=powerpc-eabi-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_BIGENDIAN -DCONFIG_RANDSEED -D__AMX__ -O2 \
+		-DCONFIG_DATA_BIGENDIAN -D__AMX__ -O2 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=AMX embedded-comments
 
 target-amx-x86:
 	@make OSNAME=amx target-init
 	make $(XDEFINES) OSNAME=AMX CC=i386-elf-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__AMX__ -O2 \
+		-DCONFIG_DATA_LITTLEENDIAN -D__AMX__ -O2 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=AMX embedded-comments
-
-# Android: Android NDK with GNU toolchain, usually hosted under Unix.  This
-# requires quite extensive configuration of target platform-specific
-# cross-compile options, the following hardcoded values will need tuning for
-# each target platform.
-
-ANDROID_8D_NDK_PATH = $(HOME)/adt-bundle-linux-x86_64/android-ndk-r8d
-ANDROID_8D_TOOLCHAIN_PATH = $(ANDROID_8D_NDK_PATH)/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/
-ANDROID_8D_INCLUDE_SOURCES_PATH = $(ANDROID_8D_NDK_PATH)/sources/cxx-stl/gnu-libstdc++/4.6/
-ANDROID_8D_INCLUDE_PLATFORM_PATH = $(ANDROID_8D_NDK_PATH)/platforms/android-9
-
-target-android8-arm:
-	@make target-init-unix
-	make $(XDEFINES) OSNAME=Android \
-		CC=$(ANDROID_8D_TOOLCHAIN_PATH)/bin/arm-linux-androideabi-gcc \
-		CFLAGS="$(XCFLAGS) -DCONFIG_DATA_LITTLEENDIAN -fomit-frame-pointer -O2 \
-		-D__Android__ -D_REENTRANT -MMD -MP -MF -D__ARM_ARCH_5__ \
-		-D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -march=armv7-a \
-		-mtune=xscale -msoft-float -mthumb -Os -g -DNDEBUG -no-canonical-prefixes \
-		-fomit-frame-pointer -fno-strict-aliasing -finline-limit=64 \
-		-I$(ANDROID_8D_INCLUDE_SOURCES_PATH)/include \
-		-I$(ANDROID_8D_INCLUDE_SOURCES_PATH)/libs/armeabi-v7a/include \
-		-I$(ANDROID_8D_INCLUDE_PLATFORM_PATH)/arch-arm/usr/include"
-
-ANDROID_9_NDK_PATH = /Applications/android-ndk-r9
-ANDROID_9_TOOLCHAIN_PATH = $(ANDROID_9_NDK_PATH)/toolchains/arm-linux-androideabi-4.6/prebuilt/darwin-x86_64
-ANDROID_9_INCLUDE_PATH = $(ANDROID_9_NDK_PATH)/sources/cxx-stl/gnu-libstdc++/4.6
-ANDROID_9_PLATFORM_PATH = $(ANDROID_9_NDK_PATH)/platforms/android-9
-ANDROID_9_PLATFORM_ARM_PATH = $(ANDROID_9_PLATFORM_PATH)/arch-arm/usr
-
-target-android9-arm:
-	@make target-init-unix
-	make $(XDEFINES) OSNAME=Android \
-		CC=$(ANDROID_9_TOOLCHAIN_PATH)/bin/arm-linux-androideabi-gcc \
-		CFLAGS="$(XSCFLAGS) -DCONFIG_DATA_LITTLEENDIAN -fomit-frame-pointer -O2 \
-		-D__Android__ -D_REENTRANT -MMD -MP -MF -D__ARM_ARCH_5__ \
-		-D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -march=armv7-a \
-		-mtune=xscale -msoft-float -mthumb -Os -g -DNDEBUG -no-canonical-prefixes \
-		-fomit-frame-pointer -fno-strict-aliasing -finline-limit=64 \
-		-I$(ANDROID_9_INCLUDE_PATH)/include \
-		-I$(ANDROID_9_INCLUDE_PATH)/libs/armeabi-v7a/include \
-		-I$(ANDROID_9_PLATFORM_ARM_PATH)/include"
-
-target-android9-arm-shared:
-	@make target-init-unix
-	make $(XSDEFINES) OSNAME=Android \
-		CC=$(ANDROID_9_TOOLCHAIN_PATH)/bin/arm-linux-androideabi-gcc \
-		CFLAGS="$(XSCFLAGS) -DCONFIG_DATA_LITTLEENDIAN -fomit-frame-pointer -O2 \
-		-D__Android__ -D_REENTRANT -MMD -MP -MF -D__ARM_ARCH_5__ \
-		-D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -march=armv7-a \
-		-mtune=xscale -msoft-float -mthumb -Os -g -DNDEBUG -no-canonical-prefixes \
-		-fomit-frame-pointer -fno-strict-aliasing -finline-limit=64 \
-		-I$(ANDROID_9_INCLUDE_PATH)/include \
-		-I$(ANDROID_9_INCLUDE_PATH)/libs/armeabi-v7a/include \
-		-I$(ANDROID_9_PLATFORM_ARM_PATH)/include" \
-		LD=$(ANDROID_9_TOOLCHAIN_PATH)/bin/arm-linux-androideabi-ld \
-		LDFLAGS="$(LDFLAGS) -L$(ANDROID_9_PLATFORM_ARM_PATH)/lib" \
-		STRIP=$(ANDROID_9_TOOLCHAIN_PATH)/bin/arm-linux-androideabi-strip \
 
 # Atmel ARM7 TDMI: Little-endian, no OS, maximum restrictions on resource
 # usage since it's running on the bare metal.
@@ -2297,8 +2271,7 @@ target-atmel:
 	@make OSNAME=atmel target-init
 	make $(XDEFINES) OSNAME=Atmel CFLAGS="$(XCFLAGS) \
 		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_NO_STDIO -DCONFIG_CONSERVE_MEMORY \
-		-DCONFIG_NO_DYNALLOC -DCONFIG_RANDSEED -fomit-frame-pointer -O3"
-	@make OSNAME=Atmel embedded-comments
+		-DCONFIG_NO_DYNALLOC -fomit-frame-pointer -O3"
 
 # ChorusOS: Generic toolchain for various architectures.
 
@@ -2340,119 +2313,31 @@ target-ecos-x86:
 target-freertos-arm:
 	@make OSNAME=X target-init
 	make $(XDEFINES) OSNAME=FreeRTOS CC=arm-elf-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__FREERTOS__ -O2 \
+		-DCONFIG_DATA_LITTLEENDIAN -D__FREERTOS__ -O2 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=FreeRTOS embedded-comments
 
 target-freertos-mb:
 	@make OSNAME=X target-init
 	make $(XDEFINES) OSNAME=FreeRTOS CC=mb-elf-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_BIGENDIAN -DCONFIG_RANDSEED -D__FREERTOS__ -O2 \
+		-DCONFIG_DATA_BIGENDIAN -D__FREERTOS__ -O2 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=FreeRTOS embedded-comments
 
 target-freertos-ppc:
 	@make OSNAME=X target-init
 	make $(XDEFINES) OSNAME=FreeRTOS CC=powerpc-eabi-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_BIGENDIAN -DCONFIG_RANDSEED -D__FREERTOS__ -O2 \
+		-DCONFIG_DATA_BIGENDIAN -D__FREERTOS__ -O2 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=FreeRTOS embedded-comments
 
-# Apple iOS hosted on OS X.  The paths changed for different versions of iOS 
-# so we define different targets for iOS 5 and iOS > 5.  In addition Apple
-# keep changing the SDK paths based on which version is in use and there's 
-# no easy way to determine what to use, the only available option seems to 
-# be to use a ghastly hack involving xcrun to try and figure out what the 
-# current installed version is.  If the user wants to override the use of the
-# current version we provide the capability to specify an explicit version,
-# since Apple always seem to release an x.0 version and then an x.1 version
-# before moving on to the next full version we make an explicit request to
-# build with version x a request for x.1 rather than x.0.
-
-IOS5_SDK_PATH=/Developer/Platforms/iPhoneOS.platform/Developer
-IOS5_TOOLS_PATH=$(IOS5_SDK_PATH)/usr/bin
-IOS5_CCOPTS=-Wno-switch -Wno-pointer-sign
-
-target-ios5:
-	@make target-init-unix
-	make $(XDEFINES) OSNAME=iOS CC=$(IOS5_TOOLS_PATH)/cc LD=$(IOS5_TOOLS_PATH)/ld \
-		AR=$(IOS5_TOOLS_PATH)/ar STRIP=$(IOS5_TOOLS_PATH)/strip \
-		CFLAGS="$(XCFLAGS) $(IOS5_CCOPTS) -DCONFIG_DATA_LITTLEENDIAN \
-		-D__UNIX__ -fomit-frame-pointer -O2 -D_REENTRANT -arch armv7 \
-		-isysroot $(IOS5_SDK_PATH)/SDKs/iPhoneOS5.0.sdk" LDFLAGS="-arch armv7"
-
-IOS_SDK_PATH=/Applications/Xcode.app/Contents/Developer
-IOS_SDK_VERSION=`xcrun --sdk iphoneos --show-sdk-path | sed -e 's/.*iPhone\(OS\)*\(Simulator\)*\([0-9]*.[0-9]*\).sdk/\3/'`
-IOS_TOOLS_PATH=$(IOS_SDK_PATH)/Toolchains/XcodeDefault.xctoolchain/usr/bin
-IOS_PLATFORM_PATH=$(IOS_SDK_PATH)/Platforms/iPhoneOS.platform/Developer/SDKs
-IOS_ARCH=arm64
-
-target-ios-generic:
-	@echo Building for iOS SDK version $(SDK_VER)
-	@make target-init-unix
-	make $(XDEFINES) OSNAME=iOS CC=$(IOS_TOOLS_PATH)/cc LD=$(IOS_TOOLS_PATH)/ld \
-		AR=$(IOS_TOOLS_PATH)/ar STRIP=$(IOS_TOOLS_PATH)/strip CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -D__UNIX__ -fomit-frame-pointer -O2 \
-		-D_REENTRANT -arch ${IOS_ARCH} -Wno-switch -Wno-pointer-sign \
-		-isysroot $(IOS_PLATFORM_PATH)/iPhoneOS$(SDK_VER).sdk" \
-		LDFLAGS="-arch ${IOS_ARCH}"
-
-target-ios6:
-	@make target-ios-generic SDK_VER="6.1"
-
-target-ios7:
-	@make target-ios-generic SDK_VER="7.1"
-
-target-ios8:
-	@make target-ios-generic SDK_VER="8.1"
-
-target-ios9:
-	@make target-ios-generic SDK_VER="9.1"
+# Apple iOS hosted on OS X.
 
 target-ios:
-	@echo Detected installed iOS SDK version as $(IOS_SDK_VERSION)
-	@make target-ios-generic SDK_VER=$(IOS_SDK_VERSION)
-
-IOS_DEVELOPER=`xcode-select -print-path`
-IOS_ARCHS_SH="armv7 armv7s arm64"
-IOS_ARCHS_CSH=armv7 armv7s arm64
-IOS_SDKVER=`xcrun -sdk iphoneos --show-sdk-version`
-IOS_CURRENTPATH=`pwd`
-
-target-ios-universal:
-	@if [ ! `which xcode` ] ; then \
-		echo "Error: Xcode development tools not found, exiting..." ; \
-		exit 1 ; \
-	fi
-	@if [ ! -d "${IOS_DEVELOPER}" ] ; then \
-		echo "Error: Xcode path is not set correctly, '${IOS_DEVELOPER}' does not exist," ; \
-		echo "  most likely because of Xcode > 4.3.  To fix this, run" ; \
-		echo "    sudo xcode-select -switch <xcode path>" ; \
-		echo "  For the default installation this is" ; \
-		echo "    sudo xcode-select -switch /Applications/Xcode.app/Contents/Developer" ; \
-		exit 1 ; \
-	fi
-	@case ${IOS_DEVELOPER} in \
-		*\ * ) \
-			echo "Your Xcode path contains whitespaces, which is not supported." ; \
-			exit 1 ;; \
-	esac
-	@for IOS_ARCH in ${IOS_ARCHS_SH} ; do \
-		if [ "$$IOS_ARCH" = "i386" -o "$$IOS_ARCH" = "x86_64" ] ; then \
-			IOS_PLATFORM="iPhoneSimulator" ; \
-		else \
-			IOS_PLATFORM="iPhoneOS" ; \
-		fi ; \
-		echo "Building cryptlib for $$IOS_PLATFORM ${IOS_SDKVER} $$IOS_ARCH" ; \
-		make clean ; \
-		rm -f ${IOS_CURRENTPATH}/libcl_${IOS_ARCH}.a ; \
-		make target-ios IOS_ARCH=${IOS_ARCH} ; \
-		mv ${IOS_CURRENTPATH}/libcl.a ${IOS_CURRENTPATH}/libcl_${IOS_ARCH}.a ; \
-	done
-	@echo "Assembling universal library..."
-	@lipo -create ${IOS_CURRENTPATH}/libcl_armv7.a ${IOS_CURRENTPATH}/libcl_armv7s.a \
-		  -output ${IOS_CURRENTPATH}/libcl.a
-	@echo "Done."
+	@make directories
+	@make OSNAME=iOS target-init
+	make $(XDEFINES) OSNAME=iOS CC=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/cc \
+		CFLAGS="$(XCFLAGS) -DCONFIG_DATA_LITTLEENDIAN -fomit-frame-pointer -O2 \
+		-D_REENTRANT -arch armv7 \
+		-isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk"
+	make $(SLIBNAME) OBJPATH=$(OBJPATH) CROSSCOMPILE=1 OSNAME=iOS
 
 # Embedded Linux.  Note that we don't have to perform the 'make target-init'
 # as for the other systems since the target environment is the same as the
@@ -2460,7 +2345,7 @@ target-ios-universal:
 # same reason.
 
 target-linux-arm:
-	@make target-init-unix
+	@make directories
 	make $(XDEFINES) OSNAME=Linux CC=arm-linux-gnueabi-gcc AR=arm-linux-gnueabi-ar \
 		CFLAGS="$(CFLAGS) -DCONFIG_DATA_LITTLEENDIAN -fomit-frame-pointer \
 		-O2 -D_REENTRANT"
@@ -2468,7 +2353,7 @@ target-linux-arm:
 		STRIP=arm-linux-gnueabi-strip CROSSCOMPILE=1 OSNAME=Linux
 
 target-linux-sh4:
-	@make target-init-unix
+	@make directories
 	make $(XDEFINES) OSNAME=Linux CC=sh4-linux-gnu-gcc AR=sh4-linux-gnu-ar \
 		CFLAGS="$(CFLAGS) -DCONFIG_DATA_LITTLEENDIAN -fomit-frame-pointer \
 		-O2 -D_REENTRANT"
@@ -2476,28 +2361,19 @@ target-linux-sh4:
 		STRIP=sh4-linux-gnu-strip CROSSCOMPILE=1 OSNAME=Linux
 
 target-linux-ppc:
-	@make target-init-unix
+	@make directories
 	make $(XDEFINES) OSNAME=Linux CC=powerpc-eabi-gcc AR=powerpc-eabi-ar \
 		CFLAGS="$(CFLAGS) -DCONFIG_DATA_BIGENDIAN -fomit-frame-pointer \
 		-O2 -D_REENTRANT"
 	make $(SLIBNAME) OBJPATH=$(OBJPATH) LD=powerpc-eabi-ld \
 		STRIP=powerpc-eabi-strip CROSSCOMPILE=1 OSNAME=Linux
 
-# mbed/CMSIS RTOS: Gnu toolchain.
-
-target-mbed:
-	@make OSNAME=X target-init
-	make $(XDEFINES) OSNAME=CMSIS CC=arm-elf-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__CMSIS__ -O2 \
-		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=mbed embedded-comments
-
 # MIPS running Linux: Little-endian, 2.x kernel.  Note that we use $(CFLAGS)
 # rather than $(XCFLAGS) since this is a Unix system, just not the same as
 # the source one.
 
 target-mips:
-	@make target-init-unix
+	@make directories
 	make $(XDEFINES) OSNAME=Linux CFLAGS="$(CFLAGS) \
 		-DCONFIG_DATA_LITTLEENDIAN -DOSVERSION=2 \
 		-fomit-frame-pointer -O3 -D_REENTRANT"
@@ -2552,39 +2428,26 @@ target-palmos-prc:
 target-rtems-arm:
 	@make OSNAME=rtems target-init
 	make $(XDEFINES) OSNAME=RTEMS CC=arm-elf-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__RTEMS__ -O2 \
+		-DCONFIG_DATA_LITTLEENDIAN -D__RTEMS__ -O2 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=RTEMS embedded-comments
 
 target-rtems-mips:
 	@make OSNAME=rtems target-init
 	make $(XDEFINES) OSNAME=RTEMS CC=mips-elf-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__RTEMS__ -O2 \
+		-DCONFIG_DATA_LITTLEENDIAN -D__RTEMS__ -O2 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=RTEMS embedded-comments
 
 target-rtems-ppc:
 	@make OSNAME=rtems target-init
 	make $(XDEFINES) OSNAME=RTEMS CC=powerpc-eabi-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__RTEMS__ -O2 \
+		-DCONFIG_DATA_LITTLEENDIAN -D__RTEMS__ -O2 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=RTEMS embedded-comments
 
 target-rtems-x86:
 	@make OSNAME=rtems target-init
 	make $(XDEFINES) OSNAME=RTEMS CC=i386-elf-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__RTEMS__ -O2 \
+		-DCONFIG_DATA_LITTLEENDIAN -D__RTEMS__ -O2 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=RTEMS embedded-comments
-
-# SMX: IAR compiler under Windows or Unix.
-
-target-smx:
-	@make OSNAME=smx target-init
-	make $(XDEFINES) OSNAME=SMX CC=iar-cc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__SMX__ -O2 \
-		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=SMX embedded-comments
 
 # Symbian: Carbide toolchain under Windows or Unix.  This builds either for
 # the ARM target or for the x86 Symbian emulator, strictly speaking the
@@ -2625,74 +2488,65 @@ THREADX_INCLUDE_PATH = "../../../uk_smets_integ_01_crypto/projects/threadx"
 target-threadx-arm:
 	@make OSNAME=threadx target-init
 	make $(XDEFINES) OSNAME=ThreadX CC=armcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__ThreadX__ -O2"
-	@make OSNAME=ThreadX embedded-comments
+		-DCONFIG_DATA_LITTLEENDIAN -D__ThreadX__ -O2"
 
 target-threadx-mb:
 	@make OSNAME=threadx target-init
 	make $(XDEFINES) OSNAME=ThreadX CC=mb-elf-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_BIGENDIAN -DCONFIG_RANDSEED -D__ThreadX__ -O2 \
+		-DCONFIG_DATA_BIGENDIAN -D__ThreadX__ -O2 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=ThreadX embedded-comments
 
 target-threadx-mips:
 	@make OSNAME=threadx target-init
 	make $(XDEFINES) OSNAME=ThreadX CC=mips-elf-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__ThreadX__ -O2 \
+		-DCONFIG_DATA_LITTLEENDIAN -D__ThreadX__ -O2 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=ThreadX embedded-comments
 
 target-threadx-ppc:
 	@make OSNAME=threadx target-init
 	make $(XDEFINES) OSNAME=ThreadX CC=powerpc-eabi-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_BIGENDIAN -DCONFIG_RANDSEED -D__ThreadX__ -O2 \
+		-DCONFIG_DATA_BIGENDIAN -D__ThreadX__ -O2 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=ThreadX embedded-comments
 
 target-threadx-rx:
 	@make OSNAME=threadx target-init
 	make $(XDEFINES) OSNAME=ThreadX CC=iccrx CFLAGS="$(XCFLAGS) \
 		-D__ThreadX__ -DDEBUG_DIAGNOSTIC_ENABLE -DCONFIG_DEBUG_MALLOC \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -DOPENSSL_NO_FP_API \
-		-DCONFIG_NO_STDIO -Ohs --core RX610 -r -I $(THREADX_INCLUDE_PATH) \
+		-DCONFIG_DATA_LITTLEENDIAN -DOPENSSL_NO_FP_API -DCONFIG_NO_STDIO \
+		-Ohs --core RX610 -r -I $(THREADX_INCLUDE_PATH) \
 		--dlib_config '$(THREADX_IAR_PATH)/rx/LIB/dlrxfllf.h'"
-	@make OSNAME=ThreadX embedded-comments
 
 target-threadx-x86:
 	@make OSNAME=threadx target-init
 	make $(XDEFINES) OSNAME=ThreadX CC=i386-elf-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__ThreadX__ -O2 \
+		-DCONFIG_DATA_LITTLEENDIAN -D__ThreadX__ -O2 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=ThreadX embedded-comments
 
 # uC/OS-II: Generic toolchain for various architectures.
 
 target-ucos-arm:
 	@make OSNAME=ucos target-init
 	make $(XDEFINES) OSNAME=UCOS CC=armcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__UCOS__ -O3"
-	@make OSNAME=uC/OS-II embedded-comments
+		-DCONFIG_DATA_LITTLEENDIAN -D__UCOS__ -O3"
 
 target-ucos-ppc:
 	@make OSNAME=ucos target-init
 	make $(XDEFINES) OSNAME=UCOS CC=powerpc-eabi-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_BIGENDIAN -DCONFIG_RANDSEED -D__UCOS__ -O3 \
+		-DCONFIG_DATA_BIGENDIAN -D__UCOS__ -O3 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=uC/OS-II embedded-comments
 
 target-ucos-x86:
 	@make OSNAME=ucos target-init
 	make $(XDEFINES) OSNAME=UCOS CC=i386-elf-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__UCOS__ -O3 \
+		-DCONFIG_DATA_LITTLEENDIAN -D__UCOS__ -O3 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=uC/OS-II embedded-comments
 
 # ucLinux on ARM: Little-endian.  Note that we use $(CFLAGS) rather than
 # $(XCFLAGS) since this is a Unix system, just not the same as the source
 # one (in particular we need __UNIX__ defined for the build).
 
 target-uclinux:
-	@make target-init-unix
+	@make directories
 	make $(XDEFINES) OSNAME=Linux CC=arm-elf-gcc CFLAGS="$(CFLAGS) \
 		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_CONSERVE_MEMORY \
 		-fomit-frame-pointer -O3 `./tools/ccopts-crosscompile.sh $(CC)`"
@@ -2702,123 +2556,40 @@ target-uclinux:
 target-vdk:
 	@make OSNAME=vdk target-init
 	make $(XDEFINES) OSNAME=VDK CC=blackfin-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__VDK__ -O2 \
+		-DCONFIG_DATA_LITTLEENDIAN -D__VDK__ -O2 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=VDK embedded-comments
 
-# VxWorks: VxWorks toolchain under Windows or Unix.  The configurations for 
-# these is highly situation-specific, and if it's not running under Cygwin 
-# (when using Windows) can't use the .sh build script, so we have to 
-# hardcode on all sorts of custom build options.  
-#
-# Since the facilities for entropy-polling under VxWorks are practically 
-# nonexistent (see the comment in random/vxworks.c) we enable 
-# -DCONFIG_RANDSEED by default.
+# VxWorks: VxWorks toolchain under Windows.
 
-VXWORKS_ARM_1_ARCH_DEFS	= -D__arm__ -t7 -mfpu=vfp -mfloat-abi=softfp \
-						  -DCPU=_VX_ARMARCH7 -DARMEL -DCPU_CORTEXA8 \
-						  -DARMMMU=ARMMMU_CORTEXA8 -DARMCACHE=ARMCACHE_CORTEXA8 \
-						  -DARM_USE_VFP
-VXWORKS_ARM_1_DEFS	= $(VXWORKS_ARM_1_ARCH_DEFS) -DRW_MULTI_THREAD \
-					  -D_REENTRANT=1 -D_POSIX_THREADS -D__VXWORKS_6_2__ \
-					  -DTOOL_FAMILY=gnu -DTOOL=gnu -D_WRS_KERNEL \
-					  -DRW_MULTI_THREAD
-VXWORKS_ARM_PATH	= $(WIND_BASE)/target/h
-
-target-vxworks-arm-1:
+target-vxworks-arm:
 	@make OSNAME=vxworks target-init
-	make $(XDEFINES) OSNAME=VxWorks CC=ccarm AR=ararm CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLENDIAN -DCONFIG_RANDSEED -D__VxWorks__ -O3 \
-		-I$(VXWORKS_ARM_PATH) -I$(VXWORKS_ARM_PATH)/wrn/coreip \
-		-I$(VXWORKS_ARM_PATH)/types -I$(VXWORKS_ARM_PATH)/wrn/coreip/netinet \
-		-I$(VXWORKS_ARM_PATH)/tool/gnu $(VXWORKS_ARM_1_DEFS)"
-
-VXWORKS_ARM_2_ARCH_DEFS	= -g -D__arm__ -t7 -mfpu=vfp -mfloat-abi=softfp  \
-						  -fno-zero-initialized-in-bss -MD -MP
-                                                 
-VXWORKS_ARM_2_DEFS		= $(VXWORKS_ARM_2_ARCH_DEFS) -DCPU=_VX_ARMARCH7 \
-						  -DTOOL_FAMILY=gnu -DTOOL=gnu -D_WRS_KERNEL \
-						  -D_WRS_VX_SMP -D_WRS_CONFIG_SMP -DARMEL -DARM_USE_VFP \
-						  -D__VXWORKS_6_9__ -D__VXWORKS 
-       
-target-vxworks-arm-2:
-	@make OSNAME=vxworks target-init
-	make $(XDEFINES) OSNAME=VxWorks CC=ccarm AR=ararm CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLENDIAN -DCONFIG_RANDSEED -D__VxWorks__ -O3 \
-		-I$(WIND_BASE)/target/h -I$(WIND_BASE)/target/h/wrn/coreip \
-		-I$(PRJ_ROOT_DIR)/../../../../../platform/dpws/dpwscore/platform/gnu/vxworks_6.9/include \
-		$(VXWORKS_ARM_2_DEFS)"
-	@make OSNAME=VxWorks embedded-comments
+	make $(XDEFINES) OSNAME=VxWorks CC=arm-elf-gcc CFLAGS="$(XCFLAGS) \
+		-DCONFIG_DATA_LITTLEENDIAN -D__VXWORKS__ -O3 \
+		`./tools/ccopts-crosscompile.sh $(CC)`"
 
 target-vxworks-mb:
 	@make OSNAME=vxworks target-init
 	make $(XDEFINES) OSNAME=VxWorks CC=mb-elf-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_BIGENDIAN -DCONFIG_RANDSEED -D__VxWorks__ -O3 \
+		-DCONFIG_DATA_BIGENDIAN -D__VXWORKS__ -O3 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=VxWorks embedded-comments
 
 target-vxworks-mips:
 	@make OSNAME=vxworks target-init
 	make $(XDEFINES) OSNAME=VxWorks CC=mips-elf-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__VxWorks__ -O3 \
+		-DCONFIG_DATA_LITTLEENDIAN -D__VXWORKS__ -O3 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=VxWorks embedded-comments
 
 target-vxworks-ppc:
 	@make OSNAME=vxworks target-init
 	make $(XDEFINES) OSNAME=VxWorks CC=powerpc-eabi-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_BIGENDIAN -DCONFIG_RANDSEED -D__VxWorks__ -O3 \
+		-DCONFIG_DATA_BIGENDIAN -D__VXWORKS__ -O3 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=VxWorks embedded-comments
-
-VXWORKS_GCC_PPC_1_ARCH_DEFS	= -D__ppc__ -mhard-float -mstrict-align \
-							  -mno-implicit-fp -DPPC32_fp60x -DCPU=PPC32
-VXWORKS_GCC_PPC_1_DEFS	= $(VXWORKS_GCC_ARCH_DEFS) -DRW_MULTI_THREAD \
-						  -D_REENTRANT=1 -D_POSIX_THREADS -D__VXWORKS_6_2__ \
-						  -DWITH_SOAPDEFS_H -DNDEBUG=1 -DTOOL_FAMILY=gnu \
-						  -DTOOL=gnu -D_WRS_KERNEL -DWITH_NONAMESPACES \
-						  -DRW_MULTI_THREAD -DCONFIG_RANDSEED
-VXWORKS_GCC_PATH	= $(WIND_BASE)/target/h
-
-target-vxworks-ppc-gnu-1:
-	@make OSNAME=vxworks target-init
-	make $(XDEFINES) OSNAME=VxWorks CC=ccppc AR=arppc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_BIGENDIAN -DCONFIG_RANDSEED -D__VxWorks__ -O3 \
-		-I$(VXWORKS_GCC_PATH) -I$(VXWORKS_GCC_PATH)/wrn/coreip \
-		-I$(VXWORKS_GCC_PATH)/types -I$(VXWORKS_GCC_PATH)/wrn/coreip/netinet \
-		-I$(VXWORKS_GCC_PATH)/tool/gnu $(VXWORKS_GCC_PPC_1_DEFS)"
-	@make OSNAME=VxWorks embedded-comments
-
-VXWORKS_GCC_PPC_2_ARCH_DEFS = -mcpu=603 -mhard-float -mstrict-align \
-							  -fno-implicit-fp -fno-zero-initialized-in-bss \
-							  -nostdinc -fvolatile -fno-builtin \
-							  -Wsystem-headers -MD -MP -G8 -DPPC32_fp60x
-VXWORKS_GCC_PPC_2_DEFS = $(VXWORKS_GCC_PPC_2_ARCH_DEFS) -DCPU=_VX_PPC32 \
-						 -D_VX_CPU=_VX_PPC32 -D_WRS_VX_SMP -D_WRS_CONFIG_SMP \
-						 -DWITH_NONAMESPACES -DPPC32_fp60x -DTOOL_FAMILY=gnu \
-						 -DTOOL=gnu -DCPU_VARIANT=_ppc603_83xx -D__VXWORKS_6_9__ \
-						 -D__VXWORKS__ -D_REENTRANT -D_POSIX_THREADS -DNDEBUG=1 \
-						 -D__powerpc__ -DCONFIG_DATA_BIGENDIAN
-
-target-vxworks-ppc-gnu-2:
-	@make OSNAME=vxworks target-init
-	make $(XDEFINES) OSNAME=VxWorks CC=ccppc AR=arppc CFLAGS="$(XCFLAGS)
-		$(VXWORKS_GCC_PPC_2_DEFS) -O3 -I$(VXWORKS_GCC_PATH)/h \
-		-I$(VXWORKS_GCC_PATH)/h/wrn/coreip -I$(VXWORKS_GCC_PATH)/h/types \
-		-I$(VXWORKS_GCC_PATH)/h/wrn/coreip/netinet -I$(VXWORKS_GCC_PATH)/usr \
-		-I$(VXWORKS_GCC_PATH)/usr/h -I$(VXWORKS_GCC_PATH)/lib/h/config \
-		-I$(VXWORKS_GCC_PATH)/h/tool/gnu -I$(VXWORKS_GCC_PATH)/usr/h \
-		-I$(WIND_HOME)/gnu/4.3.3-vxworks-6.9/lib/gcc/powerpc-wrs-vxworks/4.3.3/include \
-		-I./ -I../ \
-		-I$(PRJ_ROOT_DIR)/../../../../../platform/dpws/dpwscore/platform/gnu/vxworks_6.9/include"
-	@make OSNAME=VxWorks embedded-comments
 
 target-vxworks-x86:
 	@make OSNAME=vxworks target-init
 	make $(XDEFINES) OSNAME=VxWorks CC=i386-elf-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__VxWorks__ -O3 \
+		-DCONFIG_DATA_LITTLEENDIAN -D__VXWORKS__ -O3 \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=VxWorks embedded-comments
 
 # Xilinx XMK: Gnu toolchain under Unix or Cygwin.  There are two possible
 # compilers, gcc for MicroBlaze (Xilinx custom RISC core) or for PPC.  The
@@ -2835,29 +2606,30 @@ target-xmk-mb:
 	@echo See the comments by the MicroBlaze entry in the makefile before
 	@echo building for this core.
 	make $(XDEFINES) OSNAME=XMK CC=mb-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_BIGENDIAN -DCONFIG_CONSERVE_MEMORY -DCONFIG_RANDSEED \
-		-D__XMK__ -D__mb__ -mno-xl-soft-mul -mxl-barrel-shift \
-		-mno-xl-soft-div -fomit-frame-pointer -O2 -I../microblaze_0/include \
+		-DCONFIG_DATA_BIGENDIAN -DCONFIG_CONSERVE_MEMORY -D__XMK__ \
+		-D__mb__ -mno-xl-soft-mul -mxl-barrel-shift -mno-xl-soft-div \
+		-fomit-frame-pointer -O2 -I../microblaze_0/include \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=XMK embedded-comments
 
 target-xmk-ppc:
 	@make OSNAME=xmk target-init
 	make $(XDEFINES) OSNAME=XMK CC=powerpc-eabi-gcc CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_LITTLEENDIAN -DCONFIG_RANDSEED -D__XMK__ \
-		-fomit-frame-pointer -O3 `./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=XMK embedded-comments
+		-DCONFIG_DATA_LITTLEENDIAN -D__XMK__ -fomit-frame-pointer -O3 \
+		`./tools/ccopts-crosscompile.sh $(CC)`"
 
 # Non-OS target or proprietary OS.  This will trigger #errors at various
 # locations in the code where you need to fill in the blanks for whatever
 # your OS (or non-OS) requires.
 
-target-generic:
-	@make OSNAME=generic target-init
-	make $(XDEFINES) OSNAME=generic CC=cc.exe CFLAGS="$(XCFLAGS) \
-		-DCONFIG_DATA_BIGENDIAN -DCONFIG_RANDSEED \
+target-68k:
+	@make OSNAME=moto68 target-init
+
+	make $(XDEFINES) OSNAME=moto68 CC=mcc68k.exe CFLAGS="$(XCFLAGS) \
+		-DCONFIG_DATA_BIGENDIAN -D__m68k__ -pCPU32 -c -g -zc -Mca -Md5 \
+		-Kha5 -NScode -nKf -Oc -S -DTVA_68K=1 -DIS_COOPERATIVE=1 \
+		-DTVA_FUNCTION_FRAME_SUPPORT=0 -Os -Oe -OXc2 -OXcs2 -OXk2 -OXrep1 \
+		-nOj -OXrf -OXsr \
 		`./tools/ccopts-crosscompile.sh $(CC)`"
-	@make OSNAME=generic embedded-comments
 
 #****************************************************************************
 #*																			*
@@ -2865,55 +2637,13 @@ target-generic:
 #*																			*
 #****************************************************************************
 
-# The removal of the files and directories is silenced since they may not 
-# exist and we don't want unnecessary error messages arising from trying to 
-# remove them.
-#
-# Some build systems create additional files in the build directories, we
-# explicitly check for these before removing them rather than just removing
-# "*" since the latter can be risky if, for example, the path variable ends
-# up undefined.  The special files are:
-#
-# VxWorks: *.d dependency files.
-# gcov: *.gcno coverage-analysis files.
-# LLVM tools: *.ll IR files.
-# STACK analyser: *.out processed LLVM IR files.
-#
-# In addition to creating odd files, VxWorks ships with a broken bash
-# (and a broken gcc, and a broken gdb, and a broken Eclipse-renamed-to
-# Workbench) for which the '[ -f $(STATIC_OBJ_PATH)*.d ]' test reports no 
-# files, so we detect the Wind River environment by checking 
-# WIND_HOST_TYPE and if it's present perform a somewhat messy unconditional 
-# delete (we can't do it with error-checking turned off via '-' because
-# that's not supported under whatever Wind River ships as a bash shell).  
-# Under 6.9 the 'rm -f $(STATIC_OBJ_PATH)*.d' actually performs a 
-# 'rm -r $(STATIC_OBJ_PATH)' so the following delete of .o files and the 
-# directory aren't necessary, but we leave them in anyway in case they ever
-# ship a shell that works properly.
+# The removal of the some files and directories is silenced since they
+# may not exist and we don't want unnecessary error messages arising from
+# trying to remove them
 
 clean:
 	rm -f *.o core testlib stestlib tools/endian $(LIBNAME) $(SLIBNAME)
-	@if [ $(WIND_HOST_TYPE)x = 'x86-win32x' ] ; then \
-		rm -f "$(STATIC_OBJ_PATH)*.d" ; \
-		if [ -d $(STATIC_OBJ_DIR) ] ; then \
-			rm -f $(STATIC_OBJ_PATH)*.o ; \
-			rmdir $(STATIC_OBJ_DIR) ; \
-		fi ; \
-		exit 0 ; \
-	fi
-	@if [ -d $(STATIC_OBJ_DIR) ] ; then \
-		if [ -f $(STATIC_OBJ_PATH)*.d ] ; then \
-			rm -f $(STATIC_OBJ_PATH)*.d ; \
-		fi ; \
-		if [ -f $(STATIC_OBJ_PATH)*.gcno ] ; then \
-			rm -f $(STATIC_OBJ_PATH)*.gcno ; \
-		fi ; \
-		if [ -f $(STATIC_OBJ_PATH)*.ll ] ; then \
-			rm -f $(STATIC_OBJ_PATH)*.ll ; \
-		fi ; \
-		if [ -f $(STATIC_OBJ_PATH)*.out ] ; then \
-			rm -f $(STATIC_OBJ_PATH)*.out ; \
-		fi ; \
+	@if [ -d $(STATIC_OBJ_PATH) ] ; then \
 		rm -f $(STATIC_OBJ_PATH)*.o ; \
 		rmdir $(STATIC_OBJ_DIR) ; \
 	fi

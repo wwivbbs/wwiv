@@ -41,8 +41,7 @@ static int getDynData( OUT DYNBUF *dynBuf,
 				( isAttribute( messageParam ) || \
 				  isInternalAttribute( messageParam ) ) ) || \
 			  ( message == IMESSAGE_CRT_EXPORT && \
-		 		( messageParam == CRYPT_CERTFORMAT_CERTIFICATE || \
-				  messageParam == CRYPT_CERTFORMAT_CERTCHAIN ) ) );
+		 		messageParam == CRYPT_CERTFORMAT_CERTIFICATE ) );
 
 	/* Clear return values.  Note that we don't use the usual memset() to 
 	   clear the value since the structure contains the storage for the 
@@ -60,14 +59,14 @@ static int getDynData( OUT DYNBUF *dynBuf,
 		{
 		/* The data is larger than the built-in buffer size, dynamically
 		   allocate a larger buffer */
-		if( ( dataPtr = clDynAlloc( "getDynData", msgData.length ) ) == NULL )
+		if( ( dataPtr = clDynAlloc( "dynCreate", msgData.length ) ) == NULL )
 			return( CRYPT_ERROR_MEMORY );
 		msgData.data = dataPtr;
 		status = krnlSendMessage( cryptHandle, message, &msgData,
 								  messageParam );
 		if( cryptStatusError( status ) )
 			{
-			clFree( "getDynData", dataPtr );
+			clFree( "dynCreate", dataPtr );
 			return( status );
 			}
 		dynBuf->data = dataPtr;
@@ -111,8 +110,7 @@ int dynCreateCert( OUT DYNBUF *dynBuf,
 	assert( isWritePtr( dynBuf, sizeof( DYNBUF ) ) );
 
 	REQUIRES( isHandleRangeValid( cryptHandle ) );
-	REQUIRES( formatType == CRYPT_CERTFORMAT_CERTIFICATE || \
-			  formatType == CRYPT_CERTFORMAT_CERTCHAIN );
+	REQUIRES( formatType == CRYPT_CERTFORMAT_CERTIFICATE );
 
 	return( getDynData( dynBuf, cryptHandle, IMESSAGE_CRT_EXPORT, 
 						formatType ) );
@@ -125,7 +123,7 @@ void dynDestroy( INOUT DYNBUF *dynBuf )
 	assert( isWritePtr( dynBuf->data, dynBuf->length ) );
 
 	REQUIRES_V( dynBuf->data != NULL );
-	REQUIRES_V( dynBuf->length > 0 && dynBuf->length < MAX_BUFFER_SIZE );
+	REQUIRES_V( dynBuf->length > 0 && dynBuf->length < MAX_INTLENGTH );
 
 	zeroise( dynBuf->data, dynBuf->length );
 	if( dynBuf->data != dynBuf->dataBuffer )
@@ -145,10 +143,7 @@ void dynDestroy( INOUT DYNBUF *dynBuf )
    allocate a small memory pool ourselves and grab chunks of it as required,
    falling back to dynamically allocating memory later on if we exhaust the
    pool.  The following functions implement the custom memory pool
-   management.  Usage is:
-
-	initMemPool( &memPoolState, storage, storageSize );
-	newItem = getMemPool( &memPoolState, newItemSize ) */
+   management */
 
 typedef struct {
 	BUFFER( storageSize, storagePos ) 
@@ -279,7 +274,7 @@ void freeMemPool( INOUT void *statePtr, IN void *memblock )
 
 #ifdef __WINCE__
 
-CHECK_RETVAL_RANGE( 0, MAX_INTLENGTH_STRING ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_RANGE( -1, MAX_INTLENGTH_STRING ) STDC_NONNULL_ARG( ( 1 ) ) \
 static int wcPrintf( FORMAT_STRING const char *format, ... )
 	{
 	wchar_t wcBuffer[ 1024 + 8 ];
@@ -401,10 +396,10 @@ void clFreeFn( const char *fileName, const char *fnName,
 
 #ifdef CONFIG_FAULT_MALLOC
 
-static int currentAllocCount = 0, failAllocCount = 0;
+static int currentAllocCount = 0, failAllocCount = 8;
 static BOOLEAN allocFailed = FALSE;
 
-void clFaultAllocSetCount( const int number )
+void clFaultSet( const int number )
 	{
 	currentAllocCount = 0;
 	failAllocCount = number;
@@ -420,20 +415,20 @@ void *clFaultAllocFn( const char *fileName, const char *fnName,
 	if( allocFailed )
 		{
 #ifdef __WIN32__
-		DEBUG_PRINT(( "\n<<< Further allocation call from thread %X after "
-					  "previous call failed, called from %s line %d in "
-					  "%s.>>>\n", GetCurrentThreadId(), fnName, lineNo, 
-					  fileName ));
+		DEBUG_PRINT( "\n<<< Further allocation call from thread %X after "
+					 "previous call failed, called from %s line %d in "
+					 "%s.>>>\n", GetCurrentThreadId(), fnName, lineNo, 
+					 fileName );
 #else
-		DEBUG_PRINT(( "\n<<< Further allocation call after previous call "
-					  "failed, called from %s line %d in %s.>>>\n", fnName, 
-					  lineNo, fileName ));
+		DEBUG_PRINT( "\n<<< Further allocation call after previous call "
+					 "failed, called from %s line %d in %s.>>>\n", fnName, 
+					 lineNo, fileName );
 #endif /* __WIN32__  */
 		if( failAllocCount < 15 )
 			{
-			DEBUG_PRINT(( "<<<  (This could be because of a multithreaded "
-						  "init).>>>\n" ));
-			DEBUG_PRINT(( "\n" ));
+			DEBUG_PRINT( "<<<  (This could be because of a multithreaded "
+						 "init).>>>\n" );
+			DEBUG_PRINT( "\n" );
 			}
 		return( NULL );
 		}
@@ -447,13 +442,13 @@ void *clFaultAllocFn( const char *fileName, const char *fnName,
 
 	/* We've reached the failure count, fail the allocation */
 #ifdef __WIN32__
-	DEBUG_PRINT(( "\n<<< Failing allocation call #%d for thread %X, called "
-				  "from %s line %d in %s.>>>\n\n", failAllocCount + 1, 
-				  GetCurrentThreadId(), fnName, lineNo, fileName ));
+	DEBUG_PRINT( "\n<<< Failing allocation call #%d for thread %X, called "
+				 "from %s line %d in %s.>>>\n\n", failAllocCount + 1, 
+				 GetCurrentThreadId(), fnName, lineNo, fileName );
 #else
-	DEBUG_PRINT(( "\n<<< Failing at allocation call #%d, called from %s line "
-				  "%d in %s.>>>\n\n", failAllocCount + 1, fnName, lineNo, 
-				  fileName ));
+	DEBUG_PRINT( "\n<<< Failing at allocation call #%d, called from %s line "
+				 "%d in %s.>>>\n\n", failAllocCount + 1, fnName, lineNo, 
+				 fileName );
 #endif /* __WIN32__  */
 	allocFailed = TRUE;
 	return( NULL );

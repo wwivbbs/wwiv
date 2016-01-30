@@ -147,7 +147,7 @@ typedef struct {
 	/* Object properties */
 	int flags;					/* Internal-only, locked, etc */
 	int actionFlags;			/* Permitted actions */
-	int intRefCount, extRefCount;/* Number of int/ext refs.to this object */
+	int referenceCount;			/* Number of references to this object */
 	int lockCount;				/* Message-processing lock recursion count */
 #ifdef USE_THREADS
 	THREAD_HANDLE lockOwner;	/* Lock owner if lockCount > 0 */
@@ -555,7 +555,7 @@ int preDispatchCheckCreate( IN_HANDLE const int objectHandle,
 							IN_MESSAGE const MESSAGE_TYPE message,
 							IN_BUFFER_C( sizeof( MESSAGE_CREATEOBJECT_INFO ) ) \
 								const void *messageDataPtr,
-							IN_ENUM( OBJECT_TYPE ) const int messageValue,
+							IN_ENUM( OBJECT ) const int messageValue,
 							STDC_UNUSED const void *dummy );
 CHECK_RETVAL \
 int preDispatchCheckUserMgmtAccess( IN_HANDLE const int objectHandle, 
@@ -626,8 +626,6 @@ const void *findAttributeACL( IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE attribute,
 
 /* Prototypes for functions in int_msg.c */
 
-CHECK_RETVAL \
-int convertIntToExtRef( IN_HANDLE const int objectHandle );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int getPropertyAttribute( IN_HANDLE const int objectHandle,
 						  IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE attribute,
@@ -640,7 +638,7 @@ CHECK_RETVAL \
 int incRefCount( IN_HANDLE const int objectHandle, 
 				 STDC_UNUSED const int dummy1,
 				 STDC_UNUSED const void *dummy2, 
-				 const BOOLEAN isInternal );
+				 STDC_UNUSED const BOOLEAN dummy3 );
 CHECK_RETVAL \
 int decRefCount( IN_HANDLE const int objectHandle, 
 				 STDC_UNUSED const int dummy1,
@@ -672,20 +670,14 @@ int cloneObject( IN_HANDLE const int objectHandle,
 
 /* Prototypes for functions in sendmsg.c */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 2 ) ) \
-int checkTargetType( IN_HANDLE const CRYPT_HANDLE originalObjectHandle, 
-					 OUT_HANDLE_OPT CRYPT_HANDLE *targetObjectHandle,
-					 const long targets );
-CHECK_RETVAL STDC_NONNULL_ARG( ( 2 ) ) \
-int findTargetType( IN_HANDLE const CRYPT_HANDLE originalObjectHandle, 
-					OUT_HANDLE_OPT CRYPT_HANDLE *targetObjectHandle,
+CHECK_RETVAL \
+int checkTargetType( IN_HANDLE const int objectHandle, const long targets );
+CHECK_RETVAL \
+int findTargetType( IN_HANDLE const int originalObjectHandle, 
 					const long targets );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 2 ) ) \
 int waitForObject( IN_HANDLE const int objectHandle, 
-				   OUT_PTR_COND OBJECT_INFO **objectInfoPtrPtr );
-#ifndef NDEBUG
-const char *getObjectDescriptionNT( IN_HANDLE const int objectHandle );
-#endif /* NDEBUG */
+				   OUT_PTR OBJECT_INFO **objectInfoPtrPtr );
 
 /* Prototypes for functions in objects.c */
 
@@ -708,25 +700,15 @@ void endAllocation( void );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int initAttributeACL( INOUT KERNEL_DATA *krnlDataPtr );
 void endAttributeACL( void );
-#if defined( USE_CERTIFICATES ) && defined( USE_KEYSETS )
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int initCertMgmtACL( INOUT KERNEL_DATA *krnlDataPtr );
 void endCertMgmtACL( void );
-#else
-  #define initCertMgmtACL( krnlDataPtr )	CRYPT_OK
-  #define endCertMgmtACL()
-#endif /* USE_CERTIFICATES && USE_KEYSETS */
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int initInternalMsgs( INOUT KERNEL_DATA *krnlDataPtr );
 void endInternalMsgs( void );
-#ifdef USE_KEYSETS
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int initKeymgmtACL( INOUT KERNEL_DATA *krnlDataPtr );
 void endKeymgmtACL( void );
-#else
-  #define initKeymgmtACL( krnlDataPtr )		CRYPT_OK
-  #define endKeymgmtACL()
-#endif /* USE_KEYSETS */
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int initMechanismACL( INOUT KERNEL_DATA *krnlDataPtr );
 void endMechanismACL( void );

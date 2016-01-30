@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *					cryptlib De-enveloping Information Management			*
-*						Copyright Peter Gutmann 1996-2013					*
+*						Copyright Peter Gutmann 1996-2008					*
 *																			*
 ****************************************************************************/
 
@@ -53,8 +53,7 @@ BOOLEAN moreContentItemsPossible( IN_OPT const CONTENT_LIST *contentListPtr )
 /* Create a content list item */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int createContentListItem( OUT_BUFFER_ALLOC_OPT( sizeof( CONTENT_LIST ) ) \
-								CONTENT_LIST **newContentListItemPtrPtr,
+int createContentListItem( OUT_PTR CONTENT_LIST **newContentListItemPtrPtr,
 						   INOUT MEMPOOL_STATE memPoolState, 
 						   IN_ENUM( CONTENT ) const CONTENT_TYPE type,
 						   IN_ENUM( CRYPT_FORMAT ) \
@@ -74,10 +73,7 @@ int createContentListItem( OUT_BUFFER_ALLOC_OPT( sizeof( CONTENT_LIST ) ) \
 			  formatType < CRYPT_FORMAT_LAST );
 	REQUIRES( ( object == NULL && objectSize == 0 ) || \
 			  ( object != NULL && \
-				objectSize > 0 && objectSize < MAX_BUFFER_SIZE ) );
-
-	/* Clear return value */
-	*newContentListItemPtrPtr = NULL;
+				objectSize > 0 && objectSize < MAX_INTLENGTH ) );
 
 	if( ( newItem = getMemPool( memPoolState, \
 								sizeof( CONTENT_LIST ) ) ) == NULL )
@@ -208,7 +204,7 @@ static int processTimestamp( INOUT CONTENT_LIST *contentListPtr,
 	assert( isReadPtr( timestamp, timestampLength ) );
 
 	REQUIRES( timestampLength >= MIN_CRYPT_OBJECTSIZE && \
-			  timestampLength < MAX_BUFFER_SIZE );
+			  timestampLength < MAX_INTLENGTH );
 
 	/* Create an envelope to contain the timestamp data.  We can't use the
 	   internal enveloping API for this because we want to retain the final
@@ -269,7 +265,7 @@ static int processUnauthAttributes( INOUT CONTENT_LIST *contentListPtr,
 	assert( isReadPtr( unauthAttr, unauthAttrLength ) );
 
 	REQUIRES( unauthAttrLength >= MIN_CRYPT_OBJECTSIZE && \
-			  unauthAttrLength < MAX_BUFFER_SIZE );
+			  unauthAttrLength < MAX_INTLENGTH );
 
 	/* Make sure that the unauthenticated attributes are OK.  Normally this
 	   is done when we import the attributes but since we can't import
@@ -289,7 +285,7 @@ static int processUnauthAttributes( INOUT CONTENT_LIST *contentListPtr,
 		{
 		BYTE oid[ MAX_OID_SIZE + 8 ];
 		void *dataPtr;
-		int oidLength, length DUMMY_INIT;
+		int oidLength, length = DUMMY_INIT;
 
 		/* See what we've got */
 		readSequence( &stream, NULL );
@@ -327,7 +323,7 @@ static int processUnauthAttributes( INOUT CONTENT_LIST *contentListPtr,
 			}
 		status = sMemGetDataBlock( &stream, &dataPtr, length );
 		if( cryptStatusOK( status ) )
-			status = sSkip( &stream, length, MAX_INTLENGTH_SHORT );
+			status = sSkip( &stream, length );
 		if( cryptStatusOK( status ) )
 			status = processTimestamp( contentListPtr, dataPtr, length );
 		/* Continue in the loop with the cryptStatusOK() check */
@@ -460,14 +456,13 @@ static int initKeys( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 					 OUT_HANDLE_OPT CRYPT_CONTEXT *iMacContext )
 	{
 	CRYPT_CONTEXT iAuthEncCryptContext, iAuthEncMacContext;
-	CRYPT_ALGO_TYPE kdfAlgo DUMMY_INIT;
 	const CONTENT_LIST *contentListPtr;
 	const CONTENT_ENCR_INFO *encrInfo;
 	const CONTENT_AUTHENC_INFO *authEncInfo;
 	MECHANISM_KDF_INFO mechanismInfo;
 	CONTENT_ENCR_INFO localEncrInfo;
 	STREAM stream;
-	int value, kdfAlgoParam DUMMY_INIT, iterationCount, status;
+	int value, iterationCount, status;
 
 	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
 	assert( isWritePtr( iCryptContext, sizeof( CRYPT_CONTEXT ) ) );
@@ -514,28 +509,6 @@ static int initKeys( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	   that we've been given is actually a generic-secret context from which 
 	   the encryption and MAC contexts and keys have to be derived */
 	authEncInfo = &contentListPtr->clAuthEncInfo;
-
-	/* Recover the KDF information if it's present */
-	if( authEncInfo->kdfDataLength > 0 )
-		{
-		sMemConnect( &stream, authEncInfo->kdfData, 
-					 authEncInfo->kdfDataLength );
-		readConstructed( &stream, NULL, 0 );
-		readUniversal( &stream );
-		status = readShortInteger( &stream, NULL );
-		if( cryptStatusOK( status ) )
-			status = readAlgoIDex( &stream, &kdfAlgo, NULL, &kdfAlgoParam, 
-								   ALGOID_CLASS_HASH );
-		sMemDisconnect( &stream );
-		if( cryptStatusError( status ) )
-			return( status );
-		}
-	else
-		{
-		/* The PBKDF2 default KDF is HMAC-SHA1 */
-		kdfAlgo = CRYPT_ALGO_HMAC_SHA1;
-		kdfAlgoParam = 0;
-		}
 
 	/* Recreate the encryption and MAC contexts used for the authenticated 
 	   encryption from the algorithm parameter data stored with the generic-
@@ -591,13 +564,15 @@ static int initKeys( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 
 	/* Derive the encryption and MAC keys from the generic-secret key */
 	setMechanismKDFInfo( &mechanismInfo, iAuthEncCryptContext, 
-						 iSessionKeyContext, kdfAlgo, "encryption", 10 );
+						 iSessionKeyContext, CRYPT_ALGO_HMAC_SHA1, 
+						 "encryption", 10 );
 	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_DEV_KDF,
 							  &mechanismInfo, MECHANISM_DERIVE_PKCS5 );
 	if( cryptStatusOK( status ) )
 		{
 		setMechanismKDFInfo( &mechanismInfo, iAuthEncMacContext, 
-							 iSessionKeyContext, kdfAlgo, "authentication", 14 );
+							 iSessionKeyContext, CRYPT_ALGO_HMAC_SHA1, 
+							 "authentication", 14 );
 		status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_DEV_KDF,
 								  &mechanismInfo, MECHANISM_DERIVE_PKCS5 );
 		}
@@ -725,11 +700,10 @@ static int initSessionKeyDecryption( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 /* Import a wrapped session key (optionally a generic-secret key if we're
    going via an intermediate step for authenticated encryption) */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 static int importSessionKey( const CONTENT_LIST *contentListPtr,
 							 IN_HANDLE const CRYPT_CONTEXT iImportContext,
-							 OUT_HANDLE_OPT CRYPT_CONTEXT *iSessionKeyContext,
-							 INOUT ERROR_INFO *errorInfo )
+							 OUT_HANDLE_OPT CRYPT_CONTEXT *iSessionKeyContext )
 	{
 	CRYPT_CONTEXT iSessionKey;
 	const CONTENT_LIST *sessionKeyInfoPtr;
@@ -738,7 +712,6 @@ static int importSessionKey( const CONTENT_LIST *contentListPtr,
 
 	assert( isReadPtr( contentListPtr, sizeof( CONTENT_LIST ) ) );
 	assert( isWritePtr( iSessionKeyContext, sizeof( CRYPT_CONTEXT ) ) );
-	assert( isWritePtr( errorInfo, sizeof( ERROR_INFO ) ) );
 
 	REQUIRES( isHandleRangeValid( iImportContext ) );
 
@@ -787,12 +760,7 @@ static int importSessionKey( const CONTENT_LIST *contentListPtr,
 								  IMESSAGE_DEV_CREATEOBJECT, &createInfo,
 								  OBJECT_TYPE_CONTEXT );
 		if( cryptStatusError( status ) )
-			{
-			retExt( status,
-					( status, errorInfo,
-					  "Couldn't create decryption context for algorithm %d",
-					  encrInfo->cryptAlgo ) );
-			}
+			return( status );
 		mode = encrInfo->cryptMode;	/* int vs.enum */
 		status = krnlSendMessage( createInfo.cryptHandle, 
 								  IMESSAGE_SETATTRIBUTE, &mode,
@@ -815,12 +783,7 @@ static int importSessionKey( const CONTENT_LIST *contentListPtr,
 								  IMESSAGE_DEV_CREATEOBJECT, &createInfo,
 								  OBJECT_TYPE_CONTEXT );
 		if( cryptStatusError( status ) )
-			{
-			retExt( status,
-					( status, errorInfo,
-					  "Couldn't create decryption context for algorithm %d",
-					  authEncInfo->authEncAlgo ) );
-			}
+			return( status );
 		}
 	iSessionKey = createInfo.cryptHandle;
 
@@ -1195,7 +1158,7 @@ static int addPasswordInfo( const CONTENT_LIST *contentListPtr,
 		/* The target is an encryption context, recreate it from the 
 		   encrypted session key information */
 		status = importSessionKey( contentListPtr, iCryptContext, 
-								   iNewContext, errorInfo );
+								   iNewContext );
 		}
 	krnlSendNotifier( iCryptContext, IMESSAGE_DECREFCOUNT );
 	if( cryptStatusError( status ) )
@@ -1218,7 +1181,7 @@ static int addPasswordInfo( const CONTENT_LIST *contentListPtr,
    list */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int matchInfoObject( OUT_PTR_OPT CONTENT_LIST **contentListPtrPtr,
+static int matchInfoObject( OUT_OPT_PTR CONTENT_LIST **contentListPtrPtr,
 							const ENVELOPE_INFO *envelopeInfoPtr,
 							IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE envInfo )
 	{
@@ -1338,7 +1301,7 @@ static int addDeenvelopeInfo( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 							  IN_INT_Z const int value )
 	{
 	CRYPT_HANDLE cryptHandle = ( CRYPT_HANDLE ) value;
-	CRYPT_CONTEXT iNewContext DUMMY_INIT;
+	CRYPT_CONTEXT iNewContext = DUMMY_INIT;
 	CRYPT_ATTRIBUTE_TYPE localEnvInfo = envInfo;
 	CONTENT_LIST *contentListPtr;
 	BOOLEAN isExternalKey = TRUE;
@@ -1451,7 +1414,7 @@ static int addDeenvelopeInfo( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 		case CRYPT_ENVINFO_KEY:
 			/* Import the session key using the KEK */
 			status = importSessionKey( contentListPtr, cryptHandle, 
-									   &iNewContext, ENVELOPE_ERRINFO );
+									   &iNewContext );
 			break;
 
 		case CRYPT_ENVINFO_SESSIONKEY:
@@ -1515,7 +1478,7 @@ static int addDeenvelopeInfoString( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 									IN_RANGE( 1, CRYPT_MAX_TEXTSIZE ) \
 										const int valueLength )
 	{
-	CRYPT_CONTEXT iNewContext DUMMY_INIT;
+	CRYPT_CONTEXT iNewContext = DUMMY_INIT;
 	CONTENT_LIST *contentListPtr;
 	int status;
 

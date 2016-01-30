@@ -132,7 +132,7 @@ static int copyObjectPayloadInfo( INOUT PKCS15_INFO *pkcs15infoPtr,
 			   that we can make use of but if it's ever reached it just ends 
 			   up as an empty (non-useful) object entry */
 			DEBUG_DIAG(( "Found secret-key object" ));
-			assert_nofuzz( DEBUG_WARN );
+			assert( DEBUG_WARN );
 			break;
 
 		case PKCS15_OBJECT_DATA:
@@ -141,15 +141,6 @@ static int copyObjectPayloadInfo( INOUT PKCS15_INFO *pkcs15infoPtr,
 			pkcs15infoPtr->dataData = ( void * ) object;
 			pkcs15infoPtr->dataDataSize = objectLength;
 			pkcs15infoPtr->dataOffset = pkcs15objectInfo->dataOffset;
-			break;
-
-		case PKCS15_OBJECT_UNRECOGNISED:
-			/* This is a placeholder for an unrecognised object subtype such
-			   as a certificate object whose subtype is SPKI or WTLS or 
-			   X9.68, we record it as such but leave it as an empty (non-
-			   useful) object entry */
-			DEBUG_DIAG(( "Found unrecognised object subtype" ));
-			pkcs15infoPtr->type = PKCS15_SUBTYPE_UNRECOGNISED;
 			break;
 
 		default:
@@ -213,7 +204,7 @@ static int readObject( INOUT STREAM *stream,
 	status = readObjectAttributes( &objectStream, pkcs15objectInfo, type, 
 								   errorInfo );
 	sMemDisconnect( &objectStream );
-	if( cryptStatusError( status ) && status != OK_SPECIAL )
+	if( cryptStatusError( status ) )
 		{
 		clFree( "readObject", objectData );
 		return( status );
@@ -223,7 +214,7 @@ static int readObject( INOUT STREAM *stream,
 	*objectPtrPtr = objectData;
 	*objectLengthPtr = objectLength;
 
-	return( status );
+	return( CRYPT_OK );
 	}
 
 /* Read an entire keyset */
@@ -245,7 +236,7 @@ int readPkcs15Keyset( INOUT STREAM *stream,
 	REQUIRES( maxNoPkcs15objects >= 1 && \
 			  maxNoPkcs15objects < MAX_INTLENGTH_SHORT );
 	REQUIRES( endPos > 0 && endPos > stell( stream ) && \
-			  endPos < MAX_BUFFER_SIZE );
+			  endPos < MAX_INTLENGTH );
 
 	/* Clear return value */
 	memset( pkcs15info, 0, sizeof( PKCS15_INFO ) * maxNoPkcs15objects );
@@ -267,26 +258,17 @@ int readPkcs15Keyset( INOUT STREAM *stream,
 			{ CRYPT_ERROR, 0 }, { CRYPT_ERROR, 0 }
 			};
 		PKCS15_OBJECT_TYPE type = PKCS15_OBJECT_NONE;
-		int tag, value DUMMY_INIT, innerEndPos, innerIterationCount;
+		int tag, value, innerEndPos, innerIterationCount;
 
 		/* Map the object tag to a PKCS #15 object type */
-		status = tag = peekTag( stream );
-		if( cryptStatusError( status ) )
-			{
-			pkcs15Free( pkcs15info, maxNoPkcs15objects );
-			return( status );
-			}
+		tag = peekTag( stream );
+		if( cryptStatusError( tag ) )
+			return( tag );
 		tag = EXTRACT_CTAG( tag );
-		if( tag < CTAG_PO_PRIVKEY || tag >= CTAG_PO_LAST )
-			status = CRYPT_ERROR_BADDATA;
-		else
-			{
-			status = mapValue( tag, &value, tagToTypeTbl,
-							   FAILSAFE_ARRAYSIZE( tagToTypeTbl, MAP_TABLE ) );
-			}
+		status = mapValue( tag, &value, tagToTypeTbl,
+						   FAILSAFE_ARRAYSIZE( tagToTypeTbl, MAP_TABLE ) );
 		if( cryptStatusError( status ) )
 			{
-			pkcs15Free( pkcs15info, maxNoPkcs15objects );
 			retExt( CRYPT_ERROR_BADDATA, 
 					( CRYPT_ERROR_BADDATA, errorInfo, 
 					  "Invalid PKCS #15 object type %02X", tag ) );
@@ -294,20 +276,16 @@ int readPkcs15Keyset( INOUT STREAM *stream,
 		type = value;
 
 		/* Read the [n] [0] wrapper to find out what we're dealing with.  
-		   Note that we set the upper limit at MAX_BUFFER_SIZE rather than
+		   Note that we set the upper limit at MAX_INTLENGTH rather than
 		   MAX_INTLENGTH_SHORT because some keysets with many large objects 
 		   may have a combined group-of-objects length larger than 
 		   MAX_INTLENGTH_SHORT */
 		readConstructed( stream, NULL, tag );
 		status = readConstructed( stream, &innerEndPos, CTAG_OV_DIRECT );
 		if( cryptStatusError( status ) )
-			{
-			pkcs15Free( pkcs15info, maxNoPkcs15objects );
 			return( status );
-			}
-		if( innerEndPos < MIN_OBJECT_SIZE || innerEndPos >= MAX_BUFFER_SIZE )
+		if( innerEndPos < MIN_OBJECT_SIZE || innerEndPos >= MAX_INTLENGTH )
 			{
-			pkcs15Free( pkcs15info, maxNoPkcs15objects );
 			retExt( CRYPT_ERROR_BADDATA, 
 					( CRYPT_ERROR_BADDATA, errorInfo, 
 					  "Invalid PKCS #15 object data size %d", 
@@ -329,18 +307,7 @@ int readPkcs15Keyset( INOUT STREAM *stream,
 			status = readObject( stream, &pkcs15objectInfo, &object,
 								 &objectLength, type, errorInfo );
 			if( cryptStatusError( status ) )
-				{
-				if( status != OK_SPECIAL )
-					{
-					pkcs15Free( pkcs15info, maxNoPkcs15objects );
-					return( status );
-					}
-
-				/* We read an object that we don't know what to do with, 
-				   change the effective type to a placeholder */
-				type = PKCS15_OBJECT_UNRECOGNISED;
-				}
-			ANALYSER_HINT( object != NULL );
+				return( status );
 
 			/* If we read an object with associated ID information, find out 
 			   where to add the object data */
@@ -364,7 +331,6 @@ int readPkcs15Keyset( INOUT STREAM *stream,
 				if( pkcs15infoPtr == NULL )
 					{
 					clFree( "readKeyset", object );
-					pkcs15Free( pkcs15info, maxNoPkcs15objects );
 					retExt( CRYPT_ERROR_OVERFLOW, 
 							( CRYPT_ERROR_OVERFLOW, errorInfo, 
 							  "No more room in keyset to add further items" ) );

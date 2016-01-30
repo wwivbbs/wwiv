@@ -19,8 +19,6 @@
   #include "mechs/mech.h"
 #endif /* Compiler-specific includes */
 
-#ifdef USE_INT_CMS
-
 /****************************************************************************
 *																			*
 *								Utility Routines							*
@@ -48,26 +46,15 @@ static int getObjectInfo( INOUT STREAM *stream,
 	if( sMemDataLeft( stream ) < MIN_CRYPT_OBJECTSIZE )
 		return( CRYPT_ERROR_UNDERFLOW );
 
-	/* Get the object's length and make sure that its encoding is valid, 
-	   which also checks that all of the object's data is present */
+	/* Get the type, length, and version information */
 	status = getStreamObjectLength( stream, &length );
-	if( cryptStatusOK( status ) )
-		{
-		void *objectPtr;
-	
-		status = sMemGetDataBlockAbs( stream, startPos, &objectPtr, length );
-		if( cryptStatusOK( status ) )
-			status = checkObjectEncoding( objectPtr, length );
-		}
 	if( cryptStatusError( status ) )
 		return( status );
-
-	/* Get the type and version information */
 	queryInfo->formatType = CRYPT_FORMAT_CRYPTLIB;
 	queryInfo->size = length;
-	status = tag = peekTag( stream );
-	if( cryptStatusError( status ) )
-		return( status );
+	tag = peekTag( stream );
+	if( cryptStatusError( tag ) )
+		return( tag );
 	readGenericHole( stream, NULL, 16, tag );
 	status = readShortInteger( stream, &value );
 	if( cryptStatusError( status ) )
@@ -105,7 +92,7 @@ static int getObjectInfo( INOUT STREAM *stream,
 			   ignoring it */
 			queryInfo->type = CRYPT_OBJECT_NONE;
 			DEBUG_DIAG(( "Found keyAgreeRecipientInfo" ));
-			assert_nofuzz( DEBUG_WARN );
+			assert( DEBUG_WARN );
 			break;
 
 		case MAKE_CTAG( CTAG_RI_PWRI ):
@@ -119,15 +106,16 @@ static int getObjectInfo( INOUT STREAM *stream,
 				{
 				/* This is probably a new RecipientInfo type, skip it */
 				DEBUG_DIAG(( "Found unknown RecipientInfo %X", tag ));
-				assert_nofuzz( DEBUG_WARN );
+				assert( DEBUG_WARN );
 				break;
 				}
 			return( CRYPT_ERROR_BADDATA );
 		}
 
-	/* Reset the stream for the caller before we exit */
+	/* Reset the stream and make sure that all of the data is present */
 	sseek( stream, startPos );
-	return( CRYPT_OK );
+	return( sMemDataLeft( stream ) < queryInfo->size ? \
+			CRYPT_ERROR_UNDERFLOW : CRYPT_OK );
 	}
 
 #ifdef USE_PGP
@@ -154,15 +142,14 @@ int getPgpPacketInfo( INOUT STREAM *stream,
 	   that the assignment of version numbers is speculative only because
 	   it's possible to use PGP 2.x packet headers to wrap up OpenPGP
 	   packets */
-	status = pgpReadPacketHeader( stream, &ctb, &length, 8, 
-								  MAX_INTLENGTH - 1 );
+	status = pgpReadPacketHeader( stream, &ctb, &length, 8 );
 	if( cryptStatusError( status ) )
 		return( status );
 	queryInfo->formatType = CRYPT_FORMAT_PGP;
 	queryInfo->version = pgpGetPacketVersion( ctb );
-	status = offset = stell( stream );
-	if( cryptStatusError( status ) )
-		return( status );
+	offset = stell( stream );
+	if( cryptStatusError( offset ) )
+		return( offset );
 	queryInfo->size = ( offset - startPos ) + length;
 	switch( pgpGetPacketType( ctb ) )
 		{
@@ -396,18 +383,17 @@ int queryPgpObject( INOUT void *streamPtr, OUT QUERY_INFO *queryInfo )
 /* Query an object.  This is just a wrapper that provides an external
    interface for the lower-level object-query routines */
 
-C_CHECK_RETVAL C_NONNULL_ARG( ( 1, 3 ) ) \
 C_RET cryptQueryObject( C_IN void C_PTR objectData,
 						C_IN int objectDataLength,
 						C_OUT CRYPT_OBJECT_INFO C_PTR cryptObjectInfo )
 	{
-	QUERY_INFO queryInfo DUMMY_INIT_STRUCT;	/* If USE_PGP undef'd */
+	QUERY_INFO queryInfo = DUMMY_INIT_STRUCT;	/* If USE_PGP undef'd */
 	STREAM stream;
 	int value, length = objectDataLength, status;
 
 	/* Perform basic error checking and clear the return value */
 	if( objectDataLength <= MIN_CRYPT_OBJECTSIZE || \
-		objectDataLength >= MAX_BUFFER_SIZE )
+		objectDataLength >= MAX_INTLENGTH )
 		return( CRYPT_ERROR_PARAM2 );
 	if( !isReadPtr( objectData, objectDataLength ) )
 		return( CRYPT_ERROR_PARAM1 );
@@ -457,22 +443,3 @@ C_RET cryptQueryObject( C_IN void C_PTR objectData,
 
 	return( CRYPT_OK );
 	}
-
-#else
-
-/****************************************************************************
-*																			*
-*						Stub Functions for non-CMS/PGP Use					*
-*																			*
-****************************************************************************/
-
-C_RET cryptQueryObject( C_IN void C_PTR objectData,
-						C_IN int objectDataLength,
-						C_OUT CRYPT_OBJECT_INFO C_PTR cryptObjectInfo )
-	{
-	UNUSED_ARG( objectData );
-	UNUSED_ARG( cryptObjectInfo );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-#endif /* USE_INT_CMS */

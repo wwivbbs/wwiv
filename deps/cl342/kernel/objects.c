@@ -55,11 +55,11 @@ static KERNEL_DATA *krnlData = NULL;
    this we can't just memset the entry to all zeroes */
 
 static const OBJECT_INFO FAR_BSS OBJECT_INFO_TEMPLATE = {
-	OBJECT_TYPE_NONE, SUBTYPE_NONE,	/* Type, subtype */
+	OBJECT_TYPE_NONE, 0,		/* Type, subtype */
 	NULL, 0,					/* Object data and size */
 	OBJECT_FLAG_INTERNAL | OBJECT_FLAG_NOTINITED,	/* Flags */
 	0,							/* Action flags */
-	1, 0, 0,					/* Int.and ext. ref.counts, lock count */
+	0, 0,						/* Ref.count, lock count */
 #ifdef USE_THREADS
 	THREAD_INITIALISER,			/* Lock owner */
 #endif /* USE_THREADS */
@@ -69,8 +69,8 @@ static const OBJECT_INFO FAR_BSS OBJECT_INFO_TEMPLATE = {
 	THREAD_INITIALISER,			/* Owner */
 #endif /* USE_THREADS */
 	NULL,						/* Message function */
-	CRYPT_ERROR,				/* Owner */
-	CRYPT_ERROR, CRYPT_ERROR	/* Dependent object/device */
+	CRYPT_ERROR, CRYPT_ERROR,
+	CRYPT_ERROR					/* Owning/dependent objects */
 	};
 
 /* A template used to initialise the object allocation state data */
@@ -214,7 +214,7 @@ int destroyObjectData( IN_HANDLE const int objectHandle )
 	/* Inner precondition: There's valid object data present */
 	REQUIRES( objectInfoPtr->objectPtr != NULL && \
 			  objectInfoPtr->objectSize > 0 && \
-			  objectInfoPtr->objectSize < MAX_BUFFER_SIZE );
+			  objectInfoPtr->objectSize < MAX_INTLENGTH );
 
 	/* Destroy the object's data and clear the object table entry */
 	if( objectInfoPtr->flags & OBJECT_FLAG_SECUREMALLOC )
@@ -329,8 +329,9 @@ static int destroySelectedObjects( IN_RANGE( 1, 3 ) const int currentDepth )
 			-- Jeremiah 9:21 */
 		if( depth >= currentDepth )
 			{
-			DEBUG_PRINT(( "Destroying leftover %s.\n", 
-						  getObjectDescriptionNT( objectHandle ) ));
+			DEBUG_PRINT(( "Destroying leftover object %d, type %d, subtype %X.\n",
+						  objectHandle, objectTable[ objectHandle ].type,
+						  objectTable[ objectHandle ].subType ));
 			objectTable = NULL;
 			MUTEX_UNLOCK( objectTable );
 			krnlSendNotifier( objectHandle, IMESSAGE_DESTROY );
@@ -349,7 +350,7 @@ static int destroySelectedObjects( IN_RANGE( 1, 3 ) const int currentDepth )
 CHECK_RETVAL \
 int destroyObjects( void )
 	{
-	int depth, objectHandle, localStatus, status DUMMY_INIT;
+	int depth, objectHandle, localStatus, status = DUMMY_INIT;
 
 	/* Preconditions: We either didn't complete the initialisation and are 
 	   shutting down during a krnlBeginInit(), or we've completed 
@@ -384,15 +385,8 @@ int destroyObjects( void )
 	for( objectHandle = SYSTEM_OBJECT_HANDLE + 1;
 		 objectHandle < NO_SYSTEM_OBJECTS; objectHandle++ )
 		{
-		/* In the extremely unlikely event that we encounter an error during 
-		   the creation of the system object, no other objects will have been 
-		   created, so before we try and destroy an object we make sure that 
-		   it's actually been created */
-		if( !isValidObject( objectHandle ) )
-			continue;
-
 		status = destroyObject( objectHandle );
-		ENSURES_MUTEX( cryptStatusOK( status ), objectTable );
+		ENSURES( cryptStatusOK( status ) );
 		}
 
 	/* Postcondition: All system objects except the root system object have
@@ -428,7 +422,7 @@ int destroyObjects( void )
 	   possible error status from cleaning up any leftover objects so we use 
 	   a local status value to get the destroy-object results */
 	localStatus = destroyObject( SYSTEM_OBJECT_HANDLE );
-	ENSURES_MUTEX( cryptStatusOK( localStatus ), objectTable );
+	ENSURES( cryptStatusOK( localStatus ) );
 
 	/* Unlock the object table to allow access by other threads */
 	MUTEX_UNLOCK( objectTable );
@@ -669,12 +663,12 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 9 ) ) \
 int krnlCreateObject( OUT_HANDLE_OPT int *objectHandle,
 					  OUT_BUFFER_ALLOC_OPT( objectDataSize ) void **objectDataPtr, 
 					  IN_LENGTH_SHORT const int objectDataSize,
-					  IN_ENUM( OBJECT_TYPE ) const OBJECT_TYPE type, 
-					  IN_ENUM( SUBTYPE ) const OBJECT_SUBTYPE subType,
-					  IN_FLAGS_Z( CREATEOBJECT ) const int createObjectFlags, 
-					  IN_HANDLE_OPT const CRYPT_USER owner,
-					  IN_FLAGS_Z( ACTION_PERM ) const int actionFlags,
-					  IN MESSAGE_FUNCTION messageFunction )
+					  IN_ENUM( OBJECT ) const OBJECT_TYPE type, 
+					  IN_ENUM( OBJECT_SUB ) const OBJECT_SUBTYPE subType,
+					  IN_FLAGS( CREATEOBJECT ) const int createObjectFlags, 
+					  IN_HANDLE const CRYPT_USER owner,
+					  IN_FLAGS( ACTION ) const int actionFlags,
+					  IN CALLBACK_FUNCTION MESSAGE_FUNCTION messageFunction )
 	{
 	OBJECT_INFO objectInfo;
 	OBJECT_STATE_INFO *objectStateInfo = &krnlData->objectStateInfo;
@@ -688,25 +682,18 @@ int krnlCreateObject( OUT_HANDLE_OPT int *objectHandle,
 	   which ensures that we don't try and create multi-typed objects, the
 	   sole exception to this rule is the default user object, which acts as
 	   both a user and an SO object) */
-	REQUIRES( objectDataSize > 16 && \
-			  ( ( !( type == OBJECT_TYPE_CONTEXT && subType == SUBTYPE_CTX_PKC ) && \
-				objectDataSize < MAX_INTLENGTH_SHORT ) || \
-			  ( type == OBJECT_TYPE_CONTEXT && subType == SUBTYPE_CTX_PKC && \
-				objectDataSize < MAX_INTLENGTH ) ) );
+	REQUIRES( objectDataSize > 16 && objectDataSize < 16384 );
 	REQUIRES( isValidType( type ) );
 	REQUIRES( \
 		( bitCount = ( subType & ~SUBTYPE_CLASS_MASK ) - \
 					 ( ( ( subType & ~SUBTYPE_CLASS_MASK ) >> 1 ) & 033333333333L ) - \
 					 ( ( ( subType & ~SUBTYPE_CLASS_MASK ) >> 2 ) & 011111111111L ) ) != 0 );
 	REQUIRES( ( ( bitCount + ( bitCount >> 3 ) ) & 030707070707L ) % 63 == 1 );
-	REQUIRES( createObjectFlags >= CREATEOBJECT_FLAG_NONE && \
-			  createObjectFlags < CREATEOBJECT_FLAG_MAX );
 	REQUIRES( !( createObjectFlags & \
 				 ~( CREATEOBJECT_FLAG_SECUREMALLOC | CREATEOBJECT_FLAG_DUMMY | \
 					CREATEOBJECT_FLAG_PERSISTENT ) ) );
 	REQUIRES( owner == CRYPT_UNUSED || isValidHandle( owner ) );
-	REQUIRES( actionFlags >= ACTION_PERM_FLAG_NONE && \
-			  actionFlags <= ACTION_PERM_FLAG_MAX );
+	REQUIRES( actionFlags >= 0 && actionFlags < ACTION_PERM_LAST );
 	REQUIRES( messageFunction != NULL );
 
 	/* Clear return values */
@@ -728,13 +715,7 @@ int krnlCreateObject( OUT_HANDLE_OPT int *objectHandle,
 	/* Allocate memory for the object and set up as much as we can of the 
 	   object table entry (the remainder has to be set up inside the object-
 	   table lock).  The object is always created as an internal object, 
-	   it's up to the caller to make it externally visible.
-	   
-	   The apparently redundant clearning of objectInfo before overwriting
-	   it with the object-info template is due to yet another gcc bug, in
-	   this case in the x64 debug (-o0) build, for which it doesn't memcpy()
-	   the template across but sets each field individually, leaving 
-	   whatever padding bytes were present beforehand set to random values */
+	   it's up to the caller to make it externally visible */
 	if( createObjectFlags & CREATEOBJECT_FLAG_SECUREMALLOC )
 		{
 		int status = krnlMemalloc( objectDataPtr, objectDataSize );
@@ -748,7 +729,6 @@ int krnlCreateObject( OUT_HANDLE_OPT int *objectHandle,
 			return( CRYPT_ERROR_MEMORY );
 		}
 	memset( *objectDataPtr, 0, objectDataSize );
-	memset( &objectInfo, 0, sizeof( OBJECT_INFO ) ); /* See comment above */
 	objectInfo = OBJECT_INFO_TEMPLATE;
 	objectInfo.objectPtr = *objectDataPtr;
 	objectInfo.objectSize = objectDataSize;
@@ -776,24 +756,22 @@ int krnlCreateObject( OUT_HANDLE_OPT int *objectHandle,
 	localObjectHandle = objectStateInfo->objectHandle;
 	if( localObjectHandle < NO_SYSTEM_OBJECTS - 1 )
 		{
-		REQUIRES_MUTEX( ( localObjectHandle == SYSTEM_OBJECT_HANDLE - 1 && \
-						  owner == CRYPT_UNUSED && \
-						  type == OBJECT_TYPE_DEVICE && \
-						  subType == SUBTYPE_DEV_SYSTEM ) || \
-						( localObjectHandle == DEFAULTUSER_OBJECT_HANDLE - 1 && \
-						  owner == SYSTEM_OBJECT_HANDLE && \
-						  type == OBJECT_TYPE_USER && \
-						  subType == SUBTYPE_USER_SO ), 
-						objectTable );
+		REQUIRES( ( localObjectHandle == SYSTEM_OBJECT_HANDLE - 1 && \
+					owner == CRYPT_UNUSED && \
+					type == OBJECT_TYPE_DEVICE && \
+					subType == SUBTYPE_DEV_SYSTEM ) || \
+				  ( localObjectHandle == DEFAULTUSER_OBJECT_HANDLE - 1 && \
+					owner == SYSTEM_OBJECT_HANDLE && \
+					type == OBJECT_TYPE_USER && \
+					subType == SUBTYPE_USER_SO ) );
 		localObjectHandle++;
-		ENSURES_MUTEX( isValidHandle( localObjectHandle ) && \
-					   localObjectHandle < NO_SYSTEM_OBJECTS && \
-					   localObjectHandle == objectStateInfo->objectHandle + 1, \
-					   objectTable );
+		ENSURES( isValidHandle( localObjectHandle ) && \
+				 localObjectHandle < NO_SYSTEM_OBJECTS && \
+				 localObjectHandle == objectStateInfo->objectHandle + 1 );
 		}
 	else
 		{
-		REQUIRES_MUTEX( isValidHandle( owner ), objectTable );
+		REQUIRES( isValidHandle( owner ) );
 
 		/* Search the table for a free entry */
 		localObjectHandle = findFreeObjectEntry( localObjectHandle );
@@ -841,7 +819,7 @@ int krnlCreateObject( OUT_HANDLE_OPT int *objectHandle,
 		}
 
 	/* Inner precondition: This object table slot is free */
-	REQUIRES_MUTEX( isFreeObject( localObjectHandle ), objectTable );
+	REQUIRES( isFreeObject( localObjectHandle ) );
 
 	/* Set up the new object entry in the table and update the object table
 	   state */
@@ -880,18 +858,17 @@ int krnlCreateObject( OUT_HANDLE_OPT int *objectHandle,
 		krnlData->objectUniqueID = NO_SYSTEM_OBJECTS;
 	else
 		krnlData->objectUniqueID++;
-	ENSURES_MUTEX( krnlData->objectUniqueID > 0 && \
-				   krnlData->objectUniqueID < INT_MAX, objectTable );
+	ENSURES( krnlData->objectUniqueID > 0 && \
+			 krnlData->objectUniqueID < INT_MAX );
 
 	/* Postconditions: It's a valid object that's been set up as required */
-	ENSURES_MUTEX( isValidObject( localObjectHandle ), objectTable );
-	ENSURES_MUTEX( objectInfo.objectPtr == *objectDataPtr, objectTable );
-	ENSURES_MUTEX( objectInfo.owner == owner, objectTable );
-	ENSURES_MUTEX( objectInfo.type == type, objectTable );
-	ENSURES_MUTEX( objectInfo.subType == subType, objectTable );
-	ENSURES_MUTEX( objectInfo.actionFlags == actionFlags, objectTable );
-	ENSURES_MUTEX( objectInfo.messageFunction == messageFunction, 
-				   objectTable );
+	ENSURES( isValidObject( localObjectHandle ) );
+	ENSURES( objectInfo.objectPtr == *objectDataPtr );
+	ENSURES( objectInfo.owner == owner );
+	ENSURES( objectInfo.type == type );
+	ENSURES( objectInfo.subType == subType );
+	ENSURES( objectInfo.actionFlags == actionFlags );
+	ENSURES( objectInfo.messageFunction == messageFunction );
 
 	MUTEX_UNLOCK( objectTable );
 

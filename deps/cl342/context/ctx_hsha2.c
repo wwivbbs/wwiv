@@ -15,6 +15,8 @@
   #include "crypt/sha2.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_SHA2
+
 /* A structure to hold the initial and current MAC state info.  Rather than
    redoing the key processing each time when we're calculating multiple MACs
    with the same key, we just copy the initial state into the current state */
@@ -260,31 +262,18 @@ static int initKey( CONTEXT_INFO *contextInfoPtr, const void *key,
 		}
 	else
 		{
-		/* Copy the key to internal storage.  The memset() is unnecessary 
-		   but used to produce more or less constant timing across 
-		   different key sizes */
+		/* Copy the key to internal storage */
 		if( macInfo->userKey != key )
-			{
 			memcpy( macInfo->userKey, key, keyLength );
-			memset( macInfo->userKey + keyLength, 0, 
-					CRYPT_MAX_KEYSIZE - keyLength );
-			}
 		macInfo->userKeyLength = keyLength;
 		}
 
 	/* Perform the start of the inner hash using the zero-padded key XOR'd
-	   with the ipad value.  We do this in a manner that tries to minimise 
-	   timing information that may reveal the length of the password, given 
-	   the amount of other stuff that's going on it's highly unlikely that 
-	   this will ever ben an issue but we do it just in case */
+	   with the ipad value */
+	memset( hashBuffer, HMAC_IPAD, SHA256_BLOCK_SIZE );
 	memcpy( hashBuffer, macInfo->userKey,
 			macInfo->userKeyLength );
-	if( macInfo->userKeyLength < SHA256_BLOCK_SIZE )
-		{
-		memset( hashBuffer + macInfo->userKeyLength, 0, 
-				SHA256_BLOCK_SIZE - macInfo->userKeyLength );
-		}
-	for( i = 0; i < SHA256_BLOCK_SIZE; i++ )
+	for( i = 0; i < macInfo->userKeyLength; i++ )
 		hashBuffer[ i ] ^= HMAC_IPAD;
 	sha2_hash( hashBuffer, SHA256_BLOCK_SIZE, shaInfo );
 	memset( hashBuffer, 0, SHA256_BLOCK_SIZE );
@@ -377,3 +366,5 @@ const CAPABILITY_INFO *getHmacSHA2Capability( void )
 	{
 	return( &capabilityInfo );
 	}
+
+#endif /* USE_SHA2 */

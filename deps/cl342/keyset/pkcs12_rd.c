@@ -116,7 +116,7 @@ static void copyObjectInfo( INOUT PKCS12_INFO *destPkcs12Info,
 	   PKCS #15 item */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int findObjectEntryLocation( OUT_PTR_COND PKCS12_INFO **pkcs12infoPtrPtr, 
+static int findObjectEntryLocation( OUT_PTR PKCS12_INFO **pkcs12infoPtrPtr, 
 									IN_ARRAY( maxNoPkcs12objects ) \
 										const PKCS12_INFO *pkcs12info, 
 									IN_LENGTH_SHORT const int maxNoPkcs12objects, 
@@ -327,9 +327,8 @@ static int importCertificate( const PKCS12_OBJECT_INFO *certObjectInfo,
 		return( status );
 		}
 	status = importCertFromStream( &stream, iDataCert, cryptOwner,
-								   CRYPT_CERTTYPE_CERTIFICATE, 
-								   ( int ) length, 
-								   KEYMGMT_FLAG_DATAONLY_CERT );
+								   CRYPT_ICERTTYPE_DATAONLY, 
+								   ( int ) length );
 	sMemDisconnect( &stream );
 
 	return( status );
@@ -337,18 +336,20 @@ static int importCertificate( const PKCS12_OBJECT_INFO *certObjectInfo,
 
 /* Import an encrypted private key */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 4, 6 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 5, 10 ) ) \
 static int importPrivateKey( const PKCS12_OBJECT_INFO *keyObjectInfo,
 							 IN_HANDLE const CRYPT_USER cryptOwner,
-							 IN_HANDLE CRYPT_CONTEXT iPrivKeyContext,
 							 IN_BUFFER( passwordLen ) const void *password,
 							 IN_LENGTH_TEXT const int passwordLen,
 							 IN_BUFFER( keyObjectDataLen ) const void *keyObjectData,
 							 IN_LENGTH_SHORT const int keyObjectDataLen,
+							 IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo,
 							 IN_BUFFER_OPT( labelLength ) const void *label,
-							 IN_LENGTH_SHORT_Z const int labelLength )
+							 IN_LENGTH_SHORT_Z const int labelLength,
+							 OUT_HANDLE_OPT CRYPT_CERTIFICATE *iPrivKeyContext )
 	{
-	CRYPT_CONTEXT iWrapContext;
+	CRYPT_CONTEXT iCryptContext, iWrapContext;
+	MESSAGE_CREATEOBJECT_INFO createInfo;
 	MECHANISM_WRAP_INFO mechanismInfo;
 	MESSAGE_DATA msgData;
 	int status;
@@ -358,10 +359,10 @@ static int importPrivateKey( const PKCS12_OBJECT_INFO *keyObjectInfo,
 	assert( isReadPtr( keyObjectData, keyObjectDataLen) );
 	assert( ( label == NULL && labelLength == 0 ) || \
 			isReadPtr( label, labelLength ) );
+	assert( isWritePtr( iPrivKeyContext, sizeof( CRYPT_CERTIFICATE ) ) );
 
 	REQUIRES( cryptOwner == DEFAULTUSER_OBJECT_HANDLE || \
 			  isHandleRangeValid( cryptOwner ) );
-	REQUIRES( isHandleRangeValid( iPrivKeyContext ) );
 	REQUIRES( passwordLen >= MIN_NAME_LENGTH && \
 			  passwordLen <= CRYPT_MAX_TEXTSIZE );
 	REQUIRES( keyObjectDataLen > MIN_OBJECT_SIZE && \
@@ -369,6 +370,10 @@ static int importPrivateKey( const PKCS12_OBJECT_INFO *keyObjectInfo,
 	REQUIRES( ( label == NULL && labelLength == 0 ) || \
 			  ( label != NULL && \
 				labelLength > 0 && labelLength < MAX_INTLENGTH_SHORT ) );
+	REQUIRES( isPkcAlgo( cryptAlgo ) );
+
+	/* Clear return value */
+	*iPrivKeyContext = CRYPT_ERROR;
 
 	/* Create the wrap context used to unwrap the private key */
 	status = createPkcs12KeyWrapContext( ( PKCS12_OBJECT_INFO * ) keyObjectInfo, 
@@ -377,8 +382,19 @@ static int importPrivateKey( const PKCS12_OBJECT_INFO *keyObjectInfo,
 	if( cryptStatusError( status ) )
 		return( status );
 
-	/* Set the key label.  We have to set the label before we load the key 
-	   or the key load will be blocked by the kernel */
+	/* Create the private-key object that we'll be importing the key data 
+	   into and set the key label.  We have to set the label before we load 
+	   the key or the key load will be blocked by the kernel */
+	setMessageCreateObjectInfo( &createInfo, cryptAlgo );
+	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
+							  IMESSAGE_DEV_CREATEOBJECT, &createInfo, 
+							  OBJECT_TYPE_CONTEXT );
+	if( cryptStatusError( status ) )
+		{
+		krnlSendNotifier( iWrapContext, IMESSAGE_DECREFCOUNT );
+		return( status );
+		}
+	iCryptContext = createInfo.cryptHandle;
 	if( label != NULL )
 		{ 
 		setMessageData( &msgData, ( MESSAGE_CAST ) label, \
@@ -388,25 +404,32 @@ static int importPrivateKey( const PKCS12_OBJECT_INFO *keyObjectInfo,
 		{ 
 		setMessageData( &msgData, ( MESSAGE_CAST ) "Dummy label", 11 ); 
 		}
-	status = krnlSendMessage( iPrivKeyContext, IMESSAGE_SETATTRIBUTE_S, 
+	status = krnlSendMessage( iCryptContext, IMESSAGE_SETATTRIBUTE_S, 
 							  &msgData, CRYPT_CTXINFO_LABEL );
 	if( cryptStatusError( status ) )
 		{
 		krnlSendNotifier( iWrapContext, IMESSAGE_DECREFCOUNT );
+		krnlSendNotifier( iCryptContext, IMESSAGE_DECREFCOUNT );
 		return( status );
 		}
 
 	/* Import the encrypted private key into the PKC context */
 	setMechanismWrapInfo( &mechanismInfo, ( MESSAGE_CAST * ) keyObjectData, 
-						  keyObjectDataLen, NULL, 0, iPrivKeyContext, 
+						  keyObjectDataLen, NULL, 0, iCryptContext, 
 						  iWrapContext );
 	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_DEV_IMPORT, 
 							  &mechanismInfo, 
 							  MECHANISM_PRIVATEKEYWRAP_PKCS8 );
 	clearMechanismInfo( &mechanismInfo );
 	krnlSendNotifier( iWrapContext, IMESSAGE_DECREFCOUNT );
+	if( cryptStatusError( status ) )
+		{
+		krnlSendNotifier( iCryptContext, IMESSAGE_DECREFCOUNT );
+		return( status );
+		}
+	*iPrivKeyContext = iCryptContext;
 
-	return( status );
+	return( CRYPT_OK );
 	}
 
 /****************************************************************************
@@ -433,7 +456,7 @@ static int readObjects( INOUT STREAM *stream,
 
 	REQUIRES( maxNoPkcs12objects >= 1 && \
 			  maxNoPkcs12objects < MAX_INTLENGTH_SHORT );
-	REQUIRES( endPos >= 32 && endPos < MAX_BUFFER_SIZE );
+	REQUIRES( endPos >= 32 && endPos < MAX_INTLENGTH );
 	REQUIRES( errorInfo != NULL );
 
 	/* Read each object in the current collection */
@@ -516,7 +539,7 @@ int pkcs12ReadKeyset( INOUT STREAM *stream,
 	REQUIRES( maxNoPkcs12objects >= 1 && \
 			  maxNoPkcs12objects < MAX_INTLENGTH_SHORT );
 	REQUIRES( endPos > 0 && endPos > stell( stream ) && \
-			  endPos < MAX_BUFFER_SIZE );
+			  endPos < MAX_INTLENGTH );
 
 	/* Clear return value */
 	memset( pkcs12info, 0, sizeof( PKCS12_INFO ) * maxNoPkcs12objects );
@@ -561,7 +584,6 @@ int pkcs12ReadKeyset( INOUT STREAM *stream,
 						   &length, READCMS_FLAG_NONE );
 		if( cryptStatusError( status ) )
 			{
-			pkcs12Free( pkcs12info, maxNoPkcs12objects );
 			retExt( CRYPT_ERROR_BADDATA, 
 					( CRYPT_ERROR_BADDATA, errorInfo, 
 					  "Invalid PKCS #12 object header" ) );
@@ -586,10 +608,7 @@ int pkcs12ReadKeyset( INOUT STREAM *stream,
 			/* Skip the SET OF PKCS12Bag encapsulation */
 			status = readSequenceI( stream, &innerLength );
 			if( cryptStatusError( status ) )
-				{
-				pkcs12Free( pkcs12info, maxNoPkcs12objects );
 				return( status );
-				}
 			if( length == CRYPT_UNUSED && innerLength != CRYPT_UNUSED )
 				innerEndPos = stell( stream ) + innerLength;
 			}
@@ -604,10 +623,7 @@ int pkcs12ReadKeyset( INOUT STREAM *stream,
 			   explicitly find its length before we can continue */
 			status = getStreamObjectLength( stream, &innerLength );
 			if( cryptStatusError( status ) )
-				{
-				pkcs12Free( pkcs12info, maxNoPkcs12objects );
 				return( status );
-				}
 			innerEndPos = stell( stream ) + innerLength;
 
 			/* In practice it's not quite this simple.  Firstly, this
@@ -633,7 +649,6 @@ int pkcs12ReadKeyset( INOUT STREAM *stream,
 			   malloc() and fixed-length read, duplicating part of 
 			   readRawObjectAlloc().  For now we'll leave this until there's 
 			   an actual demand for it */
-			pkcs12Free( pkcs12info, maxNoPkcs12objects );
 			retExt( CRYPT_ERROR_BADDATA, 
 					( CRYPT_ERROR_BADDATA, errorInfo, 
 					  "Couldn't get PKCS #12 object length information" ) );
@@ -644,10 +659,7 @@ int pkcs12ReadKeyset( INOUT STREAM *stream,
 		status = readObjects( stream, pkcs12info, maxNoPkcs12objects,
 							  innerEndPos, isEncrypted, errorInfo );
 		if( cryptStatusError( status ) )
-			{
-			pkcs12Free( pkcs12info, maxNoPkcs12objects );
 			return( status );
-			}
 
 		/* Skip any EOCs that may be present.  In the simplest case where
 		   the data was encoded using all indefinte-length encoding we know
@@ -660,15 +672,9 @@ int pkcs12ReadKeyset( INOUT STREAM *stream,
 				{
 				const int value = checkEOC( stream );
 				if( cryptStatusError( value ) )
-					{
-					pkcs12Free( pkcs12info, maxNoPkcs12objects );
 					return( value );
-					}
 				if( value == FALSE )
-					{
-					pkcs12Free( pkcs12info, maxNoPkcs12objects );
 					return( CRYPT_ERROR_BADDATA );
-					}
 				}
 			}
 		else
@@ -682,10 +688,7 @@ int pkcs12ReadKeyset( INOUT STREAM *stream,
 			if( ( status = checkEOC( stream ) ) == TRUE )
 				status = checkEOC( stream );
 			if( cryptStatusError( status ) )
-				{
-				pkcs12Free( pkcs12info, maxNoPkcs12objects );
 				return( status );
-				}
 			status = CRYPT_OK;	/* checkEOC() returns TRUE/FALSE */
 			}
 		}
@@ -812,112 +815,6 @@ static int keyCrack( const void *encData, const int length )
 	}
 #endif /* 0 */
 
-/* Import a certificate as a data-only certificate object to be attached to 
-   the private key */
-
-#ifdef USE_CERTIFICATES
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4, 5, 7 ) ) \
-static int importDataOnlyCertificate( const PKCS12_INFO *pkcs12infoPtr,	
-									  IN_HANDLE const CRYPT_USER iCryptUser,
-									  OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
-									  OUT_HANDLE_OPT CRYPT_CERTIFICATE *iDataCert,
-									  IN_BUFFER( certIDlength ) const void *certID, 
-									  IN_LENGTH_SHORT const int certIDlength,
-									  INOUT ERROR_INFO *errorInfo )
-	{
-	CRYPT_CERTIFICATE iCertificate;
-	const PKCS12_OBJECT_INFO *certObjectInfo = &pkcs12infoPtr->certInfo;
-	const int certDataSize = certObjectInfo->payloadSize;
-	DYNBUF pubKeyDB;
-	STREAM stream;
-	int status;
-
-	assert( isReadPtr( pkcs12infoPtr, sizeof( PKCS12_INFO ) ) );
-	assert( isWritePtr( iCryptContext, sizeof( CRYPT_CONTEXT ) ) );
-	assert( isWritePtr( iDataCert, sizeof( CRYPT_CERTIFICATE ) ) );
-	assert( isReadPtr( certID, certIDlength ) );
-
-	REQUIRES( iCryptUser == DEFAULTUSER_OBJECT_HANDLE || \
-			  isHandleRangeValid( iCryptUser ) );
-	REQUIRES( certIDlength > 0 && certIDlength < MAX_INTLENGTH_SHORT );
-
-	/* Clear return values */
-	*iCryptContext = *iDataCert = CRYPT_ERROR;
-
-	/* If it's an unencrypted certificate (they almost never are) then we 
-	   can import it directly */
-	if( pkcs12infoPtr->flags & PKCS12_FLAG_CERT )
-		{
-		sMemConnect( &stream, ( BYTE * ) certObjectInfo->data + \
-										 certObjectInfo->payloadOffset, 
-					 certDataSize );
-		status = importCertFromStream( &stream, &iCertificate, iCryptUser,
-									   CRYPT_CERTTYPE_CERTIFICATE, 
-									   certDataSize, 
-									   KEYMGMT_FLAG_DATAONLY_CERT );
-		sMemDisconnect( &stream );
-		}
-	else
-		{
-		BYTE certDataBuffer[ 2048 + 8 ], *certData = certDataBuffer;
-
-		REQUIRES( pkcs12infoPtr->flags & PKCS12_FLAG_ENCCERT );
-
-		/* It's an encrypted certificate, we need to decrypt it before we 
-		   can import it.  First we set up a buffer to decrypt the 
-		   certificate data */
-		if( certDataSize > 2048 )
-			{
-			if( certDataSize >= MAX_INTLENGTH_SHORT )
-				return( CRYPT_ERROR_OVERFLOW );
-			if( ( certData = clAlloc( "getItemFunction", \
-									  certDataSize ) ) == NULL )
-				return( CRYPT_ERROR_MEMORY );
-			}
-		memcpy( certData, 
-				( BYTE * ) certObjectInfo->data + \
-						   certObjectInfo->payloadOffset, certDataSize );
-
-		/* Decrypt and import the certificate */
-		status = importCertificate( certObjectInfo, iCryptUser, 
-									certID, certIDlength, certData, 
-									certDataSize, &iCertificate );
-		zeroise( certData, certDataSize );
-		if( certData != certDataBuffer )
-			clFree( "getItemFunction", certData );
-		}
-	if( cryptStatusError( status ) )
-		{
-		retExt( status, 
-				( status, errorInfo, 
-				  "Couldn't recreate certificate from stored certificate "
-				  "data" ) );
-		}
-		
-	/* We've got the certificate, now create the public part of the context 
-	   from the certificate's encoded public-key components */
-	status = dynCreate( &pubKeyDB, iCertificate, CRYPT_IATTRIBUTE_SPKI );
-	if( cryptStatusError( status ) )
-		return( status );
-	sMemConnect( &stream, dynData( pubKeyDB ), dynLength( pubKeyDB ) );
-	status = iCryptReadSubjectPublicKey( &stream, iCryptContext,
-										 SYSTEM_OBJECT_HANDLE, TRUE );
-	sMemDisconnect( &stream );
-	dynDestroy( &pubKeyDB );
-	if( cryptStatusError( status ) )
-		{
-		krnlSendNotifier( iCertificate, IMESSAGE_DECREFCOUNT );
-		retExt( status, 
-				( status, errorInfo, 
-				  "Couldn't recreate public key from certificate" ) );
-		}
-
-	*iDataCert = iCertificate;
-	return( CRYPT_OK );
-	}
-#endif /* USE_CERTIFICATES */
-
 /* Get a key from a PKCS #12 keyset.  This gets pretty ugly both because 
    PKCS #12 keysets contain no effective indexing information (making it 
    impossible to look up objects within them) and because in most cases all 
@@ -942,7 +839,7 @@ static int getItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 	CRYPT_CERTIFICATE iDataCert = CRYPT_ERROR;
 #endif /* USE_CERTIFICATES */
 	CRYPT_CONTEXT iCryptContext;
-	MESSAGE_CREATEOBJECT_INFO createInfo;
+	CRYPT_ALGO_TYPE cryptAlgo = CRYPT_ALGO_RSA;
 	const PKCS12_INFO *pkcs12infoPtr;
 	const int auxInfoMaxLength = *auxInfoLength;
 	int status;
@@ -1039,61 +936,90 @@ static int getItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 #ifdef USE_CERTIFICATES
 	if( pkcs12infoPtr->certInfo.data != NULL )
 		{
-		status = importDataOnlyCertificate( pkcs12infoPtr, 
-											keysetInfoPtr->ownerHandle, 
-											&iCryptContext, &iDataCert,
-											auxInfo, *auxInfoLength,
-											KEYSET_ERRINFO );
-		if( cryptStatusError( status ) )
-			return( status );
-		if( iDataCert != CRYPT_ERROR )
+		const PKCS12_OBJECT_INFO *certObjectInfo = &pkcs12infoPtr->certInfo;
+		const int certDataSize = certObjectInfo->payloadSize;
+		int value;
+
+		/* If it's an unencrypted certificate then we can import it 
+		   directly */
+		if( pkcs12infoPtr->flags & PKCS12_FLAG_CERT )
 			{
-			status = iCryptVerifyID( iDataCert, keyIDtype, keyID, 
-									 keyIDlength );
-			if( cryptStatusError( status ) )
-				{
-				krnlSendNotifier( iCryptContext, IMESSAGE_DECREFCOUNT );
-				krnlSendNotifier( iDataCert, IMESSAGE_DECREFCOUNT );
-				retExt( status, 
-						( status, KEYSET_ERRINFO, 
-						  "Certificate fetched for ID type %d doesn't "
-						  "actually correspond to the given ID", 
-						  keyIDtype ) );
-				}
+			STREAM stream;
+
+			sMemConnect( &stream, 
+						 ( BYTE * ) certObjectInfo->data + \
+									certObjectInfo->payloadOffset, 
+						 certDataSize );
+			status = importCertFromStream( &stream, &iDataCert, 
+										   keysetInfoPtr->ownerHandle,
+										   CRYPT_ICERTTYPE_DATAONLY, 
+										   certDataSize );
+			sMemDisconnect( &stream );
 			}
-		}
-	else
-#endif /* USE_CERTIFICATES */
-		{
-		/* Create the private-key object that we'll be importing the key 
-		   data into.  In yet another piece of design brilliance, the PKC 
-		   algorithm that's needed to create the public/private-key context 
-		   is stored inside the encrypted key data, so we can't create a 
-		   context to import the key data into until we've already imported 
-		   the key data.  To get around this we default to CRYPT_ALGO_RSA, 
-		   which is almost always the case */
-		setMessageCreateObjectInfo( &createInfo, CRYPT_ALGO_RSA );
-		status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
-								  IMESSAGE_DEV_CREATEOBJECT, &createInfo, 
-								  OBJECT_TYPE_CONTEXT );
+		else
+			{
+			BYTE certDataBuffer[ 2048 + 8 ], *certData = certDataBuffer;
+
+			REQUIRES( pkcs12infoPtr->flags & PKCS12_FLAG_ENCCERT );
+
+			/* It's an encrypted certificate, we need to decrypt it before 
+			   we can import it.  First we set up a buffer to decrypt the 
+			   certificate data */
+			if( certDataSize > 2048 )
+				{
+				if( certDataSize >= MAX_INTLENGTH_SHORT )
+					return( CRYPT_ERROR_OVERFLOW );
+				if( ( certData = clAlloc( "getItemFunction", \
+										  certDataSize ) ) == NULL )
+					return( CRYPT_ERROR_MEMORY );
+				}
+			memcpy( certData, 
+					( BYTE * ) certObjectInfo->data + \
+							   certObjectInfo->payloadOffset, certDataSize );
+
+			/* Decrypt and import the certificate */
+			status = importCertificate( certObjectInfo, 
+										keysetInfoPtr->ownerHandle, 
+										auxInfo, *auxInfoLength, certData, 
+										certDataSize, &iDataCert );
+			zeroise( certData, certDataSize );
+			if( certData != certDataBuffer )
+				clFree( "getItemFunction", certData );
+			}
 		if( cryptStatusError( status ) )
-			return( status );
-		iCryptContext = createInfo.cryptHandle;
+			{
+			retExt( status, 
+					( status, KEYSET_ERRINFO, 
+					  "Couldn't recreate certificate from stored certificate "
+					  "data" ) );
+			}
+		
+		/* In yet another piece of design brilliance, the PKC algorithm 
+		   that's needed to create the public/private-key context is stored
+		   inside the encrypted key data, so we can't create a context to 
+		   import the key data into until we've already imported the key
+		   data.  To get around this we read the PKC algorithm from the
+		   certificate that corresponds to the key.  If there's no 
+		   certificate present we default to CRYPT_ALGO_RSA, which is almost
+		   always the case anyway */
+		status = krnlSendMessage( iDataCert, IMESSAGE_GETATTRIBUTE, &value,
+								  CRYPT_IATTRIBUTE_CERTKEYALGO );
+		if( cryptStatusOK( status ) )
+			cryptAlgo = value;
 		}
+#endif /* USE_CERTIFICATES */
 
 	/* Import the wrapped private key */
 	status = importPrivateKey( &pkcs12infoPtr->keyInfo, 
-					keysetInfoPtr->ownerHandle, iCryptContext,
-					auxInfo, *auxInfoLength, 
+					keysetInfoPtr->ownerHandle, auxInfo, *auxInfoLength, 
 					( const BYTE * ) pkcs12infoPtr->keyInfo.data + \
 									 pkcs12infoPtr->keyInfo.payloadOffset,
-					pkcs12infoPtr->keyInfo.payloadSize, 
+					pkcs12infoPtr->keyInfo.payloadSize, cryptAlgo,
 					( pkcs12infoPtr->labelLength > 0 ) ? \
 						pkcs12infoPtr->label : NULL, 
-					pkcs12infoPtr->labelLength );
+					pkcs12infoPtr->labelLength, &iCryptContext );
 	if( cryptStatusError( status ) )
 		{
-		krnlSendNotifier( iCryptContext, IMESSAGE_DECREFCOUNT );
 		if( iDataCert != CRYPT_ERROR )
 			krnlSendNotifier( iDataCert, IMESSAGE_DECREFCOUNT );
 		retExt( status, 

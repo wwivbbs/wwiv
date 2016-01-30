@@ -1,15 +1,17 @@
 /****************************************************************************
 *																			*
 *							Certificate Write Routines						*
-*						Copyright Peter Gutmann 1996-2012					*
+*						Copyright Peter Gutmann 1996-2007					*
 *																			*
 ****************************************************************************/
 
 #if defined( INC_ALL )
   #include "cert.h"
+  #include "asn1.h"
   #include "asn1_ext.h"
 #else
   #include "cert/cert.h"
+  #include "enc_dec/asn1.h"
   #include "enc_dec/asn1_ext.h"
 #endif /* Compiler-specific includes */
 
@@ -140,24 +142,19 @@ static int writeCertInfo( INOUT STREAM *stream,
 		}
 
 	/* Determine how the issuer name will be encoded */
-	status = length = ( issuerCertInfoPtr->subjectDNptr != NULL ) ? \
-						issuerCertInfoPtr->subjectDNsize : \
-						sizeofDN( subjectCertInfoPtr->issuerName );
-	if( cryptStatusError( status ) )
-		return( status );
-	subjectCertInfoPtr->issuerDNsize = length;
-	status = length = sizeofDN( subjectCertInfoPtr->subjectName );
-	if( cryptStatusError( status ) )
-		return( status );
-	subjectCertInfoPtr->subjectDNsize = length;
+	subjectCertInfoPtr->issuerDNsize = \
+							( issuerCertInfoPtr->subjectDNptr != NULL ) ? \
+							issuerCertInfoPtr->subjectDNsize : \
+							sizeofDN( subjectCertInfoPtr->issuerName );
+	subjectCertInfoPtr->subjectDNsize = \
+							sizeofDN( subjectCertInfoPtr->subjectName );
 
 	/* Determine the size of the certificate information */
 	algoIdInfoSize = sizeofContextAlgoID( iIssuerCryptContext, 
 										  certCertInfo->hashAlgo );
 	if( cryptStatusError( algoIdInfoSize ) )
 		return( algoIdInfoSize  );
-	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes,
-									  CRYPT_CERTTYPE_CERTIFICATE );
+	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes );
 	if( cryptStatusError( extensionSize ) )
 		return( extensionSize );
 	length = sizeofInteger( certCertInfo->serialNumber,
@@ -300,27 +297,20 @@ static int writeAttributeCertInfo( INOUT STREAM *stream,
 		}
 
 	/* Determine how the issuer name will be encoded */
-	status = length = ( issuerCertInfoPtr->subjectDNptr != NULL ) ? \
-						issuerCertInfoPtr->subjectDNsize : \
-						sizeofDN( subjectCertInfoPtr->issuerName );
-	if( cryptStatusError( status ) )
-		return( status );
- 	issuerNameSize = length;
-	status = length = sizeofDN( subjectCertInfoPtr->subjectName );
-	if( cryptStatusError( status ) )
-		return( status );
-	holderNameSize = length;
+	issuerNameSize = ( issuerCertInfoPtr->subjectDNptr != NULL ) ? \
+					 issuerCertInfoPtr->subjectDNsize : \
+					 sizeofDN( subjectCertInfoPtr->issuerName );
+	holderNameSize = sizeofDN( subjectCertInfoPtr->subjectName );
 
 	/* Determine the size of the certificate information */
 	algoIdInfoSize = sizeofContextAlgoID( iIssuerCryptContext, 
 										  certCertInfo->hashAlgo );
 	if( cryptStatusError( algoIdInfoSize ) )
 		return( algoIdInfoSize  );
-	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes,
-									  CRYPT_CERTTYPE_ATTRIBUTE_CERT );
+	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes );
 	if( cryptStatusError( extensionSize ) )
 		return( extensionSize );
-	length = sizeofShortInteger( X509ACVERSION_2 ) + \
+	length = ( int ) sizeofShortInteger( X509ACVERSION_2 ) + \
 			 sizeofObject( sizeofObject( sizeofObject( holderNameSize ) ) ) + \
 			 sizeofObject( sizeofObject( sizeofObject( issuerNameSize ) ) ) + \
 			 algoIdInfoSize + \
@@ -480,8 +470,7 @@ static int writeCRLInfo( INOUT STREAM *stream,
 										  certRevInfo->hashAlgo );
 	if( cryptStatusError( algoIdInfoSize ) )
 		return( algoIdInfoSize  );
-	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes,
-									  CRYPT_CERTTYPE_CRL );
+	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes );
 	if( cryptStatusError( extensionSize ) )
 		return( extensionSize );
 	length = algoIdInfoSize + \
@@ -592,19 +581,23 @@ static int writeCertRequestInfo( INOUT STREAM *stream,
 		}
 
 	/* Determine how big the encoded certificate request will be */
-	status = length = sizeofDN( subjectCertInfoPtr->subjectName );
-	if( cryptStatusError( status ) )
-		return( status );
-	subjectCertInfoPtr->subjectDNsize = length;
-	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes,
-									  CRYPT_CERTTYPE_CERTREQUEST );
+	subjectCertInfoPtr->subjectDNsize = \
+			sizeofDN( subjectCertInfoPtr->subjectName );
+	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes );
 	if( cryptStatusError( extensionSize ) )
 		return( extensionSize );
 	length = sizeofShortInteger( 0 ) + \
 			 subjectCertInfoPtr->subjectDNsize + \
 			 subjectCertInfoPtr->publicKeyInfoSize;
-	length += ( int ) sizeofObject( \
-							( extensionSize > 0 ) ? extensionSize : 0 );
+	if( extensionSize > 0 )
+		{
+		length += sizeofObject( \
+					sizeofObject( \
+						sizeofOID( OID_PKCS9_EXTREQ ) + \
+						sizeofObject( sizeofObject( extensionSize ) ) ) );
+		}
+	else
+		length += ( int ) sizeofObject( 0 );
 
 	/* Write the header, version number, DN, and public key information */
 	writeSequence( stream, length );
@@ -670,10 +663,8 @@ static int writeCrmfRequestInfo( INOUT STREAM *stream,
 	payloadLength = subjectCertInfoPtr->publicKeyInfoSize;
 	if( subjectCertInfoPtr->subjectName != NULL )
 		{
-		status = subjectDNsize = sizeofDN( subjectCertInfoPtr->subjectName );
-		if( cryptStatusError( status ) )
-			return( status );
-		subjectCertInfoPtr->subjectDNsize = subjectDNsize;
+		subjectCertInfoPtr->subjectDNsize = subjectDNsize = \
+								sizeofDN( subjectCertInfoPtr->subjectName );
 		payloadLength += sizeofObject( subjectDNsize );
 		}
 	if( subjectCertInfoPtr->startTime > MIN_TIME_VALUE )
@@ -682,8 +673,7 @@ static int writeCrmfRequestInfo( INOUT STREAM *stream,
 		timeSize += sizeofObject( sizeofGeneralizedTime() );
 	if( timeSize > 0 ) 
 		payloadLength += sizeofObject( timeSize );
-	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes,
-									  CRYPT_CERTTYPE_REQUEST_CERT );
+	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes );
 	if( cryptStatusError( extensionSize ) )
 		return( extensionSize );
 	if( extensionSize > 0 )
@@ -767,8 +757,7 @@ static int writeRevRequestInfo( INOUT STREAM *stream,
 		}
 
 	/* Determine how big the encoded certificate request will be */
-	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes,
-									  CRYPT_CERTTYPE_REQUEST_REVOCATION );
+	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes );
 	if( cryptStatusError( extensionSize ) )
 		return( extensionSize );
 	payloadLength = sizeofInteger( subjectCertInfoPtr->cCertCert->serialNumber,
@@ -861,8 +850,7 @@ static int writeRtcsRequestInfo( INOUT STREAM *stream,
 		requestInfoLength += requestEntrySize;
 		}
 	ENSURES( iterationCount < FAILSAFE_ITERATIONS_LARGE );
-	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes,
-									  CRYPT_CERTTYPE_RTCS_REQUEST );
+	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes );
 	if( cryptStatusError( extensionSize ) )
 		return( extensionSize );
 	length = sizeofObject( requestInfoLength ) + \
@@ -941,8 +929,7 @@ static int writeRtcsResponseInfo( INOUT STREAM *stream,
 		validityInfoLength += responseEntrySize;
 		}
 	ENSURES( iterationCount < FAILSAFE_ITERATIONS_LARGE );
-	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes,
-									  CRYPT_CERTTYPE_RTCS_RESPONSE );
+	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes );
 	if( cryptStatusError( extensionSize ) )
 		return( extensionSize );
 
@@ -1063,8 +1050,7 @@ static int writeOcspRequestInfo( INOUT STREAM *stream,
 		revocationInfoLength += requestEntrySize;
 		}
 	ENSURES( iterationCount < FAILSAFE_ITERATIONS_LARGE );
-	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes,
-									  CRYPT_CERTTYPE_OCSP_REQUEST );
+	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes );
 	if( cryptStatusError( extensionSize ) )
 		return( extensionSize );
 	length = ( ( subjectCertInfoPtr->version == 2 ) ? \
@@ -1168,8 +1154,7 @@ static int writeOcspResponseInfo( INOUT STREAM *stream,
 		revocationInfoLength += responseEntrySize;
 		}
 	ENSURES( iterationCount < FAILSAFE_ITERATIONS_LARGE );
-	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes,
-									  CRYPT_CERTTYPE_OCSP_RESPONSE );
+	extensionSize = sizeofAttributes( subjectCertInfoPtr->attributes );
 	if( cryptStatusError( extensionSize ) )
 		return( extensionSize );
 	length = sizeofObject( sizeofShortInteger( CTAG_OP_VERSION ) ) + \
@@ -1309,8 +1294,7 @@ static int writeCmsAttributes( INOUT STREAM *stream,
 							  &attributeInfoPtr->errorType );
 	if( cryptStatusError( status ) )
 		return( status );
-	attributeSize = sizeofAttributes( attributeInfoPtr->attributes,
-									  CRYPT_CERTTYPE_CMS_ATTRIBUTES );
+	attributeSize = sizeofAttributes( attributeInfoPtr->attributes );
 	if( cryptStatusError( attributeSize ) || attributeSize <= 0 )
 		return( attributeSize );
 
@@ -1332,35 +1316,27 @@ static int writeCmsAttributes( INOUT STREAM *stream,
 
 	userData ::= SEQUENCE {
 		name				Name,			-- Name for CMP
-		encAlgo				AlgorithmIdentifier,-- Algo to encrypt passwords
-		encPW				OCTET STRING,	-- Encrypted passwords
-		certAttributes		Attributes		-- Certificate attributes
-		userAttributes		SEQUENCE {		-- PKI user attributes
-			isRA			BOOLEAN OPTIONAL -- Whether user is an RA
-			} OPTIONAL
+		encAlgo				AlgorithmIdentifier,-- Algo to encrypt authenticators
+		encPW				OCTET STRING,	-- Encrypted authenticators
+		attributes			Attributes
 		} */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4, 5, 7 ) ) \
-static int createPkiUserInfo( INOUT CERT_PKIUSER_INFO *certUserInfo,
-							  OUT_BUFFER( maxUserInfoSize, *userInfoSize ) \
-									BYTE *userInfo, 
-							  IN_LENGTH_SHORT_MIN( 64 ) \
-									const int maxUserInfoSize, 
-							  OUT_LENGTH_BOUNDED_Z( maxUserInfoSize ) \
-									int *userInfoSize, 
-							  OUT_BUFFER( maxAlgoIdSize, *algoIdSize ) \
-									BYTE *algoID, 
-							  IN_LENGTH_SHORT_MIN( 16 ) \
-									const int maxAlgoIdSize, 
-							  OUT_LENGTH_BOUNDED_Z( maxAlgoIdSize ) \
-									int *algoIdSize )
+static int getPkiUserInfo( INOUT CERT_PKIUSER_INFO *certUserInfo,
+						   OUT_BUFFER( maxUserInfoSize, *userInfoSize ) \
+								BYTE *userInfo, 
+						   IN_LENGTH_SHORT_MIN( 64 ) const int maxUserInfoSize, 
+						   OUT_LENGTH_SHORT_Z int *userInfoSize, 
+						   OUT_BUFFER( maxAlgoIdSize, *algoIdSize ) BYTE *algoID, 
+						   IN_LENGTH_SHORT_MIN( 16 ) const int maxAlgoIdSize, 
+						   OUT_LENGTH_SHORT_Z int *algoIdSize )
 	{
 	CRYPT_CONTEXT iCryptContext;
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	MESSAGE_DATA msgData;
 	STREAM stream;
 	static const int mode = CRYPT_MODE_CFB;	/* enum vs.int */
-	int userInfoBufPos DUMMY_INIT, i, status;
+	int userInfoBufPos = DUMMY_INIT, i, status;
 
 	assert( isWritePtr( certUserInfo, sizeof( CERT_PKIUSER_INFO ) ) );
 	assert( isWritePtr( userInfo, maxUserInfoSize ) );
@@ -1498,8 +1474,7 @@ static int writePkiUserInfo( INOUT STREAM *stream,
 	{
 	CERT_PKIUSER_INFO *certUserInfo = userInfoPtr->cCertUser;
 	BYTE userInfo[ 128 + 8 ], algoID[ 128 + 8 ];
-	int certAttributeSize, userAttributeSize = 0, userInfoSize, algoIdSize;
-	int length, status;
+	int extensionSize, userInfoSize, algoIdSize, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( userInfoPtr, sizeof( CERT_INFO ) ) );
@@ -1513,7 +1488,7 @@ static int writePkiUserInfo( INOUT STREAM *stream,
 		CRYPT_ERRTYPE_TYPE dummy2;
 		MESSAGE_DATA msgData;
 		BYTE keyID[ 16 + 8 ];
-		int keyIDlength DUMMY_INIT;
+		int keyIDlength = DUMMY_INIT;
 
 		/* Generate the key identifier.  Once it's in user-encoded form the
 		   full identifier can't quite fit so we adjust the size to the
@@ -1566,25 +1541,18 @@ static int writePkiUserInfo( INOUT STREAM *stream,
 		}
 	else
 		{
-		status = createPkiUserInfo( certUserInfo, userInfo, 128, 
-									&userInfoSize, algoID, 128, 
-									&algoIdSize );
+		status = getPkiUserInfo( certUserInfo, userInfo, 128, &userInfoSize, 
+								 algoID, 128, &algoIdSize );
 		if( cryptStatusError( status ) )
 			return( status );
 		}
 
 	/* Determine the size of the user information */
-	status = length = sizeofDN( userInfoPtr->subjectName );
-	if( cryptStatusError( status ) )
-		return( status );
-	userInfoPtr->subjectDNsize = length;
-	certAttributeSize = sizeofAttributes( userInfoPtr->attributes,
-										  CRYPT_CERTTYPE_PKIUSER );
-	if( cryptStatusError( certAttributeSize ) )
-		return( certAttributeSize );
-	ENSURES( certAttributeSize > 0 && certAttributeSize < MAX_INTLENGTH_SHORT );
-	if( certUserInfo->isRA )
-		userAttributeSize += sizeofBoolean();
+	userInfoPtr->subjectDNsize = sizeofDN( userInfoPtr->subjectName );
+	extensionSize = sizeofAttributes( userInfoPtr->attributes );
+	if( cryptStatusError( extensionSize ) )
+		return( extensionSize );
+	ENSURES( extensionSize > 0 && extensionSize < MAX_INTLENGTH_SHORT );
 
 	/* Write the user DN, encrypted user information, and any supplementary 
 	   information */
@@ -1593,15 +1561,8 @@ static int writePkiUserInfo( INOUT STREAM *stream,
 		return( status );
 	swrite( stream, algoID, algoIdSize );
 	writeOctetString( stream, userInfo, userInfoSize, DEFAULT_TAG );
-	status = writeAttributes( stream, userInfoPtr->attributes,
-							  CRYPT_CERTTYPE_PKIUSER, certAttributeSize );
-	if( cryptStatusOK( status ) && userAttributeSize > 0 )
-		{
-		writeSequence( stream, userAttributeSize );
-		if( certUserInfo->isRA )
-			status = writeBoolean( stream, TRUE, DEFAULT_TAG );
-		}
-	return( status );
+	return( writeAttributes( stream, userInfoPtr->attributes,
+							 CRYPT_CERTTYPE_PKIUSER, extensionSize ) );
 	}
 #endif /* USE_PKIUSER */
 

@@ -70,10 +70,6 @@ static int initKeysetUpdate( INOUT KEYSET_INFO *keysetInfoPtr,
 			  ( keyIDinfo != NULL && \
 				keyIDbuffer != NULL && keyIdMaxLength == KEYID_SIZE ) );
 
-	/* Clear return values */
-	if( keyIDbuffer != NULL )
-		memset( keyIDbuffer, 0, min( 16, keyIdMaxLength ) );
-
 	/* If we're in the middle of a query we can't do anything else */
 	if( keysetInfoPtr->isBusyFunction != NULL && \
 		keysetInfoPtr->isBusyFunction( keysetInfoPtr ) )
@@ -89,7 +85,7 @@ static int initKeysetUpdate( INOUT KEYSET_INFO *keysetInfoPtr,
 		{
 		HASHINFO hashInfo;
 		STREAM stream;
-		int hashSize, payloadStart DUMMY_INIT, length, status;
+		int hashSize, payloadStart = DUMMY_INIT, length, status;
 
 		/* Hash the full iAndS to get an issuerID and use that for the 
 		   keyID.  This is complicated by the fact that there exist one or 
@@ -212,10 +208,7 @@ static int getKeysetType( INOUT STREAM *stream,
 			return( CRYPT_ERROR_BADDATA );
 
 		/* Check for a PKCS #12/#15 file */
-		status = value = peekTag( stream );
-		if( cryptStatusError( status ) )
-			return( status );
-		if( value == BER_INTEGER )
+		if( peekTag( stream ) == BER_INTEGER )
 			{
 			long version;
 
@@ -253,7 +246,7 @@ static int getKeysetType( INOUT STREAM *stream,
 
 		/* Perform a sanity check to make sure that the rest looks like a 
 		   PGP keyring */
-		status = pgpReadPacketHeader( stream, &value, &length, 64, 4096 );
+		status = pgpReadPacketHeader( stream, &value, &length, 64 );
 		if( cryptStatusError( status ) )
 			return( status );
 		if( type == KEYSET_SUBTYPE_PGP_PUBLIC )
@@ -396,7 +389,6 @@ static int openKeysetStream( INOUT STREAM *stream,
 			{
 			BYTE buffer[ 512 + 8 ];
 
-			memset( buffer, 0, 512 );	/* Keep static analysers happy */
 			sioctlSetString( stream, STREAM_IOCTL_IOBUFFER, buffer, 512 );
 			status = getKeysetType( stream, &subType );
 			if( cryptStatusError( status ) )
@@ -448,73 +440,16 @@ static int openKeysetStream( INOUT STREAM *stream,
 	return( CRYPT_OK );
 	}
 
-/* Some flat-file keysets have subtype-specific access restrictions that 
-   are too specific to be captured by the general ACLs.  To handle these, we
-   need to provide subtype-specific checking, which is handled by the 
-   following function */
-
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
-static BOOLEAN isFileKeysetAccessPermitted( INOUT KEYSET_INFO *keysetInfoPtr, 
-											IN_ENUM( KEYMGMT_ITEM ) \
-												const KEYMGMT_ITEM_TYPE accessType,
-											const BOOLEAN isRead )
-	{
-	assert( isWritePtr( keysetInfoPtr, sizeof( KEYSET_INFO ) ) );
-
-	REQUIRES_B( keysetInfoPtr->type == KEYSET_FILE );
-	REQUIRES_B( accessType > KEYMGMT_ITEM_NONE && \
-				accessType < KEYMGMT_ITEM_LAST );
-
-	switch( keysetInfoPtr->subType )
-		{
-		case KEYSET_SUBTYPE_PGP_PUBLIC:
-			/* PGP keysets have odd requirements for write in that a private
-			   key is required in order for it to be written to a public 
-			   keyring if it's a signing key.  This is because of the 
-			   requirement to have signed metadata associated with the key, 
-			   which requires the presence of a private key */
-			if( accessType == KEYMGMT_ITEM_PUBLICKEY && isRead )
-				return( TRUE );
-			if( ( accessType == KEYMGMT_ITEM_PRIVATEKEY || \
-				  accessType == KEYMGMT_ITEM_PUBLICKEY ) && !isRead )
-				return( TRUE );
-			return( FALSE );
-
-		case KEYSET_SUBTYPE_PGP_PRIVATE:
-			if( ( accessType == KEYMGMT_ITEM_PRIVATEKEY || \
-				  accessType == KEYMGMT_ITEM_PUBLICKEY ) && isRead )
-				return( TRUE );
-			return( FALSE );
-
-		case KEYSET_SUBTYPE_PKCS12:
-			if( accessType == KEYMGMT_ITEM_PRIVATEKEY || \
-				accessType == KEYMGMT_ITEM_PUBLICKEY )
-				return( TRUE );
-			return( FALSE );
-
-		case KEYSET_SUBTYPE_PKCS15:
-			if( accessType == KEYMGMT_ITEM_PRIVATEKEY || \
-				accessType == KEYMGMT_ITEM_PUBLICKEY || \
-				accessType == KEYMGMT_ITEM_SECRETKEY || \
-				accessType == KEYMGMT_ITEM_DATA || \
-				accessType == KEYMGMT_ITEM_KEYMETADATA )
-				return( TRUE );
-			return( FALSE );
-		}
-
-	retIntError_Boolean();
-	}
-
 /* Complete the open of a file keyset */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 static int completeKeysetFileOpen( INOUT KEYSET_INFO *keysetInfoPtr,
 								   IN_ENUM( KEYSET_SUBTYPE ) \
-										KEYSET_SUBTYPE subType,
+									KEYSET_SUBTYPE subType,
 								   INOUT STREAM *stream,
 								   IN_BUFFER( nameLength ) const char *name, 
 								   IN_LENGTH_SHORT_MIN( MIN_NAME_LENGTH ) \
-										const int nameLength )
+									const int nameLength )
 	{
 	FILE_INFO *fileInfo = keysetInfoPtr->keysetFile;
 	BYTE buffer[ STREAM_BUFSIZE + 8 ];
@@ -586,7 +521,7 @@ static int completeKeysetFileOpen( INOUT KEYSET_INFO *keysetInfoPtr,
 	ENSURES( keysetInfoPtr->initFunction != NULL && \
 			 keysetInfoPtr->shutdownFunction != NULL && \
 			 keysetInfoPtr->getItemFunction != NULL );
-	ENSURES( subType != KEYSET_SUBTYPE_PKCS15 || \
+	ENSURES( subType != SUBTYPE_KEYSET_FILE || \
 			 ( keysetInfoPtr->getSpecialItemFunction != NULL && \
 			   keysetInfoPtr->setItemFunction != NULL && \
 			   keysetInfoPtr->setSpecialItemFunction != NULL && \
@@ -595,7 +530,6 @@ static int completeKeysetFileOpen( INOUT KEYSET_INFO *keysetInfoPtr,
 			   keysetInfoPtr->getNextItemFunction != NULL ) );
 
 	/* Read the keyset contents into memory */
-	memset( buffer, 0, min( 16, STREAM_BUFSIZE ) );	/* Keep static analysers happy */
 	sioctlSetString( &fileInfo->stream, STREAM_IOCTL_IOBUFFER, buffer, 
 					 STREAM_BUFSIZE );
 	status = keysetInfoPtr->initFunction( keysetInfoPtr, NULL, 0,
@@ -860,10 +794,6 @@ static int keysetMessageFunction( INOUT TYPECAST( KEYSET_INFO * ) \
 								   KEYID_SIZE, TRUE );
 		if( cryptStatusError( status ) )
 			return( status );
-		if( keysetInfoPtr->type == KEYSET_FILE && \
-			!isFileKeysetAccessPermitted( keysetInfoPtr, messageValue, 
-										  TRUE ) )
-			return( CRYPT_ARGERROR_OBJECT );
 		return( keysetInfoPtr->getItemFunction( keysetInfoPtr,
 							&getkeyInfo->cryptHandle, messageValue,
 							keyIDinfo.keyIDtype, keyIDinfo.keyID, 
@@ -878,8 +808,7 @@ static int keysetMessageFunction( INOUT TYPECAST( KEYSET_INFO * ) \
 
 		REQUIRES( messageValue != KEYMGMT_ITEM_PRIVATEKEY || \
 				  ( keysetInfoPtr->type == KEYSET_FILE && \
-					( keysetInfoPtr->subType == KEYSET_SUBTYPE_PGP_PUBLIC || \
-					  keysetInfoPtr->subType == KEYSET_SUBTYPE_PKCS15 || \
+					( keysetInfoPtr->subType == KEYSET_SUBTYPE_PKCS15 || \
 					  keysetInfoPtr->subType == KEYSET_SUBTYPE_PKCS12 ) ) );
 		REQUIRES( ( messageValue != KEYMGMT_ITEM_SECRETKEY && \
 					messageValue != KEYMGMT_ITEM_DATA && \
@@ -914,10 +843,6 @@ static int keysetMessageFunction( INOUT TYPECAST( KEYSET_INFO * ) \
 		status = initKeysetUpdate( keysetInfoPtr, NULL, NULL, 0, FALSE );
 		if( cryptStatusError( status ) )
 			return( status );
-		if( keysetInfoPtr->type == KEYSET_FILE && \
-			!isFileKeysetAccessPermitted( keysetInfoPtr, messageValue, 
-										  FALSE ) )
-			return( CRYPT_ARGERROR_OBJECT );
 		status = keysetInfoPtr->setItemFunction( keysetInfoPtr,
 							setkeyInfo->cryptHandle, messageValue,
 							setkeyInfo->auxInfo, setkeyInfo->auxInfoLength,
@@ -984,8 +909,10 @@ static int keysetMessageFunction( INOUT TYPECAST( KEYSET_INFO * ) \
 				  keyIDinfo.keyID != NULL && \
 				  keyIDinfo.keyIDlength >= MIN_NAME_LENGTH && \
 				  keyIDinfo.keyIDlength < MAX_ATTRIBUTE_SIZE );
-		REQUIRES( getnextcertInfo->auxInfo != NULL && \
-				  getnextcertInfo->auxInfoLength == sizeof( int ) );
+		REQUIRES( ( getnextcertInfo->auxInfo == NULL && \
+					getnextcertInfo->auxInfoLength == 0 ) || \
+				  ( getnextcertInfo->auxInfo != NULL && \
+					getnextcertInfo->auxInfoLength == sizeof( int ) ) );
 
 		/* Fetch the first certificate in a sequence from the keyset */
 		resetErrorInfo( keysetInfoPtr );
@@ -1012,7 +939,6 @@ static int keysetMessageFunction( INOUT TYPECAST( KEYSET_INFO * ) \
 					getnextcertInfo->auxInfoLength == 0 ) || \
 				  ( getnextcertInfo->auxInfo != NULL && \
 					getnextcertInfo->auxInfoLength == sizeof( int ) ) );
-				  /* The state variable may be absent for a 
 		REQUIRES( getnextcertInfo->flags >= KEYMGMT_FLAG_NONE && \
 				  getnextcertInfo->flags < KEYMGMT_FLAG_MAX && \
 				  ( getnextcertInfo->flags & ~KEYMGMT_MASK_CERTOPTIONS ) == 0 );
@@ -1065,12 +991,12 @@ static int openKeyset( OUT_HANDLE_OPT CRYPT_KEYSET *iCryptKeyset,
 					   IN_BUFFER( nameLength ) const char *name, 
 					   IN_LENGTH_SHORT_MIN( MIN_NAME_LENGTH ) const int nameLength,
 					   IN_ENUM_OPT( CRYPT_KEYOPT ) const CRYPT_KEYOPT_TYPE options,
-					   OUT_PTR_OPT KEYSET_INFO **keysetInfoPtrPtr )
+					   OUT_PTR KEYSET_INFO **keysetInfoPtrPtr )
 	{
 	KEYSET_INFO *keysetInfoPtr;
 	STREAM stream;
 	CRYPT_KEYOPT_TYPE localOptions = options;
-	KEYSET_SUBTYPE keysetSubType DUMMY_INIT;
+	KEYSET_SUBTYPE keysetSubType = DUMMY_INIT;
 	OBJECT_SUBTYPE subType;
 	int storageSize, status;
 
@@ -1170,14 +1096,8 @@ static int openKeyset( OUT_HANDLE_OPT CRYPT_KEYSET *iCryptKeyset,
 		/* If it's a limited keyset type that nonetheless allows writing
 		   at least one public/private key, mark it as a restricted-function
 		   keyset */
-#ifdef USE_PKCS12
 		if( keysetSubType == KEYSET_SUBTYPE_PKCS12 )
 			subType = SUBTYPE_KEYSET_FILE_PARTIAL;
-#endif /* USE_PKCS12 */
-#ifdef USE_PGP
-		if( keysetSubType == KEYSET_SUBTYPE_PGP_PUBLIC )
-			subType = SUBTYPE_KEYSET_FILE_PARTIAL;
-#endif /* USE_PGP */
 
 		/* Make sure that the open-mode that's been specified is compatible
 		   with the object subtype */
@@ -1400,9 +1320,6 @@ int keysetManagementFunction( IN_ENUM( MANAGEMENT_ACTION ) \
 	switch( action )
 		{
 		case MANAGEMENT_ACTION_INIT:
-#ifdef CONFIG_FUZZ
-			return( CRYPT_OK );
-#endif /* CONFIG_FUZZ */
 			status = dbxInitODBC();
 			if( cryptStatusOK( status ) )
 				{
@@ -1420,13 +1337,9 @@ int keysetManagementFunction( IN_ENUM( MANAGEMENT_ACTION ) \
 
 		case MANAGEMENT_ACTION_SHUTDOWN:
 			if( initLevel > 1 )
-				{
 				dbxEndLDAP();
-				}
 			if( initLevel > 0 )
-				{
 				dbxEndODBC();
-				}
 			initLevel = 0;
 			return( CRYPT_OK );
 		}

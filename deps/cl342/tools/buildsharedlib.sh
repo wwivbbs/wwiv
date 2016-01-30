@@ -41,23 +41,23 @@ LINKFILE=link.tmp
 
 # Make sure that we've been given sufficient arguments.
 
-if [ -z "$1" ] ; then
+if [ "$1" = "" ] ; then
 	echo "$0: Missing OS name." >&2 ;
 	exit 1 ;
 fi
-if [ -z "$2" ] ; then
+if [ "$2" = "" ] ; then
 	echo "$0: Missing library name." >&2 ;
 	exit 1 ;
 fi
-if [ -z "$3" ] ; then
+if [ "$3" = "" ] ; then
 	echo "$0: Missing linker name." >&2 ;
 	exit 1 ;
 fi
-if [ -z "$4" ] ; then
+if [ "$4" = "" ] ; then
 	echo "$0: Missing 'strip' command name." >&2 ;
 	exit 1 ;
 fi
-if [ -z "$5" ] ; then
+if [ "$5" = "" ] ; then
 	echo "$0: Missing object filenames." >&2 ;
 	exit 1 ;
 fi
@@ -89,21 +89,14 @@ echo $* > $LINKFILE
 # it much harder to mess with library internals by getting your own symbols
 # referenced before the library-internal ones (for example by using
 # LD_PRELOAD), thus redirecting control flow to arbitrary external code.
-#
-# iOS doesn't allow shared libraries because this would allow you to bypass
-# their walled garden, so we explicitly disallow them for iOS builds.
 
 case $OSNAME in
 	'AIX')
 		$LD -o shrlibcl.o -bE:cryptlib.exp -bM:SRE -bnoentry -lpthread \
 			`cat $LINKFILE` `./tools/getlibs.sh AIX` ;
-		ar -q $LIBNAME.a shrlibcl.o ;
-		rm -f shrlibcl.o ;
+		ar -q $LIBNAME.a shrlibcl.o;
+		rm -f shrlibcl.o;
 		chmod 750 $LIBNAME.a ;;
-
-	'Android')
-		$LD -shared -o $LIBNAME `cat $LINKFILE` `./tools/getlibs.sh Android` ;
-		$STRIP $LIBNAME ;;
 
 	'BeOS' )
 		$LD -nostart -o $LIBNAME `cat $LINKFILE` `./tools/getlibs.sh BeOS` ;
@@ -116,9 +109,6 @@ case $OSNAME in
 			$LD -b -o libcl.sl `cat $LINKFILE` `./tools/getlibs.sh HP-UX` ;
 		fi
 		$STRIP libcl.sl ;;
-
-	'iOS')
-		echo "iOS doesn't allow shared libraries, you must use a static library." ;;
 
 	'SunOS')
 		if [ $LD = "gcc" ] ; then

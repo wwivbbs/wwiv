@@ -515,12 +515,12 @@ static int updateTrustedCerts( IN_HANDLE const CRYPT_HANDLE iCryptHandle,
 
 /* Run a plug-and-play PKI session */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 int pnpPkiSession( INOUT SESSION_INFO *sessionInfoPtr )
 	{
 	CRYPT_DEVICE iCryptDevice = SYSTEM_OBJECT_HANDLE;
 	CRYPT_CONTEXT iPrivateKey1, iPrivateKey2 ;
-	CRYPT_CERTIFICATE iCertReq, iCACert DUMMY_INIT;
+	CRYPT_CERTIFICATE iCertReq, iCACert = DUMMY_INIT;
 	const ATTRIBUTE_LIST *attributeListPtr;
 	const ATTRIBUTE_LIST *passwordPtr = \
 				findSessionInfo( sessionInfoPtr->attributeList,
@@ -600,7 +600,7 @@ int pnpPkiSession( INOUT SESSION_INFO *sessionInfoPtr )
 	/* Get the CA/RA certificate from the returned CTL and set it as the 
 	   certificate to use for authenticating server responses */
 	attributeListPtr = findSessionInfo( sessionInfoPtr->attributeList,
-										CRYPT_SESSINFO_SERVER_FINGERPRINT_SHA1 );
+										CRYPT_SESSINFO_SERVER_FINGERPRINT );
 	if( attributeListPtr != NULL )
 		{
 		status = getCACert( &iCACert, sessionInfoPtr->iCertResponse, 

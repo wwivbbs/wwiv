@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *							cryptlib Internal API							*
-*						Copyright Peter Gutmann 1992-2014					*
+*						Copyright Peter Gutmann 1992-2007					*
 *																			*
 ****************************************************************************/
 
@@ -27,48 +27,20 @@
    this check requires at least 64 bits of data in order to produce useful
    results */
 
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
-static BOOLEAN checkNontrivialKey( IN_BUFFER( dataLength ) const BYTE *data, 
-								   IN_LENGTH_SHORT_MIN( MIN_KEYSIZE ) const int dataLength )
-	{
-	int i;
-
-	for( i = 0; i < dataLength; i++	)
-		{
-		if( !isAlnum( data[ i ] ) )
-			break;
-		}
-	if( i >= dataLength )
-		return( FALSE );
-
-	for( i = 0; i < dataLength - 1; i++ )
-		{
-		const int delta = abs( data[ i ] - data[ i + 1 ] );
-
-		if( delta > 8 )
-			break;
-		}
-	if( i >= dataLength - 1 )
-		return( FALSE );
-
-	return( TRUE );
-	}
-
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 BOOLEAN checkEntropy( IN_BUFFER( dataLength ) const BYTE *data, 
 					  IN_LENGTH_SHORT_MIN( MIN_KEYSIZE ) const int dataLength )
 	{
 	const int delta = ( dataLength < 16 ) ? 1 : 0;
-	int bitCount[ 8 + 8 ], noOnes, i;
+	int bitCount[ 4 + 8 ] = { 0 }, noOnes, i;
 
 	assert( isReadPtr( data, dataLength ) );
 	
 	REQUIRES_B( dataLength >= MIN_KEYSIZE && dataLength < MAX_INTLENGTH_SHORT );
 
-	memset( bitCount, 0, sizeof( int ) * 9 );
 	for( i = 0; i < dataLength; i++ )
 		{
-		const int value = byteToInt( data[ i ] );
+		const int value = data[ i ];
 
 		bitCount[ value & 3 ]++;
 		bitCount[ ( value >> 2 ) & 3 ]++;
@@ -80,10 +52,7 @@ BOOLEAN checkEntropy( IN_BUFFER( dataLength ) const BYTE *data,
 	   are zeroes */
 	noOnes = bitCount[ 1 ] + bitCount[ 2 ] + ( 2 * bitCount[ 3 ] );
 	if( noOnes < dataLength * 2 || noOnes > dataLength * 6 )
-		{
-		zeroise( bitCount, 8 * sizeof( int ) );
 		return( FALSE );
-		}
 
 	/* Poker test (almost): Make sure that each bit pair is present at least
 	   1/16 of the time.  The FIPS 140 version uses 4-bit values but the
@@ -98,12 +67,8 @@ BOOLEAN checkEntropy( IN_BUFFER( dataLength ) const BYTE *data,
 		( bitCount[ 1 ] + delta < dataLength / 2 ) || \
 		( bitCount[ 2 ] + delta < dataLength / 2 ) || \
 		( bitCount[ 3 ] + delta < dataLength / 2 ) )
-		{
-		zeroise( bitCount, 8 * sizeof( int ) );
 		return( FALSE );
-		}
 
-	zeroise( bitCount, 8 * sizeof( int ) );
 	return( TRUE );
 	}
 
@@ -120,8 +85,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int attributeCopyParams( OUT_BUFFER_OPT( destMaxLength, \
 										 *destLength ) void *dest, 
 						 IN_LENGTH_SHORT_Z const int destMaxLength, 
-						 OUT_LENGTH_BOUNDED_SHORT_Z( destMaxLength ) \
-							int *destLength, 
+						 OUT_LENGTH_SHORT_Z int *destLength, 
 						 IN_BUFFER_OPT( sourceLength ) const void *source, 
 						 IN_LENGTH_SHORT_Z const int sourceLength )
 	{
@@ -187,15 +151,11 @@ BOOLEAN algoAvailable( IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo )
 				cryptAlgo < CRYPT_ALGO_LAST );
 
 	/* Short-circuit check for always-available algorithms.  The kernel 
-	   won't initialise without the symmetric and hash algorithms being 
-	   present (and SHA-x implies HMAC-SHAx) so it's safe to hardcode them 
-	   in here */
+	   won't initialise without the first two being present (and SHA-1
+	   implies HMAC-SHA1) so it's safe to hardcode them in here */
 	if( cryptAlgo == CRYPT_ALGO_3DES || \
-		cryptAlgo == CRYPT_ALGO_AES || \
 		cryptAlgo == CRYPT_ALGO_SHA1 || \
 		cryptAlgo == CRYPT_ALGO_HMAC_SHA1 || \
-		cryptAlgo == CRYPT_ALGO_SHA2 || \
-		cryptAlgo == CRYPT_ALGO_HMAC_SHA2 || \
 		cryptAlgo == CRYPT_ALGO_RSA )
 		return( TRUE );
 
@@ -204,18 +164,18 @@ BOOLEAN algoAvailable( IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo )
 									cryptAlgo ) ) ? TRUE : FALSE );
 	}
 
-/* For a given hash algorithm pair, check whether the first is stronger than 
-   the second.  The order is:
+/* For a given algorithm pair, check whether the first is stronger than the
+   second.  For hashes the order is:
 
-	SNAng > SHA2 > SHA-1 > all others */
+	SHA2 > RIPEMD160 > SHA-1 > all others */
 
 CHECK_RETVAL_BOOL \
 BOOLEAN isStrongerHash( IN_ALGO const CRYPT_ALGO_TYPE algorithm1,
 						IN_ALGO const CRYPT_ALGO_TYPE algorithm2 )
 	{
 	static const CRYPT_ALGO_TYPE algoPrecedence[] = {
-		CRYPT_ALGO_SHAng, CRYPT_ALGO_SHA2, CRYPT_ALGO_SHA1, 
-		CRYPT_ALGO_NONE, CRYPT_ALGO_NONE };
+		CRYPT_ALGO_SHAng, CRYPT_ALGO_SHA2, CRYPT_ALGO_RIPEMD160, 
+		CRYPT_ALGO_SHA1, CRYPT_ALGO_NONE, CRYPT_ALGO_NONE };
 	int algo1index, algo2index;
 
 	REQUIRES_B( isHashAlgo( algorithm1 ) );
@@ -258,16 +218,14 @@ BOOLEAN isStrongerHash( IN_ALGO const CRYPT_ALGO_TYPE algorithm1,
    all that we do is cache the data from CRYPT_IATTRIBUTE_RANDOM_NONCE and 
    pull out a small integer's worth on each call */
 
-#define RANDOM_BUFFER_SIZE	16
+#define RANDOM_BUFFER_SIZE	8
 
-CHECK_RETVAL_RANGE_NOERROR( 0, 32767 ) \
+CHECK_RETVAL_RANGE( 0, 32767 ) \
 int getRandomInteger( void )
 	{
 	static BYTE nonceData[ RANDOM_BUFFER_SIZE + 8 ];
 	static int nonceIndex = 0;
 	int returnValue, status;
-
-	REQUIRES_EXT( !( nonceIndex & 1 ), 0 );
 
 	/* Initialise/reinitialise the nonce data if necessary.  See the long 
 	   coment for getNonce() in system.c for the reason why we don't bail 
@@ -285,10 +243,10 @@ int getRandomInteger( void )
 		}
 
 	/* Extract the next random integer value from the buffered data */
-	returnValue = ( byteToInt( nonceData[ nonceIndex ] ) << 8 ) | \
-					byteToInt( nonceData[ nonceIndex + 1 ] );
+	returnValue = ( nonceData[ nonceIndex ] << 8 ) | \
+					nonceData[ nonceIndex + 1 ];
 	nonceIndex = ( nonceIndex + 2 ) % RANDOM_BUFFER_SIZE;
-	ENSURES_EXT( nonceIndex >= 0 && nonceIndex < RANDOM_BUFFER_SIZE, 0 );
+	ENSURES( nonceIndex >= 0 && nonceIndex < RANDOM_BUFFER_SIZE );
 
 	/* Return the value constrained to lie within the range 0...32767 */
 	return( returnValue & 0x7FFF );
@@ -338,28 +296,27 @@ int mapValue( IN_INT_SHORT_Z const int srcValue,
 *																			*
 ****************************************************************************/
 
-/* Calculate a 16-bit Fletcher-like checksum for a block of data.  This 
-   isn't quite a pure Fletcher checksum, this isn't a big deal since all we 
-   need is consistent results for identical data, the value itself is never 
-   communicated externally.  In cases where it's used in critical checks 
-   it's merely used as a quick pre-check for a full hash-based check, so it 
-   doesn't have to be perfect.  In addition it's not in any way 
-   cryptographically secure for the same reason, there's no particular need 
-   for it to be secure.  If a requirement for at least some sort of 
-   unpredictability did arise then something like Pearson hashing could be 
-   substituted transparently */
+/* Calculate a 16-bit Fletcher-like checksum of a block of data.  This isn't
+   quite a pure Fletcher checksum because we don't bother keeping the
+   accumulators at 8 bits and also don't need to set the initial value to
+   nonzero since we'll never see a sequence of zero bytes.  This isn't a big
+   deal since all we need is consistent results for identical data, the 
+   value itself is never communicated externally.  In addition we don't 
+   bother with masking to 16 bits during the calculation process (although 
+   we mask at the end to avoid potential problems with sign bits) since it's 
+   not being used as a true checksum */
 
 RETVAL_RANGE( MAX_ERROR, 0xFFFF ) STDC_NONNULL_ARG( ( 1 ) ) \
 int checksumData( IN_BUFFER( dataLength ) const void *data, 
-				  IN_DATALENGTH const int dataLength )
+				  IN_LENGTH const int dataLength )
 	{
 	const BYTE *dataPtr = data;
-	int sum1 = 1, sum2 = 0, i;
+	int sum1 = 0, sum2 = 0, i;
 
 	assert( isReadPtr( data, dataLength ) );
 
 	REQUIRES( data != NULL );
-	REQUIRES( dataLength > 0 && dataLength < MAX_BUFFER_SIZE )
+	REQUIRES( dataLength > 0 && dataLength < MAX_INTLENGTH )
 
 	for( i = 0; i < dataLength; i++ )
 		{
@@ -367,11 +324,7 @@ int checksumData( IN_BUFFER( dataLength ) const void *data,
 		sum2 += sum1;
 		}
 
-#if defined( SYSTEM_16BIT )
-	return( sum2 & 0x7FFF );
-#else
-	return( ( ( sum2 & 0x7FFF ) << 16 ) | ( sum1 & 0xFFFF ) );
-#endif /* 16- vs. 32-bit systems */
+	return( sum2 & 0xFFFF );
 	}
 
 /* Calculate the hash of a block of data.  We use SHA-1 because it's the 
@@ -383,7 +336,7 @@ STDC_NONNULL_ARG( ( 1, 3 ) ) \
 void hashData( OUT_BUFFER_FIXED( hashMaxLength ) BYTE *hash, 
 			   IN_LENGTH_HASH const int hashMaxLength, 
 			   IN_BUFFER( dataLength ) const void *data, 
-			   IN_DATALENGTH const int dataLength )
+			   IN_LENGTH const int dataLength )
 	{
 	static HASHFUNCTION_ATOMIC hashFunctionAtomic = NULL;
 	static int hashSize;
@@ -393,7 +346,7 @@ void hashData( OUT_BUFFER_FIXED( hashMaxLength ) BYTE *hash,
 	assert( hashMaxLength >= 16 && \
 			hashMaxLength <= CRYPT_MAX_HASHSIZE );
 	assert( isReadPtr( data, dataLength ) );
-	assert( dataLength > 0 && dataLength < MAX_BUFFER_SIZE );
+	assert( dataLength > 0 && dataLength < MAX_INTLENGTH );
 
 	/* Get the hash algorithm information if necessary */
 	if( hashFunctionAtomic == NULL )
@@ -410,7 +363,7 @@ void hashData( OUT_BUFFER_FIXED( hashMaxLength ) BYTE *hash,
 	   ensure that we never get a false-positive match but since this is a 
 	   should-never-occur condition anyway it's not certain whether forcing 
 	   a match or forcing a non-match is the preferred behaviour */
-	if( data == NULL || dataLength <= 0 || dataLength >= MAX_BUFFER_SIZE || \
+	if( data == NULL || dataLength <= 0 || dataLength >= MAX_INTLENGTH || \
 		hashMaxLength < 16 || hashMaxLength > hashSize || \
 		hashMaxLength > CRYPT_MAX_HASHSIZE || hashFunctionAtomic == NULL )
 		{
@@ -422,9 +375,9 @@ void hashData( OUT_BUFFER_FIXED( hashMaxLength ) BYTE *hash,
 	   the output.  Typically they'll require only a subset of the full 
 	   amount since all that we're doing is transforming a variable-length
 	   value to a fixed-length value for easy comparison purposes */
-	hashFunctionAtomic( hashBuffer, hashSize, data, dataLength );
+	hashFunctionAtomic( hashBuffer, 20, data, dataLength );
 	memcpy( hash, hashBuffer, hashMaxLength );
-	zeroise( hashBuffer, hashSize );
+	zeroise( hashBuffer, 20 );
 	}
 
 /* Compare two blocks of memory in a time-independent manner.  This is used 
@@ -514,7 +467,7 @@ static int exportAttr( INOUT STREAM *stream,
 	status = krnlSendMessage( cryptHandle, IMESSAGE_GETATTRIBUTE_S,
 							  &msgData, attributeType );
 	if( cryptStatusOK( status ) )
-		status = sSkip( stream, msgData.length, SSKIP_MAX );
+		status = sSkip( stream, msgData.length );
 	return( status );
 	}
 
@@ -546,8 +499,7 @@ int exportVarsizeAttributeToStream( INOUT TYPECAST( STREAM * ) void *streamPtr,
 
 	REQUIRES( cryptHandle == SYSTEM_OBJECT_HANDLE );
 	REQUIRES( attributeType == CRYPT_IATTRIBUTE_RANDOM_NONCE );
-	REQUIRES( attributeDataLength >= 8 && \
-			  attributeDataLength <= MAX_ATTRIBUTE_SIZE );
+	REQUIRES( attributeDataLength >= 8 && attributeDataLength <= 1024 );
 
 	return( exportAttr( streamPtr, cryptHandle, attributeType, 
 						attributeDataLength ) );
@@ -579,12 +531,12 @@ int exportCertToStream( INOUT TYPECAST( STREAM * ) void *streamPtr,
 			return( status );
 		}
 
-	/* Export the certificate directly into the stream buffer */
+	/* Export the cert directly into the stream buffer */
 	setMessageData( &msgData, dataPtr, length );
 	status = krnlSendMessage( cryptCertificate, IMESSAGE_CRT_EXPORT,
 							  &msgData, certFormatType );
 	if( cryptStatusOK( status ) )
-		status = sSkip( stream, msgData.length, SSKIP_MAX );
+		status = sSkip( stream, msgData.length );
 	return( status );
 	}
 
@@ -595,8 +547,7 @@ int importCertFromStream( INOUT void *streamPtr,
 						  IN_ENUM( CRYPT_CERTTYPE ) \
 							const CRYPT_CERTTYPE_TYPE certType, 
 						  IN_LENGTH_SHORT_MIN( MIN_CRYPT_OBJECTSIZE ) \
-							const int certDataLength,
-						  IN_FLAGS_Z( KEYMGMT ) const int options )
+							const int certDataLength )
 	{
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	STREAM *stream = streamPtr;
@@ -613,8 +564,6 @@ int importCertFromStream( INOUT void *streamPtr,
 			  certType < CRYPT_CERTTYPE_LAST );
 	REQUIRES( certDataLength >= MIN_CRYPT_OBJECTSIZE && \
 			  certDataLength < MAX_INTLENGTH_SHORT );
-	REQUIRES( options >= KEYMGMT_FLAG_NONE && options < KEYMGMT_FLAG_MAX && \
-			  ( options & ~KEYMGMT_FLAG_DATAONLY_CERT ) == 0 );
 
 	/* Clear return value */
 	*cryptCertificate = CRYPT_ERROR;
@@ -622,15 +571,13 @@ int importCertFromStream( INOUT void *streamPtr,
 	/* Get access to the stream buffer and skip over the certificate data */
 	status = sMemGetDataBlock( stream, &dataPtr, certDataLength );
 	if( cryptStatusOK( status ) )
-		status = sSkip( stream, certDataLength, SSKIP_MAX );
+		status = sSkip( stream, certDataLength );
 	if( cryptStatusError( status ) )
 		return( status );
 
-	/* Import the certificate directly from the stream buffer */
-	setMessageCreateObjectIndirectInfoEx( &createInfo, dataPtr, 
-						certDataLength, certType,
-						( options & KEYMGMT_FLAG_DATAONLY_CERT ) ? \
-							KEYMGMT_FLAG_DATAONLY_CERT : KEYMGMT_FLAG_NONE );
+	/* Import the cert directly from the stream buffer */
+	setMessageCreateObjectIndirectInfo( &createInfo, dataPtr, 
+										certDataLength, certType );
 	createInfo.cryptOwner = iCryptOwner;
 	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE,
 							  IMESSAGE_DEV_CREATEOBJECT_INDIRECT,
@@ -646,8 +593,6 @@ int importCertFromStream( INOUT void *streamPtr,
 *							Public-key Import Routines						*
 *																			*
 ****************************************************************************/
-
-#ifdef USE_INT_ASN1
 
 /* Read a public key from an X.509 SubjectPublicKeyInfo record, creating the
    context necessary to contain it in the process.  This is used by a variety
@@ -726,7 +671,7 @@ int iCryptReadSubjectPublicKey( INOUT TYPECAST( STREAM * ) void *streamPtr,
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	MESSAGE_DATA msgData;
 	STREAM *stream = streamPtr;
-	void *spkiPtr DUMMY_INIT_PTR;
+	void *spkiPtr = DUMMY_INIT_PTR;
 	int spkiLength, length, status;
 
 	assert( isReadPtr( stream, sizeof( STREAM ) ) );
@@ -742,7 +687,7 @@ int iCryptReadSubjectPublicKey( INOUT TYPECAST( STREAM * ) void *streamPtr,
 	   least generally) valid before we go to the extent of creating an 
 	   encryption context to contain it and to get access to the 
 	   SubjectPublicKeyInfo data and algorithm information.  Because all 
-	   sorts of bizarre tagging exist due to things like CRMF we read the 
+	   sorts of bizarre tagging exists due to things like CRMF we read the 
 	   wrapper as a generic hole rather than the more obvious SEQUENCE */
 	status = getStreamObjectLength( stream, &spkiLength );
 	if( cryptStatusOK( status ) )
@@ -796,21 +741,11 @@ int iCryptReadSubjectPublicKey( INOUT TYPECAST( STREAM * ) void *streamPtr,
 	if( cryptStatusError( status ) )
 		{
 		krnlSendNotifier( iCryptContext, IMESSAGE_DECREFCOUNT );
-		if( status == CRYPT_ARGERROR_STR1 || \
-			status == CRYPT_ARGERROR_NUM1 )
-			{
-			/* If the key data was rejected by the kernel before it got to 
-			   the SubjectPublicKeyInfo read code (see the comment above) 
-			   then it'll be rejected with an argument-error code, which we
-			   have to convert to a bad-data error before returning it to 
-			   the caller */
-			return( CRYPT_ERROR_BADDATA );
-			}
 		if( cryptArgError( status ) )
 			{
 			DEBUG_DIAG(( "Public-key load returned argError status" ));
 			assert( DEBUG_WARN );
-			status = CRYPT_ERROR_BADDATA;
+			return( CRYPT_ERROR_BADDATA );
 			}
 		return( status );
 		}
@@ -820,15 +755,12 @@ int iCryptReadSubjectPublicKey( INOUT TYPECAST( STREAM * ) void *streamPtr,
 								 NULL, MESSAGE_CHECK_PKC_PRIVATE ) ) );
 	return( CRYPT_OK );
 	}
-#endif /* USE_INT_ASN1 */
 
 /****************************************************************************
 *																			*
 *							Safe Text-line Read Functions					*
 *																			*
 ****************************************************************************/
-
-#if defined( USE_HTTP ) || defined( USE_BASE64 ) || defined( USE_SSH )
 
 /* Read a line of text data ending in an EOL.  If we get more data than will 
    fit into the read buffer we discard it until we find an EOL.  As a 
@@ -840,7 +772,7 @@ int iCryptReadSubjectPublicKey( INOUT TYPECAST( STREAM * ) void *streamPtr,
    whitespace is handled by walking back through any final whitespace once we 
    see the EOL. 
    
-   We optionally handle continued lines denoted by the MIME convention of a 
+   We also handle continued lines denoted by the MIME convention of a 
    semicolon as the last non-whitespace character by setting the 
    seenContinuation flag if we see a semicolon as the last non-whitespace 
    character.
@@ -852,40 +784,22 @@ int iCryptReadSubjectPublicKey( INOUT TYPECAST( STREAM * ) void *streamPtr,
 
 /* The extra level of indirection provided by this function is necessary 
    because the the extended error information isn't accessible from outside 
-   the stream code so we can't set it in formatTextLineError() in the usual 
-   manner via a retExt().  Instead we call retExtFn() directly and then pass 
-   the result down to the stream layer via an ioctl */
+   the stream code so we can't set it in readTextLine() in the usual manner 
+   via a retExt().  Instead we use a retExt() in the dummy function
+   formatTextLineError() and then pass it down to the stream layer via an 
+   ioctl */
 
-CHECK_RETVAL_ERROR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int exitTextLineError( INOUT STREAM *stream,
-							  FORMAT_STRING const char *format, 
-							  const int value1, const int value2,
-							  OUT_OPT_BOOL BOOLEAN *localError,
-							  IN_ERROR const int status )
+RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+static int formatTextLineError( OUT ERROR_INFO *errorInfo,
+								FORMAT_STRING const char *format, 
+								const int value1, const int value2 )
 	{
-	ERROR_INFO errorInfo;
-
-	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+	assert( isWritePtr( errorInfo, sizeof( ERROR_INFO ) ) );
 	assert( isReadPtr( format, 4 ) );
-	assert( localError == NULL || \
-			isReadPtr( localError, sizeof( BOOLEAN ) ) );
 
-	REQUIRES( cryptStatusError( status ) );
-
-	/* If the stream doesn't support extended error information, we're 
-	   done */
-	if( localError == NULL )
-		return( status );
-
-	/* The CRYPT_ERROR_BADDATA is a dummy code used in order to be able to 
-	   call retExtFn() to format the error string */
-	*localError = TRUE;
-	( void ) retExtFn( CRYPT_ERROR_BADDATA, &errorInfo, format, 
-					   value1, value2 );
-	sioctlSetString( stream, STREAM_IOCTL_ERRORINFO, &errorInfo, 
-					 sizeof( ERROR_INFO ) );
-
-	return( status );
+	retExt( CRYPT_ERROR_BADDATA, 
+			( CRYPT_ERROR_BADDATA, errorInfo, 
+			  format, value1, value2 ) );
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 5 ) ) \
@@ -894,9 +808,8 @@ int readTextLine( READCHARFUNCTION readCharFunction,
 				  OUT_BUFFER( lineBufferMaxLen, *lineBufferSize ) \
 						char *lineBuffer,
 				  IN_LENGTH_SHORT_MIN( 16 ) const int lineBufferMaxLen, 
-				  OUT_RANGE( 0, lineBufferMaxLen ) int *lineBufferSize, 
-				  OUT_OPT_BOOL BOOLEAN *localError,
-				  const BOOLEAN allowContinuation )
+				  OUT_LENGTH_SHORT_Z int *lineBufferSize, 
+				  OUT_OPT_BOOL BOOLEAN *localError )
 	{
 	BOOLEAN seenWhitespace, seenContinuation = FALSE;
 	int totalChars, bufPos = 0;
@@ -931,22 +844,21 @@ int readTextLine( READCHARFUNCTION readCharFunction,
 		if( cryptStatusError( ch ) )
 			return( ch );
 
-		/* If it's an EOL or a continuation marker, strip trailing 
-		   whitespace */
-		if( ch == '\n' || ( allowContinuation && ch == ';' ) )
+		/* Process EOL */
+		if( ch == '\n' )
 			{
 			/* Strip trailing whitespace.  At this point it's all been
 			   canonicalised so we don't need to check for anything other 
 			   than spaces */
 			while( bufPos > 0 && lineBuffer[ bufPos - 1 ] == ' ' )
 				bufPos--;
-			}
 
-		/* Process EOL */
-		if( ch == '\n' )
-			{
-			/* If we've seen a continuation marker, the line continues on 
-			   the next one */
+			/* If we've seen a continuation marker as the last non-
+			   whitespace char, the line continues on the next one.  This
+			   can theoretically result in stripping a space at the end of
+			   a line but since continuations are only placed at MIME
+			   keyword separators the space is superfluous and can be 
+			   safely removed */
 			if( seenContinuation )
 				{
 				seenContinuation = FALSE;
@@ -964,16 +876,22 @@ int readTextLine( READCHARFUNCTION readCharFunction,
 		/* If we're over the maximum buffer size discard any further input
 		   until we either hit EOL or exceed the DoS threshold at
 		   MAX_LINE_LENGTH */
-		if( bufPos >= lineBufferMaxLen )
+		if( bufPos > lineBufferMaxLen - 8 )
 			{
 			/* If we've run off into the weeds (for example we're reading 
 			   binary data following the text header), bail out */
-			if( !isValidTextChar( ch ) )
+			if( ch <= 0 || ch > 0x7F || !isPrint( ch ) )
 				{
-				return( exitTextLineError( streamPtr, "Invalid character "
-										   "0x%02X at position %d", ch, 
-										   totalChars, localError,
-										   CRYPT_ERROR_BADDATA ) );
+				ERROR_INFO errorInfo;
+
+				if( localError != NULL )
+					*localError = TRUE;
+				formatTextLineError( &errorInfo, "Invalid character 0x%02X "
+									 "at position %d", ch, totalChars );
+				sioctlSetString( streamPtr, STREAM_IOCTL_ERRORINFO, 
+								 &errorInfo, sizeof( ERROR_INFO ) );
+
+				return( CRYPT_ERROR_BADDATA );
 				}
 			continue;
 			}
@@ -992,12 +910,18 @@ int readTextLine( READCHARFUNCTION readCharFunction,
 			}
 
 		/* Process any remaining chars */
-		if( !isValidTextChar( ch ) )
+		if( ch <= 0 || ch > 0x7F || !isPrint( ch ) )
 			{
-			return( exitTextLineError( streamPtr, "Invalid character "
-									   "0x%02X at position %d", ch, 
-									   totalChars, localError,
-									   CRYPT_ERROR_BADDATA ) );
+			ERROR_INFO errorInfo;
+
+			if( localError != NULL )
+				*localError = TRUE;
+			formatTextLineError( &errorInfo, "Invalid character 0x%02X at "
+								 "position %d", ch, totalChars );
+			sioctlSetString( streamPtr, STREAM_IOCTL_ERRORINFO, &errorInfo, 
+							 sizeof( ERROR_INFO ) );
+
+			return( CRYPT_ERROR_BADDATA );
 			}
 		lineBuffer[ bufPos++ ] = intToByte( ch );
 		ENSURES( bufPos > 0 && bufPos <= totalChars + 1 );
@@ -1011,159 +935,23 @@ int readTextLine( READCHARFUNCTION readCharFunction,
 		   continuation character (which makes it effectively leading 
 		   whitespace to be stripped), remember this */
 		seenWhitespace = ( ch == ' ' ) ? TRUE : FALSE;
-		seenContinuation = allowContinuation && \
-						   ( ch == ';' || \
+		seenContinuation = ( ch == ';' || \
 						     ( seenContinuation && seenWhitespace ) ) ? \
 						   TRUE : FALSE;
 		}
 	if( totalChars >= MAX_LINE_LENGTH )
 		{
-		return( exitTextLineError( streamPtr, "Text line too long, more "
-								   "than %d characters", MAX_LINE_LENGTH, 0, 
-								   localError, CRYPT_ERROR_OVERFLOW ) );
+		ERROR_INFO errorInfo;
+
+		if( localError != NULL )
+			*localError = TRUE;
+		formatTextLineError( &errorInfo, "Text line too long", 0, 0 );
+		sioctlSetString( streamPtr, STREAM_IOCTL_ERRORINFO, &errorInfo, 
+						 sizeof( ERROR_INFO ) );
+
+		return( CRYPT_ERROR_OVERFLOW );
 		}
 	*lineBufferSize = bufPos;
 
 	return( CRYPT_OK );
 	}
-#endif /* USE_HTTP || USE_BASE64 || USE_SSH */
-
-/****************************************************************************
-*																			*
-*								Self-test Functions							*
-*																			*
-****************************************************************************/
-
-/* Test code for the above functions */
-
-#ifndef NDEBUG
-
-#if defined( USE_HTTP ) || defined( USE_BASE64 ) || defined( USE_SSH )
-
-#include "io/stream.h"
-
-CHECK_RETVAL_RANGE( 0, 255 ) STDC_NONNULL_ARG( ( 1 ) ) \
-static int readCharFunction( INOUT TYPECAST( STREAM * ) void *streamPtr )
-	{
-	STREAM *stream = streamPtr;
-	BYTE ch;
-	int status;
-
-	assert( isWritePtr( stream, sizeof( STREAM ) ) );
-
-	status = sread( stream, &ch, 1 );
-	return( cryptStatusError( status ) ? status : byteToInt( ch ) );
-	}
-
-CHECK_RETVAL_BOOL \
-static BOOLEAN testReadLine( IN_BUFFER( dataInLength ) char *dataIn,
-							 IN_LENGTH_SHORT_MIN( 8 ) const int dataInLength, 
-							 IN_BUFFER( dataOutLength ) char *dataOut,
-							 IN_LENGTH_SHORT_MIN( 1 ) const int dataOutLength,
-							 const BOOLEAN allowContinuation )
-	{
-	STREAM stream;
-	BYTE buffer[ 16 + 8 ];
-	int length, status;
-
-	assert( isReadPtr( dataIn, dataInLength ) );
-	assert( isReadPtr( dataOut, dataOutLength ) );
-
-	REQUIRES( dataInLength >= 8 && dataInLength < MAX_INTLENGTH_SHORT );
-	REQUIRES( dataOutLength >= 1 && dataOutLength < MAX_INTLENGTH_SHORT );
-
-	sMemPseudoConnect( &stream, dataIn, dataInLength );
-	status = readTextLine( readCharFunction, &stream, buffer, 16, 
-						   &length, NULL, allowContinuation );
-	if( cryptStatusError( status ) )
-		return( FALSE );
-	if( length != dataOutLength || memcmp( buffer, dataOut, dataOutLength ) )
-		return( FALSE );
-	sMemDisconnect( &stream );
-
-	return( TRUE );
-	}
-#endif /* USE_HTTP || USE_BASE64 || USE_SSH */
-
-CHECK_RETVAL_BOOL \
-BOOLEAN testIntAPI( void )
-	{
-#if 0
-checkNontrivialKey( "\x2E\x19\x76\x57\xDB\x30\xE6\x26", 8 );
-checkNontrivialKey( "\x14\xF3\x3C\x5A\xB8\x63\x13\xFB", 8 );
-checkNontrivialKey( "\x7B\xE0\xE4\x14\x5C\x7C\x2C\x07", 8 );
-checkNontrivialKey( "\xD3\x9C\x16\x37\xAD\x12\x19\xA2", 8 );
-checkNontrivialKey( "\x7F\x6B\x30\xAD\x02\x83\x96\xF9", 8 );
-checkNontrivialKey( "\x79\x92\xF9\xD1\x75\x43\x56\x87", 8 );
-checkNontrivialKey( "\x62\xAF\x14\xCF\x1F\x5F\xA7\xC6", 8 );
-checkNontrivialKey( "\xAE\x57\xF3\x63\x45\x03\x2E\x6B", 8 );
-checkNontrivialKey( "abcdefgh", 8 );
-checkNontrivialKey( "\x01\x23\x45\x67\x89\xAB\xCD\xEF", 8 );
-checkNontrivialKey( "\xA5\x5A\xA5\x5A\xA5\x5A\xA5\x5A", 8 );
-#endif
-
-	/* Test the entropy-check code */
-	if( !checkEntropy( "\x2E\x19\x76\x57\xDB\x30\xE6\x26", 8 ) || \
-		!checkEntropy( "\x14\xF3\x3C\x5A\xB8\x63\x13\xFB", 8 ) || \
-		!checkEntropy( "\x7B\xE0\xE4\x14\x5C\x7C\x2C\x07", 8 ) || \
-		!checkEntropy( "\xD3\x9C\x16\x37\xAD\x12\x19\xA2", 8 ) || \
-		!checkEntropy( "\x7F\x6B\x30\xAD\x02\x83\x96\xF9", 8 ) || \
-		!checkEntropy( "\x79\x92\xF9\xD1\x75\x43\x56\x87", 8 ) || \
-		!checkEntropy( "\x62\xAF\x14\xCF\x1F\x5F\xA7\xC6", 8 ) || \
-		!checkEntropy( "\xAE\x57\xF3\x63\x45\x03\x2E\x6B", 8 ) )
-		return( FALSE );
-	if( checkEntropy( "\xA5\x5A\xA5\x5A\xA5\x5A\xA5\x5A", 8 ) )
-		return( FALSE );
-	if( checkNontrivialKey( "abcdefgh", 8 ) )
-		return( FALSE );
-
-	/* Test the hash algorithm-strength code */
-	if( isStrongerHash( CRYPT_ALGO_SHA1, CRYPT_ALGO_SHA2 ) || \
-		!isStrongerHash( CRYPT_ALGO_SHA2, CRYPT_ALGO_SHA1 ) || \
-		isStrongerHash( CRYPT_ALGO_MD5, CRYPT_ALGO_SHA2 ) || \
-		!isStrongerHash( CRYPT_ALGO_SHA2, CRYPT_ALGO_MD5 ) )
-		return( FALSE );
-
-	/* Test the checksumming code */
-	if( checksumData( "12345678", 8 ) != checksumData( "12345678", 8 ) || \
-		checksumData( "12345678", 8 ) == checksumData( "12345778", 8 ) || \
-		checksumData( "12345678", 8 ) == checksumData( "12345\xB7" "78", 8 ) || \
-		checksumData( "12345678", 8 ) == checksumData( "12345\x00" "78", 8 ) )
-		return( FALSE );
-
-	/* Test the text-line read code */
-#if defined( USE_HTTP ) || defined( USE_BASE64 ) || defined( USE_SSH )
-	if( !testReadLine( "abcdefgh\n", 9, "abcdefgh", 8, FALSE ) || \
-		!testReadLine( "abcdefghijklmnopq\n", 18, 
-					   "abcdefghijklmnop", 16, FALSE ) || \
-		!testReadLine( " abcdefgh\n", 10, "abcdefgh", 8, FALSE ) || \
-		!testReadLine( "abcdefgh \n", 10, "abcdefgh", 8, FALSE ) || \
-		!testReadLine( " ab cdefgh \n", 12, "ab cdefgh", 9, FALSE ) || \
-		!testReadLine( "   ab   cdefgh   \n", 18, "ab cdefgh", 9, FALSE ) )
-		return( FALSE );
-	if( !testReadLine( "abcdefgh\r\n", 10, "abcdefgh", 8, FALSE ) || \
-		!testReadLine( "abcdefgh\r\r\n", 11, "abcdefgh", 8, FALSE ) )
-		return( FALSE );
-	if( testReadLine( "   \t   \n", 8, "", 1, FALSE ) || \
-		testReadLine( "abc\x12" "efgh\n", 9, "", 1, FALSE ) )
-		return( FALSE );
-	if( !testReadLine( "abcdefgh;\nabc\n", 14, 
-					   "abcdefgh;", 9, FALSE ) || \
-		!testReadLine( "abcdefgh;\nabc\n", 14, 
-					   "abcdefgh;abc", 12, TRUE ) || \
-		!testReadLine( "abcdefgh; \n abc\n", 16, 
-					   "abcdefgh;abc", 12, TRUE ) || \
-		!testReadLine( "abcdefgh ; \n abc\n", 17, 
-					   "abcdefgh;abc", 12, TRUE ) || \
-		!testReadLine( "abcdefgh;abc\nabc\n", 17, 
-					   "abcdefgh;abc", 12, TRUE ) )
-		return( FALSE );
-	if( testReadLine( "abcdefgh;\n", 10, "", 1, TRUE ) || \
-		testReadLine( "abcdefgh;\n\n", 11, "", 1, TRUE ) || \
-		testReadLine( "abcdefgh;\n \n", 12, "", 1, TRUE ) )
-		return( FALSE );
-#endif /* USE_HTTP || USE_BASE64 || USE_SSH */
-
-	return( TRUE );
-	}
-#endif /* !NDEBUG */

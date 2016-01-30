@@ -8,9 +8,11 @@
 #if defined( INC_ALL )
   #include "cert.h"
   #include "dn.h"
+  #include "asn1.h"
 #else
   #include "cert/cert.h"
   #include "cert/dn.h"
+  #include "enc_dec/asn1.h"
 #endif /* Compiler-specific includes */
 
 #ifdef USE_CERTIFICATES
@@ -32,7 +34,7 @@
    works because the certificate component values don't start until x000 */
 
 static const DN_COMPONENT_INFO FAR_BSS certInfoOIDs[] = {
-	/* Useful components, identified by attribute */
+	/* Useful components */
 	{ CRYPT_CERTINFO_COMMONNAME, MKDNOID( "\x55\x04\x03" ), 
 	  "cn", 2, "oid.2.5.4.3", 11, CRYPT_MAX_TEXTSIZE, FALSE, TRUE },
 	{ CRYPT_CERTINFO_COUNTRYNAME, MKDNOID( "\x55\x04\x06" ), 
@@ -46,7 +48,7 @@ static const DN_COMPONENT_INFO FAR_BSS certInfoOIDs[] = {
 	{ CRYPT_CERTINFO_ORGANIZATIONALUNITNAME, MKDNOID( "\x55\x04\x0B" ), 
 	  "ou", 2, "oid.2.5.4.11", 12, CRYPT_MAX_TEXTSIZE, FALSE, TRUE },
 
-	/* Non-useful components, identified by index value */
+	/* Non-useful components */
 	{ 1, MKDNOID( "\x55\x04\x01" ),		/* aliasObjectName (2 5 4 1) */
 	  "oid.2.5.4.1", 11, NULL, 0, CRYPT_MAX_TEXTSIZE, FALSE, FALSE },
 	{ 2, MKDNOID( "\x55\x04\x02" ),		/* knowledgeInformation (2 5 4 2) */
@@ -223,7 +225,7 @@ static BOOLEAN checkCountryCode( IN_BUFFER_C( 2 ) const BYTE *countryCode )
 
 /* Determine the sort priority for DN components */
 
-CHECK_RETVAL_RANGE( 0, 10 ) \
+CHECK_RETVAL_RANGE( MAX_ERROR, 10 ) \
 static int dnSortOrder( IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE type )
 	{
 	static const MAP_TABLE dnSortOrderTbl[] = {
@@ -430,8 +432,7 @@ const DN_COMPONENT_INFO *findDNInfoByOID( IN_BUFFER( oidLength ) const BYTE *oid
 		   are of the form (2 5 4 n), encoded as 0x06 0x03 0x55 0x04 0xnn,
 		   so we compare the byte at offset 4 for the quick-reject match 
 		   before we go for the full OID match */
-		if( oidLength == sizeofOID( certInfoOID->oid ) && \
-			certInfoOID->oid[ 4 ] == oid[ 4 ] && \
+		if( certInfoOID->oid[ 4 ] == oid[ 4 ] && \
 			!memcmp( certInfoOID->oid, oid, oidLength ) )
 			return( certInfoOID );
 		}
@@ -474,18 +475,19 @@ const DN_COMPONENT_INFO *findDNInfoByLabel( IN_BUFFER( labelLength ) const char 
 
 /* Find the appropriate location in a DN to insert a new component */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 4, 5 ) ) \
+CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 1, 4, 5 ) ) \
 static int findDNInsertPoint( const DN_COMPONENT *listHeadPtr,
 							  IN_INT const int type,
 							  const BOOLEAN fromExternalSource,
-							  OUT_PTR_COND DN_COMPONENT **insertPointPtrPtr,
-							  OUT_ENUM_OPT( CRYPT_ERRTYPE ) \
+							  OUT_OPT_PTR DN_COMPONENT **insertPointPtrPtr,
+							  OUT_ENUM_OPT( CRYPT_ERRTYPE_TYPE ) \
 									CRYPT_ERRTYPE_TYPE *errorType )	
 	{
 	const DN_COMPONENT *insertPoint, *prevElement = NULL;
-	int newValueSortOrder, iterationCount, status;
+	int newValueSortOrder, iterationCount;
 
-	assert( isReadPtr( listHeadPtr, sizeof( DN_COMPONENT ) ) );
+	assert( listHeadPtr == NULL || \
+			isReadPtr( listHeadPtr, sizeof( DN_COMPONENT ) ) );
 	assert( isWritePtr( insertPointPtrPtr, sizeof( DN_COMPONENT * ) ) );
 	assert( isWritePtr( errorType, sizeof( CRYPT_ERRTYPE_TYPE ) ) );
 
@@ -493,9 +495,8 @@ static int findDNInsertPoint( const DN_COMPONENT *listHeadPtr,
 				type <= CRYPT_CERTINFO_LAST_DN ) || \
 			  ( type > 0 && type < 50 ) );
 
-	/* Clear return values */
+	/* Clear return value */
 	*insertPointPtrPtr = NULL;
-	*errorType = CRYPT_ERRTYPE_NONE;
 
 	/* If it's being read from encoded certificate data just append it to 
 	   the end of the list */
@@ -512,9 +513,9 @@ static int findDNInsertPoint( const DN_COMPONENT *listHeadPtr,
 		}
 
 	/* Get the sort order for the new value and make sure that it's valid */
-	status = newValueSortOrder = dnSortOrder( type );
-	if( cryptStatusError( status ) )
-		return( status );
+	newValueSortOrder = dnSortOrder( type );
+	if( cryptStatusError( newValueSortOrder ) )
+		return( newValueSortOrder );
 
 	/* Find the location to insert it */			
 	for( insertPoint = listHeadPtr, iterationCount = 0; 
@@ -555,14 +556,14 @@ static int findDNInsertPoint( const DN_COMPONENT *listHeadPtr,
    In the latter case we don't try to sort the component into the correct 
    position */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 7 ) ) \
+CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 1, 3, 7 ) ) \
 int insertDNstring( INOUT DN_COMPONENT **dnComponentListPtrPtr, 
 					IN_INT const int type,
 					IN_BUFFER( valueLength ) const void *value, 
 					IN_LENGTH_SHORT const int valueLength,
 					IN_RANGE( 1, 20 ) const int valueStringType,
 					IN_FLAGS_Z( DN ) const int flags, 
-					OUT_ENUM_OPT( CRYPT_ERRTYPE ) \
+					OUT_ENUM_OPT( CRYPT_ERRTYPE_TYPE ) \
 						CRYPT_ERRTYPE_TYPE *errorType )
 	{
 	const DN_COMPONENT_INFO *dnComponentInfo = NULL;
@@ -583,9 +584,6 @@ int insertDNstring( INOUT DN_COMPONENT **dnComponentListPtrPtr,
 	REQUIRES( valueLength > 0 && valueLength < MAX_INTLENGTH_SHORT );
 	REQUIRES( valueStringType >= 1 && valueStringType <= 20 );
 	REQUIRES( flags >= DN_FLAG_NONE && flags <= DN_FLAG_MAX );
-
-	/* Clear return value */
-	*errorType = CRYPT_ERRTYPE_NONE;
 
 	/* If the DN is locked against modification we can't make any further
 	   updates */
@@ -699,7 +697,7 @@ int insertDNComponent( INOUT_PTR DN_PTR **dnComponentListPtrPtr,
 					   IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE componentType,
 					   IN_BUFFER( valueLength ) const void *value, 
 					   IN_LENGTH_SHORT const int valueLength,
-					   OUT_ENUM_OPT( CRYPT_ERRTYPE ) \
+					   OUT_ENUM_OPT( CRYPT_ERRTYPE_TYPE ) \
 							CRYPT_ERRTYPE_TYPE *errorType )
 	{
 	int valueStringType, dummy1, dummy2, status;
@@ -718,7 +716,7 @@ int insertDNComponent( INOUT_PTR DN_PTR **dnComponentListPtrPtr,
 	   about here is the validity so we ignore the returned encoding
 	   information */
 	status = getAsn1StringInfo( value, valueLength, &valueStringType, 
-								&dummy1, &dummy2, TRUE );
+								&dummy1, &dummy2 );
 	if( cryptStatusError( status ) )
 		{
 		*errorType = CRYPT_ERRTYPE_ATTR_VALUE;
@@ -759,7 +757,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int deleteDNComponent( INOUT_PTR DN_PTR **dnComponentListPtrPtr, 
 					   IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE type,
 					   IN_BUFFER_OPT( valueLength ) const void *value, 
-					   IN_LENGTH_SHORT_Z const int valueLength )
+					   IN_LENGTH_SHORT const int valueLength )
 	{
 	DN_COMPONENT *listHeadPtr = *dnComponentListPtrPtr;
 	DN_COMPONENT *itemToDelete;
@@ -798,7 +796,7 @@ int deleteDNComponent( INOUT_PTR DN_PTR **dnComponentListPtrPtr,
 /* Delete a DN */
 
 STDC_NONNULL_ARG( ( 1 ) ) \
-void deleteDN( INOUT_PTR DN_PTR **dnComponentListPtrPtr )
+void deleteDN( DN_PTR **dnComponentListPtrPtr )
 	{
 	DN_COMPONENT *listPtr;
 	int iterationCount;
@@ -887,8 +885,7 @@ int getDNComponentValue( IN_OPT const DN_PTR *dnComponentList,
 						 OUT_BUFFER_OPT( valueMaxLength, \
 										 *valueLength ) void *value, 
 						 IN_LENGTH_SHORT_Z const int valueMaxLength, 
-						 OUT_LENGTH_BOUNDED_Z( valueMaxLength ) \
-							int *valueLength )
+						 OUT_LENGTH_SHORT_Z int *valueLength )
 	{
 	const DN_COMPONENT *dnComponent;
 
@@ -935,7 +932,7 @@ CHECK_RETVAL_BOOL \
 BOOLEAN compareDN( IN_OPT const DN_PTR *dnComponentList1,
 				   IN_OPT const DN_PTR *dnComponentList2,
 				   const BOOLEAN dn1substring,
-				   OUT_OPT_PTR_xCOND DN_PTR **mismatchPointPtrPtr )
+				   OUT_OPT_PTR_OPT DN_PTR **mismatchPointPtrPtr )
 	{
 	DN_COMPONENT *dn1ptr, *dn2ptr;
 	int iterationCount;
@@ -1013,8 +1010,7 @@ BOOLEAN compareDN( IN_OPT const DN_PTR *dnComponentList1,
 /* Copy a DN */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int copyDN( OUT_PTR_COND DN_PTR **dnDest, 
-			IN const DN_PTR *dnSrc )
+int copyDN( OUT_OPT_PTR DN_PTR **dnDest, IN_OPT const DN_PTR *dnSrc )
 	{
 	const DN_COMPONENT *srcPtr;
 	DN_COMPONENT **dnDestPtrPtr = ( DN_COMPONENT ** ) dnDest;
@@ -1022,9 +1018,9 @@ int copyDN( OUT_PTR_COND DN_PTR **dnDest,
 	int iterationCount;
 
 	assert( isWritePtr( dnDest, sizeof( DN_COMPONENT * ) ) );
-	assert( isReadPtr( dnSrc, sizeof( DN_COMPONENT * ) ) );
+	assert( dnSrc == NULL || isReadPtr( dnSrc, sizeof( DN_COMPONENT * ) ) );
 
-	REQUIRES( isDNComponentValid( dnSrc ) ); 
+	REQUIRES( dnSrc == NULL || isDNComponentValid( dnSrc ) ); 
 
 	/* Clear return value */
 	*dnDest = NULL;
@@ -1093,10 +1089,6 @@ int checkDN( IN_OPT const DN_PTR *dnComponentList,
 			  checkFlags <= CHECKDN_FLAG_MAX );
 	REQUIRES( dnComponentList == NULL || \
 			  isDNComponentValid( dnComponentList ) ); 
-
-	/* Clear return values */
-	*errorLocus = CRYPT_ATTRIBUTE_NONE;
-	*errorType = CRYPT_ERRTYPE_NONE;
 
 	/* Perform a special-case check for a null DN */
 	if( dnComponentList == NULL )

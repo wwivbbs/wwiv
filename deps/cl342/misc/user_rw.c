@@ -18,8 +18,6 @@
   #include "misc/user.h"
 #endif /* Compiler-specific includes */
 
-#ifdef USE_KEYSETS
-
 /****************************************************************************
 *																			*
 *							Utility Functions								*
@@ -35,7 +33,7 @@ static int readConfigOption( INOUT STREAM *stream,
 	CRYPT_ATTRIBUTE_TYPE attributeType;
 	const BUILTIN_OPTION_INFO *builtinOptionInfoPtr;
 	MESSAGE_DATA msgData;
-	void *dataPtr DUMMY_INIT_PTR;
+	void *dataPtr = DUMMY_INIT_PTR;
 	long optionCode;
 	int value, tag, length, status;
 
@@ -70,9 +68,9 @@ static int readConfigOption( INOUT STREAM *stream,
 	   to set the option as a problem since the user probably doesn't want 
 	   the entire system to fail because of a bad configuration option, and 
 	   in any case we'll fall back to a safe default value */
-	status = tag = peekTag( stream );
-	if( cryptStatusError( status ) )
-		return( status );
+	tag = peekTag( stream );
+	if( cryptStatusError( tag ) )
+		return( tag );
 	if( tag == BER_BOOLEAN || tag == BER_INTEGER )
 		{
 		/* It's a numeric value, read the appropriate type and try and set 
@@ -99,7 +97,7 @@ static int readConfigOption( INOUT STREAM *stream,
 	if( cryptStatusOK( status ) )
 		status = sMemGetDataBlock( stream, &dataPtr, length );
 	if( cryptStatusOK( status ) )
-		status = sSkip( stream, length, SSKIP_MAX );
+		status = sSkip( stream, length );
 	if( cryptStatusError( status ) )
 		return( status );
 	setMessageData( &msgData, dataPtr, length );
@@ -118,7 +116,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 static int sizeofConfigData( IN_ARRAY( configOptionsCount ) \
 								const OPTION_INFO *optionList, 
 							 IN_INT_SHORT const int configOptionsCount,
-							 OUT_DATALENGTH_Z int *length )
+							 OUT_LENGTH_Z int *length )
 	{
 	int dataLength = 0, i;
 
@@ -178,7 +176,7 @@ static int sizeofConfigData( IN_ARRAY( configOptionsCount ) \
 		dataLength += lengthValue;
 		}
 	ENSURES( i < configOptionsCount );
-	ENSURES( dataLength >= 0 && dataLength < MAX_BUFFER_SIZE );
+	ENSURES( dataLength >= 0 && dataLength < MAX_INTLENGTH );
 
 	*length = dataLength;
 	return( CRYPT_OK );
@@ -329,8 +327,6 @@ int readConfig( IN_HANDLE const CRYPT_USER iCryptUser,
 	int configFilePathLen, iterationCount, status;
 
 	assert( isReadPtr( fileName, 2 ) );
-
-	ANALYSER_HINT_STRING( fileName );
 
 	REQUIRES( iCryptUser == DEFAULTUSER_OBJECT_HANDLE || \
 			  isHandleRangeValid( iCryptUser ) );
@@ -485,7 +481,7 @@ int prepareConfigData( INOUT_ARRAY( configOptionsCount ) TYPECAST( OPTION_INFO *
 							void *configOptions, 
 					   IN_INT_SHORT const int configOptionsCount, 	
 					   OUT_BUFFER_ALLOC_OPT( *dataLength ) void **dataPtrPtr, 
-					   OUT_DATALENGTH_Z int *dataLength )
+					   OUT_LENGTH_Z int *dataLength )
 	{
 	STREAM stream;
 	void *dataPtr;
@@ -507,7 +503,7 @@ int prepareConfigData( INOUT_ARRAY( configOptionsCount ) TYPECAST( OPTION_INFO *
 	status = sizeofConfigData( configOptions, configOptionsCount, &length );
 	if( cryptStatusError( status ) )
 		return( status );
-	ENSURES( length > 0 && length < MAX_BUFFER_SIZE );
+	ENSURES( length > 0 && length < MAX_INTLENGTH );
 
 	/* Allocate a buffer to hold the encoded values */
 	if( ( dataPtr = clAlloc( "prepareConfigData", length ) ) == NULL )
@@ -535,7 +531,7 @@ int prepareConfigData( INOUT_ARRAY( configOptionsCount ) TYPECAST( OPTION_INFO *
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int commitConfigData( IN_STRING const char *fileName,
 					  IN_BUFFER_OPT( dataLength ) const void *data, 
-					  IN_DATALENGTH_Z const int dataLength,
+					  IN_LENGTH_Z const int dataLength,
 					  IN_HANDLE_OPT const CRYPT_USER iTrustedCertUserObject )
 	{
 	MESSAGE_CREATEOBJECT_INFO createInfo;
@@ -547,13 +543,11 @@ int commitConfigData( IN_STRING const char *fileName,
 	assert( ( data == NULL && dataLength == 0 ) || \
 			isReadPtr( data, dataLength ) );
 
-	ANALYSER_HINT_STRING( fileName );
-
 	REQUIRES( iTrustedCertUserObject == CRYPT_UNUSED || \
 			  ( iTrustedCertUserObject == DEFAULTUSER_OBJECT_HANDLE || \
 				isHandleRangeValid( iTrustedCertUserObject ) ) );
 	REQUIRES( ( data == NULL && dataLength == 0 ) || \
-			  ( dataLength > 0 && dataLength < MAX_BUFFER_SIZE ) );
+			  ( dataLength > 0 && dataLength < MAX_INTLENGTH ) );
 
 	/* Build the path to the configuration file and try and create it */
 	status = fileBuildCryptlibPath( configFilePath, MAX_PATH_LENGTH, 
@@ -621,10 +615,6 @@ int deleteConfig( IN_STRING const char *fileName )
 	char configFilePath[ MAX_PATH_LENGTH + 1 + 8 ];
 	int configFilePathLen, status;
 
-	assert( isReadPtr( fileName, 2 ) );
-
-	ANALYSER_HINT_STRING( fileName );
-
 	status = fileBuildCryptlibPath( configFilePath, MAX_PATH_LENGTH, 
 									&configFilePathLen, fileName, 
 									strlen( fileName ), BUILDPATH_GETPATH );
@@ -635,4 +625,3 @@ int deleteConfig( IN_STRING const char *fileName )
 		}
 	return( CRYPT_OK );
 	}
-#endif /* USE_KEYSETS */

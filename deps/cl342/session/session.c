@@ -26,7 +26,7 @@
 
 STDC_NONNULL_ARG( ( 1 ) ) \
 static void cleanupReqResp( INOUT SESSION_INFO *sessionInfoPtr,
-							const BOOLEAN preTransaction )
+							const BOOLEAN isPostTransaction )
 	{
 	const BOOLEAN isServer = isServer( sessionInfoPtr );
 
@@ -42,8 +42,10 @@ static void cleanupReqResp( INOUT SESSION_INFO *sessionInfoPtr,
 		}
 
 	/* Clean up client/server responses left over from a previous
+	   transaction and server responses created by the just-completed
 	   transaction */
-	if( preTransaction && sessionInfoPtr->iCertResponse != CRYPT_ERROR )
+	if( ( isServer || !isPostTransaction ) && \
+		sessionInfoPtr->iCertResponse != CRYPT_ERROR )
 		{
 		krnlSendNotifier( sessionInfoPtr->iCertResponse,
 						  IMESSAGE_DECREFCOUNT );
@@ -149,7 +151,7 @@ int initSessionNetConnectInfo( const SESSION_INFO *sessionInfoPtr,
 #define CHECK_ATTR_CACERT		0x08
 #define CHECK_ATTR_FINGERPRINT	0x10
 
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 BOOLEAN checkAttributesConsistent( INOUT SESSION_INFO *sessionInfoPtr,
 								   IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE attribute )
 	{
@@ -160,7 +162,7 @@ BOOLEAN checkAttributesConsistent( INOUT SESSION_INFO *sessionInfoPtr,
 			CHECK_ATTR_PRIVKEY | CHECK_ATTR_PRIVKEYSET },
 		{ CRYPT_SESSINFO_CACERTIFICATE, 
 			CHECK_ATTR_CACERT | CHECK_ATTR_FINGERPRINT },
-		{ CRYPT_SESSINFO_SERVER_FINGERPRINT_SHA1, 
+		{ CRYPT_SESSINFO_SERVER_FINGERPRINT, 
 			CHECK_ATTR_FINGERPRINT | CHECK_ATTR_CACERT },
 		{ CRYPT_ERROR, 0 }, { CRYPT_ERROR, 0 } 
 		};
@@ -171,7 +173,7 @@ BOOLEAN checkAttributesConsistent( INOUT SESSION_INFO *sessionInfoPtr,
 	REQUIRES_B( attribute == CRYPT_SESSINFO_REQUEST || \
 				attribute == CRYPT_SESSINFO_PRIVATEKEY || \
 				attribute == CRYPT_SESSINFO_CACERTIFICATE || \
-				attribute == CRYPT_SESSINFO_SERVER_FINGERPRINT_SHA1 );
+				attribute == CRYPT_SESSINFO_SERVER_FINGERPRINT );
 
 	/* Find the excluded-attribute information for this attribute */
 	status = mapValue( attribute, &flags, excludedAttrTbl,
@@ -202,9 +204,9 @@ BOOLEAN checkAttributesConsistent( INOUT SESSION_INFO *sessionInfoPtr,
 		}
 	if( ( flags & CHECK_ATTR_FINGERPRINT ) && \
 		findSessionInfo( sessionInfoPtr->attributeList,
-						 CRYPT_SESSINFO_SERVER_FINGERPRINT_SHA1 ) != NULL )
+						 CRYPT_SESSINFO_SERVER_FINGERPRINT ) != NULL )
 		{
-		setErrorInfo( sessionInfoPtr, CRYPT_SESSINFO_SERVER_FINGERPRINT_SHA1,
+		setErrorInfo( sessionInfoPtr, CRYPT_SESSINFO_SERVER_FINGERPRINT,
 					  CRYPT_ERRTYPE_ATTR_PRESENT );
 		return( FALSE );
 		}
@@ -216,101 +218,64 @@ BOOLEAN checkAttributesConsistent( INOUT SESSION_INFO *sessionInfoPtr,
    avoids ugly silent failures where everything appears to work just fine on 
    the server side but the client gets invalid data back */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 2 ) ) \
-int checkServerCertValid( const CRYPT_CERTIFICATE iServerKey,
-						  INOUT ERROR_INFO *errorInfo )
+CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 3 ) ) \
+int checkServerCertValid( const CRYPT_CERTIFICATE iServerCert,
+						  OUT_ENUM_OPT( CRYPT_ATTRIBUTE ) \
+							CRYPT_ATTRIBUTE_TYPE *errorLocus,
+						  OUT_ENUM_OPT( CRYPT_ERRTYPE ) \
+							CRYPT_ERRTYPE_TYPE *errorType )
 	{
-	CRYPT_CERTIFICATE iServerCert;
-	CRYPT_ERRTYPE_TYPE errorType DUMMY_INIT;
-	CRYPT_ATTRIBUTE_TYPE errorLocus DUMMY_INIT;
 	static const int complianceLevelStandard = CRYPT_COMPLIANCELEVEL_STANDARD;
-	int complianceLevel, status;
+	int complianceLevel, value, status;
 
-	assert( isWritePtr( errorInfo, sizeof( ERROR_INFO ) ) );
+	assert( isWritePtr( errorLocus, sizeof( CRYPT_ATTRIBUTE_TYPE ) ) );
+	assert( isWritePtr( errorType, sizeof( CRYPT_ERRTYPE_TYPE ) ) );
 
-	REQUIRES( isHandleRangeValid( iServerKey ) );
+	REQUIRES( isHandleRangeValid( iServerCert ) );
 
-	status = krnlSendMessage( iServerKey, IMESSAGE_GETATTRIBUTE, 
+	status = krnlSendMessage( iServerCert, IMESSAGE_GETATTRIBUTE, 
 							  &complianceLevel, 
 							  CRYPT_OPTION_CERT_COMPLIANCELEVEL );
 	if( cryptStatusError( status ) )
 		{
 		/* We can't do much more if we can't even get the initial compliance 
 		   level */
-		return( CRYPT_ERROR_INVALID );
+		return( CRYPT_OK );
 		}
 
 	/* Check whether the certificate is valid at a standard level of 
 	   compliance, which catches expired certificates and other obvious
 	   problems */
-	krnlSendMessage( iServerKey, IMESSAGE_SETATTRIBUTE, 
+	krnlSendMessage( iServerCert, IMESSAGE_SETATTRIBUTE, 
 					 ( MESSAGE_CAST ) &complianceLevelStandard, 
 					 CRYPT_OPTION_CERT_COMPLIANCELEVEL );
-	status = krnlSendMessage( iServerKey, IMESSAGE_CHECK, NULL, 
+	status = krnlSendMessage( iServerCert, IMESSAGE_CHECK, NULL, 
 							  MESSAGE_CHECK_CERT );
-	krnlSendMessage( iServerKey, IMESSAGE_SETATTRIBUTE, 
+	krnlSendMessage( iServerCert, IMESSAGE_SETATTRIBUTE, 
 					 ( MESSAGE_CAST ) &complianceLevel, 
 					 CRYPT_OPTION_CERT_COMPLIANCELEVEL );
 	if( cryptStatusOK( status ) )
 		return( CRYPT_OK );
 
-	/* The certificate associated with the key isn't valid, get the 
-	   certificate (since otherwise we'd be querying the key rather than the
-	   certificate) and fetch the extended error information */
-	status = krnlSendMessage( iServerKey, IMESSAGE_GETDEPENDENT, 
-							  &iServerCert, OBJECT_TYPE_CERTIFICATE );
+	/* The certificate isn't valid, copy the extended error information up 
+	   from the certificate if possible.  This leads to rather odd extended 
+	   error information for the session since the error information is 
+	   pointing at certificate attributes for a session object, but it's 
+	   unlikely that users will think of checking the certificate for error 
+	   details and the presence of certificate-related error information 
+	   should make it obvious what it pertains to */
+	status = krnlSendMessage( iServerCert, IMESSAGE_GETATTRIBUTE, &value, 
+							  CRYPT_ATTRIBUTE_ERRORLOCUS );
 	if( cryptStatusOK( status ) )
 		{
-		int value;
-
-		status = krnlSendMessage( iServerCert, IMESSAGE_GETATTRIBUTE, 
-								  &value, CRYPT_ATTRIBUTE_ERRORLOCUS );
-		if( cryptStatusOK( status ) )
-			{
-			errorLocus = value;	/* int to enum */
-			status = krnlSendMessage( iServerCert, IMESSAGE_GETATTRIBUTE, 
-									  &value, CRYPT_ATTRIBUTE_ERRORTYPE );
-			}
-		if( cryptStatusOK( status ) )
-			errorType = value;	/* int to enum */
+		*errorLocus = value;
+		status = krnlSendMessage( iServerCert, IMESSAGE_GETATTRIBUTE, &value, 
+								  CRYPT_ATTRIBUTE_ERRORTYPE );
 		}
-	if( cryptStatusError( status ) )
-		{
-		/* If we can't get extended error information then there's not much 
-		   more that we can do */
-		retExt( CRYPT_ERROR_INVALID,
-				( CRYPT_ERROR_INVALID, errorInfo,
-				  "Server certificate is invalid" ) );
-		}
+	if( cryptStatusOK( status ) )
+		*errorType = value;
 
-	/* Try and get more	information on common errors and report them to the
-	   caller */
-	if( errorType == CRYPT_ERRTYPE_CONSTRAINT )
-		{
-		switch( errorLocus )
-			{
-			case CRYPT_CERTINFO_VALIDFROM:
-				retExt( CRYPT_ERROR_INVALID,
-						( CRYPT_ERROR_INVALID, errorInfo,
-						  "Server certificate is not valid yet" ) );
-
-			case CRYPT_CERTINFO_VALIDTO:
-				retExt( CRYPT_ERROR_INVALID,
-						( CRYPT_ERROR_INVALID, errorInfo,
-						  "Server certificate has expired" ) );
-
-			case CRYPT_CERTINFO_KEYUSAGE:
-				retExt( CRYPT_ERROR_INVALID,
-						( CRYPT_ERROR_INVALID, errorInfo,
-						  "Server certificate's keyUsage doesn't allow it "
-						  "to be used" ) );
-			}
-		}
-
-	retExt( CRYPT_ERROR_INVALID,
-			( CRYPT_ERROR_INVALID, errorInfo,
-			  "Server certificate is invalid, error type %d, error "
-			  "locus %d", errorType, errorLocus ) );
+	return( CRYPT_ERROR_INVALID );
 	}
 
 /****************************************************************************
@@ -321,7 +286,7 @@ int checkServerCertValid( const CRYPT_CERTIFICATE iServerKey,
 
 /* Check client/server-specific required values */
 
-CHECK_RETVAL_ENUM( CRYPT_ATTRIBUTE ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_ENUM( CRYPT_ATTRIBUTE_TYPE ) STDC_NONNULL_ARG( ( 1 ) ) \
 static CRYPT_ATTRIBUTE_TYPE checkClientParameters( const SESSION_INFO *sessionInfoPtr )
 	{
 	assert( isReadPtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
@@ -370,7 +335,7 @@ static CRYPT_ATTRIBUTE_TYPE checkClientParameters( const SESSION_INFO *sessionIn
 	return( CRYPT_ATTRIBUTE_NONE );
 	}
 
-CHECK_RETVAL_ENUM( CRYPT_ATTRIBUTE ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_ENUM( CRYPT_ATTRIBUTE_TYPE ) STDC_NONNULL_ARG( ( 1 ) ) \
 static CRYPT_ATTRIBUTE_TYPE checkServerParameters( const SESSION_INFO *sessionInfoPtr )
 	{
 	assert( isReadPtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
@@ -430,9 +395,9 @@ static int activateConnection( INOUT SESSION_INFO *sessionInfoPtr )
 	if( sessionInfoPtr->sendBuffer == NULL )
 		{
 		REQUIRES( sessionInfoPtr->receiveBufSize >= MIN_BUFFER_SIZE && \
-				  sessionInfoPtr->receiveBufSize < MAX_BUFFER_SIZE );
+				  sessionInfoPtr->receiveBufSize < MAX_INTLENGTH );
 		REQUIRES( ( sessionInfoPtr->sendBufSize >= MIN_BUFFER_SIZE && \
-					sessionInfoPtr->sendBufSize < MAX_BUFFER_SIZE ) || \
+					sessionInfoPtr->sendBufSize < MAX_INTLENGTH ) || \
 				  sessionInfoPtr->sendBufSize == CRYPT_UNUSED );
 
 		if( ( sessionInfoPtr->receiveBuffer = \
@@ -457,7 +422,7 @@ static int activateConnection( INOUT SESSION_INFO *sessionInfoPtr )
 		}
 	ENSURES( sessionInfoPtr->receiveBuffer != NULL && \
 			 sessionInfoPtr->receiveBufSize >= MIN_BUFFER_SIZE && \
-			 sessionInfoPtr->receiveBufSize < MAX_BUFFER_SIZE );
+			 sessionInfoPtr->receiveBufSize < MAX_INTLENGTH );
 	ENSURES( sessionInfoPtr->sendBufSize == CRYPT_UNUSED || \
 			 sessionInfoPtr->sendBuffer != NULL );
 
@@ -632,9 +597,9 @@ int activateSession( INOUT SESSION_INFO *sessionInfoPtr )
 	   beforehand to catch data such as responses left over from a previous
 	   transaction and afterwards to clean up ephemeral data such as
 	   requests sent to a server */
-	cleanupReqResp( sessionInfoPtr, TRUE );
-	status = sessionInfoPtr->transactFunction( sessionInfoPtr );
 	cleanupReqResp( sessionInfoPtr, FALSE );
+	status = sessionInfoPtr->transactFunction( sessionInfoPtr );
+	cleanupReqResp( sessionInfoPtr, TRUE );
 	if( cryptStatusError( status ) )
 		return( status );
 
@@ -770,7 +735,8 @@ static int defaultClientStartupFunction( INOUT SESSION_INFO *sessionInfoPtr )
 							  &connectInfo, &sessionInfoPtr->errorInfo );
 	else
 		{
-		status = sNetConnect( &sessionInfoPtr->stream, STREAM_PROTOCOL_TCP,
+		status = sNetConnect( &sessionInfoPtr->stream,
+							  STREAM_PROTOCOL_TCPIP,
 							  &connectInfo, &sessionInfoPtr->errorInfo );
 		}
 	return( status );
@@ -793,7 +759,8 @@ static int defaultServerStartupFunction( INOUT SESSION_INFO *sessionInfoPtr )
 							 &connectInfo, &sessionInfoPtr->errorInfo );
 	else
 		{
-		status = sNetListen( &sessionInfoPtr->stream, STREAM_PROTOCOL_TCP,
+		status = sNetListen( &sessionInfoPtr->stream,
+							 STREAM_PROTOCOL_TCPIP,
 							 &connectInfo, &sessionInfoPtr->errorInfo );
 		}
 	if( cryptStatusError( status ) )
@@ -858,6 +825,22 @@ static int defaultGetAttributeFunction( INOUT SESSION_INFO *sessionInfoPtr,
 	/* If we didn't get a response there's nothing to return */
 	if( sessionInfoPtr->iCertResponse == CRYPT_ERROR )
 		return( CRYPT_ERROR_NOTFOUND );
+
+/************************************************************************/
+/* SCEP gets a bit complicated because a single object has to fill 
+   multiple roles so that for example the issued certificate has to do 
+   double duty for both encryption and authentication.  For now we work 
+   around this by juggling the values around */
+if( sessionInfoPtr->type == CRYPT_SESSION_SCEP && \
+	sessionInfoPtr->iAuthInContext != CRYPT_ERROR )
+	{
+	*responsePtr = sessionInfoPtr->iCertResponse;
+	sessionInfoPtr->iCertResponse = sessionInfoPtr->iAuthInContext;
+	sessionInfoPtr->iAuthInContext = CRYPT_ERROR;
+
+	return( CRYPT_OK );
+	}
+/************************************************************************/
 
 	/* Return the information to the caller */
 	krnlSendNotifier( sessionInfoPtr->iCertResponse, IMESSAGE_INCREFCOUNT );

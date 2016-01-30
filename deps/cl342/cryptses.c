@@ -20,8 +20,6 @@
   #include "session/scorebrd.h"
 #endif /* Compiler-specific includes */
 
-#ifdef USE_SESSIONS
-
 /* The number of entries in the SSL session cache.  Note that when increasing
    the SESSIONCACHE_SIZE value to more than about 256 you need to also change 
    MAX_ALLOC_SIZE in kernel/sec_mem.c to allow the allocation of such large 
@@ -34,6 +32,8 @@
 #endif /* CONFIG_CONSERVE_MEMORY */
 
 static SCOREBOARD_STATE scoreboardInfo;
+
+#ifdef USE_SESSIONS
 
 /****************************************************************************
 *																			*
@@ -62,8 +62,7 @@ static int sessionMessageFunction( INOUT TYPECAST( CONTEXT_INFO * ) \
 	if( message == MESSAGE_DESTROY )
 		{
 		/* Shut down the session if required.  Nemo nisi mors */
-		if( sessionInfoPtr->flags & \
-					( SESSION_ISOPEN | SESSION_PARTIALOPEN ) )
+		if( sessionInfoPtr->flags & SESSION_ISOPEN )
 			{
 			sessionInfoPtr->flags |= SESSION_ISCLOSINGDOWN;
 			sessionInfoPtr->shutdownFunction( sessionInfoPtr );
@@ -139,21 +138,10 @@ static int sessionMessageFunction( INOUT TYPECAST( CONTEXT_INFO * ) \
 				messageValue <= CRYPT_SESSINFO_LAST_SPECIFIC ) || \
 			  messageValue == CRYPT_IATTRIBUTE_ENC_TIMESTAMP ) )
 			{
-			status = CRYPT_ARGERROR_VALUE;	/* For static analysers */
 			if( message == MESSAGE_SETATTRIBUTE || \
 				message == MESSAGE_SETATTRIBUTE_S )
 				{
 				REQUIRES( sessionInfoPtr->setAttributeFunction != NULL );
-
-				/* Perform any protocol-specific additional checks if 
-				   necessary */
-				if( sessionInfoPtr->checkAttributeFunction != NULL )
-					{
-					status = sessionInfoPtr->checkAttributeFunction( sessionInfoPtr,
-											messageDataPtr, messageValue );
-					if( cryptStatusError( status ) )
-						return( status );
-					}
 
 				status = sessionInfoPtr->setAttributeFunction( sessionInfoPtr,
 											messageDataPtr, messageValue );
@@ -314,7 +302,7 @@ static int openSession( OUT_HANDLE_OPT CRYPT_SESSION *iCryptSession,
 						IN_HANDLE const CRYPT_USER iCryptOwner,
 						IN_ENUM( CRYPT_SESSION ) \
 							const CRYPT_SESSION_TYPE sessionType,
-						OUT_PTR_OPT SESSION_INFO **sessionInfoPtrPtr )
+						OUT_OPT_PTR SESSION_INFO **sessionInfoPtrPtr )
 	{
 	CRYPT_SESSION_TYPE sessionBaseType;
 	SESSION_INFO *sessionInfoPtr;
@@ -486,6 +474,9 @@ static int openSession( OUT_HANDLE_OPT CRYPT_SESSION *iCryptSession,
 		sessionInfoPtr->writeTimeout = \
 			sessionInfoPtr->connectTimeout = CRYPT_ERROR;
 
+	/* Set up any additinal values */
+	sessionInfoPtr->authResponse = CRYPT_UNUSED;
+
 	/* Set up the access information for the session and initialise it */
 	switch( sessionBaseType )
 		{
@@ -541,7 +532,7 @@ static int openSession( OUT_HANDLE_OPT CRYPT_SESSION *iCryptSession,
 			   protocolInfoPtr->maxPacketSize == 0 ) || 
 			 ( !protocolInfoPtr->isReqResp && \
 			   protocolInfoPtr->bufSize >= MIN_BUFFER_SIZE && \
-			   protocolInfoPtr->bufSize < MAX_BUFFER_SIZE && \
+			   protocolInfoPtr->bufSize < MAX_INTLENGTH && \
 			   protocolInfoPtr->sendBufStartOfs >= 5 && 
 			   protocolInfoPtr->sendBufStartOfs < protocolInfoPtr->maxPacketSize && \
 			   protocolInfoPtr->maxPacketSize <= protocolInfoPtr->bufSize ) );
@@ -659,12 +650,7 @@ int sessionManagementFunction( IN_ENUM( MANAGEMENT_ACTION ) \
 										 SESSIONCACHE_SIZE );
 				}
 			if( cryptStatusOK( status ) )
-				{
 				initLevel++;
-#if defined( USE_SSH ) || defined( USE_SSL )
-				status = checkDHdata();
-#endif /* USE_SSH || USE_SSL */
-				}
 			return( status );
 
 		case MANAGEMENT_ACTION_PRE_SHUTDOWN:

@@ -30,6 +30,14 @@
 
 #define BLOBHEADER_SIZE			8
 
+/* Occasionally we need to read things into host memory from a device in a
+   manner that can't be handled by a dynBuf since the data is coming from a
+   device rather than a cryptlib object.  The following value defines the 
+   maximum size of the on-stack buffer, if the data is larger than this we 
+   dynamically allocate the buffer (this almost never occurs) */
+
+#define MAX_BUFFER_SIZE			1024
+
 #ifdef USE_CRYPTOAPI
 
 #if defined( _MSC_VER )
@@ -60,7 +68,7 @@
 #undef CRYPT_MODE_ECB
 #undef CRYPT_MODE_CBC
 #undef CRYPT_MODE_CFB
-#undef CRYPT_MODE_CTR
+#undef CRYPT_MODE_OFB
 
 /* Symbolic defines to represent non-initialised values */
 
@@ -919,14 +927,13 @@ static int getCertificate( const CRYPTOAPI_INFO *cryptoapiInfo,
 			{
 			CERT_INFO certInfo;
 			STREAM stream;
-			void *dataPtr DUMMY_INIT_PTR;
-			int length DUMMY_INIT, status;
+			void *dataPtr = DUMMY_INIT_PTR;
+			int length, status;
 
 			memset( &certInfo, 0, sizeof( CERT_INFO ) );
 			sMemConnect( &stream, keyID, keyIDlength );
-			status = readSequence( &stream, NULL );
-			if( cryptStatusOK( status ) )
-				status = getStreamObjectLength( &stream, &length );
+			readSequence( &stream, NULL );
+			status = getStreamObjectLength( &stream, &length );
 			if( cryptStatusOK( status ) )
 				status = sMemGetDataBlock( &stream, &dataPtr, length );
 			if( cryptStatusError( status ) )
@@ -936,16 +943,15 @@ static int getCertificate( const CRYPTOAPI_INFO *cryptoapiInfo,
 				}
 			certInfo.Issuer.pbData = dataPtr;		/* Issuer DN */
 			certInfo.Issuer.cbData = length;
-			status = sSkip( &stream, length, MAX_INTLENGTH_SHORT );
-			if( cryptStatusOK( status ) )
-				status = getStreamObjectLength( &stream, &length );
+			sSkip( &stream, length );
+			status = getStreamObjectLength( &stream, &length );
 			if( cryptStatusOK( status ) )
 				status = sMemGetDataBlock( &stream, &dataPtr, length );
 			if( cryptStatusError( status ) )
 				return( status );
 			certInfo.SerialNumber.pbData = dataPtr;	/* Serial number */
 			certInfo.SerialNumber.cbData = length;
-			status = sSkip( &stream, length, MAX_INTLENGTH_SHORT );
+			status = sSkip( &stream, length );
 			assert( sStatusOK( &stream ) );
 			sMemDisconnect( &stream );
 			if( cryptStatusError( status ) )
@@ -2037,6 +2043,7 @@ static int getFirstItemFunction( DEVICE_INFO *deviceInfo,
 										pCertContext->pbCertEncoded, 
 										pCertContext->cbCertEncoded,
 										CRYPT_CERTTYPE_CERTIFICATE );
+	createInfo.arg1 = CRYPT_CERTTYPE_CERTIFICATE;
 	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
 							  IMESSAGE_DEV_CREATEOBJECT_INDIRECT,
 							  &createInfo, OBJECT_TYPE_CERTIFICATE );
@@ -2094,6 +2101,7 @@ static int getNextItemFunction( DEVICE_INFO *deviceInfo,
 							pCertChainElement->pCertContext->pbCertEncoded, 
 							pCertChainElement->pCertContext->cbCertEncoded,
 							CRYPT_CERTTYPE_CERTIFICATE );
+	createInfo.arg1 = CRYPT_CERTTYPE_CERTIFICATE;
 	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
 							  IMESSAGE_DEV_CREATEOBJECT_INDIRECT,
 							  &createInfo, OBJECT_TYPE_CERTIFICATE );
@@ -2160,7 +2168,7 @@ static int rsaSetKeyInfo( CRYPTOAPI_INFO *cryptoapiInfo,
 	   all we're doing here is sending in encoded public key data for use by 
 	   objects such as certificates */
 	status = writeFlatPublicKey( keyDataBuffer, CRYPT_MAX_PKCSIZE * 2,
-								 &keyDataSize, CRYPT_ALGO_RSA, 0,
+								 &keyDataSize, CRYPT_ALGO_RSA, 
 								 n, nLen, e, eLen, NULL, 0, NULL, 0 );
 	if( cryptStatusOK( status ) )
 		{
@@ -2467,7 +2475,7 @@ static int rsaEncrypt( CONTEXT_INFO *contextInfoPtr, void *buffer, int length )
 static int rsaDecrypt( CONTEXT_INFO *contextInfoPtr, void *buffer, int length )
 	{
 	BYTE tempBuffer[ CRYPT_MAX_PKCSIZE + 8 ], *tempPtr, *bufPtr = buffer;
-	DWORD resultLength;
+	DWORD resultLength = length;
 	int i;
 
 	/* Change the data into the little-endian order required by CryptoAPI, 
@@ -2518,12 +2526,12 @@ static int dsaSetKeyInfo( DEVICE_INFO *deviceInfo, CONTEXT_INFO *contextInfoPtr,
 	   in the middle of processing a message that does this on completion, 
 	   all we're doing here is sending in encoded public key data for use by 
 	   objects such as certificates */
-	cryptStatus = keyDataSize = writeFlatPublicKey( NULL, 0, CRYPT_ALGO_DSA, 0,
+	cryptStatus = keyDataSize = writeFlatPublicKey( NULL, 0, CRYPT_ALGO_DSA, 
 													p, pLen, q, qLen, 
 													g, gLen, y, yLen );
 	if( !cryptStatusError( cryptStatus ) )
 		cryptStatus = writeFlatPublicKey( keyDataBuffer, CRYPT_MAX_PKCSIZE * 2,
-										  CRYPT_ALGO_DSA, 0, p, pLen, q, qLen, 
+										  CRYPT_ALGO_DSA, p, pLen, q, qLen, 
 										  g, gLen, y, yLen );
 	if( !cryptStatusError( cryptStatus ) )
 		{
@@ -2736,11 +2744,11 @@ static int dsaGenerateKey( CONTEXT_INFO *contextInfoPtr, const int keysizeBits )
 	readGenericHole( &stream, &length );					/* p */
 	publicKeyTemplate[ 3 ].pValue = sMemBufPtr( &stream );
 	publicKeyTemplate[ 3 ].ulValueLen = length;
-	sSkip( &stream, length, MAX_INTLENGTH_SHORT );
+	sSkip( &stream, length );
 	readGenericHole( &stream, &length );					/* q */
 	publicKeyTemplate[ 4 ].pValue = sMemBufPtr( &stream );
 	publicKeyTemplate[ 4 ].ulValueLen = length;
-	sSkip( &stream, length, MAX_INTLENGTH_SHORT );
+	sSkip( &stream, length );
 	readGenericHole( &stream, &length );					/* g */
 	publicKeyTemplate[ 5 ].pValue = sMemBufPtr( &stream );
 	publicKeyTemplate[ 5 ].ulValueLen = length;
@@ -2960,7 +2968,7 @@ static int cipherInitKey( CONTEXT_INFO *contextInfoPtr, const void *key,
 static int initCryptParams( CONTEXT_INFO *contextInfoPtr )
 	{
 	enum { CAPI_CRYPT_MODE_NONE, CAPI_CRYPT_MODE_CBC, 
-		   CAPI_CRYPT_MODE_ECB, CAPI_CRYPT_MODE_CTR,
+		   CAPI_CRYPT_MODE_ECB, CAPI_CRYPT_MODE_OFB,
 		   CAPI_CRYPT_MODE_CFB };
 	const CRYPT_MODE_TYPE mode = contextInfoPtr->ctxConv->mode;
 	DWORD dwMode;
@@ -2975,7 +2983,7 @@ static int initCryptParams( CONTEXT_INFO *contextInfoPtr )
 	assert( CRYPT_MODE_ECB == 1 );
 	assert( CRYPT_MODE_CBC == 2 );
 	assert( CRYPT_MODE_CFB == 3 );
-	assert( CRYPT_MODE_GCM == 4 );
+	assert( CRYPT_MODE_OFB == 4 );
 
 	/* CryptoAPI uses the same mode names as cryptlib but different values, 
 	   so we have to override the naming with our own names here and then 
@@ -2991,6 +2999,9 @@ static int initCryptParams( CONTEXT_INFO *contextInfoPtr )
 		case CRYPT_MODE_CFB:
 			dwMode = CAPI_CRYPT_MODE_CFB;
 			break;
+		case CRYPT_MODE_OFB:
+			dwMode = CAPI_CRYPT_MODE_OFB;
+			break;
 		default:
 			retIntError();
 		}
@@ -2999,7 +3010,7 @@ static int initCryptParams( CONTEXT_INFO *contextInfoPtr )
 	if( !CryptSetKeyParam( contextInfoPtr->deviceObject, KP_MODE,
 						   ( BYTE * ) &dwMode, 0 ) )
 		return( mapDeviceError( contextInfoPtr, CRYPT_ERROR_NOTAVAIL ) );
-	if( mode == CRYPT_MODE_CFB )
+	if( mode == CRYPT_MODE_CFB || mode == CRYPT_MODE_OFB )
 		{
 		const DWORD dwModeBits = contextInfoPtr->capabilityInfo->blockSize * 8;
 
@@ -3098,12 +3109,16 @@ static int hashFunction( CONTEXT_INFO *contextInfoPtr, void *buffer, int length 
 
 static CAPABILITY_INFO FAR_BSS capabilityTemplates[] = {
 	/* Encryption capabilities */
+	{ CRYPT_ALGO_DES, bitsToBytes( 64 ), "DES", 3,
+		bitsToBytes( 40 ), bitsToBytes( 64 ), bitsToBytes( 64 ) },
 	{ CRYPT_ALGO_3DES, bitsToBytes( 64 ), "3DES", 4,
 		bitsToBytes( 64 + 8 ), bitsToBytes( 128 ), bitsToBytes( 192 ) },
 	{ CRYPT_ALGO_RC2, bitsToBytes( 64 ), "RC2", 3,
 		bitsToBytes( 40 ), bitsToBytes( 128 ), bitsToBytes( 1024 ) },
 	{ CRYPT_ALGO_RC4, bitsToBytes( 8 ), "RC4", 3,
 		bitsToBytes( 40 ), bitsToBytes( 128 ), 256 },
+	{ CRYPT_ALGO_RC5, bitsToBytes( 64 ), "RC5", 3,
+		bitsToBytes( 40 ), bitsToBytes( 128 ), bitsToBytes( 832 ) },
 	{ CRYPT_ALGO_AES, bitsToBytes( 128 ), "AES", 3,
 		bitsToBytes( 128 ), bitsToBytes( 128 ), bitsToBytes( 256 ) },
 
@@ -3111,6 +3126,8 @@ static CAPABILITY_INFO FAR_BSS capabilityTemplates[] = {
 	{ CRYPT_ALGO_MD5, bitsToBytes( 128 ), "MD5", 3,
 		bitsToBytes( 0 ), bitsToBytes( 0 ), bitsToBytes( 0 ) },
 	{ CRYPT_ALGO_SHA1, bitsToBytes( 160 ), "SHA1", 3,
+		bitsToBytes( 0 ), bitsToBytes( 0 ), bitsToBytes( 0 ) },
+	{ CRYPT_ALGO_RIPEMD160, bitsToBytes( 160 ), "RIPEMD-160", 10,
 		bitsToBytes( 0 ), bitsToBytes( 0 ), bitsToBytes( 0 ) },
 
 	/* Public-key capabilities */
@@ -3173,7 +3190,7 @@ static const MECHANISM_INFO mechanismInfo[] = {
 	{ CALG_RC2, CALG_NONE, CRYPT_ALGO_RC2, CRYPT_MODE_CBC, 
 	  genericEndFunction, cipherInitKey, NULL, 
 	  cipherEncrypt, cipherDecrypt, NULL, NULL },
-	{ CALG_RC4, CALG_NONE, CRYPT_ALGO_RC4, CRYPT_MODE_CFB, 
+	{ CALG_RC4, CALG_NONE, CRYPT_ALGO_RC4, CRYPT_MODE_OFB, 
 	  genericEndFunction, cipherInitKey, NULL, 
 	  cipherEncrypt, cipherDecrypt, NULL, NULL },
 #if 0	/* Although CAPI supports the hash mechanisms, as with PKCS #11
@@ -3267,21 +3284,22 @@ static CAPABILITY_INFO *addCapability( const DEVICE_INFO *deviceInfo,
 	capabilityInfo->generateKeyFunction = mechanismInfoPtr->generateKeyFunction;
 	if( mechanismInfoPtr->algoID == capiAlgoInfo->aiAlgid )
 		{
-		if( mechanismInfoPtr->cryptMode == CRYPT_MODE_CFB )
+		if( mechanismInfoPtr->cryptMode == CRYPT_MODE_OFB )
 			{
-			/* Stream ciphers have an implicit mode of CFB */
-			capabilityInfo->encryptCFBFunction = mechanismInfoPtr->encryptFunction;
+			/* Stream ciphers have an implicit mode of OFB */
+			capabilityInfo->encryptOFBFunction = mechanismInfoPtr->encryptFunction;
 			}
 		else
 			capabilityInfo->encryptFunction = mechanismInfoPtr->encryptFunction;
-		if( mechanismInfoPtr->cryptMode == CRYPT_MODE_CFB )
+		if( mechanismInfoPtr->cryptMode == CRYPT_MODE_OFB )
 			{
-			/* Stream ciphers have an implicit mode of CFB */
-			capabilityInfo->decryptCFBFunction = mechanismInfoPtr->decryptFunction;
+			/* Stream ciphers have an implicit mode of OFB */
+			capabilityInfo->decryptOFBFunction = mechanismInfoPtr->decryptFunction;
 			}
 		else
 			capabilityInfo->decryptFunction = mechanismInfoPtr->decryptFunction;
-		if( mechanismInfoPtr->cryptMode != CRYPT_MODE_NONE )
+		if( mechanismInfoPtr->cryptMode != CRYPT_MODE_NONE && \
+			mechanismInfoPtr->cryptMode != CRYPT_MODE_OFB )
 			{
 			capabilityInfo->encryptCBCFunction = \
 										mechanismInfoPtr->encryptFunction;
@@ -3295,9 +3313,9 @@ static CAPABILITY_INFO *addCapability( const DEVICE_INFO *deviceInfo,
 										mechanismInfoPtr->encryptFunction;
 			capabilityInfo->decryptCFBFunction = \
 										mechanismInfoPtr->decryptFunction;
-			capabilityInfo->encryptCTRFunction = \
+			capabilityInfo->encryptOFBFunction = \
 										mechanismInfoPtr->encryptFunction;
-			capabilityInfo->decryptCTRFunction = \
+			capabilityInfo->decryptOFBFunction = \
 										mechanismInfoPtr->decryptFunction;
 #endif /* 0 */
 			}
@@ -3409,7 +3427,9 @@ static int getCapabilities( DEVICE_INFO *deviceInfo )
 									   &mechanismInfo[ i ], NULL );
 		if( newCapability == NULL )
 			break;
-		REQUIRES( sanityCheckCapability( newCapability ) );
+		REQUIRES( sanityCheckCapability( newCapability, 
+								isPkcAlgo( newCapability->cryptAlgo ) ? \
+								TRUE : FALSE ) );
 		if( ( newCapabilityList = \
 						clAlloc( "getCapabilities", \
 								 sizeof( CAPABILITY_INFO_LIST ) ) ) == NULL )

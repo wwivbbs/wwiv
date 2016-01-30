@@ -48,21 +48,6 @@ typedef enum {
 #define MAX_USERINDEX_SIZE	( ( 16 + ( KEYID_SIZE * 2 ) + \
 							  CRYPT_MAX_TEXTSIZE + 8 ) * MAX_USER_OBJECTS )
 
-/* The structure that stores the user index in the default user object */
-
-typedef struct {
-	USER_FILE_INFO userIndex[ MAX_USER_OBJECTS ];	/* User index */
-	int lastEntry;					/* Last entry in user index */
-	} USER_INDEX_INFO;
-
-#ifdef USE_KEYSETS
-
-/****************************************************************************
-*																			*
-*							Primary SO User Data							*
-*																			*
-****************************************************************************/
-
 /* Primary SO user info */
 
 static const USER_FILE_INFO FAR_BSS primarySOInfo = {
@@ -78,6 +63,13 @@ static const USER_FILE_INFO FAR_BSS primarySOInfo = {
 #define PRIMARYSO_PASSWORD		"zeroised"
 #define PRIMARYSO_ALTPASSWORD	"zeroized"
 #define PRIMARYSO_PASSWORD_LENGTH 8
+
+/* The structure that stores the user index in the default user object */
+
+typedef struct {
+	USER_FILE_INFO userIndex[ MAX_USER_OBJECTS ];	/* User index */
+	int lastEntry;					/* Last entry in user index */
+	} USER_INDEX_INFO;
 
 /****************************************************************************
 *																			*
@@ -209,7 +201,7 @@ static int addKey( IN_HANDLE const CRYPT_KEYSET iUserKeyset,
    because when we're looking up a user we don't know which SO they belong
    to until after we've looked them up */
 
-CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 1, 4 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 4 ) ) \
 static const USER_FILE_INFO *findUser( IN_ARRAY( noUserIndexEntries ) \
 										const USER_FILE_INFO *userIndex,
 									   IN_RANGE( 1, MAX_USER_OBJECTS ) \
@@ -272,7 +264,7 @@ static USER_FILE_INFO *findFreeEntry( IN_ARRAY( noUserIndexEntries ) \
 										USER_FILE_INFO *userIndex,
 									  IN_RANGE( 1, MAX_USER_OBJECTS ) \
 										const int noUserIndexEntries,
-									  OUT int *fileRef )
+									  OUT_INT_SHORT_Z int *fileRef )
 	{
 	USER_FILE_INFO *userIndexPtr;
 	int newFileRef, i, iterationCount;
@@ -283,9 +275,6 @@ static USER_FILE_INFO *findFreeEntry( IN_ARRAY( noUserIndexEntries ) \
 
 	REQUIRES_N( noUserIndexEntries > 0 && \
 				noUserIndexEntries <= MAX_USER_OBJECTS );
-
-	/* Clear return value */
-	*fileRef = CRYPT_ERROR;
 
 	/* Look for an available free entry */
 	for( i = 0, iterationCount  = 0; 
@@ -347,10 +336,10 @@ static USER_FILE_INFO *findFreeEntry( IN_ARRAY( noUserIndexEntries ) \
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
-static int createUserEntry( OUT_PTR_COND USER_FILE_INFO **userIndexPtrPtr,
+static int createUserEntry( OUT_OPT_PTR USER_FILE_INFO **userIndexPtrPtr,
 							IN_ARRAY( noUserIndexEntries ) \
 								USER_FILE_INFO *userIndex, 
-							IN_RANGE_FIXED( MAX_USER_OBJECTS ) \
+							IN_RANGE( 1, MAX_USER_OBJECTS ) \
 								const int noUserIndexEntries,
 							INOUT USER_FILE_INFO *userFileInfo )
 	{
@@ -394,8 +383,6 @@ static int createUserEntry( OUT_PTR_COND USER_FILE_INFO **userIndexPtrPtr,
 			}
 		}
 	ENSURES( iterationCount < FAILSAFE_ITERATIONS_LARGE );
-	if( cryptStatusError( status ) )
-		return( status );
 
 	/* Locate a new unused entry that we can use */
 	userIndexPtr = findFreeEntry( userIndex, MAX_USER_OBJECTS, &fileRef );
@@ -449,7 +436,7 @@ static int readIndexEntry( INOUT STREAM *stream,
 	return( CRYPT_OK );
 	}
 
-CHECK_RETVAL_RANGE( 0, maxUserObjects ) STDC_NONNULL_ARG( ( 2 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 2 ) ) \
 static int readIndex( IN_HANDLE const CRYPT_KEYSET iIndexKeyset, 
 					  IN_ARRAY( maxUserObjects ) USER_FILE_INFO *userIndex, 
 					  IN_RANGE( 1, MAX_USER_OBJECTS ) const int maxUserObjects )
@@ -603,8 +590,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 static int writeUserData( OUT_BUFFER( userDataMaxLength, \
 									  *userDataLength ) void *userData, 
 						  IN_LENGTH_SHORT const int userDataMaxLength,
-						  OUT_LENGTH_BOUNDED_Z( userDataMaxLength ) \
-								int *userDataLength, 
+						  OUT_LENGTH_SHORT_Z int *userDataLength, 
 						  const USER_INFO *userInfoPtr )
 	{
 	const USER_FILE_INFO *userFileInfo = &userInfoPtr->userFileInfo;
@@ -722,9 +708,8 @@ static int getCheckUserInfo( INOUT USER_FILE_INFO *userFileInfoPtr,
 	readConstructed( &stream, NULL, 0 );	/* Content */
 	readSequence( &stream, NULL );
 	readUniversal( &stream );				/* Version */
-	status = readSet( &stream, NULL );		/* DigestAlgorithms */
-	if( cryptSatusOK( status ) )
-		readAlgoID( &stream, &hashAlgo );
+	readSet( &stream, NULL );				/* DigestAlgorithms */
+	readAlgoID( &stream, &hashAlgo );
 	readSequence( &stream, NULL );			/* EncapContentInfo */
 	readUniversal( &stream );				/* ContentType OID */
 	readConstructed( &stream, NULL, 0 );	/* Content type wrapper */
@@ -829,23 +814,23 @@ static int getCheckUserInfo( INOUT USER_FILE_INFO *userFileInfoPtr,
 /* Return the primary SO user info.  This is used as a template to create 
    the primary SO user after a zeroise */
 
-CHECK_RETVAL_PTR_NONNULL \
 const USER_FILE_INFO *getPrimarySoUserInfo( void )
 	{
 	return( &primarySOInfo );
 	}
 
-#ifdef USE_ENVELOPES
-
 /* Sign the user info and write it to the user keyset */
 
-CHECK_RETVAL \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 2 ) ) \
 static int signUserData( IN_HANDLE const CRYPT_KEYSET iUserKeyset,
+						 const USER_INFO *userInfoPtr,
 						 IN_HANDLE const CRYPT_CONTEXT iSignContext )
 	{
 	ERROR_INFO errorInfo;
 	BYTE userInfoBuffer[ USERDATA_BUFFERSIZE + 8 ];
 	int userInfoLength, status;
+
+	assert( isReadPtr( userInfoPtr, sizeof( USER_INFO ) ) );
 
 	REQUIRES( isHandleRangeValid( iUserKeyset ) );
 	REQUIRES( isHandleRangeValid( iSignContext ) );
@@ -872,7 +857,6 @@ static int sigCheckUserData( void )
 	{
 	return( CRYPT_ERROR_SIGNATURE );
 	}
-#endif /* USE_ENVELOPES */
 
 /* Create an SO private key and write it to the user keyset */
 
@@ -1003,7 +987,7 @@ static int createPrimarySoUser( INOUT USER_INFO *userInfoPtr,
 	CRYPT_KEYSET iIndexKeyset, iUserKeyset;
 	USER_FILE_INFO userIndex;
 	BYTE userData[ USERDATA_BUFFERSIZE + 8 ];
-	int userDataLength DUMMY_INIT, status;
+	int userDataLength = DUMMY_INIT, status;
 
 	assert( isWritePtr( userInfoPtr, sizeof( USER_INFO ) ) );
 	assert( isReadPtr( password, passwordLength ) );
@@ -1025,7 +1009,7 @@ static int createPrimarySoUser( INOUT USER_INFO *userInfoPtr,
 	memcpy( &userIndex, &userInfoPtr->userFileInfo, 
 			sizeof( USER_FILE_INFO ) );
 	userIndex.fileRef = 0;
-	status = writeUserIndex( iIndexKeyset, &userIndex, 1 );
+	status = writeUserIndex( iIndexKeyset, &userIndex, MAX_USER_OBJECTS );
 	krnlSendNotifier( iIndexKeyset, IMESSAGE_DECREFCOUNT );
 	if( cryptStatusError( status ) )
 		{
@@ -1163,7 +1147,6 @@ static int createUserKeyset( INOUT USER_INFO *defaultUserInfoPtr,
 		krnlSendNotifier( iIndexKeyset, IMESSAGE_DECREFCOUNT );
 		return( status );
 		}
-	ANALYSER_HINT( userIndexPtr != NULL );
 
 	/* Create the user keyset */
 	status = openUserKeyset( &iUserKeyset, userFileInfo->fileRef, 
@@ -1216,13 +1199,10 @@ int setUserPassword( INOUT USER_INFO *userInfoPtr,
 USER_FILE_INFO dummyUserInfo = { 0 }, *userFileInfoPtr = &dummyUserInfo;
 USER_INFO userInfo;
 
-( void ) readUserData( userFileInfoPtr, "", 1 );
-#ifdef USE_ENVELOPES
-memset( &userInfo, 0, sizeof( USER_INFO ) );
-( void ) signUserData( 0, 0 );
+( void ) readUserData( userFileInfoPtr, "", 0 );
+( void ) signUserData( 0, &userInfo, 0 );
 ( void ) sigCheckUserData();
-#endif /* USE_ENVELOPES */
-( void ) createSOKey( 0, &userInfo, "", 1 );
+( void ) createSOKey( 0, &userInfo, "", 0 );
 ( void ) createUserKeyset( &userInfo, &userInfo );
 }
 /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
@@ -1269,7 +1249,7 @@ memset( &userInfo, 0, sizeof( USER_INFO ) );
    and clean up after we're done with it */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int initUserIndex( OUT_PTR_OPT void **userIndexPtrPtr )
+int initUserIndex( OUT_OPT_PTR void **userIndexPtrPtr )
 	{
 	CRYPT_KEYSET iIndexKeyset;
 	USER_INDEX_INFO *userIndexInfo;
@@ -1353,11 +1333,12 @@ int initUserIndex( OUT_PTR_OPT void **userIndexPtrPtr )
 	}
 
 STDC_NONNULL_ARG( ( 1 ) ) \
-void endUserIndex( IN void *userIndexPtr )
+void endUserIndex( INOUT void *userIndexPtr )
 	{
-	assert( isWritePtr( userIndexPtr, sizeof( USER_INDEX_INFO ) ) );
+	USER_INDEX_INFO *userIndexInfo = userIndexPtr;
 
-	zeroise( userIndexPtr, sizeof( USER_INDEX_INFO ) );
-	clFree( "endUserIndex", userIndexPtr );
+	assert( isWritePtr( userIndexInfo, sizeof( USER_INDEX_INFO ) ) );
+
+	zeroise( userIndexInfo, sizeof( USER_INDEX_INFO ) );
+	clFree( "endUserIndex", userIndexInfo );
 	}
-#endif /* USE_KEYSETS */

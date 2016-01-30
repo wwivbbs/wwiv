@@ -145,11 +145,9 @@ int connectViaSocksProxy( INOUT STREAM *stream )
 /* Open a connection via an HTTP proxy */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int connectViaHttpProxy( INOUT STREAM *stream, 
-						 INOUT ERROR_INFO *errorInfo )
+int connectViaHttpProxy( INOUT STREAM *stream, INOUT ERROR_INFO *errorInfo )
 	{
 	NET_STREAM_INFO *netStream = ( NET_STREAM_INFO * ) stream->netStreamInfo;
-	HTTP_DATA_INFO httpDataInfo;
 	BYTE buffer[ 64 + 8 ];
 	int length, status;
 
@@ -164,15 +162,9 @@ int connectViaHttpProxy( INOUT STREAM *stream,
 	   completed we re-set the stream to pure TCP I/O and clear any stream
 	   flags that were set during the proxying */
 	setStreamLayerHTTP( netStream );
-	initHttpDataInfo( &httpDataInfo, "", 0 );
-	status = netStream->writeFunction( stream, &httpDataInfo,
-									   sizeof( HTTP_DATA_INFO ), &length );
+	status = netStream->writeFunction( stream, "", 0, &length );
 	if( cryptStatusOK( status ) )
-		{
-		initHttpDataInfo( &httpDataInfo, buffer, 64 );
-		status = netStream->readFunction( stream, &httpDataInfo,
-										  sizeof( HTTP_DATA_INFO ), &length );
-		}
+		status = netStream->readFunction( stream, buffer, 64, &length );
 	setStreamLayerDirect( netStream );
 	stream->flags = 0;
 	if( cryptStatusError( status ) )
@@ -254,7 +246,7 @@ typedef BOOL ( *WINHTTPCLOSEHANDLE )( HINTERNET hInternet );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 int findProxyUrl( OUT_BUFFER( proxyMaxLen, *proxyLen ) char *proxy, 
 				  IN_LENGTH_DNS const int proxyMaxLen, 
-				  OUT_LENGTH_BOUNDED_Z( proxyMaxLen ) int *proxyLen,
+				  OUT_LENGTH_DNS_Z int *proxyLen,
 				  IN_BUFFER( urlLen ) const char *url, 
 				  IN_LENGTH_DNS const int urlLen )
 	{
@@ -391,7 +383,9 @@ int findProxyUrl( OUT_BUFFER( proxyMaxLen, *proxyLen ) char *proxy,
 
 	/* Locate the proxy used for accessing the resource at the supplied URL.
 	   We have to convert to and from Unicode because the WinHTTP functions
-	   all take Unicode strings as args.
+	   all take Unicode strings as args.  Note that we use the libc widechar
+	   functions rather than the Windows ones since the latter aren't
+	   present in Win95 or Win98.
 
 	   WinHttpGetProxyForUrl() can be rather flaky, in some cases it'll fail
 	   instantly (without even trying auto-discovery) with GetLastError() =
@@ -455,8 +449,8 @@ static int findProxyUrl( char *proxy, const int proxyMaxLen,
 	assert( isWritePtr( proxy, proxyMaxLen ) );
 	assert( isReadPtr( url, urlLen ) );
 
-	REQUIRES( proxyMaxLen > 10 && proxyMaxLen < MAX_INTLENGTH_SHORT );
-	REQUIRES( urlLen > 0 && urlLen < MAX_INTLENGTH_SHORT );
+	REQUIRES( proxyMaxLen > 10 && proxyMaxLen < MAX_INTLENGTH );
+	REQUIRES( urlLen > 0 && urlLen < MAX_INTLENGTH );
 
 	/* This gets somewhat complicated, under Win2K SP3 and XP and newer (or 
 	   at least Windows versions with WinHTTP 5.1 installed in some way, it

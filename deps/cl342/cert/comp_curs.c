@@ -379,7 +379,7 @@ BOOLEAN isGeneralNameSelectionComponent( IN_ATTRIBUTE \
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int selectGeneralName( INOUT CERT_INFO *certInfoPtr,
-					   IN_ATTRIBUTE_OPT const CRYPT_ATTRIBUTE_TYPE certInfoType,
+					   IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE certInfoType,
 					   IN_ENUM( SELECTION_OPTION ) const SELECTION_OPTION option )
 	{
 	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
@@ -522,7 +522,7 @@ int selectGeneralNameComponent( INOUT CERT_INFO *certInfoPtr,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int selectDN( INOUT CERT_INFO *certInfoPtr, 
-			  IN_ATTRIBUTE_OPT const CRYPT_ATTRIBUTE_TYPE certInfoType,
+			  IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE certInfoType,
 			  IN_ENUM( SELECTION_OPTION ) const SELECTION_OPTION option )
 	{
 	CRYPT_ATTRIBUTE_TYPE generalName = \
@@ -633,7 +633,7 @@ int selectDN( INOUT CERT_INFO *certInfoPtr,
 	   that contains it */
 	status = addAttributeField( &certInfoPtr->attributes, generalName,
 								CRYPT_CERTINFO_DIRECTORYNAME, CRYPT_UNUSED, 
-								ATTR_FLAG_NONE, &certInfoPtr->errorLocus,
+								0, &certInfoPtr->errorLocus, 
 								&certInfoPtr->errorType );
 	if( cryptStatusError( status ) )
 		return( status );
@@ -683,8 +683,8 @@ static int selectDNComponent( INOUT CERT_INFO *certInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int setCursorCertChain( INOUT CERT_INFO *certInfoPtr, 
 							   IN_RANGE( CRYPT_CURSOR_LAST, \
-										 CRYPT_CURSOR_FIRST ) \
-									const int cursorMoveType )	/* Values are -ve */
+										 CRYPT_CURSOR_FIRST ) /* Values are -ve */
+									const int cursorMoveType )
 	{
 	CERT_CERT_INFO *certChainInfo = certInfoPtr->cCertCert;
 
@@ -734,8 +734,8 @@ static int setCursorCertChain( INOUT CERT_INFO *certInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int setCursorValInfo( INOUT CERT_INFO *certInfoPtr, 
 							 IN_RANGE( CRYPT_CURSOR_LAST, \
-									   CRYPT_CURSOR_FIRST ) \
-								const int cursorMoveType )	/* Values are -ve */
+									   CRYPT_CURSOR_FIRST ) /* Values are -ve */
+								const int cursorMoveType )
 	{
 	CERT_VAL_INFO *certValInfo = certInfoPtr->cCertVal;
 	VALIDITY_INFO *valInfo = certValInfo->validityInfo;
@@ -812,8 +812,8 @@ static int setCursorValInfo( INOUT CERT_INFO *certInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int setCursorRevInfo( INOUT CERT_INFO *certInfoPtr, 
 							 IN_RANGE( CRYPT_CURSOR_LAST, \
-									   CRYPT_CURSOR_FIRST )
-								const int cursorMoveType )	/* Values are -ve */
+									   CRYPT_CURSOR_FIRST ) /* Values are -ve */
+								const int cursorMoveType )
 	{
 	CERT_REV_INFO *certRevInfo = certInfoPtr->cCertRev;
 	REVOCATION_INFO *revInfo = certRevInfo->revocations;
@@ -892,8 +892,8 @@ static int setCursorRevInfo( INOUT CERT_INFO *certInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int setCertificateCursor( INOUT CERT_INFO *certInfoPtr, 
 						  IN_RANGE( CRYPT_CURSOR_LAST, \
-									CRYPT_CURSOR_FIRST ) \
-								const int cursorMoveType )	/* Values are -ve */
+									CRYPT_CURSOR_FIRST ) /* Values are -ve */
+								const int cursorMoveType )
 	{
 	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
 
@@ -945,9 +945,7 @@ int setCertificateCursor( INOUT CERT_INFO *certInfoPtr,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int setAttributeCursorDN( INOUT SELECTION_INFO *currentSelection,
-								 IN_RANGE( CRYPT_CURSOR_LAST, \
-										   CRYPT_CURSOR_FIRST ) \
-									const int moveType )	/* Values are -ve */
+								 IN const int moveType )
 	{
 	const DN_PTR *dnComponentList = *currentSelection->dnPtr;
 	int count = 0, iterationCount;
@@ -955,7 +953,7 @@ static int setAttributeCursorDN( INOUT SELECTION_INFO *currentSelection,
 	assert( isWritePtr( currentSelection, sizeof( SELECTION_INFO ) ) );
 
 	REQUIRES( moveType <= CRYPT_CURSOR_FIRST && \
-			  moveType >= CRYPT_CURSOR_LAST );	/* Values are -ve */
+			  moveType >= CRYPT_CURSOR_LAST );
 
 	switch( moveType )
 		{
@@ -1012,9 +1010,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int setAttributeCursorRelative( INOUT CERT_INFO *certInfoPtr,
 									   IN_ATTRIBUTE \
 											const CRYPT_ATTRIBUTE_TYPE certInfoType,
-									   IN_RANGE( CRYPT_CURSOR_LAST, \
-												 CRYPT_CURSOR_FIRST ) \
-											const int value )	/* Values are -ve */
+									   IN const int value )
 	{
 	ATTRIBUTE_PTR *attributeCursor;
 
@@ -1023,8 +1019,15 @@ static int setAttributeCursorRelative( INOUT CERT_INFO *certInfoPtr,
 	REQUIRES( certInfoType == CRYPT_ATTRIBUTE_CURRENT_GROUP || \
 			  certInfoType == CRYPT_ATTRIBUTE_CURRENT || \
 			  certInfoType == CRYPT_ATTRIBUTE_CURRENT_INSTANCE );
-	REQUIRES( value <= CRYPT_CURSOR_FIRST && \
-			  value >= CRYPT_CURSOR_LAST );		/* Values are -ve */
+	REQUIRES( ( value <= CRYPT_CURSOR_FIRST && \
+				value >= CRYPT_CURSOR_LAST ) || \
+			  ( value >= CRYPT_CERTINFO_FIRST_EXTENSION && \
+				value <= CRYPT_CERTINFO_LAST_EXTENSION ) || \
+			  ( certInfoType == CRYPT_ATTRIBUTE_CURRENT_INSTANCE && \
+				( isDNComponent( value ) || \
+				  isGeneralNameComponent( value ) ) ) );
+			  /* See comment in setCursorInfo for the odd CRYPT_CURSOR_xxx 
+			     comparison */
 
 	/* If we're moving to a field in an extension and there's a saved 
 	   GeneralName selection present (which means that it's for a 
@@ -1134,8 +1137,6 @@ int setAttributeCursor( INOUT CERT_INFO *certInfoPtr,
 		return( setAttributeCursorRelative( certInfoPtr, certInfoType, 
 											value ) );
 		}
-	ENSURES( value >= CRYPT_CERTINFO_ISSUERNAME && \
-			 value <= CRYPT_CERTINFO_LAST );
 
 	/* It's a field in an extension, try and move to the start of the
 	   extension that contains this field */

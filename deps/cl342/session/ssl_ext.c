@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *					cryptlib TLS Extension Management						*
-*					Copyright Peter Gutmann 1998-2013						*
+*					Copyright Peter Gutmann 1998-2011						*
 *																			*
 ****************************************************************************/
 
@@ -50,7 +50,7 @@ static const EXT_CHECK_INFO extCheckInfoTbl[] = {
 	{ TLS_EXT_SERVER_NAME, 1, 0, 8192, 
 	  "server name indication" },
 
-	/* Maximum fragment length, RFC 4366:
+	/* Maximm fragment length, RFC 4366:
 
 		byte		fragmentLength */
 	{ TLS_EXT_MAX_FRAGMENT_LENTH, 1, 1, 1, 
@@ -163,71 +163,6 @@ static const EXT_CHECK_INFO extCheckInfoTbl[] = {
 	{ TLS_EXT_SIGNATURE_ALGORITHMS, UINT16_SIZE + 1 + 1, CRYPT_ERROR, 512, 
 	  "signature algorithm" },
 
-	/* DTLS for SRTP keying, RFC 5764:
-
-		uint16		srtpProtectionProfileListLength
-			uint16	srtpProtectionProfile
-			byte[]	srtp_mki */
-	{ TLS_EXT_USE_SRP, UINT16_SIZE + UINT16_SIZE + 1, CRYPT_ERROR, 512,
-	  "DTLS SRTP keying" },
-
-	/* DTLS heartbeat, RFC 6520:
-
-		byte		heartBeatMode */
-	{ TLS_EXT_HEARTBEAT, 1, 1, 1, 
-	  "DTLS heartbeat" },
-
-	/* TLS ALPN, RFC 7301:
-		uint16		protocolNameListLength
-			uint8	protocolNameLength
-			byte[]	protocolName */
-	{ TLS_EXT_ALPN, UINT16_SIZE + 1 + 1, CRYPT_ERROR, 512,
-	  "ALPN"},
-
-	/* OCSP status request v2, RFC 6961.  See the comment for 
-	   TLS_EXT_STATUS_REQUEST:
-
-		byte		statusType
-		uint16		requestLength
-			uint16	ocspResponderList	-- May be length 0
-				uint16	responderLength
-				byte[]	responder
-			uint16	extensionLength		-- May be length 0
-				byte[]	extensions */
-	{ TLS_EXT_STATUS_REQUEST_V2, 
-	  1 + UINT16_SIZE + UINT16_SIZE + UINT16_SIZE, CRYPT_ERROR, 8192, 
-	  "OCSP status request v2" },
-
-	/* Certificate transparency timestamp, RFC 6962.  This is another
-	   Trusted-CA-certificate level of complexity extension, the client
-	   sends an empty request and the server responds with an X.509 level
-	   of complexity extension, a SignedCertificateTimestampList:
-
-		uint16		signedCertTimestampListLength
-			uint16	serialisedSignedCertTimestampLength
-				byte[]	[ X.509 level of complexity ]
-
-	   Decoding what all of this requires from the RFC is excessively
-	   complex (the spec is vague and ambiguous in several locations, with
-	   details of what's required scattered all over the RFC in a mixture of
-	   ASN.1 and TLS notation), but requiring a length of 64 bytes seems
-	   sound */
-	{ TLS_EXT_CERT_TRANSPARENCY, 0, UINT16_SIZE + UINT16_SIZE + 64, 8192,
-	  "certificate transparency" },
-
-	/* Raw client/server public keys, RFC 7250:
-
-		uint8		certificateTypeLength
-			byte[]	certificateTypes */
-	{ TLS_EXT_RAWKEY_CLIENT, 1 + 1, 1 + 1, 64,
-	  "client raw public key" },
-	{ TLS_EXT_RAWKEY_SERVER, 1 + 1, 1 + 1, 64,
-	  "server raw public key" },
-
-	/* Encrypt-then-MAC, RFC 7366 */
-	{ TLS_EXT_ENCTHENMAC, 0, 0, 0,
-	  "encrypt-then-MAC" },
-
 	/* Session ticket, RFC 4507/5077.  The client can send a zero-length 
 	   session ticket to indicate that it supports the extension but doesn't 
 	   have a session ticket yet, and the server can send a zero-length 
@@ -244,17 +179,13 @@ static const EXT_CHECK_INFO extCheckInfoTbl[] = {
 	{ TLS_EXT_SESSIONTICKET, 0, 0, 8192,
 	  "session ticket" },
 
-	/* Secure renegotiation indication, RFC 5746:
-
-		byte renegotiated_connection[]
-	
-	   See the comment below for why we (apparently) support this even 
-	   though we don't do renegotiation.  We give the length as one, 
-	   corresponding to zero-length content, the one is for the single-byte 
-	   length field in the extension itself, set to a value of zero.  It can 
-	   in theory be larger as part of the secure renegotiation process but 
-	   this would be an indication of an attack since we don't do 
-	   renegotiation */
+	/* Secure renegotiation indication, RFC 5746.  See the comment below for
+	   why we (apparently) support this even though we don't do 
+	   renegotiation.  We give the length as one, corresponding to zero-
+	   length content, the one is for the single-byte length field in the 
+	   extension itself, set to a value of zero.  It can in theory be larger 
+	   as part of the secure renegotiation process but this would be an 
+	   indication of an attack since we don't do renegotiation */
 	{ TLS_EXT_SECURE_RENEG, 1, 1, 1,
 	  "secure renegotiation" },
 
@@ -278,72 +209,6 @@ static const EXT_CHECK_INFO extCheckInfoTbl[] = {
 *																			*
 ****************************************************************************/
 
-/* Process the SNI:
-
-	uint16		listLen
-		byte	nameType
-		uint16	nameLen
-		byte[]	name 
-
-   If we're the client and we sent this extension to the server then the 
-   server may responed with a zero-length server-name extension for no 
-   immediately obvious purpose (if the server doesn't recognise the name 
-   then it's required to send an 'unrecognised-name' alert so any non-alert 
-   return means that the value was accepted, but for some reason it's 
-   required to send a zero-length response anyway) */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int processSNI( INOUT SSL_HANDSHAKE_INFO *handshakeInfo,
-					   INOUT STREAM *stream, 
-					   IN_LENGTH_SHORT_Z const int extLength,
-					   const BOOLEAN isServer )
-	{
-	BYTE nameBuffer[ MAX_DNS_SIZE + 8 ];
-	int listLen, nameLen, status;
-
-	assert( isWritePtr( handshakeInfo, sizeof( SSL_HANDSHAKE_INFO ) ) );
-	assert( isWritePtr( stream, sizeof( STREAM ) ) );
-
-	REQUIRES( extLength >= 0 && extLength < MAX_INTLENGTH_SHORT );
-
-	/* If we're the client then the server should have sent us an empty
-	   extension */
-	if( !isServer )
-		return( ( extLength != 0 ) ? CRYPT_ERROR_BADDATA : CRYPT_OK );
-
-	/* Remember that we've seen the server-name extension so that we can 
-	   send a zero-length reply to the client */
-	handshakeInfo->needSNIResponse = TRUE;
-
-	/* Read the extension wrapper */
-	status = listLen = readUint16( stream );
-	if( cryptStatusError( status ) )
-		return( status );
-	if( listLen != extLength - UINT16_SIZE || \
-		listLen < 1 + UINT16_SIZE || \
-		listLen >= MAX_INTLENGTH_SHORT )
-		return( CRYPT_ERROR_BADDATA );
-
-	/* Read the name type and length */
-	if( sgetc( stream ) != 0 )	/* Name type 0 = hostname */
-		return( CRYPT_ERROR_BADDATA );
-	status = nameLen = readUint16( stream );
-	if( cryptStatusError( status ) )
-		return( status );
-	if( nameLen != listLen - ( 1 + UINT16_SIZE ) || \
-		nameLen < MIN_DNS_SIZE || nameLen > MAX_DNS_SIZE )
-		return( CRYPT_ERROR_BADDATA );
-
-	/* Read the SNI and hash it */
-	status = sread( stream, nameBuffer, nameLen );
-	if( cryptStatusError( status ) )
-		return( status );
-	hashData( handshakeInfo->hashedSNI, KEYID_SIZE, nameBuffer, nameLen );
-	handshakeInfo->hashedSNIpresent = TRUE;
-
-	return( CRYPT_OK );
-	}
-
 /* Process the list of preferred (or at least supported) ECC curves.  This 
    is a somewhat problematic extension because it applies to any use of ECC, 
    so if (for some reason) the server wants to use a P256 ECDH key with a 
@@ -366,21 +231,19 @@ static int processSupportedCurveID( INOUT SESSION_INFO *sessionInfoPtr,
 									OUT_BOOL BOOLEAN *extErrorInfoSet )
 	{
 	static const MAP_TABLE curveIDTbl[] = {
+		{ TLS_CURVE_SECP192R1, CRYPT_ECCCURVE_P192 },
+		{ TLS_CURVE_SECP224R1, CRYPT_ECCCURVE_P224 },
 		{ TLS_CURVE_SECP256R1, CRYPT_ECCCURVE_P256 },
 		{ TLS_CURVE_SECP384R1, CRYPT_ECCCURVE_P384 },
 		{ TLS_CURVE_SECP521R1, CRYPT_ECCCURVE_P521 },
-		{ TLS_CURVE_BRAINPOOLP256R1, CRYPT_ECCCURVE_BRAINPOOL_P256 },
-		{ TLS_CURVE_BRAINPOOLP384R1, CRYPT_ECCCURVE_BRAINPOOL_P384 },
-		{ TLS_CURVE_BRAINPOOLP512R1, CRYPT_ECCCURVE_BRAINPOOL_P512 },
 		{ CRYPT_ERROR, 0 }, { CRYPT_ERROR, 0 }
 		};
 	static const MAP_TABLE curveSizeTbl[] = {
+		{ CRYPT_ECCCURVE_P192, bitsToBytes( 192 ) },
+		{ CRYPT_ECCCURVE_P224, bitsToBytes( 224 ) },
 		{ CRYPT_ECCCURVE_P256, bitsToBytes( 256 ) },
 		{ CRYPT_ECCCURVE_P384, bitsToBytes( 384 ) },
 		{ CRYPT_ECCCURVE_P521, bitsToBytes( 521 ) },
-		{ CRYPT_ECCCURVE_BRAINPOOL_P256, bitsToBytes( 256 ) },
-		{ CRYPT_ECCCURVE_BRAINPOOL_P384, bitsToBytes( 384 ) },
-		{ CRYPT_ECCCURVE_BRAINPOOL_P512, bitsToBytes( 512 ) },
 		{ CRYPT_ERROR, 0 }, { CRYPT_ERROR, 0 }
 		};
 	CRYPT_ECCCURVE_TYPE preferredCurveID = CRYPT_ECCCURVE_NONE;
@@ -424,8 +287,6 @@ static int processSupportedCurveID( INOUT SESSION_INFO *sessionInfoPtr,
 		status = value = readUint16( stream );
 		if( cryptStatusError( status ) )
 			return( status );
-		if( value <= TLS_CURVE_NONE || value >= TLS_CURVE_LAST )
-			continue;	/* Unrecognised curve type */
 		status = mapValue( value, &curveID, curveIDTbl, 
 						   FAILSAFE_ARRAYSIZE( curveIDTbl, MAP_TABLE ) );
 		if( cryptStatusError( status ) )
@@ -561,7 +422,7 @@ static int processSignatureAlgos( INOUT SESSION_INFO *sessionInfoPtr,
 
 	/* If we're not using TLS 1.2+, skip the extension */
 	if( sessionInfoPtr->version < SSL_MINOR_VERSION_TLS12 )
-		return( sSkip( stream, listLen, MAX_INTLENGTH_SHORT ) );
+		return( sSkip( stream, listLen ) );
 
 	/* For the more strict handling requirements in Suite B only 256- or 
 	   384-bit algorithms are allowed at the 128-bit level and only 384-bit 
@@ -573,7 +434,7 @@ static int processSignatureAlgos( INOUT SESSION_INFO *sessionInfoPtr,
 		{
 		handshakeInfo->keyexSigHashAlgo = CRYPT_ALGO_SHA2;
 
-		return( sSkip( stream, listLen, MAX_INTLENGTH_SHORT ) );
+		return( sSkip( stream, listLen ) );
 		}
 
 	/* Get the size of the server's signing key to try and match the 
@@ -670,7 +531,7 @@ static int processSignatureAlgos( INOUT SESSION_INFO *sessionInfoPtr,
 #else
 	handshakeInfo->keyexSigHashAlgo = CRYPT_ALGO_SHA2;
 
-	return( sSkip( stream, listLen, MAX_INTLENGTH_SHORT ) );
+	return( sSkip( stream, listLen ) );
 #endif /* CONFIG_SUITEB */
 	}
 
@@ -685,7 +546,7 @@ static int processExtension( INOUT SESSION_INFO *sessionInfoPtr,
 							 IN_LENGTH_SHORT_Z const int extLength,
 							 OUT_BOOL BOOLEAN *extErrorInfoSet )
 	{
-	int value, status;
+	int value, listLen, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( handshakeInfo, sizeof( SSL_HANDSHAKE_INFO ) ) );
@@ -700,9 +561,42 @@ static int processExtension( INOUT SESSION_INFO *sessionInfoPtr,
 	switch( type )
 		{
 		case TLS_EXT_SERVER_NAME:
-			/* Read and process the SNI */
-			return( processSNI( handshakeInfo, stream, extLength, 
-								isServer( sessionInfoPtr ) ) );
+			/* Response: Send zero-length reply to peer:
+
+				uint16		listLen
+					byte	nameType
+					uint16	nameLen
+					byte[]	name 
+
+			   If we're the client and we sent this extension to the server
+			   then the server may responed with a zero-length server-name
+			   extension for no immediately obvious purpose (if the server
+			   doesn't recognise the name then it's required to send an
+			   'unrecognised-name' alert so any non-alert return means that
+			   the value was accepted, but for some reason it's required to
+			   send a zero-length response anyway), in which case we have to 
+			   special-case the check for this */
+			if( !isServer( sessionInfoPtr ) )
+				{
+				if( extLength <= 0 )
+					return( CRYPT_OK );
+				}
+			else
+				{
+				/* Remember that we've seen the server-name extension so that
+				   we can send a zero-length reply to the client */
+				handshakeInfo->needSNIResponse = TRUE;
+				}
+			status = listLen = readUint16( stream );
+			if( cryptStatusError( status ) )
+				return( status );
+			if( listLen != extLength - UINT16_SIZE || \
+				listLen < 1 + UINT16_SIZE || \
+				listLen >= MAX_INTLENGTH_SHORT )
+				return( CRYPT_ERROR_BADDATA );
+
+			/* Parsing of further SEQUENCE OF SEQUENCE data omitted */
+			return( sSkip( stream, listLen ) );
 
 		case TLS_EXT_MAX_FRAGMENT_LENTH:
 			{
@@ -766,7 +660,7 @@ static int processExtension( INOUT SESSION_INFO *sessionInfoPtr,
 				byte[]		pointFormat */
 			if( extLength > 0 )
 				{
-				status = sSkip( stream, extLength, MAX_INTLENGTH_SHORT );
+				status = sSkip( stream, extLength );
 				if( cryptStatusError( status ) )
 					return( status );
 				}
@@ -796,23 +690,11 @@ static int processExtension( INOUT SESSION_INFO *sessionInfoPtr,
 
 			return( CRYPT_OK );
 
-		case TLS_EXT_ENCTHENMAC:
-			if( extLength != 0 )
-				return( CRYPT_ERROR_INVALID );
-
-			/* Turn on enrypt-then-MAC and, if we're the server, rememeber 
-			   that we have to echo the extension back to the client */
-			sessionInfoPtr->protocolFlags |= SSL_PFLAG_ENCTHENMAC;
-			if( isServer( sessionInfoPtr ) )
-				handshakeInfo->needEncThenMACResponse = TRUE;
-			
-			return( CRYPT_OK );
-
 		default:
 			/* Default: Ignore the extension */
 			if( extLength > 0 )
 				{
-				status = sSkip( stream, extLength, MAX_INTLENGTH_SHORT );
+				status = sSkip( stream, extLength );
 				if( cryptStatusError( status ) )
 					return( status );
 				}
@@ -832,7 +714,7 @@ int readExtensions( INOUT SESSION_INFO *sessionInfoPtr,
 					IN_LENGTH_SHORT const int length )
 	{
 	const int endPos = stell( stream ) + length;
-	int extListLen, noExtensions, status;
+	int minPayloadLength = 1, extListLen, noExtensions, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( handshakeInfo, sizeof( SSL_HANDSHAKE_INFO ) ) );
@@ -841,20 +723,21 @@ int readExtensions( INOUT SESSION_INFO *sessionInfoPtr,
 	REQUIRES( length > 0 && length < MAX_INTLENGTH_SHORT );
 	REQUIRES( endPos > 0 && endPos < MAX_INTLENGTH_SHORT );
 
+	/* If we're the client and we've sent a server-name extension to the
+	   server, the server can optionally send back a zero-length server-name
+	   extension for no immediately obvious purpose, in which case the 
+	   minimum payload length may be zero */
+	if( !isServer( sessionInfoPtr ) && \
+		sessionInfoPtr->version >= SSL_MINOR_VERSION_TLS )
+		minPayloadLength = 0;
+
 	/* Read the extension header and make sure that it's valid:
 
 		uint16		extListLen
 			uint16	extType
 			uint16	extLen
-			byte[]	extData 
-
-	   We can get a single zero-length extension for both client and server, 
-	   for the server it's a session-ticket request sent by the client, for 
-	   the client it's a zero-length SNI sent by the server for no 
-	   immediately obvious purpose in response to our SNI, so we can't take 
-	   the precaution of requiring at least one byte of payload data as a 
-	   sanity check */
-	if( length < UINT16_SIZE + UINT16_SIZE + UINT16_SIZE )
+			byte[]	extData */
+	if( length < UINT16_SIZE + UINT16_SIZE + UINT16_SIZE + minPayloadLength )
 		{
 		retExt( CRYPT_ERROR_BADDATA,
 				( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
@@ -882,17 +765,16 @@ int readExtensions( INOUT SESSION_INFO *sessionInfoPtr,
 		{
 		const EXT_CHECK_INFO *extCheckInfoPtr = NULL;
 		BOOLEAN extErrorInfoSet;
-		int type, extLen DUMMY_INIT, i;
+		int type, extLen, i;
 
 		/* Read the header for the next extension and get the extension-
 		   checking information.  The length check at this point is just a
 		   generic sanity check, more specific checking is done once we've 
 		   got the extension type-specific information */
-		status = type = readUint16( stream );
-		if( !cryptStatusError( status ) )	/* For static analysers */
-			status = extLen = readUint16( stream );
+		type = readUint16( stream );
+		status = extLen = readUint16( stream );
 		if( cryptStatusError( status ) || \
-			extLen < 0 || extLen >= MAX_INTLENGTH_SHORT )
+			extLen < 0 || extLen > MAX_PACKET_SIZE )
 			{
 			retExt( CRYPT_ERROR_BADDATA,
 					( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
@@ -968,8 +850,8 @@ int readExtensions( INOUT SESSION_INFO *sessionInfoPtr,
 		{
 		retExt( CRYPT_ERROR_OVERFLOW,
 				( CRYPT_ERROR_OVERFLOW, SESSION_ERRINFO, 
-				  "Excessive number (more than %d) of TLS extensions "
-				  "encountered", noExtensions ) );
+				  "Excessive number (%d) of TLS extensions encountered", 
+				  noExtensions ) );
 		}
 
 	return( CRYPT_OK );
@@ -1032,8 +914,7 @@ static int writeSigHashAlgoList( STREAM *stream )
 		{ CRYPT_ALGO_ECDSA, CRYPT_ALGO_SHA1, 
 		  TLS_SIGALGO_ECDSA, TLS_HASHALGO_SHA1 },
 #endif /* 0 */
-		{ CRYPT_ALGO_NONE, CRYPT_ALGO_NONE, TLS_SIGALGO_NONE }, 
-			{ CRYPT_ALGO_NONE, CRYPT_ALGO_NONE, TLS_SIGALGO_NONE }
+		{ CRYPT_ALGO_NONE, CRYPT_ERROR }, { CRYPT_ALGO_NONE, CRYPT_ERROR }
 		};
 	BYTE algoList[ 32 + 8 ];
 	int algoIndex = 0, i;
@@ -1113,13 +994,12 @@ int writeClientExtensions( INOUT STREAM *stream,
 						   INOUT SESSION_INFO *sessionInfoPtr )
 	{
 	STREAM nullStream;
-	const void *eccCurveInfoPtr DUMMY_INIT_PTR;
+	const void *eccCurveInfoPtr = DUMMY_INIT_PTR;
 	const BOOLEAN hasServerName = \
 		( findSessionInfo( sessionInfoPtr->attributeList,
 						   CRYPT_SESSINFO_SERVER_NAME ) != NULL ) ? TRUE : FALSE;
-	int serverNameHdrLen = 0, serverNameExtLen = 0;
-	int sigHashHdrLen = 0, sigHashExtLen = 0;
-	int eccCurveTypeLen DUMMY_INIT, eccInfoLen = 0, status;
+	int serverNameExtLen = 0, sigHashHdrLen = 0, sigHashExtLen = 0;
+	int eccCurveTypeLen = DUMMY_INIT, eccInfoLen = 0, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
@@ -1134,10 +1014,7 @@ int writeClientExtensions( INOUT STREAM *stream,
 		sMemNullOpen( &nullStream );
 		status = writeServerName( &nullStream, sessionInfoPtr );
 		if( cryptStatusOK( status ) )
-			{
-			serverNameHdrLen = UINT16_SIZE + UINT16_SIZE;
 			serverNameExtLen = stell( &nullStream );
-			}
 		sMemClose( &nullStream );
 		if( cryptStatusError( status ) )
 			return( status );
@@ -1165,13 +1042,10 @@ int writeClientExtensions( INOUT STREAM *stream,
 		algoAvailable( CRYPT_ALGO_ECDSA ) )
 		{
 		static const BYTE eccCurveInfo[] = {
-			0, TLS_CURVE_BRAINPOOLP512R1, 0, TLS_CURVE_BRAINPOOLP384R1,
-			0, TLS_CURVE_BRAINPOOLP256R1,
 			0, TLS_CURVE_SECP521R1, 0, TLS_CURVE_SECP384R1, 
 			0, TLS_CURVE_SECP256R1, 0, TLS_CURVE_SECP224R1, 
 			0, TLS_CURVE_SECP192R1, 0, 0 
 			};
-		static const int eccCurveCount = 8;
 
 #ifdef CONFIG_SUITEB
 		if( sessionInfoPtr->protocolFlags & SSL_PFLAG_SUITEB )
@@ -1213,7 +1087,7 @@ int writeClientExtensions( INOUT STREAM *stream,
 #endif /* CONFIG_SUITEB */
 			{
 			eccCurveInfoPtr = eccCurveInfo;
-			eccCurveTypeLen = eccCurveCount * UINT16_SIZE;
+			eccCurveTypeLen = 5 * UINT16_SIZE;
 			}
 		eccInfoLen = UINT16_SIZE + UINT16_SIZE + \
 					 UINT16_SIZE + eccCurveTypeLen;
@@ -1221,9 +1095,9 @@ int writeClientExtensions( INOUT STREAM *stream,
 		}
 
 	/* Write the list of extensions */
-	writeUint16( stream, serverNameHdrLen + serverNameExtLen + \
-						 RENEG_EXT_SIZE + ( UINT16_SIZE + UINT16_SIZE ) + \
-						 sigHashHdrLen + sigHashExtLen + eccInfoLen );
+	writeUint16( stream, UINT16_SIZE + UINT16_SIZE + serverNameExtLen + \
+						 RENEG_EXT_SIZE + sigHashHdrLen + sigHashExtLen + \
+						 eccInfoLen );
 	if( hasServerName )
 		{
 		writeUint16( stream, TLS_EXT_SERVER_NAME );
@@ -1242,10 +1116,6 @@ int writeClientExtensions( INOUT STREAM *stream,
 	DEBUG_PRINT(( "Wrote extension secure renegotiation (%d), length 1.\n",
 				  TLS_EXT_SECURE_RENEG ));
 	DEBUG_DUMP_STREAM( stream, stell( stream ) - 1, 1 );
-	writeUint16( stream, TLS_EXT_ENCTHENMAC );
-	status = writeUint16( stream, 0 );
-	DEBUG_PRINT(( "Wrote extension encrypt-then-MAC (%d), length 0.\n",
-				  TLS_EXT_ENCTHENMAC ));
 	if( sigHashExtLen > 0 )
 		{
 		writeUint16( stream, TLS_EXT_SIGNATURE_ALGORITHMS );
@@ -1282,7 +1152,7 @@ int writeClientExtensions( INOUT STREAM *stream,
 			return( status );
 		DEBUG_PRINT(( "Wrote extension ECC point format (%d), length %d.\n",
 					  TLS_EXT_EC_POINT_FORMATS, 1 + 1 ));
-		DEBUG_DUMP_STREAM( stream, stell( stream ) - ( 1 + 1 ), 1 + 1 );
+		DEBUG_DUMP_STREAM( stream, stell( stream ) - 1 + 1, 1 + 1 );
 		}
 	return( status );
 	}
@@ -1304,8 +1174,6 @@ int writeServerExtensions( INOUT STREAM *stream,
 		extListLen += UINT16_SIZE + UINT16_SIZE;
 	if( handshakeInfo->needRenegResponse )
 		extListLen += RENEG_EXT_SIZE;
-	if( handshakeInfo->needEncThenMACResponse )
-		extListLen += UINT16_SIZE + UINT16_SIZE;
 	if( extListLen <= 0 )
 		{
 		/* No extensions to write, we're done */
@@ -1332,7 +1200,7 @@ int writeServerExtensions( INOUT STREAM *stream,
 		status = writeUint16( stream, 0 );
 		if( cryptStatusError( status ) )
 			return( status );
-		DEBUG_PRINT(( "Wrote extension server name indication (%d), "
+		DEBUG_PRINT(( "Wrote extension extension server name indication (%d), "
 					  "length 0.\n", TLS_EXT_SERVER_NAME, 0 ));
 		}
 
@@ -1347,18 +1215,6 @@ int writeServerExtensions( INOUT STREAM *stream,
 		DEBUG_PRINT(( "Wrote extension secure renegotiation (%d), length 1.\n",
 					  TLS_EXT_SECURE_RENEG ));
 		DEBUG_DUMP_STREAM( stream, stell( stream ) - 1, 1 );
-		}
-
-	/* If the client sent an encrypt-then-MAC request indicator we 
-	   acknowledge it */
-	if( handshakeInfo->needEncThenMACResponse )
-		{
-		writeUint16( stream, TLS_EXT_ENCTHENMAC );
-		status = writeUint16( stream, 0 );
-		if( cryptStatusError( status ) )
-			return( status );
-		DEBUG_PRINT(( "Wrote extension encrypt-then-MAC (%d), length 0.\n", 
-					  TLS_EXT_ENCTHENMAC, 0 ));
 		}
 
 	/* If the client sent ECC extensions and we've negotiated an ECC cipher 

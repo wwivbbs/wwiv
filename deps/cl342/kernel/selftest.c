@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *								Kernel Self-Test							*
-*						Copyright Peter Gutmann 1997-2013					*
+*						Copyright Peter Gutmann 1997-2005					*
 *																			*
 ****************************************************************************/
 
@@ -24,7 +24,8 @@
 ****************************************************************************/
 
 /* Self-test code for several general crypto algorithms that are used
-   internally all over cryptlib: MD5, SHA-1, SHA-2, 3DES, and AES */
+   internally all over cryptlib, as well as the ubiquitous AES: MD5, 
+   SHA-1, 3DES, and AES */
 
 CHECK_RETVAL_BOOL \
 static BOOLEAN testGeneralAlgorithms( void )
@@ -32,8 +33,8 @@ static BOOLEAN testGeneralAlgorithms( void )
 	const CAPABILITY_INFO *capabilityInfo;
 	int status;
 
-#ifdef USE_MD5
 	/* Test the MD5 functionality */
+#ifdef USE_MD5
 	capabilityInfo = getMD5Capability();
 	status = capabilityInfo->selfTestFunction();
 	if( cryptStatusError( status ) )
@@ -49,15 +50,6 @@ static BOOLEAN testGeneralAlgorithms( void )
 	if( cryptStatusError( status ) )
 		{
 		DEBUG_DIAG(( "SHA-1 self-test failed" ));
-		return( FALSE );
-		}
-
-	/* Test the SHA-2 functionality */
-	capabilityInfo = getSHA2Capability();
-	status = capabilityInfo->selfTestFunction();
-	if( cryptStatusError( status ) )
-		{
-		DEBUG_DIAG(( "SHA-2 self-test failed" ));
 		return( FALSE );
 		}
 
@@ -143,23 +135,23 @@ static BOOLEAN checkNumericRange( IN_HANDLE const CRYPT_CONTEXT iCryptContext )
 	if( krnlSendMessage( iCryptContext, IMESSAGE_SETATTRIBUTE, &value,
 						 CRYPT_CTXINFO_KEYING_ITERATIONS ) != CRYPT_OK )
 		return( FALSE );
-	value = MAX_KEYSETUP_ITERATIONS / 2;	/* Mid-range */
+	value = 10000;		/* Mid-range */
 	krnlSendMessage( iCryptContext, IMESSAGE_DELETEATTRIBUTE, NULL,
 					 CRYPT_CTXINFO_KEYING_ITERATIONS );
 	if( krnlSendMessage( iCryptContext, IMESSAGE_SETATTRIBUTE, &value,
 						 CRYPT_CTXINFO_KEYING_ITERATIONS ) != CRYPT_OK )
 		return( FALSE );
-	value = MAX_KEYSETUP_ITERATIONS;		/* Upper bound */
+	value = 20000;		/* Upper bound */
 	krnlSendMessage( iCryptContext, IMESSAGE_DELETEATTRIBUTE, NULL,
 					 CRYPT_CTXINFO_KEYING_ITERATIONS );
 	if( krnlSendMessage( iCryptContext, IMESSAGE_SETATTRIBUTE, &value,
 						 CRYPT_CTXINFO_KEYING_ITERATIONS ) != CRYPT_OK )
 		return( FALSE );
-	value = MAX_KEYSETUP_ITERATIONS + 1;	/* Upper bound fencepost error */
+	value = 20001;		/* Upper bound fencepost error */
 	if( krnlSendMessage( iCryptContext, IMESSAGE_SETATTRIBUTE, &value,
 						 CRYPT_CTXINFO_KEYING_ITERATIONS ) != CRYPT_ARGERROR_NUM1 )
 		return( FALSE );
-	value = MAX_KEYSETUP_ITERATIONS * 50;	/* High */
+	value = 32767;		/* High */
 	if( krnlSendMessage( iCryptContext, IMESSAGE_SETATTRIBUTE, &value,
 						 CRYPT_CTXINFO_KEYING_ITERATIONS ) != CRYPT_ARGERROR_NUM1 )
 		return( FALSE );
@@ -262,9 +254,6 @@ static BOOLEAN checkUsageCount( IN_HANDLE const CRYPT_CONTEXT iCryptContext )
 		krnlSendMessage( iCryptContext, IMESSAGE_CTX_ENCRYPT,
 						 buffer, 8 ) != CRYPT_ERROR_PERMISSION )
 		return( FALSE );
-
-	/* Note that at this point the usage count is zero so no further 
-	   operations with the object are possible */
 
 	return( TRUE );
 	}
@@ -490,19 +479,12 @@ static BOOLEAN testKernelMechanisms( void )
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	MESSAGE_DATA msgData;
 	CRYPT_CONTEXT iCryptHandle;
-	static const BYTE FAR_BSS key[] = \
-		{ 0x10, 0x46, 0x91, 0x34, 0x89, 0x98, 0x01, 0x31,
-		  0x51, 0x07, 0xB0, 0x15, 0x19, 0x58, 0x01, 0x01,
-		  0x19, 0x07, 0x92, 0x10, 0x98, 0x1A, 0x01, 0x01 };
-		/* Single-DES keys pulled from NBS 500-20 Data Permutation
-		   test vectors */
-	static const BYTE FAR_BSS iv[] = \
-		{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+	static const BYTE FAR_BSS key[] = { 0x10, 0x46, 0x91, 0x34, 0x89, 0x98, 0x01, 0x31 };
 	BYTE buffer[ 128 + 8 ];
 	int value, status;
 
 	/* Verify object creation */
-	setMessageCreateObjectInfo( &createInfo, CRYPT_ALGO_3DES );
+	setMessageCreateObjectInfo( &createInfo, CRYPT_ALGO_DES );
 	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_DEV_CREATEOBJECT,
 							  &createInfo, OBJECT_TYPE_CONTEXT );
 	if( cryptStatusError( status ) )
@@ -529,8 +511,8 @@ static BOOLEAN testKernelMechanisms( void )
 
 	/* Verify the ability to perform standard operations and the inability
 	   to perform a state = high operation on a state = low object */
+	setMessageData( &msgData, ( MESSAGE_CAST ) key, 8 );
 	memset( buffer, 0, 16 );
-	setMessageData( &msgData, ( MESSAGE_CAST ) iv, 8 );
 	if( krnlSendMessage( iCryptHandle, IMESSAGE_SETATTRIBUTE_S, &msgData,
 						 CRYPT_CTXINFO_IV ) != CRYPT_OK || \
 		krnlSendMessage( iCryptHandle, IMESSAGE_CTX_ENCRYPT,
@@ -561,7 +543,7 @@ static BOOLEAN testKernelMechanisms( void )
 
 	/* Verify the ability to transition a state = low object to state =
 	   high */
-	setMessageData( &msgData, ( MESSAGE_CAST ) key, 24 );
+	setMessageData( &msgData, ( MESSAGE_CAST ) key, 8 );
 	if( krnlSendMessage( iCryptHandle, IMESSAGE_SETATTRIBUTE_S, &msgData,
 						 CRYPT_CTXINFO_KEY ) != CRYPT_OK )
 		{
@@ -588,7 +570,7 @@ static BOOLEAN testKernelMechanisms( void )
 
 	/* Verify the inability to perform state = low operations on a state =
 	   high object */
-	setMessageData( &msgData, ( MESSAGE_CAST ) key, 24 );
+	setMessageData( &msgData, ( MESSAGE_CAST ) key, 8 );
 	if( krnlSendMessage( iCryptHandle, IMESSAGE_SETATTRIBUTE_S, &msgData,
 						 CRYPT_CTXINFO_KEY ) != CRYPT_ERROR_PERMISSION || \
 		krnlSendNotifier( iCryptHandle, 
@@ -606,81 +588,53 @@ static BOOLEAN testKernelMechanisms( void )
 
 	   The object will become very briefly visible externally at this point,
 	   but there's nothing that can be done with it because of the
-	   permission settings, and it's destroyed as soon as the internal/
-	   external tests are completed */
+	   permission settings */
 	value = \
 		MK_ACTION_PERM( MESSAGE_CTX_ENCRYPT, ACTION_PERM_NONE_EXTERNAL ) | \
 		MK_ACTION_PERM( MESSAGE_CTX_DECRYPT, ACTION_PERM_NONE_EXTERNAL );
 	memset( buffer, 0, 16 );
 	krnlSendMessage( iCryptHandle, IMESSAGE_SETATTRIBUTE, &value,
 					 CRYPT_IATTRIBUTE_ACTIONPERMS );
-	status = krnlSendMessage( iCryptHandle, IMESSAGE_SETATTRIBUTE,
-							  MESSAGE_VALUE_FALSE, 
-							  CRYPT_IATTRIBUTE_INTERNAL );
-	if( cryptStatusError( status ) )
-		{
-		/* We couldn't make the object external (which can only really 
-		   happen due to an internal error), explicitly destroy it since 
-		   it's uncertain whether we should decrement an internal or 
-		   external reference */
-		krnlSendNotifier( iCryptHandle, IMESSAGE_DESTROY );
-		DEBUG_DIAG(( "Object internal/external action self-test failed" ));
-		return( FALSE );
-		}
+	krnlSendMessage( iCryptHandle, IMESSAGE_SETATTRIBUTE,
+					 MESSAGE_VALUE_FALSE, CRYPT_IATTRIBUTE_INTERNAL );
 	if( krnlSendMessage( iCryptHandle, MESSAGE_CTX_ENCRYPT,
 						 buffer, 8 ) != CRYPT_ERROR_PERMISSION || \
 		krnlSendMessage( iCryptHandle, IMESSAGE_CTX_ENCRYPT,
 						 buffer, 8 ) != CRYPT_OK )
 		{
-		krnlSendNotifier( iCryptHandle, MESSAGE_DECREFCOUNT );
+		krnlSendNotifier( iCryptHandle, IMESSAGE_DECREFCOUNT );
 		DEBUG_DIAG(( "Object internal/external action self-test failed" ));
 		return( FALSE );
 		}
 	if( krnlSendMessage( iCryptHandle, MESSAGE_GETATTRIBUTE, &value,
 						 CRYPT_IATTRIBUTE_TYPE ) != CRYPT_ARGERROR_VALUE )
 		{
-		krnlSendNotifier( iCryptHandle, MESSAGE_DECREFCOUNT );
+		krnlSendNotifier( iCryptHandle, IMESSAGE_DECREFCOUNT );
 		DEBUG_DIAG(( "Object internal/external action self-test failed" ));
 		return( FALSE );
 		}
-
-	/* The following checks modify object properties and, as a side-effect,
-	   render them less and less usable as the checks progress.  For this
-	   reason they have to be executed in a set order, the usage-count check
-	   (which disables the ability to perform operations with the object)
-	   as the second-to-last check, and the locking check, which disables
-	   the ability to change object properties, as the last check.  Once 
-	   this check has completed, the object is locked down to a level where
-	   it can't be used any more */
+	krnlSendMessage( iCryptHandle, IMESSAGE_SETATTRIBUTE,
+					 MESSAGE_VALUE_TRUE, CRYPT_IATTRIBUTE_INTERNAL );
 
 	/* Verify the ability to use an object with a finite usage count, the
 	   inability to increment the count, the ability to decrement the count,
-	   and the inability to exceed the usage count.
-	   
-	   After this check the usage count has dropped to zero so the object is
-	   no longer usable for standard operations */
+	   and the inability to exceed the usage count */
 	if( !checkUsageCount( iCryptHandle ) )
 		{
-		krnlSendNotifier( iCryptHandle, MESSAGE_DECREFCOUNT );
+		krnlSendNotifier( iCryptHandle, IMESSAGE_DECREFCOUNT );
 		DEBUG_DIAG(( "Object usage-count self-test failed" ));
 		return( FALSE );
 		}
 
 	/* Verify the ability to lock an object and the inability to change
-	   security parameters once it's locked.
-	   
-	   After this check any further changes on the security-relevant object 
-	   properties are no longer possible */
+	   security parameters once it's locked */
 	if( !checkLocking( iCryptHandle ) )
 		{
-		krnlSendNotifier( iCryptHandle, MESSAGE_DECREFCOUNT );
+		krnlSendNotifier( iCryptHandle, IMESSAGE_DECREFCOUNT );
 		DEBUG_DIAG(( "Object locking self-test failed" ));
 		return( FALSE );
 		}
-
-	/* We've finished with the object (and in any case it's locked down to 
-	   the point where it's no longer usable), destroy it */
-	krnlSendNotifier( iCryptHandle, MESSAGE_DECREFCOUNT );
+	krnlSendNotifier( iCryptHandle, IMESSAGE_DECREFCOUNT );
 
 	/* The following checks require that use of certificates be enabled in
 	   order to perform them.  This is because these attribute types are
@@ -744,51 +698,32 @@ static BOOLEAN testKernelMechanisms( void )
 
 /****************************************************************************
 *																			*
-*							General Self-test Functions						*
+*							Genreal Self-test Functions						*
 *																			*
 ****************************************************************************/
 
-#ifndef NDEBUG
-
-/* If we're running in debug mode, run internal-function self-tests.  These
-   tests are only run in debug mode since they merely check the correct
-   functioning of various non-security-related functions */
-
-BOOLEAN testIntAPI( void );
-BOOLEAN testIntString( void );
-BOOLEAN testIntTime( void );
-
-CHECK_RETVAL_BOOL \
+CHECK_RETVAL \
 static BOOLEAN testInternalFunctions( void )
 	{
-	if( !testIntAPI() )
-		{
-		DEBUG_DIAG(( "int_api.c self-test failed" ));
+	/* Make sure that the checksumming functions can detect errors */
+	if( checksumData( "a", 1 ) == checksumData( "b", 1 ) )
 		return( FALSE );
-		}
-	if( !testIntString() )
-		{
-		DEBUG_DIAG(( "int_string.c self-test failed" ));
+	if( checksumData( "\x00\x00\x00\x00", 4 ) == \
+		checksumData( "\x00\x00\x00\x01", 4 ) )
 		return( FALSE );
-		}
-	if( !testIntTime() )
-		{
-		DEBUG_DIAG(( "int_time.c self-test failed" ));
+	if( checksumData( "\xAA\x55\xAA\x55", 4 ) == \
+		checksumData( "\x55\xAA\x55\xAA", 4 ) )
 		return( FALSE );
-		}
 
 	return( TRUE );
 	}
-#endif /* !NDEBUG */
 
 CHECK_RETVAL \
 int testKernel( void )
 	{
-	ENSURES_NOFAULT( testGeneralAlgorithms() );
-	ENSURES_NOFAULT( testKernelMechanisms() );
-#ifndef NDEBUG
-	ENSURES_NOFAULT( testInternalFunctions() );
-#endif /* !NDEBUG */
+	ENSURES( testGeneralAlgorithms() );
+	ENSURES( testKernelMechanisms() );
+	ENSURES( testInternalFunctions() );
 
 	return( CRYPT_OK );
 	}

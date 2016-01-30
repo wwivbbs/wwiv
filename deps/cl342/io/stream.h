@@ -25,9 +25,6 @@
   #include <pcdisk.h>
 #elif defined( __PALMOS__ )
   #include <VFSMgr.h>
-#elif defined( __SMX__ )
-  #include <smx.h>
-  #include <smxfs.h>
 #elif defined( __UCOSII__ )
   #include <fs_api.h>	/* For uC/FS 2.x, renamed to fs.h in 3.x */
 #elif !defined( CONFIG_NO_STDIO )
@@ -40,23 +37,16 @@
 *																			*
 ****************************************************************************/
 
-/* Access/option flags for the file stream open call.  These are:
-
-	FLAG_EXCLUSIVE_ACCESS: Lock the file so that other threads/processes 
-		can't open it until the current thread/process closes it.  This flag 
-		is implicitly set if the file R/W bits (via FLAG_RW_MASK) are 
-		FILE_WRITE, which creates a new file.  
-
-	FLAG_READ/FLAG_WRITE: Open file for read/write access.
-
-	FLAG_PRIVATE/FLAG_SENSITIVE: Specify the sensitivity of data in a file.  
-		The difference between the private and sensitive flags is that some 
-		data may be private for a given user but not sensitive (e.g.config 
-		info) while other data may be private and sensitive (e.g.private 
-		keys).  The sensitive flag only has an effect on special systems 
-		where data can be committed to secure storage, since there's usually 
-		a very limited amount of this available we only use it for sensitive 
-		data but not generic private data */
+/* Access/option flags for the file stream open call.  The exclusive access
+   flag locks the file so that other threads/processes can't open it until
+   the current thread/process closes it.  This flag is implicitly set if the
+   file R/W bits are FILE_WRITE, which creates a new file.  The difference
+   between the private and sensitive flags is that some data may be private
+   for a given user but not sensitive (e.g.config info) while other data may
+   be private and sensitive (e.g.private keys).  The sensitive flag only has
+   an effect on special systems where data can be committed to secure
+   storage, since there's usually a very limited amount of this available we
+   only use it for sensitive data but not generic private data */
 
 #define FILE_FLAG_NONE		0x00	/* No file flag */
 #define FILE_FLAG_READ		0x01	/* Open file for read access */
@@ -77,42 +67,7 @@ typedef enum {
 	BUILDPATH_LAST					/* Last valid option type */
 	} BUILDPATH_OPTION_TYPE;
 
-/* Stream IOCTL types.  These are: 
-
-	IOCTL_CLOSESENDCHANNEL: Network streams, perform a sender-side close of 
-		the network channel.
-
-	IOCTL_CONNSTATE/IOCTL_LASTMESSAGE: Network streams, manage the last 
-		message in a stream.  IOCTL_LASTMESSAGE is write-only and specifies 
-		that this is the last message to be sent, handled in HTTP by adding 
-		a "Connection: close" to the header.  IOCTL_CONNSTATE is read-only
-		and specifies that the peer has indicated that this is the last 
-		message to be received (typically by the recipient seeing an HTTP
-		"Connection: close"), so that after processing this message the 
-		channel is considered closed.
-
-	IOCTL_ERRORINFO: Set extended error information for the stream.
-
-	IOCTL_GETxxx: Network stream, get various network-related parameters.
-
-	IOCTL_HANDSHAKECOMPLETE: Network streams, change the stream timeout 
-		value from being applied to the handshake phase to being applied to 
-		the data read/write phase.  Typically the handshake is blocking 
-		while the data read/write is nonblocking, so different timeouts 
-		apply.
-
-	IOCTL_HTTPREQTYPES: Network streams, specify the HTTP request types (as
-		a STREAM_HTTPREQTYPE_xxx) that are permitted for this stream.
-
-	IOCTL_IOBUFFER: File streams, set/clear the working buffer for I/O.
-
-	IOCTL_PARTIALREAD/IOCTL_PARTIALWRITE: File streams, allow a read or 
-		write of less than the total data amount specified in the length 
-		parameter, used when working with virtual file streams that have 
-		been translated into memory streams by the stream.c buffering.
-
-	IOCTL_READTIMEOUT/IOCTL_WRITETIMEOUT: Network streams, set the read/
-		write timeout */
+/* Stream IOCTL types */
 
 typedef enum {
 	STREAM_IOCTL_NONE,				/* No IOCTL type */
@@ -123,12 +78,12 @@ typedef enum {
 	STREAM_IOCTL_WRITETIMEOUT,		/* Network write timeout */
 	STREAM_IOCTL_HANDSHAKECOMPLETE,	/* Toggle handshake vs.data timeout */
 	STREAM_IOCTL_CONNSTATE,			/* Connection state (open/closed) */
-	STREAM_IOCTL_LASTMESSAGE,		/* Last message in transaction */
 	STREAM_IOCTL_GETCLIENTNAME,		/* Get client name */
 	STREAM_IOCTL_GETCLIENTNAMELEN,	/* Get client name length */
 	STREAM_IOCTL_GETCLIENTPORT,		/* Get client port */
 	STREAM_IOCTL_GETPEERTYPE,		/* Get peer system type */
 	STREAM_IOCTL_HTTPREQTYPES,		/* Permitted HTTP request types */
+	STREAM_IOCTL_LASTMESSAGE,		/* CMP last message in transaction */
 	STREAM_IOCTL_CLOSESENDCHANNEL,	/* Close send side of channel */
 	STREAM_IOCTL_ERRORINFO,			/* Set stream extended error info */
 	STREAM_IOCTL_LAST				/* Last possible IOCTL type */
@@ -157,8 +112,7 @@ typedef enum {
 
 typedef enum {
 	STREAM_PROTOCOL_NONE,			/* No protocol type */
-	STREAM_PROTOCOL_TCP,			/* TCP */
-	STREAM_PROTOCOL_UDP,			/* UDP */
+	STREAM_PROTOCOL_TCPIP,			/* TCP/IP */
 	STREAM_PROTOCOL_HTTP,			/* HTTP */
 	STREAM_PROTOCOL_LAST			/* Last possible protocol type */
 	} STREAM_PROTOCOL_TYPE;
@@ -206,12 +160,12 @@ typedef struct ST {
   #ifdef __TESTIO__
 	char name[ MAX_PATH_LENGTH + 8 ];/* Data item associated with stream */
   #endif /* __TESTIO__ */
-#elif defined( __AMX__ ) || defined( __Android__ ) || \
-	  defined( __BEOS__ ) || defined( __ECOS__ ) || defined( __iOS__ ) || \
+#elif defined( __AMX__ ) || defined( __BEOS__ ) || defined( __ECOS__ ) || \
+	  defined( __iOS__ ) || \
 	  ( defined( __MVS__ ) && !defined( CONFIG_NO_STDIO ) ) || \
 	  defined( __RTEMS__ ) || defined( __SYMBIAN32__ ) || \
 	  defined( __TANDEM_NSK__ ) || defined( __TANDEM_OSS__ ) || \
-	  defined( __UNIX__ ) || defined( __VxWorks__ ) || defined( __XMK__ )
+	  defined( __UNIX__ ) || defined( __VXWORKS__ ) || defined( __XMK__ )
 	int fd;						/* Backing file for the stream */
   #ifdef __TESTIO__
 	char name[ MAX_PATH_LENGTH + 8 ];/* Data item associated with stream */
@@ -221,8 +175,6 @@ typedef struct ST {
 	FSSpec fsspec;				/* File system specification */
 #elif defined( __PALMOS__ )
 	FileRef fileRef;			/* File reference number */
-#elif defined( __SMX__ )
-	FILEHANDLE filePtr;			/* File associated with this stream */
 #elif defined( __FileX__ )
 	FX_FILE filePtr;			/* File associated with this stream */
 	long position;				/* Position in file */
@@ -364,17 +316,8 @@ typedef struct {
 	   arbitrary-length input.  If the buffer was resized during the read 
 	   then the flag is returned set and the caller has to reset their read 
 	   buffer to { buffer, bufSize }.  If no resize took place then the flag 
-	   is returned cleared.
-	   
-	   If the responseIsText flag is set then a text/plain response from the 
-	   server is valid.  Normally messages have application-specific message 
-	   types and the only time we'd see plain text is if the server is 
-	   returning an error message (usually outside the spec of the protocol 
-	   that we're talking), however if additional capabilities have been 
-	   kludged onto the protocol via text-format messages then a response-
-	   type of text/pain is valid */
+	   is returned cleared */
 	BOOLEAN bufferResize;			/* Buffer is resizeable */
-	BOOLEAN responseIsText;			/* Response from svr.is text/plain */
 
 	/* The client's request type and request info (for HTTP GET), and the 
 	   server's status in response to a client GET request */
@@ -392,6 +335,7 @@ typedef struct {
 #define initHttpDataInfoEx( httpDataInfo, dataBuffer, dataLength, uriInfo ) \
 	{ \
 	memset( httpDataInfo, 0, sizeof( HTTP_DATA_INFO ) ); \
+	memset( uriInfo, 0, sizeof( HTTP_URI_INFO ) ); \
 	( httpDataInfo )->buffer= dataBuffer; \
 	( httpDataInfo )->bufSize = dataLength; \
 	( httpDataInfo )->reqInfo = uriInfo; \
@@ -407,7 +351,7 @@ typedef struct {
 
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int sputc( INOUT STREAM *stream, IN_BYTE const int ch );
-CHECK_RETVAL_RANGE( 0, 0xFF ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_RANGE( MAX_ERROR, 0xFF ) STDC_NONNULL_ARG( ( 1 ) ) \
 int sgetc( INOUT STREAM *stream );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int sread( INOUT STREAM *stream, 
@@ -421,17 +365,17 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int sflush( INOUT STREAM *stream );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int sseek( INOUT STREAM *stream, IN_LENGTH_Z const long position );
-CHECK_RETVAL_RANGE_NOERROR( 0, MAX_BUFFER_SIZE ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_RANGE( 0, MAX_INTLENGTH ) STDC_NONNULL_ARG( ( 1 ) ) \
 int stell( const STREAM *stream );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int sioctlSet( INOUT STREAM *stream, 
 			   IN_ENUM( STREAM_IOCTL ) const STREAM_IOCTL_TYPE type, 
-			   const int value );
+			   IN_INT const int value );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int sioctlSetString( INOUT STREAM *stream, 
 					 IN_ENUM( STREAM_IOCTL ) const STREAM_IOCTL_TYPE type, 
 					 IN_BUFFER( dataLen ) const void *data, 
-					 IN_DATALENGTH const int dataLen );
+					 IN_LENGTH const int dataLen );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int sioctlGet( INOUT STREAM *stream, 
 			   IN_ENUM( STREAM_IOCTL ) const STREAM_IOCTL_TYPE type, 
@@ -439,15 +383,11 @@ int sioctlGet( INOUT STREAM *stream,
 			   IN_LENGTH_SHORT const int dataMaxLen );
 
 /* Nonstandard functions: Skip a number of bytes in a stream, peek at the
-   next value in the stream.  The sSkip() call applies a bounds check, the
-   define SSKIP_MAX can be used to denote the maximum length allowed */
-
-#define SSKIP_MAX	( MAX_BUFFER_SIZE - 1 )
+   next value in the stream */
 
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int sSkip( INOUT STREAM *stream, const long offset, 
-		   IN_DATALENGTH const long maxOffset );
-CHECK_RETVAL_RANGE( 0, 0xFF ) STDC_NONNULL_ARG( ( 1 ) ) \
+int sSkip( INOUT STREAM *stream, IN_LENGTH const long offset );
+CHECK_RETVAL_RANGE( MAX_ERROR, 0xFF ) STDC_NONNULL_ARG( ( 1 ) ) \
 int sPeek( INOUT STREAM *stream );
 
 /* Inquire as to the health of a stream.  Currently these are only used in 
@@ -482,40 +422,25 @@ BOOLEAN sIsNullStream( const STREAM *stream );
    memory stream that just acts as a data sink.  In some cases we may want to 
    open either a null stream or a standard memory stream depending on whether 
    the caller has specified an output buffer or not, in this case we provide a
-   function sMemOpenOpt() to indicate that it's OK for the buffer value to be 
-   NULL.
-   
-   Note that the open/connect functions are declared with a void return 
-   type, this is because they're used in hundreds of locations and the only 
-   situation in which they can fail is a programming error.  Because of 
-   this, problems are caught by throwing exceptions in debug builds rather 
-   than having to add error handling for every case where they're used.  In 
-   addition the functions always initialise the stream, setting it to an 
-   invalid stream if there's an error, so there's no real need to check a
-   return value */ 
+   function sMemOpenEx() to indicate that it's OK for the buffer value to be 
+   NULL */ 
 
-STDC_NONNULL_ARG( ( 1, 2 ) ) \
-void sMemOpen( OUT STREAM *stream, 
-			   OUT_BUFFER_FIXED( length ) void *buffer, 
-			   IN_LENGTH const int length );
-STDC_NONNULL_ARG( ( 1 ) ) \
-void sMemOpenOpt( OUT STREAM *stream, 
-				  OUT_BUFFER_OPT_FIXED( length ) void *buffer, 
-				  IN_LENGTH_Z const int length );
-STDC_NONNULL_ARG( ( 1 ) ) \
-void sMemNullOpen( OUT STREAM *stream );
+RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+int sMemOpen( OUT STREAM *stream, 
+			  OUT_BUFFER_FIXED( length ) void *buffer, 
+			  IN_LENGTH const int length );
+RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+int sMemOpenOpt( OUT STREAM *stream, 
+				 OUT_BUFFER_OPT_FIXED( length ) void *buffer, 
+				 IN_LENGTH_Z const int length );
+RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+int sMemNullOpen( OUT STREAM *stream );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int sMemClose( INOUT STREAM *stream );
-STDC_NONNULL_ARG( ( 1, 2 ) ) \
-void sMemConnect( OUT STREAM *stream, 
-				  IN_BUFFER( length ) const void *buffer, 
-				  IN_LENGTH const int length );
-#ifndef NDEBUG
-STDC_NONNULL_ARG( ( 1, 2 ) ) \
-void sMemPseudoConnect( OUT STREAM *stream, 
-					    IN_BUFFER( length ) const void *buffer,
-					    IN_LENGTH const int length );
-#endif /* !NDEBUG */
+RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+int sMemConnect( OUT STREAM *stream, 
+				 IN_BUFFER( length ) const void *buffer, 
+				 IN_LENGTH const int length );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int sMemDisconnect( INOUT STREAM *stream );
 
@@ -529,21 +454,21 @@ int sMemDisconnect( INOUT STREAM *stream );
    strictly affected because the functions can set the stream error state 
    in the case of a failure */
 
-CHECK_RETVAL_RANGE_NOERROR( 0, MAX_BUFFER_SIZE ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_RANGE( 0, MAX_INTLENGTH ) STDC_NONNULL_ARG( ( 1 ) ) \
 int sMemDataLeft( const STREAM *stream );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int sMemGetDataBlock( INOUT STREAM *stream, 
 					  OUT_BUFFER_ALLOC_OPT( dataSize ) void **dataPtrPtr, 
-					  IN_DATALENGTH const int dataSize );
+					  IN_LENGTH const int dataSize );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int sMemGetDataBlockAbs( INOUT STREAM *stream, 
-						 IN_DATALENGTH_Z const int position, 
+						 IN_LENGTH_Z const int position, 
 						 OUT_BUFFER_ALLOC_OPT( dataSize ) void **dataPtrPtr, 
-						 IN_DATALENGTH const int dataSize );
+						 IN_LENGTH const int dataSize );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 int sMemGetDataBlockRemaining( INOUT STREAM *stream, 
 							   OUT_BUFFER_ALLOC_OPT( *length ) void **dataPtrPtr, 
-							   OUT_DATALENGTH_Z int *length );
+							   OUT_LENGTH_Z int *length );
 
 /* Functions to work with file streams */
 
@@ -556,33 +481,15 @@ int sFileClose( INOUT STREAM *stream );
 /* Convert a file stream to a memory stream */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
-int sFileToMemStream( OUT STREAM *memStream, 
-					  INOUT STREAM *fileStream,
+int sFileToMemStream( OUT STREAM *memStream, INOUT STREAM *fileStream,
 					  OUT_BUFFER_ALLOC_OPT( length ) void **bufPtrPtr, 
-					  IN_DATALENGTH const int length );
-
-/* Special-case file I/O calls */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-BOOLEAN fileReadonly( IN_STRING const char *fileName );
-STDC_NONNULL_ARG( ( 1 ) ) \
-void fileClearToEOF( STREAM *stream );
-STDC_NONNULL_ARG( ( 1 ) ) \
-void fileErase( IN_STRING const char *fileName );
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
-int fileBuildCryptlibPath( OUT_BUFFER( pathMaxLen, *pathLen ) char *path, 
-						   IN_LENGTH_SHORT const int pathMaxLen, 
-						   OUT_LENGTH_BOUNDED_Z( pathMaxLen ) int *pathLen,
-						   IN_BUFFER( fileNameLen ) const char *fileName, 
-						   IN_LENGTH_SHORT const int fileNameLen,
-						   IN_ENUM( BUILDPATH ) \
-								const BUILDPATH_OPTION_TYPE option );
+					  IN_LENGTH const int length );
 
 /* Functions to work with network streams */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int sNetParseURL( OUT URL_INFO *urlInfo, 
-				  IN_BUFFER( urlLen ) const BYTE *url, 
+				  IN_BUFFER( urlLen ) const char *url, 
 				  IN_LENGTH_SHORT const int urlLen, 
 				  IN_ENUM_OPT( URL_TYPE ) const URL_TYPE urlTypeHint );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
@@ -599,6 +506,23 @@ RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int sNetDisconnect( INOUT STREAM *stream );
 STDC_NONNULL_ARG( ( 1, 2 ) ) \
 void sNetGetErrorInfo( INOUT STREAM *stream, OUT ERROR_INFO *errorInfo );
+
+/* Special-case file I/O calls */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+BOOLEAN fileReadonly( IN_STRING const char *fileName );
+STDC_NONNULL_ARG( ( 1 ) ) \
+void fileClearToEOF( const STREAM *stream );
+STDC_NONNULL_ARG( ( 1 ) ) \
+void fileErase( IN_STRING const char *fileName );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
+int fileBuildCryptlibPath( OUT_BUFFER( pathMaxLen, *pathLen ) char *path, 
+						   IN_LENGTH_SHORT const int pathMaxLen, 
+						   OUT_LENGTH_SHORT_Z int *pathLen,
+						   IN_BUFFER( fileNameLen ) const char *fileName, 
+						   IN_LENGTH_SHORT const int fileNameLen,
+						   IN_ENUM( BUILDPATH_OPTION ) \
+						   const BUILDPATH_OPTION_TYPE option );
 
 /* Initialisation/shutdown functions for network stream interfaces */
 

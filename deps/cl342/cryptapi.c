@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						 cryptlib External API Interface					*
-*						Copyright Peter Gutmann 1997-2013					*
+*						Copyright Peter Gutmann 1997-2011					*
 *																			*
 ****************************************************************************/
 
@@ -16,14 +16,14 @@
 
 /* Handlers for the various commands */
 
-#ifdef USE_CERTIFICATES
-
-static int cmdCertCheck( COMMAND_INFO *cmd )
+static int cmdCertCheck( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	assert( cmd->type == COMMAND_CERTCHECK );
 	assert( cmd->flags == COMMAND_FLAG_NONE );
 	assert( cmd->noArgs == 2 );
 	assert( cmd->noStrArgs == 0 );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	if( !isHandleRangeValid( cmd->arg[ 0 ] ) )
@@ -36,9 +36,7 @@ static int cmdCertCheck( COMMAND_INFO *cmd )
 							 cmd->arg[ 1 ] ) );
 	}
 
-#ifdef USE_KEYSETS
-
-static int cmdCertMgmt( COMMAND_INFO *cmd )
+static int cmdCertMgmt( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	MESSAGE_CERTMGMT_INFO certMgmtInfo;
 	int status;
@@ -48,6 +46,8 @@ static int cmdCertMgmt( COMMAND_INFO *cmd )
 			cmd->flags == COMMAND_FLAG_RET_NONE );
 	assert( cmd->noArgs == 4 );
 	assert( cmd->noStrArgs == 0 );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	if( !isHandleRangeValid( cmd->arg[ 0 ] ) )
@@ -69,26 +69,25 @@ static int cmdCertMgmt( COMMAND_INFO *cmd )
 
 	setMessageCertMgmtInfo( &certMgmtInfo, cmd->arg[ 2 ], cmd->arg[ 3 ] );
 	if( cmd->flags == COMMAND_FLAG_RET_NONE )
-		{
-		/* If we aren't interested in the return value, set the crypt handle 
-		   to CRYPT_UNUSED to indicate that there's no need to return the 
-		   created certificate object */
+		/* If we aren't interested in the return value, set the crypt handle
+		   to CRYPT_UNUSED to indicate that there's no need to return the
+		   created cert object */
 		certMgmtInfo.cryptCert = CRYPT_UNUSED;
-		}
 	status = krnlSendMessage( cmd->arg[ 0 ], MESSAGE_KEY_CERTMGMT,
 							  &certMgmtInfo, cmd->arg[ 1 ] );
 	if( cryptStatusOK( status ) && cmd->flags != COMMAND_FLAG_RET_NONE )
 		cmd->arg[ 0 ] = certMgmtInfo.cryptCert;
 	return( status );
 	}
-#endif /* USE_KEYSETS */
 
-static int cmdCertSign( COMMAND_INFO *cmd )
+static int cmdCertSign( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	assert( cmd->type == COMMAND_CERTSIGN );
 	assert( cmd->flags == COMMAND_FLAG_NONE );
 	assert( cmd->noArgs == 2 );
 	assert( cmd->noStrArgs == 0 );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	if( !isHandleRangeValid( cmd->arg[ 0 ] ) )
@@ -99,18 +98,19 @@ static int cmdCertSign( COMMAND_INFO *cmd )
 	return( krnlSendMessage( cmd->arg[ 0 ], MESSAGE_CRT_SIGN, NULL,
 							 cmd->arg[ 1 ] ) );
 	}
-#endif /* USE_CERTIFICATES */
 
-static int cmdCreateObject( COMMAND_INFO *cmd )
+static int cmdCreateObject( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	BOOLEAN bindToOwner = FALSE, hasStrArg = FALSE;
-	int owner DUMMY_INIT, status;
+	int owner = DUMMY_INIT, status;
 
 	assert( cmd->type == COMMAND_CREATEOBJECT );
 	assert( cmd->flags == COMMAND_FLAG_NONE );
 	assert( cmd->noArgs >= 2 && cmd->noArgs <= 4 );
 	assert( cmd->noStrArgs >= 0 && cmd->noStrArgs <= 2 );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	if( !isHandleRangeValid( cmd->arg[ 0 ] ) && \
@@ -124,8 +124,9 @@ static int cmdCreateObject( COMMAND_INFO *cmd )
 		case OBJECT_TYPE_CONTEXT:
 			assert( cmd->noArgs == 3 );
 			assert( cmd->noStrArgs == 0 );
-			if( cmd->arg[ 2 ] <= CRYPT_ALGO_NONE || \
-				cmd->arg[ 2 ] >= CRYPT_ALGO_LAST_EXTERNAL )
+			if( ( cmd->arg[ 2 ] <= CRYPT_ALGO_NONE || \
+				  cmd->arg[ 2 ] >= CRYPT_ALGO_LAST_EXTERNAL ) && \
+				cmd->arg[ 2 ] != CRYPT_USE_DEFAULT )
 				return( CRYPT_ARGERROR_NUM1 );
 			break;
 
@@ -203,7 +204,7 @@ static int cmdCreateObject( COMMAND_INFO *cmd )
 			retIntError();
 		}
 
-	/* If we're creating the object via a device, we should set the new 
+	/* If we're creating the object via a device, we should set the new
 	   object owner to the device owner */
 	if( cmd->arg[ 0 ] != SYSTEM_OBJECT_HANDLE )
 		{
@@ -211,8 +212,8 @@ static int cmdCreateObject( COMMAND_INFO *cmd )
 		owner = cmd->arg[ 0 ];
 		}
 
-	/* Create the object via the device.  Since we're usually doing this via 
-	   the system object which is invisible to the user, we have to use an 
+	/* Create the object via the device.  Since we're usually doing this via
+	   the system object which is invisible to the user, we have to use an
 	   internal message for this one case */
 	setMessageCreateObjectInfo( &createInfo, cmd->arg[ 2 ] );
 	if( cmd->noArgs == 4 )
@@ -241,10 +242,10 @@ static int cmdCreateObject( COMMAND_INFO *cmd )
 	if( cryptStatusError( status ) )
 		return( status );
 
-	/* If the device used to create the object is bound to a thread, bind 
-	   the created object to the thread as well.  If this fails, we don't 
-	   return the object to the caller since it would be returned in a 
-	   potentially unbound state */
+	/* If the device used to create the object is bound to a thread, bind the
+	   created object to the thread as well.  If this fails, we don't return
+	   the object to the caller since it would be returned in a potentially
+	   unbound state */
 	if( bindToOwner )
 		{
 		int ownerID;
@@ -275,9 +276,7 @@ static int cmdCreateObject( COMMAND_INFO *cmd )
 	return( CRYPT_OK );
 	}
 
-#ifdef USE_CERTIFICATES 
-
-static int cmdCreateObjectIndirect( COMMAND_INFO *cmd )
+static int cmdCreateObjectIndirect( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	int status;
@@ -287,17 +286,19 @@ static int cmdCreateObjectIndirect( COMMAND_INFO *cmd )
 	assert( cmd->noArgs == 2 );
 	assert( cmd->noStrArgs == 1 );
 
+	UNUSED_ARG( stateInfo );
+
 	/* Perform basic server-side error checking */
 	if( cmd->arg[ 0 ] != SYSTEM_OBJECT_HANDLE )
 		return( CRYPT_ERROR_FAILED );	/* Internal error */
 	if( cmd->arg[ 1 ] != OBJECT_TYPE_CERTIFICATE )
 		return( CRYPT_ERROR_FAILED );	/* Internal error */
 	if( cmd->strArgLen[ 0 ] < MIN_CERTSIZE || \
-		cmd->strArgLen[ 0 ] >= MAX_BUFFER_SIZE )
+		cmd->strArgLen[ 0 ] >= MAX_INTLENGTH )
 		return( CRYPT_ARGERROR_STR1 );
 
-	/* Create the object via the device.  Since we're usually doing this via 
-	   the system object which is invisible to the user, we have to use an 
+	/* Create the object via the device.  Since we're usually doing this via
+	   the system object which is invisible to the user, we have to use an
 	   internal message for this one case */
 	setMessageCreateObjectIndirectInfo( &createInfo, cmd->strArg[ 0 ],
 										cmd->strArgLen[ 0 ],
@@ -323,9 +324,8 @@ static int cmdCreateObjectIndirect( COMMAND_INFO *cmd )
 	cmd->arg[ 0 ] = createInfo.cryptHandle;
 	return( status );
 	}
-#endif /* USE_CERTIFICATES */
 
-static int cmdDecrypt( COMMAND_INFO *cmd )
+static int cmdDecrypt( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	int algorithm, mode = CRYPT_MODE_NONE, status;	/* int vs.enum */
 
@@ -333,6 +333,8 @@ static int cmdDecrypt( COMMAND_INFO *cmd )
 	assert( cmd->flags == COMMAND_FLAG_NONE );
 	assert( cmd->noArgs == 1 );
 	assert( cmd->noStrArgs == 1 );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	status = krnlSendMessage( cmd->arg[ 0 ], MESSAGE_GETATTRIBUTE,
@@ -344,7 +346,7 @@ static int cmdDecrypt( COMMAND_INFO *cmd )
 		status = krnlSendMessage( cmd->arg[ 0 ], MESSAGE_GETATTRIBUTE,
 								  &mode, CRYPT_CTXINFO_MODE );
 		if( cryptStatusError( status ) )
-			return( status );
+				return( status );
 		}
 	else
 		{
@@ -359,13 +361,8 @@ static int cmdDecrypt( COMMAND_INFO *cmd )
 			if( cryptStatusError( status ) )
 				return( status );
 			}
-		else
-			{
-			/* We shouldn't be invoking decrypt on a hash or MAC object */
-			return( CRYPT_ARGERROR_OBJECT );
-			}
 		}
-	if( cmd->strArgLen[ 0 ] <= 0 )
+	if( cmd->strArgLen[ 0 ] < 0 )
 		return( CRYPT_ARGERROR_NUM1 );
 	if( mode == CRYPT_MODE_ECB || mode == CRYPT_MODE_CBC )
 		{
@@ -379,7 +376,7 @@ static int cmdDecrypt( COMMAND_INFO *cmd )
 			return( status );
 		}
 
-	/* Make sure that the IV has been set */
+	/* Make sure the IV has been set */
 	if( needsIV( mode ) && !isStreamCipher( algorithm ) )
 		{
 		MESSAGE_DATA msgData;
@@ -391,18 +388,28 @@ static int cmdDecrypt( COMMAND_INFO *cmd )
 			return( status );
 		}
 
-	status = krnlSendMessage( cmd->arg[ 0 ], MESSAGE_CTX_DECRYPT,
+	status = krnlSendMessage( cmd->arg[ 0 ],
+							  ( isHashAlgo( algorithm ) || \
+							    isMacAlgo( algorithm ) ) ? \
+								MESSAGE_CTX_HASH : MESSAGE_CTX_DECRYPT,
 							  cmd->strArgLen[ 0 ] ? cmd->strArg[ 0 ] : "",
 							  cmd->strArgLen[ 0 ] );
+	if( isHashAlgo( algorithm ) || isMacAlgo( algorithm ) )
+		{
+		/* There's no data to return since the hashing doesn't change it */
+		cmd->strArgLen[ 0 ] = 0;
+		}
 	return( status );
 	}
 
-static int cmdDeleteAttribute( COMMAND_INFO *cmd )
+static int cmdDeleteAttribute( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	assert( cmd->type == COMMAND_DELETEATTRIBUTE );
 	assert( cmd->flags == COMMAND_FLAG_NONE );
 	assert( cmd->noArgs == 2 );
 	assert( cmd->noStrArgs == 0 );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	if( !isHandleRangeValid( cmd->arg[ 0 ] ) && \
@@ -434,9 +441,7 @@ static int cmdDeleteAttribute( COMMAND_INFO *cmd )
 							 cmd->arg[ 1 ] ) );
 	}
 
-#ifdef USE_KEYSETS
-
-static int cmdDeleteKey( COMMAND_INFO *cmd )
+static int cmdDeleteKey( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	MESSAGE_KEYMGMT_INFO deletekeyInfo;
 	int itemType = KEYMGMT_ITEM_PUBLICKEY;
@@ -445,6 +450,8 @@ static int cmdDeleteKey( COMMAND_INFO *cmd )
 	assert( cmd->flags == COMMAND_FLAG_NONE );
 	assert( cmd->noArgs >= 2 && cmd->noArgs <= 3 );
 	assert( cmd->noStrArgs == 1 );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	if( !isHandleRangeValid( cmd->arg[ 0 ] ) )
@@ -478,14 +485,15 @@ static int cmdDeleteKey( COMMAND_INFO *cmd )
 	return( krnlSendMessage( cmd->arg[ 0 ], MESSAGE_KEY_DELETEKEY,
 							 &deletekeyInfo, itemType ) );
 	}
-#endif /* USE_KEYSETS */
 
-static int cmdDestroyObject( COMMAND_INFO *cmd )
+static int cmdDestroyObject( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	assert( cmd->type == COMMAND_DESTROYOBJECT );
 	assert( cmd->flags == COMMAND_FLAG_NONE );
 	assert( cmd->noArgs == 1 );
 	assert( cmd->noStrArgs == 0 );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	if( !isHandleRangeValid( cmd->arg[ 0 ] ) )
@@ -497,7 +505,7 @@ static int cmdDestroyObject( COMMAND_INFO *cmd )
 	return( krnlSendNotifier( cmd->arg[ 0 ], MESSAGE_DECREFCOUNT ) );
 	}
 
-static int cmdEncrypt( COMMAND_INFO *cmd )
+static int cmdEncrypt( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	int algorithm, mode = CRYPT_MODE_NONE, status;	/* int vs.enum */
 
@@ -505,6 +513,8 @@ static int cmdEncrypt( COMMAND_INFO *cmd )
 	assert( cmd->flags == COMMAND_FLAG_NONE );
 	assert( cmd->noArgs == 1 );
 	assert( cmd->noStrArgs == 1 );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	status = krnlSendMessage( cmd->arg[ 0 ], MESSAGE_GETATTRIBUTE,
@@ -587,9 +597,7 @@ static int cmdEncrypt( COMMAND_INFO *cmd )
 	return( status );
 	}
 
-#ifdef USE_CERTIFICATES
-
-static int cmdExportObject( COMMAND_INFO *cmd )
+static int cmdExportObject( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	MESSAGE_DATA msgData;
 	int status;
@@ -603,18 +611,20 @@ static int cmdExportObject( COMMAND_INFO *cmd )
 	assert( cmd->flags == COMMAND_FLAG_RET_LENGTH || \
 			cmd->strArg[ 0 ] != NULL );
 
+	UNUSED_ARG( stateInfo );
+
 	/* Perform basic server-side error checking */
 	if( !isHandleRangeValid( cmd->arg[ 0 ] ) )
 		return( CRYPT_ARGERROR_OBJECT );
 	if( cmd->arg[ 1 ] <= CRYPT_CERTFORMAT_NONE || \
 		cmd->arg[ 1 ] >= CRYPT_CERTFORMAT_LAST_EXTERNAL )
 		{
-		/* At the moment the only object that we can export is a certificate, 
-		   so we make sure that the format type is valid for this */
+		/* At the moment the only object that we can export is a cert, so we
+		   make sure that the format type is valid for this */
 		return( CRYPT_ARGERROR_NUM1 );
 		}
 
-	/* Export the certificate */
+	/* Export the cert */
 	if( cmd->flags == COMMAND_FLAG_RET_LENGTH )
 		{
 		setMessageData( &msgData, NULL, 0 );
@@ -633,16 +643,16 @@ static int cmdExportObject( COMMAND_INFO *cmd )
 		}
 
 	/* If we try and export using a disallowed format (e.g. a
-	   CRYPT_CERTFORMAT_CERTCHAIN from a certificate request) we'll get an 
-	   argument value error that we need to convert into something more 
-	   sensible.  The error type to report is somewhat debatable since 
-	   either the format type or the object can be regarded as being wrong, 
-	   for example when exporting a certificate request as a certificate 
-	   chain the format is wrong but when exporting a data-only object as 
-	   anything the object is wrong.  To handle this, we report an argument 
-	   value error as a numeric parameter error for cases where the format 
-	   is incorrect for the object type, and a permission error for cases 
-	   where the object can't be exported externally */
+	   CRYPT_CERTFORMAT_CERTCHAIN from a cert request) we'll get an argument
+	   value error that we need to convert into something more sensible.
+	   The error type to report is somewhat debatable since either the
+	   format type or the object can be regarded as being wrong, for example
+	   when exporting a cert request as a cert chain the format is wrong but
+	   when exporting a data-only object as anything the object is wrong.
+	   To handle this, we report an argument value error as a numeric
+	   parameter error for cases where the format is incorrect for the
+	   object type, and a permission error for cases where the object can't
+	   be exported externally */
 	if( status == CRYPT_ARGERROR_VALUE )
 		{
 		int type;
@@ -661,11 +671,8 @@ static int cmdExportObject( COMMAND_INFO *cmd )
 
 	return( status );
 	}
-#endif /* USE_CERTIFICATES */
 
-#if defined( USE_ENVELOPES ) || defined( USE_SESSIONS )
-
-static int cmdFlushData( COMMAND_INFO *cmd )
+static int cmdFlushData( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	MESSAGE_DATA msgData;
 	int status;
@@ -674,6 +681,8 @@ static int cmdFlushData( COMMAND_INFO *cmd )
 	assert( cmd->flags == COMMAND_FLAG_NONE );
 	assert( cmd->noArgs == 1 );
 	assert( cmd->noStrArgs == 0 );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	if( !isHandleRangeValid( cmd->arg[ 0 ] ) )
@@ -685,14 +694,15 @@ static int cmdFlushData( COMMAND_INFO *cmd )
 							  &msgData, 0 );
 	return( status );
 	}
-#endif /* USE_ENVELOPES || USE_SESSIONS */
 
-static int cmdGenKey( COMMAND_INFO *cmd )
+static int cmdGenKey( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	assert( cmd->type == COMMAND_GENKEY );
 	assert( cmd->flags == COMMAND_FLAG_NONE );
 	assert( cmd->noArgs == 1 );
 	assert( cmd->noStrArgs == 0 );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	if( !isHandleRangeValid( cmd->arg[ 0 ] ) )
@@ -701,7 +711,7 @@ static int cmdGenKey( COMMAND_INFO *cmd )
 	return( krnlSendNotifier( cmd->arg[ 0 ], MESSAGE_CTX_GENKEY ) );
 	}
 
-static int cmdGetAttribute( COMMAND_INFO *cmd )
+static int cmdGetAttribute( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	MESSAGE_DATA msgData;
 	int status;
@@ -713,6 +723,8 @@ static int cmdGetAttribute( COMMAND_INFO *cmd )
 	assert( ( cmd->flags == COMMAND_FLAG_NONE && cmd->noStrArgs == 1 ) || \
 			( ( cmd->noArgs == 2 || cmd->flags == COMMAND_FLAG_RET_LENGTH ) && \
 				cmd->noStrArgs == 0 ) );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	if( !isHandleRangeValid( cmd->arg[ 0 ] ) && \
@@ -737,7 +749,7 @@ static int cmdGetAttribute( COMMAND_INFO *cmd )
 	   one case.
 
 	   This is further complicated by the fact that the kernel checks that
-	   the destination memory is writable and either returns an error (for
+	   the destination memory is writeable and either returns an error (for
 	   an external message) or throws an exception (for the internal message
 	   required to access the user object) if it isn't.  Since the external
 	   API doesn't allow the specification of the returned data length, it
@@ -792,9 +804,7 @@ static int cmdGetAttribute( COMMAND_INFO *cmd )
 	return( status );
 	}
 
-#ifdef USE_KEYSETS
-
-static int cmdGetKey( COMMAND_INFO *cmd )
+static int cmdGetKey( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	MESSAGE_KEYMGMT_INFO getkeyInfo;
 	int messageType = ( cmd->arg[ 2 ] == CRYPT_KEYID_NONE ) ? \
@@ -806,9 +816,11 @@ static int cmdGetKey( COMMAND_INFO *cmd )
 	assert( cmd->noArgs == 3 );
 	assert( cmd->noStrArgs >= 1 && cmd->noStrArgs <= 2 );
 
+	UNUSED_ARG( stateInfo );
+
 	/* Perform basic server-side error checking.  Because of keyset queries
 	   we have to accept CRYPT_KEYID_NONE as well as obviously valid key
-	   IDs.  In addition if we find a missing ID we pass the request in as
+	   ID's.  In addition if we find a missing ID we pass the request in as
 	   a keyset query (this is matched to an implicit GetFirstCert performed
 	   by setting the query attribute, this isn't really possible using the
 	   external API) */
@@ -873,11 +885,8 @@ static int cmdGetKey( COMMAND_INFO *cmd )
 	cmd->arg[ 0 ] = getkeyInfo.cryptHandle;
 	return( CRYPT_OK );
 	}
-#endif /* USE_KEYSETS */
 
-#if defined( USE_ENVELOPES ) || defined( USE_SESSIONS )
-
-static int cmdPopData( COMMAND_INFO *cmd )
+static int cmdPopData( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	MESSAGE_DATA msgData;
 	int status;
@@ -886,6 +895,8 @@ static int cmdPopData( COMMAND_INFO *cmd )
 	assert( cmd->flags == COMMAND_FLAG_NONE );
 	assert( cmd->noArgs == 2 );
 	assert( cmd->noStrArgs == 1 );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	if( !isHandleRangeValid( cmd->arg[ 0 ] ) )
@@ -902,7 +913,7 @@ static int cmdPopData( COMMAND_INFO *cmd )
 	return( status );
 	}
 
-static int cmdPushData( COMMAND_INFO *cmd )
+static int cmdPushData( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	MESSAGE_DATA msgData;
 	int status;
@@ -911,6 +922,8 @@ static int cmdPushData( COMMAND_INFO *cmd )
 	assert( cmd->flags == COMMAND_FLAG_NONE );
 	assert( cmd->noArgs == 1 );
 	assert( cmd->noStrArgs == 1 );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	if( !isHandleRangeValid( cmd->arg[ 0 ] ) )
@@ -927,9 +940,8 @@ static int cmdPushData( COMMAND_INFO *cmd )
 	cmd->arg[ 0 ] = msgData.length;
 	return( status );
 	}
-#endif /* USE_ENVELOPES || USE_SESSIONS */
 
-static int cmdQueryCapability( COMMAND_INFO *cmd )
+static int cmdQueryCapability( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	CRYPT_QUERY_INFO queryInfo;
 	int status;
@@ -942,6 +954,8 @@ static int cmdQueryCapability( COMMAND_INFO *cmd )
 			( cmd->flags == COMMAND_FLAG_RET_LENGTH && cmd->noStrArgs == 0 ) );
 	assert( cmd->flags == COMMAND_FLAG_RET_LENGTH || \
 			cmd->strArg[ 0 ] != NULL );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	if( !isHandleRangeValid( cmd->arg[ 0 ] ) && \
@@ -985,7 +999,7 @@ static int cmdQueryCapability( COMMAND_INFO *cmd )
 
 #ifdef USE_RPCAPI
 
-static int cmdServerQuery( COMMAND_INFO *cmd )
+static int cmdServerQuery( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	int value;
 
@@ -993,6 +1007,8 @@ static int cmdServerQuery( COMMAND_INFO *cmd )
 	assert( cmd->flags == COMMAND_FLAG_NONE );
 	assert( cmd->noArgs == 0 );
 	assert( cmd->noStrArgs == 0 );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Return information about the server */
 	krnlSendMessage( DEFAULTUSER_OBJECT_HANDLE, IMESSAGE_GETATTRIBUTE,
@@ -1004,7 +1020,7 @@ static int cmdServerQuery( COMMAND_INFO *cmd )
 	}
 #endif /* USE_RPCAPI */
 
-static int cmdSetAttribute( COMMAND_INFO *cmd )
+static int cmdSetAttribute( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	MESSAGE_DATA msgData;
 
@@ -1012,6 +1028,8 @@ static int cmdSetAttribute( COMMAND_INFO *cmd )
 	assert( cmd->flags == COMMAND_FLAG_NONE );
 	assert( ( cmd->noArgs == 3 && cmd->noStrArgs == 0 ) ||
 			( cmd->noArgs == 2 && cmd->noStrArgs == 1 ) );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	if( !isHandleRangeValid( cmd->arg[ 0 ] ) && \
@@ -1075,9 +1093,7 @@ static int cmdSetAttribute( COMMAND_INFO *cmd )
 							 &msgData, cmd->arg[ 1 ] ) );
 	}
 
-#ifdef USE_KEYSETS
-
-static int cmdSetKey( COMMAND_INFO *cmd )
+static int cmdSetKey( void *stateInfo, COMMAND_INFO *cmd )
 	{
 	MESSAGE_KEYMGMT_INFO setkeyInfo;
 	int itemType = ( cmd->noStrArgs == 1 ) ? \
@@ -1087,6 +1103,8 @@ static int cmdSetKey( COMMAND_INFO *cmd )
 	assert( cmd->flags == COMMAND_FLAG_NONE );
 	assert( cmd->noArgs >= 2 && cmd->noArgs <= 3 );
 	assert( cmd->noStrArgs >= 0 && cmd->noStrArgs <= 1 );
+
+	UNUSED_ARG( stateInfo );
 
 	/* Perform basic server-side error checking */
 	if( !isHandleRangeValid( cmd->arg[ 0 ] ) )
@@ -1101,9 +1119,8 @@ static int cmdSetKey( COMMAND_INFO *cmd )
 		{
 		int value;
 
-		/* It's a certificate management item request being added to a CA 
-		   store, usually this is a request but it may also be PKI user 
-		   info */
+		/* It's a cert management item request being added to a CA store,
+		   usually this is a request but it may also be PKI user info */
 		itemType = KEYMGMT_ITEM_REQUEST;
 		if( cryptStatusOK( krnlSendMessage( cmd->arg[ 1 ],
 									MESSAGE_GETATTRIBUTE, &value,
@@ -1133,7 +1150,6 @@ static int cmdSetKey( COMMAND_INFO *cmd )
 	return( krnlSendMessage( cmd->arg[ 0 ], MESSAGE_KEY_SETKEY,
 							 &setkeyInfo, itemType ) );
 	}
-#endif /* USE_KEYSETS */
 
 #ifdef USE_RPCAPI
 
@@ -1793,7 +1809,7 @@ static BOOLEAN needsTranslation( const CRYPT_ATTRIBUTE_TYPE attribute )
   #define strParamLen	strlen
 #endif /* System-specific string parameter length functions */
 
-/* Internal parameter errors are reported in terms of the parameter type (e.g.
+/* Internal parameter errors are reported in terms of the parameter type (eg
    invalid object, invalid attribute), but externally they're reported in
    terms of parameter numbers.  Before we return error values to the caller,
    we have to map them from the internal representation to the position they
@@ -1874,9 +1890,8 @@ static BOOLEAN initCalled = FALSE;
    create/destroy in that they create/destroy an instantiation of cryptlib.
    Unlike the other functions in this module, these can't pass control to
    the kernel because it hasn't been instantiated yet, so they pass the call
-   down to the internal init/shutdown functions */
+   down to the internal init/shutodwn functions */
 
-C_CHECK_RETVAL \
 C_RET cryptInit( void )
 	{
 	int status;
@@ -1895,7 +1910,6 @@ C_RET cryptEnd( void )
 
 /* Create an encryption context */
 
-C_CHECK_RETVAL C_NONNULL_ARG( ( 1 ) ) \
 C_RET cryptCreateContext( C_OUT CRYPT_CONTEXT C_PTR cryptContext,
 						  C_IN CRYPT_USER cryptUser,
 						  C_IN CRYPT_ALGO_TYPE cryptAlgo )
@@ -1914,8 +1928,9 @@ C_RET cryptCreateContext( C_OUT CRYPT_CONTEXT C_PTR cryptContext,
 	*cryptContext = CRYPT_ERROR;
 	if( cryptUser != CRYPT_UNUSED && !isHandleRangeValid( cryptUser ) )
 		return( CRYPT_ERROR_PARAM2 );
-	if( cryptAlgo <= CRYPT_ALGO_NONE || \
-		cryptAlgo >= CRYPT_ALGO_LAST_EXTERNAL )
+	if( ( cryptAlgo <= CRYPT_ALGO_NONE || \
+		  cryptAlgo >= CRYPT_ALGO_LAST_EXTERNAL ) && \
+		cryptAlgo != CRYPT_USE_DEFAULT )
 		return( CRYPT_ERROR_PARAM3 );
 
 	/* Make sure that the user has remembered to initialise cryptlib */
@@ -1939,9 +1954,6 @@ C_RET cryptCreateContext( C_OUT CRYPT_CONTEXT C_PTR cryptContext,
 
 /* Create an encryption context via the device */
 
-#ifdef USE_DEVICES
-
-C_CHECK_RETVAL C_NONNULL_ARG( ( 2 ) ) \
 C_RET cryptDeviceCreateContext( C_IN CRYPT_DEVICE device,
 							    C_OUT CRYPT_CONTEXT C_PTR cryptContext,
 							    C_IN CRYPT_ALGO_TYPE cryptAlgo )
@@ -1960,8 +1972,9 @@ C_RET cryptDeviceCreateContext( C_IN CRYPT_DEVICE device,
 	if( !isWritePtrConst( cryptContext, sizeof( CRYPT_CONTEXT ) ) )
 		return( CRYPT_ERROR_PARAM2 );
 	*cryptContext = CRYPT_ERROR;
-	if( cryptAlgo <= CRYPT_ALGO_NONE || \
-		cryptAlgo >= CRYPT_ALGO_LAST_EXTERNAL )
+	if( ( cryptAlgo <= CRYPT_ALGO_NONE || \
+		  cryptAlgo >= CRYPT_ALGO_LAST_EXTERNAL ) && \
+		cryptAlgo != CRYPT_USE_DEFAULT )
 		return( CRYPT_ERROR_PARAM3 );
 
 	/* Make sure that the user has remembered to initialise cryptlib */
@@ -1981,13 +1994,9 @@ C_RET cryptDeviceCreateContext( C_IN CRYPT_DEVICE device,
 	return( mapError( errorMap, FAILSAFE_ARRAYSIZE( errorMap, ERRORMAP ), 
 					  status ) );
 	}
-#endif /* USE_DEVICES */
 
 /* Create a certificate */
 
-#ifdef USE_CERTIFICATES
-
-C_CHECK_RETVAL C_NONNULL_ARG( ( 1 ) ) \
 C_RET cryptCreateCert( C_OUT CRYPT_CERTIFICATE C_PTR certificate,
 					   C_IN CRYPT_USER cryptUser,
 					   C_IN CRYPT_CERTTYPE_TYPE certType )
@@ -2028,13 +2037,9 @@ C_RET cryptCreateCert( C_OUT CRYPT_CERTIFICATE C_PTR certificate,
 	return( mapError( errorMap, FAILSAFE_ARRAYSIZE( errorMap, ERRORMAP ), 
 					  status ) );
 	}
-#endif /* USE_CERTIFICATES */
 
 /* Open a device */
 
-#ifdef USE_DEVICES
-
-C_CHECK_RETVAL C_NONNULL_ARG( ( 1 ) ) \
 C_RET cryptDeviceOpen( C_OUT CRYPT_DEVICE C_PTR device,
 					   C_IN CRYPT_USER cryptUser,
 					   C_IN CRYPT_DEVICE_TYPE deviceType,
@@ -2106,13 +2111,9 @@ C_RET cryptDeviceOpen( C_OUT CRYPT_DEVICE C_PTR device,
 	return( mapError( errorMap, FAILSAFE_ARRAYSIZE( errorMap, ERRORMAP ), 
 					  status ) );
 	}
-#endif /* USE_DEVICES */
 
 /* Create an envelope */
 
-#ifdef USE_ENVELOPES
-
-C_CHECK_RETVAL C_NONNULL_ARG( ( 1 ) ) \
 C_RET cryptCreateEnvelope( C_OUT CRYPT_ENVELOPE C_PTR envelope,
 						   C_IN CRYPT_USER cryptUser,
 						   C_IN CRYPT_FORMAT_TYPE formatType )
@@ -2153,13 +2154,9 @@ C_RET cryptCreateEnvelope( C_OUT CRYPT_ENVELOPE C_PTR envelope,
 	return( mapError( errorMap, FAILSAFE_ARRAYSIZE( errorMap, ERRORMAP ), 
 					  status ) );
 	}
-#endif /* USE_ENVELOPES */
 
 /* Open/create a keyset */
 
-#ifdef USE_KEYSETS
-
-C_CHECK_RETVAL C_NONNULL_ARG( ( 1, 4 ) ) \
 C_RET cryptKeysetOpen( C_OUT CRYPT_KEYSET C_PTR keyset,
 					   C_IN CRYPT_USER cryptUser,
 					   C_IN CRYPT_KEYSET_TYPE keysetType,
@@ -2229,13 +2226,9 @@ C_RET cryptKeysetOpen( C_OUT CRYPT_KEYSET C_PTR keyset,
 	return( mapError( errorMap, FAILSAFE_ARRAYSIZE( errorMap, ERRORMAP ), 
 					  status ) );
 	}
-#endif /* USE_KEYSETS */
 
 /* Create a session */
 
-#ifdef USE_SESSIONS
-
-C_CHECK_RETVAL C_NONNULL_ARG( ( 1 ) ) \
 C_RET cryptCreateSession( C_OUT CRYPT_SESSION C_PTR session,
 						  C_IN CRYPT_USER cryptUser,
 						  C_IN CRYPT_SESSION_TYPE sessionType )
@@ -2276,11 +2269,9 @@ C_RET cryptCreateSession( C_OUT CRYPT_SESSION C_PTR session,
 	return( mapError( errorMap, FAILSAFE_ARRAYSIZE( errorMap, ERRORMAP ), 
 					  status ) );
 	}
-#endif /* USE_SESSIONS */
 
 /* Log on/create a user object */
 
-C_CHECK_RETVAL C_NONNULL_ARG( ( 1, 2, 3 ) ) \
 C_RET cryptLogin( C_OUT CRYPT_USER C_PTR user,
 				  C_IN C_STR name, C_IN C_STR password )
 	{
@@ -2416,7 +2407,6 @@ C_RET cryptLogout( C_IN CRYPT_USER user )
 
 /* Get an attribute */
 
-C_CHECK_RETVAL C_NONNULL_ARG( ( 3 ) ) \
 C_RET cryptGetAttribute( C_IN CRYPT_HANDLE cryptHandle,
 						 C_IN CRYPT_ATTRIBUTE_TYPE attributeType,
 						 C_OUT int C_PTR value )
@@ -2453,10 +2443,9 @@ C_RET cryptGetAttribute( C_IN CRYPT_HANDLE cryptHandle,
 					  status ) );
 	}
 
-C_CHECK_RETVAL C_NONNULL_ARG( ( 4 ) ) \
 C_RET cryptGetAttributeString( C_IN CRYPT_HANDLE cryptHandle,
 							   C_IN CRYPT_ATTRIBUTE_TYPE attributeType,
-							   C_OUT_OPT void C_PTR value,
+							   C_OUT void C_PTR value,
 							   C_OUT int C_PTR valueLength )
 	{
 	static const COMMAND_INFO FAR_BSS cmdTemplate = \
@@ -2728,7 +2717,6 @@ C_RET cryptDeleteAttribute( C_IN CRYPT_HANDLE cryptHandle,
 
 /* Generate a key into an encryption context */
 
-C_CHECK_RETVAL \
 C_RET cryptGenerateKey( C_IN CRYPT_CONTEXT cryptContext )
 	{
 	static const COMMAND_INFO FAR_BSS cmdTemplate = \
@@ -2766,7 +2754,7 @@ C_RET cryptEncrypt( C_IN CRYPT_CONTEXT cryptContext,
 	int status;
 
 	/* Perform basic client-side error checking.  In theory we should also
-	   check for writability since the encryption does an in-place update,
+	   check for writeability since the encryption does an in-place update,
 	   however when we're hashing data it's valid for the data to be read-
 	   only so we only check for readability.  In addition when hashing we
 	   could be doing a hash-wrapup call so we allow a zero length and only
@@ -2827,10 +2815,8 @@ C_RET cryptDecrypt( C_IN CRYPT_CONTEXT cryptContext,
 *																			*
 ****************************************************************************/
 
-#ifdef USE_CERTIFICATES
-
-/* Sign/sig.check a certificate object.  The possibilities for signing are 
-   as follows:
+/* Sign/sig.check a certificate object.  The possibilities for signing are as
+   follows:
 
 						Signer
 	Type  |		Cert				Chain
@@ -2839,11 +2825,10 @@ C_RET cryptDecrypt( C_IN CRYPT_CONTEXT cryptContext,
 		  |					   |
 	Chain | Chain, length = 2  | Chain, length = n+1
 
-   For sig.checking the certificate object is checked against an issuing 
-   key/certificate or against a CRL, either as a raw CRL or a keyset contain 
+   For sig.checking the cert object is checked against an issuing key/
+   certificate or against a CRL, either as a raw CRL or a keyset contain
    revocation information */
 
-C_CHECK_RETVAL \
 C_RET cryptSignCert( C_IN CRYPT_CERTIFICATE certificate,
 					 C_IN CRYPT_CONTEXT signContext )
 	{
@@ -2871,7 +2856,6 @@ C_RET cryptSignCert( C_IN CRYPT_CERTIFICATE certificate,
 					  status ) );
 	}
 
-C_CHECK_RETVAL \
 C_RET cryptCheckCert( C_IN CRYPT_HANDLE certificate,
 					  C_IN CRYPT_HANDLE sigCheckKey )
 	{
@@ -2900,10 +2884,10 @@ C_RET cryptCheckCert( C_IN CRYPT_HANDLE certificate,
 					  status ) );
 	}
 
-/* Import/export a certificate, CRL, certification request, or certificate 
-   chain.  In the export case this just copies the internal encoded object 
-   to an external buffer.  For certificate/certificate chain export the 
-   possibilities are as follows:
+/* Import/export a certificate, CRL, certification request, or cert chain.
+   In the export case this just copies the internal encoded object to an
+   external buffer.  For cert/cert chain export the possibilities are as
+   follows:
 
 						Export
 	Type  |		Cert				Chain
@@ -2913,7 +2897,6 @@ C_RET cryptCheckCert( C_IN CRYPT_HANDLE certificate,
 	Chain | Currently selected | Chain
 		  | cert in chain	   | */
 
-C_CHECK_RETVAL C_NONNULL_ARG( ( 1, 4 ) ) \
 C_RET cryptImportCert( C_IN void C_PTR certObject,
 					   C_IN int certObjectLength,
 					   C_IN CRYPT_USER cryptUser,
@@ -2929,7 +2912,7 @@ C_RET cryptImportCert( C_IN void C_PTR certObject,
 
 	/* Perform basic client-side error checking */
 	if( certObjectLength < MIN_CERTSIZE || \
-		certObjectLength >= MAX_BUFFER_SIZE )
+		certObjectLength >= MAX_INTLENGTH )
 		return( CRYPT_ERROR_PARAM2 );
 	if( !isReadPtr( certObject, certObjectLength ) )
 		return( CRYPT_ERROR_PARAM1 );
@@ -2959,7 +2942,6 @@ C_RET cryptImportCert( C_IN void C_PTR certObject,
 					  status ) );
 	}
 
-C_CHECK_RETVAL \
 C_RET cryptExportCert( C_OUT_OPT void C_PTR certObject,
 					   C_IN int certObjectMaxLength,
 					   C_OUT int C_PTR certObjectLength,
@@ -2977,7 +2959,7 @@ C_RET cryptExportCert( C_OUT_OPT void C_PTR certObject,
 	if( certObject != NULL )
 		{
 		if( certObjectMaxLength < MIN_CERTSIZE || \
-			certObjectMaxLength >= MAX_BUFFER_SIZE )
+			certObjectMaxLength >= MAX_INTLENGTH )
 			return( CRYPT_ERROR_PARAM2 );
 		if( !isWritePtr( certObject, certObjectMaxLength ) )
 			return( CRYPT_ERROR_PARAM1 );
@@ -3015,8 +2997,8 @@ C_RET cryptExportCert( C_OUT_OPT void C_PTR certObject,
 			  certFormatType == CRYPT_CERTFORMAT_XML_CERTCHAIN ) && \
 			certObject != NULL )
 			{
-			/* It's text-encoded certificate data, convert it to the native 
-			   text format before we return */
+			/* It's text-encoded cert data, convert it to the native text
+			   format before we return */
 			cryptlibToNativeString( certObject, certObjectMaxLength,
 									certObject, *certObjectLength );
 			}
@@ -3027,11 +3009,8 @@ C_RET cryptExportCert( C_OUT_OPT void C_PTR certObject,
 					  status ) );
 	}
 
-#ifdef USE_KEYSETS
-
 /* CA management functions */
 
-C_CHECK_RETVAL \
 C_RET cryptCAAddItem( C_IN CRYPT_KEYSET keyset,
 					  C_IN CRYPT_CERTIFICATE certificate )
 	{
@@ -3060,7 +3039,6 @@ C_RET cryptCAAddItem( C_IN CRYPT_KEYSET keyset,
 					  status ) );
 	}
 
-C_CHECK_RETVAL C_NONNULL_ARG( ( 2 ) ) \
 C_RET cryptCAGetItem( C_IN CRYPT_KEYSET keyset,
 					  C_OUT CRYPT_CERTIFICATE C_PTR certificate,
 					  C_IN CRYPT_CERTTYPE_TYPE certType,
@@ -3080,9 +3058,9 @@ C_RET cryptCAGetItem( C_IN CRYPT_KEYSET keyset,
 	BOOLEAN isCert = FALSE;
 	int keyIDlen = 0, status;
 
-	/* Perform basic client-side error checking.  Because of keyset queries 
-	   we have to accept CRYPT_KEYID_NONE and a null keyID as well as 
-	   obviously valid key IDs */
+	/* Perform basic client-side error checking.  Because of keyset queries
+	   we have to accept CRYPT_KEYID_NONE and a null keyID as well as
+	   obviously valid key ID's */
 	if( !isHandleRangeValid( keyset ) )
 		return( CRYPT_ERROR_PARAM1 );
 	if( !isWritePtrConst( certificate, sizeof( CRYPT_HANDLE ) ) )
@@ -3140,15 +3118,14 @@ C_RET cryptCAGetItem( C_IN CRYPT_KEYSET keyset,
 	cmd.arg[ 0 ] = keyset;
 	if( isCert )
 		{
-		/* If we're being asked for a standard certificate, the caller 
-		   should really be using cryptGetPublicKey(), however for 
-		   orthogonality we convert the request into a standard public-key 
-		   read.  Note that this leads to some ambiguity since we can't 
-		   explicitly specify what we want returned for a certificate read 
-		   (for example we could get a chain if we ask for a single 
-		   certificate or a single certificate if we ask for a chain, 
-		   depending on what's there), but it's less confusing than refusing 
-		   any request to read a certificate */
+		/* If we're being asked for a standard cert, the caller should really
+		   be using cryptGetPublicKey(), however for orthogonality we convert
+		   the request into a standard public-key read.  Note that this leads
+		   to some ambiguity since we can't explicitly specify what we want
+		   returned for a cert read (for example we could get a chain if we
+		   ask for a single cert or a single cert if we ask for a chain,
+		   depending on what's there), but it's less confusing than refusing
+		   any request to read a cert */
 		cmd.arg[ 1 ] = KEYMGMT_ITEM_PUBLICKEY;
 		}
 	else
@@ -3221,8 +3198,8 @@ C_RET cryptCADeleteItem( C_IN CRYPT_KEYSET keyset,
 	cmd.arg[ 1 ] = keyIDtype;
 	if( certType == CRYPT_CERTTYPE_CERTIFICATE )
 		{
-		/* Allow a delete of a certificate for the same reason as given above 
-		   for cryptCAGetItem() */
+		/* Allow a delete of a cert for the same reason as given above for
+		   cryptCAGetItem() */
 		cmd.noArgs = 2;
 		}
 	else
@@ -3239,7 +3216,6 @@ C_RET cryptCADeleteItem( C_IN CRYPT_KEYSET keyset,
 					  status ) );
 	}
 
-C_CHECK_RETVAL \
 C_RET cryptCACertManagement( C_OUT_OPT CRYPT_CERTIFICATE C_PTR certificate,
 							 C_IN CRYPT_CERTACTION_TYPE action,
 							 C_IN CRYPT_KEYSET keyset,
@@ -3293,20 +3269,15 @@ C_RET cryptCACertManagement( C_OUT_OPT CRYPT_CERTIFICATE C_PTR certificate,
 	return( mapError( errorMap, FAILSAFE_ARRAYSIZE( errorMap, ERRORMAP ), 
 					  status ) );
 	}
-#endif /* USE_KEYSETS */
-#endif /* USE_CERTIFICATES */
 
 /****************************************************************************
 *																			*
-*							Envelope/Session Functions						*
+*								Envelope Functions							*
 *																			*
 ****************************************************************************/
 
-#if defined( USE_ENVELOPES ) || defined( USE_SESSIONS )
-
 /* Push data into an envelope/session object */
 
-C_CHECK_RETVAL C_NONNULL_ARG( ( 2, 4 ) ) \
 C_RET cryptPushData( C_IN CRYPT_HANDLE envelope, C_IN void C_PTR buffer,
 					 C_IN int length, C_OUT int C_PTR bytesCopied )
 	{
@@ -3322,7 +3293,7 @@ C_RET cryptPushData( C_IN CRYPT_HANDLE envelope, C_IN void C_PTR buffer,
 		return( CRYPT_ERROR_PARAM1 );
 	if( !isReadPtr( buffer, length ) )
 		return( CRYPT_ERROR_PARAM2 );
-	if( length <= 0 || length >= MAX_BUFFER_SIZE )
+	if( length <= 0 || length >= MAX_INTLENGTH )
 		return( CRYPT_ERROR_PARAM3 );
 	if( bytesCopied == NULL )
 		{
@@ -3347,7 +3318,6 @@ C_RET cryptPushData( C_IN CRYPT_HANDLE envelope, C_IN void C_PTR buffer,
 
 /* Pop data from an envelope/session object */
 
-C_CHECK_RETVAL C_NONNULL_ARG( ( 2, 4 ) ) \
 C_RET cryptPopData( C_IN CRYPT_ENVELOPE envelope, C_OUT void C_PTR buffer,
 					C_IN int length, C_OUT int C_PTR bytesCopied )
 	{
@@ -3363,7 +3333,7 @@ C_RET cryptPopData( C_IN CRYPT_ENVELOPE envelope, C_OUT void C_PTR buffer,
 		return( CRYPT_ERROR_PARAM1 );
 	if( !isWritePtr( buffer, length ) )
 		return( CRYPT_ERROR_PARAM2 );
-	if( length <= 0 || length >= MAX_BUFFER_SIZE )
+	if( length <= 0 || length >= MAX_INTLENGTH )
 		return( CRYPT_ERROR_PARAM3 );
 	memset( buffer, 0, min( length, 16 ) );
 	if( !isWritePtrConst( bytesCopied, sizeof( int ) ) )
@@ -3386,7 +3356,6 @@ C_RET cryptPopData( C_IN CRYPT_ENVELOPE envelope, C_OUT void C_PTR buffer,
 
 /* Flush data through an envelope/session object */
 
-C_CHECK_RETVAL \
 C_RET cryptFlushData( C_IN CRYPT_HANDLE envelope )
 	{
 	static const COMMAND_INFO FAR_BSS cmdTemplate = \
@@ -3409,7 +3378,6 @@ C_RET cryptFlushData( C_IN CRYPT_HANDLE envelope )
 	return( mapError( errorMap, FAILSAFE_ARRAYSIZE( errorMap, ERRORMAP ), 
 					  status ) );
 	}
-#endif /* USE_ENVELOPES || USE_SESSIONS */
 
 /****************************************************************************
 *																			*
@@ -3417,11 +3385,8 @@ C_RET cryptFlushData( C_IN CRYPT_HANDLE envelope )
 *																			*
 ****************************************************************************/
 
-#ifdef USE_KEYSETS
-
 /* Retrieve a key from a keyset or equivalent object */
 
-C_CHECK_RETVAL C_NONNULL_ARG( ( 2 ) ) \
 C_RET cryptGetPublicKey( C_IN CRYPT_KEYSET keyset,
 						 C_OUT CRYPT_HANDLE C_PTR cryptKey,
 						 C_IN CRYPT_KEYID_TYPE keyIDtype,
@@ -3441,7 +3406,7 @@ C_RET cryptGetPublicKey( C_IN CRYPT_KEYSET keyset,
 
 	/* Perform basic client-side error checking.  Because of keyset queries
 	   we have to accept CRYPT_KEYID_NONE and a null keyID as well as
-	   obviously valid key IDs */
+	   obviously valid key ID's */
 	if( !isHandleRangeValid( keyset ) )
 		return( CRYPT_ERROR_PARAM1 );
 	if( !isWritePtrConst( cryptKey, sizeof( CRYPT_HANDLE ) ) )
@@ -3499,11 +3464,10 @@ C_RET cryptGetPublicKey( C_IN CRYPT_KEYSET keyset,
 					  status ) );
 	}
 
-C_CHECK_RETVAL C_NONNULL_ARG( ( 2, 4 ) ) \
 C_RET cryptGetPrivateKey( C_IN CRYPT_HANDLE keyset,
 						  C_OUT CRYPT_CONTEXT C_PTR cryptContext,
 						  C_IN CRYPT_KEYID_TYPE keyIDtype,
-						  C_IN C_STR keyID, C_IN_OPT C_STR password )
+						  C_IN C_STR keyID, C_IN C_STR password )
 	{
 	static const COMMAND_INFO FAR_BSS cmdTemplate = \
 		{ COMMAND_GETKEY, COMMAND_FLAG_NONE, 3, 2 };
@@ -3586,11 +3550,10 @@ C_RET cryptGetPrivateKey( C_IN CRYPT_HANDLE keyset,
 					  status ) );
 	}
 
-C_CHECK_RETVAL C_NONNULL_ARG( ( 2, 4 ) ) \
 C_RET cryptGetKey( C_IN CRYPT_HANDLE keyset,
 				   C_OUT CRYPT_CONTEXT C_PTR cryptContext,
 				   C_IN CRYPT_KEYID_TYPE keyIDtype, C_IN C_STR keyID, 
-				   C_IN_OPT C_STR password )
+				   C_IN C_STR password )
 	{
 	static const COMMAND_INFO FAR_BSS cmdTemplate = \
 		{ COMMAND_GETKEY, COMMAND_FLAG_NONE, 3, 2 };
@@ -3675,7 +3638,6 @@ C_RET cryptGetKey( C_IN CRYPT_HANDLE keyset,
 
 /* Add a key from a keyset or equivalent object */
 
-C_CHECK_RETVAL \
 C_RET cryptAddPublicKey( C_IN CRYPT_KEYSET keyset,
 						 C_IN CRYPT_CERTIFICATE certificate )
 	{
@@ -3703,7 +3665,6 @@ C_RET cryptAddPublicKey( C_IN CRYPT_KEYSET keyset,
 					  status ) );
 	}
 
-C_CHECK_RETVAL C_NONNULL_ARG( ( 3 ) ) \
 C_RET cryptAddPrivateKey( C_IN CRYPT_KEYSET keyset,
 						  C_IN CRYPT_HANDLE cryptKey,
 						  C_IN C_STR password )
@@ -3821,7 +3782,6 @@ C_RET cryptDeleteKey( C_IN CRYPT_KEYSET keyset,
 	return( mapError( errorMap, FAILSAFE_ARRAYSIZE( errorMap, ERRORMAP ), 
 					  status ) );
 	}
-#endif /* USE_KEYSETS */
 
 /****************************************************************************
 *																			*
@@ -3837,7 +3797,6 @@ C_RET cryptDeleteKey( C_IN CRYPT_KEYSET keyset,
 
 /* cryptlib/object query functions */
 
-C_CHECK_RETVAL \
 C_RET cryptQueryCapability( C_IN CRYPT_ALGO_TYPE cryptAlgo,
 							C_OUT_OPT CRYPT_QUERY_INFO C_PTR cryptQueryInfo )
 	{
@@ -3897,9 +3856,6 @@ C_RET cryptQueryCapability( C_IN CRYPT_ALGO_TYPE cryptAlgo,
 					  status ) );
 	}
 
-#ifdef USE_DEVICES
-
-C_CHECK_RETVAL \
 C_RET cryptDeviceQueryCapability( C_IN CRYPT_DEVICE device,
 								  C_IN CRYPT_ALGO_TYPE cryptAlgo,
 								  C_OUT_OPT CRYPT_QUERY_INFO C_PTR cryptQueryInfo )
@@ -3956,7 +3912,6 @@ C_RET cryptDeviceQueryCapability( C_IN CRYPT_DEVICE device,
 	return( mapError( errorMap, FAILSAFE_ARRAYSIZE( errorMap, ERRORMAP ), 
 					  status ) );
 	}
-#endif /* USE_DEVICES */
 
 /* Add random data to the random pool.  This should eventually be replaced
    by some sort of device control mechanism, the problem with doing this is
@@ -3973,7 +3928,7 @@ C_RET cryptAddRandom( C_IN void C_PTR randomData, C_IN int randomDataLength )
 		}
 	else
 		{
-		if( randomDataLength <= 0 || randomDataLength >= MAX_BUFFER_SIZE )
+		if( randomDataLength <= 0 || randomDataLength >= MAX_INTLENGTH )
 			return( CRYPT_ERROR_PARAM2 );
 		if( !isReadPtr( randomData, randomDataLength ) )
 			return( CRYPT_ERROR_PARAM1 );
@@ -3991,9 +3946,9 @@ C_RET cryptAddRandom( C_IN void C_PTR randomData, C_IN int randomDataLength )
 		{
 		MESSAGE_DATA msgData;
 
-#if !defined( NDEBUG ) && ( defined( __WINDOWS__ ) || defined( CONFIG_FUZZ ) )
+#if defined( __WINDOWS__ ) && !defined( NDEBUG )	/* For debugging tests only */
 if( randomDataLength == 5 && !memcmp( randomData, "xyzzy", 5 ) )
-{	/* For debugging tests only */
+{
 BYTE buffer[ 256 + 8 ];
 int kludge = 100;
 memset( buffer, '*', 256 );
@@ -4002,11 +3957,10 @@ krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE_S,
 				 &msgData, CRYPT_IATTRIBUTE_ENTROPY );
 krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_SETATTRIBUTE,
 				 &kludge, CRYPT_IATTRIBUTE_ENTROPY_QUALITY );
-return( CRYPT_OK );
 }
 #endif /* Windows debug */
 
-		setMessageData( &msgData, ( MESSAGE_CAST ) randomData, 
+		setMessageData( &msgData, ( MESSAGE_CAST ) randomData, \
 						randomDataLength );
 		return( krnlSendMessage( SYSTEM_OBJECT_HANDLE,
 								 IMESSAGE_SETATTRIBUTE_S, &msgData,
@@ -4020,57 +3974,11 @@ return( CRYPT_OK );
 							 CRYPT_IATTRIBUTE_RANDOM_POLL ) );
 	}
 
-/****************************************************************************
-*																			*
-*					Stubs/Replacements for Disabled Functions				*
-*																			*
-****************************************************************************/
-
-/* If certain functionality is disabled then we have to provide stub 
-   replacements for the functions */
+/* If the use of certificates is disabled, we have to provide stub
+   replacements for the legacy blob cert-extension manipulation
+   functions, which aren't handled by the kernel */
 
 #ifndef USE_CERTIFICATES
-
-C_RET cryptCreateCert( C_OUT CRYPT_CERTIFICATE C_PTR certificate,
-					   C_IN CRYPT_USER cryptUser,
-					   C_IN CRYPT_CERTTYPE_TYPE certType )
-	{
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptSignCert( C_IN CRYPT_CERTIFICATE certificate,
-					 C_IN CRYPT_CONTEXT signContext )
-	{
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptCheckCert( C_IN CRYPT_HANDLE certificate,
-					  C_IN CRYPT_HANDLE sigCheckKey )
-	{
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptImportCert( C_IN void C_PTR certObject,
-					   C_IN int certObjectLength,
-					   C_IN CRYPT_USER cryptUser,
-					   C_OUT CRYPT_CERTIFICATE C_PTR certificate )
-	{
-	UNUSED_ARG( certObject );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptExportCert( C_OUT_OPT void C_PTR certObject,
-					   C_IN int certObjectMaxLength,
-					   C_OUT int C_PTR certObjectLength,
-					   C_IN CRYPT_CERTFORMAT_TYPE certFormatType,
-					   C_IN CRYPT_HANDLE certificate )
-	{
-	UNUSED_ARG( certObject );
-	UNUSED_ARG( certObjectLength );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
 
 C_RET cryptGetCertExtension( C_IN CRYPT_CERTIFICATE certificate,
 							 C_IN char C_PTR oid,
@@ -4079,11 +3987,6 @@ C_RET cryptGetCertExtension( C_IN CRYPT_CERTIFICATE certificate,
 							 C_IN int extensionMaxLength,
 							 C_OUT int C_PTR extensionLength )
 	{
-	UNUSED_ARG( oid );
-	UNUSED_ARG( criticalFlag );
-	UNUSED_ARG( extension );
-	UNUSED_ARG( extensionLength );
-
 	return( CRYPT_ERROR_NOTAVAIL );
 	}
 
@@ -4092,254 +3995,15 @@ C_RET cryptAddCertExtension( C_IN CRYPT_CERTIFICATE certificate,
 							 C_IN void C_PTR extension,
 							 C_IN int extensionLength )
 	{
-	UNUSED_ARG( oid );
-	UNUSED_ARG( extension );
-
 	return( CRYPT_ERROR_NOTAVAIL );
 	}
 
 C_RET cryptDeleteCertExtension( C_IN CRYPT_CERTIFICATE certificate,
 								C_IN char C_PTR oid )
 	{
-	UNUSED_ARG( oid );
-
 	return( CRYPT_ERROR_NOTAVAIL );
 	}
 #endif /* !USE_CERTIFICATES */
-
-#if !defined( USE_CERTIFICATES ) || !defined( USE_KEYSETS )
-
-C_RET cryptCAAddItem( C_IN CRYPT_KEYSET keyset,
-					  C_IN CRYPT_CERTIFICATE certificate )
-	{
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptCAGetItem( C_IN CRYPT_KEYSET keyset,
-					  C_OUT CRYPT_CERTIFICATE C_PTR certificate,
-					  C_IN CRYPT_CERTTYPE_TYPE certType,
-					  C_IN CRYPT_KEYID_TYPE keyIDtype,
-					  C_IN_OPT C_STR keyID )
-	{
-	UNUSED_ARG( keyID );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptCADeleteItem( C_IN CRYPT_KEYSET keyset,
-						 C_IN CRYPT_CERTTYPE_TYPE certType,
-						 C_IN CRYPT_KEYID_TYPE keyIDtype,
-						 C_IN C_STR keyID )
-	{
-	UNUSED_ARG( keyID );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptCACertManagement( C_OUT_OPT CRYPT_CERTIFICATE C_PTR certificate,
-							 C_IN CRYPT_CERTACTION_TYPE action,
-							 C_IN CRYPT_KEYSET keyset,
-							 C_IN CRYPT_CONTEXT caKey,
-							 C_IN CRYPT_CERTIFICATE certRequest )
-	{
-	UNUSED_ARG( certificate );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-#endif /* !USE_CERTIFICATES || !USE_KEYSETS */
-
-#ifdef USE_PSEUDOCERTIFICATES 
-
-C_RET cryptCreateAttachedCert( C_IN CRYPT_CONTEXT cryptContext,
-							   C_IN void C_PTR certObject,
-							   C_IN int certObjectLength )
-	{
-	MESSAGE_CREATEOBJECT_INFO createInfo;
-	int status;
-
-	/* Perform basic error checking */
-	if( !isHandleRangeValid( cryptContext ) )
-		return( CRYPT_ERROR_PARAM1 );
-	if( certObjectLength < MIN_CERTSIZE || \
-		certObjectLength >= MAX_BUFFER_SIZE )
-		return( CRYPT_ERROR_PARAM3 );
-	if( !isReadPtr( certObject, certObjectLength ) )
-		return( CRYPT_ERROR_PARAM2 );
-
-	/* Create the pseudo-certificate object */
-	setMessageCreateObjectIndirectInfo( &createInfo, certObject,
-										certObjectLength, 
-										CRYPT_CERTTYPE_NONE );
-	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE,
-							  IMESSAGE_DEV_CREATEOBJECT_INDIRECT,
-							  &createInfo, OBJECT_TYPE_CERTIFICATE );
-	if( cryptStatusError( status ) )
-		return( status );
-
-	/* Attach the pseudo-certificate to the context */
-	status = krnlSendMessage( cryptContext, MESSAGE_SETDEPENDENT,
-							  &createInfo.cryptHandle, 
-							  SETDEP_OPTION_NOINCREF );
-	if( cryptStatusError( status ) )
-		krnlSendNotifier( createInfo.cryptHandle, IMESSAGE_DECREFCOUNT );
-
-	return( status );
-	}
-#endif /* USE_PSEUDOCERTIFICATES */
-
-#ifndef USE_DEVICES
-
-C_RET cryptDeviceCreateContext( C_IN CRYPT_DEVICE device,
-							    C_OUT CRYPT_CONTEXT C_PTR cryptContext,
-							    C_IN CRYPT_ALGO_TYPE cryptAlgo )
-	{
-	UNUSED_ARG( cryptContext );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptDeviceOpen( C_OUT CRYPT_DEVICE C_PTR device,
-					   C_IN CRYPT_USER cryptUser,
-					   C_IN CRYPT_DEVICE_TYPE deviceType,
-					   C_IN_OPT C_STR name )
-	{
-	UNUSED_ARG( device );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptDeviceQueryCapability( C_IN CRYPT_DEVICE device,
-								  C_IN CRYPT_ALGO_TYPE cryptAlgo,
-								  C_OUT_OPT CRYPT_QUERY_INFO C_PTR cryptQueryInfo )
-	{
-	UNUSED_ARG( cryptQueryInfo );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-#endif /* !USE_DEVICES */
-
-#ifndef USE_ENVELOPES
-
-C_RET cryptCreateEnvelope( C_OUT CRYPT_ENVELOPE C_PTR envelope,
-						   C_IN CRYPT_USER cryptUser,
-						   C_IN CRYPT_FORMAT_TYPE formatType )
-	{
-	UNUSED_ARG( envelope );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-#endif /* !USE_ENVELOPES */
-
-#if !defined( USE_ENVELOPES ) && !defined( USE_SESSIONS )
-
-C_RET cryptPushData( C_IN CRYPT_HANDLE envelope, C_IN void C_PTR buffer,
-					 C_IN int length, C_OUT int C_PTR bytesCopied )
-	{
-	UNUSED_ARG( buffer );
-	UNUSED_ARG( bytesCopied );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptPopData( C_IN CRYPT_ENVELOPE envelope, C_OUT void C_PTR buffer,
-					C_IN int length, C_OUT int C_PTR bytesCopied )
-	{
-	UNUSED_ARG( buffer );
-	UNUSED_ARG( bytesCopied );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptFlushData( C_IN CRYPT_HANDLE envelope )
-	{
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-#endif /* !USE_ENVELOPES && !USE_SESSIONS */
-
-#ifndef USE_KEYSETS
-
-C_RET cryptKeysetOpen( C_OUT CRYPT_KEYSET C_PTR keyset,
-					   C_IN CRYPT_USER cryptUser,
-					   C_IN CRYPT_KEYSET_TYPE keysetType,
-					   C_IN C_STR name, C_IN CRYPT_KEYOPT_TYPE options )
-	{
-	UNUSED_ARG( keyset );
-	UNUSED_ARG( name );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptGetPublicKey( C_IN CRYPT_KEYSET keyset,
-						 C_OUT CRYPT_HANDLE C_PTR cryptKey,
-						 C_IN CRYPT_KEYID_TYPE keyIDtype,
-						 C_IN_OPT C_STR keyID )
-	{
-	UNUSED_ARG( cryptKey );
-	UNUSED_ARG( keyID );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptGetPrivateKey( C_IN CRYPT_HANDLE keyset,
-						  C_OUT CRYPT_CONTEXT C_PTR cryptContext,
-						  C_IN CRYPT_KEYID_TYPE keyIDtype,
-						  C_IN C_STR keyID, C_IN C_STR password )
-	{
-	UNUSED_ARG( cryptContext );
-	UNUSED_ARG( keyID );
-	UNUSED_ARG( password );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptGetKey( C_IN CRYPT_HANDLE keyset,
-				   C_OUT CRYPT_CONTEXT C_PTR cryptContext,
-				   C_IN CRYPT_KEYID_TYPE keyIDtype, C_IN C_STR keyID, 
-				   C_IN C_STR password )
-	{
-	UNUSED_ARG( cryptContext );
-	UNUSED_ARG( keyID );
-	UNUSED_ARG( password );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptAddPrivateKey( C_IN CRYPT_KEYSET keyset,
-						  C_IN CRYPT_HANDLE cryptKey,
-						  C_IN C_STR password )
-	{
-	UNUSED_ARG( password );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptAddPublicKey( C_IN CRYPT_KEYSET keyset,
-						 C_IN CRYPT_CERTIFICATE certificate )
-	{
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
-C_RET cryptDeleteKey( C_IN CRYPT_KEYSET keyset,
-					  C_IN CRYPT_KEYID_TYPE keyIDtype,
-					  C_IN C_STR keyID )
-	{
-	UNUSED_ARG( keyID );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-#endif /* !USE_KEYSETS */
-
-#ifndef USE_SESSIONS
-
-C_RET cryptCreateSession( C_OUT CRYPT_SESSION C_PTR session,
-						  C_IN CRYPT_USER cryptUser,
-						  C_IN CRYPT_SESSION_TYPE sessionType )
-	{
-	UNUSED_ARG( session );
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-#endif /* !USE_SESSIONS */
 
 /****************************************************************************
 *																			*
@@ -4347,237 +4011,76 @@ C_RET cryptCreateSession( C_OUT CRYPT_SESSION C_PTR session,
 *																			*
 ****************************************************************************/
 
-/* This section can be used to insert custom code for application-specific 
-   purposes.  It's normally not used, and isn't present in the standard 
+/* This section can be used to insert custom code for application-specific
+   purposes.  It's normally not used, and isn't present in the standard
    distribution */
 
 #if !defined( NDEBUG ) && 1
 
-/* Insert custom code here */
-
-/* Debug function to handle fault injection, which sets the global value 
-   that controls the type of fault to simulate.  Note that this function is
-   added unconditionally (provided that it's a debug build) since it's part 
-   of the self-test code */
-
-#if defined( _MSC_VER ) || defined( __GNUC__ )
-  #pragma message( "  Building with crypto fault injection enabled (debug build only)." )
-#endif /* Warn about special features enabled */
-
-C_RET cryptSetFaultType( C_IN int type )
+C_RET cryptImportCertChainExt( C_IN void C_PTR certObject,
+							   C_IN int certObjectLength,
+							   C_IN CRYPT_USER cryptUser,
+							   C_IN BOOLEAN isEncryptionCert,
+							   C_OUT CRYPT_CERTIFICATE C_PTR certificate )
 	{
-	faultType = type;
-
-	return( CRYPT_OK );
-	}
-
-/* Debug function to set the memory-allocation invocation number at which
-   we fail the malloc() */
-
-#ifdef CONFIG_FAULT_MALLOC
-
-#if defined( _MSC_VER ) || defined( __GNUC__ )
-  #pragma message( "  Building with memory fault injection enabled (debug build only)." )
-#endif /* Warn about special features enabled */
-
-C_RET cryptSetMemFaultCount( C_IN int number )
-	{
-	clFaultAllocSetCount( number );
-
-	return( CRYPT_OK );
-	}
-#endif /* CONFIG_FAULT_MALLOC */
-
-/* Debug function to handle fuzzing */
-
-#ifdef CONFIG_FUZZ
-
-#if defined( _MSC_VER ) || defined( __GNUC__ )
-  #pragma message( "  Building with fuzz data injection enabled (debug build only)." )
-#endif /* Warn about special features enabled */
-
-#include "io/stream_int.h"		/* For STREAM_MFLAG_PSEUDO_HTTP */
-#include "session/session.h"
-
-C_RET cryptFuzzInit( C_IN CRYPT_SESSION cryptSession,
-					 C_IN CRYPT_CONTEXT cryptContext )
-	{
-	SESSION_INFO *sessionInfoPtr;
+	MESSAGE_CREATEOBJECT_INFO createInfo;
 	int status;
 
-	assert( isHandleRangeValid( cryptSession ) );
-	assert( ( cryptContext == CRYPT_UNUSED ) || \
-			isHandleRangeValid( cryptContext ) );
+	*certificate = CRYPT_ERROR;
 
-	/* Make sure that any network finalisation has been performed.  We have 
-	   to do this explicitly since we're bypassing the normal session init
-	   process */
-	krnlWaitSemaphore( SEMAPHORE_DRIVERBIND );
-
-	/* Get the session state information so that we can call directly into
-	   internal functions */
-	status = krnlAcquireObject( cryptSession, OBJECT_TYPE_SESSION, 
-								( void ** ) &sessionInfoPtr,
-								CRYPT_ARGERROR_OBJECT );
+	setMessageCreateObjectIndirectInfo( &createInfo, certObject,
+										certObjectLength,
+										CRYPT_CERTTYPE_CERTCHAIN );
+	createInfo.arg3 = isEncryptionCert ? \
+					  KEYMGMT_FLAG_USAGE_CRYPT : KEYMGMT_FLAG_USAGE_SIGN;
+	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE,
+							  IMESSAGE_DEV_CREATEOBJECT_INDIRECT,
+							  &createInfo, OBJECT_TYPE_CERTIFICATE );
 	if( cryptStatusError( status ) )
 		return( status );
 
-	/* Perform any necessary final session initialistion */
-	if( sessionInfoPtr->sendBuffer == NULL )
-		{
-		if( ( sessionInfoPtr->receiveBuffer = \
-						clAlloc( "cryptSetFuzzData", \
-								 sessionInfoPtr->receiveBufSize + 8 ) ) == NULL )
-			return( CRYPT_ERROR_MEMORY );
-		if( ( sessionInfoPtr->sendBuffer = \
-						clAlloc( "cryptSetFuzzData", \
-								 sessionInfoPtr->receiveBufSize + 8 ) ) == NULL )
-			{
-			clFree( "cryptSetFuzzData", sessionInfoPtr->receiveBuffer );
-			sessionInfoPtr->receiveBuffer = NULL;
-			return( CRYPT_ERROR_MEMORY );
-			}
-		sessionInfoPtr->sendBufSize = sessionInfoPtr->receiveBufSize;
-		}
-	if( cryptContext != CRYPT_UNUSED )
-		{
-		sessionInfoPtr->privateKey = cryptContext;
-		krnlSendNotifier( sessionInfoPtr->privateKey, IMESSAGE_INCREFCOUNT );
-		}
-	switch( sessionInfoPtr->type )
-		{
-		case CRYPT_SESSION_TSP:
-			/* Set a dummy message imprint size */
-			sessionInfoPtr->sessionTSP->imprintSize = 1;
-			break;
-
-		case CRYPT_SESSION_CMP:
-			/* Set a dummy request object and auth key */
-			sessionInfoPtr->iCertRequest = 0;
-			sessionInfoPtr->iAuthInContext = 0;
-			break;
-
-		default:
-			break;
-		}
-
-	krnlReleaseObject( cryptSession );
-
-	return( CRYPT_OK );
-	}
-
-C_RET cryptSetFuzzData( C_IN CRYPT_SESSION cryptSession, 
-						C_IN void *data, C_IN int dataLength )
-	{
-	SESSION_INFO *sessionInfoPtr;
-	int status;
-
-	assert( isHandleRangeValid( cryptSession ) );
-	assert( isReadPtr( data, dataLength ) );
-
-	/* Get the session state information so that we can call directly into
-	   internal functions */
-	status = krnlAcquireObject( cryptSession, OBJECT_TYPE_SESSION, 
-								( void ** ) &sessionInfoPtr,
-								CRYPT_ARGERROR_OBJECT );
-	if( cryptStatusError( status ) )
-		return( status );
-
-	/* Set up an emulated network I/O stream to read input from and process
-	   the input as far as we can */
-	sMemPseudoConnect( &sessionInfoPtr->stream, data, dataLength );
-	if( sessionInfoPtr->type == CRYPT_SESSION_RTCS || \
-		sessionInfoPtr->type == CRYPT_SESSION_OCSP || \
-		sessionInfoPtr->type == CRYPT_SESSION_TSP || \
-		sessionInfoPtr->type == CRYPT_SESSION_CMP || \
-		sessionInfoPtr->type == CRYPT_SESSION_SCEP )
-		{
-		/* It's an HTTP pseudo-stream, mark it as such */
-		sessionInfoPtr->stream.flags |= STREAM_MFLAG_PSEUDO_HTTP;
-		}
-	status = sessionInfoPtr->transactFunction( sessionInfoPtr );
-	sMemDisconnect( &sessionInfoPtr->stream );
-
-	krnlReleaseObject( cryptSession );
+	/* Make the newly-created object externally visible */
+	status = krnlSendMessage( createInfo.cryptHandle, IMESSAGE_SETATTRIBUTE,
+							  MESSAGE_VALUE_FALSE, CRYPT_IATTRIBUTE_INTERNAL );
+	*certificate = createInfo.cryptHandle;
 
 	return( status );
 	}
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
-static int bufferedTransportReadFunction( INOUT STREAM *stream, 
-										  OUT_BUFFER( maxLength, *length ) \
-											BYTE *buffer, 
-										  IN_DATALENGTH const int maxLength, 
-										  OUT_DATALENGTH_Z int *length, 
-										  IN_FLAGS_Z( TRANSPORT ) \
-											const int flags )
+C_RET cryptCreateSHA2ExtContext( C_OUT CRYPT_CONTEXT C_PTR cryptContext,
+								 const BOOLEAN isSHA512 )
 	{
-	assert( isWritePtr( stream, sizeof( STREAM ) ) );
-	assert( isWritePtr( buffer, maxLength ) );
-	assert( isWritePtr( length, sizeof( int ) ) );
-
-	REQUIRES( maxLength == 1 );
-
-	/* Clear return value */
-	*length = 0;
-
-	if( stream->bufPos >= stream->bufEnd )
-		return( CRYPT_ERROR_UNDERFLOW );
-
-	*buffer = stream->buffer[ stream->bufPos++ ];
-	*length = 1;
-
-	return( CRYPT_OK );
-	}
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
-static int bufferedTransportWriteFunction( INOUT STREAM *stream, 
-										   IN_BUFFER( maxLength ) const BYTE *buffer, 
-										   IN_DATALENGTH const int maxLength, 
-										   OUT_DATALENGTH_Z int *length, 
-										   IN_FLAGS_Z( TRANSPORT ) \
-											const int flags )
-	{
-	assert( isWritePtr( stream, sizeof( STREAM ) ) );
-	assert( isReadPtr( buffer, maxLength ) );
-
-	*length = maxLength;
-	return( CRYPT_OK );
-	}
-
-C_RET cryptFuzzSpecial( C_IN void *data, C_IN int dataLength, 
-						C_IN int isServer )
-	{
-	HTTP_DATA_INFO httpDataInfo;
-	ERROR_INFO errorInfo;
-	NET_STREAM_INFO netStream;
-	STREAM stream;
-	BYTE buffer[ 8192 ];
+	MESSAGE_CREATEOBJECT_INFO createInfo;
+	static const int sha384BlockSize = bitsToBytes( 384 );
+	static const int sha512BlockSize = bitsToBytes( 512 );
 	int status;
 
-	assert( isReadPtr( data, dataLength ) );
+	*cryptContext = CRYPT_ERROR;
 
-	sMemPseudoConnect( &stream, data, dataLength );
-	memset( &netStream, 0, sizeof( NET_STREAM_INFO ) );
-	setStreamLayerHTTP( &netStream );
-	netStream.bufferedTransportReadFunction = bufferedTransportReadFunction;
-	netStream.bufferedTransportWriteFunction = bufferedTransportWriteFunction;
-	stream.netStreamInfo = &netStream;
-	stream.flags |= STREAM_MFLAG_PSEUDO_HTTP | STREAM_MFLAG_PSEUDO_RAW;
-	if( isServer )
-		netStream.nFlags |= STREAM_NFLAG_ISSERVER;
-	initHttpDataInfo( &httpDataInfo, buffer, 8192 );
-	status = sread( &stream, &httpDataInfo, sizeof( HTTP_DATA_INFO ) );
+	setMessageCreateObjectInfo( &createInfo, CRYPT_ALGO_SHA2 );
+	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE,
+							  IMESSAGE_DEV_CREATEOBJECT,
+							  &createInfo, OBJECT_TYPE_CONTEXT );
+	if( cryptStatusError( status ) )
+		return( status );
+	status = krnlSendMessage( createInfo.cryptHandle, IMESSAGE_SETATTRIBUTE, 
+							  ( MESSAGE_CAST ) ( isSHA512 ? \
+									&sha512BlockSize : &sha384BlockSize ),
+							  CRYPT_CTXINFO_BLOCKSIZE );
 	if( cryptStatusError( status ) )
 		{
-		sNetGetErrorInfo( &stream, &errorInfo );
+		krnlSendNotifier( createInfo.cryptHandle, IMESSAGE_DECREFCOUNT );
 		return( status );
 		}
-	sMemDisconnect( &stream );
-	
-	return( CRYPT_OK );
+
+	/* Make the newly-created object externally visible */
+	status = krnlSendMessage( createInfo.cryptHandle, IMESSAGE_SETATTRIBUTE,
+							  MESSAGE_VALUE_FALSE, CRYPT_IATTRIBUTE_INTERNAL );
+	*cryptContext = createInfo.cryptHandle;
+
+	return( status );
 	}
-#endif /* CONFIG_FUZZ */
+#endif /* Debug-mode only test code */
 
 #ifdef CONFIG_SUITEB_TESTS 
 
@@ -4592,5 +4095,3 @@ C_RET cryptSuiteBTestConfig( C_IN int magicValue )
 	return( sslSuiteBTestConfig( magicValue ) );
 	}
 #endif /* CONFIG_SUITEB_TESTS  */
-
-#endif /* Debug-mode only test code */

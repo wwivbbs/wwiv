@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						  Unix Randomness-Gathering Code					*
-*	Copyright Peter Gutmann, Paul Kendall, and Chris Wedgwood 1996-2013		*
+*	Copyright Peter Gutmann, Paul Kendall, and Chris Wedgwood 1996-2008		*
 *																			*
 ****************************************************************************/
 
@@ -54,23 +54,12 @@
 #if defined( __TANDEM_NSK__ ) || defined( __TANDEM_OSS__ )
   #error For the Tandem build you need to edit $MISCOBJS in the makefile to use 'tandem' and not 'unix'
 #endif /* Tandem OSS has its own randomness-gathering file */
-#if defined( __VxWorks__ )
+#if defined( __VXWORKS__ )
   #error For the VxWorks build you need to edit $MISCOBJS in the makefile to use 'vxworks' and not 'unix'
 #endif /* VxWorks has its own randomness-gathering file */
 #if defined( __XMK__ )
   #error For the Xilinx XMK build you need to edit $MISCOBJS in the makefile to use 'xmk' and not 'unix'
 #endif /* XMK has its own randomness-gathering file */
-
-/* Some systems built on top of Unix kernels and/or Unix-like systems don't 
-   support certain functionality like the SYSV shared memory that's used for 
-   last-line-of-defence entropy polling, or only support it in an erratic 
-   manner that we can't rely on.  For these systems we replace the shared-
-   memory-based polling with a stub the prints an error message for the
-   caller */
-
-#if defined( __Android__ ) || ( defined( __QNX__ ) && OSVERSION <= 4 )
-  #define NO_SYSV_SHAREDMEM
-#endif /* Android || QNX <= 4.x */
 
 /* OS-specific includes */
 
@@ -102,12 +91,6 @@
 	#undef MPRAS_XOPEN_DEFINES
   #endif /* MP-RAS */
 #endif /* QNX */
-#ifdef __linux__ 
-  #include <linux/random.h>
-#endif /* Linux */
-#ifdef __iOS__ 
-  #include <Security/SecRandom.h>
-#endif /* __iOS__  */
 #if defined( _AIX ) || defined( __QNX__ )
   #include <sys/select.h>
 #endif /* Aches || QNX */
@@ -120,22 +103,26 @@
   #include <sys/sem.h>
   #include <sys/shm.h>
 #endif /* CYGWIN */
-#if !( defined( __Android__ ) || defined( __CYGWIN__ ) || defined( __QNX__ ) )
+#if !( defined( __QNX__ ) || defined( __CYGWIN__ ) )
   #include <sys/shm.h>
-#endif /* !( __Android__  || Cygwin || QNX ) */
+#endif /* QNX || Cygwin */
 #if defined( __linux__ ) && ( defined(__i386__) || defined(__x86_64__) )
   #include <sys/timex.h>	/* For rdtsc() */
 #endif /* Linux on x86 */
-#ifdef __OpenBSD__
-  #include <sys/param.h>	/* For 'OpenBSD' version macro */
-#endif /* __OpenBSD__ */
 #include <signal.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>	/* Verschiedene komische Typen */
 #include <sys/un.h>
+#if defined( __hpux ) && ( OSVERSION == 9 )
+  #include <vfork.h>
+#endif /* __hpux 9.x, after that it's in unistd.h */
 #include <sys/wait.h>
 /* #include <kitchensink.h> */
+
+#if defined( sun ) || defined( __ultrix__ ) || defined( __hpux )
+  #define HAS_VFORK
+#endif /* Unixen that have vfork() */
 
 /* Crays and QNX 4.x don't have a rlimit/rusage so we have to fake the
    functions and structs */
@@ -242,7 +229,7 @@
    1024 / weight : 0' (and gcc 2.7.2.2 dies with a division by zero trap), so
    we define a value SC_0 that evaluates to zero when fed to '1024 / SC_0' */
 
-#define SC( weight )	( int ) ( 1024 / weight )	/* Scale factor */
+#define SC( weight )	( 1024 / weight )	/* Scale factor */
 #define SC_0			16384				/* SC( SC_0 ) evalutes to 0 */
 
 typedef struct {
@@ -447,6 +434,246 @@ static int getrusage( int who, OUT struct rusage *rusage )
 	}
 #endif /* __hpux */
 
+#if defined( __MVS__ ) || defined( __hpux )
+
+/* MVS USS and PHUX don't have wait4() so we emulate it with waitpid() and
+   getrusage() */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 4 ) ) \
+pid_t wait4( pid_t pid, OUT int *status, int options, 
+			 OUT struct rusage *rusage )
+	{
+	const pid_t waitPid = waitpid( pid, status, options );
+
+	getrusage( RUSAGE_CHILDREN, rusage );
+	return( waitPid );
+	}
+#endif /* MVS || PHUX */
+
+/* Cray Unicos and QNX 4.x have neither wait4() nor getrusage, so we fake
+   it */
+
+#if defined( _CRAY ) || ( defined( __QNX__ ) && OSVERSION <= 4 )
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 4 ) ) \
+pid_t wait4( pid_t pid, OUT int *status, int options, 
+			 OUT struct rusage *rusage )
+	{
+	return( waitpid( pid, status, options ) );
+	}
+#endif /* Cray Unicos || QNX 4.x */
+
+/* Under SunOS 4.x popen() doesn't record the pid of the child process.  When
+   pclose() is called, instead of calling waitpid() for the correct child, it
+   calls wait() repeatedly until the right child is reaped.  The problem whit
+   this behaviour is that this reaps any other children that happen to have
+   died at that moment, and when their pclose() comes along, the process hangs
+   forever.
+
+   This behaviour may be related to older SVR3-compatible SIGCLD handling in
+   which, under the SIG_IGN disposition, the status of the child was discarded
+   (i.e. no zombies were generated) so that when the parent called wait() it
+   would block until all children terminated, whereupon wait() would return -1
+   with errno set to ECHILD.
+
+   The fix for this problem is to use a wrapper for popen()/pclose() that
+   saves the pid in the dataSources structure (code adapted from GNU-libc's
+   popen() call).  Doing our own popen() has other advantages as well, for
+   example we use the more secure execl() to run the child instead of the
+   dangerous system().
+
+   Aut viam inveniam aut faciam */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+static FILE *my_popen( INOUT DATA_SOURCE_INFO *entry )
+	{
+	int pipedes[ 2 + 8 ];
+	FILE *stream;
+
+	/* Sanity check for stdin and stdout */
+	REQUIRES_N( STDIN_FILENO <= 1 && STDOUT_FILENO <= 1 );
+
+	/* Create the pipe.  Note that under QNX the pipe resource manager
+	   'pipe' must be running in order to use pipes */
+	if( pipe( pipedes ) < 0 )
+		return( NULL );
+
+	/* Fork off the child ("vfork() is like an OS orgasm.  All OSes want to
+	   do it, but most just end up faking it" - Chris Wedgwood).  If your OS
+	   supports it, you should try and use vfork() here because it's rather
+	   more efficient and has guaranteed copy-on-write semantics that prevent
+	   cryptlib object data from being copied to the child.  Many modern
+	   Unixen use COW for forks anyway (e.g. Linux, for which vfork() is just
+	   an alias for fork()), so we get most of the benefits of vfork() with a
+	   plain fork(), however there's another problem with fork that isn't
+	   fixed by COW.  Any large program, when forked, requires (at least
+	   temporarily) a lot of address space.  That is, when the process is
+	   forked the system needs to allocate many virtual pages (backing store)
+	   even if those pages are never used.  If the system doesn't have enough
+	   swap space available to support this, the fork() will fail when the
+	   system tries to reserver backing store for pages that are never
+	   touched.  Even in non-large processes this can cause problems when (as
+	   with the randomness-gatherer) many children are forked at once.
+
+	   In the absence of threads the use of pcreate() (which only requires
+	   backing store for the new processes' stack, not the entire process)
+	   would do the trick, however pcreate() isn't compatible with threads,
+	   which makes it of little use for the default thread-enabled cryptlib
+	   build
+
+	   Although OSF/1 has vfork(), it has nasty interactions with threading
+	   and can cause other problems with handling of children, so we don't
+	   use it */
+#ifdef HAS_VFORK
+	entry->pid = vfork();
+#else
+	entry->pid = fork();
+#endif /* Unixen that have vfork() */
+	if( entry->pid == ( pid_t ) -1 )
+		{
+		/* The fork failed */
+		close( pipedes[ 0 ] );
+		close( pipedes[ 1 ] );
+		return( NULL );
+		}
+
+	if( entry->pid == ( pid_t ) 0 )
+		{
+		int fd;
+
+		/* We are the child, connect the read side of the pipe to stdout and
+		   unplug stdin and stderr */
+		if( dup2( pipedes[ STDOUT_FILENO ], STDOUT_FILENO ) < 0 )
+			exit( 127 );
+		if( ( fd = open( "/dev/null", O_RDWR ) ) > 0 )
+			{
+			dup2( fd, STDIN_FILENO );
+			dup2( fd, STDERR_FILENO );
+			close( fd );
+			}
+
+		/* If we're root, give up our permissions to make sure that we don't
+		   inadvertently read anything sensitive.  If the getpwnam() fails
+		   (this can happen if we're chrooted with no "nobody" entry in the
+		   local passwd file) we default to -1, which is usually nobody.  
+		   The newer setreXid() and setresXid() calls use a parameter value 
+		   of -1 to indicate "don't change this value" so this isn't 
+		   possible any longer, but then there's not really much else that 
+		   we can do at this point.
+		   
+		   We don't check whether the change succeeds since it's not a major 
+		   security problem but just a precaution */
+		if( geteuid() == 0 )
+			{
+			static uid_t gathererUID = ( uid_t ) -1, gathererGID = ( uid_t ) -1;
+
+			if( gathererUID == ( uid_t ) -1 )
+				{
+				struct passwd *passwd;
+
+				passwd = getpwnam( "nobody" );
+				if( passwd != NULL )
+					{
+					gathererUID = passwd->pw_uid;
+					gathererGID = passwd->pw_gid;
+					}
+				else
+					{
+					assert( DEBUG_WARN );
+					}
+				}
+			if( gathererUID != ( uid_t ) -1 )
+				{
+#if 0			/* Not available on some OSes */
+				( void ) setuid( gathererUID );
+				( void ) seteuid( gathererUID );
+				( void ) setgid( gathererGID );
+				( void ) setegid( gathererGID );
+#else
+  #if( defined( __linux__ ) || ( defined( __FreeBSD__ ) && OSVERSION >= 5 ) || \
+	   ( defined( __hpux ) && OSVERSION >= 11 ) )
+				( void ) setresuid( gathererUID, gathererUID, gathererUID );
+				( void ) setresgid( gathererGID, gathererGID, gathererGID );
+  #else
+				( void ) setreuid( gathererUID, gathererUID );
+				( void ) setregid( gathererGID, gathererGID );
+  #endif /* OSses with setresXid() */
+#endif /* 0 */
+				}
+			}
+
+		/* Close the pipe descriptors */
+		close( pipedes[ STDIN_FILENO ] );
+		close( pipedes[ STDOUT_FILENO ] );
+
+		/* Try and exec the program */
+		execl( entry->path, entry->path, entry->arg, NULL );
+
+		/* Die if the exec failed.  Since vfork() doesn't duplicate the stdio
+		   buffers (or anything else for that matter), we have to use _exit()
+		   rather than exit() to ensure that the shutdown actions don't upset
+		   the parent's state */
+#ifdef HAS_VFORK
+		_exit( 127 );
+#else
+		exit( 127 );
+#endif /* Unixen that have vfork() */
+		}
+
+	/* We are the parent.  Close the irrelevant side of the pipe and open the
+	   relevant side as a new stream.  Mark our side of the pipe to close on
+	   exec, so new children won't see it */
+	close( pipedes[ STDOUT_FILENO ] );
+	fcntl( pipedes[ STDIN_FILENO ], F_SETFD, FD_CLOEXEC );
+	stream = fdopen( pipedes[ STDIN_FILENO ], "r" );
+	if( stream == NULL )
+		{
+		int savedErrno = errno;
+
+		/* The stream couldn't be opened or the child structure couldn't be
+		   allocated.  Kill the child and close the other side of the pipe */
+		kill( entry->pid, SIGKILL );
+		close( pipedes[ STDOUT_FILENO ] );
+		waitpid( entry->pid, NULL, 0 );
+		entry->pid = 0;
+		errno = savedErrno;
+		return( NULL );
+		}
+
+	return( stream );
+	}
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+static int my_pclose( INOUT DATA_SOURCE_INFO *entry, 
+					  INOUT struct rusage *rusage )
+	{
+	pid_t pid;
+	int iterationCount = 0, status = 0;
+
+	/* Close the pipe */
+	fclose( entry->pipe );
+	entry->pipe = NULL;
+
+	/* Wait for the child to terminate, ignoring the return value from the
+	   process because some programs return funny values that would result
+	   in the input being discarded even if they executed successfully.
+	   This isn't a problem because the result data size threshold will
+	   filter out any programs that exit with a usage message without
+	   producing useful output */
+	do
+		{
+		/* We use wait4() instead of waitpid() to get the last bit of
+		   entropy data, the resource usage of the child */
+		pid = wait4( entry->pid, NULL, 0, rusage );
+		}
+	while( pid == -1 && errno == EINTR && \
+		   iterationCount++ < FAILSAFE_ITERATIONS_MED );
+	if( pid != entry->pid )
+		status = -1;
+	entry->pid = 0;
+	return( status );
+	}
+
 /****************************************************************************
 *																			*
 *									Fast Poll								*
@@ -566,7 +793,7 @@ void fastPoll( void )
 
 /****************************************************************************
 *																			*
-*								Slow Poll Sources							*
+*									Slow Poll								*
 *																			*
 ****************************************************************************/
 
@@ -642,8 +869,7 @@ static int getKstatData( void )
    filesystem using file reads */
 
 #if ( defined( sun ) && ( OSVERSION >= 5 ) ) || defined( __osf__ ) || \
-	  defined( __alpha__ ) || \
-	  ( defined( __linux__ ) && !defined( __Android__ ) )
+	  defined( __alpha__ ) || defined( __linux__ )
 
 #define USE_PROC
 #include <sys/procfs.h>
@@ -663,6 +889,7 @@ static int getProcData( void )
 #ifdef PIOCACINFO
 	struct pracinfo pracInfo;
 #endif /* PIOCACINFO */
+
 	RANDOM_STATE randomState;
 	BYTE buffer[ RANDOM_BUFSIZE + 8 ];
 	char fileName[ 128 + 8 ];
@@ -746,47 +973,6 @@ static int getProcData( void )
 	return( quality );
 	}
 #endif /* Slowaris || OSF/1 || Linux */
-
-#ifdef __iOS__ 
-
-CHECK_RETVAL \
-static int getIOSData( void )
-	{
-	RANDOM_STATE randomState;
-	BYTE buffer[ RANDOM_BUFSIZE + 8 ];
-	int quality = 0, status;
-
-	/* Get the random data from the iOS system randomness routine.  Although 
-	   SecRandomCopyBytes() takes as its first parameter the generator type, 
-	   only one is allowed, kSecRandomDefault, after which the call is 
-	   passed down to CCRandomCopyBytes(), which does something with one of 
-	   the NIST DRBGs, but it's all obfuscated with macros and function 
-	   pointers so it's hard to tell what.
-
-	   Initially SecRandomCopyBytes() was just a wrapper for a thread-safe
-	   read of Apple's /dev/random (for which see the comment in 
-	   getDevRandomData() about the value of this and why we only assign a 
-	   quality factor of 60%), however what's in use now isn't a /dev/random
-	   read any more but something much more complex (see above).
-	   
-	   Another possible complication is that if both SecRandomCopyBytes() 
-	   and the explicit /dev/random read that we perform ourselves are 
-	   getting their input from the same source then we should only count 
-	   its value once, however the Apple current code, which seems to be out 
-	   of sync with the documentation, appears to do more than that */
-	status = initRandomData( randomState, buffer, RANDOM_BUFSIZE );
-	ENSURES_EXT( cryptStatusOK( status ), 0 );
-	status = SecRandomCopyBytes( kSecRandomDefault, RANDOM_BUFSIZE, buffer );
-	if( status == 0 )
-		{
-		addRandomData( randomState, buffer, RANDOM_BUFSIZE );
-		quality = 60;
-		}
-	endRandomData( randomState, quality );
-
-	return( quality );
-	}
-#endif /* __iOS__  */
 
 /* Named process information /procfs interface.  Each source is given a 
    weighting of 1-3, with 1 being a static (although unpredictable) source,
@@ -888,38 +1074,12 @@ static int getDevRandomData( void )
 	MESSAGE_DATA msgData;
 	BYTE buffer[ DEVRANDOM_BYTES + 8 ];
 #if defined( __APPLE__ ) || ( defined( __FreeBSD__ ) && OSVERSION >= 5 )
-	static const int quality = 60;	/* See comment below */
+	static const int quality = 50;	/* See comment below */
 #else
-	static const int quality = 80;
+	static const int quality = 75;
 #endif /* Mac OS X || FreeBSD 5.x */
 	int randFD, noBytes;
 
-	/* Some OSes include a call to access the system randomness data 
-	   directly rather than having to go via a pseudo-device, if this 
-	   capability is available then we use a direct read.  This currently 
-	   applies to OpenBSD (added in 5.6, conveniently about the time that 
-	   LibreSSL needed it) and Linux kernels from 3.17 (in response to 
-	   prodding from LibreSSL and the appearance of the OpenBSD function).
-	   
-	   OpenBSD also has the older arc4random_buf(), which used to use
-	   RC4 (ugh) until OpenBSD 5.5 when it was replaced by ChaCha20, which
-	   postprocess the entropy data through the given stream cipher.  Since 
-	   we're feeding the output into our own PRNG and since this function
-	   is a general interface to the system randomness data, we use 
-	   getentropy() rather than arc4random() */
-#if defined( __linux__ ) && defined( GRND_NONBLOCK )
-	noBytes = getrandom( buffer, DEVRANDOM_BYTES, GRND_NONBLOCK );
-#elif defined( __OpenBSD__ ) && OpenBSD > 201412
-	noBytes = getentropy( buffer, DEVRANDOM_BYTES );
-	if( noBytes == 0 )
-		{
-		/* OpenBSD's semantics for the call differ from the read()-alike
-		   functionality of the Linux version and simply return 0 or -1
-		   for success or failure, so we convert the former into a byte
-		   count */
-		noBytes = DEVRANDOM_BYTES;
-		}
-#else
 	/* Check whether there's a /dev/random present.  We don't use O_NOFOLLOW 
 	   because on some Unixen special files can be symlinks and in any case 
 	   a system that allows attackers to mess with privileged filesystems 
@@ -939,7 +1099,7 @@ static int getDevRandomData( void )
 	   sources as well.  Under FreeBSD 5.x and OS X, the /dev/random 
 	   implementation is broken, using a pretend dev-random implemented with 
 	   Yarrow and a 160-bit pool (animi sub vulpe latent) so we only assign 
-	   a 60% quality factor.  These generators also lie about entropy, with 
+	   a 50% quality factor.  These generators also lie about entropy, with 
 	   both /random and /urandom being the same PRNG-based implementation.
 	   The AIX /dev/random isn't an original /dev/random either but merely 
 	   provides a compatible interface, taking its input from interrupt 
@@ -958,7 +1118,6 @@ static int getDevRandomData( void )
 	   headless and embedded systems */
 	noBytes = read( randFD, buffer, DEVRANDOM_BYTES );
 	close( randFD );
-#endif /* OSes without API support for the randomness device */
 	if( noBytes < 1 )
 		{
 #ifdef DEBUG_RANDOM
@@ -1066,268 +1225,13 @@ static int getEGDdata( void )
 	return( quality );
 	}
 
-/****************************************************************************
-*																			*
-*						Last-resort External-Source Polling					*
-*																			*
-****************************************************************************/
-
-#ifndef NO_SYSV_SHAREDMEM
-
-#if defined( __MVS__ ) || defined( __hpux ) || defined( __Android__ )
-
-/* MVS USS, PHUX, and the Android version of Linux don't have wait4() so we 
-   emulate it with waitpid() and getrusage() */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 4 ) ) \
-pid_t wait4( pid_t pid, OUT int *status, int options, 
-			 OUT struct rusage *rusage )
-	{
-	const pid_t waitPid = waitpid( pid, status, options );
-
-	getrusage( RUSAGE_CHILDREN, rusage );
-	return( waitPid );
-	}
-#endif /* MVS USS || PHUX || Android */
-
-/* Cray Unicos and QNX 4.x have neither wait4() nor getrusage, so we fake
-   it */
-
-#if defined( _CRAY ) || ( defined( __QNX__ ) && OSVERSION <= 4 )
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 4 ) ) \
-pid_t wait4( pid_t pid, OUT int *status, int options, 
-			 OUT struct rusage *rusage )
-	{
-	return( waitpid( pid, status, options ) );
-	}
-#endif /* Cray Unicos || QNX 4.x */
-
-#if !defined( _POSIX_PRIORITY_SCHEDULING ) || ( _POSIX_PRIORITY_SCHEDULING < 0 )
-  /* No sched_yield() or sched_yield() not supported */
-  #define sched_yield()
-#elif ( _POSIX_PRIORITY_SCHEDULING == 0 )
-
-static void my_sched_yield( void )
-	{
-	/* sched_yield() is only supported if sysconf() tells us that it is */
-	if( sysconf( _SC_PRIORITY_SCHEDULING ) > 0 )
-		sched_yield();
-	}
-#define sched_yield		my_sched_yield
-
-#endif /* Systems without sched_yield() */
-
-/* Under SunOS 4.x popen() doesn't record the pid of the child process.  When
-   pclose() is called, instead of calling waitpid() for the correct child, it
-   calls wait() repeatedly until the right child is reaped.  The problem whit
-   this behaviour is that this reaps any other children that happen to have
-   died at that moment, and when their pclose() comes along, the process hangs
-   forever.
-
-   This behaviour may be related to older SVR3-compatible SIGCLD handling in
-   which, under the SIG_IGN disposition, the status of the child was discarded
-   (i.e. no zombies were generated) so that when the parent called wait() it
-   would block until all children terminated, whereupon wait() would return -1
-   with errno set to ECHILD.
-
-   The fix for this problem is to use a wrapper for popen()/pclose() that
-   saves the pid in the dataSources structure (code adapted from GNU-libc's
-   popen() call).  Doing our own popen() has other advantages as well, for
-   example we use the more secure execl() to run the child instead of the
-   dangerous system().
-
-   Aut viam inveniam aut faciam */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-static FILE *my_popen( INOUT DATA_SOURCE_INFO *entry )
-	{
-	int pipedes[ 2 + 8 ];
-	FILE *stream;
-
-	/* Sanity check for stdin and stdout */
-	REQUIRES_N( STDIN_FILENO <= 1 && STDOUT_FILENO <= 1 );
-
-	/* Create the pipe.  Note that under QNX the pipe resource manager
-	   'pipe' must be running in order to use pipes */
-	if( pipe( pipedes ) < 0 )
-		return( NULL );
-
-	/* Fork off the child.  In theory we could use vfork() ("vfork() is like 
-	   an OS orgasm.  All OSes want to do it, but most just end up faking 
-	   it" - Chris Wedgwood), but most modern Unixen use copy-on-write for 
-	   forks anyway (with vfork() being just an alias for fork()), so we get 
-	   most of the benefits of vfork() with a plain fork().  There is 
-	   however another problem with fork that isn't fixed by COW.  Any large 
-	   program, when forked, requires (at least temporarily) a lot of 
-	   address space.  That is, when the process is forked the system needs 
-	   to allocate many virtual pages (backing store) even if those pages 
-	   are never used.  If the system doesn't have enough swap space 
-	   available to support this, the fork() will fail when the system tries 
-	   to reserver backing store for pages that are never touched.  Even in 
-	   non-large processes this can cause problems when (as with the 
-	   randomness-gatherer) many children are forked at once.  However this 
-	   is a rather unlikely situation, and since the fork()-based entropy-
-	   gathering is used only as a last resort when all other methods have
-	   failed, we rarely get to this code, let alone run it in a situation
-	   where the problem described above crops up.
-
-	   In the absence of threads the use of pcreate() (which only requires
-	   backing store for the new processes' stack, not the entire process)
-	   would do the trick, however pcreate() isn't compatible with threads,
-	   which makes it of little use for the default thread-enabled cryptlib
-	   build */
-	entry->pid = fork();
-	if( entry->pid == ( pid_t ) -1 )
-		{
-		/* The fork failed */
-		close( pipedes[ 0 ] );
-		close( pipedes[ 1 ] );
-		return( NULL );
-		}
-
-	if( entry->pid == ( pid_t ) 0 )
-		{
-		int fd;
-
-		/* We are the child, connect the read side of the pipe to stdout and
-		   unplug stdin and stderr */
-		if( dup2( pipedes[ STDOUT_FILENO ], STDOUT_FILENO ) < 0 )
-			exit( 127 );
-		if( ( fd = open( "/dev/null", O_RDWR ) ) > 0 )
-			{
-			dup2( fd, STDIN_FILENO );
-			dup2( fd, STDERR_FILENO );
-			close( fd );
-			}
-
-		/* If we're root, give up our permissions to make sure that we don't
-		   inadvertently read anything sensitive.  If the getpwnam() fails
-		   (this can happen if we're chrooted with no "nobody" entry in the
-		   local passwd file) we default to -1, which is usually nobody.  
-		   The newer setreXid() and setresXid() calls use a parameter value 
-		   of -1 to indicate "don't change this value" so this isn't 
-		   possible any longer, but then there's not really much else that 
-		   we can do at this point.
-		   
-		   We don't check whether the change succeeds since it's not a major 
-		   security problem but just a precaution (in theory an attacker
-		   could do something like fork()ing until RLIMIT_NPROC is reached, 
-		   at which point it'd fail, but that doesn't really give them
-		   anything) */
-		if( geteuid() == 0 )
-			{
-			static uid_t gathererUID = ( uid_t ) -1, gathererGID = ( uid_t ) -1;
-
-			if( gathererUID == ( uid_t ) -1 )
-				{
-				struct passwd *passwd;
-
-				passwd = getpwnam( "nobody" );
-				if( passwd != NULL )
-					{
-					gathererUID = passwd->pw_uid;
-					gathererGID = passwd->pw_gid;
-					}
-				else
-					{
-					assert( DEBUG_WARN );
-					}
-				}
-			if( gathererUID != ( uid_t ) -1 )
-				{
-#if 0			/* Not available on some OSes */
-				( void ) setuid( gathererUID );
-				( void ) seteuid( gathererUID );
-				( void ) setgid( gathererGID );
-				( void ) setegid( gathererGID );
-#else
-  #if( defined( __linux__ ) || ( defined( __FreeBSD__ ) && OSVERSION >= 5 ) || \
-	   ( defined( __hpux ) && OSVERSION >= 11 ) )
-				( void ) setresuid( gathererUID, gathererUID, gathererUID );
-				( void ) setresgid( gathererGID, gathererGID, gathererGID );
-  #else
-				( void ) setreuid( gathererUID, gathererUID );
-				( void ) setregid( gathererGID, gathererGID );
-  #endif /* OSses with setresXid() */
-#endif /* 0 */
-				}
-			}
-
-		/* Close the pipe descriptors */
-		close( pipedes[ STDIN_FILENO ] );
-		close( pipedes[ STDOUT_FILENO ] );
-
-		/* Try and exec the program */
-		execl( entry->path, entry->path, entry->arg, NULL );
-
-		/* Die if the exec failed */
-		exit( 127 );
-		}
-
-	/* We are the parent.  Close the irrelevant side of the pipe and open the
-	   relevant side as a new stream.  Mark our side of the pipe to close on
-	   exec, so new children won't see it (if this call fails there's not 
-	   much that we can do, and it's mostly a hygiene thing so we don't fail
-	   fatally on it) */
-	close( pipedes[ STDOUT_FILENO ] );
-	( void ) fcntl( pipedes[ STDIN_FILENO ], F_SETFD, FD_CLOEXEC );
-	stream = fdopen( pipedes[ STDIN_FILENO ], "r" );
-	if( stream == NULL )
-		{
-		int savedErrno = errno;
-
-		/* The stream couldn't be opened or the child structure couldn't be
-		   allocated.  Kill the child and close the other side of the pipe */
-		kill( entry->pid, SIGKILL );
-		close( pipedes[ STDOUT_FILENO ] );
-		waitpid( entry->pid, NULL, 0 );
-		entry->pid = 0;
-		errno = savedErrno;
-		return( NULL );
-		}
-
-	return( stream );
-	}
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int my_pclose( INOUT DATA_SOURCE_INFO *entry, 
-					  INOUT struct rusage *rusage )
-	{
-	pid_t pid;
-	int iterationCount = 0, status = 0;
-
-	/* Close the pipe */
-	fclose( entry->pipe );
-	entry->pipe = NULL;
-
-	/* Wait for the child to terminate, ignoring the return value from the
-	   process because some programs return funny values that would result
-	   in the input being discarded even if they executed successfully.
-	   This isn't a problem because the result data size threshold will
-	   filter out any programs that exit with a usage message without
-	   producing useful output */
-	do
-		{
-		/* We use wait4() instead of waitpid() to get the last bit of
-		   entropy data, the resource usage of the child */
-		pid = wait4( entry->pid, NULL, 0, rusage );
-		}
-	while( pid == -1 && errno == EINTR && \
-		   iterationCount++ < FAILSAFE_ITERATIONS_MED );
-	if( pid != entry->pid )
-		status = -1;
-	entry->pid = 0;
-	return( status );
-	}
-
-/* Get data from an external entropy source */
+/* Get data from an entropy source */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 static int getEntropySourceData( INOUT DATA_SOURCE_INFO *dataSource, 
 								 OUT_BUFFER( bufSize, *bufPos ) BYTE *bufPtr, 
-								 IN_DATALENGTH const int bufSize, 
-								 OUT_DATALENGTH_Z int *bufPos )
+								 IN_LENGTH const int bufSize, 
+								 OUT_LENGTH int *bufPos )
 	{
 	int bufReadPos = 0, bufWritePos = 0;
 	size_t noBytes;
@@ -1385,7 +1289,7 @@ static int getEntropySourceData( INOUT DATA_SOURCE_INFO *dataSource,
 		   copy it over */
 		if( bufReadPos >= bufSize - 1 || ch != bufPtr[ bufReadPos + 1 ] )
 			{
-			bufPtr[ bufWritePos++ ] = intToByte( ch );
+			bufPtr[ bufWritePos++ ] = ch;
 			bufReadPos++;
 			}
 		else
@@ -1399,7 +1303,7 @@ static int getEntropySourceData( INOUT DATA_SOURCE_INFO *dataSource,
 				count++;
 				bufReadPos++;
 				}
-			bufPtr[ bufWritePos++ ] = intToByte( count );
+			bufPtr[ bufWritePos++ ] = count;
 			}
 		}
 
@@ -1459,12 +1363,13 @@ static void childPollingProcess( const int existingEntropy )
 	   may be tied to a device that will propagate the shutdown from the
 	   child to the parent via the device.
 
-	   In general the child will be short-lived, and the fact that any modern 
-	   fork() will have copy-on-write semantics will mean that cryptlib 
-	   memory is never copied to the child and further children.  It would, 
-	   however, be better if there were some way to perform a neutron-bomb 
-	   type shutdown that only zeroises senstive information while leaving 
-	   structures intact */
+	   In general the child will be short-lived, and the use in its further
+	   children of vfork() or the fact that many modern fork()s have copy-on-
+	   write semantics even if no vfork() is available will mean that
+	   cryptlib memory is never copied to the child and further children.  It
+	   would, however, be better if there were some way to perform a neutron-
+	   bomb type shutdown that only zeroises senstive information while
+	   leaving structures intact */
 	setrlimit( RLIMIT_CORE, &rl );
 	for( fdIndex = getdtablesize() - 1; fdIndex > STDOUT_FILENO; fdIndex-- )
 		close( fdIndex );
@@ -1579,12 +1484,10 @@ static void childPollingProcess( const int existingEntropy )
 			{
 			if( dataSources[ i ].pipe != NULL && \
 				FD_ISSET( dataSources[ i ].pipeFD, &fds ) )
-				{
 				usefulness += getEntropySourceData( &dataSources[ i ],
 													gathererBuffer + bufPos,
 													gathererBufSize - bufPos,
 													&bufPos );
-				}
 			}
 		ENSURES_EXIT( i < FAILSAFE_ARRAYSIZE( dataSources, DATA_SOURCE_INFO ) );
 
@@ -1645,41 +1548,99 @@ static void childPollingProcess( const int existingEntropy )
 	exit( 0 );
 	}
 
-/* Unix external-source slow poll.  If a few of the randomness sources 
-   create a large amount of output then the slowPoll() stops once the buffer 
-   has been filled (but before all of the randomness sources have been 
-   sucked dry) so that the 'usefulness' factor remains below the threshold.  
-   For this reason the gatherer buffer has to be fairly sizeable on 
-   moderately loaded systems.
+/* Unix slow poll.  If a few of the randomness sources create a large amount
+   of output then the slowPoll() stops once the buffer has been filled (but
+   before all of the randomness sources have been sucked dry) so that the
+   'usefulness' factor remains below the threshold.  For this reason the
+   gatherer buffer has to be fairly sizeable on moderately loaded systems.
 
-   An alternative strategy, suggested by Massimo Squillace, is to use a 
-   chunk of shared memory protected by a semaphore, with the first 
-   sizeof( int ) bytes at the start serving as a high-water mark.  The 
-   process forks and waitpid()'s for the child's pid.  The child forks all 
-   the entropy-gatherers and exits, allowing the parent to resume execution. 
-   The child's children are inherited by init (double-fork paradigm), when 
-   each one is finished it takes the semaphore, writes data to the shared 
-   memory segment at the given offset, updates the offset, releases the 
+   An alternative strategy, suggested by Massimo Squillace, is to use a
+   chunk of shared memory protected by a semaphore, with the first
+   sizeof( int ) bytes at the start serving as a high-water mark.  The
+   process forks and waitpid()'s for the child's pid.  The child forks all
+   the entropy-gatherers and exits, allowing the parent to resume execution.
+   The child's children are inherited by init (double-fork paradigm), when
+   each one is finished it takes the semaphore, writes data to the shared
+   memory segment at the given offset, updates the offset, releases the
    semaphore again, and exits, to be reaped by init.
 
-   The parent monitors the shared memory offset and when enough data is 
-   available takes the semaphore, grabs the data, and releases the shared 
-   memory area and semaphore.  If any children are still running they'll get 
-   errors when they try to access the semaphore or shared memory and 
+   The parent monitors the shared memory offset and when enough data is
+   available takes the semaphore, grabs the data, and releases the shared
+   memory area and semaphore.  If any children are still running they'll get
+   errors when they try to access the semaphore or shared memory and
    silently exit.
 
-   This approach has the advantage that all of the forked processes are 
-   managed by init rather than having the parent have to wait for them, but 
-   the disadvantage that the end-of-job handling is rather less rigorous. 
-   An additional disadvantage is that the existing code has had a lot of 
+   This approach has the advantage that all of the forked processes are
+   managed by init rather than having the parent have to wait for them, but
+   the disadvantage that the end-of-job handling is rather less rigorous.
+   An additional disadvantage is that the existing code has had a lot of
    real-world testing and adaptation to system-specific quirks, which would 
    have to be repeated for any new version */
 
 #define SHARED_BUFSIZE		49152	/* Usually about 25K are filled */
 
-static void externalSourcesPoll( const int existingEntropy )
+void slowPoll( void )
 	{
 	const int pageSize = getSysVar( SYSVAR_PAGESIZE );
+	int extraEntropy = 0;
+
+	/* Make sure that we don't start more than one slow poll at a time.  The
+	   gathererProcess value may be positive (a PID) or -1 (error), so we
+	   compare it to the specific value 0 (= not-used) in the check */
+	lockPollingMutex();
+	if( gathererProcess	!= 0 )
+		{
+		unlockPollingMutex();
+		return;
+		}
+
+	/* The popen()-level slow poll is the screen-scraping interface of last
+	   resort that we use only if we can't get the entropy in any other
+	   way.  If the system provides entropy from alternate sources, we don't 
+	   have have to try the screen-scraping slow poll (a number of these 
+	   additional sources, things like procfs and kstats, duplicate the 
+	   sources polled in the slow poll anyway, so we're not adding much by 
+	   polling these extra sources if we've already got the data directly) */
+	extraEntropy += getDevRandomData();
+	if( !access( "/proc/interrupts", R_OK ) )
+		extraEntropy += getProcFSdata();
+	extraEntropy += getEGDdata();
+#ifdef USE_KSTAT
+	extraEntropy += getKstatData();
+#endif /* USE_KSTAT */
+#ifdef USE_PROC
+	extraEntropy += getProcData();
+#endif /* USE_PROC */
+#ifdef DEBUG_RANDOM
+	printf( __FILE__ ": Got %d additional entropy from direct sources.\n",
+			extraEntropy );
+	if( extraEntropy >= 100 )
+		{
+		puts( "  (Skipping full slowpoll since sufficient entropy is "
+			  "available)." );
+		}
+#endif /* DEBUG_RANDOM */
+	if( extraEntropy >= 100 )
+		{
+		/* We got enough entropy from the additional sources, we don't
+		   have to go through with the full (heavyweight) poll */
+		unlockPollingMutex();
+		return;
+		}
+
+	/* QNX 4.x doesn't have SYSV shared memory, so we can't go beyond this
+	   point, all that we can do is warn the user that they'll have to use
+	   the entropy mechanisms for embedded systems (without proper entropy
+	   sources) */
+#if defined( __QNX__ ) && OSVERSION <= 4
+	fprintf( stderr, "cryptlib: QNX 4.x doesn't contain the OS mechanisms "
+			 "required to provide\n          system entropy sources that "
+			 "can be used for key generation.  In\n          order to use "
+			 "cryptlib in this environment, you need to apply the\n"
+			 "          randomness mechanisms for embedded systems "
+			 "described in the\n          cryptlib manual.\n" );
+	abort();
+#else
 
 	/* Check whether a non-default SIGCHLD handler is present.  This is 
 	   necessary because if the program that cryptlib is a part of installs 
@@ -1797,10 +1758,29 @@ static void externalSourcesPoll( const int existingEntropy )
 		}
 
 	/* Make the child an explicitly distinct function */
-	childPollingProcess( existingEntropy );
+	childPollingProcess( extraEntropy );
+#endif /* !QNX 4.x */
 	}
 
-static int externalSourcesPollComplete( const BOOLEAN force )
+/* Wait for the randomness gathering to finish */
+
+#if !defined( _POSIX_PRIORITY_SCHEDULING ) || ( _POSIX_PRIORITY_SCHEDULING < 0 )
+  /* No sched_yield() or sched_yield() not supported */
+  #define sched_yield()
+#elif ( _POSIX_PRIORITY_SCHEDULING == 0 )
+
+static void my_sched_yield( void )
+	{
+	/* sched_yield() is only supported if sysconf() tells us that it is */
+	if( sysconf( _SC_PRIORITY_SCHEDULING ) > 0 )
+		sched_yield();
+	}
+#define sched_yield		my_sched_yield
+
+#endif /* Systems without sched_yield() */
+
+CHECK_RETVAL \
+int waitforRandomCompletion( const BOOLEAN force )
 	{
 	MESSAGE_DATA msgData;
 	GATHERER_INFO *gathererInfo = ( GATHERER_INFO * ) gathererBuffer;
@@ -1873,6 +1853,7 @@ static int externalSourcesPollComplete( const BOOLEAN force )
 	   otherwise the unused ID hangs around until the process terminates) 
 	   and restore the original signal handler if we replaced someone else's 
 	   one */
+#if !( defined( __QNX__ ) && OSVERSION <= 4 )
 	shmdt( gathererBuffer );
 	shmctl( gathererMemID, IPC_RMID, NULL );
 	if( gathererOldHandler.sa_handler != SIG_DFL )
@@ -1901,102 +1882,11 @@ static int externalSourcesPollComplete( const BOOLEAN force )
 			sigaction( SIGCHLD, &gathererOldHandler, NULL );
 			}
 		}
+#endif /* !QNX 4.x */
 	gathererProcess = 0;
 	unlockPollingMutex();
 
 	return( CRYPT_OK );
-	}
-#endif /* NO_SYSV_SHAREDMEM */
-
-/****************************************************************************
-*																			*
-*									Slow Poll								*
-*																			*
-****************************************************************************/
-
-/* Slow poll.  We try for sources that are directly accessible 
-   programmatically and only fall back to the external-sources poll as a 
-   last resort (this is rarely, if ever, required) */
-
-void slowPoll( void )
-	{
-	int extraEntropy = 0;
-
-	/* Make sure that we don't start more than one slow poll at a time.  The
-	   gathererProcess value may be positive (a PID) or -1 (error), so we
-	   compare it to the specific value 0 (= not-used) in the check */
-	lockPollingMutex();
-	if( gathererProcess != 0 )
-		{
-		unlockPollingMutex();
-		return;
-		}
-
-	/* The popen()-level slow poll is the screen-scraping interface of last
-	   resort that we use only if we can't get the entropy in any other
-	   way.  If the system provides entropy from alternate sources, we don't 
-	   have have to try the screen-scraping slow poll (a number of these 
-	   additional sources, things like procfs and kstats, duplicate the 
-	   sources polled in the slow poll anyway, so we're not adding much by 
-	   polling these extra sources if we've already got the data directly) */
-	extraEntropy += getDevRandomData();
-	if( !access( "/proc/interrupts", R_OK ) )
-		extraEntropy += getProcFSdata();
-	extraEntropy += getEGDdata();
-#ifdef USE_KSTAT
-	extraEntropy += getKstatData();
-#endif /* USE_KSTAT */
-#ifdef USE_PROC
-	extraEntropy += getProcData();
-#endif /* USE_PROC */
-#ifdef __iOS__ 
-	extraEntropy += getIOSData();
-#endif /* __iOS__  */
-#ifdef DEBUG_RANDOM
-	printf( __FILE__ ": Got %d additional entropy from direct sources.\n",
-			extraEntropy );
-	if( extraEntropy >= 100 )
-		{
-		puts( "  (Skipping full slowpoll since sufficient entropy is "
-			  "available)." );
-		}
-#endif /* DEBUG_RANDOM */
-	if( extraEntropy >= 100 )
-		{
-		/* We got enough entropy from the additional sources, we don't
-		   have to go through with the full (heavyweight) poll */
-		unlockPollingMutex();
-		return;
-		}
-
-	/* A few systems don't support SYSV shared memory so we can't go beyond 
-	   this point, all that we can do is warn the user that they'll have to 
-	   use the entropy mechanisms intended for embedded systems without 
-	   proper entropy sources */
-#ifdef NO_SYSV_SHAREDMEM
-	fprintf( stderr, "cryptlib: This system doesn't contain the OS "
-			 "mechanisms required to provide\n          system entropy "
-			 "sources that can be used for key generation.  In\n"
-			 "          order to use cryptlib in this environment, you "
-			 "need to apply the\n          randomness mechanisms for "
-			 "embedded systems described in the\n          cryptlib "
-			 "manual.\n" );
-	unlockPollingMutex();
-#else
-	externalSourcesPoll( extraEntropy );
-#endif /* NO_SYSV_SHAREDMEM */
-	}
-
-/* Wait for the randomness gathering to finish */
-
-CHECK_RETVAL \
-int waitforRandomCompletion( const BOOLEAN force )
-	{
-#ifdef NO_SYSV_SHAREDMEM
-	return( CRYPT_OK );
-#else
-	return( externalSourcesPollComplete( force ) );
-#endif /* NO_SYSV_SHAREDMEM */
 	}
 
 /* Check whether we've forked and we're the child.  The mechanism used varies
@@ -2005,36 +1895,24 @@ int waitforRandomCompletion( const BOOLEAN force )
    since the last check, for multithreaded environments this isn't reliable
    since some systems have per-thread pid's so we need to use
    pthread_atfork() as a trigger to set the pid-changed flag.
-   
-   This is complicated by the fact that some threads implementations don't 
-   call pthread_atfork() on a vfork() (see the note about OS X below) while 
-   others do, so that with sufficiently obstreperous use of vfork() (doing 
-   stuff other than calling one of the exec() functions) it's possible to 
-   end up with duplicate pools.  OTOH this behaviour is explicitly advised 
-   against in vfork() manpages and documented as leading to undefined 
-   behaviour, so anyone who does this kinda gets what they deserve.
 
-   In terms of OS-specific issues, under Aches calling pthread_atfork() with 
-   any combination of arguments or circumstances produces a segfault, so we 
-   disable its use and fall back to the getpid()-based fork detection.  In 
-   addition some other environments don't support the call, so we exclude 
-   those as well.  FreeBSD is a particular pain because of its highly 
-   confusing use of -RELEASE, -STABLE, and -CURRENT while maintaining the 
-   same version, it's present in 5.x-CURRENT but not 5.x-RELEASE or -STABLE, 
-   so we have to exclude it for all 5.x to be safe.  OS X is also a bit of a 
-   pain, support was added after 10.4 (Tiger) but OS X uses vfork() 
-   internally so the atfork handler doesn't get called because parent and 
-   child are still sharing the same address space, so we also rely on the 
-   getpid()-based fork detection mechanism */
+   Under Aches, calling pthread_atfork() with any combination of arguments or
+   circumstances produces a segfault, so we undefine USE_THREADS to force the
+   use of the getpid()-based fork detection.  In addition some other
+   environments don't support the call, so we exclude those as well.  FreeBSD
+   is a particular pain because of its highly confusing use of -RELEASE,
+   -STABLE, and -CURRENT while maintaining the same version, it's present in
+   5.x-CURRENT but not 5.x-RELEASE or -STABLE, so we have to exclude it for
+   all 5.x to be safe */
 
 #if defined( USE_THREADS ) && \
-	( defined( _AIX ) || defined( __Android__ ) || defined( _CRAY ) || \
-	  defined( __MVS__ ) || defined( _MPRAS ) || defined( __APPLE__ ) || \
+	( defined( _AIX ) || defined( _CRAY ) || defined( __MVS__ ) || \
+	  defined( _MPRAS ) || defined( __APPLE__ ) || \
 	  ( defined( __FreeBSD__ ) && OSVERSION <= 5 ) )
-  #define NO_PTHREAD_ATFORK
+  #undef USE_THREADS
 #endif /* USE_THREADS && OSes without pthread_atfork() */
 
-#if defined( USE_THREADS ) && !defined( NO_PTHREAD_ATFORK )
+#ifdef USE_THREADS
 
 static BOOLEAN forked = FALSE;
 static pthread_mutex_t forkedMutex;
@@ -2080,35 +1958,29 @@ BOOLEAN checkForked( void )
 
 	return( FALSE );
 	}
-#endif /* USE_THREADS && !NO_PTHREAD_ATFORK */
+#endif /* USE_THREADS */
 
 /* Initialise and clean up any auxiliary randomness-related objects */
 
 void initRandomPolling( void )
 	{
-	/* Hardcoding in the Posix function name at this point is safe because 
-	   it also works for Solaris threads */
+	/* If it's multithreaded code, we need to ensure that we're signalled if
+	   another thread calls fork().  Hardcoding in the Posix function name at
+	   this point is safe because it also works for Solaris threads. We set
+	   the forked flag in both the child and the parent to ensure that both
+	   sides remix the pool thoroughly */
 #ifdef USE_THREADS
-	pthread_mutex_init( &gathererMutex, NULL );
-
-	/* If it's multithreaded code then we need to ensure that we're 
-	   signalled if another thread calls fork().  We set the forked flag 
-	   in both the child and the parent to ensure that both sides remix the 
-	   pool thoroughly */
-  #ifndef NO_PTHREAD_ATFORK
-	pthread_mutex_init( &forkedMutex, NULL );
 	pthread_atfork( NULL, setForked, setForked );
-  #endif /* NO_PTHREAD_ATFORK */
+
+	pthread_mutex_init( &gathererMutex, NULL );
+	pthread_mutex_init( &forkedMutex, NULL );
 #endif /* USE_THREADS */
 	}
 
 void endRandomPolling( void )
 	{
 #ifdef USE_THREADS
-	pthread_mutex_destroy( &gathererMutex );
-
-  #ifndef NO_PTHREAD_ATFORK
 	pthread_mutex_destroy( &forkedMutex );
-  #endif /* NO_PTHREAD_ATFORK */
+	pthread_mutex_destroy( &gathererMutex );
 #endif /* USE_THREADS */
 	}

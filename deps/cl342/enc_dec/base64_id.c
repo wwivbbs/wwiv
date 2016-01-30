@@ -15,15 +15,12 @@
 
 #define BITS_PER_GROUP	( 5 * 5 )	/* 5 chars encoding 5 bits each */
 
-/* En/decode tables for text representations of binary keys.  For the two
-   mask tables, only positions 4...7 are used */
+/* En/decode tables for text representations of binary keys */
 
 static const char codeTable[] = \
-			"ABCDEFGHJKLMNPQRSTUVWXYZ23456789____";	/* No O/0, I/1 */
-static const int hiMask[] = \
-			{ 0x00, 0x00, 0x00, 0x00, 0x0F, 0x07, 0x03, 0x01, 0x00, 0x00 };
-static const int loMask[] = \
-			{ 0x00, 0x00, 0x00, 0x00, 0x80, 0xC0, 0xE0, 0xF0, 0x00, 0x00 };
+					"ABCDEFGHJKLMNPQRSTUVWXYZ23456789____";	/* No O/0, I/1 */
+static const int hiMask[] = { 0x00, 0x00, 0x00, 0x00, 0x0F, 0x07, 0x03, 0x01 };
+static const int loMask[] = { 0x00, 0x00, 0x00, 0x00, 0x80, 0xC0, 0xE0, 0xF0 };
 
 /****************************************************************************
 *																			*
@@ -40,17 +37,16 @@ static const int loMask[] = \
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 static int adjustPKIUserValue( INOUT_BUFFER( valueMaxLength, *valueLength ) \
-									BYTE *value, 
-							   IN_LENGTH_SHORT_MIN( 32 ) \
-									const int valueMaxLength, 
-							   OUT_LENGTH_BOUNDED_Z( valueMaxLength ) \
-									int *valueLength,
+								BYTE *value, 
+							   IN_LENGTH_SHORT const int valueMaxLength, 
+							   OUT_LENGTH_SHORT_Z int *valueLength,
 							   IN_RANGE( 3, 4 ) const int noCodeGroups )
 	{
 	assert( isWritePtr( value, valueMaxLength ) );
 	assert( isWritePtr( valueLength, sizeof( int ) ) );
 	
-	REQUIRES( valueMaxLength >= 32 && valueMaxLength < MAX_INTLENGTH_SHORT );
+	REQUIRES( valueMaxLength >= roundUp( 3 * BITS_PER_GROUP, 8 ) / 8 && \
+			  valueMaxLength < MAX_INTLENGTH_SHORT );
 	REQUIRES( noCodeGroups == 3 || noCodeGroups == 4 );
 
 	/* Mask off any bits at the end of the data that can't be encoded using
@@ -86,7 +82,7 @@ static int adjustPKIUserValue( INOUT_BUFFER( valueMaxLength, *valueLength ) \
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 int encodePKIUserValue( OUT_BUFFER( encValMaxLen, *encValLen ) char *encVal, 
 						IN_LENGTH_SHORT_MIN( 10 ) const int encValMaxLen, 
-						OUT_LENGTH_BOUNDED_Z( encValMaxLen ) int *encValLen,
+						OUT_LENGTH_SHORT_Z int *encValLen,
 						IN_BUFFER( valueLen ) const BYTE *value, 
 						IN_LENGTH_SHORT_MIN( 8 ) const int valueLen, 
 						IN_RANGE( 3, 4 ) const int noCodeGroups )
@@ -167,7 +163,6 @@ int encodePKIUserValue( OUT_BUFFER( encValMaxLen, *encValLen ) char *encVal,
 			bitCount -= 8;
 			byteCount++;
 			}
-		ENSURES( bitCount >= 0 && bitCount < 8 );
 		ENSURES( byteCount >= 0 && byteCount < 64 );
 		}
 	*encValLen = length;
@@ -227,7 +222,7 @@ BOOLEAN isPKIUserValue( IN_BUFFER( encValLength ) const char *encVal,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 int decodePKIUserValue( OUT_BUFFER( valueMaxLen, *valueLen ) BYTE *value, 
 						IN_LENGTH_SHORT_MIN( 10 ) const int valueMaxLen, 
-						OUT_LENGTH_BOUNDED_Z( valueMaxLen ) int *valueLen,
+						OUT_LENGTH_SHORT_Z int *valueLen,
 						IN_BUFFER( encValLength ) const char *encVal, 
 						IN_LENGTH_SHORT const int encValLength )
 	{
@@ -331,7 +326,6 @@ int decodePKIUserValue( OUT_BUFFER( valueMaxLen, *valueLen ) BYTE *value,
 			bitCount -= 8;
 			byteCount++;
 			}
-		ENSURES( bitCount >= 0 && bitCount < 8 );
 		ENSURES( byteCount >= 0 && byteCount < 64 );
 		}
 
@@ -343,7 +337,7 @@ int decodePKIUserValue( OUT_BUFFER( valueMaxLen, *valueLen ) BYTE *value,
 		return( CRYPT_ERROR_BADDATA );
 
 	/* Return the decoded value to the caller */
-	ENSURES( byteCount >= 2 && byteCount - 1 <= valueMaxLen );
+	ENSURES( byteCount - 1 <= valueMaxLen );
 	memcpy( value, valBuf + 1, byteCount - 1 );
 	*valueLen = byteCount - 1;
 

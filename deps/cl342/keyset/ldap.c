@@ -34,7 +34,7 @@
 
 #ifdef USE_LDAP
 
-#if defined( _MSC_VER ) || defined( __GNUC__ )
+#if defined( _MSC_VER )
   #pragma message( "  Building with LDAP enabled." )
 #endif /* Warn with VC++ */
 
@@ -201,7 +201,6 @@ static LDAP_VALUE_FREE_LEN p_ldap_value_free_len = NULL;
 
 /* Dynamically load and unload any necessary LDAP libraries */
 
-CHECK_RETVAL \
 int dbxInitLDAP( void )
 	{
 #ifdef __WIN16__
@@ -303,7 +302,6 @@ void dbxEndLDAP( void )
 	}
 #else
 
-CHECK_RETVAL \
 int dbxInitLDAP( void )
 	{
 	return( CRYPT_OK );
@@ -339,9 +337,7 @@ static void assignFieldName( const CRYPT_USER cryptOwner, char *buffer,
 
 static void getErrorInfo( KEYSET_INFO *keysetInfoPtr, int ldapStatus )
 	{
-#ifdef USE_ERRMSGS
 	ERROR_INFO *errorInfo = &keysetInfoPtr->errorInfo;
-#endif /* USE_ERRMSGS */
 #ifndef __WINDOWS__ 
 	LDAP_INFO *ldapInfo = keysetInfoPtr->keysetLDAP;
 #endif /* !__WINDOWS__ */
@@ -770,7 +766,7 @@ static int getItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 							IN_FLAGS_Z( KEYMGMT ) const int flags )
 	{
 	LDAP_INFO *ldapInfo = keysetInfoPtr->keysetLDAP;
-	LDAPMessage *result DUMMY_INIT_PTR, *resultEntry;
+	LDAPMessage *result = DUMMY_INIT_PTR, *resultEntry;
 	BerElement *ber;
 	struct berval **valuePtrs;
 	char dn[ MAX_DN_STRINGSIZE + 8 ];
@@ -788,9 +784,6 @@ static int getItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 			  keyIDlength < MAX_ATTRIBUTE_SIZE );
 	REQUIRES( auxInfo == NULL && *auxInfoLength == 0 );
 	REQUIRES( flags >= KEYMGMT_FLAG_NONE && flags < KEYMGMT_FLAG_MAX );
-
-	/* Clear return value */
-	*iCryptHandle = CRYPT_ERROR;
 
 	/* Convert the DN into a null-terminated form */
 	if( keyIDlength > MAX_DN_STRINGSIZE - 1 )
@@ -835,17 +828,8 @@ static int getItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 								  IMESSAGE_DEV_CREATEOBJECT_INDIRECT,
 								  &createInfo, OBJECT_TYPE_CERTIFICATE );
 		if( cryptStatusOK( status ) )
-			{
-			status = iCryptVerifyID( createInfo.cryptHandle, keyIDtype, 
-									 keyID, keyIDlength );
-			if( cryptStatusError( status ) )
-				{
-				krnlSendNotifier( createInfo.cryptHandle, 
-								  IMESSAGE_DECREFCOUNT );
-				}
-			else
-				*iCryptHandle = createInfo.cryptHandle;
-			}
+			*iCryptHandle = createInfo.cryptHandle;
+
 		ldap_value_free_len( valuePtrs );
 		}
 	else
@@ -1072,6 +1056,7 @@ static int addCert( KEYSET_INFO *keysetInfoPtr,
 			clFree( "addCert", ldapMod[ ldapModIndex ]->mod_bvalues );
 		else
 			clFree( "addCert", ldapMod[ ldapModIndex ]->mod_values );
+		clFree( "addCert", ldapMod[ ldapModIndex ]->mod_values );
 		clFree( "addCert", ldapMod[ ldapModIndex ] );
 		}
 	if( ldapModIndex >= MAX_LDAP_ATTRIBUTES )

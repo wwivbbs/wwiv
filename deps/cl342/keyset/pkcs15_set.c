@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *					   cryptlib PKCS #15 Set-item Routines					*
-*						Copyright Peter Gutmann 1996-2011					*
+*						Copyright Peter Gutmann 1996-2007					*
 *																			*
 ****************************************************************************/
 
@@ -157,7 +157,7 @@ static int setItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 							IN_LENGTH_NAME_Z const int passwordLength,
 							IN_FLAGS( KEYMGMT ) const int flags )
 	{
-	CRYPT_CERTIFICATE iCryptCert DUMMY_INIT;
+	CRYPT_CERTIFICATE iCryptCert = DUMMY_INIT;
 	PKCS15_INFO *pkcs15info = keysetInfoPtr->keyData, *pkcs15infoPtr;
 	MESSAGE_DATA msgData;
 	BYTE iD[ CRYPT_MAX_HASHSIZE + 8 ];
@@ -407,23 +407,19 @@ static int setItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 		if( privkeyPresent )
 			{
 			char label[ CRYPT_MAX_TEXTSIZE + 8 ];
-			int labelLength;
 
 			setMessageData( &msgData, label, CRYPT_MAX_TEXTSIZE );
 			status = krnlSendMessage( cryptHandle, IMESSAGE_GETATTRIBUTE_S,
 									  &msgData, CRYPT_CTXINFO_LABEL );
 			if( cryptStatusError( status ) )
 				return( status );
-			labelLength = msgData.length;
 			if( findEntry( pkcs15info, noPkcs15objects, CRYPT_KEYID_NAME,
-						   label, labelLength, KEYMGMT_FLAG_NONE, 
-						   FALSE ) != NULL )
+						   msgData.data, msgData.length,
+						   KEYMGMT_FLAG_NONE, FALSE ) != NULL )
 				{
 				retExt( CRYPT_ERROR_DUPLICATE, 
 						( CRYPT_ERROR_DUPLICATE, KEYSET_ERRINFO, 
-						  "Item with label '%s' is already present",
-						  sanitiseString( label, CRYPT_MAX_TEXTSIZE, 
-										  labelLength ) ) );
+						  "Item with this label is already present" ) );
 				}
 			}
 
@@ -599,7 +595,7 @@ static int deleteItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 ****************************************************************************/
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int initPKCS15set( INOUT KEYSET_INFO *keysetInfoPtr )
+int initPKCS15set( KEYSET_INFO *keysetInfoPtr )
 	{
 	assert( isWritePtr( keysetInfoPtr, sizeof( KEYSET_INFO ) ) );
 

@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *					  cryptlib Encryption Context Routines					*
-*						Copyright Peter Gutmann 1992-2013					*
+*						Copyright Peter Gutmann 1992-2008					*
 *																			*
 ****************************************************************************/
 
@@ -43,50 +43,61 @@
 *																			*
 ****************************************************************************/
 
-/* Fix up potential alignment issues arising from the cloning of contexts */
+/* Initialise pointers to context-specific storage areas */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-static int fixupContextStorage( INOUT CONTEXT_INFO *contextInfoPtr, 
-								void *typeStorage, 
-								const void *subtypeStorage,
-								IN_LENGTH_SHORT const int originalOffset,
-								IN_LENGTH_SHORT const int storageAlignSize )
+static int initContextConvStorage( INOUT CONTEXT_INFO *contextInfoPtr, 
+								   IN_LENGTH_SHORT const int storageAlignSize )
 	{
-	int newOffset, stateStorageSize, status;
+	BOOLEAN isClonedContext = ( contextInfoPtr->ctxConv != NULL ) ? \
+							  TRUE : FALSE;
+	int diff = DUMMY_INIT, newDiff, stateStorageSize, status;
 
-	assert( isWritePtr( contextInfoPtr, sizeof( CONTEXT_INFO ) ) );
+	/* If this is a cloned context then the cloning operation may have moved 
+	   the relative position of the key data around in memory, since the 
+	   granularity of its allocation differs from that of the memory 
+	   allocator.  In order to determine whether we have to correct things, 
+	   we remember the old offset of the keying data from the context 
+	   storage and compare it to the new offset */
+	if( isClonedContext )
+		diff = ptr_diff( contextInfoPtr->ctxConv->key, 
+						 contextInfoPtr->ctxConv );
 
-	REQUIRES( originalOffset > 0 && originalOffset < MAX_INTLENGTH_SHORT );
-	REQUIRES( storageAlignSize > 0 && storageAlignSize < 128 );
+	/* Calculate the offsets of the context storage and keying data */
+	contextInfoPtr->ctxConv = ALIGN_CONTEXT_PTR( contextInfoPtr, CONV_INFO );
+	contextInfoPtr->ctxConv->key = \
+		ptr_align( ( BYTE * ) contextInfoPtr->ctxConv + sizeof( CONV_INFO ), 
+				   storageAlignSize );
+
+	/* If this is a newly-initialised context then we're done */
+	if( !isClonedContext )
+		return( CRYPT_OK );
 
 	/* Check whether the keying data offset has changed from the original to
 	   the cloned context */
-	newOffset = ptr_diff( subtypeStorage, typeStorage );
-	if( newOffset == originalOffset )
+	newDiff = ptr_diff( contextInfoPtr->ctxConv->key, 
+						contextInfoPtr->ctxConv );
+	if( newDiff == diff )
 		return( CRYPT_OK );
 
-	/* The start of the context subtype data within the context memory block 
-	   has changed due to the cloned memory block starting at a different 
-	   offset we need to move the subtype data do its new location */
-	status = \
-		contextInfoPtr->capabilityInfo->getInfoFunction( CAPABILITY_INFO_STATESIZE,
-												NULL, &stateStorageSize, 0 );
+	/* The start of the actual keying data within the keying data memory 
+	   block has changed due to the cloned memory block starting at a 
+	   different offset, we need to move the keying data do its new 
+	   location */
+	status = contextInfoPtr->capabilityInfo->getInfoFunction( CAPABILITY_INFO_STATESIZE,
+										NULL, &stateStorageSize, 0 );
 	if( cryptStatusError( status ) )
 		return( status );
-	memmove( ( BYTE * ) typeStorage + newOffset, 
-			 ( BYTE * ) typeStorage + originalOffset, stateStorageSize );
+	memmove( ( BYTE * ) contextInfoPtr->ctxConv + newDiff, 
+			 ( BYTE * ) contextInfoPtr->ctxConv + diff, stateStorageSize );
 
 	return( CRYPT_OK );
 	}
 
-/* Initialise pointers to context-specific storage areas */
-
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int initContextStorage( INOUT CONTEXT_INFO *contextInfoPtr, 
-							   IN_LENGTH_SHORT_Z const int storageAlignSize )
+							   IN_LENGTH_SHORT const int storageAlignSize )
 	{
-	int offset = 0;
-
 	assert( isWritePtr( contextInfoPtr, sizeof( CONTEXT_INFO ) ) );
 
 	REQUIRES( ( contextInfoPtr->type == CONTEXT_PKC && \
@@ -94,94 +105,29 @@ static int initContextStorage( INOUT CONTEXT_INFO *contextInfoPtr,
 			  ( contextInfoPtr->type != CONTEXT_PKC && \
 				storageAlignSize >= 4 && storageAlignSize <= 128 ) );
 
-	/* This function is used to initialise both pristine and cloned 
-	   contexts.  If it's the latter then the cloning operation may have 
-	   moved the relative position of the key data around in memory, since 
-	   the granularity of its allocation differs from that of the memory 
-	   allocator.  To handle this we use the following pattern:
-
-		Remember the old offset of the context subtype data from the 
-			context type data.
-		Set up the context type and subtype data pointers.
-		If this is a cloned context and the new offset of the context 
-			subtype data differs from the old one, fix up any alignment 
-			issues */
 	switch( contextInfoPtr->type )
 		{
 		case CONTEXT_CONV:
-			/* Remember the offset of the subtype data from the type data */
-			if( contextInfoPtr->ctxConv != NULL )
-				offset = ptr_diff( contextInfoPtr->ctxConv->key, 
-								   contextInfoPtr->ctxConv );
-
-			/* Calculate the offsets of the context storage and keying 
-			   data */
-			contextInfoPtr->ctxConv = \
-					ALIGN_CONTEXT_PTR( contextInfoPtr, CONV_INFO );
-			contextInfoPtr->ctxConv->key = \
-					ptr_align( ( BYTE * ) contextInfoPtr->ctxConv + sizeof( CONV_INFO ), 
-							   storageAlignSize );
-
-			/* If this is a new context, we're done */
-			if( offset == 0 )
-				return( CRYPT_OK );
-
-			/* It's a cloned context, fix up any potential alignment-
-			   related issues */
-			return( fixupContextStorage( contextInfoPtr, 
-										 contextInfoPtr->ctxConv, 
-										 contextInfoPtr->ctxConv->key,
-										 offset, storageAlignSize ) );
+			/* Handling storage for conventional contexts is sufficiently 
+			   complicated in the presence of context cloning that we do it 
+			   in a separate function */
+			return( initContextConvStorage( contextInfoPtr, storageAlignSize ) );
 
 		case CONTEXT_HASH:
-			/* Remember the offset of the subtype data from the type data */
-			if( contextInfoPtr->ctxHash != NULL )
-				offset = ptr_diff( contextInfoPtr->ctxHash->hashInfo,
-								   contextInfoPtr->ctxHash );
-
-			/* Calculate the offsets of the context storage and hash state 
-			   data */
 			contextInfoPtr->ctxHash = \
 					ALIGN_CONTEXT_PTR( contextInfoPtr, HASH_INFO );
 			contextInfoPtr->ctxHash->hashInfo = \
-					ptr_align( ( BYTE * ) contextInfoPtr->ctxHash + sizeof( HASH_INFO ), 
+					ptr_align( ( BYTE * ) contextInfoPtr->ctxConv + sizeof( HASH_INFO ), 
 							   storageAlignSize );
-
-			/* If this is a new context, we're done */
-			if( offset == 0 )
-				return( CRYPT_OK );
-
-			/* It's a cloned context, fix up any potential alignment-
-			   related issues */
-			return( fixupContextStorage( contextInfoPtr, 
-										 contextInfoPtr->ctxHash, 
-										 contextInfoPtr->ctxHash->hashInfo,
-										 offset, storageAlignSize ) );
+			break;
 
 		case CONTEXT_MAC:
-			/* Remember the offset of the subtype data from the type data */
-			if( contextInfoPtr->ctxMAC != NULL )
-				offset = ptr_diff( contextInfoPtr->ctxMAC->macInfo,
-								   contextInfoPtr->ctxMAC );
-
-			/* Calculate the offsets of the context storage and MAC state 
-			   data */
 			contextInfoPtr->ctxMAC = \
 					ALIGN_CONTEXT_PTR( contextInfoPtr, MAC_INFO );
 			contextInfoPtr->ctxMAC->macInfo = \
-					ptr_align( ( BYTE * ) contextInfoPtr->ctxMAC + sizeof( MAC_INFO ), 
+					ptr_align( ( BYTE * ) contextInfoPtr->ctxConv + sizeof( MAC_INFO ), 
 							   storageAlignSize );
-
-			/* If this is a new context, we're done */
-			if( offset == 0 )
-				return( CRYPT_OK );
-
-			/* It's a cloned context, fix up any potential alignment-
-			   related issues */
-			return( fixupContextStorage( contextInfoPtr, 
-										 contextInfoPtr->ctxMAC, 
-										 contextInfoPtr->ctxMAC->macInfo,
-										 offset, storageAlignSize ) );
+			break;
 
 		case CONTEXT_PKC:
 			contextInfoPtr->ctxPKC = \
@@ -302,90 +248,11 @@ static int checkContext( INOUT CONTEXT_INFO *contextInfoPtr,
 *																			*
 ****************************************************************************/
 
-/* Recover from an en/decryption failure.  This replaces the data being en/
-   decrypted/signed/verified with appropriate values to ensure that no 
-   plaintext or other sensitive information is leaked even if the caller
-   ignores the return code */
-
-STDC_NONNULL_ARG( ( 1 ) ) \
-static void sanitiseFailedData( INOUT_BUFFER_FIXED( dataLength ) void *data, 
-								IN_LENGTH_Z const int dataLength,
-								IN_MESSAGE const MESSAGE_TYPE message,
-								IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo )
-	{
-	void *dataPtr = data;
-	int length = dataLength, status;
-
-	assert( isWritePtr( data, dataLength ) );
-
-	REQUIRES_V( dataLength >= 0 && dataLength < MAX_INTLENGTH );
-	REQUIRES_V( message >= MESSAGE_CTX_ENCRYPT && message <= MESSAGE_CTX_HASH );
-	REQUIRES_V( cryptAlgo > CRYPT_ALGO_NONE && cryptAlgo < CRYPT_ALGO_LAST );
-
-	/* If it's a PKC algorithm then the input may be structured data, so we 
-	   have to extract the reference to the actual data being processed from
-	   it.  This gets a bit complicated because, depending on the point at 
-	   which the operation failed, the output-length may have been cleared 
-	   (alongside the output data).  To deal with this we use the maximum
-	   length possible for keyex, and either the full output length (if it's
-	   available) or at least the minimum permitted length for a DLP/ECDLP 
-	   operation (2 * SHA-1 size) if it's not */
-	if( isPkcAlgo( cryptAlgo ) )
-		{
-		if( isKeyxAlgo( cryptAlgo ) )
-			{
-			KEYAGREE_PARAMS *keyAgreeParams = ( KEYAGREE_PARAMS * ) data;
-
-			dataPtr = ( message == MESSAGE_CTX_ENCRYPT ) ? \
-					  keyAgreeParams->publicValue : keyAgreeParams->wrappedKey;
-			length = CRYPT_MAX_PKCSIZE;
-			}
-		else
-			{
-			if( isDlpAlgo( cryptAlgo ) || isEccAlgo( cryptAlgo ) )
-				{
-				DLP_PARAMS *dlpParams = ( DLP_PARAMS * ) data;
-
-				dataPtr = dlpParams->outParam;
-				length = max( dlpParams->outLen, 20 + 20 );
-				}
-			}
-		}
-
-	/* If it's a failed en/decrypt we replace the data with random noise.
-	   On encrypt this means that the plaintext is replaced with non-
-	   decryptable garbage that looks encrypted.  On decrypt this means 
-	   that the plaintext is also replaced with garbage, for decryption
-	   of data this doesn't really matter but for decryption of keying
-	   material it means that we continue with junk keys that don't reveal
-	   anything to an attacker */
-	if( message == MESSAGE_CTX_ENCRYPT || message == MESSAGE_CTX_DECRYPT )
-		{
-		MESSAGE_DATA msgData;
-
-		setMessageData( &msgData, dataPtr, length );
-		status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_GETATTRIBUTE_S,
-								  &msgData, CRYPT_IATTRIBUTE_RANDOM_NONCE );
-		if( cryptStatusError( status ) )
-			{
-			/* The attempt to fill with random garbage failed, fall back to
-			   fixed, but non-zero, data */
-			memset( dataPtr, '*', length );
-			}
-		}
-	else
-		{
-		/* It's a failed sign/signature verify, clear the output to ensure
-		   that nothing is leaked */
-		memset( dataPtr, 0, length );
-		}
-	}
-
 /* Encrypt a block of data */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int encryptDataConv( INOUT CONTEXT_INFO *contextInfoPtr, 
-							INOUT_BUFFER_FIXED( dataLength ) void *data, 
+							IN_BUFFER( dataLength ) void *data, 
 							IN_LENGTH_Z const int dataLength )
 	{
 	BYTE savedData[ ENCRYPT_CHECKSIZE + 8 ];
@@ -429,15 +296,17 @@ static int encryptDataConv( INOUT CONTEXT_INFO *contextInfoPtr,
 	   blocks if we're using a 64-bit block cipher in CBC mode in order to 
 	   reduce false positives */
 	if( !memcmp( savedData, data, savedDataLength ) )
+		{
+		zeroise( data, dataLength );
 		status = CRYPT_ERROR_FAILED;
-
+		}
 	zeroise( savedData, savedDataLength );
 	return( status );
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int encryptDataPKC( INOUT CONTEXT_INFO *contextInfoPtr, 
-						   INOUT_BUFFER_FIXED( dataLength ) void *data, 
+						   IN_BUFFER( dataLength ) void *data, 
 						   IN_LENGTH_PKC const int dataLength )
 	{
 	BYTE savedData[ ENCRYPT_CHECKSIZE + 8 ];
@@ -491,133 +360,20 @@ static int encryptDataPKC( INOUT CONTEXT_INFO *contextInfoPtr,
 
 		if( !memcmp( savedData, dlpParams->outParam, 
 					 ENCRYPT_CHECKSIZE ) )
+			{
+			zeroise( dlpParams->outParam, dlpParams->outLen );
 			status = CRYPT_ERROR_FAILED;
+			}
 		}
 	else
 		{
 		if( !memcmp( savedData, data, ENCRYPT_CHECKSIZE ) )
+			{
+			zeroise( data, dataLength );
 			status = CRYPT_ERROR_FAILED;
+			}
 		}
 	zeroise( savedData, ENCRYPT_CHECKSIZE );
-
-	return( status );
-	}
-
-/* Process an action message */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
-static int processActionMessage( INOUT CONTEXT_INFO *contextInfoPtr, 
-								 IN_MESSAGE const MESSAGE_TYPE message,
-								 INOUT_BUFFER_FIXED( dataLength ) void *data, 
-								 IN_LENGTH_PKC const int dataLength )
-	{
-	const CAPABILITY_INFO *capabilityInfoPtr = contextInfoPtr->capabilityInfo;
-	int status;
-
-	assert( isWritePtr( contextInfoPtr, sizeof( CONTEXT_INFO ) ) );
-	assert( ( message == MESSAGE_CTX_HASH && \
-			  ( dataLength == 0 || isReadPtr( data, dataLength ) ) ) || \
-			isWritePtr( data, dataLength ) );
-
-	REQUIRES( message >= MESSAGE_CTX_ENCRYPT && message <= MESSAGE_CTX_HASH );
-	REQUIRES( dataLength >= 0 && dataLength < MAX_INTLENGTH );
-
-	switch( message )
-		{
-		case MESSAGE_CTX_ENCRYPT:
-			if( contextInfoPtr->type == CONTEXT_PKC )
-				status = encryptDataPKC( contextInfoPtr, data, dataLength );
-			else
-				status = encryptDataConv( contextInfoPtr, data, dataLength );
-			if( cryptStatusError( status ) )
-				{
-				assert( DEBUG_WARN );
-				sanitiseFailedData( data, dataLength, message, 
-									capabilityInfoPtr->cryptAlgo );
-				}
-			break;
-
-		case MESSAGE_CTX_DECRYPT:
-			REQUIRES( !needsKey( contextInfoPtr ) );
-			REQUIRES( contextInfoPtr->type == CONTEXT_PKC || \
-					  ( isStreamCipher( capabilityInfoPtr->cryptAlgo ) || \
-					    !needsIV( contextInfoPtr->ctxConv->mode ) ||
-					    ( contextInfoPtr->flags & CONTEXT_FLAG_IV_SET ) ) );
-
-			status = contextInfoPtr->decryptFunction( contextInfoPtr,
-													  data, dataLength );
-			if( contextInfoPtr->type == CONTEXT_PKC && \
-				!( contextInfoPtr->flags & CONTEXT_FLAG_DUMMY ) )
-				clearTempBignums( contextInfoPtr->ctxPKC );
-			if( cryptStatusError( status ) )
-				{
-				assert( DEBUG_WARN );
-				sanitiseFailedData( data, dataLength, message, 
-									capabilityInfoPtr->cryptAlgo );
-				}
-			break;
-
-		case MESSAGE_CTX_SIGN:
-			status = capabilityInfoPtr->signFunction( contextInfoPtr,
-													  data, dataLength );
-			if( !( contextInfoPtr->flags & CONTEXT_FLAG_DUMMY ) )
-				clearTempBignums( contextInfoPtr->ctxPKC );
-			if( cryptStatusError( status ) )
-				{
-				assert( DEBUG_WARN );
-				sanitiseFailedData( data, dataLength, message, 
-									capabilityInfoPtr->cryptAlgo );
-				}
-			break;
-
-		case MESSAGE_CTX_SIGCHECK:
-			status = capabilityInfoPtr->sigCheckFunction( contextInfoPtr,
-														  data, dataLength );
-			if( !( contextInfoPtr->flags & CONTEXT_FLAG_DUMMY ) )
-				clearTempBignums( contextInfoPtr->ctxPKC );
-			if( cryptStatusError( status ) && !isDataError( status ) )
-				{
-				assert( DEBUG_WARN );
-				sanitiseFailedData( data, dataLength, message, 
-									capabilityInfoPtr->cryptAlgo );
-				}
-			break;
-
-		case MESSAGE_CTX_HASH:
-			REQUIRES( contextInfoPtr->type == CONTEXT_HASH || \
-					  contextInfoPtr->type == CONTEXT_MAC );
-
-			/* If we've already completed the hashing/MACing then we can't 
-			   continue */
-			if( contextInfoPtr->flags & CONTEXT_FLAG_HASH_DONE )
-				return( CRYPT_ERROR_COMPLETE );
-
-			status = capabilityInfoPtr->encryptFunction( contextInfoPtr,
-														 data, dataLength );
-			if( dataLength > 0 )
-				{
-				/* Usually the MAC initialisation happens when we load the 
-				   key, but if we've deleted the MAC value to process 
-				   another piece of data it'll happen on-demand so we have 
-				   to set the flag here */
-				contextInfoPtr->flags |= CONTEXT_FLAG_HASH_INITED;
-				}
-			else
-				{
-				/* Usually a hash of zero bytes is used to wrap up an
-				   ongoing hash operation, however it can also be the only 
-				   operation if a zero-byte string is being hashed.  To 
-				   handle this we have to set the inited flag as well as the 
-				   done flag */
-				contextInfoPtr->flags |= CONTEXT_FLAG_HASH_DONE | \
-										 CONTEXT_FLAG_HASH_INITED;
-				}
-			assert( cryptStatusOK( status ) );	/* Debug warning only */
-			break;
-
-		default:
-			retIntError();
-		}
 
 	return( status );
 	}
@@ -632,13 +388,13 @@ static int processActionMessage( INOUT CONTEXT_INFO *contextInfoPtr,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int contextMessageFunction( INOUT TYPECAST( CONTEXT_INFO * ) \
-										void *objectInfoPtr,
+									void *objectInfoPtr,
 								   IN_MESSAGE const MESSAGE_TYPE message,
 								   void *messageDataPtr,
 								   IN_INT_Z const int messageValue )
 	{
 	CONTEXT_INFO *contextInfoPtr = ( CONTEXT_INFO * ) objectInfoPtr;
-	const CAPABILITY_INFO *capabilityInfoPtr = contextInfoPtr->capabilityInfo;
+	const CAPABILITY_INFO *capabilityInfo = contextInfoPtr->capabilityInfo;
 	int status;
 
 	assert( isWritePtr( objectInfoPtr, sizeof( CONTEXT_INFO ) ) );
@@ -654,13 +410,13 @@ static int contextMessageFunction( INOUT TYPECAST( CONTEXT_INFO * ) \
 		REQUIRES( messageDataPtr == NULL && messageValue == 0 );
 
 		/* Perform any algorithm-specific shutdown */
-		if( capabilityInfoPtr->endFunction != NULL )
-			capabilityInfoPtr->endFunction( contextInfoPtr );
+		if( capabilityInfo->endFunction != NULL )
+			capabilityInfo->endFunction( contextInfoPtr );
 
 		/* Perform context-type-specific cleanup */
 		if( contextType == CONTEXT_PKC )
-			endContextBignums( contextInfoPtr->ctxPKC,
-							   contextInfoPtr->flags );
+			freeContextBignums( contextInfoPtr->ctxPKC,
+								contextInfoPtr->flags );
 
 		return( CRYPT_OK );
 		}
@@ -712,8 +468,89 @@ static int contextMessageFunction( INOUT TYPECAST( CONTEXT_INFO * ) \
 	/* Process action messages */
 	if( isActionMessage( message ) )
 		{
-		return( processActionMessage( contextInfoPtr, message, 
-									  messageDataPtr, messageValue ) );
+		assert( ( message == MESSAGE_CTX_HASH && \
+				  ( messageValue == 0 || \
+					isReadPtr( messageDataPtr, messageValue ) ) ) || \
+				isWritePtr( messageDataPtr, messageValue ) );
+
+		switch( message )
+			{
+			case MESSAGE_CTX_ENCRYPT:
+				if( contextInfoPtr->type == CONTEXT_PKC )
+					status = encryptDataPKC( contextInfoPtr, messageDataPtr, 
+											 messageValue );
+				else
+					status = encryptDataConv( contextInfoPtr, messageDataPtr, 
+											  messageValue );
+				assert( cryptStatusOK( status ) );	/* Debug warning only */
+				break;
+
+			case MESSAGE_CTX_DECRYPT:
+				REQUIRES( !needsKey( contextInfoPtr ) );
+				REQUIRES( contextInfoPtr->type == CONTEXT_PKC || \
+						  ( isStreamCipher( capabilityInfo->cryptAlgo ) || \
+						    !needsIV( contextInfoPtr->ctxConv->mode ) ||
+						    ( contextInfoPtr->flags & CONTEXT_FLAG_IV_SET ) ) );
+
+				status = contextInfoPtr->decryptFunction( contextInfoPtr,
+											messageDataPtr, messageValue );
+				if( contextInfoPtr->type == CONTEXT_PKC && \
+					!( contextInfoPtr->flags & CONTEXT_FLAG_DUMMY ) )
+					clearTempBignums( contextInfoPtr->ctxPKC );
+				assert( cryptStatusOK( status ) );	/* Debug warning only */
+				break;
+
+			case MESSAGE_CTX_SIGN:
+				status = capabilityInfo->signFunction( contextInfoPtr,
+											messageDataPtr, messageValue );
+				if( !( contextInfoPtr->flags & CONTEXT_FLAG_DUMMY ) )
+					clearTempBignums( contextInfoPtr->ctxPKC );
+				assert( cryptStatusOK( status ) );	/* Debug warning only */
+				break;
+
+			case MESSAGE_CTX_SIGCHECK:
+				status = capabilityInfo->sigCheckFunction( contextInfoPtr,
+											messageDataPtr, messageValue );
+				if( !( contextInfoPtr->flags & CONTEXT_FLAG_DUMMY ) )
+					clearTempBignums( contextInfoPtr->ctxPKC );
+				break;
+
+			case MESSAGE_CTX_HASH:
+				REQUIRES( contextInfoPtr->type == CONTEXT_HASH || \
+						  contextInfoPtr->type == CONTEXT_MAC );
+
+				/* If we've already completed the hashing/MACing we can't
+				   continue */
+				if( contextInfoPtr->flags & CONTEXT_FLAG_HASH_DONE )
+					return( CRYPT_ERROR_COMPLETE );
+
+				status = capabilityInfo->encryptFunction( contextInfoPtr,
+											messageDataPtr, messageValue );
+				if( messageValue > 0 )
+					{
+					/* Usually the MAC initialisation happens when we load 
+					   the key, but if we've deleted the MAC value to process 
+					   another piece of data it'll happen on-demand so we 
+					   have to set the flag here */
+					contextInfoPtr->flags |= CONTEXT_FLAG_HASH_INITED;
+					}
+				else
+					{
+					/* Usually a hash of zero bytes is used to wrap up an
+					   ongoing hash operation, however it can also be the 
+					   only operation if a zero-byte string is being hashed.
+					   To handle this we have to set the inited flag as well
+					   as the done flag */
+					contextInfoPtr->flags |= CONTEXT_FLAG_HASH_DONE | \
+											 CONTEXT_FLAG_HASH_INITED;
+					}
+				assert( cryptStatusOK( status ) );	/* Debug warning only */
+				break;
+
+			default:
+				retIntError();
+			}
+		return( status );
 		}
 
 	/* Process messages that compare object properties or clone the object */
@@ -739,13 +576,13 @@ static int contextMessageFunction( INOUT TYPECAST( CONTEXT_INFO * ) \
 				if( !( contextInfoPtr->flags & CONTEXT_FLAG_HASH_DONE ) )
 					return( CRYPT_ERROR_INCOMPLETE );
 				if( contextInfoPtr->type == CONTEXT_HASH && \
-					msgData->length == capabilityInfoPtr->blockSize && \
+					msgData->length == capabilityInfo->blockSize && \
 					compareDataConstTime( msgData->data, 
 										  contextInfoPtr->ctxHash->hash,
 										  msgData->length ) )
 					return( CRYPT_OK );
 				if( contextInfoPtr->type == CONTEXT_MAC && \
-					msgData->length == capabilityInfoPtr->blockSize && \
+					msgData->length == capabilityInfo->blockSize && \
 					compareDataConstTime( msgData->data, 
 										  contextInfoPtr->ctxMAC->mac,
 										  msgData->length ) )
@@ -760,7 +597,7 @@ static int contextMessageFunction( INOUT TYPECAST( CONTEXT_INFO * ) \
 
 				if( contextInfoPtr->ctxConv->mode != CRYPT_MODE_GCM )
 					return( CRYPT_ERROR_NOTAVAIL );
-				status = capabilityInfoPtr->getInfoFunction( CAPABILITY_INFO_ICV, 
+				status = capabilityInfo->getInfoFunction( CAPABILITY_INFO_ICV, 
 									contextInfoPtr, icv, msgData->length );
 				if( cryptStatusError( status ) )
 					return( status );
@@ -837,7 +674,7 @@ static int contextMessageFunction( INOUT TYPECAST( CONTEXT_INFO * ) \
 				/* We've been cloned, update the object handle and internal 
 				   state pointers */
 				contextInfoPtr->objectHandle = iCryptHandle;
-				status = capabilityInfoPtr->getInfoFunction( CAPABILITY_INFO_STATEALIGNTYPE,
+				status = capabilityInfo->getInfoFunction( CAPABILITY_INFO_STATEALIGNTYPE,
 											NULL, &storageAlignSize, 0 );
 				if( cryptStatusError( status ) )
 					return( status );
@@ -901,14 +738,14 @@ static int contextMessageFunction( INOUT TYPECAST( CONTEXT_INFO * ) \
 		{
 		MESSAGE_DATA msgData;
 		BYTE iv[ CRYPT_MAX_IVSIZE + 8 ];
-		const int ivSize = capabilityInfoPtr->blockSize;
+		const int ivSize = capabilityInfo->blockSize;
 
 		REQUIRES( contextInfoPtr->type == CONTEXT_CONV );
 
 		/* If it's not a conventional encryption context or it's a mode that
 		   doesn't use an IV then the generate IV operation is meaningless */
 		if( !needsIV( contextInfoPtr->ctxConv->mode ) || \
-			isStreamCipher( capabilityInfoPtr->cryptAlgo ) )
+			isStreamCipher( capabilityInfo->cryptAlgo ) )
 			return( CRYPT_ERROR_NOTAVAIL );
 
 		/* Generate a new IV and load it */
@@ -916,7 +753,7 @@ static int contextMessageFunction( INOUT TYPECAST( CONTEXT_INFO * ) \
 		status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_GETATTRIBUTE_S,
 								  &msgData, CRYPT_IATTRIBUTE_RANDOM_NONCE );
 		if( cryptStatusOK( status ) )
-			status = capabilityInfoPtr->initParamsFunction( contextInfoPtr,
+			status = capabilityInfo->initParamsFunction( contextInfoPtr,
 												KEYPARAM_IV, iv, ivSize );
 		return( status );
 		}
@@ -991,12 +828,14 @@ int createContextFromCapability( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 			if( capabilityInfoPtr->encryptFunction != NULL || \
 				capabilityInfoPtr->encryptCBCFunction != NULL || \
 				capabilityInfoPtr->encryptCFBFunction != NULL || \
+				capabilityInfoPtr->encryptOFBFunction != NULL || \
 				capabilityInfoPtr->encryptGCMFunction != NULL )
 				actionFlags |= MK_ACTION_PERM( MESSAGE_CTX_ENCRYPT,
 											   ACTION_PERM_ALL );
 			if( capabilityInfoPtr->decryptFunction != NULL || \
 				capabilityInfoPtr->decryptCBCFunction != NULL || \
 				capabilityInfoPtr->decryptCFBFunction != NULL || \
+				capabilityInfoPtr->decryptOFBFunction != NULL || \
 				capabilityInfoPtr->decryptGCMFunction != NULL )
 				actionFlags |= MK_ACTION_PERM( MESSAGE_CTX_DECRYPT,
 											   ACTION_PERM_ALL );
@@ -1062,38 +901,23 @@ int createContextFromCapability( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 	/* Create the context and initialise the variables in it.  The storage is
 	   allocated as follows:
 
-		+-----------+						  --+
-		|			|							|
-		| CTX_INFO	| ---- typeInfo ----+		|
-		|			|					|		| CONTEXT_INFO_ALIGN_SIZE
-		+-----------+					|		|
-		|###########| Pad to 8-byte boundary	|
-		+-----------+ <-----------------+	  --+
-		|			|							|
-		| typeInfo	| -- subtypeInfo ---+		| storageSize
-		|			|					|		|
-		+-----------+					|	  --+
+		+-----------+					  --+
+		|			|						|
+		| CTX_INFO	| --- ctxConv --+		|
+		|			|				|		| CONTEXT_INFO_ALIGN_SIZE
+		+-----------+				|		|
+		|###########| Pad to 8-byte boundary|
+		+-----------+ <-------------+	  --+
+		|			|						|
+		| CONV_INFO	| ---- key -----+		| storageSize
+		|			|				|		|
+		+-----------+				|	  --+
 		|###########| Pad to ALIGNSIZE boundary
-		+-----------+ <-----------------+	  --- Aligned by initContextStorage()
+		+-----------+ <-------------+	  --- Aligned by initContextStorage()
 		|			|
-		|subtypeInfo|
+		|	Key		|
 		|			|
 		+-----------+ 
-
-	   In the above the typeInfo is one of { CONV_INFO, PKC_INFO, HASH_INFO,
-	   MAC_INFO, or GENERIC_INFO }, and the subtypeInfo is the information
-	   associated with the type, for example keying data for a CONV_INFO.
-
-	   Note that the typeInfo and subtypeInfo have different alignment 
-	   handling, the typeInfo is aligned relative to the CTX_INFO at a 
-	   multiple of CONTEXT_INFO_ALIGN_SIZE bytes and the subtypeInfo is 
-	   aligned at an absolute memory postion at a multiple of 
-	   CAPABILITY_INFO_STATEALIGNTYPE bytes.  The latter is necessary 
-	   because the subtypeInfo holds low-level algorithm state information 
-	   that can require specific memory alignment when used with exotic 
-	   instruction modes like SIMD/vector or crypto hardware-assist 
-	   operations.  This leads to some complications when cloning contexts,
-	   see the comments in initContextStorage() for details.
 
 	   Since we don't know at this point what the alignment requirements for
 	   the key storage will be because we don't know what contextInfoPtr 
@@ -1171,8 +995,8 @@ int createContextFromCapability( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 			{
 			/* There's no CBC mode available, fall back to increasingly
 			   sub-optimal choices of mode.  For stream ciphers the only 
-			   available mode is (pseudo-)CFB so this isn't a problem, but 
-			   for block ciphers it'll cause problems because most crypto 
+			   available mode is OFB so this isn't a problem, but for 
+			   block ciphers it'll cause problems because most crypto 
 			   protocols only allow CBC mode.  In addition we don't fall
 			   back to GCM, which is a sufficiently unusual mode that we
 			   require it to be explicitly enabled by the user */
@@ -1186,11 +1010,22 @@ int createContextFromCapability( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 				}
 			else
 				{
-				contextInfoPtr->ctxConv->mode = CRYPT_MODE_ECB;
-				contextInfoPtr->encryptFunction = \
-								capabilityInfoPtr->encryptFunction;
-				contextInfoPtr->decryptFunction = \
-								capabilityInfoPtr->decryptFunction;
+				if( capabilityInfoPtr->encryptOFBFunction != NULL )
+					{
+					contextInfoPtr->ctxConv->mode = CRYPT_MODE_OFB;
+					contextInfoPtr->encryptFunction = \
+									capabilityInfoPtr->encryptOFBFunction;
+					contextInfoPtr->decryptFunction = \
+									capabilityInfoPtr->decryptOFBFunction;
+					}
+				else
+					{
+					contextInfoPtr->ctxConv->mode = CRYPT_MODE_ECB;
+					contextInfoPtr->encryptFunction = \
+									capabilityInfoPtr->encryptFunction;
+					contextInfoPtr->decryptFunction = \
+									capabilityInfoPtr->decryptFunction;
+					}
 				}
 			}
 		}
@@ -1209,76 +1044,23 @@ int createContextFromCapability( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 		{
 		/* Set up the key read/write functions */
 		initKeyID( contextInfoPtr );
-		initPubKeyRead( contextInfoPtr );
-		initPrivKeyRead( contextInfoPtr );
+		initKeyRead( contextInfoPtr );
 		initKeyWrite( contextInfoPtr );
 		}
 
-	/* The following postconditions are too complex to check via simple 
-	   ENSURES() statements, so we have to do it with explicit code */
-	switch( contextInfoPtr->type )
-		{
-		case CONTEXT_CONV:
-			ENSURES( contextInfoPtr->loadKeyFunction != NULL && \
-					 contextInfoPtr->generateKeyFunction != NULL );
-			ENSURES( contextInfoPtr->encryptFunction != NULL && \
-					 contextInfoPtr->decryptFunction != NULL );
-			break;
-
-		case CONTEXT_PKC:
-			ENSURES( contextInfoPtr->loadKeyFunction != NULL && \
-					 contextInfoPtr->generateKeyFunction != NULL );
-			switch( cryptAlgo )
-				{
-				case CRYPT_ALGO_RSA:
-					/* RSA can get a bit complicated because the same 
-					   operation is used for both sign/verify and decrypt/
-					   encrypt, and if the context doesn't support 
-					   encryption (for example because it's tied to a 
-					   signing-only hardware device) then the absence of an 
-					   encrypt/decrypt capability isn't an error */
-					ENSURES( ( contextInfoPtr->encryptFunction != NULL && \
-							   contextInfoPtr->decryptFunction != NULL ) || \
-							 ( capabilityInfoPtr->signFunction != NULL && \
-							   capabilityInfoPtr->sigCheckFunction != NULL ) );
-					break;
-
-				case CRYPT_ALGO_DSA:
-				case CRYPT_ALGO_ECDSA:
-					ENSURES( capabilityInfoPtr->signFunction != NULL && \
-							 capabilityInfoPtr->sigCheckFunction != NULL );
-					break;
-
-				default:
-					ENSURES( contextInfoPtr->encryptFunction != NULL && \
-							 contextInfoPtr->decryptFunction != NULL );
-				}
-			ENSURES( contextInfoPtr->ctxPKC->writePublicKeyFunction != NULL && \
-					 contextInfoPtr->ctxPKC->writePrivateKeyFunction != NULL && \
-					 contextInfoPtr->ctxPKC->readPublicKeyFunction != NULL && \
-					 contextInfoPtr->ctxPKC->readPrivateKeyFunction != NULL );
-			break;
-
-		case CONTEXT_HASH:
-			ENSURES( contextInfoPtr->encryptFunction != NULL && \
-					 contextInfoPtr->decryptFunction != NULL );
-			break;
-
-		case CONTEXT_MAC:
-			ENSURES( contextInfoPtr->loadKeyFunction != NULL && \
-					 contextInfoPtr->generateKeyFunction != NULL );
-			ENSURES( contextInfoPtr->encryptFunction != NULL && \
-					 contextInfoPtr->decryptFunction != NULL );
-			break;
-
-		case CONTEXT_GENERIC:
-			ENSURES( contextInfoPtr->loadKeyFunction != NULL && \
-					 contextInfoPtr->generateKeyFunction != NULL );
-			break;
-
-		default:
-			retIntError();
-		}
+	REQUIRES( contextInfoPtr->type == CONTEXT_HASH || \
+			  ( contextInfoPtr->loadKeyFunction != NULL && \
+				contextInfoPtr->generateKeyFunction != NULL ) );
+	REQUIRES( ( cryptAlgo == CRYPT_ALGO_DSA || \
+				cryptAlgo == CRYPT_ALGO_ECDSA || \
+				isSpecialAlgo( cryptAlgo ) ) || \
+			  ( contextInfoPtr->encryptFunction != NULL && \
+				contextInfoPtr->decryptFunction != NULL ) );
+	REQUIRES( contextInfoPtr->type != CONTEXT_PKC || \
+			  ( contextInfoPtr->ctxPKC->writePublicKeyFunction != NULL && \
+				contextInfoPtr->ctxPKC->writePrivateKeyFunction != NULL && \
+				contextInfoPtr->ctxPKC->readPublicKeyFunction != NULL && \
+				contextInfoPtr->ctxPKC->readPrivateKeyFunction != NULL ) );
 
 	/* If this is a dummy object remember that it's just a placeholder with 
 	   actions handled externally.  If it's a persistent object (backed by a 

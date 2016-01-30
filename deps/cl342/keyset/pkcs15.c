@@ -19,6 +19,20 @@
   #include "keyset/pkcs15.h"
 #endif /* Compiler-specific includes */
 
+/* Each PKCS #15 keyset can contain information for multiple personalities 
+   (although it's extremely unlikely to contain more than one or two), we 
+   allow a maximum of MAX_PKCS15_OBJECTS per keyset in order to discourage 
+   them from being used as general-purpose public-key keysets, which they're 
+   not supposed to be.  A setting of 16 objects consumes ~2K of memory 
+   (16 x ~128) and seems like a sensible upper bound so we choose that as 
+   the limit */
+
+#ifdef CONFIG_CONSERVE_MEMORY
+  #define MAX_PKCS15_OBJECTS	8
+#else
+  #define MAX_PKCS15_OBJECTS	16
+#endif /* CONFIG_CONSERVE_MEMORY */
+
 #ifdef USE_PKCS15
 
 /* OID information used to read the header of a PKCS #15 keyset.  Since the 
@@ -48,106 +62,6 @@ static const OID_INFO FAR_BSS keyFilePKCS15OIDinfo[] = {
 *																			*
 ****************************************************************************/
 
-/* Sanity-check the PKCS #15 information state */
-
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
-static BOOLEAN sanityCheck( const PKCS15_INFO *pkcs15infoPtr )
-	{
-	assert( isReadPtr( pkcs15infoPtr, sizeof( PKCS15_INFO ) ) );
-
-	/* Check that the basic fields are in order.  The label field can be 
-	   empty for standalone certificates or public keys, which don't 
-	   usually have a label associated with the key */
-	if( pkcs15infoPtr->type <= PKCS15_SUBTYPE_NONE || \
-		pkcs15infoPtr->type >= PKCS15_SUBTYPE_LAST || \
-		pkcs15infoPtr->index < 0 || \
-		pkcs15infoPtr->index >= MAX_INTLENGTH )
-		return( FALSE );
-	if( pkcs15infoPtr->labelLength < 0 || \
-		pkcs15infoPtr->labelLength > CRYPT_MAX_TEXTSIZE )
-		return( FALSE );
-	if( pkcs15infoPtr->type == PKCS15_SUBTYPE_SECRETKEY || \
-		pkcs15infoPtr->type == PKCS15_SUBTYPE_DATA )
-		{
-		if( pkcs15infoPtr->iDlength != 0 || \
-			pkcs15infoPtr->keyIDlength != 0 )
-			return( FALSE );
-		}
-	else
-		{
-		if( pkcs15infoPtr->iDlength <= 0 || \
-			pkcs15infoPtr->iDlength > CRYPT_MAX_HASHSIZE || \
-			pkcs15infoPtr->keyIDlength <= 0 || \
-			pkcs15infoPtr->keyIDlength > CRYPT_MAX_HASHSIZE )
-			return( FALSE );
-		}
-
-	/* Check that the ID fields have reasonable values.  This is a general 
-	   check for reasonable values that's more targeted at catching 
-	   inadvertent memory corruption than a strict sanity check */
-	if( pkcs15infoPtr->iAndSIDlength < 0 || \
-		pkcs15infoPtr->iAndSIDlength > KEYID_SIZE || \
-		pkcs15infoPtr->subjectNameIDlength < 0 || \
-		pkcs15infoPtr->subjectNameIDlength > KEYID_SIZE || \
-		pkcs15infoPtr->issuerNameIDlength < 0 || \
-		pkcs15infoPtr->issuerNameIDlength > KEYID_SIZE )
-		return( FALSE );
-	if( pkcs15infoPtr->pgp2KeyIDlength < 0 || \
-		pkcs15infoPtr->pgp2KeyIDlength > PGP_KEYID_SIZE || \
-		pkcs15infoPtr->openPGPKeyIDlength < 0 || \
-		pkcs15infoPtr->openPGPKeyIDlength > PGP_KEYID_SIZE )
-		return( FALSE );
-
-	/* Check that the key/certificate data fields have reasonable values.  
-	   This is a general check for reasonable values that's more targeted 
-	   at catching inadvertent memory corruption than a strict sanity 
-	   check */
-	if( pkcs15infoPtr->pubKeyData != NULL )
-		{
-		if( pkcs15infoPtr->pubKeyDataSize <= 0 || \
-			pkcs15infoPtr->pubKeyDataSize > MAX_INTLENGTH_SHORT || \
-			pkcs15infoPtr->pubKeyOffset <= 0 || \
-			pkcs15infoPtr->pubKeyOffset >= pkcs15infoPtr->pubKeyDataSize )
-			return( FALSE );
-		}
-	else
-		{
-		if( pkcs15infoPtr->pubKeyDataSize != 0 || \
-			pkcs15infoPtr->pubKeyOffset != 0 )
-			return( FALSE );
-		}
-	if( pkcs15infoPtr->privKeyData != NULL )
-		{
-		if( pkcs15infoPtr->privKeyDataSize <= 0 || \
-			pkcs15infoPtr->privKeyDataSize > MAX_INTLENGTH_SHORT || \
-			pkcs15infoPtr->privKeyOffset <= 0 || \
-			pkcs15infoPtr->privKeyOffset >= pkcs15infoPtr->privKeyDataSize )
-			return( FALSE );
-		}
-	else
-		{
-		if( pkcs15infoPtr->privKeyDataSize != 0 || \
-			pkcs15infoPtr->privKeyOffset != 0 )
-			return( FALSE );
-		}
-	if( pkcs15infoPtr->certData != NULL )
-		{
-		if( pkcs15infoPtr->certDataSize <= 0 || \
-			pkcs15infoPtr->certDataSize > MAX_INTLENGTH_SHORT || \
-			pkcs15infoPtr->certOffset <= 0 || \
-			pkcs15infoPtr->certOffset >= pkcs15infoPtr->certDataSize )
-			return( FALSE );
-		}
-	else
-		{
-		if( pkcs15infoPtr->certDataSize != 0 || \
-			pkcs15infoPtr->certOffset != 0 )
-			return( FALSE );
-		}
-
-	return( TRUE );
-	}
-
 /* Get the hash of various certificate name fields */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3, 5 ) ) \
@@ -155,7 +69,7 @@ int getCertID( IN_HANDLE const CRYPT_HANDLE iCryptHandle,
 			   IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE nameType, 
 			   OUT_BUFFER( nameIdMaxLen, *nameIdLen ) BYTE *nameID, 
 			   IN_LENGTH_SHORT_MIN( KEYID_SIZE ) const int nameIdMaxLen,
-			   OUT_LENGTH_BOUNDED_Z( nameIdMaxLen ) int *nameIdLen )
+			   OUT_LENGTH_SHORT_Z int *nameIdLen )
 	{
 	HASHFUNCTION_ATOMIC hashFunctionAtomic;
 	DYNBUF idDB;
@@ -198,8 +112,7 @@ int getCertID( IN_HANDLE const CRYPT_HANDLE iCryptHandle,
 CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 1 ) ) \
 PKCS15_INFO *findEntry( IN_ARRAY( noPkcs15objects ) const PKCS15_INFO *pkcs15info,
 						IN_LENGTH_SHORT const int noPkcs15objects,
-						IN_KEYID_OPT const CRYPT_KEYID_TYPE keyIDtype,
-							/* CRYPT_KEYIDEX_ID maps to CRYPT_KEYID_NONE */
+						IN_KEYID const CRYPT_KEYID_TYPE keyIDtype,
 						IN_BUFFER_OPT( keyIDlength ) const void *keyID, 
 						IN_LENGTH_KEYID_Z const int keyIDlength,
 						IN_FLAGS_Z( KEYMGMT ) const int requestedUsage,
@@ -218,9 +131,9 @@ PKCS15_INFO *findEntry( IN_ARRAY( noPkcs15objects ) const PKCS15_INFO *pkcs15inf
 				keyIDtype == CRYPT_KEYID_URI || \
 				keyIDtype == CRYPT_IKEYID_KEYID || \
 				keyIDtype == CRYPT_IKEYID_PGPKEYID || \
-				keyIDtype == CRYPT_IKEYID_SUBJECTID || \
 				keyIDtype == CRYPT_IKEYID_ISSUERID || \
-				keyIDtype == CRYPT_KEYIDEX_ID );
+				keyIDtype == CRYPT_KEYIDEX_ID || \
+				keyIDtype == CRYPT_KEYIDEX_SUBJECTNAMEID );
 	REQUIRES_N( ( keyID == NULL && keyIDlength == 0 ) || \
 				( keyID != NULL && \
 				  keyIDlength >= MIN_NAME_LENGTH && \
@@ -248,8 +161,6 @@ PKCS15_INFO *findEntry( IN_ARRAY( noPkcs15objects ) const PKCS15_INFO *pkcs15inf
 		/* If there's no entry at this position, continue */
 		if( pkcs15infoPtr->type == PKCS15_SUBTYPE_NONE )
 			continue;
-
-		ENSURES_N( sanityCheck( pkcs15infoPtr ) );
 
 		/* If there's an explicit usage requested, make sure that the key 
 		   usage matches this.  This can get slightly complex because the 
@@ -307,13 +218,6 @@ PKCS15_INFO *findEntry( IN_ARRAY( noPkcs15objects ) const PKCS15_INFO *pkcs15inf
 					return( ( PKCS15_INFO * ) pkcs15infoPtr );
 				break;
 
-			case CRYPT_IKEYID_SUBJECTID:
-				if( matchID( pkcs15infoPtr->subjectNameID,
-							 pkcs15infoPtr->subjectNameIDlength, keyID,
-							 keyIDlength ) )
-					return( ( PKCS15_INFO * ) pkcs15infoPtr );
-				break;
-
 			case CRYPT_IKEYID_ISSUERID:
 				if( matchID( pkcs15infoPtr->iAndSID,
 							 pkcs15infoPtr->iAndSIDlength, keyID,
@@ -324,6 +228,13 @@ PKCS15_INFO *findEntry( IN_ARRAY( noPkcs15objects ) const PKCS15_INFO *pkcs15inf
 			case CRYPT_KEYIDEX_ID:
 				if( matchID( pkcs15infoPtr->iD, pkcs15infoPtr->iDlength,
 							 keyID, keyIDlength ) )
+					return( ( PKCS15_INFO * ) pkcs15infoPtr );
+				break;
+
+			case CRYPT_KEYIDEX_SUBJECTNAMEID:
+				if( matchID( pkcs15infoPtr->subjectNameID,
+							 pkcs15infoPtr->subjectNameIDlength, keyID,
+							 keyIDlength ) )
 					return( ( PKCS15_INFO * ) pkcs15infoPtr );
 				break;
 
@@ -362,7 +273,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 PKCS15_INFO *findFreeEntry( IN_ARRAY( noPkcs15objects ) \
 								const PKCS15_INFO *pkcs15info,
 							IN_LENGTH_SHORT const int noPkcs15objects, 
-							OUT_OPT_INDEX( noPkcs15objects ) int *index )
+							OUT_OPT_LENGTH_SHORT_Z int *index )
 	{
 	int i;
 
@@ -425,8 +336,8 @@ void pkcs15freeEntry( INOUT PKCS15_INFO *pkcs15info )
 	}
 
 STDC_NONNULL_ARG( ( 1 ) ) \
-void pkcs15Free( INOUT_ARRAY( noPkcs15objects ) PKCS15_INFO *pkcs15info, 
-				 IN_RANGE( 1, MAX_PKCS15_OBJECTS ) const int noPkcs15objects )
+static void pkcs15Free( INOUT_ARRAY( noPkcs15objects ) PKCS15_INFO *pkcs15info, 
+						IN_RANGE( 1, MAX_PKCS15_OBJECTS ) const int noPkcs15objects )
 	{
 	int i;
 
@@ -502,8 +413,10 @@ static int readPkcs15EncapsHeader( INOUT STREAM *stream,
 	   AlgorithmIdentifier */
 	readUniversal( stream );
 	status = readUniversal( stream );
-	if( checkStatusPeekTag( stream, status, tag ) && \
-		tag == MAKE_CTAG( 1 ) )
+	if( cryptStatusError( status ) )
+		return( status );
+	status = tag = peekTag( stream );
+	if( !cryptStatusError( status ) && tag == MAKE_CTAG( 1 ) )
 		status = readUniversal( stream );
 	if( cryptStatusError( status ) )
 		return( status );
@@ -598,7 +511,7 @@ static int readPkcs15header( INOUT STREAM *stream,
 	   position */
 	currentPos = stell( stream ) - sizeofShortInteger( 0 );
 	if( endPos < 16 + MIN_OBJECT_SIZE || \
-		currentPos + endPos >= MAX_BUFFER_SIZE )
+		currentPos + endPos >= MAX_INTLENGTH )
 		{
 		retExt( CRYPT_ERROR_BADDATA, 
 				( CRYPT_ERROR_BADDATA, errorInfo, 
@@ -608,23 +521,12 @@ static int readPkcs15header( INOUT STREAM *stream,
 
 	/* Skip the key management information if there is any and read the 
 	   inner wrapper */
-	if( checkStatusPeekTag( stream, status, value ) && \
-		value == MAKE_CTAG( 0 ) )
-		{
-		status = readUniversal( stream );
-		if( cryptStatusError( status ) )
-			return( status );
-		}
-	status = readLongSequence( stream, NULL );
+	status = value = peekTag( stream );
 	if( cryptStatusError( status ) )
 		return( status );
-
-	/* Make sure that, after skipping the key management data, there's still 
-	   some payload left */
-	if( stell( stream ) >= endPos - MIN_OBJECT_SIZE )
-		return( CRYPT_ERROR_BADDATA );
-
-	return( CRYPT_OK );
+	if( value == MAKE_CTAG( 0 ) )
+		readUniversal( stream );
+	return( readLongSequence( stream, NULL ) );
 	}
 
 /****************************************************************************
@@ -644,7 +546,7 @@ static int initFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 	{
 	PKCS15_INFO *pkcs15info;
 	STREAM *stream = &keysetInfoPtr->keysetFile->stream;
-	long endPos DUMMY_INIT;
+	long endPos = DUMMY_INIT;
 	int status;
 
 	assert( isWritePtr( keysetInfoPtr, sizeof( KEYSET_INFO ) ) );
@@ -692,6 +594,7 @@ static int initFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 							   KEYSET_ERRINFO );
 	if( cryptStatusError( status ) )
 		{
+		pkcs15Free( pkcs15info, MAX_PKCS15_OBJECTS );
 		clFree( "initFunction", keysetInfoPtr->keyData );
 		keysetInfoPtr->keyData = NULL;
 		keysetInfoPtr->keyDataSize = 0;

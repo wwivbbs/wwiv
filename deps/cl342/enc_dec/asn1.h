@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						  ASN.1 Constants and Structures					*
-*						Copyright Peter Gutmann 1992-2014					*
+*						Copyright Peter Gutmann 1992-2007					*
 *																			*
 ****************************************************************************/
 
@@ -15,8 +15,6 @@
 #else
   #include "io/stream.h"
 #endif /* Compiler-specific includes */
-
-#ifdef USE_INT_ASN1
 
 /****************************************************************************
 *																			*
@@ -192,7 +190,7 @@ enum { BER_ID_RESERVED, BER_ID_BOOLEAN, BER_ID_INTEGER, BER_ID_BITSTRING,
 #define writeEndIndef( stream )			swrite( stream, BER_END_INDEF, 2 )
 
 #define sizeofEOC()						2
-RETVAL_RANGE( FALSE, TRUE ) STDC_NONNULL_ARG( ( 1 ) ) \
+RETVAL_RANGE( MAX_ERROR, TRUE ) STDC_NONNULL_ARG( ( 1 ) ) \
 int checkEOC( INOUT STREAM *stream );
 
 /****************************************************************************
@@ -205,54 +203,17 @@ int checkEOC( INOUT STREAM *stream );
    write a tag.  The latter translates directly to sputc(), but we use a
    macro to make explicit what's going on */
 
-RETVAL_RANGE( MAX_ERROR, MAX_TAG - 1 ) STDC_NONNULL_ARG( ( 1 ) ) \
+RETVAL_RANGE( MAX_ERROR, 0xFF ) STDC_NONNULL_ARG( ( 1 ) ) \
 int readTag( INOUT STREAM *stream );
-RETVAL_RANGE( MAX_ERROR, MAX_TAG - 1 ) STDC_NONNULL_ARG( ( 1 ) ) \
+RETVAL_RANGE( MAX_ERROR, 0xFF ) STDC_NONNULL_ARG( ( 1 ) ) \
 int peekTag( INOUT STREAM *stream );
 #define writeTag( stream, tag )	sputc( stream, tag )
-
-/* peekTag() is a somewhat awkward function because it can return an error
-   code alongside the tag, so code like:
-
-	if( peekTag() == tag1 )
-		status = read1();
-	if( peekTag() == tag2 )
-		status = read2();
-
-   to read a sequence of optional elements can conclude with an OK status 
-   but an error on the stream if an earlier peekTag() returns an error (so
-   that all sunsequent peekTags() don't match the tag).  To deal with this
-   we define a macro that checks that the status from an earlier read
-   is OK, peeks at the next tag, and checks that the result isn't an error
-   status.  The resulting usage is:
-
-	status = read();
-	if( checkStatusPeekTag( stream, status, tag ) && \
-		tag == MAKE_CTAG( 0 ) )
-		status = read(); */
-
-#define checkStatusPeekTag( stream, status, tag ) \
-		( !cryptStatusError( status ) && \
-		  ( ( status ) = ( tag ) = peekTag( stream ), !cryptStatusError( status ) ) )
-
-/* Alongside the standard checkStatusPeekTag() we also provide a version
-   that checks whether we should still be looking for new tags, for use
-   when we're reading a SEQUENCE OF/SET OF.
-   
-   Note that this sets status to a non-error/CRYPT_OK value, which means 
-   that the status can't be checked using cryptStatusOK() but has to be 
-   checked with !cryptStatusError() */
-
-#define checkStatusLimitsPeekTag( stream, status, tag, endPos ) \
-		( !cryptStatusError( status ) && \
-		  stell( stream ) < ( endPos ) && \
-		  ( ( status ) = ( tag ) = peekTag( stream ), !cryptStatusError( status ) ) )
 
 /* Determine the size of an object once it's wrapped up with a tag and
    length */
 
-RETVAL_LENGTH_NOERROR \
-long sizeofObject( IN_LENGTH_Z const long length );
+RETVAL_RANGE( MAX_ERROR, MAX_INTLENGTH ) \
+long sizeofObject( IN_LENGTH const long length );
 
 /* Generalized ASN.1 type manipulation routines.  readRawObject() reads a
    complete object (including tag and length data) while readUniversal()
@@ -267,8 +228,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 int readRawObject( INOUT STREAM *stream, 
 				   OUT_BUFFER( bufferMaxLength, *bufferLength ) BYTE *buffer, 
 				   IN_LENGTH_SHORT_MIN( 3 ) const int bufferMaxLength, 
-				   OUT_LENGTH_BOUNDED_Z( bufferMaxLength ) \
-						int *bufferLength, 
+				   OUT_LENGTH_SHORT_Z int *bufferLength, 
 				   IN_TAG_ENCODED const int tag );
 
 #define writeRawObject( stream, object, size ) \
@@ -313,7 +273,7 @@ int readOIDEx( INOUT STREAM *stream,
 			   IN_ARRAY( noOidSelectionEntries ) \
 			   const OID_INFO *oidSelection, 
 			   IN_RANGE( 1, 50 ) const int noOidSelectionEntries,
-			   OUT_OPT_PTR_COND const OID_INFO **oidSelectionValue );
+			   OUT_OPT_PTR_OPT const OID_INFO **oidSelectionValue );
 RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int readFixedOID( INOUT STREAM *stream, 
 				  IN_BUFFER( oidLength ) \
@@ -322,7 +282,7 @@ RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 int readEncodedOID( INOUT STREAM *stream, 
 					OUT_BUFFER( oidMaxLength, *oidLength ) BYTE *oid, 
 					IN_LENGTH_SHORT_MIN( 5 ) const int oidMaxLength, 
-					OUT_LENGTH_BOUNDED_Z( oidMaxLength ) int *oidLength, 
+					OUT_LENGTH_SHORT_Z int *oidLength, 
 					IN_TAG_ENCODED const int tag );
 #define writeOID( stream, oid ) \
 				  swrite( ( stream ), ( oid ), sizeofOID( oid ) )
@@ -361,7 +321,7 @@ int writeInteger( INOUT STREAM *stream,
 #define sizeofBignum( bignum ) \
 		( ( int ) sizeofObject( signedBignumSize( bignum ) ) )
 
-RETVAL_RANGE_NOERROR( 0, MAX_INTLENGTH_SHORT ) STDC_NONNULL_ARG( ( 1 ) ) \
+RETVAL_RANGE( MAX_ERROR, MAX_INTLENGTH_SHORT ) STDC_NONNULL_ARG( ( 1 ) ) \
 int signedBignumSize( IN TYPECAST( BIGNUM * ) const void *bignum );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int readBignumTag( INOUT STREAM *stream, INOUT void *bignum, 
@@ -400,7 +360,7 @@ int readBignumChecked( INOUT STREAM *stream,
 	  ( ( ( long ) value ) < 0x80000000UL ) ? 6 : 7 )
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int writeShortInteger( INOUT STREAM *stream, 
-					   IN_INT_Z const long integer, 
+					   IN_INT const long integer, 
 					   IN_TAG const int tag );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int readShortIntegerTag( INOUT STREAM *stream, 
@@ -467,9 +427,7 @@ int writeOctetString( INOUT STREAM *stream,
 RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 int readOctetStringTag( INOUT STREAM *stream, 
 						OUT_BUFFER( maxLength, *stringLength ) \
-							BYTE *string, 
-						OUT_LENGTH_BOUNDED_Z( maxLength ) \
-							int *stringLength, 
+						BYTE *string, OUT_LENGTH_SHORT_Z int *stringLength, 
 						IN_LENGTH_SHORT const int minLength, 
 						IN_LENGTH_SHORT const int maxLength, 
 						IN_TAG_EXT const int tag );
@@ -489,13 +447,11 @@ int writeCharacterString( INOUT STREAM *stream,
 						  IN_BUFFER( length ) const void *string, 
 						  IN_LENGTH_SHORT const int length, 
 						  IN_TAG_ENCODED const int tag );
-RETVAL STDC_NONNULL_ARG( ( 1, 4 ) ) \
+RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 int readCharacterString( INOUT STREAM *stream, 
-						 OUT_BUFFER_OPT( stringMaxLength, *stringLength ) \
-							void *string, 
+						 OUT_BUFFER( stringMaxLength, *stringLength ) void *string, 
 						 IN_LENGTH_SHORT const int stringMaxLength, 
-						 OUT_LENGTH_BOUNDED_Z( stringMaxLength ) \
-							int *stringLength, 
+						 OUT_LENGTH_SHORT_Z int *stringLength, 
 						 IN_TAG_EXT const int tag );
 
 /* Routines for handling bit strings.  The sizeof() values are 3 bytes for
@@ -507,7 +463,7 @@ int readCharacterString( INOUT STREAM *stream,
 			( ( value ) > 0xFF ) ? 2 : ( value ) ? 1 : 0 ) )
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int writeBitString( INOUT STREAM *stream, 
-					IN_INT_Z const int bitString, 
+					IN_INT const int bitString, 
 					IN_TAG const int tag );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int readBitStringTag( INOUT STREAM *stream, 
@@ -549,83 +505,62 @@ int readGeneralizedTimeTag( INOUT STREAM *stream, OUT time_t *timeVal,
    equivalent holes.  The difference between writeOctet/BitStringHole() and
    writeGenericHole() is that the octet/bit-string versions create a normal
    or context-specific-tagged string while the generic version creates a
-   pure hole with no processing of tags.
-
-   Note that readGenericHole() takes a full encoded tag value, since we
-   don't know what form it has to be turned into when reading the tag.
-   In addition it has to be able to read zero-length values in order to
-   deal with broken encodings */
+   pure hole with no processing of tags */
 
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int readSequence( INOUT STREAM *stream, 
-				  OUT_OPT_LENGTH_SHORT_Z int *length );
+int readSequence( INOUT STREAM *stream, OUT_OPT_LENGTH_Z int *length );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int readSet( INOUT STREAM *stream, 
-			 OUT_OPT_LENGTH_SHORT_Z int *length );
+int readSet( INOUT STREAM *stream, OUT_OPT_LENGTH_Z int *length );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int readConstructed( INOUT STREAM *stream, 
-					 OUT_OPT_LENGTH_SHORT_Z int *length,
+int readConstructed( INOUT STREAM *stream, OUT_OPT_LENGTH_Z int *length, 
 					 IN_TAG const int tag );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int readOctetStringHole( INOUT STREAM *stream, 
-						 OUT_OPT_LENGTH_SHORT_Z int *length,
+int readOctetStringHole( INOUT STREAM *stream, OUT_OPT_LENGTH_Z int *length, 
 						 IN_LENGTH_SHORT const int minLength, 
 						 IN_TAG const int tag );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int readBitStringHole( INOUT STREAM *stream, 
-					   OUT_OPT_LENGTH_SHORT_Z int *length,
+int readBitStringHole( INOUT STREAM *stream, OUT_OPT_LENGTH_Z int *length, 
 					   IN_LENGTH_SHORT const int minLength, 
 					   IN_TAG const int tag );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int readGenericHole( INOUT STREAM *stream, 
-					 OUT_OPT_LENGTH_SHORT_Z int *length,
-					 IN_LENGTH_SHORT_Z const int minLength, 
-					 IN_TAG_ENCODED const int tag );
+int readGenericHole( INOUT STREAM *stream, OUT_OPT_LENGTH_Z int *length, 
+					 IN_LENGTH_SHORT const int minLength, 
+					 IN_TAG const int tag );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int writeSequence( INOUT STREAM *stream, 
-				   IN_LENGTH_Z const int length );
+int writeSequence( INOUT STREAM *stream, IN_LENGTH_Z const int length );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int writeSet( INOUT STREAM *stream, 
-			  IN_LENGTH_SHORT_Z const int length );
+int writeSet( INOUT STREAM *stream, IN_LENGTH_Z const int length );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int writeConstructed( INOUT STREAM *stream, 
-					  IN_LENGTH_Z const int length,
+int writeConstructed( INOUT STREAM *stream, IN_LENGTH_Z const int length, 
 					  IN_TAG const int tag );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int writeOctetStringHole( INOUT STREAM *stream, 
-						  IN_LENGTH_Z const int length,
+						  IN_LENGTH_Z const int length, 
 						  IN_TAG const int tag );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int writeBitStringHole( INOUT STREAM *stream, 
-						IN_LENGTH_SHORT_Z const int length,
+int writeBitStringHole( INOUT STREAM *stream, IN_LENGTH_Z const int length, 
 						IN_TAG const int tag );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int writeGenericHole( INOUT STREAM *stream, 
-					  IN_LENGTH_Z const int length,
+int writeGenericHole( INOUT STREAM *stream, IN_LENGTH_Z const int length, 
 					  IN_TAG const int tag );
 
 /* Alternative versions of the above that allow indefinite lengths.  This
    (non-DER) behaviour is the exception rather than the rule, so we have to
-   enable it explicitly.
-
-   Note that readGenericHoleI() takes a full encoded tag value, since we 
-   don't know what form it has to be turned into when reading the tag */
+   enable it explicitly */
 
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int readSequenceI( INOUT STREAM *stream, 
-				   OUT_OPT_LENGTH_SHORT_INDEF int *length );
+				   OUT_OPT_LENGTH_INDEF int *length );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int readSetI( INOUT STREAM *stream, 
-			  OUT_OPT_LENGTH_SHORT_INDEF int *length );
+int readSetI( INOUT STREAM *stream, OUT_OPT_LENGTH_INDEF int *length );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int readConstructedI( INOUT STREAM *stream, 
-					  OUT_OPT_LENGTH_SHORT_INDEF int *length,
+int readConstructedI( INOUT STREAM *stream, OUT_OPT_LENGTH_INDEF int *length, 
 					  IN_TAG const int tag );
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int readGenericHoleI( INOUT STREAM *stream, 
-					  OUT_OPT_LENGTH_SHORT_INDEF int *length,
+					  OUT_OPT_LENGTH_INDEF int *length, 
 					  IN_LENGTH_SHORT const int minLength, 
-					  IN_TAG_ENCODED const int tag );
+					  IN_TAG const int tag );
 
 /* Read a generic object header, used to find the length of an object being
    read as a blob */
@@ -638,16 +573,11 @@ int readGenericObjectHeader( INOUT STREAM *stream,
 /* Read an arbitrary-length constructed object's data into a memory buffer.  
    This is the arbitrary-length form of readRawObject() */
 
-#define OBJECT_HEADER_DATA_SIZE		16
-
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 int readRawObjectAlloc( INOUT STREAM *stream, 
-						OUT_BUFFER_ALLOC_OPT( *objectLengthPtr ) \
-							void **objectPtrPtr,
-						OUT_LENGTH_BOUNDED_Z( maxLength ) \
-							int *objectLengthPtr,
-						IN_LENGTH_SHORT_MIN( OBJECT_HEADER_DATA_SIZE ) \
-							const int minLength,
+						OUT_BUFFER_ALLOC_OPT( *length ) void **objectPtrPtr, 
+						OUT_LENGTH_Z int *objectLengthPtr,
+						IN_LENGTH_SHORT_MIN( 16 ) const int minLength, 
 						IN_LENGTH_SHORT const int maxLength );
 
 /* Determine the length of an ASN.1-encoded object (this just reads the
@@ -655,23 +585,20 @@ int readRawObjectAlloc( INOUT STREAM *stream,
    if the length is indefinite) and check that an object has valid encoding */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int getStreamObjectLength( INOUT STREAM *stream, OUT_DATALENGTH_Z int *length );
+int getStreamObjectLength( INOUT STREAM *stream, OUT_LENGTH_Z int *length );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int getObjectLength( IN_BUFFER( objectLength ) \
 					 const void *objectPtr, 
-					 IN_DATALENGTH const int objectLength, 
-					 OUT_DATALENGTH_Z int *length );
-CHECK_RETVAL_LENGTH STDC_NONNULL_ARG( ( 1 ) ) \
+					 IN_LENGTH const int objectLength, 
+					 OUT_LENGTH_Z int *length );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int checkObjectEncoding( IN_BUFFER( objectLength ) const void *objectPtr, 
-						 IN_DATALENGTH const int objectLength );
+						 IN_LENGTH const int objectLength );
 
 /* Full-length equivalents of length/encapsulating-object read routines.
    These are used explicitly in the rare situations where long lengths are
    valid, all other ASN.1 code only works with short lengths.  Because these
-   can be quite long, they allow definite or indefinite lengths.
-
-   Note that readLongGenericHole() takes a full encoded tag value, since we 
-   don't know what form it has to be turned into when reading the tag */
+   can be quite long, they allow definite or indefinite lengths */
 
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int readLongSequence( INOUT STREAM *stream, 
@@ -685,14 +612,12 @@ int readLongConstructed( INOUT STREAM *stream,
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int readLongGenericHole( INOUT STREAM *stream, 
 						 OUT_OPT_LENGTH_INDEF long *length, 
-						 IN_TAG_ENCODED const int tag );
+						 IN_TAG const int tag );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int getLongStreamObjectLength( INOUT STREAM *stream, 
-							   OUT_DATALENGTH_Z long *length );
+							   OUT_LENGTH_Z long *length );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int getLongObjectLength( IN_BUFFER( objectLength ) const void *objectPtr, 
-						 IN_DATALENGTH const long objectLength,
-						 OUT_DATALENGTH_Z long *length );
-
-#endif /* USE_INT_ASN1 */
+						 IN_LENGTH const long objectLength,
+						 OUT_LENGTH_Z long *length );
 #endif /* !_ASN1_DEFINED */

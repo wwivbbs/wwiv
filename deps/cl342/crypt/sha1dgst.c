@@ -71,10 +71,5 @@
   #include "crypt/sha1locl.h"
 #endif /* Compiler-specific includes */
 
-#if defined( SHA1_ASM ) && defined( _MSC_VER )
-  /* Pull in the SHA-1 asm code packaged into a .lib - pcg */
-  #pragma comment( lib, "crypt/s1-win32.lib" )
-#endif /* SHA1_ASM && VC++ */
-
 #endif
 

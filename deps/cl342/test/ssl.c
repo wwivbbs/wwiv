@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *							cryptlib SSL/TLS Routines						*
-*						Copyright Peter Gutmann 1998-2014					*
+*						Copyright Peter Gutmann 1998-2011					*
 *																			*
 ****************************************************************************/
 
@@ -15,34 +15,12 @@
 #if defined( __ILEC400__ )
   #pragma convert( 0 )
 #endif /* IBM medium iron */
-#ifdef __WINDOWS__
-  /* For checking for debug-only capabilities */
-  #define _OSSPEC_DEFINED
-  #define VC_16BIT( version )		( version <= 800 )
-  #define VC_LE_VC6( version )		( version <= 1200 )
-  #define VC_LT_2005( version )		( version < 1400 )
-  #define VC_GE_2005( version )		( version >= 1400 )
-  #define VC_GE_2010( version )		( version >= 1600 )
-#else
-  #define VC_16BIT( version )		0
-  #define VC_LE_VC6( version )		0
-  #define VC_LT_2005( version )		0
-  #define VC_GE_2005( version )		0
-  #define VC_GE_2010( version )		0
-#endif /* __WINDOWS__ */
-#ifndef NDEBUG
-  #include "misc/analyse.h"		/* Needed for fault.h */
-  #include "misc/fault.h"
-#endif /* !NDEBUG */
 
 /* SSL/TLS gets a bit complicated because in the presence of the session 
    cache every session after the first one will be a resumed session.  To 
    deal with this, the VC++ 6 debug build disables the client-side session 
    cache, while every other version just ends up going through a series 
-   of session resumes.
-   
-   Note that changing the follow requires an equivalent change in 
-   session/ssl_cli.c */
+   of session resumes */
 
 #if defined( __WINDOWS__ ) && defined( _MSC_VER ) && ( _MSC_VER == 1200 ) && \
 	!defined( NDEBUG ) && 1
@@ -93,7 +71,6 @@ typedef enum {
 	SSL_TEST_NORMAL,			/* Standard SSL/TLS test */
 	SSL_TEST_BULKTRANSER,		/* Bulk data transfer */
 	SSL_TEST_CLIENTCERT,		/* User auth.with client certificate */
-	SSL_TEST_CLIENTCERT_MANUAL,	/* User auth.client certificate manual verif.*/
 	SSL_TEST_PSK,				/* User auth.with shared key */
 	SSL_TEST_PSK_SVRONLY,		/* Client = no PSK, server = TLS-PSK */
 	SSL_TEST_PSK_CLIONLY,		/* Client = TLS-PSK, server = no PSK */
@@ -103,12 +80,7 @@ typedef enum {
 	SSL_TEST_STARTTLS,			/* STARTTLS/STLS/AUTH TLS */
 	SSL_TEST_RESUME,			/* Session resumption */
 	SSL_TEST_DUALTHREAD,		/* Two-phase connect via different threads */
-	SSL_TEST_MULTITHREAD,		/* Multiple server threads */
-	SSL_TEST_CORRUPT_HANDSHAKE,	/* Detect corruption of handshake data */
-	SSL_TEST_CORRUPT_DATA,		/* Detect corruption of payload data */
-	SSL_TEST_WRONGCERT,			/* Detect wrong key for server */
-	SSL_TEST_BADSIG_HASH,		/* Detect corruption of signed DH params */
-	SSL_TEST_BADSIG_DATA		/* Detect corruption of signed DH params */
+	SSL_TEST_MULTITHREAD		/* Multiple server threads */
 	} SSL_TEST_TYPE;
 
 #if defined( TEST_SESSION ) || defined( TEST_SESSION_LOOPBACK )
@@ -132,10 +104,7 @@ typedef enum {
 	Server 2-4: Generic test servers at amazon.com, paypal.com, redhat.com. 
 			  There have to be three distinct servers in order to force a 
 			  full handshake rather than just pulling a previous session out 
-			  of the session cache.  In late 2014 Amazon disabled SSLv3 on 
-			  all of its servers and Paypal disabled it in early 2015, so we 
-			  have to use google.com instead of amazon.com since they 
-			  currently still have it enabled.
+			  of the session cache.
 	Server 5: ~40K data returned.  Returns an incorrect certificate for the
 			  server when using SSL, although when accessed from a web
 			  browser it works as expected.
@@ -249,25 +218,12 @@ typedef enum {
 			   error.
 	Server 33: RSA interop server, this requires a complex pre-approval 
 			   application process to enable access which makes it not worth 
-			   the bother, it's only listed here for completeness.
-	Server 34: Encrypt-then-MAC extension support.
-	Server 35: DHE-PSK support via PolarSSL, name = gutman, 
-			   PSK = 0x0123456789abcdef.
-	Server 36: Returns a certificate with "outlook.com" in the CN, requires
-			   matching the altName to find "smtp.office365.com".
-	Server 37: Returns (deliberately) invalid DH parameters to test whether
-			   clients check these.
-	Server 38: As #37, 768-bit DH.
-	Server 39: As #37, but valid 2048-bit DH.
-	Server 40: As #37, but valid 2048-bit DH with 2048-bit DSA.
-	Server 41: As #37, but valid 2048-bit DH with 1024-bit DSA.
-	Server 42: As #37, but invalid (non-prime) 1024-bit DH.
-	Server 43: Checks for SKIP-TLS vulnerability */
+			   the bother, it's only listed here for completeness */
 
 #define SSL_SERVER_NO	2
 #define TLS_SERVER_NO	3
-#define TLS11_SERVER_NO	4	/* Use #27 for ECC, otherwise #4 */
-#define TLS12_SERVER_NO	23	/* Options = #23, #24, #28, #29/30/31
+#define TLS11_SERVER_NO	4	/* Use #27 for ECC, otherwise #2 */
+#define TLS12_SERVER_NO	29	/* Options = #23, #24, #28, #29/30/31
 							   (but see above for #24, #28, and some of 
 							   #29) */
 #if ( SSL_SERVER_NO == TLS_SERVER_NO ) || \
@@ -276,20 +232,13 @@ typedef enum {
   #error SSL/TLS/TLS11 servers must be distinct to avoid tests being no-op'd due to cacheing
 #endif /* Make sure that servers are distinct */
 
-#if ( TLS_SERVER_NO == 35 )
-  #undef SSL_USER_NAME
-  #undef SSL_PASSWORD
-  #define SSL_USER_NAME		"gutman"
-  #define SSL_PASSWORD		"\x01\x23\x45\x67\x89\xab\xcd\xef"
-#endif /* DHE-PSK test server */
-
 static const struct {
 	const C_STR name;
-	const C_STR path;
+	const char FAR_BSS *path;
 	} FAR_BSS sslInfo[] = {
 	{ NULL, NULL },
 	/*  1 */ { TEXT( "localhost" ), "/" },
-	/*  2 */ { TEXT( "https://www.google.com" ), "/" },
+	/*  2 */ { TEXT( "https://www.amazon.com" ), "/" },
 	/*  3 */ { TEXT( "https://www.paypal.com" ), "/" },
 	/*  4 */ { TEXT( "https://www.redhat.com" ), "/" },
 	/*  5 */ { TEXT( "https://www.cs.berkeley.edu" ), "/~daw/people/crypto.html" },
@@ -321,16 +270,6 @@ static const struct {
 	/* 31 */ { TEXT( "https://tls.woodgrovebank.com:25003/" ), "/" },
 	/* 32 */ { TEXT( "https://tls.woodgrovebank.com:25005/" ), "/" },
 	/* 33 */ { TEXT( "https://203.166.62.199/" ), "/" },
-	/* 34 */ { TEXT( "https://eid.vx4.net" ), "/" },
-	/* 35 */ { TEXT( "https://beta.polarssl.org:4433" ), "/" },
-	/* 36 */ { TEXT( "https://smtp.office365.com" ), "/" },
-	/* 37 */ { TEXT( "https://demo.cmrg.net/" ), "/" },
-	/* 38 */ { TEXT( "https://dh768.tlsfun.de/" ), "/" },
-	/* 39 */ { TEXT( "https://dh2048.tlsfun.de/" ), "/" },
-	/* 40 */ { TEXT( "https://dh2048-dsa.tlsfun.de/" ), "/" },
-	/* 41 */ { TEXT( "https://dh2048-dsa1024.tlsfun.de/" ), "/" },
-	/* 42 */ { TEXT( "https://dh1024nop.tlsfun.de/" ), "/" },
-	/* 43 */ { TEXT( "https://ht.vc:6443" ), "/" },
 	{ NULL, NULL }
 	};
 
@@ -338,7 +277,7 @@ static const struct {
 
 	Server 1: SMTP: mailbox.ucsd.edu:25 (132.239.1.57) requires a client 
 			  certificate.
-	Server 2: POP: pop.cae.wisc.edu:1110 (144.92.12.50) OK.
+	Server 2: POP: pop.cae.wisc.edu:1110 (144.92.240.11) OK.
 	Server 3: SMTP: smtpauth.cae.wisc.edu:25 (144.92.12.93) requires a 
 			  client certificate.
 	Server 4: SMTP: send.columbia.edu:25 (128.59.59.23) returns invalid 
@@ -376,7 +315,7 @@ static const struct {
 			   encryption, but with no keyUsage flags set.
 	Server 11: POP: pop.gmail.com:110 (64.233.167.111) (moved to 995 as of 
 			   some time in 2008).
-	Server 12: POP: mail.rochester.edu:995 (128.151.31.4), direct SSL 
+	Server 12: POP: mail.rochester.edu:995 (128.151.224.17), direct SSL 
 			   connect (also sends zero-length packets as a kludge for pre-
 			   TLS 1.1 chosen-IV attacks).
 	Server 13: SMTP: smtp.umn.edu:465 (134.84.119.35), direct SSL connect.
@@ -384,7 +323,7 @@ static const struct {
 			   returns a malformed certificate.  Can also be accessed via 
 			   smtp.live.com, port 25 or 587 */
 
-#define STARTTLS_SERVER_NO	2
+#define STARTTLS_SERVER_NO	12
 
 typedef enum { PROTOCOL_NONE, PROTOCOL_SMTP, PROTOCOL_SMTP_DIRECT, 
 			   PROTOCOL_POP, PROTOCOL_IMAP, PROTOCOL_POP_DIRECT, 
@@ -398,7 +337,7 @@ static const struct {
 	} FAR_BSS starttlsInfo[] = {
 	{ NULL, 0 },
 	/*  1 */ { TEXT( "132.239.1.57" ), 25, PROTOCOL_SMTP },
-	/*  2 */ { TEXT( "144.92.12.50" ), 1110, PROTOCOL_POP },
+	/*  2 */ { TEXT( "144.92.240.11" ), 1110, PROTOCOL_POP },
 	/*  3 */ { TEXT( "144.92.12.93" ), 25, PROTOCOL_SMTP },
 	/*  4 */ { TEXT( "128.59.59.23" ), 25, PROTOCOL_SMTP },
 	/*  5 */ { TEXT( "192.108.102.201" ), 110, PROTOCOL_POP },
@@ -408,7 +347,7 @@ static const struct {
 	/*  9 */ { TEXT( "134.76.10.26" ), 25, PROTOCOL_SMTP },
 	/* 10 */ { TEXT( "209.151.91.6" ), 995, PROTOCOL_POP_DIRECT },
 	/* 11 */ { TEXT( "64.233.167.111" ), 110, PROTOCOL_POP },
-	/* 12 */ { TEXT( "128.151.31.4" ), 995, PROTOCOL_POP_DIRECT },
+	/* 12 */ { TEXT( "128.151.224.17" ), 995, PROTOCOL_POP_DIRECT },
 	/* 13 */ { TEXT( "134.84.119.35" ), 465, PROTOCOL_SMTP_DIRECT },
 	/* 14 */ { TEXT( "65.55.172.253" ), 995, PROTOCOL_POP_DIRECT },
 	{ NULL, 0 }
@@ -418,10 +357,10 @@ static const struct {
 
 #if ( SSL_SERVER_NO == 7 ) || ( TLS12_SERVER_NO == 30 ) || \
 	( TLS12_SERVER_NO == 31 ) || ( STARTTLS_SERVER_NO == 8 )
-  #define BROKEN_SERVER_INVALID_CERT
-  #if defined( _MSC_VER ) || defined( __GNUC__ )
- 	#pragma message( "  Building with reduced compliance level for buggy SSL/TLS server." )
-  #endif /* Warn about special features enabled */
+  #define IS_BROKEN_SERVER
+  #ifdef _MSC_VER
+	#pragma message( "  Building with reduced compliance level for buggy SSL/TLS server." )
+  #endif /* VC++ */
 #endif /* Broken servers */
 #if ( SSL_SERVER_NO == 3 )
   #define IS_HIGHVOLUME_SERVER
@@ -440,10 +379,6 @@ static const struct {
 
 #if defined( __MSDOS16__ ) || defined( __WIN16__ )
   #define BULKDATA_BUFFER_SIZE	20000
-#elif defined( __WINDOWS__ ) && defined( _MSC_VER ) && ( _MSC_VER == 1200 ) && \
-	  !defined( NDEBUG ) && 1
-  #define BULKDATA_BUFFER_SIZE	300000L
-  #define USE_TIMING			/* Report data-transfer time */
 #else
   #define BULKDATA_BUFFER_SIZE	300000L
 #endif /* 16-bit VC++ */
@@ -647,10 +582,7 @@ static int connectSSLTLS( const CRYPT_SESSION_TYPE sessionType,
 	CRYPT_SESSION cryptSession;
 	const BOOLEAN isServer = ( sessionType == CRYPT_SESSION_SSL_SERVER ) ? \
 							   TRUE : FALSE;
-	const BOOLEAN isErrorTest = ( testType >= SSL_TEST_CORRUPT_HANDSHAKE && \
-								  testType <= SSL_TEST_BADSIG_DATA ) ? \
-								  TRUE : FALSE;
-	const char *versionStr[] = { "SSLv3", "TLS 1.0", "TLS 1.1", "TLS 1.2", "TLS 1.3" };
+	const char *versionStr[] = { "SSL", "TLS", "TLS 1.1", "TLS 1.2", "TLS 1.3" };
 	const C_STR serverName = ( testType == SSL_TEST_STARTTLS ) ? \
 								starttlsInfo[ STARTTLS_SERVER_NO ].name : \
 							 ( version == 0 ) ? \
@@ -664,11 +596,8 @@ static int connectSSLTLS( const CRYPT_SESSION_TYPE sessionType,
 #if defined( __WINDOWS__ ) && !( defined( __WIN16__ ) || defined( _WIN32_WCE ) )
 	SOCKET netSocket;
 #endif /* Win32 */
-#ifdef USE_TIMING
-	HIRES_TIME timeVal;
-#endif /* USE_TIMING */
 	char buffer[ FILEBUFFER_SIZE ];
-#ifdef BROKEN_SERVER_INVALID_CERT
+#ifdef IS_BROKEN_SERVER
 	int complianceLevel;
 #endif /* SSL servers with b0rken certs */
 	int bytesCopied, protocol = PROTOCOL_SMTP, status;
@@ -706,15 +635,13 @@ static int connectSSLTLS( const CRYPT_SESSION_TYPE sessionType,
 	printf( "%sTesting %s%s session%s...\n", isServer ? "SVR: " : "",
 			localSession ? "local " : "", versionStr[ version ],
 			( testType == SSL_TEST_CLIENTCERT ) ? " with client certs" : \
-			( testType == SSL_TEST_CLIENTCERT_MANUAL ) ? " with manual verification of client cert" : \
 			( testType == SSL_TEST_STARTTLS ) ? " with local socket" : \
 			( testType == SSL_TEST_BULKTRANSER ) ? " for bulk data transfer" : \
 			( testType == SSL_TEST_PSK ) ? " with shared key" : \
 			( testType == SSL_TEST_PSK_CLIONLY ) ? " with client-only PSK" : \
 			( testType == SSL_TEST_PSK_SVRONLY ) ? " with server-only PSK" : \
 			( testType == SSL_TEST_ECC ) ? " with P256 ECC crypto" : \
-			( testType == SSL_TEST_ECC_P384 ) ? " with P384 ECC crypto" : \
-			isErrorTest ? " with checking for error handling" : "" );
+			( testType == SSL_TEST_ECC_P384 ) ? " with P384 ECC crypto" : "" );
 	if( !isServer && !localSession )
 		printf( "  Remote host: %s.\n", serverName );
 
@@ -732,32 +659,10 @@ static int connectSSLTLS( const CRYPT_SESSION_TYPE sessionType,
 								version );
 	if( cryptStatusError( status ) )
 		{
-		cryptDestroySession( cryptSession );
-		if( version == 0 )
-			{
-			puts( "  (Couldn't enable use of SSLv3, continuing on the "
-				  "assumption that it's\n   disabled in this build)." );
-			return( TRUE );
-			}
 		printf( "cryptSetAttribute() failed with error code %d, line %d.\n",
 				status, __LINE__ );
 		return( FALSE );
 		}
-#ifndef NDEBUG
-	if( isServer && isErrorTest )
-		{
-		cryptSetFaultType( ( testType == SSL_TEST_CORRUPT_HANDSHAKE ) ? \
-							 FAULT_SESSION_CORRUPT_HANDSHAKE : \
-						   ( testType == SSL_TEST_CORRUPT_DATA ) ? \
-							 FAULT_SESSION_CORRUPT_DATA : \
-						   ( testType == SSL_TEST_WRONGCERT ) ? \
-							 FAULT_SESSION_WRONGCERT : \
-						   ( testType == SSL_TEST_BADSIG_HASH ) ? \
-							 FAULT_SESSION_BADSIG_HASH : \
-						   ( testType == SSL_TEST_BADSIG_DATA ) ? \
-							 FAULT_SESSION_BADSIG_DATA : FAULT_NONE );
-		}
-#endif /* !NDEBUG */
 
 	/* If we're doing a bulk data transfer, set up the necessary buffer */
 	if( testType == SSL_TEST_BULKTRANSER )
@@ -836,16 +741,9 @@ static int connectSSLTLS( const CRYPT_SESSION_TYPE sessionType,
 										cryptKeyset );
 			cryptKeysetClose( cryptKeyset );
 			}
-		if( cryptStatusOK( status ) && testType == SSL_TEST_CLIENTCERT_MANUAL )
-			{
-			status = cryptSetAttribute( cryptSession, 
-										CRYPT_SESSINFO_SSL_OPTIONS,
-										CRYPT_SSLOPTION_MANUAL_CERTCHECK );
-			}
 		}
 	else
 		{
-		/* We're the client */
 		if( testType == SSL_TEST_STARTTLS )
 			{
 			/* Testing this fully requires a lot of OS-specific juggling so 
@@ -918,14 +816,6 @@ static int connectSSLTLS( const CRYPT_SESSION_TYPE sessionType,
 						free( bulkBuffer );
 					return( FALSE );
 					}
-				if( LOCAL_HOST_NAME[ 0 ] != 'l' )
-					{
-					/* We're performing a connect to the local host under a 
-					   name other than "localhost", disable host-name
-					   verification */
-					cryptSetAttribute( cryptSession, CRYPT_SESSINFO_SSL_OPTIONS,
-									   CRYPT_SSLOPTION_DISABLE_NAMEVERIFY );
-					}
 				}
 			else
 				{
@@ -934,9 +824,7 @@ static int connectSSLTLS( const CRYPT_SESSION_TYPE sessionType,
 								paramStrlen( serverName ) );
 				}
 			}
-		if( cryptStatusOK( status ) && \
-			( testType == SSL_TEST_CLIENTCERT || \
-			  testType == SSL_TEST_CLIENTCERT_MANUAL ) )
+		if( cryptStatusOK( status ) && testType == SSL_TEST_CLIENTCERT )
 			{
 			CRYPT_CONTEXT privateKey;
 
@@ -966,21 +854,8 @@ static int connectSSLTLS( const CRYPT_SESSION_TYPE sessionType,
 								CRYPT_KEYOPT_NONE );
 				if( cryptStatusOK( localStatus ) )
 					{
-					localStatus = cryptAddPublicKey( cryptKeyset, 
-													 privateKey );
+					( void ) cryptAddPublicKey( cryptKeyset, privateKey );
 					cryptKeysetClose( cryptKeyset );
-					if( cryptStatusError( localStatus ) && \
-						localStatus != CRYPT_ERROR_DUPLICATE )
-						{
-						/* The key isn't already present (or we'd get a
-						   CRYPT_ERROR_DUPLICATE), but also couldn't be 
-						   added, there's some sort of problem */
-						printf( "Attempt to add client certificate to server "
-								"access-control database failed\n  with "
-								"error code %d, line %d.\n", localStatus, 
-								__LINE__ );
-						return( FALSE );
-						}
 					}
 				cryptDestroyContext( privateKey );
 				}
@@ -1063,20 +938,12 @@ static int connectSSLTLS( const CRYPT_SESSION_TYPE sessionType,
 			free( bulkBuffer );
 		return( FALSE );
 		}
-#ifdef BROKEN_SERVER_INVALID_CERT
-	puts( "(Setting certificate compliance level to oblivious to deal with "
-		  "broken server)." );
+#ifdef IS_BROKEN_SERVER
 	cryptGetAttribute( CRYPT_UNUSED, CRYPT_OPTION_CERT_COMPLIANCELEVEL,
 					   &complianceLevel );
 	cryptSetAttribute( CRYPT_UNUSED, CRYPT_OPTION_CERT_COMPLIANCELEVEL,
 					   CRYPT_COMPLIANCELEVEL_OBLIVIOUS );
 #endif /* SSL servers with b0rken certs */
-#ifdef BROKEN_SERVER_WRONG_CERT
-	puts( "(Disabling certificate name checking to deal with broken "
-		  server)." );
-	cryptSetAttribute( cryptSession, CRYPT_SESSINFO_SSL_OPTIONS, 
-					   CRYPT_SSLOPTION_DISABLE_NAMEVERIFY );
-#endif /* SSL servers with the wrong cert for the domain */
 	if( localSession )
 		{
 		/* If we're running a local loopback test, display additional 
@@ -1100,7 +967,7 @@ static int connectSSLTLS( const CRYPT_SESSION_TYPE sessionType,
 		releaseMutex();
 		}
 	status = cryptSetAttribute( cryptSession, CRYPT_SESSINFO_ACTIVE, TRUE );
-#ifdef BROKEN_SERVER_INVALID_CERT
+#ifdef IS_BROKEN_SERVER
 	cryptSetAttribute( CRYPT_UNUSED, CRYPT_OPTION_CERT_COMPLIANCELEVEL,
 					   complianceLevel );
 #endif /* SSL server with b0rken certs */
@@ -1113,28 +980,6 @@ static int connectSSLTLS( const CRYPT_SESSION_TYPE sessionType,
 		if( sessionID != CRYPT_UNUSED )
 			printf( "%02d: ", sessionID );
 		printConnectInfo( cryptSession );
-		}
-	if( isServer && testType == SSL_TEST_CLIENTCERT_MANUAL && \
-		status == CRYPT_ENVELOPE_RESOURCE )
-		{
-		CRYPT_CERTIFICATE cryptCertChain;
-
-		/* Allow the auth.and complete the handshake */
-		puts( "SVR: Manually verifying client certificate..." );
-		status = cryptGetAttribute( cryptSession, CRYPT_SESSINFO_RESPONSE,
-									&cryptCertChain );
-		if( cryptStatusOK( status ) )
-			{
-			/* In a real-world situation we'd check the certificate at this
-			   point, for now we just destroy it again and tell the server
-			   to continue */
-			cryptDestroyCert( cryptCertChain );
-			status = cryptSetAttribute( cryptSession,
-										CRYPT_SESSINFO_AUTHRESPONSE, TRUE );
-			}
-		if( cryptStatusOK( status ) )
-			status = cryptSetAttribute( cryptSession,
-										CRYPT_SESSINFO_ACTIVE, TRUE );
 		}
 #ifdef WINDOWS_THREADS
 	if( isServer && testType == SSL_TEST_DUALTHREAD && \
@@ -1197,64 +1042,17 @@ dualThreadContinue:
 			return( CRYPT_ERROR_FAILED );
 			}
 		cryptDestroySession( cryptSession );
-#ifndef NDEBUG
-		if( isErrorTest || testType == SSL_TEST_PSK_CLIONLY || \
+		if( testType == SSL_TEST_PSK_CLIONLY || \
 			testType == SSL_TEST_PSK_SVRONLY )
 			{
-			if( isErrorTest )
-				{
-				if( isServer )
-					{
-					/* The corrupt-handshake test is detcted by the server 
-					   before the client even though the server has sent out
-					   a corrupted message because the client sends their 
-					   Finished message first, and that contains the overall
-					   handshake MAC which is different for the client.  In
-					   addition this can be reported as a CRYPT_ERROR_BADDATA
-					   depending on where the corruption is caught */
-					if( testType == SSL_TEST_CORRUPT_HANDSHAKE && \
-						status != CRYPT_ERROR_SIGNATURE && \
-						status != CRYPT_ERROR_BADDATA )
-						{
-						printf( "Test returned status %d, should have been "
-								"%d.\n", status, CRYPT_ERROR_SIGNATURE );
-						return( FALSE );
-						}
-					}
-				else
-					{
-					if( testType != SSL_TEST_CORRUPT_HANDSHAKE && \
-						status != CRYPT_ERROR_SIGNATURE && \
-						status != CRYPT_ERROR_BADDATA )
-						{
-						printf( "Test returned status %d, should have been "
-								"%d.\n", status, CRYPT_ERROR_SIGNATURE );
-						return( FALSE );
-						}
-					}
-				}
-
-			/* These tests are supposed to fail, so if this happens then the 
-			   overall test has succeeded */
+			/* The CLIONLY/SVRONLY test is supposed to fail, so if this 
+			   happens then the overall test has succeeded */
 			puts( "  (This test checks error handling, so the failure "
 				  "response is correct).\n" );
 			return( TRUE );
 			}
-#endif /* !NDEBUG */
 		return( FALSE );
 		}
-
-#ifndef NDEBUG
-	/* The error tests should cause handshake failures, so getting to this 
-	   point is an error */
-	if( isErrorTest && testType != SSL_TEST_CORRUPT_DATA )
-		{
-		cryptDestroySession( cryptSession );
-		puts( "  (This test should have led to a handshake failure but "
-			  "didn't, test has\n   failed).\n" );
-		return( FALSE );
-		}
-#endif /* !NDEBUG */
 
 	/* The CLIONLY/SVRONLY test is supposed to fail, if this doesn't happen 
 	   then there's a problem */
@@ -1298,24 +1096,16 @@ dualThreadContinue:
 
 #ifdef NO_SESSION_CACHE
 		if( !printSecurityInfo( cryptSession, isServer,
-				( testType != SSL_TEST_PSK && testType != SSL_TEST_RESUME ), 
-				( !isServer && testType != SSL_TEST_PSK && \
-							   testType != SSL_TEST_RESUME ),
-				( isServer && ( testType == SSL_TEST_CLIENTCERT || \
-								testType == SSL_TEST_CLIENTCERT_MANUAL ) ) ) )
-			{
-			if( testType == SSL_TEST_BULKTRANSER )
-				free( bulkBuffer );
+								( testType != SSL_TEST_PSK && \
+								  testType != SSL_TEST_RESUME ), 
+								( !isServer && testType != SSL_TEST_PSK && \
+											   testType != SSL_TEST_RESUME ),
+								( isServer && testType == SSL_TEST_CLIENTCERT ) ) )
 			return( FALSE );
-			}
 #else
 		if( !printSecurityInfo( cryptSession, isServer, isFirstSession,
 								!isServer && isFirstSession, FALSE ) )
-			{
-			if( testType == SSL_TEST_BULKTRANSER )
-				free( bulkBuffer );
 			return( FALSE );
-			}
 #endif /* NO_SESSION_CACHE */
 		status = cryptGetAttribute( cryptSession, CRYPT_SESSINFO_VERSION,
 									&actualVersion );
@@ -1327,12 +1117,10 @@ dualThreadContinue:
 			}
 		}
 #ifdef NO_SESSION_CACHE
-	if( ( !localSession && !isServer && testType != SSL_TEST_PSK ) ||
-		( localSession && isServer && \
-		  ( testType == SSL_TEST_CLIENTCERT || \
-			testType == SSL_TEST_CLIENTCERT_MANUAL ) ) )
+	if( ( !localSession && !isServer ) ||
+		( localSession && isServer && testType == SSL_TEST_CLIENTCERT ) )
 #else
-	if( !localSession && !isServer && testType != SSL_TEST_PSK )
+	if( !localSession && !isServer )
 #endif /* NO_SESSION_CACHE */
 		{
 		CRYPT_CERTIFICATE cryptCertificate;
@@ -1344,8 +1132,6 @@ dualThreadContinue:
 			printf( "%sCouldn't get %s certificate, status %d, line %d.\n",
 					isServer ? "SVR: " : "", isServer ? "client" : "server",
 					status, __LINE__ );
-			if( testType == SSL_TEST_BULKTRANSER )
-				free( bulkBuffer );
 			return( FALSE );
 			}
 		puts( localSession ? "SVR: Client certificate details are:" : \
@@ -1374,35 +1160,22 @@ dualThreadContinue:
 		userNameBuffer[ length ] = '\0';
 		printf( "SVR: Client user name = '%s'.\n", userNameBuffer );
 #endif /* UNICODE_STRINGS */
-		if( length != ( int ) paramStrlen( SSL_USER_NAME ) || \
-			memcmp( userNameBuffer, SSL_USER_NAME, \
-					paramStrlen( SSL_USER_NAME ) ) )
-			{
-			printf( "SVR: User name was '%s', should have been '%s', line "
-					"%d.\n", userNameBuffer, SSL_USER_NAME, __LINE__ );
-			return( FALSE );
-			}
 		}
 
 	/* Send data over the SSL/TLS link.  If we're doing a bulk transfer 
 	   we use fully asynchronous I/O to verify the timeout handling in 
 	   the session code */
-#if defined( IS_HIGHVOLUME_SERVER )
+#ifdef IS_HIGHVOLUME_SERVER
 	/* This server has a large amount of data on it, used to test high-
 	   latency bulk transfers, so we set a larger timeout for the read */
 	status = cryptSetAttribute( cryptSession, CRYPT_OPTION_NET_READTIMEOUT,
 								15 );
-#elif defined USE_TIMING
-	status = cryptSetAttribute( cryptSession, CRYPT_OPTION_NET_READTIMEOUT,
-								5 );
 #else
 	status = cryptSetAttribute( cryptSession, CRYPT_OPTION_NET_READTIMEOUT,
 								( testType == SSL_TEST_BULKTRANSER ) ? 0 : 5 );
 #endif /* IS_HIGHVOLUME_SERVER */
 	if( cryptStatusError( status ) )
 		{
-		if( testType == SSL_TEST_BULKTRANSER )
-			free( bulkBuffer );
 		printExtError( cryptSession, isServer ? \
 					   "SVR: Session timeout set" : "Session timeout set", 
 					   status, __LINE__ );
@@ -1410,11 +1183,6 @@ dualThreadContinue:
 		}
 	if( testType == SSL_TEST_BULKTRANSER )
 		{
-#ifdef USE_TIMING
-		int timeMS;
-
-		timeVal = timeDiff( 0 );
-#endif /* USE_TIMING */
 		if( isServer )
 			{
 			long byteCount = 0;
@@ -1490,14 +1258,7 @@ dualThreadContinue:
 				return( FALSE );
 				}
 			}
-#ifdef USE_TIMING
-		timeVal = timeDiff( timeVal ); 
-		printf( "Time for %s transfer: ", 
-				isServer ? "server-to-client" : "client-to-server" );
-		timeMS = timeDisplay( timeVal );
-		printf( "Data rate = %d kBytes/second.\n", 
-				( int ) ( BULKDATA_BUFFER_SIZE / timeMS ) );
-#endif /* USE_TIMING */
+
 		free( bulkBuffer );
 		}
 	else
@@ -1509,7 +1270,6 @@ dualThreadContinue:
 		   CRYPT_ERROR_INCOMPLETE once all the tests are finished */
 		if( isServer )
 			{
-			BYTE textBuffer[ 1024 ];
 #if defined( __MVS__ ) || defined( __VMCMS__ )
   #pragma convlit( resume )
 #endif /* IBM big iron */
@@ -1518,7 +1278,7 @@ dualThreadContinue:
 #endif /* IBM medium iron */
 			const char serverReply[] = \
 				"HTTP/1.0 200 OK\n"
-				"Date: Fri, 7 June 2015 20:02:07 GMT\n"
+				"Date: Fri, 7 June 2005 20:02:07 GMT\n"
 				"Server: cryptlib SSL/TLS test\n"
 				"Content-Type: text/html\n"
 				"Connection: Close\n"
@@ -1526,9 +1286,9 @@ dualThreadContinue:
 				"<!DOCTYPE HTML SYSTEM \"html.dtd\">\n"
 				"<html>\n"
 				"<head>\n"
-				"<title>cryptlib %s test page</title>\n"
+				"<title>cryptlib SSL/TLS test page</title>\n"
 				"<body>\n"
-				"Test message from the cryptlib %s server.<p>\n"
+				"Test message from the cryptlib SSL/TLS server.<p>\n"
 				"</body>\n"
 				"</html>\n";
 #if defined( __MVS__ ) || defined( __VMCMS__ )
@@ -1537,7 +1297,6 @@ dualThreadContinue:
 #if defined( __ILEC400__ )
   #pragma convert( 0 )
 #endif /* IBM medium iron */
-			int bytesToSend;
 
 			/* Print the text of the request from the client */
 			status = cryptPopData( cryptSession, buffer, FILEBUFFER_SIZE,
@@ -1561,14 +1320,12 @@ dualThreadContinue:
 				}
 
 			/* Send a reply */
-			bytesToSend = sprintf( textBuffer, serverReply, 
-								   versionStr[ version ], 
-								   versionStr[ version ] );
-			status = cryptPushData( cryptSession, textBuffer, bytesToSend, 
-									&bytesCopied );
+			status = cryptPushData( cryptSession, serverReply,
+									sizeof( serverReply ) - 1, &bytesCopied );
 			if( cryptStatusOK( status ) )
 				status = cryptFlushData( cryptSession );
-			if( cryptStatusError( status ) || bytesCopied != bytesToSend )
+			if( cryptStatusError( status ) || \
+				bytesCopied != sizeof( serverReply ) - 1 )
 				{
 				printExtError( cryptSession, "Attempt to send data to "
 							   "client", status, __LINE__ );
@@ -1635,29 +1392,8 @@ dualThreadContinue:
 				printExtError( cryptSession, "Attempt to read data from "
 							   "server", status, __LINE__ );
 				cryptDestroySession( cryptSession );
-#ifndef NDEBUG
-				if( isErrorTest )
-					{
-					/* These tests are supposed to fail, so if this happens 
-					   then the overall test has succeeded */
-					puts( "  (This test checks error handling, so the "
-						  "failure response is correct).\n" );
-					return( TRUE );
-					}
-#endif /* !NDEBUG */
 				return( FALSE );
 				}
-#ifndef NDEBUG
-			/* The error tests should cause protocol failures, so getting to 
-			   this point is an error */
-			if( isErrorTest )
-				{
-				cryptDestroySession( cryptSession );
-				puts( "  (This test should have led to a protocol failure "
-					  "but didn't, test has\n   failed).\n" );
-				return( FALSE );
-				}
-#endif /* !NDEBUG */
 			if( bytesCopied == 0 && testType != SSL_TEST_STARTTLS )
 				{
 				/* We've set a 5s timeout, we should get at least some 
@@ -1816,6 +1552,10 @@ int testSessionSSLClientCert( void )
 	{
 	return( connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_CLIENTCERT, 0, CRYPT_UNUSED, FALSE ) );
 	}
+int testSessionSSLSharedKey( void )
+	{
+	return( connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_PSK, 0, CRYPT_UNUSED, FALSE ) );
+	}
 
 int testSessionSSLServer( void )
 	{
@@ -1860,14 +1600,6 @@ int testSessionSSLServerClientCert( void )
 int testSessionTLS( void )
 	{
 	return( connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_NORMAL, 1, CRYPT_UNUSED, FALSE ) );
-	}
-int testSessionTLSLocalSocket( void )
-	{
-	return( connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_STARTTLS, 1, CRYPT_UNUSED, FALSE ) );
-	}
-int testSessionTLSSharedKey( void )
-	{
-	return( connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_PSK, 1, CRYPT_UNUSED, FALSE ) );
 	}
 
 int testSessionTLSServer( void )
@@ -1919,19 +1651,7 @@ int testSessionTLS12Server( void )
 	int status;
 
 	createMutex();
-
 	status = connectSSLTLS( CRYPT_SESSION_SSL_SERVER, SSL_TEST_NORMAL, 3, CRYPT_UNUSED, FALSE );
-	destroyMutex();
-
-	return( status );
-	}
-int testSessionTLS12ServerClientCertManual( void )
-	{
-	int status;
-
-	createMutex();
-
-	status = connectSSLTLS( CRYPT_SESSION_SSL_SERVER, SSL_TEST_CLIENTCERT_MANUAL, 3, CRYPT_UNUSED, TRUE );
 	destroyMutex();
 
 	return( status );
@@ -1941,168 +1661,274 @@ int testSessionTLS12ServerClientCertManual( void )
 
 #ifdef WINDOWS_THREADS
 
-unsigned __stdcall sslServerThread( void *arg )
+unsigned __stdcall sslServerThread( void *dummy )
 	{
-	const int argValue = *( ( int * ) arg );
-
-	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, argValue, 0, CRYPT_UNUSED, 
-				   TRUE );
+	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, SSL_TEST_NORMAL, 0, CRYPT_UNUSED, TRUE );
 	_endthreadex( 0 );
 	return( 0 );
 	}
-static int sslClientServer( const SSL_TEST_TYPE testType )
-	{
-	HANDLE hThread;
-	unsigned threadID;
-	int arg = testType, status;
 
-	/* Start the server */
-	createMutex();
-	hThread = ( HANDLE ) _beginthreadex( NULL, 0, sslServerThread, &arg, 0, 
-										 &threadID );
-	Sleep( 1000 );
-
-	/* Connect to the local server */
-	status = connectSSLTLS( CRYPT_SESSION_SSL, testType, 0, CRYPT_UNUSED, 
-							TRUE );
-	waitForThread( hThread );
-	destroyMutex();
-	return( status );
-	}
 int testSessionSSLClientServer( void )
 	{
-	return( sslClientServer( SSL_TEST_NORMAL ) );
-	}
-int testSessionSSLClientCertClientServer( void )
-	{
-	return( sslClientServer( SSL_TEST_CLIENTCERT ) );
-	}
-
-unsigned __stdcall tlsServerThread( void *arg )
-	{
-	const int argValue = *( ( int * ) arg );
-
-	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, argValue, 1, CRYPT_UNUSED, 
-				   TRUE );
-	_endthreadex( 0 );
-	return( 0 );
-	}
-static int tlsClientServer( const SSL_TEST_TYPE testType )
-	{
 	HANDLE hThread;
 	unsigned threadID;
-	int arg = testType, status;
+	int status;
 
 	/* Start the server */
 	createMutex();
-	hThread = ( HANDLE ) _beginthreadex( NULL, 0, tlsServerThread, &arg, 0, 
-										 &threadID );
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, sslServerThread,
+										 NULL, 0, &threadID );
 	Sleep( 1000 );
 
 	/* Connect to the local server */
-	status = connectSSLTLS( CRYPT_SESSION_SSL, testType, 1, CRYPT_UNUSED, 
-							TRUE );
+	status = connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_NORMAL, 0, CRYPT_UNUSED, TRUE );
 	waitForThread( hThread );
 	destroyMutex();
 	return( status );
 	}
+
+unsigned __stdcall sslClientCertServerThread( void *dummy )
+	{
+	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, SSL_TEST_CLIENTCERT, 0, CRYPT_UNUSED, TRUE );
+	_endthreadex( 0 );
+	return( 0 );
+	}
+
+int testSessionSSLClientCertClientServer( void )
+	{
+	HANDLE hThread;
+	unsigned threadID;
+	int status;
+
+	/* Start the server */
+	createMutex();
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, sslClientCertServerThread,
+										 NULL, 0, &threadID );
+	Sleep( 1000 );
+
+	/* Connect to the local server */
+	status = connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_CLIENTCERT, 0, CRYPT_UNUSED, TRUE );
+	waitForThread( hThread );
+	destroyMutex();
+	return( status );
+	}
+
+unsigned __stdcall tlsServerThread( void *dummy )
+	{
+	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, SSL_TEST_NORMAL, 1, CRYPT_UNUSED, TRUE );
+	_endthreadex( 0 );
+	return( 0 );
+	}
+
 int testSessionTLSClientServer( void )
 	{
-	return( tlsClientServer( SSL_TEST_NORMAL ) );
+	HANDLE hThread;
+	unsigned threadID;
+	int status;
+
+	/* Start the server */
+	createMutex();
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, tlsServerThread,
+										 NULL, 0, &threadID );
+	Sleep( 1000 );
+
+	/* Connect to the local server */
+	status = connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_NORMAL, 1, CRYPT_UNUSED, TRUE );
+	waitForThread( hThread );
+	destroyMutex();
+	return( status );
 	}
+
+unsigned __stdcall tlsSharedKeyServerThread( void *dummy )
+	{
+	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, SSL_TEST_PSK, 1, CRYPT_UNUSED, TRUE );
+	_endthreadex( 0 );
+	return( 0 );
+	}
+
 int testSessionTLSSharedKeyClientServer( void )
 	{
-	return( tlsClientServer( SSL_TEST_PSK ) );
+	HANDLE hThread;
+	unsigned threadID;
+	int status;
+
+	/* Start the server */
+	createMutex();
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, tlsSharedKeyServerThread,
+										 NULL, 0, &threadID );
+	Sleep( 1000 );
+
+	/* Connect to the local server */
+	status = connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_PSK, 1, CRYPT_UNUSED, TRUE );
+	waitForThread( hThread );
+	destroyMutex();
+	return( status );
 	}
+
+unsigned __stdcall tlsNoSharedKeyServerThread( void *arg )
+	{
+	int testType = *( ( int * ) arg );
+
+	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, testType, 1, CRYPT_UNUSED, TRUE );
+	_endthreadex( 0 );
+	return( 0 );
+	}
+
 int testSessionTLSNoSharedKeyClientServer( void )
 	{
-	if( !tlsClientServer( SSL_TEST_PSK_CLIONLY ) )
-		return( FALSE );
-	return( tlsClientServer( SSL_TEST_PSK_SVRONLY ) );
+	HANDLE hThread;
+	unsigned threadID;
+	int arg, status;
+
+	/* Start the server */
+	createMutex();
+	arg = SSL_TEST_PSK_CLIONLY;
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, tlsNoSharedKeyServerThread,
+										 &arg, 0, &threadID );
+	Sleep( 1000 );
+
+	/* Connect to the local server */
+	status = connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_PSK_CLIONLY, 1, CRYPT_UNUSED, TRUE );
+	waitForThread( hThread );
+	destroyMutex();
+	if( status != TRUE )
+		return( status );
+
+	/* Restart the server */
+	createMutex();
+	arg = SSL_TEST_PSK_SVRONLY;
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, tlsNoSharedKeyServerThread,
+										 &arg, 0, &threadID );
+	Sleep( 1000 );
+
+	/* Connect to the local server */
+	status = connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_PSK_SVRONLY, 1, CRYPT_UNUSED, TRUE );
+	waitForThread( hThread );
+	destroyMutex();
+	return( status );
 	}
+
+unsigned __stdcall tlsBulkTransferServerThread( void *dummy )
+	{
+	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, SSL_TEST_BULKTRANSER, 1, CRYPT_UNUSED, TRUE );
+	_endthreadex( 0 );
+	return( 0 );
+	}
+
 int testSessionTLSBulkTransferClientServer( void )
 	{
-	return( tlsClientServer( SSL_TEST_BULKTRANSER ) );
+	HANDLE hThread;
+	unsigned threadID;
+	int status;
+
+	/* Start the server */
+	createMutex();
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, tlsBulkTransferServerThread,
+										 NULL, 0, &threadID );
+	Sleep( 1000 );
+
+	/* Connect to the local server */
+	status = connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_BULKTRANSER, 1, CRYPT_UNUSED, TRUE );
+	waitForThread( hThread );
+	destroyMutex();
+	return( status );
 	}
+
+unsigned __stdcall tlsResumeServerThread( void *dummy )
+	{
+	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, SSL_TEST_RESUME, 1, CRYPT_UNUSED, TRUE );
+	_endthreadex( 0 );
+	return( 0 );
+	}
+
 int testSessionTLSResumeClientServer( void )
 	{
+	HANDLE hThread;
+	unsigned threadID;
+	int status;
+
 	/* Note that this function has to be called after one of the standard 
 	   TLS-connect functions has been called, since it checks for the 
 	   ability to resume a previously-cached session */
-	return( tlsClientServer( SSL_TEST_RESUME ) );
-	}
-
-unsigned __stdcall tls11ServerThread( void *arg )
-	{
-	const int argValue = *( ( int * ) arg );
-
-	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, argValue, 2, CRYPT_UNUSED, 
-				   TRUE );
-	_endthreadex( 0 );
-	return( 0 );
-	}
-static int tls11ClientServer( const SSL_TEST_TYPE testType )
-	{
-	HANDLE hThread;
-	unsigned threadID;
-	int arg = testType, status;
 
 	/* Start the server */
 	createMutex();
-	hThread = ( HANDLE ) _beginthreadex( NULL, 0, tls11ServerThread, &arg, 0, 
-										 &threadID );
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, tlsServerThread,
+										 NULL, 0, &threadID );
 	Sleep( 1000 );
 
 	/* Connect to the local server */
-	status = connectSSLTLS( CRYPT_SESSION_SSL, testType, 2, CRYPT_UNUSED, 
-							TRUE );
+	status = connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_RESUME, 1, CRYPT_UNUSED, TRUE );
 	waitForThread( hThread );
 	destroyMutex();
 	return( status );
 	}
+
+unsigned __stdcall tls11ServerThread( void *dummy )
+	{
+	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, SSL_TEST_NORMAL, 2, CRYPT_UNUSED, TRUE );
+	_endthreadex( 0 );
+	return( 0 );
+	}
+
 int testSessionTLS11ClientServer( void )
 	{
-	return( tls11ClientServer( SSL_TEST_NORMAL ) );
-	}
-int testSessionTLS11ClientCertClientServer( void )
-	{
-	return( tls11ClientServer( SSL_TEST_CLIENTCERT ) );
-	}
-
-unsigned __stdcall tls12ServerThread( void *arg )
-	{
-	const int argValue = *( ( int * ) arg );
-
-	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, argValue, 3, CRYPT_UNUSED, 
-				   TRUE );
-	_endthreadex( 0 );
-	return( 0 );
-	}
-static int tls12ClientServer( const SSL_TEST_TYPE testType )
-	{
 	HANDLE hThread;
 	unsigned threadID;
-	int arg = testType, status;
+	int status;
 
 	/* Start the server */
 	createMutex();
-	hThread = ( HANDLE ) _beginthreadex( NULL, 0, tls12ServerThread, &arg, 0, 
-										 &threadID );
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, tls11ServerThread,
+										 NULL, 0, &threadID );
 	Sleep( 1000 );
 
 	/* Connect to the local server */
-	status = connectSSLTLS( CRYPT_SESSION_SSL, testType, 3, CRYPT_UNUSED, 
-							TRUE );
+	status = connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_NORMAL, 2, CRYPT_UNUSED, TRUE );
 	waitForThread( hThread );
 	destroyMutex();
 	return( status );
 	}
+
+unsigned __stdcall tls12ServerThread( void *dummy )
+	{
+	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, SSL_TEST_NORMAL, 3, CRYPT_UNUSED, TRUE );
+	_endthreadex( 0 );
+	return( 0 );
+	}
+
 int testSessionTLS12ClientServer( void )
 	{
-	return( tls12ClientServer( SSL_TEST_NORMAL ) );
+	HANDLE hThread;
+	unsigned threadID;
+	int status;
+
+	/* Start the server */
+	createMutex();
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, tls12ServerThread,
+										 NULL, 0, &threadID );
+	Sleep( 1000 );
+
+	/* Connect to the local server */
+	status = connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_NORMAL, 3, CRYPT_UNUSED, TRUE );
+	waitForThread( hThread );
+	destroyMutex();
+	return( status );
 	}
+
+unsigned __stdcall tls12ServerEccThread( void *dummy )
+	{
+	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, SSL_TEST_ECC, 3, CRYPT_UNUSED, TRUE );
+	_endthreadex( 0 );
+	return( 0 );
+	}
+
 int testSessionTLS12ClientServerEccKey( void )
 	{
+	HANDLE hThread;
+	unsigned threadID;
+	int status;
+
 	if( cryptQueryCapability( CRYPT_ALGO_ECDSA, \
 							  NULL ) == CRYPT_ERROR_NOTAVAIL )
 		{
@@ -2110,10 +1936,33 @@ int testSessionTLS12ClientServerEccKey( void )
 			  "test." );
 		return( TRUE );
 		}
-	return( tls12ClientServer( SSL_TEST_ECC ) );
+
+	/* Start the server */
+	createMutex();
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, tls12ServerEccThread,
+										 NULL, 0, &threadID );
+	Sleep( 1000 );
+
+	/* Connect to the local server */
+	status = connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_ECC, 3, CRYPT_UNUSED, TRUE );
+	waitForThread( hThread );
+	destroyMutex();
+	return( status );
 	}
+
+unsigned __stdcall tls12ServerEcc384Thread( void *dummy )
+	{
+	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, SSL_TEST_ECC_P384, 3, CRYPT_UNUSED, TRUE );
+	_endthreadex( 0 );
+	return( 0 );
+	}
+
 int testSessionTLS12ClientServerEcc384Key( void )
 	{
+	HANDLE hThread;
+	unsigned threadID;
+	int status;
+
 	if( cryptQueryCapability( CRYPT_ALGO_ECDSA, \
 							  NULL ) == CRYPT_ERROR_NOTAVAIL )
 		{
@@ -2121,15 +1970,44 @@ int testSessionTLS12ClientServerEcc384Key( void )
 			  "test." );
 		return( TRUE );
 		}
-	return( tls12ClientServer( SSL_TEST_ECC_P384 ) );
+
+	/* Start the server */
+	createMutex();
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, tls12ServerEcc384Thread,
+										 NULL, 0, &threadID );
+	Sleep( 1000 );
+
+	/* Connect to the local server */
+	status = connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_ECC_P384, 3, CRYPT_UNUSED, TRUE );
+	waitForThread( hThread );
+	destroyMutex();
+	return( status );
 	}
+
+unsigned __stdcall tls12ClientCertServerThread( void *dummy )
+	{
+	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, SSL_TEST_CLIENTCERT, 3, CRYPT_UNUSED, TRUE );
+	_endthreadex( 0 );
+	return( 0 );
+	}
+
 int testSessionTLS12ClientCertClientServer( void )
 	{
-	return( tls12ClientServer( SSL_TEST_CLIENTCERT ) );
-	}
-int testSessionTLS12ClientCertManualClientServer( void )
-	{
-	return( tls12ClientServer( SSL_TEST_CLIENTCERT_MANUAL ) );
+	HANDLE hThread;
+	unsigned threadID;
+	int status;
+
+	/* Start the server */
+	createMutex();
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, tls12ClientCertServerThread,
+										 NULL, 0, &threadID );
+	Sleep( 1000 );
+
+	/* Connect to the local server */
+	status = connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_CLIENTCERT, 3, CRYPT_UNUSED, TRUE );
+	waitForThread( hThread );
+	destroyMutex();
+	return( status );
 	}
 
 unsigned __stdcall tlsServerDualThread2( void *dummy )
@@ -2138,12 +2016,14 @@ unsigned __stdcall tlsServerDualThread2( void *dummy )
 	_endthreadex( 0 );
 	return( 0 );
 	}
+
 unsigned __stdcall tlsServerDualThread1( void *dummy )
 	{
 	connectSSLTLS( CRYPT_SESSION_SSL_SERVER, SSL_TEST_DUALTHREAD, 1, CRYPT_UNUSED, TRUE );
 	_endthreadex( 0 );
 	return( 0 );
 	}
+
 int testSessionTLSClientServerDualThread( void )
 	{
 	HANDLE hThread;
@@ -2171,6 +2051,7 @@ unsigned __stdcall tlsServerMultiThread( void *threadIdPtr )
 	_endthreadex( 0 );
 	return( 0 );
 	}
+
 unsigned __stdcall tlsClientMultiThread( void *threadIdPtr )
 	{
 	int threadID = *( ( int * ) threadIdPtr );
@@ -2179,38 +2060,11 @@ unsigned __stdcall tlsClientMultiThread( void *threadIdPtr )
 	_endthreadex( 0 );
 	return( 0 );
 	}
+
 int testSessionTLSClientServerMultiThread( void )
 	{
 	return( multiThreadDispatch( tlsClientMultiThread, 
 								 tlsServerMultiThread, MAX_NO_THREADS ) );
-	}
-
-int testSessionSSLClientServerDebugCheck( void )
-	{
-#ifndef NDEBUG
-	if( !sslClientServer( SSL_TEST_CORRUPT_HANDSHAKE ) )
-		return( FALSE );	/* Detect corruption of handshake data */
-	if( !sslClientServer( SSL_TEST_CORRUPT_DATA ) )
-		return( FALSE );	/* Detect corruption of payload data */
-	if( !sslClientServer( SSL_TEST_WRONGCERT ) )
-		return( FALSE );	/* Detect wrong key for server */
-	if( !sslClientServer( SSL_TEST_BADSIG_HASH ) )
-		return( FALSE );	/* Detect corruption of signed DH params */
-	if( !sslClientServer( SSL_TEST_BADSIG_DATA ) )
-		return( FALSE );	/* Detect corruption of signed DH params */
-	if( !tlsClientServer( SSL_TEST_CORRUPT_HANDSHAKE ) )
-		return( FALSE );	/* Detect corruption of handshake data */
-	if( !tlsClientServer( SSL_TEST_CORRUPT_DATA ) )
-		return( FALSE );	/* Detect corruption of payload data */
-	if( !tlsClientServer( SSL_TEST_WRONGCERT ) )
-		return( FALSE );	/* Detect wrong key for server */
-	if( !tlsClientServer( SSL_TEST_BADSIG_HASH ) )
-		return( FALSE );	/* Detect corruption of signed DH params */
-	if( !tlsClientServer( SSL_TEST_BADSIG_DATA ) )
-		return( FALSE );	/* Detect corruption of signed DH params */
-	cryptSetFaultType( FAULT_NONE );
-#endif /* !NDEBUG */
-	return( TRUE );
 	}
 #endif /* WINDOWS_THREADS */
 

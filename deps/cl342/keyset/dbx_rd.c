@@ -8,13 +8,13 @@
 #if defined( INC_ALL )
   #include "crypt.h"
   #include "asn1.h"
-  #include "dbms.h"
   #include "keyset.h"
+  #include "dbms.h"
 #else
   #include "crypt.h"
   #include "enc_dec/asn1.h"
-  #include "keyset/dbms.h"
   #include "keyset/keyset.h"
+  #include "keyset/dbms.h"
 #endif /* Compiler-specific includes */
 
 #ifdef USE_DBMS
@@ -47,7 +47,7 @@ static DBMS_CACHEDQUERY_TYPE getCachedQueryType( IN_ENUM_OPT( KEYMGMT_ITEM ) \
 	REQUIRES_EXT( ( itemType == KEYMGMT_ITEM_NONE && \
 					keyIDtype == CRYPT_KEYID_NONE ) || \
 				  ( keyIDtype > CRYPT_KEYID_NONE && \
-					keyIDtype < CRYPT_KEYID_LAST ), DBMS_CACHEDQUERY_NONE );
+					keyIDtype <= CRYPT_KEYID_LAST ), DBMS_CACHEDQUERY_NONE );
 				  /* { KEYMGMT_ITEM_NONE, CRYPT_KEYID_NONE } is for ongoing 
 				     queries */
 
@@ -56,7 +56,11 @@ static DBMS_CACHEDQUERY_TYPE getCachedQueryType( IN_ENUM_OPT( KEYMGMT_ITEM ) \
 	if( itemType != KEYMGMT_ITEM_PUBLICKEY )
 		return( DBMS_CACHEDQUERY_NONE );
 
-	/* Check whether we're querying on a cacheable key value type */
+	/* Check whether we're querying on a cacheable key value type.  An ID 
+	   type of CRYPT_KEYID_LAST is a special case which denotes that we're
+	   doing a query on a name ID, this is used for getNext() and is very 
+	   common (it follows most certificate reads and is used to see if we 
+	   can build a chain) so we make it cacheable */
 	switch( keyIDtype )
 		{
 		case CRYPT_KEYID_URI:
@@ -68,7 +72,7 @@ static DBMS_CACHEDQUERY_TYPE getCachedQueryType( IN_ENUM_OPT( KEYMGMT_ITEM ) \
 		case CRYPT_IKEYID_CERTID:
 			return( DBMS_CACHEDQUERY_CERTID );
 
-		case CRYPT_IKEYID_SUBJECTID:
+		case CRYPT_KEYID_LAST:
 			return( DBMS_CACHEDQUERY_NAMEID );
 		}
 
@@ -195,93 +199,6 @@ static BOOLEAN checkCertUsage( IN_BUFFER( certLength ) const BYTE *certificate,
 	return( TRUE );
 	}
 
-/* Check that the object that we've fetched actually matches what we asked 
-   for.  Obviously this should be the case, but if the underlying data store 
-   can lie to us and the caller blindly accepts the certificate and uses it 
-   they could end up trying to fetch a certificate belonging to A, being fed 
-   one belonging to B, and "verify" information from B believing it to be 
-   from A */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 4 ) ) \
-static int checkObjectIDMatch( IN_HANDLE const CRYPT_CERTIFICATE iCryptCert,
-							   IN_ENUM_OPT( KEYMGMT_ITEM ) \
-									const KEYMGMT_ITEM_TYPE itemType, 
-							   IN_KEYID_OPT const CRYPT_KEYID_TYPE keyIDtype, 
-							   IN_BUFFER( keyIDlength ) \
-									const void *keyID, 
-							   IN_LENGTH_KEYID const int keyIDlength )
-	{
-	BYTE decodedID[ DBXKEYID_SIZE + 8 ];
-	int length = keyIDlength, status;
-
-	assert( isReadPtr( keyID, keyIDlength ) );
-
-	REQUIRES( itemType == KEYMGMT_ITEM_PUBLICKEY || \
-			  itemType == KEYMGMT_ITEM_REQUEST || \
-			  itemType == KEYMGMT_ITEM_REVREQUEST || \
-			  itemType == KEYMGMT_ITEM_PKIUSER || \
-			  itemType == KEYMGMT_ITEM_REVOCATIONINFO );
-	REQUIRES( keyIDtype > CRYPT_KEYID_NONE && keyIDtype < CRYPT_KEYID_LAST );
-	REQUIRES( keyID != NULL && \
-			  keyIDlength >= MIN_NAME_LENGTH && \
-			  keyIDlength < MAX_ATTRIBUTE_SIZE );
-
-	/* Fetching an item based on its keyID is somewhat complex because the
-	   value, which can be of arbitrary length or form, is hashed to create
-	   a fixed-size keyID.  Because of this we can't use iCryptVerifyID() 
-	   but have to extract the ID from the object in the form that it's used 
-	   by the underlying data store and compare that */
-	if( itemType == KEYMGMT_ITEM_PUBLICKEY && \
-		keyIDtype == CRYPT_IKEYID_KEYID )
-		{
-		BYTE storedKeyID[ DBXKEYID_SIZE + 8 ];
-		int storedKeyIDlength;
-
-		REQUIRES( keyIDlength == ENCODED_DBXKEYID_SIZE );
-
-		status = getCertKeyID( storedKeyID, ENCODED_DBXKEYID_SIZE, 
-							   &storedKeyIDlength, iCryptCert );
-		if( cryptStatusOK( status ) && \
-			!memcmp( keyID, storedKeyID, DBXKEYID_SIZE ) )
-			return( CRYPT_OK );
-
-		return( CRYPT_ERROR_INVALID );
-		}
-	if( itemType == KEYMGMT_ITEM_PKIUSER && \
-		keyIDtype == CRYPT_IKEYID_KEYID )
-		{
-		BYTE storedKeyID[ DBXKEYID_SIZE + 8 ];
-		int storedKeyIDlength;
-
-		REQUIRES( keyIDlength == ENCODED_DBXKEYID_SIZE );
-
-		status = getPkiUserKeyID( storedKeyID, ENCODED_DBXKEYID_SIZE, 
-								  &storedKeyIDlength, iCryptCert );
-		if( cryptStatusOK( status ) && \
-			!memcmp( keyID, storedKeyID, DBXKEYID_SIZE ) )
-			return( CRYPT_OK );
-
-		return( CRYPT_ERROR_INVALID );
-		}
-
-	/* The internal key ID types are binary values and will be base64-
-	   encoded in order to be usable with the database back-end, before we 
-	   can compare them we have to covert them back into their original 
-	   binary form */
-	if( keyIDtype >= CRYPT_KEYID_LAST_EXTERNAL )
-		{
-		status = base64decode( decodedID, DBXKEYID_SIZE, &length, keyID, 
-							   keyIDlength, CRYPT_CERTFORMAT_NONE );
-		if( cryptStatusError( status ) )
-			return( status );
-		keyID = decodedID;
-		}
-
-	/* Make sure that the ID that we've been passed to fetch an object 
-	   matches the ID used in the fetched object */
-	return( iCryptVerifyID( iCryptCert, keyIDtype, keyID, length ) );
-	}
-
 /****************************************************************************
 *																			*
 *							Database Fetch Routines							*
@@ -324,7 +241,7 @@ int getItemData( INOUT DBMS_INFO *dbmsInfo,
 	DBMS_QUERY_TYPE queryType;
 	BOOLEAN multiCertQuery = ( options & KEYMGMT_MASK_USAGEOPTIONS ) ? \
 							 TRUE : FALSE;
-	int certDataLength DUMMY_INIT, iterationCount, status;
+	int certDataLength = DUMMY_INIT, iterationCount, status;
 
 	assert( isWritePtr( dbmsInfo, sizeof( DBMS_INFO ) ) );
 	assert( isWritePtr( iCertificate, sizeof( CRYPT_CERTIFICATE ) ) );
@@ -333,7 +250,7 @@ int getItemData( INOUT DBMS_INFO *dbmsInfo,
 	assert( ( keyValueLength > MIN_NAME_LENGTH && \
 			  isReadPtr( keyValue, keyValueLength ) && \
 			  ( keyIDtype > CRYPT_KEYID_NONE && \
-				keyIDtype < CRYPT_KEYID_LAST ) ) || \
+				keyIDtype <= CRYPT_KEYID_LAST ) ) || \
 			( keyValueLength == 0 && keyValue == NULL && \
 			  keyIDtype == CRYPT_KEYID_NONE ) );
 
@@ -345,11 +262,15 @@ int getItemData( INOUT DBMS_INFO *dbmsInfo,
 			  ( itemType > KEYMGMT_ITEM_NONE && \
 			    itemType < KEYMGMT_ITEM_LAST && \
 				keyIDtype > CRYPT_KEYID_NONE && \
-				keyIDtype < CRYPT_KEYID_LAST && \
+				keyIDtype <= CRYPT_KEYID_LAST && \
 				keyValue != NULL && \
 				keyValueLength >= MIN_NAME_LENGTH && 
 				keyValueLength < MAX_ATTRIBUTE_SIZE && \
 				stateInfo != NULL ) );
+			  /* As well as the standard values we can also have the 
+			     special-case value CRYPT_KEYID_LAST (see the comment in 
+				 getItemFunction() for details) which is mapped to the
+				 database-use-only lookup value "nameID", the hashed DN */
 	REQUIRES( itemType == KEYMGMT_ITEM_NONE || \
 			  itemType == KEYMGMT_ITEM_PUBLICKEY || \
 			  itemType == KEYMGMT_ITEM_REQUEST || \
@@ -517,23 +438,6 @@ int getItemData( INOUT DBMS_INFO *dbmsInfo,
 				  "Couldn't recreate certificate from stored certificate "
 				  "data" ) );
 		}
-	if( itemType != KEYMGMT_ITEM_NONE )
-		{
-		/* If we're doing a fetch based on some form of identifier, make 
-		   sure that the data source has really given us the item that we've 
-		   asked for */
-		status = checkObjectIDMatch( createInfo.cryptHandle, itemType,
-									 keyIDtype, keyValue, keyValueLength );
-		if( cryptStatusError( status ) )
-			{
-			krnlSendNotifier( createInfo.cryptHandle, 
-							  IMESSAGE_DECREFCOUNT );
-			retExt( status, 
-					( status, errorInfo, 
-					  "Certificate fetched for ID type %d doesn't actually "
-					  "correspond to the given ID", keyIDtype ) );
-			}
-		}
 	*iCertificate = createInfo.cryptHandle;
 
 	/* If this was a read with state held externally remember where we got
@@ -611,9 +515,9 @@ static int getNextItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 
 	/* If we're fetching the next certificate in a sequence based on 
 	   externally-held state information, set the key ID to the nameID of 
-	   the previous certificate's issuer, identified using the general
-	   cryptlib ID of CRYPT_IKEYID_SUBJECTID (the term "nameID" is used
-	   only for database keysets) */
+	   the previous certificate's issuer.  This is a special-case ID that 
+	   isn't used outside the database keysets so we use the non-ID type 
+	   CRYPT_KEYID_LAST to signify its use */
 	if( stateInfo != NULL )
 		{
 		char encodedKeyID[ ENCODED_DBXKEYID_SIZE + 8 ];
@@ -625,7 +529,7 @@ static int getNextItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 		if( cryptStatusError( status ) )
 			return( status );
 		return( getItemData( dbmsInfo, iCertificate, stateInfo, 
-							 KEYMGMT_ITEM_PUBLICKEY, CRYPT_IKEYID_SUBJECTID, 
+							 KEYMGMT_ITEM_PUBLICKEY, CRYPT_KEYID_LAST, 
 							 encodedKeyID, encodedKeyIDlength, options, 
 							 KEYSET_ERRINFO ) );
 		}
@@ -673,9 +577,6 @@ static int getItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 			  flags < KEYMGMT_FLAG_MAX );
 	REQUIRES( ( flags & KEYMGMT_MASK_USAGEOPTIONS ) != \
 			  KEYMGMT_MASK_USAGEOPTIONS );
-
-	/* Clear return value */
-	*iCryptHandle = CRYPT_ERROR;
 
 	/* There are some query types that can only be satisfied by a 
 	   certificate store since a standard database doesn't contain the 

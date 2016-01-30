@@ -38,6 +38,11 @@ static int enableSidechannelProtection( INOUT PKC_INFO *pkcInfo,
 	   channels */
 	BN_set_flags( &pkcInfo->dlpParam_x, BN_FLG_EXP_CONSTTIME );
 
+	/* Checksum the bignums to try and detect fault attacks.  Since we're
+	   setting the checksum at this point there's no need to check the 
+	   return value */
+	( void ) calculateBignumChecksum( pkcInfo, cryptAlgo );
+
 	return( CRYPT_OK );
 	}
 
@@ -119,7 +124,7 @@ static int enableSidechannelProtection( INOUT PKC_INFO *pkcInfo,
 	 =  TY + (((256*M*AD+2*AN*TX-AN*x)/256)*x - (M*AD + AN*TX/256)*TX)/256/AD
 	 =  TY - ((M*AD + AN*TX/256)*TX - ((256*M*AD+2*AN*TX-AN*x)/256)*x)/256/AD */
 
-CHECK_RETVAL_RANGE( 160, 1000 ) \
+CHECK_RETVAL \
 static int getDLPexpSize( IN_LENGTH_SHORT_MIN( MIN_PKCSIZE * 8 ) \
 							const int primeBits )
 	{
@@ -213,33 +218,37 @@ static int findGeneratorForPQ( INOUT PKC_INFO *pkcInfo )
 	{
 	BIGNUM *p = &pkcInfo->dlpParam_p, *q = &pkcInfo->dlpParam_q;
 	BIGNUM *g = &pkcInfo->dlpParam_g;
-	BIGNUM *j = &pkcInfo->tmp1;
-	BN_ULONG gCounter;
-	int bnStatus = BN_STATUS;
+	BIGNUM *j = &pkcInfo->tmp1, *gCounter = &pkcInfo->tmp2;
+	int bnStatus = BN_STATUS, iterationCount;
 
 	assert( isWritePtr( pkcInfo, sizeof( PKC_INFO ) ) );
 
 	/* j = (p - 1) / q */
 	CK( BN_sub_word( p, 1 ) );
-	CK( BN_div( j, NULL, p, q, &pkcInfo->bnCTX ) );
+	CK( BN_div( j, NULL, p, q, pkcInfo->bnCTX ) );
 	CK( BN_add_word( p, 1 ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 
 	/* Starting gCounter at 3, set g = (gCounter ^ j) mod p until g != 1.
 	   Although FIPS 196/X9.30/X9.42 merely require that 1 < g < p-1, if we
-	   use small integers it makes this operation much faster */
-	for( gCounter = 3; gCounter < FAILSAFE_ITERATIONS_MED; 
-		 gCounter++ )
+	   use small integers it makes this operation much faster.  Note that 
+	   we can't use a Montgomery modexp at this point since we haven't
+	   evaluated the Montgomery form of p yet */
+	CK( BN_set_word( gCounter, 2 ) );
+	if( bnStatusError( bnStatus ) )
+		return( getBnStatus( bnStatus ) );
+	for( iterationCount = 0; iterationCount < FAILSAFE_ITERATIONS_MED; 
+		 iterationCount++ )
 		{
-		CK( BN_mod_exp_mont_word( g, gCounter, j, p, &pkcInfo->bnCTX, 
-								  &pkcInfo->dlpParam_mont_p ) );
+		CK( BN_add_word( gCounter, 1 ) );
+		CK( BN_mod_exp( g, gCounter, j, p, pkcInfo->bnCTX ) );
 		if( bnStatusError( bnStatus ) )
 			return( getBnStatus( bnStatus ) );
 		if( !BN_is_one( g ) )
 			break;
 		}
-	ENSURES( gCounter < FAILSAFE_ITERATIONS_MED );
+	ENSURES( iterationCount < FAILSAFE_ITERATIONS_MED );
 
 	return( CRYPT_OK );
 	}
@@ -264,25 +273,25 @@ static int generateDLPPublicValues( INOUT PKC_INFO *pkcInfo,
 	int bnStatus = BN_STATUS, status;
 
 	assert( isWritePtr( pkcInfo, sizeof( PKC_INFO ) ) );
-	assert( getDLPexpSize( 1024 ) == 160 );
+	assert( bytesToBits( MIN_PKCSIZE ) > 512 || \
+			getDLPexpSize( 512 ) == 160 );
+	assert( bytesToBits( MIN_PKCSIZE ) > 1024 || \
+			getDLPexpSize( 1024 ) == 160 );
 			/* 1024-bit keys have special handling for pre-FIPS 186-3
 			   compatibility */
-	assert( getDLPexpSize( 1030 ) == 168 );
-			/* First size over 160 bits */
+	assert( bytesToBits( MIN_PKCSIZE ) > 1030 || \
+			getDLPexpSize( 1030 ) == 168 );
+	assert( bytesToBits( MIN_PKCSIZE ) > 1536 || \
+			getDLPexpSize( 1536 ) == 198 );
+	assert( getDLPexpSize( 2048 ) == 225 );
+	assert( getDLPexpSize( 3072 ) == 270 );
+	assert( getDLPexpSize( 4096 ) == 305 );
 
 	REQUIRES( pBits >= bytesToBits( MIN_PKCSIZE ) && \
 			  pBits <= bytesToBits( CRYPT_MAX_PKCSIZE ) );
 	REQUIRES( qBits >= 160 && qBits <= pBits && \
 			  qBits <= bytesToBits( CRYPT_MAX_PKCSIZE ) );
 	REQUIRES( safeExpSizeBits >= 160 && safeExpSizeBits < 512 );
-
-	ENSURES( getDLPexpSize( 1024 ) == 160 );
-			 /* 1024-bit keys have special handling for pre-FIPS 186-3 
-				compatibility */
-	ENSURES( getDLPexpSize( 1536 ) == 198 );
-	ENSURES( getDLPexpSize( 2048 ) == 225 );
-	ENSURES( getDLPexpSize( 3072 ) == 270 );
-	ENSURES( getDLPexpSize( 4096 ) == 305 );
 
 	/* Determine how many factors we need and the size in bits of the 
 	   factors */
@@ -305,8 +314,10 @@ static int generateDLPPublicValues( INOUT PKC_INFO *pkcInfo,
 
 	/* Set up the permutation control arrays and generate the first nFactors 
 	   factors */
+	memset( llProducts, 0, MAX_NO_FACTORS * sizeof( BIGNUM ) );
 	for( i = 0; i < MAX_NO_FACTORS; i++ )
 		BN_init( &llProducts[ i ] );
+	memset( llPrimes, 0, MAX_NO_PRIMES * sizeof( BIGNUM ) );
 	for( i = 0; i < MAX_NO_PRIMES; i++ )
 		BN_init( &llPrimes[ i ] );
 	for( i = 0; i < nFactors; i++ )
@@ -330,7 +341,7 @@ static int generateDLPPublicValues( INOUT PKC_INFO *pkcInfo,
 		for( i = nFactors - 2; i >= 0; i-- )
 			indices[ i ] = indices[ i + 1 ] - 1;
 		CK( BN_mul( &llProducts[ nFactors - 1 ], q, &llPrimes[ nPrimes - 1 ], 
-					&pkcInfo->bnCTX ) );
+					pkcInfo->bnCTX ) );
 		if( bnStatusError( bnStatus ) )
 			{
 			status = getBnStatus( bnStatus );
@@ -350,7 +361,7 @@ static int generateDLPPublicValues( INOUT PKC_INFO *pkcInfo,
 			for( i = indexMoved; bnStatusOK( bnStatus ) && i >= 0; i-- )
 				{
 				CK( BN_mul( &llProducts[ i ], &llProducts[ i + 1 ],
-							&llPrimes[ indices[ i ] ], &pkcInfo->bnCTX ) );
+							&llPrimes[ indices[ i ] ], pkcInfo->bnCTX ) );
 				}
 			CKPTR( BN_copy( p, &llProducts[ 0 ] ) );
 			CK( BN_add_word( p, 1 ) );
@@ -421,23 +432,14 @@ static int generateDLPPublicValues( INOUT PKC_INFO *pkcInfo,
 		}
 	ENSURES( iterationCount < FAILSAFE_ITERATIONS_LARGE );
 
-	/* Recover the original value of q by dividing by 2 */
+	/* Recover the original value of q by dividing by 2 and find a generator 
+	   suitable for p and q */
 	CK( BN_rshift1( q, q ) );
 	if( bnStatusError( bnStatus ) )
 		{
 		status = getBnStatus( bnStatus );
 		goto cleanup;
 		}
-
-	/* Now that we've got p, evaluate its Montgomery form */
-	CK( BN_MONT_CTX_set( &pkcInfo->dlpParam_mont_p, p, &pkcInfo->bnCTX ) );
-	if( bnStatusError( bnStatus ) )
-		{
-		status = getBnStatus( bnStatus );
-		goto cleanup;
-		}
-
-	/* Find a generator suitable for p and q */
 	status = findGeneratorForPQ( pkcInfo );
 
 cleanup:
@@ -447,6 +449,8 @@ cleanup:
 		BN_clear_free( &llPrimes[ i ] );
 	for( i = 0; i < nFactors; i++ )
 		BN_clear_free( &llProducts[ i ] );
+	zeroise( llPrimes, MAX_NO_PRIMES * sizeof( BIGNUM ) );
+	zeroise( llProducts, MAX_NO_FACTORS * sizeof( BIGNUM ) );
 
 	return( status );
 	}
@@ -462,47 +466,36 @@ static int generateDLPPrivateValue( INOUT PKC_INFO *pkcInfo )
 
 	assert( isWritePtr( pkcInfo, sizeof( PKC_INFO ) ) );
 
-	REQUIRES( ( qBits == 0 ) || \
-			  ( qBits >= bytesToBits( 20 ) && \
-				qBits <= bytesToBits( CRYPT_MAX_PKCSIZE ) ) );
-
 	/* If it's a PKCS #3 DH key there won't be a q value present so we have 
 	   to estimate the appropriate x size in the same way that we estimated 
 	   the q size when we generated the public key components */
-	if( qBits == 0 )
+	if( BN_is_zero( q ) )
 		{
-		const int pLen = BN_num_bits( &pkcInfo->dlpParam_p );
-
-		REQUIRES( pLen >= bytesToBits( 20 ) && \
-				  pLen <= bytesToBits( CRYPT_MAX_PKCSIZE ) );
-		return( generateBignum( x, getDLPexpSize( pLen ), 0xC0, 0, NULL, 
-								0 ) );
+		return( generateBignum( x, 
+					getDLPexpSize( BN_num_bits( &pkcInfo->dlpParam_p ) ),
+					0xC0, 0 ) );
 		}
 
 	/* Generate the DLP private value x s.t. 2 <= x <= q-2 (this is the 
 	   lowest common denominator of FIPS 186's 1...q-1 and X9.42's 2...q-2). 
 	   Because the mod q-2 is expensive we do a quick check to make sure 
 	   that it's really necessary before calling it */
-	status = generateBignum( x, qBits, 0xC0, 0, NULL, 0 );
+	status = generateBignum( x, qBits, 0xC0, 0 );
 	if( cryptStatusError( status ) )
 		return( status );
 	CK( BN_sub_word( q, 2 ) );
 	if( BN_cmp( x, q ) > 0 )
 		{
-		int xLen;
-
 		/* Trim x down to size.  Actually we get the upper bound as q-3, 
 		   but over a 160-bit (minimum) number range this doesn't matter */
-		CK( BN_mod( x, x, q, &pkcInfo->bnCTX ) );
+		CK( BN_mod( x, x, q, pkcInfo->bnCTX ) );
 
 		/* If the value that we ended up with is too small, just generate a 
 		   new value one bit shorter, which guarantees that it'll fit the 
 		   criteria (the target is a suitably large random value, not the 
 		   closest possible fit within the range) */
-		xLen = BN_num_bits( x );
-		REQUIRES( xLen >= 0 && xLen <= bytesToBits( CRYPT_MAX_PKCSIZE ) );
-		if( bnStatusOK( bnStatus ) && xLen < qBits - 5 )
-			status = generateBignum( x, qBits - 1, 0xC0, 0, NULL, 0 );
+		if( bnStatusOK( bnStatus ) && BN_num_bits( x ) < qBits - 5 )
+			status = generateBignum( x, qBits - 1, 0xC0, 0 );
 		}
 	CK( BN_add_word( q, 2 ) );
 
@@ -518,7 +511,7 @@ static int generateDLPPublicValue( INOUT PKC_INFO *pkcInfo )
 
 	assert( isWritePtr( pkcInfo, sizeof( PKC_INFO ) ) );
 
-	CK( BN_mod_exp_mont( y, g, x, p, &pkcInfo->bnCTX, 
+	CK( BN_mod_exp_mont( y, g, x, p, pkcInfo->bnCTX, 
 						 &pkcInfo->dlpParam_mont_p ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
@@ -541,9 +534,9 @@ static int checkDLPDomainParameters( INOUT PKC_INFO *pkcInfo,
 									 const BOOLEAN isPKCS3, 
 									 const BOOLEAN isFullyInitialised )
 	{
-	BIGNUM *p = &pkcInfo->dlpParam_p, *q = &pkcInfo->dlpParam_q;
-	BIGNUM *g = &pkcInfo->dlpParam_g, *tmp = &pkcInfo->tmp1;
-	int length, bnStatus = BN_STATUS, status;
+	BIGNUM *p = &pkcInfo->dlpParam_p, *g = &pkcInfo->dlpParam_g;
+	BIGNUM *tmp = &pkcInfo->tmp1;
+	int length, bnStatus = BN_STATUS;
 
 	assert( isWritePtr( pkcInfo, sizeof( PKC_INFO ) ) );
 
@@ -557,11 +550,9 @@ static int checkDLPDomainParameters( INOUT PKC_INFO *pkcInfo,
 	if( length < DLPPARAM_MIN_P || length > DLPPARAM_MAX_P )
 		return( CRYPT_ARGERROR_STR1 );
 
-#ifndef CONFIG_FUZZ
 	/* Verify that p is not (obviously) composite */
 	if( !primeSieve( p ) )
 		return( CRYPT_ARGERROR_STR1 );
-#endif /* CONFIG_FUZZ */
 
 	/* Verify that gLen >= DLPPARAM_MIN_G, gLen <= DLPPARAM_MAX_G */
 	length = BN_num_bytes( g );
@@ -575,10 +566,7 @@ static int checkDLPDomainParameters( INOUT PKC_INFO *pkcInfo,
 	   parameter the same size as p so we can't limit the size as for 
 	   PKCS #3 */
 	if( isPKCS3 && BN_num_bits( g ) > 8 )
-		{
-		assert_nofuzz( DEBUG_WARN );	/* Warn in debug build */
 		return( CRYPT_ARGERROR_STR1 );
-		}
 
 	/* Verify that 2 <= g <= p - 2 */
 	if( BN_num_bits( g ) < 2 )
@@ -591,94 +579,24 @@ static int checkDLPDomainParameters( INOUT PKC_INFO *pkcInfo,
 	/* If it's a PKCS #3 key then the only public values are p and g and 
 	   we're done */
 	if( isPKCS3 )
-		{
-		/* There is a further check that we can perform on p, but it's 
-		   rather problematic because it only works for "safe" primes 
-		   (primes of the form p = 2p' + 1), and even then the checks depend 
-		   on your religious inclinations, you've got the choice of either 
-		   choosing a value where the generated DH secret is limited to half 
-		   the possible values, or one where you leak a bit of the secret 
-		   exponent.  For example for g=2, if p is congruent to 11 mod 24 
-		   then g is a quadratic nonresidue and the DH secret covers all 
-		   possible values but you leak the LSB of the secret exponent, but 
-		   if p is congruent to 11 mod 23 then g is a quadratic residue and 
-		   the DH secret only covers half the possible values, but you don't 
-		   leak any bits of the exponent (for OpenSSH's g=5, the values are 
-		   3 and 7).
-
-		   Once you go to more general values of g, or FIPS 186 primes which
-		   should be easily verifiable but aren't because the PKCS #3 form
-		   discards the q value that you need for the verification, there 
-		   isn't really any checking that can be done.  The result is an ugly
-		   yes-biased test that can say "definitely safe" but only "possibly
-		   unsafe" (unless we're willing to deal with lots of false 
-		   positives).
-
-		   Because of this we only complain about problems in debug mode, if we
-		   enabled the rejection of unverifiable primes in release code we'd 
-		   Get Letters... */
-#ifndef NDEBUG
-		{
-		BN_ULONG modWord;
-
-		switch( BN_get_word( g ) )
-			{
-			case 2:
-				/* Oakley primes, congruent to 11 mod 24 = leaks LSB, 
-				   congruent to 23 mod 24 = only covers half the possible 
-				   values */
-				modWord = BN_mod_word( p, 24 );
-				assert_nofuzz( modWord == 11 || modWord == 23 );
-				break;
-
-			case 5:
-				/* Used by OpenSSH for no known reason */
-				modWord = BN_mod_word( p, 10 );
-				assert_nofuzz( modWord == 3 || modWord == 7 );
-				break;
-
-			default:
-				assert_nofuzz( DEBUG_WARN );
-			}
-		}
-
-	/* Now we could do a full test for a safe prime, so both p and p' are 
-	   primes, but this is very slow and given the inability to reject 
-	   values that don't check out, it's not certain what would be gained
-	   by it */
-#endif /* !NDEBUG */
 		return( CRYPT_OK );
-		}
 
 	/* Verify that qLen >= DLPPARAM_MIN_Q, qLen <= DLPPARAM_MAX_Q */
-	length = BN_num_bytes( q );
+	length = BN_num_bytes( &pkcInfo->dlpParam_q );
 	if( length < DLPPARAM_MIN_Q || length > DLPPARAM_MAX_Q )
 		return( CRYPT_ARGERROR_STR1 );
 
-	/* Verify that q is not (obviously) composite.  Note that we can't 
-	   use primeProbable() because this updates the Montgomery CTX data, 
-	   it's OK to use it early in the keygen process before everything is 
-	   set up but not after the pkcInfo is fully initialised so we use
-	   primeProbablyFermat() instead */
-	if( !primeSieve( q ) )
-		return( CRYPT_ARGERROR_STR1 );
-	assert( BN_is_zero( &( pkcInfo->montCTX2.N ) ) );
-	CK( BN_MONT_CTX_set( &pkcInfo->montCTX2, q, &pkcInfo->bnCTX ) );
-	if( bnStatusError( bnStatus ) )
-		return( CRYPT_ARGERROR_STR1 );
-	status = primeProbableFermat( pkcInfo, q, &pkcInfo->montCTX2 );
-	if( cryptStatusError( status ) )
-		return( status );
-	if( status != TRUE )
+	/* Verify that q is not (obviously) composite */
+	if( !primeSieve( &pkcInfo->dlpParam_q ) )
 		return( CRYPT_ARGERROR_STR1 );
 
-	/* Verify that g is a generator of order q, i.e. that g^q mod p == 1.  
-	   This check requires initialisation of values that may not have been 
-	   performed yet at this point, in which case the check is performed 
-	   inline in the main initCheckDLPkey() code below */
+	/* Verify that g is a generator of order q.  This check requires 
+	   initialisation of values that may not have been performed yet at this 
+	   point, in which case the check is performed inline in the main 
+	   initCheckDLPkey() code below */
 	if( !isFullyInitialised )
 		return( CRYPT_OK );
-	CK( BN_mod_exp_mont( tmp, g, q, p, &pkcInfo->bnCTX,
+	CK( BN_mod_exp_mont( tmp, g, &pkcInfo->dlpParam_q, p, pkcInfo->bnCTX,
 						 &pkcInfo->dlpParam_mont_p ) );
 	if( bnStatusError( bnStatus ) || !BN_is_one( tmp ) )
 		return( CRYPT_ARGERROR_STR1 );
@@ -709,7 +627,7 @@ static int checkDLPPublicKey( INOUT PKC_INFO *pkcInfo,
 	if( !isPKCS3 )
 		{
 		CK( BN_mod_exp_mont( tmp, y, &pkcInfo->dlpParam_q, p,
-							 &pkcInfo->bnCTX, &pkcInfo->dlpParam_mont_p ) );
+							 pkcInfo->bnCTX, &pkcInfo->dlpParam_mont_p ) );
 		if( bnStatusError( bnStatus ) || !BN_is_one( tmp ) )
 			return( CRYPT_ARGERROR_STR1 );
 		}
@@ -735,12 +653,10 @@ static int checkDLPPrivateKey( INOUT PKC_INFO *pkcInfo )
 		return( CRYPT_ARGERROR_STR1 );
 
 	/* Verify that g^x mod p == y */
-#ifndef CONFIG_FUZZ
-	CK( BN_mod_exp_mont( tmp, g, x, p, &pkcInfo->bnCTX,
+	CK( BN_mod_exp_mont( tmp, g, x, p, pkcInfo->bnCTX,
 						 &pkcInfo->dlpParam_mont_p ) );
 	if( bnStatusError( bnStatus ) || BN_cmp( tmp, y ) )
 		return( CRYPT_ARGERROR_STR1 );
-#endif /* CONFIG_FUZZ */
 
 	return( CRYPT_OK );
 	}
@@ -759,7 +675,7 @@ int generateDLPkey( INOUT CONTEXT_INFO *contextInfoPtr,
 	{
 	PKC_INFO *pkcInfo = contextInfoPtr->ctxPKC;
 	BIGNUM *p = &pkcInfo->dlpParam_p;
-	int status;
+	int bnStatus = BN_STATUS, status;
 
 	assert( isWritePtr( contextInfoPtr, sizeof( CONTEXT_INFO ) ) );
 
@@ -783,10 +699,11 @@ int generateDLPkey( INOUT CONTEXT_INFO *contextInfoPtr,
 	   effective key size after we've finished generating the public value
 	   that determines its nominal size */
 	pkcInfo->keySizeBits = BN_num_bits( p );
-	ENSURES( pkcInfo->keySizeBits >= bytesToBits( 20 ) && \
-			 pkcInfo->keySizeBits <= bytesToBits( CRYPT_MAX_PKCSIZE ) );
 
-	/* Calculate y */
+	/* Evaluate the Montgomery form of p and calculate y */
+	CK( BN_MONT_CTX_set( &pkcInfo->dlpParam_mont_p, p, pkcInfo->bnCTX ) );
+	if( bnStatusError( bnStatus ) )
+		return( getBnStatus( bnStatus ) );
 	status = generateDLPPublicValue( pkcInfo );
 	if( cryptStatusError( status ) )
 		return( status );
@@ -801,21 +718,10 @@ int generateDLPkey( INOUT CONTEXT_INFO *contextInfoPtr,
 		return( status );
 
 	/* Enable side-channel protection if required */
-	if( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION )
-		{
-		status = enableSidechannelProtection( pkcInfo, 
-								contextInfoPtr->capabilityInfo->cryptAlgo );
-		if( cryptStatusError( status ) )
-			return( status );
-		}
-
-	/* Checksum the bignums to try and detect fault attacks.  Since we're
-	   setting the checksum at this point there's no need to check the 
-	   return value */
-	( void ) checksumContextData( pkcInfo, 
-							contextInfoPtr->capabilityInfo->cryptAlgo, TRUE );
-
-	return( CRYPT_OK );
+	if( !( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION ) )
+		return( CRYPT_OK );
+	return( enableSidechannelProtection( pkcInfo, 
+							contextInfoPtr->capabilityInfo->cryptAlgo ) );
 	}
 
 /* Initialise and check a DLP key.  If the isDH flag is set then it's a DH 
@@ -856,12 +762,10 @@ int initCheckDLPkey( INOUT CONTEXT_INFO *contextInfoPtr,
 		return( status );
 
 	/* Evaluate the Montgomery form of p, needed for further operations */
-	CK( BN_MONT_CTX_set( &pkcInfo->dlpParam_mont_p, p, &pkcInfo->bnCTX ) );
+	CK( BN_MONT_CTX_set( &pkcInfo->dlpParam_mont_p, p, pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 	pkcInfo->keySizeBits = BN_num_bits( p );
-	ENSURES( pkcInfo->keySizeBits >= bytesToBits( 20 ) && \
-			 pkcInfo->keySizeBits <= bytesToBits( CRYPT_MAX_PKCSIZE ) );
 
 	/* Special-case verification for non-PKCS #3 (i.e. FIPS 186) keys.  We 
 	   have to do this at this point rather than in 
@@ -871,7 +775,7 @@ int initCheckDLPkey( INOUT CONTEXT_INFO *contextInfoPtr,
 	if( !isPKCS3 )
 		{
 		/* Verify that g is a generator of order q */
-		CK( BN_mod_exp_mont( tmp, g, &pkcInfo->dlpParam_q, p, &pkcInfo->bnCTX,
+		CK( BN_mod_exp_mont( tmp, g, &pkcInfo->dlpParam_q, p, pkcInfo->bnCTX,
 							 &pkcInfo->dlpParam_mont_p ) );
 		if( bnStatusError( bnStatus ) || !BN_is_one( tmp ) )
 			return( CRYPT_ARGERROR_STR1 );
@@ -952,21 +856,9 @@ int initCheckDLPkey( INOUT CONTEXT_INFO *contextInfoPtr,
 		}
 
 	/* Enable side-channel protection if required */
-	if( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION )
-		{
-		status = enableSidechannelProtection( pkcInfo, 
-								contextInfoPtr->capabilityInfo->cryptAlgo );
-		if( cryptStatusError( status ) )
-			return( status );
-		}
-
-	/* Checksum the bignums to try and detect fault attacks.  Since we're
-	   setting the checksum at this point there's no need to check the 
-	   return value */
-	( void ) checksumContextData( pkcInfo, 
-								  contextInfoPtr->capabilityInfo->cryptAlgo, 
-								  isPrivateKey || generatedX );
-
-	return( CRYPT_OK );
+	if( !( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION ) )
+		return( CRYPT_OK );
+	return( enableSidechannelProtection( pkcInfo, 
+							contextInfoPtr->capabilityInfo->cryptAlgo ) );
 	}
 #endif /* USE_DH || USE_DSA || USE_ELGAMAL */

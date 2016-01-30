@@ -1,14 +1,16 @@
 /****************************************************************************
 *																			*
 *					Certificate Signature Checking Routines					*
-*						Copyright Peter Gutmann 1997-2013					*
+*						Copyright Peter Gutmann 1997-2008					*
 *																			*
 ****************************************************************************/
 
 #if defined( INC_ALL )
   #include "cert.h"
+  #include "asn1.h"
 #else
   #include "cert/cert.h"
+  #include "enc_dec/asn1.h"
 #endif /* Compiler-specific includes */
 
 #ifdef USE_CERTIFICATES
@@ -104,7 +106,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int checkResponder( INOUT CERT_INFO *certInfoPtr,
 						   IN_HANDLE const CRYPT_SESSION iCryptSession )
 	{
-	CRYPT_CERTIFICATE cryptResponse DUMMY_INIT;
+	CRYPT_CERTIFICATE cryptResponse = DUMMY_INIT;
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	int sessionType, status;
 
@@ -230,29 +232,20 @@ static int checkKeyset( INOUT CERT_INFO *certInfoPtr,
 *																			*
 ****************************************************************************/
 
-/* Check a certificate object against a signing certificate object, 
-   typically a certificate against an issuer certificate but also a self-
-   signed object like a certificate request against itself.
+/* Check a certificate against an issuer certificate.  The trustAnchorCheck 
+   flag is used when we're checking an explicit trust anchor, for which we
+   only need to check the signature if it's self-signed.  The 
+   shortCircuitCheck flag is used when checking subject:issuer pairs inside 
+   certificate chains, which have already been checked by the chain-handling 
+   code so a full (re-)check isn't necessary any more */
 
-   The trustAnchorCheck flag is used when we're checking an explicit trust 
-   anchor, for which we only need to check the signature if it's self-signed.  
-   The shortCircuitCheck flag is used when checking subject:issuer pairs 
-   inside certificate chains, which have already been checked by the chain-
-   handling code so a full (re-)check isn't necessary any more.  The 
-   basicCheckDone flag is used if checkCertBasic() has already been done by 
-   the caller (if we're coming from the certificate-chain code then we're 
-   processing a certificate in the middle of the chain and it hasn't been 
-   done yet, if we're coming from the standalone certificate-checking code 
-   then it's already been done) */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 8, 9 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 7, 8 ) ) \
 int checkCertDetails( INOUT CERT_INFO *subjectCertInfoPtr,
 					  INOUT_OPT CERT_INFO *issuerCertInfoPtr,
 					  IN_HANDLE_OPT const CRYPT_CONTEXT iIssuerPubKey,
 					  IN_OPT const X509SIG_FORMATINFO *formatInfo,
 					  const BOOLEAN trustAnchorCheck,
 					  const BOOLEAN shortCircuitCheck,
-					  const BOOLEAN basicCheckDone,
 					  OUT_ENUM_OPT( CRYPT_ATTRIBUTE ) \
 						CRYPT_ATTRIBUTE_TYPE *errorLocus,
 					  OUT_ENUM_OPT( CRYPT_ERRTYPE ) \
@@ -271,15 +264,10 @@ int checkCertDetails( INOUT CERT_INFO *subjectCertInfoPtr,
 	REQUIRES( iIssuerPubKey == CRYPT_UNUSED || \
 			  isHandleRangeValid( iIssuerPubKey ) );
 
-	/* Clear return values */
-	*errorLocus = CRYPT_ATTRIBUTE_NONE;
-	*errorType = CRYPT_ERRTYPE_NONE;
-
-	/* Perform a basic check for obvious invalidity issues if required */
-	if( !basicCheckDone && \
-		( subjectCertInfoPtr->type == CRYPT_CERTTYPE_CERTIFICATE || \
-		  subjectCertInfoPtr->type == CRYPT_CERTTYPE_ATTRIBUTE_CERT || \
-		  subjectCertInfoPtr->type == CRYPT_CERTTYPE_CERTCHAIN ) )
+	/* Perform a basic check for obvious invalidity issues */
+	if( subjectCertInfoPtr->type == CRYPT_CERTTYPE_CERTIFICATE || \
+		subjectCertInfoPtr->type == CRYPT_CERTTYPE_ATTRIBUTE_CERT || \
+		subjectCertInfoPtr->type == CRYPT_CERTTYPE_CERTCHAIN )
 		{
 		status = checkCertBasic( subjectCertInfoPtr );
 		if( cryptStatusError( status ) )
@@ -319,11 +307,11 @@ int checkCertDetails( INOUT CERT_INFO *subjectCertInfoPtr,
 	   second check here */
 	if( !shortCircuitCheck )
 		{
-		status = krnlSendMessage( subjectCertInfoPtr->ownerHandle, 
-								  IMESSAGE_USER_TRUSTMGMT,
-								  &subjectCertInfoPtr->objectHandle,
-								  MESSAGE_TRUSTMGMT_CHECK );
-		if( cryptStatusOK( status ) )
+		if( cryptStatusOK( \
+				krnlSendMessage( subjectCertInfoPtr->ownerHandle, 
+								 IMESSAGE_USER_TRUSTMGMT,
+								 &subjectCertInfoPtr->objectHandle,
+								 MESSAGE_TRUSTMGMT_CHECK ) ) )
 			return( CRYPT_OK );
 		}
 
@@ -494,8 +482,8 @@ static int checkSelfSignedCert( INOUT CERT_INFO *certInfoPtr,
 
 	/* Check the certificate against the issuing certificate */
 	status = checkCertDetails( certInfoPtr, issuerCertInfoPtr, 
-							   iCryptContext, formatInfo, FALSE, FALSE, 
-							   TRUE, &certInfoPtr->errorLocus, 
+							   iCryptContext, formatInfo, FALSE, FALSE,
+							   &certInfoPtr->errorLocus, 
 							   &certInfoPtr->errorType );
 	if( trustedCertAcquired )
 		krnlReleaseObject( issuerCertInfoPtr->objectHandle );
@@ -508,70 +496,8 @@ static int checkSelfSignedCert( INOUT CERT_INFO *certInfoPtr,
 *																			*
 ****************************************************************************/
 
-/* Check the validity of a certificate object against another object, 
-   typically an issuing key or certificate but also a CRL or RTCS/OCSP
-   session.
-
-   Working with certificate chains is different from working with any other 
-   type of certificate object because of the presence of multiple 
-   certificates in both the item to be checked (the left-hand argument) and 
-   the item to use for the checking (the right-hand argument).  Consider the 
-   following combinations of objects that we could encounter in terms of 
-   verification:
-
-	Left		Right		Allowed		Configuration
-	----		-----		-------		-------------
-	Leaf		Issuer		  Y			L: A
-										R:	   B
-
-	Chain		-			  Y			L: A - B - C
-										R: -
-
-	Chain		Root		  Y			L: A - B - C
-										R:		   C
-
-	Leaf		Chain		  N			L: A
-										R: A - B - C
-
-	Leaf		Chain - Lf.	  N			L: A
-										R:	   B - C
-
-	Chain - Rt.	Root		  Y			L: A - B
-										R:		   C
-
-	Chain - Rt.	Chain - Lf.	  N			L: A - B
-										R:	   B - C
-
-   In the worst case we could run into something like:
-
-	L: A - B - C - D
-	R: X - Y - C - Z
-
-   Now although some of the certificates on the left and the right appear to 
-   be identical, all this means is that the DNs and keys (and optionally 
-   keyIDs) match, they could otherwise be completely different certificates 
-   (different key usage, policies, altNames, and so on).  Because of this we 
-   can't use one chain to verify another chain since although they may 
-   logically verify, the principle of least surprise (to the user) indicates 
-   that we shouldn't make any security statement about it.  For example in 
-   the case of the A - B chain verified by the X - Y chain above, if we 
-   report a successful verification then the user could be quite justified 
-   in thinking that A - B - C - D was verified rather than A - B - C - Z, or 
-   even that both the A - B and the X - Y chains are valid.
-
-   An informal survey of users indicated that no-one was really sure what a 
-   success (or failure) status would indicate in this case, or more 
-   specifically that everyone had some sort of guess but there was little 
-   overlap between them, and people changed their views when questioned 
-   about individual details.
-
-   Because of this issue of virtually-guaranteed unexpected results from the 
-   user's point of view we don't allow a certificate chain as a right-hand 
-   argument for checking any kind of certificate object.  In addition we 
-   don't allow any overlap between the certificates on the left and the 
-   certificates on the right, for example if the left-hand argument is a 
-   chain from leaf to root and the right-hand argument is another copy of 
-   the root */
+/* Check the validity of a certificate object, either against an issuing 
+   key/certificate or against a CRL */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int checkCertValidity( INOUT CERT_INFO *certInfoPtr, 
@@ -581,8 +507,7 @@ int checkCertValidity( INOUT CERT_INFO *certInfoPtr,
 	CERT_INFO *issuerCertInfoPtr = NULL;
 	X509SIG_FORMATINFO formatInfo, *formatInfoPtr = NULL;
 	BOOLEAN issuerCertAcquired = FALSE;
-	int checkObjectType, checkObjectSubtype = CRYPT_CERTTYPE_NONE;
-	int status;
+	int sigCheckObjectType, sigCheckKeyType = CRYPT_CERTTYPE_NONE, status;
 
 	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
 
@@ -629,12 +554,13 @@ int checkCertValidity( INOUT CERT_INFO *certInfoPtr,
 
 	/* Find out what the signature check object is */
 	status = krnlSendMessage( iSigCheckObject, IMESSAGE_GETATTRIBUTE, 
-							  &checkObjectType, CRYPT_IATTRIBUTE_TYPE );
-	if( cryptStatusOK( status ) )
+							  &sigCheckObjectType, CRYPT_IATTRIBUTE_TYPE );
+	if( cryptStatusOK( status ) && \
+		sigCheckObjectType == OBJECT_TYPE_CERTIFICATE )
 		{
 		status = krnlSendMessage( iSigCheckObject, IMESSAGE_GETATTRIBUTE,
-								  &checkObjectSubtype, 
-								  CRYPT_IATTRIBUTE_SUBTYPE );
+								  &sigCheckKeyType, 
+								  CRYPT_CERTINFO_CERTTYPE );
 		}
 	if( cryptStatusError( status ) )
 		return( cryptArgError( status ) ? CRYPT_ARGERROR_VALUE : status );
@@ -644,25 +570,16 @@ int checkCertValidity( INOUT CERT_INFO *certInfoPtr,
 	   the kernel checks since the kernel only knows about valid subtypes
 	   but not that some subtypes are only valid in combination with some
 	   types of object being checked */
-	switch( checkObjectType )
+	switch( sigCheckObjectType )
 		{
 		case OBJECT_TYPE_CERTIFICATE:
-			REQUIRES( checkObjectSubtype == SUBTYPE_CERT_CERT || \
-					  checkObjectSubtype == SUBTYPE_CERT_CRL || \
-					  checkObjectSubtype == SUBTYPE_CERT_RTCS_RESP || \
-					  checkObjectSubtype == SUBTYPE_CERT_OCSP_RESP );
-			break;
-
 		case OBJECT_TYPE_CONTEXT:
-			REQUIRES( checkObjectSubtype == SUBTYPE_CTX_PKC );
 			break;
 
 		case OBJECT_TYPE_KEYSET:
 			/* A keyset can only be used as a source of revocation
 			   information for checking a certificate or to populate the
 			   status fields of an RTCS/OCSP response */
-			REQUIRES( checkObjectSubtype == SUBTYPE_KEYSET_DBMS || \
-					  checkObjectSubtype == SUBTYPE_KEYSET_DBMS_STORE );
 			if( certInfoPtr->type != CRYPT_CERTTYPE_CERTIFICATE && \
 				certInfoPtr->type != CRYPT_CERTTYPE_ATTRIBUTE_CERT && \
 				certInfoPtr->type != CRYPT_CERTTYPE_CERTCHAIN && \
@@ -674,8 +591,6 @@ int checkCertValidity( INOUT CERT_INFO *certInfoPtr,
 		case OBJECT_TYPE_SESSION:
 			/* An (RTCS or OCSP) session can only be used as a source of
 			   validity/revocation information for checking a certificate */
-			REQUIRES( checkObjectSubtype == SUBTYPE_SESSION_RTCS || \
-					  checkObjectSubtype == SUBTYPE_SESSION_OCSP );
 			if( certInfoPtr->type != CRYPT_CERTTYPE_CERTIFICATE && \
 				certInfoPtr->type != CRYPT_CERTTYPE_ATTRIBUTE_CERT && \
 				certInfoPtr->type != CRYPT_CERTTYPE_CERTCHAIN )
@@ -684,59 +599,6 @@ int checkCertValidity( INOUT CERT_INFO *certInfoPtr,
 
 		default:
 			return( CRYPT_ARGERROR_VALUE );
-		}
-
-	/* There's one special-case situation in which we don't perform a 
-	   standard check and that's when the object to be checked is a 
-	   certificate chain.  Normally the checking object would be 
-	   CRYPT_UNUSED, but the caller may also pass in a root certificate
-	   as the checking object for a chain that's missing the root */
-	if( certInfoPtr->type == CRYPT_CERTTYPE_CERTCHAIN )
-		{
-		CERT_CERT_INFO *certChainInfo = certInfoPtr->cCertCert;
-
-		/* If we're checking a certificate chain then the only type of 
-		   checking object that's valid is a certificate.  This isn't 
-		   strictly true since the CRL-checking code will check every
-		   certificate in the chain against the CRL, but the code for OCSP, 
-		   RTCS, and keysets doesn't yet do this so until someone requests 
-		   it we don't allow entire chains to be checked in this manner */
-		if( checkObjectType != OBJECT_TYPE_CERTIFICATE || \
-			checkObjectSubtype != SUBTYPE_CERT_CERT )
-			return( CRYPT_ARGERROR_VALUE );
-
-		/* At this point things get a bit deceptive (for the caller), the
-		   only way in which the check that's being performed here can 
-		   succeed is if the certificate being used as the checking object 
-		   is a trusted CA certificate that's at the top of the chain.  In 
-		   this case there's no need to explicitly make it part of the check 
-		   since it'll already be present in the trust store, however for
-		   consistency we verify that it's a CA certificate, that it's
-		   trusted, and that it chains up from the certificate at the top of
-		   the chain.  Once this check has passed we call checkCertChain()
-		   as if the checking object had been specified as CRYPT_UNUSED */
-		status = krnlSendMessage( iSigCheckObject, IMESSAGE_CHECK, NULL, 
-								  MESSAGE_CHECK_CA );
-		if( cryptStatusError( status ) )
-			return( CRYPT_ARGERROR_VALUE );
-		status = krnlSendMessage( certInfoPtr->ownerHandle, 
-								  IMESSAGE_USER_TRUSTMGMT, 
-								  ( MESSAGE_CAST ) &iSigCheckObject, 
-								  MESSAGE_TRUSTMGMT_CHECK );
-		if( cryptStatusError( status ) )
-			return( CRYPT_ARGERROR_VALUE );
-		REQUIRES( certChainInfo->chainEnd > 0 && \
-				  certChainInfo->chainEnd <= MAX_CHAINLENGTH );
-		status = krnlSendMessage( certChainInfo->chain[ certChainInfo->chainEnd - 1 ], 
-								  IMESSAGE_CRT_SIGCHECK, NULL,
-								  iSigCheckObject );
-		if( cryptStatusError( status ) )
-			return( CRYPT_ARGERROR_VALUE );
-
-		/* The checking object is a trusted CA certificate that connects to
-		   the top of the chain, check the rest of the chain with the 
-		   implicitly-present trusted certificate as the root */
-		return( checkCertChain( certInfoPtr ) );
 		}
 
 	/* Perform a basic check for obvious invalidity issues */
@@ -749,33 +611,15 @@ int checkCertValidity( INOUT CERT_INFO *certInfoPtr,
 			return( status );
 		}
 
-	/* If the checking object is a CRL or CRL-equivalent like an RTCS or
-	   OCSP response, a keyset that may contain a CRL, or an RTCS or OCSP 
-	   session then this is a validity/revocation check that works rather 
-	   differently from a straight signature check */
-#if defined( USE_CERTREV ) || defined( USE_CERTVAL )
-	if( checkObjectType == OBJECT_TYPE_CERTIFICATE )
-		{
+	/* If the checking key is a CRL, a keyset that may contain a CRL, or an
+	   RTCS or OCSP session then this is a validity/revocation check that 
+	   works rather differently from a straight signature check */
 #if defined( USE_CERTREV )
-		if( checkObjectSubtype == SUBTYPE_CERT_CRL || \
-			checkObjectSubtype == SUBTYPE_CERT_OCSP_RESP )
-			{
-			return( checkCRL( certInfoPtr, iSigCheckObject ) );
-			}
+	if( sigCheckObjectType == OBJECT_TYPE_CERTIFICATE && \
+		sigCheckKeyType == CRYPT_CERTTYPE_CRL )
+		return( checkCRL( certInfoPtr, iSigCheckObject ) );
 #endif /* USE_CERTREV */
-#if defined( USE_CERTVAL )
-		if( checkObjectSubtype == SUBTYPE_CERT_RTCS_RESP )
-			{
-			/* This functionality isn't enabled yet, since RTCS is a 
-			   straight go/no go protocol it seems unlikely that it'll
-			   ever be needed, and no-one's ever requested it in more
-			   than a decade of use */
-			retIntError();
-			}
-#endif /* USE_CERTVAL */
-		}
-#endif /* USE_CERTREV || USE_CERTVAL */
-	if( checkObjectType == OBJECT_TYPE_KEYSET )
+	if( sigCheckObjectType == OBJECT_TYPE_KEYSET )
 		{
 		/* If it's an RTCS or OCSP response use the certificate store to fill
 		   in the status information fields */
@@ -795,7 +639,7 @@ int checkCertValidity( INOUT CERT_INFO *certInfoPtr,
 #endif /* USE_CERTREV */
 		}
 #if defined( USE_CERTREV ) || defined( USE_CERTVAL )
-	if( checkObjectType == OBJECT_TYPE_SESSION )
+	if( sigCheckObjectType == OBJECT_TYPE_SESSION )
 		return( checkResponder( certInfoPtr, iSigCheckObject ) );
 #endif /* USE_CERTREV || USE_CERTVAL */
 
@@ -828,7 +672,7 @@ int checkCertValidity( INOUT CERT_INFO *certInfoPtr,
 		   questionable combinations like a certificate request being used 
 		   to validate a certificate and misleading ones such as one 
 		   certificate chain being used to check a second chain */
-		if( checkObjectType == OBJECT_TYPE_CERTIFICATE )
+		if( sigCheckObjectType == OBJECT_TYPE_CERTIFICATE )
 			{
 			status = krnlSendMessage( certInfoPtr->objectHandle,
 									  IMESSAGE_COMPARE, 
@@ -850,7 +694,7 @@ int checkCertValidity( INOUT CERT_INFO *certInfoPtr,
 	/* The signature check key may be a certificate or a context.  If it's
 	   a certificate we get the issuer certificate information and extract 
 	   the context from it before continuing */
-	if( checkObjectType == OBJECT_TYPE_CERTIFICATE )
+	if( sigCheckObjectType == OBJECT_TYPE_CERTIFICATE )
 		{
 		/* Get the context from the issuer certificate */
 		status = krnlSendMessage( iSigCheckObject, IMESSAGE_GETDEPENDENT,
@@ -895,7 +739,7 @@ int checkCertValidity( INOUT CERT_INFO *certInfoPtr,
 	status = checkCertDetails( certInfoPtr, issuerCertAcquired ? \
 									issuerCertInfoPtr : NULL, 
 							   iCryptContext, formatInfoPtr, FALSE, FALSE,
-							   TRUE, &certInfoPtr->errorLocus, 
+							   &certInfoPtr->errorLocus, 
 							   &certInfoPtr->errorType );
 	if( issuerCertAcquired )
 		krnlReleaseObject( issuerCertInfoPtr->objectHandle );

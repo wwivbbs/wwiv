@@ -227,13 +227,7 @@ static int updateDependentObjectPerms( IN_HANDLE const CRYPT_HANDLE objectHandle
 	   can be since there are bound to be certs out there broken enough to do
 	   this, and certainly under the stricter compliance levels this *will*
 	   happen, so we make it a warning that's only produced in debug mode */
-	if( actionFlags == 0 )
-		{
-		DEBUG_DIAG(( "Object %s is constrained by its associated "
-					 "certificate object to not allow any actions", 
-					 getObjectDescriptionNT( objectHandle ) ));
-		assert_nofuzz( DEBUG_WARN );
-		}
+	REQUIRES( actionFlags != 0 );
 
 	/* We're done querying the dependent object, re-lock the object table, 
 	   reinitialise any references to it, and make sure that the original 
@@ -242,12 +236,6 @@ static int updateDependentObjectPerms( IN_HANDLE const CRYPT_HANDLE objectHandle
 	objectTable = krnlData->objectTable;
 	if( objectTable[ objectHandle ].uniqueID != uniqueID )
 		return( CRYPT_ERROR_SIGNALLED );
-	if( actionFlags == 0 )
-		{
-		/* See the comment above, we can't continue at this point because we 
-		   can't set the action permissions attribute to nothing */
-		return( CRYPT_ERROR_NOTAVAIL );
-		}
 	status = setPropertyAttribute( contextHandle, CRYPT_IATTRIBUTE_ACTIONPERMS,
 								   &actionFlags );
 
@@ -256,38 +244,6 @@ static int updateDependentObjectPerms( IN_HANDLE const CRYPT_HANDLE objectHandle
 	FORALL( i, 0, ACTION_PERM_COUNT,
 			( objectTable[ contextHandle ].actionFlags & ( ACTION_PERM_MASK << ( i * 2 ) ) ) <= \
 			( ORIGINAL_VALUE( oldPerm ) & ( ACTION_PERM_MASK << ( i * 2 ) ) ) );
-
-	return( status );
-	}
-
-
-/* Convert an internal object reference to an external one */
-
-CHECK_RETVAL \
-int convertIntToExtRef( IN_HANDLE const int objectHandle )
-	{
-	int status;
-
-	/* Preconditions */
-	REQUIRES( isValidObject( objectHandle ) );
-
-	/* Convert at least one internal reference to the object to an external 
-	   one */
-	status = incRefCount( objectHandle, 0, NULL, FALSE );
-	if( cryptStatusOK( status ) )
-		status = decRefCount( objectHandle, 0, NULL, TRUE );
-	if( cryptStatusOK( status ) )
-		return( status );
-
-	/* Recovering from an error at this point is tricky, it's a shouldn't-
-	   occur condition in any case but if it does occur then the fact that 
-	   the object reference is in an unclear state means we can't do a 
-	   straight decRef().  The safest option seems to be to explicitly 
-	   destroy it, which usually produces the correct result but in the case 
-	   of something like fetching a certificate from a session or envelope 
-	   will lead to the session/envelope's reference being destroyed as 
-	   well */
-	( void ) krnlSendNotifier( objectHandle, IMESSAGE_DESTROY );
 
 	return( status );
 	}
@@ -304,12 +260,6 @@ int initInternalMsgs( INOUT KERNEL_DATA *krnlDataPtr )
 	int i;
 
 	assert( isWritePtr( krnlDataPtr, sizeof( KERNEL_DATA ) ) );
-
-	/* If we're running a fuzzing build, skip the lengthy self-checks */
-#ifdef CONFIG_FUZZ
-	krnlData = krnlDataPtr;
-	return( CRYPT_OK );
-#endif /* CONFIG_FUZZ */
 
 	/* Perform a consistency check on the object dependency ACL */
 	for( i = 0; dependencyACLTbl[ i ].type != OBJECT_TYPE_NONE && \
@@ -594,26 +544,19 @@ int setPropertyAttribute( IN_HANDLE const int objectHandle,
 			break;
 
 		case CRYPT_IATTRIBUTE_INTERNAL:
-			{
-			int status;
+			if( value )
+				{
+				REQUIRES( !( objectInfoPtr->flags & OBJECT_FLAG_INTERNAL ) );
 
-			/* Internal objects can be made external after creation or fetch 
-			   from another object like a keyset, but not the other way 
-			   round */
-			REQUIRES( value == FALSE );
+				objectInfoPtr->flags |= OBJECT_FLAG_INTERNAL;
+				}
+			else
+				{
+				REQUIRES( objectInfoPtr->flags & OBJECT_FLAG_INTERNAL );
 
-			/* Make the object externally accessible */
-			REQUIRES( isInternalObject( objectHandle ) );
-			objectInfoPtr->flags &= ~OBJECT_FLAG_INTERNAL;
-
-			/* Now that the object is external we need to convert at least 
-			   one internal reference to it to an external one */
-			status = convertIntToExtRef( objectHandle );
-			if( cryptStatusError( status ) )
-				return( status );
-
+				objectInfoPtr->flags &= ~OBJECT_FLAG_INTERNAL;
+				}
 			break;
-			}
 
 		case CRYPT_IATTRIBUTE_ACTIONPERMS:
 			{
@@ -674,48 +617,31 @@ int setPropertyAttribute( IN_HANDLE const int objectHandle,
 *																			*
 ****************************************************************************/
 
-/* Increment/decrement the reference counts for an object.  Since references 
-   can be either internal or external, we have to handle the two separately.  
-   If the last external reference is removed then the object becomes 
-   internal-only, if all references are removed then the object is 
-   destroyed.
-   
-   There's an additional reference-count manipulation facility in the 
-   attribute-handling mechanism for CRYPT_IATTRIBUTE_INTERNAL, which 
-   transfers a reference from internal to external when making an object 
-   external */
+/* Increment/decrement the reference count for an object.  This adjusts the
+   reference count as appropriate and sends destroy messages if the reference
+   count goes negative */
 
 CHECK_RETVAL \
 int incRefCount( IN_HANDLE const int objectHandle, 
 				 STDC_UNUSED const int dummy1,
 				 STDC_UNUSED const void *dummy2, 
-				 const BOOLEAN isInternal )
+				 STDC_UNUSED const BOOLEAN dummy3 )
 	{
 	OBJECT_INFO *objectTable = krnlData->objectTable;
-	int *referenceCountPtr = isInternal ? \
-							 &objectTable[ objectHandle ].intRefCount : \
-							 &objectTable[ objectHandle ].extRefCount;
-	ORIGINAL_INT_VAR( oldRefCount, *referenceCountPtr );
+	ORIGINAL_INT_VAR( refCt, objectTable[ objectHandle ].referenceCount );
 
-	/* Preconditions.  Since there are two reference counts, the one that 
-	   we're updating can be zero if the other one is nonzero */
+	/* Preconditions */
 	REQUIRES( isValidObject( objectHandle ) );
-	REQUIRES( *referenceCountPtr >= 0 && \
-			  *referenceCountPtr < MAX_INTLENGTH_SHORT );
+	REQUIRES( objectTable[ objectHandle ].referenceCount >= 0 );
 
-	/* Make sure that we don't try and increment a reference count a 
-	   suspicious number of times */
-	if( *referenceCountPtr >= MAX_INTLENGTH_SHORT - 1 )
-		return( CRYPT_ARGERROR_OBJECT );
-
-	/* Increment the object's reference count */
-	( *referenceCountPtr )++;
+	/* Increment an object's reference count */
+	objectTable[ objectHandle ].referenceCount++;
 
 	/* Postcondition: We incremented the reference count and it's now greater
 	   than zero (the ground state) */
-	ENSURES( *referenceCountPtr >= 1 && \
-			 *referenceCountPtr < MAX_INTLENGTH_SHORT );
-	ENSURES( *referenceCountPtr == ORIGINAL_VALUE( oldRefCount ) + 1 );
+	ENSURES( objectTable[ objectHandle ].referenceCount >= 1 );
+	ENSURES( objectTable[ objectHandle ].referenceCount == \
+			 ORIGINAL_VALUE( refCt ) + 1 );
 
 	return( CRYPT_OK );
 	}
@@ -727,51 +653,43 @@ int decRefCount( IN_HANDLE const int objectHandle,
 				 const BOOLEAN isInternal )
 	{
 	OBJECT_INFO *objectTable = krnlData->objectTable;
-	int *referenceCountPtr = isInternal ? \
-							 &objectTable[ objectHandle ].intRefCount : \
-							 &objectTable[ objectHandle ].extRefCount;
 	int status;
-	ORIGINAL_INT_VAR( oldRefCount, *referenceCountPtr );
+	ORIGINAL_INT_VAR( refCt, objectTable[ objectHandle ].referenceCount );
 
 	/* Preconditions */
 	REQUIRES( isValidObject( objectHandle ) );
-	REQUIRES( *referenceCountPtr >= 1 && \
-			  *referenceCountPtr < MAX_INTLENGTH_SHORT );
 
-	/* If the last external reference is about to be destroyed, make the 
-	   object internal.  This marks it as invalid for any external access, 
-	   so that to the caller it looks like it's been destroyed even if its 
-	   internal reference count keeps it active */
-	if( !isInternal && !isInternalObject( objectHandle ) && \
-		*referenceCountPtr <= 1 )
+	/* If the message is coming from an external source (in other words if
+	   it's an external caller destroying the object), make the object
+	   internal.  This marks it as invalid for any external access, so that
+	   to the caller it looks like it's been destroyed even if its reference
+	   count keeps it active */
+	if( !isInternal )
 		{
+		REQUIRES( !isInternalObject( objectHandle ) );
+
 		objectTable[ objectHandle ].flags |= OBJECT_FLAG_INTERNAL;
+
 		ENSURES( isInternalObject( objectHandle ) );
 		}
 
-	/* Decrement the object's reference count */
-	( *referenceCountPtr )--;
+	/* Decrement an object's reference count */
+	if( objectTable[ objectHandle ].referenceCount > 0 )
+		{
+		objectTable[ objectHandle ].referenceCount--;
 
-	/* Postconditions: We decremented the reference count and it's greater 
-	   than or equal to zero (the ground state) */
-	ENSURES( *referenceCountPtr >= 0 && \
-			 *referenceCountPtr < MAX_INTLENGTH_SHORT - 1 );
-	ENSURES( *referenceCountPtr == ORIGINAL_VALUE( oldRefCount ) - 1 );
+		/* Postconditions: We decremented the reference count and it's
+		   greater than or equal to zero (the ground state) */
+		ENSURES( objectTable[ objectHandle ].referenceCount >= 0 );
+		ENSURES( objectTable[ objectHandle ].referenceCount == \
+				 ORIGINAL_VALUE( refCt ) - 1 );
 
-	/* If there are still references to the object present, there's nothing
-	   further to do */
-	if( objectTable[ objectHandle ].intRefCount > 0 || \
-		objectTable[ objectHandle ].extRefCount > 0 )
 		return( CRYPT_OK );
+		}
 
-	/* We're about to destroy the object, all references to it have been 
-	   removed */
-	ENSURES( objectTable[ objectHandle ].extRefCount == 0 && \
-			 objectTable[ objectHandle ].intRefCount == 0 );
-
-	/* Destroy the object.  Since this can entail arbitrary amounts of 
-	   processing during the object shutdown phase, we have to unlock the 
-	   object table around the call */
+	/* We're already at a single reference, destroy the object.  Since this
+	   can entail arbitrary amounts of processing during the object shutdown
+	   phase, we have to unlock the object table around the call */
 	MUTEX_UNLOCK( objectTable );
 	status = krnlSendNotifier( objectHandle, IMESSAGE_DESTROY );
 	MUTEX_LOCK( objectTable );
@@ -794,7 +712,7 @@ int getDependentObject( IN_HANDLE const int objectHandle,
 							   accessed via this function pointer */
 						STDC_UNUSED const BOOLEAN dummy )
 	{
-	int *valuePtr = ( int * ) messageDataPtr, status;
+	int *valuePtr = ( int * ) messageDataPtr, localObjectHandle;
 
 	assert( isReadPtr( messageDataPtr, sizeof( int ) ) );
 
@@ -805,14 +723,15 @@ int getDependentObject( IN_HANDLE const int objectHandle,
 	/* Clear return value */
 	*valuePtr = CRYPT_ERROR;
 
-	status = findTargetType( objectHandle, valuePtr, targetType );
-	if( cryptStatusError( status ) )
+	localObjectHandle = findTargetType( objectHandle, targetType );
+	if( cryptStatusError( localObjectHandle ) )
 		{
 		/* Postconditions: No dependent object found */
 		ENSURES( *valuePtr == CRYPT_ERROR );
 
 		return( CRYPT_ARGERROR_OBJECT );
 		}
+	*valuePtr = localObjectHandle;
 
 	/* Postconditions: We found a dependent object */
 	ENSURES( isValidObject( *valuePtr ) && \

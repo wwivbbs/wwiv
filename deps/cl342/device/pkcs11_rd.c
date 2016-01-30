@@ -1,29 +1,22 @@
 /****************************************************************************
 *																			*
 *					  cryptlib PKCS #11 Item Read Routines					*
-*						Copyright Peter Gutmann 1998-2012					*
+*						Copyright Peter Gutmann 1998-2009					*
 *																			*
 ****************************************************************************/
 
-#define PKC_CONTEXT		/* Tell context.h that we're working with PKC contexts */
 #if defined( INC_ALL )
   #include "crypt.h"
   #include "context.h"
   #include "device.h"
   #include "pkcs11_api.h"
   #include "asn1.h"
-  #if defined( USE_ECDH ) || defined( USE_ECDSA )
-	#include "asn1_ext.h"
-  #endif /* USE_ECDH || USE_ECDSA */
 #else
   #include "crypt.h"
   #include "context/context.h"
   #include "device/device.h"
   #include "device/pkcs11_api.h"
   #include "enc_dec/asn1.h"
-  #if defined( USE_ECDH ) || defined( USE_ECDSA )
-	#include "enc_dec/asn1_ext.h"
-  #endif /* USE_ECDH || USE_ECDSA */
 #endif /* Compiler-specific includes */
 
 /* In some rare situations only incomplete PKCS #11 support is available in 
@@ -35,14 +28,6 @@
    information */
 
 #define PKCS11_FIND_VIA_CRYPTLIB
-
-/* We sometimes need to read things into local memory from a device in a 
-   manner that can't be handled by a dynBuf since the data is coming from a
-   device rather than a cryptlib object.  The following value defines the 
-   maximum size of the on-stack buffer, if the data is larger than this then 
-   we dynamically allocate the buffer (this almost never occurs) */
-
-#define MAX_STACK_BUFFER_SIZE		1024
 
 #ifdef USE_PKCS11
 
@@ -64,7 +49,7 @@ static int getAttributeValue( INOUT PKCS11_INFO *pkcs11Info,
 							  const CK_ATTRIBUTE_TYPE type,
 							  OUT_BUFFER_ALLOC_OPT( *valueLength ) void **value, 
 							  OUT_LENGTH_SHORT_Z int *valueLength,
-							  OUT_BUFFER( valueBufLength, *valueLength ) \
+							  INOUT_BUFFER( valueBufLength, *valueLength ) \
 									void *valueBuffer,
 							  IN_LENGTH_SHORT_MIN( 16 ) const int valueBufLength )
 	{
@@ -81,7 +66,6 @@ static int getAttributeValue( INOUT PKCS11_INFO *pkcs11Info,
 
 	/* Clear return values */
 	*value = NULL;
-	memset( valueBuffer, 0, min( 16, valueBufLength ) );
 	*valueLength = 0;
 
 	/* Find out how big the attribute value is */
@@ -136,12 +120,9 @@ static void getAttributeValueEnd( IN void *value,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 5 ) ) \
 static int getObjectLabel( INOUT PKCS11_INFO *pkcs11Info, 
 						   const CK_OBJECT_HANDLE hObject, 
-						   OUT_BUFFER( maxLabelSize, *labelLength ) \
-								char *label, 
-						   IN_LENGTH_SHORT_MIN( 16 ) \
-								const int maxLabelSize, 
-						   OUT_LENGTH_BOUNDED_Z( maxLabelSize ) \
-								int *labelLength )
+						   OUT_BUFFER( maxLabelSize, *labelLength ) char *label, 
+						   IN_LENGTH_SHORT_MIN( 16 ) const int maxLabelSize, 
+						   OUT_LENGTH_SHORT_Z int *labelLength )
 	{
 	char labelBuffer[ CRYPT_MAX_TEXTSIZE + 8 ], *localLabel;
 	int localLabelLength, cryptStatus;
@@ -288,7 +269,7 @@ static int getMechanismInfo( const PKCS11_INFO *pkcs11Info,
 							 const CAPABILITY_INFO **capabilityInfoPtrPtr,
 							 OUT_ALGO_Z CRYPT_ALGO_TYPE *cryptAlgo )
 	{
-	CK_KEY_TYPE keyType DUMMY_INIT;
+	CK_KEY_TYPE keyType = DUMMY_INIT;
 	CK_ATTRIBUTE keyTypeTemplate = \
 		{ CKA_KEY_TYPE, ( CK_VOID_PTR ) &keyType, sizeof( CK_KEY_TYPE ) };
 	CK_RV status;
@@ -340,15 +321,7 @@ static int getMechanismInfo( const PKCS11_INFO *pkcs11Info,
 		mechanismInfoPtr = getMechanismInfoConv( &mechanismInfoSize );
 	for( i = 0; i < mechanismInfoSize && \
 				mechanismInfoPtr[ i ].keyType != keyType; i++ );
-	if( i >= mechanismInfoSize )
-		{
-		/* If we can't find a match for the PKCS #11 algorithm type in the 
-		   list of mechanisms then we're trying to instantiate an object 
-		   that uses an unsupported algorithm type */
-		DEBUG_DIAG(( "Tried to read object with unsupported PKCS #11 "
-					 "algorithm type %d", keyType ));
-		return( CRYPT_ERROR_NOTAVAIL );
-		}
+	ENSURES( i < mechanismInfoSize );
 	mechanismInfoPtr = &mechanismInfoPtr[ i ];
 	*cryptAlgo = mechanismInfoPtr->cryptAlgo;
 	capabilityInfoPtr = findCapabilityInfo( capabilityInfoList, *cryptAlgo );
@@ -358,46 +331,6 @@ static int getMechanismInfo( const PKCS11_INFO *pkcs11Info,
 	
 	return( CRYPT_OK );
 	}
-
-#if defined( USE_ECDH ) || defined( USE_ECDSA )
-
-/* Get the named curve type for an ECC object */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
-int getEccCurveType( INOUT PKCS11_INFO *pkcs11Info, 
-					 const CK_OBJECT_HANDLE hObject,
-					 OUT_ENUM_OPT( CRYPT_ECCCURVE ) \
-						CRYPT_ECCCURVE_TYPE *curveType )
-	{
-	CRYPT_ECCCURVE_TYPE curve;
-	STREAM stream;
-	BYTE ecOidBuffer[ MAX_OID_SIZE + 8 ], *ecOid;
-	int ecOidLength, cryptStatus;
-
-	assert( isWritePtr( curveType, sizeof( CRYPT_ECCCURVE_TYPE ) ) );
-
-	/* Clear return value */
-	*curveType = CRYPT_ECCCURVE_NONE;
-
-	/* ECC algorithms are a serious pain, the only parameter that we have 
-	   available for them is CKA_EC_PARAMS, an OID for the curve that's 
-	   being used.  In order to get the curve type from that we have to read 
-	   the OID and then convert it to the named-curve type */
-	cryptStatus = getAttributeValue( pkcs11Info, hObject, CKA_EC_PARAMS,
-									 &ecOid, &ecOidLength, ecOidBuffer,
-									 MAX_OID_SIZE );
-	if( cryptStatusError( cryptStatus ) )
-		return( cryptStatus );
-	sMemConnect( &stream, ecOid, ecOidLength );
-	cryptStatus = readECCOID( &stream, &curve );
-	sMemDisconnect( &stream );
-	getAttributeValueEnd( ecOid, ecOidBuffer );
-	if( cryptStatusOK( cryptStatus ) )
-		*curveType = curve;
-
-	return( cryptStatus );
-	}
-#endif /* USE_ECDH || USE_ECDSA */
 
 /****************************************************************************
 *																			*
@@ -413,7 +346,7 @@ static int readIAndS( INOUT STREAM *stream,
 					  INOUT CK_ATTRIBUTE *certTemplateI, 
 					  INOUT CK_ATTRIBUTE *certTemplateS )
 	{
-	void *dataPtr DUMMY_INIT_PTR;
+	void *dataPtr = DUMMY_INIT_PTR;
 	int length, cryptStatus;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
@@ -438,7 +371,7 @@ static int readIAndS( INOUT STREAM *stream,
 	if( cryptStatusOK( cryptStatus ) )
 		{
 		certTemplateI->pValue = dataPtr;
-		cryptStatus = sSkip( stream, length, MAX_INTLENGTH_SHORT );
+		cryptStatus = sSkip( stream, length );
 		}
 	if( cryptStatusError( cryptStatus ) )
 		return( cryptStatus );
@@ -453,7 +386,7 @@ static int readIAndS( INOUT STREAM *stream,
 	if( cryptStatusOK( cryptStatus ) )
 		{
 		certTemplateS->pValue = dataPtr;
-		cryptStatus = sSkip( stream, length, MAX_INTLENGTH_SHORT );
+		cryptStatus = sSkip( stream, length );
 		}
 	return( cryptStatus );
 	}
@@ -503,7 +436,7 @@ static int initIAndSTemplate( OUT_ARRAY_C( 4 ) CK_ATTRIBUTE *iAndSTemplate,
 		{ CKA_SERIAL_NUMBER, NULL_PTR, 0 }
 		};
 	STREAM stream;
-	int offset DUMMY_INIT, length, cryptStatus;
+	int offset = DUMMY_INIT, length, cryptStatus;
 
 	assert( isWritePtr( iAndSTemplate, 4 * sizeof( CK_ATTRIBUTE ) ) );
 	assert( isWritePtr( iAndSTemplateAlt, 4 * sizeof( CK_ATTRIBUTE ) ) );
@@ -552,7 +485,7 @@ static int instantiateCert( INOUT PKCS11_INFO *pkcs11Info,
 							const BOOLEAN createContext )
 	{
 	MESSAGE_CREATEOBJECT_INFO createInfo;
-	BYTE buffer[ MAX_STACK_BUFFER_SIZE + 8 ], *bufPtr;
+	BYTE buffer[ MAX_BUFFER_SIZE + 8 ], *bufPtr;
 	int length, cryptStatus;
 
 	assert( isWritePtr( pkcs11Info, sizeof( PKCS11_INFO ) ) );
@@ -566,14 +499,15 @@ static int instantiateCert( INOUT PKCS11_INFO *pkcs11Info,
 	   attribute */
 	cryptStatus = getAttributeValue( pkcs11Info, hCertificate, CKA_VALUE, 
 									 &bufPtr, &length, buffer, 
-									 MAX_STACK_BUFFER_SIZE );
+									 MAX_BUFFER_SIZE );
 	if( cryptStatusError( cryptStatus ) )
 		return( cryptStatus );
 
 	/* Import the certificate as a cryptlib object */
-	setMessageCreateObjectIndirectInfoEx( &createInfo, bufPtr, length,
-					CRYPT_CERTTYPE_CERTIFICATE, !createContext ? \
-						KEYMGMT_FLAG_DATAONLY_CERT : KEYMGMT_FLAG_NONE );
+	setMessageCreateObjectIndirectInfo( &createInfo, bufPtr, length,
+										createContext ? \
+											CRYPT_CERTTYPE_CERTIFICATE : \
+											CRYPT_ICERTTYPE_DATAONLY );
 	cryptStatus = krnlSendMessage( SYSTEM_OBJECT_HANDLE, 
 								   IMESSAGE_DEV_CREATEOBJECT_INDIRECT,
 								   &createInfo, OBJECT_TYPE_CERTIFICATE );
@@ -595,7 +529,7 @@ static int getCertChain( INOUT PKCS11_INFO *pkcs11Info,
 	CK_ATTRIBUTE idTemplate = \
 		{ CKA_ID, NULL_PTR, 0 };
 	CK_RV status;
-	BYTE keyID[ MAX_STACK_BUFFER_SIZE + 8 ];
+	BYTE keyID[ MAX_BUFFER_SIZE + 8 ];
 
 	assert( isWritePtr( pkcs11Info, sizeof( PKCS11_INFO ) ) );
 	assert( isWritePtr( iCryptCert, sizeof( CRYPT_CERTIFICATE ) ) );
@@ -608,13 +542,13 @@ static int getCertChain( INOUT PKCS11_INFO *pkcs11Info,
 	/* Find the ID for this certificate */
 	status = C_GetAttributeValue( pkcs11Info->hSession, hCertificate, 
 								  &idTemplate, 1 );
-	if( status == CKR_OK && idTemplate.ulValueLen <= MAX_STACK_BUFFER_SIZE )
+	if( status == CKR_OK && idTemplate.ulValueLen <= MAX_BUFFER_SIZE )
 		{
 		idTemplate.pValue = keyID;
 		status = C_GetAttributeValue( pkcs11Info->hSession, hCertificate,
 									  &idTemplate, 1 );
 		}
-	if( status != CKR_OK || idTemplate.ulValueLen > MAX_STACK_BUFFER_SIZE )
+	if( status != CKR_OK || idTemplate.ulValueLen > MAX_BUFFER_SIZE )
 		{
 		/* We couldn't get the ID to build the chain or it's too large to be
 		   usable, we can at least still return the individual certificate */
@@ -741,7 +675,7 @@ int findObjectFromObject( INOUT PKCS11_INFO *pkcs11Info,
 		{ CKA_CLASS, ( CK_VOID_PTR ) &objectClass, sizeof( CK_OBJECT_CLASS ) },
 		{ CKA_ID, NULL_PTR, 0 }
 		};
-	BYTE buffer[ MAX_STACK_BUFFER_SIZE + 8 ], *bufPtr;
+	BYTE buffer[ MAX_BUFFER_SIZE + 8 ], *bufPtr;
 	int length, cryptStatus;
 
 	assert( isWritePtr( pkcs11Info, sizeof( PKCS11_INFO ) ) );
@@ -755,7 +689,7 @@ int findObjectFromObject( INOUT PKCS11_INFO *pkcs11Info,
 	   a PKCS #11 attribute rather than a cryptlib attribute */
 	cryptStatus = getAttributeValue( pkcs11Info, hSourceObject, CKA_ID, 
 									 &bufPtr, &length, buffer, 
-									 MAX_STACK_BUFFER_SIZE );
+									 MAX_BUFFER_SIZE );
 	if( cryptStatusError( cryptStatus ) )
 		return( cryptStatus );
 
@@ -795,7 +729,7 @@ static int findCertFromTemplate( INOUT PKCS11_INFO *pkcs11Info,
 								 IN_RANGE( 1, 64 ) const int templateCount,
 								 OUT_OPT_HANDLE_OPT CRYPT_CERTIFICATE *iCryptCert,
 								 OUT_OPT CK_OBJECT_HANDLE *hCertificate,
-								 IN_ENUM( FINDCERT ) \
+								 IN_ENUM( FINDCERT_ACTION ) \
 									const FINDCERT_ACTION_TYPE findAction )
 	{
 	CK_OBJECT_HANDLE hFindCertificate;
@@ -844,7 +778,7 @@ static int findCertFromLabel( INOUT PKCS11_INFO *pkcs11Info,
 							  IN_LENGTH_SHORT_Z const int labelLength,
 							  OUT_OPT_HANDLE_OPT CRYPT_CERTIFICATE *iCryptCert,
 							  OUT_OPT CK_OBJECT_HANDLE *hCertificate,
-							  IN_ENUM( FINDCERT ) \
+							  IN_ENUM( FINDCERT_ACTION ) \
 									const FINDCERT_ACTION_TYPE findAction )
 	{
 	static const CK_OBJECT_CLASS certClass = CKO_CERTIFICATE;
@@ -898,7 +832,7 @@ static int findCertFromID( INOUT PKCS11_INFO *pkcs11Info,
 						   IN_LENGTH_SHORT const int certIDlength,
 						   OUT_OPT_HANDLE_OPT CRYPT_CERTIFICATE *iCryptCert,
 						   OUT_OPT CK_OBJECT_HANDLE *hCertificate,
-						   IN_ENUM( FINDCERT ) \
+						   IN_ENUM( FINDCERT_ACTION ) \
 								const FINDCERT_ACTION_TYPE findAction )
 	{
 	static const CK_OBJECT_CLASS certClass = CKO_CERTIFICATE;
@@ -938,10 +872,10 @@ static int findCertFromObject( INOUT PKCS11_INFO *pkcs11Info,
 							   IN_HANDLE const CRYPT_DEVICE iCertSource, 
 							   const CK_OBJECT_HANDLE hObject, 
 							   OUT_HANDLE_OPT CRYPT_CERTIFICATE *iCryptCert,
-							   IN_ENUM( FINDCERT ) \
+							   IN_ENUM( FINDCERT_ACTION ) \
 									const FINDCERT_ACTION_TYPE findAction )
 	{
-	BYTE buffer[ MAX_STACK_BUFFER_SIZE + 8 ], *bufPtr;
+	BYTE buffer[ MAX_BUFFER_SIZE + 8 ], *bufPtr;
 	int length, cryptStatus;
 
 	assert( isWritePtr( pkcs11Info, sizeof( PKCS11_INFO ) ) );
@@ -957,7 +891,7 @@ static int findCertFromObject( INOUT PKCS11_INFO *pkcs11Info,
 	   key ID from the device.  We can't use a dynBuf for this because it's a 
 	   PKCS #11 attribute rather than a cryptlib attribute */
 	cryptStatus = getAttributeValue( pkcs11Info, hObject, CKA_ID, &bufPtr, 
-									 &length, buffer, MAX_STACK_BUFFER_SIZE );
+									 &length, buffer, MAX_BUFFER_SIZE );
 	if( cryptStatusError( cryptStatus ) )
 		return( cryptStatus );
 
@@ -991,7 +925,7 @@ static int findCertFromObject( INOUT PKCS11_INFO *pkcs11Info,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 static int matchID( IN_HANDLE CRYPT_CERTIFICATE iCryptCert,
-					IN_KEYID_OPT const CRYPT_KEYID_TYPE keyIDtype,
+					IN_KEYID const CRYPT_KEYID_TYPE keyIDtype,
 					IN_BUFFER( keyIDlength ) const void *keyID, 
 					IN_LENGTH_KEYID const int keyIDlength )
 	{
@@ -1006,8 +940,8 @@ static int matchID( IN_HANDLE CRYPT_CERTIFICATE iCryptCert,
 			  keyIDtype == CRYPT_KEYID_URI || \
 			  keyIDtype == CRYPT_IKEYID_KEYID || \
 			  keyIDtype == CRYPT_IKEYID_ISSUERANDSERIALNUMBER || \
-			  keyIDtype == CRYPT_KEYID_NONE );
-			  /* _NONE is by subject DN, i.e. child.issuerDN */
+			  keyIDtype == CRYPT_KEYID_LAST );
+			  /* _LAST is by subject DN, i.e. child.issuerDN */
 	REQUIRES( keyIDlength >= MIN_NAME_LENGTH && \
 			  keyIDlength < MAX_ATTRIBUTE_SIZE );
 
@@ -1054,7 +988,7 @@ static int matchID( IN_HANDLE CRYPT_CERTIFICATE iCryptCert,
 			return( krnlSendMessage( iCryptCert, IMESSAGE_COMPARE, &msgData, 
 									 MESSAGE_COMPARE_ISSUERANDSERIALNUMBER ) );
 
-		case CRYPT_KEYID_NONE:
+		case CRYPT_KEYID_LAST:
 			/* This is a special-case code to used denote a match of the 
 			   subject name, specifically the issuer DN of the child 
 			   certificate (which is the next certificate's subject DN) when 
@@ -1073,7 +1007,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 5 ) ) \
 static int searchDeviceObjects( INOUT PKCS11_INFO *pkcs11Info,
 								OUT_OPT_HANDLE_OPT CRYPT_CERTIFICATE *iCryptCert,
 								OUT_OPT CK_OBJECT_HANDLE *hObject,
-								IN_KEYID_OPT const CRYPT_KEYID_TYPE keyIDtype,
+								IN_KEYID const CRYPT_KEYID_TYPE keyIDtype,
 								IN_BUFFER( keyIDlength ) const void *keyID, 
 								IN_LENGTH_KEYID const int keyIDlength,
 								const BOOLEAN onlyOne )
@@ -1104,8 +1038,8 @@ static int searchDeviceObjects( INOUT PKCS11_INFO *pkcs11Info,
 			  keyIDtype == CRYPT_KEYID_URI || \
 			  keyIDtype == CRYPT_IKEYID_KEYID || \
 			  keyIDtype == CRYPT_IKEYID_ISSUERANDSERIALNUMBER || \
-			  keyIDtype == CRYPT_KEYID_NONE );
-			  /* _NONE is by subject DN, i.e. child.issuerDN */
+			  keyIDtype == CRYPT_KEYID_LAST );
+			  /* _LAST is by subject DN, i.e. child.issuerDN */
 	REQUIRES( keyIDlength >= MIN_NAME_LENGTH && \
 			  keyIDlength < MAX_ATTRIBUTE_SIZE );
 
@@ -1234,7 +1168,9 @@ static int findCert( INOUT PKCS11_INFO *pkcs11Info,
 	REQUIRES( keyIDtype == CRYPT_KEYID_NAME || \
 			  keyIDtype == CRYPT_KEYID_URI || \
 			  keyIDtype == CRYPT_IKEYID_KEYID || \
-			  keyIDtype == CRYPT_IKEYID_ISSUERANDSERIALNUMBER );
+			  keyIDtype == CRYPT_IKEYID_ISSUERANDSERIALNUMBER || \
+			  keyIDtype == CRYPT_KEYID_LAST );
+			  /* _LAST is by subject DN, i.e. child.issuerDN */
 	REQUIRES( keyIDlength >= MIN_NAME_LENGTH && \
 			  keyIDlength < MAX_ATTRIBUTE_SIZE );
 	REQUIRES( ( iCryptCert != NULL && hCertificate == NULL ) || \
@@ -1438,62 +1374,20 @@ static int findPubPrivKey( INOUT PKCS11_INFO *pkcs11Info,
 *																			*
 ****************************************************************************/
 
-/* Set public-key information (in the form of the SubjectPublicKeyInfo) for 
-   a native object */
-
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-static int setPublicComponents( INOUT PKCS11_INFO *pkcs11Info,
-								IN_HANDLE const CRYPT_CONTEXT iCryptContext,
-								const CK_OBJECT_HANDLE hObject,
-								IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo,
-								const BOOLEAN isPrivateKey,
-								const BOOLEAN nativeContext )
-	{
-	CK_OBJECT_HANDLE hPubKeyObject DUMMY_INIT;
-	int cryptStatus;
-
-	/* If it's an RSA object then we can set the public components from it 
-	   directly */
-	if( cryptAlgo == CRYPT_ALGO_RSA )
-		return( rsaSetPublicComponents( pkcs11Info, iCryptContext, hObject, 
-										nativeContext ) );
-
-	/* If we're creating a private-key object then we need to be able to set 
-	   the SubjectPublicKeyInfo for it.  Only RSA allows us to access the
-	   public-key components from a private-key object, for everything else 
-	   we need to locate a corresponding public-key object in order to get
-	   the public-key components */
-	if( isPrivateKey )
-		{
-		cryptStatus = findObjectFromObject( pkcs11Info, hObject, 
-											CKO_PUBLIC_KEY, &hPubKeyObject );
-		if( cryptStatusError( cryptStatus ) )
-			return( cryptStatus );
-		}
-
-	/* Send the SubjectPublicKey information to the context */
-	switch( cryptAlgo )
-		{
-		case CRYPT_ALGO_DSA:
-			return( dsaSetPublicComponents( pkcs11Info, iCryptContext, 
-											hPubKeyObject, 
-											nativeContext ) );
-
-#if defined( USE_ECDSA )
-		case CRYPT_ALGO_ECDSA:
-			return( ecdsaSetPublicComponents( pkcs11Info, iCryptContext, 
-											  hPubKeyObject, 
-											  nativeContext ) );
-#endif /* USE_ECDSA */
-		}
-
-	return( CRYPT_ERROR_NOTAVAIL );
-	}
-
 /* Instantiate an object in a device.  This works like the create context
    function but instantiates a cryptlib object using data already contained
    in the device (for example public-key components stored with a private 
    key or a stored certificate) */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+int rsaSetPublicComponents( INOUT PKCS11_INFO *pkcs11Info,
+							IN_HANDLE const CRYPT_CONTEXT iCryptContext,
+							const CK_OBJECT_HANDLE hRsaKey,
+							const BOOLEAN nativeContext );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+int dsaSetPublicComponents( INOUT PKCS11_INFO *pkcs11Info,
+							IN_HANDLE const CRYPT_CONTEXT iCryptContext,
+							const CK_OBJECT_HANDLE hDsaKey );
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int createNativeObject( INOUT PKCS11_INFO *pkcs11Info,
@@ -1542,18 +1436,17 @@ static int createNativeObject( INOUT PKCS11_INFO *pkcs11Info,
 		return( cryptStatus );
 	iLocalContext = createInfo.cryptHandle;
 
-	/* Send the SubjectPublicKeyInfo and action permissions for the 
-	   context */
-	cryptStatus = setPublicComponents( pkcs11Info, iLocalContext, hObject, 
-									   cryptAlgo, 
-									   ( itemType == KEYMGMT_ITEM_PRIVATEKEY ) ? \
-										 TRUE : FALSE, TRUE );
+	/* Send the keying information to the context and set the action flags */
+	if( cryptAlgo == CRYPT_ALGO_RSA )
+		cryptStatus = rsaSetPublicComponents( pkcs11Info, iLocalContext, 
+											  hObject, TRUE );
+	else
+		cryptStatus = dsaSetPublicComponents( pkcs11Info, iLocalContext, 
+											  hObject );
 	if( cryptStatusOK( cryptStatus ) )
-		{
 		cryptStatus = krnlSendMessage( iLocalContext, IMESSAGE_SETATTRIBUTE, 
 									   &actionFlags, 
 									   CRYPT_IATTRIBUTE_ACTIONPERMS );
-		}
 	if( cryptStatusError( cryptStatus ) )
 		{
 		krnlSendNotifier( iLocalContext, IMESSAGE_DECREFCOUNT );
@@ -1644,54 +1537,51 @@ static int createDeviceObject( INOUT PKCS11_INFO *pkcs11Info,
 		return( cryptStatus );
 		}
 
-	/* Set the object's label.  This requires special care because the label 
-	   that we're setting matches that of an existing object so trying to 
-	   set it as a standard CRYPT_CTXINFO_LABEL will return a 
-	   CRYPT_ERROR_DUPLICATE error when the context code checks for the 
-	   existence of an existing label.  To handle this we use the attribute 
-	   CRYPT_IATTRIBUTE_EXISTINGLABEL to indicate that we're setting a label 
-	   that matches an existing object in the device */
+	/* Set the object's label, record the handle for the device-internal 
+	   key, and mark it as initialised (i.e. with a key loaded).  Setting 
+	   the label requires special care because the label that we're setting 
+	   matches that of an existing object so trying to set it as a standard 
+	   CRYPT_CTXINFO_LABEL will return a CRYPT_ERROR_DUPLICATE error when 
+	   the context code checks for the existence of an existing label.  To 
+	   handle this we use the attribute CRYPT_IATTRIBUTE_EXISTINGLABEL to 
+	   indicate that we're setting a label that matches an existing object 
+	   in the device */
 	setMessageData( &msgData, label, min( labelLength, CRYPT_MAX_TEXTSIZE ) );
 	cryptStatus = krnlSendMessage( iLocalContext, IMESSAGE_SETATTRIBUTE_S,
 								   &msgData, CRYPT_IATTRIBUTE_EXISTINGLABEL );
-	if( cryptStatusError( cryptStatus ) )
-		{
-		krnlSendNotifier( iLocalContext, IMESSAGE_DECREFCOUNT );
-		return( cryptStatus );
-		}
-
-	/* Send the keying information to the context.  For non-PKC contexts we 
-	   only need to set the key length to let the user query the key size, 
-	   for PKC contexts we also have to set the key components so that they 
-	   can be written into certificates */
-	if( isPkcAlgo( cryptAlgo ) )
-		{
-		cryptStatus = setPublicComponents( pkcs11Info, iLocalContext, 
-										   hObject, cryptAlgo, TRUE, FALSE );
-		}
-	else
-		{
-		cryptStatus = krnlSendMessage( iLocalContext, IMESSAGE_SETATTRIBUTE, 
-									   ( MESSAGE_CAST ) &keySize, 
-									   CRYPT_IATTRIBUTE_KEYSIZE );
-		}
-	if( cryptStatusError( cryptStatus ) )
-		{
-		krnlSendNotifier( iLocalContext, IMESSAGE_DECREFCOUNT );
-		return( cryptStatus );
-		}
-
-	/* Finally, record the handle for the device-internal key and mark it as 
-	   initialised (i.e. with a key loaded) */
-	cryptStatus = krnlSendMessage( iLocalContext, IMESSAGE_SETATTRIBUTE, 
-								   ( MESSAGE_CAST ) &hObject, 
-								   CRYPT_IATTRIBUTE_DEVICEOBJECT );
 	if( cryptStatusOK( cryptStatus ) )
 		{
+		/* Send the keying information to the context.  For non-PKC contexts 
+		   we only need to set the key length to let the user query the key 
+		   size, for PKC contexts we also have to set the key components so
+		   that they can be written into certificates.  Unfortunately we 
+		   can't do this for DLP private keys since we can't read y from a 
+		   DLP private key object (see the comments in the DSA code for more 
+		   on this), however the only time that this is necessary is when a 
+		   certificate is being generated for a key that was pre-generated 
+		   in the device by someone else, which is typically done in Europe 
+		   where DSA isn't used so this shouldn't be a problem */
+		if( cryptAlgo == CRYPT_ALGO_RSA )
+			{
+			cryptStatus = rsaSetPublicComponents( pkcs11Info, iLocalContext, 
+												  hObject, FALSE );
+			}
+		else
+			{
+			cryptStatus = krnlSendMessage( iLocalContext, 
+										   IMESSAGE_SETATTRIBUTE, 
+										   ( MESSAGE_CAST ) &keySize, 
+										   CRYPT_IATTRIBUTE_KEYSIZE );
+			}
+		}
+	if( cryptStatusOK( cryptStatus ) )
+		cryptStatus = krnlSendMessage( iLocalContext, IMESSAGE_SETATTRIBUTE, 
+									   ( MESSAGE_CAST ) &hObject, 
+									   CRYPT_IATTRIBUTE_DEVICEOBJECT );
+	if( cryptStatusOK( cryptStatus ) )
 		cryptStatus = krnlSendMessage( iLocalContext, IMESSAGE_SETATTRIBUTE,
 									   MESSAGE_VALUE_UNUSED, 
 									   CRYPT_IATTRIBUTE_INITIALISED );
-		}
 	if( cryptStatusOK( cryptStatus ) && ( iCryptCert != CRYPT_UNUSED ) )
 		{
 		/* If it's a public key and there's a certificate present attach it 
@@ -1726,7 +1616,7 @@ static int getSecretKey( INOUT DEVICE_INFO *deviceInfo,
 	{
 	static const CK_OBJECT_CLASS secKeyClass = CKO_SECRET_KEY;
 	const CAPABILITY_INFO *capabilityInfoPtr;
-	CK_ULONG secKeySize DUMMY_INIT;
+	CK_ULONG secKeySize = DUMMY_INIT;
 	CK_ATTRIBUTE keyTemplate[] = {
 		{ CKA_CLASS, ( CK_VOID_PTR ) &secKeyClass, sizeof( CK_OBJECT_CLASS ) },
 		{ CKA_LABEL, NULL_PTR, 0 }
@@ -1814,12 +1704,12 @@ static int getItemFunction( INOUT DEVICE_INFO *deviceInfo,
 	CK_ATTRIBUTE keySizeTemplate = { 0, NULL, 0 };
 	CK_OBJECT_HANDLE hObject = CK_OBJECT_NONE, hCertificate = CK_OBJECT_NONE;
 	CK_RV status;
-	CRYPT_CERTIFICATE iCryptCert DUMMY_INIT;
+	CRYPT_CERTIFICATE iCryptCert = DUMMY_INIT;
 	CRYPT_ALGO_TYPE cryptAlgo;
 	PKCS11_INFO *pkcs11Info = deviceInfo->devicePKCS11;
 	BOOLEAN certViaPrivateKey = FALSE, privateKeyViaCert = FALSE;
 	BOOLEAN certPresent = FALSE;
-	int keySize DUMMY_INIT, cryptStatus;
+	int keySize, cryptStatus;
 
 	assert( isWritePtr( deviceInfo, sizeof( DEVICE_INFO ) ) );
 	assert( isWritePtr( iCryptHandle, sizeof( CRYPT_CONTEXT ) ) );
@@ -1860,7 +1750,7 @@ static int getItemFunction( INOUT DEVICE_INFO *deviceInfo,
 	   the private key with the given label/ID */
 	if( itemType == KEYMGMT_ITEM_PUBLICKEY )
 		{
-		CK_OBJECT_HANDLE hCertificateLabelObject DUMMY_INIT;
+		CK_OBJECT_HANDLE hCertificateLabelObject = DUMMY_INIT;
 
 		if( flags & ( KEYMGMT_FLAG_CHECK_ONLY | KEYMGMT_FLAG_LABEL_ONLY ) )
 			{
@@ -2047,36 +1937,15 @@ static int getItemFunction( INOUT DEVICE_INFO *deviceInfo,
 									TRUE, &capabilityInfoPtr, &cryptAlgo );
 	if( cryptStatusError( cryptStatus ) )
 		return( cryptStatus );
-#if defined( USE_ECDH ) || defined( USE_ECDSA )
-	if( isEccAlgo( cryptAlgo ) )
-		{
-		CRYPT_ECCCURVE_TYPE curveType;
-
-		/* Get the field size for the named curve */
-		cryptStatus = getEccCurveType( pkcs11Info, hObject, &curveType );
-		if( cryptStatusOK( cryptStatus ) )
-			cryptStatus = getECCFieldSize( curveType, &keySize );
-		if( cryptStatusError( cryptStatus ) )
-			return( cryptStatus );
-		}
-	else
-#endif /* USE_ECDH || USE_ECDSA */
-		{
-		cryptStatus = mapValue( cryptAlgo, &keySize, keySizeMapTbl, 
-								FAILSAFE_ARRAYSIZE( keySizeMapTbl, MAP_TABLE ) );
-		if( cryptStatusError( cryptStatus ) )
-			{
-			/* This can happen if the object that we're fetching uses an
-			   unknown or non-PKC algorithm */
-			return( cryptStatus );
-			}
-		keySizeTemplate.type = keySize;		/* For int vs. enum */
-		status = C_GetAttributeValue( pkcs11Info->hSession, hObject, 
-									  &keySizeTemplate, 1 );
-		if( status != CKR_OK )
-			return( pkcs11MapError( status, CRYPT_ERROR_FAILED ) );
-		keySize = keySizeTemplate.ulValueLen;
-		}
+	cryptStatus = mapValue( cryptAlgo, &keySize, keySizeMapTbl, 
+							FAILSAFE_ARRAYSIZE( keySizeMapTbl, MAP_TABLE ) );
+	ENSURES( cryptStatusOK( cryptStatus ) );
+	keySizeTemplate.type = keySize;		/* For int vs. enum */
+	status = C_GetAttributeValue( pkcs11Info->hSession, hObject, 
+								  &keySizeTemplate, 1 );
+	if( status != CKR_OK )
+		return( pkcs11MapError( status, CRYPT_ERROR_FAILED ) );
+	keySize = keySizeTemplate.ulValueLen;
 
 	/* Try and find a certificate that matches the key.  The process is as
 	   follows:
@@ -2198,9 +2067,8 @@ static int getFirstItemFunction( INOUT DEVICE_INFO *deviceInfo,
 	assert( isWritePtr( stateInfo, sizeof( int ) ) );
 
 	REQUIRES( keyIDtype == CRYPT_IKEYID_KEYID );
-	REQUIRES( keyIDlength >= 1 && keyIDlength < MAX_ATTRIBUTE_SIZE );
-			  /* The keyID can be as little as a single byte when coming 
-			     from a non-cryptlib source */
+	REQUIRES( keyIDlength >= MIN_NAME_LENGTH && \
+			  keyIDlength < MAX_ATTRIBUTE_SIZE );
 	REQUIRES( itemType == KEYMGMT_ITEM_PUBLICKEY );
 	REQUIRES( options >= KEYMGMT_FLAG_NONE && \
 			  options < KEYMGMT_FLAG_MAX );
@@ -2285,7 +2153,7 @@ static int getNextItemFunction( INOUT DEVICE_INFO *deviceInfo,
 	else
 		{
 		cryptStatus = searchDeviceObjects( pkcs11Info, iCertificate, NULL,
-										   CRYPT_KEYID_NONE,
+										   CRYPT_KEYID_LAST,
 										   dynData( subjectDB ), 
 										   dynLength( subjectDB ), TRUE );
 		}

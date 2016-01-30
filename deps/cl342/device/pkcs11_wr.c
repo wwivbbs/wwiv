@@ -499,7 +499,6 @@ static int deleteItemFunction( INOUT DEVICE_INFO *deviceInfo,
 		{
 		/* We didn't find a certificate with the given label, try for 
 		   public, private, and secret keys */
-		hCertificate = CK_OBJECT_NONE;
 		cryptStatus = findObjectEx( pkcs11Info, &hPubkey, keyTemplate, 2 );
 		if( cryptStatusError( cryptStatus ) )
 			hPubkey = CK_OBJECT_NONE;

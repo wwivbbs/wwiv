@@ -311,7 +311,7 @@ int updateUserID( INOUT SESSION_INFO *sessionInfoPtr,
 	   non-cryptlib ID for the ir, which must be MAC'd */
 	if( isServer( sessionInfoPtr ) && protocolInfo->userIDsize == 9 )
 		{
-		char encodedUserID[ CRYPT_MAX_TEXTSIZE + 8 ];
+		BYTE encodedUserID[ CRYPT_MAX_TEXTSIZE + 8 ];
 		int encodedUserIDLength;
 
 		status = encodePKIUserValue( encodedUserID, CRYPT_MAX_TEXTSIZE,
@@ -368,7 +368,7 @@ int updateCertID( INOUT SESSION_INFO *sessionInfoPtr,
 	assert( isWritePtr( protocolInfo, sizeof( CMP_PROTOCOL_INFO ) ) );
 
 	status = addSessionInfoS( &sessionInfoPtr->attributeList,
-							  CRYPT_SESSINFO_SERVER_FINGERPRINT_SHA1,
+							  CRYPT_SESSINFO_SERVER_FINGERPRINT,
 							  protocolInfo->certID,
 							  protocolInfo->certIDsize );
 	if( cryptStatusError( status ) )
@@ -485,7 +485,7 @@ static int readPkiHeader( INOUT STREAM *stream,
 						  INOUT ERROR_INFO *errorInfo,
 						  const BOOLEAN isServerInitialMessage )
 	{
-	int tag, length, endPos, status;
+	int length, endPos, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( protocolInfo, sizeof( CMP_PROTOCOL_INFO ) ) );
@@ -539,8 +539,7 @@ static int readPkiHeader( INOUT STREAM *stream,
 		}
 	if( cryptStatusOK( status ) )
 		status = readUniversal( stream );	/* Recipient DN */
-	if( checkStatusPeekTag( stream, status, tag ) && \
-		tag == MAKE_CTAG( CTAG_PH_MESSAGETIME ) )
+	if( peekTag( stream ) == MAKE_CTAG( CTAG_PH_MESSAGETIME ) )
 		status = readUniversal( stream );	/* Message time */
 	if( cryptStatusError( status ) )
 		{
@@ -548,8 +547,7 @@ static int readPkiHeader( INOUT STREAM *stream,
 				( CRYPT_ERROR_BADDATA, errorInfo, 
 				  "Invalid DN information in PKI header" ) );
 		}
-	if( !checkStatusPeekTag( stream, status, tag ) || \
-		tag != MAKE_CTAG( CTAG_PH_PROTECTIONALGO ) )
+	if( peekTag( stream ) != MAKE_CTAG( CTAG_PH_PROTECTIONALGO ) )
 		{
 		/* The message was sent without integrity protection, report it as
 		   a signature error rather than the generic bad data error that
@@ -566,8 +564,7 @@ static int readPkiHeader( INOUT STREAM *stream,
 				  "Invalid integrity protection information in PKI "
 				  "header" ) );
 		}
-	if( checkStatusPeekTag( stream, status, tag ) && \
-		tag == MAKE_CTAG( CTAG_PH_SENDERKID ) )
+	if( peekTag( stream ) == MAKE_CTAG( CTAG_PH_SENDERKID ) )
 		{								/* Sender protection keyID */
 		status = readUserID( stream, protocolInfo );
 		if( cryptStatusError( status ) )
@@ -588,14 +585,8 @@ static int readPkiHeader( INOUT STREAM *stream,
 					  "Missing PKI user ID in PKI header" ) );
 			}
 		}
-	if( checkStatusPeekTag( stream, status, tag ) && \
-		tag == MAKE_CTAG( CTAG_PH_RECIPKID ) )
-		{
-		/* Recipient protection keyID */
-		status = readUniversal( stream );
-		}
-	if( cryptStatusError( status ) )
-		return( status );
+	if( peekTag( stream ) == MAKE_CTAG( CTAG_PH_RECIPKID ) )
+		readUniversal( stream );			/* Recipient protection keyID */
 
 	/* Record the transaction ID (which is effectively the nonce) or make 
 	   sure that it matches the one that we sent.  There's no real need to 
@@ -631,8 +622,8 @@ static int readPkiHeader( INOUT STREAM *stream,
 	   response to an error that occurred before it could read the nonce from
 	   a request.  In any case we don't bother checking the nonce values
 	   since the transaction ID serves the same purpose */
-	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
-		tag == MAKE_CTAG( CTAG_PH_SENDERNONCE ) )
+	if( stell( stream ) < endPos && \
+		peekTag( stream ) == MAKE_CTAG( CTAG_PH_SENDERNONCE ) )
 		{
 		readConstructed( stream, NULL, CTAG_PH_SENDERNONCE );
 		status = readOctetString( stream, protocolInfo->recipNonce,
@@ -646,8 +637,8 @@ static int readPkiHeader( INOUT STREAM *stream,
 					  "Invalid sender nonce in PKI header" ) );
 			}
 		}
-	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
-		tag == MAKE_CTAG( CTAG_PH_RECIPNONCE ) )
+	if( stell( stream ) < endPos && \
+		peekTag( stream ) == MAKE_CTAG( CTAG_PH_RECIPNONCE ) )
 		{
 		readConstructed( stream, NULL, CTAG_PH_RECIPNONCE );
 		status = readUniversal( stream );
@@ -659,8 +650,6 @@ static int readPkiHeader( INOUT STREAM *stream,
 					  "Invalid recipient nonce in PKI header" ) );
 			}
 		}
-	if( cryptStatusError( status ) )
-		return( status );
 
 	/* Remember that we've successfully read enough of the header 
 	   information to generate a response */
@@ -668,14 +657,15 @@ static int readPkiHeader( INOUT STREAM *stream,
 
 	/* Skip any further junk and process the general information if there is 
 	   any */
-	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
-		tag == MAKE_CTAG( CTAG_PH_FREETEXT ) )
+	if( stell( stream ) < endPos && \
+		peekTag( stream ) == MAKE_CTAG( CTAG_PH_FREETEXT ) )
 		{
-		/* Skip junk */
-		status = readUniversal( stream );
+		status = readUniversal( stream );	/* Junk */
+		if( cryptStatusError( status ) )
+			return( status );
 		}
-	if( checkStatusLimitsPeekTag( stream, status, tag, endPos ) && \
-		tag == MAKE_CTAG( CTAG_PH_GENERALINFO ) )
+	if( stell( stream ) < endPos && \
+		peekTag( stream ) == MAKE_CTAG( CTAG_PH_GENERALINFO ) )
 		{
 		status = readGeneralInfo( stream, protocolInfo );
 		if( cryptStatusError( status ) )
@@ -686,8 +676,8 @@ static int readPkiHeader( INOUT STREAM *stream,
 			}
 		}
 
-	return( cryptStatusError( status ) ? status : CRYPT_OK );
-	}		/* checkStatusLimitsPeekTag() can return tag as status */
+	return( CRYPT_OK );
+	}
 
 /****************************************************************************
 *																			*
@@ -709,7 +699,7 @@ static int readPkiHeader( INOUT STREAM *stream,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int readPkiMessage( INOUT SESSION_INFO *sessionInfoPtr,
 					INOUT CMP_PROTOCOL_INFO *protocolInfo,
-					IN_ENUM_OPT( CMP_MESSAGE ) CMP_MESSAGE_TYPE messageType )
+					IN_ENUM_OPT( CTAG_PB ) CMP_MESSAGE_TYPE messageType )
 	{
 #ifdef USE_ERRMSGS
 	ERROR_INFO *errorInfo = &sessionInfoPtr->errorInfo;
@@ -718,8 +708,8 @@ int readPkiMessage( INOUT SESSION_INFO *sessionInfoPtr,
 	STREAM stream;
 	const BOOLEAN isServerInitialMessage = \
 					( messageType == CTAG_PB_READ_ANY ) ? TRUE : FALSE;
-	void *integrityInfoPtr DUMMY_INIT_PTR;
-	int protPartStart DUMMY_INIT, protPartSize, bodyStart DUMMY_INIT;
+	void *integrityInfoPtr = DUMMY_INIT_PTR;
+	int protPartStart = DUMMY_INIT, protPartSize, bodyStart = DUMMY_INIT;
 	int length, integrityInfoLength, tag, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
@@ -855,9 +845,9 @@ int readPkiMessage( INOUT SESSION_INFO *sessionInfoPtr,
 	   report that no key is available to authenticate the user, for 
 	   example?), and an unauthenticated error message is better than an 
 	   authenticated paketewhainau */
-	status = tag = peekTag( &stream );
-	if( cryptStatusError( status ) )
-		return( status );
+	tag = peekTag( &stream );
+	if( cryptStatusError( tag ) )
+		return( tag );
 	tag = EXTRACT_CTAG( tag );
 	if( tag == CTAG_PB_ERROR )
 		{
@@ -929,7 +919,7 @@ int readPkiMessage( INOUT SESSION_INFO *sessionInfoPtr,
 	if( cryptStatusOK ( status ) )
 		{
 		bodyStart = stell( &stream );
-		status = sSkip( &stream, length, SSKIP_MAX );
+		status = sSkip( &stream, length );
 		}
 	if( cryptStatusError( status ) )
 		{

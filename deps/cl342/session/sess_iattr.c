@@ -24,8 +24,8 @@
 /* Helper function used to access internal attributes within an attribute 
    group */
 
-#if 0	/* Currently unused, may be enabled in a later version with a move 
-		   to composite attributes for host/client information */
+#if 0	/* Currently unused, may be enabled in 3.4 with the move to 
+		   composite attributes for host/client information */
 
 /* Reset the internal virtual cursor in a attribute-list item after we've 
    moved the attribute cursor */
@@ -528,9 +528,9 @@ static int addInfo( INOUT_PTR ATTRIBUTE_LIST **listHeadPtr,
 					IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE attributeID,
 					IN_BUFFER_OPT( dataLength ) const void *data, 
 					IN_LENGTH_SHORT const int dataLength, 
-					IN_LENGTH_SHORT_Z const int dataMaxLength, 
+					IN_LENGTH_SHORT const int dataMaxLength, 
 					IN_OPT const ATTRACCESSFUNCTION accessFunction, 
-					IN_FLAGS_Z( ATTR ) const int flags )
+					IN_FLAGS( ATTR ) const int flags )
 	{
 	ATTRIBUTE_LIST *newElement, *insertPoint = NULL;
 
@@ -645,7 +645,7 @@ int addSessionInfoEx( INOUT_PTR ATTRIBUTE_LIST **listHeadPtr,
 					  IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE attributeID,
 					  IN_BUFFER( dataLength ) const void *data, 
 					  IN_LENGTH_SHORT const int dataLength, 
-					  IN_FLAGS_Z( ATTR ) const int flags )
+					  IN_FLAGS( ATTR ) const int flags )
 	{
 	assert( isWritePtr( listHeadPtr, sizeof( ATTRIBUTE_LIST * ) ) );
 	assert( isReadPtr( data, dataLength ) );
@@ -699,7 +699,7 @@ int updateSessionInfo( INOUT_PTR ATTRIBUTE_LIST **listHeadPtr,
 					   IN_BUFFER( dataLength ) const void *data, 
 					   IN_LENGTH_SHORT const int dataLength,
 					   IN_LENGTH_SHORT const int dataMaxLength, 
-					   IN_FLAGS_Z( ATTR ) const int flags )
+					   IN_FLAGS( ATTR ) const int flags )
 	{
 	ATTRIBUTE_LIST *attributeListPtr = *listHeadPtr;
 

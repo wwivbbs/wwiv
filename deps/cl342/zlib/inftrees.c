@@ -11,8 +11,6 @@
   #include "zlib/inftrees.h"
 #endif /* Compiler-specific includes */
 
-#ifdef USE_COMPRESSION
-
 #define MAXBITS 15
 
 const char inflate_copyright[] =
@@ -331,4 +329,3 @@ int inflate_table(codetype type, unsigned short FAR *lens,
     *bits = root;
     return 0;
 }
-#endif /* USE_COMPRESSION */

@@ -17,6 +17,23 @@
   #include "session/ssl.h"
 #endif /* Compiler-specific includes */
 
+/* Proto-HMAC padding data */
+
+#define PROTOHMAC_PAD1_VALUE	0x36
+#define PROTOHMAC_PAD2_VALUE	0x5C
+#define PROTOHMAC_PAD1			"\x36\x36\x36\x36\x36\x36\x36\x36" \
+								"\x36\x36\x36\x36\x36\x36\x36\x36" \
+								"\x36\x36\x36\x36\x36\x36\x36\x36" \
+								"\x36\x36\x36\x36\x36\x36\x36\x36" \
+								"\x36\x36\x36\x36\x36\x36\x36\x36" \
+								"\x36\x36\x36\x36\x36\x36\x36\x36"
+#define PROTOHMAC_PAD2			"\x5C\x5C\x5C\x5C\x5C\x5C\x5C\x5C" \
+								"\x5C\x5C\x5C\x5C\x5C\x5C\x5C\x5C" \
+								"\x5C\x5C\x5C\x5C\x5C\x5C\x5C\x5C" \
+								"\x5C\x5C\x5C\x5C\x5C\x5C\x5C\x5C" \
+								"\x5C\x5C\x5C\x5C\x5C\x5C\x5C\x5C" \
+								"\x5C\x5C\x5C\x5C\x5C\x5C\x5C\x5C"
+
 #ifdef USE_SSL
 
 /****************************************************************************
@@ -32,15 +49,12 @@
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 static int writePacketMetadata( OUT_BUFFER( dataMaxLength, *dataLength ) \
 									void *data,
-								IN_LENGTH_SHORT_MIN( 16 ) \
-									const int dataMaxLength,
-								OUT_LENGTH_BOUNDED_Z( dataMaxLength ) \
-									int *dataLength,
+								IN_LENGTH_SHORT_MIN( 16 ) const int dataMaxLength,
+								OUT_LENGTH_SHORT_Z int *dataLength,
 								IN_RANGE( 0, 255 ) const int type,
 								IN_INT_Z const long seqNo, 
 								IN_RANGE( SSL_MINOR_VERSION_TLS, \
-										  SSL_MINOR_VERSION_TLS12 ) \
-									const int version,
+										  SSL_MINOR_VERSION_TLS12 ) const int version,
 								IN_LENGTH_Z const int payloadLength )
 	{
 	STREAM stream;
@@ -92,9 +106,9 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 int encryptData( const SESSION_INFO *sessionInfoPtr, 
 				 INOUT_BUFFER( dataMaxLength, *dataLength ) \
 					BYTE *data, 
-				 IN_DATALENGTH const int dataMaxLength,
-				 OUT_DATALENGTH_Z int *dataLength,
-				 IN_DATALENGTH const int payloadLength )
+				 IN_LENGTH const int dataMaxLength,
+				 OUT_LENGTH_Z int *dataLength,
+				 IN_LENGTH const int payloadLength )
 	{
 	int length = payloadLength, status;
 
@@ -102,7 +116,7 @@ int encryptData( const SESSION_INFO *sessionInfoPtr,
 	assert( isWritePtr( data, dataMaxLength ) );
 	assert( isWritePtr( dataLength, sizeof( int ) ) );
 
-	REQUIRES( dataMaxLength > 0 && dataMaxLength < MAX_BUFFER_SIZE );
+	REQUIRES( dataMaxLength > 0 && dataMaxLength < MAX_INTLENGTH );
 	REQUIRES( payloadLength > 0 && \
 			  payloadLength <= MAX_PACKET_SIZE + 20 && \
 			  payloadLength <= sessionInfoPtr->sendBufSize && \
@@ -157,8 +171,8 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 int decryptData( SESSION_INFO *sessionInfoPtr, 
 				 INOUT_BUFFER_FIXED( dataLength ) \
 					BYTE *data, 
-				 IN_DATALENGTH const int dataLength, 
-				 OUT_DATALENGTH_Z int *processedDataLength )
+				 IN_LENGTH const int dataLength, 
+				 OUT_LENGTH_Z int *processedDataLength )
 	{
 	int length = dataLength, padSize, status;
 
@@ -168,7 +182,7 @@ int decryptData( SESSION_INFO *sessionInfoPtr,
 
 	REQUIRES( dataLength > 0 && \
 			  dataLength <= sessionInfoPtr->receiveBufEnd && \
-			  dataLength < MAX_BUFFER_SIZE );
+			  dataLength < MAX_INTLENGTH );
 
 	/* Clear return value */
 	*processedDataLength = 0;
@@ -227,13 +241,7 @@ int decryptData( SESSION_INFO *sessionInfoPtr,
 	   up to 256 bytes of padding (only GnuTLS actually seems to use this 
 	   capability though) so we can't check for a sensible (small) padding 
 	   length, however we can check this for SSL, which is good because for 
-	   that we can't check the padding itself.
-
-	   There's no easy way to perform these checks in a timing-independent
-	   manner because we're using them to reject completely malformed
-	   packets (out-of-bounds array references), but hopefully the few 
-	   cycles difference won't be measurable in the overall scheme of 
-	   things */
+	   that we can't check the padding itself */
 	padSize = byteToInt( data[ dataLength - 1 ] );
 	if( padSize < 0 || padSize > 255 || \
 		( sessionInfoPtr->version == SSL_MINOR_VERSION_SSL && \
@@ -245,7 +253,7 @@ int decryptData( SESSION_INFO *sessionInfoPtr,
 				  padSize, padSize ) );
 		}
 	length -= padSize + 1;
-	if( length < 0 || length > MAX_BUFFER_SIZE )
+	if( length < 0 || length > MAX_INTLENGTH )
 		{
 		retExt( CRYPT_ERROR_BADDATA,
 				( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
@@ -254,19 +262,21 @@ int decryptData( SESSION_INFO *sessionInfoPtr,
 		}
 
 	/* Check for PKCS #5-type padding (PKCS #5 uses n, TLS uses n-1) if 
-	   necessary, in a timing-independent manner */
+	   necessary */
 	if( sessionInfoPtr->version >= SSL_MINOR_VERSION_TLS )
 		{
-		int value = 0, i;
+		int i;
 
 		for( i = 0; i < padSize; i++ )
-			value |= data[ length + i ] ^ padSize;
-		if( value != 0 )
 			{
-			retExt( CRYPT_ERROR_BADDATA,
-					( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
-					  "Invalid encryption padding byte, expected 0x%02X",
-					  padSize ) );
+			if( data[ length + i ] != padSize )
+				{
+				retExt( CRYPT_ERROR_BADDATA,
+						( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
+						  "Invalid encryption padding byte 0x%02X at "
+						  "position %d, should be 0x%02X",
+						  data[ length + i ], length + i, padSize ) );
+				}
 			}
 		}
 	*processedDataLength = length;
@@ -279,25 +289,6 @@ int decryptData( SESSION_INFO *sessionInfoPtr,
 *								SSL MAC Functions							*
 *																			*
 ****************************************************************************/
-
-#ifdef USE_SSL3
-
-/* Proto-HMAC padding data */
-
-#define PROTOHMAC_PAD1_VALUE	0x36
-#define PROTOHMAC_PAD2_VALUE	0x5C
-#define PROTOHMAC_PAD1			"\x36\x36\x36\x36\x36\x36\x36\x36" \
-								"\x36\x36\x36\x36\x36\x36\x36\x36" \
-								"\x36\x36\x36\x36\x36\x36\x36\x36" \
-								"\x36\x36\x36\x36\x36\x36\x36\x36" \
-								"\x36\x36\x36\x36\x36\x36\x36\x36" \
-								"\x36\x36\x36\x36\x36\x36\x36\x36"
-#define PROTOHMAC_PAD2			"\x5C\x5C\x5C\x5C\x5C\x5C\x5C\x5C" \
-								"\x5C\x5C\x5C\x5C\x5C\x5C\x5C\x5C" \
-								"\x5C\x5C\x5C\x5C\x5C\x5C\x5C\x5C" \
-								"\x5C\x5C\x5C\x5C\x5C\x5C\x5C\x5C" \
-								"\x5C\x5C\x5C\x5C\x5C\x5C\x5C\x5C" \
-								"\x5C\x5C\x5C\x5C\x5C\x5C\x5C\x5C"
 
 /* Perform an SSL MAC of a data block.  We have to provide special-case 
    handling of zero-length blocks since some versions of OpenSSL send these 
@@ -317,14 +308,14 @@ static int macDataSSL( IN_HANDLE const CRYPT_CONTEXT iHashContext,
 					   IN_LENGTH_SHORT const int macSecretLength,
 					   IN_INT_Z const long seqNo, 
 					   IN_BUFFER_OPT( dataLength ) const void *data, 
-					   IN_DATALENGTH_Z const int dataLength, 
+					   IN_LENGTH_Z const int dataLength, 
 					   IN_RANGE( 0, 255 ) const int type )
 	{
 	MESSAGE_DATA msgData;
 	STREAM stream;
 	BYTE buffer[ 128 + 8 ];
 	const int padSize = ( hashAlgo == CRYPT_ALGO_MD5 ) ? 48 : 40;
-	int length DUMMY_INIT, status;
+	int length = DUMMY_INIT, status;
 
 	assert( isReadPtr( macSecret, macSecretLength ) );
 	assert( ( data == NULL && dataLength == 0 ) || \
@@ -392,9 +383,9 @@ static int macDataSSL( IN_HANDLE const CRYPT_CONTEXT iHashContext,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 int createMacSSL( INOUT SESSION_INFO *sessionInfoPtr, 
 				  INOUT_BUFFER( dataMaxLength, *dataLength ) void *data, 
-				  IN_DATALENGTH const int dataMaxLength, 
-				  OUT_DATALENGTH_Z int *dataLength,
-				  IN_DATALENGTH const int payloadLength, 
+				  IN_LENGTH const int dataMaxLength, 
+				  OUT_LENGTH_Z int *dataLength,
+				  IN_LENGTH const int payloadLength, 
 				  IN_RANGE( 0, 255 ) const int type )
 	{
 	SSL_INFO *sslInfo = sessionInfoPtr->sessionSSL;
@@ -405,7 +396,7 @@ int createMacSSL( INOUT SESSION_INFO *sessionInfoPtr,
 	assert( isWritePtr( data, dataMaxLength ) );
 	assert( isWritePtr( dataLength, sizeof( int ) ) );
 
-	REQUIRES( dataMaxLength > 0 && dataMaxLength < MAX_BUFFER_SIZE );
+	REQUIRES( dataMaxLength > 0 && dataMaxLength < MAX_INTLENGTH );
 	REQUIRES( payloadLength > 0 && payloadLength <= MAX_PACKET_SIZE && \
 			  payloadLength + sessionInfoPtr->authBlocksize <= dataMaxLength );
 	REQUIRES( type >= 0 && type <= 255 );
@@ -441,7 +432,7 @@ int createMacSSL( INOUT SESSION_INFO *sessionInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int checkMacSSL( INOUT SESSION_INFO *sessionInfoPtr, 
 				 IN_BUFFER( dataLength ) const void *data, 
-				 IN_DATALENGTH const int dataLength, 
+				 IN_LENGTH const int dataLength, 
 				 IN_LENGTH_Z const int payloadLength, 
 				 IN_RANGE( 0, 255 ) const int type, 
 				 const BOOLEAN noReportError )
@@ -453,7 +444,7 @@ int checkMacSSL( INOUT SESSION_INFO *sessionInfoPtr,
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isReadPtr( data, dataLength ) );
 
-	REQUIRES( dataLength > 0 && dataLength < MAX_BUFFER_SIZE );
+	REQUIRES( dataLength > 0 && dataLength < MAX_INTLENGTH );
 	REQUIRES( payloadLength >= 0 && payloadLength <= MAX_PACKET_SIZE && \
 			  payloadLength + sessionInfoPtr->authBlocksize <= dataLength );
 	REQUIRES( type >= 0 && type <= 255 );
@@ -506,7 +497,6 @@ int checkMacSSL( INOUT SESSION_INFO *sessionInfoPtr,
 
 	return( CRYPT_OK );
 	}
-#endif /* USE_SSL3 */
 
 /****************************************************************************
 *																			*
@@ -529,17 +519,13 @@ static int macDataTLS( IN_HANDLE const CRYPT_CONTEXT iHashContext,
 					   IN_INT_Z const long seqNo, 
 					   IN_RANGE( SSL_MINOR_VERSION_TLS, \
 								 SSL_MINOR_VERSION_TLS12 ) const int version,
-					   IN_BUFFER_OPT( ivLength ) const void *iv, 
-					   IN_LENGTH_IV_Z const int ivLength, 
 					   IN_BUFFER_OPT( dataLength ) const void *data, 
-					   IN_DATALENGTH_Z const int dataLength, 
+					   IN_LENGTH_Z const int dataLength, 
 					   IN_RANGE( 0, 255 ) const int type )
 	{
-	BYTE buffer[ 64 + CRYPT_MAX_IVSIZE + 8 ];
+	BYTE buffer[ 64 + 8 ];
 	int length, status;
 
-	assert( ( iv == NULL && ivLength == 0 ) || \
-			isReadPtr( iv, ivLength ) );
 	assert( ( data == NULL && dataLength == 0 ) || \
 			isReadPtr( data, dataLength ) );
 
@@ -547,9 +533,6 @@ static int macDataTLS( IN_HANDLE const CRYPT_CONTEXT iHashContext,
 	REQUIRES( seqNo >= 0 );
 	REQUIRES( version >= SSL_MINOR_VERSION_TLS && \
 			  version <= SSL_MINOR_VERSION_TLS12 );
-	REQUIRES( ( iv == NULL && ivLength == 0 ) || \
-			  ( iv != NULL && \
-				ivLength > 0 && ivLength <= CRYPT_MAX_IVSIZE ) );
 	REQUIRES( ( data == NULL && dataLength == 0 ) || \
 			  ( data != NULL && \
 				dataLength > 0 && dataLength <= MAX_PACKET_SIZE ) );
@@ -557,20 +540,13 @@ static int macDataTLS( IN_HANDLE const CRYPT_CONTEXT iHashContext,
 
 	/* Set up the packet metadata to be MACed */
 	status = writePacketMetadata( buffer, 64, &length, type, seqNo, version,
-								  dataLength + ivLength );
+								  dataLength );
 	if( cryptStatusError( status ) )
 		return( status );
-	if( ivLength > 0 )
-		{
-		/* If we're using an explicit IV, append it to the metadata for
-		   MAC'ing */
-		memcpy( buffer + length, iv, ivLength );
-		length += ivLength;
-		}
 
 	/* Reset the hash context and generate the MAC:
 
-		HMAC( metadata || (IV) || data ) */
+		HMAC( metadata || data ) */
 	krnlSendMessage( iHashContext, IMESSAGE_DELETEATTRIBUTE, NULL,
 					 CRYPT_CTXINFO_HASHVALUE );
 	krnlSendMessage( iHashContext, IMESSAGE_CTX_HASH, buffer, length );
@@ -585,9 +561,9 @@ static int macDataTLS( IN_HANDLE const CRYPT_CONTEXT iHashContext,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 int createMacTLS( INOUT SESSION_INFO *sessionInfoPtr, 
 				  OUT_BUFFER( dataMaxLength, *dataLength ) void *data, 
-				  IN_DATALENGTH const int dataMaxLength, 
-				  OUT_DATALENGTH_Z int *dataLength,
-				  IN_DATALENGTH const int payloadLength, 
+				  IN_LENGTH const int dataMaxLength, 
+				  OUT_LENGTH_Z int *dataLength,
+				  IN_LENGTH const int payloadLength, 
 				  IN_RANGE( 0, 255 ) const int type )
 	{
 	SSL_INFO *sslInfo = sessionInfoPtr->sessionSSL;
@@ -598,21 +574,17 @@ int createMacTLS( INOUT SESSION_INFO *sessionInfoPtr,
 	assert( isWritePtr( data, dataMaxLength ) );
 	assert( isWritePtr( dataLength, sizeof( int ) ) );
 
-	REQUIRES( dataMaxLength > 0 && dataMaxLength < MAX_BUFFER_SIZE );
+	REQUIRES( dataMaxLength > 0 && dataMaxLength < MAX_INTLENGTH );
 	REQUIRES( payloadLength > 0 && payloadLength <= MAX_PACKET_SIZE && \
 			  payloadLength + sessionInfoPtr->authBlocksize <= dataMaxLength );
 	REQUIRES( type >= 0 && type <= 255 );
 
-	/* Clear return values */
+	/* Clear return value */
 	*dataLength = 0;
 
-	/* MAC the payload.  When wrapping a packet the IV is treaded as part of
-	   the payload so it's always passed in as { NULL, 0 }, it's only when
-	   unwrapping that it's stripped before the payload data is copied into
-	   the session buffer and so needs to be passed in explicitly */
+	/* MAC the payload */
 	status = macDataTLS( sessionInfoPtr->iAuthOutContext, sslInfo->writeSeqNo,
-						 sessionInfoPtr->version, NULL, 0, data, 
-						 payloadLength, type );
+						 sessionInfoPtr->version, data, payloadLength, type );
 	if( cryptStatusError( status ) )
 		return( status );
 	sslInfo->writeSeqNo++;
@@ -635,20 +607,19 @@ int createMacTLS( INOUT SESSION_INFO *sessionInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int checkMacTLS( INOUT SESSION_INFO *sessionInfoPtr, 
 				 IN_BUFFER( dataLength ) const void *data, 
-				 IN_DATALENGTH const int dataLength, 
-				 IN_DATALENGTH_Z const int payloadLength, 
+				 IN_LENGTH const int dataLength, 
+				 IN_LENGTH_Z const int payloadLength, 
 				 IN_RANGE( 0, 255 ) const int type, 
 				 const BOOLEAN noReportError )
 	{
 	SSL_INFO *sslInfo = sessionInfoPtr->sessionSSL;
 	MESSAGE_DATA msgData;
-	const void *ivPtr = NULL;
-	int ivLength = 0, status;
+	int status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isReadPtr( data, dataLength ) );
 
-	REQUIRES( dataLength > 0 && dataLength < MAX_BUFFER_SIZE );
+	REQUIRES( dataLength > 0 && dataLength < MAX_INTLENGTH );
 	REQUIRES( payloadLength >= 0 && payloadLength <= MAX_PACKET_SIZE && \
 			  payloadLength + sessionInfoPtr->authBlocksize <= dataLength );
 	REQUIRES( type >= 0 && type <= 255 );
@@ -657,25 +628,17 @@ int checkMacTLS( INOUT SESSION_INFO *sessionInfoPtr,
 	   payload, this can happen with some versions of OpenSSL that send 
 	   zero-length blocks as a kludge to work around pre-TLS 1.1 chosen-IV
 	   attacks */
-	if( ( sessionInfoPtr->protocolFlags & SSL_PFLAG_ENCTHENMAC ) && \
-		sslInfo->ivSize > 0 )
-		{
-		/* When using encrypt-then-MAC and TLS 1.1+ explicit IVs, the IV is
-		   authenticated alongside the encrypted payload data */
-		ivPtr = sslInfo->iv;
-		ivLength = sslInfo->ivSize;
-		}
 	if( payloadLength <= 0 )
 		{
 		status = macDataTLS( sessionInfoPtr->iAuthInContext, 
 							 sslInfo->readSeqNo, sessionInfoPtr->version, 
-							 ivPtr, ivLength, NULL, 0, type );
+							 NULL, 0, type );
 		}
 	else
 		{
 		status = macDataTLS( sessionInfoPtr->iAuthInContext, 
 							 sslInfo->readSeqNo, sessionInfoPtr->version, 
-							 ivPtr, ivLength, data, payloadLength, type );
+							 data, payloadLength, type );
 		}
 	if( cryptStatusError( status ) )
 		return( status );
@@ -711,8 +674,6 @@ int checkMacTLS( INOUT SESSION_INFO *sessionInfoPtr,
 *								TLS GCM Functions							*
 *																			*
 ****************************************************************************/
-
-#ifdef USE_GCM
 
 /* Perform a TLS GCM integrity check of a data block.  This differs somewhat
    from the more conventional MACing routines because GCM combines the ICV
@@ -751,7 +712,6 @@ int macDataTLSGCM( IN_HANDLE const CRYPT_CONTEXT iCryptContext,
 	return( krnlSendMessage( iCryptContext, IMESSAGE_SETATTRIBUTE_S,
 							 &msgData, CRYPT_IATTRIBUTE_AAD ) );
 	}
-#endif /* USE_GCM */
 
 /****************************************************************************
 *																			*
@@ -781,14 +741,14 @@ int macDataTLSGCM( IN_HANDLE const CRYPT_CONTEXT iCryptContext,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int hashHSData( const SSL_HANDSHAKE_INFO *handshakeInfo,
 					   IN_BUFFER( dataLength ) const void *data, 
-					   IN_DATALENGTH const int dataLength )
+					   IN_LENGTH const int dataLength )
 	{
 	int status;
 
 	assert( isReadPtr( handshakeInfo, sizeof( SSL_HANDSHAKE_INFO ) ) );
 	assert( isReadPtr( data, dataLength ) );
 
-	REQUIRES( dataLength > 0 && dataLength < MAX_BUFFER_SIZE );
+	REQUIRES( dataLength > 0 && dataLength < MAX_INTLENGTH );
 
 	if( handshakeInfo->md5context != CRYPT_ERROR )
 		{
@@ -835,7 +795,7 @@ int hashHSPacketRead( const SSL_HANDSHAKE_INFO *handshakeInfo,
 	assert( isReadPtr( handshakeInfo, sizeof( SSL_HANDSHAKE_INFO ) ) );
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	
-	REQUIRES( dataLength > 0 && dataLength < MAX_BUFFER_SIZE );
+	REQUIRES( dataLength > 0 && dataLength < MAX_INTLENGTH );
 
 	/* On a read we've just processed the packet header and everything 
 	   that's left in the stream is the data to be MACd.  Note that we can't 
@@ -853,7 +813,7 @@ int hashHSPacketRead( const SSL_HANDSHAKE_INFO *handshakeInfo,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int hashHSPacketWrite( const SSL_HANDSHAKE_INFO *handshakeInfo, 
 					   INOUT STREAM *stream,
-					   IN_DATALENGTH_Z const int offset )
+					   IN_LENGTH_Z const int offset )
 	{
 	const int dataStart = offset + SSL_HEADER_SIZE;
 	const int dataLength = stell( stream ) - dataStart;
@@ -863,8 +823,8 @@ int hashHSPacketWrite( const SSL_HANDSHAKE_INFO *handshakeInfo,
 	assert( isReadPtr( handshakeInfo, sizeof( SSL_HANDSHAKE_INFO ) ) );
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 
-	REQUIRES( offset >= 0 && offset < MAX_BUFFER_SIZE );
-	REQUIRES( dataLength > 0 && dataLength < MAX_BUFFER_SIZE );
+	REQUIRES( offset >= 0 && offset < MAX_INTLENGTH );
+	REQUIRES( dataLength > 0 && dataLength < MAX_INTLENGTH );
 
 	/* On a write we've just finished writing the packet and everything but
 	   the header needs to be MACd */
@@ -889,8 +849,6 @@ int hashHSPacketWrite( const SSL_HANDSHAKE_INFO *handshakeInfo,
    transient failure in a single component operation it'll be picked up at 
    the end anyway when the overall MAC check fails */
 
-#ifdef USE_SSL3
-
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3, 5, 6, 8 ) ) \
 int completeSSLDualMAC( IN_HANDLE const CRYPT_CONTEXT md5context,
 						IN_HANDLE const CRYPT_CONTEXT sha1context, 
@@ -898,8 +856,7 @@ int completeSSLDualMAC( IN_HANDLE const CRYPT_CONTEXT md5context,
 							BYTE *hashValues, 
 						IN_LENGTH_SHORT_MIN( MD5MAC_SIZE + SHA1MAC_SIZE ) \
 							const int hashValuesMaxLen,
-						OUT_LENGTH_BOUNDED_Z( hashValuesMaxLen ) \
-							int *hashValuesLen,
+						OUT_LENGTH_SHORT_Z int *hashValuesLen,
 						IN_BUFFER( labelLength ) const char *label, 
 						IN_RANGE( 1, 64 ) const int labelLength, 
 						IN_BUFFER( masterSecretLen ) const BYTE *masterSecret, 
@@ -986,7 +943,6 @@ int completeSSLDualMAC( IN_HANDLE const CRYPT_CONTEXT md5context,
 		*hashValuesLen = MD5MAC_SIZE + SHA1MAC_SIZE;
 	return( status );
 	}
-#endif /* USE_SSL3 */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3, 5, 6, 8 ) ) \
 int completeTLSHashedMAC( IN_HANDLE const CRYPT_CONTEXT md5context,
@@ -995,12 +951,10 @@ int completeTLSHashedMAC( IN_HANDLE const CRYPT_CONTEXT md5context,
 								BYTE *hashValues, 
 						  IN_LENGTH_SHORT_MIN( TLS_HASHEDMAC_SIZE ) \
 								const int hashValuesMaxLen,
-						  OUT_LENGTH_BOUNDED_Z( hashValuesMaxLen ) \
-								int *hashValuesLen,
+						  OUT_LENGTH_SHORT_Z int *hashValuesLen,
 						  IN_BUFFER( labelLength ) const char *label, 
 						  IN_RANGE( 1, 64 ) const int labelLength, 
-						  IN_BUFFER( masterSecretLen ) \
-								const BYTE *masterSecret, 
+						  IN_BUFFER( masterSecretLen ) const BYTE *masterSecret, 
 						  IN_LENGTH_SHORT const int masterSecretLen )
 	{
 	MECHANISM_DERIVE_INFO mechanismInfo;
@@ -1051,8 +1005,7 @@ int completeTLSHashedMAC( IN_HANDLE const CRYPT_CONTEXT md5context,
 		TLS_PRF( label || MD5_hash || SHA1_hash ) */
 	setMechanismDeriveInfo( &mechanismInfo, hashValues, 
 							TLS_HASHEDMAC_SIZE, ( MESSAGE_CAST ) masterSecret, 
-							masterSecretLen, 
-							( CRYPT_ALGO_TYPE ) CRYPT_USE_DEFAULT, hashBuffer, 
+							masterSecretLen, CRYPT_USE_DEFAULT, hashBuffer, 
 							labelLength + MD5MAC_SIZE + SHA1MAC_SIZE, 1 );
 	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_DEV_DERIVE,
 							  &mechanismInfo, MECHANISM_DERIVE_TLS );
@@ -1067,12 +1020,10 @@ int completeTLS12HashedMAC( IN_HANDLE const CRYPT_CONTEXT sha2context,
 								BYTE *hashValues, 
 							IN_LENGTH_SHORT_MIN( TLS_HASHEDMAC_SIZE ) \
 								const int hashValuesMaxLen,
-							OUT_LENGTH_BOUNDED_Z( hashValuesMaxLen ) \
-								int *hashValuesLen,
+							OUT_LENGTH_SHORT_Z int *hashValuesLen,
 							IN_BUFFER( labelLength ) const char *label, 
 							IN_RANGE( 1, 64 ) const int labelLength, 
-							IN_BUFFER( masterSecretLen ) \
-								const BYTE *masterSecret, 
+							IN_BUFFER( masterSecretLen ) const BYTE *masterSecret, 
 							IN_LENGTH_SHORT const int masterSecretLen )
 	{
 	MECHANISM_DERIVE_INFO mechanismInfo;
@@ -1268,7 +1219,7 @@ int createCertVerify( const SESSION_INFO *sessionInfoPtr,
 					  INOUT STREAM *stream )
 	{
 	void *dataPtr;
-	int dataLength, length DUMMY_INIT, status;
+	int dataLength, length = DUMMY_INIT, status;
 
 	assert( isReadPtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isReadPtr( handshakeInfo, sizeof( SSL_HANDSHAKE_INFO ) ) );
@@ -1292,8 +1243,6 @@ int createCertVerify( const SESSION_INFO *sessionInfoPtr,
 		if( cryptStatusError( status ) )
 			return( status );
 
-		/* See the note above about the complexities of handling the ever-
-		   changing pre-TLS 1.2 signature format */
 		status = iCryptCreateSignature( dataPtr, 
 						min( dataLength, MAX_INTLENGTH_SHORT - 1 ), &length, 
 						CRYPT_FORMAT_CRYPTLIB, sessionInfoPtr->privateKey, 
@@ -1311,12 +1260,12 @@ int createCertVerify( const SESSION_INFO *sessionInfoPtr,
 		handshakeInfo->certVerifyContext = CRYPT_ERROR;
 		}
 	if( cryptStatusOK( status ) )
-		status = sSkip( stream, length, MAX_INTLENGTH_SHORT );
+		status = sSkip( stream, length );
 	return( status );
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
-int checkCertVerify( INOUT SESSION_INFO *sessionInfoPtr,
+int checkCertVerify( const SESSION_INFO *sessionInfoPtr,
 					 INOUT SSL_HANDSHAKE_INFO *handshakeInfo,
 					 INOUT STREAM *stream, 
 					 IN_LENGTH_SHORT_MIN( MIN_CRYPT_OBJECTSIZE ) \
@@ -1345,27 +1294,6 @@ int checkCertVerify( INOUT SESSION_INFO *sessionInfoPtr,
 	if( sessionInfoPtr->version < SSL_MINOR_VERSION_TLS12 )
 		{
 		CRYPT_CONTEXT iHashContext;
-
-		/* See the note above about the complexities of handling the ever-
-		   changing pre-TLS 1.2 signature format.  To catch any use of one 
-		   of these formats, we check for a non-cryptlib signature being 
-		   passed to us by checking for the absence of an ASN.1 SEQUENCE 
-		   tag and report it as a signature-verification failures.
-		   
-		   In theory if there's ever any demand for support for this, we
-		   could take advantage of the fact that the signature can really
-		   only be RSA (DSA is gone and ECC is TLS 1.2-only) and perform a
-		   raw RSA public-key operation on the signature data, extract the
-		   lowest 20 bytes (the SHA-1 portion), and compare it with the hash 
-		   data */
-		if( *( ( BYTE * ) dataPtr ) != 0x30 )
-			{
-			assert( DEBUG_WARN );
-			retExt( CRYPT_ERROR_SIGNATURE,
-					( CRYPT_ERROR_SIGNATURE, SESSION_ERRINFO, 
-					  "Couldn't verify old-style (pre-TLS 1.2) client "
-					  "certificate-verify message" ) );
-			}
 
 		/* Create the hash of the data to verify if necessary */
 		status = createCertVerifyAltHash( handshakeInfo, &iHashContext );
@@ -1403,14 +1331,7 @@ int checkCertVerify( INOUT SESSION_INFO *sessionInfoPtr,
 			}
 #endif /* CONFIG_SUITEB_TESTS */
 		}
-	if( cryptStatusError( status ) )
-		{
-		retExt( status,
-				( status, SESSION_ERRINFO, 
-				  "Verification of client's certificate-verify message "
-				  "failed" ) );
-		}
-	return( CRYPT_OK );
+	return( status );
 	}
 
 /****************************************************************************
@@ -1496,9 +1417,9 @@ int createKeyexSignature( INOUT SESSION_INFO *sessionInfoPtr,
 						  IN_BUFFER( keyDataLength ) const void *keyData, 
 						  IN_LENGTH_SHORT const int keyDataLength )
 	{
-	CRYPT_CONTEXT md5Context DUMMY_INIT, shaContext;
+	CRYPT_CONTEXT md5Context = DUMMY_INIT, shaContext;
 	void *dataPtr;
-	int dataLength, sigLength DUMMY_INIT, status;
+	int dataLength, sigLength = DUMMY_INIT, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( handshakeInfo, sizeof( SSL_HANDSHAKE_INFO ) ) );
@@ -1524,7 +1445,6 @@ int createKeyexSignature( INOUT SESSION_INFO *sessionInfoPtr,
 			return( status );
 			}
 		}
-	INJECT_FAULT( SESSION_BADSIG_HASH, SESSION_BADSIG_HASH_SSL_1 );
 
 	/* Sign the hashes.  The reason for the min() part of the expression is
 	   that iCryptCreateSignature() gets suspicious of very large buffer
@@ -1562,7 +1482,7 @@ int createKeyexSignature( INOUT SESSION_INFO *sessionInfoPtr,
 	if( cryptStatusError( status ) )
 		return( status );
 
-	return( sSkip( stream, sigLength, MAX_INTLENGTH_SHORT ) );
+	return( sSkip( stream, sigLength ) );
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 4 ) ) \
@@ -1573,10 +1493,10 @@ int checkKeyexSignature( INOUT SESSION_INFO *sessionInfoPtr,
 						 IN_LENGTH_SHORT const int keyDataLength,
 						 const BOOLEAN isECC )
 	{
-	CRYPT_CONTEXT md5Context DUMMY_INIT, shaContext;
+	CRYPT_CONTEXT md5Context = DUMMY_INIT, shaContext;
 	CRYPT_ALGO_TYPE hashAlgo = CRYPT_ALGO_SHA1;
 	void *dataPtr;
-	int dataLength, keyexKeySize, sigKeySize DUMMY_INIT, hashParam = 0;
+	int dataLength, keyexKeySize, sigKeySize = DUMMY_INIT, hashParam = 0;
 	int status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
@@ -1626,9 +1546,6 @@ int checkKeyexSignature( INOUT SESSION_INFO *sessionInfoPtr,
 		if( cryptStatusError( status ) )
 			return( status );
 		( void ) sgetc( stream );
-		if( tlsHashAlgo <= TLS_HASHALGO_NONE || \
-			tlsHashAlgo >= TLS_HASHALGO_LAST )
-			return( CRYPT_ERROR_NOTAVAIL ); 
 		status = mapValue( tlsHashAlgo, &cryptHashAlgo, hashAlgoIDTbl, 
 						   FAILSAFE_ARRAYSIZE( hashAlgoIDTbl, MAP_TABLE ) );
 		if( cryptStatusError( status ) )
@@ -1702,12 +1619,7 @@ int checkKeyexSignature( INOUT SESSION_INFO *sessionInfoPtr,
 		   could just sign size n with size n+1 then you wouldn't need 
 		   hashsize n/n+1 and keysize n/n+1 and whatnot) */
 		if( sigKeySize < keyexKeySize - bitsToBytes( 8 ) )
-			{
-			DEBUG_PRINT(( "Server used P%d keyex but only P%d signature.\n",
-						  bytesToBits( keyexKeySize ),
-						  bytesToBits( sigKeySize ) ));
 			return( CRYPT_ERROR_NOSECURE );
-			}
 #ifdef CONFIG_SUITEB
 		if( ( sessionInfoPtr->protocolFlags & SSL_PFLAG_SUITEB ) && \
 			sigKeySize > keyexKeySize + bitsToBytes( 8 ) )
@@ -1721,24 +1633,11 @@ int checkKeyexSignature( INOUT SESSION_INFO *sessionInfoPtr,
 		}
 	else
 		{
-#if 1
-		/* For conventional keyex/signatures things get a bit complicated,
-		   using (say) a 1024-bit key to sign a 1536-bit keyex seems like a
-		   mismatch, but then the 1024-bit key may be regenerated relatively
-		   frequently while the 1536-bit DH parameters may be static and
-		   shared with everyone else on earth, making the high-value 1536-
-		   bit key a more viable target for attack than the singleton 1024-
-		   bit one.  Because of this we allow a difference of up to 512 bits
-		   between the signing key and the keyex key */
-		if( sigKeySize < keyexKeySize - bitsToBytes( 512 + 32 ) )
-			return( CRYPT_ERROR_NOSECURE );
-#else
 		/* For conventional keyex/signatures the bounds are a bit looser 
 		   because non-ECC keygen mechanisms can result in a wider variation 
 		   of actual vs. nominal key size */
 		if( sigKeySize < keyexKeySize - bitsToBytes( 32 ) )
 			return( CRYPT_ERROR_NOSECURE );
-#endif /* 0 */
 		}
 
 	/* Skip the signature data */

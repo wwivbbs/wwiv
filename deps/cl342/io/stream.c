@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *							Stream I/O Functions							*
-*						Copyright Peter Gutmann 1993-2013					*
+*						Copyright Peter Gutmann 1993-2007					*
 *																			*
 ****************************************************************************/
 
@@ -12,6 +12,22 @@
 #else
   #include "io/stream_int.h"
 #endif /* Compiler-specific includes */
+
+/* Prototypes for functions in file.c */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+int fileRead( STREAM *stream, 
+			  OUT_BUFFER( length, *bytesRead ) void *buffer, 
+			  IN_LENGTH const int length, 
+			  OUT_LENGTH_Z int *bytesRead );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+int fileWrite( STREAM *stream, 
+			   IN_BUFFER( length ) const void *buffer, 
+			   IN_LENGTH const int length );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+int fileFlush( STREAM *stream );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+int fileSeek( STREAM *stream, IN_LENGTH_Z const long position );
 
 /****************************************************************************
 *																			*
@@ -48,12 +64,10 @@ static BOOLEAN sanityCheck( const STREAM *stream )
 				}
 			break;
 
-#ifdef USE_FILES
 		case STREAM_TYPE_FILE:
 			if( stream->flags & ~STREAM_FFLAG_MASK )
 				return( FALSE );
 			break;
-#endif /* USE_FILES */
 
 #ifdef USE_TCP
 		case STREAM_TYPE_NETWORK:
@@ -82,7 +96,7 @@ static BOOLEAN sanityCheck( const STREAM *stream )
 		if( stream->buffer != NULL || stream->bufSize != 0 )
 			return( FALSE );
 		if( stream->bufPos < 0 || stream->bufPos > stream->bufEnd || 
-			stream->bufEnd < 0 || stream->bufEnd >= MAX_BUFFER_SIZE )
+			stream->bufEnd < 0 || stream->bufEnd >= MAX_INTLENGTH )
 			return( FALSE );
 
 		return( TRUE );
@@ -115,7 +129,7 @@ static BOOLEAN sanityCheck( const STREAM *stream )
 		   that the write buffer position is within bounds */
 		if( netStream->writeBuffer == NULL || \
 			netStream->writeBufSize <= 0 || \
-			netStream->writeBufSize >= MAX_BUFFER_SIZE )
+			netStream->writeBufSize >= MAX_INTLENGTH )
 			return( FALSE );
 		if( netStream->writeBufEnd < 0 || \
 			netStream->writeBufEnd > netStream->writeBufSize )
@@ -152,22 +166,18 @@ static BOOLEAN sanityCheck( const STREAM *stream )
 			 bufPos			 bufEnd */
 	if( stream->bufPos < 0 || stream->bufPos > stream->bufEnd || \
 		stream->bufEnd < 0 || stream->bufEnd > stream->bufSize || \
-		stream->bufSize <= 0 || stream->bufSize >= MAX_BUFFER_SIZE )
+		stream->bufSize <= 0 || stream->bufSize >= MAX_INTLENGTH )
 		return( FALSE );
 	 
-#ifdef USE_FILES
 	/* If it's a file stream make sure that the position within the file
 	   makes sense */
 	if( stream->type == STREAM_TYPE_FILE && \
 		( stream->bufCount < 0 || \
-		  stream->bufCount >= ( MAX_BUFFER_SIZE / stream->bufSize ) ) )
+		  stream->bufCount >= ( MAX_INTLENGTH / stream->bufSize ) ) )
 		return( FALSE );
-#endif /* USE_FILES */
 
 	return( TRUE );
 	}
-
-#ifdef USE_FILES
 
 /* Refill a stream buffer from backing storage */
 
@@ -230,9 +240,11 @@ static int refillStream( INOUT STREAM *stream )
 	/* We've refilled the stream buffer from the file, remember the 
 	   details */
 	if( !( stream->flags & STREAM_FFLAG_POSCHANGED ) )
+		{
 		stream->bufCount++;
+		stream->bufPos = 0;
+		}
 	stream->bufEnd = length;
-	stream->bufPos = 0;
 	stream->flags &= ~( STREAM_FFLAG_POSCHANGED | \
 						STREAM_FFLAG_POSCHANGED_NOSKIP );
 
@@ -283,7 +295,6 @@ static int emptyStream( INOUT STREAM *stream, const BOOLEAN forcedFlush )
 
 	return( CRYPT_OK );
 	}
-#endif /* USE_FILES */
 
 #ifdef VIRTUAL_FILE_STREAM 
 
@@ -301,7 +312,7 @@ static int expandVirtualFileStream( INOUT STREAM *stream,
 
 	REQUIRES_S( sanityCheck( stream ) && \
 				sIsVirtualFileStream( stream ) );
-	REQUIRES_S( length > 0 && length < MAX_BUFFER_SIZE );
+	REQUIRES_S( length > 0 && length < MAX_INTLENGTH );
 
 	/* If it's a small buffer allocated when we initially read a file and it 
 	   doesn't look like we'll be overflowing a standard-size buffer, just 
@@ -342,7 +353,7 @@ static int expandVirtualFileStream( INOUT STREAM *stream,
 
 /* Read data from a stream */
 
-CHECK_RETVAL_RANGE( 0, 0xFF ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_RANGE( MAX_ERROR, 0xFF ) STDC_NONNULL_ARG( ( 1 ) ) \
 int sgetc( INOUT STREAM *stream )
 	{
 	int ch;
@@ -371,7 +382,6 @@ int sgetc( INOUT STREAM *stream )
 			ch = byteToInt( stream->buffer[ stream->bufPos++ ] );
 			break;
 
-#ifdef USE_FILES
 		case STREAM_TYPE_FILE:
 			REQUIRES_S( stream->flags & STREAM_FFLAG_BUFFERSET );
 
@@ -385,7 +395,6 @@ int sgetc( INOUT STREAM *stream )
 				}
 			ch = byteToInt( stream->buffer[ stream->bufPos++ ] );
 			break;
-#endif /* USE_FILES */
 
 		default:
 			retIntError_Stream( stream );
@@ -418,7 +427,7 @@ int sread( INOUT STREAM *stream,
 	REQUIRES_S( stream->type == STREAM_TYPE_MEMORY || \
 				stream->type == STREAM_TYPE_FILE || \
 				stream->type == STREAM_TYPE_NETWORK );
-	REQUIRES_S( length > 0 && length < MAX_BUFFER_SIZE );
+	REQUIRES_S( length > 0 && length < MAX_INTLENGTH );
 
 	/* If there's a problem with the stream don't try to do anything */
 	if( cryptStatusError( stream->status ) )
@@ -443,33 +452,6 @@ int sread( INOUT STREAM *stream,
 					localLength = length;
 				}
 #endif /* VIRTUAL_FILE_STREAM */
-#ifndef NDEBUG
-			if( sIsPseudoHTTPRawStream( stream ) )
-				{
-				NET_STREAM_INFO *netStream = \
-						( NET_STREAM_INFO * ) stream->netStreamInfo;
-				int bytesRead;
-
-				status = netStream->readFunction( stream, buffer, length, 
-												  &bytesRead );
-				break;
-				}
-			if( sIsPseudoHTTPStream( stream ) )
-				{
-				HTTP_DATA_INFO *httpDataInfo = ( HTTP_DATA_INFO * ) buffer;
-
-				REQUIRES_S( localLength == sizeof( HTTP_DATA_INFO ) );
-
-				/* Pseudo-streams using HTTP transport have special 
-				   requirements since the output buffer isn't a direct 
-				   pointer to the buffer but an HTTP_DATA_INFO containing 
-				   information on the HTTP stream, so we have to copy
-				   information across to/from the HTTP_DATA_INFO */
-				buffer = httpDataInfo->buffer;
-				httpDataInfo->bytesAvail = stream->bufEnd;
-				localLength = stream->bufEnd;
-				}
-#endif /* !NDEBUG */
 			
 			/* Read the data from the stream buffer */
 			if( stream->bufPos + localLength > stream->bufEnd )
@@ -487,18 +469,9 @@ int sread( INOUT STREAM *stream,
 			   to return an exact byte count */
 			status = ( stream->flags & STREAM_FLAG_PARTIALREAD ) ? \
 					 localLength : CRYPT_OK;
-#ifndef NDEBUG
-			if( sIsPseudoStream( stream ) )
-				{
-				/* Pseudo-streams are memory streams emulating other stream
-				   types, so we need to return a byte count */
-				status = localLength;
-				}
-#endif /* !NDEBUG */
 			break;
 			}
 
-#ifdef USE_FILES
 		case STREAM_TYPE_FILE:
 			{
 			BYTE *bufPtr = buffer;
@@ -546,7 +519,6 @@ int sread( INOUT STREAM *stream,
 					 bytesCopied : CRYPT_OK;
 			break;
 			}
-#endif /* USE_FILES */
 
 #ifdef USE_TCP
 		case STREAM_TYPE_NETWORK:
@@ -591,7 +563,7 @@ int sread( INOUT STREAM *stream,
 				   cryptographically protected close (in which case any 
 				   non-OK status indicates a problem).  The most sensible 
 				   status is probably a read error */
-				netStream->nFlags |= STREAM_NFLAG_LASTMSGR;
+				sioctlSet( stream, STREAM_IOCTL_CONNSTATE, FALSE );
 				return( CRYPT_ERROR_READ );
 				}
 			if( bytesRead < length && \
@@ -675,12 +647,6 @@ int sputc( INOUT STREAM *stream, IN_BYTE const int ch )
 	if( cryptStatusError( stream->status ) )
 		return( stream->status );
 
-	/* If this is a pseudo-stream then writes are discarded */
-#ifndef NDEBUG
-	if( sIsPseudoStream( stream ) )
-		return( CRYPT_OK );
-#endif /* !NDEBUG */
-
 	switch( stream->type )
 		{
 		case STREAM_TYPE_NULL:
@@ -720,7 +686,6 @@ int sputc( INOUT STREAM *stream, IN_BYTE const int ch )
 #endif /* VIRTUAL_FILE_STREAM */
 			break;
 
-#ifdef USE_FILES
 		case STREAM_TYPE_FILE:
 			REQUIRES_S( stream->flags & STREAM_FFLAG_BUFFERSET );
 
@@ -736,7 +701,6 @@ int sputc( INOUT STREAM *stream, IN_BYTE const int ch )
 			stream->buffer[ stream->bufPos++ ] = intToByte( ch );
 			stream->flags |= STREAM_FLAG_DIRTY;
 			break;
-#endif /* USE_FILES */
 
 		default:
 			retIntError_Stream( stream );
@@ -771,19 +735,13 @@ int swrite( INOUT STREAM *stream,
 				stream->type == STREAM_TYPE_MEMORY || \
 				stream->type == STREAM_TYPE_FILE || \
 				stream->type == STREAM_TYPE_NETWORK );
-	REQUIRES_S( length > 0 && length < MAX_BUFFER_SIZE );
+	REQUIRES_S( length > 0 && length < MAX_INTLENGTH );
 	REQUIRES_S( !( stream->flags & STREAM_FLAG_READONLY ) );
 
 	/* If there's a problem with the stream don't try to do anything until
 	   the error is cleared */
 	if( cryptStatusError( stream->status ) )
 		return( stream->status );
-
-	/* If this is a pseudo-stream then writes are discarded */
-#ifndef NDEBUG
-	if( sIsPseudoStream( stream ) )
-		return( CRYPT_OK );
-#endif /* !NDEBUG */
 
 	switch( stream->type )
 		{
@@ -827,7 +785,6 @@ int swrite( INOUT STREAM *stream,
 			status = CRYPT_OK;
 			break;
 
-#ifdef USE_FILES
 		case STREAM_TYPE_FILE:
 			{
 			const BYTE *bufPtr = buffer;
@@ -865,7 +822,6 @@ int swrite( INOUT STREAM *stream,
 			status = CRYPT_OK;
 			break;
 			}
-#endif /* USE_FILES */
 
 #ifdef USE_TCP
 		case STREAM_TYPE_NETWORK:
@@ -933,12 +889,9 @@ int swrite( INOUT STREAM *stream,
 	return( status );
 	}
 
-#ifdef USE_FILES
-
 /* Commit data in a stream to backing storage */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int sflush( INOUT STREAM *stream )
+int sflush( STREAM *stream )
 	{
 	int status = CRYPT_OK, flushStatus;
 
@@ -983,7 +936,6 @@ int sflush( INOUT STREAM *stream )
 
 	return( cryptStatusOK( status ) ? flushStatus : status );
 	}
-#endif /* USE_FILES */
 
 /****************************************************************************
 *																			*
@@ -1057,7 +1009,7 @@ int sseek( INOUT STREAM *stream, IN_LENGTH_Z const long position )
 	REQUIRES_S( stream->type == STREAM_TYPE_NULL || \
 				stream->type == STREAM_TYPE_MEMORY || \
 				stream->type == STREAM_TYPE_FILE );
-	REQUIRES_S( position >= 0 && position < MAX_BUFFER_SIZE );
+	REQUIRES_S( position >= 0 && position < MAX_INTLENGTH );
 
 	/* If there's a problem with the stream don't try to do anything */
 	if( cryptStatusError( stream->status ) )
@@ -1086,13 +1038,9 @@ int sseek( INOUT STREAM *stream, IN_LENGTH_Z const long position )
 				stream->bufEnd = stream->bufPos;
 			break;
 
-#ifdef USE_FILES
 		case STREAM_TYPE_FILE:
 			{
-			const int blockOffset = ( stream->bufSize > 0 ) ? \
-									position / stream->bufSize : 0;
-			const int byteOffset = ( stream->bufSize > 0 ) ? \
-								   position % stream->bufSize : 0;
+			int newBufCount;
 
 			/* If it's a currently-disconnected file stream then all we can 
 			   do is rewind the stream.  This occurs when we're doing an 
@@ -1107,15 +1055,9 @@ int sseek( INOUT STREAM *stream, IN_LENGTH_Z const long position )
 				return( CRYPT_OK );
 				}
 
-			/* Determine which buffer-size block of data we're moving to */
-			if( ( stream->flags & STREAM_FFLAG_EOF ) && \
-				blockOffset > stream->bufCount )
-				{
-				/* If this is the last buffer's worth and we're trying to 
-				   move past it, it's an error */
-				return( sSetError( stream, CRYPT_ERROR_UNDERFLOW ) );
-				}
-			if( blockOffset != stream->bufCount )
+			/* It's a file stream, remember the new position in the file */
+			newBufCount = position / stream->bufSize;
+			if( newBufCount != stream->bufCount )
 				{
 				/* We're not within the current buffer any more, remember 
 				   that we have to explicitly update the file position on
@@ -1124,25 +1066,14 @@ int sseek( INOUT STREAM *stream, IN_LENGTH_Z const long position )
 
 				/* If we're already positioned to read the next bufferful 
 				   of data we don't have to explicitly skip ahead to it */
-				if( blockOffset == stream->bufCount + 1 ) 
+				if( newBufCount == stream->bufCount + 1 ) 
 					stream->flags |= STREAM_FFLAG_POSCHANGED_NOSKIP;
 
-				stream->bufCount = blockOffset;
+				stream->bufCount = newBufCount;
 				}
-
-			/* Now that we've got the buffer-sized block handled, set up
-			   the byte offset within the block */
-			if( ( stream->flags & STREAM_FFLAG_EOF ) && \
-				byteOffset > stream->bufEnd )
-				{
-				/* We've tried to move past EOF, this is an error */
-				return( sSetError( stream, CRYPT_ERROR_UNDERFLOW ) );
-				}
-
-			stream->bufPos = byteOffset;
+			stream->bufPos = position % stream->bufSize;
 			break;
 			}
-#endif /* USE_FILES */
 
 		default:
 			retIntError_Stream( stream );
@@ -1155,7 +1086,7 @@ int sseek( INOUT STREAM *stream, IN_LENGTH_Z const long position )
 
 /* Return the current posision in a stream */
 
-CHECK_RETVAL_RANGE_NOERROR( 0, MAX_BUFFER_SIZE ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_RANGE( 0, MAX_INTLENGTH ) STDC_NONNULL_ARG( ( 1 ) ) \
 int stell( const STREAM *stream )
 	{
 	assert( isReadPtr( stream, sizeof( STREAM ) ) );
@@ -1187,22 +1118,18 @@ int stell( const STREAM *stream )
 		case STREAM_TYPE_MEMORY:
 			return( stream->bufPos );
 
-#ifdef USE_FILES
 		case STREAM_TYPE_FILE:
 			return( ( stream->bufCount * stream->bufSize ) + \
 					stream->bufPos );
-#endif /* USE_FILES */
 		}
 
-	retIntError_Ext( 0 );
+	retIntError();
 	}
 
-/* Skip a number of bytes in a stream, with a bounds check on the maximum 
-   allowable offset to skip */
+/* Skip a number of bytes in a stream */
 
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int sSkip( INOUT STREAM *stream, const long offset, 
-		   IN_DATALENGTH const long maxOffset )
+int sSkip( INOUT STREAM *stream, IN_LENGTH const long offset )
 	{
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 
@@ -1214,23 +1141,18 @@ int sSkip( INOUT STREAM *stream, const long offset,
 	REQUIRES_S( stream->type == STREAM_TYPE_NULL || \
 				stream->type == STREAM_TYPE_MEMORY || \
 				stream->type == STREAM_TYPE_FILE );
-	REQUIRES_S( offset > 0 );
-	REQUIRES_S( maxOffset > 0 && maxOffset <= MAX_BUFFER_SIZE );
+	REQUIRES_S( offset > 0 && offset < MAX_INTLENGTH );
 
 	/* If there's a problem with the stream don't try to do anything */
 	if( cryptStatusError( stream->status ) )
 		return( stream->status );
-
-	/* Make sure that the offset to skip is valid */
-	if( offset > maxOffset || offset > MAX_BUFFER_SIZE - stream->bufPos )
-		return( CRYPT_ERROR_BADDATA );
 
 	return( sseek( stream, stream->bufPos + offset ) );
 	}
 
 /* Peek at the next data value in a stream */
 
-CHECK_RETVAL_RANGE( 0, 0xFF ) STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_RANGE( MAX_ERROR, 0xFF ) STDC_NONNULL_ARG( ( 1 ) ) \
 int sPeek( INOUT STREAM *stream )
 	{
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
@@ -1259,7 +1181,6 @@ int sPeek( INOUT STREAM *stream )
 				return( sSetError( stream, CRYPT_ERROR_UNDERFLOW ) );
 			return( stream->buffer[ stream->bufPos ] );
 
-#ifdef USE_FILES
 		case STREAM_TYPE_FILE:
 			REQUIRES_S( stream->flags & STREAM_FFLAG_BUFFERSET );
 
@@ -1272,7 +1193,6 @@ int sPeek( INOUT STREAM *stream )
 					return( ( status == OK_SPECIAL ) ? 0 : status );
 				}
 			return( stream->buffer[ stream->bufPos ] );
-#endif /* USE_FILES */
 		}
 
 	retIntError_Stream( stream );
@@ -1291,15 +1211,14 @@ int sPeek( INOUT STREAM *stream )
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int setStreamBuffer( INOUT STREAM *stream, 
 							IN_BUFFER_OPT( dataLen ) const void *data, 
-							IN_DATALENGTH_Z const int dataLen )
+							IN_LENGTH_Z const int dataLen )
 	{
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( ( data == NULL && dataLen == 0 ) || \
 			isReadPtr( data, dataLen ) );
 
 	REQUIRES_S( ( data == NULL && dataLen == 0 ) || \
-				( data != NULL && \
-				  dataLen > 0 && dataLen < MAX_BUFFER_SIZE ) );
+				( data != NULL && dataLen > 0 && dataLen < MAX_INTLENGTH ) );
 	REQUIRES_S( dataLen == 0 || \
 				dataLen == 512 || dataLen == 1024 || \
 				dataLen == 2048 || dataLen == 4096 || \
@@ -1338,7 +1257,7 @@ static int setStreamBuffer( INOUT STREAM *stream,
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int sioctlSet( INOUT STREAM *stream, 
 			   IN_ENUM( STREAM_IOCTL ) const STREAM_IOCTL_TYPE type, 
-			   const int value )
+			   IN_INT const int value )
 	{
 #ifdef USE_TCP
 	NET_STREAM_INFO *netStream = ( NET_STREAM_INFO * ) stream->netStreamInfo;
@@ -1350,13 +1269,6 @@ int sioctlSet( INOUT STREAM *stream,
 	/* Check that the input parameters are in order */
 	if( !isWritePtrConst( stream, sizeof( STREAM ) ) )
 		retIntError();
-
-	/* If this is a pseudo-stream then there's no network information 
-	   present to set information for */
-#ifndef NDEBUG
-	if( sIsPseudoStream( stream ) )
-		return( CRYPT_OK );
-#endif /* !NDEBUG */
 
 	REQUIRES_S( sanityCheck( stream ) );
 	REQUIRES_S( ( ( stream->type == STREAM_TYPE_FILE || \
@@ -1434,11 +1346,13 @@ int sioctlSet( INOUT STREAM *stream,
 				}
 			return( CRYPT_OK );
 
-		case STREAM_IOCTL_LASTMESSAGE:
-			REQUIRES_S( value == TRUE );
-			REQUIRES_S( netStream->protocol == STREAM_PROTOCOL_HTTP );
+		case STREAM_IOCTL_CONNSTATE:
+			REQUIRES_S( value == TRUE || value == FALSE );
 
-			netStream->nFlags |= STREAM_NFLAG_LASTMSGW;
+			if( value )
+				netStream->nFlags &= ~STREAM_NFLAG_LASTMSG;
+			else
+				netStream->nFlags |= STREAM_NFLAG_LASTMSG;
 			return( CRYPT_OK );
 
 		case STREAM_IOCTL_HTTPREQTYPES:
@@ -1486,6 +1400,13 @@ int sioctlSet( INOUT STREAM *stream,
 				}
 			return( CRYPT_OK );
 
+		case STREAM_IOCTL_LASTMESSAGE:
+			REQUIRES_S( value == TRUE );
+			REQUIRES_S( netStream->protocol == STREAM_PROTOCOL_HTTP );
+
+			netStream->nFlags |= STREAM_NFLAG_LASTMSG;
+			return( CRYPT_OK );
+
 		case STREAM_IOCTL_CLOSESENDCHANNEL:
 			REQUIRES_S( value == TRUE );
 			REQUIRES_S( !( netStream->nFlags & STREAM_NFLAG_USERSOCKET ) );
@@ -1508,7 +1429,7 @@ RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int sioctlSetString( INOUT STREAM *stream, 
 					 IN_ENUM( STREAM_IOCTL ) const STREAM_IOCTL_TYPE type, 
 					 IN_BUFFER( dataLen ) const void *data, 
-					 IN_DATALENGTH const int dataLen )
+					 IN_LENGTH const int dataLen )
 	{
 #ifdef USE_TCP
 	NET_STREAM_INFO *netStream = ( NET_STREAM_INFO * ) stream->netStreamInfo;
@@ -1522,23 +1443,13 @@ int sioctlSetString( INOUT STREAM *stream,
 		retIntError();
 
 	REQUIRES_S( sanityCheck( stream ) );
-#ifndef NDEBUG
-	REQUIRES_S( ( sIsPseudoStream( stream ) && \
-				  type == STREAM_IOCTL_ERRORINFO ) || \
-				( ( stream->type == STREAM_TYPE_FILE || \
-					sIsVirtualFileStream( stream ) ) && \
-				  ( type == STREAM_IOCTL_ERRORINFO || \
-					type == STREAM_IOCTL_IOBUFFER ) ) || \
-				( stream->type == STREAM_TYPE_NETWORK ) );
-#else
 	REQUIRES_S( ( ( stream->type == STREAM_TYPE_FILE || \
 					sIsVirtualFileStream( stream ) ) && \
 				  ( type == STREAM_IOCTL_ERRORINFO || \
 					type == STREAM_IOCTL_IOBUFFER ) ) || \
 				( stream->type == STREAM_TYPE_NETWORK ) );
-#endif /* !NDEBUG */
 	REQUIRES_S( type > STREAM_IOCTL_NONE && type < STREAM_IOCTL_LAST );
-	REQUIRES_S( dataLen > 0 && dataLen < MAX_BUFFER_SIZE );
+	REQUIRES_S( dataLen > 0 && dataLen < MAX_INTLENGTH );
 
 	switch( type )
 		{
@@ -1585,16 +1496,6 @@ int sioctlGet( INOUT STREAM *stream,
 	if( !isWritePtrConst( stream, sizeof( STREAM ) ) )
 		retIntError();
 
-	/* If this is a pseudo-stream then there's no network information 
-	   present to get error information from */
-#ifndef NDEBUG
-	if( sIsPseudoStream( stream ) )
-		{
-		memset( data, 0, dataMaxLen );
-		return( CRYPT_OK );
-		}
-#endif /* !NDEBUG */
-
 	REQUIRES_S( sanityCheck( stream ) );
 	REQUIRES_S( stream->type == STREAM_TYPE_NETWORK );
 	REQUIRES_S( type > STREAM_IOCTL_NONE && type < STREAM_IOCTL_LAST );
@@ -1618,11 +1519,11 @@ int sioctlGet( INOUT STREAM *stream,
 			REQUIRES_S( dataMaxLen == sizeof( int ) );
 
 			*( ( int * ) data ) = \
-				( netStream->nFlags & STREAM_NFLAG_LASTMSGR ) ? FALSE : TRUE;
+					( netStream->nFlags & STREAM_NFLAG_LASTMSG ) ? FALSE : TRUE;
 			return( CRYPT_OK );
 
 		case STREAM_IOCTL_GETCLIENTNAME:
-			REQUIRES_S( dataMaxLen > 8 && dataMaxLen < MAX_INTLENGTH_SHORT );
+			REQUIRES_S( dataMaxLen > 8 && dataMaxLen < MAX_INTLENGTH );
 
 			if( netStream->clientAddressLen <= 0 )
 				return( CRYPT_ERROR_NOTFOUND );
@@ -1669,18 +1570,15 @@ int sioctlGet( INOUT STREAM *stream,
 *																			*
 ****************************************************************************/
 
-#ifdef USE_FILES
-
 /* Convert a file stream to a memory stream.  Usually this allocates a 
    buffer and reads the stream into it, however if it's a read-only memory-
    mapped file it just creates a second reference to the data to save
    memory */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
-int sFileToMemStream( OUT STREAM *memStream, 
-					  INOUT STREAM *fileStream,
+int sFileToMemStream( OUT STREAM *memStream, INOUT STREAM *fileStream,
 					  OUT_BUFFER_ALLOC_OPT( length ) void **bufPtrPtr, 
-					  IN_DATALENGTH const int length )
+					  IN_LENGTH const int length )
 	{
 	void *bufPtr;
 	int status;
@@ -1704,7 +1602,7 @@ int sFileToMemStream( OUT STREAM *memStream,
 	REQUIRES( sanityCheck( fileStream ) && \
 			  fileStream->flags & STREAM_FFLAG_BUFFERSET );
 	REQUIRES( fileStream->type == STREAM_TYPE_FILE );
-	REQUIRES( length > 0 && length < MAX_BUFFER_SIZE );
+	REQUIRES( length > 0 && length < MAX_INTLENGTH );
 
 	/* Clear return value */
 	memset( memStream, 0, sizeof( STREAM ) );
@@ -1725,9 +1623,11 @@ int sFileToMemStream( OUT STREAM *memStream,
 		/* Create a second reference to the memory-mapped stream and advance 
 		   the read pointer in the memory-mapped file stream to mimic the 
 		   behaviour of a read from it to the memory stream */
-		sMemConnect( memStream, fileStream->buffer + fileStream->bufPos, 
-					length );
-		status = sSkip( fileStream, length, SSKIP_MAX );
+		status = sMemConnect( memStream, fileStream->buffer + \
+										 fileStream->bufPos, length );
+		if( cryptStatusError( status ) )
+			return( status );
+		status = sSkip( fileStream, length );
 		if( cryptStatusError( status ) )
 			{
 			sMemDisconnect( memStream );
@@ -1742,13 +1642,13 @@ int sFileToMemStream( OUT STREAM *memStream,
 	if( ( bufPtr = clAlloc( "sFileToMemStream", length ) ) == NULL )
 		return( CRYPT_ERROR_MEMORY );
 	status = sread( fileStream, bufPtr, length );
+	if( cryptStatusOK( status ) )
+		status = sMemConnect( memStream, bufPtr, length );
 	if( cryptStatusError( status ) )
 		{
 		clFree( "sFileToMemStream", bufPtr );
 		return( status );
 		}
-	sMemConnect( memStream, bufPtr, length );
 	*bufPtrPtr = bufPtr;
 	return( CRYPT_OK );
 	}
-#endif /* USE_FILES */
