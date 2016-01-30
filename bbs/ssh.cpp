@@ -98,8 +98,8 @@ bool Key::Create() {
   RETURN_IF_ERROR(status);
 
   // We want 8K keys.
-  status = cryptSetAttribute(context_, CRYPT_CTXINFO_KEYSIZE, 2048 / 8);
-  RETURN_IF_ERROR(status);
+  //status = cryptSetAttribute(context_, CRYPT_CTXINFO_KEYSIZE, 2048 / 8);
+  //RETURN_IF_ERROR(status);
 
   status = cryptGenerateKey(context_);
   RETURN_IF_ERROR(status);
