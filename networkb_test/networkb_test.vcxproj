@@ -92,6 +92,9 @@
     <ProjectReference Include="..\core_test\core_fixtures.vcxproj">
       <Project>{e5e45f1a-c3c0-49ca-98de-b26185ad8694}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\deps\cl342\crypt32.vcxproj">
+      <Project>{d0793ab4-c236-4105-ad9e-7e8b1716037b}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\deps\gtest-1.7.0\msvc\gtest.vcxproj">
       <Project>{c8f6c172-56f2-4e76-b5fa-c3b423b31be7}</Project>
     </ProjectReference>

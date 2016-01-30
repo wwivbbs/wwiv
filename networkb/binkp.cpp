@@ -40,6 +40,7 @@
 #include "networkb/binkp_config.h"
 #include "sdk/callout.h"
 #include "networkb/connection.h"
+#include "networkb/cram.h"
 #include "sdk/contact.h"
 #include "networkb/net_log.h"
 #include "networkb/socket_exceptions.h"
@@ -182,6 +183,18 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
       s = s.substr(3);
       StringTrimBegin(&s);
       LOG << "OPT:   " << s;
+      if (starts_with(s, "CRAM")) {
+        // CRAM Support
+        // http://ftsc.org/docs/fts-1027.001
+        string::size_type last_dash = s.find_last_of('-');
+        if (last_dash != string::npos) {
+          // we really have CRAM-MD5
+          string challenge = s.substr(last_dash + 1);
+          LOG << "        challenge: " << challenge;
+          cram_.set_challenge_data(challenge);
+          auth_type_ = AuthType::CRAM_MD5;
+        }
+      }
     }
   } break;
   case BinkpCommands::M_ADR: {
@@ -202,7 +215,7 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
     eob_received_ = true;
   } break;
   case BinkpCommands::M_PWD: {
-    remote_password_ = s;
+    HandlePassword(s);
   } break;
   case BinkpCommands::M_FILE: {
     HandleFileRequest(s);
@@ -352,7 +365,11 @@ static string wwiv_version_string_with_date() {
 
 BinkState BinkP::WaitConn() {
   LOG << "STATE: WaitConn";
-  send_command_packet(BinkpCommands::M_NUL, "OPT wwivnet");
+  if (side_ == BinkSide::ANSWERING) {
+    cram_.GenerateChallengeData();
+    const string opt_cram = StrCat("OPT CRAM-MD5-", cram_.challenge_data());
+    send_command_packet(BinkpCommands::M_NUL, opt_cram);
+  }
   send_command_packet(BinkpCommands::M_NUL, StrCat("WWIVVER ", wwiv_version_string_with_date()));
   send_command_packet(BinkpCommands::M_NUL, StrCat("SYS ", config_->system_name()));
   const string sysop_name_packet = StrCat("ZYZ ", config_->sysop_name());
@@ -396,9 +413,19 @@ BinkState BinkP::SendPasswd() {
   const string network_name(remote_network_name());
   LOG << "STATE: SendPasswd for network '" << network_name << "' for node: " << expected_remote_node_;
   Callout callout = callouts_.at(network_name);
-  const string password = expected_password_for(&callout, expected_remote_node_);
+  string password = expected_password_for(&callout, expected_remote_node_);
   // LOG << "       sending password packet";
-  send_command_packet(BinkpCommands::M_PWD, password);
+  switch (auth_type_) {
+  case AuthType::CRAM_MD5:
+  {
+    string hashed_password = cram_.CreateHashedSecret(cram_.challenge_data(), password);
+    string hashed_password_command = StrCat("CRAM-MD5-", hashed_password);
+    send_command_packet(BinkpCommands::M_PWD, hashed_password_command);
+  } break;
+  case AuthType::PLAIN_TEXT:
+    send_command_packet(BinkpCommands::M_PWD, password);
+    break;
+  }
   return BinkState::WAIT_ADDR;
 }
 
@@ -429,13 +456,24 @@ BinkState BinkP::PasswordAck() {
   Callout callout(callouts_.at(network_name));
   const string expected_password = expected_password_for(&callout, remote_node);
   LOG << "STATE: PasswordAck";
-  LOG << "       expected_password = '" << expected_password << "'";
-  if (remote_password_ == expected_password) {
-    // Passwords match, send OK.
-    send_command_packet(BinkpCommands::M_OK, "Passwords match; insecure session");
-    // No need to wait for OK since we are the answering side, just move straight to
-    // transfer files.
-    return BinkState::TRANSFER_FILES;
+  if (auth_type_ == AuthType::PLAIN_TEXT) {
+    LOG << "       PLAIN_TEXT expected_password = '" << expected_password << "'";
+    if (remote_password_ == expected_password) {
+      // Passwords match, send OK.
+      send_command_packet(BinkpCommands::M_OK, "Passwords match; insecure session");
+      // No need to wait for OK since we are the answering side, just move straight to
+      // transfer files.
+      return BinkState::TRANSFER_FILES;
+    }
+  } else if (auth_type_ == AuthType::CRAM_MD5) {
+    LOG << "       CRAM_MD5 expected_password = '" << expected_password << "'";
+    if (cram_.ValidatePassword(cram_.challenge_data(), expected_password, remote_password_)) {
+      // Passwords match, send OK.
+      send_command_packet(BinkpCommands::M_OK, "Passwords match; secure session.");
+      // No need to wait for OK since we are the answering side, just move straight to
+      // transfer files.
+      return BinkState::TRANSFER_FILES;
+    }
   }
 
   // Passwords do not match, send error.
@@ -621,6 +659,28 @@ bool BinkP::SendFileData(TransferFile* file) {
     // an inbound command.
     process_frames(seconds(1));
   }
+  return true;
+}
+
+bool BinkP::HandlePassword(const string& password_line) {
+  LOG << "        HandlePassword: ";
+  if (!starts_with(password_line, "CRAM")) {
+    LOG << "        HandlePassword: Received Plain text password";
+    auth_type_ = AuthType::PLAIN_TEXT;
+    remote_password_ = password_line;
+    return true;
+  }
+
+  static const string CRAM_MD5_PREFIX = "CRAM-MD5-";
+  if (!starts_with(password_line, CRAM_MD5_PREFIX)) {
+    send_command_packet(BinkpCommands::M_ERR,
+        "CRAM authentication required, no common hash function");
+    return false;
+  }
+  string hashed_password = password_line.substr(CRAM_MD5_PREFIX.size());
+  LOG << "        HandlePassword: Received Plain CRAM-MD5 hashed password";
+  auth_type_ = AuthType::CRAM_MD5;
+  remote_password_ = hashed_password;
   return true;
 }
 

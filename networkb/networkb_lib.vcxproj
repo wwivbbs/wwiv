@@ -42,12 +42,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\;$(ProjectDir)\..\deps\cl342\;$(IncludePath)</IncludePath>
     <IntDir>lib\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\;$(ProjectDir)\..\deps\cl342\;$(IncludePath)</IncludePath>
     <IntDir>lib\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -100,6 +100,7 @@
     <ClInclude Include="connection.h" />
     <ClInclude Include="config_exceptions.h" />
     <ClInclude Include="contact.h" />
+    <ClInclude Include="cram.h" />
     <ClInclude Include="net_log.h" />
     <ClInclude Include="ppp_config.h" />
     <ClInclude Include="receive_file.h" />
@@ -113,6 +114,7 @@
     <ClCompile Include="binkp_config.cpp" />
     <ClCompile Include="binkp_commands.cpp" />
     <ClCompile Include="connection.cpp" />
+    <ClCompile Include="cram.cpp" />
     <ClCompile Include="net_log.cpp" />
     <ClCompile Include="ppp_config.cpp" />
     <ClCompile Include="socket_connection.cpp" />
