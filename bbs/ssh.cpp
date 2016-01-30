@@ -175,8 +175,11 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
     }
     status = cryptSetAttribute(session_, CRYPT_SESSINFO_ACTIVE, 1);
     if (status != CRYPT_ENVELOPE_RESOURCE) {
-      clog << "Hmm...";
-      //getchar();
+      // TODO(rushfan): should we do something here?
+#ifdef PAUSE_ON_SSH_CONNECT_FOR_DEBUGGER
+      clog << "Waiting for debugger...";
+      getchar();
+#endif  // PAUSE_ON_SSH_CONNECT_FOR_DEBUGGER
     }
     if (OK(status)) {
       success = true;
