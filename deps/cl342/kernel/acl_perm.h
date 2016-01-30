@@ -151,6 +151,11 @@
   #define MKPERM_INT_CERTIFICATES( perm ) ACCESS_INT_xxx_xxx
   #define MKPERM_SPECIAL_CERTIFICATES( perm ) ACCESS_xxx_xxx
 #endif /* USE_CERTIFICATES */
+#if defined( USE_CERTIFICATES ) || defined( USE_PSEUDOCERTIFICATES )
+  #define MKPERM_ALT_CERTIFICATES( perm ) ACCESS_##perm
+#else
+  #define MKPERM_ALT_CERTIFICATES( perm ) ACCESS_xxx_xxx
+#endif /* USE_CERTIFICATES || USE_PSEUDOCERTIFICATES */
 
 #ifdef USE_CERTREQ
   #define MKPERM_CERTREQ( perm )		ACCESS_##perm
@@ -306,6 +311,14 @@
 
 /* Keyset ACL macros */
 
+#ifdef USE_PKCS15
+  #define MKPERM_PKCS15( perm )			ACCESS_##perm
+  #define MKPERM_INT_PKCS15( perm )		ACCESS_INT_##perm
+#else
+  #define MKPERM_PKCS15( perm )			ACCESS_xxx_xxx
+  #define MKPERM_INT_PKCS15( perm )		ACCESS_INT_xxx_xxx
+#endif /* USE_PKCS15 */
+
 #ifdef USE_DBMS
   #define MKPERM_DBMS( perm )			ACCESS_##perm
   #define MKPERM_INT_DBMS( perm )		ACCESS_INT_##perm
@@ -391,5 +404,138 @@
   #define MKPERM_TSP( perm )			ACCESS_xxx_xxx
   #define MKPERM_INT_TSP( perm )		ACCESS_INT_xxx_xxx
 #endif /* USE_TSP */
+
+/****************************************************************************
+*																			*
+*							Conditional Access Types 						*
+*																			*
+****************************************************************************/
+
+/* Some ACLs define object types that are permitted rather than access
+   permissions.  The following macros turn these off as required */
+
+#ifdef USE_CERTIFICATES
+  #define MKTYPE_CERTIFICATES( type )	type
+#else
+  #define MKTYPE_CERTIFICATES( type )	0
+#endif /* USE_CERTIFICATES */
+
+#ifdef USE_CERTREQ
+  #define MKTYPE_CERTREQ( type )		type
+#else
+  #define MKTYPE_CERTREQ( type )		0
+#endif /* USE_CERTREQ */
+
+#ifdef USE_CERTREV
+  #define MKTYPE_CERTREV( type )		type 
+#else
+  #define MKTYPE_CERTREV( type )		0
+#endif /* USE_CERTREV */
+
+#ifdef USE_CERTVAL
+  #define MKTYPE_CERTVAL( type )		type 
+#else
+  #define MKTYPE_CERTVAL( type )		0
+#endif /* USE_CERTVAL */
+
+#ifdef USE_CMSATTR
+  #define MKTYPE_CMSATTR( type )		type 
+#else
+  #define MKTYPE_CMSATTR( type )		0
+#endif /* USE_CMSATTR */
+
+#ifdef USE_PKIUSER
+  #define MKTYPE_PKIUSER( type )		type 
+#else
+  #define MKTYPE_PKIUSER( type )		0
+#endif /* USE_PKIUSER */
+
+/* Device ACL macros */
+
+#ifdef USE_CAPI
+  #define MKTYPE_CAPI( type )			type 
+#else
+  #define MKTYPE_CAPI( type )			0
+#endif /* USE_CAPI */
+
+#ifdef USE_PKCS11
+  #define MKTYPE_PKCS11( type )			type 
+#else
+  #define MKTYPE_PKCS11( type )			0
+#endif /* USE_PKCS11 */
+
+/* Envelope ACL macros */
+
+#ifdef USE_ENVELOPES
+  #define MKTYPE_ENVELOPE( type )		type 
+#else
+  #define MKTYPE_ENVELOPE( type )		0
+#endif /* USE_ENVELOPES */
+
+/* Keyset ACL macros */
+
+#ifdef USE_DBMS
+  #define MKTYPE_DBMS( type )			type 
+#else
+  #define MKTYPE_DBMS( type )			0
+#endif /* USE_DBMS */
+
+#ifdef USE_LDAP
+  #define MKTYPE_LDAP( type )			type 
+#else
+  #define MKTYPE_LDAP( type )			0
+#endif /* USE_LDAP */
+
+#ifdef USE_HTTP
+  #define MKTYPE_HTTP( type )			type 
+#else
+  #define MKTYPE_HTTP( type )			0
+#endif /* USE_HTTP */
+
+/* Session ACL macros */
+
+#ifdef USE_CMP
+  #define MKTYPE_CMP( type )			type 
+#else
+  #define MKTYPE_CMP( type )			0
+#endif /* USE_CMP */
+
+#ifdef USE_OCSP
+  #define MKTYPE_OCSP( type )			type 
+#else
+  #define MKTYPE_OCSP( type )			0
+#endif /* USE_OCSP */
+
+#ifdef USE_RTCS
+  #define MKTYPE_RTCS( type )			type 
+#else
+  #define MKTYPE_RTCS( type )			0
+#endif /* USE_RTCS */
+
+#ifdef USE_SCEP
+  #define MKTYPE_SCEP( type )			type 
+#else
+  #define MKTYPE_SCEP( type )			0
+#endif /* USE_SCEP */
+
+#ifdef USE_SSH
+  #define MKTYPE_SSH( type )			type 
+#else
+  #define MKTYPE_SSH( type )			0
+#endif /* USE_SSH */
+
+#ifdef USE_SSL
+  #define MKTYPE_SSL( type )			type 
+#else
+  #define MKTYPE_SSL( type )			0
+#endif /* USE_SSL */
+
+#ifdef USE_TSP
+  #define MKTYPE_TSP( type )			type 
+#else
+  #define MKTYPE_TSP( type )			0
+#endif /* USE_TSP */
+
+
 
 #endif /* _ACL_PERM_DEFINED */

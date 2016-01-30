@@ -7,12 +7,12 @@
 
 #if defined( INC_ALL )
   #include "crypt.h"
-  #include "keyset.h"
   #include "dbms.h"
+  #include "keyset.h"
 #else
   #include "crypt.h"
-  #include "keyset/keyset.h"
   #include "keyset/dbms.h"
+  #include "keyset/keyset.h"
 #endif /* Compiler-specific includes */
 
 #ifdef USE_DBMS
@@ -27,7 +27,7 @@
 
 CHECK_RETVAL_BOOL \
 BOOLEAN checkRequest( IN_HANDLE const CRYPT_CERTIFICATE iCertRequest,
-					  IN_ENUM( CRYPT_CERTACTION ) \
+					  IN_ENUM_OPT( CRYPT_CERTACTION ) \
 						const CRYPT_CERTACTION_TYPE action )
 	{
 	MESSAGE_DATA msgData;
@@ -215,7 +215,7 @@ int caAddPKIUser( INOUT DBMS_INFO *dbmsInfo,
 	{
 	BYTE certData[ MAX_CERT_SIZE + 8 ];
 	char certID[ ENCODED_DBXKEYID_SIZE + 8 ];
-	int certDataLength, certIDlength = DUMMY_INIT, status;
+	int certDataLength, certIDlength DUMMY_INIT, status;
 
 	assert( isWritePtr( dbmsInfo, sizeof( DBMS_INFO ) ) );
 	
@@ -277,7 +277,7 @@ int caDeletePKIUser( INOUT DBMS_INFO *dbmsInfo,
 	CRYPT_CERTIFICATE iPkiUser;
 	BOUND_DATA boundData[ BOUND_DATA_MAXITEMS ], *boundDataPtr = boundData;
 	char certID[ ENCODED_DBXKEYID_SIZE + 8 ];
-	int certIDlength = DUMMY_INIT, dummy, status;
+	int certIDlength DUMMY_INIT, dummy, status;
 
 	assert( isWritePtr( dbmsInfo, sizeof( DBMS_INFO ) ) );
 	assert( isReadPtr( keyID, keyIDlength ) );
@@ -342,8 +342,8 @@ int caAddCertRequest( INOUT DBMS_INFO *dbmsInfo,
 	BYTE certData[ MAX_CERT_SIZE + 8 ];
 	char certID[ ENCODED_DBXKEYID_SIZE + 8 ];
 	char reqCertID[ ENCODED_DBXKEYID_SIZE + 8 ], *reqCertIDptr = reqCertID;
-	int certIDlength, reqCertIDlength = DUMMY_INIT;
-	int certDataLength = DUMMY_INIT, status;
+	int certIDlength, reqCertIDlength DUMMY_INIT;
+	int certDataLength DUMMY_INIT, status;
 
 	assert( isWritePtr( dbmsInfo, sizeof( DBMS_INFO ) ) );
 	

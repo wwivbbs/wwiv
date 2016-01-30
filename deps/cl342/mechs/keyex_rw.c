@@ -27,6 +27,62 @@ enum { CTAG_KK_DA };
 
 enum { CTAG_KT_SKI };
 
+#ifdef USE_INT_CMS
+
+/****************************************************************************
+*																			*
+*								Utility Routines							*
+*																			*
+****************************************************************************/
+
+/* Get a CMS key identifier.  This gets a bit complicated because in theory 
+   we're supposed to use the sKID from a certificate but it we're using a 
+   raw public key then there's no sKID present.  To deal with this we try 
+   for an sKID if the object that we've been passed is a certificate, if 
+   that fails or if it's a raw context then we use the keyID */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 2, 4 ) ) \
+int getCmsKeyIdentifier( IN_HANDLE const CRYPT_CONTEXT iCryptContext,
+						 OUT_BUFFER( keyIDMaxLength, *keyIDlength ) \
+							BYTE *keyID, 
+						 IN_LENGTH_SHORT_MIN( 32 ) const int keyIDMaxLength,
+						 OUT_LENGTH_BOUNDED_Z( keyIDMaxLength ) \
+							int *keyIDlength )
+	{
+	MESSAGE_DATA msgData;
+	int status;
+
+	assert( isWritePtr( keyID, keyIDMaxLength ) );
+	assert( isWritePtr( keyIDlength, sizeof( int ) ) );
+
+	REQUIRES( isHandleRangeValid( iCryptContext ) );
+	REQUIRES( keyIDMaxLength >= 32 && keyIDMaxLength < MAX_INTLENGTH_SHORT );
+
+	/* Clear return values */
+	memset( keyID, 0, min( 16, keyIDMaxLength ) );
+	*keyIDlength = 0;
+
+	/* If it's a certificate, try for an sKID */
+	setMessageData( &msgData, keyID, keyIDMaxLength );
+	status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE_S, 
+							  &msgData, CRYPT_CERTINFO_SUBJECTKEYIDENTIFIER );
+	if( cryptStatusOK( status ) )
+		{
+		*keyIDlength = msgData.length;
+		return( CRYPT_OK );
+		}
+
+	/* Use the keyID */
+	setMessageData( &msgData, keyID, keyIDMaxLength );
+	status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE_S,
+							  &msgData, CRYPT_IATTRIBUTE_KEYID );
+	if( cryptStatusError( status ) )
+		return( status );
+	*keyIDlength = msgData.length;
+
+	return( CRYPT_OK );
+	}
+
 /****************************************************************************
 *																			*
 *					Conventionally-Encrypted Key Routines					*
@@ -121,7 +177,7 @@ static int writeKeyDerivationInfo( INOUT STREAM *stream,
 	{
 	MESSAGE_DATA msgData;
 	BYTE salt[ CRYPT_MAX_HASHSIZE + 8 ];
-	int saltLength, keySetupIterations, prfAlgo = DUMMY_INIT;
+	int saltLength, keySetupIterations, prfAlgo DUMMY_INIT;
 	int derivationInfoSize, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
@@ -146,7 +202,13 @@ static int writeKeyDerivationInfo( INOUT STREAM *stream,
 	derivationInfoSize = ( int ) sizeofObject( saltLength ) + \
 						 sizeofShortInteger( keySetupIterations );
 	if( prfAlgo != CRYPT_ALGO_HMAC_SHA1 )
-		derivationInfoSize += sizeofAlgoID( prfAlgo );
+		{
+		const int prfAlgoIDsize = sizeofAlgoID( prfAlgo );
+
+		if( cryptStatusError( prfAlgoIDsize ) )
+			return( prfAlgoIDsize );
+		derivationInfoSize += prfAlgoIDsize;
+		}
 
 	/* Write the PBKDF2 information */
 	writeConstructed( stream, sizeofOID( OID_PBKDF2 ) +
@@ -262,22 +324,25 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int readCryptlibKek( INOUT STREAM *stream, 
 							OUT QUERY_INFO *queryInfo )
 	{
-	QUERY_INFO keyDerivationQueryInfo = DUMMY_INIT_STRUCT;
+	QUERY_INFO keyDerivationQueryInfo DUMMY_INIT_STRUCT;
 	const int startPos = stell( stream );
 	BOOLEAN hasDerivationInfo = FALSE;
 	long value;
-	int status;
+	int tag, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( queryInfo, sizeof( QUERY_INFO ) ) );
 
-	REQUIRES( startPos >= 0 && startPos < MAX_INTLENGTH );
+	REQUIRES( startPos >= 0 && startPos < MAX_BUFFER_SIZE );
 
 	/* Clear return value */
 	memset( queryInfo, 0, sizeof( QUERY_INFO ) );
 
 	/* If it's a CMS KEK, read it as such */
-	if( peekTag( stream ) == CTAG_RI_KEKRI )
+	status = tag = peekTag( stream );
+	if( cryptStatusError( status ) )
+		return( status );
+	if( tag == CTAG_RI_KEKRI )
 		return( readCmsKek( stream, queryInfo ) );
 
 	/* Read the header */
@@ -289,7 +354,10 @@ static int readCryptlibKek( INOUT STREAM *stream,
 		return( CRYPT_ERROR_BADDATA );
 
 	/* Read the optional KEK derivation info and KEK algorithm info */
-	if( peekTag( stream ) == MAKE_CTAG( CTAG_KK_DA ) )
+	status = tag = peekTag( stream );
+	if( cryptStatusError( status ) )
+		return( status );
+	if( tag == MAKE_CTAG( CTAG_KK_DA ) )
 		{
 		status = readKeyDerivationInfo( stream, &keyDerivationQueryInfo );
 		if( cryptStatusError( status ) )
@@ -297,9 +365,10 @@ static int readCryptlibKek( INOUT STREAM *stream,
 		hasDerivationInfo = TRUE;
 		}
 	readSequence( stream, NULL );
-	readFixedOID( stream, OID_PWRIKEK, sizeofOID( OID_PWRIKEK ) );
-	status = readContextAlgoID( stream, NULL, queryInfo, DEFAULT_TAG,
-								ALGOID_CLASS_CRYPT );
+	status = readFixedOID( stream, OID_PWRIKEK, sizeofOID( OID_PWRIKEK ) );
+	if( cryptStatusOK( status ) )
+		status = readContextAlgoID( stream, NULL, queryInfo, DEFAULT_TAG,
+									ALGOID_CLASS_CRYPT );
 	if( cryptStatusError( status ) )
 		return( status );
 
@@ -332,7 +401,7 @@ static int readCryptlibKek( INOUT STREAM *stream,
 	queryInfo->dataStart = stell( stream ) - startPos;
 
 	/* Make sure that the remaining key data is present */
-	return( sSkip( stream, queryInfo->dataLength ) );
+	return( sSkip( stream, queryInfo->dataLength, MAX_INTLENGTH_SHORT ) );
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
@@ -347,7 +416,7 @@ static int writeCryptlibKek( STREAM *stream,
 	BYTE derivationInfo[ CRYPT_MAX_HASHSIZE + 32 + 8 ], kekInfo[ 128 + 8 ];
 	BOOLEAN hasKeyDerivationInfo = TRUE;
 	const int algoIdInfoSize = sizeofCryptContextAlgoID( iCryptContext );
-	int derivationInfoSize = 0, kekInfoSize = DUMMY_INIT, value, status;
+	int derivationInfoSize = 0, kekInfoSize DUMMY_INIT, value, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isReadPtr( encryptedKey, encryptedKeyLength ) );
@@ -440,7 +509,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int readPgpKek( INOUT STREAM *stream, 
 					   OUT QUERY_INFO *queryInfo )
 	{
-	int status;
+	int dummy, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( queryInfo, sizeof( QUERY_INFO ) ) );
@@ -457,14 +526,17 @@ static int readPgpKek( INOUT STREAM *stream,
 		return( CRYPT_ERROR_BADDATA );
 	queryInfo->version = PGP_VERSION_OPENPGP;
 
-	/* Get the password hash algorithm */
-	status = readPgpAlgo( stream, &queryInfo->cryptAlgo, 
+	/* Get the encryption algorithm.  In theory we should also store the
+	   algorithm parater (indicating the key size), but that's communicated
+	   explicitly by the size of the wrapped key */
+	status = readPgpAlgo( stream, &queryInfo->cryptAlgo, &dummy,
 						  PGP_ALGOCLASS_PWCRYPT );
 	if( cryptStatusError( status ) )
 		return( status );
 
 	/* Read the S2K information */
-	return( readPgpS2K( stream, &queryInfo->keySetupAlgo, queryInfo->salt,  
+	return( readPgpS2K( stream, &queryInfo->keySetupAlgo, 
+						&queryInfo->keySetupAlgoParam, queryInfo->salt,  
 						PGP_SALTSIZE, &queryInfo->saltLength,
 						&queryInfo->keySetupIterations ) );
 	}
@@ -476,8 +548,8 @@ static int writePgpKek( INOUT STREAM *stream,
 						STDC_UNUSED const int encryptedKeyLength )
 	{
 	BYTE salt[ CRYPT_MAX_HASHSIZE + 8 ];
-	int hashAlgo = DUMMY_INIT, kekCryptAlgo = DUMMY_INIT;	/* int vs.enum */
-	int pgpKekCryptAlgo, pgpHashAlgo = DUMMY_INIT, keySetupIterations;
+	int hashAlgo DUMMY_INIT, kekCryptAlgo DUMMY_INIT;	/* int vs.enum */
+	int pgpKekCryptAlgo, pgpHashAlgo DUMMY_INIT, keySetupIterations;
 	int count = 0, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
@@ -487,16 +559,17 @@ static int writePgpKek( INOUT STREAM *stream,
 
 	/* Get the key derivation information */
 	status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE,
-						&keySetupIterations, CRYPT_CTXINFO_KEYING_ITERATIONS );
+							  &keySetupIterations, 
+							  CRYPT_CTXINFO_KEYING_ITERATIONS );
 	if( cryptStatusOK( status ) )
 		{
 		status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE,
-						&hashAlgo, CRYPT_CTXINFO_KEYING_ALGO );
+								  &hashAlgo, CRYPT_CTXINFO_KEYING_ALGO );
 		}
 	if( cryptStatusOK( status ) )
 		{
 		status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE,
-						&kekCryptAlgo, CRYPT_CTXINFO_ALGO );
+								  &kekCryptAlgo, CRYPT_CTXINFO_ALGO );
 		}
 	if( cryptStatusOK( status ) )
 		{
@@ -504,7 +577,7 @@ static int writePgpKek( INOUT STREAM *stream,
 
 		setMessageData( &msgData, salt, CRYPT_MAX_HASHSIZE );
 		status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE_S,
-						&msgData, CRYPT_CTXINFO_KEYING_SALT );
+								  &msgData, CRYPT_CTXINFO_KEYING_SALT );
 		}
 	if( cryptStatusError( status ) )
 		return( status );
@@ -574,7 +647,7 @@ static int readCmsKeytrans( INOUT STREAM *stream,
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( queryInfo, sizeof( QUERY_INFO ) ) );
 
-	REQUIRES( startPos >= 0 && startPos < MAX_INTLENGTH );
+	REQUIRES( startPos >= 0 && startPos < MAX_BUFFER_SIZE );
 
 	/* Clear return value */
 	memset( queryInfo, 0, sizeof( QUERY_INFO ) );
@@ -595,8 +668,10 @@ static int readCmsKeytrans( INOUT STREAM *stream,
 		return( status );
 	queryInfo->iAndSStart = stell( stream ) - startPos;
 	queryInfo->iAndSLength = length;
-	sSkip( stream, length );
-	status = readAlgoID( stream, &queryInfo->cryptAlgo, ALGOID_CLASS_PKC );
+	status = sSkip( stream, length, MAX_INTLENGTH_SHORT );
+	if( cryptStatusOK( status ) )
+		status = readAlgoID( stream, &queryInfo->cryptAlgo, 
+							 ALGOID_CLASS_PKC );
 	if( cryptStatusError( status ) )
 		return( status );
 
@@ -608,7 +683,7 @@ static int readCmsKeytrans( INOUT STREAM *stream,
 	queryInfo->dataStart = stell( stream ) - startPos;
 
 	/* Make sure that the remaining key data is present */
-	return( sSkip( stream, queryInfo->dataLength ) );
+	return( sSkip( stream, queryInfo->dataLength, MAX_INTLENGTH_SHORT ) );
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 5 ) ) \
@@ -636,7 +711,7 @@ static int writeCmsKeytrans( INOUT STREAM *stream,
 	if( cryptStatusError( algoIdInfoSize ) )
 		return( algoIdInfoSize  );
 
-	writeSequence( stream, sizeofShortInteger( KEYTRANS_VERSION ) +
+	writeSequence( stream, sizeofShortInteger( KEYTRANS_VERSION ) + \
 				   auxInfoLength + algoIdInfoSize + \
 				   ( int ) sizeofObject( encryptedKeyLength ) );
 	writeShortInteger( stream, KEYTRANS_VERSION, DEFAULT_TAG );
@@ -666,7 +741,7 @@ static int readCryptlibKeytrans( INOUT STREAM *stream,
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( queryInfo, sizeof( QUERY_INFO ) ) );
 
-	REQUIRES( startPos >= 0 && startPos < MAX_INTLENGTH );
+	REQUIRES( startPos >= 0 && startPos < MAX_BUFFER_SIZE );
 
 	/* Clear return value */
 	memset( queryInfo, 0, sizeof( QUERY_INFO ) );
@@ -680,10 +755,12 @@ static int readCryptlibKeytrans( INOUT STREAM *stream,
 		return( CRYPT_ERROR_BADDATA );
 
 	/* Read the key ID and PKC algorithm information */
-	readOctetStringTag( stream, queryInfo->keyID, &queryInfo->keyIDlength,
-						8, CRYPT_MAX_HASHSIZE, CTAG_KT_SKI );
-	status = readAlgoID( stream, &queryInfo->cryptAlgo, 
-						 ALGOID_CLASS_PKC );
+	status = readOctetStringTag( stream, queryInfo->keyID, 
+								 &queryInfo->keyIDlength, 8, 
+								 CRYPT_MAX_HASHSIZE, CTAG_KT_SKI );
+	if( cryptStatusOK( status ) )
+		status = readAlgoID( stream, &queryInfo->cryptAlgo, 
+							 ALGOID_CLASS_PKC );
 	if( cryptStatusError( status ) )
 		return( status );
 
@@ -695,7 +772,7 @@ static int readCryptlibKeytrans( INOUT STREAM *stream,
 	queryInfo->dataStart = stell( stream ) - startPos;
 
 	/* Make sure that the remaining key data is present */
-	return( sSkip( stream, queryInfo->dataLength ) );
+	return( sSkip( stream, queryInfo->dataLength, MAX_INTLENGTH_SHORT ) );
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
@@ -708,11 +785,10 @@ static int writeCryptlibKeytrans( INOUT STREAM *stream,
 								  STDC_UNUSED const void *auxInfo,
 								  STDC_UNUSED const int auxInfoLength )
 	{
-	MESSAGE_DATA msgData;
-	BYTE keyID[ CRYPT_MAX_HASHSIZE + 8 ];
+	BYTE keyID[ 128 + 8 ];
 	const int algoIdInfoSize = \
 				sizeofContextAlgoID( iCryptContext, CRYPT_ALGO_NONE );
-	int status;
+	int keyIDlength, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isReadPtr( encryptedKey, encryptedKeyLength ) );
@@ -725,16 +801,14 @@ static int writeCryptlibKeytrans( INOUT STREAM *stream,
 	if( cryptStatusError( algoIdInfoSize ) )
 		return( algoIdInfoSize  );
 
-	setMessageData( &msgData, keyID, CRYPT_MAX_HASHSIZE );
-	status = krnlSendMessage( iCryptContext, IMESSAGE_GETATTRIBUTE_S, &msgData,
-							  CRYPT_IATTRIBUTE_KEYID );
+	status = getCmsKeyIdentifier( iCryptContext, keyID, 128, &keyIDlength );
 	if( cryptStatusError( status ) )
 		return( status );
-	writeSequence( stream, sizeofShortInteger( KEYTRANS_EX_VERSION ) +
-				   ( int ) sizeofObject( msgData.length ) + algoIdInfoSize + \
+	writeSequence( stream, sizeofShortInteger( KEYTRANS_EX_VERSION ) + \
+				   ( int ) sizeofObject( keyIDlength ) + algoIdInfoSize + \
 				   ( int ) sizeofObject( encryptedKeyLength ) );
 	writeShortInteger( stream, KEYTRANS_EX_VERSION, DEFAULT_TAG );
-	writeOctetString( stream, msgData.data, msgData.length, CTAG_KT_SKI );
+	writeOctetString( stream, keyID, keyIDlength, CTAG_KT_SKI );
 	writeContextAlgoID( stream, iCryptContext, CRYPT_ALGO_NONE );
 	return( writeOctetString( stream, encryptedKey, encryptedKeyLength, 
 							  DEFAULT_TAG ) );
@@ -762,7 +836,7 @@ static int readPgpKeytrans( INOUT STREAM *stream,
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( queryInfo, sizeof( QUERY_INFO ) ) );
 
-	REQUIRES( startPos >= 0 && startPos < MAX_INTLENGTH );
+	REQUIRES( startPos >= 0 && startPos < MAX_BUFFER_SIZE );
 
 	/* Clear return value */
 	memset( queryInfo, 0, sizeof( QUERY_INFO ) );
@@ -785,7 +859,7 @@ static int readPgpKeytrans( INOUT STREAM *stream,
 	if( cryptStatusError( status ) )
 		return( status );
 	queryInfo->keyIDlength = PGP_KEYID_SIZE;
-	status = readPgpAlgo( stream, &queryInfo->cryptAlgo, 
+	status = readPgpAlgo( stream, &queryInfo->cryptAlgo, NULL, 
 						  PGP_ALGOCLASS_PKCCRYPT );
 	if( cryptStatusError( status ) )
 		return( status );
@@ -816,7 +890,7 @@ static int readPgpKeytrans( INOUT STREAM *stream,
 		const int dataStartPos = stell( stream );
 		int dummy;
 
-		REQUIRES( dataStartPos >= 0 && dataStartPos < MAX_INTLENGTH );
+		REQUIRES( dataStartPos >= 0 && dataStartPos < MAX_BUFFER_SIZE );
 		REQUIRES( queryInfo->cryptAlgo == CRYPT_ALGO_ELGAMAL );
 
 		/* Read the Elgamal-encrypted key, recording the position and
@@ -833,6 +907,12 @@ static int readPgpKeytrans( INOUT STREAM *stream,
 		queryInfo->dataStart = dataStartPos - startPos;
 		queryInfo->dataLength = stell( stream ) - dataStartPos;
 		}
+
+	/* Make sure that we've read the entire object.  This check is necessary 
+	   to detect corrupted length values, which can result in reading past 
+	   the end of the object */
+	if( ( stell( stream ) - startPos ) != queryInfo->size )
+		return( CRYPT_ERROR_BADDATA );
 
 	return( CRYPT_OK );
 	}
@@ -1027,3 +1107,4 @@ WRITEKEK_FUNCTION getWriteKekFunction( IN_ENUM( KEYEX ) \
 
 	return( NULL );
 	}
+#endif /* USE_INT_CMS */

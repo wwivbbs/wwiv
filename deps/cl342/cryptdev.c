@@ -72,10 +72,12 @@ static int processMechanismMessage( INOUT DEVICE_INFO *deviceInfoPtr,
 		   This code was only ever used with Fortezza devices, with PKCS #11 
 		   devices the support for various mechanisms is too patchy to allow 
 		   us to rely on it so we always use system mechanisms which we know 
-		   will get it right.  Because it should never be used in normal 
-		   use, we throw an exception if we get here inadvertently (if this 
-		   doesn't stop execution then the krnlAcquireObject() will since it 
-		   will refuse to allocate the system object) */
+		   will get it right.
+		   
+		   Because it should never be used in normal use, we throw an 
+		   exception if we get here inadvertently.  If this doesn't stop 
+		   execution then the krnlAcquireObject() will since it will refuse 
+		   to allocate the system object */
 		assert( INTERNAL_ERROR );
 		setMessageObjectUnlocked( messageExtInfo );
 		status = krnlSuspendObject( deviceInfoPtr->objectHandle, &refCount );
@@ -424,6 +426,7 @@ static int deviceMessageFunction( INOUT TYPECAST( MESSAGE_FUNCTION_EXTINFO * ) \
 
 		/* Unlock the system object to allow it to be used by others and
 		   dispatch the message */
+#ifdef USE_CERTIFICATES
 		setMessageObjectUnlocked( messageExtInfo );
 		status = krnlSuspendObject( SYSTEM_OBJECT_HANDLE, &refCount );
 		ENSURES( cryptStatusOK( status ) );
@@ -433,6 +436,9 @@ static int deviceMessageFunction( INOUT TYPECAST( MESSAGE_FUNCTION_EXTINFO * ) \
 			return( status );
 		iCryptHandle = \
 			( ( MESSAGE_CREATEOBJECT_INFO * ) messageDataPtr )->cryptHandle;
+#else
+		return( CRYPT_ERROR_NOTAVAIL );
+#endif /* USE_CERTIFICATES */
 
 		/* Make the newly-created object a dependent object of the device.  
 		   There's one special-case situation where we don't do this and 
@@ -467,11 +473,12 @@ static int deviceMessageFunction( INOUT TYPECAST( MESSAGE_FUNCTION_EXTINFO * ) \
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 6 ) ) \
 static int openDevice( OUT_HANDLE_OPT CRYPT_DEVICE *iCryptDevice,
-					   IN_HANDLE const CRYPT_USER iCryptOwner,
-					   IN_ENUM( CRYPT_DEVICE ) const CRYPT_DEVICE_TYPE deviceType,
+					   IN_HANDLE_OPT const CRYPT_USER iCryptOwner,
+					   IN_ENUM_OPT( CRYPT_DEVICE ) \
+							const CRYPT_DEVICE_TYPE deviceType,
 					   IN_BUFFER_OPT( nameLength ) const char *name, 
 					   IN_LENGTH_TEXT_Z const int nameLength,
-					   OUT_PTR DEVICE_INFO **deviceInfoPtrPtr )
+					   OUT_PTR_OPT DEVICE_INFO **deviceInfoPtrPtr )
 	{
 	DEVICE_INFO *deviceInfoPtr;
 	OBJECT_SUBTYPE subType;
@@ -576,7 +583,7 @@ static int openDevice( OUT_HANDLE_OPT CRYPT_DEVICE *iCryptDevice,
 		}
 	deviceInfoPtr->storageSize = storageSize;
 
-	/* Set up the access information for the device and connect to it */
+	/* Set up access information for the device */
 	switch( deviceType )
 		{
 		case CRYPT_DEVICE_NONE:
@@ -584,6 +591,10 @@ static int openDevice( OUT_HANDLE_OPT CRYPT_DEVICE *iCryptDevice,
 			break;
 
 		case CRYPT_DEVICE_PKCS11:
+			if( name == NULL )
+				return( CRYPT_ARGERROR_STR1 );
+			ENSURES( nameLength >= MIN_NAME_LENGTH && \
+					 nameLength <= CRYPT_MAX_TEXTSIZE );
 			status = setDevicePKCS11( deviceInfoPtr, name, nameLength );
 			break;
 
@@ -598,9 +609,6 @@ static int openDevice( OUT_HANDLE_OPT CRYPT_DEVICE *iCryptDevice,
 		default:
 			retIntError();
 		}
-	if( cryptStatusOK( status ) )
-		status = deviceInfoPtr->initFunction( deviceInfoPtr, name,
-											  nameLength );
 	if( cryptStatusOK( status ) && \
 		deviceInfoPtr->createObjectFunctions == NULL )
 		{
@@ -611,7 +619,11 @@ static int openDevice( OUT_HANDLE_OPT CRYPT_DEVICE *iCryptDevice,
 		deviceInfoPtr->createObjectFunctionCount = \
 			FAILSAFE_ARRAYSIZE( defaultCreateFunctions, CREATEOBJECT_FUNCTION_INFO );
 		}
-	return( status );
+	if( cryptStatusError( status ) )
+		return( status );
+
+	/* Connec to the device */
+	return( deviceInfoPtr->initFunction( deviceInfoPtr, name, nameLength ) );
 	}
 
 /* Create a (non-system) device object */
@@ -756,7 +768,7 @@ static int createSystemDeviceObject( void )
    logically independent so we set a flag for each device type that's
    successfully initialised rather than recording an init level */
 
-typedef CHECK_RETVAL_FNPTR int ( *DEVICEINIT_FUNCTION )( void );
+typedef CHECK_RETVAL int ( *DEVICEINIT_FUNCTION )( void );
 typedef void ( *DEVICEND_FUNCTION )( void );
 typedef struct {
 	DEVICEINIT_FUNCTION deviceInitFunction;
@@ -783,7 +795,7 @@ int deviceManagementFunction( IN_ENUM( MANAGEMENT_ACTION ) \
 #ifdef USE_HARDWARE
 		{ deviceInitHardware, deviceEndHardware, DEV_HARDWARE_INITED },
 #endif /* USE_HARDWARE */
-		{ NULL, 0 }, { NULL, 0 }
+		{ NULL, NULL, 0 }, { NULL, NULL, 0 }
 		};
 	static int initFlags = DEV_NONE_INITED;
 	int i, status;
@@ -804,9 +816,10 @@ int deviceManagementFunction( IN_ENUM( MANAGEMENT_ACTION ) \
 			return( status );
 
 		case MANAGEMENT_ACTION_INIT:
+#ifndef CONFIG_FUZZ
 			for( i = 0; deviceInitTbl[ i ].deviceInitFunction != NULL && \
 						i < FAILSAFE_ARRAYSIZE( deviceInitTbl, \
-												DEVICEINIT_FUNCTION );
+												DEVICEINIT_INFO );
 				 i++ )
 				{
 				if( krnlIsExiting() )
@@ -819,7 +832,8 @@ int deviceManagementFunction( IN_ENUM( MANAGEMENT_ACTION ) \
 					initFlags |= deviceInitTbl[ i ].initFlag;
 				}
 			ENSURES( i < FAILSAFE_ARRAYSIZE( deviceInitTbl, \
-											 DEVICEINIT_FUNCTION ) );
+											 DEVICEINIT_INFO ) );
+#endif /* !CONFIG_FUZZ */
 			return( CRYPT_OK );
 
 		case MANAGEMENT_ACTION_PRE_SHUTDOWN:
@@ -837,14 +851,14 @@ int deviceManagementFunction( IN_ENUM( MANAGEMENT_ACTION ) \
 		case MANAGEMENT_ACTION_SHUTDOWN:
 			for( i = 0; deviceInitTbl[ i ].deviceEndFunction != NULL && \
 						i < FAILSAFE_ARRAYSIZE( deviceInitTbl, \
-												DEVICEINIT_FUNCTION );
+												DEVICEINIT_INFO );
 				 i++ )
 				{
 				if( initFlags & deviceInitTbl[ i ].initFlag )
 					deviceInitTbl[ i ].deviceEndFunction();
 				}
 			ENSURES( i < FAILSAFE_ARRAYSIZE( deviceInitTbl, \
-											 DEVICEINIT_FUNCTION ) );
+											 DEVICEINIT_INFO ) );
 			return( CRYPT_OK );
 		}
 

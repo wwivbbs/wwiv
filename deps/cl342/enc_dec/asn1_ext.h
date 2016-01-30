@@ -9,6 +9,23 @@
 
 #define _ASN1OID_DEFINED
 
+/* Additional information required when reading a CMS header.  This is
+   pointed to by the extraInfo member of the ASN.1 OID_INFO structure and
+   contains CMS version number information */
+
+typedef struct {
+	const int minVersion;	/* Minimum version number for content type */
+	const int maxVersion;	/* Maximum version number for content type */
+	} CMS_CONTENT_INFO;
+
+#ifdef USE_INT_ASN1
+
+/****************************************************************************
+*																			*
+*									ASN.1 OIDs								*
+*																			*
+****************************************************************************/
+
 /* The cryptlib (strictly speaking DDS) OID arc is as follows:
 
 	1 3 6 1 4 1 3029 = dds
@@ -22,6 +39,8 @@
 						 1 = elgamal
 					   3 = hash
 					   4 = MAC
+					   5 = ECC
+						 1 = curvey25519
 					 2 = mechanism
 					 3 = attribute
 					   1 = PKIX fixes
@@ -95,14 +114,11 @@
 #define OID_RPKI_POLICY			MKOID( "\x06\x08\x2B\x06\x01\x05\x05\x07\x0E\x02" )
 #define OID_ZLIB				MKOID( "\x06\x0B\x2A\x86\x48\x86\xF7\x0D\x01\x09\x10\x03\x08" )
 
-/* Additional information required when reading a CMS header.  This is
-   pointed to by the extraInfo member of the ASN.1 OID_INFO structure and
-   contains CMS version number information */
-
-typedef struct {
-	const int minVersion;	/* Minimum version number for content type */
-	const int maxVersion;	/* Maximum version number for content type */
-	} CMS_CONTENT_INFO;
+/****************************************************************************
+*																			*
+*							ASN.1 Support Functions							*
+*																			*
+****************************************************************************/
 
 /* AlgorithmIdentifier routines.  The reason for the apparently redundant 
    CHECK_RETVAL specifiers on some of the write functions is because they 
@@ -126,10 +142,10 @@ typedef enum {
 
 CHECK_RETVAL_BOOL \
 BOOLEAN checkAlgoID( IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo,
-					 IN_MODE const CRYPT_MODE_TYPE cryptMode );
-CHECK_RETVAL_LENGTH \
+					 IN_MODE_OPT const CRYPT_MODE_TYPE cryptMode );
+CHECK_RETVAL_LENGTH_SHORT \
 int sizeofAlgoID( IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo );
-CHECK_RETVAL_LENGTH \
+CHECK_RETVAL_LENGTH_SHORT \
 int sizeofAlgoIDex( IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo,
 					IN_RANGE( 0, 999 ) const int parameter, 
 					IN_LENGTH_SHORT_Z const int extraLength );
@@ -198,6 +214,21 @@ int writeGenericAlgoID( INOUT STREAM *stream,
 						const BYTE *oid, 
 						IN_LENGTH_OID const int oidLength );
 
+/* ECC OID support routines */
+
+#if defined( USE_ECDH ) || defined( USE_ECDSA )
+
+CHECK_RETVAL_LENGTH \
+int sizeofECCOID( const CRYPT_ECCCURVE_TYPE curveType );
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+int readECCOID( INOUT STREAM *stream, 
+				OUT_OPT CRYPT_ECCCURVE_TYPE *curveType );
+RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+int writeECCOID( INOUT STREAM *stream, 
+				 const CRYPT_ECCCURVE_TYPE curveType );
+
+#endif /* USE_ECDH || USE_ECDSA */
+
 /* Read/write a message digest */
 
 CHECK_RETVAL_LENGTH \
@@ -208,12 +239,12 @@ int readMessageDigest( INOUT STREAM *stream,
 					   OUT_ALGO_Z CRYPT_ALGO_TYPE *hashAlgo,
 					   OUT_BUFFER( hashMaxLen, *hashSize ) void *hash, 
 					   IN_LENGTH_HASH const int hashMaxLen, 
-					   OUT_LENGTH_SHORT_Z int *hashSize );
+					   OUT_LENGTH_BOUNDED_Z( hashMaxLen ) int *hashSize );
 RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int writeMessageDigest( INOUT STREAM *stream, 
 						IN_ALGO const CRYPT_ALGO_TYPE hashAlgo,
-						IN_BUFFER( hashSize ) \
-						const void *hash, IN_LENGTH_HASH const int hashSize );
+						IN_BUFFER( hashSize ) const void *hash, 
+						IN_LENGTH_HASH const int hashSize );
 
 /* Read/write CMS headers.  The readCMSheader() flags are:
 
@@ -245,7 +276,7 @@ int writeMessageDigest( INOUT STREAM *stream,
 #define READCMS_FLAG_INNERHEADER	0x01	/* Inner CMS header */
 #define READCMS_FLAG_AUTHENC		0x02	/* Content uses auth.enc */
 #define READCMS_FLAG_WRAPPERONLY	0x04	/* Only read wrapper */
-#define READCMS_FLAG_DEFINITELENGTH	0x08	/* Try and get definte len */
+#define READCMS_FLAG_DEFINITELENGTH	0x08	/* Try and get definite len */
 #define READCMS_FLAG_DEFINITELENGTH_OPT 0x10/* Opt.try and get def.len */
 #define READCMS_FLAG_MAX			0x1F	/* Maximum possible flag value */
 
@@ -285,4 +316,5 @@ int writeCMSencrHeader( INOUT STREAM *stream,
 						IN_LENGTH_INDEF const long dataSize,
 						IN_HANDLE const CRYPT_CONTEXT iCryptContext );
 
+#endif /* USE_INT_ASN1 */
 #endif /* _ASN1OID_DEFINED */

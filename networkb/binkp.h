@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "sdk/callout.h"
+#include "networkb/cram.h"
 #include "networkb/receive_file.h"
 
 namespace wwiv {
@@ -58,10 +59,16 @@ enum class BinkSide {
   ANSWERING
 };
 
+enum class AuthType {
+  PLAIN_TEXT,
+  CRAM_MD5
+};
+
 // Main protocol driver class for BinkP derived sessions.
 class BinkP {
 public:
-  typedef std::function<TransferFile*(const std::string& network_name, const std::string& filename)>
+  typedef std::function<TransferFile*(
+      const std::string& network_name, const std::string& filename)>
       received_transfer_file_factory_t;
   // TODO(rushfan): should we use a unique_ptr for Connection and own the
   // connection?
@@ -109,24 +116,30 @@ private:
   bool SendFileData(TransferFile* file);
   bool HandleFileGetRequest(const std::string& request_line);
   bool HandleFileGotRequest(const std::string& request_line);
+  bool HandlePassword(const std::string& request_line);
   bool HandleFileRequest(const std::string& request_line);
 
-  BinkConfig* config_;
+  BinkConfig* config_ = nullptr;
   std::map<const std::string, wwiv::sdk::Callout> callouts_;
-  Connection* conn_;
+  Connection* conn_ = nullptr;
   std::string address_list_;
-  bool ok_received_;
-  bool eob_received_;
+  bool ok_received_ = false;
+  bool eob_received_ = false;
   std::map<std::string, std::unique_ptr<TransferFile>> files_to_send_;
   BinkSide side_;
-  const int expected_remote_node_;
+  const int expected_remote_node_ = 0;
   std::string remote_password_;
-  bool error_received_;
+  bool error_received_ = false;
   received_transfer_file_factory_t received_transfer_file_factory_;
   std::vector<std::string> received_files_;
   std::unique_ptr<ReceiveFile> current_receive_file_;
-  unsigned int bytes_received_;
-  unsigned int bytes_sent_;
+  unsigned int bytes_received_ = 0;
+  unsigned int bytes_sent_ = 0;
+
+  // Handles CRAM-MD5 authentication
+  Cram cram_;
+  // Auth type used.
+  AuthType auth_type_ = AuthType::PLAIN_TEXT;
 };
 
 // Parses a M_FILE request line into it's parts.

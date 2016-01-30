@@ -20,6 +20,8 @@
   #define ASMINF
 #endif /* ASMV */
 
+#ifdef USE_COMPRESSION
+
 #ifndef ASMINF
 
 /* Allow machine dependent optimization for post-increment or pre-increment.
@@ -349,3 +351,4 @@ void inflate_fast(z_streamp strm,		/* pcg */
  */
 
 #endif /* !ASMINF */
+#endif /* USE_COMPRESSION */

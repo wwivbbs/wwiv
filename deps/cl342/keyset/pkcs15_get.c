@@ -88,9 +88,12 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 5 ) ) \
 static int getTrustedCert( IN_ARRAY( noPkcs15objects ) \
 							const PKCS15_INFO *pkcs15info,
 						   IN_LENGTH_SHORT const int noPkcs15objects,
-						   OUT_BUFFER( dataMaxLength, *dataLength ) void *data, 
-						   IN_LENGTH_SHORT_MIN( 16 ) const int dataMaxLength, 
-						   OUT_LENGTH_SHORT_Z int *dataLength, 
+						   OUT_BUFFER( dataMaxLength, *dataLength ) \
+								void *data, 
+						   IN_LENGTH_SHORT_MIN( 16 ) \
+								const int dataMaxLength, 
+						   OUT_LENGTH_BOUNDED_Z( dataMaxLength ) \
+								int *dataLength, 
 						   const BOOLEAN resetCertIndex )
 	{
 	static int trustedCertIndex;
@@ -158,9 +161,11 @@ static int getConfigItem( IN_ARRAY( noPkcs15objects ) \
 							const PKCS15_INFO *pkcs15info,
 						  IN_LENGTH_SHORT const int noPkcs15objects,
 						  IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE dataType,
-						  OUT_BUFFER_OPT( dataMaxLength, *dataLength ) void *data, 
+						  OUT_BUFFER_OPT( dataMaxLength, *dataLength ) \
+								void *data, 
 						  IN_LENGTH_SHORT_Z const int dataMaxLength, 
-						  OUT_LENGTH_SHORT_Z int *dataLength )
+						  OUT_LENGTH_BOUNDED_Z( dataMaxLength ) \
+								int *dataLength )
 	{
 	const PKCS15_INFO *pkcs15infoPtr;
 	int dataStartOffset, dataTotalSize, i;
@@ -439,11 +444,12 @@ static int getItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 5 ) ) \
 static int getSpecialItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 								   IN_ATTRIBUTE \
-									const CRYPT_ATTRIBUTE_TYPE dataType,
+										const CRYPT_ATTRIBUTE_TYPE dataType,
 								   OUT_BUFFER_OPT( dataMaxLength, *dataLength ) \
-									void *data,
+										void *data,
 								   IN_LENGTH_SHORT_Z const int dataMaxLength,
-								   OUT_LENGTH_SHORT_Z int *dataLength )
+								   OUT_LENGTH_BOUNDED_Z( dataMaxLength ) \
+										int *dataLength )
 	{
 	assert( ( data == NULL && dataMaxLength == 0 ) || \
 			isWritePtr( data, dataMaxLength ) );
@@ -519,8 +525,8 @@ static int getItem( INOUT_ARRAY( noPkcs15objects ) PKCS15_INFO *pkcs15info,
 			  keyIDtype == CRYPT_KEYID_URI || \
 			  keyIDtype == CRYPT_IKEYID_KEYID || \
 			  keyIDtype == CRYPT_IKEYID_PGPKEYID || \
-			  keyIDtype == CRYPT_IKEYID_ISSUERID || \
-			  keyIDtype == CRYPT_KEYIDEX_SUBJECTNAMEID );
+			  keyIDtype == CRYPT_IKEYID_SUBJECTID || \
+			  keyIDtype == CRYPT_IKEYID_ISSUERID );
 	REQUIRES( keyIDlength >= MIN_NAME_LENGTH && \
 			  keyIDlength < MAX_ATTRIBUTE_SIZE );
 	REQUIRES( itemType == KEYMGMT_ITEM_PUBLICKEY );
@@ -535,12 +541,12 @@ static int getItem( INOUT_ARRAY( noPkcs15objects ) PKCS15_INFO *pkcs15info,
 	*stateInfo = CRYPT_ERROR;
 
 	/* Find the appropriate entry based on the ID */
-	if( keyIDtype != CRYPT_KEYIDEX_SUBJECTNAMEID && \
+	if( keyIDtype != CRYPT_IKEYID_SUBJECTID && \
 		keyIDlength == 6 && !strCompare( keyID, "[none]", 6 ) )
 		{
 		/* It's a findFirst() called (findNext() always uses 
-		   CRYPT_KEYIDEX_SUBJECTNAMEID as the ID) and it's a wildcard 
-		   read, locate the first object associated with a private key */
+		   CRYPT_IKEYID_SUBJECTID as the ID) and it's a wildcard read, 
+		   locate the first object associated with a private key */
 		pkcs15infoPtr = findEntry( pkcs15info, noPkcs15objects, keyIDtype, 
 								   NULL, 0, options, TRUE );
 		}
@@ -576,11 +582,12 @@ static int getItem( INOUT_ARRAY( noPkcs15objects ) PKCS15_INFO *pkcs15info,
 	REQUIRES( rangeCheck( certStartOffset, 
 						  certDataTotalSize - certStartOffset,
 						  certDataTotalSize ) );
-	setMessageCreateObjectIndirectInfo( &createInfo, certDataPtr,
+	setMessageCreateObjectIndirectInfoEx( &createInfo, certDataPtr,
 							certDataTotalSize - certStartOffset,
+							CRYPT_CERTTYPE_CERTIFICATE,
 							( options & KEYMGMT_FLAG_DATAONLY_CERT ) ? \
-								CRYPT_ICERTTYPE_DATAONLY : \
-								CRYPT_CERTTYPE_CERTIFICATE );
+								KEYMGMT_FLAG_DATAONLY_CERT : \
+								KEYMGMT_FLAG_NONE );
 	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE,
 							  IMESSAGE_DEV_CREATEOBJECT_INDIRECT, 
 							  &createInfo, OBJECT_TYPE_CERTIFICATE );
@@ -591,6 +598,26 @@ static int getItem( INOUT_ARRAY( noPkcs15objects ) PKCS15_INFO *pkcs15info,
 				( status, errorInfo, 
 				  "Couldn't create certificate from stored certificate "
 				  "data" ) );
+		}
+	if( !( ( ( keyIDtype == CRYPT_IKEYID_KEYID || \
+			   keyIDtype == CRYPT_IKEYID_PGPKEYID ) && \
+			 ( options & KEYMGMT_FLAG_DATAONLY_CERT ) ) ) )
+		{
+		/* Make sure that the certificate that we got back is what we 
+		   actually asked for.  We can't do this for key IDs with data-only 
+		   certificates since the IDs aren't present in the certificate
+		   but are generated dynamically in the associated context */
+		status = iCryptVerifyID( createInfo.cryptHandle, keyIDtype, keyID, 
+								 keyIDlength );
+		if( cryptStatusError( status ) )
+			{
+			krnlSendNotifier( createInfo.cryptHandle, 
+							  IMESSAGE_DECREFCOUNT );
+			retExt( status, 
+					( status, errorInfo, 
+					  "Certificate fetched for ID type %d doesn't actually "
+					  "correspond to the given ID", keyIDtype ) );
+			}
 		}
 	*iCertificate = createInfo.cryptHandle;
 	if( pkcs15infoPtr->validFrom <= MIN_TIME_VALUE )
@@ -699,7 +726,7 @@ static int getNextItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 	/* Find the certificate for which the subjectNameID matches this 
 	   certificate's issuerNameID */
 	status = getItem( pkcs15info, noPkcs15objects, iCertificate, stateInfo,
-					  CRYPT_KEYIDEX_SUBJECTNAMEID,
+					  CRYPT_IKEYID_SUBJECTID, 
 					  pkcs15info[ lastEntry ].issuerNameID,
 					  pkcs15info[ lastEntry ].issuerNameIDlength,
 					  KEYMGMT_ITEM_PUBLICKEY, options, KEYSET_ERRINFO );
@@ -717,7 +744,7 @@ static int getNextItemFunction( INOUT KEYSET_INFO *keysetInfoPtr,
 ****************************************************************************/
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int initPKCS15get( KEYSET_INFO *keysetInfoPtr )
+int initPKCS15get( INOUT KEYSET_INFO *keysetInfoPtr )
 	{
 	assert( isWritePtr( keysetInfoPtr, sizeof( KEYSET_INFO ) ) );
 

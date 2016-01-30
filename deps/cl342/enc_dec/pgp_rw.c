@@ -23,7 +23,7 @@
 
 /* Read a length in OpenPGP or PGP2 format */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+CHECK_RETVAL_LENGTH STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 static int readOpenPGPLength( INOUT STREAM *stream, 
 							  OUT_LENGTH_Z long *length,
 							  OUT_BOOL BOOLEAN *indefiniteLength,
@@ -156,7 +156,7 @@ static int readPGP2Length( INOUT STREAM *stream,
 
 CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int pgpReadLength( INOUT STREAM *stream, 
-						  OUT_LENGTH long *length, 
+						  OUT_LENGTH_BOUNDED_Z( maxLength ) long *length, 
 						  IN_BYTE const int ctb, 
 						  IN_LENGTH_SHORT_Z const int minLength, 
 						  IN_LENGTH const int maxLength, 
@@ -170,7 +170,7 @@ static int pgpReadLength( INOUT STREAM *stream,
 	assert( isWritePtr( length, sizeof( long ) ) );
 
 	REQUIRES_S( minLength >= 0 && minLength < MAX_INTLENGTH_SHORT && \
-				minLength < maxLength && maxLength <= MAX_INTLENGTH );
+				minLength < maxLength && maxLength < MAX_INTLENGTH );
 
 	/* Clear return value */
 	*length = 0;
@@ -211,7 +211,7 @@ static int readPacketHeader( INOUT STREAM *stream,
 	assert( length == NULL || isWritePtr( length, sizeof( long ) ) );
 	
 	REQUIRES_S( minLength >= 0 && minLength < MAX_INTLENGTH_SHORT && \
-				minLength < maxLength && maxLength <= MAX_INTLENGTH );
+				minLength < maxLength && maxLength < MAX_INTLENGTH );
 
 	/* Clear return values */
 	if( ctb != NULL )
@@ -239,16 +239,27 @@ static int readPacketHeader( INOUT STREAM *stream,
 		   However, compressed-data packets can only be stored in this
 		   manner but can still be processed because the user has to
 		   explicitly flush the data at some point and we assume that this
-		   is EOF.  For this reason we don't return OK_SPECIAL to indicate
-		   an indefinite-length encoding because this isn't a standard 
+		   is EOF.
+		   
+		   For this reason we don't return OK_SPECIAL to indicate an 
+		   indefinite-length encoding because this isn't a standard 
 		   segmented encoding but a virtual definite-length that ends when
 		   the user says it ends.   This is far uglier than the PKCS #7/CMS/
 		   SMIME equivalent where we've got an explicit end-of-data
-		   indication, but it's the best that we can do */
+		   indication, but it's the best that we can do.
+		   
+		   In addition it's not clear what we should return as the "length"
+		   value for this non-length, the contract with the caller says that
+		   we'll only permit a returned value within the range 
+		   { minLength ... maxLength } but there isn't any length present.  
+		   To deal with this we return a fake length equal to minLength, 
+		   which means that we stick to the contract, and which will be 
+		   ignored by any caller that can process compressed data since, by 
+		   definition, the length value is meaningless */
 		if( ctb != NULL )
 			*ctb = localCTB;
 		if( length != NULL )
-			*length = CRYPT_UNUSED;
+			*length = minLength;	/* See comment above */
 		return( CRYPT_OK );	/* Not-really-indef. return status */
 		}
 
@@ -281,13 +292,16 @@ static int readPacketHeader( INOUT STREAM *stream,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int pgpReadShortLength( INOUT STREAM *stream, 
-						OUT_LENGTH int *length, 
+						OUT_LENGTH_SHORT_Z int *length, 
 						IN_BYTE const int ctb )
 	{
 	long localLength;
 	int status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+
+	/* Clear return value */
+	*length = 0;
 
 	status = pgpReadLength( stream, &localLength, ctb, 0, 
 							MAX_INTLENGTH_SHORT, FALSE );
@@ -301,15 +315,17 @@ int pgpReadShortLength( INOUT STREAM *stream,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int pgpReadPacketHeader( INOUT STREAM *stream, OUT_OPT_BYTE int *ctb, 
 						 OUT_OPT_LENGTH_Z long *length, 
-						 IN_LENGTH_SHORT const int minLength )
+						 IN_LENGTH_SHORT const int minLength,
+						 IN_LENGTH const long maxLength )
 	{
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( ctb == NULL || isWritePtr( ctb, sizeof( int ) ) );
 	assert( length == NULL || isWritePtr( length, sizeof( long ) ) );
 	
 	REQUIRES_S( minLength >= 0 && minLength < MAX_INTLENGTH_SHORT );
+	REQUIRES_S( maxLength > minLength && maxLength < MAX_INTLENGTH );
 
-	return( readPacketHeader( stream, ctb, length, minLength, MAX_INTLENGTH, 
+	return( readPacketHeader( stream, ctb, length, minLength, maxLength, 
 							  FALSE ) );
 	}
 
@@ -324,8 +340,8 @@ int pgpReadPacketHeaderI( INOUT STREAM *stream, OUT_OPT_BYTE int *ctb,
 	
 	REQUIRES_S( minLength >= 0 && minLength < MAX_INTLENGTH_SHORT );
 
-	return( readPacketHeader( stream, ctb, length, minLength, MAX_INTLENGTH, 
-							  TRUE ) );
+	return( readPacketHeader( stream, ctb, length, minLength, 
+							  MAX_INTLENGTH - 1, TRUE ) );
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
@@ -337,14 +353,15 @@ int pgpReadPartialLength( INOUT STREAM *stream,
 	
 	/* This is a raw length value so we have to feed in a pseudo-CTB */
 	return( pgpReadLength( stream, length, PGP_CTB_OPENPGP,
-						   0, MAX_INTLENGTH, TRUE ) );
+						   0, MAX_INTLENGTH - 1, TRUE ) );
 	}
 
 /* Write PGP variable-length length values and packet headers (CTB + 
    length) */
 
 RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
-int pgpWriteLength( INOUT STREAM *stream, IN_LENGTH const long length )
+int pgpWriteLength( INOUT STREAM *stream, 
+					IN_LENGTH const long length )
 	{
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	

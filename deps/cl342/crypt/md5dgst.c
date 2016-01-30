@@ -59,9 +59,19 @@
 #include <stdio.h>
 #if defined( INC_ALL )
   #include "osconfig.h"
-  #include "md5locl.h"
 #else
   #include "crypt/osconfig.h"
+#endif /* Compiler-specific includes */
+
+#ifdef USE_MD5
+
+/* We can only include md5locl.h at this point since it creates code for 
+   various functions via complicated nesting of includes and macro 
+   manipulation */
+
+#if defined( INC_ALL )
+  #include "md5locl.h"
+#else
   #include "crypt/md5locl.h"
 #endif /* Compiler-specific includes */
 
@@ -320,3 +330,4 @@ int printit(unsigned long *l)
 		}
 	}
 #endif
+#endif /* USE_MD5 */

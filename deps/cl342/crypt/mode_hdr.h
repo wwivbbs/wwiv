@@ -1,30 +1,23 @@
 /*
- ---------------------------------------------------------------------------
- Copyright (c) 1998-2008, Brian Gladman, Worcester, UK. All rights reserved.
+---------------------------------------------------------------------------
+Copyright (c) 1998-2014, Brian Gladman, Worcester, UK. All rights reserved.
 
- LICENSE TERMS
+The redistribution and use of this software (with or without changes)
+is allowed without the payment of fees or royalties provided that:
 
- The redistribution and use of this software (with or without changes)
- is allowed without the payment of fees or royalties provided that:
+  source code distributions include the above copyright notice, this
+  list of conditions and the following disclaimer;
 
-  1. source code distributions include the above copyright notice, this
-     list of conditions and the following disclaimer;
+  binary distributions include the above copyright notice, this list
+  of conditions and the following disclaimer in their documentation.
 
-  2. binary distributions include the above copyright notice, this list
-     of conditions and the following disclaimer in their documentation;
+This software is provided 'as is' with no explicit or implied warranties
+in respect of its operation, including, but not limited to, correctness
+and fitness for purpose.
+---------------------------------------------------------------------------
+Issue Date: 18/02/2014
 
-  3. the name of the copyright holder is not used to endorse products
-     built using this software without specific written permission.
-
- DISCLAIMER
-
- This software is provided 'as is' with no explicit or implied warranties
- in respect of its properties, including, but not limited to, correctness
- and/or fitness for purpose.
- ---------------------------------------------------------------------------
- Issue Date: 07/10/2010
-
- This header file is an INTERNAL file which supports mode implementation
+This header file is an INTERNAL file which supports mode implementation
 */
 
 #ifndef _MODE_HDR_H
@@ -46,7 +39,11 @@
 */
 #if !defined( UNIT_BITS )
 #  if PLATFORM_BYTE_ORDER == IS_BIG_ENDIAN
-#    define UNIT_BITS  8
+#    if 0
+#      define UNIT_BITS  32
+#    elif 1
+#      define UNIT_BITS  64
+#    endif
 #  elif defined( _WIN64 )
 #    define UNIT_BITS 64
 #  else
@@ -155,28 +152,28 @@ typedef void (*xor_function)(void* r, const void* p, const void* q);
 /* left and right rotates on 32 and 64 bit variables */
 
 #if !defined( rotl32 )  /* NOTE: 0 <= n <= 32 ASSUMED */
-mh_decl uint_32t rotl32(uint_32t x, int n)
+mh_decl uint32_t rotl32(uint32_t x, int n)
 {
     return (((x) << n) | ((x) >> (32 - n)));
 }
 #endif
 
 #if !defined( rotr32 )  /* NOTE: 0 <= n <= 32 ASSUMED */
-mh_decl uint_32t rotr32(uint_32t x, int n)
+mh_decl uint32_t rotr32(uint32_t x, int n)
 {
     return (((x) >> n) | ((x) << (32 - n)));
 }
 #endif
 
 #if ( UNIT_BITS == 64 ) && !defined( rotl64 )  /* NOTE: 0 <= n <= 64 ASSUMED */
-mh_decl uint_64t rotl64(uint_64t x, int n)
+mh_decl uint64_t rotl64(uint64_t x, int n)
 {
     return (((x) << n) | ((x) >> (64 - n)));
 }
 #endif
 
 #if ( UNIT_BITS == 64 ) && !defined( rotr64 )  /* NOTE: 0 <= n <= 64 ASSUMED */
-mh_decl uint_64t rotr64(uint_64t x, int n)
+mh_decl uint64_t rotr64(uint64_t x, int n)
 {
     return (((x) >> n) | ((x) << (64 - n)));
 }
@@ -185,23 +182,23 @@ mh_decl uint_64t rotr64(uint_64t x, int n)
 /* byte order inversions for 16, 32 and 64 bit variables */
 
 #if !defined(bswap_16)
-mh_decl uint_16t bswap_16(uint_16t x)
+mh_decl uint16_t bswap_16(uint16_t x)
 {
-    return (uint_16t)((x >> 8) | (x << 8));
+    return (uint16_t)((x >> 8) | (x << 8));
 }
 #endif
 
 #if !defined(bswap_32)
-mh_decl uint_32t bswap_32(uint_32t x)
+mh_decl uint32_t bswap_32(uint32_t x)
 {
     return ((rotr32((x), 24) & 0x00ff00ff) | (rotr32((x), 8) & 0xff00ff00));
 }
 #endif
 
 #if ( UNIT_BITS == 64 ) && !defined(bswap_64)
-mh_decl uint_64t bswap_64(uint_64t x)
+mh_decl uint64_t bswap_64(uint64_t x)
 {   
-    return bswap_32((uint_32t)(x >> 32)) | ((uint_64t)bswap_32((uint_32t)x) << 32);
+    return bswap_32((uint32_t)(x >> 32)) | ((uint64_t)bswap_32((uint32_t)x) << 32);
 }
 #endif
 
@@ -245,10 +242,11 @@ mh_decl void xor_block_aligned(void *r, const void *p, const void *q)
 #endif
 }
 
+/* byte swap within 32-bit words in a 16 byte block; don't move 32-bit words */
 mh_decl void bswap32_block(void *d, const void* s)
 {
 #if UNIT_BITS == 8
-    uint_8t t;
+    uint8_t t;
     t = UNIT_PTR(s)[ 0]; UNIT_PTR(d)[ 0] = UNIT_PTR(s)[ 3]; UNIT_PTR(d)[ 3] = t;
     t = UNIT_PTR(s)[ 1]; UNIT_PTR(d)[ 1] = UNIT_PTR(s)[ 2]; UNIT_PTR(d)[ 2] = t;
     t = UNIT_PTR(s)[ 4]; UNIT_PTR(d)[ 4] = UNIT_PTR(s)[ 7]; UNIT_PTR(d)[ 7] = t;
@@ -266,10 +264,11 @@ mh_decl void bswap32_block(void *d, const void* s)
 #endif
 }
 
+/* byte swap within 64-bit words in a 16 byte block; don't move 64-bit words */
 mh_decl void bswap64_block(void *d, const void* s)
 {
 #if UNIT_BITS == 8
-    uint_8t t;
+    uint8_t t;
     t = UNIT_PTR(s)[ 0]; UNIT_PTR(d)[ 0] = UNIT_PTR(s)[ 7]; UNIT_PTR(d)[ 7] = t;
     t = UNIT_PTR(s)[ 1]; UNIT_PTR(d)[ 1] = UNIT_PTR(s)[ 6]; UNIT_PTR(d)[ 6] = t;
     t = UNIT_PTR(s)[ 2]; UNIT_PTR(d)[ 2] = UNIT_PTR(s)[ 5]; UNIT_PTR(d)[ 5] = t;
@@ -279,7 +278,7 @@ mh_decl void bswap64_block(void *d, const void* s)
     t = UNIT_PTR(s)[10]; UNIT_PTR(d)[10] = UNIT_PTR(s)[13]; UNIT_PTR(d)[13] = t;
     t = UNIT_PTR(s)[11]; UNIT_PTR(d)[11] = UNIT_PTR(s)[12]; UNIT_PTR(d)[12] = t;
 #elif UNIT_BITS == 32
-    uint_32t t;
+    uint32_t t;
     t = bswap_32(UNIT_PTR(s)[0]); UNIT_PTR(d)[0] = bswap_32(UNIT_PTR(s)[1]); UNIT_PTR(d)[1] = t;
     t = bswap_32(UNIT_PTR(s)[2]); UNIT_PTR(d)[2] = bswap_32(UNIT_PTR(s)[2]); UNIT_PTR(d)[3] = t;
 #else
@@ -290,7 +289,7 @@ mh_decl void bswap64_block(void *d, const void* s)
 mh_decl void bswap128_block(void *d, const void* s)
 {
 #if UNIT_BITS == 8
-    uint_8t t;
+    uint8_t t;
     t = UNIT_PTR(s)[0]; UNIT_PTR(d)[0] = UNIT_PTR(s)[15]; UNIT_PTR(d)[15] = t;
     t = UNIT_PTR(s)[1]; UNIT_PTR(d)[1] = UNIT_PTR(s)[14]; UNIT_PTR(d)[14] = t;
     t = UNIT_PTR(s)[2]; UNIT_PTR(d)[2] = UNIT_PTR(s)[13]; UNIT_PTR(d)[13] = t;
@@ -300,11 +299,11 @@ mh_decl void bswap128_block(void *d, const void* s)
     t = UNIT_PTR(s)[6]; UNIT_PTR(d)[6] = UNIT_PTR(s)[ 9]; UNIT_PTR(d)[ 9] = t;
     t = UNIT_PTR(s)[7]; UNIT_PTR(d)[7] = UNIT_PTR(s)[ 8]; UNIT_PTR(d)[ 8] = t;
 #elif UNIT_BITS == 32
-    uint_32t t;
+    uint32_t t;
     t = bswap_32(UNIT_PTR(s)[0]); UNIT_PTR(d)[0] = bswap_32(UNIT_PTR(s)[3]); UNIT_PTR(d)[3] = t;
     t = bswap_32(UNIT_PTR(s)[1]); UNIT_PTR(d)[1] = bswap_32(UNIT_PTR(s)[2]); UNIT_PTR(d)[2] = t;
 #else
-    uint_64t t;
+    uint64_t t;
     t = bswap_64(UNIT_PTR(s)[0]); UNIT_PTR(d)[0] = bswap_64(UNIT_PTR(s)[1]); UNIT_PTR(d)[1] = t;
 #endif
 }
@@ -313,21 +312,21 @@ mh_decl void bswap128_block(void *d, const void* s)
 
 #if PLATFORM_BYTE_ORDER == IS_BIG_ENDIAN
 
-#  define uint_16t_to_le(x) (x) = bswap_16((x))
-#  define uint_32t_to_le(x) (x) = bswap_32((x))
-#  define uint_64t_to_le(x) (x) = bswap_64((x))
-#  define uint_16t_to_be(x)
-#  define uint_32t_to_be(x)
-#  define uint_64t_to_be(x)
+#  define uint16_t_to_le(x) (x) = bswap_16((x))
+#  define uint32_t_to_le(x) (x) = bswap_32((x))
+#  define uint64_t_to_le(x) (x) = bswap_64((x))
+#  define uint16_t_to_be(x)
+#  define uint32_t_to_be(x)
+#  define uint64_t_to_be(x)
 
 #else
 
-#  define uint_16t_to_le(x)
-#  define uint_32t_to_le(x)
-#  define uint_64t_to_le(x)
-#  define uint_16t_to_be(x) (x) = bswap_16((x))
-#  define uint_32t_to_be(x) (x) = bswap_32((x))
-#  define uint_64t_to_be(x) (x) = bswap_64((x))
+#  define uint16_t_to_le(x)
+#  define uint32_t_to_le(x)
+#  define uint64_t_to_le(x)
+#  define uint16_t_to_be(x) (x) = bswap_16((x))
+#  define uint32_t_to_be(x) (x) = bswap_32((x))
+#  define uint64_t_to_be(x) (x) = bswap_64((x))
 
 #endif
 

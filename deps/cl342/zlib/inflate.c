@@ -111,6 +111,8 @@
   #include "zlib/inffast.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_COMPRESSION
+
 #ifdef MAKEFIXED
 #  ifndef BUILDFIXED
 #    define BUILDFIXED
@@ -1474,3 +1476,4 @@ long ZEXPORT inflateMark(z_streamp strm)		/* pcg */
         (state->mode == COPY ? state->length :
             (state->mode == MATCH ? state->was - state->length : 0));
 }
+#endif /* USE_COMPRESSION */

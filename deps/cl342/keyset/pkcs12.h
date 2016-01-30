@@ -80,7 +80,7 @@
 typedef struct {
 	/* The overall object data and the location of the payload within it, 
 	   usually in the form of encrypted data */
-	BUFFER_OPT_FIXED( dataLen ) \
+	BUFFER_OPT_FIXED( dataSize ) \
 	const void *data;				/* Object data */
 	int dataSize;
 	int payloadOffset, payloadSize;	/* Payload within object data */
@@ -143,15 +143,18 @@ PKCS12_INFO *pkcs12FindEntry( IN_ARRAY( noPkcs12objects ) \
 							  IN_BUFFER_OPT( keyIDlength ) const void *keyID, 
 							  IN_LENGTH_KEYID_Z const int keyIDlength,
 							  const BOOLEAN isWildcardMatch );
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 1 ) ) \
 PKCS12_INFO *pkcs12FindFreeEntry( IN_ARRAY( noPkcs12objects ) \
 									const PKCS12_INFO *pkcs12info,
 								  IN_LENGTH_SHORT const int noPkcs12objects, 
-								  OUT_OPT_LENGTH_SHORT_Z int *index );
+								  OUT_OPT_INDEX( noPkcs12objects ) int *index );
 STDC_NONNULL_ARG( ( 1 ) ) \
 void pkcs12freeObjectEntry( INOUT PKCS12_OBJECT_INFO *pkcs12objectInfo );
 STDC_NONNULL_ARG( ( 1 ) ) \
 void pkcs12freeEntry( INOUT PKCS12_INFO *pkcs12info );
+STDC_NONNULL_ARG( ( 1 ) ) \
+void pkcs12Free( INOUT_ARRAY( noPkcs12objects ) PKCS12_INFO *pkcs12info, 
+				 IN_RANGE( 1, MAX_PKCS12_OBJECTS ) const int noPkcs12objects );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 5 ) ) \
 int createPkcs12KeyWrapContext( INOUT PKCS12_OBJECT_INFO *pkcs12objectInfo,
 								IN_HANDLE const CRYPT_USER cryptOwner,

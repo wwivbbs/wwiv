@@ -66,21 +66,21 @@ static BOOLEAN checkLowlevelInfo( const CRYPT_DEVICE cryptDevice,
 		return( FALSE );
 		}
 #ifdef UNICODE_STRINGS
-	printf( "cryptQueryCapability() reports availability of %S algorithm "
-			"with\n  block size %d bits", cryptQueryInfo.algoName,
-			cryptQueryInfo.blockSize << 3 );
+	fprintf( outputStream, "cryptQueryCapability() reports availability of "
+			 "%S algorithm with\n  block size %d bits", 
+			 cryptQueryInfo.algoName, cryptQueryInfo.blockSize << 3 );
 #else
-	printf( "cryptQueryCapability() reports availability of %s algorithm "
-			"with\n  block size %d bits", cryptQueryInfo.algoName,
-			cryptQueryInfo.blockSize << 3 );
+	fprintf( outputStream, "cryptQueryCapability() reports availability of "
+			 "%s algorithm with\n  block size %d bits", 
+			 cryptQueryInfo.algoName, cryptQueryInfo.blockSize << 3 );
 #endif /* UNICODE_STRINGS */
 	if( cryptAlgo < CRYPT_ALGO_FIRST_HASH || cryptAlgo > CRYPT_ALGO_LAST_HASH )
 		{
-		printf( ", keysize %d-%d bits (recommended = %d bits)",
+		fprintf( outputStream, ", keysize %d-%d bits (recommended = %d bits)",
 				cryptQueryInfo.minKeySize << 3,
 				cryptQueryInfo.maxKeySize << 3, cryptQueryInfo.keySize << 3 );
 		}
-	puts( "." );
+	fputs( ".\n", outputStream );
 
 	return( TRUE );
 	}
@@ -168,8 +168,9 @@ static BOOLEAN loadContexts( CRYPT_CONTEXT *cryptContext, CRYPT_CONTEXT *decrypt
 		status = cryptCreateContext( cryptContext, CRYPT_UNUSED, cryptAlgo );
 	if( cryptStatusError( status ) )
 		{
-		printf( "crypt%sCreateContext() failed with error code %d, "
-				"line %d.\n", isDevice ? "Device" : "", status, __LINE__ );
+		fprintf( outputStream, "crypt%sCreateContext() failed with error "
+				 "code %d, line %d.\n", isDevice ? "Device" : "", status, 
+				 __LINE__ );
 		return( FALSE );
 		}
 	if( cryptAlgo <= CRYPT_ALGO_LAST_CONVENTIONAL )
@@ -223,9 +224,9 @@ static BOOLEAN loadContexts( CRYPT_CONTEXT *cryptContext, CRYPT_CONTEXT *decrypt
 										   cryptAlgo );
 	if( cryptStatusError( status ) )
 		{
-		printf( "crypt%sCreateContext() failed with error code %d, "
-				"line %d.\n", ( cryptDevice != CRYPT_UNUSED ) ? \
-							  "Device" : "", status, __LINE__ );
+		fprintf( outputStream, "crypt%sCreateContext() failed with error "
+				 "code %d, line %d.\n", ( cryptDevice != CRYPT_UNUSED ) ? \
+										"Device" : "", status, __LINE__ );
 		return( FALSE );
 		}
 	if( cryptAlgo <= CRYPT_ALGO_LAST_CONVENTIONAL )
@@ -234,7 +235,7 @@ static BOOLEAN loadContexts( CRYPT_CONTEXT *cryptContext, CRYPT_CONTEXT *decrypt
 									cryptMode );
 		if( cryptStatusError( status ) )
 			{
-			cryptDestroyContext( *cryptContext );
+			cryptDestroyContext( *decryptContext );
 			if( status == CRYPT_ERROR_NOTAVAIL )
 				{
 				/* This mode isn't available, return a special-case value to
@@ -264,12 +265,12 @@ static BOOLEAN loadContexts( CRYPT_CONTEXT *cryptContext, CRYPT_CONTEXT *decrypt
 /* Perform a test en/decryption */
 
 int testCrypt( CRYPT_CONTEXT cryptContext, CRYPT_CONTEXT decryptContext,
-			   BYTE *buffer, const BOOLEAN isDevice,
-			   const BOOLEAN noWarnFail )
+			   const CRYPT_ALGO_TYPE cryptAlgo, BYTE *buffer, 
+			   const BOOLEAN isDevice, const BOOLEAN noWarnFail )
 	{
 	BYTE iv[ CRYPT_MAX_IVSIZE ];
 	BYTE localBuffer[ TESTBUFFER_SIZE ];
-	int cryptAlgo, cryptMode, status;
+	int cryptMode = CRYPT_MODE_NONE, status;
 
 	/* If the user hasn't supplied a test buffer, use our own one */
 	if( buffer == NULL )
@@ -279,10 +280,16 @@ int testCrypt( CRYPT_CONTEXT cryptContext, CRYPT_CONTEXT decryptContext,
 		}
 
 	/* Find out about the algorithm we're using */
-	cryptGetAttribute( cryptContext, CRYPT_CTXINFO_ALGO, &cryptAlgo );
-	cryptGetAttribute( cryptContext, CRYPT_CTXINFO_MODE, &cryptMode );
+	if( cryptAlgo >= CRYPT_ALGO_FIRST_CONVENTIONAL && \
+		cryptAlgo <= CRYPT_ALGO_LAST_CONVENTIONAL )
+		{
+		status = cryptGetAttribute( cryptContext, CRYPT_CTXINFO_MODE, 
+									&cryptMode );
+		if( cryptStatusError( status ) )
+			return( status );
+		}
 	if( cryptAlgo <= CRYPT_ALGO_LAST_CONVENTIONAL && \
-		( cryptMode == CRYPT_MODE_CFB || cryptMode == CRYPT_MODE_OFB ) )
+		cryptMode == CRYPT_MODE_CFB )
 		{
 		/* Encrypt the buffer in two odd-sized chunks */
 		status = cryptEncrypt( cryptContext, buffer, 79 );
@@ -436,7 +443,10 @@ int testCrypt( CRYPT_CONTEXT cryptContext, CRYPT_CONTEXT decryptContext,
 		/* Take a copy of the input so that we can compare it with the 
 		   decrypted output and find out how much data we need to process */
 		memcpy( testBuffer, buffer, TESTBUFFER_SIZE );
-		cryptGetAttribute( cryptContext, CRYPT_CTXINFO_KEYSIZE, &length );
+		status = cryptGetAttribute( cryptContext, CRYPT_CTXINFO_KEYSIZE, 
+									&length );
+		if( cryptStatusError( status ) )
+			return( status );
 
 		/* Since we're doing raw RSA encryption we need to format the data
 		   specially to work with the RSA key being used.  If we're using the
@@ -463,8 +473,10 @@ int testCrypt( CRYPT_CONTEXT cryptContext, CRYPT_CONTEXT decryptContext,
 		if( cryptStatusError( status ) )
 			{
 			if( !noWarnFail )
+				{
 				printf( "Couldn't encrypt data, status = %d, line %d.\n", 
 						status, __LINE__ );
+				}
 			return( status );
 			}
 		if( cryptAlgo == CRYPT_ALGO_RSA && \
@@ -652,11 +664,7 @@ int testLowlevel( const CRYPT_DEVICE cryptDevice,
 
 			case CRYPT_ALGO_RC2:
 			case CRYPT_ALGO_RC4:
-			case CRYPT_ALGO_RC5:
-			case CRYPT_ALGO_BLOWFISH:
-			case CRYPT_ALGO_HMAC_MD5:
 			case CRYPT_ALGO_HMAC_SHA1:
-			case CRYPT_ALGO_HMAC_RIPEMD160:
 			case CRYPT_ALGO_HMAC_SHA2:
 				status = loadContexts( &cryptContext, &decryptContext,
 									   cryptDevice, cryptAlgo, cryptMode,
@@ -666,7 +674,6 @@ int testLowlevel( const CRYPT_DEVICE cryptDevice,
 			case CRYPT_ALGO_MD5:
 			case CRYPT_ALGO_SHA1:
 			case CRYPT_ALGO_SHA2:
-			case CRYPT_ALGO_RIPEMD160:
 				status = loadContexts( &cryptContext, &decryptContext,
 									   cryptDevice, cryptAlgo, CRYPT_MODE_NONE,
 									   ( BYTE * ) "", 0 );
@@ -693,7 +700,8 @@ int testLowlevel( const CRYPT_DEVICE cryptDevice,
 				break;
 
 			case CRYPT_ALGO_ECDSA:
-				status = loadECDSAContexts( &cryptContext, &decryptContext );
+				status = loadECDSAContexts( cryptDevice, &cryptContext, 
+											&decryptContext );
 				break;
 
 #ifdef TEST_DH
@@ -727,8 +735,8 @@ int testLowlevel( const CRYPT_DEVICE cryptDevice,
 			}
 
 		/* Perform a test en/decryption */
-		status = testCrypt( cryptContext, decryptContext, buffer, isDevice,
-							FALSE );
+		status = testCrypt( cryptContext, decryptContext, cryptAlgo, buffer, 
+							isDevice, FALSE );
 		if( cryptStatusError( status ) )
 			{
 			destroyContexts( cryptDevice, cryptContext, decryptContext );
@@ -764,8 +772,12 @@ int testLowlevel( const CRYPT_DEVICE cryptDevice,
 
 			status = cryptGetAttributeString( cryptContext, CRYPT_CTXINFO_HASHVALUE,
 											  hash1, &length1 );
-			cryptGetAttributeString( decryptContext, CRYPT_CTXINFO_HASHVALUE,
-									 hash2, &length2 );
+			if( cryptStatusOK( status ) )
+				{
+				status = cryptGetAttributeString( decryptContext, 
+												  CRYPT_CTXINFO_HASHVALUE,
+												  hash2, &length2 );
+				}
 			if( cryptStatusError( status ) )
 				{
 				printf( "Couldn't get hash information, status = %d, "
@@ -802,7 +814,8 @@ int testLowlevel( const CRYPT_DEVICE cryptDevice,
 				return( FALSE );
 				}
 			if( cryptStatusError( testCrypt( cryptContext, decryptContext,
-											 buffer, isDevice, FALSE ) ) )
+											 cryptAlgo, buffer, isDevice, 
+											 FALSE ) ) )
 				{
 				destroyContexts( cryptDevice, cryptContext, decryptContext );
 				return( FALSE );
@@ -850,18 +863,16 @@ int testLowlevel( const CRYPT_DEVICE cryptDevice,
 	   were tested */
 	if( cryptAlgo < CRYPT_ALGO_LAST_CONVENTIONAL )
 		{
-		printf( "  Encryption modes tested:" );
+		fprintf( outputStream, "  Encryption modes tested:" );
 		if( modesTested[ CRYPT_MODE_ECB ] )
-			printf( " ECB" );
+			fprintf( outputStream, " ECB" );
 		if( modesTested[ CRYPT_MODE_CBC ] )
-			printf( " CBC" );
+			fprintf( outputStream, " CBC" );
 		if( modesTested[ CRYPT_MODE_CFB ] )
-			printf( " CFB" );
-		if( modesTested[ CRYPT_MODE_OFB ] )
-			printf( " OFB" );
+			fprintf( outputStream, " CFB" );
 		if( modesTested[ CRYPT_MODE_GCM ] )
-			printf( " GCM" );
-		puts( "." );
+			fprintf( outputStream, " GCM" );
+		fputs( ".\n", outputStream );
 		}
 
 	/* Make sure that at least one of the algorithm's modes was tested */
@@ -883,7 +894,8 @@ int testRSAMinimalKey( void )
 	BYTE buffer[ TESTBUFFER_SIZE ], testBuffer[ TESTBUFFER_SIZE ];
 	int status;
 
-	puts( "Testing ability to recover CRT components for RSA private key..." );
+	fputs( "Testing ability to recover CRT components for RSA private "
+		   "key...\n", outputStream );
 
 	/* Load the RSA contexts from the minimal (non-CRT) RSA key */
 	status = loadRSAContextsEx( CRYPT_UNUSED, &cryptContext, &decryptContext,
@@ -897,14 +909,15 @@ int testRSAMinimalKey( void )
 
 	/* Make sure that we can encrypt and decrypt with the reconstituted CRT
 	   private key */
-	status = testCrypt( cryptContext, decryptContext, buffer, FALSE, FALSE );
+	status = testCrypt( cryptContext, decryptContext, CRYPT_ALGO_RSA, 
+						buffer, FALSE, FALSE );
 	if( cryptStatusError( status ) )
 		return( FALSE );
 
 	/* Clean up */
 	destroyContexts( CRYPT_UNUSED, cryptContext, decryptContext );
 
-	puts( "RSA CRT component recovery test succeeded." );
+	fputs( "RSA CRT component recovery test succeeded.\n", outputStream );
 	return( TRUE );
 	}
 
@@ -1137,7 +1150,6 @@ void performanceTests( const CRYPT_DEVICE cryptDevice )
 	encTests( CRYPT_UNUSED, CRYPT_ALGO_DES, CRYPT_MODE_CBC, buffer );
 	encTests( CRYPT_UNUSED, CRYPT_ALGO_3DES, CRYPT_MODE_ECB, buffer );
 	encTests( CRYPT_UNUSED, CRYPT_ALGO_3DES, CRYPT_MODE_CBC, buffer );
-	encTests( CRYPT_UNUSED, CRYPT_ALGO_RC4, CRYPT_MODE_OFB, buffer );
 	encTests( CRYPT_UNUSED, CRYPT_ALGO_AES, CRYPT_MODE_CBC, buffer );
 	encTests( CRYPT_UNUSED, CRYPT_ALGO_MD5, CRYPT_MODE_NONE, buffer );
 	encTests( CRYPT_UNUSED, CRYPT_ALGO_SHA1, CRYPT_MODE_NONE, buffer );

@@ -96,6 +96,33 @@ static void buildDBString( char *buffer, const char *attrName,
 		}
 	}
 
+static void reportSqlError( const BOOLEAN isSqlServer )
+	{
+	DWORD dwErrorCode;
+	WORD errorMessageLen;
+	char errorMessage[ 256 ];
+		
+	if( SQLInstallerError( 1, &dwErrorCode, errorMessage, 256, 
+						   &errorMessageLen ) != SQL_NO_DATA )
+		{
+		printf( "SQLConfigDataSource() returned error code %d,\n  "
+				"message '%s'.\n", dwErrorCode, errorMessage );
+#if defined( _M_X64 )
+		if( !isSqlServer )
+			{
+			puts( "  (This is probably because there's no appropriate "
+				  "64-bit driver present,\n  retrying the create with "
+				  "an alternative driver...)." );
+			}
+#endif /* _M_X64 */
+		}
+	else
+		{
+		puts( "SQLConfigDataSource() failed, no additional information "
+			  "available" );
+		}
+	}
+
 static BOOLEAN createDatabase( const char *driverName,
 							   const char *keysetName, 
 							   const char *nameString, 
@@ -119,13 +146,18 @@ static BOOLEAN createDatabase( const char *driverName,
 	   server already exists so all we have to do is create the database */
 	if( isSqlServer )
 		{
-		printf( "Attempting to create keyset '%s' using alternative data "
-				"source...\n", keysetName );
+		printf( "Attempting to create keyset '%s' using alternative\n  "
+				"data source (ODBC - SQL Server)...\n", keysetName );
+		puts( "  (Autoconfiguration of SQL Server data sources rather than "
+			  "having them\n  configured manually by an administrator can "
+			  "be erratic, if cryptlib\n  hangs while trying to access the "
+			  "certificate database then you need to\n  configure the SQL "
+			  "Server data source manually)." );
 		}
 	else
 		{
-		printf( "Database keyset '%s' not found, attempting to create data "
-				"source...\n", keysetName );
+		printf( "Database keyset '%s' not found, attempting to create\n  "
+				"data source (ODBC - MS Access)...\n", keysetName );
 		}
 	buildDBString( attrBuffer, nameString, trailerString, tempPathBuffer );
 #ifdef UNICODE_STRINGS
@@ -138,24 +170,7 @@ static BOOLEAN createDatabase( const char *driverName,
 #endif /* UNICODE_STRINGS */
 	if( status != 1 )
 		{
-		DWORD dwErrorCode;
-		WORD errorMessageLen;
-		char errorMessage[ 256 ];
-		
-		if( SQLInstallerError( 1, &dwErrorCode, errorMessage, 256, 
-							   &errorMessageLen ) != SQL_NO_DATA )
-			{
-			printf( "SQLConfigDataSource() returned error code %d,\n  "
-					"message '%s'.\n", dwErrorCode, errorMessage );
-#if defined( _M_X64 )
-			if( !isSqlServer )
-				{
-				puts( "  (This is probably because there's no appropriate "
-					  "64-bit driver present,\n  retrying the create with "
-					  "an alternative driver...)." );
-				}
-#endif /* _M_X64 */
-			}
+		reportSqlError( isSqlServer );
 		return( FALSE );
 		}
 	if( isSqlServer )
@@ -172,14 +187,36 @@ static BOOLEAN createDatabase( const char *driverName,
 	status = SQLConfigDataSource( NULL, ODBC_ADD_DSN, driverName, 
 								  attrBuffer );
 #endif /* UNICODE_STRINGS */
+	if( status != 1 )
+		{
+		reportSqlError( isSqlServer );
+		return( FALSE );
+		}
 
-	return( ( status == 1 ) ? TRUE : FALSE );
+	return( TRUE );
 	}
 
-static BOOLEAN createDatabaseKeyset( void )
+static void checkCreateDatabaseKeyset( void )
 	{
+	CRYPT_KEYSET cryptKeyset;
 	int status;
 
+	/* Check whether the test certificate database can be opened.  This can 
+	   return a CRYPT_ARGERROR_PARAM3 as a normal condition since a freshly-
+	   created database is empty and therefore can't be identified as a 
+	   certificate database until data is written to it */
+	status = cryptKeysetOpen( &cryptKeyset, CRYPT_UNUSED,
+							  CRYPT_KEYSET_ODBC, DATABASE_KEYSET_NAME,
+							  CRYPT_KEYOPT_READONLY );
+	if( cryptStatusOK( status ) )
+		{
+		cryptKeysetClose( cryptKeyset );
+		return;
+		}
+	if( status != CRYPT_ERROR_OPEN )
+		return;
+
+	/* Create the database keyset */
 	status = createDatabase( DRIVER_NAME, DATABASE_KEYSET_NAME_ASCII,
 							 DATABASE_ATTR_NAME, DATABASE_ATTR_CREATE, 
 							 DATABASE_ATTR_TAIL, FALSE );
@@ -196,14 +233,29 @@ static BOOLEAN createDatabaseKeyset( void )
 		  "Data source creation failed.\n\nYou need to create the "
 		  "keyset data source as described in the cryptlib manual\n"
 		  "for the database keyset tests to run." );
-
-	return( status );
 	}
 
-static BOOLEAN createDatabaseCertstore( void )
+static void checkCreateDatabaseCertstore( void )
 	{
+	CRYPT_KEYSET cryptKeyset;
 	int status;
 
+	/* Check whether the test certificate store database can be opened.  
+	   This can return a CRYPT_ARGERROR_PARAM3 as a normal condition since a 
+	   freshly-created database is empty and therefore can't be identified 
+	   as a certificate store until data is written to it */
+	status = cryptKeysetOpen( &cryptKeyset, CRYPT_UNUSED,
+							  CRYPT_KEYSET_ODBC_STORE, CERTSTORE_KEYSET_NAME,
+							  CRYPT_KEYOPT_READONLY );
+	if( cryptStatusOK( status ) )
+		{
+		cryptKeysetClose( cryptKeyset );
+		return;
+		}
+	if( status != CRYPT_ERROR_OPEN )
+		return;
+
+	/* Create the database keyset */
 	status = createDatabase( DRIVER_NAME, CERTSTORE_KEYSET_NAME_ASCII,
 							 CERTSTORE_ATTR_NAME, CERTSTORE_ATTR_CREATE, 
 							 CERTSTORE_ATTR_TAIL, FALSE );
@@ -221,8 +273,6 @@ static BOOLEAN createDatabaseCertstore( void )
 		  "certificate store data source as described in the\n"
 		  "cryptlib manual for the certificate management tests to "
 		  "run.\n" );
-
-	return( status );
 	}
 
 static void checkCreateDatabaseKeysets( void )
@@ -230,32 +280,55 @@ static void checkCreateDatabaseKeysets( void )
 	CRYPT_KEYSET cryptKeyset;
 	int status;
 
-	/* Try and open the test keyset */
-	status = cryptKeysetOpen( &cryptKeyset, CRYPT_UNUSED,
-							  CRYPT_KEYSET_ODBC, DATABASE_KEYSET_NAME,
-							  CRYPT_KEYOPT_READONLY );
-	if( cryptStatusOK( status ) )
-		cryptKeysetClose( cryptKeyset );
-	else
-		{
-		if( status == CRYPT_ERROR_OPEN )
-			createDatabaseKeyset();
-		}
+	/* Create the databases */
+	checkCreateDatabaseKeyset();
+	checkCreateDatabaseCertstore();
 
-	/* Try and open the test certificate store.  This can return a
-	   CRYPT_ARGERROR_PARAM3 as a normal condition since a freshly-created
-	   database is empty and therefore can't be identified as a certificate 
-	   store until data is written to it */
-	status = cryptKeysetOpen( &cryptKeyset, CRYPT_UNUSED,
-							  CRYPT_KEYSET_ODBC_STORE, CERTSTORE_KEYSET_NAME,
-							  CRYPT_KEYOPT_READONLY );
+	/* Create the keysets within the database */
+	status = cryptKeysetOpen( &cryptKeyset, CRYPT_UNUSED, 
+							  DATABASE_KEYSET_TYPE, DATABASE_KEYSET_NAME, 
+							  CRYPT_KEYOPT_CREATE );
 	if( cryptStatusOK( status ) )
+		{
+		printf( "Database keyset created within database '%s'.\n", 
+				DATABASE_KEYSET_NAME );
 		cryptKeysetClose( cryptKeyset );
+		}
 	else
 		{
-		if( status == CRYPT_ERROR_OPEN )
-			createDatabaseCertstore();
+		if( status != CRYPT_ERROR_DUPLICATE )
+			{
+			printf( "Error %d creating keyset within '%s' database.\n", status, 
+					DATABASE_KEYSET_NAME );
+			}
 		}
+	status = cryptKeysetOpen( &cryptKeyset, CRYPT_UNUSED, 
+							  CERTSTORE_KEYSET_TYPE, CERTSTORE_KEYSET_NAME, 
+							  CRYPT_KEYOPT_CREATE );
+	if( cryptStatusOK( status ) )
+		{
+		printf( "Certificate store keyset created within database '%s'.\n",
+				CERTSTORE_KEYSET_NAME );
+		cryptKeysetClose( cryptKeyset );
+		}
+	else
+		{
+		if( status != CRYPT_ERROR_DUPLICATE )
+			{
+			printf( "Error %d creating keyset within '%s' database.\n", status, 
+					CERTSTORE_KEYSET_NAME );
+			}
+		}
+	putchar( '\n' );
+	}
+
+/* External-access function for situations where a database keyset is 
+   needed, for example the PKI session tests */
+
+void initDatabaseKeysets( void )
+	{
+	/* Create the certificate store database if required */
+	checkCreateDatabaseCertstore();
 	}
 #endif /* Win32 with VC++ */
 
@@ -279,8 +352,9 @@ BOOLEAN testSelfTest( void )
 								TRUE );
 	if( cryptStatusError( status ) )
 		{
-		printf( "Attempt to perform cryptlib algorithm self-test failed "
-				"with error code %d, line %d.\n", status, __LINE__ );
+		fprintf( outputStream, "Attempt to perform cryptlib algorithm "
+				 "self-test failed with error code %d, line %d.\n", status, 
+				 __LINE__ );
 		return( FALSE );
 		}
 	status = cryptGetAttribute( CRYPT_UNUSED, CRYPT_OPTION_SELFTESTOK, 
@@ -290,11 +364,11 @@ BOOLEAN testSelfTest( void )
 		/* Unfortunately all that we can report at this point is that the
 		   self-test failed, we can't try each algorithm individually
 		   because the self-test has disabled the failed one(s) */
-		printf( "cryptlib algorithm self-test failed, line %d.\n", 
-				__LINE__ );
+		fprintf( outputStream, "cryptlib algorithm self-test failed, line "
+				 "%d.\n", __LINE__ );
 		return( FALSE );
 		}
-	puts( "cryptlib algorithm self-test succeeded.\n" );
+	fputs( "cryptlib algorithm self-test succeeded.\n\n", outputStream );
 
 	return( TRUE );
 	}
@@ -405,8 +479,8 @@ BOOLEAN testRandom( void )
 	{
 	if( !testRandomRoutines() )
 		{
-		puts( "The self-test will proceed without using a strong random "
-			  "number source.\n" );
+		fputs( "The self-test will proceed without using a strong random "
+			   "number source.\n\n", outputStream );
 
 		/* Kludge the randomness routines so we can continue the self-tests */
 		cryptAddRandom( "xyzzy", 5 );
@@ -500,15 +574,17 @@ BOOLEAN testConfig( void )
 
 		if( configOption[ i ].isNumeric )
 			{
-			status = cryptGetAttribute( CRYPT_UNUSED, configOption[ i ].option, 
-										&value );
+			status = cryptGetAttribute( CRYPT_UNUSED, 
+										configOption[ i ].option, &value );
 			if( cryptStatusError( status ) )
 				{
-				printf( "%s appears to be disabled/unavailable in this build.\n", 
-						configOption[ i ].name );
+				fprintf( outputStream, "%s appears to be "
+						 "disabled/unavailable in this build.\n", 
+						 configOption[ i ].name );
 				continue;
 				}
-			printf( "%s = %d.\n", configOption[ i ].name, value );
+			fprintf( outputStream, "%s = %d.\n", configOption[ i ].name, 
+					 value );
 			continue;
 			}
 		status = cryptGetAttributeString( CRYPT_UNUSED, 
@@ -516,17 +592,19 @@ BOOLEAN testConfig( void )
 										  buffer, &length );
 		if( cryptStatusError( status ) )
 			{
-			printf( "%s appears to be disabled/unavailable in this build.\n", 
-					configOption[ i ].name );
+			fprintf( outputStream, "%s appears to be disabled/unavailable "
+					 "in this build.\n", configOption[ i ].name );
 			continue;
 			}
 		assert( length < 256 );
 #ifdef UNICODE_STRINGS
 		buffer[ length / sizeof( wchar_t ) ] = TEXT( '\0' );
-		printf( "%s = %S.\n", configOption[ i ].name, buffer );
+		fprintf( outputStream, "%s = %S.\n", configOption[ i ].name, 
+				 buffer );
 #else
 		buffer[ length ] = '\0';
-		printf( "%s = %s.\n", configOption[ i ].name, buffer );
+		fprintf( outputStream, "%s = %s.\n", configOption[ i ].name, 
+				 buffer );
 #endif /* UNICODE_STRINGS */
 		}
 	printf( "\n" );
@@ -566,7 +644,7 @@ BOOLEAN testDevice( void )
 
 BOOLEAN testDevice( void )
 	{
-	puts( "Skipping test of crypto device routines...\n" );
+	fputs( "Skipping test of crypto device routines...\n", outputStream );
 	return( TRUE );
 	}
 #endif /* TEST_DEVICE */
@@ -603,8 +681,6 @@ BOOLEAN testMidLevel( void )
 		if( !testSignData() )
 			return( FALSE );
 		if( !testKeygen() )
-			return( FALSE );
-		if( !testKeygenAsync() )
 			return( FALSE );
 		}
 	/* No need for putchar, mid-level functions leave a blank line at end */
@@ -717,6 +793,8 @@ BOOLEAN testCert( void )
 		return( FALSE );
 	if( !testCertComplianceLevel() )
 		return( FALSE );
+	if( !testCertChainHandling() )
+		return( FALSE );
 	if( !testPKCS1Padding() )
 		return( FALSE );
 #if 0	/* This takes a while to run and produces a lot of output that won't
@@ -793,6 +871,8 @@ BOOLEAN testKeysetFile( void )
 	if( !testReadWriteFileKey() )
 		return( FALSE );
 	if( !testReadWriteAltFileKey() )
+		return( FALSE );
+	if( !testReadWritePGPFileKey() )
 		return( FALSE );
 	if( !testImportFileKey() )
 		return( FALSE );
@@ -952,11 +1032,17 @@ BOOLEAN testEnveloping( void )
 		return( FALSE );
 	if( !testPGPEnvelopePKCCryptImport() )
 		return( FALSE );
+	if( !testEnvelopePKCIterated() )
+		return( FALSE );
 	if( !testEnvelopeSign() )
 		return( FALSE );
-	if( !testEnvelopeSignAlgo() )
+	if( !testEnvelopeSignAlgos() )
+		return( FALSE );
+	if( !testEnvelopeSignHashUpgrade() )
 		return( FALSE );
 	if( !testEnvelopeSignOverflow() )
+		return( FALSE );
+	if( !testEnvelopeSignIndef() )
 		return( FALSE );
 	if( !testPGPEnvelopeSignedDataImport() )
 		return( FALSE );
@@ -975,6 +1061,8 @@ BOOLEAN testEnveloping( void )
 	if( !testCMSEnvelopeDualSign() )
 		return( FALSE );
 	if( !testCMSEnvelopeDetachedSig() )
+		return( FALSE );
+	if( !testCMSEnvelopeRefCount() )
 		return( FALSE );
 	if( !testCMSEnvelopeSignedDataImport() )
 		return( FALSE );
@@ -1023,8 +1111,6 @@ BOOLEAN testSessions( void )
 		}
 	if( !testSessionAttributes() )
 		return( FALSE );
-	if( !testSessionSSHv1() )
-		return( FALSE );
 	if( !testSessionSSH() )
 		return( FALSE );
 	if( !testSessionSSHClientCert() )
@@ -1038,6 +1124,8 @@ BOOLEAN testSessions( void )
 	if( !testSessionSSLLocalSocket() )
 		return( FALSE );
 	if( !testSessionTLS() )
+		return( FALSE );
+	if( !testSessionTLSLocalSocket() )
 		return( FALSE );
 	if( !testSessionTLS11() )
 		return( FALSE );
@@ -1086,8 +1174,6 @@ BOOLEAN testSessionsLoopback( void )
   #ifdef DATABASE_AUTOCONFIG
 	checkCreateDatabaseKeysets();	/* Needed for PKI tests */
   #endif /* DATABASE_AUTOCONFIG */
-	if( !testSessionSSHv1ClientServer() )
-		return( FALSE );
 	if( !testSessionSSHClientServer() )
 		return( FALSE );
 	if( !testSessionSSHClientServerDsaKey() )
@@ -1101,6 +1187,8 @@ BOOLEAN testSessionsLoopback( void )
 	if( !testSessionSSHClientServerExec() )
 		return( FALSE );
 	if( !testSessionSSHClientServerMultichannel() )
+		return( FALSE );
+	if( !testSessionSSHClientServerDebugCheck() )
 		return( FALSE );
 	if( !testSessionSSLClientServer() )
 		return( FALSE );
@@ -1116,15 +1204,23 @@ BOOLEAN testSessionsLoopback( void )
 		return( FALSE );
 	if( !testSessionTLS11ClientServer() )
 		return( FALSE );
+	if( !testSessionTLS11ClientCertClientServer() )
+		return( FALSE );
 	if( !testSessionTLS12ClientServer() )
 		return( FALSE );
 	if( !testSessionTLS12ClientCertClientServer() )
+		return( FALSE );
+	if( !testSessionTLS12ClientCertManualClientServer() )
+		return( FALSE );
+	if( !testSessionSSLClientServerDebugCheck() )
 		return( FALSE );
 	if( !testSessionHTTPCertstoreClientServer() )
 		return( FALSE );
 	if( !testSessionRTCSClientServer() )
 		return( FALSE );
 	if( !testSessionOCSPClientServer() )
+		return( FALSE );
+	if( !testSessionOCSPMulticertClientServer() )
 		return( FALSE );
 	if( !testSessionTSPClientServer() )
 		return( FALSE );
@@ -1134,6 +1230,10 @@ BOOLEAN testSessionsLoopback( void )
 		return( FALSE );
 	if( !testSessionSCEPCACertClientServer() )
 		return( FALSE );
+#if 0	/* Requires changes to the SCEP specification */
+	if( !testSessionSCEPRenewClientServer() )
+		return( FALSE );
+#endif /* 0 */
 	if( !testSessionCMPClientServer() )
 		return( FALSE );
 	if( !testSessionCMPSHA2ClientServer() )
@@ -1144,6 +1244,10 @@ BOOLEAN testSessionsLoopback( void )
 		return( FALSE );
 	if( !testSessionPNPPKICAClientServer() )
 		return( FALSE );
+#if 0	/* Full RA functionality not completely implemented yet */
+	if( !testSessionCMPRAClientServer() )
+		return( FALSE );
+#endif /* 0 */
 	if( !testSessionCMPFailClientServer() )
 		return( FALSE );
 
@@ -1203,4 +1307,118 @@ BOOLEAN testUsers( void )
 	puts( "Skipping test of user routines...\n" );
 	return( TRUE );
 	}
+
+/****************************************************************************
+*																			*
+*							Test Memory Fault-injection						*
+*																			*
+****************************************************************************/
+
+/* Test error-handling code paths by forcing memory-allocation faults at
+   every location in which cryptlib allocates memory.  Note that this test
+   can only be run if all of the cryptlib self-tests complete successfully,
+   since it injects memory faults until the self-tests report success */
+
+/*#define TEST_MEMFAULT	/* Undefine to perform memory-fault tests */
+
+#ifdef TEST_MEMFAULT
+
+#if !defined( TEST_SELFTEST ) || !defined( TEST_CERT ) || \
+	!defined( TEST_HIGHLEVEL )
+  #error Need to enable all tests for fault-allocation test.
+#endif /* Defines to indicate that all tests are enabled */
+
+BOOLEAN testInit( void )
+	{
+	int status;
+
+	status = cryptInit();
+	return( cryptStatusError( status ) ? FALSE : TRUE );
+	}
+
+#define FAULT_STARTFUNCTION	0
+#define FAULT_STARTINDEX	0
+
+typedef int ( *FUNCTION_PTR )( void );
+typedef struct {
+	FUNCTION_PTR function;
+	const char *functionName;
+	} FUNCTION_TBL;
+
+#define MK_FN( function )	{ function, #function }
+
+static const FUNCTION_TBL functionTbl[] = {
+	MK_FN( testInit ),
+	MK_FN( testSelfTest ),
+	MK_FN( testLowLevel ),
+	MK_FN( testRandom ),
+	MK_FN( testConfig ),
+	MK_FN( testDevice ),
+	MK_FN( testMidLevel ),
+	MK_FN( testCert ),
+	MK_FN( testKeysetFile ),
+	MK_FN( testKeysetDatabase ),
+	MK_FN( testCertMgmt ),
+	MK_FN( testHighLevel ),
+	MK_FN( testEnveloping ),
+	MK_FN( testSessions ),
+	MK_FN{ NULL )
+	};
+
+static void testMemFault( void )
+	{
+	int functionIndex;
+
+	/* Since we don't want to have tons of diagnostic output interspersed
+	   with the mem-fault output, we redirect the diagnostic output to
+	   /dev/null */
+	outputStream = fopen( "nul:", "w" );
+	assert( outputStream != NULL );
+
+	puts( "Testing memory fault injection..." );
+	for( functionIndex = FAULT_STARTFUNCTION; 
+		 functionTbl[ functionIndex ].function != NULL; 
+		 functionIndex++ )
+		{
+		int memFaultIndex;
+
+		for( memFaultIndex = FAULT_STARTINDEX; memFaultIndex < 10000; 
+			 memFaultIndex++ )
+			{
+			int status;
+
+			/* If we're testing something other than the cryptInit() 
+			   functionality then we need to initialise cryptlib first */
+			if( functionIndex != 0 )
+				{
+				/* Since we've already tested the init functionality, we 
+				   don't want to fault the init any more */
+				cryptSetMemFaultCount( 10000 );
+				status = cryptInit();
+				assert( cryptStatusOK( status ) );
+				}
+
+			/* Tell the debug-allocator to return an out-of-memory condition 
+			   after the given number of allocations */
+			printf( "%s: %d.\r", functionTbl[ functionIndex ].functionName, 
+					memFaultIndex );
+			cryptSetMemFaultCount( memFaultIndex );
+
+			/* Call the test function, with a memory fault at the given 
+			   memory allocation number */
+			status = functionTbl[ functionIndex ].function();
+			if( status != TRUE )
+				{
+				if( functionIndex != 0 )
+					cryptEnd();
+				continue;
+				}
+			cryptEnd();
+			break;
+			}
+		assert( memFaultIndex < 10000 );
+		putchar( '\n' );
+		}
+	}
+#endif /* TEST_MEMFAULT	*/
 #endif /* TEST_USER */

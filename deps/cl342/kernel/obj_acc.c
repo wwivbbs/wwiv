@@ -201,10 +201,10 @@ static int checkAccessValid( IN_HANDLE const int objectHandle,
 
 CHECK_RETVAL \
 static int getObject( IN_HANDLE const int objectHandle, 
-					  IN_ENUM( OBJECT ) const OBJECT_TYPE type,
+					  IN_ENUM( OBJECT_TYPE ) const OBJECT_TYPE type,
 					  IN_ENUM( ACCESS_CHECK ) const ACCESS_CHECK_TYPE checkType, 
-					  OUT_OPT_PTR_OPT void **objectPtr, 
-					  IN_INT_Z const int refCount, 
+					  OUT_OPT_PTR_COND void **objectPtr, 
+					  IN_INT_OPT const int refCount, 
 					  IN_ERROR const int errorCode )
 	{
 	OBJECT_INFO *objectTable, *objectInfoPtr;
@@ -220,10 +220,12 @@ static int getObject( IN_HANDLE const int objectHandle,
 
 	/* Preconditions: It's a valid object */
 	REQUIRES( isValidHandle( objectHandle ) );
+#ifndef CONFIG_FUZZ		/* To directly inject data into objects */
 	REQUIRES( isValidType( type ) && \
 			  ( type == OBJECT_TYPE_CONTEXT || \
 				type == OBJECT_TYPE_CERTIFICATE || \
 				type == OBJECT_TYPE_DEVICE || type == OBJECT_TYPE_USER ) );
+#endif /* CONFIG_FUZZ */
 	REQUIRES( checkType > ACCESS_CHECK_NONE && \
 			  checkType < ACCESS_CHECK_LAST );
 	REQUIRES( ( ( objectHandle == SYSTEM_OBJECT_HANDLE || \
@@ -244,6 +246,7 @@ static int getObject( IN_HANDLE const int objectHandle,
 	/* Perform similar access checks to the ones performed in
 	   krnlSendMessage(), as well as situation-specific additional checks 
 	   for correct object types */
+#ifndef CONFIG_FUZZ		/* To directly inject data into objects */
 	status = checkAccessValid( objectHandle, checkType, errorCode );
 	if( cryptStatusError( status ) )
 		{
@@ -251,6 +254,9 @@ static int getObject( IN_HANDLE const int objectHandle,
 		THREAD_NOTIFY_CANCELLED( objectHandle );
 		retIntError_Ext( status );
 		}
+#else
+	status = CRYPT_OK;
+#endif /* CONFIG_FUZZ */
 
 	/* Perform additional checks for correct object types */
 	if( ( ( objectHandle == SYSTEM_OBJECT_HANDLE || \
@@ -267,20 +273,25 @@ static int getObject( IN_HANDLE const int objectHandle,
 	objectInfoPtr = &objectTable[ objectHandle ];
 
 	/* Inner precondition: The object is of the requested type */
-	REQUIRES( objectInfoPtr->type == type && \
-			 ( objectInfoPtr->type == OBJECT_TYPE_CONTEXT || \
-			   objectInfoPtr->type == OBJECT_TYPE_CERTIFICATE || \
-			   objectInfoPtr->type == OBJECT_TYPE_DEVICE || \
-			   objectInfoPtr->type == OBJECT_TYPE_USER ) );
+#ifndef CONFIG_FUZZ		/* To directly inject data into objects */
+	REQUIRES_MUTEX( objectInfoPtr->type == type && \
+					( objectInfoPtr->type == OBJECT_TYPE_CONTEXT || \
+					   objectInfoPtr->type == OBJECT_TYPE_CERTIFICATE || \
+					   objectInfoPtr->type == OBJECT_TYPE_DEVICE || \
+					   objectInfoPtr->type == OBJECT_TYPE_USER ), 
+					objectTable );
+#endif /* CONFIG_FUZZ */
 
 	/* If the object is busy, wait for it to become available */
 	if( isInUse( objectHandle ) && !isObjectOwner( objectHandle ) )
-		status = waitForObject( objectHandle, &objectInfoPtr );
-	if( cryptStatusError( status ) )
 		{
-		MUTEX_UNLOCK( objectTable );
-		THREAD_NOTIFY_CANCELLED( objectHandle );
-		return( status );
+		status = waitForObject( objectHandle, &objectInfoPtr );
+		if( cryptStatusError( status ) )
+			{
+			MUTEX_UNLOCK( objectTable );
+			THREAD_NOTIFY_CANCELLED( objectHandle );
+			return( status );
+			}
 		}
 
 	/* If it's an external access to certificate/device info or an internal 
@@ -293,9 +304,9 @@ static int getObject( IN_HANDLE const int objectHandle,
 		{
 		/* If we're resuming use of an object that we suspended to allow 
 		   others access, reset the reference count */
-		REQUIRES( checkType == ACCESS_CHECK_SUSPEND );
-		REQUIRES( objectInfoPtr->lockCount == 0 );
-		REQUIRES( refCount > 0 && refCount < 100 );
+		REQUIRES_MUTEX( checkType == ACCESS_CHECK_SUSPEND, objectTable );
+		REQUIRES_MUTEX( objectInfoPtr->lockCount == 0, objectTable );
+		REQUIRES_MUTEX( refCount > 0 && refCount < 100, objectTable );
 
 		objectInfoPtr->lockCount = refCount;
 		}
@@ -307,7 +318,8 @@ static int getObject( IN_HANDLE const int objectHandle,
 
 	MUTEX_UNLOCK( objectTable );
 	THREAD_NOTIFY_ACQUIRED( objectHandle );
-	return( status );
+
+	return( CRYPT_OK );
 	}
 
 /* Release an object that we previously acquired directly.  We don't require 
@@ -321,7 +333,9 @@ static int releaseObject( IN_HANDLE const int objectHandle,
 						  OUT_OPT_INT_Z int *refCount )
 	{
 	OBJECT_INFO *objectTable, *objectInfoPtr;
+#ifndef CONFIG_FUZZ
 	int status;
+#endif /* CONFIG_FUZZ */
 	DECLARE_ORIGINAL_INT( lockCount );
 
 	assert( ( ( checkType == ACCESS_CHECK_EXTACCESS || \
@@ -346,12 +360,14 @@ static int releaseObject( IN_HANDLE const int objectHandle,
 	/* Preconditions: It's a valid object in use by the caller.  Since these 
 	   checks require access to the object table we can only perform them 
 	   after we've locked it */
-	REQUIRES( isValidObject( objectHandle ) );
-	REQUIRES( isInUse( objectHandle ) && isObjectOwner( objectHandle ) );
+	REQUIRES_MUTEX( isValidObject( objectHandle ), objectTable );
+	REQUIRES_MUTEX( isInUse( objectHandle ) && \
+					isObjectOwner( objectHandle ), objectTable );
 
 	/* Perform similar access checks to the ones performed in
 	   krnlSendMessage(), as well as situation-specific additional checks 
 	   for correct object types */
+#ifndef CONFIG_FUZZ		/* To directly inject data into objects */
 	status = checkAccessValid( objectHandle, checkType, 
 							   CRYPT_ERROR_PERMISSION );
 	if( cryptStatusError( status ) )
@@ -360,6 +376,7 @@ static int releaseObject( IN_HANDLE const int objectHandle,
 		THREAD_NOTIFY_CANCELLED( objectHandle );
 		retIntError_Ext( status );
 		}
+#endif /* CONFIG_FUZZ */
 
 	/* Perform additional checks for correct object types.  The ownership 
 	   check in checkAccessValid() simply checks whether the current thread 
@@ -387,22 +404,23 @@ static int releaseObject( IN_HANDLE const int objectHandle,
 
 		/* Postcondition: The object's lock count has been decremented and 
 		   is non-negative */
-		ENSURES( objectInfoPtr->lockCount == \
-								ORIGINAL_VALUE( lockCount ) - 1 );
-		ENSURES( objectInfoPtr->lockCount >= 0 && \
-				 objectInfoPtr->lockCount < MAX_INTLENGTH );
+		ENSURES_MUTEX( objectInfoPtr->lockCount == \
+							ORIGINAL_VALUE( lockCount ) - 1, objectTable );
+		ENSURES_MUTEX( objectInfoPtr->lockCount >= 0 && \
+					   objectInfoPtr->lockCount < MAX_INTLENGTH, \
+					   objectTable );
 		}
 	else
 		{
 		/* It's an external access to free the object for access by others, 
 		   clear the reference count */
-		REQUIRES( checkType == ACCESS_CHECK_SUSPEND );
+		REQUIRES_MUTEX( checkType == ACCESS_CHECK_SUSPEND, objectTable );
 
 		*refCount = objectInfoPtr->lockCount;
 		objectInfoPtr->lockCount = 0;
 
 		/* Postcondition: The object has been completely released */
-		ENSURES( !isInUse( objectHandle ) );
+		ENSURES_MUTEX( !isInUse( objectHandle ), objectTable );
 		}
 
 	MUTEX_UNLOCK( objectTable );
@@ -442,8 +460,8 @@ void endObjectAltAccess( void )
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int krnlAcquireObject( IN_HANDLE const int objectHandle, 
-					   IN_ENUM( OBJECT ) const OBJECT_TYPE type,
-					   OUT_OPT_PTR void **objectPtr, 
+					   IN_ENUM( OBJECT_TYPE ) const OBJECT_TYPE type,
+					   OUT_PTR_COND void **objectPtr, 
 					   IN_ERROR const int errorCode )
 	{
 	REQUIRES( objectPtr != NULL );	/* getObject() allows it to be NULL */
@@ -452,6 +470,7 @@ int krnlAcquireObject( IN_HANDLE const int objectHandle,
 					   objectPtr, CRYPT_UNUSED, errorCode ) );
 	}
 
+RETVAL \
 int krnlReleaseObject( IN_HANDLE const int objectHandle )
 	{
 	return( releaseObject( objectHandle, ACCESS_CHECK_EXTACCESS, NULL ) );
@@ -462,7 +481,7 @@ int krnlReleaseObject( IN_HANDLE const int objectHandle )
    'attributes inconsistent with previous declaration' for these two 
    functions */
 
-STDC_NONNULL_ARG( ( 2 ) ) \
+RETVAL STDC_NONNULL_ARG( ( 2 ) ) \
 int krnlSuspendObject( IN_HANDLE const int objectHandle, 
 					   OUT_INT_Z int *refCount )
 	{
@@ -564,7 +583,8 @@ int extractKeyData( IN_HANDLE const CRYPT_CONTEXT iCryptContext,
 			if( contextInfoPtr->ctxConv->userKeyLength < MIN_KEYSIZE || \
 				contextInfoPtr->ctxConv->userKeyLength > keyDataLen )
 				{
-				DEBUG_DIAG(( "Key data is too long to export" ));
+				DEBUG_DIAG(( "Conventional-encryption key data is too long "
+							 "to export" ));
 				assert( DEBUG_WARN );
 				status = CRYPT_ERROR_OVERFLOW;
 				}
@@ -579,7 +599,7 @@ int extractKeyData( IN_HANDLE const CRYPT_CONTEXT iCryptContext,
 			if( contextInfoPtr->ctxMAC->userKeyLength < MIN_KEYSIZE || \
 				contextInfoPtr->ctxMAC->userKeyLength > keyDataLen )
 				{
-				DEBUG_DIAG(( "Key data is too long to export" ));
+				DEBUG_DIAG(( "MAC key data is too long to export" ));
 				assert( DEBUG_WARN );
 				status = CRYPT_ERROR_OVERFLOW;
 				}
@@ -594,7 +614,7 @@ int extractKeyData( IN_HANDLE const CRYPT_CONTEXT iCryptContext,
 			if( contextInfoPtr->ctxGeneric->genericSecretLength < MIN_KEYSIZE || \
 				contextInfoPtr->ctxGeneric->genericSecretLength > keyDataLen )
 				{
-				DEBUG_DIAG(( "Key data is too long to export" ));
+				DEBUG_DIAG(( "Generic key data is too long to export" ));
 				assert( DEBUG_WARN );
 				status = CRYPT_ERROR_OVERFLOW;
 				}

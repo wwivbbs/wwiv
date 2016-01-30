@@ -37,8 +37,9 @@ static const MAP_TABLE reqClibReqMapTbl[] = {
 	{ CRYPT_ERROR, CRYPT_ERROR }, { CRYPT_ERROR, CRYPT_ERROR }
 	};
 
-CHECK_RETVAL_RANGE( CRYPT_REQUESTYPE_NONE, CRYPT_REQUESTYPE_LAST ) \
-static int reqToClibReq( IN_ENUM_OPT( CTAG_PB ) const CMP_MESSAGE_TYPE reqType )
+CHECK_RETVAL_RANGE( CRYPT_REQUESTTYPE_NONE, CRYPT_REQUESTTYPE_LAST ) \
+static int reqToClibReq( IN_ENUM_OPT( CMP_MESSAGE ) \
+							const CMP_MESSAGE_TYPE reqType )
 	{
 	int value, status;
 
@@ -84,6 +85,7 @@ int initServerAuthentMAC( INOUT SESSION_INFO *sessionInfoPtr,
 		zeroise( protocolInfo->altMacKey, CRYPT_MAX_HASHSIZE );
 		protocolInfo->altMacKeySize = 0;
 		}
+	protocolInfo->userIsRA = FALSE;
 
 	/* Get the user information for the user identified by the user ID from 
 	   the certificate store.  If we get a not-found error we report it as 
@@ -183,7 +185,7 @@ int initServerAuthentSign( INOUT SESSION_INFO *sessionInfoPtr,
 	MESSAGE_KEYMGMT_INFO getkeyInfo;
 	MESSAGE_DATA msgData;
 	char userName[ CRYPT_MAX_TEXTSIZE + 8 ];
-	int status;
+	int value, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( protocolInfo, sizeof( CMP_PROTOCOL_INFO ) ) );
@@ -200,6 +202,7 @@ int initServerAuthentSign( INOUT SESSION_INFO *sessionInfoPtr,
 		krnlSendNotifier( cmpInfo->userInfo, IMESSAGE_DECREFCOUNT );
 		cmpInfo->userInfo = CRYPT_ERROR;
 		}
+	protocolInfo->userIsRA = FALSE;
 
 	/* Get the user information for the user that originally authorised the 
 	   issue of the certificate that signed the request.  This serves two 
@@ -225,7 +228,8 @@ int initServerAuthentSign( INOUT SESSION_INFO *sessionInfoPtr,
 		}
 	cmpInfo->userInfo = getkeyInfo.cryptHandle;
 
-	/* Update the user ID from the PKI user object */
+	/* Update the user ID from the PKI user object and record whether the 
+	   user is an RA rather than a standard user */
 	setMessageData( &msgData, userName, CRYPT_MAX_TEXTSIZE );
 	status = krnlSendMessage( getkeyInfo.cryptHandle, 
 							  IMESSAGE_GETATTRIBUTE_S, &msgData,
@@ -244,6 +248,11 @@ int initServerAuthentSign( INOUT SESSION_INFO *sessionInfoPtr,
 				  "Couldn't copy PKI user data from PKI user object to "
 				  "session object" ) );
 		}
+	status = krnlSendMessage( getkeyInfo.cryptHandle, 
+							  IMESSAGE_GETATTRIBUTE, &value,
+							  CRYPT_CERTINFO_PKIUSER_RA );
+	if( cryptStatusOK( status ) && value == TRUE )
+		protocolInfo->userIsRA = TRUE;
 
 	/* Get the public key identified by the certificate ID from the 
 	   certificate store.  This verifies the assumption that the owner of an 
@@ -317,8 +326,8 @@ static void sendErrorResponse( INOUT SESSION_INFO *sessionInfoPtr,
 		initHttpDataInfo( &httpDataInfo, sessionInfoPtr->receiveBuffer,
 						  sessionInfoPtr->receiveBufSize );
 		httpDataInfo.reqStatus = errorStatus;
-		swrite( &sessionInfoPtr->stream, &httpDataInfo, 
-				sizeof( HTTP_DATA_INFO ) );
+		( void ) swrite( &sessionInfoPtr->stream, &httpDataInfo, 
+						 sizeof( HTTP_DATA_INFO ) );
 		}
 	else
 		{

@@ -1,17 +1,15 @@
 /****************************************************************************
 *																			*
 *						Certificate Import/Export Routines					*
-*						Copyright Peter Gutmann 1997-2008					*
+*						Copyright Peter Gutmann 1997-2012					*
 *																			*
 ****************************************************************************/
 
 #if defined( INC_ALL )
   #include "cert.h"
-  #include "asn1.h"
   #include "asn1_ext.h"
 #else
   #include "cert/cert.h"
-  #include "enc_dec/asn1.h"
   #include "enc_dec/asn1_ext.h"
 #endif /* Compiler-specific includes */
 
@@ -23,13 +21,15 @@
 *																			*
 ****************************************************************************/
 
+#ifdef USE_BASE64
+
 /* Decode a base64/PEM/SMIME-encoded certificate into a temporary buffer */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 static int decodeCertificate( IN_BUFFER( certObjectLength ) const void *certObject, 
-							  IN_LENGTH const int certObjectLength,
-							  OUT_OPT_PTR void **newObject, 
-							  OUT_LENGTH_Z int *newObjectLength )
+							  IN_DATALENGTH const int certObjectLength,
+							  OUT_PTR_COND void **newObject, 
+							  OUT_DATALENGTH_Z int *newObjectLength )
 	{
 	void *decodedObjectPtr;
 	int decodedLength, status;
@@ -38,7 +38,8 @@ static int decodeCertificate( IN_BUFFER( certObjectLength ) const void *certObje
 	assert( isWritePtr( newObject, sizeof( void * ) ) );
 	assert( isWritePtr( newObjectLength, sizeof( int ) ) );
 
-	REQUIRES( certObjectLength > 0 && certObjectLength < MAX_INTLENGTH );
+	REQUIRES( certObjectLength >= MIN_CERTSIZE && \
+			  certObjectLength < MAX_BUFFER_SIZE );
 
 	/* Clear return values */
 	*newObject = NULL;
@@ -50,7 +51,8 @@ static int decodeCertificate( IN_BUFFER( certObjectLength ) const void *certObje
 							  &decodedLength );
 	if( cryptStatusError( status ) )
 		return( status );
-	if( decodedLength < 64 || decodedLength >= MAX_INTLENGTH_SHORT )
+	if( decodedLength < MIN_CERTSIZE || \
+		decodedLength >= MAX_INTLENGTH_SHORT )
 		return( CRYPT_ERROR_UNDERFLOW );
 	if( ( decodedObjectPtr = clAlloc( "decodeCertificate", \
 									  decodedLength + 8 ) ) == NULL )
@@ -66,7 +68,8 @@ static int decodeCertificate( IN_BUFFER( certObjectLength ) const void *certObje
 		/* Make sure that the decoded data length is still valid.  We don't 
 		   allow long lengths here because we shouldn't be getting things 
 		   like mega-CRLs as email messages */
-		if( decodedLength < 64 || decodedLength >= MAX_INTLENGTH_SHORT )
+		if( decodedLength < MIN_CERTSIZE || \
+			decodedLength >= MAX_INTLENGTH_SHORT )
 			status = CRYPT_ERROR_BADDATA;
 		}
 	if( cryptStatusError( status ) )
@@ -90,9 +93,9 @@ static int decodeCertificate( IN_BUFFER( certObjectLength ) const void *certObje
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 static int checkTextEncoding( IN_BUFFER( certObjectLength ) const void *certObject, 
-							  IN_LENGTH const int certObjectLength,
+							  IN_DATALENGTH const int certObjectLength,
 							  OUT_PTR void **newObject, 
-							  OUT_LENGTH int *newObjectLength )
+							  OUT_DATALENGTH_Z int *newObjectLength )
 	{
 	CRYPT_CERTFORMAT_TYPE format;
 	void *asciiObject = NULL;
@@ -102,7 +105,8 @@ static int checkTextEncoding( IN_BUFFER( certObjectLength ) const void *certObje
 	assert( isWritePtr( newObject, sizeof( void * ) ) );
 	assert( isWritePtr( newObjectLength, sizeof( int ) ) );
 
-	REQUIRES( certObjectLength > 0 && certObjectLength < MAX_INTLENGTH );
+	REQUIRES( certObjectLength >= MIN_CERTSIZE && \
+			  certObjectLength < MAX_BUFFER_SIZE );
 
 	/* Initialise the return values to the default settings, the identity
 	   transformation */
@@ -146,7 +150,7 @@ static int checkTextEncoding( IN_BUFFER( certObjectLength ) const void *certObje
 	/* Make sure that the length after (potentially) skipping the header is 
 	   still valid, since this will now be different from the length that 
 	   was validated by the kernel */
-	if( certObjectLength - offset < 64 || \
+	if( certObjectLength - offset < MIN_CERTSIZE || \
 		certObjectLength - offset > MAX_INTLENGTH )
 		{
 		if( asciiObject != NULL )
@@ -189,9 +193,9 @@ static int checkTextEncoding( IN_BUFFER( certObjectLength ) const void *certObje
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 static int checkTextEncoding( IN_BUFFER( certObjectLength ) const void *certObject, 
-							  IN_LENGTH const int certObjectLength,
+							  IN_DATALENGTH const int certObjectLength,
 							  OUT_PTR void **objectData, 
-							  OUT_LENGTH int *objectDataLength )
+							  OUT_DATALENGTH int *objectDataLength )
 	{
 	CRYPT_CERTFORMAT_TYPE format;
 	int offset, status;
@@ -200,7 +204,8 @@ static int checkTextEncoding( IN_BUFFER( certObjectLength ) const void *certObje
 	assert( isWritePtr( objectData, sizeof( void * ) ) );
 	assert( isWritePtr( objectDataLength, sizeof( int ) ) );
 
-	REQUIRES( certObjectLength > 0 && certObjectLength < MAX_INTLENGTH );
+	REQUIRES( certObjectLength >= MIN_CERTSIZE && \
+			  certObjectLength < MAX_BUFFER_SIZE );
 
 	/* Initialise the return values to the default settings, the identity
 	   transformation */
@@ -220,7 +225,7 @@ static int checkTextEncoding( IN_BUFFER( certObjectLength ) const void *certObje
 	/* Make sure that the length after (potentially) skipping the header is 
 	   still valid, since this will now be different from the length that 
 	   was validated by the kernel */
-	if( certObjectLength - offset < 64 || \
+	if( certObjectLength - offset < MIN_CERTSIZE || \
 		certObjectLength - offset > MAX_INTLENGTH )
 		return( CRYPT_ERROR_UNDERFLOW );
 
@@ -236,6 +241,7 @@ static int checkTextEncoding( IN_BUFFER( certObjectLength ) const void *certObje
 			OK_SPECIAL : CRYPT_OK );
 	}
 #endif /* EBCDIC_CHARS */
+#endif /* USE_BASE64 */
 
 /****************************************************************************
 *																			*
@@ -249,18 +255,18 @@ static int checkTextEncoding( IN_BUFFER( certObjectLength ) const void *certObje
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int importCert( IN_BUFFER( certObjectLength ) const void *certObject, 
-				IN_LENGTH const int certObjectLength,
+				IN_DATALENGTH const int certObjectLength,
 				OUT_HANDLE_OPT CRYPT_CERTIFICATE *certificate,
 				IN_HANDLE const CRYPT_USER iCryptOwner,
-				IN_KEYID const CRYPT_KEYID_TYPE keyIDtype,
+				IN_KEYID_OPT const CRYPT_KEYID_TYPE keyIDtype,
 				IN_BUFFER_OPT( keyIDlength ) const void *keyID, 
 				IN_LENGTH_KEYID_Z const int keyIDlength,
-				IN_FLAGS( KEYMGMT ) const int options,
+				IN_FLAGS_Z( KEYMGMT ) const int options,
 				IN_ENUM_OPT( CRYPT_CERTTYPE ) \
 					const CRYPT_CERTTYPE_TYPE formatHint )
 	{
 	CERT_INFO *certInfoPtr;
-	CRYPT_CERTTYPE_TYPE type;
+	CRYPT_CERTTYPE_TYPE type, baseType;
 	STREAM stream;
 	READCERT_FUNCTION readCertFunction;
 	BOOLEAN isDecodedObject = FALSE;
@@ -275,7 +281,9 @@ int importCert( IN_BUFFER( certObjectLength ) const void *certObject,
 			( keyIDtype != CRYPT_KEYID_NONE && \
 			  isReadPtr( keyID, keyIDlength ) ) );
 
-	REQUIRES( certObjectLength > 0 && certObjectLength < MAX_INTLENGTH );
+	REQUIRES( certObjectLength >= 16 && \
+			  certObjectLength < MAX_BUFFER_SIZE );
+			  /* May be CMS attribute (short) or a mega-CRL (long ) */
 	REQUIRES( iCryptOwner == DEFAULTUSER_OBJECT_HANDLE || \
 			  isHandleRangeValid( iCryptOwner ) );
 	REQUIRES( ( keyIDtype == CRYPT_KEYID_NONE && \
@@ -286,7 +294,7 @@ int importCert( IN_BUFFER( certObjectLength ) const void *certObject,
 				keyIDlength >= MIN_NAME_LENGTH && \
 				keyIDlength < MAX_ATTRIBUTE_SIZE ) );
 	REQUIRES( options >= KEYMGMT_FLAG_NONE && options < KEYMGMT_FLAG_MAX && \
-			  ( options & ~KEYMGMT_MASK_USAGEOPTIONS ) == 0 );
+			  ( options & ~KEYMGMT_MASK_CERTOPTIONS ) == 0 );
 	REQUIRES( ( keyIDtype == CRYPT_KEYID_NONE && \
 				options == KEYMGMT_FLAG_NONE ) || \
 			  ( keyIDtype != CRYPT_KEYID_NONE && \
@@ -309,6 +317,7 @@ int importCert( IN_BUFFER( certObjectLength ) const void *certObject,
 	/* If it's not a pre-specified or special-case format, check whether 
 	   it's some form of encoded certificate object, and decode it if 
 	   required */
+#ifdef USE_BASE64
 	if( formatHint == CRYPT_CERTTYPE_NONE )
 		{
 		status = checkTextEncoding( certObject, certObjectLength,
@@ -329,27 +338,33 @@ int importCert( IN_BUFFER( certObjectLength ) const void *certObject,
 			isDecodedObject = TRUE;
 			}		
 		}
+#endif /* USE_BASE64 */
 
-	/* Determine the object's type and length and check the encoding unless 
-	   we're running in oblivious mode (qui omnes insidias timet in nullas 
-	   incidit - Syrus).  In addition we can't perform the check for SSL 
-	   certificate chains because there's SSL length data between each 
-	   certificate, so it has to be performed later when each certificate 
-	   in the chain is read */
+	/* Check the object's encoding unless we're running in oblivious mode 
+	   (qui omnes insidias timet in nullas incidit - Syrus).  In addition we 
+	   can't perform the check for SSL certificate chains because there's 
+	   SSL length data between each certificate, so it has to be performed 
+	   later when each certificate in the chain is read */
+#ifndef CONFIG_FUZZ
+	if( complianceLevel > CRYPT_COMPLIANCELEVEL_OBLIVIOUS && \
+		formatHint != CRYPT_ICERTTYPE_SSL_CERTCHAIN )
+		{
+		status = objectLength = \
+			checkObjectEncoding( certObjectPtr, objectLength );
+		if( cryptStatusError( status ) )
+			{
+			if( isDecodedObject )
+				clFree( "importCert", certObjectPtr );
+			return( status );
+			}
+		}
+#endif /* CONFIG_FUZZ */
+
+	/* Determine the object's type and length */
 	sMemConnect( &stream, certObjectPtr, objectLength );
 	status = getCertObjectInfo( &stream, &offset, &length, &type, 
 								formatHint );
 	sMemDisconnect( &stream );
-	if( cryptStatusOK( status ) && \
-		complianceLevel > CRYPT_COMPLIANCELEVEL_OBLIVIOUS && \
-		formatHint != CRYPT_ICERTTYPE_SSL_CERTCHAIN )
-		{
-		ENSURES( rangeCheckZ( offset, length, objectLength ) );
-		if( cryptStatusError( \
-				checkObjectEncoding( ( BYTE * ) certObjectPtr + offset, 
-									 length ) ) )
-			status = CRYPT_ERROR_BADDATA;
-		}
 	if( cryptStatusError( status ) )
 		{
 		if( isDecodedObject )
@@ -357,17 +372,38 @@ int importCert( IN_BUFFER( certObjectLength ) const void *certObject,
 		return( status );
 		}
 
+	/* If we're fuzzing the base64 decoding then we can exit now.  We exit 
+	   with an error code since we haven't actually created a certificate at 
+	   this point */
+#ifdef CONFIG_FUZZ
+	if( isDecodedObject )
+		{
+		clFree( "importCert", certObjectPtr );
+		return( CRYPT_ERROR_BADDATA );
+		}
+#endif /* CONFIG_FUZZ */
+
+	/* Some of the certificate types have multiple formats that are mapped 
+	   to a single base type, for example the various ways of representing
+	   a certificate chain that all end up as a CRYPT_CERTTYPE_CERTCHAIN.
+	   Before we continue we have to sort out what input type will end up as
+	   which base type */
+	switch( type )
+		{
+		case CRYPT_ICERTTYPE_CMS_CERTSET:
+		case CRYPT_ICERTTYPE_SSL_CERTCHAIN:
+			baseType = CRYPT_CERTTYPE_CERTCHAIN;
+			break;
+
+		default:
+			baseType = type;
+			break;
+		}
+
 	/* If it's a certificate chain this is handled specially since we need 
 	   to import a plurality of certificates at once */
-	if( type == CRYPT_CERTTYPE_CERTCHAIN || \
-		type == CRYPT_ICERTTYPE_CMS_CERTSET || \
-		type == CRYPT_ICERTTYPE_SSL_CERTCHAIN )
+	if( baseType == CRYPT_CERTTYPE_CERTCHAIN )
 		{
-		const int extraOptions = \
-			( formatHint == CRYPT_ICERTTYPE_DATAONLY || \
-			  formatHint == CRYPT_ICERTTYPE_CTL ) ? \
-			  KEYMGMT_FLAG_DATAONLY_CERT : KEYMGMT_FLAG_NONE;
-
 		/* Read the certificate chain into a collection of internal 
 		   certificate objects.  This returns a handle to the leaf 
 		   certificate in the chain with the remaining certificates being 
@@ -378,11 +414,8 @@ int importCert( IN_BUFFER( certObjectLength ) const void *certObject,
 		   import format was */
 		ENSURES( rangeCheckZ( offset, length, objectLength ) );
 		sMemConnect( &stream, ( BYTE * ) certObjectPtr + offset, length );
-		if( type == CRYPT_CERTTYPE_CERTCHAIN )
-			readSequence( &stream, NULL );	/* Skip the outer wrapper */
 		status = readCertChain( &stream, certificate, iCryptOwner, type, 
-								keyIDtype, keyID, keyIDlength, 
-								options | extraOptions );
+								keyIDtype, keyID, keyIDlength, options );
 		sMemDisconnect( &stream );
 		if( isDecodedObject )
 			clFree( "importCert", certObjectPtr );
@@ -393,7 +426,7 @@ int importCert( IN_BUFFER( certObjectLength ) const void *certObject,
 			 keyIDlength == 0 );
 
 	/* Select the function to use to read the certificate object */
-	readCertFunction = getCertReadFunction( type );
+	readCertFunction = getCertReadFunction( baseType );
 	if( readCertFunction == NULL )
 		{
 		/* In theory this should be an internal error if there's no decode 
@@ -426,7 +459,9 @@ int importCert( IN_BUFFER( certObjectLength ) const void *certObject,
 		}
 
 	/* Create the certificate object */
-	status = createCertificateInfo( &certInfoPtr, iCryptOwner, type );
+	status = createCertificateInfo( &certInfoPtr, iCryptOwner, 
+						( options & KEYMGMT_FLAG_CERT_AS_CERTCHAIN ) ? \
+						  CRYPT_CERTTYPE_CERTCHAIN : baseType );
 	if( cryptStatusError( status ) )
 		{
 		if( isDecodedObject )
@@ -434,13 +469,12 @@ int importCert( IN_BUFFER( certObjectLength ) const void *certObject,
 		clFree( "importCert", certBuffer );
 		return( status );
 		}
-	*certificate = status;
+	*certificate = certInfoPtr->objectHandle;
 
 	/* If we're doing a deferred read of the public key components (they'll
 	   be decoded later when we know whether we need them) set the data-only
 	   flag to ensure that we don't try to decode them */
-	if( formatHint == CRYPT_ICERTTYPE_DATAONLY || \
-		formatHint == CRYPT_ICERTTYPE_CTL )
+	if( options & KEYMGMT_FLAG_DATAONLY_CERT )
 		certInfoPtr->flags |= CERT_FLAG_DATAONLY;
 
 	/* If we're reading a single entry from a CRL, indicate that the 
@@ -460,19 +494,19 @@ int importCert( IN_BUFFER( certObjectLength ) const void *certObject,
 	   readXXX() functions will record pointers to various required encoded 
 	   fields */
 	sMemConnect( &stream, certBuffer, length );
-	if( type != CRYPT_CERTTYPE_CMS_ATTRIBUTES && \
-		type != CRYPT_CERTTYPE_RTCS_REQUEST && \
-		type != CRYPT_CERTTYPE_RTCS_RESPONSE )
+	if( baseType != CRYPT_CERTTYPE_CMS_ATTRIBUTES && \
+		baseType != CRYPT_CERTTYPE_RTCS_REQUEST && \
+		baseType != CRYPT_CERTTYPE_RTCS_RESPONSE )
 		{
 		/* Skip the outer wrapper */
 		readLongSequence( &stream, NULL );
 		}
 	status = readCertFunction( &stream, certInfoPtr );
 	if( cryptStatusOK( status ) && \
-		( type == CRYPT_CERTTYPE_CERTIFICATE || \
-		  type == CRYPT_CERTTYPE_ATTRIBUTE_CERT || \
-		  type == CRYPT_CERTTYPE_CRL || \
-		  type == CRYPT_CERTTYPE_CERTREQUEST ) )
+		( baseType == CRYPT_CERTTYPE_CERTIFICATE || \
+		  baseType == CRYPT_CERTTYPE_ATTRIBUTE_CERT || \
+		  baseType == CRYPT_CERTTYPE_CRL || \
+		  baseType == CRYPT_CERTTYPE_CERTREQUEST ) )
 		{
 		CRYPT_ALGO_TYPE dummyAlgo1, dummyAlgo2;
 		int dummyParam;
@@ -581,8 +615,8 @@ int importCert( IN_BUFFER( certObjectLength ) const void *certObject,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3, 5 ) ) \
 int exportCert( OUT_BUFFER_OPT( certObjectMaxLength, *certObjectLength ) \
 					void *certObject, 
-				IN_LENGTH const int certObjectMaxLength, 
-				OUT_LENGTH_Z int *certObjectLength,
+				IN_DATALENGTH_Z const int certObjectMaxLength, 
+				OUT_DATALENGTH_Z int *certObjectLength,
 				IN_ENUM( CRYPT_CERTFORMAT ) \
 					const CRYPT_CERTFORMAT_TYPE certFormatType,
 				const CERT_INFO *certInfoPtr )
@@ -596,8 +630,10 @@ int exportCert( OUT_BUFFER_OPT( certObjectMaxLength, *certObjectLength ) \
 			CRYPT_CERTFORMAT_CERTCHAIN : \
 			certFormatType;
 	STREAM stream;
+#ifdef USE_BASE64
 	void *buffer;
-	int length, encodedLength, status;
+#endif /* USE_BASE64 */
+	int length, encodedLength, status = CRYPT_ARGERROR_VALUE;
 
 	assert( ( certObject == NULL && certObjectMaxLength == 0 ) || \
 			isWritePtr( certObject, certObjectMaxLength ) );
@@ -606,8 +642,8 @@ int exportCert( OUT_BUFFER_OPT( certObjectMaxLength, *certObjectLength ) \
 
 	REQUIRES( ( certObject == NULL && certObjectMaxLength == 0 ) || \
 			  ( certObject != NULL && \
-				certObjectMaxLength > 0 && \
-				certObjectMaxLength < MAX_INTLENGTH ) );
+				certObjectMaxLength >= MIN_CERTSIZE && \
+				certObjectMaxLength < MAX_BUFFER_SIZE ) );
 	REQUIRES( certFormatType > CRYPT_CERTFORMAT_NONE && \
 			  certFormatType < CRYPT_CERTFORMAT_LAST );
 
@@ -616,13 +652,16 @@ int exportCert( OUT_BUFFER_OPT( certObjectMaxLength, *certObjectLength ) \
 		certFormatType == CRYPT_ICERTFORMAT_CERTSEQUENCE || \
 		certFormatType == CRYPT_ICERTFORMAT_SSL_CERTCHAIN )
 		{
-		*certObjectLength = ( int ) \
-				sizeofCertCollection( certInfoPtr, certFormatType );
+		length = sizeofCertCollection( certInfoPtr, certFormatType );
+
+		if( cryptStatusError( length ) )
+			return( length );
+		*certObjectLength = length;
 		if( certObject == NULL )
 			return( CRYPT_OK );
-		if( *certObjectLength > certObjectMaxLength )
+		if( length > certObjectMaxLength )
 			return( CRYPT_ERROR_OVERFLOW );
-		sMemOpen( &stream, certObject, *certObjectLength );
+		sMemOpen( &stream, certObject, length );
 		status = writeCertCollection( &stream, certInfoPtr,
 									  certFormatType );
 		sMemDisconnect( &stream );
@@ -649,10 +688,31 @@ int exportCert( OUT_BUFFER_OPT( certObjectMaxLength, *certObjectLength ) \
 		}
 	if( baseFormatType != certFormatType )
 		{
-		status = base64encodeLen( length, &encodedLength, 
-								  certInfoPtr->type );
+#ifdef USE_BASE64 
+		/* If we're exporting a certificate or certificate chain then the 
+		   final format will be affected by the format specifier as per 
+		   the table in the comment at the start of this function, so for 
+		   these two types the final format is defined by the format 
+		   specifier, not by the underlying object type */
+		if( certInfoPtr->type == CRYPT_CERTTYPE_CERTIFICATE || \
+			certInfoPtr->type == CRYPT_CERTTYPE_CERTCHAIN )
+			{
+			status = base64encodeLen( length, &encodedLength, 
+				( baseFormatType == CRYPT_CERTFORMAT_CERTCHAIN ) ? \
+				CRYPT_CERTTYPE_CERTCHAIN : CRYPT_CERTTYPE_CERTIFICATE );
+			}
+		else
+			{
+			status = base64encodeLen( length, &encodedLength, 
+									  certInfoPtr->type );
+			}
 		if( cryptStatusError( status ) )
 			return( status );
+#else
+		/* If text-encoding isn't enabled then an attempt to use it is an 
+		   error */
+		return( CRYPT_ARGERROR_VALUE );
+#endif /* USE_BASE64 */
 		}
 
 	/* Set up the length information */
@@ -670,11 +730,9 @@ int exportCert( OUT_BUFFER_OPT( certObjectMaxLength, *certObjectLength ) \
 		certFormatType == CRYPT_ICERTFORMAT_DATA )
 		{
 		memcpy( certObject, certInfoPtr->certificate, length );
-		ENSURES( !cryptStatusError( checkObjectEncoding( certObject, \
-														 length ) ) );
-
 		return( CRYPT_OK );
 		}
+#ifdef USE_BASE64
 	if( certFormatType == CRYPT_CERTFORMAT_TEXT_CERTIFICATE || \
 		certFormatType == CRYPT_CERTFORMAT_XML_CERTIFICATE )
 		{
@@ -683,6 +741,7 @@ int exportCert( OUT_BUFFER_OPT( certObjectMaxLength, *certObjectLength ) \
 							  certInfoPtr->certificateSize, 
 							  certInfoPtr->type ) );
 		}
+#endif /* USE_BASE64 */
 
 	/* It's a straight certificate chain, write it directly to the output */
 	if( certFormatType == CRYPT_CERTFORMAT_CERTCHAIN )
@@ -690,14 +749,12 @@ int exportCert( OUT_BUFFER_OPT( certObjectMaxLength, *certObjectLength ) \
 		sMemOpen( &stream, certObject, length );
 		status = writeCertChain( &stream, certInfoPtr );
 		sMemDisconnect( &stream );
-		ENSURES( cryptStatusError( status ) || \
-				 !cryptStatusError( checkObjectEncoding( certObject, \
-														 length ) ) );
 		return( status );
 		}
 
 	/* It's a base64 / S/MIME-encoded certificate chain, write it to a 
 	   temporary buffer and then encode it to the output */
+#ifdef USE_BASE64
 	ENSURES( certFormatType == CRYPT_CERTFORMAT_TEXT_CERTCHAIN || \
 			 certFormatType == CRYPT_CERTFORMAT_XML_CERTCHAIN );
 	if( ( buffer = clAlloc( "exportCert", length ) ) == NULL )
@@ -712,6 +769,7 @@ int exportCert( OUT_BUFFER_OPT( certObjectMaxLength, *certObjectLength ) \
 		}
 	sMemClose( &stream );
 	clFree( "exportCert", buffer );
+#endif /* USE_BASE64 */
 
 	return( status );
 	}

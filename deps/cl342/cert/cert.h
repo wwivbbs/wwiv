@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						Certificate Routines Header File 					*
-*						Copyright Peter Gutmann 1996-2008					*
+*						Copyright Peter Gutmann 1996-2014					*
 *																			*
 ****************************************************************************/
 
@@ -10,6 +10,13 @@
 #define _CERT_DEFINED
 
 #include <time.h>
+#ifndef _ASN1_DEFINED
+  #if defined( INC_ALL )
+	#include "asn1.h"
+  #else
+	#include "enc_dec/asn1.h"
+  #endif /* Compiler-specific includes */
+#endif /* _ASN1_DEFINED */
 #ifndef _STREAM_DEFINED
   #if defined( INC_ALL )
 	#include "stream.h"
@@ -18,21 +25,27 @@
   #endif /* Compiler-specific includes */
 #endif /* _STREAM_DEFINED */
 
-/* The minimum size of an attribute, SEQUENCE (2), OID (5),
-   OCTET STRING (2+3 for payload).  This is the amount of slop to allow when
-   reading attributes.  Some software gets the length encoding wrong by a few
-   bytes, if what's left at the end of an encoded object is >= this value
-   then we look for attributes */
+/* The minimum permitted size of an attribute:
+	
+	SEQUENCE {				-- 2
+		OID					-- 5
+		OCTET STRING {		-- 2
+			...				-- 3
+			}
+		} */
 
 #define MIN_ATTRIBUTE_SIZE		12
 
-/* The maximum size of a PKCS #7 certificate chain.  The built-in bounds
-   value FAILSAFE_ITERATIONS_MED is used as a safety check for an upper
-   limit on chain lengths (that is, if we hit FAILSAFE_ITERATIONS_MED on
-   processing a certificate chain it's an internal error), so it has to
-   be larger than MAX_CHAINLENGTH */
+/* The maximum size of a PKCS #7 certificate chain, any chain longer than 8
+   certificates is somewhat suspicious, in fact a limit of 4 or 5 would
+   probably be sufficient for any chains seen in the wild.
+   
+   The built-in bounds value FAILSAFE_ITERATIONS_MED is used as a safety 
+   check for an upper limit on chain lengths (that is, if we hit 
+   FAILSAFE_ITERATIONS_MED on processing a certificate chain it's an 
+   internal error), so it has to be larger than MAX_CHAINLENGTH */
 
-#define MAX_CHAINLENGTH			16
+#define MAX_CHAINLENGTH			8
 
 #if MAX_CHAINLENGTH > FAILSAFE_ITERATIONS_MED
   #error FAILSAFE_ITERATIONS_MED must be larger than the maximum certificate chain length
@@ -46,7 +59,7 @@
 
 #define DEFAULT_SERIALNO_SIZE	8
 #define SERIALNO_BUFSIZE		32
-#define MAX_SERIALNO_SIZE		256
+#define MAX_SERIALNO_SIZE		64
 
 /* The size of the PKI user binary authenticator information before
    checksumming and encoding and the size of the encrypted user info:
@@ -67,7 +80,15 @@
    define a certificate-specific time value that we use as the oldest valid 
    time value */
 
-#define MIN_CERT_TIME_VALUE		( ( 1996 - 1970 ) * 365 * 86400L )
+#define MIN_CERT_TIME_VALUE		( ( 1998 - 1970 ) * 365 * 86400L )
+
+/* X.509 certificate version numbers.  These are somewhat tautological, but 
+   we define them anyway in order to avoid hardcoding constants into various 
+   places in the code */
+
+#define X509_V1					1
+#define X509_V2					2
+#define X509_V3					3
 
 /* Certificate information flags.  These are:
 
@@ -138,6 +159,7 @@ typedef enum {
    with */
 
 typedef enum {
+	ATTRIBUTE_NONE,						/* No attribute type */
 	ATTRIBUTE_CERTIFICATE,				/* Certificate attributes */
 	ATTRIBUTE_CMS,						/* CMS / S/MIME attributes */
 	ATTRIBUTE_LAST						/* Last valid attribute type */
@@ -558,10 +580,14 @@ typedef struct {
 	int serialNumberLength;			/* Certificate serial number */
 
 	/* The certificate ID of the PKI user or certificate that authorised 
-	   this request.  This is from an external source, supplied when the 
+	   this request, and whether this request is coming directly from the 
+	   user (so the PKIUser corresponds to the issuer of the request) or
+	   via an RA (so the PKIUser is the RA that passed on the request from 
+	   the user).  This is from an external source, supplied when the 
 	   request is used as part of the CMP protocol */
 	BUFFER_FIXED( KEYID_SIZE ) \
 	BYTE authCertID[ KEYID_SIZE + 8 ];
+	BOOLEAN requestFromRA;
 	} CERT_REQ_INFO;
 #endif /* USE_CERTREQ */
 
@@ -574,6 +600,10 @@ typedef struct {
 	BYTE pkiIssuePW[ 16 + 8 ];
 	BUFFER_FIXED( 16 ) \
 	BYTE pkiRevPW[ 16 + 8 ];
+
+	/* Additional PKI user inforation: Whether this PKI user can act as an
+	   RA */
+	BOOLEAN isRA;
 	} CERT_PKIUSER_INFO;
 #endif /* USE_PKIUSER */
 
@@ -806,10 +836,10 @@ typedef struct {
    the functions are polymorphic so we have to use the lowest common 
    denominator of all of the functions */
 
-typedef CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 		int ( *READCERT_FUNCTION )( INOUT STREAM *stream, 
 									INOUT CERT_INFO *certInfoPtr );
-typedef CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 		int ( *WRITECERT_FUNCTION )( INOUT STREAM *stream, 
 									 INOUT CERT_INFO *subjectCertInfoPtr,
 									 IN_OPT const CERT_INFO *issuerCertInfoPtr,

@@ -151,7 +151,11 @@ static void initSieve( IN_ARRAY( sieveSize ) BOOLEAN *sieveArray,
 				sieveIndex = ( ( step * 2 ) - sieveIndex ) / 2;
 			}
 
-		/* Mark each multiple of the divisor as being divisible */
+		/* Mark each multiple of the divisor as being divisible.
+		
+		   Note that many compilers will complain about the comparison for 
+		   sieveIndex >= 0 being redundant because a BN_ULONG is unsigned, 
+		   we leave it in anyway to be safe */
 		while( sieveIndex >= 0 && sieveIndex < sieveSize )
 			{
 			sieveArray[ sieveIndex ] = 1;
@@ -168,7 +172,7 @@ static void initSieve( IN_ARRAY( sieveSize ) BOOLEAN *sieveArray,
 #define LFSR_POLYNOMIAL		0x1053
 #define LFSR_MASK			0x1000
 
-CHECK_RETVAL \
+CHECK_RETVAL_RANGE( 0, SIEVE_SIZE ) \
 static int nextEntry( IN_INT_SHORT int value )
 	{
 	static_assert( LFSR_MASK == SIEVE_SIZE, "LFSR size" );
@@ -179,6 +183,9 @@ static int nextEntry( IN_INT_SHORT int value )
 	value <<= 1;
 	if( value & LFSR_MASK )
 		value ^= LFSR_POLYNOMIAL;
+
+	ENSURES( value > 0 && value < SIEVE_SIZE );
+
 	return( value );
 	}
 
@@ -188,18 +195,22 @@ static int nextEntry( IN_INT_SHORT int value )
 CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
 BOOLEAN primeSieve( const BIGNUM *candidate )
 	{
+	const int candidateLen = BN_num_bytes( candidate );
 	int i;
 
 	assert( isReadPtr( candidate, sizeof( BIGNUM ) ) );
+
+	REQUIRES( candidateLen > 0 && candidateLen <= CRYPT_MAX_PKCSIZE );
 
 	/* If we're checking a small value then we can use a direct machine
 	   instruction for the check, this is both faster and avoids false 
 	   positives when the value being checked is small enough to be 
 	   present in the sieve */
-	if( BN_num_bytes( candidate ) < sizeof( int ) - 1 )
+	if( candidateLen < sizeof( int ) - 1 )
 		{
 		const BN_ULONG candidateWord = BN_get_word( candidate );
 
+		ENSURES( candidateWord != BN_MASK2 );
 		for( i = 1; i < FAST_SIEVE_NUMPRIMES && \
 					primes[ i ] < candidateWord; i++ )
 			{
@@ -235,13 +246,12 @@ BOOLEAN primeSieve( const BIGNUM *candidate )
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 4, 5, 6, 7 ) ) \
 static int witnessOld( INOUT PKC_INFO *pkcInfo, INOUT BIGNUM *a, 
-					   INOUT BIGNUM *n, INOUT BIGNUM *n1, 
-					   INOUT BIGNUM *mont_n1, INOUT BIGNUM *mont_1, 
-					   INOUT BN_MONT_CTX *montCTX_n )
+					   INOUT BIGNUM *n1, INOUT BIGNUM *mont_n1, 
+					   INOUT BIGNUM *mont_1, INOUT BN_MONT_CTX *montCTX_n )
 	{
 	BIGNUM *y = &pkcInfo->param6;
 	BIGNUM *yPrime = &pkcInfo->param7;		/* Safe to destroy */
-	BN_CTX *ctx = pkcInfo->bnCTX;
+	BN_CTX *ctx = &pkcInfo->bnCTX;
 	BIGNUM *mont_a = &ctx->bn[ ctx->tos++ ];
 	const int k = BN_num_bits( n1 );
 	int i, bnStatus = BN_STATUS;
@@ -256,7 +266,7 @@ static int witnessOld( INOUT PKC_INFO *pkcInfo, INOUT BIGNUM *a,
 
 	/* All values are manipulated in their Montgomery form so before we 
 	   begin we have to convert a to this form as well */
-	if( !BN_to_montgomery( mont_a, a, montCTX_n, pkcInfo->bnCTX ) )
+	if( !BN_to_montgomery( mont_a, a, montCTX_n, &pkcInfo->bnCTX ) )
 		{
 		ctx->tos--;
 		return( CRYPT_ERROR_FAILED );
@@ -268,7 +278,7 @@ static int witnessOld( INOUT PKC_INFO *pkcInfo, INOUT BIGNUM *a,
 		/* Perform the y^2 mod n check.  yPrime = y^2 mod n, if yPrime == 1
 		   it's composite (this condition is virtually never met) */
 		CK( BN_mod_mul_montgomery( yPrime, y, y, montCTX_n, 
-								   pkcInfo->bnCTX ) );
+								   &pkcInfo->bnCTX ) );
 		if( bnStatusError( bnStatus ) || \
 			( !BN_cmp( yPrime, mont_1 ) && \
 			  BN_cmp( y, mont_1 ) && BN_cmp( y, mont_n1 ) ) )
@@ -281,7 +291,7 @@ static int witnessOld( INOUT PKC_INFO *pkcInfo, INOUT BIGNUM *a,
 		if( BN_is_bit_set( n1, i ) )
 			{
 			CK( BN_mod_mul_montgomery( y, yPrime, mont_a, montCTX_n, 
-									   pkcInfo->bnCTX ) );
+									   &pkcInfo->bnCTX ) );
 			}
 		else
 			{
@@ -320,15 +330,15 @@ static int primeProbableOld( INOUT PKC_INFO *pkcInfo,
 	REQUIRES( noChecks >= 1 && noChecks <= 100 );
 
 	/* Set up various values */
-	CK( BN_MONT_CTX_set( montCTX_candidate, candidate, pkcInfo->bnCTX ) );
+	CK( BN_MONT_CTX_set( montCTX_candidate, candidate, &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 	CK( BN_to_montgomery( mont_1, BN_value_one(), montCTX_candidate, 
-						  pkcInfo->bnCTX ) );
+						  &pkcInfo->bnCTX ) );
 	CKPTR( BN_copy( candidate_1, candidate ) );
 	CK( BN_sub_word( candidate_1, 1 ) );
 	CK( BN_to_montgomery( mont_candidate_1, candidate_1, montCTX_candidate, 
-						  pkcInfo->bnCTX ) );
+						  &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 
@@ -388,9 +398,9 @@ static int primeProbableOld( INOUT PKC_INFO *pkcInfo,
 
    Since it's a yes-biased Monte Carlo algorithm this witness function can
    only answer "probably-prime" so we reduce the uncertainty by iterating
-   for the Miller-Rabin test */
+   for the Miller-Rabin test.  Destroys a */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 4, 5, 7 ) ) \
+CHECK_RETVAL_RANGE( FALSE, TRUE ) STDC_NONNULL_ARG( ( 1, 2, 3, 4, 5, 7 ) ) \
 static int witness( INOUT PKC_INFO *pkcInfo, INOUT BIGNUM *a, 
 					const BIGNUM *n, const BIGNUM *n_1, const BIGNUM *u, 
 					IN_LENGTH_SHORT const int k, 
@@ -409,7 +419,7 @@ static int witness( INOUT PKC_INFO *pkcInfo, INOUT BIGNUM *a,
 
 	/* x(0) = a^u mod n.  If x(0) == 1 || x(0) == n - 1 it's probably
 	   prime */
-	CK( BN_mod_exp_mont( a, a, u, n, pkcInfo->bnCTX, montCTX_n ) );
+	CK( BN_mod_exp_mont( a, a, u, n, &pkcInfo->bnCTX, montCTX_n ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 	if( BN_is_one( a ) || !BN_cmp( a, n_1 ) )
@@ -418,13 +428,29 @@ static int witness( INOUT PKC_INFO *pkcInfo, INOUT BIGNUM *a,
 	for( i = 1; i < k; i++ )
 		{
 		/* x(i) = x(i-1)^2 mod n */
-		CK( BN_mod_mul( a, a, a, n, pkcInfo->bnCTX ) );
+		CK( BN_mod_mul( a, a, a, n, &pkcInfo->bnCTX ) );
 		if( bnStatusError( bnStatus ) )
 			return( getBnStatus( bnStatus ) );
 		if( !BN_cmp( a, n_1 ) )
 			return( FALSE );	/* Probably prime */
 		if( BN_is_one( a ) )
+			{
+			/* At this point we could perform an additional test:
+
+				g = gcd( x(i-1)-1, n )
+
+			  If g > 1 then the candidate is composite with factor g, if not 
+			  then it's composite but not a power of a prime, i.e. there are 
+			  no x, y >= 2 s.t. x^y == n.  This can be used when checking 
+			  the RSA modulus for validity, however it requires an 
+			  additional temporary bignum that we don't really have.  In 
+			  theory we could overload pkcInfo->blind1, which isn't used
+			  yet when primeProbable() is called, but this is asking for
+			  trouble if any code path every sets blind1 before 
+			  primeProbable() is called.  In any case it's uncertain whether
+			  all of this is worth the effort... */
 			return( TRUE );		/* Composite */
+			}
 		}
 
 	return( TRUE );
@@ -443,7 +469,7 @@ static int witness( INOUT PKC_INFO *pkcInfo, INOUT BIGNUM *a,
 
   Destroys tmp1-3, mont1 */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+CHECK_RETVAL_RANGE( FALSE, TRUE ) STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int primeProbable( INOUT PKC_INFO *pkcInfo, 
 				   INOUT BIGNUM *n, 
 				   IN_RANGE( 1, 100 ) const int noChecks )
@@ -457,7 +483,7 @@ int primeProbable( INOUT PKC_INFO *pkcInfo,
 	REQUIRES( noChecks >= 1 && noChecks <= 100 );
 
 	/* Set up various values */
-	CK( BN_MONT_CTX_set( &pkcInfo->montCTX1, n, pkcInfo->bnCTX ) );
+	CK( BN_MONT_CTX_set( &pkcInfo->montCTX1, n, &pkcInfo->bnCTX ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
 
@@ -519,6 +545,31 @@ int primeProbable( INOUT PKC_INFO *pkcInfo,
 	return( TRUE );
 	}
 
+/* Perform a Fermat primality test to the base 2 as a quick screening 
+   alternative to a full M-R test */
+
+CHECK_RETVAL_RANGE( FALSE, TRUE ) STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+int primeProbableFermat( INOUT PKC_INFO *pkcInfo, 
+						 INOUT BIGNUM *n,
+						 INOUT BN_MONT_CTX *montCTX_n )
+	{
+	int bnStatus = BN_STATUS;
+
+	assert( isWritePtr( pkcInfo, sizeof( PKC_INFO ) ) );
+	assert( isReadPtr( n, sizeof( BIGNUM ) ) );
+	assert( isReadPtr( montCTX_n, sizeof( BN_MONT_CTX ) ) );
+
+	/* Perform a Fermat test to the base 2 (Fermat = a^p-1 mod p == 1 -> 
+	   a^p mod p == a, for all a).  This isn't as reliable as Miller-Rabin 
+	   but can use the fast BN_mod_exp_mont_word() to perform a (somewhat)
+	   quicker screening check */
+	CK( BN_mod_exp_mont_word( &pkcInfo->tmp1, 2, n, n, &pkcInfo->bnCTX, 
+							  montCTX_n ) );
+	if( bnStatusError( bnStatus ) )
+		return( getBnStatus( bnStatus ) );
+	return( BN_is_word( &pkcInfo->tmp1, 2 ) ? TRUE : FALSE );
+	}
+
 /* Generate a prime.  If the exponent is present this will also verify that
    gcd( (p - 1)(q - 1), exponent ) = 1, which is required for RSA */
 
@@ -548,7 +599,7 @@ int generatePrime( INOUT PKC_INFO *pkcInfo,
 	   divinity in odd numbers", William Shakespeare, "Merry Wives of 
 	   Windsor").  We set the two high bits so that (when generating RSA 
 	   keys) pq will end up exactly 2n bits long */
-	status = generateBignum( candidate, noBits, 0xC0, 0x1 );
+	status = generateBignum( candidate, noBits, 0xC0, 0x1, NULL, 0 );
 	if( cryptStatusError( status ) )
 		return( status );
 
@@ -591,7 +642,7 @@ int generatePrime( INOUT PKC_INFO *pkcInfo,
 			BOOLEAN passedFermat, passedOldPrimeTest;
 			int oldTicks, newTicks, ratio;
 #endif /* CHECK_PRIMETEST */
-			long remainder;
+			BN_ULONG remainder;
 
 			ENSURES( offset > 0 && offset < SIEVE_SIZE );
 			ENSURES( offset != oldOffset );
@@ -614,24 +665,13 @@ int generatePrime( INOUT PKC_INFO *pkcInfo,
 				}
 
 #if defined( CHECK_PRIMETEST )
-			/* Perform a Fermat test to the base 2 (Fermat = a^p-1 mod p == 1
-			   -> a^p mod p == a, for all a), which isn't as reliable as
-			   Miller-Rabin but may be quicker if a fast base 2 modexp is
-			   available (currently it provides no improvement at all over 
-			   the use of straight Miller-Rabin).  At the moment it's only 
-			   used to sanity-check the MR test but if a faster version is 
-			   ever made available it can be used as a filter to weed out 
-			   most pseudoprimes */
+			/* Perform a Fermat test to the base 2 */
 			CK( BN_MONT_CTX_set( &pkcInfo->montCTX1, candidate, 
-								 pkcInfo->bnCTX ) );
-			CK( BN_set_word( &pkcInfo->tmp1, 2 ) );
-			CK( BN_mod_exp_mont( &pkcInfo->tmp2, &pkcInfo->tmp1, candidate, 
-								 candidate, pkcInfo->bnCTX,
-								 &pkcInfo->montCTX1 ) );
-			passedFermat = ( bnStatusOK( bnStatus ) && \
-						     BN_is_word( &pkcInfo->tmp2, 2 ) ) ? TRUE : FALSE;
+								 &pkcInfo->bnCTX ) );
+			passedFermat = primeProbableFermat( pkcInfo, candidate,
+												&pkcInfo->montCTX1 );
 
-			/* Perform the older probabalistic test */
+			/* Perform the older probabilistic test */
 			QueryPerformanceCounter( &tStart );
 			status = primeProbableOld( pkcInfo, candidate, noChecks );
 			QueryPerformanceCounter( &tStop );
@@ -641,7 +681,7 @@ int generatePrime( INOUT PKC_INFO *pkcInfo,
 				break;
 			passedOldPrimeTest = status;
 
-			/* Perform the probabalistic test */
+			/* Perform the probabilistic test */
 			QueryPerformanceCounter( &tStart );
 			status = primeProbable( pkcInfo, candidate, noChecks );
 			QueryPerformanceCounter( &tStop );
@@ -725,20 +765,23 @@ int generatePrime( INOUT PKC_INFO *pkcInfo,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int generateBignum( OUT BIGNUM *bn, 
 					IN_LENGTH_SHORT_MIN( 120 ) const int noBits, 
-					IN_BYTE const int high, IN_BYTE const int low )
+					IN_BYTE const int high, IN_BYTE const int low,
+					IN_BUFFER_OPT( seedLength ) const void *seed,
+					IN_LENGTH_SHORT_OPT const int seedLength )
 	{
 	MESSAGE_DATA msgData;
 	BYTE buffer[ CRYPT_MAX_PKCSIZE + DLP_OVERFLOW_SIZE + 8 ];
 	int noBytes = bitsToBytes( noBits ), status;
 
 	assert( isWritePtr( bn, sizeof( BIGNUM ) ) );
+	assert( seed == NULL || isReadPtr( seed, seedLength ) );
 
 	REQUIRES( noBits >= 120 && \
 			  noBits <= bytesToBits( CRYPT_MAX_PKCSIZE + DLP_OVERFLOW_SIZE ) );
 			  /* The value of 120 doesn't correspond to any key size but is 
 			     the minimal value for a prime that we'd generate using the 
-				 Lim-Lee algorithm.  The extra 32 bits added to 
-				 CRYPT_MAX_PKCSIZE are for DLP algorithms where we reduce 
+				 Lim-Lee algorithm.  The extra DLP_OVERFLOW_SIZE bits added 
+				 to CRYPT_MAX_PKCSIZE are for DLP algorithms where we reduce 
 				 the bignum mod p or q and use a few extra bits to avoid the 
 				 resulting value being biased, see the DLP code for 
 				 details */
@@ -746,6 +789,9 @@ int generateBignum( OUT BIGNUM *bn,
 	REQUIRES( low >= 0 && low <= 0xFF );
 			  /* The lower bound may be zero if we're generating e.g. a 
 			     blinding value or some similar non-key-data value */
+	REQUIRES( ( seed == NULL && seedLength == 0 ) || \
+			  ( seed != NULL && \
+				seedLength > 0 && seedLength < MAX_INTLENGTH_SHORT ) );
 
 	/* Clear the return value */
 	BN_zero( bn );
@@ -758,6 +804,20 @@ int generateBignum( OUT BIGNUM *bn,
 		{
 		zeroise( buffer, noBytes );
 		return( status );
+		}
+
+	/* Mix in the seed value if there's one present.  This is used for 
+	   DLP/ECDLP operations where the (phenomenally low) likelihood of the 
+	   RNG producing repeated values would lead to a loss of the private
+	   key */
+	if( seed != NULL )
+		{
+		const BYTE *seedPtr = seed;
+		const int length = min( noBytes, seedLength );
+		int i;
+
+		for( i = 0; i < length; i++ )
+			buffer[ i ] ^= seedPtr[ i ];
 		}
 
 	/* Merge in the specified low bits, mask off any excess high bits, and

@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						cryptlib Internal Debugging API						*
-*						Copyright Peter Gutmann 1992-2008					*
+*						Copyright Peter Gutmann 1992-2013					*
 *																			*
 ****************************************************************************/
 
@@ -19,7 +19,13 @@
    can't hardwire in tests for their return status), and should only
    be used with a debugger */
 
-#ifndef NDEBUG
+/****************************************************************************
+*																			*
+*							Diagnostic-dump Functions						*
+*																			*
+****************************************************************************/
+
+#if !defined( NDEBUG ) || defined( DEBUG_DIAGNOSTIC_ENABLE ) 
 
 /* Older versions of the WinCE runtime don't provide complete stdio
    support so we have to emulate it using wrappers for native 
@@ -109,6 +115,11 @@ static void buildFilePath( IN_STRING const char *fileName,
 	{
 	int i;
 
+	assert( isReadPtr( fileName, 2 ) );
+	assert( isWritePtr( filenameBuffer, 1024 ) );
+
+	ANALYSER_HINT_STRING( fileName );
+
 	/* Check whether the filename appears to be an absolute path */
 	for( i = 0; fileName[ i ] != '\0'; i++ )
 		{
@@ -118,11 +129,7 @@ static void buildFilePath( IN_STRING const char *fileName,
 	if( fileName[ i ] == '\0' )
 		{
 		/* It's a relative path, put the file in the temp directory */
-#if defined( __WIN32__ )
-		GetTempPath( 512, filenameBuffer );
-#else
 		strlcpy_s( filenameBuffer, 1024, "/tmp/" );
-#endif /* __WIN32__ */
 		strlcat_s( filenameBuffer, 1024, fileName );
 		}
 	else
@@ -137,10 +144,12 @@ void debugDumpFile( IN_STRING const char *fileName,
 	{
 	FILE *filePtr;
 	char filenameBuffer[ 1024 ];
-	int count = DUMMY_INIT;
+	int count DUMMY_INIT;
 
 	assert( isReadPtr( fileName, 2 ) );
 	assert( isReadPtr( data, dataLength ) );
+
+	ANALYSER_HINT_STRING( fileName );
 
 	buildFilePath( fileName, filenameBuffer );
 #ifdef __STDC_LIB_EXT1__
@@ -170,10 +179,12 @@ void debugDumpFileCert( IN_STRING const char *fileName,
 	FILE *filePtr;
 	BYTE certData[ 2048 ];
 	char filenameBuffer[ 1024 ];
-	int count = DUMMY_INIT, status;
+	int count DUMMY_INIT, status;
 
 	assert( isReadPtr( fileName, 2 ) );
 	assert( isHandleRangeValid( iCryptCert ) );
+
+	ANALYSER_HINT_STRING( fileName );
 
 	buildFilePath( fileName, filenameBuffer );
 #ifdef __STDC_LIB_EXT1__
@@ -212,6 +223,8 @@ void debugDumpHex( IN_STRING const char *prefixString,
 	{
 	char dumpBuffer[ 128 ];
 	int offset, i, j;
+
+	ANALYSER_HINT_STRING( prefixString );
 
 	offset = sprintf_s( dumpBuffer, 128, "%3s %4d %04X ", prefixString, 
 						dataLength, checksumData( data, dataLength ) );
@@ -305,13 +318,108 @@ void debugDumpStream( INOUT /*STREAM*/ void *streamPtr,
 								  length );
 	if( cryptStatusError( status ) )
 		return;
-	ANALYSER_HINT( dataPtr != NULL );
+	ANALYSER_HINT_V( dataPtr != NULL );
 	debugDumpData( dataPtr, length );
 	}
+
+/* Dump a stack trace.  Note that under Unix this may require linking with 
+   -rdynamic (to force the addition of all symbols, not just public ones, so 
+   for example ones for static functions) in order for backtrace_symbols() 
+   to be able to display all symbols */
+
+#if defined( __WIN32__ )
+
+#ifndef _WIN64
+
+#include <ImageHlp.h>
+#pragma comment( lib, "imagehlp.lib" )
+
+void displayBacktrace( void )
+	{
+	HANDLE process;
+	IMAGEHLP_SYMBOL *symbolInfo;
+	BYTE buffer[ sizeof( IMAGEHLP_SYMBOL ) + 1024 ];
+	unsigned long prevAddress, address = 1;
+	int i;
+
+	/* Horribly nonportable way of walking the stack */
+	__asm { mov prevAddress, ebp };
+
+	/* Load debugging symbols for the current process */
+	printf( "\nStack trace:\n" );
+	process = GetCurrentProcess();
+	if( !SymInitialize( process, 
+						"D:\\Work\\cryptlib\\debug32_vc6;D:\\Work\\cryptlib\\binaries32_vc6", 
+						TRUE ) )
+		{
+		const DWORD error = GetLastError();
+		
+		printf( "Couldn't load symbols, error = %d.\n", error );
+		return;		
+		}
+	symbolInfo = ( IMAGEHLP_SYMBOL * ) buffer;
+
+	/* Walk the stack printing addresses and symbols if we can get them */
+	for( i = 0; i < 50; i++ ) 
+		{ 
+		address = ( ( unsigned long * ) prevAddress )[ 1 ]; 
+		prevAddress = ( ( unsigned long * ) prevAddress )[ 0 ]; 
+		if( address == 0 )
+			break;
+		memset( symbolInfo, 0, sizeof( IMAGEHLP_SYMBOL ) );
+		symbolInfo->SizeOfStruct = sizeof( IMAGEHLP_SYMBOL );
+		symbolInfo->MaxNameLength = 512;
+		if( !SymGetSymFromAddr( process, address, 0, symbolInfo ) )
+			{
+			const DWORD error = GetLastError();
+			printf( "<Unknown - %d> - 0x%0X\n", error, address );
+			continue;
+			}
+		printf( "%s - 0x%0X\n", symbolInfo->Name, symbolInfo->Address );
+		}
+
+	SymCleanup( process );
+#if 0
+	int noFrames, i;
+
+	noFrames = CaptureStackBackTrace( 1, 100, stackInfo, NULL );
+	for( i = 0; i < noFrames; i++ )
+		{
+		symbolInfo->MaxNameLength = 512;
+		SymGetSymFromAddr( process, stackInfo[ i ], 0, symbolInfo );
+		printf( "%i: %s - 0x%0X\n", noFrames - i - 1, symbolInfo->Name, symbolInfo->Address );
+		}
+#endif
+	}
+#endif /* Win64 */
+
+#elif defined( __UNIX__ ) && defined( __linux__ )
+
+#include <execinfo.h>
+ 
+void displayBacktrace( void )
+	{
+	void *stackInfo[ 100 ];
+	char **stackInfoStrings;
+	int i, stackInfoSize;
+ 
+	stackInfoSize = backtrace( stackInfo, 100 );
+	stackInfoStrings = backtrace_symbols( stackInfo, stackInfoSize );
+ 
+	for( i = 0; i < stackInfoSize; i++ ) 
+		{
+		printf( "%p : %s\n", stackInfo[ i ], stackInfoStrings[ i ] );
+		}
+ 
+	free( stackInfoStrings );
+	}
+#endif /* OS-specific backtrace printing */
 
 /* Support function used to access the text string data from an ERROR_INFO
    structure.  Note that this function isn't thread-safe, but that should be
    OK since it's only used for debugging */
+
+#ifdef USE_ERRMSGS
 
 const char *getErrorInfoString( ERROR_INFO *errorInfo )
 	{
@@ -326,11 +434,12 @@ const char *getErrorInfoString( ERROR_INFO *errorInfo )
 
 	return( errorInfoString );
 	}
+#endif /* USE_ERRMSGS */
 
 /* Support function used with streams to pull data bytes out of the stream,
    allowing type and content data to be dumped with DEBUG_PRINT() */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+RETVAL_RANGE_NOERROR( 0, 0xFF ) STDC_NONNULL_ARG( ( 1 ) ) \
 int debugGetStreamByte( INOUT /*STREAM*/ void *streamPtr, 
 						IN_LENGTH const int position )
 	{
@@ -343,4 +452,116 @@ int debugGetStreamByte( INOUT /*STREAM*/ void *streamPtr,
 		return( 0 );
 	return( byteToInt( *dataPtr ) );
 	}
-#endif /* !NDEBUG */
+
+#endif /* !NDEBUG || DEBUG_DIAGNOSTIC_ENABLE */
+
+/****************************************************************************
+*																			*
+*						Fault-injection Support Functions					*
+*																			*
+****************************************************************************/
+
+#ifndef NDEBUG
+
+/* Variables used for fault-injection tests */
+
+FAULT_TYPE faultType;
+int faultParam1;
+
+/* Get a substitute key to replace the actual one, used to check for 
+   detection of use of the wrong key */
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+int getSubstituteKey( OUT_HANDLE_OPT CRYPT_CONTEXT *iPrivateKey )
+	{
+	MESSAGE_CREATEOBJECT_INFO createInfo;
+	MESSAGE_KEYMGMT_INFO getkeyInfo;
+	int status;
+
+	/* Clear return value */
+	*iPrivateKey = CRYPT_ERROR;
+
+	/* Try and read the certificate chain from the keyset */
+	setMessageCreateObjectInfo( &createInfo, CRYPT_KEYSET_FILE );
+	createInfo.arg2 = CRYPT_KEYOPT_READONLY;
+	createInfo.strArg1 = "test/keys/server2.p15";
+	createInfo.strArgLen1 = strlen( createInfo.strArg1 );
+	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE,
+							  IMESSAGE_DEV_CREATEOBJECT, &createInfo,
+							  OBJECT_TYPE_KEYSET );
+	if( cryptStatusError( status ) )
+		return( status );
+	setMessageKeymgmtInfo( &getkeyInfo, CRYPT_KEYID_NAME, "Test user key", 13,
+						   NULL, 0, KEYMGMT_FLAG_USAGE_SIGN );
+	status = krnlSendMessage( createInfo.cryptHandle, IMESSAGE_KEY_GETKEY, 
+							  &getkeyInfo, KEYMGMT_ITEM_PUBLICKEY );
+	krnlSendNotifier( createInfo.cryptHandle, IMESSAGE_DESTROY );
+	if( cryptStatusOK( status ) )
+		*iPrivateKey = getkeyInfo.cryptHandle;
+
+	return( status );
+	}
+
+/****************************************************************************
+*																			*
+*								Timing Functions							*
+*																			*
+****************************************************************************/
+
+#if defined( __WINDOWS__ ) || defined( __UNIX__ )
+
+#ifdef __UNIX__ 
+  #include <sys/time.h>		/* For gettimeofday() */
+#endif /* __UNIX__  */
+
+/* Get/update high-resolution timer value */
+
+HIRES_TIME debugTimeDiff( HIRES_TIME startTime )
+	{
+	HIRES_TIME timeValue;
+#ifdef __WINDOWS__
+	LARGE_INTEGER performanceCount;
+
+	/* Sensitive to context switches */
+	QueryPerformanceCounter( &performanceCount );
+	timeValue = performanceCount.QuadPart;
+#else
+	struct timeval tv;
+
+	/* Only accurate to about 1us */
+	gettimeofday( &tv, NULL );
+	timeValue = ( ( ( HIRES_TIME ) tv.tv_sec ) << 32 ) | tv.tv_usec;
+#endif /* Windows vs.Unix high-res timing */
+
+	if( !startTime )
+		return( timeValue );
+	return( timeValue - startTime );
+	}
+
+/* Display high-resulution time value */
+
+int debugTimeDisplay( HIRES_TIME timeValue )
+	{
+	HIRES_TIME timeMS, ticksPerSec;
+
+	/* Try and get the clock frequency */
+#ifdef __WINDOWS__
+	LARGE_INTEGER performanceCount;
+
+	QueryPerformanceFrequency( &performanceCount );
+	ticksPerSec = performanceCount.QuadPart;
+#else
+	ticksPerSec = 1000000L;
+#endif /* __WINDOWS__ */	
+
+	timeMS = ( timeValue * 1000 ) / ticksPerSec;
+	assert( timeMS < INT_MAX );
+	if( timeMS <= 0 )
+		printf( "< 1" );
+	else
+		printf( HIRES_FORMAT_SPECIFIER, timeMS );
+
+	return( ( timeMS <= 0 ) ? 1 : ( int ) timeMS );
+	}
+#endif /* __WINDOWS__ || __UNIX__ */
+#endif /* NDEBUG */

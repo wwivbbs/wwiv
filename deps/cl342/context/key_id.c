@@ -21,7 +21,7 @@
   #include "misc/pgp.h"
 #endif /* Compiler-specific includes */
 
-#ifdef USE_PKC
+#if defined( USE_INT_ASN1 ) && defined( USE_PKC )
 
 /****************************************************************************
 *																			*
@@ -48,8 +48,16 @@ static int initStaticContext( OUT CONTEXT_INFO *staticContextInfo,
 	assert( isReadPtr( capabilityInfoPtr, sizeof( CAPABILITY_INFO ) ) );
 	assert( isReadPtr( publicKeyData, publicKeyDataLength ) );
 
-	REQUIRES( publicKeyDataLength >= MIN_PKCSIZE && \
-			  publicKeyDataLength < MAX_INTLENGTH_SHORT );
+	REQUIRES( ( isEccAlgo( capabilityInfoPtr->cryptAlgo ) && \
+				publicKeyDataLength >= MIN_PKCSIZE_ECCPOINT && \
+				publicKeyDataLength < MAX_INTLENGTH_SHORT ) || \
+			  ( !isEccAlgo( capabilityInfoPtr->cryptAlgo ) && \
+				publicKeyDataLength >= MIN_PKCSIZE && \
+				publicKeyDataLength < MAX_INTLENGTH_SHORT ) );
+
+	/* Clear return values */
+	memset( staticContextInfo, 0, sizeof( CONTEXT_INFO ) );
+	memset( contextData, 0, sizeof( PKC_INFO ) );
 
 	/* Initialise a static context to read the key data into */
 	status = staticInitContext( staticContextInfo, CONTEXT_PKC, 
@@ -119,8 +127,9 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int calculateKeyIDFromEncoded( INOUT CONTEXT_INFO *contextInfoPtr,
 									  IN_ALGO const CRYPT_ALGO_TYPE cryptAlgo )
 	{
-	CONTEXT_INFO staticContextInfo;
+	CONTEXT_INFO staticContextInfo;\
 	PKC_INFO staticContextData, *publicKey = contextInfoPtr->ctxPKC;
+	const CAPABILITY_INFO *capabilityInfoPtr = NULL;
 	const BOOLEAN isPgpAlgo = \
 		( cryptAlgo == CRYPT_ALGO_RSA || cryptAlgo == CRYPT_ALGO_DSA || \
 		  cryptAlgo == CRYPT_ALGO_ELGAMAL ) ? TRUE : FALSE;
@@ -163,41 +172,39 @@ static int calculateKeyIDFromEncoded( INOUT CONTEXT_INFO *contextInfoPtr,
 		{
 #ifdef USE_DH
 		case CRYPT_ALGO_DH:
-			status = initStaticContext( &staticContextInfo, &staticContextData, 
-										getDHCapability(), 
-										publicKey->publicKeyInfo, 
-										publicKey->publicKeyInfoSize );
+			capabilityInfoPtr = getDHCapability();
 			break;
 #endif /* USE_DH */
 
 		case CRYPT_ALGO_RSA:
-			status = initStaticContext( &staticContextInfo, &staticContextData, 
-										getRSACapability(), 
-										publicKey->publicKeyInfo, 
-										publicKey->publicKeyInfoSize );
+			capabilityInfoPtr = getRSACapability();
 			break;
 
 #ifdef USE_DSA
 		case CRYPT_ALGO_DSA:
-			status = initStaticContext( &staticContextInfo, &staticContextData, 
-										getDSACapability(), 
-										publicKey->publicKeyInfo, 
-										publicKey->publicKeyInfoSize );
+			capabilityInfoPtr = getDSACapability();
 			break;
 #endif /* USE_DSA */
 
 #ifdef USE_ELGAMAL
 		case CRYPT_ALGO_ELGAMAL:
-			status = initStaticContext( &staticContextInfo, &staticContextData, 
-										getElgamalCapability(), 
-										publicKey->publicKeyInfo, 
-										publicKey->publicKeyInfoSize );
+			capabilityInfoPtr = getElgamalCapability();
 			break;
 #endif /* USE_ELGAMAL */
+
+#ifdef USE_ECDSA
+		case CRYPT_ALGO_ECDSA:
+			capabilityInfoPtr = getECDSACapability();
+			break;
+#endif /* USE_ECDSA */
 
 		default:
 			retIntError();
 		}
+	ENSURES( capabilityInfoPtr != NULL );
+	status = initStaticContext( &staticContextInfo, &staticContextData, 
+								capabilityInfoPtr, publicKey->publicKeyInfo, 
+								publicKey->publicKeyInfoSize );
 	if( cryptStatusError( status ) )
 		return( status );
 
@@ -453,8 +460,35 @@ void initKeyID( INOUT CONTEXT_INFO *contextInfoPtr )
 	}
 #else
 
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+static int calculateKeyIDDummy( INOUT CONTEXT_INFO *contextInfoPtr )
+	{
+	PKC_INFO *publicKey = contextInfoPtr->ctxPKC;
+	MESSAGE_DATA msgData;
+
+	assert( isWritePtr( contextInfoPtr, sizeof( CONTEXT_INFO ) ) );
+
+	REQUIRES( contextInfoPtr->type == CONTEXT_PKC );
+
+	/* If we're not using ASN.1 then we can't calculate keyIDs, but then no 
+	   code that requires keyIDs is actually enabled so we just set a dummy
+	   value for the ID */
+	setMessageData( &msgData, publicKey->keyID, KEYID_SIZE );
+	return( krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_GETATTRIBUTE_S,
+							 &msgData, CRYPT_IATTRIBUTE_RANDOM_NONCE ) );
+	}
+
 STDC_NONNULL_ARG( ( 1 ) ) \
 void initKeyID( INOUT CONTEXT_INFO *contextInfoPtr )
 	{
+	PKC_INFO *pkcInfo = contextInfoPtr->ctxPKC;
+
+	assert( isWritePtr( contextInfoPtr, sizeof( CONTEXT_INFO ) ) );
+
+	REQUIRES_V( contextInfoPtr->type == CONTEXT_PKC );
+
+	/* Set the access method pointers */
+	pkcInfo->calculateKeyIDFunction = calculateKeyIDDummy;
 	}
-#endif /* USE_PKC */
+#endif /* USE_INT_ASN1 && USE_PKC */
+

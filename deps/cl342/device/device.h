@@ -35,7 +35,7 @@
    mechanisms to speed things up, although the overhead is vanishingly small 
    anyway */
 
-typedef CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 2 ) ) \
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 2 ) ) \
 		int ( *MECHANISM_FUNCTION )( IN_OPT void *deviceInfoPtr,
 									 INOUT void *mechanismInfo );
 typedef struct {
@@ -47,7 +47,7 @@ typedef struct {
 /* Devices can also be used to create further objects.  Most can only create
    contexts, but the system object can create any kind of object */
 
-typedef CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 		int ( *CREATEOBJECT_FUNCTION )( INOUT \
 										MESSAGE_CREATEOBJECT_INFO *objectInfo,
 										const void *auxDataPtr,
@@ -149,6 +149,83 @@ typedef struct {
 
 /* The structure which stores information on a device */
 
+struct DI;
+
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *DEV_INITFUNCTION )( INOUT struct DI *deviceInfo, 
+								   IN_BUFFER_OPT( nameLength ) \
+										const char *name,
+								   IN_LENGTH_TEXT_Z const int nameLength );
+typedef STDC_NONNULL_ARG( ( 1 ) ) \
+		void ( *DEV_SHUTDOWNFUNCTION )( INOUT struct DI *deviceInfo );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *DEV_CONTROLFUNCTION )( INOUT struct DI *deviceInfo,
+									  IN_ATTRIBUTE \
+										const CRYPT_ATTRIBUTE_TYPE type,
+									  IN_BUFFER_OPT( dataLength ) void *data, 
+									  IN_LENGTH_SHORT_Z const int dataLength,
+									  INOUT_OPT \
+										MESSAGE_FUNCTION_EXTINFO *messageExtInfo );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *DEV_SELFTESTFUNCTION )( INOUT struct DI *deviceInfo,
+									   INOUT \
+										MESSAGE_FUNCTION_EXTINFO *messageExtInfo );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 5 ) ) \
+		int ( *DEV_GETITEMFUNCTION )( INOUT struct DI *deviceInfo,
+									  OUT_HANDLE_OPT \
+										CRYPT_CONTEXT *iCryptContext,
+									  IN_ENUM( KEYMGMT_ITEM ) \
+										const KEYMGMT_ITEM_TYPE itemType,
+									  IN_KEYID const CRYPT_KEYID_TYPE keyIDtype,
+									  IN_BUFFER( keyIDlength ) \
+										const void *keyID, 
+									  IN_LENGTH_KEYID const int keyIDlength,
+									  IN_BUFFER_OPT( *auxInfoLength ) \
+										void *auxInfo, 
+									  INOUT_LENGTH_SHORT_Z int *auxInfoLength, 
+									  IN_FLAGS_Z( KEYMGMT ) const int flags );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+		int ( *DEV_SETITEMFUNCTION )( INOUT struct DI *deviceInfo,
+									  IN_HANDLE \
+										const CRYPT_HANDLE iCryptHandle );
+typedef RETVAL STDC_NONNULL_ARG( ( 1, 4 ) ) \
+		int ( *DEV_DELETEITEMFUNCTION )( INOUT struct DI *deviceInfo,
+										 IN_ENUM( KEYMGMT_ITEM ) \
+											const KEYMGMT_ITEM_TYPE itemType,
+										 IN_KEYID \
+											const CRYPT_KEYID_TYPE keyIDtype,
+										 IN_BUFFER( keyIDlength ) \
+											const void *keyID, 
+										 IN_LENGTH_KEYID \
+											const int keyIDlength );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 5 ) ) \
+		int ( *DEV_GETFIRSTITEMFUNCTION )( INOUT struct DI *deviceInfo, 
+										   OUT_HANDLE_OPT \
+											CRYPT_CERTIFICATE *iCertificate,
+										   OUT int *stateInfo, 
+										   IN_KEYID \
+											const CRYPT_KEYID_TYPE keyIDtype,
+										   IN_BUFFER( keyIDlength ) \
+											const void *keyID, 
+										   IN_LENGTH_KEYID const int keyIDlength,
+										   IN_ENUM( KEYMGMT_ITEM ) \
+											const KEYMGMT_ITEM_TYPE itemType, 
+										   IN_FLAGS_Z( KEYMGMT ) \
+											const int options );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+		int ( *DEV_GETNEXTITEMFUNCTION )( INOUT struct DI *deviceInfo, 
+										  OUT_HANDLE_OPT \
+											CRYPT_CERTIFICATE *iCertificate,
+										  INOUT int *stateInfo, 
+										  IN_FLAGS_Z( KEYMGMT ) \
+											const int options );
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+		int ( *DEV_GETRANDOMFUNCTION )( INOUT struct DI *deviceInfo, 
+										OUT_BUFFER_FIXED( length ) void *buffer, 
+										IN_LENGTH_SHORT const int length,
+										INOUT_OPT \
+											MESSAGE_FUNCTION_EXTINFO *messageExtInfo );
+
 typedef struct DI {
 	/* General device information.  Alongside various handles used to access
 	   the device we also record whether the user has authenticated
@@ -178,60 +255,16 @@ typedef struct DI {
 		} deviceInfo;
 
 	/* Pointers to device access methods */
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *initFunction )( INOUT struct DI *deviceInfo, 
-						   STDC_UNUSED const char *name,
-						   STDC_UNUSED const int nameLength );
-	STDC_NONNULL_ARG( ( 1 ) ) \
-	void ( *shutdownFunction )( INOUT struct DI *deviceInfo );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1 ) ) \
-	int ( *controlFunction )( INOUT struct DI *deviceInfo,
-							  IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE type,
-							  IN_BUFFER_OPT( dataLength ) void *data, 
-							  IN_LENGTH_SHORT_Z const int dataLength,
-							  INOUT_OPT MESSAGE_FUNCTION_EXTINFO *messageExtInfo );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *selftestFunction )( INOUT struct DI *deviceInfo,
-							   INOUT \
-							   MESSAGE_FUNCTION_EXTINFO *messageExtInfo );
-	int ( *getItemFunction )( INOUT struct DI *deviceInfo,
-							  CRYPT_CONTEXT *iCryptContext,
-							  const KEYMGMT_ITEM_TYPE itemType,
-							  const CRYPT_KEYID_TYPE keyIDtype,
-							  IN_BUFFER( keyIDlength ) \
-							  const void *keyID, const int keyIDlength,
-							  IN_BUFFER_OPT( *auxInfoLength ) \
-							  void *auxInfo, int *auxInfoLength, 
-							  const int flags ) \
-							  STDC_NONNULL_ARG( ( 1, 2, 5 ) );
-	int ( *setItemFunction )( INOUT struct DI *deviceInfo,
-							  const CRYPT_HANDLE iCryptHandle ) \
-							  STDC_NONNULL_ARG( ( 1 ) );
-	int ( *deleteItemFunction )( INOUT struct DI *deviceInfo,
-								 const KEYMGMT_ITEM_TYPE itemType,
-								 const CRYPT_KEYID_TYPE keyIDtype,
-								 IN_BUFFER( keyIDlength ) \
-								 const void *keyID, const int keyIDlength ) \
-								 STDC_NONNULL_ARG( ( 1, 4 ) );
-	int ( *getFirstItemFunction )( INOUT struct DI *deviceInfo, 
-								   OUT CRYPT_CERTIFICATE *iCertificate,
-								   INOUT int *stateInfo, 
-								   const CRYPT_KEYID_TYPE keyIDtype,
-								   IN_BUFFER( keyIDlength ) \
-								   const void *keyID, const int keyIDlength,
-								   const KEYMGMT_ITEM_TYPE itemType, 
-								   const int options ) \
-								   STDC_NONNULL_ARG( ( 1, 2, 3, 5 ) );
-	int ( *getNextItemFunction )( INOUT struct DI *deviceInfo, 
-								  OUT CRYPT_CERTIFICATE *iCertificate,
-								  INOUT int *stateInfo, const int options ) \
-								  STDC_NONNULL_ARG( ( 1, 2, 3 ) );
-	CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
-	int ( *getRandomFunction)( INOUT struct DI *deviceInfo, 
-							   OUT_BUFFER_FIXED( length ) \
-							   void *buffer, IN_LENGTH_SHORT const int length,
-							   INOUT_OPT \
-							   MESSAGE_FUNCTION_EXTINFO *messageExtInfo );
+	DEV_INITFUNCTION initFunction;
+	DEV_SHUTDOWNFUNCTION shutdownFunction;
+	DEV_CONTROLFUNCTION controlFunction;
+	DEV_SELFTESTFUNCTION selftestFunction;
+	DEV_GETITEMFUNCTION getItemFunction;
+	DEV_SETITEMFUNCTION setItemFunction;
+	DEV_DELETEITEMFUNCTION deleteItemFunction;
+	DEV_GETFIRSTITEMFUNCTION getFirstItemFunction;
+	DEV_GETNEXTITEMFUNCTION getNextItemFunction;
+	DEV_GETRANDOMFUNCTION getRandomFunction;
 
 	/* Information for the system device */
 	const MECHANISM_FUNCTION_INFO *mechanismFunctions;
@@ -292,8 +325,7 @@ int setDeviceAttributeS( INOUT DEVICE_INFO *deviceInfoPtr,
   void deviceEndPKCS11( void );
   CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
   int setDevicePKCS11( INOUT DEVICE_INFO *deviceInfo, 
-					   IN_BUFFER( nameLength ) \
-					   const char *name, 
+					   IN_BUFFER( nameLength ) const char *name, 
 					   IN_LENGTH_ATTRIBUTE const int nameLength );
 #else
   #define deviceInitPKCS11()			CRYPT_OK

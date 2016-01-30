@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *							PGP Definitions Header File						*
-*						Copyright Peter Gutmann 1996-2011					*
+*						Copyright Peter Gutmann 1996-2013					*
 *																			*
 ****************************************************************************/
 
@@ -44,10 +44,42 @@ typedef enum {
 
 /* PGP signature subpacket types */
 
-#define PGP_SUBPACKET_TIME	2		/* Signing time */
-#define PGP_SUBPACKET_KEYID	16		/* Key ID */
-#define PGP_SUBPACKET_TYPEANDVALUE 20	/* Type-and-value pairs */
-#define PGP_SUBPACKET_LAST	29		/* Last valid subpacket type */
+typedef enum {
+	PGP_SUBPACKET_RESERVED_0,	/* Reserved */
+	PGP_SUBPACKET_RESERVED_1,	/* Reserved */
+	PGP_SUBPACKET_TIME,			/* Signing time */
+	PGP_SUBPACKET_EXPIRY_TIME,	/* Signature expiry time */
+	PGP_SUBPACKET_EXP_CERT,		/* Exportable certification */
+	PGP_SUBPACKET_TRUST_SIG,	/* Trust signature */
+	PGP_SUBPACKET_REGEX,		/* Regular expression */
+	PGP_SUBPACKET_REVOCABLE,	/* Revocable */
+	PGP_SUBPACKET_RESERVED_8,	/* Reserved */
+	PGP_SUBPACKET_KEY_EXP,		/* Key expiration time */
+	PGP_SUBPACKET_PLACEHOLDER,	/* Placeholder */
+	PGP_SUBPACKET_PREF_SYM,		/* Preferred symmetric algorithms */
+	PGP_SUBPACKET_REV_KEY,		/* Revocation key  */
+	PGP_SUBPACKET_RESERVED_13,	/* Reserved */
+	PGP_SUBPACKET_RESERVED_14,	/* Reserved */
+	PGP_SUBPACKET_RESERVED_15,	/* Reserved */
+	PGP_SUBPACKET_KEYID,		/* Issuer key ID */
+	PGP_SUBPACKET_RESERVED_17,	/* Reserved */
+	PGP_SUBPACKET_RESERVED_18,	/* Reserved */
+	PGP_SUBPACKET_RESERVED_19,	/* Reserved */
+	PGP_SUBPACKET_TYPEANDVALUE,	/* Type-and-value pairs */
+	PGP_SUBPACKET_PREF_HASH,	/* Preferred hash algorithms */
+	PGP_SUBPACKET_PREF_COPR,	/* Preferred compression algorithms */
+	PGP_SUBPACKET_KEYSVR_PREF,	/* Key server preferences */
+	PGP_SUBPACKET_PREF_KEY_SVR,	/* Preferred key server */
+	PGP_SUBPACKET_PRIMARY_USERID, /* Primary userID */
+	PGP_SUBPACKET_POLICY_URI,	/* Policy URI */
+	PGP_SUBPACKET_KEY_FLAGS,	/* Key flags */
+	PGP_SUBPACKET_SIGNER_USERID, /* Signer's userID  */
+	PGP_SUBPACKET_REV_REASON,	/* Reason for revocation */
+	PGP_SUBPACKET_FEATURES,		/* Features */
+	PGP_SUBPACKET_SIG_TARGET,	/* Signature target */
+	PGP_SUBPACKET_EMBED_SIGNATURE, /* Embedded signature */
+	PGP_SUBPACKET_LAST			/* Last valid subpacket type */
+	} PGP_SUBPACKET_TYPE;
 
 /* A special-case packet type that denotes a signature that follows on from 
    a one-pass signature packet.  When generating a signature of this type PGP
@@ -103,8 +135,8 @@ typedef enum {
 #define PGP_ALGO_RSA_SIGN	3		/* RSA sign-only */
 #define PGP_ALGO_ELGAMAL	16		/* ElGamal */
 #define PGP_ALGO_DSA		17		/* DSA */
-#define PGP_ALGO_ECC_RES	18		/* Reserved for "ECC" */
-#define PGP_ALGO_ECDSA_RES	19		/* Reserved for ECDSA */
+#define PGP_ALGO_ECDH		18		/* RFC 4880: Rsvd.for "ECC", RFC 6637: ECDH */
+#define PGP_ALGO_ECDSA		19		/* RFC 4880: Rsvd.for ECDSA, RFC 6637: ECDSA */
 #define PGP_ALGO_PKC_RES1	20		/* Reserved, formerly Elgamal sign */
 #define PGP_ALGO_PKC_RES2	21		/* Reserved for "X9.42" */
 
@@ -135,6 +167,7 @@ typedef enum {
 #define PGP_ALGO_SHA2_384	9		/* SHA-2 384bit */
 #define PGP_ALGO_SHA2_512	10		/* SHA-2 512bit */
 #define PGP_ALGO_SHA2_224	11		/* SHA-2 224bit */
+#define PGP_ALGO_SHAng		99		/* Future SHA-nextgen standard */
 
 /* Compression algorithms */
 
@@ -142,9 +175,9 @@ typedef enum {
 #define PGP_ALGO_ZLIB		2		/* zlib compression */
 #define PGP_ALGO_BZIP2		3		/* Bzip2 compression */
 
-/* Highest possible algorithm value, for range checking */
+/* Highest possible algorithm value used by cryptlib, for range checking */
 
-#define PGP_ALGO_LAST		PGP_ALGO_DSA
+#define PGP_ALGO_LAST		PGP_ALGO_ECDSA
 
 /* S2K specifier */
 
@@ -216,11 +249,11 @@ typedef enum {
 	} PGP_ALGOCLASS_TYPE;
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
-int pgpToCryptlibAlgo( IN_RANGE( PGP_ALGO_NONE, 0xFF ) \
-							const int pgpAlgo, 
+int pgpToCryptlibAlgo( IN_RANGE( PGP_ALGO_NONE, 0xFF ) const int pgpAlgo, 
 					   IN_ENUM( PGP_ALGOCLASS ) \
 							const PGP_ALGOCLASS_TYPE pgpAlgoClass,
-					   OUT_ALGO_Z CRYPT_ALGO_TYPE *cryptAlgo );
+					   OUT_ALGO_Z CRYPT_ALGO_TYPE *cryptAlgo,
+					   OUT_OPT_INT_Z int *cryptAlgoParam );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 2 ) ) \
 int cryptlibToPgpAlgo( IN_ALGO const CRYPT_ALGO_TYPE cryptlibAlgo,
 					   OUT_RANGE( PGP_ALGO_NONE, PGP_ALGO_LAST ) \
@@ -228,8 +261,9 @@ int cryptlibToPgpAlgo( IN_ALGO const CRYPT_ALGO_TYPE cryptlibAlgo,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int readPgpAlgo( INOUT STREAM *stream, 
 				 OUT_ALGO_Z CRYPT_ALGO_TYPE *cryptAlgo, 
+				 OUT_OPT_INT_Z int *cryptAlgoParam,
 				 IN_ENUM( PGP_ALGOCLASS ) \
-					const PGP_ALGOCLASS_TYPE pgpAlgoClass );
+						const PGP_ALGOCLASS_TYPE pgpAlgoClass );
 
 /* Prototypes for functions in pgp_misc.c */
 
@@ -237,7 +271,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int pgpPasswordToKey( IN_HANDLE const CRYPT_CONTEXT iCryptContext, 
 					  IN_LENGTH_SHORT_OPT const int optKeyLength,
 					  IN_BUFFER( passwordLength ) const char *password, 
-					  IN_LENGTH_SHORT const int passwordLength, 
+					  IN_DATALENGTH const int passwordLength, 
 					  IN_ALGO const CRYPT_ALGO_TYPE hashAlgo, 
 					  IN_BUFFER_OPT( saltSize ) const BYTE *salt, 
 					  IN_RANGE( 0, CRYPT_MAX_HASHSIZE ) const int saltSize,
@@ -250,12 +284,13 @@ int pgpProcessIV( IN_HANDLE const CRYPT_CONTEXT iCryptContext,
 				  IN_LENGTH_IV const int ivDataSize, 
 				  IN_HANDLE_OPT const CRYPT_CONTEXT iMdcContext,
 				  const BOOLEAN isEncrypt );
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 5 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 4, 6 ) ) \
 int readPgpS2K( INOUT STREAM *stream, 
 				OUT_ALGO_Z CRYPT_ALGO_TYPE *hashAlgo,
+				OUT_INT_Z int *hashAlgoParam,
 				OUT_BUFFER( saltMaxLen, *saltLen ) BYTE *salt, 
 				IN_LENGTH_SHORT_MIN( PGP_SALTSIZE ) const int saltMaxLen, 
-				OUT_LENGTH_SHORT_Z int *saltLen,
+				OUT_LENGTH_BOUNDED_Z( saltMaxLen ) int *saltLen,
 				OUT_INT_SHORT_Z int *iterations );
 
 #endif /* _PGP_DEFINED */

@@ -80,7 +80,7 @@ static BOOLEAN pairwiseConsistencyTest( INOUT CONTEXT_INFO *contextInfoPtr )
 	if( bnStatusError( bnStatus ) )
 		{
 		staticDestroyContext( &checkContextInfo );
-		return( getBnStatus( bnStatus ) );
+		return( getBnStatusBool( bnStatus ) );
 		}
 
 	/* Perform the pairwise test using the check key */
@@ -280,6 +280,14 @@ static int encryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 	REQUIRES( noBytes == sizeof( KEYAGREE_PARAMS ) );
 	REQUIRES( !BN_is_zero( &pkcInfo->dlpParam_y ) );
 
+	/* Perform side-channel attack checks */
+	if( cryptStatusError( \
+			checksumContextData( pkcInfo, CRYPT_ALGO_DH, TRUE ) ) )
+		{
+		DEBUG_DIAG(( "DH key memory corruption detected" ));
+		return( CRYPT_ERROR_FAILED );
+		}
+
 	/* y is generated either at keygen time for static DH or as a side-effect
 	   of the implicit generation of the x value for ephemeral DH, so all we
 	   have to do is copy it to the output */
@@ -289,13 +297,14 @@ static int encryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 	if( cryptStatusError( status ) )
 		return( status );
 
-	/* Perform side-channel attack checks if necessary */
-	if( ( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION ) && \
-		cryptStatusError( calculateBignumChecksum( pkcInfo, 
-												   CRYPT_ALGO_DH ) ) )
+	/* Perform side-channel attack checks */
+	if( cryptStatusError( \
+			checksumContextData( pkcInfo, CRYPT_ALGO_DH, TRUE ) ) )
 		{
+		DEBUG_DIAG(( "DH key memory corruption detected" ));
 		return( CRYPT_ERROR_FAILED );
 		}
+
 	return( CRYPT_OK );
 	}
 
@@ -320,6 +329,14 @@ static int decryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 	REQUIRES( keyAgreeParams->publicValueLen >= MIN_PKCSIZE && \
 			  keyAgreeParams->publicValueLen < MAX_INTLENGTH_SHORT );
 
+	/* Perform side-channel attack checks */
+	if( cryptStatusError( \
+			checksumContextData( pkcInfo, CRYPT_ALGO_DH, TRUE ) ) )
+		{
+		DEBUG_DIAG(( "DH key memory corruption detected" ));
+		return( CRYPT_ERROR_FAILED );
+		}
+
 	/* The other party's y value will be stored with the key agreement info
 	   rather than having been read in when we read the DH public key */
 	status = importBignum( &pkcInfo->dhParam_yPrime,
@@ -334,7 +351,7 @@ static int decryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 	   the bignum code can't handle modexp with the first two parameters the
 	   same */
 	CK( BN_mod_exp_mont( z, &pkcInfo->dhParam_yPrime, &pkcInfo->dlpParam_x,
-						 &pkcInfo->dlpParam_p, pkcInfo->bnCTX,
+						 &pkcInfo->dlpParam_p, &pkcInfo->bnCTX,
 						 &pkcInfo->dlpParam_mont_p ) );
 	if( bnStatusError( bnStatus ) )
 		return( getBnStatus( bnStatus ) );
@@ -343,13 +360,20 @@ static int decryptFn( INOUT CONTEXT_INFO *contextInfoPtr,
 	if( cryptStatusError( status ) )
 		return( status );
 
-	/* Perform side-channel attack checks if necessary */
-	if( ( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION ) && \
-		cryptStatusError( calculateBignumChecksum( pkcInfo, 
-												   CRYPT_ALGO_DH ) ) )
+	/* Make sure that the result looks random.  This is done to defend 
+	   against (most) small-subgroup confinement attacks */
+	if( !checkEntropy( keyAgreeParams->wrappedKey, 
+					   keyAgreeParams->wrappedKeyLen ) )
+		return( CRYPT_ERROR_NOSECURE );
+
+	/* Perform side-channel attack checks */
+	if( cryptStatusError( \
+			checksumContextData( pkcInfo, CRYPT_ALGO_DH, TRUE ) ) )
 		{
+		DEBUG_DIAG(( "DH key memory corruption detected" ));
 		return( CRYPT_ERROR_FAILED );
 		}
+
 	return( CRYPT_OK );
 	}
 
@@ -445,10 +469,7 @@ static int generateKey( INOUT CONTEXT_INFO *contextInfoPtr,
 			  keySizeBits <= bytesToBits( CRYPT_MAX_PKCSIZE ) );
 
 	status = generateDLPkey( contextInfoPtr, keySizeBits );
-	if( cryptStatusOK( status ) &&
-#ifndef USE_FIPS140
-		( contextInfoPtr->flags & CONTEXT_FLAG_SIDECHANNELPROTECTION ) &&
-#endif /* USE_FIPS140 */
+	if( cryptStatusOK( status ) && \
 		!pairwiseConsistencyTest( contextInfoPtr ) )
 		{
 		DEBUG_DIAG(( "Consistency check of freshly-generated DH key "
@@ -456,7 +477,7 @@ static int generateKey( INOUT CONTEXT_INFO *contextInfoPtr,
 		assert( DEBUG_WARN );
 		status = CRYPT_ERROR_FAILED;
 		}
-	return( status );
+	return( cryptArgError( status ) ? CRYPT_ERROR_FAILED : status );
 	}
 
 /****************************************************************************
@@ -467,8 +488,9 @@ static int generateKey( INOUT CONTEXT_INFO *contextInfoPtr,
 
 static const CAPABILITY_INFO FAR_BSS capabilityInfo = {
 	CRYPT_ALGO_DH, bitsToBytes( 0 ), "Diffie-Hellman", 14,
-	MIN_PKCSIZE, bitsToBytes( 1024 ), CRYPT_MAX_PKCSIZE,
-	selfTest, getDefaultInfo, NULL, NULL, initKey, generateKey, encryptFn, decryptFn
+	MIN_PKCSIZE, bitsToBytes( 1536 ), CRYPT_MAX_PKCSIZE,
+	selfTest, getDefaultInfo, NULL, NULL, initKey, generateKey, 
+	encryptFn, decryptFn
 	};
 
 const CAPABILITY_INFO *getDHCapability( void )

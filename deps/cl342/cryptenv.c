@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *						cryptlib Enveloping Routines						*
-*					  Copyright Peter Gutmann 1996-2011						*
+*					  Copyright Peter Gutmann 1996-2012						*
 *																			*
 ****************************************************************************/
 
@@ -44,8 +44,8 @@
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int envelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr, 
 						 IN_BUFFER_OPT( length ) const void *buffer,
-						 IN_LENGTH_Z const int length, 
-						 OUT_LENGTH_Z int *bytesCopied )
+						 IN_DATALENGTH_Z const int length, 
+						 OUT_DATALENGTH_Z int *bytesCopied )
 	{
 	int status;
 
@@ -55,14 +55,14 @@ static int envelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	assert( isWritePtr( bytesCopied, sizeof( int ) ) );
 
 	REQUIRES( ( buffer == NULL && length == 0 ) || \
-			  ( buffer != NULL && length > 0 && length < MAX_INTLENGTH ) );
+			  ( buffer != NULL && length > 0 && length < MAX_BUFFER_SIZE ) );
 
 	/* Clear return value */
 	*bytesCopied = 0;
 
 	/* If we haven't started processing data yet, handle the initial data
 	   specially */
-	if( envelopeInfoPtr->state == STATE_PREDATA )
+	if( envelopeInfoPtr->state == ENVELOPE_STATE_PREDATA )
 		{
 		/* Make sure that all of the information that we need to proceed is 
 		   present */
@@ -102,12 +102,12 @@ static int envelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			}
 
 		/* Move on to the data-processing state */
-		envelopeInfoPtr->state = STATE_DATA;
+		envelopeInfoPtr->state = ENVELOPE_STATE_DATA;
 		}
 
 	/* If we're in the main data processing state, add the data and perform
 	   any necessary actions on it */
-	if( envelopeInfoPtr->state == STATE_DATA )
+	if( envelopeInfoPtr->state == ENVELOPE_STATE_DATA )
 		{
 		if( length > 0 )
 			{
@@ -127,11 +127,11 @@ static int envelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			}
 
 		/* This was a flush, move on to the postdata state */
-		envelopeInfoPtr->state = STATE_POSTDATA;
+		envelopeInfoPtr->state = ENVELOPE_STATE_POSTDATA;
 		envelopeInfoPtr->envState = ENVSTATE_NONE;
 		}
 
-	ENSURES( envelopeInfoPtr->state == STATE_POSTDATA );
+	ENSURES( envelopeInfoPtr->state == ENVELOPE_STATE_POSTDATA );
 
 	/* We're past the main data-processing state, emit the postamble */
 	status = envelopeInfoPtr->processPostambleFunction( envelopeInfoPtr, 
@@ -142,7 +142,7 @@ static int envelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			envelopeInfoPtr->errorState = status;
 		return( status );
 		}
-	envelopeInfoPtr->state = STATE_FINISHED;
+	envelopeInfoPtr->state = ENVELOPE_STATE_FINISHED;
 
 	return( CRYPT_OK );
 	}
@@ -150,8 +150,8 @@ static int envelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int deenvelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr, 
 						   IN_BUFFER_OPT( length ) const void *buffer,
-						   IN_LENGTH_Z const int length, 
-						   OUT_LENGTH_Z int *bytesCopied )
+						   IN_DATALENGTH_Z const int length, 
+						   OUT_DATALENGTH_Z int *bytesCopied )
 	{
 	BYTE *bufPtr = ( BYTE * ) buffer;
 	int bytesIn = length, status = CRYPT_OK;
@@ -162,14 +162,14 @@ static int deenvelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	assert( isWritePtr( bytesCopied, sizeof( int ) ) );
 
 	REQUIRES( ( buffer == NULL && length == 0 ) || \
-			  ( buffer != NULL && length > 0 && length < MAX_INTLENGTH ) );
+			  ( buffer != NULL && length > 0 && length < MAX_BUFFER_SIZE ) );
 
 	/* Clear return value */
 	*bytesCopied = 0;
 
 	/* If we haven't started processing data yet, handle the initial data
 	   specially */
-	if( envelopeInfoPtr->state == STATE_PREDATA )
+	if( envelopeInfoPtr->state == ENVELOPE_STATE_PREDATA )
 		{
 		BOOLEAN copiedData = FALSE;
 
@@ -183,10 +183,10 @@ static int deenvelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 				return( CRYPT_ERROR_MEMORY );
 			memset( envelopeInfoPtr->buffer, 0, envelopeInfoPtr->bufSize );
 
-#ifdef USE_PGP
 			/* Try and determine what the data format being used is.  If it 
 			   looks like PGP data, try and process it as such, otherwise 
 			   default to PKCS #7/CMS/S/MIME */
+#ifdef USE_PGP
 			if( length > 0 && ( bufPtr[ 0 ] & 0x80 ) )
 				{
 				/* When we initially created the envelope we defaulted to CMS
@@ -195,7 +195,18 @@ static int deenvelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 				envelopeInfoPtr->type = CRYPT_FORMAT_PGP;
 				initPGPDeenveloping( envelopeInfoPtr );
 				}
+			else
 #endif /* USE_PGP */
+				{
+				/* The distinction between CRYPT_FORMAT_CRYPTLIB, 
+				   CRYPT_FORMAT_PKCS7/CRYPT_FORMAT_CMS, and 
+				   CRYPT_FORMAT_SMIME is only necessary when enveloping
+				   because it affects the enveloping semantics (for
+				   example whether we use issuerAndSerialNumber or
+				   keyIdentifier to identify keys), so we identify all
+				   PKCS #7/CMS/whatever envelopes as CRYPT_FORMAT_CMS */
+				envelopeInfoPtr->type = CRYPT_FORMAT_CMS;
+				}
 			}
 
 		/* Since we're processing out-of-band information, just copy it in
@@ -265,12 +276,12 @@ static int deenvelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			}
 
 		/* Move on to the data-processing state */
-		envelopeInfoPtr->state = STATE_DATA;
+		envelopeInfoPtr->state = ENVELOPE_STATE_DATA;
 		}
 
 	/* If we're in the main data processing state, add the data and perform
 	   any necessary actions on it */
-	if( envelopeInfoPtr->state == STATE_DATA )
+	if( envelopeInfoPtr->state == ENVELOPE_STATE_DATA )
 		{
 		/* If there's data to be copied, copy it into the envelope.  If we've
 		   come from the predata state we may have zero bytes to copy if
@@ -302,7 +313,7 @@ static int deenvelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			( envelopeInfoPtr->payloadSize != CRYPT_UNUSED && \
 			  envelopeInfoPtr->segmentSize <= 0 ) )
 			{
-			envelopeInfoPtr->state = STATE_POSTDATA;
+			envelopeInfoPtr->state = ENVELOPE_STATE_POSTDATA;
 			envelopeInfoPtr->deenvState = DEENVSTATE_NONE;
 			}
 
@@ -320,14 +331,14 @@ static int deenvelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			envelopeInfoPtr->payloadSize == CRYPT_UNUSED && \
 			length <= 0 )
 			{
-			envelopeInfoPtr->state = STATE_POSTDATA;
+			envelopeInfoPtr->state = ENVELOPE_STATE_POSTDATA;
 			envelopeInfoPtr->deenvState = DEENVSTATE_NONE;
 			}
 #endif /* USE_PGP */
 		}
 
 	/* If we're past the main data-processing state, process the postamble */
-	if( envelopeInfoPtr->state == STATE_POSTDATA )
+	if( envelopeInfoPtr->state == ENVELOPE_STATE_POSTDATA )
 		{
 		/* Since we're processing trailer information, just copy it in
 		   directly */
@@ -348,13 +359,19 @@ static int deenvelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 				}
 			}
 
-		/* Process the postamble.  During this processing we can encounter 
-		   two special types of recoverable error, CRYPT_ERROR_UNDERFLOW (we 
-		   need more data to continue) or OK_SPECIAL (we processed all of 
-		   the data but there's out-of-band information still to go), if 
-		   it's one of these then we don't treat it as a standard error */
+		/* Process the postamble.  Note that we need to check the caller-
+		   supplied length value rather than the local bytesIn value to 
+		   determine whether this is a flush, since bytesIn is adjusted as 
+		   data is consumed and may have reached zero by the time we get 
+		   here.
+		
+		   During this processing we can encounter two special types of 
+		   recoverable error, CRYPT_ERROR_UNDERFLOW (we need more data to 
+		   continue) or OK_SPECIAL (we processed all of the data but there's 
+		   out-of-band information still to go).  If it's one of these then 
+		   we don't treat it as a standard error */
 		status = envelopeInfoPtr->processPostambleFunction( envelopeInfoPtr,
-										( bytesIn <= 0 ) ? TRUE : FALSE );
+										( length <= 0 ) ? TRUE : FALSE );
 		if( cryptStatusError( status ) && status != OK_SPECIAL )
 			{
 			if( !isRecoverableError( status ) )
@@ -381,7 +398,7 @@ static int deenvelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 					( envelopeInfoPtr->usage == ACTION_MAC || \
 					  ( envelopeInfoPtr->usage == ACTION_CRYPT && \
 						( envelopeInfoPtr->flags & ENVELOPE_AUTHENC ) ) ) )
-					envelopeInfoPtr->state = STATE_FINISHED;
+					envelopeInfoPtr->state = ENVELOPE_STATE_FINISHED;
 				}
 			return( status );
 			}
@@ -396,7 +413,7 @@ static int deenvelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			   sig with the data supplied out-of-band */
 			envelopeInfoPtr->state = \
 					( envelopeInfoPtr->flags & ENVELOPE_DETACHED_SIG ) ? \
-					STATE_EXTRADATA : STATE_FINISHED;
+					ENVELOPE_STATE_EXTRADATA : ENVELOPE_STATE_FINISHED;
 			}
 
 		/* At this point we always exit since the out-of-band data has to be
@@ -409,7 +426,7 @@ static int deenvelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	   being used to process two independent lots of data, so we have to be 
 	   careful to distinguish between handling of the main payload data and 
 	   handling of this additional out-of-band data */
-	if( envelopeInfoPtr->state == STATE_EXTRADATA )
+	if( envelopeInfoPtr->state == ENVELOPE_STATE_EXTRADATA )
 		{
 		/* We pass this point twice, the first time round we check the state 
 		   and if it's DEENVSTATE_DONE (set when processing of the main data 
@@ -439,7 +456,7 @@ static int deenvelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			{
 			*bytesCopied = length;
 			if( length <= 0 )
-				envelopeInfoPtr->state = STATE_FINISHED;
+				envelopeInfoPtr->state = ENVELOPE_STATE_FINISHED;
 			}
 		}
 
@@ -451,8 +468,8 @@ static int deenvelopePush( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 static int envelopePop( INOUT ENVELOPE_INFO *envelopeInfoPtr, 
 						OUT_BUFFER( length, *bytesCopied ) void *buffer,
-						IN_LENGTH const int length, 
-						OUT_LENGTH_Z int *bytesCopied )
+						IN_DATALENGTH const int length, 
+						OUT_DATALENGTH_Z int *bytesCopied )
 	{
 	int status;
 
@@ -460,7 +477,7 @@ static int envelopePop( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	assert( isWritePtr( buffer, length ) );
 	assert( isWritePtr( bytesCopied, sizeof( int ) ) );
 
-	REQUIRES( length > 0 && length < MAX_INTLENGTH );
+	REQUIRES( length > 0 && length < MAX_BUFFER_SIZE );
 
 	/* Clear return value */
 	*bytesCopied = 0;
@@ -471,7 +488,7 @@ static int envelopePop( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	   then immediately tries to pop data without an intervening flush (or 
 	   implicit flush on the initial push) to resolve the state of the data 
 	   in the envelope */
-	if( envelopeInfoPtr->state == STATE_PREDATA )
+	if( envelopeInfoPtr->state == ENVELOPE_STATE_PREDATA )
 		{
 		int dummy;
 
@@ -493,7 +510,7 @@ static int envelopePop( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			return( status );
 
 		/* If we still haven't got anywhere return an underflow error */
-		if( envelopeInfoPtr->state == STATE_PREDATA )
+		if( envelopeInfoPtr->state == ENVELOPE_STATE_PREDATA )
 			return( CRYPT_ERROR_UNDERFLOW );
 		}
 
@@ -510,8 +527,8 @@ static int envelopePop( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 static int deenvelopePop( INOUT ENVELOPE_INFO *envelopeInfoPtr, 
 						  OUT_BUFFER( length, *bytesCopied ) void *buffer,
-						  IN_LENGTH const int length, 
-						  OUT_LENGTH_Z int *bytesCopied )
+						  IN_DATALENGTH const int length, 
+						  OUT_DATALENGTH_Z int *bytesCopied )
 	{
 	int status;
 
@@ -519,7 +536,7 @@ static int deenvelopePop( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	assert( isWritePtr( buffer, length ) );
 	assert( isWritePtr( bytesCopied, sizeof( int ) ) );
 
-	REQUIRES( length > 0 && length < MAX_INTLENGTH );
+	REQUIRES( length > 0 && length < MAX_BUFFER_SIZE );
 
 	/* Clear return value */
 	*bytesCopied = 0;
@@ -530,7 +547,7 @@ static int deenvelopePop( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	   and then immediately tries to pop data without an intervening flush 
 	   (or implicit flush on the initial push) to resolve the state of the 
 	   data in the envelope */
-	if( envelopeInfoPtr->state == STATE_PREDATA )
+	if( envelopeInfoPtr->state == ENVELOPE_STATE_PREDATA )
 		{
 		int dummy;
 
@@ -545,7 +562,7 @@ static int deenvelopePop( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 			return( status );
 
 		/* If we still haven't got anywhere return an underflow error */
-		if( envelopeInfoPtr->state == STATE_PREDATA )
+		if( envelopeInfoPtr->state == ENVELOPE_STATE_PREDATA )
 			return( CRYPT_ERROR_UNDERFLOW );
 		}
 
@@ -586,19 +603,20 @@ static int envelopeMessageFunction( INOUT TYPECAST( ENVELOPE_INFO * ) \
 		{
 		int status = CRYPT_OK;
 
-		/* Check to see whether the envelope still needs operations performed
-		   on it to resolve the state of the data within it (for example if
-		   the caller pushes data but doesn't flush it, there will be a few
-		   bytes left that can't be popped).  For enveloping, destroying the 
-		   envelope while it's in any state other than STATE_PREDATA or 
-		   STATE_FINISHED or if there's data still left in the buffer is 
-		   regarded as an error.  For de-enveloping we have to be more 
-		   careful since deenveloping information required to resolve the 
-		   envelope state could be unavailable so we shouldn't return an 
-		   error if something like a signature check remains to be done.  
-		   What we therefore do is check to see whether we've processed any 
-		   data yet and report an error if there's data left in the envelope 
-		   or if we're destroying it in the middle of processing data */
+		/* Check to see whether the envelope still needs operations 
+		   performed on it to resolve the state of the data within it (for 
+		   example if the caller pushes data but doesn't flush it, there 
+		   will be a few bytes left that can't be popped).  For enveloping, 
+		   destroying the envelope while it's in any state other than 
+		   ENVELOPE_STATE_PREDATA or ENVELOPE_STATE_FINISHED or if there's 
+		   data still left in the buffer is regarded as an error.  For de-
+		   enveloping we have to be more careful since deenveloping 
+		   information required to resolve the envelope state could be 
+		   unavailable so we shouldn't return an error if something like a 
+		   signature check remains to be done.  What we therefore do is 
+		   check to see whether we've processed any data yet and report an 
+		   error if there's data left in the envelope or if we're destroying 
+		   it in the middle of processing data */
 		if( envelopeInfoPtr->flags & ENVELOPE_ISDEENVELOPE )
 			{
 			const BOOLEAN isAuthEnvelope = \
@@ -625,10 +643,10 @@ static int envelopeMessageFunction( INOUT TYPECAST( ENVELOPE_INFO * ) \
 				   caller to the fact that there's a problem, so we convert 
 				   a non-finished state for an authenticated envelope into 
 				   an integrity-check failure */
-			if( envelopeInfoPtr->state == STATE_DATA )
+			if( envelopeInfoPtr->state == ENVELOPE_STATE_DATA )
 				status = CRYPT_ERROR_INCOMPLETE;
-			if( ( envelopeInfoPtr->state == STATE_POSTDATA || \
-				  envelopeInfoPtr->state == STATE_FINISHED ) && \
+			if( ( envelopeInfoPtr->state == ENVELOPE_STATE_POSTDATA || \
+				  envelopeInfoPtr->state == ENVELOPE_STATE_FINISHED ) && \
 				envelopeInfoPtr->dataLeft > 0 && \
 				!( isAuthEnvelope && \
 				   envelopeInfoPtr->errorState == CRYPT_ERROR_SIGNATURE ) )
@@ -640,8 +658,8 @@ static int envelopeMessageFunction( INOUT TYPECAST( ENVELOPE_INFO * ) \
 			{
 			/* If we're in the middle of processing data we shouldn't be
 			   destroying the envelope yet */
-			if( envelopeInfoPtr->state != STATE_PREDATA && \
-				envelopeInfoPtr->state != STATE_FINISHED )
+			if( envelopeInfoPtr->state != ENVELOPE_STATE_PREDATA && \
+				envelopeInfoPtr->state != ENVELOPE_STATE_FINISHED )
 				status = CRYPT_ERROR_INCOMPLETE;
 			if( envelopeInfoPtr->bufPos > 0 )
 				status = CRYPT_ERROR_INCOMPLETE;
@@ -757,7 +775,7 @@ static int envelopeMessageFunction( INOUT TYPECAST( ENVELOPE_INFO * ) \
 
 		REQUIRES( ( msgData->data == NULL && msgData->length == 0 ) || \
 				  ( msgData->data != NULL && \
-				    msgData->length > 0 && msgData->length < MAX_INTLENGTH ) );
+				    msgData->length > 0 && msgData->length < MAX_BUFFER_SIZE ) );
 
 		/* Unless we're told otherwise, we've copied zero bytes */
 		msgData->length = 0;
@@ -782,12 +800,12 @@ static int envelopeMessageFunction( INOUT TYPECAST( ENVELOPE_INFO * ) \
 			   attributes.  The downside of this additional checking is that 
 			   it makes any non-SCEP use of signature-only CMS envelopes 
 			   impossible */
-			if( envelopeInfoPtr->state == STATE_FINISHED )
+			if( envelopeInfoPtr->state == ENVELOPE_STATE_FINISHED )
 				return( CRYPT_OK );
 			if( !( envelopeInfoPtr->flags & ENVELOPE_ISDEENVELOPE ) && \
-				( envelopeInfoPtr->state != STATE_DATA && \
-				  envelopeInfoPtr->state != STATE_POSTDATA ) && \
-				!( envelopeInfoPtr->state == STATE_PREDATA && \
+				( envelopeInfoPtr->state != ENVELOPE_STATE_DATA && \
+				  envelopeInfoPtr->state != ENVELOPE_STATE_POSTDATA ) && \
+				!( envelopeInfoPtr->state == ENVELOPE_STATE_PREDATA && \
 				   envelopeInfoPtr->usage == ACTION_SIGN && \
 				   envelopeInfoPtr->type == CRYPT_FORMAT_CMS && \
 				   ( envelopeInfoPtr->flags & ENVELOPE_ATTRONLY ) ) )
@@ -795,10 +813,10 @@ static int envelopeMessageFunction( INOUT TYPECAST( ENVELOPE_INFO * ) \
 			}
 		else
 			{
-			if( envelopeInfoPtr->state == STATE_FINISHED )
+			if( envelopeInfoPtr->state == ENVELOPE_STATE_FINISHED )
 				return( CRYPT_ERROR_COMPLETE );
 			}
-		if( envelopeInfoPtr->errorState != CRYPT_OK )
+		if( cryptStatusError( envelopeInfoPtr->errorState ) )
 			return( envelopeInfoPtr->errorState );
 		if( !( envelopeInfoPtr->flags & ENVELOPE_ISDEENVELOPE ) && \
 			( envelopeInfoPtr->dataFlags & ENVDATA_NOSEGMENT ) && \
@@ -843,13 +861,13 @@ static int envelopeMessageFunction( INOUT TYPECAST( ENVELOPE_INFO * ) \
 
 		assert( isWritePtr( msgData->data, msgData->length ) );
 
-		REQUIRES( msgData->length > 0 && msgData->length < MAX_INTLENGTH );
+		REQUIRES( msgData->length > 0 && msgData->length < MAX_BUFFER_SIZE );
 
 		/* Unless we're told otherwise, we've copied zero bytes */
 		msgData->length = 0;
 
 		/* Make sure that everything is in order */
-		if( envelopeInfoPtr->errorState != CRYPT_OK )
+		if( cryptStatusError( envelopeInfoPtr->errorState ) )
 			return( envelopeInfoPtr->errorState );
 
 		/* Get the data from the envelope */
@@ -875,7 +893,7 @@ static int initEnvelope( OUT_HANDLE_OPT CRYPT_ENVELOPE *iCryptEnvelope,
 						 IN_HANDLE const CRYPT_USER iCryptOwner,
 						 IN_ENUM( CRYPT_FORMAT ) \
 							const CRYPT_FORMAT_TYPE formatType,
-						 OUT_OPT_PTR ENVELOPE_INFO **envelopeInfoPtrPtr )
+						 OUT_PTR_OPT ENVELOPE_INFO **envelopeInfoPtrPtr )
 	{
 	ENVELOPE_INFO *envelopeInfoPtr;
 	const BOOLEAN isDeenvelope = ( formatType == CRYPT_FORMAT_AUTO ) ? \
@@ -921,7 +939,7 @@ static int initEnvelope( OUT_HANDLE_OPT CRYPT_ENVELOPE *iCryptEnvelope,
 	if( isDeenvelope )
 		envelopeInfoPtr->flags = ENVELOPE_ISDEENVELOPE;
 	envelopeInfoPtr->type = formatType;
-	envelopeInfoPtr->state = STATE_PREDATA;
+	envelopeInfoPtr->state = ENVELOPE_STATE_PREDATA;
 	envelopeInfoPtr->storageSize = storageSize;
 	status = initMemPool( envelopeInfoPtr->memPoolState, 
 						  envelopeInfoPtr->storage, storageSize );

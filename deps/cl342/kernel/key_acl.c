@@ -15,6 +15,8 @@
   #include "kernel/kernel.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_KEYSETS
+
 /* A pointer to the kernel data block */
 
 static KERNEL_DATA *krnlData = NULL;
@@ -254,17 +256,18 @@ static const IDTYPE_ACL idTypeACL[] = {
 	{ CRYPT_KEYID_URI, 
 	  ST_KEYSET_ANY | ST_DEV_P11 | ST_DEV_HW },
 	{ CRYPT_IKEYID_KEYID, 
-	  ST_KEYSET_FILE | ST_KEYSET_FILE_RO | ST_KEYSET_DBMS | \
-	  ST_KEYSET_DBMS_STORE | ST_DEV_P11 | ST_DEV_HW },
+	  ST_KEYSET_FILE | ST_KEYSET_FILE_PARTIAL | ST_KEYSET_FILE_RO | \
+		ST_KEYSET_DBMS | ST_KEYSET_DBMS_STORE | ST_DEV_P11 | ST_DEV_HW },
 	{ CRYPT_IKEYID_PGPKEYID, 
-	  ST_KEYSET_FILE | ST_KEYSET_FILE_RO | ST_DEV_HW },
+	  ST_KEYSET_FILE | ST_KEYSET_FILE_PARTIAL | ST_KEYSET_FILE_RO | \
+		ST_DEV_HW },
 	{ CRYPT_IKEYID_CERTID, 
 	  ST_KEYSET_DBMS | ST_KEYSET_DBMS_STORE },
 	{ CRYPT_IKEYID_ISSUERID, 
 	  ST_KEYSET_FILE | ST_KEYSET_DBMS | ST_KEYSET_DBMS_STORE | ST_DEV_HW },
 	{ CRYPT_IKEYID_ISSUERANDSERIALNUMBER, 
 	  ST_KEYSET_FILE | ST_KEYSET_DBMS | ST_KEYSET_DBMS_STORE | ST_DEV_P11 | \
-	  ST_DEV_HW },
+		ST_DEV_HW },
 	{ CRYPT_KEYID_NONE, ST_NONE },
 		{ CRYPT_KEYID_NONE, ST_NONE }
 	};
@@ -281,6 +284,12 @@ int initKeymgmtACL( INOUT KERNEL_DATA *krnlDataPtr )
 	int i;
 
 	assert( isWritePtr( krnlDataPtr, sizeof( KERNEL_DATA ) ) );
+
+	/* If we're running a fuzzing build, skip the lengthy self-checks */
+#ifdef CONFIG_FUZZ
+	krnlData = krnlDataPtr;
+	return( CRYPT_OK );
+#endif /* CONFIG_FUZZ */
 
 	/* Perform a consistency check on the key management ACLs */
 	for( i = 0; keyManagementACL[ i ].itemType != KEYMGMT_ITEM_NONE && \
@@ -399,7 +408,7 @@ int initKeymgmtACL( INOUT KERNEL_DATA *krnlDataPtr )
 	ENSURES( i < FAILSAFE_ARRAYSIZE( keyManagementACL, KEYMGMT_ACL ) );
 
 	/* Perform a consistency check on the supplementary ID ACLs */
-	for( i = 0; idTypeACL[ i ].idType != KEYMGMT_ITEM_NONE && \
+	for( i = 0; idTypeACL[ i ].idType != CRYPT_KEYID_NONE && \
 				i < FAILSAFE_ARRAYSIZE( idTypeACL, IDTYPE_ACL ); 
 		 i++ )
 		{
@@ -458,7 +467,7 @@ int preDispatchCheckKeysetAccess( IN_HANDLE const int objectHandle,
 			( localMessage == MESSAGE_KEY_GETNEXTCERT ) ? ACCESS_FLAG_N : 0;
 	const OBJECT_INFO *objectTable = krnlData->objectTable;
 	OBJECT_SUBTYPE subType;
-	int paramObjectHandle, i;
+	int paramObjectHandle, i, status;
 
 	assert( isReadPtr( messageDataPtr, sizeof( MESSAGE_KEYMGMT_INFO ) ) );
 
@@ -557,6 +566,11 @@ int preDispatchCheckKeysetAccess( IN_HANDLE const int objectHandle,
 	if( keymgmtACL->idUseFlags & accessType )
 		{
 		const IDTYPE_ACL *idACL = NULL;
+		const int minKeyIDsize = \
+					( mechanismInfo->keyIDtype == CRYPT_IKEYID_KEYID ) ? \
+					  1 : MIN_NAME_LENGTH;
+					/* The keyID can be as little as a single byte when it's 
+					   stored in a keyset/device from a non-cryptlib source */
 		BOOLEAN keyIdOK = FALSE;
 		int index;
 
@@ -567,7 +581,7 @@ int preDispatchCheckKeysetAccess( IN_HANDLE const int objectHandle,
 		if( !isInternalMessage( message ) && \
 			mechanismInfo->keyIDtype >= CRYPT_KEYID_LAST_EXTERNAL )
 			return( CRYPT_ARGERROR_NUM1 );
-		if( mechanismInfo->keyIDlength < MIN_NAME_LENGTH || \
+		if( mechanismInfo->keyIDlength < minKeyIDsize || \
 			mechanismInfo->keyIDlength >= MAX_ATTRIBUTE_SIZE || \
 			!isReadPtr( mechanismInfo->keyID, mechanismInfo->keyIDlength ) )
 			return( CRYPT_ARGERROR_STR1 );
@@ -598,7 +612,7 @@ int preDispatchCheckKeysetAccess( IN_HANDLE const int objectHandle,
 		/* Finally, check that the keyID is valid for the keyset type.  This 
 		   implements the third stage of the three-way check
 		   keysetType :: itemType :: idType */
-		for( index = 0; idTypeACL[ index ].idType != KEYMGMT_ITEM_NONE && \
+		for( index = 0; idTypeACL[ index ].idType != CRYPT_KEYID_NONE && \
 						index < FAILSAFE_ARRAYSIZE( idTypeACL, IDTYPE_ACL ); 
 			 index++ )
 			{
@@ -713,7 +727,7 @@ int preDispatchCheckKeysetAccess( IN_HANDLE const int objectHandle,
 				mechanismInfo->keyIDtype != CRYPT_KEYID_NONE && \
 				mechanismInfo->keyID != NULL && \
 				mechanismInfo->keyIDlength > 0 && \
-				mechanismInfo->keyIDlength < MAX_INTLENGTH ) ||
+				mechanismInfo->keyIDlength < MAX_INTLENGTH_SHORT ) ||
 			  ( !( keymgmtACL->idUseFlags & accessType ) && \
 				mechanismInfo->keyIDtype == CRYPT_KEYID_NONE && \
 				mechanismInfo->keyID == NULL && \
@@ -726,14 +740,14 @@ int preDispatchCheckKeysetAccess( IN_HANDLE const int objectHandle,
 			  ( ( keymgmtACL->pwUseFlags & accessType ) && \
 				mechanismInfo->auxInfo != NULL && \
 				mechanismInfo->auxInfoLength > 0 && \
-				mechanismInfo->auxInfoLength < MAX_INTLENGTH ) ||
+				mechanismInfo->auxInfoLength < MAX_INTLENGTH_SHORT ) ||
 			  ( !( keymgmtACL->pwUseFlags & accessType ) && \
 				mechanismInfo->auxInfo == NULL && \
 				mechanismInfo->auxInfoLength == 0 ) );
 	REQUIRES( !( mechanismInfo->flags & KEYMGMT_FLAG_LABEL_ONLY ) || \
 			  ( mechanismInfo->auxInfo != NULL && \
 				mechanismInfo->auxInfoLength > 0 && \
-				mechanismInfo->auxInfoLength < MAX_INTLENGTH ) );
+				mechanismInfo->auxInfoLength < MAX_INTLENGTH_SHORT ) );
 
 	/* Perform message-type-specific checking of parameters */
 	switch( localMessage )
@@ -764,9 +778,10 @@ int preDispatchCheckKeysetAccess( IN_HANDLE const int objectHandle,
 				   we look for an associated context and try again */
 				if( keymgmtACL->objSubTypeA != ST_CTX_PKC )
 					return( CRYPT_ARGERROR_NUM1 );
-				paramObjectHandle = findTargetType( paramObjectHandle,
-													OBJECT_TYPE_CONTEXT );
-				if( cryptStatusError( paramObjectHandle ) || \
+				status = findTargetType( paramObjectHandle, 
+										 &paramObjectHandle,
+										 OBJECT_TYPE_CONTEXT );
+				if( cryptStatusError( status ) || \
 					objectST( paramObjectHandle ) != ST_CTX_PKC )
 					return( CRYPT_ARGERROR_NUM1 );
 				}
@@ -794,9 +809,10 @@ int preDispatchCheckKeysetAccess( IN_HANDLE const int objectHandle,
 			/* We need a specific cert type for this keyset, make sure that
 			   we've been passed this and not just a generic PKC-equivalent
 			   object */
-			paramObjectHandle = findTargetType( mechanismInfo->cryptHandle,
-												OBJECT_TYPE_CERTIFICATE );
-			if( cryptStatusError( paramObjectHandle ) )
+			status = findTargetType( mechanismInfo->cryptHandle, 
+									 &paramObjectHandle, 
+									 OBJECT_TYPE_CERTIFICATE );
+			if( cryptStatusError( status ) )
 				return( CRYPT_ARGERROR_NUM1 );
 			subType = objectST( paramObjectHandle );
 			if( !isValidSubtype( keymgmtACL->specificObjSubTypeA, subType ) && \
@@ -827,3 +843,18 @@ int preDispatchCheckKeysetAccess( IN_HANDLE const int objectHandle,
 
 	return( CRYPT_OK );
 	}
+#else
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
+int preDispatchCheckKeysetAccess( IN_HANDLE const int objectHandle,
+								  IN_MESSAGE const MESSAGE_TYPE message,
+								  IN_BUFFER_C( sizeof( MESSAGE_KEYMGMT_INFO ) ) \
+										const void *messageDataPtr,
+								  IN_ENUM( KEYMGMT_ITEM ) const int messageValue,
+								  STDC_UNUSED const void *dummy )
+	{
+	UNUSED_ARG( messageDataPtr );
+
+	return( CRYPT_ERROR_PERMISSION );
+	}
+#endif /* USE_KEYSETS */

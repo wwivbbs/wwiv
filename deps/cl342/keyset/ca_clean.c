@@ -8,13 +8,13 @@
 #if defined( INC_ALL )
   #include "crypt.h"
   #include "asn1.h"
-  #include "keyset.h"
   #include "dbms.h"
+  #include "keyset.h"
 #else
   #include "crypt.h"
   #include "enc_dec/asn1.h"
-  #include "keyset/keyset.h"
   #include "keyset/dbms.h"
+  #include "keyset/keyset.h"
 #endif /* Compiler-specific includes */
 
 /* When we iterate through the entries in the certificate store we have to 
@@ -54,6 +54,8 @@ static int deleteIncompleteRequest( INOUT DBMS_INFO *dbmsInfo,
 	assert( isWritePtr( dbmsInfo, sizeof( DBMS_INFO ) ) );
 	assert( isReadPtr( reqCertID, reqCertIDlength ) );
 
+	ANALYSER_HINT_STRING( reasonMessage );
+
 	REQUIRES( reqCertIDlength > 0 && reqCertIDlength < MAX_INTLENGTH_SHORT );
 	REQUIRES( cryptStatusError( errorStatus ) );
 
@@ -79,6 +81,8 @@ static int deleteIncompleteCert( INOUT DBMS_INFO *dbmsInfo,
 	int certIDlength, status;
 
 	assert( isWritePtr( dbmsInfo, sizeof( DBMS_INFO ) ) );
+
+	ANALYSER_HINT_STRING( reasonMessage );
 
 	REQUIRES( cryptStatusError( errorStatus ) );
 
@@ -111,8 +115,9 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 static int getNextPartialCert( INOUT DBMS_INFO *dbmsInfo,
 							   OUT_HANDLE_OPT CRYPT_CERTIFICATE *iCertificate,
 							   INOUT_BUFFER_FIXED( prevCertDataMaxLen ) \
-								BYTE *prevCertData, 
-							   IN_LENGTH_SHORT const int prevCertDataMaxLen, 
+									BYTE *prevCertData, 
+							   IN_LENGTH_FIXED( MAX_PREVCERT_DATA ) \
+									const int prevCertDataMaxLen, 
 							   const BOOLEAN isRenewal )
 	{
 	MESSAGE_CREATEOBJECT_INFO createInfo;
@@ -126,8 +131,7 @@ static int getNextPartialCert( INOUT DBMS_INFO *dbmsInfo,
 	assert( isWritePtr( iCertificate, sizeof( CRYPT_CERTIFICATE ) ) );
 	assert( isWritePtr( prevCertData, prevCertDataMaxLen ) );
 
-	REQUIRES( prevCertDataMaxLen > 0 && \
-			  prevCertDataMaxLen < MAX_INTLENGTH_SHORT );
+	REQUIRES( prevCertDataMaxLen == MAX_PREVCERT_DATA );
 
 	/* Clear return value */
 	*iCertificate = CRYPT_ERROR;

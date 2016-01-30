@@ -52,6 +52,13 @@
 
 #define TEST_ALGORITHMS
 
+/* The default PKC algorithm that we use when generating keys in the device.
+   This is usually the universal-standard RSA, but can be switched to other
+   algorithms when we're testing different device capabilities */
+
+#define DEVICE_PKC_ALGO			CRYPT_ALGO_RSA
+/* #define DEVICE_PKC_ALGO			CRYPT_ALGO_ECDSA */
+
 #ifdef TEST_DEVICE
 
 /* Note that Fortezza support was removed as of cryptlib 3.4.0, the Fortezza 
@@ -162,17 +169,20 @@
    documented nonstandard arguments, see the comment in device/pkcs11_init.c 
    for more on this.  The easiest way to arrange to have all the files in 
    the right place is to chdir to "C:/Program Files/Mozilla Firefox" before 
-   loading the DLL, but even this doesn't mean that it'll work properly.
+   loading the DLL, but even this doesn't mean that it'll work properly 
+   (this behaviour isn't really a bug, softokn3.dll was only ever meant to 
+   be used as a crypto layer for NSS, it was never intended to be a general-
+   purpose PKCS #11 soft-token).
 
-   The presence of a device entry in this table doesn't necessarily mean
-   that the PKCS #11 driver that it comes with functions correctly, or at
-   all.  In particular the iButton driver is still in beta so it has some
-   features unimplemented, and the Utimaco driver apparently has some really
-   strange bugs, as well as screwing up Windows power management so that
-   suspends either aren't possible any more or will crash apps.  At the
-   other end of the scale the Datakey (before Rainbow got to them), Eracom
-   (usually, for older versions of the driver), iD2, and nCipher drivers are 
-   pretty good */
+   The presence of a device entry in this table doesn't necessarily mean 
+   that the PKCS #11 driver that it comes with functions correctly, or at 
+   all.  In particular the iButton driver never really got out of beta so it 
+   has some features unimplemented, and the Utimaco driver apparently has 
+   some really strange bugs, as well as screwing up Windows power management 
+   so that suspends either aren't possible any more or will crash apps.  At 
+   the other end of the scale the Datakey (before Rainbow got to them), 
+   Eracom (usually, for older versions of the driver), iD2, and nCipher 
+   drivers are pretty good */
 
 typedef struct {
 	const char *name;
@@ -214,6 +224,7 @@ static const DEVICE_CONFIG_INFO pkcs11DeviceInfo[] = {
 	{ "Safelayer PKCS#11", "Safelayer", "test", "Test user key" },
 	{ "Schlumberger", "Schlumberger", "QWERTYUI", "Test user key" },
 	{ "SignLite security module", "IBM SignLite", "test", "Test user key" },
+	{ "SmartCard-HSM (UserPIN)", "CardContact", "123456", "rsa2k" },
 	{ "Spyrus Rosetta", "Spyrus Rosetta", "test", "Test user key" },
 	{ "Spyrus Lynks", "Spyrus Lynks", "test", "Test user key" },
 	{ "Sun Metaslot", "nCipher on Solaris", "test", "Test user key" },
@@ -756,7 +767,7 @@ static BOOLEAN testPersistentObject( const CRYPT_DEVICE cryptDevice )
 	status = cryptDeviceQueryCapability( cryptDevice, cryptAlgo, NULL );
 	if( cryptStatusError( status ) )
 		{
-		cryptAlgo = CRYPT_ALGO_DES;
+		cryptAlgo = CRYPT_ALGO_3DES;
 		status = cryptDeviceQueryCapability( cryptDevice, cryptAlgo, NULL );
 		}
 	if( cryptStatusOK( status ) )
@@ -850,7 +861,7 @@ static BOOLEAN testDeviceHighlevel( const CRYPT_DEVICE cryptDevice,
 		{
 		const CRYPT_ALGO_TYPE cryptAlgo = \
 						( deviceType == CRYPT_DEVICE_FORTEZZA ) ? \
-						CRYPT_ALGO_DSA : CRYPT_ALGO_RSA;
+						CRYPT_ALGO_DSA : DEVICE_PKC_ALGO;
 
 		if( deviceType != CRYPT_DEVICE_CRYPTOAPI )
 			{
@@ -1159,7 +1170,7 @@ static int testCryptoDevice( const CRYPT_DEVICE_TYPE deviceType,
 		   write-protected so all we have to do is make sure that whatever
 		   we create is ephemeral */
 		status = cryptDeviceCreateContext( cryptDevice, &cryptContext,
-										   CRYPT_ALGO_DES );
+										   CRYPT_ALGO_3DES );
 		if( cryptStatusOK( status ) )
 			cryptDestroyContext( cryptContext );
 		if( status == CRYPT_ERROR_PERMISSION )

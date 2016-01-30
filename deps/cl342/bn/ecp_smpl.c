@@ -745,6 +745,7 @@ int ec_GFp_simple_set_compressed_coordinates(const EC_GROUP *group, EC_POINT *po
 		{
 		if (BN_is_zero(y))
 			{
+#if 0	/* This always ends in a goto err - pcg */
 			int kron;
 
 			kron = BN_kronecker(x, &group->field, ctx);
@@ -755,6 +756,7 @@ int ec_GFp_simple_set_compressed_coordinates(const EC_GROUP *group, EC_POINT *po
 			else
 				/* BN_mod_sqrt() should have cought this error (not a square) */
 				ECerr(EC_F_EC_GFP_SIMPLE_SET_COMPRESSED_COORDINATES, EC_R_INVALID_COMPRESSED_POINT);
+#endif /* 0 */
 			goto err;
 			}
 		if (!BN_usub(y, &group->field, y)) goto err;

@@ -66,6 +66,8 @@
   #include "crypt/rc2locl.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_RC2
+
 void RC2_cbc_encrypt(const unsigned char *in, unsigned char *out, long length,
 	     RC2_KEY *ks, unsigned char *iv, int encrypt)
 	{
@@ -230,4 +232,4 @@ void RC2_decrypt(unsigned long *d, RC2_KEY *key)
 	d[0]=(unsigned long)(x0&0xffff)|((unsigned long)(x1&0xffff)<<16L);
 	d[1]=(unsigned long)(x2&0xffff)|((unsigned long)(x3&0xffff)<<16L);
 	}
-
+#endif /* USE_RC2 */

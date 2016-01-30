@@ -5,7 +5,7 @@ Option Explicit
 '*****************************************************************************
 '*                                                                           *
 '*                        cryptlib External API Interface                    *
-'*                       Copyright Peter Gutmann 1997-2012                   *
+'*                       Copyright Peter Gutmann 1997-2015                   *
 '*                                                                           *
 '*                 adapted for Visual Basic Version 6  by W. Gothier         *
 '*****************************************************************************
@@ -15,7 +15,7 @@ Option Explicit
 
 'This file has been created automatically by a perl script from the file:
 '
-'"cryptlib.h" dated Wed Aug 29 15:34:08 2012, filesize = 97645.
+'"cryptlib.h" dated Mon Dec  7 02:33:30 2015, filesize = 98078.
 '
 'Please check twice that the file matches the version of cryptlib.h
 'in your cryptlib source! If this is not the right version, try to download an
@@ -29,7 +29,7 @@ Option Explicit
 
 '-----------------------------------------------------------------------------
 
-  Public Const CRYPTLIB_VERSION As Long = 3410
+  Public Const CRYPTLIB_VERSION As Long = 3430
 
 '****************************************************************************
 '*                                                                           *
@@ -49,35 +49,35 @@ Public Enum CRYPT_ALGO_TYPE
     CRYPT_ALGO_3DES                 ' Triple DES 
     CRYPT_ALGO_IDEA                 ' IDEA (only used for PGP 2.x) 
     CRYPT_ALGO_CAST                 ' CAST-128 (only used for OpenPGP) 
-    CRYPT_ALGO_RC2                  ' RC2 (disabled by default) 
-    CRYPT_ALGO_RC4                  ' RC4 
-    CRYPT_ALGO_RC5                  ' RC5 
+    CRYPT_ALGO_RC2                  ' RC2 (disabled by default, used for PKCS #12) 
+    CRYPT_ALGO_RC4                  ' RC4 (insecure, deprecated) 
+    CRYPT_ALGO_RESERVED1            ' Formerly RC5 
     CRYPT_ALGO_AES                  ' AES 
-    CRYPT_ALGO_BLOWFISH             ' Blowfish 
+    CRYPT_ALGO_RESERVED2            ' Formerly Blowfish 
 
     ' Public-key encryption 
     CRYPT_ALGO_DH = 100             ' Diffie-Hellman 
     CRYPT_ALGO_RSA                  ' RSA 
     CRYPT_ALGO_DSA                  ' DSA 
     CRYPT_ALGO_ELGAMAL              ' ElGamal 
-    CRYPT_ALGO_RESERVED1            ' Formerly KEA 
+    CRYPT_ALGO_RESERVED3            ' Formerly KEA 
     CRYPT_ALGO_ECDSA                ' ECDSA 
     CRYPT_ALGO_ECDH                 ' ECDH 
 
     ' Hash algorithms 
-    CRYPT_ALGO_RESERVED2 = 200      ' Formerly MD2 
-    CRYPT_ALGO_RESERVED3            ' Formerly MD4 
-    CRYPT_ALGO_MD5                  ' MD5 
+    CRYPT_ALGO_RESERVED4 = 200      ' Formerly MD2 
+    CRYPT_ALGO_RESERVED5            ' Formerly MD4 
+    CRYPT_ALGO_MD5                  ' MD5 (only used for TLS 1.0/1.1) 
     CRYPT_ALGO_SHA1                 ' SHA/SHA1 
-    CRYPT_ALGO_RIPEMD160            ' RIPE-MD 160 
+    CRYPT_ALGO_RESERVED6            ' Formerly RIPE-MD 160 
     CRYPT_ALGO_SHA2                 ' SHA-256 
         CRYPT_ALGO_SHA256 = CRYPT_ALGO_SHA2 ' Alternate name 
     CRYPT_ALGO_SHAng                ' Future SHA-nextgen standard 
 
     ' MAC's 
-    CRYPT_ALGO_HMAC_MD5 = 300       ' HMAC-MD5 
+    CRYPT_ALGO_RESREVED_7 = 300     ' Formerly HMAC-MD5 
     CRYPT_ALGO_HMAC_SHA1            ' HMAC-SHA 
-    CRYPT_ALGO_HMAC_RIPEMD160       ' HMAC-RIPEMD-160 
+    CRYPT_ALGO_RESERVED8            ' Formerly HMAC-RIPEMD-160 
     CRYPT_ALGO_HMAC_SHA2            ' HMAC-SHA2 
     CRYPT_ALGO_HMAC_SHAng           ' HMAC-future-SHA-nextgen 
 
@@ -111,7 +111,6 @@ Public Enum CRYPT_MODE_TYPE
     CRYPT_MODE_ECB                  ' ECB 
     CRYPT_MODE_CBC                  ' CBC 
     CRYPT_MODE_CFB                  ' CFB 
-    CRYPT_MODE_OFB                  ' OFB 
     CRYPT_MODE_GCM                  ' GCM 
     CRYPT_MODE_LAST                 ' Last possible crypt mode value 
     
@@ -198,7 +197,9 @@ Public Enum CRYPT_SESSION_TYPE
     CRYPT_SESSION_SSH               ' SSH 
     CRYPT_SESSION_SSH_SERVER        ' SSH server 
     CRYPT_SESSION_SSL               ' SSL/TLS 
+        CRYPT_SESSION_TLS = CRYPT_SESSION_SSL
     CRYPT_SESSION_SSL_SERVER        ' SSL/TLS server 
+        CRYPT_SESSION_TLS_SERVER = CRYPT_SESSION_SSL_SERVER
     CRYPT_SESSION_RTCS              ' RTCS 
     CRYPT_SESSION_RTCS_SERVER       ' RTCS server 
     CRYPT_SESSION_OCSP              ' OCSP 
@@ -281,7 +282,7 @@ Public Enum CRYPT_ATTRIBUTE_TYPE
     CRYPT_ATTRIBUTE_CURRENT_INSTANCE    ' Cursor mgt: Instance in attribute list 
     CRYPT_ATTRIBUTE_BUFFERSIZE      ' Internal data buffer size 
 
-    ' User internally 
+    ' Used internally 
     CRYPT_GENERIC_LAST
     CRYPT_OPTION_FIRST = 100
 
@@ -406,10 +407,7 @@ Public Enum CRYPT_ATTRIBUTE_TYPE
     CRYPT_CERTINFO_IMMUTABLE        ' Cert is signed and immutable 
     CRYPT_CERTINFO_XYZZY            ' Cert is a magic just-works cert 
     CRYPT_CERTINFO_CERTTYPE         ' Certificate object type 
-    CRYPT_CERTINFO_FINGERPRINT      ' Certificate fingerprints 
-        CRYPT_CERTINFO_FINGERPRINT_MD5 = CRYPT_CERTINFO_FINGERPRINT
-    CRYPT_CERTINFO_FINGERPRINT_SHA1
-        CRYPT_CERTINFO_FINGERPRINT_SHA = CRYPT_CERTINFO_FINGERPRINT_SHA1
+    CRYPT_CERTINFO_FINGERPRINT_SHA1 ' Certificate fingerprints 
     CRYPT_CERTINFO_FINGERPRINT_SHA2
     CRYPT_CERTINFO_FINGERPRINT_SHAng
     CRYPT_CERTINFO_CURRENT_CERTIFICATE ' Cursor mgt: Rel.pos in chain/CRL/OCSP 
@@ -440,6 +438,7 @@ Public Enum CRYPT_ATTRIBUTE_TYPE
     CRYPT_CERTINFO_PKIUSER_ID       ' PKI user ID 
     CRYPT_CERTINFO_PKIUSER_ISSUEPASSWORD    ' PKI user issue password 
     CRYPT_CERTINFO_PKIUSER_REVPASSWORD      ' PKI user revocation password 
+    CRYPT_CERTINFO_PKIUSER_RA       ' PKI user is an RA 
 
 '      X.520 Distinguished Name components.  This is a composite field, the
 '      DN to be manipulated is selected through the addition of a
@@ -820,11 +819,6 @@ Public Enum CRYPT_ATTRIBUTE_TYPE
     CRYPT_CERTINFO_CMS_SMIMECAP_3DES        ' 3DES encryption 
     CRYPT_CERTINFO_CMS_SMIMECAP_AES         ' AES encryption 
     CRYPT_CERTINFO_CMS_SMIMECAP_CAST128     ' CAST-128 encryption 
-    CRYPT_CERTINFO_CMS_SMIMECAP_IDEA        ' IDEA encryption 
-    CRYPT_CERTINFO_CMS_SMIMECAP_RC2         ' RC2 encryption (w.128 key) 
-    CRYPT_CERTINFO_CMS_SMIMECAP_RC5         ' RC5 encryption (w.128 key) 
-    CRYPT_CERTINFO_CMS_SMIMECAP_SKIPJACK    ' Skipjack encryption 
-    CRYPT_CERTINFO_CMS_SMIMECAP_DES         ' DES encryption 
     CRYPT_CERTINFO_CMS_SMIMECAP_SHAng       ' SHA2-ng hash 
     CRYPT_CERTINFO_CMS_SMIMECAP_SHA2        ' SHA2-256 hash 
     CRYPT_CERTINFO_CMS_SMIMECAP_SHA1        ' SHA1 hash 
@@ -1027,7 +1021,7 @@ Public Enum CRYPT_ATTRIBUTE_TYPE
     ' Client/server information 
     CRYPT_SESSINFO_SERVER_NAME      ' Server name 
     CRYPT_SESSINFO_SERVER_PORT      ' Server port number 
-    CRYPT_SESSINFO_SERVER_FINGERPRINT ' Server key fingerprint 
+    CRYPT_SESSINFO_SERVER_FINGERPRINT_SHA1 ' Server key fingerprint 
     CRYPT_SESSINFO_CLIENT_NAME      ' Client name 
     CRYPT_SESSINFO_CLIENT_PORT      ' Client port number 
     CRYPT_SESSINFO_SESSION          ' Transport mechanism 
@@ -1355,15 +1349,20 @@ Public Enum CRYPT_CERTACTION_TYPE
 End Enum
 
 '  SSL/TLS protocol options.  CRYPT_SSLOPTION_MINVER_SSLV3 is the same as 
-'  CRYPT_SSLOPTION_NONE since this is the default 
+'  CRYPT_SSLOPTION_NONE since this is the baseline, although it's generally
+'  never encountered since SSLv3 is disabled 
 
-  Public Const CRYPT_SSLOPTION_NONE As Long = &H00
-  Public Const CRYPT_SSLOPTION_MINVER_SSLV3 As Long = &H00    ' Min.protocol version 
-  Public Const CRYPT_SSLOPTION_MINVER_TLS10 As Long = &H01
-  Public Const CRYPT_SSLOPTION_MINVER_TLS11 As Long = &H02
-  Public Const CRYPT_SSLOPTION_MINVER_TLS12 As Long = &H03
-  Public Const CRYPT_SSLOPTION_SUITEB_128 As Long = &H04    ' SuiteB security levels 
-  Public Const CRYPT_SSLOPTION_SUITEB_256 As Long = &H08
+  Public Const CRYPT_SSLOPTION_NONE As Long = &H000
+  Public Const CRYPT_SSLOPTION_MINVER_SSLV3 As Long = &H000   ' Min.protocol version 
+  Public Const CRYPT_SSLOPTION_MINVER_TLS10 As Long = &H001
+  Public Const CRYPT_SSLOPTION_MINVER_TLS11 As Long = &H002
+  Public Const CRYPT_SSLOPTION_MINVER_TLS12 As Long = &H003
+  Public Const CRYPT_SSLOPTION_MINVER_TLS13 As Long = &H004
+  Public Const CRYPT_SSLOPTION_MANUAL_CERTCHECK As Long = &H008   ' Require manual cert.verif.
+  Public Const CRYPT_SSLOPTION_DISABLE_NAMEVERIFY As Long = &H010   ' Disable cert hostname check 
+  Public Const CRYPT_SSLOPTION_DISABLE_CERTVERIFY As Long = &H020   ' Disable certificate check 
+  Public Const CRYPT_SSLOPTION_SUITEB_128 As Long = &H100   ' SuiteB security levels (may 
+  Public Const CRYPT_SSLOPTION_SUITEB_256 As Long = &H200   '  vanish in future releases) 
 
 '****************************************************************************
 '*                                                                           *
@@ -1375,7 +1374,7 @@ End Enum
 
   Public Const CRYPT_MAX_KEYSIZE As Long = 256
 
-' The maximum IV size - 256 bits 
+' The maximum IV/cipher block size - 256 bits 
 
   Public Const CRYPT_MAX_IVSIZE As Long = 32
 
@@ -1549,14 +1548,15 @@ Public Enum CRYPT_ECCCURVE_TYPE
 
 '      Named ECC curves.  Since these need to be mapped to all manner of
 '      protocol- and mechanism-specific identifiers, when updating this list 
-'      grep for occurrences of CRYPT_ECCCURVE_P256 (the most common one) and
+'      grep for occurrences of the string "P256" (the most common one) and 
 '      check whether any related mapping tables need to be updated 
     CRYPT_ECCCURVE_NONE         ' No ECC curve type 
-    CRYPT_ECCCURVE_P192         ' NIST P192/X9.62 P192r1/SECG p192r1 curve 
-    CRYPT_ECCCURVE_P224         ' NIST P224/X9.62 P224r1/SECG p224r1 curve 
     CRYPT_ECCCURVE_P256         ' NIST P256/X9.62 P256v1/SECG p256r1 curve 
     CRYPT_ECCCURVE_P384         ' NIST P384, SECG p384r1 curve 
     CRYPT_ECCCURVE_P521         ' NIST P521, SECG p521r1 
+    CRYPT_ECCCURVE_BRAINPOOL_P256  ' Brainpool p256r1 
+    CRYPT_ECCCURVE_BRAINPOOL_P384  ' Brainpool p384r1 
+    CRYPT_ECCCURVE_BRAINPOOL_P512  ' Brainpool p512r1 
     CRYPT_ECCCURVE_LAST         ' Last valid ECC curve type 
     
 

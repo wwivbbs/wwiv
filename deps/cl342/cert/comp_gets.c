@@ -8,11 +8,9 @@
 #include <stdio.h>		/* For sprintf() */
 #if defined( INC_ALL )
   #include "cert.h"
-  #include "asn1.h"
   #include "asn1_ext.h"
 #else
   #include "cert/cert.h"
-  #include "enc_dec/asn1.h"
   #include "enc_dec/asn1_ext.h"
 #endif /* Compiler-specific includes */
 
@@ -40,7 +38,7 @@ static int oidToText( IN_BUFFER( binaryOidLen ) const BYTE *binaryOID,
 					  IN_LENGTH_OID const int binaryOidLen,
 					  OUT_BUFFER( maxOidLen, *oidLen ) char *oid, 
 					  IN_LENGTH_SHORT_MIN( 16 ) const int maxOidLen, 
-					  OUT_LENGTH_SHORT_Z int *oidLen )
+					  OUT_LENGTH_BOUNDED_Z( maxOidLen ) int *oidLen )
 	{
 	long value = 0;
 	int i, length = 0, subLen;
@@ -141,7 +139,7 @@ static int oidToText( IN_BUFFER( binaryOidLen ) const BYTE *binaryOID,
    well as whitespace for arc separators, these are an IETF-ism but are in 
    common use */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
+CHECK_RETVAL_RANGE( 0, CRYPT_MAX_TEXTSIZE ) STDC_NONNULL_ARG( ( 1, 3 ) ) \
 static int scanValue( IN_BUFFER( strMaxLength ) const char *string, 
 					  IN_LENGTH_TEXT const int strMaxLength,
 					  OUT_INT_Z long *value )
@@ -182,7 +180,7 @@ int textToOID( IN_BUFFER( textOidLength ) const char *textOID,
 			   IN_LENGTH_TEXT const int textOidLength, 
 			   OUT_BUFFER( binaryOidMaxLen, *binaryOidLen ) BYTE *binaryOID, 
 			   IN_LENGTH_SHORT const int binaryOidMaxLen, 
-			   OUT_LENGTH_SHORT_Z int *binaryOidLen )
+			   OUT_LENGTH_BOUNDED_Z( binaryOidMaxLen ) int *binaryOidLen )
 	{
 	const char *textOidPtr;
 	long value, value2;
@@ -289,10 +287,11 @@ int textToOID( IN_BUFFER( textOidLength ) const char *textOID,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 5 ) ) \
 static int getCertAttributeComponent( const CERT_INFO *certInfoPtr,
 					IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE certInfoType,
-					OUT_BUFFER_OPT( certInfoMaxLength, certInfoLength ) \
+					OUT_BUFFER_OPT( certInfoMaxLength, *certInfoLength ) \
 						void *certInfo, 
 					IN_LENGTH_SHORT_Z const int certInfoMaxLength, 
-					OUT_LENGTH_SHORT_Z int *certInfoLength )
+					OUT_LENGTH_BOUNDED_Z( certInfoMaxLength ) \
+						int *certInfoLength )
 	{
 	ATTRIBUTE_PTR *attributePtr;
 	void *dataPtr;
@@ -366,10 +365,10 @@ static int getCertHash( INOUT CERT_INFO *certInfoPtr,
 						OUT_BUFFER_OPT( certInfoMaxLength, \
 										*certInfoLength ) void *certInfo, 
 						IN_LENGTH_SHORT_Z const int certInfoMaxLength, 
-						OUT_LENGTH_SHORT_Z int *certInfoLength )
+						OUT_LENGTH_BOUNDED_Z( certInfoMaxLength ) \
+							int *certInfoLength )
 	{
 	static const MAP_TABLE hashAlgoMapTbl[] = {
-		{ CRYPT_CERTINFO_FINGERPRINT_MD5, CRYPT_ALGO_MD5 },
 		{ CRYPT_CERTINFO_FINGERPRINT_SHA1, CRYPT_ALGO_SHA1 },
 		{ CRYPT_CERTINFO_FINGERPRINT_SHA2, CRYPT_ALGO_SHA2 },
 		{ CRYPT_CERTINFO_FINGERPRINT_SHAng, CRYPT_ALGO_SHAng },
@@ -384,8 +383,7 @@ static int getCertHash( INOUT CERT_INFO *certInfoPtr,
 			( isWritePtr( certInfo, certInfoMaxLength ) ) );
 	assert( isWritePtr( certInfoLength, sizeof( int ) ) );
 
-	REQUIRES( certInfoType == CRYPT_CERTINFO_FINGERPRINT_MD5 || \
-			  certInfoType == CRYPT_CERTINFO_FINGERPRINT_SHA1 || \
+	REQUIRES( certInfoType == CRYPT_CERTINFO_FINGERPRINT_SHA1 || \
 			  certInfoType == CRYPT_CERTINFO_FINGERPRINT_SHA2 || \
 			  certInfoType == CRYPT_CERTINFO_FINGERPRINT_SHAng );
 	REQUIRES( ( certInfo == NULL && certInfoMaxLength == 0 ) || \
@@ -437,7 +435,8 @@ static int getESSCertID( INOUT CERT_INFO *certInfoPtr,
 						 OUT_BUFFER_OPT( certInfoMaxLength, \
 										 *certInfoLength ) void *certInfo, 
 						 IN_LENGTH_SHORT_Z const int certInfoMaxLength, 
-						 OUT_LENGTH_SHORT_Z int *certInfoLength )
+						 OUT_LENGTH_BOUNDED_Z( certInfoMaxLength ) \
+							int *certInfoLength )
 	{
 	STREAM stream;
 	BYTE certHash[ CRYPT_MAX_HASHSIZE + 8 ];
@@ -548,12 +547,13 @@ static int getCrlEntry( INOUT CERT_INFO *certInfoPtr,
 						OUT_BUFFER_OPT( certInfoMaxLength, \
 										*certInfoLength ) void *certInfo, 
 						IN_LENGTH_SHORT_Z const int certInfoMaxLength, 
-						OUT_LENGTH_SHORT_Z int *certInfoLength )
+						OUT_LENGTH_BOUNDED_Z( certInfoMaxLength ) \
+							int *certInfoLength )
 	{
 	CERT_REV_INFO *certRevInfo = certInfoPtr->cCertRev;
 	STREAM stream;
 	WRITECERT_FUNCTION writeCertFunction;
-	int crlEntrySize = DUMMY_INIT, status;
+	int crlEntrySize DUMMY_INIT, status;
 
 	assert( isWritePtr( certInfoPtr, sizeof( CERT_INFO ) ) );
 	assert( ( certInfo == NULL && certInfoMaxLength == 0 ) || \
@@ -641,7 +641,8 @@ static int getIAndS( const CERT_INFO *certInfoPtr,
 					 OUT_BUFFER_OPT( certInfoMaxLength, \
 									 *certInfoLength ) void *certInfo, 
 					 IN_LENGTH_SHORT_Z const int certInfoMaxLength, 
-					 OUT_LENGTH_SHORT_Z int *certInfoLength )
+					 OUT_LENGTH_BOUNDED_Z( certInfoMaxLength ) \
+						int *certInfoLength )
 	{
 	STREAM stream;
 	void *serialNumber;
@@ -765,9 +766,11 @@ static int extractDnComponent( IN_BUFFER( encodedDnLength ) \
    odd components not all of which are handled directly by cryptlib */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3, 4 ) ) \
-static int getNameFromDN( OUT_BUFFER_OPT( nameMaxLength, *nameLength ) void *name, 
+static int getNameFromDN( OUT_BUFFER_OPT( nameMaxLength, *nameLength ) \
+							void *name, 
 						  IN_LENGTH_SHORT_Z const int nameMaxLength, 
-						  OUT_LENGTH_SHORT_Z int *nameLength, 
+						  OUT_LENGTH_BOUNDED_Z( nameMaxLength ) \
+							int *nameLength, 
 						  IN_BUFFER( encodedDnLength ) const char *encodedDn, 
 						  IN_LENGTH_SHORT const int encodedDnLength )
 	{
@@ -835,7 +838,8 @@ static int getHolderName( const CERT_INFO *certInfoPtr,
 						  OUT_BUFFER_OPT( certInfoMaxLength, \
 										  *certInfoLength ) void *certInfo, 
 						  IN_LENGTH_SHORT_Z const int certInfoMaxLength, 
-						  OUT_LENGTH_SHORT_Z int *certInfoLength )
+						  OUT_LENGTH_BOUNDED_Z( certInfoMaxLength ) \
+							int *certInfoLength )
 	{
 	int status;
 
@@ -903,7 +907,8 @@ static int getHolderURI( const CERT_INFO *certInfoPtr,
 						 OUT_BUFFER_OPT( certInfoMaxLength, \
 										 *certInfoLength ) void *certInfo, 
 						 IN_LENGTH_SHORT_Z const int certInfoMaxLength, 
-						 OUT_LENGTH_SHORT_Z int *certInfoLength )
+						 OUT_LENGTH_BOUNDED_Z( certInfoMaxLength ) \
+							int *certInfoLength )
 	{
 	ATTRIBUTE_PTR *attributePtr;
 	void *dataPtr;
@@ -971,7 +976,8 @@ static int getPkiUserInfo( const CERT_INFO *certInfoPtr,
 						   OUT_BUFFER_OPT( certInfoMaxLength, \
 										   *certInfoLength ) void *certInfo, 
 						   IN_LENGTH_SHORT_Z const int certInfoMaxLength, 
-						   OUT_LENGTH_SHORT_Z int *certInfoLength )
+						   OUT_LENGTH_BOUNDED_Z( certInfoMaxLength ) \
+								int *certInfoLength )
 	{
 	CERT_PKIUSER_INFO *certUserInfo = certInfoPtr->cCertUser;
 	char encUserInfo[ CRYPT_MAX_TEXTSIZE + 8 ];
@@ -1042,8 +1048,9 @@ int getCertComponentString( INOUT CERT_INFO *certInfoPtr,
 							IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE certInfoType,
 							OUT_BUFFER_OPT( certInfoMaxLength, \
 											*certInfoLength ) void *certInfo, 
-							IN_LENGTH_SHORT const int certInfoMaxLength, 
-							OUT_LENGTH_SHORT_Z int *certInfoLength )
+							IN_LENGTH_SHORT_Z const int certInfoMaxLength, 
+							OUT_LENGTH_BOUNDED_Z( certInfoMaxLength ) \
+								int *certInfoLength )
 	{
 	const void *data = NULL;
 	int dataLength = 0, status;
@@ -1074,7 +1081,7 @@ int getCertComponentString( INOUT CERT_INFO *certInfoPtr,
 	if( isGeneralNameComponent( certInfoType ) )
 		{
 		SELECTION_STATE selectionState;
-		ATTRIBUTE_PTR *attributePtr = DUMMY_INIT_PTR;
+		ATTRIBUTE_PTR *attributePtr DUMMY_INIT_PTR;
 		void *dataPtr;
 
 		/* Find the requested GeneralName component and return it to the
@@ -1130,7 +1137,6 @@ int getCertComponentString( INOUT CERT_INFO *certInfoPtr,
 	/* If it's anything else, handle it specially */
 	switch( certInfoType )
 		{
-		case CRYPT_CERTINFO_FINGERPRINT_MD5:
 		case CRYPT_CERTINFO_FINGERPRINT_SHA1:
 		case CRYPT_CERTINFO_FINGERPRINT_SHA2:
 		case CRYPT_CERTINFO_FINGERPRINT_SHAng:

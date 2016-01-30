@@ -16,10 +16,20 @@
 #if defined( __ILEC400__ )
   #pragma convert( 0 )
 #endif /* IBM medium iron */
-
 #ifdef HAS_WIDECHAR
   #include <wchar.h>
 #endif /* HAS_WIDECHAR */
+#ifndef NDEBUG
+  #include "misc/config.h"
+#endif /* NDEBUG */
+
+/* Define the following if cryptlib has been built without keyset support,
+   this loads a fixed key and attaches a pseudo-certificate to it */
+
+/* #define USE_PSEUDOCERTIFICATES */
+#if defined( USE_PSEUDOCERTIFICATES ) && ( defined( _MSC_VER ) || defined( __GNUC__ ) )
+  #pragma message( "Building with pseudocertificate support" )
+#endif /* USE_PSEUDOCERTIFICATES && VC++/gcc */
 
 /* The keys used with the test code have associated certs that expire at
    some point.  The following value defines the number of days before the
@@ -156,12 +166,14 @@ int checkFileAccess( void )
 		failedFileNo = 1;
 	else
 		fclose( filePtr );
-	if( failedFileNo == 0 && \
-		( filePtr = fopen( convertFileName( TEST_PRIVKEY_FILE ), \
-						   "rb" ) ) == NULL )
-		failedFileNo = 2;
-	else
-		fclose( filePtr );
+	if( failedFileNo == 0 )
+		{
+		if( ( filePtr = fopen( convertFileName( TEST_PRIVKEY_FILE ), \
+							   "rb" ) ) == NULL )
+			failedFileNo = 2;
+		else
+			fclose( filePtr );
+		}
 	if( failedFileNo > 0 )
 		{
 		printf( "Couldn't access cryptlib keyset file '%s'.  Please make "
@@ -277,13 +289,27 @@ int checkNetworkAccess( void )
 	CRYPT_KEYSET cryptKeyset;
 	int status;
 
+	/* First we try for Microsoft's NCSI (Network Connection Status Icon) 
+	   site, a canary site used by Windows to check for network connectivity
+	   that has high availability and is unlikely to be blocked.  If that
+	   fails we try for a well-known site, Amazon, as a fallback */
+	status = cryptKeysetOpen( &cryptKeyset, CRYPT_UNUSED, CRYPT_KEYSET_HTTP,
+							  TEXT( "http://www.msftncsi.com" ), 
+							  CRYPT_KEYOPT_READONLY );
+	if( cryptStatusOK( status ) )
+		{
+		cryptKeysetClose( cryptKeyset );
+		return( TRUE );
+		}
 	status = cryptKeysetOpen( &cryptKeyset, CRYPT_UNUSED, CRYPT_KEYSET_HTTP,
 							  TEXT( "www.amazon.com" ), CRYPT_KEYOPT_READONLY );
-	if( cryptStatusError( status ) )
-		return( FALSE );
-	cryptKeysetClose( cryptKeyset );
+	if( cryptStatusOK( status ) )
+		{
+		cryptKeysetClose( cryptKeyset );
+		return( TRUE );
+		}
 
-	return( TRUE );
+	return( FALSE );
 	}
 
 /****************************************************************************
@@ -291,6 +317,44 @@ int checkNetworkAccess( void )
 *							Import/Export Functions							*
 *																			*
 ****************************************************************************/
+
+/* Read data from a file */
+
+int readFileData( const char *fileName, const char *description,
+				  BYTE *buffer, const int bufSize, const int minFileSize,
+				  const BOOLEAN silent )
+	{
+	FILE *filePtr;
+	int count;
+
+	if( ( filePtr = fopen( fileName, "rb" ) ) == NULL )
+		{
+		printf( "Couldn't find %s file, skipping test of data import...\n",
+				description );
+		return( 0 );
+		}
+	if( !silent )
+		printf( "Testing %s import...\n", description );
+	count = fread( buffer, 1, bufSize, filePtr );
+	fclose( filePtr );
+	if( count >= bufSize )
+		{
+		puts( "The data buffer size is too small for the data.  To fix this, "
+			  "either increase\nthe BUFFER_SIZE value in " __FILE__ " and "
+			  "recompile the code, or use the\ntest code with dynamically-"
+			  "allocated buffers." );
+		return( 0 );		/* Skip this test and continue */
+		}
+	if( count < minFileSize )
+		{
+		printf( "Read failed, only read %d bytes, at least %d required.\n", 
+				count, minFileSize );
+		return( 0 );		/* Skip this test and continue */
+		}
+	if( !silent )
+		printf( "%s has size %d bytes.\n", description, count );
+	return( count );
+	}
 
 /* Import a certificate object */
 
@@ -328,7 +392,37 @@ int importCertFromTemplate( CRYPT_CERTIFICATE *cryptCert,
 #endif /* UNICODE_STRINGS */
 	}
 
+/* Export a certificate to a file in the given format */
+
+int exportCertFile( const char *fileName, 
+					const CRYPT_CERTIFICATE certificate,
+					const CRYPT_CERTFORMAT_TYPE formatType )
+	{
+	FILE *filePtr;
+	BYTE certBuffer[ BUFFER_SIZE ];
+	int certLength, count, status;
+
+	/* Export the certificate in the requested format */
+	status = cryptExportCert( certBuffer, BUFFER_SIZE, &certLength, 
+							  formatType, certificate );
+	if( cryptStatusError( status ) )
+		return( status );
+
+	/* Write it to a file */
+	filePtr = fopen( fileName, "wb" );
+	if( filePtr == NULL )
+		return( CRYPT_ERROR_OPEN );
+	count = fwrite( certBuffer, 1, certLength, filePtr );
+	fclose( filePtr );
+	if( count != certLength )
+		return( CRYPT_ERROR_WRITE );
+
+	return( CRYPT_OK );
+	}
+
 /* Read a key from a key file */
+
+#ifndef USE_PSEUDOCERTIFICATES
 
 int getPublicKey( CRYPT_CONTEXT *cryptContext, const C_STR keysetName,
 				  const C_STR keyName )
@@ -340,7 +434,11 @@ int getPublicKey( CRYPT_CONTEXT *cryptContext, const C_STR keysetName,
 	status = cryptKeysetOpen( &cryptKeyset, CRYPT_UNUSED, CRYPT_KEYSET_FILE,
 							  keysetName, CRYPT_KEYOPT_READONLY );
 	if( cryptStatusError( status ) )
-		return( status );
+		{
+		printf( "Couldn't open keyset '%s', status %d, line %d.\n", 
+				keysetName, status, __LINE__ );
+		return( FALSE );
+		}
 	status = cryptGetPublicKey( cryptKeyset, cryptContext, CRYPT_KEYID_NAME,
 								keyName );
 	if( cryptStatusError( status ) )
@@ -353,7 +451,10 @@ int getPrivateKey( CRYPT_CONTEXT *cryptContext, const C_STR keysetName,
 				   const C_STR keyName, const C_STR password )
 	{
 	CRYPT_KEYSET cryptKeyset;
-	time_t validFrom, validTo;
+	time_t validFrom;
+#ifndef _WIN32_WCE
+	time_t validTo;
+#endif /* _WIN32_WCE */
 	int dummy, status;
 
 	/* Read the key from the keyset */
@@ -382,9 +483,11 @@ int getPrivateKey( CRYPT_CONTEXT *cryptContext, const C_STR keysetName,
 		/* There's no certificate there, this isn't an error */
 		return( CRYPT_OK );
 		}
-	cryptGetAttributeString( *cryptContext,
-					CRYPT_CERTINFO_VALIDTO, &validTo, &dummy );
 #ifndef _WIN32_WCE
+	status = cryptGetAttributeString( *cryptContext,
+					CRYPT_CERTINFO_VALIDTO, &validTo, &dummy );
+	if( cryptStatusError( status ) )
+		return( status );
 	if( ( validTo - validFrom > ( 86400 * EXPIRY_WARN_DAYS ) ) && \
 		validTo - time( NULL ) <= ( 86400 * EXPIRY_WARN_DAYS ) )
 		{
@@ -421,6 +524,51 @@ int getPrivateKey( CRYPT_CONTEXT *cryptContext, const C_STR keysetName,
 #endif /* _WIN32_WCE */
 	return( CRYPT_OK );
 	}
+#else
+
+C_RET cryptCreateAttachedCert( C_IN CRYPT_CONTEXT cryptContext,
+							   C_IN void C_PTR certObject,
+							   C_IN int certObjectLength );
+
+/* Import a certificate as a raw data object and attach it to a context as a 
+   pseudo-certificate */
+
+static int addPseudoCertificate( const CRYPT_CONTEXT cryptContext,
+								 const int certNo )
+	{
+	FILE *filePtr;
+	BYTE certBuffer[ BUFFER_SIZE ];
+	char filenameBuffer[ FILENAME_BUFFER_SIZE ];
+	int length = 0;
+
+	filenameFromTemplate( filenameBuffer, PSEUDOCERT_FILE_TEMPLATE, certNo );
+	if( ( filePtr = fopen( filenameBuffer, "rb" ) ) == NULL )
+		return( CRYPT_ERROR_OPEN );
+	length = fread( certBuffer, 1, BUFFER_SIZE, filePtr );
+	fclose( filePtr );
+    if( length <= 16 || length >= BUFFER_SIZE )
+		return( CRYPT_ERROR_READ );
+	return( cryptCreateAttachedCert( cryptContext, certBuffer, length ) );
+	}
+
+int getPublicKey( CRYPT_CONTEXT *cryptContext, const C_STR keysetName,
+				  const C_STR keyName )
+	{
+	/* Load a fixed RSA public key and attached the pseudo-certificate */
+	if( !loadRSAContexts( CRYPT_UNUSED, cryptContext, NULL ) )
+		return( CRYPT_ERROR_NOTAVAIL );
+	return( addPseudoCertificate( *cryptContext, 1 ) );
+	}
+
+int getPrivateKey( CRYPT_CONTEXT *cryptContext, const C_STR keysetName,
+				   const C_STR keyName, const C_STR password )
+	{
+	/* Load a fixed RSA public key and attached the pseudo-certificate */
+	if( !loadRSAContexts( CRYPT_UNUSED, NULL, cryptContext ) )
+		return( CRYPT_ERROR_NOTAVAIL );
+	return( addPseudoCertificate( *cryptContext, 1 ) );
+	}
+#endif /* USE_PSEUDOCERTIFICATES */
 
 /****************************************************************************
 *																			*
@@ -433,10 +581,15 @@ int getPrivateKey( CRYPT_CONTEXT *cryptContext, const C_STR keysetName,
 const C_STR getKeyfileName( const KEYFILE_TYPE type,
 							const BOOLEAN isPrivKey )
 	{
+	static char filenameBuffer[ FILENAME_BUFFER_SIZE ];
+
 	switch( type )
 		{
 		case KEYFILE_X509:
 			return( USER_PRIVKEY_FILE );
+		case KEYFILE_X509_ALT:
+			filenameFromTemplate( filenameBuffer, USER_PRIVKEY_FILE_TEMPLATE, 2 );
+			return( filenameBuffer );
 		case KEYFILE_PGP:
 		case KEYFILE_PGP_SPECIAL:
 			return( isPrivKey ? PGP_PRIVKEY_FILE : PGP_PUBKEY_FILE );
@@ -454,6 +607,10 @@ const C_STR getKeyfileName( const KEYFILE_TYPE type,
 			return( OPENPGP_PRIVKEY_PART_FILE );
 		case KEYFILE_NAIPGP:
 			return( isPrivKey ? NAIPGP_PRIVKEY_FILE : NAIPGP_PUBKEY_FILE );
+		case KEYFILE_OPENPGP_BOUNCYCASTLE:
+			return( OPENPGP_PRIVKEY_BC_FILE );
+		case KEYFILE_OPENPGP_ECC:
+			return( isPrivKey ? OPENPGP_PRIVKEY_ECC_FILE : OPENPGP_PUBKEY_ECC_FILE );
 		}
 	assert( 0 );
 	return( TEXT( "notfound" ) );
@@ -464,16 +621,19 @@ const C_STR getKeyfilePassword( const KEYFILE_TYPE type )
 	switch( type )
 		{
 		case KEYFILE_X509:
+		case KEYFILE_X509_ALT:
 			return( TEST_PRIVKEY_PASSWORD );
 		case KEYFILE_PGP:
 		case KEYFILE_OPENPGP_HASH:
 		case KEYFILE_OPENPGP_RSA:
+		case KEYFILE_OPENPGP_ECC:
 			return( TEXT( "test1" ) );
 		case KEYFILE_NAIPGP:
 			return( TEXT( "test10" ) );
 		case KEYFILE_OPENPGP_AES:
 			return( TEXT( "testkey" ) );
 		case KEYFILE_OPENPGP_CAST:
+		case KEYFILE_OPENPGP_BOUNCYCASTLE:
 			return( TEXT( "test" ) );
 		case KEYFILE_OPENPGP_PARTIAL:
 			return( TEXT( "def" ) );
@@ -491,8 +651,10 @@ const C_STR getKeyfileUserID( const KEYFILE_TYPE type,
 	switch( type )
 		{
 		case KEYFILE_X509:
+		case KEYFILE_X509_ALT:
 			return( USER_PRIVKEY_LABEL );
 		case KEYFILE_PGP:
+		case KEYFILE_OPENPGP_BOUNCYCASTLE:
 			return( TEXT( "test" ) );
 		case KEYFILE_PGP_SPECIAL:
 			return( TEXT( "suzuki" ) );
@@ -500,6 +662,7 @@ const C_STR getKeyfileUserID( const KEYFILE_TYPE type,
 			return( isPrivKey ? TEXT( "test" ) : TEXT( "test cryptlib" ) );
 		case KEYFILE_OPENPGP_HASH:
 		case KEYFILE_OPENPGP_RSA:
+		case KEYFILE_OPENPGP_ECC:
 			return( TEXT( "test1" ) );
 		case KEYFILE_OPENPGP_MULT:
 			return( TEXT( "NXX2502" ) );
@@ -793,7 +956,7 @@ int multiThreadDispatch( THREAD_FUNC clientFunction,
 #else
 		pthread_t threadHandle;
 
-		hServerThreads[ i ] = 0;
+		hClientThreads[ i ] = 0;
 		if( pthread_create( &threadHandle, NULL, clientFunction,
 							&sessionID[ i ] ) == 0 )
 			hClientThreads[ i ] = threadHandle;
@@ -952,7 +1115,7 @@ HIRES_TIME timeDiff( HIRES_TIME startTime )
 	   fastest, 10%-out, and 2 SD out times are all within about 1% of each 
 	   other so all methods are roughly equally accurate */
 
-static void timeDisplay( HIRES_TIME *times, const int noTimes )
+static int timeDisplayMean( HIRES_TIME *times, const int noTimes )
 	{
 	HIRES_TIME timeSum = 0, timeAvg, timeDelta;
 	HIRES_TIME timeMin = 1000000L;
@@ -967,28 +1130,37 @@ static void timeDisplay( HIRES_TIME *times, const int noTimes )
 	int timesCountSD = 0;
 #endif /* USE_SD */
 	long timeMS, ticksPerSec;
+	const int startIndex = ( noTimes == 1 ) ? 0 : 1;
+		/* If we're using a multitude of readings we discard the first one,
+		   which is always unusually high due to startup overhead */
 	int i, timesCount10 = 0;
 
 	/* Try and get the clock frequency */
-	printf( "Times given in clock ticks of frequency " );
 #ifdef __WINDOWS__
 	QueryPerformanceFrequency( &performanceCount );
 	ticksPerSec = performanceCount.LowPart;
-	printf( "%ld", ticksPerSec );
 #else
-	printf( "~1M" );
 	ticksPerSec = 1000000;
 #endif /* __WINDOWS__ */
-	printf( " ticks per second.\n\n" );
+	if( noTimes > 1 )
+		{
+		printf( "Times given in clock ticks of frequency " );
+#ifdef __WINDOWS__
+		printf( "%ld", ticksPerSec );
+#else
+		printf( "~1M" );
+#endif /* __WINDOWS__ */
+		printf( " ticks per second.\n\n" );
+		}
 
 	/* Find the mean execution time */
-	for( i = 1; i < noTimes; i++ )
+	for( i = startIndex; i < noTimes; i++ )
 		timeSum += times[ i ];
 	timeAvg = timeSum / noTimes;
 	timeDelta = timeAvg / 10;	/* 10% variation */
 
 	/* Find the fastest overall time */
-	for( i = 1; i < noTimes; i++ )
+	for( i = startIndex; i < noTimes; i++ )
 		{
 		if( times[ i ] < timeMin )
 			timeMin = times[ i ];
@@ -998,7 +1170,7 @@ static void timeDisplay( HIRES_TIME *times, const int noTimes )
 	   We cast the values to longs in order to (portably) print them, if we 
 	   want to print the full 64-bit values we have to use nonstandard 
 	   extensions like "%I64d" (for Win32) */
-	for( i = 1; i < noTimes; i++ )
+	for( i = startIndex; i < noTimes; i++ )
 		{
 		if( times[ i ] > timeAvg - timeDelta && \
 			times[ i ] < timeAvg + timeDelta )
@@ -1011,11 +1183,14 @@ static void timeDisplay( HIRES_TIME *times, const int noTimes )
 		{
 		printf( "Error: No times within +/-%ld of %ld.\n",
 				( long ) timeDelta, ( long ) timeAvg );
-		return;
+		return( -1 );
 		}
 	avgTime = timeCorrSum10 / timesCount10;
-	printf( "Time: min.= %ld, avg.= %ld ", ( long ) timeMin, 
-			( long ) avgTime );
+	if( noTimes > 1 )
+		{
+		printf( "Time: min.= %ld, avg.= %ld ", ( long ) timeMin, 
+				( long ) avgTime );
+		}
 	timeMS = ( avgTime * 1000 ) / ticksPerSec;
 #if 0	/* Print difference to fastest time, usually only around 1% */
 	printf( "(%4d)", ( timeCorrSum10 / timesCount10 ) - timeMin );
@@ -1023,7 +1198,7 @@ static void timeDisplay( HIRES_TIME *times, const int noTimes )
 
 #ifdef USE_SD
 	/* Find the standard deviation */
-	for( i = 1; i < noTimes; i++ )
+	for( i = startIndex; i < noTimes; i++ )
 		{
 		const HIRES_TIME timeDev = times[ i ] - timeAvg;
 
@@ -1036,7 +1211,7 @@ static void timeDisplay( HIRES_TIME *times, const int noTimes )
 	   standard deviations out */
 	timeCorrSumSD = 0;
 	timeDelta = ( HIRES_TIME ) stdDev * 2;
-	for( i = 1; j < noTimes; i++ )
+	for( i = startIndex; j < noTimes; i++ )
 		{
 		if( times[ i ] > timeAvg - timeDelta && \
 			times[ i ] < timeAvg + timeDelta )
@@ -1059,12 +1234,20 @@ static void timeDisplay( HIRES_TIME *times, const int noTimes )
 #endif /* USE_SD */
 
 	/* Print the times in ms */
-	printf( "\n  Per-op time = " );
+	if( noTimes > 1 )
+		printf( "\n  Per-op time = " );
 	if( timeMS <= 0 )
 		printf( "< 1" );
 	else
 		printf( "%ld", timeMS );
 	printf( " ms.\n" );
+
+	return( ( timeMS <= 0 ) ? 1 : timeMS );
+	}
+
+int timeDisplay( HIRES_TIME timeValue )
+	{
+	return( timeDisplayMean( &timeValue, 1 ) );
 	}
 
 /* Timing-attack evaluation code */
@@ -1136,7 +1319,7 @@ int testTimingAttack( void )
 			putchar( '\n' );
 		}
 #endif /* 0 */
-	timeDisplay( times, 200 );
+	timeDisplayMean( times, 200 );
 #endif /* 0 */
 
 	/* Manipulate the encrypted blob and see what timing effect it has */
@@ -1150,8 +1333,10 @@ int testTimingAttack( void )
 		encryptedKeyPtr = buffer + 173;
 		memcpy( buffer, encryptedKeyBlob, length );
 		*encryptedKeyPtr ^= 0x01;
-		cryptCreateContext( &sessionKeyContext, CRYPT_UNUSED, 
-							CRYPT_ALGO_3DES );
+		status = cryptCreateContext( &sessionKeyContext, CRYPT_UNUSED, 
+									 CRYPT_ALGO_3DES );
+		if( cryptStatusError( status ) )
+			return( FALSE );
 		timeVal = timeDiff( 0 );
 		status = cryptImportKey( buffer, length, decryptContext, 
 								 sessionKeyContext );
@@ -1174,7 +1359,7 @@ int testTimingAttack( void )
 			putchar( '\n' );
 		}
 #endif
-	timeDisplay( times, 1000 );
+	timeDisplayMean( times, 1000 );
 
 	return( TRUE );
 	}
@@ -1190,15 +1375,29 @@ int testTimingAttack( void )
 
 void printErrorAttributeInfo( const CRYPT_HANDLE cryptHandle )
 	{
+	static const char *errorTypeString[] = {
+		"CRYPT_ERRTYPE_NONE", "CRYPT_ERRTYPE_ATTR_SIZE", 
+		"CRYPT_ERRTYPE_ATTR_VALUE", "CRYPT_ERRTYPE_ATTR_ABSENT",
+		"CRYPT_ERRTYPE_ATTR_PRESENT", "CRYPT_ERRTYPE_CONSTRAINT",
+		"CRYPT_ERRTYPE_ISSUERCONSTRAINT", "NULL", "NULL"
+		};
+	const char *typeString = "<<<Unknown>>>";
 	int errorType, errorLocus, status;
 
 	status = cryptGetAttribute( cryptHandle, CRYPT_ATTRIBUTE_ERRORTYPE,
 								&errorType );
-	cryptGetAttribute( cryptHandle, CRYPT_ATTRIBUTE_ERRORLOCUS, &errorLocus );
+	if( cryptStatusOK( status ) )
+		{
+		if( errorType >= CRYPT_ERRTYPE_NONE && \
+			errorType < CRYPT_ERRTYPE_LAST )
+			typeString = errorTypeString[ errorType ];
+		}
+	status = cryptGetAttribute( cryptHandle, CRYPT_ATTRIBUTE_ERRORLOCUS, 
+								&errorLocus );
 	if( cryptStatusOK( status ) && errorType != CRYPT_ERRTYPE_NONE )
 		{
-		printf( "  Error info attributes report locus %d, type %d.\n",
-				errorLocus, errorType );
+		fprintf( outputStream, "  Error info attributes report locus %d, "
+				 "type %d (%s).\n", errorLocus, errorType, typeString );
 		}
 	}
 
@@ -1211,20 +1410,21 @@ void printExtError( const CRYPT_HANDLE cryptHandle,
 	char errorMessage[ 512 ];
 	int errorMessageLength, status;
 
-	printf( "%s failed with error code %d, line %d.\n", functionName,
-			functionStatus, lineNo );
+	fprintf( outputStream, "%s failed with error code %d, line %d.\n", 
+			 functionName, functionStatus, lineNo );
 	status = cryptGetAttributeString( cryptHandle, CRYPT_ATTRIBUTE_ERRORMESSAGE,
 									  errorMessage, &errorMessageLength );
 	if( cryptStatusError( status ) )
 		{
-		puts( "  No extended error information available." );
+		fputs( "  No extended error information available.\n", 
+			   outputStream );
 		printErrorAttributeInfo( cryptHandle );
 		return;
 		}
 	errorMessage[ errorMessageLength ] = '\0';
-	printf( "  Error message = %s'%s'.\n",
-			( errorMessageLength > ( 80 - 21 ) ) ? "\n  " : "", 
-			errorMessage );
+	fprintf( outputStream, "  Error message = %s'%s'.\n",
+			 ( errorMessageLength > ( 80 - 21 ) ) ? "\n  " : "", 
+			 errorMessage );
 	printErrorAttributeInfo( cryptHandle );
 	}
 
@@ -1235,8 +1435,8 @@ BOOLEAN attrErrorExit( const CRYPT_HANDLE cryptHandle,
 					   const char *functionName, const int errorCode,
 					   const int lineNumber )
 	{
-	printf( "%s failed with error code %d, line %d.\n", functionName,
-			errorCode, lineNumber );
+	fprintf( outputStream, "%s failed with error code %d, line %d.\n", 
+			 functionName, errorCode, lineNumber );
 	printErrorAttributeInfo( cryptHandle );
 	return( FALSE );
 	}
@@ -1263,41 +1463,46 @@ BOOLEAN extErrorExit( const CRYPT_HANDLE cryptHandle,
    algorithms in the fallback chain is always available (which is guaranteed,
    3DES is used internally), and that they have the same general properties
    as the algorithms they're replacing, which is also usually the case,
-   with Blowfish being a first-instance substitute for IDEA, RC2, or RC5, and
-   then 3DES as the fallback if Blowfish isn't available */
+   with CAST being a first-instance substitute for IDEA or RC2 and
+   then 3DES as the fallback if CAST isn't available */
 
 CRYPT_ALGO_TYPE selectCipher( const CRYPT_ALGO_TYPE algorithm )
 	{
 	if( cryptStatusOK( cryptQueryCapability( algorithm, NULL ) ) )
 		return( algorithm );
-	if( cryptStatusOK( cryptQueryCapability( CRYPT_ALGO_BLOWFISH, NULL ) ) )
-		return( CRYPT_ALGO_BLOWFISH );
+	if( cryptStatusOK( cryptQueryCapability( CRYPT_ALGO_CAST, NULL ) ) )
+		return( CRYPT_ALGO_CAST );
 	return( CRYPT_ALGO_3DES );
 	}
 
-/* Print a hex string */
+/* Print a hex string.  We assemble this as a single string and output it 
+   in one go to void it being broken up by output from another thread */
 
-void printHex( const BYTE *value, const int length )
+void printHex( const char *prefix, const BYTE *value, const int length )
 	{
-	int i;
+	char buffer[ 4096 ];
+	int pos = 0, i;
 
-	for( i = 0; i < length; i += 16 )
+	for( i = 0; i < min( length, 1024 ); i += 16 )
 		{
 		const int innerLen = min( length - i, 16 );
 		int j;
 
+		pos += sprintf( buffer + pos, prefix );
 		for( j = 0; j < innerLen; j++ )
-			printf( "%02X ", value[ i + j ] );
+			pos += sprintf( buffer + pos, "%02X ", value[ i + j ] );
 		for( ; j < 16; j++ )
-			printf( "   " );
+			pos += sprintf( buffer + pos, "   " );
 		for( j = 0; j < innerLen; j++ )
 			{
 			const BYTE ch = value[ i + j ];
 
-			printf( "%c", isprint( ch ) ? ch : '.' );
+			pos += sprintf( buffer + pos, "%c", isprint( ch ) ? ch : '.' );
 			}
-		printf( "\n" );
+		pos += sprintf( buffer + pos, "\n" );
 		}
+
+	fprintf( outputStream, "%s", buffer );
 	}
 
 /* Add a collection of fields to a certificate */
@@ -1318,10 +1523,11 @@ int addCertFields( const CRYPT_CERTIFICATE certificate,
 							certData[ i ].type, certData[ i ].numericValue );
 				if( cryptStatusError( status ) )
 					{
-					printf( "cryptSetAttribute() for entry %d, field ID %d,\n"
-							"  value %d, failed with error code %d, line %d.\n",
-							i + 1, certData[ i ].type, certData[ i ].numericValue,
-							status, lineNo );
+					fprintf( outputStream, "cryptSetAttribute() for "
+							 "entry %d, field ID %d,\n  value %d, failed "
+							 "with error code %d, line %d.\n", i + 1, 
+							 certData[ i ].type, certData[ i ].numericValue,
+							 status, lineNo );
 					}
 				break;
 
@@ -1349,11 +1555,12 @@ int addCertFields( const CRYPT_CERTIFICATE certificate,
 						puts( "                         ********************" );
 						}
 #endif /* VC++ 6 */
-					printf( "cryptSetAttributeString() for entry %d, field ID %d,\n"
-							"  value '%s', failed with error code %d, line %d.\n",
-							i + 1, certData[ i ].type,
-							( char * ) certData[ i ].stringValue, status,
-							lineNo );
+					fprintf( outputStream, "cryptSetAttributeString() for "
+							 "entry %d, field ID %d,\n  value '%s', failed "
+							 "with error code %d, line %d.\n", i + 1, 
+							 certData[ i ].type,
+							 ( char * ) certData[ i ].stringValue, status,
+							 lineNo );
 					}
 				break;
 
@@ -1364,11 +1571,12 @@ int addCertFields( const CRYPT_CERTIFICATE certificate,
 							wcslen( certData[ i ].stringValue ) * sizeof( wchar_t ) );
 				if( cryptStatusError( status ) )
 					{
-					printf( "cryptSetAttributeString() for entry %d, field ID %d,\n"
-							"  value '%s', failed with error code %d, line %d.\n",
-							i + 1, certData[ i ].type,
-							( char * ) certData[ i ].stringValue, status,
-							lineNo );
+					fprintf( outputStream, "cryptSetAttributeString() for "
+							 "entry %d, field ID %d,\n  value '%s', failed "
+							 "with error code %d, line %d.\n", i + 1, 
+							 certData[ i ].type,
+							 ( char * ) certData[ i ].stringValue, status,
+							 lineNo );
 					}
 				break;
 #endif /* HAS_WIDECHAR */
@@ -1378,10 +1586,13 @@ int addCertFields( const CRYPT_CERTIFICATE certificate,
 							certData[ i ].type, &certData[ i ].timeValue,
 							sizeof( time_t ) );
 				if( cryptStatusError( status ) )
-					printf( "cryptSetAttributeString() for entry %d, field ID %d,\n"
-							"  value 0x%lX, failed with error code %d, line %d.\n",
-							i + 1, certData[ i ].type, certData[ i ].timeValue,
-							status, lineNo );
+					{
+					fprintf( outputStream, "cryptSetAttributeString() for "
+							 "entry %d, field ID %d,\n  value 0x%lX, failed "
+							 "with error code %d, line %d.\n", i + 1, 
+							 certData[ i ].type, certData[ i ].timeValue,
+							 status, lineNo );
+					}
 				break;
 
 			default:
@@ -1415,9 +1626,9 @@ int compareData( const void *origData, const int origDataLength,
 		printf( "Data of length %d doesn't match recovered data:\n", 
 				origDataLength );
 		printf( "Original data:\n" );
-		printHex( origData, min( origDataLength, 64 ) );
+		printHex( "  ", origData, min( origDataLength, 64 ) );
 		printf( "Recovered data:\n" );
-		printHex( recovData, min( origDataLength, 64 ) );
+		printHex( "  ", recovData, min( origDataLength, 64 ) );
 
 		return( FALSE );
 		}
@@ -1549,9 +1760,13 @@ int printConnectInfo( const CRYPT_SESSION cryptSession )
 
 	status = cryptGetAttributeString( cryptSession, CRYPT_SESSINFO_CLIENT_NAME,
 									  serverName, &serverNameLength );
+	if( cryptStatusOK( status ) )
+		{
+		status = cryptGetAttribute( cryptSession, CRYPT_SESSINFO_CLIENT_PORT, 
+									&serverPort );
+		}
 	if( cryptStatusError( status ) )
 		return( FALSE );
-	cryptGetAttribute( cryptSession, CRYPT_SESSINFO_CLIENT_PORT, &serverPort );
 #ifdef UNICODE_STRINGS
 	serverName[ serverNameLength / sizeof( wchar_t ) ] = TEXT( '\0' );
 	printf( "SVR: Connect attempt from %S, port %d", serverName, serverPort );
@@ -1577,7 +1792,7 @@ int printSecurityInfo( const CRYPT_SESSION cryptSession,
 					   const BOOLEAN showServerKeyInfo,
 					   const BOOLEAN showClientCertInfo )
 	{
-	int cryptAlgo, keySize = DUMMY_INIT, version = DUMMY_INIT, status;
+	int cryptAlgo, keySize DUMMY_INIT, version DUMMY_INIT, status;
 
 	/* Print general security info */
 	status = cryptGetAttribute( cryptSession, CRYPT_CTXINFO_ALGO,
@@ -1635,11 +1850,11 @@ int printFingerprint( const CRYPT_SESSION cryptSession,
 					  const BOOLEAN isServer )
 	{
 	BYTE fingerPrint[ CRYPT_MAX_HASHSIZE ];
-	int i, length, status;
+	int length, status;
 
 	/* Print the server key fingerprint */
 	status = cryptGetAttributeString( cryptSession,
-									  CRYPT_SESSINFO_SERVER_FINGERPRINT,
+									  CRYPT_SESSINFO_SERVER_FINGERPRINT_SHA1,
 									  fingerPrint, &length );
 	if( cryptStatusError( status ) )
 		{
@@ -1647,47 +1862,17 @@ int printFingerprint( const CRYPT_SESSION cryptSession,
 				"%d, line %d.\n", status, __LINE__ );
 		return( FALSE );
 		}
-	printf( "%sServer key fingerprint =\n  ", isServer ? "SVR: " : "" );
-	for( i = 0; i < length; i++ )
-		{
-		if( i > 0 )
-			putchar( ' ' );
-		printf( "%02X", fingerPrint[ i ] );
-		}
-	puts( "." );
-	fflush( stdout );
+	printf( "%sServer key fingerprint =\n", isServer ? "SVR: " : "" );
+	printHex( "  ", fingerPrint, length );
 
 	return( TRUE );
 	}
 
 /* Set up a client/server to connect locally.  For the client this simply 
    tells it where to connect, for the server this binds it to the local 
-   (loopback) address so we don't inadvertently open up outside ports 
+   (loopback) address so that we don't inadvertently open up outside ports 
    (admittedly they can't do much except run the hardcoded self-test, but 
-   it's better not to do this at all).
-
-   In order to allow testing against non-cryptlib-loopback and/or outside 
-   clients we optionally allow it to be set to an explicit address.  This
-   can be either an explicit IPv4 localhost (since Windows 7 will bind to
-   both IPv4 and IPv6 INADDR_ANY addresses when given "localhost" as an
-   argument and refuses connections on the IPv4 interface, only connecting
-   on the IPv6 one), or an explicit address for external clients */
-
-#ifdef UNICODE_STRINGS
-  #define LOCAL_HOST_NAME			"localhost"
-  #define NATIVE_LOCAL_HOST_NAME	L"localhost"
-#else
-	#define LOCAL_HOST_NAME			"localhost"
-	#define NATIVE_LOCAL_HOST_NAME	LOCAL_HOST_NAME
-#endif /* UNICODE_STRINGS */
-#if 0
-  #undef LOCAL_HOST_NAME
-  #define LOCAL_HOST_NAME		"127.0.0.1"
-#endif /* 0 */
-#if 0
-  #undef LOCAL_HOST_NAME
-  #define LOCAL_HOST_NAME		"192.168.1.45"
-#endif /* 0 */
+   it's better not to do this at all) */
 
 BOOLEAN setLocalConnect( const CRYPT_SESSION cryptSession, const int port )
 	{
@@ -1735,16 +1920,20 @@ BOOLEAN setLocalConnect( const CRYPT_SESSION cryptSession, const int port )
 BOOLEAN isServerDown( const CRYPT_SESSION cryptSession,
 					  const int errorStatus )
 	{
-	/* If we get a straight connect error theb we don't treat it as a 
+	/* If we get a straight connect error then we don't treat it as a 
 	   serious failure */
-	if( errorStatus == CRYPT_ERROR_OPEN || errorStatus == CRYPT_ERROR_NOTFOUND )
+	if( errorStatus == CRYPT_ERROR_OPEN || \
+		errorStatus == CRYPT_ERROR_NOTFOUND )
 		return( TRUE );
 
 	/* Under Unix a connection-refused will be reported as a 
 	   CRYPT_ERROR_PERMISSION (under Winsock it's just a generic open 
-	   error), so we check for this as an alternative to an open error */
+	   error), and a failure to connect may also be reported via a
+	   timeout as CRYPT_ERROR_TIMEOUT, so we check for these as 
+	   alternatives to an open error */
 #ifdef __UNIX__
-	if( errorStatus == CRYPT_ERROR_PERMISSION )
+	if( errorStatus == CRYPT_ERROR_PERMISSION || \
+		errorStatus == CRYPT_ERROR_TIMEOUT )
 		{
 		char errorMessage[ 512 ];
 		int errorMessageLength, status;
@@ -1783,7 +1972,7 @@ static void printOperationType( const CRYPT_SESSION cryptSession )
 		{ -1, "(Unknown)" }
 		};
 	char userID[ CRYPT_MAX_TEXTSIZE ];
-	int userIDsize = DUMMY_INIT, requestType, i, status;
+	int userIDsize DUMMY_INIT, requestType, i, status;
 
 	status = cryptGetAttribute( cryptSession,
 								CRYPT_SESSINFO_CMP_REQUESTTYPE,
@@ -1828,10 +2017,14 @@ int activatePersistentServerSession( const CRYPT_SESSION cryptSession,
 		   active.  If it is, we recycle the session so that we can process
 		   another request */
 		printConnectInfo( cryptSession );
-		if( cryptStatusOK( status ) && showOperationType )
-			printOperationType( cryptSession );
-		cryptGetAttribute( cryptSession, CRYPT_SESSINFO_CONNECTIONACTIVE,
-						   &connectionActive );
+		if( cryptStatusOK( status ) )
+			{
+			if( showOperationType )
+				printOperationType( cryptSession );
+			status = cryptGetAttribute( cryptSession, 
+										CRYPT_SESSINFO_CONNECTIONACTIVE,
+										&connectionActive );
+			}
 		}
 	while( cryptStatusOK( status ) && connectionActive );
 
@@ -1844,7 +2037,9 @@ int activatePersistentServerSession( const CRYPT_SESSION cryptSession,
 *																			*
 ****************************************************************************/
 
-/* Print a list of all attributes present in an object */
+/* Print a list of all attributes present in an object.  We assemble this as 
+   a single string and output it in one go to void it being broken up by 
+   output from another thread */
 
 int displayAttributes( const CRYPT_HANDLE cryptHandle )
 	{
@@ -1855,11 +2050,12 @@ int displayAttributes( const CRYPT_HANDLE cryptHandle )
 							   CRYPT_CURSOR_FIRST ) ) )
 		return( TRUE );
 
-	puts( "Attributes present (by cryptlib ID) are:" );
+	fputs( "Attributes present (by cryptlib ID) are:\n", outputStream );
 	do
 		{
 		BOOLEAN firstAttr = TRUE;
-		int value;
+		char buffer[ 4096 ];
+		int value, pos = 0;
 
 		status = cryptGetAttribute( cryptHandle,
 									CRYPT_ATTRIBUTE_CURRENT_GROUP, &value );
@@ -1869,7 +2065,7 @@ int displayAttributes( const CRYPT_HANDLE cryptHandle )
 					"error code %d, line %d.\n", status, __LINE__ );
 			return( FALSE );
 			}
-		printf( "  Attribute group %d, values =", value );
+		pos += sprintf( buffer + pos, "  Attribute group %d, values =", value );
 		do
 			{
 			status = cryptGetAttribute( cryptHandle, CRYPT_ATTRIBUTE_CURRENT,
@@ -1881,13 +2077,14 @@ int displayAttributes( const CRYPT_HANDLE cryptHandle )
 				return( FALSE );
 				}
 			if( !firstAttr )
-				putchar( ',' );
-			printf( " %d", value );
+				pos += sprintf( buffer + pos, "," );
+			pos += sprintf( buffer + pos, " %d", value );
 			firstAttr = FALSE;
 			}
 		while( cryptSetAttribute( cryptHandle, CRYPT_ATTRIBUTE_CURRENT,
 								  CRYPT_CURSOR_NEXT ) == CRYPT_OK );
-		puts( "." );
+		sprintf( buffer + pos, ".\n" );
+		fprintf( outputStream, "%s", buffer );
 		}
 	while( cryptSetAttribute( cryptHandle, CRYPT_ATTRIBUTE_CURRENT_GROUP,
 							  CRYPT_CURSOR_NEXT ) == CRYPT_OK );
@@ -1910,7 +2107,7 @@ int displayAttributes( const CRYPT_HANDLE cryptHandle )
 
 static BOOLEAN isUnicode( const BYTE *value, const int length )
 	{
-	wchar_t wcValue[ 8 + 4 ];
+	wchar_t wcValue[ 16 + 4 ];
 
 	/* If it's an odd length or too short to reliably guess, report it as 
 	   non-Unicode */
@@ -1923,9 +2120,13 @@ static BOOLEAN isUnicode( const BYTE *value, const int length )
 		isprint( value[ 2 ] ) && isprint( value[ 3 ] ) )
 		return( FALSE );
 
+	/* We need at least three widechars for the next check */
+	if( length <= sizeof( wchar_t ) * 3 )
+		return( FALSE );
+
 	/* Copy the byte-aligned value into a local wchar_t-aligned buffer for
 	   analysis */
-	memcpy( wcValue, value, min( 8, length ) );
+	memcpy( wcValue, value, min( length, 16 ) );
 
 	/* Check whether the first 3 widechars have identical high bytes.  This
 	   isn't totally reliable (e.g. "tanaka" will give a false positive, 
@@ -1972,8 +2173,8 @@ static int printComponent( const CRYPT_CERTIFICATE certificate,
 			component == CRYPT_CERTINFO_DN )
 			{
 			/* Report this special-case condition explicitly */
-			puts( "  (Name contains characters that prevent it from being "
-				  "represented as a\n   text string)." ); 
+			fputs( "  (Name contains characters that prevent it from being "
+				   "represented as a\n   text string).\n", outputStream ); 
 			}
 		return( FALSE );
 		}
@@ -1996,11 +2197,11 @@ static int printComponent( const CRYPT_CERTIFICATE certificate,
 		   for display */
 		memcpy( wcBuffer, buffer, length );
 		wcBuffer[ length / sizeof( wchar_t ) ] = TEXT( '\0' );
-		printf( "  %s = %S.\n", prefixString, wcBuffer ); 
+		fprintf( outputStream, "  %s = %S.\n", prefixString, wcBuffer ); 
 		return( TRUE );
 		}
 	buffer[ length ] = '\0'; 
-	printf( "  %s = %s.\n", prefixString, buffer ); 
+	fprintf( outputStream, "  %s = %s.\n", prefixString, buffer ); 
 	
 	return( TRUE );
 	}
@@ -2019,7 +2220,7 @@ static int printComponents( const CRYPT_CERTIFICATE certificate,
 	if( !( component >= CRYPT_CERTINFO_COUNTRYNAME && \
 		   component <= CRYPT_CERTINFO_COMMONNAME ) && \
 		!( component >= CRYPT_CERTINFO_OTHERNAME_TYPEID && \
-		   component > CRYPT_CERTINFO_REGISTEREDID ) )
+		   component <= CRYPT_CERTINFO_REGISTEREDID ) )
 		return( TRUE );
 
 	/* Check for further components, for multivalued components in altNames */
@@ -2064,7 +2265,7 @@ static void printAltName( const CRYPT_CERTIFICATE certificate )
 								CRYPT_UNUSED );
 	if( cryptStatusOK( status ) )
 		{
-		printf( "  altName DN is:\n" );
+		fprintf( outputStream, "  altName DN is:\n" );
 		printDN( certificate );
 		}
 	}
@@ -2090,7 +2291,7 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 		certType != CRYPT_CERTTYPE_CMS_ATTRIBUTES && \
 		certType != CRYPT_CERTTYPE_PKIUSER )
 		{
-		puts( "Certificate object issuer name is:" );
+		fputs( "Certificate object issuer name is:\n", outputStream );
 		CHK( cryptSetAttribute( certificate, CRYPT_ATTRIBUTE_CURRENT,
 								CRYPT_CERTINFO_ISSUERNAME ) );
 		printDN( certificate );
@@ -2111,7 +2312,7 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 		certType != CRYPT_CERTTYPE_OCSP_REQUEST && \
 		certType != CRYPT_CERTTYPE_OCSP_RESPONSE )
 		{
-		puts( "Certificate object subject name is:" );
+		fputs( "Certificate object subject name is:\n", outputStream );
 		CHK( cryptSetAttribute( certificate, CRYPT_ATTRIBUTE_CURRENT,
 								CRYPT_CERTINFO_SUBJECTNAME ) );
 		printDN( certificate );
@@ -2137,9 +2338,9 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 									  &validFrom, &length ) );
 		CHK( cryptGetAttributeString( certificate, CRYPT_CERTINFO_VALIDTO,
 									  &validTo, &length ) );
-		printf( "Certificate is valid from %s to %s.\n", 
-				getTimeString( validFrom, 0 ),
-				getTimeString( validTo, 1 ) );
+		fprintf( outputStream, "Certificate is valid from %s to %s.\n", 
+				 getTimeString( validFrom, 0 ),
+				 getTimeString( validTo, 1 ) );
 		}
 	if( certType == CRYPT_CERTTYPE_OCSP_RESPONSE )
 		{
@@ -2156,14 +2357,14 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 											  &nextUpdate, &length );
 			if( cryptStatusOK( status ) )
 				{
-				printf( "OCSP source CRL time %s,\n  next update %s.\n", 
-						getTimeString( thisUpdate, 0 ), 
-						getTimeString( nextUpdate, 1 ) );
+				fprintf( outputStream, "OCSP source CRL time %s,\n  next "
+						 "update %s.\n", getTimeString( thisUpdate, 0 ), 
+						 getTimeString( nextUpdate, 1 ) );
 				}
 			else
 				{
-				printf( "OCSP source CRL time %s.\n", 
-						getTimeString( thisUpdate, 0 ) );
+				fprintf( outputStream, "OCSP source CRL time %s.\n", 
+						 getTimeString( thisUpdate, 0 ) );
 				}
 			}
 		}
@@ -2177,12 +2378,15 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 										  &nextUpdate, &length );
 		if( cryptStatusOK( status ) )
 			{
-			printf( "CRL time %s,\n  next update %s.\n", 
-					getTimeString( thisUpdate, 0 ), 
-					getTimeString( nextUpdate, 1 ) );
+			fprintf( outputStream, "CRL time %s,\n  next update %s.\n", 
+					 getTimeString( thisUpdate, 0 ), 
+					 getTimeString( nextUpdate, 1 ) );
 			}
 		else
-			printf( "CRL time %s.\n", getTimeString( thisUpdate, 0 ) );
+			{
+			fprintf( outputStream, "CRL time %s.\n", 
+					 getTimeString( thisUpdate, 0 ) );
+			}
 		}
 #endif /* _WIN32_WCE */
 	if( certType == CRYPT_CERTTYPE_CRL || \
@@ -2195,7 +2399,7 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 		if( cryptSetAttribute( certificate, CRYPT_CERTINFO_CURRENT_CERTIFICATE,
 							   CRYPT_CURSOR_FIRST ) == CRYPT_OK )
 			{
-			puts( "Revocation/validity list information: " );
+			fputs( "Revocation/validity list information:\n", outputStream );
 			do
 				{
 #ifndef _WIN32_WCE
@@ -2234,7 +2438,10 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 				if( noEntries >= 20 )
 					{
 					if( noEntries == 20 )
-						puts( "  (Further entries exist, but won't be printed)." );
+						{
+						fputs( "  (Further entries exist, but won't be "
+							   "printed).\n", outputStream );
+						}
 					continue;
 					}
 
@@ -2242,30 +2449,31 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 				switch( certType )
 					{
 					case CRYPT_CERTTYPE_RTCS_RESPONSE:
-						printf( "  Certificate status = %d (%s).\n",
-								certStatus,
-								( certStatus == CRYPT_CERTSTATUS_VALID ) ? \
+						fprintf( outputStream, "  Certificate status = %d (%s).\n",
+								 certStatus,
+								 ( certStatus == CRYPT_CERTSTATUS_VALID ) ? \
 									"valid" : \
-								( certStatus == CRYPT_CERTSTATUS_NOTVALID ) ? \
+								 ( certStatus == CRYPT_CERTSTATUS_NOTVALID ) ? \
 									"not valid" : \
-								( certStatus == CRYPT_CERTSTATUS_NONAUTHORITATIVE ) ? \
+								 ( certStatus == CRYPT_CERTSTATUS_NONAUTHORITATIVE ) ? \
 									"only non-authoritative response available" : \
 									"unknown" );
 						break;
 
 					case CRYPT_CERTTYPE_OCSP_RESPONSE:
-						printf( "  Entry %d, rev.status = %d (%s), rev.time "
-								"%s.\n", noEntries, revStatus,
-								( revStatus == CRYPT_OCSPSTATUS_NOTREVOKED ) ? \
+						fprintf( outputStream, "  Entry %d, rev.status = %d "
+								 "(%s), rev.time %s.\n", noEntries, revStatus,
+								 ( revStatus == CRYPT_OCSPSTATUS_NOTREVOKED ) ? \
 									"not revoked" : \
-								( revStatus == CRYPT_OCSPSTATUS_REVOKED ) ? \
+								 ( revStatus == CRYPT_OCSPSTATUS_REVOKED ) ? \
 									"revoked" : "unknown",
-								getTimeString( timeStamp, 0 ) );
+								 getTimeString( timeStamp, 0 ) );
 						break;
 
 					case CRYPT_CERTTYPE_CRL:
-						printf( "  Entry %d, revocation time %s.\n", noEntries,
-								getTimeString( timeStamp, 0 ) );
+						fprintf( outputStream, "  Entry %d, revocation "
+								 "time %s.\n", noEntries, 
+								 getTimeString( timeStamp, 0 ) );
 						break;
 
 					default:
@@ -2276,22 +2484,25 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 									  CRYPT_CERTINFO_CURRENT_CERTIFICATE,
 									  CRYPT_CURSOR_NEXT ) == CRYPT_OK );
 			}
-		printf( "Revocation/validity list has %d entr%s.\n", noEntries,
-				( noEntries == 1 ) ? "y" : "ies" );
+		fprintf( outputStream, "Revocation/validity list has %d entr%s.\n", 
+				 noEntries, ( noEntries == 1 ) ? "y" : "ies" );
 		}
 
 	/* Display the self-signed status and fingerprint */
 	if( cryptStatusOK( cryptGetAttribute( certificate,
 									CRYPT_CERTINFO_SELFSIGNED, &value ) ) )
-		printf( "Certificate object is %sself-signed.\n",
-				value ? "" : "not " );
+		{
+		fprintf( outputStream, "Certificate object is %sself-signed.\n",
+				 value ? "" : "not " );
+		}
 	if( certType == CRYPT_CERTTYPE_CERTIFICATE || \
 		certType == CRYPT_CERTTYPE_CERTCHAIN )
 		{
-		CHK( cryptGetAttributeString( certificate, CRYPT_CERTINFO_FINGERPRINT,
+		CHK( cryptGetAttributeString( certificate, 
+									  CRYPT_CERTINFO_FINGERPRINT_SHA1,
 									  buffer, &length ) );
-		printf( "Certificate fingerprint = " );
-		printHex( buffer, length );
+		fprintf( outputStream, "Certificate fingerprint =\n" );
+		printHex( "  ", buffer, length );
 		}
 
 	/* List the attribute types */
@@ -2303,10 +2514,10 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 			cryptSetAttribute( certificate, CRYPT_ATTRIBUTE_CURRENT_GROUP,
 							   CRYPT_CURSOR_FIRST ) ) )
 		{
-		puts( "  (No extensions/attributes)." );
+		fputs( "  (No extensions/attributes).\n", outputStream );
 		return( TRUE );
 		}
-	puts( "Some of the common extensions/attributes are:" );
+	fputs( "Some of the common extensions/attributes are:\n", outputStream );
 	if( certType == CRYPT_CERTTYPE_CRL )
 		{
 		time_t theTime;
@@ -2316,21 +2527,23 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 		status = cryptGetAttribute( certificate, CRYPT_CERTINFO_CRLNUMBER,
 									&value );
 		if( cryptStatusOK( status ) && value )
-			printf( "  crlNumber = %d.\n", value );
+			fprintf( outputStream, "  crlNumber = %d.\n", value );
 		status = cryptGetAttribute( certificate, CRYPT_CERTINFO_DELTACRLINDICATOR,
 									&value );
 		if( cryptStatusOK( status ) && value )
-			printf( "  deltaCRLIndicator = %d.\n", value );
+			fprintf( outputStream, "  deltaCRLIndicator = %d.\n", value );
 		status = cryptGetAttribute( certificate, CRYPT_CERTINFO_CRLREASON,
 									&value );
 		if( cryptStatusOK( status ) && value )
-			printf( "  crlReason = %d.\n", value );
+			fprintf( outputStream, "  crlReason = %d.\n", value );
 		status = cryptGetAttributeString( certificate,
 								CRYPT_CERTINFO_INVALIDITYDATE, &theTime, &length );
 #ifndef _WIN32_WCE
 		if( cryptStatusOK( status ) )
-			printf( "  invalidityDate = %s.\n", 
-					getTimeString( theTime, 0 ) );
+			{
+			fprintf( outputStream, "  invalidityDate = %s.\n", 
+					 getTimeString( theTime, 0 ) );
+			}
 #endif /* _WIN32_WCE */
 		if( cryptStatusOK( \
 				cryptGetAttribute( certificate,
@@ -2338,7 +2551,7 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 			{
 			CHK( cryptSetAttribute( certificate, CRYPT_ATTRIBUTE_CURRENT,
 									CRYPT_CERTINFO_ISSUINGDIST_FULLNAME ) );
-			puts( "  issuingDistributionPoint is:" );
+			fputs( "  issuingDistributionPoint is:\n", outputStream );
 			printDN( certificate );
 			printAltName( certificate );
 			}
@@ -2353,7 +2566,10 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 										  CRYPT_CERTINFO_CMS_SIGNINGTIME,
 										  &signingTime, &length );
 		if( cryptStatusOK( status ) )
-			printf( "Signing time %s.\n", getTimeString( signingTime, 0 ) );
+			{
+			fprintf( outputStream, "Signing time %s.\n", 
+					 getTimeString( signingTime, 0 ) );
+			}
 		return( TRUE );
 		}
 #endif /* _WIN32_WCE */
@@ -2362,17 +2578,19 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 		CHK( cryptGetAttributeString( certificate, CRYPT_CERTINFO_PKIUSER_ID,
 									  buffer, &length ) );
 		buffer[ length ] ='\0';
-		printf( "  PKI user ID = %s.\n", buffer );
+		fprintf( outputStream, "  PKI user ID = %s.\n", buffer );
 		CHK( cryptGetAttributeString( certificate,
 									  CRYPT_CERTINFO_PKIUSER_ISSUEPASSWORD,
 									  buffer, &length ) );
 		buffer[ length ] ='\0';
-		printf( "  PKI user issue password = %s.\n", buffer );
+		fprintf( outputStream, "  PKI user issue password = %s.\n", 
+				 buffer );
 		CHK( cryptGetAttributeString( certificate,
 									  CRYPT_CERTINFO_PKIUSER_REVPASSWORD,
 									  buffer, &length ) );
 		buffer[ length ] ='\0';
-		printf( "  PKI user revocation password = %s.\n", buffer );
+		fprintf( outputStream, "  PKI user revocation password = %s.\n", 
+				 buffer );
 		return( TRUE );
 		}
 	status = cryptGetAttribute( certificate,
@@ -2394,18 +2612,18 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 		BOOLEAN printedUsage = FALSE;
 		int i;
 
-		printf( "  keyUsage = %02X (", value );
+		fprintf( outputStream, "  keyUsage = %02X (", value );
 		for( i = 0; usageNames[ i ].flag != CRYPT_KEYUSAGE_NONE; i++ )
 			{
 			if( usageNames[ i ].flag & value )
 				{
 				if( printedUsage )
-					printf( ", " );
-				printf( "%s", usageNames[ i ].name );
+					fprintf( outputStream, ", " );
+				fprintf( outputStream, "%s", usageNames[ i ].name );
 				printedUsage = TRUE;
 				}
 			}
-		puts( ")." );
+		fputs( ").\n", outputStream );
 		}
 	status = cryptGetAttribute( certificate,
 								CRYPT_CERTINFO_EXTKEYUSAGE, &value );
@@ -2413,71 +2631,81 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 		{
 		BOOLEAN firstTime = TRUE;
 
-		printf( "  extKeyUsage types = " );
+		fprintf( outputStream, "  extKeyUsage types = " );
 		CHK( cryptSetAttribute( certificate, CRYPT_ATTRIBUTE_CURRENT_GROUP,
 								CRYPT_CERTINFO_EXTKEYUSAGE ) );
 		do
 			{
 			CHK( cryptGetAttribute( certificate, CRYPT_ATTRIBUTE_CURRENT,
 									&value ) );
-			printf( "%s%d", firstTime ? "" : ", ", value );
+			fprintf( outputStream, "%s%d", firstTime ? "" : ", ", value );
 			firstTime = FALSE;
 			}
 		while( cryptSetAttribute( certificate, CRYPT_ATTRIBUTE_CURRENT,
 								  CRYPT_CURSOR_NEXT ) == CRYPT_OK );
-		printf( ".\n" );
+		fprintf( outputStream, ".\n" );
 		}
 	status = cryptGetAttribute( certificate, CRYPT_CERTINFO_CA, &value );
 	if( cryptStatusOK( status ) && value )
-		printf( "  basicConstraints.cA = %s.\n", value ? "True" : "False" );
+		{
+		fprintf( outputStream, "  basicConstraints.cA = %s.\n", 
+				 value ? "True" : "False" );
+		}
 	status = cryptGetAttribute( certificate, CRYPT_CERTINFO_PATHLENCONSTRAINT,
 								&value );
 	if( cryptStatusOK( status ) && value )
-		printf( "  basicConstraints.pathLenConstraint = %d.\n", value );
+		{
+		fprintf( outputStream, "  basicConstraints.pathLenConstraint = %d.\n", 
+				 value );
+		}
 	status = cryptGetAttributeString( certificate,
 							CRYPT_CERTINFO_SUBJECTKEYIDENTIFIER, buffer, &length );
 	if( cryptStatusOK( status ) )
 		{
-		printf( "  subjectKeyIdentifier = " );
-		printHex( buffer, length );
+		fprintf( outputStream, "  subjectKeyIdentifier =\n" );
+		printHex( "  ", buffer, length );
 		}
 	status = cryptGetAttributeString( certificate,
 							CRYPT_CERTINFO_AUTHORITY_KEYIDENTIFIER, buffer, &length );
 	if( cryptStatusOK( status ) )
 		{
-		printf( "  authorityKeyIdentifier = " );
-		printHex( buffer, length );
+		fprintf( outputStream, "  authorityKeyIdentifier =\n" );
+		printHex( "  ", buffer, length );
 		}
 	status = cryptGetAttributeString( certificate,
 							CRYPT_CERTINFO_CERTPOLICYID, buffer, &length );
 	if( cryptStatusOK( status ) )
 		{
 		buffer[ length ] = '\0';
-		printf( "  certificatePolicies.policyInformation.policyIdentifier = "
-				"%s.\n", buffer );
+		fprintf( outputStream, 
+				 "  certificatePolicies.policyInformation.policyIdentifier = %s.\n", 
+				 buffer );
 		status = cryptGetAttributeString( certificate,
 							CRYPT_CERTINFO_CERTPOLICY_CPSURI, buffer, &length );
 		if( cryptStatusOK( status ) )
 			{
 			buffer[ length ] = '\0';
-			printf( "  certificatePolicies.policyInformation.cpsURI = "
-					"%s.\n", buffer );
+			fprintf( outputStream, 
+					 "  certificatePolicies.policyInformation.cpsURI = %s.\n", 
+					 buffer );
 			}
 		status = cryptGetAttributeString( certificate,
 							CRYPT_CERTINFO_CERTPOLICY_ORGANIZATION, buffer, &length );
 		if( cryptStatusOK( status ) )
 			{
 			buffer[ length ] = '\0';
-			printf( "  certificatePolicies.policyInformation.organisation = "
-					"%s.\n", buffer );
+			fprintf( outputStream, 
+					 "  certificatePolicies.policyInformation.organisation = %s.\n", 
+					 buffer );
 			}
 		status = cryptGetAttributeString( certificate,
 							CRYPT_CERTINFO_CERTPOLICY_EXPLICITTEXT, buffer, &length );
 		if( cryptStatusOK( status ) )
 			{
 			buffer[ length ] = '\0';
-			printf( "  certificatePolicies.policyInformation.explicitText = "
-					"%s.\n", buffer );
+			fprintf( outputStream, 
+					 "  certificatePolicies.policyInformation.explicitText = %s.\n", 
+					 buffer );
 			}
 		}
 	if( cryptStatusOK( \
@@ -2486,7 +2714,7 @@ int printCertInfo( const CRYPT_CERTIFICATE certificate )
 		{
 		CHK( cryptSetAttribute( certificate, CRYPT_ATTRIBUTE_CURRENT,
 								CRYPT_CERTINFO_CRLDIST_FULLNAME ) );
-		puts( "  crlDistributionPoint is/are:" );
+		fputs( "  crlDistributionPoint is/are:\n", outputStream );
 		do
 			{
 			printDN( certificate );
@@ -2519,9 +2747,9 @@ int printCertChainInfo( const CRYPT_CERTIFICATE certChain )
 							CRYPT_CURSOR_FIRST ) );
 	do
 		{
-		printf( "Certificate %d\n-------------\n", count++ );
+		fprintf( outputStream, "Certificate %d\n-------------\n", count++ );
 		printCertInfo( certChain );
-		printf( "\n" );
+		fprintf( outputStream, "\n" );
 		}
 	while( cryptSetAttribute( certChain,
 			CRYPT_CERTINFO_CURRENT_CERTIFICATE, CRYPT_CURSOR_NEXT ) == CRYPT_OK );

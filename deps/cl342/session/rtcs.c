@@ -66,7 +66,7 @@ static const OID_INFO FAR_BSS envelopeOIDinfo[] = {
 	{ NULL, 0 }, { NULL, 0 }
 	};
 
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int checkRtcsHeader( IN_BUFFER( rtcsDataLength ) const void *rtcsData, 
 							IN_LENGTH_SHORT const int rtcsDataLength,
 							OUT_ENUM_OPT( ACTION ) ACTION_TYPE *actionType )
@@ -102,7 +102,7 @@ static int checkRtcsHeader( IN_BUFFER( rtcsDataLength ) const void *rtcsData,
 
 /* Send a request to an RTCS server */
 
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int sendClientRequest( INOUT SESSION_INFO *sessionInfoPtr )
 	{
 	MESSAGE_DATA msgData;
@@ -146,7 +146,7 @@ static int sendClientRequest( INOUT SESSION_INFO *sessionInfoPtr )
 
 /* Read the response from the RTCS server */
 
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int readServerResponse( INOUT SESSION_INFO *sessionInfoPtr )
 	{
 	CRYPT_CERTIFICATE iCmsAttributes;
@@ -258,7 +258,7 @@ static int readServerResponse( INOUT SESSION_INFO *sessionInfoPtr )
 
 /* Read a request from an RTCS client */
 
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int readClientRequest( INOUT SESSION_INFO *sessionInfoPtr,
 							  INOUT RTCS_PROTOCOL_INFO *protocolInfo )
 	{
@@ -288,8 +288,8 @@ static int readClientRequest( INOUT SESSION_INFO *sessionInfoPtr,
 		}
 	if( actionType != ACTION_UNWRAP )
 		{
-		retExt( status, 
-				( status, SESSION_ERRINFO, 
+		retExt( CRYPT_ERROR_BADDATA, 
+				( CRYPT_ERROR_BADDATA, SESSION_ERRINFO,
 				  "Unexpected RTCS encapsulation type %d", actionType ) );
 		}
 	status = envelopeUnwrap( sessionInfoPtr->receiveBuffer,
@@ -359,7 +359,7 @@ static int readClientRequest( INOUT SESSION_INFO *sessionInfoPtr,
 
 /* Return a response to an RTCS client */
 
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int sendServerResponse( INOUT SESSION_INFO *sessionInfoPtr,
 							   INOUT RTCS_PROTOCOL_INFO *protocolInfo )
 	{
@@ -457,7 +457,7 @@ static int sendServerResponse( INOUT SESSION_INFO *sessionInfoPtr,
 
 /* Exchange data with an RTCS client/server */
 
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int clientTransact( INOUT SESSION_INFO *sessionInfoPtr )
 	{
 	int status;
@@ -471,7 +471,7 @@ static int clientTransact( INOUT SESSION_INFO *sessionInfoPtr )
 	return( status );
 	}
 
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int serverTransact( INOUT SESSION_INFO *sessionInfoPtr )
 	{
 	RTCS_PROTOCOL_INFO protocolInfo;

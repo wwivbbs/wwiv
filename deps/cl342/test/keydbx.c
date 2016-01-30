@@ -46,7 +46,9 @@ static const struct {
 	} FAR_BSS ldapUrlInfo[] = {
 	{ 0 },
 	{ TEXT( "ldap://ldap.diginotar.nl:389" ), "ldap.diginotar.nl",
-			/* Long URL form also test LDAP URL-parsing code */
+			/* Long URL form also tests LDAP URL-parsing code.  This was 
+			   the genuine original LDAP test URL, it's kept in here now 
+			   purely for giggles */
 	  TEXT( "cn=Root Certificaat Productie, o=DigiNotar Root,c=NL" ),
 	  TEXT( "CN=CRL Productie,O=DigiNotar CRL,C=NL" ) },
 	{ TEXT( "ds.katalog.posten.se" ), "ds.katalog.posten.se",
@@ -88,15 +90,28 @@ static const CERT_DATA FAR_BSS sqlCertData[] = {
 enum { READ_OPTION_NORMAL, READ_OPTION_MULTIPLE };
 
 static int checkKeysetCRL( const CRYPT_KEYSET cryptKeyset,
-						   const CRYPT_CERTIFICATE cryptCert )
+						   const CRYPT_CERTIFICATE cryptCert,
+						   const BOOLEAN isCertChain )
 	{
 	int errorLocus, status;
 
 	/* Perform a revocation check against the CRL in the keyset */
-	puts( "Checking certificate against CRL." );
+	printf( "Checking certificate%s against CRL.\n", 
+			isCertChain ? " chain" : "" );
 	status = cryptCheckCert( cryptCert, cryptKeyset );
 	if( cryptStatusOK( status ) )
 		return( TRUE );
+	if( isCertChain )
+		{
+		/* Checking a chain against a keyset doesn't really make sense, so
+		   this should be rejected */
+		if( status == CRYPT_ERROR_PARAM2 )
+			return( TRUE );
+
+		printf( "Check of certificate chain against keyset returned %d, "
+				"should have been %d.\n", status, CRYPT_ERROR_PARAM2 );
+		return( FALSE );
+		}
 	if( status != CRYPT_ERROR_INVALID )
 		{
 		return( extErrorExit( cryptKeyset, "cryptCheckCert() (for CRL in "
@@ -114,8 +129,9 @@ static int checkKeysetCRL( const CRYPT_KEYSET cryptKeyset,
 
 		puts( "  (Certificate has already expired, re-checking in oblivious "
 			  "mode)." );
-		cryptGetAttribute( CRYPT_UNUSED, CRYPT_OPTION_CERT_COMPLIANCELEVEL,
-						   &complianceValue );
+		( void ) cryptGetAttribute( CRYPT_UNUSED, 
+									CRYPT_OPTION_CERT_COMPLIANCELEVEL,
+									&complianceValue );
 		cryptSetAttribute( CRYPT_UNUSED, CRYPT_OPTION_CERT_COMPLIANCELEVEL,
 						   CRYPT_COMPLIANCELEVEL_OBLIVIOUS );
 		status = cryptCheckCert( cryptCert, cryptKeyset );
@@ -138,6 +154,7 @@ static int testKeysetRead( const CRYPT_KEYSET_TYPE keysetType,
 	{
 	CRYPT_KEYSET cryptKeyset;
 	CRYPT_CERTIFICATE cryptCert;
+	BOOLEAN isCertChain = FALSE;
 	int value, status;
 
 	/* Open the keyset with a check to make sure this access method exists
@@ -180,18 +197,18 @@ static int testKeysetRead( const CRYPT_KEYSET_TYPE keysetType,
 		}
 
 	/* Make sure that we got what we were expecting */
-	cryptGetAttribute( cryptCert, CRYPT_CERTINFO_CERTTYPE, &value );
-	if( value != type )
+	status = cryptGetAttribute( cryptCert, CRYPT_CERTINFO_CERTTYPE, 
+								&value );
+	if( cryptStatusError( status ) || ( value != type ) )
 		{
 		printf( "Expecting certificate object type %d, got %d, line %d.", 
 				type, value, __LINE__ );
 		return( FALSE );
 		}
+	if( value == CRYPT_CERTTYPE_CERTCHAIN )
+		isCertChain = TRUE;
 	if( value == CRYPT_CERTTYPE_CERTCHAIN || value == CRYPT_CERTTYPE_CRL )
 		{
-		const BOOLEAN isCertChain = ( value == CRYPT_CERTTYPE_CERTCHAIN ) ? \
-									TRUE : FALSE;
-
 		value = 0;
 		cryptSetAttribute( cryptCert, CRYPT_CERTINFO_CURRENT_CERTIFICATE,
 						   CRYPT_CURSOR_FIRST );
@@ -209,7 +226,7 @@ static int testKeysetRead( const CRYPT_KEYSET_TYPE keysetType,
 	if( keysetType != CRYPT_KEYSET_LDAP && \
 		keysetType != CRYPT_KEYSET_HTTP )
 		{
-		if( !checkKeysetCRL( cryptKeyset, cryptCert ) )
+		if( !checkKeysetCRL( cryptKeyset, cryptCert, isCertChain ) )
 			return( FALSE );
 		}
 	cryptDestroyCert( cryptCert );
@@ -489,8 +506,10 @@ static int testKeysetWrite( const CRYPT_KEYSET_TYPE keysetType,
 				"%d.\n", status, __LINE__ );
 		return( FALSE );
 		}
-	cryptGetAttributeString( cryptCert, CRYPT_CERTINFO_COMMONNAME,
-							 name, &length );
+	status = cryptGetAttributeString( cryptCert, CRYPT_CERTINFO_COMMONNAME,
+									  name, &length );
+	if( cryptStatusError( status ) )
+		return( FALSE );
 #ifdef UNICODE_STRINGS
 	length /= sizeof( wchar_t );
 #endif /* UNICODE_STRINGS */
@@ -853,7 +872,8 @@ int testReadCertLDAP( void )
 		}
 	if( status == CRYPT_ERROR_OPEN )
 		{
-		printf( "%s not available, trying alternative directory...\n",
+		printf( "%s not available for some odd reason,\n  trying "
+				"alternative directory instead...\n", 
 				ldapUrlInfo[ LDAP_SERVER_NO ].asciiURL );
 		ldapKeysetName = ldapUrlInfo[ LDAP_ALT_SERVER_NO ].url;
 		status = cryptKeysetOpen( &cryptKeyset, CRYPT_UNUSED,
@@ -948,8 +968,11 @@ int testReadCertLDAP( void )
 	   In addition because the magic formula for fetching a CRL doesn't seem
 	   to work for certificates, the CRL read is done first */
 	puts( "Testing LDAP CRL read..." );
-	cryptGetAttributeString( CRYPT_UNUSED, CRYPT_OPTION_KEYS_LDAP_CRLNAME,
-							 crlName, &length );
+	status = cryptGetAttributeString( CRYPT_UNUSED, 
+									  CRYPT_OPTION_KEYS_LDAP_CRLNAME,
+									  crlName, &length );
+	if( cryptStatusError( status ) )
+		return( FALSE );
 #ifdef UNICODE_STRINGS
 	length /= sizeof( wchar_t );
 #endif /* UNICODE_STRINGS */
@@ -971,16 +994,22 @@ int testReadCertLDAP( void )
 		}
 
 	puts( "Testing LDAP certificate read..." );
-	cryptGetAttributeString( CRYPT_UNUSED, CRYPT_OPTION_KEYS_LDAP_CERTNAME,
-							 certName, &length );
+	status = cryptGetAttributeString( CRYPT_UNUSED, 
+									  CRYPT_OPTION_KEYS_LDAP_CERTNAME,
+									  certName, &length );
+	if( cryptStatusError( status ) )
+		return( FALSE );
 #ifdef UNICODE_STRINGS
 	length /= sizeof( wchar_t );
 #endif /* UNICODE_STRINGS */
 	certName[ length ] = TEXT( '\0' );
 	cryptSetAttributeString( CRYPT_UNUSED, CRYPT_OPTION_KEYS_LDAP_CERTNAME,
 							 "userCertificate", 15 );
-	cryptGetAttributeString( CRYPT_UNUSED, CRYPT_OPTION_KEYS_LDAP_CACERTNAME,
-							 caCertName, &length );
+	status = cryptGetAttributeString( CRYPT_UNUSED, 
+									  CRYPT_OPTION_KEYS_LDAP_CACERTNAME,
+									  caCertName, &length );
+	if( cryptStatusError( status ) )
+		return( FALSE );
 #ifdef UNICODE_STRINGS
 	length /= sizeof( wchar_t );
 #endif /* UNICODE_STRINGS */

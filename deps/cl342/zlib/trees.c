@@ -43,6 +43,8 @@
   #pragma warning( disable: 4267 )	/* Warning about data size cast - pcg */
 #endif /* VC++ */					/* See also comment on line 225 - pcg */
 
+#ifdef USE_COMPRESSION
+
 #ifdef DEBUG
 #  include <ctype.h>
 #endif
@@ -1228,3 +1230,4 @@ local void copy_block(deflate_state *s,		/* pcg */
         put_byte(s, *buf++);
     }
 }
+#endif /* USE_COMPRESSION */

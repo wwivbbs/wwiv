@@ -3,7 +3,7 @@
 
 # Make sure that we've been given a single argument consisting of the OS name.
 
-if [ "$1" = "" ] ; then
+if [ -z "$1" ] ; then
 	echo "$0: Missing OS name." >&2 ;
 	exit 1 ;
 fi
@@ -39,6 +39,7 @@ fi
 #	NCR MP-RAS (threads):		-Xdce -lnsl -lsocket -lc89 -lresolv -lpthread
 #	NCR MP-RAS (no.threads):	-K xpg42 -lnsl -lsocket -lc89 -lresolv
 #	OSF1/DEC Unix:				-lresolv -lpthread
+#	OS X (Darwin):				-lresolv 
 #	PHUX 9.x, 10.x:				None
 #	PHUX 11.x:					-lpthread
 #	SunOS 4.x:					-ldl -lnsl -lposix4
@@ -112,6 +113,9 @@ case $OSNAME in
 
 	'CYGWIN_NT-5.0'|'CYGWIN_NT-5.1')
 		echo "" ;;
+
+	'Darwin')
+		echo "-lresolv" ;;
 
 	'FreeBSD'|'NetBSD')
 		echo "-lpthread" ;;

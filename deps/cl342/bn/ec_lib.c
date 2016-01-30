@@ -92,6 +92,7 @@ EC_GROUP *EC_GROUP_new(const EC_METHOD *meth)
 		ECerr(EC_F_EC_GROUP_NEW, ERR_R_MALLOC_FAILURE);
 		return NULL;
 		}
+	memset( ret, 0, sizeof( EC_GROUP ) );			/* pcg */
 
 	ret->meth = meth;
 
@@ -709,6 +710,7 @@ EC_POINT *EC_POINT_new(const EC_GROUP *group)
 		ECerr(EC_F_EC_POINT_NEW, ERR_R_MALLOC_FAILURE);
 		return NULL;
 		}
+	memset( ret, 0, sizeof( EC_POINT ) );			/* pcg */
 
 	ret->meth = group->meth;
 	
@@ -1160,36 +1162,4 @@ int EC_GROUP_have_precompute_mult(const EC_GROUP *group)
 	else
 		return 0; /* cannot tell whether precomputation has been performed */
 	}
-
-/* Checksum the ECC structure metadata and their data payloads - pcg */
-
-void BN_checksum_ec_group_metadata( EC_GROUP *group, int *chk )	/* pcg */
-	{
-	*chk = checksumBignumData( group, sizeof( EC_GROUP ), *chk );
-	}
-
-void BN_checksum_ec_group( EC_GROUP *group, int *chk )	/* pcg */
-	{
-	/* EC_GROUPs have an incredibly complex inner stucture (see 
-	   bn/ec_lcl.h), the following checksums the fixed without getting 
-	   into the lists of method-specific data values */
-	BN_checksum( &group->order, chk );
-	BN_checksum( &group->cofactor, chk );
-	BN_checksum( &group->field, chk );
-	BN_checksum( &group->a, chk );
-	BN_checksum( &group->b, chk );
-	}
-
-void BN_checksum_ec_point_metadata( EC_POINT *point, int *chk )	/* pcg */
-	{
-	*chk = checksumBignumData( point, sizeof( EC_POINT ), *chk );
-	}
-
-void BN_checksum_ec_point( EC_POINT *point, int *chk )	/* pcg */
-	{
-	BN_checksum( &point->X, chk );
-	BN_checksum( &point->Y, chk );
-	BN_checksum( &point->Z, chk );
-	}
-
 #endif /* USE_ECDH || USE_ECDSA */	/* pcg */

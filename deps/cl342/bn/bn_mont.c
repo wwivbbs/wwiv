@@ -116,8 +116,6 @@
  * sections 3.8 and 4.2 in http://security.ece.orst.edu/koc/papers/r01rsasw.pdf
  */
 
-/* Added proper initialisation of data in all BN_X_init() functions - pcg */
-
 #include <stdio.h>
 #if defined( INC_ALL )		/* pcg */
   #include "bn_lcl.h"
@@ -128,7 +126,7 @@
 #define MONT_WORD /* use the faster word-based algorithm */
 
 #ifdef MONT_WORD
-static int BN_from_montgomery_word(BIGNUM *ret, BIGNUM *r, BN_MONT_CTX *mont);
+static int BN_from_montgomery_word(BIGNUM *ret, BIGNUM *r, BN_MONT_CTX *mont, BN_CTX *ctx);	/* pcg */
 #endif
 
 int BN_mod_mul_montgomery(BIGNUM *r, const BIGNUM *a, const BIGNUM *b,
@@ -153,7 +151,7 @@ int BN_mod_mul_montgomery(BIGNUM *r, const BIGNUM *a, const BIGNUM *b,
 #endif
 
 	BN_CTX_start(ctx);
-	tmp = BN_CTX_get(ctx);
+	tmp = BN_CTX_get_ext( ctx, BIGNUM_EXT_MONT );	/* pcg */
 	if (tmp == NULL) goto err;
 
 	bn_check_top(tmp);
@@ -167,21 +165,21 @@ int BN_mod_mul_montgomery(BIGNUM *r, const BIGNUM *a, const BIGNUM *b,
 		}
 	/* reduce from aRR to aR */
 #ifdef MONT_WORD
-	if (!BN_from_montgomery_word(r,tmp,mont)) goto err;
+	if (!BN_from_montgomery_word(r,tmp,mont,ctx)) goto err;	/* pcg */
 #else
 	if (!BN_from_montgomery(r,tmp,mont,ctx)) goto err;
 #endif
 	bn_check_top(r);
 	ret=1;
 err:
-	BN_CTX_end(ctx);
+	BN_CTX_end_ext( ctx, BIGNUM_EXT_MONT );			/* pcg */
 	return(ret);
 	}
 
 #ifdef MONT_WORD
-static int BN_from_montgomery_word(BIGNUM *ret, BIGNUM *r, BN_MONT_CTX *mont)
+static int BN_from_montgomery_word(BIGNUM *ret, BIGNUM *r, BN_MONT_CTX *mont, BN_CTX *ctx)	/* pcg */
 	{
-	BIGNUM *n;
+	BIGNUM *n, *rr = NULL;		/* pcg */
 	BN_ULONG *ap,*np,*rp,n0,v,*nrp;
 	int al,nl,max,i,x,ri;
 
@@ -194,8 +192,24 @@ static int BN_from_montgomery_word(BIGNUM *ret, BIGNUM *r, BN_MONT_CTX *mont)
 	if ((al == 0) || (nl == 0)) { ret->top=0; return(1); }
 
 	max=(nl+al+1); /* allow for overflow (no?) XXX */
+	if( r->dmax < max )		/* pcg */
+		{
+		/* When dealing with oversize values that temporarily get very large 
+		   (which also need special-casing in BN_MONT_CTX_set()), we have to
+		   copy the input to an extended bignum to allow it to be operated 
+		   on */
+		BN_CTX_start( ctx );
+		rr = BN_CTX_get_ext( ctx, BIGNUM_EXT_MONT );
+		if( rr == NULL) 
+			return( 0 );
+		if( BN_copy( rr, r ) == NULL )
+			{
+			BN_CTX_end_ext( ctx, BIGNUM_EXT_MONT );
+			return( 0 );
+			}
+		r = rr;
+		}
 	if (bn_wexpand(r,max) == NULL) return(0);
-
 	r->neg^=n->neg;
 	np=n->d;
 	rp=r->d;
@@ -336,6 +350,9 @@ static int BN_from_montgomery_word(BIGNUM *ret, BIGNUM *r, BN_MONT_CTX *mont)
 #endif
 	bn_check_top(ret);
 
+	if( rr != NULL )	/* pcg */
+		BN_CTX_end_ext( ctx, BIGNUM_EXT_MONT );
+
 	return(1);
 	}
 #endif	/* MONT_WORD */
@@ -349,7 +366,7 @@ int BN_from_montgomery(BIGNUM *ret, const BIGNUM *a, BN_MONT_CTX *mont,
 
 	BN_CTX_start(ctx);
 	if ((t = BN_CTX_get(ctx)) != NULL && BN_copy(t,a))	/* pcg */
-		retn = BN_from_montgomery_word(ret,t,mont);
+		retn = BN_from_montgomery_word(ret,t,mont,ctx);	/* pcg */
 	BN_CTX_end(ctx);
 #else /* !MONT_WORD */
 	BIGNUM *t1,*t2;
@@ -381,60 +398,36 @@ int BN_from_montgomery(BIGNUM *ret, const BIGNUM *a, BN_MONT_CTX *mont,
 	return(retn);
 	}
 
-BN_MONT_CTX *BN_MONT_CTX_new(void)
-	{
-	BN_MONT_CTX *ret;
-
-	if ((ret=(BN_MONT_CTX *)clBnAlloc("BN_MONT_CTX_new",sizeof(BN_MONT_CTX))) == NULL)	/* pcg */
-		return(NULL);
-
-	BN_MONT_CTX_init(ret);
-	ret->flags=BN_FLG_MALLOCED;
-	return(ret);
-	}
-
-void BN_MONT_CTX_init(BN_MONT_CTX *ctx)
-	{
-	memset( ctx, 0, sizeof( BN_MONT_CTX ) );	/* pcg */
-	ctx->ri=0;
-	BN_init(&(ctx->RR));
-	BN_init(&(ctx->N));
-	BN_init(&(ctx->Ni));
-	ctx->n0[0] = ctx->n0[1] = 0;
-	ctx->flags=0;
-	}
-
-void BN_MONT_CTX_free(BN_MONT_CTX *mont)
-	{
-	if(mont == NULL)
-	    return;
-
-	BN_free(&(mont->RR));
-	BN_free(&(mont->N));
-	BN_free(&(mont->Ni));
-	if (mont->flags & BN_FLG_MALLOCED)
-		OPENSSL_free(mont);
-	}
-
 int BN_MONT_CTX_set(BN_MONT_CTX *mont, const BIGNUM *mod, BN_CTX *ctx)
 	{
 	int ret = 0;
 	BIGNUM *Ri,*R;
+	BIGNUM *RR;			/* pcg */
 
 	BN_CTX_start(ctx);
 	if((Ri = BN_CTX_get(ctx)) == NULL) goto err;
 	R= &(mont->RR);					/* grab RR as a temp */
 	if (!BN_copy(&(mont->N),mod)) goto err;		/* Set N */
 	mont->N.neg = 0;
+	RR = BN_CTX_get_ext( ctx, BIGNUM_EXT_MONT );	/* pcg */
+	if( RR == NULL ) goto err;
 
 #ifdef MONT_WORD
 		{
 		BIGNUM tmod;
+#ifdef BN_ALLOC
 		BN_ULONG buf[2];
+#else
+		BN_ULONG *buf;
+#endif /* BN_ALLOC */
 
 		BN_init(&tmod);
+#ifdef BN_ALLOC
 		tmod.d=buf;
 		tmod.dmax=2;
+#else
+		buf = tmod.d;
+#endif /* BN_ALLOC */
 		tmod.neg=0;
 
 		mont->ri=(BN_num_bits(mod)+(BN_BITS2-1))/BN_BITS2*BN_BITS2;
@@ -515,67 +508,14 @@ int BN_MONT_CTX_set(BN_MONT_CTX *mont, const BIGNUM *mod, BN_CTX *ctx)
 		}
 #endif
 
-	/* setup RR for conversions */
-	BN_zero(&(mont->RR));
-	if (!BN_set_bit(&(mont->RR),mont->ri*2)) goto err;
-	if (!BN_mod(&(mont->RR),&(mont->RR),&(mont->N),ctx)) goto err;
+	/* Set up RR for conversions.  This temporarily expands the RR value to 
+	   an extremely large size so we have to use an extended bignum - pcg */
+	BN_zero( RR );													/* pcg */
+	if( !BN_set_bit( RR, mont->ri * 2 ) ) goto err;					/* pcg */
+	if( !BN_mod( &( mont->RR ), RR, &( mont->N ), ctx ) ) goto err;	/* pcg */
 
 	ret = 1;
 err:
-	BN_CTX_end(ctx);
-	return ret;
-	}
-
-BN_MONT_CTX *BN_MONT_CTX_copy(BN_MONT_CTX *to, BN_MONT_CTX *from)
-	{
-	if (to == from) return(to);
-
-	if (!BN_copy(&(to->RR),&(from->RR))) return NULL;
-	if (!BN_copy(&(to->N),&(from->N))) return NULL;
-	if (!BN_copy(&(to->Ni),&(from->Ni))) return NULL;
-	to->ri=from->ri;
-	to->n0[0]=from->n0[0];
-	to->n0[1]=from->n0[1];
-	return(to);
-	}
-
-BN_MONT_CTX *BN_MONT_CTX_set_locked(BN_MONT_CTX **pmont, int lock,
-					const BIGNUM *mod, BN_CTX *ctx)
-	{
-#if 0		/* pcg */
-	int got_write_lock = 0;
-#endif /* 0 */
-	BN_MONT_CTX *ret;
-
-#if 0		/* pcg */
-	CRYPTO_r_lock(lock);
-#endif /* 0 */
-	if (!*pmont)
-		{
-#if 0		/* pcg */
-		CRYPTO_r_unlock(lock);
-		CRYPTO_w_lock(lock);
-		got_write_lock = 1;
-#endif /* 0 */
-
-		if (!*pmont)
-			{
-			ret = BN_MONT_CTX_new();
-			if (ret && !BN_MONT_CTX_set(ret, mod, ctx))
-				BN_MONT_CTX_free(ret);
-			else
-				*pmont = ret;
-			}
-		}
-	
-	ret = *pmont;
-	
-#if 0		/* pcg */
-	if (got_write_lock)
-		CRYPTO_w_unlock(lock);
-	else
-		CRYPTO_r_unlock(lock);
-#endif /* 0 */
-		
+	BN_CTX_end_ext( ctx, BIGNUM_EXT_MONT );	/* pcg */
 	return ret;
 	}

@@ -21,6 +21,8 @@
   #include "mechs/mech.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_INT_CMS
+
 /****************************************************************************
 *																			*
 *								Utility Functions							*
@@ -31,7 +33,7 @@
 
 CHECK_RETVAL_ENUM( CRYPT_FORMAT ) STDC_NONNULL_ARG( ( 1 ) ) \
 static CRYPT_FORMAT_TYPE getFormatType( IN_BUFFER( dataLength ) const void *data, 
-										IN_LENGTH const int dataLength )
+										IN_DATALENGTH const int dataLength )
 	{
 	STREAM stream;
 	long value;
@@ -39,8 +41,8 @@ static CRYPT_FORMAT_TYPE getFormatType( IN_BUFFER( dataLength ) const void *data
 
 	assert( isReadPtr( data, dataLength ) );
 
-	REQUIRES( dataLength > MIN_CRYPT_OBJECTSIZE && \
-			  dataLength < MAX_INTLENGTH );
+	REQUIRES_EXT( dataLength > MIN_CRYPT_OBJECTSIZE && \
+				  dataLength < MAX_BUFFER_SIZE, CRYPT_FORMAT_NONE );
 
 	sMemConnect( &stream, data, min( 16, dataLength ) );
 
@@ -102,7 +104,7 @@ static CRYPT_FORMAT_TYPE getFormatType( IN_BUFFER( dataLength ) const void *data
 
 #ifdef USE_PGP
 	/* It's not ASN.1 data, check for PGP data */
-	status = pgpReadPacketHeader( &stream, NULL, &value, 30 );
+	status = pgpReadPacketHeader( &stream, NULL, &value, 30, 8192 );
 	if( cryptStatusOK( status ) && value > 30 && value < 8192 )
 		{
 		sMemDisconnect( &stream );
@@ -177,7 +179,7 @@ static int checkContextsEncodable( IN_HANDLE const CRYPT_HANDLE exportKey,
 	{
 	const BOOLEAN exportIsPKC = isPkcAlgo( exportAlgo ) ? TRUE : FALSE;
 	BOOLEAN sessionIsMAC = FALSE;
-	int sessionKeyAlgo, sessionKeyMode = DUMMY_INIT, status;
+	int sessionKeyAlgo, sessionKeyMode DUMMY_INIT, status;
 
 	REQUIRES( isHandleRangeValid( exportKey ) );
 	REQUIRES( exportAlgo > CRYPT_ALGO_NONE && exportAlgo < CRYPT_ALGO_LAST );
@@ -288,13 +290,14 @@ static int checkContextsEncodable( IN_HANDLE const CRYPT_HANDLE exportKey,
 
 /* Import an extended encrypted key, either a cryptlib key or a CMS key */
 
+C_CHECK_RETVAL C_NONNULL_ARG( ( 1 ) ) \
 C_RET cryptImportKeyEx( C_IN void C_PTR encryptedKey,
 						C_IN int encryptedKeyLength,
 						C_IN CRYPT_CONTEXT importKey,
 						C_IN CRYPT_CONTEXT sessionKeyContext,
-						C_OUT CRYPT_CONTEXT C_PTR returnedContext )
+						C_OUT_OPT CRYPT_CONTEXT C_PTR returnedContext )
 	{
-	CRYPT_CONTEXT iReturnedContext = DUMMY_INIT;
+	CRYPT_CONTEXT iReturnedContext DUMMY_INIT;
 	CRYPT_FORMAT_TYPE formatType;
 	CRYPT_ALGO_TYPE importAlgo;
 	int owner, originalOwner, status;
@@ -334,6 +337,8 @@ C_RET cryptImportKeyEx( C_IN void C_PTR encryptedKey,
 		{
 		int sessionKeyAlgo;	/* int vs.enum */
 
+		if( !isHandleRangeValid( sessionKeyContext ) )
+			return( CRYPT_ERROR_PARAM4 );
 		status = krnlSendMessage( sessionKeyContext, MESSAGE_GETATTRIBUTE,
 								  &sessionKeyAlgo, CRYPT_CTXINFO_ALGO );
 		if( cryptStatusOK( status ) )
@@ -437,6 +442,7 @@ C_RET cryptImportKeyEx( C_IN void C_PTR encryptedKey,
 	return( CRYPT_OK );
 	}
 
+C_CHECK_RETVAL C_NONNULL_ARG( ( 1 ) ) \
 C_RET cryptImportKey( C_IN void C_PTR encryptedKey,
 					  C_IN int encryptedKeyLength,
 					  C_IN CRYPT_CONTEXT importKey,
@@ -454,6 +460,7 @@ C_RET cryptImportKey( C_IN void C_PTR encryptedKey,
 
 /* Export an extended encrypted key, either a cryptlib key or a CMS key */
 
+C_CHECK_RETVAL C_NONNULL_ARG( ( 3 ) ) \
 C_RET cryptExportKeyEx( C_OUT_OPT void C_PTR encryptedKey,
 						C_IN int encryptedKeyMaxLength,
 						C_OUT int C_PTR encryptedKeyLength,
@@ -468,7 +475,7 @@ C_RET cryptExportKeyEx( C_OUT_OPT void C_PTR encryptedKey,
 	if( encryptedKey != NULL )
 		{
 		if( encryptedKeyMaxLength <= MIN_CRYPT_OBJECTSIZE || \
-			encryptedKeyMaxLength >= MAX_INTLENGTH )
+			encryptedKeyMaxLength >= MAX_BUFFER_SIZE )
 			return( CRYPT_ERROR_PARAM2 );
 		if( !isWritePtr( encryptedKey, encryptedKeyMaxLength ) )
 			return( CRYPT_ERROR_PARAM1 );
@@ -530,6 +537,7 @@ C_RET cryptExportKeyEx( C_OUT_OPT void C_PTR encryptedKey,
 	return( status );
 	}
 
+C_CHECK_RETVAL C_NONNULL_ARG( ( 3 ) ) \
 C_RET cryptExportKey( C_OUT_OPT void C_PTR encryptedKey,
 					  C_IN int encryptedKeyMaxLength,
 					  C_OUT int C_PTR encryptedKeyLength,
@@ -590,6 +598,10 @@ int iCryptImportKey( IN_BUFFER( encryptedKeyLength ) const void *encryptedKey,
 			  ( formatType != CRYPT_FORMAT_PGP && \
 				iReturnedContext == NULL ) );
 
+	/* Clear return values */
+	if( iReturnedContext != NULL )
+		*iReturnedContext = CRYPT_ERROR;
+
 	/* Import it as appropriate.  We don't handle key agreement at this
 	   level since it's a protocol-specific mechanism used by SSH and SSL,
 	   which are internal-only formats */
@@ -599,6 +611,8 @@ int iCryptImportKey( IN_BUFFER( encryptedKeyLength ) const void *encryptedKey,
 		return( status );
 	if( isConvAlgo( importAlgo ) )
 		{
+		if( !isHandleRangeValid( iSessionKeyContext ) )
+			return( CRYPT_ARGERROR_NUM2 );
 		return( importConventionalKey( encryptedKey, encryptedKeyLength,
 									   iSessionKeyContext, iImportKey,
 									   keyexType ) );
@@ -611,8 +625,8 @@ int iCryptImportKey( IN_BUFFER( encryptedKeyLength ) const void *encryptedKey,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 3 ) ) \
 int iCryptExportKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, *encryptedKeyLength ) \
 						void *encryptedKey, 
-					 IN_LENGTH_Z const int encryptedKeyMaxLength,
-					 OUT_LENGTH_Z int *encryptedKeyLength,
+					 IN_DATALENGTH_Z const int encryptedKeyMaxLength,
+					 OUT_DATALENGTH_Z int *encryptedKeyLength,
 					 IN_ENUM( CRYPT_FORMAT ) const CRYPT_FORMAT_TYPE formatType,
 					 IN_HANDLE_OPT const CRYPT_CONTEXT iSessionKeyContext,
 					 IN_HANDLE const CRYPT_CONTEXT iExportKey )
@@ -632,7 +646,7 @@ int iCryptExportKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, *encryptedKeyLength 
 
 	REQUIRES( ( encryptedKey == NULL && encryptedKeyMaxLength == 0 ) || \
 			  ( encryptedKeyMaxLength > MIN_CRYPT_OBJECTSIZE && \
-				encryptedKeyMaxLength < MAX_INTLENGTH ) );
+				encryptedKeyMaxLength < MAX_BUFFER_SIZE ) );
 	REQUIRES( formatType > CRYPT_FORMAT_NONE && \
 			  formatType < CRYPT_FORMAT_LAST );
 	REQUIRES( ( formatType == CRYPT_FORMAT_PGP && \
@@ -720,3 +734,59 @@ int iCryptExportKey( OUT_BUFFER_OPT( encryptedKeyMaxLength, *encryptedKeyLength 
 
 	return( status );
 	}
+
+#else
+
+/****************************************************************************
+*																			*
+*						Stub Functions for non-CMS/PGP Use					*
+*																			*
+****************************************************************************/
+
+C_RET cryptImportKeyEx( C_IN void C_PTR encryptedKey,
+						C_IN int encryptedKeyLength,
+						C_IN CRYPT_CONTEXT importKey,
+						C_IN CRYPT_CONTEXT sessionKeyContext,
+						C_OUT CRYPT_CONTEXT C_PTR returnedContext )
+	{
+	UNUSED_ARG( encryptedKey );
+	UNUSED_ARG( returnedContext );
+
+	return( CRYPT_ERROR_NOTAVAIL );
+	}
+
+C_RET cryptImportKey( C_IN void C_PTR encryptedKey,
+					  C_IN int encryptedKeyLength,
+					  C_IN CRYPT_CONTEXT importKey,
+					  C_IN CRYPT_CONTEXT sessionKeyContext )
+	{
+	UNUSED_ARG( encryptedKey );
+
+	return( CRYPT_ERROR_NOTAVAIL );
+	}
+
+C_RET cryptExportKeyEx( C_OUT_OPT void C_PTR encryptedKey,
+						C_IN int encryptedKeyMaxLength,
+						C_OUT int C_PTR encryptedKeyLength,
+						C_IN CRYPT_FORMAT_TYPE formatType,
+						C_IN CRYPT_HANDLE exportKey,
+						C_IN CRYPT_CONTEXT sessionKeyContext )
+	{
+	UNUSED_ARG( encryptedKey );
+	UNUSED_ARG( encryptedKeyLength );
+
+	return( CRYPT_ERROR_NOTAVAIL );
+	}
+
+C_RET cryptExportKey( C_OUT_OPT void C_PTR encryptedKey,
+					  C_IN int encryptedKeyMaxLength,
+					  C_OUT int C_PTR encryptedKeyLength,
+					  C_IN CRYPT_HANDLE exportKey,
+					  C_IN CRYPT_CONTEXT sessionKeyContext )
+	{
+	UNUSED_ARG( encryptedKey );
+	UNUSED_ARG( encryptedKeyLength );
+
+	return( CRYPT_ERROR_NOTAVAIL );
+	}
+#endif /* USE_INT_CMS */

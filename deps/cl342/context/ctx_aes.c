@@ -30,8 +30,6 @@
    performance by using asm for the en/decrypt functions and C for the
    key schedule */
 
-#ifdef USE_AES
-
 /* The size of an AES key and block and a keyscheduled AES key */
 
 #define AES_KEYSIZE		32
@@ -271,13 +269,6 @@ static int selfTest( void )
 		{ 0x25, 0x69, 0x53, 0xB2, 0xFE, 0xAB, 0x2A, 0x04, 0xAE, 0x01, 0x80, 0xD8, 0x33, 0x5B, 0xBE, 0xD6 };
 	static const BYTE FAR_BSS mctCBCPT[] = \
 		{ 0x2E, 0x58, 0x66, 0x92, 0xE6, 0x47, 0xF5, 0x02, 0x8E, 0xC6, 0xFA, 0x47, 0xA5, 0x5A, 0x2A, 0xAB };
-	/* OFB */
-	static const BYTE FAR_BSS mctOFBKey[] = \
-		{ 0xB1, 0x1E, 0x4E, 0xCA, 0xE2, 0xE7, 0x1E, 0x14, 0x14, 0x5D, 0xD7, 0xDB, 0x26, 0x35, 0x65, 0x2F };
-	static const BYTE FAR_BSS mctOFBIV[] = \
-		{ 0xAD, 0xD3, 0x2B, 0xF8, 0x20, 0x4C, 0x33, 0x33, 0x9C, 0x54, 0xCD, 0x58, 0x58, 0xEE, 0x0D, 0x13 };
-	static const BYTE FAR_BSS mctOFBPT[] = \
-		{ 0x73, 0x20, 0x49, 0xE8, 0x9D, 0x74, 0xFC, 0xE7, 0xC5, 0xA4, 0x96, 0x64, 0x04, 0x86, 0x8F, 0xA6 };
 	/* CFB-128 */
 	static const BYTE FAR_BSS mctCFBKey[] = \
 		{ 0x71, 0x15, 0x11, 0x93, 0x1A, 0x15, 0x62, 0xEA, 0x73, 0x29, 0x0A, 0x8B, 0x0A, 0x37, 0xA3, 0xB4 };
@@ -472,26 +463,6 @@ static int decryptCFB( CONTEXT_INFO *contextInfoPtr, BYTE *buffer,
 			CRYPT_OK : CRYPT_ERROR_FAILED );
 	}
 
-static int encryptOFB( CONTEXT_INFO *contextInfoPtr, BYTE *buffer, 
-					   int noBytes )
-	{
-	CONV_INFO *convInfo = contextInfoPtr->ctxConv;
-
-	return( ( aes_ofb_encrypt( buffer, buffer, noBytes, convInfo->currentIV,
-							   ENC_KEY( convInfo ) ) == EXIT_SUCCESS ) ? \
-			CRYPT_OK : CRYPT_ERROR_FAILED );
-	}
-
-static int decryptOFB( CONTEXT_INFO *contextInfoPtr, BYTE *buffer, 
-					   int noBytes )
-	{
-	CONV_INFO *convInfo = contextInfoPtr->ctxConv;
-
-	return( ( aes_ofb_decrypt( buffer, buffer, noBytes, convInfo->currentIV,
-							   ENC_KEY( convInfo ) ) == EXIT_SUCCESS ) ? \
-			CRYPT_OK : CRYPT_ERROR_FAILED );
-	}
-
 #ifdef USE_GCM
 
 static int encryptGCM( CONTEXT_INFO *contextInfoPtr, BYTE *buffer, 
@@ -536,15 +507,13 @@ static int initParams( INOUT CONTEXT_INFO *contextInfoPtr,
 	REQUIRES( contextInfoPtr->type == CONTEXT_CONV );
 	REQUIRES( paramType > KEYPARAM_NONE && paramType < KEYPARAM_LAST );
 
-	/* Normally we implement the stream-cipher modes CFB and OFB ourselves,
-	   so an IV load/reload will also reset the CFB/OFB state, however the 
-	   AES code implements these modes natively and maintains its own 
-	   CFB/OFB state, so when we get an IV load/reload we have to explicitly
-	   reset the internal state before passing the load down to the global
+	/* Normally we implement the stream-cipher mode CFB ourselves, so an IV 
+	   load/reload will also reset the CFB state, however the AES code 
+	   implements these modes natively and maintains its own CFB state, so 
+	   when we get an IV load/reload we have to explicitly reset the 
+	   internal state before passing the load down to the global
 	   parameter-handling function */
-	if( paramType == KEYPARAM_IV && \
-		( convInfo->mode == CRYPT_MODE_CFB || \
-		  convInfo->mode == CRYPT_MODE_OFB ) )
+	if( paramType == KEYPARAM_IV && convInfo->mode == CRYPT_MODE_CFB )
 		{
 		aes_mode_reset( ENC_KEY( convInfo ) );
 		}
@@ -618,9 +587,9 @@ static const CAPABILITY_INFO FAR_BSS capabilityInfo = {
 	bitsToBytes( 128 ), bitsToBytes( 128 ), bitsToBytes( 256 ),
 	selfTest, getInfo, NULL, initParams, initKey, NULL,
 	encryptECB, decryptECB, encryptCBC, decryptCBC,
-	encryptCFB, decryptCFB, encryptOFB, decryptOFB,
+	encryptCFB, decryptCFB 
 #ifdef USE_GCM
-	encryptGCM, decryptGCM
+	, encryptGCM, decryptGCM
 #endif /* USE_GCM */
 	};
 
@@ -636,4 +605,3 @@ const CAPABILITY_INFO *getAESCapability( void )
 
 	return( &capabilityInfo );
 	}
-#endif /* USE_AES */

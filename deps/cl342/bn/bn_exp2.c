@@ -130,6 +130,8 @@ int BN_mod_exp2_mont(BIGNUM *rr, const BIGNUM *a1, const BIGNUM *p1,
 	BIGNUM *val1[TABLE_SIZE], *val2[TABLE_SIZE];
 	BN_MONT_CTX *mont=NULL;
 
+	assert( in_mont != NULL );	/* pcg */
+
 	bn_check_top(a1);
 	bn_check_top(p1);
 	bn_check_top(a2);

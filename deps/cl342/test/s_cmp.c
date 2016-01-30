@@ -71,12 +71,14 @@
 			however a kur is rejected with the message "CRMF did not contain 
 			oldCertId control".  Information at 
 			http://www.certificate.fi/resources/demos/demo.htm.
-			Tested: ir, cr */
+			Tested: ir, cr.
+	#13 - EJBCA: Implements a broken version of pre-RFC CMPv1, can't be 
+			tested */
 
 #define CA_CRYPTLIB				1
 #define CA_CRYPTLIB_PNPPKI		2
 
-#define CA_NO					CA_CRYPTLIB
+#define CA_NO					CA_CRYPTLIB	
 
 typedef struct {
 	const char FAR_BSS *name;
@@ -85,7 +87,7 @@ typedef struct {
 
 static const CA_INFO FAR_BSS caInfoTbl[] = {
 	{ NULL },	/* Dummy so index == CA_NO */
-	{ /*1*/ "cryptlib", TEXT( "http://localhost" ), TEXT( "interop" ), TEXT( "interop" ) },
+	{ /*1*/ "cryptlib", TEXT( "http://" LOCAL_HOST_NAME ), TEXT( "interop" ), TEXT( "interop" ) },
 	{ /*2*/	"cryptlib/PKIBoot", /*"_pkiboot._tcp.cryptoapps.com"*/TEXT( "http://localhost" ), TEXT( "interop" ), TEXT( "interop" ) },
 	{ /*3*/ "Certicom", TEXT( "cmp://gandalf.trustpoint.com:8081" ), TEXT( "interop" ), TEXT( "interop" ) },
 	{ /*4*/ "ssh", TEXT( "cmp://interop-ca.ssh.com:8290" ), TEXT( "123456" ), TEXT( "interop" ) },
@@ -96,7 +98,8 @@ static const CA_INFO FAR_BSS caInfoTbl[] = {
 	{ /*9*/ "Initech", TEXT( "cmp://61.74.133.49:8290" ), TEXT( "interop" ), TEXT( "interop" ) },
 	{ /*A*/ "RSA", TEXT( "cmp://ca1.kcspilot.com:32829" ), TEXT( "interop" ), TEXT( "interop" ) },
 	{ /*B*/ "Cylink", TEXT( "cmp://216.252.217.227:8082" ), TEXT( "3986" ), TEXT( "11002" ) /* "3987", "6711" */ },
-	{ /*C*/ "Insta-Certifier", TEXT( "http://pki.certificate.fi:8700/pkix/" ), TEXT( "3078" ), TEXT( "insta" ) }
+	{ /*C*/ "Insta-Certifier", TEXT( "http://pki.certificate.fi:8700/pkix/" ), TEXT( "3078" ), TEXT( "insta" ) },
+	{ /*D*/ "EJBCA", TEXT( "http://192.168.1.103:8080/ejbca/publicweb/cmp" ), TEXT( "user" ), TEXT( "password" ) }
 	};
 
 /* Enable additional tests if we're using cryptlib as the server */
@@ -109,7 +112,7 @@ static const CA_INFO FAR_BSS caInfoTbl[] = {
 
 #if ( CA_NO == 3 )			/* Certicom */
   #define SERVER_IR_DN
-#endif /* CA that requires same DN in cr as ir */
+#endif /* CAs that require same DN in cr as ir */
 #if ( CA_NO == 6 )			/* Entrust */
   #define SERVER_NO_ALTNAMES
 #endif /* CAs that won't allow altNames in requests */
@@ -145,6 +148,7 @@ static const CA_INFO FAR_BSS caInfoTbl[] = {
   #define TEST_KUR
   #define TEST_CR
   #define TEST_RR
+  #define USE_SIGNED_RR		FALSE
 
   /* Loopback test requires SERVER_IS_CRYPTLIB */
   #define NO_CA_REQUESTS	0
@@ -194,6 +198,21 @@ static const CERT_DATA FAR_BSS cmpPkiUserCaData[] = {
 	{ CRYPT_CERTINFO_KEYUSAGE, IS_NUMERIC,
 	  CRYPT_KEYUSAGE_KEYCERTSIGN | CRYPT_KEYUSAGE_CRLSIGN },
 	{ CRYPT_CERTINFO_CA, IS_NUMERIC, TRUE },
+
+	{ CRYPT_ATTRIBUTE_NONE, IS_VOID }
+	};
+static const CERT_DATA FAR_BSS cmpPkiUserRaData[] = {
+	/* Identification information */
+	{ CRYPT_CERTINFO_COUNTRYNAME, IS_STRING, 0, TEXT( "NZ" ) },
+	{ CRYPT_CERTINFO_ORGANIZATIONNAME, IS_STRING, 0, TEXT( "Dave's Wetaburgers" ) },
+	{ CRYPT_CERTINFO_ORGANIZATIONALUNITNAME, IS_STRING, 0, TEXT( "Procurement" ) },
+	{ CRYPT_CERTINFO_COMMONNAME, IS_STRING, 0, TEXT( "Test RA PKI user" ) },
+
+	/* Subject altName */
+	{ CRYPT_CERTINFO_RFC822NAME, IS_STRING, 0, TEXT( "dave@ca.wetas-r-us.com" ) },
+
+	/* RA flag */
+	{ CRYPT_CERTINFO_PKIUSER_RA, IS_NUMERIC, TRUE },
 
 	{ CRYPT_ATTRIBUTE_NONE, IS_VOID }
 	};
@@ -330,13 +349,29 @@ static int createCmpNewKeyRequest( const CERT_DATA *requestData,
 	if( useFixedKey )
 		{
 		/* Use a fixed private key, for testing purposes */
-		if( cryptAlgo == CRYPT_ALGO_RSA )
-			loadRSAContextsEx( CRYPT_UNUSED, NULL, &cryptContext, NULL,
-							   USER_PRIVKEY_LABEL, FALSE, FALSE );
-		else
-			loadDSAContextsEx( CRYPT_UNUSED, NULL, &cryptContext, NULL, 
-							   USER_PRIVKEY_LABEL );
-		status = CRYPT_OK;
+		switch( cryptAlgo )
+			{
+			case CRYPT_ALGO_RSA:
+				status = loadRSAContextsEx( CRYPT_UNUSED, NULL, &cryptContext, 
+											NULL, USER_PRIVKEY_LABEL, FALSE, 
+											FALSE );
+				break;
+
+			case CRYPT_ALGO_DSA:
+				status = loadDSAContextsEx( CRYPT_UNUSED, NULL, &cryptContext, 
+											NULL, USER_PRIVKEY_LABEL );
+				break;
+
+			case CRYPT_ALGO_ECDSA:
+				status = loadECDSAContextsEx( CRYPT_UNUSED, NULL, &cryptContext, 
+											  NULL, USER_PRIVKEY_LABEL );
+				break;
+
+			default:
+				printf( "Couldn't create CMP request with algorithm %d, "
+						"line %d.\n", cryptAlgo, __LINE__ );
+				return( FALSE );
+			}
 		}
 	else
 		{
@@ -391,8 +426,10 @@ static int createCmpRequest( const CERT_DATA *requestData,
 	/* If there's no existing private key available, generate a new key 
 	   along with the request */
 	if( privateKey == CRYPT_UNUSED )
+		{
 		return( createCmpNewKeyRequest( requestData, cryptAlgo, useFixedKey, 
 										cryptKeyset ) );
+		}
 
 	/* We're updating an existing certificate we have to vary something in 
 	   the request to make sure that the result doesn't duplicate an existing 
@@ -466,6 +503,8 @@ static int createCmpSession( const CRYPT_CONTEXT cryptCACert,
 	int status;
 
 	assert( cryptCACert == CRYPT_UNUSED || !isPKIBoot );
+	assert( ( privateKey != CRYPT_UNUSED ) || \
+			( user != NULL && password != NULL ) );
 
 	/* Create the CMP session */
 	status = cryptCreateSession( &cryptSession, CRYPT_UNUSED,
@@ -478,6 +517,10 @@ static int createCmpSession( const CRYPT_CONTEXT cryptCACert,
 				status, __LINE__ );
 		return( FALSE );
 		}
+#ifdef SERVER_IS_CRYPTLIB
+	if( !setLocalConnect( cryptSession, 80 ) )
+		return( FALSE );
+#endif /* SERVER_IS_CRYPTLIB */
 
 	/* Set up the user and server information.  Revocation requests can be
 	   signed or MACd so we handle either.  When requesting a certificate 
@@ -527,10 +570,12 @@ static int createCmpSession( const CRYPT_CONTEXT cryptCACert,
 											CRYPT_REQUESTTYPE_INITIALISATION );
 			}
 		}
+#ifndef SERVER_IS_CRYPTLIB
 	if( cryptStatusOK( status ) )
 		status = cryptSetAttributeString( cryptSession,
 										CRYPT_SESSINFO_SERVER_NAME, server,
 										paramStrlen( server ) );
+#endif /* SERVER_IS_CRYPTLIB */
 	if( cryptStatusOK( status ) && cryptCACert != CRYPT_UNUSED )
 		status = cryptSetAttribute( cryptSession,
 									CRYPT_SESSINFO_CACERTIFICATE,
@@ -938,13 +983,14 @@ static int getPkiUserInfo( const C_STR pkiUserName,
 		ir + ip + reject (requires cmp.c mod)
 		ir + ip + certconf + pkiconf
 		rr + rp (of ir certificate)
-	DSA:
+	DSA/ECDSA:
 		cr + cp + certconf + pkiconf (success implies that ir/kur/rr
 						works since they've already been tested for RSA) */
 
 /* Connect to a cryptlib server, for the loopback tests */
 
-static int connectCryptlibCMP( const BOOLEAN usePKIBoot, 
+static int connectCryptlibCMP( const CRYPT_ALGO_TYPE cryptAlgo,
+							   const BOOLEAN usePKIBoot, 
 							   const BOOLEAN localSession )
 	{
 	CRYPT_CERTIFICATE cryptCACert = CRYPT_UNUSED, cryptCert;
@@ -1014,7 +1060,7 @@ static int connectCryptlibCMP( const BOOLEAN usePKIBoot,
 	filenameParamFromTemplate( writeFileName, CMP_PRIVKEY_FILE_TEMPLATE, 1 );
 	status = requestCert( "certificate init.request (ir)", &caInfo, NULL, 
 						  usePKIBoot ? NULL : writeFileName,
-						  cmpCryptlibRequestNoDNData, CRYPT_ALGO_RSA, 
+						  cmpCryptlibRequestNoDNData, cryptAlgo, 
 						  cryptCACert, usePKIBoot, FALSE, NULL );
 	if( status != TRUE )
 		{
@@ -1042,16 +1088,16 @@ static int connectCryptlibCMP( const BOOLEAN usePKIBoot,
 	filenameParamFromTemplate( writeFileName, CMP_PRIVKEY_FILE_TEMPLATE, 1 );
 	status = requestCert( "certificate init.request (ir)", &caInfo, NULL, 
 						  usePKIBoot ? NULL : writeFileName,
-						  cmpCryptlibRequestData, CRYPT_ALGO_RSA, 
-						  cryptCACert, FALSE, FALSE, &cryptCert );
+						  cmpCryptlibRequestData, cryptAlgo, cryptCACert, 
+						  FALSE, FALSE, &cryptCert );
 	if( status != TRUE )
 		return( FALSE );
 #ifdef TEST_DUP_IR
 	/* Attempt a second ir using the same PKI user data.  This should fail,
 	   since the certificate store only allows a single ir per user */
 	if( requestCert( "Duplicate init.request", &caInfo, NULL, NULL,
-					 cmpCryptlibRequestNoDNData, CRYPT_ALGO_RSA, 
-					 cryptCACert, FALSE, TRUE, NULL ) )
+					 cmpCryptlibRequestNoDNData, cryptAlgo, cryptCACert, 
+					 FALSE, TRUE, NULL ) )
 		{
 		printf( "Duplicate init request wasn't detected by the CMP server, "
 				"line %d.\n\n", __LINE__ );
@@ -1067,8 +1113,8 @@ static int connectCryptlibCMP( const BOOLEAN usePKIBoot,
 	filenameParamFromTemplate( readFileName, CMP_PRIVKEY_FILE_TEMPLATE, 1 );
 	filenameParamFromTemplate( writeFileName, CMP_PRIVKEY_FILE_TEMPLATE, 2 );
 	status = requestCert( "certificate request (cr)", &caInfo, readFileName, 
-						  writeFileName, cmpCryptlibRequestData, 
-						  CRYPT_ALGO_RSA, cryptCACert, FALSE, FALSE, NULL );
+						  writeFileName, cmpCryptlibRequestData, cryptAlgo, 
+						  cryptCACert, FALSE, FALSE, NULL );
 	if( status != TRUE )
 		{
 		cryptDestroyCert( cryptCert );
@@ -1142,9 +1188,9 @@ static int connectCryptlibCMP( const BOOLEAN usePKIBoot,
 
 /* Connect to a non-cryptlib CMP server */
 
-static int connectCMP( void )
+static int connectCMP( const CRYPT_ALGO_TYPE cryptAlgo )
 	{
-	CRYPT_CERTIFICATE cryptCACert = CRYPT_UNUSED, cryptCert;
+	CRYPT_CERTIFICATE cryptCACert, cryptCert;
 	C_CHR readFileName[ FILENAME_BUFFER_SIZE ];
 	C_CHR writeFileName[ FILENAME_BUFFER_SIZE ];
 	const CA_INFO *caInfoPtr = &caInfoTbl[ CA_NO ];
@@ -1168,9 +1214,8 @@ static int connectCMP( void )
 	#define REVOKE_FIRST_CERT
 	filenameParamFromTemplate( writeFileName, CMP_PRIVKEY_FILE_TEMPLATE, 1 );
 	status = requestCert( "certificate init.request (ir)", caInfoPtr, NULL, 
-						  writeFileName, cmpRsaSignRequestData, 
-						  CRYPT_ALGO_RSA, cryptCACert, FALSE, FALSE, 
-						  &cryptCert );
+						  writeFileName, cmpRsaSignRequestData, cryptAlgo, 
+						  cryptCACert, FALSE, FALSE, &cryptCert );
 	if( status != TRUE )
 		{
 		/* If this is the self-test and there's a non-fatal error, make sure
@@ -1192,7 +1237,7 @@ static int connectCMP( void )
 	filenameParamFromTemplate( writeFileName, CMP_PRIVKEY_FILE_TEMPLATE, 2 );
 	status = requestCert( "certificate request (cr)", caInfoPtr, 
 						  readFileName, writeFileName, cmpRsaSignRequestData,
-						  CRYPT_ALGO_RSA, cryptCACert, FALSE, FALSE, NULL );
+						  cryptAlgo, cryptCACert, FALSE, FALSE, NULL );
 	if( status != TRUE )
 		{
   #if defined( TEST_IR )
@@ -1299,6 +1344,68 @@ static int connectCMP( void )
 	return( TRUE );
 	}
 
+/* Connect to a non-cryptlib CMP server with RA functionality */
+
+static int connectCMPRA( void )
+	{
+	CRYPT_CERTIFICATE cryptCACert;
+	C_CHR readFileName[ FILENAME_BUFFER_SIZE ];
+	C_CHR writeFileName[ FILENAME_BUFFER_SIZE ];
+	C_CHR userID[ 64 ], issuePW[ 64 ], revPW[ 64 ];
+	const CA_INFO *caInfoPtr = &caInfoTbl[ CA_NO ];
+	CA_INFO caInfo;
+	int status;
+
+	/* Get the certificate of the CA who will issue the certificate */
+	status = importCertFromTemplate( &cryptCACert, CMP_CA_FILE_TEMPLATE,
+									 CA_NO );
+	if( cryptStatusError( status ) )
+		{
+		printf( "Couldn't get CMP CA certificate, status = %d, line %d.\n",
+				status, __LINE__ );
+		return( FALSE );
+		}
+
+	/* Wait for the server to finish initialising */
+	if( waitMutex() == CRYPT_ERROR_TIMEOUT )
+		{
+		printf( "Timed out waiting for server to initialise, line %d.\n",
+				__LINE__ );
+		return( FALSE );
+		}
+
+	/* Get the certificate for the RA to use to authorise the issuance of
+	   further certificates */
+	status = getPkiUserInfo( TEXT( "Test RA PKI user" ), &caInfo, 
+							 userID, issuePW, revPW );
+	if( status != TRUE )
+		return( FALSE );
+	filenameParamFromTemplate( writeFileName, CMP_PRIVKEY_FILE_TEMPLATE, 1 );
+	status = requestCert( "RA certificate request", &caInfo, NULL, 
+						  writeFileName, cmpCryptlibRequestNoDNData, 
+						  CRYPT_ALGO_RSA, cryptCACert, FALSE, FALSE, NULL );
+	if( status != TRUE )
+		return( FALSE );
+
+	/* Test the certificate request functionality using an RA certificate, 
+	   which means using CMP's CR operation with an RA certificate instead 
+	   of the user's certificate from an IR */
+	filenameParamFromTemplate( readFileName, CMP_PRIVKEY_FILE_TEMPLATE, 1 );
+	filenameParamFromTemplate( writeFileName, CMP_PRIVKEY_FILE_TEMPLATE, 2 );
+	status = requestCert( "certificate request (cr) via RA", caInfoPtr, 
+						  readFileName, writeFileName, cmpRsaSignRequestData,
+						  CRYPT_ALGO_RSA, cryptCACert, FALSE, FALSE, NULL );
+	if( status != TRUE )
+		{
+		cryptDestroyCert( cryptCACert );
+		return( status );
+		}
+
+	/* Clean up */
+	cryptDestroyCert( cryptCACert );
+	return( TRUE );
+	}
+
 static int connectCMPFail( const int count )
 	{
 	static const CERT_DATA FAR_BSS cmpFailRequestData1[] = {
@@ -1332,11 +1439,6 @@ static int connectCMPFail( const int count )
 		};
 	static const CERT_DATA FAR_BSS *cmpFailRequestDataTbl[] = {
 		cmpFailRequestData1, cmpFailRequestData2, cmpFailRequestData3
-		};
-	static const C_STR FAR_BSS cmpFailRequestNameTbl[] = {
-		TEXT( "Test PKI user" ),	/* Template has full DN + email */
-		TEXT( "Test PKI user" ),	/* Template has full DN + email */
-		TEXT( "Procurement" )		/* Template has no CN or email */
 		};
 	static const char *cmpFailRequestDescriptionTbl[] = {
 		"request containing full DN with CN mis-matching\n  pkiUser CN",
@@ -1403,7 +1505,7 @@ static int connectCMPFail( const int count )
 
 int testSessionCMP( void )
 	{
-	return( connectCMP() );
+	return( connectCMP( CRYPT_ALGO_RSA ) );
 	}
 
 /* Test the plug-and-play PKI functionality */
@@ -1427,6 +1529,10 @@ static int connectPNPPKI( const BOOLEAN isCaUser, const BOOLEAN useDevice,
 				status, __LINE__ );
 		return( FALSE );
 		}
+#ifdef SERVER_IS_CRYPTLIB
+	if( !setLocalConnect( cryptSession, 80 ) )
+		return( FALSE );
+#endif /* SERVER_IS_CRYPTLIB */
 
 	/* Open the device/create the keyset to contain the keys.  This doesn't
 	   perform a full device.c-style auto-configure but assumes that it's
@@ -1507,11 +1613,13 @@ static int connectPNPPKI( const BOOLEAN isCaUser, const BOOLEAN useDevice,
 		status = cryptSetAttributeString( cryptSession,
 										  CRYPT_SESSINFO_PASSWORD,
 										  issuePW, paramStrlen( issuePW ) );
+#ifndef SERVER_IS_CRYPTLIB
 	if( cryptStatusOK( status ) )
 		status = cryptSetAttributeString( cryptSession,
 										  CRYPT_SESSINFO_SERVER_NAME,
 										  caInfoTbl[ CA_CRYPTLIB_PNPPKI ].url,
 										  paramStrlen( caInfoTbl[ CA_CRYPTLIB_PNPPKI ].url ) );
+#endif /* SERVER_IS_CRYPTLIB */
 	if( cryptStatusOK( status ) )
 		status = cryptSetAttribute( cryptSession,
 									CRYPT_SESSINFO_CMP_PRIVKEYSET,
@@ -1554,7 +1662,7 @@ static int connectPNPPKI( const BOOLEAN isCaUser, const BOOLEAN useDevice,
 	   allow it to be used with the standard PnP PKI test */
 	if( isCaUser )
 		{
-		CRYPT_CONTEXT cryptKey = DUMMY_INIT;
+		CRYPT_CONTEXT cryptKey DUMMY_INIT;
 
 		/* Get the newly-issued key */
 		status = cryptKeysetOpen( &cryptKeyset, CRYPT_UNUSED,
@@ -1686,7 +1794,7 @@ static int cmpServer( void )
 	if( !pkiServerInit( &cryptCAKey, &cryptCertStore, CA_PRIVKEY_FILE,
 						CA_PRIVKEY_LABEL, cmpPkiUserFullDNData, 
 						cmpPkiUserPartialDNData, cmpPkiUserCaData, 
-						"CMP" ) )
+						cmpPkiUserRaData, "CMP" ) )
 		return( FALSE );
 
 	/* Tell the client that we're ready to go */
@@ -1777,6 +1885,49 @@ int testSessionCMPServer( void )
 	return( status );
 	}
 
+static int cmpServerRA( void )
+	{
+	CRYPT_CONTEXT cryptCAKey;
+	CRYPT_KEYSET cryptCertStore;
+
+	/* Acquire the init mutex */
+	acquireMutex();
+
+	puts( "SVR: Testing CMP server for RA processing..." );
+
+	/* Set up the server-side objects */
+	if( !pkiServerInit( &cryptCAKey, &cryptCertStore, CA_PRIVKEY_FILE,
+						CA_PRIVKEY_LABEL, cmpPkiUserFullDNData, 
+						cmpPkiUserPartialDNData, cmpPkiUserCaData, 
+						cmpPkiUserRaData, "CMP" ) )
+		return( FALSE );
+
+	/* Tell the client that we're ready to go */
+	releaseMutex();
+
+	/* Run the server twice to handle the RA's certificate request followed
+	   by the RA-authorised client's certificate request */
+	puts( "SVR: Running server for RA certificate issue." );
+	if( !cmpServerSingleIteration( cryptCAKey, cryptCertStore, FALSE ) )
+		{
+		puts( "SVR: CMP RA certificate issue failed.\n" );
+		return( FALSE );
+		}
+	puts( "SVR: Running server for RA-authorised certificate issue." );
+	if( !cmpServerSingleIteration( cryptCAKey, cryptCertStore, FALSE ) )
+		{
+		puts( "SVR: CMP RA-authorised certificate issue failed.\n" );
+		return( FALSE );
+		}
+
+	/* Clean up */
+	cryptKeysetClose( cryptCertStore );
+	cryptDestroyContext( cryptCAKey );
+
+	puts( "SVR: CMP RA processing successful.\n" );
+	return( TRUE );
+	}
+
 static int cmpServerFail( void )
 	{
 	CRYPT_CONTEXT cryptCAKey;
@@ -1792,7 +1943,7 @@ static int cmpServerFail( void )
 	if( !pkiServerInit( &cryptCAKey, &cryptCertStore, CA_PRIVKEY_FILE,
 						CA_PRIVKEY_LABEL, cmpPkiUserFullDNData, 
 						cmpPkiUserPartialDNData, cmpPkiUserCaData, 
-						"CMP" ) )
+						cmpPkiUserRaData, "CMP" ) )
 		return( FALSE );
 
 	/* Tell the client that we're ready to go */
@@ -1846,7 +1997,7 @@ static int pnppkiServer( const BOOLEAN pkiBootOnly, const BOOLEAN isCaUser,
 		if( !pkiServerInit( &cryptCAKey, &cryptCertStore,
 							PNPCA_PRIVKEY_FILE, TEXT( "Signature key" ),
 							cmpPkiUserFullDNData, cmpPkiUserPartialDNData, 
-							cmpPkiUserCaData, "CMP" ) )
+							cmpPkiUserCaData, cmpPkiUserRaData, "CMP" ) )
 			return( FALSE );
 		}
 	else
@@ -1854,7 +2005,7 @@ static int pnppkiServer( const BOOLEAN pkiBootOnly, const BOOLEAN isCaUser,
 		if( !pkiServerInit( &cryptCAKey, &cryptCertStore, CA_PRIVKEY_FILE,
 							CA_PRIVKEY_LABEL, cmpPkiUserFullDNData,
 							cmpPkiUserPartialDNData, cmpPkiUserCaData, 
-							"CMP" ) )
+							cmpPkiUserRaData, "CMP" ) )
 			return( FALSE );
 		}
 
@@ -1902,7 +2053,7 @@ int testSessionCMPClientServer( void )
 	Sleep( 1000 );
 
 	/* Connect to the local server */
-	status = connectCryptlibCMP( FALSE, TRUE );
+	status = connectCryptlibCMP( CRYPT_ALGO_RSA, FALSE, TRUE );
 	waitForThread( hThread );
 	destroyMutex();
 	return( status );
@@ -1935,7 +2086,7 @@ int testSessionCMPSHA2ClientServer( void )
 	Sleep( 1000 );
 
 	/* Connect to the local server */
-	status = connectCryptlibCMP( FALSE, TRUE );
+	status = connectCryptlibCMP( CRYPT_ALGO_RSA, FALSE, TRUE );
 	waitForThread( hThread );
 	destroyMutex();
 	cryptSetAttribute( CRYPT_UNUSED, CRYPT_OPTION_ENCR_HASH, value );
@@ -1972,7 +2123,7 @@ int testSessionCMPPKIBootClientServer( void )
 	Sleep( 1000 );
 
 	/* Connect to the local server with PKIBoot enabled */
-	status = connectCryptlibCMP( TRUE, TRUE );
+	status = connectCryptlibCMP( CRYPT_ALGO_RSA, TRUE, TRUE );
 	waitForThread( hThread );
 	destroyMutex();
 	return( status );
@@ -2085,6 +2236,32 @@ int testSessionPNPPKIIntermedCAClientServer( void )
 
 	/* Connect to the local server with PKIBoot enabled */
 	status = connectPNPPKI( FALSE, FALSE, TRUE );
+	waitForThread( hThread );
+	destroyMutex();
+	return( status );
+	}
+
+unsigned __stdcall cmpServerRAThread( void *dummy )
+	{
+	cmpServerRA();
+	_endthreadex( 0 );
+	return( 0 );
+	}
+
+int testSessionCMPRAClientServer( void )
+	{
+	HANDLE hThread;
+	unsigned threadID;
+	int status;
+
+	/* Start the server */
+	createMutex();
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, cmpServerRAThread,
+										 NULL, 0, &threadID );
+	Sleep( 1000 );
+
+	/* Connect to the local server with RA functionality */
+	status = connectCMPRA();
 	waitForThread( hThread );
 	destroyMutex();
 	return( status );

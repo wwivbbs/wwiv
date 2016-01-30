@@ -8,11 +8,9 @@
 #if defined( INC_ALL )
   #include "cert.h"
   #include "certattr.h"
-  #include "asn1.h"
 #else
   #include "cert/cert.h"
   #include "cert/certattr.h"
-  #include "enc_dec/asn1.h"		/* For sizeofOID() */
 #endif /* Compiler-specific includes */
 
 /* When replicating attributes from one type of certificate object to 
@@ -45,7 +43,7 @@ typedef enum {
 /* Copy an attribute field */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int copyAttributeField( OUT_OPT_PTR ATTRIBUTE_LIST **destAttributeField,
+static int copyAttributeField( OUT_PTR_COND ATTRIBUTE_LIST **destAttributeField,
 							   const ATTRIBUTE_LIST *srcAttributeField )
 	{
 	ATTRIBUTE_LIST *newElement;
@@ -90,7 +88,7 @@ static int copyAttribute( INOUT_PTR ATTRIBUTE_LIST **destListHeadPtr,
 	const CRYPT_ATTRIBUTE_TYPE attributeID = srcListPtr->attributeID;
 	CRYPT_ATTRIBUTE_TYPE newAttributeID = attributeID;
 	ATTRIBUTE_LIST *newAttributeListHead = NULL;
-	ATTRIBUTE_LIST *newAttributeListTail = DUMMY_INIT_PTR;
+	ATTRIBUTE_LIST *newAttributeListTail DUMMY_INIT_PTR;
 	ATTRIBUTE_LIST *insertPoint, *prevElement = NULL;
 	int iterationCount;
 
@@ -141,7 +139,11 @@ static int copyAttribute( INOUT_PTR ATTRIBUTE_LIST **destListHeadPtr,
 		status = copyAttributeField( &newAttributeField, srcListPtr );
 		if( cryptStatusError( status ) )
 			{
-			deleteAttributes( ( ATTRIBUTE_PTR ** ) &newAttributeListHead );
+			if( newAttributeListHead != NULL )
+				{
+				deleteAttributes( ( ATTRIBUTE_PTR ** ) \
+											&newAttributeListHead );
+				}
 			return( status );
 			}
 
@@ -228,6 +230,9 @@ static int copyLengthConstraint( INOUT ATTRIBUTE_LIST **destListHeadPtr,
 	REQUIRES( fieldID > CRYPT_ATTRIBUTE_NONE && \
 			  fieldID < CRYPT_ATTRIBUTE_LAST );
 
+	/* Clear return value */
+	*errorLocus = CRYPT_ATTRIBUTE_NONE;
+
 	/* If there's nothing to copy, we're done */
 	srcListPtr = findAttributeField( srcListPtr, fieldID, 
 									 CRYPT_ATTRIBUTE_NONE );
@@ -292,6 +297,10 @@ int copyAttributes( INOUT ATTRIBUTE_PTR **destHeadPtr,
 	assert( isReadPtr( srcListPtr, sizeof( ATTRIBUTE_LIST ) ) );
 	assert( isWritePtr( errorLocus, sizeof( CRYPT_ATTRIBUTE_TYPE ) ) );
 	assert( isWritePtr( errorType, sizeof( CRYPT_ERRTYPE_TYPE ) ) );
+
+	/* Clear return values */
+	*errorLocus = CRYPT_ATTRIBUTE_NONE;
+	*errorType = CRYPT_ERRTYPE_NONE;
 
 	/* If there are destination attributes present make a first pass down 
 	   the list checking that the attribute to copy isn't already present in 
@@ -466,6 +475,10 @@ int copyIssuerAttributes( INOUT ATTRIBUTE_PTR **destListHeadPtr,
 	assert( isWritePtr( errorType, sizeof( CRYPT_ERRTYPE_TYPE ) ) );
 
 	REQUIRES( type > CRYPT_CERTTYPE_NONE && type < CRYPT_CERTTYPE_LAST );
+
+	/* Clear return values */
+	*errorLocus = CRYPT_ATTRIBUTE_NONE;
+	*errorType = CRYPT_ERRTYPE_NONE;
 
 	/* If the destination is a CA certificate and the source has constraint 
 	   extensions, copy them over to the destination.  The reason why we

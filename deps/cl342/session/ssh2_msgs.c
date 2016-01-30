@@ -1,7 +1,7 @@
 /****************************************************************************
 *																			*
 *				cryptlib SSHv2 Server-side Channel Message Management		*
-*						Copyright Peter Gutmann 1998-2008					*
+*						Copyright Peter Gutmann 1998-2010					*
 *																			*
 ****************************************************************************/
 
@@ -67,8 +67,10 @@ static int readAddressAndPort( INOUT SESSION_INFO *sessionInfoPtr,
 							   INOUT STREAM *stream,
 							   OUT_BUFFER( hostInfoMaxLen, *hostInfoLen ) \
 									char *hostInfo, 
-							   IN_LENGTH_SHORT_MIN( 16 ) const int hostInfoMaxLen, 
-							   OUT_LENGTH_SHORT_Z int *hostInfoLen )
+							   IN_LENGTH_SHORT_MIN( 16 ) \
+									const int hostInfoMaxLen, 
+							   OUT_LENGTH_BOUNDED_Z( hostInfoMaxLen ) \
+									int *hostInfoLen )
 	{
 	BYTE stringBuffer[ CRYPT_MAX_TEXTSIZE + 8 ];
 	char portBuffer[ 16 + 8 ];
@@ -135,8 +137,10 @@ static int getAddressAndPort( INOUT SESSION_INFO *sessionInfoPtr,
 							  INOUT STREAM *stream,
 							  OUT_BUFFER( hostInfoMaxLen, *hostInfoLen ) \
 									char *hostInfo, 
-							  IN_LENGTH_SHORT_MIN( 16 ) const int hostInfoMaxLen,
-							  OUT_LENGTH_SHORT_Z int *hostInfoLen )
+							  IN_LENGTH_SHORT_MIN( 16 ) \
+									const int hostInfoMaxLen,
+							  OUT_LENGTH_BOUNDED_Z( hostInfoMaxLen ) \
+									int *hostInfoLen )
 	{
 	int status;
 
@@ -168,8 +172,8 @@ static int getAddressAndPort( INOUT SESSION_INFO *sessionInfoPtr,
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-static int clearAddressAndPort( INOUT SESSION_INFO *sessionInfoPtr, 
-								INOUT STREAM *stream )
+static int clearAddressAndPort( SESSION_INFO *sessionInfoPtr, 
+								STREAM *stream )
 	{
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
@@ -207,7 +211,7 @@ static int sendChannelResponse( INOUT SESSION_INFO *sessionInfoPtr,
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 
 	REQUIRES( ( channelNo == CRYPT_USE_DEFAULT ) || \
-			  ( channelNo >= 0 && channelNo <= LONG_MAX ) );
+			  ( channelNo >= 0 && channelNo <= CHANNEL_MAX ) );
 
 	/* Indicate that the request succeeded/was denied:
 
@@ -235,7 +239,7 @@ static int sendGlobalResponse( INOUT SESSION_INFO *sessionInfoPtr,
 
 	/* Indicate that the request succeeded/was denied:
 
-		byte	type = SSH_MSG_CHANNEL/GLOBAL_SUCCESS/FAILURE */
+		byte	type = SSH_MSG_GLOBAL_SUCCESS/FAILURE */
 	status = enqueueResponse( sessionInfoPtr,
 				isSuccessful ? SSH_MSG_GLOBAL_SUCCESS : \
 							   SSH_MSG_GLOBAL_FAILURE, 0,
@@ -273,7 +277,7 @@ static int sendOpenResponseFailed( INOUT SESSION_INFO *sessionInfoPtr,
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 
-	REQUIRES( channelNo >= 0 && channelNo <= LONG_MAX );
+	REQUIRES( channelNo >= 0 && channelNo <= CHANNEL_MAX );
 
 	/* Indicate that the request was denied:
 
@@ -304,14 +308,14 @@ int processChannelOpen( INOUT SESSION_INFO *sessionInfoPtr,
 #ifdef USE_SSH_EXTENDED
 	BYTE arg1String[ CRYPT_MAX_TEXTSIZE + 8 ];
 #endif /* USE_SSH_EXTENDED */
-	BYTE *arg1Ptr = NULL;
+	BYTE buffer[ UINT32_SIZE + 8 ], *arg1Ptr = NULL;
 	long channelNo;
 	int typeLen, arg1Len = 0, maxPacketSize, i, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 
-	/* Read the channel open request (the type has already been read by the
+	/* Read the channel open request (the type has already been read by the 
 	   caller):
 
 	  [	byte	type = SSH_MSG_CHANNEL_OPEN ]
@@ -324,8 +328,8 @@ int processChannelOpen( INOUT SESSION_INFO *sessionInfoPtr,
 		string	originator_IP_address
 		uint32	originator_port ]
 
-	   As with global/channel requests in processChannelOpen() we can't
-	   return an error indication if we encounter a problem too early in the
+	   As with global/channel requests in processChannelOpen() we can't 
+	   return an error indication if we encounter a problem too early in the 
 	   packet, see the comment for that function for further details */
 	status = readString32( stream, typeString, CRYPT_MAX_TEXTSIZE, 
 						   &typeLen );
@@ -336,6 +340,8 @@ int processChannelOpen( INOUT SESSION_INFO *sessionInfoPtr,
 				( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
 				  "Invalid channel type in channel open message" ) );
 		}
+	DEBUG_OP(( typeString[ typeLen ] = '\0' ));
+	DEBUG_PRINT(( "Processing channel open '%s'.\n", typeString ));
 
 	/* Try and identify the channel type */
 	for( i = 0; channelInfo[ i ].channelName != NULL && \
@@ -360,8 +366,17 @@ int processChannelOpen( INOUT SESSION_INFO *sessionInfoPtr,
 				  sanitiseString( typeString, CRYPT_MAX_TEXTSIZE, 
 								  typeLen ) ) );
 		}
+
+	/* Read the channel number and window size.  Quite a number of 
+	   implementations use the same approach that we do to the windowing 
+	   problem and advertise a maximum-size window, since this is 
+	   typically INT_MAX (used by e.g. PSFTP, WinSCP, and FileZilla) we 
+	   have to use an sread() rather than the range-checking readUint32() 
+	   to read (or at least skip) this */
 	channelNo = readUint32( stream );
-	readUint32( stream );			/* Skip window size */
+	( void ) sread( stream, buffer, UINT32_SIZE );	/* Skip window size */
+
+	/* Read the maximum packet size */
 	status = maxPacketSize = readUint32( stream );
 	if( cryptStatusError( status ) )
 		{
@@ -372,8 +387,8 @@ int processChannelOpen( INOUT SESSION_INFO *sessionInfoPtr,
 		}
 	if( maxPacketSize < 1024 || maxPacketSize > 0x100000L )
 		{
-		/* General sanity check to make sure that the packet size is in the
-		   range 1K ... 1MB.  We've finally got valid packet data so we can
+		/* General sanity check to make sure that the packet size is in the 
+		   range 1K ... 1MB.  We've finally got valid packet data so we can 
 		   send error responses from now on */
 		( void ) sendOpenResponseFailed( sessionInfoPtr, channelNo );
 		retExt( CRYPT_ERROR_BADDATA,
@@ -382,6 +397,10 @@ int processChannelOpen( INOUT SESSION_INFO *sessionInfoPtr,
 				  "value %d, should be 1K...1MB", 
 				  channelInfoPtr->channelName, maxPacketSize ) );
 		}
+	maxPacketSize = min( maxPacketSize, \
+						 sessionInfoPtr->receiveBufSize - EXTRA_PACKET_SIZE );
+
+	/* Read any other information that may be present */
 #ifdef USE_SSH_EXTENDED
 	if( channelInfoPtr->isPortForwarding )
 		{
@@ -397,8 +416,6 @@ int processChannelOpen( INOUT SESSION_INFO *sessionInfoPtr,
 		arg1Ptr = arg1String;
 		}
 #endif /* USE_SSH_EXTENDED */
-	maxPacketSize = min( maxPacketSize, \
-						 sessionInfoPtr->receiveBufSize - EXTRA_PACKET_SIZE );
 
 	/* If this is the client then opening a new channel by the server isn't
 	   permitted */
@@ -521,10 +538,9 @@ int processChannelRequest( INOUT SESSION_INFO *sessionInfoPtr,
 						   INOUT STREAM *stream, 
 						   IN const long prevChannelNo )
 	{
-	SSH_INFO *sshInfo = sessionInfoPtr->sessionSSH;
 	const REQUEST_TYPE_INFO *requestInfoPtr = NULL;
 	const BOOLEAN isChannelRequest = \
-			( sshInfo->packetType == SSH_MSG_CHANNEL_REQUEST ) ? TRUE : FALSE;
+			( prevChannelNo != CRYPT_UNUSED ) ? TRUE : FALSE;
 	BYTE stringBuffer[ CRYPT_MAX_TEXTSIZE + 8 ];
 	BOOLEAN wantReply, requestOK = TRUE;
 	int stringLength, i, status;
@@ -532,7 +548,8 @@ int processChannelRequest( INOUT SESSION_INFO *sessionInfoPtr,
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 
-	REQUIRES( prevChannelNo >= 0 && prevChannelNo <= LONG_MAX );
+	REQUIRES( ( prevChannelNo == CRYPT_UNUSED ) || \
+			  ( prevChannelNo >= 0 && prevChannelNo <= CHANNEL_MAX ) );
 
 	/* Process the channel/global request (the type and channel number
 	   have already been read by the caller):
@@ -560,6 +577,8 @@ int processChannelRequest( INOUT SESSION_INFO *sessionInfoPtr,
 				  "Invalid request type in %s request packet",
 				  isChannelRequest ? "channel" : "global" ) );
 		}
+	DEBUG_OP(( stringBuffer[ stringLength ] = '\0' ));
+	DEBUG_PRINT(( "Processing channel request '%s'.\n", stringBuffer ));
 
 	/* Try and identify the request type */
 	for( i = 0; requestInfo[ i ].requestName != NULL && \

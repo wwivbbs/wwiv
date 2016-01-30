@@ -68,7 +68,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int sendHTTPData( INOUT STREAM *stream, 
 				  IN_BUFFER( length ) void *buffer, 
 				  IN_LENGTH const int length, 
-				  IN_FLAGS( HTTP ) const int flags );
+				  IN_FLAGS_Z( HTTP ) const int flags );
 STDC_NONNULL_ARG( ( 1 ) ) \
 void setStreamLayerHTTPwrite( INOUT NET_STREAM_INFO *netStream );
 
@@ -82,14 +82,14 @@ int sendHTTPError( INOUT STREAM *stream,
 				   OUT_BUFFER_FIXED( headerBufMaxLen ) char *headerBuffer, 
 				   IN_LENGTH_SHORT_MIN( 256 ) const int headerBufMaxLen, 
 				   IN_INT const int httpStatus );
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
+CHECK_RETVAL_RANGE( 0, 8 ) STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int checkHTTPID( IN_BUFFER( dataLength ) const char *data, 
 				 IN_LENGTH_SHORT const int dataLength, 
 				 INOUT STREAM *stream );
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
+CHECK_RETVAL_LENGTH_SHORT STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 int parseUriInfo( INOUT_BUFFER( dataInLength, *dataOutLength ) char *data, 
 				  IN_LENGTH_SHORT const int dataInLength, 
-				  OUT_LENGTH_SHORT_Z int *dataOutLength, 
+				  OUT_LENGTH_BOUNDED_Z( dataInLength ) int *dataOutLength, 
 				  INOUT HTTP_URI_INFO *uriInfo );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4, 5 ) ) \
 int readFirstHeaderLine( INOUT STREAM *stream, 

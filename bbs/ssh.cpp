@@ -97,6 +97,10 @@ bool Key::Create() {
   status = cryptSetAttributeString(context_, CRYPT_CTXINFO_LABEL, WWIV_SSH_KEY_NAME, strlen(WWIV_SSH_KEY_NAME));
   RETURN_IF_ERROR(status);
 
+  // We want 8K keys.
+  status = cryptSetAttribute(context_, CRYPT_CTXINFO_KEYSIZE, 2048 / 8);
+  RETURN_IF_ERROR(status);
+
   status = cryptGenerateKey(context_);
   RETURN_IF_ERROR(status);
 

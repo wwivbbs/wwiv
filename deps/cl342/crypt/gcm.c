@@ -20,9 +20,9 @@ Issue Date: 30/03/2011
  My thanks to:
 
    Colin Sinclair for finding an error and suggesting a number of
-   improvements to this code.
-
-   John Viega and David McGrew for their support in the development
+   improvements to this code. 
+ 
+   John Viega and David McGrew for their support in the development 
    of this code and to David for testing it on a big-endIAN system.
 
    Mark Rodenkirch and Jason Papadopoulos for their help in finding
@@ -36,6 +36,8 @@ Issue Date: 30/03/2011
   #include "crypt/gcm.h"
   #include "crypt/mode_hdr.h"
 #endif /* Compiler-specific includes */
+
+#ifdef USE_GCM
 
 /*  This GCM implementation needs a Galois Field multiplier for GF(2^128).
     which operates on field elements using a polynomial field representation
@@ -72,7 +74,7 @@ Issue Date: 30/03/2011
 
     then an appropriate change of representation will occur before and
     after calls to your revised field multiplier. To use this you need
-    to add gf_convert.c to your application.
+    to add gf_convert.c to your application.  
 */
 
 #if defined(__cplusplus)
@@ -92,17 +94,17 @@ extern "C"
 #  define GF_REPRESENTATION REVERSE_BITS
 #endif
 
-#define BLOCK_SIZE      GCM_BLOCK_SIZE      /* block length */
-#define BLK_ADR_MASK    (BLOCK_SIZE - 1)    /* mask for 'in block' address */
+#define BLOCK_SIZE      GCM_BLOCK_SIZE      /* block length                 */
+#define BLK_ADR_MASK    (BLOCK_SIZE - 1)    /* mask for 'in block' address  */
 #define CTR_POS         12
 
 #define inc_ctr(x)  \
     {   int i = BLOCK_SIZE; while(i-- > CTR_POS && !++(UI8_PTR(x)[i])) ; }
 
-ret_type gcm_init_and_key(                  /* initialise mode and set key */
-            const unsigned char key[],      /* the key value */
-            unsigned long key_len,          /* and its length in bytes */
-            gcm_ctx ctx[1])                 /* the mode context */
+ret_type gcm_init_and_key(                  /* initialise mode and set key  */
+            const unsigned char key[],      /* the key value                */
+            unsigned long key_len,          /* and its length in bytes      */
+            gcm_ctx ctx[1])                 /* the mode context             */
 {
     memset(ctx->ghash_h, 0, sizeof(ctx->ghash_h));
 
@@ -162,12 +164,12 @@ void gf_mul_hh(gf_t a, gcm_ctx ctx[1])
 #endif
 }
 
-ret_type gcm_init_message(                  /* initialise a new message */
-            const unsigned char iv[],       /* the initialisation vector */
-            unsigned long iv_len,           /* and its length in bytes */
-            gcm_ctx ctx[1])                 /* the mode context */
-{   uint_32t i, n_pos = 0;
-    uint_8t *p;
+ret_type gcm_init_message(                  /* initialise a new message     */
+            const unsigned char iv[],       /* the initialisation vector    */
+            unsigned long iv_len,           /* and its length in bytes      */
+            gcm_ctx ctx[1])                 /* the mode context             */
+{   uint32_t i, n_pos = 0;
+    uint8_t *p;
 
     memset(ctx->ctr_val, 0, BLOCK_SIZE);
     if(iv_len == CTR_POS)
@@ -205,11 +207,11 @@ ret_type gcm_init_message(                  /* initialise a new message */
     return RETURN_GOOD;
 }
 
-ret_type gcm_auth_header(                   /* authenticate the header */
-            const unsigned char hdr[],      /* the header buffer */
-            unsigned long hdr_len,          /* and its length in bytes */
-            gcm_ctx ctx[1])                 /* the mode context */
-{   uint_32t cnt = 0, b_pos = (uint_32t)ctx->hdr_cnt & BLK_ADR_MASK;
+ret_type gcm_auth_header(                   /* authenticate the header      */
+            const unsigned char hdr[],      /* the header buffer            */
+            unsigned long hdr_len,          /* and its length in bytes      */
+            gcm_ctx ctx[1])                 /* the mode context             */
+{   uint32_t cnt = 0, b_pos = (uint32_t)ctx->hdr_cnt & BLK_ADR_MASK;
 
     if(!hdr_len)
         return RETURN_GOOD;
@@ -263,10 +265,10 @@ ret_type gcm_auth_header(                   /* authenticate the header */
 }
 
 ret_type gcm_auth_data(                     /* authenticate ciphertext data */
-            const unsigned char data[],     /* the data buffer */
-            unsigned long data_len,         /* and its length in bytes */
-            gcm_ctx ctx[1])                 /* the mode context */
-{   uint_32t cnt = 0, b_pos = (uint_32t)ctx->txt_acnt & BLK_ADR_MASK;
+            const unsigned char data[],     /* the data buffer              */
+            unsigned long data_len,         /* and its length in bytes      */
+            gcm_ctx ctx[1])                 /* the mode context             */
+{   uint32_t cnt = 0, b_pos = (uint32_t)ctx->txt_acnt & BLK_ADR_MASK;
 
     if(!data_len)
         return RETURN_GOOD;
@@ -319,11 +321,11 @@ ret_type gcm_auth_data(                     /* authenticate ciphertext data */
     return RETURN_GOOD;
 }
 
-ret_type gcm_crypt_data(                    /* encrypt or decrypt data */
-            unsigned char data[],           /* the data buffer */
-            unsigned long data_len,         /* and its length in bytes */
-            gcm_ctx ctx[1])                 /* the mode context */
-{   uint_32t cnt = 0, b_pos = (uint_32t)ctx->txt_ccnt & BLK_ADR_MASK;
+ret_type gcm_crypt_data(                    /* encrypt or decrypt data      */
+            unsigned char data[],           /* the data buffer              */
+            unsigned long data_len,         /* and its length in bytes      */
+            gcm_ctx ctx[1])                 /* the mode context             */
+{   uint32_t cnt = 0, b_pos = (uint32_t)ctx->txt_ccnt & BLK_ADR_MASK;
 
     if(!data_len)
         return RETURN_GOOD;
@@ -369,7 +371,7 @@ ret_type gcm_crypt_data(                    /* encrypt or decrypt data */
     {
         if(b_pos == BLOCK_SIZE || !b_pos)
         {
-            inc_ctr(ctx->ctr_val); 
+            inc_ctr(ctx->ctr_val);
             aes_encrypt(UI8_PTR(ctx->ctr_val), UI8_PTR(ctx->enc_ctr), ctx->aes);
             b_pos = 0;
         }
@@ -380,11 +382,11 @@ ret_type gcm_crypt_data(                    /* encrypt or decrypt data */
     return RETURN_GOOD;
 }
 
-ret_type gcm_compute_tag(                   /* compute authentication tag */
-            unsigned char tag[],            /* the buffer for the tag */
-            unsigned long tag_len,          /* and its length in bytes */
-            gcm_ctx ctx[1])                 /* the mode context */
-{   uint_32t i, ln;
+ret_type gcm_compute_tag(                   /* compute authentication tag   */
+            unsigned char tag[],            /* the buffer for the tag       */
+            unsigned long tag_len,          /* and its length in bytes      */
+            gcm_ctx ctx[1])                 /* the mode context             */
+{   uint32_t i, ln;
     gf_t tbuf;
 
     if(ctx->txt_acnt != ctx->txt_ccnt && ctx->txt_ccnt > 0)
@@ -395,7 +397,7 @@ ret_type gcm_compute_tag(                   /* compute authentication tag */
 
     if(ctx->hdr_cnt)
     {
-        ln = (uint_32t)((ctx->txt_acnt + BLOCK_SIZE - 1) / BLOCK_SIZE);
+        ln = (uint32_t)((ctx->txt_acnt + BLOCK_SIZE - 1) / BLOCK_SIZE);
         if(ln)
         {
 #if 1       /* alternative versions of the exponentiation operation */
@@ -444,17 +446,17 @@ ret_type gcm_compute_tag(                   /* compute authentication tag */
         }
     }
 
-    i = BLOCK_SIZE;
+    i = BLOCK_SIZE; 
 #ifdef BRG_UI64
-    {   uint_64t tm = ((uint_64t)ctx->txt_acnt) << 3;
+    {   uint64_t tm = ((uint64_t)ctx->txt_acnt) << 3;
         while(i-- > 0)
         {
             UI8_PTR(ctx->hdr_ghv)[i] ^= UI8_PTR(ctx->txt_ghv)[i] ^ (unsigned char)tm;
-            tm = (i == 8 ? (((uint_64t)ctx->hdr_cnt) << 3) : tm >> 8);
+            tm = (i == 8 ? (((uint64_t)ctx->hdr_cnt) << 3) : tm >> 8);
         }
     }
-#else
-    {   uint_32t tm = ctx->txt_acnt << 3;
+#else   
+    {   uint32_t tm = ctx->txt_acnt << 3;
 
         while(i-- > 0)
         {
@@ -482,17 +484,17 @@ ret_type gcm_compute_tag(                   /* compute authentication tag */
     return (ctx->txt_ccnt == ctx->txt_acnt ? RETURN_GOOD : RETURN_WARN);
 }
 
-ret_type gcm_end(                           /* clean up and end operation */
-            gcm_ctx ctx[1])                 /* the mode context */
+ret_type gcm_end(                           /* clean up and end operation   */
+            gcm_ctx ctx[1])                 /* the mode context             */
 {
     memset(ctx, 0, sizeof(gcm_ctx));
     return RETURN_GOOD;
 }
 
-ret_type gcm_encrypt(                       /* encrypt & authenticate data */
-            unsigned char data[],           /* the data buffer */
-            unsigned long data_len,         /* and its length in bytes */
-            gcm_ctx ctx[1])                 /* the mode context */
+ret_type gcm_encrypt(                       /* encrypt & authenticate data  */
+            unsigned char data[],           /* the data buffer              */
+            unsigned long data_len,         /* and its length in bytes      */
+            gcm_ctx ctx[1])                 /* the mode context             */
 {
 
     gcm_crypt_data(data, data_len, ctx);
@@ -500,26 +502,26 @@ ret_type gcm_encrypt(                       /* encrypt & authenticate data */
     return RETURN_GOOD;
 }
 
-ret_type gcm_decrypt(                       /* authenticate & decrypt data */
-            unsigned char data[],           /* the data buffer */
-            unsigned long data_len,         /* and its length in bytes */
-            gcm_ctx ctx[1])                 /* the mode context */
+ret_type gcm_decrypt(                       /* authenticate & decrypt data  */
+            unsigned char data[],           /* the data buffer              */
+            unsigned long data_len,         /* and its length in bytes      */
+            gcm_ctx ctx[1])                 /* the mode context             */
 {
     gcm_auth_data(data, data_len, ctx);
     gcm_crypt_data(data, data_len, ctx);
     return RETURN_GOOD;
 }
 
-ret_type gcm_encrypt_message(               /* encrypt an entire message */
-            const unsigned char iv[],       /* the initialisation vector */
-            unsigned long iv_len,           /* and its length in bytes */
-            const unsigned char hdr[],      /* the header buffer */
-            unsigned long hdr_len,          /* and its length in bytes */
-            unsigned char msg[],            /* the message buffer */
-            unsigned long msg_len,          /* and its length in bytes */
-            unsigned char tag[],            /* the buffer for the tag */
-            unsigned long tag_len,          /* and its length in bytes */
-            gcm_ctx ctx[1])                 /* the mode context */
+ret_type gcm_encrypt_message(               /* encrypt an entire message    */
+            const unsigned char iv[],       /* the initialisation vector    */
+            unsigned long iv_len,           /* and its length in bytes      */
+            const unsigned char hdr[],      /* the header buffer            */
+            unsigned long hdr_len,          /* and its length in bytes      */
+            unsigned char msg[],            /* the message buffer           */
+            unsigned long msg_len,          /* and its length in bytes      */
+            unsigned char tag[],            /* the buffer for the tag       */
+            unsigned long tag_len,          /* and its length in bytes      */
+            gcm_ctx ctx[1])                 /* the mode context             */
 {
     gcm_init_message(iv, iv_len, ctx);
     gcm_auth_header(hdr, hdr_len, ctx);
@@ -527,17 +529,17 @@ ret_type gcm_encrypt_message(               /* encrypt an entire message */
     return gcm_compute_tag(tag, tag_len, ctx) ? RETURN_ERROR : RETURN_GOOD;
 }
 
-ret_type gcm_decrypt_message(               /* decrypt an entire message */
-            const unsigned char iv[],       /* the initialisation vector */
-            unsigned long iv_len,           /* and its length in bytes */
-            const unsigned char hdr[],      /* the header buffer */
-            unsigned long hdr_len,          /* and its length in bytes */
-            unsigned char msg[],            /* the message buffer */
-            unsigned long msg_len,          /* and its length in bytes */
-            const unsigned char tag[],      /* the buffer for the tag */
-            unsigned long tag_len,          /* and its length in bytes */
-            gcm_ctx ctx[1])                 /* the mode context */
-{   uint_8t local_tag[BLOCK_SIZE];
+ret_type gcm_decrypt_message(               /* decrypt an entire message    */
+            const unsigned char iv[],       /* the initialisation vector    */
+            unsigned long iv_len,           /* and its length in bytes      */
+            const unsigned char hdr[],      /* the header buffer            */
+            unsigned long hdr_len,          /* and its length in bytes      */
+            unsigned char msg[],            /* the message buffer           */
+            unsigned long msg_len,          /* and its length in bytes      */
+            const unsigned char tag[],      /* the buffer for the tag       */
+            unsigned long tag_len,          /* and its length in bytes      */
+            gcm_ctx ctx[1])                 /* the mode context             */
+{   uint8_t local_tag[BLOCK_SIZE];
     ret_type rr;
 
     gcm_init_message(iv, iv_len, ctx);
@@ -550,3 +552,4 @@ ret_type gcm_decrypt_message(               /* decrypt an entire message */
 #if defined(__cplusplus)
 }
 #endif
+#endif /* USE_GCM */

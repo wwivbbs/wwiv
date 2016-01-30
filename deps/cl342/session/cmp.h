@@ -191,15 +191,15 @@ enum { CTAG_PH_MESSAGETIME, CTAG_PH_PROTECTIONALGO, CTAG_PH_SENDERKID,
    message */
 
 typedef enum { 
-	CTAG_PB_IR, CTAG_PB_NONE = CTAG_PB_IR, /* _IR = 0 = _NONE */
+	CTAG_PB_IR, CMP_MESSAGE_NONE = CTAG_PB_IR, /* _IR = 0 = _NONE */
 	CTAG_PB_IP, CTAG_PB_CR, CTAG_PB_CP, CTAG_PB_P10CR, CTAG_PB_POPDECC, 
 	CTAG_PB_POPDECR, CTAG_PB_KUR, CTAG_PB_KUP, CTAG_PB_KRR, CTAG_PB_KRP, 
 	CTAG_PB_RR, CTAG_PB_RP, CTAG_PB_CCR, CTAG_PB_CCP, CTAG_PB_CKUANN, 
 	CTAG_PB_CANN, CTAG_PB_RANN, CTAG_PB_CRLANN, CTAG_PB_PKICONF, 
 	CTAG_PB_NESTED, CTAG_PB_GENM, CTAG_PB_GENP, CTAG_PB_ERROR, 
 	CTAG_PB_CERTCONF, 
-	CTAG_PB_LAST,		/* Last possible tag type */
-	CTAG_PB_READ_ANY	/* Special-case for match-any message */
+	CTAG_PB_READ_ANY,	/* Special-case for match-any message */
+	CTAG_PB_LAST, CMP_MESSAGE_LAST = CTAG_PB_LAST	/* Last possible type */
 	} CMP_MESSAGE_TYPE;
 
 /* Context-specific tags for the PKIMessage */
@@ -296,7 +296,7 @@ typedef enum {
 		  debugDumpCMP( type, level, sessionInfo )
 
   STDC_NONNULL_ARG( ( 3 ) ) \
-  void debugDumpCMP( IN_ENUM( CTAG_PB ) const CMP_MESSAGE_TYPE type, 
+  void debugDumpCMP( IN_ENUM( CMP_MESSAGE ) const CMP_MESSAGE_TYPE type, 
 					 IN_RANGE( 1, 4 ) const int phase,
 					 const SESSION_INFO *sessionInfoPtr );
 #else
@@ -403,8 +403,12 @@ typedef struct {
 	int altMacKeySize;						/* Alt.MAC key for revocations */
 	BOOLEAN useMACsend, useMACreceive;		/* Use MAC to verify integrity */
 
+	/* Whether the certificate issue is being authorised by an RA user 
+	   rather than a standard user */
+	BOOLEAN userIsRA;
+
 	/* Other protocol information.  CMP uses an extremely clunky 
-	   confirmation mechanism in which a certificate conf uses as hash 
+	   confirmation mechanism in which a certificate conf uses as its hash 
 	   algorithm the algorithm that was used in a previous message by the CA 
 	   to sign the certificate, which means implementations will break each 
 	   time a new certificate format or CA hash algorithm is added since the 
@@ -439,14 +443,14 @@ typedef struct {
 
 /* CMP message read/write methods for the different message types */
 
-typedef CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 		int ( *READMESSAGE_FUNCTION )( INOUT STREAM *stream, 
 									   INOUT SESSION_INFO *sessionInfoPtr,
 									   INOUT CMP_PROTOCOL_INFO *protocolInfo,
 									   IN_ENUM_OPT( CMP_MESSAGE ) \
 											const CMP_MESSAGE_TYPE messageType,
 									   IN_LENGTH_SHORT const int messageLength );
-typedef CHECK_RETVAL_FNPTR STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+typedef CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 		int ( *WRITEMESSAGE_FUNCTION )( INOUT STREAM *stream, 
 										INOUT SESSION_INFO *sessionInfoPtr,
 										const CMP_PROTOCOL_INFO *protocolInfo );
@@ -461,8 +465,8 @@ WRITEMESSAGE_FUNCTION getMessageWriteFunction( IN_ENUM( CMPBODY ) \
 
 /* Prototypes for functions in cmp.c */
 
-CHECK_RETVAL_RANGE( MAX_ERROR, CTAG_PB_LAST ) \
-int reqToResp( IN_ENUM_OPT( CTAG_PB ) const CMP_MESSAGE_TYPE reqType );
+CHECK_RETVAL_RANGE( CMP_MESSAGE_NONE, CMP_MESSAGE_LAST - 1 ) \
+int reqToResp( IN_ENUM_OPT( CMP_MESSAGE ) const CMP_MESSAGE_TYPE reqType );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int setCMPprotocolInfo( INOUT CMP_PROTOCOL_INFO *protocolInfo, 
 						IN_BUFFER_OPT( userIDlength ) const void *userID, 
@@ -501,7 +505,7 @@ int initMacInfo( IN_HANDLE const CRYPT_CONTEXT iMacContext,
 				 IN_LENGTH_SHORT const int passwordLength, 
 				 IN_BUFFER( saltLength ) const void *salt, 
 				 IN_LENGTH_SHORT const int saltLength, 
-				 IN_RANGE( 1, CMP_MAX_PASSWORD_ITERATIONS ) const int iterations );
+				 IN_RANGE( 1, CMP_MAX_PW_ITERATIONS ) const int iterations );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 5 ) ) \
 int readMacInfo( INOUT STREAM *stream, 
 				 INOUT CMP_PROTOCOL_INFO *protocolInfo,
@@ -516,11 +520,11 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 int checkMessageMAC( INOUT STREAM *stream, 
 					 INOUT CMP_PROTOCOL_INFO *protocolInfo,
 					 IN_BUFFER( messageLength ) const void *message,
-					 IN_LENGTH const int messageLength );
+					 IN_DATALENGTH const int messageLength );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 int checkMessageSignature( INOUT CMP_PROTOCOL_INFO *protocolInfo,
 						   IN_BUFFER( messageLength ) const void *message,
-						   IN_LENGTH const int messageLength,
+						   IN_DATALENGTH const int messageLength,
 						   IN_BUFFER( signatureLength ) const void *signature,
 						   IN_LENGTH_SHORT const int signatureLength,
 						   IN_HANDLE const CRYPT_HANDLE iAuthContext );
@@ -531,7 +535,8 @@ int writeMacProtinfo( IN_HANDLE const CRYPT_CONTEXT iMacContext,
 					  OUT_BUFFER( protInfoMaxLength, *protInfoLength ) \
 							void *protInfo, 
 					  IN_LENGTH_SHORT_MIN( 16 ) const int protInfoMaxLength,
-					  OUT_LENGTH_SHORT_Z int *protInfoLength );
+					  OUT_LENGTH_BOUNDED_Z( protInfoMaxLength ) \
+							int *protInfoLength );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 4, 6, 8 ) ) \
 int writeSignedProtinfo( IN_HANDLE const CRYPT_CONTEXT iSignContext,
 						 IN_ALGO const CRYPT_ALGO_TYPE hashAlgo,
@@ -541,7 +546,8 @@ int writeSignedProtinfo( IN_HANDLE const CRYPT_CONTEXT iSignContext,
 						 OUT_BUFFER( protInfoMaxLength, *protInfoLength ) \
 								void *protInfo, 
 						  IN_LENGTH_SHORT_MIN( 32 ) const int protInfoMaxLength,
-						  OUT_LENGTH_SHORT_Z int *protInfoLength );
+						  OUT_LENGTH_BOUNDED_Z( protInfoMaxLength ) \
+								int *protInfoLength );
 
 /* Prototypes for functions in cmp_err.c */
 
@@ -549,7 +555,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
 int readPkiStatusInfo( INOUT STREAM *stream, 
 					   const BOOLEAN isServer,
 					   INOUT ERROR_INFO *errorInfo );
-CHECK_RETVAL \
+CHECK_RETVAL_LENGTH_SHORT_NOERROR \
 int sizeofPkiStatusInfo( IN_STATUS const int pkiStatus,
 						 IN_ENUM_OPT( CMPFAILINFO ) const long pkiFailureInfo );
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
@@ -562,18 +568,18 @@ int writePkiStatusInfo( INOUT STREAM *stream,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int readPkiMessage( INOUT SESSION_INFO *sessionInfoPtr,
 					INOUT CMP_PROTOCOL_INFO *protocolInfo,
-					IN_ENUM_OPT( CTAG_PB ) CMP_MESSAGE_TYPE messageType );
+					IN_ENUM_OPT( CMP_MESSAGE ) CMP_MESSAGE_TYPE messageType );
 
 /* Prototypes for functions in cmp_wr.c */
 
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int writePkiMessage( INOUT SESSION_INFO *sessionInfoPtr,
 					 INOUT CMP_PROTOCOL_INFO *protocolInfo,
 					 IN_ENUM( CMPBODY ) const CMPBODY_TYPE bodyType );
 
 /* Prototypes for functions in pnppki.c */
 
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int pnpPkiSession( INOUT SESSION_INFO *sessionInfoPtr );
 
 #endif /* _CMP_DEFINED */

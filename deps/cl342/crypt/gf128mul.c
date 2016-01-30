@@ -1,28 +1,21 @@
 /*
- ---------------------------------------------------------------------------
- Copyright (c) 1998-2008, Brian Gladman, Worcester, UK. All rights reserved.
+---------------------------------------------------------------------------
+Copyright (c) 1998-2010, Brian Gladman, Worcester, UK. All rights reserved.
 
- LICENSE TERMS
+The redistribution and use of this software (with or without changes)
+is allowed without the payment of fees or royalties provided that:
 
- The redistribution and use of this software (with or without changes)
- is allowed without the payment of fees or royalties provided that:
+  source code distributions include the above copyright notice, this
+  list of conditions and the following disclaimer;
 
-  1. source code distributions include the above copyright notice, this
-     list of conditions and the following disclaimer;
+  binary distributions include the above copyright notice, this list
+  of conditions and the following disclaimer in their documentation.
 
-  2. binary distributions include the above copyright notice, this list
-     of conditions and the following disclaimer in their documentation;
-
-  3. the name of the copyright holder is not used to endorse products
-     built using this software without specific written permission.
-
- DISCLAIMER
-
- This software is provided 'as is' with no explicit or implied warranties
- in respect of its properties, including, but not limited to, correctness
- and/or fitness for purpose.
- ---------------------------------------------------------------------------
- Issue Date: 20/12/2007
+This software is provided 'as is' with no explicit or implied warranties
+in respect of its operation, including, but not limited to, correctness
+and fitness for purpose.
+---------------------------------------------------------------------------
+Issue Date: 20/12/2007
 
  This file provides fast multiplication in GF(128) as required by several
  cryptographic authentication modes (see gfmul128.h).
@@ -33,13 +26,23 @@
 #  define UNROLL_LOOPS
 #endif
 
+/* The order of these includes matters */
 #if defined( INC_ALL )		/* pcg */
-  #include "gf128mul.h"
   #include "mode_hdr.h"
+  #include "gf128mul.h"
+#else
+  #include "crypt/mode_hdr.h"
+  #include "crypt/gf128mul.h"
+#endif /* Compiler-specific includes */
+
+#ifdef USE_GCM
+
+/* We can only include gf_mul_lo.h at this point since it includes code 
+   for various functions - pcg */
+
+#if defined( INC_ALL )
   #include "gf_mul_lo.h"
 #else
-  #include "crypt/gf128mul.h"
-  #include "crypt/mode_hdr.h"
   #include "crypt/gf_mul_lo.h"
 #endif /* Compiler-specific includes */
 
@@ -65,14 +68,14 @@
 
 void gf_mul(gf_t a, const gf_t b)
 {   gf_t p[8];
-    uint_8t *q, ch;
+    uint8_t *q, ch;
     int i;
 
     copy_block_aligned(p[0], a);
     for(i = 0; i < 7; ++i)
         gf_mulx1(mode)(p[i + 1], p[i]);
 
-    q = (uint_8t*)(a == b ? p[0] : b);
+    q = (uint8_t*)(a == b ? p[0] : b);
     memset(a, 0, GF_BYTE_LEN);
     for(i = 15 ;  ; )
     {
@@ -185,7 +188,7 @@ void init_64k_table(const gf_t g, gf_t64k_t t)
 #if defined( UNROLL_LOOPS )
 
 void gf_mul_64k(gf_t a, const  gf_t64k_t t, gf_t r)
-{   uint_8t *ap = (uint_8t*)a;
+{   uint8_t *ap = (uint8_t*)a;
     memset(r, 0, GF_BYTE_LEN);
     xor_64k(15, ap, t, r); xor_64k(14, ap, t, r);
     xor_64k(13, ap, t, r); xor_64k(12, ap, t, r);
@@ -202,7 +205,7 @@ void gf_mul_64k(gf_t a, const  gf_t64k_t t, gf_t r)
 
 void gf_mul_64k(gf_t a, const  gf_t64k_t t, gf_t r)
 {   int i;
-    uint_8t *ap = (uint_8t*)a;
+    uint8_t *ap = (uint8_t*)a;
     memset(r, 0, GF_BYTE_LEN);
     for(i = 15; i >= 0; --i)
     {
@@ -289,7 +292,7 @@ void init_8k_table(const gf_t g, gf_t8k_t t)
 #if defined( UNROLL_LOOPS )
 
 void gf_mul_8k(gf_t a, const gf_t8k_t t, gf_t r)
-{   uint_8t *ap = (uint_8t*)a;
+{   uint8_t *ap = (uint8_t*)a;
     memset(r, 0, GF_BYTE_LEN);
     xor_8k(15, ap, t, r); xor_8k(14, ap, t, r);
     xor_8k(13, ap, t, r); xor_8k(12, ap, t, r);
@@ -306,7 +309,7 @@ void gf_mul_8k(gf_t a, const gf_t8k_t t, gf_t r)
 
 void gf_mul_8k(gf_t a, const gf_t8k_t t, gf_t r)
 {   int i;
-    uint_8t *ap = (uint_8t*)a;
+    uint8_t *ap = (uint8_t*)a;
     memset(r, 0, GF_BYTE_LEN);
     for(i = 15; i >= 0; --i)
     {
@@ -368,7 +371,7 @@ void init_4k_table(const gf_t g, gf_t4k_t t)
 #if defined( UNROLL_LOOPS )
 
 void gf_mul_4k(gf_t a, const gf_t4k_t t, gf_t r)
-{   uint_8t *ap = (uint_8t*)a;
+{   uint8_t *ap = (uint8_t*)a;
     memset(r, 0, GF_BYTE_LEN);
     xor_4k(15, ap, t, r); xor_4k(14, ap, t, r);
     xor_4k(13, ap, t, r); xor_4k(12, ap, t, r);
@@ -385,7 +388,7 @@ void gf_mul_4k(gf_t a, const gf_t4k_t t, gf_t r)
 
 void gf_mul_4k(gf_t a, const gf_t4k_t t, gf_t r)
 {   int i = 15;
-    uint_8t *ap = (uint_8t*)a;
+    uint8_t *ap = (uint8_t*)a;
     memset(r, 0, GF_BYTE_LEN);
     for(i = 15; i >=0; --i)
     {
@@ -452,7 +455,7 @@ void init_256_table(const gf_t g, gf_t256_t t)
 #if defined( UNROLL_LOOPS )
 
 void gf_mul_256(gf_t a, const gf_t256_t t, gf_t r)
-{   uint_8t *ap = (uint_8t*)a;
+{   uint8_t *ap = (uint8_t*)a;
     memset(r, 0, GF_BYTE_LEN);
     xor_256(15, ap, t, r); xor_256(14, ap, t, r);
     xor_256(13, ap, t, r); xor_256(12, ap, t, r);
@@ -469,7 +472,7 @@ void gf_mul_256(gf_t a, const gf_t256_t t, gf_t r)
 
 void gf_mul_256(gf_t a, const gf_t256_t t, gf_t r)
 {   int i;
-    uint_8t *ap = (uint_8t*)a;
+    uint8_t *ap = (uint8_t*)a;
     memset(r, 0, GF_BYTE_LEN);
     for(i = 15; i >= 0; --i)
     {
@@ -481,3 +484,4 @@ void gf_mul_256(gf_t a, const gf_t256_t t, gf_t r)
 #endif
 
 #endif
+#endif /* USE_GCM */

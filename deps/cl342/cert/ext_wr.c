@@ -1,19 +1,17 @@
 /****************************************************************************
 *																			*
 *						Certificate Attribute Write Routines				*
-*						 Copyright Peter Gutmann 1996-2008					*
+*						 Copyright Peter Gutmann 1996-2013					*
 *																			*
 ****************************************************************************/
 
 #if defined( INC_ALL )
   #include "cert.h"
   #include "certattr.h"
-  #include "asn1.h"
   #include "asn1_ext.h"
 #else
   #include "cert/cert.h"
   #include "cert/certattr.h"
-  #include "enc_dec/asn1.h"
   #include "enc_dec/asn1_ext.h"
 #endif /* Compiler-specific includes */
 
@@ -29,16 +27,18 @@
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 static int getAttributeEncodingInfo( const ATTRIBUTE_LIST *attributeListPtr,
-									 OUT_OPT_PTR \
+									 OUT_PTR_COND \
 										ATTRIBUTE_INFO **attributeInfoPtrPtr,
 									 OUT_INT_Z int *attributeDataSize )
 	{
 	const ATTRIBUTE_INFO *attributeInfoPtr;
-	BOOLEAN isConstructed = FALSE;
+	const int fifoEndPos = attributeListPtr->fifoEnd - 1;
 
 	assert( isReadPtr( attributeListPtr, sizeof( ATTRIBUTE_LIST ) ) );
 	assert( isWritePtr( attributeInfoPtrPtr, sizeof( ATTRIBUTE_INFO * ) ) );
 	assert( isWritePtr( attributeDataSize, sizeof( int ) ) );
+
+	REQUIRES( fifoEndPos >= -1 && fifoEndPos < ENCODING_FIFO_SIZE - 1 );
 
 	/* Clear return value */
 	*attributeInfoPtrPtr = NULL;
@@ -46,21 +46,21 @@ static int getAttributeEncodingInfo( const ATTRIBUTE_LIST *attributeListPtr,
 	/* If it's a constructed attribute then the encoding information for
 	   the outermost wrapper will be recorded in the encoding FIFO, 
 	   otherwise it's present directly */
-	if( attributeListPtr->fifoEnd > 0 )
-		{
-		attributeInfoPtr = \
-			attributeListPtr->encodingFifo[ attributeListPtr->fifoEnd - 1 ];
-		isConstructed = TRUE;
-		}
+	if( fifoEndPos >= 0 )
+		attributeInfoPtr = attributeListPtr->encodingFifo[ fifoEndPos ];
 	else
 		attributeInfoPtr = attributeListPtr->attributeInfoPtr;
 	ENSURES( attributeInfoPtr != NULL );
 
 	/* Determine the size of the attribute payload */
-	if( isConstructed && attributeInfoPtr->fieldType != FIELDTYPE_CHOICE )
+	if( fifoEndPos >= 0 && attributeInfoPtr->fieldType != FIELDTYPE_CHOICE )
 		{
-		*attributeDataSize = ( int ) sizeofObject( \
-				attributeListPtr->sizeFifo[ attributeListPtr->fifoEnd - 1 ] );
+		const int attributePayloadSize = \
+						attributeListPtr->sizeFifo[ fifoEndPos ];
+
+		REQUIRES( attributePayloadSize >= 0 && \
+				  attributePayloadSize < MAX_INTLENGTH_SHORT );
+		*attributeDataSize = ( int ) sizeofObject( attributePayloadSize );
 		}
 	else
 		*attributeDataSize = attributeListPtr->encodedSize;
@@ -87,7 +87,7 @@ static int getAttributeEncodingInfo( const ATTRIBUTE_LIST *attributeListPtr,
 
 CHECK_RETVAL_PTR STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static ATTRIBUTE_LIST *getNextEncodedAttribute( const ATTRIBUTE_LIST *attributeListPtr,
-												OUT_BUFFER_FIXED( prevEncodedFormLength ) \
+												INOUT_BUFFER_FIXED( prevEncodedFormLength ) \
 													BYTE *prevEncodedForm,
 												IN_LENGTH_FIXED( ATTR_ENCODED_SIZE ) \
 													const int prevEncodedFormLength )
@@ -104,7 +104,6 @@ static ATTRIBUTE_LIST *getNextEncodedAttribute( const ATTRIBUTE_LIST *attributeL
 	REQUIRES_N( prevEncodedFormLength == ATTR_ENCODED_SIZE );
 
 	/* Give the current encoded form the maximum possible value */
-	memset( buffer, 0, ATTR_ENCODED_SIZE );
 	memset( currentEncodedForm, 0xFF, ATTR_ENCODED_SIZE );
 
 	sMemOpen( &stream, buffer, ATTR_ENCODED_SIZE );
@@ -132,7 +131,7 @@ static ATTRIBUTE_LIST *getNextEncodedAttribute( const ATTRIBUTE_LIST *attributeL
 		/* Write the header and OID */
 		sseek( &stream, 0 );
 		writeSequence( &stream, sizeofOID( attributeInfoPtr->oid ) + \
-					   ( int ) sizeofObject( attributeDataSize ) );
+								( int ) sizeofObject( attributeDataSize ) );
 		status = swrite( &stream, attributeInfoPtr->oid,
 						 sizeofOID( attributeInfoPtr->oid ) );
 		ENSURES_N( cryptStatusOK( status ) );
@@ -169,7 +168,8 @@ static ATTRIBUTE_LIST *getNextEncodedAttribute( const ATTRIBUTE_LIST *attributeL
 
 		/* Write the header and OID */
 		sseek( &stream, 0 );
-		writeSequence( &stream, sizeofOID( attributeListPtr->oid ) + \
+		writeSequence( &stream, 
+					   sizeofOID( attributeListPtr->oid ) + \
 					   ( int ) sizeofObject( attributeListPtr->valueLength ) );
 		status = swrite( &stream, attributeListPtr->oid,
 						 sizeofOID( attributeListPtr->oid ) );
@@ -199,18 +199,21 @@ static ATTRIBUTE_LIST *getNextEncodedAttribute( const ATTRIBUTE_LIST *attributeL
 /* Determine the size of a set of attributes and validate and preprocess the
    attribute information */
 
-CHECK_RETVAL \
-int sizeofAttributes( IN_OPT const ATTRIBUTE_PTR *attributePtr )
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
+static int calculateAttributeSizes( const ATTRIBUTE_LIST *attributeListPtr,
+									const BOOLEAN hasSpecialEncoding,
+									OUT_LENGTH_Z int *attributeSize,
+									OUT_LENGTH_Z int *encapsAttributeSize )
 	{
-	const ATTRIBUTE_LIST *attributeListPtr = attributePtr;
-	int signUnrecognised, attributeSize = 0, iterationCount, status;
+	int signUnrecognised;
+	int iterationCount, status;
 
-	assert( attributePtr == NULL || \
-			isReadPtr( attributePtr, sizeof( ATTRIBUTE_LIST ) ) );
+	assert( isReadPtr( attributeListPtr, sizeof( ATTRIBUTE_LIST ) ) );
+	assert( isWritePtr( attributeSize, sizeof( int ) ) );
+	assert( isWritePtr( encapsAttributeSize, sizeof( int ) ) );
 
-	/* If there's nothing to write, return now */
-	if( attributeListPtr == NULL )
-		return( 0 );
+	/* Clear return values */
+	*attributeSize = *encapsAttributeSize = 0;
 
 	/* Determine the size of the recognised attributes */
 	for( iterationCount = 0;
@@ -232,12 +235,31 @@ int sizeofAttributes( IN_OPT const ATTRIBUTE_PTR *attributePtr )
 		attributeID = attributeListPtr->attributeID;
 		attributeDataSize = ( int ) sizeofObject( attributeDataSize );
 
-		/* Determine the overall attribute size */
+		/* Determine the attribute data size */
 		attributeDataSize += sizeofOID( attributeInfoPtr->oid );
 		if( ( attributeInfoPtr->typeInfoFlags & FL_ATTR_CRITICAL ) || \
 			( attributeListPtr->flags & ATTR_FLAG_CRITICAL ) )
 			attributeDataSize += sizeofBoolean();
-		attributeSize += ( int ) sizeofObject( attributeDataSize );
+		attributeDataSize = ( int ) sizeofObject( attributeDataSize );
+
+		/* Some certificate objects (and specifically PKCS #10 requests) 
+		   have two classes of extensions, ones that apply to the request 
+		   itself and ones that apply to the certificate that the request 
+		   will be turned into, which are themselves encapsulated inside 
+		   their own extension type.  To deal with this we record sizes for 
+		   encapsulated and non-encapsulated extensions */
+		if( hasSpecialEncoding )
+			{
+			if( attributeInfoPtr->encodingFlags & FL_SPECIALENCODING )
+				*attributeSize += attributeDataSize;
+			else
+				*encapsAttributeSize += attributeDataSize;
+			}
+		else
+			{
+			/* It's a standard extension */
+			*attributeSize += attributeDataSize;
+			}
 
 		/* Skip everything else in the current attribute */
 		for( /* Continue iterationCount from previous loop */ ;
@@ -253,24 +275,66 @@ int sizeofAttributes( IN_OPT const ATTRIBUTE_PTR *attributePtr )
 					 &signUnrecognised, 
 					 CRYPT_OPTION_CERT_SIGNUNRECOGNISEDATTRIBUTES );
 	if( !signUnrecognised )
-		return( attributeSize );
+		return( CRYPT_OK );
 
 	/* Determine the size of the blob-type attributes */
 	for( ; attributeListPtr != NULL && \
 		   iterationCount < FAILSAFE_ITERATIONS_LARGE; 
 		attributeListPtr = attributeListPtr->next, iterationCount++ )
 		{
+		int attributeDataSize;
+
 		ENSURES( checkAttributeProperty( attributeListPtr,
 										 ATTRIBUTE_PROPERTY_BLOBATTRIBUTE ) );
 
-		attributeSize += ( int ) \
-						 sizeofObject( sizeofOID( attributeListPtr->oid ) + \
-						 sizeofObject( attributeListPtr->valueLength ) );
+		attributeDataSize = ( int ) \
+						sizeofObject( sizeofOID( attributeListPtr->oid ) + \
+						sizeofObject( attributeListPtr->valueLength ) );
 		if( attributeListPtr->flags & ATTR_FLAG_CRITICAL )
-			attributeSize += sizeofBoolean();
+			attributeDataSize += sizeofBoolean();
+		*attributeSize += attributeDataSize;
 		}
 	ENSURES( iterationCount < FAILSAFE_ITERATIONS_LARGE );
 
+	return( CRYPT_OK );
+	}
+
+CHECK_RETVAL \
+int sizeofAttributes( IN_OPT const ATTRIBUTE_PTR *attributePtr,
+					  IN_ENUM_OPT( CRYPT_CERTTYPE ) \
+							const CRYPT_CERTTYPE_TYPE type )
+	{
+	const BOOLEAN hasSpecialEncoding = \
+					( type == CRYPT_CERTTYPE_CERTREQUEST ) ? TRUE : FALSE;
+	int attributeSize, encapsAttributeSize, status;
+
+	assert( attributePtr == NULL || \
+			isReadPtr( attributePtr, sizeof( ATTRIBUTE_LIST ) ) );
+
+	REQUIRES( type >= CRYPT_CERTTYPE_NONE && type < CRYPT_CERTTYPE_LAST );
+			  /* Single CRL, OCSP, and RTCS entries have the special-case 
+			     type CRYPT_CERTTYPE_NONE */
+
+	/* If there are no attributes, return now */
+	if( attributePtr == NULL )
+		return( 0 );
+
+	/* Calculate the size of the attributes */
+	status = calculateAttributeSizes( attributePtr, hasSpecialEncoding,
+									  &attributeSize, &encapsAttributeSize );
+	ENSURES( cryptStatusOK( status ) );
+
+	/* If it's a PKCS #10 request, add any extra size from the encapsulated
+	   certificate attributes */
+	if( hasSpecialEncoding && encapsAttributeSize > 0 )
+		{
+		attributeSize += ( int ) \
+						 sizeofObject( \
+							sizeofOID( OID_PKCS9_EXTREQ ) + \
+							sizeofObject( \
+								sizeofObject( encapsAttributeSize ) ) );
+		}
+	
 	return( attributeSize );
 	}
 
@@ -298,6 +362,7 @@ static int calculateSpecialFieldSize( const ATTRIBUTE_LIST *attributeListPtr,
 
 	/* Determine the size of the data payload */
 	*payloadSize = attributeListPtr->sizeFifo[ attributeListPtr->fifoPos ];
+	ENSURES( *payloadSize >= 0 && *payloadSize < MAX_INTLENGTH_SHORT );
 
 	/* It's a special-case field, the data size is taken from somewhere 
 	   other than the user-supplied data */
@@ -312,12 +377,6 @@ static int calculateSpecialFieldSize( const ATTRIBUTE_LIST *attributeListPtr,
 		case FIELDTYPE_IDENTIFIER:
 			return( sizeofOID( attributeInfoPtr->oid ) );
 
-#if 0	/* 28/9/08 This shouldn't ever occur, defaultValue is only used for
-				   FIELDTYPE_BLOB_ANY and BOOLEAN fields */
-		case BER_INTEGER:
-			return( sizeofShortInteger( attributeInfoPtr->defaultValue ) );
-#endif /* 0 */
-
 		case BER_SEQUENCE:
 		case BER_SET:
 			return( ( int ) sizeofObject( *payloadSize ) );
@@ -326,7 +385,7 @@ static int calculateSpecialFieldSize( const ATTRIBUTE_LIST *attributeListPtr,
 	retIntError();
 	}
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+CHECK_RETVAL_LENGTH_SHORT STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int calculateFieldSize( const ATTRIBUTE_LIST *attributeListPtr,
 							   const ATTRIBUTE_INFO *attributeInfoPtr,
 							   const int fieldType )
@@ -334,9 +393,9 @@ static int calculateFieldSize( const ATTRIBUTE_LIST *attributeListPtr,
 	assert( isReadPtr( attributeListPtr, sizeof( ATTRIBUTE_LIST ) ) );
 	assert( isReadPtr( attributeInfoPtr, sizeof( ATTRIBUTE_INFO ) ) );
 
-	REQUIRES( fieldType >= FIELDTYPE_TEXTSTRING && fieldType < MAX_TAG );
+	REQUIRES( fieldType >= FIELDTYPE_LAST && fieldType < MAX_TAG );
 			  /* The default handler at the end can include fields up to 
-			     FIELDTYPE_TEXTSTRING */
+			     FIELDTYPE_LAST */
 
 	switch( fieldType )
 		{
@@ -389,19 +448,27 @@ int writeAttributeField( INOUT_OPT STREAM *stream,
 						 INOUT ATTRIBUTE_LIST *attributeListPtr,
 						 IN_RANGE( 0, 4 ) const int complianceLevel )
 	{
+	const ATTRIBUTE_INFO *attributeInfoPtr;
 	const BOOLEAN isSpecial = ( attributeListPtr->fifoPos > 0 ) ? TRUE : FALSE;
-	const ATTRIBUTE_INFO *attributeInfoPtr = ( isSpecial ) ? \
-		attributeListPtr->encodingFifo[ --attributeListPtr->fifoPos ] : \
-		attributeListPtr->attributeInfoPtr;
 	const void *dataPtr = attributeListPtr->value;
-	const int fieldType = attributeInfoPtr->fieldType;
-	int tag, size, payloadSize = DUMMY_INIT;
+	int fieldType, tag, size, payloadSize DUMMY_INIT, status;
 
 	assert( stream == NULL || isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( attributeListPtr, sizeof( ATTRIBUTE_LIST ) ) );
 
 	REQUIRES( complianceLevel >= CRYPT_COMPLIANCELEVEL_OBLIVIOUS && \
 			  complianceLevel < CRYPT_COMPLIANCELEVEL_LAST );
+
+	/* Get the encoding information for this attribute field */
+	if( isSpecial )
+		{
+		attributeListPtr->fifoPos--;	/* Move down to the next entry */
+		attributeInfoPtr = attributeListPtr->encodingFifo[ attributeListPtr->fifoPos ];
+		}
+	else
+		attributeInfoPtr = attributeListPtr->attributeInfoPtr;
+	ENSURES( attributeInfoPtr != NULL );
+	fieldType = attributeInfoPtr->fieldType;
 
 	/* If this is just a marker for a series of CHOICE alternatives, return
 	   without doing anything */
@@ -411,16 +478,18 @@ int writeAttributeField( INOUT_OPT STREAM *stream,
 	/* Calculate the size of the encoded data */
 	if( isSpecial )
 		{
-		size = calculateSpecialFieldSize( attributeListPtr, attributeInfoPtr, 
-										  &payloadSize, fieldType );
+		status = size = \
+			calculateSpecialFieldSize( attributeListPtr, attributeInfoPtr,
+									   &payloadSize, fieldType );
 		}
 	else
 		{
-		size = calculateFieldSize( attributeListPtr, attributeInfoPtr, 
-								   fieldType );
+		status = size = \
+			calculateFieldSize( attributeListPtr, attributeInfoPtr, 
+								fieldType );
 		}
-	if( cryptStatusError( size ) )
-		return( size );
+	if( cryptStatusError( status ) )
+		return( status );
 
 	/* If we're just calculating the attribute size, don't write any data */
 	if( stream == NULL )
@@ -434,7 +503,7 @@ int writeAttributeField( INOUT_OPT STREAM *stream,
 		writeConstructed( stream, size, attributeInfoPtr->fieldEncodedType );
 
 	/* If the encoded field type differs from the actual field type (because
-	   if implicit tagging) and we're not specifically using explicit
+	   of implicit tagging) and we're not specifically using explicit
 	   tagging and it's not a DN in a GeneralName (which is a tagged IMPLICIT
 	   SEQUENCE overridden to make it EXPLICIT because of the tagged CHOICE
 	   encoding rules) set the tag to the encoded field type rather than the
@@ -461,12 +530,6 @@ int writeAttributeField( INOUT_OPT STREAM *stream,
 
 			case FIELDTYPE_IDENTIFIER:
 				return( swrite( stream, attributeInfoPtr->oid, size ) );
-
-#if 0	/* 28/9/08 See comment in calculateSpecialFieldSize() */
-			case BER_INTEGER:
-				return( writeShortInteger( stream, attributeInfoPtr->defaultValue, 
-										   tag ) );
-#endif /* 0 */
 
 			case BER_SEQUENCE:
 			case BER_SET:
@@ -507,13 +570,19 @@ int writeAttributeField( INOUT_OPT STREAM *stream,
 		case FIELDTYPE_TEXTSTRING:
 			if( tag == DEFAULT_TAG )
 				{
-				int status;
+				int newStringLen, dummy, status;
 
-				status = getAsn1StringType( dataPtr, 
-											attributeListPtr->valueLength, 
-											&tag );
+				status = getAsn1StringInfo( dataPtr, 
+								attributeListPtr->valueLength, &dummy, &tag, 
+								&newStringLen, FALSE );
 				if( cryptStatusError( status ) )
 					return( status );
+
+				/* If the only way to encode the string is to convert it 
+				   into a wider encoding type then we can't safely emit 
+				   it */
+				if( newStringLen != attributeListPtr->valueLength )
+					return( CRYPT_ERROR_BADDATA );
 				}
 			return( writeCharacterString( stream, dataPtr, 
 										  attributeListPtr->valueLength, 
@@ -641,7 +710,8 @@ static int writeAttribute( INOUT STREAM *stream,
 		   field itself.  In some rare instances we may have a zero-length 
 		   SEQUENCE (if all the member(s) of the sequence have default 
 		   values) so we only try to write the member if there's encoding 
-		   information for it present */
+		   information for it present.  We don't update the FIFO position
+		   since this is updated by the call to writeAttributeField() */
 		for( attributeListPtr->fifoPos = attributeListPtr->fifoEnd, \
 				innerIterationCount = 0;
 			 cryptStatusOK( status ) && \
@@ -748,9 +818,9 @@ int writeCmsAttributes( INOUT STREAM *stream,
 			iterationCount = 0;
 		 currentAttributePtr != NULL && cryptStatusOK( status ) && \
 			iterationCount < FAILSAFE_ITERATIONS_LARGE;
-		currentAttributePtr = getNextEncodedAttribute( attributeListPtr,
-													   currentEncodedForm,
-													   ATTR_ENCODED_SIZE ),
+		 currentAttributePtr = getNextEncodedAttribute( attributeListPtr,
+														currentEncodedForm,
+														ATTR_ENCODED_SIZE ),
 			iterationCount++ )
 		{
 		if( checkAttributeProperty( currentAttributePtr,
@@ -802,19 +872,19 @@ int writeCertReqAttributes( INOUT STREAM *stream,
 									attributeListPtr->attributeInfoPtr;
 
 		/* If this is an attribute that's not encapsulated inside an 
-		   extensionRequest, write it now.  We have to check for 
-		   attributeInfoPtr not being NULL because in the case of an 
-		   attribute that contains all-default values (for example the
-		   default basicConstraints with cA = DEFAULT FALSE and 
-		   pathLenConstraint absent) there won't be any encoding information 
-		   present since the entire attribute is empty */
+		   extensionRequest (denoted by it having the FL_SPECIALENCODING
+		   flag set), write it now.  We have to check for attributeInfoPtr 
+		   not being NULL because in the case of an attribute that contains 
+		   all-default values (for example the default basicConstraints with 
+		   cA = DEFAULT FALSE and pathLenConstraint absent) there won't be 
+		   any encoding information present since the entire attribute is 
+		   empty */
 		if( attributeInfoPtr != NULL && \
 			( attributeInfoPtr->encodingFlags & FL_SPECIALENCODING ) )
 			{
-			/* Write the attribute with a SET wrapper tag (for CMS 
-			   attributes) rather than an OCTET STRING wrapper tag (for
-			   certificate attributes) since this is a FL_SPECIALENCODING 
-			   attribute */
+			/* Since this is a CMS attribute we write it with a SET wrapper 
+			   tag rather than an OCTET STRING wrapper tag, indicated by 
+			   setting the wrapperTagSet flag to TRUE */
 			status = writeAttribute( stream, 
 									 ( ATTRIBUTE_LIST ** ) &attributeListPtr, 
 									 TRUE, complianceLevel );
@@ -834,14 +904,12 @@ int writeCertReqAttributes( INOUT STREAM *stream,
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
-int writeCertReqWrapper( INOUT STREAM *stream, 
-						 const ATTRIBUTE_LIST *attributeListPtr,
-						 IN_LENGTH const int attributeSize,
-						 IN_RANGE( 0, 4 ) const int complianceLevel )
+static int writeCertReqWrapper( INOUT STREAM *stream, 
+								const ATTRIBUTE_LIST *attributeListPtr,
+								IN_RANGE( 0, 4 ) const int complianceLevel )
 	{
-	STREAM nullStream;
-	int encapsAttributeSize, nonEncapsAttributeSize = DUMMY_INIT;
-	int totalAttributeSize = 0, status;
+	int encapsAttributeSize, nonEncapsAttributeSize, totalAttributeSize = 0;
+	int status;
 
 	/* Certificate request attributes can be written in two groups, standard
 	   attributes that apply to the request itself and attributes that 
@@ -849,15 +917,10 @@ int writeCertReqWrapper( INOUT STREAM *stream,
 	   encapsulated inside an extensionRequest attribute.  First we 
 	   determine which portion of the attributes will be encoded as is and
 	   which will be encapsulated inside an extensionRequest */
-	sMemNullOpen( &nullStream );
-	status = writeCertReqAttributes( &nullStream, attributeListPtr, 
-									 complianceLevel );
-	if( cryptStatusOK( status ) )
-		nonEncapsAttributeSize = stell( &nullStream );
-	sMemClose( &nullStream );
-	if( cryptStatusError( status ) )
-		return( status );
-	encapsAttributeSize = attributeSize - nonEncapsAttributeSize;
+	status = calculateAttributeSizes( attributeListPtr, TRUE,
+									  &nonEncapsAttributeSize, 
+									  &encapsAttributeSize );
+	ENSURES( cryptStatusOK( status ) );
 
 	/* Determine the overall size of the attributes */
 	if( encapsAttributeSize > 0 )
@@ -873,10 +936,7 @@ int writeCertReqWrapper( INOUT STREAM *stream,
 	/* Write the overall wrapper for the attributes */
 	writeConstructed( stream, totalAttributeSize, CTAG_CR_ATTRIBUTES );
 
-	/* The fact that the attributes are written in two groups means that the 
-	   overall attribute size doesn't apply to either of the two groups.  
-	   This means that we have to adjust the overall size based on how much 
-	   we've written of the unencapsulated attributes */
+	/* If there are non-encapsulated attributes present, write them first */
 	if( nonEncapsAttributeSize > 0 ) 
 		{
 		status = writeCertReqAttributes( stream, attributeListPtr, 
@@ -892,7 +952,7 @@ int writeCertReqWrapper( INOUT STREAM *stream,
 		}
 
 	/* Write the wrapper for the remaining attributes, encapsulated inside 
-	   an extensionRequest */
+	   a PKCS #9 extensionRequest attribute */
 	writeSequence( stream, sizeofOID( OID_PKCS9_EXTREQ ) + \
 				   ( int ) sizeofObject( \
 								sizeofObject( encapsAttributeSize ) ) );
@@ -917,15 +977,15 @@ int writeAttributes( INOUT STREAM *stream,
 					 IN_LENGTH const int attributeSize )
 	{
 	ATTRIBUTE_LIST *attributeListPtr = attributePtr;
-	int signUnrecognised = DUMMY_INIT, complianceLevel, iterationCount;
+	int signUnrecognised DUMMY_INIT, complianceLevel, iterationCount;
 	int status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( attributePtr, sizeof( ATTRIBUTE_LIST ) ) );
 
 	REQUIRES( type >= CRYPT_CERTTYPE_NONE && type < CRYPT_CERTTYPE_LAST );
-			  /* Single CRL entries have the special-case type 
-			     CRYPT_CERTTYPE_NONE */
+			  /* Single CRL, OCSP, and RTCS entries have the special-case 
+			     type CRYPT_CERTTYPE_NONE */
 	REQUIRES( attributeSize > 0 && attributeSize < MAX_INTLENGTH );
 
 	/* Some attributes have odd encoding/handling requirements that can 
@@ -961,22 +1021,21 @@ int writeAttributes( INOUT STREAM *stream,
 		}
 #endif /* USE_CMSATTR */
 
-	/* Write the appropriate extensions tag for the certificate object and 
-	   determine how far we can read.  
-	   
-	   CRLs and OCSP requests/responses have two extension types that have 
-	   different tagging, per-entry extensions and entire-CRL/request 
-	   extensions.  To differentiate between the two we write per-entry 
-	   extensions with a type of CRYPT_CERTTYPE_NONE.
+	/* Write the appropriate wrapper for the extensions.  CRLs and OCSP 
+	   requests/responses have two extension types that have different 
+	   tagging, per-entry extensions and entire-CRL/request extensions.  To 
+	   differentiate between the two we write per-entry extensions with a 
+	   type of CRYPT_CERTTYPE_NONE.
 
 	   Certificate requests also have two classes of extensions, the first
 	   class is extensions that are meant to go into the certificare that's
 	   created from the request (for example keyUsage, basicConstrains,
-	   altNames) which are encapsulated inside an extensionRequest 
+	   altNames) which are encapsulated inside a PKCS #9 extensionRequest 
 	   extension, and the second class is extensions that are written as
-	   is.  To deal with this we write the as-is extensions first (there
-	   usually aren't any of these), and then we write the extensions that
-	   go inside the extensionRequest (which is usually all of them) */
+	   is.  To deal with this we write the as-is extensions first as part
+	   of the wrapper write (there usually aren't any of these), and then we 
+	   write the extensions that go inside the PKCS #9 extensionRequest 
+	   (which is usually all of them) */
 	switch( type )
 		{
 		case CRYPT_CERTTYPE_CERTIFICATE:
@@ -987,10 +1046,12 @@ int writeAttributes( INOUT STREAM *stream,
 			status = writeSequence( stream, attributeSize );
 			break;
 
+#ifdef USE_CERTREQ
 		case CRYPT_CERTTYPE_CERTREQUEST:
 			status = writeCertReqWrapper( stream, attributeListPtr, 
-										  attributeSize, complianceLevel );
+										  complianceLevel );
 			break;
+#endif /* USE_CERTREQ */
 
 		case CRYPT_CERTTYPE_REQUEST_CERT:
 		case CRYPT_CERTTYPE_REQUEST_REVOCATION:
@@ -1033,8 +1094,10 @@ int writeAttributes( INOUT STREAM *stream,
 		const ATTRIBUTE_INFO *attributeInfoPtr = \
 									attributeListPtr->attributeInfoPtr;
 
-		/* If this attribute requires special-case encoding then we don't 
-		   write it at this point */
+		/* If this attribute requires special-case encoding (which in 
+		   practice means that it's a PKCS #10 non-encapsulated attribute) 
+		   then we don't write it at this point since it's already been 
+		   written as part of the certificate-object wrapper write */
 		if( attributeInfoPtr != NULL && \
 			( attributeInfoPtr->encodingFlags & FL_SPECIALENCODING ) )
 			{

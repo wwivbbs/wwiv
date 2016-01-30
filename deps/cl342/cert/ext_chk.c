@@ -8,12 +8,10 @@
 #if defined( INC_ALL )
   #include "cert.h"
   #include "certattr.h"
-  #include "asn1.h"
   #include "asn1_ext.h"
 #else
   #include "cert/cert.h"
   #include "cert/certattr.h"
-  #include "enc_dec/asn1.h"
   #include "enc_dec/asn1_ext.h"
 #endif /* Compiler-specific includes */
 
@@ -287,7 +285,9 @@ static int updateStackedInfo( INOUT_ARRAY_C( ATTRIBUTE_STACKSIZE ) \
    is present in the item */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 2 ) ) \
-static int checkComponentPresent( IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE fieldID,
+static int checkComponentPresent( IN_RANGE( CRYPT_ATTRIBUTE_NONE + 1,
+											CRYPT_IATTRIBUTE_LAST ) \
+										const CRYPT_ATTRIBUTE_TYPE fieldID,
 								  INOUT ATTRIBUTE_INFO **attributeInfoPtrPtr )
 	{
 	const ATTRIBUTE_INFO *attributeInfoPtr = *attributeInfoPtrPtr;
@@ -312,7 +312,7 @@ static int checkComponentPresent( IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE fieldI
 		{
 		/* Sanity check to make sure that we don't fall off the end of the 
 		   table */
-		ENSURES( attributeInfoPtr->fieldID != CRYPT_ERROR );
+		ENSURES( !isAttributeTableEnd( attributeInfoPtr ) );
 
 		/* Adjust the nesting level depending on whether we're entering or
 		   leaving a sequence */
@@ -684,7 +684,7 @@ static int checkAttribute( INOUT ATTRIBUTE_CHECK_INFO *attributeCheckInfo )
 
 		/* Sanity check to make sure that we don't fall off the end of the 
 		   encoding table */
-		ENSURES( attributeCheckInfo->attributeInfoPtr->fieldID != CRYPT_ERROR );
+		ENSURES( !isAttributeTableEnd( attributeCheckInfo->attributeInfoPtr ) );
 
 		/* Check whether this is a repeated instance of the same attribute
 		   and if it is remember the encoding restart point.  We have to do
@@ -796,6 +796,10 @@ int checkAttributes( IN_ENUM( ATTRIBUTE ) const ATTRIBUTE_TYPE attributeType,
 	REQUIRES( attributeType == ATTRIBUTE_CERTIFICATE || \
 			  attributeType == ATTRIBUTE_CMS );
 
+	/* Clear return values */
+	*errorLocus = CRYPT_ATTRIBUTE_NONE;
+	*errorType = CRYPT_ERRTYPE_NONE;
+
 	/* Get the attribute encoding information.  We can't use the size value
 	   returned from this because of the nested-loop structure below which 
 	   only ever iterates through a subset of the encoding information so we
@@ -855,7 +859,7 @@ int checkAttributes( IN_ENUM( ATTRIBUTE ) const ATTRIBUTE_TYPE attributeType,
 		   first entries will contain a FIELDID_FOLLOWS code to indicate 
 		   that the following field contains the attribute/fieldID */
 		for( innerIterationCount = 0;
-			 attributeCheckInfo.attributeInfoPtr->fieldID != CRYPT_ERROR && \
+			 !isAttributeTableEnd( attributeCheckInfo.attributeInfoPtr ) && \
 				innerIterationCount < FAILSAFE_ITERATIONS_LARGE;
 			 attributeCheckInfo.attributeInfoPtr++, innerIterationCount++ )
 			{
@@ -873,7 +877,7 @@ int checkAttributes( IN_ENUM( ATTRIBUTE ) const ATTRIBUTE_TYPE attributeType,
 				}
 			}
 		ENSURES( innerIterationCount < FAILSAFE_ITERATIONS_LARGE );
-		ENSURES( attributeCheckInfo.attributeInfoPtr->fieldID != CRYPT_ERROR );
+		ENSURES( !isAttributeTableEnd( attributeCheckInfo.attributeInfoPtr ) );
 
 		/* Check this attribute */
 		status = checkAttribute( &attributeCheckInfo );

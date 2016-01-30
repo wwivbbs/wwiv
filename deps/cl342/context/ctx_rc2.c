@@ -304,117 +304,13 @@ static int decryptCFB( CONTEXT_INFO *contextInfoPtr, BYTE *buffer,
 	return( CRYPT_OK );
 	}
 
-/* Encrypt/decrypt data in OFB mode */
-
-static int encryptOFB( CONTEXT_INFO *contextInfoPtr, BYTE *buffer,
-					   int noBytes )
-	{
-	CONV_INFO *convInfo = contextInfoPtr->ctxConv;
-	RC2_KEY *rc2Key = ( RC2_KEY * ) convInfo->key;
-	int i, ivCount = convInfo->ivCount;
-
-	/* If there's any encrypted material left in the IV, use it now */
-	if( ivCount > 0 )
-		{
-		int bytesToUse;
-
-		/* Find out how much material left in the encrypted IV we can use */
-		bytesToUse = RC2_BLOCKSIZE - ivCount;
-		if( noBytes < bytesToUse )
-			bytesToUse = noBytes;
-
-		/* Encrypt the data */
-		for( i = 0; i < bytesToUse; i++ )
-			buffer[ i ] ^= convInfo->currentIV[ i + ivCount ];
-
-		/* Adjust the byte count and buffer position */
-		noBytes -= bytesToUse;
-		buffer += bytesToUse;
-		ivCount += bytesToUse;
-		}
-
-	while( noBytes > 0 )
-		{
-		ivCount = ( noBytes > RC2_BLOCKSIZE ) ? RC2_BLOCKSIZE : noBytes;
-
-		/* Encrypt the IV */
-		RC2_ecb_encrypt( convInfo->currentIV, convInfo->currentIV, rc2Key,
-						 RC2_ENCRYPT );
-
-		/* XOR the buffer contents with the encrypted IV */
-		for( i = 0; i < ivCount; i++ )
-			buffer[ i ] ^= convInfo->currentIV[ i ];
-
-		/* Move on to next block of data */
-		noBytes -= ivCount;
-		buffer += ivCount;
-		}
-
-	/* Remember how much of the IV is still available for use */
-	convInfo->ivCount = ( ivCount % RC2_BLOCKSIZE );
-
-	return( CRYPT_OK );
-	}
-
-/* Decrypt data in OFB mode */
-
-static int decryptOFB( CONTEXT_INFO *contextInfoPtr, BYTE *buffer,
-					   int noBytes )
-	{
-	CONV_INFO *convInfo = contextInfoPtr->ctxConv;
-	RC2_KEY *rc2Key = ( RC2_KEY * ) convInfo->key;
-	int i, ivCount = convInfo->ivCount;
-
-	/* If there's any encrypted material left in the IV, use it now */
-	if( ivCount > 0 )
-		{
-		int bytesToUse;
-
-		/* Find out how much material left in the encrypted IV we can use */
-		bytesToUse = RC2_BLOCKSIZE - ivCount;
-		if( noBytes < bytesToUse )
-			bytesToUse = noBytes;
-
-		/* Decrypt the data */
-		for( i = 0; i < bytesToUse; i++ )
-			buffer[ i ] ^= convInfo->currentIV[ i + ivCount ];
-
-		/* Adjust the byte count and buffer position */
-		noBytes -= bytesToUse;
-		buffer += bytesToUse;
-		ivCount += bytesToUse;
-		}
-
-	while( noBytes > 0 )
-		{
-		ivCount = ( noBytes > RC2_BLOCKSIZE ) ? RC2_BLOCKSIZE : noBytes;
-
-		/* Encrypt the IV */
-		RC2_ecb_encrypt( convInfo->currentIV, convInfo->currentIV, rc2Key,
-						 RC2_ENCRYPT );
-
-		/* XOR the buffer contents with the encrypted IV */
-		for( i = 0; i < ivCount; i++ )
-			buffer[ i ] ^= convInfo->currentIV[ i ];
-
-		/* Move on to next block of data */
-		noBytes -= ivCount;
-		buffer += ivCount;
-		}
-
-	/* Remember how much of the IV is still available for use */
-	convInfo->ivCount = ( ivCount % RC2_BLOCKSIZE );
-
-	return( CRYPT_OK );
-	}
-
 /****************************************************************************
 *																			*
 *							RC2 Key Management Routines						*
 *																			*
 ****************************************************************************/
 
-#if 1
+#if 0
 
 static int keyCrack( CONTEXT_INFO *contextInfoPtr )
 	{
@@ -493,7 +389,7 @@ static int initKey( CONTEXT_INFO *contextInfoPtr, const void *key,
 	CONV_INFO *convInfo = contextInfoPtr->ctxConv;
 	RC2_KEY *rc2Key = ( RC2_KEY * ) convInfo->key;
 
-#if 1
+#if 0
 if( !memcmp( key, "crackcrackcrack", 15 ) )
 	keyCrack( contextInfoPtr );
 #endif /* 1 */
@@ -539,7 +435,7 @@ static const CAPABILITY_INFO FAR_BSS capabilityInfo = {
 	MIN_KEYSIZE, bitsToBytes( 128 ), bitsToBytes( 1024 ),
 	selfTest, getInfo, NULL, initGenericParams, initKey, NULL,
 	encryptECB, decryptECB, encryptCBC, decryptCBC,
-	encryptCFB, decryptCFB, encryptOFB, decryptOFB
+	encryptCFB, decryptCFB
 	};
 
 const CAPABILITY_INFO *getRC2Capability( void )

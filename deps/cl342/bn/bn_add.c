@@ -63,6 +63,22 @@
   #include "bn/bn_lcl.h"
 #endif /* Compiler-specific includes */
 
+/* Dumping ground for assorted odds and ends */
+
+#ifndef BN_ALLOC		/* pcg */
+int nonNullAddress;	/* Dummy non-null location for bn_expand() macros */
+#endif /* BN_ALLOC */
+
+#ifdef USE_BN_DEBUG_MALLOC	/* Added special BN debug-malloc - pcg */
+
+void *clBnAllocFn( const char *fileName, const char *fnName,
+				   const int lineNo, size_t size )
+	{
+	printf( "BNDEBUG: %s:%s:%d %d bytes.\n", fileName, fnName, lineNo, size );
+	return( malloc( size ) );
+	}
+#endif /* USE_BN_DEBUG_MALLOC */
+
 /* r can == a or b */
 int BN_add(BIGNUM *r, const BIGNUM *a, const BIGNUM *b)
 	{
@@ -108,7 +124,8 @@ int BN_add(BIGNUM *r, const BIGNUM *a, const BIGNUM *b)
 int BN_uadd(BIGNUM *r, const BIGNUM *a, const BIGNUM *b)
 	{
 	int max,min,dif;
-	BN_ULONG *ap,*bp,*rp,carry,t1,t2;
+	const BN_ULONG *ap,*bp;		/* pcg */
+	BN_ULONG *rp,carry,t1,t2;
 	const BIGNUM *tmp;
 
 	bn_check_top(a);
@@ -120,11 +137,9 @@ int BN_uadd(BIGNUM *r, const BIGNUM *a, const BIGNUM *b)
 	min = b->top;
 	dif = max - min;
 
-	if (bn_wexpand(r,max+1) == NULL)
-		return 0;
+	if (bn_wexpand(r,max+1) == NULL) return 0;
 
 	r->top=max;
-
 
 	ap=a->d;
 	bp=b->d;
@@ -169,7 +184,8 @@ int BN_uadd(BIGNUM *r, const BIGNUM *a, const BIGNUM *b)
 int BN_usub(BIGNUM *r, const BIGNUM *a, const BIGNUM *b)
 	{
 	int max,min,dif;
-	register BN_ULONG t1,t2,*ap,*bp,*rp;
+	const BN_ULONG *ap,*bp;		/* pcg */
+	BN_ULONG t1,t2,*rp;
 	int i,carry;
 #if defined(IRIX_CC_BUG) && !defined(LINT)
 	int dummy;

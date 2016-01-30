@@ -30,37 +30,22 @@ static BOOLEAN sanityCheck( const ENVELOPE_INFO *envelopeInfoPtr )
 	{
 	assert( isReadPtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
 
-	/* Make sure that general envelope state is in order */
-	if( envelopeInfoPtr->flags & ENVELOPE_ISDEENVELOPE )
+	/* Check the general envelope state */
+	if( !envelopeSanityCheck( envelopeInfoPtr ) )
 		return( FALSE );
-	if( envelopeInfoPtr->envState < ENVSTATE_NONE || \
-		envelopeInfoPtr->envState >= ENVSTATE_LAST )
+
+	/* Make sure that general envelope state is in order */
+	if( envelopeInfoPtr->type != CRYPT_FORMAT_CRYPTLIB && \
+		envelopeInfoPtr->type != CRYPT_FORMAT_CMS && \
+		envelopeInfoPtr->type != CRYPT_FORMAT_SMIME )
+		return( FALSE );
+	if( envelopeInfoPtr->flags & ENVELOPE_ISDEENVELOPE )
 		return( FALSE );
 
 	/* Make sure that the buffer position is within bounds */
 	if( envelopeInfoPtr->buffer == NULL || \
-		envelopeInfoPtr->bufPos < 0 || \
-		envelopeInfoPtr->bufPos > envelopeInfoPtr->bufSize || \
 		envelopeInfoPtr->bufSize < MIN_BUFFER_SIZE || \
-		envelopeInfoPtr->bufSize >= MAX_INTLENGTH )
-		return( FALSE );
-
-	/* If the auxBuffer isn't being used, make sure that all values related 
-	   to it are clear */
-	if( envelopeInfoPtr->auxBuffer == NULL )
-		{
-		if( envelopeInfoPtr->auxBufPos != 0 || \
-			envelopeInfoPtr->auxBufSize != 0 )
-			return( FALSE );
-
-		return( TRUE );
-		}
-
-	/* Make sure that the auxBuffer position is within bounds */
-	if( envelopeInfoPtr->auxBufPos < 0 || \
-		envelopeInfoPtr->auxBufPos > envelopeInfoPtr->auxBufSize || \
-		envelopeInfoPtr->auxBufSize < 0 || \
-		envelopeInfoPtr->auxBufSize >= MAX_INTLENGTH )
+		envelopeInfoPtr->bufSize >= MAX_BUFFER_SIZE )
 		return( FALSE );
 
 	return( TRUE );
@@ -287,7 +272,7 @@ static int writeSignedDataHeader( INOUT STREAM *stream,
 		}
 	ENSURES_S( dataSize == CRYPT_UNUSED || \
 			   ( dataSize >= MIN_CRYPT_OBJECTSIZE && \
-				 dataSize < MAX_INTLENGTH ) );
+				 dataSize < MAX_BUFFER_SIZE ) );
 
 	/* Write the SignedData/DigestedData header, version number, and SET OF
 	   DigestInfo */
@@ -416,7 +401,7 @@ static int getEncryptedContentSize( const ENVELOPE_INFO *envelopeInfoPtr,
 									OUT_LENGTH_Z long *encrContentInfoSize )
 	{
 	CRYPT_CONTEXT iCryptContext;
-	long length;
+	long length DUMMY_INIT;
 	int status;
 
 	assert( isReadPtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
@@ -439,12 +424,14 @@ static int getEncryptedContentSize( const ENVELOPE_INFO *envelopeInfoPtr,
 
 	/* Calculate the size of the CMS ContentInfo header */
 	status = getActionContext( envelopeInfoPtr, &iCryptContext );
+	if( cryptStatusOK( status ) )
+		{
+		status = length = \
+			sizeofCMSencrHeader( contentOID, contentOIDlength, 
+								 *blockedPayloadSize, iCryptContext );
+		}
 	if( cryptStatusError( status ) )
 		return( status );
-	length = sizeofCMSencrHeader( contentOID, contentOIDlength, 
-								  *blockedPayloadSize, iCryptContext );
-	if( cryptStatusError( length ) )
-		return( ( int ) length );
 	*encrContentInfoSize = length;
 
 	return( CRYPT_OK );
@@ -472,7 +459,7 @@ static int writeEncryptionHeader( INOUT STREAM *stream,
 				( blockedPayloadSize >= 8 && \
 				  blockedPayloadSize < MAX_INTLENGTH ) );
 	REQUIRES_S( extraSize == CRYPT_UNUSED || \
-				( extraSize > 0 && extraSize < MAX_INTLENGTH ) );
+				( extraSize > 0 && extraSize < MAX_BUFFER_SIZE ) );
 
 	status = writeCMSheader( stream, oid, oidLength,
 							 ( blockedPayloadSize == CRYPT_UNUSED || \
@@ -629,6 +616,48 @@ static int writeAuthenticatedDataHeader( INOUT STREAM *stream,
 	}
 
 CHECK_RETVAL \
+static int setKDFParams( IN_HANDLE const CRYPT_CONTEXT iGenericSecret,
+						 IN_ALGO const CRYPT_ALGO_TYPE kdfAlgo )
+	{
+	static const BYTE *fixedParamData = MKDATA( "\x04\x00\x02\x01\x01" );
+	MESSAGE_DATA msgData;
+	STREAM stream;
+	BYTE kdfParamData[ CRYPT_MAX_TEXTSIZE + 8 ];
+	const int kdfAlgoIDsize = sizeofAlgoID( kdfAlgo );
+	int kdfParamDataSize DUMMY_INIT, status;
+
+	REQUIRES( isHandleRangeValid( iGenericSecret ) );
+	REQUIRES( isMacAlgo( kdfAlgo ) );
+
+	if( cryptStatusError( kdfAlgoIDsize ) )
+		return( kdfAlgoIDsize );
+
+	/* It's the non-default MAC algorithm, send the custom KDF parameters to 
+	   the context:
+
+		CustomParams ::= [ 0 ] SEQUENCE {
+			salt			OCTET STRING SIZE(0),
+			iterationCount	INTEGER (1),
+			prf				AlgorithmIdentifier
+			} */
+	sMemOpen( &stream, kdfParamData, CRYPT_MAX_TEXTSIZE );
+	writeConstructed( &stream, 5 + kdfAlgoIDsize, 0 );
+	swrite( &stream, fixedParamData, 5 );
+	status = writeAlgoID( &stream, kdfAlgo );
+	if( cryptStatusOK( status ) )
+		kdfParamDataSize = stell( &stream );
+	sMemDisconnect( &stream );
+	if( cryptStatusError( status ) )
+		return( status );
+
+	/* Send the encoded parameter information to the generic-secret 
+	   context */
+	setMessageData( &msgData, kdfParamData, kdfParamDataSize );
+	return( krnlSendMessage( iGenericSecret, IMESSAGE_SETATTRIBUTE_S, 
+							 &msgData, CRYPT_IATTRIBUTE_KDFPARAMS ) );
+	}
+
+CHECK_RETVAL \
 static int setAlgoParams( IN_HANDLE const CRYPT_CONTEXT iGenericSecret,
 						  IN_HANDLE const CRYPT_CONTEXT iCryptContext,
 						  IN_ATTRIBUTE const CRYPT_ATTRIBUTE_TYPE attribute )
@@ -636,7 +665,7 @@ static int setAlgoParams( IN_HANDLE const CRYPT_CONTEXT iGenericSecret,
 	MESSAGE_DATA msgData;
 	STREAM stream;
 	BYTE algorithmParamData[ CRYPT_MAX_TEXTSIZE + 8 ];
-	int algorithmParamDataSize = DUMMY_INIT, status;
+	int algorithmParamDataSize DUMMY_INIT, status;
 
 	REQUIRES( isHandleRangeValid( iGenericSecret ) );
 	REQUIRES( isHandleRangeValid( iCryptContext ) );
@@ -683,11 +712,17 @@ static int writeAuthEncDataHeader( INOUT STREAM *stream,
 	   generic-secret value, with the encryption and MAC algorithm 
 	   parameters being provided in the generic-secret's AlgorithmIdentifier
 	   value.  In order to work with the generic secret we therefore have to
-	   send the encryption and MAC parameter data to the generic-secret
-	   context */
+	   send the optional KDF, encryption and MAC parameter data to the 
+	   generic-secret context */
 	actionListPtr = findAction( envelopeInfoPtr->actionList, ACTION_xxx ); 
 	REQUIRES( actionListPtr != NULL );
 	iGenericSecret = actionListPtr->iCryptHandle;
+	if( envelopeInfoPtr->defaultMAC != CRYPT_ALGO_HMAC_SHA1 )
+		{
+		status = setKDFParams( iGenericSecret, envelopeInfoPtr->defaultMAC );
+		if( cryptStatusError( status ) )
+			return( status );
+		}
 	actionListPtr = findAction( envelopeInfoPtr->actionList, ACTION_CRYPT ); 
 	REQUIRES( actionListPtr != NULL );
 	status = setAlgoParams( iGenericSecret, actionListPtr->iCryptHandle,
@@ -981,7 +1016,7 @@ static int writeCertchainTrailer( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 							  MAX_INTLENGTH_SHORT - 1 );
 	const int eocSize = ( envelopeInfoPtr->payloadSize == CRYPT_UNUSED ) ? \
 						( 3 * sizeofEOC() ) : 0;
-	int certChainBufSize, certChainSize = DUMMY_INIT, status;
+	int certChainBufSize, certChainSize DUMMY_INIT, status;
 
 	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
 
@@ -1151,7 +1186,8 @@ static int writeSignatures( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 			retExtObj( status, 
 					   ( status, ENVELOPE_ERRINFO,
 					     actionListPtr->iTspSession,
-						 "Couldn't emit signature to envelope trailer" ) );
+						 "Couldn't emit signed timestamp to envelope "
+						 "trailer" ) );
 			}
 		if( iterationCount <= 0 )
 			{
@@ -1182,7 +1218,7 @@ static int writeMAC( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 						( 3 * sizeofEOC() ) : 0;
 	const int dataLeft = min( envelopeInfoPtr->bufSize - \
 							  envelopeInfoPtr->bufPos, 512 );
-	int length = DUMMY_INIT, status;
+	int length DUMMY_INIT, status;
 
 	assert( isWritePtr( envelopeInfoPtr, sizeof( ENVELOPE_INFO ) ) );
 
@@ -1396,8 +1432,8 @@ static int emitPreamble( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 			{
 			const ACTION_LIST *actionListPtr = \
 					findAction( envelopeInfoPtr->actionList, ACTION_MAC );
-			const void *macData = DUMMY_INIT_PTR;
-			int macDataLength = DUMMY_INIT;
+			const void *macData DUMMY_INIT_PTR;
+			int macDataLength DUMMY_INIT;
 
 			REQUIRES( actionListPtr != NULL );
 
@@ -1648,7 +1684,7 @@ void initCMSEnveloping( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 							  CRYPT_OPTION_ENCR_HASH );
 	if( cryptStatusError( status ) || \
 		!checkAlgoID( algorithm, CRYPT_MODE_NONE ) )
-		envelopeInfoPtr->defaultHash = CRYPT_ALGO_SHA1;
+		envelopeInfoPtr->defaultHash = CRYPT_ALGO_SHA2;
 	else
 		envelopeInfoPtr->defaultHash = algorithm;	/* int vs.enum */
 	status = krnlSendMessage( envelopeInfoPtr->ownerHandle, 
@@ -1656,8 +1692,8 @@ void initCMSEnveloping( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 							  CRYPT_OPTION_ENCR_ALGO );
 	if( cryptStatusError( status ) || \
 		!checkAlgoID( algorithm, ( algorithm == CRYPT_ALGO_RC4 ) ? \
-								 CRYPT_MODE_OFB : CRYPT_MODE_CBC ) )
-		envelopeInfoPtr->defaultAlgo = CRYPT_ALGO_3DES;
+								 CRYPT_MODE_CFB : CRYPT_MODE_CBC ) )
+		envelopeInfoPtr->defaultAlgo = CRYPT_ALGO_AES;
 	else
 		envelopeInfoPtr->defaultAlgo = algorithm;	/* int vs.enum */
 	status = krnlSendMessage( envelopeInfoPtr->ownerHandle, 
@@ -1665,7 +1701,7 @@ void initCMSEnveloping( INOUT ENVELOPE_INFO *envelopeInfoPtr )
 							  CRYPT_OPTION_ENCR_MAC );
 	if( cryptStatusError( status ) || \
 		!checkAlgoID( algorithm, CRYPT_MODE_NONE ) )
-		envelopeInfoPtr->defaultMAC = CRYPT_ALGO_HMAC_SHA1;
+		envelopeInfoPtr->defaultMAC = CRYPT_ALGO_HMAC_SHA2;
 	else
 		envelopeInfoPtr->defaultMAC = algorithm;	/* int vs.enum */
 	}

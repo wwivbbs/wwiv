@@ -309,7 +309,7 @@ int pkcs15AddKey( INOUT PKCS15_INFO *pkcs15infoPtr,
 	BYTE pubKeyAttributes[ KEYATTR_BUFFER_SIZE + 8 ];
 	BYTE privKeyAttributes[ KEYATTR_BUFFER_SIZE + 8 ];
 	int pubKeyAttributeSize = 0, privKeyAttributeSize = 0;
-	int modulusSize = DUMMY_INIT, pkcCryptAlgo, status;
+	int modulusSize DUMMY_INIT, pkcCryptAlgo, status;
 
 	assert( isWritePtr( pkcs15infoPtr, sizeof( PKCS15_INFO ) ) );
 	assert( ( privkeyPresent && isReadPtr( password, passwordLength ) ) || \
@@ -342,11 +342,16 @@ int pkcs15AddKey( INOUT PKCS15_INFO *pkcs15infoPtr,
 	if( ( certPresent && pkcs15keyPresent ) ||		/* Updating existing */
 		( privkeyPresent && !pkcs15keyPresent ) )	/* Adding new */
 		{
+		/* If we're adding a raw private key then we have to write the
+		   identifiers that are normally written for the certificate, for
+		   the private key (specified by the last function parameter) */
 		status = writeKeyAttributes( privKeyAttributes, KEYATTR_BUFFER_SIZE,
 									 &privKeyAttributeSize,
 									 pubKeyAttributes, KEYATTR_BUFFER_SIZE,
 									 &pubKeyAttributeSize, pkcs15infoPtr,
-									 iCryptHandle );
+									 iCryptHandle,
+									 !certPresent && privkeyPresent && \
+										!pkcs15keyPresent );
 		if( cryptStatusError( status ) )
 			{
 			retExt( status, 

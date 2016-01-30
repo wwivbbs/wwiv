@@ -83,7 +83,7 @@ static int writeDataItem( INOUT STREAM *stream,
 			( pkcs15infoPtr->dataType == CRYPT_IATTRIBUTE_USERINDEX ) ? \
 				OID_CRYPTLIB_USERINDEX : OID_CRYPTLIB_USERINFO;
 	const int labelSize = \
-			( pkcs15infoPtr->labelLength ) ? \
+			( pkcs15infoPtr->labelLength > 0 ) ? \
 				sizeofObject( pkcs15infoPtr->labelLength ) : 0;
 	const int contentSize = sizeofOID( oid ) + \
 			( ( pkcs15infoPtr->dataType == CRYPT_IATTRIBUTE_USERINFO ) ? \

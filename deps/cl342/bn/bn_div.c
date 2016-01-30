@@ -190,6 +190,27 @@ int BN_div(BIGNUM *dv, BIGNUM *rem, const BIGNUM *m, const BIGNUM *d,
 #endif /* OPENSSL_NO_ASM */
 
 
+int BN_ucmp_word( const BN_ULONG *ap, const int aTop, const BIGNUM *b)	/* pcg */
+	{
+	int i;
+	const BN_ULONG *bp;	
+	BN_ULONG t1,t2;
+
+	bn_check_top(b);
+
+	i=aTop-b->top;
+	if (i != 0) return(i);
+	bp=b->d;
+	for (i=aTop-1; i>=0; i--)
+		{
+		t1= ap[i];
+		t2= bp[i];
+		if (t1 != t2)
+			return((t1 > t2) ? 1 : -1);
+		}
+	return(0);
+	}
+
 /* BN_div[_no_branch] computes  dv := num / divisor,  rounding towards
  * zero, and sets up rm  such that  dv*divisor + rm = num  holds.
  * Thus:
@@ -203,7 +224,12 @@ int BN_div(BIGNUM *dv, BIGNUM *rm, const BIGNUM *num, const BIGNUM *divisor,
 	   BN_CTX *ctx)
 	{
 	int norm_shift,i,loop;
-	BIGNUM *tmp,wnum,*snum,*sdiv,*res;
+	BIGNUM *tmp,*snum,*sdiv,*res;
+#ifdef BN_ALLOC				/* pcg */
+	BIGNUM wnum;
+#else
+	BN_ULONG *wnum_d;
+#endif /* !BN_ALLOC */
 	BN_ULONG *resp,*wnump;
 	BN_ULONG d0,d1;
 	int num_n,div_n;
@@ -245,7 +271,7 @@ int BN_div(BIGNUM *dv, BIGNUM *rm, const BIGNUM *num, const BIGNUM *divisor,
 
 	BN_CTX_start(ctx);
 	tmp=BN_CTX_get(ctx);
-	snum=BN_CTX_get(ctx);
+	snum=BN_CTX_get_ext( ctx, BIGNUM_EXT_MUL1 );	/* pcg */
 	sdiv=BN_CTX_get(ctx);
 	if (dv == NULL)
 		res=BN_CTX_get(ctx);
@@ -266,11 +292,15 @@ int BN_div(BIGNUM *dv, BIGNUM *rm, const BIGNUM *num, const BIGNUM *divisor,
 	/* Lets setup a 'window' into snum
 	 * This is the part that corresponds to the current
 	 * 'area' being divided */
+#ifdef BN_ALLOC				/* pcg */
 	wnum.neg   = 0;
 	wnum.d     = &(snum->d[loop]);
 	wnum.top   = div_n;
 	/* only needed when BN_ucmp messes up the values between top and max */
 	wnum.dmax  = snum->dmax - loop; /* so we don't step out of bounds */
+#else
+	wnum_d = &(snum->d[loop]);
+#endif /* BN_ALLOC */
 
 	/* Get the top 2 words of sdiv */
 	/* div_n=sdiv->top; */
@@ -287,15 +317,15 @@ int BN_div(BIGNUM *dv, BIGNUM *rm, const BIGNUM *num, const BIGNUM *divisor,
 	resp= &(res->d[loop-1]);
 
 	/* space for temp */
-	if (!bn_wexpand(tmp,(div_n+1))) goto err;
+	if( div_n+1 > BIGNUM_ALLOC_WORDS ) { assert( 0 ); goto err; }
 
-	if (BN_ucmp(&wnum,sdiv) >= 0)
+	if (BN_ucmp_word(wnum_d,div_n,sdiv) >= 0)
 		{
 		/* If BN_DEBUG_RAND is defined BN_ucmp changes (via
 		 * bn_pollute) the const bignum arguments =>
 		 * clean the values between top and max again */
 		bn_clear_top2max(&wnum);
-		bn_sub_words(wnum.d, wnum.d, sdiv->d, div_n);
+		bn_sub_words(wnum_d, wnum_d, sdiv->d, div_n);
 		*resp=1;
 		}
 	else
@@ -403,10 +433,10 @@ X) -> 0x%08X\n",
 
 		l0=bn_mul_words(tmp->d,sdiv->d,div_n,q);
 		tmp->d[div_n]=l0;
-		wnum.d--;
+		wnum_d--;
 		/* ingore top values of the bignums just sub the two 
 		 * BN_ULONG arrays with bn_sub_words */
-		if (bn_sub_words(wnum.d, wnum.d, tmp->d, div_n+1))
+		if (bn_sub_words(wnum_d, wnum_d, tmp->d, div_n+1))
 			{
 			/* Note: As we have considered only the leading
 			 * two BN_ULONGs in the calculation of q, sdiv * q
@@ -414,7 +444,7 @@ X) -> 0x%08X\n",
 			 * is less or equal than wnum)
 			 */
 			q--;
-			if (bn_add_words(wnum.d, wnum.d, sdiv->d, div_n))
+			if (bn_add_words(wnum_d, wnum_d, sdiv->d, div_n))
 				/* we can't have an overflow here (assuming
 				 * that q != 0, but if q == 0 then tmp is
 				 * zero anyway) */
@@ -435,14 +465,13 @@ X) -> 0x%08X\n",
 			rm->neg = neg;
 		bn_check_top(rm);
 		}
-	BN_CTX_end(ctx);
+	BN_CTX_end_ext( ctx, BIGNUM_EXT_MUL1 );		/* pcg */
 	return(1);
 err:
 	bn_check_top(rm);
-	BN_CTX_end(ctx);
+	BN_CTX_end_ext( ctx, BIGNUM_EXT_MUL1 );		/* pcg */
 	return(0);
 	}
-
 
 /* BN_div_no_branch is a special version of BN_div. It does not contain
  * branches that may leak sensitive information.
@@ -451,7 +480,12 @@ static int BN_div_no_branch(BIGNUM *dv, BIGNUM *rm, const BIGNUM *num,
 	const BIGNUM *divisor, BN_CTX *ctx)
 	{
 	int norm_shift,i,loop;
-	BIGNUM *tmp,wnum,*snum,*sdiv,*res;
+	BIGNUM *tmp,*snum,*sdiv,*res;
+#ifdef BN_ALLOC				/* pcg */
+	BIGNUM wnum;
+#else
+	BN_ULONG *wnum_d;
+#endif /* !BN_ALLOC */
 	BN_ULONG *resp,*wnump;
 	BN_ULONG d0,d1;
 	int num_n,div_n;
@@ -496,7 +530,7 @@ static int BN_div_no_branch(BIGNUM *dv, BIGNUM *rm, const BIGNUM *num,
 		}
 	else
 		{
-		if (bn_wexpand(snum, snum->top + 1) == NULL) goto err;
+		if( snum->top + 1 > BIGNUM_ALLOC_WORDS ) { assert( 0 ); goto err; }
 		snum->d[snum->top] = 0;
 		snum->top ++;
 		}
@@ -507,11 +541,15 @@ static int BN_div_no_branch(BIGNUM *dv, BIGNUM *rm, const BIGNUM *num,
 	/* Lets setup a 'window' into snum
 	 * This is the part that corresponds to the current
 	 * 'area' being divided */
+#ifdef BN_ALLOC				/* pcg */
 	wnum.neg   = 0;
 	wnum.d     = &(snum->d[loop]);
 	wnum.top   = div_n;
 	/* only needed when BN_ucmp messes up the values between top and max */
 	wnum.dmax  = snum->dmax - loop; /* so we don't step out of bounds */
+#else
+	wnum_d = &(snum->d[loop]);
+#endif /* BN_ALLOC */
 
 	/* Get the top 2 words of sdiv */
 	/* div_n=sdiv->top; */
@@ -630,10 +668,10 @@ X) -> 0x%08X\n",
 
 		l0=bn_mul_words(tmp->d,sdiv->d,div_n,q);
 		tmp->d[div_n]=l0;
-		wnum.d--;
+		wnum_d--;
 		/* ingore top values of the bignums just sub the two 
 		 * BN_ULONG arrays with bn_sub_words */
-		if (bn_sub_words(wnum.d, wnum.d, tmp->d, div_n+1))
+		if (bn_sub_words(wnum_d, wnum_d, tmp->d, div_n+1))
 			{
 			/* Note: As we have considered only the leading
 			 * two BN_ULONGs in the calculation of q, sdiv * q
@@ -641,7 +679,7 @@ X) -> 0x%08X\n",
 			 * is less or equal than wnum)
 			 */
 			q--;
-			if (bn_add_words(wnum.d, wnum.d, sdiv->d, div_n))
+			if (bn_add_words(wnum_d, wnum_d, sdiv->d, div_n))
 				/* we can't have an overflow here (assuming
 				 * that q != 0, but if q == 0 then tmp is
 				 * zero anyway) */

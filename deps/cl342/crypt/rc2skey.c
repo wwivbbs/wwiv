@@ -66,6 +66,8 @@
   #include "crypt/rc2locl.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_RC2
+
 static unsigned char key_table[256]={
 	0xd9,0x78,0xf9,0xc4,0x19,0xdd,0xb5,0xed,0x28,0xe9,0xfd,0x79,
 	0x4a,0xa0,0xd8,0x9d,0xc6,0x7e,0x37,0x83,0x2b,0x76,0x53,0x8e,
@@ -151,3 +153,4 @@ void RC2_set_key(RC2_KEY *key, int len, const unsigned char *data, int bits)
 #if defined( _WIN32_WCE ) && defined( ARMV4 ) && defined( NDEBUG )
   #pragma optimize( "g", on )
 #endif /* pcg - eVC++ 4.0 ARMv4 optimiser bug */
+#endif /* USE_RC2 */

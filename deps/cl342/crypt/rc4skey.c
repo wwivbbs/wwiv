@@ -66,6 +66,13 @@
   #include "crypt/rc4locl.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_RC4
+
+#if defined( USE_ASM ) && defined( _MSC_VER )
+  /* Pull in the RC4 asm code packaged into a .lib - pcg */
+  #pragma comment( lib, "crypt/r4-win32.lib" )
+#endif /* USE_ASM && VC++ */
+
 const char *RC4_options(void)
 	{
 #ifdef RC4_INDEX
@@ -118,4 +125,4 @@ void RC4_set_key(RC4_KEY *key, int len, const unsigned char *data)
 		SK_LOOP(i+3);
 		}
 	}
-
+#endif /* USE_RC4 */

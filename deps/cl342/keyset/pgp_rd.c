@@ -1,23 +1,34 @@
 /****************************************************************************
 *																			*
 *						 cryptlib PGP Key Read Routines						*
-*						Copyright Peter Gutmann 1992-2007					*
+*						Copyright Peter Gutmann 1992-2014					*
 *																			*
 ****************************************************************************/
 
 #if defined( INC_ALL )
   #include "crypt.h"
+  #include "asn1.h"
+  #include "asn1_ext.h"
   #include "misc_rw.h"
   #include "pgp_rw.h"
   #include "keyset.h"
   #include "pgp_key.h"
 #else
   #include "crypt.h"
+  #include "enc_dec/asn1.h"
+  #include "enc_dec/asn1_ext.h"
   #include "enc_dec/misc_rw.h"
   #include "enc_dec/pgp_rw.h"
   #include "keyset/keyset.h"
   #include "keyset/pgp_key.h"
 #endif /* Compiler-specific includes */
+
+/* Make sure that the maximum number of PGP userIDs that we record is less
+   than the failsafe bound on the loop that reads userIDs */
+
+#if MAX_PGP_USERIDS >= FAILSAFE_ITERATIONS_MED
+  #error MAX_PGP_USERIDS must be less than FAILSAFE_ITERATIONS_MED since this is used to bound loops
+#endif /* MAX_PGP_USERIDS >= FAILSAFE_ITERATIONS_MED */
 
 #ifdef USE_PGPKEYS
 
@@ -35,15 +46,15 @@ static int getMPIsize( INOUT STREAM *stream,
 					   IN_LENGTH_PKC const int maxMpiSize,
 					   OUT_LENGTH_SHORT_Z int *length )
 	{
-	const long position = stell( stream );
+	const int position = stell( stream );
 	int dummy, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( length, sizeof( int ) ) );
 
-	REQUIRES( minMpiSize > 0 && minMpiSize <= CRYPT_MAX_PKCSIZE );
-	REQUIRES( maxMpiSize > 0 && maxMpiSize >= minMpiSize && \
-			  maxMpiSize <= CRYPT_MAX_PKCSIZE );
+	REQUIRES( minMpiSize > 0 && maxMpiSize > 0 && \
+			  minMpiSize <= maxMpiSize && maxMpiSize <= CRYPT_MAX_PKCSIZE );
+	REQUIRES( !cryptStatusError( position ) );
 
 	/* Clear return value */
 	*length = 0;
@@ -52,7 +63,7 @@ static int getMPIsize( INOUT STREAM *stream,
 								 maxMpiSize );
 	if( cryptStatusError( status ) )
 		return( status );
-	*length = ( int ) stell( stream ) - position;
+	*length = stell( stream ) - position;
 
 	return( CRYPT_OK );
 	}
@@ -63,7 +74,7 @@ static int getMPIsize( INOUT STREAM *stream,
    packet.  Other than that all packets must be at least eight bytes in 
    length */
 
-CHECK_RETVAL_RANGE( 0, 8 ) \
+CHECK_RETVAL_RANGE_NOERROR( 0, 8 ) \
 static int getMinPacketSize( IN_BYTE const int packetType )
 	{
 	ENSURES_EXT( ( packetType >= 0 && \
@@ -77,58 +88,61 @@ static int getMinPacketSize( IN_BYTE const int packetType )
 			( packetType == PGP_PACKET_MARKER ) ? 3 : 8 );
 	}
 
-/* Scan a sequence of key packets to find the extent of the packet group.  In
-   addition to simply scanning this function handles over-long packets by
-   reporting their overall length and returning OK_SPECIAL, and will try to 
-   resync to a packet group if it starts in the middle of an arbitrary packet 
-   collection, for example due to skipping of an over-long packet found 
-   earlier */
+/* Scan a sequence of key packets to find the extent of the packet group */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int scanPacketGroup( INOUT STREAM *stream,
-							OUT_LENGTH_SHORT_Z int *packetGroupLength,
-							const BOOLEAN isLastGroup )
+							OUT_LENGTH_BOUNDED_Z( totalLength ) \
+								int *packetGroupLength,
+							IN_LENGTH_SHORT const int totalLength )
 	{
-	BOOLEAN firstPacket = TRUE, skipPackets = FALSE;
-	int endPos = 0, iterationCount, status = CRYPT_OK;
+	BOOLEAN firstPacket = TRUE;
+	int endPos, noPackets, status;
 
 	assert( isReadPtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( packetGroupLength, sizeof( int ) ) );
 
+	REQUIRES( totalLength > 0 && totalLength < MAX_INTLENGTH_SHORT );
+
 	/* Clear return value */
 	*packetGroupLength = 0;
 
-	for( iterationCount = 0; iterationCount < FAILSAFE_ITERATIONS_LARGE;
-		 iterationCount++ )
+	for( endPos = 0, noPackets = 0; 
+		 endPos < totalLength && noPackets < FAILSAFE_ITERATIONS_MED; 
+		 noPackets++ )
 		{
 		long length;
 		int ctb, type;
 
-		/* Get the next CTB.  If it's the start of another packet group,
-		   we're done */
-		ctb = status = sPeek( stream );
-		if( cryptStatusOK( status ) && !( pgpIsCTB( ctb ) ) )
-			status = CRYPT_ERROR_BADDATA;
+		/* Get the next CTB */
+		status = ctb = sPeek( stream );
 		if( cryptStatusError( status ) )
-			{
-			/* If we ran out of input data let the caller know, however if 
-			   this is the last packet group then running out of data isn't
-			   an error */
-			if( status == CRYPT_ERROR_UNDERFLOW )
-				{
-				if( !isLastGroup )
-					skipPackets = TRUE;
-				break;
-				}
 			return( status );
-			}
+		if( !( pgpIsCTB( ctb ) ) )
+			return( CRYPT_ERROR_BADDATA );
+
+		/* Check the packet type and make sure that it's valid.  This also
+		   catches odd things like compressed-data packets, which aren't
+		   indefinite-length but also don't really have a length so that we 
+		   can't skip them.  These shouldn't be present in keyrings anyway, 
+		   but can crop up due to data corruption */
 		type = pgpGetPacketType( ctb );
+		if( type != PGP_PACKET_SIGNATURE && type != PGP_PACKET_SECKEY && \
+			type != PGP_PACKET_PUBKEY && type != PGP_PACKET_SECKEY_SUB && \
+			type != PGP_PACKET_MARKER && type != PGP_PACKET_TRUST && \
+			type != PGP_PACKET_USERID && type != PGP_PACKET_PUBKEY_SUB && \
+			type != PGP_PACKET_USERATTR )
+			{
+			DEBUG_DIAG(( "Encountered invalid keyring packet type %d", type ));
+			assert_nofuzz( DEBUG_WARN );
+			return( CRYPT_ERROR_BADDATA );
+			}
 		if( firstPacket )
 			{
-			/* If the packet group doesn't start with the expected packet
-			   type, skip packets to try and resync */
+			/* Make sure that the packet group starts with the expected 
+			   packet type */
 			if( type != PGP_PACKET_PUBKEY && type != PGP_PACKET_SECKEY )
-				skipPackets = TRUE;
+				return( CRYPT_ERROR_BADDATA );
 			firstPacket = FALSE;
 			}
 		else
@@ -139,31 +153,29 @@ static int scanPacketGroup( INOUT STREAM *stream,
 			}
 
 		/* Skip the current packet in the buffer */
-		status = pgpReadPacketHeader( stream, NULL, &length, \
-									  getMinPacketSize( type ) );
+		status = pgpReadPacketHeader( stream, NULL, &length, 
+									  getMinPacketSize( type ),
+									  MAX_INTLENGTH_SHORT );
 		if( cryptStatusOK( status ) )
-			{
-			endPos = stell( stream ) + length;
-			status = sSkip( stream, length );
-			}
+			status = sSkip( stream, length, MAX_INTLENGTH_SHORT );
 		if( cryptStatusError( status ) )
-			{
-			/* If we ran out of input data let the caller know */
-			if( status == CRYPT_ERROR_UNDERFLOW )
-				{
-				skipPackets = TRUE;
-				break;
-				}
 			return( status );
-			}
+		endPos = stell( stream );
 		}
-	ENSURES( iterationCount < FAILSAFE_ITERATIONS_LARGE );
+	if( noPackets >= FAILSAFE_ITERATIONS_MED )
+		{
+		/* If we've found this many packets in a row all supposedly 
+		   belonging to the same key then there's something wrong */
+		DEBUG_DIAG(( "Encountered more than %d packets for a single key", 
+					 noPackets ));
+		assert_nofuzz( DEBUG_WARN );
+		return( CRYPT_ERROR_BADDATA );
+		}
 
-	/* Remember where the current packet group ends.  If we skipped packets 
-	   or consumed all of the input in the buffer and there's more present 
-	   beyond that, tell the caller to discard the data and try again */
+	/* Remember where the current packet group ends */
 	*packetGroupLength = endPos;
-	return( skipPackets ? OK_SPECIAL : CRYPT_OK );
+
+	return( CRYPT_OK );
 	}
 
 /****************************************************************************
@@ -174,12 +186,13 @@ static int scanPacketGroup( INOUT STREAM *stream,
 
 /* Read the information needed to decrypt a private key */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int readPrivateKeyDecryptionInfo( INOUT STREAM *stream, 
 										 INOUT PGP_KEYINFO *keyInfo )
 	{
+	CRYPT_QUERY_INFO queryInfo;
 	const int ctb = sgetc( stream );
-	int ivSize = 8, value, status;
+	int ivSize, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( keyInfo, sizeof( PGP_KEYINFO ) ) );
@@ -202,56 +215,53 @@ static int readPrivateKeyDecryptionInfo( INOUT STREAM *stream,
 	if( ctb == 0 )
 		return( CRYPT_ERROR_NOSECURE );
 
+#ifdef USE_PGP2
 	/* If it's a direct algorithm specifier then it's a PGP 2.x packet with 
 	   raw IDEA encryption */
 	if( ctb == PGP_ALGO_IDEA )
 		{
 		keyInfo->cryptAlgo = CRYPT_ALGO_IDEA;
 		keyInfo->hashAlgo = CRYPT_ALGO_MD5;
-		status = sread( stream, keyInfo->iv, ivSize );
+		status = sread( stream, keyInfo->iv, 8 );
 		if( cryptStatusError( status ) )
 			return( status );
-		keyInfo->ivSize = ivSize;
+		keyInfo->ivSize = 8;
 
 		return( CRYPT_OK );
 		}
+#endif /* USE_PGP2 */
 
 	/* Must be an S2K specifier */
 	if( ctb != PGP_S2K && ctb != PGP_S2K_HASHED )
 		return( CRYPT_ERROR_BADDATA );
 
-	/* Get the key wrap algorithm and S2K information.  We have to save a 
-	   copy of the raw PGP algorithm ID for later examination to determine
-	   the AES key size to use */
-	value = sPeek( stream );
+	/* Get the key wrap algorithm and S2K information */
 	status = readPgpAlgo( stream, &keyInfo->cryptAlgo, 
-						  PGP_ALGOCLASS_PWCRYPT );
+						  &keyInfo->cryptAlgoParam, PGP_ALGOCLASS_PWCRYPT );
 	if( cryptStatusError( status ) )
 		{
+		/* If it's an unknown algorithm type, skip this packet */
 		if( status == CRYPT_ERROR_NOTAVAIL )
-			{
-			/* Unknown algorithm type, skip this packet */
 			return( OK_SPECIAL );
-			}
 
-		 return( status );
-		 }
-	if( keyInfo->cryptAlgo == CRYPT_ALGO_AES )
-		{
-		/* PGP uses three different algorithm IDs to identify AES with 
-		   different key sizes (ugh) so we have to remember the key size 
-		   alongside the algorithm type for this algorithm */
-		keyInfo->aesKeySize = ( value == PGP_ALGO_AES_128 ) ? 16 : \
-							  ( value == PGP_ALGO_AES_192 ) ? 24 : 32;
-		ivSize = 16;
+		return( status );
 		}
-	status = readPgpS2K( stream, &keyInfo->hashAlgo, keyInfo->salt, 
-						 PGP_SALTSIZE, &keyInfo->saltSize, 
+	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE,
+							  IMESSAGE_DEV_QUERYCAPABILITY, &queryInfo,
+							  keyInfo->cryptAlgo );
+	if( cryptStatusError( status ) )
+		return( status );
+	ivSize = queryInfo.blockSize;
+	status = readPgpS2K( stream, &keyInfo->hashAlgo, &keyInfo->hashAlgoParam, 
+						 keyInfo->salt, PGP_SALTSIZE, &keyInfo->saltSize, 
 						 &keyInfo->keySetupIterations );
-	if( status == CRYPT_ERROR_NOTAVAIL )
+	if( cryptStatusError( status ) )
 		{
-		/* Unknown algorithm type, skip this packet */
-		return( OK_SPECIAL );
+		/* If it's an unknown algorithm type, skip this packet */
+		if( status == CRYPT_ERROR_NOTAVAIL )
+			return( OK_SPECIAL );
+
+		return( status );
 		}
 	if( ctb == PGP_S2K_HASHED )
 		{
@@ -273,13 +283,13 @@ static int readPrivateKeyDecryptionInfo( INOUT STREAM *stream,
 
 /* Read public-key components */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
-static int readPublicKeyComponents( INOUT STREAM *stream, 
-									INOUT PGP_KEYINFO *keyInfo,
-									OUT_INT_Z int *pubKeyComponentLength )
+CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+static int readRSAKeyComponents( INOUT STREAM *stream, 
+								 INOUT PGP_KEYINFO *keyInfo,
+								 OUT_INT_Z int *pubKeyComponentLength )
 	{
-	int pgpPkcAlgo, length, totalLength = 1, status;
-					/* Initial length 1 is for the algorithm ID byte */
+	int length, totalLength = 1, status;
+				/* Initial length 1 is for the algorithm ID byte */
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( keyInfo, sizeof( PGP_KEYINFO ) ) );
@@ -288,61 +298,48 @@ static int readPublicKeyComponents( INOUT STREAM *stream,
 	/* Clear return value */
 	*pubKeyComponentLength = 0;
 
-	/* Get the public-key algorithm type */
-	status = pgpPkcAlgo = sgetc( stream );
+	/* Read RSA n + e.  The LSBs of n serve as the PGP 2.x key ID so we copy 
+	   the data out if PGP 2.x support is enabled */
+	status = getMPIsize( stream, MIN_PKCSIZE, CRYPT_MAX_PKCSIZE, 
+						 &length );			/* n */
 	if( cryptStatusError( status ) )
 		return( status );
-
-	/* RSA: n + e.  The LSBs of n serve as the PGP 2.x key ID so we copy the 
-	   data out before continuing */
-	if( pgpPkcAlgo == PGP_ALGO_RSA || pgpPkcAlgo == PGP_ALGO_RSA_ENCRYPT || \
-		pgpPkcAlgo == PGP_ALGO_RSA_SIGN )
-		{
-		keyInfo->pkcAlgo = CRYPT_ALGO_RSA;
-		if( pgpPkcAlgo != PGP_ALGO_RSA_SIGN )
-			keyInfo->usageFlags = KEYMGMT_FLAG_USAGE_CRYPT;
-		if( pgpPkcAlgo != PGP_ALGO_RSA_ENCRYPT )
-			keyInfo->usageFlags |= KEYMGMT_FLAG_USAGE_SIGN;
-		status = getMPIsize( stream, MIN_PKCSIZE, CRYPT_MAX_PKCSIZE, 
-							 &length );			/* n */
-		if( cryptStatusError( status ) )
-			return( status );
-		totalLength += length;
-		static_assert( PGP_KEYID_SIZE < MIN_PKCSIZE, "PGP keyID size" );
+	totalLength += length;
 	
-		/* Move back and copy out the last PGP_KEYID_SIZE bytes of n as the PGP 
-		   2.x key ID */
-		status = sseek( stream, stell( stream ) - PGP_KEYID_SIZE );
-		if( cryptStatusOK( status ) )
-			status = sread( stream, keyInfo->pgpKeyID, PGP_KEYID_SIZE );
-		if( cryptStatusOK( status ) )
-			status = getMPIsize( stream, 1, CRYPT_MAX_PKCSIZE, &length );
-		if( cryptStatusError( status ) )		/* e */
-			return( status );
-		*pubKeyComponentLength = totalLength + length;
+#ifdef USE_PGP2
+	/* Move back and copy out the last PGP_KEYID_SIZE bytes of n as the PGP 
+	   2.x key ID */
+	static_assert( PGP_KEYID_SIZE < MIN_PKCSIZE, "PGP keyID size" );
+	status = sseek( stream, stell( stream ) - PGP_KEYID_SIZE );
+	if( cryptStatusOK( status ) )
+		status = sread( stream, keyInfo->pgp2KeyID, PGP_KEYID_SIZE );
+	if( cryptStatusError( status ) )
+		return( status );
+#endif /* USE_PGP2 */
+	status = getMPIsize( stream, 1, CRYPT_MAX_PKCSIZE, &length );
+	if( cryptStatusError( status ) )		/* e */
+		return( status );
+	*pubKeyComponentLength = totalLength + length;
 
-		return( CRYPT_OK );
-		}
+	return( CRYPT_OK );
+	}
 
-	/* If it's an unknown algorithm, skip this key */
-	if( pgpPkcAlgo != PGP_ALGO_DSA && pgpPkcAlgo != PGP_ALGO_ELGAMAL )
-		return( OK_SPECIAL );
+CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+static int readDLPKeyComponents( INOUT STREAM *stream, 
+								 INOUT PGP_KEYINFO *keyInfo,
+								 OUT_INT_Z int *pubKeyComponentLength )
+	{
+	int length, totalLength = 1, status;
+				/* Initial length 1 is for the algorithm ID byte */
 
-	/* DSA/Elgamal: p + g + y.  Note that we have to separate out the 
-	   getMPIsize() calls in order to serialise them otherwise some 
-	   optimising compilers will reorder the operations, causing the check 
-	   to fail because the parameters are different for the different MPI 
-	   values */
-	if( pgpPkcAlgo == PGP_ALGO_DSA )
-		{
-		keyInfo->pkcAlgo = CRYPT_ALGO_DSA;
-		keyInfo->usageFlags = KEYMGMT_FLAG_USAGE_SIGN;
-		}
-	else
-		{
-		keyInfo->pkcAlgo = CRYPT_ALGO_ELGAMAL;
-		keyInfo->usageFlags = KEYMGMT_FLAG_USAGE_CRYPT;
-		}
+	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+	assert( isWritePtr( keyInfo, sizeof( PGP_KEYINFO ) ) );
+	assert( isWritePtr( pubKeyComponentLength, sizeof( int ) ) );
+
+	/* Clear return value */
+	*pubKeyComponentLength = 0;
+
+	/* DSA/Elgamal: p + g + y */
 	status = getMPIsize( stream, MIN_PKCSIZE, CRYPT_MAX_PKCSIZE, &length );	
 	if( cryptStatusOK( status ) )				/* p */
 		{
@@ -358,7 +355,7 @@ static int readPublicKeyComponents( INOUT STREAM *stream,
 	if( cryptStatusError( status ) )
 		return( status );
 	totalLength += length;
-	if( pgpPkcAlgo == PGP_ALGO_DSA )
+	if( keyInfo->pkcAlgo ==  CRYPT_ALGO_DSA )
 		{
 		/* DSA has q as well */
 		status = getMPIsize( stream, bitsToBytes( 155 ), CRYPT_MAX_PKCSIZE, 
@@ -372,27 +369,142 @@ static int readPublicKeyComponents( INOUT STREAM *stream,
 	return( CRYPT_OK );
 	}
 
+CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+static int readECCKeyComponents( INOUT STREAM *stream, 
+								 INOUT PGP_KEYINFO *keyInfo,
+								 OUT_INT_Z int *pubKeyComponentLength )
+	{
+	int length, totalLength = 2, status;
+				/* Initial len.2 is for the algorithm ID and OID len.byte */
+
+	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+	assert( isWritePtr( keyInfo, sizeof( PGP_KEYINFO ) ) );
+	assert( isWritePtr( pubKeyComponentLength, sizeof( int ) ) );
+
+	/* Clear return value */
+	*pubKeyComponentLength = 0;
+
+	/* Skip the ECC OID, which is preceded by a length byte */
+	status = length = sgetc( stream );
+	if( cryptStatusError( status ) )
+		return( status );
+	if( length < MIN_OID_SIZE || length >= MAX_OID_SIZE )
+		return( CRYPT_ERROR_BADDATA );
+	status = sSkip( stream, length, MAX_OID_SIZE );
+	if( cryptStatusError( status ) )
+		return( status );
+	totalLength += length;
+
+	/* ECC: qx/qy as an ECC point */
+	status = getMPIsize( stream, MIN_PKCSIZE_ECCPOINT, 
+						 CRYPT_MAX_PKCSIZE_ECC, &length );	
+	if( cryptStatusError( status ) )
+		return( status );
+	totalLength += length;
+
+	/* If we're reading an ECDSA key, we're done */
+	if( keyInfo->pkcAlgo == CRYPT_ALGO_ECDSA )
+		{
+		*pubKeyComponentLength = totalLength;
+		return( CRYPT_OK );
+		}
+
+	/* ECDH keys are followed by further data that has nothing to do with 
+	   ECDH but that's stuffed in with the key for no obvious reason */
+	status = length = sgetc( stream );
+	if( cryptStatusError( status ) )
+		return( status );
+	if( length != 3 )
+		return( CRYPT_ERROR_BADDATA );
+	status = sSkip( stream, 3, 3 );
+	if( cryptStatusError( status ) )
+		return( status );
+	*pubKeyComponentLength = totalLength + 1 + length;
+
+	return( CRYPT_OK );
+	}
+
+CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+static int readPublicKeyComponents( INOUT STREAM *stream, 
+									INOUT PGP_KEYINFO *keyInfo,
+									OUT_INT_Z int *pubKeyComponentLength )
+	{
+	int pgpPkcAlgo, status;
+
+	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+	assert( isWritePtr( keyInfo, sizeof( PGP_KEYINFO ) ) );
+	assert( isWritePtr( pubKeyComponentLength, sizeof( int ) ) );
+
+	/* Clear return value */
+	*pubKeyComponentLength = 0;
+
+	/* Get the public-key algorithm type */
+	status = pgpPkcAlgo = sgetc( stream );
+	if( cryptStatusError( status ) )
+		return( status );
+
+	/* Set up the algorithm info and read the key components */
+	switch( pgpPkcAlgo )
+		{
+		case PGP_ALGO_RSA:
+		case PGP_ALGO_RSA_ENCRYPT:
+		case PGP_ALGO_RSA_SIGN:
+			keyInfo->pkcAlgo = CRYPT_ALGO_RSA;
+			if( pgpPkcAlgo != PGP_ALGO_RSA_SIGN )
+				keyInfo->usageFlags = KEYMGMT_FLAG_USAGE_CRYPT;
+			if( pgpPkcAlgo != PGP_ALGO_RSA_ENCRYPT )
+				keyInfo->usageFlags |= KEYMGMT_FLAG_USAGE_SIGN;
+			return( readRSAKeyComponents( stream, keyInfo, 
+										  pubKeyComponentLength ) );
+
+		case PGP_ALGO_DSA:
+			keyInfo->pkcAlgo = CRYPT_ALGO_DSA;
+			keyInfo->usageFlags = KEYMGMT_FLAG_USAGE_SIGN;
+			return( readDLPKeyComponents( stream, keyInfo, 
+										  pubKeyComponentLength ) );
+
+		case PGP_ALGO_ELGAMAL:
+			keyInfo->pkcAlgo = CRYPT_ALGO_ELGAMAL;
+			keyInfo->usageFlags = KEYMGMT_FLAG_USAGE_CRYPT;
+			return( readDLPKeyComponents( stream, keyInfo, 
+										  pubKeyComponentLength ) );
+
+		case PGP_ALGO_ECDH:
+			keyInfo->pkcAlgo = CRYPT_ALGO_ECDH;
+			keyInfo->usageFlags = KEYMGMT_FLAG_USAGE_CRYPT;
+			return( readECCKeyComponents( stream, keyInfo, 
+										  pubKeyComponentLength ) );
+
+		case PGP_ALGO_ECDSA:
+			keyInfo->pkcAlgo = CRYPT_ALGO_ECDSA;
+			keyInfo->usageFlags = KEYMGMT_FLAG_USAGE_SIGN;
+			return( readECCKeyComponents( stream, keyInfo, 
+										  pubKeyComponentLength ) );
+
+		default:
+			/* It's an unknown algorithm, skip this key */
+			return( OK_SPECIAL );
+		}
+
+	retIntError();
+	}
+
 /* Read a sequence of userID packets */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 1 ) ) \
 static int readUserID( INOUT STREAM *stream, 
-					   INOUT_OPT PGP_INFO *pgpInfo,
-					   INOUT_OPT HASHINFO *hashInfo )
+					   INOUT_OPT PGP_INFO *pgpInfo )
 	{
-	HASHINFO localHashInfo;
 	long packetLength;
-	int ctb, packetType = DUMMY_INIT, iterationCount, status;
+	int ctb, packetType DUMMY_INIT, noPackets, status DUMMY_INIT;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( pgpInfo == NULL || \
 			isWritePtr( pgpInfo, sizeof( PGP_INFO ) ) );
-	assert( hashInfo == NULL || \
-			isWritePtr( hashInfo, sizeof( HASHINFO ) ) );
 
-	/* Take a local copy of the hash information from the primary key
-	   packet */
-	if( hashInfo != NULL )
-		memcpy( &localHashInfo, hashInfo, sizeof( HASHINFO ) );
+	ENSURES( pgpInfo == NULL || \
+			 ( pgpInfo->lastUserID >= 0 && \
+			   pgpInfo->lastUserID <= MAX_PGP_USERIDS ) );
 
 	/* Skip keyring trust packets, signature packets, and any private 
 	   packets (GPG uses packet type 61, which might be a DSA self-
@@ -412,12 +524,11 @@ static int readUserID( INOUT STREAM *stream,
 	   use of these flags as it's a bit difficult to figure out what's what, 
 	   and in any case DSA vs. Elgamal doesn't need any further constraints 
 	   since there's only one usage possible */
-	for( status = CRYPT_OK, iterationCount = 0; 
-		 cryptStatusOK( status ) && iterationCount < FAILSAFE_ITERATIONS_MED;
-		 iterationCount++ )
+	for( noPackets = 0; noPackets < FAILSAFE_ITERATIONS_MED; noPackets++ )
 		{
-		/* See what we've got.  If we've run out of input or it's a non-key-
-		   related packet, we're done */
+		/* See what we've got.  If we've run out of input due to reading the 
+		   end of the packet group or it's a non-key-related packet, we're 
+		   done */
 		status = ctb = sPeek( stream );
 		if( cryptStatusError( status ) )
 			break;
@@ -428,30 +539,36 @@ static int readUserID( INOUT STREAM *stream,
 			!pgpIsReservedPacket( packetType ) )
 			break;
 
-		/* Skip the packet.  If we get an error at this point we don't 
-		   immediately bail out but try and return at least a partial 
-		   response */
-		status = pgpReadPacketHeader( stream, &ctb, &packetLength, \
-									  getMinPacketSize( packetType ) );
+		/* Skip the packet */
+		status = pgpReadPacketHeader( stream, &ctb, &packetLength, 
+									  getMinPacketSize( packetType ),
+									  MAX_INTLENGTH_SHORT );
+		if( cryptStatusOK( status ) )
+			status = sSkip( stream, packetLength, MAX_INTLENGTH_SHORT );
 		if( cryptStatusError( status ) )
-			break;
-		status = sSkip( stream, packetLength );
+			return( status );
 		}
-	ENSURES( iterationCount < FAILSAFE_ITERATIONS_MED );
+	if( cryptStatusError( status ) )
+		{
+		/* Running out of input due to reading the end of the packet group 
+		   is a valid condition so we don't return a fatal error code if 
+		   this occurss */
+		return( ( status == CRYPT_ERROR_UNDERFLOW ) ? OK_SPECIAL : status );
+		}
+	if( noPackets >= FAILSAFE_ITERATIONS_MED )
+		return( CRYPT_ERROR_BADDATA );
 
 	/* If we've reached the end of the current collection of key packets, 
-	   let the caller know that we're done.  Note that running out of input
-	   is a valid condition so we don't return a fatal error code at this
-	   point */
-	if( cryptStatusError( status ) || packetType != PGP_PACKET_USERID )
+	   let the caller know that we're done */
+	if( packetType != PGP_PACKET_USERID )
 		return( OK_SPECIAL );
 
 	/* Record the userID (unless we're skipping the packet).  If there are 
-	   more userIDs than we can record we silently ignore them.  This 
+	   more userIDs than we can record then we silently ignore them.  This 
 	   handles keys with weird numbers of userIDs without rejecting them 
 	   just because they have, well, a weird number of userIDs */
-	status = pgpReadPacketHeader( stream, &ctb, &packetLength, \
-								  getMinPacketSize( packetType ) );
+	status = pgpReadPacketHeader( stream, &ctb, &packetLength, 
+								  getMinPacketSize( packetType ), 1024 );
 	if( cryptStatusError( status ) )
 		return( status );
 	if( pgpInfo != NULL && pgpInfo->lastUserID < MAX_PGP_USERIDS )
@@ -464,7 +581,7 @@ static int readUserID( INOUT STREAM *stream,
 		pgpInfo->userID[ pgpInfo->lastUserID ] = dataPtr;
 		pgpInfo->userIDlen[ pgpInfo->lastUserID++ ] = ( int ) packetLength;
 		}
-	return( sSkip( stream, packetLength ) );
+	return( sSkip( stream, packetLength, MAX_INTLENGTH_SHORT ) );
 	}
 
 /****************************************************************************
@@ -535,22 +652,23 @@ static int readKey( INOUT STREAM *stream,
 	PGP_KEYINFO *keyInfo = &pgpInfo->key;
 	HASHFUNCTION hashFunction;
 	HASHINFO hashInfo;
-	BYTE hash[ CRYPT_MAX_HASHSIZE + 8 ], packetHeader[ 64 + 8 ];
-	BOOLEAN isPublicKey = TRUE, isPrimaryKey = FALSE;
+	BYTE hash[ CRYPT_MAX_HASHSIZE + 8 ], packetHeader[ 16 + 8 ];
+	BOOLEAN isPublicKey = TRUE;
 	void *pubKeyPayload;
 	long packetLength;
 	int pubKeyPos, pubKeyPayloadPos, endPos, pubKeyPayloadLen;
-	int ctb, length, value, hashSize, iterationCount, status;
+	int ctb, length, value, hashSize, noUserIDs, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( pgpInfo, sizeof( PGP_INFO ) ) );
+	assert( isWritePtr( errorInfo, sizeof( ERROR_INFO ) ) );
 
 	REQUIRES( keyGroupNo >= 0 && keyGroupNo < MAX_INTLENGTH_SHORT );
 	REQUIRES( errorInfo != NULL );
 
 	/* Process the CTB and packet length */
-	ctb = sPeek( stream );
-	if( cryptStatusError( ctb ) )
+	status = ctb = sPeek( stream );
+	if( cryptStatusError( status ) )
 		{
 		/* If there was an error reading the CTB, which is the first byte of 
 		   the packet group, it means that we've run out of data so we 
@@ -574,7 +692,6 @@ static int readKey( INOUT STREAM *stream,
 			break;
 
 		case PGP_PACKET_PUBKEY:
-			isPrimaryKey = TRUE;
 			break;
 
 		default:
@@ -583,7 +700,8 @@ static int readKey( INOUT STREAM *stream,
 					  "Invalid PGP CTB %02X for key packet group %d", 
 					  ctb, keyGroupNo ) );
 		}
-	status = pgpReadPacketHeader( stream, NULL, &packetLength, 64 );
+	status = pgpReadPacketHeader( stream, NULL, &packetLength, 64, 
+								  MAX_INTLENGTH_SHORT );
 	if( cryptStatusError( status ) )
 		{
 		retExt( status,
@@ -599,22 +717,28 @@ static int readKey( INOUT STREAM *stream,
 				  packetLength, keyGroupNo ) );
 		}
 
-	/* Since there can (in theory) be arbitrary numbers of subkeys and other 
-	   odds and ends attached to a key and the details of what to do with 
-	   these things gets a bit vague, we just skip any further subkeys that 
-	   may be present */
+	/* Since there can (in theory) be arbitrary numbers of further subkeys 
+	   and other odds and ends attached to an existing key and the details 
+	   of what to do with these things gets a bit vague, we just skip any 
+	   additional subkeys that may be present.
+	   
+	   How to handle userIDs in this case is a bit unclear since there could
+	   be different userIDs attached to a subkey, however stripping them 
+	   would make the main key invisible if searched for by one of the 
+	   subkey IDs, so we read them and treat them as if they belonged to the
+	   main key (it's uncertain whether such an oddball configuration of key
+	   packets even exists, or what to do with them if it does) */
 	if( keyInfo->pkcAlgo != CRYPT_ALGO_NONE )
 		{
-		status = sSkip( stream, packetLength );
-		for( iterationCount = 0; 
-			 cryptStatusOK( status ) && \
-				iterationCount < FAILSAFE_ITERATIONS_MED; 
-			 iterationCount++ )
+		status = sSkip( stream, packetLength, MAX_INTLENGTH_SHORT );
+		for( noUserIDs = 0; 
+			 cryptStatusOK( status ) && noUserIDs < FAILSAFE_ITERATIONS_MED; 
+			 noUserIDs++ )
 			{
-			status = readUserID( stream, pgpInfo, 
-								 isPrimaryKey ? &hashInfo : NULL );
+			status = readUserID( stream, pgpInfo );
 			}
-		ENSURES( iterationCount < FAILSAFE_ITERATIONS_MED );
+		if( cryptStatusOK( status ) && noUserIDs >= FAILSAFE_ITERATIONS_MED )
+			status = CRYPT_ERROR_OVERFLOW;
 		if( cryptStatusError( status ) && status != OK_SPECIAL )
 			{
 			retExt( status, 
@@ -634,18 +758,19 @@ static int readKey( INOUT STREAM *stream,
 	   and then later retroactively calculate the length based on how much
 	   data we've read in the meantime:
 
-		  pubKey pubKeyPayload		 privKey			 endPos
-			|		|					|					|
-			v		v					v					v
-		+---+---------------------------+-------------------+
-		|hdr|		|	Public key		|	Private key		|
-		+---+---------------------------+-------------------+
-			|		|<pubKeyPayloadLen->|					|
-			|<----- pubKeyDataLen ----->|<-- privKeyDLen -->| 
-			|<--------------- packetLength ---------------->| */
+		pubKeyPos pubKeyPayload			 privKey				 endPos
+			|		|						|						|
+			v		v						v						v
+		+---+-------------------------------+-----------------------+
+		|hdr|		|		Public key		|		Private key		|
+		+---+-------------------------------+-----------------------+
+			|		|<--pubKeyPayloadLen--->|						|
+			|								|						|
+			|<------- pubKeyDataLen ------->|<-- privKeyDataLen --->| 
+			|<----------------- packetLength ---------------------->| */
 	pubKeyPos = stell( stream );
 	endPos = pubKeyPos + packetLength;
-	ENSURES( endPos > pubKeyPos && endPos < MAX_INTLENGTH );
+	ENSURES( endPos > pubKeyPos && endPos < MAX_BUFFER_SIZE );
 	status = value = sgetc( stream );
 	if( cryptStatusError( status ) )
 		return( status );
@@ -675,10 +800,10 @@ static int readKey( INOUT STREAM *stream,
 	packetHeader[ 0 ] = 0x99;
 	packetHeader[ 3 ] = PGP_VERSION_OPENPGP;
 
-	/* Read the timestamp and validity period (for PGP 2.x keys) */
+	/* Read the timestamp and skip the validity period (for PGP 2.x keys) */
 	status = sread( stream, packetHeader + 4, 4 );
-	if( !cryptStatusError( status ) && !pgpInfo->isOpenPGP )
-		status = sSkip( stream, 2 );
+	if( cryptStatusOK( status ) && !pgpInfo->isOpenPGP )
+		status = sSkip( stream, 2, 2 );
 	if( cryptStatusError( status ) )
 		return( status );
 
@@ -693,8 +818,8 @@ static int readKey( INOUT STREAM *stream,
 		if( status == OK_SPECIAL )
 			{
 			DEBUG_DIAG(( "Encountered unrecognised algorithm while "
-						 "reading key" ));
-			assert( DEBUG_WARN );
+						 "reading PGP key %d", keyGroupNo ));
+			assert_nofuzz( DEBUG_WARN );
 			return( OK_SPECIAL );
 			}
 		retExt( status, 
@@ -710,7 +835,6 @@ static int readKey( INOUT STREAM *stream,
 								  keyInfo->pubKeyDataLen );
 	if( cryptStatusError( status ) )
 		{
-		DEBUG_DIAG(( "Couldn't set up reference to key data" ));
 		assert( DEBUG_WARN );
 		return( status );
 		}
@@ -719,7 +843,6 @@ static int readKey( INOUT STREAM *stream,
 								  pubKeyPayloadLen );
 	if( cryptStatusError( status ) )
 		{
-		DEBUG_DIAG(( "Couldn't set up reference to key data" ));
 		assert( DEBUG_WARN );
 		return( status );
 		}
@@ -752,8 +875,8 @@ static int readKey( INOUT STREAM *stream,
 			if( status == OK_SPECIAL )
 				{
 				DEBUG_DIAG(( "Encountered unrecognised algorithm while "
-							 "reading key" ));
-				assert( DEBUG_WARN );
+							 "reading PGP private key %d", keyGroupNo ));
+				assert_nofuzz( DEBUG_WARN );
 				return( OK_SPECIAL );
 				}
 			retExt( status, 
@@ -764,38 +887,32 @@ static int readKey( INOUT STREAM *stream,
 
 		/* What's left is the private-key data */
 		keyInfo->privKeyDataLen = endPos - stell( stream );
+		if( keyInfo->privKeyDataLen < 16 || \
+			keyInfo->privKeyDataLen > MAX_INTLENGTH_SHORT )
+			return( CRYPT_ERROR_BADDATA );
 		status = sMemGetDataBlock( stream, &keyInfo->privKeyData, 
 								   keyInfo->privKeyDataLen );
 		if( cryptStatusOK( status ) )
-			status = sSkip( stream, keyInfo->privKeyDataLen );
+			{
+			status = sSkip( stream, keyInfo->privKeyDataLen, 
+							MAX_INTLENGTH_SHORT );
+			}
 		if( cryptStatusError( status ) )
 			return( status );
 		}
 
-	/* If it's the primary key, start hashing it in preparation for 
-	   performing signature checks on subpackets */
-	if( isPrimaryKey )
-		{
-		packetHeader[ 0 ] = 0x99;
-		packetHeader[ 1 ] = intToByte( ( keyInfo->pubKeyDataLen >> 8 ) & 0xFF );
-		packetHeader[ 2 ] = intToByte( keyInfo->pubKeyDataLen & 0xFF );	
-		hashFunction( hashInfo, NULL, 0, packetHeader, 1 + 2, 
-					  HASH_STATE_START );
-		hashFunction( hashInfo, NULL, 0, keyInfo->pubKeyData, 
-					  keyInfo->pubKeyDataLen, HASH_STATE_CONTINUE );
-		}
-
 	/* Read any associated subpacket(s), of which the only ones of real 
-	   interest are the userID packet(s) */
-	for( iterationCount = 0; 
-		 cryptStatusOK( status ) && \
-			iterationCount < FAILSAFE_ITERATIONS_MED; 
-		 iterationCount++ )
+	   interest are the userID packet(s).  readUserID() returns OK_SPECIAL
+	   once it's run out of packets so this status isn't treated as an 
+	   error */
+	for( noUserIDs = 0; 
+		 cryptStatusOK( status ) && noUserIDs < FAILSAFE_ITERATIONS_MED; 
+		 noUserIDs++ )
 		{
-		status = readUserID( stream, pgpInfo, 
-							 isPrimaryKey ? &hashInfo : NULL );
+		status = readUserID( stream, pgpInfo );
 		}
-	ENSURES( iterationCount < FAILSAFE_ITERATIONS_MED );
+	if( cryptStatusOK( status ) && noUserIDs >= FAILSAFE_ITERATIONS_MED )
+		status = CRYPT_ERROR_OVERFLOW;
 	if( cryptStatusError( status ) && status != OK_SPECIAL )
 		{
 		retExt( status, 
@@ -825,50 +942,40 @@ static int processPacketGroup( INOUT STREAM *stream,
 							   IN_INT_SHORT_Z const int keyGroupNo,
 							   INOUT ERROR_INFO *errorInfo )
 	{
-	int iterationCount, status;
+	int noPackets, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( pgpInfo, sizeof( PGP_INFO ) ) );
 	assert( ( keyMatchInfo == NULL && matchedKeyInfoPtrPtr == NULL ) || \
 			( isReadPtr( keyMatchInfo, sizeof( KEY_MATCH_INFO ) ) && \
 			  isWritePtr( matchedKeyInfoPtrPtr, sizeof( PGP_KEYINFO * ) ) ) );
+	assert( isWritePtr( errorInfo, sizeof( ERROR_INFO ) ) );
 
 	REQUIRES( ( keyMatchInfo == NULL && matchedKeyInfoPtrPtr == NULL ) || \
 			  ( keyMatchInfo != NULL && matchedKeyInfoPtrPtr != NULL && \
 				pgpInfo->keyData != NULL && \
-				pgpInfo->keyDataLen == KEYRING_BUFSIZE ) );
+				pgpInfo->keyDataLen > 0 && \
+				pgpInfo->keyDataLen < MAX_INTLENGTH_SHORT ) );
 	REQUIRES( keyGroupNo >= 0 && keyGroupNo < MAX_INTLENGTH_SHORT );
 	REQUIRES( errorInfo != NULL );
 
-	/* Clear the index information before we read the current key(s), since 
+	/* Reset the index information before we read the current key(s), since 
 	   it may already have been initialised during a previous (incomplete) 
 	   key read */
-	memset( &pgpInfo->key, 0, sizeof( PGP_KEYINFO ) );
-	memset( &pgpInfo->subKey, 0, sizeof( PGP_KEYINFO ) );
-	memset( pgpInfo->userID, 0, sizeof( char * ) * MAX_PGP_USERIDS );
-	memset( pgpInfo->userIDlen, 0, sizeof( int ) * MAX_PGP_USERIDS );
-	pgpInfo->lastUserID = 0;
+	resetPGPInfo( pgpInfo );
 
 	/* Read all the packets in this packet group */
-	for( status = CRYPT_OK, iterationCount = 0;
+	for( status = CRYPT_OK, noPackets = 0;
 		 cryptStatusOK( status ) && sMemDataLeft( stream ) > 0 && \
-			iterationCount++ < FAILSAFE_ITERATIONS_MED;
-		 iterationCount++ )
+			noPackets++ < FAILSAFE_ITERATIONS_MED;
+		 noPackets++ )
 		{
 		status = readKey( stream, pgpInfo, keyGroupNo, errorInfo );
 		}
-	ENSURES( iterationCount < FAILSAFE_ITERATIONS_MED );
 	if( cryptStatusError( status ) )
-		{
-		if( status != OK_SPECIAL && status != CRYPT_ERROR_NOSECURE )
-			return( status );
-
-		/* There's either something in the key information that we can't 
-		   handle or it's stored with no security, skip the key */
-		if( keyMatchInfo == NULL )
-			pgpFreeEntry( pgpInfo );
 		return( status );
-		}
+	if( noPackets >= FAILSAFE_ITERATIONS_MED )
+		return( CRYPT_ERROR_OVERFLOW );
 
 	/* If we're reading all keys, we're done */
 	if( keyMatchInfo == NULL )
@@ -897,23 +1004,22 @@ static int processPacketGroup( INOUT STREAM *stream,
 ****************************************************************************/
 
 /* Read an entire keyring.  This function can be used in one of two ways, if 
-   key match information is supplied each packet will be checked against it 
-   and the read will exit when a match is found (used for public keyrings).  
-   If no key match information is supplied, all keys will be read into 
-   memory (used for private keyrings) */
+   key match information is supplied then each packet will be checked 
+   against it and the read will exit when a match is found (used for public 
+   keyrings).  If no key match information is supplied then all keys will be 
+   read into memory (used for private keyrings) */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4, 8, 9 ) ) \
 static int processKeyringPackets( INOUT STREAM *stream, 
 								  IN_ARRAY( maxNoPgpObjects ) PGP_INFO *pgpInfo, 
 								  IN_LENGTH_SHORT const int maxNoPgpObjects,
 								  OUT_BUFFER_FIXED( bufSize ) BYTE *buffer, 
-								  IN_LENGTH_SHORT_MIN( 64 ) const int bufSize,
+								  IN_LENGTH_FIXED( KEYRING_BUFSIZE ) const int bufSize,
 								  IN_OPT const KEY_MATCH_INFO *keyMatchInfo,
 								  INOUT_OPT PGP_KEYINFO **matchedKeyInfoPtrPtr,
 								  OUT BOOLEAN *unhandledDataPresent,
 								  INOUT ERROR_INFO *errorInfo )
 	{
-	BYTE streamBuffer[ STREAM_BUFSIZE + 8 ];
 	BOOLEAN moreData, insecureKeys = FALSE;
 	int bufEnd, keyGroupNo = 0, iterationCount, status;
 
@@ -924,9 +1030,10 @@ static int processKeyringPackets( INOUT STREAM *stream,
 			( isReadPtr( keyMatchInfo, sizeof( KEY_MATCH_INFO ) ) && \
 			  isWritePtr( matchedKeyInfoPtrPtr, sizeof( PGP_KEYINFO * ) ) ) );
 	assert( isWritePtr( unhandledDataPresent, sizeof( BOOLEAN ) ) );
+	assert( isWritePtr( errorInfo, sizeof( ERROR_INFO ) ) );
 
 	REQUIRES( maxNoPgpObjects >= 1 && maxNoPgpObjects < MAX_INTLENGTH_SHORT );
-	REQUIRES( bufSize > 64 && bufSize < MAX_INTLENGTH_SHORT );
+	REQUIRES( bufSize == KEYRING_BUFSIZE );
 	REQUIRES( ( keyMatchInfo == NULL && matchedKeyInfoPtrPtr == NULL ) || \
 			  ( keyMatchInfo != NULL && matchedKeyInfoPtrPtr != NULL && \
 				pgpInfo->keyData != NULL && \
@@ -938,12 +1045,7 @@ static int processKeyringPackets( INOUT STREAM *stream,
 
 	/* Scan all of the objects in the keyset.  This is implemented as a 
 	   sliding window that reads a certain amount of data into a lookahead 
-	   buffer and then tries to identify a packet group in the buffer.  If 
-	   we need to skip packets (for example due to unknown algorithms) we 
-	   mark the keyset as read-only since it's no longer safe for us to 
-	   write the incompletely-processed data to disk */
-	sioctlSetString( stream, STREAM_IOCTL_IOBUFFER, streamBuffer, 
-					 STREAM_BUFSIZE );
+	   buffer and then tries to identify a packet group in the buffer */
 	for( moreData = TRUE, bufEnd = 0, iterationCount = 0;
 		 ( moreData || bufEnd > 0 ) && \
 			iterationCount < FAILSAFE_ITERATIONS_MAX;
@@ -951,7 +1053,7 @@ static int processKeyringPackets( INOUT STREAM *stream,
 		{
 		PGP_INFO *pgpInfoPtr = &pgpInfo[ keyGroupNo ];
 		STREAM keyStream;
-		int length = DUMMY_INIT;	/* Init needed by gcc */
+		int length DUMMY_INIT;	/* Init needed by gcc */
 
 		/* Fill the lookahead buffer:
 
@@ -969,100 +1071,102 @@ static int processKeyringPackets( INOUT STREAM *stream,
 
 			status = length = sread( stream, buffer + bufEnd,
 									 bufSize - bufEnd );
-			if( status <= 0 )
+			if( cryptStatusError( status ) || length <= 0 )
 				{
 				/* If we read nothing and there's nothing left in the buffer,
 				   we're done */
 				if( bufEnd <= 0 )
 					{
 					/* If we've previously read at least one group of key 
-					   packets, we're OK */
+					   packets then we're OK */
 					if( keyGroupNo > 0 )
-						status = CRYPT_OK;
-					return( status );
+						return( CRYPT_OK );
+
+					/* There's no existing data still in the buffer and an
+					   attempt to read more resulted in an error, we can't 
+					   go any further */
+					return( cryptStatusError( status ) ? status : \
+							( keyMatchInfo != NULL ) ? CRYPT_ERROR_NOTFOUND : \
+													   CRYPT_ERROR_UNDERFLOW );
 					}
 
-				/* There's still data in the buffer, we can continue until 
-				   we drain it */
+				/* There's still data in the buffer from a previous read, we 
+				   can continue until we drain it */
 				length = 0;
-				}
-			if( length < bufSize - bufEnd )
-				{
-				/* We didn't get as much as we requested, there's nothing
-				   left to read */
 				moreData = FALSE;
 				}
+			else
+				{
+				/* If we didn't get as much as we requested then there's 
+				   nothing left to read */
+				if( length < bufSize - bufEnd )
+					moreData = FALSE;
+				}
 			bufEnd += length;
+
+			ENSURES( bufEnd > 0 && bufEnd <= bufSize );
 			}
 
 		/* Determine the size of the group of key packets in the buffer */
 		sMemConnect( &keyStream, buffer, bufEnd );
-		status = scanPacketGroup( &keyStream, &length, !moreData );
+		status = scanPacketGroup( &keyStream, &length, bufEnd );
 		sMemDisconnect( &keyStream );
-		if( status == OK_SPECIAL )
-			{
-			/* Remember that we hit something that we couldn't process */
-			*unhandledDataPresent = TRUE;
-
-			/* If the packet group is contained within the buffer, remove 
-			   the problem packets and continue */
-			if( length <= bufEnd )
-				{
-				if( bufEnd - length > 0 )
-					{
-					REQUIRES( rangeCheck( length, bufEnd - length, 
-										  bufSize ) );
-					memmove( buffer, buffer + length, bufEnd - length );
-					}
-				bufEnd -= length;
-				continue;
-				}
-			ENSURES( length > bufEnd );
-
-			/* The packet group overflows the buffer, skip the remaining
-			   contents and continue */
-			status = sseek( stream, stell( stream ) + ( length - bufEnd ) );
-			if( cryptStatusError( status ) )
-				break;
-			bufEnd = 0;
-			continue;
-			}
 		if( cryptStatusError( status ) )
 			{
 			retExt( status,
 					( status, errorInfo, 
 					  "Couldn't parse key packet group %d", keyGroupNo ) );
 			}
-		if( length <= 0 )
-			return( CRYPT_OK );
+		ENSURES( length > 0 && length <= bufEnd );
 
-		/* Move the packet group from the keyring buffer to the key data */
+		/* Move the packet group from the keyring buffer to the key data */  
 		if( keyMatchInfo == NULL )
 			{
-			/* It's a read of all packets, allocate room for the current
-			   packet group */
+			/* It's a private-key read of all packets, allocate room for the 
+			   current packet group */
 			if( ( pgpInfoPtr->keyData = \
-								clAlloc( "readKeyring", length ) ) == NULL )
+						clAlloc( "processKeyringPackets", length ) ) == NULL )
 				return( CRYPT_ERROR_MEMORY );
-			pgpInfoPtr->keyDataLen = length;
+			}
+		else
+			{
+			/* It's a public-key read and we're just scanning through the 
+			   packets looking for a match.  In this case pgpInfoPtr == 
+			   &pgpInfo[ 0 ], with pgpInfoPtr->keyData being a fixed buffer 
+			   of size KEYRING_BUFSIZE, with length <= KEYRING_BUFSIZE */
+			ENSURES( length <= KEYRING_BUFSIZE );
 			}
 		memcpy( pgpInfoPtr->keyData, buffer, length );
-		if( bufEnd > length )
+		pgpInfoPtr->keyDataLen = length;
+
+		/* Remove the packet group from the read buffer:
+
+				 length	  bufEnd			  length
+					|		|					|
+					v		v					v
+			+-------+-------+---+		+-------+-----------+
+			|///////|\\\\\\\|	| ---->	|\\\\\\\|			|
+			+-------+-------+---+		+-------+-----------+
+			   To	   To
+			 remove	  move */
+		if( length < bufEnd )
 			{
 			REQUIRES( rangeCheck( length, bufEnd - length, bufSize ) );
 			memmove( buffer, buffer + length, bufEnd - length );
 			}
 		bufEnd -= length;
+		ENSURES( bufEnd >= 0 && bufEnd < bufSize );
 
 		/* Process the current packet group */
-		sMemConnect( &keyStream, pgpInfoPtr->keyData, length );
+		sMemConnect( &keyStream, pgpInfoPtr->keyData, 
+					 pgpInfoPtr->keyDataLen );
 		status = processPacketGroup( &keyStream, pgpInfoPtr, keyMatchInfo,
 									 matchedKeyInfoPtrPtr, keyGroupNo, 
 									 errorInfo );
 		sMemDisconnect( &keyStream );
 		if( cryptStatusError( status ) )
 			{
-			/* If we were looking for a match for a particular key and 
+			/* If we were looking for a match for a particular key and we
 			   didn't find it, continue */
 			if( keyMatchInfo != NULL && status == CRYPT_ERROR_NOTFOUND )
 				continue;
@@ -1076,6 +1180,11 @@ static int processKeyringPackets( INOUT STREAM *stream,
 			*unhandledDataPresent = TRUE;
 			if( status == CRYPT_ERROR_NOSECURE )
 				insecureKeys = TRUE;
+			if( keyMatchInfo == NULL )
+				{
+				/* Free the entry that we allocated earlier */
+				pgpFreeEntry( pgpInfo );
+				}
 			continue;
 			}
 
@@ -1085,8 +1194,8 @@ static int processKeyringPackets( INOUT STREAM *stream,
 
 		/* We're reading all keys, move on to the next empty slot.  Note 
 		   that we only get to this point if we've been able to do something 
-		   with the key, if not then the unhandledDataPresent flag is set 
-		   without moving on to the next key group */
+		   with the key, if not then the unhandledDataPresent flag will be 
+		   set without moving on to the next key group */
 		keyGroupNo++;
 		if( keyGroupNo >= maxNoPgpObjects )
 			{
@@ -1097,12 +1206,14 @@ static int processKeyringPackets( INOUT STREAM *stream,
 			}
 		}
 	ENSURES( iterationCount < FAILSAFE_ITERATIONS_MAX );
+			 /* This is safe since under normal circumstances we'll hit the 
+				keyGroupNo bound long before we encounter this check */
 
 	/* If we were looking for a specific match, we haven't found it */
 	if( keyMatchInfo != NULL )
 		return( CRYPT_ERROR_NOTFOUND );
 
-	/* If we haven't found any keys that we can use let the caller know.  
+	/* If we haven't found any keys that we can use, let the caller know.  
 	   The error code to return here is a bit complex because we can skip 
 	   keys either because there's something in the key data that we can't
 	   process or because the keys aren't sufficiently protected for us to
@@ -1120,48 +1231,88 @@ static int processKeyringPackets( INOUT STREAM *stream,
 	return( CRYPT_OK );
 	}
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 6 ) ) \
-int pgpReadKeyring( INOUT STREAM *stream, 
-					IN_ARRAY( maxNoPgpObjects ) PGP_INFO *pgpInfo, 
-					IN_LENGTH_SHORT const int maxNoPgpObjects,
-					IN_OPT const KEY_MATCH_INFO *keyMatchInfo,
-					INOUT_OPT PGP_KEYINFO **matchedKeyInfoPtrPtr,
-					INOUT ERROR_INFO *errorInfo )
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3, 4, 5 ) ) \
+int pgpScanPubKeyring( INOUT STREAM *stream, 
+					   INOUT PGP_INFO *pgpInfo, 
+					   const KEY_MATCH_INFO *keyMatchInfo,
+					   INOUT PGP_KEYINFO **matchedKeyInfoPtrPtr,
+					   INOUT ERROR_INFO *errorInfo )
 	{
+	BYTE buffer[ KEYRING_BUFSIZE + 8 ], *streamBuffer;
 	BOOLEAN unhandledDataPresent;
-	BYTE *buffer;
+	int status;
+
+	assert( isWritePtr( stream, sizeof( STREAM ) ) );
+	assert( isWritePtr( pgpInfo, sizeof( PGP_INFO ) ) );
+	assert( isReadPtr( keyMatchInfo, sizeof( KEY_MATCH_INFO ) ) );
+	assert( isWritePtr( matchedKeyInfoPtrPtr, sizeof( PGP_KEYINFO * ) ) );
+	assert( isWritePtr( errorInfo, sizeof( ERROR_INFO ) ) );
+
+	REQUIRES( pgpInfo->keyData != NULL && \
+			  pgpInfo->keyDataLen == KEYRING_BUFSIZE );
+	REQUIRES( keyMatchInfo != NULL && matchedKeyInfoPtrPtr != NULL );
+	REQUIRES( errorInfo != NULL );
+
+	/* Clear the return value */
+	*matchedKeyInfoPtrPtr = NULL;
+
+	/* PGP keyrings just contain an arbitrary collection of packets 
+	   concatenated together so we can't tell in advance how much data we 
+	   should be reading.  Because of this we have to set the file stream to 
+	   allow partial reads without returning a read error */
+	sioctlSet( stream, STREAM_IOCTL_PARTIALREAD, TRUE );
+
+	/* Since we're scanning an arbitrarily-large collection of packets for a 
+	   match we need to allocate a stream buffer, since the stream for the 
+	   public keyring is merely an open file handle that can be scanned and 
+	   re-scanned as required to locate keys.  The somewhat awkward 
+	   buffering scheme is used because we need one buffer for the stream 
+	   and another to process keyring packets in, we can't use one for both */
+	if( ( streamBuffer = clAlloc( "readKeyring", STREAM_BUFSIZE ) ) == NULL )
+		return( CRYPT_ERROR_MEMORY );
+	sioctlSetString( stream, STREAM_IOCTL_IOBUFFER, streamBuffer, 
+					 STREAM_BUFSIZE );
+	status = processKeyringPackets( stream, pgpInfo, 1, buffer, 
+									KEYRING_BUFSIZE, keyMatchInfo, 
+									matchedKeyInfoPtrPtr, 
+									&unhandledDataPresent, errorInfo );
+	sioctlSet( stream, STREAM_IOCTL_IOBUFFER, 0 );
+	clFree( "readKeyring", streamBuffer );
+	if( cryptStatusError( status ) )
+		return( status );
+
+	/* If we couldn't process one or more packets let the caller know that 
+	   not all keyring data is present in memory */
+	return( unhandledDataPresent ? OK_SPECIAL : CRYPT_OK );
+	}
+
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+int pgpReadPrivKeyring( INOUT STREAM *stream, 
+						IN_ARRAY( maxNoPgpObjects ) PGP_INFO *pgpInfo, 
+						IN_LENGTH_SHORT const int maxNoPgpObjects,
+						INOUT ERROR_INFO *errorInfo )
+	{
+	BYTE buffer[ KEYRING_BUFSIZE + 8 ];
+	BOOLEAN unhandledDataPresent;
 	int status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( pgpInfo, sizeof( PGP_INFO ) * maxNoPgpObjects ) );
-	assert( ( keyMatchInfo == NULL && matchedKeyInfoPtrPtr == NULL ) || \
-			( isReadPtr( keyMatchInfo, sizeof( KEY_MATCH_INFO ) ) && \
-			  isWritePtr( matchedKeyInfoPtrPtr, sizeof( PGP_KEYINFO * ) ) ) );
+	assert( isWritePtr( errorInfo, sizeof( ERROR_INFO ) ) );
 
 	REQUIRES( maxNoPgpObjects >= 1 && maxNoPgpObjects < MAX_INTLENGTH_SHORT );
-	REQUIRES( ( keyMatchInfo == NULL && matchedKeyInfoPtrPtr == NULL ) || \
-			  ( keyMatchInfo != NULL && matchedKeyInfoPtrPtr != NULL && \
-				pgpInfo->keyData != NULL && \
-				pgpInfo->keyDataLen == KEYRING_BUFSIZE ) );
 	REQUIRES( errorInfo != NULL );
 
-	/* Clear the return value */
-	if( matchedKeyInfoPtrPtr != NULL )
-		*matchedKeyInfoPtrPtr = NULL;
-
-	/* Since PGP keyrings just contain an arbitrary collection of packets 
-	   concatenated together we can't tell in advance how much data we 
+	/* PGP keyrings just contain an arbitrary collection of packets 
+	   concatenated together so we can't tell in advance how much data we 
 	   should be reading.  Because of this we have to set the file stream to 
 	   allow partial reads without returning a read error */
-	if( ( buffer = clAlloc( "readKeyring", KEYRING_BUFSIZE ) ) == NULL )
-		return( CRYPT_ERROR_MEMORY );
 	sioctlSet( stream, STREAM_IOCTL_PARTIALREAD, TRUE );
+
+	/* Read all of the keyring packets into memory */
 	status = processKeyringPackets( stream, pgpInfo, maxNoPgpObjects, 
-									buffer, KEYRING_BUFSIZE, 
-									keyMatchInfo, matchedKeyInfoPtrPtr, 
+									buffer, KEYRING_BUFSIZE, NULL, NULL, 
 									&unhandledDataPresent, errorInfo );
-	sioctlSet( stream, STREAM_IOCTL_IOBUFFER, 0 );
-	clFree( "readKeyring", buffer );
 	if( cryptStatusError( status ) )
 		return( status );
 

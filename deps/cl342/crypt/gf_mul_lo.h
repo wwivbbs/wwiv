@@ -1,28 +1,21 @@
 /*
- ---------------------------------------------------------------------------
- Copyright (c) 1998-2008, Brian Gladman, Worcester, UK. All rights reserved.
+---------------------------------------------------------------------------
+Copyright (c) 1998-2010, Brian Gladman, Worcester, UK. All rights reserved.
 
- LICENSE TERMS
+The redistribution and use of this software (with or without changes)
+is allowed without the payment of fees or royalties provided that:
 
- The redistribution and use of this software (with or without changes)
- is allowed without the payment of fees or royalties provided that:
+  source code distributions include the above copyright notice, this
+  list of conditions and the following disclaimer;
 
-  1. source code distributions include the above copyright notice, this
-     list of conditions and the following disclaimer;
+  binary distributions include the above copyright notice, this list
+  of conditions and the following disclaimer in their documentation.
 
-  2. binary distributions include the above copyright notice, this list
-     of conditions and the following disclaimer in their documentation;
-
-  3. the name of the copyright holder is not used to endorse products
-     built using this software without specific written permission.
-
- DISCLAIMER
-
- This software is provided 'as is' with no explicit or implied warranties
- in respect of its properties, including, but not limited to, correctness
- and/or fitness for purpose.
- ---------------------------------------------------------------------------
- Issue Date: 20/12/2007
+This software is provided 'as is' with no explicit or implied warranties
+in respect of its operation, including, but not limited to, correctness
+and fitness for purpose.
+---------------------------------------------------------------------------
+Issue Date: 18/02/2014
 
  This file provides the low level primitives needed for Galois Field 
  operations in GF(2^128) for the four most likely field representations.
@@ -89,477 +82,196 @@
     q(0xf0), q(0xf1), q(0xf2), q(0xf3), q(0xf4), q(0xf5), q(0xf6), q(0xf7),\
     q(0xf8), q(0xf9), q(0xfa), q(0xfb), q(0xfc), q(0xfd), q(0xfe), q(0xff) }
 
-/*  Given the value i in 0..255 as the byte overflow when a field element
-    in GHASH is multipled by x^8, this function will return the values that
-    are generated in the lo 16-bit word of the field value by applying the
-    modular polynomial. The values lo_byte and hi_byte are returned via the
-    macro xp_fun(lo_byte, hi_byte) so that the values can be assembled into
-    memory as required by a suitable definition of this macro operating on
-    the table above
+/*  Within the 16 bytes of the field element the top and bottom field bits
+    are within bytes as follows (bit numbers in bytes 0 from ls up) for
+    each of the four field representations supported (see gf128mul.txt):
+
+    GF_BIT   127 126 125 124 123 122 121 120     .....  7 6 5 4 3 2 1 0
+                                                  0x87  1 0 0 0 0 1 1 1
+    BL x[ 0]   7   6   5   4   3   2   1   0     x[15]  7 6 5 4 3 2 1 0
+    LL x[15]   7   6   5   4   3   2   1   0     x[ 0]  7 6 5 4 3 2 1 0
+
+    GF_BIT   120 121 122 123 124 125 126 127     .....  0 1 2 3 4 5 6 7
+                                                  0xc1  1 1 1 0 0 0 0 1
+    BB x[ 0]   7   6   5   4   3   2   1   0     x[15]  7 6 5 4 3 2 1 0
+    LB x[15]   7   6   5   4   3   2   1   0     x[ 0]  7 6 5 4 3 2 1 0
+
+    When the field element is multiplied by x^n, the high bits overflow
+    and are used to form an overflow byte. For the BL and LL modes this
+    byte has the lowest overflow bit in bit 0 whereas for the BB and LB
+    modes this bit is in biit 7.  So we have for this byte:
+
+    bit (bit n = 2^n)    7   6   5   4   3   2   1   0
+    BL and LL          x^7 x^6 x^5 x^4 x^3 x^2 x^1 x^0  
+    BB and LB          x^0 x^1 x^2 x^3 x^4 x^5 x^6 x^7  
+    
+    This byte then has to be multiplied by the low bits of the field
+    polynomial, which produces a value of 16 bits to be xored into the 
+    left shifted field value. For the BL and LL modes bit 0 gives the
+    word value 0x0087, bit 1 gives 0x010e (0x87 left shifted 1), 0x021c
+    (0x87 left shifted 2), ... For the BB and LB modes, bit 7 gives the
+    value 0x00e1, bit 6 gives 0x8070, bit 5 gives 0x4038, ... Each bit
+    in the overflow byte is expanded in this way and is xored into the
+    overall result, so eaach of the 256 byte values will produce a
+    corresponding word value that is computed by the gf_uint16_xor(i)
+    macros below.
+
+    These word values have to be xored into the low 16 bits of the 
+    field value. If the byte endianess of the mode matches that of
+    the architecture xoring the word value will be correct. But if
+    the mode has the opposite endianess, the word value has to be
+    xored in byte reversed order. This is done by the ord() macro.
 */
+
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN \
+      && (defined( GF_MODE_LB ) || defined( GF_MODE_LL )) || \
+    PLATFORM_BYTE_ORDER == IS_BIG_ENDIAN \
+      && (defined( GF_MODE_BB ) || defined( GF_MODE_BL ))
+#  define ord(hi, lo)   0x##hi##lo
+#else 
+#  define ord(hi, lo)   0x##lo##hi
+#endif
 
 #if defined( GF_MODE_BL ) || defined( GF_MODE_LL )
 
+/* field and numeric bit significance correspond */
+
 #define gf_uint16_xor(i) ( \
-    (i & 0x01 ? xx(00,87) : 0) ^ (i & 0x02 ? xx(01,0e) : 0) ^ \
-    (i & 0x04 ? xx(02,1c) : 0) ^ (i & 0x08 ? xx(04,38) : 0) ^ \
-    (i & 0x10 ? xx(08,70) : 0) ^ (i & 0x20 ? xx(10,e0) : 0) ^ \
-    (i & 0x40 ? xx(21,c0) : 0) ^ (i & 0x80 ? xx(43,80) : 0) )
+    (i & 0x01 ? ord(00,87) : 0) ^ (i & 0x02 ? ord(01,0e) : 0) ^ \
+    (i & 0x04 ? ord(02,1c) : 0) ^ (i & 0x08 ? ord(04,38) : 0) ^ \
+    (i & 0x10 ? ord(08,70) : 0) ^ (i & 0x20 ? ord(10,e0) : 0) ^ \
+    (i & 0x40 ? ord(21,c0) : 0) ^ (i & 0x80 ? ord(43,80) : 0) )
 
 enum x_bit 
 { 
-    X_0 = 0x01, X_1 = 0x02, X_2 = 0x04, X_3 = 0x08, X_4 = 0x10, X_5 = 0x20, X_6 = 0x40, X_7 = 0x80
+    X_0 = 0x01, X_1 = 0x02, X_2 = 0x04, X_3 = 0x08, 
+    X_4 = 0x10, X_5 = 0x20, X_6 = 0x40, X_7 = 0x80
 };
 
 #elif defined( GF_MODE_BB ) || defined( GF_MODE_LB )
 
+/* field and numeric bit significance are in reverse */
+
 #define gf_uint16_xor(i) ( \
-    (i & 0x80 ? xx(e1,00) : 0) ^ (i & 0x40 ? xx(70,80) : 0) ^ \
-    (i & 0x20 ? xx(38,40) : 0) ^ (i & 0x10 ? xx(1c,20) : 0) ^ \
-    (i & 0x08 ? xx(0e,10) : 0) ^ (i & 0x04 ? xx(07,08) : 0) ^ \
-    (i & 0x02 ? xx(03,84) : 0) ^ (i & 0x01 ? xx(01,c2) : 0) )
+    (i & 0x80 ? ord(00,e1) : 0) ^ (i & 0x40 ? ord(80,70) : 0) ^ \
+    (i & 0x20 ? ord(40,38) : 0) ^ (i & 0x10 ? ord(20,1c) : 0) ^ \
+    (i & 0x08 ? ord(10,0e) : 0) ^ (i & 0x04 ? ord(08,07) : 0) ^ \
+    (i & 0x02 ? ord(84,03) : 0) ^ (i & 0x01 ? ord(c2,01) : 0) )
 
 enum x_bit 
 { 
-    X_0 = 0x80, X_1 = 0x40, X_2 = 0x20, X_3 = 0x10, X_4 = 0x08, X_5 = 0x04, X_6 = 0x02, X_7 = 0x01
+    X_0 = 0x80, X_1 = 0x40, X_2 = 0x20, X_3 = 0x10, 
+    X_4 = 0x08, X_5 = 0x04, X_6 = 0x02, X_7 = 0x01
 };
 
 #else
 #error Galois Field representation has not been set
 #endif
 
-#if defined( GF_MODE_BL ) || defined( GF_MODE_LB )
+const uint16_t gf_tab[256] = DATA_256(gf_uint16_xor);
 
-#if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
-#  define xx(p,q)   0x##q##p
-#else
-#  define xx(p,q)   0x##p##q
-#endif
+/* LL Mode Galois Field operations 
 
-#elif defined( GF_MODE_BB ) || defined( GF_MODE_LL )
+  x[0]     x[1]     x[2]     x[3]     x[4]     x[5]     x[6]    x[7]
+ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls
+10000111 ........ ........ ........ ........ ........ ........ ........
+07....00 15....08 23....16 31....24 39....32 47....40 55....48 63....56
+  x[8]    x[9]   x[10]   x[11]   x[12]   x[13]   x[14]  x[15]
+ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls
+........ ........ ........ ........ ........ ........ ........ M.......
+71....64 79....72 87....80 95....88 103...96 111..104 119..112 127..120
+*/
 
-#if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
-#  define xx(p,q)   0x##p##q
-#else
-#  define xx(p,q)   0x##q##p
-#endif
-
-#else
-#error Galois Field representation has not been set
-#endif
-
-const uint_16t gf_tab[256] = DATA_256(gf_uint16_xor);
-
-/* BL low level Galois Field operations */
+#if UNIT_BITS == 64
 
 #if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
-
-#if UNIT_BITS == 64
-
-#define f1_bl(n,r,x)   r[n] = (x[n] << 1) & ~MASK(0x01) | ((x[n] >> 15) | (!n ? x[n+1] << 49 : 0)) & MASK(0x01)
-#define f4_bl(n,r,x)   r[n] = (x[n] << 4) & ~MASK(0x0f) | ((x[n] >> 12) | (!n ? x[n+1] << 52 : 0)) & MASK(0x0f)
-#define f8_bl(n,r,x)   r[n] = (x[n] >> 8) | (!n ? x[n+1] << 56 : 0)
-
-gf_decl void gf_mulx1_bl(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 7) & 0x01];
-    rep2_u2(f1_bl, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[1] ^= ((gf_unit_t)_tt) << 48;
-}
-
-gf_decl void gf_mulx4_bl(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 4) & 0x0f];
-    rep2_u2(f4_bl, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[1] ^= ((gf_unit_t)_tt) << 48;
-}
-
-gf_decl void gf_mulx8_bl(gf_t x)
-{   gf_unit_t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[0] & 0xff];
-    rep2_u2(f8_bl, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[1] ^= ((gf_unit_t)_tt) << 48;
-}
-
-#elif UNIT_BITS == 32
-
-#define f1_bl(n,r,x)   r[n] = (x[n] << 1) & ~MASK(0x01) | ((x[n] >> 15) | (n < 3 ? x[n+1] << 17 : 0)) & MASK(0x01)
-#define f4_bl(n,r,x)   r[n] = (x[n] << 4) & ~MASK(0x0f) | ((x[n] >> 12) | (n < 3 ? x[n+1] << 20 : 0)) & MASK(0x0f)
-#define f8_bl(n,r,x)   r[n] = (x[n] >> 8) | (n < 3 ? x[n+1] << 24 : 0)
-
-gf_decl void gf_mulx1_bl(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 7) & 0x01];
-    rep2_u4(f1_bl, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[3] ^= ((gf_unit_t)_tt) << 16;
-}
-
-gf_decl void gf_mulx4_bl(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 4) & 0x0f];
-    rep2_u4(f4_bl, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[3] ^= ((gf_unit_t)_tt) << 16;
-}
-
-gf_decl void gf_mulx8_bl(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[0] & 0xff];
-    rep2_u4(f8_bl, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[3] ^= ((gf_unit_t)_tt) << 16;
-}
-
-#else
-
-#define f1_bl(n,r,x)   r[n] = (x[n] << 1) | (n < 15 ? x[n+1] >> 7 : 0)
-#define f4_bl(n,r,x)   r[n] = (x[n] << 4) | (n < 15 ? x[n+1] >> 4 : 0)
-
-gf_decl void gf_mulx1_bl(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 7) & 0x01];
-    rep2_u16(f1_bl, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[15] ^= _tt >> 8;
-}
-
-gf_decl void gf_mulx4_bl(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 4) & 0x0f];
-    rep2_u16(f4_bl, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[14] ^= _tt & 0xff;
-    UNIT_PTR(x)[15] ^= _tt >> 8;
-}
-
-gf_decl void gf_mulx8_bl(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[0]];
-    memmove(UNIT_PTR(x), UNIT_PTR(x) + 1, 15);
-    UNIT_PTR(x)[14] ^= _tt & 0xff;
-    UNIT_PTR(x)[15]  = _tt >> 8;
-}
-
-#endif
-
-#elif PLATFORM_BYTE_ORDER == IS_BIG_ENDIAN
-
-#if UNIT_BITS == 64
-
-#define f1_bl(n,r,x)   r[n] = (x[n] << 1) | (!n ? x[n+1] >> 63 : 0)
-#define f4_bl(n,r,x)   r[n] = (x[n] << 4) | (!n ? x[n+1] >> 60 : 0)
-#define f8_bl(n,r,x)   r[n] = (x[n] << 8) | (!n ? x[n+1] >> 56 : 0)
-
-gf_decl void gf_mulx1_bl(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 63) & 0x01];
-    rep2_u2(f1_bl, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[1] ^= _tt;
-}
-
-gf_decl void gf_mulx4_bl(gf_t x)
-{   gf_unit_t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 60) & 0x0f];
-    rep2_u2(f4_bl, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[1] ^= _tt;
-}
-
-gf_decl void gf_mulx8_bl(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 56) & 0xff];
-    rep2_u2(f8_bl, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[1] ^= _tt;
-}
-
-#elif UNIT_BITS == 32
-
-#define f1_bl(n,r,x)   r[n] = (x[n] << 1) | (n < 3 ? x[n+1] >> 31 : 0)
-#define f4_bl(n,r,x)   r[n] = (x[n] << 4) | (n < 3 ? x[n+1] >> 28 : 0)
-#define f8_bl(n,r,x)   r[n] = (x[n] << 8) | (n < 3 ? x[n+1] >> 24 : 0)
-
-gf_decl void gf_mulx1_bl(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 31) & 0x01];
-    rep2_u4(f1_bl, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[3] ^= _tt;
-}
-
-gf_decl void gf_mulx4_bl(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 28) & 0x0f];
-    rep2_u4(f4_bl, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[3] ^= _tt;
-}
-
-gf_decl void gf_mulx8_bl(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 24) & 0xff];
-    rep2_u4(f8_bl, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[3] ^= _tt;
-}
-
-#else
-
-#define f1_bl(n,r,x)   r[n] = (x[n] << 1) | (n < 15 ? x[n+1] >> 7 : 0)
-#define f4_bl(n,r,x)   r[n] = (x[n] << 4) | (n < 15 ? x[n+1] >> 4 : 0)
-
-gf_decl void gf_mulx1_bl(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 7) & 0x01];
-    rep2_u16(f1_bl, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[15] ^= _tt & 0xff;
-}
-
-gf_decl void gf_mulx4_bl(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 4) & 0x0f];
-    rep2_u16(f4_bl, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[14] ^= _tt >> 8;
-    UNIT_PTR(x)[15] ^= _tt & 0xff;
-}
-
-gf_decl void gf_mulx8_bl(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[0]];
-    memmove(UNIT_PTR(x), UNIT_PTR(x) + 1, 15);
-    UNIT_PTR(x)[14] ^= _tt >> 8;
-    UNIT_PTR(x)[15]  = _tt & 0xff;
-}
-
-#endif
-
-#else
-#  error Platform byte order has not been set. 
-#endif
-
-/* BB low level Galois Field operations */
-
-#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
-
-#if UNIT_BITS == 64
-
-#define f1_bb(n,r,x)   r[n] = (x[n] >> 1) | (!n ? x[n+1] << 63 : 0)
-#define f4_bb(n,r,x)   r[n] = (x[n] >> 4) | (!n ? x[n+1] << 60 : 0)
-#define f8_bb(n,r,x)   r[n] = (x[n] >> 8) | (!n ? x[n+1] << 56 : 0)
-
-gf_decl void gf_mulx1_bb(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] << 7) & 0x80];
-    rep2_u2(f1_bb, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[1] ^= ((gf_unit_t)_tt) << 48;
-}
-
-gf_decl void gf_mulx4_bb(gf_t x)
-{   gf_unit_t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] << 4) & 0xf0];
-    rep2_u2(f4_bb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[1] ^= ((gf_unit_t)_tt) << 48;
-}
-
-gf_decl void gf_mulx8_bb(gf_t x)
-{   gf_unit_t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[0] & 0xff];
-    rep2_u2(f8_bb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[1] ^= ((gf_unit_t)_tt) << 48;
-}
-
-#elif UNIT_BITS == 32
-
-#define f1_bb(n,r,x)   r[n] = (x[n] >> 1) | (n < 3 ? x[n+1] << 31 : 0)
-#define f4_bb(n,r,x)   r[n] = (x[n] >> 4) | (n < 3 ? x[n+1] << 28 : 0)
-#define f8_bb(n,r,x)   r[n] = (x[n] >> 8) | (n < 3 ? x[n+1] << 24 : 0)
-
-gf_decl void gf_mulx1_bb(gf_t r, const gf_t x)
-{   gf_unit_t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] << 7) & 0x80];
-    rep2_u4(f1_bb, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[3] ^= ((gf_unit_t)_tt) << 16;
-}
-
-gf_decl void gf_mulx4_bb(gf_t x)
-{   gf_unit_t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] << 4) & 0xf0];
-    rep2_u4(f4_bb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[3] ^= ((gf_unit_t)_tt) << 16;
-}
-
-gf_decl void gf_mulx8_bb(gf_t x)
-{   gf_unit_t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[0] & 0xff];
-    rep2_u4(f8_bb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[3] ^= ((gf_unit_t)_tt) << 16;
-}
-
-#else
-
-#define f1_bb(n,r,x)   r[n] = (x[n] >> 1) | (n < 15 ? x[n+1] << 7 : 0)
-#define f4_bb(n,r,x)   r[n] = (x[n] >> 4) | (n < 15 ? x[n+1] << 4 : 0)
-
-gf_decl void gf_mulx1_bb(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] << 7) & 0x80];
-    rep2_u16(f1_bb, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[15] ^= _tt >> 8;
-}
-
-gf_decl void gf_mulx4_bb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] << 4) & 0xf0];
-    rep2_u16(f4_bb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[14] ^= _tt & 0xff;
-    UNIT_PTR(x)[15] ^= _tt >> 8;
-}
-
-gf_decl void gf_mulx8_bb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[0]];
-    memmove(UNIT_PTR(x), UNIT_PTR(x) + 1, 15);
-    UNIT_PTR(x)[14] ^= _tt & 0xff;
-    UNIT_PTR(x)[15] = _tt >> 8;
-}
-
-#endif
-
-#elif PLATFORM_BYTE_ORDER == IS_BIG_ENDIAN
-
-#if UNIT_BITS == 64
-
-#define f1_bb(n,r,x)   r[n] = (x[n] >> 1) & ~MASK(0x80) | ((x[n] << 15) | (!n ? x[n+1] >> 49 : 0)) & MASK(0x80)
-#define f4_bb(n,r,x)   r[n] = (x[n] >> 4) & ~MASK(0xf0) | ((x[n] << 12) | (!n ? x[n+1] >> 52 : 0)) & MASK(0xf0)
-#define f8_bb(n,r,x)   r[n] = (x[n] >> 8) & ~MASK(0xff) | ((x[n] <<  8) | (!n ? x[n+1] >> 56 : 0)) & MASK(0xff)
-
-gf_decl void gf_mulx1_bb(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 49) & 0x80];
-    rep2_u2(f1_bb, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[1] ^= _tt;
-}
-
-gf_decl void gf_mulx4_bb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 52) & 0xf0];
-    rep2_u2(f4_bb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[1] ^= _tt;
-}
-
-gf_decl void gf_mulx8_bb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 56) & 0xff];
-    rep2_u2(f8_bb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[1] ^= _tt;
-}
-
-#elif UNIT_BITS == 32
-
-#define f1_bb(n,r,x)   r[n] = (x[n] >> 1) & ~MASK(0x80) | ((x[n] << 15) | (n < 3 ? x[n+1] >> 17 : 0)) & MASK(0x80)
-#define f4_bb(n,r,x)   r[n] = (x[n] >> 4) & ~MASK(0xf0) | ((x[n] << 12) | (n < 3 ? x[n+1] >> 20 : 0)) & MASK(0xf0)
-#define f8_bb(n,r,x)   r[n] = (x[n] >> 8) & ~MASK(0xff) | ((x[n] <<  8) | (n < 3 ? x[n+1] >> 24 : 0)) & MASK(0xff)
-
-gf_decl void gf_mulx1_bb(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 17) & 0x80];
-    rep2_u4(f1_bb, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[3] ^= _tt;
-}
-
-gf_decl void gf_mulx4_bb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 20) & 0xf0];
-    rep2_u4(f4_bb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[3] ^= _tt;
-}
-
-gf_decl void gf_mulx8_bb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] >> 24) & 0xff];
-    rep2_u4(f8_bb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[3] ^= _tt;
-}
-
-#else
-
-#define f1_bb(n,r,x)   r[n] = (x[n] >> 1) | (n < 15 ? x[n+1] << 7 : 0)
-#define f4_bb(n,r,x)   r[n] = (x[n] >> 4) | (n < 15 ? x[n+1] << 4 : 0)
-
-gf_decl void gf_mulx1_bb(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] << 7) & 0x80];
-    rep2_u16(f1_bb, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[15] ^= _tt;
-}
-
-gf_decl void gf_mulx4_bb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[0] << 4) & 0xf0];
-    rep2_u16(f4_bb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[14] ^= _tt >> 8;
-    UNIT_PTR(x)[15] ^= _tt & 0xff;
-}
-
-gf_decl void gf_mulx8_bb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[0]];
-    memmove(UNIT_PTR(x), UNIT_PTR(x) + 1, 15);
-    UNIT_PTR(x)[14] ^= _tt >> 8;
-    UNIT_PTR(x)[15] = _tt & 0xff;
-}
-
-#endif
-
-#else
-#  error Platform byte order has not been set. 
-#endif
-
-/* LL low level Galois Field operations */
-
-#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
-
-#if UNIT_BITS == 64
-
 #define f1_ll(n,r,x)   r[n] = (x[n] << 1) | (n ? x[n-1] >> 63 : 0)
 #define f4_ll(n,r,x)   r[n] = (x[n] << 4) | (n ? x[n-1] >> 60 : 0)
 #define f8_ll(n,r,x)   r[n] = (x[n] << 8) | (n ? x[n-1] >> 56 : 0)
+#else
+#define f1_ll(n,r,x)   r[n] = ((x[n] << 1) & ~MASK(0x01)) | (((x[n] >> 15) \
+                            | (n ? x[n-1] << 49 : 0)) & MASK(0x01))
+#define f4_ll(n,r,x)   r[n] = ((x[n] << 4) & ~MASK(0x0f)) | (((x[n] >> 12) \
+                            | (n ? x[n-1] << 52 : 0)) & MASK(0x0f))
+#define f8_ll(n,r,x)   r[n] = (x[n] >> 8) | (n ? x[n-1] << 56 : 0)
+#endif
 
 gf_decl void gf_mulx1_ll(gf_t r, const gf_t x)
-{   uint_16t _tt;
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
     _tt = gf_tab[(UNIT_PTR(x)[1] >> 63) & 0x01];
+#else
+    _tt = ((gf_unit_t)(gf_tab[(UNIT_PTR(x)[1] >> 7) & 0x01])) << 48;
+#endif
     rep2_d2(f1_ll, UNIT_PTR(r), UNIT_PTR(x));
     UNIT_PTR(r)[0] ^= _tt;
 }
 
 gf_decl void gf_mulx4_ll(gf_t x)
-{   uint_16t _tt;
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
     _tt = gf_tab[(UNIT_PTR(x)[1] >> 60) & 0x0f];
+#else
+    _tt = ((gf_unit_t)(gf_tab[(UNIT_PTR(x)[1] >> 4) & 0x0f])) << 48;
+#endif
     rep2_d2(f4_ll, UNIT_PTR(x), UNIT_PTR(x));
     UNIT_PTR(x)[0] ^= _tt;
 }
 
 gf_decl void gf_mulx8_ll(gf_t x)
-{   uint_16t _tt;
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
     _tt = gf_tab[UNIT_PTR(x)[1] >> 56];
+#else
+    _tt = ((gf_unit_t)(gf_tab[UNIT_PTR(x)[1] & 0xff])) << 48;
+#endif
     rep2_d2(f8_ll, UNIT_PTR(x), UNIT_PTR(x));
     UNIT_PTR(x)[0] ^= _tt;
 }
 
 #elif UNIT_BITS == 32
 
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
 #define f1_ll(n,r,x)   r[n] = (x[n] << 1) | (n ? x[n-1] >> 31 : 0)
 #define f4_ll(n,r,x)   r[n] = (x[n] << 4) | (n ? x[n-1] >> 28 : 0)
 #define f8_ll(n,r,x)   r[n] = (x[n] << 8) | (n ? x[n-1] >> 24 : 0)
+#else
+#define f1_ll(n,r,x)   r[n] = ((x[n] << 1) & ~MASK(0x01)) | (((x[n] >> 15) \
+                            | (n ? x[n-1] << 17 : 0)) & MASK(0x01))
+#define f4_ll(n,r,x)   r[n] = ((x[n] << 4) & ~MASK(0x0f)) | (((x[n] >> 12) \
+                            | (n ? x[n-1] << 20 : 0)) & MASK(0x0f))
+#define f8_ll(n,r,x)   r[n] = (x[n] >> 8) | (n ? x[n-1] << 24 : 0)
+#endif
 
 gf_decl void gf_mulx1_ll(gf_t r, const gf_t x)
-{   uint_16t _tt;
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
     _tt = gf_tab[(UNIT_PTR(x)[3] >> 31) & 0x01];
+#else
+    _tt = ((gf_unit_t)(gf_tab[(UNIT_PTR(x)[3] >> 7) & 0x01])) << 16;
+#endif
     rep2_d4(f1_ll, UNIT_PTR(r), UNIT_PTR(x));
     UNIT_PTR(r)[0] ^= _tt;
 }
 
 gf_decl void gf_mulx4_ll(gf_t x)
-{   uint_16t _tt;
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
     _tt = gf_tab[(UNIT_PTR(x)[3] >> 28) & 0x0f];
+#else
+    _tt = ((gf_unit_t)(gf_tab[(UNIT_PTR(x)[3] >> 4) & 0x0f])) << 16;
+#endif
     rep2_d4(f4_ll, UNIT_PTR(x), UNIT_PTR(x));
     UNIT_PTR(x)[0] ^= _tt;
 }
 
 gf_decl void gf_mulx8_ll(gf_t x)
-{   uint_16t _tt;
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
     _tt = gf_tab[UNIT_PTR(x)[3] >> 24];
+#else
+    _tt = ((gf_unit_t)(gf_tab[UNIT_PTR(x)[3] & 0xff])) << 16;
+#endif
     rep2_d4(f8_ll, UNIT_PTR(x), UNIT_PTR(x));
     UNIT_PTR(x)[0] ^= _tt;
 }
@@ -570,262 +282,298 @@ gf_decl void gf_mulx8_ll(gf_t x)
 #define f4_ll(n,r,x)   r[n] = (x[n] << 4) | (n ? x[n-1] >> 4 : 0)
 
 gf_decl void gf_mulx1_ll(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[15] >> 7) & 0x01];
+{   uint16_t _tt;
+	_tt = gf_tab[(UNIT_PTR(x)[15] >> 7) & 0x01];
     rep2_d16(f1_ll, UNIT_PTR(r), UNIT_PTR(x));
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
     UNIT_PTR(r)[0] ^= _tt & 0xff;
+#else
+    UNIT_PTR(r)[0] ^= _tt >> 8;
+#endif
 }
 
 gf_decl void gf_mulx4_ll(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[15] >> 4) & 0x0f];
+{   uint16_t _tt;
+	_tt = gf_tab[(UNIT_PTR(x)[15] >> 4) & 0x0f];
     rep2_d16(f4_ll, UNIT_PTR(x), UNIT_PTR(x));
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
     UNIT_PTR(x)[1] ^= _tt >> 8;
     UNIT_PTR(x)[0] ^= _tt & 0xff;
-}
-
-gf_decl void gf_mulx8_ll(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[15]];
-    memmove(UNIT_PTR(x) + 1, UNIT_PTR(x), 15);
-    UNIT_PTR(x)[1] ^= _tt >> 8;
-    UNIT_PTR(x)[0] =  _tt & 0xff;
-}
-
-#endif
-
-#elif PLATFORM_BYTE_ORDER == IS_BIG_ENDIAN
-
-#if UNIT_BITS == 64
-
-#define f1_ll(n,r,x)   r[n] = (x[n] << 1) & ~MASK(0x01) | ((x[n] >> 15) | (n ? x[n-1] << 49 : 0)) & MASK(0x01)
-#define f4_ll(n,r,x)   r[n] = (x[n] << 4) & ~MASK(0x0f) | ((x[n] >> 12) | (n ? x[n-1] << 52 : 0)) & MASK(0x0f)
-#define f8_ll(n,r,x)   r[n] = (x[n] << 8) & ~MASK(0xff) | ((x[n] >>  8) | (n ? x[n-1] << 56 : 0)) & MASK(0xff)
-
-gf_decl void gf_mulx1_ll(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[1] >> 7) & 0x01];
-    rep2_d2(f1_ll, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[0] ^= ((gf_unit_t)_tt) << 48;
-}
-
-gf_decl void gf_mulx4_ll(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[1] >> 4) & 0x0f];
-    rep2_d2(f4_ll, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[0] ^= ((gf_unit_t)_tt) << 48;
-}
-
-gf_decl void gf_mulx8_ll(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[1] & 0xff];
-    rep2_d2(f8_ll, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[0] ^= ((gf_unit_t)_tt) << 48;
-}
-
-#elif UNIT_BITS == 32
-
-#define f1_ll(n,r,x)   r[n] = (x[n] << 1) & ~MASK(0x01) | ((x[n] >> 15) | (n ? x[n-1] << 17 : 0)) & MASK(0x01)
-#define f4_ll(n,r,x)   r[n] = (x[n] << 4) & ~MASK(0x0f) | ((x[n] >> 12) | (n ? x[n-1] << 20 : 0)) & MASK(0x0f)
-#define f8_ll(n,r,x)   r[n] = (x[n] << 8) & ~MASK(0xff) | ((x[n] >>  8) | (n ? x[n-1] << 24 : 0)) & MASK(0xff)
-
-gf_decl void gf_mulx1_ll(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[3] >> 7) & 0x01];
-    rep2_d4(f1_ll, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[0] ^= ((gf_unit_t)_tt) << 16;
-}
-
-gf_decl void gf_mulx4_ll(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[3] >> 4) & 0x0f];
-    rep2_d4(f4_ll, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[0] ^= ((gf_unit_t)_tt) << 16;
-}
-
-gf_decl void gf_mulx8_ll(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[3] & 0xff];
-    rep2_d4(f8_ll, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[0] ^= ((gf_unit_t)_tt) << 16;
-}
-
 #else
-
-#define f1_ll(n,r,x)   r[n] = (x[n] << 1) | (n ? x[n-1] >> 7 : 0)
-#define f4_ll(n,r,x)   r[n] = (x[n] << 4) | (n ? x[n-1] >> 4 : 0)
-
-gf_decl void gf_mulx1_ll(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[15] >> 7) & 0x01];
-    rep2_d16(f1_ll, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[0] ^= _tt >> 8;
-}
-
-gf_decl void gf_mulx4_ll(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[15] >> 4) & 0x0f];
-    rep2_d16(f4_ll, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[1] ^= _tt & 0xff;
-    UNIT_PTR(x)[0] ^= _tt >> 8;
-}
-
-gf_decl void gf_mulx8_ll(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[15]];
-    memmove(UNIT_PTR(x) + 1, UNIT_PTR(x), 15);
     UNIT_PTR(x)[1] ^= _tt & 0xff;
     UNIT_PTR(x)[0] =  _tt >> 8;
+#endif
+}
+
+gf_decl void gf_mulx8_ll(gf_t x)
+{   uint16_t _tt;
+	_tt = gf_tab[UNIT_PTR(x)[15]];
+    memmove(UNIT_PTR(x) + 1, UNIT_PTR(x), 15);
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    UNIT_PTR(x)[1] ^= _tt >> 8;
+    UNIT_PTR(x)[0] =  _tt & 0xff;
+#else
+    UNIT_PTR(x)[1] ^= _tt & 0xff;
+    UNIT_PTR(x)[0] =  _tt >> 8;
+#endif
 }
 
 #endif
 
-#else
-#  error Platform byte order has not been set. 
-#endif
+/* BL Mode Galois Field operations 
 
-/* LB low level Galois Field operations */
-
-#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+  x[0]     x[1]     x[2]     x[3]     x[4]     x[5]     x[6]     x[7]
+ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls
+M....... ........ ........ ........ ........ ........ ........ ........
+127..120 119..112 111..104 103...96 95....88 87....80 79....72 71....64
+  x[8]     x[9]    x[10]    x[11]    x[12]    x[13]    x[14]    x[15]
+ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls
+........ ........ ........ ........ ........ ........ ........ 10000111
+63....56 55....48 47....40 39....32 31....24 23....16 15....08 07....00
+*/
 
 #if UNIT_BITS == 64
 
-#define f1_lb(n,r,x)   r[n] = (x[n] >> 1) & ~MASK(0x80) | ((x[n] << 15) | (n ? x[n-1] >> 49 : 0)) & MASK(0x80)
-#define f4_lb(n,r,x)   r[n] = (x[n] >> 4) & ~MASK(0xf0) | ((x[n] << 12) | (n ? x[n-1] >> 52 : 0)) & MASK(0xf0)
-#define f8_lb(n,r,x)   r[n] = (x[n] << 8) | (n ? x[n-1] >> 56 : 0)
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+#define f1_bl(n,r,x)   r[n] = ((x[n] << 1) & ~MASK(0x01)) | (((x[n] >> 15) \
+                            | (!n ? x[n+1] << 49 : 0)) & MASK(0x01))
+#define f4_bl(n,r,x)   r[n] = ((x[n] << 4) & ~MASK(0x0f)) | (((x[n] >> 12) \
+                            | (!n ? x[n+1] << 52 : 0)) & MASK(0x0f))
+#define f8_bl(n,r,x)   r[n] = (x[n] >> 8) | (!n ? x[n+1] << 56 : 0)
+#else
+#define f1_bl(n,r,x)   r[n] = (x[n] << 1) | (!n ? x[n+1] >> 63 : 0)
+#define f4_bl(n,r,x)   r[n] = (x[n] << 4) | (!n ? x[n+1] >> 60 : 0)
+#define f8_bl(n,r,x)   r[n] = (x[n] << 8) | (!n ? x[n+1] >> 56 : 0)
+#endif
 
-gf_decl void gf_mulx1_lb(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[1] >> 49) & MASK(0x80)];
-    rep2_d2(f1_lb, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[0] ^= _tt;
+gf_decl void gf_mulx1_bl(gf_t r, const gf_t x)
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = ((gf_unit_t)(gf_tab[(UNIT_PTR(x)[0] >> 7) & 0x01])) << 48;
+#else
+    _tt = gf_tab[(UNIT_PTR(x)[0] >> 63) & 0x01];
+#endif
+    rep2_u2(f1_bl, UNIT_PTR(r), UNIT_PTR(x));
+    UNIT_PTR(r)[1] ^= _tt;
 }
 
-gf_decl void gf_mulx4_lb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[1] >> 52) & MASK(0xf0)];
-    rep2_d2(f4_lb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[0] ^= _tt;
+gf_decl void gf_mulx4_bl(gf_t x)
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = ((gf_unit_t)(gf_tab[(UNIT_PTR(x)[0] >> 4) & 0x0f])) << 48;
+#else
+    _tt = gf_tab[(UNIT_PTR(x)[0] >> 60) & 0x0f];
+#endif
+    rep2_u2(f4_bl, UNIT_PTR(x), UNIT_PTR(x));
+    UNIT_PTR(x)[1] ^= _tt;
 }
 
-gf_decl void gf_mulx8_lb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[1] >> 56];
-    rep2_d2(f8_lb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[0] ^= _tt;
+gf_decl void gf_mulx8_bl(gf_t x)
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = ((gf_unit_t)(gf_tab[UNIT_PTR(x)[0] & 0xff])) << 48;
+#else
+    _tt = gf_tab[(UNIT_PTR(x)[0] >> 56) & 0xff];
+#endif
+    rep2_u2(f8_bl, UNIT_PTR(x), UNIT_PTR(x));
+    UNIT_PTR(x)[1] ^= _tt;
 }
 
 #elif UNIT_BITS == 32
 
-#define f1_lb(n,r,x)   r[n] = (x[n] >> 1) & ~MASK(0x80) | ((x[n] << 15) | (n ? x[n-1] >> 17 : 0)) & MASK(0x80)
-#define f4_lb(n,r,x)   r[n] = (x[n] >> 4) & ~MASK(0xf0) | ((x[n] << 12) | (n ? x[n-1] >> 20 : 0)) & MASK(0xf0)
-#define f8_lb(n,r,x)   r[n] = (x[n] << 8) | (n ? x[n-1] >> 24 : 0)
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+#define f1_bl(n,r,x)   r[n] = ((x[n] << 1) & ~MASK(0x01)) | (((x[n] >> 15) \
+                            | (n < 3 ? x[n+1] << 17 : 0)) & MASK(0x01))
+#define f4_bl(n,r,x)   r[n] = ((x[n] << 4) & ~MASK(0x0f)) | (((x[n] >> 12) \
+                            | (n < 3 ? x[n+1] << 20 : 0)) & MASK(0x0f))
+#define f8_bl(n,r,x)   r[n] = (x[n] >> 8) | (n < 3 ? x[n+1] << 24 : 0)
+#else
+#define f1_bl(n,r,x)   r[n] = (x[n] << 1) | (n < 3 ? x[n+1] >> 31 : 0)
+#define f4_bl(n,r,x)   r[n] = (x[n] << 4) | (n < 3 ? x[n+1] >> 28 : 0)
+#define f8_bl(n,r,x)   r[n] = (x[n] << 8) | (n < 3 ? x[n+1] >> 24 : 0)
+#endif
 
-gf_decl void gf_mulx1_lb(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[3] >> 17) & MASK(0x80)];
-    rep2_d4(f1_lb, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[0] ^= _tt;
+gf_decl void gf_mulx1_bl(gf_t r, const gf_t x)
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = ((gf_unit_t)(gf_tab[(UNIT_PTR(x)[0] >> 7) & 0x01])) << 16;
+#else
+    _tt = gf_tab[(UNIT_PTR(x)[0] >> 31) & 0x01];
+#endif
+    rep2_u4(f1_bl, UNIT_PTR(r), UNIT_PTR(x));
+    UNIT_PTR(r)[3] ^= _tt;
 }
 
-gf_decl void gf_mulx4_lb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[3] >> 20) & MASK(0xf0)];
-    rep2_d4(f4_lb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[0] ^= _tt;
+gf_decl void gf_mulx4_bl(gf_t x)
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = ((gf_unit_t)(gf_tab[(UNIT_PTR(x)[0] >> 4) & 0x0f])) << 16;
+#else
+    _tt = gf_tab[(UNIT_PTR(x)[0] >> 28) & 0x0f];
+#endif
+    rep2_u4(f4_bl, UNIT_PTR(x), UNIT_PTR(x));
+    UNIT_PTR(x)[3] ^= _tt;
 }
 
-gf_decl void gf_mulx8_lb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[3] >> 24];
-    rep2_d4(f8_lb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[0] ^= _tt;
+gf_decl void gf_mulx8_bl(gf_t x)
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = ((gf_unit_t)(gf_tab[UNIT_PTR(x)[0] & 0xff])) << 16;
+#else
+    _tt = gf_tab[(UNIT_PTR(x)[0] >> 24) & 0xff];
+#endif
+    rep2_u4(f8_bl, UNIT_PTR(x), UNIT_PTR(x));
+    UNIT_PTR(x)[3] ^= _tt;
 }
 
 #else
 
-#define f1_lb(n,r,x)   r[n] = (x[n] >> 1) | (n ? x[n-1] << 7 : 0)
-#define f4_lb(n,r,x)   r[n] = (x[n] >> 4) | (n ? x[n-1] << 4 : 0)
+#define f1_bl(n,r,x)   r[n] = (x[n] << 1) | (n < 15 ? x[n+1] >> 7 : 0)
+#define f4_bl(n,r,x)   r[n] = (x[n] << 4) | (n < 15 ? x[n+1] >> 4 : 0)
 
-gf_decl void gf_mulx1_lb(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[15] << 7) & 0x80];
-    rep2_d16(f1_lb, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[0] ^= _tt;
+gf_decl void gf_mulx1_bl(gf_t r, const gf_t x)
+{   uint16_t _tt;
+	_tt = gf_tab[(UNIT_PTR(x)[0] >> 7) & 0x01];
+    rep2_u16(f1_bl, UNIT_PTR(r), UNIT_PTR(x));
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    UNIT_PTR(r)[15] ^= _tt >> 8;
+#else
+    UNIT_PTR(r)[15] ^= _tt & 0xff;
+#endif
 }
 
-gf_decl void gf_mulx4_lb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[15] << 4) & 0xf0];
-    rep2_d16(f4_lb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[1] ^= _tt >> 8;
-    UNIT_PTR(x)[0] ^= _tt & 0xff;
+gf_decl void gf_mulx4_bl(gf_t x)
+{   uint16_t _tt;
+	_tt = gf_tab[(UNIT_PTR(x)[0] >> 4) & 0x0f];
+    rep2_u16(f4_bl, UNIT_PTR(x), UNIT_PTR(x));
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    UNIT_PTR(x)[14] ^= _tt & 0xff;
+    UNIT_PTR(x)[15] ^= _tt >> 8;
+#else
+    UNIT_PTR(x)[14] ^= _tt >> 8;
+    UNIT_PTR(x)[15] = _tt & 0xff;
+#endif
 }
 
-gf_decl void gf_mulx8_lb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[15]];
-    memmove(UNIT_PTR(x) + 1, UNIT_PTR(x), 15);
-    UNIT_PTR(x)[1] ^= _tt >> 8;
-    UNIT_PTR(x)[0] = _tt & 0xff;
+gf_decl void gf_mulx8_bl(gf_t x)
+{   uint16_t _tt;
+	_tt = gf_tab[UNIT_PTR(x)[0]];
+    memmove(UNIT_PTR(x), UNIT_PTR(x) + 1, 15);
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    UNIT_PTR(x)[14] ^= _tt & 0xff;
+    UNIT_PTR(x)[15]  = _tt >> 8;
+#else
+    UNIT_PTR(x)[14] ^= _tt >> 8;
+    UNIT_PTR(x)[15]  = _tt & 0xff;
+#endif
 }
 
 #endif
 
-#elif PLATFORM_BYTE_ORDER == IS_BIG_ENDIAN
+/* LB Mode Galois Field operations 
+
+   x[0]    x[1]     x[2]     x[3]     x[4]     x[5]     x[6]     x[7]
+ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls
+11100001 ........ ........ ........ ........ ........ ........ ........
+00....07 08....15 16....23 24....31 32....39 40....47 48....55 56....63
+   x[8]    x[9]    x[10]    x[11]    x[12]    x[13]    x[14]    x[15]
+ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls
+........ ........ ........ ........ ........ ........ ........ .......M
+64....71 72....79 80....87 88....95 96...103 104..111 112..119 120..127
+*/
 
 #if UNIT_BITS == 64
 
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+#define f1_lb(n,r,x)   r[n] = ((x[n] >> 1) & ~MASK(0x80)) | (((x[n] << 15) \
+                            | (n ? x[n-1] >> 49 : 0)) & MASK(0x80))
+#define f4_lb(n,r,x)   r[n] = ((x[n] >> 4) & ~MASK(0xf0)) | (((x[n] << 12) \
+                            | (n ? x[n-1] >> 52 : 0)) & MASK(0xf0))
+#define f8_lb(n,r,x)   r[n] = (x[n] << 8) | (n ? x[n-1] >> 56 : 0)
+#else
 #define f1_lb(n,r,x)   r[n] = (x[n] >> 1) | (n ? x[n-1] << 63 : 0)
 #define f4_lb(n,r,x)   r[n] = (x[n] >> 4) | (n ? x[n-1] << 60 : 0)
 #define f8_lb(n,r,x)   x[n] = (x[n] >> 8) | (n ? x[n-1] << 56 : 0)
+#endif
 
 gf_decl void gf_mulx1_lb(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[1] << 7) & 0xff];
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = gf_tab[(UNIT_PTR(x)[1] >> 49) & MASK(0x80)];
+#else
+    _tt = ((gf_unit_t)(gf_tab[(UNIT_PTR(x)[1] << 7) & 0xff])) << 48;
+#endif
     rep2_d2(f1_lb, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[0] ^= ((gf_unit_t)_tt)<< 48;
+    UNIT_PTR(r)[0] ^= _tt;
 }
 
 gf_decl void gf_mulx4_lb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[1] << 4) & 0xff];
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = gf_tab[(UNIT_PTR(x)[1] >> 52) & MASK(0xf0)];
+#else
+    _tt = ((gf_unit_t)(gf_tab[(UNIT_PTR(x)[1] << 4) & 0xff])) << 48;
+#endif
     rep2_d2(f4_lb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[0] ^= ((gf_unit_t)_tt) << 48;
+    UNIT_PTR(x)[0] ^= _tt;
 }
 
 gf_decl void gf_mulx8_lb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[1] & 0xff];
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = gf_tab[UNIT_PTR(x)[1] >> 56];
+#else
+    _tt = ((gf_unit_t)(gf_tab[UNIT_PTR(x)[1] & 0xff])) << 48;
+#endif
     rep2_d2(f8_lb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[0] ^= ((gf_unit_t)_tt) << 48;
+    UNIT_PTR(x)[0] ^= _tt;
 }
 
 #elif UNIT_BITS == 32
 
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+#define f1_lb(n,r,x)   r[n] = ((x[n] >> 1) & ~MASK(0x80)) | (((x[n] << 15) \
+                            | (n ? x[n-1] >> 17 : 0)) & MASK(0x80))
+#define f4_lb(n,r,x)   r[n] = ((x[n] >> 4) & ~MASK(0xf0)) | (((x[n] << 12) \
+                            | (n ? x[n-1] >> 20 : 0)) & MASK(0xf0))
+#define f8_lb(n,r,x)   r[n] = (x[n] << 8) | (n ? x[n-1] >> 24 : 0)
+#else
 #define f1_lb(n,r,x)   r[n] = (x[n] >> 1) | (n ? x[n-1] << 31 : 0)
 #define f4_lb(n,r,x)   r[n] = (x[n] >> 4) | (n ? x[n-1] << 28 : 0)
 #define f8_lb(n,r,x)   r[n] = (x[n] >> 8) | (n ? x[n-1] << 24 : 0)
+#endif
 
 gf_decl void gf_mulx1_lb(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[3] << 7) & 0xff];
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = gf_tab[(UNIT_PTR(x)[3] >> 17) & MASK(0x80)];
+#else
+    _tt = ((gf_unit_t)(gf_tab[(UNIT_PTR(x)[3] << 7) & 0xff])) << 16;
+#endif
     rep2_d4(f1_lb, UNIT_PTR(r), UNIT_PTR(x));
-    UNIT_PTR(r)[0] ^= ((gf_unit_t)_tt) << 16;
+    UNIT_PTR(r)[0] ^= _tt;
 }
 
 gf_decl void gf_mulx4_lb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[3] << 4) & 0xff];
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = gf_tab[(UNIT_PTR(x)[3] >> 20) & MASK(0xf0)];
+#else
+    _tt = ((gf_unit_t)(gf_tab[(UNIT_PTR(x)[3] << 4) & 0xff])) << 16;
+#endif
     rep2_d4(f4_lb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[0] ^= ((gf_unit_t)_tt) << 16;
+    UNIT_PTR(x)[0] ^= _tt;
 }
 
 gf_decl void gf_mulx8_lb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[3] & 0xff];
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = gf_tab[UNIT_PTR(x)[3] >> 24];
+#else
+    _tt = ((gf_unit_t)(gf_tab[UNIT_PTR(x)[3] & 0xff])) << 16;
+#endif
     rep2_d4(f8_lb, UNIT_PTR(x), UNIT_PTR(x));
-    UNIT_PTR(x)[0] ^= ((gf_unit_t)_tt) << 16;
+    UNIT_PTR(x)[0] ^= _tt;
 }
 
 #else
@@ -834,32 +582,192 @@ gf_decl void gf_mulx8_lb(gf_t x)
 #define f4_lb(n,r,x)   r[n] = (x[n] >> 4) | (n ? x[n-1] << 4 : 0)
 
 gf_decl void gf_mulx1_lb(gf_t r, const gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[15] << 7) & 0x80];
+{   uint16_t _tt;
+	_tt = gf_tab[(UNIT_PTR(x)[15] << 7) & 0x80];
     rep2_d16(f1_lb, UNIT_PTR(r), UNIT_PTR(x));
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    UNIT_PTR(r)[0] ^= _tt;
+#else
     UNIT_PTR(r)[0] ^= _tt >> 8;
+#endif
 }
 
 gf_decl void gf_mulx4_lb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[(UNIT_PTR(x)[15] << 4) & 0xff];
+{   uint16_t _tt;
+	_tt = gf_tab[(UNIT_PTR(x)[15] << 4) & 0xf0];
     rep2_d16(f4_lb, UNIT_PTR(x), UNIT_PTR(x));
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    UNIT_PTR(x)[1] ^= _tt >> 8;
+    UNIT_PTR(x)[0] ^= _tt & 0xff;
+#else
     UNIT_PTR(x)[1] ^= _tt & 0xff;
     UNIT_PTR(x)[0] ^= _tt >> 8;
+#endif
 }
 
 gf_decl void gf_mulx8_lb(gf_t x)
-{   uint_16t _tt;
-    _tt = gf_tab[UNIT_PTR(x)[15]];
+{   uint16_t _tt;
+	_tt = gf_tab[UNIT_PTR(x)[15]];
     memmove(UNIT_PTR(x) + 1, UNIT_PTR(x), 15);
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    UNIT_PTR(x)[1] ^= _tt >> 8;
+    UNIT_PTR(x)[0] = _tt & 0xff;
+#else
     UNIT_PTR(x)[1] ^= _tt & 0xff;
     UNIT_PTR(x)[0] = _tt >> 8;
+#endif
 }
 
 #endif
 
+/* BB Mode Galois Field operations 
+
+  x[0]     x[1]     x[2]     x[3]     x[4]     x[5]     x[6]     x[7]
+ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls
+.......M ........ ........ ........ ........ ........ ........ ........
+120..127 112..119 104..111 96...103 88....95 80....87 72....79 64....71
+  x[8]     x[9]     x[10]    x[11]    x[12]    x[13]    x[14]   x[15]
+ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls ms    ls
+........ ........ ........ ........ ........ ........ ........ 11100001
+56....63 48....55 40....47 32....39 24....31 16....23 08....15 00....07
+*/
+
+#if UNIT_BITS == 64
+
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+#define f1_bb(n,r,x)   r[n] = (x[n] >> 1) | (!n ? x[n+1] << 63 : 0)
+#define f4_bb(n,r,x)   r[n] = (x[n] >> 4) | (!n ? x[n+1] << 60 : 0)
+#define f8_bb(n,r,x)   r[n] = (x[n] >> 8) | (!n ? x[n+1] << 56 : 0)
 #else
-#  error Platform byte order has not been set. 
+#define f1_bb(n,r,x)   r[n] = ((x[n] >> 1) & ~MASK(0x80)) | (((x[n] << 15) \
+                            | (!n ? x[n+1] >> 49 : 0)) & MASK(0x80))
+#define f4_bb(n,r,x)   r[n] = ((x[n] >> 4) & ~MASK(0xf0)) | (((x[n] << 12) \
+                            | (!n ? x[n+1] >> 52 : 0)) & MASK(0xf0))
+#define f8_bb(n,r,x)   r[n] = (x[n] << 8) | (!n ? x[n+1] >> 56 : 0)
+#endif
+
+gf_decl void gf_mulx1_bb(gf_t r, const gf_t x)
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = (( gf_unit_t)(gf_tab[(UNIT_PTR(x)[0] << 7) & 0x80])) << 48;
+#else
+    _tt = gf_tab[(UNIT_PTR(x)[0] >> 49) & 0x80];
+#endif
+    rep2_u2(f1_bb, UNIT_PTR(r), UNIT_PTR(x));
+    UNIT_PTR(r)[1] ^= _tt;
+}
+
+gf_decl void gf_mulx4_bb(gf_t x)
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = ((gf_unit_t)(gf_tab[(UNIT_PTR(x)[0] << 4) & 0xf0])) << 48;
+#else
+    _tt = gf_tab[(UNIT_PTR(x)[0] >> 52) & 0xf0];
+#endif
+    rep2_u2(f4_bb, UNIT_PTR(x), UNIT_PTR(x));
+    UNIT_PTR(x)[1] ^= _tt;
+}
+
+gf_decl void gf_mulx8_bb(gf_t x)
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = ((gf_unit_t)(gf_tab[UNIT_PTR(x)[0] & 0xff])) << 48;
+#else
+    _tt = gf_tab[(UNIT_PTR(x)[0] >> 56) & 0xff];
+#endif
+    rep2_u2(f8_bb, UNIT_PTR(x), UNIT_PTR(x));
+    UNIT_PTR(x)[1] ^= _tt;
+}
+
+#elif UNIT_BITS == 32
+
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+#define f1_bb(n,r,x)   r[n] = (x[n] >> 1) | (n < 3 ? x[n+1] << 31 : 0)
+#define f4_bb(n,r,x)   r[n] = (x[n] >> 4) | (n < 3 ? x[n+1] << 28 : 0)
+#define f8_bb(n,r,x)   r[n] = (x[n] >> 8) | (n < 3 ? x[n+1] << 24 : 0)
+#else
+#define f1_bb(n,r,x)   r[n] = ((x[n] >> 1) & ~MASK(0x80)) | (((x[n] << 15) \
+                            | (n < 3 ? x[n+1] >> 17 : 0)) & MASK(0x80))
+#define f4_bb(n,r,x)   r[n] = ((x[n] >> 4) & ~MASK(0xf0)) | (((x[n] << 12) \
+                            | (n < 3 ? x[n+1] >> 20 : 0)) & MASK(0xf0))
+#define f8_bb(n,r,x)   r[n] = (x[n] << 8) | (n < 3 ? x[n+1] >> 24 : 0)
+#endif
+
+gf_decl void gf_mulx1_bb(gf_t r, const gf_t x)
+{   gf_unit_t _tt; 
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = ((gf_unit_t)(gf_tab[(UNIT_PTR(x)[0] << 7) & 0x80])) << 16;
+#else
+    _tt = gf_tab[(UNIT_PTR(x)[0] >> 17) & 0x80];
+#endif
+    rep2_u4(f1_bb, UNIT_PTR(r), UNIT_PTR(x));
+    UNIT_PTR(r)[3] ^= _tt;
+}
+
+gf_decl void gf_mulx4_bb(gf_t x)
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = ((gf_unit_t)(gf_tab[(UNIT_PTR(x)[0] << 4) & 0xf0])) << 16;
+#else
+    _tt = gf_tab[(UNIT_PTR(x)[0] >> 20) & 0xf0];
+#endif
+    rep2_u4(f4_bb, UNIT_PTR(x), UNIT_PTR(x));
+    UNIT_PTR(x)[3] ^= _tt;
+}
+
+gf_decl void gf_mulx8_bb(gf_t x)
+{   gf_unit_t _tt;
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    _tt = ((gf_unit_t)(gf_tab[UNIT_PTR(x)[0] & 0xff])) << 16;
+#else
+    _tt = gf_tab[(UNIT_PTR(x)[0] >> 24) & 0xff];
+#endif
+    rep2_u4(f8_bb, UNIT_PTR(x), UNIT_PTR(x));
+    UNIT_PTR(x)[3] ^= _tt;
+}
+
+#else
+
+#define f1_bb(n,r,x)   r[n] = (x[n] >> 1) | (n < 15 ? x[n+1] << 7 : 0)
+#define f4_bb(n,r,x)   r[n] = (x[n] >> 4) | (n < 15 ? x[n+1] << 4 : 0)
+
+gf_decl void gf_mulx1_bb(gf_t r, const gf_t x)
+{   uint16_t _tt;
+	_tt = gf_tab[(UNIT_PTR(x)[0] << 7) & 0x80];
+    rep2_u16(f1_bb, UNIT_PTR(r), UNIT_PTR(x));
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    UNIT_PTR(r)[15] ^= _tt >> 8;
+#else
+    UNIT_PTR(r)[15] ^= _tt;
+#endif
+}
+
+gf_decl void gf_mulx4_bb(gf_t x)
+{   uint16_t _tt;
+	_tt = gf_tab[(UNIT_PTR(x)[0] << 4) & 0xf0];
+    rep2_u16(f4_bb, UNIT_PTR(x), UNIT_PTR(x));
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    UNIT_PTR(x)[14] ^= _tt & 0xff;
+    UNIT_PTR(x)[15] ^= _tt >> 8;
+#else
+    UNIT_PTR(x)[14] ^= _tt >> 8;
+    UNIT_PTR(x)[15] ^= _tt & 0xff;
+#endif
+}
+
+gf_decl void gf_mulx8_bb(gf_t x)
+{   uint16_t _tt;
+	_tt = gf_tab[UNIT_PTR(x)[0]];
+    memmove(UNIT_PTR(x), UNIT_PTR(x) + 1, 15);
+#if PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN
+    UNIT_PTR(x)[14] ^= _tt & 0xff;
+    UNIT_PTR(x)[15] = _tt >> 8;
+#else
+    UNIT_PTR(x)[14] ^= _tt >> 8;
+    UNIT_PTR(x)[15] = _tt & 0xff;
+#endif
+}
+
 #endif
 
 #endif

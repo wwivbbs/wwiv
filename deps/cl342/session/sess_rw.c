@@ -64,7 +64,7 @@ static BOOLEAN sanityCheckRead( const SESSION_INFO *sessionInfoPtr )
 
 	/* Make sure that the general state is in order */
 	if( sessionInfoPtr->receiveBufSize < MIN_BUFFER_SIZE || \
-		sessionInfoPtr->receiveBufSize >= MAX_INTLENGTH )
+		sessionInfoPtr->receiveBufSize >= MAX_BUFFER_SIZE )
 		return( FALSE );
 
 	/* Make sure that the buffer position values are within bounds */
@@ -108,7 +108,7 @@ static BOOLEAN sanityCheckWrite( const SESSION_INFO *sessionInfoPtr )
 
 	/* Make sure that the general state is in order */
 	if( sessionInfoPtr->sendBufSize < MIN_BUFFER_SIZE || \
-		sessionInfoPtr->sendBufSize >= MAX_INTLENGTH )
+		sessionInfoPtr->sendBufSize >= MAX_BUFFER_SIZE )
 		return( FALSE );
 	if( sessionInfoPtr->sendBufStartOfs < 0 || \
 		sessionInfoPtr->sendBufStartOfs > FIXED_HEADER_MAX )
@@ -221,10 +221,10 @@ static BOOLEAN sanityCheckWrite( const SESSION_INFO *sessionInfoPtr )
    its own handling of fatal vs. nonfatal errors, so we don't try and get
    down to that level) */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 static int tryRead( INOUT SESSION_INFO *sessionInfoPtr, 
-					OUT_LENGTH_Z int *bytesRead,
-					OUT_ENUM_OPT( READSTATE ) READSTATE_INFO *readInfo )
+					OUT_DATALENGTH_Z int *bytesRead,
+					OUT_ENUM_OPT( READINFO ) READSTATE_INFO *readInfo )
 	{
 	int length, bytesLeft, status;
 
@@ -357,11 +357,11 @@ static int tryRead( INOUT SESSION_INFO *sessionInfoPtr,
 
 /* Get data from the remote system */
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
+CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 static int getData( INOUT SESSION_INFO *sessionInfoPtr, 
 					OUT_BUFFER( length, *bytesCopied ) BYTE *buffer, 
-					IN_LENGTH const int length, 
-					OUT_LENGTH_Z int *bytesCopied )
+					IN_DATALENGTH const int length, 
+					OUT_DATALENGTH_Z int *bytesCopied )
 	{
 	const int bytesToCopy = min( length, sessionInfoPtr->receiveBufPos );
 	READSTATE_INFO readInfo;
@@ -370,8 +370,8 @@ static int getData( INOUT SESSION_INFO *sessionInfoPtr,
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( bytesCopied, sizeof( int ) ) );
 
-	REQUIRES( length > 0 && length < MAX_INTLENGTH );
-	REQUIRES( bytesToCopy >= 0 && bytesToCopy < MAX_INTLENGTH );
+	REQUIRES( length > 0 && length < MAX_BUFFER_SIZE );
+	REQUIRES( bytesToCopy >= 0 && bytesToCopy < MAX_BUFFER_SIZE );
 	REQUIRES( sanityCheckRead( sessionInfoPtr ) );
 
 	/* Clear return values */
@@ -387,7 +387,7 @@ static int getData( INOUT SESSION_INFO *sessionInfoPtr,
 		{
 		const int remainder = sessionInfoPtr->receiveBufEnd - bytesToCopy;
 
-		ENSURES( remainder >= 0 && remainder < MAX_INTLENGTH );
+		ENSURES( remainder >= 0 && remainder < MAX_BUFFER_SIZE );
 
 		memcpy( buffer, sessionInfoPtr->receiveBuffer, bytesToCopy );
 		if( remainder > 0 )
@@ -503,7 +503,7 @@ static int getData( INOUT SESSION_INFO *sessionInfoPtr,
 	/* Make the stream nonblocking if it was blocking before.  This is 
 	   necessary to avoid having the stream always block for the set timeout 
 	   value on the last read */
-	ENSURES( bytesRead > 0 && bytesRead < MAX_INTLENGTH );
+	ENSURES( bytesRead > 0 && bytesRead < MAX_BUFFER_SIZE );
 	sioctlSet( &sessionInfoPtr->stream, STREAM_IOCTL_READTIMEOUT, 0 );
 
 	ENSURES( sanityCheckRead( sessionInfoPtr ) );
@@ -514,8 +514,8 @@ static int getData( INOUT SESSION_INFO *sessionInfoPtr,
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 4 ) ) \
 int getSessionData( INOUT SESSION_INFO *sessionInfoPtr, 
 					OUT_BUFFER( dataMaxLength, *bytesCopied ) void *data, 
-					IN_LENGTH const int dataMaxLength, 
-					OUT_LENGTH_Z int *bytesCopied )
+					IN_DATALENGTH const int dataMaxLength, 
+					OUT_DATALENGTH_Z int *bytesCopied )
 	{
 	BYTE *dataPtr = data;
 	int dataLength = dataMaxLength, iterationCount, status = CRYPT_OK;
@@ -523,7 +523,7 @@ int getSessionData( INOUT SESSION_INFO *sessionInfoPtr,
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( bytesCopied, sizeof( int ) ) );
 
-	REQUIRES( dataMaxLength > 0 && dataMaxLength < MAX_INTLENGTH );
+	REQUIRES( dataMaxLength > 0 && dataMaxLength < MAX_BUFFER_SIZE );
 	REQUIRES( sanityCheckRead( sessionInfoPtr ) );
 
 	/* Clear return values */
@@ -773,9 +773,9 @@ static int getRemainingBufferSpace( const SESSION_INFO *sessionInfoPtr )
 
 	REQUIRES( currentByteCount >= 0 && \
 			  currentByteCount <= sessionInfoPtr->maxPacketSize && \
-			  currentByteCount < MAX_INTLENGTH );
+			  currentByteCount < MAX_BUFFER_SIZE );
 	remainingByteCount = sessionInfoPtr->maxPacketSize - currentByteCount;
-	ENSURES( remainingByteCount >= 0 && remainingByteCount  < MAX_INTLENGTH );
+	ENSURES( remainingByteCount >= 0 && remainingByteCount < MAX_BUFFER_SIZE );
 
 	return( remainingByteCount );
 	}
@@ -871,7 +871,7 @@ static int flushData( SESSION_INFO *sessionInfoPtr )
 		}
 	bytesToWrite = sessionInfoPtr->sendBufPos - \
 				   sessionInfoPtr->sendBufPartialBufPos;
-	ENSURES( bytesToWrite > 0 && bytesToWrite < MAX_INTLENGTH );
+	ENSURES( bytesToWrite > 0 && bytesToWrite < MAX_BUFFER_SIZE );
 
 	/* Send the data through to the remote system */
 	ENSURES( rangeCheckZ( sessionInfoPtr->sendBufPartialBufPos, bytesToWrite,
@@ -931,8 +931,8 @@ static int flushData( SESSION_INFO *sessionInfoPtr )
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 4 ) ) \
 int putSessionData( INOUT SESSION_INFO *sessionInfoPtr, 
 					IN_BUFFER_OPT( dataLength ) const void *data,
-					IN_LENGTH_Z const int dataLength, 
-					OUT_LENGTH_Z int *bytesCopied )
+					IN_DATALENGTH_Z const int dataLength, 
+					OUT_DATALENGTH_Z int *bytesCopied )
 	{
 	BYTE *dataPtr = ( BYTE * ) data;
 	int length = dataLength, availableBuffer, iterationCount, status;
@@ -943,7 +943,7 @@ int putSessionData( INOUT SESSION_INFO *sessionInfoPtr,
 
 	REQUIRES( ( data == NULL && dataLength == 0 ) || \
 			  ( data != NULL && \
-				dataLength > 0 && dataLength < MAX_INTLENGTH ) );
+				dataLength > 0 && dataLength < MAX_BUFFER_SIZE ) );
 	REQUIRES( sanityCheckWrite( sessionInfoPtr ) );
 
 	/* Clear return value */
@@ -1086,8 +1086,9 @@ int putSessionData( INOUT SESSION_INFO *sessionInfoPtr,
 		{
 		ENSURES( length < availableBuffer );
 
-		ENSURES( rangeCheck( sessionInfoPtr->sendBufPos, length, 
-							 sessionInfoPtr->maxPacketSize ) );
+		ENSURES( rangeCheckZ( sessionInfoPtr->sendBufPos - \
+								sessionInfoPtr->sendBufStartOfs, length, 
+							  sessionInfoPtr->maxPacketSize ) );
 		memcpy( sessionInfoPtr->sendBuffer + sessionInfoPtr->sendBufPos,
 				dataPtr, length );
 		sessionInfoPtr->sendBufPos += length;
@@ -1105,6 +1106,8 @@ int putSessionData( INOUT SESSION_INFO *sessionInfoPtr,
 *																			*
 ****************************************************************************/
 
+#ifdef USE_CERTIFICATES
+
 /* Read/write a PKI (i.e. ASN.1-encoded) datagram.  Unlike the secure 
    session protocols these operations are always atomic so the read/write
    process is much simpler */
@@ -1113,7 +1116,7 @@ CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
 int readPkiDatagram( INOUT SESSION_INFO *sessionInfoPtr )
 	{
 	HTTP_DATA_INFO httpDataInfo;
-	int length = DUMMY_INIT, complianceLevel, status;
+	int length DUMMY_INIT, complianceLevel, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 
@@ -1140,7 +1143,7 @@ int readPkiDatagram( INOUT SESSION_INFO *sessionInfoPtr )
 		return( status );
 		}
 	length = httpDataInfo.bytesAvail;
-	if( length < 4 || length >= MAX_INTLENGTH )
+	if( length < 4 || length >= MAX_BUFFER_SIZE )
 		{
 		/* Perform a sanity check on the length.  This avoids triggering
 		   assertions in the debug build and provides somewhat more specific 
@@ -1171,24 +1174,20 @@ int readPkiDatagram( INOUT SESSION_INFO *sessionInfoPtr )
 	return( CRYPT_OK );
 	}
 
-CHECK_RETVAL STDC_NONNULL_ARG( ( 1 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int writePkiDatagram( INOUT SESSION_INFO *sessionInfoPtr, 
-					  IN_BUFFER_OPT( contentTypeLen ) \
-							const char *contentType, 
-					  IN_LENGTH_TEXT_Z const int contentTypeLen )
+					  IN_BUFFER( contentTypeLen ) const char *contentType, 
+					  IN_LENGTH_TEXT const int contentTypeLen )
 	{
 	HTTP_DATA_INFO httpDataInfo;
 	int status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
-	assert( contentType == NULL || \
-			isReadPtr( contentType, contentTypeLen ) );
+	assert( isReadPtr( contentType, contentTypeLen ) );
 
-	REQUIRES( ( contentType == NULL && contentTypeLen ) || \
-			  ( contentType != NULL && \
-				contentTypeLen > 0 && contentTypeLen <= CRYPT_MAX_TEXTSIZE ) );
+	REQUIRES( contentTypeLen > 0 && contentTypeLen <= CRYPT_MAX_TEXTSIZE );
 	REQUIRES( sessionInfoPtr->receiveBufEnd > 4 && \
-			  sessionInfoPtr->receiveBufEnd < MAX_INTLENGTH );
+			  sessionInfoPtr->receiveBufEnd < MAX_BUFFER_SIZE );
 
 	/* Write the datagram.  Request/response sessions use a single buffer 
 	   for both reads and writes, which is why we're (apparently) writing
@@ -1210,4 +1209,5 @@ int writePkiDatagram( INOUT SESSION_INFO *sessionInfoPtr,
 
 	return( status );
 	}
+#endif /* USE_CERTIFICATES */
 #endif /* USE_SESSIONS */

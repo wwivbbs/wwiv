@@ -15,9 +15,23 @@
 #ifdef __WINDOWS__
   /* For checking for debug-only capabilities */
   #define _OSSPEC_DEFINED
+  #define VC_16BIT( version )		( version <= 800 )
+  #define VC_LE_VC6( version )		( version <= 1200 )
   #define VC_LT_2005( version )		( version < 1400 )
+  #define VC_GE_2005( version )		( version >= 1400 )
+  #define VC_GE_2010( version )		( version >= 1600 )
+#else
+  #define VC_16BIT( version )		0
+  #define VC_LE_VC6( version )		0
+  #define VC_LT_2005( version )		0
+  #define VC_GE_2005( version )		0
+  #define VC_GE_2010( version )		0
 #endif /* __WINDOWS__ */
 #include "misc/config.h"
+#ifndef NDEBUG
+  #include "misc/analyse.h"		/* Needed for fault.h */
+  #include "misc/fault.h"
+#endif /* !NDEBUG */
 
 #if defined( __MVS__ ) || defined( __VMCMS__ )
   /* Suspend conversion of literals to ASCII. */
@@ -44,7 +58,6 @@
 
 typedef enum {
 	SSH_TEST_NORMAL,			/* Standard SSHv2 test */
-	SSH_TEST_SSH1,				/* SSHv1 test */
 	SSH_TEST_DSAKEY,			/* DSA server key instead of RSA */
 	SSH_TEST_ECCKEY,			/* ECDSA server key instead of RSA */
 	SSH_TEST_CLIENTCERT,		/* Use client public-key for auth */
@@ -55,7 +68,12 @@ typedef enum {
 	SSH_TEST_FINGERPRINT,		/* Test (invalid) key fingerprint */
 	SSH_TEST_CONFIRMAUTH,		/* Test manual server confirmation of auth.*/
 	SSH_TEST_DUALTHREAD,
-	SSH_TEST_DUALTHREAD2		/* Two-phase connect via different threads */
+	SSH_TEST_DUALTHREAD2,		/* Two-phase connect via different threads */
+	SSH_TEST_CORRUPT_HANDSHAKE,	/* Detect corruption of handshake data */
+	SSH_TEST_CORRUPT_DATA,		/* Detect corruption of payload data */
+	SSH_TEST_WRONGCERT,			/* Detect wrong key for server */
+	SSH_TEST_BADSIG_HASH,		/* Detect corruption of signed DH params */
+	SSH_TEST_BADSIG_DATA		/* Detect corruption of signed DH params */
 	} SSH_TEST_TYPE;
 
 #if defined( TEST_SESSION ) || defined( TEST_SESSION_LOOPBACK )
@@ -141,7 +159,7 @@ int testSessionUrlParse( void )
 	for( i = 0; urlParseInfo[ i ].url != NULL; i++ )
 		{
 		C_CHR nameBuffer[ 256 ], userInfoBuffer[ 256 ];
-		int nameLength, userInfoLength = DUMMY_INIT, port = DUMMY_INIT;
+		int nameLength, userInfoLength DUMMY_INIT, port DUMMY_INIT;
 
 		/* Clear any leftover attributes from previous tests */
 		memset( nameBuffer, 0, 16 );
@@ -347,6 +365,55 @@ int testSessionAttributes( void )
 *																			*
 ****************************************************************************/
 
+/* There are various servers running that we can use for testing, the
+   following remapping allows us to switch between them.  Notes:
+
+	Server 1: Local loopback.
+	Server 2: Sends extraneous lines of text before the SSH ID string
+			  (technically allowed by the RFC, but probably not in the way
+			  that it's being used here).
+	Server 3: Reference ssh.com implementation.
+	Server 4: Reference OpenSSH implementation.
+	Server 5: OpenSSH with ECC support.  There are two aliases for the same 
+			  server, anoncvs is a somewhat nonstandard config that only 
+			  allows access via the 'anoncvs' account and is rather abrupt
+			  about disconnecting clients, and natsu, which is a more 
+			  standard config that behaves more normally.
+	Server 6: Sends PAM auth request consisting of 16 bytes of zeroes, 
+			  technically this is valid (since the spec is so vague) but it
+			  doesn't make any sense to send it.
+	Server 7: Test server for SHA-256 signing support.
+
+   To test local -> remote/remote -> local forwarding:
+
+	ssh localhost -v -l test -pw test -L 110:pop3.test.com:110
+	ssh localhost -v -l test -pw test -R 110:pop3.test.com:110
+
+  For test purposes we connect to the OpenSSH server because this is the 
+  most frequently-used one around, so maintaining compatibility with it 
+  whenever it changes is important.  Using it for test connects is slightly 
+  antisocial but in practice few people seem to run the self-test and we 
+  never get past the initial handshake phase so it shouldn't be a big deal */
+
+static const struct {
+	const C_STR name;
+	const C_STR userName;
+	const C_STR password;
+	} FAR_BSS sshInfo[] = {
+	{ NULL, NULL, NULL },
+	/*  1 */ { TEXT( "localhost" ), SSH_USER_NAME, SSH_PASSWORD },
+	/*  2 */ { TEXT( "sorrel.humboldt.edu:222" ), TEXT( "user" ), TEXT( "password" ) },
+	/*  3 */ { TEXT( "www.ssh.com" ), TEXT( "user" ), TEXT( "password" ) },
+	/*  4 */ { TEXT( "www.openssh.com" ), TEXT( "user" ), TEXT( "password" ) },
+	/*  5 */ /* { TEXT( "anoncvs.mindrot.org" ), TEXT( "user" ), TEXT( "password" ) },	See comment above */
+	/*  5 */ { TEXT( "natsu.mindrot.org" ), TEXT( "user" ), TEXT( "password" ) },
+	/*  6 */ { TEXT( "home.bbsdev.net" ), TEXT( "user" ), TEXT( "password" ) },
+	/*  7 */ { TEXT( "experiment.bitvise.com:10712" ), TEXT( "user" ), TEXT( "password" ) },
+	{ NULL, NULL, NULL }
+	};
+
+#define SSH2_SERVER_NO	4
+
 #if defined( WINDOWS_THREADS ) || defined( UNIX_THREADS )
 
 /* Test the ability to have multiple server threads waiting on a session.
@@ -462,15 +529,15 @@ int testSessionAttributes( void )
 		{
 		status = cryptSetAttributeString( cryptSession,
 										  CRYPT_SESSINFO_USERNAME,
-										  SSH_USER_NAME,
-										  paramStrlen( SSH_USER_NAME ) );
+										  sshInfo[ SSH2_SERVER_NO ].userName,
+										  paramStrlen( sshInfo[ SSH2_SERVER_NO ].userName ) );
 		}
 	if( cryptStatusOK( status ) )
 		{
 		status = cryptSetAttributeString( cryptSession,
 										  CRYPT_SESSINFO_PASSWORD,
-										  SSH_PASSWORD,
-										  paramStrlen( SSH_PASSWORD ) );
+										  sshInfo[ SSH2_SERVER_NO ].password,
+										  paramStrlen( sshInfo[ SSH2_SERVER_NO ].password ) );
 		}
 	if( cryptStatusError( status ) )
 		{
@@ -538,9 +605,11 @@ static BOOLEAN printChannelInfo( const CRYPT_SESSION cryptSession,
 	status = cryptGetAttribute( cryptSession, CRYPT_SESSINFO_SSH_CHANNEL,
 								&channel );
 	if( cryptStatusOK( status ) )
+		{
 		status = cryptGetAttributeString( cryptSession,
 										  CRYPT_SESSINFO_SSH_CHANNEL_TYPE,
 										  stringBuffer, &stringLength );
+		}
 	if( cryptStatusError( status ) )
 		{
 		printf( "%sCouldn't query channel ID/type, status %d, line %d.\n",
@@ -599,9 +668,10 @@ static BOOLEAN printChannelInfo( const CRYPT_SESSION cryptSession,
 
 /* Print information on data sent over an SSH channel */
 
-static BOOLEAN printDataInfo( CRYPT_SESSION cryptSession,
-							  char *buffer, int *bytesCopied,
-							  const BOOLEAN isServer )
+static int printDataInfo( CRYPT_SESSION cryptSession,
+						  char *buffer, int *bytesCopied,
+						  const BOOLEAN isServer, 
+						  const BOOLEAN isErrorTest )
 	{
 	int channel = 0, status;
 
@@ -614,7 +684,7 @@ static BOOLEAN printDataInfo( CRYPT_SESSION cryptSession,
 					   isServer ? "SVR: Couldn't get data channel number" : \
 								  "Couldn't get data channel number", 
 					   status, __LINE__ );
-		return( FALSE );
+		return( status );
 		}
 #endif /* USE_SSH_EXTENDED */
 	status = cryptPopData( cryptSession, buffer, BUFFER_SIZE, bytesCopied );
@@ -624,7 +694,24 @@ static BOOLEAN printDataInfo( CRYPT_SESSION cryptSession,
 					   isServer ? "SVR: Client data read failed" : \
 								  "Server data read failed", 
 					   status, __LINE__ );
-		return( FALSE );
+#ifndef NDEBUG
+		if( isErrorTest )
+			{
+			if( !isServer && status != CRYPT_ERROR_SIGNATURE )
+					{
+					printf( "Test returned status %d, should have been %d.\n", 
+							status, CRYPT_ERROR_SIGNATURE );
+					return( status );
+					}
+
+			/* These tests are supposed to fail, so if this happens then the 
+			   overall test has succeeded */
+			puts( "  (This test checks error handling, so the failure "
+				  "response is correct).\n" );
+			return( SENTINEL );
+			}
+#endif /* !NDEBUG */
+		return( status );
 		}
 	buffer[ *bytesCopied ] = '\0';
 	printf( "%s---- %s sent %d bytes on channel #%d ----\n",
@@ -636,7 +723,7 @@ static BOOLEAN printDataInfo( CRYPT_SESSION cryptSession,
 	printf( "%s---- End of output ----\n", isServer ? "SVR: " : "" );
 	fflush( stdout );
 
-	return( TRUE );
+	return( CRYPT_OK );
 	}
 
 /* Print information on SSH authorisation info */
@@ -688,68 +775,15 @@ static BOOLEAN printAuthInfo( CRYPT_SESSION cryptSession )
 *																			*
 ****************************************************************************/
 
-/* There are various servers running that we can use for testing, the
-   following remapping allows us to switch between them.  Notes:
-
-	Server 1: Local loopback.
-	Server 2: Sends extraneous lines of text before the SSH ID string
-			  (technically allowed by the RFC, but probably not in the way
-			  that it's being used here).
-	Server 3: Reference ssh.com implementation.
-	Server 4: Reference OpenSSH implementation.
-	Server 5: OpenSSH with ECC support.  There are two aliases for the same 
-			  server, anoncvs is a somewhat nonstandard config that only 
-			  allows access via the 'anoncvs' account and is rather abrupt
-			  about disconnecting clients, and natsu, which is a more 
-			  standard config that behaves more normally.
-
-   To test local -> remote/remote -> local forwarding:
-
-	ssh localhost -v -l test -pw test -L 110:pop3.test.com:110
-	ssh localhost -v -l test -pw test -R 110:pop3.test.com:110
-
-  For test purposes we connect to the OpenSSH server for the SSHv2 test
-  because this is the most frequently-used one around, so maintaining
-  compatibility with it whenever it changes is important.  Using it for test
-  connects is slightly antisocial but in practice few people seem to run the
-  self-test and we never get past the initial handshake phase so it shouldn't
-  be a big deal.  Testing SSHv1 is a bit tricky since there are few of these
-  servers still around, in the absence of a convenient test server we just
-  try a local connect, but in any case it's been disabled by default for 
-  some years so there really isn't anything to test */
-
-static const C_STR FAR_BSS ssh1Info[] = {
-	NULL,
-	TEXT( "localhost" ),
-	NULL
-	};
-static const C_STR FAR_BSS ssh2Info[] = {
-	NULL,
-	TEXT( "localhost" ),
-	TEXT( "sorrel.humboldt.edu:222" ),
-	TEXT( "www.ssh.com" ),
-	TEXT( "www.openssh.com" ),
-/*	TEXT( "anoncvs.mindrot.org" ),	See comment above */
-	TEXT( "natsu.mindrot.org" ),
-	NULL
-	};
-
-#define SSH1_SERVER_NO	1
-#define SSH2_SERVER_NO	4
-
 /* If we're testing dual-thread handling of sessions, we need to provide a
    forward declaration of the threading function since it's called from 
    within the SSH connect code */
 
 #ifdef WINDOWS_THREADS
-  unsigned __stdcall ssh2ServerDualThread2( void *dummy );
+  unsigned __stdcall ssh2ServerThread( void *arg );
 #endif /* WINDOWS_THREADS */
 
-/* Establish an SSH session.  The generic SSHv1 client test will always step
-   up to SSHv2 if the server is v2 (which almost all are), so v1 can't
-   easily be generically tested without hardcoding v1-only into
-   session/ssh.c.  However, the loopback test, which forces the use of a
-   v1-only server, does test the client as a v1 client */
+/* Establish an SSH session */
 
 static int connectSSH( const CRYPT_SESSION_TYPE sessionType,
 					   const SSH_TEST_TYPE testType,
@@ -760,12 +794,13 @@ static int connectSSH( const CRYPT_SESSION_TYPE sessionType,
 	const C_STR serverName = SSH2_SERVER_NAME;
 #else
 	const C_STR serverName = localSession ? TEXT( "localhost" ) : \
-							 ( testType == SSH_TEST_SSH1 ) ? \
-								ssh1Info[ SSH1_SERVER_NO ] : \
-								ssh2Info[ SSH2_SERVER_NO ];
+											sshInfo[ SSH2_SERVER_NO ].name;
 #endif /* SSH2_SERVER_NAME */
 	const BOOLEAN isServer = ( sessionType == CRYPT_SESSION_SSH_SERVER ) ? \
 							   TRUE : FALSE;
+	const BOOLEAN isErrorTest = ( testType >= SSH_TEST_CORRUPT_HANDSHAKE && \
+								  testType <= SSH_TEST_BADSIG_DATA ) ? \
+								  TRUE : FALSE;
 	char buffer[ BUFFER_SIZE ];
 #ifdef USE_SSH_EXTENDED
 	int channel;
@@ -800,17 +835,17 @@ static int connectSSH( const CRYPT_SESSION_TYPE sessionType,
 		goto dualThreadContinue;
 #endif /* WINDOWS_THREADS */
 
-	printf( "%sTesting %sSSH%s%s session...\n",
+	printf( "%sTesting %sSSH%s session...\n",
 			isServer ? "SVR: " : "",
 			localSession ? "local " : "",
-			( testType == SSH_TEST_SSH1 ) ? "v1" : "v2",
 			( testType == SSH_TEST_DSAKEY ) ? " with DSA server key" : \
 			( testType == SSH_TEST_ECCKEY ) ? " with ECDSA server key" : \
 			( testType == SSH_TEST_SUBSYSTEM ) ? " SFTP" : \
 			( testType == SSH_TEST_PORTFORWARDING ) ? " port-forwarding" : \
 			( testType == SSH_TEST_EXEC ) ? " remote exec" : \
 			( testType == SSH_TEST_MULTICHANNEL ) ? " multi-channel" : \
-			( testType == SSH_TEST_CLIENTCERT ) ? " pubkey-auth" : "" );
+			( testType == SSH_TEST_CLIENTCERT ) ? " pubkey-auth" : \
+			isErrorTest ? " with checking for error handling" : "" );
 	if( !isServer && !localSession )
 		{
 #ifdef UNICODE_STRINGS
@@ -831,6 +866,21 @@ static int connectSSH( const CRYPT_SESSION_TYPE sessionType,
 				status, __LINE__ );
 		return( FALSE );
 		}
+#ifndef NDEBUG
+	if( isServer && isErrorTest )
+		{
+		cryptSetFaultType( ( testType == SSH_TEST_CORRUPT_HANDSHAKE ) ? \
+							 FAULT_SESSION_CORRUPT_HANDSHAKE : \
+						   ( testType == SSH_TEST_CORRUPT_DATA ) ? \
+							 FAULT_SESSION_CORRUPT_DATA : \
+						   ( testType == SSH_TEST_WRONGCERT ) ? \
+							 FAULT_SESSION_WRONGCERT : \
+						   ( testType == SSH_TEST_BADSIG_HASH ) ? \
+							 FAULT_SESSION_BADSIG_HASH : \
+						   ( testType == SSH_TEST_BADSIG_DATA ) ? \
+							 FAULT_SESSION_BADSIG_DATA : FAULT_NONE );
+		}
+#endif /* !NDEBUG */
 
 	/* Set up the server and user information and activate the session */
 	if( isServer )
@@ -870,15 +920,15 @@ static int connectSSH( const CRYPT_SESSION_TYPE sessionType,
 		else
 			{
 			status = cryptSetAttributeString( cryptSession,
-									CRYPT_SESSINFO_SERVER_NAME,
-									serverName, paramStrlen( serverName ) );
+							CRYPT_SESSINFO_SERVER_NAME, serverName, 
+							paramStrlen( serverName ) );
 			}
 		if( cryptStatusOK( status ) )
 			{
 			status = cryptSetAttributeString( cryptSession,
-									CRYPT_SESSINFO_USERNAME,
-									SSH_USER_NAME,
-									paramStrlen( SSH_USER_NAME ) );
+							CRYPT_SESSINFO_USERNAME,
+							sshInfo[ SSH2_SERVER_NO ].userName,
+							paramStrlen( sshInfo[ SSH2_SERVER_NO ].userName ) );
 			}
 		if( cryptStatusOK( status ) )
 			{
@@ -887,7 +937,7 @@ static int connectSSH( const CRYPT_SESSION_TYPE sessionType,
 				CRYPT_CONTEXT privateKey;
 
 				status = getPrivateKey( &privateKey, USER_PRIVKEY_FILE,
-									USER_PRIVKEY_LABEL, TEST_PRIVKEY_PASSWORD );
+							USER_PRIVKEY_LABEL, TEST_PRIVKEY_PASSWORD );
 				if( cryptStatusOK( status ) )
 					{
 					status = cryptSetAttribute( cryptSession,
@@ -904,13 +954,13 @@ static int connectSSH( const CRYPT_SESSION_TYPE sessionType,
 				fgets( password, 255, stdin );
 				password[ strlen( password ) - 1 ] = '\0';
 				status = cryptSetAttributeString( cryptSession,
-									CRYPT_SESSINFO_PASSWORD,
-									password, strlen( password ) );
+							CRYPT_SESSINFO_PASSWORD, password, 
+							strlen( password ) );
 #else
 				status = cryptSetAttributeString( cryptSession,
-									CRYPT_SESSINFO_PASSWORD,
-									SSH_PASSWORD,
-									paramStrlen( SSH_PASSWORD ) );
+							CRYPT_SESSINFO_PASSWORD,
+							sshInfo[ SSH2_SERVER_NO ].password,
+							paramStrlen( sshInfo[ SSH2_SERVER_NO ].password ) );
 #endif /* User-supplied password */
 				}
 			}
@@ -938,8 +988,8 @@ static int connectSSH( const CRYPT_SESSION_TYPE sessionType,
 			   fail */
 			memset( fingerPrint, 0, CRYPT_MAX_HASHSIZE );
 			status = cryptSetAttributeString( cryptSession,
-											  CRYPT_SESSINFO_SERVER_FINGERPRINT,
-											  fingerPrint, 16 );
+											  CRYPT_SESSINFO_SERVER_FINGERPRINT_SHA1,
+											  fingerPrint, 20 );
 			}
 #ifdef USE_SSH_EXTENDED
 		if( cryptStatusOK( status ) && \
@@ -950,9 +1000,6 @@ static int connectSSH( const CRYPT_SESSION_TYPE sessionType,
 			}
 #endif /* USE_SSH_EXTENDED */
 		}
-	if( cryptStatusOK( status ) )
-		status = cryptSetAttribute( cryptSession, CRYPT_SESSINFO_VERSION,
-									( testType == SSH_TEST_SSH1 ) ? 1 : 2 );
 	if( cryptStatusOK( status ) && isServer && \
 		( testType != SSH_TEST_CONFIRMAUTH && \
 		  testType != SSH_TEST_DUALTHREAD ) )
@@ -964,17 +1011,6 @@ static int connectSSH( const CRYPT_SESSION_TYPE sessionType,
 		}
 	if( cryptStatusError( status ) )
 		{
-		/* If we're trying to enable SSHv1 and it fails, this isn't an error
-		   since this protocol is disabled by default */
-		if( testType == SSH_TEST_SSH1 )
-			{
-			puts( "SSHv1 appears to be disbled in this build." );
-			cryptDestroySession( cryptSession );
-			puts( isServer ? "SVR: SSH server session succeeded.\n" : \
-							 "SSH client session succeeded.\n" );
-			return( CRYPT_ERROR_NOTAVAIL );
-			}
-
 		printf( "%scryptSetAttribute/AttributeString() failed with error "
 				"code %d, line %d.\n", isServer ? "SVR: " : "", status, 
 				__LINE__ );
@@ -1006,12 +1042,12 @@ static int connectSSH( const CRYPT_SESSION_TYPE sessionType,
 			status == CRYPT_ENVELOPE_RESOURCE )
 			{
 			static CRYPT_SESSION localCryptSession = 0;
+			int arg = SSH_TEST_DUALTHREAD2;
 			unsigned threadID;
 
 			/* Start a second thread to complete the handshake and exit */
 			localCryptSession = cryptSession;
-			_beginthreadex( NULL, 0, ssh2ServerDualThread2, NULL, 0, 
-							&threadID );
+			_beginthreadex( NULL, 0, ssh2ServerThread, &arg, 0, &threadID );
 			return( TRUE );
 
 			/* The second thread continues from here */
@@ -1091,6 +1127,21 @@ dualThreadContinue:
 					   "SVR: Attempt to activate SSH server session" : \
 					   "Attempt to activate SSH client session", status,
 					   __LINE__ );
+		if( isErrorTest )
+			{
+			/* These tests are supposed to fail, so if this happens then the 
+			   overall test has succeeded */
+			cryptDestroySession( cryptSession );
+			if( !isServer && status != CRYPT_ERROR_SIGNATURE )
+				{
+				printf( "Test returned status %d, should have been "
+						"%d.\n", status, CRYPT_ERROR_SIGNATURE );
+				return( FALSE );
+				}
+			puts( "  (This test checks error handling, so the failure "
+				  "response is correct).\n" );
+			return( TRUE );
+			}
 		if( localSession )
 			{
 			/* If it's a local session then none of the following soft-
@@ -1127,6 +1178,16 @@ dualThreadContinue:
 		{
 		printf( "Attempt to connect with invalid key fingerprint succeeded "
 				"when it should\nhave failed, line %d.\n", __LINE__ );
+		return( FALSE );
+		}
+
+	/* The error tests should cause handshake failures, so getting to this 
+	   point is an error */
+	if( isErrorTest && testType != SSH_TEST_CORRUPT_DATA )
+		{
+		cryptDestroySession( cryptSession );
+		puts( "  (This test should have led to a handshake failure but "
+			  "didn't, test has\n   failed).\n" );
 		return( FALSE );
 		}
 
@@ -1271,8 +1332,20 @@ dualThreadContinue:
 	delayThread( 2 );
 
 	/* Print the first lot of output from the other side */
-	if( !printDataInfo( cryptSession, buffer, &bytesCopied, isServer ) )
+	status = printDataInfo( cryptSession, buffer, &bytesCopied, isServer, 
+							isErrorTest );
+	if( cryptStatusError( status ) )
+		{
+		/* Some tests are meant to fail because they check failure 
+		   conditions, if we encounter one of these then we exit cleanly */
+		if( status == SENTINEL )
+			{
+			cryptDestroySession( cryptSession );
+			return( TRUE );
+			}
+
 		return( FALSE );
+		}
 
 	/* If we're the server, echo the command to the client */
 	if( isServer )
@@ -1334,8 +1407,9 @@ dualThreadContinue:
 				}
 			puts( "Sent 'ls -l | head -25'" );
 			delayThread( 3 );
-			if( !printDataInfo( cryptSession, buffer, &bytesCopied, 
-								isServer ) )
+			status = printDataInfo( cryptSession, buffer, &bytesCopied, 
+									isServer, isErrorTest );
+			if( cryptStatusError( status ) )
 				return( FALSE );
 			}
 		else
@@ -1358,8 +1432,9 @@ dualThreadContinue:
 			delayThread( 1 );
 
 			/* Print the server's response */
-			if( !printDataInfo( cryptSession, buffer, &bytesCopied, 
-								isServer ) )
+			status = printDataInfo( cryptSession, buffer, &bytesCopied, 
+									isServer, isErrorTest );
+			if( cryptStatusError( status ) )
 				return( FALSE );
 			}
 		}
@@ -1405,14 +1480,6 @@ dualThreadContinue:
 	return( TRUE );
 	}
 
-int testSessionSSHv1( void )
-	{
-#ifdef USE_SSH1
-	return( connectSSH( CRYPT_SESSION_SSH, SSH_TEST_SSH1, FALSE ) );
-#else
-	return( TRUE );
-#endif /* USE_SSH1 */
-	}
 int testSessionSSH( void )
 	{
 	return( connectSSH( CRYPT_SESSION_SSH, SSH_TEST_NORMAL, FALSE ) );
@@ -1445,20 +1512,6 @@ int testSessionSSH_SFTP( void )
 	return( TRUE );
 #endif /* USE_SSH_EXTENDED */
 	}
-int testSessionSSHv1Server( void )
-	{
-#ifdef USE_SSH1
-	int status;
-
-	createMutex();
-	status = connectSSH( CRYPT_SESSION_SSH_SERVER, SSH_TEST_SSH1, FALSE );
-	destroyMutex();
-
-	return( status );
-#else
-	return( TRUE );
-#endif /* USE_SSH1 */
-	}
 int testSessionSSHServer( void )
 	{
 	int status;
@@ -1488,86 +1541,24 @@ int testSessionSSH_SFTPServer( void )
 
 #ifdef WINDOWS_THREADS
 
-unsigned __stdcall ssh1ServerThread( void *dummy )
+unsigned __stdcall ssh2ServerThread( void *arg )
 	{
-	connectSSH( CRYPT_SESSION_SSH_SERVER, SSH_TEST_SSH1, TRUE );
-	_endthreadex( 0 );
-	return( 0 );
-	}
-unsigned __stdcall ssh2ServerThread( void *dummy )
-	{
-	connectSSH( CRYPT_SESSION_SSH_SERVER, SSH_TEST_NORMAL, TRUE );
-	_endthreadex( 0 );
-	return( 0 );
-	}
-unsigned __stdcall ssh2ServerDsaKeyThread( void *dummy )
-	{
-	connectSSH( CRYPT_SESSION_SSH_SERVER, SSH_TEST_DSAKEY, TRUE );
-	_endthreadex( 0 );
-	return( 0 );
-	}
-unsigned __stdcall ssh2ServerEccKeyThread( void *dummy )
-	{
-	connectSSH( CRYPT_SESSION_SSH_SERVER, SSH_TEST_ECCKEY, TRUE );
-	_endthreadex( 0 );
-	return( 0 );
-	}
-unsigned __stdcall ssh2ServerFingerprintThread( void *dummy )
-	{
-	connectSSH( CRYPT_SESSION_SSH_SERVER, SSH_TEST_FINGERPRINT, TRUE );
-	_endthreadex( 0 );
-	return( 0 );
-	}
-unsigned __stdcall ssh2ServerMultichannelThread( void *dummy )
-	{
-	connectSSH( CRYPT_SESSION_SSH_SERVER, SSH_TEST_MULTICHANNEL, TRUE );
-	_endthreadex( 0 );
-	return( 0 );
-	}
-unsigned __stdcall ssh2ServerDualThread1( void *dummy )
-	{
-	connectSSH( CRYPT_SESSION_SSH_SERVER, SSH_TEST_DUALTHREAD, TRUE );
-	_endthreadex( 0 );
-	return( 0 );
-	}
-unsigned __stdcall ssh2ServerDualThread2( void *dummy )
-	{
-	connectSSH( CRYPT_SESSION_SSH_SERVER, SSH_TEST_DUALTHREAD2, TRUE );
-	_endthreadex( 0 );
-	return( 0 );
-	}
-unsigned __stdcall sftpServerThread( void *dummy )
-	{
-	connectSSH( CRYPT_SESSION_SSH_SERVER, SSH_TEST_SUBSYSTEM, TRUE );
-	_endthreadex( 0 );
-	return( 0 );
-	}
+	const int argValue = *( ( int * ) arg );
 
+	connectSSH( CRYPT_SESSION_SSH_SERVER, argValue, TRUE );
+	_endthreadex( 0 );
+	return( 0 );
+	}
 static int sshClientServer( const SSH_TEST_TYPE testType )
 	{
 	HANDLE hThread;
 	unsigned threadID;
-	int status;
+	int arg = testType, status;
 
 	/* Start the server */
 	createMutex();
-	hThread = ( HANDLE ) _beginthreadex( NULL, 0,
-							( testType == SSH_TEST_SUBSYSTEM ) ? \
-								sftpServerThread : \
-							( testType == SSH_TEST_SSH1 ) ? \
-								ssh1ServerThread : \
-							( testType == SSH_TEST_DSAKEY ) ? \
-								ssh2ServerDsaKeyThread : \
-							( testType == SSH_TEST_ECCKEY ) ? \
-								ssh2ServerEccKeyThread : \
-							( testType == SSH_TEST_FINGERPRINT ) ? \
-								ssh2ServerFingerprintThread : \
-							( testType == SSH_TEST_MULTICHANNEL ) ? \
-								ssh2ServerMultichannelThread : \
-							( testType == SSH_TEST_DUALTHREAD ) ? \
-								ssh2ServerDualThread1 : \
-								ssh2ServerThread,
-							NULL, 0, &threadID );
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, ssh2ServerThread, &arg, 0, 
+										 &threadID );
 	Sleep( 1000 );
 
 	/* Connect to the local server */
@@ -1577,14 +1568,6 @@ static int sshClientServer( const SSH_TEST_TYPE testType )
 	return( status );
 	}
 
-int testSessionSSHv1ClientServer( void )
-	{
-#ifdef USE_SSH1
-	return( sshClientServer( SSH_TEST_SSH1 ) );
-#else
-	return( TRUE );
-#endif /* USE_SSH1 */
-	}
 int testSessionSSHClientServer( void )
 	{
 	return( sshClientServer( SSH_TEST_NORMAL ) );
@@ -1641,6 +1624,23 @@ int testSessionSSHClientServerMultichannel( void )
 int testSessionSSHClientServerDualThread( void )
 	{
 	return( sshClientServer( SSH_TEST_DUALTHREAD ) );
+	}
+int testSessionSSHClientServerDebugCheck( void )
+	{
+#ifndef NDEBUG
+	if( !sshClientServer( SSH_TEST_CORRUPT_HANDSHAKE ) )
+		return( FALSE );	/* Detect corruption of handshake data */
+	if( !sshClientServer( SSH_TEST_CORRUPT_DATA ) )
+		return( FALSE );	/* Detect corruption of payload data */
+	if( !sshClientServer( SSH_TEST_WRONGCERT ) )
+		return( FALSE );	/* Detect wrong key for server */
+	if( !sshClientServer( SSH_TEST_BADSIG_HASH ) )
+		return( FALSE );	/* Detect corruption of signed DH params */
+	if( !sshClientServer( SSH_TEST_BADSIG_DATA ) )
+		return( FALSE );	/* Detect corruption of signed DH params */
+	cryptSetFaultType( FAULT_NONE );
+#endif /* !NDEBUG */
+	return( TRUE );
 	}
 #endif /* WINDOWS_THREADS */
 

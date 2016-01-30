@@ -18,6 +18,8 @@
 
 #define CMS_KEYBLOCK_HEADERSIZE		4
 
+#ifdef USE_INT_CMS
+
 /****************************************************************************
 *																			*
 *							CMS Wrap/Unwrap Mechanisms						*
@@ -331,3 +333,4 @@ int importCMS( STDC_UNUSED void *dummy,
 
 	return( status );
 	}
+#endif /* USE_INT_CMS */

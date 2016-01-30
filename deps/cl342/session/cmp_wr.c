@@ -242,12 +242,12 @@ static int initDNInfo( INOUT SESSION_INFO *sessionInfoPtr,
    protocol information) before we try and create our own header in 
    response */
 
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2, 3 ) ) \
 static int writePkiHeader( INOUT STREAM *stream, 
 						   INOUT SESSION_INFO *sessionInfoPtr,
 						   INOUT CMP_PROTOCOL_INFO *protocolInfo )
 	{
-	CRYPT_HANDLE senderNameObject = DUMMY_INIT, recipNameObject = DUMMY_INIT;
+	CRYPT_HANDLE senderNameObject DUMMY_INIT, recipNameObject DUMMY_INIT;
 	STREAM nullStream;
 	MESSAGE_DATA msgData;
 #ifdef USE_FULL_HEADERS
@@ -258,7 +258,7 @@ static int writePkiHeader( INOUT STREAM *stream,
 	BOOLEAN sendClibID = FALSE, sendCertID = FALSE, sendMacInfo = FALSE;
 	BOOLEAN sendUserID = FALSE;
 	int senderNameLength, recipNameLength, attributeLength = 0;
-	int protInfoLength = DUMMY_INIT, totalLength, hashAlgo, status;
+	int protInfoLength DUMMY_INIT, totalLength, hashAlgo, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
@@ -544,7 +544,7 @@ static int writePkiHeader( INOUT STREAM *stream,
 		protection	[0]	BIT STRING
 		} */
 
-CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1, 2 ) ) \
+CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int writePkiMessage( INOUT SESSION_INFO *sessionInfoPtr,
 					 INOUT CMP_PROTOCOL_INFO *protocolInfo,
 					 IN_ENUM( CMPBODY ) const CMPBODY_TYPE bodyType )
@@ -552,7 +552,7 @@ int writePkiMessage( INOUT SESSION_INFO *sessionInfoPtr,
 	WRITEMESSAGE_FUNCTION writeMessageFunction;
 	BYTE protInfo[ 64 + MAX_PKCENCRYPTED_SIZE + 8 ], headerBuffer[ 8 + 8 ];
 	STREAM stream;
-	int headerSize = DUMMY_INIT, protInfoSize, status;
+	int headerSize DUMMY_INIT, protInfoSize, status;
 
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( protocolInfo, sizeof( CMP_PROTOCOL_INFO ) ) );

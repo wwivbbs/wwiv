@@ -175,14 +175,20 @@ static int checkSchema( IN_BUFFER( schemaLen ) const void *schema,
    parse URLs supplied by the caller to the cryptlib API) and not so much
    for the external interface (i.e. URLs supplied by remote systems for
    processing by cryptlib).  Because of this it's rather more liberal with
-   what it'll accept than a generic URL parser would be */
+   what it'll accept than a generic URL parser would be.
+   
+   Note though that it does occasionally have to deal with externally-
+   supplied URLs, for example when breaking down a DNS name in a certificate 
+   for comparison against the FQDN that the client is connecting to, do it 
+   treats input as suspicious (an unqualified 'BYTE *' rather than a clean
+   'char *') until proven otherwise */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 int parseURL( OUT URL_INFO *urlInfo, 
-			  IN_BUFFER( urlLen ) const char *url, 
+			  IN_BUFFER( urlLen ) const BYTE *url, 
 			  IN_LENGTH_SHORT const int urlLen,
 			  IN_PORT_OPT const int defaultPort, 
-			  IN_ENUM( URL_TYPE ) const URL_TYPE urlTypeHint,
+			  IN_ENUM_OPT( URL_TYPE ) const URL_TYPE urlTypeHint,
 			  const BOOLEAN preParseOnly )
 	{
 	const char *strPtr, *hostName, *location;
@@ -207,7 +213,7 @@ int parseURL( OUT URL_INFO *urlInfo,
 		{
 		const int ch = byteToInt( url[ offset ] );
 
-		if( ch <= 0 || ch > 0x7F || !isPrint( ch ) )
+		if( !isValidTextChar( ch ) )
 			return( CRYPT_ERROR_BADDATA );
 		}
 

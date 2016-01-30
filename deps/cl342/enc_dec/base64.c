@@ -15,22 +15,16 @@
   #include "enc_dec/asn1.h"
 #endif /* Compiler-specific includes */
 
+#ifdef USE_BASE64
+
 /* Base64 encode/decode tables from RFC 1113 */
 
 #define BPAD		'='		/* Padding for odd-sized output */
 #define BERR		0xFF	/* Illegal character marker */
 #define BEOF		0x7F	/* EOF marker (padding character or EOL) */
 
-static const char FAR_BSS binToAscii[ 64 ] = { 
-	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 
-	'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 
-	'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 
-	'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 
-	'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 
-	'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 
-	'w', 'x', 'y', 'z', '0', '1', '2', '3', 
-	'4', '5', '6', '7', '8', '9', '+', '/' 
-	};
+static const char FAR_BSS binToAscii[] = \
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 static const BYTE FAR_BSS asciiToBin[ 256 ] = { 
 	BERR, BERR, BERR, BERR, BERR, BERR, BERR, BERR,	/* 00 */
@@ -98,21 +92,33 @@ static const HEADER_INFO FAR_BSS headerInfo[] = {
 	{ CRYPT_CERTTYPE_CERTIFICATE,
 	  "-----BEGIN CERTIFICATE-----" EOL, 27 + EOL_LEN,
 	  "-----END CERTIFICATE-----" EOL, 25 + EOL_LEN },
+	{ CRYPT_CERTTYPE_CERTIFICATE,	/* Alternative form */
+	  "-----BEGIN X509 CERTIFICATE-----" EOL, 32 + EOL_LEN,
+	  "-----END X509 CERTIFICATE-----" EOL, 30 + EOL_LEN },
 	{ CRYPT_CERTTYPE_ATTRIBUTE_CERT,
 	  "-----BEGIN ATTRIBUTE CERTIFICATE-----" EOL, 37 + EOL_LEN,
 	  "-----END ATTRIBUTE CERTIFICATE-----" EOL, 35 + EOL_LEN },
 	{ CRYPT_CERTTYPE_CERTCHAIN,
 	  "-----BEGIN CERTIFICATE CHAIN-----" EOL, 33 + EOL_LEN,
 	  "-----END CERTIFICATE CHAIN-----" EOL, 31 + EOL_LEN },
+	{ CRYPT_CERTTYPE_CERTCHAIN,		/* Alternative form */
+	  "-----BEGIN PKCS7-----" EOL, 21 + EOL_LEN,
+	  "-----END PKCS7-----" EOL, 29 + EOL_LEN },
 	{ CRYPT_CERTTYPE_CERTREQUEST,
 	  "-----BEGIN NEW CERTIFICATE REQUEST-----" EOL, 39 + EOL_LEN,
 	  "-----END NEW CERTIFICATE REQUEST-----" EOL, 37 + EOL_LEN },
+	{ CRYPT_CERTTYPE_CERTREQUEST,	/* Alternative form */
+	  "-----BEGIN CERTIFICATE REQUEST-----" EOL, 35 + EOL_LEN,
+	  "-----END CERTIFICATE REQUEST-----" EOL, 33 + EOL_LEN },
 	{ CRYPT_CERTTYPE_REQUEST_CERT,
 	  "-----BEGIN NEW CERTIFICATE REQUEST-----" EOL, 39 + EOL_LEN,
 	  "-----END NEW CERTIFICATE REQUEST-----" EOL, 37 + EOL_LEN },
 	{ CRYPT_CERTTYPE_CRL,
 	  "-----BEGIN CERTIFICATE REVOCATION LIST-----"  EOL, 43 + EOL_LEN,
 	  "-----END CERTIFICATE REVOCATION LIST-----" EOL, 41 + EOL_LEN },
+	{ CRYPT_CERTTYPE_CRL,			/* Alternative form */
+	  "-----BEGIN X509 CRL-----"  EOL, 24 + EOL_LEN,
+	  "-----END X509 CRL-----" EOL, 22 + EOL_LEN },
 	{ CRYPT_CERTTYPE_NONE,			/* Universal catch-all */
 	  "-----BEGIN CERTIFICATE OBJECT-----"  EOL, 34 + EOL_LEN,
 	  "-----END CERTIFICATE OBJECT-----" EOL, 32 + EOL_LEN },
@@ -134,7 +140,7 @@ static const HEADER_INFO FAR_BSS headerInfo[] = {
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int fixedBase64decode( STREAM *stream,
-							  IN_BUFFER( srcLen ) const char *src, 
+							  IN_BUFFER( srcLen ) const BYTE *src, 
 							  IN_LENGTH_MIN( 10 ) const int srcLen );
 
 CHECK_RETVAL_BOOL STDC_NONNULL_ARG( ( 1 ) ) \
@@ -209,11 +215,11 @@ static BOOLEAN checkBase64( INOUT STREAM *stream, const BOOLEAN isPEM )
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int checkPEMHeader( INOUT STREAM *stream, 
-						   OUT_LENGTH_Z int *headerLength )
+						   OUT_DATALENGTH_Z int *headerLength )
 	{
 	BOOLEAN isSSH = FALSE, isPGP = FALSE;
 	char buffer[ 1024 + 8 ], *bufPtr = buffer;
-	int length, position = DUMMY_INIT, lineCount, status;
+	int length, position DUMMY_INIT, lineCount, status;
 
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isWritePtr( headerLength, sizeof( int ) ) );
@@ -224,13 +230,13 @@ static int checkPEMHeader( INOUT STREAM *stream,
 	/* Check for the initial 5 dashes and 'BEGIN ' (unless we're SSH, in
 	   which case we use 4 dashes, a space, and 'BEGIN ') */
 	status = readTextLine( ( READCHARFUNCTION ) sgetc, stream, 
-						   buffer, 1024, &length, NULL );
+						   buffer, 1024, &length, NULL, FALSE );
 	if( cryptStatusError( status ) )
 		return( status );
-	if( length < 5 + 6 + 7 + 5 )
+	if( length < 5 + 6 + 5 + 5 )
 		{
-		/* We need room for at least '-----' (5) + 'BEGIN ' (6) + 
-		   'ABC XYZ' (7) + '-----' (5) */
+		/* We need room for at least the shortest possible string, 
+		   '-----' (5) + 'BEGIN ' (6) + 'PKCS7' (5) + '-----' (5) */
 		return( CRYPT_ERROR_BADDATA );
 		}
 	if( memcmp( bufPtr, "-----BEGIN ", 11 ) &&	/* PEM/PGP form */
@@ -280,7 +286,7 @@ static int checkPEMHeader( INOUT STREAM *stream,
 		{
 		position = stell( stream );
 		status = readTextLine( ( READCHARFUNCTION ) sgetc, stream, 
-							   buffer, 1024, &length, NULL );
+							   buffer, 1024, &length, NULL, FALSE );
 		if( cryptStatusError( status ) )
 			return( status );
 		if( isSSH && strFindCh( buffer, length, ':' ) < 0 )
@@ -315,9 +321,9 @@ static int checkPEMHeader( INOUT STREAM *stream,
    found, return a 0-count EOL indicator */
 
 CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
-static int checkEOL( IN_BUFFER( srcLen ) const char *src, 
-					 IN_LENGTH const int srcLen,
-					 OUT_LENGTH_Z int *eolSize,
+static int checkEOL( IN_BUFFER( srcLen ) const BYTE *src, 
+					 IN_DATALENGTH const int srcLen,
+					 OUT_DATALENGTH_Z int *eolSize,
 					 IN_ENUM( CRYPT_CERTFORMAT ) \
 						const CRYPT_CERTFORMAT_TYPE format )
 	{
@@ -326,7 +332,7 @@ static int checkEOL( IN_BUFFER( srcLen ) const char *src,
 	assert( isReadPtr( src, srcLen ) );
 	assert( isWritePtr( eolSize, sizeof( int ) ) );
 
-	REQUIRES( srcLen > 0 && srcLen < MAX_INTLENGTH );
+	REQUIRES( srcLen > 0 && srcLen < MAX_BUFFER_SIZE );
 	REQUIRES( format > CRYPT_CERTFORMAT_NONE && \
 			  format < CRYPT_CERTFORMAT_LAST );
 
@@ -402,22 +408,22 @@ static int checkEOL( IN_BUFFER( srcLen ) const char *src,
    base64 indicator */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
-int base64checkHeader( IN_BUFFER( dataLength ) const char *data, 
-					   IN_LENGTH const int dataLength,
+int base64checkHeader( IN_BUFFER( dataLength ) const BYTE *data, 
+					   IN_DATALENGTH const int dataLength,
 					   OUT_ENUM_OPT( CRYPT_CERTFORMAT ) \
-						CRYPT_CERTFORMAT_TYPE *format,
-					   OUT_LENGTH_Z int *startPos )
+							CRYPT_CERTFORMAT_TYPE *format,
+					   OUT_DATALENGTH_Z int *startPos )
 	{
 	STREAM stream;
 	BOOLEAN seenTransferEncoding = FALSE, isBinaryEncoding = FALSE;
 	BOOLEAN seenDash = FALSE, isBase64;
-	int position = DUMMY_INIT, lineCount, length, status;
+	int position DUMMY_INIT, lineCount, length, status;
 
 	assert( isReadPtr( data, dataLength ) );
 	assert( isWritePtr( format, sizeof( CRYPT_CERTFORMAT_TYPE ) ) );
 	assert( isWritePtr( startPos, sizeof( int ) ) );
 
-	REQUIRES( dataLength > 0 && dataLength < MAX_INTLENGTH );
+	REQUIRES( dataLength > 0 && dataLength < MAX_BUFFER_SIZE );
 
 	/* Clear return values */
 	*format = CRYPT_CERTFORMAT_NONE;
@@ -441,7 +447,7 @@ int base64checkHeader( IN_BUFFER( dataLength ) const char *data,
 	   potential false positives */
 	if( sPeek( &stream ) == BER_SEQUENCE )
 		{
-		if( dataLength < 32000L )
+		if( dataLength < MAX_INTLENGTH_SHORT )
 			status = readSequenceI( &stream, NULL );
 		else
 			status = readLongSequence( &stream, NULL );
@@ -465,7 +471,7 @@ int base64checkHeader( IN_BUFFER( dataLength ) const char *data,
 
 		position = stell( &stream );
 		status = readTextLine( ( READCHARFUNCTION ) sgetc, &stream, 
-							   buffer, 1024, &length, NULL );
+							   buffer, 1024, &length, NULL, FALSE );
 		if( cryptStatusError( status ) )
 			{
 			sMemDisconnect( &stream );
@@ -522,7 +528,7 @@ int base64checkHeader( IN_BUFFER( dataLength ) const char *data,
 		char buffer[ 1024 + 8 ];
 
 		status = readTextLine( ( READCHARFUNCTION ) sgetc, &stream, 
-							   buffer, 1024, &length, NULL );
+							   buffer, 1024, &length, NULL, TRUE );
 		if( cryptStatusError( status ) )
 			{
 			sMemDisconnect( &stream );
@@ -594,7 +600,7 @@ int base64checkHeader( IN_BUFFER( dataLength ) const char *data,
 
 CHECK_RETVAL_SPECIAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int decodeBase64chunk( INOUT STREAM *stream,
-							  IN_BUFFER( srcLeft ) const char *src, 
+							  IN_BUFFER( srcLeft ) const BYTE *src, 
 							  IN_LENGTH const int srcLeft,
 							  const BOOLEAN fixedLenData )
 	{
@@ -604,7 +610,7 @@ static int decodeBase64chunk( INOUT STREAM *stream,
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isReadPtr( src, srcLeft ) );
 
-	REQUIRES( srcLeft > 0 && srcLeft < MAX_INTLENGTH );
+	REQUIRES( srcLeft > 0 && srcLeft < MAX_BUFFER_SIZE );
 
 	/* Make sure that there's sufficient input left to decode.  We need at
 	   least two more characters to produce one byte of output */
@@ -685,7 +691,7 @@ static int decodeBase64chunk( INOUT STREAM *stream,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 2 ) ) \
 static int fixedBase64decode( STREAM *stream,
-							  IN_BUFFER( srcLen ) const char *src, 
+							  IN_BUFFER( srcLen ) const BYTE *src, 
 							  IN_LENGTH_MIN( 10 ) const int srcLen )
 	{
 	int srcIndex;
@@ -693,14 +699,14 @@ static int fixedBase64decode( STREAM *stream,
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 	assert( isReadPtr( src, srcLen ) );
 
-	REQUIRES( srcLen >= 10 && srcLen < MAX_INTLENGTH );
+	REQUIRES( srcLen >= 10 && srcLen < MAX_BUFFER_SIZE );
 
 	/* Decode the base64 string as a fixed-length continuous string without
 	   padding or newlines.  Since we're processing arbitrary-sized input we 
 	   can't use the usual FAILSAFE_ITERATIONS_MAX to bound the loop because 
-	   the input could be larger than this so we use MAX_INTLENGTH instead */
+	   the input could be larger than this so we use MAX_BUFFER_SIZE instead */
 	for( srcIndex = 0; srcIndex < srcLen && \
-					   srcIndex < MAX_INTLENGTH; srcIndex += 4 )
+					   srcIndex < MAX_BUFFER_SIZE; srcIndex += 4 )
 		{
 		int status;
 
@@ -715,29 +721,29 @@ static int fixedBase64decode( STREAM *stream,
 			return( status );
 			}
 		}
-	ENSURES( srcIndex < MAX_INTLENGTH );
+	ENSURES( srcIndex < MAX_BUFFER_SIZE );
 
 	return( CRYPT_OK );
 	}
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 int base64decode( OUT_BUFFER( destMaxLen, *destLen ) void *dest, 
-				  IN_LENGTH_MIN( 10 ) const int destMaxLen, 
-				  OUT_LENGTH_Z int *destLen,
-				  IN_BUFFER( srcLen ) const char *src, 
-				  IN_LENGTH_MIN( 10 ) const int srcLen, 
+				  IN_DATALENGTH_MIN( 10 ) const int destMaxLen, 
+				  OUT_DATALENGTH_Z int *destLen,
+				  IN_BUFFER( srcLen ) const BYTE *src, 
+				  IN_DATALENGTH_MIN( 10 ) const int srcLen, 
 				  IN_ENUM_OPT( CRYPT_CERTFORMAT ) \
 					const CRYPT_CERTFORMAT_TYPE format )
 	{
 	STREAM stream;
-	int srcIndex, lineByteCount, lineSize = 0, status = DUMMY_INIT;
+	int srcIndex, lineByteCount, lineSize = 0, status DUMMY_INIT;
 
 	assert( destMaxLen > 10 && isWritePtr( dest, destMaxLen ) );
 	assert( isWritePtr( destLen, sizeof( int ) ) );
 	assert( srcLen > 10 && isReadPtr( src, srcLen ) );
 
-	REQUIRES( destMaxLen > 10 && destMaxLen < MAX_INTLENGTH );
-	REQUIRES( srcLen > 10 && srcLen < MAX_INTLENGTH );
+	REQUIRES( destMaxLen > 10 && destMaxLen < MAX_BUFFER_SIZE );
+	REQUIRES( srcLen > 10 && srcLen < MAX_BUFFER_SIZE );
 	REQUIRES( format >= CRYPT_CERTFORMAT_NONE && \
 			  format < CRYPT_CERTFORMAT_LAST );
 
@@ -761,9 +767,9 @@ int base64decode( OUT_BUFFER( destMaxLen, *destLen ) void *dest,
 	/* Decode the encoded object.  Since we're processing arbitrary-sized 
 	   input we can't use the usual FAILSAFE_ITERATIONS_MAX to bound the 
 	   loop because the input could be larger than this so we use 
-	   MAX_INTLENGTH instead */
+	   MAX_BUFFER_SIZE instead */
 	for( srcIndex = 0, lineByteCount = 0;
-		 srcIndex < srcLen && srcIndex < MAX_INTLENGTH;
+		 srcIndex < srcLen && srcIndex < MAX_BUFFER_SIZE;
 		 srcIndex += 4, lineByteCount += 4 )
 		{
 		/* Depending on implementations, the length of the base64-encoded
@@ -831,7 +837,7 @@ int base64decode( OUT_BUFFER( destMaxLen, *destLen ) void *dest,
 			return( status );
 			}
 		}
-	ENSURES( srcIndex < MAX_INTLENGTH );
+	ENSURES( srcIndex < MAX_BUFFER_SIZE );
 	if( cryptStatusOK( status ) )
 		*destLen = stell( &stream );
 	sMemDisconnect( &stream );
@@ -842,17 +848,17 @@ int base64decode( OUT_BUFFER( destMaxLen, *destLen ) void *dest,
 /* Calculate the size of a quantity of data once it's en/decoded */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3 ) ) \
-int base64decodeLen( IN_BUFFER( dataLength ) const char *data, 
-					 IN_LENGTH_MIN( 10 ) const int dataLength,
-					 OUT_LENGTH_Z int *decodedLength )
+int base64decodeLen( IN_BUFFER( dataLength ) const BYTE *data, 
+					 IN_DATALENGTH_MIN( 10 ) const int dataLength,
+					 OUT_DATALENGTH_Z int *decodedLength )
 	{
 	STREAM stream;
-	int ch, length = DUMMY_INIT, iterationCount;
+	int ch, length DUMMY_INIT, iterationCount;
 
 	assert( isReadPtr( data, dataLength ) );
 	assert( isWritePtr( decodedLength, sizeof( int ) ) );
 
-	REQUIRES( dataLength >= 10 && dataLength < MAX_INTLENGTH );
+	REQUIRES( dataLength >= 10 && dataLength < MAX_BUFFER_SIZE );
 
 	/* Clear return value */
 	*decodedLength = 0;
@@ -867,9 +873,10 @@ int base64decodeLen( IN_BUFFER( dataLength ) const char *data,
 	   
 	   Since we're processing arbitrary-sized input we can't use the usual
 	   FAILSAFE_ITERATIONS_MAX to bound the loop because the input could be
-	   larger than this so we use MAX_INTLENGTH instead */
+	   larger than this so we use MAX_BUFFER_SIZE instead */
 	sMemConnect( &stream, data, dataLength );
-	for( iterationCount = 0; iterationCount < MAX_INTLENGTH; iterationCount++ )
+	for( iterationCount = 0; iterationCount < MAX_BUFFER_SIZE; \
+		 iterationCount++ )
 		{
 		length = stell( &stream );
 		ch = sgetc( &stream );
@@ -884,7 +891,7 @@ int base64decodeLen( IN_BUFFER( dataLength ) const char *data,
 		if( ch == BERR || ch == BEOF )
 			break;
 		}
-	ENSURES( iterationCount < MAX_INTLENGTH );
+	ENSURES( iterationCount < MAX_BUFFER_SIZE );
 	sMemDisconnect( &stream );
 
 	/* Return a rough estimate of how much room the decoded data will occupy.
@@ -902,23 +909,46 @@ int base64decodeLen( IN_BUFFER( dataLength ) const char *data,
 *																			*
 ****************************************************************************/
 
+/* Find the header/trailer info for a given export format */
+
+static const HEADER_INFO *getHeaderInfo( IN_ENUM_OPT( CRYPT_CERTTYPE ) \
+											const CRYPT_CERTTYPE_TYPE certType )
+	{
+	int index;
+
+	REQUIRES_N( certType >= CRYPT_CERTTYPE_NONE && \
+				certType < CRYPT_CERTTYPE_LAST );
+
+	for( index = 0; headerInfo[ index ].type != CRYPT_CERTTYPE_NONE && \
+					index < FAILSAFE_ARRAYSIZE( headerInfo, HEADER_INFO ); 
+		 index++ )
+		{
+		if( headerInfo[ index ].type == certType )
+			return( &headerInfo[ index ] );
+		}
+	ENSURES_N( index < FAILSAFE_ARRAYSIZE( headerInfo, HEADER_INFO ) );
+
+	retIntError_Null();
+	}
+
 /* Calculate the size of a quantity of data once it's encoded */
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 2 ) ) \
-int base64encodeLen( IN_LENGTH_MIN( 10 ) const int dataLength,
-					 OUT_LENGTH_Z int *encodedLength,
+int base64encodeLen( IN_DATALENGTH_MIN( 10 ) const int dataLength,
+					 OUT_DATALENGTH_Z int *encodedLength,
 					 IN_ENUM_OPT( CRYPT_CERTTYPE ) \
 						const CRYPT_CERTTYPE_TYPE certType )
 	{
-	int length = roundUp( ( dataLength * 4 ) / 3, 4 ), headerInfoIndex;
+	const HEADER_INFO *headerInfoPtr;
+	int length = roundUp( ( dataLength * 4 ) / 3, 4 );
 
 	assert( isWritePtr( encodedLength, sizeof( int ) ) );
 
-	REQUIRES( dataLength >= 10 && dataLength < MAX_INTLENGTH );
+	REQUIRES( dataLength >= 10 && dataLength < MAX_BUFFER_SIZE );
 	REQUIRES( certType >= CRYPT_CERTTYPE_NONE && \
 			  certType < CRYPT_CERTTYPE_LAST );
 	
-	ENSURES( length >= 10 && length < MAX_INTLENGTH );
+	ENSURES( length >= 10 && length < MAX_BUFFER_SIZE );
 
 	/* Clear return value */
 	*encodedLength = 0;
@@ -932,20 +962,14 @@ int base64encodeLen( IN_LENGTH_MIN( 10 ) const int dataLength,
 		}
 
 	/* Find the header/trailer info for this format */
-	for( headerInfoIndex = 0;
-		 headerInfo[ headerInfoIndex ].type != certType && \
-			headerInfo[ headerInfoIndex ].type != CRYPT_CERTTYPE_NONE && \
-			headerInfoIndex < FAILSAFE_ARRAYSIZE( headerInfo, HEADER_INFO ); 
-		 headerInfoIndex++ );
-	ENSURES( headerInfoIndex < FAILSAFE_ARRAYSIZE( headerInfo, HEADER_INFO ) );
-	ENSURES( headerInfo[ headerInfoIndex ].type != CRYPT_CERTTYPE_NONE );
+	headerInfoPtr = getHeaderInfo( certType );
+	ENSURES( headerInfoPtr != NULL );
 
 	/* Calculate the extra length due to EOLs and delimiters */
 	length += ( ( roundUp( length, BASE64_LINESIZE ) / BASE64_LINESIZE ) * EOL_LEN );
-	length = headerInfo[ headerInfoIndex ].headerLen + length + \
-			 headerInfo[ headerInfoIndex ].trailerLen;
+	length = headerInfoPtr->headerLen + length + headerInfoPtr->trailerLen;
 
-	ENSURES( length > 10 && length < MAX_INTLENGTH );
+	ENSURES( length > 10 && length < MAX_BUFFER_SIZE );
 
 	*encodedLength = length;
 
@@ -956,25 +980,26 @@ int base64encodeLen( IN_LENGTH_MIN( 10 ) const int dataLength,
 
 CHECK_RETVAL STDC_NONNULL_ARG( ( 1, 3, 4 ) ) \
 int base64encode( OUT_BUFFER( destMaxLen, *destLen ) char *dest, 
-				  IN_LENGTH_MIN( 10 ) const int destMaxLen, 
-				  OUT_LENGTH_Z int *destLen,
+				  IN_DATALENGTH_MIN( 10 ) const int destMaxLen, 
+				  OUT_LENGTH_BOUNDED_Z( destMaxLen ) int *destLen,
 				  IN_BUFFER( srcLen ) const void *src, 
-				  IN_LENGTH_MIN( 10 ) const int srcLen, 
+				  IN_DATALENGTH_MIN( 10 ) const int srcLen, 
 				  IN_ENUM_OPT( CRYPT_CERTTYPE ) \
 					const CRYPT_CERTTYPE_TYPE certType )
 	{
+	const HEADER_INFO *headerInfoPtr DUMMY_INIT_PTR;
 	STREAM stream;
 	const BYTE *srcPtr = src;
 	int srcIndex, lineByteCount, remainder = srcLen % 3;
-	int headerInfoIndex = DUMMY_INIT, status = DUMMY_INIT;
+	int status DUMMY_INIT;
 
 	assert( destMaxLen > 10 && isWritePtr( dest, destMaxLen ) );
 	assert( isWritePtr( destLen, sizeof( int ) ) );
 	assert( srcLen >= 10 && isReadPtr( src, srcLen ) );
 
 	REQUIRES( destMaxLen >= 10 && destMaxLen > srcLen && \
-			  destMaxLen < MAX_INTLENGTH );
-	REQUIRES( srcLen >= 10 && srcLen < MAX_INTLENGTH );
+			  destMaxLen < MAX_BUFFER_SIZE );
+	REQUIRES( srcLen >= 10 && srcLen < MAX_BUFFER_SIZE );
 	REQUIRES( certType >= CRYPT_CERTTYPE_NONE && \
 			  certType < CRYPT_CERTTYPE_LAST );
 
@@ -988,15 +1013,10 @@ int base64encode( OUT_BUFFER( destMaxLen, *destLen ) char *dest,
 	   add the header */
 	if( certType != CRYPT_CERTTYPE_NONE )
 		{
-		for( headerInfoIndex = 0;
-			 headerInfo[ headerInfoIndex ].type != certType && \
-				headerInfo[ headerInfoIndex ].type != CRYPT_CERTTYPE_NONE && \
-				headerInfoIndex < FAILSAFE_ARRAYSIZE( headerInfo, HEADER_INFO );
-			 headerInfoIndex++ );
-		ENSURES( headerInfoIndex < FAILSAFE_ARRAYSIZE( headerInfo, HEADER_INFO ) );
-		ENSURES( headerInfo[ headerInfoIndex ].type != CRYPT_CERTTYPE_NONE );
-		status = swrite( &stream, headerInfo[ headerInfoIndex ].header, 
-						 headerInfo[ headerInfoIndex ].headerLen );
+		headerInfoPtr = getHeaderInfo( certType );
+		ENSURES( headerInfoPtr != NULL );
+		status = swrite( &stream, headerInfoPtr->header, 
+						 headerInfoPtr->headerLen );
 		if( cryptStatusError( status ) )
 			{
 			sMemDisconnect( &stream );
@@ -1078,8 +1098,8 @@ int base64encode( OUT_BUFFER( destMaxLen, *destLen ) char *dest,
 
 		/* Add the trailer */
 		swrite( &stream, EOL, EOL_LEN );
-		status = swrite( &stream, headerInfo[ headerInfoIndex ].trailer, 
-						 headerInfo[ headerInfoIndex ].trailerLen );
+		status = swrite( &stream, headerInfoPtr->trailer, 
+						 headerInfoPtr->trailerLen );
 		if( cryptStatusError( status ) )
 			{
 			sMemDisconnect( &stream );
@@ -1091,3 +1111,4 @@ int base64encode( OUT_BUFFER( destMaxLen, *destLen ) char *dest,
 
 	return( CRYPT_OK );
 	}
+#endif /* USE_BASE64 */

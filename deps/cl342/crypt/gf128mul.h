@@ -1,79 +1,77 @@
 /*
+---------------------------------------------------------------------------
+Copyright (c) 1998-2010, Brian Gladman, Worcester, UK. All rights reserved.
+
+The redistribution and use of this software (with or without changes)
+is allowed without the payment of fees or royalties provided that:
+
+  source code distributions include the above copyright notice, this
+  list of conditions and the following disclaimer;
+
+  binary distributions include the above copyright notice, this list
+  of conditions and the following disclaimer in their documentation.
+
+This software is provided 'as is' with no explicit or implied warranties
+in respect of its operation, including, but not limited to, correctness
+and fitness for purpose.
+---------------------------------------------------------------------------
+Issue Date: 11/01/2011
+
+ I am grateful for the work done by Mark Rodenkirch and Jason Papadopoulos
+ in helping to remove a bug in the operation of this code on big endian
+ systems when fast buffer operations are enabled.
  ---------------------------------------------------------------------------
- Copyright (c) 1998-2008, Brian Gladman, Worcester, UK. All rights reserved.
 
- LICENSE TERMS
+ An implementation of field multiplication in the Galois Field GF(2^128)
 
- The redistribution and use of this software (with or without changes)
- is allowed without the payment of fees or royalties provided that:
+ A polynomial representation is used for the field with the coefficients
+ held in bit sequences in which the bit numbers are the powers of x that
+ a bit represents. The field polynomial used is (x^128+x^7+x^2+x+1).
+ 
+ The obvious way of representing field elements in a computer system is 
+ to map 'x' in the field to the binary integer '2'. But this was way too
+ obvious for cryptographers!
+ 
+ Here bytes are numbered in their memory order and bits within bytes are
+ numbered according to their integer numeric significance (that is as is 
+ now normal with bit 0 representing unity). The term 'little endian' 
+ will then used to describe mappings where numeric (power of 2) or field 
+ (power of x) significance increases with increasing bit or byte numbers 
+ with 'big endian' being used to describe the inverse situation.  
 
-  1. source code distributions include the above copyright notice, this
-     list of conditions and the following disclaimer;
+ The GF bit sequence can then be mapped onto 8-bit bytes in computer 
+ memory in one of four simple ways:
 
-  2. binary distributions include the above copyright notice, this list
-     of conditions and the following disclaimer in their documentation;
+     A mapping in which x maps to the integer 2 in little endian 
+     form for both bytes and bits within bytes:
+     
+         LL: bit for x^n ==> bit for 2^(n % 8) in byte[n / 8]
 
-  3. the name of the copyright holder is not used to endorse products
-     built using this software without specific written permission.
+     A mapping in which x maps to the integer 2 in big endian form 
+     for both bytes and bits within bytes:
 
- DISCLAIMER
+         BL: bit for x^n ==> bit for 2^(n % 8) in byte[15 - n / 8]
+ 
+     A little endian mapping for bytes but with the bits within 
+     bytes in reverse order (big endian bytes):
 
- This software is provided 'as is' with no explicit or implied warranties
- in respect of its properties, including, but not limited to, correctness
- and/or fitness for purpose.
- ---------------------------------------------------------------------------
- Issue Date: 07/10/2010
+         LB: bit for x^n ==> bit for 2^(7 - n % 8) in byte[n / 8]
 
-    An implementation of field multiplication in the Galois Field GF(2^128)
+     A big endian mapping for bytes but with the bits within 
+     bytes in reverse order (big endian bytes):
 
-    A polynomial representation is used for the field with the coefficients
-    held in bit sequences in which the bit numbers are the powers of x that
-    a bit represents. The field polynomial used is (x^128+x^7+x^2+x+1).
-    
-    The obvious way of representing field elements in a computer system is 
-    to map 'x' in the field to the binary integer '2'.  But this was way 
-    too obvious for cryptographers!
-    
-    Here bytes are numbered in their memory order and bits within bytes are
-    numbered according to their integer numeric significance (that is as is 
-    now normal with bit 0 representing unity) . The term 'little endian' 
-    will then used to describe mappings where numeric (power of 2) or field 
-    (power of x) significance increases with increasing bit or byte numbers 
-    with 'big endian' being used to describe the inverse situation.  
+         BB: bit for x^n ==> bit for 2^(7 - n % 8) in byte[15 - n / 8]
 
-    The GF bit sequence can then be mapped onto 8-bit bytes in computer 
-    memory in one of four simple ways:
+ 128-bit field elements are represented by 16 byte buffers but for
+ processing efficiency reasons it is often desirable to process arrays 
+ of bytes using longer types such as, for example, unsigned long values. 
+ The type used for representing these buffers will be called a 'gf_unit' 
+ and the buffer itself will be referred to as a 'gf_t' type.
 
-        A mapping in which x maps to the integer 2 in little endian 
-        form for both bytes and bits within bytes:
-        
-            LL: bit for x^n ==> bit for 2^(n % 8) in byte[n / 8]
-
-        A mapping in which x maps to the integer 2 in big endian form 
-        for both bytes and bits within bytes:
-
-            BL: bit for x^n ==> bit for 2^(n % 8) in byte[15 - n / 8]
-    
-        A little endian mapping for bytes but with the bits within 
-        bytes in reverse order (big endian bytes):
-
-            LB: bit for x^n ==> bit for 2^(7 - n % 8) in byte[n / 8]
-
-        A big endian mapping for bytes but with the bits within 
-        bytes in reverse order (big endian bytes):
-
-            BB: bit for x^n ==> bit for 2^(7 - n % 8) in byte[15 - n / 8]
-
-    128-bit field elements are represented by 16 byte buffers but for
-    processing efficiency reasons it is often desirable to process arrays of 
-    bytes using longer types such as, for example, unsigned  long values. 
-    The type used for representing these buffers will be called a 'gf_unit' 
-    and the buffer itself will be referred to as a 'gf_t' type.
-
-    THe field multiplier is based on the assumption that one of the two
-    field elements involved in multiplication will change only relatively
-    infrequently, making it worthwhile to precompute tables to speed up
-    multiplication by this value. 
+ THe field multiplier is based on the assumption that one of the two
+ field elements involved in multiplication will change only relatively
+ infrequently, making it worthwhile to precompute tables to speed up
+ multiplication by this value. 
 */
 
 #ifndef _GF128MUL_H
@@ -88,14 +86,29 @@
   #include "crypt/brg_endian.h"
 #endif /* Compiler-specific includes */
 
-/*  The processing unit used within 16 byte buffers. This can   
-    provide significant advantages if acess to larger types
-    is available without causing memory access exceptions 
+/* USER DEFINABLE OPTIONS */
+/*  UNIT_BITS sets the size of variables used to process 16 byte buffers
+    when the buffer alignment allows this.  When buffers are processed
+    in bytes, 16 individual operations are invoolved.  But if, say, such 
+    a buffer is divided into 4 32 bit variables, it can then be processed 
+    in 4 operations, making the code typically much faster. In general
+    it will pay to use the longest natively supported size, which will
+    probably be 32 or 64 bits in 32 and 64 bit systems respectively.
 */
+
+#if defined( UNIT_BITS )
+# undef UNIT_BITS
+#endif
 
 #if !defined( UNIT_BITS )
 #  if PLATFORM_BYTE_ORDER == IS_BIG_ENDIAN
-#    define UNIT_BITS  8
+#    if 0
+#      define UNIT_BITS   8
+#    elif 0
+#      define UNIT_BITS  32
+#    elif 1
+#      define UNIT_BITS  64
+#    endif
 #  elif defined( _WIN64 )
 #    define UNIT_BITS 64
 #  else
@@ -143,7 +156,10 @@
 #  define TABLES_256
 #endif
 
-#if !(defined( TABLES_64K ) || defined( TABLES_8K ) ||defined( TABLES_4K ) ||defined( TABLES_256 ))
+/* END OF USER DEFINABLE OPTIONS */
+
+#if !(defined( TABLES_64K ) || defined( TABLES_8K ) \
+    || defined( TABLES_4K ) || defined( TABLES_256 ))
 #  define NO_TABLES
 #endif
 

@@ -80,7 +80,7 @@ void endSemaphores( void )
 	krnlData->shutdownLevel = SHUTDOWN_LEVEL_MUTEXES;
 
 	/* Shut down the mutexes */
-	MUTEX_DESTROY( mutex3);
+	MUTEX_DESTROY( mutex3 );
 	MUTEX_DESTROY( mutex2 );
 	MUTEX_DESTROY( mutex1 );
 
@@ -206,7 +206,7 @@ CHECK_RETVAL_BOOL \
 BOOLEAN krnlWaitSemaphore( IN_ENUM( SEMAPHORE ) const SEMAPHORE_TYPE semaphore )
 	{
 	SEMAPHORE_INFO *semaphoreInfo;
-	MUTEX_HANDLE object = DUMMY_INIT_MUTEX;
+	MUTEX_HANDLE object DUMMY_INIT_MUTEX;
 	BOOLEAN semaphoreSet = FALSE;
 	int status = CRYPT_OK;
 
