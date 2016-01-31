@@ -457,7 +457,7 @@ BinkState BinkP::PasswordAck() {
   const string expected_password = expected_password_for(&callout, remote_node);
   LOG << "STATE: PasswordAck";
   if (auth_type_ == AuthType::PLAIN_TEXT) {
-    LOG << "       PLAIN_TEXT expected_password = '" << expected_password << "'";
+    // LOG << "       PLAIN_TEXT expected_password = '" << expected_password << "'";
     if (remote_password_ == expected_password) {
       // Passwords match, send OK.
       send_command_packet(BinkpCommands::M_OK, "Passwords match; insecure session");
@@ -466,7 +466,7 @@ BinkState BinkP::PasswordAck() {
       return BinkState::TRANSFER_FILES;
     }
   } else if (auth_type_ == AuthType::CRAM_MD5) {
-    LOG << "       CRAM_MD5 expected_password = '" << expected_password << "'";
+    // LOG << "       CRAM_MD5 expected_password = '" << expected_password << "'";
     if (cram_.ValidatePassword(cram_.challenge_data(), expected_password, remote_password_)) {
       // Passwords match, send OK.
       send_command_packet(BinkpCommands::M_OK, "Passwords match; secure session.");
@@ -678,7 +678,7 @@ bool BinkP::HandlePassword(const string& password_line) {
     return false;
   }
   string hashed_password = password_line.substr(CRAM_MD5_PREFIX.size());
-  LOG << "        HandlePassword: Received Plain CRAM-MD5 hashed password";
+  LOG << "        HandlePassword: Received CRAM-MD5 hashed password";
   auth_type_ = AuthType::CRAM_MD5;
   remote_password_ = hashed_password;
   return true;

@@ -223,7 +223,6 @@ unique_ptr<SocketConnection> Accept(int port) {
 }
 
 SocketConnection::~SocketConnection() {
-  LOG << "       SocketConnection::~SocketConnection()";
   if (sock_ != INVALID_SOCKET) {
     closesocket(sock_);
     sock_ = INVALID_SOCKET;
