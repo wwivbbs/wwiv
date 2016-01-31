@@ -36,14 +36,14 @@
             this.listBox2 = new System.Windows.Forms.ListBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.listBox3 = new System.Windows.Forms.ListBox();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.listBox4 = new System.Windows.Forms.ListBox();
+            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.listBox5 = new System.Windows.Forms.ListBox();
             this.exitButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.logLines = new System.Windows.Forms.TextBox();
             this.refreshButton = new System.Windows.Forms.Button();
-            this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.tabPage5 = new System.Windows.Forms.TabPage();
-            this.listBox4 = new System.Windows.Forms.ListBox();
-            this.listBox5 = new System.Windows.Forms.ListBox();
             this.tabNetwork.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -127,6 +127,48 @@
             this.listBox3.Size = new System.Drawing.Size(750, 304);
             this.listBox3.TabIndex = 1;
             // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this.listBox4);
+            this.tabPage4.Location = new System.Drawing.Point(4, 22);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage4.Size = new System.Drawing.Size(753, 309);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "Change Log";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // listBox4
+            // 
+            this.listBox4.Font = new System.Drawing.Font("Lucida Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.listBox4.FormattingEnabled = true;
+            this.listBox4.ItemHeight = 12;
+            this.listBox4.Location = new System.Drawing.Point(0, 3);
+            this.listBox4.Name = "listBox4";
+            this.listBox4.Size = new System.Drawing.Size(750, 304);
+            this.listBox4.TabIndex = 2;
+            // 
+            // tabPage5
+            // 
+            this.tabPage5.Controls.Add(this.listBox5);
+            this.tabPage5.Location = new System.Drawing.Point(4, 22);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage5.Size = new System.Drawing.Size(753, 309);
+            this.tabPage5.TabIndex = 4;
+            this.tabPage5.Text = "What\'s New";
+            this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // listBox5
+            // 
+            this.listBox5.Font = new System.Drawing.Font("Lucida Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.listBox5.FormattingEnabled = true;
+            this.listBox5.ItemHeight = 12;
+            this.listBox5.Location = new System.Drawing.Point(0, 3);
+            this.listBox5.Name = "listBox5";
+            this.listBox5.Size = new System.Drawing.Size(750, 304);
+            this.listBox5.TabIndex = 3;
+            // 
             // exitButton
             // 
             this.exitButton.Font = new System.Drawing.Font("Calibri", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -165,48 +207,6 @@
             this.refreshButton.Text = "REFRESH";
             this.refreshButton.UseVisualStyleBackColor = true;
             this.refreshButton.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // tabPage4
-            // 
-            this.tabPage4.Controls.Add(this.listBox4);
-            this.tabPage4.Location = new System.Drawing.Point(4, 22);
-            this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(753, 309);
-            this.tabPage4.TabIndex = 3;
-            this.tabPage4.Text = "Change Log";
-            this.tabPage4.UseVisualStyleBackColor = true;
-            // 
-            // tabPage5
-            // 
-            this.tabPage5.Controls.Add(this.listBox5);
-            this.tabPage5.Location = new System.Drawing.Point(4, 22);
-            this.tabPage5.Name = "tabPage5";
-            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(753, 309);
-            this.tabPage5.TabIndex = 4;
-            this.tabPage5.Text = "What\'s New";
-            this.tabPage5.UseVisualStyleBackColor = true;
-            // 
-            // listBox4
-            // 
-            this.listBox4.Font = new System.Drawing.Font("Lucida Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.listBox4.FormattingEnabled = true;
-            this.listBox4.ItemHeight = 12;
-            this.listBox4.Location = new System.Drawing.Point(0, 3);
-            this.listBox4.Name = "listBox4";
-            this.listBox4.Size = new System.Drawing.Size(750, 304);
-            this.listBox4.TabIndex = 2;
-            // 
-            // listBox5
-            // 
-            this.listBox5.Font = new System.Drawing.Font("Lucida Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.listBox5.FormattingEnabled = true;
-            this.listBox5.ItemHeight = 12;
-            this.listBox5.Location = new System.Drawing.Point(0, 3);
-            this.listBox5.Name = "listBox5";
-            this.listBox5.Size = new System.Drawing.Size(750, 304);
-            this.listBox5.TabIndex = 3;
             // 
             // LogForm
             // 
