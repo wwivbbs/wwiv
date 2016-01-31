@@ -85,12 +85,28 @@ do
     sed -i "s@REPLACE-WWIVBASE@${WWIV_DIR}@" $i
 done
 
+# configure dosemu glue scripts for WWIVnet 
+echo "Configuring dosemu WWIVnet scripts"
+echo "Configuring dosemu WWIVnet scripts" >> ${WWIV_DIR}/$LOGFILE 2>&1
+echo
+echo "Setting scripts to use your install location ${WWIV_DIR}"
+echo "Setting scripts to use your install location ${WWIV_DIR}" >> ${WWIV_DIR}/$LOGFILE 2>&1
+
+cd ${WWIV_DIR}/dosemu-batchfiles
+for i in network1.bat network2.bat network3.bat
+do
+    sed -i "s@REPLACE-WWIVBASE@${WWIV_DIR}@" $i
+done
+cd ${WWIV_DIR}
+
+echo dosemu batchfiles are configured.  Copy them to your dosemu C: drive
+echo once it has been created.
+echo
 echo
 echo "Your BBS basic data setup is complete."
 echo "running ./init now to finalize the BBS.  "
 sleep 5
 
-cd ${WWIV_DIR}
 ./init
 
 echo
