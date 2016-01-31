@@ -44,15 +44,17 @@ namespace WWIV5TelnetServer
 
             foreach (string line1 in lines1)
             {
-                // Default Color Green
-                listBox1.ForeColor = Color.Green;
-
-                // Catch ERROR: And Color Red Else Green
+                // Catch ERROR: And Color Orange Else Blue
                 if (line1.Contains(errorText1))
                 {
-                    listBox1.ForeColor = Color.DarkRed;
+                    listBox1.ForeColor = Color.FromArgb(230, 159, 0);
+                    this.listBox1.Items.Add(line1);
                 }
-                this.listBox1.Items.Add(line1);
+                else
+                {
+                    listBox1.ForeColor = Color.FromArgb(0, 114, 178);
+                    this.listBox1.Items.Add(line1);
+                }
                 i1++;
                 if (i1 >= logLength) break;
             }
@@ -65,20 +67,29 @@ namespace WWIV5TelnetServer
 
             foreach (string line2 in lines2)
             {
-                // Default Color Green
-                listBox2.ForeColor = Color.Green;
+                this.listBox2.Items.Add(line2);
+                i1++;
+                if (i2 >= logLength) break;
+            }
 
-                // Catch ERROR: And Color Red Else Green
+            foreach (string line2 in lines2)
+            {
+                // Catch ERROR: And Color Orange Else Blue
                 if (line2.Contains(errorText2))
                 {
-                    listBox2.ForeColor = Color.DarkRed;
+                    listBox2.ForeColor = Color.FromArgb(230, 159, 0);
+                    this.listBox2.Items.Add(line2);
                 }
-                this.listBox2.Items.Add(line2);
+                else
+                {
+                    listBox2.ForeColor = Color.FromArgb(0, 114, 178);
+                    this.listBox2.Items.Add(line2);
+                }
                 i2++;
                 if (i2 >= logLength) break;
             }
 
-            // Net Log
+            // Net.log
             string errorText3 = " ERROR: ";
             var i3 = 0;
             // From Bottom To Top
@@ -86,13 +97,13 @@ namespace WWIV5TelnetServer
 
             foreach (string line3 in lines3)
             {
-                // Default Color Green
-                listBox3.ForeColor = Color.Green;
+                // Default Color Blue
+                listBox3.ForeColor = Color.FromArgb(0, 114, 178);
 
-                // Catch ERROR: And Color Red Else Green
+                // Catch ERROR: And Color Orange Else Blue
                 if (line3.Contains(errorText3))
                 {
-                    listBox3.ForeColor = Color.DarkRed;
+                    listBox3.ForeColor = Color.FromArgb(230, 159, 0);
                 }
                 this.listBox3.Items.Add(line3);
                 i3++;
