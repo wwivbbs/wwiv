@@ -93,7 +93,7 @@ namespace WWIV5TelnetServer
             string errorText3 = " ERROR: ";
             var i3 = 0;
             // From Bottom To Top
-            var lines3 = File.ReadAllLines(Properties.Settings.Default.homeDirectory + @"\gfiles\NET.LOG");
+            var lines3 = File.ReadAllLines(Properties.Settings.Default.homeDirectory + @"\gfiles\NET.LOG").Reverse().Skip(1);
 
             foreach (string line3 in lines3)
             {
