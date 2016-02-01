@@ -100,14 +100,12 @@ bool NetworkLog::Log(
     unsigned int bytes_sent, unsigned int bytes_received,
     std::chrono::seconds seconds_elapsed, const std::string& network_name) {
 
-  string previous_contents = GetContents();
   string log_line = CreateLogLine(
       time, side, node, bytes_sent, bytes_received, seconds_elapsed, network_name);
 
   // Opening for "w" should truncate the existing file.
-  TextFile file(gfiles_directory_, "net.log", "w");
+  TextFile file(gfiles_directory_, "net.log", "a+t");
   file.WriteLine(log_line);
-  file.Write(previous_contents);
 
   return true;
 }
