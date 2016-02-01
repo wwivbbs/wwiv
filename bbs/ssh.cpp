@@ -267,7 +267,7 @@ static void reader_thread(SSHSession& session, SOCKET socket) {
   try {
     while (true) {
       if (session.closed()) {
-        return;
+        break;
       }
       if (!socket_avail(session.socket_handle(), 1)) {
         continue;
@@ -276,7 +276,7 @@ static void reader_thread(SSHSession& session, SOCKET socket) {
       int num_read = session.PopData(data.get(), size);
       if (num_read == -1) {
         // error.
-        return;
+        break;
       }
       int num_sent = send(socket, data.get(), num_read, 0);
       // clog << "reader_thread: sent " << num_sent << endl;
@@ -284,6 +284,7 @@ static void reader_thread(SSHSession& session, SOCKET socket) {
   } catch (const socket_error& e) {
     clog << e.what() << endl;
   }
+  closesocket(socket);
 }
 
 // Reads from local socket socket, writes to remote socket using session.
@@ -293,7 +294,7 @@ static void writer_thread(SSHSession& session, SOCKET socket) {
   try {
     while (true) {
         if (session.closed()) {
-          return;
+          break;
         }
       if (!socket_avail(socket, 1)) {
         continue;
@@ -308,6 +309,7 @@ static void writer_thread(SSHSession& session, SOCKET socket) {
   } catch (const socket_error& e) {
     clog << e.what() << endl;
   }
+  closesocket(socket);
 }
 
 IOSSH::IOSSH(SOCKET ssh_socket, Key& key) 

@@ -24,6 +24,8 @@
 #include <string>
 #include <type_traits>
 
+#include "core/wwivassert.h"
+
 namespace wwiv {
 namespace bbs {
 // Text editing modes for input routines
@@ -69,6 +71,7 @@ input_number(T current_value, T min_value, T max_value, bool set_default_value =
 template<typename T>
 typename std::enable_if<std::is_unsigned<T>::value, T>::type
 input_number(T current_value, T min_value, T max_value, bool set_default_value = true) {
+  WWIV_ASSERT(max_value >= 0);
   int len = std::max<int>(1, static_cast<T>(ceil(log10(max_value))));
   std::string default_value = (set_default_value ? std::to_string(current_value) : "");
   std::string s = Input1(default_value, len, true, wwiv::bbs::InputMode::UPPER);
