@@ -276,21 +276,21 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
 bool WWIVMessageArea::DeleteMessage(int message_number) {
   int num_messages = number_of_messages();
   if (message_number < 1) {
-    return nullptr;
+    return false;
   } else if (message_number > num_messages) {
-    return nullptr;
+    return false;
   }
 
   DataFile<postrec> sub(sub_filename_, File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   if (!sub) {
     // TODO: throw exception
-    return nullptr;
+    return false;
   }
   postrec post;
   sub.Read(message_number, &post);
   if (post.msg.storage_type != 2) {
     // We only support type-2 on the WWIV API.
-    return nullptr;
+    return false;
   }
 
   // Remove text
