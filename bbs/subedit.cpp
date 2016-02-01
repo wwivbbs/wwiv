@@ -308,7 +308,7 @@ static void modify_sub(int n) {
     case 'E': {
       bout.nl();
       bout << "|#2New Post SL? ";
-      r.postsl = input_number<int8_t>(r.postsl, 0, 255);
+      r.postsl = input_number<uint8_t>(r.postsl, 0, 255);
     }
     break;
     case 'F': {
