@@ -193,16 +193,16 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
 
   if (!success) {
     clog << "We don't have a valid SSH connection here!" << endl;
-    getchar();
   } else {
     // Clear out any remaining control messages.
     int bytes_received = 0;
     char buffer[4096];
     cryptPopData(session_, buffer, 4096, &bytes_received);
+
+    GetSSHUserNameAndPassword(session_, remote_username_, remote_password_);
+    clog << "Got Username and Password!" << endl;
   }
   initialized_ = success;
-  GetSSHUserNameAndPassword(session_, remote_username_, remote_password_);
-  clog << "Got Username and Password!" << endl;
 }
 
 int SSHSession::PushData(const char* data, size_t size) {
@@ -318,9 +318,15 @@ IOSSH::IOSSH(SOCKET ssh_socket, Key& key)
   static bool initialized = RemoteSocketIO::Initialize();
   if (!ssh_initalize()) {
     clog << "ERROR INITIALIZING SSH (ssh_initalize)" << endl;
+    closesocket(ssh_socket_);
+    ssh_socket_ = INVALID_SOCKET;
+    return;
   }
   if (!session_.initialized()) {
     clog << "ERROR INITIALIZING SSH (SSHSession::initialized)" << endl;
+    closesocket(ssh_socket_);
+    ssh_socket_ = INVALID_SOCKET;
+    return;
   }
   io_.reset(new RemoteSocketIO(plain_socket_, false));
   RemoteInfo& info = remote_info();
