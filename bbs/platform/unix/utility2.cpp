@@ -33,9 +33,11 @@ using std::string;
 using wwiv::strings::StrCat;
 
 void WWIV_make_abs_cmd(const string root, string* out) {
-  if (out->find("/") != string::npos) {
+  if (out->find("/") == string::npos) {
+	// Use current path of we don't have an abs path.
     string s(*out);
-    *out = StrCat(session()->GetHomeDir(), s);
+    File f(session()->GetHomeDir(), s);
+    *out = f.full_pathname();
   }
 }
 
