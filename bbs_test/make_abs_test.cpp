@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <iostream>
+#include <string>
 
 #include "gtest/gtest.h"
 #include "bbs_test/bbs_helper.h"
@@ -59,9 +60,6 @@ TEST_F(MakeAbsTest, UnderRoot) {
 }
 
 #else 
-
-// TODO(rushfan): Fix this test.
-// See https://github.com/wwivbbs/wwiv/issues/631
 
 TEST_F(MakeAbsTest, Smoke) {
   File f (helper.files().TempDir(), "ls foo");
