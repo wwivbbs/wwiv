@@ -37,36 +37,36 @@ public:
   explicit WWIVMessageHeader(const MessageApi* api);
   virtual ~WWIVMessageHeader();
 
-  virtual std::string title() const override { return header_.title;  }
-  virtual void set_title(std::string&) override;
-  virtual std::string to() const override { return to_.empty() ? to_ : "ALL";  }
-  virtual void set_to(std::string& to) override { to_ = to;   }
-  virtual std::string from() const override { return from_; }
-  virtual void set_from(std::string& f) override { from_ = f; }
-  virtual uint16_t from_usernum() const override { return header_.owneruser; }
-  virtual void set_from_usernum(uint16_t n) override { header_.owneruser = n; }
-  virtual uint16_t from_system() const override { return header_.ownersys; }
-  virtual void set_from_system(uint16_t n) override { header_.ownersys = n;  }
-  virtual uint32_t daten() const override { return header_.daten; }
-  virtual void set_daten(uint32_t d) override { header_.daten = d; }
-  virtual uint8_t status() const override { return header_.status; }   // TODO(rushfan): This should be generic
-  virtual void set_status(uint8_t t) override { header_.status = t; }
-  virtual uint8_t anony() const override { return header_.anony;  }      // TODO(rushfan): This should be generic
-  virtual void set_anony(uint8_t a) override { header_.anony = a; }
-  virtual std::string oaddress() const override { return oaddress_;  } // TODO(rushfan): Implement me!
-  virtual void set_oaddress(std::string& a) override { oaddress_ = a;  }
-  virtual std::string destination_address() const override { return destination_address_;  }
-  virtual void set_destination_address(std::string& a) override { destination_address_ = a; }
-  virtual std::string in_reply_to() const override { return in_reply_to_; }
-  virtual void set_in_reply_to(std::string& t) override { in_reply_to_ = t; }
+  std::string title() const override { return header_.title;  }
+  void set_title(std::string&) override;
+  std::string to() const override { return to_.empty() ? to_ : "ALL";  }
+  void set_to(std::string& to) override { to_ = to;   }
+  std::string from() const override { return from_; }
+  void set_from(std::string& f) override { from_ = f; }
+  uint16_t from_usernum() const override { return header_.owneruser; }
+  void set_from_usernum(uint16_t n) override { header_.owneruser = n; }
+  uint16_t from_system() const override { return header_.ownersys; }
+  void set_from_system(uint16_t n) override { header_.ownersys = n;  }
+  uint32_t daten() const override { return header_.daten; }
+  void set_daten(uint32_t d) override { header_.daten = d; }
+  uint8_t status() const override { return header_.status; }   // TODO(rushfan): This should be generic
+  void set_status(uint8_t t) override { header_.status = t; }
+  uint8_t anony() const override { return header_.anony;  }      // TODO(rushfan): This should be generic
+  void set_anony(uint8_t a) override { header_.anony = a; }
+  std::string oaddress() const override { return oaddress_;  } // TODO(rushfan): Implement me!
+  void set_oaddress(std::string& a) override { oaddress_ = a;  }
+  std::string destination_address() const override { return destination_address_;  }
+  void set_destination_address(std::string& a) override { destination_address_ = a; }
+  std::string in_reply_to() const override { return in_reply_to_; }
+  void set_in_reply_to(std::string& t) override { in_reply_to_ = t; }
 
-  virtual bool is_local() const override;
-  virtual bool is_private() const override { return false;  } // we don't support private subs
-  virtual void set_private(bool b) override { private_ = b; }
-  virtual bool is_locked() const override { return (header_.status & status_no_delete) != 0; } // 
-  virtual void set_locked(bool b) override;
-  virtual bool is_deleted() const override { return (header_.status & status_delete) != 0; }
-  virtual void set_deleted(bool b) override;
+  bool is_local() const override;
+  bool is_private() const override { return false;  } // we don't support private subs
+  void set_private(bool b) override { private_ = b; }
+  bool is_locked() const override { return (header_.status & status_no_delete) != 0; } // 
+  void set_locked(bool b) override;
+  bool is_deleted() const override { return (header_.status & status_delete) != 0; }
+  void set_deleted(bool b) override;
 
   const postrec& data() const { return header_;  }
 
@@ -95,8 +95,8 @@ public:
   explicit WWIVMessageText(const std::string& text);
   virtual ~WWIVMessageText();
 
-  virtual const std::string text() const override;
-  virtual void set_text(const std::string&) override;
+  const std::string text() const override;
+  void set_text(const std::string&) override;
 
 private:
   std::string text_;
@@ -108,8 +108,8 @@ public:
     std::unique_ptr<WWIVMessageText> text);
   ~WWIVMessage();
 
-  virtual WWIVMessageHeader* header() const override { return header_.get(); }
-  virtual WWIVMessageText* text() const override { return text_.get(); }
+  WWIVMessageHeader* header() const override { return header_.get(); }
+  WWIVMessageText* text() const override { return text_.get(); }
   WWIVMessageHeader* release_header() { return header_.release(); }
   WWIVMessageText* release_text() { return text_.release(); }
 

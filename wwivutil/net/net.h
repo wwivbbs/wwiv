@@ -27,7 +27,7 @@ class NetCommand: public UtilCommand {
 public:
   NetCommand(): UtilCommand("net", "WWIV network commands.") {}
   virtual ~NetCommand() {}
-  virtual bool AddSubCommands() override final;
+  bool AddSubCommands() override final;
 };
 
 

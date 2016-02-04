@@ -29,9 +29,9 @@ class FixDirectoriesCommand final: public UtilCommand {
 public:
   FixDirectoriesCommand()
     : UtilCommand("dirs", "Fix File Directories.") {}
-  virtual int Execute() override final;
-  virtual std::string GetUsage() const override final;
-  virtual bool AddSubCommands() override final;
+  int Execute() override final;
+  std::string GetUsage() const override final;
+  bool AddSubCommands() override final;
 };
 
 }  // namespace wwivutil

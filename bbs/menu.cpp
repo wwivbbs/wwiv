@@ -92,7 +92,6 @@ void StartMenus() {
   if (!LoadMenuSetup(session()->usernum)) {
     strcpy(pSecondUserRec->szMenuSet, "wwiv"); // default menu set name
     pSecondUserRec->cHotKeys = HOTKEYS_ON;
-    pSecondUserRec->cMenuType = MENUTYPE_REGULAR;
     WriteMenuSetup(session()->usernum);
   }
   while (menu_data->reload && !hangup) {
@@ -431,9 +430,6 @@ void ConfigUserMenuSet() {
     case '2':
       pSecondUserRec->cHotKeys = !pSecondUserRec->cHotKeys;
       break;
-    case '3':
-      pSecondUserRec->cMenuType = !pSecondUserRec->cMenuType;
-      break;
     case '?':
       printfile(MENUWEL_NOEXT);
       continue;                           // bypass the below cls()
@@ -451,8 +447,8 @@ void ConfigUserMenuSet() {
   }
 
   WriteMenuSetup(session()->usernum);
-  MenuSysopLog(StringPrintf("Menu in use : %s - %s - %s", pSecondUserRec->szMenuSet,
-          pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Hot" : "Off", pSecondUserRec->cMenuType == MENUTYPE_REGULAR ? "REG" : "PD"));
+  MenuSysopLog(StringPrintf("Menu in use : %s - %s", pSecondUserRec->szMenuSet,
+          pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Hot" : "Off"));
   bout.nl(2);
 }
 

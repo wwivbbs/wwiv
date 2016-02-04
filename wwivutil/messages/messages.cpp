@@ -62,14 +62,14 @@ public:
 
   virtual ~DeleteMessageCommand() {}
 
-  virtual std::string GetUsage() const override final {
+  std::string GetUsage() const override final {
     std::ostringstream ss;
     ss << "Usage:   delete --num=NN <base sub filename>" << endl;
     ss << "Example: delete --num=10 general" << endl;
     return ss.str();
   }
 
-  virtual int Execute() override final {
+  int Execute() override final {
     if (remaining().empty()) {
       clog << "Missing sub basename." << endl;
       cout << GetUsage() << GetHelp() << endl;
@@ -116,7 +116,7 @@ public:
     return 0;
   }
 
-  virtual bool AddSubCommands() override final {
+  bool AddSubCommands() override final {
     add_argument({"num", "Message Number to delete.", "-1"});
     return true;
   }
@@ -136,7 +136,7 @@ public:
   PostMessageCommand()
     : UtilCommand("post", "Posts a new message.") {}
 
-  virtual bool AddSubCommands() override final {
+  bool AddSubCommands() override final {
     add_argument({"title", "message sub name to post on", ""});
     add_argument({"from", "message sub name to post on", ""});
     add_argument({"from_usernum", "message sub name to post on", ""});
@@ -146,7 +146,7 @@ public:
     return true;
   }
 
-  virtual std::string GetUsage() const override final {
+  std::string GetUsage() const override final {
     std::ostringstream ss;
     ss << "Usage:   post --title=\"Welcome\" --from_usernum=1 <base sub filename> <text filename>" << endl;
     ss << "Example: post --num=10 general mymessage.txt" << endl;

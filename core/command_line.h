@@ -194,8 +194,8 @@ public:
   CommandLine(int argc, char** argv, const std::string dot_argument);
   bool Parse();
   virtual int Execute() override final;
-  virtual bool AddStandardArgs() override;
-  virtual std::string GetHelp() const override final;
+  bool AddStandardArgs() override;
+  std::string GetHelp() const override final;
 private:
   const std::string program_name_;
   bool ParseImpl();

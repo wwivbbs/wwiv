@@ -66,21 +66,21 @@ class RemoteSocketIO : public RemoteIO {
   RemoteSocketIO(int socket_handle, bool telnet);
   virtual ~RemoteSocketIO();
 
-  virtual bool open() override;
-  virtual void close(bool bIsTemporary) override;
-  virtual unsigned char getW() override;
-  virtual bool dtr(bool raise) override;
-  virtual void purgeIn() override;
-  virtual unsigned int put(unsigned char ch) override;
-  virtual unsigned int read(char *buffer, unsigned int count) override;
-  virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) override;
-  virtual bool carrier() override;
-  virtual bool incoming() override;
-  virtual void StopThreads();
-  virtual void StartThreads();
-  virtual unsigned int GetHandle() const;
-  virtual unsigned int GetDoorHandle() const;
-  virtual bool valid_socket() const { return (socket_ != INVALID_SOCKET); }
+  bool open() override;
+  void close(bool bIsTemporary) override;
+  unsigned char getW() override;
+  bool dtr(bool raise) override;
+  void purgeIn() override;
+  unsigned int put(unsigned char ch) override;
+  unsigned int read(char *buffer, unsigned int count) override;
+  unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) override;
+  bool carrier() override;
+  bool incoming() override;
+  void StopThreads();
+  void StartThreads();
+  unsigned int GetHandle() const;
+  unsigned int GetDoorHandle() const;
+  bool valid_socket() const { return (socket_ != INVALID_SOCKET); }
 
  protected:
   void HandleTelnetIAC(unsigned char nCmd, unsigned char nParam);
@@ -90,9 +90,9 @@ class RemoteSocketIO : public RemoteIO {
  protected:
   std::queue<char> queue_;
   mutable std::mutex mu_;
-  SOCKET socket_;
+  SOCKET socket_ = INVALID_SOCKET;
   std::thread read_thread_;
-  HANDLE stop_event_;
+  HANDLE stop_event_ = 0;
   bool threads_started_ = false;
   bool telnet_ = true;
 };

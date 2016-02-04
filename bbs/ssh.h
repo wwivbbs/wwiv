@@ -74,18 +74,18 @@ public:
 
   bool ssh_initalize();
 
-  virtual bool open() override;
-  virtual void close(bool temporary) override;
-  virtual unsigned char getW() override;
-  virtual bool dtr(bool raise) override;
-  virtual void purgeIn() override;
-  virtual unsigned int put(unsigned char ch) override;
-  virtual unsigned int read(char *buffer, unsigned int count) override;
-  virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation) override;
-  virtual bool carrier() override;
-  virtual bool incoming() override;
-  virtual unsigned int GetHandle() const override;
-  virtual unsigned int GetDoorHandle() const override;
+  bool open() override;
+  void close(bool temporary) override;
+  unsigned char getW() override;
+  bool dtr(bool raise) override;
+  void purgeIn() override;
+  unsigned int put(unsigned char ch) override;
+  unsigned int read(char *buffer, unsigned int count) override;
+  unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation) override;
+  bool carrier() override;
+  bool incoming() override;
+  unsigned int GetHandle() const override;
+  unsigned int GetDoorHandle() const override;
 
 private:
   std::thread ssh_receive_thread_;

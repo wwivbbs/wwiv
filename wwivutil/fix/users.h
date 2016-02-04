@@ -32,9 +32,9 @@ class FixUsersCommand final: public UtilCommand {
 public:
   FixUsersCommand()
     : UtilCommand("users", "Fix users.") {}
-  virtual std::string GetUsage() const override final;
-  virtual int Execute() override final;
-  virtual bool AddSubCommands() override final;
+  std::string GetUsage() const override final;
+  int Execute() override final;
+  bool AddSubCommands() override final;
 };
 
 

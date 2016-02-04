@@ -55,13 +55,13 @@ public:
   FakeConnection();
   virtual ~FakeConnection();
 
-  virtual int receive(void* data, int size, std::chrono::milliseconds d) override;
-  virtual std::string receive(int size, std::chrono::milliseconds d) override;
-  virtual int send(const void* data, int size, std::chrono::milliseconds d) override;
-  virtual uint16_t read_uint16(std::chrono::milliseconds d) override;
-  virtual uint8_t read_uint8(std::chrono::milliseconds d) override;
-  virtual bool is_open() const override;
-  virtual bool close() override;
+  int receive(void* data, int size, std::chrono::milliseconds d) override;
+  std::string receive(int size, std::chrono::milliseconds d) override;
+  int send(const void* data, int size, std::chrono::milliseconds d) override;
+  uint16_t read_uint16(std::chrono::milliseconds d) override;
+  uint8_t read_uint8(std::chrono::milliseconds d) override;
+  bool is_open() const override;
+  bool close() override;
 
   bool has_sent_packets() const;
   FakeBinkpPacket GetNextPacket();

@@ -50,15 +50,15 @@ public:
   SocketConnection(SOCKET sock, const std::string& host, int port);
   virtual ~SocketConnection();
 
-  virtual int receive(void* data, int size, std::chrono::milliseconds d) override;
-  virtual std::string receive(int size, std::chrono::milliseconds d) override;
-  virtual int send(const void* data, int size, std::chrono::milliseconds d) override;
+  int receive(void* data, int size, std::chrono::milliseconds d) override;
+  std::string receive(int size, std::chrono::milliseconds d) override;
+  int send(const void* data, int size, std::chrono::milliseconds d) override;
 
-  virtual uint16_t read_uint16(std::chrono::milliseconds d) override;
-  virtual uint8_t read_uint8(std::chrono::milliseconds d) override;
+  uint16_t read_uint16(std::chrono::milliseconds d) override;
+  uint8_t read_uint8(std::chrono::milliseconds d) override;
 
-  virtual bool is_open() const { return open_; }
-  virtual bool close() override;
+  bool is_open() const { return open_; }
+  bool close() override;
 
 private:
   const std::string host_;
