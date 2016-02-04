@@ -121,7 +121,7 @@ public:
     : EditItem<T>(x, y, maxsize, data), uppercase_(uppercase) {}
   virtual ~StringEditItem() {}
 
-  virtual int Run(CursesWindow* window) override {
+  int Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
     int return_code = 0;
     int status = uppercase_ ? UPPER_ONLY : ALL;
@@ -130,7 +130,7 @@ public:
   }
 
 protected:
-  virtual void DefaultDisplay(CursesWindow* window) const override {
+  void DefaultDisplay(CursesWindow* window) const override {
     std::string blanks(this->maxsize_, ' ');
     window->PutsXY(this->x_, this->y_, blanks.c_str());
 

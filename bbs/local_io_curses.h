@@ -61,40 +61,40 @@ class CursesLocalIO : public LocalIO {
   virtual ~CursesLocalIO();
 
   virtual void SetColor(int color);
-  virtual void LocalGotoXY(int x, int y) override;
-  virtual size_t WhereX() override;
-  virtual size_t WhereY() override;
-  virtual void LocalLf() override;
-  virtual void LocalCr() override;
-  virtual void LocalCls() override;
-  virtual void LocalClrEol() override;
-  virtual void LocalBackspace() override;
-  virtual void LocalPutchRaw(unsigned char ch) override;
+  void LocalGotoXY(int x, int y) override;
+  size_t WhereX() override;
+  size_t WhereY() override;
+  void LocalLf() override;
+  void LocalCr() override;
+  void LocalCls() override;
+  void LocalClrEol() override;
+  void LocalBackspace() override;
+  void LocalPutchRaw(unsigned char ch) override;
   // Overridden by TestLocalIO in tests
-  virtual void LocalPutch(unsigned char ch) override;
-  virtual void LocalPuts(const std::string& text) override;
-  virtual void LocalXYPuts(int x, int y, const std::string& text) override;
-  virtual int  LocalPrintf(const char *formatted_text, ...) override;
-  virtual int  LocalXYPrintf(int x, int y, const char *formatted_text, ...) override;
-  virtual int  LocalXYAPrintf(int x, int y, int nAttribute, const char *formatted_text, ...) override;
-  virtual void set_protect(WSession* session, int l) override;
-  virtual void savescreen() override;
-  virtual void restorescreen() override;
-  virtual void tleft(WSession* session, bool temp_sysop, bool sysop, bool user_online) override;
-  virtual void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) override;
-  virtual bool LocalKeyPressed() override;
-  virtual unsigned char LocalGetChar() override;
-  virtual void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) override;
-  virtual void MakeLocalWindow(int x, int y, int xlen, int ylen) override;
-  virtual void SetCursor(int cursorStyle) override;
-  virtual void LocalWriteScreenBuffer(const char *buffer) override;
-  virtual size_t GetDefaultScreenBottom() override;
+  void LocalPutch(unsigned char ch) override;
+  void LocalPuts(const std::string& text) override;
+  void LocalXYPuts(int x, int y, const std::string& text) override;
+  int  LocalPrintf(const char *formatted_text, ...) override;
+  int  LocalXYPrintf(int x, int y, const char *formatted_text, ...) override;
+  int  LocalXYAPrintf(int x, int y, int nAttribute, const char *formatted_text, ...) override;
+  void set_protect(WSession* session, int l) override;
+  void savescreen() override;
+  void restorescreen() override;
+  void tleft(WSession* session, bool temp_sysop, bool sysop, bool user_online) override;
+  void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) override;
+  bool LocalKeyPressed() override;
+  unsigned char LocalGetChar() override;
+  void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) override;
+  void MakeLocalWindow(int x, int y, int xlen, int ylen) override;
+  void SetCursor(int cursorStyle) override;
+  void LocalWriteScreenBuffer(const char *buffer) override;
+  size_t GetDefaultScreenBottom() override;
 
-  virtual void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) override;
-  virtual void UpdateNativeTitleBar(WSession* session) override;
+  void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) override;
+  void UpdateNativeTitleBar(WSession* session) override;
 
 private:
-  virtual void LocalFastPuts(const std::string &text) override;
+  void LocalFastPuts(const std::string &text) override;
   size_t x_;
   size_t y_;
 

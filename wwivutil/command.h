@@ -59,7 +59,7 @@ public:
   virtual ~UtilCommand();
   // Override to add all commands.
   virtual bool AddSubCommands() = 0;
-  virtual bool add(std::unique_ptr<CommandLineCommand> cmd) override;
+  bool add(std::unique_ptr<CommandLineCommand> cmd) override;
 
   Configuration* config() const { return config_; }
   bool set_config(Configuration* config);

@@ -62,11 +62,11 @@ public:
   // for testing.
   virtual const std::string& contents() const final { return contents_; }
 
-  virtual int file_size() const override final { return contents_.length(); }
+  int file_size() const override final { return contents_.length(); }
   virtual bool Delete() { contents_.clear(); return true; }
-  virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) override final;
-  virtual bool WriteChunk(const char* chunk, std::size_t size) override final;
-  virtual bool Close() override final;
+  bool GetChunk(char* chunk, std::size_t start, std::size_t size) override final;
+  bool WriteChunk(const char* chunk, std::size_t size) override final;
+  bool Close() override final;
 
 private:
   std::string contents_;

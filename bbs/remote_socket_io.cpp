@@ -33,6 +33,7 @@
 #include "core/strings.h"
 #include "core/file.h"
 #include "core/os.h"
+#include "core/scope_exit.h"
 #include "core/wwivport.h"
 #include "core/wwivassert.h"
 
@@ -49,6 +50,11 @@ RemoteSocketIO::RemoteSocketIO(int socket_handle, bool telnet)
   // assigning the value to a static causes this only to be
   // initialized once.
   static bool once = RemoteSocketIO::Initialize();
+
+  // Make sure our signal event is not set to the "signaled" state
+  stop_event_ = CreateEvent(nullptr, true, false, nullptr);
+  clog << "Created Stop Event: " << GetLastErrorText() << endl;
+
   if (socket_handle == 0) {
     // This means we don't have a real socket handle, for example running in local mode.
     // so we set it to INVALID_SOCKET and don't initialize anything.
@@ -57,12 +63,9 @@ RemoteSocketIO::RemoteSocketIO(int socket_handle, bool telnet)
   }
   else if (socket_handle == INVALID_SOCKET) {
     // Also exit early if we have an invalid handle.
+    socket_ = INVALID_SOCKET;
     return;
   }
-
-  // Make sure our signal event is not set to the "signaled" state
-  stop_event_ = CreateEvent(nullptr, true, false, nullptr);
-  clog << "Created Stop Event: " << GetLastErrorText() << endl;
 }
 
 unsigned int RemoteSocketIO::GetHandle() const {
@@ -333,21 +336,35 @@ bool RemoteSocketIO::Initialize() {
   return err == 0;
 }
 
-void RemoteSocketIO::InboundTelnetProc(void* pTelnetVoid) {
-  RemoteSocketIO* pTelnet = static_cast<RemoteSocketIO*>(pTelnetVoid);
-  WSAEVENT hEvent = WSACreateEvent();
+void RemoteSocketIO::InboundTelnetProc(void* v) {
+  RemoteSocketIO* pTelnet = static_cast<RemoteSocketIO*>(v);
   WSANETWORKEVENTS events;
   char szBuffer[4096];
   bool bDone = false;
-  SOCKET socket_ = static_cast<SOCKET>(pTelnet->socket_);
-  int nRet = WSAEventSelect(socket_, hEvent, FD_READ | FD_CLOSE);
+
+  wwiv::core::ScopeExit at_exit_socket([&pTelnet] {
+    if (pTelnet->socket_ == INVALID_SOCKET) {
+      closesocket(pTelnet->socket_);
+      pTelnet->socket_ = INVALID_SOCKET;
+    }
+  });
+
+  WSAEVENT hEvent = WSACreateEvent();
+  int nRet = WSAEventSelect(pTelnet->socket_, hEvent, FD_READ | FD_CLOSE);
+  if (nRet != 0) {
+    // Error creating the Select Event.
+    clog << "Error creating WSAEventSelect" << endl;
+    return;
+  }
+
+  wwiv::core::ScopeExit at_exit_event([=] {
+    WSACloseEvent(hEvent);
+  });
+
   HANDLE hArray[2];
   hArray[0] = hEvent;
   hArray[1] = pTelnet->stop_event_;
 
-  if (nRet == SOCKET_ERROR) {
-    bDone = true;
-  }
   while (!bDone) {
     DWORD dwWaitRet = WSAWaitForMultipleEvents(2, hArray, false, 10000, false);
     if (dwWaitRet == (WSA_WAIT_EVENT_0 + 1)) {
@@ -360,27 +377,27 @@ void RemoteSocketIO::InboundTelnetProc(void* pTelnetVoid) {
       bDone = true;
       break;
     }
-    nRet = WSAEnumNetworkEvents(socket_, hEvent, &events);
+    nRet = WSAEnumNetworkEvents(pTelnet->socket_, hEvent, &events);
     if (nRet == SOCKET_ERROR) {
       bDone = true;
       break;
     }
     if (events.lNetworkEvents & FD_READ) {
       memset(szBuffer, 0, 4096);
-      nRet = recv(socket_, szBuffer, sizeof(szBuffer), 0);
+      nRet = recv(pTelnet->socket_, szBuffer, sizeof(szBuffer), 0);
       if (nRet == SOCKET_ERROR) {
         if (WSAGetLastError() != WSAEWOULDBLOCK) {
           // Error or the socket was closed.
-          socket_ = INVALID_SOCKET;
+          pTelnet->socket_ = INVALID_SOCKET;
           bDone = true;
           break;
         }
       } else if (nRet == 0) {
-        socket_ = INVALID_SOCKET;
+        pTelnet->socket_ = INVALID_SOCKET;
         bDone = true;
         break;
       }
-      szBuffer[ nRet ] = '\0';
+      szBuffer[nRet] = '\0';
 
       // Add the data to the input buffer
       int nNumSleeps = 0;
@@ -391,18 +408,10 @@ void RemoteSocketIO::InboundTelnetProc(void* pTelnetVoid) {
       pTelnet->AddStringToInputBuffer(0, nRet, szBuffer);
     } else if (events.lNetworkEvents & FD_CLOSE) {
       bDone = true;
-      socket_ = INVALID_SOCKET;
+      pTelnet->socket_ = INVALID_SOCKET;
       break;
     }
   }
-
-  if (socket_ == INVALID_SOCKET) {
-    closesocket(socket_);
-    socket_ = INVALID_SOCKET;
-    pTelnet->socket_ = INVALID_SOCKET;
-  }
-
-  WSACloseEvent(hEvent);
 }
 
 void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {

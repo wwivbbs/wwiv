@@ -59,24 +59,24 @@ public:
   virtual ~WWIVMessageArea();
 
   // Message Area Specific Operations
-  virtual bool Close() override;
-  virtual bool Lock() override;
-  virtual bool Unlock() override;
-  virtual void ReadMessageAreaHeader(MessageAreaHeader& header) override;
-  virtual void WriteMessageAreaHeader(const MessageAreaHeader& header) override;
-  virtual int FindUserMessages(const std::string& user_name) override;
-  virtual int number_of_messages() override;
+  bool Close() override;
+  bool Lock() override;
+  bool Unlock() override;
+  void ReadMessageAreaHeader(MessageAreaHeader& header) override;
+  void WriteMessageAreaHeader(const MessageAreaHeader& header) override;
+  int FindUserMessages(const std::string& user_name) override;
+  int number_of_messages() override;
 
   // message specific.
   // I would return a unique_ptr here but that doesn't work with
   // covariant return types for subclasses.
-  virtual WWIVMessage* ReadMessage(int message_number) override;
-  virtual WWIVMessageHeader* ReadMessageHeader(int message_number) override;
-  virtual WWIVMessageText*  ReadMessageText(int message_number) override;
-  virtual bool AddMessage(const Message& message) override;
-  virtual bool DeleteMessage(int message_number) override;
+  WWIVMessage* ReadMessage(int message_number) override;
+  WWIVMessageHeader* ReadMessageHeader(int message_number) override;
+  WWIVMessageText*  ReadMessageText(int message_number) override;
+  bool AddMessage(const Message& message) override;
+  bool DeleteMessage(int message_number) override;
 
-  virtual WWIVMessage* CreateMessage() override;
+  WWIVMessage* CreateMessage() override;
 
 private:
   File* OpenMessageFile(const std::string msgs_filename);

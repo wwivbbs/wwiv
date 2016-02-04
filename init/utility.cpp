@@ -102,8 +102,7 @@ void write_user(unsigned int un, userrec *u) {
   user_config SecondUserRec = { 0 };
   strcpy(SecondUserRec.name, (char *) u->name);
   strcpy(SecondUserRec.szMenuSet, "WWIV");
-  SecondUserRec.cHotKeys = 1;
-  SecondUserRec.cMenuType = 0;
+  SecondUserRec.cHotKeys = HOTKEYS_ON;
 
   DataFile<user_config> userdat(syscfg.datadir, "user.dat",
       File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone);

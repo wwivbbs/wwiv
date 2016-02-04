@@ -53,16 +53,15 @@ constexpr int HOTKEYS_OFF = 1;
 struct user_config {
   char name[31];          // verify against a user
 
-  unsigned long status;
+  unsigned long unused_status;
 
   unsigned long lp_options;
   unsigned char lp_colors[32];
 
   char szMenuSet[9];   // Selected AMENU set to use
   char cHotKeys;       // Use hot keys in AMENU
-  char cMenuType;      // Use pulldown or regular menus
 
-  char junk[118];   // AMENU took 11 bytes from here
+  char junk[119];   // AMENU took 11 bytes from here
 };
 
 #pragma pack(pop)

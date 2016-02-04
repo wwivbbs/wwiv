@@ -40,10 +40,10 @@ public:
     const std::string& messages_directory,
     const std::vector<net_networks_rec>& net_networks);
   virtual ~WWIVMessageApi();
-  virtual bool Exist(const std::string& name) const override;
-  virtual WWIVMessageArea* Create(const std::string& name) override;
-  virtual bool Remove(const std::string& name) override;
-  virtual WWIVMessageArea* Open(const std::string& name) override;
+  bool Exist(const std::string& name) const override;
+  WWIVMessageArea* Create(const std::string& name) override;
+  bool Remove(const std::string& name) override;
+  WWIVMessageArea* Open(const std::string& name) override;
 };
 
 }  // namespace msgapi
