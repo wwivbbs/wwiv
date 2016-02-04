@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "core/wfndfile.h"
 
+#include <cstring>
 #include <string>
 
 #include <dirent.h>
@@ -36,17 +37,137 @@ static const char* filespec_ptr;
 using std::string;
 
 //////////////////////////////////////////////////////////////////////////////
-// Local function prototypes
-char *getdir_from_file(const char *pszFileName);
-int fname_ok(const struct dirent *ent);
-char *strip_filename(const char *pszFileName);
+//
+// Local functions
+//
+static char *getdir_from_file(const char *pszFileName) {
+  static char s[256];
+
+  s[0] = '\0';
+  for (size_t i = strlen(pszFileName); i >= 0; i--) {
+    if (pszFileName[i] == '/') {
+      strcpy(s, pszFileName);
+      s[i] = '\0';
+      break;
+    }
+  }
+
+  if (!s[0]) {
+    strcpy(s, "./");
+  }
+  return s;
+}
+
+static int fname_ok(const struct dirent *ent) {
+  char f[13], *ptr = NULL, s3[13];
+  // kinda a hack but there's no way to pass parameters into this easily.
+  const char *s1 = filespec_ptr;
+  const char *s2 = ent->d_name;
+
+  if (wwiv::strings::IsEquals(s2, ".") ||
+      wwiv::strings::IsEquals(s2, "..")) {
+    return 0;
+  }
+
+  if (lTypeMask) {
+    if ((ent->d_type & TYPE_DIRECTORY) && !(lTypeMask & WFINDFILE_DIRS)) {
+      return 0;
+    } else if ((ent->d_type & TYPE_FILE) && !(lTypeMask & WFINDFILE_FILES)) {
+      return 0;
+    }
+  }
+
+  int ok = 1;
+
+  f[0] = '\0';
+  if (dos_flag) {
+    if (strlen(s2) > 12 || s2[0] == '.') {
+      return 0;
+    }
+
+    strcpy(s3, s2);
+    if (strlen(s3) < 12 && (ptr = strchr(s3, '.')) != NULL) {
+      *ptr = '\0';
+      strcpy(f, s3);
+      size_t i = strlen(f);
+      for (; i < 8; i++) {
+        f[i] = '?';
+      }
+
+      f[i] = '.';
+      f[++i] = '\0';
+      strcat(f, ptr + 1);
+
+      if (strlen(f) < 12) {
+        memset(&f[strlen(f)], 32, 12 - strlen(f));
+      }
+
+      f[12] = '\0';
+    } else {
+      if (ptr == nullptr) {
+        return 0;
+      }
+    }
+  }
+
+  if (!dos_flag) {
+    for (size_t i = 0; i < PATH_MAX && ok; i++) {
+      if ((s1[i] != s2[i]) && (s1[i] != '?') && (s2[i] != '?')) {
+        ok = 0;
+      }
+    }
+  } else {
+    for (size_t i = 0; i < 12 && ok; i++) {
+      if (s1[i] != f[i]) {
+        if (s1[i] != '?') {
+          ok = 0;
+        }
+      }
+    }
+  }
+
+  return ok;
+}
+
+static char *strip_filename(const char *pszFileName) {
+  WWIV_ASSERT(pszFileName);
+  static char szStaticFileName[15];
+  char szTempFileName[PATH_MAX];
+
+  int nSepIndex = -1;
+  for (size_t i = 0; i < strlen(pszFileName); i++) {
+    if (pszFileName[i] == '\\' || pszFileName[i] == ':' || pszFileName[i] == '/') {
+      nSepIndex = i;
+    }
+  }
+  if (nSepIndex != -1) {
+    strcpy(szTempFileName, &(pszFileName[nSepIndex + 1]));
+  } else {
+    strcpy(szTempFileName, pszFileName);
+  }
+  for (size_t i1 = 0; i1 < strlen(szTempFileName); i1++) {
+    if (szTempFileName[i1] >= 'A' && szTempFileName[i1] <= 'Z') {
+      szTempFileName[i1] = szTempFileName[i1] - 'A' + 'a';
+    }
+  }
+  int j = 0;
+  while (szTempFileName[j] != 0) {
+    if (szTempFileName[j] == 32) {
+      strcpy(&szTempFileName[j], &szTempFileName[j + 1]);
+    } else {
+      ++j;
+    }
+  }
+  strcpy(szStaticFileName, szTempFileName);
+  return szStaticFileName;
+}
 
 
 bool WFindFile::open(const string& filespec, unsigned int nTypeMask) {
   char szFileName[PATH_MAX];
   char szDirectoryName[PATH_MAX];
   char szFileSpec[PATH_MAX+1];
-  unsigned int i, f, laststar;
+  unsigned int f, laststar;
   memset(szFileSpec, 0, PATH_MAX + 1);
 
   __open(filespec, nTypeMask);
@@ -60,7 +181,7 @@ bool WFindFile::open(const string& filespec, unsigned int nTypeMask) {
     memset(szFileSpec, '?', PATH_MAX);
   } else {
     f = laststar = szFileSpec[0] = 0;
-    for (i = 0; i < strlen(szFileName); i++) {
+    for (size_t i = 0; i < strlen(szFileName); i++) {
       if (szFileName[i] == '*') {
         if (i < 8) {
           if (strchr(szFileName, '.') != NULL) {
@@ -120,7 +241,7 @@ bool WFindFile::open(const string& filespec, unsigned int nTypeMask) {
   nCurrentEntry = 0;
 
   next();
-  return (nMatches > 0);
+  return nMatches > 0;
 }
 
 bool WFindFile::next() {
@@ -158,129 +279,3 @@ bool WFindFile::IsFile() {
 }
 
 
-//////////////////////////////////////////////////////////////////////////////
-//
-// Local functions
-//
-char *getdir_from_file(const char *pszFileName) {
-  static char s[256];
-  int i;
-
-  s[0] = '\0';
-  for (i = strlen(pszFileName); i > -1; i--) {
-    if (pszFileName[i] == '/') {
-      strcpy(s, pszFileName);
-      s[i] = '\0';
-      break;
-    }
-  }
-
-  if (!s[0]) {
-    strcpy(s, "./");
-  }
-  return (s);
-}
-
-int fname_ok(const struct dirent *ent) {
-  int ok, i;
-  char f[13], *ptr = NULL, s3[13];
-  // kinda a hack but there's no way to pass parameters into this easily.
-  const char *s1 = filespec_ptr;
-  const char *s2 = ent->d_name;
-
-  if (wwiv::strings::IsEquals(s2, ".") ||
-      wwiv::strings::IsEquals(s2, "..")) {
-    return 0;
-  }
-
-  if (lTypeMask) {
-    if (ent->d_type & TYPE_DIRECTORY && !(lTypeMask & WFINDFILE_DIRS)) {
-      return 0;
-    } else if (ent->d_type & TYPE_FILE && !(lTypeMask & WFINDFILE_FILES)) {
-      return 0;
-    }
-  }
-
-  ok = 1;
-
-  f[0] = '\0';
-  if (dos_flag) {
-    if (strlen(s2) > 12 || s2[0] == '.') {
-      return 0;
-    }
-
-    strcpy(s3, s2);
-    if (strlen(s3) < 12 && (ptr = strchr(s3, '.')) != NULL) {
-      *ptr = '\0';
-      strcpy(f, s3);
-      for (i = strlen(f); i < 8; i++) {
-        f[i] = '?';
-      }
-
-      f[i] = '.';
-      f[++i] = '\0';
-      strcat(f, ptr + 1);
-
-      if (strlen(f) < 12) {
-        memset(&f[strlen(f)], 32, 12 - strlen(f));
-      }
-
-      f[12] = '\0';
-    } else {
-      if (ptr == NULL) {
-        return 0;
-      }
-    }
-  }
-
-  if (!dos_flag) {
-    for (i = 0; i < PATH_MAX && ok; i++) {
-      if ((s1[i] != s2[i]) && (s1[i] != '?') && (s2[i] != '?')) {
-        ok = 0;
-      }
-    }
-  } else {
-    for (i = 0; i < 12 && ok; i++) {
-      if (s1[i] != f[i]) {
-        if (s1[i] != '?') {
-          ok = 0;
-        }
-      }
-    }
-  }
-
-  return ok;
-}
-
-char *strip_filename(const char *pszFileName) {
-  WWIV_ASSERT(pszFileName);
-  static char szStaticFileName[15];
-  char szTempFileName[PATH_MAX];
-
-  int nSepIndex = -1;
-  for (size_t i = 0; i < strlen(pszFileName); i++) {
-    if (pszFileName[i] == '\\' || pszFileName[i] == ':' || pszFileName[i] == '/') {
-      nSepIndex = i;
-    }
-  }
-  if (nSepIndex != -1) {
-    strcpy(szTempFileName, &(pszFileName[nSepIndex + 1]));
-  } else {
-    strcpy(szTempFileName, pszFileName);
-  }
-  for (size_t i1 = 0; i1 < strlen(szTempFileName); i1++) {
-    if (szTempFileName[i1] >= 'A' && szTempFileName[i1] <= 'Z') {
-      szTempFileName[i1] = szTempFileName[i1] - 'A' + 'a';
-    }
-  }
-  int j = 0;
-  while (szTempFileName[j] != 0) {
-    if (szTempFileName[j] == 32) {
-      strcpy(&szTempFileName[j], &szTempFileName[j + 1]);
-    } else {
-      ++j;
-    }
-  }
-  strcpy(szStaticFileName, szTempFileName);
-  return szStaticFileName;
-}

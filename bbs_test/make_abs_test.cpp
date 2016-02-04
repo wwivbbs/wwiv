@@ -17,16 +17,20 @@
 /*                                                                        */
 /**************************************************************************/
 #include <iostream>
+#include <string>
 
 #include "gtest/gtest.h"
 #include "bbs_test/bbs_helper.h"
 
 #include "bbs/utility.h"
 #include "bbs/platform/platformfcns.h"
+#include "core/strings.h"
 
 using std::cout;
 using std::endl;
 using std::string;
+
+using wwiv::strings::StrCat;
 
 class MakeAbsTest : public ::testing::Test {
 protected:
@@ -57,18 +61,14 @@ TEST_F(MakeAbsTest, UnderRoot) {
 
 #else 
 
-#if 0
-// TODO(rushfan): Fix this test.
-// See https://github.com/wwivbbs/wwiv/issues/631
-
 TEST_F(MakeAbsTest, Smoke) {
-  const string expected = "/bin/ls foo";
+  File f (helper.files().TempDir(), "ls foo");
+  string expected = f.full_pathname();
   string cmdline = "ls foo";
   WWIV_make_abs_cmd(root, &cmdline);
   EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
 }
 
-#endif  // 0
 
 
 #endif  // _WIN32
