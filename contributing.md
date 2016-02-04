@@ -72,10 +72,11 @@ Here's the best way to work with the WWIV git repository:
     git push
     ```
     
-3. Create a new branch off of master for your feature, enhancement, or bug fix.
+3. Create a new branch off of master for your feature, enhancement, or bug fix and let GitHub know about your branch.
 
     ```bash
     git checkout -b <MY-BRANCH-NAME>
+    git push origin <MY-BRANCH-NAME>
     ```    
 
 4. Make your changes by editing the files and committing changes to your local repository.  Please use good commit messages that explain the changes and also reference github issues as necessary.
