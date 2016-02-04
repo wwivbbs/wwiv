@@ -67,13 +67,6 @@ namespace WWIV5TelnetServer
 
             foreach (string line2 in lines2)
             {
-                this.listBox2.Items.Add(line2);
-                i1++;
-                if (i2 >= logLength) break;
-            }
-
-            foreach (string line2 in lines2)
-            {
                 // Catch ERROR: And Color Orange Else Blue
                 if (line2.Contains(errorText2))
                 {
