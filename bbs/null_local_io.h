@@ -28,8 +28,8 @@
 
 class NullLocalIO : public LocalIO {
 public:
-  NullLocalIO() {}
-  virtual ~NullLocalIO() {}
+  NullLocalIO();
+  virtual ~NullLocalIO();
   void LocalPutch(unsigned char ch) override {};
   void LocalGotoXY(int x, int y) override {}
   size_t WhereX() override { return 0; }
