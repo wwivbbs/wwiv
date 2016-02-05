@@ -31,10 +31,6 @@
 
 using namespace wwiv::sdk;
 
-// Local data structures
-
-static int MACRO_KEY_TABLE[] = { 0, 2, 0, 0, 0, 0, 1 };
-
 // Local functions
 void HandleControlKey(char *ch);
 void PrintTime();
@@ -139,6 +135,7 @@ void HandleControlKey(char *ch) {
     case CD:   // CTRL-D
     case CF:   // CTRL-F
       if (okmacro && (!charbufferpointer)) {
+        static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
         int macroNum = MACRO_KEY_TABLE[(int)c];
         strncpy(charbuffer, &(session()->user()->GetMacro(macroNum)[0]), sizeof(charbuffer) - 1);
         c = charbuffer[0];

@@ -40,6 +40,7 @@ constexpr int INI_STR_NEWUSER_CMD = 18;
 constexpr int INI_STR_LOGON_CMD = 19;
 constexpr int INI_STR_LOGOFF_CMD = 20;
 constexpr int INI_STR_V_SCAN_CMD = 21;
+constexpr int INI_STR_TERMINAL_CMD = 22;
 
 //---NETWORK SETTINGS--
 constexpr int INI_STR_NET_CLEANUP_CMD1 = 25;
@@ -156,7 +157,7 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "LOGON_CMD",
   "LOGOFF_CMD",  //NOT USED             // 20
   "VSCAN_CMD", // NOTUSED
-  "",
+  "TERMINAL_CMD",
   "",
   "//---NETWORK SETTINGS---*",
   "NET_CLEANUP_CMD1",         // 25

@@ -148,6 +148,7 @@ MSG_COLOR              = 2                  ; for color msgs
 ;BEGINDAY_CMD   =                           ; beginday even
 ;NEWUSER_CMD    =                           ; newuser event
 ;LOGON_CMD      =                           ; logon event
+;TERMINAL_CMD   = term.exe                  ; WFC terminal command
 ;
 ;
 ;=============================================================================
