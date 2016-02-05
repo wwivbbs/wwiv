@@ -11,6 +11,19 @@ What's New in WWIV 5.1 (2016)
   https://github.com/TRI0N/Windows-WWIV-Update/) into nightly builds.  
   wwiv-update.exe is the name of the new binary.
 * SSH support. Use -XS as the commandline argumetn vs. -XT for telnet.
+* networkb will use CRAM-MD5 for authentication by default if both
+  systems support it.
+* The wwiv.ini setting TERMINAL_CMD will be used to launch a terminal
+  program from the WFC using the 'T' command (again).
+* WWIV5TelnetServer has a log viewer built in you may use to see the
+  state of the various WWIV and network log files.
+* net.log is now written in normal order for log files with the newest
+  entry at the bottom and never truncated to behave like the rest of 
+  the log files in WWIV.
+* The two laston lists in WWIV have been merged into one.  Now last few
+  callers will always display the last few callers regardless of the 
+  day they called.
+
 
 What's New in WWIV 5.1 (2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
