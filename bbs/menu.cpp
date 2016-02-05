@@ -534,8 +534,7 @@ const string GetCommand(const MenuInstanceData* menu_data) {
       return string(mmkey(2));
     }
   } else {
-    string text = input(50);
-    return string(text);
+    return input(50);
   }
 }
 

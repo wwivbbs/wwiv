@@ -655,6 +655,15 @@ int WSession::doWFCEvents() {
         getkey();
         break;
         // UserEdit
+      case 'T':
+        if (syscfg.terminal_command.empty()) {
+          bout << "Terminal Command not specified. " << wwiv::endl 
+               << " Please set TERMINAL_CMD in WWIV.INI" << wwiv::endl;
+          getkey();
+          break;
+        }
+        ExecExternalProgram(syscfg.terminal_command, INST_FLAGS_NONE);
+        break;
       case 'U':
         write_inst(INST_LOC_UEDIT, 0, INST_FLAGS_NONE);
         uedit(1, UEDIT_NONE);

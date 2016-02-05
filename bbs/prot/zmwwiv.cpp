@@ -42,12 +42,24 @@ using namespace wwiv::strings;
 int ZModemWindowStatus( const char *fmt, ... );
 int ZModemWindowXferStatus( const char *fmt, ... );
 int doIO( ZModem *info );
-void ProcessLocalKeyDuringZmodem();
 
 #if defined(_MSC_VER)
 #pragma warning( push )
 #pragma warning( disable : 4706 4127 4244 4100 )
 #endif
+
+static void ProcessLocalKeyDuringZmodem() {
+  if (!session()->localIO()->LocalKeyPressed()) {
+    return;
+  }
+  char localChar = session()->localIO()->LocalGetChar();
+  session()->SetLastKeyLocal(true);
+  if (!(g_flags & g_flag_allow_extended)) {
+    if (!localChar) {
+      session()->handle_sysop_key(session()->localIO()->LocalGetChar());
+    }
+  }
+}
 
 bool NewZModemSendFile( const char *file_name ) {
 	ZModem info;
@@ -559,19 +571,6 @@ void ZIdleStr(unsigned char *buf, int len, ZModem *info) {
 		zmodemlog( "ZIdleStr: [%s]\r\n", szBuffer );
 	}
 #endif
-}
-
-
-void ProcessLocalKeyDuringZmodem() {
-	if ( session()->localIO()->LocalKeyPressed() ) {
-		char localChar = session()->localIO()->LocalGetChar();
-		session()->SetLastKeyLocal(true);
-		if (!(g_flags & g_flag_allow_extended)) {
-			if (!localChar) {
-				session()->handle_sysop_key(session()->localIO()->LocalGetChar());
-			}
-		}
-	}
 }
 
 #if defined(_MSC_VER)

@@ -311,6 +311,7 @@ void WSession::ReadINIFile(IniFile& ini) {
   INI_INIT_STR(INI_STR_BEGINDAY_CMD, beginday_cmd);
   INI_INIT_STR(INI_STR_NEWUSER_CMD, newuser_cmd);
   INI_INIT_STR(INI_STR_LOGON_CMD, logon_cmd);
+  INI_INIT_STR(INI_STR_TERMINAL_CMD, terminal_command);
 
   m_nForcedReadSubNumber = ini.GetNumericValue(get_key_str(INI_STR_FORCE_SCAN_SUBNUM),
                                                 m_nForcedReadSubNumber);

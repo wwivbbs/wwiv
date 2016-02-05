@@ -339,6 +339,7 @@ struct small_configrec {
                 std::string logon_cmd;            // logon event
                 std::string newuser_cmd;          // newuser event
                 std::string upload_cmd;           // upload event
+                std::string terminal_command;     // Terminal command
 
   uint8_t  newusersl,          // new user SL
            newuserdsl,         // new user DSL
