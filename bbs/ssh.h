@@ -90,6 +90,7 @@ public:
 private:
   std::thread ssh_receive_thread_;
   std::thread ssh_send_thread_;
+  bool initialized_ = false;
   std::unique_ptr<RemoteSocketIO> io_;
   SOCKET ssh_socket_;
   SOCKET plain_socket_;
