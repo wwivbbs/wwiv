@@ -47,7 +47,8 @@
 #include "bbs/instmsg.h"
 #include "bbs/local_io.h"
 #include "bbs/local_io_curses.h"
-#include "bbs/message_file.h"
+#include "bbs/null_local_io.h"
+#include "bbs/null_remote_io.h"
 #include "bbs/netsup.h"
 #include "bbs/menu.h"
 #include "bbs/pause.h"
@@ -142,7 +143,9 @@ void WSession::CreateComm(unsigned int nHandle, CommunicationType type) {
   comm_.reset(new WIOUnix());
   return;
 #endif
-if (type == CommunicationType::SSH) {
+  switch (type) {
+  case CommunicationType::SSH:
+  {
     const File key_file(config_->datadir(), "wwiv.key");
     const string system_password = config()->config()->systempw;
     wwiv::bbs::Key key(key_file.full_pathname(), system_password);
@@ -153,8 +156,15 @@ if (type == CommunicationType::SSH) {
       }
     }
     comm_.reset(new wwiv::bbs::IOSSH(nHandle, key));
-  } else {
+  } break;
+  case CommunicationType::TELNET:
+  {
     comm_.reset(new RemoteSocketIO(nHandle, true));
+  } break;
+  case CommunicationType::NONE:
+  {
+    comm_.reset(new NullRemoteIO());
+  } break;
   }
   bout.SetComm(comm_.get());
 }
@@ -976,7 +986,7 @@ int WSession::Run(int argc, char *argv[]) {
   unsigned short this_usernum = 0;
   bool ooneuser = false;
   bool event_only = false;
-  CommunicationType type = CommunicationType::TELNET;
+  CommunicationType type = CommunicationType::NONE;
   unsigned int hSockOrComm = 0;
 
   curatr = 0x07;
@@ -1192,7 +1202,7 @@ int WSession::Run(int argc, char *argv[]) {
   InitializeBBS();
   localIO()->UpdateNativeTitleBar(this);
 
-  bool remote_opened = false;
+  bool remote_opened = true;
   // If we are telnet...
   if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
     ok_modem_stuff = true;

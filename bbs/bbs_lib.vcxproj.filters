@@ -370,6 +370,9 @@
     <ClCompile Include="remote_socket_io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="null_local_io.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -658,6 +661,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="remote_socket_io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="null_remote_io.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

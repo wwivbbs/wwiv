@@ -44,7 +44,6 @@ using std::string;
 using std::unique_ptr;
 using namespace wwiv::strings;
 
-
 RemoteSocketIO::RemoteSocketIO(int socket_handle, bool telnet)
   : socket_(static_cast<SOCKET>(socket_handle)), telnet_(telnet) {
   // assigning the value to a static causes this only to be
