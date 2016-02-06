@@ -1192,10 +1192,17 @@ int WSession::Run(int argc, char *argv[]) {
   InitializeBBS();
   localIO()->UpdateNativeTitleBar(this);
 
+  bool remote_opened = false;
   // If we are telnet...
   if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
     ok_modem_stuff = true;
-    remoteIO()->open();
+    remote_opened = remoteIO()->open();
+  }
+
+  if (!remote_opened) {
+    // Remote side disconnected.
+    clog << "Remote side disconnected." << std::endl;
+    exit(m_nOkLevel);
   }
 
   if (num_min > 0) {

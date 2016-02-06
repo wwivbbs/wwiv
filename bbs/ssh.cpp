@@ -332,6 +332,8 @@ IOSSH::IOSSH(SOCKET ssh_socket, Key& key)
   RemoteInfo& info = remote_info();
   info.username = session_.GetAndClearRemoteUserName();
   info.password = session_.GetAndClearRemotePassword();
+
+  initialized_ = true;
 }
 
 IOSSH::~IOSSH() {
@@ -401,27 +403,62 @@ bool IOSSH::ssh_initalize() {
   return true;
 }
 
-bool IOSSH::open() { return io_->open(); }
+bool IOSSH::open() { 
+  if (!initialized_) return false;
+  return io_->open(); 
+}
 
 void IOSSH::close(bool temporary) { 
+  if (!initialized_) return;
   if (!temporary) {
     session_.close();
   }
   io_->close(temporary);
 }
 
-unsigned char IOSSH::getW() { return io_->getW();  }
-bool IOSSH::dtr(bool raise) { return io_->dtr(raise);  }
-void IOSSH::purgeIn() { io_->purgeIn();  }
-unsigned int IOSSH::put(unsigned char ch) { return io_->put(ch);  }
-unsigned int IOSSH::read(char *buffer, unsigned int count) { return io_->read(buffer, count);  }
-unsigned int IOSSH::write(const char *buffer, unsigned int count, bool bNoTranslation) {
-  return io_->write(buffer, count, bNoTranslation); 
+unsigned char IOSSH::getW() { 
+  if (!initialized_) return 0;
+  return io_->getW();
 }
-bool IOSSH::carrier() { return io_->carrier(); }
-bool IOSSH::incoming() { return io_->incoming(); }
-unsigned int IOSSH::GetHandle() const { return io_->GetHandle(); }
-unsigned int IOSSH::GetDoorHandle() const { return io_->GetDoorHandle(); }
+bool IOSSH::dtr(bool raise) {
+  if (!initialized_) return false;
+  return io_->dtr(raise);
+}
+void IOSSH::purgeIn() { 
+  if (!initialized_) return;
+  io_->purgeIn();
+}
+unsigned int IOSSH::put(unsigned char ch) { 
+  if (!initialized_) return 0;
+  return io_->put(ch);
+}
+unsigned int IOSSH::read(char *buffer, unsigned int count) {
+  if (!initialized_) return 0;
+  return io_->read(buffer, count);
+}
+unsigned int IOSSH::write(const char *buffer, unsigned int count, bool bNoTranslation) {
+  if (!initialized_) return 0;
+  return io_->write(buffer, count, bNoTranslation);
+}
+bool IOSSH::carrier() { 
+  if (!initialized_) return false;
+  return io_->carrier(); 
+}
+
+bool IOSSH::incoming() {
+  if (!initialized_) return false;
+  return io_->incoming();
+}
+
+unsigned int IOSSH::GetHandle() const { 
+  if (!initialized_) return false;
+  return io_->GetHandle();
+}
+
+unsigned int IOSSH::GetDoorHandle() const {
+  if (!initialized_) return false;
+  return io_->GetDoorHandle();
+}
 
 }
 }
