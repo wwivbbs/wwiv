@@ -145,6 +145,7 @@
     <ClInclude Include="newuser.h" />
     <ClInclude Include="new_bbslist.h" />
     <ClInclude Include="null_local_io.h" />
+    <ClInclude Include="null_remote_io.h" />
     <ClInclude Include="pause.h" />
     <ClInclude Include="platform\platformfcns.h" />
     <ClInclude Include="platform\win32\InternalTelnetServer.h" />
@@ -255,6 +256,7 @@
     <ClCompile Include="newuser.cpp" />
     <ClCompile Include="new_bbslist.cpp" />
     <ClCompile Include="normupld.cpp" />
+    <ClCompile Include="null_local_io.cpp" />
     <ClCompile Include="pause.cpp" />
     <ClCompile Include="datetime.cpp" />
     <ClCompile Include="platform\win32\exec.cpp" />
