@@ -174,8 +174,10 @@ void build_qwk_packet() {
   checka(&qwk_info.abort);
 
   if (!qwk_info.abort) {
-    bout << "|#7xC3" << string(4, '\xC4') << '\xC5' << string(60, '\xC4') << '\xC5' << string(5, '\xC4') 
-        << '\xC5' << string(4, '\xC4') << '\xB4' << wwiv::endl;
+    bout << "|#7" << "\xC3" << string(4, '\xC4')
+         << '\xC5' << string(60, '\xC4') 
+         << '\xC5' << string(5, '\xC4') 
+         << '\xC5' << string(4, '\xC4') << '\xB4' << wwiv::endl;
   }
 
   bool msgs_ok = true;
@@ -384,9 +386,10 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
 }
 
 void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_info) {
+  //std::cout << "put_in_qwk: " << m1->title << std::endl;
   char n[205], d[81], temp[101];
   char qwk_address[201];
-  char filename[101], date[10];
+  char filename[255], date[10];
 
   postrec* pr = get_post(msgnum);
   if (pr == nullptr) {
@@ -463,7 +466,14 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   p1 = 0;
 
   len = len - cur;
-  make_qwk_ready(&ss[cur], &len, qwk_address);
+  if (len <= 0) {
+    std::cout << "we have no text for this message." << std::endl;
+    return;
+  }
+  unique_ptr<char[]> ss_temp = std::make_unique<char[]>(ss.size() + 1);
+  memcpy(ss_temp.get(), &ss[0], len);
+  make_qwk_ready(&ss_temp[cur], &len, qwk_address);
+  ss.assign(ss_temp.get(), cur + len);
 
   int amount_blocks = ((int)len / sizeof(qwk_info->qwk_rec)) + 2;
 
@@ -474,7 +484,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   if (!qwk_info->in_email) {
     strncpy(qwk_info->qwk_rec.subject, stripcolors(pr->title), 25);
   } else {
-    strncpy(qwk_info->qwk_rec.subject, stripcolors(qwk_info->email_title), 25);
+    strncpy(qwk_info->qwk_rec.subject,qwk_info->email_title, 25);
   }
 
   qwk_remove_null((char *) &qwk_info->qwk_rec, 123);
@@ -522,7 +532,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 
     if (this_pos < len) {
       size_t size = (this_pos + sizeof(qwk_info->qwk_rec) > static_cast<size_t>(len)) ? (len - this_pos - 1) : sizeof(qwk_info->qwk_rec);
-      memmove(&qwk_info->qwk_rec, ss.c_str() + cur + this_pos, size);
+      memmove(&qwk_info->qwk_rec, ss.data() + cur + this_pos, size);
     }
     // Save this block
     append_block(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec));
