@@ -161,8 +161,8 @@ void SubList() {
     p = 1;
     size_t i = sn;
     size_t i1 = 0;
-    int ns = session()->GetCurrentConferenceMessageArea();  //number of subs
     while (i <= en && uconfsub[i].confnum != -1 && !abort) {
+      int ns = 0;
       if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
         setuconf(ConferenceType::CONF_SUBS, i, -1);
         i1 = 0;
@@ -241,7 +241,7 @@ void SubList() {
           p = 1;
           lines_listed = 0;
           DisplayHorizontalBar(78, 7);
-          bout.bprintf("|#1Select |#9[|#2%d-%d, [Enter]=Next Page, Q=Quit|#9]|#0 : ", firstp + 1, lastp + 1);
+          bout.bprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ", firstp + 1, lastp + 1);
           const char* ss = mmkey(0, true);
           if (isdigit(ss[0])) {
             for (size_t i2 = 0; i2 < session()->subboards.size(); i2++) {
