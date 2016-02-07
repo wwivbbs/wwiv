@@ -524,28 +524,6 @@ void uudecode(const char *input_filename, const char *output_filename) {
 }
 
 void Packers() {
-  do {
-    bout.nl();
-    bout << "|#2Message Packet Options:\r\n";
-    bout.nl();
-    bout << "|#9[|#2C|#9] Configure Sub Scan\r\n";
-    bout << "|#9[|#2I|#9] Internal WWIV QWK\r\n";
-    bout << "|#9[|#2Q|#9] Quit back to BBS!\r\n";
-    bout.nl();
-    bout << "|#9Choice : ";
-    char ch = onek("WIZCQ\r ");
-    switch (ch) {
-    case 'I':
-      qwk_menu();
-      break;
-    case 'C':
-      bout.cls();
-      config_qscan();
-      bout.cls();
-      break;
-    default:
-      return;
-    }
-  } while (!hangup);
+  qwk_menu();
 }
 

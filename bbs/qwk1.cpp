@@ -207,9 +207,9 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     read_same_email(mloc, mw, curmail, &m, 0, 0);
 
     strupr(m.title);
-    strncpy(qwk_info->email_title, m.title, 25);
+    strncpy(qwk_info->email_title, stripcolors(m.title), 25);
     // had crash in stripcolors since this won't null terminate.
-    qwk_info->email_title[25] = 0;
+    // qwk_info->email_title[25] = 0;
     
     i = ((ability_read_email_anony & ss.ability) != 0);
 
@@ -400,6 +400,8 @@ void make_text_ready(char *text, long len) {
     }
     ++pos;
   }
+
+  text[len] = 0;
 }
 
 char* make_text_file(int filenumber, int curpos, int blocks) {
@@ -414,7 +416,13 @@ char* make_text_file(int filenumber, int curpos, int blocks) {
   read(filenumber, qwk, sizeof(qwk_record) * blocks);
   make_text_ready((char *)qwk, sizeof(qwk_record)*blocks);
 
-  return reinterpret_cast<char*>(qwk);
+  char* temp = reinterpret_cast<char*>(qwk);
+  size_t size = strlen(temp);
+  while (isspace(temp[size - 1]) && size) {
+    --size;
+  }
+  temp[size] = 0;
+  return temp;
 }
 
 void qwk_email_text(char *text, char *title, char *to) {

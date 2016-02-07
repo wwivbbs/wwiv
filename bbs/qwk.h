@@ -84,7 +84,7 @@ struct qwk_junk {
 
   char in_email;
   // This should be 25 chars so we want 1 more for null.
-  char email_title[26];
+  char email_title[25];
 };
 
 struct qwk_config {
