@@ -208,6 +208,8 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
 
     strupr(m.title);
     strncpy(qwk_info->email_title, m.title, 25);
+    // had crash in stripcolors since this won't null terminate.
+    qwk_info->email_title[25] = 0;
     
     i = ((ability_read_email_anony & ss.ability) != 0);
 
