@@ -391,38 +391,37 @@ void ready_reply_packet(const char *packet_name, const char *msg_name) {
 }
 
 // Takes reply packet and converts '227' (ã) to '13'
-void make_text_ready(char *text, long len) {
-  int pos = 0;
-
-  while (pos < len && !hangup) {
+static void make_text_ready(char *text, long len) {
+  string temp;
+  for (size_t pos = 0; pos < len && !hangup; pos++) {
     if (text[pos] == '\xE3') {
-      text[pos] = 13;
+      temp.push_back(13);
+      temp.push_back(10);
+    } else {
+      temp.push_back(text[pos]);
     }
-    ++pos;
   }
-
-  text[len] = 0;
+  memcpy(text, &temp[0], temp.size());
+  text[temp.size()] = 0;
 }
 
-char* make_text_file(int filenumber, int curpos, int blocks) {
+std::unique_ptr<char[]> make_text_file(int filenumber, int curpos, int blocks) {
   // This memory has to be freed later, after text is 'emailed' or 'posted'
   // Enough memory is allocated for all blocks, plus 2k extra for other
   // 'addline' stuff
-  qwk_junk *qwk = (qwk_junk *) malloc((blocks * sizeof(qwk_junk)) + 2048);
-  if (!qwk) {
-    return nullptr;
-  }
-  SET_BLOCK(filenumber, curpos, sizeof(qwk_record));
-  read(filenumber, qwk, sizeof(qwk_record) * blocks);
-  make_text_ready((char *)qwk, sizeof(qwk_record)*blocks);
+  unique_ptr<char[]> text = std::make_unique<char[]>(blocks * sizeof(qwk_junk) + 2048);
 
-  char* temp = reinterpret_cast<char*>(qwk);
-  size_t size = strlen(temp);
-  while (isspace(temp[size - 1]) && size) {
+  SET_BLOCK(filenumber, curpos, sizeof(qwk_record));
+  read(filenumber, text.get(), sizeof(qwk_record) * blocks);
+
+  make_text_ready(text.get(), sizeof(qwk_record)*blocks);
+
+  size_t size = strlen(text.get());
+  while (isspace(text[size - 1]) && size) {
     --size;
   }
-  temp[size] = 0;
-  return temp;
+  text[size] = 0;
+  return std::move(text);
 }
 
 void qwk_email_text(char *text, char *title, char *to) {
@@ -651,7 +650,7 @@ void process_reply_dat(char *name) {
         }
       }
 
-      char* text = make_text_file(repfile, curpos, atoi(blocks) - 1);
+      std::unique_ptr<char[]> text(make_text_file(repfile, curpos, atoi(blocks) - 1));
       if (!text) {
         curpos += atoi(blocks) - 1;
         continue;
@@ -660,7 +659,7 @@ void process_reply_dat(char *name) {
       if (to_email) {
         char *temp;
 
-        if ((temp = strstr(text, QWKFrom + 2)) != nullptr) {
+        if ((temp = strstr(text.get(), QWKFrom + 2)) != nullptr) {
           char *s;
 
           temp += strlen(QWKFrom + 2); // Get past 'QWKFrom:'
@@ -697,18 +696,15 @@ void process_reply_dat(char *name) {
       }
             
       if (to_email) {
-        qwk_email_text(text, title, to);
+        qwk_email_text(text.get(), title, to);
       } else if (freek1(syscfg.msgsdir) < 10) {
         // Not enough disk space
         bout.nl();
         bout.bputs("Sorry, not enough disk space left.");
         pausescr();
       } else {
-        qwk_post_text(text, title, atoi(tosub) - 1);
+        qwk_post_text(text.get(), title, atoi(tosub) - 1);
       }
-
-      free(text);
-
       curpos += atoi(blocks) - 1;
     }
   }

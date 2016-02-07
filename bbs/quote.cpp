@@ -138,6 +138,11 @@ void grab_quotes(messagerec * m, const char *aux) {
     string ss;
     if (readfile(m, aux, &ss)) {
       quotes_nrm_l = ss.length();
+      if (ss.back() == CZ) {
+        // Since CZ isn't special on Win32/Linux. Don't write it out
+        // to the quotea file.
+        ss.pop_back();
+      }
 
       File quotesTextFile(szQuotesTextFileName);
       if (quotesTextFile.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyNone)) {

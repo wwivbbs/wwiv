@@ -155,8 +155,6 @@ std::string qwk_which_zip();
 std::string qwk_which_protocol();
 void upload_reply_packet();
 void ready_reply_packet(const char *packet_name, const char *msg_name);
-void make_text_ready(char *text, long len);
-char* make_text_file(int filenumber, int curpos, int blocks);
 void qwk_email_text(char *text, char *title, char *to);
 void qwk_inmsg(const char *text,messagerec *m1, const char *aux, const char *name, time_t thetime);
 void process_reply_dat(char *name);
