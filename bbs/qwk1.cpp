@@ -574,7 +574,7 @@ void qwk_inmsg(const char *text, messagerec *m1, const char *aux, const char *na
 
   std::string message_text = ss.str();
   if (message_text.back() != CZ) {
-    message_text.push_back(CZ);
+    message_text.push_back(CZ); 
   }
   savefile(message_text, &m, aux);
   *m1 = m;

@@ -105,7 +105,7 @@ void dirlist(int mode) {
           p = 1;
           lines_listed = 0;
           DisplayHorizontalBar(78, 7);
-          bout.bprintf("|#1Select |#9[|#2%d-%d, [Enter]=Next Page, Q=Quit|#9]|#0 : ",
+          bout.bprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ",
                                             is ? firstp : firstp + 1, lastp);
           ss = mmkey(1, WSession::mmkeyFileAreas, true);
           if (isdigit(ss[0])) {
