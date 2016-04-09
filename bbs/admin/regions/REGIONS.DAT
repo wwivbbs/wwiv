@@ -1,0 +1,798 @@
+[--- BDE Regions File Marker - 12/10/95 ---]
+* Connecticut
+203
+860
+* Greater Atlanta, Georgia
+404
+770
+* Greater Chicago, Illinois
+312
+630
+* Greater Houston, Texas
+281
+713
+* North Dakota
+328
+701
+* Northern Florida
+352
+904
+* Oregon
+503
+541
+* South Carolina
+803
+864
+Alaska 
+907
+Alberta, Canada 
+403
+Arizona (Except Phoenix)
+520
+Arkansas
+501
+British Columbia, Canada
+604
+Carribean Islands
+809
+Central East Texas
+409
+Central Indiana
+317
+Central Iowa
+515
+Central Los Angeles, California
+213
+Central Massachusetts 
+508
+Central Michigan
+517
+Central Minnesota
+320
+Central New Jersey 
+908
+Central North Carolina
+910
+Coastal Los Angeles, California
+310
+Delaware 
+302
+East Central California
+209
+East Central Florida
+407
+East Central Illinois
+217
+East Central Pennsylvania
+717
+Eastern Iowa
+319
+Eastern Kentucky
+606
+Eastern Louisiana 
+504
+Eastern Maryland
+410
+Eastern Massachuetts
+617
+Eastern Nebraska 
+402
+Eastern North Carolina 
+919
+Eastern Pennsylvania
+610
+Eastern Tennessee
+423
+Eastern Washington State
+509
+Greater Alexandria, Virginia
+540
+Greater Dallas, Texas
+214
+Greater Denver, Colorado
+303
+Greater Detroit, Michigan
+313
+Greater Flint, Michigan
+810
+Greater Hamilton, Ontario, Canada
+905
+Greater Long Beach, California
+562
+Greater Miami, Florida
+954
+Greater Minneapolis/Saint Paul, Minnesota
+612
+Greater Montr‚al, Quebec, Canada
+514
+Greater Nashville, Tennessee
+615
+Greater Oakland, California
+510
+Greater Ottawa, Ontario, Canada
+613
+Greater Philadelphia, Pennsylvania
+215
+Greater Phoenix, Arizona
+602
+Greater Quebec City, Quebec, Canada
+418
+Greater Riverside, California
+909
+Greater San Diego/Southeastern California
+619
+Greater San Francisco, California
+415
+Greater Seattle, Washington
+206
+Greater Sherbrooke, Quebec, Canada
+819
+Greater Tampa, Florida
+813
+Greater Toronto, Ontario, Canada
+416
+Greater Windsor, Ontario, Canada
+519
+Hawaii
+808
+Idaho
+208
+Long Island, New York
+516
+Los Angeles, California Valleys
+818
+Maine
+207
+Manitoba, Canada
+204
+Mississippi
+601
+Montana
+406
+Nevada 
+702
+New Brunswick, Canada 
+506
+New Hampshire
+603
+New Mexico
+505
+New York City (Brooklyn/Queens), New York
+718
+New York City (Cellular Service), New York
+917
+New York City (Manhattan), New York
+212
+Newfoundland, Canada
+709
+North Central New York
+315
+North Central Texas
+817
+Northeastern California
+916
+Northeastern Illinois
+671
+Northeastern Illnois
+708
+Northeastern Missouri
+314
+Northeastern New York
+518
+Northeastern Ohio
+216
+Northeastern Oklahoma
+918
+Northeastern Ontario, Canada
+705
+Northeastern Texas
+903
+Northern Alabama
+205
+Northern Georgia
+706
+Northern Indiana 
+219
+Northern Kansas
+913
+Northern Michigan
+906
+Northern Minnesota
+218
+Northern New Jersey
+201
+Northern Virginia
+703
+Northern Wisconsin 
+715
+Northwestern California
+707
+Northwestern Colorado
+970
+Northwestern Illinois
+815
+Northwestern Missouri
+816
+Northwestern Ohio
+419
+Northwestern Ontario, Canada
+807
+Northwestern Pennsylvania
+814
+Northwestern Texas
+806
+Nova Scotia, Canada
+902
+Orange County, California
+714
+Rhode Island
+401
+Saskatchewan, Canada 
+306
+South Central New York
+607
+South Dakota
+605
+Southeastern Central Texas
+512
+Southeastern Colorado
+719
+Southeastern Florida
+305
+Southeastern Missouri
+573
+Southeastern New York
+914
+Southeastern Ohio
+614
+Southeastern Virginia
+804
+Southeastern Wisconsin
+414
+Southern Alabama
+334
+Southern Central California
+805
+Southern Georgia
+912
+Southern Illinois 
+618
+Southern Indiana 
+812
+Southern Kansas
+316
+Southern Minnesota
+507
+Southern New Jersey 
+609
+Southwestern Florida
+941
+Southwestern Missouri
+417
+Southwestern North Carolina 
+704
+Southwestern Ohio
+513
+Southwestern Pennsylvania
+412
+Southwestern Texas
+210
+Southwestern Wisconsin
+608
+Utah
+801
+Vermont
+802
+Washington, DC
+202
+West Central California
+408
+West Central Illinois
+309
+West Central Texas
+915
+West Virginia
+304
+Western Iowa 
+712
+Western Kentucky 
+502
+Western Louisiana
+318
+Western Maryland
+301
+Western Massachusetts 
+413
+Western Michigan
+616
+Western Nebraska 
+308
+Western New York
+716
+Western Oklahoma
+405
+Western Tennessee
+901
+Western Washington State
+360
+Wyoming
+307
+Bahrain
+973
+Belgium
+326
+Benin
+229
+Bermuda
+441
+Burundi
+257
+Cameroon
+237
+Central African Republic
+236
+Congo
+242
+Denmark
+045
+Fiji
+679
+French Antilles
+596
+Germany
+049
+Gibraltar
+350
+Hong Kong
+852
+Ivory Coast
+225
+Japan
+081
+Kuwait
+965
+Liberia
+231
+Macau
+853
+Madrid, Spain
+341
+Malaysia
+003
+Malta
+356
+Mexico City, Mexico
+525
+Misawa, Japan
+311
+Monterrey, Mexico
+528
+Morelia, Mexico
+524
+Okinawa, Japan
+098
+611
+Oman
+968
+Senegal
+221
+Singapore
+065
+Spain
+345
+Surinam
+597
+Tahiti
+689
+Tokyo, Japan
+133
+880
+United Kingdom
+029
+031
+044
+068
+Valencia, Spain
+346
+West Germany
+497
+* Connecticut
+203
+860
+* Greater Atlanta, Georgia
+404
+770
+* Greater Chicago, Illinois
+312
+630
+* Greater Houston, Texas
+281
+713
+* North Dakota
+328
+701
+* Northern Florida
+352
+904
+* Oregon
+503
+541
+* South Carolina
+803
+864
+Alaska 
+907
+Alberta, Canada 
+403
+Arizona (Except Phoenix)
+520
+Arkansas
+501
+Bermuda
+441
+British Columbia, Canada
+604
+Carribean Islands
+809
+Central East Texas
+409
+Central Indiana
+317
+Central Iowa
+515
+Central Los Angeles, California
+213
+Central Massachusetts 
+508
+Central Michigan
+517
+Central Minnesota
+320
+Central New Jersey 
+908
+Central North Carolina
+910
+Coastal Los Angeles, California
+310
+Delaware 
+302
+East Central California
+209
+East Central Florida
+407
+East Central Illinois
+217
+East Central Pennsylvania
+717
+Eastern Iowa
+319
+Eastern Kentucky
+606
+Eastern Louisiana 
+504
+Eastern Maryland
+410
+Eastern Massachuetts
+617
+Eastern Nebraska 
+402
+Eastern North Carolina 
+919
+Eastern Pennsylvania
+610
+Eastern Tennessee
+423
+Eastern Washington State
+509
+Greater Alexandria, Virginia
+540
+Greater Dallas, Texas
+214
+Greater Denver, Colorado
+303
+Greater Detroit, Michigan
+313
+Greater Flint, Michigan
+810
+Greater Hamilton, Ontario, Canada
+905
+Greater Long Beach, California
+562
+Greater Miami, Florida
+954
+Greater Minneapolis/Saint Paul, Minnesota
+612
+Greater Montr‚al, Quebec, Canada
+514
+Greater Nashville, Tennessee
+615
+Greater Oakland, California
+510
+Greater Ottawa, Ontario, Canada
+613
+Greater Philadelphia, Pennsylvania
+215
+Greater Phoenix, Arizona
+602
+Greater Quebec City, Quebec, Canada
+418
+Greater Riverside/San Bernardino, California
+909
+Greater San Diego/Southeastern California
+619
+Greater San Francisco, California
+415
+Greater Seattle, Washington
+206
+Greater Sherbrooke, Quebec, Canada
+819
+Greater Tampa, Florida
+813
+Greater Toronto, Ontario, Canada
+416
+Greater Windsor, Ontario, Canada
+519
+Hawaii
+808
+Idaho
+208
+Long Island, New York
+516
+Los Angeles, California Valleys
+818
+Maine
+207
+Manitoba, Canada
+204
+Mississippi
+601
+Montana
+406
+Nevada 
+702
+New Brunswick, Canada 
+506
+New Hampshire
+603
+New Mexico
+505
+New York City (Brooklyn/Queens), New York
+718
+New York City (Cellular Service), New York
+917
+New York City (Manhattan), New York
+212
+Newfoundland, Canada
+709
+North Central New York
+315
+North Central Texas
+817
+Northeastern California
+916
+Northeastern Illinois
+671
+Northeastern Illnois
+708
+Northeastern Missouri
+314
+Northeastern New York
+518
+Northeastern Ohio
+216
+Northeastern Oklahoma
+918
+Northeastern Ontario, Canada
+705
+Northeastern Texas
+903
+Northern Alabama
+205
+Northern Georgia
+706
+Northern Indiana 
+219
+Northern Kansas
+913
+Northern Michigan
+906
+Northern Minnesota
+218
+Northern New Jersey
+201
+Northern Virginia
+703
+Northern Wisconsin 
+715
+Northwestern California
+707
+Northwestern Colorado
+970
+Northwestern Illinois
+815
+Northwestern Missouri
+816
+Northwestern Ohio
+419
+Northwestern Ontario, Canada
+807
+Northwestern Pennsylvania
+814
+Northwestern Texas
+806
+Nova Scotia, Canada
+902
+Orange County, California
+714
+Rhode Island
+401
+Saskatchewan, Canada 
+306
+South Central New York
+607
+South Dakota
+605
+Southeastern Central Texas
+512
+Southeastern Colorado
+719
+Southeastern Florida
+305
+Southeastern Missouri
+573
+Southeastern New York
+914
+Southeastern Ohio
+614
+Southeastern Virginia
+804
+Southeastern Wisconsin
+414
+Southern Alabama
+334
+Southern Central California
+805
+Southern Georgia
+912
+Southern Illinois 
+618
+Southern Indiana 
+812
+Southern Kansas
+316
+Southern Minnesota
+507
+Southern New Jersey 
+609
+Southwestern Florida
+941
+Southwestern Missouri
+417
+Southwestern North Carolina 
+704
+Southwestern Ohio
+513
+Southwestern Pennsylvania
+412
+Southwestern Texas
+210
+Southwestern Wisconsin
+608
+Utah
+801
+Vermont
+802
+Washington, DC
+202
+West Central California
+408
+West Central Illinois
+309
+West Central Texas
+915
+West Virginia
+304
+Western Iowa 
+712
+Western Kentucky 
+502
+Western Louisiana
+318
+Western Maryland
+301
+Western Massachusetts 
+413
+Western Michigan
+616
+Western Nebraska 
+308
+Western New York
+716
+Western Oklahoma
+405
+Western Tennessee
+901
+Western Washington State
+360
+Wyoming
+307
+Bahrain
+973
+Belgium
+326
+Benin
+229
+Burundi
+257
+Cameroon
+237
+Central African Republic
+236
+Congo
+242
+Denmark
+045
+Fiji
+679
+French Antilles
+596
+Germany
+049
+Gibraltar
+350
+Hong Kong
+852
+Ivory Coast
+225
+Japan
+081
+Kuwait
+965
+Liberia
+231
+Macau
+853
+Madrid, Spain
+341
+Malaysia
+003
+Malta
+356
+Mexico City, Mexico
+525
+Misawa, Japan
+311
+Monterrey, Mexico
+528
+Morelia, Mexico
+524
+Okinawa, Japan
+098
+611
+Oman
+968
+Senegal
+221
+Singapore
+065
+Spain
+345
+Surinam
+597
+Tahiti
+689
+Tokyo, Japan
+133
+880
+United Kingdom
+029
+031
+044
+068
+Valencia, Spain
+346
+West Germany
+497
+<< Unknown Area >>
+
+
