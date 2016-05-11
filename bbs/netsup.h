@@ -21,7 +21,6 @@
 #include "sdk/net.h"
 
 void cleanup_net();
-int  cleanup_net1();
 void do_callout(int sn);
 void attempt_callout();
 void print_pending_list();

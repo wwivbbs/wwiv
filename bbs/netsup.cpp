@@ -104,31 +104,7 @@ static bool check_bbsdata() {
   return true;
 }
 
-void cleanup_net() {
-  if (cleanup_net1() && session()->HasConfigFlag(OP_FLAGS_NET_CALLOUT)) {
-    if (session()->wfc_status == 0) {
-      session()->localIO()->LocalCls();
-    }
-
-    IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
-    if (iniFile.IsOpen()) {
-      const char *pszValue = iniFile.GetValue("NET_CLEANUP_CMD1");
-      if (pszValue != nullptr) {
-        ExecuteExternalProgram(pszValue, session()->GetSpawnOptions(SPAWNOPT_NET_CMD1));
-        cleanup_net1();
-      }
-      pszValue = iniFile.GetValue("NET_CLEANUP_CMD2");
-      if (pszValue != nullptr) {
-        ExecuteExternalProgram(pszValue, session()->GetSpawnOptions(SPAWNOPT_NET_CMD2));
-        cleanup_net1();
-      }
-      iniFile.Close();
-    }
-  }
-
-}
-
-int cleanup_net1() {
+static int cleanup_net1() {
   char s[81], cl[81];
   int ok, ok2, nl = 0, anynew = 0, i = 0;
   bool abort;
@@ -237,6 +213,30 @@ int cleanup_net1() {
     send_inst_cleannet();
   }
   return i;
+}
+
+void cleanup_net() {
+  if (cleanup_net1() && session()->HasConfigFlag(OP_FLAGS_NET_CALLOUT)) {
+    if (session()->wfc_status == 0) {
+      session()->localIO()->LocalCls();
+    }
+
+    IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
+    if (iniFile.IsOpen()) {
+      const char *pszValue = iniFile.GetValue("NET_CLEANUP_CMD1");
+      if (pszValue != nullptr) {
+        ExecuteExternalProgram(pszValue, session()->GetSpawnOptions(SPAWNOPT_NET_CMD1));
+        cleanup_net1();
+      }
+      pszValue = iniFile.GetValue("NET_CLEANUP_CMD2");
+      if (pszValue != nullptr) {
+        ExecuteExternalProgram(pszValue, session()->GetSpawnOptions(SPAWNOPT_NET_CMD2));
+        cleanup_net1();
+      }
+      iniFile.Close();
+    }
+  }
+
 }
 
 void do_callout(int sn) {
