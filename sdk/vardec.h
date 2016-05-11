@@ -407,19 +407,19 @@ struct statusrec {
            uptoday,                                // files uploaded today
            activetoday;                            // Minutes active today
 
-  uint32_t qscanptr;                     // Q-scan pointer value
+  uint32_t qscanptr;                          // Q-scan pointer value
 
   char amsganon;                              // auto-message anony stat
 
-  uint16_t amsguser;                    // user who wrote a-msg
+  uint16_t amsguser;                          // user who wrote a-msg
 
-  uint32_t callernum1;                   // caller number
+  uint32_t callernum1;                        // caller number
 
-  uint16_t net_edit_stuff;              // word for net editor
+  uint16_t unused_net_edit_stuff;             // word for net editor
 
-  uint16_t wwiv_version;                // tell what version it is
+  uint16_t wwiv_version;                      // tell what version it is
 
-  uint16_t net_version;                 // tell what version of net
+  uint16_t net_version;                       // tell what version of net
 
   float net_bias;                             // network bias factor
 

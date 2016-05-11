@@ -185,10 +185,6 @@ class WStatus {
     m_pStatusRecord->amsguser = static_cast<uint16_t>(n);
   }
 
-  const bool IsUsingNetEdit() const {
-    return m_pStatusRecord->net_edit_stuff ? true : false;
-  }
-
   const int GetWWIVVersion() const {
     return m_pStatusRecord->wwiv_version;
   }
