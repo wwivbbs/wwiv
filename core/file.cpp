@@ -205,7 +205,10 @@ bool File::SetName(const string& dirName, const string& fileName) {
 int File::Read(void* pBuffer, size_t nCount) {
   int ret = read(handle_, pBuffer, nCount);
   if (ret == -1) {
-    std::cout << "[DEBUG: Read errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
+    std::cout 
+      << "[DEBUG: Read errno: "  << errno 
+      << " filename: " << full_path_name_
+      << " -- Please screen capture this and email to Rushfan]\r\n";
   }
   // TODO: Make this an WWIV_ASSERT once we get rid of these issues
   return ret;
