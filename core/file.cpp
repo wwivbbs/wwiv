@@ -381,7 +381,12 @@ bool File::mkdirs(const string& path) {
     return true;
   }
   if (errno == ENOENT) {
-    if (!mkdirs(path.substr(0, path.find_last_of(File::pathSeparatorChar)))) {
+	string::size_type pos = path.find_last_of(File::pathSeparatorChar);
+	if (pos == string::npos) {
+		return false;
+	}
+	string s = path.substr(0, pos);
+    if (!mkdirs(s)) {
       return false;  // failed to create the parent, stop here.
     }
     return File::mkdir(path.c_str());

@@ -1091,7 +1091,12 @@ int WSession::Run(int argc, char *argv[]) {
         break;
       case 'W':
       {
-        ok_modem_stuff = false;
+      	if (!ReadConfig()) {
+      		std::clog << "Unable to load CONFIG.DAT";
+      	    AbortBBS(true);
+      	}
+
+      	ok_modem_stuff = false;
         this->InitializeBBS();
         wwiv::wfc::ControlCenter control_center;
         control_center.Run();
@@ -1138,6 +1143,10 @@ int WSession::Run(int argc, char *argv[]) {
         //
       case 'K':
       {
+    	if (!ReadConfig()) {
+    		std::clog << "Unable to load CONFIG.DAT";
+    	    AbortBBS(true);
+    	}
         this->InitializeBBS();
         localIO()->LocalCls();
         if ((i + 1) < argc) {
