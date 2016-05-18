@@ -32,6 +32,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
 #include "core/inifile.h"
+#include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/wwivport.h"
@@ -389,61 +390,71 @@ void fixup_long(uint32_t *f, time_t l) {
   }
 }
 
-static void free_vars(float **weight, int **try1) {
-  if (weight || try1) {
-    for (int nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
-      if (try1 && try1[nNetNumber]) {
-        free(try1[nNetNumber]);
-      }
-      if (weight && weight[nNetNumber]) {
-        free(weight[nNetNumber]);
-      }
+class NodeAndWeight {
+public:
+  NodeAndWeight() {}
+  NodeAndWeight(int net_num, int node_num, uint64_t weight)
+    : net_num_(net_num), node_num_(node_num), weight_(weight) {}
+  int net_num_ = 0;
+  int node_num_ = 0;
+  uint64_t weight_ = 0;
+};
+
+/**
+ * Checks the net_contact_rec and net_call_out_rec to ensure the node specified
+ * is ok to call and does not violate any constraints.
+ */
+static bool ok_to_call_from_contact_rec(const net_contact_rec& ncn, const net_call_out_rec& con) {
+  time_t tCurrentTime = time(nullptr);
+  if (ncn.bytes_waiting == 0L) {
+    if (!con.call_anyway) {
+      return false;
     }
-    if (try1) {
-      free(try1);
+    time_t next_contact_time = ncn.lastcontact + SECONDS_PER_HOUR * con.call_anyway;
+    if (tCurrentTime < next_contact_time) {
+      return false;
     }
-    if (weight) {
-      free(weight);
+  } else {
+    // Only retry connections hourly if we have bytes waiting.
+    time_t next_contact_time = ncn.lastcontact + SECONDS_PER_HOUR * 1;
+    if (tCurrentTime < next_contact_time) {
+      return false;
     }
   }
+  if (con.options & options_once_per_day) {
+    if (std::abs(tCurrentTime - ncn.lastcontactsent) <
+      (20L * SECONDS_PER_HOUR / con.times_per_day)) {
+      return false;
+    }
+  }
+  if ((bytes_to_k(ncn.bytes_waiting) < con.min_k)
+    && (std::abs(tCurrentTime - ncn.lastcontact) < SECONDS_PER_DAY)) {
+    return false;
+  }
+  return true;
 }
 
-void attempt_callout() {
-  int **try1, i, i1, i2, num_call_sys, num_ncn;
-  float **weight, fl, fl1;
-  time_t tLastContactTime;
-  time_t tCurrentTime;
-  net_call_out_rec *con;
-  net_contact_rec *ncn;
+bool attempt_callout() {
+  int i, i1;
+  float fl, fl1;
 
   session()->status_manager()->RefreshStatusCache();
 
-  // We always want to call out, so set net_only to be true.
-  bool net_only = true;
-
-  time(&tCurrentTime);
-  if (last_time_c > tCurrentTime) {
-    last_time_c = 0L;
-  }
-  if (std::abs(last_time_c - tCurrentTime) < 120) {
-    return;
-  }
-  if (last_time_c == 0L) {
+  time_t tCurrentTime = time(nullptr);
+  if (last_time_c > tCurrentTime || last_time_c == 0) {
     last_time_c = tCurrentTime;
-    return;
+    return false;
   }
-  if ((try1 = static_cast<int **>(BbsAllocA(sizeof(int *) * session()->max_net_num()))) == nullptr) {
-    return;
+  if (std::abs(last_time_c - tCurrentTime) < 10) {
+    return false;
   }
-  if ((weight = static_cast<float **>(BbsAllocA(sizeof(float *) * session()->max_net_num()))) == nullptr) {
-    free(try1);
-    return;
-  }
-  memset(try1, 0, sizeof(int *) * session()->max_net_num());
-  memset(weight, 0, sizeof(float *) * session()->max_net_num());
 
-  float fl2 = 0.0;
-  int any = 0;
+  bool any = false;
+
+  // Set the last connect time to now since we are attempting to connect.
+  last_time_c = tCurrentTime;
+  wwiv::core::ScopeExit set_net_num_zero([&]() { set_net_num(0); });
+  std::vector<NodeAndWeight> to_call(session()->max_net_num());
 
   for (int nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
     set_net_num(nNetNumber);
@@ -451,120 +462,66 @@ void attempt_callout() {
       continue;
     }
 
-    // if (!session()->current_net().con)
     read_call_out_list();
-    // if (!session()->current_net().ncn)
     read_contacts();
 
-    con = session()->current_net().con;
-    ncn = session()->current_net().ncn;
-    num_call_sys = session()->current_net().num_con;
-    num_ncn = session()->current_net().num_ncn;
-
-    try1[nNetNumber] = static_cast<int *>(BbsAllocA(sizeof(int) * num_call_sys));
-    if (!try1[nNetNumber]) {
-      break;
-    }
-    weight[nNetNumber] = static_cast<float *>(BbsAllocA(sizeof(float) * num_call_sys));
-    if (!weight[nNetNumber]) {
-      break;
-    }
+    net_call_out_rec *con = session()->current_net().con;
+    net_contact_rec *ncn = session()->current_net().ncn;
+    int num_call_sys = session()->current_net().num_con;
+    int num_ncn = session()->current_net().num_ncn;
 
     for (i = 0; i < num_call_sys; i++) {
-      try1[nNetNumber][i] = 0;
       bool ok = ok_to_call(i);
-      i2 = -1;
-      for (i1 = 0; i1 < num_ncn; i1++) {
-        if (ncn[i1].systemnumber == con[i].sysnum) {
-          i2 = i1;
-        }
-      }
-      if (ok && (i2 != -1)) {
-        if (ncn[i2].bytes_waiting == 0L) {
-          if (con[i].call_anyway) {
-            if (con[i].call_anyway > 0) {
-              tLastContactTime = ncn[i2].lastcontact + SECONDS_PER_HOUR * con[i].call_anyway;
-            } else {
-              tLastContactTime = ncn[i2].lastcontact + SECONDS_PER_HOUR / (-con[i].call_anyway);
-            }
-            if (tCurrentTime < tLastContactTime) {
-              ok = false;
-            }
-          } else {
-            ok = false;
-          }
-        }
-        if (con[i].options & options_once_per_day) {
-          if (std::abs(tCurrentTime - ncn[i2].lastcontactsent) <
-              (20L * SECONDS_PER_HOUR / con[i].times_per_day)) {
-            ok = false;
-          }
-        }
-        if (ok) {
-          if ((bytes_to_k(ncn[i2].bytes_waiting) < con[i].min_k)
-              && (std::abs(tCurrentTime - ncn[i2].lastcontact) < SECONDS_PER_DAY)) {
-            ok = false;
-          }
-        }
-        fixup_long(&(ncn[i2].lastcontactsent), tCurrentTime);
-        fixup_long(&(ncn[i2].lasttry), tCurrentTime);
-        if (ok) {
-          if (ncn[i2].bytes_waiting == 0L) {
-            fl = 5.0 * WEIGHT;
-          } else {
-            fl = (float) 1024.0 / ((float) ncn[i2].bytes_waiting) * (float) WEIGHT * (float) 60.0;
-          }
-          fl1 = (float)(tCurrentTime - ncn[i2].lasttry);
-          if ((fl < fl1) || net_only) {
-            try1[nNetNumber][i] = 1;
-            fl1 = fl1 / fl;
-            if (fl1 < 1.0) {
-              fl1 = 1.0;
-            }
-            if (fl1 > 5.0) {
-              fl1 = 5.0;
-            }
-            weight[nNetNumber][i] = fl1;
-            fl2 += fl1;
-            any++;
-          }
-        }
-      }
-    }
-  }
-
-  if (any) {
-    fl = static_cast<float>(fl2) * static_cast<float>(rand()) / static_cast<float>(32767.0);
-    fl1 = 0.0;
-    for (int nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
-      set_net_num(nNetNumber);
-      if (!net_sysnum) {
+      if (!ok) {
         continue;
       }
 
-      i1 = -1;
-      for (i = 0; (i < session()->current_net().num_con); i++) {
-        if (try1[nNetNumber][i]) {
-          fl1 += weight[nNetNumber][i];
-          if (fl1 >= fl) {
-            i1 = i;
-            break;
-          }
+      int ncn_index = -1;
+      for (i1 = 0; i1 < num_ncn; i1++) {
+        if (ncn[i1].systemnumber == con[i].sysnum) {
+          ncn_index = i1;
         }
       }
-      if (i1 != -1) {
-        free_vars(weight, try1);
-        weight = nullptr;
-        try1 = nullptr;
-        do_callout(session()->current_net().con[i1].sysnum);
-        time(&tCurrentTime);
-        last_time_c = tCurrentTime;
-        break;
+      if (ncn_index == -1) {
+        continue;
       }
+
+      ok = ok_to_call_from_contact_rec((ncn[ncn_index]), con[i]);
+
+      fixup_long(&(ncn[ncn_index].lastcontactsent), tCurrentTime);
+      fixup_long(&(ncn[ncn_index].lasttry), tCurrentTime);
+
+      if (ok) {
+        uint64_t time_weight = tCurrentTime - ncn[ncn_index].lasttry;
+
+        if (ncn[ncn_index].bytes_waiting == 0L) {
+          if (to_call.at(i).weight_ < time_weight) {
+            to_call[i] = NodeAndWeight( 
+              nNetNumber, session()->current_net().con[i].sysnum, time_weight);
+          }
+        } else {
+          uint64_t bytes_weight = ncn[ncn_index].bytes_waiting * 60 + time_weight;
+          if (to_call.at(i).weight_ < bytes_weight) {
+            to_call[i] = NodeAndWeight(
+              nNetNumber, session()->current_net().con[i].sysnum, bytes_weight);
+          }
+        }
+        any = true;
+      }
+
     }
   }
-  free_vars(weight, try1);
-  set_net_num(0);
+
+  if (!any) {
+    return false;
+  }
+  for (const auto& node : to_call) {
+    set_net_num(node.net_num_);
+    if (node.weight_ != 0) {
+      do_callout(node.node_num_);
+    }
+  }
+  return true;
 }
 
 void print_pending_list() {

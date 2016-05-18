@@ -217,7 +217,10 @@ int File::Read(void* pBuffer, size_t nCount) {
 int File::Write(const void* pBuffer, size_t nCount) {
   int nRet = write(handle_, pBuffer, nCount);
   if (nRet == -1) {
-    std::cout << "[DEBUG: Write errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
+    std::cout << "[DEBUG: Write errno: " << errno
+      << " filename: " << full_path_name_ << std::endl;
+    std::cout << " -- Please screen capture this and attach to a bug here: " << std::endl;
+    std::cout << "https://github.com/wwivbbs/wwiv/issues" << std::endl;
   }
   // TODO: Make this an WWIV_ASSERT once we get rid of these issues
   return nRet;

@@ -207,9 +207,9 @@ static void RunEventsIfNeeded() {
 
   session()->SetCurrentSpeed("KB");
   static time_t last_time_c = 0;
-  time_t lCurrentTime = time(nullptr);
-  if ((((rand() % 8000) == 0) || (lCurrentTime - last_time_c > 1200)) && net_sysnum) {
-    lCurrentTime = last_time_c;
+  time_t current_time = time(nullptr);
+  if ((current_time - last_time_c > 60) && net_sysnum) {
+    current_time = last_time_c;
     attempt_callout();
   }
 }

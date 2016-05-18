@@ -192,7 +192,7 @@ struct net_call_out_rec {
   uint16_t  sysnum;         /* system number */
   uint8_t   macnum;         /* macro/script to use */
   uint16_t  options;        /* bit mapped */
-  uint8_t   call_anyway;    /* days between callouts */
+  uint8_t   call_anyway;    /* hours between callouts */
   char            min_hr,         /* callout min hour */
                   max_hr;         /* callout max hour */
   char            password[20];   /* password for system */

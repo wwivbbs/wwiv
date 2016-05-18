@@ -18,6 +18,7 @@
 
 // WWIV BINKP Network Stack. (networkb.exe)
 
+#include <chrono>
 #include <fcntl.h>
 #include <iostream>
 #include <map>
@@ -43,6 +44,7 @@
 #include "networkb/wfile_transfer_file.h"
 
 #include "sdk/config.h"
+#include "sdk/contact.h"
 #include "sdk/networks.h"
 
 using std::cout;
@@ -53,6 +55,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
+using namespace std::chrono;
 using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::sdk;
@@ -77,6 +80,7 @@ static void ShowHelp(CommandLine& cmdline) {
 
 int main(int argc, char** argv) {
   try {
+    auto start_time = system_clock::now();
     Logger::Init(argc, argv);
     wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
 
@@ -141,8 +145,14 @@ int main(int argc, char** argv) {
         LOG << "Unable to find node config for node: " << expected_remote_node;
         return 2;
       }
-
-      c = Connect(node_config->host, node_config->port);
+      try {
+        c = Connect(node_config->host, node_config->port);
+      } catch (const connection_error& e) {
+        const net_networks_rec& net = bink_config.networks()[network_name];
+        Contact c(net.dir, true);
+        c.add_failure(expected_remote_node, system_clock::to_time_t(start_time));
+        throw e;
+      }
     } else {
       ShowHelp(cmdline);
       return 1;
@@ -155,8 +165,10 @@ int main(int argc, char** argv) {
     };
     BinkP binkp(c.get(), &bink_config, callouts, side, expected_remote_node, factory);
     binkp.Run();
+  } catch (const connection_error& e) {
+    LOG << "CONNECTION ERROR: [networkb]: " << e.what();
   } catch (const socket_error& e) {
-    LOG << "ERROR: [networkb]: " << e.what();
+    LOG << "SOCKET ERROR: [networkb]: " << e.what();
   } catch (const exception& e) {
     LOG << "ERROR: [networkb]: " << e.what();
   }
