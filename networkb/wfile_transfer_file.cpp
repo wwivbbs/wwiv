@@ -33,6 +33,7 @@ using std::chrono::system_clock;
 using std::clog;
 using std::endl;
 using std::string;
+using wwiv::strings::StrCat;
 using wwiv::strings::StringPrintf;
 
 namespace wwiv {
@@ -81,8 +82,9 @@ bool WFileTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
 bool WFileTransferFile::WriteChunk(const char* chunk, size_t size) {
   if (!file_->IsOpen()) {
     if (file_->Exists()) {
-      // Don't overwrite an existing file.
-      return false;
+      // Don't overwrite an existing file.  Rename it away to: FILENAME.timestamp
+      string timestamp = std::to_string(system_clock::to_time_t(system_clock::now()));
+      File::Rename(file_->full_pathname(), StrCat(file_->full_pathname(), timestamp));
     }
     if (!file_->Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
       return false;
