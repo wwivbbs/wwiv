@@ -64,9 +64,6 @@ char *get_file(const string& filename, long *len) {
  * Creates the fully qualified filename to display adding extensions and directories as needed.
  */
 const string CreateFullPathToPrint(const string& basename) {
-  if (File::Exists(basename)) {
-    return basename;
-  }
   string langdir(session()->language_dir);
   string gfilesdir(syscfg.gfilesdir);
   std::vector<string> dirs { langdir, gfilesdir };
@@ -118,6 +115,15 @@ const string CreateFullPathToPrint(const string& basename) {
  */
 bool printfile(const string& filename, bool bAbortable, bool bForcePause) {
   string full_path_name = CreateFullPathToPrint(filename);
+  File f(full_path_name);
+  if (!f.Exists()) {
+	  // No need to print a file that does not exist.
+	  return false;
+  }
+  if (!f.IsFile()) {
+	  // Not a file, no need to print a file that is not a file.
+	  return false;
+  }
   long lFileSize;
   unique_ptr<char[], void (*)(void*)> ss(get_file(full_path_name.c_str(), &lFileSize), &std::free);
   if (!ss) {
