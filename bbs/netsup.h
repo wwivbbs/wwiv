@@ -22,7 +22,7 @@
 
 void cleanup_net();
 void do_callout(int sn);
-void attempt_callout();
+bool attempt_callout();
 void print_pending_list();
 void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char *pszAuthorName,
   unsigned short int *pList, int nFromNetworkNumber);
