@@ -175,7 +175,12 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
   // included the command number.
   string s = conn_->receive(length - 1, d);
 
-  LOG << "RECV:  " << BinkpCommands::command_id_to_name(command_id) << ": " << s;
+  string log_line = s;
+  if (command_id == BinkpCommands::M_PWD) {
+	  log_line = string(12, '*');
+  }
+  LOG << "RECV:  " << BinkpCommands::command_id_to_name(command_id)
+      << ": " << log_line;
   switch (command_id) {
   case BinkpCommands::M_NUL: {
     // TODO(rushfan): process these.
