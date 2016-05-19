@@ -105,12 +105,12 @@ class LocalIO {
   void SetEditLineColor(int n) { edit_line_color_ = n; }
 
 private:
-  virtual void LocalFastPuts(const std::string &text) = 0;
+  virtual void LocalFastPuts(const std::string& text) = 0;
 
 private:
   std::string m_chatReason;
-  int m_nTopLine;
-  int m_nScreenBottom;
+  int m_nTopLine = 0;
+  int m_nScreenBottom = 0;
   int top_screen_color_ = 27;
   int user_editor_color_ = 9;
   int edit_line_color_ = 31;

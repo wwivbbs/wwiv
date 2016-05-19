@@ -79,7 +79,7 @@ static std::map<int, AnsiColor> CreateAnsiScheme() {
 
   // Create the color pairs for each of the colors defined in the color scheme.
   for (const auto& kv : scheme) {
-    init_pair(static_cast<short>(kv.first + 100), kv.second.f(), kv.second.b());
+    init_pair(static_cast<short>(kv.first), kv.second.f(), kv.second.b());
   }
   return scheme;
 }
@@ -98,7 +98,7 @@ CursesLocalIO::~CursesLocalIO() {
 
 void CursesLocalIO::SetColor(int color) {
   const AnsiColor& s = scheme_.at(color);
-  attr_t attr = COLOR_PAIR(color + 100);
+  attr_t attr = COLOR_PAIR(color);
   if (s.bold()) {
     attr |= A_BOLD;
   }

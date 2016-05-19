@@ -31,7 +31,7 @@ class UnixConsoleIO : public LocalIO {
  public:
   // Constructor/Destructor
   UnixConsoleIO();
-  UnixConsoleIO(const LocalIO& copy) = delete;
+  UnixConsoleIO(const LocalIO& copy) = delete	;
   virtual ~UnixConsoleIO();
 
   virtual void LocalGotoXY(int x, int y) override;
@@ -69,9 +69,9 @@ class UnixConsoleIO : public LocalIO {
 
 private:
   virtual void LocalFastPuts(const std::string &text) override;
-  int m_cursorPositionX;
-  int m_cursorPositionY;
-  FILE *ttyf;
+  int m_cursorPositionX = 0;
+  int m_cursorPositionY = 0;
+  FILE *ttyf = nullptr;
   struct termios ttysav;
 
 

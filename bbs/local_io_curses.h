@@ -95,8 +95,8 @@ class CursesLocalIO : public LocalIO {
 
 private:
   void LocalFastPuts(const std::string &text) override;
-  size_t x_;
-  size_t y_;
+  size_t x_ = 0;
+  size_t y_ = 0;
 
   std::unique_ptr<CursesWindow> window_;
   const std::map<int, AnsiColor> scheme_;
