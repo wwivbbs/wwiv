@@ -547,7 +547,7 @@ static void UpdateLastOnFileAndUserLog() {
           } else {
             bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##" << wwiv::endl;
           }
-          unsigned char chLine = (okansi()) ? 205 : '=';
+          unsigned char chLine = (okansi()) ? '\xCD' : '=';
           bout << "|#7" << std::string(79, chLine) << wwiv::endl;
           needs_header = false;
         }

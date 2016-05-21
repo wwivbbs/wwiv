@@ -24,4 +24,12 @@
 #define __unix__
 #endif
 
+#ifdef _MSC_VER
+#ifdef _WIN64
+  typedef int64_t ssize_t;
+#else 
+typedef int32_t ssize_t;
+#endif  // _WIN64
+#endif  // MSVC
+
 #endif // __INCLUDED_PLATFORM_WWIVPORT_H__

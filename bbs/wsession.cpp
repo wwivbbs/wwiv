@@ -442,7 +442,7 @@ int WSession::doWFCEvents() {
     lokb = 0;
     SetCurrentSpeed("KB");
     time_t current_time = time(nullptr);
-    bool node_supports_callout = this->flags & OP_FLAGS_NET_CALLOUT;
+    bool node_supports_callout = (this->flags & OP_FLAGS_NET_CALLOUT) != 0;
     // try to check for packets to send every minute.
     time_t diff_time = current_time - last_time_c;
     bool time_to_call = diff_time > 60; // was 1200

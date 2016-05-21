@@ -143,6 +143,7 @@ static void DrawStatus(CursesWindow* statusWindow) {
   statusWindow->PutsXY(2, 7, "XXXXXXXXXXXXXXXXXXXXXXXXXX");
 }
 
+/*
 static string GetLastUserName(int inst_num) {
   instancerec ir;
   get_inst_info(inst_num, &ir);
@@ -152,8 +153,8 @@ static string GetLastUserName(int inst_num) {
   } else {
     return "Nobody";
   }
-
 }
+*/
 
 static void UpdateStatus(CursesWindow* statusWindow) {
   statusWindow->SetColor(SchemeId::WINDOW_DATA);

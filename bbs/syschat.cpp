@@ -205,7 +205,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
         if (nNumCharsToMove) {
           strncpy(&s2[nNumCharsToMove - 1], temp1, (strlen(temp1)));
         } else {
-          strcpy(s2, charstr(session()->user()->GetScreenChars() - 1, 205));
+          strcpy(s2, charstr(session()->user()->GetScreenChars() - 1, '\xCD'));
         }
         s2[session()->user()->GetScreenChars()] = '\0';
         bout << s2;

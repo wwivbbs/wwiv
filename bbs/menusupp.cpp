@@ -241,7 +241,7 @@ void LastCallers() {
   } else {
     bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
   }
-  char filler_char = okansi() ? static_cast<char>(205) : '=';
+  char filler_char = okansi() ? '\xCD' : '=';
   bout << "|#7" << string(79, filler_char) << wwiv::endl;
   printfile(LASTON_TXT);
 }

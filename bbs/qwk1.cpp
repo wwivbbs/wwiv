@@ -393,7 +393,7 @@ void ready_reply_packet(const char *packet_name, const char *msg_name) {
 // Takes reply packet and converts '227' (ã) to '13'
 static void make_text_ready(char *text, long len) {
   string temp;
-  for (size_t pos = 0; pos < len && !hangup; pos++) {
+  for (ssize_t pos = 0; pos < len && !hangup; pos++) {
     if (text[pos] == '\xE3') {
       temp.push_back(13);
       temp.push_back(10);

@@ -301,7 +301,7 @@ void do_callout(int sn) {
             << "k" << wwiv::endl;
     }
     bout << "|#7Commandline is: |#2" << cmd.str() << wwiv::endl
-         << "|#7" << std::string(80, 205) << "|#0..." << wwiv::endl;
+         << "|#7" << std::string(80, '\xCD') << "|#0..." << wwiv::endl;
     ExecuteExternalProgram(cmd.str(), EFLAG_NETPROG);
     zap_contacts();
     session()->status_manager()->RefreshStatusCache();
@@ -436,8 +436,6 @@ static bool ok_to_call_from_contact_rec(const net_contact_rec& ncn, const net_ca
 
 bool attempt_callout() {
   int i, i1;
-  float fl, fl1;
-
   session()->status_manager()->RefreshStatusCache();
 
   time_t tCurrentTime = time(nullptr);

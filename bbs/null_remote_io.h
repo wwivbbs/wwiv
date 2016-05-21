@@ -35,13 +35,13 @@ class NullRemoteIO : public RemoteIO {
 
   // Nothing is always able to be open.
   bool open() override { return true; }
-  void close(bool temporary) override {}
+  void close(bool) override {}
   unsigned char getW() override { return 0; }
-  bool dtr(bool raise) override { return true; }
+  bool dtr(bool) override { return true; }
   void purgeIn() override {}
-  unsigned int put(unsigned char ch) override { return 0; }
-  unsigned int read(char *buffer, unsigned int count) override { return 0; }
-  unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) override { return 0; }
+  unsigned int put(unsigned char) override { return 0; }
+  unsigned int read(char *, unsigned int) override { return 0; }
+  unsigned int write(const char *, unsigned int, bool) override { return 0; }
   bool carrier() override { return false; }
   bool incoming() override { return false; }
 
