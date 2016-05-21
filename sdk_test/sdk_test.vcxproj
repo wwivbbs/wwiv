@@ -42,12 +42,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)\..\deps\gtest-1.7.0\include;$(ProjectDir)..\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\deps\googletest-master\googletest\include;$(ProjectDir)..\;$(IncludePath)</IncludePath>
     <IntDir>test\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)\..\deps\gtest-1.7.0\include;$(ProjectDir)..\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\deps\googletest-master\googletest\include;$(ProjectDir)..\;$(IncludePath)</IncludePath>
     <IntDir>test\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -92,8 +92,8 @@
     <ProjectReference Include="..\core_test\core_fixtures.vcxproj">
       <Project>{e5e45f1a-c3c0-49ca-98de-b26185ad8694}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\deps\gtest-1.7.0\msvc\gtest.vcxproj">
-      <Project>{c8f6c172-56f2-4e76-b5fa-c3b423b31be7}</Project>
+    <ProjectReference Include="..\deps\googletest-master\googletest\msvc\gtest-md.vcxproj">
+      <Project>{c8f6c172-56f2-4e76-b5fa-c3b423b31be8}</Project>
     </ProjectReference>
     <ProjectReference Include="..\sdk\sdk.vcxproj">
       <Project>{53db67db-4d42-4a8a-b176-ee83a170de86}</Project>
