@@ -3,8 +3,8 @@ echo "Subversion revision: %SVN_REVISION%"
 echo "Workpace: %WORKSPACE%"
 echo "WWIV_TEST_TEMPDIR: %WWIV_TEST_TEMPDIR%"
 
-cd %WORKSPACE%\deps\gtest-1.7.0\msvc
-msbuild gtest.vcxproj /t:Build /p:Configuration=Debug || exit /b
+cd %WORKSPACE%\deps\googletest-master/googletest\msvc
+msbuild gtest-md.vcxproj /t:Build /p:Configuration=Debug || exit /b
 
 cd %WORKSPACE%\core
 msbuild core.vcxproj /t:Build /p:Configuration=Debug || exit /b

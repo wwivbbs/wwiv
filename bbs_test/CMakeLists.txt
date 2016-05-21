@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project (WWIV5)
 
-include_directories(../deps/gtest-1.7.0/include)
+include_directories(../deps/googletest-master/googletest/include)
 include_directories(..)
 
 set(test_sources
