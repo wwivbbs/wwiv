@@ -45,51 +45,9 @@ set LIB=
 endlocal
 
 echo:
-echo * Building CORE
-cd %WORKSPACE%\core
-msbuild core.vcxproj /t:Build /p:Configuration=Release || exit /b
-
-echo:
-echo * Building BBS
-cd %WORKSPACE%\bbs
-msbuild bbs_lib.vcxproj /t:Build /p:Configuration=Release || exit /b
-msbuild bbs.vcxproj /t:Build /p:Configuration=Release || exit /b
-
-echo:
-echo * Building WWIV5TelnetServer
-cd %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer
-msbuild WWIV5TelnetServer.csproj /t:Build /p:Configuration=Release || exit /b
-
-echo:
-echo * Building INITLIB
-cd %WORKSPACE%\initlib
-msbuild initlib.vcxproj /t:Build /p:Configuration=Release || exit /b
-
-echo:
-echo * Building INIT
-cd %WORKSPACE%\init
-msbuild init.vcxproj /t:Build /p:Configuration=Release || exit /b
-
-echo:
-echo * Building NETWORKB
-cd %WORKSPACE%\networkb
-msbuild networkb.vcxproj /t:Build /p:Configuration=Release || exit /b
-
-echo:
-echo * Building NETWORK
-cd %WORKSPACE%\network
-msbuild network.vcxproj /t:Build /p:Configuration=Release || exit /b
-
-echo:
-echo * Building WWIVUTIL
-cd %WORKSPACE%\wwivutil
-msbuild wwivutil.vcxproj /t:Build /p:Configuration=Release || exit /b
-
-echo:
-echo * Building WindowsWWIVUpdate
-cd %WORKSPACE%\windows-wwiv-update
-msbuild windows-wwiv-update.csproj /t:Build /p:Configuration=Release || exit /b
-
+echo * Building WWIV
+cd %WORKSPACE%
+msbuild WWIV.sln /t:Build /p:Configuration=Release || exit /b
 
 @rem build WINS
 echo:
@@ -106,7 +64,7 @@ msbuild qotd\qotd.vcxproj /t:Build /p:Configuration=Release || exit /b
 msbuild uu\uu.vcxproj /t:Build /p:Configuration=Release || exit /b
 
 
-@rem build DEPS
+@rem build InfoZIP Zip/UnZip
 echo:
 echo * Building INFOZIP (zip/unzip)
 cd %WORKSPACE%\deps\infozip

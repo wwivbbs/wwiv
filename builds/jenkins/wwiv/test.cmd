@@ -3,29 +3,8 @@ echo "Subversion revision: %SVN_REVISION%"
 echo "Workpace: %WORKSPACE%"
 echo "WWIV_TEST_TEMPDIR: %WWIV_TEST_TEMPDIR%"
 
-cd %WORKSPACE%\deps\googletest-master/googletest\msvc
-msbuild gtest-md.vcxproj /t:Build /p:Configuration=Debug || exit /b
-
-cd %WORKSPACE%\core
-msbuild core.vcxproj /t:Build /p:Configuration=Debug || exit /b
-
-cd %WORKSPACE%\bbs
-msbuild bbs_lib.vcxproj /t:Build /p:Configuration=Debug || exit /b
-
-cd %WORKSPACE%\core_test
-msbuild core_fixtures.vcxproj /t:Build /p:Configuration=Debug || exit /b
-
-cd %WORKSPACE%\core_test
-msbuild core_test.vcxproj /t:Build /p:Configuration=Debug || exit /b
-
-cd %WORKSPACE%\bbs_test
-msbuild bbs_test.vcxproj /t:Build /p:Configuration=Debug || exit /b
-
-cd %WORKSPACE%\sdk_test
-msbuild sdk_test.vcxproj /t:Build /p:Configuration=Debug || exit /b
-
-cd %WORKSPACE%\networkb_test
-msbuild networkb_test.vcxproj /t:Build /p:Configuration=Debug || exit /b
+cd %WORKSPACE%
+msbuild WWIV.sln /t:Build /p:Configuration=Debug || exit /b
 
 cd %WORKSPACE%\core_test\Debug
 del result.xml
