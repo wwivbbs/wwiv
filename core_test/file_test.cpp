@@ -77,7 +77,8 @@ TEST(FileTest, Length_Open) {
     string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
     File file(path);
     ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
-    ASSERT_EQ(kHelloWorld.size(), file.GetLength());
+    ASSERT_EQ(static_cast<long>(kHelloWorld.size()),
+    		  file.GetLength());
 }
 
 TEST(FileTest, Length_NotOpen) {
@@ -85,7 +86,8 @@ TEST(FileTest, Length_NotOpen) {
     FileHelper helper;
     string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
     File file(path);
-    ASSERT_EQ(kHelloWorld.size(), file.GetLength());
+    ASSERT_EQ(static_cast<long>(kHelloWorld.size()),
+    		  file.GetLength());
 }
 
 TEST(FileTest, IsDirectory_NotOpen) {
@@ -133,7 +135,8 @@ TEST(FileTest, Read) {
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
   char buf[255];
-  ASSERT_EQ(kHelloWorld.length(), file.Read(buf, kHelloWorld.length()));
+  ASSERT_EQ(static_cast<int>(kHelloWorld.length()),
+		    file.Read(buf, kHelloWorld.length()));
   buf[11] = 0;
   ASSERT_STREQ(kHelloWorld.c_str(), buf);
 }

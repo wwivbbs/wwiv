@@ -53,7 +53,7 @@ class Contact {
   std::string ToString() const;
 
  private:
-   /** add a contact. caled by connect or failure. */
+   /** add a contact. called by connect or failure. */
    void add_contact(net_contact_rec* c, time_t time);
 
    std::string network_dir_;

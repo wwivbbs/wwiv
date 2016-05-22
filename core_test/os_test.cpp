@@ -56,7 +56,9 @@ TEST(OsTest, SleepFor) {
 }
 
 TEST(OsTest, EnvironmentVariable_Exists) {
-  ASSERT_EQ(0, putenv("QWERTYUIOP=ASDF"));
+  char s[81];
+  strcpy(s, "QWERTYUIOP=ASDF");
+  ASSERT_EQ(0, putenv(s));
 
   EXPECT_EQ("ASDF", environment_variable("QWERTYUIOP"));
 }

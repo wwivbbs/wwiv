@@ -168,13 +168,13 @@ TEST(StringsTest, StringToUnsignedShort) {
 }
 
 TEST(StringsTest, StringToUnsignedInt) {
-  EXPECT_EQ(1234, StringToUnsignedInt("1234"));
-  EXPECT_EQ(0, StringToUnsignedInt("0"));
+  EXPECT_EQ(1234u, StringToUnsignedInt("1234"));
+  EXPECT_EQ(static_cast<unsigned int>(0), StringToUnsignedInt("0"));
 
-  EXPECT_EQ(999999, StringToUnsignedInt("999999"));
+  EXPECT_EQ(999999u, StringToUnsignedInt("999999"));
 
-  EXPECT_EQ(0, StringToUnsignedInt(""));
-  EXPECT_EQ(0, StringToUnsignedInt("ASDF"));
+  EXPECT_EQ(0u, StringToUnsignedInt(""));
+  EXPECT_EQ(0u, StringToUnsignedInt("ASDF"));
 }
 
 TEST(StringsTest, StringToInt) {

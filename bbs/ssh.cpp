@@ -197,7 +197,11 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
     // Clear out any remaining control messages.
     int bytes_received = 0;
     char buffer[4096];
-    cryptPopData(session_, buffer, 4096, &bytes_received);
+    status = cryptPopData(session_, buffer, 4096, &bytes_received);
+    if (!OK(status)) {
+    	clog << "error clearing buffer (but that is ok). status: "
+    	     << status << std::endl;
+    }
 
     GetSSHUserNameAndPassword(session_, remote_username_, remote_password_);
     clog << "Got Username and Password!" << endl;

@@ -45,7 +45,7 @@ TEST(DataFileTest, Read) {
   {
     DataFile<T> datafile(tmp, "Read", File::modeReadOnly);
     ASSERT_TRUE((bool) datafile);
-    EXPECT_EQ(2, datafile.number_of_records());
+    EXPECT_EQ(static_cast<size_t>(2), datafile.number_of_records());
     T t{0, 0};
     EXPECT_TRUE(datafile.Read(&t));
     EXPECT_EQ(1, t.a);
@@ -83,10 +83,10 @@ TEST(DataFileTest, ReadVector) {
   {
     DataFile<T> datafile(tmp, "ReadVector", File::modeReadOnly);
     ASSERT_TRUE((bool)datafile);
-    EXPECT_EQ(3, datafile.number_of_records());
+    EXPECT_EQ(static_cast<size_t>(3), datafile.number_of_records());
     std::vector<T> t;
     EXPECT_TRUE(datafile.ReadVector(t));
-    EXPECT_EQ(3, t.size());
+    EXPECT_EQ(static_cast<size_t>(3), t.size());
     EXPECT_EQ(1, t[0].a);
     EXPECT_EQ(2, t[0].b);
     EXPECT_EQ(3, t[1].a);
@@ -114,10 +114,10 @@ TEST(DataFileTest, ReadVector_MaxRecords) {
   {
     DataFile<T> datafile(tmp, "ReadVector_MaxRecords", File::modeReadOnly);
     ASSERT_TRUE((bool)datafile);
-    EXPECT_EQ(3, datafile.number_of_records());
+    EXPECT_EQ(static_cast<size_t>(3), datafile.number_of_records());
     std::vector<T> t;
     EXPECT_TRUE(datafile.ReadVector(t, 2));
-    EXPECT_EQ(2, t.size());
+    EXPECT_EQ(static_cast<size_t>(2), t.size());
     EXPECT_EQ(1, t[0].a);
     EXPECT_EQ(2, t[0].b);
     EXPECT_EQ(3, t[1].a);
@@ -194,7 +194,7 @@ TEST(DataFileTest, WriteVector_MaxRecords) {
   }
   File x(tmp, "WriteVector_MaxRecords");
   ASSERT_TRUE(x.Open(File::modeBinary | File::modeReadOnly));
-  ASSERT_EQ(2 * sizeof(T), x.GetLength());
+  ASSERT_EQ(static_cast<long>(2 * sizeof(T)), x.GetLength());
   x.Read(&t1, sizeof(T));
   EXPECT_EQ(1, t1.a);
   EXPECT_EQ(2, t1.b);
