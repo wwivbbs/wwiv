@@ -25,10 +25,12 @@ setlocal
 
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
 set RELEASE_ZIP=%WORKSPACE%\wwiv-build-win-%BUILD_NUMBER%.zip
+set STAGE_DIR=%WORKSPACE%\staging
 echo TextTransform: %TEXT_TRANSFORM%
 echo Workspace:     %WORKSPACE%         
 echo Build Number:  %BUILD_NUMBER%
 echo Archive:       %RELEASE_ZIP%
+echo Staging Dir:   %STAGE_DIR%
 
 @rem Build BBS, init, telnetserver
 echo:
@@ -73,61 +75,61 @@ msbuild unzip60\win32\vc8\unzip.vcxproj /t:Build /p:Configuration=Release || exi
 msbuild zip30\win32\vc6\zip.vcxproj /t:Build /p:Configuration=Release || exit /b
 
 cd %WORKSPACE%\
-if not exist %WORKSPACE%\release (
-  echo Creating %WORKSPACE\release
-  mkdir %WORKSPACE%\release
+if not exist %STAGE_DIR% (
+  echo Creating %STAGE_DIR%
+  mkdir %STAGE_DIR%
 )
-del /q %WORKSPACE%\release
+del /q %STAGE_DIR%
 del wwiv-build-*.zip
 
 echo:
 echo * Creating Menus (EN)
 cd %WORKSPACE%\bbs\admin\menus\en
-%ZIP_EXE% a -tzip -r %WORKSPACE%\release\en-menus.zip *
+%ZIP_EXE% a -tzip -r %STAGE_DIR%\en-menus.zip *
 
 echo:
 echo * Creating Regions
 cd %WORKSPACE%\bbs\admin
-%ZIP_EXE% a -tzip -r %WORKSPACE%\release\zip-city.zip zip-city\*
-%ZIP_EXE% a -tzip -r %WORKSPACE%\release\regions.zip regions\*
+%ZIP_EXE% a -tzip -r %STAGE_DIR%\zip-city.zip zip-city\*
+%ZIP_EXE% a -tzip -r %STAGE_DIR%\regions.zip regions\*
 
 cd %WORKSPACE%\
 echo:
 echo * Copying BBS files to staging directory.
-copy /v/y %WORKSPACE%\deps\cl342\Release\cl32.dll %WORKSPACE%\release\cl32.dll || exit /b
-copy /v/y %WORKSPACE%\bbs\Release\bbs.exe %WORKSPACE%\release\bbs.exe || exit /b
-copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\release\WWIV5TelnetServer.exe %WORKSPACE%\release\WWIV5TelnetServer.exe || exit /b
-copy /v/y %WORKSPACE%\windows-wwiv-update\bin\Release\wwiv-update.exe %WORKSPACE%\release\wwiv-update.exe || exit /b
-copy /v/y %WORKSPACE%\init\Release\init.exe %WORKSPACE%\release\init.exe || exit /b
-copy /v/y %WORKSPACE%\network\Release\network.exe %WORKSPACE%\release\network.exe || exit /b
-copy /v/y %WORKSPACE%\networkb\Release\networkb.exe %WORKSPACE%\release\networkb.exe || exit /b
-copy /v/y %WORKSPACE%\wwivutil\Release\wwivutil.exe %WORKSPACE%\release\wwivutil.exe || exit /b
-copy /v/y %WORKSPACE%\bbs\admin\* %WORKSPACE%\release\
-copy /v/y %WORKSPACE%\bbs\admin\win32\* %WORKSPACE%\release\
+copy /v/y %WORKSPACE%\Release\cl32.dll %STAGE_DIR%\cl32.dll || exit /b
+copy /v/y %WORKSPACE%\Release\bbs.exe %STAGE_DIR%\bbs.exe || exit /b
+copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\Release\WWIV5TelnetServer.exe %STAGE_DIR%\WWIV5TelnetServer.exe || exit /b
+copy /v/y %WORKSPACE%\windows-wwiv-update\bin\Release\wwiv-update.exe %STAGE_DIR%\wwiv-update.exe || exit /b
+copy /v/y %WORKSPACE%\Release\init.exe %STAGE_DIR%\init.exe || exit /b
+copy /v/y %WORKSPACE%\Release\network.exe %STAGE_DIR%\network.exe || exit /b
+copy /v/y %WORKSPACE%\Release\networkb.exe %STAGE_DIR%\networkb.exe || exit /b
+copy /v/y %WORKSPACE%\Release\wwivutil.exe %STAGE_DIR%\wwivutil.exe || exit /b
+copy /v/y %WORKSPACE%\bbs\admin\* %STAGE_DIR%\
+copy /v/y %WORKSPACE%\bbs\admin\win32\* %STAGE_DIR%\
 
 echo:
 echo * Copying WINS files to staging area
 set WINS=%WORKSPACE%\wins
-copy /v/y %WINS%\exp\Release\exp.exe %WORKSPACE%\release\exp.exe || exit /b
-copy /v/y %WINS%\networkp\Release\networkp.exe %WORKSPACE%\release\networkp.exe || exit /b
-copy /v/y %WINS%\news\Release\news.exe %WORKSPACE%\release\news.exe || exit /b
-copy /v/y %WINS%\pop\Release\pop.exe %WORKSPACE%\release\pop.exe || exit /b
-copy /v/y %WINS%\pppurge\Release\pppurge.exe %WORKSPACE%\release\pppurge.exe || exit /b
-copy /v/y %WINS%\ppputil\Release\ppputil.exe %WORKSPACE%\release\ppputil.exe || exit /b
-copy /v/y %WINS%\qotd\Release\qotd.exe %WORKSPACE%\release\qotd.exe || exit /b
-copy /v/y %WINS%\uu\Release\uu.exe %WORKSPACE%\release\uu.exe || exit /b
+copy /v/y %WINS%\exp\Release\exp.exe %STAGE_DIR%\exp.exe || exit /b
+copy /v/y %WINS%\networkp\Release\networkp.exe %STAGE_DIR%\networkp.exe || exit /b
+copy /v/y %WINS%\news\Release\news.exe %STAGE_DIR%\news.exe || exit /b
+copy /v/y %WINS%\pop\Release\pop.exe %STAGE_DIR%\pop.exe || exit /b
+copy /v/y %WINS%\pppurge\Release\pppurge.exe %STAGE_DIR%\pppurge.exe || exit /b
+copy /v/y %WINS%\ppputil\Release\ppputil.exe %STAGE_DIR%\ppputil.exe || exit /b
+copy /v/y %WINS%\qotd\Release\qotd.exe %STAGE_DIR%\qotd.exe || exit /b
+copy /v/y %WINS%\uu\Release\uu.exe %STAGE_DIR%\uu.exe || exit /b
 
 echo:
 echo * Copying WINS sample filesto staging area
-copy /v/y %WINS%\admin\* %WORKSPACE%\release\
+copy /v/y %WINS%\admin\* %STAGE_DIR%\
 
 echo:
 echo * Copying INFOZIP files to staging area
 set INFOZIP=%WORKSPACE%\deps\infozip
 dir %INFOZIP%\unzip60\win32\vc8\unzip__Win32_Release\unzip.exe
 dir %INFOZIP%\zip30\win32\vc6\zip___Win32_Release\zip.exe
-copy /v/y %INFOZIP%\unzip60\win32\vc8\unzip__Win32_Release\unzip.exe %WORKSPACE%\release\unzip.exe
-copy /v/y %INFOZIP%\zip30\win32\vc6\zip___Win32_Release\zip.exe %WORKSPACE%\release\zip.exe
+copy /v/y %INFOZIP%\unzip60\win32\vc8\unzip__Win32_Release\unzip.exe %STAGE_DIR%\unzip.exe
+copy /v/y %INFOZIP%\zip30\win32\vc6\zip___Win32_Release\zip.exe %STAGE_DIR%\zip.exe
 
 
 echo:
@@ -137,7 +139,7 @@ echo Build: 5.1.0.%BUILD_NUMBER% >> release\build.nfo
 
 echo:
 echo * Creating release archive: %RELEASE_ZIP%
-cd %WORKSPACE%\release
+cd %STAGE_DIR%
 %ZIP_EXE% a -tzip -y %RELEASE_ZIP%
 
 echo:
