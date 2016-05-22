@@ -398,7 +398,7 @@ void CreateDoorSysDropFile() {
             GetMinutesRemainingForDropFile());
     file.WriteFormatted(szLine);
     string ansiStatus = (okansi()) ? "GR" : "NG";
-    sprintf(szLine, "%s\n%u\n%c\n%s\n%d\n%s\n%d\n%c\n%u\n%u\n%u\n%u\n",
+    sprintf(szLine, "%s\n%u\n%c\n%s\n%lu\n%s\n%u\n%c\n%u\n%u\n%u\n%d\n",
             ansiStatus.c_str(),
             session()->user()->GetScreenLines(),
             session()->user()->IsExpert() ? 'Y' : 'N',
@@ -410,7 +410,7 @@ void CreateDoorSysDropFile() {
             session()->user()->GetFilesUploaded(),
             session()->user()->GetFilesDownloaded(),
             0,                              // kb dl today
-            0);                             // kb dl/day max
+            0);                            // kb dl/day max
     file.WriteFormatted(szLine);
     char szDate[21], szTemp[81];
     strcpy(szDate, "00/00/00");
