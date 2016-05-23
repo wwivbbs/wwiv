@@ -176,7 +176,7 @@ void modify_dir(int n) {
         File dir(s);
         if (!dir.Exists()) {
           session()->CdHome();
-          if (File::mkdirs(dir)) {
+          if (!File::mkdirs(dir)) {
             bout << "|#6Unable to create or change to directory." << wwiv::endl;
             pausescr();
             s[0] = 0;
