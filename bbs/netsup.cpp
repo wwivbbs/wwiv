@@ -493,14 +493,14 @@ bool attempt_callout() {
         uint64_t time_weight = tCurrentTime - ncn[ncn_index].lasttry;
 
         if (ncn[ncn_index].bytes_waiting == 0L) {
-          if (to_call.at(i).weight_ < time_weight) {
-            to_call[i] = NodeAndWeight( 
+          if (to_call.at(nNetNumber).weight_ < time_weight) {
+            to_call[nNetNumber] = NodeAndWeight(
               nNetNumber, session()->current_net().con[i].sysnum, time_weight);
           }
         } else {
           uint64_t bytes_weight = ncn[ncn_index].bytes_waiting * 60 + time_weight;
-          if (to_call.at(i).weight_ < bytes_weight) {
-            to_call[i] = NodeAndWeight(
+          if (to_call.at(nNetNumber).weight_ < bytes_weight) {
+            to_call[nNetNumber] = NodeAndWeight(
               nNetNumber, session()->current_net().con[i].sysnum, bytes_weight);
           }
         }
