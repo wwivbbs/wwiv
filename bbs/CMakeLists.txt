@@ -82,6 +82,7 @@ set(COMMON_SOURCES
  qwk1.cpp
  readmail.cpp
  read_message.cpp
+ remote_socket_io.cpp
  shortmsg.cpp
  showfiles.cpp
  smallrecord.cpp

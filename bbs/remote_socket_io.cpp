@@ -21,6 +21,8 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #pragma comment(lib, "Ws2_32.lib")
 #include "WS2tcpip.h"
+// Really windows?
+typedef int socklen_t;
 #else
 
 #include <arpa/inet.h>
@@ -32,6 +34,7 @@ typedef int HANDLE;
 typedef int SOCKET;
 constexpr int SOCKET_ERROR = -1;
 #define SOCKADDR_IN sockaddr_in
+#define SOCKADDR sockaddr
 #define closesocket(s) close(s)
 #endif  // _WIN32
 
@@ -39,7 +42,6 @@ constexpr int SOCKET_ERROR = -1;
 
 #include <iostream>
 #include <memory>
-#include <process.h>
 
 #include "sdk/user.h"
 #include "bbs/platform/platformfcns.h"
@@ -123,7 +125,7 @@ bool RemoteSocketIO::open() {
   StartThreads();
 
   SOCKADDR_IN addr;
-  int nAddrSize = sizeof(SOCKADDR);
+  socklen_t nAddrSize = sizeof(SOCKADDR);
 
   getpeername(socket_, reinterpret_cast<SOCKADDR *>(&addr), &nAddrSize);
 
@@ -182,22 +184,12 @@ unsigned int RemoteSocketIO::put(unsigned char ch) {
     szBuffer[1] = ch;
   }
 
-  for (;;) {
-    int nRet = send(socket_, reinterpret_cast<char*>(szBuffer),
-        strlen(reinterpret_cast<char*>(szBuffer)), 0);
-    if (nRet == SOCKET_ERROR) {
-      if (WSAGetLastError() != WSAEWOULDBLOCK) {
-        if (WSAGetLastError() != WSAENOTSOCK) {
-          clog << "DEBUG: ERROR on send from put() [" << WSAGetLastError() << "] [#" 
-               << static_cast<int> (ch) << "]" << endl;
-        }
-        return 0;
-      }
-    } else {
-      return nRet;
-    }
-    ::Sleep(0);
+  int num_sent = send(socket_, reinterpret_cast<char*>(szBuffer),
+		      strlen(reinterpret_cast<char*>(szBuffer)), 0);
+  if (num_sent == SOCKET_ERROR) {
+    return 0;
   }
+  return num_sent;
 }
 
 unsigned char RemoteSocketIO::getW() {
@@ -277,20 +269,11 @@ unsigned int RemoteSocketIO::write(const char *buffer, unsigned int count, bool 
     memcpy(tmp_buffer.get(), buffer, count);
   }
 
-  for (;;) {
-    int nRet = send(socket_, tmp_buffer.get(), nCount, 0);
-    if (nRet == SOCKET_ERROR) {
-      if (WSAGetLastError() != WSAEWOULDBLOCK) {
-        if (WSAGetLastError() != WSAENOTSOCK) {
-          clog << "DEBUG: in write(), expected to send " << count << " character(s), actually sent " << nRet << endl;
-        }
-        return 0;
-      }
-    } else {
-      return nRet;
-    }
-    yield();
+  int num_sent = send(socket_, tmp_buffer.get(), nCount, 0);
+  if (num_sent == SOCKET_ERROR) {
+    return 0;
   }
+  return num_sent;
 }
 
 bool RemoteSocketIO::carrier() {
@@ -455,16 +438,14 @@ void RemoteSocketIO::AddStringToInputBuffer(int nStart, int nEnd, char *buffer) 
         HandleTelnetIAC(buffer[i + 1], buffer[i + 2]);
         i += 2;
       } else {
-        ::OutputDebugString("WHAT THE HECK?!?!?!? 255 w/o any options or anything\r\n");
+        // ::OutputDebugString("WHAT THE HECK?!?!?!? 255 w/o any options or anything\r\n");
       }
     } else if (bBinaryMode || buffer[i] != '\0') {
       // I think the nulls in the input buffer were being bad... RF20020906
       // This fixed the problem of telnetting with CRT to a linux machine and then telnetting from
       // that linux box to the bbs... Hopefully this will fix the Win9x built-in telnet client as
-      // well as TetraTERM
+      // well as TetraTERM.
       queue_.push(buffer[i]);
-    } else {
-      ::OutputDebugString("buffer had a null\r\n");
     }
   }
 }
