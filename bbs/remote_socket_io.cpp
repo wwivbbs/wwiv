@@ -20,6 +20,19 @@
 // work around error using inet_ntoa on build machine.
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #pragma comment(lib, "Ws2_32.lib")
+#include "WS2tcpip.h"
+#else
+
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+typedef int HANDLE;
+typedef int SOCKET;
+constexpr int SOCKET_ERROR = -1;
+#define SOCKADDR_IN sockaddr_in
+#define closesocket(s) close(s)
 #endif  // _WIN32
 
 #include "bbs/remote_socket_io.h"
@@ -38,11 +51,39 @@
 #include "core/wwivassert.h"
 
 
+using std::chrono::milliseconds;
 using std::clog;
 using std::endl;
+using std::lock_guard;
+using std::make_unique;
+using std::mutex;
 using std::string;
+using std::thread;
 using std::unique_ptr;
+using wwiv::core::ScopeExit;
+using wwiv::os::sleep_for;
+using wwiv::os::yield;
 using namespace wwiv::strings;
+
+struct socket_error: public std::runtime_error {
+  socket_error(const string& message): std::runtime_error(message) {}
+};
+
+static bool socket_avail(SOCKET sock, int seconds) {
+  fd_set fds;
+  FD_ZERO(&fds);
+  FD_SET(sock, &fds);
+
+  timeval tv;
+  tv.tv_sec = seconds;
+  tv.tv_usec = 0;
+
+  int result = select(sock + 1, &fds, 0, 0, &tv);
+  if (result == SOCKET_ERROR) {
+    throw socket_error("Error on select for socket.");
+  }
+  return result == 1;
+}
 
 RemoteSocketIO::RemoteSocketIO(int socket_handle, bool telnet)
   : socket_(static_cast<SOCKET>(socket_handle)), telnet_(telnet) {
@@ -50,9 +91,8 @@ RemoteSocketIO::RemoteSocketIO(int socket_handle, bool telnet)
   // initialized once.
   static bool once = RemoteSocketIO::Initialize();
 
-  // Make sure our signal event is not set to the "signaled" state
-  stop_event_ = CreateEvent(nullptr, true, false, nullptr);
-  clog << "Created Stop Event: " << GetLastErrorText() << endl;
+  // Make sure our signal event is not set to the "signaled" state.
+  stop_.store(false);
 
   if (socket_handle == 0) {
     // This means we don't have a real socket handle, for example running in local mode.
@@ -261,7 +301,7 @@ bool RemoteSocketIO::incoming() {
   // Early return on invalid sockets.
   if (!valid_socket()) { return false; }
 
-  std::lock_guard<std::mutex> lock(mu_);
+  lock_guard<mutex> lock(mu_);
   bool bRet = (queue_.size() > 0);
   return bRet;
 }
@@ -270,12 +310,8 @@ void RemoteSocketIO::StopThreads() {
   if (!threads_started_) {
     return;
   }
-  if (!SetEvent(stop_event_)) {
-    const string error_text = GetLastErrorText();
-    clog << "RemoteSocketIO::StopThreads: Error with SetEvent " << GetLastError() 
-         << " - '" << error_text << "'" << endl;
-  }
-  ::Sleep(0);
+  stop_.store(true);
+  yield();
 
   // Wait for read thread to exit.
   read_thread_.join();
@@ -287,26 +323,23 @@ void RemoteSocketIO::StartThreads() {
     return;
   }
 
-  if (!ResetEvent(stop_event_)) {
-    const string error_text = GetLastErrorText();
-    clog << "RemoteSocketIO::StartThreads: Error with ResetEvent " << GetLastError()
-         << " - '" << error_text << "'" << endl;
-  }
-
-  read_thread_ = std::thread([this]() { InboundTelnetProc(this); });
+  stop_.store(false);
+  read_thread_ = thread([this]() { InboundTelnetProc(this); });
   threads_started_ = true;
 }
 
 RemoteSocketIO::~RemoteSocketIO() {
   StopThreads();
-  CloseHandle(stop_event_);
-  stop_event_ = INVALID_HANDLE_VALUE;
+
+#ifdef _WIN32
   WSACleanup();
+#endif  // _WIN32
 }
 
 // Static Class Members.
 
 bool RemoteSocketIO::Initialize() {
+#ifdef _WIN32
   WSADATA wsaData;
   int err = WSAStartup(0x0101, &wsaData);
 
@@ -333,83 +366,47 @@ bool RemoteSocketIO::Initialize() {
     }
   }
   return err == 0;
+#else 
+  return true;
+#endif
 }
 
 void RemoteSocketIO::InboundTelnetProc(void* v) {
   RemoteSocketIO* pTelnet = static_cast<RemoteSocketIO*>(v);
-  WSANETWORKEVENTS events;
-  char szBuffer[4096];
-  bool bDone = false;
+  constexpr size_t size = 4 * 1024;
+  unique_ptr<char[]> data = make_unique<char[]>(size);
 
-  wwiv::core::ScopeExit at_exit_socket([&pTelnet] {
+  ScopeExit at_exit_socket([&pTelnet] {
     if (pTelnet->socket_ == INVALID_SOCKET) {
       closesocket(pTelnet->socket_);
       pTelnet->socket_ = INVALID_SOCKET;
     }
   });
 
-  WSAEVENT hEvent = WSACreateEvent();
-  int nRet = WSAEventSelect(pTelnet->socket_, hEvent, FD_READ | FD_CLOSE);
-  if (nRet != 0) {
-    // Error creating the Select Event.
-    clog << "Error creating WSAEventSelect" << endl;
-    return;
-  }
-
-  wwiv::core::ScopeExit at_exit_event([=] {
-    WSACloseEvent(hEvent);
-  });
-
-  HANDLE hArray[2];
-  hArray[0] = hEvent;
-  hArray[1] = pTelnet->stop_event_;
-
-  while (!bDone) {
-    DWORD dwWaitRet = WSAWaitForMultipleEvents(2, hArray, false, 10000, false);
-    if (dwWaitRet == (WSA_WAIT_EVENT_0 + 1)) {
-      if (!ResetEvent(pTelnet->stop_event_)) {
-        const string error_text = GetLastErrorText();
-        clog << "RemoteSocketIO::InboundTelnetProc: Error with ResetEvent " 
-             << GetLastError() << " - '" << error_text << "'" << endl;
-      }
-
-      bDone = true;
+  bool local_done = false;
+  while (!local_done) {
+    if (pTelnet->stop_.load()) {
+      local_done = true;
       break;
     }
-    nRet = WSAEnumNetworkEvents(pTelnet->socket_, hEvent, &events);
-    if (nRet == SOCKET_ERROR) {
-      bDone = true;
+    if (!socket_avail(pTelnet->socket_, 1)) {
+      continue;
+    }
+    memset(data.get(), 0, size);
+    int num_read = recv(pTelnet->socket_, data.get(), size, 0);
+    if (num_read == SOCKET_ERROR) {
+      local_done = true;
       break;
     }
-    if (events.lNetworkEvents & FD_READ) {
-      memset(szBuffer, 0, 4096);
-      nRet = recv(pTelnet->socket_, szBuffer, sizeof(szBuffer), 0);
-      if (nRet == SOCKET_ERROR) {
-        if (WSAGetLastError() != WSAEWOULDBLOCK) {
-          // Error or the socket was closed.
-          pTelnet->socket_ = INVALID_SOCKET;
-          bDone = true;
-          break;
-        }
-      } else if (nRet == 0) {
-        pTelnet->socket_ = INVALID_SOCKET;
-        bDone = true;
-        break;
-      }
-      szBuffer[nRet] = '\0';
+    data[num_read] = '\0';
 
-      // Add the data to the input buffer
-      int nNumSleeps = 0;
-      while ((pTelnet->queue_.size() > 32678) && (nNumSleeps++ <= 10) && !bDone) {
-        ::Sleep(100);
-      }
-
-      pTelnet->AddStringToInputBuffer(0, nRet, szBuffer);
-    } else if (events.lNetworkEvents & FD_CLOSE) {
-      bDone = true;
-      pTelnet->socket_ = INVALID_SOCKET;
-      break;
+    // Add the data to the input buffer
+    int nNumSleeps = 0;
+    while ((pTelnet->queue_.size() > 32678) && (nNumSleeps++ <= 10) && !local_done) {
+      sleep_for(milliseconds(100));
     }
+
+    pTelnet->AddStringToInputBuffer(0, num_read, data.get());
   }
 }
 
@@ -459,7 +456,7 @@ void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
 
 void RemoteSocketIO::AddStringToInputBuffer(int nStart, int nEnd, char *buffer) {
   WWIV_ASSERT(buffer);
-  std::lock_guard<std::mutex> lock(mu_);
+  lock_guard<mutex> lock(mu_);
 
   bool bBinaryMode = binary_mode();
   for (int i = nStart; i < nEnd; i++) {

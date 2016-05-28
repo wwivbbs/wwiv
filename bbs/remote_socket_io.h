@@ -21,6 +21,7 @@
 
 #include "bbs/remote_io.h"
 
+#include <atomic>
 #include <cstdint>
 #include <mutex>
 #include <queue>
@@ -92,7 +93,7 @@ class RemoteSocketIO : public RemoteIO {
   mutable std::mutex mu_;
   SOCKET socket_ = INVALID_SOCKET;
   std::thread read_thread_;
-  HANDLE stop_event_ = 0;
+  std::atomic<bool> stop_;
   bool threads_started_ = false;
   bool telnet_ = true;
 };
