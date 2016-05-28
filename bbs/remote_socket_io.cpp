@@ -254,7 +254,7 @@ unsigned int RemoteSocketIO::write(const char *buffer, unsigned int count, bool 
   // Early return on invalid sockets.
   if (!valid_socket()) { return 0; }
 
-  unique_ptr<char[]> tmp_buffer(new char[count * 2 + 100]);
+  unique_ptr<char[]> tmp_buffer = make_unique<char[]>(count * 2 + 100);
   memset(tmp_buffer.get(), 0, count * 2 + 100);
   int nCount = count;
 
@@ -289,7 +289,7 @@ unsigned int RemoteSocketIO::write(const char *buffer, unsigned int count, bool 
     } else {
       return nRet;
     }
-    ::Sleep(0);
+    yield();
   }
 }
 
@@ -302,8 +302,7 @@ bool RemoteSocketIO::incoming() {
   if (!valid_socket()) { return false; }
 
   lock_guard<mutex> lock(mu_);
-  bool bRet = (queue_.size() > 0);
-  return bRet;
+  return !queue_.empty();
 }
 
 void RemoteSocketIO::StopThreads() {
@@ -316,6 +315,10 @@ void RemoteSocketIO::StopThreads() {
   // Wait for read thread to exit.
   read_thread_.join();
   threads_started_ = false;
+  if (socket_ == INVALID_SOCKET) {
+    closesocket(socket_);
+    socket_ = INVALID_SOCKET;
+  }
 }
 
 void RemoteSocketIO::StartThreads() {
@@ -324,7 +327,7 @@ void RemoteSocketIO::StartThreads() {
   }
 
   stop_.store(false);
-  read_thread_ = thread([this]() { InboundTelnetProc(this); });
+  read_thread_ = thread(&RemoteSocketIO::InboundTelnetProc, this);
   threads_started_ = true;
 }
 
@@ -371,84 +374,62 @@ bool RemoteSocketIO::Initialize() {
 #endif
 }
 
-void RemoteSocketIO::InboundTelnetProc(void* v) {
-  RemoteSocketIO* pTelnet = static_cast<RemoteSocketIO*>(v);
+void RemoteSocketIO::InboundTelnetProc() {
   constexpr size_t size = 4 * 1024;
   unique_ptr<char[]> data = make_unique<char[]>(size);
 
-  ScopeExit at_exit_socket([&pTelnet] {
-    if (pTelnet->socket_ == INVALID_SOCKET) {
-      closesocket(pTelnet->socket_);
-      pTelnet->socket_ = INVALID_SOCKET;
+  while (true) {
+    if (stop_.load()) {
+      return;
     }
-  });
-
-  bool local_done = false;
-  while (!local_done) {
-    if (pTelnet->stop_.load()) {
-      local_done = true;
-      break;
-    }
-    if (!socket_avail(pTelnet->socket_, 1)) {
+    if (!socket_avail(socket_, 1)) {
       continue;
     }
-    memset(data.get(), 0, size);
-    int num_read = recv(pTelnet->socket_, data.get(), size, 0);
+    int num_read = recv(socket_, data.get(), size, 0);
     if (num_read == SOCKET_ERROR) {
-      local_done = true;
-      break;
+      return;
     }
-    data[num_read] = '\0';
-
-    // Add the data to the input buffer
-    int nNumSleeps = 0;
-    while ((pTelnet->queue_.size() > 32678) && (nNumSleeps++ <= 10) && !local_done) {
-      sleep_for(milliseconds(100));
-    }
-
-    pTelnet->AddStringToInputBuffer(0, num_read, data.get());
+    AddStringToInputBuffer(0, num_read, data.get());
   }
 }
 
 void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   // We should probably start responding to the DO and DONT options....
-  ::OutputDebugString("HandleTelnetIAC: ");
-
   switch (nCmd) {
   case TELNET_OPTION_NOP: {
-    ::OutputDebugString("TELNET_OPTION_NOP\n");
+    // TELNET_OPTION_NOP
   }
   break;
   case TELNET_OPTION_BRK: {
-    ::OutputDebugString("TELNET_OPTION_BRK\n");
+    // TELNET_OPTION_BRK;
   }
   break;
   case TELNET_OPTION_WILL: {
-    const string s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WILL", nParam);
-    ::OutputDebugString(s.c_str());
+    // const string s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WILL", nParam);
+    // ::OutputDebugString(s.c_str());
   }
   break;
   case TELNET_OPTION_WONT: {
-    const string s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WONT", nParam);
-    ::OutputDebugString(s.c_str());
+    // const string s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WONT", nParam);
+    // ::OutputDebugString(s.c_str());
   }
   break;
   case TELNET_OPTION_DO: {
-    const string do_s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DO", nParam);
-    ::OutputDebugString(do_s.c_str());
+    // const string do_s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DO", nParam);
+    // ::OutputDebugString(do_s.c_str());
     switch (nParam) {
     case TELNET_OPTION_SUPPRESSS_GA: {
       const string will_s = StringPrintf("%c%c%c", TELNET_OPTION_IAC, TELNET_OPTION_WILL, TELNET_OPTION_SUPPRESSS_GA);
       write(will_s.c_str(), 3, true);
-      ::OutputDebugString("Sent TELNET IAC WILL SUPPRESSS GA\r\n");
+      // Sent TELNET IAC WILL SUPPRESSS GA
     }
     break;
     }
   }
   break;
   case TELNET_OPTION_DONT: {
-    const string dont_s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DONT", nParam);
-    ::OutputDebugString(dont_s.c_str());
+    // const string dont_s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DONT", nParam);
+    // ::OutputDebugString(dont_s.c_str());
   }
   break;
   }
@@ -456,6 +437,12 @@ void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
 
 void RemoteSocketIO::AddStringToInputBuffer(int nStart, int nEnd, char *buffer) {
   WWIV_ASSERT(buffer);
+
+  // Add the data to the input buffer
+  for (int num_sleeps = 0; num_sleeps < 10 && queue_.size() > 32678; ++num_sleeps) {
+    sleep_for(milliseconds(100));
+  }
+
   lock_guard<mutex> lock(mu_);
 
   bool bBinaryMode = binary_mode();

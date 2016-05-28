@@ -83,12 +83,11 @@ class RemoteSocketIO : public RemoteIO {
   unsigned int GetDoorHandle() const;
   bool valid_socket() const { return (socket_ != INVALID_SOCKET); }
 
- protected:
+ private:
   void HandleTelnetIAC(unsigned char nCmd, unsigned char nParam);
   void AddStringToInputBuffer(int nStart, int nEnd, char* buffer);
-  static void InboundTelnetProc(void* pTelnet);
+  void InboundTelnetProc();
 
- protected:
   std::queue<char> queue_;
   mutable std::mutex mu_;
   SOCKET socket_ = INVALID_SOCKET;
