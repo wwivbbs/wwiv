@@ -7,6 +7,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(Common)
 include(FindASan)
 
+add_subdirectory(deps/cl342)
 add_subdirectory(deps/googletest-master/googletest)
 add_subdirectory(core)
 add_subdirectory(core_test)

@@ -265,6 +265,7 @@ static bool socket_avail(SOCKET sock, int seconds) {
   }
   return result == 1;
 }
+
 // Reads from remote socket using session, writes to socket
 static void reader_thread(SSHSession& session, SOCKET socket) {
   constexpr size_t size = 16 * 1024;
