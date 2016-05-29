@@ -23,7 +23,8 @@ What's New in WWIV 5.1 (2016)
 * The two laston lists in WWIV have been merged into one.  Now last few
   callers will always display the last few callers regardless of the 
   day they called.
-
+* Added -XU command line type for UNIX communication type. On UNIX we
+  temporarily use that type by default for now.
 
 What's New in WWIV 5.1 (2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

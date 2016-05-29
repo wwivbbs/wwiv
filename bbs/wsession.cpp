@@ -139,10 +139,6 @@ bool WSession::reset_local_io(LocalIO* wlocal_io) {
 }
 
 void WSession::CreateComm(unsigned int nHandle, CommunicationType type) {
-#ifdef __unix__
-  comm_.reset(new WIOUnix());
-  return;
-#endif
   switch (type) {
   case CommunicationType::SSH:
   {
@@ -160,6 +156,14 @@ void WSession::CreateComm(unsigned int nHandle, CommunicationType type) {
   case CommunicationType::TELNET:
   {
     comm_.reset(new RemoteSocketIO(nHandle, true));
+  } break;
+  case CommunicationType::UNIX:
+  {
+#ifdef __unix__
+  comm_.reset(new WIOUnix());
+#else
+  comm_.reset(new NullRemoteIO());
+#endif
   } break;
   case CommunicationType::NONE:
   {
@@ -989,6 +993,11 @@ int WSession::Run(int argc, char *argv[]) {
   bool ooneuser = false;
   bool event_only = false;
   CommunicationType type = CommunicationType::NONE;
+#ifdef __unix__
+  // Default to the UNIX type by default on UNIX.
+  type = CommunicationType::UNIX;
+#endif
+  
   unsigned int hSockOrComm = 0;
 
   curatr = 0x07;
@@ -1128,6 +1137,8 @@ int WSession::Run(int argc, char *argv[]) {
             //cout << "Waiting for debugger" << endl;
             //getchar();
           }
+        } else if (argument2Char == 'U') {
+        	type = CommunicationType::UNIX;
         } else {
           clog << "Invalid Command line argument given '" << argumentRaw << "'" << std::endl;
           exit(m_nErrorLevel);

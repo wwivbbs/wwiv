@@ -75,8 +75,7 @@ static bool launchNode(const Config& config, int node_number) {
          << errno << endl;
   }
   semaphore_file.Close();
-  // TODO(rushfan): Remove /I since we only need one of these.
-  const string cmd = StringPrintf("./%s /N%u /I%u", BBS_BINARY, node_number, node_number);
+  const string cmd = StringPrintf("./%s -N%u -XU", BBS_BINARY, node_number);
 
   clog << "Invoking WWIV with command line:" << cmd << endl;
   pid_t child_pid = fork();
@@ -142,7 +141,7 @@ int main(int argc, char *argv[])
   cout << "Found " << used_nodes << "/" << num_instances << " Nodes in use." << endl;
 
   // Find open node number.
-  for(int node = 1; node <= num_instances; node++) {
+  for (int node = 1; node <= num_instances; node++) {
     if (!node_file(config, node).Exists()) {
       launchNode(config, node);
       clog << "Exiting" << endl;

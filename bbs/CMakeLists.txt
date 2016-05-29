@@ -142,6 +142,7 @@ if(UNIX)
 	platform/unix/exec.cpp 
 	platform/unix/utility2.cpp 
 	platform/unix/wiou.cpp)
+  find_package (Threads)
   if(APPLE)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} platform/osx/macversioninfo.mm)
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation -framework Foundation")
@@ -150,6 +151,6 @@ if(UNIX)
 endif()
 
 add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 
-target_link_libraries(bbs_lib initlib core sdk)
+target_link_libraries(bbs_lib initlib core sdk ${CL342_LIB} ${CMAKE_THREAD_LIBS_INIT})
 add_executable(bbs ${BBS_MAIN})
 target_link_libraries(bbs bbs_lib)
