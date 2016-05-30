@@ -57,6 +57,13 @@ fi
 echo "Building binaries"
 cd ${WORKSPACE}
 sed -i -e "s@.development@.${BUILD_NUMBER}@" core/version.cpp
+
+echo "Compiling dependencies that are not CMake friendly"
+pushd deps/cl342
+make -j12
+popd > /dev/null
+
+echo "Compiling Everything"
 cmake -DCMAKE_BUILD_TYPE:STRING=Debug
 make -j12 
 
