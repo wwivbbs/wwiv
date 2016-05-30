@@ -238,9 +238,7 @@ void run_event(int evnt) {
   int exitlevel;
 
   write_inst(INST_LOC_EVENT, 0, INST_FLAGS_NONE);
-#ifndef __unix__
   session()->localIO()->SetCursor(LocalIO::cursorNormal);
-#endif
   bout.cls();
   bout << "\r\nNow running external event.\r\n\n";
   if (events[evnt].status & EVENT_EXIT) {
@@ -254,9 +252,7 @@ void run_event(int evnt) {
   do_event = 0;
   get_next_forced_event();
   cleanup_net();
-#ifndef __unix__
   wfc_cls();
-#endif
 }
 
 void show_events() {

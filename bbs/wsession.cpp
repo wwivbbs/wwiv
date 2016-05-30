@@ -162,6 +162,7 @@ void WSession::CreateComm(unsigned int nHandle, CommunicationType type) {
 #ifdef __unix__
   comm_.reset(new WIOUnix());
 #else
+  // TODO(rushfan): Should we warn here?
   comm_.reset(new NullRemoteIO());
 #endif
   } break;

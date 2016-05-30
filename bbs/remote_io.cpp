@@ -18,20 +18,15 @@
 /**************************************************************************/
 // Always declare wwiv_windows.h first to avoid collisions on defines.
 #include "bbs/wwiv_windows.h"
-
 #include "bbs/remote_io.h"
 
-#include "core/wwivport.h"
-
-#if defined ( _WIN32 )
-#include "bbs/remote_socket_io.h"
-#include "bbs/ssh.h"
-#elif defined ( __unix__ )
-#include "bbs/platform/unix/wiou.h"
-#endif
+#include <string>
 
 #include "core/scope_exit.h"
+#include "core/strings.h"
 #include "core/wwivport.h"
+#include "bbs/remote_socket_io.h"
+#include "bbs/ssh.h"
 
 // static
 std::string RemoteIO::error_text_;
@@ -53,6 +48,8 @@ const std::string RemoteIO::GetLastErrorText() {
     nullptr
   );
   error_text_.assign(error_text);
+#else
+  return wwiv::strings::StringPrintf("errno: %d", errno);
 #endif
   return error_text_;
 }
