@@ -113,7 +113,7 @@ auto getkey_f = []() { getkey(); };
 
 ControlCenter::ControlCenter() {
   const string title = StringPrintf("WWIV %s%s Server.", wwiv_version, beta_version);
-  CursesIO::Init(title);
+  //  CursesIO::Init(title);
   // take ownership of out.
   out_scope_.reset(out);
   session()->SetWfcStatus(0);
@@ -335,8 +335,6 @@ void ControlCenter::UpdateLog() {
 
 // Legacy WFC
 
-#if !defined ( __unix__ )
-
 // Local Functions
 static char* pszScreenBuffer = nullptr;
 
@@ -483,4 +481,3 @@ void wfc_screen() {
   }
 }
 
-#endif // __unix__
