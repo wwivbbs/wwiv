@@ -41,8 +41,8 @@
 #include "core/file.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "initlib/curses_io.h"
-#include "initlib/curses_win.h"
+#include "localui/curses_io.h"
+#include "localui/curses_win.h"
 
 using std::string;
 using namespace wwiv::strings;

@@ -30,7 +30,7 @@
 #include "curses.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "initlib/curses_io.h"
+#include "localui/curses_io.h"
 
 using std::unique_ptr;
 using std::string;

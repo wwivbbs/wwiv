@@ -60,9 +60,9 @@
 #include "init/wwivinit.h"
 #include "init/utility.h"
 
-#include "initlib/input.h"
-#include "initlib/curses_io.h"
-#include "initlib/listbox.h"
+#include "localui/input.h"
+#include "localui/curses_io.h"
+#include "localui/listbox.h"
 
 #include "sdk/filenames.h"
 

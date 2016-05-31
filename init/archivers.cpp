@@ -37,8 +37,8 @@
 #include "core/file.h"
 #include "core/wwivport.h"
 #include "bbs/wconstants.h" // for MAX_ARCHIVERS
-#include "initlib/input.h"
-#include "initlib/listbox.h"
+#include "localui/input.h"
+#include "localui/listbox.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
 #include "sdk/filenames.h"

@@ -30,8 +30,8 @@
 
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "initlib/curses_io.h"
-#include "initlib/curses_win.h"
+#include "localui/curses_io.h"
+#include "localui/curses_win.h"
 #include "init/utility.h"
 
 #define NUM_ONLY            1

@@ -151,6 +151,6 @@ if(UNIX)
 endif()
 
 add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 
-target_link_libraries(bbs_lib initlib core sdk ${CL342_LIB} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(bbs_lib localui core sdk ${CL342_LIB} ${CMAKE_THREAD_LIBS_INIT})
 add_executable(bbs ${BBS_MAIN})
 target_link_libraries(bbs bbs_lib)

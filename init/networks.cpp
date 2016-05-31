@@ -33,8 +33,8 @@
 #include <sys/stat.h>
 
 #include "init/init.h"
-#include "initlib/input.h"
-#include "initlib/listbox.h"
+#include "localui/input.h"
+#include "localui/listbox.h"
 #include "core/strings.h"
 #include "core/datafile.h"
 #include "core/file.h"

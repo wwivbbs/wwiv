@@ -25,7 +25,7 @@
 
 #include "curses.h"
 #include "core/strings.h"
-#include "initlib/curses_win.h"
+#include "localui/curses_win.h"
 
 using std::string;
 using wwiv::strings::StringPrintf;

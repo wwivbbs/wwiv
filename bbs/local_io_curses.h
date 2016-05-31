@@ -24,8 +24,8 @@
 #include <string>
 
 #include "bbs/local_io.h"
-#include "initlib/colors.h"
-#include "initlib/curses_win.h"
+#include "localui/colors.h"
+#include "localui/curses_win.h"
 
 class WStatus;
 class WSession;

@@ -21,8 +21,8 @@
 #include <memory>
 
 #include "bbs/wfc_log.h"
-#include "initlib/curses_io.h"
-#include "initlib/curses_win.h"
+#include "localui/curses_io.h"
+#include "localui/curses_win.h"
 
 
 namespace wwiv {

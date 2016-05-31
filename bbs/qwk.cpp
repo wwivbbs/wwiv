@@ -69,22 +69,6 @@ static uint16_t max_msgs;
 // from xfer.cpp
 extern uint32_t this_date;
 
-#ifndef _WIN32
-long filelength(int handle) {
-  struct stat fileinfo;
-  if (fstat(handle, &fileinfo) != 0) {
-    return -1;
-  }
-  return fileinfo.st_size;
-}
-#else  // _WIN32
-
-#if !defined(ftruncate)
-#define ftruncate chsize
-#endif
-
-#endif  // _WIN32
-
 using std::string;
 using wwiv::bbs::SaveQScanPointers;
 using wwiv::bbs::TempDisablePause;

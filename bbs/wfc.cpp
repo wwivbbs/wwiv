@@ -43,7 +43,7 @@
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "core/inifile.h"
-#include "initlib/curses_io.h"
+#include "localui/curses_io.h"
 #include "sdk/filenames.h"
 
 using std::string;

@@ -36,8 +36,8 @@
 #include "init/archivers.h"
 #include "init/init.h"
 #include "init/wwivinit.h"
-#include "initlib/input.h"
-#include "initlib/curses_io.h"
+#include "localui/input.h"
+#include "localui/curses_io.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
