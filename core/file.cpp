@@ -192,14 +192,14 @@ bool File::SetName(const string& fileName) {
 }
 
 bool File::SetName(const string& dirName, const string& fileName) {
-  std::stringstream fullPathName;
-  fullPathName << dirName;
+  std::stringstream full_path_name;
+  full_path_name << dirName;
   if (!dirName.empty() && dirName[dirName.length() - 1] == pathSeparatorChar) {
-    fullPathName << fileName;
+    full_path_name << fileName;
   } else {
-    fullPathName << pathSeparatorChar << fileName;
+    full_path_name << pathSeparatorChar << fileName;
   }
-  return SetName(fullPathName.str());
+  return SetName(full_path_name.str());
 }
 
 int File::Read(void* pBuffer, size_t nCount) {
@@ -291,13 +291,13 @@ bool File::Exists(const string& original_pathname) {
 }
 
 bool File::Exists(const string& directoryName, const string& fileName) {
-  std::stringstream fullPathName;
+  std::stringstream full_path_name;
   if (!directoryName.empty() && directoryName[directoryName.length() - 1] == pathSeparatorChar) {
-    fullPathName << directoryName << fileName;
+    full_path_name << directoryName << fileName;
   } else {
-    fullPathName << directoryName << pathSeparatorChar << fileName;
+    full_path_name << directoryName << pathSeparatorChar << fileName;
   }
-  return Exists(fullPathName.str());
+  return Exists(full_path_name.str());
 }
 
 bool File::ExistsWildcard(const string& wildCard) {
@@ -381,11 +381,11 @@ bool File::mkdirs(const string& path) {
     return true;
   }
   if (errno == ENOENT) {
-	string::size_type pos = path.find_last_of(File::pathSeparatorChar);
-	if (pos == string::npos) {
-		return false;
-	}
-	string s = path.substr(0, pos);
+	  string::size_type pos = path.find_last_of(File::pathSeparatorChar);
+	  if (pos == string::npos) {
+		  return false;
+	  }
+	  string s = path.substr(0, pos);
     if (!mkdirs(s)) {
       return false;  // failed to create the parent, stop here.
     }
