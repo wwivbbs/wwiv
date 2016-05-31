@@ -39,7 +39,7 @@
 #include "core/wwivport.h"
 #include "init/archivers.h"
 #include "init/init.h"
-#include "initlib/input.h"
+#include "localui/input.h"
 #include "init/wwivinit.h"
 #include "init/utility.h"
 

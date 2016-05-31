@@ -24,7 +24,7 @@
 #include <sstream>
 
 #include "core/strings.h"
-#include "initlib/colors.h"
+#include "localui/colors.h"
 
 using std::string;
 using wwiv::strings::StringPrintf;

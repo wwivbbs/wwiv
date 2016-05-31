@@ -36,7 +36,7 @@
 #include "bbs/wconstants.h" 
 #include "core/file.h"
 #include "core/strings.h"
-#include "initlib/curses_io.h"
+#include "localui/curses_io.h"
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT

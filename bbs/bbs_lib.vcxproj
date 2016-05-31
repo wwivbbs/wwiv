@@ -321,7 +321,7 @@
     <ProjectReference Include="..\deps\cl342\crypt32.vcxproj">
       <Project>{d0793ab4-c236-4105-ad9e-7e8b1716037b}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\initlib\initlib.vcxproj">
+    <ProjectReference Include="..\localui\localui.vcxproj">
       <Project>{8ebd5a9a-e149-4e24-b5ca-7ebe0cc45a08}</Project>
     </ProjectReference>
     <ProjectReference Include="..\sdk\sdk.vcxproj">

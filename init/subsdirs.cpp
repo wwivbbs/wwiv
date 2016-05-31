@@ -32,7 +32,7 @@
 #include "core/file.h"
 #include "init/wwivinit.h"
 #include "init/init.h"
-#include "initlib/input.h"
+#include "localui/input.h"
 #include "init/subacc.h"
 #include "init/utility.h"
 #include "sdk/filenames.h"

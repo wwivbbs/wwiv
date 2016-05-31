@@ -28,7 +28,7 @@
 #include "core/wfndfile.h"
 #include "core/wwivport.h"
 #include "init/init.h"
-#include "initlib/input.h"
+#include "localui/input.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
 

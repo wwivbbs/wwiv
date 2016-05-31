@@ -39,8 +39,8 @@
 #include "core/wwivport.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
-#include "initlib/input.h"
-#include "initlib/listbox.h"
+#include "localui/input.h"
+#include "localui/listbox.h"
 #include "sdk/filenames.h"
 
 using std::unique_ptr;

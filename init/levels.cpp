@@ -31,8 +31,8 @@
 #include <sys/stat.h>
 
 #include "init/init.h"
-#include "initlib/input.h"
-#include "initlib/listbox.h"
+#include "localui/input.h"
+#include "localui/listbox.h"
 #include "bbs/wconstants.h"
 #include "init/wwivinit.h"
 #include "core/strings.h"
