@@ -263,7 +263,20 @@ void CursesLocalIO::LocalClrEol() {
   window_->ClrtoEol();
 }
 
-void CursesLocalIO::LocalWriteScreenBuffer(const char *buffer) {}
+void CursesLocalIO::LocalWriteScreenBuffer(const char *buffer) {
+  // TODO(rushfan): Optimize me.
+  const char *p = buffer;
+
+  for (int y = 0; y < 25; y++) {
+	for (int x = 0; x < 80; x++) {
+	  LocalGotoXY(x, y);
+	  char ch = *p++;
+	  SetColor(*p++);
+	  LocalPutch(ch);
+    }
+  }
+}
+
 size_t CursesLocalIO::GetDefaultScreenBottom() { return window_->GetMaxY() - 1; }
 
 void CursesLocalIO::LocalEditLine(char *s, int len, int edit_status, int *returncode, char *ss) {}
