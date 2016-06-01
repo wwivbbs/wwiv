@@ -25,7 +25,9 @@
 
 #include "core/strings.h"
 
-ColorScheme::ColorScheme() : scheme_(LoadColorSchemes()) { }
+ColorScheme::ColorScheme() : scheme_(LoadColorSchemes()) {
+  InitPairs();
+}
 
 attr_t ColorScheme::GetAttributesForScheme(SchemeId id) const {
   const SchemeDescription& s = scheme_.at(id);
@@ -35,6 +37,14 @@ attr_t ColorScheme::GetAttributesForScheme(SchemeId id) const {
   }
   return attr;
 }
+
+void ColorScheme::InitPairs() {
+  // Create the color pairs for each of the colors defined in the color scheme.
+  for (const auto& kv : scheme_) {
+    init_pair(kv.second.color_pair(), kv.second.f(), kv.second.b());
+  }
+}
+
 
 // static 
 std::map<SchemeId, SchemeDescription> ColorScheme::LoadColorSchemes() {
@@ -64,10 +74,5 @@ std::map<SchemeId, SchemeDescription> ColorScheme::LoadColorSchemes() {
   scheme[SchemeId::DESKTOP] = SchemeDescription(SchemeId::DESKTOP, COLOR_CYAN, COLOR_BLACK, false);
   scheme[SchemeId::WINDOW_DATA] = SchemeDescription(SchemeId::WINDOW_SELECTED, COLOR_YELLOW, COLOR_BLACK, true);
   scheme[SchemeId::WINDOW_TITLE] = SchemeDescription(SchemeId::WINDOW_TITLE, COLOR_YELLOW, COLOR_BLUE, true);
-
-  // Create the color pairs for each of the colors defined in the color scheme.
-  for (const auto& kv : scheme) {
-    init_pair(kv.second.color_pair(), kv.second.f(), kv.second.b());
-  }
   return scheme;
 }

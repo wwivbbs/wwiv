@@ -30,23 +30,6 @@
 class WStatus;
 class WSession;
 
-// Describes a color scheme.
-class AnsiColor {
-public:
-  AnsiColor(uint8_t f, uint8_t b, bool bold) : f_(f), b_(b), bold_(bold) {}
-  AnsiColor() : AnsiColor(7, 0, true) {}
-
-  // Don't provide a user defined destructor since that will block move semantics
-  uint8_t f() const { return f_; }
-  uint8_t b() const { return b_; }
-  bool bold() const { return bold_; }
-
-private:
-  uint8_t f_;
-  uint8_t b_;
-  bool bold_;
-};
-
 #if defined( _MSC_VER )
 #pragma warning( push )
 #pragma warning( disable : 4100 )
@@ -99,7 +82,6 @@ private:
   size_t y_ = 0;
 
   std::unique_ptr<CursesWindow> window_;
-  const std::map<int, AnsiColor> scheme_;
 };
 
 #if defined( _MSC_VER )
