@@ -46,7 +46,7 @@
 #include "bbs/wsession.h"
 #include "core/strings.h"
 #include "core/os.h"
-#include "initlib/curses_io.h"
+#include "localui/curses_io.h"
 
 #if defined( _WIN32 )
 #include "bbs/local_io_win32.h"
