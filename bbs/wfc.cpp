@@ -83,6 +83,8 @@ static void wfc_command(int instance_location_id, std::function<void()> f,
   f3();
   f4();
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
+  // Reset teh color palette.
+  out->color_scheme()->InitPairs();
 }
 
 auto send_email_f = []() {

@@ -51,42 +51,28 @@ extern CursesIO* out;
 
 static const int default_screen_bottom = 20;
 
-static std::map<int, AnsiColor> CreateAnsiScheme() {
-  std::map<int, AnsiColor> scheme;
-
-  // Create a default color scheme, ideally this would be loaded from an INI file or some other
-  // configuration file, but this is a sufficient start.
-  scheme[0] = AnsiColor(COLOR_BLUE, COLOR_BLACK, false);
-  scheme[1] = AnsiColor(COLOR_BLUE, COLOR_BLACK, false);
-  scheme[2] = AnsiColor(COLOR_GREEN, COLOR_BLACK, false);
-  scheme[3] = AnsiColor(COLOR_CYAN, COLOR_BLACK, false);
-  scheme[4] = AnsiColor(COLOR_RED, COLOR_BLACK, false);
-  scheme[5] = AnsiColor(COLOR_MAGENTA, COLOR_BLACK, false);
-  scheme[6] = AnsiColor(COLOR_YELLOW, COLOR_BLACK, false);
-  scheme[7] = AnsiColor(COLOR_WHITE, COLOR_BLACK, false);
-
-  scheme[8] = AnsiColor(COLOR_BLACK, COLOR_BLACK, true);
-  scheme[9] = AnsiColor(COLOR_BLUE, COLOR_BLACK, true);
-  scheme[10] = AnsiColor(COLOR_GREEN, COLOR_BLACK, true);
-  scheme[11] = AnsiColor(COLOR_CYAN, COLOR_BLACK, true);
-  scheme[12] = AnsiColor(COLOR_RED, COLOR_BLACK, true);
-  scheme[13] = AnsiColor(COLOR_MAGENTA, COLOR_BLACK, true);
-  scheme[14] = AnsiColor(COLOR_YELLOW, COLOR_BLACK, true);
-  scheme[15] = AnsiColor(COLOR_WHITE, COLOR_BLACK, true);
-  // TODO(rushfan): Set this correctly.
-  scheme[30] = AnsiColor(COLOR_YELLOW, COLOR_BLUE, true);
-  scheme[31] = AnsiColor(COLOR_WHITE, COLOR_BLUE, true);
-
-  // Create the color pairs for each of the colors defined in the color scheme.
-  for (const auto& kv : scheme) {
-    init_pair(static_cast<short>(kv.first), kv.second.f(), kv.second.b());
+static void InitPairs() {
+  std::vector<int> lowbit_colors = {
+    COLOR_BLACK,
+    COLOR_BLUE,
+    COLOR_GREEN,
+    COLOR_CYAN,
+    COLOR_RED,
+    COLOR_MAGENTA,
+    COLOR_YELLOW,
+    COLOR_WHITE};
+  int num = 0;
+  for (int bg = 0; bg < 8; bg++) {
+    for (int fg = 0; fg < 8; fg++) {
+      init_pair(num++, lowbit_colors[fg], lowbit_colors[bg]);
+    }
   }
-  return scheme;
-}
+ }
 
 CursesLocalIO::CursesLocalIO() : CursesLocalIO(default_screen_bottom + 1) {}
 
-CursesLocalIO::CursesLocalIO(int num_lines) : scheme_(CreateAnsiScheme()) {
+CursesLocalIO::CursesLocalIO(int num_lines) {
+  InitPairs();
   window_.reset(new CursesWindow(out->window(), out->color_scheme(), num_lines, 80, 0, 0));
   scrollok(window_->window(), true);
   window_->Clear();
@@ -96,10 +82,14 @@ CursesLocalIO::~CursesLocalIO() {
   SetCursor(LocalIO::cursorNormal);
 }
 
-void CursesLocalIO::SetColor(int color) {
-  const AnsiColor& s = scheme_.at(color);
+void CursesLocalIO::SetColor(int original_color) {
+  bool bold = (original_color & 8);
+  int color = original_color;
+  int bg = (color >> 4) & 0x07;
+  int fg = color & 0x07;
+  color = (bg << 3) | fg;
   attr_t attr = COLOR_PAIR(color);
-  if (s.bold()) {
+  if (bold) {
     attr |= A_BOLD;
   }
   window_->AttrSet(attr);
