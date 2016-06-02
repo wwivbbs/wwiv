@@ -74,7 +74,7 @@ auto noop = [](){};
 
 static void wfc_command(int instance_location_id, std::function<void()> f, 
     std::function<void()> f2 = noop, std::function<void()> f3 = noop, std::function<void()> f4 = noop) {
-  session()->reset_local_io(new CursesLocalIO(out->window()->GetMaxY()));
+  session()->reset_local_io(new CursesLocalIO(out->GetMaxY()));
 
   wfc_cls();
   write_inst(instance_location_id, 0, INST_FLAGS_NONE);
@@ -85,6 +85,12 @@ static void wfc_command(int instance_location_id, std::function<void()> f,
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
   // Reset teh color palette.
   out->color_scheme()->InitPairs();
+  out->window()->Refresh();
+  out->window()->RedrawWin();
+  out->header()->Refresh();
+  out->header()->RedrawWin();
+  out->footer()->window()->Refresh();
+  out->footer()->window()->RedrawWin();
 }
 
 auto send_email_f = []() {

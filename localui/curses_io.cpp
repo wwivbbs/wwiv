@@ -201,3 +201,12 @@ CursesWindow* CursesIO::CreateBoxedWindow(const std::string& title, int nlines, 
 void CursesIO::Init(const std::string& title) {
     out = new CursesIO(title);
 }
+
+int CursesIO::GetMaxX() const {
+  return getmaxx(stdscr);
+}
+
+int CursesIO::GetMaxY() const {
+  return getmaxy(stdscr);
+}
+
