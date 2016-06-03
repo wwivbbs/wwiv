@@ -85,12 +85,6 @@ static void wfc_command(int instance_location_id, std::function<void()> f,
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
   // Reset teh color palette.
   out->color_scheme()->InitPairs();
-  out->window()->Refresh();
-  out->window()->RedrawWin();
-  out->header()->Refresh();
-  out->header()->RedrawWin();
-  out->footer()->window()->Refresh();
-  out->footer()->window()->RedrawWin();
 }
 
 auto send_email_f = []() {
@@ -187,31 +181,37 @@ static void UpdateStatus(CursesWindow* statusWindow) {
   //  statusWindow->PutsXY(2, 7, "XXXXXXXXXXXXXXXXXXXXXXXXXX");
 }
 
-static void CleanNetIfNeeded() {
+static bool CleanNetIfNeeded() {
   static int mult_time = 0;
   if (session()->IsCleanNetNeeded() || std::abs(timer1() - mult_time) > 1000L) {
     cleanup_net();
     mult_time = timer1();
+    return true;
   }
+  return false;
 }
 
-static void RunEventsIfNeeded() {
+static bool RunEventsIfNeeded() {
   unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
+  bool ran_something = false;
   if (!IsEquals(date(), pStatus->GetLastDate())) {
     if ((session()->GetBeginDayNodeNumber() == 0) 
         || (session()->instance_number() == session()->GetBeginDayNodeNumber())) {
       cleanup_events();
       beginday(true);
+      ran_something = true;
     }
   }
 
   if (!do_event) {
     check_event();
+    ran_something = true;
   }
 
   while (do_event) {
     run_event(do_event - 1);
     check_event();
+    ran_something = true;
   }
 
   session()->SetCurrentSpeed("KB");
@@ -220,7 +220,9 @@ static void RunEventsIfNeeded() {
   if ((current_time - last_time_c > 60) && net_sysnum) {
     current_time = last_time_c;
     attempt_callout();
+    ran_something = true;
   }
+  return ran_something;
 }
 
 void ControlCenter::Initialize() {
@@ -305,6 +307,13 @@ void ControlCenter::Run() {
 }
 
 void ControlCenter::TouchAll() {
+  out->window()->Refresh();
+  out->window()->RedrawWin();
+  out->header()->Refresh();
+  out->header()->RedrawWin();
+  out->footer()->window()->Refresh();
+  out->footer()->window()->RedrawWin();
+
   out->window()->TouchWin();
   commands_->TouchWin();
   status_->TouchWin();
