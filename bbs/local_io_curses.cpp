@@ -73,7 +73,7 @@ CursesLocalIO::CursesLocalIO() : CursesLocalIO(default_screen_bottom + 1) {}
 
 CursesLocalIO::CursesLocalIO(int num_lines) {
   InitPairs();
-  window_.reset(new CursesWindow(out->window(), out->color_scheme(), num_lines, 80, 0, 0));
+  window_.reset(new CursesWindow(nullptr, out->color_scheme(), num_lines, 80, 0, 0));
   scrollok(window_->window(), true);
   window_->Clear();
 }
