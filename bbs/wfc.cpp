@@ -83,7 +83,7 @@ static void wfc_command(int instance_location_id, std::function<void()> f,
   f3();
   f4();
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
-  // Reset teh color palette.
+  // Reset the color palette.
   out->color_scheme()->InitPairs();
   out->window()->Refresh();
   out->window()->RedrawWin();
@@ -121,7 +121,7 @@ auto getkey_f = []() { getkey(); };
 
 ControlCenter::ControlCenter() {
   const string title = StringPrintf("WWIV %s%s Server.", wwiv_version, beta_version);
-  CursesIO::Init(title);
+  //  CursesIO::Init(title);
   // take ownership of out.
   out_scope_.reset(out);
   session()->SetWfcStatus(0);
@@ -343,8 +343,6 @@ void ControlCenter::UpdateLog() {
 
 // Legacy WFC
 
-#if !defined ( __unix__ )
-
 // Local Functions
 static char* pszScreenBuffer = nullptr;
 
@@ -491,4 +489,3 @@ void wfc_screen() {
   }
 }
 
-#endif // __unix__

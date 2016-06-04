@@ -30,22 +30,25 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <cstdarg>
 #include <exception>
 #include <stdexcept>
 #include <iostream>
 #include <memory>
-#include <cstdarg>
+#include <string>
+
 #include "bbs/bbs.h"
+#include "bbs/local_io_curses.h"
 #include "bbs/null_local_io.h"
+#include "bbs/remote_socket_io.h"
 #include "bbs/sysoplog.h"
 #include "bbs/remote_io.h"
 #include "bbs/wsession.h"
 #include "core/strings.h"
 #include "core/os.h"
+#include "localui/curses_io.h"
 
 #if defined( _WIN32 )
-//#include <direct.h>
-#include "bbs/remote_socket_io.h"
 #include "bbs/local_io_win32.h"
 #else
 #include <unistd.h>
@@ -58,6 +61,7 @@ using std::clog;
 using std::cout;
 using std::endl;
 using std::exception;
+using std::string;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
@@ -69,7 +73,10 @@ int WApplication::BBSMainLoop(int argc, char *argv[]) {
 #if defined ( _WIN32 )
   sess = CreateSession(app_, new Win32ConsoleIO());
 #else
-  sess = CreateSession(app_, new NullLocalIO());
+  const string title = StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version);
+  CursesIO::Init(title);
+  auto* localIO = new CursesLocalIO(out->GetMaxY());
+  sess = CreateSession(app_, localIO);
 #endif
 
   // We are not running in the telnet server, so proceed as planned.
