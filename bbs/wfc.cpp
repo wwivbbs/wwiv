@@ -115,7 +115,7 @@ auto getkey_f = []() { getkey(); };
 
 ControlCenter::ControlCenter() {
   const string title = StringPrintf("WWIV %s%s Server.", wwiv_version, beta_version);
-  //  CursesIO::Init(title);
+  CursesIO::Init(title);
   // take ownership of out.
   out_scope_.reset(out);
   session()->SetWfcStatus(0);
@@ -256,7 +256,7 @@ void ControlCenter::Initialize() {
 
 void ControlCenter::Run() {
   Initialize();
-  bool need_refresh = false;
+  bool need_refresh = true;
   for (bool done = false; !done;) {
     if (need_refresh) {
       // refresh the window since we call endwin before invoking bbs code.

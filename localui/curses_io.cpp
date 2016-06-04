@@ -199,7 +199,8 @@ CursesWindow* CursesIO::CreateBoxedWindow(const std::string& title, int nlines, 
 
 // static
 void CursesIO::Init(const std::string& title) {
-    out = new CursesIO(title);
+  auto once_init = [=]() { out = new CursesIO(title); return true; };
+  static bool initialized_once = once_init();
 }
 
 int CursesIO::GetMaxX() const {
