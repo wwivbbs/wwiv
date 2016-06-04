@@ -286,14 +286,25 @@ size_t CursesLocalIO::GetDefaultScreenBottom() { return window_->GetMaxY() - 1; 
 
 void CursesLocalIO::LocalEditLine(char *s, int len, int edit_status, int *returncode, char *ss) {}
 
-void CursesLocalIO::UpdateNativeTitleBar(WSession* session) {}
+void CursesLocalIO::UpdateNativeTitleBar(WSession* session) {
+#ifdef _WIN32
+	// Set console title
+	std::stringstream consoleTitleStream;
+	consoleTitleStream << "WWIV Node " << session->instance_number() << " (" << syscfg.systemname << ")";
+	SetConsoleTitle(consoleTitleStream.str().c_str());
+#endif  // _WIN32
+}
 
 void CursesLocalIO::ResetColors() {
 	InitPairs();
 }
 
 
-void CursesLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) {}
+void CursesLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) {
+
+}
+
+
 #if defined( _MSC_VER )
 #pragma warning( pop )
 #endif // _MSC_VER
