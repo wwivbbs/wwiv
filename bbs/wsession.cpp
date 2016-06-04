@@ -202,9 +202,9 @@ void WSession::tleft(bool check_for_timeout) {
     "Temp Sysop",
     "",
     "", // was Alert
-    "ÍÍÍÍÍÍÍ",
+    "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
     "Available",
-    "ÍÍÍÍÍÍÍÍÍÍÍ",
+    "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
     "%s chatting with %s"
   };
 
@@ -414,6 +414,7 @@ void WSession::UpdateTopScreen() {
     topdata = LocalIO::topdataNone;
   }
 
+#ifdef _WIN32
   if (syscfg.sysconfig & sysconfig_titlebar) {
     // Only set the titlebar if the user wanted it that way.
     const string username_num = names()->UserName(usernum);
@@ -421,6 +422,7 @@ void WSession::UpdateTopScreen() {
       username_num.c_str());
     ::SetConsoleTitle(title.c_str());
   }
+#endif // _WIN32
 
   switch (topdata) {
   case LocalIO::topdataNone:
