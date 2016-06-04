@@ -59,8 +59,6 @@ class Win32ConsoleIO : public LocalIO {
   void set_protect(WSession* session, int l) override;
   void savescreen() override;
   void restorescreen() override;
-  void tleft(WSession* session, bool temp_sysop, bool sysop, bool user_online) override;
-  void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) override;
   bool LocalKeyPressed() override;
   unsigned char LocalGetChar() override;
   void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) override;

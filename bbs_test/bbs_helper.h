@@ -91,7 +91,6 @@ public:
   void set_protect(WSession* session, int l) override {}
   void savescreen() override {}
   void restorescreen() override {}
-  void tleft(WSession* session, bool temp_sysop, bool sysop, bool user_online) override {}
   bool LocalKeyPressed() override { return false; }
   void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) override {}
   unsigned char LocalGetChar() override { return getchar(); }
@@ -102,7 +101,6 @@ public:
   size_t GetDefaultScreenBottom() override { return 25; }
   void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) override {}
   void UpdateNativeTitleBar(WSession* session) override {}
-  void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) override {}
 
   std::string* captured_;
 };

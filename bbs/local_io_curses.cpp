@@ -16,6 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+// Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "bbs/wwiv_windows.h"
+
 #include "bbs/local_io_curses.h"
 
 #include <algorithm>
@@ -65,7 +68,7 @@ static void InitPairs() {
     COLOR_MAGENTA,
     COLOR_YELLOW,
     COLOR_WHITE};
-  int num = 0;
+  short num = 0;
   for (int bg = 0; bg < 8; bg++) {
     for (int fg = 0; fg < 8; fg++) {
       init_pair(num++, lowbit_colors[fg], lowbit_colors[bg]);
@@ -230,8 +233,6 @@ void CursesLocalIO::restorescreen() {}
 #pragma warning( disable : 4125 4100 )
 #endif
 
-void CursesLocalIO::tleft(WSession* session, bool temp_sysop, bool sysop, bool user_online) {}
-
 static int last_key_pressed = ERR;
 
 bool CursesLocalIO::LocalKeyPressed() {
@@ -298,12 +299,6 @@ void CursesLocalIO::UpdateNativeTitleBar(WSession* session) {
 void CursesLocalIO::ResetColors() {
 	InitPairs();
 }
-
-
-void CursesLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) {
-
-}
-
 
 #if defined( _MSC_VER )
 #pragma warning( pop )

@@ -114,7 +114,7 @@ void RequestChat() {
           szChatReason[nTemp] = SPACE;
         }
         szChatReason[80] = '\0';
-        session()->localIO()->SetChatReason(szChatReason);
+        session()->SetChatReason(szChatReason);
         session()->UpdateTopScreen();
         bout << "Chat call turned ON.\r\n";
         bout.nl();
