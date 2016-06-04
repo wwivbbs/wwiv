@@ -75,6 +75,7 @@ class CursesLocalIO : public LocalIO {
 
   void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) override;
   void UpdateNativeTitleBar(WSession* session) override;
+  virtual void ResetColors();
 
 private:
   void LocalFastPuts(const std::string &text) override;

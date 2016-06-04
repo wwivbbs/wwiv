@@ -365,7 +365,6 @@ const std::string WSession::network_directory() const {
 }
 
 
-#if !defined ( __unix__ )
 void WSession::GetCaller() {
   SetShutDownStatus(WSession::shutdownNone);
   wfc_init();
@@ -405,13 +404,6 @@ void WSession::GetCaller() {
     GetCurrentSpeed().c_str());
   SetWfcStatus(0);
 }
-
-#else  // _unix__
-
-void wfc_screen() {}
-void wfc_cls() {}
-
-#endif  // __unix__
 
 int WSession::doWFCEvents() {
   unsigned char ch;
@@ -994,11 +986,6 @@ int WSession::Run(int argc, char *argv[]) {
   bool ooneuser = false;
   bool event_only = false;
   CommunicationType type = CommunicationType::NONE;
-#ifdef __unix__
-  // Default to the UNIX type by default on UNIX.
-  type = CommunicationType::UNIX;
-#endif
-  
   unsigned int hSockOrComm = 0;
 
   curatr = 0x07;
@@ -1019,12 +1006,7 @@ int WSession::Run(int argc, char *argv[]) {
     File::set_current_directory(wwiv_dir);
   }
 
-#if defined( __unix__ )
-  // HACK to make WWIV5/X just work w/o any command line
-  m_bUserAlreadyOn = true;
-  ui = us = 9600;
-  ooneuser = true;
-#endif
+  // ooneuser = true;
 
   for (int i = 1; i < argc; i++) {
     string argumentRaw = argv[i];
@@ -1081,10 +1063,13 @@ int WSession::Run(int argc, char *argv[]) {
       }
       break;
       case 'M':
-#if !defined ( __unix__ )
         ok_modem_stuff = false;
-#endif
         break;
+      case 'P':
+	localIO()->LocalCls();
+	localIO()->LocalPrintf("Waiting for keypress...");
+	getchar();
+	break;
       case 'R':
         num_min = stoi(argument);
         break;
@@ -1115,7 +1100,8 @@ int WSession::Run(int argc, char *argv[]) {
       case 'X':
       {
         char argument2Char = wwiv::UpperCase<char>(argument.at(0));
-        if (argument2Char == 'T' || argument2Char == 'S') {
+        if (argument2Char == 'T' || argument2Char == 'S'
+        		|| argument2Char == 'U') {
           // This more of a hack to make sure the Telnet
           // Server's -Bxxx parameter doesn't hose us.
           SetCurrentSpeed("115200");
@@ -1135,11 +1121,10 @@ int WSession::Run(int argc, char *argv[]) {
             type = CommunicationType::TELNET;
           } else if (argument2Char == 'S') {
             type = CommunicationType::SSH;
-            //cout << "Waiting for debugger" << endl;
-            //getchar();
+          } else if (argument2Char == 'U') {
+            session()->reset_local_io(new NullLocalIO());
+          	type = CommunicationType::UNIX;
           }
-        } else if (argument2Char == 'U') {
-        	type = CommunicationType::UNIX;
         } else {
           clog << "Invalid Command line argument given '" << argumentRaw << "'" << std::endl;
           exit(m_nErrorLevel);
@@ -1210,11 +1195,6 @@ int WSession::Run(int argc, char *argv[]) {
   // Add the environment variable or overwrite the existing one
   const string env_str = std::to_string(instance_number());
   set_environment_variable("WWIV_INSTANCE", env_str);
-#ifndef _WIN32
-  // TODO(rushfan): Don't think we need this, but need to make sure.
-  // it was already there.
-  m_bUserAlreadyOn = true;
-#endif  // _WIN32
   if (!ReadConfig()) {
     // Gotta read the config before we can create the socket handles.
     // Since we may need the SSH key.
@@ -1291,12 +1271,9 @@ int WSession::Run(int argc, char *argv[]) {
     if (!this_usernum) {
       if (m_bUserAlreadyOn) {
         GotCaller(ui, us);
-      }
-#if !defined ( __unix__ )
-      else {
+      }  else {
         GetCaller();
       }
-#endif
     }
 
     if (using_modem > -1) {
