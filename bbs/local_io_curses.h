@@ -43,7 +43,6 @@ class CursesLocalIO : public LocalIO {
   CursesLocalIO(const LocalIO& copy) = delete;
   virtual ~CursesLocalIO();
 
-  virtual void SetColor(int color);
   void LocalGotoXY(int x, int y) override;
   size_t WhereX() override;
   size_t WhereY() override;
@@ -79,6 +78,7 @@ class CursesLocalIO : public LocalIO {
 
 private:
   void LocalFastPuts(const std::string &text) override;
+  virtual void SetColor(int color);
   size_t x_ = 0;
   size_t y_ = 0;
 

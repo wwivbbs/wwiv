@@ -56,7 +56,7 @@ extern CursesIO* out;
 static const int default_screen_bottom = 20;
 
 static void InitPairs() {
-  std::vector<int> lowbit_colors = {
+  std::vector<short> lowbit_colors = {
     COLOR_BLACK,
     COLOR_BLUE,
     COLOR_GREEN,
@@ -87,7 +87,7 @@ CursesLocalIO::~CursesLocalIO() {
 }
 
 void CursesLocalIO::SetColor(int original_color) {
-  bool bold = (original_color & 8);
+  bool bold = (original_color & 8) != 0;
   int color = original_color;
   int bg = (color >> 4) & 0x07;
   int fg = color & 0x07;
@@ -276,7 +276,7 @@ void CursesLocalIO::LocalWriteScreenBuffer(const char *buffer) {
   for (int y = 0; y < 25; y++) {
 	for (int x = 0; x < 80; x++) {
 	  s[0] = *p++;
-	  SetColor(*p++);
+    curatr = *p++;
 	  LocalXYPuts(x, y, s);
     }
   }
