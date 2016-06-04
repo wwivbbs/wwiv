@@ -123,6 +123,11 @@ WSession::~WSession() {
   if (local_io_) {
     local_io_->SetCursor(LocalIO::cursorNormal);
   }
+  // CursesIO.
+  if (out != nullptr) {
+    delete out;
+    out = nullptr;
+  }
 }
 
 bool WSession::reset_local_io(LocalIO* wlocal_io) {
@@ -175,7 +180,7 @@ void WSession::CreateComm(unsigned int nHandle, CommunicationType type) {
 }
 
 bool WSession::ReadCurrentUser(int user_number) {
-  bool result = users()->ReadUser(&m_thisuser, user_number);
+  bool result = users()->ReadUser(&thisuser_, user_number);
 
   // Update all other session variables that are dependent.
   screenlinest = (using_modem) ? 
@@ -184,7 +189,7 @@ bool WSession::ReadCurrentUser(int user_number) {
 }
 
 bool WSession::WriteCurrentUser(int user_number) {
-  return users()->WriteUser(&m_thisuser, user_number);
+  return users()->WriteUser(&thisuser_, user_number);
 }
 
 void WSession::tleft(bool check_for_timeout) {
@@ -859,35 +864,36 @@ const string WSession::GetHomeDir() {
 
 void WSession::AbortBBS(bool bSkipShutdown) {
   clog.flush();
-  if (bSkipShutdown) {
-    exit(m_nErrorLevel);
-  } else {
-    ExitBBSImpl(m_nErrorLevel);
-  }
+  ExitBBSImpl(m_nErrorLevel, !bSkipShutdown);
 }
 
 void WSession::QuitBBS() {
-  ExitBBSImpl(WSession::exitLevelQuit);
+  ExitBBSImpl(WSession::exitLevelQuit, true);
 }
 
-void WSession::ExitBBSImpl(int nExitLevel) {
-  if (nExitLevel != WSession::exitLevelOK && nExitLevel != WSession::exitLevelQuit) {
-    // Only log the exiting at absnomal error levels, since we see lots of exiting statements
-    // in the logs that don't correspond to sessions every being created (network probers, etc).
-    sysoplog("", false);
-    sysoplogfi(false, "WWIV %s, inst %u, taken down at %s on %s with exit code %d.",
-      wwiv_version, instance_number(), times(), fulldate(), nExitLevel);
-    sysoplog("", false);
+void WSession::ExitBBSImpl(int exit_level, bool perform_shutdown) {
+  if (perform_shutdown) {
+    if (exit_level != WSession::exitLevelOK && exit_level != WSession::exitLevelQuit) {
+      // Only log the exiting at absnomal error levels, since we see lots of exiting statements
+      // in the logs that don't correspond to sessions every being created (network probers, etc).
+      sysoplog("", false);
+      sysoplogfi(false, "WWIV %s, inst %u, taken down at %s on %s with exit code %d.",
+        wwiv_version, instance_number(), times(), fulldate(), exit_level);
+      sysoplog("", false);
+    }
+    catsl();
+    write_inst(INST_LOC_DOWN, 0, INST_FLAGS_NONE);
+    clog << "\r\n";
+    clog << "WWIV Bulletin Board System " << wwiv_version << beta_version << " exiting at error level " << exit_level
+      << endl << endl;
   }
-  catsl();
-  write_inst(INST_LOC_DOWN, 0, INST_FLAGS_NONE);
-  clog << "\r\n";
-  clog << "WWIV Bulletin Board System " << wwiv_version << beta_version << " exiting at error level " << nExitLevel
-    << endl << endl;
-  delete this;
-  exit(nExitLevel);
-}
 
+  // We just delete the session class, not the application class
+  // since one day it'd be ideal to have 1 application contain
+  // N sessions for N>1.
+  delete this;
+  exit(exit_level);
+}
 
 void WSession::ShutDownBBS(int nShutDownStatus) {
   char xl[81], cl[81], atr[81], cc;
@@ -998,7 +1004,7 @@ int WSession::Run(int argc, char *argv[]) {
   if (!bbs_env.empty()) {
     if (bbs_env.find("WWIV") != string::npos) {
       std::cerr << "You are already in the BBS, type 'EXIT' instead.\n\n";
-      exit(255);
+      session()->ExitBBSImpl(255, false);
     }
   }
   const string wwiv_dir = environment_variable("WWIV_DIR");
@@ -1058,7 +1064,7 @@ int WSession::Run(int argc, char *argv[]) {
         instance_number_ = stoi(argument);
         if (instance_number_ <= 0 || instance_number_ > 999) {
           clog << "Your Instance can only be 1..999, you tried instance #" << instance_number_ << endl;
-          exit(m_nErrorLevel);
+          session()->ExitBBSImpl(m_nErrorLevel, false);
         }
       }
       break;
@@ -1082,7 +1088,7 @@ int WSession::Run(int argc, char *argv[]) {
         break;
       case 'V':
         cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]" << endl;
-        exit(0);
+        ExitBBSImpl(0, false);
         break;
       case 'W':
       {
@@ -1095,7 +1101,7 @@ int WSession::Run(int argc, char *argv[]) {
         this->InitializeBBS();
         wwiv::wfc::ControlCenter control_center;
         control_center.Run();
-        exit(m_nOkLevel);
+        ExitBBSImpl(m_nOkLevel, true);
       } break;
       case 'X':
       {
@@ -1127,7 +1133,7 @@ int WSession::Run(int argc, char *argv[]) {
           }
         } else {
           clog << "Invalid Command line argument given '" << argumentRaw << "'" << std::endl;
-          exit(m_nErrorLevel);
+          ExitBBSImpl(m_nErrorLevel, false);
         }
       }
       break;
@@ -1163,32 +1169,32 @@ int WSession::Run(int argc, char *argv[]) {
             bout << "|#6Aborted.\r\n";
           }
         }
-        ExitBBSImpl(m_nOkLevel);
+        ExitBBSImpl(m_nOkLevel, true);
       }
       break;
       case '?':
         ShowUsage();
-        exit(0);
+        ExitBBSImpl(0, false);
         break;
       case '-':
       {
         if (argumentRaw == "--help") {
           ShowUsage();
-          exit(0);
+          ExitBBSImpl(0, false);
         }
       }
       break;
       default:
       {
         clog << "Invalid Command line argument given '" << argument << "'\r\n\n";
-        exit(m_nErrorLevel);
+        ExitBBSImpl(m_nErrorLevel, false);
       }
       break;
       }
     } else {
       // Command line argument did not start with a '-' or a '/'
       clog << "Invalid Command line argument given '" << argumentRaw << "'\r\n\n";
-      exit(m_nErrorLevel);
+      ExitBBSImpl(m_nErrorLevel, false);
     }
   }
 
@@ -1215,7 +1221,7 @@ int WSession::Run(int argc, char *argv[]) {
   if (!remote_opened) {
     // Remote side disconnected.
     clog << "Remote side disconnected." << std::endl;
-    exit(m_nOkLevel);
+    ExitBBSImpl(m_nOkLevel, false);
   }
 
   if (num_min > 0) {
@@ -1242,7 +1248,7 @@ int WSession::Run(int argc, char *argv[]) {
       clog << "! WARNING: Tried to run beginday event again\r\n\n";
       sleep_for(seconds(2));
     }
-    ExitBBSImpl(m_nOkLevel);
+    ExitBBSImpl(m_nOkLevel, true);
   }
 
   do {

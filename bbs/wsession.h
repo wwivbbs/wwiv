@@ -91,7 +91,7 @@ public:
   static const int mmkeyMessageAreas = 1;
   static const int mmkeyFileAreas = 2;
 
-  wwiv::sdk::User* user() { return &m_thisuser; }
+  wwiv::sdk::User* user() { return &thisuser_; }
 
   void handle_sysop_key(uint8_t key);
   void tleft(bool check_for_timeout);
@@ -292,9 +292,9 @@ public:
 
    int  GetShutDownStatus() const { return m_nBbsShutdownStatus; }
    void SetShutDownStatus(int n) { m_nBbsShutdownStatus = n; }
-   void ShutDownBBS(int nShutDownStatus);
+   void ShutDownBBS(int shutdown_status);
 
-   void ExitBBSImpl(int nExitLevel);
+   void ExitBBSImpl(int exit_level, bool perform_shutdown);
 
    void InitializeBBS(); // old init() method
    void ReadINIFile(wwiv::core::IniFile& ini); // from xinit.cpp
@@ -353,10 +353,10 @@ private:
 
   std::unique_ptr<StatusMgr> statusMgr;
   std::unique_ptr<wwiv::sdk::UserManager> user_manager_;
-  std::string     m_attachmentDirectory; private:
+  std::string m_attachmentDirectory;
   WApplication* application_;
-  wwiv::sdk::User m_thisuser;
-  bool  last_key_local_ = true;
+  wwiv::sdk::User thisuser_;
+  bool last_key_local_ = true;
   int effective_sl_ = 0;
   std::unique_ptr<RemoteIO> comm_;
   std::unique_ptr<LocalIO> local_io_;

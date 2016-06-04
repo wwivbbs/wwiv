@@ -246,7 +246,7 @@ void run_event(int evnt) {
     if (ok_modem_stuff && session()->remoteIO() != nullptr) {
       session()->remoteIO()->close(false);
     }
-    exit(exitlevel);
+    session()->ExitBBSImpl(exitlevel, true);
   }
   ExecuteExternalProgram(events[evnt].cmd, EFLAG_NONE);
   do_event = 0;

@@ -58,7 +58,7 @@ class CursesIO {
  public:
   // Constructor/Destructor
   CursesIO(const std::string& title);
-  CursesIO(const CursesIO& copy);
+  CursesIO(const CursesIO& copy) = delete;
   virtual ~CursesIO();
 
   virtual void Cls(chtype background_char = ' ');

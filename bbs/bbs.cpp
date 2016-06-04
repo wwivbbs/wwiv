@@ -55,7 +55,7 @@
 #endif // _WIN32
 
 static WApplication *app_;
-static WSession* sess;
+static WSession* sess_;
 
 using std::clog;
 using std::cout;
@@ -66,23 +66,23 @@ using namespace wwiv::os;
 using namespace wwiv::strings;
 
 WApplication* application() { return app_; }
-WSession* session() { return sess; }
-
+WSession* session() { return sess_; }
 
 int WApplication::BBSMainLoop(int argc, char *argv[]) {
+  // CursesIO
+  out = nullptr;
 #if defined ( _WIN32 )
-  sess = CreateSession(app_, new Win32ConsoleIO());
+  CreateSession(app_, new Win32ConsoleIO());
 #else
   const string title = StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version);
   CursesIO::Init(title);
-  auto* localIO = new CursesLocalIO(out->GetMaxY());
-  sess = CreateSession(app_, localIO);
+  CreateSession(app_, new CursesLocalIO(out->GetMaxY()));
 #endif
 
   // We are not running in the telnet server, so proceed as planned.
-  int nReturnCode = session()->Run(argc, argv);
-  session()->ExitBBSImpl(nReturnCode);
-  return nReturnCode;
+  int return_code = session()->Run(argc, argv);
+  session()->ExitBBSImpl(return_code, false);
+  return return_code;
 }
 
 WApplication::WApplication() {
@@ -104,17 +104,16 @@ bool WApplication::LogMessage(const char* format, ...) {
   return true;
 }
 
-
 WApplication::~WApplication() {
-  if (sess != nullptr) {
-    delete sess;
-    sess = nullptr;
+  if (sess_ != nullptr) {
+    delete sess_;
+    sess_ = nullptr;
   }
 }
 
 WSession* CreateSession(WApplication* app, LocalIO* localIO) {
-  sess = new WSession(app, localIO);
-  return sess;
+  sess_ = new WSession(app, localIO);
+  return sess_;
 }
 
 int bbsmain(int argc, char *argv[]) {
