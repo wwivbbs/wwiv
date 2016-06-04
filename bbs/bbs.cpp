@@ -73,10 +73,10 @@ int WApplication::BBSMainLoop(int argc, char *argv[]) {
 #if defined ( _WIN32 )
   sess = CreateSession(app_, new Win32ConsoleIO());
 #else
-  //  sess = CreateSession(app_, new NullLocalIO());
   const string title = StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version);
   CursesIO::Init(title);
-  sess = CreateSession(app_, new CursesLocalIO());
+  auto* localIO = new CursesLocalIO(out->GetMaxY());
+  sess = CreateSession(app_, localIO);
 #endif
 
   // We are not running in the telnet server, so proceed as planned.

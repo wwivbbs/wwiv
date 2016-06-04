@@ -24,6 +24,10 @@
 #include <iostream>
 #include <string>
 #include <fcntl.h>
+#ifdef __unix__
+// TODO(rushfan): Remove this
+#include <unistd.h>
+#endif
 
 #include "curses.h"
 
@@ -267,12 +271,13 @@ void CursesLocalIO::LocalWriteScreenBuffer(const char *buffer) {
   // TODO(rushfan): Optimize me.
   const char *p = buffer;
 
+  char s[2];
+  s[1] = 0;
   for (int y = 0; y < 25; y++) {
 	for (int x = 0; x < 80; x++) {
-	  LocalGotoXY(x, y);
-	  char ch = *p++;
+	  s[0] = *p++;
 	  SetColor(*p++);
-	  LocalPutch(ch);
+	  LocalXYPuts(x, y, s);
     }
   }
 }
@@ -282,6 +287,11 @@ size_t CursesLocalIO::GetDefaultScreenBottom() { return window_->GetMaxY() - 1; 
 void CursesLocalIO::LocalEditLine(char *s, int len, int edit_status, int *returncode, char *ss) {}
 
 void CursesLocalIO::UpdateNativeTitleBar(WSession* session) {}
+
+void CursesLocalIO::ResetColors() {
+	InitPairs();
+}
+
 
 void CursesLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) {}
 #if defined( _MSC_VER )

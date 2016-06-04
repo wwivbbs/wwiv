@@ -1100,7 +1100,8 @@ int WSession::Run(int argc, char *argv[]) {
       case 'X':
       {
         char argument2Char = wwiv::UpperCase<char>(argument.at(0));
-        if (argument2Char == 'T' || argument2Char == 'S') {
+        if (argument2Char == 'T' || argument2Char == 'S'
+        		|| argument2Char == 'U') {
           // This more of a hack to make sure the Telnet
           // Server's -Bxxx parameter doesn't hose us.
           SetCurrentSpeed("115200");
@@ -1120,11 +1121,10 @@ int WSession::Run(int argc, char *argv[]) {
             type = CommunicationType::TELNET;
           } else if (argument2Char == 'S') {
             type = CommunicationType::SSH;
-            //cout << "Waiting for debugger" << endl;
-            //getchar();
+          } else if (argument2Char == 'U') {
+            session()->reset_local_io(new NullLocalIO());
+          	type = CommunicationType::UNIX;
           }
-        } else if (argument2Char == 'U') {
-        	type = CommunicationType::UNIX;
         } else {
           clog << "Invalid Command line argument given '" << argumentRaw << "'" << std::endl;
           exit(m_nErrorLevel);
