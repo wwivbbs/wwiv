@@ -119,6 +119,7 @@ WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app),
 WSession::~WSession() {
   if (comm_ && ok_modem_stuff) {
     comm_->close(false);
+    comm_.reset(nullptr);
   }
   if (local_io_) {
     local_io_->SetCursor(LocalIO::cursorNormal);
