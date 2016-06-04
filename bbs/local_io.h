@@ -49,9 +49,6 @@ class LocalIO {
   static constexpr int topdataSystem = 1;
   static constexpr int topdataUser = 2;
 
-  void SetChatReason(const std::string& chat_reason) { m_chatReason = chat_reason; }
-  void ClearChatReason() { m_chatReason.clear(); }
-
   const size_t GetTopLine() const { return m_nTopLine; }
   void SetTopLine(int nTopLine) { m_nTopLine = nTopLine; }
 
@@ -77,10 +74,6 @@ class LocalIO {
   virtual void set_protect(WSession* session, int l) = 0;
   virtual void savescreen() = 0;
   virtual void restorescreen() = 0;
-  // // int topdata, tempsysop, sysop, is_user_online, 
-
-  virtual void tleft(WSession* session, bool temp_sysop, bool sysop, bool user_online) = 0;
-  virtual void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) = 0;
   virtual bool LocalKeyPressed() = 0;
   virtual unsigned char LocalGetChar() = 0;
   virtual void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) = 0;
@@ -108,7 +101,6 @@ private:
   virtual void LocalFastPuts(const std::string& text) = 0;
 
 private:
-  std::string m_chatReason;
   int m_nTopLine = 0;
   int m_nScreenBottom = 0;
   int top_screen_color_ = 27;

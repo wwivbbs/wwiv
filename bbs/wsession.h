@@ -261,6 +261,8 @@ public:
   void SetWfcStatus(int nStatus) { m_nWfcStatus = nStatus; }
   int  GetWfcStatus() { return m_nWfcStatus; }
 
+  void SetChatReason(const std::string& chat_reason) { chat_reason_ = chat_reason; }
+
   /** Returns the WWIV SDK Config Object. */
   wwiv::sdk::Config* config() const { return config_.get(); }
   void set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config) { config_ = std::move(config); }
@@ -414,9 +416,9 @@ private:
   std::string internetFullEmailAddress;
   std::string usenetReferencesLine;
   bool m_bInternetUseRealNames;
-
   std::string language_dir;
   std::string cur_lang_name;
+  std::string chat_reason_;
 
   int wfc_status;
   int usernum;

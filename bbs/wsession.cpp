@@ -197,7 +197,62 @@ void WSession::tleft(bool check_for_timeout) {
   double nsln = nsl();
   bool temp_sysop = session()->user()->GetSl() != 255 && session()->GetEffectiveSl() == 255;
   bool sysop = sysop1();
-  localIO()->tleft(this, temp_sysop, sysop, IsUserOnline());
+  static const std::vector<string> top_screen_items = {
+    "",
+    "Temp Sysop",
+    "",
+    "", // was Alert
+    "อออออออ",
+    "Available",
+    "อออออออออออ",
+    "%s chatting with %s"
+  };
+
+  int cx = localIO()->WhereX();
+  int cy = localIO()->WhereY();
+  int ctl = localIO()->GetTopLine();
+  int cc = curatr;
+  curatr = localIO()->GetTopScreenColor();
+  localIO()->SetTopLine(0);
+  int nLineNumber = (chatcall && (topdata == LocalIO::topdataUser)) ? 5 : 4;
+
+  if (topdata) {
+    localIO()->LocalXYPuts(1, nLineNumber, GetCurrentSpeed());
+    for (int i = localIO()->WhereX(); i < 23; i++) {
+      localIO()->LocalPutch(static_cast<unsigned char>('\xCD'));
+    }
+
+    if (temp_sysop) {
+      localIO()->LocalXYPuts(23, nLineNumber, top_screen_items[1]);
+    }
+    localIO()->LocalXYPuts(54, nLineNumber, top_screen_items[4]);
+
+    if (sysop) {
+      localIO()->LocalXYPuts(64, nLineNumber, top_screen_items[5]);
+    } else {
+      localIO()->LocalXYPuts(64, nLineNumber, top_screen_items[6]);
+    }
+  }
+  switch (topdata) {
+  case LocalIO::topdataSystem:
+    if (IsUserOnline()) {
+      localIO()->LocalXYPrintf(18, 3, "T-%6.2f", nsln / SECONDS_PER_MINUTE_FLOAT);
+    }
+    break;
+  case LocalIO::topdataUser:
+  {
+    if (IsUserOnline()) {
+      localIO()->LocalXYPrintf(18, 3, "T-%6.2f", nsln / SECONDS_PER_MINUTE_FLOAT);
+    } else {
+      localIO()->LocalXYPrintf(18, 3, user()->GetPassword());
+    }
+  }
+  break;
+  }
+  localIO()->SetTopLine(ctl);
+  curatr = cc;
+  localIO()->LocalGotoXY(cx, cy);
+
   if (check_for_timeout && IsUserOnline()) {
     if (nsln == 0.0) {
       bout << "\r\nTime expired.\r\n\n";
@@ -345,16 +400,168 @@ void WSession::DisplaySysopWorkingIndicator(bool displayWait) {
 }
 
 void WSession::UpdateTopScreen() {
-  if (!GetWfcStatus()) {
-    unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
-    localIO()->UpdateTopScreen(pStatus.get(), session(), instance_number());
+  if (GetWfcStatus()) {
+    return;
   }
+
+  unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
+  char i;
+  char sl[82], ar[17], dar[17], restrict[17], rst[17], lo[90];
+
+  int lll = lines_listed;
+
+  if (so() && !incom) {
+    topdata = LocalIO::topdataNone;
+  }
+
+  if (syscfg.sysconfig & sysconfig_titlebar) {
+    // Only set the titlebar if the user wanted it that way.
+    const string username_num = names()->UserName(usernum);
+    string title = StringPrintf("WWIV Node %d (User: %s)", instance_number(),
+      username_num.c_str());
+    ::SetConsoleTitle(title.c_str());
+  }
+
+  switch (topdata) {
+  case LocalIO::topdataNone:
+    localIO()->set_protect(this, 0);
+    break;
+  case LocalIO::topdataSystem:
+    localIO()->set_protect(this, 5);
+    break;
+  case LocalIO::topdataUser:
+    if (chatcall) {
+      localIO()->set_protect(this, 6);
+    } else {
+      if (localIO()->GetTopLine() == 6) {
+        localIO()->set_protect(this, 0);
+      }
+      localIO()->set_protect(this, 5);
+    }
+    break;
+  }
+  int cx = localIO()->WhereX();
+  int cy = localIO()->WhereY();
+  int nOldTopLine = localIO()->GetTopLine();
+  int cc = curatr;
+  curatr = localIO()->GetTopScreenColor();
+  localIO()->SetTopLine(0);
+  for (i = 0; i < 80; i++) {
+    sl[i] = '\xCD';
+  }
+  sl[80] = '\0';
+
+  switch (topdata) {
+  case LocalIO::topdataNone:
+    break;
+  case LocalIO::topdataSystem:
+  {
+    localIO()->LocalXYPrintf(0, 0, "%-50s  Activity for %8s:      ", syscfg.systemname, pStatus->GetLastDate());
+
+    localIO()->LocalXYPrintf(0, 1, "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
+      pStatus->GetNumUsers(), pStatus->GetCallerNumber(),
+      pStatus->GetNumCallsToday(), pStatus->GetNumLocalPosts());
+
+    const string username_num = names()->UserName(usernum);
+    localIO()->LocalXYPrintf(0, 2, "%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
+      username_num.c_str(),
+      pStatus->GetMinutesActiveToday(),
+      static_cast<int>(10 * pStatus->GetMinutesActiveToday() / 144),
+      pStatus->GetNumEmailSentToday());
+
+    localIO()->LocalXYPrintf(0, 3, "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
+      user()->GetSl(),
+      user()->GetDsl(),
+      fwaiting,
+      pStatus->GetNumUploadsToday(),
+      pStatus->GetNumFeedbackSentToday());
+  }
+  break;
+  case LocalIO::topdataUser:
+  {
+    strcpy(rst, restrict_string);
+    for (i = 0; i <= 15; i++) {
+      if (user()->HasArFlag(1 << i)) {
+        ar[i] = static_cast<char>('A' + i);
+      } else {
+        ar[i] = SPACE;
+      }
+      if (user()->HasDarFlag(1 << i)) {
+        dar[i] = static_cast<char>('A' + i);
+      } else {
+        dar[i] = SPACE;
+      }
+      if (user()->HasRestrictionFlag(1 << i)) {
+        restrict[i] = rst[i];
+      } else {
+        restrict[i] = SPACE;
+      }
+    }
+    dar[16] = '\0';
+    ar[16] = '\0';
+    restrict[16] = '\0';
+    if (!wwiv::strings::IsEquals(user()->GetLastOn(), date())) {
+      strcpy(lo, user()->GetLastOn());
+    } else {
+      snprintf(lo, sizeof(lo), "Today:%2d", user()->GetTimesOnToday());
+    }
+
+    const string username_num = names()->UserName(usernum);
+    localIO()->LocalXYAPrintf(0, 0, curatr, "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u",
+      username_num.c_str(),
+      user()->GetNumMailWaiting(),
+      user()->GetFilesUploaded(),
+      user()->GetUploadK(),
+      user()->GetSl(),
+      user()->GetNumLogons(),
+      user()->GetNumMessagesPosted());
+
+    char szCallSignOrRegNum[41];
+    if (user()->GetWWIVRegNumber()) {
+      snprintf(szCallSignOrRegNum, sizeof(szCallSignOrRegNum), "%lu", user()->GetWWIVRegNumber());
+    } else {
+      strcpy(szCallSignOrRegNum, user()->GetCallsign());
+    }
+    localIO()->LocalXYPrintf(0, 1, "%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0lu ES=%4u",
+      user()->GetRealName(),
+      user()->GetVoicePhoneNumber(),
+      szCallSignOrRegNum,
+      user()->GetFilesDownloaded(),
+      user()->GetDownloadK(),
+      user()->GetDsl(),
+      static_cast<long>((user()->GetTimeOn() + timer() - timeon) / SECONDS_PER_MINUTE_FLOAT),
+      user()->GetNumEmailSent() + user()->GetNumNetEmailSent());
+
+    localIO()->LocalXYPrintf(0, 2, "ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u",
+      ar, dar, restrict, user()->GetExempt(),
+      lo, user()->GetNumFeedbackSent());
+
+    localIO()->LocalXYPrintf(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u",
+      user()->GetNote(),
+      user()->GetGender(),
+      user()->GetAge(),
+      ctypes(user()->GetComputerType()).c_str(), fwaiting);
+
+    if (chatcall) {
+      localIO()->LocalXYPuts(0, 4, chat_reason_);
+    }
+  }
+  break;
+  }
+  if (nOldTopLine != 0) {
+    localIO()->LocalXYPuts(0, nOldTopLine - 1, sl);
+  }
+  localIO()->SetTopLine(nOldTopLine);
+  localIO()->LocalGotoXY(cx, cy);
+  curatr = cc;
+  tleft(false);
+
+  lines_listed = lll;
 }
 
 void WSession::ClearTopScreenProtection() {
   localIO()->set_protect(this, 0);
 }
-
 
 const char* WSession::network_name() const {
   if (net_networks.empty()) {

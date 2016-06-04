@@ -119,7 +119,7 @@ void frequent_init() {
   endofline[0] = '\0';
   hangup = false;
   chatcall = false;
-  session()->localIO()->ClearChatReason();
+  session()->SetChatReason("");
   session()->SetUserOnline(false);
   change_color = 0;
   chatting = 0;
