@@ -121,9 +121,9 @@ CursesIO::CursesIO(const string& title)
     endwin();
     throw std::runtime_error(StrCat("Screen width must be at least 80, was: ", stdscr_maxx));
   }
-  if (stdscr_maxy < 25) {
+  if (stdscr_maxy < 20) {
     endwin();
-    throw std::runtime_error(StrCat("Screen height must be at least 25, was: ", stdscr_maxy));
+    throw std::runtime_error(StrCat("Screen height must be at least 20, was: ", stdscr_maxy));
   }
 
   header_.reset(new CursesWindow(nullptr, color_scheme_.get(), 2, 0));
