@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
+/*                              WWIV Version 5                            */
 /*             Copyright (C)1998-2016, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <resolv.h>
 #include <arpa/inet.h>
+#include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -162,6 +163,8 @@ int main(int argc, char *argv[])
     cerr << "Unable to create socket";
     return 1;
   }
+  // Try to set nodelay.
+  setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(optval));
 
   my_addr.sin_family = AF_INET ;
   my_addr.sin_port = htons(port);

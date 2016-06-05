@@ -75,6 +75,7 @@
 #include "bbs/remote_socket_io.h"
 #include "bbs/local_io_win32.h"
 #else
+#include <unistd.h>
 #include "bbs/platform/unix/wiou.h"
 #endif // _WIN32
 
