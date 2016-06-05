@@ -54,6 +54,9 @@
 #include <unistd.h>
 #endif // _WIN32
 
+// Uncomment this line to use curses on Win32
+#define WWIV_WIN32_CURSES_IO
+
 static WApplication *app_;
 static WSession* sess_;
 
@@ -71,7 +74,7 @@ WSession* session() { return sess_; }
 int WApplication::BBSMainLoop(int argc, char *argv[]) {
   // CursesIO
   out = nullptr;
-#if defined ( _WIN32 )
+#if defined ( _WIN32 ) && !defined (WWIV_WIN32_CURSES_IO)
   CreateSession(app_, new Win32ConsoleIO());
 #else
   const string title = StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version);

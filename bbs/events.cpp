@@ -230,7 +230,6 @@ void check_event() {
         eventsFile.Close();
       }
     }
-
   }
 }
 
@@ -306,7 +305,6 @@ void show_events() {
     pla(s, &abort);
   }
 }
-
 
 void select_event_days(int evnt) {
   int i;

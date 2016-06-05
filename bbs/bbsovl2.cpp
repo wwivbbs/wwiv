@@ -47,8 +47,8 @@ void OnlineUserEditor() {
        posts[6], banktime[6], gold[10], ass[6], logons[6];
   int cp, i, rc = ABORTED;
 
-  session()->DisplaySysopWorkingIndicator(true);
   session()->localIO()->savescreen();
+  session()->DisplaySysopWorkingIndicator(true);
   int wx = 5;
   int wy = 3;
   session()->localIO()->MakeLocalWindow(wx, wy - 2, 70, 16 + 2);
