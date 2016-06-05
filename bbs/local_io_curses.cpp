@@ -320,6 +320,7 @@ void CursesLocalIO::LocalClrEol() {
 void CursesLocalIO::LocalWriteScreenBuffer(const char *buffer) {
   // TODO(rushfan): Optimize me.
   const char *p = buffer;
+  scrollok(window_->window(), false);
 
   char s[2];
   s[1] = 0;
@@ -330,6 +331,7 @@ void CursesLocalIO::LocalWriteScreenBuffer(const char *buffer) {
 	  LocalXYPuts(x, y, s);
     }
   }
+  scrollok(window_->window(), true);
 }
 
 size_t CursesLocalIO::GetDefaultScreenBottom() { return window_->GetMaxY() - 1; }

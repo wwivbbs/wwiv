@@ -55,7 +55,7 @@
 #endif // _WIN32
 
 // Uncomment this line to use curses on Win32
-#define WWIV_WIN32_CURSES_IO
+//#define WWIV_WIN32_CURSES_IO
 
 static WApplication *app_;
 static WSession* sess_;
