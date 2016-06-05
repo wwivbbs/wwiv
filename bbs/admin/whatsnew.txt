@@ -25,6 +25,8 @@ What's New in WWIV 5.1 (2016)
   day they called.
 * Added -XU command line type for UNIX communication type. On UNIX we
   temporarily use that type by default for now.
+* UNIX Local IO is now curses based. Win32 can optionally use curses
+  for local IO by defining WWIV_WIN32_CURSES_IO.
 
 What's New in WWIV 5.1 (2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -50,7 +52,6 @@ What's New in WWIV 5.1 (2015)
   from wwiv.ini.
 * removed SLASH_SZ from wwiv.ini. It wasn't enabled by default anyway.
 * Removed ReadMessages menu item. It wasn't classic WWIV
-* 
 
 What's New in 2015 (WWIV 5.0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -67,8 +68,6 @@ What's New in 2015 (WWIV 5.0)
 * Made all QWK filenames lowercase
 * zip/unzip now bundled with WWIV on Windows
 * linux builds now just include linux files, ditto for windows
-
-
 
 What's New in 2014 (WWIV 5.0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -117,8 +116,8 @@ What's New in 2014 (WWIV 5.0)
   EXEC_CHILDWAITTIME  should be used to set how long to wait for exec'ed
   processes to become runnable. It defaults to 500ms.
 
-What's New in 5.0 Beta-2
-~~~~~~~~~~~~~~~~~~~~~~~~~
+What's New in 5.0 Beta-2 (2004)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Archver commands now work.
 * F1 User Editor Improvements
 * PuTTY now works with auto-detect line mode
