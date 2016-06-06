@@ -161,6 +161,7 @@
     <ClInclude Include="shortmsg.h" />
     <ClInclude Include="sr.h" />
     <ClInclude Include="ssh.h" />
+    <ClInclude Include="stdio_local_io.h" />
     <ClInclude Include="stuffin.h" />
     <ClInclude Include="subacc.h" />
     <ClInclude Include="subxtr.h" />
@@ -283,6 +284,7 @@
     <ClCompile Include="srsend.cpp" />
     <ClCompile Include="ssh.cpp" />
     <ClCompile Include="status.cpp" />
+    <ClCompile Include="stdio_local_io.cpp" />
     <ClCompile Include="stuffin.cpp" />
     <ClCompile Include="subacc.cpp" />
     <ClCompile Include="subedit.cpp" />

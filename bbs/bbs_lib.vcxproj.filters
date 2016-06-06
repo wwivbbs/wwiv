@@ -373,6 +373,9 @@
     <ClCompile Include="null_local_io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="stdio_local_io.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -664,6 +667,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="null_remote_io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdio_local_io.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

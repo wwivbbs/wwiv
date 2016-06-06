@@ -91,6 +91,7 @@ set(COMMON_SOURCES
  srsend.cpp
  ssh.cpp
  status.cpp
+ stdio_local_io.cpp
  stuffin.cpp
  subacc.cpp
  subedit.cpp
