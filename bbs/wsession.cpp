@@ -1421,7 +1421,7 @@ int WSession::Run(int argc, char *argv[]) {
     reset_local_io(new Win32ConsoleIO());
   }
 #else
-  if isatty(fileno(stdin))) {
+  if (isatty(fileno(stdin))) {
     CursesIO::Init(StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version));
     reset_local_io(new CursesLocalIO(out->GetMaxY()));
   }
