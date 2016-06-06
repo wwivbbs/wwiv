@@ -20,6 +20,7 @@
 // include this here so it won't get includes by local_io_win32.h
 #include "bbs/wwiv_windows.h"
 #include <direct.h>
+#include <io.h>
 #endif  // WIN32
 
 #define _DEFINE_GLOBALS_
@@ -41,6 +42,7 @@
 #include "bbs/local_io_curses.h"
 #include "bbs/null_local_io.h"
 #include "bbs/remote_socket_io.h"
+#include "bbs/stdio_local_io.h"
 #include "bbs/sysoplog.h"
 #include "bbs/remote_io.h"
 #include "bbs/wsession.h"
@@ -74,24 +76,9 @@ WSession* session() { return sess_; }
 int WApplication::BBSMainLoop(int argc, char *argv[]) {
   // CursesIO
   out = nullptr;
-  LocalIO* localIO = nullptr;;
-#if defined ( _WIN32 ) && !defined (WWIV_WIN32_CURSES_IO)
-  if (isatty(fileno(stdin))) {
-    localIO = new Win32ConsoleIO();
-  } else {
-    localIO = new Win32ConsoleIO();
-  }
-#else
-  CursesIO::Init(StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version));
-  if (true || isatty(fileno(stdin))) {
-    localIO = new CursesLocalIO(out->GetMaxY());
-  } else {
-    localIO = new CursesLocalIO(out->GetMaxY());
-  }
-#endif
-  CreateSession(app_, localIO);
-  cout << "Created Session";
-  getchar();
+
+  CreateSession(app_, new StdioLocalIO());
+
   // We are not running in the telnet server, so proceed as planned.
   int return_code = session()->Run(argc, argv);
   session()->ExitBBSImpl(return_code, false);

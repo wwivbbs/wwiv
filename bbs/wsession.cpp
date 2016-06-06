@@ -19,6 +19,7 @@
 #ifdef _WIN32
 // include this here so it won't get includes by local_io_win32.h
 #include "bbs/wwiv_windows.h"
+#include <io.h>
 #endif  // WIN32
 
 #include <algorithm>
@@ -1414,7 +1415,18 @@ int WSession::Run(int argc, char *argv[]) {
   //
   // From here down we can use localIO.
   //
-
+  
+#if defined ( _WIN32 ) && !defined (WWIV_WIN32_CURSES_IO)
+  if (isatty(fileno(stdin))) {
+    reset_local_io(new Win32ConsoleIO());
+  }
+#else
+  if isatty(fileno(stdin))) {
+    CursesIO::Init(StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version));
+    reset_local_io(new CursesLocalIO(out->GetMaxY()));
+  }
+#endif
+  
   // Add the environment variable or overwrite the existing one
   const string env_str = std::to_string(instance_number());
   set_environment_variable("WWIV_INSTANCE", env_str);
