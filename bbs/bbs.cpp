@@ -74,14 +74,24 @@ WSession* session() { return sess_; }
 int WApplication::BBSMainLoop(int argc, char *argv[]) {
   // CursesIO
   out = nullptr;
+  LocalIO* localIO = nullptr;;
 #if defined ( _WIN32 ) && !defined (WWIV_WIN32_CURSES_IO)
-  CreateSession(app_, new Win32ConsoleIO());
+  if (isatty(fileno(stdin))) {
+    localIO = new Win32ConsoleIO();
+  } else {
+    localIO = new Win32ConsoleIO();
+  }
 #else
-  const string title = StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version);
-  CursesIO::Init(title);
-  CreateSession(app_, new CursesLocalIO(out->GetMaxY()));
+  CursesIO::Init(StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version));
+  if (true || isatty(fileno(stdin))) {
+    localIO = new CursesLocalIO(out->GetMaxY());
+  } else {
+    localIO = new CursesLocalIO(out->GetMaxY());
+  }
 #endif
-
+  CreateSession(app_, localIO);
+  cout << "Created Session";
+  getchar();
   // We are not running in the telnet server, so proceed as planned.
   int return_code = session()->Run(argc, argv);
   session()->ExitBBSImpl(return_code, false);

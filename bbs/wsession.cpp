@@ -1409,6 +1409,12 @@ int WSession::Run(int argc, char *argv[]) {
     }
   }
 
+
+  /////////////////////////////////////////////////////////////////
+  //
+  // From here down we can use localIO.
+  //
+
   // Add the environment variable or overwrite the existing one
   const string env_str = std::to_string(instance_number());
   set_environment_variable("WWIV_INSTANCE", env_str);
