@@ -1410,23 +1410,16 @@ int WSession::Run(int argc, char *argv[]) {
     }
   }
 
-
-  /////////////////////////////////////////////////////////////////
-  //
-  // From here down we can use localIO.
-  //
-  
+  // Setup the full-featured localIO if we have a TTY (or console)
+  if (isatty(fileno(stdin))) {
 #if defined ( _WIN32 ) && !defined (WWIV_WIN32_CURSES_IO)
-  if (isatty(fileno(stdin))) {
     reset_local_io(new Win32ConsoleIO());
-  }
 #else
-  if (isatty(fileno(stdin))) {
     CursesIO::Init(StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version));
     reset_local_io(new CursesLocalIO(out->GetMaxY()));
-  }
 #endif
-  
+  }
+
   // Add the environment variable or overwrite the existing one
   const string env_str = std::to_string(instance_number());
   set_environment_variable("WWIV_INSTANCE", env_str);
