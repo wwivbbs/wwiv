@@ -68,7 +68,7 @@ TEST(OsTest, EnvironmentVariable_DoesNotExist) {
 }
 
 TEST(OsTest, SetEnvironmentVariable) {
-  ASSERT_EQ("ASDF", environment_variable("QWERTYUIOP"));
+  ASSERT_EQ("", environment_variable("QWERTYUIOP"));
   ASSERT_TRUE(set_environment_variable("QWERTYUIOP", "ASDF"));
   ASSERT_EQ("ASDF", environment_variable("QWERTYUIOP"));
 }
