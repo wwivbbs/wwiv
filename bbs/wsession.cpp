@@ -1176,8 +1176,7 @@ void WSession::ShowUsage() {
     "  -A<level>  - Specify the Error Exit Level\r\n" <<
     "  -B<rate>   - Someone already logged on at rate (modem speed)\r\n" <<
     "  -E         - Load for beginday event only\r\n" <<
-    "  -F         - Pass full result code (\"CONNECT 33600/ARQ/HST/V.42BIS\")\r\n" <<
-    "  -H<handle> - Socket or Comm handle\r\n" <<
+    "  -H<handle> - Socket handle\r\n" <<
     "  -I<inst>   - Designate instance number <inst>\r\n" <<
     "  -K [# # #] - Pack Message Areas, optionally list the area(s) to pack\r\n" <<
     "  -M         - Don't access modem at all\r\n" <<
@@ -1188,9 +1187,9 @@ void WSession::ShowUsage() {
     "  -S<rate>   - Used only with -B, indicates com port speed\r\n" <<
     "  -U<user#>  - Pass usernumber <user#> online\r\n" <<
     "  -V         - Display WWIV Version\r\n" <<
-    "  -W         - Display Local 'WFC' menu\r\n" <<
-#if defined (_WIN32)
     "  -XT        - Someone already logged on via telnet (socket handle)\r\n" <<
+#if defined (_WIN32)
+    "  -XS        - Someone already logged on via SSH (socket handle)\r\n" <<
 #endif // _WIN32
     "  -Z         - Do not hang up on user when at log off\r\n"
     << endl;
@@ -1302,19 +1301,6 @@ int WSession::Run(int argc, char *argv[]) {
         cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]" << endl;
         ExitBBSImpl(0, false);
         break;
-      case 'W':
-      {
-      	if (!ReadConfig()) {
-      		std::clog << "Unable to load CONFIG.DAT";
-      	    AbortBBS(true);
-      	}
-
-      	ok_modem_stuff = false;
-        this->InitializeBBS();
-        wwiv::wfc::ControlCenter control_center;
-        control_center.Run();
-        ExitBBSImpl(m_nOkLevel, true);
-      } break;
       case 'X':
       {
         char argument2Char = wwiv::UpperCase<char>(argument.at(0));

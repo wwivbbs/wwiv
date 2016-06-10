@@ -177,7 +177,6 @@
     <ClInclude Include="remote_io.h" />
     <ClInclude Include="wconstants.h" />
     <ClInclude Include="wfc.h" />
-    <ClInclude Include="wfc_log.h" />
     <ClInclude Include="remote_socket_io.h" />
     <ClInclude Include="workspace.h" />
     <ClInclude Include="woutstreambuffer.h" />
@@ -303,7 +302,6 @@
     <ClCompile Include="voteedit.cpp" />
     <ClCompile Include="remote_io.cpp" />
     <ClCompile Include="wfc.cpp" />
-    <ClCompile Include="wfc_log.cpp" />
     <ClCompile Include="remote_socket_io.cpp" />
     <ClCompile Include="workspace.cpp" />
     <ClCompile Include="WOutStream.cpp" />

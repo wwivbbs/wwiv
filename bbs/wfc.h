@@ -20,34 +20,8 @@
 
 #include <memory>
 
-#include "bbs/wfc_log.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
-
-
-namespace wwiv {
-namespace wfc {
-
-class ControlCenter {
-public: 
-  ControlCenter();
-  ~ControlCenter();
-  void Initialize();
-  void Run();
-  void UpdateLog();
-  void TouchAll();
-  void RefreshAll();
-
-private:
-  // Takes ownership of out to enure it's deleted on exit from the WFC.
-  std::unique_ptr<CursesIO> out_scope_;
-  std::unique_ptr<CursesWindow> commands_;
-  std::unique_ptr<CursesWindow> status_;
-  std::unique_ptr<CursesWindow> logs_;
-  std::unique_ptr<WfcLog> log_;
-};
-}  // namespace wfc
-}  // namespace wwiv
 
 void wfc_cls();
 void wfc_init();

@@ -27,6 +27,7 @@ What's New in WWIV 5.1 (2016)
   temporarily use that type by default for now.
 * UNIX Local IO is now curses based. Win32 can optionally use curses
   for local IO by defining WWIV_WIN32_CURSES_IO.
+* Removed "-w" argument to BBS since there is now just 1 WFC (again).
 
 What's New in WWIV 5.1 (2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
