@@ -119,7 +119,6 @@ set(COMMON_SOURCES
  xfertmp.cpp
  xinit.cpp
  wfc.cpp
- wfc_log.cpp
  workspace.cpp
 )
 
