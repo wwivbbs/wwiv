@@ -66,14 +66,5 @@ int random_number(int max_value) {
   return dist(re);
 }
 
-std::string environment_variable(const std::string& variable_name) {
-  const char* s = getenv(variable_name.c_str());
-  if (s == nullptr) {
-    return "";
-  }
-  return string(s);
-}
-
-
 }  // namespace os
 }  // namespace wwiv

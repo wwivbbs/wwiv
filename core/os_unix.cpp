@@ -94,6 +94,14 @@ bool set_environment_variable(const std::string& variable_name, const std::strin
   return setenv(variable_name.c_str(), value.c_str(), 1) == 0;
 }
 
+std::string environment_variable(const std::string& variable_name) {
+  const char* s = getenv(variable_name.c_str());
+  if (s == nullptr) {
+    return "";
+  }
+  return string(s);
+}
+
 string stacktrace() { return string(); }
 
 

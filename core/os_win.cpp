@@ -85,6 +85,18 @@ bool set_environment_variable(const std::string& variable_name, const std::strin
   return ::SetEnvironmentVariable(variable_name.c_str(), value.c_str()) ? true : false;
 }
 
+std::string environment_variable(const std::string& variable_name) {
+  // See http://techunravel.blogspot.com/2011/08/win32-env-variable-pitfall-of.html
+  // Use Win32 functions to get since we do to set...
+  char buffer[4096];
+  DWORD size = GetEnvironmentVariable(variable_name.c_str(), buffer, 4096);
+  if (size == 0) {
+    // error or does not exits.
+    return "";
+  }
+  return string(buffer);
+}
+
 string stacktrace() {
   HANDLE process = GetCurrentProcess();
   SymInitialize(process, NULL, TRUE);

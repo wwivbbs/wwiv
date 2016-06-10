@@ -23,10 +23,12 @@
 #include <string>
 
 #include "core/os.h"
+#include "core/strings.h"
 
 using std::string;
 using namespace std::chrono;
 using namespace wwiv::os;
+using namespace wwiv::strings;
 
 
 TEST(OsTest, WaitFor_PredicateTrue) {
@@ -57,18 +59,24 @@ TEST(OsTest, SleepFor) {
 
 TEST(OsTest, EnvironmentVariable_Exists) {
   char s[81];
-  strcpy(s, "QWERTYUIOP=ASDF");
+  strcpy(s, "QWERTYUIOP=ASDF2");
   ASSERT_EQ(0, putenv(s));
 
-  EXPECT_EQ("ASDF", environment_variable("QWERTYUIOP"));
+  EXPECT_EQ("ASDF2", environment_variable("QWERTYUIOP"));
 }
 
 TEST(OsTest, EnvironmentVariable_DoesNotExist) {
-  EXPECT_EQ("", environment_variable("XXXQWERTYUIOP"));
+  string name = test_info_->name();
+  StringUpperCase(&name);
+  EXPECT_EQ("", environment_variable(name));
 }
 
 TEST(OsTest, SetEnvironmentVariable) {
-  ASSERT_EQ("", environment_variable("QWERTYUIOP"));
-  ASSERT_TRUE(set_environment_variable("QWERTYUIOP", "ASDF"));
-  ASSERT_EQ("ASDF", environment_variable("QWERTYUIOP"));
+  string name = test_info_->name();
+  StringUpperCase(&name);
+  // Clear the environment
+  std::cout << name;
+  ASSERT_EQ("", environment_variable(name));
+  ASSERT_TRUE(set_environment_variable(name, "ASDF"));
+  ASSERT_EQ("ASDF", environment_variable(name));
 }
