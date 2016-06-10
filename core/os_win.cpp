@@ -62,10 +62,10 @@ void sound(uint32_t frequency, std::chrono::milliseconds d) {
 
 std::string os_version_string() {
   bool server = IsWindowsServer();
-  //if (IsWindows10OrGreater()) {
-  // TODO(rushfan): Sort out Windows 10 SDK issues on build server.
-  //  return server ? "Windows 2016 Server" : "Windows 10";
-  //}
+  if (IsWindows10OrGreater()) {
+    // TODO(rushfan): Sort out Windows 10 SDK issues on build server.
+    return server ? "Windows 2016 Server" : "Windows 10";
+  }
   if (IsWindows8Point1OrGreater()) {
     return server ? "Windows Server 2012R2" : "Windows 8.1";
   }
