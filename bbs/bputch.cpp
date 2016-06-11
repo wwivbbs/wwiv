@@ -83,7 +83,7 @@ int bputch(char c, bool bUseInternalBuffer) {
       nc = atoi(pipe_color + 1);
     } else if (pipe_color[0] == 'b' || pipe_color[0] == 'B') {
       nc = 16 + atoi(pipe_color + 1);
-    } else if (pipe_color[0] == '#' || pipe_color[0] == '#') {
+    } else if (pipe_color[0] == '#') {
       bout.Color(atoi(pipe_color + 1));
       return 0;
     } else {
@@ -147,7 +147,7 @@ int bputch(char c, bool bUseInternalBuffer) {
     }
   }
   if (ansiptr) {
-    if (ansiptr > 80) {
+    if (ansiptr >= 80) {
       // Something really bad happened here, we need to stop the memory from
       // getting trashed.
       ansiptr = 0;

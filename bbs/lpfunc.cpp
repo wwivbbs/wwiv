@@ -593,6 +593,9 @@ int compare_criteria(struct search_record * sr, uploadsrec * ur) {
 
     if (buff) {
       ext_len = strlen(buff);
+    } else {
+      // Something had something.
+      return 0;
     }
     fname_len = strlen(ur->filename);
 

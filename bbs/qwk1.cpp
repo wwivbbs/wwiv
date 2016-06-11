@@ -718,7 +718,7 @@ void qwk_post_text(char *text, char *title, int sub) {
   int dm, f, done = 0, pass = 0;
   slrec ss;
   char user_name[101];
-  uint8_t a;
+  uint8_t a = 0;
 
   while (!done && !hangup) {
     if (pass > 0) {

@@ -68,11 +68,9 @@ bool CheckForHangup() {
 }
 
 static void addto(char *ansi_str, int num) {
-  char szBuffer[ 20 ];
-
   strcat(ansi_str, (ansi_str[0]) ? ";" : "\x1b[");
-  snprintf(szBuffer, sizeof(szBuffer), "%d", num);
-  strcat(ansi_str, szBuffer);
+  std::string s = std::to_string(num);
+  strcat(ansi_str, s.c_str());
 }
 
 /* Passed to this function is a one-byte attribute as defined for IBM type

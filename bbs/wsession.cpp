@@ -1283,10 +1283,10 @@ int WSession::Run(int argc, char *argv[]) {
         ok_modem_stuff = false;
         break;
       case 'P':
-	localIO()->LocalCls();
-	localIO()->LocalPrintf("Waiting for keypress...");
-	getchar();
-	break;
+	      localIO()->LocalCls();
+	      localIO()->LocalPrintf("Waiting for keypress...");
+	      getchar();
+	      break;
       case 'R':
         num_min = stoi(argument);
         break;

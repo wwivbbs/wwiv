@@ -127,7 +127,7 @@ void pausescr() {
                                            session()->user()->GetBWColor(6));
             bout << ss;
             for (int i3 = 0; i3 < i2; i3++) {
-              if (s[i3] == 3 && i1 > 1) {
+              if (ss[i3] == 3 && i1 > 1) {
                 i1 -= 2;
               }
             }

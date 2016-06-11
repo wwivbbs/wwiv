@@ -632,7 +632,6 @@ void chat1(const char *chat_line, bool two_way) {
         }
       }
       strcat(s, "\r\n");
-      chatFile.Write(s2, strlen(s2));
     } else if (chatFile.IsOpen()) {
       chatFile.Close();
       session()->localIO()->LocalPuts("-] Chat file closed.\r\n");

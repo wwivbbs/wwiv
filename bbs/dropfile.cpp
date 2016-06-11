@@ -186,11 +186,11 @@ void CreatePCBoardSysDropFile() {
   if (pcbFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     pcboard_sys_rec pcb;
     memset(&pcb, 0, sizeof(pcb));
-    strcpy(pcb.display, "-1");
-    strcpy(pcb.printer, "0"); // -1 if logging is to the printer, 0 otherwise;
-    strcpy(pcb.page_bell, " 0");
-    strcpy(pcb.alarm, " 0");
-    strcpy(pcb.errcheck, "-1");
+    memcpy(pcb.display, "-1", 2);
+    memcpy(pcb.printer, " 0", 2); // -1 if logging is to the printer, 0 otherwise;
+    memcpy(pcb.page_bell, " 0", 2);
+    memcpy(pcb.alarm, " 0", 2);
+    memcpy(pcb.errcheck, "-1", 2);
     if (okansi()) {
       pcb.graphics = 'Y';
       pcb.ansi = '1';
@@ -202,9 +202,9 @@ void CreatePCBoardSysDropFile() {
     string com_speed_str = GetComSpeedInDropfileFormat(com_speed);
     sprintf(pcb.openbps, "%-5.5s", com_speed_str.c_str());
     if (!incom) {
-      strcpy(pcb.connectbps, "Local");
+      memcpy(pcb.connectbps, "Local", 5);
     } else {
-      sprintf(pcb.connectbps, "%-5.5d", modem_speed);
+      snprintf(pcb.connectbps, 5, "%-5.5d", modem_speed);
     }
     pcb.usernum = static_cast<int16_t>(session()->usernum);
     char szName[255];
@@ -232,9 +232,9 @@ void CreatePCBoardSysDropFile() {
     strcpy(pcb.name, session()->user()->GetName());
     pcb.sminsleft = pcb.time_limit;
     pcb.snodenum = static_cast<char>((num_instances() > 1) ? session()->instance_number() : 0);
-    strcpy(pcb.seventtime, "01:00");
-    strcpy(pcb.seventactive, " 0");
-    strcpy(pcb.sslide, " 0");
+    memcpy(pcb.seventtime, "01:00", 5);
+    memcpy(pcb.seventactive, " 0", 2);
+    memcpy(pcb.sslide, " 0", 2);
     pcb.scomport = syscfgovr.primaryport + '0';
     pcb.packflag = 27;
     pcb.bpsflag = 32;

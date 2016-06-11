@@ -128,6 +128,9 @@ int match_archiver(const char *filename) {
     case COMPRESSION_RAR:
       strcpy(type, "RAR");
       break;
+    default:
+      strcpy(type, "ZIP");
+      break;
   }
 
   x = 0;

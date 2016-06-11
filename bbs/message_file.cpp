@@ -146,6 +146,7 @@ void savefile(const std::string& text, messagerec * pMessageRecord, const string
   case 2:
   {
     int gati[128];
+    memset(&gati, 0, sizeof(gati));
     unique_ptr<File> pMessageFile(OpenMessageFile(fileName));
     if (pMessageFile->IsOpen()) {
       for (int section = 0; section < 1024; section++) {

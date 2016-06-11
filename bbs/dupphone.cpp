@@ -98,10 +98,11 @@ int find_phone_number(const char *phone) {
       }
     }
   }
-  free(p);
+  int result = 0;
   if (i < nNumRecords) {
-    return p[i].usernum;
+    return result;
   }
-  return 0;
+  free(p);
+  return result;
 }
 

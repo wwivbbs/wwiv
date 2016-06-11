@@ -227,6 +227,9 @@ void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const ch
       case 5:
         strcpy(szArcCmd, session()->arcs[i].arct);
         break;
+      default:
+        // Unknown type.
+        return;
       }
 
       if (szArcCmd[0] == 0) {
