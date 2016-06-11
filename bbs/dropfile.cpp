@@ -348,18 +348,18 @@ void CreateDoor32SysDropFile() {
 
   TextFile file(fileName, "wt");
   if (file.IsOpen()) {
-    file.WriteFormatted("%d\n",     GetDoor32CommType());
-    file.WriteFormatted("%u\n",     GetDoorHandle());
+    file.WriteFormatted("%d\n", GetDoor32CommType());
+    file.WriteFormatted("%u\n", GetDoorHandle());
     string cspeed = GetComSpeedInDropfileFormat(com_speed);
-    file.WriteFormatted("%s\n",      cspeed.c_str());
+    file.WriteFormatted("%s\n", cspeed.c_str());
     file.WriteFormatted("WWIV %s\n", wwiv_version);
-    file.WriteFormatted("999999\n"); // we don't want to share this
-    file.WriteFormatted("%s\n",      session()->user()->GetRealName());
-    file.WriteFormatted("%s\n",      session()->user()->GetName());
-    file.WriteFormatted("%d\n",      session()->user()->GetSl());
-    file.WriteFormatted("%d\n",      60 * GetMinutesRemainingForDropFile());
-    file.WriteFormatted("%d\n",      GetDoor32Emulation());
-    file.WriteFormatted("%u\n",      session()->instance_number());
+    file.WriteFormatted("%d\n", session()->usernum);
+    file.WriteFormatted("%s\n", session()->user()->GetRealName());
+    file.WriteFormatted("%s\n", session()->user()->GetName());
+    file.WriteFormatted("%d\n", session()->user()->GetSl());
+    file.WriteFormatted("%d\n", 60 * GetMinutesRemainingForDropFile());
+    file.WriteFormatted("%d\n", GetDoor32Emulation());
+    file.WriteFormatted("%u\n", session()->instance_number());
     file.Close();
   }
 }
