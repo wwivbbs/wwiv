@@ -94,20 +94,38 @@ const string stuff_in(const string& commandline, const string& arg1,
         os << flags.at(ch - '1');
         break;
       // call-specific numbers
+      case 'A':
+        os << create_filename(CHAINFILE_CALLINFO);
+        break;
+      case 'C':
+        os << create_filename(CHAINFILE_CHAIN);
+        break;
+      case 'D':
+        os << create_filename(CHAINFILE_DORINFO);
+        break;
+      case 'E':
+        os << create_filename(CHAINFILE_DOOR32);
+        break;
       case 'H':
         os << session()->remoteIO()->GetDoorHandle();
-        break;
-      case 'M':
-        os << modem_speed;
         break;
       case 'K':
         os << syscfg.gfilesdir << COMMENT_TXT;
         break;
-      case 'P':
-        os << ((incom) ? syscfgovr.primaryport : 0);
+      case 'M':
+        os << modem_speed;
         break;
       case 'N':
         os << session()->instance_number();
+        break;
+      case 'O':
+        os << create_filename(CHAINFILE_PCBOARD);
+        break;
+      case 'P':
+        os << ((incom) ? syscfgovr.primaryport : 0);
+        break;
+      case 'R':
+        os << create_filename(CHAINFILE_DOOR);
         break;
       case 'S':
         os << ((com_speed == 1) ? 115200 : com_speed);
@@ -115,24 +133,8 @@ const string stuff_in(const string& commandline, const string& arg1,
       case 'T':
         os << GetTimeLeft();
         break;
-      // chain.txt type filenames
-      case 'C':
-        os << create_filename(CHAINFILE_CHAIN);
-        break;
-      case 'D':
-        os << create_filename(CHAINFILE_DORINFO);
-        break;
-      case 'O':
-        os << create_filename(CHAINFILE_PCBOARD);
-        break;
-      case 'A':
-        os << create_filename(CHAINFILE_CALLINFO);
-        break;
-      case 'R':
-        os << create_filename(CHAINFILE_DOOR);
-        break;
-      case 'E':
-        os << create_filename(CHAINFILE_DOOR32);
+      case 'U':
+        os << session()->user()->GetName();
         break;
       }
       ++iter;

@@ -89,6 +89,7 @@ void ShowChainCommandLineHelp() {
   bout << "|#1   %R    |#9 DOOR.SYS Full Pathname\r\n";
   bout << "|#1   %S    |#9 Com Port Baud Rate\r\n";
   bout << "|#1   %T    |#9 Minutes Remaining\r\n";
+  bout << "|#1   %U    |#9 Users Handle (primary name)\r\n";
   bout.nl();
 }
 
