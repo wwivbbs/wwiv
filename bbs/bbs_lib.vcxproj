@@ -45,7 +45,7 @@
     <IncludePath>$(ProjectDir)\..\;$(UniversalCRT_IncludePath);$(IncludePath);$(ProjectDir)\..\deps\rapidjson-master\include;$(ProjectDir)\..\deps\pdcurses-3.4\include\;$(ProjectDir)\..\deps\cl342\</IncludePath>
     <IntDir>lib\$(Configuration)\</IntDir>
     <CodeAnalysisRuleSet>C:\Program Files\Microsoft Visual Studio 14.0\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -64,7 +64,7 @@
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <EnablePREfast>true</EnablePREfast>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
