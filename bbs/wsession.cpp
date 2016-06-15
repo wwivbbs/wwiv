@@ -1401,8 +1401,13 @@ int WSession::Run(int argc, char *argv[]) {
 #if defined ( _WIN32 ) && !defined (WWIV_WIN32_CURSES_IO)
     reset_local_io(new Win32ConsoleIO());
 #else
-    CursesIO::Init(StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version));
-    reset_local_io(new CursesLocalIO(out->GetMaxY()));
+    if (type == CommunicationType::NONE) {
+      // We only want the localIO if we ran this locally at a terminal
+      // and also not passed in from the telnet handler, etc.  On Windows
+      // We always have a local console, so this is *NIX specific.
+      CursesIO::Init(StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version));
+      reset_local_io(new CursesLocalIO(out->GetMaxY()));
+    }
 #endif
   }
 
