@@ -288,6 +288,10 @@ static int CursesToWin32KeyCodes(int curses_code) {
   case KEY_UP: return UPARROW;
   case KEY_DOWN: return DNARROW;
   case KEY_HOME: return HOME;
+  case KEY_LEFT: return LARROW;
+  case KEY_RIGHT: return RARROW;
+  // TODO: implement the rest.
+  default: return 0;
   }
   return curses_code;
 }
