@@ -1285,7 +1285,7 @@ int WSession::Run(int argc, char *argv[]) {
       case 'P':
 	      localIO()->LocalCls();
 	      localIO()->LocalPrintf("Waiting for keypress...");
-	      getchar();
+	      (void)getchar();
 	      break;
       case 'R':
         num_min = stoi(argument);
