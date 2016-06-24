@@ -106,7 +106,6 @@ static bool check_bbsdata() {
 }
 
 static int cleanup_net1() {
-  char s[81], cl[81];
   int ok, ok2, nl = 0, anynew = 0, i = 0;
   bool abort;
 
@@ -139,7 +138,7 @@ static int cleanup_net1() {
         ok2 = 0;
         ok = 0;
         WFindFile fnd;
-        sprintf(s, "%sp*.%3.3d", session()->network_directory().c_str(), session()->instance_number());
+        string s = StringPrintf("%sp*%s", session()->network_directory().c_str(), session()->network_extension());
         bool bFound = fnd.open(s, 0);
         while (bFound) {
           ok = 1;
@@ -151,9 +150,8 @@ static int cleanup_net1() {
 
         if (session()->instance_number() == 1) {
           if (!ok) {
-            sprintf(s, "%sp*.net", session()->network_directory().c_str());
             WFindFile fnd_net;
-            ok = fnd_net.open(s, 0);
+            ok = fnd_net.open(StrCat(session()->network_directory(), "p*.net"), 0);
           }
           if (ok) {
             if (session()->wfc_status == 0) {
@@ -165,16 +163,14 @@ static int cleanup_net1() {
             ++i;
             hangup = false;
             session()->using_modem = 0;
-            sprintf(cl, "network1 .%d", session()->net_num());
-            if (ExecuteExternalProgram(cl, EFLAG_NETPROG) < 0) {
+            if (ExecuteExternalProgram(StringPrintf("network1 .%d", session()->net_num()), EFLAG_NETPROG) < 0) {
               abort = true;
             } else {
               any = 1;
             }
             ok2 = 1;
           }
-          sprintf(s, "%s%s", session()->network_directory().c_str(), LOCAL_NET);
-          if (File::Exists(s)) {
+          if (File::Exists(session()->network_directory(), LOCAL_NET)) {
             if (session()->wfc_status == 0) {
               // WFC addition
               session()->localIO()->LocalCls();
@@ -186,8 +182,7 @@ static int cleanup_net1() {
             ok = 1;
             hangup = false;
             session()->using_modem = 0;
-            sprintf(cl, "network2 .%d", session()->net_num());
-            if (ExecuteExternalProgram(cl, EFLAG_NETPROG) < 0) {
+            if (ExecuteExternalProgram(StringPrintf("network2 .%d", session()->net_num()), EFLAG_NETPROG) < 0) {
               abort = true;
             } else {
               any = 1;
