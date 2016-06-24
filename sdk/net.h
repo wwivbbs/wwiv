@@ -138,7 +138,8 @@ struct net_contact_rec {
  * attempt connection with next.
  */
 struct net_system_list_rec {
-  uint16_t  sysnum;         /* system number of the system */
+  // system number of the system
+  uint16_t  sysnum;         
   char            phone[13],      /* phone number of system */
                   name[40];       /* name of system */
   uint8_t   group;          /* group of the system */
@@ -177,17 +178,28 @@ struct net_system_list_rec {
 #define other_area_coord    0x2000  /* ^ - AC */
 #define other_subs_coord    0x4000  /* ~ - Sub Coordinator */
 
-/* This data is also read in from a text file.  It tells how much it costs for
- * sysnum to call out to other systems.
- *
- * numsys - is the number of systems that sysnum can call out to
- * connect[] - points to an array of numsys integers that tell which
- *   other systems sysnum can connect to
- * cost[] - points to an array of numsys floating point numbers telling
- *   how much it costs to connect to that system, per minute.  ie, it would
- *   cost (cost[1]) dollars per minute for sysnum to call out to system
- *   number (connect[1]).
+/* 
+ * This data is also read in from a text file.  It tells how much it costs for
+ * sysnum to call out to other systems.  It is stored in CONNECT.NET.
  */
+typedef struct {
+  /* outward calling system */
+  uint16_t sysnum;
+  /* num systems it can call */
+  uint16_t numsys;
+  /* points to an array of numsys integers that tell which
+   * other systems sysnum can connect to
+   */
+  unsigned short  *connect;
+  /* 
+   * cost[] - points to an array of numsys floating point numbers telling
+   *   how much it costs to connect to that system, per minute.  ie, it would
+   *   cost (cost[1]) dollars per minute for sysnum to call out to system
+   *   number (connect[1]).
+   */
+  float           *cost;      
+} net_interconnect_rec;
+
 struct net_call_out_rec {
   uint16_t  sysnum;         /* system number */
   uint8_t   macnum;         /* macro/script to use */

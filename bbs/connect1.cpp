@@ -220,10 +220,7 @@ void read_bbs_list() {
   if (fileBbsData.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileBbsData.GetLength();
     session()->num_sys_list = static_cast<int>(lFileLength / sizeof(net_system_list_rec));
-    if ((csn = static_cast<net_system_list_rec *>(BbsAllocA(lFileLength + 512L))) == nullptr) {
-      WWIV_ASSERT(csn != nullptr);
-      session()->AbortBBS(true);
-    }
+    csn = static_cast<net_system_list_rec *>(BbsAllocA(lFileLength + 512L));
     for (int i = 0; i < session()->num_sys_list; i += 256) {
       fileBbsData.Read(&(csn[i]), 256 * sizeof(net_system_list_rec));
     }
@@ -243,10 +240,7 @@ void read_bbs_list_index() {
   if (fileBbsData.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileLength = fileBbsData.GetLength();
     session()->num_sys_list = static_cast<int>(lFileLength / 2);
-    if ((csn_index = static_cast<unsigned short *>(BbsAllocA(lFileLength))) == nullptr) {
-      WWIV_ASSERT(csn_index != nullptr);
-      session()->AbortBBS(true);
-    }
+    csn_index = static_cast<unsigned short *>(BbsAllocA(lFileLength));
     fileBbsData.Read(csn_index, lFileLength);
     fileBbsData.Close();
   } else {
@@ -254,7 +248,6 @@ void read_bbs_list_index() {
   }
   bbs_list_net_no = session()->net_num();
 }
-
 
 int system_index(int ts) {
   if (bbs_list_net_no != session()->net_num()) {
