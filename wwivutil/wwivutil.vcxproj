@@ -87,6 +87,7 @@
     <ClCompile Include="fix\fix.cpp" />
     <ClCompile Include="fix\users.cpp" />
     <ClCompile Include="messages\messages.cpp" />
+    <ClCompile Include="net\dump_bbsdata.cpp" />
     <ClCompile Include="net\dump_callout.cpp" />
     <ClCompile Include="net\dump_contact.cpp" />
     <ClCompile Include="net\dump_packet.cpp" />
@@ -99,6 +100,7 @@
     <ClInclude Include="fix\fix.h" />
     <ClInclude Include="fix\users.h" />
     <ClInclude Include="messages\messages.h" />
+    <ClInclude Include="net\dump_bbsdata.h" />
     <ClInclude Include="net\dump_callout.h" />
     <ClInclude Include="net\dump_contact.h" />
     <ClInclude Include="net\dump_packet.h" />

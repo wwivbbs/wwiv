@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bbslist.h" />
     <ClInclude Include="callout.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="contact.h" />
@@ -34,6 +35,7 @@
     <ClInclude Include="vardec.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="bbslist.cpp" />
     <ClCompile Include="callout.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="contact.cpp" />

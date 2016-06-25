@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.x                              */
-/*             Copyright (C)2015-2016 WWIV Software Services              */
+/*                              WWIV Version 5.x                          */
+/*             Copyright (C)1998-2016, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,49 +15,30 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "wwivutil/net/net.h"
+#ifndef __INCLUDED_WWIVUTIL_DUMP_BBSDATA_H__
+#define __INCLUDED_WWIVUTIL_DUMP_BBSDATA_H__
 
-#include <cstdio>
-#include <iomanip>
-#include <iostream>
-#include <memory>
+#include <map>
 #include <string>
-#include <vector>
+
 #include "core/command_line.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "sdk/config.h"
-#include "sdk/net.h"
-#include "sdk/networks.h"
-
-#include "wwivutil/net/dump_bbsdata.h"
-#include "wwivutil/net/dump_callout.h"
-#include "wwivutil/net/dump_contact.h"
-#include "wwivutil/net/dump_packet.h"
-
-using std::cerr;
-using std::clog;
-using std::cout;
-using std::endl;
-using std::make_unique;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
-using wwiv::core::BooleanCommandLineArgument;
-using namespace wwiv::sdk;
+#include "sdk/callout.h"
+#include "wwivutil/command.h"
 
 namespace wwiv {
 namespace wwivutil {
 
-bool NetCommand::AddSubCommands() {
-  add(make_unique<DumpPacketCommand>());
-  add(make_unique<DumpCalloutCommand>());
-  add(make_unique<DumpContactCommand>());
-  add(make_unique<DumpBbsDataCommand>());
-  return true;
-}
+class DumpBbsDataCommand final: public UtilCommand {
+public:
+  DumpBbsDataCommand()
+    : UtilCommand("dump_bbsdata", "Dumps parsed representation of BBSDATA.*") {}
+  int Execute() override final;
+  std::string GetUsage() const override final;
+  bool AddSubCommands() override final;
+};
 
 
 }  // namespace wwivutil
 }  // namespace wwiv
+
+#endif  // __INCLUDED_WWIVUTIL_DUMP_BBSDATA_H__

@@ -139,18 +139,28 @@ struct net_contact_rec {
  */
 struct net_system_list_rec {
   // system number of the system
-  uint16_t  sysnum;         
-  char            phone[13],      /* phone number of system */
-                  name[40];       /* name of system */
-  uint8_t   group;          /* group of the system */
-  uint16_t  speed,          /* max baud rate of system */
-           other,          /* other info about sys (bit-mapped)*/
-           forsys;         /* how to get there */
-  int16_t           numhops;        /* how long to get there */
+  uint16_t  sysnum;
+  /* phone number of system */
+  char phone[13];
+  /* name of system */
+  char name[40];
+  /* group of the system */
+  uint8_t   group;
+  /* max baud rate of system */
+  uint16_t  speed;
+  /* other info about sys (bit-mapped) */
+  uint16_t other;
+  /* how to get there */
+  uint16_t forsys;
+  /* how long to get there */
+  int16_t numhops;
   union {
-    uint16_t  rout_fact;  /* routing factor */
-    float           cost;       /* cost factor */
-    int32_t            temp;       /* temporary variable */
+    /* routing factor */
+    uint16_t  rout_fact;
+    /* cost factor */
+    float  cost;
+    /* temporary variable */
+    int32_t temp;
   } xx;
 };
 

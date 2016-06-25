@@ -63,6 +63,9 @@
     <ClCompile Include="fix\dirs.cpp">
       <Filter>Source Files\fix</Filter>
     </ClCompile>
+    <ClCompile Include="net\dump_bbsdata.cpp">
+      <Filter>Source Files\net</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="wwivutil.h">

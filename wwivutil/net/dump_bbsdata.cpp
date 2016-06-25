@@ -15,49 +15,74 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "wwivutil/net/net.h"
+#include "wwivutil/net/dump_bbsdata.h"
 
-#include <cstdio>
-#include <iomanip>
 #include <iostream>
-#include <memory>
+#include <map>
 #include <string>
 #include <vector>
 #include "core/command_line.h"
-#include "core/file.h"
+#include "core/log.h"
 #include "core/strings.h"
+#include "sdk/bbslist.h"
 #include "sdk/config.h"
-#include "sdk/net.h"
+#include "sdk/callout.h"
+#include "sdk/config.h"
 #include "sdk/networks.h"
 
-#include "wwivutil/net/dump_bbsdata.h"
-#include "wwivutil/net/dump_callout.h"
-#include "wwivutil/net/dump_contact.h"
-#include "wwivutil/net/dump_packet.h"
-
-using std::cerr;
-using std::clog;
 using std::cout;
 using std::endl;
-using std::make_unique;
-using std::setw;
+using std::map;
 using std::string;
-using std::unique_ptr;
-using std::vector;
-using wwiv::core::BooleanCommandLineArgument;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace wwivutil {
 
-bool NetCommand::AddSubCommands() {
-  add(make_unique<DumpPacketCommand>());
-  add(make_unique<DumpCalloutCommand>());
-  add(make_unique<DumpContactCommand>());
-  add(make_unique<DumpBbsDataCommand>());
+std::string DumpBbsDataCommand::GetUsage() const {
+  std::ostringstream ss;
+  ss << "Usage:   dump_bbsdata" << endl;
+  ss << "Example: dump_bbsdata" << endl;
+  return ss.str();
+}
+
+bool DumpBbsDataCommand::AddSubCommands() {
+  add_argument(BooleanCommandLineArgument("bbslist", 'l', "Parse BBSList.NET vs. BBSDATA.NET", false));
+
   return true;
 }
 
+int DumpBbsDataCommand::Execute() {
+  Networks networks(*config()->config());
+  if (!networks.IsInitialized()) {
+    LOG << "Unable to load networks.";
+    return 1;
+  }
 
-}  // namespace wwivutil
-}  // namespace wwiv
+  map<const string, BbsListNet> bbslists;
+  for (const auto net : networks.networks()) {
+    string lower_case_network_name(net.name);
+    StringLowerCase(&lower_case_network_name);
+    if (arg("bbslist").as_bool()) {
+      LOG << "Parsing BBSLIST.NET";
+      bbslists.emplace(lower_case_network_name, BbsListNet::ParseBbsListNet(net.dir));
+    } else {
+      LOG << "Reading BBSDATA.NET";
+      bbslists.emplace(lower_case_network_name, BbsListNet::ReadBbsDataNet(net.dir));
+    }
+  }
+
+  for (const auto& b : bbslists) {
+    cout << "BBSDATA.NET information: : " << b.first << endl;
+    cout << "===========================================================" << endl;
+    cout << b.second.ToString() << endl;
+  }
+
+  return 0;
+}
+
+
+}
+}
