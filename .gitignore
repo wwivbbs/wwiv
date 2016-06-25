@@ -5,6 +5,8 @@
 *.suo
 *.user
 *.sln.docstates
+*.VC.opendb
+*.VC.db
 
 # Build results
 [Dd]ebug/
@@ -17,6 +19,8 @@ build/
 bld/
 [Bb]in/
 [Oo]bj/
+unzip__Win32_Release/
+zip___Win32_Release/
 
 # archives directory from jenkins
 archives/

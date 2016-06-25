@@ -138,7 +138,8 @@ static int cleanup_net1() {
         ok2 = 0;
         ok = 0;
         WFindFile fnd;
-        string s = StringPrintf("%sp*%s", session()->network_directory().c_str(), session()->network_extension());
+        string s = StringPrintf("%sp*%s", 
+          session()->network_directory().c_str(), session()->network_extension().c_str());
         bool bFound = fnd.open(s, 0);
         while (bFound) {
           ok = 1;
