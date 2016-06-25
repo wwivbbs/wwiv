@@ -58,6 +58,7 @@ char StringToChar(const std::string& s);
 uint8_t StringToUnsignedChar(const std::string& s);
 unsigned int StringToUnsignedInt(const std::string& s);
 int StringToInt(const std::string& s);
+float StringToFloat(const std::string& s);
 
 
 const std::string& StringReplace(std::string* orig, const std::string& old_string, const std::string& new_string);

@@ -293,7 +293,6 @@ static int CursesToWin32KeyCodes(int curses_code) {
   // TODO: implement the rest.
   default: return 0;
   }
-  return curses_code;
 }
 
 unsigned char CursesLocalIO::LocalGetChar() {

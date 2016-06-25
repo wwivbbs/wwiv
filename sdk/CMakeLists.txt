@@ -4,8 +4,10 @@ project (SDK)
 include_directories(..)
 
 set(COMMON_SOURCES
+  bbslist.cpp
   callout.cpp
   config.cpp
+  connect.cpp
   contact.cpp
   datetime.cpp
   msgapi/message_api.cpp

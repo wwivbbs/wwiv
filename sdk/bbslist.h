@@ -44,7 +44,7 @@ class BbsListNet {
    std::map<uint16_t, net_system_list_rec> node_config_;
 };
 
-bool ParseBbsListNetLine(const std::string& line, net_system_list_rec* config);
+bool ParseBbsListNetLine(const std::string& line, net_system_list_rec* config, int32_t* reg_number);
 
 }  // namespace net
 }  // namespace wwiv

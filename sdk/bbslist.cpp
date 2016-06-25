@@ -49,7 +49,7 @@ namespace wwiv {
 namespace sdk {
 
 // [[ VisibleForTesting ]]
-bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con) {
+bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* reg_no) {
   if (ss.empty() || ss[0] != '@') {
     // skip empty lines and those not starting with @.
     return false;
@@ -111,7 +111,7 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con) {
       case '*': {
         ++iter;  // skip past *
         string phone_number;
-        while (iter != ss.end() && !iswspace(*iter)) {
+        while (iter != ss.end() && !isspace(*iter)) {
           phone_number.push_back(*iter++);
         }
         strncpy(con->phone, phone_number.c_str(), sizeof(con->phone));
@@ -127,7 +127,7 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con) {
         while (iter != ss.end() && *iter != ']') {
           reg_number.push_back(*iter++);
         }
-        con->xx.temp = StringToInt(reg_number);
+        *reg_no = StringToInt(reg_number);
       } break;
       case '\"': {
         ++iter;  // skip past first "
@@ -155,7 +155,9 @@ static bool ParseBbsListNetFile(std::map<uint16_t, net_system_list_rec>* node_co
   while (bbs_list_file.ReadLine(&line)) {
     StringTrim(&line);
     net_system_list_rec node_config;
-    if (ParseBbsListNetLine(line, &node_config)) {
+    // TODO: make map of reg #
+    int32_t reg_number;
+    if (ParseBbsListNetLine(line, &node_config, &reg_number)) {
       // Parsed a line correctly.
       node_config_map->emplace(node_config.sysnum, node_config);
     }

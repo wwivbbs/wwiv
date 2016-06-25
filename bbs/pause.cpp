@@ -84,7 +84,6 @@ static char GetKeyForPause() {
 void pausescr() {
   int i1, warned;
   int i = 0;
-  char s[81];
   char ch;
   double ttotal;
   time_t tstart, tstop;

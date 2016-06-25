@@ -178,6 +178,11 @@ int StringToInt(const string& s) {
     [](const string& s) { return std::stoi(s); }, s);
 }
 
+float StringToFloat(const string& s) {
+  return StringToT<float, float>(
+    [](const string& s) { return std::stof(s); }, s);
+}
+
 const string& StringReplace(string* orig, const string& old_string, const string& new_string) {
   string::size_type pos = orig->find(old_string, 0);
   while (pos != string::npos) {

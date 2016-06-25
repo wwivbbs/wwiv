@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV Version 5.x                              */
-/*             Copyright (C)2015-2016 WWIV Software Services              */
+/*             Copyright (C)2014-2016 WWIV Software Services              */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,51 +15,36 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "wwivutil/net/net.h"
+#ifndef __INCLUDED_SDK_CONNECT_H__
+#define __INCLUDED_SDK_CONNECT_H__
 
-#include <cstdio>
-#include <iomanip>
-#include <iostream>
-#include <memory>
+#include <initializer_list>
+#include <map>
 #include <string>
-#include <vector>
-#include "core/command_line.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "sdk/config.h"
+
 #include "sdk/net.h"
-#include "sdk/networks.h"
-
-#include "wwivutil/net/dump_bbsdata.h"
-#include "wwivutil/net/dump_callout.h"
-#include "wwivutil/net/dump_connect.h"
-#include "wwivutil/net/dump_contact.h"
-#include "wwivutil/net/dump_packet.h"
-
-using std::cerr;
-using std::clog;
-using std::cout;
-using std::endl;
-using std::make_unique;
-using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
-using wwiv::core::BooleanCommandLineArgument;
-using namespace wwiv::sdk;
 
 namespace wwiv {
-namespace wwivutil {
+namespace sdk {
 
-bool NetCommand::AddSubCommands() {
-  add(make_unique<DumpPacketCommand>());
-  add(make_unique<DumpCalloutCommand>());
-  add(make_unique<DumpConnectCommand>());
-  add(make_unique<DumpContactCommand>());
-  add(make_unique<DumpBbsDataCommand>());
-  return true;
-}
+  
+class Connect {
+ public:
+  explicit Connect(const std::string& network_dir);
+  // VisibleForTesting
+  Connect(std::initializer_list<net_interconnect_rec> l);
+  virtual ~Connect();
+  const net_interconnect_rec* node_config_for(int node) const;
+  Connect& operator=(const Connect& rhs) { node_config_ = rhs.node_config_; return *this; }
+  std::string ToString() const;
 
+ private:
+  std::map<uint16_t, net_interconnect_rec> node_config_;
+};
 
-}  // namespace wwivutil
+bool ParseConnectNetLine(const std::string& line, net_interconnect_rec* config);
+
+}  // namespace net
 }  // namespace wwiv
+
+#endif  // __INCLUDED_SDK_CONNECT_H__

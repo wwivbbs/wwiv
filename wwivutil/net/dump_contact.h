@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_DUMP_CONNECT_H__
-#define __INCLUDED_WWIVUTIL_DUMP_CONNECT_H__
+#ifndef __INCLUDED_WWIVUTIL_DUMP_CONTACT_H__
+#define __INCLUDED_WWIVUTIL_DUMP_CONTACT_H__
 
 #include <map>
 #include <string>
@@ -40,4 +40,4 @@ public:
 }  // namespace wwivutil
 }  // namespace wwiv
 
-#endif  // __INCLUDED_WWIVUTIL_DUMP_CONNECT_H__
+#endif  // __INCLUDED_WWIVUTIL_DUMP_CONTACT_H__

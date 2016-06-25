@@ -23,6 +23,7 @@
 #include "sdk/msdos_stdint.h"
 #else
 #include <cstdint>
+#include <vector>
 #endif  // __MSDOS__
 
 #pragma pack(push, 1)
@@ -116,6 +117,7 @@ struct net_contact_rec {
            bytes_waiting;      /* bytes waiting to be sent */
 };
 
+
 /* Each system will hold a file of these records.  Each record will hold the
  * data pertaining to all contacts with other systems.
  *
@@ -191,24 +193,30 @@ struct net_system_list_rec {
 /* 
  * This data is also read in from a text file.  It tells how much it costs for
  * sysnum to call out to other systems.  It is stored in CONNECT.NET.
+ * This is never written as binary data.
  */
-typedef struct {
+struct net_interconnect_rec {
   /* outward calling system */
   uint16_t sysnum;
   /* num systems it can call */
   uint16_t numsys;
+
+  // This requires modern compilers
+#ifndef __MSDOS__
+
   /* points to an array of numsys integers that tell which
    * other systems sysnum can connect to
    */
-  unsigned short  *connect;
+  std::vector<uint16_t> connect;
   /* 
    * cost[] - points to an array of numsys floating point numbers telling
    *   how much it costs to connect to that system, per minute.  ie, it would
    *   cost (cost[1]) dollars per minute for sysnum to call out to system
    *   number (connect[1]).
    */
-  float           *cost;      
-} net_interconnect_rec;
+  std::vector<float> cost;
+#endif  // __MSDOS__
+};
 
 struct net_call_out_rec {
   uint16_t  sysnum;         /* system number */
@@ -221,7 +229,7 @@ struct net_call_out_rec {
   uint8_t   times_per_day;  /* number of calls per day */
   uint8_t   call_x_days;    /* call only every x days */
   uint16_t  min_k;          /* minimum # k before callout */
-  char *          opts;           /* options or nullptr */
+  char* opts;           /* options or nullptr */
 };
 
 /* This record holds info about other systems that the sysop has determined

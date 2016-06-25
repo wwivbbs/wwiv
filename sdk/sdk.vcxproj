@@ -14,6 +14,7 @@
     <ClInclude Include="bbslist.h" />
     <ClInclude Include="callout.h" />
     <ClInclude Include="config.h" />
+    <ClInclude Include="connect.h" />
     <ClInclude Include="contact.h" />
     <ClInclude Include="datetime.h" />
     <ClInclude Include="filenames.h" />
@@ -38,6 +39,7 @@
     <ClCompile Include="bbslist.cpp" />
     <ClCompile Include="callout.cpp" />
     <ClCompile Include="config.cpp" />
+    <ClCompile Include="connect.cpp" />
     <ClCompile Include="contact.cpp" />
     <ClCompile Include="datetime.cpp" />
     <ClCompile Include="msgapi\message_api.cpp" />

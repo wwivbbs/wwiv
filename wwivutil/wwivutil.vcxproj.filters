@@ -66,6 +66,9 @@
     <ClCompile Include="net\dump_bbsdata.cpp">
       <Filter>Source Files\net</Filter>
     </ClCompile>
+    <ClCompile Include="net\dump_connect.cpp">
+      <Filter>Source Files\net</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="wwivutil.h">
@@ -100,6 +103,12 @@
     </ClInclude>
     <ClInclude Include="fix\dirs.h">
       <Filter>Header Files\fix</Filter>
+    </ClInclude>
+    <ClInclude Include="net\dump_bbsdata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net\dump_connect.h">
+      <Filter>Header Files\net</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
