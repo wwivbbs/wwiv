@@ -173,22 +173,22 @@ static bool ParseBbsListNetFile(
       std::cout << "Path to " << node_config.sysnum << ": ";
       std::copy(path.begin(), path.end(), std::ostream_iterator<uint16_t>(std::cout, " "));
       std::cout << std::endl;
-      if (!graph.has_node(node_config.sysnum) || path.empty()) {
-        LOG << "no path to " << node_config.sysnum;
-        node_config.numhops = 10000;
-        node_config.xx.cost = 10000;
-        node_config.forsys = std::numeric_limits<uint16_t>::max();
-      } else {
+      if (graph.has_node(node_config.sysnum) && path.front() == net_node_number) {
+        path.pop_front();
         // We have a path...
         //std::copy(path.begin(), path.end(), std::ostream_iterator<uint16_t>(std::cout, " "));
-        if (path.front() == net_node_number && net_node_number != node_config.sysnum) {
-          path.pop_front();
-        }
         node_config.numhops = path.size();
         node_config.xx.cost = cost;
         if (!path.empty()) {
           node_config.forsys = path.front();
+        } else {
+          node_config.forsys = node_config.sysnum;
         }
+      } else {
+        LOG << "no path to " << node_config.sysnum;
+        node_config.numhops = 10000;
+        node_config.xx.cost = 10000;
+        node_config.forsys = std::numeric_limits<uint16_t>::max();
       }
       node_config_map->emplace(node_config.sysnum, node_config);
     }
