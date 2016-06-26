@@ -37,6 +37,7 @@ class Connect {
   const net_interconnect_rec* node_config_for(int node) const;
   Connect& operator=(const Connect& rhs) { node_config_ = rhs.node_config_; return *this; }
   std::string ToString() const;
+  const std::map<uint16_t, net_interconnect_rec>& node_config() const { return node_config_; }
 
  private:
   std::map<uint16_t, net_interconnect_rec> node_config_;

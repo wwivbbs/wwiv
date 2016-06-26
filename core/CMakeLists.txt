@@ -8,6 +8,7 @@ set(COMMON_SOURCES
   inifile.cpp
   file.cpp
   file_unix.cpp
+  graphs.cpp
   log.cpp
   md5.cpp
   os.cpp

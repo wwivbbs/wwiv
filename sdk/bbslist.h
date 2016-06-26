@@ -30,7 +30,7 @@ namespace sdk {
   
 class BbsListNet {
  public:
-   static BbsListNet ParseBbsListNet(const std::string& network_dir);
+   static BbsListNet ParseBbsListNet(uint16_t net_node_number, const std::string& network_dir);
    static BbsListNet ReadBbsDataNet(const std::string& network_dir);
   // VisibleForTesting
   BbsListNet(std::initializer_list<net_system_list_rec> l);

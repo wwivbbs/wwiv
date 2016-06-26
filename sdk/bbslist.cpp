@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cwctype>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <map>
 #include <sstream>
@@ -29,8 +30,10 @@
 #include "core/inifile.h"
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/graphs.h"
 #include "core/log.h"
 #include "core/textfile.h"
+#include "sdk/connect.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
 
@@ -145,11 +148,17 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* re
     return true;
 }
 
-static bool ParseBbsListNetFile(std::map<uint16_t, net_system_list_rec>* node_config_map, const string network_dir) {
+static bool ParseBbsListNetFile(
+  std::map<uint16_t, net_system_list_rec>* node_config_map, 
+  const string network_dir,
+  wwiv::graphs::Graph& graph,
+  uint16_t net_node_number) {
   TextFile bbs_list_file(network_dir, BBSLIST_NET, "rt");
   if (!bbs_list_file.IsOpen()) {
     return false;
   }
+  std::cout << "Parsing " << network_dir << std::endl;
+
   // A line will be of the format @node *phone options [reg] "name"
   string line;
   while (bbs_list_file.ReadLine(&line)) {
@@ -159,6 +168,28 @@ static bool ParseBbsListNetFile(std::map<uint16_t, net_system_list_rec>* node_co
     int32_t reg_number;
     if (ParseBbsListNetLine(line, &node_config, &reg_number)) {
       // Parsed a line correctly.
+      float cost = graph.cost_to(node_config.sysnum);
+      std::list<uint16_t> path = graph.shortest_path_to(node_config.sysnum);
+      std::cout << "Path to " << node_config.sysnum << ": ";
+      std::copy(path.begin(), path.end(), std::ostream_iterator<uint16_t>(std::cout, " "));
+      std::cout << std::endl;
+      if (!graph.has_node(node_config.sysnum) || path.empty()) {
+        LOG << "no path to " << node_config.sysnum;
+        node_config.numhops = 10000;
+        node_config.xx.cost = 10000;
+        node_config.forsys = std::numeric_limits<uint16_t>::max();
+      } else {
+        // We have a path...
+        //std::copy(path.begin(), path.end(), std::ostream_iterator<uint16_t>(std::cout, " "));
+        if (path.front() == net_node_number && net_node_number != node_config.sysnum) {
+          path.pop_front();
+        }
+        node_config.numhops = path.size();
+        node_config.xx.cost = cost;
+        if (!path.empty()) {
+          node_config.forsys = path.front();
+        }
+      }
       node_config_map->emplace(node_config.sysnum, node_config);
     }
   }
@@ -166,9 +197,25 @@ static bool ParseBbsListNetFile(std::map<uint16_t, net_system_list_rec>* node_co
 }
 
 // static 
-BbsListNet BbsListNet::ParseBbsListNet(const std::string& network_dir) {
+BbsListNet BbsListNet::ParseBbsListNet(uint16_t net_node_number, const std::string& network_dir) {
   BbsListNet b;
-  ParseBbsListNetFile(&b.node_config_, network_dir);
+
+  // We now need to add in cost and routing information.
+  Connect connect(network_dir);
+
+  // Build the network graph
+  wwiv::graphs::Graph graph(net_node_number, std::numeric_limits<uint16_t>::max());
+  for (const auto& e : connect.node_config()) {
+    const auto& c = e.second;
+    uint16_t source = c.sysnum;
+    
+    auto cost_iter = c.cost.begin();
+    for (auto dest_iter = c.connect.begin(); dest_iter != std::end(c.connect); dest_iter++, cost_iter++) {
+      graph.add_edge(source, *dest_iter, *cost_iter);
+    }
+  }
+
+  ParseBbsListNetFile(&b.node_config_, network_dir, graph, net_node_number);
   return b;
 }
 
