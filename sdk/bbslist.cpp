@@ -58,7 +58,7 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* re
     return false;
   }
   memset(con, 0, sizeof(net_system_list_rec));
-  LOG << ss;
+  // LOG << ss;
 
   for (auto iter = ss.begin(); iter != ss.end(); iter++) {
       switch (*iter) {
@@ -170,9 +170,9 @@ static bool ParseBbsListNetFile(
       // Parsed a line correctly.
       float cost = graph.cost_to(node_config.sysnum);
       std::list<uint16_t> path = graph.shortest_path_to(node_config.sysnum);
-      std::cout << "Path to " << node_config.sysnum << ": ";
-      std::copy(path.begin(), path.end(), std::ostream_iterator<uint16_t>(std::cout, " "));
-      std::cout << std::endl;
+      // std::cout << "Path to " << node_config.sysnum << ": ";
+      // std::copy(path.begin(), path.end(), std::ostream_iterator<uint16_t>(std::cout, " "));
+      // std::cout << std::endl;
       if (graph.has_node(node_config.sysnum) && path.front() == net_node_number) {
         path.pop_front();
         // We have a path...
