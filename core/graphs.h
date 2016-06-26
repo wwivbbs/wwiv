@@ -73,7 +73,7 @@ private:
   std::vector<float> cost_;
   std::vector<uint16_t> previous_;
 
-  void Graph::Compute();
+  void Compute();
 };
 
 }  // namespace graphs
