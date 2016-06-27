@@ -298,7 +298,7 @@ void RemoteSocketIO::StopThreads() {
   // Wait for read thread to exit.
   read_thread_.join();
   threads_started_ = false;
-  if (socket_ == INVALID_SOCKET) {
+  if (socket_ != INVALID_SOCKET) {
     closesocket(socket_);
     socket_ = INVALID_SOCKET;
   }
@@ -360,19 +360,27 @@ bool RemoteSocketIO::Initialize() {
 void RemoteSocketIO::InboundTelnetProc() {
   constexpr size_t size = 4 * 1024;
   unique_ptr<char[]> data = make_unique<char[]>(size);
-
-  while (true) {
-    if (stop_.load()) {
-      return;
+  try {
+    while (true) {
+      if (stop_.load()) {
+        return;
+      }
+      if (!socket_avail(socket_, 1)) {
+        continue;
+      }
+      int num_read = recv(socket_, data.get(), size, 0);
+      if (num_read == SOCKET_ERROR) {
+        // Got Socket error.
+        closesocket(socket_);
+        socket_ = INVALID_SOCKET;
+        return;
+      }
+      AddStringToInputBuffer(0, num_read, data.get());
     }
-    if (!socket_avail(socket_, 1)) {
-      continue;
-    }
-    int num_read = recv(socket_, data.get(), size, 0);
-    if (num_read == SOCKET_ERROR) {
-      return;
-    }
-    AddStringToInputBuffer(0, num_read, data.get());
+  } catch (const socket_error& e) {
+    std::clog << "InboundTelnetProc exiting. Caught socket_error: " << e.what() << std::endl;
+    closesocket(socket_);
+    socket_ = INVALID_SOCKET;
   }
 }
 
