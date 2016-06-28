@@ -374,6 +374,11 @@ void RemoteSocketIO::InboundTelnetProc() {
         closesocket(socket_);
         socket_ = INVALID_SOCKET;
         return;
+      } else if (num_read == 0) {
+        // The other side has gracefully closed the socket.
+        closesocket(socket_);
+        socket_ = INVALID_SOCKET;
+        return;
       }
       AddStringToInputBuffer(0, num_read, data.get());
     }
