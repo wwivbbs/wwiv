@@ -38,6 +38,7 @@ bool Graph::add_edge(uint16_t source, uint16_t dest, float cost) {
     return false;
   }
 
+  //std::clog << "adding edge: " << source << " " << dest << " " << cost << " " << std::boolalpha << computed_ << std::endl;
   adjacency_list_[source].emplace_back(dest, cost);
   return true;
 }
@@ -70,7 +71,28 @@ void Graph::Compute() {
       }
     }
   }
+  //DumpCosts();
 }
+
+float Graph::cost_to(uint16_t destination) { 
+  if (!computed_) {
+    Compute();
+  }
+  return cost_[destination];
+}
+
+
+void Graph::DumpCosts() const {
+  std::clog << "costs_: ";
+  for (int i = 0; i < std::numeric_limits<uint16_t>::max(); i++) {
+    float cost = cost_[i];
+    if (isfinite(cost)) {
+      std::clog << i << "[" << cost_[i] << "] ";
+    }
+  }
+  std::clog << std::endl;
+}
+
 
 std::list<uint16_t> Graph::shortest_path_to(uint16_t destination) {
   if (!computed_) {

@@ -56,7 +56,8 @@ public:
   bool add_edge(uint16_t source, uint16_t dest, float cost);
   bool has_node(uint16_t source);
   std::list<uint16_t> shortest_path_to(uint16_t destination);
-  float cost_to(uint16_t destination) { return cost_[destination]; }
+  float cost_to(uint16_t destination);
+  void DumpCosts() const;
   int num_hops_to(uint16_t destination) { 
     std::list<uint16_t> path = shortest_path_to(destination);
     if (path.empty()) {

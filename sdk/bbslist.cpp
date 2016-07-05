@@ -168,16 +168,20 @@ static bool ParseBbsListNetFile(
     int32_t reg_number;
     if (ParseBbsListNetLine(line, &node_config, &reg_number)) {
       // Parsed a line correctly.
-      float cost = graph.cost_to(node_config.sysnum);
       std::list<uint16_t> path = graph.shortest_path_to(node_config.sysnum);
-      // std::cout << "Path to " << node_config.sysnum << ": ";
-      // std::copy(path.begin(), path.end(), std::ostream_iterator<uint16_t>(std::cout, " "));
-      // std::cout << std::endl;
+      float cost = graph.cost_to(node_config.sysnum);
+      if (!isfinite(cost)) {
+        // LOG << "high cost " << cost << " to " << node_config.sysnum;
+        // std::clog << "Path to " << node_config.sysnum << ": ";
+        // std::copy(path.begin(), path.end(), std::ostream_iterator<uint16_t>(std::clog, " "));
+        // std::clog << std::endl;
+        // graph.DumpCosts();
+      }
       if (graph.has_node(node_config.sysnum) && path.front() == net_node_number) {
         path.pop_front();
         // We have a path...
         //std::copy(path.begin(), path.end(), std::ostream_iterator<uint16_t>(std::cout, " "));
-        node_config.numhops = path.size();
+        node_config.numhops = static_cast<int16_t>(path.size());
         node_config.xx.cost = cost;
         if (!path.empty()) {
           node_config.forsys = path.front();
@@ -200,6 +204,7 @@ static bool ParseBbsListNetFile(
 BbsListNet BbsListNet::ParseBbsListNet(uint16_t net_node_number, const std::string& network_dir) {
   BbsListNet b;
 
+  //std::clog << "Processing " << network_dir << std::endl;
   // We now need to add in cost and routing information.
   Connect connect(network_dir);
 
