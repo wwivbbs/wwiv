@@ -134,6 +134,7 @@ int dump_file(const std::string& filename) {
       std::vector<uint16_t> list;
       list.resize(h.list_len);
       f.Read(&list[0], 2 * h.list_len);
+      cout << "System List: ";
       for (const auto item : list) {
         cout << item << " ";
       }
