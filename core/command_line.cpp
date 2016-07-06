@@ -93,9 +93,8 @@ bool CommandLine::Parse() {
     return false;
   }
 
-  if (raw_args_.size() <= 1) {
+  if (raw_args_.size() <= 1 && !no_args_allowed()) {
     clog << "No command line arguments specified." << endl;
-    cout << GetHelp();
     return false;
   }
   return true;

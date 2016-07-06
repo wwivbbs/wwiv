@@ -196,8 +196,13 @@ public:
   virtual int Execute() override final;
   bool AddStandardArgs() override;
   std::string GetHelp() const override final;
+
+  void set_no_args_allowed(bool no_args_allowed) { no_args_allowed_ = no_args_allowed; }
+  bool no_args_allowed() const { return no_args_allowed_; }
 private:
   const std::string program_name_;
+  bool no_args_allowed_ = false;
+
   bool ParseImpl();
 };
 
