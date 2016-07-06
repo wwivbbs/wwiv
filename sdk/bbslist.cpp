@@ -18,7 +18,8 @@
 #include "sdk/bbslist.h"
 
 #include <algorithm>
-#include <cwctype>
+#include <cmath>
+#include <cctype>
 #include <iostream>
 #include <iterator>
 #include <memory>
@@ -170,7 +171,7 @@ static bool ParseBbsListNetFile(
       // Parsed a line correctly.
       std::list<uint16_t> path = graph.shortest_path_to(node_config.sysnum);
       float cost = graph.cost_to(node_config.sysnum);
-      if (!isfinite(cost)) {
+      if (!std::isfinite(cost)) {
         // LOG << "high cost " << cost << " to " << node_config.sysnum;
         // std::clog << "Path to " << node_config.sysnum << ": ";
         // std::copy(path.begin(), path.end(), std::ostream_iterator<uint16_t>(std::clog, " "));
