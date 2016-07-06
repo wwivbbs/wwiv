@@ -87,7 +87,7 @@ void Graph::DumpCosts() const {
   std::clog << "costs_: ";
   for (int i = 0; i < std::numeric_limits<uint16_t>::max(); i++) {
     float cost = cost_[i];
-    if (isfinite(cost)) {
+    if (std::isfinite(cost)) {
       std::clog << i << "[" << cost_[i] << "] ";
     }
   }
