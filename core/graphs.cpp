@@ -2,6 +2,7 @@
 // Also http://stackoverflow.com/a/22566583/1270019
 #include "core/graphs.h"
 
+#include <cmath>
 #include <iostream>
 #include <vector>
 #include <string>
