@@ -40,7 +40,9 @@
 #include "networkb/ppp_config.h"
 
 #include "sdk/bbslist.h"
+#include "sdk/callout.h"
 #include "sdk/config.h"
+#include "sdk/contact.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
 
@@ -112,6 +114,7 @@ int main(int argc, char** argv) {
     const string network_dir = networks[network_name].dir;
     auto sysnum = networks[network_name].sysnum;
 
+    LOG << "Reading BBSLIST.NET..";
     BbsListNet b = BbsListNet::ParseBbsListNet(sysnum, network_dir);
     if (b.empty()) {
       LOG << "ERROR: bbslist.net didn't parse.";
@@ -129,29 +132,49 @@ int main(int argc, char** argv) {
     }
 
     {
+      LOG << "Writing BBSDATA.NET...";
       DataFile<net_system_list_rec> bbsdata_net_file(network_dir, BBSDATA_NET);
       bbsdata_net_file.WriteVector(bbsdata_data);
     }
     {
+      LOG << "Writing BBSDATA.IND...";
       DataFile<uint16_t> bbsdata_ind_file(network_dir, BBSDATA_IND);
       bbsdata_ind_file.WriteVector(bbsdata_ind_data);
     }
     {
-      DataFile<uint16_t> bbsdata_rou_file(network_dir, BBSDATA_IND);
+      LOG << "Writing BBSDATA.ROU...";
+      DataFile<uint16_t> bbsdata_rou_file(network_dir, BBSDATA_ROU);
       bbsdata_rou_file.WriteVector(bbsdata_rou_data);
     }
 
+    {
+      LOG << "Reading CALLOUT.NET...";
+      Callout callout(network_dir);
+      Contact contact(network_dir, true);
+
+      for (const auto& entry : callout.node_config()) {
+        // Ensure we have a contact entry for each node in CALLOUT.NET
+        const auto node = entry.first;
+        contact.ensure_rec_for(node);
+      }
+    }
+
+    {
+      statusrec status{};
+      DataFile<statusrec> file(config.datadir(), STATUS_DAT, File::modeBinary | File::modeReadWrite);
+      if (file) {
+        if (file.Read(0, &status)) {
+          status.filechange[filechange_net]++;
+          file.Write(0, &status);
+        }
+      }
+    }
+
     /*
-     * TODO:
-     * Read callout.net
-     * open contact.net
-     * add missing entries into contact.net
-     *
+     * Still TODO:
      * check network for errors & send feedback
      * rename dead.net to pending file
      * rename all S*.NET files to pending file.
-     * update status.dat increment status.filechange[filechange_net]
-     *
      */
   } catch (const std::exception& e) {
     LOG << "ERROR: [network]: " << e.what();

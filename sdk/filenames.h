@@ -39,6 +39,7 @@
 #define BBSDATA_NET "bbsdata.net"
 #define BBSDATA_IND "bbsdata.ind"
 #define BBSDATA_REG "bbsdata.reg"
+#define BBSDATA_ROU "bbsdata.rou"
 #define BBSLIST_NET "bbslist.net"
 
 #define BBSLIST_MSG "bbslist.msg"
