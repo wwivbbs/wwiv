@@ -98,7 +98,7 @@ Contact::~Contact() {
   }
 }
 
-net_contact_rec* Contact::contact_rec_for(int node) {
+net_contact_rec* Contact::contact_rec_for(uint16_t node) {
   for (net_contact_rec& c : contacts_) {
     if (c.systemnumber == node) {
       return &c;
@@ -107,11 +107,25 @@ net_contact_rec* Contact::contact_rec_for(int node) {
   return nullptr;
 }
 
+void Contact::ensure_rec_for(uint16_t node) {
+  const auto* current = contact_rec_for(node);
+  if (current == nullptr) {
+    net_contact_rec r;
+    memset(&r, 0, sizeof(net_contact_rec));
+    r.systemnumber = node;
+    contacts_.emplace_back(r);
+  }
+}
+
 void Contact::add_connect(int node, time_t time, uint32_t bytes_sent, uint32_t bytes_received) {
   net_contact_rec* c = contact_rec_for(node);
   if (c == nullptr) {
-    // TODO(rushfan): Add support for creating new contact records.
-    return;
+    ensure_rec_for(node);
+    c = contact_rec_for(node);
+    if (c == nullptr) {
+      // Unable to add node in add_connect.
+      return;
+    }
   }
   add_contact(c, time);
 
@@ -127,8 +141,12 @@ void Contact::add_connect(int node, time_t time, uint32_t bytes_sent, uint32_t b
 void Contact::add_failure(int node, time_t time) {
   net_contact_rec* c = contact_rec_for(node);
   if (c == nullptr) {
-    // TODO(rushfan): Add support for creating new contact records.
-    return;
+    ensure_rec_for(node);
+    c = contact_rec_for(node);
+    if (c == nullptr) {
+      // Unable to add node in add_connect.
+      return;
+    }
   }
 
   add_contact(c, time);

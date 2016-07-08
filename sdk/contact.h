@@ -42,7 +42,8 @@ class Contact {
   // Was this list initialized properly.
   bool IsInitialized() const { return initialized_; }
   // returns a mutable net_contact_rec for system number "node"
-  net_contact_rec* contact_rec_for(int node);
+  net_contact_rec* contact_rec_for(uint16_t node);
+  void ensure_rec_for(uint16_t node);
 
   /** add a connection to node, including bytes send and received. */
   void add_connect(int node, time_t time, uint32_t bytes_sent, uint32_t bytes_received);

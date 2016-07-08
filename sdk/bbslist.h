@@ -39,6 +39,9 @@ class BbsListNet {
   BbsListNet& operator=(const BbsListNet& rhs) { node_config_ = rhs.node_config_; return *this; }
   std::string ToString() const;
 
+  bool empty() const { return node_config_.empty(); }
+  const std::map<uint16_t, net_system_list_rec>& node_config() const { return node_config_; }
+
  private:
    BbsListNet();
    std::map<uint16_t, net_system_list_rec> node_config_;

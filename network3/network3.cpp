@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "core/command_line.h"
+#include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/scope_exit.h"
@@ -38,7 +39,9 @@
 #include "networkb/connection.h"
 #include "networkb/ppp_config.h"
 
+#include "sdk/bbslist.h"
 #include "sdk/config.h"
+#include "sdk/filenames.h"
 #include "sdk/networks.h"
 
 using std::cout;
@@ -105,6 +108,51 @@ int main(int argc, char** argv) {
       network_name = networks[std::stoi(network_number)].name;
     }
     std::cout << "NETWORK3 for network: " << network_name << std::endl;
+
+    const string network_dir = networks[network_name].dir;
+    auto sysnum = networks[network_name].sysnum;
+
+    BbsListNet b = BbsListNet::ParseBbsListNet(sysnum, network_dir);
+    if (b.empty()) {
+      LOG << "ERROR: bbslist.net didn't parse.";
+      return 1;
+    }
+
+    vector<net_system_list_rec> bbsdata_data;
+    vector<uint16_t> bbsdata_ind_data;
+    vector<uint16_t> bbsdata_rou_data;
+    for (const auto& entry : b.node_config()) {
+      const auto& n = entry.second;
+      bbsdata_data.push_back(n);
+      bbsdata_ind_data.push_back((n.forsys == 65535) ? 0 : n.sysnum);
+      bbsdata_rou_data.push_back(n.forsys);
+    }
+
+    {
+      DataFile<net_system_list_rec> bbsdata_net_file(network_dir, BBSDATA_NET);
+      bbsdata_net_file.WriteVector(bbsdata_data);
+    }
+    {
+      DataFile<uint16_t> bbsdata_ind_file(network_dir, BBSDATA_IND);
+      bbsdata_ind_file.WriteVector(bbsdata_ind_data);
+    }
+    {
+      DataFile<uint16_t> bbsdata_rou_file(network_dir, BBSDATA_IND);
+      bbsdata_rou_file.WriteVector(bbsdata_rou_data);
+    }
+
+    /*
+     * TODO:
+     * Read callout.net
+     * open contact.net
+     * add missing entries into contact.net
+     *
+     * check network for errors & send feedback
+     * rename dead.net to pending file
+     * rename all S*.NET files to pending file.
+     * update status.dat increment status.filechange[filechange_net]
+     *
+     */
   } catch (const std::exception& e) {
     LOG << "ERROR: [network]: " << e.what();
   }
