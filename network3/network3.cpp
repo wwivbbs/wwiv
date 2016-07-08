@@ -124,27 +124,35 @@ int main(int argc, char** argv) {
     vector<net_system_list_rec> bbsdata_data;
     vector<uint16_t> bbsdata_ind_data;
     vector<uint16_t> bbsdata_rou_data;
+    vector<int32_t> bbsdata_reg_data;
+    const auto& reg = b.reg_number();
     for (const auto& entry : b.node_config()) {
       const auto& n = entry.second;
       bbsdata_data.push_back(n);
       bbsdata_ind_data.push_back((n.forsys == 65535) ? 0 : n.sysnum);
       bbsdata_rou_data.push_back(n.forsys);
+      bbsdata_reg_data.push_back(reg.at(entry.first));
     }
 
     {
       LOG << "Writing BBSDATA.NET...";
-      DataFile<net_system_list_rec> bbsdata_net_file(network_dir, BBSDATA_NET);
+      DataFile<net_system_list_rec> bbsdata_net_file(network_dir, BBSDATA_NET, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
       bbsdata_net_file.WriteVector(bbsdata_data);
     }
     {
       LOG << "Writing BBSDATA.IND...";
-      DataFile<uint16_t> bbsdata_ind_file(network_dir, BBSDATA_IND);
+      DataFile<uint16_t> bbsdata_ind_file(network_dir, BBSDATA_IND, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
       bbsdata_ind_file.WriteVector(bbsdata_ind_data);
     }
     {
       LOG << "Writing BBSDATA.ROU...";
-      DataFile<uint16_t> bbsdata_rou_file(network_dir, BBSDATA_ROU);
+      DataFile<uint16_t> bbsdata_rou_file(network_dir, BBSDATA_ROU, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
       bbsdata_rou_file.WriteVector(bbsdata_rou_data);
+    }
+    {
+      DataFile<int32_t> bbsdata_reg_file(network_dir, BBSDATA_REG, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+      LOG << "Writing BBSDATA.REG...";
+      bbsdata_reg_file.WriteVector(bbsdata_reg_data);
     }
 
     {

@@ -59,6 +59,7 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* re
     return false;
   }
   memset(con, 0, sizeof(net_system_list_rec));
+  *reg_no = 0;
   // LOG << ss;
 
   for (auto iter = ss.begin(); iter != ss.end(); iter++) {
@@ -150,7 +151,8 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* re
 }
 
 static bool ParseBbsListNetFile(
-  std::map<uint16_t, net_system_list_rec>* node_config_map, 
+  std::map<uint16_t, net_system_list_rec>* node_config_map,
+  std::map<uint16_t, int32_t>* reg_number_map,
   const string network_dir,
   wwiv::graphs::Graph& graph,
   uint16_t net_node_number) {
@@ -196,6 +198,7 @@ static bool ParseBbsListNetFile(
         node_config.forsys = std::numeric_limits<uint16_t>::max();
       }
       node_config_map->emplace(node_config.sysnum, node_config);
+      reg_number_map->emplace(node_config.sysnum, reg_number);
     }
   }
   return true;
@@ -221,7 +224,7 @@ BbsListNet BbsListNet::ParseBbsListNet(uint16_t net_node_number, const std::stri
     }
   }
 
-  ParseBbsListNetFile(&b.node_config_, network_dir, graph, net_node_number);
+  ParseBbsListNetFile(&b.node_config_, &b.reg_number_, network_dir, graph, net_node_number);
   return b;
 }
 

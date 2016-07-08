@@ -41,10 +41,12 @@ class BbsListNet {
 
   bool empty() const { return node_config_.empty(); }
   const std::map<uint16_t, net_system_list_rec>& node_config() const { return node_config_; }
+  const std::map<uint16_t, int32_t>& reg_number() const { return reg_number_; }
 
  private:
    BbsListNet();
    std::map<uint16_t, net_system_list_rec> node_config_;
+   std::map<uint16_t, int32_t> reg_number_;
 };
 
 bool ParseBbsListNetLine(const std::string& line, net_system_list_rec* config, int32_t* reg_number);
