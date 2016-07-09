@@ -211,7 +211,11 @@ int main(int argc, char** argv) {
       has_next = s_files.next();
     }
 
-    /* Still TODO: check network for errors */
+    /* 
+    Still TODO: 
+    check network for errors.
+    check subs to ensure subscribers and host both exist.
+    */
 
     const auto net = networks[network_name];
     std::ostringstream text;
