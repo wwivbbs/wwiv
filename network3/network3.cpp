@@ -74,7 +74,7 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
-static bool send_feedback(const net_networks_rec& net, const std::string& text) {
+static bool send_feedback_email(const net_networks_rec& net, const std::string& text) {
   net_header_rec nh = {};
 
   string now_human = wwiv::sdk::daten_to_date(time(nullptr));
@@ -87,6 +87,171 @@ static bool send_feedback(const net_networks_rec& net, const std::string& text) 
   nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
 
   return send_local(net, &nh, text, byname, title);
+}
+
+static bool send_feedback(
+    const BbsListNet& b, 
+    const Callout& callout, 
+    const net_networks_rec& net,
+    const vector<net_system_list_rec>& bbsdata_data) {
+  /*
+  Still TODO:
+  check network for errors.
+  check subs to ensure subscribers and host both exist.
+  */
+
+  std::ostringstream text;
+  text << "\r\n";
+  TextFile feedback_hdr(net.dir, "FBACKHDR.NET", "rt");
+  if (feedback_hdr.IsOpen()) {
+    string line;
+    while (feedback_hdr.ReadLine(&line)) {
+      text << line << "\r\n";
+    }
+  }
+
+  uint16_t nc = 0;
+  uint16_t gc = 0;
+  uint16_t ac = 0;
+  map<int, int> hops_to_count;
+  map<int, int> system_to_route_count;
+  int total_hops = 0;
+  for (const auto& b : bbsdata_data) {
+    if (b.other & other_net_coord) {
+      nc = b.sysnum;
+    } else if (b.other & other_group_coord) {
+      gc = b.sysnum;
+    } else if (b.other & other_area_coord) {
+      ac = b.sysnum;
+    }
+
+    // Make num hops map.
+    int hops = hops_to_count[b.numhops];
+    hops_to_count[b.numhops] = hops + 1;
+
+    total_hops += b.numhops;
+    if (b.forsys != 65535) {
+      int num_route = system_to_route_count[b.forsys];
+      system_to_route_count[b.forsys] = num_route + 1;
+    }
+  }
+
+  text << StringPrintf("Network Coordinator is @%u\r\n", nc);
+  text << StringPrintf("Group Coordinator is @%u\r\n", (gc != 0) ? gc : nc);
+  text << StringPrintf("Area Coordinator is @%u\r\n", (ac != 0) ? ac : nc);
+  text << "\r\n";
+  text << "Using bias of 0.00100 $ / k / hop.\r\n";
+  text << "\r\n";
+  text << "\r\n";
+  for (const auto& e : hops_to_count) {
+    if (e.first > 0 && e.first < 10000) {
+      text << StringPrintf("%d systems are %d hops away.\r\n", e.second, e.first);
+    }
+  }
+  text << "\r\n";
+  for (const auto& e : system_to_route_count) {
+    if (e.first != net.sysnum) {
+      text << StringPrintf("%d systems route through @%d.\r\n", e.second, e.first);
+    }
+  }
+  text << "\r\n";
+
+  Connect connect(net.dir);
+  const auto c = connect.node_config_for(net.sysnum);
+  if (c == nullptr) {
+    text << " ** Missing CONNECT.NET entries.";
+  } else {
+    for (const auto& callout_node : c->connect) {
+      const auto cnc = callout.node_config_for(callout_node);
+      if (cnc == nullptr) {
+        text << "Can call " << callout_node << " but isn't in CALLOUT.NET.\r\n"
+          << "  ** Add to CALLOUT.NET\r\n";
+      }
+    }
+  }
+
+  return send_feedback_email(net, text.str());
+}
+
+void update_timestamps(const string& dir) {
+  // Update timestamps on {bbslist,connect,callout}.net
+  File bbsdata_net_file(dir, BBSDATA_NET);
+  time_t t = bbsdata_net_file.last_write_time();
+  File(dir, BBSLIST_NET).set_last_write_time(t);
+  File(dir, CONNECT_NET).set_last_write_time(t);
+  File(dir, CALLOUT_NET).set_last_write_time(t);
+}
+
+void write_bbsdata_files(const BbsListNet& b, const vector<net_system_list_rec>& bbsdata_data,
+  const string& dir) {
+  {
+    LOG << "Writing BBSDATA.NET...";
+    DataFile<net_system_list_rec> bbsdata_net_file(dir, BBSDATA_NET, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+    bbsdata_net_file.WriteVector(bbsdata_data);
+    update_timestamps(dir);
+  }
+  {
+    LOG << "Writing BBSDATA.IND...";
+    vector<uint16_t> bbsdata_ind_data;
+    for (const auto& n : bbsdata_data) {
+      bbsdata_ind_data.push_back((n.forsys == 65535) ? 0 : n.sysnum);
+    }
+    DataFile<uint16_t> bbsdata_ind_file(dir, BBSDATA_IND, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+    bbsdata_ind_file.WriteVector(bbsdata_ind_data);
+  }
+  {
+    LOG << "Writing BBSDATA.ROU...";
+    vector<uint16_t> bbsdata_rou_data;
+    for (const auto& n : bbsdata_data) {
+      bbsdata_rou_data.push_back(n.forsys);
+    }
+    DataFile<uint16_t> bbsdata_rou_file(dir, BBSDATA_ROU, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+    bbsdata_rou_file.WriteVector(bbsdata_rou_data);
+  }
+  {
+    LOG << "Writing BBSDATA.REG...";
+    vector<int32_t> bbsdata_reg_data;
+    const auto& reg = b.reg_number();
+    for (const auto& entry : b.node_config()) {
+      bbsdata_reg_data.push_back(reg.at(entry.first));
+    }
+    DataFile<int32_t> bbsdata_reg_file(dir, BBSDATA_REG, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+    bbsdata_reg_file.WriteVector(bbsdata_reg_data);
+  }
+}
+
+static void update_filechange_status_dat(const string& datadir) {
+  statusrec status{};
+  DataFile<statusrec> file(datadir, STATUS_DAT, File::modeBinary | File::modeReadWrite);
+  if (file) {
+    if (file.Read(0, &status)) {
+      status.filechange[filechange_net]++;
+      file.Write(0, &status);
+    }
+  }
+}
+
+static void rename_pending_files(const string& dir) {
+  File dead_net_file(dir, DEAD_NET);
+  if (dead_net_file.Exists()) {
+    rename_pend(dir, DEAD_NET);
+  }
+
+  WFindFile s_files;
+  bool has_next = s_files.open(StrCat(dir, "s*.net"), WFNDFILE_ANY);
+  while (has_next) {
+    const string name = s_files.GetFileName();
+    rename_pend(dir, name);
+    has_next = s_files.next();
+  }
+}
+
+static void ensure_contact_net_entries(const Callout& callout, const string& dir) {
+  Contact contact(dir, true);
+  for (const auto& entry : callout.node_config()) {
+    // Ensure we have a contact entry for each node in CALLOUT.NET
+    contact.ensure_rec_for(entry.first);
+  }
 }
 
 int main(int argc, char** argv) {
@@ -129,7 +294,6 @@ int main(int argc, char** argv) {
       // Need to set the network name based on the number.
       network_name = networks[std::stoi(network_number)].name;
     }
-    LOG << "NETWORK3 for network: " << network_name;
     bool need_to_send_feedback = cmdline.barg("feedback");
     if (!need_to_send_feedback) {
       for (const auto& s : cmdline.remaining()) {
@@ -139,175 +303,33 @@ int main(int argc, char** argv) {
       }
     }
 
-    const string network_dir = networks[network_name].dir;
-    auto sysnum = networks[network_name].sysnum;
+    LOG << "NETWORK3 for network: " << network_name;
+    auto net = networks[network_name];
 
     LOG << "Reading BBSLIST.NET..";
-    BbsListNet b = BbsListNet::ParseBbsListNet(sysnum, network_dir);
+    BbsListNet b = BbsListNet::ParseBbsListNet(net.sysnum, net.dir);
     if (b.empty()) {
       LOG << "ERROR: bbslist.net didn't parse.";
       return 1;
     }
 
     vector<net_system_list_rec> bbsdata_data;
-    vector<uint16_t> bbsdata_ind_data;
-    vector<uint16_t> bbsdata_rou_data;
-    vector<int32_t> bbsdata_reg_data;
-    const auto& reg = b.reg_number();
     for (const auto& entry : b.node_config()) {
       const auto& n = entry.second;
       bbsdata_data.push_back(n);
-      bbsdata_ind_data.push_back((n.forsys == 65535) ? 0 : n.sysnum);
-      bbsdata_rou_data.push_back(n.forsys);
-      bbsdata_reg_data.push_back(reg.at(entry.first));
     }
 
-    {
-      LOG << "Writing BBSDATA.NET...";
-      DataFile<net_system_list_rec> bbsdata_net_file(network_dir, BBSDATA_NET, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
-      bbsdata_net_file.WriteVector(bbsdata_data);
-    }
-    {
-      LOG << "Writing BBSDATA.IND...";
-      DataFile<uint16_t> bbsdata_ind_file(network_dir, BBSDATA_IND, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
-      bbsdata_ind_file.WriteVector(bbsdata_ind_data);
-    }
-    {
-      LOG << "Writing BBSDATA.ROU...";
-      DataFile<uint16_t> bbsdata_rou_file(network_dir, BBSDATA_ROU, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
-      bbsdata_rou_file.WriteVector(bbsdata_rou_data);
-    }
-    {
-      DataFile<int32_t> bbsdata_reg_file(network_dir, BBSDATA_REG, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
-      LOG << "Writing BBSDATA.REG...";
-      bbsdata_reg_file.WriteVector(bbsdata_reg_data);
-    }
+    write_bbsdata_files(b, bbsdata_data, net.dir);
 
     LOG << "Reading CALLOUT.NET...";
-    Callout callout(network_dir);
-    Contact contact(network_dir, true);
-    {
-
-      for (const auto& entry : callout.node_config()) {
-        // Ensure we have a contact entry for each node in CALLOUT.NET
-        const auto node = entry.first;
-        contact.ensure_rec_for(node);
-      }
-    }
-
-    {
-      statusrec status{};
-      DataFile<statusrec> file(config.datadir(), STATUS_DAT, File::modeBinary | File::modeReadWrite);
-      if (file) {
-        if (file.Read(0, &status)) {
-          status.filechange[filechange_net]++;
-          file.Write(0, &status);
-        }
-      }
-    }
-
-    File dead_net_file(network_dir, DEAD_NET);
-    if (dead_net_file.Exists()) {
-      rename_pend(network_dir, DEAD_NET);
-    }
-
-    WFindFile s_files;
-    bool has_next = s_files.open(StrCat(network_dir, "s*.net"), WFNDFILE_ANY);
-    while (has_next) {
-      const string name = s_files.GetFileName();
-      rename_pend(network_dir, name);
-      has_next = s_files.next();
-    }
-
-    /* 
-    Still TODO: 
-    check network for errors.
-    check subs to ensure subscribers and host both exist.
-    */
-
-    const auto net = networks[network_name];
-    std::ostringstream text;
-    text << "\r\n";
-    TextFile feedback_hdr(network_dir, "FBACKHDR.NET", "rt");
-    if (feedback_hdr.IsOpen()) {
-      string line;
-      while (feedback_hdr.ReadLine(&line)) {
-        text << line << "\r\n";
-      }
-    }
-
-    uint16_t nc = 0;
-    uint16_t gc = 0;
-    uint16_t ac = 0;
-    map<int, int> hops_to_count;
-    map<int, int> system_to_route_count;
-    int total_hops = 0;
-    for (const auto& b : bbsdata_data) {
-      if (b.other & other_net_coord) {
-        nc = b.sysnum;
-      } else if (b.other & other_group_coord) {
-        gc = b.sysnum;
-      } else if (b.other & other_area_coord) {
-        ac = b.sysnum;
-      }
-      
-      // Make num hops map.
-      int hops = hops_to_count[b.numhops];
-      hops_to_count[b.numhops] = hops + 1;
-
-      total_hops += b.numhops;
-      if (b.forsys != 65535) {
-        int num_route = system_to_route_count[b.forsys];
-        system_to_route_count[b.forsys] = num_route + 1;
-      }
-    }
-    
-    text << StringPrintf("Network Coordinator is @%u\r\n", nc);
-    text << StringPrintf("Group Coordinator is @%u\r\n", (gc != 0) ? gc : nc);
-    text << StringPrintf("Area Coordinator is @%u\r\n", (ac != 0) ? ac : nc);
-    text << "\r\n";
-    text << "Using bias of 0.00100 $ / k / hop.\r\n";
-    text << "\r\n";
-    text << "\r\n";
-    for (const auto& e : hops_to_count) {
-      if (e.first > 0 && e.first < 10000) {
-        text << StringPrintf("%d systems are %d hops away.\r\n", e.second, e.first);
-      }
-    }
-    text << "\r\n";
-    for (const auto& e : system_to_route_count) {
-      if (e.first != sysnum) {
-        text << StringPrintf("%d systems route through @%d.\r\n", e.second, e.first);
-      }
-    }
-    text << "\r\n";
-
-    Connect connect(network_dir);
-    const auto c = connect.node_config_for(sysnum);
-    if (c == nullptr) {
-      text << " ** Missing CONNECT.NET entries.";
-    } else {
-      for (const auto& callout_node : c->connect) {
-        const auto cnc = callout.node_config_for(callout_node);
-        if (cnc == nullptr) {
-          text << "Can call " << callout_node << " but isn't in CALLOUT.NET.\r\n"
-            << "  ** Add to CALLOUT.NET\r\n";
-        }
-      }
-    }
-
-    {
-      // Update timestamps on {bbslist,connect,callout}.net
-      File bbsdata_net_file(network_dir, BBSDATA_NET);
-      time_t t = bbsdata_net_file.last_write_time();
-      File(network_dir, BBSLIST_NET).set_last_write_time(t);
-      File(network_dir, CONNECT_NET).set_last_write_time(t);
-      File(network_dir, CALLOUT_NET).set_last_write_time(t);
-    }
+    Callout callout(net.dir);
+    ensure_contact_net_entries(callout, net.dir);
+    update_filechange_status_dat(config.datadir());
+    rename_pending_files(net.dir);
 
     if (need_to_send_feedback) {
       LOG << "Sending Feedback.";
-      send_feedback(net, text.str());
+      send_feedback(b, callout, networks[network_name], bbsdata_data);
     }
   } catch (const std::exception& e) {
     LOG << "ERROR: [network]: " << e.what();
