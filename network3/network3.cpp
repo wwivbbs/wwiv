@@ -19,6 +19,7 @@
 // WWIV5 Network3
 #include <cctype>
 #include <cstdlib>
+#include <ctime>
 #include <fcntl.h>
 #include <iostream>
 #include <map>
@@ -34,16 +35,19 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/os.h"
+#include "core/textfile.h"
 #include "core/wfndfile.h"
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"
+#include "networkb/net_util.h"
 #include "networkb/ppp_config.h"
 
 #include "sdk/bbslist.h"
 #include "sdk/callout.h"
 #include "sdk/config.h"
 #include "sdk/contact.h"
+#include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
 
@@ -68,26 +72,19 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
+static bool send_feedback(const net_networks_rec& net, const std::string& text) {
+  net_header_rec nh = {};
 
-static void rename_pend(const string& directory, const string& filename) {
-  File pend_file(directory, filename);
-  if (!pend_file.Exists()) {
-    LOG << " pending file does not exist: " << pend_file;
-    return;
-  }
-  const string pend_filename(pend_file.full_pathname());
-  const string num = filename.substr(1);
-  const string prefix = (atoi(num.c_str())) ? "1" : "0";
+  string now_human = wwiv::sdk::daten_to_date(time(nullptr));
+  string title = StringPrintf("%s analysis on %s", net.name, now_human.c_str());
+  string byname = StringPrintf("%s @%u", net.name, net.sysnum);
 
-  for (int i = 0; i < 1000; i++) {
-    const string new_filename = StringPrintf("%sp%s-0-%u.net", directory.c_str(), prefix.c_str(), i);
-    // LOG << new_filename;
-    if (File::Rename(pend_filename, new_filename)) {
-      LOG << "renamed file to: " << new_filename;
-      return;
-    }
-  }
-  LOG << "all attempts failed to rename_pend";
+  nh.touser = 1;
+  nh.fromuser = std::numeric_limits<uint16_t>::max();
+  nh.main_type = main_type_email;
+  nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
+
+  return send_local(net, &nh, text, byname, title);
 }
 
 int main(int argc, char** argv) {
@@ -211,10 +208,66 @@ int main(int argc, char** argv) {
       rename_pend(network_dir, name);
       has_next = s_files.next();
     }
-    /*
-     * Still TODO:
-     * check network for errors & send feedback
-     */
+
+    /* Still TODO: check network for errors */
+
+    const auto net = networks[network_name];
+    string text = "\r\n";
+    TextFile feedback_hdr(network_dir, "FBACKHDR.NET", "rt");
+    if (feedback_hdr.IsOpen()) {
+      string line;
+      while (feedback_hdr.ReadLine(&line)) {
+        text += line;
+        text += "\r\n";
+      }
+    }
+
+    uint16_t nc = 0;
+    uint16_t gc = 0;
+    uint16_t ac = 0;
+    map<int, int> hops_to_count;
+    map<int, int> system_to_route_count;
+    int total_hops = 0;
+    for (const auto& b : bbsdata_data) {
+      if (b.other & other_net_coord) {
+        nc = b.sysnum;
+      } else if (b.other & other_group_coord) {
+        gc = b.sysnum;
+      } else if (b.other & other_area_coord) {
+        ac = b.sysnum;
+      }
+      
+      // Make num hops map.
+      int hops = hops_to_count[b.numhops];
+      hops_to_count[b.numhops] = hops + 1;
+
+      total_hops += b.numhops;
+      if (b.forsys != 65535) {
+        int num_route = system_to_route_count[b.forsys];
+        system_to_route_count[b.forsys] = num_route + 1;
+      }
+    }
+    
+    text += StringPrintf("Network Coordinator is @%u\r\n", nc);
+    text += StringPrintf("Group Coordinator is @%u\r\n", (gc != 0) ? gc : nc);
+    text += StringPrintf("Area Coordinator is @%u\r\n", (ac != 0) ? ac : nc);
+    text += "\r\n";
+    text += "Using bias of 0.00100 $ / k / hop.\r\n";
+    text += "\r\n";
+    text += "\r\n";
+    for (const auto& e : hops_to_count) {
+      if (e.first > 0 && e.first < 10000) {
+        text += StringPrintf("%d systems are %d hops away.\r\n", e.second, e.first);
+      }
+    }
+    text += "\r\n";
+    for (const auto& e : system_to_route_count) {
+      if (e.first != sysnum) {
+        text += StringPrintf("%d systems route through @%d.\r\n", e.second, e.first);
+      }
+    }
+    text += "\r\n";
+    send_feedback(net, text);
   } catch (const std::exception& e) {
     LOG << "ERROR: [network]: " << e.what();
   }

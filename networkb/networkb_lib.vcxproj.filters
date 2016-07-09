@@ -44,6 +44,9 @@
     <ClCompile Include="cram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="net_util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="connection.h">
@@ -89,6 +92,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net_util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

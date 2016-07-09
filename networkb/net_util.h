@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2016, WWIV Software Services             */
+/*                          WWIV Version 5.x                              */
+/*              Copyright (C)2016 WWIV Software Services                  */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,23 +14,27 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_DATETIME_H__
-#define __INCLUDED_SDK_DATETIME_H__
+#ifndef __INCLUDED_NETORKB_NET_UTIL_H__
+#define __INCLUDED_NETORKB_NET_UTIL_H__
 
-#include <ctime>
 #include <string>
+#include "sdk/networks.h"
+#include "sdk/net.h"
 
 namespace wwiv {
-namespace sdk {
+namespace net {
 
-uint32_t date_to_daten(std::string datet);
-std::string daten_to_date(time_t date);
-std::string daten_to_humantime(time_t t);
-uint32_t time_t_to_daten(time_t t);
+void rename_pend(const std::string& directory, const std::string& filename);
+bool send_network(
+  const std::string& filename,
+  const net_networks_rec& network, net_header_rec* nh,
+  std::vector<uint16_t> list, const std::string& text, const std::string& byname, const std::string& title);
+bool send_local(
+  const net_networks_rec& network, net_header_rec* nh,
+  const std::string& text, const std::string& byname, const std::string& title);
 
-}
-}
+}  // namespace net
+}  // namespace wwiv
 
-#endif // __INCLUDED_SDK_DATETIME_H__
+#endif  // __INCLUDED_NETORKB_NET_UTIL_H__

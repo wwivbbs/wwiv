@@ -12,6 +12,7 @@ set(SOURCES
  connection.cpp
  cram.cpp
  net_log.cpp
+ net_util.cpp
  ppp_config.cpp
  socket_connection.cpp
  socket_exceptions.cpp

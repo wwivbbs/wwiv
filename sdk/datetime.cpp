@@ -70,5 +70,8 @@ std::string daten_to_humantime(time_t t) {
   return human_date;
 }
 
+uint32_t time_t_to_daten(time_t t) {
+  return static_cast<uint32_t>(t);
+}
 }
 }
