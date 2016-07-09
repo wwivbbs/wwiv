@@ -24,6 +24,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -45,6 +46,7 @@
 
 #include "sdk/bbslist.h"
 #include "sdk/callout.h"
+#include "sdk/connect.h"
 #include "sdk/config.h"
 #include "sdk/contact.h"
 #include "sdk/datetime.h"
@@ -173,10 +175,10 @@ int main(int argc, char** argv) {
       bbsdata_reg_file.WriteVector(bbsdata_reg_data);
     }
 
+    LOG << "Reading CALLOUT.NET...";
+    Callout callout(network_dir);
+    Contact contact(network_dir, true);
     {
-      LOG << "Reading CALLOUT.NET...";
-      Callout callout(network_dir);
-      Contact contact(network_dir, true);
 
       for (const auto& entry : callout.node_config()) {
         // Ensure we have a contact entry for each node in CALLOUT.NET
@@ -212,13 +214,13 @@ int main(int argc, char** argv) {
     /* Still TODO: check network for errors */
 
     const auto net = networks[network_name];
-    string text = "\r\n";
+    std::ostringstream text;
+    text << "\r\n";
     TextFile feedback_hdr(network_dir, "FBACKHDR.NET", "rt");
     if (feedback_hdr.IsOpen()) {
       string line;
       while (feedback_hdr.ReadLine(&line)) {
-        text += line;
-        text += "\r\n";
+        text << line << "\r\n";
       }
     }
 
@@ -248,26 +250,41 @@ int main(int argc, char** argv) {
       }
     }
     
-    text += StringPrintf("Network Coordinator is @%u\r\n", nc);
-    text += StringPrintf("Group Coordinator is @%u\r\n", (gc != 0) ? gc : nc);
-    text += StringPrintf("Area Coordinator is @%u\r\n", (ac != 0) ? ac : nc);
-    text += "\r\n";
-    text += "Using bias of 0.00100 $ / k / hop.\r\n";
-    text += "\r\n";
-    text += "\r\n";
+    text << StringPrintf("Network Coordinator is @%u\r\n", nc);
+    text << StringPrintf("Group Coordinator is @%u\r\n", (gc != 0) ? gc : nc);
+    text << StringPrintf("Area Coordinator is @%u\r\n", (ac != 0) ? ac : nc);
+    text << "\r\n";
+    text << "Using bias of 0.00100 $ / k / hop.\r\n";
+    text << "\r\n";
+    text << "\r\n";
     for (const auto& e : hops_to_count) {
       if (e.first > 0 && e.first < 10000) {
-        text += StringPrintf("%d systems are %d hops away.\r\n", e.second, e.first);
+        text << StringPrintf("%d systems are %d hops away.\r\n", e.second, e.first);
       }
     }
-    text += "\r\n";
+    text << "\r\n";
     for (const auto& e : system_to_route_count) {
       if (e.first != sysnum) {
-        text += StringPrintf("%d systems route through @%d.\r\n", e.second, e.first);
+        text << StringPrintf("%d systems route through @%d.\r\n", e.second, e.first);
       }
     }
-    text += "\r\n";
-    send_feedback(net, text);
+    text << "\r\n";
+
+    Connect connect(network_dir);
+    const auto c = connect.node_config_for(sysnum);
+    if (c == nullptr) {
+      text << " ** Missing CONNECT.NET entries.";
+    } else {
+      for (const auto& callout_node : c->connect) {
+        const auto cnc = callout.node_config_for(callout_node);
+        if (cnc == nullptr) {
+          text << "Can call " << callout_node << " but isn't in CALLOUT.NET.\r\n"
+            << "  ** Add to CALLOUT.NET\r\n";
+        }
+      }
+    }
+
+    send_feedback(net, text.str());
   } catch (const std::exception& e) {
     LOG << "ERROR: [network]: " << e.what();
   }

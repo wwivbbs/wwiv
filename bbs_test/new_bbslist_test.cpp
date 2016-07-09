@@ -18,6 +18,10 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
 #include "bbs/new_bbslist.h"
 
 #include "bbs_test/bbs_helper.h"
@@ -26,7 +30,6 @@
 
 using std::cout;
 using std::endl;
-using std::ostringstream;
 using std::string;
 using std::unique_ptr;
 using std::vector;

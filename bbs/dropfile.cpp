@@ -19,6 +19,7 @@
 #include "bbs/dropfile.h"
 #include <algorithm>
 #include <memory>
+#include <sstream>
 #include <string>
 
 #include "bbs/datetime.h"

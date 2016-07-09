@@ -18,9 +18,10 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
+#include <string>
+
 using std::cout;
 using std::endl;
-using std::ostringstream;
 using std::string;
 
 // TODO(rushfan): Make xfer.h

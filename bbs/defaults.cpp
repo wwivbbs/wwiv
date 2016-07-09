@@ -19,6 +19,7 @@
 #include "bbs/defaults.h"
 
 #include <iomanip>
+#include <sstream>
 #include <string>
 #include <vector>
 
