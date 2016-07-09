@@ -34,6 +34,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/os.h"
+#include "core/wfndfile.h"
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"
@@ -68,6 +69,26 @@ static void ShowHelp(CommandLine& cmdline) {
 }
 
 
+static void rename_pend(const string& directory, const string& filename) {
+  File pend_file(directory, filename);
+  if (!pend_file.Exists()) {
+    LOG << " pending file does not exist: " << pend_file;
+    return;
+  }
+  const string pend_filename(pend_file.full_pathname());
+  const string num = filename.substr(1);
+  const string prefix = (atoi(num.c_str())) ? "1" : "0";
+
+  for (int i = 0; i < 1000; i++) {
+    const string new_filename = StringPrintf("%sp%s-0-%u.net", directory.c_str(), prefix.c_str(), i);
+    // LOG << new_filename;
+    if (File::Rename(pend_filename, new_filename)) {
+      LOG << "renamed file to: " << new_filename;
+      return;
+    }
+  }
+  LOG << "all attempts failed to rename_pend";
+}
 
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
@@ -178,11 +199,21 @@ int main(int argc, char** argv) {
       }
     }
 
+    File dead_net_file(network_dir, DEAD_NET);
+    if (dead_net_file.Exists()) {
+      rename_pend(network_dir, DEAD_NET);
+    }
+
+    WFindFile s_files;
+    bool has_next = s_files.open(StrCat(network_dir, "s*.net"), WFNDFILE_ANY);
+    while (has_next) {
+      const string name = s_files.GetFileName();
+      rename_pend(network_dir, name);
+      has_next = s_files.next();
+    }
     /*
      * Still TODO:
      * check network for errors & send feedback
-     * rename dead.net to pending file
-     * rename all S*.NET files to pending file.
      */
   } catch (const std::exception& e) {
     LOG << "ERROR: [network]: " << e.what();
