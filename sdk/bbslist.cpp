@@ -160,7 +160,6 @@ static bool ParseBbsListNetFile(
   if (!bbs_list_file.IsOpen()) {
     return false;
   }
-  std::cout << "Parsing " << network_dir << std::endl;
 
   // A line will be of the format @node *phone options [reg] "name"
   string line;

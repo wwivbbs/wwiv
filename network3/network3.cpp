@@ -129,7 +129,15 @@ int main(int argc, char** argv) {
       // Need to set the network name based on the number.
       network_name = networks[std::stoi(network_number)].name;
     }
-    std::cout << "NETWORK3 for network: " << network_name << std::endl;
+    LOG << "NETWORK3 for network: " << network_name;
+    bool need_to_send_feedback = cmdline.barg("feedback");
+    if (!need_to_send_feedback) {
+      for (const auto& s : cmdline.remaining()) {
+        if (s == "Y" || s == "y") {
+          need_to_send_feedback = true;
+        }
+      }
+    }
 
     const string network_dir = networks[network_name].dir;
     auto sysnum = networks[network_name].sysnum;
@@ -288,7 +296,19 @@ int main(int argc, char** argv) {
       }
     }
 
-    send_feedback(net, text.str());
+    {
+      // Update timestamps on {bbslist,connect,callout}.net
+      File bbsdata_net_file(network_dir, BBSDATA_NET);
+      time_t t = bbsdata_net_file.last_write_time();
+      File(network_dir, BBSLIST_NET).set_last_write_time(t);
+      File(network_dir, CONNECT_NET).set_last_write_time(t);
+      File(network_dir, CALLOUT_NET).set_last_write_time(t);
+    }
+
+    if (need_to_send_feedback) {
+      LOG << "Sending Feedback.";
+      send_feedback(net, text.str());
+    }
   } catch (const std::exception& e) {
     LOG << "ERROR: [network]: " << e.what();
   }

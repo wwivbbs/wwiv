@@ -33,13 +33,19 @@
 #include <direct.h>
 #include <io.h>
 #include <share.h>
+#include "sys/utime.h"
 #endif  // _WIN32
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
+#include <sys/types.h>
+
+#include "core/wfndfile.h"
+
 #ifndef _WIN32
 #include <sys/file.h>
 #include <unistd.h>
+#include <utime.h>
 #endif  // _WIN32
 
 #include "core/os.h"
@@ -399,4 +405,10 @@ bool File::mkdirs(const string& path) {
 std::ostream& operator<<(std::ostream& os, const File& file) {
   os << file.full_pathname();
   return os;
+}
+
+bool File::set_last_write_time(time_t last_write_time) {
+  struct utimbuf ut;
+  ut.actime = ut.modtime = last_write_time;
+  return utime(full_path_name_.c_str(), &ut) != -1;
 }

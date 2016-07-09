@@ -31,7 +31,6 @@
 #include <string>
 #include <sys/stat.h>
 
-#include "core/wfndfile.h"
 #include "core/wwivassert.h"
 
 using std::string;
@@ -105,6 +104,7 @@ time_t File::last_write_time() {
   }
   return nFileTime;
 }
+
 
 /////////////////////////////////////////////////////////////////////////////
 // Static functions

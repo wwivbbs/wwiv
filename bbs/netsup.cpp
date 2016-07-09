@@ -93,7 +93,7 @@ static bool check_bbsdata() {
   if (!File::Exists(session()->network_directory().c_str(), CALLOUT_NET)) {
     return false;
   }
-  const string network3 = StringPrintf("network3 Y .%d", session()->net_num());
+  const string network3 = StringPrintf("network3 .%d Y", session()->net_num());
   ExecuteExternalProgram(network3, EFLAG_NETPROG);
   WStatus* wwiv_status = session()->status_manager()->BeginTransaction();
   wwiv_status->IncrementFileChangedFlag(WStatus::fileChangeNet);

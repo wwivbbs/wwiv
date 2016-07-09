@@ -130,6 +130,7 @@ class File {
 
   virtual bool SetFilePermissions(int nPermissions);
   virtual time_t last_write_time();
+  virtual bool set_last_write_time(time_t last_write_time);
 
   virtual const std::string GetParent() const {
     size_t found = full_path_name_.find_last_of(File::pathSeparatorChar);
