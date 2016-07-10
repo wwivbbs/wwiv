@@ -74,6 +74,137 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
+static bool handle_email(const net_networks_rec& net, 
+  uint16_t to_user, const net_header_rec& nh, const string& text) {
+  LOG << "handle_email to " << to_user;
+
+
+
+  return false;
+}
+
+static string NetInfoFileName(uint16_t type) {
+  switch (type) {
+  case net_info_bbslist: return BBSLIST_NET;
+  case net_info_connect: return CONNECT_NET;
+  case net_info_sub_lst: return SUBS_LST;
+  case net_info_wwivnews: return "wwivnews.net";
+  case net_info_more_wwivnews: return "wwivnews.net";
+  case net_info_categ_net: return CATEG_NET;
+  case net_info_network_lst: return "networks.lst";
+  case net_info_file: return "";
+  case net_info_binkp: return BINKP_NET;
+  }
+  return "";
+}
+
+static bool handle_net_info_file(const net_networks_rec& net,
+  const net_header_rec& nh, const string& text) {
+
+  string filename = NetInfoFileName(nh.minor_type);
+  if (nh.minor_type == net_info_file) {
+    // we don't know the filename
+    LOG << "ERROR: net_info_file not supported.";
+    return false;
+  } else if (!filename.empty()) {
+    // we know the name.
+    File file(net.dir, filename);
+    if (!file.Open(File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate, 
+      File::shareDenyReadWrite)) {
+      // We couldn't create or open the file.
+      LOG << "ERROR: Unable to create or open file: " << filename;
+      return false;
+    }
+    file.Write(text);
+    LOG << "  + Got " << filename;
+    return true;
+  }
+  // error.
+  return false;
+}
+
+static bool handle_packet(
+  const net_networks_rec& net,
+  const net_header_rec& nh, const string& text) {
+
+  switch (nh.main_type) {
+    /*
+    These messages contain various network information
+    files, encoded with method 1 (requiring DE1.EXE).
+    Once DE1.EXE has verified the source and returned to
+    the analyzer, the file is created in the network's
+    DATA directory with the filename determined by the
+    minor_type (except minor_type 1).
+    */
+  case main_type_net_info:
+    if (nh.minor_type == 0) {
+      // Feedback to sysop from the NC.  
+      // This is sent to the #1 account as source verified email.
+      return handle_email(net, 1, nh, text);
+    } else {
+      return handle_net_info_file(net, nh, text);
+    }
+  break;
+  case main_type_email:
+    // This is regular email sent to a user number at this system.
+    // Email has no minor type, so minor_type will always be zero.
+    handle_email(net, nh.touser, nh, text);
+  break;
+  }
+
+  return false;
+}
+
+static bool handle_file(const net_networks_rec& net, const string& name) {
+  File f(net.dir, name);
+  if (!f.Open(File::modeBinary | File::modeReadOnly)) {
+    LOG << "Unable to open file: " << net.dir << name;
+    return false;
+  }
+
+  bool done = false;
+  while (!done) {
+    net_header_rec nh;
+    string text;
+    int num_read = f.Read(&nh, sizeof(net_header_rec));
+    if (num_read == 0) {
+      // at the end of the packet.
+      return true;
+    }
+    if (num_read != sizeof(net_header_rec)) {
+      LOG << "error reading header, got short read of size: " << num_read
+        << "; expected: " << sizeof(net_header_rec);
+      return false;
+    }
+    if (nh.method > 0) {
+      LOG << "compression: de" << nh.method;
+    }
+
+    if (nh.list_len > 0) {
+      // skip list of addresses.
+      LOG << "WARNING: Got LIST_LEN > 0, shouldn't happen (I think)";
+      std::vector<uint16_t> list;
+      list.resize(nh.list_len);
+      f.Read(&list[0], 2 * nh.list_len);
+    }
+    if (nh.length > 0) {
+      int length = nh.length;
+      if (nh.method > 0) {
+        length -= 146; // sizeof EN/DE header.
+        // HACK - this should do this in a shim DE
+        nh.length -= 146; 
+        char header[147];
+        f.Read(header, 146);
+      }
+      text.resize(length);
+      f.Read(&text[0], length);
+    }
+    if (!handle_packet(net, nh, text)) {
+      LOG << "error handing packet: type: " << nh.main_type;
+    }
+  }
+  return true;
+}
 
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
@@ -118,6 +249,14 @@ int main(int argc, char** argv) {
 
     LOG << "NETWORK1 for network: " << network_name;
     auto net = networks[network_name];
+
+    if (!File::Exists(net.dir, LOCAL_NET)) {
+      LOG << "No local.net exists. exiting.";
+      return 0;
+    }
+
+    LOG << "Processing: " << net.dir << LOCAL_NET;
+    handle_file(net, LOCAL_NET);
 
     return 0;
   } catch (const std::exception& e) {
