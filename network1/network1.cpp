@@ -199,6 +199,7 @@ int main(int argc, char** argv) {
     bool has_next = s_files.open(StrCat(net.dir, "p*.net"), WFINDFILE_FILES);
     while (has_next) {
       const string name = s_files.GetFileName();
+      LOG << "Processing: " << net.dir << name;
       if (handle_file(net, name)) {
         LOG << "Deleting: " << net.dir << name;
         File::Remove(net.dir, name);
