@@ -188,8 +188,8 @@ void write_bbsdata_files(const BbsListNet& b, const vector<net_system_list_rec>&
     LOG << "Writing BBSDATA.NET...";
     DataFile<net_system_list_rec> bbsdata_net_file(dir, BBSDATA_NET, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
     bbsdata_net_file.WriteVector(bbsdata_data);
-    update_timestamps(dir);
-  }
+   }
+  update_timestamps(dir);
   {
     LOG << "Writing BBSDATA.IND...";
     vector<uint16_t> bbsdata_ind_data;
