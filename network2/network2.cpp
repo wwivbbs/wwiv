@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 
-// WWIV5 Network1
+// WWIV5 Network2
 #include <cctype>
 #include <cstdlib>
 #include <ctime>

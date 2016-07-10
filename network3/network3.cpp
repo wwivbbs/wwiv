@@ -238,7 +238,7 @@ static void rename_pending_files(const string& dir) {
   }
 
   WFindFile s_files;
-  bool has_next = s_files.open(StrCat(dir, "s*.net"), WFNDFILE_ANY);
+  bool has_next = s_files.open(StrCat(dir, "s*.net"), WFINDFILE_FILES);
   while (has_next) {
     const string name = s_files.GetFileName();
     rename_pend(dir, name);

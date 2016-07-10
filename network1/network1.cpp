@@ -74,6 +74,75 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
+static bool handle_packet(
+  const net_networks_rec& net,
+  const net_header_rec& nh, const std::vector<uint16_t>& list, const string& text) {
+
+  if (nh.tosys == net.sysnum) {
+    // Local Packet.
+    return write_packet("local.net", net, nh, list, text);
+  } else if (list.empty()) {
+    // Network packet, single destination
+    const string filename = StringPrintf("s%u.net", nh.tosys);
+    return write_packet(filename, net, nh, list, text);
+  } else {
+    for (const auto& node : list) {
+      const string filename = StringPrintf("s%u.net", node);
+      return write_packet(filename, net, nh, list, text);
+    }
+    // Network packet, multiple destinations.
+  }
+
+  return false;
+}
+
+static bool handle_file(const net_networks_rec& net, const string& name) {
+  File f(net.dir, name);
+  if (!f.Open(File::modeBinary | File::modeReadOnly)) {
+    LOG << "Unable to open file: " << net.dir << name;
+    return false;
+  }
+
+  bool done = false;
+  while (!done) {
+    net_header_rec nh;
+    std::vector<uint16_t> list;
+    string text;
+    int num_read = f.Read(&nh, sizeof(net_header_rec));
+    if (num_read == 0) {
+      // at the end of the packet.
+      return true;
+    }
+    if (num_read != sizeof(net_header_rec)) {
+      LOG << "error reading header, got short read of size: " << num_read
+          << "; expected: " << sizeof(net_header_rec);
+      return false;
+    }
+    if (nh.method > 0) {
+      LOG << "compression: de" << nh.method;
+    }
+
+    if (nh.list_len > 0) {
+      // read list of addresses.
+      list.resize(nh.list_len);
+      f.Read(&list[0], 2 * nh.list_len);
+    }
+    if (nh.length > 0) {
+      int length = nh.length;
+      if (nh.method > 0) {
+        length -= 146; // sizeof EN/DE header.
+        char header[147];
+        f.Read(header, 146);
+      }
+      text.resize(length);
+      f.Read(&text[0], length);
+    }
+    if (!handle_packet(net, nh, list, text)) {
+      LOG << "error handing packet: type: " << nh.main_type;
+    }
+  }
+  return true;
+}
 
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
@@ -118,6 +187,24 @@ int main(int argc, char** argv) {
 
     LOG << "NETWORK1 for network: " << network_name;
     auto net = networks[network_name];
+
+    LOG << "Reading BBSDATA.NET..";
+    BbsListNet b = BbsListNet::ReadBbsDataNet(net.dir);
+    if (b.empty()) {
+      LOG << "ERROR: Unable to read BBSDATA.NET.";
+      return 1;
+    }
+
+    WFindFile s_files;
+    bool has_next = s_files.open(StrCat(net.dir, "p*.net"), WFINDFILE_FILES);
+    while (has_next) {
+      const string name = s_files.GetFileName();
+      if (handle_file(net, name)) {
+        LOG << "Deleting: " << net.dir << name;
+        File::Remove(net.dir, name);
+      }
+      has_next = s_files.next();
+    }
 
     return 0;
   } catch (const std::exception& e) {

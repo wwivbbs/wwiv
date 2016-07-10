@@ -85,6 +85,30 @@ bool send_network(const std::string& filename,
   return true;
 }
 
+bool write_packet(
+  const string& filename,
+  const net_networks_rec& net,
+  const net_header_rec& nh, const std::vector<uint16_t>& list, const string& text) {
+
+  if (nh.length != text.size()) {
+    LOG << "Error while writing packet: " << net.dir << filename;
+    LOG << "Mismatched text and nh.length.  text =" << text.size()
+      << " nh.length = " << nh.length;
+  }
+  File file(net.dir, filename);
+  if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
+    return false;
+  }
+  file.Seek(0L, File::seekEnd);
+  file.Write(&nh, sizeof(net_header_rec));
+  if (nh.list_len) {
+    file.Write(&list[0], sizeof(uint16_t) * (nh.list_len));
+  }
+  file.Write(text);
+  file.Close();
+  return true;
+}
+
 bool send_local(
     const net_networks_rec& network, net_header_rec* nh,
     const std::string& text, const std::string& byname, const std::string& title) {

@@ -19,6 +19,7 @@
 #define __INCLUDED_NETORKB_NET_UTIL_H__
 
 #include <string>
+#include <vector>
 #include "sdk/networks.h"
 #include "sdk/net.h"
 
@@ -26,10 +27,17 @@ namespace wwiv {
 namespace net {
 
 void rename_pend(const std::string& directory, const std::string& filename);
+
+bool write_packet(
+  const std::string& filename,
+  const net_networks_rec& net,
+  const net_header_rec& nh, const std::vector<uint16_t>& list, const std::string& text);
+
 bool send_network(
   const std::string& filename,
   const net_networks_rec& network, net_header_rec* nh,
   std::vector<uint16_t> list, const std::string& text, const std::string& byname, const std::string& title);
+
 bool send_local(
   const net_networks_rec& network, net_header_rec* nh,
   const std::string& text, const std::string& byname, const std::string& title);

@@ -75,7 +75,7 @@ class WFindFile {
  * Bit-mapped values for what WFindFile is searching
  */
 enum WFindFileTypeMask {
-  WFNDFILE_ANY = 0x00,
+  WFINDFILE_ANY = 0x00,
   WFINDFILE_FILES = 0x01,
   WFINDFILE_DIRS  = 0x02
 };
