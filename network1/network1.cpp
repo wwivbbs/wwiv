@@ -128,14 +128,8 @@ static bool handle_file(const net_networks_rec& net, const string& name) {
       f.Read(&list[0], 2 * nh.list_len);
     }
     if (nh.length > 0) {
-      int length = nh.length;
-      if (nh.method > 0) {
-        length -= 146; // sizeof EN/DE header.
-        char header[147];
-        f.Read(header, 146);
-      }
-      text.resize(length);
-      f.Read(&text[0], length);
+      text.resize(nh.length);
+      f.Read(&text[0], nh.length);
     }
     if (!handle_packet(net, nh, list, text)) {
       LOG << "error handing packet: type: " << nh.main_type;
