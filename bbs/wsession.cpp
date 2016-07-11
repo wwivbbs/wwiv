@@ -64,13 +64,13 @@
 #include "bbs/wfc.h"
 #include "bbs/wsession.h"
 #include "bbs/workspace.h"
-#include "bbs/wstatus.h"
 #include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
 #include "core/os.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 #include "sdk/filenames.h"
+#include "sdk/status.h"
 
 #if defined( _WIN32 )
 #include "bbs/remote_socket_io.h"
@@ -101,9 +101,44 @@ using namespace wwiv::strings;
 extern time_t last_time_c;
 WOutStream bout;
 
+void StatusManagerCallback(int i) {
+  switch (i) {
+  case WStatus::fileChangeNames:
+  {
+    // re-read names.lst
+    if (session()->names()) {
+      // We may not have the BBS initialized yet, so only
+      // re-read the names file if it's changed from another node.
+      session()->names()->Load();
+    }
+  } break;
+  case WStatus::fileChangeUpload:
+    break;
+  case WStatus::fileChangePosts:
+    session()->subchg = 1;
+    break;
+  case WStatus::fileChangeEmail:
+    emchg = true;
+    mailcheck = false;
+    break;
+  case WStatus::fileChangeNet:
+  {
+    int nOldNetNum = session()->net_num();
+    zap_bbs_list();
+    for (int i1 = 0; i1 < session()->max_net_num(); i1++) {
+      set_net_num(i1);
+      zap_call_out_list();
+      zap_contacts();
+    }
+    set_net_num(nOldNetNum);
+  }
+  break;
+  }
+}
+
 WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app), 
     local_io_(localIO),
-    statusMgr(new StatusMgr()), 
+    statusMgr(new StatusMgr(config_->datadir(), StatusManagerCallback)),
     m_nOkLevel(exitLevelOK),
     m_nErrorLevel(exitLevelNotOK),
     m_nBbsShutdownStatus(shutdownNone) {

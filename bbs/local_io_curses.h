@@ -26,8 +26,8 @@
 #include "bbs/local_io.h"
 #include "localui/colors.h"
 #include "localui/curses_win.h"
+#include "sdk/status.h"
 
-class WStatus;
 class WSession;
 
 #if defined( _MSC_VER )

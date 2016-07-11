@@ -38,7 +38,7 @@
 #include "bbs/uedit.h"
 #include "bbs/voteedit.h"
 #include "bbs/wconstants.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivport.h"

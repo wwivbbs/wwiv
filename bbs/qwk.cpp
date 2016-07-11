@@ -47,7 +47,7 @@
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "bbs/platform/platformfcns.h"
 #include "core/file.h"
 #include "core/strings.h"
@@ -70,9 +70,9 @@ static uint16_t max_msgs;
 extern uint32_t this_date;
 
 using std::string;
-using wwiv::bbs::SaveQScanPointers;
-using wwiv::bbs::TempDisablePause;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::bbs;
+using namespace wwiv::strings;
+using namespace wwiv::sdk;
 
 static bool replacefile(char *src, char *dst) {
   if (strlen(dst) == 0) {

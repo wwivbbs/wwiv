@@ -24,7 +24,7 @@
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/instmsg.h"
@@ -46,6 +46,7 @@ using std::to_string;
 using std::unique_ptr;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 static void rename_pend(const string& directory, const string& filename) {

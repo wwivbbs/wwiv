@@ -59,7 +59,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
 #include "bbs/printfile.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"

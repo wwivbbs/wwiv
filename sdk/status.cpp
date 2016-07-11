@@ -19,14 +19,15 @@
 #include <memory>
 #include <string>
 
-#include "bbs/datetime.h"
-#include "bbs/bbs.h"
-#include "bbs/fcns.h"
-#include "bbs/vars.h"
-#include "bbs/wstatus.h"
+//#include "bbs/bbs.h"
+//#include "bbs/fcns.h"
+//#include "bbs/vars.h"
+#include "sdk/status.h"
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/datetime.h"
 #include "sdk/filenames.h"
 
 statusrec status;
@@ -34,13 +35,26 @@ statusrec status;
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
-// WStatus
-const int WStatus::fileChangeNames = 0;
-const int WStatus::fileChangeUpload = 1;
-const int WStatus::fileChangePosts = 2;
-const int WStatus::fileChangeEmail = 3;
-const int WStatus::fileChangeNet = 4;
+namespace wwiv {
+namespace sdk {
+
+
+static string GetSysopLogFileName(const string& d) {
+  return StringPrintf("%c%c%c%c%c%c.log", d[6], d[7], d[0], d[1], d[3], d[4]);
+}
+
+WStatus::WStatus(const std::string& datadir, statusrec* pStatusRecord) : datadir_(datadir) {
+  m_pStatusRecord = pStatusRecord;
+}
+
+WStatus::WStatus(const std::string& datadir) {
+  m_pStatusRecord = &status;
+}
+
+WStatus::~WStatus() {};
 
 const char* WStatus::GetLastDate(int nDaysAgo) const {
   WWIV_ASSERT(nDaysAgo >= 0);
@@ -60,9 +74,10 @@ const char* WStatus::GetLastDate(int nDaysAgo) const {
 const char* WStatus::GetLogFileName(int nDaysAgo) const {
   WWIV_ASSERT(nDaysAgo >= 0);
   switch (nDaysAgo) {
-  case 0: {
+  case 0:
+  {
     static char s[81]; // logname
-    std::string todays_log = GetSysopLogFileName(date());
+    std::string todays_log = GetSysopLogFileName(daten_to_humantime(time(nullptr)));
     strcpy(s, todays_log.c_str());
     return s;
   }
@@ -89,7 +104,7 @@ void WStatus::ValidateAndFixDates() {
     m_pStatusRecord->date1[8] = '\0'; // forgot to add null termination
   }
 
-  string currentDate = date();
+  string currentDate = daten_to_humantime(time(nullptr));
   if (m_pStatusRecord->date3[8] != '\0') {
     m_pStatusRecord->date3[6] = currentDate[6];
     m_pStatusRecord->date3[7] = currentDate[7];
@@ -113,13 +128,13 @@ void WStatus::ValidateAndFixDates() {
 }
 
 bool WStatus::NewDay() {
-  m_pStatusRecord->callstoday   = 0;
+  m_pStatusRecord->callstoday = 0;
   m_pStatusRecord->msgposttoday = 0;
-  m_pStatusRecord->localposts   = 0;
-  m_pStatusRecord->emailtoday   = 0;
-  m_pStatusRecord->fbacktoday   = 0;
-  m_pStatusRecord->uptoday      = 0;
-  m_pStatusRecord->activetoday  = 0;
+  m_pStatusRecord->localposts = 0;
+  m_pStatusRecord->emailtoday = 0;
+  m_pStatusRecord->fbacktoday = 0;
+  m_pStatusRecord->uptoday = 0;
+  m_pStatusRecord->activetoday = 0;
   m_pStatusRecord->days++;
 
   // Need to verify the dates aren't trashed otherwise we can crash here.
@@ -127,7 +142,8 @@ bool WStatus::NewDay() {
 
   strcpy(m_pStatusRecord->date3, m_pStatusRecord->date2);
   strcpy(m_pStatusRecord->date2, m_pStatusRecord->date1);
-  strcpy(m_pStatusRecord->date1, date());
+  const string d = daten_to_humantime(time(nullptr));
+  strcpy(m_pStatusRecord->date1, d.c_str());
   strcpy(m_pStatusRecord->log2, m_pStatusRecord->log1);
 
   const string log = GetSysopLogFileName(GetLastDate(1));
@@ -138,14 +154,13 @@ bool WStatus::NewDay() {
 // StatusMgr
 bool StatusMgr::Get(bool bLockFile) {
   if (!m_statusFile.IsOpen()) {
-    m_statusFile.SetName(session()->config()->datadir(), STATUS_DAT);
+    m_statusFile.SetName(datadir_, STATUS_DAT);
     int nLockMode = (bLockFile) ? (File::modeReadWrite | File::modeBinary) : (File::modeReadOnly | File::modeBinary);
     m_statusFile.Open(nLockMode);
   } else {
     m_statusFile.Seek(0L, File::seekBegin);
   }
   if (!m_statusFile.IsOpen()) {
-    sysoplog("CANNOT READ STATUS");
     return false;
   } else {
     char oldFileChangeFlags[7];
@@ -160,36 +175,8 @@ bool StatusMgr::Get(bool bLockFile) {
 
     for (int i = 0; i < 7; i++) {
       if (oldFileChangeFlags[i] != status.filechange[i]) {
-        switch (i) {
-        case WStatus::fileChangeNames: {        
-          // re-read names.lst
-          if (session()->names()) {
-            // We may not have the BBS initialized yet, so only
-            // re-read the names file if it's changed from another node.
-            session()->names()->Load();
-          }
-        } break;
-        case WStatus::fileChangeUpload:
-        break;
-        case WStatus::fileChangePosts:
-          session()->subchg = 1;
-          break;
-        case WStatus::fileChangeEmail:
-          emchg = true;
-          mailcheck = false;
-          break;
-        case WStatus::fileChangeNet: {
-          int nOldNetNum = session()->net_num();
-          zap_bbs_list();
-          for (int i1 = 0; i1 < session()->max_net_num(); i1++) {
-            set_net_num(i1);
-            zap_call_out_list();
-            zap_contacts();
-          }
-          set_net_num(nOldNetNum);
-        }
-        break;
-        }
+        // Invoke callback on changes.
+        callback_(i);
       }
     }
   }
@@ -202,7 +189,7 @@ bool StatusMgr::RefreshStatusCache() {
 
 WStatus* StatusMgr::GetStatus() {
   this->Get(false);
-  return new WStatus(&status);
+  return new WStatus(datadir_, &status);
 }
 
 void StatusMgr::AbortTransaction(WStatus* pStatus) {
@@ -214,7 +201,7 @@ void StatusMgr::AbortTransaction(WStatus* pStatus) {
 
 WStatus* StatusMgr::BeginTransaction() {
   this->Get(true);
-  return new WStatus(&status);
+  return new WStatus(datadir_, &status);
 }
 
 bool StatusMgr::CommitTransaction(WStatus* pStatus) {
@@ -224,14 +211,13 @@ bool StatusMgr::CommitTransaction(WStatus* pStatus) {
 
 bool StatusMgr::Write(statusrec *pStatus) {
   if (!m_statusFile.IsOpen()) {
-    m_statusFile.SetName(session()->config()->datadir(), STATUS_DAT);
+    m_statusFile.SetName(datadir_, STATUS_DAT);
     m_statusFile.Open(File::modeReadWrite | File::modeBinary);
   } else {
     m_statusFile.Seek(0L, File::seekBegin);
   }
 
   if (!m_statusFile.IsOpen()) {
-    sysoplog("CANNOT SAVE STATUS");
     return false;
   }
   m_statusFile.Write(pStatus, sizeof(statusrec));
@@ -242,4 +228,7 @@ bool StatusMgr::Write(statusrec *pStatus) {
 const int StatusMgr::GetUserCount() {
   unique_ptr<WStatus>pStatus(GetStatus());
   return pStatus->GetNumUsers();
+}
+
+}
 }

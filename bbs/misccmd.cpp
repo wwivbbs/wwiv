@@ -34,7 +34,7 @@
 #include "bbs/read_message.h"
 #include "bbs/wconstants.h"
 #include "bbs/keycodes.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"

@@ -226,9 +226,6 @@
     <ClCompile Include="srsend.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="status.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="stuffin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

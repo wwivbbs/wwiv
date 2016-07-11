@@ -38,7 +38,7 @@
 #include "bbs/vars.h"
 #include "bbs/keycodes.h"
 #include "bbs/workspace.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"

@@ -33,7 +33,7 @@
 #include "bbs/message_file.h"
 #include "bbs/subxtr.h"
 #include "bbs/wconstants.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 

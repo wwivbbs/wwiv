@@ -33,6 +33,7 @@
     <ClInclude Include="net.h" />
     <ClInclude Include="networks.h" />
     <ClInclude Include="phone_numbers.h" />
+    <ClInclude Include="status.h" />
     <ClInclude Include="user.h" />
     <ClInclude Include="usermanager.h" />
     <ClInclude Include="vardec.h" />
@@ -54,6 +55,7 @@
     <ClCompile Include="names.cpp" />
     <ClCompile Include="networks.cpp" />
     <ClCompile Include="phone_numbers.cpp" />
+    <ClCompile Include="status.cpp" />
     <ClCompile Include="user.cpp" />
     <ClCompile Include="usermanager.cpp" />
   </ItemGroup>

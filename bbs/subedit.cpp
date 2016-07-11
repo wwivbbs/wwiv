@@ -24,7 +24,7 @@
 #include "bbs/input.h"
 #include "bbs/subxtr.h"
 #include "bbs/keycodes.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"

@@ -37,7 +37,7 @@
 #include "bbs/subxtr.h"
 #include "bbs/printfile.h"
 #include "bbs/uedit.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "bbs/workspace.h"
 #include "core/stl.h"
 #include "core/strings.h"

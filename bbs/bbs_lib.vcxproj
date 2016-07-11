@@ -285,7 +285,6 @@
     <ClCompile Include="srrcv.cpp" />
     <ClCompile Include="srsend.cpp" />
     <ClCompile Include="ssh.cpp" />
-    <ClCompile Include="status.cpp" />
     <ClCompile Include="stdio_local_io.cpp" />
     <ClCompile Include="stuffin.cpp" />
     <ClCompile Include="subacc.cpp" />

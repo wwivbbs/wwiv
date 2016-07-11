@@ -25,7 +25,7 @@
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/keycodes.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/file.h"
 #include "core/datafile.h"
 #include "core/stl.h"
@@ -35,6 +35,7 @@
 
 using std::string;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 

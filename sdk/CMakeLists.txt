@@ -20,6 +20,7 @@ set(COMMON_SOURCES
   names.cpp
   networks.cpp
   phone_numbers.cpp
+  status.cpp
   user.cpp
   usermanager.cpp
   )

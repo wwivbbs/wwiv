@@ -1,0 +1,274 @@
+/**************************************************************************/
+/*                                                                        */
+/*                              WWIV Version 5.x                          */
+/*             Copyright (C)1998-2016, WWIV Software Services             */
+/*                                                                        */
+/*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
+/*    you may not use this  file  except in compliance with the License.  */
+/*    You may obtain a copy of the License at                             */
+/*                                                                        */
+/*                http://www.apache.org/licenses/LICENSE-2.0              */
+/*                                                                        */
+/*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
+/*    software  distributed  under  the  License  is  distributed on an   */
+/*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
+/*    either  express  or implied.  See  the  License for  the specific   */
+/*    language governing permissions and limitations under the License.   */
+/*                                                                        */
+/**************************************************************************/
+#ifndef __INCLUDED_SDK_STATUS_H__
+#define __INCLUDED_SDK_STATUS_H__
+
+#include <functional>
+#include <string>
+
+#include "sdk/vardec.h"
+#include "core/file.h"
+
+extern statusrec status;
+
+namespace wwiv {
+namespace sdk {
+
+class WStatus {
+  friend class StatusMgr;
+
+public:
+  static constexpr int fileChangeNames = 0;
+  static constexpr int fileChangeUpload = 1;
+  static constexpr int fileChangePosts = 2;
+  static constexpr int fileChangeEmail = 3;
+  static constexpr int fileChangeNet = 4;
+
+private:
+  statusrec* m_pStatusRecord;
+
+public:
+  WStatus(const std::string& datadir, statusrec* pStatusRecord);
+  WStatus(const std::string& datadir);
+  ~WStatus();
+
+  /** If the caller number variable is using the old (pre 4.2) location, move it to the new location */
+  void EnsureCallerNumberIsValid();
+  /** Checks for corruption in the date strings, and try to fix if the date strings are corrupt */
+  void ValidateAndFixDates();
+
+  /** Updates the status object for a new day.  This zeros out daily stats and updates the log file names */
+  bool NewDay();
+
+  const char* GetLastDate(int nDaysAgo = 0) const;
+  const char* GetLogFileName(int nDaysAgo = 0) const;
+  const char* GetGFileDate() const {
+    return m_pStatusRecord->gfiledate;
+  }
+  void SetGFileDate(const char *s) {
+    strcpy(m_pStatusRecord->gfiledate, s);
+  }
+  const char  GetFileChangedFlag(int nFlag) const {
+    return m_pStatusRecord->filechange[nFlag];
+  }
+  void IncrementFileChangedFlag(int nFlag) {
+    m_pStatusRecord->filechange[nFlag]++;
+  }
+
+  const unsigned short GetNumLocalPosts() const {
+    return m_pStatusRecord->localposts;
+  }
+  const int IncrementNumLocalPosts() {
+    return m_pStatusRecord->localposts++;
+  }
+  void SetNumLocalPosts(int n) {
+    m_pStatusRecord->localposts = static_cast<uint16_t>(n);
+  }
+
+  const int GetNumUsers() const {
+    return m_pStatusRecord->users;
+  }
+  const int IncrementNumUsers() {
+    return m_pStatusRecord->users++;
+  }
+  const int DecrementNumUsers() {
+    return m_pStatusRecord->users--;
+  }
+  void SetNumUsers(int n) {
+    m_pStatusRecord->users = static_cast<uint16_t>(n);
+  }
+
+  const unsigned long GetCallerNumber() const {
+    return m_pStatusRecord->callernum1;
+  }
+  const unsigned long  IncrementCallerNumber() {
+    return m_pStatusRecord->callernum1++;
+  }
+  void SetCallerNumber(unsigned long l) {
+    m_pStatusRecord->callernum1 = l;
+  }
+
+  const unsigned short GetNumCallsToday() const {
+    return m_pStatusRecord->callstoday;
+  }
+  const int IncrementNumCallsToday() {
+    return m_pStatusRecord->callstoday++;
+  }
+  void SetNumCallsToday(int n) {
+    m_pStatusRecord->callstoday = static_cast<uint16_t>(n);
+  }
+
+  const int GetNumMessagesPostedToday() const {
+    return m_pStatusRecord->msgposttoday;
+  }
+  const int IncrementNumMessagesPostedToday() {
+    return m_pStatusRecord->msgposttoday++;
+  }
+  void SetNumMessagesPostedToday(int n) {
+    m_pStatusRecord->msgposttoday = static_cast<uint16_t>(n);
+  }
+
+  const unsigned short GetNumEmailSentToday() const {
+    return m_pStatusRecord->emailtoday;
+  }
+  const int IncrementNumEmailSentToday() {
+    return m_pStatusRecord->emailtoday++;
+  }
+  void SetNumEmailSentToday(int n) {
+    m_pStatusRecord->emailtoday = static_cast<uint16_t>(n);
+  }
+
+  const unsigned short GetNumFeedbackSentToday() const {
+    return m_pStatusRecord->fbacktoday;
+  }
+  const int IncrementNumFeedbackSentToday() {
+    return m_pStatusRecord->fbacktoday++;
+  }
+  void SetNumFeedbackSentToday(int n) {
+    m_pStatusRecord->fbacktoday = static_cast<uint16_t>(n);
+  }
+
+  const unsigned short GetNumUploadsToday() const {
+    return m_pStatusRecord->uptoday;
+  }
+  const int IncrementNumUploadsToday() {
+    return m_pStatusRecord->uptoday++;
+  }
+  void SetNumUploadsToday(int n) {
+    m_pStatusRecord->uptoday = static_cast<uint16_t>(n);
+  }
+
+  const unsigned short GetMinutesActiveToday() const {
+    return m_pStatusRecord->activetoday;
+  }
+  const int IncrementMinutesActiveToday(int nMinutes) {
+    return m_pStatusRecord->uptoday += static_cast<uint16_t>(nMinutes);
+  }
+  void SetMinutesActiveToday(int n) {
+    m_pStatusRecord->activetoday = static_cast<uint16_t>(n);
+  }
+
+  const uint32_t GetQScanPointer() const {
+    return m_pStatusRecord->qscanptr;
+  }
+  const uint32_t IncrementQScanPointer() {
+    return m_pStatusRecord->qscanptr++;
+  }
+  void SetQScanPointer(uint32_t l) {
+    m_pStatusRecord->qscanptr = l;
+  }
+
+  const bool IsAutoMessageAnonymous() const {
+    return m_pStatusRecord->amsganon ? true : false;
+  }
+  void SetAutoMessageAnonymous(bool b) {
+    m_pStatusRecord->amsganon = (b) ? 1 : 0;
+  }
+
+  const int GetAutoMessageAuthorUserNumber() const {
+    return m_pStatusRecord->amsguser;
+  }
+  void SetAutoMessageAuthorUserNumber(int n) {
+    m_pStatusRecord->amsguser = static_cast<uint16_t>(n);
+  }
+
+  const int GetWWIVVersion() const {
+    return m_pStatusRecord->wwiv_version;
+  }
+  void SetWWIVVersion(int n) {
+    m_pStatusRecord->wwiv_version = static_cast<uint16_t>(n);
+  }
+
+  const int GetNetworkVersion() const {
+    return m_pStatusRecord->net_version;
+  }
+  void SetNetworkVersion(int n) {
+    m_pStatusRecord->net_version = static_cast<uint16_t>(n);
+  }
+
+  const int GetDays() const {
+    return m_pStatusRecord->days;
+  }
+  void SetDays(int n) {
+    m_pStatusRecord->days = static_cast<uint16_t>(n);
+  }
+private:
+  const std::string datadir_;
+};
+
+
+
+/*!
+ * @class StatusMgr Manages STATUS.DAT
+ */
+class StatusMgr {
+public:
+
+  typedef std::function<void(int)> status_callabck_fn;
+
+  /*!
+   * @function StatusMgr Constructor
+   */
+  StatusMgr(const std::string& datadir, status_callabck_fn callback)
+    : datadir_(datadir), callback_(callback) {}
+  ~StatusMgr() {}
+  /*!
+   * @function Read Loads the contents of STATUS.DAT
+   */
+  bool RefreshStatusCache();
+
+  /**
+   * Gets the status object with no locks.  Just delete it when finished
+   */
+  WStatus* GetStatus();
+
+  void AbortTransaction(WStatus* pStatus);
+
+  /**
+   * Replacement for Lock
+   */
+  WStatus* BeginTransaction();
+
+  /**
+   * Replacement for Write
+   */
+  bool CommitTransaction(WStatus* pStatus);
+
+  const int GetUserCount();
+
+private:
+  File m_statusFile;
+  const std::string datadir_;
+  status_callabck_fn callback_;
+  bool Write(statusrec *pStatus);
+  /*!
+  * @function Get Loads the contents of STATUS.DAT with
+  *           control on failure and lock mode
+  * @param bLockFile Aquires write lock
+  * @return true on success
+  */
+  bool Get(bool bLockFile);
+
+};
+
+}
+}
+
+#endif // __INCLUDED_SDK_STATUS_H__
+

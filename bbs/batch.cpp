@@ -34,7 +34,7 @@
 #include "bbs/stuffin.h"
 #include "bbs/remote_io.h"
 #include "bbs/wconstants.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "bbs/platform/platformfcns.h"
 #include "core/stl.h"
 #include "core/strings.h"

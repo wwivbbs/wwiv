@@ -34,7 +34,7 @@
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"

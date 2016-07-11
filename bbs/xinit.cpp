@@ -42,7 +42,7 @@
 #include "bbs/subxtr.h"
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/datafile.h"
 #include "core/inifile.h"
 #include "core/strings.h"

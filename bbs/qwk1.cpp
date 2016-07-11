@@ -44,7 +44,7 @@
 #include "bbs/subxtr.h"
 #include "sdk/vardec.h"
 #include "bbs/vars.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
@@ -67,6 +67,7 @@ using std::unique_ptr;
 using namespace wwiv::os;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
+using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
 
 #define SET_BLOCK(file, pos, size) lseek(file, (long)pos * (long)size, SEEK_SET)

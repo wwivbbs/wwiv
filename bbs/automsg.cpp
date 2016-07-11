@@ -31,7 +31,7 @@
 #include "bbs/vars.h"
 #include "bbs/quote.h"
 #include "bbs/wsession.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
@@ -40,6 +40,7 @@ using std::string;
 using std::stringstream;
 using std::unique_ptr;
 using std::vector;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 char ShowAMsgMenuAndGetInput(const string& autoMessageLockFileName);

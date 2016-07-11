@@ -36,7 +36,7 @@
 #include "bbs/stuffin.h"
 #include "bbs/uedit.h"
 #include "bbs/wconstants.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"

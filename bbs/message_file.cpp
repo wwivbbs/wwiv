@@ -27,6 +27,7 @@
 #include "core/strings.h"
 #include "sdk/net.h"
 #include "sdk/filenames.h"
+#include "sdk/status.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -39,6 +40,7 @@ static constexpr int MSG_BLOCK_SIZE = 512;
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 

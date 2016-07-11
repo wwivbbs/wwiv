@@ -23,7 +23,7 @@
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "sdk/user.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/strings.h"
@@ -31,6 +31,7 @@
 #include "sdk/filenames.h"
 
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 // Inserts a record into NAMES.LST

@@ -30,7 +30,7 @@
 #include "core/strings.h"
 #include "bbs/printfile.h"
 #include "bbs/wconstants.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
 

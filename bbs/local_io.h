@@ -23,10 +23,10 @@
 
 #include "bbs/keycodes.h"
 #include "core/file.h"
+
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
 
-class WStatus;
 class WSession;
 
 #define NUM_ONLY            1

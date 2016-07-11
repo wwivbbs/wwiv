@@ -26,7 +26,7 @@
 #include "sdk/user.h"
 #include "bbs/wsession.h"
 #include "bbs/vars.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/strings.h"
 #include "core/file.h"
 #include "sdk/filenames.h"

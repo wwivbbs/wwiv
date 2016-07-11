@@ -29,11 +29,12 @@
 #include "bbs/vars.h"
 #include "bbs/remote_io.h"
 #include "bbs/wconstants.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 
 using std::string;
+using namespace wwiv::sdk;
 
 struct pcboard_sys_rec {
   char    display[2], printer[2], page_bell[2], alarm[2], sysop_next,

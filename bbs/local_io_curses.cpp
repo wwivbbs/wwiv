@@ -44,7 +44,7 @@
 #include "bbs/vars.h"
 #include "bbs/remote_io.h"
 #include "bbs/wconstants.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/file.h"
 #include "core/os.h"
 #include "core/strings.h"

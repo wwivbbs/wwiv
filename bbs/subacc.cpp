@@ -30,7 +30,7 @@
 #include "bbs/vars.h"
 #include "bbs/woutstreambuffer.h"
 #include "bbs/wsession.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/file.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"

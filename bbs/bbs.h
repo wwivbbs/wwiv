@@ -29,7 +29,7 @@
 
 #include "bbs/remote_io.h"
 #include "bbs/wsession.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "sdk/user.h"
 #include "core/inifile.h"
 #include "core/file.h"

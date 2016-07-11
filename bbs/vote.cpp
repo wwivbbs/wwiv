@@ -21,7 +21,7 @@
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 

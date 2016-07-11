@@ -42,7 +42,7 @@
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/inifile.h"

@@ -32,7 +32,7 @@
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h" 
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/textfile.h"

@@ -40,7 +40,7 @@
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "bbs/xfer.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"

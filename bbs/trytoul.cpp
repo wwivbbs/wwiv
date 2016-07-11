@@ -27,7 +27,7 @@
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "core/os.h"
 #include "core/strings.h"
 
@@ -35,6 +35,7 @@ using std::chrono::milliseconds;
 using std::string;
 
 using namespace wwiv::os;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 int try_to_ul_wh(char *file_name);

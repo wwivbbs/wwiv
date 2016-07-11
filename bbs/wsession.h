@@ -26,7 +26,7 @@
 
 #include "bbs/runnable.h"
 #include "bbs/remote_io.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "bbs/woutstreambuffer.h"
 #include "bbs/subxtr.h"
 #include "bbs/local_io.h"
@@ -220,7 +220,7 @@ public:
 
   int  max_net_num() const { return net_networks.size(); }
 
-  StatusMgr* status_manager() { return statusMgr.get(); }
+  wwiv::sdk::StatusMgr* status_manager() { return statusMgr.get(); }
   wwiv::sdk::UserManager* users() { return user_manager_.get(); }
 
 
@@ -353,7 +353,7 @@ private:
   double          m_fShutDownTime = 0;
   int             m_nWfcStatus = 0;
 
-  std::unique_ptr<StatusMgr> statusMgr;
+  std::unique_ptr<wwiv::sdk::StatusMgr> statusMgr;
   std::unique_ptr<wwiv::sdk::UserManager> user_manager_;
   std::string m_attachmentDirectory;
   WApplication* application_;

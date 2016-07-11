@@ -30,7 +30,6 @@
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
 
-class WStatus;
 class WSession;
 
 class Win32ConsoleIO : public LocalIO {

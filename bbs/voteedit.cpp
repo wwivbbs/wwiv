@@ -19,7 +19,7 @@
 #include "bbs/voteedit.h"
 
 #include "bbs/input.h"
-#include "bbs/wstatus.h"
+#include "sdk/status.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
