@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.x                              */
+/*                          WWIV Version 5.0x                             */
 /*             Copyright (C)2015-2016, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -15,41 +15,39 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__
-#define __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__
+#ifndef __INCLUDED_SDK_TYPE2_TEXT_H__
+#define __INCLUDED_SDK_TYPE2_TEXT_H__
 
-#include "sdk/net.h"
-#include "sdk/msgapi/message_api.h"
-#include "sdk/msgapi/message_area_wwiv.h"
-#include "sdk/msgapi/email_wwiv.h"
-
-#include <memory>
+#include <cstdint>
 #include <string>
 #include <vector>
+
+#include "core/file.h"
+#include "sdk/msgapi/message_wwiv.h"
 
 namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
-class WWIVMessageArea;
-
-class WWIVMessageApi: public MessageApi {
+class Type2Text {
 public:
-  WWIVMessageApi(
-    const std::string& bbs_directory,
-    const std::string& subs_directory,
-    const std::string& messages_directory,
-    const std::vector<net_networks_rec>& net_networks);
-  virtual ~WWIVMessageApi();
-  bool Exist(const std::string& name) const override;
-  WWIVMessageArea* Create(const std::string& name) override;
-  bool Remove(const std::string& name) override;
-  WWIVMessageArea* Open(const std::string& name) override;
-  WWIVEmail* OpenEmail();
+  Type2Text(const std::string& text_filename);
+  virtual ~Type2Text();
+
+  std::vector<uint16_t> load_gat(File& file, size_t section);
+  void save_gat(File& f, size_t section, const std::vector<uint16_t>& gat);
+  bool readfile(const messagerec* msg, std::string* out);
+  void savefile(const std::string& text, messagerec* pMessageRecord);
+  void remove_link(messagerec& msg);
+
+private:
+  File* OpenMessageFile();
+  const std::string filename_;
 };
 
 }  // namespace msgapi
 }  // namespace sdk
 }  // namespace wwiv
 
-#endif  // __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__
+
+#endif  // __INCLUDED_SDK_TYPE2_TEXT_H__

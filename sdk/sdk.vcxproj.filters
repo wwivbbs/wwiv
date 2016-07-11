@@ -70,6 +70,12 @@
     <ClInclude Include="connect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="msgapi\type2_text.h">
+      <Filter>Header Files\msgapi</Filter>
+    </ClInclude>
+    <ClInclude Include="msgapi\email_wwiv.h">
+      <Filter>Header Files\msgapi</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -133,6 +139,12 @@
     </ClCompile>
     <ClCompile Include="connect.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="msgapi\type2_text.cpp">
+      <Filter>Source Files\msgapi</Filter>
+    </ClCompile>
+    <ClCompile Include="msgapi\email_wwiv.cpp">
+      <Filter>Source Files\msgapi</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

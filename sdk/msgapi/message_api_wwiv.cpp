@@ -26,6 +26,7 @@
 #include "core/strings.h"
 #include "core/version.h"
 #include "bbs/subacc.h"
+#include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
 using std::string;
@@ -129,6 +130,24 @@ WWIVMessageArea* WWIVMessageApi::Open(const std::string& name) {
   return new WWIVMessageArea(this, fileSub.full_pathname(), msgs_file.full_pathname());
 }
 
+WWIVEmail* WWIVMessageApi::OpenEmail() {
+  File datafile(subs_directory_, EMAIL_DAT);
+  if (!datafile.Exists()) {
+    return nullptr;
+  }
+  if (!datafile.Open(File::modeReadOnly | File::modeBinary)) {
+    return nullptr;
+  }
+  File textfile(messages_directory_, EMAIL_DAT);
+  if (!textfile.Exists()) {
+    return nullptr;
+  }
+  if (!textfile.Open(File::modeReadOnly | File::modeBinary)) {
+    return nullptr;
+  }
+
+  return new WWIVEmail(datafile.full_pathname(), textfile.full_pathname(), net_networks_.size());
+}
 
 }  // namespace msgapi
 }  // namespace sdk

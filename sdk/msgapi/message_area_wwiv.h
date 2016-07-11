@@ -26,6 +26,7 @@
 #include "sdk/msgapi/message.h"
 #include "sdk/msgapi/message_api.h"
 #include "sdk/msgapi/message_wwiv.h"
+#include "sdk/msgapi/type2_text.h"
 
 namespace wwiv {
 namespace sdk {
@@ -53,7 +54,7 @@ private:
   bool initialized_ = true;
 };
 
-class WWIVMessageArea: public MessageArea {
+class WWIVMessageArea: public MessageArea, private Type2Text {
 public:
   WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename, const std::string& text_filename);
   virtual ~WWIVMessageArea();
@@ -79,16 +80,9 @@ public:
   WWIVMessage* CreateMessage() override;
 
 private:
-  File* OpenMessageFile(const std::string msgs_filename);
-  std::vector<uint16_t> load_gat(File& file, size_t section);
-  void save_gat(File& f, size_t section, const std::vector<uint16_t>& gat);
-  bool readfile(const messagerec* msg, std::string msgs_filename, std::string* out);
-  void savefile(const std::string& text, messagerec* pMessageRecord, const std::string& fileName);
-  void remove_link(messagerec& msg, const std::string& fileName);
   bool add_post(const postrec& post);
 
   const std::string sub_filename_;
-  const std::string text_filename_;
   bool open_ = false;
   int last_num_messages_ = 0;
 

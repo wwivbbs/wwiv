@@ -52,9 +52,12 @@
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
+#include "sdk/msgapi/msgapi.h"
+#include "sdk/msgapi/message_api_wwiv.h"
 
 using std::cout;
 using std::endl;
+using std::make_unique;
 using std::map;
 using std::string;
 using std::unique_ptr;
@@ -62,10 +65,11 @@ using std::vector;
 
 using namespace wwiv::core;
 using namespace wwiv::net;
-using namespace wwiv::strings;
-using namespace wwiv::sdk;
-using namespace wwiv::stl;
 using namespace wwiv::os;
+using namespace wwiv::sdk;
+using namespace wwiv::sdk::msgapi;
+using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 static void ShowHelp(CommandLine& cmdline) {
   cout << cmdline.GetHelp()
@@ -74,13 +78,35 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
-static bool handle_email(const net_networks_rec& net, 
-  uint16_t to_user, const net_header_rec& nh, const string& text) {
+static bool handle_email(const net_networks_rec& net,
+  uint16_t to_user, const net_header_rec& nh, const string& text,
+  WWIVMessageApi* api, int net_num) {
   LOG << "handle_email to " << to_user;
 
+  EmailData d = {};
+  d.daten = nh.daten;
+  d.from_network_number = net_num;
+  d.from_system = nh.fromsys;
+  d.from_user = nh.fromuser;
+  d.system_number = nh.tosys;
+  d.user_number = nh.touser;
 
+  auto iter = text.begin();
+  int count = 0;
+  while (*iter != '\0' && *iter != '\r' && ++count < 80 && iter != text.end()) {
+    iter++;
+  }
+  d.title = string(text.begin(), iter);
+  if (iter != text.end()) iter++;
+  if (iter != text.end() && *iter == '\r') iter++;
+  if (iter != text.end() && *iter == '\n') iter++;
+  d.text = string(iter, text.end());
 
-  return false;
+  LOG << "title: " << d.title;
+  LOG << "text:  " << d.text;
+
+  std::unique_ptr<WWIVEmail> email(api->OpenEmail());
+  return email->AddMessage(d);
 }
 
 static string NetInfoFileName(uint16_t type) {
@@ -125,7 +151,8 @@ static bool handle_net_info_file(const net_networks_rec& net,
 
 static bool handle_packet(
   const net_networks_rec& net,
-  const net_header_rec& nh, const string& text) {
+  const net_header_rec& nh, const string& text,
+  WWIVMessageApi* api, int net_num) {
 
   switch (nh.main_type) {
     /*
@@ -140,7 +167,7 @@ static bool handle_packet(
     if (nh.minor_type == 0) {
       // Feedback to sysop from the NC.  
       // This is sent to the #1 account as source verified email.
-      return handle_email(net, 1, nh, text);
+      return handle_email(net, 1, nh, text, api, net_num);
     } else {
       return handle_net_info_file(net, nh, text);
     }
@@ -148,14 +175,15 @@ static bool handle_packet(
   case main_type_email:
     // This is regular email sent to a user number at this system.
     // Email has no minor type, so minor_type will always be zero.
-    handle_email(net, nh.touser, nh, text);
+    return handle_email(net, nh.touser, nh, text, api, net_num);
   break;
   }
 
   return false;
 }
 
-static bool handle_file(const net_networks_rec& net, const string& name) {
+static bool handle_file(const net_networks_rec& net, const string& name, WWIVMessageApi* api,
+  int net_num) {
   File f(net.dir, name);
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     LOG << "Unable to open file: " << net.dir << name;
@@ -199,7 +227,7 @@ static bool handle_file(const net_networks_rec& net, const string& name) {
       text.resize(length);
       f.Read(&text[0], length);
     }
-    if (!handle_packet(net, nh, text)) {
+    if (!handle_packet(net, nh, text, api, net_num)) {
       LOG << "error handing packet: type: " << nh.main_type;
     }
   }
@@ -242,9 +270,19 @@ int main(int argc, char** argv) {
       return 1;
     }
 
+    int network_number_int = 0;
     if (!network_number.empty() && network_name.empty()) {
       // Need to set the network name based on the number.
-      network_name = networks[std::stoi(network_number)].name;
+      network_number_int = std::stoi(network_number);
+      network_name = networks[network_number_int].name;
+    }
+    if (network_number.empty() && !network_name.empty()) {
+      int num = 0;
+      for (const auto& n : networks.networks()) {
+        if (network_name == n.name) {
+          network_number_int = num;
+        }
+      }
     }
 
     LOG << "NETWORK1 for network: " << network_name;
@@ -255,8 +293,11 @@ int main(int argc, char** argv) {
       return 0;
     }
 
+    unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(
+      bbsdir, config.datadir(), config.msgsdir(), networks.networks());
+
     LOG << "Processing: " << net.dir << LOCAL_NET;
-    handle_file(net, LOCAL_NET);
+    handle_file(net, LOCAL_NET, api.get(), network_number_int);
 
     return 0;
   } catch (const std::exception& e) {
