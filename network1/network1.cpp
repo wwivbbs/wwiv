@@ -74,21 +74,28 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
+static string CreateNetworkFileName(const net_networks_rec& net, uint16_t node) {
+  if (node == net.sysnum) {
+    // Messages to us to into local.net.
+    return LOCAL_NET;
+  }
+  return StringPrintf("s%u.net", node);
+}
+
 static bool handle_packet(
   const net_networks_rec& net,
   const net_header_rec& nh, const std::vector<uint16_t>& list, const string& text) {
 
   if (nh.tosys == net.sysnum) {
     // Local Packet.
-    return write_packet("local.net", net, nh, list, text);
+    return write_packet(LOCAL_NET, net, nh, list, text);
   } else if (list.empty()) {
     // Network packet, single destination
     const string filename = StringPrintf("s%u.net", nh.tosys);
-    return write_packet(filename, net, nh, list, text);
+    return write_packet(CreateNetworkFileName(net, nh.tosys), net, nh, list, text);
   } else {
     for (const auto& node : list) {
-      const string filename = StringPrintf("s%u.net", node);
-      return write_packet(filename, net, nh, list, text);
+      return write_packet(CreateNetworkFileName(net, node), net, nh, list, text);
     }
     // Network packet, multiple destinations.
   }

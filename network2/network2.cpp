@@ -185,7 +185,7 @@ static bool handle_net_info_file(const net_networks_rec& net,
 
 static bool handle_packet(
   Context& context,
-  const net_header_rec& nh, const string& text) {
+  const net_header_rec& nh, std::vector<uint16_t>& list, const string& text) {
 
   switch (nh.main_type) {
     /*
@@ -218,14 +218,14 @@ static bool handle_packet(
   // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
   case main_type_new_post:
     LOG << "Writing message to dead.net for unhandled type: " << main_type_name(nh.main_type);
-    return write_packet(DEAD_NET, *context.net, nh, {}, text);
+    return write_packet(DEAD_NET, *context.net, nh, list, text);
     break;
   // Legacy numeric only post types.
   case main_type_pre_post:
   case main_type_post:
   default:
     LOG << "Writing message to dead.net for unhandled type: " << main_type_name(nh.main_type);
-    return write_packet(DEAD_NET, *context.net, nh, {}, text);
+    return write_packet(DEAD_NET, *context.net, nh, list, text);
   }
 
   return false;
@@ -256,10 +256,9 @@ static bool handle_file(Context& context, const string& name) {
       LOG << "compression: de" << nh.method;
     }
 
+    std::vector<uint16_t> list;
     if (nh.list_len > 0) {
       // skip list of addresses.
-      LOG << "WARNING: Got LIST_LEN > 0, shouldn't happen (I think)";
-      std::vector<uint16_t> list;
       list.resize(nh.list_len);
       f.Read(&list[0], 2 * nh.list_len);
     }
@@ -275,7 +274,7 @@ static bool handle_file(Context& context, const string& name) {
       text.resize(length);
       f.Read(&text[0], length);
     }
-    if (!handle_packet(context, nh, text)) {
+    if (!handle_packet(context, nh, list, text)) {
       LOG << "error handing packet: type: " << nh.main_type;
     }
   }
@@ -333,7 +332,7 @@ int main(int argc, char** argv) {
       }
     }
 
-    LOG << "NETWORK1 for network: " << network_name;
+    LOG << "NETWORK2 for network: " << network_name;
     auto net = networks[network_name];
 
     if (!File::Exists(net.dir, LOCAL_NET)) {
