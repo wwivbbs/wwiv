@@ -43,6 +43,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "network", "network\network.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wwivutil", "wwivutil\wwivutil.vcxproj", "{07F07145-CA0B-4281-AD5F-0ABF9C4D4717}"
 	ProjectSection(ProjectDependencies) = postProject
+		{0756B545-A3C3-433D-8E27-B84FB3AE57C5} = {0756B545-A3C3-433D-8E27-B84FB3AE57C5}
 		{53DB67DB-4D42-4A8A-B176-EE83A170DE86} = {53DB67DB-4D42-4A8A-B176-EE83A170DE86}
 	EndProjectSection
 EndProject

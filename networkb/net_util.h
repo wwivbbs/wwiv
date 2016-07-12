@@ -42,6 +42,10 @@ bool send_local(
   const net_networks_rec& network, net_header_rec* nh,
   const std::string& text, const std::string& byname, const std::string& title);
 
+std::string main_type_name(int typ);
+std::string net_info_minor_type_name(int typ);
+
+
 }  // namespace net
 }  // namespace wwiv
 

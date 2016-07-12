@@ -210,6 +210,22 @@ static bool handle_packet(
     // Email has no minor type, so minor_type will always be zero.
     return handle_email(context, nh.touser, nh, text);
   break;
+  // Alpha subtypes are seven characters -- the first must be a letter, but the rest can be any
+  // character allowed in a DOS filename.This main_type covers both subscriber - to - host and 
+  // host - to - subscriber messages. Minor type is always zero(since it's ignored), and the
+  // subtype appears as the first part of the message text, followed by a NUL.Thus, the message
+  // header info at the beginning of the message text is in the format 
+  // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
+  case main_type_new_post:
+    LOG << "Writing message to dead.net for unhandled type: " << main_type_name(nh.main_type);
+    return write_packet(DEAD_NET, *context.net, nh, {}, text);
+    break;
+  // Legacy numeric only post types.
+  case main_type_pre_post:
+  case main_type_post:
+  default:
+    LOG << "Writing message to dead.net for unhandled type: " << main_type_name(nh.main_type);
+    return write_packet(DEAD_NET, *context.net, nh, {}, text);
   }
 
   return false;

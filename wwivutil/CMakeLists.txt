@@ -20,4 +20,4 @@ set(COMMAND_SOURCES
   )
 
 add_executable(wwivutil ${WWIVUTIL_MAIN} ${COMMAND_SOURCES})
-target_link_libraries(wwivutil core sdk)
+target_link_libraries(wwivutil core networkb_lib sdk)
