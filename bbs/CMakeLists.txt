@@ -90,7 +90,6 @@ set(COMMON_SOURCES
  srrcv.cpp
  srsend.cpp
  ssh.cpp
- status.cpp
  stdio_local_io.cpp
  stuffin.cpp
  subacc.cpp
