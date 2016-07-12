@@ -52,6 +52,7 @@
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
+#include "sdk/usermanager.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 
@@ -71,6 +72,13 @@ using namespace wwiv::sdk::msgapi;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
+struct Context {
+  net_networks_rec* net;
+  UserManager* user_manager;
+  WWIVMessageApi* api;
+  int network_number;
+};
+
 static void ShowHelp(CommandLine& cmdline) {
   cout << cmdline.GetHelp()
        << ".####      Network number (as defined in INIT)" << endl
@@ -78,17 +86,31 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
-static bool handle_email(const net_networks_rec& net,
-  uint16_t to_user, const net_header_rec& nh, const string& text,
-  WWIVMessageApi* api, int net_num) {
+static bool handle_email(Context& context,
+  uint16_t to_user, const net_header_rec& nh, const string& text) {
   LOG << "handle_email to " << to_user;
+
+  {
+    User user;
+    if (!context.user_manager->ReadUser(&user, to_user)) {
+      // Unable to read user.
+      LOG << "unable to read user #" << to_user;
+      return false;
+    }
+
+    if (user.IsUserDeleted()) {
+      LOG << "User #" << to_user << " is deleted.  skipping mail.";
+      return false;
+    }
+  }
 
   EmailData d = {};
   d.daten = nh.daten;
-  d.from_network_number = net_num;
+  d.from_network_number = context.network_number;
   d.from_system = nh.fromsys;
   d.from_user = nh.fromuser;
-  d.system_number = nh.tosys;
+  // All local email should have the system number set to 0.
+  d.system_number = 0;
   d.user_number = nh.touser;
 
   auto iter = text.begin();
@@ -97,16 +119,28 @@ static bool handle_email(const net_networks_rec& net,
     iter++;
   }
   d.title = string(text.begin(), iter);
+  // Skip null.
   if (iter != text.end()) iter++;
+  // Skip "\r\n" if it exists.
   if (iter != text.end() && *iter == '\r') iter++;
   if (iter != text.end() && *iter == '\n') iter++;
+  // Rest of the message is the text.
   d.text = string(iter, text.end());
 
   LOG << "title: " << d.title;
   LOG << "text:  " << d.text;
 
-  std::unique_ptr<WWIVEmail> email(api->OpenEmail());
-  return email->AddMessage(d);
+  std::unique_ptr<WWIVEmail> email(context.api->OpenEmail());
+  bool added = email->AddMessage(d);
+  if (added) {
+    User user;
+    context.user_manager->ReadUser(&user, d.user_number);
+    int num_waiting = user.GetNumMailWaiting();
+    num_waiting++;
+    user.SetNumMailWaiting(num_waiting);
+    context.user_manager->WriteUser(&user, d.user_number);
+  }
+  return added;
 }
 
 static string NetInfoFileName(uint16_t type) {
@@ -150,9 +184,8 @@ static bool handle_net_info_file(const net_networks_rec& net,
 }
 
 static bool handle_packet(
-  const net_networks_rec& net,
-  const net_header_rec& nh, const string& text,
-  WWIVMessageApi* api, int net_num) {
+  Context& context,
+  const net_header_rec& nh, const string& text) {
 
   switch (nh.main_type) {
     /*
@@ -167,26 +200,25 @@ static bool handle_packet(
     if (nh.minor_type == 0) {
       // Feedback to sysop from the NC.  
       // This is sent to the #1 account as source verified email.
-      return handle_email(net, 1, nh, text, api, net_num);
+      return handle_email(context, 1, nh, text);
     } else {
-      return handle_net_info_file(net, nh, text);
+      return handle_net_info_file(*context.net, nh, text);
     }
   break;
   case main_type_email:
     // This is regular email sent to a user number at this system.
     // Email has no minor type, so minor_type will always be zero.
-    return handle_email(net, nh.touser, nh, text, api, net_num);
+    return handle_email(context, nh.touser, nh, text);
   break;
   }
 
   return false;
 }
 
-static bool handle_file(const net_networks_rec& net, const string& name, WWIVMessageApi* api,
-  int net_num) {
-  File f(net.dir, name);
+static bool handle_file(Context& context, const string& name) {
+  File f(context.net->dir, name);
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
-    LOG << "Unable to open file: " << net.dir << name;
+    LOG << "Unable to open file: " << context.net->dir << name;
     return false;
   }
 
@@ -227,7 +259,7 @@ static bool handle_file(const net_networks_rec& net, const string& name, WWIVMes
       text.resize(length);
       f.Read(&text[0], length);
     }
-    if (!handle_packet(net, nh, text, api, net_num)) {
+    if (!handle_packet(context, nh, text)) {
       LOG << "error handing packet: type: " << nh.main_type;
     }
   }
@@ -295,9 +327,16 @@ int main(int argc, char** argv) {
 
     unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(
       bbsdir, config.datadir(), config.msgsdir(), networks.networks());
+    unique_ptr<UserManager> user_manager = make_unique<UserManager>(
+      config.config()->datadir, config.config()->userreclen, config.config()->maxusers);
+    Context context;
+    context.net = &net;
+    context.user_manager = user_manager.get();
+    context.network_number = network_number_int;
+    context.api = api.get();
 
     LOG << "Processing: " << net.dir << LOCAL_NET;
-    handle_file(net, LOCAL_NET, api.get(), network_number_int);
+    handle_file(context, LOCAL_NET);
 
     return 0;
   } catch (const std::exception& e) {

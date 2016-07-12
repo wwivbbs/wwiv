@@ -79,6 +79,40 @@ using namespace wwiv::sdk;
 
 uint32_t GetFlagsFromIniFile(IniFile& pIniFile, ini_flags_type * fs, int nFlagNumber, uint32_t flags);
 
+void StatusManagerCallback(int i) {
+  switch (i) {
+  case WStatus::fileChangeNames:
+  {
+    // re-read names.lst
+    if (session()->names()) {
+      // We may not have the BBS initialized yet, so only
+      // re-read the names file if it's changed from another node.
+      session()->names()->Load();
+    }
+  } break;
+  case WStatus::fileChangeUpload:
+    break;
+  case WStatus::fileChangePosts:
+    session()->subchg = 1;
+    break;
+  case WStatus::fileChangeEmail:
+    emchg = true;
+    mailcheck = false;
+    break;
+  case WStatus::fileChangeNet:
+  {
+    int nOldNetNum = session()->net_num();
+    zap_bbs_list();
+    for (int i1 = 0; i1 < session()->max_net_num(); i1++) {
+      set_net_num(i1);
+      zap_call_out_list();
+      zap_contacts();
+    }
+    set_net_num(nOldNetNum);
+  }
+  break;
+  }
+}
 
 // Turns a string into a bitmapped unsigned short flag for use with
 // ExecuteExternalProgram calls.
@@ -435,7 +469,7 @@ bool WSession::ReadConfig() {
   // initialize the user manager
   const configrec* config = config_->config();
   user_manager_.reset(new UserManager(config->datadir, config->userreclen, config->maxusers));
-
+  statusMgr.reset(new StatusMgr(config_->datadir(), StatusManagerCallback));
   const string instance_name = StringPrintf("WWIV-%u", instance_number());
   std::unique_ptr<IniFile> ini = std::make_unique<IniFile>(FilePath(GetHomeDir(), WWIV_INI), instance_name, INI_TAG);
   if (!ini->IsOpen()) {

@@ -77,7 +77,7 @@ const char* WStatus::GetLogFileName(int nDaysAgo) const {
   case 0:
   {
     static char s[81]; // logname
-    std::string todays_log = GetSysopLogFileName(daten_to_humantime(time(nullptr)));
+    std::string todays_log = GetSysopLogFileName(daten_to_date(time(nullptr)));
     strcpy(s, todays_log.c_str());
     return s;
   }
@@ -104,7 +104,7 @@ void WStatus::ValidateAndFixDates() {
     m_pStatusRecord->date1[8] = '\0'; // forgot to add null termination
   }
 
-  string currentDate = daten_to_humantime(time(nullptr));
+  string currentDate = daten_to_date(time(nullptr));
   if (m_pStatusRecord->date3[8] != '\0') {
     m_pStatusRecord->date3[6] = currentDate[6];
     m_pStatusRecord->date3[7] = currentDate[7];
@@ -142,7 +142,7 @@ bool WStatus::NewDay() {
 
   strcpy(m_pStatusRecord->date3, m_pStatusRecord->date2);
   strcpy(m_pStatusRecord->date2, m_pStatusRecord->date1);
-  const string d = daten_to_humantime(time(nullptr));
+  const string d = daten_to_date(time(nullptr));
   strcpy(m_pStatusRecord->date1, d.c_str());
   strcpy(m_pStatusRecord->log2, m_pStatusRecord->log1);
 
