@@ -35,11 +35,11 @@ bool write_packet(
 
 bool send_network(
   const std::string& filename,
-  const net_networks_rec& network, net_header_rec* nh,
+  const net_networks_rec& network, net_header_rec& nh,
   std::vector<uint16_t> list, const std::string& text, const std::string& byname, const std::string& title);
 
 bool send_local(
-  const net_networks_rec& network, net_header_rec* nh,
+  const net_networks_rec& network, net_header_rec& nh,
   const std::string& text, const std::string& byname, const std::string& title);
 
 std::string main_type_name(int typ);

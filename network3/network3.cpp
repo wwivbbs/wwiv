@@ -86,7 +86,7 @@ static bool send_feedback_email(const net_networks_rec& net, const std::string& 
   nh.main_type = main_type_email;
   nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
 
-  return send_local(net, &nh, text, byname, title);
+  return send_local(net, nh, text, byname, title);
 }
 
 static bool send_feedback(

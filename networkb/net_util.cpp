@@ -50,24 +50,24 @@ void rename_pend(const string& directory, const string& filename) {
 }
 
 bool send_network(const std::string& filename,
-  const net_networks_rec& network, net_header_rec* nh,
+  const net_networks_rec& network, net_header_rec& nh,
   std::vector<uint16_t> list, 
   const std::string& text, const std::string& byname, const std::string& title) {
 
-  LOG << "Writing type " << nh->main_type << " message to packet: " << filename;
+  LOG << "Writing type " << nh.main_type << " message to packet: " << filename;
 
   File file(network.dir, filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return false;
   }
   file.Seek(0L, File::seekEnd);
-  nh->list_len = static_cast<uint16_t>(list.size());
+  nh.list_len = static_cast<uint16_t>(list.size());
 
-  string date = wwiv::sdk::daten_to_humantime(nh->daten);
-  nh->length = (text.size() + 1 +  byname.size() + date.size() + 4 + title.size());
-  file.Write(nh, sizeof(net_header_rec));
-  if (nh->list_len) {
-    file.Write(&list[0], sizeof(uint16_t) * (nh->list_len));
+  string date = wwiv::sdk::daten_to_humantime(nh.daten);
+  nh.length = (text.size() + 1 +  byname.size() + date.size() + 4 + title.size());
+  file.Write(&nh, sizeof(net_header_rec));
+  if (nh.list_len) {
+    file.Write(&list[0], sizeof(uint16_t) * (nh.list_len));
   }
   char nul[1] = {0};
   if (!title.empty()) {
@@ -114,7 +114,7 @@ bool write_packet(
 }
 
 bool send_local(
-    const net_networks_rec& network, net_header_rec* nh,
+    const net_networks_rec& network, net_header_rec& nh,
     const std::string& text, const std::string& byname, const std::string& title) {
   return send_network(LOCAL_NET, network, nh, {}, text, byname, title);
 }
