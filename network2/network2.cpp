@@ -77,6 +77,7 @@ struct Context {
   UserManager* user_manager;
   WWIVMessageApi* api;
   int network_number;
+  vector<subboardrec> subs;
 };
 
 static void ShowHelp(CommandLine& cmdline) {
@@ -141,6 +142,12 @@ static bool handle_email(Context& context,
     context.user_manager->WriteUser(&user, d.user_number);
   }
   return added;
+}
+
+static bool handle_post(Context& context, const net_header_rec& nh,
+  std::vector<uint16_t>& list, const string& text) {
+  LOG << "Writing message to dead.net for unhandled type: " << main_type_name(nh.main_type);
+  return write_packet(DEAD_NET, *context.net, nh, list, text);
 }
 
 static string NetInfoFileName(uint16_t type) {
@@ -219,9 +226,9 @@ static bool handle_packet(
   // header info at the beginning of the message text is in the format 
   // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
   case main_type_new_post:
-    LOG << "Writing message to dead.net for unhandled type: " << main_type_name(nh.main_type);
-    return write_packet(DEAD_NET, *context.net, nh, list, text);
-    break;
+  {
+    return handle_post(context, nh, list, text);
+  } break;
   // Legacy numeric only post types.
   case main_type_pre_post:
   case main_type_post:
@@ -281,6 +288,20 @@ static bool handle_file(Context& context, const string& name) {
     }
   }
   return true;
+}
+
+static vector<subboardrec> read_subs(const string &datadir) {
+  std::vector<subboardrec> subboards;
+
+  DataFile<subboardrec> file(datadir, SUBS_DAT);
+  if (!file) {
+    std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
+    return {};
+  }
+  if (!file.ReadVector(subboards)) {
+    return {};
+  }
+  return subboards;
 }
 
 int main(int argc, char** argv) {
@@ -351,6 +372,7 @@ int main(int argc, char** argv) {
     context.user_manager = user_manager.get();
     context.network_number = network_number_int;
     context.api = api.get();
+    context.subs = std::move(read_subs(config.datadir()));
 
     LOG << "Processing: " << net.dir << LOCAL_NET;
     handle_file(context, LOCAL_NET);
