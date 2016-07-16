@@ -186,6 +186,8 @@ static bool handle_net_info_file(const net_networks_rec& net,
 static bool handle_packet(
   Context& context,
   const net_header_rec& nh, std::vector<uint16_t>& list, const string& text) {
+  LOG << "Processing message with type: " << main_type_name(nh.main_type)
+      << "/" << nh.minor_type;
 
   switch (nh.main_type) {
     /*
