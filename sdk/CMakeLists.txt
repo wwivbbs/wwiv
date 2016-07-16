@@ -21,6 +21,7 @@ set(COMMON_SOURCES
   networks.cpp
   phone_numbers.cpp
   status.cpp
+  subxtr.cpp
   user.cpp
   usermanager.cpp
   )

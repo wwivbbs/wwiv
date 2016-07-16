@@ -41,7 +41,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/message_file.h"
 #include "bbs/msgbase1.h"
-#include "bbs/subxtr.h"
+#include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 #include "bbs/vars.h"
 #include "sdk/status.h"

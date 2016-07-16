@@ -31,7 +31,7 @@
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/message_file.h"
-#include "bbs/subxtr.h"
+#include "sdk/subxtr.h"
 #include "bbs/wconstants.h"
 #include "sdk/status.h"
 #include "core/strings.h"

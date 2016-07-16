@@ -34,7 +34,7 @@
 #include "bbs/msgbase1.h"
 #include "bbs/read_message.h"
 #include "bbs/wconstants.h"
-#include "bbs/subxtr.h"
+//#include "sdk/subxtr.h"
 #include "bbs/printfile.h"
 #include "bbs/uedit.h"
 #include "sdk/status.h"

@@ -31,7 +31,7 @@
 #include "bbs/message_file.h"
 #include "bbs/msgbase1.h"
 #include "bbs/read_message.h"
-#include "bbs/subxtr.h"
+#include "sdk/subxtr.h"
 #include "bbs/printfile.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"

@@ -93,7 +93,6 @@
     <ClCompile Include="pause_test.cpp" />
     <ClCompile Include="printfile_test.cpp" />
     <ClCompile Include="stuffin_test.cpp" />
-    <ClCompile Include="subxtr_test.cpp" />
     <ClCompile Include="utility_test.cpp" />
     <ClCompile Include="wutil_test.cpp" />
     <ClCompile Include="xfer_test.cpp" />

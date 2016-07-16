@@ -22,7 +22,7 @@
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/input.h"
-#include "bbs/subxtr.h"
+#include "sdk/subxtr.h"
 #include "bbs/keycodes.h"
 #include "sdk/status.h"
 #include "bbs/bbs.h"
@@ -38,6 +38,7 @@
 using std::string;
 using wwiv::bbs::InputMode;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -63,7 +64,7 @@ static void save_subs() {
   }
 
   // Write out SUBS.XTR since it may have changed in boardedit.
-  write_subs_xtr(session()->net_networks, session()->xsubs);
+  write_subs_xtr(session()->config()->datadir(), session()->net_networks, session()->xsubs);
 
   for (int nDelNetNum = 0; nDelNetNum < session()->max_net_num(); nDelNetNum++) {
     set_net_num(nDelNetNum);

@@ -18,7 +18,7 @@
 /**************************************************************************/
 
 #include "bbs/input.h"
-#include "bbs/subxtr.h"
+#include "sdk/subxtr.h"
 #include "bbs/bbs.h"
 #include "bbs/email.h"
 #include "bbs/fcns.h"
@@ -28,6 +28,7 @@
 #include "core/textfile.h"
 #include "sdk/filenames.h"
 
+using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 

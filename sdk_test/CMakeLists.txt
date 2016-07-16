@@ -13,6 +13,7 @@ set(test_sources
   network_test.cpp
   phone_numbers_test.cpp
   sdk_helper.cpp
+  subxtr_test.cpp
   user_test.cpp
 )
 

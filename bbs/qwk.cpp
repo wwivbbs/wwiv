@@ -41,7 +41,7 @@
 #include "bbs/pause.h"
 #include "bbs/qscan.h"
 #include "bbs/stuffin.h"
-#include "bbs/subxtr.h"
+#include "sdk/subxtr.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"

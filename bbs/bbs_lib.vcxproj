@@ -291,7 +291,6 @@
     <ClCompile Include="subedit.cpp" />
     <ClCompile Include="sublist.cpp" />
     <ClCompile Include="subreq.cpp" />
-    <ClCompile Include="subxtr.cpp" />
     <ClCompile Include="syschat.cpp" />
     <ClCompile Include="sysopf.cpp" />
     <ClCompile Include="sysoplog.cpp" />

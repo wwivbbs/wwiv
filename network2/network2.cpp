@@ -145,8 +145,36 @@ static bool handle_email(Context& context,
 }
 
 static bool handle_post(Context& context, const net_header_rec& nh,
-  std::vector<uint16_t>& list, const string& text) {
+  std::vector<uint16_t>& list, const string& raw_text) {
   LOG << "Writing message to dead.net for unhandled type: " << main_type_name(nh.main_type);
+  
+  string subtype;
+  auto iter = raw_text.begin();
+  for (; iter != raw_text.end(); iter++) {
+    if (*iter == '\r' || *iter == '\n') {
+      LOG << "expected SUBNAME<NULL> in message text.  Found (\\r or \\n instead).";
+      LOG << "text: " << raw_text;
+      return false;
+    }
+    subtype.push_back(*iter);
+  }
+  if (iter != raw_text.end()) iter++;
+  string text = string(iter, raw_text.end());
+  LOG << "processing post to subtype: " << subtype;
+/*
+  if (!api->Exist(basename)) {
+    clog << "Message area: '" << basename << "' does not exist." << endl;
+    clog << "Attempting to create it." << endl;
+    // Since the area does not exist, let's create it automatically
+    // like WWIV alwyas does.
+    unique_ptr<MessageArea> creator(api->Create(basename));
+    if (!creator) {
+      clog << "Failed to create message area: " << basename << ". Exiting." << endl;
+      return 1;
+    }
+  }
+  */
+
   return write_packet(DEAD_NET, *context.net, nh, list, text);
 }
 

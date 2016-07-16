@@ -21,14 +21,15 @@
 #include <string>
 #include <vector>
 
-#include "bbs_test/bbs_helper.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core_test/file_helper.h"
-
+#include "sdk/subxtr.h"
+#include "sdk_test/sdk_helper.h"
 
 using std::string;
 using std::vector;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 class SubXtrTest: public testing::Test {
@@ -39,11 +40,11 @@ protected:
     subs.emplace_back(subboardrec{"Sub1", "S1", '1', 10, 10, 0, 0, 500, 0, 2, 0});
     subs.emplace_back(subboardrec{"Sub2", "S2", '2', 10, 10, 0, 0, 500, 0, 2, 0});
   }
-  const string dir() { return helper.files().TempDir(); }
+  const string dir() { return helper.files_.TempDir(); }
   string CreateTempFile(const string& name, const string& contents) {
     return helper.files().CreateTempFile(name, contents);
   }
-  BbsHelper helper;
+  SdkHelper helper;
   vector<net_networks_rec> net_networks;
   vector<subboardrec> subs;
 };
@@ -55,7 +56,7 @@ TEST_F(SubXtrTest, Write) {
   s2.nets.emplace_back(xtrasubsnetrec{0, 0, 0, 1, 1, "S2"});
   xsubs.emplace_back(s2);
 
-  write_subs_xtr(net_networks, xsubs);
+  write_subs_xtr(helper.data(), net_networks, xsubs);
   TextFile subs_xtr_file(helper.data(), "subs.xtr", "r");
   vector<string> actual = SplitString(subs_xtr_file.ReadFileIntoString(), "\n");
   ASSERT_EQ(4, actual.size());
@@ -113,7 +114,7 @@ TEST_F(SubXtrTest, Read) {
     }
   }
   vector<xtrasubsrec> actual;
-  read_subs_xtr(net_networks, subs, actual);
+  read_subs_xtr(helper.data(), net_networks, subs, actual);
   ASSERT_EQ(subs.size(), actual.size());
   ASSERT_EQ(expected.size(), actual.size());
   for (std::size_t i = 0; i < subs.size(); i++) {

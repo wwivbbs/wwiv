@@ -26,8 +26,11 @@ class SdkHelper {
 public:
   SdkHelper();
   ~SdkHelper();
+  bool SetUp() { return true; }
 
   const std::string& root() const { return root_; }
+  const std::string& data() const { return data_; }
+  FileHelper& files() { return files_; }
 
   std::string CreatePath(const std::string& name);
   FileHelper files_;

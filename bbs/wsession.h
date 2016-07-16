@@ -28,13 +28,14 @@
 #include "bbs/remote_io.h"
 #include "sdk/status.h"
 #include "bbs/woutstreambuffer.h"
-#include "bbs/subxtr.h"
+#include "sdk/subxtr.h"
 #include "bbs/local_io.h"
 #include "core/inifile.h"
 #include "core/file.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
 #include "sdk/net.h"
+#include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
@@ -185,7 +186,7 @@ public:
   void SetCurrentReadMessageArea(int n) { m_nCurrentReadMessageArea = n; }
 
   const subboardrec& current_sub() const { return subboards[GetCurrentReadMessageArea()]; }
-  const xtrasubsrec& current_xsub() const { return xsubs[GetCurrentReadMessageArea()]; }
+  const wwiv::sdk::xtrasubsrec& current_xsub() const { return xsubs[GetCurrentReadMessageArea()]; }
   net_networks_rec& current_net() { return net_networks[net_num()]; }
 
   size_t GetCurrentConferenceMessageArea() const { return m_nCurrentConferenceMessageArea; }
@@ -448,7 +449,7 @@ public:
   std::vector<newexternalrec> over_intern;
   std::vector<languagerec> languages;
   std::vector<subboardrec> subboards;
-  std::vector<xtrasubsrec> xsubs;
+  std::vector<wwiv::sdk::xtrasubsrec> xsubs;
   std::vector<net_networks_rec> net_networks;
   std::vector<gfiledirrec> gfilesec;
   std::vector<arcrec> arcs;

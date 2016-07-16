@@ -16,14 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/subxtr.h"
+#include "sdk/subxtr.h"
 
 #include <string>
 #include <vector>
 #include <sstream>
 
-#include "bbs/bbs.h"
 #include "bbs/vars.h"
+#include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -33,6 +33,10 @@ using std::string;
 using std::vector;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
+
+namespace wwiv {
+namespace sdk {
+
 
 static int FindNetworkByName(const std::vector<net_networks_rec>& net_networks, const std::string& name) {
   for (size_t i = 0; i < net_networks.size(); i++) {
@@ -70,8 +74,8 @@ bool ParseXSubsLine(const std::vector<net_networks_rec>& net_networks, const std
   return true;
 }
 
-bool read_subs_xtr(const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec>& subs, std::vector<xtrasubsrec>& xsubs) {
-  TextFile subs_xtr(session()->config()->datadir(), SUBS_XTR, "rt");
+bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec>& subs, std::vector<xtrasubsrec>& xsubs) {
+  TextFile subs_xtr(datadir, SUBS_XTR, "rt");
   if (!subs_xtr.IsOpen()) {
     return false;
   }
@@ -89,7 +93,8 @@ bool read_subs_xtr(const std::vector<net_networks_rec>& net_networks, const std:
     char identifier = line.front();
     line = line.substr(1);
     switch (identifier) {
-    case '!': {                        /* sub idx */
+    case '!':
+    {                        /* sub idx */
       curn = atoi(line.c_str());
       if (curn >= size_int(subs)) {
         // Bad number on ! line.
@@ -117,15 +122,15 @@ bool read_subs_xtr(const std::vector<net_networks_rec>& net_networks, const std:
   return true;
 }
 
-bool write_subs_xtr(const std::vector<net_networks_rec>& net_networks, const vector<xtrasubsrec>& xsubs) {
+bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const vector<xtrasubsrec>& xsubs) {
   // Backup subs.xtr
   const string subs_xtr_old_name = StrCat(SUBS_XTR, ".old");
-  File::Remove(session()->config()->datadir(), subs_xtr_old_name);
-  File subs_xtr(session()->config()->datadir(), SUBS_XTR);
-  File subs_xtr_old(session()->config()->datadir(), subs_xtr_old_name);
+  File::Remove(datadir, subs_xtr_old_name);
+  File subs_xtr(datadir, SUBS_XTR);
+  File subs_xtr_old(datadir, subs_xtr_old_name);
   File::Move(subs_xtr.full_pathname(), subs_xtr_old.full_pathname());
 
-  TextFile fileSubsXtr(session()->config()->datadir(), SUBS_XTR, "w");
+  TextFile fileSubsXtr(datadir, SUBS_XTR, "w");
   if (fileSubsXtr.IsOpen()) {
     int i = 0;
     for (const auto& x : xsubs) {
@@ -145,4 +150,7 @@ bool write_subs_xtr(const std::vector<net_networks_rec>& net_networks, const vec
     fileSubsXtr.Close();
   }
   return true;
+}
+
+}
 }

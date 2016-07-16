@@ -25,6 +25,10 @@
 #include "sdk/net.h"
 #include "sdk/vardec.h"
 
+namespace wwiv {
+namespace sdk {
+
+
 /*
  * Info for each network the sub is on.
  *  flags - bitmask
@@ -61,8 +65,11 @@ struct xtrasubsrec {
 #define XTRA_NET_AUTO_INFO    0x00000002    /* sends subs.lst info for sub */
 
 
-bool read_subs_xtr(const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec>& subs, std::vector<xtrasubsrec>& xsubs);
-bool write_subs_xtr(const std::vector<net_networks_rec>& net_networks, const std::vector<xtrasubsrec>& xsubs);
+bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec>& subs, std::vector<xtrasubsrec>& xsubs);
+bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<xtrasubsrec>& xsubs);
+
+}
+}
 
 
 #endif // __INCLUDED_SUBXTR_H__

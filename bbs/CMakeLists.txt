@@ -96,7 +96,6 @@ set(COMMON_SOURCES
  subedit.cpp
  sublist.cpp
  subreq.cpp
- subxtr.cpp
  syschat.cpp
  sysopf.cpp
  sysoplog.cpp

@@ -26,7 +26,7 @@
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/confutil.h"
-#include "bbs/subxtr.h"
+#include "sdk/subxtr.h"
 #include "core/strings.h"
 
 using std::max;

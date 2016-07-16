@@ -13,7 +13,6 @@ set(test_sources
   pause_test.cpp
   printfile_test.cpp
   stuffin_test.cpp
-  subxtr_test.cpp
   utility_test.cpp
   wutil_test.cpp
   xfer_test.cpp

@@ -39,7 +39,6 @@
 #include "bbs/message_file.h"
 #include "bbs/netsup.h"
 #include "bbs/pause.h"
-#include "bbs/subxtr.h"
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
 #include "sdk/status.h"
@@ -54,6 +53,7 @@
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
+#include "sdk/subxtr.h"
 
 // Additional INI file function and structure
 #include "bbs/xinitini.h"
@@ -650,7 +650,7 @@ bool WSession::read_subs() {
 
   // If we already read subs.dat that's sufficient to return true.
   // since subs.xtr is created as-needed once as sub is created.
-  read_subs_xtr(net_networks, subboards, xsubs);
+  read_subs_xtr(config()->datadir(), net_networks, subboards, xsubs);
   return true;
 }
 

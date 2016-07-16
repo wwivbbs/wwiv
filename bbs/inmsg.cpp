@@ -28,7 +28,7 @@
 #include "bbs/bbsovl3.h"
 #include "bbs/crc.h"
 #include "bbs/input.h"
-#include "bbs/subxtr.h"
+#include "sdk/subxtr.h"
 #include "bbs/printfile.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
@@ -51,6 +51,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 using wwiv::bbs::InputMode;
+using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 

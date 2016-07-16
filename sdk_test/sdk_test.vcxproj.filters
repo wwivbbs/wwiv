@@ -37,6 +37,9 @@
     <ClCompile Include="datetime_test.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="subxtr_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sdk_helper.h">

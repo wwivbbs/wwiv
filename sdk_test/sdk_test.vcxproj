@@ -109,6 +109,7 @@
     <ClCompile Include="phone_numbers_test.cpp" />
     <ClCompile Include="sdk_helper.cpp" />
     <ClCompile Include="sdk_test_main.cpp" />
+    <ClCompile Include="subxtr_test.cpp" />
     <ClCompile Include="user_test.cpp" />
   </ItemGroup>
   <ItemGroup>
