@@ -15,60 +15,28 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETWORKB_NET_UTIL_H__
-#define __INCLUDED_NETWORKB_NET_UTIL_H__
+#ifndef __INCLUDED_NETWORK2_POST_H__
+#define __INCLUDED_NETWORK2_POST_H__
 
-#include <set>
-#include <string>
 #include <vector>
+#include "network2/context.h"
 #include "sdk/networks.h"
 #include "sdk/net.h"
+#include "sdk/subxtr.h"
+#include "sdk/usermanager.h"
+#include "sdk/vardec.h"
+#include "sdk/msgapi/msgapi.h"
+#include "sdk/msgapi/message_api_wwiv.h"
 
 namespace wwiv {
 namespace net {
+namespace network2 {
 
-void rename_pend(const std::string& directory, const std::string& filename);
+bool handle_post(Context& context, const net_header_rec& nh,
+  std::vector<uint16_t>& list, const std::string& raw_text);
 
-bool write_packet(
-  const std::string& filename,
-  const net_networks_rec& net,
-  const net_header_rec& nh, const std::vector<uint16_t>& list, const std::string& text);
-
-bool send_network(
-  const std::string& filename,
-  const net_networks_rec& network, net_header_rec& nh,
-  std::vector<uint16_t> list, const std::string& text, const std::string& byname, const std::string& title);
-
-bool send_local(
-  const net_networks_rec& network, net_header_rec& nh,
-  const std::string& text, const std::string& byname, const std::string& title);
-
-std::string main_type_name(int typ);
-std::string net_info_minor_type_name(int typ);
-
-template <typename C, typename I>
-static std::string get_message_field(C& c, I& iter, std::set<char> stop, std::size_t max) {
-  const auto begin = iter;
-
-  int count = 0;
-  while (stop.find(*iter) == std::end(stop) && ++count < 80 && iter != c.end()) {
-    iter++;
-  }
-  std::string result(begin, iter);
-
-  // Stop over stop chars
-  while (stop.find(*iter) != std::end(stop)
-    && iter != std::end(c)) {
-    iter++;
-  }
-
-  return result;
-}
-
-
-
-
+}  // namespace network2
 }  // namespace net
 }  // namespace wwiv
 
-#endif  // __INCLUDED_NETWORKB_NET_UTIL_H__
+#endif  // __INCLUDED_NETWORK2_POST_H__
