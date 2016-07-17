@@ -208,11 +208,17 @@ WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
 
 WWIVMessageHeader* WWIVMessageArea::ReadMessageHeader(int message_number) {
   unique_ptr<WWIVMessage> msg(ReadMessage(message_number));
+  if (!msg) {
+    return nullptr;
+  }
   return msg->release_header();
 }
 
 WWIVMessageText* WWIVMessageArea::ReadMessageText(int message_number) {
   unique_ptr<WWIVMessage> msg(ReadMessage(message_number));
+  if (!msg) {
+    return nullptr;
+  }
   return msg->release_text();
 }
 

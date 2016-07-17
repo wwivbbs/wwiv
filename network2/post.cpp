@@ -157,6 +157,7 @@ bool handle_post(Context& context, const net_header_rec& nh,
   msg->text()->set_text(text);
 
   const int num_messages = area->number_of_messages();
+  LOG << "num_messages=" << num_messages;
   for (int current = 1; current <= num_messages; current++) {
     unique_ptr<MessageHeader> header(area->ReadMessageHeader(current));
     if (!header) {
