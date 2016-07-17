@@ -17,6 +17,8 @@
 /**************************************************************************/
 #include "networkb/net_util.h"
 
+#include <string>
+
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
@@ -40,7 +42,8 @@ void rename_pend(const string& directory, const string& filename) {
   const string prefix = (atoi(num.c_str())) ? "1" : "0";
 
   for (int i = 0; i < 1000; i++) {
-    const string new_filename = StringPrintf("%sp%s-0-%u.net", directory.c_str(), prefix.c_str(), i);
+    const string new_filename =
+      StringPrintf("%sp%s-0-%u.net", directory.c_str(), prefix.c_str(), i);
     if (File::Rename(pend_filename, new_filename)) {
       LOG << "renamed file to: " << new_filename;
       return;
