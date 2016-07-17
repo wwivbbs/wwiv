@@ -82,6 +82,9 @@
     <ClInclude Include="subxtr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ssm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -156,6 +159,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="subxtr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ssm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

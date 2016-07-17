@@ -33,6 +33,7 @@
     <ClInclude Include="net.h" />
     <ClInclude Include="networks.h" />
     <ClInclude Include="phone_numbers.h" />
+    <ClInclude Include="ssm.h" />
     <ClInclude Include="status.h" />
     <ClInclude Include="subxtr.h" />
     <ClInclude Include="user.h" />
@@ -56,6 +57,7 @@
     <ClCompile Include="names.cpp" />
     <ClCompile Include="networks.cpp" />
     <ClCompile Include="phone_numbers.cpp" />
+    <ClCompile Include="ssm.cpp" />
     <ClCompile Include="status.cpp" />
     <ClCompile Include="subxtr.cpp" />
     <ClCompile Include="user.cpp" />

@@ -78,7 +78,7 @@ struct net_header_rec {
 #define main_type_sub_list_info   0x0014  /* type 20 info for subs.lst file */
 
 #define main_type_new_post        0x001a  /* type 26 post by sub name */
-#define main_type_new_extern      0x001b  /* type 27 auto-proc ext. msgs */
+#define main_type_new_external    0x001b  /* type 27 auto-proc ext. msgs */
 #define main_type_game_pack       0x001c  /* type 28 game packs */
 
 // Minor types used by main_type_net_info

@@ -145,7 +145,7 @@ string main_type_name(int typ) {
   case main_type_sub_drop_resp: return "main_type_sub_drop_resp";
   case main_type_sub_list_info: return "main_type_sub_list_info";
   case main_type_new_post: return "main_type_new_post";
-  case main_type_new_extern: return "main_type_new_extern";
+  case main_type_new_external: return "main_type_new_external";
   case main_type_game_pack: return "main_type_game_pack";
   default: return StringPrintf("UNKNOWN type #%d", typ);
   }

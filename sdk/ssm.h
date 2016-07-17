@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.x                              */
-/*              Copyright (C)2016 WWIV Software Services                  */
+/*                          WWIV Version 5.0x                             */
+/*             Copyright (C)2015-2016, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,36 +15,35 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETWORK2_CONTEXT_H__
-#define __INCLUDED_NETWORK2_CONTEXT_H__
+#ifndef __INCLUDED_SDK_SSM_H__
+#define __INCLUDED_SDK_SSM_H__
 
+#include <string>
 #include <vector>
+
 #include "sdk/config.h"
-#include "sdk/networks.h"
 #include "sdk/net.h"
-#include "sdk/subxtr.h"
-#include "sdk/usermanager.h"
 #include "sdk/vardec.h"
-#include "sdk/msgapi/msgapi.h"
-#include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/usermanager.h"
 
 namespace wwiv {
-namespace net {
-namespace network2 {
+namespace sdk {
 
-struct Context {
-  wwiv::sdk::Config* config;
-  net_networks_rec* net;
-  wwiv::sdk::UserManager* user_manager;
-  wwiv::sdk::msgapi::WWIVMessageApi* api;
-  int network_number;
-  std::vector<subboardrec> subs;
-  std::vector<wwiv::sdk::xtrasubsrec> xsubs;
+
+class SSM {
+public:
+  SSM(wwiv::sdk::Config& config, wwiv::sdk::UserManager* user_manager);
+  virtual ~SSM();
+
+  bool send_local(uint32_t user_number, const std::string& text);
+  bool send_remote(const net_networks_rec& net, uint16_t system_number, uint32_t from_user_number, uint32_t user_number, const std::string& text);
+private:
+  const std::string data_directory_;
+  wwiv::sdk::UserManager* user_manager_;
 };
 
 
-}  // namespace network2
-}  // namespace net
-}  // namespace wwiv
+}
+}
 
-#endif  // __INCLUDED_NETWORK2_CONTEXT_H__
+#endif  // __INCLUDED_SDK_SSM_H__

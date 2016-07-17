@@ -56,6 +56,7 @@
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
+#include "sdk/ssm.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 #include "sdk/usermanager.h"
@@ -86,6 +87,22 @@ static void ShowHelp(CommandLine& cmdline) {
        << ".####      Network number (as defined in INIT)" << endl
        << endl;
   exit(1);
+}
+
+static bool handle_ssm(Context& context, const net_header_rec& nh, const std::string& text) {
+  ScopeExit at_exit([] {
+    LOG << "==============================================================";
+  });
+  LOG << "==============================================================";
+  LOG << "  Receiving SSM for user: #" << nh.touser;
+  SSM ssm(*context.config, context.user_manager);
+  if (!ssm.send_local(nh.touser, text)) {
+    LOG << "  ERROR writing SSM: '" << text << "'";
+    return false;
+  }
+
+  LOG << "    + SSM  '" << text << "'";
+  return true;
 }
 
 static string NetInfoFileName(uint16_t type) {
@@ -161,9 +178,27 @@ static bool handle_packet(
   {
     return handle_post(context, nh, list, text);
   } break;
+  case main_type_ssm:
+  {
+    return handle_ssm(context, nh, text);
+  } break;
   // Legacy numeric only post types.
-  case main_type_pre_post:
   case main_type_post:
+  case main_type_pre_post:
+  case main_type_external:
+  case main_type_email_name:
+  case main_type_net_edit:
+  case main_type_sub_list:
+  case main_type_group_bbslist:
+  case main_type_group_connect:
+  case main_type_group_info:
+  case main_type_sub_add_req:
+  case main_type_sub_drop_req:
+  case main_type_sub_add_resp:
+  case main_type_sub_drop_resp:
+  case main_type_sub_list_info:
+  case main_type_new_external:
+
   default:
     LOG << "Writing message to dead.net for unhandled type: " << main_type_name(nh.main_type);
     return write_packet(DEAD_NET, *context.net, nh, list, text);
@@ -300,6 +335,7 @@ int main(int argc, char** argv) {
     unique_ptr<UserManager> user_manager = make_unique<UserManager>(
       config.config()->datadir, config.config()->userreclen, config.config()->maxusers);
     Context context;
+    context.config = &config;
     context.net = &net;
     context.user_manager = user_manager.get();
     context.network_number = network_number_int;

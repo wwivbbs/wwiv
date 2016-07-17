@@ -170,12 +170,12 @@ bool handle_post(Context& context, const net_header_rec& nh,
       && header->from_system() == nh.fromsys
       && header->from_usernum() == nh.fromuser) {
       LOG << "  Discarding Duplicate Message.";
-      return false;
+      // Returning true since we properly handled this by discarding it.
+      return true;
     }
   }
 
-  bool result = area->AddMessage(*msg);
-  if (!result) {
+  if (!area->AddMessage(*msg)) {
     LOG << "  Failed to add message: " << title;
     return false;
   }

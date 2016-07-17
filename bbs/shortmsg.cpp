@@ -29,7 +29,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 // Local function prototypes
-void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char *messageText);
+void SendLocalShortMessage(unsigned int nUserNum, char *messageText);
 void SendRemoteShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char *messageText);
 
 /*
@@ -90,7 +90,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
   }
 }
 
-void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char *messageText) {
+void SendLocalShortMessage(unsigned int nUserNum, char *messageText) {
   User user;
   session()->users()->ReadUser(&user, nUserNum);
   if (!user.IsUserDeleted()) {
@@ -115,7 +115,7 @@ void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char 
     } else {
       nNewMsgPos = 0;
     }
-    sm.tosys = static_cast<uint16_t>(nSystemNum);
+    sm.tosys = static_cast<uint16_t>(0);  // 0 means local
     sm.touser = static_cast<uint16_t>(nUserNum);
     strncpy(sm.message, messageText, 80);
     sm.message[80] = '\0';
@@ -171,7 +171,7 @@ void ssm(int nUserNum, int nSystemNum, const char *format, ...) {
   va_end(ap);
 
   if (nSystemNum == 0) {
-    SendLocalShortMessage(nUserNum, nSystemNum, szMessageText);
+    SendLocalShortMessage(nUserNum, szMessageText);
   } else if (net_sysnum && valid_system(nSystemNum)) {
     SendRemoteShortMessage(nUserNum, nSystemNum, szMessageText);
   }
