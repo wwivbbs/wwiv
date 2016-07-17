@@ -25,6 +25,7 @@
 #include <map>
 #include <memory>
 #include <sstream>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -52,6 +53,7 @@
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
+#include "sdk/subxtr.h"
 #include "sdk/usermanager.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/msgapi/message_api_wwiv.h"
@@ -60,6 +62,7 @@ using std::cout;
 using std::endl;
 using std::make_unique;
 using std::map;
+using std::set;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -78,6 +81,7 @@ struct Context {
   WWIVMessageApi* api;
   int network_number;
   vector<subboardrec> subs;
+  vector<xtrasubsrec> xsubs;
 };
 
 static void ShowHelp(CommandLine& cmdline) {
@@ -95,12 +99,12 @@ static bool handle_email(Context& context,
     User user;
     if (!context.user_manager->ReadUser(&user, to_user)) {
       // Unable to read user.
-      LOG << "unable to read user #" << to_user;
+      LOG << "ERROR: Unable to read user #" << to_user << ". Discarding message.";
       return false;
     }
 
     if (user.IsUserDeleted()) {
-      LOG << "User #" << to_user << " is deleted.  skipping mail.";
+      LOG << "User #" << to_user << " is deleted. Discarding message.";
       return false;
     }
   }
@@ -115,21 +119,15 @@ static bool handle_email(Context& context,
   d.user_number = nh.touser;
 
   auto iter = text.begin();
-  int count = 0;
-  while (*iter != '\0' && *iter != '\r' && ++count < 80 && iter != text.end()) {
-    iter++;
-  }
-  d.title = string(text.begin(), iter);
-  // Skip null.
-  if (iter != text.end()) iter++;
-  // Skip "\r\n" if it exists.
-  if (iter != text.end() && *iter == '\r') iter++;
-  if (iter != text.end() && *iter == '\n') iter++;
+  d.title = get_message_field(text, iter, {'\0', '\r', '\n'}, 80);
   // Rest of the message is the text.
   d.text = string(iter, text.end());
 
-  LOG << "title: " << d.title;
-  LOG << "text:  " << d.text;
+  ScopeExit at_exit([] {
+    LOG << "==============================================================";
+  });
+  LOG << "  Processing email.";
+  LOG << "  Title: '" << d.title << "'";
 
   std::unique_ptr<WWIVEmail> email(context.api->OpenEmail());
   bool added = email->AddMessage(d);
@@ -140,42 +138,110 @@ static bool handle_email(Context& context,
     num_waiting++;
     user.SetNumMailWaiting(num_waiting);
     context.user_manager->WriteUser(&user, d.user_number);
+    LOG << "    + Received Email  '" << d.title << "'";
   }
   return added;
 }
 
+static bool find_basename(Context& context, const string netname, string& basename) {
+  int current = 0;
+  for (const auto& x : context.xsubs) {
+    for (const auto& n : x.nets) {
+      if (n.net_num == context.network_number) {
+        if (IsEqualsIgnoreCase(netname.c_str(), n.stype)) {
+          // Since the subtype matches, we need to find the subboard base filename.
+          // and return that.
+          basename.assign(context.subs.at(current).filename);
+          return true;
+        }
+      }
+    }
+    ++current;
+  }
+  return false;
+}
+
+// Alpha subtypes are seven characters -- the first must be a letter, but the rest can be any
+// character allowed in a DOS filename.This main_type covers both subscriber - to - host and 
+// host - to - subscriber messages. Minor type is always zero(since it's ignored), and the
+// subtype appears as the first part of the message text, followed by a NUL.Thus, the message
+// header info at the beginning of the message text is in the format 
+// SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
 static bool handle_post(Context& context, const net_header_rec& nh,
   std::vector<uint16_t>& list, const string& raw_text) {
-  LOG << "Writing message to dead.net for unhandled type: " << main_type_name(nh.main_type);
   
-  string subtype;
+  ScopeExit at_exit([] {
+    LOG << "==============================================================";
+  });
   auto iter = raw_text.begin();
-  for (; iter != raw_text.end(); iter++) {
-    if (*iter == '\r' || *iter == '\n') {
-      LOG << "expected SUBNAME<NULL> in message text.  Found (\\r or \\n instead).";
-      LOG << "text: " << raw_text;
-      return false;
-    }
-    subtype.push_back(*iter);
-  }
-  if (iter != raw_text.end()) iter++;
+  string subtype = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+  string title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+  string sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+  string date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
   string text = string(iter, raw_text.end());
-  LOG << "processing post to subtype: " << subtype;
-/*
-  if (!api->Exist(basename)) {
-    clog << "Message area: '" << basename << "' does not exist." << endl;
-    clog << "Attempting to create it." << endl;
+  LOG << "==============================================================";
+  LOG << "  Processing New Post on subtype: " << subtype;
+  LOG << "  title:   " << title;
+  LOG << "  sender:  " << sender_name;
+  LOG << "  date:    " << date_string;
+
+  string basename;
+  if (!find_basename(context, subtype, basename)) {
+    LOG << "ERROR: Unable to find subtype of subtype: " << subtype;
+    return false;
+  }
+
+  if (!context.api->Exist(basename)) {
+    LOG << "WARNING Message area: '" << basename << "' does not exist.";;
+    LOG << "WARNING Attempting to create it.";
     // Since the area does not exist, let's create it automatically
     // like WWIV alwyas does.
-    unique_ptr<MessageArea> creator(api->Create(basename));
+    unique_ptr<MessageArea> creator(context.api->Create(basename));
     if (!creator) {
-      clog << "Failed to create message area: " << basename << ". Exiting." << endl;
-      return 1;
+      LOG << "ERROR: Failed to create message area: " << basename << ". Exiting.";
+      return false;
     }
   }
-  */
 
-  return write_packet(DEAD_NET, *context.net, nh, list, text);
+  unique_ptr<MessageArea> area(context.api->Open(basename));
+  if (!area) {
+    LOG << "ERROR Unable to open message area: '" << basename << "'.";
+    return false;
+  }
+
+  unique_ptr<Message> msg(area->CreateMessage());
+  msg->header()->set_from_system(nh.fromsys);
+  msg->header()->set_from_usernum(nh.fromuser);
+  msg->header()->set_title(title);
+  msg->header()->set_from(sender_name);
+  msg->header()->set_daten(nh.daten);
+  msg->text()->set_text(text);
+
+  const int num_messages = area->number_of_messages();
+  for (int current = 1; current <= num_messages; current++) {
+    unique_ptr<MessageHeader> header(area->ReadMessageHeader(current));
+    if (!header) {
+      continue;
+    }
+
+    // Since we don't have a global message id, use the combination of
+    // date + title + from system + from user.
+    if (header->daten() == nh.daten 
+      && header->title() == title
+      && header->from_system() == nh.fromsys
+      && header->from_usernum() == nh.fromuser) {
+      LOG << "  Discarding Duplicate Message.";
+      return false;
+    }
+  }
+
+  bool result = area->AddMessage(*msg);
+  if (!result) {
+    LOG << "  Failed to add message: " << title;
+    return false;
+  }
+  LOG << "    + Posted  '" << title << "'";
+  return true;
 }
 
 static string NetInfoFileName(uint16_t type) {
@@ -247,12 +313,6 @@ static bool handle_packet(
     // Email has no minor type, so minor_type will always be zero.
     return handle_email(context, nh.touser, nh, text);
   break;
-  // Alpha subtypes are seven characters -- the first must be a letter, but the rest can be any
-  // character allowed in a DOS filename.This main_type covers both subscriber - to - host and 
-  // host - to - subscriber messages. Minor type is always zero(since it's ignored), and the
-  // subtype appears as the first part of the message text, followed by a NUL.Thus, the message
-  // header info at the beginning of the message text is in the format 
-  // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
   case main_type_new_post:
   {
     return handle_post(context, nh, list, text);
@@ -312,7 +372,7 @@ static bool handle_file(Context& context, const string& name) {
       f.Read(&text[0], length);
     }
     if (!handle_packet(context, nh, list, text)) {
-      LOG << "error handing packet: type: " << nh.main_type;
+      LOG << "Error handing packet: type: " << nh.main_type;
     }
   }
   return true;
@@ -346,26 +406,26 @@ int main(int argc, char** argv) {
 
     if (!cmdline.Parse() || cmdline.arg("help").as_bool()) {
       ShowHelp(cmdline);
-      return 1;
+      return 2;
     }
     string network_name = cmdline.arg("network").as_string();
     string network_number = cmdline.arg("network_number").as_string();
     if (network_name.empty() && network_number.empty()) {
       LOG << "--network=[network name] or .[network_number] must be specified.";
       ShowHelp(cmdline);
-      return 1;
+      return 2;
     }
 
     string bbsdir = cmdline.arg("bbsdir").as_string();
     Config config(bbsdir);
     if (!config.IsInitialized()) {
       LOG << "Unable to load CONFIG.DAT.";
-      return 1;
+      return 3;
     }
     Networks networks(config);
     if (!networks.IsInitialized()) {
       LOG << "Unable to load networks.";
-      return 1;
+      return 4;
     }
 
     int network_number_int = 0;
@@ -401,13 +461,23 @@ int main(int argc, char** argv) {
     context.network_number = network_number_int;
     context.api = api.get();
     context.subs = std::move(read_subs(config.datadir()));
+    if (!read_subs_xtr(config.datadir(), networks.networks(), context.subs, context.xsubs)) {
+      LOG << "ERROR: Failed to read file: " << SUBS_XTR;
+      return 5;
+    }
 
     LOG << "Processing: " << net.dir << LOCAL_NET;
-    handle_file(context, LOCAL_NET);
-
-    return 0;
+    if (handle_file(context, LOCAL_NET)) {
+      LOG << "Deleting: " << net.dir << LOCAL_NET;
+      File::Remove(net.dir, LOCAL_NET);
+      return 0;
+    } else {
+      LOG << "ERROR: handle_file returned false";
+    }
+    return 1;
   } catch (const std::exception& e) {
     LOG << "ERROR: [network]: " << e.what();
   }
-  return 2;
+
+  return 255;
 }

@@ -72,11 +72,12 @@ void WWIVMessageHeader::set_deleted(bool b) {
   }
 }
 
-void WWIVMessageHeader::set_title(std::string& t) {
-  if (t.size() > 72) {
-    t.resize(72);
+void WWIVMessageHeader::set_title(const std::string& t) {
+  string title = t;
+  if (title.size() > 72) {
+    title.resize(72);
   }
-  strcpy(header_.title, t.c_str());
+  strcpy(header_.title, title.c_str());
 }
 
 WWIVMessageText::WWIVMessageText()

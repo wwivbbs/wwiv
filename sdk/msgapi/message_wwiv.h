@@ -38,11 +38,11 @@ public:
   virtual ~WWIVMessageHeader();
 
   std::string title() const override { return header_.title;  }
-  void set_title(std::string&) override;
+  void set_title(const std::string&) override;
   std::string to() const override { return to_.empty() ? to_ : "ALL";  }
-  void set_to(std::string& to) override { to_ = to;   }
+  void set_to(const std::string& to) override { to_ = to;   }
   std::string from() const override { return from_; }
-  void set_from(std::string& f) override { from_ = f; }
+  void set_from(const std::string& f) override { from_ = f; }
   uint16_t from_usernum() const override { return header_.owneruser; }
   void set_from_usernum(uint16_t n) override { header_.owneruser = n; }
   uint16_t from_system() const override { return header_.ownersys; }
@@ -54,11 +54,11 @@ public:
   uint8_t anony() const override { return header_.anony;  }      // TODO(rushfan): This should be generic
   void set_anony(uint8_t a) override { header_.anony = a; }
   std::string oaddress() const override { return oaddress_;  } // TODO(rushfan): Implement me!
-  void set_oaddress(std::string& a) override { oaddress_ = a;  }
+  void set_oaddress(const std::string& a) override { oaddress_ = a;  }
   std::string destination_address() const override { return destination_address_;  }
-  void set_destination_address(std::string& a) override { destination_address_ = a; }
+  void set_destination_address(const std::string& a) override { destination_address_ = a; }
   std::string in_reply_to() const override { return in_reply_to_; }
-  void set_in_reply_to(std::string& t) override { in_reply_to_ = t; }
+  void set_in_reply_to(const std::string& t) override { in_reply_to_ = t; }
 
   bool is_local() const override;
   bool is_private() const override { return false;  } // we don't support private subs

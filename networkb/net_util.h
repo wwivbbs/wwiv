@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_NETORKB_NET_UTIL_H__
 #define __INCLUDED_NETORKB_NET_UTIL_H__
 
+#include <set>
 #include <string>
 #include <vector>
 #include "sdk/networks.h"
@@ -44,6 +45,27 @@ bool send_local(
 
 std::string main_type_name(int typ);
 std::string net_info_minor_type_name(int typ);
+
+template <typename C, typename I>
+static std::string get_message_field(C& c, I& iter, std::set<char> stop, std::size_t max) {
+  const auto begin = iter;
+
+  int count = 0;
+  while (stop.find(*iter) == std::end(stop) && ++count < 80 && iter != c.end()) {
+    iter++;
+  }
+  string result(begin, iter);
+
+  // Stop over stop chars
+  while (stop.find(*iter) != std::end(stop)
+    && iter != std::end(c)) {
+    iter++;
+  }
+
+  return result;
+}
+
+
 
 
 }  // namespace net

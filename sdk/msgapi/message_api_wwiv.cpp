@@ -121,7 +121,10 @@ WWIVMessageArea* WWIVMessageApi::Open(const std::string& name) {
   const string msgs_filename = StrCat(name, ".dat");
   File msgs_file(messages_directory_, msgs_filename);
   if (!msgs_file.Exists()) {
-    return nullptr;
+    File create_msgs_file(messages_directory_, msgs_filename);
+    if (!create_msgs_file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
+      return nullptr;
+    }
   }
   if (!msgs_file.Open(File::modeReadOnly | File::modeBinary)) {
     return nullptr;
