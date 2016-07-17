@@ -120,13 +120,13 @@ bool handle_post(Context& context, const net_header_rec& nh,
   string text = string(iter, raw_text.end());
   LOG << "==============================================================";
   LOG << "  Processing New Post on subtype: " << subtype;
-  LOG << "  title:   " << title;
-  LOG << "  sender:  " << sender_name;
-  LOG << "  date:    " << date_string;
+  LOG << "  Title:   " << title;
+  LOG << "  Sender:  " << sender_name;
+  LOG << "  Date:    " << date_string;
 
   string basename;
   if (!find_basename(context, subtype, basename)) {
-    LOG << "ERROR: Unable to find subtype of subtype: " << subtype;
+    LOG << "    ! ERROR: Unable to find subtype of subtype: " << subtype;
     return false;
   }
 
@@ -137,14 +137,14 @@ bool handle_post(Context& context, const net_header_rec& nh,
     // like WWIV alwyas does.
     unique_ptr<MessageArea> creator(context.api->Create(basename));
     if (!creator) {
-      LOG << "ERROR: Failed to create message area: " << basename << ". Exiting.";
+      LOG << "    ! ERROR: Failed to create message area: " << basename << ". Exiting.";
       return false;
     }
   }
 
   unique_ptr<MessageArea> area(context.api->Open(basename));
   if (!area) {
-    LOG << "ERROR Unable to open message area: '" << basename << "'.";
+    LOG << "    ! ERROR Unable to open message area: '" << basename << "'.";
     return false;
   }
 
@@ -169,14 +169,14 @@ bool handle_post(Context& context, const net_header_rec& nh,
       && header->title() == title
       && header->from_system() == nh.fromsys
       && header->from_usernum() == nh.fromuser) {
-      LOG << "  Discarding Duplicate Message.";
+      LOG << "    - Discarding Duplicate Message.";
       // Returning true since we properly handled this by discarding it.
       return true;
     }
   }
 
   if (!area->AddMessage(*msg)) {
-    LOG << "  Failed to add message: " << title;
+    LOG << "     ! Failed to add message: " << title;
     return false;
   }
   LOG << "    + Posted  '" << title << "'";

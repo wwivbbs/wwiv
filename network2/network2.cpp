@@ -182,23 +182,41 @@ static bool handle_packet(
   {
     return handle_ssm(context, nh, text);
   } break;
-  // Legacy numeric only post types.
-  case main_type_post:
-  case main_type_pre_post:
-  case main_type_external:
+  // The other email type.  The touser field is zero, and the name is found at
+  // the beginning of the message text, followed by a NUL character.
+  // Minor_type will always be zero.
+  // TODO(rushfan): Implement this one.
   case main_type_email_name:
-  case main_type_net_edit:
-  case main_type_sub_list:
-  case main_type_group_bbslist:
-  case main_type_group_connect:
-  case main_type_group_info:
+
+  // Subs add/drop support.
+  // TODO(rushfan): Implement these.
   case main_type_sub_add_req:
   case main_type_sub_drop_req:
   case main_type_sub_add_resp:
   case main_type_sub_drop_resp:
+
+  // Sub ping.
+  // In many WWIV networks, the subs list coordinator (SLC) occasionally sends
+  // out "pings" to all network members.
   case main_type_sub_list_info:
+
+  // Legacy numeric only post types.
+  case main_type_post:
+  case main_type_pre_post:
+
+  // EPROGS.NET support 
+  case main_type_external:
   case main_type_new_external:
 
+  // NetEdiit.
+  case main_type_net_edit:
+
+  // *.### support
+  case main_type_sub_list:
+  case main_type_group_bbslist:
+  case main_type_group_connect:
+  case main_type_group_info:
+    // Anything undefined or anything we missed.
   default:
     LOG << "Writing message to dead.net for unhandled type: " << main_type_name(nh.main_type);
     return write_packet(DEAD_NET, *context.net, nh, list, text);
@@ -349,7 +367,9 @@ int main(int argc, char** argv) {
     LOG << "Processing: " << net.dir << LOCAL_NET;
     if (handle_file(context, LOCAL_NET)) {
       LOG << "Deleting: " << net.dir << LOCAL_NET;
-      File::Remove(net.dir, LOCAL_NET);
+      if (!File::Remove(net.dir, LOCAL_NET)) {
+        LOG << "ERROR: Unable to delete " << net.dir << LOCAL_NET;
+      }
       return 0;
     } else {
       LOG << "ERROR: handle_file returned false";
