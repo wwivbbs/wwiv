@@ -51,7 +51,7 @@ static void maybe_netmail(xtrasubsnetrec * ni, bool bAdd) {
   }
 }
 
-static void sub_req(uint16_t main_type, uint16_t minor_type, int tosys, char *extra) {
+static void sub_req(uint16_t main_type, int tosys, char *stype) {
   net_header_rec nh;
 
   nh.tosys = static_cast<uint16_t>(tosys);
@@ -59,18 +59,14 @@ static void sub_req(uint16_t main_type, uint16_t minor_type, int tosys, char *ex
   nh.fromsys = net_sysnum;
   nh.fromuser = 1;
   nh.main_type = main_type;
-  nh.minor_type = minor_type;
+  // always use 0 since we use the stype
+  nh.minor_type = 0;
   nh.list_len = 0;
   nh.daten = static_cast<uint32_t>(time(nullptr));
   nh.method = 0;
-  if (minor_type == 0) {
-    // This is an alphanumeric sub type.
-    nh.length = strlen(extra) + 1;
-    send_net(&nh, nullptr, extra, nullptr);
-  } else {
-    nh.length = 1;
-    send_net(&nh, nullptr, "", nullptr);
-  }
+  // This is an alphanumeric sub type.
+  nh.length = strlen(stype) + 1;
+  send_net(&nh, nullptr, stype, nullptr);
 
   bout.nl();
   if (main_type == main_type_sub_add_req) {
@@ -210,7 +206,7 @@ void sub_xtr_del(int n, int nn, int f) {
       if (opt & OPTION_AUTO) {
         bout << "|#5Attempt automated drop request? ";
         if (yesno()) {
-          sub_req(main_type_sub_drop_req, xn.type, xn.host, xn.stype);
+          sub_req(main_type_sub_drop_req, xn.host, xn.stype);
         }
       } else {
         maybe_netmail(&xn, false);
@@ -218,7 +214,7 @@ void sub_xtr_del(int n, int nn, int f) {
     } else {
       bout << "|#5Attempt automated drop request? ";
       if (yesno()) {
-        sub_req(main_type_sub_drop_req, xn.type, xn.host, xn.stype);
+        sub_req(main_type_sub_drop_req, xn.host, xn.stype);
       } else {
         maybe_netmail(&xn, false);
       }
@@ -289,12 +285,6 @@ void sub_xtr_add(int n, int nn) {
   input(xnp.stype, 7);
   if (xnp.stype[0] == 0) {
     return;
-  }
-
-  xnp.type = StringToUnsignedShort(xnp.stype);
-
-  if (xnp.type) {
-    sprintf(xnp.stype, "%u", xnp.type);
   }
 
   bout << "|#5Will you be hosting the sub? ";
@@ -374,7 +364,7 @@ void sub_xtr_add(int n, int nn) {
           if (opt & OPTION_AUTO) {
             bout << "|#5Attempt automated add request? ";
             if (yesno()) {
-              sub_req(main_type_sub_add_req, xnp.type, xnp.host, xnp.stype);
+              sub_req(main_type_sub_add_req, xnp.host, xnp.stype);
             }
           } else {
             maybe_netmail(&xnp, true);
@@ -384,7 +374,7 @@ void sub_xtr_add(int n, int nn) {
           bout << "|#5Attempt automated add request? ";
           bool bTryAutoAddReq = yesno();
           if (bTryAutoAddReq) {
-            sub_req(main_type_sub_add_req, xnp.type, xnp.host, xnp.stype);
+            sub_req(main_type_sub_add_req, xnp.host, xnp.stype);
           } else {
             maybe_netmail(&xnp, true);
           }

@@ -96,15 +96,14 @@ void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
     set_net_num(xnp.net_num);
     net_header_rec nh = netHeaderOrig;
     unsigned short int *pList = nullptr;
-    nh.minor_type = xnp.type;
+    nh.minor_type = 0;
     if (!nh.fromsys) {
       nh.fromsys = net_sysnum;
     }
+    nh.main_type = main_type_new_post;
     if (xnp.host) {
-      nh.main_type = main_type_pre_post;
       nh.tosys = xnp.host;
     } else {
-      nh.main_type = main_type_post;
       const string filename = StringPrintf("%sn%s.net", session()->network_directory().c_str(), xnp.stype);
       File file(filename);
       if (file.Open(File::modeBinary | File::modeReadOnly)) {
@@ -144,11 +143,8 @@ void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
         continue;
       }
     }
-    if (!xnp.type) {
-      nh.main_type = main_type_new_post;
-    }
     if (nn1 == session()->net_num()) {
-      send_net(&nh, pList, b1.get(), xnp.type ? nullptr : xnp.stype);
+      send_net(&nh, pList, b1.get(), xnp.stype);
     } else {
       gate_msg(&nh, b1.get(), xnp.net_num, xnp.stype, pList, nNetNumber);
     }
