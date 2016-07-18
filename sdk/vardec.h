@@ -508,8 +508,8 @@ struct subfile_header_t {
   uint32_t password_crc32;
   uint32_t base_message_num;
   uint8_t padding_1[49];
-  uint32_t active_message_count;
-  uint8_t padding_2[11];
+  uint16_t active_message_count;
+  uint8_t padding_2[13];
 };
 
 // DATA HELD FOR EVERY POST

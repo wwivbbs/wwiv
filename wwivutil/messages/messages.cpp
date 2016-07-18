@@ -254,6 +254,14 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
 	const string& msgs_dir,
   const std::vector<net_networks_rec>& net_networks,
   int start, int end, bool all) {
+
+  LOG << sizeof(postrec) << "; " << sizeof(subfile_header_t) << "; "
+      << offsetof(postrec, owneruser) << "; " << offsetof(subfile_header_t, active_message_count);
+  static_assert(sizeof(postrec) == 100, "postrec == 100");
+  static_assert(sizeof(subfile_header_t) == 100, "subfile_header_t == 100");
+  static_assert(offsetof(postrec, owneruser) == offsetof(subfile_header_t, active_message_count),
+    "owneruser offset != active_message_count: ");
+
   // TODO(rushfan): Create the right API type for the right message area.
   unique_ptr<MessageApi> api(new WWIVMessageApi(config()->bbsdir(),
       subs_dir, msgs_dir, net_networks));

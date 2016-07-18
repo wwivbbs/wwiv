@@ -59,9 +59,10 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
     return header;
   }
   if (raw_header.active_message_count > file.number_of_records()) {
-    LOG << "Header claims too many messages, raw_header.active_message_count("
+    /*LOG << "Header claims too many messages, raw_header.active_message_count("
       << raw_header.active_message_count << ") > file.number_of_records("
       << file.number_of_records() << ")";
+    */
     raw_header.active_message_count = file.number_of_records();
   }
   return WWIVMessageAreaHeader(raw_header);
@@ -166,19 +167,19 @@ bool WWIVMessageArea::ParseMessageText(
   vector<string> lines = SplitString(raw_text, "\n");
   auto it = lines.begin();
   if (it == std::end(lines)) {
-    LOG << "Malformed message(1) #" << message_number << "; title: '" << header.title << "'";
+    LOG << "Malformed message(1) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
     return true; 
   }
 
   from_username = StringTrim(*it++);
   if (it == std::end(lines)) {
-    LOG << "Malformed message(2) #" << message_number << "; title: '" << header.title << "'";
+    LOG << "Malformed message(2) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
     return true;
   }
 
   date = StringTrim(*it++);
   if (it == std::end(lines)) {
-    LOG << "Malformed message(3) #" << message_number << "; title: '" << header.title << "'";
+    LOG << "Malformed message(3) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
     return true;
   }
 
