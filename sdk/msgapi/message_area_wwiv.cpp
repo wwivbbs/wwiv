@@ -24,6 +24,7 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "bbs/subacc.h"
@@ -128,25 +129,11 @@ int WWIVMessageArea::number_of_messages() {
   return header.owneruser;
 }
 
-WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
-  int num_messages = number_of_messages();
-  if (message_number < 1) {
-    return nullptr;
-  } else if (message_number > num_messages) {
-    message_number = num_messages;
-  }
-
-  DataFile<postrec> sub(sub_filename_);
-  if (!sub) {
-    // TODO: throw exception
-    return nullptr;
-  }
-  postrec header;
-  sub.Read(message_number, &header);
-  if (header.msg.storage_type != 2) {
-    // We only support type-2 on the WWIV API.
-    return nullptr;
-  }
+bool WWIVMessageArea::ParseMessageText(
+  const postrec& header,
+  string& from_username,
+  string& date, string& to,
+  string& in_reply_to, string& text) {
 
   // Some of the message header information ends up in the text.
   // line1: From username (i.e. rushfan #1 @5161)
@@ -159,16 +146,28 @@ WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
 
   string raw_text;
   if (!readfile(&header.msg, &raw_text)) {
-    return nullptr;
+    return false;
   }
 
   vector<string> lines = SplitString(raw_text, "\n");
   auto it = lines.begin();
-  string from_username = StringTrim(*it++);
-  string date = StringTrim(*it++);
-  string to;
-  string in_reply_to;
-  string text;
+  if (it == std::end(lines)) {
+    LOG << "Malformed message(1): " << header.title;
+    return true; 
+  }
+
+  from_username = StringTrim(*it++);
+  if (it == std::end(lines)) {
+    LOG << "Malformed message(2): " << header.title;
+    return true;
+  }
+
+  date = StringTrim(*it++);
+  if (it == std::end(lines)) {
+    LOG << "Malformed message(3): " << header.title;
+    return true;
+  }
+
   for (; it != std::end(lines); it++) {
     auto line = StringTrim(*it);
     if (!line.empty() && line.front() == CD) {
@@ -201,6 +200,33 @@ WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
       break;
     }
   }
+}
+
+WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
+  int num_messages = number_of_messages();
+  if (message_number < 1) {
+    return nullptr;
+  } else if (message_number > num_messages) {
+    message_number = num_messages;
+  }
+
+  DataFile<postrec> sub(sub_filename_);
+  if (!sub) {
+    // TODO: throw exception
+    return nullptr;
+  }
+  postrec header;
+  sub.Read(message_number, &header);
+  if (header.msg.storage_type != 2) {
+    // We only support type-2 on the WWIV API.
+    return nullptr;
+  }
+
+  string from_username, date, to, in_reply_to, text;
+  if (!ParseMessageText(header, from_username, date, to, in_reply_to, text)) {
+    return nullptr;
+  }
+
   return new WWIVMessage(
     std::unique_ptr<WWIVMessageHeader>(new WWIVMessageHeader(header, from_username, to, in_reply_to, api_)),
     make_unique<WWIVMessageText>(text));

@@ -81,6 +81,13 @@ public:
 
 private:
   bool add_post(const postrec& post);
+  bool ParseMessageText(
+    const postrec& header,
+    std::string& from_username, 
+    std::string& date, 
+    std::string& to, 
+    std::string& in_reply_to, 
+    std::string& text);
 
   const std::string sub_filename_;
   bool open_ = false;
