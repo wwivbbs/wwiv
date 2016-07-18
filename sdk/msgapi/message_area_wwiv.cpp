@@ -200,6 +200,7 @@ bool WWIVMessageArea::ParseMessageText(
       break;
     }
   }
+  return true;
 }
 
 WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
