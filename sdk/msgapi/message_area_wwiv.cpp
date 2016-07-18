@@ -58,6 +58,12 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
     header.set_initialized(false);
     return header;
   }
+  if (raw_header.active_message_count > file.number_of_records()) {
+    LOG << "Header claims too many messages, raw_header.active_message_count("
+      << raw_header.active_message_count << ") > file.number_of_records("
+      << file.number_of_records() << ")";
+    raw_header.active_message_count = file.number_of_records();
+  }
   return WWIVMessageAreaHeader(raw_header);
 }
 
@@ -80,9 +86,6 @@ WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_fil
   if (!sub) {
     // TODO: throw exception
   }
-  postrec header;
-  sub.Read(0, &header);
-  last_num_messages_ = header.owneruser;
   open_ = true;
 }
 
@@ -123,14 +126,25 @@ int WWIVMessageArea::number_of_messages() {
     // TODO: throw exception
     return 0;
   }
-  postrec header;
-  sub.Read(0, &header);
-  last_num_messages_ = header.owneruser;
-  return header.owneruser;
+
+  const int file_num_records = sub.number_of_records();
+  WWIVMessageAreaHeader wwiv_header = ReadHeader(sub);
+  if (!wwiv_header.initialized()) {
+    // TODO: throw exception
+    // This is an invalid header.
+    return 0;
+  }
+  int msgs = wwiv_header.active_message_count();
+  if (msgs > file_num_records) {
+    LOG << "Mismatch between header: " << msgs << " and filesize: " << file_num_records;
+    return std::min(msgs, file_num_records);
+  }
+  return msgs;
 }
 
 bool WWIVMessageArea::ParseMessageText(
   const postrec& header,
+  int message_number,
   string& from_username,
   string& date, string& to,
   string& in_reply_to, string& text) {
@@ -152,19 +166,19 @@ bool WWIVMessageArea::ParseMessageText(
   vector<string> lines = SplitString(raw_text, "\n");
   auto it = lines.begin();
   if (it == std::end(lines)) {
-    LOG << "Malformed message(1): " << header.title;
+    LOG << "Malformed message(1) #" << message_number << "; title: '" << header.title << "'";
     return true; 
   }
 
   from_username = StringTrim(*it++);
   if (it == std::end(lines)) {
-    LOG << "Malformed message(2): " << header.title;
+    LOG << "Malformed message(2) #" << message_number << "; title: '" << header.title << "'";
     return true;
   }
 
   date = StringTrim(*it++);
   if (it == std::end(lines)) {
-    LOG << "Malformed message(3): " << header.title;
+    LOG << "Malformed message(3) #" << message_number << "; title: '" << header.title << "'";
     return true;
   }
 
@@ -224,7 +238,7 @@ WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
   }
 
   string from_username, date, to, in_reply_to, text;
-  if (!ParseMessageText(header, from_username, date, to, in_reply_to, text)) {
+  if (!ParseMessageText(header, message_number, from_username, date, to, in_reply_to, text)) {
     return nullptr;
   }
 

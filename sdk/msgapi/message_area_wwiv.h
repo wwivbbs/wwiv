@@ -83,6 +83,7 @@ private:
   bool add_post(const postrec& post);
   bool ParseMessageText(
     const postrec& header,
+    int message_number,
     std::string& from_username, 
     std::string& date, 
     std::string& to, 
@@ -91,7 +92,6 @@ private:
 
   const std::string sub_filename_;
   bool open_ = false;
-  int last_num_messages_ = 0;
 
   static constexpr uint8_t STORAGE_TYPE = 2;
 };
