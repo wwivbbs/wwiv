@@ -193,25 +193,25 @@ bool readfile(messagerec * pMessageRecord, string fileName,string* out) {
   }
   unique_ptr<File> file(OpenMessageFile(fileName));
   set_gat_section(file.get(), pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS);
-  int lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
+  int current_section = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
   long lMessageLength = 0;
-  while (lCurrentSection > 0 && lCurrentSection < GAT_NUMBER_ELEMENTS) {
+  while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
     lMessageLength += MSG_BLOCK_SIZE;
-    lCurrentSection = gat[lCurrentSection];
+    current_section = gat[current_section];
   }
   if (lMessageLength == 0) {
     bout << "\r\nNo message found.\r\n\n";
     return false;
   }
 
-  lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
-  while (lCurrentSection > 0 && lCurrentSection < GAT_NUMBER_ELEMENTS) {
-    file->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast< long >(lCurrentSection), File::seekBegin);
+  current_section = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
+  while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
+    file->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast<uint32_t>(current_section), File::seekBegin);
     char b[MSG_BLOCK_SIZE + 1];
     file->Read(b, MSG_BLOCK_SIZE);
     b[MSG_BLOCK_SIZE] = 0;
     out->append(b);
-    lCurrentSection = gat[lCurrentSection];
+    current_section = gat[current_section];
   }
   file->Close();
   string::size_type last_cz = out->find_last_of(CZ);
