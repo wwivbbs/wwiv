@@ -162,6 +162,10 @@ bool handle_post(Context& context, const net_header_rec& nh,
     if (!header) {
       continue;
     }
+    // Skip deleted messages.
+    if (header->is_deleted()) {
+      continue;
+    }
 
     // Since we don't have a global message id, use the combination of
     // date + title + from system + from user.
