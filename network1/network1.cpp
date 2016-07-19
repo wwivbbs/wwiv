@@ -76,7 +76,7 @@ static void ShowHelp(CommandLine& cmdline) {
 
 static uint16_t get_forsys( const BbsListNet& b, uint16_t node) {
   auto n = b.node_config_for(node);
-  if (n->forsys) {
+  if (n != nullptr && n->forsys != 65535) {
     return n->forsys;
   }else{
     return node;
