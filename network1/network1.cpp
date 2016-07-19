@@ -91,7 +91,6 @@ static bool handle_packet(
     return write_packet(LOCAL_NET, net, nh, list, text);
   } else if (list.empty()) {
     // Network packet, single destination
-    const string filename = StringPrintf("s%u.net", nh.tosys);
     return write_packet(CreateNetworkFileName(net, nh.tosys), net, nh, list, text);
   } else {
     for (const auto& node : list) {
