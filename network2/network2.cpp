@@ -47,6 +47,7 @@
 #include "network2/context.h"
 #include "network2/email.h"
 #include "network2/post.h"
+#include "network2/subs.h"
 
 #include "sdk/bbslist.h"
 #include "sdk/callout.h"
@@ -191,7 +192,9 @@ static bool handle_packet(
   // Subs add/drop support.
   // TODO(rushfan): Implement these.
   case main_type_sub_add_req:
+    return handle_sub_add_req(context, nh, text);
   case main_type_sub_drop_req:
+    return handle_sub_drop_req(context, nh, text);
   case main_type_sub_add_resp:
   case main_type_sub_drop_resp:
 

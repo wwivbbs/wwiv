@@ -31,7 +31,7 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace net {
 
-void rename_pend(const string& directory, const string& filename) {
+void rename_pend(const string& directory, const string& filename, uint8_t network_app_num) {
   File pend_file(directory, filename);
   if (!pend_file.Exists()) {
     LOG << " pending file does not exist: " << pend_file;
@@ -43,13 +43,31 @@ void rename_pend(const string& directory, const string& filename) {
 
   for (int i = 0; i < 1000; i++) {
     const string new_filename =
-      StringPrintf("%sp%s-0-%u.net", directory.c_str(), prefix.c_str(), i);
+      StringPrintf("%sp%s-%u-%u.net", directory.c_str(), prefix.c_str(), network_app_num, i);
     if (File::Rename(pend_filename, new_filename)) {
       LOG << "renamed file to: " << new_filename;
       return;
     }
   }
   LOG << "all attempts failed to rename_pend";
+}
+
+std::string create_pend(const string& directory, bool local, uint8_t network_app_num) {
+  uint8_t prefix = (local) ? 0 : 1;
+  for (int i = 0; i < 1000; i++) {
+    const string filename =
+      StringPrintf("p%u-%u-%u.net", prefix, network_app_num, i);
+    File f(directory, filename);
+    if (f.Exists()) {
+      continue;
+    }
+    if (f.Open(File::modeCreateFile | File::modeReadWrite | File::modeExclusive)) {
+      LOG << "Created pending file: " << filename;
+    }
+    return filename;
+  }
+  LOG << "all attempts failed to create_pend";
+  return "";
 }
 
 bool send_network(const std::string& filename,

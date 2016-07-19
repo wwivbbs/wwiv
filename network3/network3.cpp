@@ -234,14 +234,14 @@ static void update_filechange_status_dat(const string& datadir) {
 static void rename_pending_files(const string& dir) {
   File dead_net_file(dir, DEAD_NET);
   if (dead_net_file.Exists()) {
-    rename_pend(dir, DEAD_NET);
+    rename_pend(dir, DEAD_NET, 3);
   }
 
   WFindFile s_files;
   bool has_next = s_files.open(StrCat(dir, "s*.net"), WFINDFILE_FILES);
   while (has_next) {
     const string name = s_files.GetFileName();
-    rename_pend(dir, name);
+    rename_pend(dir, name, 3);
     has_next = s_files.next();
   }
 }

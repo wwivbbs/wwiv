@@ -19,6 +19,9 @@
     <ClCompile Include="post.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="subs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="context.h">
@@ -28,6 +31,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="post.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="subs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
