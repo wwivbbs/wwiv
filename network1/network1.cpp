@@ -103,8 +103,8 @@ static bool handle_packet(
     return write_packet(LOCAL_NET, net, nh, list, text);
   } else if (list.empty()) {
     // Network packet, single destination
-    const string filename = StringPrintf("s%u.net", get_forsys(nh.tosys));
-    return write_packet(CreateNetworkFileName(net, get_forsys(nh.tosys)), net, nh, list, text);
+    const string filename = StringPrintf("s%u.net", get_forsys(b, nh.tosys));
+    return write_packet(CreateNetworkFileName(net, get_forsys(b, nh.tosys)), net, nh, list, text);
   } else {
     for (const auto& node : list) {
       return write_packet(CreateNetworkFileName(net, node), net, nh, list, text);
@@ -150,7 +150,7 @@ static bool handle_file(const BbsListNet& b, const net_networks_rec& net, const 
       text.resize(nh.length);
       f.Read(&text[0], nh.length);
     }
-    if (!handle_packet(net, nh, list, text)) {
+    if (!handle_packet(b, net, nh, list, text)) {
       LOG << "error handing packet: type: " << nh.main_type;
     }
   }
@@ -213,7 +213,7 @@ int main(int argc, char** argv) {
     while (has_next) {
       const string name = s_files.GetFileName();
       LOG << "Processing: " << net.dir << name;
-      if (handle_file(net, name)) {
+      if (handle_file(b, net, name)) {
         LOG << "Deleting: " << net.dir << name;
         File::Remove(net.dir, name);
       }
