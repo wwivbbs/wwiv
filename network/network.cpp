@@ -90,6 +90,7 @@ int main(int argc, char** argv) {
     cmdline.add_argument({"phone_number", 'P', "Network number to use (only used by legacy network0)", ""});
     cmdline.add_argument({"speed", 'S', "Modem Speedto use (only used by legacy network0)", ""});
     cmdline.add_argument({"callout_time", 'T', "Start time of the callout (only used by legacy network0)", ""});
+    cmdline.add_argument(BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
     cmdline.add_argument(BooleanCommandLineArgument("help", '?', "displays help.", false));
 
     if (!cmdline.Parse() || cmdline.arg("help").as_bool()) {
@@ -139,8 +140,11 @@ int main(int argc, char** argv) {
     if (node_config != nullptr) {
       // We have a node configuration for this one, use networkb.
       LOG << "USE networkb: " << node_config->host << ":" << node_config->port;
-      const string command_line = StringPrintf("networkb --send --network=%s --node=%d",
+      string command_line = StringPrintf("networkb --send --network=%s --node=%d",
         network_name.c_str(), node);
+      if (cmdline.barg("skip_net")) {
+        command_line += " --skip_net";
+      }
       LOG << "Executing Command: '" << command_line << "'";
       return system(command_line.c_str());
     }
