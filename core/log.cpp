@@ -77,7 +77,7 @@ void Logger::DefaultDisplay(const std::string& s) {
 }
 
 // static
-void Logger::Init(int, char** argv) {
+void Logger::Init(int argc, char** argv) {
   string filename(argv[0]);
   if (ends_with(filename, ".exe") || ends_with(filename, ".EXE")) {
     filename = filename.substr(0, filename.size() - 4);
@@ -93,6 +93,14 @@ void Logger::Init(int, char** argv) {
   Logger() << filename << " version " << wwiv_version << beta_version
            << " (" << wwiv_date << ")";
    Logger() << filename << " starting at " << l;
+   if (argc > 1) {
+     string cmdline;
+     for (int i = 1; i < argc; i++) {
+       cmdline += argv[i];
+       cmdline += " ";
+     }
+     Logger() << "command line: " << cmdline;
+   }
 
   exit_filename = filename;
 }
