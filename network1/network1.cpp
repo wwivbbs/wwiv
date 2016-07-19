@@ -74,6 +74,15 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
+static uint16_t get_forsys( const BbsListNet& b, uint16_t node) {
+  auto n = b.node_config_for(node);
+  if (n != nullptr && n->forsys != 65535) {
+    return n->forsys;
+  }else{
+    return node;
+  }
+}
+
 static string CreateNetworkFileName(const net_networks_rec& net, uint16_t node) {
   if (node == net.sysnum) {
     // Messages to us to into local.net.
@@ -83,16 +92,19 @@ static string CreateNetworkFileName(const net_networks_rec& net, uint16_t node) 
 }
 
 static bool handle_packet(
+  const BbsListNet& b,
   const net_networks_rec& net,
   const net_header_rec& nh, const std::vector<uint16_t>& list, const string& text) {
+
+  // TODO send it to dead.net if we can't find the node, or the forsys == 65535
 
   if (nh.tosys == net.sysnum) {
     // Local Packet.
     return write_packet(LOCAL_NET, net, nh, list, text);
   } else if (list.empty()) {
     // Network packet, single destination
-    const string filename = StringPrintf("s%u.net", nh.tosys);
-    return write_packet(CreateNetworkFileName(net, nh.tosys), net, nh, list, text);
+    const string filename = StringPrintf("s%u.net", get_forsys(b, nh.tosys));
+    return write_packet(CreateNetworkFileName(net, get_forsys(b, nh.tosys)), net, nh, list, text);
   } else {
     for (const auto& node : list) {
       return write_packet(CreateNetworkFileName(net, node), net, nh, list, text);
@@ -103,7 +115,7 @@ static bool handle_packet(
   return false;
 }
 
-static bool handle_file(const net_networks_rec& net, const string& name) {
+static bool handle_file(const BbsListNet& b, const net_networks_rec& net, const string& name) {
   File f(net.dir, name);
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     LOG << "Unable to open file: " << net.dir << name;
@@ -138,7 +150,7 @@ static bool handle_file(const net_networks_rec& net, const string& name) {
       text.resize(nh.length);
       f.Read(&text[0], nh.length);
     }
-    if (!handle_packet(net, nh, list, text)) {
+    if (!handle_packet(b, net, nh, list, text)) {
       LOG << "error handing packet: type: " << nh.main_type;
     }
   }
@@ -201,7 +213,7 @@ int main(int argc, char** argv) {
     while (has_next) {
       const string name = s_files.GetFileName();
       LOG << "Processing: " << net.dir << name;
-      if (handle_file(net, name)) {
+      if (handle_file(b, net, name)) {
         LOG << "Deleting: " << net.dir << name;
         File::Remove(net.dir, name);
       }

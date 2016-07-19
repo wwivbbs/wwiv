@@ -102,7 +102,7 @@ static bool send_feedback(
 
   std::ostringstream text;
   text << "\r\n";
-  TextFile feedback_hdr(net.dir, "FBACKHDR.NET", "rt");
+  TextFile feedback_hdr(net.dir, "fbackhdr.net", "rt");
   if (feedback_hdr.IsOpen()) {
     string line;
     while (feedback_hdr.ReadLine(&line)) {
