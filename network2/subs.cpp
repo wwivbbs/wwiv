@@ -236,7 +236,7 @@ bool handle_sub_drop_req(Context& context, const net_header_rec& nh, const std::
 }
 
 
-static string SubAddDropResponseMessage(char code) {
+static string SubAddDropResponseMessage(uint8_t code) {
   switch (code) {
   case sub_adddrop_already_there: return "You are already there";
   case sub_adddrop_error: return "Error Adding or Droppign Sub";
@@ -255,7 +255,7 @@ bool handle_sub_add_drop_resp(Context& context, const net_header_rec& nhorig, co
   subname.pop_back();
   StringTrimEnd(&subname);
 
-  string code_string = SubAddDropResponseMessage(code);
+  string code_string = SubAddDropResponseMessage(static_cast<uint8_t>(code));
 
   net_header_rec nh = {};
 
