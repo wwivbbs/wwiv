@@ -46,6 +46,7 @@
 #include "networkb/net_util.h"
 #include "networkb/ppp_config.h"
 #include "network2/context.h"
+#include "network2/email.h"
 
 #include "sdk/bbslist.h"
 #include "sdk/callout.h"
@@ -103,7 +104,7 @@ static bool find_subscriber_file_name(Context& context, const string& netname, s
 bool ReadSubcriberFile(const std::string& dir, const std::string& filename, std::set<uint16_t>& subscribers) {
   subscribers.clear();
 
-  TextFile file(dir, filename, "wt");
+  TextFile file(dir, filename, "rt");
   if (!file.IsOpen()) {
     return false;
   }
@@ -144,8 +145,7 @@ static string SubTypeFromText(const std::string& text) {
 static bool send_sub_add_drop_resp(Context& context, 
   net_header_rec orig,
   uint8_t main_type, uint8_t code, 
-  const std::string& subtype,
-  const std::string& message) {
+  const std::string& subtype) {
   const string pendfile = create_pend(context.net->dir, false, 2);
   net_header_rec nh = {};
   nh.daten = time_t_to_daten(time(nullptr));
@@ -157,7 +157,7 @@ static bool send_sub_add_drop_resp(Context& context,
   string title; // empty
 
   string text = subtype;
-  text.push_back(0);
+  text.push_back(0); // null after subtype.
   text.push_back(code);
   nh.length = text.size();  // should be subtype.size() + 2
   return write_packet(pendfile, *context.net, nh, {}, text);
@@ -176,41 +176,101 @@ static bool IsHostedHere(Context& context, const std::string& subtype) {
 
 bool handle_sub_add_req(Context& context, const net_header_rec& nh, const std::string& text) {
   const string subtype = SubTypeFromText(text);
+  auto resp = [&subtype, &context, &nh](int code) -> bool { return send_sub_add_drop_resp(context, nh, main_type_sub_add_resp, code, subtype); };
   if (subtype.empty()) {
-    string msg = StrCat("Invalid Subtype: ", subtype.c_str());
-    send_sub_add_drop_resp(context, nh, main_type_sub_add_resp, sub_adddrop_error, subtype, msg);
-    return false;
+    return resp(sub_adddrop_error);
   }
   if (!IsHostedHere(context, subtype)) {
     // TODO send response of not hosted here.
-    send_sub_add_drop_resp(context, nh, main_type_sub_add_resp, sub_adddrop_not_host, subtype, "");
-    return false;
+    return resp(sub_adddrop_not_host);
   }
   string filename = StrCat("n", subtype, ".net");
   std::set<uint16_t> subscribers;
   if (!ReadSubcriberFile(context.net->dir, filename, subscribers)) {
     LOG << "Unable to read subscribers file.";
-    send_sub_add_drop_resp(context, nh, main_type_sub_add_resp, sub_adddrop_error, subtype, "");
-    // TODO ???
-    return false;
+    return resp(sub_adddrop_error);
   }
   // TODO: check to see if already subscribed.
-  subscribers.insert(nh.fromsys);
+  auto result = subscribers.insert(nh.fromsys);
+  if (result.second == false) {
+    return resp(sub_adddrop_already_there);
+  }
   if (!WriteSubcriberFile(context.net->dir, filename, subscribers)) {
     LOG << "Unable to write subscribers file.";
-    send_sub_add_drop_resp(context, nh, main_type_sub_add_resp, sub_adddrop_error, subtype, "");
-    // ???
-    return false;
+    return resp(sub_adddrop_error);
   }
 
   // success!
   LOG << "Added system @" << nh.fromsys << " to subtype: " << subtype;
-  string msg = StrCat("You have been added to ", subtype);
-  return send_sub_add_drop_resp(context, nh, main_type_sub_add_resp, sub_adddrop_ok, subtype, msg);
+  return resp(sub_adddrop_ok);
 }
 
 bool handle_sub_drop_req(Context& context, const net_header_rec& nh, const std::string& text) {
-  return false;
+  const string subtype = SubTypeFromText(text);
+  auto resp = [&subtype, &context, &nh](int code) -> bool { return send_sub_add_drop_resp(context, nh, main_type_sub_drop_resp, code, subtype); };
+  if (subtype.empty()) {
+    return resp(sub_adddrop_error);
+  }
+  if (!IsHostedHere(context, subtype)) {
+    return resp(sub_adddrop_not_host);
+  }
+  string filename = StrCat("n", subtype, ".net");
+  std::set<uint16_t> subscribers;
+  if (!ReadSubcriberFile(context.net->dir, filename, subscribers)) {
+    LOG << "Unable to read subscribers file.";
+    return resp(sub_adddrop_error);
+  }
+  // TODO: check to see if already subscribed.
+  set<uint16_t>::size_type num_removed = subscribers.erase(nh.fromsys);
+  if (num_removed == 0) {
+    return resp(sub_adddrop_not_there);
+  }
+  if (!WriteSubcriberFile(context.net->dir, filename, subscribers)) {
+    LOG << "Unable to write subscribers file.";
+    return resp(sub_adddrop_error);
+  }
+
+  // success!
+  LOG << "Added system @" << nh.fromsys << " to subtype: " << subtype;
+  return resp(sub_adddrop_ok);
+}
+
+
+static string SubAddDropResponseMessage(char code) {
+  switch (code) {
+  case sub_adddrop_already_there: return "You are already there";
+  case sub_adddrop_error: return "Error Adding or Droppign Sub";
+  case sub_adddrop_not_allowed: return "Not allowed to add or drop this sub";
+  case sub_adddrop_not_host: return "This system is not the host";
+  case sub_adddrop_not_there: return "You were not subscribed to the sub";
+  case sub_adddrop_ok: return "Add or Drop successful";
+  default: return StringPrintf("Unknown response code %d", code);
+  }
+  
+}
+
+bool handle_sub_add_drop_resp(Context& context, const net_header_rec& nhorig, const std::string& add_or_drop, const std::string& text) {
+  string subname = text;
+  char code = subname.back();
+  subname.pop_back();
+  StringTrimEnd(&subname);
+
+  string code_string = SubAddDropResponseMessage(code);
+
+  net_header_rec nh = {};
+
+  string now_human = wwiv::sdk::daten_to_date(nhorig.daten);
+  string title = StringPrintf("WWIV AreaFix (%s) Response for subtype '%s'", context.net->name, now_human.c_str());
+  string byname = StringPrintf("WWIV AreaFix (%s) @%u", context.net->name, nhorig.fromsys);
+  string body = StringPrintf("SubType '%s', (%s) Response: '%s'", subname.c_str(), add_or_drop.c_str(), code_string.c_str());
+
+  nh.touser = 1;
+  nh.fromuser = std::numeric_limits<uint16_t>::max();
+  nh.main_type = main_type_email;
+  nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
+
+  string filename = create_pend(context.net->dir, true, context.network_number);
+  return send_network(filename, *context.net, nh, {}, body, byname, title);
 }
 
 }

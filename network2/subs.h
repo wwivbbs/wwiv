@@ -36,6 +36,7 @@ bool ReadSubcriberFile(const std::string& dir, const std::string& filename, std:
 bool WriteSubcriberFile(const std::string& dir, const std::string& filename, const std::set<uint16_t>& subscribers);
 bool handle_sub_add_req(Context& context, const net_header_rec& nh, const std::string& text);
 bool handle_sub_drop_req(Context& context, const net_header_rec& nh, const std::string& text);
+bool handle_sub_add_drop_resp(Context& context, const net_header_rec& nh, const std::string& add_or_drop, const std::string& text);
 
 
 }  // namespace network2

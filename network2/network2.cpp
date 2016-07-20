@@ -196,7 +196,9 @@ static bool handle_packet(
   case main_type_sub_drop_req:
     return handle_sub_drop_req(context, nh, text);
   case main_type_sub_add_resp:
+    return handle_sub_add_drop_resp(context, nh, "add", text);
   case main_type_sub_drop_resp:
+    return handle_sub_add_drop_resp(context, nh, "drop", text);
 
   // Sub ping.
   // In many WWIV networks, the subs list coordinator (SLC) occasionally sends

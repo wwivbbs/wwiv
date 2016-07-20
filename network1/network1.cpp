@@ -84,7 +84,7 @@ static uint16_t get_forsys( const BbsListNet& b, uint16_t node) {
 }
 
 static string CreateNetworkFileName(const net_networks_rec& net, uint16_t node) {
-  if (node == net.sysnum) {
+  if (node == net.sysnum || node == 0) {
     // Messages to us to into local.net.
     return LOCAL_NET;
   }
