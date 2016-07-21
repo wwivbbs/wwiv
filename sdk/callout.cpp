@@ -117,7 +117,7 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
         while (iter != ss.end() && *iter != '\"') {
           password.push_back(*iter++);
         }
-        if (password.back() == '\"') {
+        if (!password.empty() && password.back() == '\"') {
           // remove trailing "
           password.pop_back();
         }
