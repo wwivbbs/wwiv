@@ -33,6 +33,11 @@ std::string create_pend(const std::string& directory, bool local, uint8_t networ
 bool write_packet(
   const std::string& filename,
   const net_networks_rec& net,
+  const net_header_rec& nh, const std::set<uint16_t>& list, const std::string& text);
+
+bool write_packet(
+  const std::string& filename,
+  const net_networks_rec& net,
   const net_header_rec& nh, const std::vector<uint16_t>& list, const std::string& text);
 
 bool send_network(

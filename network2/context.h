@@ -40,6 +40,7 @@ struct Context {
   int network_number;
   std::vector<subboardrec> subs;
   std::vector<wwiv::sdk::xtrasubsrec> xsubs;
+  bool verbose = false;
 };
 
 

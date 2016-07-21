@@ -24,6 +24,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -76,10 +77,10 @@ static void ShowHelp(CommandLine& cmdline) {
 
 static uint16_t get_forsys( const BbsListNet& b, uint16_t node) {
   auto n = b.node_config_for(node);
-  if (n != nullptr && n->forsys != 65535) {
+  if (n == nullptr || n->forsys == 65535) {
+    return 65535;
+  } else {
     return n->forsys;
-  }else{
-    return node;
   }
 }
 
@@ -87,8 +88,11 @@ static string CreateNetworkFileName(const net_networks_rec& net, uint16_t node) 
   if (node == net.sysnum || node == 0) {
     // Messages to us to into local.net.
     return LOCAL_NET;
+  } else if (node == 65535) {
+    return DEAD_NET;
+  } else {
+    return StringPrintf("s%u.net", node);
   }
-  return StringPrintf("s%u.net", node);
 }
 
 static bool handle_packet(
@@ -96,19 +100,37 @@ static bool handle_packet(
   const net_networks_rec& net,
   const net_header_rec& nh, const std::vector<uint16_t>& list, const string& text) {
 
-  // TODO send it to dead.net if we can't find the node, or the forsys == 65535
-
-  if (nh.tosys == net.sysnum) {
+  if (nh.tosys == net.sysnum || nh.tosys == 0) {
     // Local Packet.
     return write_packet(LOCAL_NET, net, nh, list, text);
   } else if (list.empty()) {
     // Network packet, single destination
     return write_packet(CreateNetworkFileName(net, get_forsys(b, nh.tosys)), net, nh, list, text);
   } else {
-    for (const auto& node : list) {
-      return write_packet(CreateNetworkFileName(net, node), net, nh, list, text);
-    }
     // Network packet, multiple destinations.
+    std::map<uint16_t, std::set<uint16_t>> forsys_to_all;
+    for (const auto& node : list) {
+      uint16_t forsys = get_forsys(b, node);
+      forsys_to_all[forsys].insert(node);
+    }
+
+    bool result = true;
+    for (const auto& fa : forsys_to_all) {
+      const auto forsys = fa.first;
+      auto forsys_list = fa.second;
+      net_header_rec mutable_nh = nh;
+      mutable_nh.list_len = static_cast<uint16_t>(forsys_list.size());
+      if (forsys_list.size() == 1) {
+        // If we only have 1, move it out of list into tosys.
+        mutable_nh.tosys = *forsys_list.begin();
+        mutable_nh.list_len = 0;
+        forsys_list.clear();
+      }
+      if (!write_packet(CreateNetworkFileName(net, forsys), net, mutable_nh, forsys_list, text)) {
+        result = false;
+      }
+    }
+    return result;
   }
 
   return false;
@@ -166,7 +188,7 @@ int main(int argc, char** argv) {
     cmdline.add_argument({"network_number", "Network number to use (i.e. 0).", "0"});
     cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", File::current_directory()});
     cmdline.add_argument(BooleanCommandLineArgument("help", '?', "displays help.", false));
-    cmdline.add_argument(BooleanCommandLineArgument("feedback", 'y', "Sends feedback.", false));
+    cmdline.add_argument(BooleanCommandLineArgument("verbose", 'N', "Enable verbose output.", false));
 
     if (!cmdline.Parse() || cmdline.arg("help").as_bool()) {
       ShowHelp(cmdline);

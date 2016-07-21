@@ -304,7 +304,7 @@ int main(int argc, char** argv) {
     cmdline.add_argument({"network_number", "Network number to use (i.e. 0).", "0"});
     cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", File::current_directory()});
     cmdline.add_argument(BooleanCommandLineArgument("help", '?', "displays help.", false));
-    cmdline.add_argument(BooleanCommandLineArgument("feedback", 'y', "Sends feedback.", false));
+    cmdline.add_argument(BooleanCommandLineArgument("verbose", 'N', "Enable verbose output.", false));
 
     if (!cmdline.Parse() || cmdline.arg("help").as_bool()) {
       ShowHelp(cmdline);
@@ -364,6 +364,7 @@ int main(int argc, char** argv) {
     context.network_number = network_number_int;
     context.api = api.get();
     context.subs = std::move(read_subs(config.datadir()));
+    context.verbose = cmdline.barg("verbose");
     if (!read_subs_xtr(config.datadir(), networks.networks(), context.subs, context.xsubs)) {
       LOG << "ERROR: Failed to read file: " << SUBS_XTR;
       return 5;

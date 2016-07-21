@@ -160,7 +160,7 @@ static bool send_sub_add_drop_resp(Context& context,
   text.push_back(0); // null after subtype.
   text.push_back(code);
   nh.length = text.size();  // should be subtype.size() + 2
-  return write_packet(pendfile, *context.net, nh, {}, text);
+  return write_packet(pendfile, *context.net, nh, std::set<uint16_t>{}, text);
 }
 
 static bool IsHostedHere(Context& context, const std::string& subtype) {
@@ -231,7 +231,7 @@ bool handle_sub_drop_req(Context& context, const net_header_rec& nh, const std::
   }
 
   // success!
-  LOG << "Added system @" << nh.fromsys << " to subtype: " << subtype;
+  LOG << "Dropped system @" << nh.fromsys << " to subtype: " << subtype;
   return resp(sub_adddrop_ok);
 }
 
@@ -250,13 +250,26 @@ static string SubAddDropResponseMessage(uint8_t code) {
 }
 
 bool handle_sub_add_drop_resp(Context& context, const net_header_rec& nhorig, const std::string& add_or_drop, const std::string& text) {
-  string subname = text;
-  char code = subname.back();
-  subname.pop_back();
+  string subname = text.c_str();
   StringTrimEnd(&subname);
 
-  string code_string = SubAddDropResponseMessage(static_cast<uint8_t>(code));
+  auto b = text.begin();
+  while (b != text.end() && *b != '\0') { b++; }
+  if (b == text.end()) { 
+    LOG << "Unable to determine code from add_drop response.";
+    return false;
+  } // NULL
+  b++;
+  if (b == text.end()) {
+    LOG << "Unable to determine code from add_drop response.";
+    return false;
+  }
 
+  LOG << "Processed " << add_or_drop << " response from system @" << nhorig.fromsys << " to subtype: " << subname;
+
+  char code = *b++;
+  string code_string = SubAddDropResponseMessage(static_cast<uint8_t>(code));
+  string message_text = string(b, text.end());
   net_header_rec nh = {};
 
   string now_human = wwiv::sdk::daten_to_date(nhorig.daten);

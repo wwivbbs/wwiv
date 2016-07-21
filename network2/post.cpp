@@ -109,20 +109,24 @@ static bool find_basename(Context& context, const string& netname, string& basen
 bool handle_post(Context& context, const net_header_rec& nh,
   std::vector<uint16_t>& list, const string& raw_text) {
 
-  ScopeExit at_exit([] {
-    LOG << "==============================================================";
-  });
+  ScopeExit at_exit;
+  
   auto iter = raw_text.begin();
   string subtype = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
   string title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
   string sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
   string date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
   string text = string(iter, raw_text.end());
-  LOG << "==============================================================";
-  LOG << "  Processing New Post on subtype: " << subtype;
-  LOG << "  Title:   " << title;
-  LOG << "  Sender:  " << sender_name;
-  LOG << "  Date:    " << date_string;
+  if (context.verbose) {
+    at_exit.swap([] {
+      LOG << "==============================================================";
+    });
+    LOG << "==============================================================";
+    LOG << "  Processing New Post on subtype: " << subtype;
+    LOG << "  Title:   " << title;
+    LOG << "  Sender:  " << sender_name;
+    LOG << "  Date:    " << date_string;
+  }
 
   string basename;
   if (!find_basename(context, subtype, basename)) {
