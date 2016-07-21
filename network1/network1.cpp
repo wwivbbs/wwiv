@@ -77,11 +77,13 @@ static void ShowHelp(CommandLine& cmdline) {
 
 static uint16_t get_forsys( const BbsListNet& b, uint16_t node) {
   auto n = b.node_config_for(node);
+  if (node == 0) {
+    return 0;
+  }
   if (n == nullptr || n->forsys == 65535) {
     return 65535;
-  } else {
-    return n->forsys;
   }
+  return n->forsys;
 }
 
 static string CreateNetworkFileName(const net_networks_rec& net, uint16_t node) {
@@ -100,7 +102,7 @@ static bool handle_packet(
   const net_networks_rec& net,
   const net_header_rec& nh, const std::vector<uint16_t>& list, const string& text) {
 
-  if (nh.tosys == net.sysnum || nh.tosys == 0) {
+  if (nh.tosys == net.sysnum) {
     // Local Packet.
     return write_packet(LOCAL_NET, net, nh, list, text);
   } else if (list.empty()) {

@@ -120,7 +120,8 @@ bool CommandLineCommand::HandleCommandLineArgument(
     const std::string& key, const std::string& value) {
   args_.erase(key);  // emplace doesn't seem to replace.
   if (args_allowed_.at(key).is_boolean) {
-    if (value == "N" || value == "0" || IsEqualsIgnoreCase(value.c_str(), "false")) {
+    if (value == "N" || value == "0" || value == "n" 
+        || IsEqualsIgnoreCase(value.c_str(), "false")) {
       args_.emplace(key, CommandLineValue("false"));
     } else {
       args_.emplace(key, CommandLineValue("true"));
