@@ -194,10 +194,13 @@ namespace WWIV5TelnetServer
                 build = partsVersion[4];
                 version = (majorVersion + "." + minorVersion + "." + minorVersion2 + "." + build);
                 currentFullVersion = "WWIV5 Telnet Server - Running WWIV: " + version;
-                
-            } catch {
+
+            }
+            catch
+            {
                 // Ignore error and return the default currentFullVersion.
-            } finally
+            }
+            finally
             {
                 p.Close();
             }
@@ -239,7 +242,7 @@ namespace WWIV5TelnetServer
             }
             catch (Exception ex)
             {
-                MessageBox.Show("The Following Error Occured: "+ ex);
+                MessageBox.Show("The Following Error Occured: " + ex);
             }
         }
 

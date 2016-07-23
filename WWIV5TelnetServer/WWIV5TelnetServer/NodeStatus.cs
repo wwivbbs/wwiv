@@ -116,7 +116,8 @@ namespace WWIV5TelnetServer
             inUse = false;
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return FullStatus;
         }
 

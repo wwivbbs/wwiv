@@ -45,12 +45,12 @@ namespace WWIV5TelnetServer
 
         public Process launchLocalNode(int node)
         {
-          return launchNode("-N@N -M", node, -1, false);
+            return launchNode("-N@N -M", node, -1, false);
         }
 
         public Process launchBeginDayEvent(int node)
         {
-          return launchNode("-N@N -E", node, -1, false);
+            return launchNode("-N@N -E", node, -1, false);
         }
 
         public Process launchSocketNode(int node, Int32 socketHandle)
