@@ -57,7 +57,7 @@ InMemoryTransferFile::~InMemoryTransferFile() {}
 
 bool InMemoryTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
   if ((start + size) > contents_.size()) {
-    LOG << "ERROR InMemoryTransferFile::GetChunk (start + size) > file_size():"
+    LOG(ERROR) << "ERROR InMemoryTransferFile::GetChunk (start + size) > file_size():"
         << "values[ start: " << start << "; size: " << size
 	      << "; file_size(): " << file_size() << " ]";
     return false;

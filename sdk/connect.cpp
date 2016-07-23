@@ -89,7 +89,7 @@ bool ParseConnectNetLine(const string& ss, net_interconnect_rec* con) {
   while (iter != std::end(ss)) {
       uint16_t dest = PopStringToUnsignedShort(iter, ss);
     if (*iter != '=') {
-      LOG << "= expected. at: '" << *iter << "' line: " << ss;
+      LOG(ERROR) << "= expected. at: '" << *iter << "' line: " << ss;
       return false;
     }
     // skip =

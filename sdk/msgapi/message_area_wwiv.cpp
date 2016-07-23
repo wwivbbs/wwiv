@@ -59,11 +59,11 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
     return header;
   }
   if (raw_header.active_message_count > file.number_of_records()) {
-    /*LOG << "Header claims too many messages, raw_header.active_message_count("
+    /*LOG(INFO) << "Header claims too many messages, raw_header.active_message_count("
       << raw_header.active_message_count << ") > file.number_of_records("
       << file.number_of_records() << ")";
     */
-    raw_header.active_message_count = file.number_of_records();
+    raw_header.active_message_count = static_cast<uint16_t>(file.number_of_records());
   }
   return WWIVMessageAreaHeader(raw_header);
 }
@@ -137,7 +137,7 @@ int WWIVMessageArea::number_of_messages() {
   }
   int msgs = wwiv_header.active_message_count();
   if (msgs > file_num_records) {
-    LOG << "Mismatch between header: " << msgs << " and filesize: " << file_num_records;
+    LOG(ERROR) << "Mismatch between header: " << msgs << " and filesize: " << file_num_records;
     return std::min(msgs, file_num_records);
   }
   return msgs;
@@ -167,19 +167,19 @@ bool WWIVMessageArea::ParseMessageText(
   vector<string> lines = SplitString(raw_text, "\n");
   auto it = lines.begin();
   if (it == std::end(lines)) {
-    LOG << "Malformed message(1) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
+    LOG(ERROR) << "Malformed message(1) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
     return true; 
   }
 
   from_username = StringTrim(*it++);
   if (it == std::end(lines)) {
-    LOG << "Malformed message(2) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
+    LOG(ERROR) << "Malformed message(2) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
     return true;
   }
 
   date = StringTrim(*it++);
   if (it == std::end(lines)) {
-    LOG << "Malformed message(3) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
+    LOG(ERROR) << "Malformed message(3) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
     return true;
   }
 
@@ -269,7 +269,7 @@ static uint32_t next_qscan_value(const string& bbsdir) {
   uint32_t next_qscan = 0;
   Config config(bbsdir);
   if (!config.IsInitialized()) {
-    // LOG << "Unable to load CONFIG.DAT.";
+    // LOG(ERROR) << "Unable to load CONFIG.DAT.";
     return 1;
   }
   DataFile<statusrec> file(config.datadir(), STATUS_DAT,

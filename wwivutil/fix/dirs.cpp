@@ -45,9 +45,9 @@ bool checkDirExists(File &dir, const char *desc) {
     return true;
   }
 
-  LOG << "For File Area: " << desc;
-  LOG << "Unable to find dir: " << dir.full_pathname();
-  LOG << "Please create it.";
+  LOG(INFO) << "For File Area: " << desc;
+  LOG(INFO) << "Unable to find dir: " << dir.full_pathname();
+  LOG(INFO) << "Please create it.";
   return false;
   //printf("   Do you wish to CREATE it (y/N)?\n");
   //string s;
@@ -94,24 +94,24 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
     }
   }
 
-  LOG << "Checking " << directories.size() << " directories.";
+  LOG(INFO) << "Checking " << directories.size() << " directories.";
   for (size_t i = 0; i < directories.size(); i++) {
     if (!(directories[i].mask & mask_cdrom) && !(directories[i].mask & mask_offline)) {
       File dir(directories[i].path);
       if (checkDirExists(dir, directories[i].name)) {
-        LOG << "Checking directory: " << directories[i].name;
+        LOG(INFO) << "Checking directory: " << directories[i].name;
         string filename = directories[i].filename;
         filename.append(".dir");
         File recordFile(datadir, filename);
         if (recordFile.Exists()) {
           if (!recordFile.Open(File::modeReadWrite | File::modeBinary)) {
-            LOG << "Unable to open:" << recordFile.full_pathname();
+            LOG(INFO) << "Unable to open:" << recordFile.full_pathname();
           } else {
             unsigned int numFiles = recordFile.GetLength() / sizeof(uploadsrec);
             uploadsrec upload;
             recordFile.Read(&upload, sizeof(uploadsrec));
             if (upload.numbytes != numFiles) {
-              LOG << "Corrected # of files in: " << directories[i].name;
+              LOG(INFO) << "Corrected # of files in: " << directories[i].name;
               upload.numbytes = numFiles;
               recordFile.Seek(0L, File::seekBegin);
               recordFile.Write(&upload, sizeof(uploadsrec));
@@ -152,26 +152,26 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
                 if (extDescFound && (upload.mask & mask_extended) == 0) {
                   upload.mask |= mask_extended;
                   modified = true;
-                  LOG << "Fixed extended description for: " << upload.filename;
+                  LOG(INFO) << "Fixed extended description for: " << upload.filename;
                 } else if (upload.mask & mask_extended) {
                   upload.mask &= ~mask_extended;
                   modified = true;
-                  LOG << "Fixed extended description for: " << upload.filename;
+                  LOG(INFO) << "Fixed extended description for: " << upload.filename;
                 }
                 File file(directories[i].path, Unalign(upload.filename));
                 if (strlen(upload.filename) > 0 && file.Exists()) {
                   if (file.Open(File::modeReadOnly | File::modeBinary)) {
                     if (verbose) {
-                      LOG << "Checking file: " << file.full_pathname();
+                      LOG(INFO) << "Checking file: " << file.full_pathname();
                     }
                     if (upload.numbytes != (unsigned long)file.GetLength()) {
                       upload.numbytes = file.GetLength();
                       modified = true;
-                      LOG << "Fixed file size for: " << upload.filename;
+                      LOG(INFO) << "Fixed file size for: " << upload.filename;
                     }
                     file.Close();
                   } else {
-                    LOG << "Unable to open file '" << file.full_pathname()
+                    LOG(INFO) << "Unable to open file '" << file.full_pathname()
                       << "', error:" << file.GetLastError();
                   }
 								}
@@ -188,16 +188,16 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
 						recordFile.Close();
 					}
 				} else {
-          LOG << "Directory '" << directories[i].name
+          LOG(INFO) << "Directory '" << directories[i].name
             << "' missing file: " << recordFile.full_pathname();
 				}
 			}
 		} else if (directories[i].mask & mask_offline) {
-      LOG << "Skipping directory '" << directories[i].name << "' [OFFLINE]";
+      LOG(INFO) << "Skipping directory '" << directories[i].name << "' [OFFLINE]";
 		} else if (directories[i].mask & mask_cdrom) {
-      LOG << "Skipping directory '" << directories[i].name << "' [CDROM]";
+      LOG(INFO) << "Skipping directory '" << directories[i].name << "' [CDROM]";
 		} else {
-      LOG << "Skipping directory '" << directories[i].name << "' [UNKNOWN MASK]";
+      LOG(INFO) << "Skipping directory '" << directories[i].name << "' [UNKNOWN MASK]";
 		}
 	}
 }

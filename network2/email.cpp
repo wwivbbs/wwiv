@@ -84,22 +84,22 @@ namespace network2 {
 
 bool handle_email(Context& context,
   uint16_t to_user, const net_header_rec& nh, const string& text) {
-  LOG << "==============================================================";
+  LOG(INFO) << "==============================================================";
   ScopeExit at_exit([] {
-    LOG << "==============================================================";
+    LOG(INFO) << "==============================================================";
   });
-  LOG << "Processing email to user #" << to_user;
+  LOG(INFO) << "Processing email to user #" << to_user;
 
   {
     User user;
     if (!context.user_manager->ReadUser(&user, to_user)) {
       // Unable to read user.
-      LOG << "ERROR: Unable to read user #" << to_user << ". Discarding message.";
+      LOG(INFO) << "ERROR: Unable to read user #" << to_user << ". Discarding message.";
       return false;
     }
 
     if (user.IsUserDeleted()) {
-      LOG << "User #" << to_user << " is deleted. Discarding message.";
+      LOG(INFO) << "User #" << to_user << " is deleted. Discarding message.";
       return false;
     }
   }
@@ -117,12 +117,12 @@ bool handle_email(Context& context,
   d.title = get_message_field(text, iter, {'\0', '\r', '\n'}, 80);
   // Rest of the message is the text.
   d.text = string(iter, text.end());
-  LOG << "  Title: '" << d.title << "'";
+  LOG(INFO) << "  Title: '" << d.title << "'";
 
   std::unique_ptr<WWIVEmail> email(context.api->OpenEmail());
   bool added = email->AddMessage(d);
   if (!added) {
-    LOG << "    ! ERROR adding email message.";
+    LOG(INFO) << "    ! ERROR adding email message.";
     return false;
   }
   User user;
@@ -131,7 +131,7 @@ bool handle_email(Context& context,
   num_waiting++;
   user.SetNumMailWaiting(num_waiting);
   context.user_manager->WriteUser(&user, d.user_number);
-  LOG << "    + Received Email  '" << d.title << "'";
+  LOG(INFO) << "    + Received Email  '" << d.title << "'";
   return true;
 }
 

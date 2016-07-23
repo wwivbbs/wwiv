@@ -66,7 +66,7 @@ bool WFileTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
   }
   
   if (static_cast<int>(start + size) > file_size()) {
-    LOG << "ERROR WFileTransferFile::GetChunk (start + size) > file_size():"
+    LOG(ERROR) << "ERROR WFileTransferFile::GetChunk (start + size) > file_size():"
         << "values[ start: " << start << "; size: " << size
 	 << "; file_size(): " << file_size() << " ]";
     return false;

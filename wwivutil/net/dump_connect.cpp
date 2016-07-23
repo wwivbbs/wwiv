@@ -48,7 +48,7 @@ std::string DumpConnectCommand::GetUsage() const {
 int DumpConnectCommand::Execute() {
   Networks networks(*config()->config());
   if (!networks.IsInitialized()) {
-    LOG << "Unable to load networks.";
+    LOG(ERROR) << "Unable to load networks.";
     return 1;
   }
 

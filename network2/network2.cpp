@@ -92,17 +92,17 @@ static void ShowHelp(CommandLine& cmdline) {
 
 static bool handle_ssm(Context& context, const net_header_rec& nh, const std::string& text) {
   ScopeExit at_exit([] {
-    LOG << "==============================================================";
+    VLOG(1) << "==============================================================";
   });
-  LOG << "==============================================================";
-  LOG << "  Receiving SSM for user: #" << nh.touser;
+  VLOG(1) << "==============================================================";
+  VLOG(1) << "  Receiving SSM for user: #" << nh.touser;
   SSM ssm(*context.config, context.user_manager);
   if (!ssm.send_local(nh.touser, text)) {
-    LOG << "  ERROR writing SSM: '" << text << "'";
+    LOG(ERROR) << "  ERROR writing SSM: '" << text << "'";
     return false;
   }
 
-  LOG << "    + SSM  '" << text << "'";
+  LOG(INFO) << "    + SSM  '" << text << "'";
   return true;
 }
 
@@ -127,7 +127,7 @@ static bool handle_net_info_file(const net_networks_rec& net,
   string filename = NetInfoFileName(nh.minor_type);
   if (nh.minor_type == net_info_file) {
     // we don't know the filename
-    LOG << "ERROR: net_info_file not supported.";
+    LOG(ERROR) << "ERROR: net_info_file not supported.";
     return false;
   } else if (!filename.empty()) {
     // we know the name.
@@ -135,11 +135,11 @@ static bool handle_net_info_file(const net_networks_rec& net,
     if (!file.Open(File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate, 
       File::shareDenyReadWrite)) {
       // We couldn't create or open the file.
-      LOG << "ERROR: Unable to create or open file: " << filename;
+      LOG(ERROR) << "ERROR: Unable to create or open file: " << filename;
       return false;
     }
     file.Write(text);
-    LOG << "  + Got " << filename;
+    LOG(INFO) << "  + Got " << filename;
     return true;
   }
   // error.
@@ -149,7 +149,7 @@ static bool handle_net_info_file(const net_networks_rec& net,
 static bool handle_packet(
   Context& context,
   const net_header_rec& nh, std::vector<uint16_t>& list, const string& text) {
-  LOG << "Processing message with type: " << main_type_name(nh.main_type)
+  LOG(INFO) << "Processing message with type: " << main_type_name(nh.main_type)
       << "/" << nh.minor_type;
 
   switch (nh.main_type) {
@@ -223,7 +223,7 @@ static bool handle_packet(
   case main_type_group_info:
     // Anything undefined or anything we missed.
   default:
-    LOG << "Writing message to dead.net for unhandled type: " << main_type_name(nh.main_type);
+    LOG(ERROR) << "Writing message to dead.net for unhandled type: " << main_type_name(nh.main_type);
     return write_packet(DEAD_NET, *context.net, nh, list, text);
   }
 
@@ -233,7 +233,7 @@ static bool handle_packet(
 static bool handle_file(Context& context, const string& name) {
   File f(context.net->dir, name);
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
-    LOG << "Unable to open file: " << context.net->dir << name;
+    LOG(ERROR) << "Unable to open file: " << context.net->dir << name;
     return false;
   }
 
@@ -247,12 +247,12 @@ static bool handle_file(Context& context, const string& name) {
       return true;
     }
     if (num_read != sizeof(net_header_rec)) {
-      LOG << "error reading header, got short read of size: " << num_read
+      LOG(INFO) << "error reading header, got short read of size: " << num_read
         << "; expected: " << sizeof(net_header_rec);
       return false;
     }
     if (nh.method > 0) {
-      LOG << "compression: de" << nh.method;
+      LOG(INFO) << "compression: de" << nh.method;
     }
 
     std::vector<uint16_t> list;
@@ -274,7 +274,7 @@ static bool handle_file(Context& context, const string& name) {
       f.Read(&text[0], length);
     }
     if (!handle_packet(context, nh, list, text)) {
-      LOG << "Error handing packet: type: " << nh.main_type;
+      LOG(ERROR) << "Error handing packet: type: " << nh.main_type;
     }
   }
   return true;
@@ -285,7 +285,7 @@ static vector<subboardrec> read_subs(const string &datadir) {
 
   DataFile<subboardrec> file(datadir, SUBS_DAT);
   if (!file) {
-    std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
+    LOG(ERROR) << file.file().GetName() << " NOT FOUND.";
     return {};
   }
   if (!file.ReadVector(subboards)) {
@@ -294,17 +294,15 @@ static vector<subboardrec> read_subs(const string &datadir) {
   return subboards;
 }
 
+INITIALIZE_EASYLOGGINGPP
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
   try {
     ScopeExit at_exit(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "network_number");
     cmdline.set_no_args_allowed(true);
-    cmdline.add_argument({"network", "Network name to use (i.e. wwivnet).", ""});
-    cmdline.add_argument({"network_number", "Network number to use (i.e. 0).", "0"});
-    cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", File::current_directory()});
-    cmdline.add_argument(BooleanCommandLineArgument("help", '?', "displays help.", false));
-    cmdline.add_argument(BooleanCommandLineArgument("verbose", 'N', "Enable verbose output.", false));
+    cmdline.AddStandardArgs();
+    AddStandardNetworkArgs(cmdline, File::current_directory());
 
     if (!cmdline.Parse() || cmdline.arg("help").as_bool()) {
       ShowHelp(cmdline);
@@ -313,7 +311,7 @@ int main(int argc, char** argv) {
     string network_name = cmdline.arg("network").as_string();
     string network_number = cmdline.arg("network_number").as_string();
     if (network_name.empty() && network_number.empty()) {
-      LOG << "--network=[network name] or .[network_number] must be specified.";
+      LOG(INFO) << "--network=[network name] or .[network_number] must be specified.";
       ShowHelp(cmdline);
       return 2;
     }
@@ -321,12 +319,12 @@ int main(int argc, char** argv) {
     string bbsdir = cmdline.arg("bbsdir").as_string();
     Config config(bbsdir);
     if (!config.IsInitialized()) {
-      LOG << "Unable to load CONFIG.DAT.";
+      LOG(INFO) << "Unable to load CONFIG.DAT.";
       return 3;
     }
     Networks networks(config);
     if (!networks.IsInitialized()) {
-      LOG << "Unable to load networks.";
+      LOG(INFO) << "Unable to load networks.";
       return 4;
     }
 
@@ -345,11 +343,11 @@ int main(int argc, char** argv) {
       }
     }
 
-    LOG << "NETWORK2 for network: " << network_name;
+    LOG(INFO) << "NETWORK2 for network: " << network_name;
     auto net = networks[network_name];
 
     if (!File::Exists(net.dir, LOCAL_NET)) {
-      LOG << "No local.net exists. exiting.";
+      LOG(INFO) << "No local.net exists. exiting.";
       return 0;
     }
 
@@ -364,25 +362,24 @@ int main(int argc, char** argv) {
     context.network_number = network_number_int;
     context.api = api.get();
     context.subs = std::move(read_subs(config.datadir()));
-    context.verbose = cmdline.barg("verbose");
     if (!read_subs_xtr(config.datadir(), networks.networks(), context.subs, context.xsubs)) {
-      LOG << "ERROR: Failed to read file: " << SUBS_XTR;
+      LOG(ERROR) << "ERROR: Failed to read file: " << SUBS_XTR;
       return 5;
     }
 
-    LOG << "Processing: " << net.dir << LOCAL_NET;
+    LOG(INFO) << "Processing: " << net.dir << LOCAL_NET;
     if (handle_file(context, LOCAL_NET)) {
-      LOG << "Deleting: " << net.dir << LOCAL_NET;
+      LOG(INFO) << "Deleting: " << net.dir << LOCAL_NET;
       if (!File::Remove(net.dir, LOCAL_NET)) {
-        LOG << "ERROR: Unable to delete " << net.dir << LOCAL_NET;
+        LOG(ERROR) << "ERROR: Unable to delete " << net.dir << LOCAL_NET;
       }
       return 0;
     } else {
-      LOG << "ERROR: handle_file returned false";
+      LOG(ERROR) << "ERROR: handle_file returned false";
       return 1;
     }
   } catch (const std::exception& e) {
-    LOG << "ERROR: [network]: " << e.what();
+    LOG(ERROR) << "ERROR: [network]: " << e.what();
   }
 
   return 255;

@@ -18,12 +18,55 @@
 #ifndef __INCLUDED_CORE_LOG_H__
 #define __INCLUDED_CORE_LOG_H__
 
+#define ELPP_WINSOCK2
+#ifdef _WIN32
+
+#ifdef MOUSE_MOVED
+#undef MOUSE_MOVED
+#endif  // MOUSE_MOVED
+
+#define NOGDICAPMASKS
+#define NOSYSMETRICS
+#define NOMENUS
+#define NOICONS
+#define NOKEYSTATES
+#define NOSYSCOMMANDS
+#define NORASTEROPS
+#define NOATOM
+#define NOCLIPBOARD
+#define NODRAWTEXT
+#define NOKERNEL
+#define NONLS
+#define NOMEMMGR
+#define NOMETAFILE
+#define NOMINMAX
+#define NOOPENFILE
+#define NOSCROLL
+#define NOSERVICE
+#define NOSOUND
+#define NOTEXTMETRIC
+#define NOWH
+#define NOCOMM
+#define NOKANJI
+#define NOHELP
+#define NOPROFILER
+#define NODEFERWINDOWPOS
+#define NOMCX
+#define NOCRYPT
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+#endif  // _WIN32
+
+#define ELPP_NO_DEFAULT_LOG_FILE
+#define ELPP_CUSTOM_COUT std::cerr
+
+#include "deps/easylogging/easylogging++.h"
+
 #include <functional>
 #include <map>
 #include <string>
 #include <sstream>
 
-#define LOG wwiv::core::Logger()
 
 namespace wwiv {
 namespace core {
@@ -40,12 +83,11 @@ namespace core {
  *   Logger::Init(argc, argv);
  *   wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
  *
- * In code, just use "LOG << messages" and it will end up in the information logs.
+ * In code, just use "LOG(INFO) << messages" and it will end up in the information logs.
  */
 class Logger {
 public:
   Logger();
-  explicit Logger(const std::string& kind);
   ~Logger();
 
   template <typename T> Logger & operator<<(T const & value) {
@@ -55,17 +97,7 @@ public:
 
   /** Initializes the WWIV Loggers.  Must be invoked once per binary. */
   static void Init(int argc, char** argv);
-  /** Sets the filename for the logger kind (i.e. 'I' for info) */
-  static void set_filename(const std::string& kind, const std::string& filename) { fn_map_[kind] = filename; }
-  static std::string date_time();
   static void ExitLogger();
-  static void DefaultDisplay(const std::string& s);
-
-private:
-  const std::string kind_;
-  std::ostringstream stream_;
-  static std::map<std::string, std::string> fn_map_;
-  std::function<void(const std::string&)> display_fn_;
 };
 
 }

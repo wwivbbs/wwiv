@@ -36,6 +36,7 @@
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"
+#include "networkb/net_util.h"
 #include "networkb/ppp_config.h"
 
 #include "sdk/config.h"
@@ -73,25 +74,24 @@ static int LaunchOldNetworkingStack(const std::string exe, int argc, char** argv
     }
   }
   const string command_line = os.str();
-  LOG << "Executing Command: '" << command_line << "'";
+  LOG(INFO) << "Executing Command: '" << command_line << "'";
   return system(command_line.c_str());
 }
+
+INITIALIZE_EASYLOGGINGPP
 
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
   try {
     ScopeExit at_exit(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "network_number");
+    cmdline.AddStandardArgs();
+    AddStandardNetworkArgs(cmdline, File::current_directory());
     cmdline.add_argument({"node", 'n', "Network node number to dial.", "0"});
-    cmdline.add_argument({"network", "Network name to use (i.e. wwivnet).", ""});
-    cmdline.add_argument({"network_number", "Network number to use (i.e. 0).", "0"});
-    cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", File::current_directory()});
     cmdline.add_argument(BooleanCommandLineArgument("allow_sendback", 'A', "Allow sendback (only used by legacy network0)", true));
     cmdline.add_argument({"phone_number", 'P', "Network number to use (only used by legacy network0)", ""});
     cmdline.add_argument({"speed", 'S', "Modem Speedto use (only used by legacy network0)", ""});
     cmdline.add_argument({"callout_time", 'T', "Start time of the callout (only used by legacy network0)", ""});
-    cmdline.add_argument(BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
-    cmdline.add_argument(BooleanCommandLineArgument("help", '?', "displays help.", false));
 
     if (!cmdline.Parse() || cmdline.arg("help").as_bool()) {
       ShowHelp(cmdline);
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
     string network_name = cmdline.arg("network").as_string();
     string network_number = cmdline.arg("network_number").as_string();
     if (network_name.empty() && network_number.empty()) {
-      LOG << "--network=[network name] or .[network_number] must be specified.";
+      LOG(ERROR) << "--network=[network name] or .[network_number] must be specified.";
       ShowHelp(cmdline);
       return 1;
     }
@@ -108,12 +108,12 @@ int main(int argc, char** argv) {
     string bbsdir = cmdline.arg("bbsdir").as_string();
     Config config(bbsdir);
     if (!config.IsInitialized()) {
-      LOG << "Unable to load CONFIG.DAT.";
+      LOG(ERROR) << "Unable to load CONFIG.DAT.";
       return 1;
     }
     Networks networks(config);
     if (!networks.IsInitialized()) {
-      LOG << "Unable to load networks.";
+      LOG(ERROR) << "Unable to load networks.";
       return 1;
     }
 
@@ -124,14 +124,14 @@ int main(int argc, char** argv) {
 
     int node = cmdline.arg("node").as_int();
     if (node == 0 || node > 32767) {
-      LOG << "Invalid node number: '" << node << "' specified.";
+      LOG(ERROR) << "Invalid node number: '" << node << "' specified.";
       ShowHelp(cmdline);
       return 1;
     }
     if (node == 32767) {
       // 32767 is the PPP project address for "send everything". Some people use this
       // "magic" node number.
-      LOG << "USE PPP Project to send to: Internet Email (@32767)";
+      LOG(INFO) << "USE PPP Project to send to: Internet Email (@32767)";
       return LaunchOldNetworkingStack("networkp", argc, argv);
     }
 
@@ -139,26 +139,26 @@ int main(int argc, char** argv) {
     const BinkNodeConfig* node_config = bink_config.node_config_for(node);
     if (node_config != nullptr) {
       // We have a node configuration for this one, use networkb.
-      LOG << "USE networkb: " << node_config->host << ":" << node_config->port;
+      LOG(INFO) << "USE networkb: " << node_config->host << ":" << node_config->port;
       string command_line = StringPrintf("networkb --send --network=%s --node=%d",
         network_name.c_str(), node);
       if (cmdline.barg("skip_net")) {
         command_line += " --skip_net";
       }
-      LOG << "Executing Command: '" << command_line << "'";
+      LOG(INFO) << "Executing Command: '" << command_line << "'";
       return system(command_line.c_str());
     }
 
     PPPConfig ppp_config(network_name, config, networks);
     const PPPNodeConfig* ppp_node_config = ppp_config.node_config_for(node);
     if (ppp_node_config != nullptr) {
-      LOG << "USE PPP Project to send to: " << ppp_node_config->email_address;
+      LOG(INFO) << "USE PPP Project to send to: " << ppp_node_config->email_address;
       return LaunchOldNetworkingStack("networkp", argc, argv);
     }
 
     // Use legacy networking.
     return LaunchOldNetworkingStack("network0", argc, argv);
   } catch (const std::exception& e) {
-    LOG << "ERROR: [network]: " << e.what();
+    LOG(ERROR) << "ERROR: [network]: " << e.what();
   }
 }

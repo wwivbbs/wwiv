@@ -37,12 +37,13 @@
 
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
-#include "sdk/callout.h"
 #include "networkb/connection.h"
+#include "networkb/net_util.h"
 #include "networkb/socket_connection.h"
 #include "networkb/socket_exceptions.h"
 #include "networkb/wfile_transfer_file.h"
 
+#include "sdk/callout.h"
 #include "sdk/config.h"
 #include "sdk/contact.h"
 #include "sdk/networks.h"
@@ -64,20 +65,17 @@ using namespace wwiv::strings;
 using namespace wwiv::os;
 
 static void RegisterHelpCommands(CommandLine& cmdline) {
-  cmdline.add_argument(BooleanCommandLineArgument("help", '?', "Displys Help", false));
-  cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", File::current_directory()});
-  cmdline.add_argument({"network", "Network name to use (i.e. wwivnet)"});
   cmdline.add_argument(BooleanCommandLineArgument("send", "Send network traffic to --node"));
   cmdline.add_argument(BooleanCommandLineArgument("receive", "Receive from any node"));
   cmdline.add_argument({"node", "Node number (only used when sending)", "0"});
   cmdline.add_argument({"port", "Port number to use (receiving only)", "24554"});
-  cmdline.add_argument(BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
 }
   
 static void ShowHelp(CommandLine& cmdline) {
   cout << cmdline.GetHelp() << endl;
 }
 
+INITIALIZE_EASYLOGGINGPP
 int main(int argc, char** argv) {
   try {
     auto start_time = system_clock::now();
@@ -85,6 +83,8 @@ int main(int argc, char** argv) {
     wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
 
     CommandLine cmdline(argc, argv, "network_number");
+    cmdline.AddStandardArgs();
+    AddStandardNetworkArgs(cmdline, File::current_directory());
     RegisterHelpCommands(cmdline);
     if (!cmdline.Parse()) {
       ShowHelp(cmdline);
@@ -104,12 +104,12 @@ int main(int argc, char** argv) {
 
     Config config(bbsdir);
     if (!config.IsInitialized()) {
-      LOG << "Unable to load CONFIG.DAT.";
+      LOG(ERROR) << "Unable to load CONFIG.DAT.";
       return 1;
     }
     Networks networks(config);
     if (!networks.IsInitialized()) {
-      LOG << "Unable to load networks.";
+      LOG(ERROR) << "Unable to load networks.";
       return 1;
     }
 
@@ -127,22 +127,22 @@ int main(int argc, char** argv) {
     }
 
     if (cmdline.arg("receive").as_bool()) {
-      LOG << "BinkP receive";
+      LOG(INFO) << "BinkP receive";
       side = BinkSide::ANSWERING;
       c = Accept(port);
 
     } else if (cmdline.arg("send").as_bool()) {
-      LOG << "BinkP send to: " << expected_remote_node;
+      LOG(INFO) << "BinkP send to: " << expected_remote_node;
 
       if (cmdline.arg("network").as_string().empty()) {
-        LOG << "--network=[network name] must be specified.";
+        LOG(ERROR) << "--network=[network name] must be specified.";
         ShowHelp(cmdline);
         return 1;
       }
 
       const BinkNodeConfig* node_config = bink_config.node_config_for(expected_remote_node);
       if (node_config == nullptr) {
-        LOG << "Unable to find node config for node: " << expected_remote_node;
+        LOG(ERROR) << "Unable to find node config for node: " << expected_remote_node;
         return 2;
       }
       try {
@@ -166,10 +166,10 @@ int main(int argc, char** argv) {
     BinkP binkp(c.get(), &bink_config, callouts, side, expected_remote_node, factory);
     binkp.Run();
   } catch (const connection_error& e) {
-    LOG << "CONNECTION ERROR: [networkb]: " << e.what();
+    LOG(ERROR) << "CONNECTION ERROR: [networkb]: " << e.what();
   } catch (const socket_error& e) {
-    LOG << "SOCKET ERROR: [networkb]: " << e.what();
+    LOG(ERROR) << "SOCKET ERROR: [networkb]: " << e.what();
   } catch (const exception& e) {
-    LOG << "ERROR: [networkb]: " << e.what();
+    LOG(ERROR) << "ERROR: [networkb]: " << e.what();
   }
 }

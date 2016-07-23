@@ -21,6 +21,9 @@
 #include <set>
 #include <string>
 #include <vector>
+
+#include "core/command_line.h"
+#include "core/file.h"
 #include "sdk/networks.h"
 #include "sdk/net.h"
 
@@ -72,7 +75,7 @@ static std::string get_message_field(C& c, I& iter, std::set<char> stop, std::si
   return result;
 }
 
-
+void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string& current_directory);
 
 
 }  // namespace net

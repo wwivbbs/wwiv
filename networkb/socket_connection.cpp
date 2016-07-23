@@ -74,7 +74,7 @@ bool InitializeSockets() {
 WSADATA wsadata;
 int result = WSAStartup(MAKEWORD(2,2), &wsadata);
   if (result != 0) {
-    LOG << "WSAStartup failed with error: " << result;
+    LOG(ERROR) << "WSAStartup failed with error: " << result;
     return false;
   }
 #endif  // _WIN32
@@ -149,13 +149,13 @@ unique_ptr<SocketConnection> Connect(const string& host, int port) {
       // success;
       freeaddrinfo(address);
       if (!SetNonBlockingMode(s)) {
-        LOG << "Unable to put socket into nonblocking mode.";
+        LOG(ERROR) << "Unable to put socket into nonblocking mode.";
         closesocket(s);
         s = INVALID_SOCKET;
         continue;
       }
       if (!SetNoDelayMode(s)) {
-        LOG << "Unable to put socket into nodelay mode.";
+        LOG(ERROR) << "Unable to put socket into nodelay mode.";
         closesocket(s);
         s = INVALID_SOCKET;
         continue;
@@ -201,13 +201,13 @@ unique_ptr<SocketConnection> Accept(int port) {
   SOCKET s = accept(sock, reinterpret_cast<struct sockaddr*>(&saddr), &addr_length);
 
   if (!SetNonBlockingMode(s)) {
-    LOG << "Unable to put socket into nonblocking mode.";
+    LOG(ERROR) << "Unable to put socket into nonblocking mode.";
     closesocket(s);
     s = INVALID_SOCKET;
     throw socket_error("Unable to set nonblocking mode on the socket.");
   }
   if (!SetNoDelayMode(s)) {
-    LOG << "Unable to put socket into nodelay mode.";
+    LOG(ERROR) << "Unable to put socket into nodelay mode.";
     closesocket(s);
     s = INVALID_SOCKET;
     throw socket_error("Unable to set nodelay mode on the socket.");
@@ -217,7 +217,7 @@ unique_ptr<SocketConnection> Accept(int port) {
   struct sockaddr_in* clientAddr = static_cast<struct sockaddr_in*>(
       get_in_addr(reinterpret_cast<struct sockaddr*>(&saddr)));
   inet_ntop(saddr.sin_family, clientAddr , ip, sizeof ip);
-  LOG << "Received connection from: " << ip;
+  LOG(INFO) << "Received connection from: " << ip;
 
   return unique_ptr<SocketConnection>(new SocketConnection(s, "", port));
 }
@@ -277,7 +277,7 @@ string SocketConnection::receive(int size, milliseconds d) {
 int SocketConnection::send(const void* data, int size, milliseconds d) {
   int sent = ::send(sock_, reinterpret_cast<const char*>(data), size, 0);
   if (open_ && sent != size) {
-    LOG << "ERROR: send != packet size.  size: " << size << "; sent: " << sent;
+    LOG(ERROR) << "ERROR: send != packet size.  size: " << size << "; sent: " << sent;
   }
   return size;
 }

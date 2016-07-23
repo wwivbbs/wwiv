@@ -187,7 +187,7 @@ bool handle_sub_add_req(Context& context, const net_header_rec& nh, const std::s
   string filename = StrCat("n", subtype, ".net");
   std::set<uint16_t> subscribers;
   if (!ReadSubcriberFile(context.net->dir, filename, subscribers)) {
-    LOG << "Unable to read subscribers file.";
+    LOG(INFO) << "Unable to read subscribers file.";
     return resp(sub_adddrop_error);
   }
   // TODO: check to see if already subscribed.
@@ -196,12 +196,12 @@ bool handle_sub_add_req(Context& context, const net_header_rec& nh, const std::s
     return resp(sub_adddrop_already_there);
   }
   if (!WriteSubcriberFile(context.net->dir, filename, subscribers)) {
-    LOG << "Unable to write subscribers file.";
+    LOG(INFO) << "Unable to write subscribers file.";
     return resp(sub_adddrop_error);
   }
 
   // success!
-  LOG << "Added system @" << nh.fromsys << " to subtype: " << subtype;
+  LOG(INFO) << "Added system @" << nh.fromsys << " to subtype: " << subtype;
   return resp(sub_adddrop_ok);
 }
 
@@ -217,7 +217,7 @@ bool handle_sub_drop_req(Context& context, const net_header_rec& nh, const std::
   string filename = StrCat("n", subtype, ".net");
   std::set<uint16_t> subscribers;
   if (!ReadSubcriberFile(context.net->dir, filename, subscribers)) {
-    LOG << "Unable to read subscribers file.";
+    LOG(INFO) << "Unable to read subscribers file.";
     return resp(sub_adddrop_error);
   }
   // TODO: check to see if already subscribed.
@@ -226,12 +226,12 @@ bool handle_sub_drop_req(Context& context, const net_header_rec& nh, const std::
     return resp(sub_adddrop_not_there);
   }
   if (!WriteSubcriberFile(context.net->dir, filename, subscribers)) {
-    LOG << "Unable to write subscribers file.";
+    LOG(INFO) << "Unable to write subscribers file.";
     return resp(sub_adddrop_error);
   }
 
   // success!
-  LOG << "Dropped system @" << nh.fromsys << " to subtype: " << subtype;
+  LOG(INFO) << "Dropped system @" << nh.fromsys << " to subtype: " << subtype;
   return resp(sub_adddrop_ok);
 }
 
@@ -256,16 +256,16 @@ bool handle_sub_add_drop_resp(Context& context, const net_header_rec& nhorig, co
   auto b = text.begin();
   while (b != text.end() && *b != '\0') { b++; }
   if (b == text.end()) { 
-    LOG << "Unable to determine code from add_drop response.";
+    LOG(INFO) << "Unable to determine code from add_drop response.";
     return false;
   } // NULL
   b++;
   if (b == text.end()) {
-    LOG << "Unable to determine code from add_drop response.";
+    LOG(INFO) << "Unable to determine code from add_drop response.";
     return false;
   }
 
-  LOG << "Processed " << add_or_drop << " response from system @" << nhorig.fromsys << " to subtype: " << subname;
+  LOG(INFO) << "Processed " << add_or_drop << " response from system @" << nhorig.fromsys << " to subtype: " << subname;
 
   char code = *b++;
   string code_string = SubAddDropResponseMessage(static_cast<uint8_t>(code));
