@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -52,7 +53,7 @@ namespace WWIV5TelnetServer
           return launchNode("-N@N -E", node, -1, false);
         }
 
-        public Process launchTelnetNode(int node, Int32 socketHandle)
+        public Process launchSocketNode(int node, Int32 socketHandle)
         {
             return launchNode(argumentsTemplate, node, socketHandle, Properties.Settings.Default.launchMinimized);
         }
@@ -61,32 +62,41 @@ namespace WWIV5TelnetServer
         {
             CommandLineBuilder cmdlineBuilder = new CommandLineBuilder(template, executable);
 
-            Process p = new Process();
-            p.EnableRaisingEvents = false;
-            p.StartInfo.FileName = executable;
-            p.StartInfo.Arguments = cmdlineBuilder.CreateTelnetArguments(node, socketHandle);
-            p.StartInfo.WorkingDirectory = homeDirectory;
-            p.StartInfo.UseShellExecute = false;
-            logger("Launching binary: " + cmdlineBuilder.CreateFullCommandLine(node, socketHandle));
-            p.Start();
-            Console.WriteLine("binary launched.");
-
-            if (minimize)
+            try
             {
-                for (int i = 0; i < 25; i++)
+                Process p = new Process();
+                p.EnableRaisingEvents = false;
+                p.StartInfo.FileName = executable;
+                p.StartInfo.Arguments = cmdlineBuilder.CreateTelnetArguments(node, socketHandle);
+                p.StartInfo.WorkingDirectory = homeDirectory;
+                p.StartInfo.UseShellExecute = false;
+                logger("Launching binary: " + cmdlineBuilder.CreateFullCommandLine(node, socketHandle));
+                p.Start();
+                Console.WriteLine("binary launched.");
+
+                if (minimize)
                 {
-                    // The process is launched asynchronously, so wait for up to a second
-                    // for the main window handle to be created and set on the process class.
-                    if (p.MainWindowHandle.ToInt32() != 0)
+                    for (int i = 0; i < 25; i++)
                     {
-                        break;
+                        // The process is launched asynchronously, so wait for up to a second
+                        // for the main window handle to be created and set on the process class.
+                        if (p.MainWindowHandle.ToInt32() != 0)
+                        {
+                            break;
+                        }
+                        Thread.Sleep(100);
                     }
-                    Thread.Sleep(100);
+                    logger("Trying to minimize process on handle:" + p.MainWindowHandle);
+                    ShowWindowAsync(p.MainWindowHandle, SW_MINIMIZE);
                 }
-                logger("Trying to minimize process on handle:" + p.MainWindowHandle);
-                ShowWindowAsync(p.MainWindowHandle, SW_MINIMIZE);
+                return p;
             }
-            return p;
+            catch (Win32Exception e)
+            {
+                // Failed to launch
+                Console.WriteLine(e);
+            }
+            return null;
         }
     }
 }

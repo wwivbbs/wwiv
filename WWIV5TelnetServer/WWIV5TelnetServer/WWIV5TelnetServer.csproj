@@ -93,9 +93,8 @@
       <DependentUpon>PreferencesDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Settings.cs" />
-    <Compile Include="SSHServer.cs" />
+    <Compile Include="SocketServer.cs" />
     <Compile Include="StatusMessageEventArgs.cs" />
-    <Compile Include="TelnetServer.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

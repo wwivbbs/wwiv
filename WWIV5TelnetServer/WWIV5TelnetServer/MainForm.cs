@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 using System;
+using System.IO;
 using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
@@ -27,8 +28,8 @@ namespace WWIV5TelnetServer
     public partial class MainForm : Form
     {
         private NodeManager nodeManager;
-        private TelnetServer serverTelnet;
-        private SSHServer serverSSH; // SSH
+        private SocketServer serverTelnet;
+        private SocketServer serverSSH; // SSH
         //private BeginDayHandler beginDay;
 
         // Global Strings
@@ -51,8 +52,8 @@ namespace WWIV5TelnetServer
             var argumentsTemplateTelnet = Properties.Settings.Default.parameters;
             var portSSH = Convert.ToInt32(Properties.Settings.Default.portSSH); // SSH
             var argumentsTemplateSSH = Properties.Settings.Default.parameters2; // SSH
-            serverTelnet = new TelnetServer(nodeManager, portTelnet, argumentsTemplateTelnet, "Telnet");
-            serverSSH = new SSHServer(nodeManager, portSSH, argumentsTemplateSSH, "SSH"); // SSH
+            serverTelnet = new SocketServer(nodeManager, portTelnet, argumentsTemplateTelnet, "Telnet");
+            serverSSH = new SocketServer(nodeManager, portSSH, argumentsTemplateSSH, "SSH"); // SSH
 
             serverTelnet.StatusMessageChanged += server_StatusMessage;
             serverTelnet.NodeStatusChanged += server_NodeStatusChanged;
@@ -161,6 +162,48 @@ namespace WWIV5TelnetServer
             serverSSH.Stop(); // SSH
         }
 
+        private String FetchBbsVersion(out String version, out String build)
+        {
+            string currentFullVersion = "WWIV5 Telnet Server";
+            version = "5.1.0.unknown";
+            build = "0";
+            // Fetch Current WWIV Version And Build Number.
+            // It's ok if it fails.
+            var bbsExe = Properties.Settings.Default.executable;
+
+            if (!File.Exists(bbsExe))
+            {
+                // Don't try to execute bbs.exe if it does not exist.
+                return currentFullVersion;
+            }
+            Process p = new Process();
+            try
+            {
+                p.StartInfo.FileName = bbsExe;
+                p.StartInfo.Arguments = "-V";
+                p.StartInfo.UseShellExecute = false;
+                p.StartInfo.RedirectStandardOutput = true;
+                p.Start();
+                var output = p.StandardOutput.ReadToEnd();
+                p.WaitForExit();
+                char[] delims = { '[', '.', ']' };
+                var partsVersion = output.Split(delims);
+                var majorVersion = partsVersion[1];
+                var minorVersion = partsVersion[2];
+                var minorVersion2 = partsVersion[3];
+                build = partsVersion[4];
+                version = (majorVersion + "." + minorVersion + "." + minorVersion2 + "." + build);
+                currentFullVersion = "WWIV5 Telnet Server - Running WWIV: " + version;
+                
+            } catch {
+                // Ignore error and return the default currentFullVersion.
+            } finally
+            {
+                p.Close();
+            }
+            return currentFullVersion;
+        }
+
         public void MainForm_Load(object sender, EventArgs e)
         {
             notifyIcon1.Text = "WWIV Telnet Server: Offline";
@@ -187,32 +230,8 @@ namespace WWIV5TelnetServer
 
             try
             {
-                // Fetch Current WWIV Version And Build Number.
-                // It's ok if it fails.
-                Process p = new Process();
-                string bbsExe = Properties.Settings.Default.executable;
-                p.StartInfo.FileName = bbsExe;
-                p.StartInfo.Arguments = "-V";
-                p.StartInfo.UseShellExecute = false;
-                p.StartInfo.RedirectStandardOutput = true;
-                p.Start();
-                string output = p.StandardOutput.ReadToEnd();
-                p.WaitForExit();
-                char[] delimiter = { '[', '.', ']' };
-                string currentVersion = output;
-                string[] partsVersion = currentVersion.Split(delimiter);
-                string majorVersion = partsVersion[1];
-                string minorVersion = partsVersion[2];
-                string buildVersion = partsVersion[3];
-                string revisVersion = partsVersion[4];
-                string displayVersion = (majorVersion + "." + minorVersion + "." + buildVersion + "." + revisVersion);
-                string currentFullVersion = "WWIV5 Telnet Server - Running WWIV: " + displayVersion;
-                // Set Main Wiwndow Title
-                Text = currentFullVersion;
-
-                // Update Global Strings
-                WWIV_Version = displayVersion;
-                WWIV_Build = revisVersion;
+                // Set Main Wiwndow Title and update global strings.
+                Text = FetchBbsVersion(out WWIV_Version, out WWIV_Build);
 
                 // HERE FOR UPDATE
                 CheckUpdates instance = new CheckUpdates();
@@ -240,7 +259,10 @@ namespace WWIV5TelnetServer
             Process p = launcher.launchLocalNode(Convert.ToInt32(Properties.Settings.Default.localNode));
             Thread localNodeCleanupThread = new Thread(delegate ()
             {
-                p.WaitForExit();
+                if (p != null)
+                {
+                    p.WaitForExit();
+                }
                 this.Name = "localNodeCleanupThread";
                 MethodInvoker d = delegate () { this.runLocalNodeToolStripMenuItem.Enabled = true; };
                 this.Invoke(d);
