@@ -267,6 +267,11 @@ bool CommandLine::AddStandardArgs() {
     return false;
   }
   add_argument({"bbsdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory()});
+
+  // Ignore these. used by logger
+  add_argument({"v", "verbose log", "0"});
+
+
   return true;
 }
 

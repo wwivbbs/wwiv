@@ -117,38 +117,38 @@ bool handle_post(Context& context, const net_header_rec& nh,
   string sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
   string date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
   string text = string(iter, raw_text.end());
-  if (context.verbose) {
+  if (VLOG_IS_ON(1)) {
     at_exit.swap([] {
-      LOG << "==============================================================";
+      LOG(INFO) << "==============================================================";
     });
-    LOG << "==============================================================";
-    LOG << "  Processing New Post on subtype: " << subtype;
-    LOG << "  Title:   " << title;
-    LOG << "  Sender:  " << sender_name;
-    LOG << "  Date:    " << date_string;
+    VLOG(1) << "==============================================================";
+    VLOG(1) << "  Processing New Post on subtype: " << subtype;
+    VLOG(1) << "  Title:   " << title;
+    VLOG(1) << "  Sender:  " << sender_name;
+    VLOG(1) << "  Date:    " << date_string;
   }
 
   string basename;
   if (!find_basename(context, subtype, basename)) {
-    LOG << "    ! ERROR: Unable to find subtype of subtype: " << subtype;
+    LOG(INFO) << "    ! ERROR: Unable to find subtype of subtype: " << subtype;
     return false;
   }
 
   if (!context.api->Exist(basename)) {
-    LOG << "WARNING Message area: '" << basename << "' does not exist.";;
-    LOG << "WARNING Attempting to create it.";
+    LOG(INFO) << "WARNING Message area: '" << basename << "' does not exist.";;
+    LOG(INFO) << "WARNING Attempting to create it.";
     // Since the area does not exist, let's create it automatically
     // like WWIV alwyas does.
     unique_ptr<MessageArea> creator(context.api->Create(basename));
     if (!creator) {
-      LOG << "    ! ERROR: Failed to create message area: " << basename << ". Exiting.";
+      LOG(INFO) << "    ! ERROR: Failed to create message area: " << basename << ". Exiting.";
       return false;
     }
   }
 
   unique_ptr<MessageArea> area(context.api->Open(basename));
   if (!area) {
-    LOG << "    ! ERROR Unable to open message area: '" << basename << "'.";
+    LOG(INFO) << "    ! ERROR Unable to open message area: '" << basename << "'.";
     return false;
   }
 
@@ -177,17 +177,17 @@ bool handle_post(Context& context, const net_header_rec& nh,
       && header->title() == title
       && header->from_system() == nh.fromsys
       && header->from_usernum() == nh.fromuser) {
-      LOG << "    - Discarding Duplicate Message.";
+      LOG(INFO) << "    - Discarding Duplicate Message.";
       // Returning true since we properly handled this by discarding it.
       return true;
     }
   }
 
   if (!area->AddMessage(*msg)) {
-    LOG << "     ! Failed to add message: " << title;
+    LOG(INFO) << "     ! Failed to add message: " << title;
     return false;
   }
-  LOG << "    + Posted  '" << title << "'";
+  LOG(INFO) << "    + Posted  '" << title << "'";
   return true;
 }
 

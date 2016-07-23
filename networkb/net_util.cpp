@@ -19,6 +19,7 @@
 
 #include <string>
 
+#include "core/command_line.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
@@ -26,6 +27,7 @@
 #include "sdk/filenames.h"
 
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 namespace wwiv {
@@ -34,7 +36,7 @@ namespace net {
 void rename_pend(const string& directory, const string& filename, uint8_t network_app_num) {
   File pend_file(directory, filename);
   if (!pend_file.Exists()) {
-    LOG << " pending file does not exist: " << pend_file;
+    LOG(INFO) << " pending file does not exist: " << pend_file;
     return;
   }
   const string pend_filename(pend_file.full_pathname());
@@ -45,11 +47,11 @@ void rename_pend(const string& directory, const string& filename, uint8_t networ
     const string new_filename =
       StringPrintf("%sp%s-%u-%u.net", directory.c_str(), prefix.c_str(), network_app_num, i);
     if (File::Rename(pend_filename, new_filename)) {
-      LOG << "renamed file to: " << new_filename;
+      LOG(INFO) << "renamed file to: " << new_filename;
       return;
     }
   }
-  LOG << "all attempts failed to rename_pend";
+  LOG(ERROR) << "all attempts failed to rename_pend";
 }
 
 std::string create_pend(const string& directory, bool local, uint8_t network_app_num) {
@@ -62,11 +64,11 @@ std::string create_pend(const string& directory, bool local, uint8_t network_app
       continue;
     }
     if (f.Open(File::modeCreateFile | File::modeReadWrite | File::modeExclusive)) {
-      LOG << "Created pending file: " << filename;
+      LOG(INFO) << "Created pending file: " << filename;
     }
     return filename;
   }
-  LOG << "all attempts failed to create_pend";
+  LOG(ERROR) << "all attempts failed to create_pend";
   return "";
 }
 
@@ -75,7 +77,7 @@ bool send_network(const std::string& filename,
   std::vector<uint16_t> list,
   const std::string& text, const std::string& byname, const std::string& title) {
 
-  LOG << "Writing type " << nh.main_type << " message to packet: " << filename;
+  LOG(INFO) << "Writing type " << nh.main_type << " message to packet: " << filename;
 
   File file(network.dir, filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
@@ -121,10 +123,10 @@ bool write_packet(
   const net_networks_rec& net,
   const net_header_rec& nh, const std::vector<uint16_t>& list, const string& text) {
 
-  LOG << "Writing type " << nh.main_type << " message to packet: " << filename;
+  LOG(INFO) << "Writing type " << nh.main_type << " message to packet: " << filename;
   if (nh.length != text.size()) {
-    LOG << "Error while writing packet: " << net.dir << filename;
-    LOG << "Mismatched text and nh.length.  text =" << text.size()
+    LOG(ERROR) << "Error while writing packet: " << net.dir << filename;
+    LOG(ERROR) << "Mismatched text and nh.length.  text =" << text.size()
       << " nh.length = " << nh.length;
     return false;
   }
@@ -193,6 +195,14 @@ string net_info_minor_type_name(int typ) {
   default: return StringPrintf("UNKNOWN type #%d", typ);
   }
 }
+
+void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string& current_directory) {
+  cmdline.add_argument({"network", "Network name to use (i.e. wwivnet).", ""});
+  cmdline.add_argument({"network_number", "Network number to use (i.e. 0).", "0"});
+  cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", current_directory});
+  cmdline.add_argument(BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
+}
+
 
 }  // namespace net
 }  // namespace wwiv

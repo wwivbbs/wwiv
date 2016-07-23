@@ -65,18 +65,18 @@ public:
       const std::string bbsdir(cmdline_.arg("bbsdir").as_string());
       Config config(bbsdir);
       if (!config.IsInitialized()) {
-        LOG << "Unable to load CONFIG.DAT.";
+        LOG(ERROR) << "Unable to load CONFIG.DAT.";
         return 1;
       }
       command_config_.reset(new Configuration(bbsdir, &config));
       if (!command_config_->initialized()) {
-        LOG << "Unable to load NETWORKS.";
+        LOG(ERROR) << "Unable to load NETWORKS.";
         return 1;
       }
       SetConfigs();
       return cmdline_.Execute();
     } catch (std::exception& e) {
-      LOG << e.what();
+      LOG(ERROR) << e.what();
     }
     return 1;
   }
@@ -103,6 +103,7 @@ private:
 }  // namespace wwivutil
 }  // namespace wwiv
 
+INITIALIZE_EASYLOGGINGPP
 int main(int argc, char *argv[]) {
   wwiv::wwivutil::WWIVUtil wwivutil(argc, argv);
   return wwivutil.Main();

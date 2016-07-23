@@ -57,7 +57,7 @@ bool DumpBbsDataCommand::AddSubCommands() {
 int DumpBbsDataCommand::Execute() {
   Networks networks(*config()->config());
   if (!networks.IsInitialized()) {
-    LOG << "Unable to load networks.";
+    LOG(ERROR) << "Unable to load networks.";
     return 1;
   }
 
@@ -66,10 +66,10 @@ int DumpBbsDataCommand::Execute() {
     string lower_case_network_name(net.name);
     StringLowerCase(&lower_case_network_name);
     if (arg("bbslist").as_bool()) {
-      LOG << "Parsing BBSLIST.NET";
+      LOG(INFO) << "Parsing BBSLIST.NET";
       bbslists.emplace(lower_case_network_name, BbsListNet::ParseBbsListNet(net.sysnum, net.dir));
     } else {
-      LOG << "Reading BBSDATA.NET";
+      LOG(INFO) << "Reading BBSDATA.NET";
       bbslists.emplace(lower_case_network_name, BbsListNet::ReadBbsDataNet(net.dir));
     }
   }

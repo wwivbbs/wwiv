@@ -60,7 +60,7 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* re
   }
   memset(con, 0, sizeof(net_system_list_rec));
   *reg_no = 0;
-  // LOG << ss;
+  VLOG(2) << ss;
 
   for (auto iter = ss.begin(); iter != ss.end(); iter++) {
       switch (*iter) {
@@ -173,11 +173,13 @@ static bool ParseBbsListNetFile(
       std::list<uint16_t> path = graph.shortest_path_to(node_config.sysnum);
       float cost = graph.cost_to(node_config.sysnum);
       if (!std::isfinite(cost)) {
-        // LOG << "high cost " << cost << " to " << node_config.sysnum;
-        // std::clog << "Path to " << node_config.sysnum << ": ";
-        // std::copy(path.begin(), path.end(), std::ostream_iterator<uint16_t>(std::clog, " "));
-        // std::clog << std::endl;
-        // graph.DumpCosts();
+        if(VLOG_IS_ON(2)) {
+          VLOG(1) << "high cost " << cost << " to " << node_config.sysnum;
+          std::clog << "Path to " << node_config.sysnum << ": ";
+          std::copy(path.begin(), path.end(), std::ostream_iterator<uint16_t>(std::clog, " "));
+          std::clog << std::endl;
+          graph.DumpCosts();
+        }
       }
       if (graph.has_node(node_config.sysnum) && path.front() == net_node_number) {
         path.pop_front();
@@ -191,7 +193,7 @@ static bool ParseBbsListNetFile(
           node_config.forsys = node_config.sysnum;
         }
       } else {
-        LOG << "no path to " << node_config.sysnum;
+        LOG(INFO) << "no path to " << node_config.sysnum;
         node_config.numhops = 10000;
         node_config.xx.cost = 10000;
         node_config.forsys = std::numeric_limits<uint16_t>::max();
