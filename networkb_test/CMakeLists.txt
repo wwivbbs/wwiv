@@ -12,8 +12,9 @@ set(test_sources
   net_log_test.cpp
   net_util_test.cpp
   ppp_config_test.cpp
+  networkb_test_main.cpp
 )
 
 add_executable(networkb_tests ${test_sources})
-target_link_libraries(networkb_tests networkb_lib core core_fixtures gtest_main sdk)
+target_link_libraries(networkb_tests networkb_lib core core_fixtures gtest sdk)
 

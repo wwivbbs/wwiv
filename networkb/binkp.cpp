@@ -240,7 +240,7 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
     return false;
   }
   string s = conn_->receive(length, d);
-  VLOG(1) << "RECV:  DATA PACKET; len: " << s.size() 
+  VLOG(1) << "RECV:  DATA PACKET; len: " << s.size()
       << "; expected: " << length
       << " duration:" << d.count();
   if (!current_receive_file_) {
@@ -554,7 +554,7 @@ BinkState BinkP::AuthRemote() {
   }
 
   const string expected_ftn = StringPrintf("20000:20000/%d@%s", expected_remote_node_, network_name.c_str());
-  VLOG(1) << "       expected_ftn: " << expected_ftn;
+  //VLOG(1) << "       expected_ftn: " << expected_ftn;
   if (address_list_.find(expected_ftn) != string::npos) {
     return (side_ == BinkSide::ORIGINATING) ?
       BinkState::IF_SECURE : BinkState::WAIT_PWD;

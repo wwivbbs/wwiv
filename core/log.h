@@ -74,10 +74,12 @@ namespace core {
 /**
  * Logger class for WWIV.
  * Usage:
- *   - Once near your main() method, invoke Logger::Init(argc, argv) to initialize the logger.
- *     This will initialize the logger for (I)nfo to your executable's name with .LOG appended.
- *     You should also invoke ExitLogger when exiting your binary,
  * 
+ * Once near your main() method, invoke Logger::Init(argc, argv) to initialize
+ * the logger. This will initialize the logger filename to be your
+ * executable's name with .log appended. You should also also invoke ExitLogger
+ * when exiting your binary,
+ *
  * Example:
  *
  *   Logger::Init(argc, argv);
@@ -89,11 +91,6 @@ class Logger {
 public:
   Logger();
   ~Logger();
-
-  template <typename T> Logger & operator<<(T const & value) {
-    stream_ << value;
-    return *this;
-  }
 
   /** Initializes the WWIV Loggers.  Must be invoked once per binary. */
   static void Init(int argc, char** argv);
