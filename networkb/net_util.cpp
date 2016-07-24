@@ -197,7 +197,6 @@ string net_info_minor_type_name(int typ) {
 }
 
 void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string& current_directory) {
-  cmdline.add_argument({"network", "Network name to use (i.e. wwivnet).", ""});
   cmdline.add_argument({"network_number", "Network number to use (i.e. 0).", "0"});
   cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", current_directory});
   cmdline.add_argument(BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));

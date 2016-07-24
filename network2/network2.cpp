@@ -308,13 +308,7 @@ int main(int argc, char** argv) {
       ShowHelp(cmdline);
       return 2;
     }
-    string network_name = cmdline.arg("network").as_string();
-    string network_number = cmdline.arg("network_number").as_string();
-    if (network_name.empty() && network_number.empty()) {
-      LOG(INFO) << "--network=[network name] or .[network_number] must be specified.";
-      ShowHelp(cmdline);
-      return 2;
-    }
+    int network_number = cmdline.arg("network_number").as_int();
 
     string bbsdir = cmdline.arg("bbsdir").as_string();
     Config config(bbsdir);
@@ -328,23 +322,8 @@ int main(int argc, char** argv) {
       return 4;
     }
 
-    int network_number_int = 0;
-    if (!network_number.empty() && network_name.empty()) {
-      // Need to set the network name based on the number.
-      network_number_int = std::stoi(network_number);
-      network_name = networks[network_number_int].name;
-    }
-    if (network_number.empty() && !network_name.empty()) {
-      int num = 0;
-      for (const auto& n : networks.networks()) {
-        if (network_name == n.name) {
-          network_number_int = num;
-        }
-      }
-    }
-
-    LOG(INFO) << "NETWORK2 for network: " << network_name;
-    auto net = networks[network_name];
+    auto net = networks[network_number];
+    LOG(INFO) << "NETWORK2 for network: " << net.name;
 
     if (!File::Exists(net.dir, LOCAL_NET)) {
       LOG(INFO) << "No local.net exists. exiting.";
@@ -359,7 +338,7 @@ int main(int argc, char** argv) {
     context.config = &config;
     context.net = &net;
     context.user_manager = user_manager.get();
-    context.network_number = network_number_int;
+    context.network_number = network_number;
     context.api = api.get();
     context.subs = std::move(read_subs(config.datadir()));
     if (!read_subs_xtr(config.datadir(), networks.networks(), context.subs, context.xsubs)) {

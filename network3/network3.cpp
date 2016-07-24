@@ -270,13 +270,7 @@ int main(int argc, char** argv) {
       ShowHelp(cmdline);
       return 1;
     }
-    string network_name = cmdline.arg("network").as_string();
-    string network_number = cmdline.arg("network_number").as_string();
-    if (network_name.empty() && network_number.empty()) {
-      LOG(ERROR) << "--network=[network name] or .[network_number] must be specified.";
-      ShowHelp(cmdline);
-      return 1;
-    }
+    int network_number = cmdline.arg("network_number").as_int();
 
     string bbsdir = cmdline.arg("bbsdir").as_string();
     Config config(bbsdir);
@@ -290,10 +284,6 @@ int main(int argc, char** argv) {
       return 1;
     }
 
-    if (!network_number.empty() && network_name.empty()) {
-      // Need to set the network name based on the number.
-      network_name = networks[std::stoi(network_number)].name;
-    }
     bool need_to_send_feedback = cmdline.barg("feedback");
     if (!need_to_send_feedback) {
       for (const auto& s : cmdline.remaining()) {
@@ -303,8 +293,8 @@ int main(int argc, char** argv) {
       }
     }
 
-    LOG(INFO) << "NETWORK3 for network: " << network_name;
-    auto net = networks[network_name];
+    const auto& net = networks[network_number];
+    LOG(INFO) << "NETWORK3 for network: " << net.name;
 
     VLOG(1) << "Reading BBSLIST.NET..";
     BbsListNet b = BbsListNet::ParseBbsListNet(net.sysnum, net.dir);
@@ -329,7 +319,7 @@ int main(int argc, char** argv) {
 
     if (need_to_send_feedback) {
       LOG(INFO) << "Sending Feedback.";
-      send_feedback(b, callout, networks[network_name], bbsdata_data);
+      send_feedback(b, callout, net, bbsdata_data);
     }
   } catch (const std::exception& e) {
     LOG(ERROR) << "ERROR: [network]: " << e.what();

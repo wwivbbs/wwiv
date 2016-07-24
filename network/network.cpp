@@ -97,13 +97,6 @@ int main(int argc, char** argv) {
       ShowHelp(cmdline);
       return 1;
     }
-    string network_name = cmdline.arg("network").as_string();
-    string network_number = cmdline.arg("network_number").as_string();
-    if (network_name.empty() && network_number.empty()) {
-      LOG(ERROR) << "--network=[network name] or .[network_number] must be specified.";
-      ShowHelp(cmdline);
-      return 1;
-    }
 
     string bbsdir = cmdline.arg("bbsdir").as_string();
     Config config(bbsdir);
@@ -117,10 +110,9 @@ int main(int argc, char** argv) {
       return 1;
     }
 
-    if (!network_number.empty() && network_name.empty()) {
-      // Need to set the network name based on the number.
-      network_name = networks[std::stoi(network_number)].name;
-    }
+    int network_number = cmdline.arg("network_number").as_int();
+    string network_name = networks[network_number].name;
+    StringLowerCase(&network_name);
 
     int node = cmdline.arg("node").as_int();
     if (node == 0 || node > 32767) {
@@ -140,8 +132,8 @@ int main(int argc, char** argv) {
     if (node_config != nullptr) {
       // We have a node configuration for this one, use networkb.
       LOG(INFO) << "USE networkb: " << node_config->host << ":" << node_config->port;
-      string command_line = StringPrintf("networkb --send --network=%s --node=%d",
-        network_name.c_str(), node);
+      string command_line = StringPrintf("networkb --send --network_number=%u --node=%d",
+        network_number, node);
       if (cmdline.barg("skip_net")) {
         command_line += " --skip_net";
       }

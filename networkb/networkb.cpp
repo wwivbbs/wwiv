@@ -96,8 +96,6 @@ int main(int argc, char** argv) {
       return 0;
     }
     
-    string network_name = cmdline.arg("network").as_string();
-    StringLowerCase(&network_name);
     int port = cmdline.arg("port").as_int();
     bool skip_net = cmdline.arg("skip_net").as_bool();
     string bbsdir = cmdline.arg("bbsdir").as_string();
@@ -113,6 +111,11 @@ int main(int argc, char** argv) {
       return 1;
     }
 
+    const string network_number = cmdline.arg("network_number").as_string();
+    const auto& net = networks[std::stoi(network_number)];
+    string network_name = net.name;
+    StringLowerCase(&network_name);
+
     int expected_remote_node = cmdline.arg("node").as_int();
     BinkConfig bink_config(network_name, config, networks);
     bink_config.set_skip_net(skip_net);
@@ -120,10 +123,10 @@ int main(int argc, char** argv) {
     BinkSide side = BinkSide::ORIGINATING;
 
     map<const string, Callout> callouts;
-    for (const auto net : bink_config.networks().networks()) {
-      string lower_case_network_name(net.name);
+    for (const auto& n : bink_config.networks().networks()) {
+      string lower_case_network_name(n.name);
       StringLowerCase(&lower_case_network_name);
-      callouts.emplace(lower_case_network_name, Callout(net.dir));
+      callouts.emplace(lower_case_network_name, Callout(n.dir));
     }
 
     if (cmdline.arg("receive").as_bool()) {
@@ -133,12 +136,6 @@ int main(int argc, char** argv) {
 
     } else if (cmdline.arg("send").as_bool()) {
       LOG(INFO) << "BinkP send to: " << expected_remote_node;
-
-      if (cmdline.arg("network").as_string().empty()) {
-        LOG(ERROR) << "--network=[network name] must be specified.";
-        ShowHelp(cmdline);
-        return 1;
-      }
 
       const BinkNodeConfig* node_config = bink_config.node_config_for(expected_remote_node);
       if (node_config == nullptr) {
