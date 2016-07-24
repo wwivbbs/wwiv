@@ -1306,7 +1306,7 @@ int WSession::Run(int argc, char *argv[]) {
         char argument2Char = wwiv::UpperCase<char>(argument.at(0));
         if (argument2Char == 'T' || argument2Char == 'S'
         		|| argument2Char == 'U') {
-          // This more of a hack to make sure the Telnet
+          // This more of a hack to make sure the WWIV
           // Server's -Bxxx parameter doesn't hose us.
           SetCurrentSpeed("115200");
 

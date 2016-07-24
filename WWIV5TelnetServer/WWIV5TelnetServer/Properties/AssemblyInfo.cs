@@ -4,12 +4,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("WWIV5 Telnet Server")]
-[assembly: AssemblyDescription("WWIV5.x Telnet Server for Windows")]
+[assembly: AssemblyTitle("WWIV5 Server")]
+[assembly: AssemblyDescription("WWIV Server for Windows")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("WWIV Software Services")]
-[assembly: AssemblyProduct("WWIV5 Telnet Server")]
-[assembly: AssemblyCopyright("Copyright © 2016 WWIV Software Services")]
+[assembly: AssemblyProduct("WWIV5 Server")]
+[assembly: AssemblyCopyright("Copyright © 2015-2016 WWIV Software Services")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
