@@ -218,13 +218,13 @@ void do_chains() {
     bout << "\r\n\n|#5Sorry, no external programs available.\r\n";
     return;
   }
-  show_chains(&mapp, map);
 
   bool done  = false;
   int start  = 0;
   char* ss = nullptr;
 
   do {
+    show_chains(&mapp, map);
     session()->tleft(true);
     bout.nl();
     bout << "|#7Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
