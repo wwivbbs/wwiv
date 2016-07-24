@@ -270,17 +270,8 @@ int main(int argc, char** argv) {
       ShowHelp(cmdline);
       return 1;
     }
-    int network_number = cmdline.arg("network_number").as_int();
-
-    string bbsdir = cmdline.arg("bbsdir").as_string();
-    Config config(bbsdir);
-    if (!config.IsInitialized()) {
-      LOG(ERROR) << "Unable to load CONFIG.DAT.";
-      return 1;
-    }
-    Networks networks(config);
-    if (!networks.IsInitialized()) {
-      LOG(ERROR) << "Unable to load networks.";
+    NetworkCommandLine net_cmdline(cmdline);
+    if (!net_cmdline.IsInitialized()) {
       return 1;
     }
 
@@ -293,7 +284,7 @@ int main(int argc, char** argv) {
       }
     }
 
-    const auto& net = networks[network_number];
+    const auto& net = net_cmdline.network();
     LOG(INFO) << "NETWORK3 for network: " << net.name;
 
     VLOG(1) << "Reading BBSLIST.NET..";
@@ -314,7 +305,7 @@ int main(int argc, char** argv) {
     VLOG(1) << "Reading CALLOUT.NET...";
     Callout callout(net.dir);
     ensure_contact_net_entries(callout, net.dir);
-    update_filechange_status_dat(config.datadir());
+    update_filechange_status_dat(net_cmdline.config().datadir());
     rename_pending_files(net.dir);
 
     if (need_to_send_feedback) {

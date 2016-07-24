@@ -195,21 +195,12 @@ int main(int argc, char** argv) {
       ShowHelp(cmdline);
       return 1;
     }
-
-    string bbsdir = cmdline.arg("bbsdir").as_string();
-    Config config(bbsdir);
-    if (!config.IsInitialized()) {
-      LOG(ERROR) << "Unable to load CONFIG.DAT.";
-      return 1;
-    }
-    Networks networks(config);
-    if (!networks.IsInitialized()) {
-      LOG(ERROR) << "Unable to load networks.";
+    NetworkCommandLine net_cmdline(cmdline);
+    if (!net_cmdline.IsInitialized()) {
       return 1;
     }
 
-    auto network_number = cmdline.arg("network_number").as_int();
-    auto net = networks[network_number];
+    const auto& net = net_cmdline.network();
     LOG(INFO) << "NETWORK1 for network: " << net.name;
 
     VLOG(1) << "Reading BBSDATA.NET..";

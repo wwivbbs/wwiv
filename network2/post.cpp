@@ -134,19 +134,19 @@ bool handle_post(Context& context, const net_header_rec& nh,
     return false;
   }
 
-  if (!context.api->Exist(basename)) {
+  if (!context.api.Exist(basename)) {
     LOG(INFO) << "WARNING Message area: '" << basename << "' does not exist.";;
     LOG(INFO) << "WARNING Attempting to create it.";
     // Since the area does not exist, let's create it automatically
     // like WWIV alwyas does.
-    unique_ptr<MessageArea> creator(context.api->Create(basename));
+    unique_ptr<MessageArea> creator(context.api.Create(basename));
     if (!creator) {
       LOG(INFO) << "    ! ERROR: Failed to create message area: " << basename << ". Exiting.";
       return false;
     }
   }
 
-  unique_ptr<MessageArea> area(context.api->Open(basename));
+  unique_ptr<MessageArea> area(context.api.Open(basename));
   if (!area) {
     LOG(INFO) << "    ! ERROR Unable to open message area: '" << basename << "'.";
     return false;

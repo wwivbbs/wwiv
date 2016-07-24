@@ -146,7 +146,7 @@ static bool send_sub_add_drop_resp(Context& context,
   net_header_rec orig,
   uint8_t main_type, uint8_t code, 
   const std::string& subtype) {
-  const string pendfile = create_pend(context.net->dir, false, 2);
+  const string pendfile = create_pend(context.net.dir, false, 2);
   net_header_rec nh = {};
   nh.daten = time_t_to_daten(time(nullptr));
   nh.fromsys = orig.tosys;
@@ -160,7 +160,7 @@ static bool send_sub_add_drop_resp(Context& context,
   text.push_back(0); // null after subtype.
   text.push_back(code);
   nh.length = text.size();  // should be subtype.size() + 2
-  return write_packet(pendfile, *context.net, nh, std::set<uint16_t>{}, text);
+  return write_packet(pendfile, context.net, nh, std::set<uint16_t>{}, text);
 }
 
 static bool IsHostedHere(Context& context, const std::string& subtype) {
@@ -186,7 +186,7 @@ bool handle_sub_add_req(Context& context, const net_header_rec& nh, const std::s
   }
   string filename = StrCat("n", subtype, ".net");
   std::set<uint16_t> subscribers;
-  if (!ReadSubcriberFile(context.net->dir, filename, subscribers)) {
+  if (!ReadSubcriberFile(context.net.dir, filename, subscribers)) {
     LOG(INFO) << "Unable to read subscribers file.";
     return resp(sub_adddrop_error);
   }
@@ -195,7 +195,7 @@ bool handle_sub_add_req(Context& context, const net_header_rec& nh, const std::s
   if (result.second == false) {
     return resp(sub_adddrop_already_there);
   }
-  if (!WriteSubcriberFile(context.net->dir, filename, subscribers)) {
+  if (!WriteSubcriberFile(context.net.dir, filename, subscribers)) {
     LOG(INFO) << "Unable to write subscribers file.";
     return resp(sub_adddrop_error);
   }
@@ -216,7 +216,7 @@ bool handle_sub_drop_req(Context& context, const net_header_rec& nh, const std::
   }
   string filename = StrCat("n", subtype, ".net");
   std::set<uint16_t> subscribers;
-  if (!ReadSubcriberFile(context.net->dir, filename, subscribers)) {
+  if (!ReadSubcriberFile(context.net.dir, filename, subscribers)) {
     LOG(INFO) << "Unable to read subscribers file.";
     return resp(sub_adddrop_error);
   }
@@ -225,7 +225,7 @@ bool handle_sub_drop_req(Context& context, const net_header_rec& nh, const std::
   if (num_removed == 0) {
     return resp(sub_adddrop_not_there);
   }
-  if (!WriteSubcriberFile(context.net->dir, filename, subscribers)) {
+  if (!WriteSubcriberFile(context.net.dir, filename, subscribers)) {
     LOG(INFO) << "Unable to write subscribers file.";
     return resp(sub_adddrop_error);
   }
@@ -273,8 +273,8 @@ bool handle_sub_add_drop_resp(Context& context, const net_header_rec& nhorig, co
   net_header_rec nh = {};
 
   string now_human = wwiv::sdk::daten_to_date(nhorig.daten);
-  string title = StringPrintf("WWIV AreaFix (%s) Response for subtype '%s'", context.net->name, now_human.c_str());
-  string byname = StringPrintf("WWIV AreaFix (%s) @%u", context.net->name, nhorig.fromsys);
+  string title = StringPrintf("WWIV AreaFix (%s) Response for subtype '%s'", context.net.name, now_human.c_str());
+  string byname = StringPrintf("WWIV AreaFix (%s) @%u", context.net.name, nhorig.fromsys);
   string body = StringPrintf("SubType '%s', (%s) Response: '%s'", subname.c_str(), add_or_drop.c_str(), code_string.c_str());
 
   nh.touser = 1;
@@ -282,8 +282,8 @@ bool handle_sub_add_drop_resp(Context& context, const net_header_rec& nhorig, co
   nh.main_type = main_type_email;
   nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
 
-  string filename = create_pend(context.net->dir, true, context.network_number);
-  return send_network(filename, *context.net, nh, {}, body, byname, title);
+  string filename = create_pend(context.net.dir, true, context.network_number);
+  return send_network(filename, context.net, nh, {}, body, byname, title);
 }
 
 }

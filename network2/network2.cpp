@@ -96,7 +96,7 @@ static bool handle_ssm(Context& context, const net_header_rec& nh, const std::st
   });
   VLOG(1) << "==============================================================";
   VLOG(1) << "  Receiving SSM for user: #" << nh.touser;
-  SSM ssm(*context.config, context.user_manager);
+  SSM ssm(context.config, context.user_manager);
   if (!ssm.send_local(nh.touser, text)) {
     LOG(ERROR) << "  ERROR writing SSM: '" << text << "'";
     return false;
@@ -167,7 +167,7 @@ static bool handle_packet(
       // This is sent to the #1 account as source verified email.
       return handle_email(context, 1, nh, text);
     } else {
-      return handle_net_info_file(*context.net, nh, text);
+      return handle_net_info_file(context.net, nh, text);
     }
   break;
   case main_type_email:
@@ -224,16 +224,16 @@ static bool handle_packet(
     // Anything undefined or anything we missed.
   default:
     LOG(ERROR) << "Writing message to dead.net for unhandled type: " << main_type_name(nh.main_type);
-    return write_packet(DEAD_NET, *context.net, nh, list, text);
+    return write_packet(DEAD_NET, context.net, nh, list, text);
   }
 
   return false;
 }
 
 static bool handle_file(Context& context, const string& name) {
-  File f(context.net->dir, name);
+  File f(context.net.dir, name);
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
-    LOG(ERROR) << "Unable to open file: " << context.net->dir << name;
+    LOG(ERROR) << "Unable to open file: " << context.net.dir << name;
     return false;
   }
 
@@ -308,21 +308,12 @@ int main(int argc, char** argv) {
       ShowHelp(cmdline);
       return 2;
     }
-    int network_number = cmdline.arg("network_number").as_int();
-
-    string bbsdir = cmdline.arg("bbsdir").as_string();
-    Config config(bbsdir);
-    if (!config.IsInitialized()) {
-      LOG(INFO) << "Unable to load CONFIG.DAT.";
-      return 3;
-    }
-    Networks networks(config);
-    if (!networks.IsInitialized()) {
-      LOG(INFO) << "Unable to load networks.";
-      return 4;
+    NetworkCommandLine net_cmdline(cmdline);
+    if (!net_cmdline.IsInitialized()) {
+      return 1;
     }
 
-    auto net = networks[network_number];
+    const auto& net = net_cmdline.network();
     LOG(INFO) << "NETWORK2 for network: " << net.name;
 
     if (!File::Exists(net.dir, LOCAL_NET)) {
@@ -330,16 +321,14 @@ int main(int argc, char** argv) {
       return 0;
     }
 
+    const auto& bbsdir = net_cmdline.bbsdir();
+    const auto& config = net_cmdline.config();
+    const auto& networks = net_cmdline.networks();
     unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(
       bbsdir, config.datadir(), config.msgsdir(), networks.networks());
     unique_ptr<UserManager> user_manager = make_unique<UserManager>(
       config.config()->datadir, config.config()->userreclen, config.config()->maxusers);
-    Context context;
-    context.config = &config;
-    context.net = &net;
-    context.user_manager = user_manager.get();
-    context.network_number = network_number;
-    context.api = api.get();
+    Context context(config, net, *user_manager.get(), *api.get());
     context.subs = std::move(read_subs(config.datadir()));
     if (!read_subs_xtr(config.datadir(), networks.networks(), context.subs, context.xsubs)) {
       LOG(ERROR) << "ERROR: Failed to read file: " << SUBS_XTR;

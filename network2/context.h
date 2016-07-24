@@ -32,11 +32,19 @@ namespace wwiv {
 namespace net {
 namespace network2 {
 
-struct Context {
-  wwiv::sdk::Config* config;
-  net_networks_rec* net;
-  wwiv::sdk::UserManager* user_manager;
-  wwiv::sdk::msgapi::WWIVMessageApi* api;
+class Context {
+public:
+  Context(
+    const wwiv::sdk::Config& c,
+    const net_networks_rec& n,
+    wwiv::sdk::UserManager& u,
+    wwiv::sdk::msgapi::WWIVMessageApi& a): config(c), net(n), user_manager(u), api(a) 
+    {}
+
+  const wwiv::sdk::Config& config;
+  const net_networks_rec& net;
+  wwiv::sdk::UserManager& user_manager;
+  wwiv::sdk::msgapi::WWIVMessageApi& api;
   int network_number;
   std::vector<subboardrec> subs;
   std::vector<wwiv::sdk::xtrasubsrec> xsubs;

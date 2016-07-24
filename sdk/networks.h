@@ -54,7 +54,7 @@ public:
   bool contains(const std::string& network_name) const;
 
 private:
-  bool initialized_;
+  bool initialized_ = false;
   std::vector<net_networks_rec> networks_;
 };
 

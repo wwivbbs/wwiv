@@ -203,6 +203,25 @@ void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string&
 }
 
 
+NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline)
+  : bbsdir_(cmdline.arg("bbsdir").as_string()),
+    config_(bbsdir_), networks_(config_) {
+  if (!config_.IsInitialized()) {
+    LOG(ERROR) << "Unable to load CONFIG.DAT.";
+    initialized_ = false;
+  }
+  if (!networks_.IsInitialized()) {
+    LOG(ERROR) << "Unable to load networks.";
+    initialized_ = false;
+  }
+  network_number_ = cmdline.arg("network_number").as_int();
+  network_name_ = networks_[network_number_].name;
+  StringLowerCase(&network_name_);
+
+  network_ = networks_.networks()[network_number_];
+}
+
+
 }  // namespace net
 }  // namespace wwiv
 

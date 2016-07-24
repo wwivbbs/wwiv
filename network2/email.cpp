@@ -92,7 +92,7 @@ bool handle_email(Context& context,
 
   {
     User user;
-    if (!context.user_manager->ReadUser(&user, to_user)) {
+    if (!context.user_manager.ReadUser(&user, to_user)) {
       // Unable to read user.
       LOG(INFO) << "ERROR: Unable to read user #" << to_user << ". Discarding message.";
       return false;
@@ -119,18 +119,18 @@ bool handle_email(Context& context,
   d.text = string(iter, text.end());
   LOG(INFO) << "  Title: '" << d.title << "'";
 
-  std::unique_ptr<WWIVEmail> email(context.api->OpenEmail());
+  std::unique_ptr<WWIVEmail> email(context.api.OpenEmail());
   bool added = email->AddMessage(d);
   if (!added) {
     LOG(INFO) << "    ! ERROR adding email message.";
     return false;
   }
   User user;
-  context.user_manager->ReadUser(&user, d.user_number);
+  context.user_manager.ReadUser(&user, d.user_number);
   int num_waiting = user.GetNumMailWaiting();
   num_waiting++;
   user.SetNumMailWaiting(num_waiting);
-  context.user_manager->WriteUser(&user, d.user_number);
+  context.user_manager.WriteUser(&user, d.user_number);
   LOG(INFO) << "    + Received Email  '" << d.title << "'";
   return true;
 }

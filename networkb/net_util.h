@@ -24,6 +24,7 @@
 
 #include "core/command_line.h"
 #include "core/file.h"
+#include "sdk/config.h"
 #include "sdk/networks.h"
 #include "sdk/net.h"
 
@@ -77,6 +78,28 @@ static std::string get_message_field(C& c, I& iter, std::set<char> stop, std::si
 
 void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string& current_directory);
 
+
+class NetworkCommandLine {
+public:
+  NetworkCommandLine(wwiv::core::CommandLine& cmdline);
+
+  bool IsInitialized() const { return initialized_; }
+  const std::string bbsdir() const { return bbsdir_; }
+  const wwiv::sdk::Config& config() const { return config_; }
+  const wwiv::sdk::Networks& networks() const { return networks_; }
+  const std::string network_name() const { return network_name_; }
+  const int network_number() const { return network_number_; }
+  const net_networks_rec& network() { return network_; }
+
+private:
+  std::string bbsdir_;
+  wwiv::sdk::Config config_;
+  wwiv::sdk::Networks networks_;
+  std::string network_name_;
+  int network_number_ = 0;
+  bool initialized_ = true;
+  net_networks_rec network_;
+};
 
 }  // namespace net
 }  // namespace wwiv
