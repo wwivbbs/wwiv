@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "bbs/events.h"
 
+#include <algorithm>
+
 #include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
 #include "bbs/bbs.h"
@@ -38,7 +40,6 @@ using wwiv::bbs::InputMode;
 
 // Local Functions
 
-int  t_now();
 char *ttc(int d);
 char *ttclastrun(int d);
 void sort_events();
@@ -51,10 +52,10 @@ void delete_event(int n);
 static eventsrec *events;
 
 
-int t_now() {
+static int16_t t_now() {
   time_t t = time(nullptr);
   struct tm * pTm = localtime(&t);
-  return (pTm->tm_hour * 60) + pTm->tm_min;
+  return static_cast<int16_t>((pTm->tm_hour * 60) + pTm->tm_min);
 }
 
 
@@ -118,7 +119,7 @@ void get_next_forced_event() {
   syscfg.executetime = 0;
   time_event = 0.0;
   int first = -1;
-  int tl = t_now();
+  int16_t tl = t_now();
   int day = dow() + 1;
   if (day == 7) {
     day = 0;
@@ -148,9 +149,8 @@ void get_next_forced_event() {
   }
 }
 
-
 void cleanup_events() {
-  if (!session()->num_events) {
+  if (session()->num_events == 0) {
     return;
   }
 
@@ -185,7 +185,7 @@ void cleanup_events() {
 void check_event() {
   int i;
 
-  int tl = t_now();
+  int16_t tl = t_now();
   for (i = 0; i < session()->num_events && !do_event; i++) {
     if (((events[i].status & EVENT_RUNTODAY) == 0) && (events[i].time <= tl) &&
         ((events[i].days & (1 << dow())) > 0) &&
@@ -209,7 +209,10 @@ void check_event() {
                ((events[i].instance == session()->instance_number()) ||
                 (events[i].instance == 0))) {
       // periodic events run after N minutes from last execution.
-      short int nextrun = ((events[i].lastrun == 0) ? events[i].time : events[i].lastrun) + events[i].period;
+      int16_t nextrun = ((events[i].lastrun == 0) ? events[i].time : events[i].lastrun) + events[i].period;
+      // The next run time should be the later of "now", or the next scheduled time.
+      // This should keep events from executing numerous times to "catch up".
+      nextrun = std::max(tl, nextrun);
       // if the next runtime is before now trigger it to run
       if (nextrun <= tl) {
         // flag the event to run
