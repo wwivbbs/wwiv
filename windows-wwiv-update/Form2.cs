@@ -67,7 +67,7 @@ namespace windows_wwiv_update
                 wwivStatus.ForeColor = System.Drawing.Color.Green;
                 wwivStatus.Text = "OFFLINE";
             }
-            if (Process.GetProcessesByName("WWIV5TelnetServer").Length >= 1)
+            if (Process.GetProcessesByName("WWIVerver").Length >= 1)
             {
                 telnetStatus.ForeColor = System.Drawing.Color.Red;
                 telnetStatus.Text = "ONLINE";
@@ -270,7 +270,7 @@ namespace windows_wwiv_update
             string wwivChanges = "http://build.wwivbbs.org/jenkins/job/wwiv/" + fetchVersion + "/label=windows/changes";
 
             // Launch WWIV Server
-            ProcessStartInfo telNet = new ProcessStartInfo("WWIV5TelnetServer.exe");
+            ProcessStartInfo telNet = new ProcessStartInfo("WWIVServer.exe");
             Process.Start(telNet);
 
             // Launch Latest Realse Changes into Default Browser

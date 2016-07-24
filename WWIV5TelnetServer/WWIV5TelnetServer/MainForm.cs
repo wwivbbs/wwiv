@@ -113,9 +113,10 @@ namespace WWIV5TelnetServer
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Get Curent WWIV5TelnetServer Version
+            // Get Curent Version
             Telnet_Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            MessageBox.Show("WWIV5TelnetServer v" + Telnet_Version + "\r\n \r\nBuilt In Microsoft Visual Studio C# | 2015", "About WWIV5TelnetServer", MessageBoxButtons.OK);
+            MessageBox.Show("WWIV Server " + Telnet_Version, 
+                "About WWIV Server", MessageBoxButtons.OK);
         }
 
         private void startToolStripMenuItem_Click(object sender, EventArgs e)
@@ -193,7 +194,7 @@ namespace WWIV5TelnetServer
                 var minorVersion2 = partsVersion[3];
                 build = partsVersion[4];
                 version = (majorVersion + "." + minorVersion + "." + minorVersion2 + "." + build);
-                currentFullVersion = "WWIV5 Telnet Server - Running WWIV: " + version;
+                currentFullVersion = "WWIV Server - Running WWIV: " + version;
 
             }
             catch
