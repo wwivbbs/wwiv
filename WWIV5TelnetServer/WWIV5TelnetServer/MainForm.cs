@@ -128,7 +128,7 @@ namespace WWIV5TelnetServer
             startToolStripMenuItem.Enabled = false;
             stopToolStripMenuItem.Enabled = true;
             preferencesToolStripMenuItem.Enabled = false;
-            notifyIcon1.Text = "WWIV Telnet Server: Active";
+            notifyIcon1.Text = "WWIV Server: Active";
         }
 
         private void stopToolStripMenuItem_Click(object sender, EventArgs e)
@@ -141,7 +141,7 @@ namespace WWIV5TelnetServer
             preferencesToolStripMenuItem.Enabled = true;
             // Clear the list of nodes in the list.
             listBoxNodes.Items.Clear();
-            notifyIcon1.Text = "WWIV Telnet Server: Offline";
+            notifyIcon1.Text = "WWIV Server: Offline";
         }
 
         private void preferencesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -164,7 +164,7 @@ namespace WWIV5TelnetServer
 
         private String FetchBbsVersion(out String version, out String build)
         {
-            string currentFullVersion = "WWIV5 Telnet Server";
+            string currentFullVersion = "WWIV Server";
             version = "5.1.0.unknown";
             build = "0";
             // Fetch Current WWIV Version And Build Number.
@@ -209,8 +209,8 @@ namespace WWIV5TelnetServer
 
         public void MainForm_Load(object sender, EventArgs e)
         {
-            notifyIcon1.Text = "WWIV Telnet Server: Offline";
-            // Launch Telnet Server on Startup
+            notifyIcon1.Text = "WWIV Server: Offline";
+            // Launch Server on Startup
             if (Properties.Settings.Default.autostart)
             {
                 Console.WriteLine("AutoStarting Server.");
@@ -277,9 +277,9 @@ namespace WWIV5TelnetServer
 
         private void MainForm_Resize(object sender, EventArgs e)
         {
-            notifyIcon1.BalloonTipTitle = "WWIV Telnet Server";
+            notifyIcon1.BalloonTipTitle = "WWIV Server";
             notifyIcon1.BalloonTipText = "Double click to reopen application.";
-            notifyIcon1.Text = "WWIV Telnet Server";
+            notifyIcon1.Text = "WWIV Server";
 
             if (FormWindowState.Minimized == this.WindowState)
             {

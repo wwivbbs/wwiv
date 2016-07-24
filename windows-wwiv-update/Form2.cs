@@ -269,7 +269,7 @@ namespace windows_wwiv_update
             fetchVersion = label2.Text;
             string wwivChanges = "http://build.wwivbbs.org/jenkins/job/wwiv/" + fetchVersion + "/label=windows/changes";
 
-            // Launch Telnet Server
+            // Launch WWIV Server
             ProcessStartInfo telNet = new ProcessStartInfo("WWIV5TelnetServer.exe");
             Process.Start(telNet);
 
