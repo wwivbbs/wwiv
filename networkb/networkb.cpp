@@ -98,26 +98,13 @@ int main(int argc, char** argv) {
     
     int port = cmdline.arg("port").as_int();
     bool skip_net = cmdline.arg("skip_net").as_bool();
-    string bbsdir = cmdline.arg("bbsdir").as_string();
+    NetworkCommandLine net_cmdline(cmdline);
 
-    Config config(bbsdir);
-    if (!config.IsInitialized()) {
-      LOG(ERROR) << "Unable to load CONFIG.DAT.";
-      return 1;
-    }
-    Networks networks(config);
-    if (!networks.IsInitialized()) {
-      LOG(ERROR) << "Unable to load networks.";
-      return 1;
-    }
-
-    const string network_number = cmdline.arg("network_number").as_string();
-    const auto& net = networks[std::stoi(network_number)];
-    string network_name = net.name;
-    StringLowerCase(&network_name);
+    const auto& net = net_cmdline.network();
+    const auto& network_name = net_cmdline.network_name();
 
     int expected_remote_node = cmdline.arg("node").as_int();
-    BinkConfig bink_config(network_name, config, networks);
+    BinkConfig bink_config(network_name, net_cmdline.config(), net_cmdline.networks());
     bink_config.set_skip_net(skip_net);
     unique_ptr<SocketConnection> c;
     BinkSide side = BinkSide::ORIGINATING;
