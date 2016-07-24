@@ -170,9 +170,8 @@ void RemoteSocketIO::close(bool temporary) {
   if (!temporary) {
     // this will stop the threads
     closesocket(socket_);
-  } else {
-    StopThreads();
   }
+  StopThreads();
 }
 
 unsigned int RemoteSocketIO::put(unsigned char ch) {
@@ -277,6 +276,10 @@ unsigned int RemoteSocketIO::write(const char *buffer, unsigned int count, bool 
 }
 
 bool RemoteSocketIO::carrier() {
+  bool carrier = valid_socket();
+  if (!carrier) {
+    std::cerr << "!carrier(); threads_started_ = " << std::boolalpha << threads_started_;
+  }
   return valid_socket();
 }
 
@@ -298,10 +301,12 @@ void RemoteSocketIO::StopThreads() {
   // Wait for read thread to exit.
   read_thread_.join();
   threads_started_ = false;
+/*
   if (socket_ != INVALID_SOCKET) {
     closesocket(socket_);
     socket_ = INVALID_SOCKET;
   }
+  */
 }
 
 void RemoteSocketIO::StartThreads() {
