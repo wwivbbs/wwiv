@@ -98,7 +98,7 @@ echo:
 echo * Copying BBS files to staging directory.
 copy /v/y %WORKSPACE%\Release\cl32.dll %STAGE_DIR%\cl32.dll || exit /b
 copy /v/y %WORKSPACE%\Release\bbs.exe %STAGE_DIR%\bbs.exe || exit /b
-copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\Release\WWIV5TelnetServer.exe %STAGE_DIR%\WWIV5TelnetServer.exe || exit /b
+copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\Release\WWIVServer.exe %STAGE_DIR%\WWIVServer.exe || exit /b
 copy /v/y %WORKSPACE%\windows-wwiv-update\bin\Release\wwiv-update.exe %STAGE_DIR%\wwiv-update.exe || exit /b
 copy /v/y %WORKSPACE%\Release\init.exe %STAGE_DIR%\init.exe || exit /b
 copy /v/y %WORKSPACE%\Release\network.exe %STAGE_DIR%\network.exe || exit /b

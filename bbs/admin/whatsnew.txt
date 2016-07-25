@@ -28,6 +28,12 @@ What's New in WWIV 5.1 (2016)
 * UNIX Local IO is now curses based. Win32 can optionally use curses
   for local IO by defining WWIV_WIN32_CURSES_IO.
 * Removed "-w" argument to BBS since there is now just 1 WFC (again).
+* Removed the --network=[net name] option from networkb.exe, now please
+  use --network_number=N (where N is like you would use with network1 .N)
+* Created alpha-quality network{1,2,3} replacements.  Please feel free to
+  try them out. They will eventually become net51 and replace the DOS based
+  net38.
+* Renamed WWIV5TelnetServer to WWIVServer, since it also does SSH too.
 
 What's New in WWIV 5.1 (2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

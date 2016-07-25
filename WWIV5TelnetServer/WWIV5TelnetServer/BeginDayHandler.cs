@@ -67,7 +67,10 @@ namespace WWIV5TelnetServer
 
             Launcher launcher = new Launcher(executable, homeDirectory, argumentsTemplate, logger);
             Process p = launcher.launchBeginDayEvent(Convert.ToInt32(Properties.Settings.Default.localNode));
-            p.WaitForExit();
+            if (p != null)
+            {
+                p.WaitForExit();
+            }
         }
 
         private void DoUpdateCheck(object source, ElapsedEventArgs e)

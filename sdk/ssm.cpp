@@ -38,7 +38,7 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace sdk {
 
-SSM::SSM(wwiv::sdk::Config& config, wwiv::sdk::UserManager* user_manager)
+SSM::SSM(const wwiv::sdk::Config& config, wwiv::sdk::UserManager& user_manager)
   : data_directory_(config.datadir()), user_manager_(user_manager) {
 
 }
@@ -73,7 +73,7 @@ bool SSM::send_remote(const net_networks_rec& net, uint16_t system_number, uint3
 
 bool SSM::send_local(uint32_t user_number, const std::string& text) {
   User user;
-  user_manager_->ReadUser(&user, user_number);
+  user_manager_.ReadUser(&user, user_number);
   if (user.IsUserDeleted()) {
     return false;
   }
@@ -106,7 +106,7 @@ bool SSM::send_local(uint32_t user_number, const std::string& text) {
   file.Write(&sm, sizeof(shortmsgrec));
   file.Close();
   user.SetStatusFlag(User::SMW);
-  user_manager_->WriteUser(&user, user_number);
+  user_manager_.WriteUser(&user, user_number);
   return true;
 }
 

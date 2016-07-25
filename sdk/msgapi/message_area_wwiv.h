@@ -41,11 +41,11 @@ public:
   WWIVMessageAreaHeader(uint16_t wwiv_num_version, uint32_t active_message_count);
 
   const subfile_header_t& header() const { return header_; }
-  uint32_t active_message_count() const { return header_.active_message_count; }
-  void set_active_message_count(uint32_t active_message_count) {
+  uint16_t active_message_count() const { return header_.active_message_count; }
+  void set_active_message_count(uint16_t active_message_count) {
     header_.active_message_count = active_message_count;
   }
-  uint32_t increment_active_message_count() { return ++header_.active_message_count; }
+  uint16_t increment_active_message_count() { return ++header_.active_message_count; }
   bool initialized() const { return initialized_; }
   void set_initialized(bool initialized) { initialized_ = initialized; }
 
@@ -83,6 +83,7 @@ private:
   bool add_post(const postrec& post);
   bool ParseMessageText(
     const postrec& header,
+    int message_number,
     std::string& from_username, 
     std::string& date, 
     std::string& to, 
@@ -91,7 +92,6 @@ private:
 
   const std::string sub_filename_;
   bool open_ = false;
-  int last_num_messages_ = 0;
 
   static constexpr uint8_t STORAGE_TYPE = 2;
 };

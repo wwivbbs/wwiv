@@ -64,14 +64,14 @@ static bool checkFileSize(File &file, unsigned long len) {
   unsigned long actual = file.GetLength();
   file.Close();
   if (actual < len) {
-    LOG << file.full_pathname() << " too short (" << actual << "<"
+    LOG(INFO) << file.full_pathname() << " too short (" << actual << "<"
       << len << ").";
     return false;
   }
   if (actual > len) {
-    LOG << file.full_pathname() << " too long (" << actual << ">"
+    LOG(INFO) << file.full_pathname() << " too long (" << actual << ">"
       << len << ").";
-    LOG << "Attempting to continue.";
+    LOG(INFO) << "Attempting to continue.";
   }
   return true;
 }
@@ -89,8 +89,8 @@ static bool initStatusDat(const std::string& datadir) {
   bool update = false;
   File statusDat(datadir, STATUS_DAT);
   if (!statusDat.Exists()) {
-    LOG << statusDat.full_pathname() << " NOT FOUND!";
-    LOG << "Recreating " << statusDat.full_pathname() ;
+    LOG(INFO) << statusDat.full_pathname() << " NOT FOUND!";
+    LOG(INFO) << "Recreating " << statusDat.full_pathname() ;
     memset(&status, 0, sizeof(statusrec));
     strcpy(status.date1, "00/00/00");
     strcpy(status.date2, status.date1);
@@ -103,9 +103,9 @@ static bool initStatusDat(const std::string& datadir) {
     update = true;
   } else {
     checkFileSize(statusDat, sizeof(statusrec));
-    LOG << "Reading " << statusDat.full_pathname() << "...";
+    LOG(INFO) << "Reading " << statusDat.full_pathname() << "...";
     if (!statusDat.Open(nFileMode)) {
-      LOG << statusDat.full_pathname() << " NOT FOUND.";
+      LOG(INFO) << statusDat.full_pathname() << " NOT FOUND.";
       return false;
     }
     statusDat.Read(&status, sizeof(statusrec));
@@ -113,7 +113,7 @@ static bool initStatusDat(const std::string& datadir) {
 
     // version check
     if (status.wwiv_version > wwiv_num_version) {
-      LOG << "Incorrect version of fix (this is for "
+      LOG(INFO) << "Incorrect version of fix (this is for "
            << wwiv_num_version << ", you need " << status.wwiv_version << ")";
     }
 
@@ -122,7 +122,7 @@ static bool initStatusDat(const std::string& datadir) {
     if (strcmp(status.date1, curDate)) {
       strcpy(status.date1, curDate);
       update = true;
-      LOG << "Date error in STATUS.DAT (status.date1) corrected";
+      LOG(INFO) << "Date error in STATUS.DAT (status.date1) corrected";
     }
 
     val -= 86400L;
@@ -130,14 +130,14 @@ static bool initStatusDat(const std::string& datadir) {
     if (strcmp(status.date2, curDate)) {
       strcpy(status.date2, curDate);
       update = true;
-      LOG << "Date error in STATUS.DAT (status.date2) corrected";
+      LOG(INFO) << "Date error in STATUS.DAT (status.date2) corrected";
     }
     char logFile[512];
     snprintf(logFile, sizeof(logFile), "%s.log", dateFromTimeTForLog(val));
     if (strcmp(status.log1, logFile)) {
       strcpy(status.log1, logFile);
       update = true;
-      LOG << "Log filename error in STATUS.DAT (status.log1) corrected";
+      LOG(INFO) << "Log filename error in STATUS.DAT (status.log1) corrected";
     }
 
     val -= 86400L;
@@ -145,13 +145,13 @@ static bool initStatusDat(const std::string& datadir) {
     if (strcmp(status.date3, curDate)) {
       strcpy(status.date3, curDate);
       update = true;
-      LOG << "Date error in STATUS.DAT (status.date3) corrected";
+      LOG(INFO) << "Date error in STATUS.DAT (status.date3) corrected";
     }
     snprintf(logFile, sizeof(logFile), "%s.log", dateFromTimeTForLog(val));
     if (strcmp(status.log2, logFile)) {
       strcpy(status.log2, logFile);
       update = true;
-      LOG << "Log filename error in STATUS.DAT (status.log2) corrected";
+      LOG(INFO) << "Log filename error in STATUS.DAT (status.log2) corrected";
     }
   }
   if (update) {
@@ -176,26 +176,26 @@ std::string FixUsersCommand::GetUsage() const {
 }
 
 int FixUsersCommand::Execute() {
-  LOG << "Runnning FixUsersCommand::Execute";
+  LOG(INFO) << "Runnning FixUsersCommand::Execute";
 
   initStatusDat(config()->config()->datadir());
   File userFile(config()->config()->datadir(), USER_LST);
 	if (!userFile.Exists()) {
-    LOG << userFile.full_pathname() << " does not exist.";
+    LOG(ERROR) << userFile.full_pathname() << " does not exist.";
     return 1;
 	}
 
 	UserManager userMgr(config()->config()->datadir(), sizeof(userrec), 
       config()->config()->config()->maxusers);
-  LOG << "Checking USER.LST... found " << userMgr.GetNumberOfUserRecords() << " user records.";
-  LOG << "TBD: Check for trashed user recs.";
+  LOG(INFO) << "Checking USER.LST... found " << userMgr.GetNumberOfUserRecords() << " user records.";
+  LOG(INFO) << "TBD: Check for trashed user recs.";
 	if (userMgr.GetNumberOfUserRecords() > config()->config()->config()->maxusers) {
-    LOG << "Might be too many.";
+    LOG(INFO) << "Might be too many.";
     if (!arg("exp").as_bool()) {
       return 1;
     }
 	} else {
-    LOG << "Reasonable number.";
+    LOG(INFO) << "Reasonable number.";
 	}
 
 	std::vector<smalrec> smallrecords;
@@ -216,10 +216,10 @@ int FixUsersCommand::Execute() {
 				smallrecords.push_back(sr);
 				names.insert(namestring);
         if (arg("verbose").as_bool()) {
-          LOG << "Keeping user: " << sr.name << " #" << sr.number ;
+          LOG(INFO) << "Keeping user: " << sr.name << " #" << sr.number ;
         }
 			} else {
-				LOG << "[skipping duplicate user: " << namestring << " #" << sr.number << "]";
+				LOG(INFO) << "[skipping duplicate user: " << namestring << " #" << sr.number << "]";
 			}
 		}
 	};
@@ -237,10 +237,10 @@ int FixUsersCommand::Execute() {
 	});
 
 	printf("size=%lu %lu\n", smallrecords.size(), sizeof(smalrec) * smallrecords.size());
-  LOG << "Checking NAMES.LST";
+  LOG(INFO) << "Checking NAMES.LST";
 	File nameFile(config()->config()->datadir(), NAMES_LST);
 	if (!nameFile.Exists()) {
-    LOG << nameFile.full_pathname() << " does not exist, regenerating with "
+    LOG(INFO) << nameFile.full_pathname() << " does not exist, regenerating with "
          << smallrecords.size() << " names";
 		nameFile.Open(File::modeCreateFile | File::modeBinary | File::modeWriteOnly);
 		nameFile.Write(&smallrecords[0], sizeof(smalrec) * smallrecords.size());
@@ -251,9 +251,9 @@ int FixUsersCommand::Execute() {
       uint16_t recs = static_cast<uint16_t>(size / sizeof(smalrec));
 			if (recs != status.users) {
 				status.users = recs;
-        LOG << "STATUS.DAT contained an incorrect user count.";
+        LOG(INFO) << "STATUS.DAT contained an incorrect user count.";
 			} else {
-        LOG << "STATUS.DAT matches expected user count of " << status.users << " users.";
+        LOG(INFO) << "STATUS.DAT matches expected user count of " << status.users << " users.";
 			}
 		}
 		nameFile.Close();

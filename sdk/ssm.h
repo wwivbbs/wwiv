@@ -32,14 +32,14 @@ namespace sdk {
 
 class SSM {
 public:
-  SSM(wwiv::sdk::Config& config, wwiv::sdk::UserManager* user_manager);
+  SSM(const wwiv::sdk::Config& config, wwiv::sdk::UserManager& user_manager);
   virtual ~SSM();
 
   bool send_local(uint32_t user_number, const std::string& text);
   bool send_remote(const net_networks_rec& net, uint16_t system_number, uint32_t from_user_number, uint32_t user_number, const std::string& text);
 private:
   const std::string data_directory_;
-  wwiv::sdk::UserManager* user_manager_;
+  wwiv::sdk::UserManager& user_manager_;
 };
 
 

@@ -254,6 +254,7 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
 	const string& msgs_dir,
   const std::vector<net_networks_rec>& net_networks,
   int start, int end, bool all) {
+
   // TODO(rushfan): Create the right API type for the right message area.
   unique_ptr<MessageApi> api(new WWIVMessageApi(config()->bbsdir(),
       subs_dir, msgs_dir, net_networks));
@@ -293,6 +294,10 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
       cout << "[PRIVATE]";
     }
     cout << endl;
+    if (header->is_deleted()) {
+      // Don't try to read the text of deleted messages.
+      continue;
+    }
     unique_ptr<MessageText> text(area->ReadMessageText(current));
     if (!text) {
       continue;

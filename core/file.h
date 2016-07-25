@@ -60,6 +60,7 @@ class File {
   static const int modeText;
   static const int modeWriteOnly;
   static const int modeTruncate;
+  static const int modeExclusive;
 
   static const int shareUnknown;
   static const int shareDenyReadWrite;

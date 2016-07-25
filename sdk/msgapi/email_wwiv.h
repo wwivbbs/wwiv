@@ -65,7 +65,6 @@ private:
   bool add_email(const mailrec& m);
   const std::string data_filename_;
   bool open_ = false;
-  int last_num_messages_ = 0;
   const int max_net_num_;
 
   static constexpr uint8_t STORAGE_TYPE = 2;

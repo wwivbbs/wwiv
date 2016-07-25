@@ -38,7 +38,7 @@ const int Networks::npos;  // reserve space.
 
 Networks::Networks(const Config& config) {
   if (!config.IsInitialized()) {
-    throw std::invalid_argument("config must be initialized");
+    return;
   }
 
   DataFile<net_networks_rec_disk> file(config.datadir(), NETWORKS_DAT, File::modeBinary|File::modeReadOnly, File::shareDenyNone);

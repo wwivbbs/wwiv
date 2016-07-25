@@ -24,6 +24,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -67,6 +68,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::os;
 
+
 static void ShowHelp(CommandLine& cmdline) {
   cout << cmdline.GetHelp()
        << ".####      Network number (as defined in INIT)" << endl
@@ -74,15 +76,30 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
+static uint16_t get_forsys( const BbsListNet& b, uint16_t node) {
+  auto n = b.node_config_for(node);
+  if (node == 0) {
+    return 0;
+  }
+  if (n == nullptr || n->forsys == 65535) {
+    return 65535;
+  }
+  return n->forsys;
+}
+
 static string CreateNetworkFileName(const net_networks_rec& net, uint16_t node) {
-  if (node == net.sysnum) {
+  if (node == net.sysnum || node == 0) {
     // Messages to us to into local.net.
     return LOCAL_NET;
+  } else if (node == 65535) {
+    return DEAD_NET;
+  } else {
+    return StringPrintf("s%u.net", node);
   }
-  return StringPrintf("s%u.net", node);
 }
 
 static bool handle_packet(
+  const BbsListNet& b,
   const net_networks_rec& net,
   const net_header_rec& nh, const std::vector<uint16_t>& list, const string& text) {
 
@@ -91,22 +108,41 @@ static bool handle_packet(
     return write_packet(LOCAL_NET, net, nh, list, text);
   } else if (list.empty()) {
     // Network packet, single destination
-    const string filename = StringPrintf("s%u.net", nh.tosys);
-    return write_packet(CreateNetworkFileName(net, nh.tosys), net, nh, list, text);
+    return write_packet(CreateNetworkFileName(net, get_forsys(b, nh.tosys)), net, nh, list, text);
   } else {
-    for (const auto& node : list) {
-      return write_packet(CreateNetworkFileName(net, node), net, nh, list, text);
-    }
     // Network packet, multiple destinations.
+    std::map<uint16_t, std::set<uint16_t>> forsys_to_all;
+    for (const auto& node : list) {
+      uint16_t forsys = get_forsys(b, node);
+      forsys_to_all[forsys].insert(node);
+    }
+
+    bool result = true;
+    for (const auto& fa : forsys_to_all) {
+      const auto forsys = fa.first;
+      auto forsys_list = fa.second;
+      net_header_rec mutable_nh = nh;
+      mutable_nh.list_len = static_cast<uint16_t>(forsys_list.size());
+      if (forsys_list.size() == 1) {
+        // If we only have 1, move it out of list into tosys.
+        mutable_nh.tosys = *forsys_list.begin();
+        mutable_nh.list_len = 0;
+        forsys_list.clear();
+      }
+      if (!write_packet(CreateNetworkFileName(net, forsys), net, mutable_nh, forsys_list, text)) {
+        result = false;
+      }
+    }
+    return result;
   }
 
   return false;
 }
 
-static bool handle_file(const net_networks_rec& net, const string& name) {
+static bool handle_file(const BbsListNet& b, const net_networks_rec& net, const string& name) {
   File f(net.dir, name);
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
-    LOG << "Unable to open file: " << net.dir << name;
+    LOG(INFO) << "Unable to open file: " << net.dir << name;
     return false;
   }
 
@@ -121,12 +157,12 @@ static bool handle_file(const net_networks_rec& net, const string& name) {
       return true;
     }
     if (num_read != sizeof(net_header_rec)) {
-      LOG << "error reading header, got short read of size: " << num_read
+      LOG(INFO) << "error reading header, got short read of size: " << num_read
           << "; expected: " << sizeof(net_header_rec);
       return false;
     }
     if (nh.method > 0) {
-      LOG << "compression: de" << nh.method;
+      LOG(INFO) << "compression: de" << nh.method;
     }
 
     if (nh.list_len > 0) {
@@ -138,61 +174,39 @@ static bool handle_file(const net_networks_rec& net, const string& name) {
       text.resize(nh.length);
       f.Read(&text[0], nh.length);
     }
-    if (!handle_packet(net, nh, list, text)) {
-      LOG << "error handing packet: type: " << nh.main_type;
+    if (!handle_packet(b, net, nh, list, text)) {
+      LOG(INFO) << "error handing packet: type: " << nh.main_type;
     }
   }
   return true;
 }
 
+INITIALIZE_EASYLOGGINGPP
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
   try {
     ScopeExit at_exit(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "network_number");
     cmdline.set_no_args_allowed(true);
-    cmdline.add_argument({"network", "Network name to use (i.e. wwivnet).", ""});
-    cmdline.add_argument({"network_number", "Network number to use (i.e. 0).", "0"});
-    cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", File::current_directory()});
-    cmdline.add_argument(BooleanCommandLineArgument("help", '?', "displays help.", false));
-    cmdline.add_argument(BooleanCommandLineArgument("feedback", 'y', "Sends feedback.", false));
+    cmdline.AddStandardArgs();
+    AddStandardNetworkArgs(cmdline, File::current_directory());
 
     if (!cmdline.Parse() || cmdline.arg("help").as_bool()) {
       ShowHelp(cmdline);
       return 1;
     }
-    string network_name = cmdline.arg("network").as_string();
-    string network_number = cmdline.arg("network_number").as_string();
-    if (network_name.empty() && network_number.empty()) {
-      LOG << "--network=[network name] or .[network_number] must be specified.";
-      ShowHelp(cmdline);
+    NetworkCommandLine net_cmdline(cmdline);
+    if (!net_cmdline.IsInitialized()) {
       return 1;
     }
 
-    string bbsdir = cmdline.arg("bbsdir").as_string();
-    Config config(bbsdir);
-    if (!config.IsInitialized()) {
-      LOG << "Unable to load CONFIG.DAT.";
-      return 1;
-    }
-    Networks networks(config);
-    if (!networks.IsInitialized()) {
-      LOG << "Unable to load networks.";
-      return 1;
-    }
+    const auto& net = net_cmdline.network();
+    LOG(INFO) << "NETWORK1 for network: " << net.name;
 
-    if (!network_number.empty() && network_name.empty()) {
-      // Need to set the network name based on the number.
-      network_name = networks[std::stoi(network_number)].name;
-    }
-
-    LOG << "NETWORK1 for network: " << network_name;
-    auto net = networks[network_name];
-
-    LOG << "Reading BBSDATA.NET..";
+    VLOG(1) << "Reading BBSDATA.NET..";
     BbsListNet b = BbsListNet::ReadBbsDataNet(net.dir);
     if (b.empty()) {
-      LOG << "ERROR: Unable to read BBSDATA.NET.";
+      LOG(ERROR) << "ERROR: Unable to read BBSDATA.NET.";
       return 1;
     }
 
@@ -200,9 +214,9 @@ int main(int argc, char** argv) {
     bool has_next = s_files.open(StrCat(net.dir, "p*.net"), WFINDFILE_FILES);
     while (has_next) {
       const string name = s_files.GetFileName();
-      LOG << "Processing: " << net.dir << name;
-      if (handle_file(net, name)) {
-        LOG << "Deleting: " << net.dir << name;
+      LOG(INFO) << "Processing: " << net.dir << name;
+      if (handle_file(b, net, name)) {
+        LOG(INFO) << "Deleting: " << net.dir << name;
         File::Remove(net.dir, name);
       }
       has_next = s_files.next();
@@ -210,7 +224,7 @@ int main(int argc, char** argv) {
 
     return 0;
   } catch (const std::exception& e) {
-    LOG << "ERROR: [network]: " << e.what();
+    LOG(ERROR) << "ERROR: [network]: " << e.what();
   }
   return 2;
 }

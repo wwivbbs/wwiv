@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV Version 5.x                              */
-/*             Copyright (C)2015-2016 WWIV Software Services              */
+/*              Copyright (C)2016 WWIV Software Services                  */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,14 +15,32 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include <cstdio>
-#include "core/log.h"
-#include "gtest/gtest.h"
+#ifndef __INCLUDED_NETWORK2_SUBS_H__
+#define __INCLUDED_NETWORK2_SUBS_H__
 
-INITIALIZE_EASYLOGGINGPP
+#include <set>
+#include "network2/context.h"
+#include "sdk/networks.h"
+#include "sdk/net.h"
+#include "sdk/subxtr.h"
+#include "sdk/usermanager.h"
+#include "sdk/vardec.h"
+#include "sdk/msgapi/msgapi.h"
+#include "sdk/msgapi/message_api_wwiv.h"
 
-int main(int argc, char* argv[]) {
-  testing::InitGoogleTest(&argc, argv);
-  wwiv::core::Logger::Init(argc, argv);
-  return RUN_ALL_TESTS();
-} 
+namespace wwiv {
+namespace net {
+namespace network2 {
+
+bool ReadSubcriberFile(const std::string& dir, const std::string& filename, std::set<uint16_t>& subscribers);
+bool WriteSubcriberFile(const std::string& dir, const std::string& filename, const std::set<uint16_t>& subscribers);
+bool handle_sub_add_req(Context& context, const net_header_rec& nh, const std::string& text);
+bool handle_sub_drop_req(Context& context, const net_header_rec& nh, const std::string& text);
+bool handle_sub_add_drop_resp(Context& context, const net_header_rec& nh, const std::string& add_or_drop, const std::string& text);
+
+
+}  // namespace network2
+}  // namespace net
+}  // namespace wwiv
+
+#endif  // __INCLUDED_NETWORK2_SUBS_H__

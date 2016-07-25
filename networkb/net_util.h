@@ -21,13 +21,23 @@
 #include <set>
 #include <string>
 #include <vector>
+
+#include "core/command_line.h"
+#include "core/file.h"
+#include "sdk/config.h"
 #include "sdk/networks.h"
 #include "sdk/net.h"
 
 namespace wwiv {
 namespace net {
 
-void rename_pend(const std::string& directory, const std::string& filename);
+void rename_pend(const std::string& directory, const std::string& filename, uint8_t network_app_num);
+std::string create_pend(const std::string& directory, bool local, uint8_t network_app_num);
+
+bool write_packet(
+  const std::string& filename,
+  const net_networks_rec& net,
+  const net_header_rec& nh, const std::set<uint16_t>& list, const std::string& text);
 
 bool write_packet(
   const std::string& filename,
@@ -57,16 +67,39 @@ static std::string get_message_field(C& c, I& iter, std::set<char> stop, std::si
   std::string result(begin, iter);
 
   // Stop over stop chars
-  while (stop.find(*iter) != std::end(stop)
-    && iter != std::end(c)) {
+  while (iter != c.end()
+    && stop.find(*iter) != std::end(stop)) {
+    int i = 0;
     iter++;
   }
 
   return result;
 }
 
+void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string& current_directory);
 
 
+class NetworkCommandLine {
+public:
+  NetworkCommandLine(wwiv::core::CommandLine& cmdline);
+
+  bool IsInitialized() const { return initialized_; }
+  const std::string bbsdir() const { return bbsdir_; }
+  const wwiv::sdk::Config& config() const { return config_; }
+  const wwiv::sdk::Networks& networks() const { return networks_; }
+  const std::string network_name() const { return network_name_; }
+  const int network_number() const { return network_number_; }
+  const net_networks_rec& network() { return network_; }
+
+private:
+  std::string bbsdir_;
+  wwiv::sdk::Config config_;
+  wwiv::sdk::Networks networks_;
+  std::string network_name_;
+  int network_number_ = 0;
+  bool initialized_ = true;
+  net_networks_rec network_;
+};
 
 }  // namespace net
 }  // namespace wwiv

@@ -441,7 +441,7 @@
             this.autostartCheckBox.Name = "autostartCheckBox";
             this.autostartCheckBox.Size = new System.Drawing.Size(186, 17);
             this.autostartCheckBox.TabIndex = 0;
-            this.autostartCheckBox.Text = "Automatically Start Telnet Server?";
+            this.autostartCheckBox.Text = "Automatically Start Socket Servers?";
             this.autostartCheckBox.UseVisualStyleBackColor = true;
             // 
             // loggingTab

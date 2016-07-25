@@ -91,6 +91,7 @@ const int File::modeReadWrite      = O_RDWR;
 const int File::modeText           = O_TEXT;
 const int File::modeWriteOnly      = O_WRONLY;
 const int File::modeTruncate       = O_TRUNC;
+const int File::modeExclusive      = O_EXCL;
 
 const int File::modeUnknown        = -1;
 const int File::shareUnknown       = -1;

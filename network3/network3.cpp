@@ -102,7 +102,7 @@ static bool send_feedback(
 
   std::ostringstream text;
   text << "\r\n";
-  TextFile feedback_hdr(net.dir, "FBACKHDR.NET", "rt");
+  TextFile feedback_hdr(net.dir, "fbackhdr.net", "rt");
   if (feedback_hdr.IsOpen()) {
     string line;
     while (feedback_hdr.ReadLine(&line)) {
@@ -185,13 +185,13 @@ void update_timestamps(const string& dir) {
 void write_bbsdata_files(const BbsListNet& b, const vector<net_system_list_rec>& bbsdata_data,
   const string& dir) {
   {
-    LOG << "Writing BBSDATA.NET...";
+    LOG(INFO) << "Writing BBSDATA.NET...";
     DataFile<net_system_list_rec> bbsdata_net_file(dir, BBSDATA_NET, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
     bbsdata_net_file.WriteVector(bbsdata_data);
    }
   update_timestamps(dir);
   {
-    LOG << "Writing BBSDATA.IND...";
+    LOG(INFO) << "Writing BBSDATA.IND...";
     vector<uint16_t> bbsdata_ind_data;
     for (const auto& n : bbsdata_data) {
       bbsdata_ind_data.push_back((n.forsys == 65535) ? 0 : n.sysnum);
@@ -200,7 +200,7 @@ void write_bbsdata_files(const BbsListNet& b, const vector<net_system_list_rec>&
     bbsdata_ind_file.WriteVector(bbsdata_ind_data);
   }
   {
-    LOG << "Writing BBSDATA.ROU...";
+    LOG(INFO) << "Writing BBSDATA.ROU...";
     vector<uint16_t> bbsdata_rou_data;
     for (const auto& n : bbsdata_data) {
       bbsdata_rou_data.push_back(n.forsys);
@@ -209,7 +209,7 @@ void write_bbsdata_files(const BbsListNet& b, const vector<net_system_list_rec>&
     bbsdata_rou_file.WriteVector(bbsdata_rou_data);
   }
   {
-    LOG << "Writing BBSDATA.REG...";
+    LOG(INFO) << "Writing BBSDATA.REG...";
     vector<int32_t> bbsdata_reg_data;
     const auto& reg = b.reg_number();
     for (const auto& entry : b.node_config()) {
@@ -234,14 +234,14 @@ static void update_filechange_status_dat(const string& datadir) {
 static void rename_pending_files(const string& dir) {
   File dead_net_file(dir, DEAD_NET);
   if (dead_net_file.Exists()) {
-    rename_pend(dir, DEAD_NET);
+    rename_pend(dir, DEAD_NET, 3);
   }
 
   WFindFile s_files;
   bool has_next = s_files.open(StrCat(dir, "s*.net"), WFINDFILE_FILES);
   while (has_next) {
     const string name = s_files.GetFileName();
-    rename_pend(dir, name);
+    rename_pend(dir, name, 3);
     has_next = s_files.next();
   }
 }
@@ -254,46 +254,27 @@ static void ensure_contact_net_entries(const Callout& callout, const string& dir
   }
 }
 
+INITIALIZE_EASYLOGGINGPP
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
   try {
     ScopeExit at_exit(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "network_number");
     cmdline.set_no_args_allowed(true);
-    cmdline.add_argument({"network", "Network name to use (i.e. wwivnet).", ""});
-    cmdline.add_argument({"network_number", "Network number to use (i.e. 0).", "0"});
-    cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", File::current_directory()});
-    cmdline.add_argument(BooleanCommandLineArgument("help", '?', "displays help.", false));
+    cmdline.AddStandardArgs();
+    AddStandardNetworkArgs(cmdline, File::current_directory());
+
     cmdline.add_argument(BooleanCommandLineArgument("feedback", 'y', "Sends feedback.", false));
 
     if (!cmdline.Parse() || cmdline.arg("help").as_bool()) {
       ShowHelp(cmdline);
       return 1;
     }
-    string network_name = cmdline.arg("network").as_string();
-    string network_number = cmdline.arg("network_number").as_string();
-    if (network_name.empty() && network_number.empty()) {
-      LOG << "--network=[network name] or .[network_number] must be specified.";
-      ShowHelp(cmdline);
+    NetworkCommandLine net_cmdline(cmdline);
+    if (!net_cmdline.IsInitialized()) {
       return 1;
     }
 
-    string bbsdir = cmdline.arg("bbsdir").as_string();
-    Config config(bbsdir);
-    if (!config.IsInitialized()) {
-      LOG << "Unable to load CONFIG.DAT.";
-      return 1;
-    }
-    Networks networks(config);
-    if (!networks.IsInitialized()) {
-      LOG << "Unable to load networks.";
-      return 1;
-    }
-
-    if (!network_number.empty() && network_name.empty()) {
-      // Need to set the network name based on the number.
-      network_name = networks[std::stoi(network_number)].name;
-    }
     bool need_to_send_feedback = cmdline.barg("feedback");
     if (!need_to_send_feedback) {
       for (const auto& s : cmdline.remaining()) {
@@ -303,13 +284,13 @@ int main(int argc, char** argv) {
       }
     }
 
-    LOG << "NETWORK3 for network: " << network_name;
-    auto net = networks[network_name];
+    const auto& net = net_cmdline.network();
+    LOG(INFO) << "NETWORK3 for network: " << net.name;
 
-    LOG << "Reading BBSLIST.NET..";
+    VLOG(1) << "Reading BBSLIST.NET..";
     BbsListNet b = BbsListNet::ParseBbsListNet(net.sysnum, net.dir);
     if (b.empty()) {
-      LOG << "ERROR: bbslist.net didn't parse.";
+      LOG(ERROR) << "ERROR: bbslist.net didn't parse.";
       return 1;
     }
 
@@ -321,17 +302,17 @@ int main(int argc, char** argv) {
 
     write_bbsdata_files(b, bbsdata_data, net.dir);
 
-    LOG << "Reading CALLOUT.NET...";
+    VLOG(1) << "Reading CALLOUT.NET...";
     Callout callout(net.dir);
     ensure_contact_net_entries(callout, net.dir);
-    update_filechange_status_dat(config.datadir());
+    update_filechange_status_dat(net_cmdline.config().datadir());
     rename_pending_files(net.dir);
 
     if (need_to_send_feedback) {
-      LOG << "Sending Feedback.";
-      send_feedback(b, callout, networks[network_name], bbsdata_data);
+      LOG(INFO) << "Sending Feedback.";
+      send_feedback(b, callout, net, bbsdata_data);
     }
   } catch (const std::exception& e) {
-    LOG << "ERROR: [network]: " << e.what();
+    LOG(ERROR) << "ERROR: [network]: " << e.what();
   }
 }
