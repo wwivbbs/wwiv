@@ -330,6 +330,7 @@ int main(int argc, char** argv) {
       config.config()->datadir, config.config()->userreclen, config.config()->maxusers);
     Context context(config, net, *user_manager.get(), *api.get());
     context.subs = std::move(read_subs(config.datadir()));
+    context.network_number = net_cmdline.network_number();
     if (!read_subs_xtr(config.datadir(), networks.networks(), context.subs, context.xsubs)) {
       LOG(ERROR) << "ERROR: Failed to read file: " << SUBS_XTR;
       return 5;

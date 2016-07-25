@@ -45,7 +45,7 @@ public:
   const net_networks_rec& net;
   wwiv::sdk::UserManager& user_manager;
   wwiv::sdk::msgapi::WWIVMessageApi& api;
-  int network_number;
+  int network_number = 0;
   std::vector<subboardrec> subs;
   std::vector<wwiv::sdk::xtrasubsrec> xsubs;
   bool verbose = false;
