@@ -83,7 +83,8 @@ namespace net {
 namespace network2 {
 
 bool handle_email(Context& context,
-  uint16_t to_user, const net_header_rec& nh, const string& text) {
+  uint16_t to_user, const net_header_rec& nh, 
+  std::vector<uint16_t>& list, const string& text) {
   LOG(INFO) << "==============================================================";
   ScopeExit at_exit([] {
     LOG(INFO) << "==============================================================";
@@ -122,8 +123,8 @@ bool handle_email(Context& context,
   std::unique_ptr<WWIVEmail> email(context.api.OpenEmail());
   bool added = email->AddMessage(d);
   if (!added) {
-    LOG(INFO) << "    ! ERROR adding email message.";
-    return false;
+    LOG(ERROR) << "    ! ERROR adding email message; writing to dead.net";
+    return write_packet(DEAD_NET, context.net, nh, list, text);
   }
   User user;
   context.user_manager.ReadUser(&user, d.user_number);

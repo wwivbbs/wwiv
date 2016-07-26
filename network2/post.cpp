@@ -130,26 +130,26 @@ bool handle_post(Context& context, const net_header_rec& nh,
 
   string basename;
   if (!find_basename(context, subtype, basename)) {
-    LOG(INFO) << "    ! ERROR: Unable to find subtype of subtype: " << subtype;
-    return false;
+    LOG(INFO) << "    ! ERROR: Unable to find subtype of subtype: " << subtype << "; writing to dead.net.";
+    return write_packet(DEAD_NET, context.net, nh, list, text);
   }
 
   if (!context.api.Exist(basename)) {
     LOG(INFO) << "WARNING Message area: '" << basename << "' does not exist.";;
     LOG(INFO) << "WARNING Attempting to create it.";
     // Since the area does not exist, let's create it automatically
-    // like WWIV alwyas does.
+    // like WWIV always does.
     unique_ptr<MessageArea> creator(context.api.Create(basename));
     if (!creator) {
-      LOG(INFO) << "    ! ERROR: Failed to create message area: " << basename << ". Exiting.";
-      return false;
+      LOG(INFO) << "    ! ERROR: Failed to create message area: " << basename << "; writing to dead.net.";
+      return write_packet(DEAD_NET, context.net, nh, list, text);
     }
   }
 
   unique_ptr<MessageArea> area(context.api.Open(basename));
   if (!area) {
-    LOG(INFO) << "    ! ERROR Unable to open message area: '" << basename << "'.";
-    return false;
+    LOG(INFO) << "    ! ERROR Unable to open message area: " << basename << "; writing to dead.net.";
+    return write_packet(DEAD_NET, context.net, nh, list, text);
   }
 
   unique_ptr<Message> msg(area->CreateMessage());
@@ -184,8 +184,8 @@ bool handle_post(Context& context, const net_header_rec& nh,
   }
 
   if (!area->AddMessage(*msg)) {
-    LOG(INFO) << "     ! Failed to add message: " << title;
-    return false;
+    LOG(ERROR) << "     ! Failed to add message: " << title << "; writing to dead.net";
+    return write_packet(DEAD_NET, context.net, nh, list, text);
   }
   LOG(INFO) << "    + Posted  '" << title << "'";
   return true;
