@@ -129,7 +129,7 @@ static bool handle_net_info_file(const net_networks_rec& net,
   if (nh.minor_type == net_info_file) {
     // we don't know the filename
     LOG(ERROR) << "ERROR: net_info_file not supported; writing to dead.net";
-    return write_packet(DEAD_NET, context.net, nh, list, text);
+    return write_packet(DEAD_NET, net, nh, list, text);
   } else if (!filename.empty()) {
     // we know the name.
     File file(net.dir, filename);
@@ -137,7 +137,7 @@ static bool handle_net_info_file(const net_networks_rec& net,
       File::shareDenyReadWrite)) {
       // We couldn't create or open the file.
       LOG(ERROR) << "ERROR: Unable to create or open file: " << filename << " writing to dead.net";
-      return write_packet(DEAD_NET, context.net, nh, list, text);
+      return write_packet(DEAD_NET, net, nh, list, text);
     }
     file.Write(text);
     LOG(INFO) << "  + Got " << filename;
@@ -145,7 +145,7 @@ static bool handle_net_info_file(const net_networks_rec& net,
   }
   // error.
   LOG(ERROR) << "ERROR: Fell through handle_net_info_file; writing to dead.net";
-  return write_packet(DEAD_NET, context.net, nh, list, text);
+  return write_packet(DEAD_NET, net, nh, list, text);
 }
 
 static bool handle_packet(
