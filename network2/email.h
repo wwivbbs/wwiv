@@ -34,7 +34,7 @@ namespace network2 {
 
 bool handle_email(Context& context,
   uint16_t to_user, const net_header_rec& nh, 
-  std::vector<uint16_t>& list, const string& text);
+  std::vector<uint16_t>& list, const std::string& text);
 
 }  // namespace network2
 }  // namespace net
