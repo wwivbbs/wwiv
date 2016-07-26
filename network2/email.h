@@ -33,7 +33,8 @@ namespace net {
 namespace network2 {
 
 bool handle_email(Context& context,
-  uint16_t to_user, const net_header_rec& nh, const std::string& text);
+  uint16_t to_user, const net_header_rec& nh, 
+  std::vector<uint16_t>& list, const std::string& text);
 
 }  // namespace network2
 }  // namespace net
