@@ -124,7 +124,7 @@ int main(int argc, char** argv) {
     if (node_config != nullptr) {
       // We have a node configuration for this one, use networkb.
       LOG(INFO) << "USE networkb: " << node_config->host << ":" << node_config->port;
-      string command_line = StringPrintf("networkb --send --network_number=%u --node=%d",
+      string command_line = StringPrintf("networkb --send --net=%u --node=%d",
         net_cmdline.network_number(), node);
       if (cmdline.barg("skip_net")) {
         command_line += " --skip_net";
