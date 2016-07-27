@@ -67,6 +67,8 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::os;
 
+static const int NETWORK_VERSION = 51;
+
 static void ShowHelp(CommandLine& cmdline) {
   cout << cmdline.GetHelp()
        << ".####      Network number (as defined in INIT)" << endl
@@ -220,6 +222,24 @@ void write_bbsdata_files(const BbsListNet& b, const vector<net_system_list_rec>&
   }
 }
 
+static void update_net_ver_status_dat(const string& datadir) {
+  statusrec status{};
+  DataFile<statusrec> file(datadir, STATUS_DAT, File::modeBinary | File::modeReadWrite);
+  if (!file) {
+    return;
+  }
+  if (!file.Read(0, &status)) {
+    return;
+  }
+  if (status.net_version == NETWORK_VERSION) {
+    return;
+  }
+  status.net_bias = 0;
+  status.net_req_free = 0;
+  status.net_version = NETWORK_VERSION;
+  file.Write(0, &status);
+}
+
 static void update_filechange_status_dat(const string& datadir) {
   statusrec status{};
   DataFile<statusrec> file(datadir, STATUS_DAT, File::modeBinary | File::modeReadWrite);
@@ -286,6 +306,7 @@ int main(int argc, char** argv) {
 
     const auto& net = net_cmdline.network();
     LOG(INFO) << "NETWORK3 for network: " << net.name;
+    update_net_ver_status_dat(net_cmdline.config().datadir());
 
     VLOG(1) << "Reading BBSLIST.NET..";
     BbsListNet b = BbsListNet::ParseBbsListNet(net.sysnum, net.dir);
@@ -312,6 +333,7 @@ int main(int argc, char** argv) {
       LOG(INFO) << "Sending Feedback.";
       send_feedback(b, callout, net, bbsdata_data);
     }
+
   } catch (const std::exception& e) {
     LOG(ERROR) << "ERROR: [network]: " << e.what();
   }
