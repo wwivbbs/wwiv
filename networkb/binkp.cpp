@@ -82,18 +82,18 @@ string expected_password_for(const Callout* callout, int node) {
       // If the password is null nullptr and not empty string.
       password.assign(p);
     } else {
-      LOG(INFO) << "       No password found for node: " << node << " using default password of '-'";
+      LOG(ERROR) << "       No password found for node: " << node << " using default password of '-'";
     }
   }
   return password;
 }
 
 int node_number_from_address_list(const string& network_list, const string& network_name) {
-  LOG(INFO) << "       node_number_from_address_list: '" << network_list << "'; network_name: " << network_name;
+  VLOG(1) << "       node_number_from_address_list: '" << network_list << "'; network_name: " << network_name;
   vector<string> v = SplitString(network_list, " ");
   for (auto s : v) {
     StringTrim(&s);
-    LOG(INFO) << "       node_number_from_address_list(s): '" << s << "'";
+    VLOG(1) << "       node_number_from_address_list(s): '" << s << "'";
     if (ends_with(s, StrCat("@", network_name)) && starts_with(s, "20000:20000/")) {
       s = s.substr(12);
       s = s.substr(0, s.find('/'));
@@ -179,7 +179,7 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
   if (command_id == BinkpCommands::M_PWD) {
 	  log_line = string(12, '*');
   }
-  LOG(INFO) << "RECV:  " << BinkpCommands::command_id_to_name(command_id)
+  VLOG(1) << "RECV:  " << BinkpCommands::command_id_to_name(command_id)
       << ": " << log_line;
   switch (command_id) {
   case BinkpCommands::M_NUL: {
@@ -195,7 +195,7 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
         if (last_dash != string::npos) {
           // we really have CRAM-MD5
           string challenge = s.substr(last_dash + 1);
-          LOG(INFO) << "        challenge: " << challenge;
+          VLOG(1) << "        challenge: " << challenge;
           cram_.set_challenge_data(challenge);
           auth_type_ = AuthType::CRAM_MD5;
         }
@@ -229,7 +229,7 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
     error_received_ = true;
   } break;
   default: {
-    LOG(INFO) << "       ** Unhandled Command: " << BinkpCommands::command_id_to_name(command_id) << ": " << s;
+    LOG(ERROR) << "       ** Unhandled Command: " << BinkpCommands::command_id_to_name(command_id) << ": " << s;
   } break;
   }
   return true;
@@ -267,7 +267,7 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
     current_receive_file_.release();
     send_command_packet(BinkpCommands::M_GOT, data_line);
   } else {
-    LOG(INFO) << "       file still transferring; bytes_received: " << current_receive_file_->length()
+    VLOG(1) << "       file still transferring; bytes_received: " << current_receive_file_->length()
         << " and: " << current_receive_file_->expected_length() << " bytes expected.";
   }
 
@@ -325,12 +325,12 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
 
   int sent = conn_->send(packet.get(), size, seconds(3));
   if (command_id != BinkpCommands::M_PWD) {
-    LOG(INFO) << "SEND:  command: " << BinkpCommands::command_id_to_name(command_id)
+    LOG(INFO) << "SEND:  " << BinkpCommands::command_id_to_name(command_id)
          << ": " << data;
   } else {
     // Mask the password.
-    LOG(INFO) << "SEND:  command: " << BinkpCommands::command_id_to_name(command_id) 
-        << ": " << string(data.size(), '*');
+    LOG(INFO) << "SEND:  " << BinkpCommands::command_id_to_name(command_id) 
+        << ": " << string(8, '*');
   }
   return true;
 }
@@ -350,12 +350,12 @@ bool BinkP::send_data_packet(const char* data, size_t packet_length) {
   memcpy(p, data, packet_length);
 
   conn_->send(packet.get(), packet_length + 2, seconds(10));
-  LOG(INFO) << "SEND:  data packet: packet_length: " << (int) packet_length;
+  VLOG(1) << "SEND:  data packet: packet_length: " << (int) packet_length;
   return true;
 }
 
 BinkState BinkP::ConnInit() {
-  LOG(INFO) << "STATE: ConnInit";
+  VLOG(1) << "STATE: ConnInit";
   process_frames(seconds(2));
   return BinkState::WAIT_CONN;
 }
@@ -369,7 +369,7 @@ static string wwiv_version_string_with_date() {
 }
 
 BinkState BinkP::WaitConn() {
-  LOG(INFO) << "STATE: WaitConn";
+  VLOG(1) << "STATE: WaitConn";
   if (side_ == BinkSide::ANSWERING) {
     cram_.GenerateChallengeData();
     const string opt_cram = StrCat("OPT CRAM-MD5-", cram_.challenge_data());
@@ -416,7 +416,7 @@ BinkState BinkP::WaitConn() {
 BinkState BinkP::SendPasswd() {
   // This is on the sending side.
   const string network_name(remote_network_name());
-  LOG(INFO) << "STATE: SendPasswd for network '" << network_name << "' for node: " << expected_remote_node_;
+  VLOG(1) << "STATE: SendPasswd for network '" << network_name << "' for node: " << expected_remote_node_;
   Callout callout = callouts_.at(network_name);
   string password = expected_password_for(&callout, expected_remote_node_);
   VLOG(1) << "       sending password packet";
@@ -435,7 +435,7 @@ BinkState BinkP::SendPasswd() {
 }
 
 BinkState BinkP::WaitAddr() {
-  LOG(INFO) << "STATE: WaitAddr";
+  VLOG(1) << "STATE: WaitAddr";
   auto predicate = [&]() -> bool { return !address_list_.empty(); };
   for (int i=0; i < 10; i++) {
     process_frames(predicate, seconds(1));
@@ -460,9 +460,9 @@ BinkState BinkP::PasswordAck() {
 
   Callout callout(callouts_.at(network_name));
   const string expected_password = expected_password_for(&callout, remote_node);
-  LOG(INFO) << "STATE: PasswordAck";
+  VLOG(1) << "STATE: PasswordAck";
   if (auth_type_ == AuthType::PLAIN_TEXT) {
-    // LOG(INFO) << "       PLAIN_TEXT expected_password = '" << expected_password << "'";
+    // VLOG(1) << "       PLAIN_TEXT expected_password = '" << expected_password << "'";
     if (remote_password_ == expected_password) {
       // Passwords match, send OK.
       send_command_packet(BinkpCommands::M_OK, "Passwords match; insecure session");
@@ -493,7 +493,7 @@ BinkState BinkP::WaitPwd() {
   if (side_ != BinkSide::ANSWERING) {
     LOG(ERROR) << "**** ERROR: WaitPwd Called on ORIGINATING side";
   }
-  LOG(INFO) << "STATE: WaitPwd";
+  VLOG(1) << "STATE: WaitPwd";
   auto predicate = [&]() -> bool { return !remote_password_.empty(); };
   for (int i=0; i < 30; i++) {
     process_frames(predicate, seconds(1));
@@ -507,7 +507,7 @@ BinkState BinkP::WaitPwd() {
 
 BinkState BinkP::WaitOk() {
   // TODO(rushfan): add proper timeout to wait for OK.
-  LOG(INFO) << "STATE: WaitOk";
+  VLOG(1) << "STATE: WaitOk";
   for (int i=0; i < 30; i++) {
     process_frames([&]() -> bool { return ok_received_; }, seconds(1));
     if (ok_received_) {
@@ -515,20 +515,20 @@ BinkState BinkP::WaitOk() {
     }
   }
 
-  LOG(INFO) << "       after WaitOk: M_OK never received.";
+  LOG(ERROR) << "       after WaitOk: M_OK never received.";
   send_command_packet(BinkpCommands::M_ERR, "M_OK never received. Timeed out waiting for it.");
   return BinkState::DONE;
 }
 
 BinkState BinkP::IfSecure() {
-  LOG(INFO) << "STATE: IfSecure";
+  VLOG(1) << "STATE: IfSecure";
   // Wait for OK if we sent a password.
   // Log an unsecure session of there is no password.
   return BinkState::WAIT_OK;
 }
 
 BinkState BinkP::AuthRemote() {
-  LOG(INFO) << "STATE: AuthRemote";
+  VLOG(1) << "STATE: AuthRemote";
   // Check that the address matches who we thought we called.
   VLOG(1) << "       remote address_list: " << address_list_;
   const string network_name(remote_network_name());
@@ -570,7 +570,7 @@ BinkState BinkP::TransferFiles() {
   int remote_node = remote_network_node();
   const string network_name(remote_network_name());
 
-  LOG(INFO) << "STATE: TransferFiles to node: " << remote_node;
+  VLOG(1) << "STATE: TransferFiles to node: " << remote_node;
   // Quickly let the inbound event loop percolate.
   process_frames(milliseconds(500));
   SendFiles file_sender(config_->network_dir(network_name), remote_node);
@@ -579,7 +579,7 @@ BinkState BinkP::TransferFiles() {
     SendFilePacket(file);
   }
 
-  LOG(INFO) << "STATE: After SendFilePacket for all files.";
+  VLOG(1) << "STATE: After SendFilePacket for all files.";
   // Quickly let the inbound event loop percolate.
   for (int i=0; i < 5; i++) {
     process_frames(milliseconds(500));
@@ -588,19 +588,19 @@ BinkState BinkP::TransferFiles() {
   // TODO(rushfan): Should this be in a new state?
   if (files_to_send_.empty()) {
     // All files are sent, let's let the remote know we are done.
-    LOG(INFO) << "       Sending EOB";
+    VLOG(1) << "       Sending EOB";
     // Kinda a hack, but trying to send a 3 byte packet was stalling on Windows.  Making it larger makes
     // it send (yes, even with TCP_NODELAY set).
     send_command_packet(BinkpCommands::M_EOB, "All files to send have been sent. Thank you.");
     process_frames(seconds(1));
   } else {
-    LOG(INFO) << "       files_to_send_ is not empty, Not sending EOB";
+    VLOG(1) << "       files_to_send_ is not empty, Not sending EOB";
   }
   return BinkState::WAIT_EOB;
 }
 
 BinkState BinkP::Unknown() {
-  LOG(INFO) << "STATE: Unknown";
+  VLOG(1) << "STATE: Unknown";
   int count = 0;
   auto predicate = [&]() -> bool { return count++ > 4; };
   process_frames(predicate, seconds(3));
@@ -608,7 +608,7 @@ BinkState BinkP::Unknown() {
 }
 
 BinkState BinkP::WaitEob() {
-  LOG(INFO) << "STATE: WaitEob: ENTERING eob_received: " << boolalpha << eob_received_;
+  VLOG(1) << "STATE: WaitEob: ENTERING eob_received: " << boolalpha << eob_received_;
   if (eob_received_) {
     // If we've already received an EOB, don't process_frames or do anything else. 
     // We're done.
@@ -668,7 +668,7 @@ bool BinkP::SendFileData(TransferFile* file) {
 }
 
 bool BinkP::HandlePassword(const string& password_line) {
-  LOG(INFO) << "        HandlePassword: ";
+  VLOG(1) << "        HandlePassword: ";
   if (!starts_with(password_line, "CRAM")) {
     LOG(INFO) << "        HandlePassword: Received Plain text password";
     auth_type_ = AuthType::PLAIN_TEXT;
@@ -729,7 +729,7 @@ bool BinkP::HandleFileGetRequest(const string& request_line) {
 
   auto iter = files_to_send_.find(filename);
   if (iter == end(files_to_send_)) {
-    LOG(INFO) << "File not found: " << filename;
+    LOG(ERROR) << "File not found: " << filename;
     return false;
   }
   return SendFileData(iter->second.get());
@@ -744,7 +744,7 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
 
   auto iter = files_to_send_.find(filename);
   if (iter == end(files_to_send_)) {
-    LOG(INFO) << "File not found: " << filename;
+    LOG(ERROR) << "File not found: " << filename;
     return false;
   }
 
@@ -754,7 +754,7 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   bytes_sent_ += max(0, file->file_size());
 
   if (!file->Delete()) {
-    LOG(INFO) << "       *** UNABLE TO DELETE FILE: " << file->filename(); 
+    LOG(ERROR) << "       *** UNABLE TO DELETE FILE: " << file->filename(); 
   }
   files_to_send_.erase(iter);
   return true;
@@ -763,7 +763,7 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
 static void rename_pend(const string& directory, const string& filename) {
   File pend_file(directory, filename);
   if (!pend_file.Exists()) {
-    LOG(INFO) << " pending file does not exist: " << pend_file;
+    LOG(ERROR) << " pending file does not exist: " << pend_file;
     return;
   }
   const string pend_filename(pend_file.full_pathname());
@@ -826,7 +826,7 @@ void BinkP::Run() {
         state = Unknown();
         break;
       case BinkState::DONE:
-        LOG(INFO) << "STATE: Done.";
+        VLOG(1) << "STATE: Done.";
         conn_->close();
         done = true;
         break;
@@ -842,7 +842,7 @@ void BinkP::Run() {
     // The other end closed the socket before we did.
     LOG(INFO) << "       connection was closed by the other side.";
   } catch (socket_error& e) {
-    LOG(INFO) << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
+    LOG(ERROR) << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
   }
 
   auto end_time = system_clock::now();
@@ -871,7 +871,7 @@ void BinkP::Run() {
 }
 
 void BinkP::rename_pending_files() const {
-  LOG(INFO) << "STATE: rename_pending_files";
+  VLOG(1) << "STATE: rename_pending_files";
   for (const auto& file : received_files_) {
     if (!config_->networks().contains(remote_network_name())) {
       // unknown network. log and skip.
@@ -885,7 +885,7 @@ void BinkP::rename_pending_files() const {
 }
 
 static int System(const string& cmd) {
-  LOG(INFO) << "       executing:: " << cmd;
+  LOG(INFO) << "       executing: " << cmd;
   return system(cmd.c_str());
 }
 
@@ -925,7 +925,7 @@ static bool need_network3(const string& dir) {
 
 void BinkP::process_network_files() const {
   const string network_name = remote_network_name();
-  LOG(INFO) << "STATE: process_network_files for network: " << network_name;
+  VLOG(1) << "STATE: process_network_files for network: " << network_name;
   int network_number = config_->networks().network_number(network_name);
   if (network_number == wwiv::sdk::Networks::npos) {
     return;
