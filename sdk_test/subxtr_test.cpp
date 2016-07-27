@@ -53,7 +53,7 @@ TEST_F(SubXtrTest, Write) {
   vector<xtrasubsrec> xsubs;
   xsubs.emplace_back(xtrasubsrec{0, ""});
   xtrasubsrec s2{0, "this is sub2"};
-  s2.nets.emplace_back(xtrasubsnetrec{0, 0, 0, 1, 1, "S2"});
+  s2.nets.emplace_back(xtrasubsnetrec{0, 0, 1, 1, "S2"});
   xsubs.emplace_back(s2);
 
   write_subs_xtr(helper.data(), net_networks, xsubs);
@@ -99,7 +99,7 @@ TEST_F(SubXtrTest, Read) {
   vector<xtrasubsrec> expected;
   expected.emplace_back(xtrasubsrec{0, ""});
   xtrasubsrec s2{0, "this is sub2"};
-  s2.nets.emplace_back(xtrasubsnetrec{0, 0, 0, 1, 1, "S2"});
+  s2.nets.emplace_back(xtrasubsnetrec{0, 0, 1, 1, "S2"});
   expected.emplace_back(s2);
 
   {
