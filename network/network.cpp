@@ -129,6 +129,10 @@ int main(int argc, char** argv) {
       if (cmdline.barg("skip_net")) {
         command_line += " --skip_net";
       }
+      int verbose = cmdline.iarg("v");
+      if (verbose > 0) {
+        command_line += StringPrintf(" --v=%d", verbose);
+      }
       LOG(INFO) << "Executing Command: '" << command_line << "'";
       return system(command_line.c_str());
     }
