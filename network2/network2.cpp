@@ -176,7 +176,15 @@ static bool handle_packet(
     // This is regular email sent to a user number at this system.
     // Email has no minor type, so minor_type will always be zero.
     return handle_email(context, nh.touser, nh, list, text);
-  break;
+    break;
+  // The other email type.  The touser field is zero, and the name is found at
+  // the beginning of the message text, followed by a NUL character.
+  // Minor_type will always be zero.
+  case main_type_email_name:
+    // This is regular email sent to a user number at this system.
+    // Email has no minor type, so minor_type will always be zero.
+    return handle_email_byname(context, nh, list, text);
+    break;
   case main_type_new_post:
   {
     return handle_post(context, nh, list, text);
@@ -185,12 +193,6 @@ static bool handle_packet(
   {
     return handle_ssm(context, nh, list, text);
   } break;
-  // The other email type.  The touser field is zero, and the name is found at
-  // the beginning of the message text, followed by a NUL character.
-  // Minor_type will always be zero.
-  // TODO(rushfan): Implement this one.
-  case main_type_email_name:
-
   // Subs add/drop support.
   case main_type_sub_add_req:
     return handle_sub_add_req(context, nh, text);
