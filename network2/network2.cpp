@@ -192,7 +192,6 @@ static bool handle_packet(
   case main_type_email_name:
 
   // Subs add/drop support.
-  // TODO(rushfan): Implement these.
   case main_type_sub_add_req:
     return handle_sub_add_req(context, nh, text);
   case main_type_sub_drop_req:

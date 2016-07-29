@@ -181,7 +181,6 @@ bool handle_sub_add_req(Context& context, const net_header_rec& nh, const std::s
     return resp(sub_adddrop_error);
   }
   if (!IsHostedHere(context, subtype)) {
-    // TODO send response of not hosted here.
     return resp(sub_adddrop_not_host);
   }
   string filename = StrCat("n", subtype, ".net");
@@ -190,7 +189,6 @@ bool handle_sub_add_req(Context& context, const net_header_rec& nh, const std::s
     LOG(INFO) << "Unable to read subscribers file.";
     return resp(sub_adddrop_error);
   }
-  // TODO: check to see if already subscribed.
   auto result = subscribers.insert(nh.fromsys);
   if (result.second == false) {
     return resp(sub_adddrop_already_there);
@@ -220,7 +218,6 @@ bool handle_sub_drop_req(Context& context, const net_header_rec& nh, const std::
     LOG(INFO) << "Unable to read subscribers file.";
     return resp(sub_adddrop_error);
   }
-  // TODO: check to see if already subscribed.
   set<uint16_t>::size_type num_removed = subscribers.erase(nh.fromsys);
   if (num_removed == 0) {
     return resp(sub_adddrop_not_there);
