@@ -90,7 +90,8 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
-static bool handle_ssm(Context& context, const net_header_rec& nh, const std::string& text) {
+static bool handle_ssm(Context& context, const net_header_rec& nh, 
+  std::vector<uint16_t>& list,  const std::string& text) {
   ScopeExit at_exit([] {
     VLOG(1) << "==============================================================";
   });
@@ -98,8 +99,8 @@ static bool handle_ssm(Context& context, const net_header_rec& nh, const std::st
   VLOG(1) << "  Receiving SSM for user: #" << nh.touser;
   SSM ssm(context.config, context.user_manager);
   if (!ssm.send_local(nh.touser, text)) {
-    LOG(ERROR) << "  ERROR writing SSM: '" << text << "'";
-    return false;
+    LOG(ERROR) << "  ERROR writing SSM: '" << text << "'; writing to dead.net";
+    return write_packet(DEAD_NET, context.net, nh, list, text);
   }
 
   LOG(INFO) << "    + SSM  '" << text << "'";
@@ -122,28 +123,29 @@ static string NetInfoFileName(uint16_t type) {
 }
 
 static bool handle_net_info_file(const net_networks_rec& net,
-  const net_header_rec& nh, const string& text) {
+  const net_header_rec& nh, std::vector<uint16_t>& list, const string& text) {
 
   string filename = NetInfoFileName(nh.minor_type);
   if (nh.minor_type == net_info_file) {
     // we don't know the filename
-    LOG(ERROR) << "ERROR: net_info_file not supported.";
-    return false;
+    LOG(ERROR) << "ERROR: net_info_file not supported; writing to dead.net";
+    return write_packet(DEAD_NET, net, nh, list, text);
   } else if (!filename.empty()) {
     // we know the name.
     File file(net.dir, filename);
     if (!file.Open(File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate, 
       File::shareDenyReadWrite)) {
       // We couldn't create or open the file.
-      LOG(ERROR) << "ERROR: Unable to create or open file: " << filename;
-      return false;
+      LOG(ERROR) << "ERROR: Unable to create or open file: " << filename << " writing to dead.net";
+      return write_packet(DEAD_NET, net, nh, list, text);
     }
     file.Write(text);
     LOG(INFO) << "  + Got " << filename;
     return true;
   }
   // error.
-  return false;
+  LOG(ERROR) << "ERROR: Fell through handle_net_info_file; writing to dead.net";
+  return write_packet(DEAD_NET, net, nh, list, text);
 }
 
 static bool handle_packet(
@@ -165,32 +167,33 @@ static bool handle_packet(
     if (nh.minor_type == 0) {
       // Feedback to sysop from the NC.  
       // This is sent to the #1 account as source verified email.
-      return handle_email(context, 1, nh, text);
+      return handle_email(context, 1, nh, list, text);
     } else {
-      return handle_net_info_file(context.net, nh, text);
+      return handle_net_info_file(context.net, nh, list, text);
     }
   break;
   case main_type_email:
     // This is regular email sent to a user number at this system.
     // Email has no minor type, so minor_type will always be zero.
-    return handle_email(context, nh.touser, nh, text);
-  break;
+    return handle_email(context, nh.touser, nh, list, text);
+    break;
+  // The other email type.  The touser field is zero, and the name is found at
+  // the beginning of the message text, followed by a NUL character.
+  // Minor_type will always be zero.
+  case main_type_email_name:
+    // This is regular email sent to a user number at this system.
+    // Email has no minor type, so minor_type will always be zero.
+    return handle_email_byname(context, nh, list, text);
+    break;
   case main_type_new_post:
   {
     return handle_post(context, nh, list, text);
   } break;
   case main_type_ssm:
   {
-    return handle_ssm(context, nh, text);
+    return handle_ssm(context, nh, list, text);
   } break;
-  // The other email type.  The touser field is zero, and the name is found at
-  // the beginning of the message text, followed by a NUL character.
-  // Minor_type will always be zero.
-  // TODO(rushfan): Implement this one.
-  case main_type_email_name:
-
   // Subs add/drop support.
-  // TODO(rushfan): Implement these.
   case main_type_sub_add_req:
     return handle_sub_add_req(context, nh, text);
   case main_type_sub_drop_req:

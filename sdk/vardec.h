@@ -389,7 +389,7 @@ struct configoverrec {
 
 // DYNAMIC SYSTEM STATUS
 struct statusrec {
-  char date1[9],                              // last date active
+  char date1[9],                               // last date active
        date2[9],                               // date before now
        date3[9],                               // two days ago
        log1[13],                               // yesterday's log

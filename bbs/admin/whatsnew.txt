@@ -34,6 +34,12 @@ What's New in WWIV 5.1 (2016)
   try them out. They will eventually become net51 and replace the DOS based
   net38.
 * Renamed WWIV5TelnetServer to WWIVServer, since it also does SSH too.
+* Numeric subtypes are no longer used.  Here's the diff of the change
+  in case you run an older WWIV and want to mod it to behave the same
+  way (using a string version for numeric types).  Otherwise just don't
+  use numeric named subs anymore.
+  https://github.com/wwivbbs/wwiv/pull/784/files
+*
 
 What's New in WWIV 5.1 (2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -98,21 +98,13 @@ int main(int argc, char** argv) {
       return 1;
     }
 
-    string bbsdir = cmdline.arg("bbsdir").as_string();
-    Config config(bbsdir);
-    if (!config.IsInitialized()) {
-      LOG(ERROR) << "Unable to load CONFIG.DAT.";
-      return 1;
-    }
-    Networks networks(config);
-    if (!networks.IsInitialized()) {
-      LOG(ERROR) << "Unable to load networks.";
+    NetworkCommandLine net_cmdline(cmdline);
+    if (!net_cmdline.IsInitialized()) {
       return 1;
     }
 
-    int network_number = cmdline.arg("network_number").as_int();
-    string network_name = networks[network_number].name;
-    StringLowerCase(&network_name);
+    auto network_name = net_cmdline.network_name();
+    LOG(INFO) << "NETWORK for network: " << network_name;
 
     int node = cmdline.arg("node").as_int();
     if (node == 0 || node > 32767) {
@@ -127,21 +119,25 @@ int main(int argc, char** argv) {
       return LaunchOldNetworkingStack("networkp", argc, argv);
     }
 
-    BinkConfig bink_config(network_name, config, networks);
+    BinkConfig bink_config(network_name, net_cmdline.config(), net_cmdline.networks());
     const BinkNodeConfig* node_config = bink_config.node_config_for(node);
     if (node_config != nullptr) {
       // We have a node configuration for this one, use networkb.
       LOG(INFO) << "USE networkb: " << node_config->host << ":" << node_config->port;
-      string command_line = StringPrintf("networkb --send --network_number=%u --node=%d",
-        network_number, node);
+      string command_line = StringPrintf("networkb --send --net=%u --node=%d",
+        net_cmdline.network_number(), node);
       if (cmdline.barg("skip_net")) {
         command_line += " --skip_net";
+      }
+      int verbose = cmdline.iarg("v");
+      if (verbose > 0) {
+        command_line += StringPrintf(" --v=%d", verbose);
       }
       LOG(INFO) << "Executing Command: '" << command_line << "'";
       return system(command_line.c_str());
     }
 
-    PPPConfig ppp_config(network_name, config, networks);
+    PPPConfig ppp_config(network_name, net_cmdline.config(), net_cmdline.networks());
     const PPPNodeConfig* ppp_node_config = ppp_config.node_config_for(node);
     if (ppp_node_config != nullptr) {
       LOG(INFO) << "USE PPP Project to send to: " << ppp_node_config->email_address;

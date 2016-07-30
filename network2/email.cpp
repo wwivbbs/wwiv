@@ -82,8 +82,46 @@ namespace wwiv {
 namespace net {
 namespace network2 {
 
+// Gets the user number or 0 if it is not found.
+static int GetUserNumber(const std::string name, UserManager& um) {
+  auto max = um.GetNumberOfUserRecords();
+  for (int i = 0; i <= max; i++) {
+    User u;
+    if (!um.ReadUserNoCache(&u, i)) {
+      continue;
+    }
+    if (IsEqualsIgnoreCase(name.c_str(), u.GetName())) {
+      return i;
+    }
+  }
+  return 0;
+}
+
+bool handle_email_byname(Context& context,
+  const net_header_rec& nh,
+  std::vector<uint16_t>& list, const std::string& orig_text) {
+  VLOG(1) << "Processing email by name.";
+
+  auto iter = orig_text.begin();
+  const string to_name = get_message_field(orig_text, iter, {'\0'}, 80);
+  // Rest of the message is the text.
+  const string text = string(iter, orig_text.end());
+
+  auto user_number = GetUserNumber(to_name, context.user_manager);
+  if (user_number == 0) {
+    // Not found.
+    LOG(ERROR) << "Received email to user: '" << to_name << "' who is not found on this system.";
+    // Write it to DEAD_NET
+    return write_packet(DEAD_NET, context.net, nh, list, orig_text);
+  }
+  
+  return handle_email(context, user_number, nh, list, text);
+}
+
+
 bool handle_email(Context& context,
-  uint16_t to_user, const net_header_rec& nh, const string& text) {
+  uint16_t to_user, const net_header_rec& nh, 
+  std::vector<uint16_t>& list, const string& text) {
   LOG(INFO) << "==============================================================";
   ScopeExit at_exit([] {
     LOG(INFO) << "==============================================================";
@@ -111,7 +149,7 @@ bool handle_email(Context& context,
   d.from_user = nh.fromuser;
   // All local email should have the system number set to 0.
   d.system_number = 0;
-  d.user_number = nh.touser;
+  d.user_number = to_user;
 
   auto iter = text.begin();
   d.title = get_message_field(text, iter, {'\0', '\r', '\n'}, 80);
@@ -122,8 +160,8 @@ bool handle_email(Context& context,
   std::unique_ptr<WWIVEmail> email(context.api.OpenEmail());
   bool added = email->AddMessage(d);
   if (!added) {
-    LOG(INFO) << "    ! ERROR adding email message.";
-    return false;
+    LOG(ERROR) << "    ! ERROR adding email message; writing to dead.net";
+    return write_packet(DEAD_NET, context.net, nh, list, text);
   }
   User user;
   context.user_manager.ReadUser(&user, d.user_number);
