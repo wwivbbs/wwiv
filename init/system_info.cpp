@@ -88,7 +88,11 @@ public:
   virtual int Run(CursesWindow* window) {
     window->GotoXY(this->x_, this->y_);
     int return_code = 0;
-    string s = StringPrintf("%5.3f", *this->data_);
+   
+    // passing *this->data_ to StringPrintf is causing a bus error
+    // on GCC/ARM (RPI) 
+    float d = *this->data_;
+    string s = StringPrintf("%5.3f", d);
     editline(window, &s, 5 + 1, NUM_ONLY, &return_code, "");
 
     float f;
@@ -104,7 +108,11 @@ protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
     string blanks(this->maxsize_, ' ');
     window->PutsXY(this->x_, this->y_, blanks.c_str());
-    window->PrintfXY(this->x_, this->y_, "%5.3f", *this->data_);
+    
+    // passing *this->data_ to StringPrintf is causing a bus error
+    // on GCC/ARM (RPI) 
+    float d = *this->data_;
+    window->PrintfXY(this->x_, this->y_, "%5.3f", d);
   }
 };
 
