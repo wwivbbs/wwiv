@@ -36,6 +36,7 @@
 #include "bbs/bbs.h"
 #include "bbs/conf.h"
 #include "bbs/email.h"
+#include "bbs/execexternal.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"

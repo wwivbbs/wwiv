@@ -31,6 +31,7 @@
 #include "bbs/colors.h"
 #include "bbs/defaults.h"
 #include "bbs/email.h"
+#include "bbs/execexternal.h"
 #include "bbs/fcns.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"

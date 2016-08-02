@@ -26,6 +26,7 @@
 #include "bbs/dropfile.h"
 #include "bbs/email.h"
 #include "bbs/events.h"
+#include "bbs/execexternal.h"
 #include "bbs/input.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"

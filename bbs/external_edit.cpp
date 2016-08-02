@@ -22,6 +22,7 @@
 #include <string>
 
 #include "bbs/bbs.h"
+#include "bbs/execexternal.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/platform/platformfcns.h"

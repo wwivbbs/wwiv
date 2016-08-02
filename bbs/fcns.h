@@ -62,9 +62,6 @@ void add_phone_number(int usernum, const char *phone);
 void delete_phone_number(int usernum, const char *phone);
 int  find_phone_number(const char *phone);
 
-// File: execexternal.cpp
-int ExecuteExternalProgram(const std::string& commandLine, int nFlags);
-
 // File: finduser.cpp
 int finduser(const std::string& searchString);
 int finduser1(const std::string& searchString);
@@ -145,15 +142,6 @@ int  receive_block(char *b, unsigned char *bln, bool use_crc);
 void xymodem_receive(const char *file_name, bool *received, bool use_crc);
 void zmodem_receive(const std::string& filename, bool *received);
 
-// File: srsend.cpp
-void send_block(char *b, int block_type, bool use_crc, char byBlockNumber);
-char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_crc, const char *file_name,
-            int *terr, bool *abort);
-bool okstart(bool *use_crc, bool *abort);
-void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_crc, bool use_ymodem,
-                  bool use_ymodemBatch);
-void zmodem_send(const char *file_name, bool *sent, double *percent);
-
 // File: subacc.cpp
 #include "bbs/subacc.h"
 
@@ -198,39 +186,10 @@ void write_qscn(int user_number, uint32_t* qscn, bool stay_open);
 #include "bbs/xfer.h"
 
 // File: xferovl.cpp
-void move_file();
-void sortdir(int directory_num, int type);
-void sort_all(int type);
-void rename_file();
-bool maybe_upload(const char *file_name, int directory_num, const char *description);
-void upload_files(const char *file_name, int directory_num, int type);
-bool uploadall(int directory_num);
-void relist();
-void edit_database();
-void modify_database(const char *file_name, bool add);
-bool is_uploadable(const char *file_name);
-void xfer_defaults();
-void finddescription();
-void arc_l();
+#include "bbs/xferovl.h"
 
 // File: xferovl1.cpp
-void modify_extended_description(char **sss, const char *dest);
-bool valid_desc(const char *description);
-bool get_file_idz(uploadsrec * upload_record, int dn);
-int  read_idz_all();
-int  read_idz(int mode, int tempdir);
-void tag_it();
-void tag_files();
-int  add_batch(char *description, const char *file_name, int dn, long fs);
-int  try_to_download(const char *file_mask, int dn);
-void download();
-char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars);
-void endlist(int mode);
-void SetNewFileScanDate();
-void removefilesnotthere(int dn, int *autodel);
-void removenotthere();
-int  find_batch_queue(const char *file_name);
-void remove_batch(const char *file_name);
+#include "bbs/xferovl1.h"
 
 // File: xfertmp.cpp
 bool bad_filename(const char *file_name);

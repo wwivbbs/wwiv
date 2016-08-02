@@ -22,6 +22,7 @@
 #include <string>
 
 #include "bbs/conf.h"
+#include "bbs/execexternal.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
 #include "bbs/stuffin.h"

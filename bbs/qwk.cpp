@@ -35,6 +35,7 @@
 #include "bbs/bbsovl3.h"
 #include "bbs/conf.h"
 #include "bbs/defaults.h"
+#include "bbs/execexternal.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
 #include "bbs/message_file.h"

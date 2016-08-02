@@ -14,49 +14,26 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#include "bbs/execexternal.h"
+#ifndef __INCLUDED_BBS_XFEROVL1_H__
+#define __INCLUDED_BBS_XFEROVL1_H__
 
-#include "bbs/bbs.h"
-#include "bbs/fcns.h"
-#include "bbs/vars.h"
-#include "bbs/dropfile.h"
-#include "bbs/instmsg.h"
-#include "bbs/platform/platformfcns.h"
+void modify_extended_description(char **sss, const char *dest);
+bool valid_desc(const char *description);
+bool get_file_idz(uploadsrec * upload_record, int dn);
+int  read_idz_all();
+int  read_idz(int mode, int tempdir);
+void tag_it();
+void tag_files();
+int  add_batch(char *description, const char *file_name, int dn, long fs);
+int  try_to_download(const char *file_mask, int dn);
+void download();
+char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars);
+void endlist(int mode);
+void SetNewFileScanDate();
+void removefilesnotthere(int dn, int *autodel);
+void removenotthere();
+int  find_batch_queue(const char *file_name);
+void remove_batch(const char *file_name);
 
-int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
-  // forget it if the user has hung up
-  if (!(nFlags & EFLAG_NOHUP)) {
-    if (CheckForHangup()) {
-      return -1;
-    }
-  }
-  create_chain_file();
-
-  // get ready to run it
-  if (session()->IsUserOnline()) {
-    session()->WriteCurrentUser();
-    write_qscn(session()->usernum, qsc, false);
-  }
-
-  // extra processing for net programs
-  if (nFlags & EFLAG_NETPROG) {
-    write_inst(INST_LOC_NET, session()->net_num() + 1, INST_FLAGS_NONE);
-  }
-
-  // Execute the program and make sure the workingdir is reset
-  int nExecRetCode = ExecExternalProgram(commandLine, nFlags);
-  session()->CdHome();
-
-  // Reread the user record.
-  if (session()->IsUserOnline()) {
-    session()->ReadCurrentUser();
-    read_qscn(session()->usernum, qsc, false, true);
-    session()->UpdateTopScreen();
-  }
-
-  // return to caller
-  return nExecRetCode;
-}
-
+#endif  // __INCLUDED_BBS_XFEROVL1_H__

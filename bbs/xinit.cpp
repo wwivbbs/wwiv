@@ -31,6 +31,7 @@
 #include "bbs/bbs.h"
 #include "bbs/colors.h"
 #include "bbs/events.h"
+#include "bbs/execexternal.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/conf.h"
