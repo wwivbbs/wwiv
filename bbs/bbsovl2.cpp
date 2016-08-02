@@ -23,7 +23,8 @@
 
 #include "bbs/confutil.h"
 #include "bbs/bbs.h"
-#include "bbs/fcns.h"
+#include "bbs/bputch.h"
+#include "bbs/utility.h"
 #include "bbs/vars.h"
 #include "bbs/keycodes.h"
 #include "core/os.h"

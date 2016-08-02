@@ -29,7 +29,6 @@
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/email.h"
-//#include "bbs/fcns.h"
 #include "bbs/external_edit.h"
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"
