@@ -19,6 +19,7 @@
 #include "bbs/batch.h"
 
 #include <algorithm>
+#include <chrono>
 #include <iterator>
 #include <string>
 #include <utility>
@@ -41,17 +42,18 @@
 #include "bbs/vars.h"
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
-#include "sdk/status.h"
 #include "bbs/utility.h"
 #include "bbs/wconstants.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
 #include "bbs/platform/platformfcns.h"
+#include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+#include "sdk/status.h"
 
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -897,7 +899,7 @@ void bihangup(int up) {
         session()->remoteIO()->dtr(false);
         hangup = true;
         if (up) {
-          Wait(0.1);
+          wwiv::os::sleep_for(std::chrono::milliseconds(100));
           if (!session()->remoteIO()->carrier()) {
             session()->remoteIO()->dtr(true);
           }

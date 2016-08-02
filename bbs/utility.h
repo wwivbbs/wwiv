@@ -44,7 +44,6 @@ void stripfn_inplace(char *file_name);
 char *get_wildlist(char *file_mask);
 int side_menu(int *menu_pos, bool redraw, const std::vector<std::string>& menu_items, int xpos, int ypos, struct side_menu_colors * smc);
 slrec getslrec(int nSl);
-void WWIV_SetFileTime(const char* file_name, const time_t tTime);
 bool okfsed();
 std::string W_DateString(time_t tDateTime, const std::string& origMode , const std::string& timeDelim);
 
