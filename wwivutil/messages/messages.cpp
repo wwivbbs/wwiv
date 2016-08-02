@@ -49,6 +49,7 @@ using std::vector;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
+using namespace wwiv::strings;
 
 constexpr char CD = 4;
 
@@ -121,15 +122,6 @@ public:
     return true;
   }
 };
-
-static string Join(const vector<string> lines) {
-  string out;
-  for (const auto& line : lines) {
-    out += line;
-    out += "\r\n";
-  }
-  return out;
-}
 
 class PostMessageCommand: public UtilCommand {
 public:
@@ -218,7 +210,7 @@ public:
     msg->header()->set_to(to);
     msg->header()->set_daten(static_cast<uint32_t>(daten));
     msg->header()->set_in_reply_to(in_reply_to);
-    msg->text()->set_text(Join(lines));
+    msg->text()->set_text(JoinStrings(lines, "\r\n"));
 
     return area->AddMessage(*msg) ? 0 : 1;
   }

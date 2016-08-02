@@ -85,6 +85,9 @@ char *StringRemoveWhitespace(char *str);
 // Strips the string from the first occurence of ch
 char *StringRemoveChar(const char *str, char ch);
 
+std::string JoinStrings(const std::vector<std::string> lines, const std::string end_of_line);
+
+
 }  // namespace strings
 
 template<class T>

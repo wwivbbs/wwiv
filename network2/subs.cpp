@@ -82,6 +82,66 @@ namespace wwiv {
 namespace net {
 namespace network2 {
 
+struct sub_info_t {
+  std::string stype;
+  std::string flags;
+  std::string description;
+  uint16_t category = 0;
+};
+
+static string to_string(sub_info_t& s, uint16_t system_number) {
+  return StringPrintf("%-7s %5u %-5s %s~%u", s.stype.c_str(), system_number, s.flags.c_str(), s.description.c_str(), s.category);
+}
+
+
+static std::vector<string> create_sub_info(Context& context) {
+  int current = 0;
+  std::vector <std::string> result;
+  for (const auto& x : context.xsubs) {
+    for (const auto& n : x.nets) {
+      if (n.net_num != context.network_number) {
+        continue;
+      }
+      if (n.host != 0) {
+        continue;
+      }
+      if (!(n.flags & XTRA_NET_AUTO_INFO)) {
+        // Not allowed to subs.lst info for sub
+        continue;
+      }
+      sub_info_t s;
+      const auto& b = context.subs.at(current);
+      s.stype = n.stype;
+      s.category = n.category;
+      s.description = stripcolors(x.desc);
+      if (s.description.empty()) {
+        s.description = stripcolors(context.subs.at(current).name);
+      }
+      if (s.description.size() > 60) {
+        s.description.resize(60);
+      }
+      if (b.anony & anony_ansi_only) {
+        s.flags += 'A';
+      }
+      if (x.nets.size() > 1) {
+        s.flags += 'G';
+      }
+      if (b.anony & anony_val_net) {
+        s.flags += 'N';
+      }
+      if (n.flags & XTRA_NET_AUTO_ADDDROP) {
+        s.flags += 'R';
+      }
+      if (b.anony & anony_no_tag) {
+        s.flags += 'T';
+      }
+      result.emplace_back(to_string(s, context.net.sysnum));
+    }
+    ++current;
+  }
+  return result;
+}
+
 static bool find_subscriber_file_name(Context& context, const string& netname, string& basename) {
   int current = 0;
   for (const auto& x : context.xsubs) {
@@ -146,7 +206,6 @@ static bool send_sub_add_drop_resp(Context& context,
   net_header_rec orig,
   uint8_t main_type, uint8_t code, 
   const std::string& subtype) {
-  const string pendfile = create_pend(context.net.dir, false, 2);
   net_header_rec nh = {};
   nh.daten = time_t_to_daten(time(nullptr));
   nh.fromsys = orig.tosys;
@@ -160,6 +219,7 @@ static bool send_sub_add_drop_resp(Context& context,
   text.push_back(0); // null after subtype.
   text.push_back(code);
   nh.length = text.size();  // should be subtype.size() + 2
+  const string pendfile = create_pend(context.net.dir, false, 2);
   return write_packet(pendfile, context.net, nh, std::set<uint16_t>{}, text);
 }
 
@@ -282,6 +342,26 @@ bool handle_sub_add_drop_resp(Context& context, const net_header_rec& nhorig, co
   string filename = create_pend(context.net.dir, true, context.network_number);
   return send_network(filename, context.net, nh, {}, body, byname, title);
 }
+
+bool handle_sub_list_info(Context& context, const net_header_rec& nh_orig) {
+
+  net_header_rec nh{};
+  nh.fromsys = nh_orig.tosys;
+  nh.fromuser = nh_orig.touser;
+  nh.tosys = nh_orig.fromsys;
+  nh.touser = nh_orig.fromuser;
+  nh.main_type = main_type_sub_list_info;
+  nh.minor_type = 1;
+  nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
+
+  vector<string> lines = create_sub_info(context);
+  string text = JoinStrings(lines, "\r\n");
+  nh.length = text.size();
+
+  const string pendfile = create_pend(context.net.dir, false, 2);
+  return write_packet(pendfile, context.net, nh, std::set<uint16_t>{}, text);
+}
+
 
 }
 }
