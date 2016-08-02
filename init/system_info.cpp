@@ -90,7 +90,7 @@ public:
     int return_code = 0;
    
     // passing *this->data_ to StringPrintf is causing a bus error
-    // on GCC/ARM (RPI) 
+    // on GCC/ARM (RPI).  See http://stackoverflow.com/questions/26158510
     float d = *this->data_;
     string s = StringPrintf("%5.3f", d);
     editline(window, &s, 5 + 1, NUM_ONLY, &return_code, "");
@@ -110,7 +110,7 @@ protected:
     window->PutsXY(this->x_, this->y_, blanks.c_str());
     
     // passing *this->data_ to StringPrintf is causing a bus error
-    // on GCC/ARM (RPI) 
+    // on GCC/ARM (RPI).  See http://stackoverflow.com/questions/26158510
     float d = *this->data_;
     window->PrintfXY(this->x_, this->y_, "%5.3f", d);
   }
