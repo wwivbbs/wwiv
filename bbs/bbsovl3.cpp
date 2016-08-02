@@ -20,7 +20,10 @@
 #include "bbs/bbsovl3.h"
 
 #include "bbs/bbs.h"
-#include "bbs/fcns.h"
+#include "bbs/com.h"
+#include "bbs/bgetch.h"
+#include "bbs/bputch.h"
+#include "bbs/utility.h"
 #include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"

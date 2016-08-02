@@ -209,15 +209,8 @@ double nsl() {
 }
 
 void Wait(double d) {
-  WWIV_ASSERT(d >= 0);
-  if (d < 0) {
-    return ;
-  }
-  const long lStartTime = timer1();
-  auto l = d * 18.2;
-  while (std::abs(timer1() - lStartTime) < l) {
-    giveup_timeslice();
-  }
+  int ms = d * 1000;
+  wwiv::os::sleep_for(milliseconds(ms));
 }
 
 /**
@@ -508,17 +501,6 @@ slrec getslrec(int nSl) {
   nCurSl = nSl;
   CurSlRec = config.config()->sl[nSl];
   return CurSlRec;
-}
-
-void WWIV_SetFileTime(const char* file_name, const time_t tTime) {
-  struct utimbuf utbuf;
-
-  utbuf.actime  = tTime;
-  utbuf.modtime = tTime;
-
-  WWIV_ASSERT(file_name);
-
-  utime(file_name, &utbuf);
 }
 
 bool okfsed() {

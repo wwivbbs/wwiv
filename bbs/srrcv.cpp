@@ -320,10 +320,10 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
   } while (!hangup && !done);
   session()->localIO()->LocalGotoXY(nOldXPos, nOldYPos);
   if (ok) {
-    if (filedatetime) {
-      WWIV_SetFileTime(file_name, filedatetime);
-    }
     file.Close();
+    if (filedatetime) {
+      file.set_last_write_time(filedatetime);
+    }
     *received = true;
   } else {
     file.Close();
