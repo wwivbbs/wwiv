@@ -198,17 +198,7 @@ bool WSession::WriteCurrentUser(int user_number) {
 void WSession::tleft(bool check_for_timeout) {
   double nsln = nsl();
   bool temp_sysop = session()->user()->GetSl() != 255 && session()->GetEffectiveSl() == 255;
-  bool sysop = sysop1();
-  static const std::vector<string> top_screen_items = {
-    "",
-    "Temp Sysop",
-    "",
-    "", // was Alert
-    "�������",
-    "Available",
-    "�����������",
-    "%s chatting with %s"
-  };
+  bool sysop_available = sysop1();
 
   int cx = localIO()->WhereX();
   int cy = localIO()->WhereY();
@@ -225,14 +215,11 @@ void WSession::tleft(bool check_for_timeout) {
     }
 
     if (temp_sysop) {
-      localIO()->LocalXYPuts(23, nLineNumber, top_screen_items[1]);
+      localIO()->LocalXYPuts(23, nLineNumber, "Temp Sysop");
     }
-    localIO()->LocalXYPuts(54, nLineNumber, top_screen_items[4]);
 
-    if (sysop) {
-      localIO()->LocalXYPuts(64, nLineNumber, top_screen_items[5]);
-    } else {
-      localIO()->LocalXYPuts(64, nLineNumber, top_screen_items[6]);
+    if (sysop_available) {
+      localIO()->LocalXYPuts(64, nLineNumber, "Available");
     }
   }
   switch (topdata) {
