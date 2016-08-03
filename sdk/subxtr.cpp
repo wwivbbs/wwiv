@@ -23,6 +23,8 @@
 #include <sstream>
 
 #include "bbs/vars.h"
+#include "core/datafile.h"
+#include "core/log.h"
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -31,6 +33,7 @@
 
 using std::string;
 using std::vector;
+using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -149,6 +152,21 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_r
     fileSubsXtr.Close();
   }
   return true;
+}
+
+vector<subboardrec> read_subs(const string &datadir) {
+  std::vector<subboardrec> subboards;
+
+  DataFile<subboardrec> file(datadir, SUBS_DAT);
+  if (!file) {
+    // TODO(rushfan): Figure out why this caused link errors. What's missing?
+    //LOG(ERROR) << file.file().GetName() << " NOT FOUND.";
+    return{};
+  }
+  if (!file.ReadVector(subboards)) {
+    return{};
+  }
+  return subboards;
 }
 
 }

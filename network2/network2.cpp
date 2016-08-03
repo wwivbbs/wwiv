@@ -284,20 +284,6 @@ static bool handle_file(Context& context, const string& name) {
   return true;
 }
 
-static vector<subboardrec> read_subs(const string &datadir) {
-  std::vector<subboardrec> subboards;
-
-  DataFile<subboardrec> file(datadir, SUBS_DAT);
-  if (!file) {
-    LOG(ERROR) << file.file().GetName() << " NOT FOUND.";
-    return {};
-  }
-  if (!file.ReadVector(subboards)) {
-    return {};
-  }
-  return subboards;
-}
-
 INITIALIZE_EASYLOGGINGPP
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);

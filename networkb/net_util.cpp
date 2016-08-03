@@ -227,7 +227,6 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline)
   network_ = networks_.networks()[network_number_];
 }
 
-
 }  // namespace net
 }  // namespace wwiv
 

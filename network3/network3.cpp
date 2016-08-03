@@ -43,6 +43,7 @@
 #include "networkb/connection.h"
 #include "networkb/net_util.h"
 #include "networkb/ppp_config.h"
+#include "networkb/subscribers.h"
 
 #include "sdk/bbslist.h"
 #include "sdk/callout.h"
@@ -52,6 +53,7 @@
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
+#include "sdk/subxtr.h"
 
 using std::cout;
 using std::endl;
@@ -76,6 +78,55 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
+static bool check_host_networks(
+  const wwiv::sdk::Config& config, 
+  const wwiv::sdk::Networks& network,
+  const BbsListNet& b,
+  int network_number,
+  std::ostringstream& text) {
+  
+  std::vector<subboardrec> subs = read_subs(config.datadir());
+
+  std::vector<wwiv::sdk::xtrasubsrec> xsubs;
+
+  if (!read_subs_xtr(config.datadir(), network.networks(), subs, xsubs)) {
+    return false;
+  }
+
+ const auto& net = network.networks()[network_number];
+
+  for (const auto& x : xsubs) {
+    for (const auto& n : x.nets) {
+      if (n.net_num == network_number) {
+        if (n.host == 0) {
+          // Sub hosted here.
+          std::set<uint16_t> subscribers;
+
+          const string filename = StrCat("n", n.stype, ".net");
+          if (ReadSubcriberFile(net.dir, filename, subscribers)) {
+            for (uint16_t subscriber : subscribers) {
+              auto c = b.node_config_for(subscriber);
+              if (c == nullptr) {
+                text << "Unknown system @" << subscriber << " subscribed to sub '" << n.stype << "'\r\n";
+              }
+            }
+          } else {
+            text << "Unable to find subscribers file for stype: " << n.stype << "\r\n";
+          }
+        } else {
+          // Sub hosted elsewhere.
+          auto c = b.node_config_for(n.host);
+          if (c == nullptr) {
+            text << "Unknown system @" << n.host << " hosting subtype '" << n.stype << "'\r\n";
+          }
+        }
+      }
+    }
+  }
+  return true;
+}
+
+
 static bool send_feedback_email(const net_networks_rec& net, const std::string& text) {
   net_header_rec nh = {};
 
@@ -91,26 +142,24 @@ static bool send_feedback_email(const net_networks_rec& net, const std::string& 
   return send_local(net, nh, text, byname, title);
 }
 
-static bool send_feedback(
-    const BbsListNet& b, 
-    const Callout& callout, 
-    const net_networks_rec& net,
-    const vector<net_system_list_rec>& bbsdata_data) {
-  /*
-  Still TODO:
-  check network for errors.
-  check subs to ensure subscribers and host both exist.
-  */
-
-  std::ostringstream text;
+static bool add_feedback_header(const std::string& net_dir, std::ostringstream& text) {
   text << "\r\n";
-  TextFile feedback_hdr(net.dir, "fbackhdr.net", "rt");
+  TextFile feedback_hdr(net_dir, "fbackhdr.net", "rt");
   if (feedback_hdr.IsOpen()) {
     string line;
     while (feedback_hdr.ReadLine(&line)) {
       text << line << "\r\n";
     }
   }
+  return true;
+}
+
+static bool add_feedback_general_info(
+    const BbsListNet& b, 
+    const Callout& callout, 
+    const net_networks_rec& net,
+    const vector<net_system_list_rec>& bbsdata_data,
+    std::ostringstream& text) {
 
   uint16_t nc = 0;
   uint16_t gc = 0;
@@ -172,7 +221,7 @@ static bool send_feedback(
     }
   }
 
-  return send_feedback_email(net, text.str());
+  return true;
 }
 
 void update_timestamps(const string& dir) {
@@ -330,8 +379,17 @@ int main(int argc, char** argv) {
     rename_pending_files(net.dir);
 
     if (need_to_send_feedback) {
+      /*
+      Still TODO:
+      check network for errors.
+      */
+
+      std::ostringstream text;
+      add_feedback_header(net.dir, text);
       LOG(INFO) << "Sending Feedback.";
-      send_feedback(b, callout, net, bbsdata_data);
+      add_feedback_general_info(b, callout, net, bbsdata_data, text);
+      check_host_networks(net_cmdline.config(), net_cmdline.networks(), b, net_cmdline.network_number(), text);
+      send_feedback_email(net, text.str());
     }
 
   } catch (const std::exception& e) {

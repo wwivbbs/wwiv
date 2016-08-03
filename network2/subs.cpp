@@ -45,6 +45,7 @@
 #include "networkb/connection.h"
 #include "networkb/net_util.h"
 #include "networkb/ppp_config.h"
+#include "networkb/subscribers.h"
 #include "network2/context.h"
 #include "network2/email.h"
 
@@ -93,7 +94,6 @@ static string to_string(sub_info_t& s, uint16_t system_number) {
   return StringPrintf("%-7s %5u %-5s %s~%u", s.stype.c_str(), system_number, s.flags.c_str(), s.description.c_str(), s.category);
 }
 
-
 static std::vector<string> create_sub_info(Context& context) {
   int current = 0;
   std::vector <std::string> result;
@@ -140,56 +140,6 @@ static std::vector<string> create_sub_info(Context& context) {
     ++current;
   }
   return result;
-}
-
-static bool find_subscriber_file_name(Context& context, const string& netname, string& basename) {
-  int current = 0;
-  for (const auto& x : context.xsubs) {
-    for (const auto& n : x.nets) {
-      if (n.net_num == context.network_number) {
-        if (IsEqualsIgnoreCase(netname.c_str(), n.stype)) {
-          // Since the subtype matches, we need to find the subboard base filename.
-          // and return that.
-          basename.assign(context.subs.at(current).filename);
-          return true;
-        }
-      }
-    }
-    ++current;
-  }
-  return false;
-}
-
-
-bool ReadSubcriberFile(const std::string& dir, const std::string& filename, std::set<uint16_t>& subscribers) {
-  subscribers.clear();
-
-  TextFile file(dir, filename, "rt");
-  if (!file.IsOpen()) {
-    return false;
-  }
-
-  string line;
-  while (file.ReadLine(&line)) {
-    StringTrim(&line);
-    uint16_t s = StringToUnsignedShort(line);
-    if (s > 0) {
-      subscribers.insert(s);
-    }
-  }
-  return true;
-}
-
-bool WriteSubcriberFile(const std::string& dir, const std::string& filename, const std::set<uint16_t>& subscribers) {
-  TextFile file(dir, filename, "wt");
-  if (!file.IsOpen()) {
-    return false;
-  }
-
-  for (const auto s : subscribers) {
-    file.WriteLine(std::to_string(s));
-  }
-  return true;
 }
 
 static string SubTypeFromText(const std::string& text) {

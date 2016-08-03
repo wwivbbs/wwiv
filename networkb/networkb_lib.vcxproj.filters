@@ -47,6 +47,9 @@
     <ClCompile Include="net_util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="subscribers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="connection.h">
@@ -95,6 +98,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="net_util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="subscribers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

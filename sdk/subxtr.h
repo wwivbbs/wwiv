@@ -67,6 +67,8 @@ struct xtrasubsrec {
 bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec>& subs, std::vector<xtrasubsrec>& xsubs);
 bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<xtrasubsrec>& xsubs);
 
+std::vector<subboardrec> read_subs(const std::string &datadir);
+
 }
 }
 
