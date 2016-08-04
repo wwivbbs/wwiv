@@ -126,6 +126,33 @@ static bool check_host_networks(
   return true;
 }
 
+static bool check_connect_net(
+  const BbsListNet& b,
+  const net_networks_rec& net,
+  std::ostringstream& text) {
+
+  Connect connect(net.dir);
+  for (const auto& entry : b.node_config()) {
+    const auto n = connect.node_config_for(entry.first);
+    if (n == nullptr) {
+      text << "connect.net entry missing for node @" << entry.first;
+    }
+  }
+  return true;
+}
+
+static bool check_binkp_net(
+  const BbsListNet& b,
+  const BinkConfig& bink_config,
+  std::ostringstream& text) {
+  for (const auto& entry : b.node_config()) {
+    const auto binkp_entry = bink_config.node_config_for(entry.first);
+    if (binkp_entry == nullptr) {
+      text << "binkp.net entry missing for node @" << entry.first;
+    }
+  }
+  return true;
+}
 
 static bool send_feedback_email(const net_networks_rec& net, const std::string& text) {
   net_header_rec nh = {};
@@ -152,6 +179,15 @@ static bool add_feedback_header(const std::string& net_dir, std::ostringstream& 
     }
   }
   return true;
+}
+
+static uint16_t get_network_cordinator(const BbsListNet& b) {
+  for (const auto& entry : b.node_config()) {
+    if (entry.second.other & other_net_coord) {
+      return entry.second.sysnum;
+    }
+  }
+  return 65535;
 }
 
 static bool add_feedback_general_info(
@@ -344,6 +380,8 @@ int main(int argc, char** argv) {
       return 1;
     }
 
+    BinkConfig bink_config(net_cmdline.network_name(), net_cmdline.config(), net_cmdline.networks());
+
     bool need_to_send_feedback = cmdline.barg("feedback");
     if (!need_to_send_feedback) {
       for (const auto& s : cmdline.remaining()) {
@@ -364,6 +402,9 @@ int main(int argc, char** argv) {
       return 1;
     }
 
+    auto nc = get_network_cordinator(b);
+    bool is_nc = (net.sysnum == nc);
+
     vector<net_system_list_rec> bbsdata_data;
     for (const auto& entry : b.node_config()) {
       const auto& n = entry.second;
@@ -378,17 +419,18 @@ int main(int argc, char** argv) {
     update_filechange_status_dat(net_cmdline.config().datadir());
     rename_pending_files(net.dir);
 
-    if (need_to_send_feedback) {
-      /*
-      Still TODO:
-      check network for errors.
-      */
-
+    if (need_to_send_feedback || is_nc) {
       std::ostringstream text;
       add_feedback_header(net.dir, text);
       LOG(INFO) << "Sending Feedback.";
       add_feedback_general_info(b, callout, net, bbsdata_data, text);
       check_host_networks(net_cmdline.config(), net_cmdline.networks(), b, net_cmdline.network_number(), text);
+
+      if (is_nc) {
+        // We should alwyas send feedback to the NCs.
+        check_binkp_net(b, bink_config, text);
+        check_connect_net(b, net, text);
+      }
       send_feedback_email(net, text.str());
     }
 
