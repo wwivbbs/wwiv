@@ -35,7 +35,8 @@ namespace network2 {
 bool handle_sub_add_req(Context& context, const net_header_rec& nh, const std::string& text);
 bool handle_sub_drop_req(Context& context, const net_header_rec& nh, const std::string& text);
 bool handle_sub_add_drop_resp(Context& context, const net_header_rec& nh, const std::string& add_or_drop, const std::string& text);
-bool handle_sub_list_info(Context& context, const net_header_rec& nh);
+bool handle_sub_list_info_request(Context& context, const net_header_rec& nh);
+bool handle_sub_list_info_response(Context& context, const net_header_rec& nh, const std::string& text);
 
 }  // namespace network2
 }  // namespace net

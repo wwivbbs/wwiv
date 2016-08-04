@@ -77,7 +77,7 @@ bool send_network(const std::string& filename,
   std::vector<uint16_t> list,
   const std::string& text, const std::string& byname, const std::string& title) {
 
-  LOG(INFO) << "Writing type " << nh.main_type << " message to packet: " << filename;
+  LOG(INFO) << "Writing type " << nh.main_type << "/" << nh.minor_type << " message to packet: " << filename;
 
   File file(network.dir, filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
@@ -123,7 +123,7 @@ bool write_packet(
   const net_networks_rec& net,
   const net_header_rec& nh, const std::vector<uint16_t>& list, const string& text) {
 
-  LOG(INFO) << "Writing type " << nh.main_type << " message to packet: " << filename;
+  LOG(INFO) << "Writing type " << nh.main_type << "/" << nh.minor_type << " message to packet: " << filename;
   if (nh.length != text.size()) {
     LOG(ERROR) << "Error while writing packet: " << net.dir << filename;
     LOG(ERROR) << "Mismatched text and nh.length.  text =" << text.size()

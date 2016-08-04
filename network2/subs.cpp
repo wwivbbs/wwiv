@@ -152,9 +152,9 @@ static string SubTypeFromText(const std::string& text) {
   return subtype;
 }
 
-static bool send_sub_add_drop_resp(Context& context, 
+static bool send_sub_add_drop_resp(Context& context,
   net_header_rec orig,
-  uint8_t main_type, uint8_t code, 
+  uint8_t main_type, uint8_t code,
   const std::string& subtype) {
   net_header_rec nh = {};
   nh.daten = time_t_to_daten(time(nullptr));
@@ -253,7 +253,7 @@ static string SubAddDropResponseMessage(uint8_t code) {
   case sub_adddrop_ok: return "Add or Drop successful";
   default: return StringPrintf("Unknown response code %d", code);
   }
-  
+
 }
 
 bool handle_sub_add_drop_resp(Context& context, const net_header_rec& nhorig, const std::string& add_or_drop, const std::string& text) {
@@ -262,7 +262,7 @@ bool handle_sub_add_drop_resp(Context& context, const net_header_rec& nhorig, co
 
   auto b = text.begin();
   while (b != text.end() && *b != '\0') { b++; }
-  if (b == text.end()) { 
+  if (b == text.end()) {
     LOG(INFO) << "Unable to determine code from add_drop response.";
     return false;
   } // NULL
@@ -293,7 +293,14 @@ bool handle_sub_add_drop_resp(Context& context, const net_header_rec& nhorig, co
   return send_network(filename, context.net, nh, {}, body, byname, title);
 }
 
-bool handle_sub_list_info(Context& context, const net_header_rec& nh_orig) {
+bool handle_sub_list_info_response(Context& context, const net_header_rec& nh_orig, const std::string& text) {
+  TextFile subs_inf(context.net.dir, "subs.inf", "at");
+  LOG(INFO) << "Received subs line for subs.inf:";
+  LOG(INFO) << text;
+  return subs_inf.Write(text) > 0;
+}
+
+bool handle_sub_list_info_request(Context& context, const net_header_rec& nh_orig) {
 
   net_header_rec nh{};
   nh.fromsys = nh_orig.tosys;
@@ -307,6 +314,9 @@ bool handle_sub_list_info(Context& context, const net_header_rec& nh_orig) {
   vector<string> lines = create_sub_info(context);
   string text = JoinStrings(lines, "\r\n");
   nh.length = text.size();
+
+  LOG(INFO) << "Sending subs line for subs.inf:";
+  LOG(INFO) << text;
 
   const string pendfile = create_pend(context.net.dir, false, 2);
   return write_packet(pendfile, context.net, nh, std::set<uint16_t>{}, text);

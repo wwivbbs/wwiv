@@ -207,7 +207,11 @@ static bool handle_packet(
   // In many WWIV networks, the subs list coordinator (SLC) occasionally sends
   // out "pings" to all network members.
   case main_type_sub_list_info:
-    return handle_sub_list_info(context, nh);
+    if (nh.minor_type == 0) {
+      return handle_sub_list_info_request(context, nh);
+    } else {
+      return handle_sub_list_info_response(context, nh, text);
+    }
 
   // Legacy numeric only post types.
   case main_type_post:
