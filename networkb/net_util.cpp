@@ -65,90 +65,13 @@ std::string create_pend(const string& directory, bool local, uint8_t network_app
     }
     if (f.Open(File::modeCreateFile | File::modeReadWrite | File::modeExclusive)) {
       LOG(INFO) << "Created pending file: " << filename;
+      return filename;
     }
-    return filename;
   }
   LOG(ERROR) << "all attempts failed to create_pend";
   return "";
 }
 
-bool send_network(const std::string& filename,
-  const net_networks_rec& network, net_header_rec& nh,
-  std::vector<uint16_t> list,
-  const std::string& text, const std::string& byname, const std::string& title) {
-
-  LOG(INFO) << "Writing type " << nh.main_type << "/" << nh.minor_type << " message to packet: " << filename;
-
-  File file(network.dir, filename);
-  if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-    return false;
-  }
-  file.Seek(0L, File::seekEnd);
-  nh.list_len = static_cast<uint16_t>(list.size());
-
-  string date = wwiv::sdk::daten_to_humantime(nh.daten);
-  nh.length = (text.size() + 1 + byname.size() + date.size() + 4 + title.size());
-  file.Write(&nh, sizeof(net_header_rec));
-  if (nh.list_len) {
-    file.Write(&list[0], sizeof(uint16_t) * (nh.list_len));
-  }
-  char nul[1] = {0};
-  if (!title.empty()) {
-    // We want the null byte at the end too.
-    file.Write(title);
-  }
-  file.Write(nul, 1);
-  if (!byname.empty()) {
-    // We want the null byte at the end too.
-    file.Write(byname);
-  }
-  file.Write("\r\n");
-  file.Write(date);
-  file.Write("\r\n");
-  file.Write(text);
-  file.Close();
-  return true;
-}
-
-bool write_packet(
-  const std::string& filename,
-  const net_networks_rec& net,
-  const net_header_rec& nh, const std::set<uint16_t>& list, const std::string& text) {
-  std::vector<uint16_t> v(list.begin(), list.end());
-  return write_packet(filename, net, nh, v, text);
-}
-
-bool write_packet(
-  const string& filename,
-  const net_networks_rec& net,
-  const net_header_rec& nh, const std::vector<uint16_t>& list, const string& text) {
-
-  LOG(INFO) << "Writing type " << nh.main_type << "/" << nh.minor_type << " message to packet: " << filename;
-  if (nh.length != text.size()) {
-    LOG(ERROR) << "Error while writing packet: " << net.dir << filename;
-    LOG(ERROR) << "Mismatched text and nh.length.  text =" << text.size()
-      << " nh.length = " << nh.length;
-    return false;
-  }
-  File file(net.dir, filename);
-  if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-    return false;
-  }
-  file.Seek(0L, File::seekEnd);
-  file.Write(&nh, sizeof(net_header_rec));
-  if (nh.list_len) {
-    file.Write(&list[0], sizeof(uint16_t) * (nh.list_len));
-  }
-  file.Write(text);
-  file.Close();
-  return true;
-}
-
-bool send_local(
-    const net_networks_rec& network, net_header_rec& nh,
-    const std::string& text, const std::string& byname, const std::string& title) {
-  return send_network(LOCAL_NET, network, nh, {}, text, byname, title);
-}
 
 string main_type_name(int typ) {
   switch (typ) {
@@ -202,7 +125,6 @@ void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string&
   cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", current_directory});
   cmdline.add_argument(BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
 }
-
 
 NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline)
   : bbsdir_(cmdline.arg("bbsdir").as_string()),

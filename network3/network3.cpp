@@ -42,6 +42,7 @@
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"
 #include "networkb/net_util.h"
+#include "networkb/packets.h"
 #include "networkb/ppp_config.h"
 #include "networkb/subscribers.h"
 
@@ -166,7 +167,7 @@ static bool send_feedback_email(const net_networks_rec& net, const std::string& 
   nh.main_type = main_type_email;
   nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
 
-  return send_local(net, nh, text, byname, title);
+  return send_local_email(net, nh, text, byname, title);
 }
 
 static bool add_feedback_header(const std::string& net_dir, std::ostringstream& text) {

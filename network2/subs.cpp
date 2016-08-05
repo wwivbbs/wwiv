@@ -44,6 +44,7 @@
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"
 #include "networkb/net_util.h"
+#include "networkb/packets.h"
 #include "networkb/ppp_config.h"
 #include "networkb/subscribers.h"
 #include "network2/context.h"
@@ -290,7 +291,7 @@ bool handle_sub_add_drop_resp(Context& context, const net_header_rec& nhorig, co
   nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
 
   string filename = create_pend(context.net.dir, true, context.network_number);
-  return send_network(filename, context.net, nh, {}, body, byname, title);
+  return send_network_email(filename, context.net, nh, {}, body, byname, title);
 }
 
 bool handle_sub_list_info_response(Context& context, const net_header_rec& nh_orig, const std::string& text) {

@@ -34,25 +34,6 @@ namespace net {
 void rename_pend(const std::string& directory, const std::string& filename, uint8_t network_app_num);
 std::string create_pend(const std::string& directory, bool local, uint8_t network_app_num);
 
-bool write_packet(
-  const std::string& filename,
-  const net_networks_rec& net,
-  const net_header_rec& nh, const std::set<uint16_t>& list, const std::string& text);
-
-bool write_packet(
-  const std::string& filename,
-  const net_networks_rec& net,
-  const net_header_rec& nh, const std::vector<uint16_t>& list, const std::string& text);
-
-bool send_network(
-  const std::string& filename,
-  const net_networks_rec& network, net_header_rec& nh,
-  std::vector<uint16_t> list, const std::string& text, const std::string& byname, const std::string& title);
-
-bool send_local(
-  const net_networks_rec& network, net_header_rec& nh,
-  const std::string& text, const std::string& byname, const std::string& title);
-
 std::string main_type_name(int typ);
 std::string net_info_minor_type_name(int typ);
 

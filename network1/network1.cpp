@@ -43,6 +43,7 @@
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"
 #include "networkb/net_util.h"
+#include "networkb/packets.h"
 #include "networkb/ppp_config.h"
 
 #include "sdk/bbslist.h"
