@@ -166,7 +166,6 @@ static bool ParseBbsListNetFile(
   while (bbs_list_file.ReadLine(&line)) {
     StringTrim(&line);
     net_system_list_rec node_config;
-    // TODO: make map of reg #
     int32_t reg_number;
     if (ParseBbsListNetLine(line, &node_config, &reg_number)) {
       // Parsed a line correctly.

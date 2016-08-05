@@ -153,7 +153,7 @@ void input_language() {
   }
 }
 
-static bool check_name(const string userName) {
+static bool check_name(const string& userName) {
   // Since finduser is called with userName, it can not be const.  A better idea may be
   // to change this behaviour in the future.
   char s[255], s1[255], s2[MAX_PATH];
