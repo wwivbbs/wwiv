@@ -91,20 +91,19 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
-static bool handle_ssm(Context& context, const net_header_rec& nh, 
-  std::vector<uint16_t>& list,  const std::string& text) {
+static bool handle_ssm(Context& context, Packet& p) {
   ScopeExit at_exit([] {
     VLOG(1) << "==============================================================";
   });
   VLOG(1) << "==============================================================";
-  VLOG(1) << "  Receiving SSM for user: #" << nh.touser;
+  VLOG(1) << "  Receiving SSM for user: #" << p.nh.touser;
   SSM ssm(context.config, context.user_manager);
-  if (!ssm.send_local(nh.touser, text)) {
-    LOG(ERROR) << "  ERROR writing SSM: '" << text << "'; writing to dead.net";
-    return write_packet(DEAD_NET, context.net, nh, list, text);
+  if (!ssm.send_local(p.nh.touser, p.text)) {
+    LOG(ERROR) << "  ERROR writing SSM: '" << p.text << "'; writing to dead.net";
+    return write_packet(DEAD_NET, context.net, p);
   }
 
-  LOG(INFO) << "    + SSM  '" << text << "'";
+  LOG(INFO) << "    + SSM  '" << p.text << "'";
   return true;
 }
 
@@ -123,14 +122,13 @@ static string NetInfoFileName(uint16_t type) {
   return "";
 }
 
-static bool handle_net_info_file(const net_networks_rec& net,
-  const net_header_rec& nh, std::vector<uint16_t>& list, const string& text) {
+static bool handle_net_info_file(const net_networks_rec& net, Packet& p) {
 
-  string filename = NetInfoFileName(nh.minor_type);
-  if (nh.minor_type == net_info_file) {
+  string filename = NetInfoFileName(p.nh.minor_type);
+  if (p.nh.minor_type == net_info_file) {
     // we don't know the filename
     LOG(ERROR) << "ERROR: net_info_file not supported; writing to dead.net";
-    return write_packet(DEAD_NET, net, nh, list, text);
+    return write_packet(DEAD_NET, net, p);
   } else if (!filename.empty()) {
     // we know the name.
     File file(net.dir, filename);
@@ -138,24 +136,23 @@ static bool handle_net_info_file(const net_networks_rec& net,
       File::shareDenyReadWrite)) {
       // We couldn't create or open the file.
       LOG(ERROR) << "ERROR: Unable to create or open file: " << filename << " writing to dead.net";
-      return write_packet(DEAD_NET, net, nh, list, text);
+      return write_packet(DEAD_NET, net, p);
     }
-    file.Write(text);
+    file.Write(p.text);
     LOG(INFO) << "  + Got " << filename;
     return true;
   }
   // error.
   LOG(ERROR) << "ERROR: Fell through handle_net_info_file; writing to dead.net";
-  return write_packet(DEAD_NET, net, nh, list, text);
+  return write_packet(DEAD_NET, net, p);
 }
 
 static bool handle_packet(
-  Context& context,
-  const net_header_rec& nh, std::vector<uint16_t>& list, const string& text) {
-  LOG(INFO) << "Processing message with type: " << main_type_name(nh.main_type)
-      << "/" << nh.minor_type;
+  Context& context, Packet& p) {
+  LOG(INFO) << "Processing message with type: " << main_type_name(p.nh.main_type)
+      << "/" << p.nh.minor_type;
 
-  switch (nh.main_type) {
+  switch (p.nh.main_type) {
     /*
     These messages contain various network information
     files, encoded with method 1 (requiring DE1.EXE).
@@ -165,18 +162,18 @@ static bool handle_packet(
     minor_type (except minor_type 1).
     */
   case main_type_net_info:
-    if (nh.minor_type == 0) {
+    if (p.nh.minor_type == 0) {
       // Feedback to sysop from the NC.  
       // This is sent to the #1 account as source verified email.
-      return handle_email(context, 1, nh, list, text);
+      return handle_email(context, 1, p);
     } else {
-      return handle_net_info_file(context.net, nh, list, text);
+      return handle_net_info_file(context.net, p);
     }
   break;
   case main_type_email:
     // This is regular email sent to a user number at this system.
     // Email has no minor type, so minor_type will always be zero.
-    return handle_email(context, nh.touser, nh, list, text);
+    return handle_email(context, p.nh.touser, p);
     break;
   // The other email type.  The touser field is zero, and the name is found at
   // the beginning of the message text, followed by a NUL character.
@@ -184,34 +181,34 @@ static bool handle_packet(
   case main_type_email_name:
     // This is regular email sent to a user number at this system.
     // Email has no minor type, so minor_type will always be zero.
-    return handle_email_byname(context, nh, list, text);
+    return handle_email_byname(context, p);
     break;
   case main_type_new_post:
   {
-    return handle_post(context, nh, list, text);
+    return handle_post(context, p);
   } break;
   case main_type_ssm:
   {
-    return handle_ssm(context, nh, list, text);
+    return handle_ssm(context, p);
   } break;
   // Subs add/drop support.
   case main_type_sub_add_req:
-    return handle_sub_add_req(context, nh, text);
+    return handle_sub_add_req(context, p);
   case main_type_sub_drop_req:
-    return handle_sub_drop_req(context, nh, text);
+    return handle_sub_drop_req(context, p);
   case main_type_sub_add_resp:
-    return handle_sub_add_drop_resp(context, nh, "add", text);
+    return handle_sub_add_drop_resp(context, p, "add");
   case main_type_sub_drop_resp:
-    return handle_sub_add_drop_resp(context, nh, "drop", text);
+    return handle_sub_add_drop_resp(context, p, "drop");
 
   // Sub ping.
   // In many WWIV networks, the subs list coordinator (SLC) occasionally sends
   // out "pings" to all network members.
   case main_type_sub_list_info:
-    if (nh.minor_type == 0) {
-      return handle_sub_list_info_request(context, nh);
+    if (p.nh.minor_type == 0) {
+      return handle_sub_list_info_request(context, p);
     } else {
-      return handle_sub_list_info_response(context, nh, text);
+      return handle_sub_list_info_response(context, p);
     }
 
   // Legacy numeric only post types.
@@ -232,8 +229,8 @@ static bool handle_packet(
   case main_type_group_info:
     // Anything undefined or anything we missed.
   default:
-    LOG(ERROR) << "Writing message to dead.net for unhandled type: " << main_type_name(nh.main_type);
-    return write_packet(DEAD_NET, context.net, nh, list, text);
+    LOG(ERROR) << "Writing message to dead.net for unhandled type: " << main_type_name(p.nh.main_type);
+    return write_packet(DEAD_NET, context.net, p);
   }
 
   return false;
@@ -248,42 +245,16 @@ static bool handle_file(Context& context, const string& name) {
 
   bool done = false;
   while (!done) {
-    net_header_rec nh;
-    string text;
-    int num_read = f.Read(&nh, sizeof(net_header_rec));
-    if (num_read == 0) {
-      // at the end of the packet.
+    Packet packet;
+    ReadPacketResponse response = read_packet(f, packet);
+    if (response == ReadPacketResponse::END_OF_FILE) {
       return true;
-    }
-    if (num_read != sizeof(net_header_rec)) {
-      LOG(INFO) << "error reading header, got short read of size: " << num_read
-        << "; expected: " << sizeof(net_header_rec);
+    } else if (response == ReadPacketResponse::ERROR) {
       return false;
     }
-    if (nh.method > 0) {
-      LOG(INFO) << "compression: de" << nh.method;
-    }
 
-    std::vector<uint16_t> list;
-    if (nh.list_len > 0) {
-      // skip list of addresses.
-      list.resize(nh.list_len);
-      f.Read(&list[0], 2 * nh.list_len);
-    }
-    if (nh.length > 0) {
-      int length = nh.length;
-      if (nh.method > 0) {
-        length -= 146; // sizeof EN/DE header.
-        // HACK - this should do this in a shim DE
-        nh.length -= 146; 
-        char header[147];
-        f.Read(header, 146);
-      }
-      text.resize(length);
-      f.Read(&text[0], length);
-    }
-    if (!handle_packet(context, nh, list, text)) {
-      LOG(ERROR) << "Error handing packet: type: " << nh.main_type;
+    if (!handle_packet(context, packet)) {
+      LOG(ERROR) << "Error handing packet: type: " << packet.nh.main_type;
     }
   }
   return true;

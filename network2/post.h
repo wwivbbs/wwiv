@@ -19,6 +19,7 @@
 #define __INCLUDED_NETWORK2_POST_H__
 
 #include <vector>
+#include "networkb/packets.h"
 #include "network2/context.h"
 #include "sdk/networks.h"
 #include "sdk/net.h"
@@ -32,8 +33,7 @@ namespace wwiv {
 namespace net {
 namespace network2 {
 
-bool handle_post(Context& context, const net_header_rec& nh,
-  std::vector<uint16_t>& list, const std::string& raw_text);
+bool handle_post(Context& context, Packet& packet);
 
 }  // namespace network2
 }  // namespace net

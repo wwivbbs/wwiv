@@ -101,19 +101,18 @@ static string CreateNetworkFileName(const net_networks_rec& net, uint16_t node) 
 
 static bool handle_packet(
   const BbsListNet& b,
-  const net_networks_rec& net,
-  const net_header_rec& nh, const std::vector<uint16_t>& list, const string& text) {
+  const net_networks_rec& net, Packet& p) {
 
-  if (nh.tosys == net.sysnum) {
+  if (p.nh.tosys == net.sysnum) {
     // Local Packet.
-    return write_packet(LOCAL_NET, net, nh, list, text);
-  } else if (list.empty()) {
+    return write_packet(LOCAL_NET, net, p);
+  } else if (p.list.empty()) {
     // Network packet, single destination
-    return write_packet(CreateNetworkFileName(net, get_forsys(b, nh.tosys)), net, nh, list, text);
+    return write_packet(CreateNetworkFileName(net, get_forsys(b, p.nh.tosys)), net, p);
   } else {
     // Network packet, multiple destinations.
     std::map<uint16_t, std::set<uint16_t>> forsys_to_all;
-    for (const auto& node : list) {
+    for (const auto& node : p.list) {
       uint16_t forsys = get_forsys(b, node);
       forsys_to_all[forsys].insert(node);
     }
@@ -121,16 +120,15 @@ static bool handle_packet(
     bool result = true;
     for (const auto& fa : forsys_to_all) {
       const auto forsys = fa.first;
-      auto forsys_list = fa.second;
-      net_header_rec mutable_nh = nh;
-      mutable_nh.list_len = static_cast<uint16_t>(forsys_list.size());
-      if (forsys_list.size() == 1) {
+      Packet np(p.nh, std::vector<uint16_t>(fa.second.begin(), fa.second.end()), p.text);
+      np.nh.list_len = static_cast<uint16_t>(np.list.size());
+      if (np.list.size() == 1) {
         // If we only have 1, move it out of list into tosys.
-        mutable_nh.tosys = *forsys_list.begin();
-        mutable_nh.list_len = 0;
-        forsys_list.clear();
+        np.nh.tosys = *np.list.begin();
+        np.nh.list_len = 0;
+        np.list.clear();
       }
-      if (!write_packet(CreateNetworkFileName(net, forsys), net, mutable_nh, forsys_list, text)) {
+      if (!write_packet(CreateNetworkFileName(net, forsys), net, np)) {
         result = false;
       }
     }
@@ -149,34 +147,15 @@ static bool handle_file(const BbsListNet& b, const net_networks_rec& net, const 
 
   bool done = false;
   while (!done) {
-    net_header_rec nh;
-    std::vector<uint16_t> list;
-    string text;
-    int num_read = f.Read(&nh, sizeof(net_header_rec));
-    if (num_read == 0) {
-      // at the end of the packet.
+    Packet packet;
+    ReadPacketResponse response = read_packet(f, packet);
+    if (response == ReadPacketResponse::END_OF_FILE) {
       return true;
-    }
-    if (num_read != sizeof(net_header_rec)) {
-      LOG(INFO) << "error reading header, got short read of size: " << num_read
-          << "; expected: " << sizeof(net_header_rec);
+    } else if (response == ReadPacketResponse::ERROR) {
       return false;
     }
-    if (nh.method > 0) {
-      LOG(INFO) << "compression: de" << nh.method;
-    }
-
-    if (nh.list_len > 0) {
-      // read list of addresses.
-      list.resize(nh.list_len);
-      f.Read(&list[0], 2 * nh.list_len);
-    }
-    if (nh.length > 0) {
-      text.resize(nh.length);
-      f.Read(&text[0], nh.length);
-    }
-    if (!handle_packet(b, net, nh, list, text)) {
-      LOG(INFO) << "error handing packet: type: " << nh.main_type;
+    if (!handle_packet(b, net, packet)) {
+      LOG(INFO) << "error handing packet: type: " << packet.nh.main_type;
     }
   }
   return true;

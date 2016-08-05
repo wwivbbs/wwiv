@@ -25,6 +25,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "networkb/net_util.h"
+#include "networkb/packets.h"
 #include "sdk/net.h"
 
 
@@ -55,58 +56,42 @@ int dump_file(const std::string& filename) {
 
   bool done = false;
   while (!done) {
-    net_header_rec h;
-    int num_read = f.Read(&h, sizeof(net_header_rec));
-    if (num_read == 0) {
-      // at the end of the packet.
-      cout << "[End of Packet]" << endl;
+    Packet packet;
+    ReadPacketResponse response = read_packet(f, packet);
+    if (response == ReadPacketResponse::END_OF_FILE) {
       return 0;
-    }
-    if (num_read != sizeof(net_header_rec)) {
-      cerr << "error reading header, got short read of size: " << num_read
-        << "; expected: " << sizeof(net_header_rec) << endl;
+    } else if (response == ReadPacketResponse::ERROR) {
       return 1;
     }
-    cout << "destination: " << h.touser << "@" << h.tosys << endl;
-    cout << "from:        " << h.fromuser << "@" << h.fromsys << endl;
-    cout << "type:        (" << main_type_name(h.main_type);
-    if (h.main_type == main_type_net_info) {
-      cout << "/" << net_info_minor_type_name(h.minor_type);
-    } else if (h.main_type > 0) {
-      cout << "/" << h.minor_type;
+
+    cout << "destination: " << packet.nh.touser << "@" << packet.nh.tosys << endl;
+    cout << "from:        " << packet.nh.fromuser << "@" << packet.nh.fromsys << endl;
+    cout << "type:        (" << main_type_name(packet.nh.main_type);
+    if (packet.nh.main_type == main_type_net_info) {
+      cout << "/" << net_info_minor_type_name(packet.nh.minor_type);
+    } else if (packet.nh.main_type > 0) {
+      cout << "/" << packet.nh.minor_type;
     }
     cout << ")" << endl;
-    if (h.list_len > 0) {
-      cout << "list_len:    " << h.list_len << endl;
+    if (packet.nh.list_len > 0) {
+      cout << "list_len:    " << packet.nh.list_len << endl;
     }
-    cout << "daten:       " << daten_to_humantime(h.daten) << endl;
-    cout << "length:      " << h.length << endl;
-    if (h.method > 0) {
-      cout << "compression: de" << h.method << endl;
+    cout << "daten:       " << daten_to_humantime(packet.nh.daten) << endl;
+    cout << "length:      " << packet.nh.length << endl;
+    if (packet.nh.method > 0) {
+      cout << "compression: de" << packet.nh.method << endl;
     }
 
-    if (h.list_len > 0) {
+    if (packet.nh.list_len > 0) {
       // read list of addresses.
-      std::vector<uint16_t> list;
-      list.resize(h.list_len);
-      f.Read(&list[0], 2 * h.list_len);
       cout << "System List: ";
-      for (const auto item : list) {
+      for (const auto item : packet.list) {
         cout << item << " ";
       }
       cout << endl;
     }
-    if (h.length > 0) {
-      string text;
-      int length = h.length;
-      if (h.method > 0) {
-        length -= 146; // sizeof EN/DE header.
-        char header[147];
-        f.Read(header, 146);
-      }
-      text.resize(length + 1);
-      f.Read(&text[0], length);
-      cout << "Text:" << endl << text << endl << endl;
+    if (packet.nh.length) {
+      cout << "Text:" << endl << packet.text << endl << endl;
     }
     cout << "==============================================================================" << endl;
   }

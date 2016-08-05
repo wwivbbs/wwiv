@@ -19,6 +19,7 @@
 #define __INCLUDED_NETWORK2_SUBS_H__
 
 #include <set>
+#include "networkb/packets.h"
 #include "network2/context.h"
 #include "sdk/networks.h"
 #include "sdk/net.h"
@@ -32,11 +33,11 @@ namespace wwiv {
 namespace net {
 namespace network2 {
 
-bool handle_sub_add_req(Context& context, const net_header_rec& nh, const std::string& text);
-bool handle_sub_drop_req(Context& context, const net_header_rec& nh, const std::string& text);
-bool handle_sub_add_drop_resp(Context& context, const net_header_rec& nh, const std::string& add_or_drop, const std::string& text);
-bool handle_sub_list_info_request(Context& context, const net_header_rec& nh);
-bool handle_sub_list_info_response(Context& context, const net_header_rec& nh, const std::string& text);
+bool handle_sub_add_req(Context& context, Packet& p);
+bool handle_sub_drop_req(Context& context, Packet& p);
+bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& add_or_drop);
+bool handle_sub_list_info_request(Context& context, Packet& p);
+bool handle_sub_list_info_response(Context& context, Packet& p);
 
 }  // namespace network2
 }  // namespace net

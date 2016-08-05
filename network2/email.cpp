@@ -98,31 +98,29 @@ static int GetUserNumber(const std::string name, UserManager& um) {
   return 0;
 }
 
-bool handle_email_byname(Context& context,
-  const net_header_rec& nh,
-  std::vector<uint16_t>& list, const std::string& orig_text) {
+bool handle_email_byname(Context& context, Packet& p) {
   VLOG(1) << "Processing email by name.";
 
-  auto iter = orig_text.begin();
-  const string to_name = get_message_field(orig_text, iter, {'\0'}, 80);
+  auto iter = p.text.begin();
+  const string to_name = get_message_field(p.text, iter, {'\0'}, 80);
   // Rest of the message is the text.
-  const string text = string(iter, orig_text.end());
+  const string text = string(iter, p.text.end());
 
   auto user_number = GetUserNumber(to_name, context.user_manager);
   if (user_number == 0) {
     // Not found.
     LOG(ERROR) << "Received email to user: '" << to_name << "' who is not found on this system.";
     // Write it to DEAD_NET
-    return write_packet(DEAD_NET, context.net, nh, list, orig_text);
+    return write_packet(DEAD_NET, context.net, p);
   }
   
-  return handle_email(context, user_number, nh, list, text);
+  p.text = text;
+  return handle_email(context, user_number, p);
 }
 
 
 bool handle_email(Context& context,
-  uint16_t to_user, const net_header_rec& nh, 
-  std::vector<uint16_t>& list, const string& text) {
+  uint16_t to_user, Packet& p) {
   LOG(INFO) << "==============================================================";
   ScopeExit at_exit([] {
     LOG(INFO) << "==============================================================";
@@ -144,25 +142,25 @@ bool handle_email(Context& context,
   }
 
   EmailData d = {};
-  d.daten = nh.daten;
+  d.daten = p.nh.daten;
   d.from_network_number = context.network_number;
-  d.from_system = nh.fromsys;
-  d.from_user = nh.fromuser;
+  d.from_system = p.nh.fromsys;
+  d.from_user = p.nh.fromuser;
   // All local email should have the system number set to 0.
   d.system_number = 0;
   d.user_number = to_user;
 
-  auto iter = text.begin();
-  d.title = get_message_field(text, iter, {'\0', '\r', '\n'}, 80);
+  auto iter = p.text.begin();
+  d.title = get_message_field(p.text, iter, {'\0', '\r', '\n'}, 80);
   // Rest of the message is the text.
-  d.text = string(iter, text.end());
+  d.text = string(iter, p.text.end());
   LOG(INFO) << "  Title: '" << d.title << "'";
 
   std::unique_ptr<WWIVEmail> email(context.api.OpenEmail());
   bool added = email->AddMessage(d);
   if (!added) {
     LOG(ERROR) << "    ! ERROR adding email message; writing to dead.net";
-    return write_packet(DEAD_NET, context.net, nh, list, text);
+    return write_packet(DEAD_NET, context.net, p);
   }
   User user;
   context.user_manager.ReadUser(&user, d.user_number);

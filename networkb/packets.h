@@ -32,15 +32,26 @@ namespace wwiv {
 namespace net {
 
 
-bool write_packet(
-  const std::string& filename,
-  const net_networks_rec& net,
-  const net_header_rec& nh, const std::set<uint16_t>& list, const std::string& text);
+class Packet {
+public:
+  Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const std::string& t)
+    : nh(h), list(l), text(t) {}
+
+  Packet() {}
+  virtual ~Packet() {}
+
+  net_header_rec nh{};
+  std::vector<uint16_t> list;
+  std::string text;
+};
+
+
+enum class ReadPacketResponse { OK, ERROR, END_OF_FILE };
+ReadPacketResponse read_packet(File& file, Packet& packet);
 
 bool write_packet(
   const std::string& filename,
-  const net_networks_rec& net,
-  const net_header_rec& nh, const std::vector<uint16_t>& list, const std::string& text);
+  const net_networks_rec& net, Packet& packet);
 
 bool send_local_email(
   const net_networks_rec& network, net_header_rec& nh,

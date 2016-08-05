@@ -77,24 +77,61 @@ bool send_network_email(const std::string& filename,
   return true;
 }
 
-bool write_packet(
-  const std::string& filename,
-  const net_networks_rec& net,
-  const net_header_rec& nh, const std::set<uint16_t>& list, const std::string& text) {
-  std::vector<uint16_t> v(list.begin(), list.end());
-  return write_packet(filename, net, nh, v, text);
+ReadPacketResponse read_packet(File& f, Packet& packet) {
+  int num_read = f.Read(&packet.nh, sizeof(net_header_rec));
+  if (num_read == 0) {
+    // at the end of the packet.
+    return ReadPacketResponse::END_OF_FILE;
+  }
+
+  if (num_read != sizeof(net_header_rec)) {
+    LOG(INFO) << "error reading header, got short read of size: " << num_read
+      << "; expected: " << sizeof(net_header_rec);
+    return ReadPacketResponse::ERROR;
+  }
+
+  if (packet.nh.method > 0) {
+    LOG(INFO) << "compression: de" << packet.nh.method;
+  }
+
+  if (packet.nh.list_len > 0) {
+    // skip list of addresses.
+    packet.list.resize(packet.nh.list_len);
+    f.Read(&packet.list[0], 2 * packet.nh.list_len);
+  }
+
+  if (packet.nh.length > 0) {
+    int length = packet.nh.length;
+    if (packet.nh.method > 0) {
+      // HACK - this should do this in a shim DE
+      // 146 is the sizeof EN/DE header.
+      packet.nh.length -= 146;
+      char header[147];
+      f.Read(header, 146);
+    }
+    packet.text.resize(length);
+    f.Read(&packet.text[0], packet.nh.length);
+  }
+  return ReadPacketResponse::OK;
 }
 
+//bool write_packet(
+//  const std::string& filename,
+//  const net_networks_rec& net,
+//  const net_header_rec& nh, const std::set<uint16_t>& list, const std::string& text) {
+//  std::vector<uint16_t> v(list.begin(), list.end());
+//  return write_packet(filename, net, nh, v, text);
+//}
+//
 bool write_packet(
   const string& filename,
-  const net_networks_rec& net,
-  const net_header_rec& nh, const std::vector<uint16_t>& list, const string& text) {
+  const net_networks_rec& net, Packet& p) {
 
-  LOG(INFO) << "Writing type " << nh.main_type << "/" << nh.minor_type << " message to packet: " << filename;
-  if (nh.length != text.size()) {
+  LOG(INFO) << "Writing type " << p.nh.main_type << "/" << p.nh.minor_type << " message to packet: " << filename;
+  if (p.nh.length != p.text.size()) {
     LOG(ERROR) << "Error while writing packet: " << net.dir << filename;
-    LOG(ERROR) << "Mismatched text and nh.length.  text =" << text.size()
-      << " nh.length = " << nh.length;
+    LOG(ERROR) << "Mismatched text and p.nh.length.  text =" << p.text.size()
+      << " nh.length = " << p.nh.length;
     return false;
   }
   File file(net.dir, filename);
@@ -102,11 +139,11 @@ bool write_packet(
     return false;
   }
   file.Seek(0L, File::seekEnd);
-  file.Write(&nh, sizeof(net_header_rec));
-  if (nh.list_len) {
-    file.Write(&list[0], sizeof(uint16_t) * (nh.list_len));
+  file.Write(&p.nh, sizeof(net_header_rec));
+  if (p.nh.list_len) {
+    file.Write(&p.list[0], sizeof(uint16_t) * (p.nh.list_len));
   }
-  file.Write(text);
+  file.Write(p.text);
   file.Close();
   return true;
 }

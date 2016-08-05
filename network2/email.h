@@ -19,6 +19,7 @@
 #define __INCLUDED_NETWORK2_EMAIL_H__
 
 #include <vector>
+#include "networkb/packets.h"
 #include "network2/context.h"
 #include "sdk/networks.h"
 #include "sdk/net.h"
@@ -32,13 +33,9 @@ namespace wwiv {
 namespace net {
 namespace network2 {
 
-bool handle_email(Context& context,
-  uint16_t to_user, const net_header_rec& nh, 
-  std::vector<uint16_t>& list, const std::string& text);
+bool handle_email(Context& context, uint16_t to_user, Packet& packet);
 
-bool handle_email_byname(Context& context,
-  const net_header_rec& nh,
-  std::vector<uint16_t>& list, const std::string& text);
+bool handle_email_byname(Context& context, Packet& packet);
 
 }  // namespace network2
 }  // namespace net
