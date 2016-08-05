@@ -217,7 +217,7 @@ void normalupload(int dn) {
       bout.nl();
       if (xfer) {
         write_inst(INST_LOC_UPLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_ONLINE);
-        double ti = timer();
+        auto ti = timer();
         receive_file(szReceiveFileName, &ok, u.filename, dn);
         ti = timer() - ti;
         if (ti < 0) {

@@ -285,14 +285,15 @@ bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& ad
   string now_human = wwiv::sdk::daten_to_date(p.nh.daten);
   string title = StringPrintf("WWIV AreaFix (%s) Response for subtype '%s'", context.net.name, now_human.c_str());
   string byname = StringPrintf("WWIV AreaFix (%s) @%u", context.net.name, p.nh.fromsys);
-  string body = StringPrintf("SubType '%s', (%s) Response: '%s'", subname.c_str(), add_or_drop.c_str(), code_string.c_str());
+  string body = StringPrintf("SubType '%s', (%s) Response: '%s'\r\n%s\r\n", 
+    subname.c_str(), add_or_drop.c_str(), code_string.c_str(), message_text.c_str());
 
   nh.touser = 1;
   nh.fromuser = std::numeric_limits<uint16_t>::max();
   nh.main_type = main_type_email;
   nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
 
-  string filename = create_pend(context.net.dir, true, context.network_number);
+  const string filename = create_pend(context.net.dir, true, context.network_number);
   return send_network_email(filename, context.net, nh, {}, body, byname, title);
 }
 
@@ -314,7 +315,7 @@ bool handle_sub_list_info_request(Context& context, Packet& p) {
   nh.minor_type = 1;
   nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
 
-  vector<string> lines = create_sub_info(context);
+  auto lines = create_sub_info(context);
   string text = JoinStrings(lines, "\r\n");
   nh.length = text.size();
 
@@ -322,8 +323,7 @@ bool handle_sub_list_info_request(Context& context, Packet& p) {
   LOG(INFO) << text;
 
   const string pendfile = create_pend(context.net.dir, false, 2);
-  Packet sp(nh, {}, p.text);
-  return write_packet(pendfile, context.net, sp);
+  return write_packet(pendfile, context.net, Packet(nh, {}, text));
 }
 
 
